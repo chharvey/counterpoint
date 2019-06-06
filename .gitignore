@@ -59,3 +59,10 @@ typings/
 
 # next.js build output
 .next
+
+
+# Generated build files
+build/
+
+# Generated documentation & style guides
+docs/api/
