@@ -54,6 +54,7 @@ export default class Scanner {
 	 * @param sourceText  The entire source text.
 	 */
 	constructor(readonly sourceText: string) {
+		this.sourceText= sourceText + '\u0003' // append ENDMARK character
 		this.lastIndex = this.sourceText.length - 1 // sourceText.lastIndex
 	}
 
@@ -62,8 +63,7 @@ export default class Scanner {
 	 * @returns the next character in sourceText
 	 */
 	next(): Char {
-		// If we’ve read past the end of sourceText, return the ENDMARK character.
-		const ch: string = (this.sourceIndex <= this.lastIndex) ? this.sourceText[this.sourceIndex] : '\u0003'
+		const ch: string = this.sourceText[this.sourceIndex]
 		const returned: Char = new Char(ch, this.sourceIndex, this.lineIndex, this.colIndex, this.sourceText)
 		// maintain the line count
 		// if current character is newline, then feed line and return carriage
@@ -81,7 +81,7 @@ export default class Scanner {
 	 * @returns the next character without advancing this scanner
 	 */
 	lookahead(): Char {
-		const ch: string = (this.sourceIndex <= this.lastIndex) ? this.sourceText[this.sourceIndex] : '\u0003'
+		const ch: string = this.sourceText[this.sourceIndex]
 		let sourceIndex = this.sourceIndex
 		let lineIndex   = this.lineIndex
 		let colIndex    = this.colIndex
