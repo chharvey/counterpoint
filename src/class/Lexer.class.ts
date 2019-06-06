@@ -36,8 +36,6 @@ class Token {
 	readonly lineIndex: number;
 	/** The index of the column the first character is on. */
 	readonly colIndex: number;
-	/** The entire source text. */
-	readonly sourceText: string;
 	/** The token type. */
 	type: TokenType|null;
 
@@ -48,7 +46,6 @@ class Token {
 	 */
 	constructor(startChar: Char) {
 		this.cargo      = startChar.cargo
-		this.sourceText = startChar.sourceText
 		this.lineIndex  = startChar.lineIndex
 		this.colIndex   = startChar.colIndex
 		this.type       = null

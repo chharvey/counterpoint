@@ -10,14 +10,12 @@ export class Char {
 	 * @param sourceIndex The index of the character in source text.
 	 * @param lineIndex   The index of the line the character is on.
 	 * @param colIndex    The index of the column the character is on.
-	 * @param sourceText  The entire source text.
 	 */
 	constructor(
 		readonly cargo       : string,
 		readonly sourceIndex : number,
 		readonly lineIndex   : number,
 		readonly colIndex    : number,
-		readonly sourceText  : string,
 	) {
 	}
 	toString(): string {
@@ -64,7 +62,7 @@ export default class Scanner {
 	 */
 	next(): Char {
 		const ch: string = this.sourceText[this.sourceIndex]
-		const returned: Char = new Char(ch, this.sourceIndex, this.lineIndex, this.colIndex, this.sourceText)
+		const returned: Char = new Char(ch, this.sourceIndex, this.lineIndex, this.colIndex)
 		// maintain the line count
 		// if current character is newline, then feed line and return carriage
 		if (ch === '\n') {
@@ -91,6 +89,6 @@ export default class Scanner {
 		}
 		sourceIndex += 1
 		colIndex    += 1
-		return new Char(ch, sourceIndex, lineIndex, colIndex, this.sourceText)
+		return new Char(ch, sourceIndex, lineIndex, colIndex)
 	}
 }
