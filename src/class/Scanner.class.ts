@@ -2,7 +2,7 @@
  * A character in source code.
  * @see http://parsingintro.sourceforge.net/#contents_item_4.1
  */
-class Char {
+export class Char {
 	/**
 	 * Construct a new Char object.
 	 *
@@ -74,5 +74,23 @@ export default class Scanner {
 		this.sourceIndex += 1
 		this.colIndex    += 1
 		return returned
+	}
+
+	/**
+	 * Lookahead one character.
+	 * @returns the next character without advancing this scanner
+	 */
+	lookahead(): Char {
+		const ch: string = (this.sourceIndex <= this.lastIndex) ? this.sourceText[this.sourceIndex] : '\u0003'
+		let sourceIndex = this.sourceIndex
+		let lineIndex   = this.lineIndex
+		let colIndex    = this.colIndex
+		if (ch === '\n') {
+			lineIndex += 1
+			colIndex   = -1
+		}
+		sourceIndex += 1
+		colIndex    += 1
+		return new Char(ch, sourceIndex, lineIndex, colIndex, this.sourceText)
 	}
 }

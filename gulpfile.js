@@ -16,17 +16,24 @@ function dist() {
 }
 
 async function test() {
-	const { Scanner } = require('./')
-
+	const { Scanner, Lexer, TokenType } = require('./')
 	const input = util.promisify(fs.readFile)('./sample/sample-input.solid', 'utf8')
+
 	console.log("Here are the characters returned by the scanner:")
 	console.log("  line col  character")
 	const scanner = new Scanner(await input)
-
 	let character = scanner.next()
 	while (character.cargo !== '\u0003') {
 		console.log(character.toString())
 		character = scanner.next()
+	}
+
+	console.log("Here are the tokens returned by the lexer:")
+	const lexer = new Lexer(await input)
+	let token = lexer.get()
+	while (token.type !== TokenType.EOF) {
+		console.log(token.show(true))
+		token = lexer.get()
 	}
 
 	return Promise.resolve(null)
