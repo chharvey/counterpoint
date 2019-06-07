@@ -1,5 +1,8 @@
 import Scanner, { Char } from './Scanner.class'
 
+/** ENDMARK character signifies end of file. */
+const ENDMARK: '\u0003' = '\u0003'
+
 const one_char_symbols: readonly string[] = `+ *`.split(' ')
 const two_char_symbols: readonly string[] = ``.split(' ')
 const three_char_symbols: readonly string[] = ``.split(' ')
@@ -36,8 +39,6 @@ class Token {
 	readonly lineIndex: number;
 	/** The index of the column the first character is on. */
 	readonly colIndex: number;
-	/** The entire source text. */
-	readonly sourceText: string;
 	/** The token type. */
 	type: TokenType|null;
 
@@ -48,7 +49,6 @@ class Token {
 	 */
 	constructor(startChar: Char) {
 		this.cargo      = startChar.cargo
-		this.sourceText = startChar.sourceText
 		this.lineIndex  = startChar.lineIndex
 		this.colIndex   = startChar.colIndex
 		this.type       = null
@@ -68,83 +68,63 @@ class Token {
  * A lexer (aka: Tokenizer, Lexical Analyzer)
  */
 export default class Lexer {
-	/** The scanner for this lexer. */
-	readonly scanner: Scanner;
-	/** The current character. */
-	character: Char;
-	/** The current character’s cargo. */
-	c1: string;
-	/** The lookahead cargo. */
-	c2: string;
-
 	/**
 	 * Construct a new Lexer object.
-	 *
-	 * @param sourceText  The entire source text.
 	 */
-	constructor(readonly sourceText: string) {
-		this.scanner = new Scanner(sourceText)
-		this.character = this.scanner.next()
-		this.c1 = this.character.cargo
-		this.c2 = this.c1 + this.scanner.lookahead()
+	private constructor() {
 	}
 
 	/**
 	 * Construct and return the next token in the sourceText.
-	 * @return the next token, or `null` if the token contains whitespace
+	 * @param   sourceText - the entire source text
+	 * @return the next token, if it does not contain whitespace
 	 */
-	get(): Token {
-		/* read past and ignore any whitespace characters or any comments */
-		while (whitespace.includes(this.c1)) {
-			const wstoken = new Token(this.character)
-			wstoken.type = TokenType.WHITESPACE
-			this.getChar()
-			while (whitespace.includes(this.c1)) {
-				wstoken.cargo += this.c1
-				this.getChar()
-			}
-		}
-
-		const token = new Token(this.character)
-		if (this.c1 == '\u0003') {
-			token.type = TokenType.EOF
-		}
-		// TODO comments
-		else if (identifier_starts.includes(this.c1)) {
-			token.type = TokenType.IDENTIFIER
-			this.getChar()
-			while (identifier_chars.includes(this.c1)) {
-				token.cargo += this.c1
-				this.getChar()
-			}
-			if (keywords.includes(token.cargo)) {
-				token.type = TokenType.KEYWORD
-			}
-		} else if (one_char_symbols.includes(this.c1)) {
-			token.type = TokenType.SYMBOL
-			let first_char = this.c1
-			this.getChar() // read past the first character
-			if (two_char_symbols.includes(first_char + this.c1)) {
-				token.cargo += this.c1
-				let second_char = this.c1
-				this.getChar() // read past the second character
-				if (three_char_symbols.includes(first_char + second_char + this.c1)) {
-					token.cargo += this.c1
-					this.getChar() // read past the third character
+	static * generator(sourceText: string): Iterator<Token> {
+		const scanner = Scanner.generator(sourceText)
+		let character: IteratorResult<[Char, Char|null]> = scanner.next()
+		while (!character.done) {
+			if (whitespace.includes(character.value[0].cargo)) {
+				const wstoken = new Token(character.value[0])
+				wstoken.type = TokenType.WHITESPACE
+				character = scanner.next()
+				while (whitespace.includes(character.value[0].cargo)) {
+					wstoken.cargo += character.value[0].cargo
+					character = scanner.next()
 				}
 			}
-		} else {
-			throw new Error(`I found a character or symbol that I do not recognize: ${this.c1}`)
-		}
-		return token
-	}
 
-	/**
-	 * Get the next character in a token.
-	 */
-	getChar(): void {
-		this.character = this.scanner.next()
-		this.c1 = this.character.cargo
-		this.c2 = this.c1 + this.scanner.lookahead()
+			const token = new Token(character.value[0])
+			if (character.value[0].cargo === ENDMARK) {
+				token.type = TokenType.EOF
+				character = scanner.next()
+			// TODO comments
+			} else if (identifier_starts.includes(character.value[0].cargo)) {
+				token.type = TokenType.IDENTIFIER
+				character = scanner.next()
+				while (identifier_chars.includes(character.value[0].cargo)) {
+					token.cargo += character.value[0].cargo
+					character = scanner.next()
+				}
+				if (keywords.includes(token.cargo)) {
+					token.type = TokenType.KEYWORD
+				}
+			} else if (one_char_symbols.includes(character.value[0].cargo)) {
+				token.type = TokenType.SYMBOL
+				let first_char = character.value[0].cargo
+				character = scanner.next() // read past the first character
+				if (two_char_symbols.includes(first_char + character.value[0].cargo)) {
+					token.cargo += character.value[0].cargo
+					let second_char = character.value[0].cargo
+					character = scanner.next() // read past the second character
+					if (three_char_symbols.includes(first_char + second_char + character.value[0].cargo)) {
+						token.cargo += character.value[0].cargo
+						character = scanner.next() // read past the third character
+					}
+				}
+			} else {
+				throw new Error(`I found a character or symbol that I do not recognize: ${character.value[0].cargo}`)
+			}
+			yield token
+		}
 	}
 }
