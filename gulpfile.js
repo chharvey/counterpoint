@@ -21,11 +21,11 @@ async function test() {
 
 	console.log("Here are the characters returned by the scanner:")
 	console.log("  line col  character")
-	const scanner = new Scanner(await input)
-	let character = scanner.next()
-	while (character.cargo !== '\u0003') {
-		console.log(character.toString())
-		character = scanner.next()
+	let gen = Scanner.generator(await input)
+	let character = gen.next()
+	while (!character.done) {
+		console.log(character.value[0].toString());
+		character = gen.next();
 	}
 
 	console.log("Here are the tokens returned by the lexer:")

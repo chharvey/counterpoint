@@ -1,5 +1,8 @@
 import Scanner, { Char } from './Scanner.class'
 
+/** ENDMARK character signifies end of file. */
+const ENDMARK: '\u0003' = '\u0003'
+
 const one_char_symbols: readonly string[] = `+ *`.split(' ')
 const two_char_symbols: readonly string[] = ``.split(' ')
 const three_char_symbols: readonly string[] = ``.split(' ')
@@ -65,14 +68,14 @@ class Token {
  * A lexer (aka: Tokenizer, Lexical Analyzer)
  */
 export default class Lexer {
-	/** The scanner for this lexer. */
-	readonly scanner: Scanner;
-	/** The current character. */
-	character: Char;
+	/** The scanner generator for this lexer. */
+	readonly scanner: Iterator<[Char, Char|null]>;
+	/** The current iterator result. */
+	character: IteratorResult<[Char, Char|null]>;
 	/** The current character’s cargo. */
 	c1: string;
 	/** The lookahead cargo. */
-	c2: string;
+	c2: string|null;
 
 	/**
 	 * Construct a new Lexer object.
@@ -80,10 +83,10 @@ export default class Lexer {
 	 * @param sourceText  The entire source text.
 	 */
 	constructor(readonly sourceText: string) {
-		this.scanner = new Scanner(sourceText)
+		this.scanner = Scanner.generator(sourceText)
 		this.character = this.scanner.next()
-		this.c1 = this.character.cargo
-		this.c2 = this.c1 + this.scanner.lookahead()
+		this.c1 = this.character.value[0].cargo
+		this.c2 = (this.character.value[1] !== null) ? this.c1 + this.character.value[1].cargo : null
 	}
 
 	/**
@@ -93,7 +96,7 @@ export default class Lexer {
 	get(): Token {
 		/* read past and ignore any whitespace characters or any comments */
 		while (whitespace.includes(this.c1)) {
-			const wstoken = new Token(this.character)
+			const wstoken = new Token(this.character.value[0])
 			wstoken.type = TokenType.WHITESPACE
 			this.getChar()
 			while (whitespace.includes(this.c1)) {
@@ -102,8 +105,8 @@ export default class Lexer {
 			}
 		}
 
-		const token = new Token(this.character)
-		if (this.c1 == '\u0003') {
+		const token = new Token(this.character.value[0])
+		if (this.c1 === ENDMARK) {
 			token.type = TokenType.EOF
 		}
 		// TODO comments
@@ -141,7 +144,7 @@ export default class Lexer {
 	 */
 	getChar(): void {
 		this.character = this.scanner.next()
-		this.c1 = this.character.cargo
-		this.c2 = this.c1 + this.scanner.lookahead()
+		this.c1 = this.character.value[0].cargo
+		this.c2 = (this.character.value[1] !== null) ? this.c1 + this.character.value[1].cargo : null
 	}
 }
