@@ -21,19 +21,19 @@ async function test() {
 
 	console.log("Here are the characters returned by the scanner:")
 	console.log("  line col  character")
-	let gen = Scanner.generator(await input)
-	let character = gen.next()
+	const scanner = Scanner.generator(await input)
+	let character = scanner.next()
 	while (!character.done) {
-		console.log(character.value[0].toString());
-		character = gen.next();
+		console.log(character.value[0].toString())
+		character = scanner.next()
 	}
 
 	console.log("Here are the tokens returned by the lexer:")
-	const lexer = new Lexer(await input)
-	let token = lexer.get()
-	while (token.type !== TokenType.EOF) {
-		console.log(token.show(true))
-		token = lexer.get()
+	const lexer = Lexer.generator(await input)
+	let token = lexer.next()
+	while (!token.done) {
+		console.log(token.value.show(true))
+		token = lexer.next()
 	}
 
 	return Promise.resolve(null)
