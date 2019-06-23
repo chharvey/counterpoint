@@ -85,45 +85,52 @@ export default class Lexer {
 	static * generate(sourceText: string): Iterator<Token> {
 		const scanner: Iterator<Char> = Scanner.generate(sourceText)
 		let character: IteratorResult<Char> = scanner.next()
+		let c0: string = character.value.cargo
+		let c1: string|null = character.value.lookahead() && character.value.lookahead() !.cargo
+		function advance(): void {
+			character = scanner.next()
+			c0 = character.value.cargo
+			c1 = character.value.lookahead() && character.value.lookahead() !.cargo
+		}
 		while (!character.done) {
-			if (whitespace.includes(character.value.cargo)) {
+			if (whitespace.includes(c0)) {
 				const wstoken = new Token(character.value)
 				wstoken.type = TokenType.WHITESPACE
-				character = scanner.next()
-				while (!character.done && whitespace.includes(character.value.cargo)) {
-					wstoken.cargo += character.value.cargo
-					character = scanner.next()
+				advance()
+				while (!character.done && whitespace.includes(c0)) {
+					wstoken.cargo += c0
+					advance()
 				}
 				// yield wstoken // only if we want the lexer to return whitespace
 				break;
 			}
 
 			const token = new Token(character.value)
-			if (character.value.cargo === ENDMARK) {
+			if (c0 === ENDMARK) {
 				token.type = TokenType.EOF
-				character = scanner.next()
+				advance()
 			// TODO comments
-			} else if (identifier_starts.includes(character.value.cargo)) {
+			} else if (identifier_starts.includes(c0)) {
 				token.type = TokenType.IDENTIFIER
-				character = scanner.next()
-				while (!character.done && identifier_chars.includes(character.value.cargo)) {
-					token.cargo += character.value.cargo
-					character = scanner.next()
+				advance()
+				while (!character.done && identifier_chars.includes(c0)) {
+					token.cargo += c0
+					advance()
 				}
 				if (keywords.includes(token.cargo)) {
 					token.type = TokenType.KEYWORD
 				}
-			} else if (one_char_symbols.includes(character.value.cargo)) {
+			} else if (one_char_symbols.includes(c0)) {
 				token.type = TokenType.SYMBOL
-				let first_char = character.value.cargo
-				character = scanner.next() // read past the first character
-				if (two_char_symbols.includes(first_char + character.value.cargo)) {
-					token.cargo += character.value.cargo
-					let second_char = character.value.cargo
-					character = scanner.next() // read past the second character
-					if (three_char_symbols.includes(first_char + second_char + character.value.cargo)) {
-						token.cargo += character.value.cargo
-						character = scanner.next() // read past the third character
+				let first_char: string = c0
+				advance() // read past the first character
+				if (two_char_symbols.includes(first_char + c0)) {
+					token.cargo += c0
+					let second_char: string = c0
+					advance() // read past the second character
+					if (three_char_symbols.includes(first_char + second_char + c0)) {
+						token.cargo += c0
+						advance() // read past the third character
 					}
 				}
 			} else {
