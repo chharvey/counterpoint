@@ -12,16 +12,20 @@ const identifier_chars: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
 const identifier_starts: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
 const whitespace: readonly string[] = [' ', '\t', '\n']
 
+/**
+ * The different possible types of tokens.
+ */
 export enum TokenType {
-	SYMBOL     ,
-	KEYWORD    ,
-	STRING     ,
-	IDENTIFIER ,
-	NUMBER     ,
-	WHITESPACE ,
-	COMMENT    ,
-	EOF        ,
+	SYMBOL,
+	KEYWORD,
+	STRING,
+	IDENTIFIER,
+	NUMBER,
+	WHITESPACE,
+	COMMENT,
+	EOF,
 }
+
 
 /**
  * A Token object is the kind of thing that the Lexer returns.
@@ -35,9 +39,9 @@ export enum TokenType {
 class Token {
 	/** All the characters in this Token. */
 	cargo: string;
-	/** The index of the line the first character is on. */
+	/** Zero-based line number of the first character (first line is line 0). */
 	readonly lineIndex: number;
-	/** The index of the column the first character is on. */
+	/** Zero-based column number of the first character (first col is col 0). */
 	readonly colIndex: number;
 	/** The token type. */
 	type: TokenType|null;
@@ -55,8 +59,12 @@ class Token {
 	}
 
 
-	show(showLineNumbers = false) {
-		const s: string = (showLineNumbers)
+	/**
+	 * Return a row that describes this token in a table.
+	 * @returns a string representation of this token’s data
+	 */
+	show(show_line_numbers: boolean = false) {
+		const s: string = (show_line_numbers)
 			? `    ${this.lineIndex+1}    ${this.colIndex+1}    ` // for some dumb reason, lines and cols start at 1 instad of 0
 			: ''
 		return s  + `${TokenType[this.type || TokenType.SYMBOL]}: ${this.cargo}`
@@ -66,21 +74,16 @@ class Token {
 
 /**
  * A lexer (aka: Tokenizer, Lexical Analyzer)
+ * @see http://parsingintro.sourceforge.net/#contents_item_6.5
  */
 export default class Lexer {
-	/**
-	 * Construct a new Lexer object.
-	 */
-	private constructor() {
-	}
-
 	/**
 	 * Construct and return the next token in the sourceText.
 	 * @param   sourceText - the entire source text
 	 * @returns the next token, if it does not contain whitespace
 	 */
 	static * generate(sourceText: string): Iterator<Token> {
-		const scanner = Scanner.generate(sourceText)
+		const scanner: Iterator<Char> = Scanner.generate(sourceText)
 		let character: IteratorResult<Char> = scanner.next()
 		while (!character.done) {
 			if (whitespace.includes(character.value.cargo)) {
@@ -124,9 +127,16 @@ export default class Lexer {
 					}
 				}
 			} else {
-				throw new Error(`I found a character or symbol that I do not recognize: ${character.value.cargo}`)
+				throw new Error(`I found a character or symbol that I do not recognize: ${c0}`)
 			}
 			yield token
 		}
+	}
+
+
+	/**
+	 * Construct a new Lexer object.
+	 */
+	private constructor() {
 	}
 }

@@ -1,15 +1,6 @@
 /** ENDMARK character signifies end of file. */
 const ENDMARK: '\u0003' = '\u0003'
 
-/** Like {@link Array#findIndex}, but returns the end-most index. */
-function findLastIndex<T>(arr: readonly T[], predicate: (it: T, ix: number) => boolean): number|null {
-	const returned = arr.map((it, i) => [it, i] as [T, number])
-		.filter((pair) => predicate(pair[0], pair[1]))
-		.reverse()
-	return (returned.length) ? returned[0][1] : null
-}
-
-
 
 /**
  * A character in source code.
@@ -33,7 +24,7 @@ export class Char {
 		const prev_chars: readonly string[] = [...this.sourceText].slice(0, this.sourceIndex)
 		this.cargo = this.sourceText[this.sourceIndex]
 		this.lineIndex = prev_chars.filter((c) => c === '\n').length
-		this.colIndex = this.sourceIndex - ((findLastIndex(prev_chars, (c) => c === '\n') || -1) + 1)
+		this.colIndex = this.sourceIndex - (prev_chars.lastIndexOf('\n') + 1)
 	}
 
 	/**
@@ -68,20 +59,21 @@ export class Char {
  */
 export default class Scanner {
 	/**
+	 * Return the next character in sourceText.
+	 * @param   source_text - the entire source text
+	 * @returns the next character in sourceText
+	 */
+	static * generate(source_text: string): Iterator<Char> {
+		source_text = source_text + ENDMARK
+		for (let source_index = 0; source_index < source_text.length; source_index++) {
+			yield new Char(source_text, source_index)
+		}
+	}
+
+
+	/**
 	 * Construct a new Scanner object.
 	 */
 	private constructor() {
-	}
-
-	/**
-	 * Return the next character in sourceText.
-	 * @param   sourceText - the entire source text
-	 * @returns the next character in sourceText
-	 */
-	static * generate(sourceText: string): Iterator<Char> {
-		sourceText= sourceText + ENDMARK
-		for (let source_index = 0; source_index < sourceText.length; source_index++) {
-			yield new Char(sourceText, source_index)
-		}
 	}
 }
