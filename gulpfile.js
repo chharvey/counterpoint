@@ -21,7 +21,7 @@ async function test() {
 
 	console.log("Here are the characters returned by the scanner:")
 	console.log("  line col  character")
-	const scanner = Scanner.generator(await input)
+	const scanner = Scanner.generate(await input)
 	let character = scanner.next()
 	while (!character.done) {
 		console.log(character.value[0].toString())
@@ -29,7 +29,7 @@ async function test() {
 	}
 
 	console.log("Here are the tokens returned by the lexer:")
-	const lexer = Lexer.generator(await input)
+	const lexer = Lexer.generate(await input)
 	let token = lexer.next()
 	while (!token.done) {
 		console.log(token.value.show(true))

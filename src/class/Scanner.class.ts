@@ -61,7 +61,7 @@ export default class Scanner {
 	 * @param   sourceText - the entire source text
 	 * @returns the next character in sourceText
 	 */
-	static * generator(sourceText: string): Iterator<[Char, Char|null]> {
+	static * generate(sourceText: string): Iterator<[Char, Char|null]> {
 		sourceText= sourceText + ENDMARK
 		for (let source_index = 0; source_index < sourceText.length; source_index++) {
 			/** Array of characters from source start until current iteration (not including current character). */

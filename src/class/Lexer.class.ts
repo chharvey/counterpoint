@@ -77,10 +77,10 @@ export default class Lexer {
 	/**
 	 * Construct and return the next token in the sourceText.
 	 * @param   sourceText - the entire source text
-	 * @return the next token, if it does not contain whitespace
+	 * @returns the next token, if it does not contain whitespace
 	 */
-	static * generator(sourceText: string): Iterator<Token> {
-		const scanner = Scanner.generator(sourceText)
+	static * generate(sourceText: string): Iterator<Token> {
+		const scanner = Scanner.generate(sourceText)
 		let character: IteratorResult<[Char, Char|null]> = scanner.next()
 		while (!character.done) {
 			if (whitespace.includes(character.value[0].cargo)) {
