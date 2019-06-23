@@ -32,7 +32,7 @@ export enum TokenType {
  *
  * @see http://parsingintro.sourceforge.net/#contents_item_6.4
  */
-class Token {
+export class Token {
 	/** All the characters in this Token. */
 	cargo: string;
 	/** The index of the line the first character is on. */
