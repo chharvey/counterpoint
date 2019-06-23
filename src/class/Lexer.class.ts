@@ -81,50 +81,50 @@ export default class Lexer {
 	 */
 	static * generate(sourceText: string): Iterator<Token> {
 		const scanner = Scanner.generate(sourceText)
-		let character: IteratorResult<[Char, Char|null]> = scanner.next()
+		let character: IteratorResult<Char> = scanner.next()
 		while (!character.done) {
-			if (whitespace.includes(character.value[0].cargo)) {
-				const wstoken = new Token(character.value[0])
+			if (whitespace.includes(character.value.cargo)) {
+				const wstoken = new Token(character.value)
 				wstoken.type = TokenType.WHITESPACE
 				character = scanner.next()
-				while (!character.done && whitespace.includes(character.value[0].cargo)) {
-					wstoken.cargo += character.value[0].cargo
+				while (!character.done && whitespace.includes(character.value.cargo)) {
+					wstoken.cargo += character.value.cargo
 					character = scanner.next()
 				}
 				// yield wstoken // only if we want the lexer to return whitespace
 				break;
 			}
 
-			const token = new Token(character.value[0])
-			if (character.value[0].cargo === ENDMARK) {
+			const token = new Token(character.value)
+			if (character.value.cargo === ENDMARK) {
 				token.type = TokenType.EOF
 				character = scanner.next()
 			// TODO comments
-			} else if (identifier_starts.includes(character.value[0].cargo)) {
+			} else if (identifier_starts.includes(character.value.cargo)) {
 				token.type = TokenType.IDENTIFIER
 				character = scanner.next()
-				while (!character.done && identifier_chars.includes(character.value[0].cargo)) {
-					token.cargo += character.value[0].cargo
+				while (!character.done && identifier_chars.includes(character.value.cargo)) {
+					token.cargo += character.value.cargo
 					character = scanner.next()
 				}
 				if (keywords.includes(token.cargo)) {
 					token.type = TokenType.KEYWORD
 				}
-			} else if (one_char_symbols.includes(character.value[0].cargo)) {
+			} else if (one_char_symbols.includes(character.value.cargo)) {
 				token.type = TokenType.SYMBOL
-				let first_char = character.value[0].cargo
+				let first_char = character.value.cargo
 				character = scanner.next() // read past the first character
-				if (two_char_symbols.includes(first_char + character.value[0].cargo)) {
-					token.cargo += character.value[0].cargo
-					let second_char = character.value[0].cargo
+				if (two_char_symbols.includes(first_char + character.value.cargo)) {
+					token.cargo += character.value.cargo
+					let second_char = character.value.cargo
 					character = scanner.next() // read past the second character
-					if (three_char_symbols.includes(first_char + second_char + character.value[0].cargo)) {
-						token.cargo += character.value[0].cargo
+					if (three_char_symbols.includes(first_char + second_char + character.value.cargo)) {
+						token.cargo += character.value.cargo
 						character = scanner.next() // read past the third character
 					}
 				}
 			} else {
-				throw new Error(`I found a character or symbol that I do not recognize: ${character.value[0].cargo}`)
+				throw new Error(`I found a character or symbol that I do not recognize: ${character.value.cargo}`)
 			}
 			yield token
 		}

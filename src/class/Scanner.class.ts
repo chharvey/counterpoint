@@ -51,6 +51,14 @@ export class Char {
 		]).get(this.cargo) || this.cargo
 		return `    ${this.lineIndex+1}    ${this.colIndex+1}    ${cargo}` // for some dumb reason, lines and cols start at 1 instad of 0
 	}
+
+	/**
+	 * Return the next character after this character.
+	 * @returns the character succeeding this character
+	 */
+	lookahead(): Char|null {
+		return (this.cargo === ENDMARK) ? null : new Char(this.sourceText, this.sourceIndex + 1)
+	}
 }
 
 
@@ -70,19 +78,10 @@ export default class Scanner {
 	 * @param   sourceText - the entire source text
 	 * @returns the next character in sourceText
 	 */
-	static * generate(sourceText: string): Iterator<[Char, Char|null]> {
+	static * generate(sourceText: string): Iterator<Char> {
 		sourceText= sourceText + ENDMARK
 		for (let source_index = 0; source_index < sourceText.length; source_index++) {
-			/** The current character. */
-			const curr_char = sourceText[source_index]
-
-			/** The lookahead character: the character after the current character. */
-			const lookahead: string|null = (curr_char === ENDMARK) ? null : sourceText[source_index + 1];
-
-			yield [
-				new Char(sourceText, source_index),
-				(lookahead === null) ? null : new Char(sourceText, source_index + 1),
-			]
+			yield new Char(sourceText, source_index)
 		}
 	}
 }
