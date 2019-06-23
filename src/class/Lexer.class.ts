@@ -87,10 +87,12 @@ export default class Lexer {
 				const wstoken = new Token(character.value[0])
 				wstoken.type = TokenType.WHITESPACE
 				character = scanner.next()
-				while (whitespace.includes(character.value[0].cargo)) {
+				while (!character.done && whitespace.includes(character.value[0].cargo)) {
 					wstoken.cargo += character.value[0].cargo
 					character = scanner.next()
 				}
+				// yield wstoken // only if we want the lexer to return whitespace
+				break;
 			}
 
 			const token = new Token(character.value[0])
@@ -101,7 +103,7 @@ export default class Lexer {
 			} else if (identifier_starts.includes(character.value[0].cargo)) {
 				token.type = TokenType.IDENTIFIER
 				character = scanner.next()
-				while (identifier_chars.includes(character.value[0].cargo)) {
+				while (!character.done && identifier_chars.includes(character.value[0].cargo)) {
 					token.cargo += character.value[0].cargo
 					character = scanner.next()
 				}
