@@ -87,10 +87,23 @@ export default class Lexer {
 		let character: IteratorResult<Char> = scanner.next()
 		let c0: string = character.value.cargo
 		let c1: string|null = character.value.lookahead() && character.value.lookahead() !.cargo
-		function advance(): void {
-			character = scanner.next()
-			c0 = character.value.cargo
-			c1 = character.value.lookahead() && character.value.lookahead() !.cargo
+		let c2: string|null = character.value.lookahead(2) && character.value.lookahead(2) !.cargo
+		/**
+		 * Advance the lexer, scanning the next character and reassigning variables.
+		 * @param   n the number of times to advance
+		 * @throws  {RangeError} if the argument is not a positive integer
+		 */
+		function advance(n: number = 1): void {
+			if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
+			if (n === 1) {
+				character = scanner.next()
+				c0 = character.value.cargo
+				c1 = character.value.lookahead() && character.value.lookahead() !.cargo
+				c2 = character.value.lookahead(2) && character.value.lookahead(2) !.cargo
+			} else {
+				advance(n - 1)
+				advance()
+			}
 		}
 		while (!character.done) {
 			if (whitespace.includes(c0)) {

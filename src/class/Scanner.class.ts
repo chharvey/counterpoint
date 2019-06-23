@@ -45,10 +45,18 @@ export class Char {
 
 	/**
 	 * Return the next character after this character.
+	 * @param   n the number of times to lookahead
 	 * @returns the character succeeding this character
+	 * @throws  {RangeError} if the argument is not a positive integer
 	 */
-	lookahead(): Char|null {
-		return (this.cargo === ENDMARK) ? null : new Char(this.sourceText, this.sourceIndex + 1)
+	lookahead(n: number = 1): Char|null {
+		if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
+		if (n === 1) {
+			return (this.cargo === ENDMARK) ? null : new Char(this.sourceText, this.sourceIndex + 1)
+		} else {
+			const recurse: Char|null = this.lookahead(n - 1)
+			return recurse && recurse.lookahead();
+		}
 	}
 }
 
