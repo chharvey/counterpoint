@@ -13,6 +13,11 @@ const identifier_starts: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
 const whitespace: readonly string[] = [' ', '\t', '\n']
 const string_literal_delim: readonly string[] = `' "`.split(' ')
 
+const STRING_TEMPLATE_DELIM: '`' = '`'
+const STRING_TEMPLATE_INTERP_START: '{{' = '{{'
+const STRING_TEMPLATE_INTERP_END  : '}}' = '}}'
+
+
 /**
  * The different possible types of tokens.
  */
@@ -96,6 +101,10 @@ export default class Lexer {
 	 */
 	static * generate(sourceText: string): Iterator<Token> {
 		const scanner: Iterator<Char> = Scanner.generate(sourceText)
+		/**
+		 * Has the lexer passed an odd number of tokens that contain {@link STRING_TEMPLATE_DELIM}?
+		 */
+		let state_template: boolean = false;
 		let character: IteratorResult<Char> = scanner.next()
 		let c0: string = character.value.cargo
 		let l1: Char|null = character.value.lookahead()
@@ -158,6 +167,37 @@ export default class Lexer {
 				// add ending delim to token
 				token.add(c0)
 				advance()
+			} else if (c0 === STRING_TEMPLATE_DELIM || c0 + c1 === STRING_TEMPLATE_INTERP_END && state_template) {
+				state_template = true
+				token.type = TokenType.STRING
+				advance()
+				if (c1 === STRING_TEMPLATE_INTERP_END.slice(1)) {
+					token.add(STRING_TEMPLATE_INTERP_END.slice(1))
+					advance(STRING_TEMPLATE_INTERP_END.slice(1).length)
+				}
+				while (!character.done) {
+					if (c0 === ENDMARK) throw new Error('Found end of file before end of string')
+					if (c0 + c1 === '\\' + STRING_TEMPLATE_DELIM) {
+						token.add(c0 + c1)
+						advance(2)
+						continue;
+					}
+					if (c0 + c1 === STRING_TEMPLATE_INTERP_START) {
+						// add interpolation delims to token, end the token
+						token.add(STRING_TEMPLATE_INTERP_START)
+						advance(STRING_TEMPLATE_INTERP_START.length)
+						break;
+					}
+					if (c0 === STRING_TEMPLATE_DELIM) {
+						// add ending delim to token
+						token.add(c0)
+						advance()
+						state_template = false
+						break;
+					}
+					token.add(c0)
+					advance()
+				}
 			} else if (identifier_starts.includes(c0)) {
 				token.type = TokenType.IDENTIFIER
 				advance()
