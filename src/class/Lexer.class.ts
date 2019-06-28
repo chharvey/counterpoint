@@ -97,9 +97,11 @@ export default class Lexer {
 			if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
 			if (n === 1) {
 				character = scanner.next()
-				c0 = character.value.cargo
-				c1 = character.value.lookahead() && character.value.lookahead() !.cargo
-				c2 = character.value.lookahead(2) && character.value.lookahead(2) !.cargo
+				if (!character.done) {
+					c0 = character.value.cargo
+					c1 = character.value.lookahead() && character.value.lookahead() !.cargo
+					c2 = character.value.lookahead(2) && character.value.lookahead(2) !.cargo
+				}
 			} else {
 				advance(n - 1)
 				advance()
@@ -115,7 +117,7 @@ export default class Lexer {
 					advance()
 				}
 				// yield wstoken // only if we want the lexer to return whitespace
-				break;
+				continue;
 			}
 
 			const token = new Token(character.value)
