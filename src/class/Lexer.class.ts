@@ -11,6 +11,7 @@ const keywords: readonly string[] = ``.split(' ')
 const identifier_chars: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
 const identifier_starts: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
 const whitespace: readonly string[] = [' ', '\t', '\n']
+const string_literal_delim: readonly string[] = `' "`.split(' ')
 
 /**
  * The different possible types of tokens.
@@ -140,6 +141,23 @@ export default class Lexer {
 				token.type = TokenType.EOF
 				advance()
 			// TODO comments
+			} else if (string_literal_delim.includes(c0)) {
+				const delim: string = c0
+				token.type = TokenType.STRING
+				advance()
+				while (!character.done && c0 !== delim) {
+					if (c0 === ENDMARK) throw new Error('Found end of file before end of string')
+					if (c0 + c1 === '\\' + delim) {
+						token.add(c0 + c1)
+						advance(2)
+						continue;
+					}
+					token.add(c0)
+					advance()
+				}
+				// add ending delim to token
+				token.add(c0)
+				advance()
 			} else if (identifier_starts.includes(c0)) {
 				token.type = TokenType.IDENTIFIER
 				advance()
