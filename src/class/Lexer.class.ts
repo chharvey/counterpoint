@@ -38,7 +38,7 @@ export enum TokenType {
  */
 class Token {
 	/** All the characters in this Token. */
-	cargo: string;
+	private _cargo: string;
 	/** Zero-based line number of the first character (first line is line 0). */
 	readonly lineIndex: number;
 	/** Zero-based column number of the first character (first col is col 0). */
@@ -52,12 +52,23 @@ class Token {
 	 * @param startChar  The starting character of this Token.
 	 */
 	constructor(startChar: Char) {
-		this.cargo      = startChar.cargo
+		this._cargo     = startChar.cargo
 		this.lineIndex  = startChar.lineIndex
 		this.colIndex   = startChar.colIndex
 		this.type       = null
 	}
 
+	/**
+	 * Get this Token’s cargo.
+	 * @returns All the characters in this Token.
+	 */
+	get cargo(): string {
+		return this._cargo
+	}
+
+	add(cargo: string): void {
+		this._cargo += cargo
+	}
 
 	/**
 	 * Return a row that describes this token in a table.
@@ -67,7 +78,7 @@ class Token {
 		const s: string = (show_line_numbers)
 			? `    ${this.lineIndex+1}    ${this.colIndex+1}    ` // for some dumb reason, lines and cols start at 1 instad of 0
 			: ''
-		return s  + `${TokenType[this.type || TokenType.SYMBOL]}: ${this.cargo}`
+		return s  + `${TokenType[this.type || TokenType.SYMBOL]}: ${this._cargo}`
 	}
 }
 
@@ -113,7 +124,7 @@ export default class Lexer {
 				wstoken.type = TokenType.WHITESPACE
 				advance()
 				while (!character.done && whitespace.includes(c0)) {
-					wstoken.cargo += c0
+					wstoken.add(c0)
 					advance()
 				}
 				// yield wstoken // only if we want the lexer to return whitespace
@@ -129,7 +140,7 @@ export default class Lexer {
 				token.type = TokenType.IDENTIFIER
 				advance()
 				while (!character.done && identifier_chars.includes(c0)) {
-					token.cargo += c0
+					token.add(c0)
 					advance()
 				}
 				if (keywords.includes(token.cargo)) {
@@ -140,11 +151,11 @@ export default class Lexer {
 				let first_char: string = c0
 				advance() // read past the first character
 				if (two_char_symbols.includes(first_char + c0)) {
-					token.cargo += c0
+					token.add(c0)
 					let second_char: string = c0
 					advance() // read past the second character
 					if (three_char_symbols.includes(first_char + second_char + c0)) {
-						token.cargo += c0
+						token.add(c0)
 						advance() // read past the third character
 					}
 				}
