@@ -12,8 +12,8 @@ const identifier_chars: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
 const identifier_starts: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
 const whitespace: readonly string[] = [' ', '\t', '\n']
 
-const COMMENT_MULTI_START: '%-'  = '%-'
-const COMMENT_MULTI_END  : '-%'  = '-%'
+const COMMENT_MULTI_START: '"'   = '"'
+const COMMENT_MULTI_END  : '."'  = '."'
 const COMMENT_DOC_START  : '...' = '...'
 const COMMENT_DOC_END    : '...' = COMMENT_DOC_START
 const COMMENT_LINE       : '..'  = '..'
@@ -151,10 +151,9 @@ export default class Lexer {
 			if (c0 === ENDMARK) {
 				token.type = TokenType.EOF
 				advance()
-			} else if (c0 + c1 === COMMENT_MULTI_START) { // we found a multi-line comment
+			} else if ((c0 as string) === COMMENT_MULTI_START) { // we found a multi-line comment
 				token.type = TokenType.COMMENT
-				token.add(c1 !)
-				advance(2)
+				advance(COMMENT_MULTI_START.length)
 				while (!character.done && c0 + c1 !== COMMENT_MULTI_END) {
 					if (c0 === ENDMARK) throw new Error('Found end of file before end of comment')
 					token.add(c0)
