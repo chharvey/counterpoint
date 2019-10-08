@@ -14,9 +14,9 @@ const whitespace: readonly string[] = [' ', '\t', '\n']
 
 const COMMENT_MULTI_START: '%-'  = '%-'
 const COMMENT_MULTI_END  : '-%'  = '-%'
-const COMMENT_DOC_START  : '%%%' = '%%%'
-const COMMENT_DOC_END    : '%%%' = COMMENT_DOC_START
-const COMMENT_LINE       : '%%'  = '%%'
+const COMMENT_DOC_START  : '...' = '...'
+const COMMENT_DOC_END    : '...' = COMMENT_DOC_START
+const COMMENT_LINE       : '..'  = '..'
 
 
 /**
@@ -166,19 +166,17 @@ export default class Lexer {
 			} else if (c0 + c1 === COMMENT_LINE) { // we found either a doc comment or a single-line comment
 				token.type = TokenType.COMMENT
 				token.add(c1 !)
-				advance(2)
-				if (state_newline && c0 + c1 === '%\n') { // we found a doc comment
-					token.add(c0 + c1)
+				advance(COMMENT_LINE.length)
+				if (state_newline && c0 + c1 === COMMENT_DOC_START.slice(COMMENT_LINE.length) + '\n') { // we found a doc comment
+					token.add(c0 + c1 !)
 					advance(2)
 					while (!character.done) {
 						if (c0 === ENDMARK) throw new Error('Found end of file before end of comment')
 						if (c0 + c1 + c2 === COMMENT_DOC_END) {
 							const l3: Char|null = character.value.lookahead(3)
 							const c3: string|null = l3 && l3.cargo
-							if (
-								c3 === '\n' &&
-								token.cargo.slice(token.cargo.lastIndexOf('\n') + 1).trim() === ''
-							) {
+							const only_indented: boolean = token.cargo.slice(token.cargo.lastIndexOf('\n') + 1).trim() === ''
+							if (c3 === '\n' && only_indented) {
 								break;
 							}
 						}
