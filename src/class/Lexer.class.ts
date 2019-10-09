@@ -106,6 +106,10 @@ export default class Lexer {
 		 * Did the lexer just pass a token that contains `\n`?
 		 */
 		let state_newline: boolean = false;
+		/**
+		 * How many levels of nested multi-line comments are we in?
+		 */
+		let comment_multiline_level: number /* bigint */ = 0;
 		let character: IteratorResult<Char> = scanner.next()
 		let c0: string = character.value.cargo
 		let l1: Char|null = character.value.lookahead()
@@ -154,14 +158,19 @@ export default class Lexer {
 			} else if ((c0 as string) === COMMENT_MULTI_START) { // we found a multi-line comment
 				token.type = TokenType.COMMENT
 				advance(COMMENT_MULTI_START.length)
-				while (!character.done && c0 + c1 !== COMMENT_MULTI_END) {
-					if (c0 === ENDMARK) throw new Error('Found end of file before end of comment')
-					token.add(c0)
-					advance()
+				comment_multiline_level++;
+				while (comment_multiline_level !== 0) {
+					while (!character.done && c0 + c1 !== COMMENT_MULTI_END) {
+						if (c0 === ENDMARK) throw new Error('Found end of file before end of comment')
+						if (c0 === COMMENT_MULTI_START) comment_multiline_level++
+						token.add(c0)
+						advance()
+					}
+					// add COMMENT_MULTI_END to token
+					token.add(COMMENT_MULTI_END)
+					advance(COMMENT_MULTI_END.length)
+					comment_multiline_level--;
 				}
-				// add COMMENT_MULTI_END to token
-				token.add(COMMENT_MULTI_END)
-				advance(COMMENT_MULTI_END.length)
 			} else if (c0 + c1 === COMMENT_LINE) { // we found either a doc comment or a single-line comment
 				token.type = TokenType.COMMENT
 				token.add(c1 !)
