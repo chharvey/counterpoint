@@ -11,8 +11,8 @@ const keywords: readonly string[] = ``.split(' ')
 const identifier_chars: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
 const identifier_starts: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
 const whitespace: readonly string[] = [' ', '\t', '\n']
-const string_literal_delim: readonly string[] = `' "`.split(' ')
 
+const STRING_LITERAL_DELIM: '\'' = `'`
 const STRING_TEMPLATE_DELIM: '`' = '`'
 const STRING_TEMPLATE_INTERP_START: '{{' = '{{'
 const STRING_TEMPLATE_INTERP_END  : '}}' = '}}'
@@ -150,13 +150,12 @@ export default class Lexer {
 				token.type = TokenType.EOF
 				advance()
 			// TODO comments
-			} else if (string_literal_delim.includes(c0)) {
-				const delim: string = c0
+			} else if (c0 === STRING_LITERAL_DELIM) {
 				token.type = TokenType.STRING
 				advance()
-				while (!character.done && c0 !== delim) {
+				while (!character.done && c0 !== STRING_LITERAL_DELIM) {
 					if (c0 === ENDMARK) throw new Error('Found end of file before end of string')
-					if (c0 + c1 === '\\' + delim) {
+					if (c0 + c1 === '\\' + STRING_LITERAL_DELIM) {
 						token.add(c0 + c1)
 						advance(2)
 						continue;
