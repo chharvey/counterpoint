@@ -102,9 +102,9 @@ export default class Lexer {
 	static * generate(sourceText: string): Iterator<Token> {
 		const scanner: Iterator<Char> = Scanner.generate(sourceText)
 		/**
-		 * Has the lexer passed an odd number of tokens that contain {@link STRING_TEMPLATE_DELIM}?
+		 * How many levels of nested string templates are we in?
 		 */
-		let state_template: boolean = false;
+		let template_level: number /* bigint */ = 0;
 		let character: IteratorResult<Char> = scanner.next()
 		let c0: string = character.value.cargo
 		let l1: Char|null = character.value.lookahead()
@@ -166,17 +166,14 @@ export default class Lexer {
 				// add ending delim to token
 				token.add(c0)
 				advance()
-			} else if (c0 === STRING_TEMPLATE_DELIM || c0 + c1 === STRING_TEMPLATE_INTERP_END && state_template) {
-				state_template = true
+			} else if (c0 === STRING_TEMPLATE_DELIM || c0 + c1 === STRING_TEMPLATE_INTERP_END && template_level) {
 				token.type = TokenType.STRING
 				advance()
-				if (c1 === STRING_TEMPLATE_INTERP_END.slice(1)) {
-					token.add(STRING_TEMPLATE_INTERP_END.slice(1))
-					advance(STRING_TEMPLATE_INTERP_END.slice(1).length)
-				}
+				template_level++;
 				while (!character.done) {
 					if (c0 === ENDMARK) throw new Error('Found end of file before end of string')
 					if (c0 + c1 === '\\' + STRING_TEMPLATE_DELIM) {
+						// we found an escaped string delimiter
 						token.add(c0 + c1)
 						advance(2)
 						continue;
@@ -191,7 +188,7 @@ export default class Lexer {
 						// add ending delim to token
 						token.add(c0)
 						advance()
-						state_template = false
+						template_level--;
 						break;
 					}
 					token.add(c0)
