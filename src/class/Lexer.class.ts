@@ -97,8 +97,10 @@ export default class Lexer {
 		const scanner: Iterator<Char> = Scanner.generate(sourceText)
 		let character: IteratorResult<Char> = scanner.next()
 		let c0: string = character.value.cargo
-		let c1: string|null = character.value.lookahead() && character.value.lookahead() !.cargo
-		let c2: string|null = character.value.lookahead(2) && character.value.lookahead(2) !.cargo
+		let l1: Char|null = character.value.lookahead()
+		let l2: Char|null = character.value.lookahead(2)
+		let c1: string|null = l1 && l1.cargo
+		let c2: string|null = l2 && l2.cargo
 		/**
 		 * Advance the lexer, scanning the next character and reassigning variables.
 		 * @param   n the number of times to advance
@@ -110,8 +112,10 @@ export default class Lexer {
 				character = scanner.next()
 				if (!character.done) {
 					c0 = character.value.cargo
-					c1 = character.value.lookahead() && character.value.lookahead() !.cargo
-					c2 = character.value.lookahead(2) && character.value.lookahead(2) !.cargo
+					l1 = character.value.lookahead()
+					l2 = character.value.lookahead(2)
+					c1 = l1 && l1.cargo
+					c2 = l2 && l2.cargo
 				}
 			} else {
 				advance(n - 1)
@@ -160,7 +164,8 @@ export default class Lexer {
 					}
 				}
 			} else {
-				throw new Error(`I found a character or symbol that I do not recognize: ${c0}`)
+				throw new Error(`I found a character or symbol that I do not recognize:
+${c0} on ${character.value.lineIndex + 1}:${character.value.colIndex + 1}.`)
 			}
 			yield token
 		}
