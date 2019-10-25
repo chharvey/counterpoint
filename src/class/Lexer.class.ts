@@ -3,13 +3,15 @@ import Scanner, { Char } from './Scanner.class'
 /** ENDMARK character signifies end of file. */
 const ENDMARK: '\u0003' = '\u0003'
 
-const one_char_symbols: readonly string[] = `+ *`.split(' ')
+const number_chars: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
+
+const one_char_symbols: readonly string[] = `+ - * / ^ ( )`.split(' ')
 const two_char_symbols: readonly string[] = ``.split(' ')
 const three_char_symbols: readonly string[] = ``.split(' ')
 
 const keywords: readonly string[] = ``.split(' ')
-const identifier_chars: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
-const identifier_starts: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
+const identifier_chars: readonly string[] = ``.split(' ')
+const identifier_starts: readonly string[] = ``.split(' ')
 const whitespace: readonly string[] = [' ', '\t', '\n']
 
 /**
@@ -140,6 +142,13 @@ export default class Lexer {
 				token.type = TokenType.EOF
 				advance()
 			// TODO comments
+			} else if (number_chars.includes(c0)) {
+				token.type = TokenType.NUMBER
+				advance()
+				while (!character.done && number_chars.includes(c0)) {
+					token.add(c0)
+					advance()
+				}
 			} else if (identifier_starts.includes(c0)) {
 				token.type = TokenType.IDENTIFIER
 				advance()
