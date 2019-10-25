@@ -36,7 +36,7 @@ export enum TokenType {
  *
  * @see http://parsingintro.sourceforge.net/#contents_item_6.4
  */
-class Token {
+export class Token {
 	/** All the characters in this Token. */
 	private _cargo: string;
 	/** Zero-based line number of the first character (first line is line 0). */

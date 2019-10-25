@@ -3,4 +3,4 @@
 // See `./index.js` for the manual output.
 
 export { default as Scanner } from './src/class/Scanner.class'
-export { default as Lexer, TokenType } from './src/class/Lexer.class'
+export { default as Lexer, Token, TokenType } from './src/class/Lexer.class'
