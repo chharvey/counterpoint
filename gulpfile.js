@@ -24,7 +24,7 @@ async function test() {
 	const scanner = Scanner.generate(await input)
 	let character = scanner.next()
 	while (!character.done) {
-		console.log(character.value[0].toString())
+		console.log(character.value.toString())
 		character = scanner.next()
 	}
 
