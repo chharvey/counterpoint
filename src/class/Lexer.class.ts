@@ -3,29 +3,31 @@ import Scanner, { Char } from './Scanner.class'
 /** ENDMARK character signifies end of file. */
 const ENDMARK: '\u0003' = '\u0003'
 
-const number_chars: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
+const whitespace: readonly string[] = [' ', '\t', '\n', '\r']
 
-const one_char_symbols: readonly string[] = `+ - * / ^ ( )`.split(' ')
-const two_char_symbols: readonly string[] = ``.split(' ')
-const three_char_symbols: readonly string[] = ``.split(' ')
+const digits_dec: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
+
+const punctuators1: readonly string[] = `+ - * / ^ ( )`.split(' ')
+const punctuators2: readonly string[] = ``.split(' ')
+const punctuators3: readonly string[] = ``.split(' ')
 
 const keywords: readonly string[] = ``.split(' ')
 const identifier_chars: readonly string[] = ``.split(' ')
 const identifier_starts: readonly string[] = ``.split(' ')
-const whitespace: readonly string[] = [' ', '\t', '\n']
+
 
 /**
  * The different possible types of tokens.
  */
 export enum TokenType {
-	SYMBOL,
+	EOF,
+	WHITESPACE,
+	NUMBER,
+	PUNCTUATOR,
 	KEYWORD,
 	STRING,
 	IDENTIFIER,
-	NUMBER,
-	WHITESPACE,
 	COMMENT,
-	EOF,
 }
 
 
@@ -80,7 +82,7 @@ export class Token {
 		const s: string = (show_line_numbers)
 			? `    ${this.lineIndex+1}    ${this.colIndex+1}    ` // for some dumb reason, lines and cols start at 1 instad of 0
 			: ''
-		return s  + `${TokenType[this.type || TokenType.SYMBOL]}: ${this._cargo}`
+		return s  + `${TokenType[this.type || TokenType.PUNCTUATOR]}: ${this._cargo}`
 	}
 }
 
@@ -142,10 +144,10 @@ export default class Lexer {
 				token.type = TokenType.EOF
 				advance()
 			// TODO comments
-			} else if (number_chars.includes(c0)) {
+			} else if (digits_dec.includes(c0)) {
 				token.type = TokenType.NUMBER
 				advance()
-				while (!character.done && number_chars.includes(c0)) {
+				while (!character.done && digits_dec.includes(c0)) {
 					token.add(c0)
 					advance()
 				}
@@ -159,15 +161,15 @@ export default class Lexer {
 				if (keywords.includes(token.cargo)) {
 					token.type = TokenType.KEYWORD
 				}
-			} else if (one_char_symbols.includes(c0)) {
-				token.type = TokenType.SYMBOL
+			} else if (punctuators1.includes(c0)) {
+				token.type = TokenType.PUNCTUATOR
 				let first_char: string = c0
 				advance() // read past the first character
-				if (two_char_symbols.includes(first_char + c0)) {
+				if (punctuators2.includes(first_char + c0)) {
 					token.add(c0)
 					let second_char: string = c0
 					advance() // read past the second character
-					if (three_char_symbols.includes(first_char + second_char + c0)) {
+					if (punctuators3.includes(first_char + second_char + c0)) {
 						token.add(c0)
 						advance() // read past the third character
 					}
