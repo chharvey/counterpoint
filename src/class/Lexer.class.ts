@@ -44,9 +44,9 @@ export class Token {
 	/** All the characters in this Token. */
 	private _cargo: string;
 	/** Zero-based line number of the first character (first line is line 0). */
-	readonly lineIndex: number;
+	readonly line_index: number;
 	/** Zero-based column number of the first character (first col is col 0). */
-	readonly colIndex: number;
+	readonly col_index: number;
 	/** The token type. */
 	type: TokenType|null;
 
@@ -57,8 +57,8 @@ export class Token {
 	 */
 	constructor(startChar: Char) {
 		this._cargo     = startChar.cargo
-		this.lineIndex  = startChar.lineIndex
-		this.colIndex   = startChar.colIndex
+		this.line_index = startChar.lineIndex
+		this.col_index  = startChar.colIndex
 		this.type       = null
 	}
 
@@ -70,19 +70,21 @@ export class Token {
 		return this._cargo
 	}
 
+	/**
+	 * Add to this Token’s cargo.
+	 * @param cargo the string to append
+	 */
 	add(cargo: string): void {
 		this._cargo += cargo
 	}
 
 	/**
-	 * Return a row that describes this token in a table.
-	 * @returns a string representation of this token’s data
+	 * Return an XML string of this token.
+	 * @returns a string formatted as an XML element
 	 */
-	show(show_line_numbers: boolean = false) {
-		const s: string = (show_line_numbers)
-			? `    ${this.lineIndex+1}    ${this.colIndex+1}    ` // for some dumb reason, lines and cols start at 1 instad of 0
-			: ''
-		return s  + `${TokenType[this.type || TokenType.PUNCTUATOR]}: ${this._cargo}`
+	serialize(): string {
+		if (this.type === null) return ''
+		return `<${TokenType[this.type]} line="${this.line_index+1}" col="${this.col_index+1}">${this.cargo}</${TokenType[this.type]}>` // for some dumb reason, lines and cols start at 1 instad of 0
 	}
 }
 
