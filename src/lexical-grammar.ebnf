@@ -3,10 +3,12 @@ FileBound ::= #x0002 /* START OF TEXT */
 
 Whitespace ::= #x0020 /* SPACE                     */
 |              #x0009 /* CHARACTER TABULATION `\t` */
-|              #x000A /* LINE FEED            `\n` */
-|              #x000D /* CARRIAGE RETURN      `\r` */
+|              #x000A /* LINE FEED (LF)       `\n` */
+|              #x000D /* CARRIAGE RETURN (CR) `\r` */
 
 /* more whitespace characters:
+#x000B	LINE TABULATION
+#x000C	FORM FEED (FF)
 #x00A0	NO-BREAK SPACE
 #x1680	OGHAM SPACE MARK
 #x2000	EN QUAD

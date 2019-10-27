@@ -1,6 +1,6 @@
-/** Start of text. */
+/** START OF TEXT */
 export const STX: '\u0002' = '\u0002'
-/** End of text. */
+/** END OF TEXT */
 export const ETX: '\u0003' = '\u0003'
 
 
@@ -12,9 +12,9 @@ export class Char {
 	/** The actual character string. */
 	readonly cargo: string;
 	/** Zero-based line number of this character (first line is line 0).*/
-	readonly lineIndex: number;
+	readonly line_index: number;
 	/** Zero-based column number of this character (first col is col 0). */
-	readonly colIndex: number;
+	readonly col_index: number;
 
 	/**
 	 * Construct a new Char object.
@@ -25,10 +25,10 @@ export class Char {
 		/** Array of characters from source start until current iteration (not including current character). */
 		const prev_chars: readonly string[] = [...this.sourceText].slice(0, this.sourceIndex)
 		this.cargo = this.sourceText[this.sourceIndex]
-		this.lineIndex = prev_chars.filter((c) => c === '\n').length
-		this.colIndex = this.sourceIndex - (prev_chars.lastIndexOf('\n') + 1)
+		this.line_index = prev_chars.filter((c) => c === '\n').length
+		this.col_index = this.sourceIndex - (prev_chars.lastIndexOf('\n') + 1)
 
-		this.lineIndex--; // subtract 1 line due to the prepended STX + LF
+		this.line_index--; // subtract 1 line due to the prepended STX + LF
 	}
 
 	/**
@@ -36,16 +36,16 @@ export class Char {
 	 * @returns a string representation of this character’s data
 	 */
 	toString(): string {
-		const cargo = new Map([
-			['\u0000' , 'NULL (U+0000)'],
-			[' '      , 'SPACE (U+0020)'],
-			['\u00a0' , 'NO-BREAK SPACE (U+00a0)'],
-			['\n'     , 'LINE FEED (U+000a)'],
-			['\t'     , 'CHARACTER TABULATION (U+0009)'],
-			[STX      , 'START OF TEXT (U+0002)'],
-			[ETX      , 'END OF TEXT (U+0003)'],
+		const cargo: string = new Map([
+			['\u0000' /* NULL                 \u0000 */, '\u2400' /* SYMBOL FOR NULL                  */],
+			[' '      /* SPACE                \u0020 */, '\u2420' /* SYMBOL FOR SPACE                 */],
+			['\t'     /* CHARACTER TABULATION \u0009 */, '\u2409' /* SYMBOL FOR HORIZONTAL TABULATION */],
+			['\n'     /* LINE FEED (LF)       \u000a */, '\u240a' /* SYMBOL FOR LINE FEED             */],
+			['\r'     /* CARRIAGE RETURN (CR) \u000d */, '\u240d' /* SYMBOL FOR CARRIAGE RETURN       */],
+			[STX      /* START OF TEXT        \u0002 */, '\u2402' /* SYMBOL FOR START OF TEXT         */],
+			[ETX      /* END OF TEXT          \u0003 */, '\u2403' /* SYMBOL FOR END OF TEXT           */],
 		]).get(this.cargo) || this.cargo
-		return `    ${this.lineIndex+1}    ${this.colIndex+1}    ${cargo}` // for some dumb reason, lines and cols start at 1 instad of 0
+		return `    ${this.line_index+1}    ${this.col_index+1}    ${cargo}` // for some dumb reason, lines and cols start at 1 instad of 0
 	}
 
 	/**

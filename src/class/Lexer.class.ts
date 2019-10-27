@@ -54,8 +54,8 @@ export class Token {
 	 */
 	constructor(startChar: Char) {
 		this._cargo     = startChar.cargo
-		this.line_index = startChar.lineIndex
-		this.col_index  = startChar.colIndex
+		this.line_index = startChar.line_index
+		this.col_index  = startChar.col_index
 		this.type       = null
 	}
 
@@ -81,7 +81,16 @@ export class Token {
 	 */
 	serialize(): string {
 		if (this.type === null) return ''
-		return `<${TokenType[this.type]} line="${this.line_index+1}" col="${this.col_index+1}">${this.cargo}</${TokenType[this.type]}>` // for some dumb reason, lines and cols start at 1 instad of 0
+		const tagname: string = TokenType[this.type]
+		const attributes: string = (this.cargo !== STX && this.cargo !== ETX) ? ' ' + [
+			`line="${this.line_index+1}"`,
+			`col="${this.col_index+1}"`,
+		].join(' ') : ''
+		const cargo: string = new Map<string, string>([
+			[STX, '\u2402' /* SYMBOL FOR START OF TEXT */],
+			[ETX, '\u2403' /* SYMBOL FOR END OF TEXT   */],
+		]).get(this.cargo) || this.cargo
+		return `<${tagname}${attributes}>${cargo}</${tagname}>`
 	}
 }
 
@@ -175,7 +184,7 @@ export default class Lexer {
 				}
 			} else {
 				throw new Error(`I found a character or symbol that I do not recognize:
-${c0} on ${character.value.lineIndex + 1}:${character.value.colIndex + 1}.`)
+${c0} on ${character.value.line_index + 1}:${character.value.col_index + 1}.`)
 			}
 			yield token
 		}
