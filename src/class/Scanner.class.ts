@@ -1,5 +1,7 @@
-/** ENDMARK character signifies end of file. */
-const ENDMARK: '\u0003' = '\u0003'
+/** Start of text. */
+export const STX: '\u0002' = '\u0002'
+/** End of text. */
+export const ETX: '\u0003' = '\u0003'
 
 
 /**
@@ -25,6 +27,8 @@ export class Char {
 		this.cargo = this.sourceText[this.sourceIndex]
 		this.lineIndex = prev_chars.filter((c) => c === '\n').length
 		this.colIndex = this.sourceIndex - (prev_chars.lastIndexOf('\n') + 1)
+
+		this.lineIndex--; // subtract 1 line due to the prepended STX + LF
 	}
 
 	/**
@@ -38,7 +42,8 @@ export class Char {
 			['\u00a0' , 'NO-BREAK SPACE (U+00a0)'],
 			['\n'     , 'LINE FEED (U+000a)'],
 			['\t'     , 'CHARACTER TABULATION (U+0009)'],
-			[ENDMARK  , 'END OF TEXT (U+0003)'],
+			[STX      , 'START OF TEXT (U+0002)'],
+			[ETX      , 'END OF TEXT (U+0003)'],
 		]).get(this.cargo) || this.cargo
 		return `    ${this.lineIndex+1}    ${this.colIndex+1}    ${cargo}` // for some dumb reason, lines and cols start at 1 instad of 0
 	}
@@ -52,7 +57,7 @@ export class Char {
 	lookahead(n: number = 1): Char|null {
 		if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
 		if (n === 1) {
-			return (this.cargo === ENDMARK) ? null : new Char(this.sourceText, this.sourceIndex + 1)
+			return (this.cargo === ETX) ? null : new Char(this.sourceText, this.sourceIndex + 1)
 		} else {
 			const recurse: Char|null = this.lookahead(n - 1)
 			return recurse && recurse.lookahead();
@@ -72,7 +77,7 @@ export default class Scanner {
 	 * @returns the next character in sourceText
 	 */
 	static * generate(source_text: string): Iterator<Char> {
-		source_text = source_text + ENDMARK
+		source_text = STX + '\n' + source_text + ETX
 		for (let source_index = 0; source_index < source_text.length; source_index++) {
 			yield new Char(source_text, source_index)
 		}

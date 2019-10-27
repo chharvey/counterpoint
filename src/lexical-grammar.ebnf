@@ -1,4 +1,5 @@
-Endmark ::= #x0003 /* END OF TEXT */
+FileBound ::= #x0002 /* START OF TEXT */
+|             #x0003 /* END OF TEXT   */
 
 Whitespace ::= #x0020 /* SPACE                     */
 |              #x0009 /* CHARACTER TABULATION `\t` */

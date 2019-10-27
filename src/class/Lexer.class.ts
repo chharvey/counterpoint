@@ -1,7 +1,4 @@
-import Scanner, { Char } from './Scanner.class'
-
-/** ENDMARK character signifies end of file. */
-const ENDMARK: '\u0003' = '\u0003'
+import Scanner, {Char, STX, ETX} from './Scanner.class'
 
 const whitespace: readonly string[] = [' ', '\t', '\n', '\r']
 
@@ -20,7 +17,7 @@ const identifier_starts: readonly string[] = ``.split(' ')
  * The different possible types of tokens.
  */
 export enum TokenType {
-	EOF,
+	FILEBOUND,
 	WHITESPACE,
 	NUMBER,
 	PUNCTUATOR,
@@ -142,8 +139,8 @@ export default class Lexer {
 			}
 
 			const token = new Token(character.value)
-			if (c0 === ENDMARK) {
-				token.type = TokenType.EOF
+			if (c0 === STX || c0 === ETX) {
+				token.type = TokenType.FILEBOUND
 				advance()
 			// TODO comments
 			} else if (digits_dec.includes(c0)) {
