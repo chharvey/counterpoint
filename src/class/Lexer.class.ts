@@ -225,12 +225,12 @@ export default class Lexer {
 					}
 					// do not add '\n' to token
 				}
-			} else if (this.c0 === STRING_LITERAL_DELIM) {
+			} else if ((this.c0 as string) === STRING_LITERAL_DELIM) {
 				token = new TokenString(this.iterator_result_char.value)
 				this.advance()
 				while (!this.iterator_result_char.done && this.c0 !== STRING_LITERAL_DELIM) {
 					if (this.c0 === ETX) throw new Error('Found end of file before end of string')
-					if (this.c0 + this.c1 === '\\' + STRING_LITERAL_DELIM) {
+					if (this.c0 + this.c1 === '\\' + STRING_LITERAL_DELIM) { // we found an escaped string delimiter
 						token.add(this.c0 + this.c1)
 						this.advance(2)
 						continue;
@@ -247,8 +247,7 @@ export default class Lexer {
 				this.template_level++;
 				while (!this.iterator_result_char.done) {
 					if (this.c0 === ETX) throw new Error('Found end of file before end of string')
-					if (this.c0 + this.c1 === '\\' + STRING_TEMPLATE_DELIM) {
-						// we found an escaped string delimiter
+					if (this.c0 + this.c1 === '\\' + STRING_TEMPLATE_DELIM) { // we found an escaped string delimiter
 						token.add(this.c0 + this.c1)
 						this.advance(2)
 						continue;

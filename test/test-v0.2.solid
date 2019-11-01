@@ -1,0 +1,84 @@
+5  +  3  .. single-line comment  *  2
+
+5  +  3  "multi-line
+comment." *  2
+
+5  *  3  "multi-line
+which is "nested." though
+comment." *  2
+
+...
+. abcde
+. 5 + 3
+...
+
+	...
+	. fghik
+	. 3 + 5
+	...
+
+... 3 * 2
+5 + 3 ...
+
+.. below is an empty Solidoc comment:
+
+...
+...
+
+
+5  +  '3'
+
+5  ''  3 *  2
+
+5 3 *  ``
+
+4 * 'a string literal with an \' escaped apostrophe and \`escaped back-tick (both escaped)'
+
+'a string literal with an \u0061 escape sequence (escaped)'
+
+`a string template with an \` escaped back-tick (which will be escaped)
+and an \' escaped apostrophe (which won’t)`
+
+`a string template with an \u0061 escape sequence (which won’t be escaped)`
+
+* 'a string literal with
+a line break'
+
+`a string template with
+a line break`
+
+`Interpolation works {{ 3 * 6 }}!`
+`Interpolation works with {{ `{{ 3 * 6 }}` }} too!`
+`Interpolation works with an empty string {{ '' }}!`
+`Interpolation with whitespace {{ }}!`
+`Interpolation with no space {{}}!`
+
+`Interpolation with a multiline comment {{ "a multiline comment." }}!`
+
+`Interpolation with a Solidoc comment {{
+...
+a Solidoc comment
+...
+}}!`
+
+'
+<html>
+	<body class="js" id=\'top\'>
+		hello
+		\n
+		world
+		\
+		&nbsp;
+	</body>
+</html>
+'
+
+`
+<html>
+	<body class="js" id='top'>
+		hello {{ 7 + 2 }} world
+		hello \{\{ 7 + 2 \}\} world
+		hello {{ '{{ 7 + 2 }}' }} world
+	</body>
+</html>
+`

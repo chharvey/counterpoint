@@ -17,7 +17,7 @@ function dist() {
 
 async function test() {
 	const { Scanner, Lexer, TokenType } = require('./')
-	const input = util.promisify(fs.readFile)('./test/test-v0.1.solid', 'utf8')
+	const input = util.promisify(fs.readFile)('./test/test-v0.2.solid', 'utf8')
 
 	console.log("Here are the characters returned by the scanner:")
 	console.log("  line col  character")
