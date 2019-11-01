@@ -31,6 +31,33 @@ Whitespace ::= #x0020 /* SPACE                     */
 #xFEFF	ZERO WIDTH NO-BREAK SPACE
 */
 
+
+
+Comment ::= CommentSingle | CommentMulti | CommentDoc
+
+CommentSingle ::= ".." [^#x000A #x000D]*
+
+CommentMulti      ::= '"' CommentMultiChars? '."'
+CommentMultiChars ::= [^.] CommentMultiChars? | "." ( [^"] CommentMultiChars? )?
+
+CommentDoc      ::= "..." #x000A CommentDocChars? #x000A [#x000D #x0009 #x0020]* "..."
+CommentDocChars ::= [^.] CommentDocChars? | "." ( [^.] CommentDocChars? | "." ( [^.] CommentDocChars? )? )?
+
+
+
+StringLiteral::= "'" ( [^ ' \] | CharEscaped | "\'" )* "'"
+
+CharEscaped ::= "\" /* #x5C */  ( "\" /* #x5C */  | "/" /* #x2F */  | "b" /* #x62 */  | "f" /* #x66 */  | "n" /* #x6E */  | "r" /* #x72 */  | "t" /* #x74 */  | "u" /* #x75 */  [0-9a-f]* )
+
+StringTemplateFull   ::= "`"  TemplateCharacters? "`"
+StringTemplateHead   ::= "`"  TemplateCharacters? "{{"
+StringTempalteMiddle ::= "}}" TemplateCharacters? "{{"
+StringTempalteTail   ::= "}}" TemplateCharacters? "`"
+
+TemplateCharacters ::= ( [^ ` {] | "\`") TemplateCharacters? | "{" ( [^ ` {] TemplateCharacters? )?
+
+
+
 Number ::= IntegerLiteral
 
 IntegerLiteral ::= DigitSequenceDec
