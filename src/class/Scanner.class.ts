@@ -18,15 +18,15 @@ export class Char {
 
 	/**
 	 * Construct a new Char object.
-	 * @param sourceText  - The entire source text.
-	 * @param sourceIndex - The index of the character in source text.
+	 * @param   source_text  - the entire source text
+	 * @param   source_index - the index of the character in source text
 	 */
-	constructor(readonly sourceText: string, readonly sourceIndex: number) {
+	constructor(readonly source_text: string, readonly source_index: number) {
 		/** Array of characters from source start until current iteration (not including current character). */
-		const prev_chars: readonly string[] = [...this.sourceText].slice(0, this.sourceIndex)
-		this.cargo = this.sourceText[this.sourceIndex]
+		const prev_chars: readonly string[] = [...this.source_text].slice(0, this.source_index)
+		this.cargo = this.source_text[this.source_index]
 		this.line_index = prev_chars.filter((c) => c === '\n').length
-		this.col_index = this.sourceIndex - (prev_chars.lastIndexOf('\n') + 1)
+		this.col_index = this.source_index - (prev_chars.lastIndexOf('\n') + 1)
 
 		this.line_index--; // subtract 1 line due to the prepended STX + LF
 	}
@@ -57,7 +57,7 @@ export class Char {
 	lookahead(n: number = 1): Char|null {
 		if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
 		if (n === 1) {
-			return (this.cargo === ETX) ? null : new Char(this.sourceText, this.sourceIndex + 1)
+			return (this.cargo === ETX) ? null : new Char(this.source_text, this.source_index + 1)
 		} else {
 			const recurse: Char|null = this.lookahead(n - 1)
 			return recurse && recurse.lookahead();
@@ -67,26 +67,25 @@ export class Char {
 
 
 /**
- * A Scanner object reads through the sourceText and returns one character at a time.
+ * A Scanner object reads through the source text and returns one character at a time.
  * @see http://parsingintro.sourceforge.net/#contents_item_4.2
  */
 export default class Scanner {
 	/**
-	 * Return the next character in sourceText.
+	 * Construct a new Scanner object.
 	 * @param   source_text - the entire source text
-	 * @returns the next character in sourceText
 	 */
-	static * generate(source_text: string): Iterator<Char> {
-		source_text = STX + '\n' + source_text + ETX
-		for (let source_index = 0; source_index < source_text.length; source_index++) {
-			yield new Char(source_text, source_index)
-		}
+	constructor(private readonly source_text: string) {
+		this.source_text = STX + '\n' + this.source_text + ETX
 	}
 
-
 	/**
-	 * Construct a new Scanner object.
+	 * Return the next character in source text.
+	 * @returns the next character in source text
 	 */
-	private constructor() {
+	* generate(): Iterator<Char> {
+		for (let source_index: number = 0; source_index < this.source_text.length; source_index++) {
+			yield new Char(this.source_text, source_index)
+		}
 	}
 }

@@ -88,97 +88,109 @@ export class TokenPunctuator extends Token { constructor(start_char: Char) { sup
  * @see http://parsingintro.sourceforge.net/#contents_item_6.5
  */
 export default class Lexer {
+	/** The scanner returning characters for each iteration. */
+	private readonly scanner: Iterator<Char>;
+	/** The result of the scanner iterator. */
+	private iterator_result_char: IteratorResult<Char>;
+
+	/** The current character’s cargo. */
+	private c0: string;
+	/** The lookahead(1) character’s cargo. */
+	private c1: string|null;
+	/** The lookahead(2) character’s cargo. */
+	private c2: string|null;
+
 	/**
-	 * Construct and return the next token in the sourceText.
-	 * @param   sourceText - the entire source text
+	 * Construct a new Lexer object.
+	 * @param   source_text - the entire source text
+	 */
+	constructor(private readonly source_text: string) {
+		this.scanner = new Scanner(this.source_text).generate()
+		this.iterator_result_char = this.scanner.next()
+
+		this.c0 = this.iterator_result_char.value.cargo
+		const l1: Char|null = this.iterator_result_char.value.lookahead()
+		const l2: Char|null = this.iterator_result_char.value.lookahead(2)
+		this.c1 = l1 && l1.cargo
+		this.c2 = l2 && l2.cargo
+	}
+
+	/**
+	 * Advance this Lexer, scanning the next character and reassigning variables.
+	 * @param   n the number of times to advance
+	 * @throws  {RangeError} if the argument is not a positive integer
+	 */
+	private advance(n: number = 1): void {
+		if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
+		if (n === 1) {
+			this.iterator_result_char = this.scanner.next()
+			if (!this.iterator_result_char.done) {
+				this.c0 = this.iterator_result_char.value.cargo
+				const l1 = this.iterator_result_char.value.lookahead()
+				const l2 = this.iterator_result_char.value.lookahead(2)
+				this.c1 = l1 && l1.cargo
+				this.c2 = l2 && l2.cargo
+			}
+		} else {
+			this.advance(n - 1)
+			this.advance()
+		}
+	}
+
+	/**
+	 * Construct and return the next token in the source text.
 	 * @returns the next token, if it does not contain whitespace
 	 */
-	static * generate(sourceText: string): Iterator<Token> {
-		const scanner: Iterator<Char> = Scanner.generate(sourceText)
-		let character: IteratorResult<Char> = scanner.next()
-		let c0: string = character.value.cargo
-		let l1: Char|null = character.value.lookahead()
-		let l2: Char|null = character.value.lookahead(2)
-		let c1: string|null = l1 && l1.cargo
-		let c2: string|null = l2 && l2.cargo
-		/**
-		 * Advance the lexer, scanning the next character and reassigning variables.
-		 * @param   n the number of times to advance
-		 * @throws  {RangeError} if the argument is not a positive integer
-		 */
-		function advance(n: number = 1): void {
-			if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
-			if (n === 1) {
-				character = scanner.next()
-				if (!character.done) {
-					c0 = character.value.cargo
-					l1 = character.value.lookahead()
-					l2 = character.value.lookahead(2)
-					c1 = l1 && l1.cargo
-					c2 = l2 && l2.cargo
-				}
-			} else {
-				advance(n - 1)
-				advance()
-			}
-		}
-		while (!character.done) {
-			if (whitespace.includes(c0)) {
-				const wstoken = new TokenWhitespace(character.value)
-				advance()
-				while (!character.done && whitespace.includes(c0)) {
-					wstoken.add(c0)
-					advance()
+	* generate(): Iterator<Token> {
+		while (!this.iterator_result_char.done) {
+			if (whitespace.includes(this.c0)) {
+				const wstoken: TokenWhitespace = new TokenWhitespace(this.iterator_result_char.value)
+				this.advance()
+				while (!this.iterator_result_char.done && whitespace.includes(this.c0)) {
+					wstoken.add(this.c0)
+					this.advance()
 				}
 				// yield wstoken // only if we want the lexer to return whitespace
 				continue;
 			}
 
 			let token: Token;
-			if (c0 === STX || c0 === ETX) {
-				token = new TokenFilebound(character.value)
-				advance()
-			// TODO comments
-			} else if (digits_dec.includes(c0)) {
-				token = new TokenNumber(character.value)
-				advance()
-				while (!character.done && digits_dec.includes(c0)) {
-					token.add(c0)
-					advance()
+			if (this.c0 === STX || this.c0 === ETX) {
+				token = new TokenFilebound(this.iterator_result_char.value)
+				this.advance()
+			} else if (digits_dec.includes(this.c0)) {
+				token = new TokenNumber(this.iterator_result_char.value)
+				this.advance()
+				while (!this.iterator_result_char.done && digits_dec.includes(this.c0)) {
+					token.add(this.c0)
+					this.advance()
 				}
-			} else if (word_starts.includes(c0)) {
-				token = new TokenWord(character.value)
-				advance()
-				while (!character.done && word_chars.includes(c0)) {
-					token.add(c0)
-					advance()
+			} else if (word_starts.includes(this.c0)) {
+				token = new TokenWord(this.iterator_result_char.value)
+				this.advance()
+				while (!this.iterator_result_char.done && word_chars.includes(this.c0)) {
+					token.add(this.c0)
+					this.advance()
 				}
-			} else if (punctuators1.includes(c0)) {
-				token = new TokenPunctuator(character.value)
-				let first_char: string = c0
-				advance() // read past the first character
+			} else if (punctuators1.includes(this.c0)) {
+				token = new TokenPunctuator(this.iterator_result_char.value)
+				let first_char: string = this.c0
+				this.advance() // read past the first character
 				// TODO clean this up when we get to multi-char punctuators
-				if (punctuators2.includes(first_char + c0)) {
-					token.add(c0)
-					let second_char: string = c0
-					advance() // read past the second character
-					if (punctuators3.includes(first_char + second_char + c0)) {
-						token.add(c0)
-						advance() // read past the third character
+				if (punctuators2.includes(first_char + this.c0)) {
+					token.add(this.c0)
+					let second_char: string = this.c0
+					this.advance() // read past the second character
+					if (punctuators3.includes(first_char + second_char + this.c0)) {
+						token.add(this.c0)
+						this.advance() // read past the third character
 					}
 				}
 			} else {
 				throw new Error(`I found a character or symbol that I do not recognize:
-${c0} on ${character.value.line_index + 1}:${character.value.col_index + 1}.`)
+${this.c0} on ${this.iterator_result_char.value.line_index + 1}:${this.iterator_result_char.value.col_index + 1}.`)
 			}
 			yield token
 		}
-	}
-
-
-	/**
-	 * Construct a new Lexer object.
-	 */
-	private constructor() {
 	}
 }
