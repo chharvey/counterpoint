@@ -105,6 +105,13 @@ export default class Lexer {
 	/** The result of the scanner iterator. */
 	private iterator_result_char: IteratorResult<Char>;
 
+	/** Did this Lexer just pass a token that contains `\n`? */
+	private state_newline: boolean = false
+	/** How many levels of nested multi-line comments are we in? */
+	private comment_multiline_level: number /* bigint */ = 0
+	/** How many levels of nested string templates are we in? */
+	private template_level: number /* bigint */ = 0
+
 	/** The current character’s cargo. */
 	private c0: string;
 	/** The lookahead(1) character’s cargo. */
@@ -154,18 +161,6 @@ export default class Lexer {
 	 * @returns the next token, if it does not contain whitespace
 	 */
 	* generate(): Iterator<Token> {
-		/**
-		 * Did the lexer just pass a token that contains `\n`?
-		 */
-		let state_newline: boolean = false;
-		/**
-		 * How many levels of nested multi-line comments are we in?
-		 */
-		let comment_multiline_level: number /* bigint */ = 0;
-		/**
-		 * How many levels of nested string templates are we in?
-		 */
-		let template_level: number /* bigint */ = 0;
 		while (!this.iterator_result_char.done) {
 			if (whitespace.includes(this.c0)) {
 				const wstoken: TokenWhitespace = new TokenWhitespace(this.iterator_result_char.value)
@@ -174,7 +169,7 @@ export default class Lexer {
 					wstoken.add(this.c0)
 					this.advance()
 				}
-				state_newline = [...wstoken.cargo].includes('\n')
+				this.state_newline = [...wstoken.cargo].includes('\n')
 				// yield wstoken // only if we want the lexer to return whitespace
 				continue;
 			}
@@ -186,24 +181,24 @@ export default class Lexer {
 			} else if ((this.c0 as string) === COMMENT_MULTI_START) { // we found a multi-line comment
 				token = new TokenComment(this.iterator_result_char.value)
 				this.advance(COMMENT_MULTI_START.length)
-				comment_multiline_level++;
-				while (comment_multiline_level !== 0) {
+				this.comment_multiline_level++;
+				while (this.comment_multiline_level !== 0) {
 					while (!this.iterator_result_char.done && this.c0 + this.c1 !== COMMENT_MULTI_END) {
 						if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
-						if (this.c0 === COMMENT_MULTI_START) comment_multiline_level++
+						if (this.c0 === COMMENT_MULTI_START) this.comment_multiline_level++
 						token.add(this.c0)
 						this.advance()
 					}
 					// add COMMENT_MULTI_END to token
 					token.add(COMMENT_MULTI_END)
 					this.advance(COMMENT_MULTI_END.length)
-					comment_multiline_level--;
+					this.comment_multiline_level--;
 				}
 			} else if (this.c0 + this.c1 === COMMENT_LINE) { // we found either a doc comment or a single-line comment
 				token = new TokenComment(this.iterator_result_char.value)
 				token.add(this.c1 !)
 				this.advance(COMMENT_LINE.length)
-				if (state_newline && this.c0 + this.c1 === COMMENT_DOC_START.slice(COMMENT_LINE.length) + '\n') { // we found a doc comment
+				if (this.state_newline && this.c0 + this.c1 === COMMENT_DOC_START.slice(COMMENT_LINE.length) + '\n') { // we found a doc comment
 					token.add(this.c0 + this.c1 !)
 					this.advance(2)
 					while (!this.iterator_result_char.done) {
@@ -246,10 +241,10 @@ export default class Lexer {
 				// add ending delim to token
 				token.add(this.c0)
 				this.advance()
-			} else if (this.c0 === STRING_TEMPLATE_DELIM || this.c0 + this.c1 === STRING_TEMPLATE_INTERP_END && template_level) {
+			} else if (this.c0 === STRING_TEMPLATE_DELIM || this.c0 + this.c1 === STRING_TEMPLATE_INTERP_END && this.template_level) {
 				token = new TokenString(this.iterator_result_char.value)
 				this.advance()
-				template_level++;
+				this.template_level++;
 				while (!this.iterator_result_char.done) {
 					if (this.c0 === ETX) throw new Error('Found end of file before end of string')
 					if (this.c0 + this.c1 === '\\' + STRING_TEMPLATE_DELIM) {
@@ -268,7 +263,7 @@ export default class Lexer {
 						// add ending delim to token
 						token.add(this.c0)
 						this.advance()
-						template_level--;
+						this.template_level--;
 						break;
 					}
 					token.add(this.c0)
@@ -306,7 +301,7 @@ export default class Lexer {
 				throw new Error(`I found a character or symbol that I do not recognize:
 ${this.c0} on ${this.iterator_result_char.value.line_index + 1}:${this.iterator_result_char.value.col_index + 1}.`)
 			}
-			state_newline = false
+			this.state_newline = false
 			yield token
 		}
 	}
