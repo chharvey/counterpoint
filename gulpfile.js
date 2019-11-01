@@ -17,7 +17,7 @@ function dist() {
 
 async function test() {
 	const { Scanner, Lexer, TokenType } = require('./')
-	const input = util.promisify(fs.readFile)('./sample/sample-input.solid', 'utf8')
+	const input = util.promisify(fs.readFile)('./test/test-v0.1.solid', 'utf8')
 
 	console.log("Here are the characters returned by the scanner:")
 	console.log("  line col  character")
@@ -30,10 +30,10 @@ async function test() {
 
 	console.log("Here are the tokens returned by the lexer:")
 	const lexer = Lexer.generate(await input)
-	let token = lexer.next()
-	while (!token.done) {
-		console.log(token.value.show(true))
-		token = lexer.next()
+	let iterator_result_token = lexer.next()
+	while (!iterator_result_token.done) {
+		console.log(iterator_result_token.value.serialize())
+		iterator_result_token = lexer.next()
 	}
 
 	return Promise.resolve(null)

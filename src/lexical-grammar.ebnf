@@ -1,0 +1,41 @@
+FileBound ::= #x0002 /* START OF TEXT */
+|             #x0003 /* END OF TEXT   */
+
+Whitespace ::= #x0020 /* SPACE                     */
+|              #x0009 /* CHARACTER TABULATION `\t` */
+|              #x000A /* LINE FEED (LF)       `\n` */
+|              #x000D /* CARRIAGE RETURN (CR) `\r` */
+
+/* more whitespace characters:
+#x000B	LINE TABULATION
+#x000C	FORM FEED (FF)
+#x00A0	NO-BREAK SPACE
+#x1680	OGHAM SPACE MARK
+#x2000	EN QUAD
+#x2001	EM QUAD
+#x2002	EN SPACE
+#x2003	EM SPACE
+#x2004	THREE-PER-EM SPACE
+#x2005	FOUR-PER-EM SPACE
+#x2006	SIX-PER-EM SPACE
+#x2007	FIGURE SPACE
+#x2008	PUNCTUATION SPACE
+#x2009	THIN SPACE
+#x200A	HAIR SPACE
+#x200B	ZERO WIDTH SPACE
+#x2028	LINE SEPARATOR
+#x2029	PARAGRAPH SEPARATOR
+#x202F	NARROW NO-BREAK SPACE
+#x205F	MEDIUM MATHEMATICAL SPACE
+#x3000	IDEOGRAPHIC SPACE
+#xFEFF	ZERO WIDTH NO-BREAK SPACE
+*/
+
+Number ::= IntegerLiteral
+
+IntegerLiteral ::= DigitSequenceDec
+
+DigitSequenceDec ::= [0-9]
+|                    DigitSequenceDec [0-9]
+
+Punctuator ::= "+" | "-" | "*" | "/" | "^" | "(" | ")"
