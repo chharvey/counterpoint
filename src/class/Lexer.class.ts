@@ -18,6 +18,11 @@ const COMMENT_DOC_START  : '...' = '...'
 const COMMENT_DOC_END    : '...' = COMMENT_DOC_START
 const COMMENT_LINE       : '..'  = '..'
 
+const STRING_LITERAL_DELIM: '\'' = `'`
+const STRING_TEMPLATE_DELIM: '`' = '`'
+const STRING_TEMPLATE_INTERP_START: '{{' = '{{'
+const STRING_TEMPLATE_INTERP_END  : '}}' = '}}'
+
 
 /**
  * The different possible types of tokens.
@@ -110,6 +115,10 @@ export default class Lexer {
 		 * How many levels of nested multi-line comments are we in?
 		 */
 		let comment_multiline_level: number /* bigint */ = 0;
+		/**
+		 * How many levels of nested string templates are we in?
+		 */
+		let template_level: number /* bigint */ = 0;
 		let character: IteratorResult<Char> = scanner.next()
 		let c0: string = character.value.cargo
 		let l1: Char|null = character.value.lookahead()
@@ -201,6 +210,50 @@ export default class Lexer {
 						advance()
 					}
 					// do not add '\n' to token
+				}
+			} else if (c0 === STRING_LITERAL_DELIM) {
+				token.type = TokenType.STRING
+				advance()
+				while (!character.done && c0 !== STRING_LITERAL_DELIM) {
+					if (c0 === ENDMARK) throw new Error('Found end of file before end of string')
+					if (c0 + c1 === '\\' + STRING_LITERAL_DELIM) {
+						token.add(c0 + c1)
+						advance(2)
+						continue;
+					}
+					token.add(c0)
+					advance()
+				}
+				// add ending delim to token
+				token.add(c0)
+				advance()
+			} else if (c0 === STRING_TEMPLATE_DELIM || c0 + c1 === STRING_TEMPLATE_INTERP_END && template_level) {
+				token.type = TokenType.STRING
+				advance()
+				template_level++;
+				while (!character.done) {
+					if (c0 === ENDMARK) throw new Error('Found end of file before end of string')
+					if (c0 + c1 === '\\' + STRING_TEMPLATE_DELIM) {
+						// we found an escaped string delimiter
+						token.add(c0 + c1)
+						advance(2)
+						continue;
+					}
+					if (c0 + c1 === STRING_TEMPLATE_INTERP_START) {
+						// add interpolation delims to token, end the token
+						token.add(STRING_TEMPLATE_INTERP_START)
+						advance(STRING_TEMPLATE_INTERP_START.length)
+						break;
+					}
+					if (c0 === STRING_TEMPLATE_DELIM) {
+						// add ending delim to token
+						token.add(c0)
+						advance()
+						template_level--;
+						break;
+					}
+					token.add(c0)
+					advance()
 				}
 			} else if (identifier_starts.includes(c0)) {
 				token.type = TokenType.IDENTIFIER
