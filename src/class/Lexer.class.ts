@@ -12,6 +12,13 @@ const identifier_chars: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
 const identifier_starts: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
 const whitespace: readonly string[] = [' ', '\t', '\n']
 
+const COMMENT_MULTI_START: '"'   = '"'
+const COMMENT_MULTI_END  : '."'  = '."'
+const COMMENT_DOC_START  : '...' = '...'
+const COMMENT_DOC_END    : '...' = COMMENT_DOC_START
+const COMMENT_LINE       : '..'  = '..'
+
+
 /**
  * The different possible types of tokens.
  */
@@ -95,6 +102,14 @@ export default class Lexer {
 	 */
 	static * generate(sourceText: string): Iterator<Token> {
 		const scanner: Iterator<Char> = Scanner.generate(sourceText)
+		/**
+		 * Did the lexer just pass a token that contains `\n`?
+		 */
+		let state_newline: boolean = false;
+		/**
+		 * How many levels of nested multi-line comments are we in?
+		 */
+		let comment_multiline_level: number /* bigint */ = 0;
 		let character: IteratorResult<Char> = scanner.next()
 		let c0: string = character.value.cargo
 		let l1: Char|null = character.value.lookahead()
@@ -131,6 +146,7 @@ export default class Lexer {
 					wstoken.add(c0)
 					advance()
 				}
+				state_newline = [...wstoken.cargo].includes('\n')
 				// yield wstoken // only if we want the lexer to return whitespace
 				continue;
 			}
@@ -139,7 +155,53 @@ export default class Lexer {
 			if (c0 === ENDMARK) {
 				token.type = TokenType.EOF
 				advance()
-			// TODO comments
+			} else if ((c0 as string) === COMMENT_MULTI_START) { // we found a multi-line comment
+				token.type = TokenType.COMMENT
+				advance(COMMENT_MULTI_START.length)
+				comment_multiline_level++;
+				while (comment_multiline_level !== 0) {
+					while (!character.done && c0 + c1 !== COMMENT_MULTI_END) {
+						if (c0 === ENDMARK) throw new Error('Found end of file before end of comment')
+						if (c0 === COMMENT_MULTI_START) comment_multiline_level++
+						token.add(c0)
+						advance()
+					}
+					// add COMMENT_MULTI_END to token
+					token.add(COMMENT_MULTI_END)
+					advance(COMMENT_MULTI_END.length)
+					comment_multiline_level--;
+				}
+			} else if (c0 + c1 === COMMENT_LINE) { // we found either a doc comment or a single-line comment
+				token.type = TokenType.COMMENT
+				token.add(c1 !)
+				advance(COMMENT_LINE.length)
+				if (state_newline && c0 + c1 === COMMENT_DOC_START.slice(COMMENT_LINE.length) + '\n') { // we found a doc comment
+					token.add(c0 + c1 !)
+					advance(2)
+					while (!character.done) {
+						if (c0 === ENDMARK) throw new Error('Found end of file before end of comment')
+						if (c0 + c1 + c2 === COMMENT_DOC_END) {
+							const l3: Char|null = character.value.lookahead(3)
+							const c3: string|null = l3 && l3.cargo
+							const only_indented: boolean = token.cargo.slice(token.cargo.lastIndexOf('\n') + 1).trim() === ''
+							if (c3 === '\n' && only_indented) {
+								break;
+							}
+						}
+						token.add(c0)
+						advance()
+					}
+					// add COMMENT_DOC_END to token
+					token.add(COMMENT_DOC_END)
+					advance(COMMENT_DOC_END.length)
+				} else { // we found a single-line comment
+					while (!character.done && c0 !== '\n') {
+						if (c0 === ENDMARK) throw new Error('Found end of file before end of comment')
+						token.add(c0)
+						advance()
+					}
+					// do not add '\n' to token
+				}
 			} else if (identifier_starts.includes(c0)) {
 				token.type = TokenType.IDENTIFIER
 				advance()
@@ -167,6 +229,7 @@ export default class Lexer {
 				throw new Error(`I found a character or symbol that I do not recognize:
 ${c0} on ${character.value.lineIndex + 1}:${character.value.colIndex + 1}.`)
 			}
+			state_newline = false
 			yield token
 		}
 	}
