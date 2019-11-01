@@ -1,3 +1,5 @@
+import Serializable from '../iface/Serializable.iface'
+
 import Scanner, {Char, STX, ETX} from './Scanner.class'
 
 const whitespace: readonly string[] = [' ', '\t', '\n', '\r']
@@ -21,7 +23,7 @@ const punctuators3: readonly string[] = ``.split(' ')
  *
  * @see http://parsingintro.sourceforge.net/#contents_item_6.4
  */
-export abstract class Token {
+export abstract class Token implements Serializable {
 	/** All the characters in this Token. */
 	private _cargo: string;
 	/** Zero-based line number of the first character (first line is line 0). */
@@ -58,8 +60,7 @@ export abstract class Token {
 	}
 
 	/**
-	 * Return an XML string of this token.
-	 * @returns a string formatted as an XML element
+	 * @implements Serializable
 	 */
 	serialize(): string {
 		const tagname: string = this.tagname
@@ -67,11 +68,11 @@ export abstract class Token {
 			`line="${this.line_index+1}"`,
 			`col="${this.col_index+1}"`,
 		].join(' ') : ''
-		const cargo: string = new Map<string, string>([
+		const contents: string = new Map<string, string>([
 			[STX, '\u2402' /* SYMBOL FOR START OF TEXT */],
 			[ETX, '\u2403' /* SYMBOL FOR END OF TEXT   */],
 		]).get(this.cargo) || this.cargo
-		return `<${tagname}${attributes}>${cargo}</${tagname}>`
+		return `<${tagname}${attributes}>${contents}</${tagname}>`
 	}
 }
 export class TokenFilebound  extends Token { constructor(start_char: Char) { super('FILEBOUND' , start_char) } }
