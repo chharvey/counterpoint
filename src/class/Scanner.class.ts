@@ -18,13 +18,13 @@ export class Char {
 
 	/**
 	 * Construct a new Char object.
-	 * @param   source_text  - the entire source text
+	 * @param   scanner      - the scanner containing the source text
 	 * @param   source_index - the index of the character in source text
 	 */
-	constructor(readonly source_text: string, readonly source_index: number) {
+	constructor(private readonly scanner: Scanner, private readonly source_index: number) {
 		/** Array of characters from source start until current iteration (not including current character). */
-		const prev_chars: readonly string[] = [...this.source_text].slice(0, this.source_index)
-		this.cargo = this.source_text[this.source_index]
+		const prev_chars: readonly string[] = [...this.scanner.source_text].slice(0, this.source_index)
+		this.cargo = this.scanner.source_text[this.source_index]
 		this.line_index = prev_chars.filter((c) => c === '\n').length
 		this.col_index = this.source_index - (prev_chars.lastIndexOf('\n') + 1)
 
@@ -57,10 +57,10 @@ export class Char {
 	lookahead(n: number = 1): Char|null {
 		if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
 		if (n === 1) {
-			return (this.cargo === ETX) ? null : new Char(this.source_text, this.source_index + 1)
+			return (this.cargo === ETX) ? null : new Char(this.scanner, this.source_index + 1)
 		} else {
 			const recurse: Char|null = this.lookahead(n - 1)
-			return recurse && recurse.lookahead();
+			return recurse && recurse.lookahead()
 		}
 	}
 }
@@ -75,7 +75,7 @@ export default class Scanner {
 	 * Construct a new Scanner object.
 	 * @param   source_text - the entire source text
 	 */
-	constructor(private readonly source_text: string) {
+	constructor(readonly source_text: string) {
 		this.source_text = STX + '\n' + this.source_text + ETX
 	}
 
@@ -85,7 +85,7 @@ export default class Scanner {
 	 */
 	* generate(): Iterator<Char> {
 		for (let source_index: number = 0; source_index < this.source_text.length; source_index++) {
-			yield new Char(this.source_text, source_index)
+			yield new Char(this, source_index)
 		}
 	}
 }
