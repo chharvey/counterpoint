@@ -37,7 +37,10 @@ export abstract class Token implements Serializable {
 	 * @param start_char - the starting character of this Token
 	 * @param tagname    - the name of the type of this Token
 	 */
-	constructor(private readonly tagname: string, start_char: Char) {
+	constructor(
+		private readonly tagname: string,
+		start_char: Char,
+	) {
 		this._cargo     = start_char.cargo
 		this.line_index = start_char.line_index
 		this.col_index  = start_char.col_index
@@ -105,7 +108,9 @@ export default class Lexer {
 	 * Construct a new Lexer object.
 	 * @param   source_text - the entire source text
 	 */
-	constructor(private readonly source_text: string) {
+	constructor(
+		private readonly source_text: string,
+	) {
 		this.scanner = new Scanner(this.source_text).generate()
 		this.iterator_result_char = this.scanner.next()
 
