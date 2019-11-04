@@ -2,17 +2,6 @@ import Serializable from '../iface/Serializable.iface'
 
 import Scanner, {Char, STX, ETX} from './Scanner.class'
 
-const whitespace: readonly string[] = [' ', '\t', '\n', '\r']
-
-const digits_dec: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
-
-const word_starts: readonly string[] = ``.split(' ')
-const word_chars: readonly string[] = ``.split(' ')
-
-const punctuators1: readonly string[] = `+ - * / ^ ( )`.split(' ')
-const punctuators2: readonly string[] = ``.split(' ')
-const punctuators3: readonly string[] = ``.split(' ')
-
 
 /**
  * A Token object is the kind of thing that the Lexer returns.
@@ -34,8 +23,8 @@ export abstract class Token implements Serializable {
 	/**
 	 * Construct a new Token object.
 	 *
-	 * @param start_char - the starting character of this Token
 	 * @param tagname    - the name of the type of this Token
+	 * @param start_char - the starting character of this Token
 	 */
 	constructor(
 		private readonly tagname: string,
@@ -78,13 +67,56 @@ export abstract class Token implements Serializable {
 		return `<${tagname}${attributes}>${contents}</${tagname}>`
 	}
 }
-export class TokenFilebound  extends Token { constructor(start_char: Char) { super('FILEBOUND' , start_char) } }
-export class TokenWhitespace extends Token { constructor(start_char: Char) { super('WHITESPACE', start_char) } }
-export class TokenComment    extends Token { constructor(start_char: Char) { super('COMMENT'   , start_char) } }
-export class TokenString     extends Token { constructor(start_char: Char) { super('STRING'    , start_char) } }
-export class TokenNumber     extends Token { constructor(start_char: Char) { super('NUMBER'    , start_char) } }
-export class TokenWord       extends Token { constructor(start_char: Char) { super('WORD'      , start_char) } }
-export class TokenPunctuator extends Token { constructor(start_char: Char) { super('PUNCTUATOR', start_char) } }
+export class TokenFilebound extends Token {
+	static readonly TAGNAME: string = 'FILEBOUND'
+	static readonly CHARACTERS: readonly string[] = [STX, ETX]
+	constructor(start_char: Char) {
+		super(TokenFilebound.TAGNAME, start_char)
+	}
+}
+export class TokenWhitespace extends Token {
+	static readonly TAGNAME: string = 'WHITESPACE'
+	static readonly CHARACTERS: readonly string[] = [' ', '\t', '\n', '\r']
+	constructor(start_char: Char) {
+		super(TokenWhitespace.TAGNAME, start_char)
+	}
+}
+export class TokenComment extends Token {
+	static readonly TAGNAME: string = 'COMMENT'
+	constructor(start_char: Char) {
+		super(TokenComment.TAGNAME, start_char)
+	}
+}
+export class TokenString extends Token {
+	static readonly TAGNAME: string = 'STRING'
+	constructor(start_char: Char) {
+		super(TokenString.TAGNAME, start_char)
+	}
+}
+export class TokenNumber extends Token {
+	static readonly TAGNAME: string = 'NUMBER'
+	static readonly CHARACTERS: readonly string[] = '0 1 2 3 4 5 6 7 8 9'.split(' ')
+	constructor(start_char: Char) {
+		super(TokenNumber.TAGNAME, start_char)
+	}
+}
+export class TokenWord extends Token {
+	static readonly TAGNAME: string = 'WORD'
+	static readonly CHARACTERS_START: readonly string[] = ''.split(' ')
+	static readonly CHARACTERS_REST : readonly string[] = ''.split(' ')
+	constructor(start_char: Char) {
+		super(TokenWord.TAGNAME, start_char)
+	}
+}
+export class TokenPunctuator extends Token {
+	static readonly TAGNAME: string = 'PUNCTUATOR'
+	static readonly CHARACTERS_1: readonly string[] = '+ - * / ^ ( )'.split(' ')
+	static readonly CHARACTERS_2: readonly string[] = ''.split(' ')
+	static readonly CHARACTERS_3: readonly string[] = ''.split(' ')
+	constructor(start_char: Char) {
+		super(TokenPunctuator.TAGNAME, start_char)
+	}
+}
 
 
 /**
@@ -149,10 +181,10 @@ export default class Lexer {
 	 */
 	* generate(): Iterator<Token> {
 		while (!this.iterator_result_char.done) {
-			if (whitespace.includes(this.c0)) {
+			if (TokenWhitespace.CHARACTERS.includes(this.c0)) {
 				const wstoken: TokenWhitespace = new TokenWhitespace(this.iterator_result_char.value)
 				this.advance()
-				while (!this.iterator_result_char.done && whitespace.includes(this.c0)) {
+				while (!this.iterator_result_char.done && TokenWhitespace.CHARACTERS.includes(this.c0)) {
 					wstoken.add(this.c0)
 					this.advance()
 				}
@@ -161,33 +193,33 @@ export default class Lexer {
 			}
 
 			let token: Token;
-			if (this.c0 === STX || this.c0 === ETX) {
+			if (TokenFilebound.CHARACTERS.includes(this.c0)) {
 				token = new TokenFilebound(this.iterator_result_char.value)
 				this.advance()
-			} else if (digits_dec.includes(this.c0)) {
+			} else if (TokenNumber.CHARACTERS.includes(this.c0)) {
 				token = new TokenNumber(this.iterator_result_char.value)
 				this.advance()
-				while (!this.iterator_result_char.done && digits_dec.includes(this.c0)) {
+				while (!this.iterator_result_char.done && TokenNumber.CHARACTERS.includes(this.c0)) {
 					token.add(this.c0)
 					this.advance()
 				}
-			} else if (word_starts.includes(this.c0)) {
+			} else if (TokenWord.CHARACTERS_START.includes(this.c0)) {
 				token = new TokenWord(this.iterator_result_char.value)
 				this.advance()
-				while (!this.iterator_result_char.done && word_chars.includes(this.c0)) {
+				while (!this.iterator_result_char.done && TokenWord.CHARACTERS_REST.includes(this.c0)) {
 					token.add(this.c0)
 					this.advance()
 				}
-			} else if (punctuators1.includes(this.c0)) {
+			} else if (TokenPunctuator.CHARACTERS_1.includes(this.c0)) {
 				token = new TokenPunctuator(this.iterator_result_char.value)
 				let first_char: string = this.c0
 				this.advance() // read past the first character
 				// TODO clean this up when we get to multi-char punctuators
-				if (punctuators2.includes(first_char + this.c0)) {
+				if (TokenPunctuator.CHARACTERS_2.includes(first_char + this.c0)) {
 					token.add(this.c0)
 					let second_char: string = this.c0
 					this.advance() // read past the second character
-					if (punctuators3.includes(first_char + second_char + this.c0)) {
+					if (TokenPunctuator.CHARACTERS_3.includes(first_char + second_char + this.c0)) {
 						token.add(this.c0)
 						this.advance() // read past the third character
 					}
