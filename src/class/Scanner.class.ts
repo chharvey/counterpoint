@@ -21,7 +21,10 @@ export class Char {
 	 * @param   scanner      - the scanner containing the source text
 	 * @param   source_index - the index of the character in source text
 	 */
-	constructor(private readonly scanner: Scanner, private readonly source_index: number) {
+	constructor(
+		private readonly scanner: Scanner,
+		private readonly source_index: number,
+	) {
 		/** Array of characters from source start until current iteration (not including current character). */
 		const prev_chars: readonly string[] = [...this.scanner.source_text].slice(0, this.source_index)
 		this.cargo = this.scanner.source_text[this.source_index]
@@ -75,7 +78,9 @@ export default class Scanner {
 	 * Construct a new Scanner object.
 	 * @param   source_text - the entire source text
 	 */
-	constructor(readonly source_text: string) {
+	constructor(
+		public readonly source_text: string,
+	) {
 		this.source_text = STX + '\n' + this.source_text + ETX
 	}
 
