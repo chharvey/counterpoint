@@ -83,11 +83,13 @@ export class TokenWhitespace extends Token {
 }
 export class TokenComment extends Token {
 	static readonly TAGNAME: string = 'COMMENT'
-	static readonly CHARS_MULTI_START: '"'   = '"'
-	static readonly CHARS_MULTI_END  : '."'  = '."'
-	static readonly CHARS_LINE       : '..'  = '..'
-	static readonly CHARS_DOC_START  : '...' = '...'
-	static readonly CHARS_DOC_END    : '...' = '...'
+	static readonly CHARS_MULTI_START     : '"'   = '"'
+	static readonly CHARS_MULTI_END       : '"'   = '"'
+	static readonly CHARS_MULTI_NEST_START: '"{'  = '"{'
+	static readonly CHARS_MULTI_NEST_END  : '}"'  = '}"'
+	static readonly CHARS_LINE            : '..'  = '..'
+	static readonly CHARS_DOC_START       : '...' = '...'
+	static readonly CHARS_DOC_END         : '...' = '...'
 	constructor(start_char: Char) {
 		super(TokenComment.TAGNAME, start_char)
 	}
@@ -140,7 +142,7 @@ export default class Lexer {
 
 	/** Did this Lexer just pass a token that contains `\n`? */
 	private state_newline: boolean = false
-	/** How many levels of nested multi-line comments are we in? */
+	/** How many levels of nested multiline comments are we in? */
 	private comment_multiline_level: number /* bigint */ = 0
 	/** How many levels of nested string templates are we in? */
 	private template_level: number /* bigint */ = 0
@@ -213,21 +215,39 @@ export default class Lexer {
 			if (TokenFilebound.CHARS.includes(this.c0)) {
 				token = new TokenFilebound(this.iterator_result_char.value)
 				this.advance()
-			} else if ((this.c0 as string) === TokenComment.CHARS_MULTI_START) { // we found a multi-line comment
+			} else if ((this.c0 as string) === TokenComment.CHARS_MULTI_START) { // we found a multiline comment, either nestable or not
 				token = new TokenComment(this.iterator_result_char.value)
-				this.advance(TokenComment.CHARS_MULTI_START.length)
-				this.comment_multiline_level++;
-				while (this.comment_multiline_level !== 0) {
-					while (!this.iterator_result_char.done && this.c0 + this.c1 !== TokenComment.CHARS_MULTI_END) {
+				if (this.c0 + this.c1 === TokenComment.CHARS_MULTI_NEST_START) { // we found a nestable multiline comment
+					token.add(this.c1 !)
+					this.advance(TokenComment.CHARS_MULTI_NEST_START.length)
+					this.comment_multiline_level++;
+					while (this.comment_multiline_level !== 0) {
+						while (!this.iterator_result_char.done && this.c0 + this.c1 !== TokenComment.CHARS_MULTI_NEST_END) {
+							if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
+							if (this.c0 + this.c1 === TokenComment.CHARS_MULTI_NEST_START) {
+								token.add(TokenComment.CHARS_MULTI_NEST_START)
+								this.advance(TokenComment.CHARS_MULTI_NEST_START.length)
+								this.comment_multiline_level++
+							} else {
+								token.add(this.c0)
+								this.advance()
+							}
+						}
+						// add ending delim to token
+						token.add(TokenComment.CHARS_MULTI_NEST_END)
+						this.advance(TokenComment.CHARS_MULTI_NEST_END.length)
+						this.comment_multiline_level--;
+					}
+				} else { // we found a non-nestable multiline comment
+					this.advance()
+					while (!this.iterator_result_char.done && this.c0 !== TokenComment.CHARS_MULTI_END) {
 						if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
-						if (this.c0 === TokenComment.CHARS_MULTI_START) this.comment_multiline_level++
 						token.add(this.c0)
 						this.advance()
 					}
 					// add ending delim to token
 					token.add(TokenComment.CHARS_MULTI_END)
 					this.advance(TokenComment.CHARS_MULTI_END.length)
-					this.comment_multiline_level--;
 				}
 			} else if (this.c0 + this.c1 === TokenComment.CHARS_LINE) { // we found either a doc comment or a single-line comment
 				token = new TokenComment(this.iterator_result_char.value)

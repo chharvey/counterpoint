@@ -1,11 +1,21 @@
 5  +  3  .. single-line comment  *  2
 
-5  +  3  "multi-line
-comment." *  2
+5  +  3  "multiline
+comment" *  2
 
-5  *  3  "multi-line
-which is "nested." though
-comment." *  2
+.. the following is an empty multiline comment:
+""
+
+.. the following is an empty nestable multiline comment:
+"{}"
+
+5  *  3  "{multiline
+that has a "nested" multiline
+comment}" *  2
+
+6  *  4  "{multiline
+that has a "{nestable nested}" multiline
+comment}" *  3
 
 ...
 . abcde
@@ -53,7 +63,19 @@ a line break`
 `Interpolation with whitespace {{ }}!`
 `Interpolation with no space {{}}!`
 
-`Interpolation with a multiline comment {{ "a multiline comment." }}!`
+'Here is a string "that contains" a multiline comment.'
+'Here is a string "that contains a comment start marker but no end.'
+
+"Here is a multiline
+comment 'that contains' a string."
+"Here is a multiline comment
+that contains 'a string start marker but no end."
+
+`Interpolation with a multiline comment {{ "a multiline comment" }}!`
+`Interpolation with an empty multiline comment {{ "" }}!`
+`Interpolation with a nestable multiline comment {{ "{a multiline comment}" }}!`
+
+"{A nestable "{co"{mm}"ent}" with `the {{interpolation}} syntax`.}"
 
 `Interpolation with a Solidoc comment {{
 ...
