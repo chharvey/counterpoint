@@ -87,9 +87,9 @@ export class TokenComment extends Token {
 	static readonly CHARS_MULTI_END       : '"'   = '"'
 	static readonly CHARS_MULTI_NEST_START: '"{'  = '"{'
 	static readonly CHARS_MULTI_NEST_END  : '}"'  = '}"'
-	static readonly CHARS_LINE            : '..'  = '..'
-	static readonly CHARS_DOC_START       : '...' = '...'
-	static readonly CHARS_DOC_END         : '...' = '...'
+	static readonly CHARS_LINE            : '""'  = '""'
+	static readonly CHARS_DOC_START       : '"""' = '"""'
+	static readonly CHARS_DOC_END         : '"""' = '"""'
 	constructor(start_char: Char) {
 		super(TokenComment.TAGNAME, start_char)
 	}
@@ -215,9 +215,39 @@ export default class Lexer {
 			if (TokenFilebound.CHARS.includes(this.c0)) {
 				token = new TokenFilebound(this.iterator_result_char.value)
 				this.advance()
-			} else if ((this.c0 as string) === TokenComment.CHARS_MULTI_START) { // we found a multiline comment, either nestable or not
+			} else if ((this.c0 as string) === TokenComment.CHARS_MULTI_START) { // we found the start of a comment
 				token = new TokenComment(this.iterator_result_char.value)
-				if (this.c0 + this.c1 === TokenComment.CHARS_MULTI_NEST_START) { // we found a nestable multiline comment
+				if (this.c0 + this.c1 === TokenComment.CHARS_LINE) { // we found either a doc comment or a single-line comment
+					token.add(this.c1 !)
+					this.advance(TokenComment.CHARS_LINE.length)
+					if (this.state_newline && this.c0 + this.c1 === TokenComment.CHARS_DOC_START.slice(TokenComment.CHARS_LINE.length) + '\n') { // we found a doc comment
+						token.add(this.c0 + this.c1 !)
+						this.advance(2)
+						while (!this.iterator_result_char.done) {
+							if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
+							if (this.c0 + this.c1 + this.c2 === TokenComment.CHARS_DOC_END) {
+								const l3: Char|null = this.iterator_result_char.value.lookahead(3)
+								const c3: string|null = l3 && l3.cargo
+								const only_indented: boolean = token.cargo.slice(token.cargo.lastIndexOf('\n') + 1).trim() === ''
+								if (c3 === '\n' && only_indented) {
+									break;
+								}
+							}
+							token.add(this.c0)
+							this.advance()
+						}
+						// add ending delim to token
+						token.add(TokenComment.CHARS_DOC_END)
+						this.advance(TokenComment.CHARS_DOC_END.length)
+					} else { // we found a single-line comment
+						while (!this.iterator_result_char.done && this.c0 !== '\n') {
+							if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
+							token.add(this.c0)
+							this.advance()
+						}
+						// do not add '\n' to token
+					}
+				} else if (this.c0 + this.c1 === TokenComment.CHARS_MULTI_NEST_START) { // we found a nestable multiline comment
 					token.add(this.c1 !)
 					this.advance(TokenComment.CHARS_MULTI_NEST_START.length)
 					this.comment_multiline_level++;
@@ -248,37 +278,6 @@ export default class Lexer {
 					// add ending delim to token
 					token.add(TokenComment.CHARS_MULTI_END)
 					this.advance(TokenComment.CHARS_MULTI_END.length)
-				}
-			} else if (this.c0 + this.c1 === TokenComment.CHARS_LINE) { // we found either a doc comment or a single-line comment
-				token = new TokenComment(this.iterator_result_char.value)
-				token.add(this.c1 !)
-				this.advance(TokenComment.CHARS_LINE.length)
-				if (this.state_newline && this.c0 + this.c1 === TokenComment.CHARS_DOC_START.slice(TokenComment.CHARS_LINE.length) + '\n') { // we found a doc comment
-					token.add(this.c0 + this.c1 !)
-					this.advance(2)
-					while (!this.iterator_result_char.done) {
-						if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
-						if (this.c0 + this.c1 + this.c2 === TokenComment.CHARS_DOC_END) {
-							const l3: Char|null = this.iterator_result_char.value.lookahead(3)
-							const c3: string|null = l3 && l3.cargo
-							const only_indented: boolean = token.cargo.slice(token.cargo.lastIndexOf('\n') + 1).trim() === ''
-							if (c3 === '\n' && only_indented) {
-								break;
-							}
-						}
-						token.add(this.c0)
-						this.advance()
-					}
-					// add ending delim to token
-					token.add(TokenComment.CHARS_DOC_END)
-					this.advance(TokenComment.CHARS_DOC_END.length)
-				} else { // we found a single-line comment
-					while (!this.iterator_result_char.done && this.c0 !== '\n') {
-						if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
-						token.add(this.c0)
-						this.advance()
-					}
-					// do not add '\n' to token
 				}
 			} else if ((this.c0 as string) === TokenString.CHARS_LITERAL_DELIM) {
 				token = new TokenString(this.iterator_result_char.value)

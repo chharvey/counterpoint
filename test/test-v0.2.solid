@@ -1,12 +1,19 @@
-5  +  3  .. single-line comment  *  2
+5  +  3  "" single-line comment  *  2
 
 5  +  3  "multiline
 comment" *  2
 
-.. the following is an empty multiline comment:
+"" the following is an empty single-line comment:
 ""
 
-.. the following is an empty nestable multiline comment:
+"" the following is an empty multiline comment:
+" "
+
+1 + "" + 2 + "" + 3
+
+1 + '' + 2 + '' + 3
+
+"" the following is an empty nestable multiline comment:
 "{}"
 
 5  *  3  "{multiline
@@ -17,23 +24,23 @@ comment}" *  2
 that has a "{nestable nested}" multiline
 comment}" *  3
 
-...
-. abcde
-. 5 + 3
-...
+"""
+" abcde
+" 5 + 3
+"""
 
-	...
-	. fghik
-	. 3 + 5
-	...
+	"""
+	fghik"""
+	"""2 + 4
+	"""
 
-... 3 * 2
-5 + 3 ...
+""" 3 * 2
+5 + 3 """
 
-.. below is an empty Solidoc comment:
+"" below is an empty Solidoc comment:
 
-...
-...
+"""
+"""
 
 
 5  +  '3'
@@ -72,15 +79,15 @@ comment 'that contains' a string."
 that contains 'a string start marker but no end."
 
 `Interpolation with a multiline comment {{ "a multiline comment" }}!`
-`Interpolation with an empty multiline comment {{ "" }}!`
+`Interpolation with an empty multiline comment {{ " " }}!`
 `Interpolation with a nestable multiline comment {{ "{a multiline comment}" }}!`
 
 "{A nestable "{co"{mm}"ent}" with `the {{interpolation}} syntax`.}"
 
 `Interpolation with a Solidoc comment {{
-...
-a Solidoc comment
-...
+"""
+"  a Solidoc comment
+"""
 }}!`
 
 '
