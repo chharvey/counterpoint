@@ -163,6 +163,8 @@ export default class Lexer {
 	private c1: Char|null;
 	/** The lookahead(2) character. */
 	private c2: Char|null;
+	/** The lookahead(3) character. */
+	private c3: Char|null;
 
 	/**
 	 * Construct a new Lexer object.
@@ -177,6 +179,7 @@ export default class Lexer {
 		this.c0 = this.iterator_result_char.value
 		this.c1 = this.c0.lookahead()
 		this.c2 = this.c0.lookahead(2)
+		this.c3 = this.c0.lookahead(3)
 	}
 
 	/**
@@ -192,6 +195,7 @@ export default class Lexer {
 				this.c0 = this.iterator_result_char.value
 				this.c1 = this.c0.lookahead()
 				this.c2 = this.c0.lookahead(2)
+				this.c3 = this.c0.lookahead(3)
 			}
 		} else {
 			this.advance(n - 1)
@@ -232,32 +236,23 @@ export default class Lexer {
 				}
 				// do not add '\n' to token
 			} else if (Char.eq('"', this.c0)) { // we found the start of a doc comment or multiline comment
-				if (this.state_newline && Char.eq(TokenComment.CHARS_DOC_START, this.c0, this.c1, this.c2)) { // we might have found a doc comment
-					let c3: Char|null   = this.iterator_result_char.value.lookahead(3)
-					if (Char.eq('\n', c3)) { // it is definitely a doc comment
-						token = new TokenCommentDoc(this.iterator_result_char.value)
-						token.add(this.c1 !, this.c2 !, c3 !)
-						this.advance((TokenComment.CHARS_DOC_START + '\n').length)
-						while (!this.iterator_result_char.done) {
-							if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
-							if (Char.eq(TokenComment.CHARS_DOC_END, this.c0, this.c1, this.c2)) {
-								c3 = this.iterator_result_char.value.lookahead(3)
-								const only_indented: boolean = token.cargo.slice(token.cargo.lastIndexOf('\n') + 1).trim() === ''
-								if (Char.eq('\n', c3) && only_indented) {
-									break;
-								}
-							}
+				if (this.state_newline && Char.eq(TokenComment.CHARS_DOC_START + '\n', this.c0, this.c1, this.c2, this.c3)) { // we found a doc comment
+					token = new TokenCommentDoc(this.iterator_result_char.value)
+					token.add(this.c1 !, this.c2 !, this.c3 !)
+					this.advance((TokenComment.CHARS_DOC_START + '\n').length)
+					while (!this.iterator_result_char.done) {
+						if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
+						if (
+							!Char.eq(TokenComment.CHARS_DOC_END + '\n', this.c0, this.c1, this.c2, this.c3) ||
+							token.cargo.slice(token.cargo.lastIndexOf('\n') + 1).trim() !== '' // the tail end of the token does not match `/\n(\s)*/` (a newline followed by whitespace)
+						) {
 							token.add(this.c0)
 							this.advance()
 						}
-						// add ending delim to token
-						token.add(this.c0, this.c1 !, this.c2 !)
-						this.advance(TokenComment.CHARS_DOC_END.length)
-					} else { // it was two multiline comments juxtaposed
-						token = new TokenCommentMulti(this.iterator_result_char.value)
-						token.add(this.c1 !)
-						this.advance(2)
 					}
+					// add ending delim to token
+					token.add(this.c0, this.c1 !, this.c2 !)
+					this.advance(TokenComment.CHARS_DOC_END.length)
 				} else if (Char.eq(TokenComment.CHARS_MULTI_NEST_START, this.c0, this.c1)) { // we found a nestable multiline comment
 					token = new TokenCommentMultiNest(this.iterator_result_char.value)
 					token.add(this.c1 !)
@@ -349,20 +344,17 @@ export default class Lexer {
 					token.add(this.c0)
 					this.advance()
 				}
+			} else if (Char.inc(TokenPunctuator.CHARS_3, this.c0, this.c1, this.c2)) {
+				token = new TokenPunctuator(this.iterator_result_char.value)
+				token.add(this.c1 !, this.c2 !)
+				this.advance(3)
+			} else if (Char.inc(TokenPunctuator.CHARS_2, this.c0, this.c1)) {
+				token = new TokenPunctuator(this.iterator_result_char.value)
+				token.add(this.c1 !)
+				this.advance(2)
 			} else if (Char.inc(TokenPunctuator.CHARS_1, this.c0)) {
 				token = new TokenPunctuator(this.iterator_result_char.value)
-				const first_char: Char = this.c0
-				this.advance() // read past the first character
-				// TODO clean this up when we get to multi-char punctuators
-				if (Char.inc(TokenPunctuator.CHARS_2, first_char, this.c0)) {
-					token.add(this.c0)
-					const second_char: Char = this.c0
-					this.advance() // read past the second character
-					if (Char.inc(TokenPunctuator.CHARS_3, first_char, second_char, this.c0)) {
-						token.add(this.c0)
-						this.advance() // read past the third character
-					}
-				}
+				this.advance()
 			} else {
 				throw new Error(`I found a character or symbol that I do not recognize:
 ${this.c0} on ${this.iterator_result_char.value.line_index + 1}:${this.iterator_result_char.value.col_index + 1}.`)
