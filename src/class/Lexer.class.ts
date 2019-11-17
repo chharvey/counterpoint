@@ -81,7 +81,7 @@ export class TokenWhitespace extends Token {
 		super(TokenWhitespace.TAGNAME, start_char)
 	}
 }
-export class TokenComment extends Token {
+export abstract class TokenComment extends Token {
 	static readonly TAGNAME: string = 'COMMENT'
 	static readonly CHARS_LINE            : '---' = '---'
 	static readonly CHARS_MULTI_START     : '"'   = '"'
@@ -90,14 +90,20 @@ export class TokenComment extends Token {
 	static readonly CHARS_MULTI_NEST_END  : '}"'  = '}"'
 	static readonly CHARS_DOC_START       : '"""' = '"""'
 	static readonly CHARS_DOC_END         : '"""' = '"""'
-	kind: string = ''
-	constructor(start_char: Char) {
+	constructor(
+		private readonly kind: string,
+		start_char: Char,
+	) {
 		super(TokenComment.TAGNAME, start_char)
 	}
 	serialize(): string {
 		return super.serialize(this.kind ? `kind="${this.kind}"` : '')
 	}
 }
+class TokenCommentLine      extends TokenComment { constructor(start_char: Char) { super('LINE'       , start_char) } }
+class TokenCommentMulti     extends TokenComment { constructor(start_char: Char) { super('MULTI'      , start_char) } }
+class TokenCommentMultiNest extends TokenComment { constructor(start_char: Char) { super('MULTI_NEST' , start_char) } }
+class TokenCommentDoc       extends TokenComment { constructor(start_char: Char) { super('DOC'        , start_char) } }
 export class TokenString extends Token {
 	static readonly TAGNAME: string = 'STRING'
 	static readonly CHARS_LITERAL_DELIM        : '\'' = `'`
@@ -219,9 +225,8 @@ export default class Lexer {
 			if (TokenFilebound.CHARS.includes(this.c0)) {
 				token = new TokenFilebound(this.iterator_result_char.value)
 				this.advance()
-			} else if (this.c0 + this.c1 + this.c2 === TokenComment.CHARS_LINE) { // we found a single-line comment
-				token = new TokenComment(this.iterator_result_char.value)
-				;(token as TokenComment).kind = 'single-line'
+			} else if (this.c0 + this.c1 + this.c2 === TokenComment.CHARS_LINE) { // we found a line comment
+				token = new TokenCommentLine(this.iterator_result_char.value)
 				token.add(this.c1 ! + this.c2 !)
 				this.advance(TokenComment.CHARS_LINE.length)
 				while (!this.iterator_result_char.done && this.c0 !== '\n') {
@@ -231,32 +236,38 @@ export default class Lexer {
 				}
 				// do not add '\n' to token
 			} else if ((this.c0 as string) === '"') { // we found the start of a doc comment or multiline comment
-				token = new TokenComment(this.iterator_result_char.value)
-				this.advance()
-				if (this.state_newline && this.c0 + this.c1 + this.c2 === TokenComment.CHARS_DOC_START.slice(1) + '\n') { // we found a doc comment
-					;(token as TokenComment).kind = 'doc'
-					token.add(this.c0 + this.c1 ! + this.c2 !)
-					this.advance((TokenComment.CHARS_DOC_START.slice(1) + '\n').length)
-					while (!this.iterator_result_char.done) {
-						if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
-						if (this.c0 + this.c1 + this.c2 === TokenComment.CHARS_DOC_END) {
-							const l3: Char|null = this.iterator_result_char.value.lookahead(3)
-							const c3: string|null = l3 && l3.cargo
-							const only_indented: boolean = token.cargo.slice(token.cargo.lastIndexOf('\n') + 1).trim() === ''
-							if (c3 === '\n' && only_indented) {
-								break;
+				if (this.state_newline && this.c0 + this.c1 + this.c2 === TokenComment.CHARS_DOC_START) { // we might have found a doc comment
+					let l3: Char|null   = this.iterator_result_char.value.lookahead(3)
+					let c3: string|null = l3 && l3.cargo
+					if (c3 === '\n') { // it is definitely a doc comment
+						token = new TokenCommentDoc(this.iterator_result_char.value)
+						token.add(this.c1 ! + this.c2 ! + c3)
+						this.advance((TokenComment.CHARS_DOC_START + '\n').length)
+						while (!this.iterator_result_char.done) {
+							if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
+							if (this.c0 + this.c1 + this.c2 === TokenComment.CHARS_DOC_END) {
+								l3 = this.iterator_result_char.value.lookahead(3)
+								c3 = l3 && l3.cargo
+								const only_indented: boolean = token.cargo.slice(token.cargo.lastIndexOf('\n') + 1).trim() === ''
+								if (c3 === '\n' && only_indented) {
+									break;
+								}
 							}
+							token.add(this.c0)
+							this.advance()
 						}
-						token.add(this.c0)
-						this.advance()
+						// add ending delim to token
+						token.add(TokenComment.CHARS_DOC_END)
+						this.advance(TokenComment.CHARS_DOC_END.length)
+					} else { // it was two multiline comments juxtaposed
+						token = new TokenCommentMulti(this.iterator_result_char.value)
+						token.add(this.c1 !)
+						this.advance(2)
 					}
-					// add ending delim to token
-					token.add(TokenComment.CHARS_DOC_END)
-					this.advance(TokenComment.CHARS_DOC_END.length)
-				} else if (this.c0 === TokenComment.CHARS_MULTI_NEST_START.slice(1)) { // we found a nestable multiline comment
-					;(token as TokenComment).kind = 'multiline-nest'
-					token.add(this.c0)
-					this.advance()
+				} else if (this.c0 + this.c1 === TokenComment.CHARS_MULTI_NEST_START) { // we found a nestable multiline comment
+					token = new TokenCommentMultiNest(this.iterator_result_char.value)
+					token.add(this.c1 !)
+					this.advance(TokenComment.CHARS_MULTI_NEST_START.length)
 					this.comment_multiline_level++;
 					while (this.comment_multiline_level !== 0) {
 						while (!this.iterator_result_char.done && this.c0 + this.c1 !== TokenComment.CHARS_MULTI_NEST_END) {
@@ -276,7 +287,8 @@ export default class Lexer {
 						this.comment_multiline_level--;
 					}
 				} else { // we found a non-nestable multiline comment
-					;(token as TokenComment).kind = 'multiline'
+					token = new TokenCommentMulti(this.iterator_result_char.value)
+					this.advance()
 					while (!this.iterator_result_char.done && this.c0 !== TokenComment.CHARS_MULTI_END) {
 						if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
 						token.add(this.c0)
