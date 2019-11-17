@@ -7,7 +7,6 @@ import Scanner, {Char, STX, ETX} from './Scanner.class'
  * A Token object is the kind of thing that the Lexer returns.
  * It holds:
  * - the text of the token (self.cargo)
- * - the type of token that it is
  * - the line number and column index where the token starts
  *
  * @see http://parsingintro.sourceforge.net/#contents_item_6.4
@@ -54,12 +53,13 @@ export abstract class Token implements Serializable {
 	/**
 	 * @implements Serializable
 	 */
-	serialize(): string {
+	serialize(...attrs: string[]): string {
 		const tagname: string = this.tagname
 		const attributes: string = (this.cargo !== STX && this.cargo !== ETX) ? ' ' + [
 			`line="${this.line_index+1}"`,
 			`col="${this.col_index+1}"`,
-		].join(' ') : ''
+			...attrs
+		].join(' ').trim() : ''
 		const contents: string = new Map<string, string>([
 			[STX, '\u2402' /* SYMBOL FOR START OF TEXT */],
 			[ETX, '\u2403' /* SYMBOL FOR END OF TEXT   */],
@@ -90,8 +90,12 @@ export class TokenComment extends Token {
 	static readonly CHARS_LINE            : '""'  = '""'
 	static readonly CHARS_DOC_START       : '"""' = '"""'
 	static readonly CHARS_DOC_END         : '"""' = '"""'
+	kind: string = ''
 	constructor(start_char: Char) {
 		super(TokenComment.TAGNAME, start_char)
+	}
+	serialize(): string {
+		return super.serialize(this.kind ? `kind="${this.kind}"` : '')
 	}
 }
 export class TokenString extends Token {
@@ -131,7 +135,7 @@ export class TokenPunctuator extends Token {
 
 
 /**
- * A lexer (aka: Tokenizer, Lexical Analyzer)
+ * A Lexer (aka: Tokenizer, Lexical Analyzer).
  * @see http://parsingintro.sourceforge.net/#contents_item_6.5
  */
 export default class Lexer {
@@ -221,6 +225,7 @@ export default class Lexer {
 					token.add(this.c1 !)
 					this.advance(TokenComment.CHARS_LINE.length)
 					if (this.state_newline && this.c0 + this.c1 === TokenComment.CHARS_DOC_START.slice(TokenComment.CHARS_LINE.length) + '\n') { // we found a doc comment
+						;(token as TokenComment).kind = 'doc'
 						token.add(this.c0 + this.c1 !)
 						this.advance(2)
 						while (!this.iterator_result_char.done) {
@@ -240,6 +245,7 @@ export default class Lexer {
 						token.add(TokenComment.CHARS_DOC_END)
 						this.advance(TokenComment.CHARS_DOC_END.length)
 					} else { // we found a single-line comment
+						;(token as TokenComment).kind = 'single-line'
 						while (!this.iterator_result_char.done && this.c0 !== '\n') {
 							if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
 							token.add(this.c0)
@@ -248,6 +254,7 @@ export default class Lexer {
 						// do not add '\n' to token
 					}
 				} else if (this.c0 + this.c1 === TokenComment.CHARS_MULTI_NEST_START) { // we found a nestable multiline comment
+					;(token as TokenComment).kind = 'multiline-nest'
 					token.add(this.c1 !)
 					this.advance(TokenComment.CHARS_MULTI_NEST_START.length)
 					this.comment_multiline_level++;
@@ -269,6 +276,7 @@ export default class Lexer {
 						this.comment_multiline_level--;
 					}
 				} else { // we found a non-nestable multiline comment
+					;(token as TokenComment).kind = 'multiline'
 					this.advance()
 					while (!this.iterator_result_char.done && this.c0 !== TokenComment.CHARS_MULTI_END) {
 						if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
