@@ -35,13 +35,17 @@ Whitespace ::= #x0020 /* SPACE                     */
 
 Comment ::= CommentSingle | CommentMulti | CommentDoc
 
-CommentSingle ::= ".." [^#x000A #x000D]*
+CommentLine ::= '---' [^#x000A#x000D]*
 
-CommentMulti      ::= '"' CommentMultiChars? '."'
-CommentMultiChars ::= [^.] CommentMultiChars? | "." ( [^"] CommentMultiChars? )?
+CommentMulti ::= '"' [^"]* '"'
 
-CommentDoc      ::= "..." #x000A CommentDocChars? #x000A [#x000D #x0009 #x0020]* "..."
-CommentDocChars ::= [^.] CommentDocChars? | "." ( [^.] CommentDocChars? | "." ( [^.] CommentDocChars? )? )?
+CommentMultiNest ::= '"{' CommentMultiNestChars? '}"'
+CommentMultiNestChars ::= [^}"] CommentMultiNestChars?
+|                         "}" ([^"] CommentMultiNestChars?)?
+|                         '"' ([^{] CommentMultiNestChars?)?
+|                         CommentMultiNest CommentMultiNestChars?
+
+CommentDoc ::= /*? following: #x0A [#x09#x20]* ?*/ '"""' #x0A (/*? unequal: [#x09#x20]* '"""' ?*/ #x0A)? [#x09#x20]* '"""' /*? lookahead: #x0A ?*/
 
 
 
