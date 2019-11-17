@@ -1,19 +1,20 @@
-5  +  3  "" single-line comment  *  2
+5  +  3  --- single-line comment  *  2
 
 5  +  3  "multiline
 comment" *  2
 
-"" the following is an empty single-line comment:
-""
+--- the following is an empty single-line comment:
+---
 
-"" the following is an empty multiline comment:
+--- the following are empty multiline comments:
+""
 " "
 
 1 + "" + 2 + "" + 3
 
 1 + '' + 2 + '' + 3
 
-"" the following is an empty nestable multiline comment:
+--- the following is an empty nestable multiline comment:
 "{}"
 
 5  *  3  "{multiline
@@ -30,14 +31,14 @@ comment}" *  3
 """
 
 	"""
-	fghik"""
-	"""2 + 4
+	these quotes do not end the doc comment"""
+	"""nor do these
 	"""
 
 """ 3 * 2
 5 + 3 """
 
-"" below is an empty Solidoc comment:
+--- below is an empty Solidoc comment:
 
 """
 """
@@ -70,8 +71,10 @@ a line break`
 `Interpolation with whitespace {{ }}!`
 `Interpolation with no space {{}}!`
 
+'Here is a string --- that contains a single-line comment start marker.'
 'Here is a string "that contains" a multiline comment.'
 'Here is a string "that contains a comment start marker but no end.'
+'Here is a string "{that contains a nestable comment start marker but no end.'
 
 "Here is a multiline
 comment 'that contains' a string."
