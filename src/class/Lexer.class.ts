@@ -24,12 +24,14 @@ export abstract class Token implements Serializable {
 	 *
 	 * @param tagname    - the name of the type of this Token
 	 * @param start_char - the starting character of this Token
+	 * @param more_chars - additional characters to add upon construction
 	 */
 	constructor(
 		private readonly tagname: string,
 		start_char: Char,
+		...more_chars: Char[]
 	) {
-		this._cargo     = start_char.cargo
+		this._cargo     = start_char.cargo + more_chars.map((char) => char.cargo).join('')
 		this.line_index = start_char.line_index
 		this.col_index  = start_char.col_index
 	}
@@ -70,15 +72,15 @@ export abstract class Token implements Serializable {
 export class TokenFilebound extends Token {
 	static readonly TAGNAME: string = 'FILEBOUND'
 	static readonly CHARS: readonly string[] = [STX, ETX]
-	constructor(start_char: Char) {
-		super(TokenFilebound.TAGNAME, start_char)
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super(TokenFilebound.TAGNAME, start_char, ...more_chars)
 	}
 }
 export class TokenWhitespace extends Token {
 	static readonly TAGNAME: string = 'WHITESPACE'
 	static readonly CHARS: readonly string[] = [' ', '\t', '\n', '\r']
-	constructor(start_char: Char) {
-		super(TokenWhitespace.TAGNAME, start_char)
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super(TokenWhitespace.TAGNAME, start_char, ...more_chars)
 	}
 }
 export abstract class TokenComment extends Token {
@@ -93,40 +95,41 @@ export abstract class TokenComment extends Token {
 	constructor(
 		private readonly kind: string,
 		start_char: Char,
+		...more_chars: Char[]
 	) {
-		super(TokenComment.TAGNAME, start_char)
+		super(TokenComment.TAGNAME, start_char, ...more_chars)
 	}
 	serialize(): string {
 		return super.serialize(this.kind ? `kind="${this.kind}"` : '')
 	}
 }
-class TokenCommentLine      extends TokenComment { constructor(start_char: Char) { super('LINE'       , start_char) } }
-class TokenCommentMulti     extends TokenComment { constructor(start_char: Char) { super('MULTI'      , start_char) } }
-class TokenCommentMultiNest extends TokenComment { constructor(start_char: Char) { super('MULTI_NEST' , start_char) } }
-class TokenCommentDoc       extends TokenComment { constructor(start_char: Char) { super('DOC'        , start_char) } }
+class TokenCommentLine      extends TokenComment { constructor(start_char: Char, ...more_chars: Char[]) { super('LINE'       , start_char, ...more_chars) } }
+class TokenCommentMulti     extends TokenComment { constructor(start_char: Char, ...more_chars: Char[]) { super('MULTI'      , start_char, ...more_chars) } }
+class TokenCommentMultiNest extends TokenComment { constructor(start_char: Char, ...more_chars: Char[]) { super('MULTI_NEST' , start_char, ...more_chars) } }
+class TokenCommentDoc       extends TokenComment { constructor(start_char: Char, ...more_chars: Char[]) { super('DOC'        , start_char, ...more_chars) } }
 export class TokenString extends Token {
 	static readonly TAGNAME: string = 'STRING'
 	static readonly CHARS_LITERAL_DELIM        : '\'' = `'`
 	static readonly CHARS_TEMPLATE_DELIM       : '`'  = '`'
 	static readonly CHARS_TEMPLATE_INTERP_START: '{{' = '{{'
 	static readonly CHARS_TEMPLATE_INTERP_END  : '}}' = '}}'
-	constructor(start_char: Char) {
-		super(TokenString.TAGNAME, start_char)
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super(TokenString.TAGNAME, start_char, ...more_chars)
 	}
 }
 export class TokenNumber extends Token {
 	static readonly TAGNAME: string = 'NUMBER'
 	static readonly CHARS: readonly string[] = '0 1 2 3 4 5 6 7 8 9'.split(' ')
-	constructor(start_char: Char) {
-		super(TokenNumber.TAGNAME, start_char)
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super(TokenNumber.TAGNAME, start_char, ...more_chars)
 	}
 }
 export class TokenWord extends Token {
 	static readonly TAGNAME: string = 'WORD'
 	static readonly CHARS_START: readonly string[] = ''.split(' ')
 	static readonly CHARS_REST : readonly string[] = ''.split(' ')
-	constructor(start_char: Char) {
-		super(TokenWord.TAGNAME, start_char)
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super(TokenWord.TAGNAME, start_char, ...more_chars)
 	}
 }
 export class TokenPunctuator extends Token {
@@ -134,8 +137,8 @@ export class TokenPunctuator extends Token {
 	static readonly CHARS_1: readonly string[] = '+ - * / ^ ( )'.split(' ')
 	static readonly CHARS_2: readonly string[] = ''.split(' ')
 	static readonly CHARS_3: readonly string[] = ''.split(' ')
-	constructor(start_char: Char) {
-		super(TokenPunctuator.TAGNAME, start_char)
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super(TokenPunctuator.TAGNAME, start_char, ...more_chars)
 	}
 }
 
@@ -226,8 +229,7 @@ export default class Lexer {
 				token = new TokenFilebound(this.iterator_result_char.value)
 				this.advance()
 			} else if (Char.eq(TokenComment.CHARS_LINE, this.c0, this.c1, this.c2)) { // we found a line comment
-				token = new TokenCommentLine(this.iterator_result_char.value)
-				token.add(this.c1 !, this.c2 !)
+				token = new TokenCommentLine(this.iterator_result_char.value, this.c1 !, this.c2 !)
 				this.advance(TokenComment.CHARS_LINE.length)
 				while (!this.iterator_result_char.done && !Char.eq('\n', this.c0)) {
 					if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
@@ -237,8 +239,7 @@ export default class Lexer {
 				// do not add '\n' to token
 			} else if (Char.eq('"', this.c0)) { // we found the start of a doc comment or multiline comment
 				if (this.state_newline && Char.eq(TokenComment.CHARS_DOC_START + '\n', this.c0, this.c1, this.c2, this.c3)) { // we found a doc comment
-					token = new TokenCommentDoc(this.iterator_result_char.value)
-					token.add(this.c1 !, this.c2 !, this.c3 !)
+					token = new TokenCommentDoc(this.iterator_result_char.value, this.c1 !, this.c2 !, this.c3 !)
 					this.advance((TokenComment.CHARS_DOC_START + '\n').length)
 					while (!this.iterator_result_char.done) {
 						if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
@@ -254,8 +255,7 @@ export default class Lexer {
 					token.add(this.c0, this.c1 !, this.c2 !)
 					this.advance(TokenComment.CHARS_DOC_END.length)
 				} else if (Char.eq(TokenComment.CHARS_MULTI_NEST_START, this.c0, this.c1)) { // we found a nestable multiline comment
-					token = new TokenCommentMultiNest(this.iterator_result_char.value)
-					token.add(this.c1 !)
+					token = new TokenCommentMultiNest(this.iterator_result_char.value, this.c1 !)
 					this.advance(TokenComment.CHARS_MULTI_NEST_START.length)
 					this.comment_multiline_level++;
 					while (this.comment_multiline_level !== 0) {
@@ -345,12 +345,10 @@ export default class Lexer {
 					this.advance()
 				}
 			} else if (Char.inc(TokenPunctuator.CHARS_3, this.c0, this.c1, this.c2)) {
-				token = new TokenPunctuator(this.iterator_result_char.value)
-				token.add(this.c1 !, this.c2 !)
+				token = new TokenPunctuator(this.iterator_result_char.value, this.c1 !, this.c2 !)
 				this.advance(3)
 			} else if (Char.inc(TokenPunctuator.CHARS_2, this.c0, this.c1)) {
-				token = new TokenPunctuator(this.iterator_result_char.value)
-				token.add(this.c1 !)
+				token = new TokenPunctuator(this.iterator_result_char.value, this.c1 !)
 				this.advance(2)
 			} else if (Char.inc(TokenPunctuator.CHARS_1, this.c0)) {
 				token = new TokenPunctuator(this.iterator_result_char.value)
