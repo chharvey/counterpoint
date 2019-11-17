@@ -9,6 +9,42 @@ export const ETX: '\u0003' = '\u0003'
  * @see http://parsingintro.sourceforge.net/#contents_item_4.1
  */
 export class Char {
+	/**
+	 * Test whether the characters given, when joined, equal the expected string.
+	 * If any character argument is `null`, return `false`.
+	 *
+	 * @example
+	 * let a: Char;
+	 * let b: Char;
+	 * a.cargo; // 'a'
+	 * b.cargo; // 'b'
+	 * Char.eq('ab', a, b); // true
+	 * @param   expected - the expected string
+	 * @param   tests    - one or more Char objects to concatenate and test
+	 * @returns            Does the concatenation of the tests’ cargos equal the expected string?
+	 */
+	static eq(expected: string, ...tests: (Char|null)[]): boolean {
+		return tests.every((char) => char !== null) && tests.map((char) => char !.cargo).join('') === expected
+	}
+	/**
+	 * Test whether the characters given, when joined, is included in the array of expected strings.
+	 * If any character argument is `null`, return `false`.
+	 *
+	 * @example
+	 * let a: Char;
+	 * let b: Char;
+	 * a.cargo; // 'a'
+	 * b.cargo; // 'b'
+	 * Char.inc(['ab', 'bc'], a, b); // true
+	 * @param   expected - the array of expected strings
+	 * @param   tests    - one or more Char objects to concatenate and test
+	 * @returns            Is the concatenation of the tests’ cargos included in the array of expected strings?
+	 */
+	static inc(expected: readonly string[], ...tests: (Char|null)[]): boolean {
+		return tests.every((char) => char !== null) && expected.includes(tests.map((char) => char !.cargo).join(''))
+	}
+
+
 	/** The actual character string. */
 	readonly cargo: string;
 	/** Zero-based line number of this character (first line is line 0).*/

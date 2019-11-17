@@ -44,10 +44,10 @@ export abstract class Token implements Serializable {
 
 	/**
 	 * Add to this Token’s cargo.
-	 * @param cargo the string to append
+	 * @param chars - the characters to append
 	 */
-	add(cargo: string): void {
-		this._cargo += cargo
+	add(...chars: Char[]): void {
+		this._cargo += chars.map((char) => char.cargo).join('')
 	}
 
 	/**
@@ -157,12 +157,12 @@ export default class Lexer {
 	/** How many levels of nested string templates are we in? */
 	private template_level: number /* bigint */ = 0
 
-	/** The current character’s cargo. */
-	private c0: string;
-	/** The lookahead(1) character’s cargo. */
-	private c1: string|null;
-	/** The lookahead(2) character’s cargo. */
-	private c2: string|null;
+	/** The current character. */
+	private c0: Char;
+	/** The lookahead(1) character. */
+	private c1: Char|null;
+	/** The lookahead(2) character. */
+	private c2: Char|null;
 
 	/**
 	 * Construct a new Lexer object.
@@ -174,11 +174,9 @@ export default class Lexer {
 		this.scanner = new Scanner(this.source_text).generate()
 		this.iterator_result_char = this.scanner.next()
 
-		this.c0 = this.iterator_result_char.value.cargo
-		const l1: Char|null = this.iterator_result_char.value.lookahead()
-		const l2: Char|null = this.iterator_result_char.value.lookahead(2)
-		this.c1 = l1 && l1.cargo
-		this.c2 = l2 && l2.cargo
+		this.c0 = this.iterator_result_char.value
+		this.c1 = this.c0.lookahead()
+		this.c2 = this.c0.lookahead(2)
 	}
 
 	/**
@@ -191,11 +189,9 @@ export default class Lexer {
 		if (n === 1) {
 			this.iterator_result_char = this.scanner.next()
 			if (!this.iterator_result_char.done) {
-				this.c0 = this.iterator_result_char.value.cargo
-				const l1 = this.iterator_result_char.value.lookahead()
-				const l2 = this.iterator_result_char.value.lookahead(2)
-				this.c1 = l1 && l1.cargo
-				this.c2 = l2 && l2.cargo
+				this.c0 = this.iterator_result_char.value
+				this.c1 = this.c0.lookahead()
+				this.c2 = this.c0.lookahead(2)
 			}
 		} else {
 			this.advance(n - 1)
@@ -209,10 +205,10 @@ export default class Lexer {
 	 */
 	* generate(): Iterator<Token> {
 		while (!this.iterator_result_char.done) {
-			if (TokenWhitespace.CHARS.includes(this.c0)) {
+			if (Char.inc(TokenWhitespace.CHARS, this.c0)) {
 				const wstoken: TokenWhitespace = new TokenWhitespace(this.iterator_result_char.value)
 				this.advance()
-				while (!this.iterator_result_char.done && TokenWhitespace.CHARS.includes(this.c0)) {
+				while (!this.iterator_result_char.done && Char.inc(TokenWhitespace.CHARS, this.c0)) {
 					wstoken.add(this.c0)
 					this.advance()
 				}
@@ -222,34 +218,32 @@ export default class Lexer {
 			}
 
 			let token: Token;
-			if (TokenFilebound.CHARS.includes(this.c0)) {
+			if (Char.inc(TokenFilebound.CHARS, this.c0)) {
 				token = new TokenFilebound(this.iterator_result_char.value)
 				this.advance()
-			} else if (this.c0 + this.c1 + this.c2 === TokenComment.CHARS_LINE) { // we found a line comment
+			} else if (Char.eq(TokenComment.CHARS_LINE, this.c0, this.c1, this.c2)) { // we found a line comment
 				token = new TokenCommentLine(this.iterator_result_char.value)
-				token.add(this.c1 ! + this.c2 !)
+				token.add(this.c1 !, this.c2 !)
 				this.advance(TokenComment.CHARS_LINE.length)
-				while (!this.iterator_result_char.done && this.c0 !== '\n') {
-					if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
+				while (!this.iterator_result_char.done && !Char.eq('\n', this.c0)) {
+					if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
 					token.add(this.c0)
 					this.advance()
 				}
 				// do not add '\n' to token
-			} else if ((this.c0 as string) === '"') { // we found the start of a doc comment or multiline comment
-				if (this.state_newline && this.c0 + this.c1 + this.c2 === TokenComment.CHARS_DOC_START) { // we might have found a doc comment
-					let l3: Char|null   = this.iterator_result_char.value.lookahead(3)
-					let c3: string|null = l3 && l3.cargo
-					if (c3 === '\n') { // it is definitely a doc comment
+			} else if (Char.eq('"', this.c0)) { // we found the start of a doc comment or multiline comment
+				if (this.state_newline && Char.eq(TokenComment.CHARS_DOC_START, this.c0, this.c1, this.c2)) { // we might have found a doc comment
+					let c3: Char|null   = this.iterator_result_char.value.lookahead(3)
+					if (Char.eq('\n', c3)) { // it is definitely a doc comment
 						token = new TokenCommentDoc(this.iterator_result_char.value)
-						token.add(this.c1 ! + this.c2 ! + c3)
+						token.add(this.c1 !, this.c2 !, c3 !)
 						this.advance((TokenComment.CHARS_DOC_START + '\n').length)
 						while (!this.iterator_result_char.done) {
-							if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
-							if (this.c0 + this.c1 + this.c2 === TokenComment.CHARS_DOC_END) {
-								l3 = this.iterator_result_char.value.lookahead(3)
-								c3 = l3 && l3.cargo
+							if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
+							if (Char.eq(TokenComment.CHARS_DOC_END, this.c0, this.c1, this.c2)) {
+								c3 = this.iterator_result_char.value.lookahead(3)
 								const only_indented: boolean = token.cargo.slice(token.cargo.lastIndexOf('\n') + 1).trim() === ''
-								if (c3 === '\n' && only_indented) {
+								if (Char.eq('\n', c3) && only_indented) {
 									break;
 								}
 							}
@@ -257,23 +251,23 @@ export default class Lexer {
 							this.advance()
 						}
 						// add ending delim to token
-						token.add(TokenComment.CHARS_DOC_END)
+						token.add(this.c0, this.c1 !, this.c2 !)
 						this.advance(TokenComment.CHARS_DOC_END.length)
 					} else { // it was two multiline comments juxtaposed
 						token = new TokenCommentMulti(this.iterator_result_char.value)
 						token.add(this.c1 !)
 						this.advance(2)
 					}
-				} else if (this.c0 + this.c1 === TokenComment.CHARS_MULTI_NEST_START) { // we found a nestable multiline comment
+				} else if (Char.eq(TokenComment.CHARS_MULTI_NEST_START, this.c0, this.c1)) { // we found a nestable multiline comment
 					token = new TokenCommentMultiNest(this.iterator_result_char.value)
 					token.add(this.c1 !)
 					this.advance(TokenComment.CHARS_MULTI_NEST_START.length)
 					this.comment_multiline_level++;
 					while (this.comment_multiline_level !== 0) {
-						while (!this.iterator_result_char.done && this.c0 + this.c1 !== TokenComment.CHARS_MULTI_NEST_END) {
-							if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
-							if (this.c0 + this.c1 === TokenComment.CHARS_MULTI_NEST_START) {
-								token.add(TokenComment.CHARS_MULTI_NEST_START)
+						while (!this.iterator_result_char.done && !Char.eq(TokenComment.CHARS_MULTI_NEST_END, this.c0, this.c1)) {
+							if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
+							if (Char.eq(TokenComment.CHARS_MULTI_NEST_START, this.c0, this.c1)) {
+								token.add(this.c0, this.c1 !)
 								this.advance(TokenComment.CHARS_MULTI_NEST_START.length)
 								this.comment_multiline_level++
 							} else {
@@ -282,29 +276,29 @@ export default class Lexer {
 							}
 						}
 						// add ending delim to token
-						token.add(TokenComment.CHARS_MULTI_NEST_END)
+						token.add(this.c0, this.c1 !)
 						this.advance(TokenComment.CHARS_MULTI_NEST_END.length)
 						this.comment_multiline_level--;
 					}
 				} else { // we found a non-nestable multiline comment
 					token = new TokenCommentMulti(this.iterator_result_char.value)
 					this.advance()
-					while (!this.iterator_result_char.done && this.c0 !== TokenComment.CHARS_MULTI_END) {
-						if (this.c0 === ETX) throw new Error('Found end of file before end of comment')
+					while (!this.iterator_result_char.done && !Char.eq(TokenComment.CHARS_MULTI_END, this.c0)) {
+						if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
 						token.add(this.c0)
 						this.advance()
 					}
 					// add ending delim to token
-					token.add(TokenComment.CHARS_MULTI_END)
+					token.add(this.c0)
 					this.advance(TokenComment.CHARS_MULTI_END.length)
 				}
-			} else if ((this.c0 as string) === TokenString.CHARS_LITERAL_DELIM) {
+			} else if (Char.eq(TokenString.CHARS_LITERAL_DELIM, this.c0)) {
 				token = new TokenString(this.iterator_result_char.value)
 				this.advance()
-				while (!this.iterator_result_char.done && this.c0 !== TokenString.CHARS_LITERAL_DELIM) {
-					if (this.c0 === ETX) throw new Error('Found end of file before end of string')
-					if (this.c0 + this.c1 === '\\' + TokenString.CHARS_LITERAL_DELIM) { // we found an escaped string delimiter
-						token.add(this.c0 + this.c1)
+				while (!this.iterator_result_char.done && !Char.eq(TokenString.CHARS_LITERAL_DELIM, this.c0)) {
+					if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of string')
+					if (Char.eq('\\' + TokenString.CHARS_LITERAL_DELIM, this.c0, this.c1)) { // we found an escaped string delimiter
+						token.add(this.c0, this.c1 !)
 						this.advance(2)
 						continue;
 					}
@@ -312,28 +306,28 @@ export default class Lexer {
 					this.advance()
 				}
 				// add ending delim to token
-				token.add(TokenString.CHARS_LITERAL_DELIM)
+				token.add(this.c0)
 				this.advance(TokenString.CHARS_LITERAL_DELIM.length)
-			} else if (this.c0 === TokenString.CHARS_TEMPLATE_DELIM || this.c0 + this.c1 === TokenString.CHARS_TEMPLATE_INTERP_END && this.template_level) {
+			} else if (Char.eq(TokenString.CHARS_TEMPLATE_DELIM, this.c0) || Char.eq(TokenString.CHARS_TEMPLATE_INTERP_END, this.c0, this.c1) && this.template_level) {
 				token = new TokenString(this.iterator_result_char.value)
 				this.advance()
 				this.template_level++;
 				while (!this.iterator_result_char.done) {
-					if (this.c0 === ETX) throw new Error('Found end of file before end of string')
-					if (this.c0 + this.c1 === '\\' + TokenString.CHARS_TEMPLATE_DELIM) { // we found an escaped string delimiter
-						token.add(this.c0 + this.c1)
+					if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of string')
+					if (Char.eq('\\' + TokenString.CHARS_TEMPLATE_DELIM, this.c0, this.c1)) { // we found an escaped string delimiter
+						token.add(this.c0, this.c1 !)
 						this.advance(2)
 						continue;
 					}
-					if (this.c0 + this.c1 === TokenString.CHARS_TEMPLATE_INTERP_START) {
+					if (Char.eq(TokenString.CHARS_TEMPLATE_INTERP_START, this.c0, this.c1)) {
 						// add interpolation delim to token, end the token
-						token.add(TokenString.CHARS_TEMPLATE_INTERP_START)
+						token.add(this.c0, this.c1 !)
 						this.advance(TokenString.CHARS_TEMPLATE_INTERP_START.length)
 						break;
 					}
-					if (this.c0 === TokenString.CHARS_TEMPLATE_DELIM) {
+					if (Char.eq(TokenString.CHARS_TEMPLATE_DELIM, this.c0)) {
 						// add ending delim to token
-						token.add(TokenString.CHARS_TEMPLATE_DELIM)
+						token.add(this.c0)
 						this.advance(TokenString.CHARS_TEMPLATE_DELIM.length)
 						this.template_level--;
 						break;
@@ -341,30 +335,30 @@ export default class Lexer {
 					token.add(this.c0)
 					this.advance()
 				}
-			} else if (TokenNumber.CHARS.includes(this.c0)) {
+			} else if (Char.inc(TokenNumber.CHARS, this.c0)) {
 				token = new TokenNumber(this.iterator_result_char.value)
 				this.advance()
-				while (!this.iterator_result_char.done && TokenNumber.CHARS.includes(this.c0)) {
+				while (!this.iterator_result_char.done && Char.inc(TokenNumber.CHARS, this.c0)) {
 					token.add(this.c0)
 					this.advance()
 				}
-			} else if (TokenWord.CHARS_START.includes(this.c0)) {
+			} else if (Char.inc(TokenWord.CHARS_START, this.c0)) {
 				token = new TokenWord(this.iterator_result_char.value)
 				this.advance()
-				while (!this.iterator_result_char.done && TokenWord.CHARS_REST.includes(this.c0)) {
+				while (!this.iterator_result_char.done && Char.inc(TokenWord.CHARS_REST, this.c0)) {
 					token.add(this.c0)
 					this.advance()
 				}
-			} else if (TokenPunctuator.CHARS_1.includes(this.c0)) {
+			} else if (Char.inc(TokenPunctuator.CHARS_1, this.c0)) {
 				token = new TokenPunctuator(this.iterator_result_char.value)
-				let first_char: string = this.c0
+				const first_char: Char = this.c0
 				this.advance() // read past the first character
 				// TODO clean this up when we get to multi-char punctuators
-				if (TokenPunctuator.CHARS_2.includes(first_char + this.c0)) {
+				if (Char.inc(TokenPunctuator.CHARS_2, first_char, this.c0)) {
 					token.add(this.c0)
-					let second_char: string = this.c0
+					const second_char: Char = this.c0
 					this.advance() // read past the second character
-					if (TokenPunctuator.CHARS_3.includes(first_char + second_char + this.c0)) {
+					if (Char.inc(TokenPunctuator.CHARS_3, first_char, second_char, this.c0)) {
 						token.add(this.c0)
 						this.advance() // read past the third character
 					}
