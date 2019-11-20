@@ -54,17 +54,13 @@ export abstract class Token implements Serializable {
 	/**
 	 * @implements Serializable
 	 */
-	serialize(): string {
-		const tagname: string = this.tagname
-		const attributes: string = (this.cargo !== STX && this.cargo !== ETX) ? ' ' + [
+	serialize(...attrs: string[]): string {
+		const attributes: string = ' ' + [
 			`line="${this.line_index+1}"`,
 			`col="${this.col_index+1}"`,
-		].join(' ') : ''
-		const contents: string = new Map<string, string>([
-			[STX, '\u2402' /* SYMBOL FOR START OF TEXT */],
-			[ETX, '\u2403' /* SYMBOL FOR END OF TEXT   */],
-		]).get(this.cargo) || this.cargo
-		return `<${tagname}${attributes}>${contents}</${tagname}>`
+			...attrs
+		].join(' ').trim()
+		return `<${this.tagname}${attributes}>${this.cargo}</${this.tagname}>`
 	}
 }
 export class TokenFilebound extends Token {
@@ -73,6 +69,16 @@ export class TokenFilebound extends Token {
 	value: boolean|null = null
 	constructor(start_char: Char) {
 		super(TokenFilebound.TAGNAME, start_char)
+	}
+	serialize(): string {
+		const attributes: string = ' ' + [
+			this.value !== null ? `value="${this.value}"` : ''
+		].join(' ').trim()
+		const contents: string = new Map<string, string>([
+			[STX, '\u2402' /* SYMBOL FOR START OF TEXT */],
+			[ETX, '\u2403' /* SYMBOL FOR END OF TEXT   */],
+		]).get(this.cargo) !
+		return `<${TokenFilebound.TAGNAME}${attributes}>${contents}</${TokenFilebound.TAGNAME}>`
 	}
 }
 export class TokenWhitespace extends Token {
@@ -94,6 +100,9 @@ export class TokenString extends Token {
 	constructor(start_char: Char) {
 		super(TokenString.TAGNAME, start_char)
 	}
+	serialize(): string {
+		return super.serialize(this.value !== null ? `value="${this.value}"` : '')
+	}
 }
 export class TokenNumber extends Token {
 	static readonly TAGNAME: string = 'NUMBER'
@@ -101,6 +110,9 @@ export class TokenNumber extends Token {
 	value: number|null = null
 	constructor(start_char: Char) {
 		super(TokenNumber.TAGNAME, start_char)
+	}
+	serialize(): string {
+		return super.serialize(this.value !== null ? `value="${this.value}"` : '')
 	}
 }
 export class TokenWord extends Token {
@@ -110,6 +122,9 @@ export class TokenWord extends Token {
 	id: number|null = null
 	constructor(start_char: Char) {
 		super(TokenWord.TAGNAME, start_char)
+	}
+	serialize(): string {
+		return super.serialize(this.id !== null ? `id="${this.id}"` : '')
 	}
 }
 export class TokenPunctuator extends Token {
