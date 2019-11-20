@@ -1,10 +1,10 @@
-FileBound ::= #x0002 /* START OF TEXT */
-|             #x0003 /* END OF TEXT   */
+FileBound ::= #x02 /* START OF TEXT */
+|             #x03 /* END OF TEXT   */
 
-Whitespace ::= #x0020 /* SPACE                     */
-|              #x0009 /* CHARACTER TABULATION `\t` */
-|              #x000A /* LINE FEED (LF)       `\n` */
-|              #x000D /* CARRIAGE RETURN (CR) `\r` */
+Whitespace ::= #x20 /* SPACE                     */
+|              #x09 /* CHARACTER TABULATION `\t` */
+|              #x0A /* LINE FEED (LF)       `\n` */
+|              #x0D /* CARRIAGE RETURN (CR) `\r` */
 
 /* more whitespace characters:
 #x000B	LINE TABULATION
@@ -35,21 +35,21 @@ Whitespace ::= #x0020 /* SPACE                     */
 
 Comment ::= CommentSingle | CommentMulti | CommentDoc
 
-CommentLine ::= '---' [^#x000A#x000D]*
+CommentLine ::= '---' [^#x0A#x0D#x03]*
 
-CommentMulti ::= '"' [^"]* '"'
+CommentMulti ::= '"' [^"#x03]* '"'
 
 CommentMultiNest ::= '"{' CommentMultiNestChars? '}"'
-CommentMultiNestChars ::= [^}"] CommentMultiNestChars?
-|                         "}" ([^"] CommentMultiNestChars?)?
-|                         '"' ([^{] CommentMultiNestChars?)?
+CommentMultiNestChars ::= [^}"#x03] CommentMultiNestChars?
+|                         "}" ([^"#x03] CommentMultiNestChars?)?
+|                         '"' ([^{#x03] CommentMultiNestChars?)?
 |                         CommentMultiNest CommentMultiNestChars?
 
-CommentDoc ::= /*? following: #x0A [#x09#x20]* ?*/ '"""' #x0A (/*? unequal: [#x09#x20]* '"""' ?*/ #x0A)? [#x09#x20]* '"""' /*? lookahead: #x0A ?*/
+CommentDoc ::= /*? following: #x0A [#x09#x20]* ?*/'"""' #x0A (/*? unequal: [#x09#x20]* '"""' ?*/[^#x03]* #x0A)? [#x09#x20]* '"""' /*? lookahead: #x0A ?*/
 
 
 
-StringLiteral::= "'" ( [^ ' \] | CharEscaped | "\'" )* "'"
+StringLiteral::= "'" ([^'\#x03] | CharEscaped | "\'")* "'"
 
 CharEscaped ::= "\" /* #x5C */  ( "\" /* #x5C */  | "/" /* #x2F */  | "b" /* #x62 */  | "f" /* #x66 */  | "n" /* #x6E */  | "r" /* #x72 */  | "t" /* #x74 */  | "u" /* #x75 */  [0-9a-f]* )
 
@@ -58,7 +58,7 @@ StringTemplateHead   ::= "`"  TemplateCharacters? "{{"
 StringTempalteMiddle ::= "}}" TemplateCharacters? "{{"
 StringTempalteTail   ::= "}}" TemplateCharacters? "`"
 
-TemplateCharacters ::= ( [^ ` {] | "\`") TemplateCharacters? | "{" ( [^ ` {] TemplateCharacters? )?
+TemplateCharacters ::= ( [^`{#x03] | "\`") TemplateCharacters? | "{" ([^`{#x03] TemplateCharacters?)?
 
 
 
