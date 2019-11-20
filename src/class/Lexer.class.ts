@@ -56,24 +56,30 @@ export abstract class Token implements Serializable {
 	 * @implements Serializable
 	 */
 	serialize(...attrs: string[]): string {
-		const tagname: string = this.tagname
-		const attributes: string = (this.cargo !== STX && this.cargo !== ETX) ? ' ' + [
+		const attributes: string = ' ' + [
 			`line="${this.line_index+1}"`,
 			`col="${this.col_index+1}"`,
 			...attrs
-		].join(' ').trim() : ''
-		const contents: string = new Map<string, string>([
-			[STX, '\u2402' /* SYMBOL FOR START OF TEXT */],
-			[ETX, '\u2403' /* SYMBOL FOR END OF TEXT   */],
-		]).get(this.cargo) || this.cargo
-		return `<${tagname}${attributes}>${contents}</${tagname}>`
+		].join(' ').trim()
+		return `<${this.tagname}${attributes}>${this.cargo}</${this.tagname}>`
 	}
 }
 export class TokenFilebound extends Token {
 	static readonly TAGNAME: string = 'FILEBOUND'
 	static readonly CHARS: readonly string[] = [STX, ETX]
+	value: boolean|null = null
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenFilebound.TAGNAME, start_char, ...more_chars)
+	}
+	serialize(): string {
+		const attributes: string = ' ' + [
+			this.value !== null ? `value="${this.value}"` : ''
+		].join(' ').trim()
+		const contents: string = new Map<string, string>([
+			[STX, '\u2402' /* SYMBOL FOR START OF TEXT */],
+			[ETX, '\u2403' /* SYMBOL FOR END OF TEXT   */],
+		]).get(this.cargo) !
+		return `<${TokenFilebound.TAGNAME}${attributes}>${contents}</${TokenFilebound.TAGNAME}>`
 	}
 }
 export class TokenWhitespace extends Token {
@@ -113,23 +119,35 @@ export class TokenString extends Token {
 	static readonly CHARS_TEMPLATE_DELIM       : '`'  = '`'
 	static readonly CHARS_TEMPLATE_INTERP_START: '{{' = '{{'
 	static readonly CHARS_TEMPLATE_INTERP_END  : '}}' = '}}'
+	value: string|null = null
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenString.TAGNAME, start_char, ...more_chars)
+	}
+	serialize(): string {
+		return super.serialize(this.value !== null ? `value="${this.value}"` : '')
 	}
 }
 export class TokenNumber extends Token {
 	static readonly TAGNAME: string = 'NUMBER'
 	static readonly CHARS: readonly string[] = '0 1 2 3 4 5 6 7 8 9'.split(' ')
+	value: number|null = null
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenNumber.TAGNAME, start_char, ...more_chars)
+	}
+	serialize(): string {
+		return super.serialize(this.value !== null ? `value="${this.value}"` : '')
 	}
 }
 export class TokenWord extends Token {
 	static readonly TAGNAME: string = 'WORD'
 	static readonly CHARS_START: readonly string[] = ''.split(' ')
 	static readonly CHARS_REST : readonly string[] = ''.split(' ')
+	id: number|null = null
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenWord.TAGNAME, start_char, ...more_chars)
+	}
+	serialize(): string {
+		return super.serialize(this.id !== null ? `id="${this.id}"` : '')
 	}
 }
 export class TokenPunctuator extends Token {
