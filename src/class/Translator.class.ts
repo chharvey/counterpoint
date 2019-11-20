@@ -45,7 +45,7 @@ export default class Translator {
 	 * Construct and return the next token in the source text.
 	 * @returns the next token, if it does not contain whitespace
 	 */
-	* generate(): Iterator<Token|null> {
+	* generate(): Iterator<Token> {
 		while (!this.iterator_result_token.done) {
 			if (this.t0 instanceof TokenFilebound) {
 				this.t0.value = new Map<string, boolean>([
@@ -54,9 +54,9 @@ export default class Translator {
 				]).get(this.t0.cargo) !
 				yield this.t0
 			} else if (this.t0 instanceof TokenWhitespace) {
-				yield null // we do not want to send whitespace to the parser
+				// we do not want to send whitespace to the parser
 			} else if (this.t0 instanceof TokenComment) {
-				yield null // we do not want to send comments to the parser
+				// we do not want to send comments to the parser
 			} else if (this.t0 instanceof TokenString) {
 				this.t0.value = this.t0.cargo // here is where we perform character escapes
 				yield this.t0
