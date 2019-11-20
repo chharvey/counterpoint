@@ -267,6 +267,8 @@ export default class Lexer {
 						) {
 							token.add(this.c0)
 							this.advance()
+						} else {
+							break;
 						}
 					}
 					// add ending delim to token
