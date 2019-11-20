@@ -70,6 +70,7 @@ export abstract class Token implements Serializable {
 export class TokenFilebound extends Token {
 	static readonly TAGNAME: string = 'FILEBOUND'
 	static readonly CHARACTERS: readonly string[] = [STX, ETX]
+	value: boolean|null = null
 	constructor(start_char: Char) {
 		super(TokenFilebound.TAGNAME, start_char)
 	}
@@ -89,6 +90,7 @@ export class TokenComment extends Token {
 }
 export class TokenString extends Token {
 	static readonly TAGNAME: string = 'STRING'
+	value: string|null = null
 	constructor(start_char: Char) {
 		super(TokenString.TAGNAME, start_char)
 	}
@@ -96,6 +98,7 @@ export class TokenString extends Token {
 export class TokenNumber extends Token {
 	static readonly TAGNAME: string = 'NUMBER'
 	static readonly CHARACTERS: readonly string[] = '0 1 2 3 4 5 6 7 8 9'.split(' ')
+	value: number|null = null
 	constructor(start_char: Char) {
 		super(TokenNumber.TAGNAME, start_char)
 	}
@@ -104,6 +107,7 @@ export class TokenWord extends Token {
 	static readonly TAGNAME: string = 'WORD'
 	static readonly CHARACTERS_START: readonly string[] = ''.split(' ')
 	static readonly CHARACTERS_REST : readonly string[] = ''.split(' ')
+	id: number|null = null
 	constructor(start_char: Char) {
 		super(TokenWord.TAGNAME, start_char)
 	}
