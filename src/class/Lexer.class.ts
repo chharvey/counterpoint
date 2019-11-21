@@ -130,6 +130,7 @@ export class TokenString extends Token {
 export class TokenNumber extends Token {
 	static readonly TAGNAME: string = 'NUMBER'
 	static readonly CHARS: readonly string[] = '0 1 2 3 4 5 6 7 8 9'.split(' ')
+	static readonly DIGITS_HEX: readonly string[] = '0 1 2 3 4 5 6 7 8 9 a b c d e f'.split('')
 	value: number|null = null
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenNumber.TAGNAME, start_char, ...more_chars)
@@ -312,13 +313,37 @@ export default class Lexer {
 				this.advance()
 				while (!this.iterator_result_char.done && !Char.eq(TokenString.CHARS_LITERAL_DELIM, this.c0)) {
 					if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of string')
-					if (Char.eq('\\' + TokenString.CHARS_LITERAL_DELIM, this.c0, this.c1)) { // we found an escaped string delimiter
-						token.add(this.c0, this.c1 !)
-						this.advance(2)
-						continue;
+					if (Char.eq('\\', this.c0)) { // possible escape or line continuation
+						if (Char.inc([TokenString.CHARS_LITERAL_DELIM, '\\', 's','t','n','r'], this.c1)) { // an escaped character literal
+							token.add(this.c0, this.c1 !)
+							this.advance(2)
+						} else if (Char.eq('u{', this.c1, this.c2)) { // an escape sequence
+							token.add(this.c0, this.c1 !, this.c2 !)
+							this.advance(3)
+							while(!Char.eq('}', this.c0)) {
+								if (Char.inc(TokenNumber.DIGITS_HEX, this.c0)) {
+									token.add(this.c0)
+									this.advance()
+								} else {
+									throw new Error('Invalid escape sequence.')
+								}
+							}
+							token.add(this.c0)
+							this.advance()
+						} else if (Char.eq('\n', this.c1)) { // a line continuation (LF)
+							token.add(this.c0, this.c1 !)
+							this.advance(2)
+						} else if (Char.eq('\r\n', this.c1, this.c2)) { // a line continuation (CRLF)
+							token.add(this.c0, this.c1 !, this.c2 !)
+							this.advance(3)
+						} else { // a backslash is used, but it has no function
+							token.add(this.c0)
+							this.advance()
+						}
+					} else {
+						token.add(this.c0)
+						this.advance()
 					}
-					token.add(this.c0)
-					this.advance()
 				}
 				// add ending delim to token
 				token.add(this.c0)

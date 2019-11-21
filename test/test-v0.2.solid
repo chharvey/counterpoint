@@ -52,7 +52,15 @@ comment}" *  3
 
 4 * 'a string literal with an \' escaped apostrophe and \`escaped back-tick (both escaped)'
 
-'a string literal with an \u0061 escape sequence (escaped)'
+'a string literal with escaped characters: \s (space), \t (tab), \n (LF), \r (CR).'
+
+'a string literal with a unicode \u{0061} escape sequence (escaped)'
+
+'a string literal with an empty unicode \u{} escape sequence (default escaped to U+0000)'
+
+--- 'a string literal with an invalid escape sequence \u{6g}'
+
+--- 'a string literal with an invalid escape sequence \u{61'
 
 `a string template with an \` escaped back-tick (which will be escaped)
 and an \' escaped apostrophe (which won’t)`
