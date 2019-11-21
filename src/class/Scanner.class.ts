@@ -20,10 +20,12 @@ export class Char {
 	 * b.cargo; // 'b'
 	 * Char.eq('ab', a, b); // true
 	 * @param   expected - the expected string
-	 * @param   tests    - one or more Char objects to concatenate and test
+	 * @param   test     - the first Char object test
+	 * @param   tests    - succeeding Char objects to concatenate and test
 	 * @returns            Does the concatenation of the tests’ cargos equal the expected string?
 	 */
-	static eq(expected: string, ...tests: (Char|null)[]): boolean {
+	static eq(expected: string, test: Char|null, ...tests: readonly (Char|null)[]): boolean {
+		tests = [test, ...tests]
 		return tests.every((char) => char !== null) && tests.map((char) => char !.cargo).join('') === expected
 	}
 	/**
@@ -37,10 +39,12 @@ export class Char {
 	 * b.cargo; // 'b'
 	 * Char.inc(['ab', 'bc'], a, b); // true
 	 * @param   expected - the array of expected strings
-	 * @param   tests    - one or more Char objects to concatenate and test
+	 * @param   test     - the first Char object test
+	 * @param   tests    - succeeding Char objects to concatenate and test
 	 * @returns            Is the concatenation of the tests’ cargos included in the array of expected strings?
 	 */
-	static inc(expected: readonly string[], ...tests: (Char|null)[]): boolean {
+	static inc(expected: readonly string[], test: Char|null, ...tests: readonly (Char|null)[]): boolean {
+		tests = [test, ...tests]
 		return tests.every((char) => char !== null) && expected.includes(tests.map((char) => char !.cargo).join(''))
 	}
 
