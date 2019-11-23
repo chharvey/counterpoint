@@ -65,7 +65,9 @@ StringTemplateHead   ::= "`"  TemplateCharacters? "{{"
 StringTempalteMiddle ::= "}}" TemplateCharacters? "{{"
 StringTempalteTail   ::= "}}" TemplateCharacters? "`"
 
-TemplateCharacters ::= ( [^`{#x03] | "\`") TemplateCharacters? | "{" ([^`{#x03] TemplateCharacters?)?
+StringTemplateCharacters ::= [^`{\#x03] StringTemplateCharacters?
+|                            "{" ([^`{\#x03] TemplateCharacters?)?
+|                            "\" ("`" | "\" | [^`\#x03]) StringTemplateCharacters?
 
 
 

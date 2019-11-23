@@ -361,25 +361,28 @@ export default class Lexer {
 				this.advance()
 				while (!this.iterator_result_char.done) {
 					if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of string')
-					if (Char.eq('\\' + TokenString.CHARS_TEMPLATE_DELIM, this.c0, this.c1)) { // we found an escaped string delimiter
-						token.add(this.c0, this.c1 !)
-						this.advance(2)
-						continue;
-					}
-					if (Char.eq(TokenString.CHARS_TEMPLATE_INTERP_START, this.c0, this.c1)) {
-						// add interpolation delim to token, end the token
+					if (Char.eq('\\', this.c0)) { // possible escape
+						if (Char.inc([TokenString.CHARS_TEMPLATE_DELIM, '\\'], this.c1)) { // an escaped character literal
+							token.add(this.c0, this.c1 !)
+							this.advance(2)
+						} else { // a backslash is used, but it has no function
+							token.add(this.c0)
+							this.advance()
+						}
+					} else if (Char.eq(TokenString.CHARS_TEMPLATE_INTERP_START, this.c0, this.c1)) { // end string template head/middle
+						// add start interpolation delim to token
 						token.add(this.c0, this.c1 !)
 						this.advance(TokenString.CHARS_TEMPLATE_INTERP_START.length)
 						break;
-					}
-					if (Char.eq(TokenString.CHARS_TEMPLATE_DELIM, this.c0)) {
+					} else if (Char.eq(TokenString.CHARS_TEMPLATE_DELIM, this.c0)) { // end string template full/tail
 						// add ending delim to token
 						token.add(this.c0)
 						this.advance(TokenString.CHARS_TEMPLATE_DELIM.length)
 						break;
+					} else {
+						token.add(this.c0)
+						this.advance()
 					}
-					token.add(this.c0)
-					this.advance()
 				}
 			} else if (Char.inc(TokenNumber.CHARS, this.c0)) {
 				token = new TokenNumber(this.iterator_result_char.value)
