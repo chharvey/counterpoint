@@ -60,10 +60,10 @@ EscapeCode       ::= "u{" [0-9a-f]* "}"
 LineContinuation ::= #x0D? #x0A
 NonEscapeChar    ::= [^'\stnru#x0D#x0A#x03] | "u" /*? lookahead: [^{] ?*/
 
-StringTemplateFull   ::= "`"  TemplateCharacters? "`"
-StringTemplateHead   ::= "`"  TemplateCharacters? "{{"
-StringTempalteMiddle ::= "}}" TemplateCharacters? "{{"
-StringTempalteTail   ::= "}}" TemplateCharacters? "`"
+StringTemplateFull   ::= "`"  StringTemplateCharacters? "`"
+StringTemplateHead   ::= "`"  StringTemplateCharacters? "{{"
+StringTempalteMiddle ::= "}}" StringTemplateCharacters? "{{"
+StringTempalteTail   ::= "}}" StringTemplateCharacters? "`"
 
 StringTemplateCharacters ::= [^`{\#x03] StringTemplateCharacters?
 |                            "{" ([^`{\#x03] TemplateCharacters?)?
