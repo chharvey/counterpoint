@@ -52,7 +52,15 @@ comment}" *  3
 
 4 * 'a string literal with an \' escaped apostrophe and \`escaped back-tick (both escaped)'
 
-'a string literal with an \u0061 escape sequence (escaped)'
+'a string literal with escaped characters: \s (space), \t (tab), \n (LF), \r (CR).'
+
+'a string literal with a unicode \u{0061} escape sequence (escaped)'
+
+'a string literal with an empty unicode \u{} escape sequence (default escaped to U+0000)'
+
+--- 'a string literal with an invalid escape sequence \u{6g}'
+
+--- 'a string literal with an invalid escape sequence \u{61'
 
 `a string template with an \` escaped back-tick (which will be escaped)
 and an \' escaped apostrophe (which won’t)`
@@ -62,14 +70,27 @@ and an \' escaped apostrophe (which won’t)`
 * 'a string literal with
 a line break'
 
+'a string literal\
+with a collapsed newline'
+
 `a string template with
 a line break`
+
+`a string template\
+with NO collapsed newline`
 
 `Interpolation works {{ 3 * 6 }}!`
 `Interpolation works with {{ `{{ 3 * 6 }}` }} too!`
 `Interpolation works with an empty string {{ '' }}!`
 `Interpolation with whitespace {{ }}!`
 `Interpolation with no space {{}}!`
+
+
+`Interpolation allows {{ `nest{{ 'ed inter' }}polation` }} which is a good thing.`
+
+}} a string template tail token not preceded by a head or middle`
+
+`A string template head token not followed by a middle or tail {{
 
 'Here is a string --- that contains a single-line comment start marker.'
 'Here is a string "that contains" a multiline comment.'

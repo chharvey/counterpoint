@@ -49,16 +49,25 @@ CommentDoc ::= /*? following: #x0A [#x09#x20]* ?*/'"""' #x0A (/*? unequal: [#x09
 
 
 
-StringLiteral::= "'" ([^'\#x03] | CharEscaped | "\'")* "'"
+StringLiteral ::= "'" StringLiteralChars? "'"
+StringLiteralChars ::= [^'\#x03] StringLiteralChars?
+|                      "\" StringLiteralEscape StringLiteralChars?
 
-CharEscaped ::= "\" /* #x5C */  ( "\" /* #x5C */  | "/" /* #x2F */  | "b" /* #x62 */  | "f" /* #x66 */  | "n" /* #x6E */  | "r" /* #x72 */  | "t" /* #x74 */  | "u" /* #x75 */  [0-9a-f]* )
+StringLiteralEscape ::= EscapeChar | EscapeCode | LineContinuation | NonEscapeChar
 
-StringTemplateFull   ::= "`"  TemplateCharacters? "`"
-StringTemplateHead   ::= "`"  TemplateCharacters? "{{"
-StringTempalteMiddle ::= "}}" TemplateCharacters? "{{"
-StringTempalteTail   ::= "}}" TemplateCharacters? "`"
+EscapeChar       ::= "'" | "\" | "s" | "t" | "n" | "r"
+EscapeCode       ::= "u{" [0-9a-f]* "}"
+LineContinuation ::= #x0D? #x0A
+NonEscapeChar    ::= [^'\stnru#x0D#x0A#x03] | "u" /*? lookahead: [^{] ?*/
 
-TemplateCharacters ::= ( [^`{#x03] | "\`") TemplateCharacters? | "{" ([^`{#x03] TemplateCharacters?)?
+StringTemplateFull   ::= "`"  StringTemplateCharacters? "`"
+StringTemplateHead   ::= "`"  StringTemplateCharacters? "{{"
+StringTempalteMiddle ::= "}}" StringTemplateCharacters? "{{"
+StringTempalteTail   ::= "}}" StringTemplateCharacters? "`"
+
+StringTemplateCharacters ::= [^`{\#x03] StringTemplateCharacters?
+|                            "{" ([^`{\#x03] TemplateCharacters?)?
+|                            "\" ("`" | "\" | [^`\#x03]) StringTemplateCharacters?
 
 
 

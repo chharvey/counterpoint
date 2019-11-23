@@ -1,6 +1,6 @@
 import Serializable from '../iface/Serializable.iface'
-
 import Scanner, {Char, STX, ETX} from './Scanner.class'
+import Translator, {ParseLeaf} from './Translator.class'
 
 
 /**
@@ -27,20 +27,20 @@ export abstract class Token implements Serializable {
 	 * @param more_chars - additional characters to add upon construction
 	 */
 	constructor(
-		private readonly tagname: string,
+		readonly tagname: string,
 		start_char: Char,
 		...more_chars: Char[]
 	) {
-		this._cargo     = start_char.cargo + more_chars.map((char) => char.cargo).join('')
+		this._cargo     = start_char.source + more_chars.map((char) => char.source).join('')
 		this.line_index = start_char.line_index
 		this.col_index  = start_char.col_index
 	}
 
 	/**
-	 * Get this Token’s cargo.
-	 * @returns All the characters in this Token.
+	 * Get the sum of this Token’s cargo.
+	 * @returns All the source characters in this Token.
 	 */
-	get cargo(): string {
+	get source(): string {
 		return this._cargo
 	}
 
@@ -49,37 +49,42 @@ export abstract class Token implements Serializable {
 	 * @param chars - the characters to append
 	 */
 	add(...chars: Char[]): void {
-		this._cargo += chars.map((char) => char.cargo).join('')
+		this._cargo += chars.map((char) => char.source).join('')
 	}
+
+	/**
+	 * Produce a parse leaf with this token’s cooked value.
+	 * If this token is not to be sent to the parser, then return `null`.
+	 * @returns a new ParseLeaf object containing a computed value of this token, or `null`
+	 */
+	abstract cook(): ParseLeaf|null;
 
 	/**
 	 * @implements Serializable
 	 */
-	serialize(...attrs: string[]): string {
+	serialize(): string {
 		const attributes: string = ' ' + [
 			`line="${this.line_index+1}"`,
 			`col="${this.col_index+1}"`,
-			...attrs
 		].join(' ').trim()
-		return `<${this.tagname}${attributes}>${this.cargo}</${this.tagname}>`
+		return `<${this.tagname}${attributes}>${this.source}</${this.tagname}>`
 	}
 }
 export class TokenFilebound extends Token {
 	static readonly TAGNAME: string = 'FILEBOUND'
 	static readonly CHARS: readonly string[] = [STX, ETX]
-	value: boolean|null = null
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenFilebound.TAGNAME, start_char, ...more_chars)
 	}
+	cook(): ParseLeaf {
+		return new ParseLeaf(this, this.source === STX /* || !this.source === ETX */)
+	}
 	serialize(): string {
-		const attributes: string = ' ' + [
-			this.value !== null ? `value="${this.value}"` : ''
-		].join(' ').trim()
-		const contents: string = new Map<string, string>([
+		const formatted: string = new Map<string, string>([
 			[STX, '\u2402' /* SYMBOL FOR START OF TEXT */],
 			[ETX, '\u2403' /* SYMBOL FOR END OF TEXT   */],
-		]).get(this.cargo) !
-		return `<${TokenFilebound.TAGNAME}${attributes}>${contents}</${TokenFilebound.TAGNAME}>`
+		]).get(this.source) !
+		return `<${TokenFilebound.TAGNAME}>${formatted}</${TokenFilebound.TAGNAME}>`
 	}
 }
 export class TokenWhitespace extends Token {
@@ -88,66 +93,103 @@ export class TokenWhitespace extends Token {
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenWhitespace.TAGNAME, start_char, ...more_chars)
 	}
+	cook(): null {
+		return null // we do not want to send whitespace to the parser
+	}
 }
 export abstract class TokenComment extends Token {
 	static readonly TAGNAME: string = 'COMMENT'
-	static readonly CHARS_LINE            : '---' = '---'
-	static readonly CHARS_MULTI_START     : '"'   = '"'
-	static readonly CHARS_MULTI_END       : '"'   = '"'
-	static readonly CHARS_MULTI_NEST_START: '"{'  = '"{'
-	static readonly CHARS_MULTI_NEST_END  : '}"'  = '}"'
-	static readonly CHARS_DOC_START       : '"""' = '"""'
-	static readonly CHARS_DOC_END         : '"""' = '"""'
-	constructor(
-		private readonly kind: string,
-		start_char: Char,
-		...more_chars: Char[]
-	) {
-		super(TokenComment.TAGNAME, start_char, ...more_chars)
+	constructor(kind: string, start_char: Char, ...more_chars: Char[]) {
+		super(`${TokenComment.TAGNAME}-${kind}`, start_char, ...more_chars)
 	}
-	serialize(): string {
-		return super.serialize(this.kind ? `kind="${this.kind}"` : '')
+	/* final */ cook(): null {
+		return null // we do not want to send comments to the parser
 	}
 }
-class TokenCommentLine      extends TokenComment { constructor(start_char: Char, ...more_chars: Char[]) { super('LINE'       , start_char, ...more_chars) } }
-class TokenCommentMulti     extends TokenComment { constructor(start_char: Char, ...more_chars: Char[]) { super('MULTI'      , start_char, ...more_chars) } }
-class TokenCommentMultiNest extends TokenComment { constructor(start_char: Char, ...more_chars: Char[]) { super('MULTI_NEST' , start_char, ...more_chars) } }
-class TokenCommentDoc       extends TokenComment { constructor(start_char: Char, ...more_chars: Char[]) { super('DOC'        , start_char, ...more_chars) } }
-export class TokenString extends Token {
+class TokenCommentLine extends TokenComment {
+	static readonly CHARS_LINE: '---' = '---'
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super('LINE', start_char, ...more_chars)
+	}
+}
+class TokenCommentMulti extends TokenComment {
+	static readonly CHARS_MULTI_START : '"'   = '"'
+	static readonly CHARS_MULTI_END   : '"'   = '"'
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super('MULTI', start_char, ...more_chars)
+	}
+}
+class TokenCommentMultiNest extends TokenComment {
+	static readonly CHARS_MULTI_NEST_START : '"{'  = '"{'
+	static readonly CHARS_MULTI_NEST_END   : '}"'  = '}"'
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super('MULTI_NEST', start_char, ...more_chars)
+	}
+}
+class TokenCommentDoc extends TokenComment {
+	static readonly CHARS_DOC_START : '"""' = '"""'
+	static readonly CHARS_DOC_END   : '"""' = '"""'
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super('DOC', start_char, ...more_chars)
+	}
+}
+export abstract class TokenString extends Token {
 	static readonly TAGNAME: string = 'STRING'
-	static readonly CHARS_LITERAL_DELIM        : '\'' = `'`
+	constructor(kind: string, start_char: Char, ...more_chars: Char[]) {
+		super(`${TokenString.TAGNAME}-${kind}`, start_char, ...more_chars)
+	}
+}
+export class TokenStringLiteral extends TokenString {
+	static readonly CHARS_LITERAL_DELIM: '\'' = '\''
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super('LITERAL', start_char, ...more_chars)
+	}
+	cook(): ParseLeaf {
+		return new ParseLeaf(this, String.fromCodePoint(...Translator.svl(
+			this.source.slice(1, -1) // cut off the string delimiters
+		)))
+	}
+}
+export class TokenStringTemplate extends TokenString {
 	static readonly CHARS_TEMPLATE_DELIM       : '`'  = '`'
 	static readonly CHARS_TEMPLATE_INTERP_START: '{{' = '{{'
 	static readonly CHARS_TEMPLATE_INTERP_END  : '}}' = '}}'
-	value: string|null = null
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super(TokenString.TAGNAME, start_char, ...more_chars)
+		super('TEMPLATE', start_char, ...more_chars)
 	}
-	serialize(): string {
-		return super.serialize(this.value !== null ? `value="${this.value}"` : '')
+	cook(): ParseLeaf {
+		const c0: string = this.source
+		return new ParseLeaf(this, String.fromCodePoint(...Translator.svt(
+			c0.slice( // cut off the string delimiters
+				(c0[0          ] === '`') ?  1 : /* if (c0[0          ] + c0[1          ] === '}}') */  2,
+				(c0[c0.length-1] === '`') ? -1 : /* if (c0[c0.length-2] + c0[c0.length-1] === '{{') */ -2,
+			)
+		)))
 	}
 }
 export class TokenNumber extends Token {
 	static readonly TAGNAME: string = 'NUMBER'
 	static readonly CHARS: readonly string[] = '0 1 2 3 4 5 6 7 8 9'.split(' ')
-	value: number|null = null
+	static readonly DIGITS_HEX: readonly string[] = '0 1 2 3 4 5 6 7 8 9 a b c d e f'.split('')
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenNumber.TAGNAME, start_char, ...more_chars)
 	}
-	serialize(): string {
-		return super.serialize(this.value !== null ? `value="${this.value}"` : '')
+	cook(): ParseLeaf {
+		return new ParseLeaf(this, Translator.mv(this.source, 10))
 	}
 }
 export class TokenWord extends Token {
 	static readonly TAGNAME: string = 'WORD'
 	static readonly CHARS_START: readonly string[] = ''.split(' ')
 	static readonly CHARS_REST : readonly string[] = ''.split(' ')
-	id: number|null = null
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenWord.TAGNAME, start_char, ...more_chars)
 	}
-	serialize(): string {
-		return super.serialize(this.id !== null ? `id="${this.id}"` : '')
+	/**
+	 * @param   id the running identifier count
+	 */
+	cook(id?: number /* bigint */): ParseLeaf {
+		return new ParseLeaf(this, id || -1)
 	}
 }
 export class TokenPunctuator extends Token {
@@ -157,6 +199,9 @@ export class TokenPunctuator extends Token {
 	static readonly CHARS_3: readonly string[] = ''.split(' ')
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenPunctuator.TAGNAME, start_char, ...more_chars)
+	}
+	cook(): ParseLeaf {
+		return new ParseLeaf(this, this.source)
 	}
 }
 
@@ -175,8 +220,6 @@ export default class Lexer {
 	private state_newline: boolean = false
 	/** How many levels of nested multiline comments are we in? */
 	private comment_multiline_level: number /* bigint */ = 0
-	/** How many levels of nested string templates are we in? */
-	private template_level: number /* bigint */ = 0
 
 	/** The current character. */
 	private c0: Char;
@@ -191,10 +234,8 @@ export default class Lexer {
 	 * Construct a new Lexer object.
 	 * @param   source_text - the entire source text
 	 */
-	constructor(
-		private readonly source_text: string,
-	) {
-		this.scanner = new Scanner(this.source_text).generate()
+	constructor(source_text: string) {
+		this.scanner = new Scanner(source_text).generate()
 		this.iterator_result_char = this.scanner.next()
 
 		this.c0 = this.iterator_result_char.value
@@ -231,24 +272,24 @@ export default class Lexer {
 	* generate(): Iterator<Token> {
 		while (!this.iterator_result_char.done) {
 			if (Char.inc(TokenWhitespace.CHARS, this.c0)) {
-				const wstoken: TokenWhitespace = new TokenWhitespace(this.iterator_result_char.value)
+				const wstoken: TokenWhitespace = new TokenWhitespace(this.c0)
 				this.advance()
 				while (!this.iterator_result_char.done && Char.inc(TokenWhitespace.CHARS, this.c0)) {
 					wstoken.add(this.c0)
 					this.advance()
 				}
-				this.state_newline = [...wstoken.cargo].includes('\n')
-				// yield wstoken // only if we want the lexer to return whitespace
+				this.state_newline = [...wstoken.source].includes('\n')
+				yield wstoken
 				continue;
 			}
 
 			let token: Token;
 			if (Char.inc(TokenFilebound.CHARS, this.c0)) {
-				token = new TokenFilebound(this.iterator_result_char.value)
+				token = new TokenFilebound(this.c0)
 				this.advance()
-			} else if (Char.eq(TokenComment.CHARS_LINE, this.c0, this.c1, this.c2)) { // we found a line comment
-				token = new TokenCommentLine(this.iterator_result_char.value, this.c1 !, this.c2 !)
-				this.advance(TokenComment.CHARS_LINE.length)
+			} else if (Char.eq(TokenCommentLine.CHARS_LINE, this.c0, this.c1, this.c2)) { // we found a line comment
+				token = new TokenCommentLine(this.c0, this.c1 !, this.c2 !)
+				this.advance(TokenCommentLine.CHARS_LINE.length)
 				while (!this.iterator_result_char.done && !Char.eq('\n', this.c0)) {
 					if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
 					token.add(this.c0)
@@ -256,14 +297,14 @@ export default class Lexer {
 				}
 				// do not add '\n' to token
 			} else if (Char.eq('"', this.c0)) { // we found the start of a doc comment or multiline comment
-				if (this.state_newline && Char.eq(TokenComment.CHARS_DOC_START + '\n', this.c0, this.c1, this.c2, this.c3)) { // we found a doc comment
-					token = new TokenCommentDoc(this.iterator_result_char.value, this.c1 !, this.c2 !, this.c3 !)
-					this.advance((TokenComment.CHARS_DOC_START + '\n').length)
+				if (this.state_newline && Char.eq(TokenCommentDoc.CHARS_DOC_START + '\n', this.c0, this.c1, this.c2, this.c3)) { // we found a doc comment
+					token = new TokenCommentDoc(this.c0, this.c1 !, this.c2 !, this.c3 !)
+					this.advance((TokenCommentDoc.CHARS_DOC_START + '\n').length)
 					while (!this.iterator_result_char.done) {
 						if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
 						if (
-							!Char.eq(TokenComment.CHARS_DOC_END + '\n', this.c0, this.c1, this.c2, this.c3) ||
-							token.cargo.slice(token.cargo.lastIndexOf('\n') + 1).trim() !== '' // the tail end of the token does not match `/\n(\s)*/` (a newline followed by whitespace)
+							!Char.eq(TokenCommentDoc.CHARS_DOC_END + '\n', this.c0, this.c1, this.c2, this.c3) ||
+							token.source.slice(token.source.lastIndexOf('\n') + 1).trim() !== '' // the tail end of the token does not match `/\n(\s)*/` (a newline followed by whitespace)
 						) {
 							token.add(this.c0)
 							this.advance()
@@ -273,18 +314,18 @@ export default class Lexer {
 					}
 					// add ending delim to token
 					token.add(this.c0, this.c1 !, this.c2 !)
-					this.advance(TokenComment.CHARS_DOC_END.length)
-				} else if (Char.eq(TokenComment.CHARS_MULTI_NEST_START, this.c0, this.c1)) { // we found a nestable multiline comment
-					token = new TokenCommentMultiNest(this.iterator_result_char.value, this.c1 !)
-					this.advance(TokenComment.CHARS_MULTI_NEST_START.length)
+					this.advance(TokenCommentDoc.CHARS_DOC_END.length)
+				} else if (Char.eq(TokenCommentMultiNest.CHARS_MULTI_NEST_START, this.c0, this.c1)) { // we found a nestable multiline comment
+					token = new TokenCommentMultiNest(this.c0, this.c1 !)
+					this.advance(TokenCommentMultiNest.CHARS_MULTI_NEST_START.length)
 					this.comment_multiline_level++;
 					while (this.comment_multiline_level !== 0) {
-						while (!this.iterator_result_char.done && !Char.eq(TokenComment.CHARS_MULTI_NEST_END, this.c0, this.c1)) {
+						while (!this.iterator_result_char.done && !Char.eq(TokenCommentMultiNest.CHARS_MULTI_NEST_END, this.c0, this.c1)) {
 							if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
-							if (Char.eq(TokenComment.CHARS_MULTI_NEST_START, this.c0, this.c1)) {
+							if (Char.eq(TokenCommentMultiNest.CHARS_MULTI_NEST_START, this.c0, this.c1)) {
 								token.add(this.c0, this.c1 !)
-								this.advance(TokenComment.CHARS_MULTI_NEST_START.length)
-								this.comment_multiline_level++
+								this.advance(TokenCommentMultiNest.CHARS_MULTI_NEST_START.length)
+								this.comment_multiline_level++;
 							} else {
 								token.add(this.c0)
 								this.advance()
@@ -292,90 +333,125 @@ export default class Lexer {
 						}
 						// add ending delim to token
 						token.add(this.c0, this.c1 !)
-						this.advance(TokenComment.CHARS_MULTI_NEST_END.length)
+						this.advance(TokenCommentMultiNest.CHARS_MULTI_NEST_END.length)
 						this.comment_multiline_level--;
 					}
 				} else { // we found a non-nestable multiline comment
-					token = new TokenCommentMulti(this.iterator_result_char.value)
+					token = new TokenCommentMulti(this.c0)
 					this.advance()
-					while (!this.iterator_result_char.done && !Char.eq(TokenComment.CHARS_MULTI_END, this.c0)) {
+					while (!this.iterator_result_char.done && !Char.eq(TokenCommentMulti.CHARS_MULTI_END, this.c0)) {
 						if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
 						token.add(this.c0)
 						this.advance()
 					}
 					// add ending delim to token
 					token.add(this.c0)
-					this.advance(TokenComment.CHARS_MULTI_END.length)
+					this.advance(TokenCommentMulti.CHARS_MULTI_END.length)
 				}
-			} else if (Char.eq(TokenString.CHARS_LITERAL_DELIM, this.c0)) {
-				token = new TokenString(this.iterator_result_char.value)
+			} else if (Char.eq(TokenStringLiteral.CHARS_LITERAL_DELIM, this.c0)) {
+				token = new TokenStringLiteral(this.c0)
 				this.advance()
-				while (!this.iterator_result_char.done && !Char.eq(TokenString.CHARS_LITERAL_DELIM, this.c0)) {
+				while (!this.iterator_result_char.done && !Char.eq(TokenStringLiteral.CHARS_LITERAL_DELIM, this.c0)) {
 					if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of string')
-					if (Char.eq('\\' + TokenString.CHARS_LITERAL_DELIM, this.c0, this.c1)) { // we found an escaped string delimiter
-						token.add(this.c0, this.c1 !)
-						this.advance(2)
-						continue;
+					if (Char.eq('\\', this.c0)) { // possible escape or line continuation
+						if (Char.inc([TokenStringLiteral.CHARS_LITERAL_DELIM, '\\', 's','t','n','r'], this.c1)) { // an escaped character literal
+							token.add(this.c0, this.c1 !)
+							this.advance(2)
+						} else if (Char.eq('u{', this.c1, this.c2)) { // an escape sequence
+							const sequence: {
+								readonly line: number,
+								readonly col : number,
+								cargo: string,
+							} = {
+								line: this.c0.line_index + 1,
+								col : this.c0.col_index + 1,
+								cargo: this.c0.source + this.c1 !.source + this.c2 !.source,
+							}
+							token.add(this.c0, this.c1 !, this.c2 !)
+							this.advance(3)
+							while(!Char.eq('}', this.c0)) {
+								sequence.cargo += this.c0.source
+								if (Char.inc(TokenNumber.DIGITS_HEX, this.c0)) {
+									token.add(this.c0)
+									this.advance()
+								} else {
+									throw new Error(`Invalid escape sequence: \`${sequence.cargo}\` at line ${sequence.line} col ${sequence.col}.`)
+								}
+							}
+							token.add(this.c0)
+							this.advance()
+						} else if (Char.eq('\n', this.c1)) { // a line continuation (LF)
+							token.add(this.c0, this.c1 !)
+							this.advance(2)
+						} else if (Char.eq('\r\n', this.c1, this.c2)) { // a line continuation (CRLF)
+							token.add(this.c0, this.c1 !, this.c2 !)
+							this.advance(3)
+						} else { // a backslash escapes the following character
+							token.add(this.c0)
+							this.advance()
+						}
+					} else {
+						token.add(this.c0)
+						this.advance()
 					}
-					token.add(this.c0)
-					this.advance()
 				}
 				// add ending delim to token
 				token.add(this.c0)
-				this.advance(TokenString.CHARS_LITERAL_DELIM.length)
-			} else if (Char.eq(TokenString.CHARS_TEMPLATE_DELIM, this.c0) || Char.eq(TokenString.CHARS_TEMPLATE_INTERP_END, this.c0, this.c1) && this.template_level) {
-				token = new TokenString(this.iterator_result_char.value)
+				this.advance(TokenStringLiteral.CHARS_LITERAL_DELIM.length)
+			} else if (Char.eq(TokenStringTemplate.CHARS_TEMPLATE_DELIM, this.c0) || Char.eq(TokenStringTemplate.CHARS_TEMPLATE_INTERP_END, this.c0, this.c1)) {
+				token = new TokenStringTemplate(this.c0)
 				this.advance()
-				this.template_level++;
 				while (!this.iterator_result_char.done) {
 					if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of string')
-					if (Char.eq('\\' + TokenString.CHARS_TEMPLATE_DELIM, this.c0, this.c1)) { // we found an escaped string delimiter
+					if (Char.eq('\\', this.c0)) { // possible escape
+						if (Char.inc([TokenStringTemplate.CHARS_TEMPLATE_DELIM, '\\'], this.c1)) { // an escaped character literal
+							token.add(this.c0, this.c1 !)
+							this.advance(2)
+						} else { // a backslash escapes nothing
+							token.add(this.c0)
+							this.advance()
+						}
+					} else if (Char.eq(TokenStringTemplate.CHARS_TEMPLATE_INTERP_START, this.c0, this.c1)) { // end string template head/middle
+						// add start interpolation delim to token
 						token.add(this.c0, this.c1 !)
-						this.advance(2)
-						continue;
-					}
-					if (Char.eq(TokenString.CHARS_TEMPLATE_INTERP_START, this.c0, this.c1)) {
-						// add interpolation delim to token, end the token
-						token.add(this.c0, this.c1 !)
-						this.advance(TokenString.CHARS_TEMPLATE_INTERP_START.length)
+						this.advance(TokenStringTemplate.CHARS_TEMPLATE_INTERP_START.length)
 						break;
-					}
-					if (Char.eq(TokenString.CHARS_TEMPLATE_DELIM, this.c0)) {
+					} else if (Char.eq(TokenStringTemplate.CHARS_TEMPLATE_DELIM, this.c0)) { // end string template full/tail
 						// add ending delim to token
 						token.add(this.c0)
-						this.advance(TokenString.CHARS_TEMPLATE_DELIM.length)
-						this.template_level--;
+						this.advance(TokenStringTemplate.CHARS_TEMPLATE_DELIM.length)
 						break;
+					} else {
+						token.add(this.c0)
+						this.advance()
 					}
-					token.add(this.c0)
-					this.advance()
 				}
 			} else if (Char.inc(TokenNumber.CHARS, this.c0)) {
-				token = new TokenNumber(this.iterator_result_char.value)
+				token = new TokenNumber(this.c0)
 				this.advance()
 				while (!this.iterator_result_char.done && Char.inc(TokenNumber.CHARS, this.c0)) {
 					token.add(this.c0)
 					this.advance()
 				}
 			} else if (Char.inc(TokenWord.CHARS_START, this.c0)) {
-				token = new TokenWord(this.iterator_result_char.value)
+				token = new TokenWord(this.c0)
 				this.advance()
 				while (!this.iterator_result_char.done && Char.inc(TokenWord.CHARS_REST, this.c0)) {
 					token.add(this.c0)
 					this.advance()
 				}
 			} else if (Char.inc(TokenPunctuator.CHARS_3, this.c0, this.c1, this.c2)) {
-				token = new TokenPunctuator(this.iterator_result_char.value, this.c1 !, this.c2 !)
+				token = new TokenPunctuator(this.c0, this.c1 !, this.c2 !)
 				this.advance(3)
 			} else if (Char.inc(TokenPunctuator.CHARS_2, this.c0, this.c1)) {
-				token = new TokenPunctuator(this.iterator_result_char.value, this.c1 !)
+				token = new TokenPunctuator(this.c0, this.c1 !)
 				this.advance(2)
 			} else if (Char.inc(TokenPunctuator.CHARS_1, this.c0)) {
-				token = new TokenPunctuator(this.iterator_result_char.value)
+				token = new TokenPunctuator(this.c0)
 				this.advance()
 			} else {
 				throw new Error(`I found a character or symbol that I do not recognize:
-${this.c0} on ${this.iterator_result_char.value.line_index + 1}:${this.iterator_result_char.value.col_index + 1}.`)
+${this.c0} on ${this.c0.line_index + 1}:${this.c0.col_index + 1}.`)
 			}
 			this.state_newline = false
 			yield token
