@@ -79,6 +79,13 @@ a line break`
 `Interpolation with whitespace {{ }}!`
 `Interpolation with no space {{}}!`
 
+
+`Interpolation allows {{ `nest{{ 'ed inter' }}polation` }} which is a good thing.`
+
+}} a string template tail token not preceded by a head or middle`
+
+`A string template head token not followed by a middle or tail {{
+
 'Here is a string --- that contains a single-line comment start marker.'
 'Here is a string "that contains" a multiline comment.'
 'Here is a string "that contains a comment start marker but no end.'

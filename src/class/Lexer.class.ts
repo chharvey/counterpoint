@@ -176,8 +176,6 @@ export default class Lexer {
 	private state_newline: boolean = false
 	/** How many levels of nested multiline comments are we in? */
 	private comment_multiline_level: number /* bigint */ = 0
-	/** How many levels of nested string templates are we in? */
-	private template_level: number /* bigint */ = 0
 
 	/** The current character. */
 	private c0: Char;
@@ -285,7 +283,7 @@ export default class Lexer {
 							if (Char.eq(TokenComment.CHARS_MULTI_NEST_START, this.c0, this.c1)) {
 								token.add(this.c0, this.c1 !)
 								this.advance(TokenComment.CHARS_MULTI_NEST_START.length)
-								this.comment_multiline_level++
+								this.comment_multiline_level++;
 							} else {
 								token.add(this.c0)
 								this.advance()
@@ -358,10 +356,9 @@ export default class Lexer {
 				// add ending delim to token
 				token.add(this.c0)
 				this.advance(TokenString.CHARS_LITERAL_DELIM.length)
-			} else if (Char.eq(TokenString.CHARS_TEMPLATE_DELIM, this.c0) || Char.eq(TokenString.CHARS_TEMPLATE_INTERP_END, this.c0, this.c1) && this.template_level) {
+			} else if (Char.eq(TokenString.CHARS_TEMPLATE_DELIM, this.c0) || Char.eq(TokenString.CHARS_TEMPLATE_INTERP_END, this.c0, this.c1)) {
 				token = new TokenString(this.iterator_result_char.value)
 				this.advance()
-				this.template_level++;
 				while (!this.iterator_result_char.done) {
 					if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of string')
 					if (Char.eq('\\' + TokenString.CHARS_TEMPLATE_DELIM, this.c0, this.c1)) { // we found an escaped string delimiter
@@ -379,7 +376,6 @@ export default class Lexer {
 						// add ending delim to token
 						token.add(this.c0)
 						this.advance(TokenString.CHARS_TEMPLATE_DELIM.length)
-						this.template_level--;
 						break;
 					}
 					token.add(this.c0)
