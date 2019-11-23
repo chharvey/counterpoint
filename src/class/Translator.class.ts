@@ -33,10 +33,8 @@ export default class Translator {
 	 * Construct a new Translator object.
 	 * @param   source_text - the entire source text
 	 */
-	constructor(
-		private readonly source_text: string,
-	) {
-		this.lexer = new Lexer(this.source_text).generate()
+	constructor(source_text: string) {
+		this.lexer = new Lexer(source_text).generate()
 		this.iterator_result_token = this.lexer.next()
 		this.t0 = this.iterator_result_token.value
 	}
@@ -51,7 +49,7 @@ export default class Translator {
 				this.t0.value = new Map<string, boolean>([
 					[STX, true ],
 					[ETX, false],
-				]).get(this.t0.cargo) !
+				]).get(this.t0.source) !
 				yield this.t0
 			} else if (this.t0 instanceof TokenWhitespace) {
 				yield null // we do not want to send whitespace to the parser
@@ -61,7 +59,7 @@ export default class Translator {
 				this.t0.value = String.fromCodePoint(...this.t0.codePoints)
 				yield this.t0
 			} else if (this.t0 instanceof TokenNumber) {
-				this.t0.value = TokenNumber.mv(this.t0.cargo, 10)
+				this.t0.value = TokenNumber.mv(this.t0.source, 10)
 				yield this.t0
 			} else if (this.t0 instanceof TokenWord) {
 				this.t0.id = this.idcount++;
