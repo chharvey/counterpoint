@@ -1,6 +1,6 @@
 import Serializable from '../iface/Serializable.iface'
 import Scanner, {Char, STX, ETX} from './Scanner.class'
-import {ParseLeaf} from './Translator.class'
+import Translator, {ParseLeaf} from './Translator.class'
 
 
 /**
@@ -135,261 +135,47 @@ class TokenCommentDoc extends TokenComment {
 }
 export abstract class TokenString extends Token {
 	static readonly TAGNAME: string = 'STRING'
-	/**
-	 * The UTF16Encoding of a numeric code point value.
-	 * @see http://ecma-international.org/ecma-262/10.0/#sec-utf16encoding
-	 * @param   codepoint a positive integer within [0x0, 0x10ffff]
-	 * @returns a code unit sequence representing the code point
-	 */
-	static utf16Encoding(codepoint: number): [number] | [number, number] {
-		if (codepoint < 0 || 0x10ffff < codepoint) throw new RangeError(`Code point ${codepoint} must be within [0x0, 0x10ffff].`)
-		if (codepoint <= 0xffff) return [codepoint]
-		const cu1: number = Math.floor(codepoint - 0x10000) / 0x400
-		const cu2: number =           (codepoint - 0x10000) % 0x400
-		return [cu1 + 0xd800, cu2 + 0xdc00]
-	}
 	constructor(kind: string, start_char: Char, ...more_chars: Char[]) {
 		super(`${TokenString.TAGNAME}-${kind}`, start_char, ...more_chars)
 	}
-	/* final */ cook(): ParseLeaf {
-		return new ParseLeaf(this, String.fromCodePoint(...this.codePoints))
-	}
-	abstract get codePoints(): readonly number[];
 }
 export class TokenStringLiteral extends TokenString {
 	static readonly CHARS_LITERAL_DELIM: '\'' = '\''
-	/**
-	 * Compute the string literal value of a `TokenStringLiteral` token.
-	 * The string literal value is a sequence of Unicode code points.
-	 * ```
-	 * SLV(StringLiteral ::= "'" "'")
-	 * 	is the empty array
-	 * SLV(StringLiteral ::= "'" StringLiteralChars "'")
-	 * 	is SLV(StringLiteralChars)
-	 * SLV(StringLiteralChars ::= [^'\#x03])
-	 * 	is {@link TokenString.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SLV(StringLiteralChars ::= [^'\#x03] StringLiteralChars)
-	 * 	is {@link TokenString.utf16Encoding|UTF16Encoding}(code point of that character) followed by SLV(StringLiteralChars)
-	 * SLV(StringLiteralChars ::= "\" StringLiteralEscape)
-	 * 	is SLV(StringLiteralEscape)
-	 * SLV(StringLiteralChars ::= "\" StringLiteralEscape StringLiteralChars)
-	 * 	is SLV(StringLiteralEscape) followed by SLV(StringLiteralChars)
-	 * SLV(StringLiteralEscape ::= EscapeChar)
-	 * 	is SLV(EscapeChar)
-	 * SLV(StringLiteralEscape ::= EscapeCode)
-	 * 	is SLV(EscapeCode)
-	 * SLV(StringLiteralEscape ::= LineContinuation)
-	 * 	is SLV(LineContinuation)
-	 * SLV(StringLiteralEscape ::= NonEscapeChar)
-	 * 	is SLV(NonEscapeChar)
-	 * SLV(EscapeChar ::= "'" | "\" | "s" | "t" | "n" | "r")
-	 * 	is given by the following map: {
-	 * 		"'" : 0x27, // APOSTROPHE           U+0027
-	 * 		"\" : 0x5c, // REVERSE SOLIDUS      U+005C
-	 * 		"s" : 0x20, // SPACE                U+0020
-	 * 		"t" : 0x09, // CHARACTER TABULATION U+0009
-	 * 		"n" : 0x0a, // LINE FEED (LF)       U+000A
-	 * 		"r" : 0x0d, // CARRIAGE RETURN (CR) U+000D
-	 * 	}
-	 * SLV(EscapeCode ::= "u{" [0-9a-f]* "}")
-	 * 	is UTF16Encoding({@link TokenNumber.mv|MV}([0-9a-f]*))
-	 * SLV(LineContinuation ::= #x0A)
-	 * 	is 0x20
-	 * SLV(LineContinuation ::= #x0D #x0A)
-	 * 	is 0x20
-	 * SLV(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03]
-	 * 	is {@link TokenString.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SLV(NonEscapeChar ::= "u" /*? lookahead: [^{] ?/)
-	 * 	is 0x75
-	 * ```
-	 * @param   text the string to compute
-	 * @returns the string literal value, a sequence of code points
-	 */
-	static slv(text: string): number[] {
-		if (text.length === 0) return []
-		if ('\\' === text[0]) { // possible escape or line continuation
-			if (TokenStringLiteral.CHARS_LITERAL_DELIM === text[1] || /[\\stnr]/.test(text[1])) { // an escaped character literal
-				return [
-					new Map<string, number>([
-						[TokenStringLiteral.CHARS_LITERAL_DELIM, TokenStringLiteral.CHARS_LITERAL_DELIM.codePointAt(0) !],
-						['\\' , 0x5c],
-						['s'  , 0x20],
-						['t'  , 0x09],
-						['n'  , 0x0a],
-						['r'  , 0x0d],
-					]).get(text[1]) !,
-					...TokenStringLiteral.slv(text.slice(2)),
-				]
-			} else if ('u{' === text[1] + text[2]) { // an escape sequence
-				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f]*}/) !
-				return [
-					...TokenString.utf16Encoding(TokenNumber.mv(sequence[0].slice(3, -1) || '0', 16)),
-					...TokenStringLiteral.slv(text.slice(sequence[0].length)),
-				]
-			} else if ('\n' === text[1]) { // a line continuation (LF)
-				return [0x20, ...TokenStringLiteral.slv(text.slice(2))]
-			} else if ('\r\n' === text[1] + text [2]) { // a line continuation (CRLF)
-				return [0x20, ...TokenStringLiteral.slv(text.slice(2))]
-			} else { // a backslash escapes the following character
-				return [
-					...TokenString.utf16Encoding(text.codePointAt(1) !),
-					...TokenStringLiteral.slv(text.slice(2)),
-				]
-			}
-		} else return [
-			...TokenString.utf16Encoding(text.codePointAt(0) !),
-			...TokenStringLiteral.slv(text.slice(1)),
-		]
-	}
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super('LITERAL', start_char, ...more_chars)
 	}
-	get codePoints(): readonly number[] {
-		return TokenStringLiteral.slv(
+	cook(): ParseLeaf {
+		return new ParseLeaf(this, String.fromCodePoint(...Translator.svl(
 			this.source.slice(1, -1) // cut off the string delimiters
-		)
+		)))
 	}
 }
 export class TokenStringTemplate extends TokenString {
 	static readonly CHARS_TEMPLATE_DELIM       : '`'  = '`'
 	static readonly CHARS_TEMPLATE_INTERP_START: '{{' = '{{'
 	static readonly CHARS_TEMPLATE_INTERP_END  : '}}' = '}}'
-	/**
-	 * Compute the string template value of a `TokenStringTemplate` token.
-	 * The string template value is a sequence of Unicode code points.
-	 * ```
-	 * STV(StringTemplateFull ::= "`" "`")
-	 * 	is the empty array
-	 * STV(StringTemplateFull ::= "`" TemplateCharacters "`")
-	 * 	is STV(StringTemplateCharacters)
-	 * STV(StringTemplateHead ::= "`" "{{")
-	 * 	is the empty array
-	 * STV(StringTemplateHead ::= "`" TemplateCharacters "{{")
-	 * 	is STV(StringTemplateCharacters)
-	 * STV(StringTempalteMiddle ::= "}}" "{{")
-	 * 	is the empty array
-	 * STV(StringTempalteMiddle ::= "}}" TemplateCharacters "{{")
-	 * 	is STV(StringTemplateCharacters)
-	 * STV(StringTempalteTail ::= "}}" "`")
-	 * 	is the empty array
-	 * STV(StringTempalteTail ::= "}}" TemplateCharacters "`")
-	 * 	is STV(StringTemplateCharacters)
-	 * STV(StringTemplateCharacters ::= [^`{\#x03])
-	 * 	is {@link TokenString.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * STV(StringTemplateCharacters ::= [^`{\#x03] StringTemplateCharacters)
-	 * 	is {@link TokenString.utf16Encoding|UTF16Encoding}(code point of that character) followed by STV(StringTemplateCharacters)
-	 * STV(StringTemplateCharacters ::= "{"
-	 * 	is 0x7b
-	 * STV(StringTemplateCharacters ::= "{" [^`{\#x03])
-	 * 	is 0x7b followed by {@link TokenString.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * STV(StringTemplateCharacters ::= "{" [^`{\#x03] StringTemplateCharacters)
-	 * 	is 0x7b followed by {@link TokenString.utf16Encoding|UTF16Encoding}(code point of that character) followed by STV(StringTemplateCharacters)
-	 * STV(StringTemplateCharacters ::= "\`")
-	 * 	is 0x60
-	 * STV(StringTemplateCharacters ::= "\`" StringTemplateCharacters)
-	 * 	is 0x60 followed by STV(StringTemplateCharacters)
-	 * STV(StringTemplateCharacters ::= "\\")
-	 * 	is 0x5c
-	 * STV(StringTemplateCharacters ::= "\\" StringTemplateCharacters)
-	 * 	is 0x5c followed by STV(StringTemplateCharacters)
-	 * STV(StringTemplateCharacters ::= "\" [^`{\#x03] StringTemplateCharacters)
-	 * 	is 0x5c followed by {@link TokenString.utf16Encoding|UTF16Encoding}(code point of that character) followed by STV(StringTemplateCharacters)
-	 * ```
-	 * @param   text the string to compute
-	 * @returns the string template value of the string, a sequence of code points
-	 */
-	static stv(text: string): number[] {
-		if (text.length === 0) return []
-		if ('\\' === text[0]) { // possible escape
-			if (TokenStringTemplate.CHARS_TEMPLATE_DELIM === text[1] || '\\' === text[1]) { // an escaped character literal
-				return [
-					new Map<string, number>([
-						[TokenStringTemplate.CHARS_TEMPLATE_DELIM, TokenStringTemplate.CHARS_TEMPLATE_DELIM.codePointAt(0) !],
-						['\\' , 0x5c],
-					]).get(text[1]) !,
-					...TokenStringTemplate.stv(text.slice(2)),
-				]
-			} else { // a backslash escapes nothing
-				return [
-					...TokenString.utf16Encoding(text.codePointAt(0) !),
-					...TokenStringTemplate.stv(text.slice(1)),
-				]
-			}
-		} else return [
-			...TokenString.utf16Encoding(text.codePointAt(0) !),
-			...TokenStringTemplate.stv(text.slice(1)),
-		]
-	}
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super('TEMPLATE', start_char, ...more_chars)
 	}
-	get codePoints(): readonly number[] {
+	cook(): ParseLeaf {
 		const c0: string = this.source
-		return TokenStringTemplate.stv(
+		return new ParseLeaf(this, String.fromCodePoint(...Translator.svt(
 			c0.slice( // cut off the string delimiters
 				(c0[0          ] === '`') ?  1 : /* if (c0[0          ] + c0[1          ] === '}}') */  2,
 				(c0[c0.length-1] === '`') ? -1 : /* if (c0[c0.length-2] + c0[c0.length-1] === '{{') */ -2,
 			)
-		)
+		)))
 	}
 }
 export class TokenNumber extends Token {
 	static readonly TAGNAME: string = 'NUMBER'
 	static readonly CHARS: readonly string[] = '0 1 2 3 4 5 6 7 8 9'.split(' ')
 	static readonly DIGITS_HEX: readonly string[] = '0 1 2 3 4 5 6 7 8 9 a b c d e f'.split('')
-	/**
-	 * Compute the mathematical value of a `TokenNumber` token.
-	 * ```
-	 * MV(DigitSequenceHex ::= [0-9a-f])
-	 * 	is MV([0-9a-f])
-	 * MV(DigitSequenceHex ::= DigitSequenceHex [0-9a-f])
-	 * 	is 16 * MV(DigitSequenceHex) + MV([0-9a-f])
-	 * MV([0-9a-f] ::= 0) is 0
-	 * MV([0-9a-f] ::= 1) is 1
-	 * MV([0-9a-f] ::= 2) is 2
-	 * MV([0-9a-f] ::= 3) is 3
-	 * MV([0-9a-f] ::= 4) is 4
-	 * MV([0-9a-f] ::= 5) is 5
-	 * MV([0-9a-f] ::= 6) is 6
-	 * MV([0-9a-f] ::= 7) is 7
-	 * MV([0-9a-f] ::= 8) is 8
-	 * MV([0-9a-f] ::= 9) is 9
-	 * MV([0-9a-f] ::= a) is 10
-	 * MV([0-9a-f] ::= b) is 11
-	 * MV([0-9a-f] ::= c) is 12
-	 * MV([0-9a-f] ::= d) is 13
-	 * MV([0-9a-f] ::= e) is 14
-	 * MV([0-9a-f] ::= f) is 15
-	 *
-	 * MV(DigitSequenceDec ::= [0-9])
-	 * 	is MV([0-9])
-	 * MV(DigitSequenceDec ::= DigitSequenceDec [0-9])
-	 * 	is 10 * MV(DigitSequenceDec) + MV([0-9])
-	 * MV([0-9] ::= 0) is 0
-	 * MV([0-9] ::= 1) is 1
-	 * MV([0-9] ::= 2) is 2
-	 * MV([0-9] ::= 3) is 3
-	 * MV([0-9] ::= 4) is 4
-	 * MV([0-9] ::= 5) is 5
-	 * MV([0-9] ::= 6) is 6
-	 * MV([0-9] ::= 7) is 7
-	 * MV([0-9] ::= 8) is 8
-	 * MV([0-9] ::= 9) is 9
-	 * ```
-	 * @param   cargo the string to compute
-	 * @param   radix the base in which to compute
-	 * @returns the mathematical value of the string in base 16
-	 */
-	static mv(cargo: string, radix = 10): number { // TODO let `base` be an instance field of `TokenNumber`
-		if (cargo.length === 0) throw new Error('Cannot compute mathematical value of empty string.')
-		return (cargo.length === 1) ? parseInt(cargo, radix)
-			: radix * TokenNumber.mv(cargo.slice(0, -1), radix) + TokenNumber.mv(cargo[cargo.length-1], radix)
-	}
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenNumber.TAGNAME, start_char, ...more_chars)
 	}
 	cook(): ParseLeaf {
-		return new ParseLeaf(this, TokenNumber.mv(this.source, 10))
+		return new ParseLeaf(this, Translator.mv(this.source, 10))
 	}
 }
 export class TokenWord extends Token {
