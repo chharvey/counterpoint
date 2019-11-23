@@ -1,5 +1,6 @@
 import Serializable from '../iface/Serializable.iface'
 import Scanner, {Char, STX, ETX} from './Scanner.class'
+import {ParseLeaf} from './Translator.class'
 
 
 /**
@@ -52,6 +53,13 @@ export abstract class Token implements Serializable {
 	}
 
 	/**
+	 * Produce a parse leaf with this token’s cooked value.
+	 * If this token is not to be sent to the parser, then return `null`.
+	 * @returns a new ParseLeaf object containing a computed value of this token, or `null`
+	 */
+	abstract cook(): ParseLeaf|null;
+
+	/**
 	 * @implements Serializable
 	 */
 	serialize(): string {
@@ -68,6 +76,9 @@ export class TokenFilebound extends Token {
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenFilebound.TAGNAME, start_char, ...more_chars)
 	}
+	cook(): ParseLeaf {
+		return new ParseLeaf(this, this.source === STX /* || !this.source === ETX */)
+	}
 	serialize(): string {
 		const formatted: string = new Map<string, string>([
 			[STX, '\u2402' /* SYMBOL FOR START OF TEXT */],
@@ -82,11 +93,17 @@ export class TokenWhitespace extends Token {
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenWhitespace.TAGNAME, start_char, ...more_chars)
 	}
+	cook(): null {
+		return null // we do not want to send whitespace to the parser
+	}
 }
 export abstract class TokenComment extends Token {
 	static readonly TAGNAME: string = 'COMMENT'
 	constructor(kind: string, start_char: Char, ...more_chars: Char[]) {
 		super(`${TokenComment.TAGNAME}-${kind}`, start_char, ...more_chars)
+	}
+	/* final */ cook(): null {
+		return null // we do not want to send comments to the parser
 	}
 }
 class TokenCommentLine extends TokenComment {
@@ -133,6 +150,9 @@ export abstract class TokenString extends Token {
 	}
 	constructor(kind: string, start_char: Char, ...more_chars: Char[]) {
 		super(`${TokenString.TAGNAME}-${kind}`, start_char, ...more_chars)
+	}
+	/* final */ cook(): ParseLeaf {
+		return new ParseLeaf(this, String.fromCodePoint(...this.codePoints))
 	}
 	abstract get codePoints(): readonly number[];
 }
@@ -368,6 +388,9 @@ export class TokenNumber extends Token {
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenNumber.TAGNAME, start_char, ...more_chars)
 	}
+	cook(): ParseLeaf {
+		return new ParseLeaf(this, TokenNumber.mv(this.source, 10))
+	}
 }
 export class TokenWord extends Token {
 	static readonly TAGNAME: string = 'WORD'
@@ -375,6 +398,12 @@ export class TokenWord extends Token {
 	static readonly CHARS_REST : readonly string[] = ''.split(' ')
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenWord.TAGNAME, start_char, ...more_chars)
+	}
+	/**
+	 * @param   id the running identifier count
+	 */
+	cook(id?: number /* bigint */): ParseLeaf {
+		return new ParseLeaf(this, id || -1)
 	}
 }
 export class TokenPunctuator extends Token {
@@ -384,6 +413,9 @@ export class TokenPunctuator extends Token {
 	static readonly CHARS_3: readonly string[] = ''.split(' ')
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenPunctuator.TAGNAME, start_char, ...more_chars)
+	}
+	cook(): ParseLeaf {
+		return new ParseLeaf(this, this.source)
 	}
 }
 

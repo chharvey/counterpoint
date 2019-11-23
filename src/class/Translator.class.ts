@@ -2,11 +2,6 @@ import Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Scanner.class'
 import Lexer, {
 	Token,
-	TokenFilebound,
-	TokenWhitespace,
-	TokenComment,
-	TokenString,
-	TokenNumber,
 	TokenWord,
 } from './Lexer.class'
 
@@ -93,21 +88,7 @@ export default class Translator {
 	 */
 	* generate(): Iterator<ParseLeaf|null> {
 		while (!this.iterator_result_token.done) {
-			if (this.t0 instanceof TokenFilebound) {
-				yield new ParseLeaf(this.t0, this.t0.source === STX /* || !this.t0.source === ETX */)
-			} else if (this.t0 instanceof TokenWhitespace) {
-				yield null // we do not want to send whitespace to the parser
-			} else if (this.t0 instanceof TokenComment) {
-				yield null // we do not want to send comments to the parser
-			} else if (this.t0 instanceof TokenString) {
-				yield new ParseLeaf(this.t0, String.fromCodePoint(...this.t0.codePoints))
-			} else if (this.t0 instanceof TokenNumber) {
-				yield new ParseLeaf(this.t0, TokenNumber.mv(this.t0.source, 10))
-			} else if (this.t0 instanceof TokenWord) {
-				yield new ParseLeaf(this.t0, this.idcount++)
-			} else /* if (this.t0 instanceof TokenPunctuator) */ {
-				yield new ParseLeaf(this.t0, this.t0.source)
-			}
+			yield (this.t0 instanceof TokenWord) ? this.t0.cook(this.idcount++) : this.t0.cook()
 			this.iterator_result_token = this.lexer.next()
 			this.t0 = this.iterator_result_token.value
 		}
