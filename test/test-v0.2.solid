@@ -70,8 +70,14 @@ and an \' escaped apostrophe (which won’t)`
 * 'a string literal with
 a line break'
 
+'a string literal\
+with a collapsed newline'
+
 `a string template with
 a line break`
+
+`a string template\
+with NO collapsed newline`
 
 `Interpolation works {{ 3 * 6 }}!`
 `Interpolation works with {{ `{{ 3 * 6 }}` }} too!`

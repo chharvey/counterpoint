@@ -14,7 +14,7 @@ import Lexer, {
  * A translator prepares the tokens for the parser.
  * It performs certian operations such as
  * - computing the mathematical value of numerical constants
- * - performing escapes of escape sequences in strings
+ * - performing escapes of escape sequences in strings (a.k.a “cooking”)
  * - optimizing identifiers
  */
 export default class Translator {
@@ -58,7 +58,7 @@ export default class Translator {
 			} else if (this.t0 instanceof TokenComment) {
 				yield null // we do not want to send comments to the parser
 			} else if (this.t0 instanceof TokenString) {
-				this.t0.value = this.t0.cargo // here is where we perform character escapes
+				this.t0.value = String.fromCodePoint(...this.t0.codePoints)
 				yield this.t0
 			} else if (this.t0 instanceof TokenNumber) {
 				/**
