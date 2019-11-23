@@ -1,5 +1,4 @@
 import Serializable from '../iface/Serializable.iface'
-
 import Scanner, {Char, STX, ETX} from './Scanner.class'
 
 
@@ -27,7 +26,7 @@ export abstract class Token implements Serializable {
 	 * @param more_chars - additional characters to add upon construction
 	 */
 	constructor(
-		private readonly tagname: string,
+		readonly tagname: string,
 		start_char: Char,
 		...more_chars: Char[]
 	) {
@@ -91,15 +90,8 @@ export class TokenWhitespace extends Token {
 }
 export abstract class TokenComment extends Token {
 	static readonly TAGNAME: string = 'COMMENT'
-	constructor(
-		private readonly kind: string,
-		start_char: Char,
-		...more_chars: Char[]
-	) {
-		super(TokenComment.TAGNAME, start_char, ...more_chars)
-	}
-	serialize(): string {
-		return super.serialize(this.kind ? `kind="${this.kind}"` : '')
+	constructor(kind: string, start_char: Char, ...more_chars: Char[]) {
+		super(`${TokenComment.TAGNAME}-${kind}`, start_char, ...more_chars)
 	}
 }
 class TokenCommentLine extends TokenComment {
@@ -148,16 +140,12 @@ export abstract class TokenString extends Token {
 		const cu2: number =           (codepoint - 0x10000) % 0x400
 		return [cu1 + 0xd800, cu2 + 0xdc00]
 	}
-	constructor(
-		private readonly kind: string,
-		start_char: Char,
-		...more_chars: Char[]
-	) {
-		super(TokenString.TAGNAME, start_char, ...more_chars)
+	constructor(kind: string, start_char: Char, ...more_chars: Char[]) {
+		super(`${TokenString.TAGNAME}-${kind}`, start_char, ...more_chars)
 	}
 	abstract get codePoints(): readonly number[];
 	serialize(): string {
-		return super.serialize(`kind="${this.kind}"`, this.value !== null ? `value="${this.value}"` : '')
+		return super.serialize(this.value !== null ? `value="${this.value}"` : '')
 		// `codepoints="${this.codePoints.map((n) => n.toString(16)).join()}"`
 	}
 }
