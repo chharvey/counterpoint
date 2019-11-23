@@ -61,31 +61,7 @@ export default class Translator {
 				this.t0.value = String.fromCodePoint(...this.t0.codePoints)
 				yield this.t0
 			} else if (this.t0 instanceof TokenNumber) {
-				/**
-				 * Compute the mathematical value of a `TokenNumber` token.
-				 * ```
-				 * MV(DigitSequenceDec ::= DigitSequenceDec [0-9])
-				 * 	is 10 * MV(DigitSequenceDec) + MV([0-9])
-				 * MV(DigitSequenceDec ::= 0) is 0
-				 * MV(DigitSequenceDec ::= 1) is 1
-				 * MV(DigitSequenceDec ::= 2) is 2
-				 * MV(DigitSequenceDec ::= 3) is 3
-				 * MV(DigitSequenceDec ::= 4) is 4
-				 * MV(DigitSequenceDec ::= 5) is 5
-				 * MV(DigitSequenceDec ::= 6) is 6
-				 * MV(DigitSequenceDec ::= 7) is 7
-				 * MV(DigitSequenceDec ::= 8) is 8
-				 * MV(DigitSequenceDec ::= 9) is 9
-				 * ```
-				 * @param   cargo the string to compute
-				 * @returns the mathematical value of the string
-				 */
-				const mv_dec = (cargo: string): number => { // base 10 // TODO let `base` be an instance field of `TokenNumber`
-					if (cargo.length === 0) throw new Error('Cannot compute mathematical value of empty string.')
-					return (cargo.length === 1) ? parseInt(cargo)
-						: 10 * mv_dec(cargo.slice(0, -1)) + mv_dec(cargo[cargo.length-1])
-				}
-				this.t0.value = mv_dec(this.t0.cargo)
+				this.t0.value = TokenNumber.mv(this.t0.cargo, 10)
 				yield this.t0
 			} else if (this.t0 instanceof TokenWord) {
 				this.t0.id = this.idcount++;

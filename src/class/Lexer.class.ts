@@ -342,6 +342,54 @@ export class TokenNumber extends Token {
 	static readonly TAGNAME: string = 'NUMBER'
 	static readonly CHARS: readonly string[] = '0 1 2 3 4 5 6 7 8 9'.split(' ')
 	static readonly DIGITS_HEX: readonly string[] = '0 1 2 3 4 5 6 7 8 9 a b c d e f'.split('')
+	/**
+	 * Compute the mathematical value of a `TokenNumber` token.
+	 * ```
+	 * MV(DigitSequenceHex ::= [0-9a-f])
+	 * 	is MV([0-9a-f])
+	 * MV(DigitSequenceHex ::= DigitSequenceHex [0-9a-f])
+	 * 	is 16 * MV(DigitSequenceHex) + MV([0-9a-f])
+	 * MV([0-9a-f] ::= 0) is 0
+	 * MV([0-9a-f] ::= 1) is 1
+	 * MV([0-9a-f] ::= 2) is 2
+	 * MV([0-9a-f] ::= 3) is 3
+	 * MV([0-9a-f] ::= 4) is 4
+	 * MV([0-9a-f] ::= 5) is 5
+	 * MV([0-9a-f] ::= 6) is 6
+	 * MV([0-9a-f] ::= 7) is 7
+	 * MV([0-9a-f] ::= 8) is 8
+	 * MV([0-9a-f] ::= 9) is 9
+	 * MV([0-9a-f] ::= a) is 10
+	 * MV([0-9a-f] ::= b) is 11
+	 * MV([0-9a-f] ::= c) is 12
+	 * MV([0-9a-f] ::= d) is 13
+	 * MV([0-9a-f] ::= e) is 14
+	 * MV([0-9a-f] ::= f) is 15
+	 *
+	 * MV(DigitSequenceDec ::= [0-9])
+	 * 	is MV([0-9])
+	 * MV(DigitSequenceDec ::= DigitSequenceDec [0-9])
+	 * 	is 10 * MV(DigitSequenceDec) + MV([0-9])
+	 * MV([0-9] ::= 0) is 0
+	 * MV([0-9] ::= 1) is 1
+	 * MV([0-9] ::= 2) is 2
+	 * MV([0-9] ::= 3) is 3
+	 * MV([0-9] ::= 4) is 4
+	 * MV([0-9] ::= 5) is 5
+	 * MV([0-9] ::= 6) is 6
+	 * MV([0-9] ::= 7) is 7
+	 * MV([0-9] ::= 8) is 8
+	 * MV([0-9] ::= 9) is 9
+	 * ```
+	 * @param   cargo the string to compute
+	 * @param   radix the base in which to compute
+	 * @returns the mathematical value of the string in base 16
+	 */
+	static mv(cargo: string, radix = 10): number { // TODO let `base` be an instance field of `TokenNumber`
+		if (cargo.length === 0) throw new Error('Cannot compute mathematical value of empty string.')
+		return (cargo.length === 1) ? parseInt(cargo, radix)
+			: radix * TokenNumber.mv(cargo.slice(0, -1), radix) + TokenNumber.mv(cargo[cargo.length-1], radix)
+	}
 	value: number|null = null
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenNumber.TAGNAME, start_char, ...more_chars)
