@@ -1,3 +1,4 @@
+import Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Scanner.class'
 import Lexer, {
 	Token,
@@ -11,10 +12,57 @@ import Lexer, {
 
 
 /**
+ * A ParseLeaf is a leaf in the parse tree. It consists of only a single token
+ * (a terminal in the syntactic grammar), and a cooked value.
+ */
+export class ParseLeaf implements Serializable {
+	/**
+	 * Construct a new ParseNode object.
+	 * @param   token - the raw token to prepare
+	 * @param   value - the cooked value of the raw text
+	 */
+	constructor(
+		private readonly token: Token,
+		private readonly value: string|number|boolean,
+	) {
+	}
+	/**
+	 * @implements Serializable
+	 */
+	serialize(): string {
+		const tagname: string = this.token.tagname
+		const attributes: string = ' ' + [
+			`line="${this.token.line_index+1}"`,
+			`col="${this.token.col_index+1}"`,
+			`value="${(typeof this.value === 'string') ? this.value
+				.replace(/\&/g, '&amp;' )
+				.replace(/\</g, '&lt;'  )
+				.replace(/\>/g, '&gt;'  )
+				.replace(/\'/g, '&apos;')
+				.replace(/\"/g, '&quot;')
+				.replace(/\\/g, '&#x5c;')
+				.replace(/\t/g, '&#x09;')
+				.replace(/\n/g, '&#x0a;')
+				.replace(/\r/g, '&#x0d;')
+				.replace(/\u0000/g, '&#x00;')
+			: this.value.toString()}"`,
+		].join(' ').trim()
+		const formatted: string = this.token.source
+			.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
+			.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
+		return `<${tagname}${attributes}>${formatted}</${tagname}>`
+	}
+}
+
+
+/**
  * A translator prepares the tokens for the parser.
  * It performs certian operations such as
- * - computing the mathematical value of numerical constants
- * - performing escapes of escape sequences in strings (a.k.a “cooking”)
+ * - removing whitespace and comment tokens
+ * - stripping out compiler directives (“pragmas”) and sending them
+ * 	separately to the compiler
+ * - computing the mathematical values of numerical constants
+ * - computing the string values, including escaping, of string constants (“cooking”)
  * - optimizing identifiers
  */
 export default class Translator {
@@ -43,29 +91,22 @@ export default class Translator {
 	 * Construct and return the next token in the source text.
 	 * @returns the next token, if it does not contain whitespace
 	 */
-	* generate(): Iterator<Token|null> {
+	* generate(): Iterator<ParseLeaf|null> {
 		while (!this.iterator_result_token.done) {
 			if (this.t0 instanceof TokenFilebound) {
-				this.t0.value = new Map<string, boolean>([
-					[STX, true ],
-					[ETX, false],
-				]).get(this.t0.source) !
-				yield this.t0
+				yield new ParseLeaf(this.t0, this.t0.source === STX /* || !this.t0.source === ETX */)
 			} else if (this.t0 instanceof TokenWhitespace) {
 				yield null // we do not want to send whitespace to the parser
 			} else if (this.t0 instanceof TokenComment) {
 				yield null // we do not want to send comments to the parser
 			} else if (this.t0 instanceof TokenString) {
-				this.t0.value = String.fromCodePoint(...this.t0.codePoints)
-				yield this.t0
+				yield new ParseLeaf(this.t0, String.fromCodePoint(...this.t0.codePoints))
 			} else if (this.t0 instanceof TokenNumber) {
-				this.t0.value = TokenNumber.mv(this.t0.source, 10)
-				yield this.t0
+				yield new ParseLeaf(this.t0, TokenNumber.mv(this.t0.source, 10))
 			} else if (this.t0 instanceof TokenWord) {
-				this.t0.id = this.idcount++;
-				yield this.t0
-			} else {
-				yield this.t0
+				yield new ParseLeaf(this.t0, this.idcount++)
+			} else /* if (this.t0 instanceof TokenPunctuator) */ {
+				yield new ParseLeaf(this.t0, this.t0.source)
 			}
 			this.iterator_result_token = this.lexer.next()
 			this.t0 = this.iterator_result_token.value

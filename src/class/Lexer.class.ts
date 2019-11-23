@@ -54,11 +54,10 @@ export abstract class Token implements Serializable {
 	/**
 	 * @implements Serializable
 	 */
-	serialize(...attrs: string[]): string {
+	serialize(): string {
 		const attributes: string = ' ' + [
 			`line="${this.line_index+1}"`,
 			`col="${this.col_index+1}"`,
-			...attrs
 		].join(' ').trim()
 		return `<${this.tagname}${attributes}>${this.source}</${this.tagname}>`
 	}
@@ -66,19 +65,15 @@ export abstract class Token implements Serializable {
 export class TokenFilebound extends Token {
 	static readonly TAGNAME: string = 'FILEBOUND'
 	static readonly CHARS: readonly string[] = [STX, ETX]
-	value: boolean|null = null
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenFilebound.TAGNAME, start_char, ...more_chars)
 	}
 	serialize(): string {
-		const attributes: string = ' ' + [
-			this.value !== null ? `value="${this.value}"` : ''
-		].join(' ').trim()
 		const formatted: string = new Map<string, string>([
 			[STX, '\u2402' /* SYMBOL FOR START OF TEXT */],
 			[ETX, '\u2403' /* SYMBOL FOR END OF TEXT   */],
 		]).get(this.source) !
-		return `<${TokenFilebound.TAGNAME}${attributes}>${formatted}</${TokenFilebound.TAGNAME}>`
+		return `<${TokenFilebound.TAGNAME}>${formatted}</${TokenFilebound.TAGNAME}>`
 	}
 }
 export class TokenWhitespace extends Token {
@@ -124,10 +119,6 @@ class TokenCommentDoc extends TokenComment {
 export abstract class TokenString extends Token {
 	static readonly TAGNAME: string = 'STRING'
 	/**
-	 * The cooked string value of this token.
-	 */
-	value: string|null = null
-	/**
 	 * The UTF16Encoding of a numeric code point value.
 	 * @see http://ecma-international.org/ecma-262/10.0/#sec-utf16encoding
 	 * @param   codepoint a positive integer within [0x0, 0x10ffff]
@@ -144,10 +135,6 @@ export abstract class TokenString extends Token {
 		super(`${TokenString.TAGNAME}-${kind}`, start_char, ...more_chars)
 	}
 	abstract get codePoints(): readonly number[];
-	serialize(): string {
-		return super.serialize(this.value !== null ? `value="${this.value}"` : '')
-		// `codepoints="${this.codePoints.map((n) => n.toString(16)).join()}"`
-	}
 }
 export class TokenStringLiteral extends TokenString {
 	static readonly CHARS_LITERAL_DELIM: '\'' = '\''
@@ -378,24 +365,16 @@ export class TokenNumber extends Token {
 		return (cargo.length === 1) ? parseInt(cargo, radix)
 			: radix * TokenNumber.mv(cargo.slice(0, -1), radix) + TokenNumber.mv(cargo[cargo.length-1], radix)
 	}
-	value: number|null = null
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenNumber.TAGNAME, start_char, ...more_chars)
-	}
-	serialize(): string {
-		return super.serialize(this.value !== null ? `value="${this.value}"` : '')
 	}
 }
 export class TokenWord extends Token {
 	static readonly TAGNAME: string = 'WORD'
 	static readonly CHARS_START: readonly string[] = ''.split(' ')
 	static readonly CHARS_REST : readonly string[] = ''.split(' ')
-	id: number|null = null
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TokenWord.TAGNAME, start_char, ...more_chars)
-	}
-	serialize(): string {
-		return super.serialize(this.id !== null ? `id="${this.id}"` : '')
 	}
 }
 export class TokenPunctuator extends Token {
@@ -482,7 +461,7 @@ export default class Lexer {
 					this.advance()
 				}
 				this.state_newline = [...wstoken.source].includes('\n')
-				// yield wstoken // only if we want the lexer to return whitespace
+				yield wstoken
 				continue;
 			}
 
