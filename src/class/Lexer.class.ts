@@ -169,13 +169,32 @@ export class TokenStringTemplate extends TokenString {
 }
 export class TokenNumber extends Token {
 	static readonly TAGNAME: string = 'NUMBER'
-	static readonly CHARS: readonly string[] = '0 1 2 3 4 5 6 7 8 9'.split(' ')
-	static readonly DIGITS_HEX: readonly string[] = '0 1 2 3 4 5 6 7 8 9 a b c d e f'.split('')
-	constructor(start_char: Char, ...more_chars: Char[]) {
+	static readonly RADIX_DEFAULT: number = 10
+	static readonly bases: ReadonlyMap<string, number> = new Map<string, number>([
+		['b',  2],
+		['q',  4],
+		['o',  8],
+		['d', 10],
+		['x', 16],
+		['z', 36],
+	])
+	static readonly digits: ReadonlyMap<number, readonly string[]> = new Map<number, readonly string[]>([
+		[ 2, '0 1'                                                                     .split(' ')],
+		[ 4, '0 1 2 3'                                                                 .split(' ')],
+		[ 8, '0 1 2 3 4 5 6 7'                                                         .split(' ')],
+		[10, '0 1 2 3 4 5 6 7 8 9'                                                     .split(' ')],
+		[16, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ')],
+		[36, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
+	])
+	constructor(
+		private readonly radix: number,
+		start_char: Char,
+		...more_chars: Char[]
+	) {
 		super(TokenNumber.TAGNAME, start_char, ...more_chars)
 	}
 	cook(): ParseLeaf {
-		return new ParseLeaf(this, Translator.mv(this.source, 10))
+		return new ParseLeaf(this, Translator.mv(this.source[0] === '\\' ? this.source.slice(2) : this.source, this.radix))
 	}
 }
 export class TokenWord extends Token {
@@ -365,7 +384,7 @@ export default class Lexer {
 							this.advance(3)
 							while(!Char.eq('}', this.c0)) {
 								cargo += this.c0.source
-								if (Char.inc(TokenNumber.DIGITS_HEX, this.c0)) {
+								if (Char.inc(TokenNumber.digits.get(16) !, this.c0)) {
 									token.add(this.c0)
 									this.advance()
 								} else {
@@ -420,10 +439,26 @@ export default class Lexer {
 						this.advance()
 					}
 				}
-			} else if (Char.inc(TokenNumber.CHARS, this.c0)) {
-				token = new TokenNumber(this.c0)
+			} else if (Char.eq('\\', this.c0)) {
+				/**** A possible integer literal was found. ****/
+				const line  : number = this.c0.line_index + 1
+				const col   : number = this.c0.col_index  + 1
+				const cargo : string = this.c0.source + (this.c1 ? this.c1.source : '')
+				if (!Char.inc([...TokenNumber.bases.keys()], this.c1)) {
+					throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
+				}
+				const radix: number = TokenNumber.bases.get(this.c1 !.source) !
+				token = new TokenNumber(radix, this.c0, this.c1 !)
+				this.advance(2)
+				while (Char.inc(TokenNumber.digits.get(radix) !, this.c0)) {
+					token.add(this.c0)
+					this.advance()
+				}
+			} else if (Char.inc(TokenNumber.digits.get(TokenNumber.RADIX_DEFAULT) !, this.c0)) {
+				/**** An integer literal in the default base was found. ****/
+				token = new TokenNumber(TokenNumber.RADIX_DEFAULT, this.c0)
 				this.advance()
-				while (!this.iterator_result_char.done && Char.inc(TokenNumber.CHARS, this.c0)) {
+				while (Char.inc(TokenNumber.digits.get(TokenNumber.RADIX_DEFAULT) !, this.c0)) {
 					token.add(this.c0)
 					this.advance()
 				}

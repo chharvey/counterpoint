@@ -1,7 +1,7 @@
-5  +  3  --- single-line comment  *  2
+500  +  30  --- single-line comment  *  2
 
-5  +  3  "multiline
-comment" *  2
+\o55  +  \q33  "multiline
+comment" *  \x2
 
 --- the following is an empty single-line comment:
 ---
@@ -10,9 +10,14 @@ comment" *  2
 ""
 " "
 
-1 + "" + 2 + "" + 3
+\b10 + "" + \z27y + "" + \d301
 
-1 + '' + 2 + '' + 3
+\x322 + '' + \z2r4k + '' + \o322
+
+--- an invalid integer:
+--- \d39c
+--- an invalid escape sequence:
+--- \h39c
 
 --- the following is an empty nestable multiline comment:
 "{}"
