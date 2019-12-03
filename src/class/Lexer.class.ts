@@ -301,12 +301,11 @@ export default class Lexer {
 				yield wstoken
 				continue;
 			}
-
 			let token: Token;
 			if (Char.inc(TokenFilebound.CHARS, this.c0)) {
 				token = new TokenFilebound(this.c0)
 				this.advance()
-			} else if (Char.eq(TokenCommentLine.CHARS_LINE, this.c0, this.c1, this.c2)) { // we found a line comment
+			} else if (Char.eq(TokenCommentLine.CHARS_LINE, this.c0, this.c1, this.c2)) {
 				token = new TokenCommentLine(this.c0, this.c1 !, this.c2 !)
 				this.advance(TokenCommentLine.CHARS_LINE.length)
 				while (!this.iterator_result_char.done && !Char.eq('\n', this.c0)) {
@@ -315,7 +314,7 @@ export default class Lexer {
 					this.advance()
 				}
 				// do not add '\n' to token
-			} else if (Char.eq('"', this.c0)) { // we found the start of a doc comment or multiline comment
+			} else if (Char.eq('"', this.c0)) {
 				if (this.state_newline && Char.eq(TokenCommentDoc.CHARS_DOC_START + '\n', this.c0, this.c1, this.c2, this.c3)) { // we found a doc comment
 					token = new TokenCommentDoc(this.c0, this.c1 !, this.c2 !, this.c3 !)
 					this.advance((TokenCommentDoc.CHARS_DOC_START + '\n').length)
@@ -435,7 +434,6 @@ export default class Lexer {
 					}
 				}
 			} else if (Char.eq('\\', this.c0)) {
-				/**** A possible integer literal was found. ****/
 				const line  : number = this.c0.line_index + 1
 				const col   : number = this.c0.col_index  + 1
 				const cargo : string = this.c0.source + (this.c1 ? this.c1.source : '')
@@ -450,7 +448,6 @@ export default class Lexer {
 					this.advance()
 				}
 			} else if (Char.inc(TokenNumber.digits.get(TokenNumber.RADIX_DEFAULT) !, this.c0)) {
-				/**** An integer literal in the default base was found. ****/
 				token = new TokenNumber(TokenNumber.RADIX_DEFAULT, this.c0)
 				this.advance()
 				while (Char.inc(TokenNumber.digits.get(TokenNumber.RADIX_DEFAULT) !, this.c0)) {
