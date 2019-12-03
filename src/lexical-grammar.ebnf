@@ -73,7 +73,12 @@ StringTemplateCharacters ::= [^`{\#x03] StringTemplateCharacters?
 
 Number ::= IntegerLiteral
 
-IntegerLiteral ::= DigitSequenceDec
+IntegerLiteral ::= "\b"  DigitSequenceBin
+|                  "\q"  DigitSequenceQua
+|                  "\o"  DigitSequenceOct
+|                  "\d"? DigitSequenceDec
+|                  "\x"  DigitSequenceHex
+|                  "\z"  DigitSequenceHTD
 
 DigitSequenceBin ::= DigitSequenceBin? [0-1]
 DigitSequenceQua ::= DigitSequenceQua? [0-3]
