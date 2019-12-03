@@ -358,24 +358,18 @@ export default class Lexer {
 							token.add(this.c0, this.c1 !)
 							this.advance(2)
 						} else if (Char.eq('u{', this.c1, this.c2)) { // an escape sequence
-							const sequence: {
-								readonly line: number,
-								readonly col : number,
-								cargo: string,
-							} = {
-								line: this.c0.line_index + 1,
-								col : this.c0.col_index + 1,
-								cargo: this.c0.source + this.c1 !.source + this.c2 !.source,
-							}
+							const line : number = this.c0.line_index + 1
+							const col  : number = this.c0.col_index  + 1
+							let cargo  : string = this.c0.source + this.c1 !.source + this.c2 !.source
 							token.add(this.c0, this.c1 !, this.c2 !)
 							this.advance(3)
 							while(!Char.eq('}', this.c0)) {
-								sequence.cargo += this.c0.source
+								cargo += this.c0.source
 								if (Char.inc(TokenNumber.DIGITS_HEX, this.c0)) {
 									token.add(this.c0)
 									this.advance()
 								} else {
-									throw new Error(`Invalid escape sequence: \`${sequence.cargo}\` at line ${sequence.line} col ${sequence.col}.`)
+									throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
 								}
 							}
 							token.add(this.c0)
