@@ -295,12 +295,14 @@ export default class Translator {
 	}
 
 	/**
-	 * Construct and return the next token in the source text.
-	 * @returns the next token, if it does not contain whitespace
+	 * Prepare the next token for the parser.
+	 * Whitespace and comment tokens are filtered out.
+	 * @returns the next token, with modified contents
 	 */
-	* generate(): Iterator<ParseLeaf|null> {
+	* generate(): Iterator<ParseLeaf> {
 		while (!this.iterator_result_token.done) {
-			yield (this.t0 instanceof TokenWord) ? this.t0.cook(this.idcount++) : this.t0.cook()
+			const cooked: ParseLeaf|null = (this.t0 instanceof TokenWord) ? this.t0.cook(this.idcount++) : this.t0.cook()
+			if (cooked) yield cooked
 			this.iterator_result_token = this.lexer.next()
 			this.t0 = this.iterator_result_token.value
 		}

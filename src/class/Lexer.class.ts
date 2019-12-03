@@ -267,7 +267,7 @@ export default class Lexer {
 
 	/**
 	 * Construct and return the next token in the source text.
-	 * @returns the next token, if it does not contain whitespace
+	 * @returns the next token
 	 */
 	* generate(): Iterator<Token> {
 		while (!this.iterator_result_char.done) {
