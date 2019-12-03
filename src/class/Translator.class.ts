@@ -228,50 +228,85 @@ export default class Translator {
 	/**
 	 * Compute the mathematical value of a `TokenNumber` token.
 	 * ```
-	 * MV(DigitSequenceHex ::= [0-9a-f])
-	 * 	is MV([0-9a-f])
-	 * MV(DigitSequenceHex ::= DigitSequenceHex [0-9a-f])
-	 * 	is 16 * MV(DigitSequenceHex) + MV([0-9a-f])
-	 * MV([0-9a-f] ::= 0) is 0
-	 * MV([0-9a-f] ::= 1) is 1
-	 * MV([0-9a-f] ::= 2) is 2
-	 * MV([0-9a-f] ::= 3) is 3
-	 * MV([0-9a-f] ::= 4) is 4
-	 * MV([0-9a-f] ::= 5) is 5
-	 * MV([0-9a-f] ::= 6) is 6
-	 * MV([0-9a-f] ::= 7) is 7
-	 * MV([0-9a-f] ::= 8) is 8
-	 * MV([0-9a-f] ::= 9) is 9
-	 * MV([0-9a-f] ::= a) is 10
-	 * MV([0-9a-f] ::= b) is 11
-	 * MV([0-9a-f] ::= c) is 12
-	 * MV([0-9a-f] ::= d) is 13
-	 * MV([0-9a-f] ::= e) is 14
-	 * MV([0-9a-f] ::= f) is 15
+	 * MV(DigitSequenceBin ::= [0-1])
+	 * 	is MV([0-1])
+	 * MV(DigitSequenceBin ::= DigitSequenceBin [0-1])
+	 * 	is 2 * MV(DigitSequenceBin) + MV([0-1])
+	 *
+	 * MV(DigitSequenceQua ::= [0-3])
+	 * 	is MV([0-3])
+	 * MV(DigitSequenceQua ::= DigitSequenceQua [0-3])
+	 * 	is 4 * MV(DigitSequenceQua) + MV([0-3])
+	 *
+	 * MV(DigitSequenceOct ::= [0-7])
+	 * 	is MV([0-7])
+	 * MV(DigitSequenceOct ::= DigitSequenceOct [0-7])
+	 * 	is 8 * MV(DigitSequenceOct) + MV([0-7])
 	 *
 	 * MV(DigitSequenceDec ::= [0-9])
 	 * 	is MV([0-9])
 	 * MV(DigitSequenceDec ::= DigitSequenceDec [0-9])
 	 * 	is 10 * MV(DigitSequenceDec) + MV([0-9])
-	 * MV([0-9] ::= 0) is 0
-	 * MV([0-9] ::= 1) is 1
-	 * MV([0-9] ::= 2) is 2
-	 * MV([0-9] ::= 3) is 3
-	 * MV([0-9] ::= 4) is 4
-	 * MV([0-9] ::= 5) is 5
-	 * MV([0-9] ::= 6) is 6
-	 * MV([0-9] ::= 7) is 7
-	 * MV([0-9] ::= 8) is 8
-	 * MV([0-9] ::= 9) is 9
+	 *
+	 * MV(DigitSequenceHex ::= [0-9a-f])
+	 * 	is MV([0-9a-f])
+	 * MV(DigitSequenceHex ::= DigitSequenceHex [0-9a-f])
+	 * 	is 16 * MV(DigitSequenceHex) + MV([0-9a-f])
+	 *
+	 * MV(DigitSequenceHTD ::= [0-9a-z])
+	 * 	is MV([0-9a-z])
+	 * MV(DigitSequenceHTD ::= DigitSequenceHTD [0-9a-z])
+	 * 	is 36 * MV(DigitSequenceHTD) + MV([0-9a-z])
+	 *
+	 * MV([0-9a-z] ::= 0) is MV([0-9a-f] ::= 0) is MV([0-9] ::= 0) is MV([0-7] ::= 0) is MV([0-3] ::= 0) is MV([0-1] ::= 0) is 0
+	 * MV([0-9a-z] ::= 1) is MV([0-9a-f] ::= 1) is MV([0-9] ::= 1) is MV([0-7] ::= 1) is MV([0-3] ::= 1) is MV([0-1] ::= 1) is 1
+	 * MV([0-9a-z] ::= 2) is MV([0-9a-f] ::= 2) is MV([0-9] ::= 2) is MV([0-7] ::= 2) is MV([0-3] ::= 2) is 2
+	 * MV([0-9a-z] ::= 3) is MV([0-9a-f] ::= 3) is MV([0-9] ::= 3) is MV([0-7] ::= 3) is MV([0-3] ::= 3) is 3
+	 * MV([0-9a-z] ::= 4) is MV([0-9a-f] ::= 4) is MV([0-9] ::= 4) is MV([0-7] ::= 4) is 4
+	 * MV([0-9a-z] ::= 5) is MV([0-9a-f] ::= 5) is MV([0-9] ::= 5) is MV([0-7] ::= 5) is 5
+	 * MV([0-9a-z] ::= 6) is MV([0-9a-f] ::= 6) is MV([0-9] ::= 6) is MV([0-7] ::= 6) is 6
+	 * MV([0-9a-z] ::= 7) is MV([0-9a-f] ::= 7) is MV([0-9] ::= 7) is MV([0-7] ::= 7) is 7
+	 * MV([0-9a-z] ::= 8) is MV([0-9a-f] ::= 8) is MV([0-9] ::= 8) is 8
+	 * MV([0-9a-z] ::= 9) is MV([0-9a-f] ::= 9) is MV([0-9] ::= 9) is 9
+	 * MV([0-9a-z] ::= a) is MV([0-9a-f] ::= a) is 10
+	 * MV([0-9a-z] ::= b) is MV([0-9a-f] ::= b) is 11
+	 * MV([0-9a-z] ::= c) is MV([0-9a-f] ::= c) is 12
+	 * MV([0-9a-z] ::= d) is MV([0-9a-f] ::= d) is 13
+	 * MV([0-9a-z] ::= e) is MV([0-9a-f] ::= e) is 14
+	 * MV([0-9a-z] ::= f) is MV([0-9a-f] ::= f) is 15
+	 * MV([0-9a-z] ::= g) is 16
+	 * MV([0-9a-z] ::= h) is 17
+	 * MV([0-9a-z] ::= i) is 18
+	 * MV([0-9a-z] ::= j) is 19
+	 * MV([0-9a-z] ::= k) is 20
+	 * MV([0-9a-z] ::= l) is 21
+	 * MV([0-9a-z] ::= m) is 22
+	 * MV([0-9a-z] ::= n) is 23
+	 * MV([0-9a-z] ::= o) is 24
+	 * MV([0-9a-z] ::= p) is 25
+	 * MV([0-9a-z] ::= q) is 26
+	 * MV([0-9a-z] ::= r) is 27
+	 * MV([0-9a-z] ::= s) is 28
+	 * MV([0-9a-z] ::= t) is 29
+	 * MV([0-9a-z] ::= u) is 30
+	 * MV([0-9a-z] ::= v) is 31
+	 * MV([0-9a-z] ::= w) is 32
+	 * MV([0-9a-z] ::= x) is 33
+	 * MV([0-9a-z] ::= y) is 34
+	 * MV([0-9a-z] ::= z) is 35
 	 * ```
 	 * @param   text the string to compute
 	 * @param   radix the base in which to compute
-	 * @returns the mathematical value of the string in base 16
+	 * @returns the mathematical value of the string in the given base
 	 */
 	static mv(text: string, radix = 10): number { // TODO let `base` be an instance field of `TokenNumber`
 		if (text.length === 0) throw new Error('Cannot compute mathematical value of empty string.')
-		return (text.length === 1) ? parseInt(text, radix)
-			: radix * Translator.mv(text.slice(0, -1), radix) + Translator.mv(text[text.length-1], radix)
+		if (text.length === 1) {
+			const digitvalue: number = parseInt(text, radix)
+			if (Number.isNaN(digitvalue)) throw new Error('Invalid number format.')
+			return digitvalue
+		}
+		return radix * Translator.mv(text.slice(0, -1), radix) + Translator.mv(text[text.length-1], radix)
 	}
 
 

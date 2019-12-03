@@ -75,7 +75,11 @@ Number ::= IntegerLiteral
 
 IntegerLiteral ::= DigitSequenceDec
 
-DigitSequenceDec ::= [0-9]
-|                    DigitSequenceDec [0-9]
+DigitSequenceBin ::= DigitSequenceBin? [0-1]
+DigitSequenceQua ::= DigitSequenceQua? [0-3]
+DigitSequenceOct ::= DigitSequenceOct? [0-7]
+DigitSequenceDec ::= DigitSequenceDec? [0-9]
+DigitSequenceHex ::= DigitSequenceHex? [0-9a-f]
+DigitSequenceHTD ::= DigitSequenceHTD? [0-9a-z]
 
 Punctuator ::= "+" | "-" | "*" | "/" | "^" | "(" | ")"
