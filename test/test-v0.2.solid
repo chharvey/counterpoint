@@ -3,6 +3,22 @@
 \o55  +  \q33  "multiline
 comment" *  \x2
 
+007
+
+"numeric separators"
+100_000_000
+\b1_0000_0000
+\d123_456_789
+\q123_012_3
+\o123_456_70
+\xba_da_55
+\zzyxwvu_6
+
+"not lex errors, but future parse errors:"
+\b1_0040_0000
+\q123_142_3
+\o123_456_78
+
 \ the following is an empty line comment:
 \
 
