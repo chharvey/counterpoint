@@ -4,6 +4,7 @@ import Lexer, {
 	Token,
 	TokenStringLiteral,
 	TokenStringTemplate,
+	TokenNumber,
 	TokenWord,
 } from './Lexer.class'
 
@@ -216,32 +217,32 @@ export default class Translator {
 	 * ```
 	 * MV(DigitSequenceBin ::= [0-1])
 	 * 	is MV([0-1])
-	 * MV(DigitSequenceBin ::= DigitSequenceBin [0-1])
+	 * MV(DigitSequenceBin ::= DigitSequenceBin "_"? [0-1])
 	 * 	is 2 * MV(DigitSequenceBin) + MV([0-1])
 	 *
 	 * MV(DigitSequenceQua ::= [0-3])
 	 * 	is MV([0-3])
-	 * MV(DigitSequenceQua ::= DigitSequenceQua [0-3])
+	 * MV(DigitSequenceQua ::= DigitSequenceQua "_"? [0-3])
 	 * 	is 4 * MV(DigitSequenceQua) + MV([0-3])
 	 *
 	 * MV(DigitSequenceOct ::= [0-7])
 	 * 	is MV([0-7])
-	 * MV(DigitSequenceOct ::= DigitSequenceOct [0-7])
+	 * MV(DigitSequenceOct ::= DigitSequenceOct "_"? [0-7])
 	 * 	is 8 * MV(DigitSequenceOct) + MV([0-7])
 	 *
 	 * MV(DigitSequenceDec ::= [0-9])
 	 * 	is MV([0-9])
-	 * MV(DigitSequenceDec ::= DigitSequenceDec [0-9])
+	 * MV(DigitSequenceDec ::= DigitSequenceDec "_"? [0-9])
 	 * 	is 10 * MV(DigitSequenceDec) + MV([0-9])
 	 *
 	 * MV(DigitSequenceHex ::= [0-9a-f])
 	 * 	is MV([0-9a-f])
-	 * MV(DigitSequenceHex ::= DigitSequenceHex [0-9a-f])
+	 * MV(DigitSequenceHex ::= DigitSequenceHex "_"? [0-9a-f])
 	 * 	is 16 * MV(DigitSequenceHex) + MV([0-9a-f])
 	 *
 	 * MV(DigitSequenceHTD ::= [0-9a-z])
 	 * 	is MV([0-9a-z])
-	 * MV(DigitSequenceHTD ::= DigitSequenceHTD [0-9a-z])
+	 * MV(DigitSequenceHTD ::= DigitSequenceHTD "_"? [0-9a-z])
 	 * 	is 36 * MV(DigitSequenceHTD) + MV([0-9a-z])
 	 *
 	 * MV([0-9a-z] ::= 0) is MV([0-9a-f] ::= 0) is MV([0-9] ::= 0) is MV([0-7] ::= 0) is MV([0-3] ::= 0) is MV([0-1] ::= 0) is 0
@@ -286,6 +287,9 @@ export default class Translator {
 	 * @returns the mathematical value of the string in the given base
 	 */
 	static mv(text: string, radix = 10): number { // TODO let `base` be an instance field of `TokenNumber`
+		if (text[text.length-1] === TokenNumber.SEPARATOR) {
+			text = text.slice(0, -1)
+		}
 		if (text.length === 0) throw new Error('Cannot compute mathematical value of empty string.')
 		if (text.length === 1) {
 			const digitvalue: number = parseInt(text, radix)
