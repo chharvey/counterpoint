@@ -1,12 +1,39 @@
-500  +  30  --- single-line comment  *  2
+500  +  30  \ line comment  *  2
 
 \o55  +  \q33  "multiline
 comment" *  \x2
 
---- the following is an empty single-line comment:
----
+\ the following is an empty line comment:
+\
 
---- the following are empty multiline comments:
+  \a \ line comment starting with "a"
+\ \b \ line comment starting with "b"
+  \c \ line comment starting with "c"
+\ \d \ line comment starting with "d"
+  \e \ line comment starting with "e"
+  \f \ line comment starting with "f"
+  \g \ line comment starting with "g"
+  \h \ line comment starting with "h"
+  \i \ line comment starting with "i"
+  \j \ line comment starting with "j"
+  \k \ line comment starting with "k"
+  \l \ line comment starting with "l"
+  \m \ line comment starting with "m"
+  \n \ line comment starting with "n"
+\ \o \ line comment starting with "o"
+  \p \ line comment starting with "p"
+\ \q \ line comment starting with "q"
+  \r \ line comment starting with "r"
+  \s \ line comment starting with "s"
+  \t \ line comment starting with "t"
+  \u \ line comment starting with "u"
+  \v \ line comment starting with "v"
+  \w \ line comment starting with "w"
+\ \x \ line comment starting with "x"
+  \y \ line comment starting with "y"
+\ \z \ line comment starting with "z"
+
+\ the following are empty multiline comments:
 ""
 " "
 
@@ -14,12 +41,10 @@ comment" *  \x2
 
 \x322 + '' + \z2r4k + '' + \o322
 
---- an invalid integer:
---- \d39c
---- an invalid escape sequence:
---- \h39c
+\ an invalid integer:
+\ \d39c
 
---- the following is an empty nestable multiline comment:
+\ the following is an empty nestable multiline comment:
 "{}"
 
 5  *  3  "{multiline
@@ -43,7 +68,7 @@ comment}" *  3
 """ 3 * 2
 5 + 3 """
 
---- below is an empty Solidoc comment:
+\ below is an empty Solidoc comment:
 
 """
 """
@@ -63,14 +88,16 @@ comment}" *  3
 
 'a string literal with an empty unicode \u{} escape sequence (default escaped to U+0000)'
 
---- 'a string literal with an invalid escape sequence \u{6g}'
+\ 'a string literal with an invalid escape sequence \u{6g}'
 
---- 'a string literal with an invalid escape sequence \u{61'
+\ 'a string literal with an invalid escape sequence \u{61'
 
 `a string template with an \` escaped back-tick (which will be escaped)
 and an \' escaped apostrophe (which won’t)`
 
 `a string template with an \u0061 escape sequence (which won’t be escaped)`
+
+`a string template with \\` an escaped backslash followed by a back-tick.`
 
 * 'a string literal with
 a line break'
@@ -97,7 +124,7 @@ with NO collapsed newline`
 
 `A string template head token not followed by a middle or tail {{
 
-'Here is a string --- that contains a single-line comment start marker.'
+'Here is a string \ that contains a line comment start marker.'
 'Here is a string "that contains" a multiline comment.'
 'Here is a string "that contains a comment start marker but no end.'
 'Here is a string "{that contains a nestable comment start marker but no end.'

@@ -107,7 +107,7 @@ export abstract class TokenComment extends Token {
 	}
 }
 class TokenCommentLine extends TokenComment {
-	static readonly CHARS_LINE: '---' = '---'
+	static readonly CHARS_LINE: '\\' = '\\'
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super('LINE', start_char, ...more_chars)
 	}
@@ -161,8 +161,8 @@ export class TokenStringTemplate extends TokenString {
 		const c0: string = this.source
 		return new ParseLeaf(this, String.fromCodePoint(...Translator.svt(
 			c0.slice( // cut off the string delimiters
-				(c0[0          ] === '`') ?  1 : /* if (c0[0          ] + c0[1          ] === '}}') */  2,
-				(c0[c0.length-1] === '`') ? -1 : /* if (c0[c0.length-2] + c0[c0.length-1] === '{{') */ -2,
+				(c0[0          ] === TokenStringTemplate.CHARS_TEMPLATE_DELIM) ?  1 : /* if (c0[0          ] + c0[1          ] === TokenStringTemplate.CHARS_TEMPLATE_INTERP_END  ) */  2,
+				(c0[c0.length-1] === TokenStringTemplate.CHARS_TEMPLATE_DELIM) ? -1 : /* if (c0[c0.length-2] + c0[c0.length-1] === TokenStringTemplate.CHARS_TEMPLATE_INTERP_START) */ -2,
 			)
 		)))
 	}
@@ -283,6 +283,183 @@ export default class Lexer {
 			this.advance()
 		}
 	}
+	private lexFilebound(): TokenFilebound {
+		const token: TokenFilebound = new TokenFilebound(this.c0)
+		this.advance()
+		return token
+	}
+	private lexWhitespace(): TokenWhitespace {
+		const token: TokenWhitespace = new TokenWhitespace(this.c0)
+		this.advance()
+		while (!this.iterator_result_char.done && Char.inc(TokenWhitespace.CHARS, this.c0)) {
+			token.add(this.c0)
+			this.advance()
+		}
+		return token
+	}
+	private lexCommentLine(): TokenCommentLine {
+		const token: TokenCommentLine = new TokenCommentLine(this.c0)
+		this.advance(TokenCommentLine.CHARS_LINE.length)
+		while (!this.iterator_result_char.done && !Char.eq('\n', this.c0)) {
+			if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
+			token.add(this.c0)
+			this.advance()
+		}
+		// do not add '\n' to token
+		return token
+	}
+	private lexCommentMulti(): TokenCommentMulti {
+		const token: TokenCommentMulti = new TokenCommentMulti(this.c0)
+		this.advance()
+		while (!this.iterator_result_char.done && !Char.eq(TokenCommentMulti.CHARS_MULTI_END, this.c0)) {
+			if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
+			token.add(this.c0)
+			this.advance()
+		}
+		// add ending delim to token
+		token.add(this.c0)
+		this.advance(TokenCommentMulti.CHARS_MULTI_END.length)
+		return token
+	}
+	private lexCommentMultiNest(): TokenCommentMultiNest {
+		const token: TokenCommentMultiNest = new TokenCommentMultiNest(this.c0, this.c1 !)
+		this.advance(TokenCommentMultiNest.CHARS_MULTI_NEST_START.length)
+		this.comment_multiline_level++;
+		while (this.comment_multiline_level !== 0) {
+			while (!this.iterator_result_char.done && !Char.eq(TokenCommentMultiNest.CHARS_MULTI_NEST_END, this.c0, this.c1)) {
+				if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
+				if (Char.eq(TokenCommentMultiNest.CHARS_MULTI_NEST_START, this.c0, this.c1)) {
+					token.add(this.c0, this.c1 !)
+					this.advance(TokenCommentMultiNest.CHARS_MULTI_NEST_START.length)
+					this.comment_multiline_level++;
+				} else {
+					token.add(this.c0)
+					this.advance()
+				}
+			}
+			// add ending delim to token
+			token.add(this.c0, this.c1 !)
+			this.advance(TokenCommentMultiNest.CHARS_MULTI_NEST_END.length)
+			this.comment_multiline_level--;
+		}
+		return token
+	}
+	private lexCommentDoc(): TokenCommentDoc {
+		const token: TokenCommentDoc = new TokenCommentDoc(this.c0, this.c1 !, this.c2 !, this.c3 !)
+		this.advance((TokenCommentDoc.CHARS_DOC_START + '\n').length)
+		while (!this.iterator_result_char.done) {
+			if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
+			if (
+				!Char.eq(TokenCommentDoc.CHARS_DOC_END + '\n', this.c0, this.c1, this.c2, this.c3) ||
+				token.source.slice(token.source.lastIndexOf('\n') + 1).trim() !== '' // the tail end of the token does not match `/\n(\s)*/` (a newline followed by whitespace)
+			) {
+				token.add(this.c0)
+				this.advance()
+			} else {
+				break;
+			}
+		}
+		// add ending delim to token
+		token.add(this.c0, this.c1 !, this.c2 !)
+		this.advance(TokenCommentDoc.CHARS_DOC_END.length)
+		return token
+	}
+	private lexStringLiteral(): TokenStringLiteral {
+		const token: TokenStringLiteral = new TokenStringLiteral(this.c0)
+		this.advance()
+		while (!this.iterator_result_char.done && !Char.eq(TokenStringLiteral.CHARS_LITERAL_DELIM, this.c0)) {
+			if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of string')
+			if (Char.eq('\\', this.c0)) { // possible escape or line continuation
+				if (Char.inc([TokenStringLiteral.CHARS_LITERAL_DELIM, '\\', 's','t','n','r'], this.c1)) { // an escaped character literal
+					token.add(this.c0, this.c1 !)
+					this.advance(2)
+				} else if (Char.eq('u{', this.c1, this.c2)) { // an escape sequence
+					const line : number = this.c0.line_index + 1
+					const col  : number = this.c0.col_index  + 1
+					let cargo  : string = this.c0.source + this.c1 !.source + this.c2 !.source
+					token.add(this.c0, this.c1 !, this.c2 !)
+					this.advance(3)
+					while(!Char.eq('}', this.c0)) {
+						cargo += this.c0.source
+						if (Char.inc(TokenNumber.digits.get(16) !, this.c0)) {
+							token.add(this.c0)
+							this.advance()
+						} else {
+							throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
+						}
+					}
+					token.add(this.c0)
+					this.advance()
+				} else if (Char.eq('\n', this.c1)) { // a line continuation (LF)
+					token.add(this.c0, this.c1 !)
+					this.advance(2)
+				} else if (Char.eq('\r\n', this.c1, this.c2)) { // a line continuation (CRLF)
+					token.add(this.c0, this.c1 !, this.c2 !)
+					this.advance(3)
+				} else { // a backslash escapes the following character
+					token.add(this.c0)
+					this.advance()
+				}
+			} else {
+				token.add(this.c0)
+				this.advance()
+			}
+		}
+		// add ending delim to token
+		token.add(this.c0)
+		this.advance(TokenStringLiteral.CHARS_LITERAL_DELIM.length)
+		return token
+	}
+	private lexStringTemplate(): TokenStringTemplate {
+		const token: TokenStringTemplate = new TokenStringTemplate(this.c0)
+		this.advance()
+		while (!this.iterator_result_char.done) {
+			if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of string')
+			if (Char.eq('\\' + TokenStringTemplate.CHARS_TEMPLATE_DELIM, this.c0, this.c1)) { // an escaped template delimiter
+				token.add(this.c0, this.c1 !)
+				this.advance(2)
+			} else if (Char.eq(TokenStringTemplate.CHARS_TEMPLATE_INTERP_START, this.c0, this.c1)) { // end string template head/middle
+				// add start interpolation delim to token
+				token.add(this.c0, this.c1 !)
+				this.advance(TokenStringTemplate.CHARS_TEMPLATE_INTERP_START.length)
+				break;
+			} else if (Char.eq(TokenStringTemplate.CHARS_TEMPLATE_DELIM, this.c0)) { // end string template full/tail
+				// add ending delim to token
+				token.add(this.c0)
+				this.advance(TokenStringTemplate.CHARS_TEMPLATE_DELIM.length)
+				break;
+			} else {
+				token.add(this.c0)
+				this.advance()
+			}
+		}
+		return token
+	}
+	private lexNumber(radix?: number /* TODO bigint */): TokenNumber {
+		const r: number = radix || TokenNumber.RADIX_DEFAULT // do not use default parameter because of the ternary check below
+		let token: TokenNumber;
+		if (typeof radix === 'number') {
+			token = new TokenNumber(r, this.c0, this.c1 !)
+			this.advance(2)
+		} else {
+			token = new TokenNumber(r, this.c0)
+			this.advance()
+		}
+		while (Char.inc(TokenNumber.digits.get(r) !, this.c0)) {
+			token.add(this.c0)
+			this.advance()
+		}
+		return token
+	}
+	private lexWord(): TokenWord {
+		const token: TokenWord = new TokenWord(this.c0)
+		this.advance()
+		while (!this.iterator_result_char.done && Char.inc(TokenWord.CHARS_REST, this.c0)) {
+			token.add(this.c0)
+			this.advance()
+		}
+		return token
+	}
 
 	/**
 	 * Construct and return the next token in the source text.
@@ -290,185 +467,41 @@ export default class Lexer {
 	 */
 	* generate(): Iterator<Token> {
 		while (!this.iterator_result_char.done) {
-			if (Char.inc(TokenWhitespace.CHARS, this.c0)) {
-				const wstoken: TokenWhitespace = new TokenWhitespace(this.c0)
-				this.advance()
-				while (!this.iterator_result_char.done && Char.inc(TokenWhitespace.CHARS, this.c0)) {
-					wstoken.add(this.c0)
-					this.advance()
-				}
-				this.state_newline = [...wstoken.source].includes('\n')
-				yield wstoken
-				continue;
-			}
-
 			let token: Token;
 			if (Char.inc(TokenFilebound.CHARS, this.c0)) {
-				token = new TokenFilebound(this.c0)
-				this.advance()
-			} else if (Char.eq(TokenCommentLine.CHARS_LINE, this.c0, this.c1, this.c2)) { // we found a line comment
-				token = new TokenCommentLine(this.c0, this.c1 !, this.c2 !)
-				this.advance(TokenCommentLine.CHARS_LINE.length)
-				while (!this.iterator_result_char.done && !Char.eq('\n', this.c0)) {
-					if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
-					token.add(this.c0)
-					this.advance()
+				token = this.lexFilebound()
+			} else if (Char.inc(TokenWhitespace.CHARS, this.c0)) {
+				token = this.lexWhitespace()
+			} else if (Char.eq('\\', this.c0)) { // we found a line comment or an integer literal with a radix
+				if (Char.inc([...TokenNumber.bases.keys()], this.c1)) {
+					const line  : number = this.c0.line_index + 1
+					const col   : number = this.c0.col_index  + 1
+					const cargo : string = this.c0.source + this.c1 !.source
+					const radix : number = TokenNumber.bases.get(this.c1 !.source) !
+					if (Char.inc(TokenNumber.digits.get(radix) !, this.c2)) {
+						token = this.lexNumber(radix)
+					} else {
+						throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
+					}
+				} else {
+					token = this.lexCommentLine()
 				}
-				// do not add '\n' to token
 			} else if (Char.eq('"', this.c0)) { // we found the start of a doc comment or multiline comment
-				if (this.state_newline && Char.eq(TokenCommentDoc.CHARS_DOC_START + '\n', this.c0, this.c1, this.c2, this.c3)) { // we found a doc comment
-					token = new TokenCommentDoc(this.c0, this.c1 !, this.c2 !, this.c3 !)
-					this.advance((TokenCommentDoc.CHARS_DOC_START + '\n').length)
-					while (!this.iterator_result_char.done) {
-						if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
-						if (
-							!Char.eq(TokenCommentDoc.CHARS_DOC_END + '\n', this.c0, this.c1, this.c2, this.c3) ||
-							token.source.slice(token.source.lastIndexOf('\n') + 1).trim() !== '' // the tail end of the token does not match `/\n(\s)*/` (a newline followed by whitespace)
-						) {
-							token.add(this.c0)
-							this.advance()
-						} else {
-							break;
-						}
-					}
-					// add ending delim to token
-					token.add(this.c0, this.c1 !, this.c2 !)
-					this.advance(TokenCommentDoc.CHARS_DOC_END.length)
-				} else if (Char.eq(TokenCommentMultiNest.CHARS_MULTI_NEST_START, this.c0, this.c1)) { // we found a nestable multiline comment
-					token = new TokenCommentMultiNest(this.c0, this.c1 !)
-					this.advance(TokenCommentMultiNest.CHARS_MULTI_NEST_START.length)
-					this.comment_multiline_level++;
-					while (this.comment_multiline_level !== 0) {
-						while (!this.iterator_result_char.done && !Char.eq(TokenCommentMultiNest.CHARS_MULTI_NEST_END, this.c0, this.c1)) {
-							if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
-							if (Char.eq(TokenCommentMultiNest.CHARS_MULTI_NEST_START, this.c0, this.c1)) {
-								token.add(this.c0, this.c1 !)
-								this.advance(TokenCommentMultiNest.CHARS_MULTI_NEST_START.length)
-								this.comment_multiline_level++;
-							} else {
-								token.add(this.c0)
-								this.advance()
-							}
-						}
-						// add ending delim to token
-						token.add(this.c0, this.c1 !)
-						this.advance(TokenCommentMultiNest.CHARS_MULTI_NEST_END.length)
-						this.comment_multiline_level--;
-					}
-				} else { // we found a non-nestable multiline comment
-					token = new TokenCommentMulti(this.c0)
-					this.advance()
-					while (!this.iterator_result_char.done && !Char.eq(TokenCommentMulti.CHARS_MULTI_END, this.c0)) {
-						if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
-						token.add(this.c0)
-						this.advance()
-					}
-					// add ending delim to token
-					token.add(this.c0)
-					this.advance(TokenCommentMulti.CHARS_MULTI_END.length)
+				if (this.state_newline && Char.eq(TokenCommentDoc.CHARS_DOC_START + '\n', this.c0, this.c1, this.c2, this.c3)) {
+					token = this.lexCommentDoc()
+				} else if (Char.eq(TokenCommentMultiNest.CHARS_MULTI_NEST_START, this.c0, this.c1)) {
+					token = this.lexCommentMultiNest()
+				} else {
+					token = this.lexCommentMulti()
 				}
 			} else if (Char.eq(TokenStringLiteral.CHARS_LITERAL_DELIM, this.c0)) {
-				token = new TokenStringLiteral(this.c0)
-				this.advance()
-				while (!this.iterator_result_char.done && !Char.eq(TokenStringLiteral.CHARS_LITERAL_DELIM, this.c0)) {
-					if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of string')
-					if (Char.eq('\\', this.c0)) { // possible escape or line continuation
-						if (Char.inc([TokenStringLiteral.CHARS_LITERAL_DELIM, '\\', 's','t','n','r'], this.c1)) { // an escaped character literal
-							token.add(this.c0, this.c1 !)
-							this.advance(2)
-						} else if (Char.eq('u{', this.c1, this.c2)) { // an escape sequence
-							const line : number = this.c0.line_index + 1
-							const col  : number = this.c0.col_index  + 1
-							let cargo  : string = this.c0.source + this.c1 !.source + this.c2 !.source
-							token.add(this.c0, this.c1 !, this.c2 !)
-							this.advance(3)
-							while(!Char.eq('}', this.c0)) {
-								cargo += this.c0.source
-								if (Char.inc(TokenNumber.digits.get(16) !, this.c0)) {
-									token.add(this.c0)
-									this.advance()
-								} else {
-									throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
-								}
-							}
-							token.add(this.c0)
-							this.advance()
-						} else if (Char.eq('\n', this.c1)) { // a line continuation (LF)
-							token.add(this.c0, this.c1 !)
-							this.advance(2)
-						} else if (Char.eq('\r\n', this.c1, this.c2)) { // a line continuation (CRLF)
-							token.add(this.c0, this.c1 !, this.c2 !)
-							this.advance(3)
-						} else { // a backslash escapes the following character
-							token.add(this.c0)
-							this.advance()
-						}
-					} else {
-						token.add(this.c0)
-						this.advance()
-					}
-				}
-				// add ending delim to token
-				token.add(this.c0)
-				this.advance(TokenStringLiteral.CHARS_LITERAL_DELIM.length)
+				token = this.lexStringLiteral()
 			} else if (Char.eq(TokenStringTemplate.CHARS_TEMPLATE_DELIM, this.c0) || Char.eq(TokenStringTemplate.CHARS_TEMPLATE_INTERP_END, this.c0, this.c1)) {
-				token = new TokenStringTemplate(this.c0)
-				this.advance()
-				while (!this.iterator_result_char.done) {
-					if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of string')
-					if (Char.eq('\\', this.c0)) { // possible escape
-						if (Char.inc([TokenStringTemplate.CHARS_TEMPLATE_DELIM, '\\'], this.c1)) { // an escaped character literal
-							token.add(this.c0, this.c1 !)
-							this.advance(2)
-						} else { // a backslash escapes nothing
-							token.add(this.c0)
-							this.advance()
-						}
-					} else if (Char.eq(TokenStringTemplate.CHARS_TEMPLATE_INTERP_START, this.c0, this.c1)) { // end string template head/middle
-						// add start interpolation delim to token
-						token.add(this.c0, this.c1 !)
-						this.advance(TokenStringTemplate.CHARS_TEMPLATE_INTERP_START.length)
-						break;
-					} else if (Char.eq(TokenStringTemplate.CHARS_TEMPLATE_DELIM, this.c0)) { // end string template full/tail
-						// add ending delim to token
-						token.add(this.c0)
-						this.advance(TokenStringTemplate.CHARS_TEMPLATE_DELIM.length)
-						break;
-					} else {
-						token.add(this.c0)
-						this.advance()
-					}
-				}
-			} else if (Char.eq('\\', this.c0)) {
-				/**** A possible integer literal was found. ****/
-				const line  : number = this.c0.line_index + 1
-				const col   : number = this.c0.col_index  + 1
-				const cargo : string = this.c0.source + (this.c1 ? this.c1.source : '')
-				if (!Char.inc([...TokenNumber.bases.keys()], this.c1)) {
-					throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
-				}
-				const radix: number = TokenNumber.bases.get(this.c1 !.source) !
-				token = new TokenNumber(radix, this.c0, this.c1 !)
-				this.advance(2)
-				while (Char.inc(TokenNumber.digits.get(radix) !, this.c0)) {
-					token.add(this.c0)
-					this.advance()
-				}
+				token = this.lexStringTemplate()
 			} else if (Char.inc(TokenNumber.digits.get(TokenNumber.RADIX_DEFAULT) !, this.c0)) {
-				/**** An integer literal in the default base was found. ****/
-				token = new TokenNumber(TokenNumber.RADIX_DEFAULT, this.c0)
-				this.advance()
-				while (Char.inc(TokenNumber.digits.get(TokenNumber.RADIX_DEFAULT) !, this.c0)) {
-					token.add(this.c0)
-					this.advance()
-				}
+				token = this.lexNumber()
 			} else if (Char.inc(TokenWord.CHARS_START, this.c0)) {
-				token = new TokenWord(this.c0)
-				this.advance()
-				while (!this.iterator_result_char.done && Char.inc(TokenWord.CHARS_REST, this.c0)) {
-					token.add(this.c0)
-					this.advance()
-				}
+				token = this.lexWord()
 			} else if (Char.inc(TokenPunctuator.CHARS_3, this.c0, this.c1, this.c2)) {
 				token = new TokenPunctuator(this.c0, this.c1 !, this.c2 !)
 				this.advance(3)
@@ -482,7 +515,7 @@ export default class Lexer {
 				throw new Error(`I found a character or symbol that I do not recognize:
 ${this.c0} on ${this.c0.line_index + 1}:${this.c0.col_index + 1}.`)
 			}
-			this.state_newline = false
+			this.state_newline = token instanceof TokenWhitespace && [...token.source].includes('\n')
 			yield token
 		}
 	}
