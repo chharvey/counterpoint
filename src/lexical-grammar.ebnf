@@ -80,11 +80,11 @@ IntegerLiteral ::= "\b"  DigitSequenceBin
 |                  "\x"  DigitSequenceHex
 |                  "\z"  DigitSequenceHTD
 
-DigitSequenceBin ::= DigitSequenceBin? [0-1]
-DigitSequenceQua ::= DigitSequenceQua? [0-3]
-DigitSequenceOct ::= DigitSequenceOct? [0-7]
-DigitSequenceDec ::= DigitSequenceDec? [0-9]
-DigitSequenceHex ::= DigitSequenceHex? [0-9a-f]
-DigitSequenceHTD ::= DigitSequenceHTD? [0-9a-z]
+DigitSequenceBin ::= (DigitSequenceBin "_"?)? [0-1]
+DigitSequenceQua ::= (DigitSequenceQua "_"?)? [0-3]
+DigitSequenceOct ::= (DigitSequenceOct "_"?)? [0-7]
+DigitSequenceDec ::= (DigitSequenceDec "_"?)? [0-9]
+DigitSequenceHex ::= (DigitSequenceHex "_"?)? [0-9a-f]
+DigitSequenceHTD ::= (DigitSequenceHTD "_"?)? [0-9a-z]
 
 Punctuator ::= "+" | "-" | "*" | "/" | "^" | "(" | ")"

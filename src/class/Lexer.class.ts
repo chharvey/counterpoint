@@ -170,6 +170,7 @@ export class TokenStringTemplate extends TokenString {
 export class TokenNumber extends Token {
 	static readonly TAGNAME: string = 'NUMBER'
 	static readonly RADIX_DEFAULT: number = 10
+	static readonly SEPARATOR: string = '_'
 	static readonly bases: ReadonlyMap<string, number> = new Map<string, number>([
 		['b',  2],
 		['q',  4],
@@ -381,12 +382,11 @@ export default class Lexer {
 					this.advance(3)
 					while(!Char.eq('}', this.c0)) {
 						cargo += this.c0.source
-						if (Char.inc(TokenNumber.digits.get(16) !, this.c0)) {
-							token.add(this.c0)
-							this.advance()
-						} else {
+						if (!Char.inc(TokenNumber.digits.get(16) !, this.c0)) {
 							throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
 						}
+						token.add(this.c0)
+						this.advance()
 					}
 					token.add(this.c0)
 					this.advance()
@@ -436,18 +436,40 @@ export default class Lexer {
 		return token
 	}
 	private lexNumber(radix?: number /* TODO bigint */): TokenNumber {
-		const r: number = radix || TokenNumber.RADIX_DEFAULT // do not use default parameter because of the ternary check below
+		const r: number = radix || TokenNumber.RADIX_DEFAULT // do not use default parameter because of the if-else below
+		const digits: readonly string[] = TokenNumber.digits.get(r) !
+		const line  : number = this.c0.line_index + 1
+		const col   : number = this.c0.col_index  + 1
+		let cargo   : string = this.c0.source
 		let token: TokenNumber;
 		if (typeof radix === 'number') {
-			token = new TokenNumber(r, this.c0, this.c1 !)
-			this.advance(2)
+			cargo += this.c1 !.source
+			if (!Char.inc(digits, this.c2)) {
+				throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
+			}
+			cargo += this.c2 !.source
+			token = new TokenNumber(r, this.c0, this.c1 !, this.c2 !)
+			this.advance(3)
 		} else {
 			token = new TokenNumber(r, this.c0)
 			this.advance()
 		}
-		while (Char.inc(TokenNumber.digits.get(r) !, this.c0)) {
-			token.add(this.c0)
-			this.advance()
+		while (Char.inc([...digits, TokenNumber.SEPARATOR], this.c0)) {
+			if (Char.inc(digits, this.c0)) {
+				cargo += this.c0.source
+				token.add(this.c0)
+				this.advance()
+			} else if (Char.eq(TokenNumber.SEPARATOR, this.c0)) {
+				if (Char.inc(digits, this.c1)) {
+					cargo += this.c0.source + this.c1 !.source
+					token.add(this.c0, this.c1 !)
+					this.advance(2)
+				} else if (Char.eq(TokenNumber.SEPARATOR, this.c1)) {
+					throw new Error(`Adjacent numeric separators not allowed at line ${this.c1 !.line_index+1} col ${this.c1 !.col_index+1}.`)
+				} else {
+					throw new Error(`Numeric separator not allowed at end of numeric literal \`${cargo}\` at line ${line} col ${col}.`)
+				}
+			}
 		}
 		return token
 	}
@@ -474,15 +496,7 @@ export default class Lexer {
 				token = this.lexWhitespace()
 			} else if (Char.eq('\\', this.c0)) { // we found a line comment or an integer literal with a radix
 				if (Char.inc([...TokenNumber.bases.keys()], this.c1)) {
-					const line  : number = this.c0.line_index + 1
-					const col   : number = this.c0.col_index  + 1
-					const cargo : string = this.c0.source + this.c1 !.source
-					const radix : number = TokenNumber.bases.get(this.c1 !.source) !
-					if (Char.inc(TokenNumber.digits.get(radix) !, this.c2)) {
-						token = this.lexNumber(radix)
-					} else {
-						throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
-					}
+					token = this.lexNumber(TokenNumber.bases.get(this.c1 !.source) !)
 				} else {
 					token = this.lexCommentLine()
 				}
