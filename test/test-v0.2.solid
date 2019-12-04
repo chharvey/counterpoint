@@ -72,6 +72,8 @@ and an \' escaped apostrophe (which won’t)`
 
 `a string template with an \u0061 escape sequence (which won’t be escaped)`
 
+`a string template with \\` an escaped backslash followed by a back-tick.`
+
 * 'a string literal with
 a line break'
 

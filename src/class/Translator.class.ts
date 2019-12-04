@@ -146,7 +146,7 @@ export default class Translator {
 				]
 			} else if ('\n' === text[1]) { // a line continuation (LF)
 				return [0x20, ...Translator.svl(text.slice(2))]
-			} else if ('\r\n' === text[1] + text [2]) { // a line continuation (CRLF)
+			} else if ('\r\n' === text[1] + text[2]) { // a line continuation (CRLF)
 				return [0x20, ...Translator.svl(text.slice(2))]
 			} else { // a backslash escapes the following character
 				return [
@@ -185,19 +185,15 @@ export default class Translator {
 	 * 	is {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharacters)
 	 * SVT(StringTemplateCharacters ::= "{"
 	 * 	is 0x7b
-	 * SVT(StringTemplateCharacters ::= "{" [^`{\#x03])
+	 * SVT(StringTemplateCharacters ::= "{" [^`{#x03])
 	 * 	is 0x7b followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVT(StringTemplateCharacters ::= "{" [^`{\#x03] StringTemplateCharacters)
+	 * SVT(StringTemplateCharacters ::= "{" [^`{#x03] StringTemplateCharacters)
 	 * 	is 0x7b followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharacters)
 	 * SVT(StringTemplateCharacters ::= "\`")
 	 * 	is 0x60
 	 * SVT(StringTemplateCharacters ::= "\`" StringTemplateCharacters)
 	 * 	is 0x60 followed by SVT(StringTemplateCharacters)
-	 * SVT(StringTemplateCharacters ::= "\\")
-	 * 	is 0x5c
-	 * SVT(StringTemplateCharacters ::= "\\" StringTemplateCharacters)
-	 * 	is 0x5c followed by SVT(StringTemplateCharacters)
-	 * SVT(StringTemplateCharacters ::= "\" [^`{\#x03] StringTemplateCharacters)
+	 * SVT(StringTemplateCharacters ::= "\" [^`#x03] StringTemplateCharacters)
 	 * 	is 0x5c followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharacters)
 	 * ```
 	 * @param   text the string to compute
@@ -205,21 +201,11 @@ export default class Translator {
 	 */
 	static svt(text: string): number[] {
 		if (text.length === 0) return []
-		if ('\\' === text[0]) { // possible escape
-			if (TokenStringTemplate.CHARS_TEMPLATE_DELIM === text[1] || '\\' === text[1]) { // an escaped character literal
-				return [
-					new Map<string, number>([
-						[TokenStringTemplate.CHARS_TEMPLATE_DELIM, TokenStringTemplate.CHARS_TEMPLATE_DELIM.codePointAt(0) !],
-						['\\' , 0x5c],
-					]).get(text[1]) !,
-					...Translator.svt(text.slice(2)),
-				]
-			} else { // a backslash escapes nothing
-				return [
-					...Translator.utf16Encoding(text.codePointAt(0) !),
-					...Translator.svt(text.slice(1)),
-				]
-			}
+		if ('\\' + TokenStringTemplate.CHARS_TEMPLATE_DELIM === text[0] + text[1]) { // an escaped template delimiter
+			return [
+				TokenStringTemplate.CHARS_TEMPLATE_DELIM.codePointAt(0) !,
+				...Translator.svt(text.slice(2)),
+			]
 		} else return [
 			...Translator.utf16Encoding(text.codePointAt(0) !),
 			...Translator.svt(text.slice(1)),

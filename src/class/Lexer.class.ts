@@ -161,8 +161,8 @@ export class TokenStringTemplate extends TokenString {
 		const c0: string = this.source
 		return new ParseLeaf(this, String.fromCodePoint(...Translator.svt(
 			c0.slice( // cut off the string delimiters
-				(c0[0          ] === '`') ?  1 : /* if (c0[0          ] + c0[1          ] === '}}') */  2,
-				(c0[c0.length-1] === '`') ? -1 : /* if (c0[c0.length-2] + c0[c0.length-1] === '{{') */ -2,
+				(c0[0          ] === TokenStringTemplate.CHARS_TEMPLATE_DELIM) ?  1 : /* if (c0[0          ] + c0[1          ] === TokenStringTemplate.CHARS_TEMPLATE_INTERP_END  ) */  2,
+				(c0[c0.length-1] === TokenStringTemplate.CHARS_TEMPLATE_DELIM) ? -1 : /* if (c0[c0.length-2] + c0[c0.length-1] === TokenStringTemplate.CHARS_TEMPLATE_INTERP_START) */ -2,
 			)
 		)))
 	}
@@ -416,14 +416,9 @@ export default class Lexer {
 				this.advance()
 				while (!this.iterator_result_char.done) {
 					if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of string')
-					if (Char.eq('\\', this.c0)) { // possible escape
-						if (Char.inc([TokenStringTemplate.CHARS_TEMPLATE_DELIM, '\\'], this.c1)) { // an escaped character literal
-							token.add(this.c0, this.c1 !)
-							this.advance(2)
-						} else { // a backslash escapes nothing
-							token.add(this.c0)
-							this.advance()
-						}
+					if (Char.eq('\\' + TokenStringTemplate.CHARS_TEMPLATE_DELIM, this.c0, this.c1)) { // an escaped template delimiter
+						token.add(this.c0, this.c1 !)
+						this.advance(2)
 					} else if (Char.eq(TokenStringTemplate.CHARS_TEMPLATE_INTERP_START, this.c0, this.c1)) { // end string template head/middle
 						// add start interpolation delim to token
 						token.add(this.c0, this.c1 !)
