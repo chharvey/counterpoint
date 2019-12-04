@@ -35,7 +35,7 @@ Whitespace ::= #x20 /* SPACE                     */
 
 Comment ::= CommentSingle | CommentMulti | CommentDoc
 
-CommentLine ::= '---' [^#x0A#x0D#x03]*
+CommentLine ::= "\" [^bqodxz#x03] [^#x0A#x0D#x03]* /*? lookahead: #x0A ?*/
 
 CommentMulti ::= '"' [^"#x03]* '"'
 

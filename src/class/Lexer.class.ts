@@ -107,7 +107,7 @@ export abstract class TokenComment extends Token {
 	}
 }
 class TokenCommentLine extends TokenComment {
-	static readonly CHARS_LINE: '---' = '---'
+	static readonly CHARS_LINE: '\\' = '\\'
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super('LINE', start_char, ...more_chars)
 	}
@@ -298,7 +298,7 @@ export default class Lexer {
 		return token
 	}
 	private lexCommentLine(): TokenCommentLine {
-		const token: TokenCommentLine = new TokenCommentLine(this.c0, this.c1 !, this.c2 !)
+		const token: TokenCommentLine = new TokenCommentLine(this.c0)
 		this.advance(TokenCommentLine.CHARS_LINE.length)
 		while (!this.iterator_result_char.done && !Char.eq('\n', this.c0)) {
 			if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
@@ -472,8 +472,20 @@ export default class Lexer {
 				token = this.lexFilebound()
 			} else if (Char.inc(TokenWhitespace.CHARS, this.c0)) {
 				token = this.lexWhitespace()
-			} else if (Char.eq(TokenCommentLine.CHARS_LINE, this.c0, this.c1, this.c2)) {
-				token = this.lexCommentLine()
+			} else if (Char.eq('\\', this.c0)) { // we found a line comment or an integer literal with a radix
+				if (Char.inc([...TokenNumber.bases.keys()], this.c1)) {
+					const line  : number = this.c0.line_index + 1
+					const col   : number = this.c0.col_index  + 1
+					const cargo : string = this.c0.source + this.c1 !.source
+					const radix : number = TokenNumber.bases.get(this.c1 !.source) !
+					if (Char.inc(TokenNumber.digits.get(radix) !, this.c2)) {
+						token = this.lexNumber(radix)
+					} else {
+						throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
+					}
+				} else {
+					token = this.lexCommentLine()
+				}
 			} else if (Char.eq('"', this.c0)) { // we found the start of a doc comment or multiline comment
 				if (this.state_newline && Char.eq(TokenCommentDoc.CHARS_DOC_START + '\n', this.c0, this.c1, this.c2, this.c3)) {
 					token = this.lexCommentDoc()
@@ -486,14 +498,6 @@ export default class Lexer {
 				token = this.lexStringLiteral()
 			} else if (Char.eq(TokenStringTemplate.CHARS_TEMPLATE_DELIM, this.c0) || Char.eq(TokenStringTemplate.CHARS_TEMPLATE_INTERP_END, this.c0, this.c1)) {
 				token = this.lexStringTemplate()
-			} else if (Char.eq('\\', this.c0)) { // we possibly found an integer literal
-				const line  : number = this.c0.line_index + 1
-				const col   : number = this.c0.col_index  + 1
-				const cargo : string = this.c0.source + (this.c1 ? this.c1.source : '')
-				if (!Char.inc([...TokenNumber.bases.keys()], this.c1)) {
-					throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
-				}
-				token = this.lexNumber(TokenNumber.bases.get(this.c1 !.source) !)
 			} else if (Char.inc(TokenNumber.digits.get(TokenNumber.RADIX_DEFAULT) !, this.c0)) {
 				token = this.lexNumber()
 			} else if (Char.inc(TokenWord.CHARS_START, this.c0)) {
