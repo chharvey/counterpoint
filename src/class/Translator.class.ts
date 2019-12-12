@@ -1,13 +1,13 @@
 import {STX, ETX} from './Scanner.class'
-import Lexer, {
-	Token,
+import Lexer from './Lexer.class'
+import Token, {
 	TokenFilebound,
 	TokenWhitespace,
 	TokenComment,
 	TokenString,
 	TokenNumber,
 	TokenWord,
-} from './Lexer.class'
+} from './Token.class'
 
 
 /**
