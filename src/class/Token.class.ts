@@ -1,5 +1,6 @@
 import Serializable from '../iface/Serializable.iface'
 import {Char, STX, ETX} from './Scanner.class'
+import Util from './Util.class'
 
 
 /**
@@ -64,6 +65,11 @@ export default abstract class Token implements Serializable {
 }
 export interface TokenSubclass extends NewableFunction {
 	readonly TAGNAME: string;
+	/**
+	 * Generate a random instance of this Token.
+	 * @returns a well-formed string satisfying this Token class
+	 */
+	random(): string;
 	new (char: Char): Token;
 }
 export const isTokenSubclass = (it: any): it is TokenSubclass => {
@@ -74,6 +80,9 @@ export const isTokenSubclass = (it: any): it is TokenSubclass => {
 export class TokenFilebound extends Token {
 	static readonly TAGNAME: string = 'FILEBOUND'
 	static readonly CHARACTERS: readonly string[] = [STX, ETX]
+	static random(): string {
+		return Util.arrayRandom(TokenFilebound.CHARACTERS)
+	}
 	value: boolean|null = null
 	constructor(start_char: Char) {
 		super(TokenFilebound.TAGNAME, start_char)
@@ -92,18 +101,27 @@ export class TokenFilebound extends Token {
 export class TokenWhitespace extends Token {
 	static readonly TAGNAME: string = 'WHITESPACE'
 	static readonly CHARACTERS: readonly string[] = [' ', '\t', '\n', '\r']
+	static random(): string {
+		return (Util.randomBool() ? '' : TokenWhitespace.random()) + Util.arrayRandom(TokenWhitespace.CHARACTERS)
+	}
 	constructor(start_char: Char) {
 		super(TokenWhitespace.TAGNAME, start_char)
 	}
 }
 export class TokenComment extends Token {
 	static readonly TAGNAME: string = 'COMMENT'
+	static random(): string {
+		throw new Error('not yet supported')
+	}
 	constructor(start_char: Char) {
 		super(TokenComment.TAGNAME, start_char)
 	}
 }
 export class TokenString extends Token {
 	static readonly TAGNAME: string = 'STRING'
+	static random(): string {
+		throw new Error('not yet supported')
+	}
 	value: string|null = null
 	constructor(start_char: Char) {
 		super(TokenString.TAGNAME, start_char)
@@ -115,6 +133,11 @@ export class TokenString extends Token {
 export class TokenNumber extends Token {
 	static readonly TAGNAME: string = 'NUMBER'
 	static readonly CHARACTERS: readonly string[] = '0 1 2 3 4 5 6 7 8 9'.split(' ')
+	static random(): string {
+		const digitSequenceDec = (): string =>
+			(Util.randomBool() ? '' : digitSequenceDec()) + Util.arrayRandom(TokenNumber.CHARACTERS)
+		return digitSequenceDec()
+	}
 	value: number|null = null
 	constructor(start_char: Char) {
 		super(TokenNumber.TAGNAME, start_char)
@@ -127,6 +150,9 @@ export class TokenWord extends Token {
 	static readonly TAGNAME: string = 'WORD'
 	static readonly CHARACTERS_START: readonly string[] = ''.split(' ')
 	static readonly CHARACTERS_REST : readonly string[] = ''.split(' ')
+	static random(): string {
+		throw new Error('not yet supported')
+	}
 	id: number|null = null
 	constructor(start_char: Char) {
 		super(TokenWord.TAGNAME, start_char)
@@ -140,6 +166,11 @@ export class TokenPunctuator extends Token {
 	static readonly CHARACTERS_1: readonly string[] = '+ - * / ^ ( )'.split(' ')
 	static readonly CHARACTERS_2: readonly string[] = ''.split(' ')
 	static readonly CHARACTERS_3: readonly string[] = ''.split(' ')
+	static random(): string {
+		return Util.arrayRandom([
+			...TokenPunctuator.CHARACTERS_1,
+		])
+	}
 	constructor(start_char: Char) {
 		super(TokenPunctuator.TAGNAME, start_char)
 	}
