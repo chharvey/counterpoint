@@ -67,8 +67,8 @@ export default class Translator {
 	/**
 	 * The UTF16Encoding of a numeric code point value.
 	 * @see http://ecma-international.org/ecma-262/10.0/#sec-utf16encoding
-	 * @param   codepoint a positive integer within [0x0, 0x10ffff]
-	 * @returns a code unit sequence representing the code point
+	 * @param   codepoint - a positive integer within [0x0, 0x10ffff]
+	 * @returns             a code unit sequence representing the code point
 	 */
 	private static utf16Encoding(codepoint: number): [number] | [number, number] {
 		if (codepoint < 0 || 0x10ffff < codepoint) throw new RangeError(`Code point ${codepoint} must be within [0x0, 0x10ffff].`)
@@ -121,8 +121,8 @@ export default class Translator {
 	 * SVL(NonEscapeChar ::= "u" /*? lookahead: [^{] ?/)
 	 * 	is 0x75
 	 * ```
-	 * @param   text the string to compute
-	 * @returns the string literal value, a sequence of code points
+	 * @param   text - the string to compute
+	 * @returns        the string literal value, a sequence of code points
 	 */
 	static svl(text: string): number[] {
 		if (text.length === 0) return []
@@ -197,8 +197,8 @@ export default class Translator {
 	 * SVT(StringTemplateCharacters ::= "\" [^`#x03] StringTemplateCharacters)
 	 * 	is 0x5c followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharacters)
 	 * ```
-	 * @param   text the string to compute
-	 * @returns the string template value of the string, a sequence of code points
+	 * @param   text - the string to compute
+	 * @returns        the string template value of the string, a sequence of code points
 	 */
 	static svt(text: string): number[] {
 		if (text.length === 0) return []
@@ -282,9 +282,9 @@ export default class Translator {
 	 * MV([0-9a-z] ::= y) is 34
 	 * MV([0-9a-z] ::= z) is 35
 	 * ```
-	 * @param   text the string to compute
-	 * @param   radix the base in which to compute
-	 * @returns the mathematical value of the string in the given base
+	 * @param   text  - the string to compute
+	 * @param   radix - the base in which to compute
+	 * @returns         the mathematical value of the string in the given base
 	 */
 	static mv(text: string, radix = 10): number { // TODO let `base` be an instance field of `TokenNumber`
 		if (text[text.length-1] === TokenNumber.SEPARATOR) {

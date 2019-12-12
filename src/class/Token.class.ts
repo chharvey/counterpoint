@@ -7,7 +7,6 @@ import Translator, {ParseLeaf} from './Translator.class'
  * A Token object is the kind of thing that the Lexer returns.
  * It holds:
  * - the text of the token (self.cargo)
- * - the type of token that it is
  * - the line number and column index where the token starts
  *
  * @see http://parsingintro.sourceforge.net/#contents_item_6.4
@@ -39,7 +38,7 @@ export default abstract class Token implements Serializable {
 
 	/**
 	 * Get the sum of this Token’s cargo.
-	 * @returns All the source characters in this Token.
+	 * @returns all the source characters in this Token
 	 */
 	get source(): string {
 		return this._cargo
@@ -112,7 +111,7 @@ export abstract class TokenComment extends Token {
 	constructor(kind: string, start_char: Char, ...more_chars: Char[]) {
 		super(`${TokenComment.TAGNAME}-${kind}`, start_char, ...more_chars)
 	}
-	/* final */ cook(): null {
+	/** @final */ cook(): null {
 		return null // we do not want to send comments to the parser
 	}
 }
@@ -168,11 +167,11 @@ export class TokenStringTemplate extends TokenString {
 		super('TEMPLATE', start_char, ...more_chars)
 	}
 	cook(): ParseLeaf {
-		const c0: string = this.source
+		const src: string = this.source
 		return new ParseLeaf(this, String.fromCodePoint(...Translator.svt(
-			c0.slice( // cut off the string delimiters
-				(c0[0          ] === TokenStringTemplate.CHARS_TEMPLATE_DELIM) ?  1 : /* if (c0[0          ] + c0[1          ] === TokenStringTemplate.CHARS_TEMPLATE_INTERP_END  ) */  2,
-				(c0[c0.length-1] === TokenStringTemplate.CHARS_TEMPLATE_DELIM) ? -1 : /* if (c0[c0.length-2] + c0[c0.length-1] === TokenStringTemplate.CHARS_TEMPLATE_INTERP_START) */ -2,
+			src.slice( // cut off the string delimiters
+				(src[0           ] === TokenStringTemplate.CHARS_TEMPLATE_DELIM) ?  1 : /* if (src[0           ] + src[1           ] === TokenStringTemplate.CHARS_TEMPLATE_INTERP_END  ) */  2,
+				(src[src.length-1] === TokenStringTemplate.CHARS_TEMPLATE_DELIM) ? -1 : /* if (src[src.length-2] + src[src.length-1] === TokenStringTemplate.CHARS_TEMPLATE_INTERP_START) */ -2,
 			)
 		)))
 	}

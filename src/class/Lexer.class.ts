@@ -54,7 +54,7 @@ export default class Lexer {
 
 	/**
 	 * Advance this Lexer, scanning the next character and reassigning variables.
-	 * @param   n the number of times to advance
+	 * @param   n - the number of times to advance
 	 * @throws  {RangeError} if the argument is not a positive integer
 	 */
 	private advance(n: number /* bigint */ = 1): void {
