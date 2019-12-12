@@ -1,12 +1,12 @@
 import Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Scanner.class'
-import Lexer, {
-	Token,
+import Lexer from './Lexer.class'
+import Token, {
 	TokenStringLiteral,
 	TokenStringTemplate,
 	TokenNumber,
 	TokenWord,
-} from './Lexer.class'
+} from './Token.class'
 
 
 /**
