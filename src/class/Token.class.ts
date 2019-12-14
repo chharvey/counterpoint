@@ -27,7 +27,7 @@ export default abstract class Token implements Serializable {
 	 * @param start_char - the starting character of this Token
 	 */
 	constructor(
-		private readonly tagname: string,
+		readonly tagname: string,
 		start_char: Char,
 	) {
 		this._cargo     = start_char.cargo
