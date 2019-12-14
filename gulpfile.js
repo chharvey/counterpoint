@@ -49,10 +49,24 @@ async function test() {
 
 const build = gulp.series(dist, test)
 
+async function random() {
+	const {NodeFile} = require('./build/class/ParseNode.class.js')
+	let rand = null
+	for (let i = 0; i < 64; i++) {
+		try {
+			rand = NodeFile.random().join(' ')
+			break;
+		} catch { // RangeError: Maximum call stack size exceeded
+		}
+	}
+	console.log(rand)
+	return Promise.resolve(null)
+}
 
 
 module.exports = {
 	build,
 		dist,
 		test,
+	random
 }
