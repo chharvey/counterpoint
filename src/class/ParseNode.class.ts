@@ -1,16 +1,7 @@
 import Serializable from '../iface/Serializable.iface'
 
 import {STX, ETX} from './Scanner.class'
-import Token, {
-	TokenSubclass,
-	TokenNumber,
-} from './Token.class'
-import Util from './Util.class'
-
-
-export type GrammarSymbol = Terminal|Nonterminal
-       type Terminal      = string|TokenSubclass
-       type Nonterminal   = NodeSubclass
+import Token from './Token.class'
 
 
 /**
@@ -21,7 +12,7 @@ export type GrammarSymbol = Terminal|Nonterminal
  *
  * @see http://parsingintro.sourceforge.net/#contents_item_8.2
  */
-export default abstract class ParseNode implements Serializable {
+export default class ParseNode implements Serializable {
 	/** The set of child inputs that creates this ParseNode. */
 	readonly inputs: readonly (Token|ParseNode)[];
 	/** The concatenation of the source text of all children. */
@@ -68,143 +59,5 @@ export default abstract class ParseNode implements Serializable {
 			(typeof child === 'string') ? child : child.serialize()
 		).join('')
 		return `<${tagname}${attributes}>${contents}</${tagname}>`
-	}
-}
-export interface NodeSubclass extends NewableFunction {
-	readonly TAGNAME: string;
-	/**
-	 * A set of sequences of parse symbols (terminals and/or nonterminals) in this production.
-	 */
-	readonly sequences: readonly (readonly GrammarSymbol[])[];
-	/**
-	 * Generate a random instance of this ParseNode.
-	 * @returns a well-formed sequence of strings satisfying this ParseNode class
-	 */
-	random(): string[];
-	new (children: readonly (Token|ParseNode)[]): ParseNode;
-}
-export const isNodeSubclass = (it: any): it is NodeSubclass => {
-	return !!it && !!it.prototype && it.prototype.__proto__ === ParseNode.prototype
-}
-
-
-export class NodeFile extends ParseNode {
-	static readonly TAGNAME: string = 'File'
-	static get sequences(): GrammarSymbol[][] {
-		return [
-			[STX,                 ETX],
-			[STX, NodeExpression, ETX],
-		]
-	}
-	static random(): string[] {
-		return [STX, ...NodeExpression.random(), ETX]
-	}
-	constructor(children: readonly (Token|ParseNode)[]) {
-		super(NodeFile.TAGNAME, children)
-	}
-}
-export class NodeExpression extends ParseNode {
-	static readonly TAGNAME: string = 'Expression'
-	static get sequences(): GrammarSymbol[][] {
-		return [
-			[NodeExpressionAdditive],
-		]
-	}
-	static random(): string[] {
-		return NodeExpressionAdditive.random()
-	}
-	constructor(children: readonly (Token|ParseNode)[]) {
-		super(NodeExpression.TAGNAME, children)
-	}
-}
-export class NodeExpressionAdditive extends ParseNode {
-	static readonly TAGNAME: string = 'ExpressionAdditive'
-	static get sequences(): GrammarSymbol[][] {
-		return [
-			[                             NodeExpressionMultiplicative],
-			[NodeExpressionAdditive, '+', NodeExpressionMultiplicative],
-			[NodeExpressionAdditive, '-', NodeExpressionMultiplicative],
-		]
-	}
-	static random(): string[] {
-		return [
-			...(Util.randomBool() ? [] : [...NodeExpressionAdditive.random(), Util.arrayRandom(['+','-'])]),
-			...NodeExpressionMultiplicative.random(),
-		]
-	}
-	constructor(children: readonly (Token|ParseNode)[]) {
-		super(NodeExpressionAdditive.TAGNAME, children)
-	}
-}
-export class NodeExpressionMultiplicative extends ParseNode {
-	static readonly TAGNAME: string = 'ExpressionMultiplicative'
-	static get sequences(): GrammarSymbol[][] {
-		return [
-			[                                   NodeExpressionExponential],
-			[NodeExpressionMultiplicative, '*', NodeExpressionExponential],
-			[NodeExpressionMultiplicative, '/', NodeExpressionExponential],
-		]
-	}
-	static random(): string[] {
-		return [
-			...(Util.randomBool() ? [] : [...NodeExpressionMultiplicative.random(), Util.arrayRandom(['*','/'])]),
-			...NodeExpressionExponential.random(),
-		]
-	}
-	constructor(children: readonly (Token|ParseNode)[]) {
-		super(NodeExpressionMultiplicative.TAGNAME, children)
-	}
-}
-export class NodeExpressionExponential extends ParseNode {
-	static readonly TAGNAME: string = 'ExpressionExponential'
-	static get sequences(): GrammarSymbol[][] {
-		return [
-			[NodeExpressionUnarySymbol                                ],
-			[NodeExpressionUnarySymbol, '^', NodeExpressionExponential],
-		]
-	}
-	static random(): string[] {
-		return [
-			...NodeExpressionUnarySymbol.random(),
-			...(Util.randomBool() ? [] : ['^', ...NodeExpressionExponential.random()]),
-		]
-	}
-	constructor(children: readonly (Token|ParseNode)[]) {
-		super(NodeExpressionExponential.TAGNAME, children)
-	}
-}
-export class NodeExpressionUnarySymbol extends ParseNode {
-	static readonly TAGNAME: string = 'ExpressionUnarySymbol'
-	static get sequences(): GrammarSymbol[][] {
-		return [
-			[NodeExpressionUnit],
-			['+', NodeExpressionUnarySymbol],
-			['-', NodeExpressionUnarySymbol],
-		]
-	}
-	static random(): string[] {
-		return Util.randomBool() ?
-			NodeExpressionUnit.random() :
-			[Util.arrayRandom(['+','-']), ...NodeExpressionUnarySymbol.random()]
-	}
-	constructor(children: readonly (Token|ParseNode)[]) {
-		super(NodeExpressionUnarySymbol.TAGNAME, children)
-	}
-}
-export class NodeExpressionUnit extends ParseNode {
-	static readonly TAGNAME: string = 'ExpressionUnit'
-	static get sequences(): GrammarSymbol[][] {
-		return [
-			[TokenNumber],
-			['(', NodeExpression, ')'],
-		]
-	}
-	static random(): string[] {
-		return Util.randomBool() ?
-			[TokenNumber.random()] :
-			['(', ...NodeExpression.random(), ')']
-	}
-	constructor(children: readonly (Token|ParseNode)[]) {
-		super(NodeExpressionUnit.TAGNAME, children)
 	}
 }
