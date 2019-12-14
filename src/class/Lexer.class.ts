@@ -13,6 +13,8 @@ import Token, {
 	TokenPunctuator,
 } from './Token.class'
 
+import {LexError01} from '../error/LexError.class'
+
 
 /**
  * A Lexer (aka: Tokenizer, Lexical Analyzer).
@@ -274,6 +276,7 @@ export default class Lexer {
 	/**
 	 * Construct and return the next token in the source text.
 	 * @returns the next token
+	 * @throws  {LexError01} if an unrecognized character was reached
 	 */
 	* generate(): Iterator<Token> {
 		while (!this.iterator_result_char.done) {
@@ -314,8 +317,7 @@ export default class Lexer {
 				token = new TokenPunctuator(this.c0)
 				this.advance()
 			} else {
-				throw new Error(`I found a character or symbol that I do not recognize:
-${this.c0} on ${this.c0.line_index + 1}:${this.c0.col_index + 1}.`)
+				throw new LexError01(this.c0.toString(), this.c0.line_index, this.c0.col_index)
 			}
 			this.state_newline = token instanceof TokenWhitespace && [...token.source].includes('\n')
 			yield token
