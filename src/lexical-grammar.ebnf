@@ -1,10 +1,10 @@
 FileBound ::= #x0002 /* START OF TEXT */
 |             #x0003 /* END OF TEXT   */
 
-Whitespace ::= #x0020 /* SPACE                     */
-|              #x0009 /* CHARACTER TABULATION `\t` */
-|              #x000A /* LINE FEED (LF)       `\n` */
-|              #x000D /* CARRIAGE RETURN (CR) `\r` */
+Whitespace ::= Whitespace? (#x0020 /* SPACE                     */
+|                           #x0009 /* CHARACTER TABULATION `\t` */
+|                           #x000A /* LINE FEED (LF)       `\n` */
+|                           #x000D /* CARRIAGE RETURN (CR) `\r` */)
 
 /* more whitespace characters:
 #x000B	LINE TABULATION
