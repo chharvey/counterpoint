@@ -17,7 +17,7 @@ import {
 	TerminalWhitespace,
 	TerminalComment,
 	TerminalStringLiteral,
-	TerminalStringTemplate,
+	TerminalStringTemplateFull,
 	TerminalNumber,
 	TerminalWord,
 	TerminalPunctuator,
@@ -117,8 +117,14 @@ export default class Lexer {
 				}
 			} else if (Char.eq(TokenStringLiteral.DELIM, this._c0)) {
 				token = TerminalStringLiteral.instance.lex(this)
-			} else if (Char.eq(TokenStringTemplate.DELIM, this._c0) || Char.eq(TokenStringTemplate.DELIM_INTERP_END, this._c0, this._c1)) {
-				token = TerminalStringTemplate.instance.lex(this)
+			} else if (Char.eq(TokenStringTemplate.DELIM, this._c0)) {
+				// we found a template full or template head
+				token = TerminalStringTemplateFull.instance.lex(this, true)
+
+			} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_END, this._c0, this._c1)) {
+				// we found a template middle or template tail
+				token = TerminalStringTemplateFull.instance.lex(this, false)
+
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
 				token = TerminalNumber.instance.lex(this)
 			} else if (Char.inc(TokenWord.CHARS_START, this._c0)) {

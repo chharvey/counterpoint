@@ -2,6 +2,7 @@ import Util from './Util.class'
 import {Char, ETX} from './Scanner.class'
 import Lexer from './Lexer.class'
 import Token, {
+	TemplatePosition,
 	TokenFilebound,
 	TokenWhitespace,
 	TokenComment,
@@ -233,26 +234,37 @@ export class TerminalStringLiteral extends Terminal {
 		return '\'' + (Util.randomBool() ? '' : chars()) + '\''
 	}
 }
-export class TerminalStringTemplate extends Terminal {
-	static readonly instance: TerminalStringTemplate = new TerminalStringTemplate()
+export abstract class TerminalStringTemplate extends Terminal {
 	readonly TAGNAME: string = 'STRING-TEMPLATE'
-	lex(lexer: Lexer): TokenStringTemplate {
-				const token: TokenStringTemplate = new TokenStringTemplate(lexer.c0)
-				lexer.advance()
+	lex(lexer: Lexer, full_or_head: boolean = true): TokenStringTemplate {
+		let token: TokenStringTemplate;
+		if (full_or_head) {
+			token = new TokenStringTemplate(lexer.c0)
+			token.positions.add(TemplatePosition.FULL).add(TemplatePosition.HEAD)
+			lexer.advance()
+		} else {
+			token = new TokenStringTemplate(lexer.c0, lexer.c1 !)
+			token.positions.add(TemplatePosition.MIDDLE).add(TemplatePosition.TAIL)
+			lexer.advance(2)
+		}
 				while (!lexer.isDone) {
 					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of string')
 					if (Char.eq('\\' + TokenStringTemplate.DELIM, lexer.c0, lexer.c1)) { // an escaped template delimiter
 						token.add(lexer.c0, lexer.c1 !)
 						lexer.advance(2)
-					} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) { // end string template head/middle
-						// add start interpolation delim to token
-						token.add(lexer.c0, lexer.c1 !)
-						lexer.advance(TokenStringTemplate.DELIM_INTERP_START.length)
-						break;
 					} else if (Char.eq(TokenStringTemplate.DELIM, lexer.c0)) { // end string template full/tail
 						// add ending delim to token
 						token.add(lexer.c0)
 						lexer.advance(TokenStringTemplate.DELIM.length)
+						token.positions.delete(TemplatePosition.HEAD)
+						token.positions.delete(TemplatePosition.MIDDLE)
+						break;
+					} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) { // end string template head/middle
+						// add start interpolation delim to token
+						token.add(lexer.c0, lexer.c1 !)
+						lexer.advance(TokenStringTemplate.DELIM_INTERP_START.length)
+						token.positions.delete(TemplatePosition.FULL)
+						token.positions.delete(TemplatePosition.TAIL)
 						break;
 					} else {
 						token.add(lexer.c0)
@@ -263,6 +275,33 @@ export class TerminalStringTemplate extends Terminal {
 	}
 	random(): string {
 		throw new Error('not yet supported')
+	}
+	match(candidate: Token): boolean {
+		return super.match(candidate) && candidate instanceof TokenStringTemplate && candidate.positions.size === 1
+	}
+}
+export class TerminalStringTemplateFull extends TerminalStringTemplate {
+	static readonly instance: TerminalStringTemplateFull = new TerminalStringTemplateFull()
+	match(candidate: Token): boolean {
+		return super.match(candidate) && (candidate as TokenStringTemplate).positions.has(TemplatePosition.FULL)
+	}
+}
+export class TerminalStringTemplateHead extends TerminalStringTemplate {
+	static readonly instance: TerminalStringTemplateHead = new TerminalStringTemplateHead()
+	match(candidate: Token): boolean {
+		return super.match(candidate) && (candidate as TokenStringTemplate).positions.has(TemplatePosition.HEAD)
+	}
+}
+export class TerminalStringTemplateMiddle extends TerminalStringTemplate {
+	static readonly instance: TerminalStringTemplateMiddle = new TerminalStringTemplateMiddle()
+	match(candidate: Token): boolean {
+		return super.match(candidate) && (candidate as TokenStringTemplate).positions.has(TemplatePosition.MIDDLE)
+	}
+}
+export class TerminalStringTemplateTail extends TerminalStringTemplate {
+	static readonly instance: TerminalStringTemplateTail = new TerminalStringTemplateTail()
+	match(candidate: Token): boolean {
+		return super.match(candidate) && (candidate as TokenStringTemplate).positions.has(TemplatePosition.TAIL)
 	}
 }
 export class TerminalNumber extends Terminal {

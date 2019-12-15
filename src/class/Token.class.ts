@@ -5,12 +5,20 @@ import {
 	TerminalWhitespace,
 	TerminalComment,
 	TerminalStringLiteral,
-	TerminalStringTemplate,
+	TerminalStringTemplateFull,
 	TerminalNumber,
 	TerminalWord,
 	TerminalPunctuator,
 } from './Terminal.class'
 import Translator, {ParseLeaf} from './Translator.class'
+
+
+export enum TemplatePosition {
+	FULL,
+	HEAD,
+	MIDDLE,
+	TAIL,
+}
 
 
 /**
@@ -158,8 +166,10 @@ export class TokenStringTemplate extends Token {
 	static readonly DELIM              : '`'  = '`'
 	static readonly DELIM_INTERP_START : '{{' = '{{'
 	static readonly DELIM_INTERP_END   : '}}' = '}}'
+	/** Which kind of string template could this be? */
+	positions: Set<TemplatePosition> = new Set<TemplatePosition>()
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super(TerminalStringTemplate.instance.TAGNAME, start_char, ...more_chars)
+		super(TerminalStringTemplateFull.instance.TAGNAME, start_char, ...more_chars)
 	}
 	cook(): ParseLeaf {
 		const src: string = this.source
