@@ -133,7 +133,7 @@ export class Rule {
 		return candidate.length === this.symbols.length && this.symbols.every((symbol, i) => {
 			const test: Token|ParseNode = candidate[i]
 			return (typeof symbol === 'string') ? // a string literal (terminal)
-				test instanceof Token && test.cargo === symbol
+				test instanceof Token && test.source === symbol
 			: (symbol instanceof Function && isTokenSubclass(symbol)) ? // a token type (terminal)
 				test instanceof symbol
 			: (symbol instanceof Production) ? // a reference to a nonterminal

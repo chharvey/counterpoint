@@ -34,7 +34,7 @@ export default class ParseNode implements Serializable {
 		this.inputs = children.slice()
 		this.source = children.map((child) =>
 			(typeof child === 'string') ? child :
-			(child instanceof Token) ? child.cargo :
+			(child instanceof Token) ? child.source :
 			child.source
 		).join(' ')
 		this.line_index = children[0].line_index

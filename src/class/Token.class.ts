@@ -78,7 +78,6 @@ export interface TokenSubclass extends NewableFunction {
 	 * @returns a well-formed string satisfying this Token class
 	 */
 	random(): string;
-	new (char: Char): Token;
 }
 export const isTokenSubclass = (it: any): it is TokenSubclass => {
 	return !!it && !!it.prototype && it.prototype.__proto__ === Token.prototype
