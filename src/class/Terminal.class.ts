@@ -17,6 +17,8 @@ import Token, {
 	TokenPunctuator,
 } from './Token.class'
 
+import {LexError04} from '../error/LexError.class'
+
 
 type TokenCommentType =
 	typeof TokenCommentLine |
@@ -302,10 +304,8 @@ export class TerminalNumber extends Terminal {
 					cargo += lexer.c0.source + lexer.c1 !.source
 					token.add(lexer.c0, lexer.c1 !)
 					lexer.advance(2)
-				} else if (Char.eq(TokenNumber.SEPARATOR, lexer.c1)) {
-					throw new Error(`Adjacent numeric separators not allowed at line ${lexer.c1 !.line_index+1} col ${lexer.c1 !.col_index+1}.`)
 				} else {
-					throw new Error(`Numeric separator not allowed at end of numeric literal \`${cargo}\` at line ${line} col ${col}.`)
+					throw new LexError04(Char.eq(TokenNumber.SEPARATOR, lexer.c1) ? lexer.c1 ! : lexer.c0)
 				}
 			}
 		}

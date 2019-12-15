@@ -35,3 +35,9 @@ export class LexError03 extends LexError {
 		super(`Invalid escape sequence: \`${span}\` at line ${line + 1} col ${col + 1}.`, LexError03.CODE, line, col)
 	}
 }
+export class LexError04 extends LexError {
+	static readonly CODE = 4
+	constructor (char: Char) {
+		super(`Numeric separator not allowed: at line ${char.line_index + 1} col ${char.col_index + 1}.`, LexError04.CODE, char.line_index, char.col_index)
+	}
+}
