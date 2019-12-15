@@ -93,8 +93,6 @@ export class TerminalWhitespace extends Terminal {
 export class TerminalComment extends Terminal {
 	static readonly instance: TerminalComment = new TerminalComment()
 	readonly TAGNAME: string = 'COMMENT'
-	/** How many levels of nested multiline comments are we in? */
-	private comment_multiline_level: number /* bigint */ = 0
 	lex(lexer: Lexer, comment_type: TokenCommentType = TokenCommentLine): TokenComment {
 		return (new Map<TokenCommentType, () => TokenComment>([
 			[TokenCommentLine, (): TokenCommentLine => {
@@ -122,16 +120,17 @@ export class TerminalComment extends Terminal {
 				return token
 			}],
 			[TokenCommentMultiNest, (): TokenCommentMultiNest => {
+				let comment_multiline_level: number /* bigint */ = 0
 				const token: TokenCommentMultiNest = new TokenCommentMultiNest(lexer.c0, lexer.c1 !)
 				lexer.advance(TokenCommentMultiNest.DELIM_START.length)
-				this.comment_multiline_level++;
-				while (this.comment_multiline_level !== 0) {
+				comment_multiline_level++;
+				while (comment_multiline_level !== 0) {
 					while (!lexer.isDone && !Char.eq(TokenCommentMultiNest.DELIM_END, lexer.c0, lexer.c1)) {
 						if (Char.eq(ETX, lexer.c0)) throw new LexError02(token)
 						if (Char.eq(TokenCommentMultiNest.DELIM_START, lexer.c0, lexer.c1)) {
 							token.add(lexer.c0, lexer.c1 !)
 							lexer.advance(TokenCommentMultiNest.DELIM_START.length)
-							this.comment_multiline_level++;
+							comment_multiline_level++;
 						} else {
 							token.add(lexer.c0)
 							lexer.advance()
@@ -140,7 +139,7 @@ export class TerminalComment extends Terminal {
 					// add ending delim to token
 					token.add(lexer.c0, lexer.c1 !)
 					lexer.advance(TokenCommentMultiNest.DELIM_END.length)
-					this.comment_multiline_level--;
+					comment_multiline_level--;
 				}
 				return token
 			}],
