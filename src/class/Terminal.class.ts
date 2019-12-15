@@ -2,7 +2,6 @@ import Util from './Util.class'
 import {Char, ETX} from './Scanner.class'
 import Lexer from './Lexer.class'
 import Token, {
-	TemplatePosition,
 	TokenFilebound,
 	TokenWhitespace,
 	TokenComment,
@@ -12,6 +11,10 @@ import Token, {
 	TokenCommentDoc,
 	TokenStringLiteral,
 	TokenStringTemplate,
+	TokenStringTemplateFull,
+	TokenStringTemplateHead,
+	TokenStringTemplateMiddle,
+	TokenStringTemplateTail,
 	TokenNumber,
 	TokenWord,
 	TokenPunctuator,
@@ -23,6 +26,14 @@ type TokenCommentType =
 	typeof TokenCommentMulti |
 	typeof TokenCommentMultiNest |
 	typeof TokenCommentDoc
+
+enum TemplatePosition {
+	FULL,
+	HEAD,
+	MIDDLE,
+	TAIL,
+}
+
 
 /**
  * A Terminal is a symbol in a production (a formal context-free grammar) that cannot be reduced any further.
@@ -237,72 +248,67 @@ export class TerminalStringLiteral extends Terminal {
 export abstract class TerminalStringTemplate extends Terminal {
 	readonly TAGNAME: string = 'STRING-TEMPLATE'
 	lex(lexer: Lexer, full_or_head: boolean = true): TokenStringTemplate {
-		let token: TokenStringTemplate;
+		const positions: Set<TemplatePosition> = new Set<TemplatePosition>()
+		const buffer: Char[] = []
 		if (full_or_head) {
-			token = new TokenStringTemplate(lexer.c0)
-			token.positions.add(TemplatePosition.FULL).add(TemplatePosition.HEAD)
+			buffer.push(lexer.c0)
+			positions.add(TemplatePosition.FULL).add(TemplatePosition.HEAD)
 			lexer.advance()
 		} else {
-			token = new TokenStringTemplate(lexer.c0, lexer.c1 !)
-			token.positions.add(TemplatePosition.MIDDLE).add(TemplatePosition.TAIL)
+			buffer.push(lexer.c0, lexer.c1 !)
+			positions.add(TemplatePosition.MIDDLE).add(TemplatePosition.TAIL)
 			lexer.advance(2)
 		}
 				while (!lexer.isDone) {
 					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of string')
 					if (Char.eq('\\' + TokenStringTemplate.DELIM, lexer.c0, lexer.c1)) { // an escaped template delimiter
-						token.add(lexer.c0, lexer.c1 !)
+						buffer.push(lexer.c0, lexer.c1 !)
 						lexer.advance(2)
 					} else if (Char.eq(TokenStringTemplate.DELIM, lexer.c0)) { // end string template full/tail
 						// add ending delim to token
-						token.add(lexer.c0)
+						buffer.push(lexer.c0)
 						lexer.advance(TokenStringTemplate.DELIM.length)
-						token.positions.delete(TemplatePosition.HEAD)
-						token.positions.delete(TemplatePosition.MIDDLE)
+						positions.delete(TemplatePosition.HEAD)
+						positions.delete(TemplatePosition.MIDDLE)
 						break;
 					} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) { // end string template head/middle
 						// add start interpolation delim to token
-						token.add(lexer.c0, lexer.c1 !)
+						buffer.push(lexer.c0, lexer.c1 !)
 						lexer.advance(TokenStringTemplate.DELIM_INTERP_START.length)
-						token.positions.delete(TemplatePosition.FULL)
-						token.positions.delete(TemplatePosition.TAIL)
+						positions.delete(TemplatePosition.FULL)
+						positions.delete(TemplatePosition.TAIL)
 						break;
 					} else {
-						token.add(lexer.c0)
+						buffer.push(lexer.c0)
 						lexer.advance()
 					}
 				}
-				return token
+				return (new Map<TemplatePosition, (start_char: Char, ...more_chars: Char[]) => TokenStringTemplate>([
+					[TemplatePosition.FULL  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateFull  (start_char, ...more_chars)],
+					[TemplatePosition.HEAD  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateHead  (start_char, ...more_chars)],
+					[TemplatePosition.MIDDLE, (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateMiddle(start_char, ...more_chars)],
+					[TemplatePosition.TAIL  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateTail  (start_char, ...more_chars)],
+				]).get([...positions][0]) !)(buffer[0], ...buffer.slice(1))
 	}
 	random(): string {
 		throw new Error('not yet supported')
 	}
-	match(candidate: Token): boolean {
-		return super.match(candidate) && candidate instanceof TokenStringTemplate && candidate.positions.size === 1
-	}
 }
 export class TerminalStringTemplateFull extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateFull = new TerminalStringTemplateFull()
-	match(candidate: Token): boolean {
-		return super.match(candidate) && (candidate as TokenStringTemplate).positions.has(TemplatePosition.FULL)
-	}
+	readonly TAGNAME: string = 'STRING-TEMPLATE-FULL'
 }
 export class TerminalStringTemplateHead extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateHead = new TerminalStringTemplateHead()
-	match(candidate: Token): boolean {
-		return super.match(candidate) && (candidate as TokenStringTemplate).positions.has(TemplatePosition.HEAD)
-	}
+	readonly TAGNAME: string = 'STRING-TEMPLATE-HEAD'
 }
 export class TerminalStringTemplateMiddle extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateMiddle = new TerminalStringTemplateMiddle()
-	match(candidate: Token): boolean {
-		return super.match(candidate) && (candidate as TokenStringTemplate).positions.has(TemplatePosition.MIDDLE)
-	}
+	readonly TAGNAME: string = 'STRING-TEMPLATE-MIDDLE'
 }
 export class TerminalStringTemplateTail extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateTail = new TerminalStringTemplateTail()
-	match(candidate: Token): boolean {
-		return super.match(candidate) && (candidate as TokenStringTemplate).positions.has(TemplatePosition.TAIL)
-	}
+	readonly TAGNAME: string = 'STRING-TEMPLATE-TAIL'
 }
 export class TerminalNumber extends Terminal {
 	static readonly instance: TerminalNumber = new TerminalNumber()

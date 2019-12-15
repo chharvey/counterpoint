@@ -6,19 +6,14 @@ import {
 	TerminalComment,
 	TerminalStringLiteral,
 	TerminalStringTemplateFull,
+	TerminalStringTemplateHead,
+	TerminalStringTemplateMiddle,
+	TerminalStringTemplateTail,
 	TerminalNumber,
 	TerminalWord,
 	TerminalPunctuator,
 } from './Terminal.class'
 import Translator, {ParseLeaf} from './Translator.class'
-
-
-export enum TemplatePosition {
-	FULL,
-	HEAD,
-	MIDDLE,
-	TAIL,
-}
 
 
 /**
@@ -162,23 +157,46 @@ export class TokenStringLiteral extends Token {
 		)))
 	}
 }
-export class TokenStringTemplate extends Token {
+export abstract class TokenStringTemplate extends Token {
 	static readonly DELIM              : '`'  = '`'
 	static readonly DELIM_INTERP_START : '{{' = '{{'
 	static readonly DELIM_INTERP_END   : '}}' = '}}'
-	/** Which kind of string template could this be? */
-	positions: Set<TemplatePosition> = new Set<TemplatePosition>()
+	cook(start: number = 0, end: number = Infinity): ParseLeaf {
+		return new ParseLeaf(this, String.fromCodePoint(...Translator.svt(
+			this.source.slice(start, end) // cut off the string delimiters
+		)))
+	}
+}
+export class TokenStringTemplateFull extends TokenStringTemplate {
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TerminalStringTemplateFull.instance.TAGNAME, start_char, ...more_chars)
 	}
 	cook(): ParseLeaf {
-		const src: string = this.source
-		return new ParseLeaf(this, String.fromCodePoint(...Translator.svt(
-			src.slice( // cut off the string delimiters
-				(src[0           ] === TokenStringTemplate.DELIM) ?  1 : (src[0           ] + src[1           ] === TokenStringTemplate.DELIM_INTERP_END  ) ?  2 : void 0,
-				(src[src.length-1] === TokenStringTemplate.DELIM) ? -1 : (src[src.length-2] + src[src.length-1] === TokenStringTemplate.DELIM_INTERP_START) ? -2 : void 0,
-			)
-		)))
+		return super.cook(1, -1)
+	}
+}
+export class TokenStringTemplateHead extends TokenStringTemplate {
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super(TerminalStringTemplateHead.instance.TAGNAME, start_char, ...more_chars)
+	}
+	cook(): ParseLeaf {
+		return super.cook(1, -2)
+	}
+}
+export class TokenStringTemplateMiddle extends TokenStringTemplate {
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super(TerminalStringTemplateMiddle.instance.TAGNAME, start_char, ...more_chars)
+	}
+	cook(): ParseLeaf {
+		return super.cook(2, -2)
+	}
+}
+export class TokenStringTemplateTail extends TokenStringTemplate {
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super(TerminalStringTemplateTail.instance.TAGNAME, start_char, ...more_chars)
+	}
+	cook(): ParseLeaf {
+		return super.cook(2, -1)
 	}
 }
 export class TokenNumber extends Token {
