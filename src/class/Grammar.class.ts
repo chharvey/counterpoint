@@ -1,11 +1,12 @@
-import Token, {TokenSubclass, isTokenSubclass} from './Token.class'
-import ParseNode from './ParseNode.class'
-import Production from './Production.class'
 import Util from './Util.class'
+import Terminal from './Terminal.class'
+import Token from './Token.class'
+import Production from './Production.class'
+import ParseNode from './ParseNode.class'
 
 
-export type GrammarSymbol = Terminal|Production
-export type Terminal      = string|TokenSubclass
+export type GrammarSymbol   = GrammarTerminal|Production
+export type GrammarTerminal = string|Terminal
 
 
 export default class Grammar {
@@ -36,13 +37,13 @@ export default class Grammar {
 	 * @param   symbol - a terminal or nonterminal grammar symbol
 	 * @returns          the set of all possible terminal symbols, each of which may replace `symbol`
 	 */
-	first(symbol: GrammarSymbol): Set<Terminal> {
-		return new Set<Terminal>((typeof symbol === 'string') ? // a string literal (terminal)
+	first(symbol: GrammarSymbol): Set<GrammarTerminal> {
+		return new Set<GrammarTerminal>((typeof symbol === 'string') ? // a string literal (terminal)
 			[symbol]
-		: (symbol instanceof Function && isTokenSubclass(symbol)) ? // a token type (terminal)
+		: (symbol instanceof Terminal) ? // a token type (terminal)
 			[symbol]
 		: (symbol instanceof Production) ? // a reference to a nonterminal
-			symbol.sequences.map<Terminal[]>((seq) =>
+			symbol.sequences.map<GrammarTerminal[]>((seq) =>
 				(seq[0] !== symbol) ? // avoid infinite loop
 					[...this.first(seq[0])] :
 					[]
@@ -56,10 +57,10 @@ export default class Grammar {
 	 * @param   symbol - a terminal or nonterminal grammar symbol
 	 * @returns          the set of all possible terminal symbols, each of which may follow `symbol`
 	 */
-	follow(symbol: GrammarSymbol): Set<Terminal> {
-		const set: Set<string|TokenSubclass> = new Set<Terminal>(this.rules
+	follow(symbol: GrammarSymbol): Set<GrammarTerminal> {
+		const set: Set<GrammarTerminal> = new Set<GrammarTerminal>(this.rules
 			.filter((rule) => rule.symbols.includes(symbol))
-			.map<Terminal[]>((rule) => {
+			.map<GrammarTerminal[]>((rule) => {
 				const index: number = rule.symbols.indexOf(symbol)
 				return (index < rule.symbols.length-1) ? // if (item !== choice.lastItem)
 					[...this.first(rule.symbols[index + 1])] :
@@ -134,8 +135,8 @@ export class Rule {
 			const test: Token|ParseNode = candidate[i]
 			return (typeof symbol === 'string') ? // a string literal (terminal)
 				test instanceof Token && test.source === symbol
-			: (symbol instanceof Function && isTokenSubclass(symbol)) ? // a token type (terminal)
-				test instanceof symbol
+			: (symbol instanceof Terminal) ? // a token type (terminal)
+				test instanceof Token && symbol.match(test)
 			: (symbol instanceof Production) ? // a reference to a nonterminal
 				test instanceof ParseNode && symbol.toRules().some((rule) =>
 					rule.match(test.inputs)
