@@ -1,14 +1,32 @@
 import Util from './Util.class'
-import {Char} from './Scanner.class'
+import {Char, ETX} from './Scanner.class'
 import Lexer from './Lexer.class'
 import Token, {
 	TokenFilebound,
 	TokenWhitespace,
+	TokenComment,
+	TokenCommentLine,
+	TokenCommentMulti,
+	TokenCommentMultiNest,
+	TokenCommentDoc,
+	TokenString,
+	TokenStringLiteral,
+	TokenStringTemplate,
 	TokenNumber,
 	TokenWord,
 	TokenPunctuator,
 } from './Token.class'
 
+
+type TokenCommentType =
+	typeof TokenCommentLine |
+	typeof TokenCommentMulti |
+	typeof TokenCommentMultiNest |
+	typeof TokenCommentDoc
+
+type TokenStringType =
+	typeof TokenStringLiteral |
+	typeof TokenStringTemplate
 
 /**
  * A Terminal is a symbol in a production (a formal context-free grammar) that cannot be reduced any further.
@@ -69,8 +87,78 @@ export class TerminalWhitespace extends Terminal {
 export class TerminalComment extends Terminal {
 	static readonly instance: TerminalComment = new TerminalComment()
 	readonly TAGNAME: string = 'COMMENT'
-	lex(lexer: Lexer): Token {
-		throw new Error('not yet supported' || lexer) //  TODO
+	/** How many levels of nested multiline comments are we in? */
+	private comment_multiline_level: number /* bigint */ = 0
+	lex(lexer: Lexer, comment_type: TokenCommentType = TokenCommentLine): TokenComment {
+		return (new Map<TokenCommentType, () => TokenComment>([
+			[TokenCommentLine, (): TokenCommentLine => {
+				const token: TokenCommentLine = new TokenCommentLine(lexer.c0)
+				lexer.advance(TokenCommentLine.DELIM.length)
+				while (!lexer.isDone && !Char.eq('\n', lexer.c0)) {
+					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of comment')
+					token.add(lexer.c0)
+					lexer.advance()
+				}
+				// do not add '\n' to token
+				return token
+			}],
+			[TokenCommentMulti, (): TokenCommentMulti => {
+				const token: TokenCommentMulti = new TokenCommentMulti(lexer.c0)
+				lexer.advance()
+				while (!lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, lexer.c0)) {
+					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of comment')
+					token.add(lexer.c0)
+					lexer.advance()
+				}
+				// add ending delim to token
+				token.add(lexer.c0)
+				lexer.advance(TokenCommentMulti.DELIM_END.length)
+				return token
+			}],
+			[TokenCommentMultiNest, (): TokenCommentMultiNest => {
+				const token: TokenCommentMultiNest = new TokenCommentMultiNest(lexer.c0, lexer.c1 !)
+				lexer.advance(TokenCommentMultiNest.DELIM_START.length)
+				this.comment_multiline_level++;
+				while (this.comment_multiline_level !== 0) {
+					while (!lexer.isDone && !Char.eq(TokenCommentMultiNest.DELIM_END, lexer.c0, lexer.c1)) {
+						if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of comment')
+						if (Char.eq(TokenCommentMultiNest.DELIM_START, lexer.c0, lexer.c1)) {
+							token.add(lexer.c0, lexer.c1 !)
+							lexer.advance(TokenCommentMultiNest.DELIM_START.length)
+							this.comment_multiline_level++;
+						} else {
+							token.add(lexer.c0)
+							lexer.advance()
+						}
+					}
+					// add ending delim to token
+					token.add(lexer.c0, lexer.c1 !)
+					lexer.advance(TokenCommentMultiNest.DELIM_END.length)
+					this.comment_multiline_level--;
+				}
+				return token
+			}],
+			[TokenCommentDoc, (): TokenCommentDoc => {
+				const token: TokenCommentDoc = new TokenCommentDoc(lexer.c0, lexer.c1 !, lexer.c2 !, lexer.c3 !)
+				lexer.advance((TokenCommentDoc.DELIM_START + '\n').length)
+				while (!lexer.isDone) {
+					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of comment')
+					if (
+						!Char.eq(TokenCommentDoc.DELIM_END + '\n', lexer.c0, lexer.c1, lexer.c2, lexer.c3) ||
+						token.source.slice(token.source.lastIndexOf('\n') + 1).trim() !== '' // the tail end of the token does not match `/\n(\s)*/` (a newline followed by whitespace)
+					) {
+						token.add(lexer.c0)
+						lexer.advance()
+					} else {
+						break;
+					}
+				}
+				// add ending delim to token
+				token.add(lexer.c0, lexer.c1 !, lexer.c2 !)
+				lexer.advance(TokenCommentDoc.DELIM_END.length)
+				return token
+			}],
+		]).get(comment_type) !)()
 	}
 	random(): string {
 		throw new Error('not yet supported')
@@ -82,8 +170,79 @@ export class TerminalComment extends Terminal {
 export class TerminalString extends Terminal {
 	static readonly instance: TerminalString = new TerminalString()
 	readonly TAGNAME: string = 'STRING'
-	lex(lexer: Lexer): Token {
-		throw new Error('not yet supported' || lexer) //  TODO
+	lex(lexer: Lexer, string_type: TokenStringType = TokenStringLiteral): TokenString {
+		return (new Map<TokenStringType, () => TokenString>([
+			[TokenStringLiteral, (): TokenStringLiteral => {
+				const token: TokenStringLiteral = new TokenStringLiteral(lexer.c0)
+				lexer.advance()
+				while (!lexer.isDone && !Char.eq(TokenStringLiteral.DELIM, lexer.c0)) {
+					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of string')
+					if (Char.eq('\\', lexer.c0)) { // possible escape or line continuation
+						if (Char.inc([TokenStringLiteral.DELIM, '\\', 's','t','n','r'], lexer.c1)) { // an escaped character literal
+							token.add(lexer.c0, lexer.c1 !)
+							lexer.advance(2)
+						} else if (Char.eq('u{', lexer.c1, lexer.c2)) { // an escape sequence
+							const line : number = lexer.c0.line_index + 1
+							const col  : number = lexer.c0.col_index  + 1
+							let cargo  : string = lexer.c0.source + lexer.c1 !.source + lexer.c2 !.source
+							token.add(lexer.c0, lexer.c1 !, lexer.c2 !)
+							lexer.advance(3)
+							while(!Char.eq('}', lexer.c0)) {
+								cargo += lexer.c0.source
+								if (!Char.inc(TokenNumber.DIGITS.get(16) !, lexer.c0)) {
+									throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
+								}
+								token.add(lexer.c0)
+								lexer.advance()
+							}
+							token.add(lexer.c0)
+							lexer.advance()
+						} else if (Char.eq('\n', lexer.c1)) { // a line continuation (LF)
+							token.add(lexer.c0, lexer.c1 !)
+							lexer.advance(2)
+						} else if (Char.eq('\r\n', lexer.c1, lexer.c2)) { // a line continuation (CRLF)
+							token.add(lexer.c0, lexer.c1 !, lexer.c2 !)
+							lexer.advance(3)
+						} else { // a backslash escapes the following character
+							token.add(lexer.c0)
+							lexer.advance()
+						}
+					} else {
+						token.add(lexer.c0)
+						lexer.advance()
+					}
+				}
+				// add ending delim to token
+				token.add(lexer.c0)
+				lexer.advance(TokenStringLiteral.DELIM.length)
+				return token
+			}],
+			[TokenStringTemplate, (): TokenStringTemplate => {
+				const token: TokenStringTemplate = new TokenStringTemplate(lexer.c0)
+				lexer.advance()
+				while (!lexer.isDone) {
+					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of string')
+					if (Char.eq('\\' + TokenStringTemplate.DELIM, lexer.c0, lexer.c1)) { // an escaped template delimiter
+						token.add(lexer.c0, lexer.c1 !)
+						lexer.advance(2)
+					} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) { // end string template head/middle
+						// add start interpolation delim to token
+						token.add(lexer.c0, lexer.c1 !)
+						lexer.advance(TokenStringTemplate.DELIM_INTERP_START.length)
+						break;
+					} else if (Char.eq(TokenStringTemplate.DELIM, lexer.c0)) { // end string template full/tail
+						// add ending delim to token
+						token.add(lexer.c0)
+						lexer.advance(TokenStringTemplate.DELIM.length)
+						break;
+					} else {
+						token.add(lexer.c0)
+						lexer.advance()
+					}
+				}
+				return token
+			}],
+		]).get(string_type) !)()
 	}
 	random(): string {
 		throw new Error('not yet supported')
