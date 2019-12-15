@@ -1,5 +1,6 @@
 import {STX, ETX} from './Scanner.class'
 import {
+	TerminalString,
 	TerminalNumber,
 } from './Terminal.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
@@ -130,12 +131,14 @@ export class ProductionExpressionUnit extends Production {
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[TerminalNumber.instance],
+			[TerminalString.instance],
 			['(', ProductionExpression.instance, ')'],
 		]
 	}
 	random(): string[] {
-		return Util.randomBool() ?
-			[TerminalNumber.instance.random()] :
+		const random: number = Math.random()
+		return random < 0.333 ? [TerminalNumber.instance.random()] :
+			random < 0.667 ? [TerminalString.instance.random()] :
 			['(', ...ProductionExpression.instance.random(), ')']
 	}
 }

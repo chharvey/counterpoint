@@ -10,4 +10,4 @@ ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"          ExpressionE
 
 ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
 
-ExpressionUnit ::= [./lexical-grammar.ebnf#Number] | "(" Expression ")"
+ExpressionUnit ::= [./lexical-grammar.ebnf#Number] | [./lexical-grammar.ebnf#StringLiteral] | "(" Expression ")"
