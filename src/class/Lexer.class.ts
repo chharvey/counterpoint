@@ -12,6 +12,13 @@ import Token, {
 	TokenWord,
 	TokenPunctuator,
 } from './Token.class'
+import {
+	TerminalFilebound,
+	TerminalWhitespace,
+	TerminalNumber,
+	TerminalWord,
+	TerminalPunctuator,
+} from './Terminal.class'
 
 import {LexError01} from '../error/LexError.class'
 
@@ -65,7 +72,7 @@ export default class Lexer {
 	 * @param   n - the number of times to advance
 	 * @throws  {RangeError} if the argument is not a positive integer
 	 */
-	private advance(n: number /* bigint */ = 1): void {
+	advance(n: number /* bigint */ = 1): void {
 		if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
 		if (n === 1) {
 			this.iterator_result_char = this.scanner.next()
@@ -79,20 +86,6 @@ export default class Lexer {
 			this.advance(n - 1)
 			this.advance()
 		}
-	}
-	private lexFilebound(): TokenFilebound {
-		const token: TokenFilebound = new TokenFilebound(this._c0)
-		this.advance()
-		return token
-	}
-	private lexWhitespace(): TokenWhitespace {
-		const token: TokenWhitespace = new TokenWhitespace(this._c0)
-		this.advance()
-		while (!this.iterator_result_char.done && Char.inc(TokenWhitespace.CHARS, this._c0)) {
-			token.add(this._c0)
-			this.advance()
-		}
-		return token
 	}
 	private lexCommentLine(): TokenCommentLine {
 		const token: TokenCommentLine = new TokenCommentLine(this._c0)
@@ -231,53 +224,6 @@ export default class Lexer {
 		}
 		return token
 	}
-	private lexNumber(radix?: number /* TODO bigint */): TokenNumber {
-		const r: number = radix || TokenNumber.RADIX_DEFAULT // do not use default parameter because of the if-else below
-		const digits: readonly string[] = TokenNumber.DIGITS.get(r) !
-		const line  : number = this._c0.line_index + 1
-		const col   : number = this._c0.col_index  + 1
-		let cargo   : string = this._c0.source
-		let token: TokenNumber;
-		if (typeof radix === 'number') {
-			cargo += this._c1 !.source
-			if (!Char.inc(digits, this._c2)) {
-				throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
-			}
-			cargo += this._c2 !.source
-			token = new TokenNumber(r, this._c0, this._c1 !, this._c2 !)
-			this.advance(3)
-		} else {
-			token = new TokenNumber(r, this._c0)
-			this.advance()
-		}
-		while (Char.inc([...digits, TokenNumber.SEPARATOR], this._c0)) {
-			if (Char.inc(digits, this._c0)) {
-				cargo += this._c0.source
-				token.add(this._c0)
-				this.advance()
-			} else if (Char.eq(TokenNumber.SEPARATOR, this._c0)) {
-				if (Char.inc(digits, this._c1)) {
-					cargo += this._c0.source + this._c1 !.source
-					token.add(this._c0, this._c1 !)
-					this.advance(2)
-				} else if (Char.eq(TokenNumber.SEPARATOR, this._c1)) {
-					throw new Error(`Adjacent numeric separators not allowed at line ${this._c1 !.line_index+1} col ${this._c1 !.col_index+1}.`)
-				} else {
-					throw new Error(`Numeric separator not allowed at end of numeric literal \`${cargo}\` at line ${line} col ${col}.`)
-				}
-			}
-		}
-		return token
-	}
-	private lexWord(): TokenWord {
-		const token: TokenWord = new TokenWord(this._c0)
-		this.advance()
-		while (!this.iterator_result_char.done && Char.inc(TokenWord.CHARS_REST, this._c0)) {
-			token.add(this._c0)
-			this.advance()
-		}
-		return token
-	}
 
 	/**
 	 * Construct and return the next token in the source text.
@@ -288,12 +234,12 @@ export default class Lexer {
 		while (!this.iterator_result_char.done) {
 			let token: Token;
 			if (Char.inc(TokenFilebound.CHARS, this._c0)) {
-				token = this.lexFilebound()
+				token = TerminalFilebound.instance.lex(this)
 			} else if (Char.inc(TokenWhitespace.CHARS, this._c0)) {
-				token = this.lexWhitespace()
+				token = TerminalWhitespace.instance.lex(this)
 			} else if (Char.eq('\\', this._c0)) { // we found a line comment or an integer literal with a radix
 				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
-					token = this.lexNumber(TokenNumber.BASES.get(this._c1 !.source) !)
+					token = TerminalNumber.instance.lex(this, TokenNumber.BASES.get(this._c1 !.source) !)
 				} else {
 					token = this.lexCommentLine()
 				}
@@ -310,18 +256,15 @@ export default class Lexer {
 			} else if (Char.eq(TokenStringTemplate.DELIM, this._c0) || Char.eq(TokenStringTemplate.DELIM_INTERP_END, this._c0, this._c1)) {
 				token = this.lexStringTemplate()
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
-				token = this.lexNumber()
+				token = TerminalNumber.instance.lex(this)
 			} else if (Char.inc(TokenWord.CHARS_START, this._c0)) {
-				token = this.lexWord()
+				token = TerminalWord.instance.lex(this)
 			} else if (Char.inc(TokenPunctuator.CHARS_3, this._c0, this._c1, this._c2)) {
-				token = new TokenPunctuator(this._c0, this._c1 !, this._c2 !)
-				this.advance(3)
+				token = TerminalPunctuator.instance.lex(this, 3)
 			} else if (Char.inc(TokenPunctuator.CHARS_2, this._c0, this._c1)) {
-				token = new TokenPunctuator(this._c0, this._c1 !)
-				this.advance(2)
+				token = TerminalPunctuator.instance.lex(this, 2)
 			} else if (Char.inc(TokenPunctuator.CHARS_1, this._c0)) {
-				token = new TokenPunctuator(this._c0)
-				this.advance()
+				token = TerminalPunctuator.instance.lex(this)
 			} else {
 				throw new LexError01(this._c0.toString(), this._c0.line_index, this._c0.col_index)
 			}
