@@ -9,6 +9,16 @@ export default class Util {
 	static randomBool(): boolean {
 		return Math.random() < 0.5
 	}
+	/**
+	 * Return a random integer from 0 to the argument.
+	 * @example
+	 * randomInt(16); // returns a random integer within the interval [0, 16)
+	 * @param   n - the upper bound, exclusive
+	 * @returns a random integer between 0 (inclusive) and n (exclusive)
+	 */
+	static randomInt(n: number): number {
+		return Math.floor(Math.random() * n)
+	}
 
 	/**
 	 * Select a random element from the provided array.

@@ -293,9 +293,10 @@ export class TerminalNumber extends Terminal {
 		return token
 	}
 	random(): string {
-		const digitSequenceDec = (): string =>
-			(Util.randomBool() ? '' : digitSequenceDec()) + Util.arrayRandom(TokenNumber.DIGITS.get(10) !)
-		return digitSequenceDec()
+		const base: [string, number] = [...TokenNumber.BASES.entries()][Util.randomInt(6)]
+		const digitSequence = (radix: number): string =>
+			(Util.randomBool() ? '' : digitSequence(radix) + (Util.randomBool() ? '' : '_')) + Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)
+		return (Util.randomBool() ? '' : '\\' + base[0]) + digitSequence(base[1])
 	}
 }
 export class TerminalWord extends Terminal {
