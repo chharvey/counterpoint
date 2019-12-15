@@ -49,10 +49,35 @@ async function test() {
 
 const build = gulp.series(dist, test)
 
+async function random() {
+	const Grammar = require('./build/class/Grammar.class.js').default
+	const {
+		ProductionFile,
+		ProductionExpression,
+		ProductionExpressionAdditive,
+		ProductionExpressionMultiplicative,
+		ProductionExpressionExponential,
+		ProductionExpressionUnarySymbol,
+		ProductionExpressionUnit,
+	} = require('./build/class/Production.class')
+	const solid_grammar = new Grammar([
+		new ProductionFile(),
+		new ProductionExpression(),
+		new ProductionExpressionAdditive(),
+		new ProductionExpressionMultiplicative(),
+		new ProductionExpressionExponential(),
+		new ProductionExpressionUnarySymbol(),
+		new ProductionExpressionUnit(),
+	])
+	console.log(solid_grammar.rules.map((r) => `${r.production.TAGNAME} --> ${r.symbols.map((s) => s.TAGNAME || `"${s}"`).join(' ')}`))
+	console.log(solid_grammar.random().join(' '))
+	return Promise.resolve(null)
+}
 
 
 module.exports = {
 	build,
 		dist,
 		test,
+	random
 }

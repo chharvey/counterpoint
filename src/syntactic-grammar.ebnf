@@ -1,0 +1,13 @@
+/* LR grammar */
+
+File ::= #x02 Expression? #x03
+
+Expression ::= ExpressionAdditive
+
+ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-"))? ExpressionMultiplicative
+ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential
+ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"          ExpressionExponential)?
+
+ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
+
+ExpressionUnit ::= [./lexical-grammar.ebnf#Number] | [./lexical-grammar.ebnf#StringLiteral] | "(" Expression ")"
