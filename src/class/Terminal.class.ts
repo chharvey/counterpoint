@@ -24,7 +24,7 @@ export default abstract class Terminal {
 	 * @returns             does the given token satisfy this Terminal?
 	 */
 	match(candidate: Token): boolean {
-		return candidate.tagname.split('-')[0] === this.TAGNAME
+		return candidate.tagname === this.TAGNAME
 	}
 }
 
@@ -49,12 +49,18 @@ export class TerminalComment extends Terminal {
 	random(): string {
 		throw new Error('not yet supported')
 	}
+	match(candidate: Token): boolean {
+		return candidate.tagname.split('-')[0] === this.TAGNAME
+	}
 }
 export class TerminalString extends Terminal {
 	static readonly instance: TerminalString = new TerminalString()
 	readonly TAGNAME: string = 'STRING'
 	random(): string {
 		throw new Error('not yet supported')
+	}
+	match(candidate: Token): boolean {
+		return candidate.tagname.split('-')[0] === this.TAGNAME
 	}
 }
 export class TerminalNumber extends Terminal {
