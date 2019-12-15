@@ -90,7 +90,7 @@ export default class Lexer {
 	}
 	private lexCommentLine(): TokenCommentLine {
 		const token: TokenCommentLine = new TokenCommentLine(this.c0)
-		this.advance(TokenCommentLine.CHARS_LINE.length)
+		this.advance(TokenCommentLine.DELIM.length)
 		while (!this.iterator_result_char.done && !Char.eq('\n', this.c0)) {
 			if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
 			token.add(this.c0)
@@ -102,26 +102,26 @@ export default class Lexer {
 	private lexCommentMulti(): TokenCommentMulti {
 		const token: TokenCommentMulti = new TokenCommentMulti(this.c0)
 		this.advance()
-		while (!this.iterator_result_char.done && !Char.eq(TokenCommentMulti.CHARS_MULTI_END, this.c0)) {
+		while (!this.iterator_result_char.done && !Char.eq(TokenCommentMulti.DELIM_END, this.c0)) {
 			if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
 			token.add(this.c0)
 			this.advance()
 		}
 		// add ending delim to token
 		token.add(this.c0)
-		this.advance(TokenCommentMulti.CHARS_MULTI_END.length)
+		this.advance(TokenCommentMulti.DELIM_END.length)
 		return token
 	}
 	private lexCommentMultiNest(): TokenCommentMultiNest {
 		const token: TokenCommentMultiNest = new TokenCommentMultiNest(this.c0, this.c1 !)
-		this.advance(TokenCommentMultiNest.CHARS_MULTI_NEST_START.length)
+		this.advance(TokenCommentMultiNest.DELIM_START.length)
 		this.comment_multiline_level++;
 		while (this.comment_multiline_level !== 0) {
-			while (!this.iterator_result_char.done && !Char.eq(TokenCommentMultiNest.CHARS_MULTI_NEST_END, this.c0, this.c1)) {
+			while (!this.iterator_result_char.done && !Char.eq(TokenCommentMultiNest.DELIM_END, this.c0, this.c1)) {
 				if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
-				if (Char.eq(TokenCommentMultiNest.CHARS_MULTI_NEST_START, this.c0, this.c1)) {
+				if (Char.eq(TokenCommentMultiNest.DELIM_START, this.c0, this.c1)) {
 					token.add(this.c0, this.c1 !)
-					this.advance(TokenCommentMultiNest.CHARS_MULTI_NEST_START.length)
+					this.advance(TokenCommentMultiNest.DELIM_START.length)
 					this.comment_multiline_level++;
 				} else {
 					token.add(this.c0)
@@ -130,18 +130,18 @@ export default class Lexer {
 			}
 			// add ending delim to token
 			token.add(this.c0, this.c1 !)
-			this.advance(TokenCommentMultiNest.CHARS_MULTI_NEST_END.length)
+			this.advance(TokenCommentMultiNest.DELIM_END.length)
 			this.comment_multiline_level--;
 		}
 		return token
 	}
 	private lexCommentDoc(): TokenCommentDoc {
 		const token: TokenCommentDoc = new TokenCommentDoc(this.c0, this.c1 !, this.c2 !, this.c3 !)
-		this.advance((TokenCommentDoc.CHARS_DOC_START + '\n').length)
+		this.advance((TokenCommentDoc.DELIM_START + '\n').length)
 		while (!this.iterator_result_char.done) {
 			if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of comment')
 			if (
-				!Char.eq(TokenCommentDoc.CHARS_DOC_END + '\n', this.c0, this.c1, this.c2, this.c3) ||
+				!Char.eq(TokenCommentDoc.DELIM_END + '\n', this.c0, this.c1, this.c2, this.c3) ||
 				token.source.slice(token.source.lastIndexOf('\n') + 1).trim() !== '' // the tail end of the token does not match `/\n(\s)*/` (a newline followed by whitespace)
 			) {
 				token.add(this.c0)
@@ -152,16 +152,16 @@ export default class Lexer {
 		}
 		// add ending delim to token
 		token.add(this.c0, this.c1 !, this.c2 !)
-		this.advance(TokenCommentDoc.CHARS_DOC_END.length)
+		this.advance(TokenCommentDoc.DELIM_END.length)
 		return token
 	}
 	private lexStringLiteral(): TokenStringLiteral {
 		const token: TokenStringLiteral = new TokenStringLiteral(this.c0)
 		this.advance()
-		while (!this.iterator_result_char.done && !Char.eq(TokenStringLiteral.CHARS_LITERAL_DELIM, this.c0)) {
+		while (!this.iterator_result_char.done && !Char.eq(TokenStringLiteral.DELIM, this.c0)) {
 			if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of string')
 			if (Char.eq('\\', this.c0)) { // possible escape or line continuation
-				if (Char.inc([TokenStringLiteral.CHARS_LITERAL_DELIM, '\\', 's','t','n','r'], this.c1)) { // an escaped character literal
+				if (Char.inc([TokenStringLiteral.DELIM, '\\', 's','t','n','r'], this.c1)) { // an escaped character literal
 					token.add(this.c0, this.c1 !)
 					this.advance(2)
 				} else if (Char.eq('u{', this.c1, this.c2)) { // an escape sequence
@@ -172,7 +172,7 @@ export default class Lexer {
 					this.advance(3)
 					while(!Char.eq('}', this.c0)) {
 						cargo += this.c0.source
-						if (!Char.inc(TokenNumber.digits.get(16) !, this.c0)) {
+						if (!Char.inc(TokenNumber.DIGITS.get(16) !, this.c0)) {
 							throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
 						}
 						token.add(this.c0)
@@ -197,7 +197,7 @@ export default class Lexer {
 		}
 		// add ending delim to token
 		token.add(this.c0)
-		this.advance(TokenStringLiteral.CHARS_LITERAL_DELIM.length)
+		this.advance(TokenStringLiteral.DELIM.length)
 		return token
 	}
 	private lexStringTemplate(): TokenStringTemplate {
@@ -205,18 +205,18 @@ export default class Lexer {
 		this.advance()
 		while (!this.iterator_result_char.done) {
 			if (Char.eq(ETX, this.c0)) throw new Error('Found end of file before end of string')
-			if (Char.eq('\\' + TokenStringTemplate.CHARS_TEMPLATE_DELIM, this.c0, this.c1)) { // an escaped template delimiter
+			if (Char.eq('\\' + TokenStringTemplate.DELIM, this.c0, this.c1)) { // an escaped template delimiter
 				token.add(this.c0, this.c1 !)
 				this.advance(2)
-			} else if (Char.eq(TokenStringTemplate.CHARS_TEMPLATE_INTERP_START, this.c0, this.c1)) { // end string template head/middle
+			} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_START, this.c0, this.c1)) { // end string template head/middle
 				// add start interpolation delim to token
 				token.add(this.c0, this.c1 !)
-				this.advance(TokenStringTemplate.CHARS_TEMPLATE_INTERP_START.length)
+				this.advance(TokenStringTemplate.DELIM_INTERP_START.length)
 				break;
-			} else if (Char.eq(TokenStringTemplate.CHARS_TEMPLATE_DELIM, this.c0)) { // end string template full/tail
+			} else if (Char.eq(TokenStringTemplate.DELIM, this.c0)) { // end string template full/tail
 				// add ending delim to token
 				token.add(this.c0)
-				this.advance(TokenStringTemplate.CHARS_TEMPLATE_DELIM.length)
+				this.advance(TokenStringTemplate.DELIM.length)
 				break;
 			} else {
 				token.add(this.c0)
@@ -227,7 +227,7 @@ export default class Lexer {
 	}
 	private lexNumber(radix?: number /* TODO bigint */): TokenNumber {
 		const r: number = radix || TokenNumber.RADIX_DEFAULT // do not use default parameter because of the if-else below
-		const digits: readonly string[] = TokenNumber.digits.get(r) !
+		const digits: readonly string[] = TokenNumber.DIGITS.get(r) !
 		const line  : number = this.c0.line_index + 1
 		const col   : number = this.c0.col_index  + 1
 		let cargo   : string = this.c0.source
@@ -286,24 +286,24 @@ export default class Lexer {
 			} else if (Char.inc(TokenWhitespace.CHARS, this.c0)) {
 				token = this.lexWhitespace()
 			} else if (Char.eq('\\', this.c0)) { // we found a line comment or an integer literal with a radix
-				if (Char.inc([...TokenNumber.bases.keys()], this.c1)) {
-					token = this.lexNumber(TokenNumber.bases.get(this.c1 !.source) !)
+				if (Char.inc([...TokenNumber.BASES.keys()], this.c1)) {
+					token = this.lexNumber(TokenNumber.BASES.get(this.c1 !.source) !)
 				} else {
 					token = this.lexCommentLine()
 				}
 			} else if (Char.eq('"', this.c0)) { // we found the start of a doc comment or multiline comment
-				if (this.state_newline && Char.eq(TokenCommentDoc.CHARS_DOC_START + '\n', this.c0, this.c1, this.c2, this.c3)) {
+				if (this.state_newline && Char.eq(TokenCommentDoc.DELIM_START + '\n', this.c0, this.c1, this.c2, this.c3)) {
 					token = this.lexCommentDoc()
-				} else if (Char.eq(TokenCommentMultiNest.CHARS_MULTI_NEST_START, this.c0, this.c1)) {
+				} else if (Char.eq(TokenCommentMultiNest.DELIM_START, this.c0, this.c1)) {
 					token = this.lexCommentMultiNest()
 				} else {
 					token = this.lexCommentMulti()
 				}
-			} else if (Char.eq(TokenStringLiteral.CHARS_LITERAL_DELIM, this.c0)) {
+			} else if (Char.eq(TokenStringLiteral.DELIM, this.c0)) {
 				token = this.lexStringLiteral()
-			} else if (Char.eq(TokenStringTemplate.CHARS_TEMPLATE_DELIM, this.c0) || Char.eq(TokenStringTemplate.CHARS_TEMPLATE_INTERP_END, this.c0, this.c1)) {
+			} else if (Char.eq(TokenStringTemplate.DELIM, this.c0) || Char.eq(TokenStringTemplate.DELIM_INTERP_END, this.c0, this.c1)) {
 				token = this.lexStringTemplate()
-			} else if (Char.inc(TokenNumber.digits.get(TokenNumber.RADIX_DEFAULT) !, this.c0)) {
+			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this.c0)) {
 				token = this.lexNumber()
 			} else if (Char.inc(TokenWord.CHARS_START, this.c0)) {
 				token = this.lexWord()

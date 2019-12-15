@@ -115,28 +115,28 @@ export abstract class TokenComment extends Token {
 	}
 }
 export class TokenCommentLine extends TokenComment {
-	static readonly CHARS_LINE: '\\' = '\\'
+	static readonly DELIM: '\\' = '\\'
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super('LINE', start_char, ...more_chars)
 	}
 }
 export class TokenCommentMulti extends TokenComment {
-	static readonly CHARS_MULTI_START : '"'   = '"'
-	static readonly CHARS_MULTI_END   : '"'   = '"'
+	static readonly DELIM_START : '"' = '"'
+	static readonly DELIM_END   : '"' = '"'
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super('MULTI', start_char, ...more_chars)
 	}
 }
 export class TokenCommentMultiNest extends TokenComment {
-	static readonly CHARS_MULTI_NEST_START : '"{'  = '"{'
-	static readonly CHARS_MULTI_NEST_END   : '}"'  = '}"'
+	static readonly DELIM_START : '"{' = '"{'
+	static readonly DELIM_END   : '}"' = '}"'
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super('MULTI_NEST', start_char, ...more_chars)
 	}
 }
 export class TokenCommentDoc extends TokenComment {
-	static readonly CHARS_DOC_START : '"""' = '"""'
-	static readonly CHARS_DOC_END   : '"""' = '"""'
+	static readonly DELIM_START : '"""' = '"""'
+	static readonly DELIM_END   : '"""' = '"""'
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super('DOC', start_char, ...more_chars)
 	}
@@ -147,7 +147,7 @@ export abstract class TokenString extends Token {
 	}
 }
 export class TokenStringLiteral extends TokenString {
-	static readonly CHARS_LITERAL_DELIM: '\'' = '\''
+	static readonly DELIM: '\'' = '\''
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super('LITERAL', start_char, ...more_chars)
 	}
@@ -158,9 +158,9 @@ export class TokenStringLiteral extends TokenString {
 	}
 }
 export class TokenStringTemplate extends TokenString {
-	static readonly CHARS_TEMPLATE_DELIM       : '`'  = '`'
-	static readonly CHARS_TEMPLATE_INTERP_START: '{{' = '{{'
-	static readonly CHARS_TEMPLATE_INTERP_END  : '}}' = '}}'
+	static readonly DELIM              : '`'  = '`'
+	static readonly DELIM_INTERP_START : '{{' = '{{'
+	static readonly DELIM_INTERP_END   : '}}' = '}}'
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super('TEMPLATE', start_char, ...more_chars)
 	}
@@ -168,8 +168,8 @@ export class TokenStringTemplate extends TokenString {
 		const src: string = this.source
 		return new ParseLeaf(this, String.fromCodePoint(...Translator.svt(
 			src.slice( // cut off the string delimiters
-				(src[0           ] === TokenStringTemplate.CHARS_TEMPLATE_DELIM) ?  1 : /* if (src[0           ] + src[1           ] === TokenStringTemplate.CHARS_TEMPLATE_INTERP_END  ) */  2,
-				(src[src.length-1] === TokenStringTemplate.CHARS_TEMPLATE_DELIM) ? -1 : /* if (src[src.length-2] + src[src.length-1] === TokenStringTemplate.CHARS_TEMPLATE_INTERP_START) */ -2,
+				(src[0           ] === TokenStringTemplate.DELIM) ?  1 : (src[0           ] + src[1           ] === TokenStringTemplate.DELIM_INTERP_END  ) ?  2 : void 0,
+				(src[src.length-1] === TokenStringTemplate.DELIM) ? -1 : (src[src.length-2] + src[src.length-1] === TokenStringTemplate.DELIM_INTERP_START) ? -2 : void 0,
 			)
 		)))
 	}
@@ -177,7 +177,7 @@ export class TokenStringTemplate extends TokenString {
 export class TokenNumber extends Token {
 	static readonly RADIX_DEFAULT: number = 10
 	static readonly SEPARATOR: string = '_'
-	static readonly bases: ReadonlyMap<string, number> = new Map<string, number>([
+	static readonly BASES: ReadonlyMap<string, number> = new Map<string, number>([
 		['b',  2],
 		['q',  4],
 		['o',  8],
@@ -185,7 +185,7 @@ export class TokenNumber extends Token {
 		['x', 16],
 		['z', 36],
 	])
-	static readonly digits: ReadonlyMap<number, readonly string[]> = new Map<number, readonly string[]>([
+	static readonly DIGITS: ReadonlyMap<number, readonly string[]> = new Map<number, readonly string[]>([
 		[ 2, '0 1'                                                                     .split(' ')],
 		[ 4, '0 1 2 3'                                                                 .split(' ')],
 		[ 8, '0 1 2 3 4 5 6 7'                                                         .split(' ')],

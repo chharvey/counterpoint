@@ -127,10 +127,10 @@ export default class Translator {
 	static svl(text: string): number[] {
 		if (text.length === 0) return []
 		if ('\\' === text[0]) { // possible escape or line continuation
-			if (TokenStringLiteral.CHARS_LITERAL_DELIM === text[1] || /[\\stnr]/.test(text[1])) { // an escaped character literal
+			if (TokenStringLiteral.DELIM === text[1] || /[\\stnr]/.test(text[1])) { // an escaped character literal
 				return [
 					new Map<string, number>([
-						[TokenStringLiteral.CHARS_LITERAL_DELIM, TokenStringLiteral.CHARS_LITERAL_DELIM.codePointAt(0) !],
+						[TokenStringLiteral.DELIM, TokenStringLiteral.DELIM.codePointAt(0) !],
 						['\\' , 0x5c],
 						['s'  , 0x20],
 						['t'  , 0x09],
@@ -202,9 +202,9 @@ export default class Translator {
 	 */
 	static svt(text: string): number[] {
 		if (text.length === 0) return []
-		if ('\\' + TokenStringTemplate.CHARS_TEMPLATE_DELIM === text[0] + text[1]) { // an escaped template delimiter
+		if ('\\' + TokenStringTemplate.DELIM === text[0] + text[1]) { // an escaped template delimiter
 			return [
-				TokenStringTemplate.CHARS_TEMPLATE_DELIM.codePointAt(0) !,
+				TokenStringTemplate.DELIM.codePointAt(0) !,
 				...Translator.svt(text.slice(2)),
 			]
 		} else return [

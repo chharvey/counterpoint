@@ -62,7 +62,7 @@ export class TerminalNumber extends Terminal {
 	readonly TAGNAME: string = 'NUMBER'
 	random(): string {
 		const digitSequenceDec = (): string =>
-			(Util.randomBool() ? '' : digitSequenceDec()) + Util.arrayRandom(TokenNumber.digits.get(10) !)
+			(Util.randomBool() ? '' : digitSequenceDec()) + Util.arrayRandom(TokenNumber.DIGITS.get(10) !)
 		return digitSequenceDec()
 	}
 }
