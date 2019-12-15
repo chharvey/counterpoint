@@ -178,7 +178,7 @@ export class TerminalString extends Terminal {
 				while (!lexer.isDone && !Char.eq(TokenStringLiteral.DELIM, lexer.c0)) {
 					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of string')
 					if (Char.eq('\\', lexer.c0)) { // possible escape or line continuation
-						if (Char.inc([TokenStringLiteral.DELIM, '\\', 's','t','n','r'], lexer.c1)) { // an escaped character literal
+						if (Char.inc(TokenStringLiteral.ESCAPES, lexer.c1)) { // an escaped character literal
 							token.add(lexer.c0, lexer.c1 !)
 							lexer.advance(2)
 						} else if (Char.eq('u{', lexer.c1, lexer.c2)) { // an escape sequence
@@ -245,7 +245,26 @@ export class TerminalString extends Terminal {
 		]).get(string_type) !)()
 	}
 	random(): string {
-		throw new Error('not yet supported')
+		const chars = (): string =>
+			(Util.randomBool() ?
+				Util.randomChar('\' \\ \u0003'.split(' ')) /* `/[^'\#x03]/` */ :
+				'\\' + escape()) +
+			(Util.randomBool() ? '' : chars())
+		const escape = (): string =>
+			Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
+		const escapeChar = (): string => Util.arrayRandom(TokenStringLiteral.ESCAPES)
+		const escapeCode = (): string => {
+			let code: string = ''
+			while (Util.randomBool()) {
+				code += Util.arrayRandom(TokenNumber.DIGITS.get(16) !)
+			}
+			return 'u{' + code + '}'
+		}
+		const lineCont = (): string => (Util.randomBool() ? '': '\u000d') + '\u000a'
+		const nonEscapeChar = (): string => Util.randomBool() ?
+			Util.randomChar('\' \\ s t n r u \u000D \u000A \u0003'.split(' ')) /* `/[^'\stnru#x0D#x0A#x03]/` */ :
+			'u' + Util.randomChar(['{']) /* `/[^{]/` */
+		return '\'' + (Util.randomBool() ? '' : chars()) + '\''
 	}
 	match(candidate: Token): boolean {
 		return candidate.tagname.split('-')[0] === this.TAGNAME

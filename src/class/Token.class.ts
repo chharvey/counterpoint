@@ -148,6 +148,7 @@ export abstract class TokenString extends Token {
 }
 export class TokenStringLiteral extends TokenString {
 	static readonly DELIM: '\'' = '\''
+	static readonly ESCAPES: readonly string[] = [TokenStringLiteral.DELIM, '\\', 's','t','n','r']
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super('LITERAL', start_char, ...more_chars)
 	}

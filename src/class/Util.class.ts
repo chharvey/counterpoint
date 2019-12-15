@@ -9,6 +9,7 @@ export default class Util {
 	static randomBool(): boolean {
 		return Math.random() < 0.5
 	}
+
 	/**
 	 * Return a random integer from 0 to the argument.
 	 * @example
@@ -18,6 +19,24 @@ export default class Util {
 	 */
 	static randomInt(n: number): number {
 		return Math.floor(Math.random() * n)
+	}
+
+	/**
+	 * Return a random code point, an integer between 0 (inclusive) and
+	 * 0x7f (the highest ASCII code point, inclusive), or
+	 * 0x10ffff (the highest Unicode code point, inclusive),
+	 * as a character in a string.
+	 * Any exceptions given will not be returned.
+	 * @param   except - a list of exceptions
+	 * @param   ascii  - should the returned character be limited to the ASCII character set?
+	 * @returns          a random character whose code point is not in the exceptions list
+	 */
+	static randomChar(except: string[] = [], ascii: boolean = true): string {
+		let code: number;
+		do {
+			code = Util.randomInt(ascii ? 0x80 : 0x110000)
+		} while (except.map((s) => s.codePointAt(0) !).includes(code))
+		return String.fromCodePoint(code)
 	}
 
 	/**
