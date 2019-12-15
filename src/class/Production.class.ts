@@ -130,15 +130,27 @@ export class ProductionExpressionUnit extends Production {
 	readonly TAGNAME: string = 'ExpressionUnit'
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[TerminalNumber.instance],
-			[TerminalString.instance],
+			[ProductionPrimitiveLiteral.instance],
 			['(', ProductionExpression.instance, ')'],
 		]
 	}
 	random(): string[] {
-		const random: number = Math.random()
-		return random < 0.333 ? [TerminalNumber.instance.random()] :
-			random < 0.667 ? [TerminalString.instance.random()] :
+		return Util.randomBool() ? ProductionPrimitiveLiteral.instance.random() :
 			['(', ...ProductionExpression.instance.random(), ')']
+	}
+}
+export class ProductionPrimitiveLiteral extends Production {
+	static readonly instance: ProductionPrimitiveLiteral = new ProductionPrimitiveLiteral()
+	readonly TAGNAME: string = 'PrimitiveLiteral'
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[TerminalNumber.instance],
+			[TerminalString.instance],
+		]
+	}
+	random(): string[] {
+		return [
+			Util.randomBool() ? TerminalNumber.instance.random() : TerminalString.instance.random()
+		]
 	}
 }
