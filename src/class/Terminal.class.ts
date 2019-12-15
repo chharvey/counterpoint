@@ -9,7 +9,6 @@ import Token, {
 	TokenCommentMulti,
 	TokenCommentMultiNest,
 	TokenCommentDoc,
-	TokenString,
 	TokenStringLiteral,
 	TokenStringTemplate,
 	TokenNumber,
@@ -23,10 +22,6 @@ type TokenCommentType =
 	typeof TokenCommentMulti |
 	typeof TokenCommentMultiNest |
 	typeof TokenCommentDoc
-
-type TokenStringType =
-	typeof TokenStringLiteral |
-	typeof TokenStringTemplate
 
 /**
  * A Terminal is a symbol in a production (a formal context-free grammar) that cannot be reduced any further.
@@ -167,12 +162,10 @@ export class TerminalComment extends Terminal {
 		return candidate.tagname.split('-')[0] === this.TAGNAME
 	}
 }
-export class TerminalString extends Terminal {
-	static readonly instance: TerminalString = new TerminalString()
-	readonly TAGNAME: string = 'STRING'
-	lex(lexer: Lexer, string_type: TokenStringType = TokenStringLiteral): TokenString {
-		return (new Map<TokenStringType, () => TokenString>([
-			[TokenStringLiteral, (): TokenStringLiteral => {
+export class TerminalStringLiteral extends Terminal {
+	static readonly instance: TerminalStringLiteral = new TerminalStringLiteral()
+	readonly TAGNAME: string = 'STRING-LITERAL'
+	lex(lexer: Lexer): TokenStringLiteral {
 				const token: TokenStringLiteral = new TokenStringLiteral(lexer.c0)
 				lexer.advance()
 				while (!lexer.isDone && !Char.eq(TokenStringLiteral.DELIM, lexer.c0)) {
@@ -216,33 +209,6 @@ export class TerminalString extends Terminal {
 				token.add(lexer.c0)
 				lexer.advance(TokenStringLiteral.DELIM.length)
 				return token
-			}],
-			[TokenStringTemplate, (): TokenStringTemplate => {
-				const token: TokenStringTemplate = new TokenStringTemplate(lexer.c0)
-				lexer.advance()
-				while (!lexer.isDone) {
-					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of string')
-					if (Char.eq('\\' + TokenStringTemplate.DELIM, lexer.c0, lexer.c1)) { // an escaped template delimiter
-						token.add(lexer.c0, lexer.c1 !)
-						lexer.advance(2)
-					} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) { // end string template head/middle
-						// add start interpolation delim to token
-						token.add(lexer.c0, lexer.c1 !)
-						lexer.advance(TokenStringTemplate.DELIM_INTERP_START.length)
-						break;
-					} else if (Char.eq(TokenStringTemplate.DELIM, lexer.c0)) { // end string template full/tail
-						// add ending delim to token
-						token.add(lexer.c0)
-						lexer.advance(TokenStringTemplate.DELIM.length)
-						break;
-					} else {
-						token.add(lexer.c0)
-						lexer.advance()
-					}
-				}
-				return token
-			}],
-		]).get(string_type) !)()
 	}
 	random(): string {
 		const chars = (): string =>
@@ -266,8 +232,37 @@ export class TerminalString extends Terminal {
 			'u' + Util.randomChar(['{']) /* `/[^{]/` */
 		return '\'' + (Util.randomBool() ? '' : chars()) + '\''
 	}
-	match(candidate: Token): boolean {
-		return candidate.tagname.split('-')[0] === this.TAGNAME
+}
+export class TerminalStringTemplate extends Terminal {
+	static readonly instance: TerminalStringTemplate = new TerminalStringTemplate()
+	readonly TAGNAME: string = 'STRING-TEMPLATE'
+	lex(lexer: Lexer): TokenStringTemplate {
+				const token: TokenStringTemplate = new TokenStringTemplate(lexer.c0)
+				lexer.advance()
+				while (!lexer.isDone) {
+					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of string')
+					if (Char.eq('\\' + TokenStringTemplate.DELIM, lexer.c0, lexer.c1)) { // an escaped template delimiter
+						token.add(lexer.c0, lexer.c1 !)
+						lexer.advance(2)
+					} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) { // end string template head/middle
+						// add start interpolation delim to token
+						token.add(lexer.c0, lexer.c1 !)
+						lexer.advance(TokenStringTemplate.DELIM_INTERP_START.length)
+						break;
+					} else if (Char.eq(TokenStringTemplate.DELIM, lexer.c0)) { // end string template full/tail
+						// add ending delim to token
+						token.add(lexer.c0)
+						lexer.advance(TokenStringTemplate.DELIM.length)
+						break;
+					} else {
+						token.add(lexer.c0)
+						lexer.advance()
+					}
+				}
+				return token
+	}
+	random(): string {
+		throw new Error('not yet supported')
 	}
 }
 export class TerminalNumber extends Terminal {

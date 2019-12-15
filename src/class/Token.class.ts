@@ -4,7 +4,8 @@ import {
 	TerminalFilebound,
 	TerminalWhitespace,
 	TerminalComment,
-	TerminalString,
+	TerminalStringLiteral,
+	TerminalStringTemplate,
 	TerminalNumber,
 	TerminalWord,
 	TerminalPunctuator,
@@ -141,16 +142,11 @@ export class TokenCommentDoc extends TokenComment {
 		super('DOC', start_char, ...more_chars)
 	}
 }
-export abstract class TokenString extends Token {
-	constructor(kind: string, start_char: Char, ...more_chars: Char[]) {
-		super(`${TerminalString.instance.TAGNAME}-${kind}`, start_char, ...more_chars)
-	}
-}
-export class TokenStringLiteral extends TokenString {
+export class TokenStringLiteral extends Token {
 	static readonly DELIM: '\'' = '\''
 	static readonly ESCAPES: readonly string[] = [TokenStringLiteral.DELIM, '\\', 's','t','n','r']
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super('LITERAL', start_char, ...more_chars)
+		super(TerminalStringLiteral.instance.TAGNAME, start_char, ...more_chars)
 	}
 	cook(): ParseLeaf {
 		return new ParseLeaf(this, String.fromCodePoint(...Translator.svl(
@@ -158,12 +154,12 @@ export class TokenStringLiteral extends TokenString {
 		)))
 	}
 }
-export class TokenStringTemplate extends TokenString {
+export class TokenStringTemplate extends Token {
 	static readonly DELIM              : '`'  = '`'
 	static readonly DELIM_INTERP_START : '{{' = '{{'
 	static readonly DELIM_INTERP_END   : '}}' = '}}'
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super('TEMPLATE', start_char, ...more_chars)
+		super(TerminalStringTemplate.instance.TAGNAME, start_char, ...more_chars)
 	}
 	cook(): ParseLeaf {
 		const src: string = this.source

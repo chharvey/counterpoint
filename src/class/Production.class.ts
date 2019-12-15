@@ -1,6 +1,6 @@
 import {STX, ETX} from './Scanner.class'
 import {
-	TerminalString,
+	TerminalStringLiteral,
 	TerminalNumber,
 } from './Terminal.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
@@ -145,12 +145,12 @@ export class ProductionPrimitiveLiteral extends Production {
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[TerminalNumber.instance],
-			[TerminalString.instance],
+			[TerminalStringLiteral.instance],
 		]
 	}
 	random(): string[] {
 		return [
-			Util.randomBool() ? TerminalNumber.instance.random() : TerminalString.instance.random()
+			Util.randomBool() ? TerminalNumber.instance.random() : TerminalStringLiteral.instance.random()
 		]
 	}
 }

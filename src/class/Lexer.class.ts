@@ -16,7 +16,8 @@ import {
 	TerminalFilebound,
 	TerminalWhitespace,
 	TerminalComment,
-	TerminalString,
+	TerminalStringLiteral,
+	TerminalStringTemplate,
 	TerminalNumber,
 	TerminalWord,
 	TerminalPunctuator,
@@ -115,9 +116,9 @@ export default class Lexer {
 					token = TerminalComment.instance.lex(this, TokenCommentMulti)
 				}
 			} else if (Char.eq(TokenStringLiteral.DELIM, this._c0)) {
-				token = TerminalString.instance.lex(this, TokenStringLiteral)
+				token = TerminalStringLiteral.instance.lex(this)
 			} else if (Char.eq(TokenStringTemplate.DELIM, this._c0) || Char.eq(TokenStringTemplate.DELIM_INTERP_END, this._c0, this._c1)) {
-				token = TerminalString.instance.lex(this, TokenStringTemplate)
+				token = TerminalStringTemplate.instance.lex(this)
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
 				token = TerminalNumber.instance.lex(this)
 			} else if (Char.inc(TokenWord.CHARS_START, this._c0)) {
