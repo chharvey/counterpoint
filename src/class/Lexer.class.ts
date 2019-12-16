@@ -136,7 +136,7 @@ export default class Lexer {
 			} else if (Char.inc(TokenPunctuator.CHARS_1, this._c0)) {
 				token = TerminalPunctuator.instance.lex(this)
 			} else {
-				throw new LexError01(this._c0.toString(), this._c0.line_index, this._c0.col_index)
+				throw new LexError01(this._c0)
 			}
 			this.state_newline = token instanceof TokenWhitespace && [...token.source].includes('\n')
 			yield token

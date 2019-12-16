@@ -286,7 +286,7 @@ export default class Translator {
 	 * @param   radix - the base in which to compute
 	 * @returns         the mathematical value of the string in the given base
 	 */
-	static mv(text: string, radix = 10): number { // TODO let `base` be an instance field of `TokenNumber`
+	static mv(text: string, radix = 10): number {
 		if (text[text.length-1] === TokenNumber.SEPARATOR) {
 			text = text.slice(0, -1)
 		}

@@ -20,6 +20,12 @@ import Token, {
 	TokenPunctuator,
 } from './Token.class'
 
+import {
+	LexError02,
+	LexError03,
+	LexError04,
+} from '../error/LexError.class'
+
 
 type TokenCommentType =
 	typeof TokenCommentLine |
@@ -94,15 +100,13 @@ export class TerminalWhitespace extends Terminal {
 export class TerminalComment extends Terminal {
 	static readonly instance: TerminalComment = new TerminalComment()
 	readonly TAGNAME: string = 'COMMENT'
-	/** How many levels of nested multiline comments are we in? */
-	private comment_multiline_level: number /* bigint */ = 0
 	lex(lexer: Lexer, comment_type: TokenCommentType = TokenCommentLine): TokenComment {
 		return (new Map<TokenCommentType, () => TokenComment>([
 			[TokenCommentLine, (): TokenCommentLine => {
 				const token: TokenCommentLine = new TokenCommentLine(lexer.c0)
 				lexer.advance(TokenCommentLine.DELIM.length)
 				while (!lexer.isDone && !Char.eq('\n', lexer.c0)) {
-					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of comment')
+					if (Char.eq(ETX, lexer.c0)) throw new LexError02(token)
 					token.add(lexer.c0)
 					lexer.advance()
 				}
@@ -113,7 +117,7 @@ export class TerminalComment extends Terminal {
 				const token: TokenCommentMulti = new TokenCommentMulti(lexer.c0)
 				lexer.advance()
 				while (!lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, lexer.c0)) {
-					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of comment')
+					if (Char.eq(ETX, lexer.c0)) throw new LexError02(token)
 					token.add(lexer.c0)
 					lexer.advance()
 				}
@@ -123,16 +127,17 @@ export class TerminalComment extends Terminal {
 				return token
 			}],
 			[TokenCommentMultiNest, (): TokenCommentMultiNest => {
+				let comment_multiline_level: number /* bigint */ = 0
 				const token: TokenCommentMultiNest = new TokenCommentMultiNest(lexer.c0, lexer.c1 !)
 				lexer.advance(TokenCommentMultiNest.DELIM_START.length)
-				this.comment_multiline_level++;
-				while (this.comment_multiline_level !== 0) {
+				comment_multiline_level++;
+				while (comment_multiline_level !== 0) {
 					while (!lexer.isDone && !Char.eq(TokenCommentMultiNest.DELIM_END, lexer.c0, lexer.c1)) {
-						if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of comment')
+						if (Char.eq(ETX, lexer.c0)) throw new LexError02(token)
 						if (Char.eq(TokenCommentMultiNest.DELIM_START, lexer.c0, lexer.c1)) {
 							token.add(lexer.c0, lexer.c1 !)
 							lexer.advance(TokenCommentMultiNest.DELIM_START.length)
-							this.comment_multiline_level++;
+							comment_multiline_level++;
 						} else {
 							token.add(lexer.c0)
 							lexer.advance()
@@ -141,7 +146,7 @@ export class TerminalComment extends Terminal {
 					// add ending delim to token
 					token.add(lexer.c0, lexer.c1 !)
 					lexer.advance(TokenCommentMultiNest.DELIM_END.length)
-					this.comment_multiline_level--;
+					comment_multiline_level--;
 				}
 				return token
 			}],
@@ -149,7 +154,7 @@ export class TerminalComment extends Terminal {
 				const token: TokenCommentDoc = new TokenCommentDoc(lexer.c0, lexer.c1 !, lexer.c2 !, lexer.c3 !)
 				lexer.advance((TokenCommentDoc.DELIM_START + '\n').length)
 				while (!lexer.isDone) {
-					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of comment')
+					if (Char.eq(ETX, lexer.c0)) throw new LexError02(token)
 					if (
 						!Char.eq(TokenCommentDoc.DELIM_END + '\n', lexer.c0, lexer.c1, lexer.c2, lexer.c3) ||
 						token.source.slice(token.source.lastIndexOf('\n') + 1).trim() !== '' // the tail end of the token does not match `/\n(\s)*/` (a newline followed by whitespace)
@@ -181,21 +186,19 @@ export class TerminalStringLiteral extends Terminal {
 				const token: TokenStringLiteral = new TokenStringLiteral(lexer.c0)
 				lexer.advance()
 				while (!lexer.isDone && !Char.eq(TokenStringLiteral.DELIM, lexer.c0)) {
-					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of string')
+					if (Char.eq(ETX, lexer.c0)) throw new LexError02(token)
 					if (Char.eq('\\', lexer.c0)) { // possible escape or line continuation
 						if (Char.inc(TokenStringLiteral.ESCAPES, lexer.c1)) { // an escaped character literal
 							token.add(lexer.c0, lexer.c1 !)
 							lexer.advance(2)
 						} else if (Char.eq('u{', lexer.c1, lexer.c2)) { // an escape sequence
-							const line : number = lexer.c0.line_index + 1
-							const col  : number = lexer.c0.col_index  + 1
-							let cargo  : string = lexer.c0.source + lexer.c1 !.source + lexer.c2 !.source
+							let cargo: string = lexer.c0.source + lexer.c1 !.source + lexer.c2 !.source
 							token.add(lexer.c0, lexer.c1 !, lexer.c2 !)
 							lexer.advance(3)
 							while(!Char.eq('}', lexer.c0)) {
 								cargo += lexer.c0.source
 								if (!Char.inc(TokenNumber.DIGITS.get(16) !, lexer.c0)) {
-									throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
+									throw new LexError03(cargo, lexer.c0.line_index, lexer.c0.col_index)
 								}
 								token.add(lexer.c0)
 								lexer.advance()
@@ -258,7 +261,7 @@ export abstract class TerminalStringTemplate extends Terminal {
 			lexer.advance(2)
 		}
 				while (!lexer.isDone) {
-					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of string')
+					if (Char.eq(ETX, lexer.c0)) throw new LexError02(new TokenStringTemplateFull(buffer[0], ...buffer.slice(1)))
 					if (Char.eq('\\' + TokenStringTemplate.DELIM, lexer.c0, lexer.c1)) { // an escaped template delimiter
 						buffer.push(lexer.c0, lexer.c1 !)
 						lexer.advance(2)
@@ -333,36 +336,29 @@ export class TerminalNumber extends Terminal {
 	lex(lexer: Lexer, radix?: number): TokenNumber {
 		const r: number = radix || TokenNumber.RADIX_DEFAULT // do not use default parameter because of the if-else below
 		const digits: readonly string[] = TokenNumber.DIGITS.get(r) !
-		const line  : number = lexer.c0.line_index + 1
-		const col   : number = lexer.c0.col_index  + 1
-		let cargo   : string = lexer.c0.source
+		let cargo: string = lexer.c0.source
 		let token: TokenNumber;
-		if (typeof radix === 'number') {
+		if (typeof radix === 'number') { // an explicit base
 			cargo += lexer.c1 !.source
 			if (!Char.inc(digits, lexer.c2)) {
-				throw new Error(`Invalid escape sequence: \`${cargo}\` at line ${line} col ${col}.`)
+				throw new LexError03(cargo, lexer.c0.line_index, lexer.c0.col_index)
 			}
-			cargo += lexer.c2 !.source
 			token = new TokenNumber(r, lexer.c0, lexer.c1 !, lexer.c2 !)
 			lexer.advance(3)
-		} else {
+		} else { // implicit default base
 			token = new TokenNumber(r, lexer.c0)
 			lexer.advance()
 		}
 		while (Char.inc([...digits, TokenNumber.SEPARATOR], lexer.c0)) {
 			if (Char.inc(digits, lexer.c0)) {
-				cargo += lexer.c0.source
 				token.add(lexer.c0)
 				lexer.advance()
 			} else if (Char.eq(TokenNumber.SEPARATOR, lexer.c0)) {
 				if (Char.inc(digits, lexer.c1)) {
-					cargo += lexer.c0.source + lexer.c1 !.source
 					token.add(lexer.c0, lexer.c1 !)
 					lexer.advance(2)
-				} else if (Char.eq(TokenNumber.SEPARATOR, lexer.c1)) {
-					throw new Error(`Adjacent numeric separators not allowed at line ${lexer.c1 !.line_index+1} col ${lexer.c1 !.col_index+1}.`)
 				} else {
-					throw new Error(`Numeric separator not allowed at end of numeric literal \`${cargo}\` at line ${line} col ${col}.`)
+					throw new LexError04(Char.eq(TokenNumber.SEPARATOR, lexer.c1) ? lexer.c1 ! : lexer.c0)
 				}
 			}
 		}
@@ -372,7 +368,7 @@ export class TerminalNumber extends Terminal {
 		const base: [string, number] = [...TokenNumber.BASES.entries()][Util.randomInt(6)]
 		const digitSequence = (radix: number): string =>
 			(Util.randomBool() ? '' : digitSequence(radix) + (Util.randomBool() ? '' : '_')) + Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)
-		return (Util.randomBool() ? '' : '\\' + base[0]) + digitSequence(base[1])
+		return Util.randomBool() ? digitSequence(TokenNumber.RADIX_DEFAULT) : '\\' + base[0] + digitSequence(base[1])
 	}
 }
 export class TerminalWord extends Terminal {
