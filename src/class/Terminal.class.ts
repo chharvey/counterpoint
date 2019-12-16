@@ -183,47 +183,56 @@ export class TerminalStringLiteral extends Terminal {
 	static readonly instance: TerminalStringLiteral = new TerminalStringLiteral()
 	readonly TAGNAME: string = 'STRING-LITERAL'
 	lex(lexer: Lexer): TokenStringLiteral {
-				const token: TokenStringLiteral = new TokenStringLiteral(lexer.c0)
-				lexer.advance()
-				while (!lexer.isDone && !Char.eq(TokenStringLiteral.DELIM, lexer.c0)) {
-					if (Char.eq(ETX, lexer.c0)) throw new LexError02(token)
-					if (Char.eq('\\', lexer.c0)) { // possible escape or line continuation
-						if (Char.inc(TokenStringLiteral.ESCAPES, lexer.c1)) { // an escaped character literal
-							token.add(lexer.c0, lexer.c1 !)
-							lexer.advance(2)
-						} else if (Char.eq('u{', lexer.c1, lexer.c2)) { // an escape sequence
-							let cargo: string = lexer.c0.source + lexer.c1 !.source + lexer.c2 !.source
-							token.add(lexer.c0, lexer.c1 !, lexer.c2 !)
-							lexer.advance(3)
-							while(!Char.eq('}', lexer.c0)) {
-								cargo += lexer.c0.source
-								if (!Char.inc(TokenNumber.DIGITS.get(16) !, lexer.c0)) {
-									throw new LexError03(cargo, lexer.c0.line_index, lexer.c0.col_index)
-								}
-								token.add(lexer.c0)
-								lexer.advance()
-							}
-							token.add(lexer.c0)
-							lexer.advance()
-						} else if (Char.eq('\n', lexer.c1)) { // a line continuation (LF)
-							token.add(lexer.c0, lexer.c1 !)
-							lexer.advance(2)
-						} else if (Char.eq('\r\n', lexer.c1, lexer.c2)) { // a line continuation (CRLF)
-							token.add(lexer.c0, lexer.c1 !, lexer.c2 !)
-							lexer.advance(3)
-						} else { // a backslash escapes the following character
-							token.add(lexer.c0)
-							lexer.advance()
+		const token: TokenStringLiteral = new TokenStringLiteral(lexer.c0)
+		lexer.advance()
+		while (!lexer.isDone && !Char.eq(TokenStringLiteral.DELIM, lexer.c0)) {
+			if (Char.eq(ETX, lexer.c0)) throw new LexError02(token)
+			if (Char.eq('\\', lexer.c0)) { // possible escape or line continuation
+				if (Char.inc(TokenStringLiteral.ESCAPES, lexer.c1)) {
+					/* an escaped character literal */
+					token.add(lexer.c0, lexer.c1 !)
+					lexer.advance(2)
+
+				} else if (Char.eq('u{', lexer.c1, lexer.c2)) {
+					/* an escape sequence */
+					let cargo: string = lexer.c0.source + lexer.c1 !.source + lexer.c2 !.source
+					token.add(lexer.c0, lexer.c1 !, lexer.c2 !)
+					lexer.advance(3)
+					while(!Char.eq('}', lexer.c0)) {
+						cargo += lexer.c0.source
+						if (!Char.inc(TokenNumber.DIGITS.get(16) !, lexer.c0)) {
+							throw new LexError03(cargo, lexer.c0.line_index, lexer.c0.col_index)
 						}
-					} else {
 						token.add(lexer.c0)
 						lexer.advance()
 					}
+					token.add(lexer.c0)
+					lexer.advance()
+
+				} else if (Char.eq('\n', lexer.c1)) {
+					/* a line continuation (LF) */
+					token.add(lexer.c0, lexer.c1 !)
+					lexer.advance(2)
+
+				} else if (Char.eq('\r\n', lexer.c1, lexer.c2)) {
+					/* a line continuation (CRLF) */
+					token.add(lexer.c0, lexer.c1 !, lexer.c2 !)
+					lexer.advance(3)
+
+				} else {
+					/* a backslash escapes the following character */
+					token.add(lexer.c0)
+					lexer.advance()
 				}
-				// add ending delim to token
+			} else {
 				token.add(lexer.c0)
-				lexer.advance(TokenStringLiteral.DELIM.length)
-				return token
+				lexer.advance()
+			}
+		}
+		// add ending delim to token
+		token.add(lexer.c0)
+		lexer.advance(TokenStringLiteral.DELIM.length)
+		return token
 	}
 	random(): string {
 		const chars = (): string => (Util.randomBool() ?
@@ -260,36 +269,41 @@ export abstract class TerminalStringTemplate extends Terminal {
 			positions.add(TemplatePosition.MIDDLE).add(TemplatePosition.TAIL)
 			lexer.advance(2)
 		}
-				while (!lexer.isDone) {
-					if (Char.eq(ETX, lexer.c0)) throw new LexError02(new TokenStringTemplateFull(buffer[0], ...buffer.slice(1)))
-					if (Char.eq('\\' + TokenStringTemplate.DELIM, lexer.c0, lexer.c1)) { // an escaped template delimiter
-						buffer.push(lexer.c0, lexer.c1 !)
-						lexer.advance(2)
-					} else if (Char.eq(TokenStringTemplate.DELIM, lexer.c0)) { // end string template full/tail
-						// add ending delim to token
-						buffer.push(lexer.c0)
-						lexer.advance(TokenStringTemplate.DELIM.length)
-						positions.delete(TemplatePosition.HEAD)
-						positions.delete(TemplatePosition.MIDDLE)
-						break;
-					} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) { // end string template head/middle
-						// add start interpolation delim to token
-						buffer.push(lexer.c0, lexer.c1 !)
-						lexer.advance(TokenStringTemplate.DELIM_INTERP_START.length)
-						positions.delete(TemplatePosition.FULL)
-						positions.delete(TemplatePosition.TAIL)
-						break;
-					} else {
-						buffer.push(lexer.c0)
-						lexer.advance()
-					}
-				}
-				return (new Map<TemplatePosition, (start_char: Char, ...more_chars: Char[]) => TokenStringTemplate>([
-					[TemplatePosition.FULL  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateFull  (start_char, ...more_chars)],
-					[TemplatePosition.HEAD  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateHead  (start_char, ...more_chars)],
-					[TemplatePosition.MIDDLE, (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateMiddle(start_char, ...more_chars)],
-					[TemplatePosition.TAIL  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateTail  (start_char, ...more_chars)],
-				]).get([...positions][0]) !)(buffer[0], ...buffer.slice(1))
+		while (!lexer.isDone) {
+			if (Char.eq(ETX, lexer.c0)) throw new LexError02(new TokenStringTemplateFull(buffer[0], ...buffer.slice(1)))
+			if (Char.eq('\\' + TokenStringTemplate.DELIM, lexer.c0, lexer.c1)) { // an escaped template delimiter
+				buffer.push(lexer.c0, lexer.c1 !)
+				lexer.advance(2)
+
+			} else if (Char.eq(TokenStringTemplate.DELIM, lexer.c0)) {
+				/* end string template full/tail */
+				// add ending delim to token
+				buffer.push(lexer.c0)
+				lexer.advance(TokenStringTemplate.DELIM.length)
+				positions.delete(TemplatePosition.HEAD)
+				positions.delete(TemplatePosition.MIDDLE)
+				break;
+
+			} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) {
+				/* end string template head/middle */
+				// add start interpolation delim to token
+				buffer.push(lexer.c0, lexer.c1 !)
+				lexer.advance(TokenStringTemplate.DELIM_INTERP_START.length)
+				positions.delete(TemplatePosition.FULL)
+				positions.delete(TemplatePosition.TAIL)
+				break;
+
+			} else {
+				buffer.push(lexer.c0)
+				lexer.advance()
+			}
+		}
+		return (new Map<TemplatePosition, (start_char: Char, ...more_chars: Char[]) => TokenStringTemplate>([
+			[TemplatePosition.FULL  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateFull  (start_char, ...more_chars)],
+			[TemplatePosition.HEAD  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateHead  (start_char, ...more_chars)],
+			[TemplatePosition.MIDDLE, (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateMiddle(start_char, ...more_chars)],
+			[TemplatePosition.TAIL  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateTail  (start_char, ...more_chars)],
+		]).get([...positions][0]) !)(buffer[0], ...buffer.slice(1))
 	}
 	random(start: string = TokenStringTemplate.DELIM, end: string = TokenStringTemplate.DELIM): string {
 		const chars = (): string => {

@@ -99,15 +99,20 @@ export default class Lexer {
 			let token: Token;
 			if (Char.inc(TokenFilebound.CHARS, this._c0)) {
 				token = TerminalFilebound.instance.lex(this)
+
 			} else if (Char.inc(TokenWhitespace.CHARS, this._c0)) {
 				token = TerminalWhitespace.instance.lex(this)
-			} else if (Char.eq('\\', this._c0)) { // we found a line comment or an integer literal with a radix
+
+			} else if (Char.eq('\\', this._c0)) {
+				/* we found a line comment or an integer literal with a radix */
 				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
 					token = TerminalNumber.instance.lex(this, TokenNumber.BASES.get(this._c1 !.source) !)
 				} else {
 					token = TerminalComment.instance.lex(this, TokenCommentLine)
 				}
-			} else if (Char.eq('"', this._c0)) { // we found the start of a doc comment or multiline comment
+
+			} else if (Char.eq('"', this._c0)) {
+				/* we found the start of a doc comment or multiline comment */
 				if (this.state_newline && Char.eq(TokenCommentDoc.DELIM_START + '\n', this._c0, this._c1, this._c2, this._c3)) {
 					token = TerminalComment.instance.lex(this, TokenCommentDoc)
 				} else if (Char.eq(TokenCommentMultiNest.DELIM_START, this._c0, this._c1)) {
@@ -115,20 +120,23 @@ export default class Lexer {
 				} else {
 					token = TerminalComment.instance.lex(this, TokenCommentMulti)
 				}
+
 			} else if (Char.eq(TokenStringLiteral.DELIM, this._c0)) {
+				/* we found a string literal */
 				token = TerminalStringLiteral.instance.lex(this)
 			} else if (Char.eq(TokenStringTemplate.DELIM, this._c0)) {
-				// we found a template full or template head
+				/* we found a template full or template head */
 				token = TerminalStringTemplateFull.instance.lex(this, true)
-
 			} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_END, this._c0, this._c1)) {
-				// we found a template middle or template tail
+				/* we found a template middle or template tail */
 				token = TerminalStringTemplateFull.instance.lex(this, false)
 
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
 				token = TerminalNumber.instance.lex(this)
+
 			} else if (Char.inc(TokenWord.CHARS_START, this._c0)) {
 				token = TerminalWord.instance.lex(this)
+
 			} else if (Char.inc(TokenPunctuator.CHARS_3, this._c0, this._c1, this._c2)) {
 				token = TerminalPunctuator.instance.lex(this, 3)
 			} else if (Char.inc(TokenPunctuator.CHARS_2, this._c0, this._c1)) {
