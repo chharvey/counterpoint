@@ -4,7 +4,11 @@ import {
 	TerminalFilebound,
 	TerminalWhitespace,
 	TerminalComment,
-	TerminalString,
+	TerminalStringLiteral,
+	TerminalStringTemplateFull,
+	TerminalStringTemplateHead,
+	TerminalStringTemplateMiddle,
+	TerminalStringTemplateTail,
 	TerminalNumber,
 	TerminalWord,
 	TerminalPunctuator,
@@ -141,16 +145,11 @@ export class TokenCommentDoc extends TokenComment {
 		super('DOC', start_char, ...more_chars)
 	}
 }
-export abstract class TokenString extends Token {
-	constructor(kind: string, start_char: Char, ...more_chars: Char[]) {
-		super(`${TerminalString.instance.TAGNAME}-${kind}`, start_char, ...more_chars)
-	}
-}
-export class TokenStringLiteral extends TokenString {
+export class TokenStringLiteral extends Token {
 	static readonly DELIM: '\'' = '\''
 	static readonly ESCAPES: readonly string[] = [TokenStringLiteral.DELIM, '\\', 's','t','n','r']
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super('LITERAL', start_char, ...more_chars)
+		super(TerminalStringLiteral.instance.TAGNAME, start_char, ...more_chars)
 	}
 	cook(): ParseLeaf {
 		return new ParseLeaf(this, String.fromCodePoint(...Translator.svl(
@@ -158,21 +157,46 @@ export class TokenStringLiteral extends TokenString {
 		)))
 	}
 }
-export class TokenStringTemplate extends TokenString {
+export abstract class TokenStringTemplate extends Token {
 	static readonly DELIM              : '`'  = '`'
 	static readonly DELIM_INTERP_START : '{{' = '{{'
 	static readonly DELIM_INTERP_END   : '}}' = '}}'
+	cook(start: number = 0, end: number = Infinity): ParseLeaf {
+		return new ParseLeaf(this, String.fromCodePoint(...Translator.svt(
+			this.source.slice(start, end) // cut off the string delimiters
+		)))
+	}
+}
+export class TokenStringTemplateFull extends TokenStringTemplate {
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super('TEMPLATE', start_char, ...more_chars)
+		super(TerminalStringTemplateFull.instance.TAGNAME, start_char, ...more_chars)
 	}
 	cook(): ParseLeaf {
-		const src: string = this.source
-		return new ParseLeaf(this, String.fromCodePoint(...Translator.svt(
-			src.slice( // cut off the string delimiters
-				(src[0           ] === TokenStringTemplate.DELIM) ?  1 : (src[0           ] + src[1           ] === TokenStringTemplate.DELIM_INTERP_END  ) ?  2 : void 0,
-				(src[src.length-1] === TokenStringTemplate.DELIM) ? -1 : (src[src.length-2] + src[src.length-1] === TokenStringTemplate.DELIM_INTERP_START) ? -2 : void 0,
-			)
-		)))
+		return super.cook(TokenStringTemplate.DELIM.length, -TokenStringTemplate.DELIM.length)
+	}
+}
+export class TokenStringTemplateHead extends TokenStringTemplate {
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super(TerminalStringTemplateHead.instance.TAGNAME, start_char, ...more_chars)
+	}
+	cook(): ParseLeaf {
+		return super.cook(TokenStringTemplate.DELIM.length, -TokenStringTemplate.DELIM_INTERP_START.length)
+	}
+}
+export class TokenStringTemplateMiddle extends TokenStringTemplate {
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super(TerminalStringTemplateMiddle.instance.TAGNAME, start_char, ...more_chars)
+	}
+	cook(): ParseLeaf {
+		return super.cook(TokenStringTemplate.DELIM_INTERP_END.length, -TokenStringTemplate.DELIM_INTERP_START.length)
+	}
+}
+export class TokenStringTemplateTail extends TokenStringTemplate {
+	constructor(start_char: Char, ...more_chars: Char[]) {
+		super(TerminalStringTemplateTail.instance.TAGNAME, start_char, ...more_chars)
+	}
+	cook(): ParseLeaf {
+		return super.cook(TokenStringTemplate.DELIM_INTERP_END.length, -TokenStringTemplate.DELIM.length)
 	}
 }
 export class TokenNumber extends Token {

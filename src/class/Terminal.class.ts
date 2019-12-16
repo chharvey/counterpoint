@@ -9,9 +9,12 @@ import Token, {
 	TokenCommentMulti,
 	TokenCommentMultiNest,
 	TokenCommentDoc,
-	TokenString,
 	TokenStringLiteral,
 	TokenStringTemplate,
+	TokenStringTemplateFull,
+	TokenStringTemplateHead,
+	TokenStringTemplateMiddle,
+	TokenStringTemplateTail,
 	TokenNumber,
 	TokenWord,
 	TokenPunctuator,
@@ -24,9 +27,13 @@ type TokenCommentType =
 	typeof TokenCommentMultiNest |
 	typeof TokenCommentDoc
 
-type TokenStringType =
-	typeof TokenStringLiteral |
-	typeof TokenStringTemplate
+enum TemplatePosition {
+	FULL,
+	HEAD,
+	MIDDLE,
+	TAIL,
+}
+
 
 /**
  * A Terminal is a symbol in a production (a formal context-free grammar) that cannot be reduced any further.
@@ -167,12 +174,10 @@ export class TerminalComment extends Terminal {
 		return candidate.tagname.split('-')[0] === this.TAGNAME
 	}
 }
-export class TerminalString extends Terminal {
-	static readonly instance: TerminalString = new TerminalString()
-	readonly TAGNAME: string = 'STRING'
-	lex(lexer: Lexer, string_type: TokenStringType = TokenStringLiteral): TokenString {
-		return (new Map<TokenStringType, () => TokenString>([
-			[TokenStringLiteral, (): TokenStringLiteral => {
+export class TerminalStringLiteral extends Terminal {
+	static readonly instance: TerminalStringLiteral = new TerminalStringLiteral()
+	readonly TAGNAME: string = 'STRING-LITERAL'
+	lex(lexer: Lexer): TokenStringLiteral {
 				const token: TokenStringLiteral = new TokenStringLiteral(lexer.c0)
 				lexer.advance()
 				while (!lexer.isDone && !Char.eq(TokenStringLiteral.DELIM, lexer.c0)) {
@@ -216,58 +221,110 @@ export class TerminalString extends Terminal {
 				token.add(lexer.c0)
 				lexer.advance(TokenStringLiteral.DELIM.length)
 				return token
-			}],
-			[TokenStringTemplate, (): TokenStringTemplate => {
-				const token: TokenStringTemplate = new TokenStringTemplate(lexer.c0)
-				lexer.advance()
-				while (!lexer.isDone) {
-					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of string')
-					if (Char.eq('\\' + TokenStringTemplate.DELIM, lexer.c0, lexer.c1)) { // an escaped template delimiter
-						token.add(lexer.c0, lexer.c1 !)
-						lexer.advance(2)
-					} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) { // end string template head/middle
-						// add start interpolation delim to token
-						token.add(lexer.c0, lexer.c1 !)
-						lexer.advance(TokenStringTemplate.DELIM_INTERP_START.length)
-						break;
-					} else if (Char.eq(TokenStringTemplate.DELIM, lexer.c0)) { // end string template full/tail
-						// add ending delim to token
-						token.add(lexer.c0)
-						lexer.advance(TokenStringTemplate.DELIM.length)
-						break;
-					} else {
-						token.add(lexer.c0)
-						lexer.advance()
-					}
-				}
-				return token
-			}],
-		]).get(string_type) !)()
 	}
 	random(): string {
-		const chars = (): string =>
-			(Util.randomBool() ?
-				Util.randomChar('\' \\ \u0003'.split(' ')) /* `/[^'\#x03]/` */ :
-				'\\' + escape()) +
-			(Util.randomBool() ? '' : chars())
-		const escape = (): string =>
-			Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
+		const chars = (): string => (Util.randomBool() ?
+			Util.randomChar('\' \\ \u0003'.split(' ')) /* `/[^'\#x03]/` */ :
+			'\\' + escape()) + maybeChars()
+		const maybeChars = (): string => Util.randomBool() ? '' : chars()
+		const escape     = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
 		const escapeChar = (): string => Util.arrayRandom(TokenStringLiteral.ESCAPES)
 		const escapeCode = (): string => {
 			let code: string = ''
 			while (Util.randomBool()) {
 				code += Util.arrayRandom(TokenNumber.DIGITS.get(16) !)
 			}
-			return 'u{' + code + '}'
+			return `u{${code}}`
 		}
 		const lineCont = (): string => (Util.randomBool() ? '': '\u000d') + '\u000a'
 		const nonEscapeChar = (): string => Util.randomBool() ?
 			Util.randomChar('\' \\ s t n r u \u000D \u000A \u0003'.split(' ')) /* `/[^'\stnru#x0D#x0A#x03]/` */ :
 			'u' + Util.randomChar(['{']) /* `/[^{]/` */
-		return '\'' + (Util.randomBool() ? '' : chars()) + '\''
+		return `${TokenStringLiteral.DELIM}${maybeChars()}${TokenStringLiteral.DELIM}`
 	}
-	match(candidate: Token): boolean {
-		return candidate.tagname.split('-')[0] === this.TAGNAME
+}
+export abstract class TerminalStringTemplate extends Terminal {
+	readonly TAGNAME: string = 'STRING-TEMPLATE'
+	lex(lexer: Lexer, full_or_head: boolean = true): TokenStringTemplate {
+		const positions: Set<TemplatePosition> = new Set<TemplatePosition>()
+		const buffer: Char[] = []
+		if (full_or_head) {
+			buffer.push(lexer.c0)
+			positions.add(TemplatePosition.FULL).add(TemplatePosition.HEAD)
+			lexer.advance()
+		} else {
+			buffer.push(lexer.c0, lexer.c1 !)
+			positions.add(TemplatePosition.MIDDLE).add(TemplatePosition.TAIL)
+			lexer.advance(2)
+		}
+				while (!lexer.isDone) {
+					if (Char.eq(ETX, lexer.c0)) throw new Error('Found end of file before end of string')
+					if (Char.eq('\\' + TokenStringTemplate.DELIM, lexer.c0, lexer.c1)) { // an escaped template delimiter
+						buffer.push(lexer.c0, lexer.c1 !)
+						lexer.advance(2)
+					} else if (Char.eq(TokenStringTemplate.DELIM, lexer.c0)) { // end string template full/tail
+						// add ending delim to token
+						buffer.push(lexer.c0)
+						lexer.advance(TokenStringTemplate.DELIM.length)
+						positions.delete(TemplatePosition.HEAD)
+						positions.delete(TemplatePosition.MIDDLE)
+						break;
+					} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) { // end string template head/middle
+						// add start interpolation delim to token
+						buffer.push(lexer.c0, lexer.c1 !)
+						lexer.advance(TokenStringTemplate.DELIM_INTERP_START.length)
+						positions.delete(TemplatePosition.FULL)
+						positions.delete(TemplatePosition.TAIL)
+						break;
+					} else {
+						buffer.push(lexer.c0)
+						lexer.advance()
+					}
+				}
+				return (new Map<TemplatePosition, (start_char: Char, ...more_chars: Char[]) => TokenStringTemplate>([
+					[TemplatePosition.FULL  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateFull  (start_char, ...more_chars)],
+					[TemplatePosition.HEAD  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateHead  (start_char, ...more_chars)],
+					[TemplatePosition.MIDDLE, (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateMiddle(start_char, ...more_chars)],
+					[TemplatePosition.TAIL  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateTail  (start_char, ...more_chars)],
+				]).get([...positions][0]) !)(buffer[0], ...buffer.slice(1))
+	}
+	random(start: string = TokenStringTemplate.DELIM, end: string = TokenStringTemplate.DELIM): string {
+		const chars = (): string => {
+			const random: number = Math.random()
+			return random < 0.333 ? Util.randomChar('` { \\ \u0003'.split(' ')) + maybeChars() :
+			       random < 0.667 ? '{'  + (Util.randomBool() ? '' : Util.randomChar('` { \u0003'.split(' ')) + maybeChars()) :
+			                        '\\' + (Util.randomBool() ? '`' : Util.randomChar('` \u0003'.split(' '))) + maybeChars()
+		}
+		const maybeChars = (): string => Util.randomBool() ? '' : chars()
+		return `${start}${maybeChars()}${end}`
+	}
+}
+export class TerminalStringTemplateFull extends TerminalStringTemplate {
+	static readonly instance: TerminalStringTemplateFull = new TerminalStringTemplateFull()
+	readonly TAGNAME: string = 'STRING-TEMPLATE-FULL'
+	random(): string {
+		return super.random(TokenStringTemplate.DELIM, TokenStringTemplate.DELIM)
+	}
+}
+export class TerminalStringTemplateHead extends TerminalStringTemplate {
+	static readonly instance: TerminalStringTemplateHead = new TerminalStringTemplateHead()
+	readonly TAGNAME: string = 'STRING-TEMPLATE-HEAD'
+	random(): string {
+		return super.random(TokenStringTemplate.DELIM, TokenStringTemplate.DELIM_INTERP_START)
+	}
+}
+export class TerminalStringTemplateMiddle extends TerminalStringTemplate {
+	static readonly instance: TerminalStringTemplateMiddle = new TerminalStringTemplateMiddle()
+	readonly TAGNAME: string = 'STRING-TEMPLATE-MIDDLE'
+	random(): string {
+		return super.random(TokenStringTemplate.DELIM_INTERP_END, TokenStringTemplate.DELIM_INTERP_START)
+	}
+}
+export class TerminalStringTemplateTail extends TerminalStringTemplate {
+	static readonly instance: TerminalStringTemplateTail = new TerminalStringTemplateTail()
+	readonly TAGNAME: string = 'STRING-TEMPLATE-TAIL'
+	random(): string {
+		return super.random(TokenStringTemplate.DELIM_INTERP_END, TokenStringTemplate.DELIM)
 	}
 }
 export class TerminalNumber extends Terminal {
