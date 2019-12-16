@@ -256,17 +256,21 @@ export class TerminalStringLiteral extends Terminal {
 		return token
 	}
 	random(): string {
-		const chars = (): string => (Util.randomBool() ?
-			Util.randomChar('\' \\ \u0003'.split(' ')) /* `/[^'\#x03]/` */ :
-			'\\' + escape()) + maybeChars()
-		const maybeChars = (): string => Util.randomBool() ? '' : chars()
-		const escape     = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
-		const escapeChar = (): string => Util.arrayRandom(TokenStringLiteral.ESCAPES)
-		const escapeCode = (): string => `u{${Util.randomBool() ? '' : digitSequence(16)}}`
-		const lineCont   = (): string => (Util.randomBool() ? '': '\u000d') + '\u000a'
-		const nonEscapeChar = (): string => Util.randomBool() ?
-			Util.randomChar('\' \\ s t n r u \u000D \u000A \u0003'.split(' ')) /* `/[^'\stnru#x0D#x0A#x03]/` */ :
-			'u' + Util.randomChar(['{']) /* `/[^{]/` */
+		const chars = (): string => {
+			const random: number = Math.random()
+			return (
+				random < 0.25 ? Util.randomChar('\' \\ \u0003'.split(' ')) + maybeChars() :
+				random < 0.50 ? '\\' + escape() + maybeChars() :
+				random < 0.75 ? '\\u' + (Util.randomBool() ? '' : Util.randomChar('\' { \u0003'.split(' ')) + maybeChars()) :
+				'\\\u000d' + (Util.randomBool() ? '' : Util.randomChar('\' \u000a \u0003'.split(' ')) + maybeChars())
+			)
+		}
+		const maybeChars    = (): string => Util.randomBool() ? '' : chars()
+		const escape        = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
+		const escapeChar    = (): string => Util.arrayRandom(TokenStringLiteral.ESCAPES)
+		const escapeCode    = (): string => `u{${Util.randomBool() ? '' : digitSequence(16)}}`
+		const lineCont      = (): string => (Util.randomBool() ? '': '\u000d') + '\u000a'
+		const nonEscapeChar = (): string => Util.randomChar('\' \\ s t n r u \u000D \u000A \u0003'.split(' '))
 		return `${TokenStringLiteral.DELIM}${maybeChars()}${TokenStringLiteral.DELIM}`
 	}
 }
@@ -321,11 +325,16 @@ export abstract class TerminalStringTemplate extends Terminal {
 		]).get([...positions][0]) !)(buffer[0], ...buffer.slice(1))
 	}
 	random(start: string = TokenStringTemplate.DELIM, end: string = TokenStringTemplate.DELIM): string {
+		const end_delim: boolean = end === TokenStringTemplate.DELIM
+		const followsOpenBracket = (): string => Util.randomBool() ? Util.randomChar('` { \\ \u0003'.split(' ')) : '\\' + followsBackslash()
+		const followsBackslash = (): string => Util.randomBool() ? Util.randomChar('` \u0003'.split(' ')) : '`'
 		const chars = (): string => {
 			const random: number = Math.random()
-			return random < 0.333 ? Util.randomChar('` { \\ \u0003'.split(' ')) + maybeChars() :
-			       random < 0.667 ? '{'  + (Util.randomBool() ? '' : Util.randomChar('` { \u0003'.split(' ')) + maybeChars()) :
-			                        '\\' + (Util.randomBool() ? '`' : Util.randomChar('` \u0003'.split(' '))) + maybeChars()
+			return (
+				random < 0.333 ? Util.randomChar('` { \\ \u0003'.split(' ')) + maybeChars() :
+				random < 0.667 ? '{' + (end_delim && Util.randomBool() ? '' : followsOpenBracket() + maybeChars()) :
+				'\\' + (!end_delim && Util.randomBool() ? '' : followsBackslash() + maybeChars())
+			)
 		}
 		const maybeChars = (): string => Util.randomBool() ? '' : chars()
 		return `${start}${maybeChars()}${end}`
