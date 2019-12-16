@@ -110,8 +110,10 @@ export default class Translator {
 	 * 		"n" : 0x0a, // LINE FEED (LF)       U+000A
 	 * 		"r" : 0x0d, // CARRIAGE RETURN (CR) U+000D
 	 * 	}
-	 * SVL(EscapeCode ::= "u{" [0-9a-f]* "}")
-	 * 	is UTF16Encoding({@link Translator.mv|MV}([0-9a-f]*))
+	 * SVL(EscapeCode ::= "u{" "}")
+	 * 	is 0x0
+	 * SVL(EscapeCode ::= "u{" DigitSequenceHex "}")
+	 * 	is UTF16Encoding({@link Translator.mv|MV}(DigitSequenceHex))
 	 * SVL(LineContinuation ::= #x0A)
 	 * 	is 0x20
 	 * SVL(LineContinuation ::= #x0D #x0A)
@@ -140,7 +142,7 @@ export default class Translator {
 					...Translator.svl(text.slice(2)),
 				]
 			} else if ('u{' === text[1] + text[2]) { // an escape sequence
-				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f]*}/) !
+				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
 				return [
 					...Translator.utf16Encoding(Translator.mv(sequence[0].slice(3, -1) || '0', 16)),
 					...Translator.svl(text.slice(sequence[0].length)),

@@ -56,7 +56,7 @@ StringLiteralChars ::= [^'\#x03] StringLiteralChars?
 StringLiteralEscape ::= EscapeChar | EscapeCode | LineContinuation | NonEscapeChar
 
 EscapeChar       ::= "'" | "\" | "s" | "t" | "n" | "r"
-EscapeCode       ::= "u{" [0-9a-f]* "}"
+EscapeCode       ::= "u{" DigitSequenceHex? "}"
 LineContinuation ::= #x0D? #x0A
 NonEscapeChar    ::= [^'\stnru#x0D#x0A#x03] | "u" /*? lookahead: [^{] ?*/
 
