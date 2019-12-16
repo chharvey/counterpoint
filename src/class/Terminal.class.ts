@@ -223,26 +223,24 @@ export class TerminalStringLiteral extends Terminal {
 				return token
 	}
 	random(): string {
-		const chars = (): string =>
-			(Util.randomBool() ?
-				Util.randomChar('\' \\ \u0003'.split(' ')) /* `/[^'\#x03]/` */ :
-				'\\' + escape()) +
-			(Util.randomBool() ? '' : chars())
-		const escape = (): string =>
-			Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
+		const chars = (): string => (Util.randomBool() ?
+			Util.randomChar('\' \\ \u0003'.split(' ')) /* `/[^'\#x03]/` */ :
+			'\\' + escape()) + maybeChars()
+		const maybeChars = (): string => Util.randomBool() ? '' : chars()
+		const escape     = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
 		const escapeChar = (): string => Util.arrayRandom(TokenStringLiteral.ESCAPES)
 		const escapeCode = (): string => {
 			let code: string = ''
 			while (Util.randomBool()) {
 				code += Util.arrayRandom(TokenNumber.DIGITS.get(16) !)
 			}
-			return 'u{' + code + '}'
+			return `u{${code}}`
 		}
 		const lineCont = (): string => (Util.randomBool() ? '': '\u000d') + '\u000a'
 		const nonEscapeChar = (): string => Util.randomBool() ?
 			Util.randomChar('\' \\ s t n r u \u000D \u000A \u0003'.split(' ')) /* `/[^'\stnru#x0D#x0A#x03]/` */ :
 			'u' + Util.randomChar(['{']) /* `/[^{]/` */
-		return '\'' + (Util.randomBool() ? '' : chars()) + '\''
+		return `${TokenStringLiteral.DELIM}${maybeChars()}${TokenStringLiteral.DELIM}`
 	}
 }
 export abstract class TerminalStringTemplate extends Terminal {
@@ -290,25 +288,44 @@ export abstract class TerminalStringTemplate extends Terminal {
 					[TemplatePosition.TAIL  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateTail  (start_char, ...more_chars)],
 				]).get([...positions][0]) !)(buffer[0], ...buffer.slice(1))
 	}
-	random(): string {
-		throw new Error('not yet supported')
+	random(start: string = TokenStringTemplate.DELIM, end: string = TokenStringTemplate.DELIM): string {
+		const chars = (): string => {
+			const random: number = Math.random()
+			return random < 0.333 ? Util.randomChar('` { \\ \u0003'.split(' ')) + maybeChars() :
+			       random < 0.667 ? '{'  + (Util.randomBool() ? '' : Util.randomChar('` { \u0003'.split(' ')) + maybeChars()) :
+			                        '\\' + (Util.randomBool() ? '`' : Util.randomChar('` \u0003'.split(' '))) + maybeChars()
+		}
+		const maybeChars = (): string => Util.randomBool() ? '' : chars()
+		return `${start}${maybeChars()}${end}`
 	}
 }
 export class TerminalStringTemplateFull extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateFull = new TerminalStringTemplateFull()
 	readonly TAGNAME: string = 'STRING-TEMPLATE-FULL'
+	random(): string {
+		return super.random(TokenStringTemplate.DELIM, TokenStringTemplate.DELIM)
+	}
 }
 export class TerminalStringTemplateHead extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateHead = new TerminalStringTemplateHead()
 	readonly TAGNAME: string = 'STRING-TEMPLATE-HEAD'
+	random(): string {
+		return super.random(TokenStringTemplate.DELIM, TokenStringTemplate.DELIM_INTERP_START)
+	}
 }
 export class TerminalStringTemplateMiddle extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateMiddle = new TerminalStringTemplateMiddle()
 	readonly TAGNAME: string = 'STRING-TEMPLATE-MIDDLE'
+	random(): string {
+		return super.random(TokenStringTemplate.DELIM_INTERP_END, TokenStringTemplate.DELIM_INTERP_START)
+	}
 }
 export class TerminalStringTemplateTail extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateTail = new TerminalStringTemplateTail()
 	readonly TAGNAME: string = 'STRING-TEMPLATE-TAIL'
+	random(): string {
+		return super.random(TokenStringTemplate.DELIM_INTERP_END, TokenStringTemplate.DELIM)
+	}
 }
 export class TerminalNumber extends Terminal {
 	static readonly instance: TerminalNumber = new TerminalNumber()

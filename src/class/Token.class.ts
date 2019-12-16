@@ -172,7 +172,7 @@ export class TokenStringTemplateFull extends TokenStringTemplate {
 		super(TerminalStringTemplateFull.instance.TAGNAME, start_char, ...more_chars)
 	}
 	cook(): ParseLeaf {
-		return super.cook(1, -1)
+		return super.cook(TokenStringTemplate.DELIM.length, -TokenStringTemplate.DELIM.length)
 	}
 }
 export class TokenStringTemplateHead extends TokenStringTemplate {
@@ -180,7 +180,7 @@ export class TokenStringTemplateHead extends TokenStringTemplate {
 		super(TerminalStringTemplateHead.instance.TAGNAME, start_char, ...more_chars)
 	}
 	cook(): ParseLeaf {
-		return super.cook(1, -2)
+		return super.cook(TokenStringTemplate.DELIM.length, -TokenStringTemplate.DELIM_INTERP_START.length)
 	}
 }
 export class TokenStringTemplateMiddle extends TokenStringTemplate {
@@ -188,7 +188,7 @@ export class TokenStringTemplateMiddle extends TokenStringTemplate {
 		super(TerminalStringTemplateMiddle.instance.TAGNAME, start_char, ...more_chars)
 	}
 	cook(): ParseLeaf {
-		return super.cook(2, -2)
+		return super.cook(TokenStringTemplate.DELIM_INTERP_END.length, -TokenStringTemplate.DELIM_INTERP_START.length)
 	}
 }
 export class TokenStringTemplateTail extends TokenStringTemplate {
@@ -196,7 +196,7 @@ export class TokenStringTemplateTail extends TokenStringTemplate {
 		super(TerminalStringTemplateTail.instance.TAGNAME, start_char, ...more_chars)
 	}
 	cook(): ParseLeaf {
-		return super.cook(2, -1)
+		return super.cook(TokenStringTemplate.DELIM_INTERP_END.length, -TokenStringTemplate.DELIM.length)
 	}
 }
 export class TokenNumber extends Token {
