@@ -59,6 +59,8 @@ async function random() {
 		ProductionExpressionExponential,
 		ProductionExpressionUnarySymbol,
 		ProductionExpressionUnit,
+		ProductionStringTemplate,
+		ProductionStringTemplate__0__List,
 		ProductionPrimitiveLiteral,
 	} = require('./build/class/Production.class')
 	const solid_grammar = new Grammar([
@@ -69,6 +71,8 @@ async function random() {
 		new ProductionExpressionExponential(),
 		new ProductionExpressionUnarySymbol(),
 		new ProductionExpressionUnit(),
+		new ProductionStringTemplate(),
+		new ProductionStringTemplate__0__List(),
 		new ProductionPrimitiveLiteral(),
 	])
 	console.log(solid_grammar.rules.map((r) => `${r.production.TAGNAME} --> ${r.symbols.map((s) => s.TAGNAME || `"${s}"`).join(' ')}`))
