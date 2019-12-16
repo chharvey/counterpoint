@@ -311,7 +311,7 @@ export class TerminalNumber extends Terminal {
 		const base: [string, number] = [...TokenNumber.BASES.entries()][Util.randomInt(6)]
 		const digitSequence = (radix: number): string =>
 			(Util.randomBool() ? '' : digitSequence(radix) + (Util.randomBool() ? '' : '_')) + Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)
-		return (Util.randomBool() ? '' : '\\' + base[0]) + digitSequence(base[1])
+		return Util.randomBool() ? digitSequence(TokenNumber.RADIX_DEFAULT) : '\\' + base[0] + digitSequence(base[1])
 	}
 }
 export class TerminalWord extends Terminal {
