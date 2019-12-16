@@ -83,7 +83,10 @@ export default class Grammar {
 			try {
 				returned = this.productions[0].random()
 				break;
-			} catch { // RangeError: Maximum call stack size exceeded
+			} catch (err) { // RangeError: Maximum call stack size exceeded
+				if (err.message !== 'Maximum call stack size exceeded') {
+					throw err
+				}
 			}
 		}
 		return returned || []
