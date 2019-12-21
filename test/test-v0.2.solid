@@ -20,7 +20,7 @@ comment" *  \x2
 \o123_456_78
 
 \ the following is an empty line comment:
-\
+123 \
 
   \a \ line comment starting with "a"
 \ \b \ line comment starting with "b"
