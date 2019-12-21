@@ -139,7 +139,7 @@ export default class Translator {
 	static svl(text: string): number[] {
 		if (text.length === 0) return []
 		if ('\\' === text[0]) { // possible escape or line continuation
-			if ([TokenStringLiteral.DELIM, ...'\\stnr'].includes(text[1])) { // an escaped character literal
+			if (TokenStringLiteral.ESCAPES.includes(text[1])) { // an escaped character literal
 				return [
 					new Map<string, number>([
 						[TokenStringLiteral.DELIM, TokenStringLiteral.DELIM.codePointAt(0) !],
