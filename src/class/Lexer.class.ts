@@ -104,7 +104,7 @@ export default class Lexer {
 				token = TerminalWhitespace.instance.lex(this)
 
 			} else if (Char.eq('\\', this._c0)) {
-				/* we found a line comment or an integer literal with a radix */
+				/* we found an integer literal with a radix or a line comment */
 				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
 					token = TerminalNumber.instance.lex(this, TokenNumber.BASES.get(this._c1 !.source) !)
 				} else {

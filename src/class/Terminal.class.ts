@@ -40,6 +40,9 @@ enum TemplatePosition {
 	TAIL,
 }
 
+const digitSequence = (radix: number): string =>
+	(Util.randomBool() ? '' : digitSequence(radix) + (Util.randomBool() ? '' : '_')) + Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)
+
 
 /**
  * A Terminal is a symbol in a production (a formal context-free grammar) that cannot be reduced any further.
@@ -195,19 +198,37 @@ export class TerminalStringLiteral extends Terminal {
 
 				} else if (Char.eq('u{', lexer.c1, lexer.c2)) {
 					/* an escape sequence */
+					const digits: readonly string[] = TokenNumber.DIGITS.get(16) !
 					let cargo: string = lexer.c0.source + lexer.c1 !.source + lexer.c2 !.source
 					token.add(lexer.c0, lexer.c1 !, lexer.c2 !)
 					lexer.advance(3)
-					while(!Char.eq('}', lexer.c0)) {
+					if (Char.inc(digits, lexer.c0)) {
 						cargo += lexer.c0.source
-						if (!Char.inc(TokenNumber.DIGITS.get(16) !, lexer.c0)) {
-							throw new LexError03(cargo, lexer.c0.line_index, lexer.c0.col_index)
-						}
 						token.add(lexer.c0)
 						lexer.advance()
+						while(!lexer.isDone && Char.inc([...digits, TokenNumber.SEPARATOR], lexer.c0)) {
+							if (Char.inc(digits, lexer.c0)) {
+								cargo += lexer.c0.source
+								token.add(lexer.c0)
+								lexer.advance()
+							} else if (Char.eq(TokenNumber.SEPARATOR, lexer.c0)) {
+								if (Char.inc(digits, lexer.c1)) {
+									cargo += lexer.c0.source + lexer.c1 !.source
+									token.add(lexer.c0, lexer.c1 !)
+									lexer.advance(2)
+								} else {
+									throw new LexError04(Char.eq(TokenNumber.SEPARATOR, lexer.c1) ? lexer.c1 ! : lexer.c0)
+								}
+							}
+						}
 					}
-					token.add(lexer.c0)
-					lexer.advance()
+					// add ending escape delim
+					if (Char.eq('}', lexer.c0)) {
+						token.add(lexer.c0)
+						lexer.advance()
+					} else {
+						throw new LexError03(cargo, lexer.c0.line_index, lexer.c0.col_index)
+					}
 
 				} else if (Char.eq('\n', lexer.c1)) {
 					/* a line continuation (LF) */
@@ -235,23 +256,21 @@ export class TerminalStringLiteral extends Terminal {
 		return token
 	}
 	random(): string {
-		const chars = (): string => (Util.randomBool() ?
-			Util.randomChar('\' \\ \u0003'.split(' ')) /* `/[^'\#x03]/` */ :
-			'\\' + escape()) + maybeChars()
-		const maybeChars = (): string => Util.randomBool() ? '' : chars()
-		const escape     = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
-		const escapeChar = (): string => Util.arrayRandom(TokenStringLiteral.ESCAPES)
-		const escapeCode = (): string => {
-			let code: string = ''
-			while (Util.randomBool()) {
-				code += Util.arrayRandom(TokenNumber.DIGITS.get(16) !)
-			}
-			return `u{${code}}`
+		const chars = (): string => {
+			const random: number = Math.random()
+			return (
+				random < 0.25 ? Util.randomChar('\' \\ \u0003'.split(' ')) + maybeChars() :
+				random < 0.50 ? '\\' + escape() + maybeChars() :
+				random < 0.75 ? '\\u' + (Util.randomBool() ? '' : Util.randomChar('\' { \u0003'.split(' ')) + maybeChars()) :
+				'\\\u000d' + (Util.randomBool() ? '' : Util.randomChar('\' \u000a \u0003'.split(' ')) + maybeChars())
+			)
 		}
-		const lineCont = (): string => (Util.randomBool() ? '': '\u000d') + '\u000a'
-		const nonEscapeChar = (): string => Util.randomBool() ?
-			Util.randomChar('\' \\ s t n r u \u000D \u000A \u0003'.split(' ')) /* `/[^'\stnru#x0D#x0A#x03]/` */ :
-			'u' + Util.randomChar(['{']) /* `/[^{]/` */
+		const maybeChars    = (): string => Util.randomBool() ? '' : chars()
+		const escape        = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
+		const escapeChar    = (): string => Util.arrayRandom(TokenStringLiteral.ESCAPES)
+		const escapeCode    = (): string => `u{${Util.randomBool() ? '' : digitSequence(16)}}`
+		const lineCont      = (): string => (Util.randomBool() ? '': '\u000d') + '\u000a'
+		const nonEscapeChar = (): string => Util.randomChar('\' \\ s t n r u \u000D \u000A \u0003'.split(' '))
 		return `${TokenStringLiteral.DELIM}${maybeChars()}${TokenStringLiteral.DELIM}`
 	}
 }
@@ -306,11 +325,16 @@ export abstract class TerminalStringTemplate extends Terminal {
 		]).get([...positions][0]) !)(buffer[0], ...buffer.slice(1))
 	}
 	random(start: string = TokenStringTemplate.DELIM, end: string = TokenStringTemplate.DELIM): string {
+		const end_delim: boolean = end === TokenStringTemplate.DELIM
+		const followsOpenBracket = (): string => Util.randomBool() ? Util.randomChar('` { \\ \u0003'.split(' ')) : '\\' + followsBackslash()
+		const followsBackslash = (): string => Util.randomBool() ? Util.randomChar('` \u0003'.split(' ')) : '`'
 		const chars = (): string => {
 			const random: number = Math.random()
-			return random < 0.333 ? Util.randomChar('` { \\ \u0003'.split(' ')) + maybeChars() :
-			       random < 0.667 ? '{'  + (Util.randomBool() ? '' : Util.randomChar('` { \u0003'.split(' ')) + maybeChars()) :
-			                        '\\' + (Util.randomBool() ? '`' : Util.randomChar('` \u0003'.split(' '))) + maybeChars()
+			return (
+				random < 0.333 ? Util.randomChar('` { \\ \u0003'.split(' ')) + maybeChars() :
+				random < 0.667 ? '{' + (end_delim && Util.randomBool() ? '' : followsOpenBracket() + maybeChars()) :
+				'\\' + (!end_delim && Util.randomBool() ? '' : followsBackslash() + maybeChars())
+			)
 		}
 		const maybeChars = (): string => Util.randomBool() ? '' : chars()
 		return `${start}${maybeChars()}${end}`
@@ -363,7 +387,7 @@ export class TerminalNumber extends Terminal {
 			token = new TokenNumber(r, lexer.c0)
 			lexer.advance()
 		}
-		while (Char.inc([...digits, TokenNumber.SEPARATOR], lexer.c0)) {
+		while (!lexer.isDone && Char.inc([...digits, TokenNumber.SEPARATOR], lexer.c0)) {
 			if (Char.inc(digits, lexer.c0)) {
 				token.add(lexer.c0)
 				lexer.advance()
@@ -380,8 +404,6 @@ export class TerminalNumber extends Terminal {
 	}
 	random(): string {
 		const base: [string, number] = [...TokenNumber.BASES.entries()][Util.randomInt(6)]
-		const digitSequence = (radix: number): string =>
-			(Util.randomBool() ? '' : digitSequence(radix) + (Util.randomBool() ? '' : '_')) + Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)
 		return Util.randomBool() ? digitSequence(TokenNumber.RADIX_DEFAULT) : '\\' + base[0] + digitSequence(base[1])
 	}
 }

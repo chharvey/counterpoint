@@ -22,20 +22,19 @@ export default class Util {
 	}
 
 	/**
-	 * Return a random code point, an integer between 0 (inclusive) and
-	 * 0x7f (the highest ASCII code point, inclusive), or
-	 * 0x10ffff (the highest Unicode code point, inclusive),
+	 * Return a random code point, an integer between 0x20 (inclusive) and
+	 * 0x7f (the highest ASCII code point, inclusive),
 	 * as a character in a string.
 	 * Any exceptions given will not be returned.
 	 * @param   except - a list of exceptions
-	 * @param   ascii  - should the returned character be limited to the ASCII character set?
 	 * @returns          a random character whose code point is not in the exceptions list
 	 */
-	static randomChar(except: string[] = [], ascii: boolean = true): string {
+	static randomChar(except: string[] = []): string {
+		const exceptcodes: number[] = except.map((s) => s.codePointAt(0) !)
 		let code: number;
 		do {
-			code = Util.randomInt(ascii ? 0x80 : 0x110000)
-		} while (except.map((s) => s.codePointAt(0) !).includes(code))
+			code = Util.randomInt(0x80 - 0x20) + 0x20
+		} while (exceptcodes.includes(code))
 		return String.fromCodePoint(code)
 	}
 

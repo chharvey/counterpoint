@@ -93,6 +93,18 @@ export default class Translator {
 	 * 	is SVL(StringLiteralEscape)
 	 * SVL(StringLiteralChars ::= "\" StringLiteralEscape StringLiteralChars)
 	 * 	is SVL(StringLiteralEscape) followed by SVL(StringLiteralChars)
+	 * SVL(StringLiteralChars ::= "\u")
+	 * 	is 0x75
+	 * SVL(StringLiteralChars ::= "\u" [^'{#x03'])
+	 * 	is 0x75 followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character)
+	 * SVL(StringLiteralChars ::= "\u" [^'{#x03'] StringLiteralChars)
+	 * 	is 0x75 followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVL(StringLiteralChars)
+	 * SVL(StringLiteralChars ::= "\" #x0D)
+	 * 	is 0x0D
+	 * SVL(StringLiteralChars ::= "\" #x0D [^'#x0A#x03])
+	 * 	is 0x0D followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character)
+	 * SVL(StringLiteralChars ::= "\" #x0D [^'#x0A#x03] StringLiteralChars)
+	 * 	is 0x0D followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVL(StringLiteralChars)
 	 * SVL(StringLiteralEscape ::= EscapeChar)
 	 * 	is SVL(EscapeChar)
 	 * SVL(StringLiteralEscape ::= EscapeCode)
@@ -110,16 +122,16 @@ export default class Translator {
 	 * 		"n" : 0x0a, // LINE FEED (LF)       U+000A
 	 * 		"r" : 0x0d, // CARRIAGE RETURN (CR) U+000D
 	 * 	}
-	 * SVL(EscapeCode ::= "u{" [0-9a-f]* "}")
-	 * 	is UTF16Encoding({@link Translator.mv|MV}([0-9a-f]*))
+	 * SVL(EscapeCode ::= "u{" "}")
+	 * 	is 0x0
+	 * SVL(EscapeCode ::= "u{" DigitSequenceHex "}")
+	 * 	is UTF16Encoding({@link Translator.mv|MV}(DigitSequenceHex))
 	 * SVL(LineContinuation ::= #x0A)
 	 * 	is 0x20
 	 * SVL(LineContinuation ::= #x0D #x0A)
 	 * 	is 0x20
 	 * SVL(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03]
 	 * 	is {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVL(NonEscapeChar ::= "u" /*? lookahead: [^{] ?/)
-	 * 	is 0x75
 	 * ```
 	 * @param   text - the string to compute
 	 * @returns        the string literal value, a sequence of code points
@@ -127,7 +139,7 @@ export default class Translator {
 	static svl(text: string): number[] {
 		if (text.length === 0) return []
 		if ('\\' === text[0]) { // possible escape or line continuation
-			if (TokenStringLiteral.DELIM === text[1] || /[\\stnr]/.test(text[1])) { // an escaped character literal
+			if (TokenStringLiteral.ESCAPES.includes(text[1])) { // an escaped character literal
 				return [
 					new Map<string, number>([
 						[TokenStringLiteral.DELIM, TokenStringLiteral.DELIM.codePointAt(0) !],
@@ -140,7 +152,7 @@ export default class Translator {
 					...Translator.svl(text.slice(2)),
 				]
 			} else if ('u{' === text[1] + text[2]) { // an escape sequence
-				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f]*}/) !
+				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
 				return [
 					...Translator.utf16Encoding(Translator.mv(sequence[0].slice(3, -1) || '0', 16)),
 					...Translator.svl(text.slice(sequence[0].length)),
@@ -166,36 +178,72 @@ export default class Translator {
 	 * ```
 	 * SVT(StringTemplateFull ::= "`" "`")
 	 * 	is the empty array
-	 * SVT(StringTemplateFull ::= "`" TemplateCharacters "`")
-	 * 	is SVT(StringTemplateCharacters)
+	 * SVT(StringTemplateFull ::= "`" StringTemplateCharsEndDelim "`")
+	 * 	is SVT(StringTemplateCharsEndDelim)
 	 * SVT(StringTemplateHead ::= "`" "{{")
 	 * 	is the empty array
-	 * SVT(StringTemplateHead ::= "`" TemplateCharacters "{{")
-	 * 	is SVT(StringTemplateCharacters)
+	 * SVT(StringTemplateHead ::= "`" StringTemplateCharsEndInterp "{{")
+	 * 	is SVT(StringTemplateCharsEndInterp)
 	 * SVT(StringTempalteMiddle ::= "}}" "{{")
 	 * 	is the empty array
-	 * SVT(StringTempalteMiddle ::= "}}" TemplateCharacters "{{")
-	 * 	is SVT(StringTemplateCharacters)
+	 * SVT(StringTempalteMiddle ::= "}}" StringTemplateCharsEndInterp "{{")
+	 * 	is SVT(StringTemplateCharsEndInterp)
 	 * SVT(StringTempalteTail ::= "}}" "`")
 	 * 	is the empty array
-	 * SVT(StringTempalteTail ::= "}}" TemplateCharacters "`")
-	 * 	is SVT(StringTemplateCharacters)
-	 * SVT(StringTemplateCharacters ::= [^`{\#x03])
+	 * SVT(StringTempalteTail ::= "}}" StringTemplateCharsEndDelim "`")
+	 * 	is SVT(StringTemplateCharsEndDelim)
+	 * SVT(StringTemplateCharsEndDelim ::= [^`{\#x03])
 	 * 	is {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVT(StringTemplateCharacters ::= [^`{\#x03] StringTemplateCharacters)
-	 * 	is {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharacters)
-	 * SVT(StringTemplateCharacters ::= "{"
+	 * SVT(StringTemplateCharsEndDelim ::= [^`{\#x03] StringTemplateCharsEndDelim)
+	 * 	is {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndDelim)
+	 * SVT(StringTemplateCharsEndDelim ::= "{"
 	 * 	is 0x7b
-	 * SVT(StringTemplateCharacters ::= "{" [^`{#x03])
+	 * SVT(StringTemplateCharsEndDelim ::= "{" [^`{\#x03])
 	 * 	is 0x7b followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVT(StringTemplateCharacters ::= "{" [^`{#x03] StringTemplateCharacters)
-	 * 	is 0x7b followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharacters)
-	 * SVT(StringTemplateCharacters ::= "\`")
+	 * SVT(StringTemplateCharsEndDelim ::= "{" [^`{\#x03] StringTemplateCharsEndDelim)
+	 * 	is 0x7b followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndDelim)
+	 * SVT(StringTemplateCharsEndDelim ::= "{" "\" [^`#x03])
+	 * 	is 0x7b followed by 0x5c followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character)
+	 * SVT(StringTemplateCharsEndDelim ::= "{" "\" [^`#x03] StringTemplateCharsEndDelim)
+	 * 	is 0x7b followed by 0x5c followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndDelim)
+	 * SVT(StringTemplateCharsEndDelim ::= "{" "\" "`")
+	 * 	is 0x7b followed by 0x60
+	 * SVT(StringTemplateCharsEndDelim ::= "{" "\" "`" StringTemplateCharsEndDelim)
+	 * 	is 0x7b followed by 0x60 followed by SVT(StringTemplateCharsEndDelim)
+	 * SVT(StringTemplateCharsEndDelim ::= "\" [^`#x03])
+	 * 	is 0x5c followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character)
+	 * SVT(StringTemplateCharsEndDelim ::= "\" [^`#x03] StringTemplateCharsEndDelim)
+	 * 	is 0x5c followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndDelim)
+	 * SVT(StringTemplateCharsEndDelim ::= "\" "`")
 	 * 	is 0x60
-	 * SVT(StringTemplateCharacters ::= "\`" StringTemplateCharacters)
-	 * 	is 0x60 followed by SVT(StringTemplateCharacters)
-	 * SVT(StringTemplateCharacters ::= "\" [^`#x03] StringTemplateCharacters)
-	 * 	is 0x5c followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharacters)
+	 * SVT(StringTemplateCharsEndDelim ::= "\" "`" StringTemplateCharsEndDelim)
+	 * 	is 0x60 followed by SVT(StringTemplateCharsEndDelim)
+	 * SVT(StringTemplateCharsEndInterp ::= [^`{\#x03])
+	 * 	is {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character)
+	 * SVT(StringTemplateCharsEndInterp ::= [^`{\#x03] StringTemplateCharsEndInterp)
+	 * 	is {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndInterp)
+	 * SVT(StringTemplateCharsEndInterp ::= "{" [^`{\#x03])
+	 * 	is 0x7b followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character)
+	 * SVT(StringTemplateCharsEndInterp ::= "{" [^`{\#x03] StringTemplateCharsEndInterp)
+	 * 	is 0x7b followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndInterp)
+	 * SVT(StringTemplateCharsEndInterp ::= "{" "\" [^`#x03])
+	 * 	is 0x7b followed by 0x5c followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character)
+	 * SVT(StringTemplateCharsEndInterp ::= "{" "\" [^`#x03] StringTemplateCharsEndInterp)
+	 * 	is 0x7b followed by 0x5c followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndInterp)
+	 * SVT(StringTemplateCharsEndInterp ::= "{" "\" "`")
+	 * 	is 0x7b followed by 0x60
+	 * SVT(StringTemplateCharsEndInterp ::= "{" "\" "`" StringTemplateCharsEndInterp)
+	 * 	is 0x7b followed by 0x60 followed by SVT(StringTemplateCharsEndInterp)
+	 * SVT(StringTemplateCharsEndInterp ::= "\")
+	 * 	is 0x5c
+	 * SVT(StringTemplateCharsEndInterp ::= "\" [^`#x03])
+	 * 	is 0x5c followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character)
+	 * SVT(StringTemplateCharsEndInterp ::= "\" [^`#x03] StringTemplateCharsEndInterp)
+	 * 	is 0x5c followed by {@link Translator.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndInterp)
+	 * SVT(StringTemplateCharsEndInterp ::= "\" "`")
+	 * 	is 0x60
+	 * SVT(StringTemplateCharsEndInterp ::= "\" "`" StringTemplateCharsEndInterp)
+	 * 	is 0x60 followed by SVT(StringTemplateCharsEndInterp)
 	 * ```
 	 * @param   text - the string to compute
 	 * @returns        the string template value of the string, a sequence of code points

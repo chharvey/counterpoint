@@ -50,24 +50,29 @@ CommentDoc ::= /*? following: #x0A [#x09#x20]* ?*/'"""' #x0A (/*? unequal: [#x09
 
 
 StringLiteral ::= "'" StringLiteralChars? "'"
-StringLiteralChars ::= [^'\#x03] StringLiteralChars?
+StringLiteralChars ::= [^'\#x03]               StringLiteralChars?
 |                      "\" StringLiteralEscape StringLiteralChars?
+|                      "\u"     ([^'{#x03]     StringLiteralChars?)?
+|                      "\" #x0D ([^'#x0A#x03]  StringLiteralChars?)?
 
 StringLiteralEscape ::= EscapeChar | EscapeCode | LineContinuation | NonEscapeChar
 
 EscapeChar       ::= "'" | "\" | "s" | "t" | "n" | "r"
-EscapeCode       ::= "u{" [0-9a-f]* "}"
+EscapeCode       ::= "u{" DigitSequenceHex? "}"
 LineContinuation ::= #x0D? #x0A
-NonEscapeChar    ::= [^'\stnru#x0D#x0A#x03] | "u" /*? lookahead: [^{] ?*/
+NonEscapeChar    ::= [^'\stnru#x0D#x0A#x03]
 
-StringTemplateFull   ::= "`"  StringTemplateCharacters? "`"
-StringTemplateHead   ::= "`"  StringTemplateCharacters? "{{"
-StringTempalteMiddle ::= "}}" StringTemplateCharacters? "{{"
-StringTempalteTail   ::= "}}" StringTemplateCharacters? "`"
+StringTemplateFull   ::= "`"  StringTemplateCharsEndDelim ? "`"
+StringTemplateHead   ::= "`"  StringTemplateCharsEndInterp? "{{"
+StringTempalteMiddle ::= "}}" StringTemplateCharsEndInterp? "{{"
+StringTempalteTail   ::= "}}" StringTemplateCharsEndDelim ? "`"
 
-StringTemplateCharacters ::= [^`{\#x03] StringTemplateCharacters?
-|                            "{" ([^`{#x03] StringTemplateCharacters?)?
-|                            "\" ("`" | [^`#x03]) StringTemplateCharacters?
+StringTemplateCharsEndDelim  ::=       [^`{\#x03]                          StringTemplateCharsEndDelim ?
+|                                "{" (([^`{\#x03] | "\"  ([^`#x03] | "`")) StringTemplateCharsEndDelim ?)?
+|                                                   "\"  ([^`#x03] | "`")  StringTemplateCharsEndDelim ?
+StringTemplateCharsEndInterp ::=       [^`{\#x03]                          StringTemplateCharsEndInterp?
+|                                "{"  ([^`{\#x03] | "\"  ([^`#x03] | "`")) StringTemplateCharsEndInterp?
+|                                                   "\" (([^`#x03] | "`")  StringTemplateCharsEndInterp?)?
 
 
 
