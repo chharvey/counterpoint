@@ -102,6 +102,8 @@ comment}" *  3
 
 'a string literal with a unicode \u{0061} escape sequence (escaped)'
 
+\ 'a string literal with a unicode \u{a00061} escape sequence (escaped)'
+
 'a string literal with a unicode \u{00_61} escape sequence with numeric separators'
 
 'a string literal with an empty unicode \u{} escape sequence (default escaped to U+0000)'
