@@ -1,10 +1,13 @@
-FileBound ::= #x0002 /* START OF TEXT */
-|             #x0003 /* END OF TEXT   */
+FileBound ::=
+	#x02 /* START OF TEXT */ |
+	#x03 /* END OF TEXT   */
 
-Whitespace ::= Whitespace? (#x0020 /* SPACE                     */
-|                           #x0009 /* CHARACTER TABULATION `\t` */
-|                           #x000A /* LINE FEED (LF)       `\n` */
-|                           #x000D /* CARRIAGE RETURN (CR) `\r` */)
+Whitespace ::= Whitespace? (
+	#x20 /* SPACE                     */ |
+	#x09 /* CHARACTER TABULATION `\t` */ |
+	#x0A /* LINE FEED (LF)       `\n` */ |
+	#x0D /* CARRIAGE RETURN (CR) `\r` */
+)
 
 /* more whitespace characters:
 #x000B	LINE TABULATION
@@ -35,7 +38,6 @@ Number ::= IntegerLiteral
 
 IntegerLiteral ::= DigitSequenceDec
 
-DigitSequenceDec ::= [0-9]
-|                    DigitSequenceDec [0-9]
+DigitSequenceDec ::= DigitSequenceDec? [0-9]
 
 Punctuator ::= "+" | "-" | "*" | "/" | "^" | "(" | ")"
