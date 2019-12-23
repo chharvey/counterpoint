@@ -1,10 +1,13 @@
 import Util from './Util.class'
 import Token, {
+	TemplatePosition,
 	TokenFilebound,
 	TokenWhitespace,
+	TokenComment,
 	TokenStringLiteral,
 	TokenStringTemplate,
 	TokenNumber,
+	TokenWord,
 	TokenPunctuator,
 } from './Token.class'
 
@@ -29,8 +32,9 @@ export default abstract class Terminal {
 	 * @param   candidate - a Token to test
 	 * @returns             does the given Token satisfy this Terminal?
 	 */
-	match(candidate: Token): boolean {
-		throw new Error('not yet supported')
+	abstract match(candidate: Token): boolean;
+	protected /** @final */ _match(candidate: Token, tagname: string): boolean {
+		return candidate.tagname === tagname
 	}
 }
 
@@ -40,11 +44,17 @@ export class TerminalFilebound extends Terminal {
 	random(): string {
 		return Util.arrayRandom(TokenFilebound.CHARS)
 	}
+	match(candidate: Token): boolean {
+		return this._match(candidate, TokenFilebound.TAGNAME)
+	}
 }
 export class TerminalWhitespace extends Terminal {
 	static readonly instance: TerminalWhitespace = new TerminalWhitespace()
 	random(): string {
 		return (Util.randomBool() ? '' : this.random()) + Util.arrayRandom(TokenWhitespace.CHARS)
+	}
+	match(candidate: Token): boolean {
+		return this._match(candidate, TokenWhitespace.TAGNAME)
 	}
 }
 export class TerminalComment extends Terminal {
@@ -53,7 +63,7 @@ export class TerminalComment extends Terminal {
 		throw new Error('not yet supported')
 	}
 	match(candidate: Token): boolean {
-		return candidate.tagname.split('-')[0] === 'COMMENT'
+		return candidate.tagname.split('-')[0] === TokenComment.TAGNAME
 	}
 }
 export class TerminalStringLiteral extends Terminal {
@@ -76,6 +86,9 @@ export class TerminalStringLiteral extends Terminal {
 		const nonEscapeChar = (): string => Util.randomChar('\' \\ s t n r u \u000D \u000A \u0003'.split(' '))
 		return `${TokenStringLiteral.DELIM}${maybeChars()}${TokenStringLiteral.DELIM}`
 	}
+	match(candidate: Token): boolean {
+		return this._match(candidate, TokenStringLiteral.TAGNAME)
+	}
 }
 export abstract class TerminalStringTemplate extends Terminal {
 	random(start: string = TokenStringTemplate.DELIM, end: string = TokenStringTemplate.DELIM): string {
@@ -93,8 +106,8 @@ export abstract class TerminalStringTemplate extends Terminal {
 		const maybeChars = (): string => Util.randomBool() ? '' : chars()
 		return `${start}${maybeChars()}${end}`
 	}
-	match(candidate: Token): boolean {
-		return candidate.tagname === 'STRING-TEMPLATE'
+	match(candidate: Token, position: TemplatePosition = TemplatePosition.FULL): boolean {
+		return this._match(candidate, `${TokenStringTemplate.TAGNAME}-${position}`)
 	}
 }
 export class TerminalStringTemplateFull extends TerminalStringTemplate {
@@ -102,11 +115,17 @@ export class TerminalStringTemplateFull extends TerminalStringTemplate {
 	random(): string {
 		return super.random(TokenStringTemplate.DELIM, TokenStringTemplate.DELIM)
 	}
+	match(candidate: Token): boolean {
+		return super.match(candidate, TemplatePosition.FULL)
+	}
 }
 export class TerminalStringTemplateHead extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateHead = new TerminalStringTemplateHead()
 	random(): string {
 		return super.random(TokenStringTemplate.DELIM, TokenStringTemplate.DELIM_INTERP_START)
+	}
+	match(candidate: Token): boolean {
+		return super.match(candidate, TemplatePosition.HEAD)
 	}
 }
 export class TerminalStringTemplateMiddle extends TerminalStringTemplate {
@@ -114,11 +133,17 @@ export class TerminalStringTemplateMiddle extends TerminalStringTemplate {
 	random(): string {
 		return super.random(TokenStringTemplate.DELIM_INTERP_END, TokenStringTemplate.DELIM_INTERP_START)
 	}
+	match(candidate: Token): boolean {
+		return super.match(candidate, TemplatePosition.MIDDLE)
+	}
 }
 export class TerminalStringTemplateTail extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateTail = new TerminalStringTemplateTail()
 	random(): string {
 		return super.random(TokenStringTemplate.DELIM_INTERP_END, TokenStringTemplate.DELIM)
+	}
+	match(candidate: Token): boolean {
+		return super.match(candidate, TemplatePosition.TAIL)
 	}
 }
 export class TerminalNumber extends Terminal {
@@ -127,11 +152,17 @@ export class TerminalNumber extends Terminal {
 		const base: [string, number] = [...TokenNumber.BASES.entries()][Util.randomInt(6)]
 		return Util.randomBool() ? digitSequence(TokenNumber.RADIX_DEFAULT) : '\\' + base[0] + digitSequence(base[1])
 	}
+	match(candidate: Token): boolean {
+		return this._match(candidate, TokenNumber.TAGNAME)
+	}
 }
 export class TerminalWord extends Terminal {
 	static readonly instance: TerminalWord = new TerminalWord()
 	random(): string {
 		throw new Error('not yet supported')
+	}
+	match(candidate: Token): boolean {
+		return this._match(candidate, TokenWord.TAGNAME)
 	}
 }
 export class TerminalPunctuator extends Terminal {
@@ -140,5 +171,8 @@ export class TerminalPunctuator extends Terminal {
 		return Util.arrayRandom([
 			...TokenPunctuator.CHARS_1,
 		])
+	}
+	match(candidate: Token): boolean {
+		return this._match(candidate, TokenPunctuator.TAGNAME)
 	}
 }

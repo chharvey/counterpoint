@@ -10,7 +10,7 @@ import {
 } from '../error/LexError.class'
 
 
-enum TemplatePosition {
+export enum TemplatePosition {
 	FULL,
 	HEAD,
 	MIDDLE,
@@ -106,9 +106,10 @@ export default abstract class Token implements Serializable {
 
 
 export class TokenFilebound extends Token {
+	static readonly TAGNAME: string = 'FILEBOUND'
 	static readonly CHARS: readonly string[] = [STX, ETX]
 	constructor (lexer: Lexer) {
-		super('FILEBOUND', lexer.c0)
+		super(TokenFilebound.TAGNAME, lexer.c0)
 		lexer.advance()
 	}
 	get cooked(): boolean {
@@ -123,6 +124,7 @@ export class TokenFilebound extends Token {
 	}
 }
 export class TokenWhitespace extends Token {
+	static readonly TAGNAME: string = 'WHITESPACE'
 	static readonly CHARS: readonly string[] = [' ', '\t', '\n', '\r']
 	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
@@ -131,38 +133,41 @@ export class TokenWhitespace extends Token {
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
-		super('WHITESPACE', buffer[0], ...buffer.slice(1))
+		super(TokenWhitespace.TAGNAME, buffer[0], ...buffer.slice(1))
 	}
 	get cooked(): null {
 		return null // we do not want to send whitespace to the parser
 	}
 }
 export abstract class TokenComment extends Token {
+	static readonly TAGNAME: string = 'COMMENT'
 	constructor (kind: string, start_char: Char, ...more_chars: Char[]) {
-		super(`COMMENT-${kind}`, start_char, ...more_chars)
+		super(`${TokenComment.TAGNAME}-${kind}`, start_char, ...more_chars)
 	}
 	/** @final */ get cooked(): null {
 		return null // we do not want to send comments to the parser
 	}
 }
 export class TokenCommentLine extends TokenComment {
+	static readonly TAGNAME: string = 'LINE'
 	static readonly DELIM: '\\' = '\\'
 	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance(TokenCommentLine.DELIM.length)
 		while (!lexer.isDone && !Char.eq('\n', lexer.c0)) {
 			if (Char.eq(ETX, lexer.c0)) {
-				super('LINE', buffer[0], ...buffer.slice(1))
+				super(TokenCommentLine.TAGNAME, buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
 		// do not add '\n' to token
-		super('LINE', buffer[0], ...buffer.slice(1))
+		super(TokenCommentLine.TAGNAME, buffer[0], ...buffer.slice(1))
 	}
 }
 export class TokenCommentMulti extends TokenComment {
+	static readonly TAGNAME: string = 'MULTI'
 	static readonly DELIM_START : '"' = '"'
 	static readonly DELIM_END   : '"' = '"'
 	constructor (lexer: Lexer) {
@@ -170,7 +175,7 @@ export class TokenCommentMulti extends TokenComment {
 		lexer.advance()
 		while (!lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, lexer.c0)) {
 			if (Char.eq(ETX, lexer.c0)) {
-				super('MULTI', buffer[0], ...buffer.slice(1))
+				super(TokenCommentMulti.TAGNAME, buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
 			buffer.push(lexer.c0)
@@ -179,10 +184,11 @@ export class TokenCommentMulti extends TokenComment {
 		// add ending delim to token
 		buffer.push(lexer.c0)
 		lexer.advance(TokenCommentMulti.DELIM_END.length)
-		super('MULTI', buffer[0], ...buffer.slice(1))
+		super(TokenCommentMulti.TAGNAME, buffer[0], ...buffer.slice(1))
 	}
 }
 export class TokenCommentMultiNest extends TokenComment {
+	static readonly TAGNAME: string = 'MULTI-NEST'
 	static readonly DELIM_START : '"{' = '"{'
 	static readonly DELIM_END   : '}"' = '}"'
 	constructor (lexer: Lexer) {
@@ -193,7 +199,7 @@ export class TokenCommentMultiNest extends TokenComment {
 		while (comment_multiline_level !== 0) {
 			while (!lexer.isDone && !Char.eq(TokenCommentMultiNest.DELIM_END, lexer.c0, lexer.c1)) {
 				if (Char.eq(ETX, lexer.c0)) {
-					super('MULTI_NEST', buffer[0], ...buffer.slice(1))
+					super(TokenCommentMultiNest.TAGNAME, buffer[0], ...buffer.slice(1))
 					throw new LexError02(this)
 				}
 				if (Char.eq(TokenCommentMultiNest.DELIM_START, lexer.c0, lexer.c1)) {
@@ -210,10 +216,11 @@ export class TokenCommentMultiNest extends TokenComment {
 			lexer.advance(TokenCommentMultiNest.DELIM_END.length)
 			comment_multiline_level--;
 		}
-		super('MULTI-NEST', buffer[0], ...buffer.slice(1))
+		super(TokenCommentMultiNest.TAGNAME, buffer[0], ...buffer.slice(1))
 	}
 }
 export class TokenCommentDoc extends TokenComment {
+	static readonly TAGNAME: string = 'DOC'
 	static readonly DELIM_START : '"""' = '"""'
 	static readonly DELIM_END   : '"""' = '"""'
 	constructor (lexer: Lexer) {
@@ -222,7 +229,7 @@ export class TokenCommentDoc extends TokenComment {
 		let source: string = buffer.map((char) => char.source).join('')
 		while (!lexer.isDone) {
 			if (Char.eq(ETX, lexer.c0)) {
-				super('DOC', buffer[0], ...buffer.slice(1))
+				super(TokenCommentDoc.TAGNAME, buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
 			if (
@@ -239,10 +246,11 @@ export class TokenCommentDoc extends TokenComment {
 		// add ending delim to token
 		buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
 		lexer.advance(TokenCommentDoc.DELIM_END.length)
-		super('DOC', buffer[0], ...buffer.slice(1))
+		super(TokenCommentDoc.TAGNAME, buffer[0], ...buffer.slice(1))
 	}
 }
 export class TokenStringLiteral extends Token {
+	static readonly TAGNAME: string = 'STRING-LITERAL'
 	static readonly DELIM: '\'' = '\''
 	static readonly ESCAPES: readonly string[] = [TokenStringLiteral.DELIM, '\\', 's','t','n','r']
 	constructor (lexer: Lexer) {
@@ -250,7 +258,7 @@ export class TokenStringLiteral extends Token {
 		lexer.advance()
 		while (!lexer.isDone && !Char.eq(TokenStringLiteral.DELIM, lexer.c0)) {
 			if (Char.eq(ETX, lexer.c0)) {
-				super('STRING-LITERAL', buffer[0], ...buffer.slice(1))
+				super(TokenStringLiteral.TAGNAME, buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
 			if (Char.eq('\\', lexer.c0)) { // possible escape or line continuation
@@ -316,7 +324,7 @@ export class TokenStringLiteral extends Token {
 		// add ending delim to token
 		buffer.push(lexer.c0)
 		lexer.advance(TokenStringLiteral.DELIM.length)
-		super('STRING-LITERAL', buffer[0], ...buffer.slice(1))
+		super(TokenStringLiteral.TAGNAME, buffer[0], ...buffer.slice(1))
 	}
 	get cooked(): string {
 		return String.fromCodePoint(...Translator.svl(
@@ -325,6 +333,7 @@ export class TokenStringLiteral extends Token {
 	}
 }
 export class TokenStringTemplate extends Token {
+	static readonly TAGNAME: string = 'STRING-TEMPLATE'
 	static readonly DELIM              : '`'  = '`'
 	static readonly DELIM_INTERP_START : '{{' = '{{'
 	static readonly DELIM_INTERP_END   : '}}' = '}}'
@@ -344,7 +353,7 @@ export class TokenStringTemplate extends Token {
 		}
 		while (!lexer.isDone) {
 			if (Char.eq(ETX, lexer.c0)) {
-				super('STRING-TEMPLATE', buffer[0], ...buffer.slice(1))
+				super(TokenStringTemplate.TAGNAME, buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
 			if (Char.eq('\\' + TokenStringTemplate.DELIM, lexer.c0, lexer.c1)) {
@@ -377,7 +386,7 @@ export class TokenStringTemplate extends Token {
 				lexer.advance()
 			}
 		}
-		super(`STRING-TEMPLATE-${TemplatePosition[[...positions][0]]}`, buffer[0], ...buffer.slice(1))
+		super(`${TokenStringTemplate.TAGNAME}-${TemplatePosition[[...positions][0]]}`, buffer[0], ...buffer.slice(1))
 		this.delim_start = delim_start
 		this.delim_end   = delim_end !
 	}
@@ -388,6 +397,7 @@ export class TokenStringTemplate extends Token {
 	}
 }
 export class TokenNumber extends Token {
+	static readonly TAGNAME: string = 'NUMBER'
 	static readonly RADIX_DEFAULT: number = 10
 	static readonly SEPARATOR: string = '_'
 	static readonly BASES: ReadonlyMap<string, number> = new Map<string, number>([
@@ -434,7 +444,7 @@ export class TokenNumber extends Token {
 				}
 			}
 		}
-		super('NUMBER', buffer[0], ...buffer.slice(1))
+		super(TokenNumber.TAGNAME, buffer[0], ...buffer.slice(1))
 		this.radix = r
 	}
 	get cooked(): number {
@@ -442,6 +452,7 @@ export class TokenNumber extends Token {
 	}
 }
 export class TokenWord extends Token {
+	static readonly TAGNAME: string = 'WORD'
 	static readonly CHARS_START: readonly string[] = ''.split(' ')
 	static readonly CHARS_REST : readonly string[] = ''.split(' ')
 	constructor (lexer: Lexer) {
@@ -451,7 +462,7 @@ export class TokenWord extends Token {
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
-		super('WORD', buffer[0], ...buffer.slice(1))
+		super(TokenWord.TAGNAME, buffer[0], ...buffer.slice(1))
 	}
 	/**
 	 * @param   id the running identifier count
@@ -464,6 +475,7 @@ export class TokenWord extends Token {
 	}
 }
 export class TokenPunctuator extends Token {
+	static readonly TAGNAME: string = 'PUNCTUATOR'
 	static readonly CHARS_1: readonly string[] = '+ - * / ^ ( )'.split(' ')
 	static readonly CHARS_2: readonly string[] = ''.split(' ')
 	static readonly CHARS_3: readonly string[] = ''.split(' ')
@@ -475,7 +487,7 @@ export class TokenPunctuator extends Token {
 			buffer.push(lexer.c1 !)
 		}
 		lexer.advance(count)
-		super('PUNCTUATOR', buffer[0], ...buffer.slice(1))
+		super(TokenPunctuator.TAGNAME, buffer[0], ...buffer.slice(1))
 	}
 	get cooked(): string {
 		return this.source
