@@ -43,20 +43,22 @@ CommentLine ::= "\" ([^bqodxz#x0A#x03] [^#x0A#x03]*)? /*? lookahead: #x0A ?*/
 CommentMulti ::= '"' [^"#x03]* '"'
 
 CommentMultiNest ::= '"{' CommentMultiNestChars? '}"'
-CommentMultiNestChars ::= [^}"#x03] CommentMultiNestChars?
-|                         "}" ([^"#x03] CommentMultiNestChars?)?
-|                         '"' ([^{#x03] CommentMultiNestChars?)?
-|                         CommentMultiNest CommentMultiNestChars?
+CommentMultiNestChars ::=
+	[^}"#x03] CommentMultiNestChars?        |
+	"}" ([^"#x03] CommentMultiNestChars?)?  |
+	'"' ([^{#x03] CommentMultiNestChars?)?  |
+	CommentMultiNest CommentMultiNestChars?
 
 CommentDoc ::= /*? following: #x0A [#x09#x20]* ?*/'"""' #x0A (/*? unequal: [#x09#x20]* '"""' ?*/[^#x03]* #x0A)? [#x09#x20]* '"""' /*? lookahead: #x0A ?*/
 
 
 
 StringLiteral ::= "'" StringLiteralChars? "'"
-StringLiteralChars ::= [^'\#x03]               StringLiteralChars?
-|                      "\" StringLiteralEscape StringLiteralChars?
-|                      "\u"     ([^'{#x03]     StringLiteralChars?)?
-|                      "\" #x0D ([^'#x0A#x03]  StringLiteralChars?)?
+StringLiteralChars ::=
+	[^'\#x03]               StringLiteralChars?   |
+	"\" StringLiteralEscape StringLiteralChars?   |
+	"\u"     ([^'{#x03]     StringLiteralChars?)? |
+	"\" #x0D ([^'#x0A#x03]  StringLiteralChars?)?
 
 StringLiteralEscape ::= EscapeChar | EscapeCode | LineContinuation | NonEscapeChar
 
@@ -70,23 +72,27 @@ StringTemplateHead   ::= "`"  StringTemplateCharsEndInterp? "{{"
 StringTempalteMiddle ::= "}}" StringTemplateCharsEndInterp? "{{"
 StringTempalteTail   ::= "}}" StringTemplateCharsEndDelim ? "`"
 
-StringTemplateCharsEndDelim  ::=       [^`{\#x03]                          StringTemplateCharsEndDelim ?
-|                                "{" (([^`{\#x03] | "\"  ([^`#x03] | "`")) StringTemplateCharsEndDelim ?)?
-|                                                   "\"  ([^`#x03] | "`")  StringTemplateCharsEndDelim ?
-StringTemplateCharsEndInterp ::=       [^`{\#x03]                          StringTemplateCharsEndInterp?
-|                                "{"  ([^`{\#x03] | "\"  ([^`#x03] | "`")) StringTemplateCharsEndInterp?
-|                                                   "\" (([^`#x03] | "`")  StringTemplateCharsEndInterp?)?
+StringTemplateCharsEndDelim ::=
+	      [^`{\#x03]                          StringTemplateCharsEndDelim ?   |
+	"{" (([^`{\#x03] | "\"  ([^`#x03] | "`")) StringTemplateCharsEndDelim ?)? |
+	                   "\"  ([^`#x03] | "`")  StringTemplateCharsEndDelim ?
+
+StringTemplateCharsEndInterp ::=
+	      [^`{\#x03]                          StringTemplateCharsEndInterp?   |
+	"{"  ([^`{\#x03] | "\"  ([^`#x03] | "`")) StringTemplateCharsEndInterp?   |
+	                   "\" (([^`#x03] | "`")  StringTemplateCharsEndInterp?)?
 
 
 
 Number ::= IntegerLiteral
 
-IntegerLiteral ::= "\b"  DigitSequenceBin
-|                  "\q"  DigitSequenceQua
-|                  "\o"  DigitSequenceOct
-|                  "\d"? DigitSequenceDec
-|                  "\x"  DigitSequenceHex
-|                  "\z"  DigitSequenceHTD
+IntegerLiteral ::=
+	"\b"  DigitSequenceBin |
+	"\q"  DigitSequenceQua |
+	"\o"  DigitSequenceOct |
+	"\d"? DigitSequenceDec |
+	"\x"  DigitSequenceHex |
+	"\z"  DigitSequenceHTD
 
 DigitSequenceBin ::= (DigitSequenceBin "_"?)? [0-1]
 DigitSequenceQua ::= (DigitSequenceQua "_"?)? [0-3]
