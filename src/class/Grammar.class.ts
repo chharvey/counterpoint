@@ -130,7 +130,7 @@ export class Rule {
 	}
 	/**
 	 * Does the given sequence of symbols satisfy this rule?
-	 * @param   candidate - a sequence of grammar symbols
+	 * @param   candidate - a sequence of objects on the parse stack
 	 * @returns             does the given sequence of symbols satisfy this rule?
 	 */
 	match(candidate: readonly (Token|ParseNode)[]): boolean {
@@ -142,7 +142,7 @@ export class Rule {
 				test instanceof Token && symbol.match(test)
 			: (symbol instanceof Production) ? // a reference to a nonterminal
 				test instanceof ParseNode && symbol.toRules().some((rule) =>
-					rule.match(test.inputs)
+					rule.match(test.children)
 				)
 			: false
 		})

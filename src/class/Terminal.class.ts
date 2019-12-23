@@ -50,6 +50,7 @@ const digitSequence = (radix: number): string =>
  */
 export default abstract class Terminal {
 	abstract readonly TAGNAME: string;
+	protected constructor() {}
 	/**
 	 * Generate a Token from a lexer’s input stream using this Terminal’s lexing rules.
 	 * @param   lexer - the lexer whose input stream to use
