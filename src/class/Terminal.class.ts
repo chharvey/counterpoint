@@ -18,7 +18,6 @@ const digitSequence = (radix: number): string =>
  * It serves as a distinction betwen different types of actual tokens.
  */
 export default abstract class Terminal {
-	abstract readonly TAGNAME: string;
 	protected constructor() {}
 	/**
 	 * Generate a random instance of this Terminal.
@@ -31,38 +30,34 @@ export default abstract class Terminal {
 	 * @returns             does the given Token satisfy this Terminal?
 	 */
 	match(candidate: Token): boolean {
-		return candidate.tagname === this.TAGNAME
+		throw new Error('not yet supported')
 	}
 }
 
 
 export class TerminalFilebound extends Terminal {
 	static readonly instance: TerminalFilebound = new TerminalFilebound()
-	readonly TAGNAME: string = 'FILEBOUND'
 	random(): string {
 		return Util.arrayRandom(TokenFilebound.CHARS)
 	}
 }
 export class TerminalWhitespace extends Terminal {
 	static readonly instance: TerminalWhitespace = new TerminalWhitespace()
-	readonly TAGNAME: string = 'WHITESPACE'
 	random(): string {
 		return (Util.randomBool() ? '' : this.random()) + Util.arrayRandom(TokenWhitespace.CHARS)
 	}
 }
 export class TerminalComment extends Terminal {
 	static readonly instance: TerminalComment = new TerminalComment()
-	readonly TAGNAME: string = 'COMMENT'
 	random(): string {
 		throw new Error('not yet supported')
 	}
 	match(candidate: Token): boolean {
-		return candidate.tagname.split('-')[0] === this.TAGNAME
+		return candidate.tagname.split('-')[0] === 'COMMENT'
 	}
 }
 export class TerminalStringLiteral extends Terminal {
 	static readonly instance: TerminalStringLiteral = new TerminalStringLiteral()
-	readonly TAGNAME: string = 'STRING-LITERAL'
 	random(): string {
 		const chars = (): string => {
 			const random: number = Math.random()
@@ -83,7 +78,6 @@ export class TerminalStringLiteral extends Terminal {
 	}
 }
 export abstract class TerminalStringTemplate extends Terminal {
-	readonly TAGNAME: string = 'STRING-TEMPLATE'
 	random(start: string = TokenStringTemplate.DELIM, end: string = TokenStringTemplate.DELIM): string {
 		const end_delim: boolean = end === TokenStringTemplate.DELIM
 		const followsOpenBracket = (): string => Util.randomBool() ? Util.randomChar('` { \\ \u0003'.split(' ')) : '\\' + followsBackslash()
@@ -102,35 +96,30 @@ export abstract class TerminalStringTemplate extends Terminal {
 }
 export class TerminalStringTemplateFull extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateFull = new TerminalStringTemplateFull()
-	readonly TAGNAME: string = 'STRING-TEMPLATE-FULL'
 	random(): string {
 		return super.random(TokenStringTemplate.DELIM, TokenStringTemplate.DELIM)
 	}
 }
 export class TerminalStringTemplateHead extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateHead = new TerminalStringTemplateHead()
-	readonly TAGNAME: string = 'STRING-TEMPLATE-HEAD'
 	random(): string {
 		return super.random(TokenStringTemplate.DELIM, TokenStringTemplate.DELIM_INTERP_START)
 	}
 }
 export class TerminalStringTemplateMiddle extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateMiddle = new TerminalStringTemplateMiddle()
-	readonly TAGNAME: string = 'STRING-TEMPLATE-MIDDLE'
 	random(): string {
 		return super.random(TokenStringTemplate.DELIM_INTERP_END, TokenStringTemplate.DELIM_INTERP_START)
 	}
 }
 export class TerminalStringTemplateTail extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateTail = new TerminalStringTemplateTail()
-	readonly TAGNAME: string = 'STRING-TEMPLATE-TAIL'
 	random(): string {
 		return super.random(TokenStringTemplate.DELIM_INTERP_END, TokenStringTemplate.DELIM)
 	}
 }
 export class TerminalNumber extends Terminal {
 	static readonly instance: TerminalNumber = new TerminalNumber()
-	readonly TAGNAME: string = 'NUMBER'
 	random(): string {
 		const base: [string, number] = [...TokenNumber.BASES.entries()][Util.randomInt(6)]
 		return Util.randomBool() ? digitSequence(TokenNumber.RADIX_DEFAULT) : '\\' + base[0] + digitSequence(base[1])
@@ -138,14 +127,12 @@ export class TerminalNumber extends Terminal {
 }
 export class TerminalWord extends Terminal {
 	static readonly instance: TerminalWord = new TerminalWord()
-	readonly TAGNAME: string = 'WORD'
 	random(): string {
 		throw new Error('not yet supported')
 	}
 }
 export class TerminalPunctuator extends Terminal {
 	static readonly instance: TerminalPunctuator = new TerminalPunctuator()
-	readonly TAGNAME: string = 'PUNCTUATOR'
 	random(): string {
 		return Util.arrayRandom([
 			...TokenPunctuator.CHARS_1,

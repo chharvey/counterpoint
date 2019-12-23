@@ -1,19 +1,6 @@
 import Serializable from '../iface/Serializable.iface'
 import {Char, STX, ETX} from './Scanner.class'
 import Lexer from './Lexer.class'
-import {
-	TerminalFilebound,
-	TerminalWhitespace,
-	TerminalComment,
-	TerminalStringLiteral,
-	TerminalStringTemplateFull,
-	TerminalStringTemplateHead,
-	TerminalStringTemplateMiddle,
-	TerminalStringTemplateTail,
-	TerminalNumber,
-	TerminalWord,
-	TerminalPunctuator,
-} from './Terminal.class'
 import Translator from './Translator.class'
 
 import {
@@ -140,7 +127,7 @@ export class TokenFilebound extends Token {
 		return token
 	}
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super(TerminalFilebound.instance.TAGNAME, start_char, ...more_chars)
+		super('FILEBOUND', start_char, ...more_chars)
 	}
 	get cooked(): boolean {
 		return this.source === STX /* || !this.source === ETX */
@@ -150,7 +137,7 @@ export class TokenFilebound extends Token {
 			[STX, '\u2402' /* SYMBOL FOR START OF TEXT */],
 			[ETX, '\u2403' /* SYMBOL FOR END OF TEXT   */],
 		]).get(this.source) !
-		return `<${TerminalFilebound.instance.TAGNAME}>${formatted}</${TerminalFilebound.instance.TAGNAME}>`
+		return `<${this.tagname}>${formatted}</${this.tagname}>`
 	}
 }
 export class TokenWhitespace extends Token {
@@ -165,7 +152,7 @@ export class TokenWhitespace extends Token {
 		return token
 	}
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super(TerminalWhitespace.instance.TAGNAME, start_char, ...more_chars)
+		super('WHITESPACE', start_char, ...more_chars)
 	}
 	get cooked(): null {
 		return null // we do not want to send whitespace to the parser
@@ -173,7 +160,7 @@ export class TokenWhitespace extends Token {
 }
 export abstract class TokenComment extends Token {
 	constructor(kind: string, start_char: Char, ...more_chars: Char[]) {
-		super(`${TerminalComment.instance.TAGNAME}-${kind}`, start_char, ...more_chars)
+		super(`COMMENT-${kind}`, start_char, ...more_chars)
 	}
 	/** @final */ get cooked(): null {
 		return null // we do not want to send comments to the parser
@@ -244,7 +231,7 @@ export class TokenCommentMultiNest extends TokenComment {
 		return token
 	}
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super('MULTI_NEST', start_char, ...more_chars)
+		super('MULTI-NEST', start_char, ...more_chars)
 	}
 }
 export class TokenCommentDoc extends TokenComment {
@@ -348,7 +335,7 @@ export class TokenStringLiteral extends Token {
 		return token
 	}
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super(TerminalStringLiteral.instance.TAGNAME, start_char, ...more_chars)
+		super('STRING-LITERAL', start_char, ...more_chars)
 	}
 	get cooked(): string {
 		return String.fromCodePoint(...Translator.svl(
@@ -416,7 +403,7 @@ export abstract class TokenStringTemplate extends Token {
 }
 export class TokenStringTemplateFull extends TokenStringTemplate {
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super(TerminalStringTemplateFull.instance.TAGNAME, start_char, ...more_chars)
+		super('STRING-TEMPLATE-FULL', start_char, ...more_chars)
 	}
 	get cooked(): string {
 		return super.cook(TokenStringTemplate.DELIM.length, -TokenStringTemplate.DELIM.length)
@@ -424,7 +411,7 @@ export class TokenStringTemplateFull extends TokenStringTemplate {
 }
 export class TokenStringTemplateHead extends TokenStringTemplate {
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super(TerminalStringTemplateHead.instance.TAGNAME, start_char, ...more_chars)
+		super('STRING-TEMPLATE-HEAD', start_char, ...more_chars)
 	}
 	get cooked(): string {
 		return super.cook(TokenStringTemplate.DELIM.length, -TokenStringTemplate.DELIM_INTERP_START.length)
@@ -432,7 +419,7 @@ export class TokenStringTemplateHead extends TokenStringTemplate {
 }
 export class TokenStringTemplateMiddle extends TokenStringTemplate {
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super(TerminalStringTemplateMiddle.instance.TAGNAME, start_char, ...more_chars)
+		super('STRING-TEMPLATE-MIDDLE', start_char, ...more_chars)
 	}
 	get cooked(): string {
 		return super.cook(TokenStringTemplate.DELIM_INTERP_END.length, -TokenStringTemplate.DELIM_INTERP_START.length)
@@ -440,7 +427,7 @@ export class TokenStringTemplateMiddle extends TokenStringTemplate {
 }
 export class TokenStringTemplateTail extends TokenStringTemplate {
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super(TerminalStringTemplateTail.instance.TAGNAME, start_char, ...more_chars)
+		super('STRING-TEMPLATE-TAIL', start_char, ...more_chars)
 	}
 	get cooked(): string {
 		return super.cook(TokenStringTemplate.DELIM_INTERP_END.length, -TokenStringTemplate.DELIM.length)
@@ -501,7 +488,7 @@ export class TokenNumber extends Token {
 		start_char: Char,
 		...more_chars: Char[]
 	) {
-		super(TerminalNumber.instance.TAGNAME, start_char, ...more_chars)
+		super('NUMBER', start_char, ...more_chars)
 	}
 	get cooked(): number {
 		return Translator.mv(this.source[0] === '\\' ? this.source.slice(2) : this.source, this.radix)
@@ -520,7 +507,7 @@ export class TokenWord extends Token {
 		return token
 	}
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super(TerminalWord.instance.TAGNAME, start_char, ...more_chars)
+		super('WORD', start_char, ...more_chars)
 	}
 	/**
 	 * @param   id the running identifier count
@@ -550,7 +537,7 @@ export class TokenPunctuator extends Token {
 		return token
 	}
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		super(TerminalPunctuator.instance.TAGNAME, start_char, ...more_chars)
+		super('PUNCTUATOR', start_char, ...more_chars)
 	}
 	get cooked(): string {
 		return this.source
