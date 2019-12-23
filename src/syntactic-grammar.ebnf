@@ -15,5 +15,7 @@ ExpressionUnit ::= PrimitiveLiteral | StringTemplate | "(" Expression ")"
 StringTemplate ::= [./lexical-grammar.ebnf#StringTemplateFull]
 |                  [./lexical-grammar.ebnf#StringTemplateHead] Expression? ([./lexical-grammar.ebnf#StringTemplateMiddle] Expression?)* [./lexical-grammar.ebnf#StringTemplateTail]
 
-PrimitiveLiteral ::= [./lexical-grammar.ebnf#Number]
+PrimitiveLiteral ::= NUMBER
 |                    [./lexical-grammar.ebnf#StringLiteral]
+
+NUMBER ::= [./lexical-grammar.ebnf#Number]
