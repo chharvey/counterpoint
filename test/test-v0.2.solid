@@ -20,7 +20,7 @@ comment" *  \x2
 \o123_456_78
 
 \ the following is an empty line comment:
-\
+123 \
 
   \a \ line comment starting with "a"
 \ \b \ line comment starting with "b"
@@ -101,6 +101,8 @@ comment}" *  3
 'a string literal with escaped characters: \s (space), \t (tab), \n (LF), \r (CR).'
 
 'a string literal with a unicode \u{0061} escape sequence (escaped)'
+
+\ 'a string literal with a unicode \u{a00061} escape sequence (escaped)'
 
 'a string literal with a unicode \u{00_61} escape sequence with numeric separators'
 

@@ -10,10 +10,22 @@ ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"          ExpressionE
 
 ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
 
-ExpressionUnit ::= PrimitiveLiteral | StringTemplate | "(" Expression ")"
+ExpressionUnit ::=
+	PrimitiveLiteral   |
+	StringTemplate     |
+	"(" Expression ")"
 
-StringTemplate ::= [./lexical-grammar.ebnf#StringTemplateFull]
-|                  [./lexical-grammar.ebnf#StringTemplateHead] Expression? ([./lexical-grammar.ebnf#StringTemplateMiddle] Expression?)* [./lexical-grammar.ebnf#StringTemplateTail]
+StringTemplate ::=
+	STRING_TEMPLATE_FULL |
+	STRING_TEMPLATE_HEAD Expression? (STRING_TEMPLATE_MIDDLE Expression?)* STRING_TEMPLATE_TAIL
 
-PrimitiveLiteral ::= [./lexical-grammar.ebnf#Number]
-|                    [./lexical-grammar.ebnf#StringLiteral]
+PrimitiveLiteral ::=
+	NUMBER         |
+	STRING_LITERAL
+
+STRING_LITERAL         ::= [./lexical-grammar.ebnf#StringLiteral]
+STRING_TEMPLATE_FULL   ::= [./lexical-grammar.ebnf#StringTemplateFull]
+STRING_TEMPLATE_HEAD   ::= [./lexical-grammar.ebnf#StringTemplateHead]
+STRING_TEMPLATE_MIDDLE ::= [./lexical-grammar.ebnf#StringTemplateMiddle]
+STRING_TEMPLATE_TAIL   ::= [./lexical-grammar.ebnf#StringTemplateTail]
+NUMBER                 ::= [./lexical-grammar.ebnf#Number]
