@@ -116,10 +116,10 @@ export default class Lexer {
 				token = new TokenStringLiteral(this)
 			} else if (Char.eq(TokenStringTemplate.DELIM, this._c0)) {
 				/* we found a template full or template head */
-				token = TokenStringTemplate.lex(this, true)
+				token = new TokenStringTemplate(this, TokenStringTemplate.DELIM.length)
 			} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_END, this._c0, this._c1)) {
 				/* we found a template middle or template tail */
-				token = TokenStringTemplate.lex(this, false)
+				token = new TokenStringTemplate(this, TokenStringTemplate.DELIM_INTERP_END.length)
 
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
 				token = new TokenNumber(this)

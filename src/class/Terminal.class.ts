@@ -93,6 +93,9 @@ export abstract class TerminalStringTemplate extends Terminal {
 		const maybeChars = (): string => Util.randomBool() ? '' : chars()
 		return `${start}${maybeChars()}${end}`
 	}
+	match(candidate: Token): boolean {
+		return candidate.tagname === 'STRING-TEMPLATE'
+	}
 }
 export class TerminalStringTemplateFull extends TerminalStringTemplate {
 	static readonly instance: TerminalStringTemplateFull = new TerminalStringTemplateFull()

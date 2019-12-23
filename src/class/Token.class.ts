@@ -324,44 +324,52 @@ export class TokenStringLiteral extends Token {
 		))
 	}
 }
-export abstract class TokenStringTemplate extends Token {
+export class TokenStringTemplate extends Token {
 	static readonly DELIM              : '`'  = '`'
 	static readonly DELIM_INTERP_START : '{{' = '{{'
 	static readonly DELIM_INTERP_END   : '}}' = '}}'
-	static lex(lexer: Lexer, full_or_head: boolean = true): TokenStringTemplate {
+	private readonly delim_end  : number;
+	private readonly delim_start: number;
+	constructor (lexer: Lexer, delim_start: number) {
+		let delim_end: number;
 		const positions: Set<TemplatePosition> = new Set<TemplatePosition>()
-		const buffer: Char[] = []
-		if (full_or_head) {
-			buffer.push(lexer.c0)
+		const buffer: Char[] = [lexer.c0]
+		lexer.advance()
+		if (delim_start === TokenStringTemplate.DELIM.length) {
 			positions.add(TemplatePosition.FULL).add(TemplatePosition.HEAD)
-			lexer.advance()
-		} else {
-			buffer.push(lexer.c0, lexer.c1 !)
+		} else if (delim_start === TokenStringTemplate.DELIM_INTERP_START.length) {
 			positions.add(TemplatePosition.MIDDLE).add(TemplatePosition.TAIL)
-			lexer.advance(2)
+			buffer.push(lexer.c1 !)
+			lexer.advance()
 		}
 		while (!lexer.isDone) {
-			if (Char.eq(ETX, lexer.c0)) throw new LexError02(new TokenStringTemplateFull(buffer[0], ...buffer.slice(1)))
-			if (Char.eq('\\' + TokenStringTemplate.DELIM, lexer.c0, lexer.c1)) { // an escaped template delimiter
+			if (Char.eq(ETX, lexer.c0)) {
+				super('STRING-TEMPLATE', buffer[0], ...buffer.slice(1))
+				throw new LexError02(this)
+			}
+			if (Char.eq('\\' + TokenStringTemplate.DELIM, lexer.c0, lexer.c1)) {
+				/* an escaped template delimiter */
 				buffer.push(lexer.c0, lexer.c1 !)
 				lexer.advance(2)
 
 			} else if (Char.eq(TokenStringTemplate.DELIM, lexer.c0)) {
 				/* end string template full/tail */
+				delim_end = TokenStringTemplate.DELIM.length
+				positions.delete(TemplatePosition.HEAD)
+				positions.delete(TemplatePosition.MIDDLE)
 				// add ending delim to token
 				buffer.push(lexer.c0)
 				lexer.advance(TokenStringTemplate.DELIM.length)
-				positions.delete(TemplatePosition.HEAD)
-				positions.delete(TemplatePosition.MIDDLE)
 				break;
 
 			} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) {
 				/* end string template head/middle */
+				delim_end = TokenStringTemplate.DELIM_INTERP_START.length
+				positions.delete(TemplatePosition.FULL)
+				positions.delete(TemplatePosition.TAIL)
 				// add start interpolation delim to token
 				buffer.push(lexer.c0, lexer.c1 !)
 				lexer.advance(TokenStringTemplate.DELIM_INTERP_START.length)
-				positions.delete(TemplatePosition.FULL)
-				positions.delete(TemplatePosition.TAIL)
 				break;
 
 			} else {
@@ -369,49 +377,14 @@ export abstract class TokenStringTemplate extends Token {
 				lexer.advance()
 			}
 		}
-		return (new Map<TemplatePosition, (start_char: Char, ...more_chars: Char[]) => TokenStringTemplate>([
-			[TemplatePosition.FULL  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateFull  (start_char, ...more_chars)],
-			[TemplatePosition.HEAD  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateHead  (start_char, ...more_chars)],
-			[TemplatePosition.MIDDLE, (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateMiddle(start_char, ...more_chars)],
-			[TemplatePosition.TAIL  , (start_char: Char, ...more_chars: Char[]) => new TokenStringTemplateTail  (start_char, ...more_chars)],
-		]).get([...positions][0]) !)(buffer[0], ...buffer.slice(1))
+		super(`STRING-TEMPLATE-${TemplatePosition[[...positions][0]]}`, buffer[0], ...buffer.slice(1))
+		this.delim_start = delim_start
+		this.delim_end   = delim_end !
 	}
-	cook(start: number = 0, end: number = Infinity): string {
+	get cooked(): string {
 		return String.fromCodePoint(...Translator.svt(
-			this.source.slice(start, end) // cut off the string delimiters
+			this.source.slice(this.delim_start, -this.delim_end) // cut off the string delimiters
 		))
-	}
-}
-export class TokenStringTemplateFull extends TokenStringTemplate {
-	constructor (start_char: Char, ...more_chars: Char[]) {
-		super('STRING-TEMPLATE-FULL', start_char, ...more_chars)
-	}
-	get cooked(): string {
-		return super.cook(TokenStringTemplate.DELIM.length, -TokenStringTemplate.DELIM.length)
-	}
-}
-export class TokenStringTemplateHead extends TokenStringTemplate {
-	constructor (start_char: Char, ...more_chars: Char[]) {
-		super('STRING-TEMPLATE-HEAD', start_char, ...more_chars)
-	}
-	get cooked(): string {
-		return super.cook(TokenStringTemplate.DELIM.length, -TokenStringTemplate.DELIM_INTERP_START.length)
-	}
-}
-export class TokenStringTemplateMiddle extends TokenStringTemplate {
-	constructor (start_char: Char, ...more_chars: Char[]) {
-		super('STRING-TEMPLATE-MIDDLE', start_char, ...more_chars)
-	}
-	get cooked(): string {
-		return super.cook(TokenStringTemplate.DELIM_INTERP_END.length, -TokenStringTemplate.DELIM_INTERP_START.length)
-	}
-}
-export class TokenStringTemplateTail extends TokenStringTemplate {
-	constructor (start_char: Char, ...more_chars: Char[]) {
-		super('STRING-TEMPLATE-TAIL', start_char, ...more_chars)
-	}
-	get cooked(): string {
-		return super.cook(TokenStringTemplate.DELIM_INTERP_END.length, -TokenStringTemplate.DELIM.length)
 	}
 }
 export class TokenNumber extends Token {
