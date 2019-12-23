@@ -12,16 +12,6 @@ import Token, {
 	TokenWord,
 	TokenPunctuator,
 } from './Token.class'
-import {
-	TerminalFilebound,
-	TerminalWhitespace,
-	TerminalComment,
-	TerminalStringLiteral,
-	TerminalStringTemplateFull,
-	TerminalNumber,
-	TerminalWord,
-	TerminalPunctuator,
-} from './Terminal.class'
 
 import {LexError01} from '../error/LexError.class'
 
@@ -98,51 +88,51 @@ export default class Lexer {
 		while (!this.iterator_result_char.done) {
 			let token: Token;
 			if (Char.inc(TokenFilebound.CHARS, this._c0)) {
-				token = TerminalFilebound.instance.lex(this)
+				token = TokenFilebound.lex(this)
 
 			} else if (Char.inc(TokenWhitespace.CHARS, this._c0)) {
-				token = TerminalWhitespace.instance.lex(this)
+				token = TokenWhitespace.lex(this)
 
 			} else if (Char.eq('\\', this._c0)) {
 				/* we found an integer literal with a radix or a line comment */
 				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
-					token = TerminalNumber.instance.lex(this, TokenNumber.BASES.get(this._c1 !.source) !)
+					token = TokenNumber.lex(this, TokenNumber.BASES.get(this._c1 !.source) !)
 				} else {
-					token = TerminalComment.instance.lex(this, TokenCommentLine)
+					token = TokenCommentLine.lex(this)
 				}
 
 			} else if (Char.eq('"', this._c0)) {
 				/* we found the start of a doc comment or multiline comment */
 				if (this.state_newline && Char.eq(TokenCommentDoc.DELIM_START + '\n', this._c0, this._c1, this._c2, this._c3)) {
-					token = TerminalComment.instance.lex(this, TokenCommentDoc)
+					token = TokenCommentDoc.lex(this)
 				} else if (Char.eq(TokenCommentMultiNest.DELIM_START, this._c0, this._c1)) {
-					token = TerminalComment.instance.lex(this, TokenCommentMultiNest)
+					token = TokenCommentMultiNest.lex(this)
 				} else {
-					token = TerminalComment.instance.lex(this, TokenCommentMulti)
+					token = TokenCommentMulti.lex(this)
 				}
 
 			} else if (Char.eq(TokenStringLiteral.DELIM, this._c0)) {
 				/* we found a string literal */
-				token = TerminalStringLiteral.instance.lex(this)
+				token = TokenStringLiteral.lex(this)
 			} else if (Char.eq(TokenStringTemplate.DELIM, this._c0)) {
 				/* we found a template full or template head */
-				token = TerminalStringTemplateFull.instance.lex(this, true)
+				token = TokenStringTemplate.lex(this, true)
 			} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_END, this._c0, this._c1)) {
 				/* we found a template middle or template tail */
-				token = TerminalStringTemplateFull.instance.lex(this, false)
+				token = TokenStringTemplate.lex(this, false)
 
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
-				token = TerminalNumber.instance.lex(this)
+				token = TokenNumber.lex(this)
 
 			} else if (Char.inc(TokenWord.CHARS_START, this._c0)) {
-				token = TerminalWord.instance.lex(this)
+				token = TokenWord.lex(this)
 
 			} else if (Char.inc(TokenPunctuator.CHARS_3, this._c0, this._c1, this._c2)) {
-				token = TerminalPunctuator.instance.lex(this, 3)
+				token = TokenPunctuator.lex(this, 3)
 			} else if (Char.inc(TokenPunctuator.CHARS_2, this._c0, this._c1)) {
-				token = TerminalPunctuator.instance.lex(this, 2)
+				token = TokenPunctuator.lex(this, 2)
 			} else if (Char.inc(TokenPunctuator.CHARS_1, this._c0)) {
-				token = TerminalPunctuator.instance.lex(this)
+				token = TokenPunctuator.lex(this)
 			} else {
 				throw new LexError01(this._c0)
 			}
