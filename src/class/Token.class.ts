@@ -78,11 +78,27 @@ export default abstract class Token implements Serializable {
 	 * @implements Serializable
 	 */
 	serialize(): string {
+		const cooked: string|number|boolean|null = this.cooked; // getter is called only once
 		const attributes: string = ' ' + [
 			`line="${this.line_index+1}"`,
 			`col="${this.col_index+1}"`,
+			(cooked !== null) ? `value="${(typeof cooked === 'string') ? cooked
+				.replace(/\&/g, '&amp;' )
+				.replace(/\</g, '&lt;'  )
+				.replace(/\>/g, '&gt;'  )
+				.replace(/\'/g, '&apos;')
+				.replace(/\"/g, '&quot;')
+				.replace(/\\/g, '&#x5c;')
+				.replace(/\t/g, '&#x09;')
+				.replace(/\n/g, '&#x0a;')
+				.replace(/\r/g, '&#x0d;')
+				.replace(/\u0000/g, '&#x00;')
+			: cooked.toString()}"` : '',
 		].join(' ').trim()
-		return `<${this.tagname}${attributes}>${this.source}</${this.tagname}>`
+		const formatted: string = this.source
+			.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
+			.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
+		return `<${this.tagname}${attributes}>${formatted}</${this.tagname}>`
 	}
 }
 
