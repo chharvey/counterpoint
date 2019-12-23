@@ -90,11 +90,11 @@ comment}" *  3
 """
 
 
-5  +  '3'
+5;  +=  '3'
 
-5  ''  3 *  2
+5  ''=  3 *  2;
 
-5 3 *  ``
+5 = 3 *  ``;
 
 4 * 'a string literal with an \' escaped apostrophe and \`escaped back-tick (both escaped)'
 
@@ -187,3 +187,8 @@ that contains 'a string start marker but no end."
 	</body>
 </html>
 `
+
+\ words
+this is a word
+_words _can _start _with _underscores
+_and0 _can1 contain2 numb3rs

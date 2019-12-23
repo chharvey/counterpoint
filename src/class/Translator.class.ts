@@ -309,8 +309,6 @@ export default class Translator {
 	private iterator_result_token: IteratorResult<Token>;
 	/** The current token. */
 	private t0: Token;
-	/** The running identifier count. Used as an id for identifier tokens. */
-	private idcount: number /* bigint */ = 0;
 
 	/**
 	 * Construct a new Translator object.
@@ -329,7 +327,6 @@ export default class Translator {
 	 */
 	* generate(): Iterator<Token> {
 		while (!this.iterator_result_token.done) {
-			// TODO (this.t0 instanceof TokenWord) ? this.idcount++
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
 				yield this.t0
 			}

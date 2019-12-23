@@ -453,30 +453,26 @@ export class TokenNumber extends Token {
 }
 export class TokenWord extends Token {
 	static readonly TAGNAME: string = 'WORD'
-	static readonly CHARS_START: readonly string[] = ''.split(' ')
-	static readonly CHARS_REST : readonly string[] = ''.split(' ')
-	constructor (lexer: Lexer) {
+	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
+	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
+	private readonly id: number /* bigint */
+	constructor (lexer: Lexer, id: number /* bigint */) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
-		while (!lexer.isDone && Char.inc(TokenWord.CHARS_REST, lexer.c0)) {
+		while (!lexer.isDone && TokenWord.CHAR_REST.test(lexer.c0.source)) {
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
 		super(TokenWord.TAGNAME, buffer[0], ...buffer.slice(1))
+		this.id = id
 	}
-	/**
-	 * @param   id the running identifier count
-	 */
-	cook(id?: number /* bigint */): number {
-		return id || -1 // TODO
-	}
-	get cooked(): number {
-		return -1 // TODO
+	get cooked(): number /* bigint */ {
+		return this.id
 	}
 }
 export class TokenPunctuator extends Token {
 	static readonly TAGNAME: string = 'PUNCTUATOR'
-	static readonly CHARS_1: readonly string[] = '+ - * / ^ ( )'.split(' ')
+	static readonly CHARS_1: readonly string[] = '; = + - * / ^ ( )'.split(' ')
 	static readonly CHARS_2: readonly string[] = ''.split(' ')
 	static readonly CHARS_3: readonly string[] = ''.split(' ')
 	constructor (lexer: Lexer, count: 1|2|3 = 1) {

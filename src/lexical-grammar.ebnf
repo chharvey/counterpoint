@@ -101,4 +101,10 @@ DigitSequenceDec ::= (DigitSequenceDec "_"?)? [0-9]
 DigitSequenceHex ::= (DigitSequenceHex "_"?)? [0-9a-f]
 DigitSequenceHTD ::= (DigitSequenceHTD "_"?)? [0-9a-z]
 
-Punctuator ::= "+" | "-" | "*" | "/" | "^" | "(" | ")"
+
+
+Word ::= [A-Za-z_] [A-Za-z0-9_]*
+
+
+
+Punctuator ::= ";" | "=" | "+" | "-" | "*" | "/" | "^" | "(" | ")"

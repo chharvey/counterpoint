@@ -28,6 +28,8 @@ export default class Lexer {
 
 	/** Did this Lexer just pass a token that contains `\n`? */
 	private state_newline: boolean = false
+	/** The running word count. Used as an id for word tokens. */
+	private wordcount: number /* bigint */ = 0
 
 	/** The current character. */
 	private _c0: Char;
@@ -124,8 +126,8 @@ export default class Lexer {
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
 				token = new TokenNumber(this)
 
-			} else if (Char.inc(TokenWord.CHARS_START, this._c0)) {
-				token = new TokenWord(this)
+			} else if (TokenWord.CHAR_START.test(this._c0.source)) {
+				token = new TokenWord(this, this.wordcount++)
 
 			} else if (Char.inc(TokenPunctuator.CHARS_3, this._c0, this._c1, this._c2)) {
 				token = new TokenPunctuator(this, 3)
