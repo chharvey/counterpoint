@@ -88,32 +88,32 @@ export default class Lexer {
 		while (!this.iterator_result_char.done) {
 			let token: Token;
 			if (Char.inc(TokenFilebound.CHARS, this._c0)) {
-				token = TokenFilebound.lex(this)
+				token = new TokenFilebound(this)
 
 			} else if (Char.inc(TokenWhitespace.CHARS, this._c0)) {
-				token = TokenWhitespace.lex(this)
+				token = new TokenWhitespace(this)
 
 			} else if (Char.eq('\\', this._c0)) {
 				/* we found an integer literal with a radix or a line comment */
 				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
-					token = TokenNumber.lex(this, TokenNumber.BASES.get(this._c1 !.source) !)
+					token = new TokenNumber(this, TokenNumber.BASES.get(this._c1 !.source) !)
 				} else {
-					token = TokenCommentLine.lex(this)
+					token = new TokenCommentLine(this)
 				}
 
 			} else if (Char.eq('"', this._c0)) {
 				/* we found the start of a doc comment or multiline comment */
 				if (this.state_newline && Char.eq(TokenCommentDoc.DELIM_START + '\n', this._c0, this._c1, this._c2, this._c3)) {
-					token = TokenCommentDoc.lex(this)
+					token = new TokenCommentDoc(this)
 				} else if (Char.eq(TokenCommentMultiNest.DELIM_START, this._c0, this._c1)) {
-					token = TokenCommentMultiNest.lex(this)
+					token = new TokenCommentMultiNest(this)
 				} else {
-					token = TokenCommentMulti.lex(this)
+					token = new TokenCommentMulti(this)
 				}
 
 			} else if (Char.eq(TokenStringLiteral.DELIM, this._c0)) {
 				/* we found a string literal */
-				token = TokenStringLiteral.lex(this)
+				token = new TokenStringLiteral(this)
 			} else if (Char.eq(TokenStringTemplate.DELIM, this._c0)) {
 				/* we found a template full or template head */
 				token = TokenStringTemplate.lex(this, true)
@@ -122,17 +122,17 @@ export default class Lexer {
 				token = TokenStringTemplate.lex(this, false)
 
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
-				token = TokenNumber.lex(this)
+				token = new TokenNumber(this)
 
 			} else if (Char.inc(TokenWord.CHARS_START, this._c0)) {
-				token = TokenWord.lex(this)
+				token = new TokenWord(this)
 
 			} else if (Char.inc(TokenPunctuator.CHARS_3, this._c0, this._c1, this._c2)) {
-				token = TokenPunctuator.lex(this, 3)
+				token = new TokenPunctuator(this, 3)
 			} else if (Char.inc(TokenPunctuator.CHARS_2, this._c0, this._c1)) {
-				token = TokenPunctuator.lex(this, 2)
+				token = new TokenPunctuator(this, 2)
 			} else if (Char.inc(TokenPunctuator.CHARS_1, this._c0)) {
-				token = TokenPunctuator.lex(this)
+				token = new TokenPunctuator(this)
 			} else {
 				throw new LexError01(this._c0)
 			}
