@@ -2,10 +2,11 @@ import Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Scanner.class'
 import Lexer from './Lexer.class'
 import Token, {
+	TokenWhitespace,
+	TokenComment,
 	TokenStringLiteral,
 	TokenStringTemplate,
 	TokenNumber,
-	TokenWord,
 } from './Token.class'
 
 
@@ -13,7 +14,7 @@ import Token, {
  * A ParseLeaf is a leaf in the parse tree. It consists of only a single token
  * (a terminal in the syntactic grammar), and a cooked value.
  */
-export class ParseLeaf implements Serializable {
+class ParseLeaf implements Serializable {
 	/**
 	 * Construct a new ParseNode object.
 	 * @param   token - the raw token to prepare
@@ -370,12 +371,14 @@ export default class Translator {
 	/**
 	 * Prepare the next token for the parser.
 	 * Whitespace and comment tokens are filtered out.
-	 * @returns the next token, with modified contents
+	 * @returns the next token
 	 */
-	* generate(): Iterator<ParseLeaf> {
+	* generate(): Iterator<Token> {
 		while (!this.iterator_result_token.done) {
-			const cooked: ParseLeaf|null = (this.t0 instanceof TokenWord) ? this.t0.cook(this.idcount++) : this.t0.cook()
-			if (cooked) yield cooked
+			// TODO (this.t0 instanceof TokenWord) ? this.idcount++
+			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
+				yield this.t0
+			}
 			this.iterator_result_token = this.lexer.next()
 			this.t0 = this.iterator_result_token.value
 		}

@@ -13,7 +13,7 @@ import {
 	TerminalWord,
 	TerminalPunctuator,
 } from './Terminal.class'
-import Translator, {ParseLeaf} from './Translator.class'
+import Translator from './Translator.class'
 
 
 /**
@@ -66,11 +66,13 @@ export default abstract class Token implements Serializable {
 	}
 
 	/**
-	 * Produce a parse leaf with this token’s cooked value.
-	 * If this token is not to be sent to the parser, then return `null`.
-	 * @returns a new ParseLeaf object containing a computed value of this token, or `null`
+	 * Return this Token’s cooked value.
+	 * The cooked value is the computed or evaluated contents of this Token,
+	 * to be sent to the parser and compiler.
+	 * If this Token is not to be sent to the parser, then return `null`.
+	 * @returns the computed value of this token, or `null`
 	 */
-	abstract cook(): ParseLeaf|null;
+	abstract get cooked(): string|number|boolean|null;
 
 	/**
 	 * @implements Serializable
@@ -90,8 +92,8 @@ export class TokenFilebound extends Token {
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TerminalFilebound.instance.TAGNAME, start_char, ...more_chars)
 	}
-	cook(): ParseLeaf {
-		return new ParseLeaf(this, this.source === STX /* || !this.source === ETX */)
+	get cooked(): boolean {
+		return this.source === STX /* || !this.source === ETX */
 	}
 	serialize(): string {
 		const formatted: string = new Map<string, string>([
@@ -106,7 +108,7 @@ export class TokenWhitespace extends Token {
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TerminalWhitespace.instance.TAGNAME, start_char, ...more_chars)
 	}
-	cook(): null {
+	get cooked(): null {
 		return null // we do not want to send whitespace to the parser
 	}
 }
@@ -114,7 +116,7 @@ export abstract class TokenComment extends Token {
 	constructor(kind: string, start_char: Char, ...more_chars: Char[]) {
 		super(`${TerminalComment.instance.TAGNAME}-${kind}`, start_char, ...more_chars)
 	}
-	/** @final */ cook(): null {
+	/** @final */ get cooked(): null {
 		return null // we do not want to send comments to the parser
 	}
 }
@@ -151,27 +153,27 @@ export class TokenStringLiteral extends Token {
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TerminalStringLiteral.instance.TAGNAME, start_char, ...more_chars)
 	}
-	cook(): ParseLeaf {
-		return new ParseLeaf(this, String.fromCodePoint(...Translator.svl(
+	get cooked(): string {
+		return String.fromCodePoint(...Translator.svl(
 			this.source.slice(1, -1) // cut off the string delimiters
-		)))
+		))
 	}
 }
 export abstract class TokenStringTemplate extends Token {
 	static readonly DELIM              : '`'  = '`'
 	static readonly DELIM_INTERP_START : '{{' = '{{'
 	static readonly DELIM_INTERP_END   : '}}' = '}}'
-	cook(start: number = 0, end: number = Infinity): ParseLeaf {
-		return new ParseLeaf(this, String.fromCodePoint(...Translator.svt(
+	cook(start: number = 0, end: number = Infinity): string {
+		return String.fromCodePoint(...Translator.svt(
 			this.source.slice(start, end) // cut off the string delimiters
-		)))
+		))
 	}
 }
 export class TokenStringTemplateFull extends TokenStringTemplate {
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TerminalStringTemplateFull.instance.TAGNAME, start_char, ...more_chars)
 	}
-	cook(): ParseLeaf {
+	get cooked(): string {
 		return super.cook(TokenStringTemplate.DELIM.length, -TokenStringTemplate.DELIM.length)
 	}
 }
@@ -179,7 +181,7 @@ export class TokenStringTemplateHead extends TokenStringTemplate {
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TerminalStringTemplateHead.instance.TAGNAME, start_char, ...more_chars)
 	}
-	cook(): ParseLeaf {
+	get cooked(): string {
 		return super.cook(TokenStringTemplate.DELIM.length, -TokenStringTemplate.DELIM_INTERP_START.length)
 	}
 }
@@ -187,7 +189,7 @@ export class TokenStringTemplateMiddle extends TokenStringTemplate {
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TerminalStringTemplateMiddle.instance.TAGNAME, start_char, ...more_chars)
 	}
-	cook(): ParseLeaf {
+	get cooked(): string {
 		return super.cook(TokenStringTemplate.DELIM_INTERP_END.length, -TokenStringTemplate.DELIM_INTERP_START.length)
 	}
 }
@@ -195,7 +197,7 @@ export class TokenStringTemplateTail extends TokenStringTemplate {
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TerminalStringTemplateTail.instance.TAGNAME, start_char, ...more_chars)
 	}
-	cook(): ParseLeaf {
+	get cooked(): string {
 		return super.cook(TokenStringTemplate.DELIM_INTERP_END.length, -TokenStringTemplate.DELIM.length)
 	}
 }
@@ -225,8 +227,8 @@ export class TokenNumber extends Token {
 	) {
 		super(TerminalNumber.instance.TAGNAME, start_char, ...more_chars)
 	}
-	cook(): ParseLeaf {
-		return new ParseLeaf(this, Translator.mv(this.source[0] === '\\' ? this.source.slice(2) : this.source, this.radix))
+	get cooked(): number {
+		return Translator.mv(this.source[0] === '\\' ? this.source.slice(2) : this.source, this.radix)
 	}
 }
 export class TokenWord extends Token {
@@ -238,8 +240,11 @@ export class TokenWord extends Token {
 	/**
 	 * @param   id the running identifier count
 	 */
-	cook(id?: number /* bigint */): ParseLeaf {
-		return new ParseLeaf(this, id || -1)
+	cook(id?: number /* bigint */): number {
+		return id || -1 // TODO
+	}
+	get cooked(): number {
+		return -1 // TODO
 	}
 }
 export class TokenPunctuator extends Token {
@@ -249,7 +254,7 @@ export class TokenPunctuator extends Token {
 	constructor(start_char: Char, ...more_chars: Char[]) {
 		super(TerminalPunctuator.instance.TAGNAME, start_char, ...more_chars)
 	}
-	cook(): ParseLeaf {
-		return new ParseLeaf(this, this.source)
+	get cooked(): string {
+		return this.source
 	}
 }
