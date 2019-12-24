@@ -13,7 +13,7 @@ import Token, {
 
 
 const digitSequence = (radix: number): string =>
-	(Util.randomBool() ? '' : digitSequence(radix) + (Util.randomBool() ? '' : '_')) + Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)
+	`${Util.randomBool() ? '' : `${digitSequence(radix)}${Util.randomBool() ? '' : '_'}`}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
 
 
 /**
@@ -51,7 +51,7 @@ export class TerminalFilebound extends Terminal {
 export class TerminalWhitespace extends Terminal {
 	static readonly instance: TerminalWhitespace = new TerminalWhitespace()
 	random(): string {
-		return (Util.randomBool() ? '' : this.random()) + Util.arrayRandom(TokenWhitespace.CHARS)
+		return `${Util.randomBool() ? '' : this.random()}${Util.arrayRandom(TokenWhitespace.CHARS)}`
 	}
 	match(candidate: Token): boolean {
 		return this._match(candidate, TokenWhitespace.TAGNAME)
@@ -72,17 +72,17 @@ export class TerminalStringLiteral extends Terminal {
 		const chars = (): string => {
 			const random: number = Math.random()
 			return (
-				random < 0.25 ? Util.randomChar('\' \\ \u0003'.split(' ')) + maybeChars() :
-				random < 0.50 ? '\\' + escape() + maybeChars() :
-				random < 0.75 ? '\\u' + (Util.randomBool() ? '' : Util.randomChar('\' { \u0003'.split(' ')) + maybeChars()) :
-				'\\\u000d' + (Util.randomBool() ? '' : Util.randomChar('\' \u000a \u0003'.split(' ')) + maybeChars())
+				random < 0.25 ? `${Util.randomChar('\' \\ \u0003'.split(' '))}${maybeChars()}` :
+				random < 0.50 ? `\\${escape()}${maybeChars()}` :
+				random < 0.75 ? `\\u${Util.randomBool() ? '' : `${Util.randomChar('\' { \u0003'.split(' '))}${maybeChars()}`}` :
+				`\\\u000d${Util.randomBool() ? '' : `${Util.randomChar('\' \u000a \u0003'.split(' '))}${maybeChars()}`}`
 			)
 		}
 		const maybeChars    = (): string => Util.randomBool() ? '' : chars()
 		const escape        = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
 		const escapeChar    = (): string => Util.arrayRandom(TokenStringLiteral.ESCAPES)
 		const escapeCode    = (): string => `u{${Util.randomBool() ? '' : digitSequence(16)}}`
-		const lineCont      = (): string => (Util.randomBool() ? '': '\u000d') + '\u000a'
+		const lineCont      = (): string => `${Util.randomBool() ? '': '\u000d'}\u000a`
 		const nonEscapeChar = (): string => Util.randomChar('\' \\ s t n r u \u000D \u000A \u0003'.split(' '))
 		return `${TokenStringLiteral.DELIM}${maybeChars()}${TokenStringLiteral.DELIM}`
 	}
@@ -93,14 +93,14 @@ export class TerminalStringLiteral extends Terminal {
 export abstract class TerminalStringTemplate extends Terminal {
 	random(start: string = TokenStringTemplate.DELIM, end: string = TokenStringTemplate.DELIM): string {
 		const end_delim: boolean = end === TokenStringTemplate.DELIM
-		const followsOpenBracket = (): string => Util.randomBool() ? Util.randomChar('` { \\ \u0003'.split(' ')) : '\\' + followsBackslash()
+		const followsOpenBracket = (): string => Util.randomBool() ? Util.randomChar('` { \\ \u0003'.split(' ')) : `\\${followsBackslash()}`
 		const followsBackslash = (): string => Util.randomBool() ? Util.randomChar('` \u0003'.split(' ')) : '`'
 		const chars = (): string => {
 			const random: number = Math.random()
 			return (
-				random < 0.333 ? Util.randomChar('` { \\ \u0003'.split(' ')) + maybeChars() :
-				random < 0.667 ? '{' + (end_delim && Util.randomBool() ? '' : followsOpenBracket() + maybeChars()) :
-				'\\' + (!end_delim && Util.randomBool() ? '' : followsBackslash() + maybeChars())
+				random < 0.333 ? `${Util.randomChar('` { \\ \u0003'.split(' '))}${maybeChars()}` :
+				random < 0.667 ? `{${end_delim && Util.randomBool() ? '' : `${followsOpenBracket()}${maybeChars()}`}` :
+				`\\${!end_delim && Util.randomBool() ? '' : `${followsBackslash()}${maybeChars()}`}`
 			)
 		}
 		const maybeChars = (): string => Util.randomBool() ? '' : chars()
@@ -150,16 +150,28 @@ export class TerminalNumber extends Terminal {
 	static readonly instance: TerminalNumber = new TerminalNumber()
 	random(): string {
 		const base: [string, number] = [...TokenNumber.BASES.entries()][Util.randomInt(6)]
-		return Util.randomBool() ? digitSequence(TokenNumber.RADIX_DEFAULT) : '\\' + base[0] + digitSequence(base[1])
+		return Util.randomBool() ? digitSequence(TokenNumber.RADIX_DEFAULT) : `\\${base[0]}${digitSequence(base[1])}`
 	}
 	match(candidate: Token): boolean {
 		return this._match(candidate, TokenNumber.TAGNAME)
 	}
 }
-export class TerminalWord extends Terminal {
-	static readonly instance: TerminalWord = new TerminalWord()
+export class TerminalIdentifier extends Terminal {
+	static readonly instance: TerminalIdentifier = new TerminalIdentifier()
 	random(): string {
-		throw new Error('not yet supported')
+		const chars = (start: boolean = false): string => {
+			let c: string;
+			const pass: RegExp = start ? TokenWord.CHAR_START : TokenWord.CHAR_REST
+			do {
+				c = Util.randomChar()
+			} while (!pass.test(c))
+			return start ? c : `${c}${Util.randomBool() ? '' : chars()}`
+		}
+		let returned: string;
+		do {
+			returned = `${chars(true)}${Util.randomBool() ? '' : chars()}`
+		} while (([...TokenWord.KEYWORDS.values()].flat() as string[]).includes(returned))
+		return returned
 	}
 	match(candidate: Token): boolean {
 		return this._match(candidate, TokenWord.TAGNAME)
