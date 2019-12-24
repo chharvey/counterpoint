@@ -40,7 +40,7 @@ async function test() {
 	const translator = new Translator(await input).generate()
 	let iterator_result_tokentrans = translator.next()
 	while (!iterator_result_tokentrans.done) {
-		console.log(iterator_result_tokentrans.value.serialize())
+		console.log(iterator_result_tokentrans.value.serialize(translator))
 		iterator_result_tokentrans = translator.next()
 	}
 
