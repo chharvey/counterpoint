@@ -190,7 +190,7 @@ that contains 'a string start marker but no end."
 
 \ words
 this is a word
-_words _can _start _with _underscores
+_words _can let _start _with _underscores
 _and0 _can1 contain2 numb3rs
 
-a word _can repeat _with the same id
+a word _can unfixed repeat _with the same id

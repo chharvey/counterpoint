@@ -18,6 +18,11 @@ export enum TemplatePosition {
 	TAIL,
 }
 
+enum KeywordKind {
+	STORAGE,
+	MODIFIER,
+}
+
 
 /**
  * A Token object is the kind of thing that the Lexer returns.
@@ -719,8 +724,17 @@ export class TokenNumber extends Token {
 }
 export class TokenWord extends Token {
 	static readonly TAGNAME: string = 'WORD'
+	private static readonly IDENTIFIER_TAG: string = 'IDENTIFIER'
 	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
+	private static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>(([
+		[KeywordKind.STORAGE, [
+			'let',
+		]],
+		[KeywordKind.MODIFIER, [
+			'unfixed',
+		]],
+	]))
 	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
@@ -728,10 +742,20 @@ export class TokenWord extends Token {
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
-		super(TokenWord.TAGNAME, buffer[0], ...buffer.slice(1))
+		const source: string = buffer.map((char) => char.source).join('')
+		let kind = TokenWord.IDENTIFIER_TAG
+		TokenWord.KEYWORDS.forEach((value, key) => {
+			if (kind === TokenWord.IDENTIFIER_TAG && value.includes(source)) {
+				kind = KeywordKind[key]
+			}
+		})
+		super(`${TokenWord.TAGNAME}-${kind}`, buffer[0], ...buffer.slice(1))
 	}
-	cook(trans: Translator): number /* bigint */ {
-		return trans.words.indexOf(this.source)
+	get isIdentifier(): boolean {
+		return this.tagname === `${TokenWord.TAGNAME}-${TokenWord.IDENTIFIER_TAG}`
+	}
+	cook(trans: Translator): number /* bigint */ | string {
+		return (this.isIdentifier) ? trans.identifiers.indexOf(this.source) : this.source
 	}
 }
 export class TokenPunctuator extends Token {

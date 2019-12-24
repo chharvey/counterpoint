@@ -23,8 +23,8 @@ export default class Translator {
 	private iterator_result_token: IteratorResult<Token>;
 	/** The current token. */
 	private t0: Token;
-	/** A set of all unique words in the program. */
-	private _words: Set<string> = new Set()
+	/** A set of all unique identifiers in the program. */
+	private _ids: Set<string> = new Set()
 
 	/**
 	 * Construct a new Translator object.
@@ -37,12 +37,12 @@ export default class Translator {
 	}
 
 	/**
-	 * Return a list of unique words in the program,
+	 * Return a list of unique identifiers in the program,
 	 * in the order they appeared.
-	 * @returns a list of unique words
+	 * @returns a list of unique identifiers
 	 */
-	get words(): readonly string[] {
-		return [...this._words]
+	get identifiers(): readonly string[] {
+		return [...this._ids]
 	}
 
 	/**
@@ -53,7 +53,9 @@ export default class Translator {
 	* generate(): Iterator<Token> {
 		while (!this.iterator_result_token.done) {
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
-				this.t0 instanceof TokenWord && this._words.add(this.t0.source)
+				if (this.t0 instanceof TokenWord && this.t0.isIdentifier) {
+					this._ids.add(this.t0.source)
+				}
 				yield this.t0
 			}
 			this.iterator_result_token = this.lexer.next()

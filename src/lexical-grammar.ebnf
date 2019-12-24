@@ -104,7 +104,20 @@ DigitSequenceHTD ::= (DigitSequenceHTD "_"?)? [0-9a-z]
 
 
 Word ::= [A-Za-z_] [A-Za-z0-9_]*
+Identifier ::= Word - Keyword
 
 
 
 Punctuator ::= ";" | "=" | "+" | "-" | "*" | "/" | "^" | "(" | ")"
+
+
+
+Keyword ::=
+	KeywordStorage  |
+	KeywordModifier
+
+KeywordStorage ::=
+	"let"
+
+KeywordModifier ::=
+	"unfixed"
