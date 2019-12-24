@@ -727,7 +727,7 @@ export class TokenWord extends Token {
 	private static readonly IDENTIFIER_TAG: string = 'IDENTIFIER'
 	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
-	private static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>(([
+	static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>(([
 		[KeywordKind.STORAGE, [
 			'let',
 		]],

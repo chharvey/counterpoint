@@ -156,10 +156,22 @@ export class TerminalNumber extends Terminal {
 		return this._match(candidate, TokenNumber.TAGNAME)
 	}
 }
-export class TerminalWord extends Terminal {
-	static readonly instance: TerminalWord = new TerminalWord()
+export class TerminalIdentifier extends Terminal {
+	static readonly instance: TerminalIdentifier = new TerminalIdentifier()
 	random(): string {
-		throw new Error('not yet supported')
+		const chars = (start: boolean = false): string => {
+			let c: string;
+			const pass: RegExp = start ? TokenWord.CHAR_START : TokenWord.CHAR_REST
+			do {
+				c = Util.randomChar()
+			} while (!pass.test(c))
+			return start ? c : `${c}${Util.randomBool() ? '' : chars()}`
+		}
+		let returned: string;
+		do {
+			returned = `${chars(true)}${Util.randomBool() ? '' : chars()}`
+		} while (([...TokenWord.KEYWORDS.values()].flat() as string[]).includes(returned))
+		return returned
 	}
 	match(candidate: Token): boolean {
 		return this._match(candidate, TokenWord.TAGNAME)
