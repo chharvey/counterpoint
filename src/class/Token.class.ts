@@ -721,8 +721,7 @@ export class TokenWord extends Token {
 	static readonly TAGNAME: string = 'WORD'
 	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
-	private readonly id: number /* bigint */
-	constructor (lexer: Lexer, id: number /* bigint */) {
+	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
 		while (!lexer.isDone && TokenWord.CHAR_REST.test(lexer.c0.source)) {
@@ -730,10 +729,9 @@ export class TokenWord extends Token {
 			lexer.advance()
 		}
 		super(TokenWord.TAGNAME, buffer[0], ...buffer.slice(1))
-		this.id = id
 	}
-	cook(_trans: Translator): number /* bigint */ {
-		return this.id
+	cook(trans: Translator): number /* bigint */ {
+		return trans.words.indexOf(this.source)
 	}
 }
 export class TokenPunctuator extends Token {

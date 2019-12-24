@@ -37,10 +37,11 @@ async function test() {
 	}
 
 	console.log("\n\nHere are the tokens returned by the translator:")
-	const translator = new Translator(await input).generate()
+	const trans_obj = new Translator(await input)
+	const translator = trans_obj.generate()
 	let iterator_result_tokentrans = translator.next()
 	while (!iterator_result_tokentrans.done) {
-		console.log(iterator_result_tokentrans.value.serialize(translator))
+		console.log(iterator_result_tokentrans.value.serialize(trans_obj))
 		iterator_result_tokentrans = translator.next()
 	}
 

@@ -2,6 +2,7 @@ import Lexer from './Lexer.class'
 import Token, {
 	TokenWhitespace,
 	TokenComment,
+	TokenWord,
 } from './Token.class'
 
 
@@ -22,6 +23,8 @@ export default class Translator {
 	private iterator_result_token: IteratorResult<Token>;
 	/** The current token. */
 	private t0: Token;
+	/** A set of all unique words in the program. */
+	private _words: Set<string> = new Set()
 
 	/**
 	 * Construct a new Translator object.
@@ -34,6 +37,15 @@ export default class Translator {
 	}
 
 	/**
+	 * Return a list of unique words in the program,
+	 * in the order they appeared.
+	 * @returns a list of unique words
+	 */
+	get words(): readonly string[] {
+		return [...this._words]
+	}
+
+	/**
 	 * Prepare the next token for the parser.
 	 * Whitespace and comment tokens are filtered out.
 	 * @returns the next token
@@ -41,6 +53,7 @@ export default class Translator {
 	* generate(): Iterator<Token> {
 		while (!this.iterator_result_token.done) {
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
+				this.t0 instanceof TokenWord && this._words.add(this.t0.source)
 				yield this.t0
 			}
 			this.iterator_result_token = this.lexer.next()

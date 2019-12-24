@@ -192,3 +192,5 @@ that contains 'a string start marker but no end."
 this is a word
 _words _can _start _with _underscores
 _and0 _can1 contain2 numb3rs
+
+a word _can repeat _with the same id
