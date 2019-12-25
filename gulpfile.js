@@ -69,8 +69,8 @@ async function random() {
 		new ProductionExpressionUnarySymbol(),
 		new ProductionExpressionUnit(),
 	])
-	console.log(solid_grammar.rules.map((r) => `${r.production.TAGNAME} --> ${r.symbols.map((s) => s.TAGNAME || `"${s}"`).join(' ')}`))
-	console.log(solid_grammar.random().join(' '))
+	console.log(solid_grammar.rules.map((r) => r.toString()))
+	console.log(solid_grammar.random().join(' ').replace(/\u000d/g, ' '))
 	return Promise.resolve(null)
 }
 
@@ -79,5 +79,5 @@ module.exports = {
 	build,
 		dist,
 		test,
-	random
+	random,
 }

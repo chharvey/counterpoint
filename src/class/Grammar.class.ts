@@ -1,7 +1,8 @@
+import Util from './Util.class'
+import {STX, ETX} from './Scanner.class'
 import Token, {TokenSubclass, isTokenSubclass} from './Token.class'
 import ParseNode from './ParseNode.class'
 import Production from './Production.class'
-import Util from './Util.class'
 
 
 export type GrammarSymbol = Terminal|Production
@@ -142,5 +143,17 @@ export class Rule {
 				)
 			: false
 		})
+	}
+	/** @override */
+	toString(): string {
+		const tokens = (arr: readonly GrammarSymbol[]): string =>
+			arr.map((symbol) =>
+				(symbol instanceof Production) ?
+					symbol.TAGNAME
+				: (isTokenSubclass(symbol)) ?
+					symbol.name.replace(/[A-Z]/g, '_$&').slice('_Token_'.length).toUpperCase()
+				: `"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
+			).join(' ')
+		return `${this.production.TAGNAME} --> ${tokens(this.symbols)}`
 	}
 }
