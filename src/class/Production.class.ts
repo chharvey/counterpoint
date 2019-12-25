@@ -19,6 +19,7 @@ import Util from './Util.class'
  * which can be reduced to the left-hand side nonterminal in a parsing action.
  */
 export default abstract class Production {
+	protected constructor() {}
 	abstract readonly TAGNAME: string;
 	/**
 	 * A set of sequences of parse symbols (terminals and/or nonterminals) in this production.
@@ -56,8 +57,8 @@ export class ProductionFile extends Production {
 		readonly TAGNAME: string = 'File__0__List'
 		get sequences(): GrammarSymbol[][] {
 			return [
-				[                                   ProductionStatement.instance],
-				[ProductionFile.__0__List.instance, ProductionStatement.instance],
+				[      ProductionStatement.instance],
+				[this, ProductionStatement.instance],
 			]
 		}
 		random(): string[] {
@@ -237,31 +238,27 @@ export class ProductionStringTemplate extends Production {
 		]
 	}
 	random(): string[] {
-		if (Util.randomBool()) {
-			return [TerminalStringTemplateFull.instance.random()]
-		} else {
-			return [
-				TerminalStringTemplateHead.instance.random(),
-				...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
-				...(Util.randomBool() ? [] : ProductionStringTemplate.__0__List.instance.random()),
-				TerminalStringTemplateTail.instance.random(),
-			]
-		}
+		return Util.randomBool() ? [TerminalStringTemplateFull.instance.random()] : [
+			TerminalStringTemplateHead.instance.random(),
+			...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
+			...(Util.randomBool() ? [] : ProductionStringTemplate.__0__List.instance.random()),
+			TerminalStringTemplateTail.instance.random(),
+		]
 	}
 	static readonly __0__List = class __0__List extends Production {
 		static readonly instance: __0__List = new __0__List()
 		readonly TAGNAME: string = 'StringTemplate__0__List'
 		get sequences(): GrammarSymbol[][] {
 			return [
-				[                    TerminalStringTemplateMiddle.instance                               ],
-				[                    TerminalStringTemplateMiddle.instance, ProductionExpression.instance],
-				[__0__List.instance, TerminalStringTemplateMiddle.instance                               ],
-				[__0__List.instance, TerminalStringTemplateMiddle.instance, ProductionExpression.instance],
+				[      TerminalStringTemplateMiddle.instance                               ],
+				[      TerminalStringTemplateMiddle.instance, ProductionExpression.instance],
+				[this, TerminalStringTemplateMiddle.instance                               ],
+				[this, TerminalStringTemplateMiddle.instance, ProductionExpression.instance],
 			]
 		}
 		random(): string[] {
 			return [
-				...(Util.randomBool() ? [] : __0__List.instance.random()),
+				...(Util.randomBool() ? [] : this.random()),
 				TerminalStringTemplateMiddle.instance.random(),
 				...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
 			]
