@@ -6,6 +6,7 @@ import {
 	TerminalStringTemplateMiddle,
 	TerminalStringTemplateTail,
 	TerminalNumber,
+	TerminalIdentifier,
 } from './Terminal.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
 import Util from './Util.class'
@@ -136,14 +137,18 @@ export class ProductionExpressionUnit extends Production {
 		return [
 			[ProductionPrimitiveLiteral.instance],
 			[ProductionStringTemplate  .instance],
+			[TerminalIdentifier        .instance],
 			['(', ProductionExpression.instance, ')'],
 		]
 	}
 	random(): string[] {
 		const random: number = Math.random()
-		return random < 0.333 ? ProductionPrimitiveLiteral.instance.random() :
-		       random < 0.667 ? ProductionStringTemplate  .instance.random() :
+		return (
+			random < 0.25 ?  ProductionPrimitiveLiteral.instance.random()  :
+			random < 0.50 ?  ProductionStringTemplate  .instance.random()  :
+			random < 0.75 ? [TerminalIdentifier        .instance.random()] :
 			['(', ...ProductionExpression.instance.random(), ')']
+		)
 	}
 }
 export class ProductionStringTemplate extends Production {
