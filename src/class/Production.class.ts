@@ -44,12 +44,84 @@ export class ProductionFile extends Production {
 	readonly TAGNAME: string = 'File'
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[STX,                                ETX],
-			[STX, ProductionExpression.instance, ETX],
+			[STX,                                   ETX],
+			[STX, ProductionFile__0__List.instance, ETX],
 		]
 	}
 	random(): string[] {
-		return [STX, ...ProductionExpression.instance.random(), ETX]
+		return [STX, ...ProductionFile__0__List.instance.random(), ETX]
+	}
+}
+export class ProductionFile__0__List extends Production {
+	static readonly instance: ProductionFile__0__List = new ProductionFile__0__List()
+	readonly TAGNAME: string = 'File__0__List'
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[                                  ProductionStatement.instance],
+			[ProductionFile__0__List.instance, ProductionStatement.instance],
+		]
+	}
+	random(): string[] {
+		return [
+			...(Util.randomBool() ? [] : this.random()),
+			...ProductionStatement.instance.random(),
+		]
+	}
+}
+export class ProductionStatement extends Production {
+	static readonly instance: ProductionStatement = new ProductionStatement()
+	readonly TAGNAME: string = 'Statement'
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[ProductionDeclarationVariable.instance],
+			[ProductionStatementAssignment.instance],
+			[ProductionExpression.instance, ';'],
+		]
+	}
+	random(): string[] {
+		const random: number = Math.random()
+		return (
+			random < 0.33 ?  ProductionDeclarationVariable.instance.random() :
+			random < 0.67 ?  ProductionStatementAssignment.instance.random() :
+			[...ProductionExpression.instance.random(), ';']
+		)
+	}
+}
+export class ProductionDeclarationVariable extends Production {
+	static readonly instance: ProductionDeclarationVariable = new ProductionDeclarationVariable()
+	readonly TAGNAME: string = 'DeclarationVariable'
+	get sequences(): GrammarSymbol[][] {
+		return [
+			['let',            TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
+			['let', 'unfixed', TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
+		]
+	}
+	random(): string[] {
+		return [
+			'let',
+			Util.randomBool() ? '' : 'unfixed',
+			TerminalIdentifier.instance.random(),
+			'=',
+			...ProductionExpression.instance.random(),
+			';',
+		]
+	}
+}
+export class ProductionStatementAssignment extends Production {
+	static readonly instance: ProductionStatementAssignment = new ProductionStatementAssignment()
+	readonly TAGNAME: string = 'StatementAssignment'
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
+		]
+	}
+	random(): string[] {
+		return [
+			TerminalIdentifier.instance.random(),
+			'=',
+			...ProductionExpression.instance.random(),
+			';',
+		]
 	}
 }
 export class ProductionExpression extends Production {

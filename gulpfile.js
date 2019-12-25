@@ -54,6 +54,10 @@ async function random() {
 	const Grammar = require('./build/class/Grammar.class.js').default
 	const {
 		ProductionFile,
+		ProductionFile__0__List,
+		ProductionStatement,
+		ProductionDeclarationVariable,
+		ProductionStatementAssignment,
 		ProductionExpression,
 		ProductionExpressionAdditive,
 		ProductionExpressionMultiplicative,
@@ -66,6 +70,10 @@ async function random() {
 	} = require('./build/class/Production.class')
 	const solid_grammar = new Grammar([
 		new ProductionFile(),
+		new ProductionFile__0__List(),
+		new ProductionStatement(),
+		new ProductionDeclarationVariable(),
+		new ProductionStatementAssignment(),
 		new ProductionExpression(),
 		new ProductionExpressionAdditive(),
 		new ProductionExpressionMultiplicative(),

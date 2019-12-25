@@ -1,6 +1,19 @@
 /* LR grammar */
 
-File ::= #x02 Expression? #x03
+File ::= #x02 Statement* #x03
+
+
+
+Statement ::=
+	DeclarationVariable |
+	StatementAssignment |
+	Expression ";"
+
+DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";"
+
+StatementAssignment ::= IDENTIFIER "=" Expression ";"
+
+
 
 Expression ::= ExpressionAdditive
 
