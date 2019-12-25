@@ -54,7 +54,6 @@ async function random() {
 	const Grammar = require('./build/class/Grammar.class.js').default
 	const {
 		ProductionFile,
-		ProductionFile__0__List,
 		ProductionStatement,
 		ProductionDeclarationVariable,
 		ProductionStatementAssignment,
@@ -65,12 +64,11 @@ async function random() {
 		ProductionExpressionUnarySymbol,
 		ProductionExpressionUnit,
 		ProductionStringTemplate,
-		ProductionStringTemplate__0__List,
 		ProductionPrimitiveLiteral,
 	} = require('./build/class/Production.class')
 	const solid_grammar = new Grammar([
 		new ProductionFile(),
-		new ProductionFile__0__List(),
+		new ProductionFile.__0__List(),
 		new ProductionStatement(),
 		new ProductionDeclarationVariable(),
 		new ProductionStatementAssignment(),
@@ -81,7 +79,7 @@ async function random() {
 		new ProductionExpressionUnarySymbol(),
 		new ProductionExpressionUnit(),
 		new ProductionStringTemplate(),
-		new ProductionStringTemplate__0__List(),
+		new ProductionStringTemplate.__0__List(),
 		new ProductionPrimitiveLiteral(),
 	])
 	console.log(solid_grammar.rules.map((r) => `${r.production.TAGNAME} --> ${r.symbols.map((s) => s.TAGNAME || `"${s}"`).join(' ')}`))
