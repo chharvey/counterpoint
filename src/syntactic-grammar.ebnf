@@ -1,6 +1,6 @@
 /* LR grammar */
 
-File ::= #x02 Statement* #x03
+Goal ::= #x02 Statement* #x03
 
 
 

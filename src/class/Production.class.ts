@@ -40,21 +40,21 @@ export default abstract class Production {
 }
 
 
-export class ProductionFile extends Production {
-	static readonly instance: ProductionFile = new ProductionFile()
-	readonly TAGNAME: string = 'File'
+export class ProductionGoal extends Production {
+	static readonly instance: ProductionGoal = new ProductionGoal()
+	readonly TAGNAME: string = 'Goal'
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[STX,                                   ETX],
-			[STX, ProductionFile.__0__List.instance, ETX],
+			[STX, ProductionGoal.__0__List.instance, ETX],
 		]
 	}
 	random(): string[] {
-		return [STX, ...ProductionFile.__0__List.instance.random(), ETX]
+		return [STX, ...ProductionGoal.__0__List.instance.random(), ETX]
 	}
 	static readonly __0__List = class __0__List extends Production {
 		static readonly instance: __0__List = new __0__List()
-		readonly TAGNAME: string = 'File__0__List'
+		readonly TAGNAME: string = 'Goal__0__List'
 		get sequences(): GrammarSymbol[][] {
 			return [
 				[      ProductionStatement.instance],

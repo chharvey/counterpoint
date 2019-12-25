@@ -53,7 +53,7 @@ const build = gulp.series(dist, test)
 async function random() {
 	const Grammar = require('./build/class/Grammar.class.js').default
 	const {
-		ProductionFile,
+		ProductionGoal,
 		ProductionStatement,
 		ProductionDeclarationVariable,
 		ProductionStatementAssignment,
@@ -67,8 +67,8 @@ async function random() {
 		ProductionPrimitiveLiteral,
 	} = require('./build/class/Production.class')
 	const solid_grammar = new Grammar([
-		ProductionFile.instance,
-		ProductionFile.__0__List.instance,
+		ProductionGoal.instance,
+		ProductionGoal.__0__List.instance,
 		ProductionStatement.instance,
 		ProductionDeclarationVariable.instance,
 		ProductionStatementAssignment.instance,
