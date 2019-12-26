@@ -18,11 +18,11 @@ import Token, {
  */
 export default class Translator {
 	/** The lexer returning tokens for each iteration. */
-	private readonly lexer: Iterator<Token>;
+	private readonly lexer: Iterator<Token, void>;
 	/** The result of the lexer iterator. */
-	private iterator_result_token: IteratorResult<Token>;
+	private iterator_result_token: IteratorResult<Token, void>;
 	/** The current token. */
-	private t0: Token;
+	private t0: Token|void;
 	/** A set of all unique identifiers in the program. */
 	private _ids: Set<string> = new Set()
 
@@ -50,13 +50,15 @@ export default class Translator {
 	 * Whitespace and comment tokens are filtered out.
 	 * @returns the next token
 	 */
-	* generate(): Iterator<Token> {
+	* generate(): Iterator<Token, void> {
 		while (!this.iterator_result_token.done) {
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
 				if (this.t0 instanceof TokenWord && this.t0.isIdentifier) {
 					this._ids.add(this.t0.source)
 				}
-				yield this.t0
+				if (this.t0 instanceof Token) {
+					yield this.t0
+				}
 			}
 			this.iterator_result_token = this.lexer.next()
 			this.t0 = this.iterator_result_token.value

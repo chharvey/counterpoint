@@ -1,8 +1,9 @@
 import Util from './Util.class'
-import Terminal from './Terminal.class'
+import {STX, ETX} from './Scanner.class'
 import Token from './Token.class'
-import Production from './Production.class'
+import Terminal from './Terminal.class'
 import ParseNode from './ParseNode.class'
+import Production from './Production.class'
 
 
 export type GrammarSymbol   = GrammarTerminal|Production
@@ -146,5 +147,17 @@ export class Rule {
 				)
 			: false
 		})
+	}
+	/** @override */
+	toString(): string {
+		const tokens = (arr: readonly GrammarSymbol[]): string =>
+			arr.map((symbol) =>
+				(symbol instanceof Production) ?
+					symbol.TAGNAME
+				: (symbol instanceof Terminal) ?
+					symbol.constructor.name.replace(/[A-Z]/g, '_$&').slice('_Terminal_'.length).toUpperCase()
+				: `"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
+			).join(' ')
+		return `${this.production.TAGNAME} --> ${tokens(this.symbols)}`
 	}
 }
