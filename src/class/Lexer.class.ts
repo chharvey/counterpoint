@@ -16,9 +16,9 @@ import {LexError01} from '../error/LexError.class'
  */
 export default class Lexer {
 	/** The scanner returning characters for each iteration. */
-	private readonly scanner: Iterator<Char>;
+	private readonly scanner: Iterator<Char, void>;
 	/** The result of the scanner iterator. */
-	private iterator_result_char: IteratorResult<Char>;
+	private iterator_result_char: IteratorResult<Char, void>;
 
 	/** The current character’s cargo. */
 	private c0: string;
@@ -37,9 +37,9 @@ export default class Lexer {
 		this.scanner = new Scanner(this.source_text).generate()
 		this.iterator_result_char = this.scanner.next()
 
-		this.c0 = this.iterator_result_char.value.cargo
-		const l1: Char|null = this.iterator_result_char.value.lookahead()
-		const l2: Char|null = this.iterator_result_char.value.lookahead(2)
+		this.c0             = (this.iterator_result_char.value as Char).cargo
+		const l1: Char|null = (this.iterator_result_char.value as Char).lookahead()
+		const l2: Char|null = (this.iterator_result_char.value as Char).lookahead(2)
 		this.c1 = l1 && l1.cargo
 		this.c2 = l2 && l2.cargo
 	}
@@ -71,7 +71,7 @@ export default class Lexer {
 	 * @returns the next token, if it does not contain whitespace
 	 * @throws  {LexError01} if an unrecognized character was reached
 	 */
-	* generate(): Iterator<Token> {
+	* generate(): Iterator<Token, void> {
 		while (!this.iterator_result_char.done) {
 			if (TokenWhitespace.CHARACTERS.includes(this.c0)) {
 				const wstoken: TokenWhitespace = new TokenWhitespace(this.iterator_result_char.value)

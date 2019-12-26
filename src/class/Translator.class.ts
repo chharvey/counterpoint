@@ -19,12 +19,12 @@ import Token, {
  */
 export default class Translator {
 	/** The lexer returning tokens for each iteration. */
-	private readonly lexer: Iterator<Token>;
+	private readonly lexer: Iterator<Token, void>;
 	/** The result of the lexer iterator. */
-	private iterator_result_token: IteratorResult<Token>;
+	private iterator_result_token: IteratorResult<Token, void>;
 
 	/** The current token. */
-	private t0: Token;
+	private t0: Token|void;
 
 	/** The running identifier count. Used as an id for identifier tokens. */
 	private idcount: number /* bigint */ = 0;
@@ -45,7 +45,7 @@ export default class Translator {
 	 * Construct and return the next token in the source text.
 	 * @returns the next token, if it does not contain whitespace
 	 */
-	* generate(): Iterator<Token> {
+	* generate(): Iterator<Token, void> {
 		while (!this.iterator_result_token.done) {
 			if (this.t0 instanceof TokenFilebound) {
 				this.t0.value = new Map<string, boolean>([
@@ -90,7 +90,7 @@ export default class Translator {
 			} else if (this.t0 instanceof TokenWord) {
 				this.t0.id = this.idcount++;
 				yield this.t0
-			} else {
+			} else if (this.t0 instanceof Token) {
 				yield this.t0
 			}
 			this.iterator_result_token = this.lexer.next()
