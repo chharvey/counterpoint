@@ -1,5 +1,6 @@
-import Token, {isTokenSubclass} from './Token.class'
 import Translator from './Translator.class'
+import Token from './Token.class'
+import Terminal from './Terminal.class'
 import ParseNode from './ParseNode.class'
 import Grammar, {
 	GrammarSymbol,
@@ -41,8 +42,8 @@ export default class Parser {
 		const next_state: Set<Configuration> = new Set<Configuration>([...curr_state].filter((config) => {
 			const next_symbol: GrammarSymbol|null = config.after[0] || null
 			return (
-				typeof next_symbol === 'string' && this.lookahead !.cargo === next_symbol ||
-				isTokenSubclass(next_symbol) && this.lookahead ! instanceof next_symbol
+				typeof next_symbol === 'string' && this.lookahead !.source === next_symbol ||
+				next_symbol instanceof Terminal && next_symbol.match(this.lookahead !)
 			)
 		}).map((config) => config.advance()))
 		let shifted: boolean = false
@@ -64,7 +65,11 @@ export default class Parser {
 		const dones: Configuration[] = [...curr_state].filter((config) => config.done)
 		if (dones.length) {
 			const reductions: Configuration[] = dones.filter((config) =>
-				this.lookahead ? config.lookaheads.has(this.lookahead.cargo) : config.lookaheads.size === 0
+				this.lookahead ? [...config.lookaheads].some((symbol) => (typeof symbol === 'string') ?
+					symbol === this.lookahead !.source
+				: (symbol instanceof Terminal) ?
+					symbol.match(this.lookahead !)
+				: false) : config.lookaheads.size === 0
 			)
 			if (reductions.length === 1) {
 				const rule: Rule = reductions[0].rule

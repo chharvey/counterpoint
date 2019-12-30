@@ -190,12 +190,11 @@ export class Rule {
 	/** @override */
 	toString(): string {
 		const tokens = (arr: readonly GrammarSymbol[]): string =>
-			arr.map((symbol) =>
-				(symbol instanceof Production) ?
-					symbol.TAGNAME
-				: (isTokenSubclass(symbol)) ?
-					symbol.name.replace(/[A-Z]/g, '_$&').slice('_Token_'.length).toUpperCase()
-				: `"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
+			arr.map((symbol) => (symbol instanceof Production) ?
+				symbol.TAGNAME
+			: (symbol instanceof Terminal) ?
+				symbol.constructor.name.replace(/[A-Z]/g, '_$&').slice('_Terminal_'.length).toUpperCase()
+			: `"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
 			).join(' ')
 		return `${this.production.TAGNAME} --> ${tokens(this.symbols)}`
 	}
@@ -218,7 +217,7 @@ export class Configuration {
 	/**
 	 * The set of terminal symbols that may succeed the symbols in this configuration’s rule.
 	 */
-	readonly lookaheads: ReadonlySet<Terminal>;
+	readonly lookaheads: ReadonlySet<GrammarTerminal>;
 	/**
 	 * Construct a new Configuration object.
 	 * @param  rule       - The rule to track.
@@ -230,7 +229,7 @@ export class Configuration {
 	constructor(
 		readonly rule: Rule,
 		readonly marker: number /* TODO bigint */ = 0,
-		...lookaheads: readonly Terminal[]
+		...lookaheads: readonly GrammarTerminal[]
 	) {
 		if (this.marker > this.rule.symbols.length) throw new Error('Cannot advance past end of rule.')
 		this.lookaheads = new Set(lookaheads)
@@ -262,19 +261,18 @@ export class Configuration {
 		return this === config ||
 			this.rule.equals(config.rule) &&
 			this.marker === config.marker &&
-			(!lookaheads || Util.equalSets<Terminal>(this.lookaheads, config.lookaheads))
+			(!lookaheads || Util.equalSets<GrammarTerminal>(this.lookaheads, config.lookaheads))
 	}
 	/** @override */
 	toString(): string {
 		const tokens = (arr: readonly GrammarSymbol[]): string =>
-			arr.map((symbol) =>
-				((symbol instanceof Production)) ?
-					symbol.TAGNAME
-				: isTokenSubclass(symbol) ?
-					symbol.name.replace(/[A-Z]/g, '_$&').slice('_Token_'.length).toUpperCase()
-				: `"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
+			arr.map((symbol) => (symbol instanceof Production) ?
+				symbol.TAGNAME
+			: (symbol instanceof Terminal) ?
+				symbol.constructor.name.replace(/[A-Z]/g, '_$&').slice('_Terminal_'.length).toUpperCase()
+			: `"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
 			).join(' ')
-		const lookaheads = (set: ReadonlySet<Terminal>): string =>
+		const lookaheads = (set: ReadonlySet<GrammarTerminal>): string =>
 			tokens([...set]).replace(/\s/g, ', ')
 		return `${this.rule.production.TAGNAME} --> ${tokens(this.before)} \u2022 ${tokens(this.after)} {${lookaheads(this.lookaheads)}}`
 	}
