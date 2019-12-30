@@ -1,14 +1,10 @@
 import Util from './Util.class'
 import Token, {
 	TemplatePosition,
-	TokenFilebound,
-	TokenWhitespace,
-	TokenComment,
 	TokenStringLiteral,
 	TokenStringTemplate,
 	TokenNumber,
 	TokenWord,
-	TokenPunctuator,
 } from './Token.class'
 
 
@@ -39,33 +35,6 @@ export default abstract class Terminal {
 }
 
 
-export class TerminalFilebound extends Terminal {
-	static readonly instance: TerminalFilebound = new TerminalFilebound()
-	random(): string {
-		return Util.arrayRandom(TokenFilebound.CHARS)
-	}
-	match(candidate: Token): boolean {
-		return this._match(candidate, TokenFilebound.TAGNAME)
-	}
-}
-export class TerminalWhitespace extends Terminal {
-	static readonly instance: TerminalWhitespace = new TerminalWhitespace()
-	random(): string {
-		return `${Util.randomBool() ? '' : this.random()}${Util.arrayRandom(TokenWhitespace.CHARS)}`
-	}
-	match(candidate: Token): boolean {
-		return this._match(candidate, TokenWhitespace.TAGNAME)
-	}
-}
-export class TerminalComment extends Terminal {
-	static readonly instance: TerminalComment = new TerminalComment()
-	random(): string {
-		throw new Error('not yet supported')
-	}
-	match(candidate: Token): boolean {
-		return candidate.tagname.split('-')[0] === TokenComment.TAGNAME
-	}
-}
 export class TerminalStringLiteral extends Terminal {
 	static readonly instance: TerminalStringLiteral = new TerminalStringLiteral()
 	random(): string {
@@ -90,7 +59,7 @@ export class TerminalStringLiteral extends Terminal {
 		return this._match(candidate, TokenStringLiteral.TAGNAME)
 	}
 }
-export abstract class TerminalStringTemplate extends Terminal {
+abstract class TerminalStringTemplate extends Terminal {
 	random(start: string = TokenStringTemplate.DELIM, end: string = TokenStringTemplate.DELIM): string {
 		const end_delim: boolean = end === TokenStringTemplate.DELIM
 		const followsOpenBracket = (): string => Util.randomBool() ? Util.randomChar('` { \\ \u0003'.split(' ')) : `\\${followsBackslash()}`
@@ -175,16 +144,5 @@ export class TerminalIdentifier extends Terminal {
 	}
 	match(candidate: Token): boolean {
 		return this._match(candidate, TokenWord.TAGNAME)
-	}
-}
-export class TerminalPunctuator extends Terminal {
-	static readonly instance: TerminalPunctuator = new TerminalPunctuator()
-	random(): string {
-		return Util.arrayRandom([
-			...TokenPunctuator.CHARS_1,
-		])
-	}
-	match(candidate: Token): boolean {
-		return this._match(candidate, TokenPunctuator.TAGNAME)
 	}
 }

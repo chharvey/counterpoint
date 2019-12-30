@@ -53,7 +53,10 @@ const build = gulp.series(dist, test)
 async function random() {
 	const Grammar = require('./build/class/Grammar.class.js').default
 	const {
-		ProductionFile,
+		ProductionGoal,
+		ProductionStatement,
+		ProductionDeclarationVariable,
+		ProductionStatementAssignment,
 		ProductionExpression,
 		ProductionExpressionAdditive,
 		ProductionExpressionMultiplicative,
@@ -61,20 +64,23 @@ async function random() {
 		ProductionExpressionUnarySymbol,
 		ProductionExpressionUnit,
 		ProductionStringTemplate,
-		ProductionStringTemplate__0__List,
 		ProductionPrimitiveLiteral,
 	} = require('./build/class/Production.class')
 	const solid_grammar = new Grammar([
-		new ProductionFile(),
-		new ProductionExpression(),
-		new ProductionExpressionAdditive(),
-		new ProductionExpressionMultiplicative(),
-		new ProductionExpressionExponential(),
-		new ProductionExpressionUnarySymbol(),
-		new ProductionExpressionUnit(),
-		new ProductionStringTemplate(),
-		new ProductionStringTemplate__0__List(),
-		new ProductionPrimitiveLiteral(),
+		ProductionGoal.instance,
+		ProductionGoal.__0__List.instance,
+		ProductionStatement.instance,
+		ProductionDeclarationVariable.instance,
+		ProductionStatementAssignment.instance,
+		ProductionExpression.instance,
+		ProductionExpressionAdditive.instance,
+		ProductionExpressionMultiplicative.instance,
+		ProductionExpressionExponential.instance,
+		ProductionExpressionUnarySymbol.instance,
+		ProductionExpressionUnit.instance,
+		ProductionStringTemplate.instance,
+		ProductionStringTemplate.__0__List.instance,
+		ProductionPrimitiveLiteral.instance,
 	])
 	console.log(solid_grammar.rules.map((r) => r.toString()))
 	console.log(solid_grammar.random().join(' ').replace(/\u000d/g, ' '))

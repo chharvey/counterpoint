@@ -1,6 +1,19 @@
 /* LR grammar */
 
-File ::= #x02 Expression? #x03
+Goal ::= #x02 Statement* #x03
+
+
+
+Statement ::=
+	DeclarationVariable |
+	StatementAssignment |
+	Expression ";"
+
+DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";"
+
+StatementAssignment ::= IDENTIFIER "=" Expression ";"
+
+
 
 Expression ::= ExpressionAdditive
 
@@ -13,6 +26,7 @@ ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
 ExpressionUnit ::=
 	PrimitiveLiteral   |
 	StringTemplate     |
+	IDENTIFIER         |
 	"(" Expression ")"
 
 StringTemplate ::=
@@ -29,3 +43,4 @@ STRING_TEMPLATE_HEAD   ::= [./lexical-grammar.ebnf#StringTemplateHead]
 STRING_TEMPLATE_MIDDLE ::= [./lexical-grammar.ebnf#StringTemplateMiddle]
 STRING_TEMPLATE_TAIL   ::= [./lexical-grammar.ebnf#StringTemplateTail]
 NUMBER                 ::= [./lexical-grammar.ebnf#Number]
+IDENTIFIER             ::= [./lexical-grammar.ebnf#Identifier]

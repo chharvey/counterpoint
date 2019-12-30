@@ -6,6 +6,7 @@ import {
 	TerminalStringTemplateMiddle,
 	TerminalStringTemplateTail,
 	TerminalNumber,
+	TerminalIdentifier,
 } from './Terminal.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
 import Util from './Util.class'
@@ -18,6 +19,7 @@ import Util from './Util.class'
  * which can be reduced to the left-hand side nonterminal in a parsing action.
  */
 export default abstract class Production {
+	protected constructor() {}
 	abstract readonly TAGNAME: string;
 	/**
 	 * A set of sequences of parse symbols (terminals and/or nonterminals) in this production.
@@ -38,17 +40,89 @@ export default abstract class Production {
 }
 
 
-export class ProductionFile extends Production {
-	static readonly instance: ProductionFile = new ProductionFile()
-	readonly TAGNAME: string = 'File'
+export class ProductionGoal extends Production {
+	static readonly instance: ProductionGoal = new ProductionGoal()
+	readonly TAGNAME: string = 'Goal'
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[STX,                                ETX],
-			[STX, ProductionExpression.instance, ETX],
+			[STX,                                   ETX],
+			[STX, ProductionGoal.__0__List.instance, ETX],
 		]
 	}
 	random(): string[] {
-		return [STX, ...ProductionExpression.instance.random(), ETX]
+		return [STX, ...ProductionGoal.__0__List.instance.random(), ETX]
+	}
+	static readonly __0__List = class __0__List extends Production {
+		static readonly instance: __0__List = new __0__List()
+		readonly TAGNAME: string = 'Goal__0__List'
+		get sequences(): GrammarSymbol[][] {
+			return [
+				[      ProductionStatement.instance],
+				[this, ProductionStatement.instance],
+			]
+		}
+		random(): string[] {
+			return [
+				...(Util.randomBool() ? [] : this.random()),
+				...ProductionStatement.instance.random(),
+			]
+		}
+	}
+}
+export class ProductionStatement extends Production {
+	static readonly instance: ProductionStatement = new ProductionStatement()
+	readonly TAGNAME: string = 'Statement'
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[ProductionDeclarationVariable.instance],
+			[ProductionStatementAssignment.instance],
+			[ProductionExpression.instance, ';'],
+		]
+	}
+	random(): string[] {
+		const random: number = Math.random()
+		return (
+			random < 0.33 ?  ProductionDeclarationVariable.instance.random() :
+			random < 0.67 ?  ProductionStatementAssignment.instance.random() :
+			[...ProductionExpression.instance.random(), ';']
+		)
+	}
+}
+export class ProductionDeclarationVariable extends Production {
+	static readonly instance: ProductionDeclarationVariable = new ProductionDeclarationVariable()
+	readonly TAGNAME: string = 'DeclarationVariable'
+	get sequences(): GrammarSymbol[][] {
+		return [
+			['let',            TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
+			['let', 'unfixed', TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
+		]
+	}
+	random(): string[] {
+		return [
+			'let',
+			Util.randomBool() ? '' : 'unfixed',
+			TerminalIdentifier.instance.random(),
+			'=',
+			...ProductionExpression.instance.random(),
+			';',
+		]
+	}
+}
+export class ProductionStatementAssignment extends Production {
+	static readonly instance: ProductionStatementAssignment = new ProductionStatementAssignment()
+	readonly TAGNAME: string = 'StatementAssignment'
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
+		]
+	}
+	random(): string[] {
+		return [
+			TerminalIdentifier.instance.random(),
+			'=',
+			...ProductionExpression.instance.random(),
+			';',
+		]
 	}
 }
 export class ProductionExpression extends Production {
@@ -136,14 +210,18 @@ export class ProductionExpressionUnit extends Production {
 		return [
 			[ProductionPrimitiveLiteral.instance],
 			[ProductionStringTemplate  .instance],
+			[TerminalIdentifier        .instance],
 			['(', ProductionExpression.instance, ')'],
 		]
 	}
 	random(): string[] {
 		const random: number = Math.random()
-		return random < 0.333 ? ProductionPrimitiveLiteral.instance.random() :
-		       random < 0.667 ? ProductionStringTemplate  .instance.random() :
+		return (
+			random < 0.25 ?  ProductionPrimitiveLiteral.instance.random()  :
+			random < 0.50 ?  ProductionStringTemplate  .instance.random()  :
+			random < 0.75 ? [TerminalIdentifier        .instance.random()] :
 			['(', ...ProductionExpression.instance.random(), ')']
+		)
 	}
 }
 export class ProductionStringTemplate extends Production {
@@ -152,43 +230,39 @@ export class ProductionStringTemplate extends Production {
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[TerminalStringTemplateFull.instance],
-			[TerminalStringTemplateHead.instance,                                                                            TerminalStringTemplateTail.instance],
-			[TerminalStringTemplateHead.instance, ProductionExpression.instance,                                             TerminalStringTemplateTail.instance],
-			[TerminalStringTemplateHead.instance,                                ProductionStringTemplate__0__List.instance, TerminalStringTemplateTail.instance],
-			[TerminalStringTemplateHead.instance, ProductionExpression.instance, ProductionStringTemplate__0__List.instance, TerminalStringTemplateTail.instance],
+			[TerminalStringTemplateHead.instance,                                                                             TerminalStringTemplateTail.instance],
+			[TerminalStringTemplateHead.instance, ProductionExpression.instance,                                              TerminalStringTemplateTail.instance],
+			[TerminalStringTemplateHead.instance,                                ProductionStringTemplate.__0__List.instance, TerminalStringTemplateTail.instance],
+			[TerminalStringTemplateHead.instance, ProductionExpression.instance, ProductionStringTemplate.__0__List.instance, TerminalStringTemplateTail.instance],
 
 		]
 	}
 	random(): string[] {
-		if (Util.randomBool()) {
-			return [TerminalStringTemplateFull.instance.random()]
-		} else {
+		return Util.randomBool() ? [TerminalStringTemplateFull.instance.random()] : [
+			TerminalStringTemplateHead.instance.random(),
+			...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
+			...(Util.randomBool() ? [] : ProductionStringTemplate.__0__List.instance.random()),
+			TerminalStringTemplateTail.instance.random(),
+		]
+	}
+	static readonly __0__List = class __0__List extends Production {
+		static readonly instance: __0__List = new __0__List()
+		readonly TAGNAME: string = 'StringTemplate__0__List'
+		get sequences(): GrammarSymbol[][] {
 			return [
-				TerminalStringTemplateHead.instance.random(),
-				...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
-				...(Util.randomBool() ? [] : ProductionStringTemplate__0__List.instance.random()),
-				TerminalStringTemplateTail.instance.random(),
+				[      TerminalStringTemplateMiddle.instance                               ],
+				[      TerminalStringTemplateMiddle.instance, ProductionExpression.instance],
+				[this, TerminalStringTemplateMiddle.instance                               ],
+				[this, TerminalStringTemplateMiddle.instance, ProductionExpression.instance],
 			]
 		}
-	}
-}
-export class ProductionStringTemplate__0__List extends Production {
-	static readonly instance: ProductionStringTemplate__0__List = new ProductionStringTemplate__0__List()
-	readonly TAGNAME: string = 'StringTemplate__0__List'
-	get sequences(): GrammarSymbol[][] {
-		return [
-			[                                            TerminalStringTemplateMiddle.instance                               ],
-			[                                            TerminalStringTemplateMiddle.instance, ProductionExpression.instance],
-			[ProductionStringTemplate__0__List.instance, TerminalStringTemplateMiddle.instance                               ],
-			[ProductionStringTemplate__0__List.instance, TerminalStringTemplateMiddle.instance, ProductionExpression.instance],
-		]
-	}
-	random(): string[] {
-		return [
-			...(Util.randomBool() ? [] : ProductionStringTemplate__0__List.instance.random()),
-			TerminalStringTemplateMiddle.instance.random(),
-			...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
-		]
+		random(): string[] {
+			return [
+				...(Util.randomBool() ? [] : this.random()),
+				TerminalStringTemplateMiddle.instance.random(),
+				...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
+			]
+		}
 	}
 }
 export class ProductionPrimitiveLiteral extends Production {

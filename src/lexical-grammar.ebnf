@@ -1,3 +1,18 @@
+Goal ::=
+	FileBound            |
+	Whitespace           |
+	Comment              |
+	StringLiteral        |
+	StringTemplateFull   |
+	StringTemplateHead   |
+	StringTemplateMiddle |
+	StringTemplateTail   |
+	Number               |
+	Word                 |
+	Identifier           |
+	Punctuator
+
+
 FileBound ::=
 	#x02 /* START OF TEXT */ |
 	#x03 /* END OF TEXT   */
