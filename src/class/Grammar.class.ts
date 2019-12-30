@@ -1,8 +1,9 @@
 import Util from './Util.class'
-import Terminal from './Terminal.class'
+import {STX, ETX} from './Scanner.class'
 import Token from './Token.class'
-import Production from './Production.class'
+import Terminal from './Terminal.class'
 import ParseNode from './ParseNode.class'
+import Production from './Production.class'
 
 
 export type GrammarSymbol   = GrammarTerminal|Production
@@ -71,6 +72,36 @@ export default class Grammar {
 		return set
 	}
 	/**
+	 * The **closure** of a configuration set adds new configurations by expanding variables that appear to the right of the marker.
+	 * @see http://www2.lawrence.edu/fast/GREGGJ/CMSC515/parsing/LR_parsing.html
+	 * @param   configurations - the set of configurations to close upon
+	 * @returns                  the closure set
+	 */
+	closure(configurations: ReadonlySet<Configuration>
+		= new Set<Configuration>(this.productions[0].toRules().map((rule) => new Configuration(rule)))
+	): Set<Configuration> {
+		const closure: Set<Configuration> = new Set<Configuration>(configurations)
+		closure.forEach((config) => { // callback will visit any new items added to the set before `.forEach()` returns
+			const expand: GrammarSymbol|null = config.after[0] || null
+			const follow: GrammarSymbol|null = config.after[1] || null
+			if (expand instanceof Production) {
+				expand.toRules().forEach((rule) => {
+					/* equivalent configurations (differ only by lookahead set) */
+					const similar: Configuration|null = [...closure].find((c) => c.rule.equals(rule) && c.marker === 0) || null
+					const new_config: Configuration = new Configuration(rule, 0, ...[
+						...(follow ? this.first(follow) : config.lookaheads),
+						...(similar ? similar.lookaheads : []),
+					])
+					if (![...closure].find((c) => c.equals(new_config))) {
+						closure.add(new_config) // callback of `closure.forEach()` will run on these added items
+						similar && closure.delete(similar)
+					}
+				})
+			}
+		})
+		return closure
+	}
+	/**
 	 * Generate an instance of the language of this Grammar.
 	 * A language instance is a sequence of terminal symbols that can result from repeatedly replacing
 	 * any nonterminal in the sequence with a right-hand side of a production for which
@@ -129,6 +160,15 @@ export class Rule {
 			Util.equalArrays<GrammarSymbol>(this.symbols, rule.symbols)
 	}
 	/**
+	 * Does this rule belong to the given production?
+	 *
+	 * @param   prod - the production to test
+	 * @returns        does the given production contain this rule?
+	 */
+	belongsTo(prod: Production): boolean {
+		return prod.toRules().some((rule) => this.equals(rule))
+	}
+	/**
 	 * Does the given sequence of symbols satisfy this rule?
 	 * @param   candidate - a sequence of objects on the parse stack
 	 * @returns             does the given sequence of symbols satisfy this rule?
@@ -146,5 +186,96 @@ export class Rule {
 				)
 			: false
 		})
+	}
+	/** @override */
+	toString(): string {
+		const tokens = (arr: readonly GrammarSymbol[]): string =>
+			arr.map((symbol) =>
+				(symbol instanceof Production) ?
+					symbol.TAGNAME
+				: (isTokenSubclass(symbol)) ?
+					symbol.name.replace(/[A-Z]/g, '_$&').slice('_Token_'.length).toUpperCase()
+				: `"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
+			).join(' ')
+		return `${this.production.TAGNAME} --> ${tokens(this.symbols)}`
+	}
+}
+
+
+/**
+ * A configuration is a grammar rule augmented with an additional symbol that tracks
+ * our progress in identifying the right hand side.
+ * @see http://www2.lawrence.edu/fast/GREGGJ/CMSC515/parsing/LR_parsing.html
+ */
+export class Configuration {
+	readonly before: readonly GrammarSymbol[] = this.rule.symbols.slice(0, this.marker)
+	readonly after : readonly GrammarSymbol[] = this.rule.symbols.slice(   this.marker)
+	/**
+	 * Is this configuration done?
+	 * That is, is the marker past all of the symbols in the rule?
+	 */
+	readonly done: boolean = this.after.length === 0
+	/**
+	 * The set of terminal symbols that may succeed the symbols in this configuration’s rule.
+	 */
+	readonly lookaheads: ReadonlySet<Terminal>;
+	/**
+	 * Construct a new Configuration object.
+	 * @param  rule       - The rule to track.
+	 * @param  marker     - The index of the marker’s current location.
+	 *                      The items to the left of the marker (indices are < marker index) have been seen,
+	 *                      and the items to the right of the marker (indices are >= marker index) have not yet been seen.
+	 * @param  lookaheads - any lookaheads to add upon construction
+	 */
+	constructor(
+		readonly rule: Rule,
+		readonly marker: number /* TODO bigint */ = 0,
+		...lookaheads: readonly Terminal[]
+	) {
+		if (this.marker > this.rule.symbols.length) throw new Error('Cannot advance past end of rule.')
+		this.lookaheads = new Set(lookaheads)
+	}
+	/**
+	 * Produce a new configuration that represents this configuartion with its marker advanced to the next symbol.
+	 * If a parameter is supplied, advance the marker by that number of symbols.
+	 * @param   step - number of steps to advance the marker; a positive integer
+	 * @returns        a new Configuration with the marker moved forward 1 step
+	 */
+	advance(step: number /* TODO bigint */ = 1): Configuration {
+		return new Configuration(this.rule, this.marker + Math.max(1, Math.floor(step)), ...this.lookaheads)
+	}
+	/**
+	 * Is this configuration “equal to” the argument?
+	 *
+	 * Two configurations are “equal” if they are the same object, or all of the following are true:
+	 * - The rules of both configurations are the same object.
+	 * - The markers of both configurations are equal.
+	 * - The lookahead sets of both configurations are “equal” (they contain the same terminal symbols).
+	 *
+	 * The last criterian may be disabled by providing `false` for the `lookaheads` parameter.
+	 *
+	 * @param   config     - the configuration to compare
+	 * @param   lookaheads - should lookahead sets be compared?
+	 * @returns              is this configuration “equal to” the argument?
+	 */
+	equals(config: Configuration, lookaheads: boolean = true): boolean {
+		return this === config ||
+			this.rule.equals(config.rule) &&
+			this.marker === config.marker &&
+			(!lookaheads || Util.equalSets<Terminal>(this.lookaheads, config.lookaheads))
+	}
+	/** @override */
+	toString(): string {
+		const tokens = (arr: readonly GrammarSymbol[]): string =>
+			arr.map((symbol) =>
+				((symbol instanceof Production)) ?
+					symbol.TAGNAME
+				: isTokenSubclass(symbol) ?
+					symbol.name.replace(/[A-Z]/g, '_$&').slice('_Token_'.length).toUpperCase()
+				: `"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
+			).join(' ')
+		const lookaheads = (set: ReadonlySet<Terminal>): string =>
+			tokens([...set]).replace(/\s/g, ', ')
+		return `${this.rule.production.TAGNAME} --> ${tokens(this.before)} \u2022 ${tokens(this.after)} {${lookaheads(this.lookaheads)}}`
 	}
 }

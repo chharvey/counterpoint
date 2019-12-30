@@ -16,7 +16,8 @@ function dist() {
 }
 
 async function test() {
-	const { Scanner, Lexer, Translator } = require('./')
+	const {Scanner, Lexer, Translator, Parser} = require('./')
+	const {default: Grammar} = require('./build/class/Grammar.class')
 	const input = util.promisify(fs.readFile)('./test/test-v0.2.solid', 'utf8')
 
 	console.log("\n\nHere are the characters returned by the scanner:")
@@ -44,6 +45,27 @@ async function test() {
 		console.log(iterator_result_tokentrans.value.serialize(trans_obj))
 		iterator_result_tokentrans = translator.next()
 	}
+
+	const {
+		ProductionFile,
+		ProductionExpression,
+		ProductionExpressionAdditive,
+		ProductionExpressionMultiplicative,
+		ProductionExpressionExponential,
+		ProductionExpressionUnarySymbol,
+		ProductionExpressionUnit,
+	} = require('./build/class/Production.class')
+	const solid_grammar = new Grammar([
+		new ProductionFile(),
+		new ProductionExpression(),
+		new ProductionExpressionAdditive(),
+		new ProductionExpressionMultiplicative(),
+		new ProductionExpressionExponential(),
+		new ProductionExpressionUnarySymbol(),
+		new ProductionExpressionUnit(),
+	])
+	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
+	fs.writeFileSync('./sample/output.xml', new Parser(solid_grammar).parse(await input).serialize())
 
 	return Promise.resolve(null)
 }
@@ -76,8 +98,8 @@ async function random() {
 		new ProductionStringTemplate__0__List(),
 		new ProductionPrimitiveLiteral(),
 	])
-	console.log(solid_grammar.rules.map((r) => `${r.production.TAGNAME} --> ${r.symbols.map((s) => s.TAGNAME || `"${s}"`).join(' ')}`))
-	console.log(solid_grammar.random().join(' '))
+	console.log(solid_grammar.rules.map((r) => r.toString()))
+	console.log(solid_grammar.random().join(' ').replace(/\u000d/g, ' '))
 	return Promise.resolve(null)
 }
 
@@ -86,5 +108,5 @@ module.exports = {
 	build,
 		dist,
 		test,
-	random
+	random,
 }
