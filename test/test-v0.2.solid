@@ -1,7 +1,7 @@
-500  +  30  \ line comment  *  2
+500  +  30;  \ line comment  *  2
 
 + \o55  +  \q33  "multiline
-comment" *  \x2
+comment" *  \x2;
 
 + 007 +
 
@@ -12,7 +12,7 @@ comment" *  \x2
 +\q123_012_3+
 \o123_456_70
 +\xba_da_55+
-\zzyxwvu_6
+\zzyxwvu_6;
 
 "not lex errors, but parse errors:"
 \\b1_0040_0000
@@ -20,7 +20,7 @@ comment" *  \x2
 \\o123_456_78
 
 \ the following is an empty line comment:
-+123 \
++123; \
 
   \a \ line comment starting with "a"
 \ \b \ line comment starting with "b"
@@ -55,7 +55,7 @@ comment" *  \x2
 
 +\b10 + "" + \z27y + "" + \d301+
 
-\x322 + '' + \z2r4k + '' + \o322
+\x322 + '' + \z2r4k + '' + \o322;
 
 \ an invalid integer:
 \ \d39c
@@ -69,7 +69,7 @@ comment}" *  2
 
 +6  *  4  "{multiline
 that has a "{nestable nested}" multiline
-comment}" *  3
+comment}" *  3;
 
 """
 " abcde
@@ -90,11 +90,11 @@ comment}" *  3
 """
 
 
-\ 5;  +=  '3'
+5; x =+  '3';
 
-\ 5  ''=  3 *  2;
+y  =  3 *  2;
 
-\ 5 = 3 *  ``;
+z = 3 *  ``;
 
 +4 * 'a string literal with an \' escaped apostrophe and \`escaped back-tick (both escaped)'+
 
@@ -135,7 +135,7 @@ with NO collapsed newline`
 `Interpolation works with {{ `{{ 3 * 6 }}` }} too!`
 +`Interpolation works with an empty string {{ '' }}!`+
 `Interpolation with whitespace {{ }}!`
-+`Interpolation with no space {{}}!`+
++`Interpolation with no space {{}}!`;
 
 
 `Interpolation allows {{ `nest{{ 'ed inter' }}polation` }} which is a good thing.` +
@@ -147,7 +147,7 @@ with NO collapsed newline`
 'Here is a string \ that contains a line comment start marker.'
 +'Here is a string "that contains" a multiline comment.'+
 'Here is a string "that contains a comment start marker but no end.'
-+'Here is a string "{that contains a nestable comment start marker but no end.'+
++'Here is a string "{that contains a nestable comment start marker but no end.';
 
 "Here is a multiline
 comment 'that contains' a string."
@@ -164,7 +164,7 @@ that contains 'a string start marker but no end."
 """
 "  a Solidoc comment
 """
-}}!`+
+}}!`;
 
 '
 <html>
@@ -186,11 +186,13 @@ that contains 'a string start marker but no end."
 		hello {{ '{{ 7 + 2 }}' }} world
 	</body>
 </html>
-`
+`;
 
 \ words
-/this /is /a /word
-/_words /_can /_let /_start /_with /_underscores
+this /is /a /word
+/_words /_can  /_start /_with /_underscores
 /_and0 /_can1 /contain2 /numb3rs
 
-/a /word /_can /_unfixed /repeat /_with /the /same /id
+/a /word /_can  /repeat /_with /the /same /id;
+
+let unfixed x = 42;
