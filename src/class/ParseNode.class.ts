@@ -1,6 +1,7 @@
 import Serializable from '../iface/Serializable.iface'
 
 import {STX, ETX} from './Scanner.class'
+import Translator from './Translator.class'
 import Token from './Token.class'
 
 
@@ -39,20 +40,28 @@ export default class ParseNode implements Serializable {
 	/**
 	 * @implements Serializable
 	 */
-	serialize(...attrs: string[]): string {
+	serialize(trans: Translator|null = null): string {
 		const tagname: string = this.tagname
-		const attributes: string = (tagname !== 'FILE') ? ' ' + [
+		const attributes: string = ' ' + [
 			`line="${this.line_index+1}"`,
 			`col="${this.col_index+1}"`,
-			`source="${
-				this.source
-					.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
-					.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
+			`source="${this.source
+				.replace(/\&/g, '&amp;' )
+				.replace(/\</g, '&lt;'  )
+				.replace(/\>/g, '&gt;'  )
+				.replace(/\'/g, '&apos;')
+				.replace(/\"/g, '&quot;')
+				.replace(/\\/g, '&#x5c;')
+				.replace(/\t/g, '&#x09;')
+				.replace(/\n/g, '&#x0a;')
+				.replace(/\r/g, '&#x0d;')
+				.replace(/\u0000/g, '&#x00;')
+				.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
+				.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
 			}"`,
-			...attrs
-		].join(' ').trim() : ''
+		].join(' ').trim()
 		const contents: string = this.children.map((child) =>
-			(typeof child === 'string') ? child : child.serialize()
+			(typeof child === 'string') ? child : child.serialize(trans)
 		).join('')
 		return `<${tagname}${attributes}>${contents}</${tagname}>`
 	}
