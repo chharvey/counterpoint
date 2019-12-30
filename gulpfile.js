@@ -65,7 +65,15 @@ async function test() {
 		new ProductionExpressionUnit(),
 	])
 	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
-	fs.writeFileSync('./sample/output.xml', new Parser(solid_grammar).parse(await input).serialize())
+	const parser = new Parser(solid_grammar)
+	let output = ''
+	try {
+		output = parser.parse(await input)
+	} catch (err) {
+		console.log(parser.viewStack().slice(-1)[0])
+		throw err
+	}
+	fs.writeFileSync('./sample/output.xml', output.serialize(trans_obj))
 
 	return Promise.resolve(null)
 }

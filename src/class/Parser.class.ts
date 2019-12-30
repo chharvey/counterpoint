@@ -32,6 +32,18 @@ export default class Parser {
 	}
 
 	/**
+	 * View this Parser’s stack in a readable format.
+	 * @returns an array containing Token–Configuration pairs represented as strings
+	 */
+	viewStack(): [string, Set<string>][] {
+		const printSet = (s: ReadonlySet<object>): Set<string> => new Set([...s].map((e) => e.toString()))
+		return this.stack.map(([symb, state]) => [
+			symb.serialize(),
+			printSet(state),
+		] as [string, Set<string>])
+	}
+
+	/**
 	 * Shift the parser, moving the lookahead token onto the stack.
 	 * @param   curr_state            - the current configuration state
 	 * @param   translator            - the translator returning tokens for each iteration
