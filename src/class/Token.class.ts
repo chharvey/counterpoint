@@ -531,9 +531,9 @@ export class TokenStringTemplate extends Token {
 		lexer.advance()
 		if (delim_start === TokenStringTemplate.DELIM.length) {
 			positions.add(TemplatePosition.FULL).add(TemplatePosition.HEAD)
-		} else if (delim_start === TokenStringTemplate.DELIM_INTERP_START.length) {
+		} else if (delim_start === TokenStringTemplate.DELIM_INTERP_END.length) {
 			positions.add(TemplatePosition.MIDDLE).add(TemplatePosition.TAIL)
-			buffer.push(lexer.c1 !)
+			buffer.push(lexer.c0 !)
 			lexer.advance()
 		}
 		while (!lexer.isDone) {
