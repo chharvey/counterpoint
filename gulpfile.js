@@ -16,7 +16,8 @@ function dist() {
 }
 
 async function test() {
-	const { Scanner, Lexer, Translator } = require('./')
+	const {Scanner, Lexer, Translator, Parser} = require('./')
+	const {default: Grammar} = require('./build/class/Grammar.class')
 	const input = util.promisify(fs.readFile)('./test/test-v0.1.solid', 'utf8')
 
 	console.log("\n\nHere are the characters returned by the scanner:")
@@ -43,6 +44,27 @@ async function test() {
 		if (iterator_result_tokentrans.value !== null) console.log(iterator_result_tokentrans.value.serialize())
 		iterator_result_tokentrans = translator.next()
 	}
+
+	const {
+		ProductionFile,
+		ProductionExpression,
+		ProductionExpressionAdditive,
+		ProductionExpressionMultiplicative,
+		ProductionExpressionExponential,
+		ProductionExpressionUnarySymbol,
+		ProductionExpressionUnit,
+	} = require('./build/class/Production.class')
+	const solid_grammar = new Grammar([
+		new ProductionFile(),
+		new ProductionExpression(),
+		new ProductionExpressionAdditive(),
+		new ProductionExpressionMultiplicative(),
+		new ProductionExpressionExponential(),
+		new ProductionExpressionUnarySymbol(),
+		new ProductionExpressionUnit(),
+	])
+	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
+	fs.writeFileSync('./sample/output.xml', new Parser(solid_grammar).parse(await input).serialize())
 
 	return Promise.resolve(null)
 }
