@@ -63,6 +63,21 @@ export default class Util {
 	}
 
 	/**
+	 * Are the two sets “equal”?
+	 *
+	 * Two sets are “equal” if they are the same object,
+	 * or if they are subsets of each other (that is, if each set has the same elements as the other).
+	 *
+	 * @param   <T> the types of the sets
+	 * @param   s1 - the first set
+	 * @param   s2 - the second set
+	 * @returns      do the two set have the exact same elements?
+	 */
+	static equalSets<T>(s1: ReadonlySet<T>, s2: ReadonlySet<T>): boolean {
+		return s1 === s2 || s1.size === s2.size && [...s1].every((e1) => s2.has(e1))
+	}
+
+	/**
 	 * The UTF16Encoding of a numeric code point value.
 	 * @see http://ecma-international.org/ecma-262/10.0/#sec-utf16encoding
 	 * @param   codepoint - a positive integer within [0x0, 0x10ffff]

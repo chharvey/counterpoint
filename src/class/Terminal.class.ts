@@ -76,7 +76,7 @@ abstract class TerminalStringTemplate extends Terminal {
 		return `${start}${maybeChars()}${end}`
 	}
 	match(candidate: Token, position: TemplatePosition = TemplatePosition.FULL): boolean {
-		return this._match(candidate, `${TokenStringTemplate.TAGNAME}-${position}`)
+		return this._match(candidate, `${TokenStringTemplate.TAGNAME}-${TemplatePosition[position]}`)
 	}
 }
 export class TerminalStringTemplateFull extends TerminalStringTemplate {
@@ -143,6 +143,6 @@ export class TerminalIdentifier extends Terminal {
 		return returned
 	}
 	match(candidate: Token): boolean {
-		return this._match(candidate, TokenWord.TAGNAME)
+		return candidate instanceof TokenWord && candidate.isIdentifier
 	}
 }
