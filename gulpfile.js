@@ -47,32 +47,44 @@ async function test() {
 	}
 
 	const {
-		ProductionFile,
+		ProductionGoal,
+		ProductionStatement,
+		ProductionDeclarationVariable,
+		ProductionStatementAssignment,
 		ProductionExpression,
 		ProductionExpressionAdditive,
 		ProductionExpressionMultiplicative,
 		ProductionExpressionExponential,
 		ProductionExpressionUnarySymbol,
 		ProductionExpressionUnit,
+		ProductionStringTemplate,
+		ProductionPrimitiveLiteral,
 	} = require('./build/class/Production.class')
 	const solid_grammar = new Grammar([
-		new ProductionFile(),
-		new ProductionExpression(),
-		new ProductionExpressionAdditive(),
-		new ProductionExpressionMultiplicative(),
-		new ProductionExpressionExponential(),
-		new ProductionExpressionUnarySymbol(),
-		new ProductionExpressionUnit(),
+		ProductionGoal.instance,
+		ProductionGoal.__0__List.instance,
+		ProductionStatement.instance,
+		ProductionDeclarationVariable.instance,
+		ProductionStatementAssignment.instance,
+		ProductionExpression.instance,
+		ProductionExpressionAdditive.instance,
+		ProductionExpressionMultiplicative.instance,
+		ProductionExpressionExponential.instance,
+		ProductionExpressionUnarySymbol.instance,
+		ProductionExpressionUnit.instance,
+		ProductionStringTemplate.instance,
+		ProductionStringTemplate.__0__List.instance,
+		ProductionPrimitiveLiteral.instance,
 	])
-	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
 	const parser = new Parser(solid_grammar)
 	let output = ''
 	try {
 		output = parser.parse(await input)
 	} catch (err) {
-		console.log(parser.viewStack().slice(-1)[0])
+		console.log(parser.viewStack())
 		throw err
 	}
+	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
 	fs.writeFileSync('./sample/output.xml', output.serialize(trans_obj))
 
 	return Promise.resolve(null)
