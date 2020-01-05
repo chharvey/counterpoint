@@ -103,6 +103,16 @@ export default class Lexer {
 					this.advance()
 				}
 			} else if (TokenPunctuator.CHARACTERS_1.includes(this.c0)) {
+				if (TokenNumber.PREFIXES.includes(this.c0) && this.c1 && TokenNumber.CHARACTERS.includes(this.c1)) {
+					/* a number */
+					token = new TokenNumber(this.iterator_result_char.value)
+					this.advance()
+					while (!this.iterator_result_char.done && TokenNumber.CHARACTERS.includes(this.c0)) {
+						token.add(this.c0)
+						this.advance()
+					}
+				} else {
+					/* a punctuator*/
 				token = new TokenPunctuator(this.iterator_result_char.value)
 				let first_char: string = this.c0
 				this.advance() // read past the first character
@@ -115,6 +125,7 @@ export default class Lexer {
 						token.add(this.c0)
 						this.advance() // read past the third character
 					}
+				}
 				}
 			} else {
 				throw new LexError01(this.c0, this.iterator_result_char.value.line_index, this.iterator_result_char.value.col_index)

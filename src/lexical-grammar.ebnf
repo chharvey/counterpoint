@@ -34,7 +34,7 @@ Whitespace ::= Whitespace? (
 #xFEFF	ZERO WIDTH NO-BREAK SPACE
 */
 
-Number ::= IntegerLiteral
+Number ::= ("+" | "-")? IntegerLiteral
 
 IntegerLiteral ::= DigitSequenceDec
 
