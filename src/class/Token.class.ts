@@ -276,12 +276,6 @@ export class TokenStringLiteral extends Token {
 	 * 	is 0x75 followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
 	 * SVL(StringLiteralChars ::= "\u" [^'{#x03'] StringLiteralChars)
 	 * 	is 0x75 followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVL(StringLiteralChars)
-	 * SVL(StringLiteralChars ::= "\" #x0D)
-	 * 	is 0x0D
-	 * SVL(StringLiteralChars ::= "\" #x0D [^'#x0A#x03])
-	 * 	is 0x0D followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVL(StringLiteralChars ::= "\" #x0D [^'#x0A#x03] StringLiteralChars)
-	 * 	is 0x0D followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVL(StringLiteralChars)
 	 * SVL(StringLiteralEscape ::= EscapeChar)
 	 * 	is SVL(EscapeChar)
 	 * SVL(StringLiteralEscape ::= EscapeCode)
@@ -304,8 +298,6 @@ export class TokenStringLiteral extends Token {
 	 * SVL(EscapeCode ::= "u{" DigitSequenceHex "}")
 	 * 	is {@link Util.utf16Encoding|UTF16Encoding}({@link TokenNumber.mv|MV}(DigitSequenceHex))
 	 * SVL(LineContinuation ::= #x0A)
-	 * 	is 0x20
-	 * SVL(LineContinuation ::= #x0D #x0A)
 	 * 	is 0x20
 	 * SVL(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03])
 	 * 	is {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
@@ -335,8 +327,6 @@ export class TokenStringLiteral extends Token {
 					...TokenStringLiteral.svl(text.slice(sequence[0].length)),
 				]
 			} else if ('\n' === text[1]) { // a line continuation (LF)
-				return [0x20, ...TokenStringLiteral.svl(text.slice(2))]
-			} else if ('\r\n' === text[1] + text[2]) { // a line continuation (CRLF)
 				return [0x20, ...TokenStringLiteral.svl(text.slice(2))]
 			} else { // a backslash escapes the following character
 				return [
