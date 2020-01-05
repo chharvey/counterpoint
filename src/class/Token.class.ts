@@ -308,7 +308,8 @@ export class TokenStringLiteral extends Token {
 	private static svl(text: string): number[] {
 		if (text.length === 0) return []
 		if ('\\' === text[0]) { // possible escape or line continuation
-			if (TokenStringLiteral.ESCAPES.includes(text[1])) { // an escaped character literal
+			if (TokenStringLiteral.ESCAPES.includes(text[1])) {
+				/* an escaped character literal */
 				return [
 					new Map<string, number>([
 						[TokenStringLiteral.DELIM, TokenStringLiteral.DELIM.codePointAt(0) !],
@@ -320,15 +321,21 @@ export class TokenStringLiteral extends Token {
 					]).get(text[1]) !,
 					...TokenStringLiteral.svl(text.slice(2)),
 				]
-			} else if ('u{' === text[1] + text[2]) { // an escape sequence
+
+			} else if ('u{' === text[1] + text[2]) {
+				/* an escape sequence */
 				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
 				return [
 					...Util.utf16Encoding(TokenNumber.mv(sequence[0].slice(3, -1) || '0', 16)),
 					...TokenStringLiteral.svl(text.slice(sequence[0].length)),
 				]
-			} else if ('\n' === text[1]) { // a line continuation (LF)
+
+			} else if ('\n' === text[1]) {
+				/* a line continuation (LF) */
 				return [0x20, ...TokenStringLiteral.svl(text.slice(2))]
-			} else { // a backslash escapes the following character
+
+			} else {
+				/* a backslash escapes the following character */
 				return [
 					...Util.utf16Encoding(text.codePointAt(1) !),
 					...TokenStringLiteral.svl(text.slice(2)),
@@ -497,7 +504,8 @@ export class TokenStringTemplate extends Token {
 	 */
 	private static svt(text: string): number[] {
 		if (text.length === 0) return []
-		if ('\\' + TokenStringTemplate.DELIM === text[0] + text[1]) { // an escaped template delimiter
+		if ('\\' + TokenStringTemplate.DELIM === text[0] + text[1]) {
+			/* an escaped template delimiter */
 			return [
 				TokenStringTemplate.DELIM.codePointAt(0) !,
 				...TokenStringTemplate.svt(text.slice(2)),
