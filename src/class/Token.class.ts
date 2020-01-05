@@ -125,7 +125,7 @@ export class TokenFilebound extends Token {
 }
 export class TokenWhitespace extends Token {
 	static readonly TAGNAME: string = 'WHITESPACE'
-	static readonly CHARS: readonly string[] = [' ', '\t', '\n', '\r']
+	static readonly CHARS: readonly string[] = [' ', '\t', '\n']
 	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
@@ -276,12 +276,6 @@ export class TokenStringLiteral extends Token {
 	 * 	is 0x75 followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
 	 * SVL(StringLiteralChars ::= "\u" [^'{#x03'] StringLiteralChars)
 	 * 	is 0x75 followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVL(StringLiteralChars)
-	 * SVL(StringLiteralChars ::= "\" #x0D)
-	 * 	is 0x0D
-	 * SVL(StringLiteralChars ::= "\" #x0D [^'#x0A#x03])
-	 * 	is 0x0D followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVL(StringLiteralChars ::= "\" #x0D [^'#x0A#x03] StringLiteralChars)
-	 * 	is 0x0D followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVL(StringLiteralChars)
 	 * SVL(StringLiteralEscape ::= EscapeChar)
 	 * 	is SVL(EscapeChar)
 	 * SVL(StringLiteralEscape ::= EscapeCode)
@@ -305,8 +299,6 @@ export class TokenStringLiteral extends Token {
 	 * 	is {@link Util.utf16Encoding|UTF16Encoding}({@link TokenNumber.mv|MV}(DigitSequenceHex))
 	 * SVL(LineContinuation ::= #x0A)
 	 * 	is 0x20
-	 * SVL(LineContinuation ::= #x0D #x0A)
-	 * 	is 0x20
 	 * SVL(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03])
 	 * 	is {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
 	 * ```
@@ -316,7 +308,8 @@ export class TokenStringLiteral extends Token {
 	private static svl(text: string): number[] {
 		if (text.length === 0) return []
 		if ('\\' === text[0]) { // possible escape or line continuation
-			if (TokenStringLiteral.ESCAPES.includes(text[1])) { // an escaped character literal
+			if (TokenStringLiteral.ESCAPES.includes(text[1])) {
+				/* an escaped character literal */
 				return [
 					new Map<string, number>([
 						[TokenStringLiteral.DELIM, TokenStringLiteral.DELIM.codePointAt(0) !],
@@ -328,17 +321,21 @@ export class TokenStringLiteral extends Token {
 					]).get(text[1]) !,
 					...TokenStringLiteral.svl(text.slice(2)),
 				]
-			} else if ('u{' === text[1] + text[2]) { // an escape sequence
+
+			} else if ('u{' === text[1] + text[2]) {
+				/* an escape sequence */
 				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
 				return [
 					...Util.utf16Encoding(TokenNumber.mv(sequence[0].slice(3, -1) || '0', 16)),
 					...TokenStringLiteral.svl(text.slice(sequence[0].length)),
 				]
-			} else if ('\n' === text[1]) { // a line continuation (LF)
+
+			} else if ('\n' === text[1]) {
+				/* a line continuation (LF) */
 				return [0x20, ...TokenStringLiteral.svl(text.slice(2))]
-			} else if ('\r\n' === text[1] + text[2]) { // a line continuation (CRLF)
-				return [0x20, ...TokenStringLiteral.svl(text.slice(2))]
-			} else { // a backslash escapes the following character
+
+			} else {
+				/* a backslash escapes the following character */
 				return [
 					...Util.utf16Encoding(text.codePointAt(1) !),
 					...TokenStringLiteral.svl(text.slice(2)),
@@ -401,11 +398,6 @@ export class TokenStringLiteral extends Token {
 					/* a line continuation (LF) */
 					buffer.push(lexer.c0, lexer.c1 !)
 					lexer.advance(2)
-
-				} else if (Char.eq('\r\n', lexer.c1, lexer.c2)) {
-					/* a line continuation (CRLF) */
-					buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-					lexer.advance(3)
 
 				} else {
 					/* a backslash escapes the following character */
@@ -512,7 +504,8 @@ export class TokenStringTemplate extends Token {
 	 */
 	private static svt(text: string): number[] {
 		if (text.length === 0) return []
-		if ('\\' + TokenStringTemplate.DELIM === text[0] + text[1]) { // an escaped template delimiter
+		if ('\\' + TokenStringTemplate.DELIM === text[0] + text[1]) {
+			/* an escaped template delimiter */
 			return [
 				TokenStringTemplate.DELIM.codePointAt(0) !,
 				...TokenStringTemplate.svt(text.slice(2)),
