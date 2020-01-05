@@ -121,7 +121,7 @@ export default class Scanner {
 	constructor(
 		public readonly source_text: string,
 	) {
-		this.source_text = STX + '\n' + this.source_text + ETX
+		this.source_text = `${STX}\n${this.source_text.replace(/\r\n|\r/g, '\n')}${ETX}`
 	}
 
 	/**

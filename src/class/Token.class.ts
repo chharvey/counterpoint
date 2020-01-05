@@ -125,7 +125,7 @@ export class TokenFilebound extends Token {
 }
 export class TokenWhitespace extends Token {
 	static readonly TAGNAME: string = 'WHITESPACE'
-	static readonly CHARS: readonly string[] = [' ', '\t', '\n', '\r']
+	static readonly CHARS: readonly string[] = [' ', '\t', '\n']
 	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
