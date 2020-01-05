@@ -72,15 +72,14 @@ StringLiteral ::= "'" StringLiteralChars? "'"
 StringLiteralChars ::=
 	[^'\#x03]               StringLiteralChars?   |
 	"\" StringLiteralEscape StringLiteralChars?   |
-	"\u"     ([^'{#x03]     StringLiteralChars?)? |
-	"\" #x0D ([^'#x0A#x03]  StringLiteralChars?)?
+	"\u"     ([^'{#x03]     StringLiteralChars?)?
 
 StringLiteralEscape ::= EscapeChar | EscapeCode | LineContinuation | NonEscapeChar
 
 EscapeChar       ::= "'" | "\" | "s" | "t" | "n" | "r"
 EscapeCode       ::= "u{" DigitSequenceHex? "}"
-LineContinuation ::= #x0D? #x0A
-NonEscapeChar    ::= [^'\stnru#x0D#x0A#x03]
+LineContinuation ::= #x0A
+NonEscapeChar    ::= [^'\stnru#x0A#x03]
 
 StringTemplateFull   ::= "`"  StringTemplateCharsEndDelim ? "`"
 StringTemplateHead   ::= "`"  StringTemplateCharsEndInterp? "{{"

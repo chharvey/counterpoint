@@ -402,11 +402,6 @@ export class TokenStringLiteral extends Token {
 					buffer.push(lexer.c0, lexer.c1 !)
 					lexer.advance(2)
 
-				} else if (Char.eq('\r\n', lexer.c1, lexer.c2)) {
-					/* a line continuation (CRLF) */
-					buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-					lexer.advance(3)
-
 				} else {
 					/* a backslash escapes the following character */
 					buffer.push(lexer.c0)
