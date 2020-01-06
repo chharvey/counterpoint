@@ -98,7 +98,7 @@ StringTemplateCharsEndInterp ::=
 
 
 
-Number ::= IntegerLiteral
+Number ::= ("+" | "-")? IntegerLiteral
 
 IntegerLiteral ::=
 	"\b"  DigitSequenceBin |

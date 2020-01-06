@@ -594,9 +594,19 @@ export class TokenNumber extends Token {
 		[16, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ')],
 		[36, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
 	])
+	static readonly PREFIXES: readonly string[] = '+ -'.split(' ')
 	/**
 	 * Compute the mathematical value of a `TokenNumber` token.
 	 * ```
+	 * MV(Number ::= IntegerLiteral)
+	 * 	is MV(IntegerLiteral)
+	 * MV(Number ::= "+" IntegerLiteral)
+	 * 	is MV(IntegerLiteral)
+	 * MV(Number ::= "-" IntegerLiteral)
+	 * 	is -1 * MV(IntegerLiteral)
+	 * MV(IntegerLiteral ::= DigitSequenceDec)
+	 * 	is MV(DigitSequenceDec)
+	 *
 	 * MV(DigitSequenceBin ::= [0-1])
 	 * 	is MV([0-1])
 	 * MV(DigitSequenceBin ::= DigitSequenceBin "_"? [0-1])
@@ -712,7 +722,14 @@ export class TokenNumber extends Token {
 		this.radix = r
 	}
 	cook(_trans: Translator): number {
-		return TokenNumber.mv(this.source[0] === '\\' ? this.source.slice(2) : this.source, this.radix)
+		let text = this.source
+		const multiplier = new Map<string, number>([
+			['+',  1],
+			['-', -1],
+		]).get(text[0]) || null
+		if (multiplier !== null) text = text.slice(1) // cut off prefix, if any
+		if (text[0]    === '\\') text = text.slice(2) // cut off radix , if any
+		return (multiplier || 1) * TokenNumber.mv(text, this.radix)
 	}
 }
 export class TokenWord extends Token {
