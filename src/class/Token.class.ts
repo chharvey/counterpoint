@@ -594,9 +594,30 @@ export class TokenNumber extends Token {
 		[16, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ')],
 		[36, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
 	])
+	static readonly PREFIXES: readonly string[] = '+ -'.split(' ')
 	/**
 	 * Compute the mathematical value of a `TokenNumber` token.
 	 * ```
+	 * MV(Number ::= IntegerLiteral)
+	 * 	is MV(IntegerLiteral)
+	 * MV(Number ::= "+" IntegerLiteral)
+	 * 	is MV(IntegerLiteral)
+	 * MV(Number ::= "-" IntegerLiteral)
+	 * 	is -1 * MV(IntegerLiteral)
+	 *
+	 * MV(IntegerLiteral ::= "\b"  DigitSequenceBin)
+	 * 	is MV(DigitSequenceBin)
+	 * MV(IntegerLiteral ::= "\q"  DigitSequenceQua)
+	 * 	is MV(DigitSequenceQua)
+	 * MV(IntegerLiteral ::= "\o"  DigitSequenceOct)
+	 * 	is MV(DigitSequenceOct)
+	 * MV(IntegerLiteral ::= "\d"? DigitSequenceDec)
+	 * 	is MV(DigitSequenceDec)
+	 * MV(IntegerLiteral ::= "\x"  DigitSequenceHex)
+	 * 	is MV(DigitSequenceHex)
+	 * MV(IntegerLiteral ::= "\z"  DigitSequenceHTD)
+	 * 	is MV(DigitSequenceHTD)
+	 *
 	 * MV(DigitSequenceBin ::= [0-1])
 	 * 	is MV([0-1])
 	 * MV(DigitSequenceBin ::= DigitSequenceBin "_"? [0-1])
@@ -675,16 +696,20 @@ export class TokenNumber extends Token {
 		if (text.length === 0) throw new Error('Cannot compute mathematical value of empty string.')
 		if (text.length === 1) {
 			const digitvalue: number = parseInt(text, radix)
-			if (Number.isNaN(digitvalue)) throw new Error('Invalid number format.')
+			if (Number.isNaN(digitvalue)) throw new Error(`Invalid number format: \`${text}\``)
 			return digitvalue
 		}
 		return radix * TokenNumber.mv(text.slice(0, -1), radix) + TokenNumber.mv(text[text.length-1], radix)
 	}
 	private readonly radix: number;
-	constructor (lexer: Lexer, radix: number|null = null) {
+	constructor (lexer: Lexer, has_prefix: boolean, radix: number|null = null) {
 		const r: number = radix || TokenNumber.RADIX_DEFAULT // do not use RADIX_DEFAULT as the default parameter because of the if-else below
 		const digits: readonly string[] = TokenNumber.DIGITS.get(r) !
 		const buffer: Char[] = []
+		if (has_prefix) { // prefixed with leading "+" or "-"
+			buffer.push(lexer.c0)
+			lexer.advance()
+		}
 		if (typeof radix === 'number') { // an explicit base
 			if (!Char.inc(digits, lexer.c2)) {
 				throw new LexError03(lexer.c0.source + lexer.c1 !.source, lexer.c0.line_index, lexer.c0.col_index)
@@ -712,7 +737,14 @@ export class TokenNumber extends Token {
 		this.radix = r
 	}
 	cook(_trans: Translator): number {
-		return TokenNumber.mv(this.source[0] === '\\' ? this.source.slice(2) : this.source, this.radix)
+		let text = this.source
+		const multiplier = new Map<string, number>([
+			['+',  1],
+			['-', -1],
+		]).get(text[0]) || null
+		if (multiplier !== null) text = text.slice(1) // cut off prefix, if any
+		if (text[0]    === '\\') text = text.slice(2) // cut off radix , if any
+		return (multiplier || 1) * TokenNumber.mv(text, this.radix)
 	}
 }
 export class TokenWord extends Token {

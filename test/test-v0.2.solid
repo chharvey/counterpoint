@@ -7,11 +7,11 @@ comment" *  \x2;
 
 "numeric separators"
 100_000_000
-+\b1_0000_0000+
++ \b1_0000_0000+
 \d123_456_789
-+\q123_012_3+
++ +\q123_012_3+
 \o123_456_70
-+\xba_da_55+
++ -\xba_da_55+
 \zzyxwvu_6;
 
 "not lex errors, but parse errors:"
@@ -67,7 +67,7 @@ comment" *  \x2;
 that has a "nested" multiline
 comment}" *  2
 
-+6  *  4  "{multiline
+^6  *  4  "{multiline
 that has a "{nestable nested}" multiline
 comment}" *  3;
 
