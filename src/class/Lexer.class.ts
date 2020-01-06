@@ -96,7 +96,7 @@ export default class Lexer {
 			} else if (Char.eq('\\', this._c0)) {
 				/* we found a line comment or an integer literal with a radix */
 				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
-					token = new TokenNumber(this, TokenNumber.BASES.get(this._c1 !.source) !)
+					token = new TokenNumber(this, false, TokenNumber.BASES.get(this._c1 !.source) !)
 				} else {
 					token = new TokenCommentLine(this)
 				}
@@ -122,7 +122,7 @@ export default class Lexer {
 				token = new TokenStringTemplate(this, TokenStringTemplate.DELIM_INTERP_END.length)
 
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
-				token = new TokenNumber(this)
+				token = new TokenNumber(this, false)
 
 			} else if (TokenWord.CHAR_START.test(this._c0.source)) {
 				token = new TokenWord(this)
@@ -137,10 +137,10 @@ export default class Lexer {
 				if (Char.inc(TokenNumber.PREFIXES, this._c0)) {
 					if (Char.eq('\\', this._c1) && Char.inc([...TokenNumber.BASES.keys()], this._c2)) {
 						/* an integer literal with a radix */
-						token = new TokenNumber(this, TokenNumber.BASES.get(this._c2 !.source) !)
+						token = new TokenNumber(this, true, TokenNumber.BASES.get(this._c2 !.source) !)
 					} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c1)) {
 						/* a number literal without a radix */
-						token = new TokenNumber(this)
+						token = new TokenNumber(this, true)
 					} else {
 						/* a punctuator "+" or "-" */
 						token = new TokenPunctuator(this)
