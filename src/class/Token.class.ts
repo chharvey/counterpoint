@@ -133,6 +133,7 @@ export class TokenString extends Token {
 export class TokenNumber extends Token {
 	static readonly TAGNAME: string = 'NUMBER'
 	static readonly CHARACTERS: readonly string[] = '0 1 2 3 4 5 6 7 8 9'.split(' ')
+	static readonly PREFIXES: readonly string[] = '+ -'.split(' ')
 	static random(): string {
 		const digitSequenceDec = (): string =>
 			(Util.randomBool() ? '' : digitSequenceDec()) + Util.arrayRandom(TokenNumber.CHARACTERS)

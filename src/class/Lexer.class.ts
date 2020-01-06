@@ -103,17 +103,28 @@ export default class Lexer {
 					this.advance()
 				}
 			} else if (TokenPunctuator.CHARACTERS_1.includes(this.c0)) {
-				token = new TokenPunctuator(this.iterator_result_char.value)
-				let first_char: string = this.c0
-				this.advance() // read past the first character
-				// TODO clean this up when we get to multi-char punctuators
-				if (TokenPunctuator.CHARACTERS_2.includes(first_char + this.c0)) {
-					token.add(this.c0)
-					let second_char: string = this.c0
-					this.advance() // read past the second character
-					if (TokenPunctuator.CHARACTERS_3.includes(first_char + second_char + this.c0)) {
+				if (TokenNumber.PREFIXES.includes(this.c0) && this.c1 && TokenNumber.CHARACTERS.includes(this.c1)) {
+					/* a number */
+					token = new TokenNumber(this.iterator_result_char.value)
+					this.advance()
+					while (!this.iterator_result_char.done && TokenNumber.CHARACTERS.includes(this.c0)) {
 						token.add(this.c0)
-						this.advance() // read past the third character
+						this.advance()
+					}
+				} else {
+					/* a punctuator*/
+					token = new TokenPunctuator(this.iterator_result_char.value)
+					let first_char: string = this.c0
+					this.advance() // read past the first character
+					// TODO clean this up when we get to multi-char punctuators
+					if (TokenPunctuator.CHARACTERS_2.includes(first_char + this.c0)) {
+						token.add(this.c0)
+						let second_char: string = this.c0
+						this.advance() // read past the second character
+						if (TokenPunctuator.CHARACTERS_3.includes(first_char + second_char + this.c0)) {
+							token.add(this.c0)
+							this.advance() // read past the third character
+						}
 					}
 				}
 			} else {

@@ -64,6 +64,14 @@ export default class Translator {
 				/**
 				 * Compute the mathematical value of a `TokenNumber` token.
 				 * ```
+				 * MV(Number ::= IntegerLiteral)
+				 * 	is MV(IntegerLiteral)
+				 * MV(Number ::= "+" IntegerLiteral)
+				 * 	is MV(IntegerLiteral)
+				 * MV(Number ::= "-" IntegerLiteral)
+				 * 	is -1 * MV(IntegerLiteral)
+				 * MV(IntegerLiteral ::= DigitSequenceDec)
+				 * 	is MV(DigitSequenceDec)
 				 * MV(DigitSequenceDec ::= DigitSequenceDec [0-9])
 				 * 	is 10 * MV(DigitSequenceDec) + MV([0-9])
 				 * MV(DigitSequenceDec ::= 0) is 0
@@ -82,8 +90,15 @@ export default class Translator {
 				 */
 				const mv_dec = (cargo: string): number => { // base 10 // TODO let `base` be an instance field of `TokenNumber`
 					if (cargo.length === 0) throw new Error('Cannot compute mathematical value of empty string.')
-					return (cargo.length === 1) ? parseInt(cargo)
-						: 10 * mv_dec(cargo.slice(0, -1)) + mv_dec(cargo[cargo.length-1])
+					return (cargo.length === 1) ?
+						parseInt(cargo)
+					: (TokenNumber.PREFIXES.includes(cargo[0])) ?
+						new Map<string, number>([
+							['+',  1],
+							['-', -1],
+						]).get(cargo[0]) ! * mv_dec(cargo.slice(1))
+					:
+						10 * mv_dec(cargo.slice(0, -1)) + mv_dec(cargo[cargo.length-1])
 				}
 				this.t0.value = mv_dec(this.t0.cargo)
 				yield this.t0
