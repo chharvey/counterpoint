@@ -30,17 +30,17 @@ ExpressionUnit ::=
 	"(" Expression ")"
 
 StringTemplate ::=
-	STRING_TEMPLATE_FULL |
-	STRING_TEMPLATE_HEAD Expression? (STRING_TEMPLATE_MIDDLE Expression?)* STRING_TEMPLATE_TAIL
+	TEMPLATE_LITERAL_FULL |
+	TEMPLATE_LITERAL_HEAD Expression? (TEMPLATE_LITERAL_MIDDLE Expression?)* TEMPLATE_LITERAL_TAIL
 
 PrimitiveLiteral ::=
 	NUMBER |
 	STRING
 
-STRING                 ::= [./lexical-grammar.ebnf#String]
-STRING_TEMPLATE_FULL   ::= [./lexical-grammar.ebnf#StringTemplateFull]
-STRING_TEMPLATE_HEAD   ::= [./lexical-grammar.ebnf#StringTemplateHead]
-STRING_TEMPLATE_MIDDLE ::= [./lexical-grammar.ebnf#StringTemplateMiddle]
-STRING_TEMPLATE_TAIL   ::= [./lexical-grammar.ebnf#StringTemplateTail]
-NUMBER                 ::= [./lexical-grammar.ebnf#Number]
-IDENTIFIER             ::= [./lexical-grammar.ebnf#Identifier]
+STRING          ::= [./lexical-grammar.ebnf#String]
+TEMPLATE_FULL   ::= [./lexical-grammar.ebnf#TemplateFull]
+TEMPLATE_HEAD   ::= [./lexical-grammar.ebnf#TemplateHead]
+TEMPLATE_MIDDLE ::= [./lexical-grammar.ebnf#TempalteMiddle]
+TEMPLATE_TAIL   ::= [./lexical-grammar.ebnf#TempalteTail]
+NUMBER          ::= [./lexical-grammar.ebnf#Number]
+IDENTIFIER      ::= [./lexical-grammar.ebnf#Identifier]

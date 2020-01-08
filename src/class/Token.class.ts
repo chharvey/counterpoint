@@ -420,99 +420,99 @@ export class TokenString extends Token {
 		))
 	}
 }
-export class TokenStringTemplate extends Token {
-	static readonly TAGNAME: string = 'STRING-TEMPLATE'
+export class TokenTemplate extends Token {
+	static readonly TAGNAME: string = 'TEMPLATE'
 	static readonly DELIM              : '`'  = '`'
 	static readonly DELIM_INTERP_START : '{{' = '{{'
 	static readonly DELIM_INTERP_END   : '}}' = '}}'
 	/**
-	 * Compute the string template value of a `TokenStringTemplate` token
+	 * Compute the template value of a `TokenTemplate` token
 	 * or any segment of such token.
-	 * The string template value is a sequence of Unicode code points.
+	 * The template value is a sequence of Unicode code points.
 	 * ```
-	 * SVT(StringTemplateFull ::= "`" "`")
+	 * TV(TemplateFull ::= "`" "`")
 	 * 	is the empty array
-	 * SVT(StringTemplateFull ::= "`" StringTemplateCharsEndDelim "`")
-	 * 	is SVT(StringTemplateCharsEndDelim)
-	 * SVT(StringTemplateHead ::= "`" "{{")
+	 * TV(TemplateFull ::= "`" TemplateCharsEndDelim "`")
+	 * 	is TV(TemplateCharsEndDelim)
+	 * TV(TemplateHead ::= "`" "{{")
 	 * 	is the empty array
-	 * SVT(StringTemplateHead ::= "`" StringTemplateCharsEndInterp "{{")
-	 * 	is SVT(StringTemplateCharsEndInterp)
-	 * SVT(StringTempalteMiddle ::= "}}" "{{")
+	 * TV(TemplateHead ::= "`" TemplateCharsEndInterp "{{")
+	 * 	is TV(TemplateCharsEndInterp)
+	 * TV(TemplateMiddle ::= "}}" "{{")
 	 * 	is the empty array
-	 * SVT(StringTempalteMiddle ::= "}}" StringTemplateCharsEndInterp "{{")
-	 * 	is SVT(StringTemplateCharsEndInterp)
-	 * SVT(StringTempalteTail ::= "}}" "`")
+	 * TV(TemplateMiddle ::= "}}" TemplateCharsEndInterp "{{")
+	 * 	is TV(TemplateCharsEndInterp)
+	 * TV(TemplateTail ::= "}}" "`")
 	 * 	is the empty array
-	 * SVT(StringTempalteTail ::= "}}" StringTemplateCharsEndDelim "`")
-	 * 	is SVT(StringTemplateCharsEndDelim)
-	 * SVT(StringTemplateCharsEndDelim ::= [^`{\#x03])
+	 * TV(TemplateTail ::= "}}" TemplateCharsEndDelim "`")
+	 * 	is TV(TemplateCharsEndDelim)
+	 * TV(TemplateCharsEndDelim ::= [^`{\#x03])
 	 * 	is {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVT(StringTemplateCharsEndDelim ::= [^`{\#x03] StringTemplateCharsEndDelim)
-	 * 	is {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndDelim)
-	 * SVT(StringTemplateCharsEndDelim ::= "{"
+	 * TV(TemplateCharsEndDelim ::= [^`{\#x03] TemplateCharsEndDelim)
+	 * 	is {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by TV(TemplateCharsEndDelim)
+	 * TV(TemplateCharsEndDelim ::= "{"
 	 * 	is 0x7b
-	 * SVT(StringTemplateCharsEndDelim ::= "{" [^`{\#x03])
+	 * TV(TemplateCharsEndDelim ::= "{" [^`{\#x03])
 	 * 	is 0x7b followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVT(StringTemplateCharsEndDelim ::= "{" [^`{\#x03] StringTemplateCharsEndDelim)
-	 * 	is 0x7b followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndDelim)
-	 * SVT(StringTemplateCharsEndDelim ::= "{" "\" [^`#x03])
+	 * TV(TemplateCharsEndDelim ::= "{" [^`{\#x03] TemplateCharsEndDelim)
+	 * 	is 0x7b followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by TV(TemplateCharsEndDelim)
+	 * TV(TemplateCharsEndDelim ::= "{" "\" [^`#x03])
 	 * 	is 0x7b followed by 0x5c followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVT(StringTemplateCharsEndDelim ::= "{" "\" [^`#x03] StringTemplateCharsEndDelim)
-	 * 	is 0x7b followed by 0x5c followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndDelim)
-	 * SVT(StringTemplateCharsEndDelim ::= "{" "\" "`")
+	 * TV(TemplateCharsEndDelim ::= "{" "\" [^`#x03] TemplateCharsEndDelim)
+	 * 	is 0x7b followed by 0x5c followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by TV(TemplateCharsEndDelim)
+	 * TV(TemplateCharsEndDelim ::= "{" "\" "`")
 	 * 	is 0x7b followed by 0x60
-	 * SVT(StringTemplateCharsEndDelim ::= "{" "\" "`" StringTemplateCharsEndDelim)
-	 * 	is 0x7b followed by 0x60 followed by SVT(StringTemplateCharsEndDelim)
-	 * SVT(StringTemplateCharsEndDelim ::= "\" [^`#x03])
+	 * TV(TemplateCharsEndDelim ::= "{" "\" "`" TemplateCharsEndDelim)
+	 * 	is 0x7b followed by 0x60 followed by TV(TemplateCharsEndDelim)
+	 * TV(TemplateCharsEndDelim ::= "\" [^`#x03])
 	 * 	is 0x5c followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVT(StringTemplateCharsEndDelim ::= "\" [^`#x03] StringTemplateCharsEndDelim)
-	 * 	is 0x5c followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndDelim)
-	 * SVT(StringTemplateCharsEndDelim ::= "\" "`")
+	 * TV(TemplateCharsEndDelim ::= "\" [^`#x03] TemplateCharsEndDelim)
+	 * 	is 0x5c followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by TV(TemplateCharsEndDelim)
+	 * TV(TemplateCharsEndDelim ::= "\" "`")
 	 * 	is 0x60
-	 * SVT(StringTemplateCharsEndDelim ::= "\" "`" StringTemplateCharsEndDelim)
-	 * 	is 0x60 followed by SVT(StringTemplateCharsEndDelim)
-	 * SVT(StringTemplateCharsEndInterp ::= [^`{\#x03])
+	 * TV(TemplateCharsEndDelim ::= "\" "`" TemplateCharsEndDelim)
+	 * 	is 0x60 followed by TV(TemplateCharsEndDelim)
+	 * TV(TemplateCharsEndInterp ::= [^`{\#x03])
 	 * 	is {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVT(StringTemplateCharsEndInterp ::= [^`{\#x03] StringTemplateCharsEndInterp)
-	 * 	is {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndInterp)
-	 * SVT(StringTemplateCharsEndInterp ::= "{" [^`{\#x03])
+	 * TV(TemplateCharsEndInterp ::= [^`{\#x03] TemplateCharsEndInterp)
+	 * 	is {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by TV(TemplateCharsEndInterp)
+	 * TV(TemplateCharsEndInterp ::= "{" [^`{\#x03])
 	 * 	is 0x7b followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVT(StringTemplateCharsEndInterp ::= "{" [^`{\#x03] StringTemplateCharsEndInterp)
-	 * 	is 0x7b followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndInterp)
-	 * SVT(StringTemplateCharsEndInterp ::= "{" "\" [^`#x03])
+	 * TV(TemplateCharsEndInterp ::= "{" [^`{\#x03] TemplateCharsEndInterp)
+	 * 	is 0x7b followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by TV(TemplateCharsEndInterp)
+	 * TV(TemplateCharsEndInterp ::= "{" "\" [^`#x03])
 	 * 	is 0x7b followed by 0x5c followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVT(StringTemplateCharsEndInterp ::= "{" "\" [^`#x03] StringTemplateCharsEndInterp)
-	 * 	is 0x7b followed by 0x5c followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndInterp)
-	 * SVT(StringTemplateCharsEndInterp ::= "{" "\" "`")
+	 * TV(TemplateCharsEndInterp ::= "{" "\" [^`#x03] TemplateCharsEndInterp)
+	 * 	is 0x7b followed by 0x5c followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by TV(TemplateCharsEndInterp)
+	 * TV(TemplateCharsEndInterp ::= "{" "\" "`")
 	 * 	is 0x7b followed by 0x60
-	 * SVT(StringTemplateCharsEndInterp ::= "{" "\" "`" StringTemplateCharsEndInterp)
-	 * 	is 0x7b followed by 0x60 followed by SVT(StringTemplateCharsEndInterp)
-	 * SVT(StringTemplateCharsEndInterp ::= "\")
+	 * TV(TemplateCharsEndInterp ::= "{" "\" "`" TemplateCharsEndInterp)
+	 * 	is 0x7b followed by 0x60 followed by TV(TemplateCharsEndInterp)
+	 * TV(TemplateCharsEndInterp ::= "\")
 	 * 	is 0x5c
-	 * SVT(StringTemplateCharsEndInterp ::= "\" [^`#x03])
+	 * TV(TemplateCharsEndInterp ::= "\" [^`#x03])
 	 * 	is 0x5c followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVT(StringTemplateCharsEndInterp ::= "\" [^`#x03] StringTemplateCharsEndInterp)
-	 * 	is 0x5c followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVT(StringTemplateCharsEndInterp)
-	 * SVT(StringTemplateCharsEndInterp ::= "\" "`")
+	 * TV(TemplateCharsEndInterp ::= "\" [^`#x03] TemplateCharsEndInterp)
+	 * 	is 0x5c followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by TV(TemplateCharsEndInterp)
+	 * TV(TemplateCharsEndInterp ::= "\" "`")
 	 * 	is 0x60
-	 * SVT(StringTemplateCharsEndInterp ::= "\" "`" StringTemplateCharsEndInterp)
-	 * 	is 0x60 followed by SVT(StringTemplateCharsEndInterp)
+	 * TV(TemplateCharsEndInterp ::= "\" "`" TemplateCharsEndInterp)
+	 * 	is 0x60 followed by TV(TemplateCharsEndInterp)
 	 * ```
 	 * @param   text - the string to compute
-	 * @returns        the string template value of the string, a sequence of code points
+	 * @returns        the template value of the string, a sequence of code points
 	 */
-	private static svt(text: string): number[] {
+	private static tv(text: string): number[] {
 		if (text.length === 0) return []
-		if ('\\' + TokenStringTemplate.DELIM === text[0] + text[1]) {
+		if ('\\' + TokenTemplate.DELIM === text[0] + text[1]) {
 			/* an escaped template delimiter */
 			return [
-				TokenStringTemplate.DELIM.codePointAt(0) !,
-				...TokenStringTemplate.svt(text.slice(2)),
+				TokenTemplate.DELIM.codePointAt(0) !,
+				...TokenTemplate.tv(text.slice(2)),
 			]
 		} else return [
 			...Util.utf16Encoding(text.codePointAt(0) !),
-			...TokenStringTemplate.svt(text.slice(1)),
+			...TokenTemplate.tv(text.slice(1)),
 		]
 	}
 	private readonly delim_end  : number;
@@ -522,41 +522,41 @@ export class TokenStringTemplate extends Token {
 		const positions: Set<TemplatePosition> = new Set<TemplatePosition>()
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
-		if (delim_start === TokenStringTemplate.DELIM.length) {
+		if (delim_start === TokenTemplate.DELIM.length) {
 			positions.add(TemplatePosition.FULL).add(TemplatePosition.HEAD)
-		} else if (delim_start === TokenStringTemplate.DELIM_INTERP_END.length) {
+		} else if (delim_start === TokenTemplate.DELIM_INTERP_END.length) {
 			positions.add(TemplatePosition.MIDDLE).add(TemplatePosition.TAIL)
 			buffer.push(lexer.c0 !)
 			lexer.advance()
 		}
 		while (!lexer.isDone) {
 			if (Char.eq(ETX, lexer.c0)) {
-				super(TokenStringTemplate.TAGNAME, buffer[0], ...buffer.slice(1))
+				super(TokenTemplate.TAGNAME, buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
-			if (Char.eq('\\' + TokenStringTemplate.DELIM, lexer.c0, lexer.c1)) {
+			if (Char.eq('\\' + TokenTemplate.DELIM, lexer.c0, lexer.c1)) {
 				/* an escaped template delimiter */
 				buffer.push(lexer.c0, lexer.c1 !)
 				lexer.advance(2)
 
-			} else if (Char.eq(TokenStringTemplate.DELIM, lexer.c0)) {
+			} else if (Char.eq(TokenTemplate.DELIM, lexer.c0)) {
 				/* end string template full/tail */
-				delim_end = TokenStringTemplate.DELIM.length
+				delim_end = TokenTemplate.DELIM.length
 				positions.delete(TemplatePosition.HEAD)
 				positions.delete(TemplatePosition.MIDDLE)
 				// add ending delim to token
 				buffer.push(lexer.c0)
-				lexer.advance(TokenStringTemplate.DELIM.length)
+				lexer.advance(TokenTemplate.DELIM.length)
 				break;
 
-			} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) {
+			} else if (Char.eq(TokenTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) {
 				/* end string template head/middle */
-				delim_end = TokenStringTemplate.DELIM_INTERP_START.length
+				delim_end = TokenTemplate.DELIM_INTERP_START.length
 				positions.delete(TemplatePosition.FULL)
 				positions.delete(TemplatePosition.TAIL)
 				// add start interpolation delim to token
 				buffer.push(lexer.c0, lexer.c1 !)
-				lexer.advance(TokenStringTemplate.DELIM_INTERP_START.length)
+				lexer.advance(TokenTemplate.DELIM_INTERP_START.length)
 				break;
 
 			} else {
@@ -564,12 +564,12 @@ export class TokenStringTemplate extends Token {
 				lexer.advance()
 			}
 		}
-		super(`${TokenStringTemplate.TAGNAME}-${TemplatePosition[[...positions][0]]}`, buffer[0], ...buffer.slice(1))
+		super(`${TokenTemplate.TAGNAME}-${TemplatePosition[[...positions][0]]}`, buffer[0], ...buffer.slice(1))
 		this.delim_start = delim_start
 		this.delim_end   = delim_end !
 	}
 	cook(_trans: Translator): string {
-		return String.fromCodePoint(...TokenStringTemplate.svt(
+		return String.fromCodePoint(...TokenTemplate.tv(
 			this.source.slice(this.delim_start, -this.delim_end) // cut off the string delimiters
 		))
 	}

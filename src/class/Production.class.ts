@@ -1,10 +1,10 @@
 import {STX, ETX} from './Scanner.class'
 import {
 	TerminalString,
-	TerminalStringTemplateFull,
-	TerminalStringTemplateHead,
-	TerminalStringTemplateMiddle,
-	TerminalStringTemplateTail,
+	TerminalTemplateFull,
+	TerminalTemplateHead,
+	TerminalTemplateMiddle,
+	TerminalTemplateTail,
 	TerminalNumber,
 	TerminalIdentifier,
 } from './Terminal.class'
@@ -229,20 +229,20 @@ export class ProductionStringTemplate extends Production {
 	readonly TAGNAME: string = 'StringTemplate'
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[TerminalStringTemplateFull.instance],
-			[TerminalStringTemplateHead.instance,                                                                             TerminalStringTemplateTail.instance],
-			[TerminalStringTemplateHead.instance, ProductionExpression.instance,                                              TerminalStringTemplateTail.instance],
-			[TerminalStringTemplateHead.instance,                                ProductionStringTemplate.__0__List.instance, TerminalStringTemplateTail.instance],
-			[TerminalStringTemplateHead.instance, ProductionExpression.instance, ProductionStringTemplate.__0__List.instance, TerminalStringTemplateTail.instance],
+			[TerminalTemplateFull.instance],
+			[TerminalTemplateHead.instance,                                                                             TerminalTemplateTail.instance],
+			[TerminalTemplateHead.instance, ProductionExpression.instance,                                              TerminalTemplateTail.instance],
+			[TerminalTemplateHead.instance,                                ProductionStringTemplate.__0__List.instance, TerminalTemplateTail.instance],
+			[TerminalTemplateHead.instance, ProductionExpression.instance, ProductionStringTemplate.__0__List.instance, TerminalTemplateTail.instance],
 
 		]
 	}
 	random(): string[] {
-		return Util.randomBool() ? [TerminalStringTemplateFull.instance.random()] : [
-			TerminalStringTemplateHead.instance.random(),
+		return Util.randomBool() ? [TerminalTemplateFull.instance.random()] : [
+			TerminalTemplateHead.instance.random(),
 			...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
 			...(Util.randomBool() ? [] : ProductionStringTemplate.__0__List.instance.random()),
-			TerminalStringTemplateTail.instance.random(),
+			TerminalTemplateTail.instance.random(),
 		]
 	}
 	static readonly __0__List = class __0__List extends Production {
@@ -250,16 +250,16 @@ export class ProductionStringTemplate extends Production {
 		readonly TAGNAME: string = 'StringTemplate__0__List'
 		get sequences(): GrammarSymbol[][] {
 			return [
-				[      TerminalStringTemplateMiddle.instance                               ],
-				[      TerminalStringTemplateMiddle.instance, ProductionExpression.instance],
-				[this, TerminalStringTemplateMiddle.instance                               ],
-				[this, TerminalStringTemplateMiddle.instance, ProductionExpression.instance],
+				[      TerminalTemplateMiddle.instance                               ],
+				[      TerminalTemplateMiddle.instance, ProductionExpression.instance],
+				[this, TerminalTemplateMiddle.instance                               ],
+				[this, TerminalTemplateMiddle.instance, ProductionExpression.instance],
 			]
 		}
 		random(): string[] {
 			return [
 				...(Util.randomBool() ? [] : this.random()),
-				TerminalStringTemplateMiddle.instance.random(),
+				TerminalTemplateMiddle.instance.random(),
 				...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
 			]
 		}

@@ -1,15 +1,15 @@
 Goal ::=
-	FileBound            |
-	Whitespace           |
-	Comment              |
-	String               |
-	StringTemplateFull   |
-	StringTemplateHead   |
-	StringTemplateMiddle |
-	StringTemplateTail   |
-	Number               |
-	Word                 |
-	Identifier           |
+	FileBound      |
+	Whitespace     |
+	Comment        |
+	String         |
+	TemplateFull   |
+	TemplateHead   |
+	TemplateMiddle |
+	TemplateTail   |
+	Number         |
+	Word           |
+	Identifier     |
 	Punctuator
 
 
@@ -81,20 +81,20 @@ EscapeCode       ::= "u{" DigitSequenceHex? "}"
 LineContinuation ::= #x0A
 NonEscapeChar    ::= [^'\stnru#x0A#x03]
 
-StringTemplateFull   ::= "`"  StringTemplateCharsEndDelim ? "`"
-StringTemplateHead   ::= "`"  StringTemplateCharsEndInterp? "{{"
-StringTempalteMiddle ::= "}}" StringTemplateCharsEndInterp? "{{"
-StringTempalteTail   ::= "}}" StringTemplateCharsEndDelim ? "`"
+TemplateFull   ::= "`"  TemplateCharsEndDelim ? "`"
+TemplateHead   ::= "`"  TemplateCharsEndInterp? "{{"
+TempalteMiddle ::= "}}" TemplateCharsEndInterp? "{{"
+TempalteTail   ::= "}}" TemplateCharsEndDelim ? "`"
 
-StringTemplateCharsEndDelim ::=
-	      [^`{\#x03]                          StringTemplateCharsEndDelim ?   |
-	"{" (([^`{\#x03] | "\"  ([^`#x03] | "`")) StringTemplateCharsEndDelim ?)? |
-	                   "\"  ([^`#x03] | "`")  StringTemplateCharsEndDelim ?
+TemplateCharsEndDelim ::=
+	      [^`{\#x03]                          TemplateCharsEndDelim ?   |
+	"{" (([^`{\#x03] | "\"  ([^`#x03] | "`")) TemplateCharsEndDelim ?)? |
+	                   "\"  ([^`#x03] | "`")  TemplateCharsEndDelim ?
 
-StringTemplateCharsEndInterp ::=
-	      [^`{\#x03]                          StringTemplateCharsEndInterp?   |
-	"{"  ([^`{\#x03] | "\"  ([^`#x03] | "`")) StringTemplateCharsEndInterp?   |
-	                   "\" (([^`#x03] | "`")  StringTemplateCharsEndInterp?)?
+TemplateCharsEndInterp ::=
+	      [^`{\#x03]                          TemplateCharsEndInterp?   |
+	"{"  ([^`{\#x03] | "\"  ([^`#x03] | "`")) TemplateCharsEndInterp?   |
+	                   "\" (([^`#x03] | "`")  TemplateCharsEndInterp?)?
 
 
 

@@ -2,7 +2,7 @@ import Util from './Util.class'
 import Token, {
 	TemplatePosition,
 	TokenString,
-	TokenStringTemplate,
+	TokenTemplate,
 	TokenNumber,
 	TokenWord,
 } from './Token.class'
@@ -59,9 +59,9 @@ export class TerminalString extends Terminal {
 		return this._match(candidate, TokenString.TAGNAME)
 	}
 }
-abstract class TerminalStringTemplate extends Terminal {
-	random(start: string = TokenStringTemplate.DELIM, end: string = TokenStringTemplate.DELIM): string {
-		const end_delim: boolean = end === TokenStringTemplate.DELIM
+abstract class TerminalTemplate extends Terminal {
+	random(start: string = TokenTemplate.DELIM, end: string = TokenTemplate.DELIM): string {
+		const end_delim: boolean = end === TokenTemplate.DELIM
 		const followsOpenBracket = (): string => Util.randomBool() ? Util.randomChar('` { \\ \u0003'.split(' ')) : `\\${followsBackslash()}`
 		const followsBackslash = (): string => Util.randomBool() ? Util.randomChar('` \u0003'.split(' ')) : '`'
 		const chars = (): string => {
@@ -76,40 +76,40 @@ abstract class TerminalStringTemplate extends Terminal {
 		return `${start}${maybeChars()}${end}`
 	}
 	match(candidate: Token, position: TemplatePosition = TemplatePosition.FULL): boolean {
-		return this._match(candidate, `${TokenStringTemplate.TAGNAME}-${TemplatePosition[position]}`)
+		return this._match(candidate, `${TokenTemplate.TAGNAME}-${TemplatePosition[position]}`)
 	}
 }
-export class TerminalStringTemplateFull extends TerminalStringTemplate {
-	static readonly instance: TerminalStringTemplateFull = new TerminalStringTemplateFull()
+export class TerminalTemplateFull extends TerminalTemplate {
+	static readonly instance: TerminalTemplateFull = new TerminalTemplateFull()
 	random(): string {
-		return super.random(TokenStringTemplate.DELIM, TokenStringTemplate.DELIM)
+		return super.random(TokenTemplate.DELIM, TokenTemplate.DELIM)
 	}
 	match(candidate: Token): boolean {
 		return super.match(candidate, TemplatePosition.FULL)
 	}
 }
-export class TerminalStringTemplateHead extends TerminalStringTemplate {
-	static readonly instance: TerminalStringTemplateHead = new TerminalStringTemplateHead()
+export class TerminalTemplateHead extends TerminalTemplate {
+	static readonly instance: TerminalTemplateHead = new TerminalTemplateHead()
 	random(): string {
-		return super.random(TokenStringTemplate.DELIM, TokenStringTemplate.DELIM_INTERP_START)
+		return super.random(TokenTemplate.DELIM, TokenTemplate.DELIM_INTERP_START)
 	}
 	match(candidate: Token): boolean {
 		return super.match(candidate, TemplatePosition.HEAD)
 	}
 }
-export class TerminalStringTemplateMiddle extends TerminalStringTemplate {
-	static readonly instance: TerminalStringTemplateMiddle = new TerminalStringTemplateMiddle()
+export class TerminalTemplateMiddle extends TerminalTemplate {
+	static readonly instance: TerminalTemplateMiddle = new TerminalTemplateMiddle()
 	random(): string {
-		return super.random(TokenStringTemplate.DELIM_INTERP_END, TokenStringTemplate.DELIM_INTERP_START)
+		return super.random(TokenTemplate.DELIM_INTERP_END, TokenTemplate.DELIM_INTERP_START)
 	}
 	match(candidate: Token): boolean {
 		return super.match(candidate, TemplatePosition.MIDDLE)
 	}
 }
-export class TerminalStringTemplateTail extends TerminalStringTemplate {
-	static readonly instance: TerminalStringTemplateTail = new TerminalStringTemplateTail()
+export class TerminalTemplateTail extends TerminalTemplate {
+	static readonly instance: TerminalTemplateTail = new TerminalTemplateTail()
 	random(): string {
-		return super.random(TokenStringTemplate.DELIM_INTERP_END, TokenStringTemplate.DELIM)
+		return super.random(TokenTemplate.DELIM_INTERP_END, TokenTemplate.DELIM)
 	}
 	match(candidate: Token): boolean {
 		return super.match(candidate, TemplatePosition.TAIL)
