@@ -1,15 +1,15 @@
 Goal ::=
-	FileBound            |
-	Whitespace           |
-	Comment              |
-	StringLiteral        |
-	StringTemplateFull   |
-	StringTemplateHead   |
-	StringTemplateMiddle |
-	StringTemplateTail   |
-	Number               |
-	Word                 |
-	Identifier           |
+	FileBound      |
+	Whitespace     |
+	Comment        |
+	String         |
+	TemplateFull   |
+	TemplateHead   |
+	TemplateMiddle |
+	TemplateTail   |
+	Number         |
+	Word           |
+	Identifier     |
 	Punctuator
 
 
@@ -68,33 +68,33 @@ CommentDoc ::= /*? following: #x0A [#x09#x20]* ?*/'"""' #x0A (/*? unequal: [#x09
 
 
 
-StringLiteral ::= "'" StringLiteralChars? "'"
-StringLiteralChars ::=
-	[^'\#x03]               StringLiteralChars?   |
-	"\" StringLiteralEscape StringLiteralChars?   |
-	"\u"     ([^'{#x03]     StringLiteralChars?)?
+String ::= "'" StringChars? "'"
+StringChars ::=
+	[^'\#x03]               StringChars?   |
+	"\"        StringEscape StringChars?   |
+	"\u"      ([^'{#x03]    StringChars?)?
 
-StringLiteralEscape ::= EscapeChar | EscapeCode | LineContinuation | NonEscapeChar
+StringEscape ::= EscapeChar | EscapeCode | LineContinuation | NonEscapeChar
 
 EscapeChar       ::= "'" | "\" | "s" | "t" | "n" | "r"
 EscapeCode       ::= "u{" DigitSequenceHex? "}"
 LineContinuation ::= #x0A
 NonEscapeChar    ::= [^'\stnru#x0A#x03]
 
-StringTemplateFull   ::= "`"  StringTemplateCharsEndDelim ? "`"
-StringTemplateHead   ::= "`"  StringTemplateCharsEndInterp? "{{"
-StringTempalteMiddle ::= "}}" StringTemplateCharsEndInterp? "{{"
-StringTempalteTail   ::= "}}" StringTemplateCharsEndDelim ? "`"
+TemplateFull   ::= "`"  TemplateCharsEndDelim ? "`"
+TemplateHead   ::= "`"  TemplateCharsEndInterp? "{{"
+TempalteMiddle ::= "}}" TemplateCharsEndInterp? "{{"
+TempalteTail   ::= "}}" TemplateCharsEndDelim ? "`"
 
-StringTemplateCharsEndDelim ::=
-	      [^`{\#x03]                          StringTemplateCharsEndDelim ?   |
-	"{" (([^`{\#x03] | "\"  ([^`#x03] | "`")) StringTemplateCharsEndDelim ?)? |
-	                   "\"  ([^`#x03] | "`")  StringTemplateCharsEndDelim ?
+TemplateCharsEndDelim ::=
+	      [^`{\#x03]                          TemplateCharsEndDelim ?   |
+	"{" (([^`{\#x03] | "\"  ([^`#x03] | "`")) TemplateCharsEndDelim ?)? |
+	                   "\"  ([^`#x03] | "`")  TemplateCharsEndDelim ?
 
-StringTemplateCharsEndInterp ::=
-	      [^`{\#x03]                          StringTemplateCharsEndInterp?   |
-	"{"  ([^`{\#x03] | "\"  ([^`#x03] | "`")) StringTemplateCharsEndInterp?   |
-	                   "\" (([^`#x03] | "`")  StringTemplateCharsEndInterp?)?
+TemplateCharsEndInterp ::=
+	      [^`{\#x03]                          TemplateCharsEndInterp?   |
+	"{"  ([^`{\#x03] | "\"  ([^`#x03] | "`")) TemplateCharsEndInterp?   |
+	                   "\" (([^`#x03] | "`")  TemplateCharsEndInterp?)?
 
 
 

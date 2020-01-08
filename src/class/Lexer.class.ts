@@ -6,8 +6,8 @@ import Token, {
 	TokenCommentMulti,
 	TokenCommentMultiNest,
 	TokenCommentDoc,
-	TokenStringLiteral,
-	TokenStringTemplate,
+	TokenString,
+	TokenTemplate,
 	TokenNumber,
 	TokenWord,
 	TokenPunctuator,
@@ -111,15 +111,15 @@ export default class Lexer {
 					token = new TokenCommentMulti(this)
 				}
 
-			} else if (Char.eq(TokenStringLiteral.DELIM, this._c0)) {
+			} else if (Char.eq(TokenString.DELIM, this._c0)) {
 				/* we found a string literal */
-				token = new TokenStringLiteral(this)
-			} else if (Char.eq(TokenStringTemplate.DELIM, this._c0)) {
-				/* we found a template full or template head */
-				token = new TokenStringTemplate(this, TokenStringTemplate.DELIM.length)
-			} else if (Char.eq(TokenStringTemplate.DELIM_INTERP_END, this._c0, this._c1)) {
-				/* we found a template middle or template tail */
-				token = new TokenStringTemplate(this, TokenStringTemplate.DELIM_INTERP_END.length)
+				token = new TokenString(this)
+			} else if (Char.eq(TokenTemplate.DELIM, this._c0)) {
+				/* we found a template literal full or template literal head */
+				token = new TokenTemplate(this, TokenTemplate.DELIM.length)
+			} else if (Char.eq(TokenTemplate.DELIM_INTERP_END, this._c0, this._c1)) {
+				/* we found a template literal middle or template literal tail */
+				token = new TokenTemplate(this, TokenTemplate.DELIM_INTERP_END.length)
 
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
 				token = new TokenNumber(this, false)
