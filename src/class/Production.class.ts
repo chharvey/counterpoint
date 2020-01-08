@@ -1,6 +1,6 @@
 import {STX, ETX} from './Scanner.class'
 import {
-	TerminalStringLiteral,
+	TerminalString,
 	TerminalStringTemplateFull,
 	TerminalStringTemplateHead,
 	TerminalStringTemplateMiddle,
@@ -270,13 +270,13 @@ export class ProductionPrimitiveLiteral extends Production {
 	readonly TAGNAME: string = 'PrimitiveLiteral'
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[TerminalNumber       .instance],
-			[TerminalStringLiteral.instance],
+			[TerminalNumber.instance],
+			[TerminalString.instance],
 		]
 	}
 	random(): string[] {
 		return [
-			Util.randomBool() ? TerminalNumber.instance.random() : TerminalStringLiteral.instance.random()
+			Util.randomBool() ? TerminalNumber.instance.random() : TerminalString.instance.random()
 		]
 	}
 }

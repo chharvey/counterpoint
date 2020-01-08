@@ -6,7 +6,7 @@ import Token, {
 	TokenCommentMulti,
 	TokenCommentMultiNest,
 	TokenCommentDoc,
-	TokenStringLiteral,
+	TokenString,
 	TokenStringTemplate,
 	TokenNumber,
 	TokenWord,
@@ -111,9 +111,9 @@ export default class Lexer {
 					token = new TokenCommentMulti(this)
 				}
 
-			} else if (Char.eq(TokenStringLiteral.DELIM, this._c0)) {
+			} else if (Char.eq(TokenString.DELIM, this._c0)) {
 				/* we found a string literal */
-				token = new TokenStringLiteral(this)
+				token = new TokenString(this)
 			} else if (Char.eq(TokenStringTemplate.DELIM, this._c0)) {
 				/* we found a template full or template head */
 				token = new TokenStringTemplate(this, TokenStringTemplate.DELIM.length)

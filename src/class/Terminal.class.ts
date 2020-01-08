@@ -1,7 +1,7 @@
 import Util from './Util.class'
 import Token, {
 	TemplatePosition,
-	TokenStringLiteral,
+	TokenString,
 	TokenStringTemplate,
 	TokenNumber,
 	TokenWord,
@@ -35,8 +35,8 @@ export default abstract class Terminal {
 }
 
 
-export class TerminalStringLiteral extends Terminal {
-	static readonly instance: TerminalStringLiteral = new TerminalStringLiteral()
+export class TerminalString extends Terminal {
+	static readonly instance: TerminalString = new TerminalString()
 	random(): string {
 		const chars = (): string => {
 			const random: number = Math.random()
@@ -49,14 +49,14 @@ export class TerminalStringLiteral extends Terminal {
 		}
 		const maybeChars    = (): string => Util.randomBool() ? '' : chars()
 		const escape        = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
-		const escapeChar    = (): string => Util.arrayRandom(TokenStringLiteral.ESCAPES)
+		const escapeChar    = (): string => Util.arrayRandom(TokenString.ESCAPES)
 		const escapeCode    = (): string => `u{${Util.randomBool() ? '' : digitSequence(16)}}`
 		const lineCont      = (): string => `${Util.randomBool() ? '': '\u000d'}\u000a`
 		const nonEscapeChar = (): string => Util.randomChar('\' \\ s t n r u \u000D \u000A \u0003'.split(' '))
-		return `${TokenStringLiteral.DELIM}${maybeChars()}${TokenStringLiteral.DELIM}`
+		return `${TokenString.DELIM}${maybeChars()}${TokenString.DELIM}`
 	}
 	match(candidate: Token): boolean {
-		return this._match(candidate, TokenStringLiteral.TAGNAME)
+		return this._match(candidate, TokenString.TAGNAME)
 	}
 }
 abstract class TerminalStringTemplate extends Terminal {

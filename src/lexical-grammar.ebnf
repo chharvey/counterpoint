@@ -2,7 +2,7 @@ Goal ::=
 	FileBound            |
 	Whitespace           |
 	Comment              |
-	StringLiteral        |
+	String               |
 	StringTemplateFull   |
 	StringTemplateHead   |
 	StringTemplateMiddle |
@@ -68,13 +68,13 @@ CommentDoc ::= /*? following: #x0A [#x09#x20]* ?*/'"""' #x0A (/*? unequal: [#x09
 
 
 
-StringLiteral ::= "'" StringLiteralChars? "'"
-StringLiteralChars ::=
-	[^'\#x03]               StringLiteralChars?   |
-	"\" StringLiteralEscape StringLiteralChars?   |
-	"\u"     ([^'{#x03]     StringLiteralChars?)?
+String ::= "'" StringChars? "'"
+StringChars ::=
+	[^'\#x03]               StringChars?   |
+	"\"        StringEscape StringChars?   |
+	"\u"      ([^'{#x03]    StringChars?)?
 
-StringLiteralEscape ::= EscapeChar | EscapeCode | LineContinuation | NonEscapeChar
+StringEscape ::= EscapeChar | EscapeCode | LineContinuation | NonEscapeChar
 
 EscapeChar       ::= "'" | "\" | "s" | "t" | "n" | "r"
 EscapeCode       ::= "u{" DigitSequenceHex? "}"

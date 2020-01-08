@@ -249,42 +249,42 @@ export class TokenCommentDoc extends TokenComment {
 		super(TokenCommentDoc.TAGNAME, buffer[0], ...buffer.slice(1))
 	}
 }
-export class TokenStringLiteral extends Token {
-	static readonly TAGNAME: string = 'STRING-LITERAL'
+export class TokenString extends Token {
+	static readonly TAGNAME: string = 'STRING'
 	static readonly DELIM: '\'' = '\''
-	static readonly ESCAPES: readonly string[] = [TokenStringLiteral.DELIM, '\\', 's','t','n','r']
+	static readonly ESCAPES: readonly string[] = [TokenString.DELIM, '\\', 's','t','n','r']
 	/**
-	 * Compute the string literal value of a `TokenStringLiteral` token
+	 * Compute the string value of a `TokenString` token
 	 * or any segment of such token.
-	 * The string literal value is a sequence of Unicode code points.
+	 * The string value is a sequence of Unicode code points.
 	 * ```
-	 * SVL(StringLiteral ::= "'" "'")
+	 * SV(String ::= "'" "'")
 	 * 	is the empty array
-	 * SVL(StringLiteral ::= "'" StringLiteralChars "'")
-	 * 	is SVL(StringLiteralChars)
-	 * SVL(StringLiteralChars ::= [^'\#x03])
+	 * SV(String ::= "'" StringChars "'")
+	 * 	is SV(StringChars)
+	 * SV(StringChars ::= [^'\#x03])
 	 * 	is {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVL(StringLiteralChars ::= [^'\#x03] StringLiteralChars)
-	 * 	is {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVL(StringLiteralChars)
-	 * SVL(StringLiteralChars ::= "\" StringLiteralEscape)
-	 * 	is SVL(StringLiteralEscape)
-	 * SVL(StringLiteralChars ::= "\" StringLiteralEscape StringLiteralChars)
-	 * 	is SVL(StringLiteralEscape) followed by SVL(StringLiteralChars)
-	 * SVL(StringLiteralChars ::= "\u")
+	 * SV(StringChars ::= [^'\#x03] StringChars)
+	 * 	is {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SV(StringChars)
+	 * SV(StringChars ::= "\" StringEscape)
+	 * 	is SV(StringEscape)
+	 * SV(StringChars ::= "\" StringEscape StringChars)
+	 * 	is SV(StringEscape) followed by SV(StringChars)
+	 * SV(StringChars ::= "\u")
 	 * 	is 0x75
-	 * SVL(StringLiteralChars ::= "\u" [^'{#x03'])
+	 * SV(StringChars ::= "\u" [^'{#x03'])
 	 * 	is 0x75 followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
-	 * SVL(StringLiteralChars ::= "\u" [^'{#x03'] StringLiteralChars)
-	 * 	is 0x75 followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SVL(StringLiteralChars)
-	 * SVL(StringLiteralEscape ::= EscapeChar)
-	 * 	is SVL(EscapeChar)
-	 * SVL(StringLiteralEscape ::= EscapeCode)
-	 * 	is SVL(EscapeCode)
-	 * SVL(StringLiteralEscape ::= LineContinuation)
-	 * 	is SVL(LineContinuation)
-	 * SVL(StringLiteralEscape ::= NonEscapeChar)
-	 * 	is SVL(NonEscapeChar)
-	 * SVL(EscapeChar ::= "'" | "\" | "s" | "t" | "n" | "r")
+	 * SV(StringChars ::= "\u" [^'{#x03'] StringChars)
+	 * 	is 0x75 followed by {@link Util.utf16Encoding|UTF16Encoding}(code point of that character) followed by SV(StringChars)
+	 * SV(StringEscape ::= EscapeChar)
+	 * 	is SV(EscapeChar)
+	 * SV(StringEscape ::= EscapeCode)
+	 * 	is SV(EscapeCode)
+	 * SV(StringEscape ::= LineContinuation)
+	 * 	is SV(LineContinuation)
+	 * SV(StringEscape ::= NonEscapeChar)
+	 * 	is SV(NonEscapeChar)
+	 * SV(EscapeChar ::= "'" | "\" | "s" | "t" | "n" | "r")
 	 * 	is given by the following map: {
 	 * 		"'" : 0x27, // APOSTROPHE           U+0027
 	 * 		"\" : 0x5c, // REVERSE SOLIDUS      U+005C
@@ -293,33 +293,33 @@ export class TokenStringLiteral extends Token {
 	 * 		"n" : 0x0a, // LINE FEED (LF)       U+000A
 	 * 		"r" : 0x0d, // CARRIAGE RETURN (CR) U+000D
 	 * 	}
-	 * SVL(EscapeCode ::= "u{" "}")
+	 * SV(EscapeCode ::= "u{" "}")
 	 * 	is 0x0
-	 * SVL(EscapeCode ::= "u{" DigitSequenceHex "}")
+	 * SV(EscapeCode ::= "u{" DigitSequenceHex "}")
 	 * 	is {@link Util.utf16Encoding|UTF16Encoding}({@link TokenNumber.mv|MV}(DigitSequenceHex))
-	 * SVL(LineContinuation ::= #x0A)
+	 * SV(LineContinuation ::= #x0A)
 	 * 	is 0x20
-	 * SVL(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03])
+	 * SV(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03])
 	 * 	is {@link Util.utf16Encoding|UTF16Encoding}(code point of that character)
 	 * ```
 	 * @param   text - the string to compute
-	 * @returns        the string literal value, a sequence of code points
+	 * @returns        the string value, a sequence of code points
 	 */
-	private static svl(text: string): number[] {
+	private static sv(text: string): number[] {
 		if (text.length === 0) return []
 		if ('\\' === text[0]) { // possible escape or line continuation
-			if (TokenStringLiteral.ESCAPES.includes(text[1])) {
+			if (TokenString.ESCAPES.includes(text[1])) {
 				/* an escaped character literal */
 				return [
 					new Map<string, number>([
-						[TokenStringLiteral.DELIM, TokenStringLiteral.DELIM.codePointAt(0) !],
+						[TokenString.DELIM, TokenString.DELIM.codePointAt(0) !],
 						['\\' , 0x5c],
 						['s'  , 0x20],
 						['t'  , 0x09],
 						['n'  , 0x0a],
 						['r'  , 0x0d],
 					]).get(text[1]) !,
-					...TokenStringLiteral.svl(text.slice(2)),
+					...TokenString.sv(text.slice(2)),
 				]
 
 			} else if ('u{' === text[1] + text[2]) {
@@ -327,35 +327,35 @@ export class TokenStringLiteral extends Token {
 				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
 				return [
 					...Util.utf16Encoding(TokenNumber.mv(sequence[0].slice(3, -1) || '0', 16)),
-					...TokenStringLiteral.svl(text.slice(sequence[0].length)),
+					...TokenString.sv(text.slice(sequence[0].length)),
 				]
 
 			} else if ('\n' === text[1]) {
 				/* a line continuation (LF) */
-				return [0x20, ...TokenStringLiteral.svl(text.slice(2))]
+				return [0x20, ...TokenString.sv(text.slice(2))]
 
 			} else {
 				/* a backslash escapes the following character */
 				return [
 					...Util.utf16Encoding(text.codePointAt(1) !),
-					...TokenStringLiteral.svl(text.slice(2)),
+					...TokenString.sv(text.slice(2)),
 				]
 			}
 		} else return [
 			...Util.utf16Encoding(text.codePointAt(0) !),
-			...TokenStringLiteral.svl(text.slice(1)),
+			...TokenString.sv(text.slice(1)),
 		]
 	}
 	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
-		while (!lexer.isDone && !Char.eq(TokenStringLiteral.DELIM, lexer.c0)) {
+		while (!lexer.isDone && !Char.eq(TokenString.DELIM, lexer.c0)) {
 			if (Char.eq(ETX, lexer.c0)) {
-				super(TokenStringLiteral.TAGNAME, buffer[0], ...buffer.slice(1))
+				super(TokenString.TAGNAME, buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
 			if (Char.eq('\\', lexer.c0)) { // possible escape or line continuation
-				if (Char.inc(TokenStringLiteral.ESCAPES, lexer.c1)) {
+				if (Char.inc(TokenString.ESCAPES, lexer.c1)) {
 					/* an escaped character literal */
 					buffer.push(lexer.c0, lexer.c1 !)
 					lexer.advance(2)
@@ -411,11 +411,11 @@ export class TokenStringLiteral extends Token {
 		}
 		// add ending delim to token
 		buffer.push(lexer.c0)
-		lexer.advance(TokenStringLiteral.DELIM.length)
-		super(TokenStringLiteral.TAGNAME, buffer[0], ...buffer.slice(1))
+		lexer.advance(TokenString.DELIM.length)
+		super(TokenString.TAGNAME, buffer[0], ...buffer.slice(1))
 	}
 	cook(_trans: Translator): string {
-		return String.fromCodePoint(...TokenStringLiteral.svl(
+		return String.fromCodePoint(...TokenString.sv(
 			this.source.slice(1, -1) // cut off the string delimiters
 		))
 	}

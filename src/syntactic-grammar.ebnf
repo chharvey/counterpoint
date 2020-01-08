@@ -34,10 +34,10 @@ StringTemplate ::=
 	STRING_TEMPLATE_HEAD Expression? (STRING_TEMPLATE_MIDDLE Expression?)* STRING_TEMPLATE_TAIL
 
 PrimitiveLiteral ::=
-	NUMBER         |
-	STRING_LITERAL
+	NUMBER |
+	STRING
 
-STRING_LITERAL         ::= [./lexical-grammar.ebnf#StringLiteral]
+STRING                 ::= [./lexical-grammar.ebnf#String]
 STRING_TEMPLATE_FULL   ::= [./lexical-grammar.ebnf#StringTemplateFull]
 STRING_TEMPLATE_HEAD   ::= [./lexical-grammar.ebnf#StringTemplateHead]
 STRING_TEMPLATE_MIDDLE ::= [./lexical-grammar.ebnf#StringTemplateMiddle]
