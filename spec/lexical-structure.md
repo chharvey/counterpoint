@@ -113,6 +113,38 @@ DigitSequenceDec ::= DigitSequenceDec? [0-9]
 Numbers are literal constants that represent numeric mathematical values.
 Currently, only positive and negative (and zero) integers are supported.
 
+#### Static Semantics: Mathematical Value
+The Mathematical Value (MV) of a number token is the computed number that the token represents.
+
+There is a many-to-one relationship between tokens and mathematical values. For example,
+a token containing `0042` has the same mathematical value as a token containing `+42`:
+the integer *42*.
+
+```
+MV(Number ::= IntegerLiteral)
+	:= MV(IntegerLiteral)
+MV(Number ::= "+" IntegerLiteral)
+	:= MV(IntegerLiteral)
+MV(Number ::= "-" IntegerLiteral)
+	:= -1 * MV(IntegerLiteral)
+MV(IntegerLiteral ::= DigitSequenceDec)
+	:= MV(DigitSequenceDec)
+MV(DigitSequenceDec ::= [0-9])
+	:= MV([0-9])
+MV(DigitSequenceDec ::= DigitSequenceDec [0-9])
+	:= 10 * MV(DigitSequenceDec) + MV([0-9])
+MV([0-9] ::= "0") := 0
+MV([0-9] ::= "1") := 1
+MV([0-9] ::= "2") := 2
+MV([0-9] ::= "3") := 3
+MV([0-9] ::= "4") := 4
+MV([0-9] ::= "5") := 5
+MV([0-9] ::= "6") := 6
+MV([0-9] ::= "7") := 7
+MV([0-9] ::= "8") := 8
+MV([0-9] ::= "9") := 9
+```
+
 
 ### Punctuators
 ```w3c
