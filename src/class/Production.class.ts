@@ -1,7 +1,8 @@
 import {STX, ETX} from './Scanner.class'
 import {
-	TokenNumber,
-} from './Token.class'
+	TerminalNumber,
+} from './Terminal.class'
+
 import {GrammarSymbol, Rule} from './Grammar.class'
 import Util from './Util.class'
 
@@ -129,13 +130,13 @@ export class ProductionExpressionUnit extends Production {
 	readonly TAGNAME: string = 'ExpressionUnit'
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[TokenNumber],
+			[TerminalNumber.instance],
 			['(', ProductionExpression.instance, ')'],
 		]
 	}
 	random(): string[] {
 		return Util.randomBool() ?
-			[TokenNumber.random()] :
+			[TerminalNumber.instance.random()] :
 			['(', ...ProductionExpression.instance.random(), ')']
 	}
 }

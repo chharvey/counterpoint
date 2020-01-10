@@ -1,6 +1,7 @@
-import Token, {isTokenSubclass} from './Token.class'
+import Token from './Token.class'
 import Translator from './Translator.class'
 import ParseNode from './ParseNode.class'
+import Terminal from './Terminal.class'
 import Grammar, {
 	GrammarSymbol,
 	Rule,
@@ -42,7 +43,7 @@ export default class Parser {
 			const next_symbol: GrammarSymbol|null = config.after[0] || null
 			return (
 				typeof next_symbol === 'string' && this.lookahead !.cargo === next_symbol ||
-				isTokenSubclass(next_symbol) && this.lookahead ! instanceof next_symbol
+				next_symbol instanceof Terminal && next_symbol.match(this.lookahead !)
 			)
 		}).map((config) => config.advance()))
 		let shifted: boolean = false

@@ -1,0 +1,41 @@
+import Util from './Util.class'
+import Token, {
+	TokenNumber,
+} from './Token.class'
+
+
+/**
+ * A Terminal is a symbol in a production (a formal context-free grammar) that cannot be reduced any further.
+ * It serves as a distinction betwen different types of actual tokens.
+ */
+export default abstract class Terminal {
+	protected constructor() {}
+	/**
+	 * Generate a random instance of this Terminal.
+	 * @returns a well-formed string satisfying this Terminal
+	 */
+	abstract random(): string;
+	/**
+	 * Does the given token satisfy this Terminal?
+	 * @param   candidate - a Token to test
+	 * @returns             does the given Token satisfy this Terminal?
+	 */
+	abstract match(candidate: Token): boolean;
+	protected /** @final */ _match(candidate: Token, tagname: string): boolean {
+		return candidate.tagname === tagname
+	}
+}
+
+
+export class TerminalNumber extends Terminal {
+	static readonly instance: TerminalNumber = new TerminalNumber()
+	static digitSequence(): string {
+		return `${Util.randomBool() ? '' : `${TerminalNumber.digitSequence()}`}${Util.arrayRandom(TokenNumber.CHARACTERS)}`
+	}
+	random(): string {
+		return TerminalNumber.digitSequence()
+	}
+	match(candidate: Token): boolean {
+		return this._match(candidate, TokenNumber.TAGNAME)
+	}
+}
