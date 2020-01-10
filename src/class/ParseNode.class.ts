@@ -4,6 +4,10 @@ import {STX, ETX} from './Scanner.class'
 import Translator from './Translator.class'
 import Token from './Token.class'
 
+import {
+	ProductionGoal,
+} from './Production.class'
+
 
 /**
  * A ParseNode is a node in a parse tree for a given input stream.
@@ -41,10 +45,9 @@ export default class ParseNode implements Serializable {
 	 * @implements Serializable
 	 */
 	serialize(trans: Translator|null = null): string {
-		const tagname: string = this.tagname
 		const attributes: string = ' ' + [
-			`line="${this.line_index+1}"`,
-			`col="${this.col_index+1}"`,
+			(this.tagname !== ProductionGoal.instance.displayName) ? `line="${this.line_index + 1}"` : '',
+			(this.tagname !== ProductionGoal.instance.displayName) ?  `col="${this.col_index  + 1}"` : '',
 			`source="${this.source
 				.replace(/\&/g, '&amp;' )
 				.replace(/\</g, '&lt;'  )
@@ -63,6 +66,6 @@ export default class ParseNode implements Serializable {
 		const contents: string = this.children.map((child) =>
 			(typeof child === 'string') ? child : child.serialize(trans)
 		).join('')
-		return `<${tagname}${attributes}>${contents}</${tagname}>`
+		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
 	}
 }

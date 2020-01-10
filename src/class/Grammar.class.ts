@@ -1,13 +1,27 @@
 import Util from './Util.class'
 import {STX, ETX} from './Scanner.class'
 import Token from './Token.class'
-import Terminal from './Terminal.class'
 import ParseNode from './ParseNode.class'
+
+import Terminal from './Terminal.class'
 import Production from './Production.class'
 
 
 export type GrammarSymbol   = GrammarTerminal|Production
 export type GrammarTerminal = string|Terminal
+
+
+/**
+ * Display a string of grammar symbols for debugging purposes.
+ *
+ * @param   arr - the array of grammar symbols
+ * @returns       a string representing the sequence of those symbols
+ */
+const stringOfSymbols = (arr: readonly GrammarSymbol[]): string =>
+	arr.map((symbol) => (typeof symbol === 'string') ?
+		`"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
+		: symbol.displayName
+	).join(' ')
 
 
 export default class Grammar {
@@ -170,10 +184,11 @@ export class Rule {
 	}
 	/**
 	 * Does the given sequence of symbols satisfy this rule?
+	 * @deprecated WARNING DEPRECATED
 	 * @param   candidate - a sequence of objects on the parse stack
 	 * @returns             does the given sequence of symbols satisfy this rule?
 	 */
-	match(candidate: readonly (Token|ParseNode)[]): boolean {
+	private match(candidate: readonly (Token|ParseNode)[]): boolean {
 		return candidate.length === this.symbols.length && this.symbols.every((symbol, i) => {
 			const test: Token|ParseNode = candidate[i]
 			return (typeof symbol === 'string') ? // a string literal (terminal)
@@ -189,14 +204,7 @@ export class Rule {
 	}
 	/** @override */
 	toString(): string {
-		const tokens = (arr: readonly GrammarSymbol[]): string =>
-			arr.map((symbol) => (symbol instanceof Production) ?
-				symbol.TAGNAME
-			: (symbol instanceof Terminal) ?
-				symbol.constructor.name.replace(/[A-Z]/g, '_$&').slice('_Terminal_'.length).toUpperCase()
-			: `"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
-			).join(' ')
-		return `${this.production.TAGNAME} --> ${tokens(this.symbols)}`
+		return `${this.production.displayName} --> ${stringOfSymbols(this.symbols)}`
 	}
 }
 
@@ -265,15 +273,8 @@ export class Configuration {
 	}
 	/** @override */
 	toString(): string {
-		const tokens = (arr: readonly GrammarSymbol[]): string =>
-			arr.map((symbol) => (symbol instanceof Production) ?
-				symbol.TAGNAME
-			: (symbol instanceof Terminal) ?
-				symbol.constructor.name.replace(/[A-Z]/g, '_$&').slice('_Terminal_'.length).toUpperCase()
-			: `"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
-			).join(' ')
 		const lookaheads = (set: ReadonlySet<GrammarTerminal>): string =>
-			tokens([...set]).replace(/\s/g, ', ')
-		return `${this.rule.production.TAGNAME} --> ${tokens(this.before)} \u2022 ${tokens(this.after)} {${lookaheads(this.lookaheads)}}`
+			stringOfSymbols([...set]).replace(/\s/g, ', ')
+		return `${this.rule.production.displayName} --> ${stringOfSymbols(this.before)} \u2022 ${stringOfSymbols(this.after)} {${lookaheads(this.lookaheads)}}`
 	}
 }
