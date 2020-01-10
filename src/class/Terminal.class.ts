@@ -8,16 +8,15 @@ import Token, {
 } from './Token.class'
 
 
-const digitSequence = (radix: number): string =>
-	`${Util.randomBool() ? '' : `${digitSequence(radix)}${Util.randomBool() ? '' : '_'}`}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
-
-
 /**
  * A Terminal is a symbol in a production (a formal context-free grammar) that cannot be reduced any further.
  * It serves as a distinction betwen different types of actual tokens.
  */
 export default abstract class Terminal {
 	protected constructor() {}
+	/** @final */ get displayName(): string {
+		return this.constructor.name.replace(/[A-Z]/g, '_$&').slice('_Terminal_'.length).toUpperCase()
+	}
 	/**
 	 * Generate a random instance of this Terminal.
 	 * @returns a well-formed string satisfying this Terminal
@@ -29,9 +28,6 @@ export default abstract class Terminal {
 	 * @returns             does the given Token satisfy this Terminal?
 	 */
 	abstract match(candidate: Token): boolean;
-	protected /** @final */ _match(candidate: Token, tagname: string): boolean {
-		return candidate.tagname === tagname
-	}
 }
 
 
@@ -50,13 +46,13 @@ export class TerminalString extends Terminal {
 		const maybeChars    = (): string => Util.randomBool() ? '' : chars()
 		const escape        = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
 		const escapeChar    = (): string => Util.arrayRandom(TokenString.ESCAPES)
-		const escapeCode    = (): string => `u{${Util.randomBool() ? '' : digitSequence(16)}}`
+		const escapeCode    = (): string => `u{${Util.randomBool() ? '' : TerminalNumber.digitSequence(16)}}`
 		const lineCont      = (): string => `${Util.randomBool() ? '': '\u000d'}\u000a`
 		const nonEscapeChar = (): string => Util.randomChar('\' \\ s t n r u \u000D \u000A \u0003'.split(' '))
 		return `${TokenString.DELIM}${maybeChars()}${TokenString.DELIM}`
 	}
 	match(candidate: Token): boolean {
-		return this._match(candidate, TokenString.TAGNAME)
+		return candidate.tagname === TokenString.TAGNAME
 	}
 }
 abstract class TerminalTemplate extends Terminal {
@@ -76,7 +72,7 @@ abstract class TerminalTemplate extends Terminal {
 		return `${start}${maybeChars()}${end}`
 	}
 	match(candidate: Token, position: TemplatePosition = TemplatePosition.FULL): boolean {
-		return this._match(candidate, `${TokenTemplate.TAGNAME}-${TemplatePosition[position]}`)
+		return candidate.tagname === `${TokenTemplate.TAGNAME}-${TemplatePosition[position]}`
 	}
 }
 export class TerminalTemplateFull extends TerminalTemplate {
@@ -117,12 +113,15 @@ export class TerminalTemplateTail extends TerminalTemplate {
 }
 export class TerminalNumber extends Terminal {
 	static readonly instance: TerminalNumber = new TerminalNumber()
+	static digitSequence(radix: number): string {
+		return `${Util.randomBool() ? '' : `${TerminalNumber.digitSequence(radix)}${Util.randomBool() ? '' : '_'}`}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
+	}
 	random(): string {
 		const base: [string, number] = [...TokenNumber.BASES.entries()][Util.randomInt(6)]
-		return Util.randomBool() ? digitSequence(TokenNumber.RADIX_DEFAULT) : `\\${base[0]}${digitSequence(base[1])}`
+		return Util.randomBool() ? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT) : `\\${base[0]}${TerminalNumber.digitSequence(base[1])}`
 	}
 	match(candidate: Token): boolean {
-		return this._match(candidate, TokenNumber.TAGNAME)
+		return candidate.tagname === TokenNumber.TAGNAME
 	}
 }
 export class TerminalIdentifier extends Terminal {
