@@ -18,9 +18,9 @@ export type GrammarTerminal = string|Terminal
  * @returns       a string representing the sequence of those symbols
  */
 const stringOfSymbols = (arr: readonly GrammarSymbol[]): string =>
-	arr.map((symbol) => (symbol instanceof Production || symbol instanceof Terminal) ?
-		symbol.displayName :
+	arr.map((symbol) => (typeof symbol === 'string') ?
 		`"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
+		: symbol.displayName
 	).join(' ')
 
 
@@ -181,10 +181,11 @@ export class Rule {
 	}
 	/**
 	 * Does the given sequence of symbols satisfy this rule?
+	 * @deprecated WARNING DEPRECATED
 	 * @param   candidate - a sequence of grammar symbols
 	 * @returns             does the given sequence of symbols satisfy this rule?
 	 */
-	match(candidate: readonly (Token|ParseNode)[]): boolean {
+	private match(candidate: readonly (Token|ParseNode)[]): boolean {
 		return candidate.length === this.symbols.length && this.symbols.every((symbol, i) => {
 			const test: Token|ParseNode = candidate[i]
 			return (typeof symbol === 'string') ? // a string literal (terminal)

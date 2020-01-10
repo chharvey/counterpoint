@@ -41,10 +41,11 @@ export default class Parser {
 	private shift(curr_state: State, translator: Iterator<Token, void>, iterator_result_token: IteratorResult<Token, void>): [IteratorResult<Token, void>, boolean] {
 		const next_state: Set<Configuration> = new Set<Configuration>([...curr_state].filter((config) => {
 			const next_symbol: GrammarSymbol|null = config.after[0] || null
-			return (
-				typeof next_symbol === 'string' && this.lookahead !.cargo === next_symbol ||
-				next_symbol instanceof Terminal && next_symbol.match(this.lookahead !)
-			)
+			return (typeof next_symbol === 'string') ?
+				this.lookahead !.cargo === next_symbol
+			: (next_symbol instanceof Terminal) ?
+				next_symbol.match(this.lookahead !)
+			: false
 		}).map((config) => config.advance()))
 		let shifted: boolean = false
 		if (next_state.size > 0) {
@@ -72,7 +73,6 @@ export default class Parser {
 				const children: (Token|ParseNode)[] = rule.symbols.map(() =>
 					this.stack.pop() ![0] as Token|ParseNode
 				).reverse()
-				// if (rule.match(this.stack.slice(-rule.symbols.length)))
 				const token = new ParseNode(rule.production.displayName, children)
 				const next_state: Set<Configuration> = new Set<Configuration>((this.stack.length) ?
 					[...this.stack[this.stack.length-1][1]]

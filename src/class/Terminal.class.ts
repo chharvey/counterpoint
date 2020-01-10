@@ -24,9 +24,6 @@ export default abstract class Terminal {
 	 * @returns             does the given Token satisfy this Terminal?
 	 */
 	abstract match(candidate: Token): boolean;
-	protected /** @final */ _match(candidate: Token, tagname: string): boolean {
-		return candidate.tagname === tagname
-	}
 }
 
 
@@ -39,6 +36,6 @@ export class TerminalNumber extends Terminal {
 		return TerminalNumber.digitSequence()
 	}
 	match(candidate: Token): boolean {
-		return this._match(candidate, TokenNumber.TAGNAME)
+		return candidate.tagname === TokenNumber.TAGNAME
 	}
 }
