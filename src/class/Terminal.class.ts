@@ -10,6 +10,9 @@ import Token, {
  */
 export default abstract class Terminal {
 	protected constructor() {}
+	/** @final */ get displayName(): string {
+		return this.constructor.name.replace(/[A-Z]/g, '_$&').slice('_Terminal_'.length).toUpperCase()
+	}
 	/**
 	 * Generate a random instance of this Terminal.
 	 * @returns a well-formed string satisfying this Terminal

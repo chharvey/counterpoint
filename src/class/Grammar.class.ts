@@ -11,6 +11,19 @@ export type GrammarSymbol   = GrammarTerminal|Production
 export type GrammarTerminal = string|Terminal
 
 
+/**
+ * Display a string of grammar symbols for debugging purposes.
+ *
+ * @param   arr - the array of grammar symbols
+ * @returns       a string representing the sequence of those symbols
+ */
+const stringOfSymbols = (arr: readonly GrammarSymbol[]): string =>
+	arr.map((symbol) => (symbol instanceof Production || symbol instanceof Terminal) ?
+		symbol.displayName :
+		`"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
+	).join(' ')
+
+
 export default class Grammar {
 	/** The productions of this grammar decomposed into rules. There are likely many rules per production. */
 	readonly rules: readonly Rule[];
@@ -187,15 +200,7 @@ export class Rule {
 	}
 	/** @override */
 	toString(): string {
-		const tokens = (arr: readonly GrammarSymbol[]): string =>
-			arr.map((symbol) =>
-				(symbol instanceof Production) ?
-					symbol.TAGNAME
-				: (symbol instanceof Terminal) ?
-					symbol.constructor.name.replace(/[A-Z]/g, '_$&').slice('_Terminal_'.length).toUpperCase()
-				: `"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
-			).join(' ')
-		return `${this.production.TAGNAME} --> ${tokens(this.symbols)}`
+		return `${this.production.displayName} --> ${stringOfSymbols(this.symbols)}`
 	}
 }
 
@@ -264,16 +269,8 @@ export class Configuration {
 	}
 	/** @override */
 	toString(): string {
-		const tokens = (arr: readonly GrammarSymbol[]): string =>
-			arr.map((symbol) =>
-				((symbol instanceof Production)) ?
-					symbol.TAGNAME
-				: (symbol instanceof Terminal) ?
-					symbol.constructor.name.replace(/[A-Z]/g, '_$&').slice('_Terminal_'.length).toUpperCase()
-				: `"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
-			).join(' ')
 		const lookaheads = (set: ReadonlySet<GrammarTerminal>): string =>
-			tokens([...set]).replace(/\s/g, ', ')
-		return `${this.rule.production.TAGNAME} --> ${tokens(this.before)} \u2022 ${tokens(this.after)} {${lookaheads(this.lookaheads)}}`
+			stringOfSymbols([...set]).replace(/\s/g, ', ')
+		return `${this.rule.production.displayName} --> ${stringOfSymbols(this.before)} \u2022 ${stringOfSymbols(this.after)} {${lookaheads(this.lookaheads)}}`
 	}
 }

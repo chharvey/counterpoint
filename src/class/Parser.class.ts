@@ -73,14 +73,14 @@ export default class Parser {
 					this.stack.pop() ![0] as Token|ParseNode
 				).reverse()
 				// if (rule.match(this.stack.slice(-rule.symbols.length)))
-				const token = new ParseNode(rule.production.TAGNAME, children)
+				const token = new ParseNode(rule.production.displayName, children)
 				const next_state: Set<Configuration> = new Set<Configuration>((this.stack.length) ?
 					[...this.stack[this.stack.length-1][1]]
 						.filter((config) => config.after[0] === rule.production)
 						.map((config) => config.advance())
 				: [])
 				this.stack.push([token, this.grammar.closure(next_state)])
-				if (next_state.size < 0 && rule.production.TAGNAME !== 'File' && rule.production.TAGNAME !== 'Goal') {
+				if (next_state.size < 0 && rule.production.displayName !== 'File') { // TODO change to 'Goal' on v0.2
 					throw new Error('no next configuration found')
 				}
 				return true

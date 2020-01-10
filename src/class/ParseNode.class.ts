@@ -49,8 +49,8 @@ export default class ParseNode implements Serializable {
 	 */
 	serialize(...attrs: string[]): string {
 		const attributes: string = ' ' + [
-			(this.tagname !== ProductionFile.instance.TAGNAME) ? `line="${this.line_index + 1}"` : '',
-			(this.tagname !== ProductionFile.instance.TAGNAME) ?  `col="${this.col_index  + 1}"` : '',
+			(this.tagname !== ProductionFile.instance.displayName) ? `line="${this.line_index + 1}"` : '',
+			(this.tagname !== ProductionFile.instance.displayName) ?  `col="${this.col_index  + 1}"` : '',
 			`source="${
 				this.source
 					.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
