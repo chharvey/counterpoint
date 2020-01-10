@@ -63,18 +63,6 @@ export default abstract class Token implements Serializable {
 		return `<${this.tagname}${attributes}>${this.cargo}</${this.tagname}>`
 	}
 }
-export interface TokenSubclass extends NewableFunction {
-	readonly TAGNAME: string;
-	/**
-	 * Generate a random instance of this Token.
-	 * @returns a well-formed string satisfying this Token class
-	 */
-	random(): string;
-	new (char: Char): Token;
-}
-export const isTokenSubclass = (it: any): it is TokenSubclass => {
-	return !!it && !!it.prototype && it.prototype.__proto__ === Token.prototype
-}
 
 
 export class TokenFilebound extends Token {
@@ -134,11 +122,6 @@ export class TokenNumber extends Token {
 	static readonly TAGNAME: string = 'NUMBER'
 	static readonly CHARACTERS: readonly string[] = '0 1 2 3 4 5 6 7 8 9'.split(' ')
 	static readonly PREFIXES: readonly string[] = '+ -'.split(' ')
-	static random(): string {
-		const digitSequenceDec = (): string =>
-			(Util.randomBool() ? '' : digitSequenceDec()) + Util.arrayRandom(TokenNumber.CHARACTERS)
-		return digitSequenceDec()
-	}
 	value: number|null = null
 	constructor(start_char: Char) {
 		super(TokenNumber.TAGNAME, start_char)

@@ -1,6 +1,7 @@
-import Token, {isTokenSubclass} from './Token.class'
+import Token from './Token.class'
 import Translator from './Translator.class'
 import ParseNode from './ParseNode.class'
+import Terminal from './Terminal.class'
 import Grammar, {
 	GrammarSymbol,
 	Rule,
@@ -40,10 +41,11 @@ export default class Parser {
 	private shift(curr_state: State, translator: Iterator<Token, void>, iterator_result_token: IteratorResult<Token, void>): [IteratorResult<Token, void>, boolean] {
 		const next_state: Set<Configuration> = new Set<Configuration>([...curr_state].filter((config) => {
 			const next_symbol: GrammarSymbol|null = config.after[0] || null
-			return (
-				typeof next_symbol === 'string' && this.lookahead !.cargo === next_symbol ||
-				isTokenSubclass(next_symbol) && this.lookahead ! instanceof next_symbol
-			)
+			return (typeof next_symbol === 'string') ?
+				this.lookahead !.cargo === next_symbol
+			: (next_symbol instanceof Terminal) ?
+				next_symbol.match(this.lookahead !)
+			: false
 		}).map((config) => config.advance()))
 		let shifted: boolean = false
 		if (next_state.size > 0) {
@@ -71,15 +73,14 @@ export default class Parser {
 				const children: (Token|ParseNode)[] = rule.symbols.map(() =>
 					this.stack.pop() ![0] as Token|ParseNode
 				).reverse()
-				// if (rule.match(this.stack.slice(-rule.symbols.length)))
-				const token = new ParseNode(rule.production.TAGNAME, children)
+				const token = new ParseNode(rule.production.displayName, children)
 				const next_state: Set<Configuration> = new Set<Configuration>((this.stack.length) ?
 					[...this.stack[this.stack.length-1][1]]
 						.filter((config) => config.after[0] === rule.production)
 						.map((config) => config.advance())
 				: [])
 				this.stack.push([token, this.grammar.closure(next_state)])
-				if (next_state.size < 0 && rule.production.TAGNAME !== 'File' && rule.production.TAGNAME !== 'Goal') {
+				if (next_state.size < 0 && rule.production.displayName !== 'File') { // TODO change to 'Goal' on v0.2
 					throw new Error('no next configuration found')
 				}
 				return true

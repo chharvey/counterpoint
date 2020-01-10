@@ -1,7 +1,8 @@
 import {STX, ETX} from './Scanner.class'
 import {
-	TokenNumber,
-} from './Token.class'
+	TerminalNumber,
+} from './Terminal.class'
+
 import {GrammarSymbol, Rule} from './Grammar.class'
 import Util from './Util.class'
 
@@ -13,7 +14,9 @@ import Util from './Util.class'
  * which can be reduced to the left-hand side nonterminal in a parsing action.
  */
 export default abstract class Production {
-	abstract readonly TAGNAME: string;
+	/** @final */ get displayName(): string {
+		return this.constructor.name.slice('Production'.length)
+	}
 	/**
 	 * A set of sequences of parse symbols (terminals and/or nonterminals) in this production.
 	 */
@@ -35,7 +38,6 @@ export default abstract class Production {
 
 export class ProductionFile extends Production {
 	static readonly instance: ProductionFile = new ProductionFile()
-	readonly TAGNAME: string = 'File'
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[STX,                                ETX],
@@ -48,7 +50,6 @@ export class ProductionFile extends Production {
 }
 export class ProductionExpression extends Production {
 	static readonly instance: ProductionExpression = new ProductionExpression()
-	readonly TAGNAME: string = 'Expression'
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[ProductionExpressionAdditive.instance],
@@ -60,7 +61,6 @@ export class ProductionExpression extends Production {
 }
 export class ProductionExpressionAdditive extends Production {
 	static readonly instance: ProductionExpressionAdditive = new ProductionExpressionAdditive()
-	readonly TAGNAME: string = 'ExpressionAdditive'
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[           ProductionExpressionMultiplicative.instance],
@@ -77,7 +77,6 @@ export class ProductionExpressionAdditive extends Production {
 }
 export class ProductionExpressionMultiplicative extends Production {
 	static readonly instance: ProductionExpressionMultiplicative = new ProductionExpressionMultiplicative()
-	readonly TAGNAME: string = 'ExpressionMultiplicative'
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[           ProductionExpressionExponential.instance],
@@ -94,7 +93,6 @@ export class ProductionExpressionMultiplicative extends Production {
 }
 export class ProductionExpressionExponential extends Production {
 	static readonly instance: ProductionExpressionExponential = new ProductionExpressionExponential()
-	readonly TAGNAME: string = 'ExpressionExponential'
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[ProductionExpressionUnarySymbol.instance           ],
@@ -110,7 +108,6 @@ export class ProductionExpressionExponential extends Production {
 }
 export class ProductionExpressionUnarySymbol extends Production {
 	static readonly instance: ProductionExpressionUnarySymbol = new ProductionExpressionUnarySymbol()
-	readonly TAGNAME: string = 'ExpressionUnarySymbol'
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[ProductionExpressionUnit.instance],
@@ -126,16 +123,15 @@ export class ProductionExpressionUnarySymbol extends Production {
 }
 export class ProductionExpressionUnit extends Production {
 	static readonly instance: ProductionExpressionUnit = new ProductionExpressionUnit()
-	readonly TAGNAME: string = 'ExpressionUnit'
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[TokenNumber],
+			[TerminalNumber.instance],
 			['(', ProductionExpression.instance, ')'],
 		]
 	}
 	random(): string[] {
 		return Util.randomBool() ?
-			[TokenNumber.random()] :
+			[TerminalNumber.instance.random()] :
 			['(', ...ProductionExpression.instance.random(), ')']
 	}
 }

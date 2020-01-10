@@ -3,6 +3,10 @@ import Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Scanner.class'
 import Token from './Token.class'
 
+import {
+	ProductionFile,
+} from './Production.class'
+
 
 /**
  * A ParseNode is a node in a parse tree for a given input stream.
@@ -24,7 +28,7 @@ export default class ParseNode implements Serializable {
 	/**
 	 * Construct a new ParseNode object.
 	 *
-	 * @param tagname  - the name of the type of this ParseNode
+	 * @param tagname  - The name of the type of this ParseNode.
 	 * @param children - the child Tokens and/or ParseNodes of this ParseNode
 	 */
 	constructor(
@@ -44,20 +48,19 @@ export default class ParseNode implements Serializable {
 	 * @implements Serializable
 	 */
 	serialize(...attrs: string[]): string {
-		const tagname: string = this.tagname
-		const attributes: string = (tagname !== 'FILE') ? ' ' + [
-			`line="${this.line_index+1}"`,
-			`col="${this.col_index+1}"`,
+		const attributes: string = ' ' + [
+			(this.tagname !== ProductionFile.instance.displayName) ? `line="${this.line_index + 1}"` : '',
+			(this.tagname !== ProductionFile.instance.displayName) ?  `col="${this.col_index  + 1}"` : '',
 			`source="${
 				this.source
 					.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
 					.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
 			}"`,
 			...attrs
-		].join(' ').trim() : ''
+		].join(' ').trim()
 		const contents: string = this.inputs.map((child) =>
 			(typeof child === 'string') ? child : child.serialize()
 		).join('')
-		return `<${tagname}${attributes}>${contents}</${tagname}>`
+		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
 	}
 }

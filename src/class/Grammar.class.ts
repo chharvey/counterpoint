@@ -1,12 +1,27 @@
 import Util from './Util.class'
 import {STX, ETX} from './Scanner.class'
-import Token, {TokenSubclass, isTokenSubclass} from './Token.class'
+import Token from './Token.class'
 import ParseNode from './ParseNode.class'
+
+import Terminal from './Terminal.class'
 import Production from './Production.class'
 
 
-export type GrammarSymbol = Terminal|Production
-export type Terminal      = string|TokenSubclass
+export type GrammarSymbol   = GrammarTerminal|Production
+export type GrammarTerminal = string|Terminal
+
+
+/**
+ * Display a string of grammar symbols for debugging purposes.
+ *
+ * @param   arr - the array of grammar symbols
+ * @returns       a string representing the sequence of those symbols
+ */
+const stringOfSymbols = (arr: readonly GrammarSymbol[]): string =>
+	arr.map((symbol) => (typeof symbol === 'string') ?
+		`"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
+		: symbol.displayName
+	).join(' ')
 
 
 export default class Grammar {
@@ -37,13 +52,13 @@ export default class Grammar {
 	 * @param   symbol - a terminal or nonterminal grammar symbol
 	 * @returns          the set of all possible terminal symbols, each of which may replace `symbol`
 	 */
-	first(symbol: GrammarSymbol): Set<Terminal> {
-		return new Set<Terminal>((typeof symbol === 'string') ? // a string literal (terminal)
+	first(symbol: GrammarSymbol): Set<GrammarTerminal> {
+		return new Set<GrammarTerminal>((typeof symbol === 'string') ? // a string literal (terminal)
 			[symbol]
-		: (symbol instanceof Function && isTokenSubclass(symbol)) ? // a token type (terminal)
+		: (symbol instanceof Terminal) ? // a token type (terminal)
 			[symbol]
 		: (symbol instanceof Production) ? // a reference to a nonterminal
-			symbol.sequences.map<Terminal[]>((seq) =>
+			symbol.sequences.map<GrammarTerminal[]>((seq) =>
 				(seq[0] !== symbol) ? // avoid infinite loop
 					[...this.first(seq[0])] :
 					[]
@@ -57,10 +72,10 @@ export default class Grammar {
 	 * @param   symbol - a terminal or nonterminal grammar symbol
 	 * @returns          the set of all possible terminal symbols, each of which may follow `symbol`
 	 */
-	follow(symbol: GrammarSymbol): Set<Terminal> {
-		const set: Set<string|TokenSubclass> = new Set<Terminal>(this.rules
+	follow(symbol: GrammarSymbol): Set<GrammarTerminal> {
+		const set: Set<GrammarTerminal> = new Set<GrammarTerminal>(this.rules
 			.filter((rule) => rule.symbols.includes(symbol))
-			.map<Terminal[]>((rule) => {
+			.map<GrammarTerminal[]>((rule) => {
 				const index: number = rule.symbols.indexOf(symbol)
 				return (index < rule.symbols.length-1) ? // if (item !== choice.lastItem)
 					[...this.first(rule.symbols[index + 1])] :
@@ -166,16 +181,17 @@ export class Rule {
 	}
 	/**
 	 * Does the given sequence of symbols satisfy this rule?
+	 * @deprecated WARNING DEPRECATED
 	 * @param   candidate - a sequence of grammar symbols
 	 * @returns             does the given sequence of symbols satisfy this rule?
 	 */
-	match(candidate: readonly (Token|ParseNode)[]): boolean {
+	private match(candidate: readonly (Token|ParseNode)[]): boolean {
 		return candidate.length === this.symbols.length && this.symbols.every((symbol, i) => {
 			const test: Token|ParseNode = candidate[i]
 			return (typeof symbol === 'string') ? // a string literal (terminal)
 				test instanceof Token && test.cargo === symbol
-			: (symbol instanceof Function && isTokenSubclass(symbol)) ? // a token type (terminal)
-				test instanceof symbol
+			: (symbol instanceof Terminal) ? // a token type (terminal)
+				test instanceof Token && symbol.match(test)
 			: (symbol instanceof Production) ? // a reference to a nonterminal
 				test instanceof ParseNode && symbol.toRules().some((rule) =>
 					rule.match(test.inputs)
@@ -185,15 +201,7 @@ export class Rule {
 	}
 	/** @override */
 	toString(): string {
-		const tokens = (arr: readonly GrammarSymbol[]): string =>
-			arr.map((symbol) =>
-				(symbol instanceof Production) ?
-					symbol.TAGNAME
-				: (isTokenSubclass(symbol)) ?
-					symbol.name.replace(/[A-Z]/g, '_$&').slice('_Token_'.length).toUpperCase()
-				: `"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
-			).join(' ')
-		return `${this.production.TAGNAME} --> ${tokens(this.symbols)}`
+		return `${this.production.displayName} --> ${stringOfSymbols(this.symbols)}`
 	}
 }
 
@@ -214,7 +222,7 @@ export class Configuration {
 	/**
 	 * The set of terminal symbols that may succeed the symbols in this configuration’s rule.
 	 */
-	readonly lookaheads: ReadonlySet<Terminal>;
+	readonly lookaheads: ReadonlySet<GrammarTerminal>;
 	/**
 	 * Construct a new Configuration object.
 	 * @param  rule       - The rule to track.
@@ -226,7 +234,7 @@ export class Configuration {
 	constructor(
 		readonly rule: Rule,
 		readonly marker: number /* TODO bigint */ = 0,
-		...lookaheads: readonly Terminal[]
+		...lookaheads: readonly GrammarTerminal[]
 	) {
 		if (this.marker > this.rule.symbols.length) throw new Error('Cannot advance past end of rule.')
 		this.lookaheads = new Set(lookaheads)
@@ -258,20 +266,12 @@ export class Configuration {
 		return this === config ||
 			this.rule.equals(config.rule) &&
 			this.marker === config.marker &&
-			(!lookaheads || Util.equalSets<Terminal>(this.lookaheads, config.lookaheads))
+			(!lookaheads || Util.equalSets<GrammarTerminal>(this.lookaheads, config.lookaheads))
 	}
 	/** @override */
 	toString(): string {
-		const tokens = (arr: readonly GrammarSymbol[]): string =>
-			arr.map((symbol) =>
-				((symbol instanceof Production)) ?
-					symbol.TAGNAME
-				: isTokenSubclass(symbol) ?
-					symbol.name.replace(/[A-Z]/g, '_$&').slice('_Token_'.length).toUpperCase()
-				: `"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
-			).join(' ')
-		const lookaheads = (set: ReadonlySet<Terminal>): string =>
-			tokens([...set]).replace(/\s/g, ', ')
-		return `${this.rule.production.TAGNAME} --> ${tokens(this.before)} \u2022 ${tokens(this.after)} {${lookaheads(this.lookaheads)}}`
+		const lookaheads = (set: ReadonlySet<GrammarTerminal>): string =>
+			stringOfSymbols([...set]).replace(/\s/g, ', ')
+		return `${this.rule.production.displayName} --> ${stringOfSymbols(this.before)} \u2022 ${stringOfSymbols(this.after)} {${lookaheads(this.lookaheads)}}`
 	}
 }
