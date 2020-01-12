@@ -62,7 +62,7 @@ export default class Parser {
 	 * @param   curr_state - the current configuration state
 	 * @returns              whether the rduce was successful
 	 */
-	private reduce(curr_state: State): boolean {
+	private reduce(curr_state: State): true {
 		const dones: Configuration[] = [...curr_state].filter((config) => config.done)
 		if (dones.length) {
 			const reductions: Configuration[] = dones.filter((config) =>
@@ -70,16 +70,14 @@ export default class Parser {
 			)
 			if (reductions.length === 1) {
 				const rule: Rule = reductions[0].rule
-				const children: (Token|ParseNode)[] = rule.symbols.map(() =>
-					this.stack.pop() ![0] as Token|ParseNode
-				).reverse()
-				const token = new ParseNode(rule.production.displayName, children)
+				const children: (Token|ParseNode)[] = rule.symbols.map(() => this.stack.pop() ![0]).reverse()
+				const node: ParseNode = new ParseNode(rule.production.displayName, children)
 				const next_state: Set<Configuration> = new Set<Configuration>((this.stack.length) ?
 					[...this.stack[this.stack.length-1][1]]
 						.filter((config) => config.after[0] === rule.production)
 						.map((config) => config.advance())
 				: [])
-				this.stack.push([token, this.grammar.closure(next_state)])
+				this.stack.push([node, this.grammar.closure(next_state)])
 				if (next_state.size < 0 && rule.production.displayName !== 'File') { // TODO change to 'Goal' on v0.2
 					throw new Error('no next configuration found')
 				}
@@ -96,7 +94,7 @@ export default class Parser {
 	 * @param   source the source text
 	 * @returns        a token representing the grammar’s goal symbol
 	 */
-	parse(source: string): Token|ParseNode {
+	parse(source: string): ParseNode {
 		/** The translator returning tokens for each iteration. */
 		const translator: Iterator<Token, void> = new Translator(source).generate()
 		/** The result of the translator iterator. */
@@ -113,21 +111,19 @@ export default class Parser {
 				continue;
 			}
 
-			const reduced: boolean = this.reduce(curr_state)
+			const reduced: true = this.reduce(curr_state)
 			if (reduced) {
 				continue;
 			}
 
-			if (!shifted && !reduced) {
-				throw new Error('I neither shifted nor reduced; there must be a syntax error.')
-			}
+			throw new Error('I neither shifted nor reduced; there must be a syntax error.')
 		}
 		const final_state: State = this.stack[this.stack.length-1][1]
 		if ([...final_state][0].rule.belongsTo(this.grammar.productions[0])) {
 			this.reduce(final_state)
 		}
-		if (this.stack.length === 0) throw new Error('Somehow, the stack was emptied. It should have 1 final element, a top-level rule.')
-		if (this.stack.length >   1) throw new Error('There is still unfinished business: The Stack should have only 1 element left.')
-		return this.stack[0][0]
+		if (this.stack.length < 1) throw new Error('Somehow, the stack was emptied. It should have 1 final element, a top-level rule.')
+		if (this.stack.length > 1) throw new Error('There is still unfinished business: The Stack should have only 1 element left.')
+		return this.stack[0][0] as ParseNode
 	}
 }
