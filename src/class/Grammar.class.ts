@@ -194,7 +194,7 @@ export class Rule {
 				test instanceof Token && symbol.match(test)
 			: (symbol instanceof Production) ? // a reference to a nonterminal
 				test instanceof ParseNode && symbol.toRules().some((rule) =>
-					rule.match(test.inputs)
+					rule.match(test.children)
 				)
 			: false
 		})

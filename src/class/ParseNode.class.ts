@@ -17,8 +17,6 @@ import {
  * @see http://parsingintro.sourceforge.net/#contents_item_8.2
  */
 export default class ParseNode implements Serializable {
-	/** The set of child inputs that creates this ParseNode. */
-	readonly inputs: readonly (Token|ParseNode)[];
 	/** The concatenation of the source text of all children. */
 	private readonly source: string;
 	/** Zero-based line number of the first token (first line is line 0). */
@@ -29,18 +27,13 @@ export default class ParseNode implements Serializable {
 	 * Construct a new ParseNode object.
 	 *
 	 * @param tagname  - The name of the type of this ParseNode.
-	 * @param children - the child Tokens and/or ParseNodes of this ParseNode
+	 * @param children - The set of child inputs that creates this ParseNode.
 	 */
 	constructor(
 		private readonly tagname: string,
-		children: readonly (Token|ParseNode)[],
+		readonly children: readonly (Token|ParseNode)[], // COMBAK make private once `Rule#match` is removed
 	) {
-		this.inputs = children.slice()
-		this.source = children.map((child) =>
-			(typeof child === 'string') ? child :
-			(child instanceof Token) ? child.cargo :
-			child.source
-		).join(' ')
+		this.source = children.map((child) => (child instanceof Token) ? child.cargo : child.source).join(' ')
 		this.line_index = children[0].line_index
 		this.col_index  = children[0].col_index
 	}
@@ -58,9 +51,7 @@ export default class ParseNode implements Serializable {
 			}"`,
 			...attrs
 		].join(' ').trim()
-		const contents: string = this.inputs.map((child) =>
-			(typeof child === 'string') ? child : child.serialize()
-		).join('')
+		const contents: string = this.children.map((child) => child.serialize()).join('')
 		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
 	}
 }
