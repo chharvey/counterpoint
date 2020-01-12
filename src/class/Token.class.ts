@@ -39,7 +39,7 @@ export default abstract class Token implements Serializable {
 	 * Get this Token’s cargo.
 	 * @returns All the characters in this Token.
 	 */
-	get cargo(): string {
+	get source(): string {
 		return this._cargo
 	}
 
@@ -60,7 +60,7 @@ export default abstract class Token implements Serializable {
 			`col="${this.col_index+1}"`,
 			...attrs
 		].join(' ').trim()
-		return `<${this.tagname}${attributes}>${this.cargo}</${this.tagname}>`
+		return `<${this.tagname}${attributes}>${this.source}</${this.tagname}>`
 	}
 }
 
@@ -82,7 +82,7 @@ export class TokenFilebound extends Token {
 		const contents: string = new Map<string, string>([
 			[STX, '\u2402' /* SYMBOL FOR START OF TEXT */],
 			[ETX, '\u2403' /* SYMBOL FOR END OF TEXT   */],
-		]).get(this.cargo) !
+		]).get(this.source) !
 		return `<${TokenFilebound.TAGNAME}${attributes}>${contents}</${TokenFilebound.TAGNAME}>`
 	}
 }

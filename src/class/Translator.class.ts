@@ -51,14 +51,14 @@ export default class Translator {
 				this.t0.value = new Map<string, boolean>([
 					[STX, true ],
 					[ETX, false],
-				]).get(this.t0.cargo) !
+				]).get(this.t0.source) !
 				yield this.t0
 			} else if (this.t0 instanceof TokenWhitespace) {
 				// we do not want to send whitespace to the parser
 			} else if (this.t0 instanceof TokenComment) {
 				// we do not want to send comments to the parser
 			} else if (this.t0 instanceof TokenString) {
-				this.t0.value = this.t0.cargo // here is where we perform character escapes
+				this.t0.value = this.t0.source // here is where we perform character escapes
 				yield this.t0
 			} else if (this.t0 instanceof TokenNumber) {
 				/**
@@ -78,7 +78,7 @@ export default class Translator {
 					:
 						10 * mv_dec(cargo.slice(0, -1)) + mv_dec(cargo[cargo.length-1])
 				}
-				this.t0.value = mv_dec(this.t0.cargo)
+				this.t0.value = mv_dec(this.t0.source)
 				yield this.t0
 			} else if (this.t0 instanceof TokenWord) {
 				this.t0.id = this.idcount++;

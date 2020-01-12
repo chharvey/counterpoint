@@ -18,7 +18,7 @@ import {
  */
 export default class ParseNode implements Serializable {
 	/** The concatenation of the source text of all children. */
-	private readonly source: string;
+	readonly source: string;
 	/** Zero-based line number of the first token (first line is line 0). */
 	readonly line_index: number;
 	/** Zero-based column number of the first token (first col is col 0). */
@@ -33,7 +33,7 @@ export default class ParseNode implements Serializable {
 		private readonly tagname: string,
 		readonly children: readonly (Token|ParseNode)[], // COMBAK make private once `Rule#match` is removed
 	) {
-		this.source = children.map((child) => (child instanceof Token) ? child.cargo : child.source).join(' ')
+		this.source = children.map((child) => child.source).join(' ')
 		this.line_index = children[0].line_index
 		this.col_index  = children[0].col_index
 	}
