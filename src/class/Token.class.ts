@@ -23,7 +23,7 @@ export default abstract class Token implements Serializable {
 	/**
 	 * Construct a new Token object.
 	 *
-	 * @param tagname    - the name of the type of this Token
+	 * @param tagname    - The name of the type of this Token.
 	 * @param start_char - the starting character of this Token
 	 */
 	constructor(

@@ -71,7 +71,7 @@ export default class Parser {
 			if (reductions.length === 1) {
 				const rule: Rule = reductions[0].rule
 				const children: (Token|ParseNode)[] = rule.symbols.map(() => this.stack.pop() ![0]).reverse()
-				const node: ParseNode = new ParseNode(rule.production.displayName, children)
+				const node: ParseNode = new ParseNode(rule, children)
 				const next_state: Set<Configuration> = new Set<Configuration>((this.stack.length) ?
 					[...this.stack[this.stack.length-1][1]]
 						.filter((config) => config.after[0] === rule.production)

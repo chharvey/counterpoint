@@ -1,7 +1,5 @@
 import Util from './Util.class'
 import {STX, ETX} from './Scanner.class'
-import Token from './Token.class'
-import ParseNode from './ParseNode.class'
 
 import Terminal from './Terminal.class'
 import Production from './Production.class'
@@ -178,26 +176,6 @@ export class Rule {
 	 */
 	belongsTo(prod: Production): boolean {
 		return prod.toRules().some((rule) => this.equals(rule))
-	}
-	/**
-	 * Does the given sequence of symbols satisfy this rule?
-	 * @deprecated WARNING DEPRECATED
-	 * @param   candidate - a sequence of grammar symbols
-	 * @returns             does the given sequence of symbols satisfy this rule?
-	 */
-	private match(candidate: readonly (Token|ParseNode)[]): boolean {
-		return candidate.length === this.symbols.length && this.symbols.every((symbol, i) => {
-			const test: Token|ParseNode = candidate[i]
-			return (typeof symbol === 'string') ? // a string literal (terminal)
-				test instanceof Token && test.source === symbol
-			: (symbol instanceof Terminal) ? // a token type (terminal)
-				test instanceof Token && symbol.match(test)
-			: (symbol instanceof Production) ? // a reference to a nonterminal
-				test instanceof ParseNode && symbol.toRules().some((rule) =>
-					rule.match(test.children)
-				)
-			: false
-		})
 	}
 	/** @override */
 	toString(): string {

@@ -3,6 +3,7 @@ import Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Scanner.class'
 import Token from './Token.class'
 
+import {Rule} from './Grammar.class'
 import {
 	ProductionFile,
 } from './Production.class'
@@ -17,6 +18,8 @@ import {
  * @see http://parsingintro.sourceforge.net/#contents_item_8.2
  */
 export default class ParseNode implements Serializable {
+	/** The name of the type of this ParseNode. */
+	readonly tagname: string;
 	/** The concatenation of the source text of all children. */
 	readonly source: string;
 	/** Zero-based line number of the first token (first line is line 0). */
@@ -26,13 +29,14 @@ export default class ParseNode implements Serializable {
 	/**
 	 * Construct a new ParseNode object.
 	 *
-	 * @param tagname  - The name of the type of this ParseNode.
+	 * @param rule     - The Rule used to create this ParseNode.
 	 * @param children - The set of child inputs that creates this ParseNode.
 	 */
 	constructor(
-		private readonly tagname: string,
-		readonly children: readonly (Token|ParseNode)[], // COMBAK make private once `Rule#match` is removed
+		readonly rule: Rule,
+		readonly children: readonly (Token|ParseNode)[],
 	) {
+		this.tagname = rule.production.displayName
 		this.source = children.map((child) => child.source).join(' ')
 		this.line_index = children[0].line_index
 		this.col_index  = children[0].col_index
@@ -42,8 +46,8 @@ export default class ParseNode implements Serializable {
 	 */
 	serialize(...attrs: string[]): string {
 		const attributes: string = ' ' + [
-			(this.tagname !== ProductionFile.instance.displayName) ? `line="${this.line_index + 1}"` : '',
-			(this.tagname !== ProductionFile.instance.displayName) ?  `col="${this.col_index  + 1}"` : '',
+			(this.rule.production !== ProductionFile.instance) ? `line="${this.line_index + 1}"` : '',
+			(this.rule.production !== ProductionFile.instance) ?  `col="${this.col_index  + 1}"` : '',
 			`source="${
 				this.source
 					.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */

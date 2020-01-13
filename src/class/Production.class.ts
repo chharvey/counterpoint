@@ -1,10 +1,10 @@
+import Util from './Util.class'
 import {STX, ETX} from './Scanner.class'
+import ParseNode from './ParseNode.class'
+import {GrammarSymbol, Rule} from './Grammar.class'
 import {
 	TerminalNumber,
 } from './Terminal.class'
-
-import {GrammarSymbol, Rule} from './Grammar.class'
-import Util from './Util.class'
 
 
 /**
@@ -26,6 +26,15 @@ export default abstract class Production {
 	 * @returns a well-formed sequence of strings satisfying this Production
 	 */
 	abstract random(): string[];
+	/**
+	 * Does the given ParseNode satisfy a Rule in this Production?
+	 * @param   candidate - a ParseNode to test
+	 * @returns             Does the given ParseNode satisfy a Rule in this Production?
+	 * @final
+	 */
+	match(candidate: ParseNode): boolean {
+		return candidate.rule.belongsTo(this)
+	}
 	/**
 	 * Generate grammar rules from this Production.
 	 * @returns this Production split into several rules
