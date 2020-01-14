@@ -1,11 +1,17 @@
 import Serializable from '../iface/Serializable.iface'
 
 import {STX, ETX} from './Scanner.class'
-import Token from './Token.class'
-
+import Token, {TokenNumber} from './Token.class'
+import SemanticNode from './SemanticNode.class'
 import {Rule} from './Grammar.class'
 import {
 	ProductionFile,
+	ProductionExpression,
+	ProductionExpressionAdditive,
+	ProductionExpressionMultiplicative,
+	ProductionExpressionExponential,
+	ProductionExpressionUnarySymbol,
+	ProductionExpressionUnit,
 } from './Production.class'
 
 
@@ -18,6 +24,33 @@ import {
  * @see http://parsingintro.sourceforge.net/#contents_item_8.2
  */
 export default class ParseNode implements Serializable {
+	/**
+	 * Construct a speific subtype of ParseNode depending on which production the rule belongs to.
+	 *
+	 * @param rule     - The Rule used to create this ParseNode.
+	 * @param children - The set of child inputs that creates this ParseNode.
+	 * @returns          a new ParseNode object
+	 */
+	static from(rule: Rule, children: readonly (Token|ParseNode)[]): ParseNode {
+		return (rule.production === ProductionFile.instance) ?
+			new ParseNodeGoal(rule, children)
+		: (rule.production === ProductionExpression.instance) ?
+			new ParseNodeExpression(rule, children)
+		: ([
+			ProductionExpressionAdditive,
+			ProductionExpressionMultiplicative,
+			ProductionExpressionExponential,
+		].some((prodclass) => rule.production === prodclass.instance)) ?
+			new ParseNodeExpressionBinary(rule, children)
+		: (rule.production === ProductionExpressionUnarySymbol.instance) ?
+			new ParseNodeExpressionUnary(rule, children)
+		: (rule.production === ProductionExpressionUnit.instance) ?
+			new ParseNodeExpressionUnit(rule, children)
+		:
+			new ParseNode(rule, children)
+	}
+
+
 	/** The name of the type of this ParseNode. */
 	readonly tagname: string;
 	/** The concatenation of the source text of all children. */
@@ -32,7 +65,7 @@ export default class ParseNode implements Serializable {
 	 * @param rule     - The Rule used to create this ParseNode.
 	 * @param children - The set of child inputs that creates this ParseNode.
 	 */
-	constructor(
+	protected constructor(
 		readonly rule: Rule,
 		readonly children: readonly (Token|ParseNode)[],
 	) {
@@ -57,5 +90,58 @@ export default class ParseNode implements Serializable {
 		].join(' ').trim()
 		const contents: string = this.children.map((child) => child.serialize()).join('')
 		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
+	}
+	/**
+	 * Return a Semantic Node, a node of the Semantic Tree or “decorated/abstract syntax tree”.
+	 * @returns a semantic node containing this parse node’s semantics
+	 */
+	decorate(): SemanticNode {
+		return new SemanticNode(this, 'SemanticUnknown')
+	}
+}
+class ParseNodeGoal extends ParseNode {
+	decorate(): SemanticNode {
+		return (this.children.length === 2) ?
+			new SemanticNode(this, 'SemanticNull')
+		:
+			new SemanticNode(this, 'SemanticGoal', [
+				(this.children[1] as ParseNode).decorate()
+			])
+	}
+}
+class ParseNodeExpression extends ParseNode {
+	decorate(): SemanticNode {
+		return (this.children[0] as ParseNode).decorate()
+	}
+}
+class ParseNodeExpressionBinary extends ParseNode {
+	decorate(): SemanticNode {
+		return (this.children.length === 1) ?
+			(this.children[0] as ParseNode).decorate()
+		:
+			new SemanticNode(this, 'SemanticExpression', [
+				(this.children[0] as ParseNode).decorate(),
+				(this.children[2] as ParseNode).decorate(),
+			], {operator: this.children[1].source})
+	}
+}
+class ParseNodeExpressionUnary extends ParseNode {
+	decorate(): SemanticNode {
+		return (this.children.length === 1) ?
+			(this.children[0] as ParseNode).decorate()
+		:
+			new SemanticNode(this, 'SemanticExpression', [
+				(this.children[1] as ParseNode).decorate(),
+			], {operator: this.children[0].source})
+	}
+}
+class ParseNodeExpressionUnit extends ParseNode {
+	decorate(): SemanticNode {
+		return (this.children.length === 1) ?
+			new SemanticNode(this, 'SemanticConstant', [], {value: (this.children[0] as TokenNumber).value}) // TODO use `.cook()` in v2
+		:
+			new SemanticNode(this, 'SemanticExpression', [
+				(this.children[1] as ParseNode).decorate(),
+			], {operator: [this.children[0], this.children[2]].map((c) => c.source).join('')})
 	}
 }
