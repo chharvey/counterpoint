@@ -77,6 +77,7 @@ export class ProductionStatement extends Production {
 			[ProductionDeclarationVariable.instance],
 			[ProductionStatementAssignment.instance],
 			[ProductionExpression.instance, ';'],
+			[';'],
 		]
 	}
 	random(): string[] {

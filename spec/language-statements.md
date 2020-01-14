@@ -6,7 +6,7 @@ This chapter defines the syntactic structure and semantics of statements in the 
 Statement ::=
 	DeclarationVariable |
 	StatementAssignment |
-	Expression ";"
+	Expression? ";"
 ```
 
 

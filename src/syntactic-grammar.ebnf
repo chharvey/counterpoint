@@ -7,7 +7,7 @@ Goal ::= #x02 Statement* #x03
 Statement ::=
 	DeclarationVariable |
 	StatementAssignment |
-	Expression ";"
+	Expression? ";"
 
 DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";"
 

@@ -1,4 +1,4 @@
-500  +  30;  \ line comment  *  2
+500  +  30; ;  \ line comment  *  2
 
 + \o55  +  \q33  "multiline
 comment" *  \x2;
@@ -21,6 +21,9 @@ comment" *  \x2;
 
 \ the following is an empty line comment:
 +123; \
+
+\ the following is an empty statement:
+; \
 
   \a \ line comment starting with "a"
 \ \b \ line comment starting with "b"
