@@ -120,7 +120,7 @@ There is a many-to-one relationship between tokens and mathematical values. For 
 a token containing `0042` has the same mathematical value as a token containing `+42`:
 the integer *42*.
 
-```
+```w3c
 MV(Number ::= IntegerLiteral)
 	:= MV(IntegerLiteral)
 MV(Number ::= "+" IntegerLiteral)
@@ -144,6 +144,13 @@ MV([0-9] ::= "7") := 7
 MV([0-9] ::= "8") := 8
 MV([0-9] ::= "9") := 9
 ```
+
+#### Static Semantics: Decoration (Numbers)
+```w3c
+Decorate(Number)
+	::= SemanticConstant {value: MV(Number)} []
+```
+where `MV` is [Mathematical Value](./#static-semantics-mathematical-value).
 
 
 ### Punctuators
