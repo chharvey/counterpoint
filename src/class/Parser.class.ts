@@ -119,7 +119,7 @@ export default class Parser {
 			throw new Error('I neither shifted nor reduced; there must be a syntax error.')
 		}
 		const final_state: State = this.stack[this.stack.length-1][1]
-		if ([...final_state][0].rule.belongsTo(this.grammar.productions[0])) {
+		if ([...final_state][0].rule.production.equals(this.grammar.productions[0])) {
 			this.reduce(final_state)
 		}
 		if (this.stack.length < 1) throw new Error('Somehow, the stack was emptied. It should have 1 final element, a top-level rule.')

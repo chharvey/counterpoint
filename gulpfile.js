@@ -55,13 +55,13 @@ async function test() {
 		ProductionExpressionUnit,
 	} = require('./build/class/Production.class')
 	const solid_grammar = new Grammar([
-		new ProductionFile(),
-		new ProductionExpression(),
-		new ProductionExpressionAdditive(),
-		new ProductionExpressionMultiplicative(),
-		new ProductionExpressionExponential(),
-		new ProductionExpressionUnarySymbol(),
-		new ProductionExpressionUnit(),
+		ProductionFile.instance,
+		ProductionExpression.instance,
+		ProductionExpressionAdditive.instance,
+		ProductionExpressionMultiplicative.instance,
+		ProductionExpressionExponential.instance,
+		ProductionExpressionUnarySymbol.instance,
+		ProductionExpressionUnit.instance,
 	])
 	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
 	fs.writeFileSync('./sample/output.xml', new Parser(solid_grammar).parse(await input).serialize())
@@ -83,13 +83,13 @@ async function random() {
 		ProductionExpressionUnit,
 	} = require('./build/class/Production.class')
 	const solid_grammar = new Grammar([
-		new ProductionFile(),
-		new ProductionExpression(),
-		new ProductionExpressionAdditive(),
-		new ProductionExpressionMultiplicative(),
-		new ProductionExpressionExponential(),
-		new ProductionExpressionUnarySymbol(),
-		new ProductionExpressionUnit(),
+		ProductionFile.instance,
+		ProductionExpression.instance,
+		ProductionExpressionAdditive.instance,
+		ProductionExpressionMultiplicative.instance,
+		ProductionExpressionExponential.instance,
+		ProductionExpressionUnarySymbol.instance,
+		ProductionExpressionUnit.instance,
 	])
 	console.log(solid_grammar.rules.map((r) => r.toString()))
 	console.log(solid_grammar.random().join(' ').replace(/\u000d/g, ' '))

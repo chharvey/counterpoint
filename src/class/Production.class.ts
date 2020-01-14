@@ -14,6 +14,7 @@ import {
  * which can be reduced to the left-hand side nonterminal in a parsing action.
  */
 export default abstract class Production {
+	protected constructor() {}
 	/** @final */ get displayName(): string {
 		return this.constructor.name.slice('Production'.length)
 	}
@@ -33,7 +34,20 @@ export default abstract class Production {
 	 * @final
 	 */
 	match(candidate: ParseNode): boolean {
-		return candidate.rule.belongsTo(this)
+		return candidate.rule.production.equals(this)
+	}
+	/**
+	 * Is this production “equal to” the argument?
+	 *
+	 * Two productions are “equal” if they are the same object, or all of the following are true:
+	 * - The corresponding rules of both productions are “equal” (by {@link Rule#equals}).
+	 *
+	 * @param   prod - the production to compare
+	 * @returns        is this production “equal to” the argument?
+	 */
+	equals(prod: Production) {
+		return this === prod ||
+			Util.equalArrays<Rule>(this.toRules(), prod.toRules(), (r1, r2) => r1.equals(r2))
 	}
 	/**
 	 * Generate grammar rules from this Production.
