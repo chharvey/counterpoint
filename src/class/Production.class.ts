@@ -54,9 +54,8 @@ export class ProductionGoal extends Production {
 	random(): string[] {
 		return [STX, ...ProductionGoal.__0__List.instance.random(), ETX]
 	}
-	static readonly __0__List = class __0__List extends Production {
-		static readonly instance: __0__List = new __0__List()
-		readonly TAGNAME: string = 'Goal__0__List'
+	static readonly __0__List = class ProductionGoal__0__List extends Production {
+		static readonly instance: ProductionGoal__0__List = new ProductionGoal__0__List()
 		get sequences(): GrammarSymbol[][] {
 			return [
 				[      ProductionStatement.instance],
@@ -73,7 +72,6 @@ export class ProductionGoal extends Production {
 }
 export class ProductionStatement extends Production {
 	static readonly instance: ProductionStatement = new ProductionStatement()
-	readonly TAGNAME: string = 'Statement'
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[ProductionDeclarationVariable.instance],
@@ -92,7 +90,6 @@ export class ProductionStatement extends Production {
 }
 export class ProductionDeclarationVariable extends Production {
 	static readonly instance: ProductionDeclarationVariable = new ProductionDeclarationVariable()
-	readonly TAGNAME: string = 'DeclarationVariable'
 	get sequences(): GrammarSymbol[][] {
 		return [
 			['let',            TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
@@ -112,7 +109,6 @@ export class ProductionDeclarationVariable extends Production {
 }
 export class ProductionStatementAssignment extends Production {
 	static readonly instance: ProductionStatementAssignment = new ProductionStatementAssignment()
-	readonly TAGNAME: string = 'StatementAssignment'
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
@@ -222,7 +218,6 @@ export class ProductionExpressionUnit extends Production {
 }
 export class ProductionStringTemplate extends Production {
 	static readonly instance: ProductionStringTemplate = new ProductionStringTemplate()
-	readonly TAGNAME: string = 'StringTemplate'
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[TerminalTemplateFull.instance],
@@ -241,9 +236,8 @@ export class ProductionStringTemplate extends Production {
 			TerminalTemplateTail.instance.random(),
 		]
 	}
-	static readonly __0__List = class __0__List extends Production {
-		static readonly instance: __0__List = new __0__List()
-		readonly TAGNAME: string = 'StringTemplate__0__List'
+	static readonly __0__List = class ProductionStringTemplate__0__List extends Production {
+		static readonly instance: ProductionStringTemplate__0__List = new ProductionStringTemplate__0__List()
 		get sequences(): GrammarSymbol[][] {
 			return [
 				[      TerminalTemplateMiddle.instance                               ],
@@ -263,7 +257,6 @@ export class ProductionStringTemplate extends Production {
 }
 export class ProductionPrimitiveLiteral extends Production {
 	static readonly instance: ProductionPrimitiveLiteral = new ProductionPrimitiveLiteral()
-	readonly TAGNAME: string = 'PrimitiveLiteral'
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[TerminalNumber.instance],
