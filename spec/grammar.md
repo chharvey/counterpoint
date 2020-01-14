@@ -58,3 +58,29 @@ Each (non-leaf) node of the tree corresponds to a nonterminal production in the 
 and has child nodes that correspond to the production’s sequence of symbols on its right-hand side.
 The leaves of the tree (at the ends of the branches), are terminal symbols,
 the tokens from the input stream.
+
+
+
+## Syntax Errors (1xxx)
+Syntax Errors arise when a Solid source text does not adhere to the language’s
+formal lexical or syntactic grammar rules.
+If this is the case, the code is said to be “not well-formed”.
+
+There are two main types of syntax errors: lexical errors and parse errors.
+
+
+### Lexical Errors (11xx)
+When the Solid source text fails to produce a token per
+the [lexical grammar](#the-lexical-grammar) rules,
+a lexical error is raised.
+
+1100. A general lexical error not covered by one of the following cases.
+1101. The lexer reached a character that it does not recognize.
+1102. The lexer reached the end of the file before it found the end of the current token.
+1103. The lexer found an escape sequence of an invalid format.
+
+
+### Parse Errors (12xx)
+When the Solid source text fails to parse correctly per
+the [syntactic grammar](#the-syntactic-grammar) rules,
+a parse error is raised.
