@@ -213,6 +213,13 @@ SV(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03])
 	:= UTF16Encoding(code point of that character)
 ```
 
+#### Static Semantics: Decoration (String Literals)
+```w3c
+Decorate(String)
+	::= SemanticConstant {value: SV(String)} []
+```
+where `SV` is [String Value](./#static-semantics-string-value).
+
 
 ### Template Literals
 ```w3c
@@ -309,6 +316,19 @@ TV(TemplateCharsEndInterp ::= "\" "`")
 TV(TemplateCharsEndInterp ::= "\" "`" TemplateCharsEndInterp)
 	:= \x60 followed by TV(TemplateCharsEndInterp)
 ```
+
+#### Static Semantics: Decoration (Template Literals)
+```w3c
+Decorate(TemplateFull)
+	::= SemanticConstant {value: TV(TemplateFull)} []
+Decorate(TemplateHead)
+	::= SemanticConstant {value: TV(TemplateHead)} []
+Decorate(TempalteMiddle)
+	::= SemanticConstant {value: TV(TempalteMiddle)} []
+Decorate(TempalteTail)
+	::= SemanticConstant {value: TV(TempalteTail)} []
+```
+where `TV` is [Template Value](./#static-semantics-template-value).
 
 
 ### Numbers
@@ -468,6 +488,19 @@ WV(Word ::= Identifier)
 WV(Word ::= Keyword)
 	:= the contents of the token
 ```
+
+#### Static Semantics: Decoration (Words)
+```w3c
+Decorate(Word ::= Identifier)
+	::= Decorate(Identifier)
+Decorate(Word ::= Keyword)
+	::= Decorate(Keyword)
+Decorate(Identifier)
+	::= SemanticIdentifier {id: WV(Identifier)} []
+Decorate(Keyword)
+	::= SemanticKeyword {id: WV(Keyword)} []
+```
+where `WV` is [Word Value](./#static-semantics-word-value).
 
 
 ### Punctuators
