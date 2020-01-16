@@ -41,7 +41,7 @@ export default class Translator {
 	 * in the order they appeared.
 	 * @returns a list of unique identifiers
 	 */
-	get identifiers(): readonly string[] {
+	get identifiers(): string[] {
 		return [...this._ids]
 	}
 
@@ -55,6 +55,7 @@ export default class Translator {
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
 				if (this.t0 instanceof TokenWord && this.t0.isIdentifier) {
 					this._ids.add(this.t0.source)
+					this.t0.setValue(this)
 				}
 				if (this.t0 instanceof Token) {
 					yield this.t0

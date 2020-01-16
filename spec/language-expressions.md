@@ -15,9 +15,26 @@ Decorate(Expression ::= ExpressionAdditive)
 
 
 
+## Literals
+```w3c
+StringTemplate ::=
+	TEMPLATE_FULL |
+	TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
+
+PrimitiveLiteral ::=
+	NUMBER |
+	STRING
+```
+
+
+
 ## Expression Units
 ```w3c
-ExpressionUnit ::= NUMBER | "(" Expression ")"
+ExpressionUnit ::=
+	IDENTIFIER         |
+	PrimitiveLiteral   |
+	StringTemplate     |
+	"(" Expression ")"
 ```
 
 

@@ -38,11 +38,10 @@ async function test() {
 	}
 
 	console.log("\n\nHere are the tokens returned by the translator:")
-	const trans_obj = new Translator(await input)
-	const translator = trans_obj.generate()
+	const translator = new Translator(await input).generate()
 	let iterator_result_tokentrans = translator.next()
 	while (!iterator_result_tokentrans.done) {
-		console.log(iterator_result_tokentrans.value.serialize(trans_obj))
+		console.log(iterator_result_tokentrans.value.serialize())
 		iterator_result_tokentrans = translator.next()
 	}
 
@@ -85,11 +84,10 @@ async function test() {
 		throw err
 	}
 	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
-	const tree = new Parser(solid_grammar).parse(await input)
-	fs.writeFileSync('./sample/output.xml', tree.serialize(trans_obj))
+	fs.writeFileSync('./sample/output.xml', output.serialize())
 
 	console.log("\n\nThe semantic tree returned by the decorator is written to file: `./sample/output-1.xml`")
-	fs.writeFileSync('./sample/output-1.xml', tree.decorate().serialize())
+	fs.writeFileSync('./sample/output-1.xml', output.decorate().serialize())
 
 	return Promise.resolve(null)
 }
