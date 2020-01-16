@@ -1,8 +1,7 @@
 import Serializable from '../iface/Serializable.iface'
 
 import {STX, ETX} from './Scanner.class'
-import Translator from './Translator.class'
-import Token, {TokenNumber} from './Token.class'
+import Token from './Token.class'
 import SemanticNode from './SemanticNode.class'
 import {Rule} from './Grammar.class'
 import {
@@ -13,6 +12,8 @@ import {
 	ProductionExpressionExponential,
 	ProductionExpressionUnarySymbol,
 	ProductionExpressionUnit,
+	ProductionStringTemplate,
+	ProductionPrimitiveLiteral,
 } from './Production.class'
 
 
@@ -47,6 +48,13 @@ export default class ParseNode implements Serializable {
 			new ParseNodeExpressionUnary(rule, children)
 		: (rule.production.equals(ProductionExpressionUnit.instance)) ?
 			new ParseNodeExpressionUnit(rule, children)
+		: ([
+			ProductionStringTemplate,
+			ProductionStringTemplate.__0__List,
+		].some((prodclass) => rule.production.equals(prodclass.instance))) ?
+			new ParseNodeStringTemplate(rule, children)
+		: (rule.production.equals(ProductionPrimitiveLiteral.instance)) ?
+			new ParseNodePrimitiveLiteral(rule, children)
 		:
 			new ParseNode(rule, children)
 	}
@@ -156,5 +164,21 @@ class ParseNodeExpressionUnit extends ParseNode {
 			new SemanticNode(this, 'SemanticExpression', [
 				(this.children[1] as ParseNode).decorate(),
 			], {operator: [this.children[0], this.children[2]].map((c) => c.source).join('')})
+	}
+}
+class ParseNodeStringTemplate extends ParseNode {
+	decorate(): SemanticNode {
+		return new SemanticNode(this, 'SemanticTemplate', this.children.flatMap((c) => c instanceof Token ?
+			[new SemanticNode(c, 'SemanticConstant', [], {value: (c as Token).cook()})]
+		: c instanceof ParseNodeStringTemplate ?
+			c.decorate().children
+		:
+			[c.decorate()]
+		))
+	}
+}
+class ParseNodePrimitiveLiteral extends ParseNode {
+	decorate(): SemanticNode {
+		return new SemanticNode(this, 'SemanticConstant', [], {value: (this.children[0] as Token).cook()})
 	}
 }

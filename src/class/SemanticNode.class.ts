@@ -27,7 +27,7 @@ export default class SemanticNode implements Serializable {
 	constructor(
 		canonical: Token|ParseNode,
 		private readonly tagname: string,
-		private readonly children: readonly SemanticNode[] = [],
+		readonly children: readonly SemanticNode[] = [],
 		private readonly attributes: { [key: string]: string|number|boolean|null } = {}, //ReadonlyMap<string, string|number|boolean|null> = new Map()
 	) {
 		this.source     = canonical.source

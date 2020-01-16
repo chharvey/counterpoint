@@ -138,6 +138,7 @@ with NO collapsed newline`
 `Interpolation works with {{ `{{ 3 * 6 }}` }} too!`
 +`Interpolation works with an empty string {{ '' }}!`+
 `Interpolation with whitespace {{ }}!`
+^`Multiple interpolations! {{ a }} b {{ 'c' }}!`
 +`Interpolation with no space {{}}!`;
 
 
