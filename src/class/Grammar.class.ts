@@ -240,6 +240,14 @@ export class Configuration {
 		this.lookaheads = new Set(lookaheads)
 	}
 	/**
+	 * Does this Configuration’s lookahead set contain the given candidate Token?
+	 * @param   candidate - the Token to check
+	 * @returns             is the Token, or the Token’s cargo, in this lookahead set?
+	 */
+	hasLookahead(candidate: Token): boolean {
+		return this.lookaheads.has(candidate.cargo) || [...this.lookaheads].some((l) => l instanceof Terminal && l.match(candidate))
+	}
+	/**
 	 * Produce a new configuration that represents this configuartion with its marker advanced to the next symbol.
 	 * If a parameter is supplied, advance the marker by that number of symbols.
 	 * @param   step - number of steps to advance the marker; a positive integer
