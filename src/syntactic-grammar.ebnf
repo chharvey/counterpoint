@@ -24,14 +24,14 @@ ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"          ExpressionE
 ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
 
 ExpressionUnit ::=
+	IDENTIFIER         |
 	PrimitiveLiteral   |
 	StringTemplate     |
-	IDENTIFIER         |
 	"(" Expression ")"
 
 StringTemplate ::=
-	TEMPLATE_LITERAL_FULL |
-	TEMPLATE_LITERAL_HEAD Expression? (TEMPLATE_LITERAL_MIDDLE Expression?)* TEMPLATE_LITERAL_TAIL
+	TEMPLATE_FULL |
+	TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
 
 PrimitiveLiteral ::=
 	NUMBER |
