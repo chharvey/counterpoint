@@ -2,6 +2,7 @@ import Serializable from '../iface/Serializable.iface'
 
 import {STX, ETX} from './Scanner.class'
 
+import Token from './Token.class'
 import ParseNode from './ParseNode.class'
 
 
@@ -24,7 +25,7 @@ export default class SemanticNode implements Serializable {
 	 * @param attributes - Any other attributes to attach.
 	 */
 	constructor(
-		canonical: ParseNode,
+		canonical: Token|ParseNode,
 		private readonly tagname: string,
 		private readonly children: readonly SemanticNode[] = [],
 		private readonly attributes: { [key: string]: string|number|boolean|null } = {}, //ReadonlyMap<string, string|number|boolean|null> = new Map()
@@ -40,10 +41,19 @@ export default class SemanticNode implements Serializable {
 		const attributes: string = ' ' + [
 			(this.tagname !== 'SemanticGoal') ? `line="${this.line_index + 1}"` : '',
 			(this.tagname !== 'SemanticGoal') ?  `col="${this.col_index  + 1}"` : '',
-			`source="${
-				this.source
-					.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
-					.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
+			`source="${this.source
+				.replace(/\&/g, '&amp;' )
+				.replace(/\</g, '&lt;'  )
+				.replace(/\>/g, '&gt;'  )
+				.replace(/\'/g, '&apos;')
+				.replace(/\"/g, '&quot;')
+				.replace(/\\/g, '&#x5c;')
+				.replace(/\t/g, '&#x09;')
+				.replace(/\n/g, '&#x0a;')
+				.replace(/\r/g, '&#x0d;')
+				.replace(/\u0000/g, '&#x00;')
+				.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
+				.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
 			}"`,
 			...Object.entries<string|number|boolean|null>(this.attributes).map(([key, value]) => `${key}="${value}"`),
 		].join(' ').trim()

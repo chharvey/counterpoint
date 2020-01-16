@@ -88,8 +88,8 @@ export default abstract class Token implements Serializable {
 	serialize(): string {
 		const cooked: string|number|boolean|null = this.cook()
 		const attributes: string = ' ' + [
-			`line="${this.line_index+1}"`,
-			`col="${this.col_index+1}"`,
+			(this.tagname !== TokenFilebound.TAGNAME) ? `line="${this.line_index + 1}"` : '',
+			(this.tagname !== TokenFilebound.TAGNAME) ?  `col="${this.col_index  + 1}"` : '',
 			(cooked !== null) ? `value="${(typeof cooked === 'string') ? cooked
 				.replace(/\&/g, '&amp;' )
 				.replace(/\</g, '&lt;'  )

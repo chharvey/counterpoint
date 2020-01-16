@@ -94,7 +94,7 @@ export default class Parser {
 						.map((config) => config.advance())
 				: [])
 				this.stack.push([node, this.grammar.closure(next_state)])
-				if (next_state.size < 0 && rule.production.displayName !== 'File') { // TODO change to 'Goal' on v0.2
+				if (next_state.size < 0 && rule.production.displayName !== 'Goal') {
 					throw new Error('no next configuration found')
 				}
 				return true

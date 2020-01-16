@@ -167,7 +167,7 @@ The text of the string in the source code is called the “raw” text of the to
 Before the token is sent to the parser, this “raw” text is transformed into a
 String Value (SV), or, informally, “cooked” text.
 
-```
+```w3c
 SV(String ::= "'" "'")
 	:= the empty array
 SV(String ::= "'" StringChars "'")
@@ -238,7 +238,8 @@ specific ways determined by the formal syntactic grammar.
 
 #### Static Semantics: Template Value
 The Template Value (TV) of a template token is the analogue of the SV of a string token.
-```
+
+```w3c
 TV(TemplateFull ::= "`" "`")
 	:= the empty array
 TV(TemplateFull ::= "`" TemplateCharsEndDelim "`")
@@ -461,7 +462,7 @@ which go beyond the letters and numerals of the English alphabet.
 The Word Value (WV) of a word token is the unique identifier that distinguishes
 the word from other words in a program.
 
-```
+```w3c
 WV(Word ::= Identifier)
 	:= /* TO BE DETERMINED */
 WV(Word ::= Keyword)

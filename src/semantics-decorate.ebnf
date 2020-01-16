@@ -1,6 +1,6 @@
-Decorate(File ::= #x02 #x03)
+Decorate(Goal ::= #x02 #x03)
 	:= SemanticNull {} []
-Decorate(File ::= #x02 Expression #x03)
+Decorate(Goal ::= #x02 Expression #x03)
 	:= Decorate(Expression)
 
 Decorate(Expression ::= ExpressionAdditive)
