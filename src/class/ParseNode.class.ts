@@ -44,7 +44,7 @@ export default class ParseNode implements Serializable {
 	/**
 	 * @implements Serializable
 	 */
-	serialize(trans: Translator|null = null): string {
+	serialize(): string {
 		const attributes: string = ' ' + [
 			(this.tagname !== ProductionGoal.instance.displayName) ? `line="${this.line_index + 1}"` : '',
 			(this.tagname !== ProductionGoal.instance.displayName) ?  `col="${this.col_index  + 1}"` : '',
@@ -63,9 +63,7 @@ export default class ParseNode implements Serializable {
 				.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
 			}"`,
 		].join(' ').trim()
-		const contents: string = this.children.map((child) =>
-			(typeof child === 'string') ? child : child.serialize(trans)
-		).join('')
+		const contents: string = this.children.map((child) => child.serialize()).join('')
 		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
 	}
 }

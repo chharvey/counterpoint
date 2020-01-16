@@ -78,20 +78,19 @@ export default abstract class Token implements Serializable {
 	 * The cooked value is the computed or evaluated contents of this Token,
 	 * to be sent to the parser and compiler.
 	 * If this Token is not to be sent to the parser, then return `null`.
-	 * @param   translator - the translator to cook this Token
 	 * @returns              the computed value of this token, or `null`
 	 */
-	abstract cook(translator: Translator): string|number|boolean|null;
+	abstract cook(): string|number|boolean|null;
 
 	/**
 	 * @implements Serializable
 	 */
-	serialize(trans: Translator|null = null): string {
-		const cooked: string|number|boolean|null = trans ? this.cook(trans) : null
+	serialize(): string {
+		const cooked: string|number|boolean|null = this.cook()
 		const attributes: string = ' ' + [
 			`line="${this.line_index+1}"`,
 			`col="${this.col_index+1}"`,
-			(trans && cooked !== null) ? `value="${(typeof cooked === 'string') ? cooked
+			(cooked !== null) ? `value="${(typeof cooked === 'string') ? cooked
 				.replace(/\&/g, '&amp;' )
 				.replace(/\</g, '&lt;'  )
 				.replace(/\>/g, '&gt;'  )
@@ -119,7 +118,7 @@ export class TokenFilebound extends Token {
 		super(TokenFilebound.TAGNAME, lexer.c0)
 		lexer.advance()
 	}
-	cook(_trans: Translator): boolean {
+	cook(): boolean {
 		return this.source === STX /* || !this.source === ETX */
 	}
 }
@@ -135,7 +134,7 @@ export class TokenWhitespace extends Token {
 		}
 		super(TokenWhitespace.TAGNAME, buffer[0], ...buffer.slice(1))
 	}
-	cook(_trans: Translator): null {
+	cook(): null {
 		return null // we do not want to send whitespace to the parser
 	}
 }
@@ -144,7 +143,7 @@ export abstract class TokenComment extends Token {
 	constructor (kind: string, start_char: Char, ...more_chars: Char[]) {
 		super(`${TokenComment.TAGNAME}-${kind}`, start_char, ...more_chars)
 	}
-	/** @final */ cook(_trans: Translator): null {
+	/** @final */ cook(): null {
 		return null // we do not want to send comments to the parser
 	}
 }
@@ -368,7 +367,7 @@ export class TokenString extends Token {
 		lexer.advance(TokenString.DELIM.length)
 		super(TokenString.TAGNAME, buffer[0], ...buffer.slice(1))
 	}
-	cook(_trans: Translator): string {
+	cook(): string {
 		return String.fromCodePoint(...TokenString.sv(
 			this.source.slice(1, -1) // cut off the string delimiters
 		))
@@ -451,7 +450,7 @@ export class TokenTemplate extends Token {
 		this.delim_start = delim_start
 		this.delim_end   = delim_end !
 	}
-	cook(_trans: Translator): string {
+	cook(): string {
 		return String.fromCodePoint(...TokenTemplate.tv(
 			this.source.slice(this.delim_start, -this.delim_end) // cut off the string delimiters
 		))
@@ -531,7 +530,7 @@ export class TokenNumber extends Token {
 		super(TokenNumber.TAGNAME, buffer[0], ...buffer.slice(1))
 		this.radix = r
 	}
-	cook(_trans: Translator): number {
+	cook(): number {
 		let text = this.source
 		const multiplier = new Map<string, number>([
 			['+',  1],
@@ -555,6 +554,13 @@ export class TokenWord extends Token {
 			'unfixed',
 		]],
 	]))
+	/**
+	 * The cooked value of this Token.
+	 * If the token is a keyword, the cooked value is its contents.
+	 * If the token is an identifier, the cooked value is set by a {@link Translator},
+	 * which indexes unique identifier tokens.
+	 */
+	private _cooked: number/* bigint */|string;
 	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
@@ -570,12 +576,29 @@ export class TokenWord extends Token {
 			}
 		})
 		super(`${TokenWord.TAGNAME}-${kind}`, buffer[0], ...buffer.slice(1))
+		this._cooked = this.source
 	}
+	/**
+	 * Is this Token an identifier?
+	 * @returns Is this an identifier?
+	 */
 	get isIdentifier(): boolean {
 		return this.tagname === `${TokenWord.TAGNAME}-${TokenWord.IDENTIFIER_TAG}`
 	}
-	cook(trans: Translator): number /* bigint */ | string {
-		return (this.isIdentifier) ? trans.identifiers.indexOf(this.source) : this.source
+	/**
+	 * Use a Translator to set the value of this Token.
+	 * If this token is an identifier, get the index of this token’s contents
+	 * in the given translator’s list of unique identifier tokens.
+	 * Else if this token is a keyword, do nothing.
+	 * @param   translator the Translator whose indexed identifiers to search
+	 */
+	setValue(translator: Translator) {
+		if (this.isIdentifier) {
+			this._cooked = translator.identifiers.indexOf(this.source)
+		}
+	}
+	cook(): number/* bigint */|string {
+		return this._cooked;
 	}
 }
 export class TokenPunctuator extends Token {
@@ -593,7 +616,7 @@ export class TokenPunctuator extends Token {
 		lexer.advance(count)
 		super(TokenPunctuator.TAGNAME, buffer[0], ...buffer.slice(1))
 	}
-	cook(_trans: Translator): string {
+	cook(): string {
 		return this.source
 	}
 }
