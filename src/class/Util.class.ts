@@ -51,15 +51,17 @@ export default class Util {
 	 * Are the two arrays “equal”?
 	 *
 	 * Two arrays are “equal” if they are the same object,
-	 * or if index by index, their elements are strictly equal (`===`).
+	 * or if index by index, their elements are either strictly equal (`===`),
+	 * or “equal” by some other predicate.
 	 *
 	 * @param   <T> the types of the arrays
 	 * @param   a1 - the first array
 	 * @param   a2 - the second array
+	 * @param   predicate - the comparison function to determine equality
 	 * @returns      do the two arrays have the exact same elements at the same indices?
 	 */
-	static equalArrays<T>(a1: readonly T[], a2: readonly T[]): boolean {
-		return a1 === a2 || a1.length === a2.length && a1.every((e1, i) => e1 === a2[i])
+	static equalArrays<T>(a1: readonly T[], a2: readonly T[], predicate: (t1: T, t2: T) => boolean = (t1: T, t2: T) => t1 === t2): boolean {
+		return a1 === a2 || a1.length === a2.length && a1.every((e1, i) => e1 === a2[i] || predicate(e1, a2[i]))
 	}
 
 	/**

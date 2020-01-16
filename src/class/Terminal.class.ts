@@ -23,7 +23,7 @@ export default abstract class Terminal {
 	 */
 	abstract random(): string;
 	/**
-	 * Does the given token satisfy this Terminal?
+	 * Does the given Token satisfy this Terminal?
 	 * @param   candidate - a Token to test
 	 * @returns             does the given Token satisfy this Terminal?
 	 */

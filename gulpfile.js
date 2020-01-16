@@ -85,7 +85,11 @@ async function test() {
 		throw err
 	}
 	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
-	fs.writeFileSync('./sample/output.xml', output.serialize(trans_obj))
+	const tree = new Parser(solid_grammar).parse(await input)
+	fs.writeFileSync('./sample/output.xml', tree.serialize(trans_obj))
+
+	console.log("\n\nThe semantic tree returned by the decorator is written to file: `./sample/output-1.xml`")
+	fs.writeFileSync('./sample/output-1.xml', tree.decorate().serialize())
 
 	return Promise.resolve(null)
 }
