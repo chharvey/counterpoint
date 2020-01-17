@@ -6,6 +6,7 @@ import SemanticNode from './SemanticNode.class'
 import {Rule} from './Grammar.class'
 import {
 	ProductionGoal,
+	ProductionStatement,
 	ProductionExpression,
 	ProductionExpressionAdditive,
 	ProductionExpressionMultiplicative,
@@ -36,6 +37,8 @@ export default class ParseNode implements Serializable {
 	static from(rule: Rule, children: readonly (Token|ParseNode)[]): ParseNode {
 		return (rule.production.equals(ProductionGoal.instance)) ?
 			new ParseNodeGoal(rule, children)
+		: (rule.production.equals(ProductionStatement.instance)) ?
+			new ParseNodeStatement(rule, children)
 		: (rule.production.equals(ProductionExpression.instance)) ?
 			new ParseNodeExpression(rule, children)
 		: ([
@@ -124,8 +127,18 @@ class ParseNodeGoal extends ParseNode {
 			new SemanticNode(this, 'SemanticNull')
 		:
 			new SemanticNode(this, 'SemanticGoal', [
-				(this.children[1] as ParseNode).decorate()
+				(this.children[1] as ParseNode).decorate(),
 			])
+	}
+}
+class ParseNodeStatement extends ParseNode {
+	decorate(): SemanticNode {
+		const firstchild: ParseNode|Token = this.children[0]
+		return (this.children.length === 1 && firstchild instanceof ParseNode) ?
+			firstchild.decorate() :
+			new SemanticNode(this, `SemanticStatement`, (this.children.length === 2) ? [
+				(firstchild as ParseNode).decorate(),
+			] : [], {type: 'expression'})
 	}
 }
 class ParseNodeExpression extends ParseNode {

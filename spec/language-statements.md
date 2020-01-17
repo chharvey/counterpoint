@@ -17,9 +17,11 @@ Decorate(Statement ::= DeclarationVariable)
 Decorate(Statement ::= StatementAssignment)
 	:= Decorate(StatementAssignment)
 Decorate(Statement ::= Expression ";")
-	:= Decorate(Expression)
+	:= SemanticStatement {type: "expression"} [
+		Decorate(Expression),
+	]
 Decorate(Statement ::= ";")
-	:= SemanticNull {} []
+	:= SemanticStatement {type: "expression"} []
 ```
 
 
