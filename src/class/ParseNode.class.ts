@@ -100,46 +100,51 @@ export default class ParseNode implements Serializable {
 	}
 }
 class ParseNodeGoal extends ParseNode {
+	declare children: [Token, Token] | [Token, ParseNodeExpression, Token];
 	decorate(): SemanticNode {
 		return (this.children.length === 2) ?
 			new SemanticNode(this, 'SemanticNull')
 		:
 			new SemanticNode(this, 'SemanticGoal', [
-				(this.children[1] as ParseNode).decorate()
+				this.children[1].decorate()
 			])
 	}
 }
 class ParseNodeExpression extends ParseNode {
+	declare children: [ParseNodeExpressionBinary];
 	decorate(): SemanticNode {
-		return (this.children[0] as ParseNode).decorate()
+		return this.children[0].decorate()
 	}
 }
 class ParseNodeExpressionBinary extends ParseNode {
+	declare children: [ParseNodeExpressionBinary] | [ParseNodeExpressionBinary, Token, ParseNodeExpressionBinary];
 	decorate(): SemanticNode {
 		return (this.children.length === 1) ?
-			(this.children[0] as ParseNode).decorate()
+			this.children[0].decorate()
 		:
 			new SemanticNode(this, 'SemanticExpression', [
-				(this.children[0] as ParseNode).decorate(),
-				(this.children[2] as ParseNode).decorate(),
+				this.children[0].decorate(),
+				this.children[2].decorate(),
 			], {operator: this.children[1].source})
 	}
 }
 class ParseNodeExpressionUnary extends ParseNode {
+	declare children: [ParseNodeExpressionUnit] | [Token, ParseNodeExpressionUnary];
 	decorate(): SemanticNode {
 		return (this.children.length === 1) ?
-			(this.children[0] as ParseNode).decorate()
+			this.children[0].decorate()
 		:
 			new SemanticNode(this, 'SemanticExpression', [
-				(this.children[1] as ParseNode).decorate(),
+				this.children[1].decorate(),
 			], {operator: this.children[0].source})
 	}
 }
 class ParseNodeExpressionUnit extends ParseNode {
+	declare children: [TokenNumber] | [Token, ParseNodeExpression, Token];
 	decorate(): SemanticNode {
 		return (this.children.length === 1) ?
-			new SemanticNode(this, 'SemanticConstant', [], {value: (this.children[0] as TokenNumber).value}) // TODO use `.cook()` in v2
+			new SemanticNode(this, 'SemanticConstant', [], {value: this.children[0].value}) // TODO use `.cook()` in v2
 		:
-			(this.children[1] as ParseNode).decorate()
+			this.children[1].decorate()
 	}
 }
