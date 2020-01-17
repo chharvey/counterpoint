@@ -39,6 +39,8 @@ export default class ParseNode implements Serializable {
 	static from(rule: Rule, children: readonly (Token|ParseNode)[]): ParseNode {
 		return (rule.production.equals(ProductionGoal.instance)) ?
 			new ParseNodeGoal(rule, children)
+		: (rule.production.equals(ProductionGoal.__0__List.instance)) ?
+			new ParseNodeStatementList(rule, children)
 		: (rule.production.equals(ProductionStatement.instance)) ?
 			new ParseNodeStatement(rule, children)
 		: (rule.production.equals(ProductionDeclarationVariable.instance)) ?
@@ -137,6 +139,15 @@ class ParseNodeGoal extends ParseNode {
 			])
 	}
 }
+class ParseNodeStatementList extends ParseNode {
+	decorate(): SemanticNode {
+		return new SemanticNode(this, 'SemanticStatementList', this.children.flatMap((c) => c instanceof ParseNodeStatementList ?
+			c.decorate().children
+		: // c instanceof ParseNodeStatement
+			[(c as ParseNode).decorate()]
+		))
+	}
+}
 class ParseNodeStatement extends ParseNode {
 	decorate(): SemanticNode {
 		const firstchild: ParseNode|Token = this.children[0]
@@ -220,7 +231,7 @@ class ParseNodeStringTemplate extends ParseNode {
 			[new SemanticNode(c, 'SemanticConstant', [], {value: (c as Token).cook()})]
 		: c instanceof ParseNodeStringTemplate ?
 			c.decorate().children
-		:
+		: // c instanceof ParseNodeExpression
 			[c.decorate()]
 		))
 	}
