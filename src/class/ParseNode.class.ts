@@ -140,8 +140,6 @@ class ParseNodeExpressionUnit extends ParseNode {
 		return (this.children.length === 1) ?
 			new SemanticNode(this, 'SemanticConstant', [], {value: (this.children[0] as TokenNumber).value}) // TODO use `.cook()` in v2
 		:
-			new SemanticNode(this, 'SemanticExpression', [
-				(this.children[1] as ParseNode).decorate(),
-			], {operator: [this.children[0], this.children[2]].map((c) => c.source).join('')})
+			(this.children[1] as ParseNode).decorate()
 	}
 }
