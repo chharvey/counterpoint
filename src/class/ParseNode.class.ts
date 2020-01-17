@@ -7,6 +7,8 @@ import {Rule} from './Grammar.class'
 import {
 	ProductionGoal,
 	ProductionStatement,
+	ProductionDeclarationVariable,
+	ProductionStatementAssignment,
 	ProductionExpression,
 	ProductionExpressionAdditive,
 	ProductionExpressionMultiplicative,
@@ -39,6 +41,10 @@ export default class ParseNode implements Serializable {
 			new ParseNodeGoal(rule, children)
 		: (rule.production.equals(ProductionStatement.instance)) ?
 			new ParseNodeStatement(rule, children)
+		: (rule.production.equals(ProductionDeclarationVariable.instance)) ?
+			new ParseNodeDeclarationVariable(rule, children)
+		: (rule.production.equals(ProductionStatementAssignment.instance)) ?
+			new ParseNodeStatementAssignment(rule, children)
 		: (rule.production.equals(ProductionExpression.instance)) ?
 			new ParseNodeExpression(rule, children)
 		: ([
@@ -139,6 +145,35 @@ class ParseNodeStatement extends ParseNode {
 			new SemanticNode(this, `SemanticStatement`, (this.children.length === 2) ? [
 				(firstchild as ParseNode).decorate(),
 			] : [], {type: 'expression'})
+	}
+}
+class ParseNodeDeclarationVariable extends ParseNode {
+	decorate(): SemanticNode {
+		const is_unfixed: boolean   = this.children[1] instanceof Token && this.children[1].source === 'unfixed'
+		const identifier: Token     = this.children[is_unfixed ? 2 : 1] as Token
+		const expression: ParseNode = this.children[is_unfixed ? 4 : 3] as ParseNode
+		return new SemanticNode(this, 'SemanticDeclaration', [
+			new SemanticNode(identifier, 'SemanticAssignee', [
+				new SemanticNode(identifier, 'SemanticIdentifier', [], {id: identifier.cook()}),
+			], {unfixed: is_unfixed}),
+			new SemanticNode(expression, 'SemanticAssigned', [
+				expression.decorate(),
+			]),
+		], {type: 'variable'})
+	}
+}
+class ParseNodeStatementAssignment extends ParseNode {
+	decorate(): SemanticNode {
+		const identifier: Token     = this.children[0] as Token
+		const expression: ParseNode = this.children[2] as ParseNode
+		return new SemanticNode(this, 'SemanticAssignment', [
+			new SemanticNode(identifier, 'SemanticAssignee', [
+				new SemanticNode(identifier, 'SemanticIdentifier', [], {id: identifier.cook()}),
+			]),
+			new SemanticNode(expression, 'SemanticAssigned', [
+				expression.decorate(),
+			]),
+		])
 	}
 }
 class ParseNodeExpression extends ParseNode {

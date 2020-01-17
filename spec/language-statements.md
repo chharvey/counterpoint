@@ -35,14 +35,22 @@ DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";"
 ### Static Semantics: Decoration (Variable Declaration)
 ```w3c
 Decorate(DeclarationVariable ::= "let" IDENTIFIER "=" Expression ";")
-	:= SemanticDeclaration {type: "variable", unfixed: false} [
-		SemanticIdentifier {id: WV(IDENTIFIER)} [],
-		Decorate(Expression),
+	:= SemanticDeclaration {type: "variable"} [
+		SemanticAssignee {unfixed: false} [
+			Decorate(IDENTIFIER),
+		],
+		SemanticAssigned {} [
+			Decorate(Expression),
+		],
 	]
 Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER "=" Expression ";")
-	:= SemanticDeclaration {type: "variable", unfixed: true} [
-		SemanticIdentifier {id: WV(IDENTIFIER)} [],
-		Decorate(Expression),
+	:= SemanticDeclaration {type: "variable"} [
+		SemanticAssignee {unfixed: true} [
+			Decorate(IDENTIFIER),
+		],
+		SemanticAssigned {} [
+			Decorate(Expression),
+		],
 	]
 ```
 
@@ -58,7 +66,11 @@ StatementAssignment ::= IDENTIFIER "=" Expression ";"
 ```w3c
 Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";")
 	:= SemanticAssignment {} [
-		SemanticIdentifier {id: WV(IDENTIFIER)} [],
-		Decorate(Expression),
+		SemanticAssignee {} [
+			Decorate(IDENTIFIER),
+		],
+		SemanticAssigned {} [
+			Decorate(Expression),
+		],
 	]
 ```

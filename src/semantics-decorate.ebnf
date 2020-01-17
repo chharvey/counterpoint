@@ -27,20 +27,32 @@ Decorate(Statement ::= ";")
 	:= SemanticStatement {type: "expression"} []
 
 Decorate(DeclarationVariable ::= "let" IDENTIFIER "=" Expression ";")
-	:= SemanticDeclaration {type: "variable", unfixed: false} [
-		SemanticIdentifier {id: WV(IDENTIFIER)} [],
-		Decorate(Expression),
+	:= SemanticDeclaration {type: "variable"} [
+		SemanticAssignee {unfixed: false} [
+			Decorate(IDENTIFIER),
+		],
+		SemanticAssigned {} [
+			Decorate(Expression),
+		],
 	]
 Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER "=" Expression ";")
-	:= SemanticDeclaration {type: "variable", unfixed: true} [
-		SemanticIdentifier {id: WV(IDENTIFIER)} [],
-		Decorate(Expression),
+	:= SemanticDeclaration {type: "variable"} [
+		SemanticAssignee {unfixed: true} [
+			Decorate(IDENTIFIER),
+		],
+		SemanticAssigned {} [
+			Decorate(Expression),
+		],
 	]
 
 Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";")
 	:= SemanticAssignment {} [
-		SemanticIdentifier {id: WV(IDENTIFIER)} [],
-		Decorate(Expression),
+		SemanticAssignee {} [
+			Decorate(IDENTIFIER),
+		],
+		SemanticAssigned {} [
+			Decorate(Expression),
+		],
 	]
 
 

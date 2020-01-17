@@ -199,4 +199,6 @@ this /is /a /word
 
 /a /word /_can  /repeat /_with /the /same /id;
 
-let unfixed x = 42;
+let unfixed the_answer = 42;
+let the_high_answer = the_answer * 10;
+the_answer = the_answer - \z14;
