@@ -3,6 +3,7 @@ import {Char, STX, ETX} from './Scanner.class'
 import Util from './Util.class'
 
 
+
 /**
  * A Token object is the kind of thing that the Lexer returns.
  * It holds:
@@ -64,6 +65,7 @@ export default abstract class Token implements Serializable {
 		return `<${this.tagname}${attributes}>${this.source}</${this.tagname}>`
 	}
 }
+
 
 
 export class TokenFilebound extends Token {

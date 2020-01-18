@@ -5,6 +5,7 @@ import {STX, ETX} from './Scanner.class'
 import ParseNode from './ParseNode.class'
 
 
+
 /**
  * A SemanticNode holds only the semantics of a {@link ParseNode}.
  */
@@ -17,6 +18,7 @@ export default class SemanticNode implements Serializable {
 	readonly line_index: number;
 	/** Zero-based column number of the first token (first col is col 0). */
 	readonly col_index: number;
+
 	/**
 	 * Construct a new SemanticNode object.
 	 *
@@ -34,6 +36,7 @@ export default class SemanticNode implements Serializable {
 		this.line_index = start_node.line_index
 		this. col_index = start_node. col_index
 	}
+
 	/**
 	 * @implements Serializable
 	 */
@@ -52,6 +55,9 @@ export default class SemanticNode implements Serializable {
 		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
 	}
 }
+
+
+
 export class SemanticNodeNull extends SemanticNode {
 	constructor(start_node: ParseNode) {
 		super(start_node)

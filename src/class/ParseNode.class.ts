@@ -20,6 +20,7 @@ import Production, {
 } from './Production.class'
 
 
+
 /**
  * A ParseNode is a node in a parse tree for a given input stream.
  * It holds:
@@ -57,6 +58,7 @@ export default class ParseNode implements Serializable {
 	readonly line_index: number;
 	/** Zero-based column number of the first token (first col is col 0). */
 	readonly col_index: number;
+
 	/**
 	 * Construct a new ParseNode object.
 	 *
@@ -72,6 +74,15 @@ export default class ParseNode implements Serializable {
 		this.line_index = children[0].line_index
 		this.col_index  = children[0].col_index
 	}
+
+	/**
+	 * Return a Semantic Node, a node of the Semantic Tree or “decorated/abstract syntax tree”.
+	 * @returns a semantic node containing this parse node’s semantics
+	 */
+	decorate(): SemanticNode {
+		return new SemanticNode(this)
+	}
+
 	/**
 	 * @implements Serializable
 	 */
@@ -89,14 +100,10 @@ export default class ParseNode implements Serializable {
 		const contents: string = this.children.map((child) => child.serialize()).join('')
 		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
 	}
-	/**
-	 * Return a Semantic Node, a node of the Semantic Tree or “decorated/abstract syntax tree”.
-	 * @returns a semantic node containing this parse node’s semantics
-	 */
-	decorate(): SemanticNode {
-		return new SemanticNode(this)
-	}
 }
+
+
+
 class ParseNodeGoal extends ParseNode {
 	declare children: [Token, Token] | [Token, ParseNodeExpression, Token];
 	decorate(): SemanticNode {

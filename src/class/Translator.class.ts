@@ -10,6 +10,7 @@ import Token, {
 } from './Token.class'
 
 
+
 /**
  * A translator prepares the tokens for the parser.
  * It performs certian operations such as
@@ -22,10 +23,8 @@ export default class Translator {
 	private readonly lexer: Iterator<Token, void>;
 	/** The result of the lexer iterator. */
 	private iterator_result_token: IteratorResult<Token, void>;
-
 	/** The current token. */
 	private t0: Token|void;
-
 	/** The running identifier count. Used as an id for identifier tokens. */
 	private idcount: number /* bigint */ = 0;
 

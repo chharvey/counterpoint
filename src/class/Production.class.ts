@@ -7,6 +7,7 @@ import {
 } from './Terminal.class'
 
 
+
 /**
  * A Production is an item in a formal context-free grammar.
  * It consists of a nonterminal on the left-hand side, which serves as the identifier of the production,
@@ -15,18 +16,22 @@ import {
  */
 export default abstract class Production {
 	protected constructor() {}
+
 	/** @final */ get displayName(): string {
 		return this.constructor.name.slice('Production'.length)
 	}
+
 	/**
 	 * A set of sequences of parse symbols (terminals and/or nonterminals) in this production.
 	 */
 	abstract get sequences(): GrammarSymbol[][];
+
 	/**
 	 * Generate a random instance of this Production.
 	 * @returns a well-formed sequence of strings satisfying this Production
 	 */
 	abstract random(): string[];
+
 	/**
 	 * Does the given ParseNode satisfy a Rule in this Production?
 	 * @param   candidate - a ParseNode to test
@@ -36,6 +41,7 @@ export default abstract class Production {
 	match(candidate: ParseNode): boolean {
 		return candidate.rule.production.equals(this)
 	}
+
 	/**
 	 * Is this production “equal to” the argument?
 	 *
@@ -49,6 +55,7 @@ export default abstract class Production {
 		return this === prod ||
 			Util.equalArrays<Rule>(this.toRules(), prod.toRules(), (r1, r2) => r1.equals(r2))
 	}
+
 	/**
 	 * Generate grammar rules from this Production.
 	 * @returns this Production split into several rules
@@ -57,6 +64,7 @@ export default abstract class Production {
 		return this.sequences.map((_, i) => new Rule(this, i))
 	}
 }
+
 
 
 export class ProductionFile extends Production {

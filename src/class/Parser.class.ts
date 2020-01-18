@@ -12,6 +12,7 @@ import Grammar, {
 type State = ReadonlySet<Configuration>
 
 
+
 /**
  * An LR(1), shift-reduce Parser.
  * @see http://www2.lawrence.edu/fast/GREGGJ/CMSC515/parsing/LR_parsing.html
