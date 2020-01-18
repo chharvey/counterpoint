@@ -79,11 +79,7 @@ export default class Parser {
 		const dones: Configuration[] = [...curr_state].filter((config) => config.done)
 		if (dones.length) {
 			const reductions: Configuration[] = dones.filter((config) =>
-				this.lookahead ? [...config.lookaheads].some((symbol) => (typeof symbol === 'string') ?
-					symbol === this.lookahead !.source
-				: (symbol instanceof Terminal) ?
-					symbol.match(this.lookahead !)
-				: false) : config.lookaheads.size === 0
+				this.lookahead ? config.hasLookahead(this.lookahead) : config.lookaheads.size === 0
 			)
 			if (reductions.length === 1) {
 				const rule: Rule = reductions[0].rule
