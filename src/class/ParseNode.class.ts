@@ -110,13 +110,13 @@ class ParseNodeGoal extends ParseNode {
 }
 class ParseNodeExpression extends ParseNode {
 	declare children: [ParseNodeExpressionBinary];
-	decorate(): SemanticNode {
+	decorate(): SemanticNodeExpression {
 		return this.children[0].decorate()
 	}
 }
 class ParseNodeExpressionBinary extends ParseNode {
-	declare children: [ParseNodeExpressionBinary] | [ParseNodeExpressionBinary, Token, ParseNodeExpressionBinary];
-	decorate(): SemanticNode {
+	declare children: [ParseNodeExpressionBinary] | [ParseNodeExpressionBinary|ParseNodeExpressionUnary, Token, ParseNodeExpressionBinary];
+	decorate(): SemanticNodeExpression {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
 		:

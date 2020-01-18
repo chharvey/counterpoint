@@ -57,7 +57,7 @@ export class SemanticNodeNull extends SemanticNode {
 	}
 }
 export class SemanticNodeGoal extends SemanticNode {
-	constructor(canonical: ParseNode, children: readonly SemanticNode[]) {
+	constructor(canonical: ParseNode, children: readonly [SemanticNodeExpression]) {
 		super('Goal', canonical, {}, children)
 	}
 }
