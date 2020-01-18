@@ -176,8 +176,8 @@ class ParseNodeDeclarationVariable extends ParseNode {
 		const is_unfixed: boolean             = this.children[1].source === 'unfixed'
 		const identifier: TokenWord           = this.children[is_unfixed ? 2 : 1] as TokenWord
 		const expression: ParseNodeExpression = this.children[is_unfixed ? 4 : 3] as ParseNodeExpression
-		return new SemanticNodeDeclaration(this, 'variable', [
-			new SemanticNodeAssignee(identifier, is_unfixed, [
+		return new SemanticNodeDeclaration(this, 'variable', is_unfixed, [
+			new SemanticNodeAssignee(identifier, [
 				new SemanticNodeIdentifier(identifier, identifier.cook()),
 			]),
 			new SemanticNodeAssigned(expression, [
@@ -192,7 +192,7 @@ class ParseNodeStatementAssignment extends ParseNode {
 		const identifier: TokenWord           = this.children[0]
 		const expression: ParseNodeExpression = this.children[2]
 		return new SemanticNodeAssignment(this, [
-			new SemanticNodeAssignee(identifier, false /* FIXME */, [
+			new SemanticNodeAssignee(identifier, [
 				new SemanticNodeIdentifier(identifier, identifier.cook()),
 			]),
 			new SemanticNodeAssigned(expression, [

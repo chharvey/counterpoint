@@ -82,8 +82,8 @@ export class SemanticNodeStatement extends SemanticNode {
 	}
 }
 export class SemanticNodeDeclaration extends SemanticNode {
-	constructor(canonical: ParseNode, type: string, children: readonly SemanticNode[]) {
-		super('Declaration', canonical, {type}, children)
+	constructor(canonical: ParseNode, type: string, unfixed: boolean, children: readonly SemanticNode[]) {
+		super('Declaration', canonical, {type, unfixed}, children)
 	}
 }
 export class SemanticNodeAssignment extends SemanticNode {
@@ -92,8 +92,8 @@ export class SemanticNodeAssignment extends SemanticNode {
 	}
 }
 export class SemanticNodeAssignee extends SemanticNode {
-	constructor(canonical: Token, unfixed: boolean /* FIXME */, children: readonly SemanticNode[]) {
-		super('Assignee', canonical, {unfixed}, children)
+	constructor(canonical: Token, children: readonly SemanticNode[]) {
+		super('Assignee', canonical, {}, children)
 	}
 }
 export class SemanticNodeAssigned extends SemanticNode {
