@@ -86,6 +86,9 @@ async function test() {
 	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
 	fs.writeFileSync('./sample/output.xml', output.serialize())
 
+	console.log("\n\nThe semantic tree returned by the decorator is written to file: `./sample/output-1.xml`")
+	fs.writeFileSync('./sample/output-1.xml', output.decorate().serialize())
+
 	return Promise.resolve(null)
 }
 

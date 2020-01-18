@@ -4,6 +4,7 @@ export const STX: '\u0002' = '\u0002'
 export const ETX: '\u0003' = '\u0003'
 
 
+
 /**
  * A character in source code.
  * @see http://parsingintro.sourceforge.net/#contents_item_4.1
@@ -75,6 +76,23 @@ export class Char {
 	}
 
 	/**
+	 * Return the next character after this character.
+	 * @param   n the number of times to lookahead
+	 * @returns the character succeeding this character
+	 * @throws  {RangeError} if the argument is not a positive integer
+	 */
+	lookahead(n: number = 1): Char|null {
+		if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
+		if (n === 1) {
+			return (this.source === ETX) ? null : new Char(this.scanner, this.source_index + 1)
+		} else {
+			const recurse: Char|null = this.lookahead(n - 1)
+			return recurse && recurse.lookahead()
+		}
+	}
+
+	/**
+	 * @override
 	 * Return a row that describes this character in a table.
 	 * @returns a string representation of this character’s data
 	 */
@@ -90,23 +108,8 @@ export class Char {
 		]).get(this.source) || this.source
 		return `    ${this.line_index+1}    ${this.col_index+1}    ${formatted}` // for some dumb reason, lines and cols start at 1 instad of 0
 	}
-
-	/**
-	 * Return the next character after this character.
-	 * @param   n the number of times to lookahead
-	 * @returns the character succeeding this character
-	 * @throws  {RangeError} if the argument is not a positive integer
-	 */
-	lookahead(n: number = 1): Char|null {
-		if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
-		if (n === 1) {
-			return (this.source === ETX) ? null : new Char(this.scanner, this.source_index + 1)
-		} else {
-			const recurse: Char|null = this.lookahead(n - 1)
-			return recurse && recurse.lookahead()
-		}
-	}
 }
+
 
 
 /**

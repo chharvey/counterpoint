@@ -16,6 +16,7 @@ import Token, {
 import {LexError01} from '../error/LexError.class'
 
 
+
 /**
  * A Lexer (aka: Tokenizer, Lexical Analyzer).
  * @see http://parsingintro.sourceforge.net/#contents_item_6.5
@@ -25,10 +26,8 @@ export default class Lexer {
 	private readonly scanner: Iterator<Char, void>;
 	/** The result of the scanner iterator. */
 	private iterator_result_char: IteratorResult<Char, void>;
-
 	/** Did this Lexer just pass a token that contains `\n`? */
 	private state_newline: boolean = false
-
 	/** The current character. */
 	private _c0: Char;
 	/** The lookahead(1) character. */

@@ -167,7 +167,7 @@ The text of the string in the source code is called the “raw” text of the to
 Before the token is sent to the parser, this “raw” text is transformed into a
 String Value (SV), or, informally, “cooked” text.
 
-```
+```w3c
 SV(String ::= "'" "'")
 	:= the empty array
 SV(String ::= "'" StringChars "'")
@@ -213,6 +213,13 @@ SV(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03])
 	:= UTF16Encoding(code point of that character)
 ```
 
+#### Static Semantics: Decoration (String Literals)
+```w3c
+Decorate(String)
+	::= SemanticConstant {value: SV(String)} []
+```
+where `SV` is [String Value](./#static-semantics-string-value).
+
 
 ### Template Literals
 ```w3c
@@ -238,7 +245,8 @@ specific ways determined by the formal syntactic grammar.
 
 #### Static Semantics: Template Value
 The Template Value (TV) of a template token is the analogue of the SV of a string token.
-```
+
+```w3c
 TV(TemplateFull ::= "`" "`")
 	:= the empty array
 TV(TemplateFull ::= "`" TemplateCharsEndDelim "`")
@@ -309,6 +317,19 @@ TV(TemplateCharsEndInterp ::= "\" "`" TemplateCharsEndInterp)
 	:= \x60 followed by TV(TemplateCharsEndInterp)
 ```
 
+#### Static Semantics: Decoration (Template Literals)
+```w3c
+Decorate(TemplateFull)
+	::= SemanticConstant {value: TV(TemplateFull)} []
+Decorate(TemplateHead)
+	::= SemanticConstant {value: TV(TemplateHead)} []
+Decorate(TempalteMiddle)
+	::= SemanticConstant {value: TV(TempalteMiddle)} []
+Decorate(TempalteTail)
+	::= SemanticConstant {value: TV(TempalteTail)} []
+```
+where `TV` is [Template Value](./#static-semantics-template-value).
+
 
 ### Numbers
 ```w3c
@@ -339,7 +360,7 @@ There is a many-to-one relationship between tokens and mathematical values. For 
 a token containing `0042` has the same mathematical value as a token containing `+42`:
 the integer *42*.
 
-```
+```w3c
 MV(Number ::= IntegerLiteral)
 	:= MV(IntegerLiteral)
 MV(Number ::= "+" IntegerLiteral)
@@ -423,6 +444,13 @@ MV([0-9a-z] ::= "y")  :=  34
 MV([0-9a-z] ::= "z")  :=  35
 ```
 
+#### Static Semantics: Decoration (Numbers)
+```w3c
+Decorate(Number)
+	::= SemanticConstant {value: MV(Number)} []
+```
+where `MV` is [Mathematical Value](./#static-semantics-mathematical-value).
+
 
 ### Words
 ```w3c
@@ -454,12 +482,25 @@ which go beyond the letters and numerals of the English alphabet.
 The Word Value (WV) of a word token is the unique identifier that distinguishes
 the word from other words in a program.
 
-```
+```w3c
 WV(Word ::= Identifier)
 	:= /* TO BE DETERMINED */
 WV(Word ::= Keyword)
 	:= the contents of the token
 ```
+
+#### Static Semantics: Decoration (Words)
+```w3c
+Decorate(Word ::= Identifier)
+	::= Decorate(Identifier)
+Decorate(Word ::= Keyword)
+	::= Decorate(Keyword)
+Decorate(Identifier)
+	::= SemanticIdentifier {id: WV(Identifier)} []
+Decorate(Keyword)
+	::= SemanticKeyword {id: WV(Keyword)} []
+```
+where `WV` is [Word Value](./#static-semantics-word-value).
 
 
 ### Punctuators
