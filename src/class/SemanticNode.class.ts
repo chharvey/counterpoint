@@ -25,10 +25,10 @@ export default class SemanticNode implements Serializable {
 	 * @param attributes - Any other attributes to attach.
 	 */
 	constructor(
-		canonical: Token|ParseNode,
 		private readonly tagname: string,
+		canonical: Token|ParseNode,
+		private readonly attributes: { [key: string]: string|number|boolean|null } = {},
 		readonly children: readonly SemanticNode[] = [],
-		private readonly attributes: { [key: string]: string|number|boolean|null } = {}, //ReadonlyMap<string, string|number|boolean|null> = new Map()
 	) {
 		this.source     = canonical.source
 		this.line_index = canonical.line_index
@@ -59,5 +59,25 @@ export default class SemanticNode implements Serializable {
 		].join(' ').trim()
 		const contents: string = this.children.map((child) => child.serialize()).join('')
 		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
+	}
+}
+export class SemanticNodeNull extends SemanticNode {
+	constructor(canonical: ParseNode) {
+		super('Null', canonical)
+	}
+}
+export class SemanticNodeGoal extends SemanticNode {
+	constructor(canonical: ParseNode, children: readonly SemanticNode[]) {
+		super('Goal', canonical, {}, children)
+	}
+}
+export class SemanticNodeExpression extends SemanticNode {
+	constructor(canonical: ParseNode, operator: string, children: readonly SemanticNode[]) {
+		super('Expression', canonical, {operator}, children)
+	}
+}
+export class SemanticNodeConstant extends SemanticNode {
+	constructor(canonical: ParseNode, value: number) {
+		super('Constant', canonical, {value})
 	}
 }

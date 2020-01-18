@@ -1,10 +1,15 @@
 import Serializable from '../iface/Serializable.iface'
 
 import {STX, ETX} from './Scanner.class'
-import Token from './Token.class'
-import SemanticNode from './SemanticNode.class'
+import Token, {TokenNumber} from './Token.class'
+import SemanticNode, {
+	SemanticNodeNull,
+	SemanticNodeGoal,
+	SemanticNodeExpression,
+	SemanticNodeConstant,
+} from './SemanticNode.class'
 import {Rule} from './Grammar.class'
-import {
+import Production, {
 	ProductionGoal,
 	ProductionStatement,
 	ProductionDeclarationVariable,
@@ -37,37 +42,22 @@ export default class ParseNode implements Serializable {
 	 * @returns          a new ParseNode object
 	 */
 	static from(rule: Rule, children: readonly (Token|ParseNode)[]): ParseNode {
-		return (rule.production.equals(ProductionGoal.instance)) ?
-			new ParseNodeGoal(rule, children)
-		: (rule.production.equals(ProductionGoal.__0__List.instance)) ?
-			new ParseNodeStatementList(rule, children)
-		: (rule.production.equals(ProductionStatement.instance)) ?
-			new ParseNodeStatement(rule, children)
-		: (rule.production.equals(ProductionDeclarationVariable.instance)) ?
-			new ParseNodeDeclarationVariable(rule, children)
-		: (rule.production.equals(ProductionStatementAssignment.instance)) ?
-			new ParseNodeStatementAssignment(rule, children)
-		: (rule.production.equals(ProductionExpression.instance)) ?
-			new ParseNodeExpression(rule, children)
-		: ([
-			ProductionExpressionAdditive,
-			ProductionExpressionMultiplicative,
-			ProductionExpressionExponential,
-		].some((prodclass) => rule.production.equals(prodclass.instance))) ?
-			new ParseNodeExpressionBinary(rule, children)
-		: (rule.production.equals(ProductionExpressionUnarySymbol.instance)) ?
-			new ParseNodeExpressionUnary(rule, children)
-		: (rule.production.equals(ProductionExpressionUnit.instance)) ?
-			new ParseNodeExpressionUnit(rule, children)
-		: ([
-			ProductionStringTemplate,
-			ProductionStringTemplate.__0__List,
-		].some((prodclass) => rule.production.equals(prodclass.instance))) ?
-			new ParseNodeStringTemplate(rule, children)
-		: (rule.production.equals(ProductionPrimitiveLiteral.instance)) ?
-			new ParseNodePrimitiveLiteral(rule, children)
-		:
-			new ParseNode(rule, children)
+		return new ([...new Map<Production, typeof ParseNode>([
+			[ProductionGoal                     .instance, ParseNodeGoal               ],
+			[ProductionGoal.__0__List           .instance, ParseNodeStatementList      ],
+			[ProductionStatement                .instance, ParseNodeStatement          ],
+			[ProductionDeclarationVariable      .instance, ParseNodeDeclarationVariable],
+			[ProductionStatementAssignment      .instance, ParseNodeStatementAssignment],
+			[ProductionExpression               .instance, ParseNodeExpression         ],
+			[ProductionExpressionAdditive       .instance, ParseNodeExpressionBinary   ],
+			[ProductionExpressionMultiplicative .instance, ParseNodeExpressionBinary   ],
+			[ProductionExpressionExponential    .instance, ParseNodeExpressionBinary   ],
+			[ProductionExpressionUnarySymbol    .instance, ParseNodeExpressionUnary    ],
+			[ProductionExpressionUnit           .instance, ParseNodeExpressionUnit     ],
+			[ProductionStringTemplate           .instance, ParseNodeStringTemplate     ],
+			[ProductionStringTemplate.__0__List .instance, ParseNodeStringTemplate     ],
+			[ProductionPrimitiveLiteral         .instance, ParseNodePrimitiveLiteral   ],
+		]).entries()].find(([key]) => rule.production.equals(key)) || [null, ParseNode])[1](rule, children)
 	}
 
 
@@ -124,24 +114,25 @@ export default class ParseNode implements Serializable {
 	 * @returns a semantic node containing this parse node’s semantics
 	 */
 	decorate(): SemanticNode {
-		return new SemanticNode(this, `SemanticUnknown`, this.children.map((c) =>
-			(c instanceof ParseNode) ? c.decorate() : new SemanticNode(c, `SemanticToken`, [], {'syntactic-name': c.tagname})
-		), {'syntactic-name': this.tagname})
+		return new SemanticNode('Unknown', this, {'syntactic-name': this.tagname}, this.children.map((c) =>
+			(c instanceof ParseNode) ? c.decorate() : new SemanticNode(`SemanticToken`, c, {'syntactic-name': c.tagname})
+		))
 	}
 }
 class ParseNodeGoal extends ParseNode {
+	declare children: [Token, Token] | [Token, ParseNodeExpression, Token];
 	decorate(): SemanticNode {
 		return (this.children.length === 2) ?
-			new SemanticNode(this, 'SemanticNull')
+			new SemanticNodeNull(this)
 		:
-			new SemanticNode(this, 'SemanticGoal', [
-				(this.children[1] as ParseNode).decorate(),
+			new SemanticNodeGoal(this, [
+				this.children[1].decorate()
 			])
 	}
 }
 class ParseNodeStatementList extends ParseNode {
 	decorate(): SemanticNode {
-		return new SemanticNode(this, 'SemanticStatementList', this.children.flatMap((c) => c instanceof ParseNodeStatementList ?
+		return new SemanticNode('StatementList', this, {}, this.children.flatMap((c) => c instanceof ParseNodeStatementList ?
 			c.decorate().children
 		: // c instanceof ParseNodeStatement
 			[(c as ParseNode).decorate()]
@@ -153,9 +144,9 @@ class ParseNodeStatement extends ParseNode {
 		const firstchild: ParseNode|Token = this.children[0]
 		return (this.children.length === 1 && firstchild instanceof ParseNode) ?
 			firstchild.decorate() :
-			new SemanticNode(this, `SemanticStatement`, (this.children.length === 2) ? [
+			new SemanticNode('Statement', this, {type: 'expression'}, (this.children.length === 2) ? [
 				(firstchild as ParseNode).decorate(),
-			] : [], {type: 'expression'})
+			] : [])
 	}
 }
 class ParseNodeDeclarationVariable extends ParseNode {
@@ -163,72 +154,74 @@ class ParseNodeDeclarationVariable extends ParseNode {
 		const is_unfixed: boolean   = this.children[1] instanceof Token && this.children[1].source === 'unfixed'
 		const identifier: Token     = this.children[is_unfixed ? 2 : 1] as Token
 		const expression: ParseNode = this.children[is_unfixed ? 4 : 3] as ParseNode
-		return new SemanticNode(this, 'SemanticDeclaration', [
-			new SemanticNode(identifier, 'SemanticAssignee', [
-				new SemanticNode(identifier, 'SemanticIdentifier', [], {id: identifier.cook()}),
-			], {unfixed: is_unfixed}),
-			new SemanticNode(expression, 'SemanticAssigned', [
+		return new SemanticNode('Declaration', this, {type: 'variable'}, [
+			new SemanticNode('Assignee', identifier, {unfixed: is_unfixed}, [
+				new SemanticNode('Identifier', identifier, {id: identifier.cook()}),
+			]),
+			new SemanticNode('Assigned', expression, {}, [
 				expression.decorate(),
 			]),
-		], {type: 'variable'})
+		])
 	}
 }
 class ParseNodeStatementAssignment extends ParseNode {
 	decorate(): SemanticNode {
 		const identifier: Token     = this.children[0] as Token
 		const expression: ParseNode = this.children[2] as ParseNode
-		return new SemanticNode(this, 'SemanticAssignment', [
-			new SemanticNode(identifier, 'SemanticAssignee', [
-				new SemanticNode(identifier, 'SemanticIdentifier', [], {id: identifier.cook()}),
+		return new SemanticNode('Assignment', this, {}, [
+			new SemanticNode('Assignee', identifier, {}, [
+				new SemanticNode('Identifier', identifier, {id: identifier.cook()}),
 			]),
-			new SemanticNode(expression, 'SemanticAssigned', [
+			new SemanticNode('Assigned', expression, {}, [
 				expression.decorate(),
 			]),
 		])
 	}
 }
 class ParseNodeExpression extends ParseNode {
+	declare children: [ParseNodeExpressionBinary];
 	decorate(): SemanticNode {
-		return (this.children[0] as ParseNode).decorate()
+		return this.children[0].decorate()
 	}
 }
 class ParseNodeExpressionBinary extends ParseNode {
+	declare children: [ParseNodeExpressionBinary] | [ParseNodeExpressionBinary, Token, ParseNodeExpressionBinary];
 	decorate(): SemanticNode {
 		return (this.children.length === 1) ?
-			(this.children[0] as ParseNode).decorate()
+			this.children[0].decorate()
 		:
-			new SemanticNode(this, 'SemanticExpression', [
-				(this.children[0] as ParseNode).decorate(),
-				(this.children[2] as ParseNode).decorate(),
-			], {operator: this.children[1].source})
+			new SemanticNodeExpression(this, this.children[1].source, [
+				this.children[0].decorate(),
+				this.children[2].decorate(),
+			])
 	}
 }
 class ParseNodeExpressionUnary extends ParseNode {
+	declare children: [ParseNodeExpressionUnit] | [Token, ParseNodeExpressionUnary];
 	decorate(): SemanticNode {
 		return (this.children.length === 1) ?
-			(this.children[0] as ParseNode).decorate()
+			this.children[0].decorate()
 		:
-			new SemanticNode(this, 'SemanticExpression', [
-				(this.children[1] as ParseNode).decorate(),
-			], {operator: this.children[0].source})
+			new SemanticNodeExpression(this, this.children[0].source, [
+				this.children[1].decorate(),
+			])
 	}
 }
 class ParseNodeExpressionUnit extends ParseNode {
+	declare children: [TokenNumber] | [Token, ParseNodeExpression, Token];
 	decorate(): SemanticNode {
 		const firstchild: ParseNode|Token = this.children[0]
 		return (this.children.length === 1) ?
 			(firstchild instanceof ParseNode) ? firstchild.decorate() :
-				new SemanticNode(this, `SemanticIdentifier`, [], {'id': firstchild.cook()})
+				new SemanticNode('Identifier', this, {'id': firstchild.cook()})
 		:
-			new SemanticNode(this, 'SemanticExpression', [
-				(this.children[1] as ParseNode).decorate(),
-			], {operator: [this.children[0], this.children[2]].map((c) => c.source).join('')})
+			this.children[1].decorate()
 	}
 }
 class ParseNodeStringTemplate extends ParseNode {
 	decorate(): SemanticNode {
-		return new SemanticNode(this, 'SemanticTemplate', this.children.flatMap((c) => c instanceof Token ?
-			[new SemanticNode(c, 'SemanticConstant', [], {value: (c as Token).cook()})]
+		return new SemanticNode('Template', this, {}, this.children.flatMap((c) => c instanceof Token ?
+			[new SemanticNode('Constant', c, {value: (c as Token).cook()})]
 		: c instanceof ParseNodeStringTemplate ?
 			c.decorate().children
 		: // c instanceof ParseNodeExpression
@@ -238,6 +231,6 @@ class ParseNodeStringTemplate extends ParseNode {
 }
 class ParseNodePrimitiveLiteral extends ParseNode {
 	decorate(): SemanticNode {
-		return new SemanticNode(this, 'SemanticConstant', [], {value: (this.children[0] as Token).cook()})
+		return new SemanticNode('Constant', this, {value: (this.children[0] as Token).cook()})
 	}
 }

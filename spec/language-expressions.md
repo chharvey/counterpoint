@@ -106,9 +106,7 @@ Decorate(ExpressionUnit ::= PrimitiveLiteral)
 Decorate(ExpressionUnit ::= StringTemplate)
 	:= Decorate(StringTemplate)
 Decorate(ExpressionUnit ::= "(" Expression ")")
-	:= SemanticExpression {operator: "()"} [
-		Decorate(Expression),
-	]
+	:= Decorate(Expression)
 ```
 
 
