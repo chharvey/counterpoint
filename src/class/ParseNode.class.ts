@@ -4,7 +4,7 @@ import {STX, ETX} from './Scanner.class'
 import Token, {TokenNumber} from './Token.class'
 import SemanticNode from './SemanticNode.class'
 import {Rule} from './Grammar.class'
-import {
+import Production, {
 	ProductionFile,
 	ProductionExpression,
 	ProductionExpressionAdditive,
@@ -32,22 +32,15 @@ export default class ParseNode implements Serializable {
 	 * @returns          a new ParseNode object
 	 */
 	static from(rule: Rule, children: readonly (Token|ParseNode)[]): ParseNode {
-		return (rule.production === ProductionFile.instance) ?
-			new ParseNodeGoal(rule, children)
-		: (rule.production === ProductionExpression.instance) ?
-			new ParseNodeExpression(rule, children)
-		: ([
-			ProductionExpressionAdditive,
-			ProductionExpressionMultiplicative,
-			ProductionExpressionExponential,
-		].some((prodclass) => rule.production === prodclass.instance)) ?
-			new ParseNodeExpressionBinary(rule, children)
-		: (rule.production === ProductionExpressionUnarySymbol.instance) ?
-			new ParseNodeExpressionUnary(rule, children)
-		: (rule.production === ProductionExpressionUnit.instance) ?
-			new ParseNodeExpressionUnit(rule, children)
-		:
-			new ParseNode(rule, children)
+		return new ([...new Map<Production, typeof ParseNode>([
+			[ProductionFile                     .instance, ParseNodeGoal            ],
+			[ProductionExpression               .instance, ParseNodeExpression      ],
+			[ProductionExpressionAdditive       .instance, ParseNodeExpressionBinary],
+			[ProductionExpressionMultiplicative .instance, ParseNodeExpressionBinary],
+			[ProductionExpressionExponential    .instance, ParseNodeExpressionBinary],
+			[ProductionExpressionUnarySymbol    .instance, ParseNodeExpressionUnary ],
+			[ProductionExpressionUnit           .instance, ParseNodeExpressionUnit  ],
+		]).entries()].find(([key]) => rule.production.equals(key)) || [null, ParseNode])[1](rule, children)
 	}
 
 
