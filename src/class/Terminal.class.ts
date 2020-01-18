@@ -36,6 +36,6 @@ export class TerminalNumber extends Terminal {
 		return TerminalNumber.digitSequence()
 	}
 	match(candidate: Token): boolean {
-		return candidate.tagname === TokenNumber.TAGNAME
+		return candidate instanceof TokenNumber
 	}
 }

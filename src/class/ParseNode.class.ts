@@ -77,8 +77,8 @@ export default class ParseNode implements Serializable {
 	 */
 	serialize(...attrs: string[]): string {
 		const attributes: string = ' ' + [
-			(this.rule.production !== ProductionFile.instance) ? `line="${this.line_index + 1}"` : '',
-			(this.rule.production !== ProductionFile.instance) ?  `col="${this.col_index  + 1}"` : '',
+			!(this instanceof ParseNodeGoal) ? `line="${this.line_index + 1}"` : '',
+			!(this instanceof ParseNodeGoal) ?  `col="${this.col_index  + 1}"` : '',
 			`source="${
 				this.source
 					.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
@@ -94,7 +94,7 @@ export default class ParseNode implements Serializable {
 	 * @returns a semantic node containing this parse node’s semantics
 	 */
 	decorate(): SemanticNode {
-		return new SemanticNode('Unknown', this)
+		return new SemanticNode(this)
 	}
 }
 class ParseNodeGoal extends ParseNode {

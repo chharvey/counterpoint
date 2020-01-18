@@ -9,6 +9,8 @@ import ParseNode from './ParseNode.class'
  * A SemanticNode holds only the semantics of a {@link ParseNode}.
  */
 export default class SemanticNode implements Serializable {
+	/** The name of the type of this SemanticNode. */
+	private readonly tagname: string;
 	/** The concatenation of the source text of all children. */
 	private readonly source: string;
 	/** Zero-based line number of the first token (first line is line 0). */
@@ -18,28 +20,27 @@ export default class SemanticNode implements Serializable {
 	/**
 	 * Construct a new SemanticNode object.
 	 *
-	 * @param canonical  - The canonical node in the parse tree to which this SemanticNode corresponds.
-	 * @param tagname    - The name of the type of this SemanticNode.
+	 * @param start_node - The initial node in the parse tree to which this SemanticNode corresponds.
 	 * @param children   - The set of child inputs that creates this SemanticNode.
 	 * @param attributes - Any other attributes to attach.
 	 */
 	constructor(
-		private readonly tagname: string,
-		canonical: ParseNode,
+		start_node: ParseNode,
 		private readonly attributes: { [key: string]: string|number|boolean|null } = {},
 		private readonly children: readonly SemanticNode[] = [],
 	) {
-		this.source     = canonical.source
-		this.line_index = canonical.line_index
-		this. col_index = canonical. col_index
+		this.tagname    = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
+		this.source     = start_node.source
+		this.line_index = start_node.line_index
+		this. col_index = start_node. col_index
 	}
 	/**
 	 * @implements Serializable
 	 */
 	serialize(): string {
 		const attributes: string = ' ' + [
-			(this.tagname !== 'SemanticGoal') ? `line="${this.line_index + 1}"` : '',
-			(this.tagname !== 'SemanticGoal') ?  `col="${this.col_index  + 1}"` : '',
+			!(this instanceof SemanticNodeGoal) ? `line="${this.line_index + 1}"` : '',
+			!(this instanceof SemanticNodeGoal) ?  `col="${this.col_index  + 1}"` : '',
 			`source="${
 				this.source
 					.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
@@ -52,22 +53,22 @@ export default class SemanticNode implements Serializable {
 	}
 }
 export class SemanticNodeNull extends SemanticNode {
-	constructor(canonical: ParseNode) {
-		super('Null', canonical)
+	constructor(start_node: ParseNode) {
+		super(start_node)
 	}
 }
 export class SemanticNodeGoal extends SemanticNode {
-	constructor(canonical: ParseNode, children: readonly [SemanticNodeExpression]) {
-		super('Goal', canonical, {}, children)
+	constructor(start_node: ParseNode, children: readonly [SemanticNodeExpression]) {
+		super(start_node, {}, children)
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {
-	constructor(canonical: ParseNode, operator: string, children: readonly SemanticNode[]) {
-		super('Expression', canonical, {operator}, children)
+	constructor(start_node: ParseNode, operator: string, children: readonly SemanticNode[]) {
+		super(start_node, {operator}, children)
 	}
 }
 export class SemanticNodeConstant extends SemanticNode {
-	constructor(canonical: ParseNode, value: number) {
-		super('Constant', canonical, {value})
+	constructor(start_node: ParseNode, value: number) {
+		super(start_node, {value})
 	}
 }
