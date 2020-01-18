@@ -10,6 +10,7 @@ import Token, {
 import {LexError01} from '../error/LexError.class'
 
 
+
 /**
  * A lexer (aka: Tokenizer, Lexical Analyzer)
  * @see http://parsingintro.sourceforge.net/#contents_item_6.5
@@ -19,13 +20,10 @@ export default class Lexer {
 	private readonly scanner: Iterator<Char, void>;
 	/** The result of the scanner iterator. */
 	private iterator_result_char: IteratorResult<Char, void>;
-
 	/** The current character’s cargo. */
 	private c0: string;
 	/** The lookahead(1) character’s cargo. */
 	private c1: string|null;
-	/** The lookahead(2) character’s cargo. */
-	private c2: string|null;
 
 	/**
 	 * Construct a new Lexer object.
@@ -39,9 +37,7 @@ export default class Lexer {
 
 		this.c0             = (this.iterator_result_char.value as Char).cargo
 		const l1: Char|null = (this.iterator_result_char.value as Char).lookahead()
-		const l2: Char|null = (this.iterator_result_char.value as Char).lookahead(2)
 		this.c1 = l1 && l1.cargo
-		this.c2 = l2 && l2.cargo
 	}
 
 	/**
@@ -56,9 +52,7 @@ export default class Lexer {
 			if (!this.iterator_result_char.done) {
 				this.c0 = this.iterator_result_char.value.cargo
 				const l1 = this.iterator_result_char.value.lookahead()
-				const l2 = this.iterator_result_char.value.lookahead(2)
 				this.c1 = l1 && l1.cargo
-				this.c2 = l2 && l2.cargo
 			}
 		} else {
 			this.advance(n - 1)

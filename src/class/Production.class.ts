@@ -1,10 +1,11 @@
+import Util from './Util.class'
 import {STX, ETX} from './Scanner.class'
+import ParseNode from './ParseNode.class'
+import {GrammarSymbol, Rule} from './Grammar.class'
 import {
 	TerminalNumber,
 } from './Terminal.class'
 
-import {GrammarSymbol, Rule} from './Grammar.class'
-import Util from './Util.class'
 
 
 /**
@@ -14,18 +15,47 @@ import Util from './Util.class'
  * which can be reduced to the left-hand side nonterminal in a parsing action.
  */
 export default abstract class Production {
+	protected constructor() {}
+
 	/** @final */ get displayName(): string {
 		return this.constructor.name.slice('Production'.length)
 	}
+
 	/**
 	 * A set of sequences of parse symbols (terminals and/or nonterminals) in this production.
 	 */
 	abstract get sequences(): GrammarSymbol[][];
+
 	/**
 	 * Generate a random instance of this Production.
 	 * @returns a well-formed sequence of strings satisfying this Production
 	 */
 	abstract random(): string[];
+
+	/**
+	 * Does the given ParseNode satisfy a Rule in this Production?
+	 * @param   candidate - a ParseNode to test
+	 * @returns             Does the given ParseNode satisfy a Rule in this Production?
+	 * @final
+	 */
+	match(candidate: ParseNode): boolean {
+		return candidate.rule.production.equals(this)
+	}
+
+	/**
+	 * Is this production “equal to” the argument?
+	 *
+	 * Two productions are “equal” if they are the same object, or all of the following are true:
+	 * - The corresponding rules of both productions are “equal” (by {@link Rule#equals}).
+	 *
+	 * @param   prod - the production to compare
+	 * @returns        is this production “equal to” the argument?
+	 */
+	equals(prod: Production) {
+		return this === prod ||
+			Util.equalArrays<Rule>(this.toRules(), prod.toRules(), (r1, r2) => r1.equals(r2))
+	}
+
 	/**
 	 * Generate grammar rules from this Production.
 	 * @returns this Production split into several rules
@@ -34,6 +64,7 @@ export default abstract class Production {
 		return this.sequences.map((_, i) => new Rule(this, i))
 	}
 }
+
 
 
 export class ProductionFile extends Production {

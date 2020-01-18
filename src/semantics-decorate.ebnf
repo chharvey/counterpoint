@@ -1,0 +1,60 @@
+Decorate(File ::= #x02 #x03)
+	:= SemanticNull {} []
+Decorate(File ::= #x02 Expression #x03)
+	:= Decorate(Expression)
+
+Decorate(Expression ::= ExpressionAdditive)
+	:= Decorate(ExpressionAdditive)
+
+Decorate(ExpressionAdditive ::= ExpressionMultiplicative)
+	:= Decorate(ExpressionMultiplicative)
+Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative)
+	:= SemanticExpression {operator: "+"} [
+		Decorate(ExpressionAdditive),
+		Decorate(ExpressionMultiplicative),
+	]
+Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
+	:= SemanticExpression {operator: "-"} [
+		Decorate(ExpressionAdditive),
+		Decorate(ExpressionMultiplicative),
+	]
+
+Decorate(ExpressionMultiplicative ::= ExpressionExponential)
+	:= Decorate(ExpressionExponential)
+Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential)
+	:= SemanticExpression {operator: "*"} [
+		Decorate(ExpressionMultiplicative),
+		Decorate(ExpressionExponential),
+	]
+Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential)
+	:= SemanticExpression {operator: "/"} [
+		Decorate(ExpressionMultiplicative),
+		Decorate(ExpressionExponential),
+	]
+
+Decorate(ExpressionExponential ::= ExpressionUnarySymbol)
+	:= Decorate(ExpressionUnarySymbol)
+Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential)
+	:= SemanticExpression {operator: "^"} [
+		Decorate(ExpressionUnarySymbol),
+		Decorate(ExpressionExponential),
+	]
+
+Decorate(ExpressionUnarySymbol ::= ExpressionUnit)
+	:= Decorate(ExpressionUnit)
+Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol)
+	:= SemanticExpression {operator: "+"} [
+		Decorate(ExpressionUnarySymbol),
+	]
+Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol)
+	:= SemanticExpression {operator: "-"} [
+		Decorate(ExpressionUnarySymbol),
+	]
+
+Decorate(ExpressionUnit ::= NUMBER)
+	:= Decorate(NUMBER)
+Decorate(ExpressionUnit ::= "(" Expression ")")
+	:= Decorate(Expression)
+
+Decorate(NUMBER)
+	::= SemanticConstant {value: MV(NUMBER)} []
