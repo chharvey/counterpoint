@@ -62,7 +62,7 @@ export default class SemanticNode implements Serializable {
 	}
 }
 export class SemanticNodeNull extends SemanticNode {
-	constructor(canonical: ParseNode) {
+	constructor(canonical: Token|ParseNode) {
 		super('Null', canonical)
 	}
 }
@@ -77,7 +77,7 @@ export class SemanticNodeExpression extends SemanticNode {
 	}
 }
 export class SemanticNodeConstant extends SemanticNode {
-	constructor(canonical: ParseNode, value: number) {
+	constructor(canonical: Token, value: string|number) {
 		super('Constant', canonical, {value})
 	}
 }

@@ -1,7 +1,11 @@
 import Serializable from '../iface/Serializable.iface'
 
 import {STX, ETX} from './Scanner.class'
-import Token, {TokenNumber} from './Token.class'
+import Token, {
+	TokenString,
+	TokenTemplate,
+	TokenNumber,
+} from './Token.class'
 import SemanticNode, {
 	SemanticNodeNull,
 	SemanticNodeGoal,
@@ -232,10 +236,10 @@ class ParseNodeExpressionUnit extends ParseNode {
 	}
 }
 class ParseNodeStringTemplate extends ParseNode {
-	declare children: (Token|ParseNodeExpression|ParseNodeStringTemplate)[];
+	declare children: (TokenTemplate|ParseNodeExpression|ParseNodeStringTemplate)[];
 	decorate(): SemanticNode {
 		return new SemanticNode('Template', this, {}, this.children.flatMap((c) => c instanceof Token ?
-			[new SemanticNode('Constant', c, {value: c.cook()})]
+			[new SemanticNodeConstant(c, c.cook())]
 		: c instanceof ParseNodeStringTemplate ?
 			c.decorate().children
 		:
@@ -244,8 +248,8 @@ class ParseNodeStringTemplate extends ParseNode {
 	}
 }
 class ParseNodePrimitiveLiteral extends ParseNode {
-	declare children: [Token];
-	decorate(): SemanticNode {
-		return new SemanticNode('Constant', this, {value: this.children[0].cook()})
+	declare children: [TokenString|TokenNumber];
+	decorate(): SemanticNodeConstant {
+		return new SemanticNodeConstant(this.children[0], this.children[0].cook())
 	}
 }
