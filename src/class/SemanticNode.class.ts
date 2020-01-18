@@ -71,9 +71,49 @@ export class SemanticNodeGoal extends SemanticNode {
 		super('Goal', canonical, {}, children)
 	}
 }
+export class SemanticNodeStatementList extends SemanticNode {
+	constructor(canonical: ParseNode, children: readonly SemanticNode[]) {
+		super('StatementList', canonical, {}, children)
+	}
+}
+export class SemanticNodeStatement extends SemanticNode {
+	constructor(canonical: ParseNode, type: string, children: readonly SemanticNode[]) {
+		super('Statement', canonical, {type}, children)
+	}
+}
+export class SemanticNodeDeclaration extends SemanticNode {
+	constructor(canonical: ParseNode, type: string, children: readonly SemanticNode[]) {
+		super('Declaration', canonical, {type}, children)
+	}
+}
+export class SemanticNodeAssignment extends SemanticNode {
+	constructor(canonical: ParseNode, children: readonly SemanticNode[]) {
+		super('Assignment', canonical, {}, children)
+	}
+}
+export class SemanticNodeAssignee extends SemanticNode {
+	constructor(canonical: Token, unfixed: boolean /* FIXME */, children: readonly SemanticNode[]) {
+		super('Assignee', canonical, {unfixed}, children)
+	}
+}
+export class SemanticNodeAssigned extends SemanticNode {
+	constructor(canonical: ParseNode, children: readonly SemanticNode[]) {
+		super('Assigned', canonical, {}, children)
+	}
+}
 export class SemanticNodeExpression extends SemanticNode {
 	constructor(canonical: ParseNode, operator: string, children: readonly SemanticNode[]) {
 		super('Expression', canonical, {operator}, children)
+	}
+}
+export class SemanticNodeTemplate extends SemanticNode {
+	constructor(canonical: ParseNode, children: readonly SemanticNode[]) {
+		super('Expression', canonical, {}, children)
+	}
+}
+export class SemanticNodeIdentifier extends SemanticNode {
+	constructor(canonical: Token, id: string|number) {
+		super('Identifier', canonical, {id})
 	}
 }
 export class SemanticNodeConstant extends SemanticNode {
