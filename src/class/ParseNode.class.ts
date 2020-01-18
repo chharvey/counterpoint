@@ -38,6 +38,7 @@ import Production, {
 } from './Production.class'
 
 
+
 /**
  * A ParseNode is a node in a parse tree for a given input stream.
  * It holds:
@@ -82,6 +83,7 @@ export default class ParseNode implements Serializable {
 	readonly line_index: number;
 	/** Zero-based column number of the first token (first col is col 0). */
 	readonly col_index: number;
+
 	/**
 	 * Construct a new ParseNode object.
 	 *
@@ -97,13 +99,24 @@ export default class ParseNode implements Serializable {
 		this.line_index = this.children[0].line_index
 		this.col_index  = this.children[0].col_index
 	}
+
+	/**
+	 * Return a Semantic Node, a node of the Semantic Tree or “decorated/abstract syntax tree”.
+	 * @returns a semantic node containing this parse node’s semantics
+	 */
+	decorate(): SemanticNode {
+		return new SemanticNode(this, {'syntactic-name': this.tagname}, this.children.map((c) =>
+			(c instanceof ParseNode) ? c.decorate() : new SemanticNode(c, {'syntactic-name': c.tagname})
+		))
+	}
+
 	/**
 	 * @implements Serializable
 	 */
 	serialize(): string {
 		const attributes: string = ' ' + [
-			!this.rule.production.equals(ProductionGoal.instance) ? `line="${this.line_index + 1}"` : '',
-			!this.rule.production.equals(ProductionGoal.instance) ?  `col="${this.col_index  + 1}"` : '',
+			!(this instanceof ParseNodeGoal) ? `line="${this.line_index + 1}"` : '',
+			!(this instanceof ParseNodeGoal) ?  `col="${this.col_index  + 1}"` : '',
 			`source="${this.source
 				.replace(/\&/g, '&amp;' )
 				.replace(/\</g, '&lt;'  )
@@ -122,16 +135,10 @@ export default class ParseNode implements Serializable {
 		const contents: string = this.children.map((child) => child.serialize()).join('')
 		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
 	}
-	/**
-	 * Return a Semantic Node, a node of the Semantic Tree or “decorated/abstract syntax tree”.
-	 * @returns a semantic node containing this parse node’s semantics
-	 */
-	decorate(): SemanticNode {
-		return new SemanticNode('Unknown', this, {'syntactic-name': this.tagname}, this.children.map((c) =>
-			(c instanceof ParseNode) ? c.decorate() : new SemanticNode('Unknown', c, {'syntactic-name': c.tagname})
-		))
-	}
 }
+
+
+
 class ParseNodeGoal extends ParseNode {
 	declare children: [Token, Token] | [Token, ParseNodeStatementList, Token];
 	decorate(): SemanticNode {
@@ -203,13 +210,13 @@ class ParseNodeStatementAssignment extends ParseNode {
 }
 class ParseNodeExpression extends ParseNode {
 	declare children: [ParseNodeExpressionBinary];
-	decorate(): SemanticNode {
+	decorate(): SemanticNodeExpression {
 		return this.children[0].decorate()
 	}
 }
 class ParseNodeExpressionBinary extends ParseNode {
-	declare children: [ParseNodeExpressionBinary] | [ParseNodeExpressionBinary, Token, ParseNodeExpressionBinary];
-	decorate(): SemanticNode {
+	declare children: [ParseNodeExpressionBinary] | [ParseNodeExpressionBinary|ParseNodeExpressionUnary, Token, ParseNodeExpressionBinary];
+	decorate(): SemanticNodeExpression {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
 		:

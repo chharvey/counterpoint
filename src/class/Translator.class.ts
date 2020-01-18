@@ -6,6 +6,7 @@ import Token, {
 } from './Token.class'
 
 
+
 /**
  * A translator prepares the tokens for the parser.
  * It performs certian operations such as

@@ -9,6 +9,7 @@ export type GrammarSymbol   = GrammarTerminal|Production
 export type GrammarTerminal = string|Terminal
 
 
+
 /**
  * Display a string of grammar symbols for debugging purposes.
  *
@@ -22,9 +23,11 @@ const stringOfSymbols = (arr: readonly GrammarSymbol[]): string =>
 	).join(' ')
 
 
+
 export default class Grammar {
 	/** The productions of this grammar decomposed into rules. There are likely many rules per production. */
 	readonly rules: readonly Rule[];
+
 	/**
 	 * Construct a new Grammar object.
 	 * @param   productions - The set of all productions in this Grammar.
@@ -41,6 +44,7 @@ export default class Grammar {
 		})
 		this.rules = this.productions.map((prod) => prod.toRules()).flat()
 	}
+
 	/**
 	 * The **first** of a grammar symbol `s` is,
 	 * if `s` is a terminal, the singleton set $\{s\}$, or
@@ -63,6 +67,7 @@ export default class Grammar {
 			).flat()
 		: [])
 	}
+
 	/**
 	 * The **follow** of a grammar symbol `s` is
 	 * the set of all possible terminals that may appear immediately after `s` in a rule.
@@ -83,6 +88,7 @@ export default class Grammar {
 		)
 		return set
 	}
+
 	/**
 	 * The **closure** of a configuration set adds new configurations by expanding variables that appear to the right of the marker.
 	 * @see http://www2.lawrence.edu/fast/GREGGJ/CMSC515/parsing/LR_parsing.html
@@ -113,6 +119,7 @@ export default class Grammar {
 		})
 		return closure
 	}
+
 	/**
 	 * Generate an instance of the language of this Grammar.
 	 * A language instance is a sequence of terminal symbols that can result from repeatedly replacing
@@ -137,6 +144,7 @@ export default class Grammar {
 }
 
 
+
 /**
  * A Rule is a single instance of a {@link Production} in use:
  * it consists of the production’s nonterminal and a single choice,
@@ -145,6 +153,7 @@ export default class Grammar {
 export class Rule {
 	/** The sequence of terminals/nonterminals on the right-hand side of the rule. */
 	readonly symbols: readonly GrammarSymbol[];
+
 	/**
 	 * Construct a new Rule object.
 	 * @param   production - The production.
@@ -156,6 +165,7 @@ export class Rule {
 	) {
 		this.symbols = production.sequences[choice]
 	}
+
 	/**
 	 * Is this rule “equal to” the argument?
 	 *
@@ -169,11 +179,13 @@ export class Rule {
 		return this === rule ||
 			Util.equalArrays<GrammarSymbol>(this.symbols, rule.symbols)
 	}
+
 	/** @override */
 	toString(): string {
 		return `${this.production.displayName} --> ${stringOfSymbols(this.symbols)}`
 	}
 }
+
 
 
 /**
@@ -182,17 +194,15 @@ export class Rule {
  * @see http://www2.lawrence.edu/fast/GREGGJ/CMSC515/parsing/LR_parsing.html
  */
 export class Configuration {
+	/** The set of symbols before the current marker. */
 	readonly before: readonly GrammarSymbol[] = this.rule.symbols.slice(0, this.marker)
-	readonly after : readonly GrammarSymbol[] = this.rule.symbols.slice(   this.marker)
-	/**
-	 * Is this configuration done?
-	 * That is, is the marker past all of the symbols in the rule?
-	 */
+	/** The set of symbols after the current marker. */
+	readonly after: readonly GrammarSymbol[] = this.rule.symbols.slice(this.marker)
+	/** Is this configuration done? That is, is the marker past all of the symbols in the rule? */
 	readonly done: boolean = this.after.length === 0
-	/**
-	 * The set of terminal symbols that may succeed the symbols in this configuration’s rule.
-	 */
+	/** The set of terminal symbols that may succeed the symbols in this configuration’s rule. */
 	readonly lookaheads: ReadonlySet<GrammarTerminal>;
+
 	/**
 	 * Construct a new Configuration object.
 	 * @param  rule       - The rule to track.
@@ -209,6 +219,7 @@ export class Configuration {
 		if (this.marker > this.rule.symbols.length) throw new Error('Cannot advance past end of rule.')
 		this.lookaheads = new Set(lookaheads)
 	}
+
 	/**
 	 * Produce a new configuration that represents this configuartion with its marker advanced to the next symbol.
 	 * If a parameter is supplied, advance the marker by that number of symbols.
@@ -218,6 +229,7 @@ export class Configuration {
 	advance(step: number /* TODO bigint */ = 1): Configuration {
 		return new Configuration(this.rule, this.marker + Math.max(1, Math.floor(step)), ...this.lookaheads)
 	}
+
 	/**
 	 * Is this configuration “equal to” the argument?
 	 *
@@ -238,6 +250,7 @@ export class Configuration {
 			this.marker === config.marker &&
 			(!lookaheads || Util.equalSets<GrammarTerminal>(this.lookaheads, config.lookaheads))
 	}
+
 	/** @override */
 	toString(): string {
 		const lookaheads = (set: ReadonlySet<GrammarTerminal>): string =>

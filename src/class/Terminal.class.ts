@@ -8,20 +8,24 @@ import Token, {
 } from './Token.class'
 
 
+
 /**
  * A Terminal is a symbol in a production (a formal context-free grammar) that cannot be reduced any further.
  * It serves as a distinction betwen different types of actual tokens.
  */
 export default abstract class Terminal {
 	protected constructor() {}
+
 	/** @final */ get displayName(): string {
 		return this.constructor.name.replace(/[A-Z]/g, '_$&').slice('_Terminal_'.length).toUpperCase()
 	}
+
 	/**
 	 * Generate a random instance of this Terminal.
 	 * @returns a well-formed string satisfying this Terminal
 	 */
 	abstract random(): string;
+
 	/**
 	 * Does the given Token satisfy this Terminal?
 	 * @param   candidate - a Token to test
@@ -29,6 +33,7 @@ export default abstract class Terminal {
 	 */
 	abstract match(candidate: Token): boolean;
 }
+
 
 
 export class TerminalString extends Terminal {
@@ -52,7 +57,7 @@ export class TerminalString extends Terminal {
 		return `${TokenString.DELIM}${maybeChars()}${TokenString.DELIM}`
 	}
 	match(candidate: Token): boolean {
-		return candidate.tagname === TokenString.TAGNAME
+		return candidate instanceof TokenString
 	}
 }
 abstract class TerminalTemplate extends Terminal {
@@ -72,7 +77,7 @@ abstract class TerminalTemplate extends Terminal {
 		return `${start}${maybeChars()}${end}`
 	}
 	match(candidate: Token, position: TemplatePosition = TemplatePosition.FULL): boolean {
-		return candidate.tagname === `${TokenTemplate.TAGNAME}-${TemplatePosition[position]}`
+		throw new Error('TODO')
 	}
 }
 export class TerminalTemplateFull extends TerminalTemplate {
@@ -121,7 +126,7 @@ export class TerminalNumber extends Terminal {
 		return Util.randomBool() ? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT) : `\\${base[0]}${TerminalNumber.digitSequence(base[1])}`
 	}
 	match(candidate: Token): boolean {
-		return candidate.tagname === TokenNumber.TAGNAME
+		return candidate instanceof TokenNumber
 	}
 }
 export class TerminalIdentifier extends Terminal {

@@ -6,41 +6,45 @@ import Token from './Token.class'
 import ParseNode from './ParseNode.class'
 
 
+
 /**
  * A SemanticNode holds only the semantics of a {@link ParseNode}.
  */
 export default class SemanticNode implements Serializable {
+	/** The name of the type of this SemanticNode. */
+	private readonly tagname: string;
 	/** The concatenation of the source text of all children. */
 	private readonly source: string;
 	/** Zero-based line number of the first token (first line is line 0). */
 	readonly line_index: number;
 	/** Zero-based column number of the first token (first col is col 0). */
 	readonly col_index: number;
+
 	/**
 	 * Construct a new SemanticNode object.
 	 *
-	 * @param canonical  - The canonical node in the parse tree to which this SemanticNode corresponds.
-	 * @param tagname    - The name of the type of this SemanticNode.
+	 * @param start_node - The initial node in the parse tree to which this SemanticNode corresponds.
 	 * @param children   - The set of child inputs that creates this SemanticNode.
 	 * @param attributes - Any other attributes to attach.
 	 */
 	constructor(
-		private readonly tagname: string,
-		canonical: Token|ParseNode,
+		start_node: Token|ParseNode,
 		private readonly attributes: { [key: string]: string|number|boolean|null } = {},
 		readonly children: readonly SemanticNode[] = [],
 	) {
-		this.source     = canonical.source
-		this.line_index = canonical.line_index
-		this. col_index = canonical. col_index
+		this.tagname    = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
+		this.source     = start_node.source
+		this.line_index = start_node.line_index
+		this. col_index = start_node. col_index
 	}
+
 	/**
 	 * @implements Serializable
 	 */
 	serialize(): string {
 		const attributes: string = ' ' + [
-			(this.tagname !== 'SemanticGoal') ? `line="${this.line_index + 1}"` : '',
-			(this.tagname !== 'SemanticGoal') ?  `col="${this.col_index  + 1}"` : '',
+			!(this instanceof SemanticNodeGoal) ? `line="${this.line_index + 1}"` : '',
+			!(this instanceof SemanticNodeGoal) ?  `col="${this.col_index  + 1}"` : '',
 			`source="${this.source
 				.replace(/\&/g, '&amp;' )
 				.replace(/\</g, '&lt;'  )
@@ -61,63 +65,66 @@ export default class SemanticNode implements Serializable {
 		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
 	}
 }
+
+
+
 export class SemanticNodeNull extends SemanticNode {
-	constructor(canonical: Token|ParseNode) {
-		super('Null', canonical)
+	constructor(start_node: Token|ParseNode) {
+		super(start_node)
 	}
 }
 export class SemanticNodeGoal extends SemanticNode {
-	constructor(canonical: ParseNode, children: readonly SemanticNode[]) {
-		super('Goal', canonical, {}, children)
+	constructor(start_node: ParseNode, children: readonly [SemanticNodeExpression]) {
+		super(start_node, {}, children)
 	}
 }
 export class SemanticNodeStatementList extends SemanticNode {
 	constructor(canonical: ParseNode, children: readonly SemanticNode[]) {
-		super('StatementList', canonical, {}, children)
+		super(canonical, {}, children)
 	}
 }
 export class SemanticNodeStatement extends SemanticNode {
 	constructor(canonical: ParseNode, type: string, children: readonly SemanticNode[]) {
-		super('Statement', canonical, {type}, children)
+		super(canonical, {type}, children)
 	}
 }
 export class SemanticNodeDeclaration extends SemanticNode {
 	constructor(canonical: ParseNode, type: string, unfixed: boolean, children: readonly SemanticNode[]) {
-		super('Declaration', canonical, {type, unfixed}, children)
+		super(canonical, {type, unfixed}, children)
 	}
 }
 export class SemanticNodeAssignment extends SemanticNode {
 	constructor(canonical: ParseNode, children: readonly SemanticNode[]) {
-		super('Assignment', canonical, {}, children)
+		super(canonical, {}, children)
 	}
 }
 export class SemanticNodeAssignee extends SemanticNode {
 	constructor(canonical: Token, children: readonly SemanticNode[]) {
-		super('Assignee', canonical, {}, children)
+		super(canonical, {}, children)
 	}
 }
 export class SemanticNodeAssigned extends SemanticNode {
 	constructor(canonical: ParseNode, children: readonly SemanticNode[]) {
-		super('Assigned', canonical, {}, children)
+		super(canonical, {}, children)
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {
-	constructor(canonical: ParseNode, operator: string, children: readonly SemanticNode[]) {
-		super('Expression', canonical, {operator}, children)
+	constructor(start_node: ParseNode, operator: string, children: readonly SemanticNode[]) {
+		super(start_node, {operator}, children)
 	}
 }
 export class SemanticNodeTemplate extends SemanticNode {
 	constructor(canonical: ParseNode, children: readonly SemanticNode[]) {
-		super('Expression', canonical, {}, children)
+		super(canonical, {}, children)
 	}
 }
 export class SemanticNodeIdentifier extends SemanticNode {
 	constructor(canonical: Token, id: string|number) {
-		super('Identifier', canonical, {id})
+		super(canonical, {id})
 	}
 }
 export class SemanticNodeConstant extends SemanticNode {
-	constructor(canonical: Token, value: string|number) {
-		super('Constant', canonical, {value})
+	constructor(start_node: Token, value: string|number) {
+		super(start_node, {value})
 	}
 }
