@@ -77,7 +77,7 @@ abstract class TerminalTemplate extends Terminal {
 		return `${start}${maybeChars()}${end}`
 	}
 	match(candidate: Token, position: TemplatePosition = TemplatePosition.FULL): boolean {
-		throw new Error('TODO')
+		return candidate instanceof TokenTemplate && candidate.position === position
 	}
 }
 export class TerminalTemplateFull extends TerminalTemplate {
@@ -147,6 +147,6 @@ export class TerminalIdentifier extends Terminal {
 		return returned
 	}
 	match(candidate: Token): boolean {
-		return candidate instanceof TokenWord && candidate.isIdentifier
+		return candidate instanceof TokenWord && candidate.is_identifier
 	}
 }

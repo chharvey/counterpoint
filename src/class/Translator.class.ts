@@ -54,7 +54,7 @@ export default class Translator {
 	* generate(): Iterator<Token, void> {
 		while (!this.iterator_result_token.done) {
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
-				if (this.t0 instanceof TokenWord && this.t0.isIdentifier) {
+				if (this.t0 instanceof TokenWord && this.t0.is_identifier) {
 					this._ids.add(this.t0.source)
 					this.t0.setValue(this)
 				}

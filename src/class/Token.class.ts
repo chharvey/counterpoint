@@ -393,6 +393,7 @@ export class TokenTemplate extends Token {
 	}
 	private readonly delim_end  : number;
 	private readonly delim_start: number;
+	readonly position: TemplatePosition;
 	constructor (lexer: Lexer, delim_start: number) {
 		let delim_end: number;
 		const positions: Set<TemplatePosition> = new Set<TemplatePosition>()
@@ -443,6 +444,7 @@ export class TokenTemplate extends Token {
 		super(buffer[0], ...buffer.slice(1))
 		this.delim_start = delim_start
 		this.delim_end   = delim_end !
+		this.position = [...positions][0]
 	}
 	cook(): string {
 		return String.fromCodePoint(...TokenTemplate.tv(
@@ -546,6 +548,8 @@ export class TokenWord extends Token {
 			'unfixed',
 		]],
 	]))
+	/** Is this Token an identifier? */
+	readonly is_identifier: boolean;
 	/**
 	 * The cooked value of this Token.
 	 * If the token is a keyword, the cooked value is its contents.
@@ -568,14 +572,8 @@ export class TokenWord extends Token {
 			}
 		})
 		super(buffer[0], ...buffer.slice(1))
+		this.is_identifier = kind === TokenWord.IDENTIFIER_TAG
 		this._cooked = this.source
-	}
-	/**
-	 * Is this Token an identifier?
-	 * @returns Is this an identifier?
-	 */
-	get isIdentifier(): boolean {
-		throw new Error('TODO')
 	}
 	/**
 	 * Use a Translator to set the value of this Token.
@@ -585,7 +583,7 @@ export class TokenWord extends Token {
 	 * @param   translator the Translator whose indexed identifiers to search
 	 */
 	setValue(translator: Translator) {
-		if (this.isIdentifier) {
+		if (this.is_identifier) {
 			this._cooked = translator.identifiers.indexOf(this.source)
 		}
 	}
