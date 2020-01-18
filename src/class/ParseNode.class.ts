@@ -2,7 +2,12 @@ import Serializable from '../iface/Serializable.iface'
 
 import {STX, ETX} from './Scanner.class'
 import Token, {TokenNumber} from './Token.class'
-import SemanticNode from './SemanticNode.class'
+import SemanticNode, {
+	SemanticNodeNull,
+	SemanticNodeGoal,
+	SemanticNodeExpression,
+	SemanticNodeConstant,
+} from './SemanticNode.class'
 import {Rule} from './Grammar.class'
 import Production, {
 	ProductionFile,
@@ -89,16 +94,16 @@ export default class ParseNode implements Serializable {
 	 * @returns a semantic node containing this parse node’s semantics
 	 */
 	decorate(): SemanticNode {
-		return new SemanticNode(this, 'SemanticUnknown')
+		return new SemanticNode('Unknown', this)
 	}
 }
 class ParseNodeGoal extends ParseNode {
 	declare children: [Token, Token] | [Token, ParseNodeExpression, Token];
 	decorate(): SemanticNode {
 		return (this.children.length === 2) ?
-			new SemanticNode(this, 'SemanticNull')
+			new SemanticNodeNull(this)
 		:
-			new SemanticNode(this, 'SemanticGoal', [
+			new SemanticNodeGoal(this, [
 				this.children[1].decorate()
 			])
 	}
@@ -115,10 +120,10 @@ class ParseNodeExpressionBinary extends ParseNode {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
 		:
-			new SemanticNode(this, 'SemanticExpression', [
+			new SemanticNodeExpression(this, this.children[1].source, [
 				this.children[0].decorate(),
 				this.children[2].decorate(),
-			], {operator: this.children[1].source})
+			])
 	}
 }
 class ParseNodeExpressionUnary extends ParseNode {
@@ -127,16 +132,16 @@ class ParseNodeExpressionUnary extends ParseNode {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
 		:
-			new SemanticNode(this, 'SemanticExpression', [
+			new SemanticNodeExpression(this, this.children[0].source, [
 				this.children[1].decorate(),
-			], {operator: this.children[0].source})
+			])
 	}
 }
 class ParseNodeExpressionUnit extends ParseNode {
 	declare children: [TokenNumber] | [Token, ParseNodeExpression, Token];
 	decorate(): SemanticNode {
 		return (this.children.length === 1) ?
-			new SemanticNode(this, 'SemanticConstant', [], {value: this.children[0].value}) // TODO use `.cook()` in v2
+			new SemanticNodeConstant(this, this.children[0].value !)
 		:
 			this.children[1].decorate()
 	}
