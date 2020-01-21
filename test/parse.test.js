@@ -1,25 +1,7 @@
 const {TokenFilebound} = require('../build/class/Token.class.js')
 const {default: Parser} = require('../build/class/Parser.class.js')
 const {default: Grammar} = require('../build/class/Grammar.class.js')
-const {
-	ProductionFile,
-	ProductionExpression,
-	ProductionExpressionAdditive,
-	ProductionExpressionMultiplicative,
-	ProductionExpressionExponential,
-	ProductionExpressionUnarySymbol,
-	ProductionExpressionUnit,
-} = require('../build/class/Production.class')
 
-const grammar = new Grammar([
-	ProductionFile.instance,
-	ProductionExpression.instance,
-	ProductionExpressionAdditive.instance,
-	ProductionExpressionMultiplicative.instance,
-	ProductionExpressionExponential.instance,
-	ProductionExpressionUnarySymbol.instance,
-	ProductionExpressionUnit.instance,
-])
 const mock = `
 5  +  30
 
@@ -43,7 +25,7 @@ const mock = `
 
 
 test('Parse empty file.', () => {
-	const tree = new Parser(grammar).parse('')
+	const tree = new Parser('').parse()
 	expect(tree.tagname).toBe('File')
 	expect(tree.children.length).toBe(2)
 	tree.children.forEach((child) => expect(child).toEqual(expect.any(TokenFilebound)))
@@ -52,7 +34,7 @@ test('Parse empty file.', () => {
 
 
 test('Parse simple expression unit.', () => {
-	const tree = new Parser(grammar).parse('42')
+	const tree = new Parser('42').parse()
 	expect(tree.serialize()).toBe(`
 <File source="␂ 42 ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
@@ -77,7 +59,7 @@ test('Parse simple expression unit.', () => {
 
 
 test('Parse unary symbol.', () => {
-	const tree = new Parser(grammar).parse('- 42')
+	const tree = new Parser('- 42').parse()
 	expect(tree.serialize()).toBe(`
 <File source="␂ - 42 ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
@@ -105,7 +87,7 @@ test('Parse unary symbol.', () => {
 
 
 test('Parse exponential.', () => {
-	const tree = new Parser(grammar).parse('2 ^ -3')
+	const tree = new Parser('2 ^ -3').parse()
 	expect(tree.serialize()).toBe(`
 <File source="␂ 2 ^ -3 ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
@@ -138,7 +120,7 @@ test('Parse exponential.', () => {
 
 
 test('Parse multiplicative.', () => {
-	const tree = new Parser(grammar).parse('2 * -3')
+	const tree = new Parser('2 * -3').parse()
 	expect(tree.serialize()).toBe(`
 <File source="␂ 2 * -3 ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
@@ -173,7 +155,7 @@ test('Parse multiplicative.', () => {
 
 
 test('Parse additive.', () => {
-	const tree = new Parser(grammar).parse('2 + -3')
+	const tree = new Parser('2 + -3').parse()
 	expect(tree.serialize()).toBe(`
 <File source="␂ 2 + -3 ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
@@ -210,7 +192,7 @@ test('Parse additive.', () => {
 
 
 test('Parse grouping.', () => {
-	const tree = new Parser(grammar).parse('(2 + -3)')
+	const tree = new Parser('(2 + -3)').parse()
 	expect(tree.serialize()).toBe(`
 <File source="␂ ( 2 + -3 ) ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
@@ -262,7 +244,7 @@ test('Parse grouping.', () => {
 
 test('Parse full.', () => {
 	expect(() => {
-		const tree = new Parser(grammar).parse(mock)
+		const tree = new Parser(mock).parse()
 	}).not.toThrow()
 })
 
@@ -270,6 +252,6 @@ test('Parse full.', () => {
 
 test('Parse Errors', () => {
 	expect(() => {
-		const tree = new Parser(grammar).parse('2 3')
+		const tree = new Parser('2 3').parse()
 	}).toThrow('Unexpected token')
 })
