@@ -27,12 +27,10 @@ export default class Lexer {
 
 	/**
 	 * Construct a new Lexer object.
-	 * @param   source_text - the entire source text
+	 * @param   source - the entire source text
 	 */
-	constructor(
-		private readonly source_text: string,
-	) {
-		this.scanner = new Scanner(this.source_text).generate()
+	constructor(source: string) {
+		this.scanner = new Scanner(source).generate()
 		this.iterator_result_char = this.scanner.next()
 
 		this.c0             = (this.iterator_result_char.value as Char).cargo

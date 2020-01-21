@@ -92,8 +92,8 @@ export default class Parser {
 
 	/**
 	 * Main parsing function.
-	 * @param   source the source text
-	 * @returns        a token representing the grammar’s goal symbol
+	 * @param   source - the entire source text
+	 * @returns          a token representing the grammar’s goal symbol
 	 */
 	parse(source: string): ParseNode {
 		/** The translator returning tokens for each iteration. */

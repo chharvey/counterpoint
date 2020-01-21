@@ -67,12 +67,12 @@ export default class ParseNode implements Serializable {
 	 */
 	protected constructor(
 		readonly rule: Rule,
-		readonly children: readonly (Token|ParseNode)[],
+		protected readonly children: readonly (Token|ParseNode)[],
 	) {
-		this.tagname = rule.production.displayName
-		this.source = children.map((child) => child.source).join(' ')
-		this.line_index = children[0].line_index
-		this.col_index  = children[0].col_index
+		this.tagname = this.rule.production.displayName
+		this.source = this.children.map((child) => child.source).join(' ')
+		this.line_index = this.children[0].line_index
+		this.col_index  = this.children[0].col_index
 	}
 
 	/**

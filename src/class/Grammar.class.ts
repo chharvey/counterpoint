@@ -158,7 +158,7 @@ export class Rule {
 	 * @param   choice     - the index determining which of the production’s choices to use
 	 */
 	constructor(
-		public readonly production: Production,
+		readonly production: Production,
 		choice: number /* TODO bigint */,
 	) {
 		this.symbols = production.sequences[choice]

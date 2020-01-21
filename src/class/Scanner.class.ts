@@ -82,7 +82,7 @@ export default class Scanner {
 	 * @param   source_text - the entire source text
 	 */
 	constructor(
-		public readonly source_text: string,
+		readonly source_text: string,
 	) {
 		this.source_text = STX + '\n' + this.source_text + ETX
 	}
