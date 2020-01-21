@@ -3,7 +3,15 @@ import {STX, ETX} from './Scanner.class'
 
 import Token from './Token.class'
 import Terminal from './Terminal.class'
-import Production from './Production.class'
+import Production, {
+	ProductionFile,
+	ProductionExpression,
+	ProductionExpressionAdditive,
+	ProductionExpressionMultiplicative,
+	ProductionExpressionExponential,
+	ProductionExpressionUnarySymbol,
+	ProductionExpressionUnit,
+} from './Production.class'
 
 
 export type GrammarSymbol   = GrammarTerminal|Production
@@ -26,16 +34,24 @@ const stringOfSymbols = (arr: readonly GrammarSymbol[]): string =>
 
 
 export default class Grammar {
+	/* The set of all productions in this Grammar. */
+	readonly productions: readonly Production[];
 	/** The productions of this grammar decomposed into rules. There are likely many rules per production. */
 	readonly rules: readonly Rule[];
 
 	/**
 	 * Construct a new Grammar object.
-	 * @param   productions - The set of all productions in this Grammar.
 	 */
-	constructor(
-		readonly productions: readonly Production[],
-	) {
+	constructor() {
+		this.productions = [
+			ProductionFile.instance,
+			ProductionExpression.instance,
+			ProductionExpressionAdditive.instance,
+			ProductionExpressionMultiplicative.instance,
+			ProductionExpressionExponential.instance,
+			ProductionExpressionUnarySymbol.instance,
+			ProductionExpressionUnit.instance,
+		]
 		if (!this.productions.length) throw new Error('Grammar must ahve at least one production.')
 		this.productions.forEach((prod) => {
 			if (!prod.sequences.length) throw new Error('Grammar production must have at least one sequence.')

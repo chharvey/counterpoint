@@ -57,25 +57,8 @@ async function test() {
 const build = gulp.series(dist, test)
 
 async function random() {
-	const Grammar = require('./build/class/Grammar.class.js').default
-	const {
-		ProductionFile,
-		ProductionExpression,
-		ProductionExpressionAdditive,
-		ProductionExpressionMultiplicative,
-		ProductionExpressionExponential,
-		ProductionExpressionUnarySymbol,
-		ProductionExpressionUnit,
-	} = require('./build/class/Production.class')
-	const solid_grammar = new Grammar([
-		ProductionFile.instance,
-		ProductionExpression.instance,
-		ProductionExpressionAdditive.instance,
-		ProductionExpressionMultiplicative.instance,
-		ProductionExpressionExponential.instance,
-		ProductionExpressionUnarySymbol.instance,
-		ProductionExpressionUnit.instance,
-	])
+	const {default: Grammar} = require('./build/class/Grammar.class')
+	const solid_grammar = new Grammar()
 	console.log(solid_grammar.rules.map((r) => r.toString()))
 	console.log(solid_grammar.random().join(' ').replace(/\u000d/g, ' '))
 	return Promise.resolve(null)

@@ -7,15 +7,6 @@ import Grammar, {
 	Rule,
 	Configuration,
 } from './Grammar.class'
-import {
-	ProductionFile,
-	ProductionExpression,
-	ProductionExpressionAdditive,
-	ProductionExpressionMultiplicative,
-	ProductionExpressionExponential,
-	ProductionExpressionUnarySymbol,
-	ProductionExpressionUnit,
-} from './Production.class'
 
 
 type State = ReadonlySet<Configuration>
@@ -43,15 +34,7 @@ export default class Parser {
 	 * @param   source  - the entire source text
 	 */
 	constructor(source: string) {
-		this.grammar = new Grammar([
-			ProductionFile.instance,
-			ProductionExpression.instance,
-			ProductionExpressionAdditive.instance,
-			ProductionExpressionMultiplicative.instance,
-			ProductionExpressionExponential.instance,
-			ProductionExpressionUnarySymbol.instance,
-			ProductionExpressionUnit.instance,
-		])
+		this.grammar = new Grammar()
 		this.translator = new Translator(source).generate()
 		this.iterator_result_token = this.translator.next()
 		this.lookahead = this.iterator_result_token.value as Token
