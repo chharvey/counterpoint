@@ -2,6 +2,8 @@ const fs = require('fs')
 const util = require('util')
 
 const gulp       = require('gulp')
+const {default: jest} = require('gulp-jest')
+// require('jest-cli') // DO NOT REMOVE … peerDependency of `gulp-jest`
 const typescript = require('gulp-typescript')
 // require('typescript') // DO NOT REMOVE … peerDependency of `gulp-typescript`
 
@@ -15,7 +17,13 @@ function dist() {
 		.pipe(gulp.dest('./build/'))
 }
 
-async function test() {
+function test() {
+	return gulp.src('./test/')
+		.pipe(jest({
+		}))
+}
+
+async function test_dev() {
 	const {Scanner, Lexer, Translator, Parser} = require('./')
 	const input = util.promisify(fs.readFile)('./test/test-v0.1.solid', 'utf8')
 
@@ -56,6 +64,8 @@ async function test() {
 
 const build = gulp.series(dist, test)
 
+const dev = gulp.series(dist, test_dev)
+
 async function random() {
 	const {default: Grammar} = require('./build/class/Grammar.class')
 	const solid_grammar = new Grammar()
@@ -69,5 +79,7 @@ module.exports = {
 	build,
 		dist,
 		test,
+	dev,
+		test_dev,
 	random,
 }
