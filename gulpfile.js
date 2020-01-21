@@ -64,7 +64,7 @@ async function test() {
 		ProductionExpressionUnit.instance,
 	])
 	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
-	const tree = new Parser(solid_grammar).parse(await input)
+	const tree = new Parser(solid_grammar, await input).parse()
 	fs.writeFileSync('./sample/output.xml', tree.serialize())
 
 	console.log("\n\nThe semantic tree returned by the decorator is written to file: `./sample/output-1.xml`")
