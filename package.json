@@ -20,8 +20,10 @@
   "devDependencies": {
     "@types/node": "^13.0.0",
     "gulp": "^4.0.2",
+    "gulp-jest": "^4.0.3",
     "gulp-typescript": "^5.0.1",
     "jest": "^24.9.0",
+    "jest-cli": "^24.9.0",
     "typescript": "~3.7.3"
   }
 }
