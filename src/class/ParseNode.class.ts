@@ -92,7 +92,7 @@ export default class ParseNode implements Serializable {
 	 */
 	protected constructor(
 		readonly rule: Rule,
-		readonly children: readonly (Token|ParseNode)[],
+		protected readonly children: readonly (Token|ParseNode)[],
 	) {
 		this.tagname = this.rule.production.displayName
 		this.source = this.children.map((child) => child.source).join(' ')

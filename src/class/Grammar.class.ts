@@ -3,7 +3,20 @@ import {STX, ETX} from './Scanner.class'
 
 import Token from './Token.class'
 import Terminal from './Terminal.class'
-import Production from './Production.class'
+import Production, {
+	ProductionGoal,
+	ProductionStatement,
+	ProductionDeclarationVariable,
+	ProductionStatementAssignment,
+	ProductionExpression,
+	ProductionExpressionAdditive,
+	ProductionExpressionMultiplicative,
+	ProductionExpressionExponential,
+	ProductionExpressionUnarySymbol,
+	ProductionExpressionUnit,
+	ProductionStringTemplate,
+	ProductionPrimitiveLiteral,
+} from './Production.class'
 
 
 export type GrammarSymbol   = GrammarTerminal|Production
@@ -26,16 +39,31 @@ const stringOfSymbols = (arr: readonly GrammarSymbol[]): string =>
 
 
 export default class Grammar {
+	/* The set of all productions in this Grammar. */
+	readonly productions: readonly Production[];
 	/** The productions of this grammar decomposed into rules. There are likely many rules per production. */
 	readonly rules: readonly Rule[];
 
 	/**
 	 * Construct a new Grammar object.
-	 * @param   productions - The set of all productions in this Grammar.
 	 */
-	constructor(
-		readonly productions: readonly Production[],
-	) {
+	constructor() {
+		this.productions = [
+			ProductionGoal.instance,
+			ProductionGoal.__0__List.instance,
+			ProductionStatement.instance,
+			ProductionDeclarationVariable.instance,
+			ProductionStatementAssignment.instance,
+			ProductionExpression.instance,
+			ProductionExpressionAdditive.instance,
+			ProductionExpressionMultiplicative.instance,
+			ProductionExpressionExponential.instance,
+			ProductionExpressionUnarySymbol.instance,
+			ProductionExpressionUnit.instance,
+			ProductionStringTemplate.instance,
+			ProductionStringTemplate.__0__List.instance,
+			ProductionPrimitiveLiteral.instance,
+		]
 		if (!this.productions.length) throw new Error('Grammar must ahve at least one production.')
 		this.productions.forEach((prod) => {
 			if (!prod.sequences.length) throw new Error('Grammar production must have at least one sequence.')
@@ -161,7 +189,7 @@ export class Rule {
 	 * @param   choice     - the index determining which of the production’s choices to use
 	 */
 	constructor(
-		public readonly production: Production,
+		readonly production: Production,
 		choice: number /* TODO bigint */,
 	) {
 		this.symbols = production.sequences[choice]

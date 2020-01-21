@@ -29,10 +29,10 @@ export default class Translator {
 
 	/**
 	 * Construct a new Translator object.
-	 * @param   source_text - the entire source text
+	 * @param   source - the entire source text
 	 */
-	constructor(source_text: string) {
-		this.lexer = new Lexer(source_text).generate()
+	constructor(source: string) {
+		this.lexer = new Lexer(source).generate()
 		this.iterator_result_token = this.lexer.next()
 		this.t0 = this.iterator_result_token.value
 	}

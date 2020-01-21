@@ -49,10 +49,7 @@ export default abstract class Token implements Serializable {
 	 * @param start_char - the starting character of this Token
 	 * @param more_chars - additional characters to add upon construction
 	 */
-	constructor(
-		start_char: Char,
-		...more_chars: Char[]
-	) {
+	constructor(start_char: Char, ...more_chars: Char[]) {
 		this.tagname    = this.constructor.name.slice('Token'.length).toUpperCase()
 		this._cargo     = [start_char, ...more_chars].map((char) => char.source).join('')
 		this.line_index = start_char.line_index

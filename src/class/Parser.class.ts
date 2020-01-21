@@ -18,18 +18,26 @@ type State = ReadonlySet<Configuration>
  * @see http://www2.lawrence.edu/fast/GREGGJ/CMSC515/parsing/LR_parsing.html
  */
 export default class Parser {
+	/** The syntactic grammar of the language used in parsing. */
+	private readonly grammar: Grammar;
+	/** The translator returning tokens for each iteration. */
+	private readonly translator: Iterator<Token, void>;
+	/** The result of the translator iterator. */
+	private iterator_result_token: IteratorResult<Token, void>;
 	/** Working stack of tokens, nodes, and configuration states. */
 	private readonly stack: [Token|ParseNode, State][] = []
 	/** Lookahead into the input stream. */
-	private lookahead: Token|null = null;
+	private lookahead: Token;
 
 	/**
 	 * Construct a new Parser object.
-	 * @param   grammar - the grammar of the language to parse
+	 * @param   source  - the entire source text
 	 */
-	constructor(
-		private readonly grammar: Grammar,
-	) {
+	constructor(source: string) {
+		this.grammar = new Grammar()
+		this.translator = new Translator(source).generate()
+		this.iterator_result_token = this.translator.next()
+		this.lookahead = this.iterator_result_token.value as Token
 	}
 
 	/**
@@ -46,28 +54,26 @@ export default class Parser {
 
 	/**
 	 * Shift the parser, moving the lookahead token onto the stack.
-	 * @param   curr_state            - the current configuration state
-	 * @param   translator            - the translator returning tokens for each iteration
-	 * @param   iterator_result_token - the result of the translator iterator
-	 * @returns                         a new `iterator_result_token`, for the next lookahead token, and whether the shift was successful
+	 * @param   curr_state - the current configuration state
+	 * @returns              whether the shift was successful
 	 */
-	private shift(curr_state: State, translator: Iterator<Token, void>, iterator_result_token: IteratorResult<Token, void>): [IteratorResult<Token, void>, boolean] {
+	private shift(curr_state: State): boolean {
 		const next_state: Set<Configuration> = new Set<Configuration>([...curr_state].filter((config) => {
 			const next_symbol: GrammarSymbol|null = config.after[0] || null
 			return (typeof next_symbol === 'string') ?
-				this.lookahead !.source === next_symbol
+				this.lookahead.source === next_symbol
 			: (next_symbol instanceof Terminal) ?
-				next_symbol.match(this.lookahead !)
+				next_symbol.match(this.lookahead)
 			: false
 		}).map((config) => config.advance()))
 		let shifted: boolean = false
 		if (next_state.size > 0) {
-			this.stack.push([this.lookahead !, this.grammar.closure(next_state)])
-			iterator_result_token = translator.next()
-			this.lookahead = iterator_result_token.value as Token
+			this.stack.push([this.lookahead, this.grammar.closure(next_state)])
+			this.iterator_result_token = this.translator.next()
+			this.lookahead = this.iterator_result_token.value as Token
 			shifted = true
 		}
-		return [iterator_result_token, shifted]
+		return shifted
 	}
 
 	/**
@@ -99,36 +105,24 @@ export default class Parser {
 				throw new Error(`Reduce-Reduce Conflict:\n${reductions.map((r) => r.toString())}`)
 			}
 		}
-		throw new Error(`Unexpected token: ${this.lookahead !.serialize()}`)
+		throw new Error(`Unexpected token: ${this.lookahead.serialize()}`)
 	}
 
 	/**
 	 * Main parsing function.
-	 * @param   source the source text
-	 * @returns        a token representing the grammar’s goal symbol
+	 * @returns          a token representing the grammar’s goal symbol
 	 */
-	parse(source: string): ParseNode {
-		/** The translator returning tokens for each iteration. */
-		const translator: Iterator<Token, void> = new Translator(source).generate()
-		/** The result of the translator iterator. */
-		let iterator_result_token: IteratorResult<Token, void> = translator.next()
-
-		this.lookahead = iterator_result_token.value as Token
-		while (!iterator_result_token.done) {
+	parse(): ParseNode {
+		while (!this.iterator_result_token.done) {
 			const curr_state = this.stack.length ? this.stack[this.stack.length-1][1] : this.grammar.closure()
-
-			const shift_result: [IteratorResult<Token, void>, boolean] = this.shift(curr_state, translator, iterator_result_token)
-			iterator_result_token = shift_result[0]
-			const shifted: boolean = shift_result[1]
+			const shifted: boolean = this.shift(curr_state)
 			if (shifted) {
 				continue;
 			}
-
 			const reduced: true = this.reduce(curr_state)
 			if (reduced) {
 				continue;
 			}
-
 			throw new Error('I neither shifted nor reduced; there must be a syntax error.')
 		}
 		const final_state: State = this.stack[this.stack.length-1][1]
