@@ -17,7 +17,6 @@ function dist() {
 
 async function test() {
 	const {Scanner, Lexer, Translator, Parser} = require('./')
-	const {default: Grammar} = require('./build/class/Grammar.class')
 	const input = util.promisify(fs.readFile)('./test/test-v0.1.solid', 'utf8')
 
 	console.log("\n\nHere are the characters returned by the scanner:")
@@ -45,26 +44,8 @@ async function test() {
 		iterator_result_tokentrans = translator.next()
 	}
 
-	const {
-		ProductionFile,
-		ProductionExpression,
-		ProductionExpressionAdditive,
-		ProductionExpressionMultiplicative,
-		ProductionExpressionExponential,
-		ProductionExpressionUnarySymbol,
-		ProductionExpressionUnit,
-	} = require('./build/class/Production.class')
-	const solid_grammar = new Grammar([
-		ProductionFile.instance,
-		ProductionExpression.instance,
-		ProductionExpressionAdditive.instance,
-		ProductionExpressionMultiplicative.instance,
-		ProductionExpressionExponential.instance,
-		ProductionExpressionUnarySymbol.instance,
-		ProductionExpressionUnit.instance,
-	])
 	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
-	const tree = new Parser(solid_grammar, await input).parse()
+	const tree = new Parser(await input).parse()
 	fs.writeFileSync('./sample/output.xml', tree.serialize())
 
 	console.log("\n\nThe semantic tree returned by the decorator is written to file: `./sample/output-1.xml`")

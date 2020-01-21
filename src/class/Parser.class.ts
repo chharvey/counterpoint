@@ -7,6 +7,15 @@ import Grammar, {
 	Rule,
 	Configuration,
 } from './Grammar.class'
+import {
+	ProductionFile,
+	ProductionExpression,
+	ProductionExpressionAdditive,
+	ProductionExpressionMultiplicative,
+	ProductionExpressionExponential,
+	ProductionExpressionUnarySymbol,
+	ProductionExpressionUnit,
+} from './Production.class'
 
 
 type State = ReadonlySet<Configuration>
@@ -18,6 +27,8 @@ type State = ReadonlySet<Configuration>
  * @see http://www2.lawrence.edu/fast/GREGGJ/CMSC515/parsing/LR_parsing.html
  */
 export default class Parser {
+	/** The syntactic grammar of the language used in parsing. */
+	private readonly grammar: Grammar;
 	/** The translator returning tokens for each iteration. */
 	private readonly translator: Iterator<Token, void>;
 	/** The result of the translator iterator. */
@@ -29,13 +40,18 @@ export default class Parser {
 
 	/**
 	 * Construct a new Parser object.
-	 * @param   grammar - The syntactic grammar of the language used in parsing.
 	 * @param   source  - the entire source text
 	 */
-	constructor(
-		private readonly grammar: Grammar,
-		source: string,
-	) {
+	constructor(source: string) {
+		this.grammar = new Grammar([
+			ProductionFile.instance,
+			ProductionExpression.instance,
+			ProductionExpressionAdditive.instance,
+			ProductionExpressionMultiplicative.instance,
+			ProductionExpressionExponential.instance,
+			ProductionExpressionUnarySymbol.instance,
+			ProductionExpressionUnit.instance,
+		])
 		this.translator = new Translator(source).generate()
 		this.iterator_result_token = this.translator.next()
 		this.lookahead = this.iterator_result_token.value as Token
