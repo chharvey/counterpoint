@@ -68,9 +68,11 @@ Whitespace ::= Whitespace? (#x20 | #x09 | #x0A)
 Whitespace tokens consist of combinations of the following characters.
 Any consecutive sequence of these characters is put into a single whitespace token.
 
-- U+0020 SPACE
-- U+0009 CHARACTER TABULATION
-- U+000A LINE FEED (LF)
+Code Point | Name                 | Block       | Category
+---------- | -------------------- | ----------- | ---------------------
+U+0020     | SPACE                | Basic Latin | Separator, Space [Zs]
+U+0009     | CHARACTER TABULATION | Basic Latin | Other, Control [Cc]
+U+000A     | LINE FEED (LF)       | Basic Latin | Other, Control [Cc]
 
 Solid is whitespace-independent.
 This means that a programmer should be able to add more whitespace where whitespace already exists,
@@ -80,29 +82,30 @@ Whitespace tokens are not sent to the parser for syntactic analysis.
 
 The Solid compiler does not currently, but could in the future, recognize the following whitespace characters:
 
-- U+000B LINE TABULATION
-- U+000C FORM FEED (FF)
-- U+000D CARRIAGE RETURN (CR)
-- U+00A0 NO-BREAK SPACE
-- U+1680 OGHAM SPACE MARK
-- U+2000 EN QUAD
-- U+2001 EM QUAD
-- U+2002 EN SPACE
-- U+2003 EM SPACE
-- U+2004 THREE-PER-EM SPACE
-- U+2005 FOUR-PER-EM SPACE
-- U+2006 SIX-PER-EM SPACE
-- U+2007 FIGURE SPACE
-- U+2008 PUNCTUATION SPACE
-- U+2009 THIN SPACE
-- U+200A HAIR SPACE
-- U+200B ZERO WIDTH SPACE
-- U+2028 LINE SEPARATOR
-- U+2029 PARAGRAPH SEPARATOR
-- U+202F NARROW NO-BREAK SPACE
-- U+205F MEDIUM MATHEMATICAL SPACE
-- U+3000 IDEOGRAPHIC SPACE
-- U+FEFF ZERO WIDTH NO-BREAK SPACE
+Code Point | Name                      | Block                       | Category
+---------- | ------------------------- | --------------------------- | -------------------------
+U+000B     | LINE TABULATION           | Basic Latin                 | Other, Control [Cc]
+U+000C     | FORM FEED (FF)            | Basic Latin                 | Other, Control [Cc]
+U+000D     | CARRIAGE RETURN (CR)      | Basic Latin                 | Other, Control [Cc]
+U+00A0     | NO-BREAK SPACE            | Latin-1 Supplement          | Separator, Space [Zs]
+U+1680     | OGHAM SPACE MARK          | Latin-1 Supplement          | Separator, Space [Zs]
+U+2000     | EN QUAD                   | Latin-1 Supplement          | Separator, Space [Zs]
+U+2001     | EM QUAD                   | Latin-1 Supplement          | Separator, Space [Zs]
+U+2002     | EN SPACE                  | Latin-1 Supplement          | Separator, Space [Zs]
+U+2003     | EM SPACE                  | Latin-1 Supplement          | Separator, Space [Zs]
+U+2004     | THREE-PER-EM SPACE        | Latin-1 Supplement          | Separator, Space [Zs]
+U+2005     | FOUR-PER-EM SPACE         | Latin-1 Supplement          | Separator, Space [Zs]
+U+2006     | SIX-PER-EM SPACE          | Latin-1 Supplement          | Separator, Space [Zs]
+U+2007     | FIGURE SPACE              | Latin-1 Supplement          | Separator, Space [Zs]
+U+2008     | PUNCTUATION SPACE         | Latin-1 Supplement          | Separator, Space [Zs]
+U+2009     | THIN SPACE                | Latin-1 Supplement          | Separator, Space [Zs]
+U+200A     | HAIR SPACE                | Latin-1 Supplement          | Separator, Space [Zs]
+U+200B     | ZERO WIDTH SPACE          | General Punctuation         | Other, Format [Cf]
+U+2028     | LINE SEPARATOR            | General Punctuation         | Separator, Line [Zl]
+U+2029     | PARAGRAPH SEPARATOR       | General Punctuation         | Separator, Paragraph [Zp]
+U+202F     | NARROW NO-BREAK SPACE     | General Punctuation         | Separator, Space [Zs]
+U+205F     | MEDIUM MATHEMATICAL SPACE | General Punctuation         | Separator, Space [Zs]
+U+3000     | IDEOGRAPHIC SPACE         | CJK Symbols and Punctuation | Separator, Space [Zs]
 
 
 ### Comments
