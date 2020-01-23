@@ -28,10 +28,10 @@ ExpressionAddition
 	::= ExpressionAddition "+" NUMBER
 	::= NUMBER
 ```
-The grammar above is a very simple grammar with only two productions. The first production is defined
+The grammar above is a very simple grammar with only one production, defined
 by the nonterminal `ExpressionAddition` on the left-hand side and two sequences on the right-hand side.
 The first sequence has three symbols: one nonterminal (which happens to be the same as the production —
-recursion is allowed in this specification’s grammars), and one two terminals.
+recursion is allowed in this specification’s grammars), and two terminals.
 The terminal `"+"` is a literal token, and the terminal `NUMBER` represents a token
 that matches some lexical formula, such as `[0-9]*` (which might be defined in a separate lexical grammar).
 In this specification, such terminal identifiers will be written in all-uppercase (‘MACRO_CASE’).
@@ -59,7 +59,7 @@ When an input stream is successfully lexically analyzed without error, it is sen
 The transformer, while not a part of the lexer, performs medial tasks that can be done during lexical analysis.
 Such tasks prepare the tokens for the parser, such as computing the mathematical values and string values
 of numeric tokens and string tokens respectively, as well as performing other optimizing techniques.
-The transformer is also responsible for deciding which tokens to send to the parser.
+The transformer is also responsible for deciding which tokens get sent to the parser.
 
 
 
@@ -93,8 +93,8 @@ Attribute grammars are context-sensitive grammars that help the decorator transf
 the parse tree into the semantic tree, which is a prerequisite for semantic analysis.
 In an attribute grammar, attributes are defined on nodes of a parse tree via the productions
 of a context-free grammar.
-In this specification, attributes determined in a top-down manner: given a parse node,
-computing an attribute of that node might require looking at its children.
+In this specification, attributes are “synthesized” and thus propagate in a bottom-up manner:
+given a parse node, computing an attribute of that node might require looking at its children.
 Attributes can be computed values, or entire objects representing semantic nodes with children.
 For example, an attribute grammar can be used to determine the mathematical value of a number.
 

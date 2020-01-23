@@ -9,9 +9,9 @@ Solid source text (Solid code) is expressed using [Unicode](https://www.unicode.
 Solid source text is a sequence of Unicode code points,
 values ranging from U+0000 to U+10FFFF (including surrogate code points).
 Not all code points are permitted everywhere;
-the token syntax below explicitly define these permissions.
+the token syntax below explicitly defines these permissions.
 
-When stored and transmitted, Solid source text should be encoded and decoded via the
+When stored and transmitted, Solid source text must be encoded and decoded via the
 [UTF-8](https://tools.ietf.org/html/rfc3629) encoding format.
 
 Solid programs are often stored in text files, which, for editing convenience, are organized into lines.
@@ -22,7 +22,7 @@ whereas on Unix-based systems the representation is a single LF.
 
 To simplify the tasks of external applications, the Solid compiler **normalizes** all line breaks
 in a source file on input, before parsing. This normalization is a process in which
-both the two-character sequence CR–LF and any single CR that is not followed by a LF
+any two-character sequence CR–LF and any single CR that is not followed by a LF
 are replaced with a single LF character.
 
 Even though Solid is a [whitespace-independent language](#whitespace),
@@ -80,7 +80,7 @@ and remove any amount of whitespace from existing whitespace (but not remove all
 without affecting the syntax or semantics of the program.
 Whitespace tokens are not sent to the parser for syntactic analysis.
 
-The Solid compiler does not currently, but could in the future, recognize the following whitespace characters:
+The Solid lexical grammar does not currently recognize the following characters as whitespace:
 
 Code Point | Name                      | Block                       | Category
 ---------- | ------------------------- | --------------------------- | -------------------------
@@ -125,9 +125,9 @@ CommentMultiNestChars ::=
 
 CommentDoc ::= /*? following: #x0A [#x09#x20]* ?*/'"""' #x0A (/*? unequal: [#x09#x20]* '"""' ?*/[^#x03]* #x0A)? [#x09#x20]* '"""' /*? lookahead: #x0A ?*/
 ```
-Comments are pieces of code ignored by the compiler.
-They are mainly used to add human-readable language to code,
-which offer many benefits.
+Comments are tokens of arbitrary text,
+mainly used to add human-readable language to code
+or to provide other types of annotations.
 Comment tokens are not sent to the Solid parser.
 
 #### Line Comments
@@ -144,7 +144,7 @@ Multiline comments can be nested if their inner contents are wrapped with curly 
 
 #### Block Comments
 Block comments begin and end with triple quote marks `"""` (**U+0022 QUOTATION MARK**).
-The triple quote marks *must* be on their own lines (with or without leading and/or trailing whitespace).
+The triple quote marks *must* be on their own lines (with or without leading whitespace).
 
 
 ### String Literals
@@ -472,12 +472,12 @@ KeywordModifier ::=
 ```
 Words are sequences of alphanumeric characters.
 Formally, words are partitioned into two types:
-author-defined **identifiers**, which point to values, and
+author-defined **identifiers**, which point to values in a program, and
 language-reserved **keywords**, which convey certain semantics.
 Keywords are reserved by the Solid language and cannot be used as identifiers.
 
-Words may start with an alphabetic character or an underscore, `[A-Za-z_]`,
-and thereafter may contain zero or more alphanumeric characters or underscores, `[A-Za-z0-9_]`.
+Words must start with an alphabetic character or an underscore, `[A-Za-z_]`,
+and thereafter may contain more alphanumeric characters or underscores, `[A-Za-z0-9_]`.
 In the future, support will be added for a certain subset of Unicode characters,
 which go beyond the letters and numerals of the English alphabet.
 
