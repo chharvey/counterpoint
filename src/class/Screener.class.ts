@@ -12,13 +12,13 @@ import Token, {
 
 
 /**
- * A translator prepares the tokens for the parser.
+ * A screener prepares the tokens for the parser.
  * It performs certian operations such as
  * - computing the mathematical value of numerical constants
  * - performing escapes of escape sequences in strings
  * - optimizing identifiers
  */
-export default class Translator {
+export default class Screener {
 	/** The lexer returning tokens for each iteration. */
 	private readonly lexer: Iterator<Token, void>;
 	/** The result of the lexer iterator. */
@@ -29,7 +29,7 @@ export default class Translator {
 	private idcount: number /* bigint */ = 0;
 
 	/**
-	 * Construct a new Translator object.
+	 * Construct a new Screener object.
 	 * @param   source - the entire source text
 	 */
 	constructor(source: string) {

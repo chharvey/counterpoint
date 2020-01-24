@@ -1,5 +1,5 @@
 import Token from './Token.class'
-import Translator from './Translator.class'
+import Screener from './Screener.class'
 import ParseNode from './ParseNode.class'
 import Terminal from './Terminal.class'
 import Grammar, {
@@ -20,9 +20,9 @@ type State = ReadonlySet<Configuration>
 export default class Parser {
 	/** The syntactic grammar of the language used in parsing. */
 	private readonly grammar: Grammar;
-	/** The translator returning tokens for each iteration. */
-	private readonly translator: Iterator<Token, void>;
-	/** The result of the translator iterator. */
+	/** The screener returning tokens for each iteration. */
+	private readonly screener: Iterator<Token, void>;
+	/** The result of the screener iterator. */
 	private iterator_result_token: IteratorResult<Token, void>;
 	/** Working stack of tokens, nodes, and configuration states. */
 	private readonly stack: [Token|ParseNode, State][] = []
@@ -35,8 +35,8 @@ export default class Parser {
 	 */
 	constructor(source: string) {
 		this.grammar = new Grammar()
-		this.translator = new Translator(source).generate()
-		this.iterator_result_token = this.translator.next()
+		this.screener = new Screener(source).generate()
+		this.iterator_result_token = this.screener.next()
 		this.lookahead = this.iterator_result_token.value as Token
 	}
 
@@ -57,7 +57,7 @@ export default class Parser {
 		let shifted: boolean = false
 		if (next_state.size > 0) {
 			this.stack.push([this.lookahead, this.grammar.closure(next_state)])
-			this.iterator_result_token = this.translator.next()
+			this.iterator_result_token = this.screener.next()
 			this.lookahead = this.iterator_result_token.value as Token
 			shifted = true
 		}

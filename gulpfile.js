@@ -23,7 +23,7 @@ function test() {
 }
 
 async function test_dev() {
-	const {Scanner, Lexer, Translator, Parser} = require('./')
+	const {Scanner, Lexer, Screener, Parser} = require('./')
 	const input = fsPromise.readFile('./test/test-v0.1.solid', 'utf8')
 
 	console.log("\n\nHere are the characters returned by the scanner:")
@@ -43,12 +43,12 @@ async function test_dev() {
 		iterator_result_token = lexer.next()
 	}
 
-	console.log("\n\nHere are the tokens returned by the translator:")
-	const translator = new Translator(await input).generate()
-	let iterator_result_tokentrans = translator.next()
-	while (!iterator_result_tokentrans.done) {
-		if (iterator_result_tokentrans.value !== null) console.log(iterator_result_tokentrans.value.serialize())
-		iterator_result_tokentrans = translator.next()
+	console.log("\n\nHere are the tokens returned by the screener:")
+	const screener = new Screener(await input).generate()
+	let iterator_result_screen = screener.next()
+	while (!iterator_result_screen.done) {
+		if (iterator_result_screen.value !== null) console.log(iterator_result_screen.value.serialize())
+		iterator_result_screen = screener.next()
 	}
 
 	const tree = new Parser(await input).parse()
