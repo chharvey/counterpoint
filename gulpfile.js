@@ -1,5 +1,4 @@
-const fs = require('fs')
-const util = require('util')
+const fsPromise = require('fs').promises
 
 const gulp       = require('gulp')
 const {default: jest} = require('gulp-jest')
@@ -25,7 +24,7 @@ function test() {
 
 async function test_dev() {
 	const {Scanner, Lexer, Translator, Parser} = require('./')
-	const input = util.promisify(fs.readFile)('./test/test-v0.1.solid', 'utf8')
+	const input = fsPromise.readFile('./test/test-v0.1.solid', 'utf8')
 
 	console.log("\n\nHere are the characters returned by the scanner:")
 	console.log("  line col  character")
@@ -52,14 +51,14 @@ async function test_dev() {
 		iterator_result_tokentrans = translator.next()
 	}
 
-	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
 	const tree = new Parser(await input).parse()
-	fs.writeFileSync('./sample/output.xml', tree.serialize())
-
+	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
 	console.log("\n\nThe semantic tree returned by the decorator is written to file: `./sample/output-1.xml`")
-	fs.writeFileSync('./sample/output-1.xml', tree.decorate().serialize())
 
-	return Promise.resolve(null)
+	return Promise.all([
+		fsPromise.writeFile('./sample/output.xml', tree.serialize()),
+		fsPromise.writeFile('./sample/output-1.xml', tree.decorate().serialize()),
+	])
 }
 
 const build = gulp.series(dist, test)
