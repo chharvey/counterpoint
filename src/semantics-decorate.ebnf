@@ -1,7 +1,9 @@
 Decorate(File ::= #x02 #x03)
 	:= SemanticNull {} []
 Decorate(File ::= #x02 Expression #x03)
-	:= Decorate(Expression)
+	:= SemanticGoal {} [
+		Decorate(Expression),
+	]
 
 Decorate(Expression ::= ExpressionAdditive)
 	:= Decorate(ExpressionAdditive)
