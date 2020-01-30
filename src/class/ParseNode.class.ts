@@ -53,6 +53,8 @@ export default class ParseNode implements Serializable {
 	readonly tagname: string;
 	/** The concatenation of the source text of all children. */
 	readonly source: string;
+	/** The index of the first token in source text. */
+	readonly source_index: number;
 	/** Zero-based line number of the first token (first line is line 0). */
 	readonly line_index: number;
 	/** Zero-based column number of the first token (first col is col 0). */
@@ -70,6 +72,7 @@ export default class ParseNode implements Serializable {
 	) {
 		this.tagname = this.rule.production.displayName
 		this.source = this.children.map((child) => child.source).join(' ')
+		this.source_index = this.children[0].source_index
 		this.line_index = this.children[0].line_index
 		this.col_index  = this.children[0].col_index
 	}

@@ -12,6 +12,8 @@ export default class SemanticNode implements Serializable {
 	private readonly tagname: string;
 	/** The concatenation of the source text of all children. */
 	private readonly source: string;
+	/** The index of the first token in source text. */
+	readonly source_index: number;
 	/** Zero-based line number of the first token (first line is line 0). */
 	readonly line_index: number;
 	/** Zero-based column number of the first token (first col is col 0). */
@@ -31,6 +33,7 @@ export default class SemanticNode implements Serializable {
 	) {
 		this.tagname    = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
 		this.source     = start_node.source
+		this.source_index = start_node.source_index
 		this.line_index = start_node.line_index
 		this. col_index = start_node. col_index
 	}

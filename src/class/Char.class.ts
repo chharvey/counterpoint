@@ -28,7 +28,7 @@ export default class Char {
 	 */
 	constructor(
 		private readonly scanner: Scanner,
-		private readonly source_index: number,
+		readonly source_index: number,
 	) {
 		/** Array of characters from source start until current iteration (not including current character). */
 		const prev_chars: readonly string[] = [...this.scanner.source_text].slice(0, this.source_index)
