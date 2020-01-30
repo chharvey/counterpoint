@@ -70,11 +70,11 @@ export default class ParseNode implements Serializable {
 		readonly rule: Rule,
 		protected readonly children: readonly (Token|ParseNode)[],
 	) {
-		this.tagname = this.rule.production.displayName
-		this.source = this.children.map((child) => child.source).join(' ')
+		this.tagname      = this.rule.production.displayName
+		this.source       = this.children.map((child) => child.source).join(' ')
 		this.source_index = this.children[0].source_index
-		this.line_index = this.children[0].line_index
-		this.col_index  = this.children[0].col_index
+		this.line_index   = this.children[0].line_index
+		this.col_index    = this.children[0].col_index
 	}
 
 	/**

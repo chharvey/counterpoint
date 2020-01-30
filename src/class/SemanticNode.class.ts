@@ -31,11 +31,11 @@ export default class SemanticNode implements Serializable {
 		private readonly attributes: { [key: string]: string|number|boolean|null } = {},
 		private readonly children: readonly SemanticNode[] = [],
 	) {
-		this.tagname    = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
-		this.source     = start_node.source
+		this.tagname      = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
+		this.source       = start_node.source
 		this.source_index = start_node.source_index
-		this.line_index = start_node.line_index
-		this. col_index = start_node. col_index
+		this.line_index   = start_node.line_index
+		this.col_index    = start_node.col_index
 	}
 
 	/**

@@ -23,8 +23,8 @@ export default class Char {
 
 	/**
 	 * Construct a new Char object.
-	 * @param   scanner      - the scanner containing the source text
-	 * @param   source_index - the index of the character in source text
+	 * @param   scanner      - The scanner containing the source text.
+	 * @param   source_index - The index of the character in source text.
 	 */
 	constructor(
 		private readonly scanner: Scanner,
