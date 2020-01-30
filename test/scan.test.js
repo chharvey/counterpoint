@@ -1,9 +1,9 @@
+const {default: Scanner} = require('../build/class/Scanner.class.js')
 const {
-	default: Scanner,
+	default: Char,
 	STX,
 	ETX,
-	Char,
-} = require('../build/class/Scanner.class.js')
+} = require('../build/class/Char.class.js')
 
 const lastItem = (iterable) => iterable[iterable.length-1]
 const lastIndex = (iterable) => iterable.length-1

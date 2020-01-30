@@ -1,6 +1,5 @@
 import Serializable from '../iface/Serializable.iface'
-
-import {STX, ETX} from './Scanner.class'
+import {STX, ETX} from './Char.class'
 import Token, {TokenNumber} from './Token.class'
 import SemanticNode, {
 	SemanticNodeNull,

@@ -1,6 +1,6 @@
-import Serializable from '../iface/Serializable.iface'
-import {Char, STX, ETX} from './Scanner.class'
 import Util from './Util.class'
+import Serializable from '../iface/Serializable.iface'
+import Char, {STX, ETX} from './Char.class'
 
 
 

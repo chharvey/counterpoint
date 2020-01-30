@@ -1,6 +1,6 @@
-const {ETX} = require('../build/class/Scanner.class.js')
-const {TokenNumber} = require('../build/class/Token.class.js')
 const {default: Screener} = require('../build/class/Screener.class.js')
+const {ETX} = require('../build/class/Char.class.js')
+const {TokenNumber} = require('../build/class/Token.class.js')
 
 const mock = `
 5 + 03 *  -2

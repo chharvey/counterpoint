@@ -1,10 +1,10 @@
+const {default: Scanner} = require('../build/class/Scanner.class.js')
+const {default: Lexer} = require('../build/class/Lexer.class.js')
 const {
-	default: Scanner,
+	default: Char,
 	STX,
 	ETX,
-	Char,
-} = require('../build/class/Scanner.class.js')
-const {default: Lexer} = require('../build/class/Lexer.class.js')
+} = require('../build/class/Char.class.js')
 const {
 	default: Token,
 	TokenFilebound,
@@ -13,7 +13,6 @@ const {
 	TokenPunctuator,
 } = require('../build/class/Token.class.js')
 const {
-	// default: LexError,
 	LexError01,
 } = require('../build/error/LexError.class.js')
 

@@ -1,5 +1,5 @@
 import Util from './Util.class'
-import {STX, ETX} from './Scanner.class'
+import {STX, ETX} from './Char.class'
 import ParseNode from './ParseNode.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
 import {

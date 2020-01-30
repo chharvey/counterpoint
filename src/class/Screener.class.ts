@@ -1,5 +1,5 @@
-import {STX, ETX} from './Scanner.class'
 import Lexer from './Lexer.class'
+import {STX, ETX} from './Char.class'
 import Token, {
 	TokenFilebound,
 	TokenWhitespace,
