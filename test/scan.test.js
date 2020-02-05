@@ -8,11 +8,11 @@ const {
 const lastItem = (iterable) => iterable[iterable.length-1]
 const lastIndex = (iterable) => iterable.length-1
 const mock = `
-5  +  30
+5  +  30 \u000d
 
 6 ^ 2 - 37 *
 
-( 4 * 2 ^ 3
+( 4 * \u000d9 ^ 3
 `.trim()
 
 
@@ -21,7 +21,19 @@ test('Scanner wraps source text.', () => {
 	const scanner = new Scanner(mock)
 	expect(scanner.source_text[0]).toBe(STX)
 	expect(scanner.source_text[1]).toBe('\n')
+	expect(scanner.source_text[2]).toBe('5')
 	expect(lastItem(scanner.source_text)).toBe(ETX)
+})
+
+
+
+test('Scanner normalizes line endings.', () => {
+	const scanner = new Scanner(mock)
+	expect(scanner.source_text[11]).toBe('\n')
+	expect(scanner.source_text[12]).toBe('\n')
+	expect(scanner.source_text[13]).toBe('6')
+	expect(scanner.source_text[33]).toBe('\n')
+	expect(scanner.source_text[34]).toBe('9')
 })
 
 
@@ -39,14 +51,14 @@ test('Scanner yields Character objects.', () => {
 
 
 test('Character source, line, column.', () => {
-	const {source, line_index, col_index} = new Char(new Scanner(mock), 20)
+	const {source, line_index, col_index} = new Char(new Scanner(mock), 21)
 	expect([source, line_index + 1, col_index + 1]).toEqual(['3', 3, 9])
 })
 
 
 
 test('Character lookahead is Char.', () => {
-	const lookahead = new Char(new Scanner(mock), 22).lookahead()
+	const lookahead = new Char(new Scanner(mock), 23).lookahead()
 	expect(lookahead).toBeInstanceOf(Char)
 	const {source, line_index, col_index} = lookahead
 	expect([source, line_index + 1, col_index + 1]).toEqual(['*', 3, 12])
