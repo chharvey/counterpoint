@@ -1,6 +1,4 @@
-const {TokenFilebound} = require('../build/class/Token.class.js')
 const {default: Parser} = require('../build/class/Parser.class.js')
-const {default: Grammar} = require('../build/class/Grammar.class.js')
 
 
 
@@ -18,10 +16,6 @@ test('Decorate file with single token.', () => {
 	<Constant line="1" col="1" source="42" value="42"/>
 </Goal>
 	`.replace(/\n\t*/g, ''))
-	const tree = new Parser('').parse()
-	expect(tree.tagname).toBe('File')
-	expect(tree.children.length).toBe(2)
-	tree.children.forEach((child) => expect(child).toEqual(expect.any(TokenFilebound)))
 })
 
 
