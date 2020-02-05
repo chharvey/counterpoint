@@ -1,7 +1,8 @@
-const fs = require('fs')
-const util = require('util')
+const fsPromise = require('fs').promises
 
 const gulp       = require('gulp')
+const {default: jest} = require('gulp-jest')
+// require('jest-cli') // DO NOT REMOVE … peerDependency of `gulp-jest`
 const typescript = require('gulp-typescript')
 // require('typescript') // DO NOT REMOVE … peerDependency of `gulp-typescript`
 
@@ -15,10 +16,15 @@ function dist() {
 		.pipe(gulp.dest('./build/'))
 }
 
-async function test() {
+function test() {
+	return gulp.src('./test/')
+		.pipe(jest({
+		}))
+}
+
+async function test_dev() {
 	const {Scanner, Lexer, Translator, Parser} = require('./')
-	const {default: Grammar} = require('./build/class/Grammar.class')
-	const input = util.promisify(fs.readFile)('./test/test-v0.1.solid', 'utf8')
+	const input = fsPromise.readFile('./test/test-v0.1.solid', 'utf8')
 
 	console.log("\n\nHere are the characters returned by the scanner:")
 	console.log("  line col  character")
@@ -45,56 +51,23 @@ async function test() {
 		iterator_result_tokentrans = translator.next()
 	}
 
-	const {
-		ProductionFile,
-		ProductionExpression,
-		ProductionExpressionAdditive,
-		ProductionExpressionMultiplicative,
-		ProductionExpressionExponential,
-		ProductionExpressionUnarySymbol,
-		ProductionExpressionUnit,
-	} = require('./build/class/Production.class')
-	const solid_grammar = new Grammar([
-		ProductionFile.instance,
-		ProductionExpression.instance,
-		ProductionExpressionAdditive.instance,
-		ProductionExpressionMultiplicative.instance,
-		ProductionExpressionExponential.instance,
-		ProductionExpressionUnarySymbol.instance,
-		ProductionExpressionUnit.instance,
-	])
+	const tree = new Parser(await input).parse()
 	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
-	const tree = new Parser(solid_grammar).parse(await input)
-	fs.writeFileSync('./sample/output.xml', tree.serialize())
-
 	console.log("\n\nThe semantic tree returned by the decorator is written to file: `./sample/output-1.xml`")
-	fs.writeFileSync('./sample/output-1.xml', tree.decorate().serialize())
 
-	return Promise.resolve(null)
+	return Promise.all([
+		fsPromise.writeFile('./sample/output.xml', tree.serialize()),
+		fsPromise.writeFile('./sample/output-1.xml', tree.decorate().serialize()),
+	])
 }
 
 const build = gulp.series(dist, test)
 
+const dev = gulp.series(dist, test_dev)
+
 async function random() {
-	const Grammar = require('./build/class/Grammar.class.js').default
-	const {
-		ProductionFile,
-		ProductionExpression,
-		ProductionExpressionAdditive,
-		ProductionExpressionMultiplicative,
-		ProductionExpressionExponential,
-		ProductionExpressionUnarySymbol,
-		ProductionExpressionUnit,
-	} = require('./build/class/Production.class')
-	const solid_grammar = new Grammar([
-		ProductionFile.instance,
-		ProductionExpression.instance,
-		ProductionExpressionAdditive.instance,
-		ProductionExpressionMultiplicative.instance,
-		ProductionExpressionExponential.instance,
-		ProductionExpressionUnarySymbol.instance,
-		ProductionExpressionUnit.instance,
-	])
+	const {default: Grammar} = require('./build/class/Grammar.class')
+	const solid_grammar = new Grammar()
 	console.log(solid_grammar.rules.map((r) => r.toString()))
 	console.log(solid_grammar.random().join(' ').replace(/\u000d/g, ' '))
 	return Promise.resolve(null)
@@ -105,5 +78,7 @@ module.exports = {
 	build,
 		dist,
 		test,
+	dev,
+		test_dev,
 	random,
 }

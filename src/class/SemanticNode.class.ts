@@ -52,7 +52,7 @@ export default class SemanticNode implements Serializable {
 			...Object.entries<string|number|boolean|null>(this.attributes).map(([key, value]) => `${key}="${value}"`),
 		].join(' ').trim()
 		const contents: string = this.children.map((child) => child.serialize()).join('')
-		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
+		return (contents) ? `<${this.tagname}${attributes}>${contents}</${this.tagname}>` : `<${this.tagname}${attributes}/>`
 	}
 }
 
