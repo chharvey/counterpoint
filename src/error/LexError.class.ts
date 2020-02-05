@@ -1,4 +1,4 @@
-import {Char} from '../class/Scanner.class'
+import Char from '../class/Char.class'
 import Token from '../class/Token.class'
 
 import SolidError from './SolidError.class'

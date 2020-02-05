@@ -1,7 +1,9 @@
 Decorate(Goal ::= #x02 #x03)
 	:= SemanticNull {} []
 Decorate(Goal ::= #x02 Statement__List #x03)
-	:= Decorate(Statement__List)
+	:= SemanticGoal {} [
+		Decorate(Statement__List),
+	]
 
 Decorate(Statement__List ::= Statement)
 	:= SemanticStatementList {} [

@@ -1,7 +1,5 @@
 import Serializable from '../iface/Serializable.iface'
-
-import {STX, ETX} from './Scanner.class'
-
+import {STX, ETX} from './Char.class'
 import Token from './Token.class'
 import ParseNode from './ParseNode.class'
 
@@ -15,10 +13,14 @@ export default class SemanticNode implements Serializable {
 	private readonly tagname: string;
 	/** The concatenation of the source text of all children. */
 	private readonly source: string;
+	/** The index of the first token in source text. */
+	readonly source_index: number;
 	/** Zero-based line number of the first token (first line is line 0). */
 	readonly line_index: number;
 	/** Zero-based column number of the first token (first col is col 0). */
 	readonly col_index: number;
+	/** An identifier for this node in compiled output. */
+	readonly identifier: string; // COMBAK `protected` NB <https://github.com/microsoft/TypeScript/issues/35989>
 
 	/**
 	 * Construct a new SemanticNode object.
@@ -32,10 +34,22 @@ export default class SemanticNode implements Serializable {
 		private readonly attributes: { [key: string]: string|number|boolean|null } = {},
 		readonly children: readonly SemanticNode[] = [],
 	) {
-		this.tagname    = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
-		this.source     = start_node.source
-		this.line_index = start_node.line_index
-		this. col_index = start_node. col_index
+		this.tagname      = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
+		this.source       = start_node.source
+		this.source_index = start_node.source_index
+		this.line_index   = start_node.line_index
+		this.col_index    = start_node.col_index
+		this.identifier   = `__${this.source_index.toString(36)}`
+	}
+
+	/**
+	 * Generate code for the runtime.
+	 * @returns a string of code to execute
+	 */
+	compile(): string {
+		return `
+export default void 0
+		`.trim()
 	}
 
 	/**
@@ -62,7 +76,7 @@ export default class SemanticNode implements Serializable {
 			...Object.entries<string|number|boolean|null>(this.attributes).map(([key, value]) => `${key}="${value}"`),
 		].join(' ').trim()
 		const contents: string = this.children.map((child) => child.serialize()).join('')
-		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
+		return (contents) ? `<${this.tagname}${attributes}>${contents}</${this.tagname}>` : `<${this.tagname}${attributes}/>`
 	}
 }
 
@@ -72,10 +86,23 @@ export class SemanticNodeNull extends SemanticNode {
 	constructor(start_node: Token|ParseNode) {
 		super(start_node)
 	}
+	compile(): string {
+		return `
+export default null
+		`.trim()
+	}
 }
 export class SemanticNodeGoal extends SemanticNode {
-	constructor(start_node: ParseNode, children: readonly [SemanticNodeExpression]) {
+	constructor(start_node: ParseNode, children: readonly [SemanticNodeStatementList]) {
 		super(start_node, {}, children)
+	}
+	compile(): string {
+		return this.children[0] instanceof SemanticNodeConstant ? `
+export default ${this.children[0].compile()}
+		`.trim() : `
+${this.children[0].compile()}
+export default ${this.children[0].identifier}
+		`.trim()
 	}
 }
 export class SemanticNodeStatementList extends SemanticNode {
@@ -109,8 +136,20 @@ export class SemanticNodeAssigned extends SemanticNode {
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {
-	constructor(start_node: ParseNode, operator: string, children: readonly SemanticNode[]) {
+	constructor(start_node: ParseNode, private readonly operator: string, children: readonly SemanticNode[]) {
 		super(start_node, {operator}, children)
+	}
+	compile(): string {
+		const child0 : string = this.children[0].compile()
+		const child1 : string = this.children.length === 2 ? this.children[1].compile() : ''
+		const idthis : string = this.identifier
+		const id0    : string = this.children[0].identifier
+		const id1    : string = this.children.length === 2 ? this.children[1].identifier : '__'
+		return `
+${this.children[0] instanceof SemanticNodeConstant ? `let ${id0}: number = ${child0}` : child0}
+${this.children[1] instanceof SemanticNodeConstant ? `let ${id1}: number = ${child1}` : child1}
+${idthis === id0 ? idthis : `let ${idthis}: number`} = ${this.children.length === 2 ? `${id0} ${this.operator.replace('^', '**')} ${id1}` : `${this.operator} ${id0}`}
+		`.trim()
 	}
 }
 export class SemanticNodeTemplate extends SemanticNode {
@@ -124,7 +163,10 @@ export class SemanticNodeIdentifier extends SemanticNode {
 	}
 }
 export class SemanticNodeConstant extends SemanticNode {
-	constructor(start_node: Token, value: string|number) {
+	constructor(start_node: Token, private readonly value: string|number) {
 		super(start_node, {value})
+	}
+	compile(): string {
+		return `${this.value}`
 	}
 }

@@ -1,8 +1,8 @@
 import Serializable from '../iface/Serializable.iface'
 import Util from './Util.class'
-import {Char, STX, ETX} from './Scanner.class'
+import Char, {STX, ETX} from './Char.class'
 import Lexer from './Lexer.class'
-import Translator from './Translator.class'
+import Screener from './Screener.class'
 
 import {
 	LexError02,
@@ -38,6 +38,8 @@ export default abstract class Token implements Serializable {
 	readonly tagname: string;
 	/** All the characters in this Token. */
 	private _cargo: string;
+	/** The index of the first character in source text. */
+	readonly source_index: number;
 	/** Zero-based line number of the first character (first line is line 0). */
 	readonly line_index: number;
 	/** Zero-based column number of the first character (first col is col 0). */
@@ -50,10 +52,11 @@ export default abstract class Token implements Serializable {
 	 * @param more_chars - additional characters to add upon construction
 	 */
 	constructor(start_char: Char, ...more_chars: Char[]) {
-		this.tagname    = this.constructor.name.slice('Token'.length).toUpperCase()
-		this._cargo     = [start_char, ...more_chars].map((char) => char.source).join('')
-		this.line_index = start_char.line_index
-		this.col_index  = start_char.col_index
+		this.tagname      = this.constructor.name.slice('Token'.length).toUpperCase()
+		this._cargo       = [start_char, ...more_chars].map((char) => char.source).join('')
+		this.source_index = start_char.source_index
+		this.line_index   = start_char.line_index
+		this.col_index    = start_char.col_index
 	}
 
 	/**
@@ -550,7 +553,7 @@ export class TokenWord extends Token {
 	/**
 	 * The cooked value of this Token.
 	 * If the token is a keyword, the cooked value is its contents.
-	 * If the token is an identifier, the cooked value is set by a {@link Translator},
+	 * If the token is an identifier, the cooked value is set by a {@link Screener},
 	 * which indexes unique identifier tokens.
 	 */
 	private _cooked: number/* bigint */|string;
@@ -573,15 +576,15 @@ export class TokenWord extends Token {
 		this._cooked = this.source
 	}
 	/**
-	 * Use a Translator to set the value of this Token.
+	 * Use a Screener to set the value of this Token.
 	 * If this token is an identifier, get the index of this token’s contents
-	 * in the given translator’s list of unique identifier tokens.
+	 * in the given screener’s list of unique identifier tokens.
 	 * Else if this token is a keyword, do nothing.
-	 * @param   translator the Translator whose indexed identifiers to search
+	 * @param   screener the Screener whose indexed identifiers to search
 	 */
-	setValue(translator: Translator) {
+	setValue(screener: Screener) {
 		if (this.is_identifier) {
-			this._cooked = translator.identifiers.indexOf(this.source)
+			this._cooked = screener.identifiers.indexOf(this.source)
 		}
 	}
 	cook(): number/* bigint */|string {
