@@ -41,6 +41,21 @@ which form the lowest-level building blocks of the language.
 
 There are a small number of token types, each of which have a specific purpose.
 
+```w3c
+Goal ::=
+	FileBound      |
+	Whitespace     |
+	Comment        |
+	String         |
+	TemplateFull   |
+	TemplateHead   |
+	TemplateMiddle |
+	TemplateTail   |
+	Number         |
+	Word           |
+	Punctuator
+```
+
 1. [File Bounds](#file-bounds)
 1. [Whitespace](#whitespace)
 1. [Comments](#comments)

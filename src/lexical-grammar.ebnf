@@ -9,18 +9,17 @@ Goal ::=
 	TemplateTail   |
 	Number         |
 	Word           |
-	Identifier     |
 	Punctuator
 
 
 FileBound ::=
-	#x02 /* START OF TEXT */ |
-	#x03 /* END OF TEXT   */
+	#x02 | /* START OF TEXT */
+	#x03   /* END OF TEXT   */
 
 Whitespace ::= Whitespace? (
-	#x20 /* SPACE                     */ |
-	#x09 /* CHARACTER TABULATION `\t` */ |
-	#x0A /* LINE FEED (LF)       `\n` */
+	#x20 | /* SPACE                     */
+	#x09 | /* CHARACTER TABULATION `\t` */
+	#x0A   /* LINE FEED (LF)       `\n` */
 )
 
 /* more whitespace characters:
