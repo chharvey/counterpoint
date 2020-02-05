@@ -30,20 +30,6 @@ const mock = `
 
 
 
-test('Lexer yields `Token`, non-`TokenWhitespace`, objects.', () => {
-	const lexer = new Lexer(mock)
-	const generator = lexer.generate()
-	let iterator_result = generator.next()
-	while (!iterator_result.done) {
-		const token = iterator_result.value
-		expect(token).toBeInstanceOf(Token)
-		expect(token).not.toBeInstanceOf(TokenWhitespace)
-		iterator_result = generator.next()
-	}
-})
-
-
-
 test('Lexer recognizes `TokenFilebound` conditions.', () => {
 	const lexer = new Lexer(mock)
 	const generator = lexer.generate()
@@ -77,17 +63,16 @@ test('Lexer recognizes `TokenString` conditions.', () => {
 
 
 test('Lexer recognizes `TokenNumber` conditions.', () => {
-	const bank = TokenNumber.CHARACTERS
+	const bank = TokenNumber.DIGITS.get(10)
 	const lexer = new Lexer(bank.join(' '))
 	const generator = lexer.generate()
-	let iterator_result = generator.next()
-	expect(iterator_result.value).toBeInstanceOf(TokenFilebound)
-	bank.forEach(() => {
-		iterator_result = generator.next()
-		expect(iterator_result.value).toBeInstanceOf(TokenNumber)
+	;[...generator].slice(1, -1).forEach((value) => {
+		try {
+			expect(value).toBeInstanceOf(TokenNumber)
+		} catch {
+			expect(value).toBeInstanceOf(TokenWhitespace)
+		}
 	})
-	iterator_result = generator.next()
-	expect(iterator_result.value).toBeInstanceOf(TokenFilebound)
 })
 
 
@@ -99,26 +84,25 @@ test('Lexer recognizes `TokenWord` conditions.', () => {
 
 test('Lexer recognizes `TokenPunctuator` conditions.', () => {
 	const bank = [
-		...TokenPunctuator.CHARACTERS_1,
-		...TokenPunctuator.CHARACTERS_2,
-		...TokenPunctuator.CHARACTERS_3,
+		...TokenPunctuator.CHARS_1,
+		...TokenPunctuator.CHARS_2,
+		...TokenPunctuator.CHARS_3,
 	].filter((p) => p !== '')
 	const lexer = new Lexer(bank.join(' '))
 	const generator = lexer.generate()
-	let iterator_result = generator.next()
-	expect(iterator_result.value).toBeInstanceOf(TokenFilebound)
-	bank.forEach(() => {
-		iterator_result = generator.next()
-		expect(iterator_result.value).toBeInstanceOf(TokenPunctuator)
+	;[...generator].slice(1, -1).forEach((value) => {
+		try {
+			expect(value).toBeInstanceOf(TokenPunctuator)
+		} catch {
+			expect(value).toBeInstanceOf(TokenWhitespace)
+		}
 	})
-	iterator_result = generator.next()
-	expect(iterator_result.value).toBeInstanceOf(TokenFilebound)
 })
 
 
 
 test('Lexer rejects unrecognized characters.', () => {
-	`_ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z`.split(' ').forEach((c) => {
+	`. ~ , [ ] | & ! { } : # $ %`.split(' ').forEach((c) => {
 		const lexer = new Lexer(`
 5  +  30
 + 6 ^ - (${c} - 37 *
@@ -129,24 +113,28 @@ test('Lexer rejects unrecognized characters.', () => {
 			while (!iterator_result.done) {
 				iterator_result = generator.next()
 			}
-		}).toThrow(new LexError01(c, 2 - 1, 10 - 1))
+		}).toThrow(LexError01)
 	})
 })
 
 
 
 test('TokenNumber#serialize', () => {
-	let token = new TokenNumber(new Char(new Scanner(`5`), 2))
-	token.add('42')
+	const lexer = new Lexer(`5`)
+	lexer.advance(2) // bypass added `\u0002\u000a`
+	const token = new TokenNumber(lexer)
+	token.add(...'42'.split('').map((s) => new Char(new Scanner(s), 2)))
 	expect(token.source).toBe('542')
-	expect(token.serialize()).toBe('<NUMBER line="1" col="1">542</NUMBER>')
+	expect(token.serialize()).toBe('<NUMBER line="1" col="1" value="542">542</NUMBER>')
 })
 
 
 
 test('TokenPunctuator#serialize', () => {
-	let token = new TokenPunctuator(new Char(new Scanner(`+`), 2))
-	token.add('=')
+	const lexer = new Lexer(`+`)
+	lexer.advance(2) // bypass added `\u0002\u000a`
+	const token = new TokenPunctuator(lexer)
+	token.add(new Char(new Scanner('='), 2))
 	expect(token.source).toBe('+=')
-	expect(token.serialize()).toBe('<PUNCTUATOR line="1" col="1">+=</PUNCTUATOR>')
+	expect(token.serialize()).toBe('<PUNCTUATOR line="1" col="1" value="+=">+=</PUNCTUATOR>')
 })

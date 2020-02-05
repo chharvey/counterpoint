@@ -39,8 +39,8 @@ test('Scanner yields Character objects.', () => {
 
 
 test('Character source, line, column.', () => {
-	const {cargo, line_index, col_index} = new Char(new Scanner(mock), 20)
-	expect([cargo, line_index+1, col_index+1]).toEqual(['3', 3, 9])
+	const {source, line_index, col_index} = new Char(new Scanner(mock), 20)
+	expect([source, line_index + 1, col_index + 1]).toEqual(['3', 3, 9])
 })
 
 
@@ -48,8 +48,8 @@ test('Character source, line, column.', () => {
 test('Character lookahead is Char.', () => {
 	const lookahead = new Char(new Scanner(mock), 22).lookahead()
 	expect(lookahead).toBeInstanceOf(Char)
-	const {cargo, line_index, col_index} = lookahead
-	expect([cargo, line_index+1, col_index+1]).toEqual(['*', 3, 12])
+	const {source, line_index, col_index} = lookahead
+	expect([source, line_index + 1, col_index + 1]).toEqual(['*', 3, 12])
 })
 
 
@@ -57,6 +57,6 @@ test('Character lookahead is Char.', () => {
 test('Last character lookahead is null.', () => {
 	const scanner = new Scanner(mock)
 	const char = new Char(scanner, lastIndex(scanner.source_text))
-	expect(char.cargo).toBe(ETX)
+	expect(char.source).toBe(ETX)
 	expect(char.lookahead()).toBe(null)
 })
