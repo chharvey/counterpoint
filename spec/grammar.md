@@ -35,12 +35,12 @@ A lexer, a.k.a. tokenizer, is a mechanism that reads a stream of character input
 groups consecutive inputs into tokens based on the rules of the lexical grammar,
 and then outputs that steam of tokens.
 This process is called lexical analysis, or “lexing/tokenizing” for short.
-When an input stream is successfully lexically analyzed without error, it is sent to a transformer.
+When an input stream is successfully lexically analyzed without error, it is sent to a screener.
 
-The transformer, while not a part of the lexer, performs medial tasks that can be done during lexical analysis.
+The screener, while not a part of the lexer, performs medial tasks that can be done during lexical analysis.
 Such tasks prepare the tokens for the parser, such as computing the mathematical values and string values
 of numeric tokens and string tokens respectively, as well as performing other optimizing techniques.
-The transformer is also responsible for deciding which tokens to send to the parser.
+The screener is also responsible for deciding which tokens to send to the parser.
 
 
 

@@ -1,4 +1,5 @@
-import Scanner, {Char} from './Scanner.class'
+import Scanner from './Scanner.class'
+import Char from './Char.class'
 import Token, {
 	TokenWhitespace,
 	TokenFilebound,
@@ -6,7 +7,6 @@ import Token, {
 	TokenWord,
 	TokenPunctuator,
 } from './Token.class'
-
 import {LexError01} from '../error/LexError.class'
 
 

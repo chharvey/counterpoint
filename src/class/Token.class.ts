@@ -1,6 +1,6 @@
-import Serializable from '../iface/Serializable.iface'
-import {Char, STX, ETX} from './Scanner.class'
 import Util from './Util.class'
+import Serializable from '../iface/Serializable.iface'
+import Char, {STX, ETX} from './Char.class'
 
 
 
@@ -18,6 +18,8 @@ export default abstract class Token implements Serializable {
 	readonly tagname: string;
 	/** All the characters in this Token. */
 	private _cargo: string;
+	/** The index of the first character in source text. */
+	readonly source_index: number;
 	/** Zero-based line number of the first character (first line is line 0). */
 	readonly line_index: number;
 	/** Zero-based column number of the first character (first col is col 0). */
@@ -29,10 +31,11 @@ export default abstract class Token implements Serializable {
 	 * @param start_char - the starting character of this Token
 	 */
 	constructor(start_char: Char) {
-		this.tagname    = this.constructor.name.slice('Token'.length).toUpperCase()
-		this._cargo     = start_char.cargo
-		this.line_index = start_char.line_index
-		this.col_index  = start_char.col_index
+		this.tagname      = this.constructor.name.slice('Token'.length).toUpperCase()
+		this._cargo       = start_char.cargo
+		this.source_index = start_char.source_index
+		this.line_index   = start_char.line_index
+		this.col_index    = start_char.col_index
 	}
 
 	/**
