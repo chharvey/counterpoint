@@ -192,5 +192,3 @@ Decorate(NUMBER)
 
 Decorate(IDENTIFIER)
 	::= SemanticIdentifier {id: WV(IDENTIFIER)} []
-Decorate(KEYWORD)
-	::= SemanticKeyword {id: WV(KEYWORD)} []

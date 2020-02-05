@@ -509,14 +509,8 @@ WV(Word ::= Keyword)
 
 #### Static Semantics: Decoration (Words)
 ```w3c
-Decorate(Word ::= Identifier)
-	::= Decorate(Identifier)
-Decorate(Word ::= Keyword)
-	::= Decorate(Keyword)
 Decorate(Identifier)
 	::= SemanticIdentifier {id: WV(Identifier)} []
-Decorate(Keyword)
-	::= SemanticKeyword {id: WV(Keyword)} []
 ```
 where `WV` is [Word Value](./#static-semantics-word-value).
 
