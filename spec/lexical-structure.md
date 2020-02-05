@@ -9,9 +9,9 @@ Solid source text (Solid code) is expressed using [Unicode](https://www.unicode.
 Solid source text is a sequence of Unicode code points,
 values ranging from U+0000 to U+10FFFF (including surrogate code points).
 Not all code points are permitted everywhere;
-the token syntax below explicitly define these permissions.
+the token syntax below explicitly defines these permissions.
 
-When stored and transmitted, Solid source text should be encoded and decoded via the
+When stored and transmitted, Solid source text must be encoded and decoded via the
 [UTF-8](https://tools.ietf.org/html/rfc3629) encoding format.
 
 Solid programs are often stored in text files, which, for editing convenience, are organized into lines.
@@ -22,7 +22,7 @@ whereas on Unix-based systems the representation is a single LF.
 
 To simplify the tasks of external applications, the Solid compiler **normalizes** all line breaks
 in a source file on input, before parsing. This normalization is a process in which
-both the two-character sequence CR–LF and any single CR that is not followed by a LF
+any two-character sequence CR–LF and any single CR that is not followed by a LF
 are replaced with a single LF character.
 
 Even though Solid is a [whitespace-independent language](#whitespace),
@@ -40,6 +40,21 @@ The lexical structure of Solid describes what sequence of characters form valid 
 which form the lowest-level building blocks of the language.
 
 There are a small number of token types, each of which have a specific purpose.
+
+```w3c
+Goal ::=
+	FileBound      |
+	Whitespace     |
+	Comment        |
+	String         |
+	TemplateFull   |
+	TemplateHead   |
+	TemplateMiddle |
+	TemplateTail   |
+	Number         |
+	Word           |
+	Punctuator
+```
 
 1. [File Bounds](#file-bounds)
 1. [Whitespace](#whitespace)
@@ -68,9 +83,11 @@ Whitespace ::= Whitespace? (#x20 | #x09 | #x0A)
 Whitespace tokens consist of combinations of the following characters.
 Any consecutive sequence of these characters is put into a single whitespace token.
 
-- U+0020 SPACE
-- U+0009 CHARACTER TABULATION
-- U+000A LINE FEED (LF)
+Code Point | Name                 | Block       | Category
+---------- | -------------------- | ----------- | ---------------------
+U+0020     | SPACE                | Basic Latin | Separator, Space [Zs]
+U+0009     | CHARACTER TABULATION | Basic Latin | Other, Control [Cc]
+U+000A     | LINE FEED (LF)       | Basic Latin | Other, Control [Cc]
 
 Solid is whitespace-independent.
 This means that a programmer should be able to add more whitespace where whitespace already exists,
@@ -78,31 +95,32 @@ and remove any amount of whitespace from existing whitespace (but not remove all
 without affecting the syntax or semantics of the program.
 Whitespace tokens are not sent to the parser for syntactic analysis.
 
-The Solid compiler does not currently, but could in the future, recognize the following whitespace characters:
+The Solid lexical grammar does not currently recognize the following characters as whitespace:
 
-- U+000B LINE TABULATION
-- U+000C FORM FEED (FF)
-- U+000D CARRIAGE RETURN (CR)
-- U+00A0 NO-BREAK SPACE
-- U+1680 OGHAM SPACE MARK
-- U+2000 EN QUAD
-- U+2001 EM QUAD
-- U+2002 EN SPACE
-- U+2003 EM SPACE
-- U+2004 THREE-PER-EM SPACE
-- U+2005 FOUR-PER-EM SPACE
-- U+2006 SIX-PER-EM SPACE
-- U+2007 FIGURE SPACE
-- U+2008 PUNCTUATION SPACE
-- U+2009 THIN SPACE
-- U+200A HAIR SPACE
-- U+200B ZERO WIDTH SPACE
-- U+2028 LINE SEPARATOR
-- U+2029 PARAGRAPH SEPARATOR
-- U+202F NARROW NO-BREAK SPACE
-- U+205F MEDIUM MATHEMATICAL SPACE
-- U+3000 IDEOGRAPHIC SPACE
-- U+FEFF ZERO WIDTH NO-BREAK SPACE
+Code Point | Name                      | Block                       | Category
+---------- | ------------------------- | --------------------------- | -------------------------
+U+000B     | LINE TABULATION           | Basic Latin                 | Other, Control [Cc]
+U+000C     | FORM FEED (FF)            | Basic Latin                 | Other, Control [Cc]
+U+000D     | CARRIAGE RETURN (CR)      | Basic Latin                 | Other, Control [Cc]
+U+00A0     | NO-BREAK SPACE            | Latin-1 Supplement          | Separator, Space [Zs]
+U+1680     | OGHAM SPACE MARK          | Latin-1 Supplement          | Separator, Space [Zs]
+U+2000     | EN QUAD                   | Latin-1 Supplement          | Separator, Space [Zs]
+U+2001     | EM QUAD                   | Latin-1 Supplement          | Separator, Space [Zs]
+U+2002     | EN SPACE                  | Latin-1 Supplement          | Separator, Space [Zs]
+U+2003     | EM SPACE                  | Latin-1 Supplement          | Separator, Space [Zs]
+U+2004     | THREE-PER-EM SPACE        | Latin-1 Supplement          | Separator, Space [Zs]
+U+2005     | FOUR-PER-EM SPACE         | Latin-1 Supplement          | Separator, Space [Zs]
+U+2006     | SIX-PER-EM SPACE          | Latin-1 Supplement          | Separator, Space [Zs]
+U+2007     | FIGURE SPACE              | Latin-1 Supplement          | Separator, Space [Zs]
+U+2008     | PUNCTUATION SPACE         | Latin-1 Supplement          | Separator, Space [Zs]
+U+2009     | THIN SPACE                | Latin-1 Supplement          | Separator, Space [Zs]
+U+200A     | HAIR SPACE                | Latin-1 Supplement          | Separator, Space [Zs]
+U+200B     | ZERO WIDTH SPACE          | General Punctuation         | Other, Format [Cf]
+U+2028     | LINE SEPARATOR            | General Punctuation         | Separator, Line [Zl]
+U+2029     | PARAGRAPH SEPARATOR       | General Punctuation         | Separator, Paragraph [Zp]
+U+202F     | NARROW NO-BREAK SPACE     | General Punctuation         | Separator, Space [Zs]
+U+205F     | MEDIUM MATHEMATICAL SPACE | General Punctuation         | Separator, Space [Zs]
+U+3000     | IDEOGRAPHIC SPACE         | CJK Symbols and Punctuation | Separator, Space [Zs]
 
 
 ### Comments
@@ -122,9 +140,9 @@ CommentMultiNestChars ::=
 
 CommentDoc ::= /*? following: #x0A [#x09#x20]* ?*/'"""' #x0A (/*? unequal: [#x09#x20]* '"""' ?*/[^#x03]* #x0A)? [#x09#x20]* '"""' /*? lookahead: #x0A ?*/
 ```
-Comments are pieces of code ignored by the compiler.
-They are mainly used to add human-readable language to code,
-which offer many benefits.
+Comments are tokens of arbitrary text,
+mainly used to add human-readable language to code
+or to provide other types of annotations.
 Comment tokens are not sent to the Solid parser.
 
 #### Line Comments
@@ -141,7 +159,7 @@ Multiline comments can be nested if their inner contents are wrapped with curly 
 
 #### Block Comments
 Block comments begin and end with triple quote marks `"""` (**U+0022 QUOTATION MARK**).
-The triple quote marks *must* be on their own lines (with or without leading and/or trailing whitespace).
+The triple quote marks *must* be on their own lines (with or without leading whitespace).
 
 
 ### String Literals
@@ -181,7 +199,7 @@ SV(StringChars ::= "\" StringEscape)
 SV(StringChars ::= "\" StringEscape StringChars)
 	:= SV(StringEscape) followed by SV(StringChars)
 SV(StringChars ::= "\u")
-	:= \x75 // U+0075 LATIN SMALL LETTER U
+	:= \x75 /* U+0075 LATIN SMALL LETTER U */
 SV(StringChars ::= "\u" [^'{#x03'])
 	:= \x75 followed by UTF16Encoding(code point of that character)
 SV(StringChars ::= "\u" [^'{#x03'] StringChars)
@@ -196,19 +214,19 @@ SV(StringEscape ::= NonEscapeChar)
 	:= SV(NonEscapeChar)
 SV(EscapeChar ::= "'" | "\" | "s" | "t" | "n" | "r")
 	:= given by the following map: {
-		"'" : \x27, // U+0027 APOSTROPHE
-		"\" : \x5c, // U+005C REVERSE SOLIDUS
-		"s" : \x20, // U+0020 SPACE
-		"t" : \x09, // U+0009 CHARACTER TABULATION
-		"n" : \x0a, // U+000A LINE FEED (LF)
-		"r" : \x0d, // U+000D CARRIAGE RETURN (CR)
+		"'" : \x27, /* U+0027 APOSTROPHE           */
+		"\" : \x5c, /* U+005C REVERSE SOLIDUS      */
+		"s" : \x20, /* U+0020 SPACE                */
+		"t" : \x09, /* U+0009 CHARACTER TABULATION */
+		"n" : \x0a, /* U+000A LINE FEED (LF)       */
+		"r" : \x0d, /* U+000D CARRIAGE RETURN (CR) */
 	}
 SV(EscapeCode ::= "u{" "}")
-	:= \x0 // U+0000 NULL
+	:= \x0 /* U+0000 NULL */
 SV(EscapeCode ::= "u{" DigitSequenceHex "}")
 	:= UTF16Encoding(MV(DigitSequenceHex))
 SV(LineContinuation ::= #x0A)
-	:= \x20 // U+0020 SPACE
+	:= \x20 /* U+0020 SPACE */
 SV(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03])
 	:= UTF16Encoding(code point of that character)
 ```
@@ -268,7 +286,7 @@ TV(TemplateCharsEndDelim ::= [^`{\#x03])
 TV(TemplateCharsEndDelim ::= [^`{\#x03] TemplateCharsEndDelim)
 	:= UTF16Encoding(code point of that character) followed by TV(TemplateCharsEndDelim)
 TV(TemplateCharsEndDelim ::= "{"
-	:= \x7b // U+007B LEFT CURLY BRACKET
+	:= \x7b /* U+007B LEFT CURLY BRACKET */
 TV(TemplateCharsEndDelim ::= "{" [^`{\#x03])
 	:= \x7b followed by UTF16Encoding(code point of that character)
 TV(TemplateCharsEndDelim ::= "{" [^`{\#x03] TemplateCharsEndDelim)
@@ -286,7 +304,7 @@ TV(TemplateCharsEndDelim ::= "\" [^`#x03])
 TV(TemplateCharsEndDelim ::= "\" [^`#x03] TemplateCharsEndDelim)
 	:= \x5c followed by UTF16Encoding(code point of that character) followed by TV(TemplateCharsEndDelim)
 TV(TemplateCharsEndDelim ::= "\" "`")
-	:= \x60 // U+0060 GRAVE ACCENT
+	:= \x60 /* U+0060 GRAVE ACCENT */
 TV(TemplateCharsEndDelim ::= "\" "`" TemplateCharsEndDelim)
 	:= \x60 followed by TV(TemplateCharsEndDelim)
 TV(TemplateCharsEndInterp ::= [^`{\#x03])
@@ -306,13 +324,13 @@ TV(TemplateCharsEndInterp ::= "{" "\" "`")
 TV(TemplateCharsEndInterp ::= "{" "\" "`" TemplateCharsEndInterp)
 	:= \x7b followed by \x60 followed by TV(TemplateCharsEndInterp)
 TV(TemplateCharsEndInterp ::= "\")
-	:= \x5c // U+005C REVERSE SOLIDUS
+	:= \x5c /* U+005C REVERSE SOLIDUS */
 TV(TemplateCharsEndInterp ::= "\" [^`#x03])
 	:= \x5c followed by UTF16Encoding(code point of that character)
 TV(TemplateCharsEndInterp ::= "\" [^`#x03] TemplateCharsEndInterp)
 	:= \x5c followed by UTF16Encoding(code point of that character) followed by TV(TemplateCharsEndInterp)
 TV(TemplateCharsEndInterp ::= "\" "`")
-	:= \x60 // U+0060 GRAVE ACCENT
+	:= \x60 /* U+0060 GRAVE ACCENT */
 TV(TemplateCharsEndInterp ::= "\" "`" TemplateCharsEndInterp)
 	:= \x60 followed by TV(TemplateCharsEndInterp)
 ```
@@ -469,12 +487,12 @@ KeywordModifier ::=
 ```
 Words are sequences of alphanumeric characters.
 Formally, words are partitioned into two types:
-author-defined **identifiers**, which point to values, and
+author-defined **identifiers**, which point to values in a program, and
 language-reserved **keywords**, which convey certain semantics.
 Keywords are reserved by the Solid language and cannot be used as identifiers.
 
-Words may start with an alphabetic character or an underscore, `[A-Za-z_]`,
-and thereafter may contain zero or more alphanumeric characters or underscores, `[A-Za-z0-9_]`.
+Words must start with an alphabetic character or an underscore, `[A-Za-z_]`,
+and thereafter may contain more alphanumeric characters or underscores, `[A-Za-z0-9_]`.
 In the future, support will be added for a certain subset of Unicode characters,
 which go beyond the letters and numerals of the English alphabet.
 
@@ -491,14 +509,8 @@ WV(Word ::= Keyword)
 
 #### Static Semantics: Decoration (Words)
 ```w3c
-Decorate(Word ::= Identifier)
-	::= Decorate(Identifier)
-Decorate(Word ::= Keyword)
-	::= Decorate(Keyword)
 Decorate(Identifier)
 	::= SemanticIdentifier {id: WV(Identifier)} []
-Decorate(Keyword)
-	::= SemanticKeyword {id: WV(Keyword)} []
 ```
 where `WV` is [Word Value](./#static-semantics-word-value).
 

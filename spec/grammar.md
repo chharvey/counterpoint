@@ -22,6 +22,25 @@ If multiple sequences define a nonterminal in a production,
 then exactly one of those sequences may replace the nonterminal in the language
 for any given replacement step.
 
+### Example
+```
+ExpressionAddition
+	::= ExpressionAddition "+" NUMBER
+	::= NUMBER
+```
+The grammar above is a very simple grammar with only one production, defined
+by the nonterminal `ExpressionAddition` on the left-hand side and two sequences on the right-hand side.
+The first sequence has three symbols: one nonterminal (which happens to be the same as the production —
+recursion is allowed in this specification’s grammars), and two terminals.
+The terminal `"+"` is a literal token, and the terminal `NUMBER` represents a token
+that matches some lexical formula, such as `[0-9]*` (which might be defined in a separate lexical grammar).
+In this specification, such terminal identifiers will be written in all-uppercase (‘MACRO_CASE’).
+
+One is able to start with the nonterminal `ExpressionAddition`, and replace it with
+any of the right-hand sequences, repeating that step perhaps an arbitrary number of times
+if recursion is allowed, until no more nonterminals remain. The resulting sequence of terminals
+would be a well-formed instance of the language.
+
 
 
 ## The Lexical Grammar
@@ -40,7 +59,7 @@ When an input stream is successfully lexically analyzed without error, it is sen
 The transformer, while not a part of the lexer, performs medial tasks that can be done during lexical analysis.
 Such tasks prepare the tokens for the parser, such as computing the mathematical values and string values
 of numeric tokens and string tokens respectively, as well as performing other optimizing techniques.
-The transformer is also responsible for deciding which tokens to send to the parser.
+The transformer is also responsible for deciding which tokens get sent to the parser.
 
 
 
@@ -58,6 +77,42 @@ Each (non-leaf) node of the tree corresponds to a nonterminal production in the 
 and has child nodes that correspond to the production’s sequence of symbols on its right-hand side.
 The leaves of the tree (at the ends of the branches) are terminal symbols,
 the tokens from the input stream.
+After successful syntactical analysis, the parse tree is sent to a decorator.
+
+The parser’s decorator is the analogue of the lexer’s transformer.
+The responsibility of the decorator is to infer all the semantics it can,
+based only on the syntactic structure of a given language instance.
+This is made possible because context-sensitive clues are given once a parse tree is completed.
+Further, the decorator transforms the very large parse tree into a more simplified and condensed
+semantic tree, which is then passed on to a semantic analyzer.
+
+
+
+## Attribute Grammars
+Attribute grammars are context-sensitive grammars that help the decorator transform
+the parse tree into the semantic tree, which is a prerequisite for semantic analysis.
+In an attribute grammar, attributes are defined on nodes of a parse tree via the productions
+of a context-free grammar.
+In this specification, attributes are “synthesized” and thus propagate in a bottom-up manner:
+given a parse node, computing an attribute of that node might require looking at its children.
+Attributes can be computed values, or entire objects representing semantic nodes with children.
+For example, an attribute grammar can be used to determine the mathematical value of a number.
+
+### Example
+```
+MV(NUMBER ::= [0-9])
+	:= MV([0-9])
+MV(NUMBER ::= NUMBER [0-9])
+	:= 10 * MV(NUMBER) + MV([0-9])
+MV([0-9] ::= "0") := 0
+MV([0-9] ::= "1") := 1
+...
+MV([0-9] ::= "9") := 9
+```
+This example demonstrates an attribute grammar that defines an attribute called `MV` on a `NUMBER` token.
+Each rule defines the attribute on the token matching a different pattern defined by a CFG.
+The first line could be read aloud as, “The `MV` of `NUMBER` matching `[0-9]` is the `MV` of `[0-9]`.”
+
 
 
 
