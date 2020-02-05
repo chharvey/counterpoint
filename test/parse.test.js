@@ -1,6 +1,5 @@
 const {TokenFilebound} = require('../build/class/Token.class.js')
 const {default: Parser} = require('../build/class/Parser.class.js')
-const {default: Grammar} = require('../build/class/Grammar.class.js')
 
 const mock = `
 5  +  30

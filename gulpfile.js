@@ -54,10 +54,12 @@ async function test_dev() {
 	const tree = new Parser(await input).parse()
 	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
 	console.log("\n\nThe semantic tree returned by the decorator is written to file: `./sample/output-1.xml`")
+	console.log("\n\nThe compiled output returned by the compiler is written to file: `./sample/output-2.ts`")
 
 	return Promise.all([
 		fsPromise.writeFile('./sample/output.xml', tree.serialize()),
 		fsPromise.writeFile('./sample/output-1.xml', tree.decorate().serialize()),
+		fsPromise.writeFile('./sample/output-2.ts', tree.decorate().compile()),
 	])
 }
 
