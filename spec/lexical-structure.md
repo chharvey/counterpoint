@@ -199,7 +199,7 @@ SV(StringChars ::= "\" StringEscape)
 SV(StringChars ::= "\" StringEscape StringChars)
 	:= SV(StringEscape) followed by SV(StringChars)
 SV(StringChars ::= "\u")
-	:= \x75 // U+0075 LATIN SMALL LETTER U
+	:= \x75 /* U+0075 LATIN SMALL LETTER U */
 SV(StringChars ::= "\u" [^'{#x03'])
 	:= \x75 followed by UTF16Encoding(code point of that character)
 SV(StringChars ::= "\u" [^'{#x03'] StringChars)
@@ -214,19 +214,19 @@ SV(StringEscape ::= NonEscapeChar)
 	:= SV(NonEscapeChar)
 SV(EscapeChar ::= "'" | "\" | "s" | "t" | "n" | "r")
 	:= given by the following map: {
-		"'" : \x27, // U+0027 APOSTROPHE
-		"\" : \x5c, // U+005C REVERSE SOLIDUS
-		"s" : \x20, // U+0020 SPACE
-		"t" : \x09, // U+0009 CHARACTER TABULATION
-		"n" : \x0a, // U+000A LINE FEED (LF)
-		"r" : \x0d, // U+000D CARRIAGE RETURN (CR)
+		"'" : \x27, /* U+0027 APOSTROPHE           */
+		"\" : \x5c, /* U+005C REVERSE SOLIDUS      */
+		"s" : \x20, /* U+0020 SPACE                */
+		"t" : \x09, /* U+0009 CHARACTER TABULATION */
+		"n" : \x0a, /* U+000A LINE FEED (LF)       */
+		"r" : \x0d, /* U+000D CARRIAGE RETURN (CR) */
 	}
 SV(EscapeCode ::= "u{" "}")
-	:= \x0 // U+0000 NULL
+	:= \x0 /* U+0000 NULL */
 SV(EscapeCode ::= "u{" DigitSequenceHex "}")
 	:= UTF16Encoding(MV(DigitSequenceHex))
 SV(LineContinuation ::= #x0A)
-	:= \x20 // U+0020 SPACE
+	:= \x20 /* U+0020 SPACE */
 SV(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03])
 	:= UTF16Encoding(code point of that character)
 ```
@@ -286,7 +286,7 @@ TV(TemplateCharsEndDelim ::= [^`{\#x03])
 TV(TemplateCharsEndDelim ::= [^`{\#x03] TemplateCharsEndDelim)
 	:= UTF16Encoding(code point of that character) followed by TV(TemplateCharsEndDelim)
 TV(TemplateCharsEndDelim ::= "{"
-	:= \x7b // U+007B LEFT CURLY BRACKET
+	:= \x7b /* U+007B LEFT CURLY BRACKET */
 TV(TemplateCharsEndDelim ::= "{" [^`{\#x03])
 	:= \x7b followed by UTF16Encoding(code point of that character)
 TV(TemplateCharsEndDelim ::= "{" [^`{\#x03] TemplateCharsEndDelim)
@@ -304,7 +304,7 @@ TV(TemplateCharsEndDelim ::= "\" [^`#x03])
 TV(TemplateCharsEndDelim ::= "\" [^`#x03] TemplateCharsEndDelim)
 	:= \x5c followed by UTF16Encoding(code point of that character) followed by TV(TemplateCharsEndDelim)
 TV(TemplateCharsEndDelim ::= "\" "`")
-	:= \x60 // U+0060 GRAVE ACCENT
+	:= \x60 /* U+0060 GRAVE ACCENT */
 TV(TemplateCharsEndDelim ::= "\" "`" TemplateCharsEndDelim)
 	:= \x60 followed by TV(TemplateCharsEndDelim)
 TV(TemplateCharsEndInterp ::= [^`{\#x03])
@@ -324,13 +324,13 @@ TV(TemplateCharsEndInterp ::= "{" "\" "`")
 TV(TemplateCharsEndInterp ::= "{" "\" "`" TemplateCharsEndInterp)
 	:= \x7b followed by \x60 followed by TV(TemplateCharsEndInterp)
 TV(TemplateCharsEndInterp ::= "\")
-	:= \x5c // U+005C REVERSE SOLIDUS
+	:= \x5c /* U+005C REVERSE SOLIDUS */
 TV(TemplateCharsEndInterp ::= "\" [^`#x03])
 	:= \x5c followed by UTF16Encoding(code point of that character)
 TV(TemplateCharsEndInterp ::= "\" [^`#x03] TemplateCharsEndInterp)
 	:= \x5c followed by UTF16Encoding(code point of that character) followed by TV(TemplateCharsEndInterp)
 TV(TemplateCharsEndInterp ::= "\" "`")
-	:= \x60 // U+0060 GRAVE ACCENT
+	:= \x60 /* U+0060 GRAVE ACCENT */
 TV(TemplateCharsEndInterp ::= "\" "`" TemplateCharsEndInterp)
 	:= \x60 followed by TV(TemplateCharsEndInterp)
 ```
