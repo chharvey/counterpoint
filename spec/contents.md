@@ -3,3 +3,4 @@
 1. [Lexical Structure](./lexical-structure.md)
 1. [Solid Language: Expressions](./language-expressions.md)
 1. [Solid Language: Statements](./language-statements.md)
+1. [Solid Language: Goal Symbols](./language-goal.md)

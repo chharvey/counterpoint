@@ -3,8 +3,6 @@ Decorate(Goal ::= #x02 #x03)
 Decorate(Goal ::= #x02 Statement__List #x03)
 	:= Decorate(Statement__List)
 
-
-
 Decorate(Statement__List ::= Statement)
 	:= SemanticStatementList {} [
 		Decorate(Statement),
@@ -14,6 +12,8 @@ Decorate(Statement__List ::= Statement__List Statement)
 		Spread(Decorate(Statement__List)),
 		Decorate(Statement),
 	]
+
+
 
 Decorate(Statement ::= DeclarationVariable)
 	:= Decorate(DeclarationVariable)
