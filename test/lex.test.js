@@ -48,6 +48,9 @@ test('Lexer recognizes `TokenFilebound` conditions.', () => {
 
 
 test('Lexer recognizes `TokenWhitespace` conditions.', () => {
+	;[...new Lexer(TokenWhitespace.CHARS.join('')).generate()].slice(1, -1).forEach((value) => {
+		expect(value).toBeInstanceOf(TokenWhitespace)
+	})
 })
 
 
