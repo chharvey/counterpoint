@@ -1,5 +1,3 @@
-500  +  30; ;  \ line comment  *  2
-
 + \o55  +  \q33  "multiline
 comment" *  \x2;
 
@@ -19,38 +17,8 @@ comment" *  \x2;
 \\q123_142_3
 \\o123_456_78
 
-\ the following is an empty line comment:
-+123; \
-
 \ the following is an empty statement:
 ; \
-
-  \a \ line comment starting with "a"
-\ \b \ line comment starting with "b"
-  \c \ line comment starting with "c"
-\ \d \ line comment starting with "d"
-  \e \ line comment starting with "e"
-  \f \ line comment starting with "f"
-  \g \ line comment starting with "g"
-  \h \ line comment starting with "h"
-  \i \ line comment starting with "i"
-  \j \ line comment starting with "j"
-  \k \ line comment starting with "k"
-  \l \ line comment starting with "l"
-  \m \ line comment starting with "m"
-  \n \ line comment starting with "n"
-\ \o \ line comment starting with "o"
-  \p \ line comment starting with "p"
-\ \q \ line comment starting with "q"
-  \r \ line comment starting with "r"
-  \s \ line comment starting with "s"
-  \t \ line comment starting with "t"
-  \u \ line comment starting with "u"
-  \v \ line comment starting with "v"
-  \w \ line comment starting with "w"
-\ \x \ line comment starting with "x"
-  \y \ line comment starting with "y"
-\ \z \ line comment starting with "z"
 
 \ the following are empty multiline comments:
 ""
