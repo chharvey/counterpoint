@@ -11,6 +11,7 @@ const {
 	TokenWhitespace,
 	TokenCommentLine,
 	TokenCommentMulti,
+	TokenCommentMultiNest,
 	TokenNumber,
 	TokenPunctuator,
 } = require('../build/class/Token.class.js')
@@ -171,6 +172,67 @@ comment
 "multiline
 \u0003
 comment"
+		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
+			expect(() => [...lexer.generate()]).toThrow(LexError02)
+		})
+	})
+})
+
+
+
+describe('Lexer recognizes `TokenCommentMultiNest` conditions.', () => {
+	test('Empty nestable multiline comment.', () => {
+		const tokens = [...new Lexer(`
+"{}"
+"{ }"
+		`.trim()).generate()]
+		expect(tokens[2]).toBeInstanceOf(TokenCommentMultiNest)
+		expect(tokens[4]).toBeInstanceOf(TokenCommentMultiNest)
+		expect(tokens[2].source).toBe('"{}"')
+		expect(tokens[4].source).toBe('"{ }"')
+	})
+
+	test('Nestable multiline comment containing multiline comment.', () => {
+		const comment = [...new Lexer(`
+"{multiline
+that has a "nested" multiline
+comment}"
+		`.trim()).generate()][2]
+		expect(comment).toBeInstanceOf(TokenCommentMultiNest)
+	})
+
+	test('Nestable multiline comment containing nestable multiline comment.', () => {
+		const comment = [...new Lexer(`
+"{multiline
+that has a "{nestable nested}" multiline
+comment}"
+		`.trim()).generate()][2]
+		expect(comment).toBeInstanceOf(TokenCommentMultiNest)
+	})
+
+	test('Nestable comment containing interpolation delimiters.', () => {
+		const tokens = [...new Lexer(`
+"{A nestable "{co"{mm}"ent}" with \`the {{interpolation}} syntax\`.}"
+		`.trim()).generate()]
+		expect(tokens[2]).toBeInstanceOf(TokenCommentMultiNest)
+		expect(tokens[3]).toBeInstanceOf(TokenFilebound)
+		expect(tokens[3].cook()).toBe(false)
+	})
+
+	test('Unfinished nestable multiline comment throws.', () => {
+		;[`
+"{multiline
+comment
+		`, `
+"{multiline
+"{comm}"ent
+		`, `
+"{multiline
+\u0003
+"{comm}"ent}"
+		`, `
+"{multiline
+"{co\u0003mm}"ent}"
 		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
 			expect(() => [...lexer.generate()]).toThrow(LexError02)
 		})
