@@ -1,5 +1,4 @@
-+ \o55  +  \q33  "multiline
-comment" *  \x2;
++ \o55  +  \q33   *  \x2;
 
 + 007 +
 
@@ -19,10 +18,6 @@ comment" *  \x2;
 
 \ the following is an empty statement:
 ; \
-
-\ the following are empty multiline comments:
-""
-" "
 
 +\b10 + "" + -\z27y + "" + \d301+
 
@@ -120,11 +115,6 @@ with NO collapsed newline`
 +'Here is a string "that contains" a multiline comment.'+
 'Here is a string "that contains a comment start marker but no end.'
 +'Here is a string "{that contains a nestable comment start marker but no end.';
-
-"Here is a multiline
-comment 'that contains' a string."
-"Here is a multiline comment
-that contains 'a string start marker but no end."
 
 `Interpolation with a multiline comment {{ "a multiline comment" }}!`
 +`Interpolation with an empty multiline comment {{ " " }}!`+

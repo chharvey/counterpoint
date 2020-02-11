@@ -10,6 +10,7 @@ const {
 	TokenFilebound,
 	TokenWhitespace,
 	TokenCommentLine,
+	TokenCommentMulti,
 	TokenNumber,
 	TokenPunctuator,
 } = require('../build/class/Token.class.js')
@@ -122,6 +123,54 @@ describe('Lexer recognizes `TokenCommentLine` conditions.', () => {
 		`, `
 \\ line \u0003 comment
 8;
+		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
+			expect(() => [...lexer.generate()]).toThrow(LexError02)
+		})
+	})
+})
+
+
+
+describe('Lexer recognizes `TokenCommentMulti` conditions.', () => {
+	test('Basic multiline comment.', () => {
+		expect([...new Lexer(`
+500  +  "multiline
+comment" 30; ;
+		`.trim()).generate()][6]).toBeInstanceOf(TokenCommentMulti)
+	})
+
+	test('Empty multiline comment.', () => {
+		const tokens = [...new Lexer(`
+""
+" "
+		`.trim()).generate()]
+		expect(tokens[2]).toBeInstanceOf(TokenCommentMulti)
+		expect(tokens[4]).toBeInstanceOf(TokenCommentMulti)
+		expect(tokens[2].source).toBe('""')
+		expect(tokens[4].source).toBe('" "')
+	})
+
+	test('Multiline comment containing string delimiters.', () => {
+		const tokens = [...new Lexer(`
+"Here is a multiline
+comment 'that contains' a string."
+"Here is a multiline comment
+that contains 'a string start marker but no end."
+		`.trim()).generate()]
+		expect(tokens[2]).toBeInstanceOf(TokenCommentMulti)
+		expect(tokens[4]).toBeInstanceOf(TokenCommentMulti)
+		expect(tokens[5]).toBeInstanceOf(TokenFilebound)
+		expect(tokens[5].cook()).toBe(false)
+	})
+
+	test('Unfinished multiline comment throws.', () => {
+		;[`
+"multiline
+comment
+		`, `
+"multiline
+\u0003
+comment"
 		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
 			expect(() => [...lexer.generate()]).toThrow(LexError02)
 		})
