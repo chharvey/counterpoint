@@ -30,25 +30,6 @@
 
 ^6  *  4   *  3;
 
-"""
-" abcde
-" 5 + 3
-"""
-
-	"""
-	these quotes do not end the doc comment"""
-	"""nor do these
-	"""
-
-""" 3 * 2
-5 + 3 """
-
-\ below is an empty Solidoc comment:
-
-"""
-"""
-
-
 5; x =+  '3';
 
 y  =  3 *  2;

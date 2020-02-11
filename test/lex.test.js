@@ -12,6 +12,7 @@ const {
 	TokenCommentLine,
 	TokenCommentMulti,
 	TokenCommentMultiNest,
+	TokenCommentDoc,
 	TokenNumber,
 	TokenPunctuator,
 } = require('../build/class/Token.class.js')
@@ -233,6 +234,74 @@ comment
 		`, `
 "{multiline
 "{co\u0003mm}"ent}"
+		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
+			expect(() => [...lexer.generate()]).toThrow(LexError02)
+		})
+	})
+})
+
+
+
+describe('Lexer recognizes `TokenCommentDoc` conditions.', () => {
+	test('Empty doc comment.', () => {
+		const tokens = [...new Lexer(`
+"""
+"""
+8;
+		`.trim()).generate()]
+		expect(tokens[2]).toBeInstanceOf(TokenCommentDoc)
+		expect(tokens[2].source).toBe('"""\n"""')
+		expect(tokens[4].source).toBe('8')
+	})
+
+	test('Basic doc comment.', () => {
+		const tokens = [...new Lexer(`
+"""
+abcde
+5 + 3
+"""
+
+	"""
+	abcde
+	5 + 3
+	"""
+8;
+		`.trim()).generate()]
+		expect(tokens[2]).toBeInstanceOf(TokenCommentDoc)
+		expect(tokens[4]).toBeInstanceOf(TokenCommentDoc)
+		expect(tokens[6].source).toBe('8')
+	})
+
+	test('Doc comment delimiters must be on own line.', () => {
+		const tokens = [...new Lexer(`
+"""
+these quotes do not end the doc comment"""
+"""nor do these
+"""
+
+""" 3 * 2
+5 + 3 """
+8;
+		`.trim()).generate()]
+		expect(tokens[2]).toBeInstanceOf(TokenCommentDoc)
+		expect(tokens[4]).toBeInstanceOf(TokenCommentMulti)
+		expect(tokens[5]).toBeInstanceOf(TokenCommentMulti)
+		expect(tokens[6]).toBeInstanceOf(TokenCommentMulti)
+	})
+
+	test('Unfinished doc comment throws.', () => {
+		;[`
+"""
+doc comment without end delimiters
+		`, `
+"""
+doc comment with end delimiter, but not followed by a newline
+"""
+		`, `
+"""
+doc comment containing \u0003 character
+"""
+8;
 		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
 			expect(() => [...lexer.generate()]).toThrow(LexError02)
 		})
