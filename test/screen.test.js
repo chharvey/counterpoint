@@ -47,6 +47,36 @@ test('Screener computes filebound token values.', () => {
 
 
 
+test('Screener computes `TokenString` values.', () => {
+	const tokens = [...new Screener(`
+5 + 03 + '' * 'hello' *  -2;
+
+'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
+
+'0 \\u{24} 1 \\u{005f} 2 \\u{} 3';
+
+'012\\
+345
+678';
+	`.trim()).generate()]
+	expect(tokens[ 5].cook()).toBe(``)
+	expect(tokens[ 7].cook()).toBe(`hello`)
+	expect(tokens[11].cook()).toBe(`0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`)
+	expect(tokens[13].cook()).toBe(`0 $ 1 _ 2 \0 3`)
+	expect(tokens[15].cook()).toBe(`012 345\n678`)
+})
+
+
+
+test('UTF-16 encoding throws when input is out of range.', () => {
+	const stringtoken = [...new Screener(`
+'a string literal with a unicode \\u{a00061} escape sequence out of range';
+	`.trim()).generate()][1]
+	expect(() => stringtoken.cook()).toThrow(RangeError)
+})
+
+
+
 test('Screener computes number token values.', () => {
 	const screener = new Screener(mock)
 	const generator = screener.generate()

@@ -36,8 +36,6 @@ y  =  3 *  2;
 
 z = 3 *  ``;
 
-\ 'a string literal with a unicode \u{a00061} escape sequence (escaped)'
-
 'a string literal with a unicode \u{00_61} escape sequence with numeric separators'
 
 + 4 *
