@@ -445,3 +445,115 @@ describe('Parse `StringTemplate` expression units.', () => {
 		`.trim()).parse()).toThrow('Unexpected token')
 	})
 })
+
+
+
+describe('Decorate `StringTemplate` expression units.', () => {
+	const stringTemplateSemanticNode = (goal) => goal
+		.children[0] // StatementList
+		.children[0] // Statement
+		.children[0] // Template
+
+	test('Head, tail.', () => {
+		expect(stringTemplateSemanticNode(new Parser(`
+\`head1{{}}tail1\`;
+		`.trim()).parse().decorate()).serialize()).toBe(`
+<Template line="1" col="1" source="\`head1{{ }}tail1\`">
+	<Constant line="1" col="1" source="\`head1{{" value="head1"/>
+	<Constant line="1" col="9" source="}}tail1\`" value="tail1"/>
+</Template>
+		`.replace(/\n\t*/g, ''))
+	})
+
+	test('Head, expr, tail.', () => {
+		expect(stringTemplateSemanticNode(new Parser(`
+\`head1{{ \`full1\` }}tail1\`;
+		`.trim()).parse().decorate()).serialize()).toBe(`
+<Template line="1" col="1" source="\`head1{{ \`full1\` }}tail1\`">
+	<Constant line="1" col="1" source="\`head1{{" value="head1"/>
+	<Template line="1" col="10" source="\`full1\`">
+		<Constant line="1" col="10" source="\`full1\`" value="full1"/>
+	</Template>
+	<Constant line="1" col="18" source="}}tail1\`" value="tail1"/>
+</Template>
+		`.replace(/\n\t*/g, ''))
+	})
+
+	test('Head, expr, middle, tail.', () => {
+		expect(stringTemplateSemanticNode(new Parser(`
+\`head1{{ \`full1\` }}midd1{{}}tail1\`;
+		`.trim()).parse().decorate()).serialize()).toBe(`
+<Template line="1" col="1" source="\`head1{{ \`full1\` }}midd1{{ }}tail1\`">
+	<Constant line="1" col="1" source="\`head1{{" value="head1"/>
+	<Template line="1" col="10" source="\`full1\`">
+		<Constant line="1" col="10" source="\`full1\`" value="full1"/>
+	</Template>
+	<Constant line="1" col="18" source="}}midd1{{" value="midd1"/>
+	<Constant line="1" col="27" source="}}tail1\`" value="tail1"/>
+</Template>
+		`.replace(/\n\t*/g, ''))
+	})
+
+	test('Head, expr, middle, expr, tail.', () => {
+		expect(stringTemplateSemanticNode(new Parser(`
+\`head1{{ \`full1\` }}midd1{{ \`full2\` }}tail1\`;
+		`.trim()).parse().decorate()).serialize()).toBe(`
+<Template line="1" col="1" source="\`head1{{ \`full1\` }}midd1{{ \`full2\` }}tail1\`">
+	<Constant line="1" col="1" source="\`head1{{" value="head1"/>
+	<Template line="1" col="10" source="\`full1\`">
+		<Constant line="1" col="10" source="\`full1\`" value="full1"/>
+	</Template>
+	<Constant line="1" col="18" source="}}midd1{{" value="midd1"/>
+	<Template line="1" col="28" source="\`full2\`">
+		<Constant line="1" col="28" source="\`full2\`" value="full2"/>
+	</Template>
+	<Constant line="1" col="36" source="}}tail1\`" value="tail1"/>
+</Template>
+		`.replace(/\n\t*/g, ''))
+	})
+
+	test('Head, expr, middle, expr, middle, tail.', () => {
+		expect(stringTemplateSemanticNode(new Parser(`
+\`head1{{ \`full1\` }}midd1{{ \`full2\` }}midd2{{}}tail1\`;
+		`.trim()).parse().decorate()).serialize()).toBe(`
+<Template line="1" col="1" source="\`head1{{ \`full1\` }}midd1{{ \`full2\` }}midd2{{ }}tail1\`">
+	<Constant line="1" col="1" source="\`head1{{" value="head1"/>
+	<Template line="1" col="10" source="\`full1\`">
+		<Constant line="1" col="10" source="\`full1\`" value="full1"/>
+	</Template>
+	<Constant line="1" col="18" source="}}midd1{{" value="midd1"/>
+	<Template line="1" col="28" source="\`full2\`">
+		<Constant line="1" col="28" source="\`full2\`" value="full2"/>
+	</Template>
+	<Constant line="1" col="36" source="}}midd2{{" value="midd2"/>
+	<Constant line="1" col="45" source="}}tail1\`" value="tail1"/>
+</Template>
+		`.replace(/\n\t*/g, ''))
+	})
+
+	test('Head, expr, middle, expr, middle, expr, tail.', () => {
+		expect(stringTemplateSemanticNode(new Parser(`
+\`head1{{ \`full1\` }}midd1{{ \`full2\` }}midd2{{ \`head2{{ \`full3\` }}tail2\` }}tail1\`;
+		`.trim()).parse().decorate()).serialize()).toBe(`
+<Template line="1" col="1" source="\`head1{{ \`full1\` }}midd1{{ \`full2\` }}midd2{{ \`head2{{ \`full3\` }}tail2\` }}tail1\`">
+	<Constant line="1" col="1" source="\`head1{{" value="head1"/>
+	<Template line="1" col="10" source="\`full1\`">
+		<Constant line="1" col="10" source="\`full1\`" value="full1"/>
+	</Template>
+	<Constant line="1" col="18" source="}}midd1{{" value="midd1"/>
+	<Template line="1" col="28" source="\`full2\`">
+		<Constant line="1" col="28" source="\`full2\`" value="full2"/>
+	</Template>
+	<Constant line="1" col="36" source="}}midd2{{" value="midd2"/>
+	<Template line="1" col="46" source="\`head2{{ \`full3\` }}tail2\`">
+		<Constant line="1" col="46" source="\`head2{{" value="head2"/>
+		<Template line="1" col="55" source="\`full3\`">
+			<Constant line="1" col="55" source="\`full3\`" value="full3"/>
+		</Template>
+		<Constant line="1" col="63" source="}}tail2\`" value="tail2"/>
+	</Template>
+	<Constant line="1" col="72" source="}}tail1\`" value="tail1"/>
+</Template>
+		`.replace(/\n\t*/g, ''))
+	})
+})
