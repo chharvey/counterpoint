@@ -40,11 +40,6 @@ z = 3 *  ``;
 
 + 4 *
 
-
-\ }} a string template tail token not preceded by a head or middle`
-
-\ `A string template head token not followed by a middle or tail {{
-
 8;
 
 '
