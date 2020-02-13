@@ -7,29 +7,14 @@ const {
 	TokenNumber,
 } = require('../build/class/Token.class.js')
 
-const mock = `
-5 + 03 *  -2
-
-600  /  (  *  23
-
-4 * 2 ^ /
-
--60 * -2 / 12
-`.trim()
-
 
 
 test('Lexer recognizes `TokenNumber` conditions.', () => {
-	const bank = TokenNumber.DIGITS.get(10)
-	const lexer = new Lexer(bank.join(' '))
-	const generator = lexer.generate()
-	;[...generator].slice(1, -1).forEach((value) => {
-		try {
-			expect(value).toBeInstanceOf(TokenNumber)
-		} catch {
-			expect(value).toBeInstanceOf(TokenWhitespace)
-		}
-	})
+	;[...new Lexer(TokenNumber.DIGITS.get(10).join(' ')).generate()].slice(1, -1)
+		.filter((token) => !(token instanceof TokenWhitespace))
+		.forEach((token) => {
+			expect(token).toBeInstanceOf(TokenNumber)
+		})
 })
 
 
@@ -46,14 +31,17 @@ test('TokenNumber#serialize', () => {
 
 
 test('Screener computes number token values.', () => {
-	const screener = new Screener(mock)
-	const generator = screener.generate()
-	let iterator_result = generator.next()
-	while (!iterator_result.done) {
-		const token = iterator_result.value
+	;[...new Screener(`
+5 + 03 *  -2
+
+600  /  (  *  23
+
+4 * 2 ^ /
+
+-60 * -2 / 12
+	`.trim()).generate()].forEach((token) => {
 		if (token instanceof TokenNumber) {
 			expect(token.cook()).toBe(parseInt(token.source))
 		}
-		iterator_result = generator.next()
-	}
+	})
 })

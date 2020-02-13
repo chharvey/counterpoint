@@ -8,7 +8,11 @@ const {
 	LexError03,
 } = require('../build/error/LexError.class.js')
 
-const mock = `
+
+
+describe('Lexer recognizes `TokenString` conditions.', () => {
+	test('Basic strings.', () => {
+		const tokens = [...new Lexer(`
 3 - 50 + * 2
 
 5 + 03 + '' * 'hello' *  -2
@@ -18,13 +22,7 @@ const mock = `
 600  /  (3  *  2
 
 4 * 2 ^ 3
-`.trim()
-
-
-
-describe('Lexer recognizes `TokenString` conditions.', () => {
-	test('Basic strings.', () => {
-		const tokens = [...new Lexer(mock).generate()]
+		`.trim()).generate()]
 		expect(tokens[22]).toBeInstanceOf(TokenString)
 		expect(tokens[22].source.length).toBe(2)
 		expect(tokens[26]).toBeInstanceOf(TokenString)

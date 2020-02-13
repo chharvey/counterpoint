@@ -1,25 +1,5 @@
 const {default: Parser} = require('../build/class/Parser.class.js')
 
-const mock = `
-5  +  30
-
-+ 6 ^ - (2 - 37 *
-
-3 - 50 + - 2
-
-- 5 + 03) *  -2 *
-
-600  /  3  *  2
-
-/ 600  /  (3  *  2) ^
-
-4 * 2 ^ 3
-
-- 60 * -2 / 12 +
-
- 4 * 222 ^ 3;
-`.trim()
-
 
 
 test('Parse expression unit.', () => {
@@ -361,7 +341,25 @@ test('Decorate grouping.', () => {
 
 test('Parse full.', () => {
 	expect(() => {
-		const tree = new Parser(mock).parse()
+		const tree = new Parser(`
+5  +  30
+
++ 6 ^ - (2 - 37 *
+
+3 - 50 + - 2
+
+- 5 + 03) *  -2 *
+
+600  /  3  *  2
+
+/ 600  /  (3  *  2) ^
+
+4 * 2 ^ 3
+
+- 60 * -2 / 12 +
+
+ 4 * 222 ^ 3;
+		`.trim()).parse()
 	}).not.toThrow()
 })
 

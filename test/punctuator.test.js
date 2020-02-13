@@ -9,20 +9,15 @@ const {
 
 
 test('Lexer recognizes `TokenPunctuator` conditions.', () => {
-	const bank = [
+	;[...new Lexer([
 		...TokenPunctuator.CHARS_1,
 		...TokenPunctuator.CHARS_2,
 		...TokenPunctuator.CHARS_3,
-	].filter((p) => p !== '')
-	const lexer = new Lexer(bank.join(' '))
-	const generator = lexer.generate()
-	;[...generator].slice(1, -1).forEach((value) => {
-		try {
+	].filter((p) => p !== '').join(' ')).generate()].slice(1, -1)
+		.filter((token) => !(token instanceof TokenWhitespace))
+		.forEach((value) => {
 			expect(value).toBeInstanceOf(TokenPunctuator)
-		} catch {
-			expect(value).toBeInstanceOf(TokenWhitespace)
-		}
-	})
+		})
 })
 
 
