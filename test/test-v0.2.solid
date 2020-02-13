@@ -40,42 +40,12 @@ z = 3 *  ``;
 
 + 4 *
 
-`a string template with an \` escaped back-tick (which will be escaped)
-and an \' escaped apostrophe (which won’t)`
-
-+`a string template with an \u0061 escape sequence (which won’t be escaped)`+
-
-`a string template with \\` an escaped backslash followed by a back-tick.`
-
-+`a string template with
-a line break`+
-
-`a string template\
-with NO collapsed newline`
-
-+`Interpolation works {{ 3 * 6 }}!`+
-`Interpolation works with {{ `{{ 3 * 6 }}` }} too!`
-+`Interpolation works with an empty string {{ '' }}!`+
-`Interpolation with whitespace {{ }}!`
-^`Multiple interpolations! {{ a }} b {{ 'c' }}!`
-+`Interpolation with no space {{}}!`;
-
-
-`Interpolation allows {{ `nest{{ 'ed inter' }}polation` }} which is a good thing.` +
 
 \ }} a string template tail token not preceded by a head or middle`
 
 \ `A string template head token not followed by a middle or tail {{
 
-`Interpolation with a multiline comment {{ "a multiline comment" }}!`
-+`Interpolation with an empty multiline comment {{ " " }}!`+
-`Interpolation with a nestable multiline comment {{ "{a multiline comment}" }}!`
-
-+`Interpolation with a Solidoc comment {{
-"""
-"  a Solidoc comment
-"""
-}}!`;
+8;
 
 '
 <html>
