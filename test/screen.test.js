@@ -68,6 +68,37 @@ test('Screener computes `TokenString` values.', () => {
 
 
 
+test('Screener computes `TokenTemplate` values.', () => {
+	const tokens = [...new Screener(`
+600  /  \`\` * 3 + \`hello\` *  2;
+
+3 + \`head{{ * 2
+3 + }}midl{{ * 2
+3 + }}tail\` * 2
+
+\`0 \\\` 1\`;
+
+\`0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7\`;
+
+\`0 \\u{24} 1 \\u{005f} 2 \\u{} 3\`;
+
+\`012\\
+345
+678\`;
+	`.trim()).generate()]
+	expect(tokens[ 3].cook()).toBe(``)
+	expect(tokens[ 7].cook()).toBe(`hello`)
+	expect(tokens[13].cook()).toBe(`head`)
+	expect(tokens[18].cook()).toBe(`midl`)
+	expect(tokens[23].cook()).toBe(`tail`)
+	expect(tokens[26].cook()).toBe(`0 \` 1`)
+	expect(tokens[28].cook()).toBe(`0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\` 7`)
+	expect(tokens[30].cook()).toBe(`0 \\u{24} 1 \\u{005f} 2 \\u{} 3`)
+	expect(tokens[32].cook()).toBe(`012\\\n345\n678`)
+})
+
+
+
 test('UTF-16 encoding throws when input is out of range.', () => {
 	const stringtoken = [...new Screener(`
 'a string literal with a unicode \\u{a00061} escape sequence out of range';
