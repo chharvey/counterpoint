@@ -21,17 +21,36 @@ describe('Lexer recognizes `TokenNumber` conditions.', () => {
 			expect(token).toBeInstanceOf(TokenNumber)
 		})
 	})
-})
 
+	test('Tokenize non-prefixed (decimal) integers.', () => {
+		const tokens = [...new Lexer(`
++  55  -  33  2  007  700  +91  -27  +091  -0027
+		`.trim()).generate()]
+		expect(tokens[ 4].source).toBe(`55`)
+		expect(tokens[ 8].source).toBe(`33`)
+		expect(tokens[10].source).toBe(`2`)
+		expect(tokens[12].source).toBe(`007`)
+		expect(tokens[14].source).toBe(`700`)
+		expect(tokens[16].source).toBe(`+91`)
+		expect(tokens[18].source).toBe(`-27`)
+		expect(tokens[20].source).toBe(`+091`)
+		expect(tokens[22].source).toBe(`-0027`)
+	})
 
-
-test('TokenNumber#serialize', () => {
-	const lexer = new Lexer(`5`)
-	lexer.advance(2) // bypass added `\u0002\u000a`
-	const token = new TokenNumber(lexer)
-	token.add(...'42'.split('').map((s) => new Char(new Scanner(s), 2)))
-	expect(token.source).toBe('542')
-	expect(token.serialize()).toBe('<NUMBER line="1" col="1" value="542">542</NUMBER>')
+	test('Tokenize prefixed integers.', () => {
+		const source = `
+\\b100  \\b001  +\\b1000  -\\b1000  +\\b01  -\\b01
+\\q320  \\q032  +\\q1032  -\\q1032  +\\q03  -\\q03
+\\o370  \\o037  +\\o1037  -\\o1037  +\\o06  -\\o06
+\\d370  \\d037  +\\d9037  -\\d9037  +\\d06  -\\d06
+\\xe70  \\x0e7  +\\x90e7  -\\x90e7  +\\x06  -\\x06
+\\ze70  \\z0e7  +\\z90e7  -\\z90e7  +\\z06  -\\z06
+		`.trim().replace(/\n/g, '  ')
+		;[...new Lexer(source).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
+			expect(token).toBeInstanceOf(TokenNumber)
+			expect(token.source).toBe(source.split('  ')[i])
+		})
+	})
 })
 
 
