@@ -8,13 +8,19 @@ const {
 } = require('../build/class/Token.class.js')
 
 
-
-test('Lexer recognizes `TokenNumber` conditions.', () => {
-	;[...new Lexer(TokenNumber.DIGITS.get(10).join(' ')).generate()].slice(1, -1)
-		.filter((token) => !(token instanceof TokenWhitespace))
-		.forEach((token) => {
+describe('Lexer recognizes `TokenNumber` conditions.', () => {
+	test('Single-digit numbers.', () => {
+		;[...new Lexer(TokenNumber.DIGITS.get(10).join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 			expect(token).toBeInstanceOf(TokenNumber)
 		})
+		;[...TokenNumber.BASES.entries()].map(([base, radix]) =>
+			[...new Lexer(
+				TokenNumber.DIGITS.get(radix).map((d) => `\\${base}${d}`).join(' ')
+			).generate()].slice(1, -1)
+		).flat().filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
+			expect(token).toBeInstanceOf(TokenNumber)
+		})
+	})
 })
 
 
