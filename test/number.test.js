@@ -8,21 +8,14 @@ const {
 } = require('../build/class/Token.class.js')
 
 
-describe('Lexer recognizes `TokenNumber` conditions.', () => {
+describe('Non-radix (decimal default) integers.', () => {
 	test('Single-digit numbers.', () => {
 		;[...new Lexer(TokenNumber.DIGITS.get(10).join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 			expect(token).toBeInstanceOf(TokenNumber)
 		})
-		;[...TokenNumber.BASES.entries()].map(([base, radix]) =>
-			[...new Lexer(
-				TokenNumber.DIGITS.get(radix).map((d) => `\\${base}${d}`).join(' ')
-			).generate()].slice(1, -1)
-		).flat().filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
-			expect(token).toBeInstanceOf(TokenNumber)
-		})
 	})
 
-	test('Tokenize non-prefixed (decimal) integers.', () => {
+	test('Tokenize non-radix integers.', () => {
 		const tokens = [...new Lexer(`
 +  55  -  33  2  007  700  +91  -27  +091  -0027
 		`.trim()).generate()]
@@ -37,7 +30,29 @@ describe('Lexer recognizes `TokenNumber` conditions.', () => {
 		expect(tokens[22].source).toBe(`-0027`)
 	})
 
-	test('Tokenize prefixed integers.', () => {
+	test('Cook non-radix integers.', () => {
+		;[...new Screener(`
+370  037  +9037  -9037  +06  -06
+		`.trim()).generate()].filter((token) => token instanceof TokenNumber).forEach((token, i) => {
+			expect(token.cook()).toBe([370, 37, 9037, -9037, 6, -6][i])
+		})
+	})
+})
+
+
+
+describe('Radix-specific integers.', () => {
+	test('Single-digit numbers.', () => {
+		;[...TokenNumber.BASES.entries()].map(([base, radix]) =>
+			[...new Lexer(
+				TokenNumber.DIGITS.get(radix).map((d) => `\\${base}${d}`).join(' ')
+			).generate()].slice(1, -1)
+		).flat().filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
+			expect(token).toBeInstanceOf(TokenNumber)
+		})
+	})
+
+	test('Tokenize radix integers.', () => {
 		const source = `
 \\b100  \\b001  +\\b1000  -\\b1000  +\\b01  -\\b01
 \\q320  \\q032  +\\q1032  -\\q1032  +\\q03  -\\q03
@@ -51,20 +66,8 @@ describe('Lexer recognizes `TokenNumber` conditions.', () => {
 			expect(token.source).toBe(source.split('  ')[i])
 		})
 	})
-})
 
-
-
-describe('Screener computes number token values.', () => {
-	test('Non-prefixed integers.', () => {
-		;[...new Screener(`
-370  037  +9037  -9037  +06  -06
-		`.trim()).generate()].filter((token) => token instanceof TokenNumber).forEach((token, i) => {
-			expect(token.cook()).toBe([370, 37, 9037, -9037, 6, -6][i])
-		})
-	})
-
-	test('Prefixed integers.', () => {
+	test('Cook radix integers.', () => {
 		;[...new Screener(`
 \\b100  \\b001  +\\b1000  -\\b1000  +\\b01  -\\b01
 \\q320  \\q032  +\\q1032  -\\q1032  +\\q03  -\\q03
