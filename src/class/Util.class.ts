@@ -92,4 +92,16 @@ export default class Util {
 		const cu2: number =           (codepoint - 0x10000) % 0x400
 		return [cu1 + 0xd800, cu2 + 0xdc00]
 	}
+
+	/**
+	 * Return a map of key-value pairs as a string of HTML attributes.
+	 *
+	 * For example, given the map `[[key0, value0],  [key1, value1]]`,
+	 * this method returns the string `key0="value0" key1="value1"`.
+	 * @param   attributes a map of key-value pairs
+	 * @returns            an HTML string of space-separated attributes
+	 */
+	static stringifyAttributes(attributes: Map<string, string|number|boolean|null>): string {
+		return [...attributes.entries()].map((([attr, val]) => `${attr}="${val}"`)).join(' ')
+	}
 }

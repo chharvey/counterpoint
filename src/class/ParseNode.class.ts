@@ -1,3 +1,4 @@
+import Util from './Util.class'
 import Serializable from '../iface/Serializable.iface'
 
 import {STX, ETX} from './Scanner.class'
@@ -114,10 +115,8 @@ export default class ParseNode implements Serializable {
 	 * @implements Serializable
 	 */
 	serialize(): string {
-		const attributes: string = ' ' + [
-			!(this instanceof ParseNodeGoal) ? `line="${this.line_index + 1}"` : '',
-			!(this instanceof ParseNodeGoal) ?  `col="${this.col_index  + 1}"` : '',
-			`source="${this.source
+		const attributes: Map<string, string|number|boolean|null> = new Map<string, string|number|boolean|null>([
+			['source', this.source
 				.replace(/\&/g, '&amp;' )
 				.replace(/\</g, '&lt;'  )
 				.replace(/\>/g, '&gt;'  )
@@ -130,10 +129,14 @@ export default class ParseNode implements Serializable {
 				.replace(/\u0000/g, '&#x00;')
 				.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
 				.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
-			}"`,
-		].join(' ').trim()
+			],
+		])
+		if (!(this instanceof ParseNodeGoal)) {
+			attributes.set('line', this.line_index + 1)
+			attributes.set('col' , this.col_index  + 1)
+		}
 		const contents: string = this.children.map((child) => child.serialize()).join('')
-		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
+		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`
 	}
 }
 

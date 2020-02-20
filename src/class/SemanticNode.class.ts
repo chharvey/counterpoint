@@ -1,3 +1,4 @@
+import Util from './Util.class'
 import Serializable from '../iface/Serializable.iface'
 
 import {STX, ETX} from './Scanner.class'
@@ -42,10 +43,8 @@ export default class SemanticNode implements Serializable {
 	 * @implements Serializable
 	 */
 	serialize(): string {
-		const attributes: string = ' ' + [
-			!(this instanceof SemanticNodeGoal) ? `line="${this.line_index + 1}"` : '',
-			!(this instanceof SemanticNodeGoal) ?  `col="${this.col_index  + 1}"` : '',
-			`source="${this.source
+		const attributes: Map<string, string|number|boolean|null> = new Map<string, string|number|boolean|null>([
+			['source', this.source
 				.replace(/\&/g, '&amp;' )
 				.replace(/\</g, '&lt;'  )
 				.replace(/\>/g, '&gt;'  )
@@ -58,11 +57,17 @@ export default class SemanticNode implements Serializable {
 				.replace(/\u0000/g, '&#x00;')
 				.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
 				.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
-			}"`,
-			...Object.entries<string|number|boolean|null>(this.attributes).map(([key, value]) => `${key}="${value}"`),
-		].join(' ').trim()
+			],
+		])
+		if (!(this instanceof SemanticNodeGoal)) {
+			attributes.set('line', this.line_index + 1)
+			attributes.set('col' , this.col_index  + 1)
+		}
+		Object.entries<string|number|boolean|null>(this.attributes).forEach(([key, value]) => {
+			attributes.set(key, value)
+		})
 		const contents: string = this.children.map((child) => child.serialize()).join('')
-		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
+		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`
 	}
 }
 

@@ -1,5 +1,5 @@
-import Serializable from '../iface/Serializable.iface'
 import Util from './Util.class'
+import Serializable from '../iface/Serializable.iface'
 import {Char, STX, ETX} from './Scanner.class'
 import Lexer from './Lexer.class'
 import Translator from './Translator.class'
@@ -86,10 +86,13 @@ export default abstract class Token implements Serializable {
 	 */
 	serialize(): string {
 		const cooked: string|number|boolean|null = this.cook()
-		const attributes: string = ' ' + [
-			!(this instanceof TokenFilebound) ? `line="${this.line_index + 1}"` : '',
-			!(this instanceof TokenFilebound) ?  `col="${this.col_index  + 1}"` : '',
-			(cooked !== null) ? `value="${(typeof cooked === 'string') ? cooked
+		const attributes: Map<string, string|number|boolean|null> = new Map<string, string|number|boolean|null>()
+		if (!(this instanceof TokenFilebound)) {
+			attributes.set('line', this.line_index + 1)
+			attributes.set('col' , this.col_index  + 1)
+		}
+		if (cooked !== null) {
+			attributes.set('value', (typeof cooked === 'string') ? cooked
 				.replace(/\&/g, '&amp;' )
 				.replace(/\</g, '&lt;'  )
 				.replace(/\>/g, '&gt;'  )
@@ -100,12 +103,12 @@ export default abstract class Token implements Serializable {
 				.replace(/\n/g, '&#x0a;')
 				.replace(/\r/g, '&#x0d;')
 				.replace(/\u0000/g, '&#x00;')
-			: cooked.toString()}"` : '',
-		].join(' ').trim()
-		const formatted: string = this.source
+			: cooked.toString())
+		}
+		const contents: string = this.source
 			.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
 			.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
-		return `<${this.tagname}${attributes}>${formatted}</${this.tagname}>`
+		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`
 	}
 }
 
