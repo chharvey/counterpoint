@@ -26,7 +26,7 @@ export default class Screener {
 	/** The current token. */
 	private t0: Token|void;
 	/** The running identifier count. Used as an id for identifier tokens. */
-	private idcount: number /* bigint */ = 0;
+	private idcount: number = 0
 
 	/**
 	 * Construct a new Screener object.
