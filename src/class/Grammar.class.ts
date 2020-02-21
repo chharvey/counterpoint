@@ -1,6 +1,6 @@
 import Util from './Util.class'
 import {STX, ETX} from './Char.class'
-import Token from './Token.class'
+import type Token from './Token.class'
 import Terminal from './Terminal.class'
 import Production, {
 	ProductionFile,

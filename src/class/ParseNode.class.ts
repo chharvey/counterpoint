@@ -1,13 +1,14 @@
-import Serializable from '../iface/Serializable.iface'
+import type Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Char.class'
-import Token, {TokenNumber} from './Token.class'
+import type Token from './Token.class'
+import type {TokenNumber} from './Token.class'
 import SemanticNode, {
 	SemanticNodeNull,
 	SemanticNodeGoal,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 } from './SemanticNode.class'
-import {Rule} from './Grammar.class'
+import type {Rule} from './Grammar.class'
 import Production, {
 	ProductionFile,
 	ProductionExpression,

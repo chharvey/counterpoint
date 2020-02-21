@@ -1,5 +1,5 @@
 import Scanner from './Scanner.class'
-import Char from './Char.class'
+import type Char from './Char.class'
 import Token, {
 	TokenWhitespace,
 	TokenFilebound,

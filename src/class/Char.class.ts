@@ -1,4 +1,4 @@
-import Scanner from './Scanner.class'
+import type Scanner from './Scanner.class'
 
 
 

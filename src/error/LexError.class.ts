@@ -1,5 +1,5 @@
 import SolidError from './SolidError.class'
-import Token from '../class/Token.class'
+import type Token from '../class/Token.class'
 
 
 export default class LexError extends SolidError {

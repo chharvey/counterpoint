@@ -1,6 +1,6 @@
-import Serializable from '../iface/Serializable.iface'
+import type Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Char.class'
-import ParseNode from './ParseNode.class'
+import type ParseNode from './ParseNode.class'
 
 
 

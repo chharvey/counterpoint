@@ -1,4 +1,4 @@
-import Token from './Token.class'
+import type Token from './Token.class'
 import Screener from './Screener.class'
 import ParseNode from './ParseNode.class'
 import Terminal from './Terminal.class'
