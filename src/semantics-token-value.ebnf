@@ -64,7 +64,7 @@ TV(TemplateCharsEndDelim ::= [^`{\#x03])
 	:= UTF16Encoding(code point of that character)
 TV(TemplateCharsEndDelim ::= [^`{\#x03] TemplateCharsEndDelim)
 	:= UTF16Encoding(code point of that character) followed by TV(TemplateCharsEndDelim)
-TV(TemplateCharsEndDelim ::= "{"
+TV(TemplateCharsEndDelim ::= "{")
 	:= \x7b /* U+007B LEFT CURLY BRACKET */
 TV(TemplateCharsEndDelim ::= "{" [^`{\#x03])
 	:= \x7b followed by UTF16Encoding(code point of that character)
@@ -109,7 +109,7 @@ TV(TemplateCharsEndInterp ::= "\" [^`#x03])
 TV(TemplateCharsEndInterp ::= "\" [^`#x03] TemplateCharsEndInterp)
 	:= \x5c followed by UTF16Encoding(code point of that character) followed by TV(TemplateCharsEndInterp)
 TV(TemplateCharsEndInterp ::= "\" "`")
-	:= \x60 /* U+0060 GRAVE ACCENT */
+	:= \x60
 TV(TemplateCharsEndInterp ::= "\" "`" TemplateCharsEndInterp)
 	:= \x60 followed by TV(TemplateCharsEndInterp)
 

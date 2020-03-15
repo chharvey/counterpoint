@@ -380,7 +380,7 @@ export class TokenTemplate extends Token {
 	 */
 	private static tv(text: string): number[] {
 		if (text.length === 0) return []
-		if ('\\' + TokenTemplate.DELIM === text[0] + text[1]) {
+		if (`\\${TokenTemplate.DELIM}` === text.slice(0, 2)) {
 			/* an escaped template delimiter */
 			return [
 				TokenTemplate.DELIM.codePointAt(0) !,
@@ -448,7 +448,7 @@ export class TokenTemplate extends Token {
 	}
 	cook(): string {
 		return String.fromCodePoint(...TokenTemplate.tv(
-			this.source.slice(this.delim_start, -this.delim_end) // cut off the string delimiters
+			this.source.slice(this.delim_start, -this.delim_end) // cut off the template delimiters
 		))
 	}
 }
