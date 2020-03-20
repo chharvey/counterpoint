@@ -5,6 +5,7 @@ const {default: Char} = require('../build/class/Char.class.js')
 const {
 	TokenWhitespace,
 	TokenNumber,
+	TokenWord,
 } = require('../build/class/Token.class.js')
 const {
 	LexError04,
@@ -89,6 +90,22 @@ describe('Radix-specific integers.', () => {
 				18396, 511, 420415, -420415, 6, -6,
 			][i])
 		})
+	})
+
+	test('Integers with invalid digits start a new token.', () => {
+		expect([...new Screener(`
+\\b1_0040_0000
+\\q123_142_3
+\\o123_456_78
+		`.trim()).generate()].slice(1, -1).map((token) => token.cook()))
+			.toEqual([4, 400000, 109, 423, 342391, 8])
+	})
+
+	test('Invalid sequence.', () => {
+		expect([...new Screener(`
+\\d39c
+		`.trim()).generate()].slice(1, -1).map((token) => token.source))
+			.toEqual(['\\d39', 'c'])
 	})
 })
 
