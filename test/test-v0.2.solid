@@ -97,7 +97,7 @@ comment}" *  3;
 
 y  =  3 *  2;
 
-z = 3 *  ``;
+z = 3 *  '''''';
 
 +4 * 'a string literal with an \' escaped apostrophe and \`escaped back-tick (both escaped)'+
 
@@ -115,12 +115,12 @@ z = 3 *  ``;
 
 \ 'a string literal with an invalid escape sequence \u{61'
 
-`a string template with an \` escaped back-tick (which will be escaped)
-and an \' escaped apostrophe (which won’t)`
+'''a string template with an \` escaped back-tick (which will not be escaped)
+and an \' escaped apostrophe (which also won’t)'''
 
-+`a string template with an \u0061 escape sequence (which won’t be escaped)`+
++'''a string template with an \u0061 escape sequence (which won’t be escaped)'''+
 
-`a string template with \\` an escaped backslash followed by a back-tick.`
+'''a string template with \\` an escaped backslash followed by a back-tick.'''
 
 * 'a string literal with
 a line break'+
@@ -128,25 +128,25 @@ a line break'+
 'a string literal\
 with a collapsed newline'
 
-+`a string template with
-a line break`+
++'''a string template with
+a line break'''+
 
-`a string template\
-with NO collapsed newline`
+'''a string template\
+with NO collapsed newline'''
 
-+`Interpolation works {{ 3 * 6 }}!`+
-`Interpolation works with {{ `{{ 3 * 6 }}` }} too!`
-+`Interpolation works with an empty string {{ '' }}!`+
-`Interpolation with whitespace {{ }}!`
-^`Multiple interpolations! {{ a }} b {{ 'c' }}!`
-+`Interpolation with no space {{}}!`;
++'''Interpolation works {{ 3 * 6 }}!'''
++'''Interpolation works with {{ '''{{ 3 * 6 }}''' }} too!'''
++'''Interpolation works with an empty string {{ '' }}!'''
++'''Interpolation with whitespace {{ }}!'''
++'''Multiple interpolations! {{ a }} b {{ 'c' }}!'''
++'''Interpolation with no space {{}}!''';
 
 
-`Interpolation allows {{ `nest{{ 'ed inter' }}polation` }} which is a good thing.` +
+'''Interpolation allows {{ '''nest{{ 'ed inter' }}polation''' }} which is a good thing.''' +
 
-\ }} a string template tail token not preceded by a head or middle`
+\ }} a string template tail token not preceded by a head or middle'''
 
-\ `A string template head token not followed by a middle or tail {{
+\ '''A string template head token not followed by a middle or tail {{
 
 'Here is a string \ that contains a line comment start marker.'
 +'Here is a string "that contains" a multiline comment.'+
@@ -158,17 +158,17 @@ comment 'that contains' a string."
 "Here is a multiline comment
 that contains 'a string start marker but no end."
 
-`Interpolation with a multiline comment {{ "a multiline comment" }}!`
-+`Interpolation with an empty multiline comment {{ " " }}!`+
-`Interpolation with a nestable multiline comment {{ "{a multiline comment}" }}!`
+'''Interpolation with a multiline comment {{ "a multiline comment" }}!'''+
+'''Interpolation with an empty multiline comment {{ " " }}!'''+
+'''Interpolation with a nestable multiline comment {{ "{a multiline comment}" }}!'''
 
 "{A nestable "{co"{mm}"ent}" with `the {{interpolation}} syntax`.}"
 
-+`Interpolation with a Solidoc comment {{
++'''Interpolation with a Solidoc comment {{
 """
 "  a Solidoc comment
 """
-}}!`;
+}}!''';
 
 '
 <html>
@@ -182,7 +182,7 @@ that contains 'a string start marker but no end."
 </html>
 '
 
-+`
++'''
 <html>
 	<body class="js" id='top'>
 		hello {{ 7 + 2 }} world
@@ -190,7 +190,7 @@ that contains 'a string start marker but no end."
 		hello {{ '{{ 7 + 2 }}' }} world
 	</body>
 </html>
-`;
+''';
 
 \ words
 this /is /a /word
