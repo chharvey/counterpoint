@@ -80,20 +80,44 @@ EscapeCode       ::= "u{" DigitSequenceHex? "}"
 LineContinuation ::= #x0A
 NonEscapeChar    ::= [^'\stnru#x0A#x03]
 
-TemplateFull   ::= "`"  TemplateCharsEndDelim ? "`"
-TemplateHead   ::= "`"  TemplateCharsEndInterp? "{{"
-TempalteMiddle ::= "}}" TemplateCharsEndInterp? "{{"
-TempalteTail   ::= "}}" TemplateCharsEndDelim ? "`"
 
-TemplateCharsEndDelim ::=
-	      [^`{\#x03]                          TemplateCharsEndDelim ?   |
-	"{" (([^`{\#x03] | "\"  ([^`#x03] | "`")) TemplateCharsEndDelim ?)? |
-	                   "\"  ([^`#x03] | "`")  TemplateCharsEndDelim ?
 
-TemplateCharsEndInterp ::=
-	      [^`{\#x03]                          TemplateCharsEndInterp?   |
-	"{"  ([^`{\#x03] | "\"  ([^`#x03] | "`")) TemplateCharsEndInterp?   |
-	                   "\" (([^`#x03] | "`")  TemplateCharsEndInterp?)?
+TemplateFull   ::= "'''" TemplateChars__EndDelim ? "'''"
+TemplateHead   ::= "'''" TemplateChars__EndInterp? "{{"
+TempalteMiddle ::= "}}"  TemplateChars__EndInterp? "{{"
+TempalteTail   ::= "}}"  TemplateChars__EndDelim ? "'''"
+
+TemplateChars__EndDelim ::=
+	[^'{#x03] TemplateChars__EndDelim?   |
+	TemplateChars__EndDelim__StartDelim  |
+	TemplateChars__EndDelim__StartInterp
+
+TemplateChars__EndDelim__StartDelim ::=
+	"'"    [^'{#x03] TemplateChars__EndDelim?                                         |
+	"''"   [^'{#x03] TemplateChars__EndDelim?                                         |
+	"'{"  ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)? |
+	"''{" ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)?
+
+TemplateChars__EndDelim__StartInterp ::=
+	"{"   ([^'{#x03] TemplateChars__EndDelim?                                       )? |
+	"{'"  ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)  |
+	"{''" ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)
+
+TemplateChars__EndInterp ::=
+	[^'{#x03] TemplateChars__EndInterp?   |
+	TemplateChars__EndInterp__StartDelim  |
+	TemplateChars__EndInterp__StartInterp
+
+TemplateChars__EndInterp__StartDelim ::=
+	"'"   ([^'{#x03] TemplateChars__EndInterp?                                       )? |
+	"''"  ([^'{#x03] TemplateChars__EndInterp?                                       )? |
+	"'{"  ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)  |
+	"''{" ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)
+
+TemplateChars__EndInterp__StartInterp ::=
+	"{"    [^'{#x03] TemplateChars__EndInterp?                                           |
+	"{'"  ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)? |
+	"{''" ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)?
 
 
 
