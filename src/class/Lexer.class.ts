@@ -3,7 +3,6 @@ import Token, {
 	TokenFilebound,
 	TokenWhitespace,
 	TokenCommentLine,
-	TokenCommentMulti,
 	TokenCommentMultiNest,
 	TokenCommentDoc,
 	TokenString,
@@ -13,7 +12,10 @@ import Token, {
 	TokenPunctuator,
 } from './Token.class'
 
-import {LexError01} from '../error/LexError.class'
+import {
+	LexError01,
+	LexError03,
+} from '../error/LexError.class'
 
 
 
@@ -92,23 +94,16 @@ export default class Lexer {
 			} else if (Char.inc(TokenWhitespace.CHARS, this._c0)) {
 				token = new TokenWhitespace(this)
 
-			} else if (Char.eq('\\', this._c0)) {
-				/* we found a line comment or an integer literal with a radix */
-				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
-					token = new TokenNumber(this, false, TokenNumber.BASES.get(this._c1 !.source) !)
+			} else if (Char.eq(TokenCommentLine.DELIM, this._c0)) {
+				/* we found either a line comment or a block comment */
+				if (this.state_newline && Char.eq(TokenCommentDoc.DELIM_START + '\n', this._c0, this._c1, this._c2, this._c3)) {
+					token = new TokenCommentDoc(this)
 				} else {
 					token = new TokenCommentLine(this)
 				}
-
-			} else if (Char.eq('"', this._c0)) {
-				/* we found the start of a doc comment or multiline comment */
-				if (this.state_newline && Char.eq(TokenCommentDoc.DELIM_START + '\n', this._c0, this._c1, this._c2, this._c3)) {
-					token = new TokenCommentDoc(this)
-				} else if (Char.eq(TokenCommentMultiNest.DELIM_START, this._c0, this._c1)) {
-					token = new TokenCommentMultiNest(this)
-				} else {
-					token = new TokenCommentMulti(this)
-				}
+			} else if (Char.eq(TokenCommentMultiNest.DELIM_START, this._c0, this._c1)) {
+				/* we found a multiline comment */
+				token = new TokenCommentMultiNest(this)
 
 			} else if (Char.eq(TokenString.DELIM, this._c0)) {
 				/* we found a string literal */
@@ -120,6 +115,13 @@ export default class Lexer {
 				/* we found a template literal middle or template literal tail */
 				token = new TokenTemplate(this, TokenTemplate.DELIM_INTERP_END.length)
 
+			} else if (Char.eq('\\', this._c0)) {
+				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
+					/* we found an integer literal with a radix */
+					token = new TokenNumber(this, false, TokenNumber.BASES.get(this._c1 !.source) !)
+				} else {
+					throw new LexError03(`${this._c0.source}${this._c1 !.source}`, this._c0.line_index, this._c0.col_index)
+				}
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
 				token = new TokenNumber(this, false)
 
@@ -130,7 +132,6 @@ export default class Lexer {
 				token = new TokenPunctuator(this, 3)
 			} else if (Char.inc(TokenPunctuator.CHARS_2, this._c0, this._c1)) {
 				token = new TokenPunctuator(this, 2)
-
 			} else if (Char.inc(TokenPunctuator.CHARS_1, this._c0)) {
 				/* we found a punctuator or a number literal with a punctuator prefix */
 				if (Char.inc(TokenNumber.PREFIXES, this._c0)) {
@@ -148,6 +149,7 @@ export default class Lexer {
 					/* a different punctuator */
 					token = new TokenPunctuator(this)
 				}
+
 			} else {
 				throw new LexError01(this._c0)
 			}

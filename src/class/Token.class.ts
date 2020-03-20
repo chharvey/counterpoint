@@ -148,7 +148,7 @@ export abstract class TokenComment extends Token {
 	}
 }
 export class TokenCommentLine extends TokenComment {
-	static readonly DELIM: '\\' = '\\'
+	static readonly DELIM: '%' = '%'
 	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance(TokenCommentLine.DELIM.length)
@@ -160,7 +160,9 @@ export class TokenCommentLine extends TokenComment {
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
-		// do not add '\n' to token
+		// add '\n' to token
+		buffer.push(lexer.c0)
+		lexer.advance()
 		super(buffer[0], ...buffer.slice(1))
 	}
 }
@@ -185,8 +187,8 @@ export class TokenCommentMulti extends TokenComment {
 	}
 }
 export class TokenCommentMultiNest extends TokenComment {
-	static readonly DELIM_START : '"{' = '"{'
-	static readonly DELIM_END   : '}"' = '}"'
+	static readonly DELIM_START : '{%' = '{%'
+	static readonly DELIM_END   : '%}' = '%}'
 	constructor (lexer: Lexer) {
 		let comment_multiline_level: number /* bigint */ = 0
 		const buffer: Char[] = [lexer.c0, lexer.c1 !]
@@ -216,8 +218,8 @@ export class TokenCommentMultiNest extends TokenComment {
 	}
 }
 export class TokenCommentDoc extends TokenComment {
-	static readonly DELIM_START : '"""' = '"""'
-	static readonly DELIM_END   : '"""' = '"""'
+	static readonly DELIM_START : '%%%' = '%%%'
+	static readonly DELIM_END   : '%%%' = '%%%'
 	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0, lexer.c1 !, lexer.c2 !, lexer.c3 !]
 		lexer.advance((TokenCommentDoc.DELIM_START + '\n').length)

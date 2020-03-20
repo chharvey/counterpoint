@@ -1,11 +1,11 @@
-500  +  30; ;  \ line comment  *  2
+500  +  30; ;  % line comment  *  2
 
-+ \o55  +  \q33  "multiline
-comment" *  \x2;
++ \o55  +  \q33  {% multiline
+comment %} *  \x2;
 
 + 007 +
 
-"numeric separators"
+{% numeric separators %}
 100_000_000
 + \b1_0000_0000+
 \d123_456_789
@@ -14,83 +14,49 @@ comment" *  \x2;
 + -\xba_da_55+
 \zzyxwvu_6;
 
-"not lex errors, but parse errors:"
-\\b1_0040_0000
-\\q123_142_3
-\\o123_456_78
+{% not lex errors, but parse errors: %}
+%\b1_0040_0000
+%\q123_142_3
+%\o123_456_78
 
-\ the following is an empty line comment:
-+123; \
+% the following is an empty line comment:
++123; %
 
-\ the following is an empty statement:
-; \
+% the following is an empty statement:
+; %
 
-  \a \ line comment starting with "a"
-\ \b \ line comment starting with "b"
-  \c \ line comment starting with "c"
-\ \d \ line comment starting with "d"
-  \e \ line comment starting with "e"
-  \f \ line comment starting with "f"
-  \g \ line comment starting with "g"
-  \h \ line comment starting with "h"
-  \i \ line comment starting with "i"
-  \j \ line comment starting with "j"
-  \k \ line comment starting with "k"
-  \l \ line comment starting with "l"
-  \m \ line comment starting with "m"
-  \n \ line comment starting with "n"
-\ \o \ line comment starting with "o"
-  \p \ line comment starting with "p"
-\ \q \ line comment starting with "q"
-  \r \ line comment starting with "r"
-  \s \ line comment starting with "s"
-  \t \ line comment starting with "t"
-  \u \ line comment starting with "u"
-  \v \ line comment starting with "v"
-  \w \ line comment starting with "w"
-\ \x \ line comment starting with "x"
-  \y \ line comment starting with "y"
-\ \z \ line comment starting with "z"
+% the following are empty multiline comments:
+{%%}
+{% %}
 
-\ the following are empty multiline comments:
-""
-" "
-
-+\b10 + "" + -\z27y + "" + \d301+
++\b10 + {%%} + -\z27y + {%%} + \d301+
 
 \x322 + '' + \z2r4k + '' + \o322;
 
-\ an invalid integer:
-\ \d39c
+% an invalid integer:
+% \d39c
 
-\ the following is an empty nestable multiline comment:
-"{}"
+6  *  4  {% multiline
+that has a {% nested %} multiline
+comment %} *  3;
 
-+5  *  3  "{multiline
-that has a "nested" multiline
-comment}" *  2
+%%%
+abcde
+5 + 3
+%%%
 
-^6  *  4  "{multiline
-that has a "{nestable nested}" multiline
-comment}" *  3;
+	%%%
+	these delims do not end the doc comment%%%
+	%%%nor do these
+	%%%
 
-"""
-" abcde
-" 5 + 3
-"""
+%%% 3 * 2
+5 + 3; %%%
 
-	"""
-	these quotes do not end the doc comment"""
-	"""nor do these
-	"""
+% below is an empty Solidoc comment:
 
-""" 3 * 2
-5 + 3 """
-
-\ below is an empty Solidoc comment:
-
-"""
-"""
+%%%
+%%%
 
 
 5; x =+  '3';
@@ -105,15 +71,15 @@ z = 3 *  ``;
 
 +'a string literal with a unicode \u{0061} escape sequence (escaped)'+
 
-\ 'a string literal with a unicode \u{a00061} escape sequence (escaped)'
+% 'a string literal with a unicode \u{a00061} escape sequence (escaped)'
 
 'a string literal with a unicode \u{00_61} escape sequence with numeric separators'
 
 +'a string literal with an empty unicode \u{} escape sequence (default escaped to U+0000)'+
 
-\ 'a string literal with an invalid escape sequence \u{6g}'
+% 'a string literal with an invalid escape sequence \u{6g}'
 
-\ 'a string literal with an invalid escape sequence \u{61'
+% 'a string literal with an invalid escape sequence \u{61'
 
 `a string template with an \` escaped back-tick (which will be escaped)
 and an \' escaped apostrophe (which won’t)`
@@ -144,30 +110,31 @@ with NO collapsed newline`
 
 `Interpolation allows {{ `nest{{ 'ed inter' }}polation` }} which is a good thing.` +
 
-\ }} a string template tail token not preceded by a head or middle`
+% }} a string template tail token not preceded by a head or middle`
 
-\ `A string template head token not followed by a middle or tail {{
+% `A string template head token not followed by a middle or tail {{
 
-'Here is a string \ that contains a line comment start marker.'
-+'Here is a string "that contains" a multiline comment.'+
-'Here is a string "that contains a comment start marker but no end.'
-+'Here is a string "{that contains a nestable comment start marker but no end.';
+'Here is a string % that contains a line comment start marker.'
++'Here is a string {% that contains %} a multiline comment.'+
+'Here is a string {% that contains a nestable comment start marker but no end.';
 
-"Here is a multiline
-comment 'that contains' a string."
-"Here is a multiline comment
-that contains 'a string start marker but no end."
+{% Here is a multiline
+comment 'that contains' a string. %}
+{% Here is a multiline comment
+that contains 'a string start marker but no end. %}
 
-`Interpolation with a multiline comment {{ "a multiline comment" }}!`
-+`Interpolation with an empty multiline comment {{ " " }}!`+
-`Interpolation with a nestable multiline comment {{ "{a multiline comment}" }}!`
+`Interpolation with a multiline comment {{ {% a multiline comment %} }}!`
++`Interpolation with an empty multiline comment {{ {% %} }}!`+
+`Interpolation with a block comment {{
+%%%
+a block comment
+%%%
+}}!`
 
-"{A nestable "{co"{mm}"ent}" with `the {{interpolation}} syntax`.}"
+{% A multiline {% co{% mm %}ent %} with `the {{interpolation}} syntax`. %}
 
-+`Interpolation with a Solidoc comment {{
-"""
-"  a Solidoc comment
-"""
++`Interpolation with a line comment {{
+% a line comment
 }}!`;
 
 '
@@ -192,7 +159,7 @@ that contains 'a string start marker but no end."
 </html>
 `;
 
-\ words
+% words
 this /is /a /word
 /_words /_can  /_start /_with /_underscores
 /_and0 /_can1 /contain2 /numb3rs
