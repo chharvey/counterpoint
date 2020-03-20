@@ -13,11 +13,9 @@ test('Lexer recognizes `TokenPunctuator` conditions.', () => {
 		...TokenPunctuator.CHARS_1,
 		...TokenPunctuator.CHARS_2,
 		...TokenPunctuator.CHARS_3,
-	].filter((p) => p !== '').join(' ')).generate()].slice(1, -1)
-		.filter((token) => !(token instanceof TokenWhitespace))
-		.forEach((value) => {
-			expect(value).toBeInstanceOf(TokenPunctuator)
-		})
+	].filter((p) => p !== '').join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((value) => {
+		expect(value).toBeInstanceOf(TokenPunctuator)
+	})
 })
 
 
