@@ -125,20 +125,18 @@ U+3000     | IDEOGRAPHIC SPACE         | CJK Symbols and Punctuation | Separator
 
 ### Comments
 ```w3c
-Comment ::= CommentLine | CommentMulti | CommentMultiNest | CommentDoc
+Comment ::= CommentLine | CommentMulti | CommentBlock
 
-CommentLine ::= "\" ([^bqodxz#x0A#x03] [^#x0A#x03]*)? /*? lookahead: #x0A ?*/
+CommentLine ::= "%" [^#x0A#x03]* #x0A
 
-CommentMulti ::= '"' [^"#x03]* '"'
+CommentMulti ::= "{%" CommentMultiNestChars? "%}"
+CommentMultiChars ::=
+	[^{%#x03] CommentMultiChars?       |
+	"{" [^%#x03] CommentMultiChars?    |
+	"%" ([^}#x03] CommentMultiChars?)? |
+	CommentMulti CommentMultiChars?
 
-CommentMultiNest ::= '"{' CommentMultiNestChars? '}"'
-CommentMultiNestChars ::=
-	[^}"#x03] CommentMultiNestChars?        |
-	"}" ([^"#x03] CommentMultiNestChars?)?  |
-	'"' ([^{#x03] CommentMultiNestChars?)?  |
-	CommentMultiNest CommentMultiNestChars?
-
-CommentDoc ::= /*? following: #x0A [#x09#x20]* ?*/'"""' #x0A (/*? unequal: [#x09#x20]* '"""' ?*/[^#x03]* #x0A)? [#x09#x20]* '"""' /*? lookahead: #x0A ?*/
+CommentBlock ::= /*? following: #x0A [#x09#x20]* ?*/"%%%" #x0A (/*? unequal: [#x09#x20]* "%%%" ?*/[^#x03]* #x0A)? [#x09#x20]* "%%%" /*? lookahead: #x0A ?*/
 ```
 Comments are tokens of arbitrary text,
 mainly used to add human-readable language to code
@@ -146,20 +144,18 @@ or to provide other types of annotations.
 Comment tokens are not sent to the Solid parser.
 
 #### Line Comments
-Line comments begin with a backslash, `\` (**U+005C REVERSE SOLIDUS**),
-followed by any character other than the integer literal bases: `b`, `q`, `o`, `d`, `x`, or `z`.
-(A backslash followed by one of the integer literal bases will produce an integer token.)
-The compiler will ignore all source text starting from `\` and onward until it sees a line break.
+Line comments begin with `%` (**U+0025 PERCENT SIGN**).
+The compiler will ignore all source text starting from `%` and onward,
+up to and including the next line break (**U+000A LINE FEED (LF)**).
 
 #### Multiline Comments
-Multiline comments are contained in quote marks `" "` (**U+0022 QUOTATION MARK**),
-and may contain line breaks.
-Multiline comments can be nested if their inner contents are wrapped with curly braces `{ }`
-(**U+007B LEFT CURLY BRACKET** and **U+007D RIGHT CURLY BRACKET**).
+Multiline comments are contained in the delimiters `{% %}`
+(**U+007B LEFT CURLY BRACKET**, **U+007C RIGHT CURLY BRACKET**, with adjacent percent signs),
+and may contain line breaks and may be nested.
 
 #### Block Comments
-Block comments begin and end with triple quote marks `"""` (**U+0022 QUOTATION MARK**).
-The triple quote marks *must* be on their own lines (with or without leading whitespace).
+Block comments begin and end with triple percent signs `%%%`.
+These delimiters *must* be on their own lines (with or without leading/trailing whitespace).
 
 
 ### String Literals
