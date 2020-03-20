@@ -52,13 +52,6 @@ z = 3 *  ``;
 </html>
 `;
 
-\ words
-this /is /a /word
-/_words /_can  /_start /_with /_underscores
-/_and0 /_can1 /contain2 /numb3rs
-
-/a /word /_can  /repeat /_with /the /same /id;
-
 let unfixed the_answer = 42;
 let the_high_answer = the_answer * 10;
 the_answer = the_answer - \z14;
