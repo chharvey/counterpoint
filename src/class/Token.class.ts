@@ -385,18 +385,18 @@ export class TokenTemplate extends Token {
 			...TokenTemplate.tv(text.slice(1)),
 		]
 	}
-	private readonly delim_end  : number;
-	private readonly delim_start: number;
+	private readonly delim_start: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_END  ;
+	private readonly delim_end  : typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_START;
 	readonly position: TemplatePosition;
-	constructor (lexer: Lexer, delim_start: number) {
-		let delim_end: number;
+	constructor (lexer: Lexer, delim_start: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_END) {
+		let delim_end: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_START;
 		const positions: Set<TemplatePosition> = new Set<TemplatePosition>()
 		const buffer: Char[] = []
-		if (delim_start === TokenTemplate.DELIM.length) {
+		if (delim_start === TokenTemplate.DELIM) {
 			positions.add(TemplatePosition.FULL).add(TemplatePosition.HEAD)
 			buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
 			lexer.advance(TokenTemplate.DELIM.length)
-		} else if (delim_start === TokenTemplate.DELIM_INTERP_END.length) {
+		} else { // delim_start === TokenTemplate.DELIM_INTERP_END
 			positions.add(TemplatePosition.MIDDLE).add(TemplatePosition.TAIL)
 			buffer.push(lexer.c0, lexer.c1 !)
 			lexer.advance(TokenTemplate.DELIM_INTERP_END.length)
@@ -408,7 +408,7 @@ export class TokenTemplate extends Token {
 			}
 			if (Char.eq(TokenTemplate.DELIM, lexer.c0, lexer.c1, lexer.c2)) {
 				/* end string template full/tail */
-				delim_end = TokenTemplate.DELIM.length
+				delim_end = TokenTemplate.DELIM
 				positions.delete(TemplatePosition.HEAD)
 				positions.delete(TemplatePosition.MIDDLE)
 				// add ending delim to token
@@ -418,7 +418,7 @@ export class TokenTemplate extends Token {
 
 			} else if (Char.eq(TokenTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) {
 				/* end string template head/middle */
-				delim_end = TokenTemplate.DELIM_INTERP_START.length
+				delim_end = TokenTemplate.DELIM_INTERP_START
 				positions.delete(TemplatePosition.FULL)
 				positions.delete(TemplatePosition.TAIL)
 				// add start interpolation delim to token
@@ -438,7 +438,7 @@ export class TokenTemplate extends Token {
 	}
 	cook(): string {
 		return String.fromCodePoint(...TokenTemplate.tv(
-			this.source.slice(this.delim_start, -this.delim_end) // cut off the template delimiters
+			this.source.slice(this.delim_start.length, -this.delim_end.length) // cut off the template delimiters
 		))
 	}
 }
