@@ -51,7 +51,3 @@ z = 3 *  ``;
 	</body>
 </html>
 `;
-
-let unfixed the_answer = 42;
-let the_high_answer = the_answer * 10;
-the_answer = the_answer - \z14;
