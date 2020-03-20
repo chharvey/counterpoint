@@ -96,7 +96,7 @@ export default class Lexer {
 
 			} else if (Char.eq(TokenCommentLine.DELIM, this._c0)) {
 				/* we found either a line comment or a block comment */
-				if (this.state_newline && Char.eq(TokenCommentDoc.DELIM_START + '\n', this._c0, this._c1, this._c2, this._c3)) {
+				if (this.state_newline && Char.eq(`${TokenCommentDoc.DELIM_START}\n`, this._c0, this._c1, this._c2, this._c3)) {
 					token = new TokenCommentDoc(this)
 				} else {
 					token = new TokenCommentLine(this)
