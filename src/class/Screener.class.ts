@@ -1,4 +1,5 @@
 import Lexer from './Lexer.class'
+import {STX, ETX} from './Char.class'
 import Token, {
 	TokenWhitespace,
 	TokenComment,
@@ -8,7 +9,7 @@ import Token, {
 
 
 /**
- * A translator prepares the tokens for the parser.
+ * A screener prepares the tokens for the parser.
  * It performs certian operations such as
  * - removing whitespace and comment tokens
  * - stripping out compiler directives (“pragmas”) and sending them
@@ -17,7 +18,7 @@ import Token, {
  * - computing the string values, including escaping, of string constants (“cooking”)
  * - optimizing identifiers
  */
-export default class Translator {
+export default class Screener {
 	/** The lexer returning tokens for each iteration. */
 	private readonly lexer: Iterator<Token, void>;
 	/** The result of the lexer iterator. */
@@ -28,7 +29,7 @@ export default class Translator {
 	private _ids: Set<string> = new Set()
 
 	/**
-	 * Construct a new Translator object.
+	 * Construct a new Screener object.
 	 * @param   source - the entire source text
 	 */
 	constructor(source: string) {

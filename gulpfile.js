@@ -1,7 +1,8 @@
-const fs = require('fs')
-const util = require('util')
+const fsPromise = require('fs').promises
 
 const gulp       = require('gulp')
+const {default: jest} = require('gulp-jest')
+// require('jest-cli') // DO NOT REMOVE … peerDependency of `gulp-jest`
 const typescript = require('gulp-typescript')
 // require('typescript') // DO NOT REMOVE … peerDependency of `gulp-typescript`
 
@@ -15,9 +16,15 @@ function dist() {
 		.pipe(gulp.dest('./build/'))
 }
 
-async function test() {
-	const {Scanner, Lexer, Translator, Parser} = require('./')
-	const input = util.promisify(fs.readFile)('./test/test-v0.2.solid', 'utf8')
+function test() {
+	return gulp.src('./test/')
+		.pipe(jest({
+		}))
+}
+
+async function test_dev() {
+	const {Scanner, Lexer, Screener, Parser} = require('./')
+	const input = fsPromise.readFile('./test/test-v0.2.solid', 'utf8')
 
 	console.log("\n\nHere are the characters returned by the scanner:")
 	console.log("  line col  character")
@@ -36,32 +43,36 @@ async function test() {
 		iterator_result_token = lexer.next()
 	}
 
-	console.log("\n\nHere are the tokens returned by the translator:")
-	const translator = new Translator(await input).generate()
-	let iterator_result_tokentrans = translator.next()
-	while (!iterator_result_tokentrans.done) {
-		console.log(iterator_result_tokentrans.value.serialize())
-		iterator_result_tokentrans = translator.next()
+	console.log("\n\nHere are the tokens returned by the screener:")
+	const screener = new Screener(await input).generate()
+	let iterator_result_screen = screener.next()
+	while (!iterator_result_screen.done) {
+		if (iterator_result_screen.value !== null) console.log(iterator_result_screen.value.serialize())
+		iterator_result_screen = screener.next()
 	}
 
 	const parser = new Parser(await input)
-	let output = ''
+	let tree = ''
 	try {
-		output = parser.parse()
+		tree = parser.parse()
 	} catch (err) {
 		console.log(parser.viewStack())
 		throw err
 	}
 	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
-	fs.writeFileSync('./sample/output.xml', output.serialize())
-
 	console.log("\n\nThe semantic tree returned by the decorator is written to file: `./sample/output-1.xml`")
-	fs.writeFileSync('./sample/output-1.xml', output.decorate().serialize())
+	console.log("\n\nThe compiled output returned by the compiler is written to file: `./sample/output-2.ts`")
 
-	return Promise.resolve(null)
+	return Promise.all([
+		fsPromise.writeFile('./sample/output.xml', tree.serialize()),
+		fsPromise.writeFile('./sample/output-1.xml', tree.decorate().serialize()),
+		fsPromise.writeFile('./sample/output-2.ts', tree.decorate().compile()),
+	])
 }
 
 const build = gulp.series(dist, test)
+
+const dev = gulp.series(dist, test_dev)
 
 async function random() {
 	const {default: Grammar} = require('./build/class/Grammar.class')
@@ -76,5 +87,7 @@ module.exports = {
 	build,
 		dist,
 		test,
+	dev,
+		test_dev,
 	random,
 }

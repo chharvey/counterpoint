@@ -4,5 +4,5 @@
 
 export { default as Scanner } from './src/class/Scanner.class'
 export { default as Lexer } from './src/class/Lexer.class'
-export { default as Translator } from './src/class/Translator.class'
+export { default as Screener } from './src/class/Screener.class'
 export { default as Parser } from './src/class/Parser.class'
