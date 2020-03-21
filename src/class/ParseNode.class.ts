@@ -117,26 +117,25 @@ export default class ParseNode implements Serializable {
 	 * @implements Serializable
 	 */
 	serialize(): string {
-		const attributes: Map<string, string|number|boolean|null> = new Map<string, string|number|boolean|null>([
-			['source', this.source
-				.replace(/\&/g, '&amp;' )
-				.replace(/\</g, '&lt;'  )
-				.replace(/\>/g, '&gt;'  )
-				.replace(/\'/g, '&apos;')
-				.replace(/\"/g, '&quot;')
-				.replace(/\\/g, '&#x5c;')
-				.replace(/\t/g, '&#x09;')
-				.replace(/\n/g, '&#x0a;')
-				.replace(/\r/g, '&#x0d;')
-				.replace(/\u0000/g, '&#x00;')
-				.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
-				.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
-			],
-		])
+		const attributes: Map<string, string|number|boolean|null> = new Map<string, string|number|boolean|null>()
 		if (!(this instanceof ParseNodeGoal)) {
 			attributes.set('line', this.line_index + 1)
 			attributes.set('col' , this.col_index  + 1)
 		}
+		attributes.set('source', this.source
+			.replace(/\&/g, '&amp;' )
+			.replace(/\</g, '&lt;'  )
+			.replace(/\>/g, '&gt;'  )
+			.replace(/\'/g, '&apos;')
+			.replace(/\"/g, '&quot;')
+			.replace(/\\/g, '&#x5c;')
+			.replace(/\t/g, '&#x09;')
+			.replace(/\n/g, '&#x0a;')
+			.replace(/\r/g, '&#x0d;')
+			.replace(/\u0000/g, '&#x00;')
+			.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
+			.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
+		)
 		const contents: string = this.children.map((child) => child.serialize()).join('')
 		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`
 	}
