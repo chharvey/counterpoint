@@ -1,5 +1,5 @@
 import Util from './Util.class'
-import Serializable from '../iface/Serializable.iface'
+import type Serializable from '../iface/Serializable.iface'
 import Char, {STX, ETX} from './Char.class'
 
 

@@ -1,6 +1,6 @@
 import Util from './Util.class'
 import {STX, ETX} from './Char.class'
-import Token from './Token.class'
+import type Token from './Token.class'
 import Terminal from './Terminal.class'
 import Production, {
 	ProductionFile,
@@ -174,7 +174,7 @@ export class Rule {
 	 */
 	constructor(
 		readonly production: Production,
-		choice: number /* TODO bigint */,
+		choice: number,
 	) {
 		this.symbols = production.sequences[choice]
 	}
@@ -226,7 +226,7 @@ export class Configuration {
 	 */
 	constructor(
 		readonly rule: Rule,
-		readonly marker: number /* TODO bigint */ = 0,
+		readonly marker: number = 0,
 		...lookaheads: readonly GrammarTerminal[]
 	) {
 		if (this.marker > this.rule.symbols.length) throw new Error('Cannot advance past end of rule.')
@@ -247,7 +247,7 @@ export class Configuration {
 	 * @param   step - number of steps to advance the marker; a positive integer
 	 * @returns        a new Configuration with the marker moved forward 1 step
 	 */
-	advance(step: number /* TODO bigint */ = 1): Configuration {
+	advance(step: number = 1): Configuration {
 		return new Configuration(this.rule, this.marker + Math.max(1, Math.floor(step)), ...this.lookaheads)
 	}
 
