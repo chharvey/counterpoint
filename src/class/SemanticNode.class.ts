@@ -81,7 +81,7 @@ export default void 0
 			attributes.set(key, value)
 		})
 		const contents: string = this.children.map((child) => child.serialize()).join('')
-		return (contents) ? `<${this.tagname}${attributes}>${contents}</${this.tagname}>` : `<${this.tagname}${attributes}/>`
+		return (contents) ? `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>` : `<${this.tagname} ${Util.stringifyAttributes(attributes)}/>`
 	}
 }
 

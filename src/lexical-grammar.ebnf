@@ -50,20 +50,18 @@ Whitespace ::= Whitespace? (
 
 
 
-Comment ::= CommentLine | CommentMulti | CommentMultiNest | CommentDoc
+Comment ::= CommentLine | CommentMulti | CommentBlock
 
-CommentLine ::= "\" ([^bqodxz#x0A#x03] [^#x0A#x03]*)? /*? lookahead: #x0A ?*/
+CommentLine ::= "%" [^#x0A#x03]* #x0A
 
-CommentMulti ::= '"' [^"#x03]* '"'
+CommentMulti ::= "{%" CommentMultiNestChars? "%}"
+CommentMultiChars ::=
+	[^{%#x03] CommentMultiChars?       |
+	"{" [^%#x03] CommentMultiChars?    |
+	"%" ([^}#x03] CommentMultiChars?)? |
+	CommentMulti CommentMultiChars?
 
-CommentMultiNest ::= '"{' CommentMultiNestChars? '}"'
-CommentMultiNestChars ::=
-	[^}"#x03] CommentMultiNestChars?        |
-	"}" ([^"#x03] CommentMultiNestChars?)?  |
-	'"' ([^{#x03] CommentMultiNestChars?)?  |
-	CommentMultiNest CommentMultiNestChars?
-
-CommentDoc ::= /*? following: #x0A [#x09#x20]* ?*/'"""' #x0A (/*? unequal: [#x09#x20]* '"""' ?*/[^#x03]* #x0A)? [#x09#x20]* '"""' /*? lookahead: #x0A ?*/
+CommentBlock ::= /*? following: #x0A [#x09#x20]* ?*/"%%%" #x0A (/*? unequal: [#x09#x20]* "%%%" ?*/[^#x03]* #x0A)? [#x09#x20]* "%%%" /*? lookahead: #x0A ?*/
 
 
 

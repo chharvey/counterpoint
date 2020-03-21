@@ -151,7 +151,7 @@ export abstract class TokenComment extends Token {
 	}
 }
 export class TokenCommentLine extends TokenComment {
-	static readonly DELIM: '\\' = '\\'
+	static readonly DELIM: '%' = '%'
 	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance(TokenCommentLine.DELIM.length)
@@ -163,47 +163,29 @@ export class TokenCommentLine extends TokenComment {
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
-		// do not add '\n' to token
+		// add '\n' to token
+		buffer.push(lexer.c0)
+		lexer.advance()
 		super(buffer[0], ...buffer.slice(1))
 	}
 }
 export class TokenCommentMulti extends TokenComment {
-	static readonly DELIM_START : '"' = '"'
-	static readonly DELIM_END   : '"' = '"'
-	constructor (lexer: Lexer) {
-		const buffer: Char[] = [lexer.c0]
-		lexer.advance()
-		while (!lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, lexer.c0)) {
-			if (Char.eq(ETX, lexer.c0)) {
-				super(buffer[0], ...buffer.slice(1))
-				throw new LexError02(this)
-			}
-			buffer.push(lexer.c0)
-			lexer.advance()
-		}
-		// add ending delim to token
-		buffer.push(lexer.c0)
-		lexer.advance(TokenCommentMulti.DELIM_END.length)
-		super(buffer[0], ...buffer.slice(1))
-	}
-}
-export class TokenCommentMultiNest extends TokenComment {
-	static readonly DELIM_START : '"{' = '"{'
-	static readonly DELIM_END   : '}"' = '}"'
+	static readonly DELIM_START : '{%' = '{%'
+	static readonly DELIM_END   : '%}' = '%}'
 	constructor (lexer: Lexer) {
 		let comment_multiline_level: number /* bigint */ = 0
 		const buffer: Char[] = [lexer.c0, lexer.c1 !]
-		lexer.advance(TokenCommentMultiNest.DELIM_START.length)
+		lexer.advance(TokenCommentMulti.DELIM_START.length)
 		comment_multiline_level++;
 		while (comment_multiline_level !== 0) {
-			while (!lexer.isDone && !Char.eq(TokenCommentMultiNest.DELIM_END, lexer.c0, lexer.c1)) {
+			while (!lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, lexer.c0, lexer.c1)) {
 				if (Char.eq(ETX, lexer.c0)) {
 					super(buffer[0], ...buffer.slice(1))
 					throw new LexError02(this)
 				}
-				if (Char.eq(TokenCommentMultiNest.DELIM_START, lexer.c0, lexer.c1)) {
+				if (Char.eq(TokenCommentMulti.DELIM_START, lexer.c0, lexer.c1)) {
 					buffer.push(lexer.c0, lexer.c1 !)
-					lexer.advance(TokenCommentMultiNest.DELIM_START.length)
+					lexer.advance(TokenCommentMulti.DELIM_START.length)
 					comment_multiline_level++;
 				} else {
 					buffer.push(lexer.c0)
@@ -212,18 +194,18 @@ export class TokenCommentMultiNest extends TokenComment {
 			}
 			// add ending delim to token
 			buffer.push(lexer.c0, lexer.c1 !)
-			lexer.advance(TokenCommentMultiNest.DELIM_END.length)
+			lexer.advance(TokenCommentMulti.DELIM_END.length)
 			comment_multiline_level--;
 		}
 		super(buffer[0], ...buffer.slice(1))
 	}
 }
-export class TokenCommentDoc extends TokenComment {
-	static readonly DELIM_START : '"""' = '"""'
-	static readonly DELIM_END   : '"""' = '"""'
+export class TokenCommentBlock extends TokenComment {
+	static readonly DELIM_START : '%%%' = '%%%'
+	static readonly DELIM_END   : '%%%' = '%%%'
 	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0, lexer.c1 !, lexer.c2 !, lexer.c3 !]
-		lexer.advance((TokenCommentDoc.DELIM_START + '\n').length)
+		lexer.advance((`${TokenCommentBlock.DELIM_START}\n`).length)
 		let source: string = buffer.map((char) => char.source).join('')
 		while (!lexer.isDone) {
 			if (Char.eq(ETX, lexer.c0)) {
@@ -231,7 +213,7 @@ export class TokenCommentDoc extends TokenComment {
 				throw new LexError02(this)
 			}
 			if (
-				!Char.eq(TokenCommentDoc.DELIM_END + '\n', lexer.c0, lexer.c1, lexer.c2, lexer.c3) ||
+				!Char.eq(`${TokenCommentBlock.DELIM_END}\n`, lexer.c0, lexer.c1, lexer.c2, lexer.c3) ||
 				source.slice(source.lastIndexOf('\n') + 1).trim() !== '' // the tail end of the token does not match `/\n(\s)*/` (a newline followed by whitespace)
 			) {
 				buffer.push(lexer.c0)
@@ -243,7 +225,7 @@ export class TokenCommentDoc extends TokenComment {
 		}
 		// add ending delim to token
 		buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-		lexer.advance(TokenCommentDoc.DELIM_END.length)
+		lexer.advance(TokenCommentBlock.DELIM_END.length)
 		super(buffer[0], ...buffer.slice(1))
 	}
 }
@@ -273,7 +255,7 @@ export class TokenString extends Token {
 					...TokenString.sv(text.slice(2)),
 				]
 
-			} else if ('u{' === text[1] + text[2]) {
+			} else if ('u{' === `${text[1]}${text[2]}`) {
 				/* an escape sequence */
 				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
 				return [
@@ -314,7 +296,7 @@ export class TokenString extends Token {
 				} else if (Char.eq('u{', lexer.c1, lexer.c2)) {
 					/* an escape sequence */
 					const digits: readonly string[] = TokenNumber.DIGITS.get(16) !
-					let cargo: string = lexer.c0.source + lexer.c1 !.source + lexer.c2 !.source
+					let cargo: string = `${lexer.c0.source}${lexer.c1 !.source}${lexer.c2 !.source}`
 					buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
 					lexer.advance(3)
 					if (Char.inc(digits, lexer.c0)) {
@@ -328,7 +310,7 @@ export class TokenString extends Token {
 								lexer.advance()
 							} else if (Char.eq(TokenNumber.SEPARATOR, lexer.c0)) {
 								if (Char.inc(digits, lexer.c1)) {
-									cargo += lexer.c0.source + lexer.c1 !.source
+									cargo += `${lexer.c0.source}${lexer.c1 !.source}`
 									buffer.push(lexer.c0, lexer.c1 !)
 									lexer.advance(2)
 								} else {
@@ -414,7 +396,7 @@ export class TokenTemplate extends Token {
 				super(buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
-			if (Char.eq('\\' + TokenTemplate.DELIM, lexer.c0, lexer.c1)) {
+			if (Char.eq(`\\${TokenTemplate.DELIM}`, lexer.c0, lexer.c1)) {
 				/* an escaped template delimiter */
 				buffer.push(lexer.c0, lexer.c1 !)
 				lexer.advance(2)
@@ -504,7 +486,7 @@ export class TokenNumber extends Token {
 		}
 		if (typeof radix === 'number') { // an explicit base
 			if (!Char.inc(digits, lexer.c2)) {
-				throw new LexError03(lexer.c0.source + lexer.c1 !.source, lexer.c0.line_index, lexer.c0.col_index)
+				throw new LexError03(`${lexer.c0.source}${lexer.c1 !.source}`, lexer.c0.line_index, lexer.c0.col_index)
 			}
 			buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
 			lexer.advance(3)

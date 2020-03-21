@@ -62,13 +62,11 @@ describe('Lexer recognizes `TokenString` conditions.', () => {
 
 	test('Strings containing comment syntax.', () => {
 		;[`
-'Here is a string \\ that contains a line comment start marker.'
+'Here is a string % that contains a line comment start marker.'
 		`, `
-'Here is a string "that contains" a multiline comment.'
+'Here is a string {% that contains %} a multiline comment.'
 		`, `
-'Here is a string "that contains a comment start marker but no end.'
-		`, `
-'Here is a string "{that contains a nestable comment start marker but no end.'
+'Here is a string {% that contains a comment start marker but no end.'
 		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
 			expect(() => [...lexer.generate()]).not.toThrow()
 		})

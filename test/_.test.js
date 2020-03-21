@@ -105,7 +105,7 @@ describe('Lexer.', () => {
 	})
 
 	test('Lexer rejects unrecognized characters.', () => {
-		`. ~ , [ ] | & ! { } : # $ %`.split(' ').map((c) => new Lexer(`
+		`. ~ , [ ] | & ! { } : # $ "`.split(' ').map((c) => new Lexer(`
 	5  +  30
 	+ 6 ^ - (${c} - 37 *
 		`.trim())).forEach((lexer) => {

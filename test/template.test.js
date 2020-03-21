@@ -46,7 +46,7 @@ describe('Lexer recognizes `TokenTemplate` conditions.', () => {
 		const tokens = [...new Lexer(`
 \`abc{{ }}def\`
 \`ghi{{}}jkl\`
-\`mno{{ "pqr" }}stu\`
+\`mno{{ {% pqr %} }}stu\`
 		`.trim()).generate()]
 		expect(tokens[ 2]).toBeInstanceOf(TokenTemplate)
 		expect(tokens[ 2].position).toBe(TemplatePosition.HEAD)
