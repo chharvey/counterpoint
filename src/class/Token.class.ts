@@ -354,7 +354,7 @@ export class TokenString extends Token {
 	}
 }
 export class TokenTemplate extends Token {
-	static readonly DELIM              : '`'  = '`'
+	static readonly DELIM              : '\'\'\'' = '\'\'\''
 	static readonly DELIM_INTERP_START : '{{' = '{{'
 	static readonly DELIM_INTERP_END   : '}}' = '}}'
 	/**
@@ -365,55 +365,45 @@ export class TokenTemplate extends Token {
 	 */
 	private static tv(text: string): number[] {
 		if (text.length === 0) return []
-		if ('\\' + TokenTemplate.DELIM === text[0] + text[1]) {
-			/* an escaped template delimiter */
-			return [
-				TokenTemplate.DELIM.codePointAt(0) !,
-				...TokenTemplate.tv(text.slice(2)),
-			]
-		} else return [
+		return [
 			...Util.utf16Encoding(text.codePointAt(0) !),
 			...TokenTemplate.tv(text.slice(1)),
 		]
 	}
-	private readonly delim_end  : number;
-	private readonly delim_start: number;
+	private readonly delim_start: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_END  ;
+	private readonly delim_end  : typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_START;
 	readonly position: TemplatePosition;
-	constructor (lexer: Lexer, delim_start: number) {
-		let delim_end: number;
+	constructor (lexer: Lexer, delim_start: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_END) {
+		let delim_end: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_START;
 		const positions: Set<TemplatePosition> = new Set<TemplatePosition>()
-		const buffer: Char[] = [lexer.c0]
-		lexer.advance()
-		if (delim_start === TokenTemplate.DELIM.length) {
+		const buffer: Char[] = []
+		if (delim_start === TokenTemplate.DELIM) {
 			positions.add(TemplatePosition.FULL).add(TemplatePosition.HEAD)
-		} else if (delim_start === TokenTemplate.DELIM_INTERP_END.length) {
+			buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
+			lexer.advance(TokenTemplate.DELIM.length)
+		} else { // delim_start === TokenTemplate.DELIM_INTERP_END
 			positions.add(TemplatePosition.MIDDLE).add(TemplatePosition.TAIL)
-			buffer.push(lexer.c0 !)
-			lexer.advance()
+			buffer.push(lexer.c0, lexer.c1 !)
+			lexer.advance(TokenTemplate.DELIM_INTERP_END.length)
 		}
 		while (!lexer.isDone) {
 			if (Char.eq(ETX, lexer.c0)) {
 				super(buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
-			if (Char.eq(`\\${TokenTemplate.DELIM}`, lexer.c0, lexer.c1)) {
-				/* an escaped template delimiter */
-				buffer.push(lexer.c0, lexer.c1 !)
-				lexer.advance(2)
-
-			} else if (Char.eq(TokenTemplate.DELIM, lexer.c0)) {
+			if (Char.eq(TokenTemplate.DELIM, lexer.c0, lexer.c1, lexer.c2)) {
 				/* end string template full/tail */
-				delim_end = TokenTemplate.DELIM.length
+				delim_end = TokenTemplate.DELIM
 				positions.delete(TemplatePosition.HEAD)
 				positions.delete(TemplatePosition.MIDDLE)
 				// add ending delim to token
-				buffer.push(lexer.c0)
+				buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
 				lexer.advance(TokenTemplate.DELIM.length)
 				break;
 
 			} else if (Char.eq(TokenTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) {
 				/* end string template head/middle */
-				delim_end = TokenTemplate.DELIM_INTERP_START.length
+				delim_end = TokenTemplate.DELIM_INTERP_START
 				positions.delete(TemplatePosition.FULL)
 				positions.delete(TemplatePosition.TAIL)
 				// add start interpolation delim to token
@@ -433,7 +423,7 @@ export class TokenTemplate extends Token {
 	}
 	cook(): string {
 		return String.fromCodePoint(...TokenTemplate.tv(
-			this.source.slice(this.delim_start, -this.delim_end) // cut off the string delimiters
+			this.source.slice(this.delim_start.length, -this.delim_end.length) // cut off the template delimiters
 		))
 	}
 }

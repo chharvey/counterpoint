@@ -5,7 +5,7 @@
 
 y  =  3 *  2;
 
-z = 3 *  ``;
+z = 3 *  '''''';
 
 'a string literal with a unicode \u{00_61} escape sequence with numeric separators'
 
@@ -25,7 +25,7 @@ z = 3 *  ``;
 </html>
 '
 
-+`
++'''
 <html>
 	<body class="js" id='top'>
 		hello {{ 7 + 2 }} world
@@ -33,4 +33,4 @@ z = 3 *  ``;
 		hello {{ '{{ 7 + 2 }}' }} world
 	</body>
 </html>
-`;
+''';

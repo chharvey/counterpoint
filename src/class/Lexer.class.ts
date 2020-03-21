@@ -107,14 +107,15 @@ export default class Lexer {
 				token = new TokenCommentMulti(this)
 
 			} else if (Char.eq(TokenString.DELIM, this._c0)) {
-				/* we found a string literal */
-				token = new TokenString(this)
-			} else if (Char.eq(TokenTemplate.DELIM, this._c0)) {
-				/* we found a template literal full or template literal head */
-				token = new TokenTemplate(this, TokenTemplate.DELIM.length)
+				/* we found a string literal or a template literal full or head */
+				if (Char.eq(TokenTemplate.DELIM, this._c0, this._c1, this._c2)) {
+					token = new TokenTemplate(this, TokenTemplate.DELIM)
+				} else {
+					token = new TokenString(this)
+				}
 			} else if (Char.eq(TokenTemplate.DELIM_INTERP_END, this._c0, this._c1)) {
-				/* we found a template literal middle or template literal tail */
-				token = new TokenTemplate(this, TokenTemplate.DELIM_INTERP_END.length)
+				/* we found a template literal middle or tail */
+				token = new TokenTemplate(this, TokenTemplate.DELIM_INTERP_END)
 
 			} else if (Char.eq('\\', this._c0)) {
 				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
