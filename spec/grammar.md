@@ -1,6 +1,6 @@
 # Grammar
-
-This chapter describes the context-free grammars used to define the lexical and syntactic structure of a Solid program.
+This chapter describes the context-free grammars used to define
+the lexical and syntactic structure of a Solid program.
 
 
 
@@ -22,6 +22,7 @@ If multiple sequences define a nonterminal in a production,
 then exactly one of those sequences may replace the nonterminal in the language
 for any given replacement step.
 
+
 ### Example
 ```
 ExpressionAddition
@@ -42,8 +43,7 @@ if recursion is allowed, until no more nonterminals remain. The resulting sequen
 would be a well-formed instance of the language.
 
 
-
-## The Lexical Grammar
+### The Lexical Grammar
 A lexical grammar for the Solid programming language is a formal context-free grammar that has
 as its terminal symbols the characters of the Unicode character set.
 The lexical grammar is a set of productions that describes
@@ -62,8 +62,7 @@ of numeric tokens and string tokens respectively, as well as performing other op
 The screener is also responsible for deciding which tokens get sent to the parser.
 
 
-
-## The Syntactic Grammar
+### The Syntactic Grammar
 The syntactic context-free grammar for the Solid programming language has as its terminal symbols
 the tokens defined by the lexical grammar, excluding certain tokens such as comments.
 The syntactic grammar is a set of productions that describes
@@ -97,6 +96,7 @@ In this specification, attributes are “synthesized” and thus propagate in a 
 given a parse node, computing an attribute of that node might require looking at its children.
 Attributes can be computed values, or entire objects representing semantic nodes with children.
 For example, an attribute grammar can be used to determine the mathematical value of a number.
+
 
 ### Example
 ```

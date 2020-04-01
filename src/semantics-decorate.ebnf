@@ -181,16 +181,16 @@ Decorate(STRING)
 	::= SemanticConstant {value: SV(STRING)} []
 
 Decorate(TEMPLATE_FULL)
-	::= SemanticConstant {value: TV(TEMPLATE_FULL)} []
+	:= SemanticConstant {value: TV(TEMPLATE_FULL)} []
 Decorate(TEMPLATE_HEAD)
-	::= SemanticConstant {value: TV(TEMPLATE_HEAD)} []
+	:= SemanticConstant {value: TV(TEMPLATE_HEAD)} []
 Decorate(TEMPLATE_MIDDLE)
-	::= SemanticConstant {value: TV(TEMPLATE_MIDDLE)} []
+	:= SemanticConstant {value: TV(TEMPLATE_MIDDLE)} []
 Decorate(TEMPLATE_TAIL)
-	::= SemanticConstant {value: TV(TEMPLATE_TAIL)} []
+	:= SemanticConstant {value: TV(TEMPLATE_TAIL)} []
 
 Decorate(NUMBER)
-	::= SemanticConstant {value: MV(NUMBER)} []
+	:= SemanticConstant {value: MV(NUMBER)} []
 
 Decorate(IDENTIFIER)
-	::= SemanticIdentifier {id: WV(IDENTIFIER)} []
+	:= SemanticIdentifier {id: WV(IDENTIFIER)} []
