@@ -128,7 +128,9 @@ export default class Lexer {
 				token = new TokenNumber(this, false)
 
 			} else if (TokenWord.CHAR_START.test(this._c0.source)) {
-				token = new TokenWord(this)
+				token = new TokenWord(this, false)
+			} else if (Char.eq(TokenWord.DELIM, this._c0)) {
+				token = new TokenWord(this, true)
 
 			} else if (Char.inc(TokenPunctuator.CHARS_3, this._c0, this._c1, this._c2)) {
 				token = new TokenPunctuator(this, 3)

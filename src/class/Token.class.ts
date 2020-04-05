@@ -513,6 +513,7 @@ export class TokenNumber extends Token {
 export class TokenWord extends Token {
 	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
+	static readonly DELIM: '`' = '`'
 	static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>(([
 		[KeywordKind.STORAGE, [
 			'let',
@@ -532,18 +533,32 @@ export class TokenWord extends Token {
 	private _cooked: number|string;
 	/** Is this Token an identifier? */
 	readonly is_identifier: boolean;
-	constructor (lexer: Lexer) {
+	constructor (lexer: Lexer, is_unicode: boolean) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
-		while (!lexer.isDone && TokenWord.CHAR_REST.test(lexer.c0.source)) {
+		if (is_unicode) {
+			while (!lexer.isDone && !Char.eq(TokenWord.DELIM, lexer.c0)) {
+				if (Char.eq(ETX, lexer.c0)) {
+					super(buffer[0], ...buffer.slice(1))
+					throw new LexError02(this)
+				}
+				buffer.push(lexer.c0)
+				lexer.advance()
+			}
+			// add ending delim to token
 			buffer.push(lexer.c0)
-			lexer.advance()
+			lexer.advance(TokenWord.DELIM.length)
+		} else {
+			while (!lexer.isDone && TokenWord.CHAR_REST.test(lexer.c0.source)) {
+				buffer.push(lexer.c0)
+				lexer.advance()
+			}
 		}
 		super(buffer[0], ...buffer.slice(1))
-		this.keyword_kind = ([...TokenWord.KEYWORDS].find(
+		this.keyword_kind = is_unicode ? null : ([...TokenWord.KEYWORDS].find(
 			([_key, value]) => value.includes(this.source)
 		) || [null])[0]
-		this.is_identifier = this.keyword_kind === null
+		this.is_identifier = is_unicode || this.keyword_kind === null
 		this._cooked = this.source
 	}
 	/**
@@ -555,7 +570,7 @@ export class TokenWord extends Token {
 	 * @param   value - the value to set, unique among all identifiers in a program
 	 */
 	setValue(value: number): void {
-		if (typeof this._cooked === 'string' && this.is_identifier) {
+		if (this.is_identifier && typeof this._cooked === 'string') {
 			this._cooked = value
 		}
 	}
