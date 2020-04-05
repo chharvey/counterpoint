@@ -40,6 +40,16 @@ describe('Lexer recognizes `TokenCommentLine` conditions.', () => {
 			expect(() => [...lexer.generate()]).toThrow(LexError02)
 		})
 	})
+
+	test('TokenTokenCommentLine#serialize', () => {
+		expect([...new Lexer(`
+500  +  30; ;  % line comment  *  2
+8;
+		`.trim()).generate()][11].serialize()).toBe(`
+<COMMENTLINE line="1" col="16">% line comment  *  2
+</COMMENTLINE>
+		`.trim())
+	})
 })
 
 
@@ -100,6 +110,18 @@ comment
 		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
 			expect(() => [...lexer.generate()]).toThrow(LexError02)
 		})
+	})
+
+	test('TokenCommentMulti#serialize', () => {
+		expect([...new Lexer(`
+{% multiline
+that has a {% nestable nested %} multiline
+comment %}
+		`.trim()).generate()][2].serialize()).toBe(`
+<COMMENTMULTI line="1" col="1">{% multiline
+that has a {% nestable nested %} multiline
+comment %}</COMMENTMULTI>
+		`.trim())
 	})
 })
 
@@ -167,5 +189,20 @@ block comment containing \u0003 character
 		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
 			expect(() => [...lexer.generate()]).toThrow(LexError02)
 		})
+	})
+
+	test('TokenCommentBlock#serialize', () => {
+		expect([...new Lexer(`
+%%%
+these quotes do not end the doc comment%%%
+%%%nor do these
+%%%
+;
+		`.trim()).generate()][2].serialize()).toBe(`
+<COMMENTBLOCK line="1" col="1">%%%
+these quotes do not end the doc comment%%%
+%%%nor do these
+%%%</COMMENTBLOCK>
+		`.trim())
 	})
 })
