@@ -147,6 +147,6 @@ export class TerminalIdentifier extends Terminal {
 		return returned
 	}
 	match(candidate: Token): boolean {
-		return candidate instanceof TokenWord && candidate.is_identifier
+		return candidate instanceof TokenWord && candidate.isIdentifier
 	}
 }

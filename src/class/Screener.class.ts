@@ -45,7 +45,7 @@ export default class Screener {
 	* generate(): Iterator<Token, void> {
 		while (!this.iterator_result_token.done) {
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
-				if (this.t0 instanceof TokenWord && this.t0.is_identifier) {
+				if (this.t0 instanceof TokenWord && this.t0.isIdentifier) {
 					this._ids.add(this.t0.source)
 					this.t0.setValue([...this._ids].indexOf(this.t0.source))
 				}

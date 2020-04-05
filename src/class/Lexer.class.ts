@@ -9,7 +9,8 @@ import Token, {
 	TokenString,
 	TokenTemplate,
 	TokenNumber,
-	TokenWord,
+	TokenWordStandard,
+	TokenWordUnicode,
 	TokenPunctuator,
 } from './Token.class'
 
@@ -127,10 +128,10 @@ export default class Lexer {
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
 				token = new TokenNumber(this, false)
 
-			} else if (TokenWord.CHAR_START.test(this._c0.source)) {
-				token = new TokenWord(this, false)
-			} else if (Char.eq(TokenWord.DELIM, this._c0)) {
-				token = new TokenWord(this, true)
+			} else if (TokenWordStandard.CHAR_START.test(this._c0.source)) {
+				token = new TokenWordStandard(this)
+			} else if (Char.eq(TokenWordUnicode.DELIM, this._c0)) {
+				token = new TokenWordUnicode(this)
 
 			} else if (Char.inc(TokenPunctuator.CHARS_3, this._c0, this._c1, this._c2)) {
 				token = new TokenPunctuator(this, 3)

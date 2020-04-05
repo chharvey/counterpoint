@@ -510,10 +510,39 @@ export class TokenNumber extends Token {
 		return (multiplier || 1) * TokenNumber.mv(text, this.radix)
 	}
 }
-export class TokenWord extends Token {
+export abstract class TokenWord extends Token {
+	/**
+	 * The cooked value of this Token.
+	 * If the token is a keyword, the cooked value is its contents.
+	 * If the token is an identifier, the cooked value is set by a {@link Screener},
+	 * which indexes unique identifier tokens.
+	 */
+	protected _cooked: number|string;
+	constructor (start_char: Char, ...more_chars: Char[]) {
+		super(start_char, ...more_chars)
+		this._cooked = this.source
+	}
+	/**
+	 * Is this Token an identifier?
+	 * @returns Is this Token an identifier?
+	 */
+	abstract get isIdentifier(): boolean;
+	/**
+	 * If this Token is an identifier, set the numeric value.
+	 * Else if this token is a keyword, do nothing.
+	 * The value should be the index of this token’s contents
+	 * in a given screener’s list of unique identifier tokens.
+	 * This operation can only be done once.
+	 * @param   value - the value to set, unique among all identifiers in a program
+	 */
+	abstract setValue(value: number): void;
+	/** @final */ cook(): number|string {
+		return this._cooked
+	}
+}
+export class TokenWordStandard extends TokenWord {
 	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
-	static readonly DELIM: '`' = '`'
 	static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>(([
 		[KeywordKind.STORAGE, [
 			'let',
@@ -524,42 +553,20 @@ export class TokenWord extends Token {
 	]))
 	/** The classification of this keyword, if not an identifier. */
 	private readonly keyword_kind: KeywordKind|null;
-	/**
-	 * The cooked value of this Token.
-	 * If the token is a keyword, the cooked value is its contents.
-	 * If the token is an identifier, the cooked value is set by a {@link Screener},
-	 * which indexes unique identifier tokens.
-	 */
-	private _cooked: number|string;
-	/** Is this Token an identifier? */
-	readonly is_identifier: boolean;
-	constructor (lexer: Lexer, is_unicode: boolean) {
+	constructor(lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
-		if (is_unicode) {
-			while (!lexer.isDone && !Char.eq(TokenWord.DELIM, lexer.c0)) {
-				if (Char.eq(ETX, lexer.c0)) {
-					super(buffer[0], ...buffer.slice(1))
-					throw new LexError02(this)
-				}
-				buffer.push(lexer.c0)
-				lexer.advance()
-			}
-			// add ending delim to token
+		while (!lexer.isDone && TokenWordStandard.CHAR_REST.test(lexer.c0.source)) {
 			buffer.push(lexer.c0)
-			lexer.advance(TokenWord.DELIM.length)
-		} else {
-			while (!lexer.isDone && TokenWord.CHAR_REST.test(lexer.c0.source)) {
-				buffer.push(lexer.c0)
-				lexer.advance()
-			}
+			lexer.advance()
 		}
 		super(buffer[0], ...buffer.slice(1))
-		this.keyword_kind = is_unicode ? null : ([...TokenWord.KEYWORDS].find(
+		this.keyword_kind = ([...TokenWordStandard.KEYWORDS].find(
 			([_key, value]) => value.includes(this.source)
 		) || [null])[0]
-		this.is_identifier = is_unicode || this.keyword_kind === null
-		this._cooked = this.source
+	}
+	get isIdentifier(): boolean {
+		return this.keyword_kind === null
 	}
 	/**
 	 * If this Token is an identifier, set the numeric value.
@@ -570,12 +577,43 @@ export class TokenWord extends Token {
 	 * @param   value - the value to set, unique among all identifiers in a program
 	 */
 	setValue(value: number): void {
-		if (this.is_identifier && typeof this._cooked === 'string') {
+		if (this.isIdentifier && typeof this._cooked === 'string') {
 			this._cooked = value
 		}
 	}
-	cook(): number|string {
-		return this._cooked
+}
+export class TokenWordUnicode extends TokenWord {
+	static readonly DELIM: '`' = '`'
+	constructor(lexer: Lexer) {
+		const buffer: Char[] = [lexer.c0]
+		lexer.advance()
+		while (!lexer.isDone && !Char.eq(TokenWordUnicode.DELIM, lexer.c0)) {
+			if (Char.eq(ETX, lexer.c0)) {
+				super(buffer[0], ...buffer.slice(1))
+				throw new LexError02(this)
+			}
+			buffer.push(lexer.c0)
+			lexer.advance()
+		}
+		// add ending delim to token
+		buffer.push(lexer.c0)
+		lexer.advance(TokenWordUnicode.DELIM.length)
+		super(buffer[0], ...buffer.slice(1))
+	}
+	get isIdentifier(): boolean {
+		return true
+	}
+	/**
+	 * Set the numeric value of this Token.
+	 * The value should be the index of this token’s contents
+	 * in a given screener’s list of unique identifier tokens.
+	 * This operation can only be done once.
+	 * @param   value - the value to set, unique among all identifiers in a program
+	 */
+	setValue(value: number): void {
+		if (typeof this._cooked === 'string') {
+			this._cooked = value
+		}
 	}
 }
 export class TokenPunctuator extends Token {
