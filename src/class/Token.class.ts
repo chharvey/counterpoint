@@ -2,7 +2,6 @@ import Serializable from '../iface/Serializable.iface'
 import Util from './Util.class'
 import Char, {STX, ETX} from './Char.class'
 import Lexer from './Lexer.class'
-import Screener from './Screener.class'
 
 import {
 	LexError02,
@@ -530,7 +529,7 @@ export class TokenWord extends Token {
 	 * If the token is an identifier, the cooked value is set by a {@link Screener},
 	 * which indexes unique identifier tokens.
 	 */
-	private _cooked: number/* bigint */|string;
+	private _cooked: number|string;
 	/** Is this Token an identifier? */
 	readonly is_identifier: boolean;
 	constructor (lexer: Lexer) {
@@ -548,18 +547,19 @@ export class TokenWord extends Token {
 		this._cooked = this.source
 	}
 	/**
-	 * Use a Screener to set the value of this Token.
-	 * If this token is an identifier, get the index of this token’s contents
-	 * in the given screener’s list of unique identifier tokens.
+	 * If this Token is an identifier, set the numeric value.
 	 * Else if this token is a keyword, do nothing.
-	 * @param   screener the Screener whose indexed identifiers to search
+	 * The value should be the index of this token’s contents
+	 * in a given screener’s list of unique identifier tokens.
+	 * This operation can only be done once.
+	 * @param   value - the value to set, unique among all identifiers in a program
 	 */
-	setValue(screener: Screener) {
-		if (this.is_identifier) {
-			this._cooked = screener.identifiers.indexOf(this.source)
+	setValue(value: number): void {
+		if (typeof this._cooked === 'string' && this.is_identifier) {
+			this._cooked = value
 		}
 	}
-	cook(): number/* bigint */|string {
+	cook(): number|string {
 		return this._cooked
 	}
 }

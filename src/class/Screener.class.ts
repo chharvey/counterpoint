@@ -1,5 +1,4 @@
 import Lexer from './Lexer.class'
-import {STX, ETX} from './Char.class'
 import Token, {
 	TokenWhitespace,
 	TokenComment,
@@ -39,15 +38,6 @@ export default class Screener {
 	}
 
 	/**
-	 * Return a list of unique identifiers in the program,
-	 * in the order they appeared.
-	 * @returns a list of unique identifiers
-	 */
-	get identifiers(): string[] {
-		return [...this._ids]
-	}
-
-	/**
 	 * Prepare the next token for the parser.
 	 * Whitespace and comment tokens are filtered out.
 	 * @returns the next token
@@ -57,7 +47,7 @@ export default class Screener {
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
 				if (this.t0 instanceof TokenWord && this.t0.is_identifier) {
 					this._ids.add(this.t0.source)
-					this.t0.setValue(this)
+					this.t0.setValue([...this._ids].indexOf(this.t0.source))
 				}
 				if (this.t0 instanceof Token) {
 					yield this.t0
