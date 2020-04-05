@@ -512,7 +512,6 @@ export class TokenNumber extends Token {
 	}
 }
 export class TokenWord extends Token {
-	private static readonly IDENTIFIER_TAG: string = 'IDENTIFIER'
 	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
 	static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>(([
@@ -523,8 +522,8 @@ export class TokenWord extends Token {
 			'unfixed',
 		]],
 	]))
-	/** Is this Token an identifier? */
-	readonly is_identifier: boolean;
+	/** The classification of this keyword, if not an identifier. */
+	private readonly keyword_kind: KeywordKind|null;
 	/**
 	 * The cooked value of this Token.
 	 * If the token is a keyword, the cooked value is its contents.
@@ -532,6 +531,8 @@ export class TokenWord extends Token {
 	 * which indexes unique identifier tokens.
 	 */
 	private _cooked: number/* bigint */|string;
+	/** Is this Token an identifier? */
+	readonly is_identifier: boolean;
 	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
@@ -539,15 +540,11 @@ export class TokenWord extends Token {
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
-		const source: string = buffer.map((char) => char.source).join('')
-		let kind = TokenWord.IDENTIFIER_TAG
-		TokenWord.KEYWORDS.forEach((value, key) => {
-			if (kind === TokenWord.IDENTIFIER_TAG && value.includes(source)) {
-				kind = KeywordKind[key]
-			}
-		})
 		super(buffer[0], ...buffer.slice(1))
-		this.is_identifier = kind === TokenWord.IDENTIFIER_TAG
+		this.keyword_kind = ([...TokenWord.KEYWORDS].find(
+			([_key, value]) => value.includes(this.source)
+		) || [null])[0]
+		this.is_identifier = this.keyword_kind === null
 		this._cooked = this.source
 	}
 	/**
