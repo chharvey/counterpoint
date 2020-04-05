@@ -138,7 +138,7 @@ DigitSequenceHTD ::= (DigitSequenceHTD "_"?)? [0-9a-z]
 
 
 
-Word ::= [A-Za-z_] [A-Za-z0-9_]*
+Word ::= [A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`"
 Identifier ::= Word - Keyword
 
 

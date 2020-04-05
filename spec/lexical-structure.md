@@ -549,7 +549,7 @@ where `MV` is [Mathematical Value](./#static-semantics-mathematical-value).
 
 ### Words
 ```w3c
-Word ::= [A-Za-z_] [A-Za-z0-9_]*
+Word ::= [A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`"
 Identifier ::= Word - Keyword
 
 Keyword ::=
@@ -578,7 +578,7 @@ The Word Value (WV) of a word token is the unique identifier that distinguishes
 the word from other words in a program.
 
 ```w3c
-WV(Word ::= Identifier)
+WV(Word ::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - Keyword)
 	:= /* TO BE DETERMINED */
 WV(Word ::= Keyword)
 	:= the contents of the token
