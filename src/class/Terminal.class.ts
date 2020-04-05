@@ -39,21 +39,20 @@ export default abstract class Terminal {
 export class TerminalString extends Terminal {
 	static readonly instance: TerminalString = new TerminalString()
 	random(): string {
+		const maybeChars = (): string => Util.randomBool() ? '' : chars()
 		const chars = (): string => {
 			const random: number = Math.random()
 			return (
-				random < 0.25 ? `${Util.randomChar('\' \\ \u0003'.split(' '))}${maybeChars()}` :
-				random < 0.50 ? `\\${escape()}${maybeChars()}` :
-				random < 0.75 ? `\\u${Util.randomBool() ? '' : `${Util.randomChar('\' { \u0003'.split(' '))}${maybeChars()}`}` :
-				`\\\u000d${Util.randomBool() ? '' : `${Util.randomChar('\' \u000a \u0003'.split(' '))}${maybeChars()}`}`
+				random < 0.333 ? `${Util.randomChar('\' \\ \u0003'.split(' '))}${maybeChars()}` :
+				random < 0.667 ? `\\${escape()}${maybeChars()}` :
+				                 `\\u${Util.randomBool() ? '' : `${Util.randomChar('\' { \u0003'.split(' '))}${maybeChars()}`}`
 			)
 		}
-		const maybeChars    = (): string => Util.randomBool() ? '' : chars()
 		const escape        = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
 		const escapeChar    = (): string => Util.arrayRandom(TokenString.ESCAPES)
 		const escapeCode    = (): string => `u{${Util.randomBool() ? '' : TerminalNumber.digitSequence(16)}}`
-		const lineCont      = (): string => `${Util.randomBool() ? '': '\u000d'}\u000a`
-		const nonEscapeChar = (): string => Util.randomChar('\' \\ s t n r u \u000D \u000A \u0003'.split(' '))
+		const lineCont      = (): string => `\u000a`
+		const nonEscapeChar = (): string => Util.randomChar('\' \\ s t n r u \u000a \u0003'.split(' '))
 		return `${TokenString.DELIM}${maybeChars()}${TokenString.DELIM}`
 	}
 	match(candidate: Token): boolean {
