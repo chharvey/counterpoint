@@ -8,6 +8,7 @@ const {
 	TokenWord,
 } = require('../build/class/Token.class.js')
 const {
+	LexError03,
 	LexError04,
 } = require('../build/error/LexError.class.js')
 
@@ -106,6 +107,16 @@ describe('Radix-specific integers.', () => {
 \\d39c
 		`.trim()).generate()].slice(1, -1).map((token) => token.source))
 			.toEqual(['\\d39', 'c'])
+	})
+
+	test('Invalid escape characters.', () => {
+		`
+ \\a0  \\c0  \\e0  \\f0  \\g0  \\h0  \\i0  \\j0  \\k0  \\l0  \\m0  \\n0  \\p0  \\r0  \\s0  \\t0  \\u0  \\v0  \\w0  \\y0  \\
++\\a0 +\\c0 +\\e0 +\\f0 +\\g0 +\\h0 +\\i0 +\\j0 +\\k0 +\\l0 +\\m0 +\\n0 +\\p0 +\\r0 +\\s0 +\\t0 +\\u0 +\\v0 +\\w0 +\\y0 +\\
+-\\a0 -\\c0 -\\e0 -\\f0 -\\g0 -\\h0 -\\i0 -\\j0 -\\k0 -\\l0 -\\m0 -\\n0 -\\p0 -\\r0 -\\s0 -\\t0 -\\u0 -\\v0 -\\w0 -\\y0 -\\
+		`.trim().split(' ').filter((src) => src !== '').map((src) => new Lexer(src)).forEach((lexer) => {
+			expect(() => [...lexer.generate()]).toThrow(LexError03)
+		})
 	})
 })
 

@@ -33,8 +33,6 @@ enum KeywordKind {
  * @see http://parsingintro.sourceforge.net/#contents_item_6.4
  */
 export default abstract class Token implements Serializable {
-	/** The name of the type of this Token. */
-	readonly tagname: string;
 	/** All the characters in this Token. */
 	private _cargo: string;
 	/** The index of the first character in source text. */
@@ -46,12 +44,11 @@ export default abstract class Token implements Serializable {
 
 	/**
 	 * Construct a new Token object.
-	 *
+	 * @param tagname    - The name of the type of this Token.
 	 * @param start_char - the starting character of this Token
 	 * @param more_chars - additional characters to add upon construction
 	 */
-	constructor(start_char: Char, ...more_chars: Char[]) {
-		this.tagname      = this.constructor.name.slice('Token'.length).toUpperCase()
+	constructor(readonly tagname: string, start_char: Char, ...more_chars: Char[]) {
 		this._cargo       = [start_char, ...more_chars].map((char) => char.source).join('')
 		this.source_index = start_char.source_index
 		this.line_index   = start_char.line_index
@@ -119,7 +116,7 @@ export default abstract class Token implements Serializable {
 export class TokenFilebound extends Token {
 	static readonly CHARS: readonly string[] = [STX, ETX]
 	constructor (lexer: Lexer) {
-		super(lexer.c0)
+		super('FILEBOUND', lexer.c0)
 		lexer.advance()
 	}
 	cook(): boolean {
@@ -135,7 +132,7 @@ export class TokenWhitespace extends Token {
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
-		super(buffer[0], ...buffer.slice(1))
+		super('WHITESPACE', buffer[0], ...buffer.slice(1))
 	}
 	cook(): null {
 		return null // we do not want to send whitespace to the parser
@@ -143,7 +140,7 @@ export class TokenWhitespace extends Token {
 }
 export abstract class TokenComment extends Token {
 	constructor (start_char: Char, ...more_chars: Char[]) {
-		super(start_char, ...more_chars)
+		super('COMMENT', start_char, ...more_chars)
 	}
 	/** @final */ cook(): null {
 		return null // we do not want to send comments to the parser
@@ -283,7 +280,7 @@ export class TokenString extends Token {
 		lexer.advance()
 		while (!lexer.isDone && !Char.eq(TokenString.DELIM, lexer.c0)) {
 			if (Char.eq(ETX, lexer.c0)) {
-				super(buffer[0], ...buffer.slice(1))
+				super('STRING', buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
 			if (Char.eq('\\', lexer.c0)) { // possible escape or line continuation
@@ -344,7 +341,7 @@ export class TokenString extends Token {
 		// add ending delim to token
 		buffer.push(lexer.c0)
 		lexer.advance(TokenString.DELIM.length)
-		super(buffer[0], ...buffer.slice(1))
+		super('STRING', buffer[0], ...buffer.slice(1))
 	}
 	cook(): string {
 		return String.fromCodePoint(...TokenString.sv(
@@ -387,7 +384,7 @@ export class TokenTemplate extends Token {
 		}
 		while (!lexer.isDone) {
 			if (Char.eq(ETX, lexer.c0)) {
-				super(buffer[0], ...buffer.slice(1))
+				super('TEMPLATE', buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
 			if (Char.eq(TokenTemplate.DELIM, lexer.c0, lexer.c1, lexer.c2)) {
@@ -415,7 +412,7 @@ export class TokenTemplate extends Token {
 				lexer.advance()
 			}
 		}
-		super(buffer[0], ...buffer.slice(1))
+		super('TEMPLATE', buffer[0], ...buffer.slice(1))
 		this.delim_start = delim_start
 		this.delim_end   = delim_end !
 		this.position = [...positions][0]
@@ -496,7 +493,7 @@ export class TokenNumber extends Token {
 				}
 			}
 		}
-		super(buffer[0], ...buffer.slice(1))
+		super('NUMBER', buffer[0], ...buffer.slice(1))
 		this.radix = r
 	}
 	cook(): number {
@@ -519,7 +516,7 @@ export abstract class TokenWord extends Token {
 	 */
 	protected _cooked: number|string;
 	constructor (start_char: Char, ...more_chars: Char[]) {
-		super(start_char, ...more_chars)
+		super('WORD', start_char, ...more_chars)
 		this._cooked = this.source
 	}
 	/**
@@ -628,7 +625,7 @@ export class TokenPunctuator extends Token {
 			buffer.push(lexer.c1 !)
 		}
 		lexer.advance(count)
-		super(buffer[0], ...buffer.slice(1))
+		super('PUNCTUATOR', buffer[0], ...buffer.slice(1))
 	}
 	cook(): string {
 		return this.source

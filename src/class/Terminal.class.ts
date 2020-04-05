@@ -40,21 +40,20 @@ export default abstract class Terminal {
 export class TerminalString extends Terminal {
 	static readonly instance: TerminalString = new TerminalString()
 	random(): string {
+		const maybeChars = (): string => Util.randomBool() ? '' : chars()
 		const chars = (): string => {
 			const random: number = Math.random()
 			return (
-				random < 0.25 ? `${Util.randomChar('\' \\ \u0003'.split(' '))}${maybeChars()}` :
-				random < 0.50 ? `\\${escape()}${maybeChars()}` :
-				random < 0.75 ? `\\u${Util.randomBool() ? '' : `${Util.randomChar('\' { \u0003'.split(' '))}${maybeChars()}`}` :
-				`\\\u000d${Util.randomBool() ? '' : `${Util.randomChar('\' \u000a \u0003'.split(' '))}${maybeChars()}`}`
+				random < 0.333 ? `${Util.randomChar('\' \\ \u0003'.split(' '))}${maybeChars()}` :
+				random < 0.667 ? `\\${escape()}${maybeChars()}` :
+				                 `\\u${Util.randomBool() ? '' : `${Util.randomChar('\' { \u0003'.split(' '))}${maybeChars()}`}`
 			)
 		}
-		const maybeChars    = (): string => Util.randomBool() ? '' : chars()
 		const escape        = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
 		const escapeChar    = (): string => Util.arrayRandom(TokenString.ESCAPES)
 		const escapeCode    = (): string => `u{${Util.randomBool() ? '' : TerminalNumber.digitSequence(16)}}`
-		const lineCont      = (): string => `${Util.randomBool() ? '': '\u000d'}\u000a`
-		const nonEscapeChar = (): string => Util.randomChar('\' \\ s t n r u \u000D \u000A \u0003'.split(' '))
+		const lineCont      = (): string => `\u000a`
+		const nonEscapeChar = (): string => Util.randomChar('\' \\ s t n r u \u000a \u0003'.split(' '))
 		return `${TokenString.DELIM}${maybeChars()}${TokenString.DELIM}`
 	}
 	match(candidate: Token): boolean {
@@ -63,19 +62,59 @@ export class TerminalString extends Terminal {
 }
 abstract class TerminalTemplate extends Terminal {
 	random(start: string = TokenTemplate.DELIM, end: string = TokenTemplate.DELIM): string {
-		const end_delim: boolean = end === TokenTemplate.DELIM
-		const followsOpenBracket = (): string => Util.randomBool() ? Util.randomChar('` { \\ \u0003'.split(' ')) : `\\${followsBackslash()}`
-		const followsBackslash = (): string => Util.randomBool() ? Util.randomChar('` \u0003'.split(' ')) : '`'
-		const chars = (): string => {
+		const maybe = (fun: () => string): string => Util.randomBool() ? '' : fun()
+		const forbidden = (): string => Util.randomChar('\' { \u0003'.split(' '))
+		const charsEndDelim = (): string => {
 			const random: number = Math.random()
 			return (
-				random < 0.333 ? `${Util.randomChar('` { \\ \u0003'.split(' '))}${maybeChars()}` :
-				random < 0.667 ? `{${end_delim && Util.randomBool() ? '' : `${followsOpenBracket()}${maybeChars()}`}` :
-				`\\${!end_delim && Util.randomBool() ? '' : `${followsBackslash()}${maybeChars()}`}`
+				random < 0.333 ? `${forbidden()}${maybe(charsEndDelim)}` :
+				random < 0.667 ? charsEndDelimStartDelim() :
+				                 charsEndDelimStartInterp()
 			)
 		}
-		const maybeChars = (): string => Util.randomBool() ? '' : chars()
-		return `${start}${maybeChars()}${end}`
+		const charsEndDelimStartDelim = (): string => {
+			const random: number = Math.random()
+			return (
+				random < 0.25 ?   `'${                                                forbidden()}${maybe(charsEndDelim)                              }` :
+				random < 0.50 ?  `''${                                                forbidden()}${maybe(charsEndDelim)                              }` :
+				random < 0.75 ?  `'{${Util.randomBool() ? '' : Util.randomBool() ? `${forbidden()}${maybe(charsEndDelim)}` : charsEndDelimStartDelim()}` :
+				                `''{${Util.randomBool() ? '' : Util.randomBool() ? `${forbidden()}${maybe(charsEndDelim)}` : charsEndDelimStartDelim()}`
+			)
+		}
+		const charsEndDelimStartInterp = (): string => {
+			const random: number = Math.random()
+			return (
+				random < 0.333 ?   `{${Util.randomBool() ? `${forbidden()}${maybe(charsEndDelim)}` : ''                        }` :
+				random < 0.667 ?  `{'${Util.randomBool() ? `${forbidden()}${maybe(charsEndDelim)}` : charsEndDelimStartInterp()}` :
+				                 `{''${Util.randomBool() ? `${forbidden()}${maybe(charsEndDelim)}` : charsEndDelimStartInterp()}`
+			)
+		}
+		const charsEndInterp = (): string => {
+			const random: number = Math.random()
+			return (
+				random < 0.333 ? `${forbidden()}${maybe(charsEndInterp)}` :
+				random < 0.667 ? charsEndInterpStartDelim() :
+				                 charsEndInterpStartInterp()
+			)
+		}
+		const charsEndInterpStartDelim = (): string => {
+			const random: number = Math.random()
+			return (
+				random < 0.25 ?   `'${Util.randomBool() ? `${forbidden()}${maybe(charsEndInterp)}` : ''                        }` :
+				random < 0.50 ?  `''${Util.randomBool() ? `${forbidden()}${maybe(charsEndInterp)}` : ''                        }` :
+				random < 0.75 ?  `'{${Util.randomBool() ? `${forbidden()}${maybe(charsEndInterp)}` : charsEndInterpStartDelim()}` :
+				                `''{${Util.randomBool() ? `${forbidden()}${maybe(charsEndInterp)}` : charsEndInterpStartDelim()}`
+			)
+		}
+		const charsEndInterpStartInterp = (): string => {
+			const random: number = Math.random()
+			return (
+				random < 0.333 ?   `{${                                                forbidden()}${maybe(charsEndInterp)                                }` :
+				random < 0.667 ?  `{'${Util.randomBool() ? '' : Util.randomBool() ? `${forbidden()}${maybe(charsEndInterp)}` : charsEndInterpStartInterp()}` :
+				                 `{''${Util.randomBool() ? '' : Util.randomBool() ? `${forbidden()}${maybe(charsEndInterp)}` : charsEndInterpStartInterp()}`
+			)
+		}
+		return `${start}${maybe(end === TokenTemplate.DELIM ? charsEndDelim : charsEndInterp)}${end}`
 	}
 	match(candidate: Token, position: TemplatePosition = TemplatePosition.FULL): boolean {
 		return candidate instanceof TokenTemplate && candidate.position === position
