@@ -78,7 +78,7 @@ async function random() {
 	const {default: Grammar} = require('./build/class/Grammar.class')
 	const solid_grammar = new Grammar()
 	console.log(solid_grammar.rules.map((r) => r.toString()))
-	console.log(solid_grammar.random().join(' ').replace(/\u000d/g, ' '))
+	console.log(solid_grammar.random().join(' ').replace(/\u000d/g, '\u240d'))
 	return Promise.resolve(null)
 }
 
