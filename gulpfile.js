@@ -52,7 +52,7 @@ async function test_dev() {
 	}
 
 	const parser = new Parser(await input)
-	let tree = ''
+	let tree;
 	try {
 		tree = parser.parse()
 	} catch (err) {
@@ -75,11 +75,23 @@ const build = gulp.series(dist, test)
 const dev = gulp.series(dist, test_dev)
 
 async function random() {
+	const {Parser} = require('./')
 	const {default: Grammar} = require('./build/class/Grammar.class')
-	const solid_grammar = new Grammar()
-	console.log(solid_grammar.rules.map((r) => r.toString()))
-	console.log(solid_grammar.random().join(' ').replace(/\u000d/g, ' '))
-	return Promise.resolve(null)
+	const sample = new Grammar().random().join(' ').replace(/\u0002|\u0003/g, '') // inserted by Scanner
+	console.log(sample.replace(/\u000d/g, '\u240d'))
+	const parser = new Parser(sample)
+	let tree;
+	try {
+		tree = parser.parse()
+	} catch (err) {
+		console.log(parser.viewStack())
+		throw err
+	}
+	return Promise.all([
+		fsPromise.writeFile('./sample/output.xml', tree.serialize()),
+		fsPromise.writeFile('./sample/output-1.xml', tree.decorate().serialize()),
+		fsPromise.writeFile('./sample/output-2.ts', tree.decorate().compile()),
+	])
 }
 
 
