@@ -46,8 +46,8 @@ describe('Lexer recognizes `TokenCommentLine` conditions.', () => {
 500  +  30; ;  % line comment  *  2
 8;
 		`.trim()).generate()][11].serialize()).toBe(`
-<COMMENTLINE line="1" col="16">% line comment  *  2
-</COMMENTLINE>
+<COMMENT line="1" col="16">% line comment  *  2
+</COMMENT>
 		`.trim())
 	})
 })
@@ -118,9 +118,9 @@ comment
 that has a {% nestable nested %} multiline
 comment %}
 		`.trim()).generate()][2].serialize()).toBe(`
-<COMMENTMULTI line="1" col="1">{% multiline
+<COMMENT line="1" col="1">{% multiline
 that has a {% nestable nested %} multiline
-comment %}</COMMENTMULTI>
+comment %}</COMMENT>
 		`.trim())
 	})
 })
@@ -199,10 +199,10 @@ these quotes do not end the doc comment%%%
 %%%
 ;
 		`.trim()).generate()][2].serialize()).toBe(`
-<COMMENTBLOCK line="1" col="1">%%%
+<COMMENT line="1" col="1">%%%
 these quotes do not end the doc comment%%%
 %%%nor do these
-%%%</COMMENTBLOCK>
+%%%</COMMENT>
 		`.trim())
 	})
 })
