@@ -3,6 +3,8 @@ const {default: Screener} = require('../build/class/Screener.class.js')
 const {
 	TokenWhitespace,
 	TokenWord,
+	TokenWordStandard,
+	TokenWordUnicode,
 } = require('../build/class/Token.class.js')
 const {
 	LexError02,
@@ -10,7 +12,7 @@ const {
 
 
 
-describe('Lexer recognizes `TokenWord` conditions for non-unicode words.', () => {
+describe('Lexer recognizes `TokenWordStandard` conditions.', () => {
 	const CHAR_START = 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z _'.split(' ')
 	const CHAR_REST = CHAR_START.concat('0 1 2 3 4 5 6 7 8 9'.split(' '))
 	test('Word beginners.', () => {
@@ -20,23 +22,23 @@ describe('Lexer recognizes `TokenWord` conditions for non-unicode words.', () =>
 	})
 
 	test('Word continuations.', () => {
-		const tokens = [...new Lexer(`
+		const tokens = [...new Screener(`
 this is a word
 _words _can _start _with _underscores
 _and0 _can1 contain2 numb3rs
-		`.trim()).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace))
+		`.trim()).generate()].slice(1, -1)
 		tokens.forEach((token) => {
-			expect(token).toBeInstanceOf(TokenWord)
+			expect(token).toBeInstanceOf(TokenWordStandard)
 		})
 		expect(tokens.length).toBe(13)
 	})
 
 	test('Words cannot start with a digit.', () => {
-		const tokens = [...new Lexer(`
+		const tokens = [...new Screener(`
 this is 0a word
 _words 1c_an _start 2w_ith _underscores
 _and0 3c_an1 contain2 44numb3rs
-		`.trim()).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace))
+		`.trim()).generate()].slice(1, -1)
 		expect(tokens.filter((token) => token instanceof TokenWord).map((token) => token.source).join(' ')).toBe(`
 this is a word _words c_an _start w_ith _underscores _and0 c_an1 contain2 numb3rs
 		`.trim())
@@ -45,7 +47,7 @@ this is a word _words c_an _start w_ith _underscores _and0 c_an1 contain2 numb3r
 
 
 
-describe('Screener assigns word values for non-unicode words.', () => {
+describe('Screener assigns word values for standard words.', () => {
 	const printToken = (token) => `${token.cook()}: ${token.source}`
 	test('Keyword word value is itself.', () => {
 		expect([...new Screener(`let unfixed`).generate()].filter((token) => token instanceof TokenWord).map(printToken).join('\n')).toBe(`
@@ -89,7 +91,7 @@ a word _can repeat _with the same id
 
 
 
-describe('Lexer recognizes `TokenWord` conditions for unicode words.', () => {
+describe('Lexer recognizes `TokenWordUnicode` conditions.', () => {
 	test('Word boundaries.', () => {
 		const tokens = [...new Screener(`
 \`this\` \`is\` \`a\` \`unicode word\`
@@ -99,7 +101,7 @@ describe('Lexer recognizes `TokenWord` conditions for unicode words.', () => {
 		`.trim()).generate()].slice(1, -1)
 		expect(tokens.length).toBe(18)
 		tokens.forEach((token) => {
-			expect(token).toBeInstanceOf(TokenWord)
+			expect(token).toBeInstanceOf(TokenWordUnicode)
 		})
 	})
 
