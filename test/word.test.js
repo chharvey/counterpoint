@@ -48,43 +48,44 @@ this is a word _words c_an _start w_ith _underscores _and0 c_an1 contain2 numb3r
 
 
 describe('Screener assigns word values for standard words.', () => {
-	const printToken = (token) => `${token.cook()}: ${token.source}`
-	test('Keyword word value is itself.', () => {
-		expect([...new Screener(`let unfixed`).generate()].filter((token) => token instanceof TokenWord).map(printToken).join('\n')).toBe(`
-let: let
-unfixed: unfixed
+	test('TokenWordStandard#serialize for keywords.', () => {
+		expect([...new Screener(`
+let unfixed
+		`.trim()).generate()].filter((token) => token instanceof TokenWord).map((token) => token.serialize()).join('\n')).toBe(`
+<WORD line="1" col="1" value="let">let</WORD>
+<WORD line="1" col="5" value="unfixed">unfixed</WORD>
 		`.trim())
 	})
 
-	test('Identifier word value is unique number.', () => {
+	test('TokenWordStandard#serialize for identifiers.', () => {
 		expect([...new Screener(`
 this is a word
 _words _can _start _with _underscores
 _and0 _can1 contain2 numb3rs
 
 a word _can repeat _with the same id
-		`.trim()).generate()].filter((token) => token instanceof TokenWord).map(printToken).join('\n')).toBe(`
-0: this
-1: is
-2: a
-3: word
-4: _words
-5: _can
-6: _start
-7: _with
-8: _underscores
-9: _and0
-10: _can1
-11: contain2
-12: numb3rs
-2: a
-3: word
-5: _can
-13: repeat
-7: _with
-14: the
-15: same
-16: id
+		`.trim()).generate()].filter((token) => token instanceof TokenWord).map((token) => token.serialize()).join('\n')).toBe(`
+<WORD line="1" col="1" value="0">this</WORD>
+<WORD line="1" col="6" value="1">is</WORD>
+<WORD line="1" col="9" value="2">a</WORD>
+<WORD line="1" col="11" value="3">word</WORD>
+<WORD line="2" col="1" value="4">_words</WORD>
+<WORD line="2" col="8" value="5">_can</WORD>
+<WORD line="2" col="13" value="6">_start</WORD>
+<WORD line="2" col="20" value="7">_with</WORD>
+<WORD line="2" col="26" value="8">_underscores</WORD>
+<WORD line="3" col="1" value="9">_and0</WORD>
+<WORD line="3" col="7" value="10">_can1</WORD>
+<WORD line="3" col="13" value="11">contain2</WORD>
+<WORD line="3" col="22" value="12">numb3rs</WORD>
+<WORD line="5" col="1" value="2">a</WORD>
+<WORD line="5" col="3" value="3">word</WORD>
+<WORD line="5" col="8" value="5">_can</WORD>
+<WORD line="5" col="13" value="13">repeat</WORD>
+<WORD line="5" col="20" value="7">_with</WORD>
+<WORD line="5" col="26" value="14">the</WORD>
+<WORD line="5" col="30" value="15">same</WORD>
+<WORD line="5" col="35" value="16">id</WORD>
 		`.trim())
 	})
 })
@@ -121,26 +122,25 @@ describe('Lexer recognizes `TokenWordUnicode` conditions.', () => {
 
 
 describe('Screener assigns word values for unicode words.', () => {
-	const printToken = (token) => `${token.cook()}: ${token.source}`
-	test('Identifier word value is unique number.', () => {
+	test('TokenWordUnicode#serialize', () => {
 		expect([...new Screener(`
 \`this\` \`is\` \`a\` \`unicode word\`
 \`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
 \`except\` \`back-ticks\` \`.\`
-		`.trim()).generate()].filter((token) => token instanceof TokenWord).map(printToken).join('\n')).toBe(`
-0: \`this\`
-1: \`is\`
-2: \`a\`
-3: \`unicode word\`
-4: \`any\`
-3: \`unicode word\`
-5: \`can\`
-6: \`contain\`
-4: \`any\`
-7: \`character\`
-8: \`except\`
-9: \`back-ticks\`
-10: \`.\`
+		`.trim()).generate()].filter((token) => token instanceof TokenWord).map((token) => token.serialize()).join('\n')).toBe(`
+<WORD line="1" col="1" value="0">\`this\`</WORD>
+<WORD line="1" col="8" value="1">\`is\`</WORD>
+<WORD line="1" col="13" value="2">\`a\`</WORD>
+<WORD line="1" col="17" value="3">\`unicode word\`</WORD>
+<WORD line="2" col="1" value="4">\`any\`</WORD>
+<WORD line="2" col="7" value="3">\`unicode word\`</WORD>
+<WORD line="2" col="22" value="5">\`can\`</WORD>
+<WORD line="2" col="28" value="6">\`contain\`</WORD>
+<WORD line="2" col="38" value="4">\`any\`</WORD>
+<WORD line="2" col="44" value="7">\`character\`</WORD>
+<WORD line="3" col="1" value="8">\`except\`</WORD>
+<WORD line="3" col="10" value="9">\`back-ticks\`</WORD>
+<WORD line="3" col="23" value="10">\`.\`</WORD>
 		`.trim())
 	})
 })
