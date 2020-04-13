@@ -3,13 +3,24 @@ This chapter introduces and provides an overview of the Solid programming langua
 
 
 
+## What is Solid?
+Solid is a general-purpose, multi-paradigm programming language that combines
+the power of a static compiler,
+the efficiency of asynchronous execution, and
+the logic of mathematical concepts.
+
+The Solid Project includes this Solid Language Specification,
+a Solid language compiler, and a collection of built-in objects (the “core library”) in Solid.
+
+
+
 ## Scope
 This specification defines the Solid programming language and compiler,
 developed by [Chris Harvey](https://github.com/chharvey).
 Solid started off as a personal side project, and it is by no means an industry standard.
 However, plans for Solid’s growth are ambitious.
 
-Solid is a general-purpose programming language inspired by similar languages such as
+Solid is a new programming language inspired by similar languages such as
 [Java](https://docs.oracle.com/javase/specs/) and [TypeScript](https://www.typescriptlang.org/).
 It was developed to address some of the pitfalls of the most popular languages, as well as
 to incorporate more mathematically-focused concepts and programming best practices.
@@ -34,15 +45,6 @@ following the [Semantic Versioning](https://semver.org/) specification to track 
 The **zeroth** edition of this specification is in pre-release, and not fully stable.
 New features are added by minor version number, with similar features grouped by theme.
 A detailed changelog can be found on GitHub.
-
-
-
-## What is Solid?
-Solid is a multi-purpose, multi-paradigm programming language
-that combines the power of a static compiler with the logic of mathematical concepts.
-
-The Solid Project includes this Solid Language Specification,
-a Solid language compiler, and a collection of built-in objects (the “core library”) in Solid.
 
 
 
@@ -121,17 +123,18 @@ to work with larger structures and think in abstract terms.
 ### Multi-Paradigm
 Solid combines multiple paradigms of programming style, roughly consisting of:
 
-- 40% [object-oriented](https://en.wikipedia.org/wiki/Object-oriented_programming)
-- 30% [functional](https://en.wikipedia.org/wiki/Functional_programming)
-- 20% [procedural](https://en.wikipedia.org/wiki/Procedural_programming)
-- 10% [ontology](https://en.wikipedia.org/wiki/Ontology_language)
+- 40% [Object-Oriented](#object-oriented)
+- 30% [Functional](#functional)
+- 20% [Procedural](#procedural)
+- 10% [Ontology](#ontology)
 
 Overall, this makes Solid about 60% imperative and 40% declarative.
 Of course, the percentages above are very subjective,
 and programmers can use any language styles they prefer.
 
 #### Object-Oriented
-Solid takes most of its ideas from object-oriented languages such as Java and Smalltalk.
+Solid takes most of its ideas from [object-oriented](https://en.wikipedia.org/wiki/Object-oriented_programming)
+languages such as [C++](https://isocpp.org/) and [Smalltalk](http://www.smalltalk.org/).
 At the highest levels of a program are classes and objects, which have states and behaviors
 and communicate to each other through methods and interfaces.
 The class hierarchy and polymorphism are used to define more fine-grained properties of objects.
@@ -139,7 +142,8 @@ Customized behavior, for example, is first and foremost achieved via inheritance
 instead of object/data manipulation.
 
 #### Functional
-Solid contains concepts in Lambda Calculus and functional languages such as Lisp and Scheme.
+Solid contains concepts in Lambda Calculus and [functional](https://en.wikipedia.org/wiki/Functional_programming)
+languages such as [Lisp](https://lisp-lang.org/) and [Haskell](https://www.haskell.org/).
 Lambdas are first-class citizens just like other data types, and are pure by default:
 they cannot modify externals or have side effects, and they must return a value
 (unless explicitly defined otherwise).
@@ -150,15 +154,18 @@ Solid exhibits abstract concepts such as referential transparency, recursion,
 function composition, function currying, and eta-conversion.
 
 #### Procedural
-Solid allows a procedural writing style when developers need to be more dictatorial
-in their approach.
+Solid allows a [procedural](https://en.wikipedia.org/wiki/Procedural_programming) writing style
+when developers need to be more dictatorial in their approach.
 Method definitions and statement blocks contain several procedures to be executed
 in a particular order (whether it be sequential or concurrent).
 Control flow statements offer more fine-grained control of the order of execution.
 
 #### Ontology
-Solid’s type system is significantly expressive, allowing developers to be explicit
-in the types of data they pass around. Types are static and declarative.
+Solid’s type system is significantly expressive.
+Types are static and declarative, and relations between types are expressed
+[ontologically](https://en.wikipedia.org/wiki/Ontology_language),
+allowing developers to be explicit in the kinds of data they work with.
+
 
 
 ### Compiled
@@ -175,7 +182,7 @@ Solid has a robust **manifest** type system in which types are declared by hand.
 Solid’s compiler can infer types that are not declared manually,
 but type inference takes the strictest route.
 A strong and explicit type system prevents common runtime errors and allows developers
-to think of the shape of their data while writing code.
+to think about the shape of their data while writing code.
 
 Solid’s type system is **structural**, as opposed to **nominal**,
 meaning types are compared based on their shape (the properties they have),
