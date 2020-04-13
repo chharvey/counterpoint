@@ -71,7 +71,7 @@ export default class ParseNode implements Serializable {
 			[ProductionStringTemplate           .instance, ParseNodeStringTemplate     ],
 			[ProductionStringTemplate.__0__List .instance, ParseNodeStringTemplate     ],
 			[ProductionPrimitiveLiteral         .instance, ParseNodePrimitiveLiteral   ],
-		]).entries()].find(([key]) => rule.production.equals(key)) || [null, ParseNode])[1](rule, children)
+		])].find(([key]) => rule.production.equals(key)) || [null, ParseNode])[1](rule, children)
 	}
 
 
