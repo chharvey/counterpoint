@@ -1,5 +1,5 @@
 import Screener from './Screener.class'
-import Token from './Token.class'
+import type Token from './Token.class'
 import Terminal from './Terminal.class'
 import ParseNode from './ParseNode.class'
 import Grammar, {

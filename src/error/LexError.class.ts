@@ -1,5 +1,5 @@
-import Char from '../class/Char.class'
-import Token from '../class/Token.class'
+import type Char from '../class/Char.class'
+import type Token from '../class/Token.class'
 
 import SolidError from './SolidError.class'
 

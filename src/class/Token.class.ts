@@ -1,8 +1,8 @@
-import Serializable from '../iface/Serializable.iface'
 import Util from './Util.class'
+import type Serializable from '../iface/Serializable.iface'
 import Char, {STX, ETX} from './Char.class'
-import Lexer from './Lexer.class'
-import Screener from './Screener.class'
+import type Lexer from './Lexer.class'
+import type Screener from './Screener.class'
 
 import {
 	LexError02,

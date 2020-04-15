@@ -1,5 +1,5 @@
 import Util from './Util.class'
-import Serializable from '../iface/Serializable.iface'
+import type Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Char.class'
 import Token, {
 	TokenString,
@@ -21,7 +21,7 @@ import SemanticNode, {
 	SemanticNodeIdentifier,
 	SemanticNodeConstant,
 } from './SemanticNode.class'
-import {Rule} from './Grammar.class'
+import type {Rule} from './Grammar.class'
 import Production, {
 	ProductionGoal,
 	ProductionStatement,
