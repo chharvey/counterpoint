@@ -3,7 +3,7 @@ const {default: Screener} = require('../build/class/Screener.class.js')
 const {
 	TokenWhitespace,
 	TokenWord,
-	TokenWordStandard,
+	TokenWordBasic,
 	TokenWordUnicode,
 } = require('../build/class/Token.class.js')
 const {
@@ -12,7 +12,7 @@ const {
 
 
 
-describe('Lexer recognizes `TokenWordStandard` conditions.', () => {
+describe('Lexer recognizes `TokenWordBasic` conditions.', () => {
 	const CHAR_START = 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z _'.split(' ')
 	const CHAR_REST = CHAR_START.concat('0 1 2 3 4 5 6 7 8 9'.split(' '))
 	test('Word beginners.', () => {
@@ -28,7 +28,7 @@ _words _can _start _with _underscores
 _and0 _can1 contain2 numb3rs
 		`.trim()).generate()].slice(1, -1)
 		tokens.forEach((token) => {
-			expect(token).toBeInstanceOf(TokenWordStandard)
+			expect(token).toBeInstanceOf(TokenWordBasic)
 		})
 		expect(tokens.length).toBe(13)
 	})
@@ -47,8 +47,8 @@ this is a word _words c_an _start w_ith _underscores _and0 c_an1 contain2 numb3r
 
 
 
-describe('Screener assigns word values for standard words.', () => {
-	test('TokenWordStandard#serialize for keywords.', () => {
+describe('Screener assigns word values for basic words.', () => {
+	test('TokenWordBasic#serialize for keywords.', () => {
 		expect([...new Screener(`
 let unfixed
 		`.trim()).generate()].filter((token) => token instanceof TokenWord).map((token) => token.serialize()).join('\n')).toBe(`
@@ -57,7 +57,7 @@ let unfixed
 		`.trim())
 	})
 
-	test('TokenWordStandard#serialize for identifiers.', () => {
+	test('TokenWordBasic#serialize for identifiers.', () => {
 		expect([...new Screener(`
 this is a word
 _words _can _start _with _underscores

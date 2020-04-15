@@ -5,7 +5,7 @@ import Token, {
 	TokenTemplate,
 	TokenNumber,
 	TokenWord,
-	TokenWordStandard,
+	TokenWordBasic,
 } from './Token.class'
 
 
@@ -172,13 +172,13 @@ export class TerminalNumber extends Terminal {
 export class TerminalIdentifier extends Terminal {
 	static readonly instance: TerminalIdentifier = new TerminalIdentifier()
 	random(): string {
-		const charsStandard = (start: boolean = false): string => {
+		const charsBasic = (start: boolean = false): string => {
 			let c: string;
-			const pass: RegExp = start ? TokenWordStandard.CHAR_START : TokenWordStandard.CHAR_REST
+			const pass: RegExp = start ? TokenWordBasic.CHAR_START : TokenWordBasic.CHAR_REST
 			do {
 				c = Util.randomChar()
 			} while (!pass.test(c))
-			return start ? c : `${c}${Util.randomBool() ? '' : charsStandard()}`
+			return start ? c : `${c}${Util.randomBool() ? '' : charsBasic()}`
 		}
 		const charsUnicode = (): string => {
 			return `${Util.randomBool() ? '' : charsUnicode()}${Util.randomChar(['`'])}`
@@ -186,8 +186,8 @@ export class TerminalIdentifier extends Terminal {
 		let returned: string;
 		if (Util.randomBool()) {
 			do {
-				returned = `${charsStandard(true)}${Util.randomBool() ? '' : charsStandard()}`
-			} while (([...TokenWordStandard.KEYWORDS.values()].flat() as string[]).includes(returned))
+				returned = `${charsBasic(true)}${Util.randomBool() ? '' : charsBasic()}`
+			} while (([...TokenWordBasic.KEYWORDS.values()].flat() as string[]).includes(returned))
 		} else {
 			returned = `\`${Util.randomBool() ? '' : charsUnicode()}\``
 		}

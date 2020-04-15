@@ -537,7 +537,7 @@ export abstract class TokenWord extends Token {
 		return this._cooked
 	}
 }
-export class TokenWordStandard extends TokenWord {
+export class TokenWordBasic extends TokenWord {
 	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
 	static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>(([
@@ -553,12 +553,12 @@ export class TokenWordStandard extends TokenWord {
 	constructor(lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
-		while (!lexer.isDone && TokenWordStandard.CHAR_REST.test(lexer.c0.source)) {
+		while (!lexer.isDone && TokenWordBasic.CHAR_REST.test(lexer.c0.source)) {
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
 		super(buffer[0], ...buffer.slice(1))
-		this.keyword_kind = ([...TokenWordStandard.KEYWORDS].find(
+		this.keyword_kind = ([...TokenWordBasic.KEYWORDS].find(
 			([_key, value]) => value.includes(this.source)
 		) || [null])[0]
 	}
