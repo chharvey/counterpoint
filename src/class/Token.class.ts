@@ -22,6 +22,8 @@ enum KeywordKind {
 	MODIFIER,
 }
 
+export type CookValueType = string|number|boolean|null
+
 
 
 /**
@@ -78,17 +80,17 @@ export default abstract class Token implements Serializable {
 	 * If this Token is not to be sent to the parser, then return `null`.
 	 * @returns              the computed value of this token, or `null`
 	 */
-	abstract cook(): string|number|boolean|null;
+	abstract cook(): CookValueType;
 
 	/**
 	 * @implements Serializable
 	 */
 	serialize(): string {
-		const cooked: string|number|boolean|null = this.cook()
-		const attributes: Map<string, string|number|boolean|null> = new Map<string, string|number|boolean|null>()
+		const cooked: CookValueType = this.cook()
+		const attributes: Map<string, string> = new Map<string, string>()
 		if (!(this instanceof TokenFilebound)) {
-			attributes.set('line', this.line_index + 1)
-			attributes.set('col' , this.col_index  + 1)
+			attributes.set('line', `${this.line_index + 1}`)
+			attributes.set('col' , `${this.col_index  + 1}`)
 		}
 		if (cooked !== null) {
 			attributes.set('value', (typeof cooked === 'string') ? cooked

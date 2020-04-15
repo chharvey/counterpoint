@@ -117,10 +117,10 @@ export default class ParseNode implements Serializable {
 	 * @implements Serializable
 	 */
 	serialize(): string {
-		const attributes: Map<string, string|number|boolean|null> = new Map<string, string|number|boolean|null>()
+		const attributes: Map<string, string> = new Map<string, string>()
 		if (!(this instanceof ParseNodeGoal)) {
-			attributes.set('line', this.line_index + 1)
-			attributes.set('col' , this.col_index  + 1)
+			attributes.set('line', `${this.line_index + 1}`)
+			attributes.set('col' , `${this.col_index  + 1}`)
 		}
 		attributes.set('source', this.source
 			.replace(/\&/g, '&amp;' )
