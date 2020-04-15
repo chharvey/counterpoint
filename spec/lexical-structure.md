@@ -578,10 +578,8 @@ The Word Value (WV) of a word token is the unique identifier that distinguishes
 the word from other words in a program.
 
 ```w3c
-WV(Word ::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - Keyword)
-	:= /* TO BE DETERMINED */
-WV(Word ::= Keyword)
-	:= the contents of the token
+WV(Word ::= [A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`")
+	:= /* TO BE DESCRIBED */
 ```
 
 #### Static Semantics: Decoration (Words)

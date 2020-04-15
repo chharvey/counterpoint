@@ -22,7 +22,7 @@ enum KeywordKind {
 	MODIFIER,
 }
 
-export type CookValueType = string|number|boolean|null
+export type CookValueType = string|number|bigint|boolean|null
 
 
 
@@ -516,10 +516,10 @@ export abstract class TokenWord extends Token {
 	 * If the token is an identifier, the cooked value is set by a {@link Screener},
 	 * which indexes unique identifier tokens.
 	 */
-	protected _cooked: number|string;
+	protected _cooked: bigint|null;
 	constructor (start_char: Char, ...more_chars: Char[]) {
 		super('WORD', start_char, ...more_chars)
-		this._cooked = this.source
+		this._cooked = null
 	}
 	/**
 	 * Is this Token an identifier?
@@ -527,15 +527,18 @@ export abstract class TokenWord extends Token {
 	 */
 	abstract get isIdentifier(): boolean;
 	/**
-	 * If this Token is an identifier, set the numeric value.
-	 * Else if this token is a keyword, do nothing.
-	 * The value should be the index of this token’s contents
-	 * in a given screener’s list of unique identifier tokens.
+	 * Set the numeric integral value of this Token.
+	 * If it is an identifier, it will be 128 or higher;
+	 * else if it is a reserved keyword, it will be 0–127.
 	 * This operation can only be done once.
-	 * @param   value - the value to set, unique among all identifiers in a program
+	 * @param   value - the value to set, unique among all words in a program
 	 */
-	abstract setValue(value: number): void;
-	/** @final */ cook(): number|string {
+	/** @final */ setValue(value: bigint): void {
+		if (this._cooked === null) {
+			this._cooked = value
+		}
+	}
+	/** @final */ cook(): bigint|null {
 		return this._cooked
 	}
 }
@@ -561,24 +564,11 @@ export class TokenWordBasic extends TokenWord {
 		}
 		super(buffer[0], ...buffer.slice(1))
 		this.keyword_kind = ([...TokenWordBasic.KEYWORDS].find(
-			([_key, value]) => value.includes(this.source)
+			([_, reserved]) => reserved.includes(this.source)
 		) || [null])[0]
 	}
 	get isIdentifier(): boolean {
 		return this.keyword_kind === null
-	}
-	/**
-	 * If this Token is an identifier, set the numeric value.
-	 * Else if this token is a keyword, do nothing.
-	 * The value should be the index of this token’s contents
-	 * in a given screener’s list of unique identifier tokens.
-	 * This operation can only be done once.
-	 * @param   value - the value to set, unique among all identifiers in a program
-	 */
-	setValue(value: number): void {
-		if (this.isIdentifier && typeof this._cooked === 'string') {
-			this._cooked = value
-		}
 	}
 }
 export class TokenWordUnicode extends TokenWord {
@@ -601,18 +591,6 @@ export class TokenWordUnicode extends TokenWord {
 	}
 	get isIdentifier(): boolean {
 		return true
-	}
-	/**
-	 * Set the numeric value of this Token.
-	 * The value should be the index of this token’s contents
-	 * in a given screener’s list of unique identifier tokens.
-	 * This operation can only be done once.
-	 * @param   value - the value to set, unique among all identifiers in a program
-	 */
-	setValue(value: number): void {
-		if (typeof this._cooked === 'string') {
-			this._cooked = value
-		}
 	}
 }
 export class TokenPunctuator extends Token {

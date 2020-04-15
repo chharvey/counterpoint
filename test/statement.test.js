@@ -56,9 +56,9 @@ the_answer = the_answer - \\z14;
 			<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ;">
 				<Statement line="1" col="1" source="let unfixed the_answer = 42 ;">
 					<DeclarationVariable line="1" col="1" source="let unfixed the_answer = 42 ;">
-						<WORD line="1" col="1" value="let">let</WORD>
-						<WORD line="1" col="5" value="unfixed">unfixed</WORD>
-						<WORD line="1" col="13" value="0">the_answer</WORD>
+						<WORD line="1" col="1" value="0">let</WORD>
+						<WORD line="1" col="5" value="1">unfixed</WORD>
+						<WORD line="1" col="13" value="128">the_answer</WORD>
 						<PUNCTUATOR line="1" col="24" value="=">=</PUNCTUATOR>
 						<Expression line="1" col="26" source="42">
 							<ExpressionAdditive line="1" col="26" source="42">
@@ -81,8 +81,8 @@ the_answer = the_answer - \\z14;
 			</Goal__0__List>
 			<Statement line="2" col="1" source="let \`the £ answer\` = the_answer * 10 ;">
 				<DeclarationVariable line="2" col="1" source="let \`the £ answer\` = the_answer * 10 ;">
-					<WORD line="2" col="1" value="let">let</WORD>
-					<WORD line="2" col="5" value="1">\`the £ answer\`</WORD>
+					<WORD line="2" col="1" value="0">let</WORD>
+					<WORD line="2" col="5" value="129">\`the £ answer\`</WORD>
 					<PUNCTUATOR line="2" col="20" value="=">=</PUNCTUATOR>
 					<Expression line="2" col="22" source="the_answer * 10">
 						<ExpressionAdditive line="2" col="22" source="the_answer * 10">
@@ -91,7 +91,7 @@ the_answer = the_answer - \\z14;
 									<ExpressionExponential line="2" col="22" source="the_answer">
 										<ExpressionUnarySymbol line="2" col="22" source="the_answer">
 											<ExpressionUnit line="2" col="22" source="the_answer">
-												<WORD line="2" col="22" value="0">the_answer</WORD>
+												<WORD line="2" col="22" value="128">the_answer</WORD>
 											</ExpressionUnit>
 										</ExpressionUnarySymbol>
 									</ExpressionExponential>
@@ -115,7 +115,7 @@ the_answer = the_answer - \\z14;
 		</Goal__0__List>
 		<Statement line="3" col="1" source="the_answer = the_answer - &#x5c;z14 ;">
 			<StatementAssignment line="3" col="1" source="the_answer = the_answer - &#x5c;z14 ;">
-				<WORD line="3" col="1" value="0">the_answer</WORD>
+				<WORD line="3" col="1" value="128">the_answer</WORD>
 				<PUNCTUATOR line="3" col="12" value="=">=</PUNCTUATOR>
 				<Expression line="3" col="14" source="the_answer - &#x5c;z14">
 					<ExpressionAdditive line="3" col="14" source="the_answer - &#x5c;z14">
@@ -124,7 +124,7 @@ the_answer = the_answer - \\z14;
 								<ExpressionExponential line="3" col="14" source="the_answer">
 									<ExpressionUnarySymbol line="3" col="14" source="the_answer">
 										<ExpressionUnit line="3" col="14" source="the_answer">
-											<WORD line="3" col="14" value="0">the_answer</WORD>
+											<WORD line="3" col="14" value="128">the_answer</WORD>
 										</ExpressionUnit>
 									</ExpressionUnarySymbol>
 								</ExpressionExponential>
@@ -159,7 +159,7 @@ the_answer = the_answer - \\z14;
 	<StatementList line="1" col="1" source="let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ;">
 		<Declaration line="1" col="1" source="let unfixed the_answer = 42 ;" type="variable" unfixed="true">
 			<Assignee line="1" col="13" source="the_answer">
-				<Identifier line="1" col="13" source="the_answer" id="0"/>
+				<Identifier line="1" col="13" source="the_answer" id="128"/>
 			</Assignee>
 			<Assigned line="1" col="26" source="42">
 				<Constant line="1" col="26" source="42" value="42"/>
@@ -167,22 +167,22 @@ the_answer = the_answer - \\z14;
 		</Declaration>
 		<Declaration line="2" col="1" source="let \`the £ answer\` = the_answer * 10 ;" type="variable" unfixed="false">
 			<Assignee line="2" col="5" source="\`the £ answer\`">
-				<Identifier line="2" col="5" source="\`the £ answer\`" id="1"/>
+				<Identifier line="2" col="5" source="\`the £ answer\`" id="129"/>
 			</Assignee>
 			<Assigned line="2" col="22" source="the_answer * 10">
 				<Expression line="2" col="22" source="the_answer * 10" operator="*">
-					<Identifier line="2" col="22" source="the_answer" id="0"/>
+					<Identifier line="2" col="22" source="the_answer" id="128"/>
 					<Constant line="2" col="35" source="10" value="10"/>
 				</Expression>
 			</Assigned>
 		</Declaration>
 		<Assignment line="3" col="1" source="the_answer = the_answer - &#x5c;z14 ;">
 			<Assignee line="3" col="1" source="the_answer">
-				<Identifier line="3" col="1" source="the_answer" id="0"/>
+				<Identifier line="3" col="1" source="the_answer" id="128"/>
 			</Assignee>
 			<Assigned line="3" col="14" source="the_answer - &#x5c;z14">
 				<Expression line="3" col="14" source="the_answer - &#x5c;z14" operator="-">
-					<Identifier line="3" col="14" source="the_answer" id="0"/>
+					<Identifier line="3" col="14" source="the_answer" id="128"/>
 					<Constant line="3" col="27" source="&#x5c;z14" value="40"/>
 				</Expression>
 			</Assigned>

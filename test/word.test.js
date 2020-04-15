@@ -52,8 +52,8 @@ describe('Screener assigns word values for basic words.', () => {
 		expect([...new Screener(`
 let unfixed
 		`.trim()).generate()].filter((token) => token instanceof TokenWord).map((token) => token.serialize()).join('\n')).toBe(`
-<WORD line="1" col="1" value="let">let</WORD>
-<WORD line="1" col="5" value="unfixed">unfixed</WORD>
+<WORD line="1" col="1" value="0">let</WORD>
+<WORD line="1" col="5" value="1">unfixed</WORD>
 		`.trim())
 	})
 
@@ -65,27 +65,27 @@ _and0 _can1 contain2 numb3rs
 
 a word _can repeat _with the same id
 		`.trim()).generate()].filter((token) => token instanceof TokenWord).map((token) => token.serialize()).join('\n')).toBe(`
-<WORD line="1" col="1" value="0">this</WORD>
-<WORD line="1" col="6" value="1">is</WORD>
-<WORD line="1" col="9" value="2">a</WORD>
-<WORD line="1" col="11" value="3">word</WORD>
-<WORD line="2" col="1" value="4">_words</WORD>
-<WORD line="2" col="8" value="5">_can</WORD>
-<WORD line="2" col="13" value="6">_start</WORD>
-<WORD line="2" col="20" value="7">_with</WORD>
-<WORD line="2" col="26" value="8">_underscores</WORD>
-<WORD line="3" col="1" value="9">_and0</WORD>
-<WORD line="3" col="7" value="10">_can1</WORD>
-<WORD line="3" col="13" value="11">contain2</WORD>
-<WORD line="3" col="22" value="12">numb3rs</WORD>
-<WORD line="5" col="1" value="2">a</WORD>
-<WORD line="5" col="3" value="3">word</WORD>
-<WORD line="5" col="8" value="5">_can</WORD>
-<WORD line="5" col="13" value="13">repeat</WORD>
-<WORD line="5" col="20" value="7">_with</WORD>
-<WORD line="5" col="26" value="14">the</WORD>
-<WORD line="5" col="30" value="15">same</WORD>
-<WORD line="5" col="35" value="16">id</WORD>
+<WORD line="1" col="1" value="128">this</WORD>
+<WORD line="1" col="6" value="129">is</WORD>
+<WORD line="1" col="9" value="130">a</WORD>
+<WORD line="1" col="11" value="131">word</WORD>
+<WORD line="2" col="1" value="132">_words</WORD>
+<WORD line="2" col="8" value="133">_can</WORD>
+<WORD line="2" col="13" value="134">_start</WORD>
+<WORD line="2" col="20" value="135">_with</WORD>
+<WORD line="2" col="26" value="136">_underscores</WORD>
+<WORD line="3" col="1" value="137">_and0</WORD>
+<WORD line="3" col="7" value="138">_can1</WORD>
+<WORD line="3" col="13" value="139">contain2</WORD>
+<WORD line="3" col="22" value="140">numb3rs</WORD>
+<WORD line="5" col="1" value="130">a</WORD>
+<WORD line="5" col="3" value="131">word</WORD>
+<WORD line="5" col="8" value="133">_can</WORD>
+<WORD line="5" col="13" value="141">repeat</WORD>
+<WORD line="5" col="20" value="135">_with</WORD>
+<WORD line="5" col="26" value="142">the</WORD>
+<WORD line="5" col="30" value="143">same</WORD>
+<WORD line="5" col="35" value="144">id</WORD>
 		`.trim())
 	})
 })
@@ -128,19 +128,19 @@ describe('Screener assigns word values for unicode words.', () => {
 \`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
 \`except\` \`back-ticks\` \`.\`
 		`.trim()).generate()].filter((token) => token instanceof TokenWord).map((token) => token.serialize()).join('\n')).toBe(`
-<WORD line="1" col="1" value="0">\`this\`</WORD>
-<WORD line="1" col="8" value="1">\`is\`</WORD>
-<WORD line="1" col="13" value="2">\`a\`</WORD>
-<WORD line="1" col="17" value="3">\`unicode word\`</WORD>
-<WORD line="2" col="1" value="4">\`any\`</WORD>
-<WORD line="2" col="7" value="3">\`unicode word\`</WORD>
-<WORD line="2" col="22" value="5">\`can\`</WORD>
-<WORD line="2" col="28" value="6">\`contain\`</WORD>
-<WORD line="2" col="38" value="4">\`any\`</WORD>
-<WORD line="2" col="44" value="7">\`character\`</WORD>
-<WORD line="3" col="1" value="8">\`except\`</WORD>
-<WORD line="3" col="10" value="9">\`back-ticks\`</WORD>
-<WORD line="3" col="23" value="10">\`.\`</WORD>
+<WORD line="1" col="1" value="128">\`this\`</WORD>
+<WORD line="1" col="8" value="129">\`is\`</WORD>
+<WORD line="1" col="13" value="130">\`a\`</WORD>
+<WORD line="1" col="17" value="131">\`unicode word\`</WORD>
+<WORD line="2" col="1" value="132">\`any\`</WORD>
+<WORD line="2" col="7" value="131">\`unicode word\`</WORD>
+<WORD line="2" col="22" value="133">\`can\`</WORD>
+<WORD line="2" col="28" value="134">\`contain\`</WORD>
+<WORD line="2" col="38" value="132">\`any\`</WORD>
+<WORD line="2" col="44" value="135">\`character\`</WORD>
+<WORD line="3" col="1" value="136">\`except\`</WORD>
+<WORD line="3" col="10" value="137">\`back-ticks\`</WORD>
+<WORD line="3" col="23" value="138">\`.\`</WORD>
 		`.trim())
 	})
 })

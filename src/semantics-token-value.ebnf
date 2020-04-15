@@ -258,7 +258,5 @@ MV([0-9a-z] ::= "z")  :=  35
 
 
 
-WV(Word ::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - Keyword)
-	:= /* TO BE DETERMINED */
-WV(Word ::= Keyword)
-	:= the contents of the token
+WV(Word ::= [A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`")
+	:= /* TO BE DESCRIBED */

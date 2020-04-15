@@ -3,6 +3,7 @@ import Token, {
 	TokenWhitespace,
 	TokenComment,
 	TokenWord,
+	TokenWordBasic,
 } from './Token.class'
 
 
@@ -45,9 +46,17 @@ export default class Screener {
 	* generate(): Iterator<Token, void> {
 		while (!this.iterator_result_token.done) {
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
-				if (this.t0 instanceof TokenWord && this.t0.isIdentifier) {
-					this._ids.add(this.t0.source)
-					this.t0.setValue([...this._ids].indexOf(this.t0.source))
+				if (this.t0 instanceof TokenWord) {
+					if (!this.t0.isIdentifier) {
+						const value: number = [...TokenWordBasic.KEYWORDS]
+							.flatMap(([_, reserved]) => reserved)
+							.indexOf(this.t0.source)
+						if (value < 0) throw new Error('A word token was not flagged as an identifier but was not found among the reserved keywords.')
+						this.t0.setValue(BigInt(value))
+					} else {
+						this._ids.add(this.t0.source)
+						this.t0.setValue(BigInt([...this._ids].indexOf(this.t0.source)) + 128n) // bypass all the reserved keywords
+					}
 				}
 				if (this.t0 instanceof Token) {
 					yield this.t0

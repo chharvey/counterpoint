@@ -163,7 +163,7 @@ export class SemanticNodeTemplate extends SemanticNode {
 	}
 }
 export class SemanticNodeIdentifier extends SemanticNode {
-	constructor(canonical: Token, id: string|number) {
+	constructor(canonical: Token, id: bigint|null) {
 		super(canonical, {id})
 	}
 }
