@@ -162,7 +162,7 @@ export class TerminalNumber extends Terminal {
 		return `${Util.randomBool() ? '' : `${TerminalNumber.digitSequence(radix)}${Util.randomBool() ? '' : '_'}`}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
 	}
 	random(): string {
-		const base: [string, number] = [...TokenNumber.BASES.entries()][Util.randomInt(6)]
+		const base: [string, number] = [...TokenNumber.BASES][Util.randomInt(6)]
 		return Util.randomBool() ? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT) : `\\${base[0]}${TerminalNumber.digitSequence(base[1])}`
 	}
 	match(candidate: Token): boolean {

@@ -49,7 +49,7 @@ describe('Non-radix (decimal default) integers.', () => {
 
 describe('Radix-specific integers.', () => {
 	test('Single-digit numbers.', () => {
-		;[...TokenNumber.BASES.entries()].map(([base, radix]) =>
+		;[...TokenNumber.BASES].map(([base, radix]) =>
 			[...new Lexer(
 				TokenNumber.DIGITS.get(radix).map((d) => `\\${base}${d}`).join(' ')
 			).generate()].slice(1, -1)
