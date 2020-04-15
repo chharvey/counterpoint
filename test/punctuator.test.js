@@ -22,7 +22,7 @@ test('Lexer recognizes `TokenPunctuator` conditions.', () => {
 
 test('TokenPunctuator#serialize', () => {
 	const lexer = new Lexer(`+`)
-	lexer.advance(2) // bypass added `\u0002\u000a`
+	lexer.advance(2n) // bypass added `\u0002\u000a`
 	const token = new TokenPunctuator(lexer)
 	token.add(new Char(new Scanner('='), 2))
 	expect(token.source).toBe('+=')

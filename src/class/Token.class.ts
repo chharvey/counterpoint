@@ -151,7 +151,7 @@ export class TokenCommentLine extends TokenComment {
 	static readonly DELIM: '%' = '%'
 	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
-		lexer.advance(TokenCommentLine.DELIM.length)
+		lexer.advance()
 		while (!lexer.isDone && !Char.eq('\n', lexer.c0)) {
 			if (Char.eq(ETX, lexer.c0)) {
 				super(buffer[0], ...buffer.slice(1))
@@ -172,7 +172,7 @@ export class TokenCommentMulti extends TokenComment {
 	constructor (lexer: Lexer) {
 		let comment_multiline_level: number /* bigint */ = 0
 		const buffer: Char[] = [lexer.c0, lexer.c1 !]
-		lexer.advance(TokenCommentMulti.DELIM_START.length)
+		lexer.advance(2n)
 		comment_multiline_level++;
 		while (comment_multiline_level !== 0) {
 			while (!lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, lexer.c0, lexer.c1)) {
@@ -182,7 +182,7 @@ export class TokenCommentMulti extends TokenComment {
 				}
 				if (Char.eq(TokenCommentMulti.DELIM_START, lexer.c0, lexer.c1)) {
 					buffer.push(lexer.c0, lexer.c1 !)
-					lexer.advance(TokenCommentMulti.DELIM_START.length)
+					lexer.advance(2n)
 					comment_multiline_level++;
 				} else {
 					buffer.push(lexer.c0)
@@ -191,7 +191,7 @@ export class TokenCommentMulti extends TokenComment {
 			}
 			// add ending delim to token
 			buffer.push(lexer.c0, lexer.c1 !)
-			lexer.advance(TokenCommentMulti.DELIM_END.length)
+			lexer.advance(2n)
 			comment_multiline_level--;
 		}
 		super(buffer[0], ...buffer.slice(1))
@@ -202,7 +202,7 @@ export class TokenCommentBlock extends TokenComment {
 	static readonly DELIM_END   : '%%%' = '%%%'
 	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0, lexer.c1 !, lexer.c2 !, lexer.c3 !]
-		lexer.advance((`${TokenCommentBlock.DELIM_START}\n`).length)
+		lexer.advance(4n)
 		let source: string = buffer.map((char) => char.source).join('')
 		while (!lexer.isDone) {
 			if (Char.eq(ETX, lexer.c0)) {
@@ -222,7 +222,7 @@ export class TokenCommentBlock extends TokenComment {
 		}
 		// add ending delim to token
 		buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-		lexer.advance(TokenCommentBlock.DELIM_END.length)
+		lexer.advance(3n)
 		super(buffer[0], ...buffer.slice(1))
 	}
 }
@@ -288,14 +288,14 @@ export class TokenString extends Token {
 				if (Char.inc(TokenString.ESCAPES, lexer.c1)) {
 					/* an escaped character literal */
 					buffer.push(lexer.c0, lexer.c1 !)
-					lexer.advance(2)
+					lexer.advance(2n)
 
 				} else if (Char.eq('u{', lexer.c1, lexer.c2)) {
 					/* an escape sequence */
 					const digits: readonly string[] = TokenNumber.DIGITS.get(16) !
 					let cargo: string = `${lexer.c0.source}${lexer.c1 !.source}${lexer.c2 !.source}`
 					buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-					lexer.advance(3)
+					lexer.advance(3n)
 					if (Char.inc(digits, lexer.c0)) {
 						cargo += lexer.c0.source
 						buffer.push(lexer.c0)
@@ -309,7 +309,7 @@ export class TokenString extends Token {
 								if (Char.inc(digits, lexer.c1)) {
 									cargo += `${lexer.c0.source}${lexer.c1 !.source}`
 									buffer.push(lexer.c0, lexer.c1 !)
-									lexer.advance(2)
+									lexer.advance(2n)
 								} else {
 									throw new LexError04(Char.eq(TokenNumber.SEPARATOR, lexer.c1) ? lexer.c1 ! : lexer.c0)
 								}
@@ -327,7 +327,7 @@ export class TokenString extends Token {
 				} else if (Char.eq('\n', lexer.c1)) {
 					/* a line continuation (LF) */
 					buffer.push(lexer.c0, lexer.c1 !)
-					lexer.advance(2)
+					lexer.advance(2n)
 
 				} else {
 					/* a backslash escapes the following character */
@@ -341,7 +341,7 @@ export class TokenString extends Token {
 		}
 		// add ending delim to token
 		buffer.push(lexer.c0)
-		lexer.advance(TokenString.DELIM.length)
+		lexer.advance()
 		super('STRING', buffer[0], ...buffer.slice(1))
 	}
 	cook(): string {
@@ -377,11 +377,11 @@ export class TokenTemplate extends Token {
 		if (delim_start === TokenTemplate.DELIM) {
 			positions.add(TemplatePosition.FULL).add(TemplatePosition.HEAD)
 			buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-			lexer.advance(TokenTemplate.DELIM.length)
+			lexer.advance(3n)
 		} else { // delim_start === TokenTemplate.DELIM_INTERP_END
 			positions.add(TemplatePosition.MIDDLE).add(TemplatePosition.TAIL)
 			buffer.push(lexer.c0, lexer.c1 !)
-			lexer.advance(TokenTemplate.DELIM_INTERP_END.length)
+			lexer.advance(2n)
 		}
 		while (!lexer.isDone) {
 			if (Char.eq(ETX, lexer.c0)) {
@@ -395,7 +395,7 @@ export class TokenTemplate extends Token {
 				positions.delete(TemplatePosition.MIDDLE)
 				// add ending delim to token
 				buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-				lexer.advance(TokenTemplate.DELIM.length)
+				lexer.advance(3n)
 				break;
 
 			} else if (Char.eq(TokenTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) {
@@ -405,7 +405,7 @@ export class TokenTemplate extends Token {
 				positions.delete(TemplatePosition.TAIL)
 				// add start interpolation delim to token
 				buffer.push(lexer.c0, lexer.c1 !)
-				lexer.advance(TokenTemplate.DELIM_INTERP_START.length)
+				lexer.advance(2n)
 				break;
 
 			} else {
@@ -476,7 +476,7 @@ export class TokenNumber extends Token {
 				throw new LexError03(`${lexer.c0.source}${lexer.c1 !.source}`, lexer.c0.line_index, lexer.c0.col_index)
 			}
 			buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-			lexer.advance(3)
+			lexer.advance(3n)
 		} else { // implicit default base
 			buffer.push(lexer.c0)
 			lexer.advance()
@@ -488,7 +488,7 @@ export class TokenNumber extends Token {
 			} else if (Char.eq(TokenNumber.SEPARATOR, lexer.c0)) {
 				if (Char.inc(digits, lexer.c1)) {
 					buffer.push(lexer.c0, lexer.c1 !)
-					lexer.advance(2)
+					lexer.advance(2n)
 				} else {
 					throw new LexError04(Char.eq(TokenNumber.SEPARATOR, lexer.c1) ? lexer.c1 ! : lexer.c0)
 				}
@@ -567,11 +567,11 @@ export class TokenPunctuator extends Token {
 	static readonly CHARS_1: readonly string[] = '; = + - * / ^ ( )'.split(' ')
 	static readonly CHARS_2: readonly string[] = ''.split(' ')
 	static readonly CHARS_3: readonly string[] = ''.split(' ')
-	constructor (lexer: Lexer, count: 1|2|3 = 1) {
+	constructor (lexer: Lexer, count: 1n|2n|3n = 1n) {
 		const buffer: Char[] = [lexer.c0]
-		if (count >= 3) {
+		if (count >= 3n) {
 			buffer.push(lexer.c1 !, lexer.c2 !)
-		} else if (count >= 2) {
+		} else if (count >= 2n) {
 			buffer.push(lexer.c1 !)
 		}
 		lexer.advance(count)
