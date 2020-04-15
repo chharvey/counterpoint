@@ -170,11 +170,11 @@ export class TokenCommentMulti extends TokenComment {
 	static readonly DELIM_START : '{%' = '{%'
 	static readonly DELIM_END   : '%}' = '%}'
 	constructor (lexer: Lexer) {
-		let comment_multiline_level: number /* bigint */ = 0
+		let comment_multiline_level: bigint = 0n
 		const buffer: Char[] = [lexer.c0, lexer.c1 !]
 		lexer.advance(2n)
 		comment_multiline_level++;
-		while (comment_multiline_level !== 0) {
+		while (comment_multiline_level !== 0n) {
 			while (!lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, lexer.c0, lexer.c1)) {
 				if (Char.eq(ETX, lexer.c0)) {
 					super(buffer[0], ...buffer.slice(1))
