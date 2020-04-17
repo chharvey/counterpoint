@@ -1,6 +1,9 @@
 import type Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Char.class'
 import type ParseNode from './ParseNode.class'
+import type {
+	ParseNodeExpressionUnit,
+} from './ParseNode.class'
 
 
 
@@ -83,7 +86,11 @@ export default null
 	}
 }
 export class SemanticNodeGoal extends SemanticNode {
-	constructor(start_node: ParseNode, children: readonly [SemanticNodeExpression]) {
+	constructor(
+		start_node: ParseNode,
+		protected readonly children:
+			readonly [SemanticNodeConstant|SemanticNodeExpression],
+	) {
 		super(start_node, {}, children)
 	}
 	compile(): string {
@@ -96,7 +103,13 @@ export default ${this.children[0].identifier}
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {
-	constructor(start_node: ParseNode, private readonly operator: string, children: readonly SemanticNode[]) {
+	constructor(
+		start_node: ParseNode,
+		private readonly operator: string,
+		protected readonly children:
+			readonly [SemanticNodeConstant|SemanticNodeExpression] |
+			readonly [SemanticNodeConstant|SemanticNodeExpression, SemanticNodeConstant|SemanticNodeExpression],
+	) {
 		super(start_node, {operator}, children)
 	}
 	compile(): string {
@@ -113,7 +126,10 @@ ${idthis === id0 ? idthis : `let ${idthis}: number`} = ${this.children.length ==
 	}
 }
 export class SemanticNodeConstant extends SemanticNode {
-	constructor(start_node: ParseNode, private readonly value: number) {
+	constructor(
+		start_node: ParseNodeExpressionUnit,
+		private readonly value: number,
+	) {
 		super(start_node, {value})
 	}
 	compile(): string {
