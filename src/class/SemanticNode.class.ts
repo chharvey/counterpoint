@@ -21,8 +21,6 @@ export default class SemanticNode implements Serializable {
 	readonly line_index: number;
 	/** Zero-based column number of the first token (first col is col 0). */
 	readonly col_index: number;
-	/** An identifier for this node in compiled output. */
-	readonly identifier: string; // COMBAK `protected` NB <https://github.com/microsoft/TypeScript/issues/35989>
 
 	/**
 	 * Construct a new SemanticNode object.
@@ -41,7 +39,6 @@ export default class SemanticNode implements Serializable {
 		this.source_index = start_node.source_index
 		this.line_index   = start_node.line_index
 		this.col_index    = start_node.col_index
-		this.identifier   = `__${this.source_index.toString(36)}`
 	}
 
 	/**
@@ -50,8 +47,8 @@ export default class SemanticNode implements Serializable {
 	 */
 	compile(): string {
 		return `
-export default void 0
-		`.trim()
+			export default void 0
+		`
 	}
 
 	/**
@@ -81,8 +78,8 @@ export class SemanticNodeNull extends SemanticNode {
 	}
 	compile(): string {
 		return `
-export default null
-		`.trim()
+			export default null
+		`
 	}
 }
 export class SemanticNodeGoal extends SemanticNode {
@@ -94,12 +91,29 @@ export class SemanticNodeGoal extends SemanticNode {
 		super(start_node, {}, children)
 	}
 	compile(): string {
-		return this.children[0] instanceof SemanticNodeConstant ? `
-export default ${this.children[0].compile()}
-		`.trim() : `
-${this.children[0].compile()}
-export default ${this.children[0].identifier}
-		`.trim()
+		return `
+			type RuntimeInt = number
+			type Stack = StackItem[]
+			type StackItem = RuntimeInt|StackFunction
+			type StackFunction = (x: RuntimeInt, y?: RuntimeInt) => RuntimeInt
+			const evalStack = (stack: Stack): RuntimeInt => {
+				if (!stack.length) throw new Error('empty stack')
+				const it: StackItem = stack.pop()!
+				return (it instanceof Function) ?
+					it(...[...new Array(it.length)].map(() => evalStack(stack)).reverse() as Parameters<StackFunction>) :
+					it
+			}
+			const AFF: StackFunction = (a) => +a
+			const NEG: StackFunction = (a) => -a
+			const ADD: StackFunction = (a, b) => a  + b!
+			const SUB: StackFunction = (a, b) => a  - b!
+			const MUL: StackFunction = (a, b) => a  * b!
+			const DIV: StackFunction = (a, b) => a  / b!
+			const EXP: StackFunction = (a, b) => a ** b!
+			const STACK: Stack = []
+			${this.children[0].compile()}
+			export default evalStack(STACK)
+		`
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {
@@ -113,16 +127,24 @@ export class SemanticNodeExpression extends SemanticNode {
 		super(start_node, {operator}, children)
 	}
 	compile(): string {
-		const child0 : string = this.children[0].compile()
-		const child1 : string = this.children.length === 2 ? this.children[1].compile() : ''
-		const idthis : string = this.identifier
-		const id0    : string = this.children[0].identifier
-		const id1    : string = this.children.length === 2 ? this.children[1].identifier : '__'
 		return `
-${this.children[0] instanceof SemanticNodeConstant ? `let ${id0}: number = ${child0}` : child0}
-${this.children[1] instanceof SemanticNodeConstant ? `let ${id1}: number = ${child1}` : child1}
-${idthis === id0 ? idthis : `let ${idthis}: number`} = ${this.children.length === 2 ? `${id0} ${this.operator.replace('^', '**')} ${id1}` : `${this.operator} ${id0}`}
-		`.trim()
+			${this.children[0].compile()}
+			${(this.children.length === 2) ? `
+				${this.children[1].compile()}
+				STACK.push(${new Map<string, string>([
+					['+', 'ADD'],
+					['-', 'SUB'],
+					['*', 'MUL'],
+					['/', 'DIV'],
+					['^', 'EXP'],
+				]).get(this.operator || '+') || 'ADD'})
+			` : `
+				STACK.push(${new Map<string, string>([
+					['+', 'AFF'],
+					['-', 'NEG'],
+				]).get(this.operator || '+') || 'AFF'})
+			`}
+		`
 	}
 }
 export class SemanticNodeConstant extends SemanticNode {
@@ -133,6 +155,8 @@ export class SemanticNodeConstant extends SemanticNode {
 		super(start_node, {value})
 	}
 	compile(): string {
-		return `${this.value}`
+		return `
+			STACK.push(${this.value})
+		`
 	}
 }
