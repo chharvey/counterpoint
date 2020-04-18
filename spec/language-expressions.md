@@ -52,6 +52,33 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol)
 ```
 
 
+### Static Semantics: Compilation (Unary Operators)
+```w3c
+Compile(SemanticExpression[operator="+"]) :=
+	1. assert the number of `SemanticExpression.children` is 1.
+	2. perform `Compile(SemanticExpression.children.0)`.
+	4. push `AFF` onto `STACK`.
+Compile(SemanticExpression[operator="-"]) :=
+	1. assert the number of `SemanticExpression.children` is 1.
+	2. perform `Compile(SemanticExpression.children.0)`.
+	4. push `NEG` onto `STACK`.
+```
+
+
+### Runtime Semantics: Evaluation (Unary Operators)
+```w3c
+Evaluate(STACK) :=
+	1. assert `STACK` is not empty.
+	2. let `it` be `STACK.lastItem`.
+	3. pop `STACK`.
+	4. assert `it` is either `AFF` or `NEG`.
+	6. let `arg` be `EVALUATE(STACK)`.
+	7. if `it` is `NEG`, then return the negation, `-arg`,
+		obtained by negating `arg`.
+	9. return `arg`.
+```
+
+
 
 ## Exponentiation
 ```w3c
@@ -68,6 +95,30 @@ Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponenti
 		Decorate(ExpressionUnarySymbol),
 		Decorate(ExpressionExponential),
 	]
+```
+
+
+### Static Semantics: Compilation (Exponentiation)
+```w3c
+Compile(SemanticExpression[operator="^"]) :=
+	1. assert the number of `SemanticExpression.children` is 2.
+	2. perform `Compile(SemanticExpression.children.0)`.
+	3. perform `Compile(SemanticExpression.children.1)`.
+	4. push `EXP` onto `STACK`.
+```
+
+
+### Runtime Semantics: Evaluation (Exponentiation)
+```w3c
+Evaluate(STACK) :=
+	1. assert `STACK` is not empty.
+	2. let `it` be `STACK.lastItem`.
+	3. pop `STACK`.
+	4. assert `it` is `EXP`.
+	5. let `arg2` be `Evaluate(STACK)`.
+	6. let `arg1` be `EVALUATE(STACK)`.
+	7. return the power, `arg1 ^ arg2`,
+		obtained by raising `arg1` (the base) to `arg2` (the exponent).
 ```
 
 
@@ -95,6 +146,38 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 ```
 
 
+### Static Semantics: Compilation (Multiplication/Division)
+```w3c
+Compile(SemanticExpression[operator="*"]) :=
+	1. assert the number of `SemanticExpression.children` is 2.
+	2. perform `Compile(SemanticExpression.children.0)`.
+	3. perform `Compile(SemanticExpression.children.1)`.
+	4. push `MUL` onto `STACK`.
+Compile(SemanticExpression[operator="/"]) :=
+	1. assert the number of `SemanticExpression.children` is 2.
+	2. perform `Compile(SemanticExpression.children.0)`.
+	3. perform `Compile(SemanticExpression.children.1)`.
+	4. push `DIV` onto `STACK`.
+```
+
+
+### Runtime Semantics: Evaluation (Multiplication/Division)
+```w3c
+Evaluate(STACK) :=
+	1. assert `STACK` is not empty.
+	2. let `it` be `STACK.lastItem`.
+	3. pop `STACK`.
+	4. assert `it` is either `MUL` or `DIV`.
+	5. let `arg2` be `Evaluate(STACK)`.
+	6. let `arg1` be `EVALUATE(STACK)`.
+	7. if `it` is `MUL`, then return the product, `arg1 * arg2`,
+		obtained by multiplying `arg1` (the multiplicand) by `arg2` (the multiplier).
+	8. if `it` is `DIV`, then return the quotient, `arg1 / arg2`,
+		obtained by dividing `arg1` (the dividend) by `arg2` (the divisor).
+	9. return 0.
+```
+
+
 
 ## Addition/Subtraction
 ```w3c
@@ -116,4 +199,36 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 		Decorate(ExpressionAdditive),
 		Decorate(ExpressionMultiplicative),
 	]
+```
+
+
+### Static Semantics: Compilation (Addition/Subtraction)
+```w3c
+Compile(SemanticExpression[operator="+"]) :=
+	1. assert the number of `SemanticExpression.children` is 2.
+	2. perform `Compile(SemanticExpression.children.0)`.
+	3. perform `Compile(SemanticExpression.children.1)`.
+	4. push `ADD` onto `STACK`.
+Compile(SemanticExpression[operator="-"]) :=
+	1. assert the number of `SemanticExpression.children` is 2.
+	2. perform `Compile(SemanticExpression.children.0)`.
+	3. perform `Compile(SemanticExpression.children.1)`.
+	4. push `SUB` onto `STACK`.
+```
+
+
+### Runtime Semantics: Evaluation (Addition/Subtraction)
+```w3c
+Evaluate(STACK) :=
+	1. assert `STACK` is not empty.
+	2. let `it` be `STACK.lastItem`.
+	3. pop `STACK`.
+	4. assert `it` is either `ADD` or `SUB`.
+	5. let `arg2` be `Evaluate(STACK)`.
+	6. let `arg1` be `EVALUATE(STACK)`.
+	7. if `it` is `ADD`, then return the sum, `arg1 + arg2`,
+		obtained by adding `arg1` (the augend) to `arg2` (the addend).
+	8. if `it` is `SUB`, then return the difference, `arg1 - arg2`,
+		obtained by subtracting `arg2` (the subtrahend) from `arg1` (the minuend).
+	9. return 0.
 ```

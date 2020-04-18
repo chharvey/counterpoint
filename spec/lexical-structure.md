@@ -152,6 +152,12 @@ Decorate(Number)
 ```
 where `MV` is [Mathematical Value](./#static-semantics-mathematical-value).
 
+#### Static Semantics: Compilation (Numbers)
+```w3c
+Compile(SemanticConstant) :=
+	1. push `SemanticConstant.value` onto `STACK`.
+```
+
 
 ### Punctuators
 ```w3c
