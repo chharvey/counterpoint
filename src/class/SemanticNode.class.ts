@@ -1,3 +1,4 @@
+import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Char.class'
 import type ParseNode from './ParseNode.class'
@@ -46,9 +47,9 @@ export default class SemanticNode implements Serializable {
 	 * @returns a string of code to execute
 	 */
 	compile(): string {
-		return `
+		return Util.dedent(`
 			export default void 0
-		`
+		`)
 	}
 
 	/**
@@ -77,9 +78,9 @@ export class SemanticNodeNull extends SemanticNode {
 		super(start_node)
 	}
 	compile(): string {
-		return `
+		return Util.dedent(`
 			export default null
-		`
+		`)
 	}
 }
 export class SemanticNodeGoal extends SemanticNode {
@@ -91,7 +92,7 @@ export class SemanticNodeGoal extends SemanticNode {
 		super(start_node, {}, children)
 	}
 	compile(): string {
-		return `
+		return Util.dedent(`
 			type RuntimeInt = number
 			type Stack = StackItem[]
 			type StackItem = RuntimeInt|StackFunction
@@ -113,7 +114,7 @@ export class SemanticNodeGoal extends SemanticNode {
 			const STACK: Stack = []
 			${this.children[0].compile()}
 			export default evalStack(STACK)
-		`
+		`)
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {
@@ -127,9 +128,9 @@ export class SemanticNodeExpression extends SemanticNode {
 		super(start_node, {operator}, children)
 	}
 	compile(): string {
-		return `
+		return Util.dedent(`
 			${this.children[0].compile()}
-			${(this.children.length === 2) ? `
+			${Util.dedent((this.children.length === 2) ? `
 				${this.children[1].compile()}
 				STACK.push(${new Map<string, string>([
 					['+', 'ADD'],
@@ -143,8 +144,8 @@ export class SemanticNodeExpression extends SemanticNode {
 					['+', 'AFF'],
 					['-', 'NEG'],
 				]).get(this.operator || '+') || 'AFF'})
-			`}
-		`
+			`)}
+		`)
 	}
 }
 export class SemanticNodeConstant extends SemanticNode {
@@ -155,8 +156,8 @@ export class SemanticNodeConstant extends SemanticNode {
 		super(start_node, {value})
 	}
 	compile(): string {
-		return `
+		return Util.dedent(`
 			STACK.push(${this.value})
-		`
+		`)
 	}
 }
