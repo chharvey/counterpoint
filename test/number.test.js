@@ -16,7 +16,7 @@ const {
 
 describe('Non-radix (decimal default) integers.', () => {
 	test('Single-digit numbers.', () => {
-		;[...new Lexer(TokenNumber.DIGITS.get(10).join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
+		;[...new Lexer(TokenNumber.DIGITS.get(10n).join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 			expect(token).toBeInstanceOf(TokenNumber)
 		})
 	})

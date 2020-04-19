@@ -10,6 +10,8 @@ import {
 } from '../error/LexError.class'
 
 
+export type RadixType = 2n|4n|8n|10n|16n|36n
+
 export enum TemplatePosition {
 	FULL,
 	HEAD,
@@ -257,7 +259,7 @@ export class TokenString extends Token {
 				/* an escape sequence */
 				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
 				return [
-					...Util.utf16Encoding(TokenNumber.mv(sequence[0].slice(3, -1) || '0', 16)),
+					...Util.utf16Encoding(TokenNumber.mv(sequence[0].slice(3, -1) || '0', 16n)),
 					...TokenString.sv(text.slice(sequence[0].length)),
 				]
 
@@ -293,7 +295,7 @@ export class TokenString extends Token {
 
 				} else if (Char.eq('u{', lexer.c1, lexer.c2)) {
 					/* an escape sequence */
-					const digits: readonly string[] = TokenNumber.DIGITS.get(16) !
+					const digits: readonly string[] = TokenNumber.DIGITS.get(16n) !
 					let cargo: string = `${lexer.c0.source}${lexer.c1 !.source}${lexer.c2 !.source}`
 					buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
 					lexer.advance(3n)
@@ -426,53 +428,58 @@ export class TokenTemplate extends Token {
 	}
 }
 export class TokenNumber extends Token {
-	static readonly RADIX_DEFAULT: number = 10
+	static readonly RADIX_DEFAULT: RadixType = 10n
 	static readonly SEPARATOR: string = '_'
-	static readonly BASES: ReadonlyMap<string, number> = new Map<string, number>([
-		['b',  2],
-		['q',  4],
-		['o',  8],
-		['d', 10],
-		['x', 16],
-		['z', 36],
+	static readonly BASES: ReadonlyMap<string, RadixType> = new Map<string, RadixType>([
+		['b',  2n],
+		['q',  4n],
+		['o',  8n],
+		['d', 10n],
+		['x', 16n],
+		['z', 36n],
 	])
-	static readonly DIGITS: ReadonlyMap<number, readonly string[]> = new Map<number, readonly string[]>([
-		[ 2, '0 1'                                                                     .split(' ')],
-		[ 4, '0 1 2 3'                                                                 .split(' ')],
-		[ 8, '0 1 2 3 4 5 6 7'                                                         .split(' ')],
-		[10, '0 1 2 3 4 5 6 7 8 9'                                                     .split(' ')],
-		[16, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ')],
-		[36, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
+	static readonly DIGITS: ReadonlyMap<RadixType, readonly string[]> = new Map<RadixType, readonly string[]>([
+		[ 2n, '0 1'                                                                     .split(' ')],
+		[ 4n, '0 1 2 3'                                                                 .split(' ')],
+		[ 8n, '0 1 2 3 4 5 6 7'                                                         .split(' ')],
+		[10n, '0 1 2 3 4 5 6 7 8 9'                                                     .split(' ')],
+		[16n, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ')],
+		[36n, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
 	])
-	static readonly PREFIXES: readonly string[] = '+ -'.split(' ')
+	static readonly UNARY: ReadonlyMap<string, number> = new Map<string, number>([
+		['+',  1],
+		['-', -1],
+	])
 	/**
 	 * Compute the mathematical value of a `TokenNumber` token.
 	 * @param   text  - the string to compute
 	 * @param   radix - the base in which to compute
 	 * @returns         the mathematical value of the string in the given base
 	 */
-	static mv(text: string, radix = 10): number {
+	static mv(text: string, radix: RadixType = TokenNumber.RADIX_DEFAULT): number {
 		if (text[text.length-1] === TokenNumber.SEPARATOR) {
 			text = text.slice(0, -1)
 		}
 		if (text.length === 0) throw new Error('Cannot compute mathematical value of empty string.')
 		if (text.length === 1) {
-			const digitvalue: number = parseInt(text, radix)
+			const digitvalue: number = parseInt(text, Number(radix))
 			if (Number.isNaN(digitvalue)) throw new Error(`Invalid number format: \`${text}\``)
 			return digitvalue
 		}
-		return radix * TokenNumber.mv(text.slice(0, -1), radix) + TokenNumber.mv(text[text.length-1], radix)
+		return Number(radix) * TokenNumber.mv(text.slice(0, -1), radix) + TokenNumber.mv(text[text.length-1], radix)
 	}
-	private readonly radix: number;
-	constructor (lexer: Lexer, has_prefix: boolean, radix: number|null = null) {
-		const r: number = radix || TokenNumber.RADIX_DEFAULT // do not use RADIX_DEFAULT as the default parameter because of the if-else below
-		const digits: readonly string[] = TokenNumber.DIGITS.get(r) !
+	private readonly has_unary: boolean;
+	private readonly has_radix: boolean;
+	private readonly radix: RadixType;
+	constructor (lexer: Lexer, has_unary: boolean, has_radix: boolean = false) {
 		const buffer: Char[] = []
-		if (has_prefix) { // prefixed with leading "+" or "-"
+		if (has_unary) { // prefixed with leading unary operator "+" or "-"
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
-		if (typeof radix === 'number') { // an explicit base
+		const radix: RadixType = has_radix ? TokenNumber.BASES.get(lexer.c1 !.source) ! : TokenNumber.RADIX_DEFAULT
+		const digits: readonly string[] = TokenNumber.DIGITS.get(radix) !
+		if (has_radix) { // an explicit base
 			if (!Char.inc(digits, lexer.c2)) {
 				throw new LexError03(`${lexer.c0.source}${lexer.c1 !.source}`, lexer.c0.line_index, lexer.c0.col_index)
 			}
@@ -496,17 +503,16 @@ export class TokenNumber extends Token {
 			}
 		}
 		super('NUMBER', buffer[0], ...buffer.slice(1))
-		this.radix = r
+		this.has_unary = has_unary
+		this.has_radix = has_radix
+		this.radix     = radix
 	}
 	cook(): number {
-		let text = this.source
-		const multiplier = new Map<string, number>([
-			['+',  1],
-			['-', -1],
-		]).get(text[0]) || null
-		if (multiplier !== null) text = text.slice(1) // cut off prefix, if any
-		if (text[0]    === '\\') text = text.slice(2) // cut off radix , if any
-		return (multiplier || 1) * TokenNumber.mv(text, this.radix)
+		let text: string = this.source
+		const multiplier: number = TokenNumber.UNARY.get(text[0]) || 1
+		if (this.has_unary) text = text.slice(1) // cut off unary, if any
+		if (this.has_radix) text = text.slice(2) // cut off radix, if any
+		return multiplier * TokenNumber.mv(text, this.radix)
 	}
 }
 export abstract class TokenWord extends Token {
