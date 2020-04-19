@@ -1,3 +1,5 @@
+import * as xjs from 'extrajs'
+
 import Util from './Util.class'
 import {STX, ETX} from './Char.class'
 import type Token from './Token.class'
@@ -263,7 +265,7 @@ export class Configuration {
 	 * @returns        a new Configuration with the marker moved forward 1 step
 	 */
 	advance(step: bigint = 1n): Configuration {
-		return new Configuration(this.rule, this.marker + Util.maxBigInt(1n, step), ...this.lookaheads)
+		return new Configuration(this.rule, this.marker + xjs.Math.maxBigInt(1n, step), ...this.lookaheads)
 	}
 
 	/**

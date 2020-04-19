@@ -11,14 +11,6 @@ export default class Util {
 	}
 
 	/**
-	 * @todo TODO import from extrajs@^0.21
-	 */
-	static maxBigInt(...ints: bigint[]): bigint {
-		if (!ints.length) throw new Error('No arguments supplied.')
-		return ints.reduce((a, b) => a < b ? b : a)
-	}
-
-	/**
 	 * Return a random integer from 0 to the argument.
 	 * @example
 	 * randomInt(16); // returns a random integer within the interval [0, 16)
