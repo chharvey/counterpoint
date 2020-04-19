@@ -88,3 +88,28 @@ STACK.push(SUB)
 export default evalStack(STACK)
 	`))
 })
+
+
+
+test('Compile file with compound expression, grouping.', () => {
+	const node = new Parser('42 ^ (2 * 420)').parse().decorate()
+	expect(node.compile()).toBe(preamble + Util.dedent(`
+
+STACK.push(42)
+
+
+
+
+STACK.push(2)
+
+
+
+STACK.push(420)
+
+STACK.push(MUL)
+
+STACK.push(EXP)
+
+export default evalStack(STACK)
+	`))
+})

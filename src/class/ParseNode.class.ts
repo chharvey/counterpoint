@@ -2,6 +2,7 @@ import type Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Char.class'
 import type Token from './Token.class'
 import type {
+	TokenFilebound,
 	TokenNumber,
 	TokenPunctuator,
 } from './Token.class'
@@ -112,8 +113,8 @@ export default class ParseNode implements Serializable {
 
 class ParseNodeGoal extends ParseNode {
 	declare children:
-		readonly [Token,                      Token] |
-		readonly [Token, ParseNodeExpression, Token];
+		readonly [TokenFilebound,                      TokenFilebound] |
+		readonly [TokenFilebound, ParseNodeExpression, TokenFilebound];
 	decorate(): SemanticNodeNull|SemanticNodeGoal {
 		return (this.children.length === 2) ?
 			new SemanticNodeNull(this)
@@ -147,7 +148,7 @@ class ParseNodeExpressionBinary extends ParseNode {
 class ParseNodeExpressionUnary extends ParseNode {
 	declare children:
 		readonly [ParseNodeExpressionUnit] |
-		readonly [Token, ParseNodeExpressionUnary];
+		readonly [TokenPunctuator, ParseNodeExpressionUnary];
 	decorate(): SemanticNodeConstant|SemanticNodeExpression {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
@@ -160,7 +161,7 @@ class ParseNodeExpressionUnary extends ParseNode {
 export class ParseNodeExpressionUnit extends ParseNode {
 	declare children:
 		readonly [TokenNumber] |
-		readonly [Token, ParseNodeExpression, Token];
+		readonly [TokenPunctuator, ParseNodeExpression, TokenPunctuator];
 	decorate(): SemanticNodeConstant|SemanticNodeExpression {
 		return (this.children.length === 1) ?
 			new SemanticNodeConstant(this, this.children[0].value !)
