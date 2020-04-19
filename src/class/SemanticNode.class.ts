@@ -107,7 +107,6 @@ export class SemanticNodeGoal extends SemanticNode {
 			const AFF: StackFunction = (a) => +a
 			const NEG: StackFunction = (a) => -a
 			const ADD: StackFunction = (a, b) => a  + b!
-			const SUB: StackFunction = (a, b) => a  - b!
 			const MUL: StackFunction = (a, b) => a  * b!
 			const DIV: StackFunction = (a, b) => a  / b!
 			const EXP: StackFunction = (a, b) => a ** b!
@@ -134,7 +133,6 @@ export class SemanticNodeExpression extends SemanticNode {
 				${this.children[1].compile()}
 				STACK.push(${new Map<string, string>([
 					['+', 'ADD'],
-					['-', 'SUB'],
 					['*', 'MUL'],
 					['/', 'DIV'],
 					['^', 'EXP'],

@@ -67,6 +67,20 @@ test('Decorate additive.', () => {
 
 
 
+test('Decorate subtractive.', () => {
+	const node = new Parser('2 - 3').parse().children[1]
+	expect(node.decorate().serialize()).toBe(`
+<Expression line="1" col="1" source="2 - 3" operator="+">
+	<Constant line="1" col="1" source="2" value="2"/>
+	<Expression line="1" col="5" source="3" operator="-">
+		<Constant line="1" col="5" source="3" value="3"/>
+	</Expression>
+</Expression>
+	`.replace(/\n\t*/g, ''))
+})
+
+
+
 test('Decorate grouping.', () => {
 	const node = new Parser('(2 + -3)').parse().children[1]
 	expect(node.decorate().serialize()).toBe(`

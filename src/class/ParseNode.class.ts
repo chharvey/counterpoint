@@ -139,10 +139,18 @@ class ParseNodeExpressionBinary extends ParseNode {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
 		:
-			new SemanticNodeExpression(this, this.children[1].source, [
-				this.children[0].decorate(),
-				this.children[2].decorate(),
-			])
+			(this.children[1].source === '-') ? // `a - b` is syntax sugar for `a + -(b)`
+				new SemanticNodeExpression(this, '+', [
+					this.children[0].decorate(),
+					new SemanticNodeExpression(this.children[2], '-', [
+						this.children[2].decorate(),
+					]),
+				])
+			:
+				new SemanticNodeExpression(this, this.children[1].source, [
+					this.children[0].decorate(),
+					this.children[2].decorate(),
+				])
 	}
 }
 class ParseNodeExpressionUnary extends ParseNode {
