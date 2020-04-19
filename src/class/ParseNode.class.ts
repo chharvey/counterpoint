@@ -146,10 +146,10 @@ class ParseNodeExpressionBinary extends ParseNode {
 					]),
 				])
 			:
-			new SemanticNodeExpression(this, this.children[1].source, [
-				this.children[0].decorate(),
-				this.children[2].decorate(),
-			])
+				new SemanticNodeExpression(this, this.children[1].source, [
+					this.children[0].decorate(),
+					this.children[2].decorate(),
+				])
 	}
 }
 class ParseNodeExpressionUnary extends ParseNode {

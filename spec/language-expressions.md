@@ -70,8 +70,8 @@ Compile(SemanticExpression[operator="-"]) :=
 Evaluate(STACK) :=
 	1. assert `STACK` is not empty.
 	2. let `it` be `STACK.lastItem`.
-	3. pop `STACK`.
-	4. assert `it` is either `AFF` or `NEG`.
+	3. assert `it` is either `AFF` or `NEG`.
+	4. pop `STACK`.
 	6. let `arg` be `EVALUATE(STACK)`.
 	7. if `it` is `NEG`, then return the negation, `-arg`,
 		obtained by negating `arg`.
@@ -113,8 +113,8 @@ Compile(SemanticExpression[operator="^"]) :=
 Evaluate(STACK) :=
 	1. assert `STACK` is not empty.
 	2. let `it` be `STACK.lastItem`.
-	3. pop `STACK`.
-	4. assert `it` is `EXP`.
+	3. assert `it` is `EXP`.
+	4. pop `STACK`.
 	5. let `arg2` be `Evaluate(STACK)`.
 	6. let `arg1` be `EVALUATE(STACK)`.
 	7. return the power, `arg1 ^ arg2`,
@@ -166,8 +166,8 @@ Compile(SemanticExpression[operator="/"]) :=
 Evaluate(STACK) :=
 	1. assert `STACK` is not empty.
 	2. let `it` be `STACK.lastItem`.
-	3. pop `STACK`.
-	4. assert `it` is either `MUL` or `DIV`.
+	3. assert `it` is either `MUL` or `DIV`.
+	4. pop `STACK`.
 	5. let `arg2` be `Evaluate(STACK)`.
 	6. let `arg1` be `EVALUATE(STACK)`.
 	7. if `it` is `MUL`, then return the product, `arg1 * arg2`,
@@ -219,8 +219,8 @@ Compile(SemanticExpression[operator="+"]) :=
 Evaluate(STACK) :=
 	1. assert `STACK` is not empty.
 	2. let `it` be `STACK.lastItem`.
-	3. pop `STACK`.
-	4. assert `it` is `ADD`.
+	3. assert `it` is `ADD`.
+	4. pop `STACK`.
 	5. let `arg2` be `Evaluate(STACK)`.
 	6. let `arg1` be `EVALUATE(STACK)`.
 	7. return the sum, `arg1 + arg2`,
