@@ -16,9 +16,11 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative)
 		Decorate(ExpressionMultiplicative),
 	]
 Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
-	:= SemanticExpression {operator: "-"} [
+	:= SemanticExpression {operator: "+"} [
 		Decorate(ExpressionAdditive),
-		Decorate(ExpressionMultiplicative),
+		SemanticExpression {operator: "-"} [
+			Decorate(ExpressionMultiplicative),
+		],
 	]
 
 Decorate(ExpressionMultiplicative ::= ExpressionExponential)

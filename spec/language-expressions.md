@@ -195,9 +195,11 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative)
 		Decorate(ExpressionMultiplicative),
 	]
 Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
-	:= SemanticExpression {operator: "-"} [
+	:= SemanticExpression {operator: "+"} [
 		Decorate(ExpressionAdditive),
-		Decorate(ExpressionMultiplicative),
+		SemanticExpression {operator: "-"} [
+			Decorate(ExpressionMultiplicative),
+		],
 	]
 ```
 
@@ -209,11 +211,6 @@ Compile(SemanticExpression[operator="+"]) :=
 	2. perform `Compile(SemanticExpression.children.0)`.
 	3. perform `Compile(SemanticExpression.children.1)`.
 	4. push `ADD` onto `STACK`.
-Compile(SemanticExpression[operator="-"]) :=
-	1. assert the number of `SemanticExpression.children` is 2.
-	2. perform `Compile(SemanticExpression.children.0)`.
-	3. perform `Compile(SemanticExpression.children.1)`.
-	4. push `SUB` onto `STACK`.
 ```
 
 
@@ -223,12 +220,9 @@ Evaluate(STACK) :=
 	1. assert `STACK` is not empty.
 	2. let `it` be `STACK.lastItem`.
 	3. pop `STACK`.
-	4. assert `it` is either `ADD` or `SUB`.
+	4. assert `it` is `ADD`.
 	5. let `arg2` be `Evaluate(STACK)`.
 	6. let `arg1` be `EVALUATE(STACK)`.
-	7. if `it` is `ADD`, then return the sum, `arg1 + arg2`,
+	7. return the sum, `arg1 + arg2`,
 		obtained by adding `arg1` (the augend) to `arg2` (the addend).
-	8. if `it` is `SUB`, then return the difference, `arg1 - arg2`,
-		obtained by subtracting `arg2` (the subtrahend) from `arg1` (the minuend).
-	9. return 0.
 ```

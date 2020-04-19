@@ -18,7 +18,6 @@ const evalStack = (stack: Stack): RuntimeInt => {
 const AFF: StackFunction = (a) => +a
 const NEG: StackFunction = (a) => -a
 const ADD: StackFunction = (a, b) => a  + b!
-const SUB: StackFunction = (a, b) => a  - b!
 const MUL: StackFunction = (a, b) => a  * b!
 const DIV: StackFunction = (a, b) => a  / b!
 const EXP: StackFunction = (a, b) => a ** b!
@@ -47,7 +46,7 @@ export default evalStack(STACK)
 
 
 
-test('Compile file with simple expression.', () => {
+test('Compile file with simple expression, add.', () => {
 	const node = new Parser('42 + 420').parse().decorate()
 	expect(node.compile()).toBe(preamble + Util.dedent(`
 
@@ -66,8 +65,31 @@ export default evalStack(STACK)
 
 
 
+test('Compile file with simple expression, subtract.', () => {
+	const node = new Parser('42 - 420').parse().decorate()
+	expect(node.compile()).toBe(preamble + Util.dedent(`
+
+STACK.push(42)
+
+
+
+
+STACK.push(420)
+
+
+STACK.push(NEG)
+
+STACK.push(ADD)
+
+export default evalStack(STACK)
+
+	`))
+})
+
+
+
 test('Compile file with compound expression.', () => {
-	const node = new Parser('42 ^ 2 - 420').parse().decorate()
+	const node = new Parser('42 ^ 2 * 420').parse().decorate()
 	expect(node.compile()).toBe(preamble + Util.dedent(`
 
 
@@ -83,7 +105,7 @@ STACK.push(EXP)
 
 STACK.push(420)
 
-STACK.push(SUB)
+STACK.push(MUL)
 
 export default evalStack(STACK)
 	`))
