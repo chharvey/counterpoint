@@ -5,7 +5,8 @@
   "description": "A robust programming language.",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "gulp test",
+    "build": "rm -rf ./build/ && gulp build"
   },
   "repository": {
     "type": "git",
