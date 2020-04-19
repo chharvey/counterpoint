@@ -2,7 +2,6 @@ import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import Char, {STX, ETX} from './Char.class'
 import type Lexer from './Lexer.class'
-import type Screener from './Screener.class'
 
 import {
 	LexError02,
@@ -24,6 +23,8 @@ enum KeywordKind {
 	STORAGE,
 	MODIFIER,
 }
+
+export type CookValueType = string|number|bigint|boolean|null
 
 
 
@@ -81,17 +82,17 @@ export default abstract class Token implements Serializable {
 	 * If this Token is not to be sent to the parser, then return `null`.
 	 * @returns              the computed value of this token, or `null`
 	 */
-	abstract cook(): string|number|boolean|null;
+	abstract cook(): CookValueType;
 
 	/**
 	 * @implements Serializable
 	 */
 	serialize(): string {
-		const cooked: string|number|boolean|null = this.cook()
-		const attributes: Map<string, string|number|boolean|null> = new Map<string, string|number|boolean|null>()
+		const cooked: CookValueType = this.cook()
+		const attributes: Map<string, string> = new Map<string, string>()
 		if (!(this instanceof TokenFilebound)) {
-			attributes.set('line', this.line_index + 1)
-			attributes.set('col' , this.col_index  + 1)
+			attributes.set('line', `${this.line_index + 1}`)
+			attributes.set('col' , `${this.col_index  + 1}`)
 		}
 		if (cooked !== null) {
 			attributes.set('value', (typeof cooked === 'string') ? cooked
@@ -514,8 +515,40 @@ export class TokenNumber extends Token {
 		return multiplier * TokenNumber.mv(text, this.radix)
 	}
 }
-export class TokenWord extends Token {
-	private static readonly IDENTIFIER_TAG: string = 'IDENTIFIER'
+export abstract class TokenWord extends Token {
+	/**
+	 * The cooked value of this Token.
+	 * If the token is a keyword, the cooked value is its contents.
+	 * If the token is an identifier, the cooked value is set by a {@link Screener},
+	 * which indexes unique identifier tokens.
+	 */
+	protected _cooked: bigint|null;
+	constructor (start_char: Char, ...more_chars: Char[]) {
+		super('WORD', start_char, ...more_chars)
+		this._cooked = null
+	}
+	/**
+	 * Is this Token an identifier?
+	 * @returns Is this Token an identifier?
+	 */
+	abstract get isIdentifier(): boolean;
+	/**
+	 * Set the numeric integral value of this Token.
+	 * If it is an identifier, it will be 128 or higher;
+	 * else if it is a reserved keyword, it will be 0–127.
+	 * This operation can only be done once.
+	 * @param   value - the value to set, unique among all words in a program
+	 */
+	/** @final */ setValue(value: bigint): void {
+		if (this._cooked === null) {
+			this._cooked = value
+		}
+	}
+	/** @final */ cook(): bigint|null {
+		return this._cooked
+	}
+}
+export class TokenWordBasic extends TokenWord {
 	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
 	static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>(([
@@ -526,47 +559,44 @@ export class TokenWord extends Token {
 			'unfixed',
 		]],
 	]))
-	/** Is this Token an identifier? */
-	readonly is_identifier: boolean;
-	/**
-	 * The cooked value of this Token.
-	 * If the token is a keyword, the cooked value is its contents.
-	 * If the token is an identifier, the cooked value is set by a {@link Screener},
-	 * which indexes unique identifier tokens.
-	 */
-	private _cooked: number/* bigint */|string;
-	constructor (lexer: Lexer) {
+	/** The classification of this keyword, if not an identifier. */
+	private readonly keyword_kind: KeywordKind|null;
+	constructor(lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
-		while (!lexer.isDone && TokenWord.CHAR_REST.test(lexer.c0.source)) {
+		while (!lexer.isDone && TokenWordBasic.CHAR_REST.test(lexer.c0.source)) {
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
-		const source: string = buffer.map((char) => char.source).join('')
-		let kind = TokenWord.IDENTIFIER_TAG
-		TokenWord.KEYWORDS.forEach((value, key) => {
-			if (kind === TokenWord.IDENTIFIER_TAG && value.includes(source)) {
-				kind = KeywordKind[key]
+		super(buffer[0], ...buffer.slice(1))
+		this.keyword_kind = ([...TokenWordBasic.KEYWORDS].find(
+			([_, reserved]) => reserved.includes(this.source)
+		) || [null])[0]
+	}
+	get isIdentifier(): boolean {
+		return this.keyword_kind === null
+	}
+}
+export class TokenWordUnicode extends TokenWord {
+	static readonly DELIM: '`' = '`'
+	constructor(lexer: Lexer) {
+		const buffer: Char[] = [lexer.c0]
+		lexer.advance()
+		while (!lexer.isDone && !Char.eq(TokenWordUnicode.DELIM, lexer.c0)) {
+			if (Char.eq(ETX, lexer.c0)) {
+				super(buffer[0], ...buffer.slice(1))
+				throw new LexError02(this)
 			}
-		})
-		super('WORD', buffer[0], ...buffer.slice(1))
-		this.is_identifier = kind === TokenWord.IDENTIFIER_TAG
-		this._cooked = this.source
-	}
-	/**
-	 * Use a Screener to set the value of this Token.
-	 * If this token is an identifier, get the index of this token’s contents
-	 * in the given screener’s list of unique identifier tokens.
-	 * Else if this token is a keyword, do nothing.
-	 * @param   screener the Screener whose indexed identifiers to search
-	 */
-	setValue(screener: Screener) {
-		if (this.is_identifier) {
-			this._cooked = screener.identifiers.indexOf(this.source)
+			buffer.push(lexer.c0)
+			lexer.advance()
 		}
+		// add ending delim to token
+		buffer.push(lexer.c0)
+		lexer.advance()
+		super(buffer[0], ...buffer.slice(1))
 	}
-	cook(): number/* bigint */|string {
-		return this._cooked
+	get isIdentifier(): boolean {
+		return true
 	}
 }
 export class TokenPunctuator extends Token {

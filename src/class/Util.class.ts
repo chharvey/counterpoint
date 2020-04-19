@@ -101,7 +101,7 @@ export default class Util {
 	 * @param   attributes a map of key-value pairs
 	 * @returns            an HTML string of space-separated attributes
 	 */
-	static stringifyAttributes(attributes: Map<string, string|number|boolean|null>): string {
+	static stringifyAttributes(attributes: Map<string, string>): string {
 		return [...attributes].map((([attr, val]) => `${attr}="${val}"`)).join(' ')
 	}
 }
