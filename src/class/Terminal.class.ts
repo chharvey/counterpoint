@@ -159,11 +159,17 @@ export class TerminalTemplateTail extends TerminalTemplate {
 export class TerminalNumber extends Terminal {
 	static readonly instance: TerminalNumber = new TerminalNumber()
 	static digitSequence(radix: RadixType): string {
-		return `${Util.randomBool() ? '' : `${TerminalNumber.digitSequence(radix)}${Util.randomBool() ? '' : '_'}`}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
+		return `${
+			Util.randomBool() ? '' : `${TerminalNumber.digitSequence(radix)}${Util.randomBool() ? '' : TokenNumber.SEPARATOR}`
+		}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
 	}
 	random(): string {
-		const [prefix, radix]: [string, RadixType] = Util.arrayRandom([...TokenNumber.BASES])
-		return Util.randomBool() ? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT) : `\\${prefix}${TerminalNumber.digitSequence(radix)}`
+		const [unary, radix]: [string, RadixType] = Util.arrayRandom([...TokenNumber.BASES])
+		return `${Util.randomBool() ? '' : Util.arrayRandom([...TokenNumber.UNARY.keys()])}${
+			Util.randomBool()
+				? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT)
+				: `\\${unary}${TerminalNumber.digitSequence(radix)}`
+		}`
 	}
 	match(candidate: Token): boolean {
 		return candidate instanceof TokenNumber

@@ -136,8 +136,8 @@ export default class Lexer {
 			} else if (Char.inc(TokenPunctuator.CHARS_2, this._c0, this._c1)) {
 				token = new TokenPunctuator(this, 2n)
 			} else if (Char.inc(TokenPunctuator.CHARS_1, this._c0)) {
-				/* we found a punctuator or a number literal with a punctuator prefix */
-				if (Char.inc(TokenNumber.PREFIXES, this._c0)) {
+				/* we found a punctuator or a number literal prefixed with a unary operator */
+				if (Char.inc([...TokenNumber.UNARY.keys()], this._c0)) {
 					if (Char.eq('\\', this._c1)) {
 						if (Char.inc([...TokenNumber.BASES.keys()], this._c2)) {
 							/* an integer literal with an explicit radix */

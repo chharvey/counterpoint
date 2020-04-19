@@ -445,7 +445,10 @@ export class TokenNumber extends Token {
 		[16n, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ')],
 		[36n, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
 	])
-	static readonly PREFIXES: readonly string[] = '+ -'.split(' ')
+	static readonly UNARY: ReadonlyMap<string, number> = new Map<string, number>([
+		['+',  1],
+		['-', -1],
+	])
 	/**
 	 * Compute the mathematical value of a `TokenNumber` token.
 	 * @param   text  - the string to compute
@@ -464,11 +467,12 @@ export class TokenNumber extends Token {
 		}
 		return Number(radix) * TokenNumber.mv(text.slice(0, -1), radix) + TokenNumber.mv(text[text.length-1], radix)
 	}
+	private readonly has_unary: boolean;
 	private readonly has_radix: boolean;
 	private readonly radix: RadixType;
-	constructor (lexer: Lexer, has_prefix: boolean, has_radix: boolean = false) {
+	constructor (lexer: Lexer, has_unary: boolean, has_radix: boolean = false) {
 		const buffer: Char[] = []
-		if (has_prefix) { // prefixed with leading "+" or "-"
+		if (has_unary) { // prefixed with leading unary operator "+" or "-"
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
@@ -498,18 +502,16 @@ export class TokenNumber extends Token {
 			}
 		}
 		super('NUMBER', buffer[0], ...buffer.slice(1))
+		this.has_unary = has_unary
 		this.has_radix = has_radix
 		this.radix     = radix
 	}
 	cook(): number {
-		let text = this.source
-		const multiplier = new Map<string, number>([
-			['+',  1],
-			['-', -1],
-		]).get(text[0]) || null
-		if (multiplier !== null) text = text.slice(1) // cut off prefix, if any
+		let text: string = this.source
+		const multiplier: number = TokenNumber.UNARY.get(text[0]) || 1
+		if (this.has_unary) text = text.slice(1) // cut off unary, if any
 		if (this.has_radix) text = text.slice(2) // cut off radix, if any
-		return (multiplier || 1) * TokenNumber.mv(text, this.radix)
+		return multiplier * TokenNumber.mv(text, this.radix)
 	}
 }
 export class TokenWord extends Token {
