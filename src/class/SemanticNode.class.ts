@@ -1,8 +1,8 @@
 import Util from './Util.class'
-import Serializable from '../iface/Serializable.iface'
+import type Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Char.class'
-import Token from './Token.class'
-import ParseNode from './ParseNode.class'
+import type Token from './Token.class'
+import type ParseNode from './ParseNode.class'
 
 
 

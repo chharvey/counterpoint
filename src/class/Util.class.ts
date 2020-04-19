@@ -102,6 +102,6 @@ export default class Util {
 	 * @returns            an HTML string of space-separated attributes
 	 */
 	static stringifyAttributes(attributes: Map<string, string|number|boolean|null>): string {
-		return [...attributes.entries()].map((([attr, val]) => `${attr}="${val}"`)).join(' ')
+		return [...attributes].map((([attr, val]) => `${attr}="${val}"`)).join(' ')
 	}
 }

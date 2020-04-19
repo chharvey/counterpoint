@@ -1,6 +1,8 @@
+import * as xjs from 'extrajs'
+
 import Util from './Util.class'
 import {STX, ETX} from './Char.class'
-import Token from './Token.class'
+import type Token from './Token.class'
 import Terminal from './Terminal.class'
 import Production, {
 	ProductionGoal,
@@ -133,8 +135,8 @@ export default class Grammar {
 			if (expand instanceof Production) {
 				expand.toRules().forEach((rule) => {
 					/* equivalent configurations (differ only by lookahead set) */
-					const similar: Configuration|null = [...closure].find((c) => c.rule.equals(rule) && c.marker === 0) || null
-					const new_config: Configuration = new Configuration(rule, 0, ...[
+					const similar: Configuration|null = [...closure].find((c) => c.rule.equals(rule) && c.marker === 0n) || null
+					const new_config: Configuration = new Configuration(rule, 0n, ...[
 						...(follow ? this.first(follow) : config.lookaheads),
 						...(similar ? similar.lookaheads : []),
 					])
@@ -189,7 +191,7 @@ export class Rule {
 	 */
 	constructor(
 		readonly production: Production,
-		choice: number /* TODO bigint */,
+		choice: number,
 	) {
 		this.symbols = production.sequences[choice]
 	}
@@ -223,9 +225,9 @@ export class Rule {
  */
 export class Configuration {
 	/** The set of symbols before the current marker. */
-	readonly before: readonly GrammarSymbol[] = this.rule.symbols.slice(0, this.marker)
+	readonly before: readonly GrammarSymbol[] = this.rule.symbols.slice(0, Number(this.marker))
 	/** The set of symbols after the current marker. */
-	readonly after: readonly GrammarSymbol[] = this.rule.symbols.slice(this.marker)
+	readonly after: readonly GrammarSymbol[] = this.rule.symbols.slice(Number(this.marker))
 	/** Is this configuration done? That is, is the marker past all of the symbols in the rule? */
 	readonly done: boolean = this.after.length === 0
 	/** The set of terminal symbols that may succeed the symbols in this configuration’s rule. */
@@ -241,7 +243,7 @@ export class Configuration {
 	 */
 	constructor(
 		readonly rule: Rule,
-		readonly marker: number /* TODO bigint */ = 0,
+		readonly marker: bigint = 0n,
 		...lookaheads: readonly GrammarTerminal[]
 	) {
 		if (this.marker > this.rule.symbols.length) throw new Error('Cannot advance past end of rule.')
@@ -262,8 +264,8 @@ export class Configuration {
 	 * @param   step - number of steps to advance the marker; a positive integer
 	 * @returns        a new Configuration with the marker moved forward 1 step
 	 */
-	advance(step: number /* TODO bigint */ = 1): Configuration {
-		return new Configuration(this.rule, this.marker + Math.max(1, Math.floor(step)), ...this.lookaheads)
+	advance(step: bigint = 1n): Configuration {
+		return new Configuration(this.rule, this.marker + xjs.Math.maxBigInt(1n, step), ...this.lookaheads)
 	}
 
 	/**
