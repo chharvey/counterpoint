@@ -18,12 +18,13 @@
   },
   "homepage": "https://github.com/chharvey/solid#readme",
   "devDependencies": {
+    "@types/mocha": "^7.0.2",
     "@types/node": "^13.0.0",
     "extrajs": "^0.21.0",
     "gulp": "^4.0.2",
-    "gulp-jest": "^4.0.3",
+    "gulp-mocha": "^7.0.2",
     "gulp-typescript": "^5.0.1",
-    "jest-cli": "^24.9.0",
+    "ts-node": "^8.8.2",
     "typescript": "~3.8.2"
   }
 }
