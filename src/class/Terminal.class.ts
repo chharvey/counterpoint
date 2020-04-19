@@ -50,7 +50,7 @@ export class TerminalString extends Terminal {
 		}
 		const escape        = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
 		const escapeChar    = (): string => Util.arrayRandom(TokenString.ESCAPES)
-		const escapeCode    = (): string => `u{${Util.randomBool() ? '' : TerminalNumber.digitSequence(16)}}`
+		const escapeCode    = (): string => `u{${Util.randomBool() ? '' : TerminalNumber.digitSequence(16n)}}`
 		const lineCont      = (): string => `\u000a`
 		const nonEscapeChar = (): string => Util.randomChar('\' \\ s t n r u \u000a \u0003'.split(' '))
 		return `${TokenString.DELIM}${maybeChars()}${TokenString.DELIM}`
@@ -157,12 +157,12 @@ export class TerminalTemplateTail extends TerminalTemplate {
 }
 export class TerminalNumber extends Terminal {
 	static readonly instance: TerminalNumber = new TerminalNumber()
-	static digitSequence(radix: number): string {
+	static digitSequence(radix: bigint): string {
 		return `${Util.randomBool() ? '' : `${TerminalNumber.digitSequence(radix)}${Util.randomBool() ? '' : '_'}`}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
 	}
 	random(): string {
-		const base: [string, number] = [...TokenNumber.BASES][Util.randomInt(6)]
-		return Util.randomBool() ? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT) : `\\${base[0]}${TerminalNumber.digitSequence(base[1])}`
+		const [prefix, radix]: [string, bigint] = Util.arrayRandom([...TokenNumber.BASES])
+		return Util.randomBool() ? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT) : `\\${prefix}${TerminalNumber.digitSequence(radix)}`
 	}
 	match(candidate: Token): boolean {
 		return candidate instanceof TokenNumber

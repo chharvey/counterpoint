@@ -256,7 +256,7 @@ export class TokenString extends Token {
 				/* an escape sequence */
 				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
 				return [
-					...Util.utf16Encoding(TokenNumber.mv(sequence[0].slice(3, -1) || '0', 16)),
+					...Util.utf16Encoding(TokenNumber.mv(sequence[0].slice(3, -1) || '0', 16n)),
 					...TokenString.sv(text.slice(sequence[0].length)),
 				]
 
@@ -292,7 +292,7 @@ export class TokenString extends Token {
 
 				} else if (Char.eq('u{', lexer.c1, lexer.c2)) {
 					/* an escape sequence */
-					const digits: readonly string[] = TokenNumber.DIGITS.get(16) !
+					const digits: readonly string[] = TokenNumber.DIGITS.get(16n) !
 					let cargo: string = `${lexer.c0.source}${lexer.c1 !.source}${lexer.c2 !.source}`
 					buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
 					lexer.advance(3n)
@@ -425,23 +425,23 @@ export class TokenTemplate extends Token {
 	}
 }
 export class TokenNumber extends Token {
-	static readonly RADIX_DEFAULT: number = 10
+	static readonly RADIX_DEFAULT: bigint = 10n
 	static readonly SEPARATOR: string = '_'
-	static readonly BASES: ReadonlyMap<string, number> = new Map<string, number>([
-		['b',  2],
-		['q',  4],
-		['o',  8],
-		['d', 10],
-		['x', 16],
-		['z', 36],
+	static readonly BASES: ReadonlyMap<string, bigint> = new Map<string, bigint>([
+		['b',  2n],
+		['q',  4n],
+		['o',  8n],
+		['d', 10n],
+		['x', 16n],
+		['z', 36n],
 	])
-	static readonly DIGITS: ReadonlyMap<number, readonly string[]> = new Map<number, readonly string[]>([
-		[ 2, '0 1'                                                                     .split(' ')],
-		[ 4, '0 1 2 3'                                                                 .split(' ')],
-		[ 8, '0 1 2 3 4 5 6 7'                                                         .split(' ')],
-		[10, '0 1 2 3 4 5 6 7 8 9'                                                     .split(' ')],
-		[16, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ')],
-		[36, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
+	static readonly DIGITS: ReadonlyMap<bigint, readonly string[]> = new Map<bigint, readonly string[]>([
+		[ 2n, '0 1'                                                                     .split(' ')],
+		[ 4n, '0 1 2 3'                                                                 .split(' ')],
+		[ 8n, '0 1 2 3 4 5 6 7'                                                         .split(' ')],
+		[10n, '0 1 2 3 4 5 6 7 8 9'                                                     .split(' ')],
+		[16n, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ')],
+		[36n, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
 	])
 	static readonly PREFIXES: readonly string[] = '+ -'.split(' ')
 	/**
@@ -450,28 +450,28 @@ export class TokenNumber extends Token {
 	 * @param   radix - the base in which to compute
 	 * @returns         the mathematical value of the string in the given base
 	 */
-	static mv(text: string, radix = 10): number {
+	static mv(text: string, radix: bigint = 10n): number {
 		if (text[text.length-1] === TokenNumber.SEPARATOR) {
 			text = text.slice(0, -1)
 		}
 		if (text.length === 0) throw new Error('Cannot compute mathematical value of empty string.')
 		if (text.length === 1) {
-			const digitvalue: number = parseInt(text, radix)
+			const digitvalue: number = parseInt(text, Number(radix))
 			if (Number.isNaN(digitvalue)) throw new Error(`Invalid number format: \`${text}\``)
 			return digitvalue
 		}
-		return radix * TokenNumber.mv(text.slice(0, -1), radix) + TokenNumber.mv(text[text.length-1], radix)
+		return Number(radix) * TokenNumber.mv(text.slice(0, -1), radix) + TokenNumber.mv(text[text.length-1], radix)
 	}
-	private readonly radix: number;
-	constructor (lexer: Lexer, has_prefix: boolean, radix: number|null = null) {
-		const r: number = radix || TokenNumber.RADIX_DEFAULT // do not use RADIX_DEFAULT as the default parameter because of the if-else below
+	private readonly radix: bigint;
+	constructor (lexer: Lexer, has_prefix: boolean, radix: bigint|null = null) {
+		const r: bigint = radix || TokenNumber.RADIX_DEFAULT // do not use RADIX_DEFAULT as the default parameter because of the if-else below
 		const digits: readonly string[] = TokenNumber.DIGITS.get(r) !
 		const buffer: Char[] = []
 		if (has_prefix) { // prefixed with leading "+" or "-"
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
-		if (typeof radix === 'number') { // an explicit base
+		if (typeof radix === 'bigint') { // an explicit base
 			if (!Char.inc(digits, lexer.c2)) {
 				throw new LexError03(`${lexer.c0.source}${lexer.c1 !.source}`, lexer.c0.line_index, lexer.c0.col_index)
 			}
