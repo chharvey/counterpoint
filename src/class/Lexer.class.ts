@@ -65,9 +65,9 @@ export default class Lexer {
 	 * @param   n - the number of times to advance
 	 * @throws  {RangeError} if the argument is not a positive integer
 	 */
-	advance(n: number /* bigint */ = 1): void {
-		if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
-		if (n === 1) {
+	advance(n: bigint = 1n): void {
+		if (n % 1n !== 0n || n <= 0n) throw new RangeError('Argument must be a positive integer.')
+		if (n === 1n) {
 			this.iterator_result_char = this.scanner.next()
 			if (!this.iterator_result_char.done) {
 				this._c0 = this.iterator_result_char.value
@@ -76,7 +76,7 @@ export default class Lexer {
 				this._c3 = this._c0.lookahead(3)
 			}
 		} else {
-			this.advance(n - 1)
+			this.advance(n - 1n)
 			this.advance()
 		}
 	}
@@ -119,33 +119,34 @@ export default class Lexer {
 
 			} else if (Char.eq('\\', this._c0)) {
 				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
-					/* we found an integer literal with a radix */
-					token = new TokenNumber(this, false, TokenNumber.BASES.get(this._c1 !.source) !)
+					/* an integer literal with an explicit radix */
+					token = new TokenNumber(this, false, true)
 				} else {
 					throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}`, this._c0.line_index, this._c0.col_index)
 				}
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
+				/* a number literal without an explicit radix */
 				token = new TokenNumber(this, false)
 
 			} else if (TokenWord.CHAR_START.test(this._c0.source)) {
 				token = new TokenWord(this)
 
 			} else if (Char.inc(TokenPunctuator.CHARS_3, this._c0, this._c1, this._c2)) {
-				token = new TokenPunctuator(this, 3)
+				token = new TokenPunctuator(this, 3n)
 			} else if (Char.inc(TokenPunctuator.CHARS_2, this._c0, this._c1)) {
-				token = new TokenPunctuator(this, 2)
+				token = new TokenPunctuator(this, 2n)
 			} else if (Char.inc(TokenPunctuator.CHARS_1, this._c0)) {
-				/* we found a punctuator or a number literal with a punctuator prefix */
-				if (Char.inc(TokenNumber.PREFIXES, this._c0)) {
+				/* we found a punctuator or a number literal prefixed with a unary operator */
+				if (Char.inc([...TokenNumber.UNARY.keys()], this._c0)) {
 					if (Char.eq('\\', this._c1)) {
 						if (Char.inc([...TokenNumber.BASES.keys()], this._c2)) {
-							/* an integer literal with a radix */
-							token = new TokenNumber(this, true, TokenNumber.BASES.get(this._c2 !.source) !)
+							/* an integer literal with an explicit radix */
+							token = new TokenNumber(this, true, true)
 						} else {
 							throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}${this._c2 && this._c2.source || ''}`, this._c0.line_index, this._c0.col_index)
 						}
 					} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c1)) {
-						/* a number literal without a radix */
+						/* a number literal without an explicit radix */
 						token = new TokenNumber(this, true)
 					} else {
 						/* a punctuator "+" or "-" */

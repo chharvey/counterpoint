@@ -19,6 +19,7 @@
   "homepage": "https://github.com/chharvey/solid#readme",
   "devDependencies": {
     "@types/node": "^13.0.0",
+    "extrajs": "^0.21.0",
     "gulp": "^4.0.2",
     "gulp-jest": "^4.0.3",
     "gulp-typescript": "^5.0.1",
