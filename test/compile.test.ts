@@ -1,5 +1,5 @@
-const {default: Util}   = require('../build/class/Util.class.js')
-const {default: Parser} = require('../build/class/Parser.class.js')
+import Util   from '../src/class/Util.class'
+import Parser from '../src/class/Parser.class'
 
 
 

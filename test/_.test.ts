@@ -1,20 +1,18 @@
-const {default: Scanner} = require('../build/class/Scanner.class.js')
-const {default: Lexer} = require('../build/class/Lexer.class.js')
-const {default: Screener} = require('../build/class/Screener.class.js')
-const {default: Parser} = require('../build/class/Parser.class.js')
-const {
-	default: Char,
+import Scanner  from '../src/class/Scanner.class'
+import Lexer    from '../src/class/Lexer.class'
+import Screener from '../src/class/Screener.class'
+import Parser   from '../src/class/Parser.class'
+import Char, {
 	STX,
 	ETX,
-} = require('../build/class/Char.class.js')
-const {
-	default: Token,
+} from '../src/class/Char.class'
+import Token, {
 	TokenFilebound,
 	TokenWhitespace,
-} = require('../build/class/Token.class.js')
-const {
+} from '../src/class/Token.class'
+import {
 	LexError01,
-} = require('../build/error/LexError.class.js')
+} from '../src/error/LexError.class'
 
 const lastItem = (iterable) => iterable[iterable.length-1]
 const lastIndex = (iterable) => iterable.length-1

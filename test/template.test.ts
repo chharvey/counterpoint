@@ -1,14 +1,14 @@
-const {default: Lexer} = require('../build/class/Lexer.class.js')
-const {default: Screener} = require('../build/class/Screener.class.js')
-const {default: Parser} = require('../build/class/Parser.class.js')
-const {
+import Lexer    from '../src/class/Lexer.class'
+import Screener from '../src/class/Screener.class'
+import Parser   from '../src/class/Parser.class'
+import {
 	TokenTemplate,
 	TemplatePosition,
-} = require('../build/class/Token.class.js')
-const {
+} from '../src/class/Token.class'
+import {
 	LexError01,
 	LexError02,
-} = require('../build/error/LexError.class.js')
+} from '../src/error/LexError.class'
 
 
 

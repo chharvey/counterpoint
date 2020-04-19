@@ -1,4 +1,4 @@
-const {default: Parser} = require('../build/class/Parser.class.js')
+import Parser from '../src/class/Parser.class'
 
 
 

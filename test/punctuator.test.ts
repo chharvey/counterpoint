@@ -1,10 +1,10 @@
-const {default: Scanner} = require('../build/class/Scanner.class.js')
-const {default: Lexer} = require('../build/class/Lexer.class.js')
-const {default: Char} = require('../build/class/Char.class.js')
-const {
+import Scanner from '../src/class/Scanner.class'
+import Lexer   from '../src/class/Lexer.class'
+import Char    from '../src/class/Char.class'
+import {
 	TokenWhitespace,
 	TokenPunctuator,
-} = require('../build/class/Token.class.js')
+} from '../src/class/Token.class'
 
 
 

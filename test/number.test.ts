@@ -1,16 +1,16 @@
-const {default: Scanner} = require('../build/class/Scanner.class.js')
-const {default: Lexer} = require('../build/class/Lexer.class.js')
-const {default: Screener} = require('../build/class/Screener.class.js')
-const {default: Char} = require('../build/class/Char.class.js')
-const {
+import Scanner  from '../src/class/Scanner.class'
+import Lexer    from '../src/class/Lexer.class'
+import Screener from '../src/class/Screener.class'
+import Char     from '../src/class/Char.class'
+import {
 	TokenWhitespace,
 	TokenNumber,
 	TokenWord,
-} = require('../build/class/Token.class.js')
-const {
+} from '../src/class/Token.class'
+import {
 	LexError03,
 	LexError04,
-} = require('../build/error/LexError.class.js')
+} from '../src/error/LexError.class'
 
 
 

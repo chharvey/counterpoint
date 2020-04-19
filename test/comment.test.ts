@@ -1,15 +1,15 @@
-const {default: Lexer} = require('../build/class/Lexer.class.js')
-const {
+import Lexer from '../src/class/Lexer.class'
+import {
 	TokenFilebound,
 	TokenWhitespace,
 	TokenCommentLine,
 	TokenCommentMulti,
 	TokenCommentBlock,
-} = require('../build/class/Token.class.js')
-const {
+} from '../src/class/Token.class'
+import {
 	LexError02,
 	LexError03,
-} = require('../build/error/LexError.class.js')
+} from '../src/error/LexError.class'
 
 
 
