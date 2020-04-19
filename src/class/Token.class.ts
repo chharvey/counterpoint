@@ -11,6 +11,8 @@ import {
 } from '../error/LexError.class'
 
 
+export type RadixType = 2n|4n|8n|10n|16n|36n
+
 export enum TemplatePosition {
 	FULL,
 	HEAD,
@@ -425,9 +427,9 @@ export class TokenTemplate extends Token {
 	}
 }
 export class TokenNumber extends Token {
-	static readonly RADIX_DEFAULT: bigint = 10n
+	static readonly RADIX_DEFAULT: RadixType = 10n
 	static readonly SEPARATOR: string = '_'
-	static readonly BASES: ReadonlyMap<string, bigint> = new Map<string, bigint>([
+	static readonly BASES: ReadonlyMap<string, RadixType> = new Map<string, RadixType>([
 		['b',  2n],
 		['q',  4n],
 		['o',  8n],
@@ -435,7 +437,7 @@ export class TokenNumber extends Token {
 		['x', 16n],
 		['z', 36n],
 	])
-	static readonly DIGITS: ReadonlyMap<bigint, readonly string[]> = new Map<bigint, readonly string[]>([
+	static readonly DIGITS: ReadonlyMap<RadixType, readonly string[]> = new Map<RadixType, readonly string[]>([
 		[ 2n, '0 1'                                                                     .split(' ')],
 		[ 4n, '0 1 2 3'                                                                 .split(' ')],
 		[ 8n, '0 1 2 3 4 5 6 7'                                                         .split(' ')],
@@ -450,7 +452,7 @@ export class TokenNumber extends Token {
 	 * @param   radix - the base in which to compute
 	 * @returns         the mathematical value of the string in the given base
 	 */
-	static mv(text: string, radix: bigint = 10n): number {
+	static mv(text: string, radix: RadixType = TokenNumber.RADIX_DEFAULT): number {
 		if (text[text.length-1] === TokenNumber.SEPARATOR) {
 			text = text.slice(0, -1)
 		}
@@ -462,16 +464,17 @@ export class TokenNumber extends Token {
 		}
 		return Number(radix) * TokenNumber.mv(text.slice(0, -1), radix) + TokenNumber.mv(text[text.length-1], radix)
 	}
-	private readonly radix: bigint;
-	constructor (lexer: Lexer, has_prefix: boolean, radix: bigint|null = null) {
-		const r: bigint = radix || TokenNumber.RADIX_DEFAULT // do not use RADIX_DEFAULT as the default parameter because of the if-else below
-		const digits: readonly string[] = TokenNumber.DIGITS.get(r) !
+	private readonly has_radix: boolean;
+	private readonly radix: RadixType;
+	constructor (lexer: Lexer, has_prefix: boolean, has_radix: boolean = false) {
 		const buffer: Char[] = []
 		if (has_prefix) { // prefixed with leading "+" or "-"
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
-		if (typeof radix === 'bigint') { // an explicit base
+		const radix: RadixType = has_radix ? TokenNumber.BASES.get(lexer.c1 !.source) ! : TokenNumber.RADIX_DEFAULT
+		const digits: readonly string[] = TokenNumber.DIGITS.get(radix) !
+		if (has_radix) { // an explicit base
 			if (!Char.inc(digits, lexer.c2)) {
 				throw new LexError03(`${lexer.c0.source}${lexer.c1 !.source}`, lexer.c0.line_index, lexer.c0.col_index)
 			}
@@ -495,7 +498,8 @@ export class TokenNumber extends Token {
 			}
 		}
 		super('NUMBER', buffer[0], ...buffer.slice(1))
-		this.radix = r
+		this.has_radix = has_radix
+		this.radix     = radix
 	}
 	cook(): number {
 		let text = this.source
@@ -504,7 +508,7 @@ export class TokenNumber extends Token {
 			['-', -1],
 		]).get(text[0]) || null
 		if (multiplier !== null) text = text.slice(1) // cut off prefix, if any
-		if (text[0]    === '\\') text = text.slice(2) // cut off radix , if any
+		if (this.has_radix) text = text.slice(2) // cut off radix, if any
 		return (multiplier || 1) * TokenNumber.mv(text, this.radix)
 	}
 }

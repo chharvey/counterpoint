@@ -119,12 +119,13 @@ export default class Lexer {
 
 			} else if (Char.eq('\\', this._c0)) {
 				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
-					/* we found an integer literal with a radix */
-					token = new TokenNumber(this, false, TokenNumber.BASES.get(this._c1 !.source) !)
+					/* an integer literal with an explicit radix */
+					token = new TokenNumber(this, false, true)
 				} else {
 					throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}`, this._c0.line_index, this._c0.col_index)
 				}
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
+				/* a number literal without an explicit radix */
 				token = new TokenNumber(this, false)
 
 			} else if (TokenWord.CHAR_START.test(this._c0.source)) {
@@ -139,13 +140,13 @@ export default class Lexer {
 				if (Char.inc(TokenNumber.PREFIXES, this._c0)) {
 					if (Char.eq('\\', this._c1)) {
 						if (Char.inc([...TokenNumber.BASES.keys()], this._c2)) {
-							/* an integer literal with a radix */
-							token = new TokenNumber(this, true, TokenNumber.BASES.get(this._c2 !.source) !)
+							/* an integer literal with an explicit radix */
+							token = new TokenNumber(this, true, true)
 						} else {
 							throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}${this._c2 && this._c2.source || ''}`, this._c0.line_index, this._c0.col_index)
 						}
 					} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c1)) {
-						/* a number literal without a radix */
+						/* a number literal without an explicit radix */
 						token = new TokenNumber(this, true)
 					} else {
 						/* a punctuator "+" or "-" */

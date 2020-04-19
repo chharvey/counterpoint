@@ -5,6 +5,7 @@ import Token, {
 	TokenTemplate,
 	TokenNumber,
 	TokenWord,
+	RadixType,
 } from './Token.class'
 
 
@@ -157,11 +158,11 @@ export class TerminalTemplateTail extends TerminalTemplate {
 }
 export class TerminalNumber extends Terminal {
 	static readonly instance: TerminalNumber = new TerminalNumber()
-	static digitSequence(radix: bigint): string {
+	static digitSequence(radix: RadixType): string {
 		return `${Util.randomBool() ? '' : `${TerminalNumber.digitSequence(radix)}${Util.randomBool() ? '' : '_'}`}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
 	}
 	random(): string {
-		const [prefix, radix]: [string, bigint] = Util.arrayRandom([...TokenNumber.BASES])
+		const [prefix, radix]: [string, RadixType] = Util.arrayRandom([...TokenNumber.BASES])
 		return Util.randomBool() ? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT) : `\\${prefix}${TerminalNumber.digitSequence(radix)}`
 	}
 	match(candidate: Token): boolean {
