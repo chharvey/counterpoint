@@ -183,7 +183,7 @@ String Value (SV), or, informally, “cooked” text.
 
 ```w3c
 SV(String ::= "'" "'")
-	:= the empty array
+	:= <> /* the empty array */
 SV(String ::= "'" StringChars "'")
 	:= SV(StringChars)
 SV(StringChars ::= [^'\#x03])
@@ -230,7 +230,7 @@ SV(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03])
 #### Static Semantics: Decoration (String Literals)
 ```w3c
 Decorate(String)
-	::= SemanticConstant {value: SV(String)} []
+	:= SemanticConstant {value: SV(String)} []
 ```
 where `SV` is [String Value](./#static-semantics-string-value).
 
@@ -415,13 +415,13 @@ TV(TemplateChars__EndInterp__StartInterp ::= "{''" TemplateChars__EndInterp__Sta
 #### Static Semantics: Decoration (Template Literals)
 ```w3c
 Decorate(TemplateFull)
-	::= SemanticConstant {value: TV(TemplateFull)} []
+	:= SemanticConstant {value: TV(TemplateFull)} []
 Decorate(TemplateHead)
-	::= SemanticConstant {value: TV(TemplateHead)} []
+	:= SemanticConstant {value: TV(TemplateHead)} []
 Decorate(TempalteMiddle)
-	::= SemanticConstant {value: TV(TempalteMiddle)} []
+	:= SemanticConstant {value: TV(TempalteMiddle)} []
 Decorate(TempalteTail)
-	::= SemanticConstant {value: TV(TempalteTail)} []
+	:= SemanticConstant {value: TV(TempalteTail)} []
 ```
 where `TV` is [Template Value](./#static-semantics-template-value).
 
@@ -542,7 +542,7 @@ MV([0-9a-z] ::= "z")  :=  35
 #### Static Semantics: Decoration (Numbers)
 ```w3c
 Decorate(Number)
-	::= SemanticConstant {value: MV(Number)} []
+	:= SemanticConstant {value: MV(Number)} []
 ```
 where `MV` is [Mathematical Value](./#static-semantics-mathematical-value).
 
@@ -587,7 +587,7 @@ WV(Word ::= Keyword)
 #### Static Semantics: Decoration (Words)
 ```w3c
 Decorate(Identifier)
-	::= SemanticIdentifier {id: WV(Identifier)} []
+	:= SemanticIdentifier {id: WV(Identifier)} []
 ```
 where `WV` is [Word Value](./#static-semantics-word-value).
 
