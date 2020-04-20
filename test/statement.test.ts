@@ -32,9 +32,7 @@ suite('Empty statements.', () => {
 	})
 
 	test('Compile empty statement.', () => {
-		assert.strictEqual(new Parser(';').parse().decorate().compile(), SemanticNodeGoal_compileOutput(`
-			export default void 0
-		`))
+		assert.strictEqual(new Parser(';').parse().decorate().compile(), SemanticNodeGoal_compileOutput(''))
 	})
 })
 

@@ -141,6 +141,9 @@ export class SemanticNodeStatementList extends SemanticNode {
 	) {
 		super(canonical, {}, children)
 	}
+	compile(): string {
+		return this.children.map((child) => child.compile()).join('')
+	}
 }
 export class SemanticNodeDeclaration extends SemanticNode {
 	constructor(canonical: ParseNode, type: string, unfixed: boolean, children: readonly [SemanticNodeAssignee, SemanticNodeAssigned]) {
@@ -166,10 +169,16 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 	constructor(canonical: ParseNode, children: readonly [SemanticExpressionType]) {
 		super(canonical, {}, children)
 	}
+	compile(): string {
+		return this.children.map((child) => child.compile()).join('')
+	}
 }
 export class SemanticNodeStatementEmpty extends SemanticNode {
 	constructor(canonical: ParseNode) {
 		super(canonical)
+	}
+	compile(): string {
+		return Util.dedent('')
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {

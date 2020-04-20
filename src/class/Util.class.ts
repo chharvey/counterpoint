@@ -45,7 +45,7 @@ export default class Util {
 	 */
 	static dedent(s: string): string {
 		s = `${s.trimEnd()}\n`
-		const indents: RegExpMatchArray|null = s.match(/\n\t*/)
+		const indents: RegExpMatchArray|null = s.match(/\n\t+/)
 		return (indents) ? s.replace(new RegExp(`\\n\\t{${indents[0].length - 1}}`, 'g'), '\n') : s
 	}
 
