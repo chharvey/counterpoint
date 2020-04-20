@@ -1,3 +1,5 @@
+import * as assert from 'assert'
+
 import Scanner  from '../src/class/Scanner.class'
 import Lexer    from '../src/class/Lexer.class'
 import Screener from '../src/class/Screener.class'
@@ -17,7 +19,7 @@ import {
 suite('Non-radix (decimal default) integers.', () => {
 	test('Single-digit numbers.', () => {
 		;[...new Lexer(TokenNumber.DIGITS.get(10n).join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
-			expect(token).toBeInstanceOf(TokenNumber)
+			assert.ok(token instanceof TokenNumber)
 		})
 	})
 
@@ -25,22 +27,22 @@ suite('Non-radix (decimal default) integers.', () => {
 		const tokens = [...new Lexer(`
 +  55  -  33  2  007  700  +91  -27  +091  -0027
 		`.trim()).generate()]
-		expect(tokens[ 4].source).toBe(`55`)
-		expect(tokens[ 8].source).toBe(`33`)
-		expect(tokens[10].source).toBe(`2`)
-		expect(tokens[12].source).toBe(`007`)
-		expect(tokens[14].source).toBe(`700`)
-		expect(tokens[16].source).toBe(`+91`)
-		expect(tokens[18].source).toBe(`-27`)
-		expect(tokens[20].source).toBe(`+091`)
-		expect(tokens[22].source).toBe(`-0027`)
+		assert.strictEqual(tokens[ 4].source, `55`)
+		assert.strictEqual(tokens[ 8].source, `33`)
+		assert.strictEqual(tokens[10].source, `2`)
+		assert.strictEqual(tokens[12].source, `007`)
+		assert.strictEqual(tokens[14].source, `700`)
+		assert.strictEqual(tokens[16].source, `+91`)
+		assert.strictEqual(tokens[18].source, `-27`)
+		assert.strictEqual(tokens[20].source, `+091`)
+		assert.strictEqual(tokens[22].source, `-0027`)
 	})
 
 	test('Cook non-radix integers.', () => {
 		;[...new Screener(`
 370  037  +9037  -9037  +06  -06
 		`.trim()).generate()].filter((token) => token instanceof TokenNumber).forEach((token, i) => {
-			expect(token.cook()).toBe([370, 37, 9037, -9037, 6, -6][i])
+			assert.strictEqual(token.cook(), [370, 37, 9037, -9037, 6, -6][i])
 		})
 	})
 })
@@ -54,7 +56,7 @@ suite('Radix-specific integers.', () => {
 				TokenNumber.DIGITS.get(radix).map((d) => `\\${base}${d}`).join(' ')
 			).generate()].slice(1, -1)
 		).flat().filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
-			expect(token).toBeInstanceOf(TokenNumber)
+			assert.ok(token instanceof TokenNumber)
 		})
 	})
 
@@ -68,8 +70,8 @@ suite('Radix-specific integers.', () => {
 \\ze70  \\z0e7  +\\z90e7  -\\z90e7  +\\z06  -\\z06
 		`.trim().replace(/\n/g, '  ')
 		;[...new Lexer(source).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
-			expect(token).toBeInstanceOf(TokenNumber)
-			expect(token.source).toBe(source.split('  ')[i])
+			assert.ok(token instanceof TokenNumber)
+			assert.strictEqual(token.source, source.split('  ')[i])
 		})
 	})
 
@@ -82,7 +84,7 @@ suite('Radix-specific integers.', () => {
 \\xe70  \\x0e7  +\\x90e7  -\\x90e7  +\\x06  -\\x06
 \\ze70  \\z0e7  +\\z90e7  -\\z90e7  +\\z06  -\\z06
 		`.trim()).generate()].filter((token) => token instanceof TokenNumber).forEach((token, i) => {
-			expect(token.cook()).toBe([
+			assert.strictEqual(token.cook(), [
 				    4,  1,       8,      -8, 1, -1,
 				   56, 14,      78,     -78, 3, -3,
 				  248, 31,     543,    -543, 6, -6,
@@ -94,19 +96,17 @@ suite('Radix-specific integers.', () => {
 	})
 
 	test('Integers with invalid digits start a new token.', () => {
-		expect([...new Screener(`
+		assert.deepStrictEqual([...new Screener(`
 \\b1_0040_0000
 \\q123_142_3
 \\o123_456_78
-		`.trim()).generate()].slice(1, -1).map((token) => token.cook()))
-			.toEqual([4, 400000, 109, 423, 342391, 8])
+		`.trim()).generate()].slice(1, -1).map((token) => token.cook()), [4, 400000, 109, 423, 342391, 8])
 	})
 
 	test('Invalid sequence.', () => {
-		expect([...new Screener(`
+		assert.deepStrictEqual([...new Screener(`
 \\d39c
-		`.trim()).generate()].slice(1, -1).map((token) => token.source))
-			.toEqual(['\\d39', 'c'])
+		`.trim()).generate()].slice(1, -1).map((token) => token.source), ['\\d39', 'c'])
 	})
 
 	test('Invalid escape characters.', () => {
@@ -115,7 +115,7 @@ suite('Radix-specific integers.', () => {
 +\\a0 +\\c0 +\\e0 +\\f0 +\\g0 +\\h0 +\\i0 +\\j0 +\\k0 +\\l0 +\\m0 +\\n0 +\\p0 +\\r0 +\\s0 +\\t0 +\\u0 +\\v0 +\\w0 +\\y0 +\\
 -\\a0 -\\c0 -\\e0 -\\f0 -\\g0 -\\h0 -\\i0 -\\j0 -\\k0 -\\l0 -\\m0 -\\n0 -\\p0 -\\r0 -\\s0 -\\t0 -\\u0 -\\v0 -\\w0 -\\y0 -\\
 		`.trim().split(' ').filter((src) => src !== '').map((src) => new Lexer(src)).forEach((lexer) => {
-			expect(() => [...lexer.generate()]).toThrow(LexError03)
+			assert.throws(() => [...lexer.generate()], LexError03)
 		})
 	})
 })
@@ -129,28 +129,28 @@ suite('Non-radix (decimal default) integers with numeric separators.', () => {
 
 	test('Tokenize non-radix integers with separators.', () => {
 		;[...new Lexer(SOURCE).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
-			expect(token).toBeInstanceOf(TokenNumber)
-			expect(token.source).toBe(SOURCE.split('  ')[i])
+			assert.ok(token instanceof TokenNumber)
+			assert.strictEqual(token.source, SOURCE.split('  ')[i])
 		})
 	})
 
 	test('Cook non-radix integers with separators.', () => {
 		;[...new Screener(SOURCE).generate()].filter((token) => token instanceof TokenNumber).forEach((token, i) => {
-			expect(token.cook()).toBe([12345, 12345, -12345, 1234567, 1234567, -1234567, 12345678, 12345678, -12345678][i])
+			assert.strictEqual(token.cook(), [12345, 12345, -12345, 1234567, 1234567, -1234567, 12345678, 12345678, -12345678][i])
 		})
 	})
 
 	test('Numeric separator cannot appear at end of token.', () => {
-		expect(() => [...new Lexer(`12_345_`).generate()]).toThrow(LexError04)
+		assert.throws(() => [...new Lexer(`12_345_`).generate()], LexError04)
 	})
 
 	test('Numeric separators cannot appear consecutively.', () => {
-		expect(() => [...new Lexer(`12__345`).generate()]).toThrow(LexError04)
+		assert.throws(() => [...new Lexer(`12__345`).generate()], LexError04)
 	})
 
 	test('Numeric separator at beginning of token is not a number token.', () => {
 		const token = [...new Lexer(`_12345`).generate()][2]
-		expect(token).not.toBeInstanceOf(TokenNumber)
+		assert.ok(!(token instanceof TokenNumber))
 	})
 })
 
@@ -168,14 +168,14 @@ suite('Radix-specific integers with numeric separators.', () => {
 
 	test('Tokenize radix integers with separators.', () => {
 		;[...new Lexer(SOURCE).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
-			expect(token).toBeInstanceOf(TokenNumber)
-			expect(token.source).toBe(SOURCE.split('  ')[i])
+			assert.ok(token instanceof TokenNumber)
+			assert.strictEqual(token.source, SOURCE.split('  ')[i])
 		})
 	})
 
 	test('Cook radix integers with separators.', () => {
 		;[...new Screener(SOURCE).generate()].filter((token) => token instanceof TokenNumber).forEach((token, i) => {
-			expect(token.cook()).toBe([
+			assert.strictEqual(token.cook(), [
 				    4,  1,       8,      -8, 1, -1,
 				   56, 14,      78,     -78, 3, -3,
 				  248, 31,     543,    -543, 6, -6,

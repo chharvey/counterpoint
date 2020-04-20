@@ -1,3 +1,5 @@
+import * as assert from 'assert'
+
 import Scanner from '../src/class/Scanner.class'
 import Lexer   from '../src/class/Lexer.class'
 import Char    from '../src/class/Char.class'
@@ -14,7 +16,7 @@ test('Lexer recognizes `TokenPunctuator` conditions.', () => {
 		...TokenPunctuator.CHARS_2,
 		...TokenPunctuator.CHARS_3,
 	].filter((p) => p !== '').join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((value) => {
-		expect(value).toBeInstanceOf(TokenPunctuator)
+		assert.ok(value instanceof TokenPunctuator)
 	})
 })
 
@@ -25,6 +27,6 @@ test('TokenPunctuator#serialize', () => {
 	lexer.advance(2n) // bypass added `\u0002\u000a`
 	const token = new TokenPunctuator(lexer)
 	token.add(new Char(new Scanner('='), 2))
-	expect(token.source).toBe('+=')
-	expect(token.serialize()).toBe('<PUNCTUATOR line="1" col="1" value="+=">+=</PUNCTUATOR>')
+	assert.strictEqual(token.source, '+=')
+	assert.strictEqual(token.serialize(), '<PUNCTUATOR line="1" col="1" value="+=">+=</PUNCTUATOR>')
 })

@@ -1,3 +1,5 @@
+import * as assert from 'assert'
+
 import Util   from '../src/class/Util.class'
 import Parser from '../src/class/Parser.class'
 
@@ -28,7 +30,7 @@ const STACK: Stack = []
 
 test('Compile empty file.', () => {
 	const node = new Parser('').parse().decorate()
-	expect(node.compile()).toBe(Util.dedent(`
+	assert.strictEqual(node.compile(), Util.dedent(`
 export default null
 	`))
 })
@@ -37,7 +39,7 @@ export default null
 
 test.skip('Compile file with single token.', () => {
 	const node = new Parser('42').parse().decorate()
-	expect(node.compile()).toBe(preamble + Util.dedent(`
+	assert.strictEqual(node.compile(), preamble + Util.dedent(`
 STACK.push(42)
 
 export default evalStack(STACK)
@@ -48,7 +50,7 @@ export default evalStack(STACK)
 
 test.skip('Compile file with simple expression, add.', () => {
 	const node = new Parser('42 + 420').parse().decorate()
-	expect(node.compile()).toBe(preamble + Util.dedent(`
+	assert.strictEqual(node.compile(), preamble + Util.dedent(`
 
 STACK.push(42)
 
@@ -67,7 +69,7 @@ export default evalStack(STACK)
 
 test.skip('Compile file with simple expression, subtract.', () => {
 	const node = new Parser('42 - 420').parse().decorate()
-	expect(node.compile()).toBe(preamble + Util.dedent(`
+	assert.strictEqual(node.compile(), preamble + Util.dedent(`
 
 STACK.push(42)
 
@@ -90,7 +92,7 @@ export default evalStack(STACK)
 
 test.skip('Compile file with compound expression.', () => {
 	const node = new Parser('42 ^ 2 * 420').parse().decorate()
-	expect(node.compile()).toBe(preamble + Util.dedent(`
+	assert.strictEqual(node.compile(), preamble + Util.dedent(`
 
 
 STACK.push(42)
@@ -115,7 +117,7 @@ export default evalStack(STACK)
 
 test.skip('Compile file with compound expression, grouping.', () => {
 	const node = new Parser('42 ^ (2 * 420)').parse().decorate()
-	expect(node.compile()).toBe(preamble + Util.dedent(`
+	assert.strictEqual(node.compile(), preamble + Util.dedent(`
 
 STACK.push(42)
 

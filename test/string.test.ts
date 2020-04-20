@@ -1,3 +1,5 @@
+import * as assert from 'assert'
+
 import Lexer    from '../src/class/Lexer.class'
 import Screener from '../src/class/Screener.class'
 import {
@@ -23,31 +25,31 @@ suite('Lexer recognizes `TokenString` conditions.', () => {
 
 4 * 2 ^ 3
 		`.trim()).generate()]
-		expect(tokens[22]).toBeInstanceOf(TokenString)
-		expect(tokens[22].source.length).toBe(2)
-		expect(tokens[26]).toBeInstanceOf(TokenString)
-		expect(tokens[26].source).toBe(`'hello'`)
+		assert.ok(tokens[22] instanceof TokenString)
+		assert.strictEqual(tokens[22].source.length, 2)
+		assert.ok(tokens[26] instanceof TokenString)
+		assert.strictEqual(tokens[26].source, `'hello'`)
 	})
 
 	test('Escaped characters.', () => {
 		const tokenstring = [...new Lexer(`
 '0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
 		`.trim()).generate()][2]
-		expect(tokenstring.source.slice( 3,  5)).toBe(`\\'`)
-		expect(tokenstring.source.slice( 8, 10)).toBe(`\\\\`)
-		expect(tokenstring.source.slice(13, 15)).toBe(`\\s`)
-		expect(tokenstring.source.slice(18, 20)).toBe(`\\t`)
-		expect(tokenstring.source.slice(23, 25)).toBe(`\\n`)
-		expect(tokenstring.source.slice(28, 30)).toBe(`\\r`)
+		assert.strictEqual(tokenstring.source.slice( 3,  5), `\\'`)
+		assert.strictEqual(tokenstring.source.slice( 8, 10), `\\\\`)
+		assert.strictEqual(tokenstring.source.slice(13, 15), `\\s`)
+		assert.strictEqual(tokenstring.source.slice(18, 20), `\\t`)
+		assert.strictEqual(tokenstring.source.slice(23, 25), `\\n`)
+		assert.strictEqual(tokenstring.source.slice(28, 30), `\\r`)
 	})
 
 	test('Escaped character sequences.', () => {
 		const tokenstring = [...new Lexer(`
 '0 \\u{24} 1 \\u{005f} 2 \\u{} 3';
 		`.trim()).generate()][2]
-		expect(tokenstring.source.slice( 3,  9)).toBe(`\\u{24}`)
-		expect(tokenstring.source.slice(12, 20)).toBe(`\\u{005f}`)
-		expect(tokenstring.source.slice(23, 27)).toBe(`\\u{}`)
+		assert.strictEqual(tokenstring.source.slice( 3,  9), `\\u{24}`)
+		assert.strictEqual(tokenstring.source.slice(12, 20), `\\u{005f}`)
+		assert.strictEqual(tokenstring.source.slice(23, 27), `\\u{}`)
 	})
 
 	test('Line continuation.', () => {
@@ -56,8 +58,8 @@ suite('Lexer recognizes `TokenString` conditions.', () => {
 345
 678';
 		`.trim()).generate()][2]
-		expect(tokenstring.source.slice(4,  6)).toBe(`\\\n`)
-		expect(tokenstring.source.slice(9, 10)).toBe(`\n`)
+		assert.strictEqual(tokenstring.source.slice(4,  6), `\\\n`)
+		assert.strictEqual(tokenstring.source.slice(9, 10), `\n`)
 	})
 
 	test('Strings containing comment syntax.', () => {
@@ -68,7 +70,7 @@ suite('Lexer recognizes `TokenString` conditions.', () => {
 		`, `
 'Here is a string {% that contains a comment start marker but no end.'
 		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
-			expect(() => [...lexer.generate()]).not.toThrow()
+			assert.doesNotThrow(() => [...lexer.generate()])
 		})
 	})
 
@@ -79,7 +81,7 @@ suite('Lexer recognizes `TokenString` conditions.', () => {
 'string with end delimiter but contains \u0003 character'
 8;
 		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
-			expect(() => [...lexer.generate()]).toThrow(LexError02)
+			assert.throws(() => [...lexer.generate()], LexError02)
 		})
 	})
 
@@ -89,7 +91,7 @@ suite('Lexer recognizes `TokenString` conditions.', () => {
 		`, `
 'a string literal with \\u{61 an invalid escape sequence'
 		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
-			expect(() => [...lexer.generate()]).toThrow(LexError03)
+			assert.throws(() => [...lexer.generate()], LexError03)
 		})
 	})
 })
@@ -108,11 +110,11 @@ test('Screener computes `TokenString` values.', () => {
 345
 678';
 	`.trim()).generate()]
-	expect(tokens[ 5].cook()).toBe(``)
-	expect(tokens[ 7].cook()).toBe(`hello`)
-	expect(tokens[11].cook()).toBe(`0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`)
-	expect(tokens[13].cook()).toBe(`0 $ 1 _ 2 \0 3`)
-	expect(tokens[15].cook()).toBe(`012 345\n678`)
+	assert.strictEqual(tokens[ 5].cook(), ``)
+	assert.strictEqual(tokens[ 7].cook(), `hello`)
+	assert.strictEqual(tokens[11].cook(), `0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`)
+	assert.strictEqual(tokens[13].cook(), `0 $ 1 _ 2 \0 3`)
+	assert.strictEqual(tokens[15].cook(), `012 345\n678`)
 })
 
 
@@ -121,5 +123,5 @@ test('UTF-16 encoding throws when input is out of range.', () => {
 	const stringtoken = [...new Screener(`
 'a string literal with a unicode \\u{a00061} escape sequence out of range';
 	`.trim()).generate()][1]
-	expect(() => stringtoken.cook()).toThrow(RangeError)
+	assert.throws(() => stringtoken.cook(), RangeError)
 })

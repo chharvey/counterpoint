@@ -1,3 +1,5 @@
+import * as assert from 'assert'
+
 import Scanner  from '../src/class/Scanner.class'
 import Lexer    from '../src/class/Lexer.class'
 import Screener from '../src/class/Screener.class'
@@ -40,19 +42,19 @@ const mock = `
 suite('Scanner.', () => {
 	test('Scanner wraps source text.', () => {
 		const scanner = new Scanner(mock)
-		expect(scanner.source_text[0]).toBe(STX)
-		expect(scanner.source_text[1]).toBe('\n')
-		expect(scanner.source_text[2]).toBe('5')
-		expect(lastItem(scanner.source_text)).toBe(ETX)
+		assert.strictEqual(scanner.source_text[0], STX)
+		assert.strictEqual(scanner.source_text[1], '\n')
+		assert.strictEqual(scanner.source_text[2], '5')
+		assert.strictEqual(lastItem(scanner.source_text), ETX)
 	})
 
 	test('Scanner normalizes line endings.', () => {
 		const scanner = new Scanner(mock)
-		expect(scanner.source_text[11]).toBe('\n')
-		expect(scanner.source_text[12]).toBe('\n')
-		expect(scanner.source_text[13]).toBe('6')
-		expect(scanner.source_text[33]).toBe('\n')
-		expect(scanner.source_text[34]).toBe('9')
+		assert.strictEqual(scanner.source_text[11], '\n')
+		assert.strictEqual(scanner.source_text[12], '\n')
+		assert.strictEqual(scanner.source_text[13], '6')
+		assert.strictEqual(scanner.source_text[33], '\n')
+		assert.strictEqual(scanner.source_text[34], '9')
 	})
 
 	test('Scanner yields Character objects.', () => {
@@ -60,28 +62,28 @@ suite('Scanner.', () => {
 		const generator = scanner.generate()
 		let iterator_result = generator.next()
 		while (!iterator_result.done) {
-			expect(iterator_result.value).toBeInstanceOf(Char)
+			assert.ok(iterator_result.value instanceof Char)
 			iterator_result = generator.next()
 		}
 	})
 
 	test('Character source, line, column.', () => {
 		const {source, line_index, col_index} = new Char(new Scanner(mock), 21)
-		expect([source, line_index + 1, col_index + 1]).toEqual(['3', 3, 9])
+		assert.deepStrictEqual([source, line_index + 1, col_index + 1], ['3', 3, 9])
 	})
 
 	test('Character lookahead is Char.', () => {
 		const lookahead = new Char(new Scanner(mock), 23).lookahead()
-		expect(lookahead).toBeInstanceOf(Char)
+		assert.ok(lookahead instanceof Char)
 		const {source, line_index, col_index} = lookahead
-		expect([source, line_index + 1, col_index + 1]).toEqual(['*', 3, 12])
+		assert.deepStrictEqual([source, line_index + 1, col_index + 1], ['*', 3, 12])
 	})
 
 	test('Last character lookahead is null.', () => {
 		const scanner = new Scanner(mock)
 		const char = new Char(scanner, lastIndex(scanner.source_text))
-		expect(char.source).toBe(ETX)
-		expect(char.lookahead()).toBe(null)
+		assert.strictEqual(char.source, ETX)
+		assert.strictEqual(char.lookahead(), null)
 	})
 })
 
@@ -90,15 +92,15 @@ suite('Scanner.', () => {
 suite('Lexer.', () => {
 	test('Lexer recognizes `TokenFilebound` conditions.', () => {
 		const tokens = [...new Lexer(mock).generate()]
-		expect(tokens[0]).toBeInstanceOf(TokenFilebound)
-		expect(tokens[0].source).toBe(STX)
-		expect(lastItem(tokens)).toBeInstanceOf(TokenFilebound)
-		expect(lastItem(tokens).source).toBe(ETX)
+		assert.ok(tokens[0] instanceof TokenFilebound)
+		assert.strictEqual(tokens[0].source, STX)
+		assert.ok(lastItem(tokens) instanceof TokenFilebound)
+		assert.strictEqual(lastItem(tokens).source, ETX)
 	})
 
 	test('Lexer recognizes `TokenWhitespace` conditions.', () => {
 		;[...new Lexer(TokenWhitespace.CHARS.join('')).generate()].slice(1, -1).forEach((value) => {
-			expect(value).toBeInstanceOf(TokenWhitespace)
+			assert.ok(value instanceof TokenWhitespace)
 		})
 	})
 
@@ -107,7 +109,7 @@ suite('Lexer.', () => {
 	5  +  30
 	+ 6 ^ - (${c} - 37 *
 		`.trim())).forEach((lexer) => {
-			expect(() => [...lexer.generate()]).toThrow(LexError01)
+			assert.throws(() => [...lexer.generate()], LexError01)
 		})
 	})
 })
@@ -117,15 +119,15 @@ suite('Lexer.', () => {
 suite('Screener.', () => {
 	test('Screener yields `Token`, non-`TokenWhitespace`, objects.', () => {
 		;[...new Screener(mock).generate()].forEach((token) => {
-			expect(token).toBeInstanceOf(Token)
-			expect(token).not.toBeInstanceOf(TokenWhitespace)
+			assert.ok(token instanceof Token)
+			assert.ok(!(token instanceof TokenWhitespace))
 		})
 	})
 
 	test('Screener computes filebound token values.', () => {
 		const tokens = [...new Screener(mock).generate()]
-		expect(tokens[0].cook()).toBe(true)
-		expect(lastItem(tokens).cook()).toBe(false)
+		assert.strictEqual(tokens[0].cook(), true)
+		assert.strictEqual(lastItem(tokens).cook(), false)
 	})
 })
 
@@ -134,19 +136,19 @@ suite('Screener.', () => {
 suite('Empty file.', () => {
 	test('Parse empty file.', () => {
 		const tree = new Parser('').parse()
-		expect(tree.tagname).toBe('Goal')
-		expect(tree.children.length).toBe(2)
-		tree.children.forEach((child) => expect(child).toEqual(expect.any(TokenFilebound)))
+		assert.strictEqual(tree.tagname, 'Goal')
+		assert.strictEqual(tree.children.length, 2)
+		tree.children.forEach((child) => assert.ok(child instanceof TokenFilebound))
 	})
 
 	test('Decorate empty file.', () => {
 		const node = new Parser('').parse()
-		expect(node.decorate().tagname).toBe('Null')
+		assert.strictEqual(node.decorate().tagname, 'Null')
 	})
 
 	test.skip('Compile empty file.', () => {
 		const node = new Parser('').parse().decorate()
-		expect(node.compile()).toBe(`
+		assert.strictEqual(node.compile(), `
 	export default null
 		`.trim())
 	})

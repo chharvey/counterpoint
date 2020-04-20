@@ -1,3 +1,5 @@
+import * as assert from 'assert'
+
 import Parser from '../src/class/Parser.class'
 
 
@@ -5,7 +7,7 @@ import Parser from '../src/class/Parser.class'
 suite('Empty statements.', () => {
 	test('Parse empty statement.', () => {
 		const parser = new Parser(';')
-		expect(parser.parse().serialize()).toBe(`
+		assert.strictEqual(parser.parse().serialize(), `
 <Goal source="␂ ; ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
 	<Goal__0__List line="1" col="1" source=";">
@@ -20,7 +22,7 @@ suite('Empty statements.', () => {
 
 	test('Decorate empty statement.', () => {
 		const parser = new Parser(';')
-		expect(parser.parse().decorate().serialize()).toBe(`
+		assert.strictEqual(parser.parse().decorate().serialize(), `
 <Goal source="␂ ; ␃">
 	<StatementList line="1" col="1" source=";">
 		<StatementEmpty line="1" col="1" source=";"/>
@@ -31,7 +33,7 @@ suite('Empty statements.', () => {
 
 	test.skip('Compile empty statement.', () => {
 		const parser = new Parser(';')
-		expect(parser.parse().decorate().compile()).toBe(`
+		assert.strictEqual(parser.parse().decorate().compile(), `
 export default void 0
 export default __2
 		`.trim())
@@ -48,7 +50,7 @@ the_answer = the_answer - \\z14;
 	`.trim()
 
 	test('Parse assignment statements.', () => {
-		expect(new Parser(input).parse().serialize()).toBe(`
+		assert.strictEqual(new Parser(input).parse().serialize(), `
 <Goal source="␂ let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
 	<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ;">
@@ -154,7 +156,7 @@ the_answer = the_answer - \\z14;
 	})
 
 	test.skip('Decorate assignment statements.', () => {
-		expect(new Parser(input).parse().decorate().serialize()).toBe(`
+		assert.strictEqual(new Parser(input).parse().decorate().serialize(), `
 <Goal source="␂ let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
 	<StatementList line="1" col="1" source="let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ;">
 		<Declaration line="1" col="1" source="let unfixed the_answer = 42 ;" type="variable" unfixed="true">
@@ -196,7 +198,7 @@ the_answer = the_answer - \\z14;
 
 
 test('Parse Errors', () => {
-	expect(() => {
+	assert.throws(() => {
 		const tree = new Parser('2 3').parse()
-	}).toThrow('Unexpected token')
+	}, /Unexpected token/)
 })
