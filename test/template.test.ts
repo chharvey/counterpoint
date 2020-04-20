@@ -26,10 +26,10 @@ suite('Lexer recognizes `TokenTemplate` conditions.', () => {
 600  /  '''''' * 3 + '''hello''' *  2
 		`.trim()).generate()]
 		assert.ok(tokens[ 6] instanceof TokenTemplate)
-		assert.strictEqual(tokens[ 6].position, TemplatePosition.FULL)
+		assert.strictEqual((tokens[ 6] as TokenTemplate).position, TemplatePosition.FULL)
 		assert.strictEqual(tokens[ 6].source.length, 6)
 		assert.ok(tokens[14] instanceof TokenTemplate)
-		assert.strictEqual(tokens[14].position, TemplatePosition.FULL)
+		assert.strictEqual((tokens[14] as TokenTemplate).position, TemplatePosition.FULL)
 		assert.strictEqual(tokens[14].source, `'''hello'''`)
 	})
 
@@ -40,13 +40,13 @@ suite('Lexer recognizes `TokenTemplate` conditions.', () => {
 3 + }}tail''' * 2
 		`.trim()).generate()]
 		assert.ok(tokens[ 6] instanceof TokenTemplate)
-		assert.strictEqual(tokens[ 6].position, TemplatePosition.HEAD)
+		assert.strictEqual((tokens[ 6] as TokenTemplate).position, TemplatePosition.HEAD)
 		assert.strictEqual(tokens[ 6].source, `'''head{{`)
 		assert.ok(tokens[16] instanceof TokenTemplate)
-		assert.strictEqual(tokens[16].position, TemplatePosition.MIDDLE)
+		assert.strictEqual((tokens[16] as TokenTemplate).position, TemplatePosition.MIDDLE)
 		assert.strictEqual(tokens[16].source, `}}midl{{`)
 		assert.ok(tokens[26] instanceof TokenTemplate)
-		assert.strictEqual(tokens[26].position, TemplatePosition.TAIL)
+		assert.strictEqual((tokens[26] as TokenTemplate).position, TemplatePosition.TAIL)
 		assert.strictEqual(tokens[26].source, `}}tail'''`)
 	})
 
@@ -57,22 +57,22 @@ suite('Lexer recognizes `TokenTemplate` conditions.', () => {
 '''mno{{ {% pqr %} }}stu'''
 		`.trim()).generate()]
 		assert.ok(tokens[ 2] instanceof TokenTemplate)
-		assert.strictEqual(tokens[ 2].position, TemplatePosition.HEAD)
+		assert.strictEqual((tokens[ 2] as TokenTemplate).position, TemplatePosition.HEAD)
 		assert.strictEqual(tokens[ 2].source, `'''abc{{`)
 		assert.ok(tokens[ 4] instanceof TokenTemplate)
-		assert.strictEqual(tokens[ 4].position, TemplatePosition.TAIL)
+		assert.strictEqual((tokens[ 4] as TokenTemplate).position, TemplatePosition.TAIL)
 		assert.strictEqual(tokens[ 4].source, `}}def'''`)
 		assert.ok(tokens[ 6] instanceof TokenTemplate)
-		assert.strictEqual(tokens[ 6].position, TemplatePosition.HEAD)
+		assert.strictEqual((tokens[ 6] as TokenTemplate).position, TemplatePosition.HEAD)
 		assert.strictEqual(tokens[ 6].source, `'''ghi{{`)
 		assert.ok(tokens[ 7] instanceof TokenTemplate)
-		assert.strictEqual(tokens[ 7].position, TemplatePosition.TAIL)
+		assert.strictEqual((tokens[ 7] as TokenTemplate).position, TemplatePosition.TAIL)
 		assert.strictEqual(tokens[ 7].source, `}}jkl'''`)
 		assert.ok(tokens[ 9] instanceof TokenTemplate)
-		assert.strictEqual(tokens[ 9].position, TemplatePosition.HEAD)
+		assert.strictEqual((tokens[ 9] as TokenTemplate).position, TemplatePosition.HEAD)
 		assert.strictEqual(tokens[ 9].source, `'''mno{{`)
 		assert.ok(tokens[13] instanceof TokenTemplate)
-		assert.strictEqual(tokens[13].position, TemplatePosition.TAIL)
+		assert.strictEqual((tokens[13] as TokenTemplate).position, TemplatePosition.TAIL)
 		assert.strictEqual(tokens[13].source, `}}stu'''`)
 	})
 
@@ -81,16 +81,16 @@ suite('Lexer recognizes `TokenTemplate` conditions.', () => {
 1 + '''head1 {{ 2 + '''head2 {{ 3 ^ 3 }} tail2''' * 2 }} tail1''' * 1
 		`.trim()).generate()]
 		assert.ok(tokens[ 6] instanceof TokenTemplate)
-		assert.strictEqual(tokens[ 6].position, TemplatePosition.HEAD)
+		assert.strictEqual((tokens[ 6] as TokenTemplate).position, TemplatePosition.HEAD)
 		assert.strictEqual(tokens[ 6].source, `'''head1 {{`)
 		assert.ok(tokens[12] instanceof TokenTemplate)
-		assert.strictEqual(tokens[12].position, TemplatePosition.HEAD)
+		assert.strictEqual((tokens[12] as TokenTemplate).position, TemplatePosition.HEAD)
 		assert.strictEqual(tokens[12].source, `'''head2 {{`)
 		assert.ok(tokens[20] instanceof TokenTemplate)
-		assert.strictEqual(tokens[20].position, TemplatePosition.TAIL)
+		assert.strictEqual((tokens[20] as TokenTemplate).position, TemplatePosition.TAIL)
 		assert.strictEqual(tokens[20].source, `}} tail2'''`)
 		assert.ok(tokens[26] instanceof TokenTemplate)
-		assert.strictEqual(tokens[26].position, TemplatePosition.TAIL)
+		assert.strictEqual((tokens[26] as TokenTemplate).position, TemplatePosition.TAIL)
 		assert.strictEqual(tokens[26].source, `}} tail1'''`)
 	})
 

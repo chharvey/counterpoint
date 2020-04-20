@@ -1,6 +1,7 @@
 import * as assert from 'assert'
 
 import Parser from '../src/class/Parser.class'
+import type ParseNode from '../src/class/ParseNode.class'
 
 
 
@@ -21,7 +22,7 @@ test.skip('Decorate file with single token.', () => {
 
 
 test.skip('Decorate unary symbol.', () => {
-	assert.strictEqual(new Parser('- 42').parse().children[1].decorate().serialize(), `
+	assert.strictEqual((new Parser('- 42').parse().children[1] as ParseNode).decorate().serialize(), `
 <Expression line="1" col="1" source="- 42" operator="-">
 	<Constant line="1" col="3" source="42" value="42"/>
 </Expression>
@@ -31,7 +32,7 @@ test.skip('Decorate unary symbol.', () => {
 
 
 test.skip('Decorate exponential.', () => {
-	assert.strictEqual(new Parser('2 ^ -3').parse().children[1].decorate().serialize(), `
+	assert.strictEqual((new Parser('2 ^ -3').parse().children[1] as ParseNode).decorate().serialize(), `
 <Expression line="1" col="1" source="2 ^ -3" operator="^">
 	<Constant line="1" col="1" source="2" value="2"/>
 	<Constant line="1" col="5" source="-3" value="-3"/>
@@ -42,7 +43,7 @@ test.skip('Decorate exponential.', () => {
 
 
 test.skip('Decorate multiplicative.', () => {
-	assert.strictEqual(new Parser('2 * -3').parse().children[1].decorate().serialize(), `
+	assert.strictEqual((new Parser('2 * -3').parse().children[1] as ParseNode).decorate().serialize(), `
 <Expression line="1" col="1" source="2 * -3" operator="*">
 	<Constant line="1" col="1" source="2" value="2"/>
 	<Constant line="1" col="5" source="-3" value="-3"/>
@@ -53,7 +54,7 @@ test.skip('Decorate multiplicative.', () => {
 
 
 test.skip('Decorate additive.', () => {
-	assert.strictEqual(new Parser('2 + -3').parse().children[1].decorate().serialize(), `
+	assert.strictEqual((new Parser('2 + -3').parse().children[1] as ParseNode).decorate().serialize(), `
 <Expression line="1" col="1" source="2 + -3" operator="+">
 	<Constant line="1" col="1" source="2" value="2"/>
 	<Constant line="1" col="5" source="-3" value="-3"/>
@@ -64,7 +65,7 @@ test.skip('Decorate additive.', () => {
 
 
 test.skip('Decorate subtractive.', () => {
-	assert.strictEqual(new Parser('2 - 3').parse().children[1].decorate().serialize(), `
+	assert.strictEqual((new Parser('2 - 3').parse().children[1] as ParseNode).decorate().serialize(), `
 <Expression line="1" col="1" source="2 - 3" operator="+">
 	<Constant line="1" col="1" source="2" value="2"/>
 	<Expression line="1" col="5" source="3" operator="-">
@@ -77,7 +78,7 @@ test.skip('Decorate subtractive.', () => {
 
 
 test.skip('Decorate grouping.', () => {
-	assert.strictEqual(new Parser('(2 + -3)').parse().children[1].decorate().serialize(), `
+	assert.strictEqual((new Parser('(2 + -3)').parse().children[1] as ParseNode).decorate().serialize(), `
 <Expression line="1" col="2" source="2 + -3" operator="+">
 	<Constant line="1" col="2" source="2" value="2"/>
 	<Constant line="1" col="6" source="-3" value="-3"/>

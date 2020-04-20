@@ -76,7 +76,7 @@ suite('Scanner.', () => {
 	test('Character lookahead is Char.', () => {
 		const lookahead: Char|null = new Char(new Scanner(mock), 23).lookahead()
 		assert.ok(lookahead instanceof Char)
-		const {source, line_index, col_index} = lookahead
+		const {source, line_index, col_index} = lookahead !
 		assert.deepStrictEqual([source, line_index + 1, col_index + 1], ['*', 3, 12])
 	})
 
