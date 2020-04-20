@@ -21,7 +21,7 @@ export default class Scanner {
 	 * Return the next character in source text.
 	 * @returns the next character in source text
 	 */
-	* generate(): Iterator<Char, void> {
+	* generate(): IterableIterator<Char> {
 		for (let source_index: number = 0; source_index < this.source_text.length; source_index++) {
 			yield new Char(this, source_index)
 		}

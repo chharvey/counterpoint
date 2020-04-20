@@ -27,7 +27,7 @@ import {
  */
 export default class Lexer {
 	/** The scanner returning characters for each iteration. */
-	private readonly scanner: Iterator<Char, void>;
+	private readonly scanner: IterableIterator<Char>;
 	/** The result of the scanner iterator. */
 	private iterator_result_char: IteratorResult<Char, void>;
 	/** Did this Lexer just pass a token that contains `\n`? */
@@ -87,7 +87,7 @@ export default class Lexer {
 	 * @returns the next token
 	 * @throws  {LexError01} if an unrecognized character was reached
 	 */
-	* generate(): Iterator<Token, void> {
+	* generate(): IterableIterator<Token> {
 		while (!this.iterator_result_char.done) {
 			let token: Token;
 			if (Char.inc(TokenFilebound.CHARS, this._c0)) {

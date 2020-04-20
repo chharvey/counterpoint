@@ -16,8 +16,8 @@ import {
 	LexError01,
 } from '../src/error/LexError.class'
 
-const lastItem = (iterable) => iterable[iterable.length-1]
-const lastIndex = (iterable) => iterable.length-1
+const lastItem  = (iter: any): any     => iter[lastIndex(iter)]
+const lastIndex = (iter: any): number  => iter.length-1
 
 const mock = `
 5  +  30 \u000d
