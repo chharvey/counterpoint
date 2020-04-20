@@ -10,7 +10,7 @@ import {
 
 
 
-describe('Lexer recognizes `TokenString` conditions.', () => {
+suite('Lexer recognizes `TokenString` conditions.', () => {
 	test('Basic strings.', () => {
 		const tokens = [...new Lexer(`
 3 - 50 + * 2

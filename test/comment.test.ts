@@ -13,7 +13,7 @@ import {
 
 
 
-describe('Lexer recognizes `TokenCommentLine` conditions.', () => {
+suite('Lexer recognizes `TokenCommentLine` conditions.', () => {
 	test('Basic line comment.', () => {
 		expect([...new Lexer(`
 500  +  30; ;  % line comment  *  2
@@ -54,7 +54,7 @@ describe('Lexer recognizes `TokenCommentLine` conditions.', () => {
 
 
 
-describe('Lexer recognizes `TokenCommentMulti` conditions.', () => {
+suite('Lexer recognizes `TokenCommentMulti` conditions.', () => {
 	test('Empty multiline comment.', () => {
 		const tokens = [...new Lexer(`
 {%%}
@@ -127,7 +127,7 @@ comment %}</COMMENT>
 
 
 
-describe('Lexer recognizes `TokenCommentBlock` conditions.', () => {
+suite('Lexer recognizes `TokenCommentBlock` conditions.', () => {
 	test('Empty block comment.', () => {
 		const tokens = [...new Lexer(`
 %%%

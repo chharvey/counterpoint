@@ -2,7 +2,7 @@ import Parser from '../src/class/Parser.class'
 
 
 
-describe('Empty statements.', () => {
+suite('Empty statements.', () => {
 	test('Parse empty statement.', () => {
 		const parser = new Parser(';')
 		expect(parser.parse().serialize()).toBe(`
@@ -40,7 +40,7 @@ export default __2
 
 
 
-describe('Assignment statements.', () => {
+suite('Assignment statements.', () => {
 	const input = `
 let unfixed the_answer = 42;
 let \`the £ answer\` = the_answer * 10;

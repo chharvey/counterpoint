@@ -37,7 +37,7 @@ const mock = `
 
 
 
-describe('Scanner.', () => {
+suite('Scanner.', () => {
 	test('Scanner wraps source text.', () => {
 		const scanner = new Scanner(mock)
 		expect(scanner.source_text[0]).toBe(STX)
@@ -87,7 +87,7 @@ describe('Scanner.', () => {
 
 
 
-describe('Lexer.', () => {
+suite('Lexer.', () => {
 	test('Lexer recognizes `TokenFilebound` conditions.', () => {
 		const tokens = [...new Lexer(mock).generate()]
 		expect(tokens[0]).toBeInstanceOf(TokenFilebound)
@@ -114,7 +114,7 @@ describe('Lexer.', () => {
 
 
 
-describe('Screener.', () => {
+suite('Screener.', () => {
 	test('Screener yields `Token`, non-`TokenWhitespace`, objects.', () => {
 		;[...new Screener(mock).generate()].forEach((token) => {
 			expect(token).toBeInstanceOf(Token)
@@ -131,7 +131,7 @@ describe('Screener.', () => {
 
 
 
-describe('Empty file.', () => {
+suite('Empty file.', () => {
 	test('Parse empty file.', () => {
 		const tree = new Parser('').parse()
 		expect(tree.tagname).toBe('Goal')

@@ -12,7 +12,7 @@ import {
 
 
 
-describe('Lexer recognizes `TokenWordBasic` conditions.', () => {
+suite('Lexer recognizes `TokenWordBasic` conditions.', () => {
 	const CHAR_START = 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z _'.split(' ')
 	const CHAR_REST = CHAR_START.concat('0 1 2 3 4 5 6 7 8 9'.split(' '))
 	test('Word beginners.', () => {
@@ -47,7 +47,7 @@ this is a word _words c_an _start w_ith _underscores _and0 c_an1 contain2 numb3r
 
 
 
-describe('Screener assigns word values for basic words.', () => {
+suite('Screener assigns word values for basic words.', () => {
 	test('TokenWordBasic#serialize for keywords.', () => {
 		expect([...new Screener(`
 let unfixed
@@ -92,7 +92,7 @@ a word _can repeat _with the same id
 
 
 
-describe('Lexer recognizes `TokenWordUnicode` conditions.', () => {
+suite('Lexer recognizes `TokenWordUnicode` conditions.', () => {
 	test('Word boundaries.', () => {
 		const tokens = [...new Screener(`
 \`this\` \`is\` \`a\` \`unicode word\`
@@ -121,7 +121,7 @@ describe('Lexer recognizes `TokenWordUnicode` conditions.', () => {
 
 
 
-describe('Screener assigns word values for unicode words.', () => {
+suite('Screener assigns word values for unicode words.', () => {
 	test('TokenWordUnicode#serialize', () => {
 		expect([...new Screener(`
 \`this\` \`is\` \`a\` \`unicode word\`

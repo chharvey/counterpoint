@@ -12,7 +12,7 @@ import {
 
 
 
-describe('Lexer recognizes `TokenTemplate` conditions.', () => {
+suite('Lexer recognizes `TokenTemplate` conditions.', () => {
 	test('Basic templates.', () => {
 		const tokens = [...new Lexer(`
 600  /  '''''' * 3 + '''hello''' *  2
@@ -180,7 +180,7 @@ test('Screener computes `TokenTemplate` values.', () => {
 
 
 
-describe('Parse `StringTemplate` expression units.', () => {
+suite('Parse `StringTemplate` expression units.', () => {
 	const stringTemplateParseNode = (goal) => goal
 		.children[1] // Goal__0__List
 		.children[0] // Statement
@@ -448,7 +448,7 @@ describe('Parse `StringTemplate` expression units.', () => {
 
 
 
-describe('Decorate `StringTemplate` expression units.', () => {
+suite('Decorate `StringTemplate` expression units.', () => {
 	const stringTemplateSemanticNode = (goal) => goal
 		.children[0] // StatementList
 		.children[0] // Statement

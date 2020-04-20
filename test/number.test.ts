@@ -14,7 +14,7 @@ import {
 
 
 
-describe('Non-radix (decimal default) integers.', () => {
+suite('Non-radix (decimal default) integers.', () => {
 	test('Single-digit numbers.', () => {
 		;[...new Lexer(TokenNumber.DIGITS.get(10n).join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 			expect(token).toBeInstanceOf(TokenNumber)
@@ -47,7 +47,7 @@ describe('Non-radix (decimal default) integers.', () => {
 
 
 
-describe('Radix-specific integers.', () => {
+suite('Radix-specific integers.', () => {
 	test('Single-digit numbers.', () => {
 		;[...TokenNumber.BASES].map(([base, radix]) =>
 			[...new Lexer(
@@ -122,7 +122,7 @@ describe('Radix-specific integers.', () => {
 
 
 
-describe('Non-radix (decimal default) integers with numeric separators.', () => {
+suite('Non-radix (decimal default) integers with numeric separators.', () => {
 	const SOURCE = `
 12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
 	`.trim()
@@ -156,7 +156,7 @@ describe('Non-radix (decimal default) integers with numeric separators.', () => 
 
 
 
-describe('Radix-specific integers with numeric separators.', () => {
+suite('Radix-specific integers with numeric separators.', () => {
 	const SOURCE = `
 \\b1_00  \\b0_01  +\\b1_000  -\\b1_000  +\\b0_1  -\\b0_1
 \\q3_20  \\q0_32  +\\q1_032  -\\q1_032  +\\q0_3  -\\q0_3
