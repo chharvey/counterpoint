@@ -1,8 +1,8 @@
 const fsPromise = require('fs').promises
 
 const gulp       = require('gulp')
-const {default: jest} = require('gulp-jest')
-// require('jest-cli') // DO NOT REMOVE … peerDependency of `gulp-jest`
+const mocha = require('gulp-mocha')
+// require('ts-node') // DO NOT REMOVE … peerDependency of `gulp-mocha`
 const typescript = require('gulp-typescript')
 // require('typescript') // DO NOT REMOVE … peerDependency of `gulp-typescript`
 
@@ -17,8 +17,10 @@ function dist() {
 }
 
 function test() {
-	return gulp.src('./test/')
-		.pipe(jest({
+	return gulp.src('./test/*.ts')
+		.pipe(mocha({
+			require: 'ts-node/register',
+			ui: 'tdd',
 		}))
 }
 
@@ -70,7 +72,7 @@ async function test_dev() {
 	])
 }
 
-const build = gulp.series(dist, test)
+const build = gulp.parallel(dist, test)
 
 const dev = gulp.series(dist, test_dev)
 

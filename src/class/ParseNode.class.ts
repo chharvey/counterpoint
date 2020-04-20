@@ -2,24 +2,29 @@ import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Char.class'
 import Token, {
+	TokenFilebound,
 	TokenString,
 	TokenTemplate,
 	TokenNumber,
 	TokenWord,
+	TokenPunctuator,
 } from './Token.class'
 import SemanticNode, {
 	SemanticNodeNull,
 	SemanticNodeGoal,
 	SemanticNodeStatementList,
-	SemanticNodeStatement,
 	SemanticNodeDeclaration,
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
 	SemanticNodeAssigned,
+	SemanticNodeStatementExpression,
+	SemanticNodeStatementEmpty,
 	SemanticNodeExpression,
 	SemanticNodeTemplate,
 	SemanticNodeIdentifier,
 	SemanticNodeConstant,
+	SemanticExpressionType,
+	SemanticStatementType,
 } from './SemanticNode.class'
 import type {Rule} from './Grammar.class'
 import Production, {
@@ -94,7 +99,7 @@ export default class ParseNode implements Serializable {
 	 */
 	protected constructor(
 		readonly rule: Rule,
-		protected readonly children: readonly (Token|ParseNode)[],
+		readonly children: readonly (Token|ParseNode)[],
 	) {
 		this.tagname      = this.rule.production.displayName
 		this.source       = this.children.map((child) => child.source).join(' ')
@@ -144,8 +149,10 @@ export default class ParseNode implements Serializable {
 
 
 class ParseNodeGoal extends ParseNode {
-	declare children: [Token, Token] | [Token, ParseNodeStatementList, Token];
-	decorate(): SemanticNode {
+	declare children:
+		readonly [TokenFilebound,                         TokenFilebound] |
+		readonly [TokenFilebound, ParseNodeStatementList, TokenFilebound];
+	decorate(): SemanticNodeNull|SemanticNodeGoal {
 		return (this.children.length === 2) ?
 			new SemanticNodeNull(this)
 		:
@@ -155,7 +162,9 @@ class ParseNodeGoal extends ParseNode {
 	}
 }
 class ParseNodeStatementList extends ParseNode {
-	declare children: [ParseNodeStatement] | [ParseNodeStatementList, ParseNodeStatement];
+	declare children:
+		readonly [                        ParseNodeStatement] |
+		readonly [ParseNodeStatementList, ParseNodeStatement];
 	decorate(): SemanticNodeStatementList {
 		return new SemanticNodeStatementList(this, this.children.length === 1 ?
 			[this.children[0].decorate()]
@@ -167,22 +176,24 @@ class ParseNodeStatementList extends ParseNode {
 }
 class ParseNodeStatement extends ParseNode {
 	declare children:
-		[ParseNodeDeclarationVariable] |
-		[ParseNodeStatementAssignment] |
-		[ParseNodeExpression, Token]   |
-		[Token];
-	decorate(): SemanticNode {
-		return (this.children.length === 1 && this.children[0] instanceof ParseNode) ?
-			this.children[0].decorate() :
-			new SemanticNodeStatement(this, 'expression', (this.children.length === 2) ? [
-				this.children[0].decorate(),
-			] : [])
+		readonly [ParseNodeDeclarationVariable] |
+		readonly [ParseNodeStatementAssignment] |
+		readonly [ParseNodeExpression, Token]   |
+		readonly [Token];
+	decorate(): SemanticStatementType {
+		return (this.children.length === 1 && this.children[0] instanceof ParseNode)
+			? this.children[0].decorate()
+			: (this.children.length === 2)
+				? new SemanticNodeStatementExpression(this, [
+					this.children[0].decorate(),
+				])
+				: new SemanticNodeStatementEmpty(this)
 	}
 }
 class ParseNodeDeclarationVariable extends ParseNode {
 	declare children:
-		[TokenWord, TokenWord, Token, ParseNodeExpression, Token] |
-		[TokenWord, TokenWord, TokenWord, Token, ParseNodeExpression, Token];
+		readonly [TokenWord, TokenWord,            Token, ParseNodeExpression, Token] |
+		readonly [TokenWord, TokenWord, TokenWord, Token, ParseNodeExpression, Token];
 	decorate(): SemanticNodeDeclaration {
 		const is_unfixed: boolean             = this.children[1].source === 'unfixed'
 		const identifier: TokenWord           = this.children[is_unfixed ? 2 : 1] as TokenWord
@@ -198,7 +209,8 @@ class ParseNodeDeclarationVariable extends ParseNode {
 	}
 }
 class ParseNodeStatementAssignment extends ParseNode {
-	declare children: [TokenWord, Token, ParseNodeExpression, Token];
+	declare children:
+		readonly [TokenWord, Token, ParseNodeExpression, Token];
 	decorate(): SemanticNodeAssignment {
 		const identifier: TokenWord           = this.children[0]
 		const expression: ParseNodeExpression = this.children[2]
@@ -213,26 +225,39 @@ class ParseNodeStatementAssignment extends ParseNode {
 	}
 }
 class ParseNodeExpression extends ParseNode {
-	declare children: [ParseNodeExpressionBinary];
-	decorate(): SemanticNodeExpression {
+	declare children:
+		readonly [ParseNodeExpressionBinary];
+	decorate(): SemanticExpressionType {
 		return this.children[0].decorate()
 	}
 }
 class ParseNodeExpressionBinary extends ParseNode {
-	declare children: [ParseNodeExpressionBinary] | [ParseNodeExpressionBinary|ParseNodeExpressionUnary, Token, ParseNodeExpressionBinary];
-	decorate(): SemanticNodeExpression {
+	declare children:
+		readonly [ParseNodeExpressionUnary|ParseNodeExpressionBinary] |
+		readonly [ParseNodeExpressionUnary|ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary];
+	decorate(): SemanticExpressionType {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
 		:
-			new SemanticNodeExpression(this, this.children[1].source, [
-				this.children[0].decorate(),
-				this.children[2].decorate(),
-			])
+			(this.children[1].source === '-') ? // `a - b` is syntax sugar for `a + -(b)`
+				new SemanticNodeExpression(this, '+', [
+					this.children[0].decorate(),
+					new SemanticNodeExpression(this.children[2], '-', [
+						this.children[2].decorate(),
+					]),
+				])
+			:
+				new SemanticNodeExpression(this, this.children[1].source, [
+					this.children[0].decorate(),
+					this.children[2].decorate(),
+				])
 	}
 }
 class ParseNodeExpressionUnary extends ParseNode {
-	declare children: [ParseNodeExpressionUnit] | [Token, ParseNodeExpressionUnary];
-	decorate(): SemanticNode {
+	declare children:
+		readonly [ParseNodeExpressionUnit] |
+		readonly [TokenPunctuator, ParseNodeExpressionUnary];
+	decorate(): SemanticExpressionType {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
 		:
@@ -241,13 +266,13 @@ class ParseNodeExpressionUnary extends ParseNode {
 			])
 	}
 }
-class ParseNodeExpressionUnit extends ParseNode {
+export class ParseNodeExpressionUnit extends ParseNode {
 	declare children:
 		[TokenWord] |
 		[ParseNodePrimitiveLiteral] |
 		[ParseNodeStringTemplate] |
-		[Token, ParseNodeExpression, Token];
-	decorate(): SemanticNode {
+		[TokenPunctuator, ParseNodeExpression, TokenPunctuator];
+	decorate(): SemanticExpressionType {
 		return (this.children.length === 1) ?
 			(this.children[0] instanceof ParseNode) ? this.children[0].decorate() :
 				new SemanticNodeIdentifier(this.children[0], this.children[0].cook())
@@ -255,8 +280,9 @@ class ParseNodeExpressionUnit extends ParseNode {
 			this.children[1].decorate()
 	}
 }
-class ParseNodeStringTemplate extends ParseNode {
-	declare children: (TokenTemplate|ParseNodeExpression|ParseNodeStringTemplate)[];
+export class ParseNodeStringTemplate extends ParseNode {
+	declare children:
+		readonly (TokenTemplate|ParseNodeExpression|ParseNodeStringTemplate)[];
 	decorate(): SemanticNodeTemplate {
 		return new SemanticNodeTemplate(this, this.children.flatMap((c) => c instanceof Token ?
 			[new SemanticNodeConstant(c, c.cook())]
@@ -268,7 +294,8 @@ class ParseNodeStringTemplate extends ParseNode {
 	}
 }
 class ParseNodePrimitiveLiteral extends ParseNode {
-	declare children: [TokenString|TokenNumber];
+	declare children:
+		readonly [TokenString|TokenNumber];
 	decorate(): SemanticNodeConstant {
 		return new SemanticNodeConstant(this.children[0], this.children[0].cook())
 	}

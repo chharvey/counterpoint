@@ -1,10 +1,13 @@
-const {default: Parser} = require('../build/class/Parser.class.js')
+import * as assert from 'assert'
+
+import Parser from '../src/class/Parser.class'
+
+import {SemanticNodeGoal_compileOutput} from './compile.test'
 
 
 
 test('Parse expression unit.', () => {
-	const tree = new Parser('42;').parse()
-	expect(tree.serialize()).toBe(`
+	assert.strictEqual(new Parser('42;').parse().serialize(), `
 <Goal source="␂ 42 ; ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
 	<Goal__0__List line="1" col="1" source="42 ;">
@@ -35,13 +38,12 @@ test('Parse expression unit.', () => {
 
 
 test('Decorate expression unit.', () => {
-	const node = new Parser('42;').parse()
-	expect(node.decorate().serialize()).toBe(`
+	assert.strictEqual(new Parser('42;').parse().decorate().serialize(), `
 <Goal source="␂ 42 ; ␃">
 	<StatementList line="1" col="1" source="42 ;">
-		<Statement line="1" col="1" source="42 ;" type="expression">
+		<StatementExpression line="1" col="1" source="42 ;">
 			<Constant line="1" col="1" source="42" value="42"/>
-		</Statement>
+		</StatementExpression>
 	</StatementList>
 </Goal>
 	`.replace(/\n\t*/g, ''))
@@ -50,18 +52,15 @@ test('Decorate expression unit.', () => {
 
 
 test('Compile expression unit.', () => {
-	const node = new Parser('42;').parse().decorate()
-	expect(node.compile()).toBe(`
-export default void 0
-export default __2
-	`.trim())
+	assert.strictEqual(new Parser('42;').parse().decorate().compile(), SemanticNodeGoal_compileOutput(`
+		STACK.push(42)
+	`))
 })
 
 
 
 test('Parse unary symbol.', () => {
-	const tree = new Parser('- 42;').parse()
-	expect(tree.serialize()).toBe(`
+	assert.strictEqual(new Parser('- 42;').parse().serialize(), `
 <Goal source="␂ - 42 ; ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
 	<Goal__0__List line="1" col="1" source="- 42 ;">
@@ -95,15 +94,14 @@ test('Parse unary symbol.', () => {
 
 
 test('Decorate unary symbol.', () => {
-	const node = new Parser('- 42;').parse()
-	expect(node.decorate().serialize()).toBe(`
+	assert.strictEqual(new Parser('- 42;').parse().decorate().serialize(), `
 <Goal source="␂ - 42 ; ␃">
 	<StatementList line="1" col="1" source="- 42 ;">
-		<Statement line="1" col="1" source="- 42 ;" type="expression">
+		<StatementExpression line="1" col="1" source="- 42 ;">
 			<Expression line="1" col="1" source="- 42" operator="-">
 				<Constant line="1" col="3" source="42" value="42"/>
 			</Expression>
-		</Statement>
+		</StatementExpression>
 	</StatementList>
 </Goal>
 	`.replace(/\n\t*/g, ''))
@@ -112,8 +110,7 @@ test('Decorate unary symbol.', () => {
 
 
 test('Parse exponential.', () => {
-	const tree = new Parser('2 ^ -3;').parse()
-	expect(tree.serialize()).toBe(`
+	assert.strictEqual(new Parser('2 ^ -3;').parse().serialize(), `
 <Goal source="␂ 2 ^ -3 ; ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
 	<Goal__0__List line="1" col="1" source="2 ^ -3 ;">
@@ -154,16 +151,15 @@ test('Parse exponential.', () => {
 
 
 test('Decorate exponential.', () => {
-	const node = new Parser('2 ^ -3;').parse()
-	expect(node.decorate().serialize()).toBe(`
+	assert.strictEqual(new Parser('2 ^ -3;').parse().decorate().serialize(), `
 <Goal source="␂ 2 ^ -3 ; ␃">
 	<StatementList line="1" col="1" source="2 ^ -3 ;">
-		<Statement line="1" col="1" source="2 ^ -3 ;" type="expression">
+		<StatementExpression line="1" col="1" source="2 ^ -3 ;">
 			<Expression line="1" col="1" source="2 ^ -3" operator="^">
 				<Constant line="1" col="1" source="2" value="2"/>
 				<Constant line="1" col="5" source="-3" value="-3"/>
 			</Expression>
-		</Statement>
+		</StatementExpression>
 	</StatementList>
 </Goal>
 	`.replace(/\n\t*/g, ''))
@@ -172,8 +168,7 @@ test('Decorate exponential.', () => {
 
 
 test('Parse multiplicative.', () => {
-	const tree = new Parser('2 * -3;').parse()
-	expect(tree.serialize()).toBe(`
+	assert.strictEqual(new Parser('2 * -3;').parse().serialize(), `
 <Goal source="␂ 2 * -3 ; ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
 	<Goal__0__List line="1" col="1" source="2 * -3 ;">
@@ -215,9 +210,25 @@ test('Parse multiplicative.', () => {
 
 
 
+test('Decorate multiplicative.', () => {
+	assert.strictEqual(new Parser('2 * -3;').parse().decorate().serialize(), `
+		<Goal source="␂ 2 * -3 ; ␃">
+			<StatementList line="1" col="1" source="2 * -3 ;">
+				<StatementExpression line="1" col="1" source="2 * -3 ;">
+					<Expression line="1" col="1" source="2 * -3" operator="*">
+						<Constant line="1" col="1" source="2" value="2"/>
+						<Constant line="1" col="5" source="-3" value="-3"/>
+					</Expression>
+				</StatementExpression>
+			</StatementList>
+		</Goal>
+	`.replace(/\n\t*/g, ''))
+})
+
+
+
 test('Parse additive.', () => {
-	const tree = new Parser('2 + -3;').parse()
-	expect(tree.serialize()).toBe(`
+	assert.strictEqual(new Parser('2 + -3;').parse().serialize(), `
 <Goal source="␂ 2 + -3 ; ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
 	<Goal__0__List line="1" col="1" source="2 + -3 ;">
@@ -261,9 +272,100 @@ test('Parse additive.', () => {
 
 
 
+test('Decorate additive.', () => {
+	assert.strictEqual(new Parser('2 + -3;').parse().decorate().serialize(), `
+		<Goal source="␂ 2 + -3 ; ␃">
+			<StatementList line="1" col="1" source="2 + -3 ;">
+				<StatementExpression line="1" col="1" source="2 + -3 ;">
+					<Expression line="1" col="1" source="2 + -3" operator="+">
+						<Constant line="1" col="1" source="2" value="2"/>
+						<Constant line="1" col="5" source="-3" value="-3"/>
+					</Expression>
+				</StatementExpression>
+			</StatementList>
+		</Goal>
+	`.replace(/\n\t*/g, ''))
+})
+
+
+
+test('Decorate subtractive.', () => {
+	assert.strictEqual(new Parser('2 - 3;').parse().decorate().serialize(), `
+		<Goal source="␂ 2 - 3 ; ␃">
+			<StatementList line="1" col="1" source="2 - 3 ;">
+				<StatementExpression line="1" col="1" source="2 - 3 ;">
+					<Expression line="1" col="1" source="2 - 3" operator="+">
+						<Constant line="1" col="1" source="2" value="2"/>
+						<Expression line="1" col="5" source="3" operator="-">
+							<Constant line="1" col="5" source="3" value="3"/>
+						</Expression>
+					</Expression>
+				</StatementExpression>
+			</StatementList>
+		</Goal>
+	`.replace(/\n\t*/g, ''))
+})
+
+
+
+test('Compile additive.', () => {
+	assert.strictEqual(new Parser('42 + 420;').parse().decorate().compile(), SemanticNodeGoal_compileOutput(`
+
+STACK.push(42)
+
+
+
+STACK.push(420)
+
+STACK.push(ADD)
+	`))
+})
+
+
+
+test('Compile file subtractive.', () => {
+	assert.strictEqual(new Parser('42 - 420;').parse().decorate().compile(), SemanticNodeGoal_compileOutput(`
+
+STACK.push(42)
+
+
+
+
+STACK.push(420)
+
+
+STACK.push(NEG)
+
+STACK.push(ADD)
+	`))
+})
+
+
+
+test('Compile compound expression.', () => {
+	assert.strictEqual(new Parser('42 ^ 2 * 420;').parse().decorate().compile(), SemanticNodeGoal_compileOutput(`
+
+
+STACK.push(42)
+
+
+
+STACK.push(2)
+
+STACK.push(EXP)
+
+
+
+STACK.push(420)
+
+STACK.push(MUL)
+	`))
+})
+
+
+
 test('Parse grouping.', () => {
-	const tree = new Parser('(2 + -3);').parse()
-	expect(tree.serialize()).toBe(`
+	assert.strictEqual(new Parser('(2 + -3);').parse().serialize(), `
 <Goal source="␂ ( 2 + -3 ) ; ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
 	<Goal__0__List line="1" col="1" source="( 2 + -3 ) ;">
@@ -322,16 +424,15 @@ test('Parse grouping.', () => {
 
 
 test('Decorate grouping.', () => {
-	const node = new Parser('(2 + -3);').parse()
-	expect(node.decorate().serialize()).toBe(`
+	assert.strictEqual(new Parser('(2 + -3);').parse().decorate().serialize(), `
 <Goal source="␂ ( 2 + -3 ) ; ␃">
 	<StatementList line="1" col="1" source="( 2 + -3 ) ;">
-		<Statement line="1" col="1" source="( 2 + -3 ) ;" type="expression">
+		<StatementExpression line="1" col="1" source="( 2 + -3 ) ;">
 			<Expression line="1" col="2" source="2 + -3" operator="+">
 				<Constant line="1" col="2" source="2" value="2"/>
 				<Constant line="1" col="6" source="-3" value="-3"/>
 			</Expression>
-		</Statement>
+		</StatementExpression>
 	</StatementList>
 </Goal>
 	`.replace(/\n\t*/g, ''))
@@ -339,9 +440,31 @@ test('Decorate grouping.', () => {
 
 
 
+test('Compile compound expression, grouping.', () => {
+	assert.strictEqual(new Parser('42 ^ (2 * 420);').parse().decorate().compile(), SemanticNodeGoal_compileOutput(`
+
+STACK.push(42)
+
+
+
+
+STACK.push(2)
+
+
+
+STACK.push(420)
+
+STACK.push(MUL)
+
+STACK.push(EXP)
+	`))
+})
+
+
+
 test('Parse full.', () => {
-	expect(() => {
-		const tree = new Parser(`
+	assert.doesNotThrow(() => {
+		new Parser(`
 5  +  30
 
 + 6 ^ - (2 - 37 *
@@ -360,25 +483,5 @@ test('Parse full.', () => {
 
  4 * 222 ^ 3;
 		`.trim()).parse()
-	}).not.toThrow()
-})
-
-
-
-test('Compile simple expression.', () => {
-	const node = new Parser('2 + -3;').parse().decorate()
-	expect(node.compile()).toBe(`
-export default void 0
-export default __2
-	`.trim())
-})
-
-
-
-test('Compile compound expression.', () => {
-	const node = new Parser('42 + 3 * -1;').parse().decorate()
-	expect(node.compile()).toBe(`
-export default void 0
-export default __2
-	`.trim())
+	})
 })
