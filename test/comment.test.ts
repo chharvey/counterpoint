@@ -1,33 +1,33 @@
-const {default: Lexer} = require('../build/class/Lexer.class.js')
-const {
+import * as assert from 'assert'
+
+import Lexer from '../src/class/Lexer.class'
+import Token, {
 	TokenFilebound,
-	TokenWhitespace,
 	TokenCommentLine,
 	TokenCommentMulti,
 	TokenCommentBlock,
-} = require('../build/class/Token.class.js')
-const {
+} from '../src/class/Token.class'
+import {
 	LexError02,
-	LexError03,
-} = require('../build/error/LexError.class.js')
+} from '../src/error/LexError.class'
 
 
 
-describe('Lexer recognizes `TokenCommentLine` conditions.', () => {
+suite('Lexer recognizes `TokenCommentLine` conditions.', () => {
 	test('Basic line comment.', () => {
-		expect([...new Lexer(`
+		assert.ok([...new Lexer(`
 500  +  30; ;  % line comment  *  2
 8;
-		`.trim()).generate()][11]).toBeInstanceOf(TokenCommentLine)
+		`.trim()).generate()][11] instanceof TokenCommentLine)
 	})
 
 	test('Empty line comment.', () => {
-		const comment = [...new Lexer(`
+		const comment: Token = [...new Lexer(`
 %
 8;
 		`.trim()).generate()][2]
-		expect(comment).toBeInstanceOf(TokenCommentLine)
-		expect(comment.source).toBe('%\n')
+		assert.ok(comment instanceof TokenCommentLine)
+		assert.strictEqual(comment.source, '%\n')
 	})
 
 	test('Unfinished line comment throws.', () => {
@@ -37,15 +37,15 @@ describe('Lexer recognizes `TokenCommentLine` conditions.', () => {
 % line \u0003 comment
 8;
 		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
-			expect(() => [...lexer.generate()]).toThrow(LexError02)
+			assert.throws(() => [...lexer.generate()], LexError02)
 		})
 	})
 
 	test('TokenTokenCommentLine#serialize', () => {
-		expect([...new Lexer(`
+		assert.strictEqual([...new Lexer(`
 500  +  30; ;  % line comment  *  2
 8;
-		`.trim()).generate()][11].serialize()).toBe(`
+		`.trim()).generate()][11].serialize(), `
 <COMMENT line="1" col="16">% line comment  *  2
 </COMMENT>
 		`.trim())
@@ -54,43 +54,43 @@ describe('Lexer recognizes `TokenCommentLine` conditions.', () => {
 
 
 
-describe('Lexer recognizes `TokenCommentMulti` conditions.', () => {
+suite('Lexer recognizes `TokenCommentMulti` conditions.', () => {
 	test('Empty multiline comment.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 {%%}
 {% %}
 		`.trim()).generate()]
-		expect(tokens[2]).toBeInstanceOf(TokenCommentMulti)
-		expect(tokens[4]).toBeInstanceOf(TokenCommentMulti)
-		expect(tokens[2].source).toBe('{%%}')
-		expect(tokens[4].source).toBe('{% %}')
+		assert.ok(tokens[2] instanceof TokenCommentMulti)
+		assert.ok(tokens[4] instanceof TokenCommentMulti)
+		assert.strictEqual(tokens[2].source, '{%%}')
+		assert.strictEqual(tokens[4].source, '{% %}')
 	})
 
 	test('Nonempty multiline comment.', () => {
-		const comment = [...new Lexer(`
+		const comment: Token = [...new Lexer(`
 {% multiline
 that has contents
 comment %}
 		`.trim()).generate()][2]
-		expect(comment).toBeInstanceOf(TokenCommentMulti)
+		assert.ok(comment instanceof TokenCommentMulti)
 	})
 
 	test('Multiline comment containing nested multiline comment.', () => {
-		const comment = [...new Lexer(`
+		const comment: Token = [...new Lexer(`
 {% multiline
 that has a {% nestable nested %} multiline
 comment %}
 		`.trim()).generate()][2]
-		expect(comment).toBeInstanceOf(TokenCommentMulti)
+		assert.ok(comment instanceof TokenCommentMulti)
 	})
 
 	test('Multiline comment containing interpolation delimiters.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 {% A nestable {% co{%mm%}ent %} with '''the {{interpolation}} syntax'''. %}
 		`.trim()).generate()]
-		expect(tokens[2]).toBeInstanceOf(TokenCommentMulti)
-		expect(tokens[3]).toBeInstanceOf(TokenFilebound)
-		expect(tokens[3].cook()).toBe(false)
+		assert.ok(tokens[2] instanceof TokenCommentMulti)
+		assert.ok(tokens[3] instanceof TokenFilebound)
+		assert.strictEqual(tokens[3].cook(), false)
 	})
 
 	test('Unfinished multiline comment throws.', () => {
@@ -108,16 +108,16 @@ comment
 {%multiline
 {%co\u0003mm%}ent%}
 		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
-			expect(() => [...lexer.generate()]).toThrow(LexError02)
+			assert.throws(() => [...lexer.generate()], LexError02)
 		})
 	})
 
 	test('TokenCommentMulti#serialize', () => {
-		expect([...new Lexer(`
+		assert.strictEqual([...new Lexer(`
 {% multiline
 that has a {% nestable nested %} multiline
 comment %}
-		`.trim()).generate()][2].serialize()).toBe(`
+		`.trim()).generate()][2].serialize(), `
 <COMMENT line="1" col="1">{% multiline
 that has a {% nestable nested %} multiline
 comment %}</COMMENT>
@@ -127,20 +127,20 @@ comment %}</COMMENT>
 
 
 
-describe('Lexer recognizes `TokenCommentBlock` conditions.', () => {
+suite('Lexer recognizes `TokenCommentBlock` conditions.', () => {
 	test('Empty block comment.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 %%%
 %%%
 8;
 		`.trim()).generate()]
-		expect(tokens[2]).toBeInstanceOf(TokenCommentBlock)
-		expect(tokens[2].source).toBe('%%%\n%%%')
-		expect(tokens[4].source).toBe('8')
+		assert.ok(tokens[2] instanceof TokenCommentBlock)
+		assert.strictEqual(tokens[2].source, '%%%\n%%%')
+		assert.strictEqual(tokens[4].source, '8')
 	})
 
 	test('Basic block comment.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 %%%
 abcde
 5 + 3
@@ -152,13 +152,13 @@ abcde
 	%%%
 8;
 		`.trim()).generate()]
-		expect(tokens[2]).toBeInstanceOf(TokenCommentBlock)
-		expect(tokens[4]).toBeInstanceOf(TokenCommentBlock)
-		expect(tokens[6].source).toBe('8')
+		assert.ok(tokens[2] instanceof TokenCommentBlock)
+		assert.ok(tokens[4] instanceof TokenCommentBlock)
+		assert.strictEqual(tokens[6].source, '8')
 	})
 
 	test('Block comment delimiters must be on own line.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 %%%
 these quotes do not end the doc comment%%%
 %%%nor do these
@@ -168,9 +168,9 @@ these quotes do not end the doc comment%%%
 5 + 3 %%%
 8;
 		`.trim()).generate()]
-		expect(tokens[ 2]).toBeInstanceOf(TokenCommentBlock)
-		expect(tokens[ 4]).toBeInstanceOf(TokenCommentLine)
-		expect(tokens[11]).toBeInstanceOf(TokenCommentLine)
+		assert.ok(tokens[ 2] instanceof TokenCommentBlock)
+		assert.ok(tokens[ 4] instanceof TokenCommentLine)
+		assert.ok(tokens[11] instanceof TokenCommentLine)
 	})
 
 	test('Unfinished block comment throws.', () => {
@@ -187,18 +187,18 @@ block comment containing \u0003 character
 %%%
 8;
 		`].map((source) => new Lexer(source.trim())).forEach((lexer) => {
-			expect(() => [...lexer.generate()]).toThrow(LexError02)
+			assert.throws(() => [...lexer.generate()], LexError02)
 		})
 	})
 
 	test('TokenCommentBlock#serialize', () => {
-		expect([...new Lexer(`
+		assert.strictEqual([...new Lexer(`
 %%%
 these quotes do not end the doc comment%%%
 %%%nor do these
 %%%
 ;
-		`.trim()).generate()][2].serialize()).toBe(`
+		`.trim()).generate()][2].serialize(), `
 <COMMENT line="1" col="1">%%%
 these quotes do not end the doc comment%%%
 %%%nor do these

@@ -99,7 +99,7 @@ export default class ParseNode implements Serializable {
 	 */
 	protected constructor(
 		readonly rule: Rule,
-		protected readonly children: readonly (Token|ParseNode)[],
+		readonly children: readonly (Token|ParseNode)[],
 	) {
 		this.tagname      = this.rule.production.displayName
 		this.source       = this.children.map((child) => child.source).join(' ')
@@ -280,7 +280,7 @@ export class ParseNodeExpressionUnit extends ParseNode {
 			this.children[1].decorate()
 	}
 }
-class ParseNodeStringTemplate extends ParseNode {
+export class ParseNodeStringTemplate extends ParseNode {
 	declare children:
 		readonly (TokenTemplate|ParseNodeExpression|ParseNodeStringTemplate)[];
 	decorate(): SemanticNodeTemplate {
