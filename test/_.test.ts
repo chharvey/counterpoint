@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 
+import Util     from '../src/class/Util.class'
 import Scanner  from '../src/class/Scanner.class'
 import Lexer    from '../src/class/Lexer.class'
 import Screener from '../src/class/Screener.class'
@@ -146,9 +147,9 @@ suite('Empty file.', () => {
 		assert.strictEqual(new Parser('').parse().decorate().tagname, 'Null')
 	})
 
-	test.skip('Compile empty file.', () => {
-		assert.strictEqual(new Parser('').parse().decorate().compile(), `
-	export default null
-		`.trim())
+	test('Compile empty file.', () => {
+		assert.strictEqual(new Parser('').parse().decorate().compile(), Util.dedent(`
+			export default null
+		`))
 	})
 })

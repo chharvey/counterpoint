@@ -2,6 +2,8 @@ import * as assert from 'assert'
 
 import Parser from '../src/class/Parser.class'
 
+import {SemanticNodeGoal_compileOutput} from './compile.test'
+
 
 
 test('Parse expression unit.', () => {
@@ -49,11 +51,10 @@ test('Decorate expression unit.', () => {
 
 
 
-test.skip('Compile expression unit.', () => {
-	assert.strictEqual(new Parser('42;').parse().decorate().compile(), `
-export default void 0
-export default __2
-	`.trim())
+test('Compile expression unit.', () => {
+	assert.strictEqual(new Parser('42;').parse().decorate().compile(), SemanticNodeGoal_compileOutput(`
+		export default void 0
+	`))
 })
 
 
@@ -352,22 +353,4 @@ test('Parse full.', () => {
  4 * 222 ^ 3;
 		`.trim()).parse()
 	})
-})
-
-
-
-test.skip('Compile simple expression.', () => {
-	assert.strictEqual(new Parser('2 + -3;').parse().decorate().compile(), `
-export default void 0
-export default __2
-	`.trim())
-})
-
-
-
-test.skip('Compile compound expression.', () => {
-	assert.strictEqual(new Parser('42 + 3 * -1;').parse().decorate().compile(), `
-export default void 0
-export default __2
-	`.trim())
 })

@@ -2,6 +2,8 @@ import * as assert from 'assert'
 
 import Parser from '../src/class/Parser.class'
 
+import {SemanticNodeGoal_compileOutput} from './compile.test'
+
 
 
 suite('Empty statements.', () => {
@@ -29,11 +31,10 @@ suite('Empty statements.', () => {
 		`.replace(/\n\t*/g, ''))
 	})
 
-	test.skip('Compile empty statement.', () => {
-		assert.strictEqual(new Parser(';').parse().decorate().compile(), `
-export default void 0
-export default __2
-		`.trim())
+	test('Compile empty statement.', () => {
+		assert.strictEqual(new Parser(';').parse().decorate().compile(), SemanticNodeGoal_compileOutput(`
+			export default void 0
+		`))
 	})
 })
 
