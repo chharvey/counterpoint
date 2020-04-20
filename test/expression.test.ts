@@ -210,6 +210,23 @@ test('Parse multiplicative.', () => {
 
 
 
+test('Decorate multiplicative.', () => {
+	assert.strictEqual(new Parser('2 * -3;').parse().decorate().serialize(), `
+		<Goal source="␂ 2 * -3 ; ␃">
+			<StatementList line="1" col="1" source="2 * -3 ;">
+				<StatementExpression line="1" col="1" source="2 * -3 ;">
+					<Expression line="1" col="1" source="2 * -3" operator="*">
+						<Constant line="1" col="1" source="2" value="2"/>
+						<Constant line="1" col="5" source="-3" value="-3"/>
+					</Expression>
+				</StatementExpression>
+			</StatementList>
+		</Goal>
+	`.replace(/\n\t*/g, ''))
+})
+
+
+
 test('Parse additive.', () => {
 	assert.strictEqual(new Parser('2 + -3;').parse().serialize(), `
 <Goal source="␂ 2 + -3 ; ␃">
@@ -250,6 +267,42 @@ test('Parse additive.', () => {
 	</Goal__0__List>
 	<FILEBOUND value="false">␃</FILEBOUND>
 </Goal>
+	`.replace(/\n\t*/g, ''))
+})
+
+
+
+test('Decorate additive.', () => {
+	assert.strictEqual(new Parser('2 + -3;').parse().decorate().serialize(), `
+		<Goal source="␂ 2 + -3 ; ␃">
+			<StatementList line="1" col="1" source="2 + -3 ;">
+				<StatementExpression line="1" col="1" source="2 + -3 ;">
+					<Expression line="1" col="1" source="2 + -3" operator="+">
+						<Constant line="1" col="1" source="2" value="2"/>
+						<Constant line="1" col="5" source="-3" value="-3"/>
+					</Expression>
+				</StatementExpression>
+			</StatementList>
+		</Goal>
+	`.replace(/\n\t*/g, ''))
+})
+
+
+
+test('Decorate subtractive.', () => {
+	assert.strictEqual(new Parser('2 - 3;').parse().decorate().serialize(), `
+		<Goal source="␂ 2 - 3 ; ␃">
+			<StatementList line="1" col="1" source="2 - 3 ;">
+				<StatementExpression line="1" col="1" source="2 - 3 ;">
+					<Expression line="1" col="1" source="2 - 3" operator="+">
+						<Constant line="1" col="1" source="2" value="2"/>
+						<Expression line="1" col="5" source="3" operator="-">
+							<Constant line="1" col="5" source="3" value="3"/>
+						</Expression>
+					</Expression>
+				</StatementExpression>
+			</StatementList>
+		</Goal>
 	`.replace(/\n\t*/g, ''))
 })
 

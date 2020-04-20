@@ -153,7 +153,7 @@ the_answer = the_answer - \\z14;
 		`.replace(/\n\t*/g, ''))
 	})
 
-	test.skip('Decorate assignment statements.', () => {
+	test('Decorate assignment statements.', () => {
 		assert.strictEqual(new Parser(input).parse().decorate().serialize(), `
 <Goal source="␂ let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
 	<StatementList line="1" col="1" source="let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ;">
@@ -181,9 +181,11 @@ the_answer = the_answer - \\z14;
 				<Identifier line="3" col="1" source="the_answer" id="128"/>
 			</Assignee>
 			<Assigned line="3" col="14" source="the_answer - &#x5c;z14">
-				<Expression line="3" col="14" source="the_answer - &#x5c;z14" operator="-">
+				<Expression line="3" col="14" source="the_answer - &#x5c;z14" operator="+">
 					<Identifier line="3" col="14" source="the_answer" id="128"/>
-					<Constant line="3" col="27" source="&#x5c;z14" value="40"/>
+					<Expression line="3" col="27" source="&#x5c;z14" operator="-">
+						<Constant line="3" col="27" source="&#x5c;z14" value="40"/>
+					</Expression>
 				</Expression>
 			</Assigned>
 		</Assignment>
