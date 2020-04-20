@@ -49,7 +49,7 @@ test('Decorate expression unit.', () => {
 
 
 
-test('Compile expression unit.', () => {
+test.skip('Compile expression unit.', () => {
 	const node = new Parser('42;').parse().decorate()
 	expect(node.compile()).toBe(`
 export default void 0
@@ -365,7 +365,7 @@ test('Parse full.', () => {
 
 
 
-test('Compile simple expression.', () => {
+test.skip('Compile simple expression.', () => {
 	const node = new Parser('2 + -3;').parse().decorate()
 	expect(node.compile()).toBe(`
 export default void 0
@@ -375,7 +375,7 @@ export default __2
 
 
 
-test('Compile compound expression.', () => {
+test.skip('Compile compound expression.', () => {
 	const node = new Parser('42 + 3 * -1;').parse().decorate()
 	expect(node.compile()).toBe(`
 export default void 0

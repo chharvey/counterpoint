@@ -9,7 +9,7 @@ test('Decorate empty file.', () => {
 
 
 
-test('Decorate file with single token.', () => {
+test.skip('Decorate file with single token.', () => {
 	const node = new Parser('42').parse()
 	expect(node.decorate().serialize()).toBe(`
 <Goal source=\"␂ 42 ␃\">
@@ -20,7 +20,7 @@ test('Decorate file with single token.', () => {
 
 
 
-test('Decorate unary symbol.', () => {
+test.skip('Decorate unary symbol.', () => {
 	const node = new Parser('- 42').parse().children[1]
 	expect(node.decorate().serialize()).toBe(`
 <Expression line="1" col="1" source="- 42" operator="-">
@@ -31,7 +31,7 @@ test('Decorate unary symbol.', () => {
 
 
 
-test('Decorate exponential.', () => {
+test.skip('Decorate exponential.', () => {
 	const node = new Parser('2 ^ -3').parse().children[1]
 	expect(node.decorate().serialize()).toBe(`
 <Expression line="1" col="1" source="2 ^ -3" operator="^">
@@ -43,7 +43,7 @@ test('Decorate exponential.', () => {
 
 
 
-test('Decorate multiplicative.', () => {
+test.skip('Decorate multiplicative.', () => {
 	const node = new Parser('2 * -3').parse().children[1]
 	expect(node.decorate().serialize()).toBe(`
 <Expression line="1" col="1" source="2 * -3" operator="*">
@@ -55,7 +55,7 @@ test('Decorate multiplicative.', () => {
 
 
 
-test('Decorate additive.', () => {
+test.skip('Decorate additive.', () => {
 	const node = new Parser('2 + -3').parse().children[1]
 	expect(node.decorate().serialize()).toBe(`
 <Expression line="1" col="1" source="2 + -3" operator="+">
@@ -67,7 +67,7 @@ test('Decorate additive.', () => {
 
 
 
-test('Decorate subtractive.', () => {
+test.skip('Decorate subtractive.', () => {
 	const node = new Parser('2 - 3').parse().children[1]
 	expect(node.decorate().serialize()).toBe(`
 <Expression line="1" col="1" source="2 - 3" operator="+">
@@ -81,7 +81,7 @@ test('Decorate subtractive.', () => {
 
 
 
-test('Decorate grouping.', () => {
+test.skip('Decorate grouping.', () => {
 	const node = new Parser('(2 + -3)').parse().children[1]
 	expect(node.decorate().serialize()).toBe(`
 <Expression line="1" col="2" source="2 + -3" operator="+">
