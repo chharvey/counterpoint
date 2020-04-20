@@ -18,7 +18,7 @@ export type SemanticExpressionType = SemanticNodeConstant|SemanticNodeIdentifier
  */
 export default class SemanticNode implements Serializable {
 	/** The name of the type of this SemanticNode. */
-	private readonly tagname: string;
+	readonly tagname: string;
 	/** The concatenation of the source text of all children. */
 	private readonly source: string;
 	/** The index of the first token in source text. */

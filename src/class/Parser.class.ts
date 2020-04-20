@@ -21,7 +21,7 @@ export default class Parser {
 	/** The syntactic grammar of the language used in parsing. */
 	private readonly grammar: Grammar;
 	/** The screener returning tokens for each iteration. */
-	private readonly screener: Iterator<Token, void>;
+	private readonly screener: IterableIterator<Token>;
 	/** The result of the screener iterator. */
 	private iterator_result_token: IteratorResult<Token, void>;
 	/** Working stack of tokens, nodes, and configuration states. */

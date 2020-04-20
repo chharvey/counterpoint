@@ -1,45 +1,46 @@
-const {default: Lexer} = require('../build/class/Lexer.class.js')
-const {default: Screener} = require('../build/class/Screener.class.js')
-const {
+import * as assert from 'assert'
+
+import Lexer    from '../src/class/Lexer.class'
+import Screener from '../src/class/Screener.class'
+import Token, {
 	TokenWhitespace,
 	TokenWord,
 	TokenWordBasic,
 	TokenWordUnicode,
-} = require('../build/class/Token.class.js')
-const {
+} from '../src/class/Token.class'
+import {
 	LexError02,
-} = require('../build/error/LexError.class.js')
+} from '../src/error/LexError.class'
 
 
 
-describe('Lexer recognizes `TokenWordBasic` conditions.', () => {
-	const CHAR_START = 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z _'.split(' ')
-	const CHAR_REST = CHAR_START.concat('0 1 2 3 4 5 6 7 8 9'.split(' '))
+suite('Lexer recognizes `TokenWordBasic` conditions.', () => {
+	const CHAR_START: string[] = 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z _'.split(' ')
 	test('Word beginners.', () => {
 		;[...new Lexer(CHAR_START.join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
-			expect(token).toBeInstanceOf(TokenWord)
+			assert.ok(token instanceof TokenWord)
 		})
 	})
 
 	test('Word continuations.', () => {
-		const tokens = [...new Screener(`
+		const tokens: Token[] = [...new Screener(`
 this is a word
 _words _can _start _with _underscores
 _and0 _can1 contain2 numb3rs
 		`.trim()).generate()].slice(1, -1)
 		tokens.forEach((token) => {
-			expect(token).toBeInstanceOf(TokenWordBasic)
+			assert.ok(token instanceof TokenWordBasic)
 		})
-		expect(tokens.length).toBe(13)
+		assert.strictEqual(tokens.length, 13)
 	})
 
 	test('Words cannot start with a digit.', () => {
-		const tokens = [...new Screener(`
+		const tokens: Token[] = [...new Screener(`
 this is 0a word
 _words 1c_an _start 2w_ith _underscores
 _and0 3c_an1 contain2 44numb3rs
 		`.trim()).generate()].slice(1, -1)
-		expect(tokens.filter((token) => token instanceof TokenWord).map((token) => token.source).join(' ')).toBe(`
+		assert.strictEqual(tokens.filter((token) => token instanceof TokenWord).map((token) => token.source).join(' '), `
 this is a word _words c_an _start w_ith _underscores _and0 c_an1 contain2 numb3rs
 		`.trim())
 	})
@@ -47,24 +48,24 @@ this is a word _words c_an _start w_ith _underscores _and0 c_an1 contain2 numb3r
 
 
 
-describe('Screener assigns word values for basic words.', () => {
+suite('Screener assigns word values for basic words.', () => {
 	test('TokenWordBasic#serialize for keywords.', () => {
-		expect([...new Screener(`
+		assert.strictEqual([...new Screener(`
 let unfixed
-		`.trim()).generate()].filter((token) => token instanceof TokenWord).map((token) => token.serialize()).join('\n')).toBe(`
+		`.trim()).generate()].filter((token) => token instanceof TokenWord).map((token) => token.serialize()).join('\n'), `
 <WORD line="1" col="1" value="0">let</WORD>
 <WORD line="1" col="5" value="1">unfixed</WORD>
 		`.trim())
 	})
 
 	test('TokenWordBasic#serialize for identifiers.', () => {
-		expect([...new Screener(`
+		assert.strictEqual([...new Screener(`
 this is a word
 _words _can _start _with _underscores
 _and0 _can1 contain2 numb3rs
 
 a word _can repeat _with the same id
-		`.trim()).generate()].filter((token) => token instanceof TokenWord).map((token) => token.serialize()).join('\n')).toBe(`
+		`.trim()).generate()].filter((token) => token instanceof TokenWord).map((token) => token.serialize()).join('\n'), `
 <WORD line="1" col="1" value="128">this</WORD>
 <WORD line="1" col="6" value="129">is</WORD>
 <WORD line="1" col="9" value="130">a</WORD>
@@ -92,42 +93,42 @@ a word _can repeat _with the same id
 
 
 
-describe('Lexer recognizes `TokenWordUnicode` conditions.', () => {
+suite('Lexer recognizes `TokenWordUnicode` conditions.', () => {
 	test('Word boundaries.', () => {
-		const tokens = [...new Screener(`
+		const tokens: Token[] = [...new Screener(`
 \`this\` \`is\` \`a\` \`unicode word\`
 \`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
 \`except\` \`back-ticks\` \`.\`
 \`<hello world>\` \`Æther\` \`5 × 3\` \`\\u{24}hello\` \`\`
 		`.trim()).generate()].slice(1, -1)
-		expect(tokens.length).toBe(18)
+		assert.strictEqual(tokens.length, 18)
 		tokens.forEach((token) => {
-			expect(token).toBeInstanceOf(TokenWordUnicode)
+			assert.ok(token instanceof TokenWordUnicode)
 		})
 	})
 
 	test('Unicode words cannot contain U+0060 GRAVE ACCENT.', () => {
-		expect(() => [...new Screener(`
+		assert.throws(() => [...new Screener(`
 \`a \\\` grave accent\`
-		`.trim()).generate()]).toThrow(LexError02)
+		`.trim()).generate()], LexError02)
 	})
 
 	test('Unicode words cannot contain U+0003 END OF TEXT.', () => {
-		expect(() => [...new Screener(`
+		assert.throws(() => [...new Screener(`
 \`an \u0003 end of text.\`
-		`.trim()).generate()]).toThrow(LexError02)
+		`.trim()).generate()], LexError02)
 	})
 })
 
 
 
-describe('Screener assigns word values for unicode words.', () => {
+suite('Screener assigns word values for unicode words.', () => {
 	test('TokenWordUnicode#serialize', () => {
-		expect([...new Screener(`
+		assert.strictEqual([...new Screener(`
 \`this\` \`is\` \`a\` \`unicode word\`
 \`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
 \`except\` \`back-ticks\` \`.\`
-		`.trim()).generate()].filter((token) => token instanceof TokenWord).map((token) => token.serialize()).join('\n')).toBe(`
+		`.trim()).generate()].filter((token) => token instanceof TokenWord).map((token) => token.serialize()).join('\n'), `
 <WORD line="1" col="1" value="128">\`this\`</WORD>
 <WORD line="1" col="8" value="129">\`is\`</WORD>
 <WORD line="1" col="13" value="130">\`a\`</WORD>

@@ -1,11 +1,14 @@
-const {default: Parser} = require('../build/class/Parser.class.js')
+import * as assert from 'assert'
+
+import Parser from '../src/class/Parser.class'
+
+import {SemanticNodeGoal_compileOutput} from './compile.test'
 
 
 
-describe('Empty statements.', () => {
+suite('Empty statements.', () => {
 	test('Parse empty statement.', () => {
-		const parser = new Parser(';')
-		expect(parser.parse().serialize()).toBe(`
+		assert.strictEqual(new Parser(';').parse().serialize(), `
 <Goal source="␂ ; ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
 	<Goal__0__List line="1" col="1" source=";">
@@ -19,8 +22,7 @@ describe('Empty statements.', () => {
 	})
 
 	test('Decorate empty statement.', () => {
-		const parser = new Parser(';')
-		expect(parser.parse().decorate().serialize()).toBe(`
+		assert.strictEqual(new Parser(';').parse().decorate().serialize(), `
 <Goal source="␂ ; ␃">
 	<StatementList line="1" col="1" source=";">
 		<StatementEmpty line="1" col="1" source=";"/>
@@ -29,26 +31,24 @@ describe('Empty statements.', () => {
 		`.replace(/\n\t*/g, ''))
 	})
 
-	test.skip('Compile empty statement.', () => {
-		const parser = new Parser(';')
-		expect(parser.parse().decorate().compile()).toBe(`
-export default void 0
-export default __2
-		`.trim())
+	test('Compile empty statement.', () => {
+		assert.strictEqual(new Parser(';').parse().decorate().compile(), SemanticNodeGoal_compileOutput(`
+			export default void 0
+		`))
 	})
 })
 
 
 
-describe('Assignment statements.', () => {
-	const input = `
+suite('Assignment statements.', () => {
+	const input: string = `
 let unfixed the_answer = 42;
 let \`the £ answer\` = the_answer * 10;
 the_answer = the_answer - \\z14;
 	`.trim()
 
 	test('Parse assignment statements.', () => {
-		expect(new Parser(input).parse().serialize()).toBe(`
+		assert.strictEqual(new Parser(input).parse().serialize(), `
 <Goal source="␂ let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
 	<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ;">
@@ -153,8 +153,8 @@ the_answer = the_answer - \\z14;
 		`.replace(/\n\t*/g, ''))
 	})
 
-	test.skip('Decorate assignment statements.', () => {
-		expect(new Parser(input).parse().decorate().serialize()).toBe(`
+	test('Decorate assignment statements.', () => {
+		assert.strictEqual(new Parser(input).parse().decorate().serialize(), `
 <Goal source="␂ let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
 	<StatementList line="1" col="1" source="let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ;">
 		<Declaration line="1" col="1" source="let unfixed the_answer = 42 ;" type="variable" unfixed="true">
@@ -181,9 +181,11 @@ the_answer = the_answer - \\z14;
 				<Identifier line="3" col="1" source="the_answer" id="128"/>
 			</Assignee>
 			<Assigned line="3" col="14" source="the_answer - &#x5c;z14">
-				<Expression line="3" col="14" source="the_answer - &#x5c;z14" operator="-">
+				<Expression line="3" col="14" source="the_answer - &#x5c;z14" operator="+">
 					<Identifier line="3" col="14" source="the_answer" id="128"/>
-					<Constant line="3" col="27" source="&#x5c;z14" value="40"/>
+					<Expression line="3" col="27" source="&#x5c;z14" operator="-">
+						<Constant line="3" col="27" source="&#x5c;z14" value="40"/>
+					</Expression>
 				</Expression>
 			</Assigned>
 		</Assignment>
@@ -196,7 +198,7 @@ the_answer = the_answer - \\z14;
 
 
 test('Parse Errors', () => {
-	expect(() => {
-		const tree = new Parser('2 3').parse()
-	}).toThrow('Unexpected token')
+	assert.throws(() => {
+		new Parser('2 3').parse()
+	}, /Unexpected token/)
 })
