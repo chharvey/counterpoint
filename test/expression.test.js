@@ -39,9 +39,9 @@ test('Decorate expression unit.', () => {
 	expect(node.decorate().serialize()).toBe(`
 <Goal source="␂ 42 ; ␃">
 	<StatementList line="1" col="1" source="42 ;">
-		<Statement line="1" col="1" source="42 ;" type="expression">
+		<StatementExpression line="1" col="1" source="42 ;">
 			<Constant line="1" col="1" source="42" value="42"/>
-		</Statement>
+		</StatementExpression>
 	</StatementList>
 </Goal>
 	`.replace(/\n\t*/g, ''))
@@ -99,11 +99,11 @@ test('Decorate unary symbol.', () => {
 	expect(node.decorate().serialize()).toBe(`
 <Goal source="␂ - 42 ; ␃">
 	<StatementList line="1" col="1" source="- 42 ;">
-		<Statement line="1" col="1" source="- 42 ;" type="expression">
+		<StatementExpression line="1" col="1" source="- 42 ;">
 			<Expression line="1" col="1" source="- 42" operator="-">
 				<Constant line="1" col="3" source="42" value="42"/>
 			</Expression>
-		</Statement>
+		</StatementExpression>
 	</StatementList>
 </Goal>
 	`.replace(/\n\t*/g, ''))
@@ -158,12 +158,12 @@ test('Decorate exponential.', () => {
 	expect(node.decorate().serialize()).toBe(`
 <Goal source="␂ 2 ^ -3 ; ␃">
 	<StatementList line="1" col="1" source="2 ^ -3 ;">
-		<Statement line="1" col="1" source="2 ^ -3 ;" type="expression">
+		<StatementExpression line="1" col="1" source="2 ^ -3 ;">
 			<Expression line="1" col="1" source="2 ^ -3" operator="^">
 				<Constant line="1" col="1" source="2" value="2"/>
 				<Constant line="1" col="5" source="-3" value="-3"/>
 			</Expression>
-		</Statement>
+		</StatementExpression>
 	</StatementList>
 </Goal>
 	`.replace(/\n\t*/g, ''))
@@ -326,12 +326,12 @@ test('Decorate grouping.', () => {
 	expect(node.decorate().serialize()).toBe(`
 <Goal source="␂ ( 2 + -3 ) ; ␃">
 	<StatementList line="1" col="1" source="( 2 + -3 ) ;">
-		<Statement line="1" col="1" source="( 2 + -3 ) ;" type="expression">
+		<StatementExpression line="1" col="1" source="( 2 + -3 ) ;">
 			<Expression line="1" col="2" source="2 + -3" operator="+">
 				<Constant line="1" col="2" source="2" value="2"/>
 				<Constant line="1" col="6" source="-3" value="-3"/>
 			</Expression>
-		</Statement>
+		</StatementExpression>
 	</StatementList>
 </Goal>
 	`.replace(/\n\t*/g, ''))

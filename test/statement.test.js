@@ -23,7 +23,7 @@ describe('Empty statements.', () => {
 		expect(parser.parse().decorate().serialize()).toBe(`
 <Goal source="␂ ; ␃">
 	<StatementList line="1" col="1" source=";">
-		<Statement line="1" col="1" source=";" type="expression"/>
+		<StatementEmpty line="1" col="1" source=";"/>
 	</StatementList>
 </Goal>
 		`.replace(/\n\t*/g, ''))

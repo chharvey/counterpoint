@@ -10,7 +10,7 @@ import type {
 
 
 
-export type SemanticStatementType  = SemanticNodeDeclaration|SemanticNodeAssignment|SemanticNodeStatement
+export type SemanticStatementType  = SemanticNodeDeclaration|SemanticNodeAssignment|SemanticNodeStatementExpression|SemanticNodeStatementEmpty
 export type SemanticExpressionType = SemanticNodeConstant|SemanticNodeIdentifier|SemanticNodeTemplate|SemanticNodeExpression
 
 /**
@@ -142,11 +142,6 @@ export class SemanticNodeStatementList extends SemanticNode {
 		super(canonical, {}, children)
 	}
 }
-export class SemanticNodeStatement extends SemanticNode {
-	constructor(canonical: ParseNode, type: string, children: readonly []|[SemanticExpressionType]) {
-		super(canonical, {type}, children)
-	}
-}
 export class SemanticNodeDeclaration extends SemanticNode {
 	constructor(canonical: ParseNode, type: string, unfixed: boolean, children: readonly [SemanticNodeAssignee, SemanticNodeAssigned]) {
 		super(canonical, {type, unfixed}, children)
@@ -165,6 +160,16 @@ export class SemanticNodeAssignee extends SemanticNode {
 export class SemanticNodeAssigned extends SemanticNode {
 	constructor(canonical: ParseNode, children: readonly [SemanticExpressionType]) {
 		super(canonical, {}, children)
+	}
+}
+export class SemanticNodeStatementExpression extends SemanticNode {
+	constructor(canonical: ParseNode, children: readonly []|[SemanticExpressionType]) {
+		super(canonical, {}, children)
+	}
+}
+export class SemanticNodeStatementEmpty extends SemanticNode {
+	constructor(canonical: ParseNode) {
+		super(canonical)
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {

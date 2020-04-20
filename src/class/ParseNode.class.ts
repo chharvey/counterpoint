@@ -13,11 +13,12 @@ import SemanticNode, {
 	SemanticNodeNull,
 	SemanticNodeGoal,
 	SemanticNodeStatementList,
-	SemanticNodeStatement,
 	SemanticNodeDeclaration,
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
 	SemanticNodeAssigned,
+	SemanticNodeStatementExpression,
+	SemanticNodeStatementEmpty,
 	SemanticNodeExpression,
 	SemanticNodeTemplate,
 	SemanticNodeIdentifier,
@@ -180,11 +181,13 @@ class ParseNodeStatement extends ParseNode {
 		readonly [ParseNodeExpression, Token]   |
 		readonly [Token];
 	decorate(): SemanticStatementType {
-		return (this.children.length === 1 && this.children[0] instanceof ParseNode) ?
-			this.children[0].decorate() :
-			new SemanticNodeStatement(this, 'expression', (this.children.length === 2) ? [
-				this.children[0].decorate(),
-			] : [])
+		return (this.children.length === 1 && this.children[0] instanceof ParseNode)
+			? this.children[0].decorate()
+			: (this.children.length === 2)
+				? new SemanticNodeStatementExpression(this, [
+					this.children[0].decorate(),
+				])
+				: new SemanticNodeStatementEmpty(this)
 	}
 }
 class ParseNodeDeclarationVariable extends ParseNode {
