@@ -163,7 +163,7 @@ export class SemanticNodeAssigned extends SemanticNode {
 	}
 }
 export class SemanticNodeStatementExpression extends SemanticNode {
-	constructor(canonical: ParseNode, children: readonly []|[SemanticExpressionType]) {
+	constructor(canonical: ParseNode, children: readonly [SemanticExpressionType]) {
 		super(canonical, {}, children)
 	}
 }
