@@ -1,16 +1,14 @@
 import * as assert from 'assert'
 
 import Lexer from '../src/class/Lexer.class'
-import {
+import Token, {
 	TokenFilebound,
-	TokenWhitespace,
 	TokenCommentLine,
 	TokenCommentMulti,
 	TokenCommentBlock,
 } from '../src/class/Token.class'
 import {
 	LexError02,
-	LexError03,
 } from '../src/error/LexError.class'
 
 
@@ -24,7 +22,7 @@ suite('Lexer recognizes `TokenCommentLine` conditions.', () => {
 	})
 
 	test('Empty line comment.', () => {
-		const comment = [...new Lexer(`
+		const comment: Token = [...new Lexer(`
 %
 8;
 		`.trim()).generate()][2]
@@ -58,7 +56,7 @@ suite('Lexer recognizes `TokenCommentLine` conditions.', () => {
 
 suite('Lexer recognizes `TokenCommentMulti` conditions.', () => {
 	test('Empty multiline comment.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 {%%}
 {% %}
 		`.trim()).generate()]
@@ -69,7 +67,7 @@ suite('Lexer recognizes `TokenCommentMulti` conditions.', () => {
 	})
 
 	test('Nonempty multiline comment.', () => {
-		const comment = [...new Lexer(`
+		const comment: Token = [...new Lexer(`
 {% multiline
 that has contents
 comment %}
@@ -78,7 +76,7 @@ comment %}
 	})
 
 	test('Multiline comment containing nested multiline comment.', () => {
-		const comment = [...new Lexer(`
+		const comment: Token = [...new Lexer(`
 {% multiline
 that has a {% nestable nested %} multiline
 comment %}
@@ -87,7 +85,7 @@ comment %}
 	})
 
 	test('Multiline comment containing interpolation delimiters.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 {% A nestable {% co{%mm%}ent %} with '''the {{interpolation}} syntax'''. %}
 		`.trim()).generate()]
 		assert.ok(tokens[2] instanceof TokenCommentMulti)
@@ -131,7 +129,7 @@ comment %}</COMMENT>
 
 suite('Lexer recognizes `TokenCommentBlock` conditions.', () => {
 	test('Empty block comment.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 %%%
 %%%
 8;
@@ -142,7 +140,7 @@ suite('Lexer recognizes `TokenCommentBlock` conditions.', () => {
 	})
 
 	test('Basic block comment.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 %%%
 abcde
 5 + 3
@@ -160,7 +158,7 @@ abcde
 	})
 
 	test('Block comment delimiters must be on own line.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 %%%
 these quotes do not end the doc comment%%%
 %%%nor do these

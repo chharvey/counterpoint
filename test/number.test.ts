@@ -1,13 +1,10 @@
 import * as assert from 'assert'
 
-import Scanner  from '../src/class/Scanner.class'
 import Lexer    from '../src/class/Lexer.class'
 import Screener from '../src/class/Screener.class'
-import Char     from '../src/class/Char.class'
-import {
+import Token, {
 	TokenWhitespace,
 	TokenNumber,
-	TokenWord,
 } from '../src/class/Token.class'
 import {
 	LexError03,
@@ -18,13 +15,13 @@ import {
 
 suite('Non-radix (decimal default) integers.', () => {
 	test('Single-digit numbers.', () => {
-		;[...new Lexer(TokenNumber.DIGITS.get(10n).join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
+		;[...new Lexer(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !.join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 			assert.ok(token instanceof TokenNumber)
 		})
 	})
 
 	test('Tokenize non-radix integers.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 +  55  -  33  2  007  700  +91  -27  +091  -0027
 		`.trim()).generate()]
 		assert.strictEqual(tokens[ 4].source, `55`)
@@ -53,7 +50,7 @@ suite('Radix-specific integers.', () => {
 	test('Single-digit numbers.', () => {
 		;[...TokenNumber.BASES].map(([base, radix]) =>
 			[...new Lexer(
-				TokenNumber.DIGITS.get(radix).map((d) => `\\${base}${d}`).join(' ')
+				TokenNumber.DIGITS.get(radix) !.map((d) => `\\${base}${d}`).join(' ')
 			).generate()].slice(1, -1)
 		).flat().filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 			assert.ok(token instanceof TokenNumber)
@@ -61,7 +58,7 @@ suite('Radix-specific integers.', () => {
 	})
 
 	test('Tokenize radix integers.', () => {
-		const source = `
+		const source: string = `
 \\b100  \\b001  +\\b1000  -\\b1000  +\\b01  -\\b01
 \\q320  \\q032  +\\q1032  -\\q1032  +\\q03  -\\q03
 \\o370  \\o037  +\\o1037  -\\o1037  +\\o06  -\\o06
@@ -123,7 +120,7 @@ suite('Radix-specific integers.', () => {
 
 
 suite('Non-radix (decimal default) integers with numeric separators.', () => {
-	const SOURCE = `
+	const SOURCE: string = `
 12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
 	`.trim()
 
@@ -149,15 +146,14 @@ suite('Non-radix (decimal default) integers with numeric separators.', () => {
 	})
 
 	test('Numeric separator at beginning of token is not a number token.', () => {
-		const token = [...new Lexer(`_12345`).generate()][2]
-		assert.ok(!(token instanceof TokenNumber))
+		assert.ok(!([...new Lexer(`_12345`).generate()][2] instanceof TokenNumber))
 	})
 })
 
 
 
 suite('Radix-specific integers with numeric separators.', () => {
-	const SOURCE = `
+	const SOURCE: string = `
 \\b1_00  \\b0_01  +\\b1_000  -\\b1_000  +\\b0_1  -\\b0_1
 \\q3_20  \\q0_32  +\\q1_032  -\\q1_032  +\\q0_3  -\\q0_3
 \\o3_70  \\o0_37  +\\o1_037  -\\o1_037  +\\o0_6  -\\o0_6

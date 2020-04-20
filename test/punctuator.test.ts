@@ -3,7 +3,7 @@ import * as assert from 'assert'
 import Scanner from '../src/class/Scanner.class'
 import Lexer   from '../src/class/Lexer.class'
 import Char    from '../src/class/Char.class'
-import {
+import Token, {
 	TokenWhitespace,
 	TokenPunctuator,
 } from '../src/class/Token.class'
@@ -23,9 +23,9 @@ test('Lexer recognizes `TokenPunctuator` conditions.', () => {
 
 
 test('TokenPunctuator#serialize', () => {
-	const lexer = new Lexer(`+`)
+	const lexer: Lexer = new Lexer(`+`)
 	lexer.advance(2n) // bypass added `\u0002\u000a`
-	const token = new TokenPunctuator(lexer)
+	const token: Token = new TokenPunctuator(lexer)
 	token.add(new Char(new Scanner('='), 2))
 	assert.strictEqual(token.source, '+=')
 	assert.strictEqual(token.serialize(), '<PUNCTUATOR line="1" col="1" value="+=">+=</PUNCTUATOR>')

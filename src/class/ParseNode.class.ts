@@ -280,7 +280,7 @@ export class ParseNodeExpressionUnit extends ParseNode {
 			this.children[1].decorate()
 	}
 }
-class ParseNodeStringTemplate extends ParseNode {
+export class ParseNodeStringTemplate extends ParseNode {
 	declare children:
 		readonly (TokenTemplate|ParseNodeExpression|ParseNodeStringTemplate)[];
 	decorate(): SemanticNodeTemplate {

@@ -6,8 +6,7 @@ import Parser from '../src/class/Parser.class'
 
 suite('Empty statements.', () => {
 	test('Parse empty statement.', () => {
-		const parser = new Parser(';')
-		assert.strictEqual(parser.parse().serialize(), `
+		assert.strictEqual(new Parser(';').parse().serialize(), `
 <Goal source="␂ ; ␃">
 	<FILEBOUND value="true">␂</FILEBOUND>
 	<Goal__0__List line="1" col="1" source=";">
@@ -21,8 +20,7 @@ suite('Empty statements.', () => {
 	})
 
 	test('Decorate empty statement.', () => {
-		const parser = new Parser(';')
-		assert.strictEqual(parser.parse().decorate().serialize(), `
+		assert.strictEqual(new Parser(';').parse().decorate().serialize(), `
 <Goal source="␂ ; ␃">
 	<StatementList line="1" col="1" source=";">
 		<StatementEmpty line="1" col="1" source=";"/>
@@ -32,8 +30,7 @@ suite('Empty statements.', () => {
 	})
 
 	test.skip('Compile empty statement.', () => {
-		const parser = new Parser(';')
-		assert.strictEqual(parser.parse().decorate().compile(), `
+		assert.strictEqual(new Parser(';').parse().decorate().compile(), `
 export default void 0
 export default __2
 		`.trim())
@@ -43,7 +40,7 @@ export default __2
 
 
 suite('Assignment statements.', () => {
-	const input = `
+	const input: string = `
 let unfixed the_answer = 42;
 let \`the £ answer\` = the_answer * 10;
 the_answer = the_answer - \\z14;
@@ -199,6 +196,6 @@ the_answer = the_answer - \\z14;
 
 test('Parse Errors', () => {
 	assert.throws(() => {
-		const tree = new Parser('2 3').parse()
+		new Parser('2 3').parse()
 	}, /Unexpected token/)
 })

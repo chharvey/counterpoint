@@ -2,7 +2,7 @@ import * as assert from 'assert'
 
 import Lexer    from '../src/class/Lexer.class'
 import Screener from '../src/class/Screener.class'
-import {
+import Token, {
 	TokenString,
 } from '../src/class/Token.class'
 import {
@@ -14,7 +14,7 @@ import {
 
 suite('Lexer recognizes `TokenString` conditions.', () => {
 	test('Basic strings.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 3 - 50 + * 2
 
 5 + 03 + '' * 'hello' *  -2
@@ -32,7 +32,7 @@ suite('Lexer recognizes `TokenString` conditions.', () => {
 	})
 
 	test('Escaped characters.', () => {
-		const tokenstring = [...new Lexer(`
+		const tokenstring: Token = [...new Lexer(`
 '0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
 		`.trim()).generate()][2]
 		assert.strictEqual(tokenstring.source.slice( 3,  5), `\\'`)
@@ -44,7 +44,7 @@ suite('Lexer recognizes `TokenString` conditions.', () => {
 	})
 
 	test('Escaped character sequences.', () => {
-		const tokenstring = [...new Lexer(`
+		const tokenstring: Token = [...new Lexer(`
 '0 \\u{24} 1 \\u{005f} 2 \\u{} 3';
 		`.trim()).generate()][2]
 		assert.strictEqual(tokenstring.source.slice( 3,  9), `\\u{24}`)
@@ -53,7 +53,7 @@ suite('Lexer recognizes `TokenString` conditions.', () => {
 	})
 
 	test('Line continuation.', () => {
-		const tokenstring = [...new Lexer(`
+		const tokenstring: Token = [...new Lexer(`
 '012\\
 345
 678';
@@ -99,7 +99,7 @@ suite('Lexer recognizes `TokenString` conditions.', () => {
 
 
 test('Screener computes `TokenString` values.', () => {
-	const tokens = [...new Screener(`
+	const tokens: Token[] = [...new Screener(`
 5 + 03 + '' * 'hello' *  -2;
 
 '0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
@@ -120,7 +120,7 @@ test('Screener computes `TokenString` values.', () => {
 
 
 test('UTF-16 encoding throws when input is out of range.', () => {
-	const stringtoken = [...new Screener(`
+	const stringtoken: Token = [...new Screener(`
 'a string literal with a unicode \\u{a00061} escape sequence out of range';
 	`.trim()).generate()][1]
 	assert.throws(() => stringtoken.cook(), RangeError)

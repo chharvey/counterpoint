@@ -3,10 +3,16 @@ import * as assert from 'assert'
 import Lexer    from '../src/class/Lexer.class'
 import Screener from '../src/class/Screener.class'
 import Parser   from '../src/class/Parser.class'
-import {
+import Token, {
 	TokenTemplate,
 	TemplatePosition,
 } from '../src/class/Token.class'
+import type {
+	ParseNodeStringTemplate,
+} from '../src/class/ParseNode.class'
+import type {
+	SemanticNodeTemplate,
+} from '../src/class/SemanticNode.class'
 import {
 	LexError01,
 	LexError02,
@@ -16,7 +22,7 @@ import {
 
 suite('Lexer recognizes `TokenTemplate` conditions.', () => {
 	test('Basic templates.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 600  /  '''''' * 3 + '''hello''' *  2
 		`.trim()).generate()]
 		assert.ok(tokens[ 6] instanceof TokenTemplate)
@@ -28,7 +34,7 @@ suite('Lexer recognizes `TokenTemplate` conditions.', () => {
 	})
 
 	test('Template interpolation.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 3 + '''head{{ * 2
 3 + }}midl{{ * 2
 3 + }}tail''' * 2
@@ -45,7 +51,7 @@ suite('Lexer recognizes `TokenTemplate` conditions.', () => {
 	})
 
 	test('Empty/comment interpolation.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 '''abc{{ }}def'''
 '''ghi{{}}jkl'''
 '''mno{{ {% pqr %} }}stu'''
@@ -71,7 +77,7 @@ suite('Lexer recognizes `TokenTemplate` conditions.', () => {
 	})
 
 	test('Nested interpolation.', () => {
-		const tokens = [...new Lexer(`
+		const tokens: Token[] = [...new Lexer(`
 1 + '''head1 {{ 2 + '''head2 {{ 3 ^ 3 }} tail2''' * 2 }} tail1''' * 1
 		`.trim()).generate()]
 		assert.ok(tokens[ 6] instanceof TokenTemplate)
@@ -89,7 +95,7 @@ suite('Lexer recognizes `TokenTemplate` conditions.', () => {
 	})
 
 	test('Non-escaped characters.', () => {
-		const tokentemplate = [...new Lexer(`
+		const tokentemplate: Token = [...new Lexer(`
 '''0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7''';
 		`.trim()).generate()][2]
 		assert.strictEqual(tokentemplate.source.slice( 5,  7), `\\'`)
@@ -102,7 +108,7 @@ suite('Lexer recognizes `TokenTemplate` conditions.', () => {
 	})
 
 	test('Non-escaped character sequences.', () => {
-		const tokentemplate = [...new Lexer(`
+		const tokentemplate: Token = [...new Lexer(`
 '''0 \\u{24} 1 \\u{005f} 2 \\u{} 3''';
 		`.trim()).generate()][2]
 		assert.strictEqual(tokentemplate.source.slice( 5, 11), `\\u{24}`)
@@ -111,7 +117,7 @@ suite('Lexer recognizes `TokenTemplate` conditions.', () => {
 	})
 
 	test('Line breaks.', () => {
-		const tokentemplate = [...new Lexer(`
+		const tokentemplate: Token = [...new Lexer(`
 '''012\\
 345
 678''';
@@ -152,7 +158,7 @@ suite('Lexer recognizes `TokenTemplate` conditions.', () => {
 
 
 test('Screener computes `TokenTemplate` values.', () => {
-	const tokens = [...new Screener(`
+	const tokens: Token[] = [...new Screener(`
 600  /  '''''' * 3 + '''hello''' *  2;
 
 3 + '''head{{ * 2
@@ -183,7 +189,7 @@ test('Screener computes `TokenTemplate` values.', () => {
 
 
 suite('Parse `StringTemplate` expression units.', () => {
-	const stringTemplateParseNode = (goal) => goal
+	const stringTemplateParseNode = (goal: any): ParseNodeStringTemplate => goal
 		.children[1] // Goal__0__List
 		.children[0] // Statement
 		.children[0] // Expression
@@ -451,7 +457,7 @@ suite('Parse `StringTemplate` expression units.', () => {
 
 
 suite('Decorate `StringTemplate` expression units.', () => {
-	const stringTemplateSemanticNode = (goal) => goal
+	const stringTemplateSemanticNode = (goal: any): SemanticNodeTemplate => goal
 		.children[0] // StatementList
 		.children[0] // Statement
 		.children[0] // Template

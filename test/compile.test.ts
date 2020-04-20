@@ -29,8 +29,7 @@ const STACK: Stack = []
 
 
 test('Compile empty file.', () => {
-	const node = new Parser('').parse().decorate()
-	assert.strictEqual(node.compile(), Util.dedent(`
+	assert.strictEqual(new Parser('').parse().decorate().compile(), Util.dedent(`
 export default null
 	`))
 })
@@ -38,8 +37,7 @@ export default null
 
 
 test.skip('Compile file with single token.', () => {
-	const node = new Parser('42').parse().decorate()
-	assert.strictEqual(node.compile(), preamble + Util.dedent(`
+	assert.strictEqual(new Parser('42').parse().decorate().compile(), preamble + Util.dedent(`
 STACK.push(42)
 
 export default evalStack(STACK)
@@ -49,8 +47,7 @@ export default evalStack(STACK)
 
 
 test.skip('Compile file with simple expression, add.', () => {
-	const node = new Parser('42 + 420').parse().decorate()
-	assert.strictEqual(node.compile(), preamble + Util.dedent(`
+	assert.strictEqual(new Parser('42 + 420').parse().decorate().compile(), preamble + Util.dedent(`
 
 STACK.push(42)
 
@@ -68,8 +65,7 @@ export default evalStack(STACK)
 
 
 test.skip('Compile file with simple expression, subtract.', () => {
-	const node = new Parser('42 - 420').parse().decorate()
-	assert.strictEqual(node.compile(), preamble + Util.dedent(`
+	assert.strictEqual(new Parser('42 - 420').parse().decorate().compile(), preamble + Util.dedent(`
 
 STACK.push(42)
 
@@ -91,8 +87,7 @@ export default evalStack(STACK)
 
 
 test.skip('Compile file with compound expression.', () => {
-	const node = new Parser('42 ^ 2 * 420').parse().decorate()
-	assert.strictEqual(node.compile(), preamble + Util.dedent(`
+	assert.strictEqual(new Parser('42 ^ 2 * 420').parse().decorate().compile(), preamble + Util.dedent(`
 
 
 STACK.push(42)
@@ -116,8 +111,7 @@ export default evalStack(STACK)
 
 
 test.skip('Compile file with compound expression, grouping.', () => {
-	const node = new Parser('42 ^ (2 * 420)').parse().decorate()
-	assert.strictEqual(node.compile(), preamble + Util.dedent(`
+	assert.strictEqual(new Parser('42 ^ (2 * 420)').parse().decorate().compile(), preamble + Util.dedent(`
 
 STACK.push(42)
 

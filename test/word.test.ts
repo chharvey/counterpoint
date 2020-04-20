@@ -2,7 +2,7 @@ import * as assert from 'assert'
 
 import Lexer    from '../src/class/Lexer.class'
 import Screener from '../src/class/Screener.class'
-import {
+import Token, {
 	TokenWhitespace,
 	TokenWord,
 	TokenWordBasic,
@@ -15,8 +15,7 @@ import {
 
 
 suite('Lexer recognizes `TokenWordBasic` conditions.', () => {
-	const CHAR_START = 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z _'.split(' ')
-	const CHAR_REST = CHAR_START.concat('0 1 2 3 4 5 6 7 8 9'.split(' '))
+	const CHAR_START: string[] = 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z _'.split(' ')
 	test('Word beginners.', () => {
 		;[...new Lexer(CHAR_START.join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 			assert.ok(token instanceof TokenWord)
@@ -24,7 +23,7 @@ suite('Lexer recognizes `TokenWordBasic` conditions.', () => {
 	})
 
 	test('Word continuations.', () => {
-		const tokens = [...new Screener(`
+		const tokens: Token[] = [...new Screener(`
 this is a word
 _words _can _start _with _underscores
 _and0 _can1 contain2 numb3rs
@@ -36,7 +35,7 @@ _and0 _can1 contain2 numb3rs
 	})
 
 	test('Words cannot start with a digit.', () => {
-		const tokens = [...new Screener(`
+		const tokens: Token[] = [...new Screener(`
 this is 0a word
 _words 1c_an _start 2w_ith _underscores
 _and0 3c_an1 contain2 44numb3rs
@@ -96,7 +95,7 @@ a word _can repeat _with the same id
 
 suite('Lexer recognizes `TokenWordUnicode` conditions.', () => {
 	test('Word boundaries.', () => {
-		const tokens = [...new Screener(`
+		const tokens: Token[] = [...new Screener(`
 \`this\` \`is\` \`a\` \`unicode word\`
 \`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
 \`except\` \`back-ticks\` \`.\`
