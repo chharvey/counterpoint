@@ -92,13 +92,14 @@ and the **mathematical negation** operator, `-`,
 are valid only on number types.
 The affirmation is a no-op (the number itself is produced),
 and the negation computes the additive inverse, or “negation”, of the number.
+Any integer base can be used.
 
 These operators can be chained, and when done so, are grouped right-to-left.
 For example, `-+-8` is equivalent to `-(+(-8))`.
 
 ```
 let int_p = 512;
-let int_n = -512;
+let int_n = -\x200;
 
 +int_p; % 512
 +int_n; % -512
@@ -107,11 +108,12 @@ let int_n = -512;
 -int_n; % 512
 ```
 
-Recognize that number tokens can begin with **U+002B PLUS SIGN** or **U+002D HYPHEN-MINUS**.
-For example, `-512` is lexed as a single token, and not two tokens `-` and `512`.
-The same is true for `+512`.
+Recognize that number tokens can begin with **U+002B PLUS SIGN** or **U+002D HYPHEN-MINUS**,
+even if they’re prefixed with a radix.
+For example, `-\x200` is lexed as a single token, and not two tokens `-` and `\x200`.
+The same is true for `+\x200`.
 These tokens’ values are the same as the computed values of
-the expressions `-(512)` and `+(512)`,
+the expressions `-(\x200)` and `+(\x200)`,
 but this is important to mention because it could affect how we write
 [Additive](#parsing-additive-expressions) expressions.
 
@@ -121,10 +123,11 @@ but this is important to mention because it could affect how we write
 The **exponentiation** operator, `^`,
 is valid only on number types.
 It produces the result of raising the left-hand operand to the power of the right-hand operand.
+Integer bases can be mixed.
 
 ```
-3 ^ 2; % 9
-2 ^ 3; % 8
+3 ^ 2;    % 9
+2 ^ \b11; % 8
 ```
 
 Expressions involving exponentiation can be imprecise.
@@ -172,6 +175,7 @@ The **multiplication** operator, `*` and
 the **division** operator, `/`,
 are valid only on number types.
 They produce the respective mathematical product and quotient of the operands.
+Integer bases can be mixed.
 
 Multiplication is **associative**, which means the following expressions produce the same result,
 for any numbers `‹a›`, `‹b›`, and `‹c›`:
@@ -185,9 +189,9 @@ Multiplication and division perform the standard arithmetic operations,
 keeping in mind that the result of division `/` on integers are truncated,
 and division by `0` will result in an error.
 ```
-10 / 5; % produces `2`
- 3 / 2; % produces `1`, since 1.5 gets truncated
- 4 / 0; % runtime error
+\o12 / \q11; % produces `2`
+3 / 2;       % produces `1`, since 1.5 gets truncated
+4 / 0;       % runtime error
 ```
 
 
@@ -197,6 +201,7 @@ The **addition** operator, `+`,
 and the **subtraction** operator, `-`,
 are valid only on number types.
 They produce the respective mathematical sum and difference of the operands.
+Integer bases can be mixed.
 
 Addition is **associative**, which means the following expressions produce the same result,
 for any numbers `‹a›`, `‹b›`, and `‹c›`:
