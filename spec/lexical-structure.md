@@ -1,5 +1,4 @@
 # Lexical Structure
-
 This chapter defines the lexical structure of the Solid programming language.
 
 

@@ -1,5 +1,4 @@
 # Solid Language: Expressions
-
 This chapter defines the syntactic structure and semantics of expressions in the Solid programming language.
 
 ```w3c
