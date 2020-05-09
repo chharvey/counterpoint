@@ -313,8 +313,6 @@ test('Compile additive.', () => {
 
 STACK.push(42)
 
-
-
 STACK.push(420)
 
 STACK.push(ADD)
@@ -328,11 +326,7 @@ test('Compile file subtractive.', () => {
 
 STACK.push(42)
 
-
-
-
 STACK.push(420)
-
 
 STACK.push(NEG)
 
@@ -348,13 +342,9 @@ test('Compile compound expression.', () => {
 
 STACK.push(42)
 
-
-
 STACK.push(2)
 
 STACK.push(EXP)
-
-
 
 STACK.push(420)
 
@@ -445,12 +435,7 @@ test('Compile compound expression, grouping.', () => {
 
 STACK.push(42)
 
-
-
-
 STACK.push(2)
-
-
 
 STACK.push(420)
 

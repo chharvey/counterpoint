@@ -228,7 +228,7 @@ describe('Token', () => {
 			assert.strictEqual([...new Lexer(Util.dedent(`
 				500  +  30; ;  % line comment  *  2
 				8;
-			`).trimStart()).generate()][11].serialize(), Util.dedent(`
+			`)).generate()][11].serialize(), Util.dedent(`
 				<COMMENT line="1" col="16">% line comment  *  2\n</COMMENT>
 			`).trim())
 		})
@@ -237,7 +237,7 @@ describe('Token', () => {
 				{% multiline
 				that has a {% nestable nested %} multiline
 				comment %}
-			`).trimStart()).generate()][2].serialize(), Util.dedent(`
+			`)).generate()][2].serialize(), Util.dedent(`
 				<COMMENT line="1" col="1">{% multiline
 				that has a {% nestable nested %} multiline
 				comment %}</COMMENT>
@@ -250,7 +250,7 @@ describe('Token', () => {
 				%%%nor do these
 				%%%
 				;
-			`).trimStart()).generate()][2].serialize(), Util.dedent(`
+			`)).generate()][2].serialize(), Util.dedent(`
 				<COMMENT line="1" col="1">%%%
 				these quotes do not end the doc comment%%%
 				%%%nor do these
