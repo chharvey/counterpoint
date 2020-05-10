@@ -112,10 +112,10 @@ Recognize that number tokens can begin with **U+002B PLUS SIGN** or **U+002D HYP
 even if they’re prefixed with a radix.
 For example, `-\x200` is lexed as a single token, and not two tokens `-` and `\x200`.
 The same is true for `+\x200`.
-These tokens’ values are the same as the computed values of
+Even though these tokens’ values are the same as the computed values of
 the expressions `-(\x200)` and `+(\x200)`,
-but this is important to mention because it could affect how we write
-[Additive](#parsing-additive-expressions) expressions.
+this is important to mention because it could affect how we write
+[additive expressions](#parsing-additive-expressions).
 
 
 
@@ -137,13 +137,13 @@ which is not an integer. Since integers are truncated, `3 ^ -2` will produce `0`
 Exponentiation is *grouped right-to-left*.
 This means that where grouping is ambiguous, the expression is evaluated from right to left.
 For example, `a ^ b ^ c` is equivalent to `a ^ (b ^ c)` and not `(a ^ b) ^ c`.
-The reason is that this is consistent with mathematical notation,
+This is consistent with mathematical notation,
 where *a<sup>b<sup>c</sup></sup>* is interpreted as *a<sup>(b<sup>c</sup>)</sup>*.
 
 
 ### Exponentiation: Order of Operations
 In mathematics, exponents are applied before negation (which is multiplication).
-However, in Solid, [mathematical negation](#mathematical-affirmation-+-mathematical-negation--)
+However, in Solid, [mathematical negation](#mathematical-affirmation--mathematical-negation--)
 is a unary operator, which is stronger than any binary operator.
 **Mathematical negation is not considered multiplication**,
 even if it indeed produces the same mathematical result of multiplying by -1.
@@ -152,9 +152,10 @@ Therefore, we can end up with confusing syntax such as this:
 -3 ^ 2
 ```
 While *mathematically*, *&minus;3<sup>2</sup>* is equivalent to *&minus;1&middot;3<sup>2</sup>*,
-producing `-9`, the Solid expression `-3 ^ 2`, is *not equivalent*.
+producing *&minus;9*, the Solid expression `-3 ^ 2`, is *not equivalent*.
 Mathematical negation is stronger than exponentiation, so Solid will compute `-3`
-first as a unary operation, and then raise that value to the power of `2`, producing `9`.
+first as a unary operation (or, in this case, as a single token),
+and then raise that value to the power of `2`, producing `9`.
 Writing such an ambiguous syntax could cause developers to scratch their heads
 wondering why `-3 ^ 2` is `9`.
 
@@ -217,7 +218,7 @@ when going beyond the maximum/minimum integer values.
 
 
 ### Parsing Additive Expressions
-[Previously in this chapter](#mathematical-affirmation-+-mathematical-negation--)
+[Previously in this chapter](#mathematical-affirmation--mathematical-negation--)
 we saw that number tokens can begin with **U+002B PLUS SIGN** or **U+002D HYPHEN-MINUS**.
 Since those characters are the same as the additive operator symbols,
 this could affect how additive expressions are parsed.

@@ -1,12 +1,13 @@
 # Variables
-This chapter describes declaring and referencing variables.
+This chapter describes declaring and accessing local variables.
 
 
 
 ## Variable Declaration
-Values in Solid can be stored in variables and then referenced later.
-In order to use a variable, it must be **declared** first.
-We declare variables with he keyword `let`.
+Values in Solid can be stored in variables and then accessed later.
+In order to use a variable, it must be **declared** first,
+in what we call a **variable declaration statement**.
+We declare variables with the keyword `let`.
 ```
 let my_var = 'Hello, world!';
 ```
@@ -53,37 +54,37 @@ let my_other_var = 'Hello, programmer!';
 
 
 ## Variable Reassignment
-When a variable is declared with `let unfixed`, its pointer may change to a new value.
-```
-let unfixed my_var = 'Hello, world!';
-my_var;                               %== 'Hello, world!'
-my_var = '¡Hola, mundo!';
-my_var;                               %== '¡Hola, mundo!'
-```
-
-Changing the values of variables is useful in some cases, such as for storing state,
-but in some programming disciplines this pattern is generally not encouraged.
-Variables holding holding different values at different points in runtime
-could lead to unpredictability.
-
-Therefore, we can declare a variables without the keyword `unfixed`.
-Such variables are **fixed**: they cannot be reassigned.
+By default, variables are **fixed** in that they cannot be reassigned.
 ```
 let my_var = 'Hello, world!';
 my_var = '¡Hola, mundo!';     %> AssignmentError
 ```
 > AssignmentError: Reassignment of a fixed variable: `my_var`.
 
+In some programming disciplines this pattern is generally encouraged, because
+variables holding different values at different points in runtime could lead to unpredictability.
+However, changing a variable’s value is useful in some cases, such as in loops or for storing state.
+
+Therefore, we can declare a variables with the keywords `let unfixed`,
+which allows us to assign it a new value later.
+```
+let unfixed my_var = 'Hello, world!';
+my_var;                               %== 'Hello, world!'
+my_var = '¡Hola, mundo!';
+my_var;                               %== '¡Hola, mundo!'
+```
+The statement `my_var = '¡Hola, mundo!';` is called a **variable reassignment statement**.
+An unfixed variable can be reassigned anywhere in the scope in which it’s visible.
+
 
 ### Pointers
 Variables are pointers, which reference preexisting values.
-When we reference a variable, we access the value that it points to.
+When we access a variable, we reference the value that it points to.
 ```
 let my_var = 'Hello, world!';
 my_var;                       % references the string `'Hello, world!'`
 ```
 
-Pointers are static.
 When a variable is assigned another variable, it points to the evaluated value of that variable.
 ```
 let a = 42;
@@ -116,7 +117,7 @@ Many other languages have characters in their alphabet that are not allowed by t
 Therefore, Solid offers a flexible mechanism for allowing identifiers with
 almost any character in the Unicode character set: **Unicode identifiers**.
 
-By wrapping the identifier name with back-ticks (`` ` ` `` **U+0060 GRAVE ACCENT**),
+By wrapping the identifier name with back-ticks (`` `…` `` **U+0060 GRAVE ACCENT**),
 we can include non-ASCII letters.
 ```
 let `español` = 'Spanish for “Spanish”';
@@ -127,7 +128,7 @@ We can access the variable just like any other, as long as we include the name i
 `español`; %== 'Spanish for “Spanish”'
 ```
 
-When an identifier is declared with back-ticks, it must always be accessed as such,
+When an identifier is written with back-ticks, it must always be referred to as such,
 even if it doesn’t contain “special characters”. The converse is true as well.
 ```
 let `foo` = 42;
