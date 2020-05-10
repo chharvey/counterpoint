@@ -20,7 +20,7 @@ or, “the value `'Hello, world!'` is **assigned *to* the variable** `my_var`”
 
 When we access the variable, we reference the value it’s assigned.
 ```
-my_var; %> 'Hello, world!'
+my_var; %== 'Hello, world!'
 ```
 
 All **basic** variable names *must* start with an uppercase or lowercase letter or an underscore.
@@ -56,9 +56,9 @@ let my_other_var = 'Hello, programmer!';
 When a variable is declared with `let unfixed`, its pointer may change to a new value.
 ```
 let unfixed my_var = 'Hello, world!';
-my_var;                               %> 'Hello, world!'
+my_var;                               %== 'Hello, world!'
 my_var = '¡Hola, mundo!';
-my_var;                               %> '¡Hola, mundo!'
+my_var;                               %== '¡Hola, mundo!'
 ```
 
 Changing the values of variables is useful in some cases, such as for storing state,
@@ -88,7 +88,7 @@ When a variable is assigned another variable, it points to the evaluated value o
 ```
 let a = 42;
 let b = a;
-a;          %> 42
+a;          %== 42
 b;          % also `42`
 ```
 If that first variable is ever reassigned, the second variable will keep its pointer
@@ -96,7 +96,7 @@ to the original value, until it itself is reassigned.
 ```
 let unfixed a = 42;
 let unfixed b = a;
-a;                  %> 42
+a;                  %== 42
 b;                  % also `42`
 a = 420;
 a;                  % now `420`
@@ -124,7 +124,7 @@ let `español` = 'Spanish for “Spanish”';
 In the identifier above, notice the letter `ñ` (**U+00F1 LATIN SMALL LETTER N WITH TILDE**).
 We can access the variable just like any other, as long as we include the name in back-tick delimiters.
 ```
-`español`; %> 'Spanish for “Spanish”'
+`español`; %== 'Spanish for “Spanish”'
 ```
 
 When an identifier is declared with back-ticks, it must always be accessed as such,
@@ -143,7 +143,7 @@ With Unicode identifiers, we can insert almost any character,
 including spaces and punctuation symbols.
 ```
 let `Svaret på den ultimata frågan.` = 42;
-`Svaret på den ultimata frågan.` / 2;      %> 21
+`Svaret på den ultimata frågan.` / 2;      %== 21
 ```
 Note that Unicode identifiers *are not strings*; they’re simply names of declared variables.
 Even though Unicode identifiers are not strings, they’re tokenized the same way

@@ -101,11 +101,11 @@ For example, `-+-8` is equivalent to `-(+(-8))`.
 let int_p = 512;
 let int_n = -\x200;
 
-+int_p; % 512
-+int_n; % -512
++int_p; %== 512
++int_n; %== -512
 
--int_p; % -512
--int_n; % 512
+-int_p; %== -512
+-int_n; %== 512
 ```
 
 Recognize that number tokens can begin with **U+002B PLUS SIGN** or **U+002D HYPHEN-MINUS**,
@@ -126,8 +126,8 @@ It produces the result of raising the left-hand operand to the power of the righ
 Integer bases can be mixed.
 
 ```
-3 ^ 2;    % 9
-2 ^ \b11; % 8
+3 ^ 2;    %== 9
+2 ^ \b11; %== 8
 ```
 
 Expressions involving exponentiation can be imprecise.
