@@ -27,6 +27,27 @@ Decorate(ExpressionUnit ::= NUMBER)
 	:= Decorate(NUMBER)
 Decorate(ExpressionUnit ::= "(" Expression ")")
 	:= Decorate(Expression)
+
+Decorate(NUMBER)
+	:= SemanticConstant {value: MV(NUMBER)} []
+```
+where `MV` is [Mathematical Value](./lexical-structure.md#static-semantics-mathematical-value).
+
+
+### Static Semantics: Compilation (Expression Units)
+```w3c
+Compile(SemanticConstant) :=
+	1. push `SemanticConstant.value` onto `STACK`.
+```
+
+
+### Runtime Semantics: Evaluation (Expression Units)
+```w3c
+Evaluate(STACK) :=
+	1. assert `STACK` is not empty.
+	2. let `it` be `STACK.lastItem`.
+	3. pop `STACK`.
+	4. return `it`.
 ```
 
 
