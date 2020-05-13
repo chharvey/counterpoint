@@ -5,21 +5,12 @@ const {default: Parser} = require('../build/class/Parser.class.js')
 
 const preamble = `
 type RuntimeInt = number
-type Stack = StackItem[]
-type StackItem = RuntimeInt|StackFunction
-type StackFunction = (x: RuntimeInt, y?: RuntimeInt) => RuntimeInt
-const evalStack = (stack: Stack): RuntimeInt => {
-	if (!stack.length) throw new Error('empty stack')
-	const it: StackItem = stack.pop()!
-	return (it instanceof Function) ?
-		it(...[...new Array(it.length)].map(() => evalStack(stack)).reverse() as Parameters<StackFunction>) :
-		it
-}
-const ADD: StackFunction = (a, b) => a  + b!
-const MUL: StackFunction = (a, b) => a  * b!
-const DIV: StackFunction = (a, b) => a  / b!
-const EXP: StackFunction = (a, b) => a ** b!
-const NEG: StackFunction = (a) => -a
+type Stack = RuntimeInt[]
+const ADD = (stack: Stack): void => { const arg2: RuntimeInt = stack.pop() !; const arg1: RuntimeInt = stack.pop() !; stack.push(arg1 +  arg2) }
+const MUL = (stack: Stack): void => { const arg2: RuntimeInt = stack.pop() !; const arg1: RuntimeInt = stack.pop() !; stack.push(arg1 *  arg2) }
+const DIV = (stack: Stack): void => { const arg2: RuntimeInt = stack.pop() !; const arg1: RuntimeInt = stack.pop() !; stack.push(arg1 /  arg2) }
+const EXP = (stack: Stack): void => { const arg2: RuntimeInt = stack.pop() !; const arg1: RuntimeInt = stack.pop() !; stack.push(arg1 ** arg2) }
+const NEG = (stack: Stack): void => { stack.push(-stack.pop() !) }
 const STACK: Stack = []
 `
 
@@ -39,15 +30,15 @@ test('Compile file with single token.', () => {
 	expect(outs).toEqual([`
 		STACK.push(42)
 
-		export default evalStack(STACK)
+		export default STACK.pop()
 	`, `
 		STACK.push(42)
 
-		export default evalStack(STACK)
+		export default STACK.pop()
 	`, `
 		STACK.push(-42)
 
-		export default evalStack(STACK)
+		export default STACK.pop()
 	`].map((out) => preamble + Util.dedent(out)))
 })
 
@@ -62,9 +53,9 @@ STACK.push(42)
 
 STACK.push(420)
 
-STACK.push(ADD)
+ADD(STACK)
 
-export default evalStack(STACK)
+export default STACK.pop()
 
 	`))
 })
@@ -82,11 +73,11 @@ STACK.push(42)
 STACK.push(420)
 
 
-STACK.push(NEG)
+NEG(STACK)
 
-STACK.push(ADD)
+ADD(STACK)
 
-export default evalStack(STACK)
+export default STACK.pop()
 
 	`))
 })
@@ -103,14 +94,14 @@ STACK.push(42)
 
 STACK.push(2)
 
-STACK.push(EXP)
+EXP(STACK)
 
 
 STACK.push(420)
 
-STACK.push(MUL)
+MUL(STACK)
 
-export default evalStack(STACK)
+export default STACK.pop()
 	`))
 })
 
@@ -124,7 +115,7 @@ test('Compile file with compound expression, grouping.', () => {
 STACK.push(42)
 
 
-STACK.push(NEG)
+NEG(STACK)
 
 
 
@@ -133,10 +124,10 @@ STACK.push(2)
 
 STACK.push(420)
 
-STACK.push(MUL)
+MUL(STACK)
 
-STACK.push(EXP)
+EXP(STACK)
 
-export default evalStack(STACK)
+export default STACK.pop()
 	`))
 })

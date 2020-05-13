@@ -95,24 +95,15 @@ export class SemanticNodeGoal extends SemanticNode {
 	compile(): string {
 		return Util.dedent(`
 			type RuntimeInt = number
-			type Stack = StackItem[]
-			type StackItem = RuntimeInt|StackFunction
-			type StackFunction = (x: RuntimeInt, y?: RuntimeInt) => RuntimeInt
-			const evalStack = (stack: Stack): RuntimeInt => {
-				if (!stack.length) throw new Error('empty stack')
-				const it: StackItem = stack.pop()!
-				return (it instanceof Function) ?
-					it(...[...new Array(it.length)].map(() => evalStack(stack)).reverse() as Parameters<StackFunction>) :
-					it
-			}
-			const ${Operator[Operator.ADD]}: StackFunction = (a, b) => a  + b!
-			const ${Operator[Operator.MUL]}: StackFunction = (a, b) => a  * b!
-			const ${Operator[Operator.DIV]}: StackFunction = (a, b) => a  / b!
-			const ${Operator[Operator.EXP]}: StackFunction = (a, b) => a ** b!
-			const ${Operator[Operator.NEG]}: StackFunction = (a) => -a
+			type Stack = RuntimeInt[]
+			const ${Operator[Operator.ADD]} = (stack: Stack): void => { const arg2: RuntimeInt = stack.pop() !; const arg1: RuntimeInt = stack.pop() !; stack.push(arg1 +  arg2) }
+			const ${Operator[Operator.MUL]} = (stack: Stack): void => { const arg2: RuntimeInt = stack.pop() !; const arg1: RuntimeInt = stack.pop() !; stack.push(arg1 *  arg2) }
+			const ${Operator[Operator.DIV]} = (stack: Stack): void => { const arg2: RuntimeInt = stack.pop() !; const arg1: RuntimeInt = stack.pop() !; stack.push(arg1 /  arg2) }
+			const ${Operator[Operator.EXP]} = (stack: Stack): void => { const arg2: RuntimeInt = stack.pop() !; const arg1: RuntimeInt = stack.pop() !; stack.push(arg1 ** arg2) }
+			const ${Operator[Operator.NEG]} = (stack: Stack): void => { stack.push(-stack.pop() !) }
 			const STACK: Stack = []
 			${this.children[0].compile()}
-			export default evalStack(STACK)
+			export default STACK.pop()
 		`)
 	}
 }
@@ -130,7 +121,7 @@ export class SemanticNodeExpression extends SemanticNode {
 		return Util.dedent(`
 			${this.children[0].compile()}
 			${(this.children.length === 2) ? this.children[1].compile() : ''}
-			STACK.push(${Operator[this.operator]})
+			${Operator[this.operator]}(STACK)
 		`)
 	}
 }
