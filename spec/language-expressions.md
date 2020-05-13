@@ -73,10 +73,6 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol)
 
 ### Static Semantics: Compilation (Unary Operators)
 ```w3c
-Compile(SemanticExpression[operator=AFF]) :=
-	1. assert the number of `SemanticExpression.children` is 1.
-	2. perform `Compile(SemanticExpression.children.0)`.
-	4. push `AFF` onto `STACK`.
 Compile(SemanticExpression[operator=NEG]) :=
 	1. assert the number of `SemanticExpression.children` is 1.
 	2. perform `Compile(SemanticExpression.children.0)`.
