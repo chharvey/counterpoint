@@ -19,7 +19,6 @@ const ADD: StackFunction = (a, b) => a  + b!
 const MUL: StackFunction = (a, b) => a  * b!
 const DIV: StackFunction = (a, b) => a  / b!
 const EXP: StackFunction = (a, b) => a ** b!
-const AFF: StackFunction = (a) => +a
 const NEG: StackFunction = (a) => -a
 const STACK: Stack = []
 `
@@ -36,12 +35,20 @@ export default null
 
 
 test('Compile file with single token.', () => {
-	const node = new Parser('42').parse().decorate()
-	expect(node.compile()).toBe(preamble + Util.dedent(`
-STACK.push(42)
+	const outs = ['42', '+42', '-42'].map((src) => new Parser(src).parse().decorate().compile())
+	expect(outs).toEqual([`
+		STACK.push(42)
 
-export default evalStack(STACK)
-	`))
+		export default evalStack(STACK)
+	`, `
+		STACK.push(42)
+
+		export default evalStack(STACK)
+	`, `
+		STACK.push(-42)
+
+		export default evalStack(STACK)
+	`].map((out) => preamble + Util.dedent(out)))
 })
 
 
@@ -110,10 +117,14 @@ export default evalStack(STACK)
 
 
 test('Compile file with compound expression, grouping.', () => {
-	const node = new Parser('42 ^ (2 * 420)').parse().decorate()
+	const node = new Parser('-(42) ^ +(2 * 420)').parse().decorate()
 	expect(node.compile()).toBe(preamble + Util.dedent(`
 
+
 STACK.push(42)
+
+
+STACK.push(NEG)
 
 
 

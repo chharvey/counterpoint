@@ -109,7 +109,6 @@ export class SemanticNodeGoal extends SemanticNode {
 			const MUL: StackFunction = (a, b) => a  * b!
 			const DIV: StackFunction = (a, b) => a  / b!
 			const EXP: StackFunction = (a, b) => a ** b!
-			const AFF: StackFunction = (a) => +a
 			const NEG: StackFunction = (a) => -a
 			const STACK: Stack = []
 			${this.children[0].compile()}
