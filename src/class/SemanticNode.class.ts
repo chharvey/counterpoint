@@ -105,11 +105,11 @@ export class SemanticNodeGoal extends SemanticNode {
 					it(...[...new Array(it.length)].map(() => evalStack(stack)).reverse() as Parameters<StackFunction>) :
 					it
 			}
-			const ADD: StackFunction = (a, b) => a  + b!
-			const MUL: StackFunction = (a, b) => a  * b!
-			const DIV: StackFunction = (a, b) => a  / b!
-			const EXP: StackFunction = (a, b) => a ** b!
-			const NEG: StackFunction = (a) => -a
+			const ${Operator[Operator.ADD]}: StackFunction = (a, b) => a  + b!
+			const ${Operator[Operator.MUL]}: StackFunction = (a, b) => a  * b!
+			const ${Operator[Operator.DIV]}: StackFunction = (a, b) => a  / b!
+			const ${Operator[Operator.EXP]}: StackFunction = (a, b) => a ** b!
+			const ${Operator[Operator.NEG]}: StackFunction = (a) => -a
 			const STACK: Stack = []
 			${this.children[0].compile()}
 			export default evalStack(STACK)
