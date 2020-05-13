@@ -63,9 +63,7 @@ ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
 Decorate(ExpressionUnarySymbol ::= ExpressionUnit)
 	:= Decorate(ExpressionUnit)
 Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol)
-	:= SemanticExpression {operator: AFF} [
-		Decorate(ExpressionUnarySymbol),
-	]
+	:= Decorate(ExpressionUnarySymbol)
 Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol)
 	:= SemanticExpression {operator: NEG} [
 		Decorate(ExpressionUnarySymbol),

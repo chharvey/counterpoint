@@ -19,7 +19,6 @@ const ADD: StackFunction = (a, b) => a  + b!
 const MUL: StackFunction = (a, b) => a  * b!
 const DIV: StackFunction = (a, b) => a  / b!
 const EXP: StackFunction = (a, b) => a ** b!
-const AFF: StackFunction = (a) => +a
 const NEG: StackFunction = (a) => -a
 const STACK: Stack = []
 `
@@ -129,16 +128,12 @@ STACK.push(NEG)
 
 
 
-
 STACK.push(2)
 
 
 STACK.push(420)
 
 STACK.push(MUL)
-
-
-STACK.push(AFF)
 
 STACK.push(EXP)
 

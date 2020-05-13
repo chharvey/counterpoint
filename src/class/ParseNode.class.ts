@@ -183,9 +183,12 @@ class ParseNodeExpressionUnary extends ParseNode {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
 		:
-			new SemanticNodeExpression(this, ParseNodeExpressionUnary.OPERATORS.get(this.children[0].source) !, [
-				this.children[1].decorate(),
-			])
+			(this.children[0].source === '+') ? // `+a` is a no-op
+				this.children[1].decorate()
+			:
+				new SemanticNodeExpression(this, ParseNodeExpressionUnary.OPERATORS.get(this.children[0].source) !, [
+					this.children[1].decorate(),
+				])
 	}
 }
 export class ParseNodeExpressionUnit extends ParseNode {

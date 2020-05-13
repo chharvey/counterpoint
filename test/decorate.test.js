@@ -31,9 +31,7 @@ test('Decorate file with single token.', () => {
 test('Decorate unary symbol, affirm.', () => {
 	const node = new Parser('+ 42').parse().children[1]
 	expect(node.decorate().serialize()).toBe(`
-		<Expression line="1" col="1" source="+ 42" operator="AFF">
-			<Constant line="1" col="3" source="42" value="42"/>
-		</Expression>
+		<Constant line="1" col="3" source="42" value="42"/>
 	`.replace(/\n\t*/g, ''))
 })
 
@@ -107,11 +105,9 @@ test('Decorate grouping.', () => {
 			<Expression line="1" col="1" source="- ( 42 )" operator="NEG">
 				<Constant line="1" col="3" source="42" value="42"/>
 			</Expression>
-			<Expression line="1" col="9" source="+ ( 2 * 420 )" operator="AFF">
-				<Expression line="1" col="11" source="2 * 420" operator="MUL">
-					<Constant line="1" col="11" source="2" value="2"/>
-					<Constant line="1" col="15" source="420" value="420"/>
-				</Expression>
+			<Expression line="1" col="11" source="2 * 420" operator="MUL">
+				<Constant line="1" col="11" source="2" value="2"/>
+				<Constant line="1" col="15" source="420" value="420"/>
 			</Expression>
 		</Expression>
 	`.replace(/\n\t*/g, ''))
