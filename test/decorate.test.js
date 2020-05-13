@@ -23,7 +23,7 @@ test('Decorate file with single token.', () => {
 test('Decorate unary symbol.', () => {
 	const node = new Parser('- 42').parse().children[1]
 	expect(node.decorate().serialize()).toBe(`
-<Expression line="1" col="1" source="- 42" operator="-">
+<Expression line="1" col="1" source="- 42" operator="NEG">
 	<Constant line="1" col="3" source="42" value="42"/>
 </Expression>
 	`.replace(/\n\t*/g, ''))
@@ -34,7 +34,7 @@ test('Decorate unary symbol.', () => {
 test('Decorate exponential.', () => {
 	const node = new Parser('2 ^ -3').parse().children[1]
 	expect(node.decorate().serialize()).toBe(`
-<Expression line="1" col="1" source="2 ^ -3" operator="^">
+<Expression line="1" col="1" source="2 ^ -3" operator="EXP">
 	<Constant line="1" col="1" source="2" value="2"/>
 	<Constant line="1" col="5" source="-3" value="-3"/>
 </Expression>
@@ -46,7 +46,7 @@ test('Decorate exponential.', () => {
 test('Decorate multiplicative.', () => {
 	const node = new Parser('2 * -3').parse().children[1]
 	expect(node.decorate().serialize()).toBe(`
-<Expression line="1" col="1" source="2 * -3" operator="*">
+<Expression line="1" col="1" source="2 * -3" operator="MUL">
 	<Constant line="1" col="1" source="2" value="2"/>
 	<Constant line="1" col="5" source="-3" value="-3"/>
 </Expression>
@@ -58,7 +58,7 @@ test('Decorate multiplicative.', () => {
 test('Decorate additive.', () => {
 	const node = new Parser('2 + -3').parse().children[1]
 	expect(node.decorate().serialize()).toBe(`
-<Expression line="1" col="1" source="2 + -3" operator="+">
+<Expression line="1" col="1" source="2 + -3" operator="ADD">
 	<Constant line="1" col="1" source="2" value="2"/>
 	<Constant line="1" col="5" source="-3" value="-3"/>
 </Expression>
@@ -70,9 +70,9 @@ test('Decorate additive.', () => {
 test('Decorate subtractive.', () => {
 	const node = new Parser('2 - 3').parse().children[1]
 	expect(node.decorate().serialize()).toBe(`
-<Expression line="1" col="1" source="2 - 3" operator="+">
+<Expression line="1" col="1" source="2 - 3" operator="ADD">
 	<Constant line="1" col="1" source="2" value="2"/>
-	<Expression line="1" col="5" source="3" operator="-">
+	<Expression line="1" col="5" source="3" operator="NEG">
 		<Constant line="1" col="5" source="3" value="3"/>
 	</Expression>
 </Expression>
@@ -84,7 +84,7 @@ test('Decorate subtractive.', () => {
 test('Decorate grouping.', () => {
 	const node = new Parser('(2 + -3)').parse().children[1]
 	expect(node.decorate().serialize()).toBe(`
-<Expression line="1" col="2" source="2 + -3" operator="+">
+<Expression line="1" col="2" source="2 + -3" operator="ADD">
 	<Constant line="1" col="2" source="2" value="2"/>
 	<Constant line="1" col="6" source="-3" value="-3"/>
 </Expression>

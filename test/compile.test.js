@@ -15,12 +15,12 @@ const evalStack = (stack: Stack): RuntimeInt => {
 		it(...[...new Array(it.length)].map(() => evalStack(stack)).reverse() as Parameters<StackFunction>) :
 		it
 }
-const AFF: StackFunction = (a) => +a
-const NEG: StackFunction = (a) => -a
 const ADD: StackFunction = (a, b) => a  + b!
 const MUL: StackFunction = (a, b) => a  * b!
 const DIV: StackFunction = (a, b) => a  / b!
 const EXP: StackFunction = (a, b) => a ** b!
+const AFF: StackFunction = (a) => +a
+const NEG: StackFunction = (a) => -a
 const STACK: Stack = []
 `
 
@@ -53,7 +53,6 @@ test('Compile file with simple expression, add.', () => {
 STACK.push(42)
 
 
-
 STACK.push(420)
 
 STACK.push(ADD)
@@ -70,7 +69,6 @@ test('Compile file with simple expression, subtract.', () => {
 	expect(node.compile()).toBe(preamble + Util.dedent(`
 
 STACK.push(42)
-
 
 
 
@@ -96,11 +94,9 @@ test('Compile file with compound expression.', () => {
 STACK.push(42)
 
 
-
 STACK.push(2)
 
 STACK.push(EXP)
-
 
 
 STACK.push(420)
@@ -121,9 +117,7 @@ STACK.push(42)
 
 
 
-
 STACK.push(2)
-
 
 
 STACK.push(420)

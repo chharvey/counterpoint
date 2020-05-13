@@ -2,8 +2,9 @@ import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Char.class'
 import type ParseNode from './ParseNode.class'
-import type {
+import {
 	ParseNodeExpressionUnit,
+	Operator,
 } from './ParseNode.class'
 
 
@@ -104,12 +105,12 @@ export class SemanticNodeGoal extends SemanticNode {
 					it(...[...new Array(it.length)].map(() => evalStack(stack)).reverse() as Parameters<StackFunction>) :
 					it
 			}
-			const AFF: StackFunction = (a) => +a
-			const NEG: StackFunction = (a) => -a
 			const ADD: StackFunction = (a, b) => a  + b!
 			const MUL: StackFunction = (a, b) => a  * b!
 			const DIV: StackFunction = (a, b) => a  / b!
 			const EXP: StackFunction = (a, b) => a ** b!
+			const AFF: StackFunction = (a) => +a
+			const NEG: StackFunction = (a) => -a
 			const STACK: Stack = []
 			${this.children[0].compile()}
 			export default evalStack(STACK)
@@ -119,30 +120,18 @@ export class SemanticNodeGoal extends SemanticNode {
 export class SemanticNodeExpression extends SemanticNode {
 	constructor(
 		start_node: ParseNode,
-		private readonly operator: string,
+		private readonly operator: Operator,
 		protected readonly children:
 			readonly [SemanticNodeConstant|SemanticNodeExpression] |
 			readonly [SemanticNodeConstant|SemanticNodeExpression, SemanticNodeConstant|SemanticNodeExpression],
 	) {
-		super(start_node, {operator}, children)
+		super(start_node, {operator: Operator[operator]}, children)
 	}
 	compile(): string {
 		return Util.dedent(`
 			${this.children[0].compile()}
-			${Util.dedent((this.children.length === 2) ? `
-				${this.children[1].compile()}
-				STACK.push(${new Map<string, string>([
-					['+', 'ADD'],
-					['*', 'MUL'],
-					['/', 'DIV'],
-					['^', 'EXP'],
-				]).get(this.operator || '+') || 'ADD'})
-			` : `
-				STACK.push(${new Map<string, string>([
-					['+', 'AFF'],
-					['-', 'NEG'],
-				]).get(this.operator || '+') || 'AFF'})
-			`)}
+			${(this.children.length === 2) ? this.children[1].compile() : ''}
+			STACK.push(${Operator[this.operator]})
 		`)
 	}
 }

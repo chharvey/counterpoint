@@ -63,11 +63,11 @@ ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
 Decorate(ExpressionUnarySymbol ::= ExpressionUnit)
 	:= Decorate(ExpressionUnit)
 Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol)
-	:= SemanticExpression {operator: "+"} [
+	:= SemanticExpression {operator: AFF} [
 		Decorate(ExpressionUnarySymbol),
 	]
 Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol)
-	:= SemanticExpression {operator: "-"} [
+	:= SemanticExpression {operator: NEG} [
 		Decorate(ExpressionUnarySymbol),
 	]
 ```
@@ -75,11 +75,11 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol)
 
 ### Static Semantics: Compilation (Unary Operators)
 ```w3c
-Compile(SemanticExpression[operator="+"]) :=
+Compile(SemanticExpression[operator=AFF]) :=
 	1. assert the number of `SemanticExpression.children` is 1.
 	2. perform `Compile(SemanticExpression.children.0)`.
 	4. push `AFF` onto `STACK`.
-Compile(SemanticExpression[operator="-"]) :=
+Compile(SemanticExpression[operator=NEG]) :=
 	1. assert the number of `SemanticExpression.children` is 1.
 	2. perform `Compile(SemanticExpression.children.0)`.
 	4. push `NEG` onto `STACK`.
@@ -112,7 +112,7 @@ ExpressionExponential ::=  ExpressionUnarySymbol ("^" ExpressionExponential)?
 Decorate(ExpressionExponential ::= ExpressionUnarySymbol)
 	:= Decorate(ExpressionUnarySymbol)
 Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential)
-	:= SemanticExpression {operator: "^"} [
+	:= SemanticExpression {operator: EXP} [
 		Decorate(ExpressionUnarySymbol),
 		Decorate(ExpressionExponential),
 	]
@@ -121,7 +121,7 @@ Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponenti
 
 ### Static Semantics: Compilation (Exponentiation)
 ```w3c
-Compile(SemanticExpression[operator="^"]) :=
+Compile(SemanticExpression[operator=EXP]) :=
 	1. assert the number of `SemanticExpression.children` is 2.
 	2. perform `Compile(SemanticExpression.children.0)`.
 	3. perform `Compile(SemanticExpression.children.1)`.
@@ -155,12 +155,12 @@ ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionE
 Decorate(ExpressionMultiplicative ::= ExpressionExponential)
 	:= Decorate(ExpressionExponential)
 Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential)
-	:= SemanticExpression {operator: "*"} [
+	:= SemanticExpression {operator: MUL} [
 		Decorate(ExpressionMultiplicative),
 		Decorate(ExpressionExponential),
 	]
 Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential)
-	:= SemanticExpression {operator: "/"} [
+	:= SemanticExpression {operator: DIV} [
 		Decorate(ExpressionMultiplicative),
 		Decorate(ExpressionExponential),
 	]
@@ -169,12 +169,12 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 
 ### Static Semantics: Compilation (Multiplication/Division)
 ```w3c
-Compile(SemanticExpression[operator="*"]) :=
+Compile(SemanticExpression[operator=MUL]) :=
 	1. assert the number of `SemanticExpression.children` is 2.
 	2. perform `Compile(SemanticExpression.children.0)`.
 	3. perform `Compile(SemanticExpression.children.1)`.
 	4. push `MUL` onto `STACK`.
-Compile(SemanticExpression[operator="/"]) :=
+Compile(SemanticExpression[operator=DIV]) :=
 	1. assert the number of `SemanticExpression.children` is 2.
 	2. perform `Compile(SemanticExpression.children.0)`.
 	3. perform `Compile(SemanticExpression.children.1)`.
@@ -211,14 +211,14 @@ ExpressionAdditive ::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicativ
 Decorate(ExpressionAdditive ::= ExpressionMultiplicative)
 	:= Decorate(ExpressionMultiplicative)
 Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative)
-	:= SemanticExpression {operator: "+"} [
+	:= SemanticExpression {operator: ADD} [
 		Decorate(ExpressionAdditive),
 		Decorate(ExpressionMultiplicative),
 	]
 Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
-	:= SemanticExpression {operator: "+"} [
+	:= SemanticExpression {operator: ADD} [
 		Decorate(ExpressionAdditive),
-		SemanticExpression {operator: "-"} [
+		SemanticExpression {operator: NEG} [
 			Decorate(ExpressionMultiplicative),
 		],
 	]
@@ -227,7 +227,7 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 
 ### Static Semantics: Compilation (Addition/Subtraction)
 ```w3c
-Compile(SemanticExpression[operator="+"]) :=
+Compile(SemanticExpression[operator=ADD]) :=
 	1. assert the number of `SemanticExpression.children` is 2.
 	2. perform `Compile(SemanticExpression.children.0)`.
 	3. perform `Compile(SemanticExpression.children.1)`.
