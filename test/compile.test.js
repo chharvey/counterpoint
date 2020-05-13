@@ -36,12 +36,20 @@ export default null
 
 
 test('Compile file with single token.', () => {
-	const node = new Parser('42').parse().decorate()
-	expect(node.compile()).toBe(preamble + Util.dedent(`
-STACK.push(42)
+	const outs = ['42', '+42', '-42'].map((src) => new Parser(src).parse().decorate().compile())
+	expect(outs).toEqual([`
+		STACK.push(42)
 
-export default evalStack(STACK)
-	`))
+		export default evalStack(STACK)
+	`, `
+		STACK.push(42)
+
+		export default evalStack(STACK)
+	`, `
+		STACK.push(-42)
+
+		export default evalStack(STACK)
+	`].map((out) => preamble + Util.dedent(out)))
 })
 
 
@@ -110,10 +118,15 @@ export default evalStack(STACK)
 
 
 test('Compile file with compound expression, grouping.', () => {
-	const node = new Parser('42 ^ (2 * 420)').parse().decorate()
+	const node = new Parser('-(42) ^ +(2 * 420)').parse().decorate()
 	expect(node.compile()).toBe(preamble + Util.dedent(`
 
+
 STACK.push(42)
+
+
+STACK.push(NEG)
+
 
 
 
@@ -123,6 +136,9 @@ STACK.push(2)
 STACK.push(420)
 
 STACK.push(MUL)
+
+
+STACK.push(AFF)
 
 STACK.push(EXP)
 
