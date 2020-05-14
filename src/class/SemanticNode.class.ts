@@ -1,5 +1,5 @@
-import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
+import CodeGenerator from './CodeGenerator.class'
 import {STX, ETX} from './Char.class'
 import type ParseNode from './ParseNode.class'
 import {
@@ -44,13 +44,11 @@ export default class SemanticNode implements Serializable {
 	}
 
 	/**
-	 * Generate code for the runtime.
-	 * @returns a string of code to execute
+	 * Give directions to the runtime code generator.
+	 * @param generator the generator to direct
 	 */
-	compile(): string {
-		return Util.dedent(`
-			export default void 0
-		`)
+	compile(generator: CodeGenerator): CodeGenerator {
+		return generator.unreachable() // TODO make `ParseNode` and `SemanticNode` abstract classes
 	}
 
 	/**
@@ -78,10 +76,8 @@ export class SemanticNodeNull extends SemanticNode {
 	constructor(start_node: ParseNode) {
 		super(start_node)
 	}
-	compile(): string {
-		return Util.dedent(`
-			export default null
-		`)
+	compile(): CodeGenerator {
+		return new CodeGenerator().nop()
 	}
 }
 export class SemanticNodeGoal extends SemanticNode {
@@ -92,19 +88,8 @@ export class SemanticNodeGoal extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	compile(): string {
-		return Util.dedent(`
-			type RuntimeInt = number
-			type Stack = RuntimeInt[]
-			const ${Operator[Operator.ADD]} = (stack: Stack): void => { const arg2: RuntimeInt = stack.pop() !; const arg1: RuntimeInt = stack.pop() !; stack.push(arg1 +  arg2) }
-			const ${Operator[Operator.MUL]} = (stack: Stack): void => { const arg2: RuntimeInt = stack.pop() !; const arg1: RuntimeInt = stack.pop() !; stack.push(arg1 *  arg2) }
-			const ${Operator[Operator.DIV]} = (stack: Stack): void => { const arg2: RuntimeInt = stack.pop() !; const arg1: RuntimeInt = stack.pop() !; stack.push(arg1 /  arg2) }
-			const ${Operator[Operator.EXP]} = (stack: Stack): void => { const arg2: RuntimeInt = stack.pop() !; const arg1: RuntimeInt = stack.pop() !; stack.push(arg1 ** arg2) }
-			const ${Operator[Operator.NEG]} = (stack: Stack): void => { stack.push(-stack.pop() !) }
-			const STACK: Stack = []
-			${this.children[0].compile()}
-			export default STACK.pop()
-		`)
+	compile(): CodeGenerator {
+		return this.children[0].compile(new CodeGenerator())
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {
@@ -117,12 +102,12 @@ export class SemanticNodeExpression extends SemanticNode {
 	) {
 		super(start_node, {operator: Operator[operator]}, children)
 	}
-	compile(): string {
-		return Util.dedent(`
-			${this.children[0].compile()}
-			${(this.children.length === 2) ? this.children[1].compile() : ''}
-			${Operator[this.operator]}(STACK)
-		`)
+	compile(generator: CodeGenerator): CodeGenerator {
+		this.children[0].compile(generator)
+		if (this.children.length === 2) {
+			this.children[1].compile(generator)
+		}
+		return generator.perform(this.operator)
 	}
 }
 export class SemanticNodeConstant extends SemanticNode {
@@ -132,9 +117,7 @@ export class SemanticNodeConstant extends SemanticNode {
 	) {
 		super(start_node, {value})
 	}
-	compile(): string {
-		return Util.dedent(`
-			STACK.push(${this.value})
-		`)
+	compile(generator: CodeGenerator): CodeGenerator {
+		return generator.const(this.value)
 	}
 }

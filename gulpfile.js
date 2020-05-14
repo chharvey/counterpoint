@@ -59,7 +59,7 @@ async function test_dev() {
 	return Promise.all([
 		fsPromise.writeFile('./sample/output.xml', tree.serialize()),
 		fsPromise.writeFile('./sample/output-1.xml', tree.decorate().serialize()),
-		fsPromise.writeFile('./sample/output-2.ts', tree.decorate().compile()),
+		fsPromise.writeFile('./sample/output-2.ts', tree.decorate().compile().print()),
 	])
 }
 
