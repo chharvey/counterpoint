@@ -2,11 +2,21 @@ import type Serializable from '../iface/Serializable.iface'
 import CodeGenerator from './CodeGenerator.class'
 import {STX, ETX} from './Char.class'
 import type ParseNode from './ParseNode.class'
-import {
+import type {
 	ParseNodeExpressionUnit,
-	Operator,
 } from './ParseNode.class'
 
+
+
+export enum Operator {
+	/** Add.          */ ADD, // +
+	/** Subtract.     */ SUB, // -
+	/** Multiply.     */ MUL, // *
+	/** Divide.       */ DIV, // /
+	/** Exponentiate. */ EXP, // ^
+	/** Affirm.       */ AFF, // +
+	/** Negate.       */ NEG, // -
+}
 
 
 /**

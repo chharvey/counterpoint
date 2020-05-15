@@ -11,6 +11,7 @@ import SemanticNode, {
 	SemanticNodeGoal,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
+	Operator,
 } from './SemanticNode.class'
 import type {Rule} from './Grammar.class'
 import Production, {
@@ -23,17 +24,6 @@ import Production, {
 	ProductionExpressionUnit,
 } from './Production.class'
 
-
-
-export enum Operator {
-	/** Add.          */ ADD, // +
-	/** Subtract.     */ SUB, // -
-	/** Multiply.     */ MUL, // *
-	/** Divide.       */ DIV, // /
-	/** Exponentiate. */ EXP, // ^
-	/** Affirm.       */ AFF, // +
-	/** Negate.       */ NEG, // -
-}
 
 
 /**

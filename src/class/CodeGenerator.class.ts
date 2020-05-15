@@ -1,7 +1,7 @@
 import Util from './Util.class'
-import {
+import type {
 	Operator,
-} from './ParseNode.class'
+} from './SemanticNode.class'
 
 
 
@@ -63,7 +63,8 @@ export default class CodeGenerator {
 	 * @return this
 	 */
 	perform(op: Operator): this {
-		this.instructions.push(`${Operator[op]}(${CodeGenerator.NAMES.stack_name})`)
+		const Operator_export: typeof Operator = require('./SemanticNode.class').Operator
+		this.instructions.push(`${Operator_export[op]}(${CodeGenerator.NAMES.stack_name})`)
 		return this
 	}
 
@@ -71,14 +72,15 @@ export default class CodeGenerator {
 	 * Return the instructions to print to file.
 	 */
 	print(): string {
+		const Operator_export: typeof Operator = require('./SemanticNode.class').Operator
 		return Util.dedent(`
 			type ${CodeGenerator.NAMES.int_classname} = number
 			type ${CodeGenerator.NAMES.stack_classname} = ${CodeGenerator.NAMES.int_classname}[]
-			const ${Operator[Operator.ADD]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 2)} const arg2: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; const arg1: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; stack.push(arg1 +  arg2) }
-			const ${Operator[Operator.MUL]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 2)} const arg2: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; const arg1: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; stack.push(arg1 *  arg2) }
-			const ${Operator[Operator.DIV]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 2)} const arg2: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; const arg1: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; stack.push(arg1 /  arg2) }
-			const ${Operator[Operator.EXP]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 2)} const arg2: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; const arg1: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; stack.push(arg1 ** arg2) }
-			const ${Operator[Operator.NEG]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 1)} stack.push(-stack.pop() !) }
+			const ${Operator_export[Operator_export.ADD]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 2)} const arg2: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; const arg1: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; stack.push(arg1 +  arg2) }
+			const ${Operator_export[Operator_export.MUL]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 2)} const arg2: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; const arg1: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; stack.push(arg1 *  arg2) }
+			const ${Operator_export[Operator_export.DIV]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 2)} const arg2: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; const arg1: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; stack.push(arg1 /  arg2) }
+			const ${Operator_export[Operator_export.EXP]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 2)} const arg2: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; const arg1: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; stack.push(arg1 ** arg2) }
+			const ${Operator_export[Operator_export.NEG]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 1)} stack.push(-stack.pop() !) }
 			const ${CodeGenerator.NAMES.stack_name}: ${CodeGenerator.NAMES.stack_classname} = []
 			${this.instructions.join('\n')}
 			export default ${CodeGenerator.NAMES.stack_name}.pop()
