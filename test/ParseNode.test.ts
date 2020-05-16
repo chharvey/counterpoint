@@ -158,9 +158,28 @@ describe('ParseNode', () => {
 					<Goal source="␂ ( 2 + -3 ) ; ␃">
 						<StatementList line="1" col="1" source="( 2 + -3 ) ;">
 							<StatementExpression line="1" col="1" source="( 2 + -3 ) ;">
-								<Expression line="1" col="2" source="2 + -3" operator="+">
+								<Expression line="1" col="2" source="2 + -3" operator="ADD">
 									<Constant line="1" col="2" source="2" value="2"/>
 									<Constant line="1" col="6" source="-3" value="-3"/>
+								</Expression>
+							</StatementExpression>
+						</StatementList>
+					</Goal>
+				`.replace(/\n\t*/g, ''))
+			})
+			it('recursively applies to several sub-expressions.', () => {
+				assert.strictEqual(new Parser('(-(42) ^ +(2 * 420));').parse().decorate().serialize(), `
+					<Goal source="␂ ( - ( 42 ) ^ + ( 2 * 420 ) ) ; ␃">
+						<StatementList line="1" col="1" source="( - ( 42 ) ^ + ( 2 * 420 ) ) ;">
+							<StatementExpression line="1" col="1" source="( - ( 42 ) ^ + ( 2 * 420 ) ) ;">
+								<Expression line="1" col="1" source="- ( 42 ) ^ + ( 2 * 420 )" operator="EXP">
+									<Expression line="1" col="1" source="- ( 42 )" operator="NEG">
+										<Constant line="1" col="3" source="42" value="42"/>
+									</Expression>
+									<Expression line="1" col="11" source="2 * 420" operator="MUL">
+										<Constant line="1" col="11" source="2" value="2"/>
+										<Constant line="1" col="15" source="420" value="420"/>
+									</Expression>
 								</Expression>
 							</StatementExpression>
 						</StatementList>
@@ -175,7 +194,7 @@ describe('ParseNode', () => {
 					<Goal source="␂ - 42 ; ␃">
 						<StatementList line="1" col="1" source="- 42 ;">
 							<StatementExpression line="1" col="1" source="- 42 ;">
-								<Expression line="1" col="1" source="- 42" operator="-">
+								<Expression line="1" col="1" source="- 42" operator="NEG">
 									<Constant line="1" col="3" source="42" value="42"/>
 								</Expression>
 							</StatementExpression>
@@ -191,7 +210,7 @@ describe('ParseNode', () => {
 					<Goal source="␂ 2 ^ -3 ; ␃">
 						<StatementList line="1" col="1" source="2 ^ -3 ;">
 							<StatementExpression line="1" col="1" source="2 ^ -3 ;">
-								<Expression line="1" col="1" source="2 ^ -3" operator="^">
+								<Expression line="1" col="1" source="2 ^ -3" operator="EXP">
 									<Constant line="1" col="1" source="2" value="2"/>
 									<Constant line="1" col="5" source="-3" value="-3"/>
 								</Expression>
@@ -208,7 +227,7 @@ describe('ParseNode', () => {
 					<Goal source="␂ 2 * -3 ; ␃">
 						<StatementList line="1" col="1" source="2 * -3 ;">
 							<StatementExpression line="1" col="1" source="2 * -3 ;">
-								<Expression line="1" col="1" source="2 * -3" operator="*">
+								<Expression line="1" col="1" source="2 * -3" operator="MUL">
 									<Constant line="1" col="1" source="2" value="2"/>
 									<Constant line="1" col="5" source="-3" value="-3"/>
 								</Expression>
@@ -225,7 +244,7 @@ describe('ParseNode', () => {
 					<Goal source="␂ 2 + -3 ; ␃">
 						<StatementList line="1" col="1" source="2 + -3 ;">
 							<StatementExpression line="1" col="1" source="2 + -3 ;">
-								<Expression line="1" col="1" source="2 + -3" operator="+">
+								<Expression line="1" col="1" source="2 + -3" operator="ADD">
 									<Constant line="1" col="1" source="2" value="2"/>
 									<Constant line="1" col="5" source="-3" value="-3"/>
 								</Expression>
@@ -242,9 +261,9 @@ describe('ParseNode', () => {
 					<Goal source="␂ 2 - 3 ; ␃">
 						<StatementList line="1" col="1" source="2 - 3 ;">
 							<StatementExpression line="1" col="1" source="2 - 3 ;">
-								<Expression line="1" col="1" source="2 - 3" operator="+">
+								<Expression line="1" col="1" source="2 - 3" operator="ADD">
 									<Constant line="1" col="1" source="2" value="2"/>
-									<Expression line="1" col="5" source="3" operator="-">
+									<Expression line="1" col="5" source="3" operator="NEG">
 										<Constant line="1" col="5" source="3" value="3"/>
 									</Expression>
 								</Expression>

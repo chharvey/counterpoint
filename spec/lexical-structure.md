@@ -227,13 +227,6 @@ SV(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03])
 	:= UTF16Encoding(code point of that character)
 ```
 
-#### Static Semantics: Decoration (String Literals)
-```w3c
-Decorate(String)
-	:= SemanticConstant {value: SV(String)} []
-```
-where `SV` is [String Value](./#static-semantics-string-value).
-
 
 ### Template Literals
 ```w3c
@@ -412,19 +405,6 @@ TV(TemplateChars__EndInterp__StartInterp ::= "{''" TemplateChars__EndInterp__Sta
 	:= <\x7b, \x27, \x27> followed by TV(TemplateChars__EndInterp__StartInterp)
 ```
 
-#### Static Semantics: Decoration (Template Literals)
-```w3c
-Decorate(TemplateFull)
-	:= SemanticConstant {value: TV(TemplateFull)} []
-Decorate(TemplateHead)
-	:= SemanticConstant {value: TV(TemplateHead)} []
-Decorate(TempalteMiddle)
-	:= SemanticConstant {value: TV(TempalteMiddle)} []
-Decorate(TempalteTail)
-	:= SemanticConstant {value: TV(TempalteTail)} []
-```
-where `TV` is [Template Value](./#static-semantics-template-value).
-
 
 ### Numbers
 ```w3c
@@ -539,19 +519,6 @@ MV([0-9a-z] ::= "y")  :=  34
 MV([0-9a-z] ::= "z")  :=  35
 ```
 
-#### Static Semantics: Decoration (Numbers)
-```w3c
-Decorate(Number)
-	:= SemanticConstant {value: MV(Number)} []
-```
-where `MV` is [Mathematical Value](./#static-semantics-mathematical-value).
-
-#### Static Semantics: Compilation (Numbers)
-```w3c
-Compile(SemanticConstant) :=
-	1. push `SemanticConstant.value` onto `STACK`.
-```
-
 
 ### Words
 ```w3c
@@ -587,13 +554,6 @@ the word from other words in a program.
 WV(Word ::= [A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`")
 	:= /* TO BE DESCRIBED */
 ```
-
-#### Static Semantics: Decoration (Words)
-```w3c
-Decorate(Identifier)
-	:= SemanticIdentifier {id: WV(Identifier)} []
-```
-where `WV` is [Word Value](./#static-semantics-word-value).
 
 
 ### Punctuators

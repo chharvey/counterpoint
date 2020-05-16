@@ -1,5 +1,5 @@
-import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
+import CodeGenerator from './CodeGenerator.class'
 import {STX, ETX} from './Char.class'
 import type Token from './Token.class'
 import type {CookValueType} from './Token.class'
@@ -12,6 +12,17 @@ import type {
 
 export type SemanticStatementType  = SemanticNodeDeclaration|SemanticNodeAssignment|SemanticNodeStatementExpression|SemanticNodeStatementEmpty
 export type SemanticExpressionType = SemanticNodeConstant|SemanticNodeIdentifier|SemanticNodeTemplate|SemanticNodeExpression
+
+export enum Operator {
+	/** Add.          */ ADD, // +
+	/** Subtract.     */ SUB, // -
+	/** Multiply.     */ MUL, // *
+	/** Divide.       */ DIV, // /
+	/** Exponentiate. */ EXP, // ^
+	/** Affirm.       */ AFF, // +
+	/** Negate.       */ NEG, // -
+}
+
 
 /**
  * A SemanticNode holds only the semantics of a {@link ParseNode}.
@@ -48,13 +59,11 @@ export default class SemanticNode implements Serializable {
 	}
 
 	/**
-	 * Generate code for the runtime.
-	 * @returns a string of code to execute
+	 * Give directions to the runtime code generator.
+	 * @param generator the generator to direct
 	 */
-	compile(): string {
-		return Util.dedent(`
-			export default void 0
-		`)
+	compile(generator: CodeGenerator): CodeGenerator {
+		return generator.unreachable() // TODO make `ParseNode` and `SemanticNode` abstract classes
 	}
 
 	/**
@@ -94,10 +103,8 @@ export class SemanticNodeNull extends SemanticNode {
 	constructor(start_node: Token|ParseNode) {
 		super(start_node)
 	}
-	compile(): string {
-		return Util.dedent(`
-			export default null
-		`)
+	compile(): CodeGenerator {
+		return new CodeGenerator().nop()
 	}
 }
 export class SemanticNodeGoal extends SemanticNode {
@@ -108,29 +115,8 @@ export class SemanticNodeGoal extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	compile(): string {
-		return Util.dedent(`
-			type RuntimeInt = number
-			type Stack = StackItem[]
-			type StackItem = RuntimeInt|StackFunction
-			type StackFunction = (x: RuntimeInt, y?: RuntimeInt) => RuntimeInt
-			const evalStack = (stack: Stack): RuntimeInt => {
-				if (!stack.length) throw new Error('empty stack')
-				const it: StackItem = stack.pop()!
-				return (it instanceof Function) ?
-					it(...[...new Array(it.length)].map(() => evalStack(stack)).reverse() as Parameters<StackFunction>) :
-					it
-			}
-			const AFF: StackFunction = (a) => +a
-			const NEG: StackFunction = (a) => -a
-			const ADD: StackFunction = (a, b) => a  + b!
-			const MUL: StackFunction = (a, b) => a  * b!
-			const DIV: StackFunction = (a, b) => a  / b!
-			const EXP: StackFunction = (a, b) => a ** b!
-			const STACK: Stack = []
-			${this.children[0].compile()}
-			export default evalStack(STACK)
-		`)
+	compile(): CodeGenerator {
+		return this.children[0].compile(new CodeGenerator())
 	}
 }
 export class SemanticNodeStatementList extends SemanticNode {
@@ -184,31 +170,17 @@ export class SemanticNodeStatementEmpty extends SemanticNode {
 export class SemanticNodeExpression extends SemanticNode {
 	constructor(
 		start_node: ParseNode,
-		private readonly operator: string,
+		private readonly operator: Operator,
 		readonly children:
-			readonly [SemanticExpressionType] |
+			readonly [SemanticExpressionType                        ] |
 			readonly [SemanticExpressionType, SemanticExpressionType],
 	) {
-		super(start_node, {operator}, children)
+		super(start_node, {operator: Operator[operator]}, children)
 	}
-	compile(): string {
-		return Util.dedent(`
-			${this.children[0].compile()}
-			${Util.dedent((this.children.length === 2) ? `
-				${this.children[1].compile()}
-				STACK.push(${new Map<string, string>([
-					['+', 'ADD'],
-					['*', 'MUL'],
-					['/', 'DIV'],
-					['^', 'EXP'],
-				]).get(this.operator || '+') || 'ADD'})
-			` : `
-				STACK.push(${new Map<string, string>([
-					['+', 'AFF'],
-					['-', 'NEG'],
-				]).get(this.operator || '+') || 'AFF'})
-			`)}
-		`)
+	compile(generator: CodeGenerator): CodeGenerator {
+		return (this.children.length === 1)
+			? generator.unop (this.operator, ...this.children)
+			: generator.binop(this.operator, ...this.children)
 	}
 }
 export class SemanticNodeTemplate extends SemanticNode {
@@ -232,9 +204,7 @@ export class SemanticNodeConstant extends SemanticNode {
 	) {
 		super(start_node, {value})
 	}
-	compile(): string {
-		return Util.dedent(`
-			STACK.push(${this.value})
-		`)
+	compile(generator: CodeGenerator): CodeGenerator {
+		return generator.const(this.value)
 	}
 }
