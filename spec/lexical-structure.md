@@ -145,19 +145,6 @@ MV([0-9] ::= "8") := 8
 MV([0-9] ::= "9") := 9
 ```
 
-#### Static Semantics: Decoration (Numbers)
-```w3c
-Decorate(Number)
-	::= SemanticConstant {value: MV(Number)} []
-```
-where `MV` is [Mathematical Value](./#static-semantics-mathematical-value).
-
-#### Static Semantics: Compilation (Numbers)
-```w3c
-Compile(SemanticConstant) :=
-	1. push `SemanticConstant.value` onto `STACK`.
-```
-
 
 ### Punctuators
 ```w3c

@@ -14,6 +14,26 @@ Decorate(Expression ::= ExpressionAdditive)
 ```
 
 
+### Abstract Operation: EvaluateNumericBinaryExpression
+```w3c
+EvaluateNumericBinaryExpression(op) :=
+	1. Assert the count of the operand stack is at least 2.
+	2. Pop `operand2` off the operand stack.
+	3. Pop `operand1` off the operand stack.
+	4. Let `operation` be a function obtained from the following record, keyed by `op`: {
+		`ADD`: Return the sum, `arg1 + arg2`,
+			obtained by adding `arg1` (the augend) to `arg2` (the addend).
+		`MUL`: Return the product, `arg1 * arg2`,
+			obtained by multiplying `arg1` (the multiplicand) by `arg2` (the multiplier).
+		`DIV`: Return the quotient, `arg1 / arg2`,
+			obtained by dividing `arg1` (the dividend) by `arg2` (the divisor).
+		`EXP`: Return the power, `arg1 ^ arg2`,
+				obtained by raising `arg1` (the base) to `arg2` (the exponent).
+	}
+	5. Push `operation(operand1, operand2)` onto the operand stack.
+```
+
+
 
 ## Expression Units
 ```w3c
@@ -27,6 +47,17 @@ Decorate(ExpressionUnit ::= NUMBER)
 	:= Decorate(NUMBER)
 Decorate(ExpressionUnit ::= "(" Expression ")")
 	:= Decorate(Expression)
+
+Decorate(NUMBER)
+	:= SemanticConstant {value: MV(NUMBER)} []
+```
+where `MV` is [Mathematical Value](./lexical-structure.md#static-semantics-mathematical-value).
+
+
+### Runtime Instructions: Evaluation (Expression Units)
+```w3c
+Evaluate(SemanticConstant) :=
+	1. Push `SemanticConstant.value` onto the operand stack.
 ```
 
 
@@ -42,40 +73,24 @@ ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
 Decorate(ExpressionUnarySymbol ::= ExpressionUnit)
 	:= Decorate(ExpressionUnit)
 Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol)
-	:= SemanticExpression {operator: "+"} [
-		Decorate(ExpressionUnarySymbol),
-	]
+	:= Decorate(ExpressionUnarySymbol)
 Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol)
-	:= SemanticExpression {operator: "-"} [
+	:= SemanticExpression {operator: NEG} [
 		Decorate(ExpressionUnarySymbol),
 	]
 ```
 
 
-### Static Semantics: Compilation (Unary Operators)
+### Runtime Instructions: Evaluation (Unary Operators)
 ```w3c
-Compile(SemanticExpression[operator="+"]) :=
-	1. assert the number of `SemanticExpression.children` is 1.
-	2. perform `Compile(SemanticExpression.children.0)`.
-	4. push `AFF` onto `STACK`.
-Compile(SemanticExpression[operator="-"]) :=
-	1. assert the number of `SemanticExpression.children` is 1.
-	2. perform `Compile(SemanticExpression.children.0)`.
-	4. push `NEG` onto `STACK`.
-```
-
-
-### Runtime Semantics: Evaluation (Unary Operators)
-```w3c
-Evaluate(STACK) :=
-	1. assert `STACK` is not empty.
-	2. let `it` be `STACK.lastItem`.
-	3. assert `it` is either `AFF` or `NEG`.
-	4. pop `STACK`.
-	6. let `arg` be `EVALUATE(STACK)`.
-	7. if `it` is `NEG`, then return the negation, `-arg`,
-		obtained by negating `arg`.
-	9. return `arg`.
+Evaluate(SemanticExpression[operator=NEG]) :=
+	1. Assert `SemanticExpression.children.count` is 1.
+	2. Perform `Evaluate(SemanticExpression.children.0)`.
+	3. Assert the count of the operand stack is at least 1.
+	4. Pop `operand` off the operand stack.
+	5. Let `negation` be the additive inverse, `-operand`,
+		obtained by negating `operand`.
+	6. Push `negation` onto the operand stack.
 ```
 
 
@@ -91,34 +106,20 @@ ExpressionExponential ::=  ExpressionUnarySymbol ("^" ExpressionExponential)?
 Decorate(ExpressionExponential ::= ExpressionUnarySymbol)
 	:= Decorate(ExpressionUnarySymbol)
 Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential)
-	:= SemanticExpression {operator: "^"} [
+	:= SemanticExpression {operator: EXP} [
 		Decorate(ExpressionUnarySymbol),
 		Decorate(ExpressionExponential),
 	]
 ```
 
 
-### Static Semantics: Compilation (Exponentiation)
+### Runtime Instructions: Evaluation (Exponentiation)
 ```w3c
-Compile(SemanticExpression[operator="^"]) :=
-	1. assert the number of `SemanticExpression.children` is 2.
-	2. perform `Compile(SemanticExpression.children.0)`.
-	3. perform `Compile(SemanticExpression.children.1)`.
-	4. push `EXP` onto `STACK`.
-```
-
-
-### Runtime Semantics: Evaluation (Exponentiation)
-```w3c
-Evaluate(STACK) :=
-	1. assert `STACK` is not empty.
-	2. let `it` be `STACK.lastItem`.
-	3. assert `it` is `EXP`.
-	4. pop `STACK`.
-	5. let `arg2` be `Evaluate(STACK)`.
-	6. let `arg1` be `EVALUATE(STACK)`.
-	7. return the power, `arg1 ^ arg2`,
-		obtained by raising `arg1` (the base) to `arg2` (the exponent).
+Evaluate(SemanticExpression[operator=EXP]) :=
+	1. Assert `SemanticExpression.children.count` is 2.
+	2. Perform `Evaluate(SemanticExpression.children.0)`.
+	3. Perform `Evaluate(SemanticExpression.children.1)`.
+	4. Perform `EvaluateNumericBinaryExpression(EXP)`
 ```
 
 
@@ -134,47 +135,30 @@ ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionE
 Decorate(ExpressionMultiplicative ::= ExpressionExponential)
 	:= Decorate(ExpressionExponential)
 Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential)
-	:= SemanticExpression {operator: "*"} [
+	:= SemanticExpression {operator: MUL} [
 		Decorate(ExpressionMultiplicative),
 		Decorate(ExpressionExponential),
 	]
 Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential)
-	:= SemanticExpression {operator: "/"} [
+	:= SemanticExpression {operator: DIV} [
 		Decorate(ExpressionMultiplicative),
 		Decorate(ExpressionExponential),
 	]
 ```
 
 
-### Static Semantics: Compilation (Multiplication/Division)
+### Runtime Instructions: Evaluation (Multiplication/Division)
 ```w3c
-Compile(SemanticExpression[operator="*"]) :=
-	1. assert the number of `SemanticExpression.children` is 2.
-	2. perform `Compile(SemanticExpression.children.0)`.
-	3. perform `Compile(SemanticExpression.children.1)`.
-	4. push `MUL` onto `STACK`.
-Compile(SemanticExpression[operator="/"]) :=
-	1. assert the number of `SemanticExpression.children` is 2.
-	2. perform `Compile(SemanticExpression.children.0)`.
-	3. perform `Compile(SemanticExpression.children.1)`.
-	4. push `DIV` onto `STACK`.
-```
-
-
-### Runtime Semantics: Evaluation (Multiplication/Division)
-```w3c
-Evaluate(STACK) :=
-	1. assert `STACK` is not empty.
-	2. let `it` be `STACK.lastItem`.
-	3. assert `it` is either `MUL` or `DIV`.
-	4. pop `STACK`.
-	5. let `arg2` be `Evaluate(STACK)`.
-	6. let `arg1` be `EVALUATE(STACK)`.
-	7. if `it` is `MUL`, then return the product, `arg1 * arg2`,
-		obtained by multiplying `arg1` (the multiplicand) by `arg2` (the multiplier).
-	8. if `it` is `DIV`, then return the quotient, `arg1 / arg2`,
-		obtained by dividing `arg1` (the dividend) by `arg2` (the divisor).
-	9. return 0.
+Evaluate(SemanticExpression[operator=MUL]) :=
+	1. Assert `SemanticExpression.children.count` is 2.
+	2. Perform `Evaluate(SemanticExpression.children.0)`.
+	3. Perform `Evaluate(SemanticExpression.children.1)`.
+	4. Perform `EvaluateNumericBinaryExpression(MUL)`
+Evaluate(SemanticExpression[operator=DIV]) :=
+	1. Assert `SemanticExpression.children.count` is 2.
+	2. Perform `Evaluate(SemanticExpression.children.0)`.
+	3. Perform `Evaluate(SemanticExpression.children.1)`.
+	4. Perform `EvaluateNumericBinaryExpression(DIV)`
 ```
 
 
@@ -190,39 +174,25 @@ ExpressionAdditive ::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicativ
 Decorate(ExpressionAdditive ::= ExpressionMultiplicative)
 	:= Decorate(ExpressionMultiplicative)
 Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative)
-	:= SemanticExpression {operator: "+"} [
+	:= SemanticExpression {operator: ADD} [
 		Decorate(ExpressionAdditive),
 		Decorate(ExpressionMultiplicative),
 	]
 Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
-	:= SemanticExpression {operator: "+"} [
+	:= SemanticExpression {operator: ADD} [
 		Decorate(ExpressionAdditive),
-		SemanticExpression {operator: "-"} [
+		SemanticExpression {operator: NEG} [
 			Decorate(ExpressionMultiplicative),
 		],
 	]
 ```
 
 
-### Static Semantics: Compilation (Addition/Subtraction)
+### Runtime Instructions: Evaluation (Addition/Subtraction)
 ```w3c
-Compile(SemanticExpression[operator="+"]) :=
-	1. assert the number of `SemanticExpression.children` is 2.
-	2. perform `Compile(SemanticExpression.children.0)`.
-	3. perform `Compile(SemanticExpression.children.1)`.
-	4. push `ADD` onto `STACK`.
-```
-
-
-### Runtime Semantics: Evaluation (Addition/Subtraction)
-```w3c
-Evaluate(STACK) :=
-	1. assert `STACK` is not empty.
-	2. let `it` be `STACK.lastItem`.
-	3. assert `it` is `ADD`.
-	4. pop `STACK`.
-	5. let `arg2` be `Evaluate(STACK)`.
-	6. let `arg1` be `EVALUATE(STACK)`.
-	7. return the sum, `arg1 + arg2`,
-		obtained by adding `arg1` (the augend) to `arg2` (the addend).
+Evaluate(SemanticExpression[operator=ADD]) :=
+	1. Assert `SemanticExpression.children.count` is 2.
+	2. Perform `Evaluate(SemanticExpression.children.0)`.
+	3. Perform `Evaluate(SemanticExpression.children.1)`.
+	4. Perform `EvaluateNumericBinaryExpression(ADD)`
 ```

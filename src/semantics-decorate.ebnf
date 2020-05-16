@@ -61,4 +61,4 @@ Decorate(ExpressionUnit ::= "(" Expression ")")
 	:= Decorate(Expression)
 
 Decorate(NUMBER)
-	::= SemanticConstant {value: MV(NUMBER)} []
+	:= SemanticConstant {value: MV(NUMBER)} []

@@ -11,6 +11,7 @@ import SemanticNode, {
 	SemanticNodeGoal,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
+	Operator,
 } from './SemanticNode.class'
 import type {Rule} from './Grammar.class'
 import Production, {
@@ -132,6 +133,13 @@ class ParseNodeExpression extends ParseNode {
 	}
 }
 class ParseNodeExpressionBinary extends ParseNode {
+	private static OPERATORS: ReadonlyMap<string, Operator> = new Map<string, Operator>([
+		['+', Operator.ADD],
+		['-', Operator.SUB],
+		['*', Operator.MUL],
+		['/', Operator.DIV],
+		['^', Operator.EXP],
+	])
 	declare children:
 		readonly [ParseNodeExpressionUnary|ParseNodeExpressionBinary] |
 		readonly [ParseNodeExpressionUnary|ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary];
@@ -140,20 +148,24 @@ class ParseNodeExpressionBinary extends ParseNode {
 			this.children[0].decorate()
 		:
 			(this.children[1].source === '-') ? // `a - b` is syntax sugar for `a + -(b)`
-				new SemanticNodeExpression(this, '+', [
+				new SemanticNodeExpression(this, Operator.ADD, [
 					this.children[0].decorate(),
-					new SemanticNodeExpression(this.children[2], '-', [
+					new SemanticNodeExpression(this.children[2], Operator.NEG, [
 						this.children[2].decorate(),
 					]),
 				])
 			:
-				new SemanticNodeExpression(this, this.children[1].source, [
+				new SemanticNodeExpression(this, ParseNodeExpressionBinary.OPERATORS.get(this.children[1].source) !, [
 					this.children[0].decorate(),
 					this.children[2].decorate(),
 				])
 	}
 }
 class ParseNodeExpressionUnary extends ParseNode {
+	private static OPERATORS: ReadonlyMap<string, Operator> = new Map<string, Operator>([
+		['+', Operator.AFF],
+		['-', Operator.NEG],
+	])
 	declare children:
 		readonly [ParseNodeExpressionUnit] |
 		readonly [TokenPunctuator, ParseNodeExpressionUnary];
@@ -161,9 +173,12 @@ class ParseNodeExpressionUnary extends ParseNode {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
 		:
-			new SemanticNodeExpression(this, this.children[0].source, [
-				this.children[1].decorate(),
-			])
+			(this.children[0].source === '+') ? // `+a` is a no-op
+				this.children[1].decorate()
+			:
+				new SemanticNodeExpression(this, ParseNodeExpressionUnary.OPERATORS.get(this.children[0].source) !, [
+					this.children[1].decorate(),
+				])
 	}
 }
 export class ParseNodeExpressionUnit extends ParseNode {
