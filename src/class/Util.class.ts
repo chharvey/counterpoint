@@ -44,9 +44,10 @@ export default class Util {
 	 * @returns   the string with indentation removed and a line feed appended
 	 */
 	static dedent(s: string): string {
-		s = `${s.trimEnd()}\n`
-		const indents: RegExpMatchArray|null = s.match(/\n\t+/)
-		return (indents) ? s.replace(new RegExp(`\\n\\t{${indents[0].length - 1}}`, 'g'), '\n') : s
+		const indents: RegExpMatchArray|null = s.match(/\n\t*/)
+		return `${
+			(indents) ? s.replace(new RegExp(`\\n\\t{${indents[0].length - 1}}`, 'g'), '\n').trim() : s
+		}\n`
 	}
 
 	/**
