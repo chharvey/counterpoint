@@ -1,26 +1,19 @@
+import * as fs from 'fs'
+import * as path from 'path'
+
 import Util from './Util.class'
 import type {
 	Operator,
 } from './SemanticNode.class'
 
+const i32_exp: string = fs.readFileSync(path.join(__dirname, '../../src/exp.wat'), 'utf8')
 
 
-function assertStackLength(stack: string, length: number): string {
-	return `if (${stack}.length < ${length}) { throw new Error('Operand stack does not have enough operands.') };`
-}
 
 /**
  * The Code Generator.
  */
 export default class CodeGenerator {
-	/** Commonly used names. */
-	private static readonly NAMES = {
-		stack_classname: `OperandStack`,
-		int_classname: `Int16`,
-		stack_name: `STACK`,
-	}
-
-
 	/** The list of stack instructions to perform. */
 	private readonly instructions: string[] = []
 
@@ -35,7 +28,7 @@ export default class CodeGenerator {
 	 * @return this
 	 */
 	unreachable(): this {
-		this.instructions.push(`throw new Error()`)
+		this.instructions.push(`unreachable`)
 		return this
 	}
 
@@ -44,6 +37,7 @@ export default class CodeGenerator {
 	 * @return this
 	 */
 	nop(): this {
+		this.instructions.push(`nop`)
 		return this
 	}
 
@@ -53,7 +47,7 @@ export default class CodeGenerator {
 	 * @return this
 	 */
 	const(i32: number): this {
-		this.instructions.push(`${CodeGenerator.NAMES.stack_name}.push(${i32})`)
+		this.instructions.push(`i32.const ${ i32 }`)
 		return this
 	}
 
@@ -64,7 +58,20 @@ export default class CodeGenerator {
 	 */
 	perform(op: Operator): this {
 		const Operator_export: typeof Operator = require('./SemanticNode.class').Operator
-		this.instructions.push(`${Operator_export[op]}(${CodeGenerator.NAMES.stack_name})`)
+		this.instructions.push(new Map<Operator, string>([
+			[Operator_export.ADD, `i32.add`],
+			[Operator_export.SUB, `i32.sub`],
+			[Operator_export.MUL, `i32.mul`],
+			[Operator_export.DIV, `i32.div_s`],
+			[Operator_export.EXP, `call $exp`],
+			[Operator_export.AFF, `nop`],
+			[Operator_export.NEG, [
+				`i32.const -1`,
+				`i32.xor`,
+				`i32.const 1`,
+				`i32.add`,
+			].join('\n')],
+		]).get(op) !)
 		return this
 	}
 
@@ -72,18 +79,13 @@ export default class CodeGenerator {
 	 * Return the instructions to print to file.
 	 */
 	print(): string {
-		const Operator_export: typeof Operator = require('./SemanticNode.class').Operator
-		return Util.dedent(`
-			type ${CodeGenerator.NAMES.int_classname} = number
-			type ${CodeGenerator.NAMES.stack_classname} = ${CodeGenerator.NAMES.int_classname}[]
-			const ${Operator_export[Operator_export.ADD]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 2)} const arg2: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; const arg1: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; stack.push(arg1 +  arg2) }
-			const ${Operator_export[Operator_export.MUL]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 2)} const arg2: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; const arg1: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; stack.push(arg1 *  arg2) }
-			const ${Operator_export[Operator_export.DIV]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 2)} const arg2: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; const arg1: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; stack.push(arg1 /  arg2) }
-			const ${Operator_export[Operator_export.EXP]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 2)} const arg2: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; const arg1: ${CodeGenerator.NAMES.int_classname} = stack.pop() !; stack.push(arg1 ** arg2) }
-			const ${Operator_export[Operator_export.NEG]} = (stack: ${CodeGenerator.NAMES.stack_classname}): void => { ${assertStackLength('stack', 1)} stack.push(-stack.pop() !) }
-			const ${CodeGenerator.NAMES.stack_name}: ${CodeGenerator.NAMES.stack_classname} = []
-			${this.instructions.join('\n')}
-			export default ${CodeGenerator.NAMES.stack_name}.pop()
-		`)
+		return `
+			(module
+				${ i32_exp }
+				(func (export "run") (result i32)
+					${ this.instructions.join('\n') }
+				)
+			)
+		`
 	}
 }
