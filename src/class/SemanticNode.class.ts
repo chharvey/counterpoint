@@ -113,11 +113,9 @@ export class SemanticNodeExpression extends SemanticNode {
 		super(start_node, {operator: Operator[operator]}, children)
 	}
 	compile(generator: CodeGenerator): CodeGenerator {
-		this.children[0].compile(generator)
-		if (this.children.length === 2) {
-			this.children[1].compile(generator)
-		}
-		return generator.perform(this.operator)
+		return (this.children.length === 1)
+			? generator.unop (this.operator, ...this.children)
+			: generator.binop(this.operator, ...this.children)
 	}
 }
 export class SemanticNodeConstant extends SemanticNode {

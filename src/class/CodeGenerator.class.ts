@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import Util from './Util.class'
+import type SemanticNode from './SemanticNode.class'
 import type {
 	Operator,
 } from './SemanticNode.class'
@@ -52,18 +53,35 @@ export default class CodeGenerator {
 	}
 
 	/**
-	 * Perform an operation on the stack.
+	 * Perform a binary operation on the stack.
 	 * @param op the operation to perform
+	 * @param arg1 the first operand
+	 * @param arg2 the second operand
 	 * @return this
 	 */
-	perform(op: Operator): this {
+	binop(op: Operator, arg1: SemanticNode, arg2: SemanticNode): this {
 		const Operator_export: typeof Operator = require('./SemanticNode.class').Operator
+		arg1.compile(this)
+		arg2.compile(this)
 		this.instructions.push(new Map<Operator, string>([
 			[Operator_export.ADD, `i32.add`],
 			[Operator_export.SUB, `i32.sub`],
 			[Operator_export.MUL, `i32.mul`],
 			[Operator_export.DIV, `i32.div_s`],
 			[Operator_export.EXP, `call $exp`],
+		]).get(op) !)
+		return this
+	}
+
+	/**
+	 * Perform a unary operation on the stack.
+	 * @param op the operation to perform
+	 * @return this
+	 */
+	unop(op: Operator, arg: SemanticNode): this {
+		const Operator_export: typeof Operator = require('./SemanticNode.class').Operator
+		arg.compile(this)
+		this.instructions.push(new Map<Operator, string>([
 			[Operator_export.AFF, `nop`],
 			[Operator_export.NEG, [
 				`i32.const -1`,
