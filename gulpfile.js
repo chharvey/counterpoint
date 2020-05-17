@@ -20,7 +20,6 @@ function test() {
 	return gulp.src('./test/*.ts')
 		.pipe(mocha({
 			require: 'ts-node/register',
-			ui: 'tdd',
 		}))
 }
 
@@ -63,12 +62,12 @@ async function test_dev() {
 	}
 	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
 	console.log("\n\nThe semantic tree returned by the decorator is written to file: `./sample/output-1.xml`")
-	console.log("\n\nThe compiled output returned by the compiler is written to file: `./sample/output-2.ts`")
+	console.log("\n\nThe compiled output returned by the compiler is written to file: `./sample/output-2.wat`")
 
 	return Promise.all([
 		fsPromise.writeFile('./sample/output.xml', tree.serialize()),
 		fsPromise.writeFile('./sample/output-1.xml', tree.decorate().serialize()),
-		fsPromise.writeFile('./sample/output-2.ts', tree.decorate().compile()),
+		fsPromise.writeFile('./sample/output-2.wat', tree.decorate().compile().print()),
 	])
 }
 

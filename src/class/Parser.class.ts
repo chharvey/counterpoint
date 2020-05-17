@@ -1,7 +1,9 @@
 import Screener from './Screener.class'
 import type Token from './Token.class'
 import Terminal from './Terminal.class'
-import ParseNode from './ParseNode.class'
+import ParseNode, {
+	ParseNodeGoal,
+} from './ParseNode.class'
 import Grammar, {
 	GrammarSymbol,
 	Rule,
@@ -112,7 +114,7 @@ export default class Parser {
 	 * Main parsing function.
 	 * @returns          a token representing the grammar’s goal symbol
 	 */
-	parse(): ParseNode {
+	parse(): ParseNodeGoal {
 		while (!this.iterator_result_token.done) {
 			const curr_state = this.stack.length ? this.stack[this.stack.length-1][1] : this.grammar.closure()
 			const shifted: boolean = this.shift(curr_state)
@@ -131,6 +133,6 @@ export default class Parser {
 		}
 		if (this.stack.length < 1) throw new Error('Somehow, the stack was emptied. It should have 1 final element, a top-level rule.')
 		if (this.stack.length > 1) throw new Error('There is still unfinished business: The Stack should have only 1 element left.')
-		return this.stack[0][0] as ParseNode
+		return this.stack[0][0] as ParseNodeGoal
 	}
 }
