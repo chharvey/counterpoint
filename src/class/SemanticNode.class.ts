@@ -1,3 +1,4 @@
+import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import CodeGenerator from './CodeGenerator.class'
 import {STX, ETX} from './Char.class'
@@ -104,7 +105,7 @@ export class SemanticNodeNull extends SemanticNode {
 		super(start_node)
 	}
 	compile(): CodeGenerator {
-		return new CodeGenerator().nop()
+		return new CodeGenerator()
 	}
 }
 export class SemanticNodeGoal extends SemanticNode {
@@ -127,8 +128,11 @@ export class SemanticNodeStatementList extends SemanticNode {
 	) {
 		super(canonical, {}, children)
 	}
-	compile(): string {
-		return this.children.map((child) => child.compile()).join('')
+	compile(generator: CodeGenerator): CodeGenerator {
+		this.children.forEach((child) => {
+			child.compile(generator)
+		})
+		return generator
 	}
 }
 export class SemanticNodeDeclaration extends SemanticNode {
@@ -155,16 +159,16 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 	constructor(canonical: ParseNode, children: readonly [SemanticExpressionType]) {
 		super(canonical, {}, children)
 	}
-	compile(): string {
-		return this.children.map((child) => child.compile()).join('')
+	compile(generator: CodeGenerator): CodeGenerator {
+		return this.children[0].compile(generator)
 	}
 }
 export class SemanticNodeStatementEmpty extends SemanticNode {
 	constructor(canonical: ParseNode) {
 		super(canonical)
 	}
-	compile(): string {
-		return Util.dedent('')
+	compile(generator: CodeGenerator): CodeGenerator {
+		return generator.nop()
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {
@@ -205,6 +209,8 @@ export class SemanticNodeConstant extends SemanticNode {
 		super(start_node, {value})
 	}
 	compile(generator: CodeGenerator): CodeGenerator {
-		return generator.const(this.value)
+		return (typeof this.value === 'number')
+			? generator.const(this.value)
+			: generator // TODO strings
 	}
 }

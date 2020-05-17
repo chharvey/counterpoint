@@ -232,7 +232,7 @@ export class ParseNodeExpression extends ParseNode {
 		return this.children[0].decorate()
 	}
 }
-class ParseNodeExpressionBinary extends ParseNode {
+export class ParseNodeExpressionBinary extends ParseNode {
 	private static OPERATORS: ReadonlyMap<string, Operator> = new Map<string, Operator>([
 		['+', Operator.ADD],
 		['-', Operator.SUB],
@@ -261,7 +261,7 @@ class ParseNodeExpressionBinary extends ParseNode {
 				])
 	}
 }
-class ParseNodeExpressionUnary extends ParseNode {
+export class ParseNodeExpressionUnary extends ParseNode {
 	private static OPERATORS: ReadonlyMap<string, Operator> = new Map<string, Operator>([
 		['+', Operator.AFF],
 		['-', Operator.NEG],

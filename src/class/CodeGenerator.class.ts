@@ -1,7 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-import Util from './Util.class'
 import type SemanticNode from './SemanticNode.class'
 import type {
 	Operator,
