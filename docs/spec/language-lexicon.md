@@ -1,5 +1,5 @@
-# Lexical Structure
-This chapter defines the lexical structure of the Solid programming language.
+# Solid Language: Lexicon
+This chapter defines the lexical composition of the Solid programming language.
 
 
 
@@ -8,7 +8,7 @@ Solid source text (Solid code) is expressed using [Unicode](https://www.unicode.
 Solid source text is a sequence of Unicode code points,
 values ranging from U+0000 to U+10FFFF (including surrogate code points).
 Not all code points are permitted everywhere;
-the token syntax below explicitly defines these permissions.
+the next section explicitly defines these permissions.
 
 When stored and transmitted, Solid source text must be encoded and decoded via the
 [UTF-8](https://tools.ietf.org/html/rfc3629) encoding format.
@@ -30,7 +30,7 @@ during which line and column numbers of any invalid source input might be report
 
 
 
-## Token Syntax
+## Token Formation
 After line break normalization,
 the source text of a Solid file is converted into a sequence of input elements, called tokens.
 The source text is scanned from left to right, repeatedly taking the longest possible
