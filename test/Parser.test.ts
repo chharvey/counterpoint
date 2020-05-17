@@ -6,6 +6,8 @@ import type {
 	ParseNodeGoal,
 	ParseNodeStatementList,
 	ParseNodeStatement,
+	ParseNodeDeclarationVariable,
+	ParseNodeStatementAssignment,
 	ParseNodeExpression,
 	ParseNodeExpressionBinary,
 	ParseNodeExpressionUnary,
@@ -14,16 +16,34 @@ import type {
 } from '../src/class/ParseNode.class'
 import {
 	TokenFilebound,
+	TokenPunctuator,
 } from '../src/class/Token.class'
 
 
 
 describe('Parser', () => {
 	describe('#parse', () => {
+		function assert_ok(value: unknown, message?: string|Error): asserts value {
+			return assert.ok(value, message)
+		}
+
+		function assert_arrayLength(array: readonly unknown[], length: 0      , message?: string|Error): asserts array is readonly [                                                                      ];
+		function assert_arrayLength(array: readonly unknown[], length: 1      , message?: string|Error): asserts array is readonly [unknown,                                                              ];
+		function assert_arrayLength(array: readonly unknown[], length: 2      , message?: string|Error): asserts array is readonly [unknown, unknown,                                                     ];
+		function assert_arrayLength(array: readonly unknown[], length: 3      , message?: string|Error): asserts array is readonly [unknown, unknown, unknown,                                            ];
+		function assert_arrayLength(array: readonly unknown[], length: 4      , message?: string|Error): asserts array is readonly [unknown, unknown, unknown, unknown,                                   ];
+		function assert_arrayLength(array: readonly unknown[], length: 5      , message?: string|Error): asserts array is readonly [unknown, unknown, unknown, unknown, unknown,                          ];
+		function assert_arrayLength(array: readonly unknown[], length: 6      , message?: string|Error): asserts array is readonly [unknown, unknown, unknown, unknown, unknown, unknown,                 ];
+		function assert_arrayLength(array: readonly unknown[], length: 7      , message?: string|Error): asserts array is readonly [unknown, unknown, unknown, unknown, unknown, unknown, unknown,        ];
+		function assert_arrayLength(array: readonly unknown[], length: 8      , message?: string|Error): asserts array is readonly [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown];
+		function assert_arrayLength(array: readonly unknown[], length: number , message?: string|Error): void;
+		function assert_arrayLength(array: readonly unknown[], length: number , message?: string|Error): void {
+			return assert.strictEqual(array.length, length, message)
+		}
+
 		context('Goal ::= #x02 #x03', () => {
 			it('returns only file bounds.', () => {
 				const tree: ParseNodeGoal = new Parser('').parse()
-				assert.strictEqual(tree.tagname, 'Goal')
 				assert.strictEqual(tree.children.length, 2)
 				tree.children.forEach((child) => assert.ok(child instanceof TokenFilebound))
 			})
@@ -31,7 +51,7 @@ describe('Parser', () => {
 
 		context('Statement ::= ";"', () => {
 			it('returns a statement with only a punctuator.', () => {
-				assert.strictEqual(new Parser(';').parse().serialize(), `
+				/*
 					<Goal source="␂ ; ␃">
 						<FILEBOUND value="true">␂</FILEBOUND>
 						<Goal__0__List line="1" col="1" source=";">
@@ -41,7 +61,16 @@ describe('Parser', () => {
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
 					</Goal>
-				`.replace(/\n\t*/g, ''))
+				*/
+				const tree: ParseNodeGoal = new Parser(';').parse()
+				assert_arrayLength(tree.children, 3)
+				const statement_list: ParseNodeStatementList = tree.children[1]
+				assert_arrayLength(statement_list.children, 1)
+				const statement: ParseNodeStatement = statement_list.children[0]
+				assert_arrayLength(statement.children, 1)
+				const token: ParseNodeDeclarationVariable|ParseNodeStatementAssignment|TokenPunctuator = statement.children[0]
+				assert_ok(token instanceof TokenPunctuator)
+				assert.strictEqual(token.cook(), ';')
 			})
 		})
 
