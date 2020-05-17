@@ -1,5 +1,15 @@
 /* LR grammar */
 
+NUMBER          ::= [../docs/spec/lexical-structure.md#numbers]
+IDENTIFIER      ::= [../docs/spec/lexical-structure.md#words]
+STRING          ::= [../docs/spec/lexical-structure.md#string-literals]
+TEMPLATE_FULL   ::= [../docs/spec/lexical-structure.md#template-literals]
+TEMPLATE_HEAD   ::= [../docs/spec/lexical-structure.md#template-literals]
+TEMPLATE_MIDDLE ::= [../docs/spec/lexical-structure.md#template-literals]
+TEMPLATE_TAIL   ::= [../docs/spec/lexical-structure.md#template-literals]
+
+
+
 Goal ::= #x02 Statement* #x03
 
 
@@ -36,11 +46,3 @@ StringTemplate ::=
 PrimitiveLiteral ::=
 	NUMBER |
 	STRING
-
-STRING          ::= [./lexical-grammar.ebnf#String]
-TEMPLATE_FULL   ::= [./lexical-grammar.ebnf#TemplateFull]
-TEMPLATE_HEAD   ::= [./lexical-grammar.ebnf#TemplateHead]
-TEMPLATE_MIDDLE ::= [./lexical-grammar.ebnf#TempalteMiddle]
-TEMPLATE_TAIL   ::= [./lexical-grammar.ebnf#TempalteTail]
-NUMBER          ::= [./lexical-grammar.ebnf#Number]
-IDENTIFIER      ::= [./lexical-grammar.ebnf#Identifier]

@@ -3,11 +3,11 @@ import type Serializable from '../iface/Serializable.iface'
 import {STX, ETX} from './Char.class'
 import Token, {
 	TokenFilebound,
-	TokenString,
-	TokenTemplate,
+	TokenPunctuator,
 	TokenNumber,
 	TokenWord,
-	TokenPunctuator,
+	TokenString,
+	TokenTemplate,
 } from './Token.class'
 import SemanticNode, {
 	SemanticNodeNull,

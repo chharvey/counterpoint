@@ -3,13 +3,13 @@ import {STX, ETX} from './Char.class'
 import type ParseNode from './ParseNode.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
 import {
+	TerminalNumber,
+	TerminalIdentifier,
 	TerminalString,
 	TerminalTemplateFull,
 	TerminalTemplateHead,
 	TerminalTemplateMiddle,
 	TerminalTemplateTail,
-	TerminalNumber,
-	TerminalIdentifier,
 } from './Terminal.class'
 
 

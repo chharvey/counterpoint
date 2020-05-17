@@ -44,25 +44,25 @@ There are a small number of token types, each of which have a specific purpose.
 Goal ::=
 	FileBound      |
 	Whitespace     |
-	Comment        |
+	Punctuator     |
+	Number         |
+	Word           |
 	String         |
 	TemplateFull   |
 	TemplateHead   |
 	TemplateMiddle |
 	TemplateTail   |
-	Number         |
-	Word           |
-	Punctuator
+	Comment        |
 ```
 
 1. [File Bounds](#file-bounds)
 1. [Whitespace](#whitespace)
-1. [Comments](#comments)
-1. [String Literals](#string-literals)
-1. [Template Literals](#template-literals)
+1. [Punctuators](#punctuators)
 1. [Numbers](#numbers)
 1. [Words](#words)
-1. [Punctuators](#punctuators)
+1. [String Literals](#string-literals)
+1. [Template Literals](#template-literals)
+1. [Comments](#comments)
 
 
 ### File Bounds
@@ -122,44 +122,171 @@ U+205F     | MEDIUM MATHEMATICAL SPACE | General Punctuation         | Separator
 U+3000     | IDEOGRAPHIC SPACE         | CJK Symbols and Punctuation | Separator, Space [Zs]
 
 
-### Comments
+### Punctuators
 ```w3c
-Comment ::= CommentLine | CommentMulti | CommentBlock
-
-CommentLine ::= "%" [^#x0A#x03]* #x0A
-
-CommentMulti ::= "{%" CommentMultiNestChars? "%}"
-CommentMultiChars ::=
-	[^{%#x03] CommentMultiChars?       |
-	"{" [^%#x03] CommentMultiChars?    |
-	"%" ([^}#x03] CommentMultiChars?)? |
-	CommentMulti CommentMultiChars?
-
-CommentBlock ::= /*? following: #x0A [#x09#x20]* ?*/"%%%" #x0A (/*? unequal: [#x09#x20]* "%%%" ?*/[^#x03]* #x0A)? [#x09#x20]* "%%%" /*? lookahead: #x0A ?*/
+Punctuator ::= ";" | "=" | "+" | "-" | "*" | "/" | "^" | "(" | ")"
 ```
-Comments are tokens of arbitrary text,
-mainly used to add human-readable language to code
-or to provide other types of annotations.
-Comment tokens are not sent to the Solid parser.
+Punctuators are non-alphanumeric characters in the ASCII character set that
+add to the semantics of the Solid language.
+Some punctuators are operators, which perform computations on values, and
+some punctuators are delimiters, which separate certain code constructs from each other or group them together.
 
-#### Line Comments
-Line comments begin with `%` (**U+0025 PERCENT SIGN**).
-The compiler will ignore all source text starting from `%` and onward,
-up to and including the next line break (**U+000A LINE FEED (LF)**).
 
-#### Multiline Comments
-Multiline comments are contained in the delimiters `{% %}`
-(**U+007B LEFT CURLY BRACKET**, **U+007C RIGHT CURLY BRACKET**, with adjacent percent signs),
-and may contain line breaks and may be nested.
+### Numbers
+```w3c
+Number ::= ("+" | "-")? IntegerLiteral
 
-#### Block Comments
-Block comments begin and end with triple percent signs `%%%`.
-These delimiters *must* be on their own lines (with or without leading/trailing whitespace).
+IntegerLiteral ::=
+	"\b"  DigitSequenceBin |
+	"\q"  DigitSequenceQua |
+	"\o"  DigitSequenceOct |
+	"\d"? DigitSequenceDec |
+	"\x"  DigitSequenceHex |
+	"\z"  DigitSequenceHTD
+
+DigitSequenceBin ::= (DigitSequenceBin "_"?)? [0-1]
+DigitSequenceQua ::= (DigitSequenceQua "_"?)? [0-3]
+DigitSequenceOct ::= (DigitSequenceOct "_"?)? [0-7]
+DigitSequenceDec ::= (DigitSequenceDec "_"?)? [0-9]
+DigitSequenceHex ::= (DigitSequenceHex "_"?)? [0-9a-f]
+DigitSequenceHTD ::= (DigitSequenceHTD "_"?)? [0-9a-z]
+```
+Numbers are literal constants that represent numeric mathematical values.
+Currently, only positive and negative (and zero) integers are supported.
+
+#### Static Semantics: Mathematical Value
+The Mathematical Value (MV) of a number token is the computed number that the token represents.
+
+There is a many-to-one relationship between tokens and mathematical values. For example,
+a token containing `0042` has the same mathematical value as a token containing `+42`:
+the integer *42*.
+
+```w3c
+MV(Number ::= IntegerLiteral)
+	:= MV(IntegerLiteral)
+MV(Number ::= "+" IntegerLiteral)
+	:= MV(IntegerLiteral)
+MV(Number ::= "-" IntegerLiteral)
+	:= -1 * MV(IntegerLiteral)
+
+MV(IntegerLiteral ::= "\b"  DigitSequenceBin)
+	:= MV(DigitSequenceBin)
+MV(IntegerLiteral ::= "\q"  DigitSequenceQua)
+	:= MV(DigitSequenceQua)
+MV(IntegerLiteral ::= "\o"  DigitSequenceOct)
+	:= MV(DigitSequenceOct)
+MV(IntegerLiteral ::= "\d"? DigitSequenceDec)
+	:= MV(DigitSequenceDec)
+MV(IntegerLiteral ::= "\x"  DigitSequenceHex)
+	:= MV(DigitSequenceHex)
+MV(IntegerLiteral ::= "\z"  DigitSequenceHTD)
+	:= MV(DigitSequenceHTD)
+
+MV(DigitSequenceBin ::= [0-1])
+	:= MV([0-1])
+MV(DigitSequenceBin ::= DigitSequenceBin "_"? [0-1])
+	:= 2 * MV(DigitSequenceBin) + MV([0-1])
+MV(DigitSequenceQua ::= [0-3])
+	:= MV([0-3])
+MV(DigitSequenceQua ::= DigitSequenceQua "_"? [0-3])
+	:= 4 * MV(DigitSequenceQua) + MV([0-3])
+MV(DigitSequenceOct ::= [0-7])
+	:= MV([0-7])
+MV(DigitSequenceOct ::= DigitSequenceOct "_"? [0-7])
+	:= 8 * MV(DigitSequenceOct) + MV([0-7])
+MV(DigitSequenceDec ::= [0-9])
+	:= MV([0-9])
+MV(DigitSequenceDec ::= DigitSequenceDec "_"? [0-9])
+	:= 10 * MV(DigitSequenceDec) + MV([0-9])
+MV(DigitSequenceHex ::= [0-9a-f])
+	:= MV([0-9a-f])
+MV(DigitSequenceHex ::= DigitSequenceHex "_"? [0-9a-f])
+	:= 16 * MV(DigitSequenceHex) + MV([0-9a-f])
+MV(DigitSequenceHTD ::= [0-9a-z])
+	:= MV([0-9a-z])
+MV(DigitSequenceHTD ::= DigitSequenceHTD "_"? [0-9a-z])
+	:= 36 * MV(DigitSequenceHTD) + MV([0-9a-z])
+
+MV([0-9a-z] ::= "0")  :=  MV([0-9a-f] ::= "0")  :=  MV([0-9] ::= "0")  :=  MV([0-7] ::= "0")  :=  MV([0-3] ::= "0")  :=  MV([0-1] ::= "0")  :=  0
+MV([0-9a-z] ::= "1")  :=  MV([0-9a-f] ::= "1")  :=  MV([0-9] ::= "1")  :=  MV([0-7] ::= "1")  :=  MV([0-3] ::= "1")  :=  MV([0-1] ::= "1")  :=  1
+MV([0-9a-z] ::= "2")  :=  MV([0-9a-f] ::= "2")  :=  MV([0-9] ::= "2")  :=  MV([0-7] ::= "2")  :=  MV([0-3] ::= "2")  :=  2
+MV([0-9a-z] ::= "3")  :=  MV([0-9a-f] ::= "3")  :=  MV([0-9] ::= "3")  :=  MV([0-7] ::= "3")  :=  MV([0-3] ::= "3")  :=  3
+MV([0-9a-z] ::= "4")  :=  MV([0-9a-f] ::= "4")  :=  MV([0-9] ::= "4")  :=  MV([0-7] ::= "4")  :=  4
+MV([0-9a-z] ::= "5")  :=  MV([0-9a-f] ::= "5")  :=  MV([0-9] ::= "5")  :=  MV([0-7] ::= "5")  :=  5
+MV([0-9a-z] ::= "6")  :=  MV([0-9a-f] ::= "6")  :=  MV([0-9] ::= "6")  :=  MV([0-7] ::= "6")  :=  6
+MV([0-9a-z] ::= "7")  :=  MV([0-9a-f] ::= "7")  :=  MV([0-9] ::= "7")  :=  MV([0-7] ::= "7")  :=  7
+MV([0-9a-z] ::= "8")  :=  MV([0-9a-f] ::= "8")  :=  MV([0-9] ::= "8")  :=  8
+MV([0-9a-z] ::= "9")  :=  MV([0-9a-f] ::= "9")  :=  MV([0-9] ::= "9")  :=  9
+MV([0-9a-z] ::= "a")  :=  MV([0-9a-f] ::= "a")  :=  10
+MV([0-9a-z] ::= "b")  :=  MV([0-9a-f] ::= "b")  :=  11
+MV([0-9a-z] ::= "c")  :=  MV([0-9a-f] ::= "c")  :=  12
+MV([0-9a-z] ::= "d")  :=  MV([0-9a-f] ::= "d")  :=  13
+MV([0-9a-z] ::= "e")  :=  MV([0-9a-f] ::= "e")  :=  14
+MV([0-9a-z] ::= "f")  :=  MV([0-9a-f] ::= "f")  :=  15
+MV([0-9a-z] ::= "g")  :=  16
+MV([0-9a-z] ::= "h")  :=  17
+MV([0-9a-z] ::= "i")  :=  18
+MV([0-9a-z] ::= "j")  :=  19
+MV([0-9a-z] ::= "k")  :=  20
+MV([0-9a-z] ::= "l")  :=  21
+MV([0-9a-z] ::= "m")  :=  22
+MV([0-9a-z] ::= "n")  :=  23
+MV([0-9a-z] ::= "o")  :=  24
+MV([0-9a-z] ::= "p")  :=  25
+MV([0-9a-z] ::= "q")  :=  26
+MV([0-9a-z] ::= "r")  :=  27
+MV([0-9a-z] ::= "s")  :=  28
+MV([0-9a-z] ::= "t")  :=  29
+MV([0-9a-z] ::= "u")  :=  30
+MV([0-9a-z] ::= "v")  :=  31
+MV([0-9a-z] ::= "w")  :=  32
+MV([0-9a-z] ::= "x")  :=  33
+MV([0-9a-z] ::= "y")  :=  34
+MV([0-9a-z] ::= "z")  :=  35
+```
+
+
+### Words
+```w3c
+Word ::= [A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`"
+
+Identifier ::= Word - Keyword
+
+Keyword ::=
+	KeywordStorage  |
+	KeywordModifier
+
+KeywordStorage ::=
+	"let"
+
+KeywordModifier ::=
+	"unfixed"
+```
+Words are sequences of alphanumeric characters.
+Formally, words are partitioned into two types:
+author-defined **identifiers**, which point to values in a program, and
+language-reserved **keywords**, which convey certain semantics.
+Keywords are reserved by the Solid language and cannot be used as identifiers.
+
+Words must start with an alphabetic character or an underscore, `[A-Za-z_]`,
+and thereafter may contain more alphanumeric characters or underscores, `[A-Za-z0-9_]`.
+In the future, support will be added for a certain subset of Unicode characters,
+which go beyond the letters and numerals of the English alphabet.
+
+#### Static Semantics: Word Value
+The Word Value (WV) of a word token is the unique identifier that distinguishes
+the word from other words in a program.
+
+```w3c
+WV(Word ::= [A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`")
+	:= /* TO BE DESCRIBED */
+```
 
 
 ### String Literals
 ```w3c
 String ::= "'" StringChars? "'"
+
 StringChars ::=
 	[^'\#x03]               StringChars?   |
 	"\"        StringEscape StringChars?   |
@@ -405,161 +532,37 @@ TV(TemplateChars__EndInterp__StartInterp ::= "{''" TemplateChars__EndInterp__Sta
 ```
 
 
-### Numbers
+### Comments
 ```w3c
-Number ::= ("+" | "-")? IntegerLiteral
+Comment ::= CommentLine | CommentMulti | CommentBlock
 
-IntegerLiteral ::=
-	"\b"  DigitSequenceBin |
-	"\q"  DigitSequenceQua |
-	"\o"  DigitSequenceOct |
-	"\d"? DigitSequenceDec |
-	"\x"  DigitSequenceHex |
-	"\z"  DigitSequenceHTD
+CommentLine ::= "%" [^#x0A#x03]* #x0A
 
-DigitSequenceBin ::= (DigitSequenceBin "_"?)? [0-1]
-DigitSequenceQua ::= (DigitSequenceQua "_"?)? [0-3]
-DigitSequenceOct ::= (DigitSequenceOct "_"?)? [0-7]
-DigitSequenceDec ::= (DigitSequenceDec "_"?)? [0-9]
-DigitSequenceHex ::= (DigitSequenceHex "_"?)? [0-9a-f]
-DigitSequenceHTD ::= (DigitSequenceHTD "_"?)? [0-9a-z]
+CommentMulti ::= "{%" CommentMultiNestChars? "%}"
+
+CommentMultiChars ::=
+	[^{%#x03] CommentMultiChars?       |
+	"{" [^%#x03] CommentMultiChars?    |
+	"%" ([^}#x03] CommentMultiChars?)? |
+	CommentMulti CommentMultiChars?
+
+CommentBlock ::= /*? following: #x0A [#x09#x20]* ?*/"%%%" #x0A (/*? unequal: [#x09#x20]* "%%%" ?*/[^#x03]* #x0A)? [#x09#x20]* "%%%" /*? lookahead: #x0A ?*/
 ```
-Numbers are literal constants that represent numeric mathematical values.
-Currently, only positive and negative (and zero) integers are supported.
+Comments are tokens of arbitrary text,
+mainly used to add human-readable language to code
+or to provide other types of annotations.
+Comment tokens are not sent to the Solid parser.
 
-#### Static Semantics: Mathematical Value
-The Mathematical Value (MV) of a number token is the computed number that the token represents.
+#### Line Comments
+Line comments begin with `%` (**U+0025 PERCENT SIGN**).
+The compiler will ignore all source text starting from `%` and onward,
+up to and including the next line break (**U+000A LINE FEED (LF)**).
 
-There is a many-to-one relationship between tokens and mathematical values. For example,
-a token containing `0042` has the same mathematical value as a token containing `+42`:
-the integer *42*.
+#### Multiline Comments
+Multiline comments are contained in the delimiters `{% %}`
+(**U+007B LEFT CURLY BRACKET**, **U+007C RIGHT CURLY BRACKET**, with adjacent percent signs),
+and may contain line breaks and may be nested.
 
-```w3c
-MV(Number ::= IntegerLiteral)
-	:= MV(IntegerLiteral)
-MV(Number ::= "+" IntegerLiteral)
-	:= MV(IntegerLiteral)
-MV(Number ::= "-" IntegerLiteral)
-	:= -1 * MV(IntegerLiteral)
-
-MV(IntegerLiteral ::= "\b"  DigitSequenceBin)
-	:= MV(DigitSequenceBin)
-MV(IntegerLiteral ::= "\q"  DigitSequenceQua)
-	:= MV(DigitSequenceQua)
-MV(IntegerLiteral ::= "\o"  DigitSequenceOct)
-	:= MV(DigitSequenceOct)
-MV(IntegerLiteral ::= "\d"? DigitSequenceDec)
-	:= MV(DigitSequenceDec)
-MV(IntegerLiteral ::= "\x"  DigitSequenceHex)
-	:= MV(DigitSequenceHex)
-MV(IntegerLiteral ::= "\z"  DigitSequenceHTD)
-	:= MV(DigitSequenceHTD)
-
-MV(DigitSequenceBin ::= [0-1])
-	:= MV([0-1])
-MV(DigitSequenceBin ::= DigitSequenceBin "_"? [0-1])
-	:= 2 * MV(DigitSequenceBin) + MV([0-1])
-MV(DigitSequenceQua ::= [0-3])
-	:= MV([0-3])
-MV(DigitSequenceQua ::= DigitSequenceQua "_"? [0-3])
-	:= 4 * MV(DigitSequenceQua) + MV([0-3])
-MV(DigitSequenceOct ::= [0-7])
-	:= MV([0-7])
-MV(DigitSequenceOct ::= DigitSequenceOct "_"? [0-7])
-	:= 8 * MV(DigitSequenceOct) + MV([0-7])
-MV(DigitSequenceDec ::= [0-9])
-	:= MV([0-9])
-MV(DigitSequenceDec ::= DigitSequenceDec "_"? [0-9])
-	:= 10 * MV(DigitSequenceDec) + MV([0-9])
-MV(DigitSequenceHex ::= [0-9a-f])
-	:= MV([0-9a-f])
-MV(DigitSequenceHex ::= DigitSequenceHex "_"? [0-9a-f])
-	:= 16 * MV(DigitSequenceHex) + MV([0-9a-f])
-MV(DigitSequenceHTD ::= [0-9a-z])
-	:= MV([0-9a-z])
-MV(DigitSequenceHTD ::= DigitSequenceHTD "_"? [0-9a-z])
-	:= 36 * MV(DigitSequenceHTD) + MV([0-9a-z])
-
-MV([0-9a-z] ::= "0")  :=  MV([0-9a-f] ::= "0")  :=  MV([0-9] ::= "0")  :=  MV([0-7] ::= "0")  :=  MV([0-3] ::= "0")  :=  MV([0-1] ::= "0")  :=  0
-MV([0-9a-z] ::= "1")  :=  MV([0-9a-f] ::= "1")  :=  MV([0-9] ::= "1")  :=  MV([0-7] ::= "1")  :=  MV([0-3] ::= "1")  :=  MV([0-1] ::= "1")  :=  1
-MV([0-9a-z] ::= "2")  :=  MV([0-9a-f] ::= "2")  :=  MV([0-9] ::= "2")  :=  MV([0-7] ::= "2")  :=  MV([0-3] ::= "2")  :=  2
-MV([0-9a-z] ::= "3")  :=  MV([0-9a-f] ::= "3")  :=  MV([0-9] ::= "3")  :=  MV([0-7] ::= "3")  :=  MV([0-3] ::= "3")  :=  3
-MV([0-9a-z] ::= "4")  :=  MV([0-9a-f] ::= "4")  :=  MV([0-9] ::= "4")  :=  MV([0-7] ::= "4")  :=  4
-MV([0-9a-z] ::= "5")  :=  MV([0-9a-f] ::= "5")  :=  MV([0-9] ::= "5")  :=  MV([0-7] ::= "5")  :=  5
-MV([0-9a-z] ::= "6")  :=  MV([0-9a-f] ::= "6")  :=  MV([0-9] ::= "6")  :=  MV([0-7] ::= "6")  :=  6
-MV([0-9a-z] ::= "7")  :=  MV([0-9a-f] ::= "7")  :=  MV([0-9] ::= "7")  :=  MV([0-7] ::= "7")  :=  7
-MV([0-9a-z] ::= "8")  :=  MV([0-9a-f] ::= "8")  :=  MV([0-9] ::= "8")  :=  8
-MV([0-9a-z] ::= "9")  :=  MV([0-9a-f] ::= "9")  :=  MV([0-9] ::= "9")  :=  9
-MV([0-9a-z] ::= "a")  :=  MV([0-9a-f] ::= "a")  :=  10
-MV([0-9a-z] ::= "b")  :=  MV([0-9a-f] ::= "b")  :=  11
-MV([0-9a-z] ::= "c")  :=  MV([0-9a-f] ::= "c")  :=  12
-MV([0-9a-z] ::= "d")  :=  MV([0-9a-f] ::= "d")  :=  13
-MV([0-9a-z] ::= "e")  :=  MV([0-9a-f] ::= "e")  :=  14
-MV([0-9a-z] ::= "f")  :=  MV([0-9a-f] ::= "f")  :=  15
-MV([0-9a-z] ::= "g")  :=  16
-MV([0-9a-z] ::= "h")  :=  17
-MV([0-9a-z] ::= "i")  :=  18
-MV([0-9a-z] ::= "j")  :=  19
-MV([0-9a-z] ::= "k")  :=  20
-MV([0-9a-z] ::= "l")  :=  21
-MV([0-9a-z] ::= "m")  :=  22
-MV([0-9a-z] ::= "n")  :=  23
-MV([0-9a-z] ::= "o")  :=  24
-MV([0-9a-z] ::= "p")  :=  25
-MV([0-9a-z] ::= "q")  :=  26
-MV([0-9a-z] ::= "r")  :=  27
-MV([0-9a-z] ::= "s")  :=  28
-MV([0-9a-z] ::= "t")  :=  29
-MV([0-9a-z] ::= "u")  :=  30
-MV([0-9a-z] ::= "v")  :=  31
-MV([0-9a-z] ::= "w")  :=  32
-MV([0-9a-z] ::= "x")  :=  33
-MV([0-9a-z] ::= "y")  :=  34
-MV([0-9a-z] ::= "z")  :=  35
-```
-
-
-### Words
-```w3c
-Word ::= [A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`"
-Identifier ::= Word - Keyword
-
-Keyword ::=
-	KeywordStorage  |
-	KeywordModifier
-
-KeywordStorage ::=
-	"let"
-
-KeywordModifier ::=
-	"unfixed"
-```
-Words are sequences of alphanumeric characters.
-Formally, words are partitioned into two types:
-author-defined **identifiers**, which point to values in a program, and
-language-reserved **keywords**, which convey certain semantics.
-Keywords are reserved by the Solid language and cannot be used as identifiers.
-
-Words must start with an alphabetic character or an underscore, `[A-Za-z_]`,
-and thereafter may contain more alphanumeric characters or underscores, `[A-Za-z0-9_]`.
-In the future, support will be added for a certain subset of Unicode characters,
-which go beyond the letters and numerals of the English alphabet.
-
-#### Static Semantics: Word Value
-The Word Value (WV) of a word token is the unique identifier that distinguishes
-the word from other words in a program.
-
-```w3c
-WV(Word ::= [A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`")
-	:= /* TO BE DESCRIBED */
-```
-
-
-### Punctuators
-```w3c
-Punctuator ::= ";" | "=" | "+" | "-" | "*" | "/" | "^" | "(" | ")"
-```
-Punctuators are non-alphanumeric characters in the ASCII character set that
-add to the semantics of the Solid language.
-Some punctuators are operators, which perform computations on values, and
-some punctuators are delimiters, which separate certain code constructs from each other or group them together.
+#### Block Comments
+Block comments begin and end with triple percent signs `%%%`.
+These delimiters *must* be on their own lines (with or without leading/trailing whitespace).

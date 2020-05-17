@@ -1,12 +1,12 @@
 import Util from './Util.class'
 import Token, {
+	RadixType,
 	TemplatePosition,
-	TokenString,
-	TokenTemplate,
 	TokenNumber,
 	TokenWord,
 	TokenWordBasic,
-	RadixType,
+	TokenString,
+	TokenTemplate,
 } from './Token.class'
 
 
@@ -38,6 +38,53 @@ export default abstract class Terminal {
 
 
 
+export class TerminalNumber extends Terminal {
+	static readonly instance: TerminalNumber = new TerminalNumber()
+	static digitSequence(radix: RadixType): string {
+		return `${
+			Util.randomBool() ? '' : `${TerminalNumber.digitSequence(radix)}${Util.randomBool() ? '' : TokenNumber.SEPARATOR}`
+		}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
+	}
+	random(): string {
+		const [unary, radix]: [string, RadixType] = Util.arrayRandom([...TokenNumber.BASES])
+		return `${Util.randomBool() ? '' : Util.arrayRandom([...TokenNumber.UNARY.keys()])}${
+			Util.randomBool()
+				? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT)
+				: `\\${unary}${TerminalNumber.digitSequence(radix)}`
+		}`
+	}
+	match(candidate: Token): boolean {
+		return candidate instanceof TokenNumber
+	}
+}
+export class TerminalIdentifier extends Terminal {
+	static readonly instance: TerminalIdentifier = new TerminalIdentifier()
+	random(): string {
+		const charsBasic = (start: boolean = false): string => {
+			let c: string;
+			const pass: RegExp = start ? TokenWordBasic.CHAR_START : TokenWordBasic.CHAR_REST
+			do {
+				c = Util.randomChar()
+			} while (!pass.test(c))
+			return start ? c : `${c}${Util.randomBool() ? '' : charsBasic()}`
+		}
+		const charsUnicode = (): string => {
+			return `${Util.randomBool() ? '' : charsUnicode()}${Util.randomChar(['`'])}`
+		}
+		let returned: string;
+		if (Util.randomBool()) {
+			do {
+				returned = `${charsBasic(true)}${Util.randomBool() ? '' : charsBasic()}`
+			} while (([...TokenWordBasic.KEYWORDS.values()].flat() as string[]).includes(returned))
+		} else {
+			returned = `\`${Util.randomBool() ? '' : charsUnicode()}\``
+		}
+		return returned
+	}
+	match(candidate: Token): boolean {
+		return candidate instanceof TokenWord && candidate.isIdentifier
+	}
+}
 export class TerminalString extends Terminal {
 	static readonly instance: TerminalString = new TerminalString()
 	random(): string {
@@ -155,52 +202,5 @@ export class TerminalTemplateTail extends TerminalTemplate {
 	}
 	match(candidate: Token): boolean {
 		return super.match(candidate, TemplatePosition.TAIL)
-	}
-}
-export class TerminalNumber extends Terminal {
-	static readonly instance: TerminalNumber = new TerminalNumber()
-	static digitSequence(radix: RadixType): string {
-		return `${
-			Util.randomBool() ? '' : `${TerminalNumber.digitSequence(radix)}${Util.randomBool() ? '' : TokenNumber.SEPARATOR}`
-		}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
-	}
-	random(): string {
-		const [unary, radix]: [string, RadixType] = Util.arrayRandom([...TokenNumber.BASES])
-		return `${Util.randomBool() ? '' : Util.arrayRandom([...TokenNumber.UNARY.keys()])}${
-			Util.randomBool()
-				? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT)
-				: `\\${unary}${TerminalNumber.digitSequence(radix)}`
-		}`
-	}
-	match(candidate: Token): boolean {
-		return candidate instanceof TokenNumber
-	}
-}
-export class TerminalIdentifier extends Terminal {
-	static readonly instance: TerminalIdentifier = new TerminalIdentifier()
-	random(): string {
-		const charsBasic = (start: boolean = false): string => {
-			let c: string;
-			const pass: RegExp = start ? TokenWordBasic.CHAR_START : TokenWordBasic.CHAR_REST
-			do {
-				c = Util.randomChar()
-			} while (!pass.test(c))
-			return start ? c : `${c}${Util.randomBool() ? '' : charsBasic()}`
-		}
-		const charsUnicode = (): string => {
-			return `${Util.randomBool() ? '' : charsUnicode()}${Util.randomChar(['`'])}`
-		}
-		let returned: string;
-		if (Util.randomBool()) {
-			do {
-				returned = `${charsBasic(true)}${Util.randomBool() ? '' : charsBasic()}`
-			} while (([...TokenWordBasic.KEYWORDS.values()].flat() as string[]).includes(returned))
-		} else {
-			returned = `\`${Util.randomBool() ? '' : charsUnicode()}\``
-		}
-		return returned
-	}
-	match(candidate: Token): boolean {
-		return candidate instanceof TokenWord && candidate.isIdentifier
 	}
 }

@@ -7,19 +7,19 @@ import {
 	ETX,
 } from '../src/class/Char.class'
 import Token, {
+	TemplatePosition,
 	TokenFilebound,
 	TokenWhitespace,
-	TokenCommentLine,
-	TokenCommentMulti,
-	TokenCommentBlock,
-	TokenString,
-	TokenTemplate,
+	TokenPunctuator,
 	TokenNumber,
 	TokenWord,
 	TokenWordBasic,
 	TokenWordUnicode,
-	TokenPunctuator,
-	TemplatePosition,
+	TokenString,
+	TokenTemplate,
+	TokenCommentLine,
+	TokenCommentMulti,
+	TokenCommentBlock,
 } from '../src/class/Token.class'
 
 import {

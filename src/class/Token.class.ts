@@ -12,16 +12,16 @@ import {
 
 export type RadixType = 2n|4n|8n|10n|16n|36n
 
+enum KeywordKind {
+	STORAGE,
+	MODIFIER,
+}
+
 export enum TemplatePosition {
 	FULL,
 	HEAD,
 	MIDDLE,
 	TAIL,
-}
-
-enum KeywordKind {
-	STORAGE,
-	MODIFIER,
 }
 
 export type CookValueType = string|number|bigint|boolean|null
@@ -142,20 +142,180 @@ export class TokenWhitespace extends Token {
 		return null // we do not want to send whitespace to the parser
 	}
 }
-export abstract class TokenComment extends Token {
-	constructor (start_char: Char, ...more_chars: Char[]) {
-		super('COMMENT', start_char, ...more_chars)
+export class TokenPunctuator extends Token {
+	static readonly CHARS_1: readonly string[] = '; = + - * / ^ ( )'.split(' ')
+	static readonly CHARS_2: readonly string[] = ''.split(' ')
+	static readonly CHARS_3: readonly string[] = ''.split(' ')
+	constructor (lexer: Lexer, count: 1n|2n|3n = 1n) {
+		const buffer: Char[] = [lexer.c0]
+		if (count >= 3n) {
+			buffer.push(lexer.c1 !, lexer.c2 !)
+		} else if (count >= 2n) {
+			buffer.push(lexer.c1 !)
+		}
+		lexer.advance(count)
+		super('PUNCTUATOR', buffer[0], ...buffer.slice(1))
 	}
-	/** @final */ cook(): null {
-		return null // we do not want to send comments to the parser
+	cook(): string {
+		return this.source
 	}
 }
-export class TokenCommentLine extends TokenComment {
-	static readonly DELIM: '%' = '%'
-	constructor (lexer: Lexer) {
+export class TokenNumber extends Token {
+	static readonly RADIX_DEFAULT: RadixType = 10n
+	static readonly SEPARATOR: string = '_'
+	static readonly BASES: ReadonlyMap<string, RadixType> = new Map<string, RadixType>([
+		['b',  2n],
+		['q',  4n],
+		['o',  8n],
+		['d', 10n],
+		['x', 16n],
+		['z', 36n],
+	])
+	static readonly DIGITS: ReadonlyMap<RadixType, readonly string[]> = new Map<RadixType, readonly string[]>([
+		[ 2n, '0 1'                                                                     .split(' ')],
+		[ 4n, '0 1 2 3'                                                                 .split(' ')],
+		[ 8n, '0 1 2 3 4 5 6 7'                                                         .split(' ')],
+		[10n, '0 1 2 3 4 5 6 7 8 9'                                                     .split(' ')],
+		[16n, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ')],
+		[36n, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
+	])
+	static readonly UNARY: ReadonlyMap<string, number> = new Map<string, number>([
+		['+',  1],
+		['-', -1],
+	])
+	/**
+	 * Compute the mathematical value of a `TokenNumber` token.
+	 * @param   text  - the string to compute
+	 * @param   radix - the base in which to compute
+	 * @returns         the mathematical value of the string in the given base
+	 */
+	static mv(text: string, radix: RadixType = TokenNumber.RADIX_DEFAULT): number {
+		if (text[text.length-1] === TokenNumber.SEPARATOR) {
+			text = text.slice(0, -1)
+		}
+		if (text.length === 0) throw new Error('Cannot compute mathematical value of empty string.')
+		if (text.length === 1) {
+			const digitvalue: number = parseInt(text, Number(radix))
+			if (Number.isNaN(digitvalue)) throw new Error(`Invalid number format: \`${text}\``)
+			return digitvalue
+		}
+		return Number(radix) * TokenNumber.mv(text.slice(0, -1), radix) + TokenNumber.mv(text[text.length-1], radix)
+	}
+	private readonly has_unary: boolean;
+	private readonly has_radix: boolean;
+	private readonly radix: RadixType;
+	constructor (lexer: Lexer, has_unary: boolean, has_radix: boolean = false) {
+		const buffer: Char[] = []
+		if (has_unary) { // prefixed with leading unary operator "+" or "-"
+			buffer.push(lexer.c0)
+			lexer.advance()
+		}
+		const radix: RadixType = has_radix ? TokenNumber.BASES.get(lexer.c1 !.source) ! : TokenNumber.RADIX_DEFAULT
+		const digits: readonly string[] = TokenNumber.DIGITS.get(radix) !
+		if (has_radix) { // an explicit base
+			if (!Char.inc(digits, lexer.c2)) {
+				throw new LexError03(`${lexer.c0.source}${lexer.c1 !.source}`, lexer.c0.line_index, lexer.c0.col_index)
+			}
+			buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
+			lexer.advance(3n)
+		} else { // implicit default base
+			buffer.push(lexer.c0)
+			lexer.advance()
+		}
+		while (!lexer.isDone && Char.inc([...digits, TokenNumber.SEPARATOR], lexer.c0)) {
+			if (Char.inc(digits, lexer.c0)) {
+				buffer.push(lexer.c0)
+				lexer.advance()
+			} else if (Char.eq(TokenNumber.SEPARATOR, lexer.c0)) {
+				if (Char.inc(digits, lexer.c1)) {
+					buffer.push(lexer.c0, lexer.c1 !)
+					lexer.advance(2n)
+				} else {
+					throw new LexError04(Char.eq(TokenNumber.SEPARATOR, lexer.c1) ? lexer.c1 ! : lexer.c0)
+				}
+			}
+		}
+		super('NUMBER', buffer[0], ...buffer.slice(1))
+		this.has_unary = has_unary
+		this.has_radix = has_radix
+		this.radix     = radix
+	}
+	cook(): number {
+		let text: string = this.source
+		const multiplier: number = TokenNumber.UNARY.get(text[0]) || 1
+		if (this.has_unary) text = text.slice(1) // cut off unary, if any
+		if (this.has_radix) text = text.slice(2) // cut off radix, if any
+		return multiplier * TokenNumber.mv(text, this.radix)
+	}
+}
+export abstract class TokenWord extends Token {
+	/**
+	 * The cooked value of this Token.
+	 * If the token is a keyword, the cooked value is its contents.
+	 * If the token is an identifier, the cooked value is set by a {@link Screener},
+	 * which indexes unique identifier tokens.
+	 */
+	protected _cooked: bigint|null;
+	constructor (start_char: Char, ...more_chars: Char[]) {
+		super('WORD', start_char, ...more_chars)
+		this._cooked = null
+	}
+	/**
+	 * Is this Token an identifier?
+	 * @returns Is this Token an identifier?
+	 */
+	abstract get isIdentifier(): boolean;
+	/**
+	 * Set the numeric integral value of this Token.
+	 * If it is an identifier, it will be 128 or higher;
+	 * else if it is a reserved keyword, it will be 0–127.
+	 * This operation can only be done once.
+	 * @param   value - the value to set, unique among all words in a program
+	 */
+	/** @final */ setValue(value: bigint): void {
+		if (this._cooked === null) {
+			this._cooked = value
+		}
+	}
+	/** @final */ cook(): bigint|null {
+		return this._cooked
+	}
+}
+export class TokenWordBasic extends TokenWord {
+	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
+	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
+	static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>(([
+		[KeywordKind.STORAGE, [
+			'let',
+		]],
+		[KeywordKind.MODIFIER, [
+			'unfixed',
+		]],
+	]))
+	/** The classification of this keyword, if not an identifier. */
+	private readonly keyword_kind: KeywordKind|null;
+	constructor(lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
-		while (!lexer.isDone && !Char.eq('\n', lexer.c0)) {
+		while (!lexer.isDone && TokenWordBasic.CHAR_REST.test(lexer.c0.source)) {
+			buffer.push(lexer.c0)
+			lexer.advance()
+		}
+		super(buffer[0], ...buffer.slice(1))
+		this.keyword_kind = ([...TokenWordBasic.KEYWORDS].find(
+			([_, reserved]) => reserved.includes(this.source)
+		) || [null])[0]
+	}
+	get isIdentifier(): boolean {
+		return this.keyword_kind === null
+	}
+}
+export class TokenWordUnicode extends TokenWord {
+	static readonly DELIM: '`' = '`'
+	constructor(lexer: Lexer) {
+		const buffer: Char[] = [lexer.c0]
+		lexer.advance()
+		while (!lexer.isDone && !Char.eq(TokenWordUnicode.DELIM, lexer.c0)) {
 			if (Char.eq(ETX, lexer.c0)) {
 				super(buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
@@ -163,70 +323,13 @@ export class TokenCommentLine extends TokenComment {
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
-		// add '\n' to token
+		// add ending delim to token
 		buffer.push(lexer.c0)
 		lexer.advance()
 		super(buffer[0], ...buffer.slice(1))
 	}
-}
-export class TokenCommentMulti extends TokenComment {
-	static readonly DELIM_START : '{%' = '{%'
-	static readonly DELIM_END   : '%}' = '%}'
-	constructor (lexer: Lexer) {
-		let comment_multiline_level: bigint = 0n
-		const buffer: Char[] = [lexer.c0, lexer.c1 !]
-		lexer.advance(2n)
-		comment_multiline_level++;
-		while (comment_multiline_level !== 0n) {
-			while (!lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, lexer.c0, lexer.c1)) {
-				if (Char.eq(ETX, lexer.c0)) {
-					super(buffer[0], ...buffer.slice(1))
-					throw new LexError02(this)
-				}
-				if (Char.eq(TokenCommentMulti.DELIM_START, lexer.c0, lexer.c1)) {
-					buffer.push(lexer.c0, lexer.c1 !)
-					lexer.advance(2n)
-					comment_multiline_level++;
-				} else {
-					buffer.push(lexer.c0)
-					lexer.advance()
-				}
-			}
-			// add ending delim to token
-			buffer.push(lexer.c0, lexer.c1 !)
-			lexer.advance(2n)
-			comment_multiline_level--;
-		}
-		super(buffer[0], ...buffer.slice(1))
-	}
-}
-export class TokenCommentBlock extends TokenComment {
-	static readonly DELIM_START : '%%%' = '%%%'
-	static readonly DELIM_END   : '%%%' = '%%%'
-	constructor (lexer: Lexer) {
-		const buffer: Char[] = [lexer.c0, lexer.c1 !, lexer.c2 !, lexer.c3 !]
-		lexer.advance(4n)
-		let source: string = buffer.map((char) => char.source).join('')
-		while (!lexer.isDone) {
-			if (Char.eq(ETX, lexer.c0)) {
-				super(buffer[0], ...buffer.slice(1))
-				throw new LexError02(this)
-			}
-			if (
-				!Char.eq(`${TokenCommentBlock.DELIM_END}\n`, lexer.c0, lexer.c1, lexer.c2, lexer.c3) ||
-				source.slice(source.lastIndexOf('\n') + 1).trim() !== '' // the tail end of the token does not match `/\n(\s)*/` (a newline followed by whitespace)
-			) {
-				buffer.push(lexer.c0)
-				source += lexer.c0.source
-				lexer.advance()
-			} else {
-				break;
-			}
-		}
-		// add ending delim to token
-		buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-		lexer.advance(3n)
-		super(buffer[0], ...buffer.slice(1))
+	get isIdentifier(): boolean {
+		return true
 	}
 }
 export class TokenString extends Token {
@@ -427,162 +530,20 @@ export class TokenTemplate extends Token {
 		))
 	}
 }
-export class TokenNumber extends Token {
-	static readonly RADIX_DEFAULT: RadixType = 10n
-	static readonly SEPARATOR: string = '_'
-	static readonly BASES: ReadonlyMap<string, RadixType> = new Map<string, RadixType>([
-		['b',  2n],
-		['q',  4n],
-		['o',  8n],
-		['d', 10n],
-		['x', 16n],
-		['z', 36n],
-	])
-	static readonly DIGITS: ReadonlyMap<RadixType, readonly string[]> = new Map<RadixType, readonly string[]>([
-		[ 2n, '0 1'                                                                     .split(' ')],
-		[ 4n, '0 1 2 3'                                                                 .split(' ')],
-		[ 8n, '0 1 2 3 4 5 6 7'                                                         .split(' ')],
-		[10n, '0 1 2 3 4 5 6 7 8 9'                                                     .split(' ')],
-		[16n, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ')],
-		[36n, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
-	])
-	static readonly UNARY: ReadonlyMap<string, number> = new Map<string, number>([
-		['+',  1],
-		['-', -1],
-	])
-	/**
-	 * Compute the mathematical value of a `TokenNumber` token.
-	 * @param   text  - the string to compute
-	 * @param   radix - the base in which to compute
-	 * @returns         the mathematical value of the string in the given base
-	 */
-	static mv(text: string, radix: RadixType = TokenNumber.RADIX_DEFAULT): number {
-		if (text[text.length-1] === TokenNumber.SEPARATOR) {
-			text = text.slice(0, -1)
-		}
-		if (text.length === 0) throw new Error('Cannot compute mathematical value of empty string.')
-		if (text.length === 1) {
-			const digitvalue: number = parseInt(text, Number(radix))
-			if (Number.isNaN(digitvalue)) throw new Error(`Invalid number format: \`${text}\``)
-			return digitvalue
-		}
-		return Number(radix) * TokenNumber.mv(text.slice(0, -1), radix) + TokenNumber.mv(text[text.length-1], radix)
-	}
-	private readonly has_unary: boolean;
-	private readonly has_radix: boolean;
-	private readonly radix: RadixType;
-	constructor (lexer: Lexer, has_unary: boolean, has_radix: boolean = false) {
-		const buffer: Char[] = []
-		if (has_unary) { // prefixed with leading unary operator "+" or "-"
-			buffer.push(lexer.c0)
-			lexer.advance()
-		}
-		const radix: RadixType = has_radix ? TokenNumber.BASES.get(lexer.c1 !.source) ! : TokenNumber.RADIX_DEFAULT
-		const digits: readonly string[] = TokenNumber.DIGITS.get(radix) !
-		if (has_radix) { // an explicit base
-			if (!Char.inc(digits, lexer.c2)) {
-				throw new LexError03(`${lexer.c0.source}${lexer.c1 !.source}`, lexer.c0.line_index, lexer.c0.col_index)
-			}
-			buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-			lexer.advance(3n)
-		} else { // implicit default base
-			buffer.push(lexer.c0)
-			lexer.advance()
-		}
-		while (!lexer.isDone && Char.inc([...digits, TokenNumber.SEPARATOR], lexer.c0)) {
-			if (Char.inc(digits, lexer.c0)) {
-				buffer.push(lexer.c0)
-				lexer.advance()
-			} else if (Char.eq(TokenNumber.SEPARATOR, lexer.c0)) {
-				if (Char.inc(digits, lexer.c1)) {
-					buffer.push(lexer.c0, lexer.c1 !)
-					lexer.advance(2n)
-				} else {
-					throw new LexError04(Char.eq(TokenNumber.SEPARATOR, lexer.c1) ? lexer.c1 ! : lexer.c0)
-				}
-			}
-		}
-		super('NUMBER', buffer[0], ...buffer.slice(1))
-		this.has_unary = has_unary
-		this.has_radix = has_radix
-		this.radix     = radix
-	}
-	cook(): number {
-		let text: string = this.source
-		const multiplier: number = TokenNumber.UNARY.get(text[0]) || 1
-		if (this.has_unary) text = text.slice(1) // cut off unary, if any
-		if (this.has_radix) text = text.slice(2) // cut off radix, if any
-		return multiplier * TokenNumber.mv(text, this.radix)
-	}
-}
-export abstract class TokenWord extends Token {
-	/**
-	 * The cooked value of this Token.
-	 * If the token is a keyword, the cooked value is its contents.
-	 * If the token is an identifier, the cooked value is set by a {@link Screener},
-	 * which indexes unique identifier tokens.
-	 */
-	protected _cooked: bigint|null;
+export abstract class TokenComment extends Token {
 	constructor (start_char: Char, ...more_chars: Char[]) {
-		super('WORD', start_char, ...more_chars)
-		this._cooked = null
+		super('COMMENT', start_char, ...more_chars)
 	}
-	/**
-	 * Is this Token an identifier?
-	 * @returns Is this Token an identifier?
-	 */
-	abstract get isIdentifier(): boolean;
-	/**
-	 * Set the numeric integral value of this Token.
-	 * If it is an identifier, it will be 128 or higher;
-	 * else if it is a reserved keyword, it will be 0–127.
-	 * This operation can only be done once.
-	 * @param   value - the value to set, unique among all words in a program
-	 */
-	/** @final */ setValue(value: bigint): void {
-		if (this._cooked === null) {
-			this._cooked = value
-		}
-	}
-	/** @final */ cook(): bigint|null {
-		return this._cooked
+	/** @final */ cook(): null {
+		return null // we do not want to send comments to the parser
 	}
 }
-export class TokenWordBasic extends TokenWord {
-	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
-	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
-	static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>(([
-		[KeywordKind.STORAGE, [
-			'let',
-		]],
-		[KeywordKind.MODIFIER, [
-			'unfixed',
-		]],
-	]))
-	/** The classification of this keyword, if not an identifier. */
-	private readonly keyword_kind: KeywordKind|null;
-	constructor(lexer: Lexer) {
+export class TokenCommentLine extends TokenComment {
+	static readonly DELIM: '%' = '%'
+	constructor (lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
-		while (!lexer.isDone && TokenWordBasic.CHAR_REST.test(lexer.c0.source)) {
-			buffer.push(lexer.c0)
-			lexer.advance()
-		}
-		super(buffer[0], ...buffer.slice(1))
-		this.keyword_kind = ([...TokenWordBasic.KEYWORDS].find(
-			([_, reserved]) => reserved.includes(this.source)
-		) || [null])[0]
-	}
-	get isIdentifier(): boolean {
-		return this.keyword_kind === null
-	}
-}
-export class TokenWordUnicode extends TokenWord {
-	static readonly DELIM: '`' = '`'
-	constructor(lexer: Lexer) {
-		const buffer: Char[] = [lexer.c0]
-		lexer.advance()
-		while (!lexer.isDone && !Char.eq(TokenWordUnicode.DELIM, lexer.c0)) {
+		while (!lexer.isDone && !Char.eq('\n', lexer.c0)) {
 			if (Char.eq(ETX, lexer.c0)) {
 				super(buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
@@ -590,30 +551,69 @@ export class TokenWordUnicode extends TokenWord {
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
-		// add ending delim to token
+		// add '\n' to token
 		buffer.push(lexer.c0)
 		lexer.advance()
 		super(buffer[0], ...buffer.slice(1))
 	}
-	get isIdentifier(): boolean {
-		return true
+}
+export class TokenCommentMulti extends TokenComment {
+	static readonly DELIM_START : '{%' = '{%'
+	static readonly DELIM_END   : '%}' = '%}'
+	constructor (lexer: Lexer) {
+		let comment_multiline_level: bigint = 0n
+		const buffer: Char[] = [lexer.c0, lexer.c1 !]
+		lexer.advance(2n)
+		comment_multiline_level++;
+		while (comment_multiline_level !== 0n) {
+			while (!lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, lexer.c0, lexer.c1)) {
+				if (Char.eq(ETX, lexer.c0)) {
+					super(buffer[0], ...buffer.slice(1))
+					throw new LexError02(this)
+				}
+				if (Char.eq(TokenCommentMulti.DELIM_START, lexer.c0, lexer.c1)) {
+					buffer.push(lexer.c0, lexer.c1 !)
+					lexer.advance(2n)
+					comment_multiline_level++;
+				} else {
+					buffer.push(lexer.c0)
+					lexer.advance()
+				}
+			}
+			// add ending delim to token
+			buffer.push(lexer.c0, lexer.c1 !)
+			lexer.advance(2n)
+			comment_multiline_level--;
+		}
+		super(buffer[0], ...buffer.slice(1))
 	}
 }
-export class TokenPunctuator extends Token {
-	static readonly CHARS_1: readonly string[] = '; = + - * / ^ ( )'.split(' ')
-	static readonly CHARS_2: readonly string[] = ''.split(' ')
-	static readonly CHARS_3: readonly string[] = ''.split(' ')
-	constructor (lexer: Lexer, count: 1n|2n|3n = 1n) {
-		const buffer: Char[] = [lexer.c0]
-		if (count >= 3n) {
-			buffer.push(lexer.c1 !, lexer.c2 !)
-		} else if (count >= 2n) {
-			buffer.push(lexer.c1 !)
+export class TokenCommentBlock extends TokenComment {
+	static readonly DELIM_START : '%%%' = '%%%'
+	static readonly DELIM_END   : '%%%' = '%%%'
+	constructor (lexer: Lexer) {
+		const buffer: Char[] = [lexer.c0, lexer.c1 !, lexer.c2 !, lexer.c3 !]
+		lexer.advance(4n)
+		let source: string = buffer.map((char) => char.source).join('')
+		while (!lexer.isDone) {
+			if (Char.eq(ETX, lexer.c0)) {
+				super(buffer[0], ...buffer.slice(1))
+				throw new LexError02(this)
+			}
+			if (
+				!Char.eq(`${TokenCommentBlock.DELIM_END}\n`, lexer.c0, lexer.c1, lexer.c2, lexer.c3) ||
+				source.slice(source.lastIndexOf('\n') + 1).trim() !== '' // the tail end of the token does not match `/\n(\s)*/` (a newline followed by whitespace)
+			) {
+				buffer.push(lexer.c0)
+				source += lexer.c0.source
+				lexer.advance()
+			} else {
+				break;
+			}
 		}
-		lexer.advance(count)
-		super('PUNCTUATOR', buffer[0], ...buffer.slice(1))
-	}
-	cook(): string {
-		return this.source
+		// add ending delim to token
+		buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
+		lexer.advance(3n)
+		super(buffer[0], ...buffer.slice(1))
 	}
 }
