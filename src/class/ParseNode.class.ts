@@ -13,19 +13,19 @@ import SemanticNode, {
 	Operator,
 	SemanticExpressionType,
 	SemanticStatementType,
+	SemanticNodeNull,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
 	SemanticNodeExpression,
-	SemanticNodeNull,
-	SemanticNodeGoal,
-	SemanticNodeStatementList,
 	SemanticNodeDeclaration,
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
 	SemanticNodeAssigned,
-	SemanticNodeStatementExpression,
 	SemanticNodeStatementEmpty,
+	SemanticNodeStatementExpression,
+	SemanticNodeStatementList,
+	SemanticNodeGoal,
 } from './SemanticNode.class'
 import type {Rule} from './Grammar.class'
 import Production, {
@@ -37,10 +37,10 @@ import Production, {
 	ProductionExpressionMultiplicative,
 	ProductionExpressionAdditive,
 	ProductionExpression,
-	ProductionGoal,
-	ProductionStatement,
 	ProductionDeclarationVariable,
 	ProductionStatementAssignment,
+	ProductionStatement,
+	ProductionGoal,
 } from './Production.class'
 
 
@@ -72,11 +72,11 @@ export default class ParseNode implements Serializable {
 			[ProductionExpressionMultiplicative .instance, ParseNodeExpressionBinary   ],
 			[ProductionExpressionAdditive       .instance, ParseNodeExpressionBinary   ],
 			[ProductionExpression               .instance, ParseNodeExpression         ],
-			[ProductionGoal                     .instance, ParseNodeGoal               ],
-			[ProductionGoal.__0__List           .instance, ParseNodeStatementList      ],
-			[ProductionStatement                .instance, ParseNodeStatement          ],
 			[ProductionDeclarationVariable      .instance, ParseNodeDeclarationVariable],
 			[ProductionStatementAssignment      .instance, ParseNodeStatementAssignment],
+			[ProductionStatement                .instance, ParseNodeStatement          ],
+			[ProductionGoal.__0__List           .instance, ParseNodeStatementList      ],
+			[ProductionGoal                     .instance, ParseNodeGoal               ],
 		])].find(([key]) => rule.production.equals(key)) || [null, ParseNode])[1](rule, children)
 	}
 
@@ -239,48 +239,6 @@ export class ParseNodeExpression extends ParseNode {
 		return this.children[0].decorate()
 	}
 }
-export class ParseNodeGoal extends ParseNode {
-	declare children:
-		readonly [TokenFilebound,                         TokenFilebound] |
-		readonly [TokenFilebound, ParseNodeStatementList, TokenFilebound];
-	decorate(): SemanticNodeNull|SemanticNodeGoal {
-		return (this.children.length === 2) ?
-			new SemanticNodeNull(this)
-		:
-			new SemanticNodeGoal(this, [
-				this.children[1].decorate()
-			])
-	}
-}
-export class ParseNodeStatementList extends ParseNode {
-	declare children:
-		readonly [                        ParseNodeStatement] |
-		readonly [ParseNodeStatementList, ParseNodeStatement];
-	decorate(): SemanticNodeStatementList {
-		return new SemanticNodeStatementList(this, this.children.length === 1 ?
-			[this.children[0].decorate()]
-		: [
-			...this.children[0].decorate().children,
-			this.children[1].decorate()
-		])
-	}
-}
-export class ParseNodeStatement extends ParseNode {
-	declare children:
-		readonly [ParseNodeDeclarationVariable]         |
-		readonly [ParseNodeStatementAssignment]         |
-		readonly [ParseNodeExpression, TokenPunctuator] |
-		readonly [TokenPunctuator];
-	decorate(): SemanticStatementType {
-		return (this.children.length === 1 && this.children[0] instanceof ParseNode)
-			? this.children[0].decorate()
-			: (this.children.length === 2)
-				? new SemanticNodeStatementExpression(this, [
-					this.children[0].decorate(),
-				])
-				: new SemanticNodeStatementEmpty(this)
-	}
-}
 export class ParseNodeDeclarationVariable extends ParseNode {
 	declare children:
 		readonly [TokenWord, TokenWord,            Token, ParseNodeExpression, Token] |
@@ -313,5 +271,47 @@ export class ParseNodeStatementAssignment extends ParseNode {
 				expression.decorate(),
 			]),
 		])
+	}
+}
+export class ParseNodeStatement extends ParseNode {
+	declare children:
+		readonly [ParseNodeDeclarationVariable]         |
+		readonly [ParseNodeStatementAssignment]         |
+		readonly [ParseNodeExpression, TokenPunctuator] |
+		readonly [TokenPunctuator];
+	decorate(): SemanticStatementType {
+		return (this.children.length === 1 && this.children[0] instanceof ParseNode)
+			? this.children[0].decorate()
+			: (this.children.length === 2)
+				? new SemanticNodeStatementExpression(this, [
+					this.children[0].decorate(),
+				])
+				: new SemanticNodeStatementEmpty(this)
+	}
+}
+export class ParseNodeStatementList extends ParseNode {
+	declare children:
+		readonly [                        ParseNodeStatement] |
+		readonly [ParseNodeStatementList, ParseNodeStatement];
+	decorate(): SemanticNodeStatementList {
+		return new SemanticNodeStatementList(this, this.children.length === 1 ?
+			[this.children[0].decorate()]
+		: [
+			...this.children[0].decorate().children,
+			this.children[1].decorate()
+		])
+	}
+}
+export class ParseNodeGoal extends ParseNode {
+	declare children:
+		readonly [TokenFilebound,                         TokenFilebound] |
+		readonly [TokenFilebound, ParseNodeStatementList, TokenFilebound];
+	decorate(): SemanticNodeNull|SemanticNodeGoal {
+		return (this.children.length === 2) ?
+			new SemanticNodeNull(this)
+		:
+			new SemanticNodeGoal(this, [
+				this.children[1].decorate()
+			])
 	}
 }

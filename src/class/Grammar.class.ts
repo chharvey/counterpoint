@@ -13,10 +13,10 @@ import Production, {
 	ProductionExpressionMultiplicative,
 	ProductionExpressionAdditive,
 	ProductionExpression,
-	ProductionGoal,
-	ProductionStatement,
 	ProductionDeclarationVariable,
 	ProductionStatementAssignment,
+	ProductionStatement,
+	ProductionGoal,
 } from './Production.class'
 
 
@@ -61,11 +61,11 @@ export default class Grammar {
 			ProductionExpressionMultiplicative.instance,
 			ProductionExpressionAdditive.instance,
 			ProductionExpression.instance,
-			ProductionGoal.instance,
-			ProductionGoal.__0__List.instance,
-			ProductionStatement.instance,
 			ProductionDeclarationVariable.instance,
 			ProductionStatementAssignment.instance,
+			ProductionStatement.instance,
+			ProductionGoal.instance,
+			ProductionGoal.__0__List.instance,
 		]
 		if (!this.productions.length) throw new Error('Grammar must have at least one production.')
 		this.productions.forEach((prod) => {

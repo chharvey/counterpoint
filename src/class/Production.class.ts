@@ -218,52 +218,6 @@ export class ProductionExpression extends Production {
 		return ProductionExpressionAdditive.instance.random()
 	}
 }
-export class ProductionGoal extends Production {
-	static readonly instance: ProductionGoal = new ProductionGoal()
-	get sequences(): GrammarSymbol[][] {
-		return [
-			[STX,                                   ETX],
-			[STX, ProductionGoal.__0__List.instance, ETX],
-		]
-	}
-	random(): string[] {
-		return [STX, ...ProductionGoal.__0__List.instance.random(), ETX]
-	}
-	static readonly __0__List = class ProductionGoal__0__List extends Production {
-		static readonly instance: ProductionGoal__0__List = new ProductionGoal__0__List()
-		get sequences(): GrammarSymbol[][] {
-			return [
-				[      ProductionStatement.instance],
-				[this, ProductionStatement.instance],
-			]
-		}
-		random(): string[] {
-			return [
-				...(Util.randomBool() ? [] : this.random()),
-				...ProductionStatement.instance.random(),
-			]
-		}
-	}
-}
-export class ProductionStatement extends Production {
-	static readonly instance: ProductionStatement = new ProductionStatement()
-	get sequences(): GrammarSymbol[][] {
-		return [
-			[ProductionDeclarationVariable.instance],
-			[ProductionStatementAssignment.instance],
-			[ProductionExpression.instance, ';'],
-			[';'],
-		]
-	}
-	random(): string[] {
-		const random: number = Math.random()
-		return (
-			random < 0.33 ?  ProductionDeclarationVariable.instance.random() :
-			random < 0.67 ?  ProductionStatementAssignment.instance.random() :
-			[...ProductionExpression.instance.random(), ';']
-		)
-	}
-}
 export class ProductionDeclarationVariable extends Production {
 	static readonly instance: ProductionDeclarationVariable = new ProductionDeclarationVariable()
 	get sequences(): GrammarSymbol[][] {
@@ -297,5 +251,51 @@ export class ProductionStatementAssignment extends Production {
 			...ProductionExpression.instance.random(),
 			';',
 		]
+	}
+}
+export class ProductionStatement extends Production {
+	static readonly instance: ProductionStatement = new ProductionStatement()
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[ProductionDeclarationVariable.instance],
+			[ProductionStatementAssignment.instance],
+			[ProductionExpression.instance, ';'],
+			[';'],
+		]
+	}
+	random(): string[] {
+		const random: number = Math.random()
+		return (
+			random < 0.33 ?  ProductionDeclarationVariable.instance.random() :
+			random < 0.67 ?  ProductionStatementAssignment.instance.random() :
+			[...ProductionExpression.instance.random(), ';']
+		)
+	}
+}
+export class ProductionGoal extends Production {
+	static readonly instance: ProductionGoal = new ProductionGoal()
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[STX,                                   ETX],
+			[STX, ProductionGoal.__0__List.instance, ETX],
+		]
+	}
+	random(): string[] {
+		return [STX, ...ProductionGoal.__0__List.instance.random(), ETX]
+	}
+	static readonly __0__List = class ProductionGoal__0__List extends Production {
+		static readonly instance: ProductionGoal__0__List = new ProductionGoal__0__List()
+		get sequences(): GrammarSymbol[][] {
+			return [
+				[      ProductionStatement.instance],
+				[this, ProductionStatement.instance],
+			]
+		}
+		random(): string[] {
+			return [
+				...(Util.randomBool() ? [] : this.random()),
+				...ProductionStatement.instance.random(),
+			]
+		}
 	}
 }

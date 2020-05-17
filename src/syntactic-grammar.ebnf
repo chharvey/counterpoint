@@ -34,15 +34,15 @@ Expression ::= ExpressionAdditive
 
 
 
-Goal ::= #x02 Statement* #x03
-
-
-
-Statement ::=
-	DeclarationVariable |
-	StatementAssignment |
-	Expression? ";"
-
 DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";"
 
 StatementAssignment ::= IDENTIFIER "=" Expression ";"
+
+Statement ::=
+	Expression? ";"     |
+	DeclarationVariable |
+	StatementAssignment |
+
+
+
+Goal ::= #x02 Statement* #x03

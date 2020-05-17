@@ -8,11 +8,11 @@ import type {
 	ParseNodeExpressionUnary,
 	ParseNodeExpressionBinary,
 	ParseNodeExpression,
-	ParseNodeGoal,
-	ParseNodeStatementList,
-	ParseNodeStatement,
 	ParseNodeDeclarationVariable,
 	ParseNodeStatementAssignment,
+	ParseNodeStatement,
+	ParseNodeStatementList,
+	ParseNodeGoal,
 } from '../src/class/ParseNode.class'
 import {
 	TokenFilebound,
