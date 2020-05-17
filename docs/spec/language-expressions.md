@@ -105,9 +105,9 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 	]
 ```
 Where
-- `MV` is [Mathematical Value](./lexical-structure.md#static-semantics-mathematical-value)
-- `SV` is [String Value](./lexical-structure.md#static-semantics-string-value)
-- `TV` is [Template Value](./lexical-structure.md#static-semantics-template-value)
+- `MV` is [Mathematical Value](./language-lexicon.md#static-semantics-mathematical-value)
+- `SV` is [String Value](./language-lexicon.md#static-semantics-string-value)
+- `TV` is [Template Value](./language-lexicon.md#static-semantics-template-value)
 
 
 
@@ -133,7 +133,7 @@ Decorate(ExpressionUnit ::= "(" Expression ")")
 	:= Decorate(Expression)
 ```
 Where
-- `WV` is [Word Value](./lexical-structure.md#static-semantics-word-value)
+- `WV` is [Word Value](./language-lexicon.md#static-semantics-word-value)
 
 
 ### Runtime Instructions: Evaluation (Expression Units)

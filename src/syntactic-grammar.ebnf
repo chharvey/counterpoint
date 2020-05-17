@@ -1,12 +1,12 @@
 /* LR grammar */
 
-NUMBER          ::= [../docs/spec/lexical-structure.md#numbers]
-IDENTIFIER      ::= [../docs/spec/lexical-structure.md#words]
-STRING          ::= [../docs/spec/lexical-structure.md#string-literals]
-TEMPLATE_FULL   ::= [../docs/spec/lexical-structure.md#template-literals]
-TEMPLATE_HEAD   ::= [../docs/spec/lexical-structure.md#template-literals]
-TEMPLATE_MIDDLE ::= [../docs/spec/lexical-structure.md#template-literals]
-TEMPLATE_TAIL   ::= [../docs/spec/lexical-structure.md#template-literals]
+NUMBER          ::= [../docs/spec/language-lexicon.md#numbers]
+IDENTIFIER      ::= [../docs/spec/language-lexicon.md#words]
+STRING          ::= [../docs/spec/language-lexicon.md#string-literals]
+TEMPLATE_FULL   ::= [../docs/spec/language-lexicon.md#template-literals]
+TEMPLATE_HEAD   ::= [../docs/spec/language-lexicon.md#template-literals]
+TEMPLATE_MIDDLE ::= [../docs/spec/language-lexicon.md#template-literals]
+TEMPLATE_TAIL   ::= [../docs/spec/language-lexicon.md#template-literals]
 
 
 

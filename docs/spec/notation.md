@@ -132,7 +132,7 @@ The **Word Value** of a Word token is the unique integer that identifies the wor
 (Integers are used instead of text as an optimization technique.)
 
 These token value grammars are described further in detail in the chapter
-[Lexical Structure](./lexical-structure.md).
+[Lexical Structure](./language-lexicon.md).
 
 
 ### Decoration
