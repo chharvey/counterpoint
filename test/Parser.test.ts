@@ -3,16 +3,16 @@ import * as assert from 'assert'
 import Util from '../src/class/Util.class'
 import Parser from '../src/class/Parser.class'
 import type {
+	ParseNodeStringTemplate,
+	ParseNodeExpressionUnit,
+	ParseNodeExpressionUnary,
+	ParseNodeExpressionBinary,
+	ParseNodeExpression,
 	ParseNodeGoal,
 	ParseNodeStatementList,
 	ParseNodeStatement,
 	ParseNodeDeclarationVariable,
 	ParseNodeStatementAssignment,
-	ParseNodeExpression,
-	ParseNodeExpressionBinary,
-	ParseNodeExpressionUnary,
-	ParseNodeExpressionUnit,
-	ParseNodeStringTemplate,
 } from '../src/class/ParseNode.class'
 import {
 	TokenFilebound,

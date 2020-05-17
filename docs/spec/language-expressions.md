@@ -36,96 +36,78 @@ EvaluateNumericBinaryExpression(op) :=
 
 ## Literals
 ```w3c
-StringTemplate ::=
-	TEMPLATE_FULL |
-	TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
-
 PrimitiveLiteral ::=
 	NUMBER |
 	STRING
+
+StringTemplate ::=
+	TEMPLATE_FULL |
+	TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
 ```
 
 
 ### Static Semantics: Decoration (Literals)
 ```w3c
+Decorate(PrimitiveLiteral ::= NUMBER)
+	:= SemanticConstant {value: MV(NUMBER)} []
+
+Decorate(PrimitiveLiteral ::= STRING)
+	:= SemanticConstant {value: SV(STRING)} []
+
 Decorate(StringTemplate ::= TEMPLATE_FULL)
 	:= SemanticTemplate {type: "full"} [
-		Decorate(TEMPLATE_FULL),
+		SemanticConstant {value: TV(TEMPLATE_FULL)} [],
 	]
 Decorate(StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL)
 	:= SemanticTemplate {type: "substitution"} [
-		Decorate(TEMPLATE_HEAD),
-		Decorate(TEMPLATE_TAIL),
+		SemanticConstant {value: TV(TEMPLATE_HEAD)} [],
+		SemanticConstant {value: TV(TEMPLATE_TAIL)} [],
 	]
 Decorate(StringTemplate ::= TEMPLATE_HEAD Expression TEMPLATE_TAIL)
 	:= SemanticTemplate {type: "substitution"} [
-		Decorate(TEMPLATE_HEAD),
+		SemanticConstant {value: TV(TEMPLATE_HEAD)} [],
 		Decorate(Expression),
-		Decorate(TEMPLATE_TAIL),
+		SemanticConstant {value: TV(TEMPLATE_TAIL)} [],
 	]
 Decorate(StringTemplate ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL)
 	:= SemanticTemplate {type: "substitution"} [
-		Decorate(TEMPLATE_HEAD),
+		SemanticConstant {value: TV(TEMPLATE_HEAD)} [],
 		Spread(Decorate(StringTemplate__0__List))
-		Decorate(TEMPLATE_TAIL),
+		SemanticConstant {value: TV(TEMPLATE_TAIL)} [],
 	]
 Decorate(StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL)
 	:= SemanticTemplate {type: "substitution"} [
-		Decorate(TEMPLATE_HEAD),
+		SemanticConstant {value: TV(TEMPLATE_HEAD)} [],
 		Decorate(Expression),
 		Spread(Decorate(StringTemplate__0__List)),
-		Decorate(TEMPLATE_TAIL),
+		SemanticConstant {value: TV(TEMPLATE_TAIL)} [],
 	]
 
 Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE)
 	:= SemanticTemplatePartial {} [
-		Decorate(TEMPLATE_MIDDLE),
+		SemanticConstant {value: TV(TEMPLATE_MIDDLE)} [],
 	]
 Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE Expression)
 	:= SemanticTemplatePartial {} [
-		Decorate(TEMPLATE_MIDDLE),
+		SemanticConstant {value: TV(TEMPLATE_MIDDLE)} [],
 		Decorate(Expression),
 	]
 Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE)
 	:= SemanticTemplatePartial {} [
 		Spread(Decorate(StringTemplate__0__List)),
-		Decorate(TEMPLATE_MIDDLE),
+		SemanticConstant {value: TV(TEMPLATE_MIDDLE)} [],
 	]
 Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression)
 	:= SemanticTemplatePartial {} [
 		Spread(Decorate(StringTemplate__0__List)),
-		Decorate(TEMPLATE_MIDDLE),
+		SemanticConstant {value: TV(TEMPLATE_MIDDLE)} [],
 		Decorate(Expression),
 	]
-
-Decorate(PrimitiveLiteral ::= NUMBER)
-	:= Decorate(NUMBER)
-Decorate(PrimitiveLiteral ::= STRING)
-	:= Decorate(STRING)
-
-Decorate(TEMPLATE_FULL)
-	:= SemanticConstant {value: TV(TEMPLATE_FULL)} []
-Decorate(TEMPLATE_HEAD)
-	:= SemanticConstant {value: TV(TEMPLATE_HEAD)} []
-Decorate(TEMPLATE_MIDDLE)
-	:= SemanticConstant {value: TV(TEMPLATE_MIDDLE)} []
-Decorate(TEMPLATE_TAIL)
-	:= SemanticConstant {value: TV(TEMPLATE_TAIL)} []
-
-Decorate(STRING)
-	:= SemanticConstant {value: SV(STRING)} []
-
-Decorate(NUMBER)
-	:= SemanticConstant {value: MV(NUMBER)} []
-
-Decorate(IDENTIFIER)
-	:= SemanticIdentifier {id: WV(IDENTIFIER)} []
 ```
 Where
-`TV` is [Template Value](./lexical-structure.md#static-semantics-template-value),
-`SV` is [String Value](./lexical-structure.md#static-semantics-string-value),
-`MV` is [Mathematical Value](./lexical-structure.md#static-semantics-mathematical-value),
-`WV` is [Word Value](./lexical-structure.md#static-semantics-word-value).
+- `MV` is [Mathematical Value](./lexical-structure.md#static-semantics-mathematical-value)
+- `SV` is [String Value](./lexical-structure.md#static-semantics-string-value)
+- `TV` is [Template Value](./lexical-structure.md#static-semantics-template-value)
 
 
 
@@ -142,7 +124,7 @@ ExpressionUnit ::=
 ### Static Semantics: Decoration (Expression Units)
 ```w3c
 Decorate(ExpressionUnit ::= IDENTIFIER)
-	:= Decorate(IDENTIFIER)
+	:= SemanticIdentifier {id: WV(IDENTIFIER)} []
 Decorate(ExpressionUnit ::= PrimitiveLiteral)
 	:= Decorate(PrimitiveLiteral)
 Decorate(ExpressionUnit ::= StringTemplate)
@@ -150,6 +132,8 @@ Decorate(ExpressionUnit ::= StringTemplate)
 Decorate(ExpressionUnit ::= "(" Expression ")")
 	:= Decorate(Expression)
 ```
+Where
+- `WV` is [Word Value](./lexical-structure.md#static-semantics-word-value)
 
 
 ### Runtime Instructions: Evaluation (Expression Units)
@@ -222,13 +206,13 @@ Evaluate(SemanticExpression[operator=EXP]) :=
 
 
 
-## Multiplication/Division
+## Multiplicative
 ```w3c
 ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential
 ```
 
 
-### Static Semantics: Decoration (Multiplication/Division)
+### Static Semantics: Decoration (Multiplicative)
 ```w3c
 Decorate(ExpressionMultiplicative ::= ExpressionExponential)
 	:= Decorate(ExpressionExponential)
@@ -245,7 +229,7 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 ```
 
 
-### Runtime Instructions: Evaluation (Multiplication/Division)
+### Runtime Instructions: Evaluation (Multiplicative)
 ```w3c
 Evaluate(SemanticExpression[operator=MUL]) :=
 	1. Assert `SemanticExpression.children.count` is 2.
@@ -261,13 +245,13 @@ Evaluate(SemanticExpression[operator=DIV]) :=
 
 
 
-## Addition/Subtraction
+## Additive
 ```w3c
 ExpressionAdditive ::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicative
 ```
 
 
-### Static Semantics: Decoration (Addition/Subtraction)
+### Static Semantics: Decoration (Additive)
 ```w3c
 Decorate(ExpressionAdditive ::= ExpressionMultiplicative)
 	:= Decorate(ExpressionMultiplicative)
@@ -286,7 +270,7 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 ```
 
 
-### Runtime Instructions: Evaluation (Addition/Subtraction)
+### Runtime Instructions: Evaluation (Additive)
 ```w3c
 Evaluate(SemanticExpression[operator=ADD]) :=
 	1. Assert `SemanticExpression.children.count` is 2.

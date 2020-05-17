@@ -5,18 +5,18 @@ import {STX, ETX} from './Char.class'
 import type Token from './Token.class'
 import Terminal from './Terminal.class'
 import Production, {
+	ProductionPrimitiveLiteral,
+	ProductionStringTemplate,
+	ProductionExpressionUnit,
+	ProductionExpressionUnarySymbol,
+	ProductionExpressionExponential,
+	ProductionExpressionMultiplicative,
+	ProductionExpressionAdditive,
+	ProductionExpression,
 	ProductionGoal,
 	ProductionStatement,
 	ProductionDeclarationVariable,
 	ProductionStatementAssignment,
-	ProductionExpression,
-	ProductionExpressionAdditive,
-	ProductionExpressionMultiplicative,
-	ProductionExpressionExponential,
-	ProductionExpressionUnarySymbol,
-	ProductionExpressionUnit,
-	ProductionStringTemplate,
-	ProductionPrimitiveLiteral,
 } from './Production.class'
 
 
@@ -50,20 +50,20 @@ export default class Grammar {
 	 */
 	constructor() {
 		this.productions = [
+			ProductionPrimitiveLiteral.instance,
+			ProductionStringTemplate.instance,
+			ProductionStringTemplate.__0__List.instance,
+			ProductionExpressionUnit.instance,
+			ProductionExpressionUnarySymbol.instance,
+			ProductionExpressionExponential.instance,
+			ProductionExpressionMultiplicative.instance,
+			ProductionExpressionAdditive.instance,
+			ProductionExpression.instance,
 			ProductionGoal.instance,
 			ProductionGoal.__0__List.instance,
 			ProductionStatement.instance,
 			ProductionDeclarationVariable.instance,
 			ProductionStatementAssignment.instance,
-			ProductionExpression.instance,
-			ProductionExpressionAdditive.instance,
-			ProductionExpressionMultiplicative.instance,
-			ProductionExpressionExponential.instance,
-			ProductionExpressionUnarySymbol.instance,
-			ProductionExpressionUnit.instance,
-			ProductionStringTemplate.instance,
-			ProductionStringTemplate.__0__List.instance,
-			ProductionPrimitiveLiteral.instance,
 		]
 		if (!this.productions.length) throw new Error('Grammar must ahve at least one production.')
 		this.productions.forEach((prod) => {

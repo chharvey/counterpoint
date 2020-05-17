@@ -11,9 +11,6 @@ import type {
 
 
 
-export type SemanticStatementType  = SemanticNodeDeclaration|SemanticNodeAssignment|SemanticNodeStatementExpression|SemanticNodeStatementEmpty
-export type SemanticExpressionType = SemanticNodeConstant|SemanticNodeIdentifier|SemanticNodeTemplate|SemanticNodeExpression
-
 export enum Operator {
 	/** Add.          */ ADD, // +
 	/** Subtract.     */ SUB, // -
@@ -23,6 +20,10 @@ export enum Operator {
 	/** Affirm.       */ AFF, // +
 	/** Negate.       */ NEG, // -
 }
+
+export type SemanticStatementType = SemanticNodeDeclaration | SemanticNodeAssignment | SemanticNodeStatementExpression | SemanticNodeStatementEmpty
+export type SemanticExpressionType = SemanticNodeConstant|SemanticNodeIdentifier|SemanticNodeTemplate|SemanticNodeExpression
+
 
 
 /**
@@ -100,6 +101,49 @@ export default class SemanticNode implements Serializable {
 
 
 
+export class SemanticNodeConstant extends SemanticNode {
+	constructor(
+		start_node: Token|ParseNodeExpressionUnit,
+		private readonly value: string|number,
+	) {
+		super(start_node, {value})
+	}
+	compile(generator: CodeGenerator): CodeGenerator {
+		return (typeof this.value === 'number')
+			? generator.const(this.value)
+			: generator // TODO strings
+	}
+}
+export class SemanticNodeIdentifier extends SemanticNode {
+	constructor(canonical: Token, id: bigint|null) {
+		super(canonical, {id})
+	}
+}
+export class SemanticNodeTemplate extends SemanticNode {
+	constructor(
+		canonical: ParseNode,
+		readonly children:
+			readonly SemanticExpressionType[],
+	) {
+		super(canonical, {}, children)
+	}
+}
+export class SemanticNodeExpression extends SemanticNode {
+	constructor(
+		start_node: ParseNode,
+		private readonly operator: Operator,
+		readonly children:
+			readonly [SemanticExpressionType                        ] |
+			readonly [SemanticExpressionType, SemanticExpressionType],
+	) {
+		super(start_node, {operator: Operator[operator]}, children)
+	}
+	compile(generator: CodeGenerator): CodeGenerator {
+		return (this.children.length === 1)
+			? generator.unop (this.operator, ...this.children)
+			: generator.binop(this.operator, ...this.children)
+	}
+}
 export class SemanticNodeNull extends SemanticNode {
 	constructor(start_node: Token|ParseNode) {
 		super(start_node)
@@ -169,48 +213,5 @@ export class SemanticNodeStatementEmpty extends SemanticNode {
 	}
 	compile(generator: CodeGenerator): CodeGenerator {
 		return generator.nop()
-	}
-}
-export class SemanticNodeExpression extends SemanticNode {
-	constructor(
-		start_node: ParseNode,
-		private readonly operator: Operator,
-		readonly children:
-			readonly [SemanticExpressionType                        ] |
-			readonly [SemanticExpressionType, SemanticExpressionType],
-	) {
-		super(start_node, {operator: Operator[operator]}, children)
-	}
-	compile(generator: CodeGenerator): CodeGenerator {
-		return (this.children.length === 1)
-			? generator.unop (this.operator, ...this.children)
-			: generator.binop(this.operator, ...this.children)
-	}
-}
-export class SemanticNodeTemplate extends SemanticNode {
-	constructor(
-		canonical: ParseNode,
-		readonly children:
-			readonly SemanticExpressionType[],
-	) {
-		super(canonical, {}, children)
-	}
-}
-export class SemanticNodeIdentifier extends SemanticNode {
-	constructor(canonical: Token, id: bigint|null) {
-		super(canonical, {id})
-	}
-}
-export class SemanticNodeConstant extends SemanticNode {
-	constructor(
-		start_node: Token|ParseNodeExpressionUnit,
-		private readonly value: string|number,
-	) {
-		super(start_node, {value})
-	}
-	compile(generator: CodeGenerator): CodeGenerator {
-		return (typeof this.value === 'number')
-			? generator.const(this.value)
-			: generator // TODO strings
 	}
 }

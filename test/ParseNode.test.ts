@@ -3,11 +3,11 @@ import * as assert from 'assert'
 import Util   from '../src/class/Util.class'
 import Parser from '../src/class/Parser.class'
 import {
+	SemanticNodeTemplate,
 	SemanticNodeNull,
 	SemanticNodeGoal,
 	SemanticNodeStatementList,
 	SemanticNodeStatementExpression,
-	SemanticNodeTemplate,
 } from '../src/class/SemanticNode.class'
 
 

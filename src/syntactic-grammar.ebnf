@@ -10,6 +10,30 @@ TEMPLATE_TAIL   ::= [../docs/spec/lexical-structure.md#template-literals]
 
 
 
+PrimitiveLiteral ::=
+	NUMBER |
+	STRING
+
+StringTemplate ::=
+	TEMPLATE_FULL |
+	TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
+
+ExpressionUnit ::=
+	IDENTIFIER         |
+	PrimitiveLiteral   |
+	StringTemplate     |
+	"(" Expression ")"
+
+ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
+
+ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"          ExpressionExponential)?
+ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential
+ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-"))? ExpressionMultiplicative
+
+Expression ::= ExpressionAdditive
+
+
+
 Goal ::= #x02 Statement* #x03
 
 
@@ -22,27 +46,3 @@ Statement ::=
 DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";"
 
 StatementAssignment ::= IDENTIFIER "=" Expression ";"
-
-
-
-Expression ::= ExpressionAdditive
-
-ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-"))? ExpressionMultiplicative
-ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential
-ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"          ExpressionExponential)?
-
-ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
-
-ExpressionUnit ::=
-	IDENTIFIER         |
-	PrimitiveLiteral   |
-	StringTemplate     |
-	"(" Expression ")"
-
-StringTemplate ::=
-	TEMPLATE_FULL |
-	TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
-
-PrimitiveLiteral ::=
-	NUMBER |
-	STRING
