@@ -146,6 +146,95 @@ The productions of the decoration grammar are listed in the chapters
 
 
 
+## Algorithms
+This specification uses abstract algorithms to describe the runtime behavior of a program.
+The algorithms are called “abstract” since they do not specify an implementation technique or technology,
+and their steps are written in prose.
+
+An algorithm consists of a name and a sequence of steps, formatted as an ordered list.
+The list is “ordered” in that the outcome could change if the steps were not performed in the order given.
+Algorithm steps may include substeps, which are formatted by an additional indentation level.
+Substeps may include their own “subsubsteps”, and so on, with each level corresponding to a new indentation.
+Steps may be nested an arbitrary number of levels.
+
+```w3c
+AlgorithmName() :=
+	1. Step 1.
+	2. Step 2.
+		1. Substep 2.1.
+			1. Subsubstep 2.1.1.
+		2. Substep 2.1.
+	3. Step 3.
+		1. Substep 3.1.
+```
+
+Algorithms may perform basic mathematical operations of numeric values, which include
+addition `+`, subtraction `-`, multiplication `*`, division `/`, and exponentiation `^`.
+These operations are implied with their typical meaning in the context of real and complex numbers,
+but are specified in more detail under [Mathematical Operations] (link pending).
+
+Algorithms may be referenced from one another.
+Algorithms are written in parameterized functional form, with the algorithm name in CamelCase
+and any parameters specified in parentheses after the algoritm name.
+When the algorithm is referenced, arguments, if any, are listed after the name in the same manner.
+Local variables, parameters, other algorithm names, and code snippets
+referenced within the steps of an algorithm are delimited with \`back-ticks\`.
+
+
+### Algorithm Steps
+The steps allowed in an algorithm fall into categories, whose semantics are defined here.
+If a step does not match one of the given categories, its behavior is open to interpretation.
+
+#### Assert
+Steps that begin with “Assert: …” are informative and are meant only to provide clarification to the reader.
+These steps explicitly indicate that a conditon is true when it would otherwise only be implicit.
+
+#### Perform
+Steps that begin with “Perform: …” reference another algorithm expect it to be performed.
+The current algorithm is halted on this step and waits for the referenced algorithm to complete before proceeding.
+
+#### Let/Set
+Algorithms may make the use of variable references, such as, “Let \`x\` be \`someValue\`.”
+Such a step indicates that \`x\` is a pointer to the value \`someValue\`,
+which itself may refer to a [Solid Language Value] (link pending), an [Internal Specification Value] (link pending),
+or the result of performing another algorithm.
+
+The variable \`x\` is treated as a pointer in that if \`someValue\` is mutated in some way,
+then that effect will also be seen on \`x\`.
+An algorithm may specify that a variable be reassigned, e.g., “Set \`x\` to \`someOtherValue\`.”
+In that case, the pointer \`x\` is changed to the new value.
+
+#### If/Else, While
+Conditional and loop programming structures may appear in algorithms.
+For conditionals, the *if* branch and *else* branch are parallel steps,
+each containing the substeps respective to that branch.
+(The *else* branch is not always necessary, e.g. if the *if* branch completes the algorithm.)
+*If* steps begin with “If …:” and *else* steps begin with “Else:”.
+
+A step that specifies a loop must have as its substeps the steps to be performed for each iteration.
+A loop step begins with “While …:”
+
+#### Return
+Algorithms may have an output value, which is the result of performing the algorithm.
+If one algorithm `A` is referenced by another, `B`, then the output value of `A` (if it exists) is given to `B`
+in the step it was referenced.
+An algorithm must output either no value or one value.
+If an algorithm outputs a value, it must do so via a step beginning with “Return: …”.
+
+
+### Runtime Instructions
+Algorithms that specify behavior to be performed at runtime are called **runtime instructions**.
+These algorithms are derived from the [static semantics](#decoration) of a program.
+They pass instructions to the code generator,
+which in turn generates compiled code to be executed at runtime.
+
+The runtime instructions of static semantics are listed in the chapters
+[Solid Language: Expressions](./language-expressions.md),
+[Solid Language: Statements](./language-statements.md), and
+[Solid Language: Goal Symbols](./language-goal.md).
+
+
+
 ## Syntax Errors (1xxx)
 Syntax Errors arise when a Solid source text does not adhere to the language’s
 formal lexical or syntactic grammar rules.
