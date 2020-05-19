@@ -14,7 +14,7 @@ export default class Scanner {
 	constructor(
 		readonly source_text: string,
 	) {
-		this.source_text = SOT + '\n' + this.source_text + EOT
+		this.source_text = `${ SOT }\n${ this.source_text.replace(/\r\n|\r/g, '\n') }\n${ EOT }`
 	}
 
 	/**

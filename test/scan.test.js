@@ -5,8 +5,8 @@ const {
 	EOT,
 } = require('../build/class/Char.class.js')
 
-const lastItem = (iterable) => iterable[iterable.length-1]
-const lastIndex = (iterable) => iterable.length-1
+const lastItem = (iterable) => iterable[iterable.length - 1]
+const lastIndex = (iterable) => iterable.length - 1
 const mock = `
 5  +  30
 
@@ -21,6 +21,7 @@ test('Scanner wraps source text.', () => {
 	const scanner = new Scanner(mock)
 	expect(scanner.source_text[0]).toBe(SOT)
 	expect(scanner.source_text[1]).toBe('\n')
+	expect(scanner.source_text[scanner.source_text.length - 2]).toBe('\n')
 	expect(lastItem(scanner.source_text)).toBe(EOT)
 })
 
