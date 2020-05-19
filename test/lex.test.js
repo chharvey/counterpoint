@@ -2,8 +2,8 @@ const {default: Scanner} = require('../build/class/Scanner.class.js')
 const {default: Lexer} = require('../build/class/Lexer.class.js')
 const {
 	default: Char,
-	STX,
-	ETX,
+	SOT,
+	EOT,
 } = require('../build/class/Char.class.js')
 const {
 	default: Token,
@@ -49,12 +49,12 @@ test('Lexer recognizes `TokenFilebound` conditions.', () => {
 	const generator = lexer.generate()
 	let iterator_result = generator.next()
 	expect(iterator_result.value).toBeInstanceOf(TokenFilebound)
-	expect(iterator_result.value.source).toBe(STX)
-	while (iterator_result.value.source !== ETX) {
+	expect(iterator_result.value.source).toBe(SOT)
+	while (iterator_result.value.source !== EOT) {
 		iterator_result = generator.next()
 	}
 	expect(iterator_result.value).toBeInstanceOf(TokenFilebound)
-	expect(iterator_result.value.source).toBe(ETX)
+	expect(iterator_result.value.source).toBe(EOT)
 	iterator_result = generator.next()
 	expect(iterator_result.done).toBe(true)
 })

@@ -1,5 +1,5 @@
 import type Serializable from '../iface/Serializable.iface'
-import {STX, ETX} from './Char.class'
+import {SOT, EOT} from './Char.class'
 import type Token from './Token.class'
 import type {
 	TokenFilebound,
@@ -100,8 +100,8 @@ export default class ParseNode implements Serializable {
 			!(this instanceof ParseNodeGoal) ?  `col="${this.col_index  + 1}"` : '',
 			`source="${
 				this.source
-					.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
-					.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
+					.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
+					.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 			}"`,
 			...attrs
 		].join(' ').trim()

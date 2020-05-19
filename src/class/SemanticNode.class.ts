@@ -1,6 +1,6 @@
 import type Serializable from '../iface/Serializable.iface'
 import CodeGenerator from './CodeGenerator.class'
-import {STX, ETX} from './Char.class'
+import {SOT, EOT} from './Char.class'
 import type ParseNode from './ParseNode.class'
 import type {
 	ParseNodeExpressionUnit,
@@ -70,8 +70,8 @@ export default class SemanticNode implements Serializable {
 			!(this instanceof SemanticNodeGoal) ?  `col="${this.col_index  + 1}"` : '',
 			`source="${
 				this.source
-					.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
-					.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
+					.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
+					.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 			}"`,
 			...Object.entries<string|number|boolean|null>(this.attributes).map(([key, value]) => `${key}="${value}"`),
 		].join(' ').trim()

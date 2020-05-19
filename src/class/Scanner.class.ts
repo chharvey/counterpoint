@@ -1,4 +1,4 @@
-import Char, {STX, ETX} from './Char.class'
+import Char, {SOT, EOT} from './Char.class'
 
 
 
@@ -14,7 +14,7 @@ export default class Scanner {
 	constructor(
 		readonly source_text: string,
 	) {
-		this.source_text = STX + '\n' + this.source_text + ETX
+		this.source_text = SOT + '\n' + this.source_text + EOT
 	}
 
 	/**

@@ -1,5 +1,5 @@
 import Util from './Util.class'
-import {STX, ETX} from './Char.class'
+import {SOT, EOT} from './Char.class'
 import type Token from './Token.class'
 import Terminal from './Terminal.class'
 import Production, {
@@ -26,7 +26,9 @@ export type GrammarTerminal = string|Terminal
  */
 const stringOfSymbols = (arr: readonly GrammarSymbol[]): string =>
 	arr.map((symbol) => (typeof symbol === 'string') ?
-		`"${symbol}"`.replace(STX, '\u2402').replace(ETX, '\u2403')
+		`"${ symbol }"`
+			.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 		: symbol.displayName
 	).join(' ')
 

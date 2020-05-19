@@ -1,5 +1,5 @@
 const {default: Screener} = require('../build/class/Screener.class.js')
-const {ETX} = require('../build/class/Char.class.js')
+const {EOT} = require('../build/class/Char.class.js')
 const {TokenNumber} = require('../build/class/Token.class.js')
 
 const mock = `
@@ -19,7 +19,7 @@ test('Screener computes filebound token values.', () => {
 	const generator = screener.generate()
 	let iterator_result = generator.next()
 	expect(iterator_result.value.value).toBe(true)
-	while (iterator_result.value.source !== ETX) {
+	while (iterator_result.value.source !== EOT) {
 		iterator_result = generator.next()
 	}
 	expect(iterator_result.value.value).toBe(false)
