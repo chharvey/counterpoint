@@ -1,7 +1,10 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import CodeGenerator from './CodeGenerator.class'
-import {STX, ETX} from './Char.class'
+import {
+	SOT,
+	EOT,
+} from './Char.class'
 import type Token from './Token.class'
 import type {CookValueType} from './Token.class'
 import type ParseNode from './ParseNode.class'
@@ -31,7 +34,7 @@ export type SemanticExpressionType = SemanticNodeConstant|SemanticNodeIdentifier
  */
 export default class SemanticNode implements Serializable {
 	/** The name of the type of this SemanticNode. */
-	readonly tagname: string;
+	readonly tagname: string = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
 	/** The concatenation of the source text of all children. */
 	private readonly source: string;
 	/** The index of the first token in source text. */
@@ -53,7 +56,6 @@ export default class SemanticNode implements Serializable {
 		private readonly attributes: { [key: string]: CookValueType } = {},
 		readonly children: readonly SemanticNode[] = [],
 	) {
-		this.tagname      = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
 		this.source       = start_node.source
 		this.source_index = start_node.source_index
 		this.line_index   = start_node.line_index
@@ -88,8 +90,8 @@ export default class SemanticNode implements Serializable {
 			.replace(/\n/g, '&#x0a;')
 			.replace(/\r/g, '&#x0d;')
 			.replace(/\u0000/g, '&#x00;')
-			.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
-			.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
+			.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 		)
 		Object.entries<CookValueType>(this.attributes).forEach(([key, value]) => {
 			attributes.set(key, `${value}`)

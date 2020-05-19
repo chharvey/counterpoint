@@ -1,6 +1,9 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
-import {STX, ETX} from './Char.class'
+import {
+	SOT,
+	EOT,
+} from './Char.class'
 import Token, {
 	TokenFilebound,
 	TokenPunctuator,
@@ -82,15 +85,15 @@ export default class ParseNode implements Serializable {
 
 
 	/** The name of the type of this ParseNode. */
-	readonly tagname: string;
+	readonly tagname: string = this.rule.production.displayName
 	/** The concatenation of the source text of all children. */
-	readonly source: string;
+	readonly source: string = this.children.map((child) => child.source).join(' ')
 	/** The index of the first token in source text. */
-	readonly source_index: number;
+	readonly source_index: number = this.children[0].source_index
 	/** Zero-based line number of the first token (first line is line 0). */
-	readonly line_index: number;
+	readonly line_index: number = this.children[0].line_index
 	/** Zero-based column number of the first token (first col is col 0). */
-	readonly col_index: number;
+	readonly col_index: number = this.children[0].col_index
 
 	/**
 	 * Construct a new ParseNode object.
@@ -102,11 +105,6 @@ export default class ParseNode implements Serializable {
 		readonly rule: Rule,
 		readonly children: readonly (Token|ParseNode)[],
 	) {
-		this.tagname      = this.rule.production.displayName
-		this.source       = this.children.map((child) => child.source).join(' ')
-		this.source_index = this.children[0].source_index
-		this.line_index   = this.children[0].line_index
-		this.col_index    = this.children[0].col_index
 	}
 
 	/**
@@ -139,8 +137,8 @@ export default class ParseNode implements Serializable {
 			.replace(/\n/g, '&#x0a;')
 			.replace(/\r/g, '&#x0d;')
 			.replace(/\u0000/g, '&#x00;')
-			.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
-			.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
+			.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 		)
 		const contents: string = this.children.map((child) => child.serialize()).join('')
 		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`

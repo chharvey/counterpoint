@@ -3,8 +3,8 @@ import * as assert from 'assert'
 import Util  from '../src/class/Util.class'
 import Lexer from '../src/class/Lexer.class'
 import {
-	STX,
-	ETX,
+	SOT,
+	EOT,
 } from '../src/class/Char.class'
 import Token, {
 	TemplatePosition,
@@ -57,9 +57,9 @@ describe('Lexer', () => {
 		it('recognizes `TokenFilebound` conditions.', () => {
 			const tokens: Token[] = [...new Lexer(mock).generate()]
 			assert.ok(tokens[0] instanceof TokenFilebound)
-			assert.strictEqual(tokens[0].source, STX)
+			assert.strictEqual(tokens[0].source, SOT)
 			assert.ok(lastItem(tokens) instanceof TokenFilebound)
-			assert.strictEqual(lastItem(tokens).source, ETX)
+			assert.strictEqual(lastItem(tokens).source, EOT)
 		})
 		it('recognizes `TokenWhitespace` conditions.', () => {
 			;[...new Lexer(TokenWhitespace.CHARS.join('')).generate()].slice(1, -1).forEach((value) => {
@@ -78,9 +78,7 @@ describe('Lexer', () => {
 		context('unfinished tokens.', () => {
 			;[...new Map<string, string[]>([
 				['line comment', [`
-					% line comment not followed by LF
-				`.trimEnd(), `
-					% line \u0003 comment containing ETX
+					% line \u0003 comment containing EOT
 					8;
 				`]],
 				['multiline comment', [`
@@ -101,10 +99,6 @@ describe('Lexer', () => {
 					%%%
 					block comment without end delimiters
 				`, `
-					%%%
-					block comment with end delimiter, but not followed by LF
-					%%%
-				`.trimEnd(), `
 					%%%
 					block comment containing \u0003 character
 					%%%
@@ -150,6 +144,11 @@ describe('Lexer', () => {
 					500  +  30; ;  % line comment  *  2
 					8;
 				`).generate()][11] instanceof TokenCommentLine)
+			})
+			specify('Line comment at end of file not followed by LF.', () => {
+				assert.doesNotThrow(() => [...new Lexer(`
+					% line comment not followed by LF
+				`.trimEnd()).generate()])
 			})
 		})
 
@@ -219,6 +218,13 @@ describe('Lexer', () => {
 				assert.ok(tokens[2] instanceof TokenCommentBlock)
 				assert.ok(tokens[4] instanceof TokenCommentBlock)
 				assert.strictEqual(tokens[6].source, '8')
+			})
+			specify('Block comment at end of file end delimiter not followed by LF.', () => {
+				assert.doesNotThrow(() => [...new Lexer(`
+					%%%
+					block comment with end delimiter, but not followed by LF
+					%%%
+				`.trimEnd()).generate()])
 			})
 			specify('Block comment delimiters must be on own line.', () => {
 				const tokens: Token[] = [...new Lexer(`

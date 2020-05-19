@@ -1,6 +1,9 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
-import Char, {STX, ETX} from './Char.class'
+import Char, {
+	SOT,
+	EOT,
+} from './Char.class'
 import type Lexer from './Lexer.class'
 
 import {
@@ -52,7 +55,11 @@ export default abstract class Token implements Serializable {
 	 * @param start_char - the starting character of this Token
 	 * @param more_chars - additional characters to add upon construction
 	 */
-	constructor(readonly tagname: string, start_char: Char, ...more_chars: Char[]) {
+	constructor (
+		readonly tagname: string,
+		start_char: Char,
+		...more_chars: Char[]
+	) {
 		this._cargo       = [start_char, ...more_chars].map((char) => char.source).join('')
 		this.source_index = start_char.source_index
 		this.line_index   = start_char.line_index
@@ -109,8 +116,8 @@ export default abstract class Token implements Serializable {
 			: cooked.toString())
 		}
 		const contents: string = this.source
-			.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
-			.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
+			.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`
 	}
 }
@@ -118,13 +125,13 @@ export default abstract class Token implements Serializable {
 
 
 export class TokenFilebound extends Token {
-	static readonly CHARS: readonly string[] = [STX, ETX]
+	static readonly CHARS: readonly string[] = [SOT, EOT]
 	constructor (lexer: Lexer) {
 		super('FILEBOUND', lexer.c0)
 		lexer.advance()
 	}
 	cook(): boolean {
-		return this.source === STX /* || !this.source === ETX */
+		return this.source === SOT
 	}
 }
 export class TokenWhitespace extends Token {
@@ -284,14 +291,14 @@ export abstract class TokenWord extends Token {
 export class TokenWordBasic extends TokenWord {
 	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
-	static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>(([
+	static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>([
 		[KeywordKind.STORAGE, [
 			'let',
 		]],
 		[KeywordKind.MODIFIER, [
 			'unfixed',
 		]],
-	]))
+	])
 	/** The classification of this keyword, if not an identifier. */
 	private readonly keyword_kind: KeywordKind|null;
 	constructor(lexer: Lexer) {
@@ -316,7 +323,7 @@ export class TokenWordUnicode extends TokenWord {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
 		while (!lexer.isDone && !Char.eq(TokenWordUnicode.DELIM, lexer.c0)) {
-			if (Char.eq(ETX, lexer.c0)) {
+			if (Char.eq(EOT, lexer.c0)) {
 				super(buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
@@ -386,7 +393,7 @@ export class TokenString extends Token {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
 		while (!lexer.isDone && !Char.eq(TokenString.DELIM, lexer.c0)) {
-			if (Char.eq(ETX, lexer.c0)) {
+			if (Char.eq(EOT, lexer.c0)) {
 				super('STRING', buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
@@ -490,7 +497,7 @@ export class TokenTemplate extends Token {
 			lexer.advance(2n)
 		}
 		while (!lexer.isDone) {
-			if (Char.eq(ETX, lexer.c0)) {
+			if (Char.eq(EOT, lexer.c0)) {
 				super('TEMPLATE', buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
@@ -544,7 +551,7 @@ export class TokenCommentLine extends TokenComment {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
 		while (!lexer.isDone && !Char.eq('\n', lexer.c0)) {
-			if (Char.eq(ETX, lexer.c0)) {
+			if (Char.eq(EOT, lexer.c0)) {
 				super(buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
@@ -567,7 +574,7 @@ export class TokenCommentMulti extends TokenComment {
 		comment_multiline_level++;
 		while (comment_multiline_level !== 0n) {
 			while (!lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, lexer.c0, lexer.c1)) {
-				if (Char.eq(ETX, lexer.c0)) {
+				if (Char.eq(EOT, lexer.c0)) {
 					super(buffer[0], ...buffer.slice(1))
 					throw new LexError02(this)
 				}
@@ -596,7 +603,7 @@ export class TokenCommentBlock extends TokenComment {
 		lexer.advance(4n)
 		let source: string = buffer.map((char) => char.source).join('')
 		while (!lexer.isDone) {
-			if (Char.eq(ETX, lexer.c0)) {
+			if (Char.eq(EOT, lexer.c0)) {
 				super(buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}

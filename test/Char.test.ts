@@ -2,7 +2,7 @@ import * as assert from 'assert'
 
 import Scanner  from '../src/class/Scanner.class'
 import Char, {
-	ETX,
+	EOT,
 } from '../src/class/Char.class'
 
 const lastIndex = (iter: any): number  => iter.length-1
@@ -45,7 +45,7 @@ describe('Char', () => {
 		it('if last is null.', () => {
 			const scanner: Scanner = new Scanner(mock)
 			const char: Char = new Char(scanner, lastIndex(scanner.source_text))
-			assert.strictEqual(char.source, ETX)
+			assert.strictEqual(char.source, EOT)
 			assert.strictEqual(char.lookahead(), null)
 		})
 	})
