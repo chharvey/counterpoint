@@ -1,5 +1,5 @@
 import Lexer from './Lexer.class'
-import {STX, ETX} from './Char.class'
+import {SOT, EOT} from './Char.class'
 import Token, {
 	TokenFilebound,
 	TokenWhitespace,
@@ -46,8 +46,8 @@ export default class Screener {
 		while (!this.iterator_result_token.done) {
 			if (this.t0 instanceof TokenFilebound) {
 				this.t0.value = new Map<string, boolean>([
-					[STX, true ],
-					[ETX, false],
+					[SOT, true ],
+					[EOT, false],
 				]).get(this.t0.source) !
 				yield this.t0
 			} else if (this.t0 instanceof TokenWhitespace) {

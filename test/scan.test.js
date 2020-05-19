@@ -1,12 +1,12 @@
 const {default: Scanner} = require('../build/class/Scanner.class.js')
 const {
 	default: Char,
-	STX,
-	ETX,
+	SOT,
+	EOT,
 } = require('../build/class/Char.class.js')
 
-const lastItem = (iterable) => iterable[iterable.length-1]
-const lastIndex = (iterable) => iterable.length-1
+const lastItem = (iterable) => iterable[iterable.length - 1]
+const lastIndex = (iterable) => iterable.length - 1
 const mock = `
 5  +  30
 
@@ -19,9 +19,10 @@ const mock = `
 
 test('Scanner wraps source text.', () => {
 	const scanner = new Scanner(mock)
-	expect(scanner.source_text[0]).toBe(STX)
+	expect(scanner.source_text[0]).toBe(SOT)
 	expect(scanner.source_text[1]).toBe('\n')
-	expect(lastItem(scanner.source_text)).toBe(ETX)
+	expect(scanner.source_text[scanner.source_text.length - 2]).toBe('\n')
+	expect(lastItem(scanner.source_text)).toBe(EOT)
 })
 
 
@@ -57,6 +58,6 @@ test('Character lookahead is Char.', () => {
 test('Last character lookahead is null.', () => {
 	const scanner = new Scanner(mock)
 	const char = new Char(scanner, lastIndex(scanner.source_text))
-	expect(char.cargo).toBe(ETX)
+	expect(char.cargo).toBe(EOT)
 	expect(char.lookahead()).toBe(null)
 })

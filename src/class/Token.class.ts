@@ -1,6 +1,6 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
-import Char, {STX, ETX} from './Char.class'
+import Char, {SOT, EOT} from './Char.class'
 
 
 
@@ -70,7 +70,7 @@ export default abstract class Token implements Serializable {
 
 
 export class TokenFilebound extends Token {
-	static readonly CHARACTERS: readonly string[] = [STX, ETX]
+	static readonly CHARACTERS: readonly string[] = [SOT, EOT]
 	static random(): string {
 		return Util.arrayRandom(TokenFilebound.CHARACTERS)
 	}
@@ -83,8 +83,8 @@ export class TokenFilebound extends Token {
 			this.value !== null ? `value="${this.value}"` : ''
 		].join(' ').trim()
 		const contents: string = new Map<string, string>([
-			[STX, '\u2402' /* SYMBOL FOR START OF TEXT */],
-			[ETX, '\u2403' /* SYMBOL FOR END OF TEXT   */],
+			[SOT, '\u2402'], // SYMBOL FOR START OF TEXT
+			[EOT, '\u2403'], // SYMBOL FOR END   OF TEXT
 		]).get(this.source) !
 		return `<${this.tagname}${attributes}>${contents}</${this.tagname}>`
 	}

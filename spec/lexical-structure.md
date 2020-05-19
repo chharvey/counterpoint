@@ -5,7 +5,8 @@ This chapter defines the lexical structure of the Solid programming language.
 
 
 ## Solid Source Code
-Solid source text (Solid code) is expressed using [Unicode](https://www.unicode.org/).
+Solid source text (Solid code) is expressed using characters from the
+[Unicode](https://www.unicode.org/) character set.
 Solid source text is a sequence of Unicode code points,
 values ranging from U+0000 to U+10FFFF (including surrogate code points).
 Not all code points are permitted everywhere;
@@ -20,11 +21,20 @@ These lines are typically separated by some combination of the characters
 For example, it is common for Windows systems to represent a newline as a CR–LF pair,
 whereas on Unix-based systems the representation is a single LF.
 
-To simplify the tasks of external applications, the Solid compiler **normalizes** all line breaks
-in a source file on input, before parsing. This normalization is a process in which
-both the two-character sequence CR–LF and any single CR that is not followed by a LF
-are replaced with a single LF character.
 
+### Line Normalization
+To simplify the tasks of external applications and to delineate file bounds,
+the Solid compiler **normalizes** all line breaks in a source file on input, before parsing.
+This line normalization consists of three steps:
+
+1. Prepend the file with a **U+0002 START OF TEXT** (“SOT”) character followed by an LF.
+2. Replace any two-character sequence CR–LF and any single CR not followed by an LF
+	with a single LF character.
+3. Append the file with an LF followed by a **U+0003 END OF TEXT** (“EOT”) character.
+
+Note that if the source file already contains an LF at the end,
+the last step will result in an extra LF character preceding the EOT.
+This does not matter, however, since additional whitespace does not affect parsing.
 Even though Solid is a [whitespace-independent language](#whitespace),
 line break normalization is important to the compilation process,
 during which line and column numbers of any invalid source input might be reported.
@@ -52,9 +62,7 @@ There are a small number of token types, each of which have a specific purpose.
 FileBound ::= #x02 | #x03
 ```
 File bound tokens are tokens that consist of exactly 1 character:
-either **U+0002 START OF TEXT** (“STX”), or **U+0003 END OF TEXT** (“ETX”).
-The STX character appears at the beginning of the source input, and the ETX character appears at the end.
-These tokens are passed to the parser to help it determine where the bounds of a file are.
+either **U+0002 START OF TEXT**, or **U+0003 END OF TEXT**.
 
 
 ### Whitespace
