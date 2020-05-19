@@ -5,8 +5,7 @@ import Token, {
 	TokenWhitespace,
 	TokenPunctuator,
 	TokenNumber,
-	TokenWordBasic,
-	TokenWordUnicode,
+	TokenKeyword,
 	TokenIdentifierBasic,
 	TokenIdentifierUnicode,
 	TokenString,
@@ -135,10 +134,24 @@ export default class Lexer {
 					throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}`, this._c0.line_index, this._c0.col_index)
 				}
 
+			} else if (TokenKeyword.CHAR.test(this._c0.source)) {
+				/* we found a keyword or a basic identifier */
+				const buffer: Char[] = [this.c0]
+				this.advance()
+				while (!this.isDone && TokenIdentifierBasic.CHAR_REST.test(this._c0.source)) {
+					buffer.push(this._c0)
+					this.advance()
+				}
+				const bufferstring: string = buffer.map((char) => char.source).join('')
+				token = (TokenKeyword.KEYWORDS.includes(bufferstring))
+					? new TokenKeyword(buffer)
+					: new TokenIdentifierBasic(buffer)
 			} else if (TokenIdentifierBasic.CHAR_START.test(this._c0.source)) {
-				token = new TokenWordBasic(this)
+				/* we found a basic identifier */
+				token = new TokenIdentifierBasic(this)
 			} else if (Char.eq(TokenIdentifierUnicode.DELIM, this._c0)) {
-				token = new TokenWordUnicode(this)
+				/* we found a unicode identifier */
+				token = new TokenIdentifierUnicode(this)
 
 			} else if (Char.eq(TokenString.DELIM, this._c0)) {
 				/* we found a string literal or a template literal full or head */

@@ -6,8 +6,9 @@ import Screener from '../src/class/Screener.class'
 import Token, {
 	TokenPunctuator,
 	TokenNumber,
-	TokenWordBasic,
-	TokenWordUnicode,
+	TokenKeyword,
+	TokenIdentifier,
+	TokenIdentifierUnicode,
 } from '../src/class/Token.class'
 
 const lastItem  = (iter: any): any     => iter[lastIndex(iter)]
@@ -134,32 +135,33 @@ describe('Token', () => {
 				})
 			})
 		})
-		context('TokenWord', () => {
-			context('TokenWordBasic', () => {
-				it('assigns values 0n–127n to reserved keywords.', () => {
-					const tokens: TokenWordBasic[] = [...new Screener(`
-						let
-						unfixed
-					`).generate()].filter((token): token is TokenWordBasic => token instanceof TokenWordBasic)
-					const cooked: (bigint|null)[] = tokens.map((token) => token.cook())
-					assert.deepStrictEqual(cooked, [
-						0n,
-						1n,
-					])
-					cooked.forEach((value) => {
-						assert.ok(value !== null, 'cooked value should not be null.')
-						assert.ok(0n <= value !, 'cooked value should be >= 0n.')
-						assert.ok(value ! < 128n, 'cooked value should be < 128n.')
-					})
+		context('TokenKeyword', () => {
+			it('assigns values 0n–127n to reserved keywords.', () => {
+				const tokens: TokenKeyword[] = [...new Screener(`
+					let
+					unfixed
+				`).generate()].filter((token): token is TokenKeyword => token instanceof TokenKeyword)
+				const cooked: bigint[] = tokens.map((token) => token.cook())
+				assert.deepStrictEqual(cooked, [
+					0n,
+					1n,
+				])
+				cooked.forEach((value) => {
+					assert.ok(0n <= value, 'cooked value should be >= 0n.')
+					assert.ok(value < 128n, 'cooked value should be < 128n.')
 				})
+			})
+		})
+		context('TokenIdentifier', () => {
+			context('TokenIdentifierBasic', () => {
 				it('assigns values 128n or greater to basic identifiers.', () => {
-					const tokens: TokenWordBasic[] = [...new Screener(`
+					const tokens: TokenIdentifier[] = [...new Screener(`
 						this is a word
 						_words _can _start _with _underscores
 						_and0 _can1 contain2 numb3rs
 
 						a word _can repeat _with the same id
-					`).generate()].filter((token): token is TokenWordBasic => token instanceof TokenWordBasic)
+					`).generate()].filter((token): token is TokenIdentifier => token instanceof TokenIdentifier)
 					const cooked: (bigint|null)[] = tokens.map((token) => token.cook())
 					cooked.forEach((value) => {
 						assert.ok(value !== null, 'cooked value should not be null.')
@@ -178,13 +180,13 @@ describe('Token', () => {
 					], 'identical identifier names should have the same value.')
 				})
 			})
-			context('TokenWordUnicode', () => {
-				it('alwaysa assigns values 128n or greater.', () => {
-					const tokens: TokenWordUnicode[] = [...new Screener(`
+			context('TokenIdentifierUnicode', () => {
+				it('always assigns values 128n or greater.', () => {
+					const tokens: TokenIdentifierUnicode[] = [...new Screener(`
 						\`this\` \`is\` \`a\` \`unicode word\`
 						\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
 						\`except\` \`back-ticks\` \`.\`
-					`).generate()].filter((token): token is TokenWordUnicode => token instanceof TokenWordUnicode)
+					`).generate()].filter((token): token is TokenIdentifierUnicode => token instanceof TokenIdentifierUnicode)
 					const cooked: (bigint|null)[] = tokens.map((token) => token.cook())
 					cooked.forEach((value) => {
 						assert.ok(value !== null, 'cooked value should not be null.')

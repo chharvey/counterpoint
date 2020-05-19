@@ -3,8 +3,8 @@ import Token, {
 	RadixType,
 	TemplatePosition,
 	TokenNumber,
-	TokenWord,
 	TokenKeyword,
+	TokenIdentifier,
 	TokenIdentifierBasic,
 	TokenString,
 	TokenTemplate,
@@ -83,7 +83,7 @@ export class TerminalIdentifier extends Terminal {
 		return returned
 	}
 	match(candidate: Token): boolean {
-		return candidate instanceof TokenWord && candidate.isIdentifier
+		return candidate instanceof TokenIdentifier
 	}
 }
 export class TerminalString extends Terminal {
