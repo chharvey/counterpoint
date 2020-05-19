@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 
-const {default: Parser} = require('../build/class/Parser.class.js')
+const {default: CodeGenerator} = require('../build/class/CodeGenerator.class.js')
 
 
 
@@ -17,15 +17,13 @@ const boilerplate = (expected) => `
 
 
 test('Compile empty file.', () => {
-	const node = new Parser('').parse().decorate()
-	expect(node.compile().print()).toBe(boilerplate(`nop`))
+	expect(new CodeGenerator('').print()).toBe(boilerplate(`nop`))
 })
 
 
 
 test('Compile file with single token.', () => {
-	const outs = ['42', '+42', '-42'].map((src) => new Parser(src).parse().decorate().compile().print())
-	expect(outs).toEqual([
+	expect(['42', '+42', '-42'].map((src) => new CodeGenerator(src).print())).toEqual([
 		`i32.const 42`,
 		`i32.const 42`,
 		`i32.const -42`,
@@ -35,8 +33,7 @@ test('Compile file with single token.', () => {
 
 
 test('Compile file with simple expression, add.', () => {
-	const node = new Parser('42 + 420').parse().decorate()
-	expect(node.compile().print()).toBe(boilerplate([
+	expect(new CodeGenerator('42 + 420').print()).toBe(boilerplate([
 		`i32.const 42`,
 		`i32.const 420`,
 		`i32.add`,
@@ -46,8 +43,7 @@ test('Compile file with simple expression, add.', () => {
 
 
 test('Compile file with simple expression, subtract.', () => {
-	const node = new Parser('42 - 420').parse().decorate()
-	expect(node.compile().print()).toBe(boilerplate([
+	expect(new CodeGenerator('42 - 420').print()).toBe(boilerplate([
 		`i32.const 42`,
 		`i32.const 420`,
 		`i32.const -1`,
@@ -61,8 +57,7 @@ test('Compile file with simple expression, subtract.', () => {
 
 
 test('Compile file with compound expression.', () => {
-	const node = new Parser('42 ^ 2 * 420').parse().decorate()
-	expect(node.compile().print()).toBe(boilerplate([
+	expect(new CodeGenerator('42 ^ 2 * 420').print()).toBe(boilerplate([
 		`i32.const 42`,
 		`i32.const 2`,
 		`call $exp`,
@@ -74,8 +69,7 @@ test('Compile file with compound expression.', () => {
 
 
 test('Compile file with compound expression, grouping.', () => {
-	const node = new Parser('-(42) ^ +(2 * 420)').parse().decorate()
-	expect(node.compile().print()).toBe(boilerplate([
+	expect(new CodeGenerator('-(42) ^ +(2 * 420)').print()).toBe(boilerplate([
 		`i32.const 42`,
 		`i32.const -1`,
 		`i32.xor`,

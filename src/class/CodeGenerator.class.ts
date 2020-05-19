@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-import Util from './Util.class'
+import Parser from './Parser.class'
 import type SemanticNode from './SemanticNode.class'
 import type {
 	Operator,
@@ -20,8 +20,10 @@ export default class CodeGenerator {
 
 	/**
 	 * Construct a new CodeGenerator object.
+	 * @param source - the entire source text
 	 */
-	constructor() {
+	constructor(source: string) {
+		new Parser(source).parse().decorate().compile(this)
 	}
 
 	/**
