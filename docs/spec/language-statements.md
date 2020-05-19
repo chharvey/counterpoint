@@ -36,7 +36,7 @@ DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";"
 Decorate(DeclarationVariable ::= "let" IDENTIFIER "=" Expression ";")
 	:= SemanticDeclaration {type: "variable", unfixed: false} [
 		SemanticAssignee {} [
-			SemanticIdentifier {id: WV(IDENTIFIER)} [],
+			SemanticIdentifier {id: IV(IDENTIFIER)} [],
 		],
 		SemanticAssigned {} [
 			Decorate(Expression),
@@ -45,13 +45,15 @@ Decorate(DeclarationVariable ::= "let" IDENTIFIER "=" Expression ";")
 Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER "=" Expression ";")
 	:= SemanticDeclaration {type: "variable", unfixed: true} [
 		SemanticAssignee {} [
-			SemanticIdentifier {id: WV(IDENTIFIER)} [],
+			SemanticIdentifier {id: IV(IDENTIFIER)} [],
 		],
 		SemanticAssigned {} [
 			Decorate(Expression),
 		],
 	]
 ```
+Where
+- `IV` is [Identifier Value](./language-lexicon.md#static-semantics-identifier-value)
 
 
 
@@ -66,10 +68,12 @@ StatementAssignment ::= IDENTIFIER "=" Expression ";"
 Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";")
 	:= SemanticAssignment {} [
 		SemanticAssignee {} [
-			SemanticIdentifier {id: WV(IDENTIFIER)} [],
+			SemanticIdentifier {id: IV(IDENTIFIER)} [],
 		],
 		SemanticAssigned {} [
 			Decorate(Expression),
 		],
 	]
 ```
+Where
+- `IV` is [Identifier Value](./language-lexicon.md#static-semantics-identifier-value)

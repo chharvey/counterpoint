@@ -69,7 +69,8 @@ Goal ::=
 1. [Whitespace](#whitespace)
 1. [Punctuators](#punctuators)
 1. [Numbers](#numbers)
-1. [Words](#words)
+1. [Keywords](#keywords)
+1. [Identifiers](#identifiers)
 1. [String Literals](#string-literals)
 1. [Template Literals](#template-literals)
 1. [Comments](#comments)
@@ -254,12 +255,8 @@ MV([0-9a-z] ::= "z")  :=  35
 ```
 
 
-### Words
+### Keywords
 ```w3c
-Word ::= [A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`"
-
-Identifier ::= Word - Keyword
-
 Keyword ::=
 	KeywordStorage  |
 	KeywordModifier
@@ -270,25 +267,49 @@ KeywordStorage ::=
 KeywordModifier ::=
 	"unfixed"
 ```
-Words are sequences of alphanumeric characters.
-Semantically, words are partitioned into two types:
-author-defined **identifiers**, which point to values in a program, and
-language-reserved **keywords**, which convey certain semantics.
-Keywords are reserved by the Solid language and cannot be used as identifiers.
+Keywords are sequences of alphanumeric characters reserved by the Solid language
+and enumerated in the lexical grammar.
+Keywords convey certain semantics to the compiler and to programmers.
 
-Lexically, words have two forms: basic words and Unicode words.
-Basic words must start with an alphabetic character or an underscore,
-and thereafter may contain more alphanumeric characters or underscores.
-Unicode words are enclosed in back-ticks (`` `…` `` **U+0060 GRAVE ACCENT**),
-and may contain any number of characters from the Unicode character set.
+#### Static Semantics: Keyword Value
+The Keyword Value (KV) of a keyword token is the unique mathematical integer ID
+that distinguishes the keyword from the other keywords.
+Keyword IDs are predetermined by the lexical grammar and are independent of any instance program.
+Keyword values are mathematical integers ranging from *0* to *127* (inclusive).
 
-#### Static Semantics: Word Value
-The Word Value (WV) of a word token is the unique identifier that distinguishes
-the word from other words in a program.
+This specification uses the term “ID” to refer to the identification,
+as not to be confused with [Identifier tokens](#identifiers).
 
 ```w3c
-WV(Word ::= [A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`")
-	:= /* TO BE DESCRIBED */
+KV(Keyword)
+	:= given by the following map: {
+		"let"     : \x00,
+		"unfixed" : \x01,
+	}
+```
+
+
+### Identifiers
+```w3c
+Identifier ::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - Keyword
+```
+Identifiers are sequences of alphanumeric characters that do not match the [Keyword](#keywords) production.
+Identifiers are author-defined and point to values in a program.
+
+Lexically, identifiers have two forms: basic identifiers and Unicode identifiers.
+Basic identifiers must start with an alphabetic character or an underscore,
+and thereafter may contain more alphanumeric characters or underscores.
+Unicode identifiers are enclosed in back-ticks (`` `…` `` **U+0060 GRAVE ACCENT**),
+and may contain any number of characters from the Unicode character set.
+
+#### Static Semantics: Identifier Value
+The Identifier Value (IV) of an identifier token is the unique mathematical integer ID
+that distinguishes the identifier from other identifiers within a program.
+Identifier values are mathematical integers strictly greater than *127*.
+
+```w3c
+IV(Identifier)
+	:= (* TO BE DESCRIBED *)
 ```
 
 
