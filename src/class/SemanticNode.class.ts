@@ -1,7 +1,10 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import CodeGenerator from './CodeGenerator.class'
-import {STX, ETX} from './Char.class'
+import {
+	SOT,
+	EOT,
+} from './Char.class'
 import type Token from './Token.class'
 import type {CookValueType} from './Token.class'
 import type ParseNode from './ParseNode.class'
@@ -88,8 +91,8 @@ export default class SemanticNode implements Serializable {
 			.replace(/\n/g, '&#x0a;')
 			.replace(/\r/g, '&#x0d;')
 			.replace(/\u0000/g, '&#x00;')
-			.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
-			.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
+			.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 		)
 		Object.entries<CookValueType>(this.attributes).forEach(([key, value]) => {
 			attributes.set(key, `${value}`)

@@ -1,5 +1,8 @@
 import Util from './Util.class'
-import {STX, ETX} from './Char.class'
+import {
+	SOT,
+	EOT,
+} from './Char.class'
 import type ParseNode from './ParseNode.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
 import {
@@ -276,12 +279,12 @@ export class ProductionGoal extends Production {
 	static readonly instance: ProductionGoal = new ProductionGoal()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[STX,                                   ETX],
-			[STX, ProductionGoal.__0__List.instance, ETX],
+			[SOT,                                    EOT],
+			[SOT, ProductionGoal.__0__List.instance, EOT],
 		]
 	}
 	random(): string[] {
-		return [STX, ...ProductionGoal.__0__List.instance.random(), ETX]
+		return [SOT, ...ProductionGoal.__0__List.instance.random(), EOT]
 	}
 	static readonly __0__List = class ProductionGoal__0__List extends Production {
 		static readonly instance: ProductionGoal__0__List = new ProductionGoal__0__List()

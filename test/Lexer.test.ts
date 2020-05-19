@@ -3,8 +3,8 @@ import * as assert from 'assert'
 import Util  from '../src/class/Util.class'
 import Lexer from '../src/class/Lexer.class'
 import {
-	STX,
-	ETX,
+	SOT,
+	EOT,
 } from '../src/class/Char.class'
 import Token, {
 	TemplatePosition,
@@ -57,9 +57,9 @@ describe('Lexer', () => {
 		it('recognizes `TokenFilebound` conditions.', () => {
 			const tokens: Token[] = [...new Lexer(mock).generate()]
 			assert.ok(tokens[0] instanceof TokenFilebound)
-			assert.strictEqual(tokens[0].source, STX)
+			assert.strictEqual(tokens[0].source, SOT)
 			assert.ok(lastItem(tokens) instanceof TokenFilebound)
-			assert.strictEqual(lastItem(tokens).source, ETX)
+			assert.strictEqual(lastItem(tokens).source, EOT)
 		})
 		it('recognizes `TokenWhitespace` conditions.', () => {
 			;[...new Lexer(TokenWhitespace.CHARS.join('')).generate()].slice(1, -1).forEach((value) => {
@@ -80,7 +80,7 @@ describe('Lexer', () => {
 				['line comment', [`
 					% line comment not followed by LF
 				`.trimEnd(), `
-					% line \u0003 comment containing ETX
+					% line \u0003 comment containing EOT
 					8;
 				`]],
 				['multiline comment', [`

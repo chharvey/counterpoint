@@ -1,6 +1,9 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
-import Char, {STX, ETX} from './Char.class'
+import Char, {
+	SOT,
+	EOT,
+} from './Char.class'
 import type Lexer from './Lexer.class'
 
 import {
@@ -109,8 +112,8 @@ export default abstract class Token implements Serializable {
 			: cooked.toString())
 		}
 		const contents: string = this.source
-			.replace(STX, '\u2402') /* SYMBOL FOR START OF TEXT */
-			.replace(ETX, '\u2403') /* SYMBOL FOR START OF TEXT */
+			.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`
 	}
 }
@@ -118,13 +121,13 @@ export default abstract class Token implements Serializable {
 
 
 export class TokenFilebound extends Token {
-	static readonly CHARS: readonly string[] = [STX, ETX]
+	static readonly CHARS: readonly string[] = [SOT, EOT]
 	constructor (lexer: Lexer) {
 		super('FILEBOUND', lexer.c0)
 		lexer.advance()
 	}
 	cook(): boolean {
-		return this.source === STX /* || !this.source === ETX */
+		return this.source === SOT
 	}
 }
 export class TokenWhitespace extends Token {
@@ -316,7 +319,7 @@ export class TokenWordUnicode extends TokenWord {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
 		while (!lexer.isDone && !Char.eq(TokenWordUnicode.DELIM, lexer.c0)) {
-			if (Char.eq(ETX, lexer.c0)) {
+			if (Char.eq(EOT, lexer.c0)) {
 				super(buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
@@ -386,7 +389,7 @@ export class TokenString extends Token {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
 		while (!lexer.isDone && !Char.eq(TokenString.DELIM, lexer.c0)) {
-			if (Char.eq(ETX, lexer.c0)) {
+			if (Char.eq(EOT, lexer.c0)) {
 				super('STRING', buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
@@ -490,7 +493,7 @@ export class TokenTemplate extends Token {
 			lexer.advance(2n)
 		}
 		while (!lexer.isDone) {
-			if (Char.eq(ETX, lexer.c0)) {
+			if (Char.eq(EOT, lexer.c0)) {
 				super('TEMPLATE', buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
@@ -544,7 +547,7 @@ export class TokenCommentLine extends TokenComment {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
 		while (!lexer.isDone && !Char.eq('\n', lexer.c0)) {
-			if (Char.eq(ETX, lexer.c0)) {
+			if (Char.eq(EOT, lexer.c0)) {
 				super(buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
@@ -567,7 +570,7 @@ export class TokenCommentMulti extends TokenComment {
 		comment_multiline_level++;
 		while (comment_multiline_level !== 0n) {
 			while (!lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, lexer.c0, lexer.c1)) {
-				if (Char.eq(ETX, lexer.c0)) {
+				if (Char.eq(EOT, lexer.c0)) {
 					super(buffer[0], ...buffer.slice(1))
 					throw new LexError02(this)
 				}
@@ -596,7 +599,7 @@ export class TokenCommentBlock extends TokenComment {
 		lexer.advance(4n)
 		let source: string = buffer.map((char) => char.source).join('')
 		while (!lexer.isDone) {
-			if (Char.eq(ETX, lexer.c0)) {
+			if (Char.eq(EOT, lexer.c0)) {
 				super(buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
