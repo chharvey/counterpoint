@@ -7,6 +7,8 @@ import Token, {
 	TokenNumber,
 	TokenWordBasic,
 	TokenWordUnicode,
+	TokenIdentifierBasic,
+	TokenIdentifierUnicode,
 	TokenString,
 	TokenTemplate,
 	TokenCommentLine,
@@ -133,9 +135,9 @@ export default class Lexer {
 					throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}`, this._c0.line_index, this._c0.col_index)
 				}
 
-			} else if (TokenWordBasic.CHAR_START.test(this._c0.source)) {
+			} else if (TokenIdentifierBasic.CHAR_START.test(this._c0.source)) {
 				token = new TokenWordBasic(this)
-			} else if (Char.eq(TokenWordUnicode.DELIM, this._c0)) {
+			} else if (Char.eq(TokenIdentifierUnicode.DELIM, this._c0)) {
 				token = new TokenWordUnicode(this)
 
 			} else if (Char.eq(TokenString.DELIM, this._c0)) {

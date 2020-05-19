@@ -4,7 +4,8 @@ import Token, {
 	TemplatePosition,
 	TokenNumber,
 	TokenWord,
-	TokenWordBasic,
+	TokenKeyword,
+	TokenIdentifierBasic,
 	TokenString,
 	TokenTemplate,
 } from './Token.class'
@@ -62,7 +63,7 @@ export class TerminalIdentifier extends Terminal {
 	random(): string {
 		const charsBasic = (start: boolean = false): string => {
 			let c: string;
-			const pass: RegExp = start ? TokenWordBasic.CHAR_START : TokenWordBasic.CHAR_REST
+			const pass: RegExp = start ? TokenIdentifierBasic.CHAR_START : TokenIdentifierBasic.CHAR_REST
 			do {
 				c = Util.randomChar()
 			} while (!pass.test(c))
@@ -75,7 +76,7 @@ export class TerminalIdentifier extends Terminal {
 		if (Util.randomBool()) {
 			do {
 				returned = `${charsBasic(true)}${Util.randomBool() ? '' : charsBasic()}`
-			} while (([...TokenWordBasic.KEYWORDS.values()].flat() as string[]).includes(returned))
+			} while (TokenKeyword.KEYWORDS.includes(returned))
 		} else {
 			returned = `\`${Util.randomBool() ? '' : charsUnicode()}\``
 		}

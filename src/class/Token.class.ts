@@ -289,27 +289,17 @@ export abstract class TokenWord extends Token {
 	}
 }
 export class TokenWordBasic extends TokenWord {
-	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
-	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
-	static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>([
-		[KeywordKind.STORAGE, [
-			'let',
-		]],
-		[KeywordKind.MODIFIER, [
-			'unfixed',
-		]],
-	])
 	/** The classification of this keyword, if not an identifier. */
 	private readonly keyword_kind: KeywordKind|null;
 	constructor(lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
-		while (!lexer.isDone && TokenWordBasic.CHAR_REST.test(lexer.c0.source)) {
+		while (!lexer.isDone && TokenIdentifierBasic.CHAR_REST.test(lexer.c0.source)) {
 			buffer.push(lexer.c0)
 			lexer.advance()
 		}
 		super(buffer[0], ...buffer.slice(1))
-		this.keyword_kind = ([...TokenWordBasic.KEYWORDS].find(
+		this.keyword_kind = ([...TokenKeyword.RESERVED].find(
 			([_, reserved]) => reserved.includes(this.source)
 		) || [null])[0]
 	}
@@ -318,11 +308,10 @@ export class TokenWordBasic extends TokenWord {
 	}
 }
 export class TokenWordUnicode extends TokenWord {
-	static readonly DELIM: '`' = '`'
 	constructor(lexer: Lexer) {
 		const buffer: Char[] = [lexer.c0]
 		lexer.advance()
-		while (!lexer.isDone && !Char.eq(TokenWordUnicode.DELIM, lexer.c0)) {
+		while (!lexer.isDone && !Char.eq(TokenIdentifierUnicode.DELIM, lexer.c0)) {
 			if (Char.eq(EOT, lexer.c0)) {
 				super(buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
@@ -337,6 +326,85 @@ export class TokenWordUnicode extends TokenWord {
 	}
 	get isIdentifier(): boolean {
 		return true
+	}
+}
+export class TokenKeyword extends Token {
+	static readonly CHAR: RegExp = /^[a-z]$/
+	static readonly RESERVED: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>([
+		[KeywordKind.STORAGE, [
+			'let',
+		]],
+		[KeywordKind.MODIFIER, [
+			'unfixed',
+		]],
+	])
+	static readonly KEYWORDS: readonly string[] = [...TokenKeyword.RESERVED.values()].flat()
+	static readonly MAX_KEYWORD_LENGTH: number = Math.max(...TokenKeyword.KEYWORDS.map((kw) => kw.length))
+	constructor (chars: Char[]) {
+		super('KEYWORD', chars[0], ...chars.slice(1))
+	}
+	cook(): bigint {
+		return BigInt(TokenKeyword.KEYWORDS.indexOf(this.source))
+	}
+}
+export abstract class TokenIdentifier extends Token {
+	/**
+	 * The cooked value of this Token.
+	 * If the token is a keyword, the cooked value is its contents.
+	 * If the token is an identifier, the cooked value is set by a {@link Screener},
+	 * which indexes unique identifier tokens.
+	 */
+	private _cooked: bigint|null;
+	constructor (start_char: Char, ...more_chars: Char[]) {
+		super('IDENTIFIER', start_char, ...more_chars)
+		this._cooked = null
+	}
+	/**
+	 * Set the numeric integral value of this Token.
+	 * The value must be 128 or higher.
+	 * This operation can only be done once.
+	 * @param value - the value to set, unique among all identifiers in a program
+	 */
+	/** @final */ setValue(value: bigint): void {
+		if (this._cooked === null) {
+			this._cooked = value
+		}
+	}
+	/** @final */ cook(): bigint|null {
+		return this._cooked
+	}
+}
+export class TokenIdentifierBasic extends TokenIdentifier {
+	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
+	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
+	constructor (chars_or_lexer: Char[] | Lexer) {
+		if (chars_or_lexer instanceof Array) {
+			super(chars_or_lexer[0], ...chars_or_lexer.slice(1))
+		} else {
+			super(chars_or_lexer.c0)
+			chars_or_lexer.advance()
+			while (!chars_or_lexer.isDone && TokenIdentifierBasic.CHAR_REST.test(chars_or_lexer.c0.source)) {
+				this.add(chars_or_lexer.c0)
+				chars_or_lexer.advance()
+			}
+		}
+	}
+}
+export class TokenIdentifierUnicode extends TokenIdentifier {
+	static readonly DELIM: '`' = '`'
+	constructor (lexer: Lexer) {
+		super(lexer.c0)
+		lexer.advance()
+		while (!lexer.isDone && !Char.eq(TokenIdentifierUnicode.DELIM, lexer.c0)) {
+			if (Char.eq(EOT, lexer.c0)) {
+				throw new LexError02(this)
+			}
+			this.add(lexer.c0)
+			lexer.advance()
+		}
+		// add ending delim to token
+		this.add(lexer.c0)
+		lexer.advance()
 	}
 }
 export class TokenString extends Token {

@@ -2,7 +2,7 @@ import Lexer from './Lexer.class'
 import Token, {
 	TokenWhitespace,
 	TokenWord,
-	TokenWordBasic,
+	TokenKeyword,
 	TokenComment,
 } from './Token.class'
 
@@ -48,9 +48,7 @@ export default class Screener {
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
 				if (this.t0 instanceof TokenWord) {
 					if (!this.t0.isIdentifier) {
-						const value: number = [...TokenWordBasic.KEYWORDS]
-							.flatMap(([_, reserved]) => reserved)
-							.indexOf(this.t0.source)
+						const value: number = TokenKeyword.KEYWORDS.indexOf(this.t0.source)
 						if (value < 0) throw new Error('A word token was not flagged as an identifier but was not found among the reserved keywords.')
 						this.t0.setValue(BigInt(value))
 					} else {
