@@ -263,15 +263,16 @@ KeywordModifier ::=
 	"unfixed"
 ```
 Words are sequences of alphanumeric characters.
-Formally, words are partitioned into two types:
+Semantically, words are partitioned into two types:
 author-defined **identifiers**, which point to values in a program, and
 language-reserved **keywords**, which convey certain semantics.
 Keywords are reserved by the Solid language and cannot be used as identifiers.
 
-Words must start with an alphabetic character or an underscore, `[A-Za-z_]`,
-and thereafter may contain more alphanumeric characters or underscores, `[A-Za-z0-9_]`.
-In the future, support will be added for a certain subset of Unicode characters,
-which go beyond the letters and numerals of the English alphabet.
+Lexically, words have two forms: basic words and Unicode words.
+Basic words must start with an alphabetic character or an underscore,
+and thereafter may contain more alphanumeric characters or underscores.
+Unicode words are enclosed in back-ticks (`` `…` `` **U+0060 GRAVE ACCENT**),
+and may contain any number of characters from the Unicode character set.
 
 #### Static Semantics: Word Value
 The Word Value (WV) of a word token is the unique identifier that distinguishes

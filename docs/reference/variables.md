@@ -108,21 +108,20 @@ b;                  % still `42`
 
 ## Unicode Identifiers
 Identifiers exist to name variables, among other programming constructs.
-**Basic identifiers** take the form `[A-Za-z_][A-Za-z0-9_]*`,
-that is, a single upper- or lower-case letter or underscore, followed by any number of
-upper- or lower-case letters, digits, and underscores.
+**Basic identifiers** take the form of a single upper- or lower-case letter or underscore,
+followed by any number of upper- or lower-case letters, digits, and underscores.
 
 This constraint is quite limited and could be a pain point for non-English speakers.
 Many other languages have characters in their alphabet that are not allowed by this rule.
 Therefore, Solid offers a flexible mechanism for allowing identifiers with
 almost any character in the Unicode character set: **Unicode identifiers**.
 
-By wrapping the identifier name with back-ticks (`` `…` `` **U+0060 GRAVE ACCENT**),
+By wrapping the identifier name with \`back-ticks\`,
 we can include non-ASCII letters.
 ```
 let `español` = 'Spanish for “Spanish”';
 ```
-In the identifier above, notice the letter `ñ` (**U+00F1 LATIN SMALL LETTER N WITH TILDE**).
+In the identifier above, notice the letter `ñ`.
 We can access the variable just like any other, as long as we include the name in back-tick delimiters.
 ```
 `español`; %== 'Spanish for “Spanish”'
