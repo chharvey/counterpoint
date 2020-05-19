@@ -3,15 +3,15 @@ import Char from './Char.class'
 import Token, {
 	TokenFilebound,
 	TokenWhitespace,
-	TokenCommentLine,
-	TokenCommentMulti,
-	TokenCommentBlock,
-	TokenString,
-	TokenTemplate,
+	TokenPunctuator,
 	TokenNumber,
 	TokenWordBasic,
 	TokenWordUnicode,
-	TokenPunctuator,
+	TokenString,
+	TokenTemplate,
+	TokenCommentLine,
+	TokenCommentMulti,
+	TokenCommentBlock,
 } from './Token.class'
 
 import {
@@ -96,44 +96,6 @@ export default class Lexer {
 			} else if (Char.inc(TokenWhitespace.CHARS, this._c0)) {
 				token = new TokenWhitespace(this)
 
-			} else if (Char.eq(TokenCommentLine.DELIM, this._c0)) {
-				/* we found either a line comment or a block comment */
-				if (this.state_newline && Char.eq(`${TokenCommentBlock.DELIM_START}\n`, this._c0, this._c1, this._c2, this._c3)) {
-					token = new TokenCommentBlock(this)
-				} else {
-					token = new TokenCommentLine(this)
-				}
-			} else if (Char.eq(TokenCommentMulti.DELIM_START, this._c0, this._c1)) {
-				/* we found a multiline comment */
-				token = new TokenCommentMulti(this)
-
-			} else if (Char.eq(TokenString.DELIM, this._c0)) {
-				/* we found a string literal or a template literal full or head */
-				if (Char.eq(TokenTemplate.DELIM, this._c0, this._c1, this._c2)) {
-					token = new TokenTemplate(this, TokenTemplate.DELIM)
-				} else {
-					token = new TokenString(this)
-				}
-			} else if (Char.eq(TokenTemplate.DELIM_INTERP_END, this._c0, this._c1)) {
-				/* we found a template literal middle or tail */
-				token = new TokenTemplate(this, TokenTemplate.DELIM_INTERP_END)
-
-			} else if (Char.eq('\\', this._c0)) {
-				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
-					/* an integer literal with an explicit radix */
-					token = new TokenNumber(this, false, true)
-				} else {
-					throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}`, this._c0.line_index, this._c0.col_index)
-				}
-			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
-				/* a number literal without an explicit radix */
-				token = new TokenNumber(this, false)
-
-			} else if (TokenWordBasic.CHAR_START.test(this._c0.source)) {
-				token = new TokenWordBasic(this)
-			} else if (Char.eq(TokenWordUnicode.DELIM, this._c0)) {
-				token = new TokenWordUnicode(this)
-
 			} else if (Char.inc(TokenPunctuator.CHARS_3, this._c0, this._c1, this._c2)) {
 				token = new TokenPunctuator(this, 3n)
 			} else if (Char.inc(TokenPunctuator.CHARS_2, this._c0, this._c1)) {
@@ -159,6 +121,44 @@ export default class Lexer {
 					/* a different punctuator */
 					token = new TokenPunctuator(this)
 				}
+
+			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
+				/* a number literal without an explicit radix */
+				token = new TokenNumber(this, false)
+			} else if (Char.eq('\\', this._c0)) {
+				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
+					/* an integer literal with an explicit radix */
+					token = new TokenNumber(this, false, true)
+				} else {
+					throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}`, this._c0.line_index, this._c0.col_index)
+				}
+
+			} else if (TokenWordBasic.CHAR_START.test(this._c0.source)) {
+				token = new TokenWordBasic(this)
+			} else if (Char.eq(TokenWordUnicode.DELIM, this._c0)) {
+				token = new TokenWordUnicode(this)
+
+			} else if (Char.eq(TokenString.DELIM, this._c0)) {
+				/* we found a string literal or a template literal full or head */
+				if (Char.eq(TokenTemplate.DELIM, this._c0, this._c1, this._c2)) {
+					token = new TokenTemplate(this, TokenTemplate.DELIM)
+				} else {
+					token = new TokenString(this)
+				}
+			} else if (Char.eq(TokenTemplate.DELIM_INTERP_END, this._c0, this._c1)) {
+				/* we found a template literal middle or tail */
+				token = new TokenTemplate(this, TokenTemplate.DELIM_INTERP_END)
+
+			} else if (Char.eq(TokenCommentLine.DELIM, this._c0)) {
+				/* we found either a line comment or a block comment */
+				if (this.state_newline && Char.eq(`${TokenCommentBlock.DELIM_START}\n`, this._c0, this._c1, this._c2, this._c3)) {
+					token = new TokenCommentBlock(this)
+				} else {
+					token = new TokenCommentLine(this)
+				}
+			} else if (Char.eq(TokenCommentMulti.DELIM_START, this._c0, this._c1)) {
+				/* we found a multiline comment */
+				token = new TokenCommentMulti(this)
 
 			} else {
 				throw new LexError01(this._c0)

@@ -1,27 +1,22 @@
 /* LR grammar */
 
-Goal ::= #x02 Statement* #x03
+NUMBER          ::= [../docs/spec/language-lexicon.md#numbers]
+IDENTIFIER      ::= [../docs/spec/language-lexicon.md#words]
+STRING          ::= [../docs/spec/language-lexicon.md#string-literals]
+TEMPLATE_FULL   ::= [../docs/spec/language-lexicon.md#template-literals]
+TEMPLATE_HEAD   ::= [../docs/spec/language-lexicon.md#template-literals]
+TEMPLATE_MIDDLE ::= [../docs/spec/language-lexicon.md#template-literals]
+TEMPLATE_TAIL   ::= [../docs/spec/language-lexicon.md#template-literals]
 
 
 
-Statement ::=
-	DeclarationVariable |
-	StatementAssignment |
-	Expression? ";"
+PrimitiveLiteral ::=
+	NUMBER |
+	STRING
 
-DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";"
-
-StatementAssignment ::= IDENTIFIER "=" Expression ";"
-
-
-
-Expression ::= ExpressionAdditive
-
-ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-"))? ExpressionMultiplicative
-ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential
-ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"          ExpressionExponential)?
-
-ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
+StringTemplate ::=
+	TEMPLATE_FULL |
+	TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
 
 ExpressionUnit ::=
 	IDENTIFIER         |
@@ -29,18 +24,25 @@ ExpressionUnit ::=
 	StringTemplate     |
 	"(" Expression ")"
 
-StringTemplate ::=
-	TEMPLATE_FULL |
-	TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
+ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
 
-PrimitiveLiteral ::=
-	NUMBER |
-	STRING
+ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"          ExpressionExponential)?
+ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential
+ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-"))? ExpressionMultiplicative
 
-STRING          ::= [./lexical-grammar.ebnf#String]
-TEMPLATE_FULL   ::= [./lexical-grammar.ebnf#TemplateFull]
-TEMPLATE_HEAD   ::= [./lexical-grammar.ebnf#TemplateHead]
-TEMPLATE_MIDDLE ::= [./lexical-grammar.ebnf#TempalteMiddle]
-TEMPLATE_TAIL   ::= [./lexical-grammar.ebnf#TempalteTail]
-NUMBER          ::= [./lexical-grammar.ebnf#Number]
-IDENTIFIER      ::= [./lexical-grammar.ebnf#Identifier]
+Expression ::= ExpressionAdditive
+
+
+
+DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";"
+
+StatementAssignment ::= IDENTIFIER "=" Expression ";"
+
+Statement ::=
+	Expression? ";"     |
+	DeclarationVariable |
+	StatementAssignment |
+
+
+
+Goal ::= #x02 Statement* #x03

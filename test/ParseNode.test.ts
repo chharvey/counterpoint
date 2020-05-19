@@ -4,10 +4,10 @@ import Util   from '../src/class/Util.class'
 import Parser from '../src/class/Parser.class'
 import {
 	SemanticNodeNull,
-	SemanticNodeGoal,
-	SemanticNodeStatementList,
-	SemanticNodeStatementExpression,
 	SemanticNodeTemplate,
+	SemanticNodeStatementExpression,
+	SemanticNodeStatementList,
+	SemanticNodeGoal,
 } from '../src/class/SemanticNode.class'
 
 

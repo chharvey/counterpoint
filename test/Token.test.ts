@@ -4,10 +4,10 @@ import Util     from '../src/class/Util.class'
 import Lexer    from '../src/class/Lexer.class'
 import Screener from '../src/class/Screener.class'
 import Token, {
+	TokenPunctuator,
 	TokenNumber,
 	TokenWordBasic,
 	TokenWordUnicode,
-	TokenPunctuator,
 } from '../src/class/Token.class'
 
 const lastItem  = (iter: any): any     => iter[lastIndex(iter)]

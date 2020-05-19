@@ -1,9 +1,9 @@
 import Lexer from './Lexer.class'
 import Token, {
 	TokenWhitespace,
-	TokenComment,
 	TokenWord,
 	TokenWordBasic,
+	TokenComment,
 } from './Token.class'
 
 

@@ -5,18 +5,18 @@ import {STX, ETX} from './Char.class'
 import type Token from './Token.class'
 import Terminal from './Terminal.class'
 import Production, {
-	ProductionGoal,
-	ProductionStatement,
+	ProductionPrimitiveLiteral,
+	ProductionStringTemplate,
+	ProductionExpressionUnit,
+	ProductionExpressionUnarySymbol,
+	ProductionExpressionExponential,
+	ProductionExpressionMultiplicative,
+	ProductionExpressionAdditive,
+	ProductionExpression,
 	ProductionDeclarationVariable,
 	ProductionStatementAssignment,
-	ProductionExpression,
-	ProductionExpressionAdditive,
-	ProductionExpressionMultiplicative,
-	ProductionExpressionExponential,
-	ProductionExpressionUnarySymbol,
-	ProductionExpressionUnit,
-	ProductionStringTemplate,
-	ProductionPrimitiveLiteral,
+	ProductionStatement,
+	ProductionGoal,
 } from './Production.class'
 
 
@@ -40,9 +40,11 @@ const stringOfSymbols = (arr: readonly GrammarSymbol[]): string =>
 
 
 export default class Grammar {
-	/* The set of all productions in this Grammar. */
+	/** The set of all productions in this Grammar. */
 	readonly productions: readonly Production[];
-	/** The productions of this grammar decomposed into rules. There are likely many rules per production. */
+	/** The goal production of this Grammar. */
+	readonly goal: Production = ProductionGoal.instance
+	/** The productions of this Grammar decomposed into rules. There are likely many rules per production. */
 	readonly rules: readonly Rule[];
 
 	/**
@@ -50,22 +52,22 @@ export default class Grammar {
 	 */
 	constructor() {
 		this.productions = [
-			ProductionGoal.instance,
-			ProductionGoal.__0__List.instance,
-			ProductionStatement.instance,
-			ProductionDeclarationVariable.instance,
-			ProductionStatementAssignment.instance,
-			ProductionExpression.instance,
-			ProductionExpressionAdditive.instance,
-			ProductionExpressionMultiplicative.instance,
-			ProductionExpressionExponential.instance,
-			ProductionExpressionUnarySymbol.instance,
-			ProductionExpressionUnit.instance,
+			ProductionPrimitiveLiteral.instance,
 			ProductionStringTemplate.instance,
 			ProductionStringTemplate.__0__List.instance,
-			ProductionPrimitiveLiteral.instance,
+			ProductionExpressionUnit.instance,
+			ProductionExpressionUnarySymbol.instance,
+			ProductionExpressionExponential.instance,
+			ProductionExpressionMultiplicative.instance,
+			ProductionExpressionAdditive.instance,
+			ProductionExpression.instance,
+			ProductionDeclarationVariable.instance,
+			ProductionStatementAssignment.instance,
+			ProductionStatement.instance,
+			ProductionGoal.instance,
+			ProductionGoal.__0__List.instance,
 		]
-		if (!this.productions.length) throw new Error('Grammar must ahve at least one production.')
+		if (!this.productions.length) throw new Error('Grammar must have at least one production.')
 		this.productions.forEach((prod) => {
 			if (!prod.sequences.length) throw new Error('Grammar production must have at least one sequence.')
 			prod.sequences.forEach((seq) => {
@@ -126,7 +128,7 @@ export default class Grammar {
 	 * @returns                  the closure set
 	 */
 	closure(configurations: ReadonlySet<Configuration>
-		= new Set<Configuration>(this.productions[0].toRules().map((rule) => new Configuration(rule)))
+		= new Set<Configuration>(this.goal.toRules().map((rule) => new Configuration(rule)))
 	): Set<Configuration> {
 		const closure: Set<Configuration> = new Set<Configuration>(configurations)
 		closure.forEach((config) => { // callback will visit any new items added to the set before `.forEach()` returns
@@ -161,7 +163,7 @@ export default class Grammar {
 		let returned: string[]|null = null
 		for (let i = 0; i < 64; i++) {
 			try {
-				returned = this.productions[0].random()
+				returned = this.goal.random()
 				break;
 			} catch (err) { // RangeError: Maximum call stack size exceeded
 				if (err.message !== 'Maximum call stack size exceeded') {
