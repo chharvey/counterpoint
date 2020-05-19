@@ -2,8 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import Parser from './Parser.class'
-import type SemanticNode from './SemanticNode.class'
-import type {
+import SemanticNode, {
 	Operator,
 } from './SemanticNode.class'
 
@@ -62,15 +61,14 @@ export default class CodeGenerator {
 	 * @return this
 	 */
 	binop(op: Operator, arg1: SemanticNode, arg2: SemanticNode): this {
-		const Operator_export: typeof Operator = require('./SemanticNode.class').Operator
 		arg1.compile(this)
 		arg2.compile(this)
 		this.instructions.push(new Map<Operator, string>([
-			[Operator_export.ADD, `i32.add`],
-			[Operator_export.SUB, `i32.sub`],
-			[Operator_export.MUL, `i32.mul`],
-			[Operator_export.DIV, `i32.div_s`],
-			[Operator_export.EXP, `call $exp`],
+			[Operator.ADD, `i32.add`],
+			[Operator.SUB, `i32.sub`],
+			[Operator.MUL, `i32.mul`],
+			[Operator.DIV, `i32.div_s`],
+			[Operator.EXP, `call $exp`],
 		]).get(op) !)
 		return this
 	}
@@ -81,11 +79,10 @@ export default class CodeGenerator {
 	 * @return this
 	 */
 	unop(op: Operator, arg: SemanticNode): this {
-		const Operator_export: typeof Operator = require('./SemanticNode.class').Operator
 		arg.compile(this)
 		this.instructions.push(new Map<Operator, string>([
-			[Operator_export.AFF, `nop`],
-			[Operator_export.NEG, [
+			[Operator.AFF, `nop`],
+			[Operator.NEG, [
 				`i32.const -1`,
 				`i32.xor`,
 				`i32.const 1`,
