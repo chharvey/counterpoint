@@ -145,13 +145,6 @@ MV([0-9] ::= "8") := 8
 MV([0-9] ::= "9") := 9
 ```
 
-#### Static Semantics: Decoration (Numbers)
-```w3c
-Decorate(Number)
-	::= SemanticConstant {value: MV(Number)} []
-```
-where `MV` is [Mathematical Value](./#static-semantics-mathematical-value).
-
 
 ### Punctuators
 ```w3c

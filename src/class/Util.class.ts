@@ -11,6 +11,17 @@ export default class Util {
 	}
 
 	/**
+	 * Remove indentation from string templates, and appends a line feed.
+	 * @param   s the string to remove indentation from each line
+	 * @returns   the string with indentation removed and a line feed appended
+	 */
+	static dedent(s: string): string {
+		s = `${s.trimEnd()}\n`
+		const indents: RegExpMatchArray|null = s.match(/\n\t*/)
+		return (indents) ? s.replace(new RegExp(`\\n\\t{${indents[0].length - 1}}`, 'g'), '\n') : s
+	}
+
+	/**
 	 * Select a random element from the provided array.
 	 * @param   array - the array to select from
 	 * @returns         a uniformly-distributed random element from the array
