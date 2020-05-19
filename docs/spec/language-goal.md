@@ -1,5 +1,5 @@
 # Solid Language: Goal Symbols
-This chapter defines the syntactic structure and semantics of goal symbols in the Solid programming language.
+This chapter defines the syntax, semantics, and behavior of goal symbols in the Solid programming language.
 
 ```w3c
 Goal ::= #x02 Statement* #x03

@@ -1,5 +1,5 @@
 # Solid Language: Expressions
-This chapter defines the syntactic structure and semantics of expressions in the Solid programming language.
+This chapter defines the syntax, semantics, and behavior of expressions in the Solid programming language.
 
 ```w3c
 Expression ::= ExpressionAdditive
@@ -16,7 +16,7 @@ Decorate(Expression ::= ExpressionAdditive)
 ### Abstract Operation: EvaluateNumericBinaryExpression
 ```w3c
 EvaluateNumericBinaryExpression(op) :=
-	1. Assert the count of the operand stack is at least 2.
+	1. Assert: The count of the operand stack is at least 2.
 	2. Pop `operand2` off the operand stack.
 	3. Pop `operand1` off the operand stack.
 	4. Let `operation` be a function obtained from the following record, keyed by `op`: {
@@ -105,9 +105,9 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 	]
 ```
 Where
-- `MV` is [Mathematical Value](./lexical-structure.md#static-semantics-mathematical-value)
-- `SV` is [String Value](./lexical-structure.md#static-semantics-string-value)
-- `TV` is [Template Value](./lexical-structure.md#static-semantics-template-value)
+- `MV` is [Mathematical Value](./language-lexicon.md#static-semantics-mathematical-value)
+- `SV` is [String Value](./language-lexicon.md#static-semantics-string-value)
+- `TV` is [Template Value](./language-lexicon.md#static-semantics-template-value)
 
 
 
@@ -133,7 +133,7 @@ Decorate(ExpressionUnit ::= "(" Expression ")")
 	:= Decorate(Expression)
 ```
 Where
-- `WV` is [Word Value](./lexical-structure.md#static-semantics-word-value)
+- `WV` is [Word Value](./language-lexicon.md#static-semantics-word-value)
 
 
 ### Runtime Instructions: Evaluation (Expression Units)
@@ -166,9 +166,9 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol)
 ### Runtime Instructions: Evaluation (Unary Operators)
 ```w3c
 Evaluate(SemanticExpression[operator=NEG]) :=
-	1. Assert `SemanticExpression.children.count` is 1.
-	2. Perform `Evaluate(SemanticExpression.children.0)`.
-	3. Assert the count of the operand stack is at least 1.
+	1. Assert: `SemanticExpression.children.count` is 1.
+	2. Perform: `Evaluate(SemanticExpression.children.0)`.
+	3. Assert: The count of the operand stack is at least 1.
 	4. Pop `operand` off the operand stack.
 	5. Let `negation` be the additive inverse, `-operand`,
 		obtained by negating `operand`.
@@ -198,10 +198,10 @@ Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponenti
 ### Runtime Instructions: Evaluation (Exponentiation)
 ```w3c
 Evaluate(SemanticExpression[operator=EXP]) :=
-	1. Assert `SemanticExpression.children.count` is 2.
-	2. Perform `Evaluate(SemanticExpression.children.0)`.
-	3. Perform `Evaluate(SemanticExpression.children.1)`.
-	4. Perform `EvaluateNumericBinaryExpression(EXP)`
+	1. Assert:`SemanticExpression.children.count` is 2.
+	2. Perform: `Evaluate(SemanticExpression.children.0)`.
+	3. Perform: `Evaluate(SemanticExpression.children.1)`.
+	4. Perform: `EvaluateNumericBinaryExpression(EXP)`
 ```
 
 
@@ -232,15 +232,15 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 ### Runtime Instructions: Evaluation (Multiplicative)
 ```w3c
 Evaluate(SemanticExpression[operator=MUL]) :=
-	1. Assert `SemanticExpression.children.count` is 2.
-	2. Perform `Evaluate(SemanticExpression.children.0)`.
-	3. Perform `Evaluate(SemanticExpression.children.1)`.
-	4. Perform `EvaluateNumericBinaryExpression(MUL)`
+	1. Assert: `SemanticExpression.children.count` is 2.
+	2. Perform: `Evaluate(SemanticExpression.children.0)`.
+	3. Perform: `Evaluate(SemanticExpression.children.1)`.
+	4. Perform: `EvaluateNumericBinaryExpression(MUL)`
 Evaluate(SemanticExpression[operator=DIV]) :=
-	1. Assert `SemanticExpression.children.count` is 2.
-	2. Perform `Evaluate(SemanticExpression.children.0)`.
-	3. Perform `Evaluate(SemanticExpression.children.1)`.
-	4. Perform `EvaluateNumericBinaryExpression(DIV)`
+	1. Assert: `SemanticExpression.children.count` is 2.
+	2. Perform: `Evaluate(SemanticExpression.children.0)`.
+	3. Perform: `Evaluate(SemanticExpression.children.1)`.
+	4. Perform: `EvaluateNumericBinaryExpression(DIV)`
 ```
 
 
@@ -273,8 +273,8 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 ### Runtime Instructions: Evaluation (Additive)
 ```w3c
 Evaluate(SemanticExpression[operator=ADD]) :=
-	1. Assert `SemanticExpression.children.count` is 2.
-	2. Perform `Evaluate(SemanticExpression.children.0)`.
-	3. Perform `Evaluate(SemanticExpression.children.1)`.
-	4. Perform `EvaluateNumericBinaryExpression(ADD)`
+	1. Assert: `SemanticExpression.children.count` is 2.
+	2. Perform: `Evaluate(SemanticExpression.children.0)`.
+	3. Perform: `Evaluate(SemanticExpression.children.1)`.
+	4. Perform: `EvaluateNumericBinaryExpression(ADD)`
 ```
