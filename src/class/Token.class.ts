@@ -55,7 +55,11 @@ export default abstract class Token implements Serializable {
 	 * @param start_char - the starting character of this Token
 	 * @param more_chars - additional characters to add upon construction
 	 */
-	constructor(readonly tagname: string, start_char: Char, ...more_chars: Char[]) {
+	constructor (
+		readonly tagname: string,
+		start_char: Char,
+		...more_chars: Char[]
+	) {
 		this._cargo       = [start_char, ...more_chars].map((char) => char.source).join('')
 		this.source_index = start_char.source_index
 		this.line_index   = start_char.line_index
@@ -287,14 +291,14 @@ export abstract class TokenWord extends Token {
 export class TokenWordBasic extends TokenWord {
 	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
-	static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>(([
+	static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>([
 		[KeywordKind.STORAGE, [
 			'let',
 		]],
 		[KeywordKind.MODIFIER, [
 			'unfixed',
 		]],
-	]))
+	])
 	/** The classification of this keyword, if not an identifier. */
 	private readonly keyword_kind: KeywordKind|null;
 	constructor(lexer: Lexer) {

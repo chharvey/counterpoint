@@ -34,7 +34,7 @@ export type SemanticExpressionType = SemanticNodeConstant|SemanticNodeIdentifier
  */
 export default class SemanticNode implements Serializable {
 	/** The name of the type of this SemanticNode. */
-	readonly tagname: string;
+	readonly tagname: string = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
 	/** The concatenation of the source text of all children. */
 	private readonly source: string;
 	/** The index of the first token in source text. */
@@ -56,7 +56,6 @@ export default class SemanticNode implements Serializable {
 		private readonly attributes: { [key: string]: CookValueType } = {},
 		readonly children: readonly SemanticNode[] = [],
 	) {
-		this.tagname      = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
 		this.source       = start_node.source
 		this.source_index = start_node.source_index
 		this.line_index   = start_node.line_index

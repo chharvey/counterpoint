@@ -10,14 +10,14 @@ import Char, {
  * @see http://parsingintro.sourceforge.net/#contents_item_4.2
  */
 export default class Scanner {
+	/** The entire source text of the program. */
+	readonly source_text: string;
 	/**
 	 * Construct a new Scanner object.
-	 * @param   source_text - the entire source text
+	 * @param source - the source text
 	 */
-	constructor(
-		readonly source_text: string,
-	) {
-		this.source_text = `${ SOT }\n${ this.source_text.replace(/\r\n|\r/g, '\n') }\n${ EOT }`
+	constructor(source: string) {
+		this.source_text = `${ SOT }\n${ source.replace(/\r\n|\r/g, '\n') }\n${ EOT }`
 	}
 
 	/**

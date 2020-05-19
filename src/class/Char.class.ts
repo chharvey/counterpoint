@@ -56,7 +56,7 @@ export default class Char {
 
 
 	/** The actual character string. */
-	readonly source: string;
+	readonly source: string = this.scanner.source_text[this.source_index]
 	/** Zero-based line number of this character (first line is line 0).*/
 	readonly line_index: number;
 	/** Zero-based column number of this character (first col is col 0). */
@@ -73,7 +73,6 @@ export default class Char {
 	) {
 		/** Array of characters from source start until current iteration (not including current character). */
 		const prev_chars: readonly string[] = [...this.scanner.source_text].slice(0, this.source_index)
-		this.source = this.scanner.source_text[this.source_index]
 		this.line_index = prev_chars.filter((c) => c === '\n').length
 		this.col_index = this.source_index - (prev_chars.lastIndexOf('\n') + 1)
 
