@@ -8,7 +8,8 @@ import Token, {
 	TokenFilebound,
 	TokenPunctuator,
 	TokenNumber,
-	TokenWord,
+	TokenKeyword,
+	TokenIdentifier,
 	TokenString,
 	TokenTemplate,
 } from './Token.class'
@@ -169,7 +170,7 @@ export class ParseNodeStringTemplate extends ParseNode {
 }
 export class ParseNodeExpressionUnit extends ParseNode {
 	declare children:
-		[TokenWord] |
+		[TokenIdentifier] |
 		[ParseNodePrimitiveLiteral] |
 		[ParseNodeStringTemplate] |
 		[TokenPunctuator, ParseNodeExpression, TokenPunctuator];
@@ -239,11 +240,11 @@ export class ParseNodeExpression extends ParseNode {
 }
 export class ParseNodeDeclarationVariable extends ParseNode {
 	declare children:
-		readonly [TokenWord, TokenWord,            Token, ParseNodeExpression, Token] |
-		readonly [TokenWord, TokenWord, TokenWord, Token, ParseNodeExpression, Token];
+		readonly [TokenKeyword,               TokenIdentifier, TokenPunctuator, ParseNodeExpression, TokenPunctuator] |
+		readonly [TokenKeyword, TokenKeyword, TokenIdentifier, TokenPunctuator, ParseNodeExpression, TokenPunctuator];
 	decorate(): SemanticNodeDeclaration {
 		const is_unfixed: boolean             = this.children[1].source === 'unfixed'
-		const identifier: TokenWord           = this.children[is_unfixed ? 2 : 1] as TokenWord
+		const identifier: TokenIdentifier     = this.children[is_unfixed ? 2 : 1] as TokenIdentifier
 		const expression: ParseNodeExpression = this.children[is_unfixed ? 4 : 3] as ParseNodeExpression
 		return new SemanticNodeDeclaration(this, 'variable', is_unfixed, [
 			new SemanticNodeAssignee(identifier, [
@@ -257,9 +258,9 @@ export class ParseNodeDeclarationVariable extends ParseNode {
 }
 export class ParseNodeStatementAssignment extends ParseNode {
 	declare children:
-		readonly [TokenWord, Token, ParseNodeExpression, Token];
+		readonly [TokenIdentifier, TokenPunctuator, ParseNodeExpression, TokenPunctuator];
 	decorate(): SemanticNodeAssignment {
-		const identifier: TokenWord           = this.children[0]
+		const identifier: TokenIdentifier     = this.children[0]
 		const expression: ParseNodeExpression = this.children[2]
 		return new SemanticNodeAssignment(this, [
 			new SemanticNodeAssignee(identifier, [

@@ -598,9 +598,9 @@ describe('Parser', () => {
 								<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ;">
 									<Statement line="1" col="1" source="let unfixed the_answer = 42 ;">
 										<DeclarationVariable line="1" col="1" source="let unfixed the_answer = 42 ;">
-											<WORD line="1" col="1" value="0">let</WORD>
-											<WORD line="1" col="5" value="1">unfixed</WORD>
-											<WORD line="1" col="13" value="128">the_answer</WORD>
+											<KEYWORD line="1" col="1" value="0">let</KEYWORD>
+											<KEYWORD line="1" col="5" value="1">unfixed</KEYWORD>
+											<IDENTIFIER line="1" col="13" value="128">the_answer</IDENTIFIER>
 											<PUNCTUATOR line="1" col="24" value="=">=</PUNCTUATOR>
 											<Expression line="1" col="26" source="42">
 												<ExpressionAdditive line="1" col="26" source="42">
@@ -623,8 +623,8 @@ describe('Parser', () => {
 								</Goal__0__List>
 								<Statement line="2" col="1" source="let \`the £ answer\` = the_answer * 10 ;">
 									<DeclarationVariable line="2" col="1" source="let \`the £ answer\` = the_answer * 10 ;">
-										<WORD line="2" col="1" value="0">let</WORD>
-										<WORD line="2" col="5" value="129">\`the £ answer\`</WORD>
+										<KEYWORD line="2" col="1" value="0">let</KEYWORD>
+										<IDENTIFIER line="2" col="5" value="129">\`the £ answer\`</IDENTIFIER>
 										<PUNCTUATOR line="2" col="20" value="=">=</PUNCTUATOR>
 										<Expression line="2" col="22" source="the_answer * 10">
 											<ExpressionAdditive line="2" col="22" source="the_answer * 10">
@@ -633,7 +633,7 @@ describe('Parser', () => {
 														<ExpressionExponential line="2" col="22" source="the_answer">
 															<ExpressionUnarySymbol line="2" col="22" source="the_answer">
 																<ExpressionUnit line="2" col="22" source="the_answer">
-																	<WORD line="2" col="22" value="128">the_answer</WORD>
+																	<IDENTIFIER line="2" col="22" value="128">the_answer</IDENTIFIER>
 																</ExpressionUnit>
 															</ExpressionUnarySymbol>
 														</ExpressionExponential>
@@ -657,7 +657,7 @@ describe('Parser', () => {
 							</Goal__0__List>
 							<Statement line="3" col="1" source="the_answer = the_answer - &#x5c;z14 ;">
 								<StatementAssignment line="3" col="1" source="the_answer = the_answer - &#x5c;z14 ;">
-									<WORD line="3" col="1" value="128">the_answer</WORD>
+									<IDENTIFIER line="3" col="1" value="128">the_answer</IDENTIFIER>
 									<PUNCTUATOR line="3" col="12" value="=">=</PUNCTUATOR>
 									<Expression line="3" col="14" source="the_answer - &#x5c;z14">
 										<ExpressionAdditive line="3" col="14" source="the_answer - &#x5c;z14">
@@ -666,7 +666,7 @@ describe('Parser', () => {
 													<ExpressionExponential line="3" col="14" source="the_answer">
 														<ExpressionUnarySymbol line="3" col="14" source="the_answer">
 															<ExpressionUnit line="3" col="14" source="the_answer">
-																<WORD line="3" col="14" value="128">the_answer</WORD>
+																<IDENTIFIER line="3" col="14" value="128">the_answer</IDENTIFIER>
 															</ExpressionUnit>
 														</ExpressionUnarySymbol>
 													</ExpressionExponential>

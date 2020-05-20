@@ -12,9 +12,9 @@ import Token, {
 	TokenWhitespace,
 	TokenPunctuator,
 	TokenNumber,
-	TokenWord,
-	TokenWordBasic,
-	TokenWordUnicode,
+	TokenKeyword,
+	TokenIdentifierBasic,
+	TokenIdentifierUnicode,
 	TokenString,
 	TokenTemplate,
 	TokenCommentLine,
@@ -512,16 +512,25 @@ describe('Lexer', () => {
 			})
 		})
 
-		context('recognizes `TokenWord` conditions.', () => {
-			context('recognizes `TokenWordBasic` conditions.', () => {
-				specify('Basic word beginners.', () => {
+		it('recognizes `TokenKeyword` conditions.', () => {
+			;[...new Lexer(`
+				let
+				unfixed
+			`).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
+				assert.ok(token instanceof TokenKeyword)
+			})
+		})
+
+		context('recognizes `TokenIdentifier` conditions.', () => {
+			context('recognizes `TokenIdentifierBasic` conditions.', () => {
+				specify('Basic identifier beginners.', () => {
 					;[...new Lexer(`
 						A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z _
 					`).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
-						assert.ok(token instanceof TokenWord)
+						assert.ok(token instanceof TokenIdentifierBasic)
 					})
 				})
-				specify('Word continuations.', () => {
+				specify('Identifier continuations.', () => {
 					let tokens: Token[] = [...new Lexer(`
 						this is a word
 						_words _can _start _with _underscores
@@ -529,22 +538,22 @@ describe('Lexer', () => {
 					`).generate()]
 					tokens = tokens.slice(1, -1).filter((token) => !(token instanceof TokenWhitespace))
 					tokens.forEach((token) => {
-						assert.ok(token instanceof TokenWordBasic)
+						assert.ok(token instanceof TokenIdentifierBasic)
 					})
 					assert.strictEqual(tokens.length, 13)
 				})
-				specify('Words cannot start with a digit.', () => {
+				specify('Identifiers cannot start with a digit.', () => {
 					assert.deepStrictEqual([...new Lexer(`
 						this is 0a word
 						_words 1c_an _start 2w_ith _underscores
 						_and0 3c_an1 contain2 44numb3rs
-					`).generate()].slice(1, -1).filter((token) => token instanceof TokenWord).map((token) => token.source), `
+					`).generate()].slice(1, -1).filter((token) => token instanceof TokenIdentifierBasic).map((token) => token.source), `
 						this is a word _words c_an _start w_ith _underscores _and0 c_an1 contain2 numb3rs
 					`.trim().split(' '))
 				})
 			})
-			context('recognizes `TokenWordUnicode` conditions.', () => {
-				specify('Word boundaries.', () => {
+			context('recognizes `TokenIdentifierUnicode` conditions.', () => {
+				specify('Identifier boundaries.', () => {
 					let tokens: Token[] = [...new Lexer(`
 						\`this\` \`is\` \`a\` \`unicode word\`
 						\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
@@ -553,16 +562,16 @@ describe('Lexer', () => {
 					`).generate()]
 					tokens = tokens.slice(1, -1).filter((token) => !(token instanceof TokenWhitespace))
 					tokens.forEach((token) => {
-						assert.ok(token instanceof TokenWordUnicode)
+						assert.ok(token instanceof TokenIdentifierUnicode)
 					})
 					assert.strictEqual(tokens.length, 18)
 				})
-				it('should throw if Unicode word contains U+0060 GRAVE ACCENT.', () => {
+				it('should throw if Unicode identifier contains U+0060 GRAVE ACCENT.', () => {
 					assert.throws(() => [...new Lexer(`
 						\`a \\\` grave accent\`
 					`).generate()], LexError02)
 				})
-				it('should throw if Unicode word contains U+0003 END OF TEXT.', () => {
+				it('should throw if Unicode identifier contains U+0003 END OF TEXT.', () => {
 					assert.throws(() => [...new Lexer(`
 						\`an \u0003 end of text.\`
 					`).generate()], LexError02)

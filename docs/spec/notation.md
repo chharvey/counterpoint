@@ -114,7 +114,7 @@ The first line could be read aloud as, “The `MV` of `NUMBER` matching `[0-9]` 
 
 #### Token Value
 The various token value grammars
-— String Value, Template Value, Mathematical Value, and Word Value —
+— String Value, Template Value, Mathematical Value, Keyword Value, and Identifier Value —
 are attribute grammars that determine the semantic value of their respective token types.
 
 The **String Value** of a String token is the intended text that the string represents,
@@ -126,7 +126,8 @@ The **Mathematical Value** of a Number token is the abstract mathematical quanti
 (abstract mathematical quantities could include irrational numbers,
 even though they cannot be represented exactly in a computer system).
 
-The **Word Value** of a Word token is the unique integer that identifies the word.
+The **Keyword Value** / **Identifier Value** of a Keyword token / Identifier token respecitvely
+is the unique integer that identifies the token.
 (Integers are used instead of text as an optimization technique.)
 
 These token value grammars are described further in detail in the chapter

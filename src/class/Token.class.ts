@@ -255,29 +255,42 @@ export class TokenNumber extends Token {
 		return multiplier * TokenNumber.mv(text, this.radix)
 	}
 }
-export abstract class TokenWord extends Token {
+export class TokenKeyword extends Token {
+	static readonly CHAR: RegExp = /^[a-z]$/
+	static readonly RESERVED: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>([
+		[KeywordKind.STORAGE, [
+			'let',
+		]],
+		[KeywordKind.MODIFIER, [
+			'unfixed',
+		]],
+	])
+	static readonly KEYWORDS: readonly string[] = [...TokenKeyword.RESERVED.values()].flat()
+	static readonly MAX_KEYWORD_LENGTH: number = Math.max(...TokenKeyword.KEYWORDS.map((kw) => kw.length))
+	constructor (chars: Char[]) {
+		super('KEYWORD', chars[0], ...chars.slice(1))
+	}
+	cook(): bigint {
+		return BigInt(TokenKeyword.KEYWORDS.indexOf(this.source))
+	}
+}
+export abstract class TokenIdentifier extends Token {
 	/**
 	 * The cooked value of this Token.
 	 * If the token is a keyword, the cooked value is its contents.
 	 * If the token is an identifier, the cooked value is set by a {@link Screener},
 	 * which indexes unique identifier tokens.
 	 */
-	protected _cooked: bigint|null;
+	private _cooked: bigint|null;
 	constructor (start_char: Char, ...more_chars: Char[]) {
-		super('WORD', start_char, ...more_chars)
+		super('IDENTIFIER', start_char, ...more_chars)
 		this._cooked = null
 	}
 	/**
-	 * Is this Token an identifier?
-	 * @returns Is this Token an identifier?
-	 */
-	abstract get isIdentifier(): boolean;
-	/**
 	 * Set the numeric integral value of this Token.
-	 * If it is an identifier, it will be 128 or higher;
-	 * else if it is a reserved keyword, it will be 0–127.
+	 * The value must be 128 or higher.
 	 * This operation can only be done once.
-	 * @param   value - the value to set, unique among all words in a program
+	 * @param value - the value to set, unique among all identifiers in a program
 	 */
 	/** @final */ setValue(value: bigint): void {
 		if (this._cooked === null) {
@@ -288,55 +301,37 @@ export abstract class TokenWord extends Token {
 		return this._cooked
 	}
 }
-export class TokenWordBasic extends TokenWord {
+export class TokenIdentifierBasic extends TokenIdentifier {
 	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
-	static readonly KEYWORDS: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>([
-		[KeywordKind.STORAGE, [
-			'let',
-		]],
-		[KeywordKind.MODIFIER, [
-			'unfixed',
-		]],
-	])
-	/** The classification of this keyword, if not an identifier. */
-	private readonly keyword_kind: KeywordKind|null;
-	constructor(lexer: Lexer) {
-		const buffer: Char[] = [lexer.c0]
-		lexer.advance()
-		while (!lexer.isDone && TokenWordBasic.CHAR_REST.test(lexer.c0.source)) {
-			buffer.push(lexer.c0)
-			lexer.advance()
+	constructor (chars_or_lexer: Char[] | Lexer) {
+		if (chars_or_lexer instanceof Array) {
+			super(chars_or_lexer[0], ...chars_or_lexer.slice(1))
+		} else {
+			super(chars_or_lexer.c0)
+			chars_or_lexer.advance()
+			while (!chars_or_lexer.isDone && TokenIdentifierBasic.CHAR_REST.test(chars_or_lexer.c0.source)) {
+				this.add(chars_or_lexer.c0)
+				chars_or_lexer.advance()
+			}
 		}
-		super(buffer[0], ...buffer.slice(1))
-		this.keyword_kind = ([...TokenWordBasic.KEYWORDS].find(
-			([_, reserved]) => reserved.includes(this.source)
-		) || [null])[0]
-	}
-	get isIdentifier(): boolean {
-		return this.keyword_kind === null
 	}
 }
-export class TokenWordUnicode extends TokenWord {
+export class TokenIdentifierUnicode extends TokenIdentifier {
 	static readonly DELIM: '`' = '`'
-	constructor(lexer: Lexer) {
-		const buffer: Char[] = [lexer.c0]
+	constructor (lexer: Lexer) {
+		super(lexer.c0)
 		lexer.advance()
-		while (!lexer.isDone && !Char.eq(TokenWordUnicode.DELIM, lexer.c0)) {
+		while (!lexer.isDone && !Char.eq(TokenIdentifierUnicode.DELIM, lexer.c0)) {
 			if (Char.eq(EOT, lexer.c0)) {
-				super(buffer[0], ...buffer.slice(1))
 				throw new LexError02(this)
 			}
-			buffer.push(lexer.c0)
+			this.add(lexer.c0)
 			lexer.advance()
 		}
 		// add ending delim to token
-		buffer.push(lexer.c0)
+		this.add(lexer.c0)
 		lexer.advance()
-		super(buffer[0], ...buffer.slice(1))
-	}
-	get isIdentifier(): boolean {
-		return true
 	}
 }
 export class TokenString extends Token {

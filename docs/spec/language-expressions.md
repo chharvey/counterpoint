@@ -124,7 +124,7 @@ ExpressionUnit ::=
 ### Static Semantics: Decoration (Expression Units)
 ```w3c
 Decorate(ExpressionUnit ::= IDENTIFIER)
-	:= SemanticIdentifier {id: WV(IDENTIFIER)} []
+	:= SemanticIdentifier {id: IV(IDENTIFIER)} []
 Decorate(ExpressionUnit ::= PrimitiveLiteral)
 	:= Decorate(PrimitiveLiteral)
 Decorate(ExpressionUnit ::= StringTemplate)
@@ -133,7 +133,7 @@ Decorate(ExpressionUnit ::= "(" Expression ")")
 	:= Decorate(Expression)
 ```
 Where
-- `WV` is [Word Value](./language-lexicon.md#static-semantics-word-value)
+- `IV` is [Identifier Value](./language-lexicon.md#static-semantics-identifier-value)
 
 
 ### Runtime Instructions: Evaluation (Expression Units)

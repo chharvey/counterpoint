@@ -27,6 +27,7 @@ my_var; %== 'Hello, world!'
 All **basic** variable names *must* start with an uppercase or lowercase letter or an underscore.
 The rest of the basic variable name may include letters, digits, and underscores.
 By convention, variables are named in *snake_case*, but it’s not required.
+Basic variable names cannot be any of the reserved keywords in the Solid language.
 Variable names don’t have to be “basic” — we can write variables with
 [Unicode characters](#unicode-identifiers) as well.
 
@@ -138,6 +139,18 @@ let bar = 420;
 > ReferenceError: `foo` is not declared.
 >
 > ReferenceError: `` `bar` `` is not declared.
+
+We can use Unicode identifiers to name variables with words that appear in the set of reserved keywords.
+```
+let let = 42; %> ParseError
+```
+> ParseError: Unexpeted token `let`.
+
+The reserved keyword `let` cannot be used as an identifier name,
+but we can turn it into a Unicode identifier to work around this limitation.
+```
+let `let` = 42;
+```
 
 With Unicode identifiers, we can insert almost any character,
 including spaces and punctuation symbols.
