@@ -65,11 +65,15 @@ export default class Lexer {
 	/**
 	 * Advance this Lexer, scanning the next character and reassigning variables.
 	 * @param   n - the number of times to advance
+	 * @returns all the characters scanned since the last advance
 	 * @throws  {RangeError} if the argument is not a positive integer
 	 */
-	advance(n: bigint = 1n): void {
-		if (n % 1n !== 0n || n <= 0n) throw new RangeError('Argument must be a positive integer.')
+	advance(n?: 1n): [Char];
+	advance(n: bigint): [Char, ...Char[]];
+	advance(n: bigint = 1n): [Char, ...Char[]] {
+		if (n <= 0n) throw new RangeError('Argument must be a positive integer.')
 		if (n === 1n) {
+			const returned: Char = this._c0
 			this.iterator_result_char = this.scanner.next()
 			if (!this.iterator_result_char.done) {
 				this._c0 = this.iterator_result_char.value
@@ -77,9 +81,12 @@ export default class Lexer {
 				this._c2 = this._c0.lookahead(2)
 				this._c3 = this._c0.lookahead(3)
 			}
+			return [returned]
 		} else {
-			this.advance(n - 1n)
-			this.advance()
+			return [
+				...this.advance(),
+				...this.advance(n - 1n),
+			] as [Char, ...Char[]]
 		}
 	}
 
