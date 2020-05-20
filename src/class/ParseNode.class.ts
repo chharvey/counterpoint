@@ -5,6 +5,7 @@ import {
 	EOT,
 } from './Char.class'
 import Token, {
+	Keyword,
 	TokenFilebound,
 	TokenPunctuator,
 	TokenNumber,
@@ -243,7 +244,7 @@ export class ParseNodeDeclarationVariable extends ParseNode {
 		readonly [TokenKeyword,               TokenIdentifier, TokenPunctuator, ParseNodeExpression, TokenPunctuator] |
 		readonly [TokenKeyword, TokenKeyword, TokenIdentifier, TokenPunctuator, ParseNodeExpression, TokenPunctuator];
 	decorate(): SemanticNodeDeclaration {
-		const is_unfixed: boolean             = this.children[1].source === 'unfixed'
+		const is_unfixed: boolean             = this.children[1].source === Keyword.UNFIXED
 		const identifier: TokenIdentifier     = this.children[is_unfixed ? 2 : 1] as TokenIdentifier
 		const expression: ParseNodeExpression = this.children[is_unfixed ? 4 : 3] as ParseNodeExpression
 		return new SemanticNodeDeclaration(this, 'variable', is_unfixed, [

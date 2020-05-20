@@ -3,6 +3,9 @@ import {
 	SOT,
 	EOT,
 } from './Char.class'
+import {
+	Keyword,
+} from './Token.class'
 import type ParseNode from './ParseNode.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
 import {
@@ -225,14 +228,14 @@ export class ProductionDeclarationVariable extends Production {
 	static readonly instance: ProductionDeclarationVariable = new ProductionDeclarationVariable()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			['let',            TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
-			['let', 'unfixed', TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
+			[Keyword.LET,                  TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
+			[Keyword.LET, Keyword.UNFIXED, TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
 		]
 	}
 	random(): string[] {
 		return [
-			'let',
-			Util.randomBool() ? '' : 'unfixed',
+			Keyword.LET,
+			Util.randomBool() ? '' : Keyword.UNFIXED,
 			TerminalIdentifier.instance.random(),
 			'=',
 			...ProductionExpression.instance.random(),

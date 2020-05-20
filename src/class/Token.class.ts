@@ -13,12 +13,16 @@ import {
 } from '../error/LexError.class'
 
 
-export type RadixType = 2n|4n|8n|10n|16n|36n
-
-enum KeywordKind {
-	STORAGE,
-	MODIFIER,
+export enum Keyword {
+	// Storage
+	LET = 'let',
+	// Modifier
+	UNFIXED = 'unfixed',
 }
+
+
+
+export type RadixType = 2n|4n|8n|10n|16n|36n
 
 export enum TemplatePosition {
 	FULL,
@@ -250,16 +254,8 @@ export class TokenNumber extends Token {
 }
 export class TokenKeyword extends Token {
 	static readonly CHAR: RegExp = /^[a-z]$/
-	static readonly RESERVED: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>([
-		[KeywordKind.STORAGE, [
-			'let',
-		]],
-		[KeywordKind.MODIFIER, [
-			'unfixed',
-		]],
-	])
-	static readonly KEYWORDS: readonly string[] = [...TokenKeyword.RESERVED.values()].flat()
-	static readonly MAX_KEYWORD_LENGTH: number = Math.max(...TokenKeyword.KEYWORDS.map((kw) => kw.length))
+	static readonly KEYWORDS: readonly string[] = Object.values(Keyword)
+	declare source: Keyword;
 	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
 		super('KEYWORD', lexer, start_char, ...more_chars)
 	}
