@@ -151,8 +151,8 @@ export default class Lexer {
 				}
 				const bufferstring: string = buffer.map((char) => char.source).join('')
 				token = (TokenKeyword.KEYWORDS.includes(bufferstring))
-					? new TokenKeyword(buffer)
-					: new TokenIdentifierBasic(buffer)
+					? new TokenKeyword        (this, buffer[0], ...buffer.slice(1))
+					: new TokenIdentifierBasic(this, buffer[0], ...buffer.slice(1))
 			} else if (TokenIdentifierBasic.CHAR_START.test(this._c0.source)) {
 				/* we found a basic identifier */
 				token = new TokenIdentifierBasic(this)
