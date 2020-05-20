@@ -4,6 +4,7 @@ import {
 	EOT,
 } from './Char.class'
 import {
+	Punctuator,
 	Keyword,
 } from './Token.class'
 import type ParseNode from './ParseNode.class'
@@ -138,7 +139,7 @@ export class ProductionExpressionUnit extends Production {
 			[ProductionPrimitiveLiteral.instance],
 			[ProductionStringTemplate  .instance],
 			[TerminalIdentifier        .instance],
-			['(', ProductionExpression.instance, ')'],
+			[Punctuator.GRP_OPN, ProductionExpression.instance, Punctuator.GRP_CLS],
 		]
 	}
 	random(): string[] {
@@ -147,7 +148,7 @@ export class ProductionExpressionUnit extends Production {
 			random < 0.25 ?  ProductionPrimitiveLiteral.instance.random()  :
 			random < 0.50 ?  ProductionStringTemplate  .instance.random()  :
 			random < 0.75 ? [TerminalIdentifier        .instance.random()] :
-			['(', ...ProductionExpression.instance.random(), ')']
+			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
 		)
 	}
 }
@@ -156,28 +157,28 @@ export class ProductionExpressionUnarySymbol extends Production {
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[ProductionExpressionUnit.instance],
-			['+', this],
-			['-', this],
+			[Punctuator.AFF, this],
+			[Punctuator.NEG, this],
 		]
 	}
 	random(): string[] {
 		return Util.randomBool() ?
 			ProductionExpressionUnit.instance.random() :
-			[Util.arrayRandom(['+','-']), ...this.random()]
+			[Util.arrayRandom([Punctuator.AFF, Punctuator.NEG]), ...this.random()]
 	}
 }
 export class ProductionExpressionExponential extends Production {
 	static readonly instance: ProductionExpressionExponential = new ProductionExpressionExponential()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[ProductionExpressionUnarySymbol.instance           ],
-			[ProductionExpressionUnarySymbol.instance, '^', this],
+			[ProductionExpressionUnarySymbol.instance                      ],
+			[ProductionExpressionUnarySymbol.instance, Punctuator.EXP, this],
 		]
 	}
 	random(): string[] {
 		return [
 			...ProductionExpressionUnarySymbol.instance.random(),
-			...(Util.randomBool() ? [] : ['^', ...this.random()]),
+			...(Util.randomBool() ? [] : [Punctuator.EXP, ...this.random()]),
 		]
 	}
 }
@@ -185,14 +186,14 @@ export class ProductionExpressionMultiplicative extends Production {
 	static readonly instance: ProductionExpressionMultiplicative = new ProductionExpressionMultiplicative()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[           ProductionExpressionExponential.instance],
-			[this, '*', ProductionExpressionExponential.instance],
-			[this, '/', ProductionExpressionExponential.instance],
+			[                      ProductionExpressionExponential.instance],
+			[this, Punctuator.MUL, ProductionExpressionExponential.instance],
+			[this, Punctuator.DIV, ProductionExpressionExponential.instance],
 		]
 	}
 	random(): string[] {
 		return [
-			...(Util.randomBool() ? [] : [...this.random(), Util.arrayRandom(['*','/'])]),
+			...(Util.randomBool() ? [] : [...this.random(), Util.arrayRandom([Punctuator.MUL, Punctuator.DIV])]),
 			...ProductionExpressionExponential.instance.random(),
 		]
 	}
@@ -201,14 +202,14 @@ export class ProductionExpressionAdditive extends Production {
 	static readonly instance: ProductionExpressionAdditive = new ProductionExpressionAdditive()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[           ProductionExpressionMultiplicative.instance],
-			[this, '+', ProductionExpressionMultiplicative.instance],
-			[this, '-', ProductionExpressionMultiplicative.instance],
+			[                      ProductionExpressionMultiplicative.instance],
+			[this, Punctuator.ADD, ProductionExpressionMultiplicative.instance],
+			[this, Punctuator.SUB, ProductionExpressionMultiplicative.instance],
 		]
 	}
 	random(): string[] {
 		return [
-			...(Util.randomBool() ? [] : [...this.random(), Util.arrayRandom(['+','-'])]),
+			...(Util.randomBool() ? [] : [...this.random(), Util.arrayRandom([Punctuator.ADD, Punctuator.SUB])]),
 			...ProductionExpressionMultiplicative.instance.random(),
 		]
 	}
@@ -228,8 +229,8 @@ export class ProductionDeclarationVariable extends Production {
 	static readonly instance: ProductionDeclarationVariable = new ProductionDeclarationVariable()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[Keyword.LET,                  TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
-			[Keyword.LET, Keyword.UNFIXED, TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
+			[Keyword.LET,                  TerminalIdentifier.instance, Punctuator.ASSIGN, ProductionExpression.instance, Punctuator.ENDSTAT],
+			[Keyword.LET, Keyword.UNFIXED, TerminalIdentifier.instance, Punctuator.ASSIGN, ProductionExpression.instance, Punctuator.ENDSTAT],
 		]
 	}
 	random(): string[] {
@@ -237,9 +238,9 @@ export class ProductionDeclarationVariable extends Production {
 			Keyword.LET,
 			Util.randomBool() ? '' : Keyword.UNFIXED,
 			TerminalIdentifier.instance.random(),
-			'=',
+			Punctuator.ASSIGN,
 			...ProductionExpression.instance.random(),
-			';',
+			Punctuator.ENDSTAT,
 		]
 	}
 }
@@ -247,15 +248,15 @@ export class ProductionStatementAssignment extends Production {
 	static readonly instance: ProductionStatementAssignment = new ProductionStatementAssignment()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[TerminalIdentifier.instance, '=', ProductionExpression.instance, ';'],
+			[TerminalIdentifier.instance, Punctuator.ASSIGN, ProductionExpression.instance, Punctuator.ENDSTAT],
 		]
 	}
 	random(): string[] {
 		return [
 			TerminalIdentifier.instance.random(),
-			'=',
+			Punctuator.ASSIGN,
 			...ProductionExpression.instance.random(),
-			';',
+			Punctuator.ENDSTAT,
 		]
 	}
 }
@@ -265,8 +266,8 @@ export class ProductionStatement extends Production {
 		return [
 			[ProductionDeclarationVariable.instance],
 			[ProductionStatementAssignment.instance],
-			[ProductionExpression.instance, ';'],
-			[';'],
+			[ProductionExpression.instance, Punctuator.ENDSTAT],
+			[Punctuator.ENDSTAT],
 		]
 	}
 	random(): string[] {
@@ -274,7 +275,7 @@ export class ProductionStatement extends Production {
 		return (
 			random < 0.33 ?  ProductionDeclarationVariable.instance.random() :
 			random < 0.67 ?  ProductionStatementAssignment.instance.random() :
-			[...ProductionExpression.instance.random(), ';']
+			[...ProductionExpression.instance.random(), Punctuator.ENDSTAT]
 		)
 	}
 }

@@ -13,6 +13,20 @@ import {
 } from '../error/LexError.class'
 
 
+export enum Punctuator {
+	GRP_OPN = '(',
+	GRP_CLS = ')',
+	AFF     = '+',
+	NEG     = '-',
+	EXP     = '^',
+	MUL     = '*',
+	DIV     = '/',
+	ADD     = '+',
+	SUB     = '-',
+	ASSIGN  = '=',
+	ENDSTAT = ';',
+}
+
 export enum Keyword {
 	// Storage
 	LET = 'let',
@@ -156,6 +170,7 @@ export class TokenPunctuator extends Token {
 	static readonly CHARS_1: readonly string[] = '; = + - * / ^ ( )'.split(' ')
 	static readonly CHARS_2: readonly string[] = ''.split(' ')
 	static readonly CHARS_3: readonly string[] = ''.split(' ')
+	declare source: Punctuator;
 	constructor (lexer: Lexer, count: 1n|2n|3n = 1n) {
 		super('PUNCTUATOR', lexer, ...lexer.advance())
 		if (count >= 3n) {
@@ -188,8 +203,8 @@ export class TokenNumber extends Token {
 		[36n, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
 	])
 	static readonly UNARY: ReadonlyMap<string, number> = new Map<string, number>([
-		['+',  1],
-		['-', -1],
+		[`${ Punctuator.AFF }`,  1],
+		[`${ Punctuator.NEG }`, -1],
 	])
 	/**
 	 * Compute the mathematical value of a `TokenNumber` token.
