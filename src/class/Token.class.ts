@@ -209,6 +209,7 @@ export class TokenNumber extends Token {
 	private readonly has_radix: boolean;
 	private readonly radix: RadixType;
 	constructor (lexer: Lexer, has_unary: boolean, has_radix: boolean = false) {
+		// NB https://github.com/microsoft/TypeScript/issues/8277
 		const buffer: Char[] = []
 		if (has_unary) { // prefixed with leading unary operator "+" or "-"
 			buffer.push(...lexer.advance())
@@ -449,13 +450,15 @@ export class TokenTemplate extends Token {
 			...TokenTemplate.tv(text.slice(1)),
 		]
 	}
-	private readonly delim_start: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_END  ;
 	private readonly delim_end  : typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_START;
 	readonly position: TemplatePosition;
-	constructor (lexer: Lexer, delim_start: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_END) {
+	constructor (
+		lexer: Lexer,
+		private delim_start: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_END,
+	) {
+		super('TEMPLATE', lexer, ...lexer.advance())
 		let delim_end: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_START;
 		const positions: Set<TemplatePosition> = new Set<TemplatePosition>()
-		super('TEMPLATE', lexer, ...lexer.advance())
 		if (delim_start === TokenTemplate.DELIM) {
 			positions.add(TemplatePosition.FULL).add(TemplatePosition.HEAD)
 			this.advance(2n)
@@ -489,7 +492,6 @@ export class TokenTemplate extends Token {
 				this.advance()
 			}
 		}
-		this.delim_start = delim_start
 		this.delim_end   = delim_end !
 		this.position = [...positions][0]
 	}
@@ -525,8 +527,8 @@ export class TokenCommentMulti extends TokenComment {
 	static readonly DELIM_START : '{%' = '{%'
 	static readonly DELIM_END   : '%}' = '%}'
 	constructor (lexer: Lexer) {
-		let comment_multiline_level: bigint = 0n
 		super(lexer, ...lexer.advance(2n))
+		let comment_multiline_level: bigint = 0n
 		comment_multiline_level++;
 		while (comment_multiline_level !== 0n) {
 			while (!this.lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)) {

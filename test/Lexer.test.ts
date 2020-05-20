@@ -172,12 +172,13 @@ describe('Lexer', () => {
 				assert.ok(comment instanceof TokenCommentMulti)
 			})
 			specify('Multiline comment containing nested multiline comment.', () => {
-				const comment: Token = [...new Lexer(`
+				const tokens: Token[] = [...new Lexer(`
 					{% multiline
 					that has a {% nestable nested %} multiline
 					comment %}
-				`).generate()][2]
-				assert.ok(comment instanceof TokenCommentMulti)
+				`).generate()]
+				assert.strictEqual(tokens.length, 5)
+				assert.ok(tokens[2] instanceof TokenCommentMulti)
 			})
 			specify('Multiline comment containing interpolation delimiters.', () => {
 				const tokens: Token[] = [...new Lexer(`

@@ -111,16 +111,16 @@ export default class Lexer {
 			} else if (Char.inc(TokenPunctuator.CHARS_1, this._c0)) {
 				/* we found a punctuator or a number literal prefixed with a unary operator */
 				if (Char.inc([...TokenNumber.UNARY.keys()], this._c0)) {
-					if (Char.eq('\\', this._c1)) {
+					if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c1)) {
+						/* a number literal with a unary operator and without an explicit radix */
+						token = new TokenNumber(this, true)
+					} else if (Char.eq('\\', this._c1)) {
 						if (Char.inc([...TokenNumber.BASES.keys()], this._c2)) {
-							/* an integer literal with an explicit radix */
+							/* a number literal with a unary operator and with an explicit radix */
 							token = new TokenNumber(this, true, true)
 						} else {
 							throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}${this._c2 && this._c2.source || ''}`, this._c0.line_index, this._c0.col_index)
 						}
-					} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c1)) {
-						/* a number literal without an explicit radix */
-						token = new TokenNumber(this, true)
 					} else {
 						/* a punctuator "+" or "-" */
 						token = new TokenPunctuator(this)
@@ -131,11 +131,11 @@ export default class Lexer {
 				}
 
 			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
-				/* a number literal without an explicit radix */
+				/* a number literal without a unary operator and without an explicit radix */
 				token = new TokenNumber(this, false)
 			} else if (Char.eq('\\', this._c0)) {
 				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
-					/* an integer literal with an explicit radix */
+					/* a number literal without a unary operator and with an explicit radix */
 					token = new TokenNumber(this, false, true)
 				} else {
 					throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}`, this._c0.line_index, this._c0.col_index)
