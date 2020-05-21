@@ -14,8 +14,9 @@ Decorate(Expression ::= ExpressionAdditive)
 
 
 ### Abstract Operation: EvaluateNumericBinaryExpression
+The abstract operation `EvaluateNumericBinaryExpression` performs a binary stack operation.
 ```w3c
-EvaluateNumericBinaryExpression(op) :=
+Void EvaluateNumericBinaryExpression(Text op) :=
 	1. Assert: The count of the operand stack is at least 2.
 	2. Pop `operand2` off the operand stack.
 	3. Pop `operand1` off the operand stack.

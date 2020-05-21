@@ -138,14 +138,21 @@ This specification uses abstract algorithms to describe the runtime behavior of 
 The algorithms are called “abstract” since they do not specify an implementation technique or technology,
 and their steps are written in prose.
 
-An algorithm consists of a name and a sequence of steps, formatted as an ordered list.
-The list is “ordered” in that the outcome could change if the steps were not performed in the order given.
-Algorithm steps may include substeps, which are formatted by an additional indentation level.
-Substeps may include their own “subsubsteps”, and so on, with each level corresponding to a new indentation.
-Steps may be nested an arbitrary number of levels.
+An algorithm consists of a name, an output type, zero or more parameters, and a sequence of steps.
+The steps are formatted as an ordered list;
+the list is *ordered* in that the outcome could change if the steps were not performed in the order given.
+
+Algorithms are written in parameterized functional form,
+e.g., `RType AlgorithnName(PType1 param1, PType2 param2)`,
+where `AlgorithnName` is the algorithm name, `RType` is the output type of the algorithm,
+and `PType1` and `PType2` are the types of the parameters `param1` and `param2` respectively.
+If the algorithm is invoked in another algorithm, it is written in a similar manner, e.g., `AlgorithmName(arg1, arg2)`.
+Typically, algorithm names are written in PascalCase while parameter/argument names are written in snake_case.
+Within the steps of an algorithm, referenced
+local variables, parameters, other algorithm names, and code snippets are delimited with \`back-ticks\`.
 
 ```w3c
-AlgorithmName() :=
+Void AlgorithmName(RealNumber param) :=
 	1. Step 1.
 	2. Step 2.
 		1. Substep 2.1.
@@ -155,17 +162,14 @@ AlgorithmName() :=
 		1. Substep 3.1.
 ```
 
+Algorithm steps may include substeps, which are formatted by an additional indentation level.
+Substeps may include their own “subsubsteps”, and so on, with each level corresponding to a new indentation.
+Steps may be nested an arbitrary number of levels.
+
 Algorithms may perform basic mathematical operations of numeric values, which include
 addition `+`, subtraction `-`, multiplication `*`, division `/`, and exponentiation `^`.
 These operations are implied with their typical meaning in the context of real and complex numbers,
 but are specified in more detail under [Mathematical Operations] (link pending).
-
-Algorithms may be referenced from one another.
-Algorithms are written in parameterized functional form, with the algorithm name in CamelCase
-and any parameters specified in parentheses after the algoritm name.
-When the algorithm is referenced, arguments, if any, are listed after the name in the same manner.
-Local variables, parameters, other algorithm names, and code snippets
-referenced within the steps of an algorithm are delimited with \`back-ticks\`.
 
 
 ### Algorithm Steps
@@ -202,10 +206,10 @@ A step that specifies a loop must have as its substeps the steps to be performed
 A loop step begins with “While …:”
 
 #### Return
-Algorithms may have an output value, which is the result of performing the algorithm.
-If one algorithm `A` is referenced by another, `B`, then the output value of `A` (if it exists) is given to `B`
-in the step it was referenced.
 An algorithm must output either no value or one value.
+The output value, if it exists, is a [Solid Specification Value] returned by the algorithm to its invoker.
+The output type is specified before the name of the algorithm in its header, but
+if the algorithm does not output a value, the output type is specified as “Void”.
 If an algorithm outputs a value, it must do so via a step beginning with “Return: …”.
 
 
