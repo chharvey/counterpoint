@@ -180,8 +180,8 @@ export class TokenPunctuator extends Token {
 			this.advance()
 		}
 	}
-	cook(): string {
-		return this.source
+	cook(): bigint {
+		return BigInt(TokenPunctuator.PUNCTUATORS.indexOf(this.source))
 	}
 }
 export class TokenNumber extends Token {
@@ -270,7 +270,7 @@ export class TokenNumber extends Token {
 	}
 }
 export class TokenKeyword extends Token {
-	static readonly COUNT: bigint = 0x80n
+	private static readonly MINIMUM_VALUE: bigint = 0x80n
 	static readonly CHAR: RegExp = /^[a-z]$/
 	static readonly KEYWORDS: readonly Keyword[] = [...new Set<Keyword>(Object.values(Keyword))] // remove duplicates
 	declare source: Keyword;
@@ -278,10 +278,11 @@ export class TokenKeyword extends Token {
 		super('KEYWORD', lexer, start_char, ...more_chars)
 	}
 	cook(): bigint {
-		return BigInt(TokenKeyword.KEYWORDS.indexOf(this.source))
+		return BigInt(TokenKeyword.KEYWORDS.indexOf(this.source)) + TokenKeyword.MINIMUM_VALUE
 	}
 }
 export abstract class TokenIdentifier extends Token {
+	private static readonly MINIMUM_VALUE: bigint = 0x100n
 	/**
 	 * The cooked value of this Token.
 	 * If the token is a keyword, the cooked value is its contents.
@@ -301,7 +302,7 @@ export abstract class TokenIdentifier extends Token {
 	 */
 	/** @final */ setValue(value: bigint): void {
 		if (this._cooked === null) {
-			this._cooked = value
+			this._cooked = value + TokenIdentifier.MINIMUM_VALUE
 		}
 	}
 	/** @final */ cook(): bigint|null {
