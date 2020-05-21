@@ -1,11 +1,9 @@
 import * as xjs from 'extrajs'
 
 import Util from './Util.class'
-import {
-	SOT,
-	EOT,
-} from './Char.class'
-import type Token from './Token.class'
+import Token, {
+	Filebound,
+} from './Token.class'
 import Terminal from './Terminal.class'
 import Production, {
 	ProductionPrimitiveLiteral,
@@ -37,8 +35,8 @@ export type GrammarTerminal = string|Terminal
 const stringOfSymbols = (arr: readonly GrammarSymbol[]): string =>
 	arr.map((symbol) => (typeof symbol === 'string') ?
 		`"${ symbol }"`
-			.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
-			.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
+			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 		: symbol.displayName
 	).join(' ')
 

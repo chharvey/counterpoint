@@ -1,10 +1,9 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
-import {
-	SOT,
-	EOT,
-} from './Char.class'
 import Token, {
+	Filebound,
+	Punctuator,
+	Keyword,
 	TokenFilebound,
 	TokenPunctuator,
 	TokenNumber,
@@ -138,8 +137,8 @@ export default class ParseNode implements Serializable {
 			.replace(/\n/g, '&#x0a;')
 			.replace(/\r/g, '&#x0d;')
 			.replace(/\u0000/g, '&#x00;')
-			.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
-			.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
+			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 		)
 		const contents: string = this.children.map((child) => child.serialize()).join('')
 		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`
@@ -183,9 +182,9 @@ export class ParseNodeExpressionUnit extends ParseNode {
 	}
 }
 export class ParseNodeExpressionUnary extends ParseNode {
-	private static OPERATORS: ReadonlyMap<string, Operator> = new Map<string, Operator>([
-		['+', Operator.AFF],
-		['-', Operator.NEG],
+	private static OPERATORS: ReadonlyMap<Punctuator, Operator> = new Map<Punctuator, Operator>([
+		[Punctuator.AFF, Operator.AFF],
+		[Punctuator.NEG, Operator.NEG],
 	])
 	declare children:
 		readonly [ParseNodeExpressionUnit] |
@@ -194,7 +193,7 @@ export class ParseNodeExpressionUnary extends ParseNode {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
 		:
-			(this.children[0].source === '+') ? // `+a` is a no-op
+			(this.children[0].source === Punctuator.AFF) ? // `+a` is a no-op
 				this.children[1].decorate()
 			:
 				new SemanticNodeExpression(this, ParseNodeExpressionUnary.OPERATORS.get(this.children[0].source) !, [
@@ -203,12 +202,12 @@ export class ParseNodeExpressionUnary extends ParseNode {
 	}
 }
 export class ParseNodeExpressionBinary extends ParseNode {
-	private static OPERATORS: ReadonlyMap<string, Operator> = new Map<string, Operator>([
-		['+', Operator.ADD],
-		['-', Operator.SUB],
-		['*', Operator.MUL],
-		['/', Operator.DIV],
-		['^', Operator.EXP],
+	private static OPERATORS: ReadonlyMap<Punctuator, Operator> = new Map<Punctuator, Operator>([
+		[Punctuator.EXP, Operator.EXP],
+		[Punctuator.MUL, Operator.MUL],
+		[Punctuator.DIV, Operator.DIV],
+		[Punctuator.ADD, Operator.ADD],
+		[Punctuator.SUB, Operator.SUB],
 	])
 	declare children:
 		readonly [ParseNodeExpressionUnary|ParseNodeExpressionBinary] |
@@ -217,7 +216,7 @@ export class ParseNodeExpressionBinary extends ParseNode {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
 		:
-			(this.children[1].source === '-') ? // `a - b` is syntax sugar for `a + -(b)`
+			(this.children[1].source === Punctuator.SUB) ? // `a - b` is syntax sugar for `a + -(b)`
 				new SemanticNodeExpression(this, Operator.ADD, [
 					this.children[0].decorate(),
 					new SemanticNodeExpression(this.children[2], Operator.NEG, [
@@ -243,7 +242,7 @@ export class ParseNodeDeclarationVariable extends ParseNode {
 		readonly [TokenKeyword,               TokenIdentifier, TokenPunctuator, ParseNodeExpression, TokenPunctuator] |
 		readonly [TokenKeyword, TokenKeyword, TokenIdentifier, TokenPunctuator, ParseNodeExpression, TokenPunctuator];
 	decorate(): SemanticNodeDeclaration {
-		const is_unfixed: boolean             = this.children[1].source === 'unfixed'
+		const is_unfixed: boolean             = this.children[1].source === Keyword.UNFIXED
 		const identifier: TokenIdentifier     = this.children[is_unfixed ? 2 : 1] as TokenIdentifier
 		const expression: ParseNodeExpression = this.children[is_unfixed ? 4 : 3] as ParseNodeExpression
 		return new SemanticNodeDeclaration(this, 'variable', is_unfixed, [

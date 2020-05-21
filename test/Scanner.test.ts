@@ -1,10 +1,7 @@
 import * as assert from 'assert'
 
 import Scanner  from '../src/class/Scanner.class'
-import Char, {
-	SOT,
-	EOT,
-} from '../src/class/Char.class'
+import Char from '../src/class/Char.class'
 
 const lastItem  = (iter: any): any     => iter[lastIndex(iter)]
 const lastIndex = (iter: any): number  => iter.length - 1
@@ -33,11 +30,11 @@ describe('Scanner', () => {
 	describe('.constructor', () => {
 		it('wraps source text.', () => {
 			const scanner: Scanner = new Scanner(mock)
-			assert.strictEqual(scanner.source_text[0], SOT)
+			assert.strictEqual(scanner.source_text[0], '\u0002')
 			assert.strictEqual(scanner.source_text[1], '\n')
 			assert.strictEqual(scanner.source_text[3], '5')
 			assert.strictEqual(scanner.source_text[scanner.source_text.length - 2], '\n')
-			assert.strictEqual(lastItem(scanner.source_text), EOT)
+			assert.strictEqual(lastItem(scanner.source_text), '\u0003')
 		})
 		it('normalizes line endings.', () => {
 			const scanner: Scanner = new Scanner(mock)

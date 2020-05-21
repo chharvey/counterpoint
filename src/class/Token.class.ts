@@ -1,9 +1,6 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
-import Char, {
-	SOT,
-	EOT,
-} from './Char.class'
+import Char from './Char.class'
 import type Lexer from './Lexer.class'
 
 import {
@@ -13,12 +10,35 @@ import {
 } from '../error/LexError.class'
 
 
-export type RadixType = 2n|4n|8n|10n|16n|36n
-
-enum KeywordKind {
-	STORAGE,
-	MODIFIER,
+export enum Filebound {
+	SOT = '\u0002',
+	EOT = '\u0003',
 }
+
+export enum Punctuator {
+	GRP_OPN = '(',
+	GRP_CLS = ')',
+	AFF     = '+',
+	NEG     = '-',
+	EXP     = '^',
+	MUL     = '*',
+	DIV     = '/',
+	ADD     = '+',
+	SUB     = '-',
+	ASSIGN  = '=',
+	ENDSTAT = ';',
+}
+
+export enum Keyword {
+	// Storage
+	LET = 'let',
+	// Modifier
+	UNFIXED = 'unfixed',
+}
+
+
+
+export type RadixType = 2n|4n|8n|10n|16n|36n
 
 export enum TemplatePosition {
 	FULL,
@@ -119,8 +139,8 @@ export default abstract class Token implements Serializable {
 			: cooked.toString())
 		}
 		const contents: string = this.source
-			.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
-			.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
+			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`
 	}
 }
@@ -128,12 +148,13 @@ export default abstract class Token implements Serializable {
 
 
 export class TokenFilebound extends Token {
-	static readonly CHARS: readonly string[] = [SOT, EOT]
+	static readonly CHARS: readonly Filebound[] = [Filebound.SOT, Filebound.EOT]
+	declare source: Filebound;
 	constructor (lexer: Lexer) {
 		super('FILEBOUND', lexer, ...lexer.advance())
 	}
 	cook(): boolean {
-		return this.source === SOT
+		return this.source === Filebound.SOT
 	}
 }
 export class TokenWhitespace extends Token {
@@ -149,9 +170,8 @@ export class TokenWhitespace extends Token {
 	}
 }
 export class TokenPunctuator extends Token {
-	static readonly CHARS_1: readonly string[] = '; = + - * / ^ ( )'.split(' ')
-	static readonly CHARS_2: readonly string[] = ''.split(' ')
-	static readonly CHARS_3: readonly string[] = ''.split(' ')
+	static readonly PUNCTUATORS: readonly Punctuator[] = [...new Set(Object.values(Punctuator))] // remove duplicates
+	declare source: Punctuator;
 	constructor (lexer: Lexer, count: 1n|2n|3n = 1n) {
 		super('PUNCTUATOR', lexer, ...lexer.advance())
 		if (count >= 3n) {
@@ -166,7 +186,12 @@ export class TokenPunctuator extends Token {
 }
 export class TokenNumber extends Token {
 	static readonly RADIX_DEFAULT: RadixType = 10n
-	static readonly SEPARATOR: string = '_'
+	static readonly ESCAPER   : string = '\\'
+	static readonly SEPARATOR : string = '_'
+	static readonly UNARY: readonly Punctuator[] = [
+		Punctuator.AFF,
+		Punctuator.NEG,
+	]
 	static readonly BASES: ReadonlyMap<string, RadixType> = new Map<string, RadixType>([
 		['b',  2n],
 		['q',  4n],
@@ -182,10 +207,6 @@ export class TokenNumber extends Token {
 		[10n, '0 1 2 3 4 5 6 7 8 9'                                                     .split(' ')],
 		[16n, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ')],
 		[36n, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
-	])
-	static readonly UNARY: ReadonlyMap<string, number> = new Map<string, number>([
-		['+',  1],
-		['-', -1],
 	])
 	/**
 	 * Compute the mathematical value of a `TokenNumber` token.
@@ -242,24 +263,17 @@ export class TokenNumber extends Token {
 	}
 	cook(): number {
 		let text: string = this.source
-		const multiplier: number = TokenNumber.UNARY.get(text[0]) || 1
+		const multiplier: number = (text[0] === Punctuator.NEG) ? -1 : 1
 		if (this.has_unary) text = text.slice(1) // cut off unary, if any
 		if (this.has_radix) text = text.slice(2) // cut off radix, if any
 		return multiplier * TokenNumber.mv(text, this.radix)
 	}
 }
 export class TokenKeyword extends Token {
+	static readonly COUNT: bigint = 0x80n
 	static readonly CHAR: RegExp = /^[a-z]$/
-	static readonly RESERVED: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>([
-		[KeywordKind.STORAGE, [
-			'let',
-		]],
-		[KeywordKind.MODIFIER, [
-			'unfixed',
-		]],
-	])
-	static readonly KEYWORDS: readonly string[] = [...TokenKeyword.RESERVED.values()].flat()
-	static readonly MAX_KEYWORD_LENGTH: number = Math.max(...TokenKeyword.KEYWORDS.map((kw) => kw.length))
+	static readonly KEYWORDS: readonly Keyword[] = [...new Set<Keyword>(Object.values(Keyword))] // remove duplicates
+	declare source: Keyword;
 	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
 		super('KEYWORD', lexer, start_char, ...more_chars)
 	}
@@ -313,7 +327,7 @@ export class TokenIdentifierUnicode extends TokenIdentifier {
 	constructor (lexer: Lexer) {
 		super(lexer, ...lexer.advance())
 		while (!this.lexer.isDone && !Char.eq(TokenIdentifierUnicode.DELIM, this.lexer.c0)) {
-			if (Char.eq(EOT, this.lexer.c0)) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
 			this.advance()
@@ -323,8 +337,9 @@ export class TokenIdentifierUnicode extends TokenIdentifier {
 	}
 }
 export class TokenString extends Token {
-	static readonly DELIM: '\'' = '\''
-	static readonly ESCAPES: readonly string[] = [TokenString.DELIM, '\\', 's','t','n','r']
+	static readonly DELIM   : string = '\''
+	static readonly ESCAPER : string = '\\'
+	static readonly ESCAPES: readonly string[] = [TokenString.DELIM, TokenString.ESCAPER, 's','t','n','r']
 	/**
 	 * Compute the string value of a `TokenString` token
 	 * or any segment of such token.
@@ -333,17 +348,18 @@ export class TokenString extends Token {
 	 */
 	private static sv(text: string): number[] {
 		if (text.length === 0) return []
-		if ('\\' === text[0]) { // possible escape or line continuation
+		if (TokenString.ESCAPER === text[0]) {
+			/* possible escape or line continuation */
 			if (TokenString.ESCAPES.includes(text[1])) {
 				/* an escaped character literal */
 				return [
 					new Map<string, number>([
 						[TokenString.DELIM, TokenString.DELIM.codePointAt(0) !],
-						['\\' , 0x5c],
-						['s'  , 0x20],
-						['t'  , 0x09],
-						['n'  , 0x0a],
-						['r'  , 0x0d],
+						[TokenString.ESCAPER , 0x5c],
+						['s'                 , 0x20],
+						['t'                 , 0x09],
+						['n'                 , 0x0a],
+						['r'                 , 0x0d],
 					]).get(text[1]) !,
 					...TokenString.sv(text.slice(2)),
 				]
@@ -375,10 +391,11 @@ export class TokenString extends Token {
 	constructor (lexer: Lexer) {
 		super('STRING', lexer, ...lexer.advance())
 		while (!this.lexer.isDone && !Char.eq(TokenString.DELIM, this.lexer.c0)) {
-			if (Char.eq(EOT, this.lexer.c0)) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
-			if (Char.eq('\\', this.lexer.c0)) { // possible escape or line continuation
+			if (Char.eq(TokenString.ESCAPER, this.lexer.c0)) {
+				/* possible escape or line continuation */
 				if (Char.inc(TokenString.ESCAPES, this.lexer.c1)) {
 					/* an escaped character literal */
 					this.advance(2n)
@@ -467,7 +484,7 @@ export class TokenTemplate extends Token {
 			this.advance()
 		}
 		while (!this.lexer.isDone) {
-			if (Char.eq(EOT, this.lexer.c0)) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
 			if (Char.eq(TokenTemplate.DELIM, this.lexer.c0, this.lexer.c1, this.lexer.c2)) {
@@ -514,7 +531,7 @@ export class TokenCommentLine extends TokenComment {
 	constructor (lexer: Lexer) {
 		super(lexer, ...lexer.advance())
 		while (!this.lexer.isDone && !Char.eq('\n', this.lexer.c0)) {
-			if (Char.eq(EOT, this.lexer.c0)) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
 			this.advance()
@@ -532,7 +549,7 @@ export class TokenCommentMulti extends TokenComment {
 		comment_multiline_level++;
 		while (comment_multiline_level !== 0n) {
 			while (!this.lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)) {
-				if (Char.eq(EOT, lexer.c0)) {
+				if (Char.eq(Filebound.EOT, lexer.c0)) {
 					throw new LexError02(this)
 				}
 				if (Char.eq(TokenCommentMulti.DELIM_START, this.lexer.c0, this.lexer.c1)) {
@@ -554,7 +571,7 @@ export class TokenCommentBlock extends TokenComment {
 	constructor (lexer: Lexer) {
 		super(lexer, ...lexer.advance(4n))
 		while (!this.lexer.isDone) {
-			if (Char.eq(EOT, this.lexer.c0)) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
 			if (
