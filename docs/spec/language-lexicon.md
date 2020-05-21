@@ -133,12 +133,36 @@ U+3000     | IDEOGRAPHIC SPACE         | CJK Symbols and Punctuation | Separator
 
 ### Punctuators
 ```w3c
-Punctuator ::= ";" | "=" | "+" | "-" | "*" | "/" | "^" | "(" | ")"
+Punctuator ::= "(" | ")" | "+" | "-" | "^" | "*" | "/" | "=" | ";"
 ```
-Punctuators are non-alphanumeric characters in the ASCII character set that
-add to the semantics of the Solid language.
+Punctuators are non-alphanumeric characters in the ASCII character set, or spans of such characters,
+that add to the semantics of the Solid language.
 Some punctuators are operators, which perform computations on values, and
 some punctuators are delimiters, which separate certain code constructs from each other or group them together.
+
+#### Static Semantics: Punctuator Value
+The Punctuator Value (PV) of a punctuator token is the unique mathematical integer ID
+that distinguishes the punctuator from the other punctuators.
+Punctuator Values are predetermined by the lexical grammar and are independent of any instance program.
+Punctuator Values are mathematical integers ranging from *0* to *127* (inclusive).
+
+This specification uses the term “ID” to refer to the identification,
+as not to be confused with [Identifier tokens](#identifiers).
+
+```w3c
+PV(Puncatuator)
+	:= given by the following map: {
+		"(" : \x00,
+		")" : \x01,
+		"+" : \x02,
+		"-" : \x03,
+		"^" : \x04,
+		"*" : \x05,
+		"/" : \x06,
+		"=" : \x07,
+		";" : \x08,
+	}
+```
 
 
 ### Numbers
@@ -164,7 +188,9 @@ Numbers are literal constants that represent numeric mathematical values.
 Currently, only positive and negative (and zero) integers are supported.
 
 #### Static Semantics: Mathematical Value
-The Mathematical Value (MV) of a number token is the computed number that the token represents.
+The Mathematical Value (MV) of a number token is the abstract mathematical quantity that the token represents.
+(Abstract mathematical quantities could include irrational numbers,
+even though they cannot be represented exactly in a computer system.)
 
 There is a many-to-one relationship between tokens and mathematical values. For example,
 a token containing `0042` has the same mathematical value as a token containing `+42`:
@@ -274,17 +300,14 @@ Keywords convey certain semantics to the compiler and to programmers.
 #### Static Semantics: Keyword Value
 The Keyword Value (KV) of a keyword token is the unique mathematical integer ID
 that distinguishes the keyword from the other keywords.
-Keyword IDs are predetermined by the lexical grammar and are independent of any instance program.
-Keyword values are mathematical integers ranging from *0* to *127* (inclusive).
-
-This specification uses the term “ID” to refer to the identification,
-as not to be confused with [Identifier tokens](#identifiers).
+Keyword Values are predetermined by the lexical grammar and are independent of any instance program.
+Keyword Values are mathematical integers ranging from *128* to *255* (inclusive).
 
 ```w3c
 KV(Keyword)
 	:= given by the following map: {
-		"let"     : \x00,
-		"unfixed" : \x01,
+		"let"     : \x80,
+		"unfixed" : \x81,
 	}
 ```
 
@@ -304,12 +327,12 @@ and may contain any number of characters from the Unicode character set.
 
 #### Static Semantics: Identifier Value
 The Identifier Value (IV) of an identifier token is the unique mathematical integer ID
-that distinguishes the identifier from other identifiers within a program.
-Identifier values are mathematical integers strictly greater than *127*.
+that distinguishes the identifier from other identifiers within a given program.
+Identifier values are mathematical integers strictly greater than *255*.
 
 ```w3c
 IV(Identifier)
-	:= (* TO BE DESCRIBED *)
+	:= /* TO BE DESCRIBED */
 ```
 
 
@@ -333,9 +356,11 @@ String tokens are sequences of Unicode characters enclosed in delimiters.
 Strings are snippets of textual data.
 
 #### Static Semantics: String Value
+The String Value (SV) of a string token is the intended text that the string represents,
+which might not always be equal to the token’s source input.
 The text of the string in the source code is called the “raw” text of the token.
 Before the token is sent to the parser, this “raw” text is transformed into a
-String Value (SV), or, informally, “cooked” text.
+String Value, or, informally, “cooked” text.
 
 ```w3c
 SV(String ::= "'" "'")

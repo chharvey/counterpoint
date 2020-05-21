@@ -1,11 +1,7 @@
 import type Scanner from './Scanner.class'
-
-
-
-/** START OF TEXT */
-export const SOT: '\u0002' = '\u0002'
-/** END OF TEXT */
-export const EOT: '\u0003' = '\u0003'
+import {
+	Filebound,
+} from './Token.class'
 
 
 
@@ -88,7 +84,7 @@ export default class Char {
 	lookahead(n: number = 1): Char|null {
 		if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
 		if (n === 1) {
-			return (this.source === EOT) ? null : new Char(this.scanner, this.source_index + 1)
+			return (this.source === Filebound.EOT) ? null : new Char(this.scanner, this.source_index + 1)
 		} else {
 			const recurse: Char|null = this.lookahead(n - 1)
 			return recurse && recurse.lookahead()
@@ -102,13 +98,13 @@ export default class Char {
 	 */
 	toString(): string {
 		const formatted: string = new Map([
-			['\u0000' /* NULL                 \u0000 */, '\u2400' /* SYMBOL FOR NULL                  */],
-			[' '      /* SPACE                \u0020 */, '\u2420' /* SYMBOL FOR SPACE                 */],
-			['\t'     /* CHARACTER TABULATION \u0009 */, '\u2409' /* SYMBOL FOR HORIZONTAL TABULATION */],
-			['\n'     /* LINE FEED (LF)       \u000a */, '\u240a' /* SYMBOL FOR LINE FEED             */],
-			['\r'     /* CARRIAGE RETURN (CR) \u000d */, '\u240d' /* SYMBOL FOR CARRIAGE RETURN       */],
-			[SOT      /* START OF TEXT        \u0002 */, '\u2402' /* SYMBOL FOR START OF TEXT         */],
-			[EOT      /* END OF TEXT          \u0003 */, '\u2403' /* SYMBOL FOR END OF TEXT           */],
+			['\u0000'      /* NULL                 \u0000 */, '\u2400' /* SYMBOL FOR NULL                  */],
+			[' '           /* SPACE                \u0020 */, '\u2420' /* SYMBOL FOR SPACE                 */],
+			['\t'          /* CHARACTER TABULATION \u0009 */, '\u2409' /* SYMBOL FOR HORIZONTAL TABULATION */],
+			['\n'          /* LINE FEED (LF)       \u000a */, '\u240a' /* SYMBOL FOR LINE FEED             */],
+			['\r'          /* CARRIAGE RETURN (CR) \u000d */, '\u240d' /* SYMBOL FOR CARRIAGE RETURN       */],
+			[Filebound.SOT /* START OF TEXT        \u0002 */, '\u2402' /* SYMBOL FOR START OF TEXT         */],
+			[Filebound.EOT /* END OF TEXT          \u0003 */, '\u2403' /* SYMBOL FOR END OF TEXT           */],
 		]).get(this.source) || this.source
 		return `    ${this.line_index+1}    ${this.col_index+1}    ${formatted}` // for some dumb reason, lines and cols start at 1 instad of 0
 	}

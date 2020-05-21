@@ -1,7 +1,7 @@
-import Char, {
-	SOT,
-	EOT,
-} from './Char.class'
+import Char from './Char.class'
+import {
+	Filebound,
+} from './Token.class'
 
 
 
@@ -17,7 +17,7 @@ export default class Scanner {
 	 * @param source - the source text
 	 */
 	constructor(source: string) {
-		this.source_text = `${ SOT }\n${ source.replace(/\r\n|\r/g, '\n') }\n${ EOT }`
+		this.source_text = `${ Filebound.SOT }\n${ source.replace(/\r\n|\r/g, '\n') }\n${ Filebound.EOT }`
 	}
 
 	/**

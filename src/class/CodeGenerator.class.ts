@@ -1,10 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
+import {
+	Punctuator,
+} from './Token.class'
 import type SemanticNode from './SemanticNode.class'
-import type {
-	Operator,
-} from './SemanticNode.class'
 
 const i32_exp: string = fs.readFileSync(path.join(__dirname, '../../src/exp.wat'), 'utf8')
 
@@ -52,42 +52,40 @@ export default class CodeGenerator {
 	}
 
 	/**
-	 * Perform a binary operation on the stack.
-	 * @param op the operation to perform
-	 * @param arg1 the first operand
-	 * @param arg2 the second operand
-	 * @return this
-	 */
-	binop(op: Operator, arg1: SemanticNode, arg2: SemanticNode): this {
-		const Operator_export: typeof Operator = require('./SemanticNode.class').Operator
-		arg1.compile(this)
-		arg2.compile(this)
-		this.instructions.push(new Map<Operator, string>([
-			[Operator_export.ADD, `i32.add`],
-			[Operator_export.SUB, `i32.sub`],
-			[Operator_export.MUL, `i32.mul`],
-			[Operator_export.DIV, `i32.div_s`],
-			[Operator_export.EXP, `call $exp`],
-		]).get(op) !)
-		return this
-	}
-
-	/**
 	 * Perform a unary operation on the stack.
-	 * @param op the operation to perform
+	 * @param op a punctuator representing the operation to perform
 	 * @return this
 	 */
-	unop(op: Operator, arg: SemanticNode): this {
-		const Operator_export: typeof Operator = require('./SemanticNode.class').Operator
+	unop(op: Punctuator, arg: SemanticNode): this {
 		arg.compile(this)
-		this.instructions.push(new Map<Operator, string>([
-			[Operator_export.AFF, `nop`],
-			[Operator_export.NEG, [
+		this.instructions.push(new Map<Punctuator, string>([
+			[Punctuator.AFF, `nop`],
+			[Punctuator.NEG, [
 				`i32.const -1`,
 				`i32.xor`,
 				`i32.const 1`,
 				`i32.add`,
 			].join('\n')],
+		]).get(op) !)
+		return this
+	}
+
+	/**
+	 * Perform a binary operation on the stack.
+	 * @param op a punctuator representing the operation to perform
+	 * @param arg1 the first operand
+	 * @param arg2 the second operand
+	 * @return this
+	 */
+	binop(op: Punctuator, arg1: SemanticNode, arg2: SemanticNode): this {
+		arg1.compile(this)
+		arg2.compile(this)
+		this.instructions.push(new Map<Punctuator, string>([
+			[Punctuator.ADD, `i32.add`],
+			[Punctuator.SUB, `i32.sub`],
+			[Punctuator.MUL, `i32.mul`],
+			[Punctuator.DIV, `i32.div_s`],
+			[Punctuator.EXP, `call $exp`],
 		]).get(op) !)
 		return this
 	}

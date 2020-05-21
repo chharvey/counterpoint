@@ -1,9 +1,6 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
-import Char, {
-	SOT,
-	EOT,
-} from './Char.class'
+import Char from './Char.class'
 import type Lexer from './Lexer.class'
 
 import {
@@ -13,12 +10,35 @@ import {
 } from '../error/LexError.class'
 
 
-export type RadixType = 2n|4n|8n|10n|16n|36n
-
-enum KeywordKind {
-	STORAGE,
-	MODIFIER,
+export enum Filebound {
+	SOT = '\u0002',
+	EOT = '\u0003',
 }
+
+export enum Punctuator {
+	GRP_OPN = '(',
+	GRP_CLS = ')',
+	AFF     = '+',
+	NEG     = '-',
+	EXP     = '^',
+	MUL     = '*',
+	DIV     = '/',
+	ADD     = '+',
+	SUB     = '-',
+	ASSIGN  = '=',
+	ENDSTAT = ';',
+}
+
+export enum Keyword {
+	// Storage
+	LET = 'let',
+	// Modifier
+	UNFIXED = 'unfixed',
+}
+
+
+
+export type RadixType = 2n|4n|8n|10n|16n|36n
 
 export enum TemplatePosition {
 	FULL,
@@ -52,11 +72,13 @@ export default abstract class Token implements Serializable {
 	/**
 	 * Construct a new Token object.
 	 * @param tagname    - The name of the type of this Token.
+	 * @param lexer      - The lexer used to construct this Token.
 	 * @param start_char - the starting character of this Token
 	 * @param more_chars - additional characters to add upon construction
 	 */
 	constructor (
 		readonly tagname: string,
+		protected readonly lexer: Lexer,
 		start_char: Char,
 		...more_chars: Char[]
 	) {
@@ -76,10 +98,11 @@ export default abstract class Token implements Serializable {
 
 	/**
 	 * Add to this Token’s cargo.
-	 * @param chars - the characters to append
+	 * @param lexer - the lexer whose characters to take from
+	 * @param n     - the number of characters to append
 	 */
-	add(...chars: Char[]): void {
-		this._cargo += chars.map((char) => char.source).join('')
+	protected advance(n: bigint = 1n): void {
+		this._cargo += this.lexer.advance(n).map((char) => char.source).join('')
 	}
 
 	/**
@@ -116,8 +139,8 @@ export default abstract class Token implements Serializable {
 			: cooked.toString())
 		}
 		const contents: string = this.source
-			.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
-			.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
+			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`
 	}
 }
@@ -125,51 +148,50 @@ export default abstract class Token implements Serializable {
 
 
 export class TokenFilebound extends Token {
-	static readonly CHARS: readonly string[] = [SOT, EOT]
+	static readonly CHARS: readonly Filebound[] = [Filebound.SOT, Filebound.EOT]
+	declare source: Filebound;
 	constructor (lexer: Lexer) {
-		super('FILEBOUND', lexer.c0)
-		lexer.advance()
+		super('FILEBOUND', lexer, ...lexer.advance())
 	}
 	cook(): boolean {
-		return this.source === SOT
+		return this.source === Filebound.SOT
 	}
 }
 export class TokenWhitespace extends Token {
 	static readonly CHARS: readonly string[] = [' ', '\t', '\n']
 	constructor (lexer: Lexer) {
-		const buffer: Char[] = [lexer.c0]
-		lexer.advance()
-		while (!lexer.isDone && Char.inc(TokenWhitespace.CHARS, lexer.c0)) {
-			buffer.push(lexer.c0)
-			lexer.advance()
+		super('WHITESPACE', lexer, ...lexer.advance())
+		while (!this.lexer.isDone && Char.inc(TokenWhitespace.CHARS, this.lexer.c0)) {
+			this.advance()
 		}
-		super('WHITESPACE', buffer[0], ...buffer.slice(1))
 	}
 	cook(): null {
 		return null // we do not want to send whitespace to the parser
 	}
 }
 export class TokenPunctuator extends Token {
-	static readonly CHARS_1: readonly string[] = '; = + - * / ^ ( )'.split(' ')
-	static readonly CHARS_2: readonly string[] = ''.split(' ')
-	static readonly CHARS_3: readonly string[] = ''.split(' ')
+	static readonly PUNCTUATORS: readonly Punctuator[] = [...new Set(Object.values(Punctuator))] // remove duplicates
+	declare source: Punctuator;
 	constructor (lexer: Lexer, count: 1n|2n|3n = 1n) {
-		const buffer: Char[] = [lexer.c0]
+		super('PUNCTUATOR', lexer, ...lexer.advance())
 		if (count >= 3n) {
-			buffer.push(lexer.c1 !, lexer.c2 !)
+			this.advance(2n)
 		} else if (count >= 2n) {
-			buffer.push(lexer.c1 !)
+			this.advance()
 		}
-		lexer.advance(count)
-		super('PUNCTUATOR', buffer[0], ...buffer.slice(1))
 	}
-	cook(): string {
-		return this.source
+	cook(): bigint {
+		return BigInt(TokenPunctuator.PUNCTUATORS.indexOf(this.source))
 	}
 }
 export class TokenNumber extends Token {
 	static readonly RADIX_DEFAULT: RadixType = 10n
-	static readonly SEPARATOR: string = '_'
+	static readonly ESCAPER   : string = '\\'
+	static readonly SEPARATOR : string = '_'
+	static readonly UNARY: readonly Punctuator[] = [
+		Punctuator.AFF,
+		Punctuator.NEG,
+	]
 	static readonly BASES: ReadonlyMap<string, RadixType> = new Map<string, RadixType>([
 		['b',  2n],
 		['q',  4n],
@@ -185,10 +207,6 @@ export class TokenNumber extends Token {
 		[10n, '0 1 2 3 4 5 6 7 8 9'                                                     .split(' ')],
 		[16n, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ')],
 		[36n, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
-	])
-	static readonly UNARY: ReadonlyMap<string, number> = new Map<string, number>([
-		['+',  1],
-		['-', -1],
 	])
 	/**
 	 * Compute the mathematical value of a `TokenNumber` token.
@@ -212,10 +230,10 @@ export class TokenNumber extends Token {
 	private readonly has_radix: boolean;
 	private readonly radix: RadixType;
 	constructor (lexer: Lexer, has_unary: boolean, has_radix: boolean = false) {
+		// NB https://github.com/microsoft/TypeScript/issues/8277
 		const buffer: Char[] = []
 		if (has_unary) { // prefixed with leading unary operator "+" or "-"
-			buffer.push(lexer.c0)
-			lexer.advance()
+			buffer.push(...lexer.advance())
 		}
 		const radix: RadixType = has_radix ? TokenNumber.BASES.get(lexer.c1 !.source) ! : TokenNumber.RADIX_DEFAULT
 		const digits: readonly string[] = TokenNumber.DIGITS.get(radix) !
@@ -223,58 +241,48 @@ export class TokenNumber extends Token {
 			if (!Char.inc(digits, lexer.c2)) {
 				throw new LexError03(`${lexer.c0.source}${lexer.c1 !.source}`, lexer.c0.line_index, lexer.c0.col_index)
 			}
-			buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-			lexer.advance(3n)
+			buffer.push(...lexer.advance(3n))
 		} else { // implicit default base
-			buffer.push(lexer.c0)
-			lexer.advance()
+			buffer.push(...lexer.advance())
 		}
-		while (!lexer.isDone && Char.inc([...digits, TokenNumber.SEPARATOR], lexer.c0)) {
-			if (Char.inc(digits, lexer.c0)) {
-				buffer.push(lexer.c0)
-				lexer.advance()
-			} else if (Char.eq(TokenNumber.SEPARATOR, lexer.c0)) {
-				if (Char.inc(digits, lexer.c1)) {
-					buffer.push(lexer.c0, lexer.c1 !)
-					lexer.advance(2n)
-				} else {
-					throw new LexError04(Char.eq(TokenNumber.SEPARATOR, lexer.c1) ? lexer.c1 ! : lexer.c0)
-				}
-			}
-		}
-		super('NUMBER', buffer[0], ...buffer.slice(1))
+		super('NUMBER', lexer, buffer[0], ...buffer.slice(1))
 		this.has_unary = has_unary
 		this.has_radix = has_radix
 		this.radix     = radix
+		while (!this.lexer.isDone && Char.inc([...digits, TokenNumber.SEPARATOR], this.lexer.c0)) {
+			if (Char.inc(digits, this.lexer.c0)) {
+				this.advance()
+			} else if (Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
+				if (Char.inc(digits, this.lexer.c1)) {
+					this.advance(2n)
+				} else {
+					throw new LexError04(Char.eq(TokenNumber.SEPARATOR, this.lexer.c1) ? this.lexer.c1 ! : this.lexer.c0)
+				}
+			}
+		}
 	}
 	cook(): number {
 		let text: string = this.source
-		const multiplier: number = TokenNumber.UNARY.get(text[0]) || 1
+		const multiplier: number = (text[0] === Punctuator.NEG) ? -1 : 1
 		if (this.has_unary) text = text.slice(1) // cut off unary, if any
 		if (this.has_radix) text = text.slice(2) // cut off radix, if any
 		return multiplier * TokenNumber.mv(text, this.radix)
 	}
 }
 export class TokenKeyword extends Token {
+	private static readonly MINIMUM_VALUE: bigint = 0x80n
 	static readonly CHAR: RegExp = /^[a-z]$/
-	static readonly RESERVED: ReadonlyMap<KeywordKind, readonly string[]> = new Map<KeywordKind, readonly string[]>([
-		[KeywordKind.STORAGE, [
-			'let',
-		]],
-		[KeywordKind.MODIFIER, [
-			'unfixed',
-		]],
-	])
-	static readonly KEYWORDS: readonly string[] = [...TokenKeyword.RESERVED.values()].flat()
-	static readonly MAX_KEYWORD_LENGTH: number = Math.max(...TokenKeyword.KEYWORDS.map((kw) => kw.length))
-	constructor (chars: Char[]) {
-		super('KEYWORD', chars[0], ...chars.slice(1))
+	static readonly KEYWORDS: readonly Keyword[] = [...new Set<Keyword>(Object.values(Keyword))] // remove duplicates
+	declare source: Keyword;
+	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
+		super('KEYWORD', lexer, start_char, ...more_chars)
 	}
 	cook(): bigint {
-		return BigInt(TokenKeyword.KEYWORDS.indexOf(this.source))
+		return BigInt(TokenKeyword.KEYWORDS.indexOf(this.source)) + TokenKeyword.MINIMUM_VALUE
 	}
 }
 export abstract class TokenIdentifier extends Token {
+	private static readonly MINIMUM_VALUE: bigint = 0x100n
 	/**
 	 * The cooked value of this Token.
 	 * If the token is a keyword, the cooked value is its contents.
@@ -282,8 +290,8 @@ export abstract class TokenIdentifier extends Token {
 	 * which indexes unique identifier tokens.
 	 */
 	private _cooked: bigint|null;
-	constructor (start_char: Char, ...more_chars: Char[]) {
-		super('IDENTIFIER', start_char, ...more_chars)
+	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
+		super('IDENTIFIER', lexer, start_char, ...more_chars)
 		this._cooked = null
 	}
 	/**
@@ -294,7 +302,7 @@ export abstract class TokenIdentifier extends Token {
 	 */
 	/** @final */ setValue(value: bigint): void {
 		if (this._cooked === null) {
-			this._cooked = value
+			this._cooked = value + TokenIdentifier.MINIMUM_VALUE
 		}
 	}
 	/** @final */ cook(): bigint|null {
@@ -304,15 +312,13 @@ export abstract class TokenIdentifier extends Token {
 export class TokenIdentifierBasic extends TokenIdentifier {
 	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
-	constructor (chars_or_lexer: Char[] | Lexer) {
-		if (chars_or_lexer instanceof Array) {
-			super(chars_or_lexer[0], ...chars_or_lexer.slice(1))
+	constructor (lexer: Lexer, start_char?: Char, ...more_chars: Char[]) {
+		if (start_char) {
+			super(lexer, start_char, ...more_chars)
 		} else {
-			super(chars_or_lexer.c0)
-			chars_or_lexer.advance()
-			while (!chars_or_lexer.isDone && TokenIdentifierBasic.CHAR_REST.test(chars_or_lexer.c0.source)) {
-				this.add(chars_or_lexer.c0)
-				chars_or_lexer.advance()
+			super(lexer, ...lexer.advance())
+			while (!this.lexer.isDone && TokenIdentifierBasic.CHAR_REST.test(this.lexer.c0.source)) {
+				this.advance()
 			}
 		}
 	}
@@ -320,23 +326,21 @@ export class TokenIdentifierBasic extends TokenIdentifier {
 export class TokenIdentifierUnicode extends TokenIdentifier {
 	static readonly DELIM: '`' = '`'
 	constructor (lexer: Lexer) {
-		super(lexer.c0)
-		lexer.advance()
-		while (!lexer.isDone && !Char.eq(TokenIdentifierUnicode.DELIM, lexer.c0)) {
-			if (Char.eq(EOT, lexer.c0)) {
+		super(lexer, ...lexer.advance())
+		while (!this.lexer.isDone && !Char.eq(TokenIdentifierUnicode.DELIM, this.lexer.c0)) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
-			this.add(lexer.c0)
-			lexer.advance()
+			this.advance()
 		}
 		// add ending delim to token
-		this.add(lexer.c0)
-		lexer.advance()
+		this.advance()
 	}
 }
 export class TokenString extends Token {
-	static readonly DELIM: '\'' = '\''
-	static readonly ESCAPES: readonly string[] = [TokenString.DELIM, '\\', 's','t','n','r']
+	static readonly DELIM   : string = '\''
+	static readonly ESCAPER : string = '\\'
+	static readonly ESCAPES: readonly string[] = [TokenString.DELIM, TokenString.ESCAPER, 's','t','n','r']
 	/**
 	 * Compute the string value of a `TokenString` token
 	 * or any segment of such token.
@@ -345,17 +349,18 @@ export class TokenString extends Token {
 	 */
 	private static sv(text: string): number[] {
 		if (text.length === 0) return []
-		if ('\\' === text[0]) { // possible escape or line continuation
+		if (TokenString.ESCAPER === text[0]) {
+			/* possible escape or line continuation */
 			if (TokenString.ESCAPES.includes(text[1])) {
 				/* an escaped character literal */
 				return [
 					new Map<string, number>([
 						[TokenString.DELIM, TokenString.DELIM.codePointAt(0) !],
-						['\\' , 0x5c],
-						['s'  , 0x20],
-						['t'  , 0x09],
-						['n'  , 0x0a],
-						['r'  , 0x0d],
+						[TokenString.ESCAPER , 0x5c],
+						['s'                 , 0x20],
+						['t'                 , 0x09],
+						['n'                 , 0x0a],
+						['r'                 , 0x0d],
 					]).get(text[1]) !,
 					...TokenString.sv(text.slice(2)),
 				]
@@ -385,72 +390,60 @@ export class TokenString extends Token {
 		]
 	}
 	constructor (lexer: Lexer) {
-		const buffer: Char[] = [lexer.c0]
-		lexer.advance()
-		while (!lexer.isDone && !Char.eq(TokenString.DELIM, lexer.c0)) {
-			if (Char.eq(EOT, lexer.c0)) {
-				super('STRING', buffer[0], ...buffer.slice(1))
+		super('STRING', lexer, ...lexer.advance())
+		while (!this.lexer.isDone && !Char.eq(TokenString.DELIM, this.lexer.c0)) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
-			if (Char.eq('\\', lexer.c0)) { // possible escape or line continuation
-				if (Char.inc(TokenString.ESCAPES, lexer.c1)) {
+			if (Char.eq(TokenString.ESCAPER, this.lexer.c0)) {
+				/* possible escape or line continuation */
+				if (Char.inc(TokenString.ESCAPES, this.lexer.c1)) {
 					/* an escaped character literal */
-					buffer.push(lexer.c0, lexer.c1 !)
-					lexer.advance(2n)
+					this.advance(2n)
 
-				} else if (Char.eq('u{', lexer.c1, lexer.c2)) {
+				} else if (Char.eq('u{', this.lexer.c1, this.lexer.c2)) {
 					/* an escape sequence */
 					const digits: readonly string[] = TokenNumber.DIGITS.get(16n) !
-					let cargo: string = `${lexer.c0.source}${lexer.c1 !.source}${lexer.c2 !.source}`
-					buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-					lexer.advance(3n)
-					if (Char.inc(digits, lexer.c0)) {
-						cargo += lexer.c0.source
-						buffer.push(lexer.c0)
-						lexer.advance()
-						while(!lexer.isDone && Char.inc([...digits, TokenNumber.SEPARATOR], lexer.c0)) {
-							if (Char.inc(digits, lexer.c0)) {
-								cargo += lexer.c0.source
-								buffer.push(lexer.c0)
-								lexer.advance()
-							} else if (Char.eq(TokenNumber.SEPARATOR, lexer.c0)) {
-								if (Char.inc(digits, lexer.c1)) {
-									cargo += `${lexer.c0.source}${lexer.c1 !.source}`
-									buffer.push(lexer.c0, lexer.c1 !)
-									lexer.advance(2n)
+					let cargo: string = `${this.lexer.c0.source}${this.lexer.c1 !.source}${this.lexer.c2 !.source}`
+					this.advance(3n)
+					if (Char.inc(digits, this.lexer.c0)) {
+						cargo += this.lexer.c0.source
+						this.advance()
+						while(!this.lexer.isDone && Char.inc([...digits, TokenNumber.SEPARATOR], this.lexer.c0)) {
+							if (Char.inc(digits, this.lexer.c0)) {
+								cargo += this.lexer.c0.source
+								this.advance()
+							} else if (Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
+								if (Char.inc(digits, this.lexer.c1)) {
+									cargo += `${this.lexer.c0.source}${this.lexer.c1 !.source}`
+									this.advance(2n)
 								} else {
-									throw new LexError04(Char.eq(TokenNumber.SEPARATOR, lexer.c1) ? lexer.c1 ! : lexer.c0)
+									throw new LexError04(Char.eq(TokenNumber.SEPARATOR, this.lexer.c1) ? this.lexer.c1 ! : this.lexer.c0)
 								}
 							}
 						}
 					}
 					// add ending escape delim
-					if (Char.eq('}', lexer.c0)) {
-						buffer.push(lexer.c0)
-						lexer.advance()
+					if (Char.eq('}', this.lexer.c0)) {
+						this.advance()
 					} else {
-						throw new LexError03(cargo, lexer.c0.line_index, lexer.c0.col_index)
+						throw new LexError03(cargo, this.lexer.c0.line_index, this.lexer.c0.col_index)
 					}
 
-				} else if (Char.eq('\n', lexer.c1)) {
+				} else if (Char.eq('\n', this.lexer.c1)) {
 					/* a line continuation (LF) */
-					buffer.push(lexer.c0, lexer.c1 !)
-					lexer.advance(2n)
+					this.advance(2n)
 
 				} else {
 					/* a backslash escapes the following character */
-					buffer.push(lexer.c0)
-					lexer.advance()
+					this.advance()
 				}
 			} else {
-				buffer.push(lexer.c0)
-				lexer.advance()
+				this.advance()
 			}
 		}
 		// add ending delim to token
-		buffer.push(lexer.c0)
-		lexer.advance()
-		super('STRING', buffer[0], ...buffer.slice(1))
+		this.advance()
 	}
 	cook(): string {
 		return String.fromCodePoint(...TokenString.sv(
@@ -475,54 +468,48 @@ export class TokenTemplate extends Token {
 			...TokenTemplate.tv(text.slice(1)),
 		]
 	}
-	private readonly delim_start: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_END  ;
 	private readonly delim_end  : typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_START;
 	readonly position: TemplatePosition;
-	constructor (lexer: Lexer, delim_start: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_END) {
+	constructor (
+		lexer: Lexer,
+		private delim_start: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_END,
+	) {
+		super('TEMPLATE', lexer, ...lexer.advance())
 		let delim_end: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_START;
 		const positions: Set<TemplatePosition> = new Set<TemplatePosition>()
-		const buffer: Char[] = []
 		if (delim_start === TokenTemplate.DELIM) {
 			positions.add(TemplatePosition.FULL).add(TemplatePosition.HEAD)
-			buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-			lexer.advance(3n)
+			this.advance(2n)
 		} else { // delim_start === TokenTemplate.DELIM_INTERP_END
 			positions.add(TemplatePosition.MIDDLE).add(TemplatePosition.TAIL)
-			buffer.push(lexer.c0, lexer.c1 !)
-			lexer.advance(2n)
+			this.advance()
 		}
-		while (!lexer.isDone) {
-			if (Char.eq(EOT, lexer.c0)) {
-				super('TEMPLATE', buffer[0], ...buffer.slice(1))
+		while (!this.lexer.isDone) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
-			if (Char.eq(TokenTemplate.DELIM, lexer.c0, lexer.c1, lexer.c2)) {
+			if (Char.eq(TokenTemplate.DELIM, this.lexer.c0, this.lexer.c1, this.lexer.c2)) {
 				/* end string template full/tail */
 				delim_end = TokenTemplate.DELIM
 				positions.delete(TemplatePosition.HEAD)
 				positions.delete(TemplatePosition.MIDDLE)
 				// add ending delim to token
-				buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-				lexer.advance(3n)
+				this.advance(3n)
 				break;
 
-			} else if (Char.eq(TokenTemplate.DELIM_INTERP_START, lexer.c0, lexer.c1)) {
+			} else if (Char.eq(TokenTemplate.DELIM_INTERP_START, this.lexer.c0, this.lexer.c1)) {
 				/* end string template head/middle */
 				delim_end = TokenTemplate.DELIM_INTERP_START
 				positions.delete(TemplatePosition.FULL)
 				positions.delete(TemplatePosition.TAIL)
 				// add start interpolation delim to token
-				buffer.push(lexer.c0, lexer.c1 !)
-				lexer.advance(2n)
+				this.advance(2n)
 				break;
 
 			} else {
-				buffer.push(lexer.c0)
-				lexer.advance()
+				this.advance()
 			}
 		}
-		super('TEMPLATE', buffer[0], ...buffer.slice(1))
-		this.delim_start = delim_start
 		this.delim_end   = delim_end !
 		this.position = [...positions][0]
 	}
@@ -533,8 +520,8 @@ export class TokenTemplate extends Token {
 	}
 }
 export abstract class TokenComment extends Token {
-	constructor (start_char: Char, ...more_chars: Char[]) {
-		super('COMMENT', start_char, ...more_chars)
+	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
+		super('COMMENT', lexer, start_char, ...more_chars)
 	}
 	/** @final */ cook(): null {
 		return null // we do not want to send comments to the parser
@@ -543,79 +530,61 @@ export abstract class TokenComment extends Token {
 export class TokenCommentLine extends TokenComment {
 	static readonly DELIM: '%' = '%'
 	constructor (lexer: Lexer) {
-		const buffer: Char[] = [lexer.c0]
-		lexer.advance()
-		while (!lexer.isDone && !Char.eq('\n', lexer.c0)) {
-			if (Char.eq(EOT, lexer.c0)) {
-				super(buffer[0], ...buffer.slice(1))
+		super(lexer, ...lexer.advance())
+		while (!this.lexer.isDone && !Char.eq('\n', this.lexer.c0)) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
-			buffer.push(lexer.c0)
-			lexer.advance()
+			this.advance()
 		}
 		// add '\n' to token
-		buffer.push(lexer.c0)
-		lexer.advance()
-		super(buffer[0], ...buffer.slice(1))
+		this.advance()
 	}
 }
 export class TokenCommentMulti extends TokenComment {
 	static readonly DELIM_START : '{%' = '{%'
 	static readonly DELIM_END   : '%}' = '%}'
 	constructor (lexer: Lexer) {
+		super(lexer, ...lexer.advance(2n))
 		let comment_multiline_level: bigint = 0n
-		const buffer: Char[] = [lexer.c0, lexer.c1 !]
-		lexer.advance(2n)
 		comment_multiline_level++;
 		while (comment_multiline_level !== 0n) {
-			while (!lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, lexer.c0, lexer.c1)) {
-				if (Char.eq(EOT, lexer.c0)) {
-					super(buffer[0], ...buffer.slice(1))
+			while (!this.lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)) {
+				if (Char.eq(Filebound.EOT, lexer.c0)) {
 					throw new LexError02(this)
 				}
-				if (Char.eq(TokenCommentMulti.DELIM_START, lexer.c0, lexer.c1)) {
-					buffer.push(lexer.c0, lexer.c1 !)
-					lexer.advance(2n)
+				if (Char.eq(TokenCommentMulti.DELIM_START, this.lexer.c0, this.lexer.c1)) {
+					this.advance(2n)
 					comment_multiline_level++;
 				} else {
-					buffer.push(lexer.c0)
-					lexer.advance()
+					this.advance()
 				}
 			}
 			// add ending delim to token
-			buffer.push(lexer.c0, lexer.c1 !)
-			lexer.advance(2n)
+			this.advance(2n)
 			comment_multiline_level--;
 		}
-		super(buffer[0], ...buffer.slice(1))
 	}
 }
 export class TokenCommentBlock extends TokenComment {
 	static readonly DELIM_START : '%%%' = '%%%'
 	static readonly DELIM_END   : '%%%' = '%%%'
 	constructor (lexer: Lexer) {
-		const buffer: Char[] = [lexer.c0, lexer.c1 !, lexer.c2 !, lexer.c3 !]
-		lexer.advance(4n)
-		let source: string = buffer.map((char) => char.source).join('')
-		while (!lexer.isDone) {
-			if (Char.eq(EOT, lexer.c0)) {
-				super(buffer[0], ...buffer.slice(1))
+		super(lexer, ...lexer.advance(4n))
+		while (!this.lexer.isDone) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
 			if (
-				!Char.eq(`${TokenCommentBlock.DELIM_END}\n`, lexer.c0, lexer.c1, lexer.c2, lexer.c3) ||
-				source.slice(source.lastIndexOf('\n') + 1).trim() !== '' // the tail end of the token does not match `/\n(\s)*/` (a newline followed by whitespace)
+				!Char.eq(`${TokenCommentBlock.DELIM_END}\n`, this.lexer.c0, this.lexer.c1, this.lexer.c2, this.lexer.c3) ||
+				this.source.slice(this.source.lastIndexOf('\n') + 1).trim() !== '' // the tail end of this token does not match `/\n(\s)*/` (a newline followed by whitespace)
 			) {
-				buffer.push(lexer.c0)
-				source += lexer.c0.source
-				lexer.advance()
+				this.advance()
 			} else {
 				break;
 			}
 		}
 		// add ending delim to token
-		buffer.push(lexer.c0, lexer.c1 !, lexer.c2 !)
-		lexer.advance(3n)
-		super(buffer[0], ...buffer.slice(1))
+		this.advance(3n)
 	}
 }

@@ -1,6 +1,7 @@
 import Scanner from './Scanner.class'
 import Char from './Char.class'
 import Token, {
+	Punctuator,
 	TokenFilebound,
 	TokenWhitespace,
 	TokenPunctuator,
@@ -27,6 +28,13 @@ import {
  * @see http://parsingintro.sourceforge.net/#contents_item_6.5
  */
 export default class Lexer {
+	private static readonly PUNCTUATORS_3: readonly Punctuator[] = TokenPunctuator.PUNCTUATORS.filter((p) => p.length === 3)
+	private static readonly PUNCTUATORS_2: readonly Punctuator[] = TokenPunctuator.PUNCTUATORS.filter((p) => p.length === 2)
+	private static readonly PUNCTUATORS_1: readonly Punctuator[] = TokenPunctuator.PUNCTUATORS.filter((p) => p.length === 1)
+	private static readonly BASES_KEYS: readonly string[] = [...TokenNumber.BASES.keys()]
+	private static readonly DIGITS_DEFAULT: readonly string[] = TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT)!
+
+
 	/** The scanner returning characters for each iteration. */
 	private readonly scanner: IterableIterator<Char>;
 	/** The result of the scanner iterator. */
@@ -65,11 +73,15 @@ export default class Lexer {
 	/**
 	 * Advance this Lexer, scanning the next character and reassigning variables.
 	 * @param   n - the number of times to advance
+	 * @returns all the characters scanned since the last advance
 	 * @throws  {RangeError} if the argument is not a positive integer
 	 */
-	advance(n: bigint = 1n): void {
-		if (n % 1n !== 0n || n <= 0n) throw new RangeError('Argument must be a positive integer.')
+	advance(n?: 1n): [Char];
+	advance(n: bigint): [Char, ...Char[]];
+	advance(n: bigint = 1n): [Char, ...Char[]] {
+		if (n <= 0n) throw new RangeError('Argument must be a positive integer.')
 		if (n === 1n) {
+			const returned: Char = this._c0
 			this.iterator_result_char = this.scanner.next()
 			if (!this.iterator_result_char.done) {
 				this._c0 = this.iterator_result_char.value
@@ -77,9 +89,12 @@ export default class Lexer {
 				this._c2 = this._c0.lookahead(2)
 				this._c3 = this._c0.lookahead(3)
 			}
+			return [returned]
 		} else {
-			this.advance(n - 1n)
-			this.advance()
+			return [
+				...this.advance(),
+				...this.advance(n - 1n),
+			] as [Char, ...Char[]]
 		}
 	}
 
@@ -97,23 +112,23 @@ export default class Lexer {
 			} else if (Char.inc(TokenWhitespace.CHARS, this._c0)) {
 				token = new TokenWhitespace(this)
 
-			} else if (Char.inc(TokenPunctuator.CHARS_3, this._c0, this._c1, this._c2)) {
+			} else if (Char.inc(Lexer.PUNCTUATORS_3, this._c0, this._c1, this._c2)) {
 				token = new TokenPunctuator(this, 3n)
-			} else if (Char.inc(TokenPunctuator.CHARS_2, this._c0, this._c1)) {
+			} else if (Char.inc(Lexer.PUNCTUATORS_2, this._c0, this._c1)) {
 				token = new TokenPunctuator(this, 2n)
-			} else if (Char.inc(TokenPunctuator.CHARS_1, this._c0)) {
+			} else if (Char.inc(Lexer.PUNCTUATORS_1, this._c0)) {
 				/* we found a punctuator or a number literal prefixed with a unary operator */
-				if (Char.inc([...TokenNumber.UNARY.keys()], this._c0)) {
-					if (Char.eq('\\', this._c1)) {
-						if (Char.inc([...TokenNumber.BASES.keys()], this._c2)) {
-							/* an integer literal with an explicit radix */
+				if (Char.inc(TokenNumber.UNARY, this._c0)) {
+					if (Char.inc(Lexer.DIGITS_DEFAULT, this._c1)) {
+						/* a number literal with a unary operator and without an explicit radix */
+						token = new TokenNumber(this, true)
+					} else if (Char.eq(TokenNumber.ESCAPER, this._c1)) {
+						if (Char.inc(Lexer.BASES_KEYS, this._c2)) {
+							/* a number literal with a unary operator and with an explicit radix */
 							token = new TokenNumber(this, true, true)
 						} else {
 							throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}${this._c2 && this._c2.source || ''}`, this._c0.line_index, this._c0.col_index)
 						}
-					} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c1)) {
-						/* a number literal without an explicit radix */
-						token = new TokenNumber(this, true)
 					} else {
 						/* a punctuator "+" or "-" */
 						token = new TokenPunctuator(this)
@@ -123,12 +138,12 @@ export default class Lexer {
 					token = new TokenPunctuator(this)
 				}
 
-			} else if (Char.inc(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !, this._c0)) {
-				/* a number literal without an explicit radix */
+			} else if (Char.inc(Lexer.DIGITS_DEFAULT, this._c0)) {
+				/* a number literal without a unary operator and without an explicit radix */
 				token = new TokenNumber(this, false)
-			} else if (Char.eq('\\', this._c0)) {
-				if (Char.inc([...TokenNumber.BASES.keys()], this._c1)) {
-					/* an integer literal with an explicit radix */
+			} else if (Char.eq(TokenNumber.ESCAPER, this._c0)) {
+				if (Char.inc(Lexer.BASES_KEYS, this._c1)) {
+					/* a number literal without a unary operator and with an explicit radix */
 					token = new TokenNumber(this, false, true)
 				} else {
 					throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}`, this._c0.line_index, this._c0.col_index)
@@ -143,9 +158,9 @@ export default class Lexer {
 					this.advance()
 				}
 				const bufferstring: string = buffer.map((char) => char.source).join('')
-				token = (TokenKeyword.KEYWORDS.includes(bufferstring))
-					? new TokenKeyword(buffer)
-					: new TokenIdentifierBasic(buffer)
+				token = ((TokenKeyword.KEYWORDS as string[]).includes(bufferstring))
+					? new TokenKeyword        (this, buffer[0], ...buffer.slice(1))
+					: new TokenIdentifierBasic(this, buffer[0], ...buffer.slice(1))
 			} else if (TokenIdentifierBasic.CHAR_START.test(this._c0.source)) {
 				/* we found a basic identifier */
 				token = new TokenIdentifierBasic(this)

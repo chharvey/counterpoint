@@ -1,11 +1,10 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import CodeGenerator from './CodeGenerator.class'
-import {
-	SOT,
-	EOT,
-} from './Char.class'
-import type Token from './Token.class'
+import Token, {
+	Filebound,
+	Punctuator,
+} from './Token.class'
 import type {CookValueType} from './Token.class'
 import type ParseNode from './ParseNode.class'
 import type {
@@ -13,16 +12,6 @@ import type {
 } from './ParseNode.class'
 
 
-
-export enum Operator {
-	/** Add.          */ ADD, // +
-	/** Subtract.     */ SUB, // -
-	/** Multiply.     */ MUL, // *
-	/** Divide.       */ DIV, // /
-	/** Exponentiate. */ EXP, // ^
-	/** Affirm.       */ AFF, // +
-	/** Negate.       */ NEG, // -
-}
 
 export type SemanticStatementType = SemanticNodeDeclaration | SemanticNodeAssignment | SemanticNodeStatementExpression | SemanticNodeStatementEmpty
 export type SemanticExpressionType = SemanticNodeConstant|SemanticNodeIdentifier|SemanticNodeTemplate|SemanticNodeExpression
@@ -90,8 +79,8 @@ export default class SemanticNode implements Serializable {
 			.replace(/\n/g, '&#x0a;')
 			.replace(/\r/g, '&#x0d;')
 			.replace(/\u0000/g, '&#x00;')
-			.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
-			.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
+			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 		)
 		Object.entries<CookValueType>(this.attributes).forEach(([key, value]) => {
 			attributes.set(key, `${value}`)
@@ -141,12 +130,12 @@ export class SemanticNodeTemplate extends SemanticNode {
 export class SemanticNodeExpression extends SemanticNode {
 	constructor(
 		start_node: ParseNode,
-		private readonly operator: Operator,
+		private readonly operator: Punctuator,
 		readonly children:
 			readonly [SemanticExpressionType                        ] |
 			readonly [SemanticExpressionType, SemanticExpressionType],
 	) {
-		super(start_node, {operator: Operator[operator]}, children)
+		super(start_node, {operator}, children)
 	}
 	compile(generator: CodeGenerator): CodeGenerator {
 		return (this.children.length === 1)
