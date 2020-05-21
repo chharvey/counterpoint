@@ -247,8 +247,8 @@ Currently, only positive and negative (and zero) integers are supported.
 The Token Worth of a Number token is the [real number] (link pending) that the token represents.
 
 There is a many-to-one relationship between tokens and Token Worth quantities.
-For example, the tokens containing `0042` and `+42`
-both have the same Token Worth: the integer *42*.
+For example, both the tokens containing `0042` and `+42`
+have the same Token Worth: the integer *42*.
 
 ```w3c
 TokenWorth(Number ::= IntegerLiteral) -> RealNumber
@@ -359,8 +359,8 @@ The Token Worth of a String token is a [sequence] (link pending) of [code points
 computed by the various parts of the token.
 
 There is a many-to-one relationship between tokens and Token Worth quantities.
-For example, the tokens containing `'ABC'` and `'\u{41}\u{42}\u{43}'`
-both have the same Token Worth: the sequence of integers *«65, 66, 67»*.
+For example, both the tokens containing `'ABC'` and `'\u{41}\u{42}\u{43}'`
+have the same Token Worth: the sequence of integers *«65, 66, 67»*.
 
 ```w3c
 TokenWorth(String ::= "'" "'") -> Sequence<RealNumber>
