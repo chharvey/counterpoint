@@ -9,7 +9,7 @@ Statement ::=
 ```
 
 
-### Static Semantics: Decoration (Statements)
+### Static Semantics: Decorate (Statements)
 ```w3c
 Decorate(Statement ::= DeclarationVariable)
 	:= Decorate(DeclarationVariable)
@@ -31,7 +31,7 @@ DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";"
 ```
 
 
-### Static Semantics: Decoration (Variable Declaration)
+### Static Semantics: Decorate (Variable Declaration)
 ```w3c
 Decorate(DeclarationVariable ::= "let" IDENTIFIER "=" Expression ";")
 	:= SemanticDeclaration {type: "variable", unfixed: false} [
@@ -61,7 +61,7 @@ StatementAssignment ::= IDENTIFIER "=" Expression ";"
 ```
 
 
-### Static Semantics: Decoration (Variable Assignment)
+### Static Semantics: Decorate (Variable Assignment)
 ```w3c
 Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";")
 	:= SemanticAssignment {} [

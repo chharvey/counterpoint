@@ -6,7 +6,7 @@ Goal ::= #x02 Statement* #x03
 ```
 
 
-### Static Semantics: Decoration (Goal Symbols)
+### Static Semantics: Decorate (Goal Symbols)
 ```w3c
 Decorate(Goal ::= #x02 #x03)
 	:= SemanticNull {} []

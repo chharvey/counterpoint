@@ -6,7 +6,7 @@ Expression ::= ExpressionAdditive
 ```
 
 
-### Static Semantics: Decoration (Expressions)
+### Static Semantics: Decorate (Expressions)
 ```w3c
 Decorate(Expression ::= ExpressionAdditive)
 	:= Decorate(ExpressionAdditive)
@@ -46,7 +46,7 @@ StringTemplate ::=
 ```
 
 
-### Static Semantics: Decoration (Literals)
+### Static Semantics: Decorate (Literals)
 ```w3c
 Decorate(PrimitiveLiteral ::= NUMBER)
 	:= SemanticConstant {value: TokenWorth(NUMBER)} []
@@ -106,6 +106,13 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 ```
 
 
+### Runtime Instructions: Evaluate (Literals)
+```w3c
+Evaluate(SemanticConstant) :=
+	1. Push `SemanticConstant.value` onto the operand stack.
+```
+
+
 
 ## Expression Units
 ```w3c
@@ -117,7 +124,7 @@ ExpressionUnit ::=
 ```
 
 
-### Static Semantics: Decoration (Expression Units)
+### Static Semantics: Decorate (Expression Units)
 ```w3c
 Decorate(ExpressionUnit ::= IDENTIFIER)
 	:= SemanticIdentifier {id: TokenWorth(IDENTIFIER)} []
@@ -130,10 +137,10 @@ Decorate(ExpressionUnit ::= "(" Expression ")")
 ```
 
 
-### Runtime Instructions: Evaluation (Expression Units)
+### Runtime Instructions: Evaluate (Expression Units)
 ```w3c
-Evaluate(SemanticConstant) :=
-	1. Push `SemanticConstant.value` onto the operand stack.
+Evaluate(SemanticIdentifier) :=
+	/* TO BE DETERMINED */
 ```
 
 
@@ -144,7 +151,7 @@ ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
 ```
 
 
-### Static Semantics: Decoration (Unary Operators)
+### Static Semantics: Decorate (Unary Operators)
 ```w3c
 Decorate(ExpressionUnarySymbol ::= ExpressionUnit)
 	:= Decorate(ExpressionUnit)
@@ -157,7 +164,7 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol)
 ```
 
 
-### Runtime Instructions: Evaluation (Unary Operators)
+### Runtime Instructions: Evaluate (Unary Operators)
 ```w3c
 Evaluate(SemanticExpression[operator=NEG]) :=
 	1. Assert: `SemanticExpression.children.count` is 1.
@@ -177,7 +184,7 @@ ExpressionExponential ::=  ExpressionUnarySymbol ("^" ExpressionExponential)?
 ```
 
 
-### Static Semantics: Decoration (Exponentiation)
+### Static Semantics: Decorate (Exponentiation)
 ```w3c
 Decorate(ExpressionExponential ::= ExpressionUnarySymbol)
 	:= Decorate(ExpressionUnarySymbol)
@@ -189,7 +196,7 @@ Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponenti
 ```
 
 
-### Runtime Instructions: Evaluation (Exponentiation)
+### Runtime Instructions: Evaluate (Exponentiation)
 ```w3c
 Evaluate(SemanticExpression[operator=EXP]) :=
 	1. Assert:`SemanticExpression.children.count` is 2.
@@ -206,7 +213,7 @@ ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionE
 ```
 
 
-### Static Semantics: Decoration (Multiplicative)
+### Static Semantics: Decorate (Multiplicative)
 ```w3c
 Decorate(ExpressionMultiplicative ::= ExpressionExponential)
 	:= Decorate(ExpressionExponential)
@@ -223,7 +230,7 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 ```
 
 
-### Runtime Instructions: Evaluation (Multiplicative)
+### Runtime Instructions: Evaluate (Multiplicative)
 ```w3c
 Evaluate(SemanticExpression[operator=MUL]) :=
 	1. Assert: `SemanticExpression.children.count` is 2.
@@ -245,7 +252,7 @@ ExpressionAdditive ::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicativ
 ```
 
 
-### Static Semantics: Decoration (Additive)
+### Static Semantics: Decorate (Additive)
 ```w3c
 Decorate(ExpressionAdditive ::= ExpressionMultiplicative)
 	:= Decorate(ExpressionMultiplicative)
@@ -264,7 +271,7 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 ```
 
 
-### Runtime Instructions: Evaluation (Additive)
+### Runtime Instructions: Evaluate (Additive)
 ```w3c
 Evaluate(SemanticExpression[operator=ADD]) :=
 	1. Assert: `SemanticExpression.children.count` is 2.
