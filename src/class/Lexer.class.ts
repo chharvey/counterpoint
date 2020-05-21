@@ -52,7 +52,7 @@ export default class Lexer {
 
 	/**
 	 * Construct a new Lexer object.
-	 * @param   source - the entire source text
+	 * @param source - the entire source text
 	 */
 	constructor(source: string) {
 		this.scanner = new Scanner(source).generate()

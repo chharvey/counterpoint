@@ -2,7 +2,7 @@ import * as assert from 'assert'
 import * as fs from 'fs'
 import * as path from 'path'
 
-import Parser from '../src/class/Parser.class'
+import CodeGenerator from '../src/class/CodeGenerator.class'
 
 
 
@@ -19,19 +19,19 @@ describe('SemanticNode', () => {
 
 		context('SemanticNodeNull', () => {
 			it('prints nothing.', () => {
-				assert.strictEqual(new Parser('').parse().decorate().compile().print(), boilerplate(''))
+				assert.strictEqual(new CodeGenerator('').print(), boilerplate('nop'))
 			})
 		})
 
 		context('SemanticNodeStatementEmpty', () => {
 			it('prints nop.', () => {
-				assert.strictEqual(new Parser(';').parse().decorate().compile().print(), boilerplate(`nop`))
+				assert.strictEqual(new CodeGenerator(';').print(), boilerplate(`nop`))
 			})
 		})
 
 		context('SemanticNodeConstant', () => {
 			it('pushes the constant onto the stack.', () => {
-				const outs = ['42;', '+42;', '-42;'].map((src) => new Parser(src).parse().decorate().compile().print())
+				const outs = ['42;', '+42;', '-42;'].map((src) => new CodeGenerator(src).print())
 				assert.deepStrictEqual(outs, [
 					`i32.const 42`,
 					`i32.const 42`,
@@ -42,14 +42,14 @@ describe('SemanticNode', () => {
 
 		context('SemanticNodeExpression', () => {
 			specify('ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative', () => {
-				assert.strictEqual(new Parser('42 + 420;').parse().decorate().compile().print(), boilerplate([
+				assert.strictEqual(new CodeGenerator('42 + 420;').print(), boilerplate([
 					`i32.const 42`,
 					`i32.const 420`,
 					`i32.add`,
 				].join('\n')))
 			})
 			specify('ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative', () => {
-				assert.strictEqual(new Parser('42 - 420;').parse().decorate().compile().print(), boilerplate([
+				assert.strictEqual(new CodeGenerator('42 - 420;').print(), boilerplate([
 					`i32.const 42`,
 					`i32.const 420`,
 					`i32.const -1`,
@@ -60,7 +60,7 @@ describe('SemanticNode', () => {
 				].join('\n')))
 			})
 			specify('compound expression.', () => {
-				assert.strictEqual(new Parser('42 ^ 2 * 420;').parse().decorate().compile().print(), boilerplate([
+				assert.strictEqual(new CodeGenerator('42 ^ 2 * 420;').print(), boilerplate([
 					`i32.const 42`,
 					`i32.const 2`,
 					`call $exp`,
@@ -69,7 +69,7 @@ describe('SemanticNode', () => {
 				].join('\n')))
 			})
 			specify('compound expression with grouping.', () => {
-				assert.strictEqual(new Parser('-(42) ^ +(2 * 420);').parse().decorate().compile().print(), boilerplate([
+				assert.strictEqual(new CodeGenerator('-(42) ^ +(2 * 420);').print(), boilerplate([
 					`i32.const 42`,
 					`i32.const -1`,
 					`i32.xor`,

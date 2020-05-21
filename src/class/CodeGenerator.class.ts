@@ -5,6 +5,7 @@ import {
 	Punctuator,
 } from './Token.class'
 import type SemanticNode from './SemanticNode.class'
+import Parser from './Parser.class'
 
 const i32_exp: string = fs.readFileSync(path.join(__dirname, '../../src/exp.wat'), 'utf8')
 
@@ -19,8 +20,10 @@ export default class CodeGenerator {
 
 	/**
 	 * Construct a new CodeGenerator object.
+	 * @param source - the entire source text
 	 */
-	constructor() {
+	constructor(source: string) {
+		new Parser(source).parse().decorate().compile(this)
 	}
 
 	/**

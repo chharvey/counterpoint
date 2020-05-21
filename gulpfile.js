@@ -24,7 +24,7 @@ function test() {
 }
 
 async function test_dev() {
-	const {Scanner, Lexer, Screener, Parser} = require('./')
+	const {Scanner, Lexer, Screener, Parser, CodeGenerator} = require('./')
 	const input = fsPromise.readFile('./test/test-v0.2.solid', 'utf8')
 
 	console.log("\n\nHere are the characters returned by the scanner:")
@@ -52,14 +52,8 @@ async function test_dev() {
 		iterator_result_screen = screener.next()
 	}
 
-	const parser = new Parser(await input)
-	let tree;
-	try {
-		tree = parser.parse()
-	} catch (err) {
-		console.log(parser.viewStack())
-		throw err
-	}
+	const tree = new Parser(await input).parse()
+	const code = new CodeGenerator(await input).print()
 	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
 	console.log("\n\nThe semantic tree returned by the decorator is written to file: `./sample/output-1.xml`")
 	console.log("\n\nThe compiled output returned by the compiler is written to file: `./sample/output-2.wat`")
@@ -67,7 +61,7 @@ async function test_dev() {
 	return Promise.all([
 		fsPromise.writeFile('./sample/output.xml', tree.serialize()),
 		fsPromise.writeFile('./sample/output-1.xml', tree.decorate().serialize()),
-		fsPromise.writeFile('./sample/output-2.wat', tree.decorate().compile().print()),
+		fsPromise.writeFile('./sample/output-2.wat', code),
 	])
 }
 
