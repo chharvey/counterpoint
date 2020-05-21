@@ -52,6 +52,25 @@ export default class CodeGenerator {
 	}
 
 	/**
+	 * Perform a unary operation on the stack.
+	 * @param op a punctuator representing the operation to perform
+	 * @return this
+	 */
+	unop(op: Punctuator, arg: SemanticNode): this {
+		arg.compile(this)
+		this.instructions.push(new Map<Punctuator, string>([
+			[Punctuator.AFF, `nop`],
+			[Punctuator.NEG, [
+				`i32.const -1`,
+				`i32.xor`,
+				`i32.const 1`,
+				`i32.add`,
+			].join('\n')],
+		]).get(op) !)
+		return this
+	}
+
+	/**
 	 * Perform a binary operation on the stack.
 	 * @param op a punctuator representing the operation to perform
 	 * @param arg1 the first operand
@@ -67,25 +86,6 @@ export default class CodeGenerator {
 			[Punctuator.MUL, `i32.mul`],
 			[Punctuator.DIV, `i32.div_s`],
 			[Punctuator.EXP, `call $exp`],
-		]).get(op) !)
-		return this
-	}
-
-	/**
-	 * Perform a unary operation on the stack.
-	 * @param op a punctuator representing the operation to perform
-	 * @return this
-	 */
-	unop(op: Punctuator, arg: SemanticNode): this {
-		arg.compile(this)
-		this.instructions.push(new Map<Punctuator, string>([
-			[Punctuator.AFF, `nop`],
-			[Punctuator.NEG, [
-				`i32.const -1`,
-				`i32.xor`,
-				`i32.const 1`,
-				`i32.add`,
-			].join('\n')],
 		]).get(op) !)
 		return this
 	}

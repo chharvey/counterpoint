@@ -43,48 +43,21 @@ describe('Token', () => {
 				assert.strictEqual(lastItem(tokens).cook(), false)
 			})
 		})
-		context('TokenString', () => {
-			it('produces the cooked string value.', () => {
-				const tokens: Token[] = [...new Screener(Util.dedent(`
-					5 + 03 + '' * 'hello' *  -2;
-					'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
-					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3';
-					'012\\
-					345
-					678';
-				`)).generate()]
-				assert.strictEqual(tokens[ 5].cook(), ``)
-				assert.strictEqual(tokens[ 7].cook(), `hello`)
-				assert.strictEqual(tokens[11].cook(), `0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`)
-				assert.strictEqual(tokens[13].cook(), `0 $ 1 _ 2 \0 3`)
-				assert.strictEqual(tokens[15].cook(), `012 345\n678`)
+
+		context('TokenPunctuator', () => {
+			it('assigns values 0n–127n to punctuator tokens.', () => {
+				const cooked: bigint[] = [...new Screener(TokenPunctuator.PUNCTUATORS.join(' ')).generate()]
+					.filter((token): token is TokenPunctuator => token instanceof TokenPunctuator)
+					.map((punctuator) => punctuator.cook())
+				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i)).slice(0, TokenPunctuator.PUNCTUATORS.length)
+				assert.deepStrictEqual(cooked, expected)
+				cooked.forEach((value) => {
+					assert.ok(0n <= value, 'cooked value should be >= 0n.')
+					assert.ok(value < 128n, 'cooked value should be < 128n.')
+				})
 			})
 		})
-		context('TokenTemplate', () => {
-			it('produces the cooked template value.', () => {
-				const tokens: Token[] = [...new Screener(Util.dedent(`
-					600  /  '''''' * 3 + '''hello''' *  2;
-					3 + '''head{{ * 2
-					3 + }}midl{{ * 2
-					3 + }}tail''' * 2
-					'''0 \\\` 1''';
-					'''0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7''';
-					'''0 \\u{24} 1 \\u{005f} 2 \\u{} 3''';
-					'''012\\
-					345
-					678''';
-				`)).generate()]
-				assert.strictEqual(tokens[ 3].cook(), ``)
-				assert.strictEqual(tokens[ 7].cook(), `hello`)
-				assert.strictEqual(tokens[13].cook(), `head`)
-				assert.strictEqual(tokens[18].cook(), `midl`)
-				assert.strictEqual(tokens[23].cook(), `tail`)
-				assert.strictEqual(tokens[26].cook(), `0 \\\` 1`)
-				assert.strictEqual(tokens[28].cook(), `0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`)
-				assert.strictEqual(tokens[30].cook(), `0 \\u{24} 1 \\u{005f} 2 \\u{} 3`)
-				assert.strictEqual(tokens[32].cook(), `012\\\n345\n678`)
-			})
-		})
+
 		context('TokenNumber', () => {
 			;[...new Map<string, [string, number[]]>([
 				['implicit radix integers', [`
@@ -135,6 +108,7 @@ describe('Token', () => {
 				})
 			})
 		})
+
 		context('TokenKeyword', () => {
 			it('assigns values 128n–255n to reserved keywords.', () => {
 				const cooked: bigint[] = [...new Screener(TokenKeyword.KEYWORDS.join(' ')).generate()]
@@ -148,6 +122,7 @@ describe('Token', () => {
 				})
 			})
 		})
+
 		context('TokenIdentifier', () => {
 			context('TokenIdentifierBasic', () => {
 				const cooked: (bigint|null)[] = [...new Screener(`
@@ -179,6 +154,7 @@ describe('Token', () => {
 					])
 				})
 			})
+
 			context('TokenIdentifierUnicode', () => {
 				const cooked: (bigint|null)[] = [...new Screener(`
 					\`this\` \`is\` \`a\` \`unicode word\`
@@ -204,19 +180,51 @@ describe('Token', () => {
 				})
 			})
 		})
-		context('TokenPunctuator', () => {
-			it('assigns values 0n–127n to punctuator tokens.', () => {
-				const cooked: bigint[] = [...new Screener(TokenPunctuator.PUNCTUATORS.join(' ')).generate()]
-					.filter((token): token is TokenPunctuator => token instanceof TokenPunctuator)
-					.map((punctuator) => punctuator.cook())
-				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i)).slice(0, TokenPunctuator.PUNCTUATORS.length)
-				assert.deepStrictEqual(cooked, expected)
-				cooked.forEach((value) => {
-					assert.ok(0n <= value, 'cooked value should be >= 0n.')
-					assert.ok(value < 128n, 'cooked value should be < 128n.')
-				})
+
+		context('TokenString', () => {
+			it('produces the cooked string value.', () => {
+				const tokens: Token[] = [...new Screener(Util.dedent(`
+					5 + 03 + '' * 'hello' *  -2;
+					'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
+					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3';
+					'012\\
+					345
+					678';
+				`)).generate()]
+				assert.strictEqual(tokens[ 5].cook(), ``)
+				assert.strictEqual(tokens[ 7].cook(), `hello`)
+				assert.strictEqual(tokens[11].cook(), `0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`)
+				assert.strictEqual(tokens[13].cook(), `0 $ 1 _ 2 \0 3`)
+				assert.strictEqual(tokens[15].cook(), `012 345\n678`)
 			})
 		})
+
+		context('TokenTemplate', () => {
+			it('produces the cooked template value.', () => {
+				const tokens: Token[] = [...new Screener(Util.dedent(`
+					600  /  '''''' * 3 + '''hello''' *  2;
+					3 + '''head{{ * 2
+					3 + }}midl{{ * 2
+					3 + }}tail''' * 2
+					'''0 \\\` 1''';
+					'''0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7''';
+					'''0 \\u{24} 1 \\u{005f} 2 \\u{} 3''';
+					'''012\\
+					345
+					678''';
+				`)).generate()]
+				assert.strictEqual(tokens[ 3].cook(), ``)
+				assert.strictEqual(tokens[ 7].cook(), `hello`)
+				assert.strictEqual(tokens[13].cook(), `head`)
+				assert.strictEqual(tokens[18].cook(), `midl`)
+				assert.strictEqual(tokens[23].cook(), `tail`)
+				assert.strictEqual(tokens[26].cook(), `0 \\\` 1`)
+				assert.strictEqual(tokens[28].cook(), `0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`)
+				assert.strictEqual(tokens[30].cook(), `0 \\u{24} 1 \\u{005f} 2 \\u{} 3`)
+				assert.strictEqual(tokens[32].cook(), `012\\\n345\n678`)
+			})
+		})
+
 		it('throws when UTF-16 encoding input is out of range.', () => {
 			const stringtoken: Token = [...new Screener(Util.dedent(`
 				'a string literal with a unicode \\u{a00061} escape sequence out of range';

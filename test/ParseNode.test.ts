@@ -204,7 +204,7 @@ describe('ParseNode', () => {
 			})
 		})
 
-		context('ExpressionExponential', () => {
+		context('ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential', () => {
 			it('makes a SemanticNodeExpression node with 2 children.', () => {
 				assert.strictEqual(new Parser('2 ^ -3;').parse().decorate().serialize(), `
 					<Goal source="␂ 2 ^ -3 ; ␃">
