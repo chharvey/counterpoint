@@ -7,8 +7,8 @@ import {
 import type ParseNode from './ParseNode.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
 import {
-	TerminalNumber,
 	TerminalIdentifier,
+	TerminalNumber,
 	TerminalString,
 	TerminalTemplateFull,
 	TerminalTemplateHead,

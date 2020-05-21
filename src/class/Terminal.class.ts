@@ -3,10 +3,10 @@ import Token, {
 	Filebound,
 	RadixType,
 	TemplatePosition,
-	TokenNumber,
 	TokenKeyword,
 	TokenIdentifier,
 	TokenIdentifierBasic,
+	TokenNumber,
 	TokenString,
 	TokenTemplate,
 } from './Token.class'
@@ -40,25 +40,6 @@ export default abstract class Terminal {
 
 
 
-export class TerminalNumber extends Terminal {
-	static readonly instance: TerminalNumber = new TerminalNumber()
-	static digitSequence(radix: RadixType): string {
-		return `${
-			Util.randomBool() ? '' : `${TerminalNumber.digitSequence(radix)}${Util.randomBool() ? '' : TokenNumber.SEPARATOR}`
-		}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
-	}
-	random(): string {
-		const [unary, radix]: [string, RadixType] = Util.arrayRandom([...TokenNumber.BASES])
-		return `${ Util.randomBool() ? '' : Util.arrayRandom(TokenNumber.UNARY) }${
-			Util.randomBool()
-				? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT)
-			: `${ TokenNumber.ESCAPER }${ unary }${ TerminalNumber.digitSequence(radix) }`
-		}`
-	}
-	match(candidate: Token): boolean {
-		return candidate instanceof TokenNumber
-	}
-}
 export class TerminalIdentifier extends Terminal {
 	static readonly instance: TerminalIdentifier = new TerminalIdentifier()
 	random(): string {
@@ -85,6 +66,25 @@ export class TerminalIdentifier extends Terminal {
 	}
 	match(candidate: Token): boolean {
 		return candidate instanceof TokenIdentifier
+	}
+}
+export class TerminalNumber extends Terminal {
+	static readonly instance: TerminalNumber = new TerminalNumber()
+	static digitSequence(radix: RadixType): string {
+		return `${
+			Util.randomBool() ? '' : `${TerminalNumber.digitSequence(radix)}${Util.randomBool() ? '' : TokenNumber.SEPARATOR}`
+		}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
+	}
+	random(): string {
+		const [unary, radix]: [string, RadixType] = Util.arrayRandom([...TokenNumber.BASES])
+		return `${ Util.randomBool() ? '' : Util.arrayRandom(TokenNumber.UNARY) }${
+			Util.randomBool()
+				? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT)
+			: `${ TokenNumber.ESCAPER }${ unary }${ TerminalNumber.digitSequence(radix) }`
+		}`
+	}
+	match(candidate: Token): boolean {
+		return candidate instanceof TokenNumber
 	}
 }
 export class TerminalString extends Terminal {

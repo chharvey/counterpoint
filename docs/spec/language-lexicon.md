@@ -55,8 +55,9 @@ Goal ::=
 	FileBound      |
 	Whitespace     |
 	Punctuator     |
+	Keyword        |
+	Identifier     |
 	Number         |
-	Word           |
 	String         |
 	TemplateFull   |
 	TemplateHead   |
@@ -68,9 +69,9 @@ Goal ::=
 1. [File Bounds](#file-bounds)
 1. [Whitespace](#whitespace)
 1. [Punctuators](#punctuators)
-1. [Numbers](#numbers)
 1. [Keywords](#keywords)
 1. [Identifiers](#identifiers)
+1. [Numbers](#numbers)
 1. [String Literals](#string-literals)
 1. [Template Literals](#template-literals)
 1. [Comments](#comments)
@@ -162,6 +163,61 @@ PV(Puncatuator)
 		"=" : \x07,
 		";" : \x08,
 	}
+```
+
+
+### Keywords
+```w3c
+Keyword ::=
+	KeywordStorage  |
+	KeywordModifier
+
+KeywordStorage ::=
+	"let"
+
+KeywordModifier ::=
+	"unfixed"
+```
+Keywords are sequences of alphanumeric characters reserved by the Solid language
+and enumerated in the lexical grammar.
+Keywords convey certain semantics to the compiler and to programmers.
+
+#### Static Semantics: Keyword Value
+The Keyword Value (KV) of a keyword token is the unique mathematical integer ID
+that distinguishes the keyword from the other keywords.
+Keyword Values are predetermined by the lexical grammar and are independent of any instance program.
+Keyword Values are mathematical integers ranging from *128* to *255* (inclusive).
+
+```w3c
+KV(Keyword)
+	:= given by the following map: {
+		"let"     : \x80,
+		"unfixed" : \x81,
+	}
+```
+
+
+### Identifiers
+```w3c
+Identifier ::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - Keyword
+```
+Identifiers are sequences of alphanumeric characters that do not match the [Keyword](#keywords) production.
+Identifiers are author-defined and point to values in a program.
+
+Lexically, identifiers have two forms: basic identifiers and Unicode identifiers.
+Basic identifiers must start with an alphabetic character or an underscore,
+and thereafter may contain more alphanumeric characters or underscores.
+Unicode identifiers are enclosed in back-ticks (`` `…` `` **U+0060 GRAVE ACCENT**),
+and may contain any number of characters from the Unicode character set.
+
+#### Static Semantics: Identifier Value
+The Identifier Value (IV) of an identifier token is the unique mathematical integer ID
+that distinguishes the identifier from other identifiers within a given program.
+Identifier values are mathematical integers strictly greater than *255*.
+
+```w3c
+IV(Identifier)
+	:= /* TO BE DESCRIBED */
 ```
 
 
@@ -278,61 +334,6 @@ MV([0-9a-z] ::= "w")  :=  32
 MV([0-9a-z] ::= "x")  :=  33
 MV([0-9a-z] ::= "y")  :=  34
 MV([0-9a-z] ::= "z")  :=  35
-```
-
-
-### Keywords
-```w3c
-Keyword ::=
-	KeywordStorage  |
-	KeywordModifier
-
-KeywordStorage ::=
-	"let"
-
-KeywordModifier ::=
-	"unfixed"
-```
-Keywords are sequences of alphanumeric characters reserved by the Solid language
-and enumerated in the lexical grammar.
-Keywords convey certain semantics to the compiler and to programmers.
-
-#### Static Semantics: Keyword Value
-The Keyword Value (KV) of a keyword token is the unique mathematical integer ID
-that distinguishes the keyword from the other keywords.
-Keyword Values are predetermined by the lexical grammar and are independent of any instance program.
-Keyword Values are mathematical integers ranging from *128* to *255* (inclusive).
-
-```w3c
-KV(Keyword)
-	:= given by the following map: {
-		"let"     : \x80,
-		"unfixed" : \x81,
-	}
-```
-
-
-### Identifiers
-```w3c
-Identifier ::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - Keyword
-```
-Identifiers are sequences of alphanumeric characters that do not match the [Keyword](#keywords) production.
-Identifiers are author-defined and point to values in a program.
-
-Lexically, identifiers have two forms: basic identifiers and Unicode identifiers.
-Basic identifiers must start with an alphabetic character or an underscore,
-and thereafter may contain more alphanumeric characters or underscores.
-Unicode identifiers are enclosed in back-ticks (`` `…` `` **U+0060 GRAVE ACCENT**),
-and may contain any number of characters from the Unicode character set.
-
-#### Static Semantics: Identifier Value
-The Identifier Value (IV) of an identifier token is the unique mathematical integer ID
-that distinguishes the identifier from other identifiers within a given program.
-Identifier values are mathematical integers strictly greater than *255*.
-
-```w3c
-IV(Identifier)
-	:= /* TO BE DESCRIBED */
 ```
 
 

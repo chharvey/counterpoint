@@ -1,7 +1,7 @@
 /* LR grammar */
 
-NUMBER          ::= [../docs/spec/language-lexicon.md#numbers]
 IDENTIFIER      ::= [../docs/spec/language-lexicon.md#identifiers]
+NUMBER          ::= [../docs/spec/language-lexicon.md#numbers]
 STRING          ::= [../docs/spec/language-lexicon.md#string-literals]
 TEMPLATE_FULL   ::= [../docs/spec/language-lexicon.md#template-literals]
 TEMPLATE_HEAD   ::= [../docs/spec/language-lexicon.md#template-literals]

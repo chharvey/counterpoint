@@ -6,9 +6,9 @@ import Token, {
 	Keyword,
 	TokenFilebound,
 	TokenPunctuator,
-	TokenNumber,
 	TokenKeyword,
 	TokenIdentifier,
+	TokenNumber,
 	TokenString,
 	TokenTemplate,
 } from './Token.class'
