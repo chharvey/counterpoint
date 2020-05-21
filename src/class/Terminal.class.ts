@@ -49,7 +49,7 @@ export class TerminalNumber extends Terminal {
 	}
 	random(): string {
 		const [unary, radix]: [string, RadixType] = Util.arrayRandom([...TokenNumber.BASES])
-		return `${Util.randomBool() ? '' : Util.arrayRandom([...TokenNumber.UNARY.keys()])}${
+		return `${ Util.randomBool() ? '' : Util.arrayRandom(TokenNumber.UNARY) }${
 			Util.randomBool()
 				? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT)
 			: `${ TokenNumber.ESCAPER }${ unary }${ TerminalNumber.digitSequence(radix) }`
@@ -77,7 +77,7 @@ export class TerminalIdentifier extends Terminal {
 		if (Util.randomBool()) {
 			do {
 				returned = `${charsBasic(true)}${Util.randomBool() ? '' : charsBasic()}`
-			} while (TokenKeyword.KEYWORDS.includes(returned))
+			} while ((TokenKeyword.KEYWORDS as string[]).includes(returned))
 		} else {
 			returned = `\`${Util.randomBool() ? '' : charsUnicode()}\``
 		}

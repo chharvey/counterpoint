@@ -170,9 +170,7 @@ export class TokenWhitespace extends Token {
 	}
 }
 export class TokenPunctuator extends Token {
-	static readonly CHARS_1: readonly string[] = '; = + - * / ^ ( )'.split(' ')
-	static readonly CHARS_2: readonly string[] = ''.split(' ')
-	static readonly CHARS_3: readonly string[] = ''.split(' ')
+	static readonly PUNCTUATORS: readonly Punctuator[] = [...new Set(Object.values(Punctuator))] // remove duplicates
 	declare source: Punctuator;
 	constructor (lexer: Lexer, count: 1n|2n|3n = 1n) {
 		super('PUNCTUATOR', lexer, ...lexer.advance())
@@ -190,6 +188,10 @@ export class TokenNumber extends Token {
 	static readonly RADIX_DEFAULT: RadixType = 10n
 	static readonly ESCAPER   : string = '\\'
 	static readonly SEPARATOR : string = '_'
+	static readonly UNARY: readonly Punctuator[] = [
+		Punctuator.AFF,
+		Punctuator.NEG,
+	]
 	static readonly BASES: ReadonlyMap<string, RadixType> = new Map<string, RadixType>([
 		['b',  2n],
 		['q',  4n],
@@ -205,10 +207,6 @@ export class TokenNumber extends Token {
 		[10n, '0 1 2 3 4 5 6 7 8 9'                                                     .split(' ')],
 		[16n, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ')],
 		[36n, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
-	])
-	static readonly UNARY: ReadonlyMap<string, number> = new Map<string, number>([
-		[`${ Punctuator.AFF }`,  1],
-		[`${ Punctuator.NEG }`, -1],
 	])
 	/**
 	 * Compute the mathematical value of a `TokenNumber` token.
@@ -265,7 +263,7 @@ export class TokenNumber extends Token {
 	}
 	cook(): number {
 		let text: string = this.source
-		const multiplier: number = TokenNumber.UNARY.get(text[0]) || 1
+		const multiplier: number = (text[0] === Punctuator.NEG) ? -1 : 1
 		if (this.has_unary) text = text.slice(1) // cut off unary, if any
 		if (this.has_radix) text = text.slice(2) // cut off radix, if any
 		return multiplier * TokenNumber.mv(text, this.radix)
@@ -274,7 +272,7 @@ export class TokenNumber extends Token {
 export class TokenKeyword extends Token {
 	static readonly COUNT: bigint = 0x80n
 	static readonly CHAR: RegExp = /^[a-z]$/
-	static readonly KEYWORDS: readonly string[] = Object.values(Keyword)
+	static readonly KEYWORDS: readonly Keyword[] = [...new Set<Keyword>(Object.values(Keyword))] // remove duplicates
 	declare source: Keyword;
 	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
 		super('KEYWORD', lexer, start_char, ...more_chars)

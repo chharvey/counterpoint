@@ -204,16 +204,11 @@ describe('Token', () => {
 		})
 		context('TokenPunctuator', () => {
 			it('correctly cooks punctuator tokens.', () => {
-				const srcs: string[] = [
-					...TokenPunctuator.CHARS_1,
-					...TokenPunctuator.CHARS_2,
-					...TokenPunctuator.CHARS_3,
-				].filter((p) => p !== '')
 				assert.deepStrictEqual(
-					[...new Screener(srcs.join(' ')).generate()]
+					[...new Screener(TokenPunctuator.PUNCTUATORS.join(' ')).generate()]
 						.filter((token): token is TokenPunctuator => token instanceof TokenPunctuator)
 						.map((token) => token.cook()),
-					srcs,
+					TokenPunctuator.PUNCTUATORS,
 				)
 			})
 		})

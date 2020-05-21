@@ -577,11 +577,7 @@ describe('Lexer', () => {
 		})
 
 		it('recognizes `TokenPunctuator` conditions.', () => {
-			;[...new Lexer([
-				...TokenPunctuator.CHARS_1,
-				...TokenPunctuator.CHARS_2,
-				...TokenPunctuator.CHARS_3,
-			].filter((p) => p !== '').join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((value) => {
+			;[...new Lexer(TokenPunctuator.PUNCTUATORS.join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((value) => {
 				assert.ok(value instanceof TokenPunctuator)
 			})
 		})
