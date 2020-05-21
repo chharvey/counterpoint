@@ -188,7 +188,8 @@ export class TokenPunctuator extends Token {
 }
 export class TokenNumber extends Token {
 	static readonly RADIX_DEFAULT: RadixType = 10n
-	static readonly SEPARATOR: string = '_'
+	static readonly ESCAPER   : string = '\\'
+	static readonly SEPARATOR : string = '_'
 	static readonly BASES: ReadonlyMap<string, RadixType> = new Map<string, RadixType>([
 		['b',  2n],
 		['q',  4n],
@@ -271,6 +272,7 @@ export class TokenNumber extends Token {
 	}
 }
 export class TokenKeyword extends Token {
+	static readonly COUNT: bigint = 0x80n
 	static readonly CHAR: RegExp = /^[a-z]$/
 	static readonly KEYWORDS: readonly string[] = Object.values(Keyword)
 	declare source: Keyword;
@@ -337,8 +339,9 @@ export class TokenIdentifierUnicode extends TokenIdentifier {
 	}
 }
 export class TokenString extends Token {
-	static readonly DELIM: '\'' = '\''
-	static readonly ESCAPES: readonly string[] = [TokenString.DELIM, '\\', 's','t','n','r']
+	static readonly DELIM   : string = '\''
+	static readonly ESCAPER : string = '\\'
+	static readonly ESCAPES: readonly string[] = [TokenString.DELIM, TokenString.ESCAPER, 's','t','n','r']
 	/**
 	 * Compute the string value of a `TokenString` token
 	 * or any segment of such token.
@@ -347,17 +350,18 @@ export class TokenString extends Token {
 	 */
 	private static sv(text: string): number[] {
 		if (text.length === 0) return []
-		if ('\\' === text[0]) { // possible escape or line continuation
+		if (TokenString.ESCAPER === text[0]) {
+			/* possible escape or line continuation */
 			if (TokenString.ESCAPES.includes(text[1])) {
 				/* an escaped character literal */
 				return [
 					new Map<string, number>([
 						[TokenString.DELIM, TokenString.DELIM.codePointAt(0) !],
-						['\\' , 0x5c],
-						['s'  , 0x20],
-						['t'  , 0x09],
-						['n'  , 0x0a],
-						['r'  , 0x0d],
+						[TokenString.ESCAPER , 0x5c],
+						['s'                 , 0x20],
+						['t'                 , 0x09],
+						['n'                 , 0x0a],
+						['r'                 , 0x0d],
 					]).get(text[1]) !,
 					...TokenString.sv(text.slice(2)),
 				]
@@ -392,7 +396,8 @@ export class TokenString extends Token {
 			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
-			if (Char.eq('\\', this.lexer.c0)) { // possible escape or line continuation
+			if (Char.eq(TokenString.ESCAPER, this.lexer.c0)) {
+				/* possible escape or line continuation */
 				if (Char.inc(TokenString.ESCAPES, this.lexer.c1)) {
 					/* an escaped character literal */
 					this.advance(2n)

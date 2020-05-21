@@ -1,5 +1,6 @@
 import Util from './Util.class'
 import Token, {
+	Filebound,
 	RadixType,
 	TemplatePosition,
 	TokenNumber,
@@ -51,7 +52,7 @@ export class TerminalNumber extends Terminal {
 		return `${Util.randomBool() ? '' : Util.arrayRandom([...TokenNumber.UNARY.keys()])}${
 			Util.randomBool()
 				? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT)
-				: `\\${unary}${TerminalNumber.digitSequence(radix)}`
+			: `${ TokenNumber.ESCAPER }${ unary }${ TerminalNumber.digitSequence(radix) }`
 		}`
 	}
 	match(candidate: Token): boolean {
@@ -93,16 +94,16 @@ export class TerminalString extends Terminal {
 		const chars = (): string => {
 			const random: number = Math.random()
 			return (
-				random < 0.333 ? `${Util.randomChar('\' \\ \u0003'.split(' '))}${maybeChars()}` :
-				random < 0.667 ? `\\${escape()}${maybeChars()}` :
-				                 `\\u${Util.randomBool() ? '' : `${Util.randomChar('\' { \u0003'.split(' '))}${maybeChars()}`}`
+				random < 0.333 ? `${ Util.randomChar([TokenString.DELIM, TokenString.ESCAPER, Filebound.EOT]) }${ maybeChars() }` :
+				random < 0.667 ? `${ TokenString.ESCAPER }${ escape() }${ maybeChars() }` :
+				                 `${ TokenString.ESCAPER }u${ Util.randomBool() ? '' : `${Util.randomChar([TokenString.DELIM, '{', Filebound.EOT]) }${ maybeChars() }`}`
 			)
 		}
 		const escape        = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
 		const escapeChar    = (): string => Util.arrayRandom(TokenString.ESCAPES)
 		const escapeCode    = (): string => `u{${Util.randomBool() ? '' : TerminalNumber.digitSequence(16n)}}`
 		const lineCont      = (): string => `\u000a`
-		const nonEscapeChar = (): string => Util.randomChar('\' \\ s t n r u \u000a \u0003'.split(' '))
+		const nonEscapeChar = (): string => Util.randomChar([TokenString.DELIM, TokenString.ESCAPER, ...'s t n r u \u000a'.split(' '), Filebound.EOT])
 		return `${TokenString.DELIM}${maybeChars()}${TokenString.DELIM}`
 	}
 	match(candidate: Token): boolean {
