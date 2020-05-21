@@ -49,65 +49,61 @@ StringTemplate ::=
 ### Static Semantics: Decoration (Literals)
 ```w3c
 Decorate(PrimitiveLiteral ::= NUMBER)
-	:= SemanticConstant {value: MV(NUMBER)} []
+	:= SemanticConstant {value: TokenWorth(NUMBER)} []
 
 Decorate(PrimitiveLiteral ::= STRING)
-	:= SemanticConstant {value: SV(STRING)} []
+	:= SemanticConstant {value: TokenWorth(STRING)} []
 
 Decorate(StringTemplate ::= TEMPLATE_FULL)
 	:= SemanticTemplate {type: "full"} [
-		SemanticConstant {value: TV(TEMPLATE_FULL)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_FULL)} [],
 	]
 Decorate(StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL)
 	:= SemanticTemplate {type: "substitution"} [
-		SemanticConstant {value: TV(TEMPLATE_HEAD)} [],
-		SemanticConstant {value: TV(TEMPLATE_TAIL)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
 	]
 Decorate(StringTemplate ::= TEMPLATE_HEAD Expression TEMPLATE_TAIL)
 	:= SemanticTemplate {type: "substitution"} [
-		SemanticConstant {value: TV(TEMPLATE_HEAD)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
 		Decorate(Expression),
-		SemanticConstant {value: TV(TEMPLATE_TAIL)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
 	]
 Decorate(StringTemplate ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL)
 	:= SemanticTemplate {type: "substitution"} [
-		SemanticConstant {value: TV(TEMPLATE_HEAD)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
 		Spread(Decorate(StringTemplate__0__List))
-		SemanticConstant {value: TV(TEMPLATE_TAIL)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
 	]
 Decorate(StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL)
 	:= SemanticTemplate {type: "substitution"} [
-		SemanticConstant {value: TV(TEMPLATE_HEAD)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
 		Decorate(Expression),
 		Spread(Decorate(StringTemplate__0__List)),
-		SemanticConstant {value: TV(TEMPLATE_TAIL)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
 	]
 
 Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE)
 	:= SemanticTemplatePartial {} [
-		SemanticConstant {value: TV(TEMPLATE_MIDDLE)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_MIDDLE)} [],
 	]
 Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE Expression)
 	:= SemanticTemplatePartial {} [
-		SemanticConstant {value: TV(TEMPLATE_MIDDLE)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_MIDDLE)} [],
 		Decorate(Expression),
 	]
 Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE)
 	:= SemanticTemplatePartial {} [
 		Spread(Decorate(StringTemplate__0__List)),
-		SemanticConstant {value: TV(TEMPLATE_MIDDLE)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_MIDDLE)} [],
 	]
 Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression)
 	:= SemanticTemplatePartial {} [
 		Spread(Decorate(StringTemplate__0__List)),
-		SemanticConstant {value: TV(TEMPLATE_MIDDLE)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_MIDDLE)} [],
 		Decorate(Expression),
 	]
 ```
-Where
-- `MV` is [Mathematical Value](./language-lexicon.md#static-semantics-mathematical-value)
-- `SV` is [String Value](./language-lexicon.md#static-semantics-string-value)
-- `TV` is [Template Value](./language-lexicon.md#static-semantics-template-value)
 
 
 
@@ -124,7 +120,7 @@ ExpressionUnit ::=
 ### Static Semantics: Decoration (Expression Units)
 ```w3c
 Decorate(ExpressionUnit ::= IDENTIFIER)
-	:= SemanticIdentifier {id: IV(IDENTIFIER)} []
+	:= SemanticIdentifier {id: TokenWorth(IDENTIFIER)} []
 Decorate(ExpressionUnit ::= PrimitiveLiteral)
 	:= Decorate(PrimitiveLiteral)
 Decorate(ExpressionUnit ::= StringTemplate)
@@ -132,8 +128,6 @@ Decorate(ExpressionUnit ::= StringTemplate)
 Decorate(ExpressionUnit ::= "(" Expression ")")
 	:= Decorate(Expression)
 ```
-Where
-- `IV` is [Identifier Value](./language-lexicon.md#static-semantics-identifier-value)
 
 
 ### Runtime Instructions: Evaluation (Expression Units)

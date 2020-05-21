@@ -141,17 +141,17 @@ that add to the semantics of the Solid language.
 Some punctuators are operators, which perform computations on values, and
 some punctuators are delimiters, which separate certain code constructs from each other or group them together.
 
-#### Static Semantics: Punctuator Value
-The Punctuator Value (PV) of a punctuator token is the unique mathematical integer ID
+#### Static Semantics: TokenWorth (Punctuators)
+The Token Worth of a Punctuator token is the unique [real number] (link pending) ID
 that distinguishes the punctuator from the other punctuators.
-Punctuator Values are predetermined by the lexical grammar and are independent of any instance program.
-Punctuator Values are mathematical integers ranging from *0* to *127* (inclusive).
+Token Worth quantities for punctuators are predetermined by the lexical grammar and are independent of any instance program.
+Token Worth quantities for punctuators are integers ranging from *0* to *127* (inclusive).
 
 This specification uses the term “ID” to refer to the identification,
 as not to be confused with [Identifier tokens](#identifiers).
 
 ```w3c
-PV(Puncatuator)
+TokenWorth(Puncatuator) -> RealNumber
 	:= given by the following map: {
 		"(" : \x00,
 		")" : \x01,
@@ -182,14 +182,14 @@ Keywords are sequences of alphanumeric characters reserved by the Solid language
 and enumerated in the lexical grammar.
 Keywords convey certain semantics to the compiler and to programmers.
 
-#### Static Semantics: Keyword Value
-The Keyword Value (KV) of a keyword token is the unique mathematical integer ID
+#### Static Semantics: TokenWorth (Keywords)
+The Token Worth of a Keyword token is the unique [real number] (link pending) ID
 that distinguishes the keyword from the other keywords.
-Keyword Values are predetermined by the lexical grammar and are independent of any instance program.
-Keyword Values are mathematical integers ranging from *128* to *255* (inclusive).
+Token Worth quantities for keywords are predetermined by the lexical grammar and are independent of any instance program.
+Token Worth quantities for keywords are integers ranging from *128* to *255* (inclusive).
 
 ```w3c
-KV(Keyword)
+TokenWorth(Keyword) -> RealNumber
 	:= given by the following map: {
 		"let"     : \x80,
 		"unfixed" : \x81,
@@ -210,13 +210,13 @@ and thereafter may contain more alphanumeric characters or underscores.
 Unicode identifiers are enclosed in back-ticks (`` `…` `` **U+0060 GRAVE ACCENT**),
 and may contain any number of characters from the Unicode character set.
 
-#### Static Semantics: Identifier Value
-The Identifier Value (IV) of an identifier token is the unique mathematical integer ID
+#### Static Semantics: TokenWorth (Identifiers)
+The Token Worth of an Identifier token is the unique [real number] (link pending) ID
 that distinguishes the identifier from other identifiers within a given program.
-Identifier values are mathematical integers strictly greater than *255*.
+Token Worth quantities for identifiers are integers strictly greater than *255*.
 
 ```w3c
-IV(Identifier)
+TokenWorth(Identifier) -> RealNumber
 	:= /* TO BE DESCRIBED */
 ```
 
@@ -243,97 +243,95 @@ DigitSequenceHTD ::= (DigitSequenceHTD "_"?)? [0-9a-z]
 Numbers are literal constants that represent numeric mathematical values.
 Currently, only positive and negative (and zero) integers are supported.
 
-#### Static Semantics: Mathematical Value
-The Mathematical Value (MV) of a number token is the abstract mathematical quantity that the token represents.
-(Abstract mathematical quantities could include irrational numbers,
-even though they cannot be represented exactly in a computer system.)
+#### Static Semantics: TokenWorth (Numbers)
+The Token Worth of a Number token is the [real number] (link pending) that the token represents.
 
-There is a many-to-one relationship between tokens and mathematical values. For example,
-a token containing `0042` has the same mathematical value as a token containing `+42`:
-the integer *42*.
+There is a many-to-one relationship between tokens and Token Worth quantities.
+For example, the tokens containing `0042` and `+42`
+both have the same Token Worth: the integer *42*.
 
 ```w3c
-MV(Number ::= IntegerLiteral)
-	:= MV(IntegerLiteral)
-MV(Number ::= "+" IntegerLiteral)
-	:= MV(IntegerLiteral)
-MV(Number ::= "-" IntegerLiteral)
-	:= -1 * MV(IntegerLiteral)
+TokenWorth(Number ::= IntegerLiteral) -> RealNumber
+	:= TokenWorth(IntegerLiteral)
+TokenWorth(Number ::= "+" IntegerLiteral) -> RealNumber
+	:= TokenWorth(IntegerLiteral)
+TokenWorth(Number ::= "-" IntegerLiteral) -> RealNumber
+	:= -1 * TokenWorth(IntegerLiteral)
 
-MV(IntegerLiteral ::= "\b"  DigitSequenceBin)
-	:= MV(DigitSequenceBin)
-MV(IntegerLiteral ::= "\q"  DigitSequenceQua)
-	:= MV(DigitSequenceQua)
-MV(IntegerLiteral ::= "\o"  DigitSequenceOct)
-	:= MV(DigitSequenceOct)
-MV(IntegerLiteral ::= "\d"? DigitSequenceDec)
-	:= MV(DigitSequenceDec)
-MV(IntegerLiteral ::= "\x"  DigitSequenceHex)
-	:= MV(DigitSequenceHex)
-MV(IntegerLiteral ::= "\z"  DigitSequenceHTD)
-	:= MV(DigitSequenceHTD)
+TokenWorth(IntegerLiteral ::= "\b"  DigitSequenceBin) -> RealNumber
+	:= TokenWorth(DigitSequenceBin)
+TokenWorth(IntegerLiteral ::= "\q"  DigitSequenceQua) -> RealNumber
+	:= TokenWorth(DigitSequenceQua)
+TokenWorth(IntegerLiteral ::= "\o"  DigitSequenceOct) -> RealNumber
+	:= TokenWorth(DigitSequenceOct)
+TokenWorth(IntegerLiteral ::= "\d"? DigitSequenceDec) -> RealNumber
+	:= TokenWorth(DigitSequenceDec)
+TokenWorth(IntegerLiteral ::= "\x"  DigitSequenceHex) -> RealNumber
+	:= TokenWorth(DigitSequenceHex)
+TokenWorth(IntegerLiteral ::= "\z"  DigitSequenceHTD) -> RealNumber
+	:= TokenWorth(DigitSequenceHTD)
 
-MV(DigitSequenceBin ::= [0-1])
-	:= MV([0-1])
-MV(DigitSequenceBin ::= DigitSequenceBin "_"? [0-1])
-	:= 2 * MV(DigitSequenceBin) + MV([0-1])
-MV(DigitSequenceQua ::= [0-3])
-	:= MV([0-3])
-MV(DigitSequenceQua ::= DigitSequenceQua "_"? [0-3])
-	:= 4 * MV(DigitSequenceQua) + MV([0-3])
-MV(DigitSequenceOct ::= [0-7])
-	:= MV([0-7])
-MV(DigitSequenceOct ::= DigitSequenceOct "_"? [0-7])
-	:= 8 * MV(DigitSequenceOct) + MV([0-7])
-MV(DigitSequenceDec ::= [0-9])
-	:= MV([0-9])
-MV(DigitSequenceDec ::= DigitSequenceDec "_"? [0-9])
-	:= 10 * MV(DigitSequenceDec) + MV([0-9])
-MV(DigitSequenceHex ::= [0-9a-f])
-	:= MV([0-9a-f])
-MV(DigitSequenceHex ::= DigitSequenceHex "_"? [0-9a-f])
-	:= 16 * MV(DigitSequenceHex) + MV([0-9a-f])
-MV(DigitSequenceHTD ::= [0-9a-z])
-	:= MV([0-9a-z])
-MV(DigitSequenceHTD ::= DigitSequenceHTD "_"? [0-9a-z])
-	:= 36 * MV(DigitSequenceHTD) + MV([0-9a-z])
+TokenWorth(DigitSequenceBin ::= [0-1]) -> RealNumber
+	:= TokenWorth([0-1])
+TokenWorth(DigitSequenceBin ::= DigitSequenceBin "_"? [0-1]) -> RealNumber
+	:= 2 * TokenWorth(DigitSequenceBin) + TokenWorth([0-1])
+TokenWorth(DigitSequenceQua ::= [0-3]) -> RealNumber
+	:= TokenWorth([0-3])
+TokenWorth(DigitSequenceQua ::= DigitSequenceQua "_"? [0-3]) -> RealNumber
+	:= 4 * TokenWorth(DigitSequenceQua) + TokenWorth([0-3])
+TokenWorth(DigitSequenceOct ::= [0-7]) -> RealNumber
+	:= TokenWorth([0-7])
+TokenWorth(DigitSequenceOct ::= DigitSequenceOct "_"? [0-7]) -> RealNumber
+	:= 8 * TokenWorth(DigitSequenceOct) + TokenWorth([0-7])
+TokenWorth(DigitSequenceDec ::= [0-9]) -> RealNumber
+	:= TokenWorth([0-9])
+TokenWorth(DigitSequenceDec ::= DigitSequenceDec "_"? [0-9]) -> RealNumber
+	:= 10 * TokenWorth(DigitSequenceDec) + TokenWorth([0-9])
+TokenWorth(DigitSequenceHex ::= [0-9a-f]) -> RealNumber
+	:= TokenWorth([0-9a-f])
+TokenWorth(DigitSequenceHex ::= DigitSequenceHex "_"? [0-9a-f]) -> RealNumber
+	:= 16 * TokenWorth(DigitSequenceHex) + TokenWorth([0-9a-f])
+TokenWorth(DigitSequenceHTD ::= [0-9a-z]) -> RealNumber
+	:= TokenWorth([0-9a-z])
+TokenWorth(DigitSequenceHTD ::= DigitSequenceHTD "_"? [0-9a-z]) -> RealNumber
+	:= 36 * TokenWorth(DigitSequenceHTD) + TokenWorth([0-9a-z])
 
-MV([0-9a-z] ::= "0")  :=  MV([0-9a-f] ::= "0")  :=  MV([0-9] ::= "0")  :=  MV([0-7] ::= "0")  :=  MV([0-3] ::= "0")  :=  MV([0-1] ::= "0")  :=  0
-MV([0-9a-z] ::= "1")  :=  MV([0-9a-f] ::= "1")  :=  MV([0-9] ::= "1")  :=  MV([0-7] ::= "1")  :=  MV([0-3] ::= "1")  :=  MV([0-1] ::= "1")  :=  1
-MV([0-9a-z] ::= "2")  :=  MV([0-9a-f] ::= "2")  :=  MV([0-9] ::= "2")  :=  MV([0-7] ::= "2")  :=  MV([0-3] ::= "2")  :=  2
-MV([0-9a-z] ::= "3")  :=  MV([0-9a-f] ::= "3")  :=  MV([0-9] ::= "3")  :=  MV([0-7] ::= "3")  :=  MV([0-3] ::= "3")  :=  3
-MV([0-9a-z] ::= "4")  :=  MV([0-9a-f] ::= "4")  :=  MV([0-9] ::= "4")  :=  MV([0-7] ::= "4")  :=  4
-MV([0-9a-z] ::= "5")  :=  MV([0-9a-f] ::= "5")  :=  MV([0-9] ::= "5")  :=  MV([0-7] ::= "5")  :=  5
-MV([0-9a-z] ::= "6")  :=  MV([0-9a-f] ::= "6")  :=  MV([0-9] ::= "6")  :=  MV([0-7] ::= "6")  :=  6
-MV([0-9a-z] ::= "7")  :=  MV([0-9a-f] ::= "7")  :=  MV([0-9] ::= "7")  :=  MV([0-7] ::= "7")  :=  7
-MV([0-9a-z] ::= "8")  :=  MV([0-9a-f] ::= "8")  :=  MV([0-9] ::= "8")  :=  8
-MV([0-9a-z] ::= "9")  :=  MV([0-9a-f] ::= "9")  :=  MV([0-9] ::= "9")  :=  9
-MV([0-9a-z] ::= "a")  :=  MV([0-9a-f] ::= "a")  :=  10
-MV([0-9a-z] ::= "b")  :=  MV([0-9a-f] ::= "b")  :=  11
-MV([0-9a-z] ::= "c")  :=  MV([0-9a-f] ::= "c")  :=  12
-MV([0-9a-z] ::= "d")  :=  MV([0-9a-f] ::= "d")  :=  13
-MV([0-9a-z] ::= "e")  :=  MV([0-9a-f] ::= "e")  :=  14
-MV([0-9a-z] ::= "f")  :=  MV([0-9a-f] ::= "f")  :=  15
-MV([0-9a-z] ::= "g")  :=  16
-MV([0-9a-z] ::= "h")  :=  17
-MV([0-9a-z] ::= "i")  :=  18
-MV([0-9a-z] ::= "j")  :=  19
-MV([0-9a-z] ::= "k")  :=  20
-MV([0-9a-z] ::= "l")  :=  21
-MV([0-9a-z] ::= "m")  :=  22
-MV([0-9a-z] ::= "n")  :=  23
-MV([0-9a-z] ::= "o")  :=  24
-MV([0-9a-z] ::= "p")  :=  25
-MV([0-9a-z] ::= "q")  :=  26
-MV([0-9a-z] ::= "r")  :=  27
-MV([0-9a-z] ::= "s")  :=  28
-MV([0-9a-z] ::= "t")  :=  29
-MV([0-9a-z] ::= "u")  :=  30
-MV([0-9a-z] ::= "v")  :=  31
-MV([0-9a-z] ::= "w")  :=  32
-MV([0-9a-z] ::= "x")  :=  33
-MV([0-9a-z] ::= "y")  :=  34
-MV([0-9a-z] ::= "z")  :=  35
+TokenWorth([0-9a-z] ::= "0") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "0") -> RealNumber  :=  TokenWorth([0-9] ::= "0") -> RealNumber  :=  TokenWorth([0-7] ::= "0") -> RealNumber  :=  TokenWorth([0-3] ::= "0") -> RealNumber  :=  TokenWorth([0-1] ::= "0") -> RealNumber  :=  \x00
+TokenWorth([0-9a-z] ::= "1") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "1") -> RealNumber  :=  TokenWorth([0-9] ::= "1") -> RealNumber  :=  TokenWorth([0-7] ::= "1") -> RealNumber  :=  TokenWorth([0-3] ::= "1") -> RealNumber  :=  TokenWorth([0-1] ::= "1") -> RealNumber  :=  \x01
+TokenWorth([0-9a-z] ::= "2") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "2") -> RealNumber  :=  TokenWorth([0-9] ::= "2") -> RealNumber  :=  TokenWorth([0-7] ::= "2") -> RealNumber  :=  TokenWorth([0-3] ::= "2") -> RealNumber  :=  \x02
+TokenWorth([0-9a-z] ::= "3") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "3") -> RealNumber  :=  TokenWorth([0-9] ::= "3") -> RealNumber  :=  TokenWorth([0-7] ::= "3") -> RealNumber  :=  TokenWorth([0-3] ::= "3") -> RealNumber  :=  \x03
+TokenWorth([0-9a-z] ::= "4") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "4") -> RealNumber  :=  TokenWorth([0-9] ::= "4") -> RealNumber  :=  TokenWorth([0-7] ::= "4") -> RealNumber  :=  \x04
+TokenWorth([0-9a-z] ::= "5") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "5") -> RealNumber  :=  TokenWorth([0-9] ::= "5") -> RealNumber  :=  TokenWorth([0-7] ::= "5") -> RealNumber  :=  \x05
+TokenWorth([0-9a-z] ::= "6") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "6") -> RealNumber  :=  TokenWorth([0-9] ::= "6") -> RealNumber  :=  TokenWorth([0-7] ::= "6") -> RealNumber  :=  \x06
+TokenWorth([0-9a-z] ::= "7") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "7") -> RealNumber  :=  TokenWorth([0-9] ::= "7") -> RealNumber  :=  TokenWorth([0-7] ::= "7") -> RealNumber  :=  \x07
+TokenWorth([0-9a-z] ::= "8") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "8") -> RealNumber  :=  TokenWorth([0-9] ::= "8") -> RealNumber  :=  \x08
+TokenWorth([0-9a-z] ::= "9") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "9") -> RealNumber  :=  TokenWorth([0-9] ::= "9") -> RealNumber  :=  \x09
+TokenWorth([0-9a-z] ::= "a") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "a") -> RealNumber  :=  \x0a
+TokenWorth([0-9a-z] ::= "b") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "b") -> RealNumber  :=  \x0b
+TokenWorth([0-9a-z] ::= "c") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "c") -> RealNumber  :=  \x0c
+TokenWorth([0-9a-z] ::= "d") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "d") -> RealNumber  :=  \x0d
+TokenWorth([0-9a-z] ::= "e") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "e") -> RealNumber  :=  \x0e
+TokenWorth([0-9a-z] ::= "f") -> RealNumber  :=  TokenWorth([0-9a-f] ::= "f") -> RealNumber  :=  \x0f
+TokenWorth([0-9a-z] ::= "g") -> RealNumber  :=  \x010
+TokenWorth([0-9a-z] ::= "h") -> RealNumber  :=  \x011
+TokenWorth([0-9a-z] ::= "i") -> RealNumber  :=  \x012
+TokenWorth([0-9a-z] ::= "j") -> RealNumber  :=  \x013
+TokenWorth([0-9a-z] ::= "k") -> RealNumber  :=  \x014
+TokenWorth([0-9a-z] ::= "l") -> RealNumber  :=  \x015
+TokenWorth([0-9a-z] ::= "m") -> RealNumber  :=  \x016
+TokenWorth([0-9a-z] ::= "n") -> RealNumber  :=  \x017
+TokenWorth([0-9a-z] ::= "o") -> RealNumber  :=  \x018
+TokenWorth([0-9a-z] ::= "p") -> RealNumber  :=  \x019
+TokenWorth([0-9a-z] ::= "q") -> RealNumber  :=  \x01a
+TokenWorth([0-9a-z] ::= "r") -> RealNumber  :=  \x01b
+TokenWorth([0-9a-z] ::= "s") -> RealNumber  :=  \x01c
+TokenWorth([0-9a-z] ::= "t") -> RealNumber  :=  \x01d
+TokenWorth([0-9a-z] ::= "u") -> RealNumber  :=  \x01e
+TokenWorth([0-9a-z] ::= "v") -> RealNumber  :=  \x01f
+TokenWorth([0-9a-z] ::= "w") -> RealNumber  :=  \x020
+TokenWorth([0-9a-z] ::= "x") -> RealNumber  :=  \x021
+TokenWorth([0-9a-z] ::= "y") -> RealNumber  :=  \x022
+TokenWorth([0-9a-z] ::= "z") -> RealNumber  :=  \x023
 ```
 
 
@@ -356,57 +354,58 @@ NonEscapeChar    ::= [^'\stnru#x0A#x03]
 String tokens are sequences of Unicode characters enclosed in delimiters.
 Strings are snippets of textual data.
 
-#### Static Semantics: String Value
-The String Value (SV) of a string token is the intended text that the string represents,
-which might not always be equal to the token’s source input.
-The text of the string in the source code is called the “raw” text of the token.
-Before the token is sent to the parser, this “raw” text is transformed into a
-String Value, or, informally, “cooked” text.
+#### Static Semantics: TokenWorth (Strings)
+The Token Worth of a String token is a [sequence] (link pending) of [code points] (link pending)
+computed by the various parts of the token.
+
+There is a many-to-one relationship between tokens and Token Worth quantities.
+For example, the tokens containing `'ABC'` and `'\u{41}\u{42}\u{43}'`
+both have the same Token Worth: the sequence of integers *«65, 66, 67»*.
 
 ```w3c
-SV(String ::= "'" "'")
-	:= <> /* the empty array */
-SV(String ::= "'" StringChars "'")
-	:= SV(StringChars)
-SV(StringChars ::= [^'\#x03])
-	:= UTF16Encoding(code point of that character)
-SV(StringChars ::= [^'\#x03] StringChars)
-	:= UTF16Encoding(code point of that character) followed by SV(StringChars)
-SV(StringChars ::= "\" StringEscape)
-	:= SV(StringEscape)
-SV(StringChars ::= "\" StringEscape StringChars)
-	:= SV(StringEscape) followed by SV(StringChars)
-SV(StringChars ::= "\u")
-	:= \x75 /* U+0075 LATIN SMALL LETTER U */
-SV(StringChars ::= "\u" [^'{#x03'])
-	:= \x75 followed by UTF16Encoding(code point of that character)
-SV(StringChars ::= "\u" [^'{#x03'] StringChars)
-	:= \x75 followed by UTF16Encoding(code point of that character) followed by SV(StringChars)
-SV(StringEscape ::= EscapeChar)
-	:= SV(EscapeChar)
-SV(StringEscape ::= EscapeCode)
-	:= SV(EscapeCode)
-SV(StringEscape ::= LineContinuation)
-	:= SV(LineContinuation)
-SV(StringEscape ::= NonEscapeChar)
-	:= SV(NonEscapeChar)
-SV(EscapeChar ::= "'" | "\" | "s" | "t" | "n" | "r")
+TokenWorth(String ::= "'" "'") -> Sequence<RealNumber>
+	:= <>
+TokenWorth(String ::= "'" StringChars "'") -> Sequence<RealNumber>
+	:= TokenWorth(StringChars)
+TokenWorth(StringChars ::= [^'\#x03]) -> Sequence<RealNumber>
+	:= <UTF16Encoding(code point of that character)>
+TokenWorth(StringChars ::= [^'\#x03] StringChars) -> Sequence<RealNumber>
+	:= <UTF16Encoding(code point of that character), ...TokenWorth(StringChars)>
+TokenWorth(StringChars ::= "\" StringEscape) -> Sequence<RealNumber>
+	:= TokenWorth(StringEscape)
+TokenWorth(StringChars ::= "\" StringEscape StringChars) -> Sequence<RealNumber>
+	:= <...TokenWorth(StringEscape), TokenWorth(StringChars)>
+TokenWorth(StringChars ::= "\u") -> Sequence<RealNumber>
+	:= <\x75> /* U+0075 LATIN SMALL LETTER U */
+TokenWorth(StringChars ::= "\u" [^'{#x03']) -> Sequence<RealNumber>
+	:= <\x75, UTF16Encoding(code point of that character)>
+TokenWorth(StringChars ::= "\u" [^'{#x03'] StringChars) -> Sequence<RealNumber>
+	:= <\x75, UTF16Encoding(code point of that character), ...TokenWorth(StringChars)>
+TokenWorth(StringEscape ::= EscapeChar) -> Sequence<RealNumber>
+	:= TokenWorth(EscapeChar)
+TokenWorth(StringEscape ::= EscapeCode) -> Sequence<RealNumber>
+	:= TokenWorth(EscapeCode)
+TokenWorth(StringEscape ::= LineContinuation) -> Sequence<RealNumber>
+	:= TokenWorth(LineContinuation)
+TokenWorth(StringEscape ::= NonEscapeChar) -> Sequence<RealNumber>
+	:= TokenWorth(NonEscapeChar)
+TokenWorth(EscapeChar ::= "'" | "\" | "s" | "t" | "n" | "r") -> Sequence<RealNumber>
 	:= given by the following map: {
-		"'" : \x27, /* U+0027 APOSTROPHE           */
-		"\" : \x5c, /* U+005C REVERSE SOLIDUS      */
-		"s" : \x20, /* U+0020 SPACE                */
-		"t" : \x09, /* U+0009 CHARACTER TABULATION */
-		"n" : \x0a, /* U+000A LINE FEED (LF)       */
-		"r" : \x0d, /* U+000D CARRIAGE RETURN (CR) */
+		"'" : <\x27>, /* U+0027 APOSTROPHE           */
+		"\" : <\x5c>, /* U+005C REVERSE SOLIDUS      */
+		"s" : <\x20>, /* U+0020 SPACE                */
+		"t" : <\x09>, /* U+0009 CHARACTER TABULATION */
+		"n" : <\x0a>, /* U+000A LINE FEED (LF)       */
+		"r" : <\x0d>, /* U+000D CARRIAGE RETURN (CR) */
 	}
-SV(EscapeCode ::= "u{" "}")
-	:= \x0 /* U+0000 NULL */
-SV(EscapeCode ::= "u{" DigitSequenceHex "}")
-	:= UTF16Encoding(MV(DigitSequenceHex))
-SV(LineContinuation ::= #x0A)
-	:= \x20 /* U+0020 SPACE */
-SV(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03])
-	:= UTF16Encoding(code point of that character)
+TokenWorth(EscapeCode ::= "u{" "}") -> Sequence<RealNumber>
+	:= <\x00> /* U+0000 NULL */
+TokenWorth(EscapeCode ::= "u{" DigitSequenceHex "}") -> Sequence<RealNumber>
+	:= <UTF16Encoding(TokenWorth(DigitSequenceHex))>
+TokenWorth(LineContinuation ::= #x0A) -> Sequence<RealNumber>
+	:= <\x20> /* U+0020 SPACE */
+TokenWorth(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03]) -> Sequence<RealNumber>
+	:= <UTF16Encoding(code point of that character)>
 ```
 
 
@@ -454,137 +453,137 @@ they use different delimiters, and their “cooked” values are computed differ
 Template literal tokens can be combined together in
 specific ways determined by the formal syntactic grammar.
 
-#### Static Semantics: Template Value
-The Template Value (TV) of a template token is the analogue of the SV of a string token.
+#### Static Semantics: TokenWorth (Templates)
+The Token Worth of a Template token is the analogue of the Token Worth of a String token.
 
 ```w3c
-TV(TemplateFull ::= "'''" "'''")
+TokenWorth(TemplateFull ::= "'''" "'''") -> Sequence<RealNumber>
 	:= <>
-TV(TemplateFull ::= "'''" TemplateChars__EndDelim "'''")
-	:= TV(TemplateChars__EndDelim)
+TokenWorth(TemplateFull ::= "'''" TemplateChars__EndDelim "'''") -> Sequence<RealNumber>
+	:= TokenWorth(TemplateChars__EndDelim)
 
-TV(TemplateHead ::= "'''" "{{")
+TokenWorth(TemplateHead ::= "'''" "{{") -> Sequence<RealNumber>
 	:= <>
-TV(TemplateHead ::= "'''" TemplateChars__EndInterp "{{")
-	:= TV(TemplateChars__EndInterp)
+TokenWorth(TemplateHead ::= "'''" TemplateChars__EndInterp "{{") -> Sequence<RealNumber>
+	:= TokenWorth(TemplateChars__EndInterp)
 
-TV(TemplateMiddle ::= "}}" "{{")
+TokenWorth(TemplateMiddle ::= "}}" "{{") -> Sequence<RealNumber>
 	:= <>
-TV(TemplateMiddle ::= "}}" TemplateChars__EndInterp "{{")
-	:= TV(TemplateChars__EndInterp)
+TokenWorth(TemplateMiddle ::= "}}" TemplateChars__EndInterp "{{") -> Sequence<RealNumber>
+	:= TokenWorth(TemplateChars__EndInterp)
 
-TV(TemplateTail ::= "}}" "'''")
+TokenWorth(TemplateTail ::= "}}" "'''") -> Sequence<RealNumber>
 	:= <>
-TV(TemplateTail ::= "}}" TemplateChars__EndDelim "'''")
-	:= TV(TemplateChars__EndDelim)
+TokenWorth(TemplateTail ::= "}}" TemplateChars__EndDelim "'''") -> Sequence<RealNumber>
+	:= TokenWorth(TemplateChars__EndDelim)
 
-TV(TemplateChars__EndDelim ::= [^'{#x03])
-	:= UTF16Encoding(code point of that character)
-TV(TemplateChars__EndDelim ::= [^'{#x03] TemplateChars__EndDelim)
-	:= UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndDelim)
-TV(TemplateChars__EndDelim ::= TemplateChars__EndDelim__StartDelim)
-	:= TV(TemplateChars__EndDelim__StartDelim)
-TV(TemplateChars__EndDelim ::= TemplateChars__EndDelim__StartInterp)
-	:= TV(TemplateChars__EndDelim__StartInterp)
+TokenWorth(TemplateChars__EndDelim ::= [^'{#x03]) -> Sequence<RealNumber>
+	:= <UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndDelim ::= [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
+	:= <UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndDelim)>
+TokenWorth(TemplateChars__EndDelim ::= TemplateChars__EndDelim__StartDelim) -> Sequence<RealNumber>
+	:= TokenWorth(TemplateChars__EndDelim__StartDelim)
+TokenWorth(TemplateChars__EndDelim ::= TemplateChars__EndDelim__StartInterp) -> Sequence<RealNumber>
+	:= TokenWorth(TemplateChars__EndDelim__StartInterp)
 
-TV(TemplateChars__EndDelim__StartDelim ::= "'" [^'{#x03])
-	:= \x27 followed by UTF16Encoding(code point of that character)
-TV(TemplateChars__EndDelim__StartDelim ::= "'" [^'{#x03] TemplateChars__EndDelim)
-	:= \x27 followed by UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndDelim)
-TV(TemplateChars__EndDelim__StartDelim ::= "''" [^'{#x03])
-	:= <\x27, \x27> followed by UTF16Encoding(code point of that character)
-TV(TemplateChars__EndDelim__StartDelim ::= "''" [^'{#x03] TemplateChars__EndDelim)
-	:= <\x27, \x27> followed by UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndInterp)
-TV(TemplateChars__EndDelim__StartDelim ::= "'{")
+TokenWorth(TemplateChars__EndDelim__StartDelim ::= "'" [^'{#x03]) -> Sequence<RealNumber>
+	:= <\x27, UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndDelim__StartDelim ::= "'" [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
+	:= <\x27, UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndDelim)>
+TokenWorth(TemplateChars__EndDelim__StartDelim ::= "''" [^'{#x03]) -> Sequence<RealNumber>
+	:= <\x27, \x27, UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndDelim__StartDelim ::= "''" [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
+	:= <\x27, \x27, UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndInterp)>
+TokenWorth(TemplateChars__EndDelim__StartDelim ::= "'{") -> Sequence<RealNumber>
 	:= <\x27, \x7b>
-TV(TemplateChars__EndDelim__StartDelim ::= "'{" [^'{#x03])
-	:= <\x27, \x7b> followed by UTF16Encoding(code point of that character)
-TV(TemplateChars__EndDelim__StartDelim ::= "'{" [^'{#x03] TemplateChars__EndDelim)
-	:= <\x27, \x7b> followed by UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndDelim)
-TV(TemplateChars__EndDelim__StartDelim ::= "'{" TemplateChars__EndDelim__StartDelim)
-	:= <\x27, \x7b> followed by TV(TemplateChars__EndDelim__StartDelim)
-TV(TemplateChars__EndDelim__StartDelim ::= "''{")
+TokenWorth(TemplateChars__EndDelim__StartDelim ::= "'{" [^'{#x03]) -> Sequence<RealNumber>
+	:= <\x27, \x7b, UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndDelim__StartDelim ::= "'{" [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
+	:= <\x27, \x7b, UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndDelim)>
+TokenWorth(TemplateChars__EndDelim__StartDelim ::= "'{" TemplateChars__EndDelim__StartDelim) -> Sequence<RealNumber>
+	:= <\x27, \x7b, ...TokenWorth(TemplateChars__EndDelim__StartDelim)>
+TokenWorth(TemplateChars__EndDelim__StartDelim ::= "''{") -> Sequence<RealNumber>
 	:= <\x27, \x27, \x7b>
-TV(TemplateChars__EndDelim__StartDelim ::= "''{" [^'{#x03])
-	:= <\x27, \x27, \x7b> followed by UTF16Encoding(code point of that character)
-TV(TemplateChars__EndDelim__StartDelim ::= "''{" [^'{#x03] TemplateChars__EndDelim)
-	:= <\x27, \x27, \x7b> followed by UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndDelim)
-TV(TemplateChars__EndDelim__StartDelim ::= "''{" TemplateChars__EndDelim__StartDelim)
-	:= <\x27, \x27, \x7b> followed by TV(TemplateChars__EndDelim__StartDelim)
+TokenWorth(TemplateChars__EndDelim__StartDelim ::= "''{" [^'{#x03]) -> Sequence<RealNumber>
+	:= <\x27, \x27, \x7b, UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndDelim__StartDelim ::= "''{" [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
+	:= <\x27, \x27, \x7b, UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndDelim)>
+TokenWorth(TemplateChars__EndDelim__StartDelim ::= "''{" TemplateChars__EndDelim__StartDelim) -> Sequence<RealNumber>
+	:= <\x27, \x27, \x7b, ...TokenWorth(TemplateChars__EndDelim__StartDelim)>
 
-TV(TemplateChars__EndDelim__StartInterp ::= "{")
-	:= \x7b /* U+007B LEFT CURLY BRACKET */
-TV(TemplateChars__EndDelim__StartInterp ::= "{" [^'{#x03])
-	:= \x7b followed by UTF16Encoding(code point of that character)
-TV(TemplateChars__EndDelim__StartInterp ::= "{" [^'{#x03] TemplateChars__EndDelim)
-	:= \x7b followed by UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndDelim)
-TV(TemplateChars__EndDelim__StartInterp ::= "{'" [^'{#x03])
-	:= <\x7b, \x27> followed by UTF16Encoding(code point of that character)
-TV(TemplateChars__EndDelim__StartInterp ::= "{'" [^'{#x03] TemplateChars__EndDelim)
-	:= <\x7b, \x27> followed by UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndDelim)
-TV(TemplateChars__EndDelim__StartInterp ::= "{'" TemplateChars__EndDelim__StartInterp)
-	:= <\x7b, \x27> followed by TV(TemplateChars__EndDelim__StartInterp)
-TV(TemplateChars__EndDelim__StartInterp ::= "{''" [^'{#x03])
-	:= <\x7b, \x27, \x27> followed by UTF16Encoding(code point of that character)
-TV(TemplateChars__EndDelim__StartInterp ::= "{''" [^'{#x03] TemplateChars__EndDelim)
-	:= <\x7b, \x27, \x27> followed by UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndDelim)
-TV(TemplateChars__EndDelim__StartInterp ::= "{''" TemplateChars__EndDelim__StartInterp)
-	:= <\x7b, \x27, \x27> followed by TV(TemplateChars__EndDelim__StartInterp)
+TokenWorth(TemplateChars__EndDelim__StartInterp ::= "{") -> Sequence<RealNumber>
+	:= <\x7b> /* U+007B LEFT CURLY BRACKET */
+TokenWorth(TemplateChars__EndDelim__StartInterp ::= "{" [^'{#x03]) -> Sequence<RealNumber>
+	:= <\x7b, UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndDelim__StartInterp ::= "{" [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
+	:= <\x7b, UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndDelim)>
+TokenWorth(TemplateChars__EndDelim__StartInterp ::= "{'" [^'{#x03]) -> Sequence<RealNumber>
+	:= <\x7b, \x27, UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndDelim__StartInterp ::= "{'" [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
+	:= <\x7b, \x27, UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndDelim)>
+TokenWorth(TemplateChars__EndDelim__StartInterp ::= "{'" TemplateChars__EndDelim__StartInterp) -> Sequence<RealNumber>
+	:= <\x7b, \x27, ...TokenWorth(TemplateChars__EndDelim__StartInterp)>
+TokenWorth(TemplateChars__EndDelim__StartInterp ::= "{''" [^'{#x03]) -> Sequence<RealNumber>
+	:= <\x7b, \x27, \x27, UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndDelim__StartInterp ::= "{''" [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
+	:= <\x7b, \x27, \x27, UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndDelim)>
+TokenWorth(TemplateChars__EndDelim__StartInterp ::= "{''" TemplateChars__EndDelim__StartInterp) -> Sequence<RealNumber>
+	:= <\x7b, \x27, \x27, ...TokenWorth(TemplateChars__EndDelim__StartInterp)>
 
-TV(TemplateChars__EndInterp ::= [^'{#x03])
-	:= UTF16Encoding(code point of that character)
-TV(TemplateChars__EndInterp ::= [^'{#x03] TemplateChars__EndInterp)
-	:= UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndInterp)
-TV(TemplateChars__EndInterp ::= TemplateChars__EndInterp__StartDelim)
-	:= TV(TemplateChars__EndInterp__StartDelim)
-TV(TemplateChars__EndInterp ::= TemplateChars__EndInterp__StartInterp)
-	:= TV(TemplateChars__EndInterp__StartInterp)
+TokenWorth(TemplateChars__EndInterp ::= [^'{#x03]) -> Sequence<RealNumber>
+	:= <UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndInterp ::= [^'{#x03] TemplateChars__EndInterp) -> Sequence<RealNumber>
+	:= <UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndInterp)>
+TokenWorth(TemplateChars__EndInterp ::= TemplateChars__EndInterp__StartDelim) -> Sequence<RealNumber>
+	:= TokenWorth(TemplateChars__EndInterp__StartDelim)
+TokenWorth(TemplateChars__EndInterp ::= TemplateChars__EndInterp__StartInterp) -> Sequence<RealNumber>
+	:= TokenWorth(TemplateChars__EndInterp__StartInterp)
 
-TV(TemplateChars__EndInterp__StartDelim ::= "'")
-	:= \x27 /* U+0027 APOSTROPHE */
-TV(TemplateChars__EndInterp__StartDelim ::= "'" [^'{#x03])
-	:= \x27 followed by UTF16Encoding(code point of that character)
-TV(TemplateChars__EndInterp__StartDelim ::= "'" [^'{#x03] TemplateChars__EndInterp)
-	:= \x27 followed by UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndInterp)
-TV(TemplateChars__EndInterp__StartDelim ::= "''")
+TokenWorth(TemplateChars__EndInterp__StartDelim ::= "'") -> Sequence<RealNumber>
+	:= <\x27> /* U+0027 APOSTROPHE */
+TokenWorth(TemplateChars__EndInterp__StartDelim ::= "'" [^'{#x03]) -> Sequence<RealNumber>
+	:= <\x27, UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndInterp__StartDelim ::= "'" [^'{#x03] TemplateChars__EndInterp) -> Sequence<RealNumber>
+	:= <\x27, UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndInterp)>
+TokenWorth(TemplateChars__EndInterp__StartDelim ::= "''") -> Sequence<RealNumber>
 	:= <\x27, \x27>
-TV(TemplateChars__EndInterp__StartDelim ::= "''" [^'{#x03])
-	:= <\x27, \x27> followed by UTF16Encoding(code point of that character)
-TV(TemplateChars__EndInterp__StartDelim ::= "''" [^'{#x03] TemplateChars__EndInterp)
-	:= <\x27, \x27> followed by UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndInterp)
-TV(TemplateChars__EndInterp__StartDelim ::= "'{" [^'{#x03])
-	:= <\x27, \x7b> followed by UTF16Encoding(code point of that character)
-TV(TemplateChars__EndInterp__StartDelim ::= "'{" [^'{#x03] TemplateChars__EndInterp)
-	:= <\x27, \x7b> followed by UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndInterp)
-TV(TemplateChars__EndInterp__StartDelim ::= "'{" TemplateChars__EndInterp__StartDelim)
-	:= <\x27, \x7b> followed by TV(TemplateChars__EndInterp__StartDelim)
-TV(TemplateChars__EndInterp__StartDelim ::= "''{" [^'{#x03])
-	:= <\x27, \x27, \x7b> followed by UTF16Encoding(code point of that character)
-TV(TemplateChars__EndInterp__StartDelim ::= "''{" [^'{#x03] TemplateChars__EndInterp)
-	:= <\x27, \x27, \x7b> followed by UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndInterp)
-TV(TemplateChars__EndInterp__StartDelim ::= "''{" TemplateChars__EndInterp__StartDelim)
-	:= <\x27, \x27, \x7b> followed by TV(TemplateChars__EndInterp__StartDelim)
+TokenWorth(TemplateChars__EndInterp__StartDelim ::= "''" [^'{#x03]) -> Sequence<RealNumber>
+	:= <\x27, \x27, UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndInterp__StartDelim ::= "''" [^'{#x03] TemplateChars__EndInterp) -> Sequence<RealNumber>
+	:= <\x27, \x27, UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndInterp)>
+TokenWorth(TemplateChars__EndInterp__StartDelim ::= "'{" [^'{#x03]) -> Sequence<RealNumber>
+	:= <\x27, \x7b, UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndInterp__StartDelim ::= "'{" [^'{#x03] TemplateChars__EndInterp) -> Sequence<RealNumber>
+	:= <\x27, \x7b, UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndInterp)>
+TokenWorth(TemplateChars__EndInterp__StartDelim ::= "'{" TemplateChars__EndInterp__StartDelim) -> Sequence<RealNumber>
+	:= <\x27, \x7b, ...TokenWorth(TemplateChars__EndInterp__StartDelim)>
+TokenWorth(TemplateChars__EndInterp__StartDelim ::= "''{" [^'{#x03]) -> Sequence<RealNumber>
+	:= <\x27, \x27, \x7b, UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndInterp__StartDelim ::= "''{" [^'{#x03] TemplateChars__EndInterp) -> Sequence<RealNumber>
+	:= <\x27, \x27, \x7b, UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndInterp)>
+TokenWorth(TemplateChars__EndInterp__StartDelim ::= "''{" TemplateChars__EndInterp__StartDelim) -> Sequence<RealNumber>
+	:= <\x27, \x27, \x7b, ...TokenWorth(TemplateChars__EndInterp__StartDelim)>
 
-TV(TemplateChars__EndInterp__StartInterp ::= "{" [^'{#x03])
-	:= \x7b followed by UTF16Encoding(code point of that character)
-TV(TemplateChars__EndInterp__StartInterp ::= "{" [^'{#x03] TemplateChars__EndInterp)
-	:= \x7b followed by UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndInterp)
-TV(TemplateChars__EndInterp__StartInterp ::= "{'")
+TokenWorth(TemplateChars__EndInterp__StartInterp ::= "{" [^'{#x03]) -> Sequence<RealNumber>
+	:= <\x7b, UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndInterp__StartInterp ::= "{" [^'{#x03] TemplateChars__EndInterp) -> Sequence<RealNumber>
+	:= <\x7b, UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndInterp)>
+TokenWorth(TemplateChars__EndInterp__StartInterp ::= "{'") -> Sequence<RealNumber>
 	:= <\x7b, \x27>
-TV(TemplateChars__EndInterp__StartInterp ::= "{'" [^'{#x03])
-	:= <\x7b, \x27> followed by UTF16Encoding(code point of that character)
-TV(TemplateChars__EndInterp__StartInterp ::= "{'" [^'{#x03] TemplateChars__EndInterp)
-	:= <\x7b, \x27> followed by UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndInterp)
-TV(TemplateChars__EndInterp__StartInterp ::= "{'" TemplateChars__EndInterp__StartInterp)
-	:= <\x7b, \x27> followed by TV(TemplateChars__EndInterp__StartInterp)
-TV(TemplateChars__EndInterp__StartInterp ::= "{''")
+TokenWorth(TemplateChars__EndInterp__StartInterp ::= "{'" [^'{#x03]) -> Sequence<RealNumber>
+	:= <\x7b, \x27, UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndInterp__StartInterp ::= "{'" [^'{#x03] TemplateChars__EndInterp) -> Sequence<RealNumber>
+	:= <\x7b, \x27, UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndInterp)>
+TokenWorth(TemplateChars__EndInterp__StartInterp ::= "{'" TemplateChars__EndInterp__StartInterp) -> Sequence<RealNumber>
+	:= <\x7b, \x27, ...TokenWorth(TemplateChars__EndInterp__StartInterp)>
+TokenWorth(TemplateChars__EndInterp__StartInterp ::= "{''") -> Sequence<RealNumber>
 	:= <\x7b, \x27, \x27>
-TV(TemplateChars__EndInterp__StartInterp ::= "{''" [^'{#x03])
-	:= <\x7b, \x27, \x27> followed by UTF16Encoding(code point of that character)
-TV(TemplateChars__EndInterp__StartInterp ::= "{''" [^'{#x03] TemplateChars__EndInterp)
-	:= <\x7b, \x27, \x27> followed by UTF16Encoding(code point of that character) followed by TV(TemplateChars__EndInterp)
-TV(TemplateChars__EndInterp__StartInterp ::= "{''" TemplateChars__EndInterp__StartInterp)
-	:= <\x7b, \x27, \x27> followed by TV(TemplateChars__EndInterp__StartInterp)
+TokenWorth(TemplateChars__EndInterp__StartInterp ::= "{''" [^'{#x03]) -> Sequence<RealNumber>
+	:= <\x7b, \x27, \x27, UTF16Encoding(code point of that character)>
+TokenWorth(TemplateChars__EndInterp__StartInterp ::= "{''" [^'{#x03] TemplateChars__EndInterp) -> Sequence<RealNumber>
+	:= <\x7b, \x27, \x27, UTF16Encoding(code point of that character), ...TokenWorth(TemplateChars__EndInterp)>
+TokenWorth(TemplateChars__EndInterp__StartInterp ::= "{''" TemplateChars__EndInterp__StartInterp) -> Sequence<RealNumber>
+	:= <\x7b, \x27, \x27, ...TokenWorth(TemplateChars__EndInterp__StartInterp)>
 ```
 
 

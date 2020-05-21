@@ -94,35 +94,29 @@ In an attribute grammar, attributes are defined on nodes of a parse tree via the
 of a context-free grammar.
 In this specification, attributes are “synthesized” and thus propagate in a bottom-up manner:
 given a parse node, computing an attribute of that node might require looking at its children.
-Attributes can be computed values, or entire objects representing semantic nodes with children.
-For example, an attribute grammar can be used to determine the mathematical value of a number.
+Attributes are [Solid Specification Values], such as computed values,
+or entire objects representing semantic nodes with children.
 
 #### Example
 ```
-MV(NUMBER ::= [0-9])
-	:= MV([0-9])
-MV(NUMBER ::= NUMBER [0-9])
-	:= 10 * MV(NUMBER) + MV([0-9])
-MV([0-9] ::= "0") := 0
-MV([0-9] ::= "1") := 1
+Value(INT ::= [0-9]) -> Integer
+	:= Value([0-9])
+Value(INT ::= INT [0-9]) -> Integer
+	:= 10 * Value(INT) + Value([0-9])
+Value([0-9] ::= "0") -> Integer := 0
+Value([0-9] ::= "1") -> Integer := 1
 ...
-MV([0-9] ::= "9") := 9
+Value([0-9] ::= "9") -> Integer := 9
 ```
-This example demonstrates an attribute grammar that defines an attribute called `MV` on a `NUMBER` token.
-Each rule defines the attribute on the token matching a different pattern defined by a CFG.
-The first line could be read aloud as, “The `MV` of `NUMBER` matching `[0-9]` is the `MV` of `[0-9]`.”
+This example illustrates a hypothetical attribute grammar that defines an attribute called `Value` on an `INT` token.
+Each rule defines the attribute on the token matching a different pattern defined by a CFG,
+and then denotes that the returned object will be an integer.
+The first line could be read aloud as,
+“The `Value` of `INT` matching `[0-9]` is the `Value` of `[0-9]`, which is an `Integer`.”
 
-#### Token Value
-The various token value grammars are attribute grammars that determine the semantic value of their respective token types.
-
-- Punctuator Value
-- Mathematical Value
-- Keyword Value
-- Identifier Value
-- String Value
-- Template Value
-
-These token value grammars are described further in detail in the chapter
+#### Token Worth
+The token worth grammar is an attribute grammar that determines the semantic value of the various token types.
+This grammar is described further in detail in the chapter
 [Solid Language: Lexicon](./language-lexicon.md).
 
 #### Decoration
