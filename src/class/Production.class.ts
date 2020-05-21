@@ -1,9 +1,6 @@
 import Util from './Util.class'
 import {
-	SOT,
-	EOT,
-} from './Char.class'
-import {
+	Filebound,
 	Punctuator,
 	Keyword,
 } from './Token.class'
@@ -283,12 +280,12 @@ export class ProductionGoal extends Production {
 	static readonly instance: ProductionGoal = new ProductionGoal()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[SOT,                                    EOT],
-			[SOT, ProductionGoal.__0__List.instance, EOT],
+			[Filebound.SOT,                                    Filebound.EOT],
+			[Filebound.SOT, ProductionGoal.__0__List.instance, Filebound.EOT],
 		]
 	}
 	random(): string[] {
-		return [SOT, ...ProductionGoal.__0__List.instance.random(), EOT]
+		return [Filebound.SOT, ...ProductionGoal.__0__List.instance.random(), Filebound.EOT]
 	}
 	static readonly __0__List = class ProductionGoal__0__List extends Production {
 		static readonly instance: ProductionGoal__0__List = new ProductionGoal__0__List()

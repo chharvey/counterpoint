@@ -1,9 +1,6 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
-import Char, {
-	SOT,
-	EOT,
-} from './Char.class'
+import Char from './Char.class'
 import type Lexer from './Lexer.class'
 
 import {
@@ -12,6 +9,11 @@ import {
 	LexError04,
 } from '../error/LexError.class'
 
+
+export enum Filebound {
+	SOT = '\u0002',
+	EOT = '\u0003',
+}
 
 export enum Punctuator {
 	GRP_OPN = '(',
@@ -137,8 +139,8 @@ export default abstract class Token implements Serializable {
 			: cooked.toString())
 		}
 		const contents: string = this.source
-			.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
-			.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
+			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`
 	}
 }
@@ -146,12 +148,13 @@ export default abstract class Token implements Serializable {
 
 
 export class TokenFilebound extends Token {
-	static readonly CHARS: readonly string[] = [SOT, EOT]
+	static readonly CHARS: readonly Filebound[] = [Filebound.SOT, Filebound.EOT]
+	declare source: Filebound;
 	constructor (lexer: Lexer) {
 		super('FILEBOUND', lexer, ...lexer.advance())
 	}
 	cook(): boolean {
-		return this.source === SOT
+		return this.source === Filebound.SOT
 	}
 }
 export class TokenWhitespace extends Token {
@@ -324,7 +327,7 @@ export class TokenIdentifierUnicode extends TokenIdentifier {
 	constructor (lexer: Lexer) {
 		super(lexer, ...lexer.advance())
 		while (!this.lexer.isDone && !Char.eq(TokenIdentifierUnicode.DELIM, this.lexer.c0)) {
-			if (Char.eq(EOT, this.lexer.c0)) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
 			this.advance()
@@ -386,7 +389,7 @@ export class TokenString extends Token {
 	constructor (lexer: Lexer) {
 		super('STRING', lexer, ...lexer.advance())
 		while (!this.lexer.isDone && !Char.eq(TokenString.DELIM, this.lexer.c0)) {
-			if (Char.eq(EOT, this.lexer.c0)) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
 			if (Char.eq('\\', this.lexer.c0)) { // possible escape or line continuation
@@ -478,7 +481,7 @@ export class TokenTemplate extends Token {
 			this.advance()
 		}
 		while (!this.lexer.isDone) {
-			if (Char.eq(EOT, this.lexer.c0)) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
 			if (Char.eq(TokenTemplate.DELIM, this.lexer.c0, this.lexer.c1, this.lexer.c2)) {
@@ -525,7 +528,7 @@ export class TokenCommentLine extends TokenComment {
 	constructor (lexer: Lexer) {
 		super(lexer, ...lexer.advance())
 		while (!this.lexer.isDone && !Char.eq('\n', this.lexer.c0)) {
-			if (Char.eq(EOT, this.lexer.c0)) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
 			this.advance()
@@ -543,7 +546,7 @@ export class TokenCommentMulti extends TokenComment {
 		comment_multiline_level++;
 		while (comment_multiline_level !== 0n) {
 			while (!this.lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)) {
-				if (Char.eq(EOT, lexer.c0)) {
+				if (Char.eq(Filebound.EOT, lexer.c0)) {
 					throw new LexError02(this)
 				}
 				if (Char.eq(TokenCommentMulti.DELIM_START, this.lexer.c0, this.lexer.c1)) {
@@ -565,7 +568,7 @@ export class TokenCommentBlock extends TokenComment {
 	constructor (lexer: Lexer) {
 		super(lexer, ...lexer.advance(4n))
 		while (!this.lexer.isDone) {
-			if (Char.eq(EOT, this.lexer.c0)) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
 			if (

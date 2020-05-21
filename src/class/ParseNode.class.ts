@@ -1,10 +1,7 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
-import {
-	SOT,
-	EOT,
-} from './Char.class'
 import Token, {
+	Filebound,
 	Punctuator,
 	Keyword,
 	TokenFilebound,
@@ -140,8 +137,8 @@ export default class ParseNode implements Serializable {
 			.replace(/\n/g, '&#x0a;')
 			.replace(/\r/g, '&#x0d;')
 			.replace(/\u0000/g, '&#x00;')
-			.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
-			.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
+			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 		)
 		const contents: string = this.children.map((child) => child.serialize()).join('')
 		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`

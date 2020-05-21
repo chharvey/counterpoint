@@ -2,10 +2,6 @@ import * as assert from 'assert'
 
 import Util  from '../src/class/Util.class'
 import Lexer from '../src/class/Lexer.class'
-import {
-	SOT,
-	EOT,
-} from '../src/class/Char.class'
 import Token, {
 	TemplatePosition,
 	TokenFilebound,
@@ -57,9 +53,9 @@ describe('Lexer', () => {
 		it('recognizes `TokenFilebound` conditions.', () => {
 			const tokens: Token[] = [...new Lexer(mock).generate()]
 			assert.ok(tokens[0] instanceof TokenFilebound)
-			assert.strictEqual(tokens[0].source, SOT)
+			assert.strictEqual(tokens[0].source, '\u0002')
 			assert.ok(lastItem(tokens) instanceof TokenFilebound)
-			assert.strictEqual(lastItem(tokens).source, EOT)
+			assert.strictEqual(lastItem(tokens).source, '\u0003')
 		})
 		it('recognizes `TokenWhitespace` conditions.', () => {
 			;[...new Lexer(TokenWhitespace.CHARS.join('')).generate()].slice(1, -1).forEach((value) => {
