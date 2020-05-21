@@ -113,22 +113,14 @@ Each rule defines the attribute on the token matching a different pattern define
 The first line could be read aloud as, “The `MV` of `NUMBER` matching `[0-9]` is the `MV` of `[0-9]`.”
 
 #### Token Value
-The various token value grammars
-— String Value, Template Value, Mathematical Value, Keyword Value, and Identifier Value —
-are attribute grammars that determine the semantic value of their respective token types.
+The various token value grammars are attribute grammars that determine the semantic value of their respective token types.
 
-The **String Value** of a String token is the intended text that the string represents,
-which might not always be equal to the token’s source input.
-
-The **Template Value** for Template tokens is analogous to the String Value for String tokens.
-
-The **Mathematical Value** of a Number token is the abstract mathematical quantity that the token represents
-(abstract mathematical quantities could include irrational numbers,
-even though they cannot be represented exactly in a computer system).
-
-The **Keyword Value** / **Identifier Value** of a Keyword token / Identifier token respecitvely
-is the unique integer that identifies the token.
-(Integers are used instead of text as an optimization technique.)
+- Punctuator Value
+- Mathematical Value
+- Keyword Value
+- Identifier Value
+- String Value
+- Template Value
 
 These token value grammars are described further in detail in the chapter
 [Solid Language: Lexicon](./language-lexicon.md).

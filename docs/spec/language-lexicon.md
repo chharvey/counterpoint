@@ -188,7 +188,9 @@ Numbers are literal constants that represent numeric mathematical values.
 Currently, only positive and negative (and zero) integers are supported.
 
 #### Static Semantics: Mathematical Value
-The Mathematical Value (MV) of a number token is the computed number that the token represents.
+The Mathematical Value (MV) of a number token is the abstract mathematical quantity that the token represents.
+(Abstract mathematical quantities could include irrational numbers,
+even though they cannot be represented exactly in a computer system.)
 
 There is a many-to-one relationship between tokens and mathematical values. For example,
 a token containing `0042` has the same mathematical value as a token containing `+42`:
@@ -354,9 +356,11 @@ String tokens are sequences of Unicode characters enclosed in delimiters.
 Strings are snippets of textual data.
 
 #### Static Semantics: String Value
+The String Value (SV) of a string token is the intended text that the string represents,
+which might not always be equal to the token’s source input.
 The text of the string in the source code is called the “raw” text of the token.
 Before the token is sent to the parser, this “raw” text is transformed into a
-String Value (SV), or, informally, “cooked” text.
+String Value, or, informally, “cooked” text.
 
 ```w3c
 SV(String ::= "'" "'")
