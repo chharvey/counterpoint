@@ -3,6 +3,7 @@ import type Serializable from '../iface/Serializable.iface'
 import CodeGenerator from './CodeGenerator.class'
 import Token, {
 	Filebound,
+	Punctuator,
 } from './Token.class'
 import type {CookValueType} from './Token.class'
 import type ParseNode from './ParseNode.class'
@@ -11,16 +12,6 @@ import type {
 } from './ParseNode.class'
 
 
-
-export enum Operator {
-	/** Add.          */ ADD, // +
-	/** Subtract.     */ SUB, // -
-	/** Multiply.     */ MUL, // *
-	/** Divide.       */ DIV, // /
-	/** Exponentiate. */ EXP, // ^
-	/** Affirm.       */ AFF, // +
-	/** Negate.       */ NEG, // -
-}
 
 export type SemanticStatementType = SemanticNodeDeclaration | SemanticNodeAssignment | SemanticNodeStatementExpression | SemanticNodeStatementEmpty
 export type SemanticExpressionType = SemanticNodeConstant|SemanticNodeIdentifier|SemanticNodeTemplate|SemanticNodeExpression
@@ -139,12 +130,12 @@ export class SemanticNodeTemplate extends SemanticNode {
 export class SemanticNodeExpression extends SemanticNode {
 	constructor(
 		start_node: ParseNode,
-		private readonly operator: Operator,
+		private readonly operator: Punctuator,
 		readonly children:
 			readonly [SemanticExpressionType                        ] |
 			readonly [SemanticExpressionType, SemanticExpressionType],
 	) {
-		super(start_node, {operator: Operator[operator]}, children)
+		super(start_node, {operator}, children)
 	}
 	compile(generator: CodeGenerator): CodeGenerator {
 		return (this.children.length === 1)
