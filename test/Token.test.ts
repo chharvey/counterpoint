@@ -136,37 +136,36 @@ describe('Token', () => {
 			})
 		})
 		context('TokenKeyword', () => {
-			it('assigns values 0n–127n to reserved keywords.', () => {
-				const tokens: TokenKeyword[] = [...new Screener(`
-					let
-					unfixed
-				`).generate()].filter((token): token is TokenKeyword => token instanceof TokenKeyword)
-				const cooked: bigint[] = tokens.map((token) => token.cook())
-				assert.deepStrictEqual(cooked, [
-					0n,
-					1n,
-				])
+			it('assigns values 128n–255n to reserved keywords.', () => {
+				const cooked: bigint[] = [...new Screener(TokenKeyword.KEYWORDS.join(' ')).generate()]
+					.filter((token): token is TokenKeyword => token instanceof TokenKeyword)
+					.map((keyword) => keyword.cook())
+				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i + 128)).slice(0, TokenKeyword.KEYWORDS.length)
+				assert.deepStrictEqual(cooked, expected)
 				cooked.forEach((value) => {
-					assert.ok(0n <= value, 'cooked value should be >= 0n.')
-					assert.ok(value < 128n, 'cooked value should be < 128n.')
+					assert.ok(128n <= value, 'cooked value should be >= 128n.')
+					assert.ok(value < 256n, 'cooked value should be < 256n.')
 				})
 			})
 		})
 		context('TokenIdentifier', () => {
 			context('TokenIdentifierBasic', () => {
-				it('assigns values 128n or greater to basic identifiers.', () => {
-					const tokens: TokenIdentifier[] = [...new Screener(`
-						this is a word
-						_words _can _start _with _underscores
-						_and0 _can1 contain2 numb3rs
+				const cooked: (bigint|null)[] = [...new Screener(`
+					this is a word
+					_words _can _start _with _underscores
+					_and0 _can1 contain2 numb3rs
 
-						a word _can repeat _with the same id
-					`).generate()].filter((token): token is TokenIdentifier => token instanceof TokenIdentifier)
-					const cooked: (bigint|null)[] = tokens.map((token) => token.cook())
+					a word _can repeat _with the same id
+				`).generate()]
+					.filter((token): token is TokenIdentifier => token instanceof TokenIdentifier)
+					.map((identifier) => identifier.cook())
+				it('assigns values 256n or greater.', () => {
 					cooked.forEach((value) => {
 						assert.ok(value !== null, 'cooked value should not be null.')
-						assert.ok(value ! >= 128n, 'cooked value should be >= 128n.')
+						assert.ok(value ! >= 256n, 'cooked value should be >= 256n.')
 					})
+				})
+				it('assigns the same value to identical identifier names.', () => {
 					assert.deepStrictEqual([
 						cooked[2],
 						cooked[3],
@@ -177,39 +176,45 @@ describe('Token', () => {
 						cooked[14],
 						cooked[15],
 						cooked[17],
-					], 'identical identifier names should have the same value.')
+					])
 				})
 			})
 			context('TokenIdentifierUnicode', () => {
-				it('always assigns values 128n or greater.', () => {
-					const tokens: TokenIdentifierUnicode[] = [...new Screener(`
-						\`this\` \`is\` \`a\` \`unicode word\`
-						\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
-						\`except\` \`back-ticks\` \`.\`
-					`).generate()].filter((token): token is TokenIdentifierUnicode => token instanceof TokenIdentifierUnicode)
-					const cooked: (bigint|null)[] = tokens.map((token) => token.cook())
+				const cooked: (bigint|null)[] = [...new Screener(`
+					\`this\` \`is\` \`a\` \`unicode word\`
+					\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
+					\`except\` \`back-ticks\` \`.\`
+				`).generate()]
+					.filter((token): token is TokenIdentifierUnicode => token instanceof TokenIdentifierUnicode)
+					.map((identifier) => identifier.cook())
+				it('assigns values 256n or greater.', () => {
 					cooked.forEach((value) => {
 						assert.ok(value !== null, 'cooked value should not be null.')
-						assert.ok(value ! >= 128n, 'cooked value should be >= 128n.')
+						assert.ok(value ! >= 256n, 'cooked value should be >= 256n.')
 					})
+				})
+				it('assigns the same value to identical identifier names.', () => {
 					assert.deepStrictEqual([
 						cooked[3],
 						cooked[4],
 					], [
 						cooked[5],
 						cooked[8],
-					], 'identical identifier names should have the same value.')
+					])
 				})
 			})
 		})
 		context('TokenPunctuator', () => {
-			it('correctly cooks punctuator tokens.', () => {
-				assert.deepStrictEqual(
-					[...new Screener(TokenPunctuator.PUNCTUATORS.join(' ')).generate()]
-						.filter((token): token is TokenPunctuator => token instanceof TokenPunctuator)
-						.map((token) => token.cook()),
-					TokenPunctuator.PUNCTUATORS,
-				)
+			it('assigns values 0n–127n to punctuator tokens.', () => {
+				const cooked: bigint[] = [...new Screener(TokenPunctuator.PUNCTUATORS.join(' ')).generate()]
+					.filter((token): token is TokenPunctuator => token instanceof TokenPunctuator)
+					.map((punctuator) => punctuator.cook())
+				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i)).slice(0, TokenPunctuator.PUNCTUATORS.length)
+				assert.deepStrictEqual(cooked, expected)
+				cooked.forEach((value) => {
+					assert.ok(0n <= value, 'cooked value should be >= 0n.')
+					assert.ok(value < 128n, 'cooked value should be < 128n.')
+				})
 			})
 		})
 		it('throws when UTF-16 encoding input is out of range.', () => {

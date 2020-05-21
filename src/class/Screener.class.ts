@@ -1,7 +1,6 @@
 import Lexer from './Lexer.class'
 import Token, {
 	TokenWhitespace,
-	TokenKeyword,
 	TokenIdentifier,
 	TokenComment,
 } from './Token.class'
@@ -48,7 +47,7 @@ export default class Screener {
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
 				if (this.t0 instanceof TokenIdentifier) {
 					this._ids.add(this.t0.source)
-					this.t0.setValue(BigInt([...this._ids].indexOf(this.t0.source)) + TokenKeyword.COUNT)
+					this.t0.setValue(BigInt([...this._ids].indexOf(this.t0.source)))
 				}
 				if (this.t0 instanceof Token) {
 					yield this.t0
