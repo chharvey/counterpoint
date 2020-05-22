@@ -24,7 +24,6 @@ import SemanticNode, {
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
 	SemanticNodeAssigned,
-	SemanticNodeStatementEmpty,
 	SemanticNodeStatementExpression,
 	SemanticNodeStatementList,
 	SemanticNodeGoal,
@@ -266,13 +265,13 @@ export class ParseNodeStatement extends ParseNode {
 		readonly [ParseNodeExpression, TokenPunctuator] |
 		readonly [TokenPunctuator];
 	decorate(): SemanticStatementType {
-		return (this.children.length === 1 && this.children[0] instanceof ParseNode)
-			? this.children[0].decorate()
-			: (this.children.length === 2)
-				? new SemanticNodeStatementExpression(this, [
-					this.children[0].decorate(),
-				])
-				: new SemanticNodeStatementEmpty(this)
+		return (this.children.length === 2)
+			? new SemanticNodeStatementExpression(this, [
+				this.children[0].decorate(),
+			])
+			: (this.children[0] instanceof ParseNode)
+				? this.children[0].decorate()
+				: new SemanticNodeNull(this)
 	}
 }
 export class ParseNodeStatementList extends ParseNode {

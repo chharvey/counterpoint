@@ -17,7 +17,7 @@ export type SemanticStatementType =
 	SemanticNodeDeclaration |
 	SemanticNodeAssignment |
 	SemanticNodeStatementExpression |
-	SemanticNodeStatementEmpty
+	SemanticNodeNull
 
 export type SemanticExpressionType =
 	SemanticNodeConstant |
@@ -106,7 +106,7 @@ export class SemanticNodeNull extends SemanticNode {
 		super(start_node)
 	}
 	compile(): CodeGenerator {
-		return new CodeGenerator()
+		return new CodeGenerator().nop()
 	}
 }
 export class SemanticNodeConstant extends SemanticNode {
@@ -170,14 +170,6 @@ export class SemanticNodeAssignee extends SemanticNode {
 export class SemanticNodeAssigned extends SemanticNode {
 	constructor(canonical: ParseNode, children: readonly [SemanticExpressionType]) {
 		super(canonical, {}, children)
-	}
-}
-export class SemanticNodeStatementEmpty extends SemanticNode {
-	constructor(canonical: ParseNode) {
-		super(canonical)
-	}
-	compile(generator: CodeGenerator): CodeGenerator {
-		return generator.nop()
 	}
 }
 export class SemanticNodeStatementExpression extends SemanticNode {

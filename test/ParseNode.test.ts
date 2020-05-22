@@ -21,13 +21,13 @@ describe('ParseNode', () => {
 		})
 
 		context('Statement ::= ";"', () => {
-			it('makes a StatementEmpty node.', () => {
+			it('makes a SemanticNodeNull node.', () => {
 				const semanticnode: SemanticNodeNull|SemanticNodeGoal = new Parser(';').parse().decorate()
 				assert.ok(semanticnode instanceof SemanticNodeGoal)
 				assert.strictEqual(semanticnode.serialize(), `
 					<Goal source="␂ ; ␃">
 						<StatementList line="1" col="1" source=";">
-							<StatementEmpty line="1" col="1" source=";"/>
+							<Null line="1" col="1" source=";"/>
 						</StatementList>
 					</Goal>
 				`.replace(/\n\t*/g, ''))
