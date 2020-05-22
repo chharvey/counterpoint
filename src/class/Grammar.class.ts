@@ -3,6 +3,8 @@ import * as xjs from 'extrajs'
 import Util from './Util.class'
 import Token, {
 	Filebound,
+	Punctuator,
+	Keyword,
 } from './Token.class'
 import Terminal from './Terminal.class'
 import Production, {
@@ -22,7 +24,7 @@ import Production, {
 
 
 export type GrammarSymbol   = GrammarTerminal|Production
-export type GrammarTerminal = string|Terminal
+export type GrammarTerminal = Filebound|Punctuator|Keyword|Terminal
 
 
 
@@ -261,7 +263,10 @@ export class Configuration {
 	 * @returns             is the Token, or the Token’s cargo, in this lookahead set?
 	 */
 	hasLookahead(candidate: Token): boolean {
-		return this.lookaheads.has(candidate.source) || [...this.lookaheads].some((l) => l instanceof Terminal && l.match(candidate))
+		return [...this.lookaheads].some((l) =>
+			l === candidate.source ||
+			l instanceof Terminal && l.match(candidate)
+		)
 	}
 	/**
 	 * Produce a new configuration that represents this configuartion with its marker advanced to the next symbol.
