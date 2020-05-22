@@ -3,9 +3,10 @@ This chapter defines the syntax, semantics, and behavior of statements in the So
 
 ```w3c
 Statement ::=
-	Expression? ";"     |
-	DeclarationVariable |
-	StatementAssignment |
+	| Expression? ";"
+	| DeclarationVariable
+	| StatementAssignment
+;
 ```
 
 
@@ -27,7 +28,7 @@ Decorate(Statement ::= ";")
 
 ## Variable Declaration
 ```w3c
-DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";"
+DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";";
 ```
 
 
@@ -57,7 +58,7 @@ Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER "=" Expression ";")
 
 ## Variable Assignment
 ```w3c
-StatementAssignment ::= IDENTIFIER "=" Expression ";"
+StatementAssignment ::= IDENTIFIER "=" Expression ";";
 ```
 
 

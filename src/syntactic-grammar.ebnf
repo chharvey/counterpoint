@@ -1,48 +1,50 @@
-/* LR grammar */
-
-IDENTIFIER      ::= [../docs/spec/language-lexicon.md#identifiers]
-NUMBER          ::= [../docs/spec/language-lexicon.md#numbers]
-STRING          ::= [../docs/spec/language-lexicon.md#string-literals]
-TEMPLATE_FULL   ::= [../docs/spec/language-lexicon.md#template-literals]
-TEMPLATE_HEAD   ::= [../docs/spec/language-lexicon.md#template-literals]
-TEMPLATE_MIDDLE ::= [../docs/spec/language-lexicon.md#template-literals]
-TEMPLATE_TAIL   ::= [../docs/spec/language-lexicon.md#template-literals]
+IDENTIFIER      ::= [../docs/spec/language-lexicon.md#identifiers];
+NUMBER          ::= [../docs/spec/language-lexicon.md#numbers];
+STRING          ::= [../docs/spec/language-lexicon.md#string-literals];
+TEMPLATE_FULL   ::= [../docs/spec/language-lexicon.md#template-literals];
+TEMPLATE_HEAD   ::= [../docs/spec/language-lexicon.md#template-literals];
+TEMPLATE_MIDDLE ::= [../docs/spec/language-lexicon.md#template-literals];
+TEMPLATE_TAIL   ::= [../docs/spec/language-lexicon.md#template-literals];
 
 
 
 PrimitiveLiteral ::=
-	NUMBER |
-	STRING
+	| NUMBER
+	| STRING
+;
 
 StringTemplate ::=
-	TEMPLATE_FULL |
-	TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
+	| TEMPLATE_FULL
+	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
+;
 
 ExpressionUnit ::=
-	IDENTIFIER         |
-	PrimitiveLiteral   |
-	StringTemplate     |
-	"(" Expression ")"
+	| IDENTIFIER
+	| PrimitiveLiteral
+	| StringTemplate
+	| "(" Expression ")"
+;
 
-ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
+ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol;
 
-ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"          ExpressionExponential)?
-ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential
-ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-"))? ExpressionMultiplicative
+ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"          ExpressionExponential   )?;
+ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential     ;
+ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-"))? ExpressionMultiplicative  ;
 
-Expression ::= ExpressionAdditive
+Expression ::= ExpressionAdditive;
 
 
 
-DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";"
+DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";";
 
-StatementAssignment ::= IDENTIFIER "=" Expression ";"
+StatementAssignment ::= IDENTIFIER "=" Expression ";";
 
 Statement ::=
-	Expression? ";"     |
-	DeclarationVariable |
-	StatementAssignment |
+	| Expression? ";"
+	| DeclarationVariable
+	| StatementAssignment
+;
 
 
 
-Goal ::= #x02 Statement* #x03
+Goal ::= #x02 Statement* #x03;

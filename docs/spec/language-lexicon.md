@@ -68,18 +68,19 @@ There are a small number of token types, each of which have a specific purpose.
 
 ```w3c
 Goal ::=
-	FileBound      |
-	Whitespace     |
-	Punctuator     |
-	Keyword        |
-	Identifier     |
-	Number         |
-	String         |
-	TemplateFull   |
-	TemplateHead   |
-	TemplateMiddle |
-	TemplateTail   |
-	Comment        |
+	| FileBound
+	| Whitespace
+	| Punctuator
+	| Keyword
+	| Identifier
+	| Number
+	| String
+	| TemplateFull
+	| TemplateHead
+	| TemplateMiddle
+	| TemplateTail
+	| Comment
+;
 ```
 
 1. [File Bounds](#file-bounds)
@@ -95,7 +96,7 @@ Goal ::=
 
 ### File Bounds
 ```w3c
-FileBound ::= #x02 | #x03
+FileBound ::= #x02 | #x03;
 ```
 File bound tokens are tokens that consist of exactly 1 character:
 either **U+0002 START OF TEXT**, or **U+0003 END OF TEXT**.
@@ -103,7 +104,7 @@ either **U+0002 START OF TEXT**, or **U+0003 END OF TEXT**.
 
 ### Whitespace
 ```w3c
-Whitespace ::= Whitespace? (#x20 | #x09 | #x0A)
+Whitespace ::= (#x20 | #x09 | #x0A)+;
 ```
 Whitespace tokens consist of combinations of the following characters.
 Any consecutive sequence of these characters is put into a single whitespace token.
@@ -150,7 +151,7 @@ U+3000     | IDEOGRAPHIC SPACE         | CJK Symbols and Punctuation | Separator
 
 ### Punctuators
 ```w3c
-Punctuator ::= "(" | ")" | "+" | "-" | "^" | "*" | "/" | "=" | ";"
+Punctuator ::= "(" | ")" | "+" | "-" | "^" | "*" | "/" | "=" | ";";
 ```
 Punctuators are non-alphanumeric characters in the ASCII character set, or spans of such characters,
 that add to the semantics of the Solid language.
@@ -185,14 +186,17 @@ TokenWorth(Puncatuator) -> RealNumber
 ### Keywords
 ```w3c
 Keyword ::=
-	KeywordStorage  |
-	KeywordModifier
+	| KeywordStorage
+	| KeywordModifier
+;
 
 KeywordStorage ::=
-	"let"
+	| "let"
+;
 
 KeywordModifier ::=
-	"unfixed"
+	| "unfixed"
+;
 ```
 Keywords are sequences of alphanumeric characters reserved by the Solid language
 and enumerated in the lexical grammar.
@@ -215,7 +219,7 @@ TokenWorth(Keyword) -> RealNumber
 
 ### Identifiers
 ```w3c
-Identifier ::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - Keyword
+Identifier ::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - Keyword;
 ```
 Identifiers are sequences of alphanumeric characters that do not match the [Keyword](#keywords) production.
 Identifiers are author-defined and point to values in a program.
@@ -239,22 +243,24 @@ TokenWorth(Identifier) -> RealNumber
 
 ### Numbers
 ```w3c
-Number ::= ("+" | "-")? IntegerLiteral
+Number
+	::= ("+" | "-")? IntegerLiteral;
 
 IntegerLiteral ::=
-	"\b"  DigitSequenceBin |
-	"\q"  DigitSequenceQua |
-	"\o"  DigitSequenceOct |
-	"\d"? DigitSequenceDec |
-	"\x"  DigitSequenceHex |
-	"\z"  DigitSequenceHTD
+	| "\b"  DigitSequenceBin
+	| "\q"  DigitSequenceQua
+	| "\o"  DigitSequenceOct
+	| "\d"? DigitSequenceDec
+	| "\x"  DigitSequenceHex
+	| "\z"  DigitSequenceHTD
+;
 
-DigitSequenceBin ::= (DigitSequenceBin "_"?)? [0-1]
-DigitSequenceQua ::= (DigitSequenceQua "_"?)? [0-3]
-DigitSequenceOct ::= (DigitSequenceOct "_"?)? [0-7]
-DigitSequenceDec ::= (DigitSequenceDec "_"?)? [0-9]
-DigitSequenceHex ::= (DigitSequenceHex "_"?)? [0-9a-f]
-DigitSequenceHTD ::= (DigitSequenceHTD "_"?)? [0-9a-z]
+DigitSequenceBin ::= (DigitSequenceBin "_"?)? [0-1];
+DigitSequenceQua ::= (DigitSequenceQua "_"?)? [0-3];
+DigitSequenceOct ::= (DigitSequenceOct "_"?)? [0-7];
+DigitSequenceDec ::= (DigitSequenceDec "_"?)? [0-9];
+DigitSequenceHex ::= (DigitSequenceHex "_"?)? [0-9a-f];
+DigitSequenceHTD ::= (DigitSequenceHTD "_"?)? [0-9a-z];
 ```
 Numbers are literal constants that represent numeric mathematical values.
 Currently, only positive and negative (and zero) integers are supported.
@@ -353,19 +359,26 @@ TokenWorth([0-9a-z] ::= "z") -> RealNumber  :=  \x023
 
 ### String Literals
 ```w3c
-String ::= "'" StringChars? "'"
+String
+	::= "'" StringChars? "'";
 
 StringChars ::=
-	[^'\#x03]               StringChars?   |
-	"\"        StringEscape StringChars?   |
-	"\u"      ([^'{#x03]    StringChars?)?
+	| [^'\#x03]               StringChars?
+	| "\"        StringEscape StringChars?
+	| "\u"      ([^'{#x03]    StringChars?)?
+;
 
-StringEscape ::= EscapeChar | EscapeCode | LineContinuation | NonEscapeChar
+StringEscape ::=
+	| EscapeChar
+	| EscapeCode
+	| LineContinuation
+	| NonEscapeChar
+;
 
-EscapeChar       ::= "'" | "\" | "s" | "t" | "n" | "r"
-EscapeCode       ::= "u{" DigitSequenceHex? "}"
-LineContinuation ::= #x0A
-NonEscapeChar    ::= [^'\stnru#x0A#x03]
+EscapeChar       ::= "'" | "\" | "s" | "t" | "n" | "r";
+EscapeCode       ::= "u{" DigitSequenceHex? "}";
+LineContinuation ::= #x0A;
+NonEscapeChar    ::= [^'\stnru#x0A#x03];
 ```
 String tokens are sequences of Unicode characters enclosed in delimiters.
 Strings are snippets of textual data.
@@ -427,42 +440,48 @@ TokenWorth(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03]) -> Sequence<RealNumber>
 
 ### Template Literals
 ```w3c
-TemplateFull   ::= "'''" TemplateChars__EndDelim ? "'''"
-TemplateHead   ::= "'''" TemplateChars__EndInterp? "{{"
-TempalteMiddle ::= "}}"  TemplateChars__EndInterp? "{{"
-TempalteTail   ::= "}}"  TemplateChars__EndDelim ? "'''"
+TemplateFull   ::= "'''" TemplateChars__EndDelim ? "'''";
+TemplateHead   ::= "'''" TemplateChars__EndInterp? "{{" ;
+TempalteMiddle ::= "}}"  TemplateChars__EndInterp? "{{" ;
+TempalteTail   ::= "}}"  TemplateChars__EndDelim ? "'''";
 
 TemplateChars__EndDelim ::=
-	[^'{#x03] TemplateChars__EndDelim?   |
-	TemplateChars__EndDelim__StartDelim  |
-	TemplateChars__EndDelim__StartInterp
+	| [^'{#x03] TemplateChars__EndDelim?
+	| TemplateChars__EndDelim__StartDelim
+	| TemplateChars__EndDelim__StartInterp
+;
 
 TemplateChars__EndDelim__StartDelim ::=
-	"'"    [^'{#x03] TemplateChars__EndDelim?                                         |
-	"''"   [^'{#x03] TemplateChars__EndDelim?                                         |
-	"'{"  ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)? |
-	"''{" ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)?
+	| "'"    [^'{#x03] TemplateChars__EndDelim?
+	| "''"   [^'{#x03] TemplateChars__EndDelim?
+	| "'{"  ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)?
+	| "''{" ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)?
+;
 
 TemplateChars__EndDelim__StartInterp ::=
-	"{"   ([^'{#x03] TemplateChars__EndDelim?                                       )? |
-	"{'"  ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)  |
-	"{''" ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)
+	| "{"   ([^'{#x03] TemplateChars__EndDelim?                                       )?
+	| "{'"  ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)
+	| "{''" ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)
+;
 
 TemplateChars__EndInterp ::=
-	[^'{#x03] TemplateChars__EndInterp?   |
-	TemplateChars__EndInterp__StartDelim  |
-	TemplateChars__EndInterp__StartInterp
+	| [^'{#x03] TemplateChars__EndInterp?
+	| TemplateChars__EndInterp__StartDelim
+	| TemplateChars__EndInterp__StartInterp
+;
 
 TemplateChars__EndInterp__StartDelim ::=
-	"'"   ([^'{#x03] TemplateChars__EndInterp?                                       )? |
-	"''"  ([^'{#x03] TemplateChars__EndInterp?                                       )? |
-	"'{"  ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)  |
-	"''{" ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)
+	| "'"   ([^'{#x03] TemplateChars__EndInterp?                                       )?
+	| "''"  ([^'{#x03] TemplateChars__EndInterp?                                       )?
+	| "'{"  ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)
+	| "''{" ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)
+;
 
 TemplateChars__EndInterp__StartInterp ::=
-	"{"    [^'{#x03] TemplateChars__EndInterp?                                           |
-	"{'"  ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)? |
-	"{''" ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)?
+	| "{"    [^'{#x03] TemplateChars__EndInterp?
+	| "{'"  ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)?
+	| "{''" ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)?
+;
 ```
 Template tokens are almost exactly like string tokens, except that
 they use different delimiters, and their “cooked” values are computed differently.
@@ -605,19 +624,33 @@ TokenWorth(TemplateChars__EndInterp__StartInterp ::= "{''" TemplateChars__EndInt
 
 ### Comments
 ```w3c
-Comment ::= CommentLine | CommentMulti | CommentBlock
+Comment ::=
+	| CommentLine
+	| CommentMulti
+	| CommentBlock
+;
 
-CommentLine ::= "%" [^#x0A#x03]* #x0A
+CommentLine
+	::= "%" [^#x0A#x03]* #x0A;
 
-CommentMulti ::= "{%" CommentMultiNestChars? "%}"
+CommentMulti
+	::= "{%" CommentMultiNestChars? "%}";
 
 CommentMultiChars ::=
-	[^{%#x03] CommentMultiChars?       |
-	"{" [^%#x03] CommentMultiChars?    |
-	"%" ([^}#x03] CommentMultiChars?)? |
-	CommentMulti CommentMultiChars?
+	| [^{%#x03] CommentMultiChars?
+	| "{" [^%#x03] CommentMultiChars?
+	| "%" ([^}#x03] CommentMultiChars?)?
+	| CommentMulti CommentMultiChars?
+;
 
-CommentBlock ::= /*? following: #x0A [#x09#x20]* ?*/"%%%" #x0A (/*? unequal: [#x09#x20]* "%%%" ?*/[^#x03]* #x0A)? [#x09#x20]* "%%%" /*? lookahead: #x0A ?*/
+CommentBlock
+	::=
+		{following: #x0A [#x09#x20]*}"%%%"
+		#x0A
+		({unequal: [#x09#x20]* "%%%"}[^#x03]* #x0A)?
+		[#x09#x20]* "%%%"
+		{lookahead: #x0A}
+	;
 ```
 Comments are tokens of arbitrary text,
 mainly used to add human-readable language to code

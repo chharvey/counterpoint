@@ -2,7 +2,7 @@
 This chapter defines the syntax, semantics, and behavior of expressions in the Solid programming language.
 
 ```w3c
-Expression ::= ExpressionAdditive
+Expression ::= ExpressionAdditive;
 ```
 
 
@@ -38,12 +38,14 @@ Void EvaluateNumericBinaryExpression(Text op) :=
 ## Literals
 ```w3c
 PrimitiveLiteral ::=
-	NUMBER |
-	STRING
+	| NUMBER
+	| STRING
+;
 
 StringTemplate ::=
-	TEMPLATE_FULL |
-	TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
+	| TEMPLATE_FULL
+	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
+;
 ```
 
 
@@ -118,10 +120,11 @@ Evaluate(SemanticConstant) :=
 ## Expression Units
 ```w3c
 ExpressionUnit ::=
-	IDENTIFIER         |
-	PrimitiveLiteral   |
-	StringTemplate     |
-	"(" Expression ")"
+	| IDENTIFIER
+	| PrimitiveLiteral
+	| StringTemplate
+	| "(" Expression ")"
+;
 ```
 
 
@@ -148,7 +151,7 @@ Evaluate(SemanticIdentifier) :=
 
 ## Unary Operators
 ```w3c
-ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol
+ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol;
 ```
 
 
@@ -181,7 +184,7 @@ Evaluate(SemanticExpression[operator=NEG]) :=
 
 ## Exponentiation
 ```w3c
-ExpressionExponential ::=  ExpressionUnarySymbol ("^" ExpressionExponential)?
+ExpressionExponential ::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
 ```
 
 
@@ -210,7 +213,7 @@ Evaluate(SemanticExpression[operator=EXP]) :=
 
 ## Multiplicative
 ```w3c
-ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential
+ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential;
 ```
 
 
@@ -249,7 +252,7 @@ Evaluate(SemanticExpression[operator=DIV]) :=
 
 ## Additive
 ```w3c
-ExpressionAdditive ::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicative
+ExpressionAdditive ::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicative;
 ```
 
 
