@@ -8,8 +8,8 @@ Expression ::= ExpressionAdditive;
 
 ### Static Semantics: Decorate (Expressions)
 ```w3c
-Decorate(Expression ::= ExpressionAdditive)
-	:= Decorate(ExpressionAdditive)
+Decorate(Expression ::= ExpressionAdditive) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticExpression
+	:= Decorate(ExpressionAdditive);
 ```
 
 
@@ -51,61 +51,61 @@ StringTemplate ::=
 
 ### Static Semantics: Decorate (Literals)
 ```w3c
-Decorate(PrimitiveLiteral ::= NUMBER)
-	:= SemanticConstant {value: TokenWorth(NUMBER)} []
+Decorate(PrimitiveLiteral ::= NUMBER) -> SemanticConstant
+	:= SemanticConstant {value: TokenWorth(NUMBER)} [];
 
-Decorate(PrimitiveLiteral ::= STRING)
-	:= SemanticConstant {value: TokenWorth(STRING)} []
+Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
+	:= SemanticConstant {value: TokenWorth(STRING)} [];
 
-Decorate(StringTemplate ::= TEMPLATE_FULL)
+Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticTemplate
 	:= SemanticTemplate {type: "full"} [
 		SemanticConstant {value: TokenWorth(TEMPLATE_FULL)} [],
-	]
-Decorate(StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL)
+	];
+Decorate(StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticTemplate
 	:= SemanticTemplate {type: "substitution"} [
 		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
 		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
-	]
-Decorate(StringTemplate ::= TEMPLATE_HEAD Expression TEMPLATE_TAIL)
-	:= SemanticTemplate {type: "substitution"} [
-		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
-		Decorate(Expression),
-		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
-	]
-Decorate(StringTemplate ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL)
-	:= SemanticTemplate {type: "substitution"} [
-		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
-		Spread(Decorate(StringTemplate__0__List))
-		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
-	]
-Decorate(StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL)
+	];
+Decorate(StringTemplate ::= TEMPLATE_HEAD Expression TEMPLATE_TAIL) -> SemanticTemplate
 	:= SemanticTemplate {type: "substitution"} [
 		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
 		Decorate(Expression),
-		Spread(Decorate(StringTemplate__0__List)),
 		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
-	]
+	];
+Decorate(StringTemplate ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
+	:= SemanticTemplate {type: "substitution"} [
+		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
+		...Decorate(StringTemplate__0__List),
+		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
+	];
+Decorate(StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
+	:= SemanticTemplate {type: "substitution"} [
+		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
+		Decorate(Expression),
+		...Decorate(StringTemplate__0__List),
+		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
+	];
 
-Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE)
+Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE) -> SemanticTemplatePartial
 	:= SemanticTemplatePartial {} [
 		SemanticConstant {value: TokenWorth(TEMPLATE_MIDDLE)} [],
-	]
-Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE Expression)
+	];
+Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE Expression) -> SemanticTemplatePartial
 	:= SemanticTemplatePartial {} [
 		SemanticConstant {value: TokenWorth(TEMPLATE_MIDDLE)} [],
 		Decorate(Expression),
-	]
-Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE)
+	];
+Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE) -> SemanticTemplatePartial
 	:= SemanticTemplatePartial {} [
-		Spread(Decorate(StringTemplate__0__List)),
+		...Decorate(StringTemplate__0__List),
 		SemanticConstant {value: TokenWorth(TEMPLATE_MIDDLE)} [],
-	]
-Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression)
+	];
+Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression) -> SemanticTemplatePartial
 	:= SemanticTemplatePartial {} [
-		Spread(Decorate(StringTemplate__0__List)),
+		...Decorate(StringTemplate__0__List),
 		SemanticConstant {value: TokenWorth(TEMPLATE_MIDDLE)} [],
 		Decorate(Expression),
-	]
+	];
 ```
 
 
@@ -130,14 +130,14 @@ ExpressionUnit ::=
 
 ### Static Semantics: Decorate (Expression Units)
 ```w3c
-Decorate(ExpressionUnit ::= IDENTIFIER)
-	:= SemanticIdentifier {id: TokenWorth(IDENTIFIER)} []
-Decorate(ExpressionUnit ::= PrimitiveLiteral)
-	:= Decorate(PrimitiveLiteral)
-Decorate(ExpressionUnit ::= StringTemplate)
-	:= Decorate(StringTemplate)
-Decorate(ExpressionUnit ::= "(" Expression ")")
-	:= Decorate(Expression)
+Decorate(ExpressionUnit ::= IDENTIFIER) -> SemanticIdentifier
+	:= SemanticIdentifier {id: TokenWorth(IDENTIFIER)} [];
+Decorate(ExpressionUnit ::= PrimitiveLiteral) -> SemanticConstant
+	:= Decorate(PrimitiveLiteral);
+Decorate(ExpressionUnit ::= StringTemplate) -> SemanticTemplate
+	:= Decorate(StringTemplate);
+Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticExpression
+	:= Decorate(Expression);
 ```
 
 
@@ -157,14 +157,14 @@ ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol;
 
 ### Static Semantics: Decorate (Unary Operators)
 ```w3c
-Decorate(ExpressionUnarySymbol ::= ExpressionUnit)
-	:= Decorate(ExpressionUnit)
-Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol)
-	:= Decorate(ExpressionUnarySymbol)
-Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol)
+Decorate(ExpressionUnarySymbol ::= ExpressionUnit) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticExpression
+	:= Decorate(ExpressionUnit);
+Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticExpression
+	:= Decorate(ExpressionUnarySymbol);
+Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticExpression
 	:= SemanticExpression {operator: NEG} [
 		Decorate(ExpressionUnarySymbol),
-	]
+	];
 ```
 
 
@@ -190,13 +190,13 @@ ExpressionExponential ::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
 
 ### Static Semantics: Decorate (Exponentiation)
 ```w3c
-Decorate(ExpressionExponential ::= ExpressionUnarySymbol)
-	:= Decorate(ExpressionUnarySymbol)
-Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential)
+Decorate(ExpressionExponential ::= ExpressionUnarySymbol) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticExpression
+	:= Decorate(ExpressionUnarySymbol);
+Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential) -> SemanticExpression
 	:= SemanticExpression {operator: EXP} [
 		Decorate(ExpressionUnarySymbol),
 		Decorate(ExpressionExponential),
-	]
+	];
 ```
 
 
@@ -219,18 +219,18 @@ ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionE
 
 ### Static Semantics: Decorate (Multiplicative)
 ```w3c
-Decorate(ExpressionMultiplicative ::= ExpressionExponential)
-	:= Decorate(ExpressionExponential)
-Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential)
+Decorate(ExpressionMultiplicative ::= ExpressionExponential) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticExpression
+	:= Decorate(ExpressionExponential);
+Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential) -> SemanticExpression
 	:= SemanticExpression {operator: MUL} [
 		Decorate(ExpressionMultiplicative),
 		Decorate(ExpressionExponential),
-	]
-Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential)
+	];
+Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential) -> SemanticExpression
 	:= SemanticExpression {operator: DIV} [
 		Decorate(ExpressionMultiplicative),
 		Decorate(ExpressionExponential),
-	]
+	];
 ```
 
 
@@ -258,20 +258,20 @@ ExpressionAdditive ::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicativ
 
 ### Static Semantics: Decorate (Additive)
 ```w3c
-Decorate(ExpressionAdditive ::= ExpressionMultiplicative)
-	:= Decorate(ExpressionMultiplicative)
-Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative)
+Decorate(ExpressionAdditive ::= ExpressionMultiplicative) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticExpression
+	:= Decorate(ExpressionMultiplicative);
+Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative) -> SemanticExpression
 	:= SemanticExpression {operator: ADD} [
 		Decorate(ExpressionAdditive),
 		Decorate(ExpressionMultiplicative),
-	]
-Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
+	];
+Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative) -> SemanticExpression
 	:= SemanticExpression {operator: ADD} [
 		Decorate(ExpressionAdditive),
 		SemanticExpression {operator: NEG} [
 			Decorate(ExpressionMultiplicative),
 		],
-	]
+	];
 ```
 
 

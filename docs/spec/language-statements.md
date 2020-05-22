@@ -12,16 +12,16 @@ Statement ::=
 
 ### Static Semantics: Decorate (Statements)
 ```w3c
-Decorate(Statement ::= DeclarationVariable)
-	:= Decorate(DeclarationVariable)
-Decorate(Statement ::= StatementAssignment)
-	:= Decorate(StatementAssignment)
-Decorate(Statement ::= Expression ";")
+Decorate(Statement ::= DeclarationVariable) -> SemanticDeclaration
+	:= Decorate(DeclarationVariable);
+Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
+	:= Decorate(StatementAssignment);
+Decorate(Statement ::= Expression ";") -> SemanticStatement
 	:= SemanticStatement {type: "expression"} [
 		Decorate(Expression),
-	]
-Decorate(Statement ::= ";")
-	:= SemanticStatement {type: "expression"} []
+	];
+Decorate(Statement ::= ";") -> SemanticStatement
+	:= SemanticStatement {type: "expression"} [];
 ```
 
 
@@ -34,7 +34,7 @@ DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";";
 
 ### Static Semantics: Decorate (Variable Declaration)
 ```w3c
-Decorate(DeclarationVariable ::= "let" IDENTIFIER "=" Expression ";")
+Decorate(DeclarationVariable ::= "let" IDENTIFIER "=" Expression ";") -> SemanticDeclaration
 	:= SemanticDeclaration {type: "variable", unfixed: false} [
 		SemanticAssignee {} [
 			SemanticIdentifier {id: TokenWorth(IDENTIFIER)} [],
@@ -42,8 +42,8 @@ Decorate(DeclarationVariable ::= "let" IDENTIFIER "=" Expression ";")
 		SemanticAssigned {} [
 			Decorate(Expression),
 		],
-	]
-Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER "=" Expression ";")
+	];
+Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER "=" Expression ";") -> SemanticDeclaration
 	:= SemanticDeclaration {type: "variable", unfixed: true} [
 		SemanticAssignee {} [
 			SemanticIdentifier {id: TokenWorth(IDENTIFIER)} [],
@@ -51,7 +51,7 @@ Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER "=" Expression ";")
 		SemanticAssigned {} [
 			Decorate(Expression),
 		],
-	]
+	];
 ```
 
 
@@ -64,7 +64,7 @@ StatementAssignment ::= IDENTIFIER "=" Expression ";";
 
 ### Static Semantics: Decorate (Variable Assignment)
 ```w3c
-Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";")
+Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";") -> SemanticAssignment
 	:= SemanticAssignment {} [
 		SemanticAssignee {} [
 			SemanticIdentifier {id: TokenWorth(IDENTIFIER)} [],
@@ -72,5 +72,5 @@ Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";")
 		SemanticAssigned {} [
 			Decorate(Expression),
 		],
-	]
+	];
 ```

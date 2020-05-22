@@ -92,7 +92,7 @@ This specification uses a variant of [W3C’s EBNF syntax](https://www.w3.org/TR
 to notate the formal context-free grammars (CFGs) of the Solid language.
 
 This section describes grammar notation in a readable format.
-For a complete self-describing grammar of the EBNF grammar, see [Formal Grammar](#formal-grammar) below.
+For a complete self-describing grammar of the EBNF grammar, see [Formal Grammar](#formal-grammar-cfg) below.
 
 Each production in a CFG consists of a nonterminal followed by a choice of one or more sequences.
 ```
@@ -603,7 +603,7 @@ This informative table summarizes the right-hand side appearances.
 `<X-><Y->M` | `N` |        |        |
 —           |     |        |        |
 
-#### Formal Grammar
+#### Formal Grammar (CFG)
 The grammar below describes the formal CFGs that describe the Solid language.
 It is self-describing; that is, the grammar below describes the very syntax it uses.
 ```
@@ -828,20 +828,20 @@ In an attribute grammar, attributes are defined on nodes of a parse tree via the
 of a context-free grammar.
 In this specification, attributes are “synthesized” and thus propagate in a bottom-up manner:
 given a parse node, computing an attribute of that node might require looking at its children.
-Attributes are [Solid Specification Values], such as computed values,
+Attributes are [Solid Specification Values] (link pending), such as computed values,
 or entire objects representing semantic nodes with children.
 
 
 ### Example
 ```
 Value(INT ::= [0-9]) -> Integer
-	:= Value([0-9])
+	:= Value([0-9]);
 Value(INT ::= INT [0-9]) -> Integer
-	:= 10 * Value(INT) + Value([0-9])
-Value([0-9] ::= "0") -> Integer := 0
-Value([0-9] ::= "1") -> Integer := 1
+	:= 10 * Value(INT) + Value([0-9]);
+Value([0-9] ::= "0") -> Integer := 0;
+Value([0-9] ::= "1") -> Integer := 1;
 ...
-Value([0-9] ::= "9") -> Integer := 9
+Value([0-9] ::= "9") -> Integer := 9;
 ```
 This example illustrates a hypothetical attribute grammar that defines an attribute called `Value` on an `INT` token.
 Each rule defines the attribute on the token matching a different pattern defined by a CFG,
@@ -867,6 +867,94 @@ The productions of the decoration grammar are listed in the chapters
 [Solid Language: Expressions](./language-expressions.md),
 [Solid Language: Statements](./language-statements.md), and
 [Solid Language: Goal Symbols](./language-goal.md).
+
+
+### Notation: Attribute Grammar
+The notation for the attribute grammars (AGs) in this specification resembles that of the
+[context-free grammars](#notation-context-free-grammar), with a few changes.
+
+Attribute productions are written in lambda form, taking a lexical or syntactic production
+as an argument and “returning” a value.
+(To be precise, the AG production defines a value as the attribute
+of the specified lexical/syntactic production.)
+The “return type” of the attribute production is indicated after a thin arrow `->`
+following the attribute production name, and the “return value” is
+a [Solid Specification Value] (link pending) followed by the definition symbol `:=`.
+```
+‹AttributeName›(‹CFGProduction›) -> ‹ReturnType›
+	:= ‹ReturnValue›;
+```
+For brevity, we may use the format
+```
+‹AttributeName›(‹CFGProduction›) -> ‹ReturnType› := ‹ReturnValue›;
+```
+
+The production definition following the symbol `:=` is not a sequence of terminals and nonterminals,
+but rather a semantic value.
+Since different AGs can “return” different types, the “return type” is indicated after the production head.
+
+An AG production may define several forms of a CFG production as its parameter:
+```
+Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticTemplate
+	:= SemanticTemplate {type: "full"} [
+		SemanticConstant {value: TokenWorth(TEMPLATE_FULL)} [],
+	];
+Decorate(StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticTemplate
+	:= SemanticTemplate {type: "substitution"} [
+		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
+	];
+```
+The AG example above defines a Decoration attribute on `StringTemplate` productions.
+If the production matches `TEMPLATE_FULL`, then one value is returned;
+if it matches `TEMPLATE_HEAD TEMPLATE_TAIL` than another value is returned.
+
+The terminals and nonterminals in the parameter’s sequence act like separate parameters,
+which can then be referenced in the return value.
+
+AG productions may also invoke each other, and they may do so recursively.
+```
+TokenWorth(TemplateFull :::= "'''" TemplateChars__EndDelim "'''") -> Sequence<RealNumber>
+	:= TokenWorth(TemplateChars__EndDelim)
+TokenWorth(TemplateChars__EndDelim :::= [^'{#x03]) -> Sequence<RealNumber>
+	:= <UTF16Encoding(CodePoint([^'{#x03]))>
+TokenWorth(TemplateChars__EndDelim :::= [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
+	:= <UTF16Encoding(CodePoint([^'{#x03])), ...TokenWorth(TemplateChars__EndDelim)>
+TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartDelim) -> Sequence<RealNumber>
+	:= TokenWorth(TemplateChars__EndDelim__StartDelim)
+TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartInterp) -> Sequence<RealNumber>
+	:= TokenWorth(TemplateChars__EndDelim__StartInterp)
+```
+The TokenWorth attribute is computed by invoking itself on children elements.
+
+Other than its functional behavior, attribute grammars are much simpler
+than their context-free counterparts. There are no operations or expansions.
+The complexity lies within the values they return, which are further described
+in the chapter [Solid Data Types and Values] (link pending).
+
+#### Formal Grammar (AG)
+The grammar below (which is a CFG) describes the formal AGs that describe the Solid language.
+```
+Grammar
+	::= #x02 Production* #x03;
+
+Production
+	::= IDENTIFIER "(" Parameter ")" "->" ReturnType ":=" RETURN_VALUE ";";
+
+Parameter
+	::= IDENTIFIER (":::=" | "::=") Item+;
+
+Item ::=
+	| STRING
+	| CHARCODE
+	| CHARCLASS
+	| IDENTIFIER
+;
+```
+where the non-literal terminal symbols of the syntax grammar above are
+taken from the lexical grammar defined in [CFGs: Formal Grammar](#formal-grammar-cfg).
+The exception is the terminal `RETURN_VALUE`, which has no prescribed syntax.
+The syntax of the return value is the syntax of its type.
 
 
 
