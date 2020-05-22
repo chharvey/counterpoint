@@ -3,10 +3,7 @@ This chapter describes notational conventions used throughout this specification
 
 
 
-## Grammars
-
-
-### Context-Free Grammars
+## Context-Free Grammars
 Context-free grammars define the lexical and syntactic composition of Solid programs.
 
 A context-free grammar consists of a number of **productions**, each of which
@@ -26,7 +23,8 @@ If multiple sequences define a nonterminal in a production,
 then exactly one of those sequences may replace the nonterminal in the language
 for any given replacement step.
 
-#### Example
+
+### Example
 ```
 ExpressionAddition
 	::= ExpressionAddition "+" NUMBER
@@ -37,7 +35,7 @@ by the nonterminal `ExpressionAddition` on the left-hand side and two sequences 
 The first sequence has three symbols: one nonterminal (which happens to be the same as the production —
 recursion is allowed in this specification’s grammars), and two terminals.
 The terminal `"+"` is a literal token, and the terminal `NUMBER` represents a token
-that matches some lexical formula, such as `[0-9]*` (which might be defined in a separate lexical grammar).
+that matches some lexical formula, such as `[0-9]+` (which might be defined in a separate lexical grammar).
 In this specification, such terminal identifiers will be written in all-uppercase (‘MACRO_CASE’).
 
 One is able to start with the nonterminal `ExpressionAddition`, and replace it with
@@ -45,7 +43,8 @@ any of the right-hand sequences, repeating that step perhaps an arbitrary number
 if recursion is allowed, until no more nonterminals remain. The resulting sequence of terminals
 would be a well-formed instance of the language.
 
-#### The Lexical Grammar
+
+### The Lexical Grammar
 A lexical grammar for the Solid programming language is a formal context-free grammar that has
 as its terminal symbols the characters of the Unicode character set.
 The lexical grammar is a set of productions that describes
@@ -63,7 +62,8 @@ Such tasks prepare the tokens for the parser, such as computing the mathematical
 of numeric tokens and string tokens respectively, as well as performing other optimizing techniques.
 The screener is also responsible for deciding which tokens get sent to the parser.
 
-#### The Syntactic Grammar
+
+### The Syntactic Grammar
 The syntactic context-free grammar for the Solid programming language has as its terminal symbols
 the tokens defined by the lexical grammar, excluding certain tokens such as comments.
 The syntactic grammar is a set of productions that describes
@@ -87,45 +87,776 @@ Further, the decorator transforms the very large parse tree into a more simplifi
 semantic tree, which is then passed on to a semantic analyzer.
 
 
-### Attribute Grammars
+### Notation: Context-Free Grammar
+This specification uses a variant of [W3C’s EBNF syntax](https://www.w3.org/TR/xml/#sec-notation)
+to notate the formal context-free grammars (CFGs) of the Solid language.
+
+This section describes grammar notation in a readable format.
+For a complete self-describing grammar of the EBNF grammar, see [Formal Grammar](#formal-grammar-cfg) below.
+
+Each production in a CFG consists of a nonterminal followed by a choice of one or more sequences.
+```
+‹ProductionName›
+	::= ‹Choice›;
+```
+where `‹ProductionDefinition›` and `‹Choice›` are meta-variables repesenting structures in the EBNF syntax.
+`‹ProductionName›` represents a name of the nonterminal being defined,
+and `‹Choice›` represents any sequence of symbols that may replace the nonterminal,
+or a choice of such sequences.
+
+For brevity, we may use the format
+```
+‹ProductionDefinition› ::= ‹Choice›;
+```
+
+The production definition is followed by a definition symbol `:::=` or `::=`, and the production is ended by `;`.
+Throughout this specification, different definition symbols denote the type of grammar the production is in:
+The symbol `:::=` is used in lexical grammars and the symbol `::=` is used in syntactic grammars.
+(Furthermore, the symbol `:=` is used in [attribute grammars](#attribute-grammars).)
+In this section, however, we will stick with `::=` in the absense of context.
+
+The nonterminal representative `‹Choice›` may define one or more alternatives
+for **sequences** that replace the nonterminal `‹ProductionDefinition›`.
+In that case, we delimit the sequences with pipes (**U+007C VERTICAL LINE**),
+and place each sequence on its own line.
+```
+‹ProductionDefinition› ::=
+	| ‹Sequence1›
+	| ‹Sequence2›
+	| ‹Sequence3›
+;
+```
+In this format, the pipes are to be thought of as *delimiters* rather than as *operators*,
+though [they serve the same purpose](#alternation).
+The list of sequences may begin with a leading pipe as shown above.
+
+When describing CFGs, this specification uses PascalCase to denote nonterminal symbols,
+"double quotes" to denote literal terminals, and MACRO_CASE to denote non-literal terminal symbols.
+For example, the following production defines a nonterminal `PrimitiveLiteral`,
+which during syntactical analysis is replaced by one of five alternatives:
+one of the terminal literals `"null"`, `"false"`, or `"true"`, or one of the terminal symbols `INTEGER` or `FLOAT`.
+The latter two symbols are not literal spans of code, but rather productions defined by a separate lexical grammar.
+(E.g., `INTEGER` could be defined lexically as `[0-9]+`.)
+```
+PrimitiveLiteral ::=
+	| "null"
+	| "false"
+	| "true"
+	| INTEGER
+	| FLOAT
+;
+```
+
+A **sequence** of symbols in a CFG is defined as a list of symbols
+that may replace a nonterminal in exactly the same order.
+Symbols in a sequence are concatenated with only whitespace separating them.
+```
+ExpressionUnit
+	::= "(" Expression ")";
+```
+During syntactical analysis, the nonterminal `ExpressionUnit` may be replaced by
+the terminal `"("`, followed by the nonterminal `Expression`, followed by the terminal `")"`.
+
+EBNF **comments** are snippets of text ignored by any EBNF parser;
+they can be used to insert human-readable descriptions.
+Comments are written `// in C-style line comment syntax`,
+and, if present, must appear at the end of a line.
+
+#### Operations
+This specification supplements the formal EBNF grammar described above
+with an operational shorthand syntax to ease readability and length.
+Specifically, the supplemented symbols include `( ) & | + * # ?`.
+
+This supplemental shorthand notation does not alter or add new semantics
+to the formal EBNF grammar, but merely provides a route to transform productions
+from their shorthand form to a number of productions in their formal form.
+
+These shorthand notations are described in the following subsections.
+
+##### Grouping
+Grouping of symbols promotes the precedence of operations listed in the subsequent sections.
+Grouping syntax uses the delimiters `( … )`.
+
+##### Unordered Concatenation
+Unordered Concatenation of symbols is concatenation where the order is not important.
+
+Unordered Concatenation syntax uses the symbol `&` and is shorthand for an alternative choice with concatenation:
+```
+N
+	::= A & B;
+```
+transforms to
+```
+N ::=
+	| A B
+	| B A
+;
+```
+
+Unordered Concatenation is evaluated left-to-right, so the EBNF expression `A & B & C`
+is equivalent to `(A & B) & C`.
+```
+N
+	::= A & B & C;
+```
+transforms to
+```
+N ::=
+	| (A & B) C
+	| C (A & B)
+;
+```
+which in turn transforms to
+```
+N ::=
+	| A B C
+	| B A C
+	| C A B
+	| C B A
+;
+```
+**(Notice that not all permutations are available here — namely, `A C B` and `B C A` are missing.)**
+
+Unordered Concatenation is weaker than concatenation:
+`A & B C` is equivalent to `A & (B C)`.
+
+##### Alternation
+Alternation of symbols indicates an alternative choice of those symbols in the formal grammar.
+
+Alteration syntax uses the symbol `|` and is shorthand for an alternative choice for a production:
+```
+N
+	::= A | B;
+```
+transforms to
+```
+N
+	| A
+	| B
+;
+```
+
+Alternation is evaluated left-to-right, so the EBNF expression `A | B | C`
+is equivalent to `(A | B) | C`.
+```
+N
+	::= A | B | C;
+```
+transforms to
+```
+N ::=
+	| A | B
+	| C
+;
+```
+which in turn transforms to
+```
+N ::=
+	| A
+	| B
+	| C
+;
+```
+
+Alternation is weaker than Unordered Concatenation:
+`A | B & C` is equivalent to `A | (B & C)`.
+
+Alternation on its own is not that interesting, but it can be useful when combined with other operations:
+```
+N ::= (A | B) C;
+```
+is shorthand for
+```
+N ::=
+	| A C
+	| B C
+;
+```
+
+##### Repetition
+Repetition indicates one or more occurrences of a symbol in the formal grammar.
+
+Repetition syntax uses the symbol `+` and is shorthand for a left-recursive list:
+```
+N
+	::= A B+;
+```
+transforms to
+```
+N ::=
+	| A B__List
+;
+
+B__List ::=
+	| B
+	| B__List B
+;
+```
+
+Repetition is stronger than concatenation:
+`A B+` is equivalent to `A (B+)`.
+
+##### Optional Repetition
+Optional repetition is the repetition of zero or more occurrences of a symbol on the formal grammar.
+
+Optional repetition uses the symbol `*` and is shorthand for a repetition that may be present or absent:
+```
+N
+	::= A B*;
+```
+transforms to
+```
+N ::=
+	| A
+	| A B__List
+;
+
+B__List ::=
+	| B
+	| B__List B
+;
+```
+
+Optional repetition is stronger than concatenation:
+`A B*` is equivalent to `A (B*)`.
+
+##### Comma-Separated Repetition
+Comma-separated repetition is a repetition of one or more items with commas (**U+002C COMMA**) in between them.
+Comma-separated repetition only specifies commas *between* the items, but does not necessarily
+specify a leading or trailing comma.
+
+Comma-separated repetition syntax uses the symbol `#` and is shorthand for a left-recursive list.
+```
+N
+	::= A B#;
+```
+transforms to
+```
+N ::=
+	| A B__List
+;
+
+B__List ::=
+	| B
+	| B__List "," B
+;
+```
+
+Comma-separated repetition is stronger than concatenation:
+`A B#` is equivalent to `A (B#)`.
+
+##### Optionality
+Optionality indicates that the symbol may be present or absent in the formal grammar.
+
+Optionality syntax uses the symbol `?` and is shorthand for an alternative choice:
+```
+N
+	::= A B?;
+```
+transforms to
+```
+N ::=
+	| A
+	| A B
+;
+```
+
+Optionality is stronger than concatenation:
+`A B?` is equivalent to `A (B?)`.
+However, it is the weakest of all unary operators:
+`C+?`, `D*?`, and `E#?` are respectively equivalent to `(C+)?`, `(D*)?`, and `(E#)?`.
+
+#### Parameterized Productions
+Parameterized productions are syntax sugar for decreasing the
+amount and effort of hand-written productions.
+These are not new features; they are only shorthand notation that
+reduce to the normative notation described at the beginning of this section.
+
+##### Production Parameters
+A parameter of a nonterminal on the left-hand side of a production
+takes the form of an identifier, which expands the production into two productions.
+```
+N<X>
+	::= A;
+```
+transforms to
+```
+N    ::= A;
+N__X ::= A;
+```
+Production parameters expand combinatorially.
+```
+N<X, Y>
+	::= A;
+
+M<Z><W>
+	::= B;
+```
+transforms to
+```
+N       ::= A;
+N__X    ::= A;
+N__Y    ::= A;
+N__X__Y ::= A;
+
+M       ::= B;
+M__Z    ::= B;
+M__W    ::= B;
+M__Z__W ::= B;
+```
+Therefore, a nonterminal on the left-hand side `P<F, G>` is equivalent to `P<F><G>`.
+
+##### Production Arguments
+When a parameterized production is referenced as a nonterminal on the right-hand side,
+identifiers are sent as arguments, which determine the production used.
+```
+N ::=
+	| A<+X>
+	| B<-X>
+;
+
+M<Y>
+	::= C<?Y>;
+```
+transforms to
+```
+N ::=
+	| A__X
+	| B
+;
+
+M    ::= C;
+M__Y ::= C__Y;
+```
+Production arguments expand combinatorially, the same way parameters do.
+```
+N ::=
+	| I<-X, +X>
+	| J<+Y, -Y>
+	| K<-X><+X>
+	| L<+Y><-Y>
+;
+
+M ::=
+	| A<+X, +Y>
+	| B<+X, -Y>
+	| C<-X, +Y>
+	| D<-X, -Y>
+	| E<+X><+Y>
+	| F<+X><-Y>
+	| G<-X><+Y>
+	| H<-X><-Y>
+;
+
+O<Z, W> ::=
+	| P<?Z, ?W>
+	| Q<?Z><?W>
+;
+```
+transforms to
+```
+N ::=
+	| I
+	| I__X
+	| J__Y
+	| J
+	| K__X
+	| L__Y
+;
+
+M ::=
+	| A__X
+	| A__Y
+	| A__X__Y
+	| B__X
+	| B
+	| C
+	| C__Y
+	| D
+	| E__X__Y
+	| F__X
+	| G__Y
+	| H
+;
+
+O ::=
+	| P
+	| Q
+;
+O__Z ::=
+	| P__Z
+	| Q__Z
+;
+O__W ::=
+	| P__W
+	| Q__W
+;
+O__Z__W ::=
+	| P__Z__W
+	| Q__Z__W
+;
+```
+Notice that a nonterminal on the right-hand side `P<⊛F, ⊗G>` is *not* equivalent to `P<⊛F><⊗G>`.
+(`⊛` and `⊗` are metavariables representing one of the symbols `+` and `-`.)
+The former (`P<⊛F, ⊗G>`) acts like a disjunction (`P<⊛F> | P<⊗G> | P<⊛F><⊗G>`), while
+the latter (`P<⊛F><⊗G>`) acts like a conjunction (only `P<⊛F><⊗G>`).
+
+##### Production Conditionals
+A production conditional determines whether or not an item appears in the sequence of a production.
+```
+N<X> ::=
+	| A
+	| <X+>B
+	| <X->C
+;
+```
+transforms to
+```
+N ::=
+	| A
+	| C
+;
+N__X ::=
+	| A
+	| B
+;
+```
+Production conditionals expand combinatorially.
+```
+N<X, Y> ::=
+	| A
+	| <X+>B
+	| <X->C
+	| <Y+>D
+	| <Y->E
+	| <X+, Y+>F
+	| <X+, Y->G
+	| <X-, Y+>H
+	| <X-, Y->I
+	| <X+><Y+>J
+	| <X+><Y->K
+	| <X-><Y+>L
+	| <X-><Y->M
+;
+```
+transforms to
+```
+N ::=
+	| A
+	| C
+	| E
+	| G
+	| H
+	| I
+	| M
+;
+N__X ::=
+	| A
+	| B
+	| E
+	| F
+	| G
+	| I
+	| K
+;
+N__Y ::=
+	| A
+	| C
+	| D
+	| F
+	| H
+	| I
+	| L
+;
+N__X__Y ::=
+	| A
+	| B
+	| D
+	| F
+	| G
+	| H
+	| J
+;
+```
+Notice that the conditional `<F⊛, G⊗>P` is *not* equivalent to `<F⊛><G⊗>P`.
+(`⊛` and `⊗` are metavariables representing one of the symbols `+` and `-`.)
+The former acts like a union whereas the latter acts like an intersection.
+
+This informative table summarizes the right-hand side appearances.
+
+|           | N   | N__X   | N__Y   | N__X__Y
+----------- | --- | ------ | ------ | --------
+`A`         | `N` | `N__X` | `N__Y` | `N__X__Y`
+`<X+>B`     |     | `N__X` |        | `N__X__Y`
+`<X->C`     | `N` |        | `N__Y` |
+`<Y+>D`     |     |        | `N__Y` | `N__X__Y`
+`<Y->E`     | `N` | `N__X` |        |
+—           | `N` |        |        | `N__X__Y`
+—           |     | `N__X` | `N__Y` |
+`<X+, Y+>F` |     | `N__X` | `N__Y` | `N__X__Y`
+`<X+, Y->G` | `N` | `N__X` |        | `N__X__Y`
+`<X-, Y+>H` | `N` |        | `N__Y` | `N__X__Y`
+`<X-, Y->I` | `N` | `N__X` | `N__Y` |
+`<X+><Y+>J` |     |        |        | `N__X__Y`
+`<X+><Y->K` |     | `N__X` |        |
+`<X-><Y+>L` |     |        | `N__Y` |
+`<X-><Y->M` | `N` |        |        |
+—           |     |        |        |
+
+#### Formal Grammar (CFG)
+The grammar below describes the formal CFGs that describe the Solid language.
+It is self-describing; that is, the grammar below describes the very syntax it uses.
+```
+Grammar
+	::= #x02 Production* #x03;
+
+Production
+	::= NonterminalDefinition (":::=" | "::=") "|"? Choice ";";
+
+Choice   ::= (Choice   "|")? Sequence;
+Sequence ::= (Sequence "&")? Item+;
+
+Item
+	::= Condition? Unary;
+
+Unary
+	::= Unit ("+" | "*" | "#")? "?"?;
+
+Unit ::=
+	| STRING
+	| CHARCODE
+	| CHARCLASS
+	| NonterminalReference
+	| "(" Choice ")"
+;
+
+NonterminalDefinition ::= IDENTIFIER ("<" IDENTIFIER#                     ">")?;
+NonterminalReference  ::= IDENTIFIER ("<" (("+" | "-" | "?") IDENTIFIER)# ">")?;
+Condition             ::=             "<" (IDENTIFIER ("+" | "-")      )# ">"  ;
+```
+The non-literal terminal symbols of the syntax grammar above are defined in this lexical grammar:
+```
+CHARCLASS  :::= CharClass;
+CHARCODE   :::= CharCode;
+STRING     :::= String;
+IDENTIFIER :::= Identifier;
+
+CharClass
+	:::= "[" "^"? (Char | CharCode | Char "-" Char | CharCode "-" CharCode)+ "]";
+
+CharCode
+	:::= "#x" [0-9a-f]+;
+
+Char
+	:::= [#x20-#x5c#x5e-#7e]; // excluding close brace "]"
+
+String
+	:::= #x22 [^"]* #x22; // '"' [^"]* '"'
+
+Identifier
+	:::= [A-Z] [A-Za-z0-9_]*;
+
+Comment
+	:::= "//" [^#x0a#03]+ #x0a;
+```
+For those not faint of heart, the shorthand grammars above expand into the following formal grammar.
+The following is non-normative; if there are any discrepancies, the grammars above take precedence.
+```
+// ##### Syntax Grammar ##### //
+
+Grammar ::=
+	| #x02                  #x03
+	| #x02 Production__List #x03
+;
+
+Production__List ::=
+	|                  Production
+	| Production__List Production
+;
+
+Production ::=
+	| NonterminalDefinition ":::="     Choice ";"
+	| NonterminalDefinition ":::=" "|" Choice ";"
+	| NonterminalDefinition  "::="     Choice ";"
+	| NonterminalDefinition  "::=" "|" Choice ";"
+;
+
+Choice ::=
+	|            Sequence
+	| Choice "|" Sequence
+;
+
+Sequence ::=
+	|              Item__List
+	| Sequence "&" Item__List
+;
+
+Item__List ::=
+	|            Item
+	| Item__List Item
+;
+
+Item ::=
+	|           Unary
+	| Condition Unary
+;
+
+Unary ::=
+	| Unit
+	| Unit "+"
+	| Unit "*"
+	| Unit "#"
+	| Unit "+" "?"
+	| Unit "*" "?"
+	| Unit "#" "?"
+;
+
+Unit ::=
+	| STRING
+	| CHARCODE
+	| CHARCLASS
+	| NonterminalReference
+	| "(" Choice ")"
+;
+
+NonterminalDefinition ::=
+	| IDENTIFIER
+	| IDENTIFIER "<" IDENTIFIER__List ">"
+;
+
+NonterminalReference ::=
+	| IDENTIFIER
+	| IDENTIFIER "<" NonterminalReference__0__List ">"
+;
+
+Condition ::=
+	| "<" Condition__0__List ">"
+;
+
+IDENTIFIER__List ::=
+	|                      IDENTIFIER
+	| IDENTIFIER__List "," IDENTIFIER
+;
+
+NonterminalReference__0__List ::=
+	|                                   "+" IDENTIFIER
+	|                                   "-" IDENTIFIER
+	|                                   "?" IDENTIFIER
+	| NonterminalReference__0__List "," "+" IDENTIFIER
+	| NonterminalReference__0__List "," "-" IDENTIFIER
+	| NonterminalReference__0__List "," "?" IDENTIFIER
+
+Condition__0__List ::=
+	|                        IDENTIFIER "+"
+	|                        IDENTIFIER "-"
+	| Condition__0__List "," IDENTIFIER "+"
+	| Condition__0__List "," IDENTIFIER "-"
+;
+
+// ##### Lexical Grammar ##### //
+
+CHARCLASS  :::= CharClass;
+CHARCODE   :::= CharCode;
+STRING     :::= String;
+IDENTIFIER :::= Identifier;
+
+CharClass :::=
+	| "["     CharClass__0__List "]"
+	| "[" "^" CharClass__0__List "]"
+;
+
+CharClass__0__List :::=
+	|                    Char
+	|                    CharCode
+	|                    Char "-" Char
+	|                    CharCode "-" CharCode
+	| CharClass__0__List Char
+	| CharClass__0__List CharCode
+	| CharClass__0__List Char "-" Char
+	| CharClass__0__List CharCode "-" CharCode
+;
+
+CharCode :::=
+	| "#x" CharCode__0__List
+;
+
+CharCode__0__List :::=
+	|                   [0-9a-f]
+	| CharCode__0__List [0-9a-f]
+;
+
+Char :::=
+	| [#x20-#x5c#x5e-#7e]
+;
+
+String :::=
+	| #x22                 #x22
+	| #x22 String__0__List #x22
+;
+
+String__0__List :::=
+	|                 [^"]
+	| String__0__List [^"]
+;
+
+Identifier :::=
+	| [A-Z]
+	| [A-Z] Identifier__0__List
+;
+
+Identifier__0__List :::=
+	|                     [A-Za-z0-9_]
+	| Identifier__0__List [A-Za-z0-9_]
+;
+
+Comment :::=
+	| "//" Comment__0__List #x0a
+;
+
+Comment__0__List :::=
+	|                  [^#x0a#03]
+	| Comment__0__List [^#x0a#03]
+;
+```
+
+
+
+## Attribute Grammars
 Attribute grammars are context-sensitive grammars that help the decorator transform
 the parse tree into the semantic tree, which is a prerequisite for semantic analysis.
 In an attribute grammar, attributes are defined on nodes of a parse tree via the productions
 of a context-free grammar.
 In this specification, attributes are “synthesized” and thus propagate in a bottom-up manner:
 given a parse node, computing an attribute of that node might require looking at its children.
-Attributes can be computed values, or entire objects representing semantic nodes with children.
-For example, an attribute grammar can be used to determine the mathematical value of a number.
+Attributes are [Solid Specification Values] (link pending), such as computed values,
+or entire objects representing semantic nodes with children.
 
-#### Example
+
+### Example
 ```
-MV(NUMBER ::= [0-9])
-	:= MV([0-9])
-MV(NUMBER ::= NUMBER [0-9])
-	:= 10 * MV(NUMBER) + MV([0-9])
-MV([0-9] ::= "0") := 0
-MV([0-9] ::= "1") := 1
+Value(INT ::= [0-9]) -> Integer
+	:= Value([0-9]);
+Value(INT ::= INT [0-9]) -> Integer
+	:= 10 * Value(INT) + Value([0-9]);
+Value([0-9] ::= "0") -> Integer := 0;
+Value([0-9] ::= "1") -> Integer := 1;
 ...
-MV([0-9] ::= "9") := 9
+Value([0-9] ::= "9") -> Integer := 9;
 ```
-This example demonstrates an attribute grammar that defines an attribute called `MV` on a `NUMBER` token.
-Each rule defines the attribute on the token matching a different pattern defined by a CFG.
-The first line could be read aloud as, “The `MV` of `NUMBER` matching `[0-9]` is the `MV` of `[0-9]`.”
+This example illustrates a hypothetical attribute grammar that defines an attribute called `Value` on an `INT` token.
+Each rule defines the attribute on the token matching a different pattern defined by a CFG,
+and then denotes that the returned object will be an integer.
+The first line could be read aloud as,
+“The `Value` of `INT` matching `[0-9]` is the `Value` of `[0-9]`, which is an `Integer`.”
 
-#### Token Value
-The various token value grammars are attribute grammars that determine the semantic value of their respective token types.
 
-- Punctuator Value
-- Mathematical Value
-- Keyword Value
-- Identifier Value
-- String Value
-- Template Value
-
-These token value grammars are described further in detail in the chapter
+### Token Worth
+The token worth grammar is an attribute grammar that determines the semantic value of the various token types.
+This grammar is described further in detail in the chapter
 [Solid Language: Lexicon](./language-lexicon.md).
 
-#### Decoration
+
+### Decoration
 The decoration grammar is the attribute grammar that defines the semantic value
 of a syntactic production. The values of the productions in the decoration attribute grammar
 are semantic nodes whose properties and children determine what code is to be generated by the compiler.
@@ -138,20 +869,115 @@ The productions of the decoration grammar are listed in the chapters
 [Solid Language: Goal Symbols](./language-goal.md).
 
 
+### Notation: Attribute Grammar
+The notation for the attribute grammars (AGs) in this specification resembles that of the
+[context-free grammars](#notation-context-free-grammar), with a few changes.
+
+Attribute productions are written in lambda form, taking a lexical or syntactic production
+as an argument and “returning” a value.
+(To be precise, the AG production defines a value as the attribute
+of the specified lexical/syntactic production.)
+The “return type” of the attribute production is indicated after a thin arrow `->`
+following the attribute production name, and the “return value” is
+a [Solid Specification Value] (link pending) followed by the definition symbol `:=`.
+```
+‹AttributeName›(‹CFGProduction›) -> ‹ReturnType›
+	:= ‹ReturnValue›;
+```
+For brevity, we may use the format
+```
+‹AttributeName›(‹CFGProduction›) -> ‹ReturnType› := ‹ReturnValue›;
+```
+
+The production definition following the symbol `:=` is not a sequence of terminals and nonterminals,
+but rather a semantic value.
+Since different AGs can “return” different types, the “return type” is indicated after the production head.
+
+An AG production may define several forms of a CFG production as its parameter:
+```
+Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticTemplate
+	:= SemanticTemplate {type: "full"} [
+		SemanticConstant {value: TokenWorth(TEMPLATE_FULL)} [],
+	];
+Decorate(StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticTemplate
+	:= SemanticTemplate {type: "substitution"} [
+		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
+		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
+	];
+```
+The AG example above defines a Decoration attribute on `StringTemplate` productions.
+If the production matches `TEMPLATE_FULL`, then one value is returned;
+if it matches `TEMPLATE_HEAD TEMPLATE_TAIL` than another value is returned.
+
+The terminals and nonterminals in the parameter’s sequence act like separate parameters,
+which can then be referenced in the return value.
+
+AG productions may also invoke each other, and they may do so recursively.
+```
+TokenWorth(TemplateFull :::= "'''" TemplateChars__EndDelim "'''") -> Sequence<RealNumber>
+	:= TokenWorth(TemplateChars__EndDelim)
+TokenWorth(TemplateChars__EndDelim :::= [^'{#x03]) -> Sequence<RealNumber>
+	:= <UTF16Encoding(CodePoint([^'{#x03]))>
+TokenWorth(TemplateChars__EndDelim :::= [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
+	:= <UTF16Encoding(CodePoint([^'{#x03])), ...TokenWorth(TemplateChars__EndDelim)>
+TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartDelim) -> Sequence<RealNumber>
+	:= TokenWorth(TemplateChars__EndDelim__StartDelim)
+TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartInterp) -> Sequence<RealNumber>
+	:= TokenWorth(TemplateChars__EndDelim__StartInterp)
+```
+The TokenWorth attribute is computed by invoking itself on children elements.
+
+Other than its functional behavior, attribute grammars are much simpler
+than their context-free counterparts. There are no operations or expansions.
+The complexity lies within the values they return, which are further described
+in the chapter [Solid Data Types and Values] (link pending).
+
+#### Formal Grammar (AG)
+The grammar below (which is a CFG) describes the formal AGs that describe the Solid language.
+```
+Grammar
+	::= #x02 Production* #x03;
+
+Production
+	::= IDENTIFIER "(" Parameter ")" "->" ReturnType ":=" RETURN_VALUE ";";
+
+Parameter
+	::= IDENTIFIER (":::=" | "::=") Item+;
+
+Item ::=
+	| STRING
+	| CHARCODE
+	| CHARCLASS
+	| IDENTIFIER
+;
+```
+where the non-literal terminal symbols of the syntax grammar above are
+taken from the lexical grammar defined in [CFGs: Formal Grammar](#formal-grammar-cfg).
+The exception is the terminal `RETURN_VALUE`, which has no prescribed syntax.
+The syntax of the return value is the syntax of its type.
+
+
 
 ## Algorithms
 This specification uses abstract algorithms to describe the runtime behavior of a program.
 The algorithms are called “abstract” since they do not specify an implementation technique or technology,
 and their steps are written in prose.
 
-An algorithm consists of a name and a sequence of steps, formatted as an ordered list.
-The list is “ordered” in that the outcome could change if the steps were not performed in the order given.
-Algorithm steps may include substeps, which are formatted by an additional indentation level.
-Substeps may include their own “subsubsteps”, and so on, with each level corresponding to a new indentation.
-Steps may be nested an arbitrary number of levels.
+An algorithm consists of a name, an output type, zero or more parameters, and a sequence of steps.
+The steps are formatted as an ordered list;
+the list is *ordered* in that the outcome could change if the steps were not performed in the order given.
+
+Algorithms are written in parameterized functional form,
+e.g., `RType AlgorithnName(PType1 param1, PType2 param2)`,
+where `AlgorithnName` is the algorithm name, `RType` is the output type of the algorithm,
+and `PType1` and `PType2` are the types of the parameters `param1` and `param2` respectively.
+If the algorithm is invoked in another algorithm, it is written in a similar manner, e.g., `AlgorithmName(arg1, arg2)`.
+Typically, algorithm names are written in PascalCase while parameter/argument names are written in snake_case.
+Within the steps of an algorithm, referenced
+local variables, parameters, other algorithm names, and code snippets are delimited with \`back-ticks\`.
 
 ```w3c
-AlgorithmName() :=
+Void AlgorithmName(RealNumber param) :=
 	1. Step 1.
 	2. Step 2.
 		1. Substep 2.1.
@@ -161,17 +987,14 @@ AlgorithmName() :=
 		1. Substep 3.1.
 ```
 
+Algorithm steps may include substeps, which are formatted by an additional indentation level.
+Substeps may include their own “subsubsteps”, and so on, with each level corresponding to a new indentation.
+Steps may be nested an arbitrary number of levels.
+
 Algorithms may perform basic mathematical operations of numeric values, which include
 addition `+`, subtraction `-`, multiplication `*`, division `/`, and exponentiation `^`.
 These operations are implied with their typical meaning in the context of real and complex numbers,
 but are specified in more detail under [Mathematical Operations] (link pending).
-
-Algorithms may be referenced from one another.
-Algorithms are written in parameterized functional form, with the algorithm name in CamelCase
-and any parameters specified in parentheses after the algoritm name.
-When the algorithm is referenced, arguments, if any, are listed after the name in the same manner.
-Local variables, parameters, other algorithm names, and code snippets
-referenced within the steps of an algorithm are delimited with \`back-ticks\`.
 
 
 ### Algorithm Steps
@@ -208,10 +1031,10 @@ A step that specifies a loop must have as its substeps the steps to be performed
 A loop step begins with “While …:”
 
 #### Return
-Algorithms may have an output value, which is the result of performing the algorithm.
-If one algorithm `A` is referenced by another, `B`, then the output value of `A` (if it exists) is given to `B`
-in the step it was referenced.
 An algorithm must output either no value or one value.
+The output value, if it exists, is a [Solid Specification Value] returned by the algorithm to its invoker.
+The output type is specified before the name of the algorithm in its header, but
+if the algorithm does not output a value, the output type is specified as “Void”.
 If an algorithm outputs a value, it must do so via a step beginning with “Return: …”.
 
 
