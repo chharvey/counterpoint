@@ -125,23 +125,9 @@ export default abstract class Token implements Serializable {
 			attributes.set('col' , `${this.col_index  + 1}`)
 		}
 		if (cooked !== null) {
-			attributes.set('value', (typeof cooked === 'string') ? cooked
-				.replace(/\&/g, '&amp;' )
-				.replace(/\</g, '&lt;'  )
-				.replace(/\>/g, '&gt;'  )
-				.replace(/\'/g, '&apos;')
-				.replace(/\"/g, '&quot;')
-				.replace(/\\/g, '&#x5c;')
-				.replace(/\t/g, '&#x09;')
-				.replace(/\n/g, '&#x0a;')
-				.replace(/\r/g, '&#x0d;')
-				.replace(/\u0000/g, '&#x00;')
-			: cooked.toString())
+			attributes.set('value', cooked.toString())
 		}
-		const contents: string = this.source
-			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
-			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
-		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`
+		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${Util.sanitizeContent(this.source)}</${this.tagname}>`
 	}
 }
 

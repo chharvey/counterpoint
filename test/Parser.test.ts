@@ -592,10 +592,10 @@ describe('Parser', () => {
 					let \`the £ answer\` = the_answer * 10;
 					the_answer = the_answer - \\z14;
 				`)).parse().serialize(), `
-					<Goal source="␂ let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
+					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
 						<FILEBOUND value="true">␂</FILEBOUND>
-						<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ;">
-							<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ;">
+						<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ;">
+							<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ;">
 								<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ;">
 									<Statement line="1" col="1" source="let unfixed the_answer = 42 ;">
 										<DeclarationVariable line="1" col="1" source="let unfixed the_answer = 42 ;">
@@ -622,8 +622,8 @@ describe('Parser', () => {
 										</DeclarationVariable>
 									</Statement>
 								</Goal__0__List>
-								<Statement line="2" col="1" source="let \`the £ answer\` = the_answer * 10 ;">
-									<DeclarationVariable line="2" col="1" source="let \`the £ answer\` = the_answer * 10 ;">
+								<Statement line="2" col="1" source="let \`the &#xa3; answer\` = the_answer * 10 ;">
+									<DeclarationVariable line="2" col="1" source="let \`the &#xa3; answer\` = the_answer * 10 ;">
 										<KEYWORD line="2" col="1" value="128">let</KEYWORD>
 										<IDENTIFIER line="2" col="5" value="257">\`the £ answer\`</IDENTIFIER>
 										<PUNCTUATOR line="2" col="20" value="7">=</PUNCTUATOR>
@@ -679,7 +679,7 @@ describe('Parser', () => {
 													<ExpressionUnarySymbol line="3" col="27" source="&#x5c;z14">
 														<ExpressionUnit line="3" col="27" source="&#x5c;z14">
 															<PrimitiveLiteral line="3" col="27" source="&#x5c;z14">
-																<NUMBER line="3" col="27" value="40">\\z14</NUMBER>
+																<NUMBER line="3" col="27" value="40">&#x5c;z14</NUMBER>
 															</PrimitiveLiteral>
 														</ExpressionUnit>
 													</ExpressionUnarySymbol>

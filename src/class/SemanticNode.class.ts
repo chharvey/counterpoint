@@ -1,8 +1,8 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import CodeGenerator from './CodeGenerator.class'
-import Token, {
-	Filebound,
+import type Token from './Token.class'
+import type {
 	Punctuator,
 } from './Token.class'
 import type {CookValueType} from './Token.class'
@@ -68,20 +68,7 @@ export default class SemanticNode implements Serializable {
 			attributes.set('line', `${this.line_index + 1}`)
 			attributes.set('col' , `${this.col_index  + 1}`)
 		}
-		attributes.set('source', this.source
-			.replace(/\&/g, '&amp;' )
-			.replace(/\</g, '&lt;'  )
-			.replace(/\>/g, '&gt;'  )
-			.replace(/\'/g, '&apos;')
-			.replace(/\"/g, '&quot;')
-			.replace(/\\/g, '&#x5c;')
-			.replace(/\t/g, '&#x09;')
-			.replace(/\n/g, '&#x0a;')
-			.replace(/\r/g, '&#x0d;')
-			.replace(/\u0000/g, '&#x00;')
-			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
-			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
-		)
+		attributes.set('source', this.source)
 		Object.entries<CookValueType>(this.attributes).forEach(([key, value]) => {
 			attributes.set(key, `${value}`)
 		})

@@ -97,15 +97,14 @@ export default class Char {
 	 * @returns a string representation of this character’s data
 	 */
 	toString(): string {
-		const formatted: string = new Map([
-			['\u0000'      /* NULL                 \u0000 */, '\u2400' /* SYMBOL FOR NULL                  */],
-			[' '           /* SPACE                \u0020 */, '\u2420' /* SYMBOL FOR SPACE                 */],
-			['\t'          /* CHARACTER TABULATION \u0009 */, '\u2409' /* SYMBOL FOR HORIZONTAL TABULATION */],
-			['\n'          /* LINE FEED (LF)       \u000a */, '\u240a' /* SYMBOL FOR LINE FEED             */],
-			['\r'          /* CARRIAGE RETURN (CR) \u000d */, '\u240d' /* SYMBOL FOR CARRIAGE RETURN       */],
-			[Filebound.SOT /* START OF TEXT        \u0002 */, '\u2402' /* SYMBOL FOR START OF TEXT         */],
-			[Filebound.EOT /* END OF TEXT          \u0003 */, '\u2403' /* SYMBOL FOR END OF TEXT           */],
-		]).get(this.source) || this.source
+		const formatted: string = this.source
+			.replace('\u0000'      /* NULL                 \u0000 */, '\u2400' /* SYMBOL FOR NULL                  */)
+			.replace(' '           /* SPACE                \u0020 */, '\u2420' /* SYMBOL FOR SPACE                 */)
+			.replace('\t'          /* CHARACTER TABULATION \u0009 */, '\u2409' /* SYMBOL FOR HORIZONTAL TABULATION */)
+			.replace('\n'          /* LINE FEED (LF)       \u000a */, '\u240a' /* SYMBOL FOR LINE FEED             */)
+			.replace('\r'          /* CARRIAGE RETURN (CR) \u000d */, '\u240d' /* SYMBOL FOR CARRIAGE RETURN       */)
+			.replace(Filebound.SOT /* START OF TEXT        \u0002 */, '\u2402' /* SYMBOL FOR START OF TEXT         */)
+			.replace(Filebound.EOT /* END OF TEXT          \u0003 */, '\u2403' /* SYMBOL FOR END OF TEXT           */)
 		return `    ${this.line_index+1}    ${this.col_index+1}    ${formatted}` // for some dumb reason, lines and cols start at 1 instad of 0
 	}
 }

@@ -281,8 +281,8 @@ describe('ParseNode', () => {
 					let \`the £ answer\` = the_answer * 10;
 					the_answer = the_answer - \\z14;
 				`)).parse().decorate().serialize(), `
-					<Goal source="␂ let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
-						<StatementList line="1" col="1" source="let unfixed the_answer = 42 ; let \`the £ answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ;">
+					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
+						<StatementList line="1" col="1" source="let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ;">
 							<Declaration line="1" col="1" source="let unfixed the_answer = 42 ;" type="variable" unfixed="true">
 								<Assignee line="1" col="13" source="the_answer">
 									<Identifier line="1" col="13" source="the_answer" id="256"/>
@@ -291,9 +291,9 @@ describe('ParseNode', () => {
 									<Constant line="1" col="26" source="42" value="42"/>
 								</Assigned>
 							</Declaration>
-							<Declaration line="2" col="1" source="let \`the £ answer\` = the_answer * 10 ;" type="variable" unfixed="false">
-								<Assignee line="2" col="5" source="\`the £ answer\`">
-									<Identifier line="2" col="5" source="\`the £ answer\`" id="257"/>
+							<Declaration line="2" col="1" source="let \`the &#xa3; answer\` = the_answer * 10 ;" type="variable" unfixed="false">
+								<Assignee line="2" col="5" source="\`the &#xa3; answer\`">
+									<Identifier line="2" col="5" source="\`the &#xa3; answer\`" id="257"/>
 								</Assignee>
 								<Assigned line="2" col="22" source="the_answer * 10">
 									<Expression line="2" col="22" source="the_answer * 10" operator="*">
