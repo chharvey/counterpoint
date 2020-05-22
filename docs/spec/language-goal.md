@@ -10,8 +10,10 @@ Goal ::= #x02 Statement* #x03;
 ```w3c
 Decorate(Goal ::= #x02 #x03) -> SemanticNull
 	:= SemanticNull {} [];
-Decorate(Goal ::= #x02 Statement__List #x03) -> SemanticStatementList
-	:= Decorate(Statement__List);
+Decorate(Goal ::= #x02 Statement__List #x03) -> SemanticNodeGoal
+	:= SemanticNodeGoal {} [
+		Decorate(Statement__List),
+	];
 
 Decorate(Statement__List ::= Statement) -> SemanticStatementList
 	:= SemanticStatementList {} [
