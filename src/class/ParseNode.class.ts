@@ -6,9 +6,9 @@ import Token, {
 	Keyword,
 	TokenFilebound,
 	TokenPunctuator,
-	TokenNumber,
 	TokenKeyword,
 	TokenIdentifier,
+	TokenNumber,
 	TokenString,
 	TokenTemplate,
 } from './Token.class'
@@ -19,12 +19,11 @@ import SemanticNode, {
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
-	SemanticNodeExpression,
+	SemanticNodeOperation,
 	SemanticNodeDeclaration,
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
 	SemanticNodeAssigned,
-	SemanticNodeStatementEmpty,
 	SemanticNodeStatementExpression,
 	SemanticNodeStatementList,
 	SemanticNodeGoal,
@@ -191,7 +190,7 @@ export class ParseNodeExpressionUnary extends ParseNode {
 			(this.children[0].source === Punctuator.AFF) ? // `+a` is a no-op
 				this.children[1].decorate()
 			:
-				new SemanticNodeExpression(this, this.children[0].source, [
+				new SemanticNodeOperation(this, this.children[0].source, [
 					this.children[1].decorate(),
 				])
 	}
@@ -205,14 +204,14 @@ export class ParseNodeExpressionBinary extends ParseNode {
 			this.children[0].decorate()
 		:
 			(this.children[1].source === Punctuator.SUB) ? // `a - b` is syntax sugar for `a + -(b)`
-				new SemanticNodeExpression(this, Punctuator.ADD, [
+				new SemanticNodeOperation(this, Punctuator.ADD, [
 					this.children[0].decorate(),
-					new SemanticNodeExpression(this.children[2], Punctuator.NEG, [
+					new SemanticNodeOperation(this.children[2], Punctuator.NEG, [
 						this.children[2].decorate(),
 					]),
 				])
 			:
-				new SemanticNodeExpression(this, this.children[1].source, [
+				new SemanticNodeOperation(this, this.children[1].source, [
 					this.children[0].decorate(),
 					this.children[2].decorate(),
 				])
@@ -266,13 +265,13 @@ export class ParseNodeStatement extends ParseNode {
 		readonly [ParseNodeExpression, TokenPunctuator] |
 		readonly [TokenPunctuator];
 	decorate(): SemanticStatementType {
-		return (this.children.length === 1 && this.children[0] instanceof ParseNode)
-			? this.children[0].decorate()
-			: (this.children.length === 2)
-				? new SemanticNodeStatementExpression(this, [
-					this.children[0].decorate(),
-				])
-				: new SemanticNodeStatementEmpty(this)
+		return (this.children.length === 2)
+			? new SemanticNodeStatementExpression(this, [
+				this.children[0].decorate(),
+			])
+			: (this.children[0] instanceof ParseNode)
+				? this.children[0].decorate()
+				: new SemanticNodeNull(this)
 	}
 }
 export class ParseNodeStatementList extends ParseNode {

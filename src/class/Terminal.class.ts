@@ -3,10 +3,10 @@ import Token, {
 	Filebound,
 	RadixType,
 	TemplatePosition,
-	TokenNumber,
 	TokenKeyword,
 	TokenIdentifier,
 	TokenIdentifierBasic,
+	TokenNumber,
 	TokenString,
 	TokenTemplate,
 } from './Token.class'
@@ -40,25 +40,6 @@ export default abstract class Terminal {
 
 
 
-export class TerminalNumber extends Terminal {
-	static readonly instance: TerminalNumber = new TerminalNumber()
-	static digitSequence(radix: RadixType): string {
-		return `${
-			Util.randomBool() ? '' : `${TerminalNumber.digitSequence(radix)}${Util.randomBool() ? '' : TokenNumber.SEPARATOR}`
-		}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
-	}
-	random(): string {
-		const [unary, radix]: [string, RadixType] = Util.arrayRandom([...TokenNumber.BASES])
-		return `${ Util.randomBool() ? '' : Util.arrayRandom(TokenNumber.UNARY) }${
-			Util.randomBool()
-				? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT)
-			: `${ TokenNumber.ESCAPER }${ unary }${ TerminalNumber.digitSequence(radix) }`
-		}`
-	}
-	match(candidate: Token): boolean {
-		return candidate instanceof TokenNumber
-	}
-}
 export class TerminalIdentifier extends Terminal {
 	static readonly instance: TerminalIdentifier = new TerminalIdentifier()
 	random(): string {
@@ -87,23 +68,43 @@ export class TerminalIdentifier extends Terminal {
 		return candidate instanceof TokenIdentifier
 	}
 }
+export class TerminalNumber extends Terminal {
+	static readonly instance: TerminalNumber = new TerminalNumber()
+	static digitSequence(radix: RadixType): string {
+		return `${
+			Util.randomBool() ? '' : `${TerminalNumber.digitSequence(radix)}${Util.randomBool() ? '' : TokenNumber.SEPARATOR}`
+		}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
+	}
+	random(): string {
+		const [base, radix]: [string, RadixType] = Util.arrayRandom([...TokenNumber.BASES])
+		return `${ Util.randomBool() ? '' : Util.arrayRandom(TokenNumber.UNARY) }${
+			Util.randomBool()
+				? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT)
+			: `${ TokenNumber.ESCAPER }${ base }${ TerminalNumber.digitSequence(radix) }`
+		}`
+	}
+	match(candidate: Token): boolean {
+		return candidate instanceof TokenNumber
+	}
+}
 export class TerminalString extends Terminal {
 	static readonly instance: TerminalString = new TerminalString()
+	private static readonly escape_opts: readonly (() => string)[] = [
+		(): string => Util.arrayRandom(TokenString.ESCAPES),
+		(): string => `u{${ Util.randomBool() ? '' : TerminalNumber.digitSequence(16n) }}`,
+		(): string => `\u000a`,
+		(): string => Util.randomChar([TokenString.DELIM, TokenString.ESCAPER, ...'s t n r u \u000a'.split(' '), Filebound.EOT]),
+	]
 	random(): string {
 		const maybeChars = (): string => Util.randomBool() ? '' : chars()
 		const chars = (): string => {
 			const random: number = Math.random()
 			return (
 				random < 0.333 ? `${ Util.randomChar([TokenString.DELIM, TokenString.ESCAPER, Filebound.EOT]) }${ maybeChars() }` :
-				random < 0.667 ? `${ TokenString.ESCAPER }${ escape() }${ maybeChars() }` :
+				random < 0.667 ? `${ TokenString.ESCAPER }${ Util.arrayRandom(TerminalString.escape_opts)() }${ maybeChars() }` :
 				                 `${ TokenString.ESCAPER }u${ Util.randomBool() ? '' : `${Util.randomChar([TokenString.DELIM, '{', Filebound.EOT]) }${ maybeChars() }`}`
 			)
 		}
-		const escape        = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
-		const escapeChar    = (): string => Util.arrayRandom(TokenString.ESCAPES)
-		const escapeCode    = (): string => `u{${Util.randomBool() ? '' : TerminalNumber.digitSequence(16n)}}`
-		const lineCont      = (): string => `\u000a`
-		const nonEscapeChar = (): string => Util.randomChar([TokenString.DELIM, TokenString.ESCAPER, ...'s t n r u \u000a'.split(' '), Filebound.EOT])
 		return `${TokenString.DELIM}${maybeChars()}${TokenString.DELIM}`
 	}
 	match(candidate: Token): boolean {

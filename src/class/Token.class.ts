@@ -183,6 +183,73 @@ export class TokenPunctuator extends Token {
 	cook(): bigint {
 		return BigInt(TokenPunctuator.PUNCTUATORS.indexOf(this.source))
 	}
+}export class TokenKeyword extends Token {
+	private static readonly MINIMUM_VALUE: bigint = 0x80n
+	static readonly CHAR: RegExp = /^[a-z]$/
+	static readonly KEYWORDS: readonly Keyword[] = [...new Set<Keyword>(Object.values(Keyword))] // remove duplicates
+	declare source: Keyword;
+	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
+		super('KEYWORD', lexer, start_char, ...more_chars)
+	}
+	cook(): bigint {
+		return BigInt(TokenKeyword.KEYWORDS.indexOf(this.source)) + TokenKeyword.MINIMUM_VALUE
+	}
+}
+export abstract class TokenIdentifier extends Token {
+	private static readonly MINIMUM_VALUE: bigint = 0x100n
+	/**
+	 * The cooked value of this Token.
+	 * If the token is a keyword, the cooked value is its contents.
+	 * If the token is an identifier, the cooked value is set by a {@link Screener},
+	 * which indexes unique identifier tokens.
+	 */
+	private _cooked: bigint|null;
+	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
+		super('IDENTIFIER', lexer, start_char, ...more_chars)
+		this._cooked = null
+	}
+	/**
+	 * Set the numeric integral value of this Token.
+	 * The value must be 128 or higher.
+	 * This operation can only be done once.
+	 * @param value - the value to set, unique among all identifiers in a program
+	 */
+	/** @final */ setValue(value: bigint): void {
+		if (this._cooked === null) {
+			this._cooked = value + TokenIdentifier.MINIMUM_VALUE
+		}
+	}
+	/** @final */ cook(): bigint|null {
+		return this._cooked
+	}
+}
+export class TokenIdentifierBasic extends TokenIdentifier {
+	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
+	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
+	constructor (lexer: Lexer, start_char?: Char, ...more_chars: Char[]) {
+		if (start_char) {
+			super(lexer, start_char, ...more_chars)
+		} else {
+			super(lexer, ...lexer.advance())
+			while (!this.lexer.isDone && TokenIdentifierBasic.CHAR_REST.test(this.lexer.c0.source)) {
+				this.advance()
+			}
+		}
+	}
+}
+export class TokenIdentifierUnicode extends TokenIdentifier {
+	static readonly DELIM: '`' = '`'
+	constructor (lexer: Lexer) {
+		super(lexer, ...lexer.advance())
+		while (!this.lexer.isDone && !Char.eq(TokenIdentifierUnicode.DELIM, this.lexer.c0)) {
+			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
+				throw new LexError02(this)
+			}
+			this.advance()
+		}
+		// add ending delim to token
+		this.advance()
+	}
 }
 export class TokenNumber extends Token {
 	static readonly RADIX_DEFAULT: RadixType = 10n
@@ -267,74 +334,6 @@ export class TokenNumber extends Token {
 		if (this.has_unary) text = text.slice(1) // cut off unary, if any
 		if (this.has_radix) text = text.slice(2) // cut off radix, if any
 		return multiplier * TokenNumber.mv(text, this.radix)
-	}
-}
-export class TokenKeyword extends Token {
-	private static readonly MINIMUM_VALUE: bigint = 0x80n
-	static readonly CHAR: RegExp = /^[a-z]$/
-	static readonly KEYWORDS: readonly Keyword[] = [...new Set<Keyword>(Object.values(Keyword))] // remove duplicates
-	declare source: Keyword;
-	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
-		super('KEYWORD', lexer, start_char, ...more_chars)
-	}
-	cook(): bigint {
-		return BigInt(TokenKeyword.KEYWORDS.indexOf(this.source)) + TokenKeyword.MINIMUM_VALUE
-	}
-}
-export abstract class TokenIdentifier extends Token {
-	private static readonly MINIMUM_VALUE: bigint = 0x100n
-	/**
-	 * The cooked value of this Token.
-	 * If the token is a keyword, the cooked value is its contents.
-	 * If the token is an identifier, the cooked value is set by a {@link Screener},
-	 * which indexes unique identifier tokens.
-	 */
-	private _cooked: bigint|null;
-	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
-		super('IDENTIFIER', lexer, start_char, ...more_chars)
-		this._cooked = null
-	}
-	/**
-	 * Set the numeric integral value of this Token.
-	 * The value must be 128 or higher.
-	 * This operation can only be done once.
-	 * @param value - the value to set, unique among all identifiers in a program
-	 */
-	/** @final */ setValue(value: bigint): void {
-		if (this._cooked === null) {
-			this._cooked = value + TokenIdentifier.MINIMUM_VALUE
-		}
-	}
-	/** @final */ cook(): bigint|null {
-		return this._cooked
-	}
-}
-export class TokenIdentifierBasic extends TokenIdentifier {
-	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
-	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
-	constructor (lexer: Lexer, start_char?: Char, ...more_chars: Char[]) {
-		if (start_char) {
-			super(lexer, start_char, ...more_chars)
-		} else {
-			super(lexer, ...lexer.advance())
-			while (!this.lexer.isDone && TokenIdentifierBasic.CHAR_REST.test(this.lexer.c0.source)) {
-				this.advance()
-			}
-		}
-	}
-}
-export class TokenIdentifierUnicode extends TokenIdentifier {
-	static readonly DELIM: '`' = '`'
-	constructor (lexer: Lexer) {
-		super(lexer, ...lexer.advance())
-		while (!this.lexer.isDone && !Char.eq(TokenIdentifierUnicode.DELIM, this.lexer.c0)) {
-			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
-				throw new LexError02(this)
-			}
-			this.advance()
-		}
-		// add ending delim to token
-		this.advance()
 	}
 }
 export class TokenString extends Token {

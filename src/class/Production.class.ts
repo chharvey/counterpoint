@@ -7,8 +7,8 @@ import {
 import type ParseNode from './ParseNode.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
 import {
-	TerminalNumber,
 	TerminalIdentifier,
+	TerminalNumber,
 	TerminalString,
 	TerminalTemplateFull,
 	TerminalTemplateHead,
@@ -264,15 +264,16 @@ export class ProductionStatement extends Production {
 			[ProductionDeclarationVariable.instance],
 			[ProductionStatementAssignment.instance],
 			[ProductionExpression.instance, Punctuator.ENDSTAT],
-			[Punctuator.ENDSTAT],
+			[                               Punctuator.ENDSTAT],
 		]
 	}
 	random(): string[] {
 		const random: number = Math.random()
 		return (
-			random < 0.33 ?  ProductionDeclarationVariable.instance.random() :
-			random < 0.67 ?  ProductionStatementAssignment.instance.random() :
-			[...ProductionExpression.instance.random(), Punctuator.ENDSTAT]
+			random < 0.25 ?     ProductionDeclarationVariable.instance.random() :
+			random < 0.50 ?     ProductionStatementAssignment.instance.random() :
+			random < 0.75 ? [...ProductionExpression.instance.random(), Punctuator.ENDSTAT] :
+			                [                                           Punctuator.ENDSTAT]
 		)
 	}
 }

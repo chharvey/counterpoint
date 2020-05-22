@@ -13,8 +13,17 @@ import type {
 
 
 
-export type SemanticStatementType = SemanticNodeDeclaration | SemanticNodeAssignment | SemanticNodeStatementExpression | SemanticNodeStatementEmpty
-export type SemanticExpressionType = SemanticNodeConstant|SemanticNodeIdentifier|SemanticNodeTemplate|SemanticNodeExpression
+export type SemanticStatementType =
+	SemanticNodeDeclaration |
+	SemanticNodeAssignment |
+	SemanticNodeStatementExpression |
+	SemanticNodeNull
+
+export type SemanticExpressionType =
+	SemanticNodeConstant |
+	SemanticNodeIdentifier |
+	SemanticNodeTemplate |
+	SemanticNodeOperation
 
 
 
@@ -127,7 +136,7 @@ export class SemanticNodeTemplate extends SemanticNode {
 		super(canonical, {}, children)
 	}
 }
-export class SemanticNodeExpression extends SemanticNode {
+export class SemanticNodeOperation extends SemanticNode {
 	constructor(
 		start_node: ParseNode,
 		private readonly operator: Punctuator,
@@ -161,14 +170,6 @@ export class SemanticNodeAssignee extends SemanticNode {
 export class SemanticNodeAssigned extends SemanticNode {
 	constructor(canonical: ParseNode, children: readonly [SemanticExpressionType]) {
 		super(canonical, {}, children)
-	}
-}
-export class SemanticNodeStatementEmpty extends SemanticNode {
-	constructor(canonical: ParseNode) {
-		super(canonical)
-	}
-	compile(generator: CodeGenerator): void {
-		generator.nop()
 	}
 }
 export class SemanticNodeStatementExpression extends SemanticNode {

@@ -5,10 +5,10 @@ import Token, {
 	TokenFilebound,
 	TokenWhitespace,
 	TokenPunctuator,
-	TokenNumber,
 	TokenKeyword,
 	TokenIdentifierBasic,
 	TokenIdentifierUnicode,
+	TokenNumber,
 	TokenString,
 	TokenTemplate,
 	TokenCommentLine,
@@ -138,17 +138,6 @@ export default class Lexer {
 					token = new TokenPunctuator(this)
 				}
 
-			} else if (Char.inc(Lexer.DIGITS_DEFAULT, this._c0)) {
-				/* a number literal without a unary operator and without an explicit radix */
-				token = new TokenNumber(this, false)
-			} else if (Char.eq(TokenNumber.ESCAPER, this._c0)) {
-				if (Char.inc(Lexer.BASES_KEYS, this._c1)) {
-					/* a number literal without a unary operator and with an explicit radix */
-					token = new TokenNumber(this, false, true)
-				} else {
-					throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}`, this._c0.line_index, this._c0.col_index)
-				}
-
 			} else if (TokenKeyword.CHAR.test(this._c0.source)) {
 				/* we found a keyword or a basic identifier */
 				const buffer: Char[] = [this.c0]
@@ -167,6 +156,17 @@ export default class Lexer {
 			} else if (Char.eq(TokenIdentifierUnicode.DELIM, this._c0)) {
 				/* we found a unicode identifier */
 				token = new TokenIdentifierUnicode(this)
+
+			} else if (Char.inc(Lexer.DIGITS_DEFAULT, this._c0)) {
+				/* a number literal without a unary operator and without an explicit radix */
+				token = new TokenNumber(this, false)
+			} else if (Char.eq(TokenNumber.ESCAPER, this._c0)) {
+				if (Char.inc(Lexer.BASES_KEYS, this._c1)) {
+					/* a number literal without a unary operator and with an explicit radix */
+					token = new TokenNumber(this, false, true)
+				} else {
+					throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}`, this._c0.line_index, this._c0.col_index)
+				}
 
 			} else if (Char.eq(TokenString.DELIM, this._c0)) {
 				/* we found a string literal or a template literal full or head */

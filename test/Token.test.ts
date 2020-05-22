@@ -5,10 +5,10 @@ import Lexer    from '../src/class/Lexer.class'
 import Screener from '../src/class/Screener.class'
 import Token, {
 	TokenPunctuator,
-	TokenNumber,
 	TokenKeyword,
 	TokenIdentifier,
 	TokenIdentifierUnicode,
+	TokenNumber,
 } from '../src/class/Token.class'
 
 const lastItem  = (iter: any): any     => iter[lastIndex(iter)]
@@ -54,57 +54,6 @@ describe('Token', () => {
 				cooked.forEach((value) => {
 					assert.ok(0n <= value, 'cooked value should be >= 0n.')
 					assert.ok(value < 128n, 'cooked value should be < 128n.')
-				})
-			})
-		})
-
-		context('TokenNumber', () => {
-			;[...new Map<string, [string, number[]]>([
-				['implicit radix integers', [`
-					370  037  +9037  -9037  +06  -06
-				`, [
-					370, 37, 9037, -9037, 6, -6,
-				]]],
-				['explicit radix integers', [`
-					\\b100  \\b001  +\\b1000  -\\b1000  +\\b01  -\\b01
-					\\q320  \\q032  +\\q1032  -\\q1032  +\\q03  -\\q03
-					\\o370  \\o037  +\\o1037  -\\o1037  +\\o06  -\\o06
-					\\d370  \\d037  +\\d9037  -\\d9037  +\\d06  -\\d06
-					\\xe70  \\x0e7  +\\x90e7  -\\x90e7  +\\x06  -\\x06
-					\\ze70  \\z0e7  +\\z90e7  -\\z90e7  +\\z06  -\\z06
-				`, [
-						    4,  1,       8,      -8, 1, -1,
-						   56, 14,      78,     -78, 3, -3,
-						  248, 31,     543,    -543, 6, -6,
-						  370, 37,    9037,   -9037, 6, -6,
-						 3696, 231,  37095,  -37095, 6, -6,
-						18396, 511, 420415, -420415, 6, -6,
-				]]],
-				['implicit radix integers with separators', [`
-					12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
-				`, [
-					12345, 12345, -12345, 1234567, 1234567, -1234567, 12345678, 12345678, -12345678,
-				]]],
-				['explicit radix integers with separators', [`
-					\\b1_00  \\b0_01  +\\b1_000  -\\b1_000  +\\b0_1  -\\b0_1
-					\\q3_20  \\q0_32  +\\q1_032  -\\q1_032  +\\q0_3  -\\q0_3
-					\\o3_70  \\o0_37  +\\o1_037  -\\o1_037  +\\o0_6  -\\o0_6
-					\\d3_70  \\d0_37  +\\d9_037  -\\d9_037  +\\d0_6  -\\d0_6
-					\\xe_70  \\x0_e7  +\\x9_0e7  -\\x9_0e7  +\\x0_6  -\\x0_6
-					\\ze_70  \\z0_e7  +\\z9_0e7  -\\z9_0e7  +\\z0_6  -\\z0_6
-				`, [
-						    4,  1,       8,      -8, 1, -1,
-						   56, 14,      78,     -78, 3, -3,
-						  248, 31,     543,    -543, 6, -6,
-						  370, 37,    9037,   -9037, 6, -6,
-						 3696, 231,  37095,  -37095, 6, -6,
-						18396, 511, 420415, -420415, 6, -6,
-				]]],
-			])].forEach(([name, [source, values]]) => {
-				it(`correctly cooks ${name}.`, () => {
-					;[...new Screener(source).generate()].filter((token) => token instanceof TokenNumber).forEach((token, i) => {
-						assert.strictEqual(token.cook(), values[i])
-					})
 				})
 			})
 		})
@@ -177,6 +126,57 @@ describe('Token', () => {
 						cooked[5],
 						cooked[8],
 					])
+				})
+			})
+		})
+
+		context('TokenNumber', () => {
+			;[...new Map<string, [string, number[]]>([
+				['implicit radix integers', [`
+					370  037  +9037  -9037  +06  -06
+				`, [
+					370, 37, 9037, -9037, 6, -6,
+				]]],
+				['explicit radix integers', [`
+					\\b100  \\b001  +\\b1000  -\\b1000  +\\b01  -\\b01
+					\\q320  \\q032  +\\q1032  -\\q1032  +\\q03  -\\q03
+					\\o370  \\o037  +\\o1037  -\\o1037  +\\o06  -\\o06
+					\\d370  \\d037  +\\d9037  -\\d9037  +\\d06  -\\d06
+					\\xe70  \\x0e7  +\\x90e7  -\\x90e7  +\\x06  -\\x06
+					\\ze70  \\z0e7  +\\z90e7  -\\z90e7  +\\z06  -\\z06
+				`, [
+						    4,  1,       8,      -8, 1, -1,
+						   56, 14,      78,     -78, 3, -3,
+						  248, 31,     543,    -543, 6, -6,
+						  370, 37,    9037,   -9037, 6, -6,
+						 3696, 231,  37095,  -37095, 6, -6,
+						18396, 511, 420415, -420415, 6, -6,
+				]]],
+				['implicit radix integers with separators', [`
+					12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
+				`, [
+					12345, 12345, -12345, 1234567, 1234567, -1234567, 12345678, 12345678, -12345678,
+				]]],
+				['explicit radix integers with separators', [`
+					\\b1_00  \\b0_01  +\\b1_000  -\\b1_000  +\\b0_1  -\\b0_1
+					\\q3_20  \\q0_32  +\\q1_032  -\\q1_032  +\\q0_3  -\\q0_3
+					\\o3_70  \\o0_37  +\\o1_037  -\\o1_037  +\\o0_6  -\\o0_6
+					\\d3_70  \\d0_37  +\\d9_037  -\\d9_037  +\\d0_6  -\\d0_6
+					\\xe_70  \\x0_e7  +\\x9_0e7  -\\x9_0e7  +\\x0_6  -\\x0_6
+					\\ze_70  \\z0_e7  +\\z9_0e7  -\\z9_0e7  +\\z0_6  -\\z0_6
+				`, [
+						    4,  1,       8,      -8, 1, -1,
+						   56, 14,      78,     -78, 3, -3,
+						  248, 31,     543,    -543, 6, -6,
+						  370, 37,    9037,   -9037, 6, -6,
+						 3696, 231,  37095,  -37095, 6, -6,
+						18396, 511, 420415, -420415, 6, -6,
+				]]],
+			])].forEach(([name, [source, values]]) => {
+				it(`correctly cooks ${name}.`, () => {
+					;[...new Screener(source).generate()].filter((token) => token instanceof TokenNumber).forEach((token, i) => {
+						assert.strictEqual(token.cook(), values[i])
+					})
 				})
 			})
 		})

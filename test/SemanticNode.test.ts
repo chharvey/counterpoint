@@ -18,14 +18,8 @@ describe('SemanticNode', () => {
 		`
 
 		context('SemanticNodeNull', () => {
-			it('prints nothing.', () => {
-				assert.strictEqual(new CodeGenerator('').print(), boilerplate('nop'))
-			})
-		})
-
-		context('SemanticNodeStatementEmpty', () => {
 			it('prints nop.', () => {
-				assert.strictEqual(new CodeGenerator(';').print(), boilerplate(`nop`))
+				assert.strictEqual(new CodeGenerator('').print(), boilerplate(`nop`))
 			})
 		})
 
@@ -40,7 +34,7 @@ describe('SemanticNode', () => {
 			})
 		})
 
-		context('SemanticNodeExpression', () => {
+		context('SemanticNodeOperation', () => {
 			specify('ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative', () => {
 				assert.strictEqual(new CodeGenerator('42 + 420;').print(), boilerplate([
 					`i32.const 42`,
