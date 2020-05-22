@@ -13,9 +13,9 @@ import Token, {
 	TokenTemplate,
 } from './Token.class'
 import SemanticNode, {
-	SemanticExpressionType,
 	SemanticStatementType,
 	SemanticNodeNull,
+	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
@@ -171,7 +171,7 @@ export class ParseNodeExpressionUnit extends ParseNode {
 		[ParseNodePrimitiveLiteral] |
 		[ParseNodeStringTemplate] |
 		[TokenPunctuator, ParseNodeExpression, TokenPunctuator];
-	decorate(): SemanticExpressionType {
+	decorate(): SemanticNodeExpression {
 		return (this.children.length === 1) ?
 			(this.children[0] instanceof ParseNode) ? this.children[0].decorate() :
 				new SemanticNodeIdentifier(this.children[0], this.children[0].cook())
@@ -183,7 +183,7 @@ export class ParseNodeExpressionUnary extends ParseNode {
 	declare children:
 		readonly [ParseNodeExpressionUnit] |
 		readonly [TokenPunctuator, ParseNodeExpressionUnary];
-	decorate(): SemanticExpressionType {
+	decorate(): SemanticNodeExpression {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
 		:
@@ -199,7 +199,7 @@ export class ParseNodeExpressionBinary extends ParseNode {
 	declare children:
 		readonly [ParseNodeExpressionUnary|ParseNodeExpressionBinary] |
 		readonly [ParseNodeExpressionUnary|ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary];
-	decorate(): SemanticExpressionType {
+	decorate(): SemanticNodeExpression {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
 		:
@@ -220,7 +220,7 @@ export class ParseNodeExpressionBinary extends ParseNode {
 export class ParseNodeExpression extends ParseNode {
 	declare children:
 		readonly [ParseNodeExpressionBinary];
-	decorate(): SemanticExpressionType {
+	decorate(): SemanticNodeExpression {
 		return this.children[0].decorate()
 	}
 }
