@@ -103,12 +103,17 @@ where `‹ProductionDefinition›` and `‹Choice›` are meta-variables repesen
 `‹ProductionName›` represents a name of the nonterminal being defined,
 and `‹Choice›` represents any sequence of symbols that may replace the nonterminal,
 or a choice of such sequences.
-The production definition is followed by the symbol `::=`, and the production is ended by `;`.
 
 For brevity, we may use the format
 ```
 ‹ProductionDefinition› ::= ‹Choice›;
 ```
+
+The production definition is followed by a definition symbol `:::=` or `::=`, and the production is ended by `;`.
+Throughout this specification, different definition symbols denote the type of grammar the production is in:
+The symbol `:::=` is used in lexical grammars and the symbol `::=` is used in syntactic grammars.
+(Furthermore, the symbol `:=` is used in [attribute grammars](#attribute-grammars).)
+In this section, however, we will stick with `::=` in the absense of context.
 
 The nonterminal representative `‹Choice›` may define one or more alternatives
 for **sequences** that replace the nonterminal `‹ProductionDefinition›`.
@@ -606,7 +611,7 @@ Grammar
 	::= #x02 Production* #x03;
 
 Production
-	::= NonterminalDefinition "::=" "|"? Choice ";";
+	::= NonterminalDefinition (":::=" | "::=") "|"? Choice ";";
 
 Choice   ::= (Choice   "|")? Sequence;
 Sequence ::= (Sequence "&")? Item+;
@@ -631,28 +636,28 @@ Condition             ::=             "<" (IDENTIFIER ("+" | "-")      )# ">"  ;
 ```
 The non-literal terminal symbols of the syntax grammar above are defined in this lexical grammar:
 ```
-CHARCLASS  ::= CharClass;
-CHARCODE   ::= CharCode;
-STRING     ::= String;
-IDENTIFIER ::= Identifier;
+CHARCLASS  :::= CharClass;
+CHARCODE   :::= CharCode;
+STRING     :::= String;
+IDENTIFIER :::= Identifier;
 
 CharClass
-	::= "[" "^"? (Char | CharCode | Char "-" Char | CharCode "-" CharCode)+ "]";
+	:::= "[" "^"? (Char | CharCode | Char "-" Char | CharCode "-" CharCode)+ "]";
 
 CharCode
-	::= "#x" [0-9a-f]+;
+	:::= "#x" [0-9a-f]+;
 
 Char
-	::= [#x20-#x5c#x5e-#7e]; // excluding close brace "]"
+	:::= [#x20-#x5c#x5e-#7e]; // excluding close brace "]"
 
 String
-	::= #x22 [^"]* #x22; // '"' [^"]* '"'
+	:::= #x22 [^"]* #x22; // '"' [^"]* '"'
 
 Identifier
-	::= [A-Z] [A-Za-z0-9_]*;
+	:::= [A-Z] [A-Za-z0-9_]*;
 
 Comment
-	::= "//" [^#x0a#03]+ #x0a;
+	:::= "//" [^#x0a#03]+ #x0a;
 ```
 For those not faint of heart, the shorthand grammars above expand into the following formal grammar.
 The following is non-normative; if there are any discrepancies, the grammars above take precedence.
@@ -670,8 +675,10 @@ Production__List ::=
 ;
 
 Production ::=
-	| NonterminalDefinition "::="     Choice ";"
-	| NonterminalDefinition "::=" "|" Choice ";"
+	| NonterminalDefinition ":::="     Choice ";"
+	| NonterminalDefinition ":::=" "|" Choice ";"
+	| NonterminalDefinition  "::="     Choice ";"
+	| NonterminalDefinition  "::=" "|" Choice ";"
 ;
 
 Choice ::=
@@ -748,17 +755,17 @@ Condition__0__List ::=
 
 // ##### Lexical Grammar ##### //
 
-CHARCLASS  ::= CharClass;
-CHARCODE   ::= CharCode;
-STRING     ::= String;
-IDENTIFIER ::= Identifier;
+CHARCLASS  :::= CharClass;
+CHARCODE   :::= CharCode;
+STRING     :::= String;
+IDENTIFIER :::= Identifier;
 
-CharClass ::=
+CharClass :::=
 	| "["     CharClass__0__List "]"
 	| "[" "^" CharClass__0__List "]"
 ;
 
-CharClass__0__List ::=
+CharClass__0__List :::=
 	|                    Char
 	|                    CharCode
 	|                    Char "-" Char
@@ -769,43 +776,44 @@ CharClass__0__List ::=
 	| CharClass__0__List CharCode "-" CharCode
 ;
 
-CharCode ::=
+CharCode :::=
 	| "#x" CharCode__0__List
 ;
 
-CharCode__0__List ::=
+CharCode__0__List :::=
 	|                   [0-9a-f]
 	| CharCode__0__List [0-9a-f]
 ;
 
-Char ::=
+Char :::=
 	| [#x20-#x5c#x5e-#7e]
 ;
 
-String ::=
+String :::=
 	| #x22                 #x22
 	| #x22 String__0__List #x22
 ;
 
-String__0__List ::=
+String__0__List :::=
 	|                 [^"]
 	| String__0__List [^"]
 ;
 
-Identifier ::=
+Identifier :::=
 	| [A-Z]
 	| [A-Z] Identifier__0__List
 ;
 
-Identifier__0__List ::=
+Identifier__0__List :::=
 	|                     [A-Za-z0-9_]
 	| Identifier__0__List [A-Za-z0-9_]
 ;
 
-Comment
-	::= "//" Comment__0__List #x0a;
+Comment :::=
+	| "//" Comment__0__List #x0a
+;
 
-Comment__0__List ::=
+Comment__0__List :::=
 	|                  [^#x0a#03]
 	| Comment__0__List [^#x0a#03]
 ;
