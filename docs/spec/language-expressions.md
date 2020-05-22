@@ -8,7 +8,7 @@ Expression ::= ExpressionAdditive;
 
 ### Static Semantics: Decorate (Expressions)
 ```w3c
-Decorate(Expression ::= ExpressionAdditive) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticExpression
+Decorate(Expression ::= ExpressionAdditive) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticOperation
 	:= Decorate(ExpressionAdditive);
 ```
 
@@ -136,7 +136,7 @@ Decorate(ExpressionUnit ::= PrimitiveLiteral) -> SemanticConstant
 	:= Decorate(PrimitiveLiteral);
 Decorate(ExpressionUnit ::= StringTemplate) -> SemanticTemplate
 	:= Decorate(StringTemplate);
-Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticExpression
+Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticOperation
 	:= Decorate(Expression);
 ```
 
@@ -157,12 +157,12 @@ ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol;
 
 ### Static Semantics: Decorate (Unary Operators)
 ```w3c
-Decorate(ExpressionUnarySymbol ::= ExpressionUnit) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticExpression
+Decorate(ExpressionUnarySymbol ::= ExpressionUnit) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticOperation
 	:= Decorate(ExpressionUnit);
-Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticExpression
+Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticOperation
 	:= Decorate(ExpressionUnarySymbol);
-Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticExpression
-	:= SemanticExpression {operator: NEG} [
+Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperation
+	:= SemanticOperation {operator: NEG} [
 		Decorate(ExpressionUnarySymbol),
 	];
 ```
@@ -170,9 +170,9 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticExpress
 
 ### Runtime Instructions: Evaluate (Unary Operators)
 ```w3c
-Evaluate(SemanticExpression[operator=NEG]) :=
-	1. Assert: `SemanticExpression.children.count` is 1.
-	2. Perform: `Evaluate(SemanticExpression.children.0)`.
+Evaluate(SemanticOperation[operator=NEG]) :=
+	1. Assert: `SemanticOperation.children.count` is 1.
+	2. Perform: `Evaluate(SemanticOperation.children.0)`.
 	3. Assert: The count of the operand stack is at least 1.
 	4. Pop `operand` off the operand stack.
 	5. Let `negation` be the additive inverse, `-operand`,
@@ -190,10 +190,10 @@ ExpressionExponential ::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
 
 ### Static Semantics: Decorate (Exponentiation)
 ```w3c
-Decorate(ExpressionExponential ::= ExpressionUnarySymbol) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticExpression
+Decorate(ExpressionExponential ::= ExpressionUnarySymbol) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticOperation
 	:= Decorate(ExpressionUnarySymbol);
-Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential) -> SemanticExpression
-	:= SemanticExpression {operator: EXP} [
+Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential) -> SemanticOperation
+	:= SemanticOperation {operator: EXP} [
 		Decorate(ExpressionUnarySymbol),
 		Decorate(ExpressionExponential),
 	];
@@ -202,10 +202,10 @@ Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponenti
 
 ### Runtime Instructions: Evaluate (Exponentiation)
 ```w3c
-Evaluate(SemanticExpression[operator=EXP]) :=
-	1. Assert:`SemanticExpression.children.count` is 2.
-	2. Perform: `Evaluate(SemanticExpression.children.0)`.
-	3. Perform: `Evaluate(SemanticExpression.children.1)`.
+Evaluate(SemanticOperation[operator=EXP]) :=
+	1. Assert:`SemanticOperation.children.count` is 2.
+	2. Perform: `Evaluate(SemanticOperation.children.0)`.
+	3. Perform: `Evaluate(SemanticOperation.children.1)`.
 	4. Perform: `EvaluateNumericBinaryExpression(EXP)`
 ```
 
@@ -219,15 +219,15 @@ ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionE
 
 ### Static Semantics: Decorate (Multiplicative)
 ```w3c
-Decorate(ExpressionMultiplicative ::= ExpressionExponential) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticExpression
+Decorate(ExpressionMultiplicative ::= ExpressionExponential) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticOperation
 	:= Decorate(ExpressionExponential);
-Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential) -> SemanticExpression
-	:= SemanticExpression {operator: MUL} [
+Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential) -> SemanticOperation
+	:= SemanticOperation {operator: MUL} [
 		Decorate(ExpressionMultiplicative),
 		Decorate(ExpressionExponential),
 	];
-Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential) -> SemanticExpression
-	:= SemanticExpression {operator: DIV} [
+Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential) -> SemanticOperation
+	:= SemanticOperation {operator: DIV} [
 		Decorate(ExpressionMultiplicative),
 		Decorate(ExpressionExponential),
 	];
@@ -236,15 +236,15 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 
 ### Runtime Instructions: Evaluate (Multiplicative)
 ```w3c
-Evaluate(SemanticExpression[operator=MUL]) :=
-	1. Assert: `SemanticExpression.children.count` is 2.
-	2. Perform: `Evaluate(SemanticExpression.children.0)`.
-	3. Perform: `Evaluate(SemanticExpression.children.1)`.
+Evaluate(SemanticOperation[operator=MUL]) :=
+	1. Assert: `SemanticOperation.children.count` is 2.
+	2. Perform: `Evaluate(SemanticOperation.children.0)`.
+	3. Perform: `Evaluate(SemanticOperation.children.1)`.
 	4. Perform: `EvaluateNumericBinaryExpression(MUL)`
-Evaluate(SemanticExpression[operator=DIV]) :=
-	1. Assert: `SemanticExpression.children.count` is 2.
-	2. Perform: `Evaluate(SemanticExpression.children.0)`.
-	3. Perform: `Evaluate(SemanticExpression.children.1)`.
+Evaluate(SemanticOperation[operator=DIV]) :=
+	1. Assert: `SemanticOperation.children.count` is 2.
+	2. Perform: `Evaluate(SemanticOperation.children.0)`.
+	3. Perform: `Evaluate(SemanticOperation.children.1)`.
 	4. Perform: `EvaluateNumericBinaryExpression(DIV)`
 ```
 
@@ -258,17 +258,17 @@ ExpressionAdditive ::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicativ
 
 ### Static Semantics: Decorate (Additive)
 ```w3c
-Decorate(ExpressionAdditive ::= ExpressionMultiplicative) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticExpression
+Decorate(ExpressionAdditive ::= ExpressionMultiplicative) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticOperation
 	:= Decorate(ExpressionMultiplicative);
-Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative) -> SemanticExpression
-	:= SemanticExpression {operator: ADD} [
+Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative) -> SemanticOperation
+	:= SemanticOperation {operator: ADD} [
 		Decorate(ExpressionAdditive),
 		Decorate(ExpressionMultiplicative),
 	];
-Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative) -> SemanticExpression
-	:= SemanticExpression {operator: ADD} [
+Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative) -> SemanticOperation
+	:= SemanticOperation {operator: ADD} [
 		Decorate(ExpressionAdditive),
-		SemanticExpression {operator: NEG} [
+		SemanticOperation {operator: NEG} [
 			Decorate(ExpressionMultiplicative),
 		],
 	];
@@ -277,9 +277,9 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 
 ### Runtime Instructions: Evaluate (Additive)
 ```w3c
-Evaluate(SemanticExpression[operator=ADD]) :=
-	1. Assert: `SemanticExpression.children.count` is 2.
-	2. Perform: `Evaluate(SemanticExpression.children.0)`.
-	3. Perform: `Evaluate(SemanticExpression.children.1)`.
+Evaluate(SemanticOperation[operator=ADD]) :=
+	1. Assert: `SemanticOperation.children.count` is 2.
+	2. Perform: `Evaluate(SemanticOperation.children.0)`.
+	3. Perform: `Evaluate(SemanticOperation.children.1)`.
 	4. Perform: `EvaluateNumericBinaryExpression(ADD)`
 ```

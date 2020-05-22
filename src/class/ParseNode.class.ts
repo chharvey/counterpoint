@@ -19,7 +19,7 @@ import SemanticNode, {
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
-	SemanticNodeExpression,
+	SemanticNodeOperation,
 	SemanticNodeDeclaration,
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
@@ -191,7 +191,7 @@ export class ParseNodeExpressionUnary extends ParseNode {
 			(this.children[0].source === Punctuator.AFF) ? // `+a` is a no-op
 				this.children[1].decorate()
 			:
-				new SemanticNodeExpression(this, this.children[0].source, [
+				new SemanticNodeOperation(this, this.children[0].source, [
 					this.children[1].decorate(),
 				])
 	}
@@ -205,14 +205,14 @@ export class ParseNodeExpressionBinary extends ParseNode {
 			this.children[0].decorate()
 		:
 			(this.children[1].source === Punctuator.SUB) ? // `a - b` is syntax sugar for `a + -(b)`
-				new SemanticNodeExpression(this, Punctuator.ADD, [
+				new SemanticNodeOperation(this, Punctuator.ADD, [
 					this.children[0].decorate(),
-					new SemanticNodeExpression(this.children[2], Punctuator.NEG, [
+					new SemanticNodeOperation(this.children[2], Punctuator.NEG, [
 						this.children[2].decorate(),
 					]),
 				])
 			:
-				new SemanticNodeExpression(this, this.children[1].source, [
+				new SemanticNodeOperation(this, this.children[1].source, [
 					this.children[0].decorate(),
 					this.children[2].decorate(),
 				])

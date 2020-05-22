@@ -158,10 +158,10 @@ describe('ParseNode', () => {
 					<Goal source="␂ ( 2 + -3 ) ; ␃">
 						<StatementList line="1" col="1" source="( 2 + -3 ) ;">
 							<StatementExpression line="1" col="1" source="( 2 + -3 ) ;">
-								<Expression line="1" col="2" source="2 + -3" operator="+">
+								<Operation line="1" col="2" source="2 + -3" operator="+">
 									<Constant line="1" col="2" source="2" value="2"/>
 									<Constant line="1" col="6" source="-3" value="-3"/>
-								</Expression>
+								</Operation>
 							</StatementExpression>
 						</StatementList>
 					</Goal>
@@ -172,15 +172,15 @@ describe('ParseNode', () => {
 					<Goal source="␂ ( - ( 42 ) ^ + ( 2 * 420 ) ) ; ␃">
 						<StatementList line="1" col="1" source="( - ( 42 ) ^ + ( 2 * 420 ) ) ;">
 							<StatementExpression line="1" col="1" source="( - ( 42 ) ^ + ( 2 * 420 ) ) ;">
-								<Expression line="1" col="2" source="- ( 42 ) ^ + ( 2 * 420 )" operator="^">
-									<Expression line="1" col="2" source="- ( 42 )" operator="-">
+								<Operation line="1" col="2" source="- ( 42 ) ^ + ( 2 * 420 )" operator="^">
+									<Operation line="1" col="2" source="- ( 42 )" operator="-">
 										<Constant line="1" col="4" source="42" value="42"/>
-									</Expression>
-									<Expression line="1" col="12" source="2 * 420" operator="*">
+									</Operation>
+									<Operation line="1" col="12" source="2 * 420" operator="*">
 										<Constant line="1" col="12" source="2" value="2"/>
 										<Constant line="1" col="16" source="420" value="420"/>
-									</Expression>
-								</Expression>
+									</Operation>
+								</Operation>
 							</StatementExpression>
 						</StatementList>
 					</Goal>
@@ -189,14 +189,14 @@ describe('ParseNode', () => {
 		})
 
 		context('ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol', () => {
-			it('makes a SemanticNodeExpression node with 1 child.', () => {
+			it('makes a SemanticNodeOperation node with 1 child.', () => {
 				assert.strictEqual(new Parser('- 42;').parse().decorate().serialize(), `
 					<Goal source="␂ - 42 ; ␃">
 						<StatementList line="1" col="1" source="- 42 ;">
 							<StatementExpression line="1" col="1" source="- 42 ;">
-								<Expression line="1" col="1" source="- 42" operator="-">
+								<Operation line="1" col="1" source="- 42" operator="-">
 									<Constant line="1" col="3" source="42" value="42"/>
-								</Expression>
+								</Operation>
 							</StatementExpression>
 						</StatementList>
 					</Goal>
@@ -205,15 +205,15 @@ describe('ParseNode', () => {
 		})
 
 		context('ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential', () => {
-			it('makes a SemanticNodeExpression node with 2 children.', () => {
+			it('makes a SemanticNodeOperation node with 2 children.', () => {
 				assert.strictEqual(new Parser('2 ^ -3;').parse().decorate().serialize(), `
 					<Goal source="␂ 2 ^ -3 ; ␃">
 						<StatementList line="1" col="1" source="2 ^ -3 ;">
 							<StatementExpression line="1" col="1" source="2 ^ -3 ;">
-								<Expression line="1" col="1" source="2 ^ -3" operator="^">
+								<Operation line="1" col="1" source="2 ^ -3" operator="^">
 									<Constant line="1" col="1" source="2" value="2"/>
 									<Constant line="1" col="5" source="-3" value="-3"/>
-								</Expression>
+								</Operation>
 							</StatementExpression>
 						</StatementList>
 					</Goal>
@@ -222,15 +222,15 @@ describe('ParseNode', () => {
 		})
 
 		context('ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential', () => {
-			it('makes a SemanticNodeExpression node with 2 children.', () => {
+			it('makes a SemanticNodeOperation node with 2 children.', () => {
 				assert.strictEqual(new Parser('2 * -3;').parse().decorate().serialize(), `
 					<Goal source="␂ 2 * -3 ; ␃">
 						<StatementList line="1" col="1" source="2 * -3 ;">
 							<StatementExpression line="1" col="1" source="2 * -3 ;">
-								<Expression line="1" col="1" source="2 * -3" operator="*">
+								<Operation line="1" col="1" source="2 * -3" operator="*">
 									<Constant line="1" col="1" source="2" value="2"/>
 									<Constant line="1" col="5" source="-3" value="-3"/>
-								</Expression>
+								</Operation>
 							</StatementExpression>
 						</StatementList>
 					</Goal>
@@ -239,15 +239,15 @@ describe('ParseNode', () => {
 		})
 
 		context('ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative', () => {
-			it('makes a SemanticNodeExpression node with 2 children.', () => {
+			it('makes a SemanticNodeOperation node with 2 children.', () => {
 				assert.strictEqual(new Parser('2 + -3;').parse().decorate().serialize(), `
 					<Goal source="␂ 2 + -3 ; ␃">
 						<StatementList line="1" col="1" source="2 + -3 ;">
 							<StatementExpression line="1" col="1" source="2 + -3 ;">
-								<Expression line="1" col="1" source="2 + -3" operator="+">
+								<Operation line="1" col="1" source="2 + -3" operator="+">
 									<Constant line="1" col="1" source="2" value="2"/>
 									<Constant line="1" col="5" source="-3" value="-3"/>
-								</Expression>
+								</Operation>
 							</StatementExpression>
 						</StatementList>
 					</Goal>
@@ -256,17 +256,17 @@ describe('ParseNode', () => {
 		})
 
 		context('ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative', () => {
-			it('makes a SemanticNodeExpression with the `+` operator and negates the 2nd operand.', () => {
+			it('makes a SemanticNodeOperation with the `+` operator and negates the 2nd operand.', () => {
 				assert.strictEqual(new Parser('2 - 3;').parse().decorate().serialize(), `
 					<Goal source="␂ 2 - 3 ; ␃">
 						<StatementList line="1" col="1" source="2 - 3 ;">
 							<StatementExpression line="1" col="1" source="2 - 3 ;">
-								<Expression line="1" col="1" source="2 - 3" operator="+">
+								<Operation line="1" col="1" source="2 - 3" operator="+">
 									<Constant line="1" col="1" source="2" value="2"/>
-									<Expression line="1" col="5" source="3" operator="-">
+									<Operation line="1" col="5" source="3" operator="-">
 										<Constant line="1" col="5" source="3" value="3"/>
-									</Expression>
-								</Expression>
+									</Operation>
+								</Operation>
 							</StatementExpression>
 						</StatementList>
 					</Goal>
@@ -296,10 +296,10 @@ describe('ParseNode', () => {
 									<Identifier line="2" col="5" source="\`the £ answer\`" id="257"/>
 								</Assignee>
 								<Assigned line="2" col="22" source="the_answer * 10">
-									<Expression line="2" col="22" source="the_answer * 10" operator="*">
+									<Operation line="2" col="22" source="the_answer * 10" operator="*">
 										<Identifier line="2" col="22" source="the_answer" id="256"/>
 										<Constant line="2" col="35" source="10" value="10"/>
-									</Expression>
+									</Operation>
 								</Assigned>
 							</Declaration>
 							<Assignment line="3" col="1" source="the_answer = the_answer - &#x5c;z14 ;">
@@ -307,12 +307,12 @@ describe('ParseNode', () => {
 									<Identifier line="3" col="1" source="the_answer" id="256"/>
 								</Assignee>
 								<Assigned line="3" col="14" source="the_answer - &#x5c;z14">
-									<Expression line="3" col="14" source="the_answer - &#x5c;z14" operator="+">
+									<Operation line="3" col="14" source="the_answer - &#x5c;z14" operator="+">
 										<Identifier line="3" col="14" source="the_answer" id="256"/>
-										<Expression line="3" col="27" source="&#x5c;z14" operator="-">
+										<Operation line="3" col="27" source="&#x5c;z14" operator="-">
 											<Constant line="3" col="27" source="&#x5c;z14" value="40"/>
-										</Expression>
-									</Expression>
+										</Operation>
+									</Operation>
 								</Assigned>
 							</Assignment>
 						</StatementList>

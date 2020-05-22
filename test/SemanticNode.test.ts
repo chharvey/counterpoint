@@ -40,7 +40,7 @@ describe('SemanticNode', () => {
 			})
 		})
 
-		context('SemanticNodeExpression', () => {
+		context('SemanticNodeOperation', () => {
 			specify('ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative', () => {
 				assert.strictEqual(new Parser('42 + 420;').parse().decorate().compile().print(), boilerplate([
 					`i32.const 42`,
