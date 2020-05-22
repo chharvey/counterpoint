@@ -155,7 +155,7 @@ export class ParseNodePrimitiveLiteral extends ParseNode {
 }
 export class ParseNodeStringTemplate extends ParseNode {
 	declare children:
-		readonly (TokenTemplate|ParseNodeExpression|ParseNodeStringTemplate)[];
+		readonly (TokenTemplate|ParseNodeExpression|ParseNodeStringTemplate)[]; // TODO more accurate tuples
 	decorate(): SemanticNodeTemplate {
 		return new SemanticNodeTemplate(this, this.children.flatMap((c) => c instanceof Token ?
 			[new SemanticNodeConstant(c, c.cook())]

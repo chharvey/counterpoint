@@ -93,6 +93,8 @@ export default class SemanticNode implements Serializable {
 
 
 export class SemanticNodeNull extends SemanticNode {
+	declare children:
+		readonly [];
 	constructor(start_node: Token|ParseNode) {
 		super(start_node)
 	}
@@ -101,6 +103,8 @@ export class SemanticNodeNull extends SemanticNode {
 	}
 }
 export class SemanticNodeConstant extends SemanticNode {
+	declare children:
+		readonly [];
 	constructor(
 		start_node: Token|ParseNodeExpressionUnit,
 		private readonly value: string|number,
@@ -114,6 +118,8 @@ export class SemanticNodeConstant extends SemanticNode {
 	}
 }
 export class SemanticNodeIdentifier extends SemanticNode {
+	declare children:
+		readonly [];
 	constructor(canonical: Token, id: bigint|null) {
 		super(canonical, {id})
 	}
@@ -122,7 +128,7 @@ export class SemanticNodeTemplate extends SemanticNode {
 	constructor(
 		canonical: ParseNode,
 		readonly children:
-			readonly SemanticExpressionType[],
+			readonly SemanticExpressionType[], // TODO more accurate tuples
 	) {
 		super(canonical, {}, children)
 	}
@@ -144,26 +150,46 @@ export class SemanticNodeExpression extends SemanticNode {
 	}
 }
 export class SemanticNodeDeclaration extends SemanticNode {
-	constructor(canonical: ParseNode, type: string, unfixed: boolean, children: readonly [SemanticNodeAssignee, SemanticNodeAssigned]) {
+	constructor (
+		canonical: ParseNode,
+		type: string,
+		unfixed: boolean,
+		readonly children:
+			readonly [SemanticNodeAssignee, SemanticNodeAssigned],
+	) {
 		super(canonical, {type, unfixed}, children)
 	}
 }
 export class SemanticNodeAssignment extends SemanticNode {
-	constructor(canonical: ParseNode, children: readonly [SemanticNodeAssignee, SemanticNodeAssigned]) {
+	constructor (
+		canonical: ParseNode,
+		readonly children:
+			readonly [SemanticNodeAssignee, SemanticNodeAssigned],
+	) {
 		super(canonical, {}, children)
 	}
 }
 export class SemanticNodeAssignee extends SemanticNode {
-	constructor(canonical: Token, children: readonly [SemanticNodeIdentifier]) {
+	constructor(
+		canonical: Token,
+		readonly children:
+			readonly [SemanticNodeIdentifier],
+	) {
 		super(canonical, {}, children)
 	}
 }
 export class SemanticNodeAssigned extends SemanticNode {
-	constructor(canonical: ParseNode, children: readonly [SemanticExpressionType]) {
+	constructor(
+		canonical: ParseNode,
+		readonly children:
+			readonly [SemanticExpressionType],
+	) {
 		super(canonical, {}, children)
 	}
 }
 export class SemanticNodeStatementEmpty extends SemanticNode {
+	declare children:
+		readonly [];
 	constructor(canonical: ParseNode) {
 		super(canonical)
 	}
@@ -172,7 +198,11 @@ export class SemanticNodeStatementEmpty extends SemanticNode {
 	}
 }
 export class SemanticNodeStatementExpression extends SemanticNode {
-	constructor(canonical: ParseNode, children: readonly [SemanticExpressionType]) {
+	constructor(
+		canonical: ParseNode,
+		readonly children:
+			readonly [SemanticExpressionType],
+	) {
 		super(canonical, {}, children)
 	}
 	compile(generator: CodeGenerator): CodeGenerator {
