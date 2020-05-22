@@ -369,16 +369,11 @@ StringChars ::=
 ;
 
 StringEscape ::=
-	| EscapeChar
-	| EscapeCode
-	| LineContinuation
-	| NonEscapeChar
+	| "'" | "\" | "s" | "t" | "n" | "r"
+	| "u{" DigitSequenceHex? "}"
+	| #x0A
+	| [^'\stnru#x0A#x03]
 ;
-
-EscapeChar       ::= "'" | "\" | "s" | "t" | "n" | "r";
-EscapeCode       ::= "u{" DigitSequenceHex? "}";
-LineContinuation ::= #x0A;
-NonEscapeChar    ::= [^'\stnru#x0A#x03];
 ```
 String tokens are sequences of Unicode characters enclosed in delimiters.
 Strings are snippets of textual data.
@@ -410,15 +405,7 @@ TokenWorth(StringChars ::= "\u" [^'{#x03']) -> Sequence<RealNumber>
 	:= <\x75, UTF16Encoding(CodePoint([^'{#x03']))>
 TokenWorth(StringChars ::= "\u" [^'{#x03'] StringChars) -> Sequence<RealNumber>
 	:= <\x75, UTF16Encoding(CodePoint([^'{#x03'])), ...TokenWorth(StringChars)>
-TokenWorth(StringEscape ::= EscapeChar) -> Sequence<RealNumber>
-	:= TokenWorth(EscapeChar)
-TokenWorth(StringEscape ::= EscapeCode) -> Sequence<RealNumber>
-	:= TokenWorth(EscapeCode)
-TokenWorth(StringEscape ::= LineContinuation) -> Sequence<RealNumber>
-	:= TokenWorth(LineContinuation)
-TokenWorth(StringEscape ::= NonEscapeChar) -> Sequence<RealNumber>
-	:= TokenWorth(NonEscapeChar)
-TokenWorth(EscapeChar ::= "'" | "\" | "s" | "t" | "n" | "r") -> Sequence<RealNumber>
+TokenWorth(StringEscape ::= "'" | "\" | "s" | "t" | "n" | "r") -> Sequence<RealNumber>
 	:= given by the following map: {
 		"'" : <\x27>, /* U+0027 APOSTROPHE           */
 		"\" : <\x5c>, /* U+005C REVERSE SOLIDUS      */
@@ -427,13 +414,13 @@ TokenWorth(EscapeChar ::= "'" | "\" | "s" | "t" | "n" | "r") -> Sequence<RealNum
 		"n" : <\x0a>, /* U+000A LINE FEED (LF)       */
 		"r" : <\x0d>, /* U+000D CARRIAGE RETURN (CR) */
 	}
-TokenWorth(EscapeCode ::= "u{" "}") -> Sequence<RealNumber>
+TokenWorth(StringEscape ::= "u{" "}") -> Sequence<RealNumber>
 	:= <\x00> /* U+0000 NULL */
-TokenWorth(EscapeCode ::= "u{" DigitSequenceHex "}") -> Sequence<RealNumber>
+TokenWorth(StringEscape ::= "u{" DigitSequenceHex "}") -> Sequence<RealNumber>
 	:= <UTF16Encoding(TokenWorth(DigitSequenceHex))>
-TokenWorth(LineContinuation ::= #x0A) -> Sequence<RealNumber>
+TokenWorth(StringEscape ::= #x0A) -> Sequence<RealNumber>
 	:= <\x20> /* U+0020 SPACE */
-TokenWorth(NonEscapeChar ::= [^'\stnru#x0D#x0A#x03]) -> Sequence<RealNumber>
+TokenWorth(StringEscape ::= [^'\stnru#x0D#x0A#x03]) -> Sequence<RealNumber>
 	:= <UTF16Encoding(CodePoint([^'\stnru#x0D#x0A#x03]))>
 ```
 
@@ -638,8 +625,8 @@ CommentMulti
 
 CommentMultiChars ::=
 	| [^{%#x03] CommentMultiChars?
-	| "{" [^%#x03] CommentMultiChars?
-	| "%" ([^}#x03] CommentMultiChars?)?
+	| "{"+ [^%#x03] CommentMultiChars?
+	| "%"+ ([^}#x03] CommentMultiChars?)?
 	| CommentMulti CommentMultiChars?
 ;
 

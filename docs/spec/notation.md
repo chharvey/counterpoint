@@ -35,7 +35,7 @@ by the nonterminal `ExpressionAddition` on the left-hand side and two sequences 
 The first sequence has three symbols: one nonterminal (which happens to be the same as the production —
 recursion is allowed in this specification’s grammars), and two terminals.
 The terminal `"+"` is a literal token, and the terminal `NUMBER` represents a token
-that matches some lexical formula, such as `[0-9]*` (which might be defined in a separate lexical grammar).
+that matches some lexical formula, such as `[0-9]+` (which might be defined in a separate lexical grammar).
 In this specification, such terminal identifiers will be written in all-uppercase (‘MACRO_CASE’).
 
 One is able to start with the nonterminal `ExpressionAddition`, and replace it with

@@ -76,11 +76,11 @@ export class TerminalNumber extends Terminal {
 		}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
 	}
 	random(): string {
-		const [unary, radix]: [string, RadixType] = Util.arrayRandom([...TokenNumber.BASES])
+		const [base, radix]: [string, RadixType] = Util.arrayRandom([...TokenNumber.BASES])
 		return `${ Util.randomBool() ? '' : Util.arrayRandom(TokenNumber.UNARY) }${
 			Util.randomBool()
 				? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT)
-			: `${ TokenNumber.ESCAPER }${ unary }${ TerminalNumber.digitSequence(radix) }`
+			: `${ TokenNumber.ESCAPER }${ base }${ TerminalNumber.digitSequence(radix) }`
 		}`
 	}
 	match(candidate: Token): boolean {
@@ -89,21 +89,22 @@ export class TerminalNumber extends Terminal {
 }
 export class TerminalString extends Terminal {
 	static readonly instance: TerminalString = new TerminalString()
+	private static readonly escape_opts: readonly (() => string)[] = [
+		(): string => Util.arrayRandom(TokenString.ESCAPES),
+		(): string => `u{${ Util.randomBool() ? '' : TerminalNumber.digitSequence(16n) }}`,
+		(): string => `\u000a`,
+		(): string => Util.randomChar([TokenString.DELIM, TokenString.ESCAPER, ...'s t n r u \u000a'.split(' '), Filebound.EOT]),
+	]
 	random(): string {
 		const maybeChars = (): string => Util.randomBool() ? '' : chars()
 		const chars = (): string => {
 			const random: number = Math.random()
 			return (
 				random < 0.333 ? `${ Util.randomChar([TokenString.DELIM, TokenString.ESCAPER, Filebound.EOT]) }${ maybeChars() }` :
-				random < 0.667 ? `${ TokenString.ESCAPER }${ escape() }${ maybeChars() }` :
+				random < 0.667 ? `${ TokenString.ESCAPER }${ Util.arrayRandom(TerminalString.escape_opts)() }${ maybeChars() }` :
 				                 `${ TokenString.ESCAPER }u${ Util.randomBool() ? '' : `${Util.randomChar([TokenString.DELIM, '{', Filebound.EOT]) }${ maybeChars() }`}`
 			)
 		}
-		const escape        = (): string => Util.arrayRandom([escapeChar, escapeCode, lineCont, nonEscapeChar])()
-		const escapeChar    = (): string => Util.arrayRandom(TokenString.ESCAPES)
-		const escapeCode    = (): string => `u{${Util.randomBool() ? '' : TerminalNumber.digitSequence(16n)}}`
-		const lineCont      = (): string => `\u000a`
-		const nonEscapeChar = (): string => Util.randomChar([TokenString.DELIM, TokenString.ESCAPER, ...'s t n r u \u000a'.split(' '), Filebound.EOT])
 		return `${TokenString.DELIM}${maybeChars()}${TokenString.DELIM}`
 	}
 	match(candidate: Token): boolean {
