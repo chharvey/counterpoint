@@ -13,8 +13,16 @@ import type {
 
 
 
-export type SemanticStatementType = SemanticNodeDeclaration | SemanticNodeAssignment | SemanticNodeStatementExpression | SemanticNodeStatementEmpty
-export type SemanticExpressionType = SemanticNodeConstant|SemanticNodeIdentifier|SemanticNodeTemplate|SemanticNodeExpression
+export type SemanticStatementType =
+	| SemanticNodeDeclaration
+	| SemanticNodeAssignment
+	| SemanticNodeStatementExpression
+	| SemanticNodeStatementEmpty
+export type SemanticExpressionType =
+	| SemanticNodeConstant
+	| SemanticNodeIdentifier
+	| SemanticNodeTemplate
+	| SemanticNodeExpression
 
 
 
@@ -94,7 +102,7 @@ export default class SemanticNode implements Serializable {
 
 export class SemanticNodeNull extends SemanticNode {
 	declare children:
-		readonly [];
+		| readonly []
 	constructor(start_node: Token|ParseNode) {
 		super(start_node)
 	}
@@ -104,7 +112,7 @@ export class SemanticNodeNull extends SemanticNode {
 }
 export class SemanticNodeConstant extends SemanticNode {
 	declare children:
-		readonly [];
+		| readonly []
 	constructor(
 		start_node: Token|ParseNodeExpressionUnit,
 		private readonly value: string|number,
@@ -119,14 +127,14 @@ export class SemanticNodeConstant extends SemanticNode {
 }
 export class SemanticNodeIdentifier extends SemanticNode {
 	declare children:
-		readonly [];
-	constructor(canonical: Token, id: bigint|null) {
-		super(canonical, {id})
+		| readonly []
+	constructor(start_node: Token, id: bigint|null) {
+		super(start_node, {id})
 	}
 }
 export class SemanticNodeTemplate extends SemanticNode {
 	constructor(
-		canonical: ParseNode,
+		start_node: ParseNode,
 		readonly children: // FIXME spread types
 			| readonly [SemanticNodeConstant]
 			| readonly [SemanticNodeConstant,                                                                     SemanticNodeConstant]
@@ -134,9 +142,8 @@ export class SemanticNodeTemplate extends SemanticNode {
 			// | readonly [SemanticNodeConstant,                         ...SemanticNodeTemplatePartialChildrenType, SemanticNodeConstant]
 			// | readonly [SemanticNodeConstant, SemanticExpressionType, ...SemanticNodeTemplatePartialChildrenType, SemanticNodeConstant]
 			| readonly SemanticExpressionType[]
-		,
 	) {
-		super(canonical, {}, children)
+		super(start_node, {}, children)
 	}
 }
 type SemanticNodeTemplatePartialChildrenType = // FIXME spread types
@@ -147,10 +154,10 @@ type SemanticNodeTemplatePartialChildrenType = // FIXME spread types
 	| readonly SemanticExpressionType[]
 export class SemanticNodeTemplatePartial extends SemanticNode {
 	constructor(
-		canonical: ParseNode,
+		start_node: ParseNode,
 		readonly children: SemanticNodeTemplatePartialChildrenType,
 	) {
-		super(canonical, {}, children)
+		super(start_node, {}, children)
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {
@@ -158,8 +165,8 @@ export class SemanticNodeExpression extends SemanticNode {
 		start_node: ParseNode,
 		private readonly operator: Punctuator,
 		readonly children:
-			readonly [SemanticExpressionType                        ] |
-			readonly [SemanticExpressionType, SemanticExpressionType],
+			| readonly [SemanticExpressionType                        ]
+			| readonly [SemanticExpressionType, SemanticExpressionType]
 	) {
 		super(start_node, {operator}, children)
 	}
@@ -171,47 +178,47 @@ export class SemanticNodeExpression extends SemanticNode {
 }
 export class SemanticNodeDeclaration extends SemanticNode {
 	constructor (
-		canonical: ParseNode,
+		start_node: ParseNode,
 		type: string,
 		unfixed: boolean,
 		readonly children:
-			readonly [SemanticNodeAssignee, SemanticNodeAssigned],
+			| readonly [SemanticNodeAssignee, SemanticNodeAssigned]
 	) {
-		super(canonical, {type, unfixed}, children)
+		super(start_node, {type, unfixed}, children)
 	}
 }
 export class SemanticNodeAssignment extends SemanticNode {
 	constructor (
-		canonical: ParseNode,
+		start_node: ParseNode,
 		readonly children:
-			readonly [SemanticNodeAssignee, SemanticNodeAssigned],
+			| readonly [SemanticNodeAssignee, SemanticNodeAssigned]
 	) {
-		super(canonical, {}, children)
+		super(start_node, {}, children)
 	}
 }
 export class SemanticNodeAssignee extends SemanticNode {
 	constructor(
-		canonical: Token,
+		start_node: Token,
 		readonly children:
-			readonly [SemanticNodeIdentifier],
+			| readonly [SemanticNodeIdentifier]
 	) {
-		super(canonical, {}, children)
+		super(start_node, {}, children)
 	}
 }
 export class SemanticNodeAssigned extends SemanticNode {
 	constructor(
-		canonical: ParseNode,
+		start_node: ParseNode,
 		readonly children:
-			readonly [SemanticExpressionType],
+			| readonly [SemanticExpressionType]
 	) {
-		super(canonical, {}, children)
+		super(start_node, {}, children)
 	}
 }
 export class SemanticNodeStatementEmpty extends SemanticNode {
 	declare children:
-		readonly [];
-	constructor(canonical: ParseNode) {
-		super(canonical)
+		| readonly []
+	constructor(start_node: ParseNode) {
+		super(start_node)
 	}
 	compile(generator: CodeGenerator): CodeGenerator {
 		return generator.nop()
@@ -219,11 +226,11 @@ export class SemanticNodeStatementEmpty extends SemanticNode {
 }
 export class SemanticNodeStatementExpression extends SemanticNode {
 	constructor(
-		canonical: ParseNode,
+		start_node: ParseNode,
 		readonly children:
-			readonly [SemanticExpressionType],
+			| readonly [SemanticExpressionType]
 	) {
-		super(canonical, {}, children)
+		super(start_node, {}, children)
 	}
 	compile(generator: CodeGenerator): CodeGenerator {
 		return this.children[0].compile(generator)
@@ -231,11 +238,11 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 }
 export class SemanticNodeStatementList extends SemanticNode {
 	constructor(
-		canonical: ParseNode,
+		start_node: ParseNode,
 		readonly children:
-			readonly SemanticStatementType[],
+			| readonly SemanticStatementType[]
 	) {
-		super(canonical, {}, children)
+		super(start_node, {}, children)
 	}
 	compile(generator: CodeGenerator): CodeGenerator {
 		this.children.forEach((child) => {
@@ -248,7 +255,7 @@ export class SemanticNodeGoal extends SemanticNode {
 	constructor(
 		start_node: ParseNode,
 		readonly children:
-			readonly [SemanticNodeStatementList],
+			| readonly [SemanticNodeStatementList]
 	) {
 		super(start_node, {}, children)
 	}
