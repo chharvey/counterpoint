@@ -7,9 +7,9 @@ This chapter describes notational conventions used throughout this specification
 Context-free grammars define the lexical and syntactic composition of Solid programs.
 
 A context-free grammar consists of a number of **productions**, each of which
-has an abstract symbol called a **nonterminal** as its left-hand side,
-and any number of sequences of zero or more nonterminal and terminal symbols as its right-hand side.
-For each grammar, the **terminal** symbols are drawn from a specified alphabet.
+defines an abstract symbol called a **nonterminal** by
+one or more sequences of zero or more nonterminal and **terminal** symbols.
+For each grammar, the terminal symbols are drawn from a specified alphabet.
 
 Starting from a sentence consisting of a single distinguished nonterminal,
 called the goal symbol, a given context-free grammar specifies a language, namely,
@@ -26,9 +26,10 @@ for any given replacement step.
 
 ### Example
 ```
-ExpressionAddition
-	::= ExpressionAddition "+" NUMBER
-	::= NUMBER
+ExpressionAddition ::=
+	| ExpressionAddition "+" NUMBER
+	| NUMBER
+;
 ```
 The grammar above is a very simple grammar with only one production, defined
 by the nonterminal `ExpressionAddition` on the left-hand side and two sequences on the right-hand side.
@@ -36,7 +37,6 @@ The first sequence has three symbols: one nonterminal (which happens to be the s
 recursion is allowed in this specification’s grammars), and two terminals.
 The terminal `"+"` is a literal token, and the terminal `NUMBER` represents a token
 that matches some lexical formula, such as `[0-9]+` (which might be defined in a separate lexical grammar).
-In this specification, such terminal identifiers will be written in all-uppercase (‘MACRO_CASE’).
 
 One is able to start with the nonterminal `ExpressionAddition`, and replace it with
 any of the right-hand sequences, repeating that step perhaps an arbitrary number of times
@@ -616,8 +616,10 @@ Production
 Choice   ::= (Choice   "|")? Sequence;
 Sequence ::= (Sequence "&")? Item+;
 
-Item
-	::= Condition? Unary;
+Item ::=
+	| Unary
+	| Condition Item
+;
 
 Unary
 	::= Unit ("+" | "*" | "#")? "?"?;
@@ -657,7 +659,7 @@ Identifier
 	:::= [A-Z] [A-Za-z0-9_]*;
 
 Comment
-	:::= "//" [^#x0a#03]+ #x0a;
+	:::= "//" [^#x0a#03]* #x0a;
 ```
 For those not faint of heart, the shorthand grammars above expand into the following formal grammar.
 The following is non-normative; if there are any discrepancies, the grammars above take precedence.
@@ -724,18 +726,14 @@ NonterminalDefinition ::=
 	| IDENTIFIER "<" IDENTIFIER__List ">"
 ;
 
-NonterminalReference ::=
-	| IDENTIFIER
-	| IDENTIFIER "<" NonterminalReference__0__List ">"
-;
-
-Condition ::=
-	| "<" Condition__0__List ">"
-;
-
 IDENTIFIER__List ::=
 	|                      IDENTIFIER
 	| IDENTIFIER__List "," IDENTIFIER
+;
+
+NonterminalReference ::=
+	| IDENTIFIER
+	| IDENTIFIER "<" NonterminalReference__0__List ">"
 ;
 
 NonterminalReference__0__List ::=
@@ -745,6 +743,10 @@ NonterminalReference__0__List ::=
 	| NonterminalReference__0__List "," "+" IDENTIFIER
 	| NonterminalReference__0__List "," "-" IDENTIFIER
 	| NonterminalReference__0__List "," "?" IDENTIFIER
+
+Condition ::=
+	| "<" Condition__0__List ">"
+;
 
 Condition__0__List ::=
 	|                        IDENTIFIER "+"
@@ -810,6 +812,7 @@ Identifier__0__List :::=
 ;
 
 Comment :::=
+	| "//"                  #x0a
 	| "//" Comment__0__List #x0a
 ;
 
@@ -834,14 +837,14 @@ or entire objects representing semantic nodes with children.
 
 ### Example
 ```
-Value(INT ::= [0-9]) -> Integer
+Value(INT :::= [0-9]) -> Integer
 	:= Value([0-9]);
-Value(INT ::= INT [0-9]) -> Integer
+Value(INT :::= INT [0-9]) -> Integer
 	:= 10 * Value(INT) + Value([0-9]);
-Value([0-9] ::= "0") -> Integer := 0;
-Value([0-9] ::= "1") -> Integer := 1;
+Value([0-9] :::= "0") -> Integer := 0;
+Value([0-9] :::= "1") -> Integer := 1;
 ...
-Value([0-9] ::= "9") -> Integer := 9;
+Value([0-9] :::= "9") -> Integer := 9;
 ```
 This example illustrates a hypothetical attribute grammar that defines an attribute called `Value` on an `INT` token.
 Each rule defines the attribute on the token matching a different pattern defined by a CFG,
@@ -943,6 +946,12 @@ Production
 
 Parameter
 	::= IDENTIFIER (":::=" | "::=") Item+;
+
+ReturnType
+	::= (ReturnType "|")? Type;
+
+Type
+	::= IDENTIFIER ("<" Type ">")?;
 
 Item ::=
 	| STRING
