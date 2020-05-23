@@ -68,7 +68,7 @@ There are a small number of token types, each of which have a specific purpose.
 
 ```w3c
 Goal :::=
-	| FileBound
+	| Filebound
 	| Whitespace
 	| Punctuator
 	| Keyword
@@ -96,7 +96,7 @@ Goal :::=
 
 ### File Bounds
 ```w3c
-FileBound :::= #x02 | #x03;
+Filebound :::= #x02 | #x03;
 ```
 File bound tokens are tokens that consist of exactly 1 character:
 either **U+0002 START OF TEXT**, or **U+0003 END OF TEXT**.
@@ -607,10 +607,23 @@ Comment :::=
 	| CommentMulti
 	| CommentBlock
 ;
+```
+Comments are tokens of arbitrary text,
+mainly used to add human-readable language to code
+or to provide other types of annotations.
+Comment tokens are not sent to the Solid parser.
 
+#### Line Comments
+```
 CommentLine
 	:::= "%" [^#x0A#x03]* #x0A;
+```
+Line comments begin with `%` (**U+0025 PERCENT SIGN**).
+The compiler will ignore all source text starting from `%` and onward,
+up to and including the next line break (**U+000A LINE FEED (LF)**).
 
+#### Multiline Comments
+```
 CommentMulti
 	:::= "{%" CommentMultiNestChars? "%}";
 
@@ -620,7 +633,13 @@ CommentMultiChars :::=
 	| "%"+ ([^}#x03] CommentMultiChars?)?
 	| CommentMulti CommentMultiChars?
 ;
+```
+Multiline comments are contained in the delimiters `{% %}`
+(**U+007B LEFT CURLY BRACKET**, **U+007C RIGHT CURLY BRACKET**, with adjacent percent signs),
+and may contain line breaks and may be nested.
 
+#### Block Comments
+```
 CommentBlock
 	:::=
 		{following: #x0A [#x09#x20]*}"%%%"
@@ -630,21 +649,5 @@ CommentBlock
 		{lookahead: #x0A}
 	;
 ```
-Comments are tokens of arbitrary text,
-mainly used to add human-readable language to code
-or to provide other types of annotations.
-Comment tokens are not sent to the Solid parser.
-
-#### Line Comments
-Line comments begin with `%` (**U+0025 PERCENT SIGN**).
-The compiler will ignore all source text starting from `%` and onward,
-up to and including the next line break (**U+000A LINE FEED (LF)**).
-
-#### Multiline Comments
-Multiline comments are contained in the delimiters `{% %}`
-(**U+007B LEFT CURLY BRACKET**, **U+007C RIGHT CURLY BRACKET**, with adjacent percent signs),
-and may contain line breaks and may be nested.
-
-#### Block Comments
 Block comments begin and end with triple percent signs `%%%`.
 These delimiters *must* be on their own lines (with or without leading/trailing whitespace).
