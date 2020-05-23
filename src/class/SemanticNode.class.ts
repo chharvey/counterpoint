@@ -22,6 +22,16 @@ export type SemanticStatementType =
 
 
 /**
+ * @deprecated temporary in lieu of a more full-fledged class.
+ */
+export enum SolidLanguageType {
+	NUMBER,
+	STRING,
+}
+
+
+
+/**
  * A SemanticNode holds only the semantics of a {@link ParseNode}.
  */
 export default class SemanticNode implements Serializable {
@@ -112,6 +122,10 @@ export class SemanticNodeNull extends SemanticNode {
  * - SemanticNodeOperation
  */
 export abstract class SemanticNodeExpression extends SemanticNode {
+	/**
+	 * The Type of this expression.
+	 */
+	abstract type(): SolidLanguageType;
 }
 export class SemanticNodeConstant extends SemanticNodeExpression {
 	constructor(
@@ -125,10 +139,18 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 			? generator.const(this.value)
 			: generator // TODO strings
 	}
+	type(): SolidLanguageType {
+		return (typeof this.value === 'number')
+			? SolidLanguageType.NUMBER
+			: SolidLanguageType.STRING
+	}
 }
 export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	constructor(canonical: Token, id: bigint|null) {
 		super(canonical, {id})
+	}
+	type(): SolidLanguageType {
+		throw new Error('Not yet supported.')
 	}
 }
 export class SemanticNodeTemplate extends SemanticNodeExpression {
@@ -138,6 +160,9 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 			readonly SemanticNodeExpression[],
 	) {
 		super(canonical, {}, children)
+	}
+	type(): SolidLanguageType {
+		return SolidLanguageType.STRING
 	}
 }
 export class SemanticNodeOperation extends SemanticNodeExpression {
@@ -154,6 +179,13 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 		(this.children.length === 1)
 			? generator.unop (this.operator, ...this.children)
 			: generator.binop(this.operator, ...this.children)
+	}
+	type(): SolidLanguageType {
+		const t1: SolidLanguageType = this.children[0].type()
+		if (t1 !== SolidLanguageType.NUMBER || this.children.length === 2 && this.children[1].type() !== SolidLanguageType.NUMBER) {
+			throw new TypeError('Invalid operation.')
+		}
+		return t1
 	}
 }
 export class SemanticNodeDeclaration extends SemanticNode {

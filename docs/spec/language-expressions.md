@@ -13,6 +13,34 @@ Decorate(Expression ::= ExpressionAdditive) -> SemanticIdentifier | SemanticCons
 ```
 
 
+### Abstract Operation: TypeOf
+The abstract operation `TypeOf` returns the [Solid Language Type] of an expression.
+```
+Type typeOf(SemanticConstant constant) :=
+	1. If `constant.value` is a `RealNumber`:
+		1. Return: `Number`.
+	2. Else:
+		1. Assert: `constant.value` is a `Sequence<RealNumber>`.
+		2. Return: `String`.
+
+Type typeOf(StringTemplate template) :=
+	1. Return: `String`.
+
+Type typeOf(SemanticIdentifier id) :=
+	/* TO BE DETERMINED */
+
+Type typeOf(SemanticOperation operation) :=
+	1. If `typeOf(operation.children.0)` is `Number`:
+		1. If `operation.children.count` is 1:
+			1. Return: `Number`.
+		2. Else:
+			1. Assert: `operation.children.count` is 2.
+			2. If `typeOf(operation.children.1)` is `Number`:
+				1. Return: `Number`.
+	2. Throw a TypeError "Invalid operation.".
+```
+
+
 ### Abstract Operation: EvaluateNumericBinaryExpression
 The abstract operation `EvaluateNumericBinaryExpression` performs a binary stack operation.
 ```w3c
