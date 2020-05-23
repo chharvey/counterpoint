@@ -976,26 +976,6 @@ An algorithm consists of a name, an output type, zero or more parameters, and a 
 The steps are formatted as an ordered list;
 the list is *ordered* in that the outcome could change if the steps were not performed in the order given.
 
-Algorithms are written in parameterized functional form,
-e.g., `RType AlgorithnName(PType1 param1, PType2 param2)`,
-where `AlgorithnName` is the algorithm name, `RType` is the output type of the algorithm,
-and `PType1` and `PType2` are the types of the parameters `param1` and `param2` respectively.
-If the algorithm is invoked in another algorithm, it is written in a similar manner, e.g., `AlgorithmName(arg1, arg2)`.
-Typically, algorithm names are written in PascalCase while parameter/argument names are written in snake_case.
-Within the steps of an algorithm, referenced
-local variables, parameters, other algorithm names, and code snippets are delimited with \`back-ticks\`.
-
-```w3c
-Void AlgorithmName(RealNumber param) :=
-	1. Step 1.
-	2. Step 2.
-		1. Substep 2.1.
-			1. Subsubstep 2.1.1.
-		2. Substep 2.1.
-	3. Step 3.
-		1. Substep 3.1.
-```
-
 Algorithm steps may include substeps, which are formatted by an additional indentation level.
 Substeps may include their own “subsubsteps”, and so on, with each level corresponding to a new indentation.
 Steps may be nested an arbitrary number of levels.
@@ -1015,8 +995,8 @@ Steps that begin with “Assert: …” are informative and are meant only to pr
 These steps explicitly indicate that a conditon is true when it would otherwise only be implicit.
 
 #### Perform
-Steps that begin with “Perform: …” reference another algorithm expect it to be performed.
-The current algorithm is halted on this step and waits for the referenced algorithm to complete before proceeding.
+Steps that begin with “Perform: …” invoke another algorithm expect it to be performed.
+The current algorithm is halted on this step and waits for the invoked algorithm to complete before proceeding.
 
 #### Let/Set
 Algorithms may make the use of variable references, such as, “Let \`x\` be \`someValue\`.”
@@ -1031,10 +1011,10 @@ In that case, the pointer \`x\` is changed to the new value.
 
 #### If/Else, While
 Conditional and loop programming structures may appear in algorithms.
-For conditionals, the *if* branch and *else* branch are parallel steps,
+For conditionals, the ‘if branch’ and ‘else branch’ are parallel steps,
 each containing the substeps respective to that branch.
-(The *else* branch is not always necessary, e.g. if the *if* branch completes the algorithm.)
-*If* steps begin with “If …:” and *else* steps begin with “Else:”.
+(The ‘else branch’ is not always necessary, e.g. if the ‘if branch’ completes the algorithm.)
+‘If’ steps begin with “If …:” and ‘else’ steps begin with “Else:”.
 
 A step that specifies a loop must have as its substeps the steps to be performed for each iteration.
 A loop step begins with “While …:”
@@ -1057,6 +1037,31 @@ The runtime instructions of static semantics are listed in the chapters
 [Solid Language: Expressions](./language-expressions.md),
 [Solid Language: Statements](./language-statements.md), and
 [Solid Language: Goal Symbols](./language-goal.md).
+
+
+### Notation: Algorithms
+Algorithms are written in parameterized functional form, e.g.,
+```
+RType AlgorithmName(PType1 param1, PType2 param2) :=
+```
+where `AlgorithmName` is the algorithm name, `RType` is the output type of the algorithm,
+and `PType1` and `PType2` are the types of the parameters `param1` and `param2` respectively.
+If the algorithm is invoked in another algorithm, it is written in a similar manner, e.g., `AlgorithmName(arg1, arg2)`.
+The symbol `:=` delimits the algorithm head from its body (its steps).
+Typically, algorithm names are written in PascalCase while parameter/argument names are written in snake_case.
+Within the steps of an algorithm, referenced local variables, parameters, other algorithm names, and code snippets
+are delimited with \`back-ticks\`.
+
+```w3c
+Void AlgorithmName(RealNumber param) :=
+	1. Step 1.
+	2. Step 2.
+		1. Substep 2.1.
+			1. Subsubstep 2.1.1.
+		2. Substep 2.2.
+	3. Step 3.
+		1. Substep 3.1.
+```
 
 
 
