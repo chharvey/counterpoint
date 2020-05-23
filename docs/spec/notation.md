@@ -991,22 +991,22 @@ The steps allowed in an algorithm fall into categories, whose semantics are defi
 If a step does not match one of the given categories, its behavior is open to interpretation.
 
 #### Assert
-Steps that begin with “Assert: …” are informative and are meant only to provide clarification to the reader.
+Steps that begin with “*Assert:* …” are informative and are meant only to provide clarification to the reader.
 These steps explicitly indicate that a conditon is true when it would otherwise only be implicit.
 
 #### Perform
-Steps that begin with “Perform: …” invoke another algorithm expect it to be performed.
+Steps that begin with “*Perform:* …” invoke another algorithm expect it to be performed.
 The current algorithm is halted on this step and waits for the invoked algorithm to complete before proceeding.
 
 #### Let/Set
-Algorithms may make the use of variable references, such as, “Let \`x\` be \`someValue\`.”
+Algorithms may make the use of variable references, such as, “*Let* \`x\` be \`someValue\`.”
 Such a step indicates that \`x\` is a pointer to the value \`someValue\`,
 which itself may refer to a [Solid Language Value] (link pending), an [Internal Specification Value] (link pending),
 or the result of performing another algorithm.
 
 The variable \`x\` is treated as a pointer in that if \`someValue\` is mutated in some way,
 then that effect will also be seen on \`x\`.
-An algorithm may specify that a variable be reassigned, e.g., “Set \`x\` to \`someOtherValue\`.”
+An algorithm may specify that a variable be reassigned, e.g., “*Set* \`x\` to \`someOtherValue\`.”
 In that case, the pointer \`x\` is changed to the new value.
 
 #### If/Else, While
@@ -1017,14 +1017,14 @@ each containing the substeps respective to that branch.
 ‘If’ steps begin with “If …:” and ‘else’ steps begin with “Else:”.
 
 A step that specifies a loop must have as its substeps the steps to be performed for each iteration.
-A loop step begins with “While …:”
+A loop step begins with “*While* …:”
 
 #### Return
 An algorithm must output either no value or one value.
 The output value, if it exists, is a [Solid Specification Value] returned by the algorithm to its invoker.
 The output type is specified before the name of the algorithm in its header, but
 if the algorithm does not output a value, the output type is specified as “Void”.
-If an algorithm outputs a value, it must do so via a step beginning with “Return: …”.
+If an algorithm outputs a value, it must do so via a step beginning with “*Return:* …”.
 
 
 ### Runtime Instructions
@@ -1051,6 +1051,7 @@ The symbol `:=` delimits the algorithm head from its body (its steps).
 Typically, algorithm names are written in PascalCase while parameter/argument names are written in snake_case.
 Within the steps of an algorithm, referenced local variables, parameters, other algorithm names, and code snippets
 are delimited with \`back-ticks\`.
+Algorithm instructions (*If*, *Perform*, etc.) are written in *italics*.
 
 ```w3c
 Void AlgorithmName(RealNumber param) :=
