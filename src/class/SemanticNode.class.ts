@@ -127,8 +127,28 @@ export class SemanticNodeIdentifier extends SemanticNode {
 export class SemanticNodeTemplate extends SemanticNode {
 	constructor(
 		canonical: ParseNode,
-		readonly children:
-			readonly SemanticExpressionType[], // TODO more accurate tuples
+		readonly children: // FIXME spread types
+			| readonly [SemanticNodeConstant]
+			| readonly [SemanticNodeConstant,                                                                     SemanticNodeConstant]
+			| readonly [SemanticNodeConstant, SemanticExpressionType,                                             SemanticNodeConstant]
+			// | readonly [SemanticNodeConstant,                         ...SemanticNodeTemplatePartialChildrenType, SemanticNodeConstant]
+			// | readonly [SemanticNodeConstant, SemanticExpressionType, ...SemanticNodeTemplatePartialChildrenType, SemanticNodeConstant]
+			| readonly SemanticExpressionType[]
+		,
+	) {
+		super(canonical, {}, children)
+	}
+}
+type SemanticNodeTemplatePartialChildrenType = // FIXME spread types
+	| readonly [                                            SemanticNodeConstant                        ]
+	| readonly [                                            SemanticNodeConstant, SemanticExpressionType]
+	// | readonly [...SemanticNodeTemplatePartialChildrenType, SemanticNodeConstant                        ]
+	// | readonly [...SemanticNodeTemplatePartialChildrenType, SemanticNodeConstant, SemanticExpressionType]
+	| readonly SemanticExpressionType[]
+export class SemanticNodeTemplatePartial extends SemanticNode {
+	constructor(
+		canonical: ParseNode,
+		readonly children: SemanticNodeTemplatePartialChildrenType,
 	) {
 		super(canonical, {}, children)
 	}
