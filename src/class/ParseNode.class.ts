@@ -34,6 +34,7 @@ import type {Rule} from './Grammar.class'
 import Production, {
 	ProductionPrimitiveLiteral,
 	ProductionStringTemplate,
+	ProductionStringTemplate__0__List,
 	ProductionExpressionUnit,
 	ProductionExpressionUnarySymbol,
 	ProductionExpressionExponential,
@@ -68,7 +69,7 @@ export default class ParseNode implements Serializable {
 		return new ([...new Map<Production, typeof ParseNode>([
 			[ProductionPrimitiveLiteral         .instance, ParseNodePrimitiveLiteral   ],
 			[ProductionStringTemplate           .instance, ParseNodeStringTemplate     ],
-			[ProductionStringTemplate.__0__List .instance, ParseNodeStringTemplate__0__List],
+			[ProductionStringTemplate__0__List  .instance, ParseNodeStringTemplate__0__List],
 			[ProductionExpressionUnit           .instance, ParseNodeExpressionUnit     ],
 			[ProductionExpressionUnarySymbol    .instance, ParseNodeExpressionUnary    ],
 			[ProductionExpressionExponential    .instance, ParseNodeExpressionBinary   ],

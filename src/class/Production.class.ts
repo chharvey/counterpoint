@@ -97,49 +97,49 @@ export class ProductionStringTemplate extends Production {
 	static readonly instance: ProductionStringTemplate = new ProductionStringTemplate()
 	get sequences(): [
 		[TerminalTemplateFull],
-		[TerminalTemplateHead,                                                                           TerminalTemplateTail],
-		[TerminalTemplateHead, ProductionExpression,                                                     TerminalTemplateTail],
-		[TerminalTemplateHead,                       typeof ProductionStringTemplate.__0__List.instance, TerminalTemplateTail],
-		[TerminalTemplateHead, ProductionExpression, typeof ProductionStringTemplate.__0__List.instance, TerminalTemplateTail],
+		[TerminalTemplateHead,                                                          TerminalTemplateTail],
+		[TerminalTemplateHead, ProductionExpression,                                    TerminalTemplateTail],
+		[TerminalTemplateHead,                       ProductionStringTemplate__0__List, TerminalTemplateTail],
+		[TerminalTemplateHead, ProductionExpression, ProductionStringTemplate__0__List, TerminalTemplateTail],
 	] {
 		return [
 			[TerminalTemplateFull.instance],
-			[TerminalTemplateHead.instance,                                                                             TerminalTemplateTail.instance],
-			[TerminalTemplateHead.instance, ProductionExpression.instance,                                              TerminalTemplateTail.instance],
-			[TerminalTemplateHead.instance,                                ProductionStringTemplate.__0__List.instance, TerminalTemplateTail.instance],
-			[TerminalTemplateHead.instance, ProductionExpression.instance, ProductionStringTemplate.__0__List.instance, TerminalTemplateTail.instance],
+			[TerminalTemplateHead.instance,                                                                            TerminalTemplateTail.instance],
+			[TerminalTemplateHead.instance, ProductionExpression.instance,                                             TerminalTemplateTail.instance],
+			[TerminalTemplateHead.instance,                                ProductionStringTemplate__0__List.instance, TerminalTemplateTail.instance],
+			[TerminalTemplateHead.instance, ProductionExpression.instance, ProductionStringTemplate__0__List.instance, TerminalTemplateTail.instance],
 		]
 	}
 	random(): string[] {
 		return Util.randomBool() ? [TerminalTemplateFull.instance.random()] : [
 			TerminalTemplateHead.instance.random(),
 			...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
-			...(Util.randomBool() ? [] : ProductionStringTemplate.__0__List.instance.random()),
+			...(Util.randomBool() ? [] : ProductionStringTemplate__0__List.instance.random()),
 			TerminalTemplateTail.instance.random(),
 		]
 	}
-	static readonly __0__List = class ProductionStringTemplate__0__List extends Production {
-		static readonly instance: ProductionStringTemplate__0__List = new ProductionStringTemplate__0__List()
-		get sequences(): GrammarSymbol[][] /* [
-			[      TerminalTemplateMiddle                      ],
-			[      TerminalTemplateMiddle, ProductionExpression],
-			[this, TerminalTemplateMiddle                      ],
-			[this, TerminalTemplateMiddle, ProductionExpression],
-		] */ {
-			return [
-				[      TerminalTemplateMiddle.instance                               ],
-				[      TerminalTemplateMiddle.instance, ProductionExpression.instance],
-				[this, TerminalTemplateMiddle.instance                               ],
-				[this, TerminalTemplateMiddle.instance, ProductionExpression.instance],
-			]
-		}
-		random(): string[] {
-			return [
-				...(Util.randomBool() ? [] : this.random()),
-				TerminalTemplateMiddle.instance.random(),
-				...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
-			]
-		}
+}
+export class ProductionStringTemplate__0__List extends Production {
+	static readonly instance: ProductionStringTemplate__0__List = new ProductionStringTemplate__0__List()
+	get sequences(): [
+		[      TerminalTemplateMiddle                      ],
+		[      TerminalTemplateMiddle, ProductionExpression],
+		[this, TerminalTemplateMiddle                      ],
+		[this, TerminalTemplateMiddle, ProductionExpression],
+	] {
+		return [
+			[      TerminalTemplateMiddle.instance                               ],
+			[      TerminalTemplateMiddle.instance, ProductionExpression.instance],
+			[this, TerminalTemplateMiddle.instance                               ],
+			[this, TerminalTemplateMiddle.instance, ProductionExpression.instance],
+		]
+	}
+	random(): string[] {
+		return [
+			...(Util.randomBool() ? [] : this.random()),
+			TerminalTemplateMiddle.instance.random(),
+			...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
+		]
 	}
 }
 export class ProductionExpressionUnit extends Production {

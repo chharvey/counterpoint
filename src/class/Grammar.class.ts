@@ -8,6 +8,7 @@ import Terminal from './Terminal.class'
 import Production, {
 	ProductionPrimitiveLiteral,
 	ProductionStringTemplate,
+	ProductionStringTemplate__0__List,
 	ProductionExpressionUnit,
 	ProductionExpressionUnarySymbol,
 	ProductionExpressionExponential,
@@ -57,7 +58,7 @@ export default class Grammar {
 		this.productions = [
 			ProductionPrimitiveLiteral.instance,
 			ProductionStringTemplate.instance,
-			ProductionStringTemplate.__0__List.instance,
+			ProductionStringTemplate__0__List.instance,
 			ProductionExpressionUnit.instance,
 			ProductionExpressionUnarySymbol.instance,
 			ProductionExpressionExponential.instance,
