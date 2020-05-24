@@ -6,6 +6,7 @@ import SemanticNode, {
 	Operator,
 } from './SemanticNode.class'
 
+const i32_neg: string = fs.readFileSync(path.join(__dirname, '../../src/neg.wat'), 'utf8')
 const i32_exp: string = fs.readFileSync(path.join(__dirname, '../../src/exp.wat'), 'utf8')
 
 
@@ -82,12 +83,7 @@ export default class CodeGenerator {
 		arg.compile(this)
 		this.instructions.push(new Map<Operator, string>([
 			[Operator.AFF, `nop`],
-			[Operator.NEG, [
-				`i32.const -1`,
-				`i32.xor`,
-				`i32.const 1`,
-				`i32.add`,
-			].join('\n')],
+			[Operator.NEG, `call $neg`],
 		]).get(op) !)
 		return this
 	}
@@ -98,6 +94,7 @@ export default class CodeGenerator {
 	print(): string {
 		return `
 			(module
+				${ i32_neg }
 				${ i32_exp }
 				(func (export "run") (result i32)
 					${ this.instructions.join('\n') }
