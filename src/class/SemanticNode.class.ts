@@ -56,9 +56,10 @@ export default class SemanticNode implements Serializable {
 	/**
 	 * Give directions to the runtime code generator.
 	 * @param generator the generator to direct
+	 * @return the directions to print
 	 */
-	compile(generator: CodeGenerator): void {
-		generator.unreachable() // TODO make `ParseNode` and `SemanticNode` abstract classes
+	compile(generator: CodeGenerator): string {
+		return generator.unreachable() // TODO make `ParseNode` and `SemanticNode` abstract classes
 	}
 
 	/**
@@ -86,8 +87,8 @@ export class SemanticNodeNull extends SemanticNode {
 	constructor(start_node: ParseNode) {
 		super(start_node)
 	}
-	compile(generator: CodeGenerator): void {
-		generator.nop()
+	compile(generator: CodeGenerator): string {
+		return generator.nop()
 	}
 }
 export class SemanticNodeGoal extends SemanticNode {
@@ -98,7 +99,7 @@ export class SemanticNodeGoal extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	compile(generator: CodeGenerator): void {
+	compile(generator: CodeGenerator): string {
 		return this.children[0].compile(generator)
 	}
 }
@@ -112,8 +113,8 @@ export class SemanticNodeExpression extends SemanticNode {
 	) {
 		super(start_node, {operator: Operator[operator]}, children)
 	}
-	compile(generator: CodeGenerator): void {
-		(this.children.length === 1)
+	compile(generator: CodeGenerator): string {
+		return (this.children.length === 1)
 			? generator.unop (this.operator, ...this.children)
 			: generator.binop(this.operator, ...this.children)
 	}
@@ -125,7 +126,7 @@ export class SemanticNodeConstant extends SemanticNode {
 	) {
 		super(start_node, {value})
 	}
-	compile(generator: CodeGenerator): void {
-		generator.const(this.value)
+	compile(generator: CodeGenerator): string {
+		return generator.const(this.value)
 	}
 }
