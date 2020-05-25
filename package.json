@@ -5,6 +5,13 @@
   "description": "A robust programming language.",
   "main": "index.js",
   "scripts": {
+    "solid"    : "node ./build/solid.js",
+    "solid-h"  : "node ./build/solid.js --help",
+    "solid-c"  : "node ./build/solid.js ./sample/test-v0.1.solid",
+    "solid-o"  : "node ./build/solid.js ./sample/test-v0.1.solid -o ./sample/testout.wasm",
+    "solid-d"  : "node ./build/solid.js ./sample/test-v0.1.solid -d",
+    "solid-do" : "node ./build/solid.js ./sample/test-v0.1.solid -d -o ./sample/testout.wat",
+    "solid-r"  : "node ./build/solid.js -r ./sample/test-v0.1.wasm",
     "test": "jest"
   },
   "repository": {
@@ -18,11 +25,16 @@
   },
   "homepage": "https://github.com/chharvey/solid#readme",
   "devDependencies": {
+    "@types/minimist": "^1.2.0",
     "@types/node": "^13.0.0",
     "gulp": "^4.0.2",
     "gulp-jest": "^4.0.3",
     "gulp-typescript": "^5.0.1",
     "jest-cli": "^24.9.0",
     "typescript": "~3.8.2"
+  },
+  "dependencies": {
+    "minimist": "^1.2.5",
+    "wabt": "^1.0.16"
   }
 }
