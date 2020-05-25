@@ -27,7 +27,7 @@ export default class CodeGenerator {
 	 * Throw an error at runtime.
 	 * @return this
 	 */
-	unreachable(): this {
+	private unreachable(): this {
 		this.instructions.push(`unreachable`)
 		return this
 	}

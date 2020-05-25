@@ -29,7 +29,7 @@ export type SemanticExpressionType =
 /**
  * A SemanticNode holds only the semantics of a {@link ParseNode}.
  */
-export default class SemanticNode implements Serializable {
+export default abstract class SemanticNode implements Serializable {
 	/** The name of the type of this SemanticNode. */
 	readonly tagname: string = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
 	/** The concatenation of the source text of all children. */
@@ -63,9 +63,7 @@ export default class SemanticNode implements Serializable {
 	 * Give directions to the runtime code generator.
 	 * @param generator the generator to direct
 	 */
-	compile(generator: CodeGenerator): CodeGenerator {
-		return generator.unreachable() // TODO make `ParseNode` and `SemanticNode` abstract classes
-	}
+	abstract compile(generator: CodeGenerator): CodeGenerator;
 
 	/**
 	 * @implements Serializable
@@ -131,6 +129,9 @@ export class SemanticNodeIdentifier extends SemanticNode {
 	constructor(start_node: Token, id: bigint|null) {
 		super(start_node, {id})
 	}
+	compile(generator: CodeGenerator): CodeGenerator {
+		throw new Error('not yet supported.')
+	}
 }
 export class SemanticNodeTemplate extends SemanticNode {
 	constructor(
@@ -145,6 +146,9 @@ export class SemanticNodeTemplate extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
+	compile(generator: CodeGenerator): CodeGenerator {
+		throw new Error('not yet supported.')
+	}
 }
 type SemanticNodeTemplatePartialChildrenType = // FIXME spread types
 	| readonly [                                            SemanticNodeConstant                        ]
@@ -158,6 +162,9 @@ export class SemanticNodeTemplatePartial extends SemanticNode {
 		readonly children: SemanticNodeTemplatePartialChildrenType,
 	) {
 		super(start_node, {}, children)
+	}
+	compile(generator: CodeGenerator): CodeGenerator {
+		throw new Error('not yet supported.')
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {
@@ -186,6 +193,9 @@ export class SemanticNodeDeclaration extends SemanticNode {
 	) {
 		super(start_node, {type, unfixed}, children)
 	}
+	compile(generator: CodeGenerator): CodeGenerator {
+		throw new Error('not yet supported.')
+	}
 }
 export class SemanticNodeAssignment extends SemanticNode {
 	constructor (
@@ -194,6 +204,9 @@ export class SemanticNodeAssignment extends SemanticNode {
 			| readonly [SemanticNodeAssignee, SemanticNodeAssigned]
 	) {
 		super(start_node, {}, children)
+	}
+	compile(generator: CodeGenerator): CodeGenerator {
+		throw new Error('not yet supported.')
 	}
 }
 export class SemanticNodeAssignee extends SemanticNode {
@@ -204,6 +217,9 @@ export class SemanticNodeAssignee extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
+	compile(generator: CodeGenerator): CodeGenerator {
+		throw new Error('not yet supported.')
+	}
 }
 export class SemanticNodeAssigned extends SemanticNode {
 	constructor(
@@ -212,6 +228,9 @@ export class SemanticNodeAssigned extends SemanticNode {
 			| readonly [SemanticExpressionType]
 	) {
 		super(start_node, {}, children)
+	}
+	compile(generator: CodeGenerator): CodeGenerator {
+		throw new Error('not yet supported.')
 	}
 }
 export class SemanticNodeStatementEmpty extends SemanticNode {

@@ -57,7 +57,7 @@ import Production, {
  *
  * @see http://parsingintro.sourceforge.net/#contents_item_8.2
  */
-export default class ParseNode implements Serializable {
+export default abstract class ParseNode implements Serializable {
 	/**
 	 * Construct a speific subtype of ParseNode depending on which production the rule belongs to.
 	 *
@@ -65,23 +65,23 @@ export default class ParseNode implements Serializable {
 	 * @param children - The set of child inputs that creates this ParseNode.
 	 * @returns          a new ParseNode object
 	 */
-	static from(rule: Rule, children: readonly (Token|ParseNode)[]): ParseNode {
-		return new ([...new Map<Production, typeof ParseNode>([
-			[ProductionPrimitiveLiteral         .instance, ParseNodePrimitiveLiteral       ],
-			[ProductionStringTemplate           .instance, ParseNodeStringTemplate         ],
-			[ProductionStringTemplate__0__List  .instance, ParseNodeStringTemplate__0__List],
-			[ProductionExpressionUnit           .instance, ParseNodeExpressionUnit         ],
-			[ProductionExpressionUnarySymbol    .instance, ParseNodeExpressionUnary        ],
-			[ProductionExpressionExponential    .instance, ParseNodeExpressionBinary       ],
-			[ProductionExpressionMultiplicative .instance, ParseNodeExpressionBinary       ],
-			[ProductionExpressionAdditive       .instance, ParseNodeExpressionBinary       ],
-			[ProductionExpression               .instance, ParseNodeExpression             ],
-			[ProductionDeclarationVariable      .instance, ParseNodeDeclarationVariable    ],
-			[ProductionStatementAssignment      .instance, ParseNodeStatementAssignment    ],
-			[ProductionStatement                .instance, ParseNodeStatement              ],
-			[ProductionGoal.__0__List           .instance, ParseNodeStatementList          ],
-			[ProductionGoal                     .instance, ParseNodeGoal                   ],
-		])].find(([key]) => rule.production.equals(key)) || [null, ParseNode])[1](rule, children)
+	static from(rule: Rule, children: readonly (Token | ParseNode)[]): ParseNode {
+		// NOTE: Need to use a chained if-else instead of a Map because cannot create instance of abstract class (`typeof ParseNode`).
+		if (rule.production.equals(ProductionPrimitiveLiteral         .instance)) return new ParseNodePrimitiveLiteral        (rule, children)
+		if (rule.production.equals(ProductionStringTemplate           .instance)) return new ParseNodeStringTemplate          (rule, children)
+		if (rule.production.equals(ProductionStringTemplate__0__List  .instance)) return new ParseNodeStringTemplate__0__List (rule, children)
+		if (rule.production.equals(ProductionExpressionUnit           .instance)) return new ParseNodeExpressionUnit          (rule, children)
+		if (rule.production.equals(ProductionExpressionUnarySymbol    .instance)) return new ParseNodeExpressionUnary         (rule, children)
+		if (rule.production.equals(ProductionExpressionExponential    .instance)) return new ParseNodeExpressionBinary        (rule, children)
+		if (rule.production.equals(ProductionExpressionMultiplicative .instance)) return new ParseNodeExpressionBinary        (rule, children)
+		if (rule.production.equals(ProductionExpressionAdditive       .instance)) return new ParseNodeExpressionBinary        (rule, children)
+		if (rule.production.equals(ProductionExpression               .instance)) return new ParseNodeExpression              (rule, children)
+		if (rule.production.equals(ProductionDeclarationVariable      .instance)) return new ParseNodeDeclarationVariable     (rule, children)
+		if (rule.production.equals(ProductionStatementAssignment      .instance)) return new ParseNodeStatementAssignment     (rule, children)
+		if (rule.production.equals(ProductionStatement                .instance)) return new ParseNodeStatement               (rule, children)
+		if (rule.production.equals(ProductionGoal.__0__List           .instance)) return new ParseNodeStatementList           (rule, children)
+		if (rule.production.equals(ProductionGoal                     .instance)) return new ParseNodeGoal                    (rule, children)
+		throw new Error(`The given rule \`${ rule.toString() }\` does not match any known grammar productions.`)
 	}
 
 
@@ -112,11 +112,7 @@ export default class ParseNode implements Serializable {
 	 * Return a Semantic Node, a node of the Semantic Tree or “decorated/abstract syntax tree”.
 	 * @returns a semantic node containing this parse node’s semantics
 	 */
-	decorate(): SemanticNode {
-		return new SemanticNode(this, {'syntactic-name': this.tagname}, this.children.map((c) =>
-			(c instanceof ParseNode) ? c.decorate() : new SemanticNode(c, {'syntactic-name': c.tagname})
-		))
-	}
+	abstract decorate(): SemanticNode;
 
 	/**
 	 * @implements Serializable
