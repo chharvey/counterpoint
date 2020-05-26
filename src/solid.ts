@@ -3,9 +3,7 @@ import * as path from 'path'
 
 import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
-import {
-	CodeGenerator,
-} from '../'
+import * as solid from '../'
 
 
 
@@ -113,13 +111,14 @@ const inputpath: string = path.normalize(argv._[1])
 const inputfilepath: string = path.join(process.cwd(), inputpath)
 
 if (command === Command.COMPILE || command === Command.DEV) {
+	const sourcecode: Promise<string> = fs.promises.readFile(inputfilepath, 'utf8')
+
 	const outputpath: string|null = argv.out ? path.normalize(argv.out) : null
 	const outputfilepath: string = path.join(process.cwd(), outputpath || path.format({
 		...path.parse(inputpath),
 		base: void 0,
 		ext: command === Command.DEV ? '.wat' : '.wasm',
 	}))
-	const sourcecode: Promise<string> = fs.promises.readFile(inputfilepath, 'utf8')
 
 	console.log(`
 		Compiling………
@@ -131,8 +130,7 @@ if (command === Command.COMPILE || command === Command.DEV) {
 	`)
 
 	;(async () => {
-		const generator: CodeGenerator = new CodeGenerator(await sourcecode)
-		await fs.promises.writeFile(outputfilepath, command === Command.DEV ? generator.print() : generator.compile())
+		await fs.promises.writeFile(outputfilepath, command === Command.DEV ? solid.print(await sourcecode) : solid.compile(await sourcecode))
 		return console.log('Success!')
 	})().catch((err) => {
 		console.error(err)
