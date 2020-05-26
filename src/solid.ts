@@ -30,6 +30,7 @@ const helptext: string = `
 
 	Options:
 	-h, --help               Print this help message.
+	-v, --version            Print the version of Solid currently installed.
 	-o, --output=file        Specify the output file.
 	                         Otherwise, the default output filepath is the input filepath except
 	                         with the extension changed to \`.wasm\` (or \`.wat\` if \`-d\` is given).
@@ -41,6 +42,8 @@ const helptext: string = `
 const argv = minimist<{
 	/** Display help text. */
 	help: boolean;
+	/** Display version number. */
+	version: boolean;
 	/** If compiling, specify output filepath. */
 	output: string;
 	/** Save intermediate representation (*.wat) output file for inspecting. */
@@ -50,6 +53,7 @@ const argv = minimist<{
 }>(process.argv.slice(2), {
 	boolean: [
 		'help',
+		'version',
 		'debug',
 		'run',
 	],
@@ -58,6 +62,7 @@ const argv = minimist<{
 	],
 	alias: {
 		h: 'help',
+		v: 'version',
 		o: 'output',
 		d: 'debug',
 		r: 'run',
@@ -65,6 +70,7 @@ const argv = minimist<{
 })
 const valid_args: boolean = (
 	typeof argv.help  === 'boolean' &&
+	typeof argv.version === 'boolean' &&
 	typeof argv.debug === 'boolean' &&
 	typeof argv.run   === 'boolean' &&
 	(argv.output === void 0 || typeof argv.output === 'string' && argv.output !== '')
@@ -73,7 +79,10 @@ if (!valid_args) throw new Error(`
 	Invalid CLI arguments!
 	${ helptext }
 `)
-if (argv.help || !argv._[0]) {
+if (argv.version) {
+	console.log(`solid version ${ require('../package.json').version }`)
+	process.exit(0)
+} else if (argv.help || !argv._[0]) {
 	console.log(helptext)
 	process.exit(0)
 }

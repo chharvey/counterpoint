@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "solid"    : "node ./build/solid.js",
-    "solid-h"  : "node ./build/solid.js --help",
+    "solid-h"  : "node ./build/solid.js -h",
+    "solid-v"  : "node ./build/solid.js -v",
     "solid-c"  : "node ./build/solid.js ./sample/test-v0.1.solid",
     "solid-o"  : "node ./build/solid.js ./sample/test-v0.1.solid -o ./sample/testout.wasm",
     "solid-d"  : "node ./build/solid.js ./sample/test-v0.1.solid -d",
