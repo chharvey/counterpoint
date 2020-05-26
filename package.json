@@ -5,14 +5,14 @@
   "description": "A robust programming language.",
   "main": "index.js",
   "scripts": {
-    "solid"    : "node ./build/solid.js",
-    "solid-h"  : "node ./build/solid.js -h",
-    "solid-v"  : "node ./build/solid.js -v",
-    "solid-c"  : "node ./build/solid.js ./sample/test-v0.1.solid",
-    "solid-o"  : "node ./build/solid.js ./sample/test-v0.1.solid -o ./sample/testout.wasm",
-    "solid-d"  : "node ./build/solid.js ./sample/test-v0.1.solid -d",
-    "solid-do" : "node ./build/solid.js ./sample/test-v0.1.solid -d -o ./sample/testout.wat",
-    "solid-r"  : "node ./build/solid.js -r ./sample/test-v0.1.wasm",
+    "solid"     : "node ./build/solid.js",
+    "solid-h"   : "node ./build/solid.js -h",
+    "solid-v"   : "node ./build/solid.js -v",
+    "solid:c"   : "node ./build/solid.js c ./sample/test-v0.1.solid",
+    "solid:c-o" : "node ./build/solid.js c ./sample/test-v0.1.solid -o ./sample/testout.wasm",
+    "solid:d"   : "node ./build/solid.js d ./sample/test-v0.1.solid",
+    "solid:d-o" : "node ./build/solid.js d ./sample/test-v0.1.solid -o ./sample/testout.wat",
+    "solid:r"   : "node ./build/solid.js r ./sample/test-v0.1.wasm",
     "test": "jest"
   },
   "repository": {
