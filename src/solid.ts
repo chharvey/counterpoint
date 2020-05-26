@@ -2,7 +2,6 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
-import wabt from 'wabt'         // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
 import {
 	CodeGenerator,
@@ -104,13 +103,8 @@ if (!argv.run) {
 	`)
 
 	;(async () => {
-		const wat: string = new CodeGenerator(await sourcecode).print()
-		const waModule = wabt().parseWat(outputfilepath, wat, {})
-		waModule.validate()
-		await (argv.debug
-			? fs.promises.writeFile(outputfilepath, wat)
-			: fs.promises.writeFile(outputfilepath, waModule.toBinary({}).buffer)
-		)
+		const generator: CodeGenerator = new CodeGenerator(await sourcecode)
+		await fs.promises.writeFile(outputfilepath, argv.debug ? generator.print() : generator.compile())
 		return console.log('Success!')
 	})().catch((err) => {
 		console.error(err)

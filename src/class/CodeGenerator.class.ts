@@ -1,6 +1,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
+import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
+
 import Parser from './Parser.class'
 import SemanticNode, {
 	Operator,
@@ -82,7 +84,7 @@ export default class CodeGenerator {
 
 	/**
 	 * Return the instructions to print to file.
-	 * @return the final output
+	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
 	print(): string {
 		return `
@@ -94,5 +96,14 @@ export default class CodeGenerator {
 				)
 			)
 		`
+	}
+	/**
+	 * Return a binary format of the program.
+	 * @return a binary output in WASM format, which can be executed
+	 */
+	compile(): Uint8Array {
+		const waModule = wabt().parseWat('', this.print(), {})
+		waModule.validate()
+		return waModule.toBinary({}).buffer
 	}
 }
