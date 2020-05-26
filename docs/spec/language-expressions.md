@@ -44,11 +44,8 @@ Type typeOf(SemanticOperation operation) :=
 ### Abstract Operation: EvaluateNumericBinaryExpression
 The abstract operation `EvaluateNumericBinaryExpression` performs a binary stack operation.
 ```w3c
-Void EvaluateNumericBinaryExpression(Text op) :=
-	1. Assert: The count of the operand stack is at least 2.
-	2. Pop `operand2` off the operand stack.
-	3. Pop `operand1` off the operand stack.
-	4. Let `operation` be a function obtained from the following record, keyed by `op`: {
+Void EvaluateNumericBinaryExpression(Text op, operand1, operand2) :=
+	1. *Let* `operation` be a function obtained from the following record, keyed by `op`: {
 		`ADD`: Return the sum, `arg1 + arg2`,
 			obtained by adding `arg1` (the augend) to `arg2` (the addend).
 		`MUL`: Return the product, `arg1 * arg2`,
@@ -58,7 +55,7 @@ Void EvaluateNumericBinaryExpression(Text op) :=
 		`EXP`: Return the power, `arg1 ^ arg2`,
 				obtained by raising `arg1` (the base) to `arg2` (the exponent).
 	}
-	5. Push `operation(operand1, operand2)` onto the operand stack.
+	2. *Return* `operation(operand1, operand2)`.
 ```
 
 
@@ -140,7 +137,7 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 ### Runtime Instructions: Evaluate (Literals)
 ```w3c
 Evaluate(SemanticConstant) :=
-	1. Push `SemanticConstant.value` onto the operand stack.
+	1. *Return* `SemanticConstant.value`.
 ```
 
 
@@ -199,13 +196,11 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperati
 ### Runtime Instructions: Evaluate (Unary Operators)
 ```w3c
 Evaluate(SemanticOperation[operator=NEG]) :=
-	1. Assert: `SemanticOperation.children.count` is 1.
-	2. Perform: `Evaluate(SemanticOperation.children.0)`.
-	3. Assert: The count of the operand stack is at least 1.
-	4. Pop `operand` off the operand stack.
-	5. Let `negation` be the additive inverse, `-operand`,
+	1. *Assert:* `SemanticExpression.children.count` is 1.
+	2. *Let* `operand` be the result of performing `Evaluate(SemanticExpression.children.0)`.
+	3. *Let* `negation` be the additive inverse, `-operand`,
 		obtained by negating `operand`.
-	6. Push `negation` onto the operand stack.
+	4. *Return* `negation`.
 ```
 
 
@@ -231,10 +226,11 @@ Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponenti
 ### Runtime Instructions: Evaluate (Exponentiation)
 ```w3c
 Evaluate(SemanticOperation[operator=EXP]) :=
-	1. Assert:`SemanticOperation.children.count` is 2.
-	2. Perform: `Evaluate(SemanticOperation.children.0)`.
-	3. Perform: `Evaluate(SemanticOperation.children.1)`.
-	4. Perform: `EvaluateNumericBinaryExpression(EXP)`
+	1. *Assert:* `SemanticExpression.children.count` is 2.
+	2. *Let* `operand1` be the result of performing `Evaluate(SemanticExpression.children.0)`.
+	3. *Let* `operand2` be the result of performing `Evaluate(SemanticExpression.children.1)`.
+	4. *Let* `power` be the result of performing `EvaluateNumericBinaryExpression(EXP, operand1, operand2)`.
+	5. *Return* `power`.
 ```
 
 
@@ -265,15 +261,17 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 ### Runtime Instructions: Evaluate (Multiplicative)
 ```w3c
 Evaluate(SemanticOperation[operator=MUL]) :=
-	1. Assert: `SemanticOperation.children.count` is 2.
-	2. Perform: `Evaluate(SemanticOperation.children.0)`.
-	3. Perform: `Evaluate(SemanticOperation.children.1)`.
-	4. Perform: `EvaluateNumericBinaryExpression(MUL)`
+	1. *Assert:* `SemanticExpression.children.count` is 2.
+	2. *Let* `operand1` be the result of performing `Evaluate(SemanticExpression.children.0)`.
+	3. *Let* `operand2` be the result of performing `Evaluate(SemanticExpression.children.1)`.
+	4. *Let* `product` be the result of performing `EvaluateNumericBinaryExpression(MUL, operand1, operand2)`.
+	5. *Return* `product`.
 Evaluate(SemanticOperation[operator=DIV]) :=
-	1. Assert: `SemanticOperation.children.count` is 2.
-	2. Perform: `Evaluate(SemanticOperation.children.0)`.
-	3. Perform: `Evaluate(SemanticOperation.children.1)`.
-	4. Perform: `EvaluateNumericBinaryExpression(DIV)`
+	1. *Assert:* `SemanticExpression.children.count` is 2.
+	2. *Let* `operand1` be the result of performing `Evaluate(SemanticExpression.children.0)`.
+	3. *Let* `operand2` be the result of performing `Evaluate(SemanticExpression.children.1)`.
+	4. *Let* `quotient` be the result of performing `EvaluateNumericBinaryExpression(DIV, operand1, operand2)`.
+	5. *Return* `quotient`.
 ```
 
 
@@ -306,8 +304,9 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 ### Runtime Instructions: Evaluate (Additive)
 ```w3c
 Evaluate(SemanticOperation[operator=ADD]) :=
-	1. Assert: `SemanticOperation.children.count` is 2.
-	2. Perform: `Evaluate(SemanticOperation.children.0)`.
-	3. Perform: `Evaluate(SemanticOperation.children.1)`.
-	4. Perform: `EvaluateNumericBinaryExpression(ADD)`
+	1. *Assert:* `SemanticExpression.children.count` is 2.
+	2. *Let* `operand1` be the result of performing `Evaluate(SemanticExpression.children.0)`.
+	3. *Let* `operand2` be the result of performing `Evaluate(SemanticExpression.children.1)`.
+	4. *Let* `sum` be the result of performing `EvaluateNumericBinaryExpression(ADD, operand1, operand2)`.
+	5. *Return* `sum`.
 ```

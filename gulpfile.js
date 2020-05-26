@@ -24,7 +24,12 @@ function test() {
 }
 
 async function test_dev() {
-	const {Scanner, Lexer, Screener, Parser, CodeGenerator} = require('./')
+	const {default: Scanner      } = require('./build/class/Scanner.class.js')
+	const {default: Lexer        } = require('./build/class/Lexer.class.js')
+	const {default: Screener     } = require('./build/class/Screener.class.js')
+	const {default: Parser       } = require('./build/class/Parser.class.js')
+	const {default: CodeGenerator} = require('./build/class/CodeGenerator.class.js')
+
 	const input = fsPromise.readFile('./test/test-v0.2.solid', 'utf8')
 
 	console.log("\n\nHere are the characters returned by the scanner:")
