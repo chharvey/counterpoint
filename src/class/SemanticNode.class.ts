@@ -104,8 +104,8 @@ export class SemanticNodeNull extends SemanticNode {
 	constructor(start_node: Token|ParseNode) {
 		super(start_node)
 	}
-	compile(): CodeGenerator {
-		return new CodeGenerator()
+	compile(generator: CodeGenerator): CodeGenerator {
+		return generator.nop()
 	}
 }
 export class SemanticNodeConstant extends SemanticNode {
@@ -274,6 +274,7 @@ export class SemanticNodeGoal extends SemanticNode {
 	constructor(
 		start_node: ParseNode,
 		readonly children:
+			| readonly [SemanticNodeNull]
 			| readonly [SemanticNodeStatementList]
 	) {
 		super(start_node, {}, children)

@@ -18,8 +18,8 @@ describe('SemanticNode', () => {
 		`
 
 		context('SemanticNodeNull', () => {
-			it('prints nothing.', () => {
-				assert.strictEqual(new Parser('').parse().decorate().compile().print(), boilerplate(''))
+			it('prints nop.', () => {
+				assert.strictEqual(new Parser('').parse().decorate().compile().print(), boilerplate(`nop`))
 			})
 		})
 
