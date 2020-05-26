@@ -4,15 +4,18 @@
   "private": true,
   "description": "A robust programming language.",
   "main": "index.js",
+  "bin": {
+    "solid": "bin/solid"
+  },
   "scripts": {
-    "solid"     : "node ./build/solid.js",
-    "solid-h"   : "node ./build/solid.js -h",
-    "solid-v"   : "node ./build/solid.js -v",
-    "solid:c"   : "node ./build/solid.js c ./sample/test-v0.1.solid",
-    "solid:c-o" : "node ./build/solid.js c ./sample/test-v0.1.solid -o ./sample/testout.wasm",
-    "solid:d"   : "node ./build/solid.js d ./sample/test-v0.1.solid",
-    "solid:d-o" : "node ./build/solid.js d ./sample/test-v0.1.solid -o ./sample/testout.wat",
-    "solid:r"   : "node ./build/solid.js r ./sample/test-v0.1.wasm",
+    "solid"     : "solid",
+    "solid-h"   : "solid -h",
+    "solid-v"   : "solid -v",
+    "solid:c"   : "solid c ./sample/test-v0.1.solid",
+    "solid:c-o" : "solid c ./sample/test-v0.1.solid -o ./sample/testout.wasm",
+    "solid:d"   : "solid d ./sample/test-v0.1.solid",
+    "solid:d-o" : "solid d ./sample/test-v0.1.solid -o ./sample/testout.wat",
+    "solid:r"   : "solid r ./sample/test-v0.1.wasm",
     "test": "jest"
   },
   "repository": {
