@@ -1,5 +1,5 @@
 import type Serializable from '../iface/Serializable.iface'
-import CodeGenerator from './CodeGenerator.class'
+import type CodeGenerator from './CodeGenerator.class'
 import {SOT, EOT} from './Char.class'
 import type ParseNode from './ParseNode.class'
 import type {
@@ -56,8 +56,9 @@ export default class SemanticNode implements Serializable {
 	/**
 	 * Give directions to the runtime code generator.
 	 * @param generator the generator to direct
+	 * @return the directions to print
 	 */
-	compile(generator: CodeGenerator): CodeGenerator {
+	evaluate(generator: CodeGenerator): string {
 		return generator.unreachable() // TODO make `ParseNode` and `SemanticNode` abstract classes
 	}
 
@@ -86,8 +87,8 @@ export class SemanticNodeNull extends SemanticNode {
 	constructor(start_node: ParseNode) {
 		super(start_node)
 	}
-	compile(): CodeGenerator {
-		return new CodeGenerator().nop()
+	evaluate(generator: CodeGenerator): string {
+		return generator.nop()
 	}
 }
 export class SemanticNodeGoal extends SemanticNode {
@@ -98,8 +99,8 @@ export class SemanticNodeGoal extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	compile(): CodeGenerator {
-		return this.children[0].compile(new CodeGenerator())
+	evaluate(generator: CodeGenerator): string {
+		return this.children[0].evaluate(generator)
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {
@@ -112,7 +113,7 @@ export class SemanticNodeExpression extends SemanticNode {
 	) {
 		super(start_node, {operator: Operator[operator]}, children)
 	}
-	compile(generator: CodeGenerator): CodeGenerator {
+	evaluate(generator: CodeGenerator): string {
 		return (this.children.length === 1)
 			? generator.unop (this.operator, ...this.children)
 			: generator.binop(this.operator, ...this.children)
@@ -125,7 +126,7 @@ export class SemanticNodeConstant extends SemanticNode {
 	) {
 		super(start_node, {value})
 	}
-	compile(generator: CodeGenerator): CodeGenerator {
+	evaluate(generator: CodeGenerator): string {
 		return generator.const(this.value)
 	}
 }
