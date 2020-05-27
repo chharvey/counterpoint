@@ -33,7 +33,7 @@ export default class CodeGenerator {
 	 * Throw an error at runtime.
 	 * @return `'(unreachable)'`
 	 */
-	unreachable(): string {
+	private unreachable(): string {
 		return `(unreachable)`
 	}
 

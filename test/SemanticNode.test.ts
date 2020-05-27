@@ -35,6 +35,12 @@ describe('SemanticNode', () => {
 			})
 		})
 
+		context('SemanticNodeStatementEmpty', () => {
+			it('prints nop.', () => {
+				assert.strictEqual(new CodeGenerator('').print(), boilerplate(`(nop)`))
+			})
+		})
+
 		context('SemanticNodeConstant', () => {
 			it('pushes the constant onto the stack.', () => {
 				const outs = ['42;', '+42;', '-42;'].map((src) => new CodeGenerator(src).print())

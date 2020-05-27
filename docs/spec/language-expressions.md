@@ -8,7 +8,7 @@ Expression ::= ExpressionAdditive;
 
 ### Static Semantics: Decorate (Expressions)
 ```w3c
-Decorate(Expression ::= ExpressionAdditive) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticOperation
+Decorate(Expression ::= ExpressionAdditive) -> SemanticConstant | SemanticIdentifier | SemanticTemplate | SemanticOperation
 	:= Decorate(ExpressionAdditive);
 ```
 
@@ -100,14 +100,14 @@ Decorate(StringTemplate ::= TEMPLATE_HEAD Expression TEMPLATE_TAIL) -> SemanticT
 Decorate(StringTemplate ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
 	:= SemanticTemplate {type: "substitution"} [
 		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
-		...Decorate(StringTemplate__0__List),
+		...Decorate(StringTemplate__0__List).children,
 		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
 	];
 Decorate(StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
 	:= SemanticTemplate {type: "substitution"} [
 		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
 		Decorate(Expression),
-		...Decorate(StringTemplate__0__List),
+		...Decorate(StringTemplate__0__List).children,
 		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
 	];
 
@@ -122,12 +122,12 @@ Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE Expression) -> SemanticTemp
 	];
 Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE) -> SemanticTemplatePartial
 	:= SemanticTemplatePartial {} [
-		...Decorate(StringTemplate__0__List),
+		...Decorate(StringTemplate__0__List).children,
 		SemanticConstant {value: TokenWorth(TEMPLATE_MIDDLE)} [],
 	];
 Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression) -> SemanticTemplatePartial
 	:= SemanticTemplatePartial {} [
-		...Decorate(StringTemplate__0__List),
+		...Decorate(StringTemplate__0__List).children,
 		SemanticConstant {value: TokenWorth(TEMPLATE_MIDDLE)} [],
 		Decorate(Expression),
 	];
@@ -161,7 +161,7 @@ Decorate(ExpressionUnit ::= PrimitiveLiteral) -> SemanticConstant
 	:= Decorate(PrimitiveLiteral);
 Decorate(ExpressionUnit ::= StringTemplate) -> SemanticTemplate
 	:= Decorate(StringTemplate);
-Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticOperation
+Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticConstant | SemanticIdentifier | SemanticTemplate | SemanticOperation
 	:= Decorate(Expression);
 ```
 
@@ -182,9 +182,9 @@ ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol;
 
 ### Static Semantics: Decorate (Unary Operators)
 ```w3c
-Decorate(ExpressionUnarySymbol ::= ExpressionUnit) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticOperation
+Decorate(ExpressionUnarySymbol ::= ExpressionUnit) -> SemanticConstant | SemanticIdentifier | SemanticTemplate | SemanticOperation
 	:= Decorate(ExpressionUnit);
-Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticOperation
+Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticConstant | SemanticIdentifier | SemanticTemplate | SemanticOperation
 	:= Decorate(ExpressionUnarySymbol);
 Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperation
 	:= SemanticOperation {operator: NEG} [
@@ -213,7 +213,7 @@ ExpressionExponential ::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
 
 ### Static Semantics: Decorate (Exponentiation)
 ```w3c
-Decorate(ExpressionExponential ::= ExpressionUnarySymbol) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticOperation
+Decorate(ExpressionExponential ::= ExpressionUnarySymbol) -> SemanticConstant | SemanticIdentifier | SemanticTemplate | SemanticOperation
 	:= Decorate(ExpressionUnarySymbol);
 Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential) -> SemanticOperation
 	:= SemanticOperation {operator: EXP} [
@@ -243,7 +243,7 @@ ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionE
 
 ### Static Semantics: Decorate (Multiplicative)
 ```w3c
-Decorate(ExpressionMultiplicative ::= ExpressionExponential) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticOperation
+Decorate(ExpressionMultiplicative ::= ExpressionExponential) -> SemanticConstant | SemanticIdentifier | SemanticTemplate | SemanticOperation
 	:= Decorate(ExpressionExponential);
 Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential) -> SemanticOperation
 	:= SemanticOperation {operator: MUL} [
@@ -284,7 +284,7 @@ ExpressionAdditive ::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicativ
 
 ### Static Semantics: Decorate (Additive)
 ```w3c
-Decorate(ExpressionAdditive ::= ExpressionMultiplicative) -> SemanticIdentifier | SemanticConstant | SemanticTemplate | SemanticOperation
+Decorate(ExpressionAdditive ::= ExpressionMultiplicative) -> SemanticConstant | SemanticIdentifier | SemanticTemplate | SemanticOperation
 	:= Decorate(ExpressionMultiplicative);
 Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative) -> SemanticOperation
 	:= SemanticOperation {operator: ADD} [
