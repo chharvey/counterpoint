@@ -29,7 +29,7 @@ export default class Screener {
 
 	/**
 	 * Construct a new Screener object.
-	 * @param   source - the entire source text
+	 * @param source - the entire source text
 	 */
 	constructor(source: string) {
 		this.lexer = new Lexer(source).generate()
