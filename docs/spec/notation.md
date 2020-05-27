@@ -7,9 +7,9 @@ This chapter describes notational conventions used throughout this specification
 Context-free grammars define the lexical and syntactic composition of Solid programs.
 
 A context-free grammar consists of a number of **productions**, each of which
-has an abstract symbol called a **nonterminal** as its left-hand side,
-and any number of sequences of zero or more nonterminal and terminal symbols as its right-hand side.
-For each grammar, the **terminal** symbols are drawn from a specified alphabet.
+defines an abstract symbol called a **nonterminal** by
+one or more sequences of zero or more nonterminal and **terminal** symbols.
+For each grammar, the terminal symbols are drawn from a specified alphabet.
 
 Starting from a sentence consisting of a single distinguished nonterminal,
 called the goal symbol, a given context-free grammar specifies a language, namely,
@@ -26,9 +26,10 @@ for any given replacement step.
 
 ### Example
 ```
-ExpressionAddition
-	::= ExpressionAddition "+" NUMBER
-	::= NUMBER
+ExpressionAddition ::=
+	| ExpressionAddition "+" NUMBER
+	| NUMBER
+;
 ```
 The grammar above is a very simple grammar with only one production, defined
 by the nonterminal `ExpressionAddition` on the left-hand side and two sequences on the right-hand side.
@@ -36,7 +37,6 @@ The first sequence has three symbols: one nonterminal (which happens to be the s
 recursion is allowed in this specification’s grammars), and two terminals.
 The terminal `"+"` is a literal token, and the terminal `NUMBER` represents a token
 that matches some lexical formula, such as `[0-9]+` (which might be defined in a separate lexical grammar).
-In this specification, such terminal identifiers will be written in all-uppercase (‘MACRO_CASE’).
 
 One is able to start with the nonterminal `ExpressionAddition`, and replace it with
 any of the right-hand sequences, repeating that step perhaps an arbitrary number of times
@@ -616,8 +616,10 @@ Production
 Choice   ::= (Choice   "|")? Sequence;
 Sequence ::= (Sequence "&")? Item+;
 
-Item
-	::= Condition? Unary;
+Item ::=
+	| Unary
+	| Condition Item
+;
 
 Unary
 	::= Unit ("+" | "*" | "#")? "?"?;
@@ -657,7 +659,7 @@ Identifier
 	:::= [A-Z] [A-Za-z0-9_]*;
 
 Comment
-	:::= "//" [^#x0a#03]+ #x0a;
+	:::= "//" [^#x0a#03]* #x0a;
 ```
 For those not faint of heart, the shorthand grammars above expand into the following formal grammar.
 The following is non-normative; if there are any discrepancies, the grammars above take precedence.
@@ -724,18 +726,14 @@ NonterminalDefinition ::=
 	| IDENTIFIER "<" IDENTIFIER__List ">"
 ;
 
-NonterminalReference ::=
-	| IDENTIFIER
-	| IDENTIFIER "<" NonterminalReference__0__List ">"
-;
-
-Condition ::=
-	| "<" Condition__0__List ">"
-;
-
 IDENTIFIER__List ::=
 	|                      IDENTIFIER
 	| IDENTIFIER__List "," IDENTIFIER
+;
+
+NonterminalReference ::=
+	| IDENTIFIER
+	| IDENTIFIER "<" NonterminalReference__0__List ">"
 ;
 
 NonterminalReference__0__List ::=
@@ -745,6 +743,10 @@ NonterminalReference__0__List ::=
 	| NonterminalReference__0__List "," "+" IDENTIFIER
 	| NonterminalReference__0__List "," "-" IDENTIFIER
 	| NonterminalReference__0__List "," "?" IDENTIFIER
+
+Condition ::=
+	| "<" Condition__0__List ">"
+;
 
 Condition__0__List ::=
 	|                        IDENTIFIER "+"
@@ -810,6 +812,7 @@ Identifier__0__List :::=
 ;
 
 Comment :::=
+	| "//"                  #x0a
 	| "//" Comment__0__List #x0a
 ;
 
@@ -834,14 +837,14 @@ or entire objects representing semantic nodes with children.
 
 ### Example
 ```
-Value(INT ::= [0-9]) -> Integer
+Value(INT :::= [0-9]) -> Integer
 	:= Value([0-9]);
-Value(INT ::= INT [0-9]) -> Integer
+Value(INT :::= INT [0-9]) -> Integer
 	:= 10 * Value(INT) + Value([0-9]);
-Value([0-9] ::= "0") -> Integer := 0;
-Value([0-9] ::= "1") -> Integer := 1;
+Value([0-9] :::= "0") -> Integer := 0;
+Value([0-9] :::= "1") -> Integer := 1;
 ...
-Value([0-9] ::= "9") -> Integer := 9;
+Value([0-9] :::= "9") -> Integer := 9;
 ```
 This example illustrates a hypothetical attribute grammar that defines an attribute called `Value` on an `INT` token.
 Each rule defines the attribute on the token matching a different pattern defined by a CFG,
@@ -944,6 +947,12 @@ Production
 Parameter
 	::= IDENTIFIER (":::=" | "::=") Item+;
 
+ReturnType
+	::= (ReturnType "|")? Type;
+
+Type
+	::= IDENTIFIER ("<" Type ">")?;
+
 Item ::=
 	| STRING
 	| CHARCODE
@@ -967,26 +976,6 @@ An algorithm consists of a name, an output type, zero or more parameters, and a 
 The steps are formatted as an ordered list;
 the list is *ordered* in that the outcome could change if the steps were not performed in the order given.
 
-Algorithms are written in parameterized functional form,
-e.g., `RType AlgorithnName(PType1 param1, PType2 param2)`,
-where `AlgorithnName` is the algorithm name, `RType` is the output type of the algorithm,
-and `PType1` and `PType2` are the types of the parameters `param1` and `param2` respectively.
-If the algorithm is invoked in another algorithm, it is written in a similar manner, e.g., `AlgorithmName(arg1, arg2)`.
-Typically, algorithm names are written in PascalCase while parameter/argument names are written in snake_case.
-Within the steps of an algorithm, referenced
-local variables, parameters, other algorithm names, and code snippets are delimited with \`back-ticks\`.
-
-```w3c
-Void AlgorithmName(RealNumber param) :=
-	1. Step 1.
-	2. Step 2.
-		1. Substep 2.1.
-			1. Subsubstep 2.1.1.
-		2. Substep 2.1.
-	3. Step 3.
-		1. Substep 3.1.
-```
-
 Algorithm steps may include substeps, which are formatted by an additional indentation level.
 Substeps may include their own “subsubsteps”, and so on, with each level corresponding to a new indentation.
 Steps may be nested an arbitrary number of levels.
@@ -1002,40 +991,40 @@ The steps allowed in an algorithm fall into categories, whose semantics are defi
 If a step does not match one of the given categories, its behavior is open to interpretation.
 
 #### Assert
-Steps that begin with “Assert: …” are informative and are meant only to provide clarification to the reader.
+Steps that begin with “*Assert:* …” are informative and are meant only to provide clarification to the reader.
 These steps explicitly indicate that a conditon is true when it would otherwise only be implicit.
 
 #### Perform
-Steps that begin with “Perform: …” reference another algorithm expect it to be performed.
-The current algorithm is halted on this step and waits for the referenced algorithm to complete before proceeding.
+Steps that begin with “*Perform:* …” invoke another algorithm expect it to be performed.
+The current algorithm is halted on this step and waits for the invoked algorithm to complete before proceeding.
 
 #### Let/Set
-Algorithms may make the use of variable references, such as, “Let \`x\` be \`someValue\`.”
+Algorithms may make the use of variable references, such as, “*Let* \`x\` be \`someValue\`.”
 Such a step indicates that \`x\` is a pointer to the value \`someValue\`,
 which itself may refer to a [Solid Language Value] (link pending), an [Internal Specification Value] (link pending),
 or the result of performing another algorithm.
 
 The variable \`x\` is treated as a pointer in that if \`someValue\` is mutated in some way,
 then that effect will also be seen on \`x\`.
-An algorithm may specify that a variable be reassigned, e.g., “Set \`x\` to \`someOtherValue\`.”
+An algorithm may specify that a variable be reassigned, e.g., “*Set* \`x\` to \`someOtherValue\`.”
 In that case, the pointer \`x\` is changed to the new value.
 
 #### If/Else, While
 Conditional and loop programming structures may appear in algorithms.
-For conditionals, the *if* branch and *else* branch are parallel steps,
+For conditionals, the ‘if branch’ and ‘else branch’ are parallel steps,
 each containing the substeps respective to that branch.
-(The *else* branch is not always necessary, e.g. if the *if* branch completes the algorithm.)
-*If* steps begin with “If …:” and *else* steps begin with “Else:”.
+(The ‘else branch’ is not always necessary, e.g. if the ‘if branch’ completes the algorithm.)
+‘If’ steps begin with “If …:” and ‘else’ steps begin with “Else:”.
 
 A step that specifies a loop must have as its substeps the steps to be performed for each iteration.
-A loop step begins with “While …:”
+A loop step begins with “*While* …:”
 
 #### Return
 An algorithm must output either no value or one value.
 The output value, if it exists, is a [Solid Specification Value] returned by the algorithm to its invoker.
 The output type is specified before the name of the algorithm in its header, but
 if the algorithm does not output a value, the output type is specified as “Void”.
-If an algorithm outputs a value, it must do so via a step beginning with “Return: …”.
+If an algorithm outputs a value, it must do so via a step beginning with “*Return:* …”.
 
 
 ### Runtime Instructions
@@ -1048,6 +1037,32 @@ The runtime instructions of static semantics are listed in the chapters
 [Solid Language: Expressions](./language-expressions.md),
 [Solid Language: Statements](./language-statements.md), and
 [Solid Language: Goal Symbols](./language-goal.md).
+
+
+### Notation: Algorithms
+Algorithms are written in parameterized functional form, e.g.,
+```
+RType AlgorithmName(PType1 param1, PType2 param2) :=
+```
+where `AlgorithmName` is the algorithm name, `RType` is the output type of the algorithm,
+and `PType1` and `PType2` are the types of the parameters `param1` and `param2` respectively.
+If the algorithm is invoked in another algorithm, it is written in a similar manner, e.g., `AlgorithmName(arg1, arg2)`.
+The symbol `:=` delimits the algorithm head from its body (its steps).
+Typically, algorithm names are written in PascalCase while parameter/argument names are written in snake_case.
+Within the steps of an algorithm, referenced local variables, parameters, other algorithm names, and code snippets
+are delimited with \`back-ticks\`.
+Algorithm instructions (*If*, *Perform*, etc.) are written in *italics*.
+
+```w3c
+Void AlgorithmName(RealNumber param) :=
+	1. Step 1.
+	2. Step 2.
+		1. Substep 2.1.
+			1. Subsubstep 2.1.1.
+		2. Substep 2.2.
+	3. Step 3.
+		1. Substep 3.1.
+```
 
 
 

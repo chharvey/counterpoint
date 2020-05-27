@@ -140,6 +140,12 @@ let bar = 420;
 >
 > ReferenceError: `` `bar` `` is not declared.
 
+This means that the identifiers `foo` and `` `foo` `` can refer to different values.
+```
+let foo = 42;
+let `foo` = 420;
+```
+
 We can use Unicode identifiers to name variables with words that appear in the set of reserved keywords.
 ```
 let let = 42; %> ParseError
@@ -158,6 +164,12 @@ including spaces and punctuation symbols.
 let `Svaret på den ultimata frågan.` = 42;
 `Svaret på den ultimata frågan.` / 2;      %== 21
 ```
+
+Unicode identifiers may also contain no characters: the token `` `​` `` is a valid identifier.
+```
+let `` = 'What’s my name?';
+```
+
 Note that Unicode identifiers *are not strings*; they’re simply names of declared variables.
 Even though Unicode identifiers are not strings, they’re tokenized the same way
 that template literals are, with a few differences.
@@ -168,7 +180,7 @@ Like template literals,
 	That is, an identifier named `` `1\u{24}2` `` remains exactly as typed;
 	it does not become `` `1$2` `` and cannot be accessed as such.
 	`` `1\u{24}2` `` and `` `1$2` `` are two different identifiers.
-- Line breaks are allowed in Unicode identifiers,
+- Line breaks, whitespace, and non-printing characters are allowed in Unicode identifiers,
 	however, keep in mind that this might result in very unreadable code.
 - The character **U+0003 END OF TEXT** is not allowed in Unicode identifiers
 	(or any token for that matter) and will cause a lexical error.
