@@ -1,3 +1,6 @@
+import {CONFIG_DEFAULT} from '../../'
+import type SolidConfig from '../SolidConfig.d'
+
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import Char from './Char.class'
@@ -8,6 +11,7 @@ import {
 	LexError03,
 	LexError04,
 } from '../error/LexError.class'
+
 
 
 export enum Filebound {
@@ -265,10 +269,15 @@ export class TokenNumber extends Token {
 	 * Compute the mathematical value of a `TokenNumber` token.
 	 * @param   text  - the string to compute
 	 * @param   radix - the base in which to compute
+	 * @param   allow_separators - Should numeric separators be allowed?
 	 * @returns         the mathematical value of the string in the given base
 	 */
-	static mv(text: string, radix: RadixType = TokenNumber.RADIX_DEFAULT): number {
-		if (text[text.length-1] === TokenNumber.SEPARATOR) {
+	static mv(
+		text: string,
+		radix: RadixType = TokenNumber.RADIX_DEFAULT,
+		allow_separators: SolidConfig['features']['numericSeparators'] = CONFIG_DEFAULT.features.numericSeparators,
+	): number {
+		if (allow_separators && text[text.length-1] === TokenNumber.SEPARATOR) {
 			text = text.slice(0, -1)
 		}
 		if (text.length === 0) throw new Error('Cannot compute mathematical value of empty string.')
@@ -277,7 +286,9 @@ export class TokenNumber extends Token {
 			if (Number.isNaN(digitvalue)) throw new Error(`Invalid number format: \`${text}\``)
 			return digitvalue
 		}
-		return Number(radix) * TokenNumber.mv(text.slice(0, -1), radix) + TokenNumber.mv(text[text.length-1], radix)
+		return Number(radix) *
+			TokenNumber.mv(text.slice(0, -1)    , radix, allow_separators) +
+			TokenNumber.mv(text[text.length - 1], radix, allow_separators)
 	}
 	private readonly has_unary: boolean;
 	private readonly has_radix: boolean;
@@ -302,10 +313,13 @@ export class TokenNumber extends Token {
 		this.has_unary = has_unary
 		this.has_radix = has_radix
 		this.radix     = radix
-		while (!this.lexer.isDone && Char.inc([...digits, TokenNumber.SEPARATOR], this.lexer.c0)) {
+		while (!this.lexer.isDone && Char.inc([
+			...digits,
+			...(this.lexer.config.features.numericSeparators ? [TokenNumber.SEPARATOR] : [])
+		], this.lexer.c0)) {
 			if (Char.inc(digits, this.lexer.c0)) {
 				this.advance()
-			} else if (Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
+			} else if (this.lexer.config.features.numericSeparators && Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
 				if (Char.inc(digits, this.lexer.c1)) {
 					this.advance(2n)
 				} else {
@@ -319,7 +333,7 @@ export class TokenNumber extends Token {
 		const multiplier: number = (text[0] === Punctuator.NEG) ? -1 : 1
 		if (this.has_unary) text = text.slice(1) // cut off unary, if any
 		if (this.has_radix) text = text.slice(2) // cut off radix, if any
-		return multiplier * TokenNumber.mv(text, this.radix)
+		return multiplier * TokenNumber.mv(text, this.radix, this.lexer.config.features.numericSeparators)
 	}
 }
 export class TokenString extends Token {
@@ -330,9 +344,13 @@ export class TokenString extends Token {
 	 * Compute the string value of a `TokenString` token
 	 * or any segment of such token.
 	 * @param   text - the string to compute
+	 * @param   allow_separators - Should numeric separators be allowed?
 	 * @returns        the string value of the argument, a sequence of Unicode code points
 	 */
-	private static sv(text: string): number[] {
+	private static sv(
+		text: string,
+		allow_separators: SolidConfig['features']['numericSeparators'] = CONFIG_DEFAULT.features.numericSeparators,
+	): number[] {
 		if (text.length === 0) return []
 		if (TokenString.ESCAPER === text[0]) {
 			/* possible escape or line continuation */
@@ -347,31 +365,31 @@ export class TokenString extends Token {
 						['n'                 , 0x0a],
 						['r'                 , 0x0d],
 					]).get(text[1]) !,
-					...TokenString.sv(text.slice(2)),
+					...TokenString.sv(text.slice(2), allow_separators),
 				]
 
 			} else if ('u{' === `${text[1]}${text[2]}`) {
 				/* an escape sequence */
 				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
 				return [
-					...Util.utf16Encoding(TokenNumber.mv(sequence[0].slice(3, -1) || '0', 16n)),
-					...TokenString.sv(text.slice(sequence[0].length)),
+					...Util.utf16Encoding(TokenNumber.mv(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
+					...TokenString.sv(text.slice(sequence[0].length), allow_separators),
 				]
 
 			} else if ('\n' === text[1]) {
 				/* a line continuation (LF) */
-				return [0x20, ...TokenString.sv(text.slice(2))]
+				return [0x20, ...TokenString.sv(text.slice(2), allow_separators)]
 
 			} else {
 				/* a backslash escapes the following character */
 				return [
 					...Util.utf16Encoding(text.codePointAt(1) !),
-					...TokenString.sv(text.slice(2)),
+					...TokenString.sv(text.slice(2), allow_separators),
 				]
 			}
 		} else return [
 			...Util.utf16Encoding(text.codePointAt(0) !),
-			...TokenString.sv(text.slice(1)),
+			...TokenString.sv(text.slice(1), allow_separators),
 		]
 	}
 	constructor (lexer: Lexer) {
@@ -432,7 +450,8 @@ export class TokenString extends Token {
 	}
 	cook(): string {
 		return String.fromCodePoint(...TokenString.sv(
-			this.source.slice(1, -1) // cut off the string delimiters
+			this.source.slice(1, -1), // cut off the string delimiters
+			this.lexer.config.features.numericSeparators,
 		))
 	}
 }

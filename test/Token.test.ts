@@ -175,7 +175,13 @@ describe('Token', () => {
 				]]],
 			])].forEach(([name, [source, values]]) => {
 				it(`correctly cooks ${name}.`, () => {
-					;[...new Screener(source, CONFIG_DEFAULT).generate()].filter((token) => token instanceof TokenNumber).forEach((token, i) => {
+					;[...new Screener(source, {
+						...CONFIG_DEFAULT,
+						features: {
+							...CONFIG_DEFAULT.features,
+							numericSeparators: true,
+						},
+					}).generate()].filter((token) => token instanceof TokenNumber).forEach((token, i) => {
 						assert.strictEqual(token.cook(), values[i])
 					})
 				})

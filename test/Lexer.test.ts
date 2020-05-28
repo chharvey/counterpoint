@@ -209,6 +209,13 @@ describe('Lexer', () => {
 					integerRadices: false,
 				},
 			}
+			const separators_on: SolidConfig = {
+				...CONFIG_DEFAULT,
+				features: {
+					...CONFIG_DEFAULT.features,
+					numericSeparators: true,
+				},
+			}
 			specify('implicit radix integers.', () => {
 				;[...new Lexer(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !.join(' '), CONFIG_DEFAULT).generate()]
 					.slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
@@ -262,59 +269,68 @@ describe('Lexer', () => {
 						\\ze70  \\z0e7  +\\z90e7  -\\z90e7  +\\z06  -\\z06
 					`, radices_off).generate()], LexError01)
 				})
-			})
-			specify('implicit radix integers with separators.', () => {
-				const source: string = `
-					12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
-				`.trim().replace(/\n\t+/g, '  ')
-				;[...new Lexer(source, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
-					assert.ok(token instanceof TokenNumber)
-					assert.strictEqual(token.source, source.split('  ')[i])
+				specify('invalid sequence.', () => {
+					assert.deepStrictEqual([...new Lexer(`
+						\\d39c
+					`, CONFIG_DEFAULT).generate()].slice(2, -2).map((token) => token.source), ['\\d39', 'c'])
+				})
+				specify('invalid escape characters.', () => {
+					`
+						\\a0  \\c0  \\e0  \\f0  \\g0  \\h0  \\i0  \\j0  \\k0  \\l0  \\m0  \\n0  \\p0  \\r0  \\s0  \\t0  \\u0  \\v0  \\w0  \\y0  \\
+						+\\a0 +\\c0 +\\e0 +\\f0 +\\g0 +\\h0 +\\i0 +\\j0 +\\k0 +\\l0 +\\m0 +\\n0 +\\p0 +\\r0 +\\s0 +\\t0 +\\u0 +\\v0 +\\w0 +\\y0 +\\
+						-\\a0 -\\c0 -\\e0 -\\f0 -\\g0 -\\h0 -\\i0 -\\j0 -\\k0 -\\l0 -\\m0 -\\n0 -\\p0 -\\r0 -\\s0 -\\t0 -\\u0 -\\v0 -\\w0 -\\y0 -\\
+					`.trim().split(' ').filter((src) => src !== '').map((src) => new Lexer(src, CONFIG_DEFAULT)).forEach((lexer) => {
+						assert.throws(() => [...lexer.generate()], LexError03)
+					})
+				})
+				specify('integers with invalid digits start a new token.', () => {
+					assert.deepStrictEqual([...new Lexer(`
+						\\b100400000  \\q1231423  \\o12345678
+					`, CONFIG_DEFAULT).generate()].filter((token) => token instanceof TokenNumber).map((token) => token.source), [
+						'\\b100', '400000', '\\q1231', '423', '\\o1234567', '8'
+					])
 				})
 			})
-			specify('explicit radix integers with separators.', () => {
-				const source: string = `
-					\\b1_00  \\b0_01  +\\b1_000  -\\b1_000  +\\b0_1  -\\b0_1
-					\\q3_20  \\q0_32  +\\q1_032  -\\q1_032  +\\q0_3  -\\q0_3
-					\\o3_70  \\o0_37  +\\o1_037  -\\o1_037  +\\o0_6  -\\o0_6
-					\\d3_70  \\d0_37  +\\d9_037  -\\d9_037  +\\d0_6  -\\d0_6
-					\\xe_70  \\x0_e7  +\\x9_0e7  -\\x9_0e7  +\\x0_6  -\\x0_6
-					\\ze_70  \\z0_e7  +\\z9_0e7  -\\z9_0e7  +\\z0_6  -\\z0_6
-				`.trim().replace(/\n\t+/g, '  ')
-				;[...new Lexer(source, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
-					assert.ok(token instanceof TokenNumber)
-					assert.strictEqual(token.source, source.split('  ')[i])
+			context('integers with separators.', () => {
+				it('throws when `config.features.numericSeparators` is turned off.', () => {
+					const tokens: Token[] = [...new Lexer(`
+						12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
+						\\b1_00  \\q0_32  +\\o1_037  -\\d9_037  +\\x0_6  -\\z0_6
+					`, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace))
+					const expected: string[] = `
+						12 +12 -12 0123 +0123 -0123 012 +012 -012
+						\\b1 \\q0 +\\o1 -\\d9 +\\x0 -\\z0
+					`.trim().replace(/\n\t+/g, ' ').split(' ')
+					tokens.filter((_, i) => i % 2 === 0).forEach((token, j) => {
+						assert.ok(token instanceof TokenNumber, 'this token instanceof TokenNumber')
+						assert.ok(!(tokens[j * 2 + 1] instanceof TokenNumber), 'next token not instanceof TokenNumber')
+						assert.strictEqual(token.source, expected[j])
+					})
 				})
-			})
-			specify('invalid sequence.', () => {
-				assert.deepStrictEqual([...new Lexer(`
-					\\d39c
-				`, CONFIG_DEFAULT).generate()].slice(2, -2).map((token) => token.source), ['\\d39', 'c'])
-			})
-			specify('invalid escape characters.', () => {
-				`
-					 \\a0  \\c0  \\e0  \\f0  \\g0  \\h0  \\i0  \\j0  \\k0  \\l0  \\m0  \\n0  \\p0  \\r0  \\s0  \\t0  \\u0  \\v0  \\w0  \\y0  \\
-					+\\a0 +\\c0 +\\e0 +\\f0 +\\g0 +\\h0 +\\i0 +\\j0 +\\k0 +\\l0 +\\m0 +\\n0 +\\p0 +\\r0 +\\s0 +\\t0 +\\u0 +\\v0 +\\w0 +\\y0 +\\
-					-\\a0 -\\c0 -\\e0 -\\f0 -\\g0 -\\h0 -\\i0 -\\j0 -\\k0 -\\l0 -\\m0 -\\n0 -\\p0 -\\r0 -\\s0 -\\t0 -\\u0 -\\v0 -\\w0 -\\y0 -\\
-				`.trim().split(' ').filter((src) => src !== '').map((src) => new Lexer(src, CONFIG_DEFAULT)).forEach((lexer) => {
-					assert.throws(() => [...lexer.generate()], LexError03)
+				it('`config.features.numericSeparators` allows integers with separators.', () => {
+					const source: string = `
+						12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
+						\\b1_00  \\b0_01  +\\b1_000  -\\b1_000  +\\b0_1  -\\b0_1
+						\\q3_20  \\q0_32  +\\q1_032  -\\q1_032  +\\q0_3  -\\q0_3
+						\\o3_70  \\o0_37  +\\o1_037  -\\o1_037  +\\o0_6  -\\o0_6
+						\\d3_70  \\d0_37  +\\d9_037  -\\d9_037  +\\d0_6  -\\d0_6
+						\\xe_70  \\x0_e7  +\\x9_0e7  -\\x9_0e7  +\\x0_6  -\\x0_6
+						\\ze_70  \\z0_e7  +\\z9_0e7  -\\z9_0e7  +\\z0_6  -\\z0_6
+					`.trim().replace(/\n\t+/g, '  ')
+					;[...new Lexer(source, separators_on).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
+						assert.ok(token instanceof TokenNumber)
+						assert.strictEqual(token.source, source.split('  ')[i])
+					})
 				})
-			})
-			specify('integers with invalid digits start a new token.', () => {
-				assert.deepStrictEqual([...new Lexer(`
-					\\b1_0040_0000  \\q123_142_3  \\o123_456_78
-				`, CONFIG_DEFAULT).generate()].filter((token) => token instanceof TokenNumber).map((token) => token.source), [
-					'\\b1_00', '40_0000', '\\q123_1', '42_3', '\\o123_456_7', '8'
-				])
-			})
-			specify('numeric separator cannot appear at end of token.', () => {
-				assert.throws(() => [...new Lexer(`12_345_`, CONFIG_DEFAULT).generate()], LexError04)
-			})
-			specify('numeric separators cannot appear consecutively.', () => {
-				assert.throws(() => [...new Lexer(`12__345`, CONFIG_DEFAULT).generate()], LexError04)
-			})
-			specify('numeric separator at beginning of token is not a number token.', () => {
-				assert.ok(!([...new Lexer(`_12345`, CONFIG_DEFAULT).generate()][2] instanceof TokenNumber))
+				specify('numeric separator cannot appear at end of token.', () => {
+					assert.throws(() => [...new Lexer(`12_345_`, separators_on).generate()], LexError04)
+				})
+				specify('numeric separators cannot appear consecutively.', () => {
+					assert.throws(() => [...new Lexer(`12__345`, separators_on).generate()], LexError04)
+				})
+				specify('numeric separator at beginning of token is not a number token.', () => {
+					assert.ok(!([...new Lexer(`_12345`, separators_on).generate()][2] instanceof TokenNumber))
+				})
 			})
 		})
 
