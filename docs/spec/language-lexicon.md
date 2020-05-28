@@ -67,19 +67,19 @@ which form the lowest-level building blocks of the language.
 There are a small number of token types, each of which have a specific purpose.
 
 ```w3c
-Goal :::=
+Goal<Comment, Radix, Separator> :::=
 	| Filebound
 	| Whitespace
 	| Punctuator
 	| Keyword
 	| Identifier
-	| Number
+	| Number<?Radix, ?Separator>
 	| String
 	| TemplateFull
 	| TemplateHead
 	| TemplateMiddle
 	| TemplateTail
-	| Comment
+	| <Comment+>Comment
 ;
 ```
 
@@ -237,24 +237,25 @@ TokenWorth(Identifier) -> RealNumber
 
 ### Numbers
 ```w3c
-Number
-	:::= ("+" | "-")? IntegerLiteral;
+Number<Radix, Separator>
+	:::= ("+" | "-")? IntegerLiteral<?Radix, ?Separator>;
 
-IntegerLiteral :::=
-	| "\b"  DigitSequenceBin
-	| "\q"  DigitSequenceQua
-	| "\o"  DigitSequenceOct
-	| "\d"? DigitSequenceDec
-	| "\x"  DigitSequenceHex
-	| "\z"  DigitSequenceHTD
+IntegerLiteral<Radix, Separator> :::=
+	| <Radix->DigitSequenceDec<?Separator>
+	| <Radix+>("\b"  DigitSequenceBin<?Separator>)
+	| <Radix+>("\q"  DigitSequenceQua<?Separator>)
+	| <Radix+>("\o"  DigitSequenceOct<?Separator>)
+	| <Radix+>("\d"? DigitSequenceDec<?Separator>)
+	| <Radix+>("\x"  DigitSequenceHex<?Separator>)
+	| <Radix+>("\z"  DigitSequenceHTD<?Separator>)
 ;
 
-DigitSequenceBin :::= (DigitSequenceBin "_"?)? [0-1];
-DigitSequenceQua :::= (DigitSequenceQua "_"?)? [0-3];
-DigitSequenceOct :::= (DigitSequenceOct "_"?)? [0-7];
-DigitSequenceDec :::= (DigitSequenceDec "_"?)? [0-9];
-DigitSequenceHex :::= (DigitSequenceHex "_"?)? [0-9a-f];
-DigitSequenceHTD :::= (DigitSequenceHTD "_"?)? [0-9a-z];
+DigitSequenceBin<Separator> :::= (DigitSequenceBin <Separator+>"_"?)? [0-1];
+DigitSequenceQua<Separator> :::= (DigitSequenceQua <Separator+>"_"?)? [0-3];
+DigitSequenceOct<Separator> :::= (DigitSequenceOct <Separator+>"_"?)? [0-7];
+DigitSequenceDec<Separator> :::= (DigitSequenceDec <Separator+>"_"?)? [0-9];
+DigitSequenceHex<Separator> :::= (DigitSequenceHex <Separator+>"_"?)? [0-9a-f];
+DigitSequenceHTD<Separator> :::= (DigitSequenceHTD <Separator+>"_"?)? [0-9a-z];
 ```
 Numbers are literal constants that represent numeric mathematical values.
 Currently, only positive and negative (and zero) integers are supported.
