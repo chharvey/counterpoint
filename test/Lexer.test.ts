@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 
+import {CONFIG_DEFAULT} from '../'
 import Util  from '../src/class/Util.class'
 import Lexer from '../src/class/Lexer.class'
 import Token, {
@@ -51,14 +52,14 @@ const mock: string = `
 describe('Lexer', () => {
 	describe('#generate', () => {
 		it('recognizes `TokenFilebound` conditions.', () => {
-			const tokens: Token[] = [...new Lexer(mock).generate()]
+			const tokens: Token[] = [...new Lexer(mock, CONFIG_DEFAULT).generate()]
 			assert.ok(tokens[0] instanceof TokenFilebound)
 			assert.strictEqual(tokens[0].source, '\u0002')
 			assert.ok(lastItem(tokens) instanceof TokenFilebound)
 			assert.strictEqual(lastItem(tokens).source, '\u0003')
 		})
 		it('recognizes `TokenWhitespace` conditions.', () => {
-			;[...new Lexer(TokenWhitespace.CHARS.join('')).generate()].slice(1, -1).forEach((value) => {
+			;[...new Lexer(TokenWhitespace.CHARS.join(''), CONFIG_DEFAULT).generate()].slice(1, -1).forEach((value) => {
 				assert.ok(value instanceof TokenWhitespace)
 			})
 		})
@@ -66,7 +67,7 @@ describe('Lexer', () => {
 			`. ~ , [ ] | & ! { } : # $ "`.split(' ').map((c) => new Lexer(`
 				5  +  30
 				+ 6 ^ - (${c} - 37 *
-			`)).forEach((lexer) => {
+			`, CONFIG_DEFAULT)).forEach((lexer) => {
 				assert.throws(() => [...lexer.generate()], LexError01)
 			})
 		})
@@ -119,7 +120,7 @@ describe('Lexer', () => {
 				`]],
 			])].forEach(([name, sources]) => {
 				it(`throws when ${name} token is unfinished.`, () => {
-					sources.map((source) => new Lexer(source)).forEach((lexer) => {
+					sources.map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
 						assert.throws(() => [...lexer.generate()], LexError02)
 					})
 				})
@@ -127,7 +128,7 @@ describe('Lexer', () => {
 		})
 
 		it('recognizes `TokenPunctuator` conditions.', () => {
-			;[...new Lexer(TokenPunctuator.PUNCTUATORS.join(' ')).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((value) => {
+			;[...new Lexer(TokenPunctuator.PUNCTUATORS.join(' '), CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((value) => {
 				assert.ok(value instanceof TokenPunctuator)
 			})
 		})
@@ -136,7 +137,7 @@ describe('Lexer', () => {
 			;[...new Lexer(`
 				let
 				unfixed
-			`).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
+			`, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 				assert.ok(token instanceof TokenKeyword)
 			})
 		})
@@ -146,7 +147,7 @@ describe('Lexer', () => {
 				specify('Basic identifier beginners.', () => {
 					;[...new Lexer(`
 						A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z _
-					`).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
+					`, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 						assert.ok(token instanceof TokenIdentifierBasic)
 					})
 				})
@@ -155,7 +156,7 @@ describe('Lexer', () => {
 						this is a word
 						_words _can _start _with _underscores
 						_and0 _can1 contain2 numb3rs
-					`).generate()]
+					`, CONFIG_DEFAULT).generate()]
 					tokens = tokens.slice(1, -1).filter((token) => !(token instanceof TokenWhitespace))
 					tokens.forEach((token) => {
 						assert.ok(token instanceof TokenIdentifierBasic)
@@ -167,7 +168,7 @@ describe('Lexer', () => {
 						this is 0a word
 						_words 1c_an _start 2w_ith _underscores
 						_and0 3c_an1 contain2 44numb3rs
-					`).generate()].slice(1, -1).filter((token) => token instanceof TokenIdentifierBasic).map((token) => token.source), `
+					`, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => token instanceof TokenIdentifierBasic).map((token) => token.source), `
 						this is a word _words c_an _start w_ith _underscores _and0 c_an1 contain2 numb3rs
 					`.trim().split(' '))
 				})
@@ -179,7 +180,7 @@ describe('Lexer', () => {
 						\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
 						\`except\` \`back-ticks\` \`.\`
 						\`<hello world>\` \`Æther\` \`5 × 3\` \`\\u{24}hello\` \`\`
-					`).generate()]
+					`, CONFIG_DEFAULT).generate()]
 					tokens = tokens.slice(1, -1).filter((token) => !(token instanceof TokenWhitespace))
 					tokens.forEach((token) => {
 						assert.ok(token instanceof TokenIdentifierUnicode)
@@ -189,25 +190,25 @@ describe('Lexer', () => {
 				it('should throw if Unicode identifier contains U+0060 GRAVE ACCENT.', () => {
 					assert.throws(() => [...new Lexer(`
 						\`a \\\` grave accent\`
-					`).generate()], LexError02)
+					`, CONFIG_DEFAULT).generate()], LexError02)
 				})
 				it('should throw if Unicode identifier contains U+0003 END OF TEXT.', () => {
 					assert.throws(() => [...new Lexer(`
 						\`an \u0003 end of text.\`
-					`).generate()], LexError02)
+					`, CONFIG_DEFAULT).generate()], LexError02)
 				})
 			})
 		})
 
 		context('recognizes `TokenNumber` conditions.', () => {
 			specify('implicit radix integers.', () => {
-				;[...new Lexer(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !.join(' ')).generate()]
+				;[...new Lexer(TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT) !.join(' '), CONFIG_DEFAULT).generate()]
 					.slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 						assert.ok(token instanceof TokenNumber)
 					})
 				const tokens: Token[] = [...new Lexer(`
 					+  55  -  33  2  007  700  +91  -27  +091  -0027
-				`).generate()]
+				`, CONFIG_DEFAULT).generate()]
 				assert.strictEqual(tokens[ 4].source, `55`)
 				assert.strictEqual(tokens[ 8].source, `33`)
 				assert.strictEqual(tokens[10].source, `2`)
@@ -221,7 +222,8 @@ describe('Lexer', () => {
 			specify('explicit radix integers.', () => {
 				;[...TokenNumber.BASES].map(([base, radix]) =>
 					[...new Lexer(
-						TokenNumber.DIGITS.get(radix) !.map((d) => `\\${base}${d}`).join(' ')
+						TokenNumber.DIGITS.get(radix)!.map((d) => `\\${ base }${ d }`).join(' '),
+						CONFIG_DEFAULT,
 					).generate()].slice(1, -1)
 				).flat().filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 					assert.ok(token instanceof TokenNumber)
@@ -234,7 +236,7 @@ describe('Lexer', () => {
 					\\xe70  \\x0e7  +\\x90e7  -\\x90e7  +\\x06  -\\x06
 					\\ze70  \\z0e7  +\\z90e7  -\\z90e7  +\\z06  -\\z06
 				`.trim().replace(/\n\t+/g, '  ')
-				;[...new Lexer(source).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
+				;[...new Lexer(source, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
 					assert.ok(token instanceof TokenNumber)
 					assert.strictEqual(token.source, source.split('  ')[i])
 				})
@@ -243,7 +245,7 @@ describe('Lexer', () => {
 				const source: string = `
 					12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
 				`.trim().replace(/\n\t+/g, '  ')
-				;[...new Lexer(source).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
+				;[...new Lexer(source, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
 					assert.ok(token instanceof TokenNumber)
 					assert.strictEqual(token.source, source.split('  ')[i])
 				})
@@ -257,7 +259,7 @@ describe('Lexer', () => {
 					\\xe_70  \\x0_e7  +\\x9_0e7  -\\x9_0e7  +\\x0_6  -\\x0_6
 					\\ze_70  \\z0_e7  +\\z9_0e7  -\\z9_0e7  +\\z0_6  -\\z0_6
 				`.trim().replace(/\n\t+/g, '  ')
-				;[...new Lexer(source).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
+				;[...new Lexer(source, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
 					assert.ok(token instanceof TokenNumber)
 					assert.strictEqual(token.source, source.split('  ')[i])
 				})
@@ -265,32 +267,32 @@ describe('Lexer', () => {
 			specify('invalid sequence.', () => {
 				assert.deepStrictEqual([...new Lexer(`
 					\\d39c
-				`).generate()].slice(2, -2).map((token) => token.source), ['\\d39', 'c'])
+				`, CONFIG_DEFAULT).generate()].slice(2, -2).map((token) => token.source), ['\\d39', 'c'])
 			})
 			specify('invalid escape characters.', () => {
 				`
 					 \\a0  \\c0  \\e0  \\f0  \\g0  \\h0  \\i0  \\j0  \\k0  \\l0  \\m0  \\n0  \\p0  \\r0  \\s0  \\t0  \\u0  \\v0  \\w0  \\y0  \\
 					+\\a0 +\\c0 +\\e0 +\\f0 +\\g0 +\\h0 +\\i0 +\\j0 +\\k0 +\\l0 +\\m0 +\\n0 +\\p0 +\\r0 +\\s0 +\\t0 +\\u0 +\\v0 +\\w0 +\\y0 +\\
 					-\\a0 -\\c0 -\\e0 -\\f0 -\\g0 -\\h0 -\\i0 -\\j0 -\\k0 -\\l0 -\\m0 -\\n0 -\\p0 -\\r0 -\\s0 -\\t0 -\\u0 -\\v0 -\\w0 -\\y0 -\\
-				`.trim().split(' ').filter((src) => src !== '').map((src) => new Lexer(src)).forEach((lexer) => {
+				`.trim().split(' ').filter((src) => src !== '').map((src) => new Lexer(src, CONFIG_DEFAULT)).forEach((lexer) => {
 					assert.throws(() => [...lexer.generate()], LexError03)
 				})
 			})
 			specify('integers with invalid digits start a new token.', () => {
 				assert.deepStrictEqual([...new Lexer(`
 					\\b1_0040_0000  \\q123_142_3  \\o123_456_78
-				`).generate()].filter((token) => token instanceof TokenNumber).map((token) => token.source), [
+				`, CONFIG_DEFAULT).generate()].filter((token) => token instanceof TokenNumber).map((token) => token.source), [
 					'\\b1_00', '40_0000', '\\q123_1', '42_3', '\\o123_456_7', '8'
 				])
 			})
 			specify('numeric separator cannot appear at end of token.', () => {
-				assert.throws(() => [...new Lexer(`12_345_`).generate()], LexError04)
+				assert.throws(() => [...new Lexer(`12_345_`, CONFIG_DEFAULT).generate()], LexError04)
 			})
 			specify('numeric separators cannot appear consecutively.', () => {
-				assert.throws(() => [...new Lexer(`12__345`).generate()], LexError04)
+				assert.throws(() => [...new Lexer(`12__345`, CONFIG_DEFAULT).generate()], LexError04)
 			})
 			specify('numeric separator at beginning of token is not a number token.', () => {
-				assert.ok(!([...new Lexer(`_12345`).generate()][2] instanceof TokenNumber))
+				assert.ok(!([...new Lexer(`_12345`, CONFIG_DEFAULT).generate()][2] instanceof TokenNumber))
 			})
 		})
 
@@ -302,7 +304,7 @@ describe('Lexer', () => {
 					600  /  3  *  2
 					600  /  (3  *  2
 					4 * 2 ^ 3
-				`).generate()]
+				`, CONFIG_DEFAULT).generate()]
 				assert.ok(tokens[22] instanceof TokenString)
 				assert.strictEqual(tokens[22].source.length, 2)
 				assert.ok(tokens[26] instanceof TokenString)
@@ -311,7 +313,7 @@ describe('Lexer', () => {
 			specify('Escaped characters.', () => {
 				const tokenstring: Token = [...new Lexer(`
 					'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
-				`).generate()][2]
+				`, CONFIG_DEFAULT).generate()][2]
 				assert.strictEqual(tokenstring.source.slice( 3,  5), `\\'`)
 				assert.strictEqual(tokenstring.source.slice( 8, 10), `\\\\`)
 				assert.strictEqual(tokenstring.source.slice(13, 15), `\\s`)
@@ -322,7 +324,7 @@ describe('Lexer', () => {
 			specify('Escaped character sequences.', () => {
 				const tokenstring: Token = [...new Lexer(`
 					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3';
-				`).generate()][2]
+				`, CONFIG_DEFAULT).generate()][2]
 				assert.strictEqual(tokenstring.source.slice( 3,  9), `\\u{24}`)
 				assert.strictEqual(tokenstring.source.slice(12, 20), `\\u{005f}`)
 				assert.strictEqual(tokenstring.source.slice(23, 27), `\\u{}`)
@@ -332,7 +334,7 @@ describe('Lexer', () => {
 					'012\\
 					345
 					678';
-				`).generate()][2]
+				`, CONFIG_DEFAULT).generate()][2]
 				assert.strictEqual(tokenstring.source.slice( 4,  6), `\\\n`)
 				assert.strictEqual(tokenstring.source.slice(14, 15), `\n`)
 			})
@@ -343,7 +345,7 @@ describe('Lexer', () => {
 					'Here is a string {% that contains %} a multiline comment.'
 				`, `
 					'Here is a string {% that contains a comment start marker but no end.'
-				`].map((source) => new Lexer(source)).forEach((lexer) => {
+				`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
 					assert.doesNotThrow(() => [...lexer.generate()])
 				})
 			})
@@ -352,7 +354,7 @@ describe('Lexer', () => {
 					'a string literal with \\u{6g} an invalid escape sequence'
 				`, `
 					'a string literal with \\u{61 an invalid escape sequence'
-				`].map((source) => new Lexer(source)).forEach((lexer) => {
+				`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
 					assert.throws(() => [...lexer.generate()], LexError03)
 				})
 			})
@@ -362,7 +364,7 @@ describe('Lexer', () => {
 			specify('Basic templates.', () => {
 				const tokens: Token[] = [...new Lexer(`
 					600  /  '''''' * 3 + '''hello''' *  2
-				`).generate()]
+				`, CONFIG_DEFAULT).generate()]
 				assert.ok(tokens[ 6] instanceof TokenTemplate)
 				assert.strictEqual((tokens[ 6] as TokenTemplate).position, TemplatePosition.FULL)
 				assert.strictEqual(tokens[ 6].source.length, 6)
@@ -375,7 +377,7 @@ describe('Lexer', () => {
 					3 + '''head{{ * 2
 					3 + }}midl{{ * 2
 					3 + }}tail''' * 2
-				`).generate()]
+				`, CONFIG_DEFAULT).generate()]
 				assert.ok(tokens[ 6] instanceof TokenTemplate)
 				assert.strictEqual((tokens[ 6] as TokenTemplate).position, TemplatePosition.HEAD)
 				assert.strictEqual(tokens[ 6].source, `'''head{{`)
@@ -391,7 +393,7 @@ describe('Lexer', () => {
 					'''abc{{ }}def'''
 					'''ghi{{}}jkl'''
 					'''mno{{ {% pqr %} }}stu'''
-				`).generate()]
+				`, CONFIG_DEFAULT).generate()]
 				assert.ok(tokens[ 2] instanceof TokenTemplate)
 				assert.strictEqual((tokens[ 2] as TokenTemplate).position, TemplatePosition.HEAD)
 				assert.strictEqual(tokens[ 2].source, `'''abc{{`)
@@ -414,7 +416,7 @@ describe('Lexer', () => {
 			specify('Nested interpolation.', () => {
 				const tokens: Token[] = [...new Lexer(`
 					1 + '''head1 {{ 2 + '''head2 {{ 3 ^ 3 }} tail2''' * 2 }} tail1''' * 1
-				`).generate()]
+				`, CONFIG_DEFAULT).generate()]
 				assert.ok(tokens[ 6] instanceof TokenTemplate)
 				assert.strictEqual((tokens[ 6] as TokenTemplate).position, TemplatePosition.HEAD)
 				assert.strictEqual(tokens[ 6].source, `'''head1 {{`)
@@ -431,7 +433,7 @@ describe('Lexer', () => {
 			specify('Non-escaped characters.', () => {
 				const tokentemplate: Token = [...new Lexer(`
 					'''0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7''';
-				`).generate()][2]
+				`, CONFIG_DEFAULT).generate()][2]
 				assert.strictEqual(tokentemplate.source.slice( 5,  7), `\\'`)
 				assert.strictEqual(tokentemplate.source.slice(10, 12), `\\\\`)
 				assert.strictEqual(tokentemplate.source.slice(15, 17), `\\s`)
@@ -443,7 +445,7 @@ describe('Lexer', () => {
 			specify('Non-escaped character sequences.', () => {
 				const tokentemplate: Token = [...new Lexer(`
 					'''0 \\u{24} 1 \\u{005f} 2 \\u{} 3''';
-				`).generate()][2]
+				`, CONFIG_DEFAULT).generate()][2]
 				assert.strictEqual(tokentemplate.source.slice( 5, 11), `\\u{24}`)
 				assert.strictEqual(tokentemplate.source.slice(14, 22), `\\u{005f}`)
 				assert.strictEqual(tokentemplate.source.slice(25, 29), `\\u{}`)
@@ -453,7 +455,7 @@ describe('Lexer', () => {
 					'''012\\
 					345
 					678''';
-				`).generate()][2]
+				`, CONFIG_DEFAULT).generate()][2]
 				assert.strictEqual(tokentemplate.source.slice( 6,  8), `\\\n`)
 				assert.strictEqual(tokentemplate.source.slice(16, 17), `\n`)
 			})
@@ -462,7 +464,7 @@ describe('Lexer', () => {
 					'''template-head that ends with a single open brace {{{
 				`, `
 					}}template-middle that ends with a single open brace {{{
-				`].map((source) => new Lexer(source)).forEach((lexer) => {
+				`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
 					assert.throws(() => [...lexer.generate()], LexError01) // TODO change to parse error when `{` becomes punctuator
 				})
 			})
@@ -473,7 +475,7 @@ describe('Lexer', () => {
 				const comment: Token = [...new Lexer(`
 					%
 					8;
-				`).generate()][2]
+				`, CONFIG_DEFAULT).generate()][2]
 				assert.ok(comment instanceof TokenCommentLine)
 				assert.strictEqual(comment.source, '%\n')
 			})
@@ -481,12 +483,12 @@ describe('Lexer', () => {
 				assert.ok([...new Lexer(`
 					500  +  30; ;  % line comment  *  2
 					8;
-				`).generate()][11] instanceof TokenCommentLine)
+				`, CONFIG_DEFAULT).generate()][11] instanceof TokenCommentLine)
 			})
 			specify('Line comment at end of file not followed by LF.', () => {
 				assert.doesNotThrow(() => [...new Lexer(`
 					% line comment not followed by LF
-				`.trimEnd()).generate()])
+				`.trimEnd(), CONFIG_DEFAULT).generate()])
 			})
 		})
 
@@ -495,7 +497,7 @@ describe('Lexer', () => {
 				const tokens: Token[] = [...new Lexer(`
 					{%%}
 					{% %}
-				`).generate()]
+				`, CONFIG_DEFAULT).generate()]
 				assert.ok(tokens[2] instanceof TokenCommentMulti)
 				assert.ok(tokens[4] instanceof TokenCommentMulti)
 				assert.strictEqual(tokens[2].source, '{%%}')
@@ -506,7 +508,7 @@ describe('Lexer', () => {
 					{% multiline
 					that has contents
 					comment %}
-				`).generate()][2]
+				`, CONFIG_DEFAULT).generate()][2]
 				assert.ok(comment instanceof TokenCommentMulti)
 			})
 			specify('Multiline comment containing nested multiline comment.', () => {
@@ -514,14 +516,14 @@ describe('Lexer', () => {
 					{% multiline
 					that has a {% nestable nested %} multiline
 					comment %}
-				`).generate()]
+				`, CONFIG_DEFAULT).generate()]
 				assert.strictEqual(tokens.length, 5)
 				assert.ok(tokens[2] instanceof TokenCommentMulti)
 			})
 			specify('Multiline comment containing interpolation delimiters.', () => {
 				const tokens: Token[] = [...new Lexer(`
 					{% A nestable {% co{%mm%}ent %} with '''the {{interpolation}} syntax'''. %}
-				`).generate()]
+				`, CONFIG_DEFAULT).generate()]
 				assert.ok(tokens[2] instanceof TokenCommentMulti)
 				assert.ok(tokens[4] instanceof TokenFilebound)
 			})
@@ -533,7 +535,7 @@ describe('Lexer', () => {
 					%%%
 					%%%
 					8;
-				`)).generate()]
+				`), CONFIG_DEFAULT).generate()]
 				assert.ok(tokens[2] instanceof TokenCommentBlock)
 				assert.strictEqual(tokens[2].source, Util.dedent(`
 					%%%
@@ -553,7 +555,7 @@ describe('Lexer', () => {
 						5 + 3
 						%%%
 					8;
-				`).generate()]
+				`, CONFIG_DEFAULT).generate()]
 				assert.ok(tokens[2] instanceof TokenCommentBlock)
 				assert.ok(tokens[4] instanceof TokenCommentBlock)
 				assert.strictEqual(tokens[6].source, '8')
@@ -563,7 +565,7 @@ describe('Lexer', () => {
 					%%%
 					block comment with end delimiter, but not followed by LF
 					%%%
-				`.trimEnd()).generate()])
+				`.trimEnd(), CONFIG_DEFAULT).generate()])
 			})
 			specify('Block comment delimiters must be on own line.', () => {
 				const tokens: Token[] = [...new Lexer(`
@@ -574,7 +576,7 @@ describe('Lexer', () => {
 					%%% 3 * 2
 					5 + 3 %%%
 					8;
-				`).generate()]
+				`, CONFIG_DEFAULT).generate()]
 				assert.ok(tokens[ 2] instanceof TokenCommentBlock)
 				assert.ok(tokens[ 4] instanceof TokenCommentLine)
 				assert.ok(tokens[12] instanceof TokenCommentLine)

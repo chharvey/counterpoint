@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 
+import {CONFIG_DEFAULT} from '../'
 import Util   from '../src/class/Util.class'
 import Parser from '../src/class/Parser.class'
 import {
@@ -16,7 +17,7 @@ describe('ParseNode', () => {
 	describe('#decorate', () => {
 		context('Goal ::= #x02 #x03', () => {
 			it('makes a SemanticNodeGoal node containing a SemanticNodeNull.', () => {
-				const goal: SemanticNodeGoal = new Parser('').parse().decorate()
+				const goal: SemanticNodeGoal = new Parser('', CONFIG_DEFAULT).parse().decorate()
 				assert.strictEqual(goal.children.length, 1)
 				assert.ok(goal.children[0] instanceof SemanticNodeNull)
 			})
@@ -24,7 +25,7 @@ describe('ParseNode', () => {
 
 		context('Statement ::= ";"', () => {
 			it('makes a SemanticNodeNull node.', () => {
-				const semanticnode: SemanticNodeNull|SemanticNodeGoal = new Parser(';').parse().decorate()
+				const semanticnode: SemanticNodeNull|SemanticNodeGoal = new Parser(';', CONFIG_DEFAULT).parse().decorate()
 				assert.ok(semanticnode instanceof SemanticNodeGoal)
 				assert.strictEqual(semanticnode.serialize(), `
 					<Goal source="␂ ; ␃">
@@ -38,7 +39,7 @@ describe('ParseNode', () => {
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
 			it('makes a SemanticNodeConstant node.', () => {
-				assert.strictEqual(new Parser('42;').parse().decorate().serialize(), `
+				assert.strictEqual(new Parser('42;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ 42 ; ␃">
 						<StatementList line="1" col="1" source="42 ;">
 							<StatementExpression line="1" col="1" source="42 ;">
@@ -58,7 +59,7 @@ describe('ParseNode', () => {
 			specify('head, tail.', () => {
 				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
 					'''head1{{}}tail1''';
-				`)).parse().decorate() as SemanticNodeGoal).serialize(), `
+				`), CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal).serialize(), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Constant line="1" col="11" source="}}tail1&apos;&apos;&apos;" value="tail1"/>
@@ -68,7 +69,7 @@ describe('ParseNode', () => {
 			specify('head, expr, tail.', () => {
 				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
 					'''head1{{ '''full1''' }}tail1''';
-				`)).parse().decorate() as SemanticNodeGoal).serialize(), `
+				`), CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal).serialize(), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -81,7 +82,7 @@ describe('ParseNode', () => {
 			specify('head, expr, middle, tail.', () => {
 				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{}}tail1''';
-				`)).parse().decorate() as SemanticNodeGoal).serialize(), `
+				`), CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal).serialize(), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -95,7 +96,7 @@ describe('ParseNode', () => {
 			specify('head, expr, middle, expr, tail.', () => {
 				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1''';
-				`)).parse().decorate() as SemanticNodeGoal).serialize(), `
+				`), CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal).serialize(), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -112,7 +113,7 @@ describe('ParseNode', () => {
 			specify('head, expr, middle, expr, middle, tail.', () => {
 				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1''';
-				`)).parse().decorate() as SemanticNodeGoal).serialize(), `
+				`), CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal).serialize(), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -130,7 +131,7 @@ describe('ParseNode', () => {
 			specify('head, expr, middle, expr, middle, expr, tail.', () => {
 				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1''';
-				`)).parse().decorate() as SemanticNodeGoal).serialize(), `
+				`), CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal).serialize(), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ &apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -156,7 +157,7 @@ describe('ParseNode', () => {
 
 		context('ExpressionUnit ::= "(" Expression ")"', () => {
 			it('returns the inner Expression node.', () => {
-				assert.strictEqual(new Parser('(2 + -3);').parse().decorate().serialize(), `
+				assert.strictEqual(new Parser('(2 + -3);', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ ( 2 + -3 ) ; ␃">
 						<StatementList line="1" col="1" source="( 2 + -3 ) ;">
 							<StatementExpression line="1" col="1" source="( 2 + -3 ) ;">
@@ -170,7 +171,7 @@ describe('ParseNode', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			it('recursively applies to several sub-expressions.', () => {
-				assert.strictEqual(new Parser('(-(42) ^ +(2 * 420));').parse().decorate().serialize(), `
+				assert.strictEqual(new Parser('(-(42) ^ +(2 * 420));', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ ( - ( 42 ) ^ + ( 2 * 420 ) ) ; ␃">
 						<StatementList line="1" col="1" source="( - ( 42 ) ^ + ( 2 * 420 ) ) ;">
 							<StatementExpression line="1" col="1" source="( - ( 42 ) ^ + ( 2 * 420 ) ) ;">
@@ -192,7 +193,7 @@ describe('ParseNode', () => {
 
 		context('ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol', () => {
 			it('makes a SemanticNodeOperation node with 1 child.', () => {
-				assert.strictEqual(new Parser('- 42;').parse().decorate().serialize(), `
+				assert.strictEqual(new Parser('- 42;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ - 42 ; ␃">
 						<StatementList line="1" col="1" source="- 42 ;">
 							<StatementExpression line="1" col="1" source="- 42 ;">
@@ -208,7 +209,7 @@ describe('ParseNode', () => {
 
 		context('ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential', () => {
 			it('makes a SemanticNodeOperation node with 2 children.', () => {
-				assert.strictEqual(new Parser('2 ^ -3;').parse().decorate().serialize(), `
+				assert.strictEqual(new Parser('2 ^ -3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ 2 ^ -3 ; ␃">
 						<StatementList line="1" col="1" source="2 ^ -3 ;">
 							<StatementExpression line="1" col="1" source="2 ^ -3 ;">
@@ -225,7 +226,7 @@ describe('ParseNode', () => {
 
 		context('ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential', () => {
 			it('makes a SemanticNodeOperation node with 2 children.', () => {
-				assert.strictEqual(new Parser('2 * -3;').parse().decorate().serialize(), `
+				assert.strictEqual(new Parser('2 * -3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ 2 * -3 ; ␃">
 						<StatementList line="1" col="1" source="2 * -3 ;">
 							<StatementExpression line="1" col="1" source="2 * -3 ;">
@@ -242,7 +243,7 @@ describe('ParseNode', () => {
 
 		context('ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative', () => {
 			it('makes a SemanticNodeOperation node with 2 children.', () => {
-				assert.strictEqual(new Parser('2 + -3;').parse().decorate().serialize(), `
+				assert.strictEqual(new Parser('2 + -3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ 2 + -3 ; ␃">
 						<StatementList line="1" col="1" source="2 + -3 ;">
 							<StatementExpression line="1" col="1" source="2 + -3 ;">
@@ -259,7 +260,7 @@ describe('ParseNode', () => {
 
 		context('ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative', () => {
 			it('makes a SemanticNodeOperation with the `+` operator and negates the 2nd operand.', () => {
-				assert.strictEqual(new Parser('2 - 3;').parse().decorate().serialize(), `
+				assert.strictEqual(new Parser('2 - 3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ 2 - 3 ; ␃">
 						<StatementList line="1" col="1" source="2 - 3 ;">
 							<StatementExpression line="1" col="1" source="2 - 3 ;">
@@ -282,7 +283,7 @@ describe('ParseNode', () => {
 					let unfixed the_answer = 42;
 					let \`the £ answer\` = the_answer * 10;
 					the_answer = the_answer - \\z14;
-				`)).parse().decorate().serialize(), `
+				`), CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
 						<StatementList line="1" col="1" source="let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ;">
 							<Declaration line="1" col="1" source="let unfixed the_answer = 42 ;" type="variable" unfixed="true">

@@ -1,7 +1,6 @@
 const {default: CodeGenerator} = require('./build/class/CodeGenerator.class.js')
 
-module.exports.print = (sourcecode) =>
-	new CodeGenerator(sourcecode).print()
+module.exports.CONFIG_DEFAULT = require('./src/solid-config.default.json')
 
-module.exports.compile = (sourcecode) =>
-	new CodeGenerator(sourcecode).compile()
+module.exports.print   = (sourcecode, config = module.exports.CONFIG_DEFAULT) => new CodeGenerator(sourcecode, config).print()
+module.exports.compile = (sourcecode, config = module.exports.CONFIG_DEFAULT) => new CodeGenerator(sourcecode, config).compile()

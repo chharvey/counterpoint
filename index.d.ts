@@ -1,10 +1,15 @@
+import type SolidConfig from './src/SolidConfig'
+
+/** The default configuration settings. */
+export declare const CONFIG_DEFAULT: SolidConfig;
+
 /**
  * Compile Solid source code into a readable text format for development purposes.
  * Output text is in [WAT](https://webassembly.org/) format.
  * @param sourcecode - the Solid source text
  * @return the output text
  */
-export declare function print(sourcecode: string): string;
+export declare function print(sourcecode: string, config?: SolidConfig): string;
 
 /**
  * Compile Solid source code into an executable binary format.
@@ -12,4 +17,4 @@ export declare function print(sourcecode: string): string;
  * @param sourcecode - the Solid source text
  * @return the output as a binary format
  */
-export declare function compile(sourcecode: string): Uint8Array;
+export declare function compile(sourcecode: string, config?: SolidConfig): Uint8Array;

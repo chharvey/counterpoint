@@ -1,3 +1,5 @@
+import type SolidConfig from '../SolidConfig.d'
+
 import Scanner from './Scanner.class'
 import Char from './Char.class'
 import Token, {
@@ -53,8 +55,12 @@ export default class Lexer {
 	/**
 	 * Construct a new Lexer object.
 	 * @param source - the entire source text
+	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor(source: string) {
+	constructor (
+		source: string,
+		readonly config: SolidConfig,
+	) {
 		this.scanner = new Scanner(source).generate()
 		this.iterator_result_char = this.scanner.next()
 
