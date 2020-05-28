@@ -128,7 +128,7 @@ export default class Lexer {
 					if (Char.inc(Lexer.DIGITS_DEFAULT, this._c1)) {
 						/* a number literal with a unary operator and without an explicit radix */
 						token = new TokenNumber(this, true)
-					} else if (Char.eq(TokenNumber.ESCAPER, this._c1)) {
+					} else if (this.config.features.integerRadices && Char.eq(TokenNumber.ESCAPER, this._c1)) {
 						if (Char.inc(Lexer.BASES_KEYS, this._c2)) {
 							/* a number literal with a unary operator and with an explicit radix */
 							token = new TokenNumber(this, true, true)
@@ -166,7 +166,7 @@ export default class Lexer {
 			} else if (Char.inc(Lexer.DIGITS_DEFAULT, this._c0)) {
 				/* a number literal without a unary operator and without an explicit radix */
 				token = new TokenNumber(this, false)
-			} else if (Char.eq(TokenNumber.ESCAPER, this._c0)) {
+			} else if (this.config.features.integerRadices && Char.eq(TokenNumber.ESCAPER, this._c0)) {
 				if (Char.inc(Lexer.BASES_KEYS, this._c1)) {
 					/* a number literal without a unary operator and with an explicit radix */
 					token = new TokenNumber(this, false, true)
