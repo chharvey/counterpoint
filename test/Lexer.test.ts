@@ -1,6 +1,7 @@
 import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../'
+import type SolidConfig from '../src/SolidConfig'
 import Util  from '../src/class/Util.class'
 import Lexer from '../src/class/Lexer.class'
 import Token, {
@@ -470,117 +471,151 @@ describe('Lexer', () => {
 			})
 		})
 
-		context('recognizes `TokenCommentLine` conditions.', () => {
-			specify('Empty line comment.', () => {
-				const comment: Token = [...new Lexer(`
-					%
-					8;
-				`, CONFIG_DEFAULT).generate()][2]
-				assert.ok(comment instanceof TokenCommentLine)
-				assert.strictEqual(comment.source, '%\n')
+		context('recgnizes `TokenComment` conditions.', () => {
+			const comments_off: SolidConfig = {
+				...CONFIG_DEFAULT,
+				features: {
+					...CONFIG_DEFAULT.features,
+					comments: false,
+				},
+			}
+			context('TokenCommentLine', () => {
+				specify('Empty line comment.', () => {
+					const comment: Token = [...new Lexer(`
+						%
+						8;
+					`, CONFIG_DEFAULT).generate()][2]
+					assert.ok(comment instanceof TokenCommentLine)
+					assert.strictEqual(comment.source, '%\n')
+				})
+				specify('Basic line comment.', () => {
+					assert.ok([...new Lexer(`
+						500  +  30; ;  % line comment  *  2
+						8;
+					`, CONFIG_DEFAULT).generate()][11] instanceof TokenCommentLine)
+				})
+				specify('Line comment at end of file not followed by LF.', () => {
+					assert.doesNotThrow(() => [...new Lexer(`
+						% line comment not followed by LF
+					`.trimEnd(), CONFIG_DEFAULT).generate()])
+				})
+				it('throws when `config.features.comments` is turned off.', () => {
+					assert.throws(() => [...new Lexer(`
+						%
+						8;
+					`, comments_off).generate()], LexError01)
+				})
 			})
-			specify('Basic line comment.', () => {
-				assert.ok([...new Lexer(`
-					500  +  30; ;  % line comment  *  2
-					8;
-				`, CONFIG_DEFAULT).generate()][11] instanceof TokenCommentLine)
+			context('TokenCommentMulti', () => {
+				specify('Empty multiline comment.', () => {
+					const tokens: Token[] = [...new Lexer(`
+						{%%}
+						{% %}
+					`, CONFIG_DEFAULT).generate()]
+					assert.ok(tokens[2] instanceof TokenCommentMulti)
+					assert.ok(tokens[4] instanceof TokenCommentMulti)
+					assert.strictEqual(tokens[2].source, '{%%}')
+					assert.strictEqual(tokens[4].source, '{% %}')
+				})
+				specify('Nonempty multiline comment.', () => {
+					const comment: Token = [...new Lexer(`
+						{% multiline
+						that has contents
+						comment %}
+					`, CONFIG_DEFAULT).generate()][2]
+					assert.ok(comment instanceof TokenCommentMulti)
+				})
+				specify('Multiline comment containing nested multiline comment.', () => {
+					const tokens: Token[] = [...new Lexer(`
+						{% multiline
+						that has a {% nestable nested %} multiline
+						comment %}
+					`, CONFIG_DEFAULT).generate()]
+					assert.strictEqual(tokens.length, 5)
+					assert.ok(tokens[2] instanceof TokenCommentMulti)
+				})
+				specify('Multiline comment containing interpolation delimiters.', () => {
+					const tokens: Token[] = [...new Lexer(`
+						{% A nestable {% co{%mm%}ent %} with '''the {{interpolation}} syntax'''. %}
+					`, CONFIG_DEFAULT).generate()]
+					assert.ok(tokens[2] instanceof TokenCommentMulti)
+					assert.ok(tokens[4] instanceof TokenFilebound)
+				})
+				it('throws when `config.features.comments` is turned off.', () => {
+					assert.throws(() => [...new Lexer(`
+						{% multiline
+						that has a {% nestable nested %} multiline
+						comment %}
+					`, comments_off).generate()], LexError01)
+				})
 			})
-			specify('Line comment at end of file not followed by LF.', () => {
-				assert.doesNotThrow(() => [...new Lexer(`
-					% line comment not followed by LF
-				`.trimEnd(), CONFIG_DEFAULT).generate()])
-			})
-		})
-
-		context('recognizes `TokenCommentMulti` conditions.', () => {
-			specify('Empty multiline comment.', () => {
-				const tokens: Token[] = [...new Lexer(`
-					{%%}
-					{% %}
-				`, CONFIG_DEFAULT).generate()]
-				assert.ok(tokens[2] instanceof TokenCommentMulti)
-				assert.ok(tokens[4] instanceof TokenCommentMulti)
-				assert.strictEqual(tokens[2].source, '{%%}')
-				assert.strictEqual(tokens[4].source, '{% %}')
-			})
-			specify('Nonempty multiline comment.', () => {
-				const comment: Token = [...new Lexer(`
-					{% multiline
-					that has contents
-					comment %}
-				`, CONFIG_DEFAULT).generate()][2]
-				assert.ok(comment instanceof TokenCommentMulti)
-			})
-			specify('Multiline comment containing nested multiline comment.', () => {
-				const tokens: Token[] = [...new Lexer(`
-					{% multiline
-					that has a {% nestable nested %} multiline
-					comment %}
-				`, CONFIG_DEFAULT).generate()]
-				assert.strictEqual(tokens.length, 5)
-				assert.ok(tokens[2] instanceof TokenCommentMulti)
-			})
-			specify('Multiline comment containing interpolation delimiters.', () => {
-				const tokens: Token[] = [...new Lexer(`
-					{% A nestable {% co{%mm%}ent %} with '''the {{interpolation}} syntax'''. %}
-				`, CONFIG_DEFAULT).generate()]
-				assert.ok(tokens[2] instanceof TokenCommentMulti)
-				assert.ok(tokens[4] instanceof TokenFilebound)
-			})
-		})
-
-		context('recognizes `TokenCommentBlock` conditions.', () => {
-			specify('Empty block comment.', () => {
-				const tokens: Token[] = [...new Lexer(Util.dedent(`
-					%%%
-					%%%
-					8;
-				`), CONFIG_DEFAULT).generate()]
-				assert.ok(tokens[2] instanceof TokenCommentBlock)
-				assert.strictEqual(tokens[2].source, Util.dedent(`
-					%%%
-					%%%
-				`).trim())
-				assert.strictEqual(tokens[4].source, '8')
-			})
-			specify('Basic block comment.', () => {
-				const tokens: Token[] = [...new Lexer(`
-					%%%
-					abcde
-					5 + 3
-					%%%
-
+			context('TokenCommentBlock', () => {
+				specify('Empty block comment.', () => {
+					const tokens: Token[] = [...new Lexer(Util.dedent(`
+						%%%
+						%%%
+						8;
+					`), CONFIG_DEFAULT).generate()]
+					assert.ok(tokens[2] instanceof TokenCommentBlock)
+					assert.strictEqual(tokens[2].source, Util.dedent(`
+						%%%
+						%%%
+					`).trim())
+					assert.strictEqual(tokens[4].source, '8')
+				})
+				specify('Basic block comment.', () => {
+					const tokens: Token[] = [...new Lexer(`
 						%%%
 						abcde
 						5 + 3
 						%%%
-					8;
-				`, CONFIG_DEFAULT).generate()]
-				assert.ok(tokens[2] instanceof TokenCommentBlock)
-				assert.ok(tokens[4] instanceof TokenCommentBlock)
-				assert.strictEqual(tokens[6].source, '8')
-			})
-			specify('Block comment at end of file end delimiter not followed by LF.', () => {
-				assert.doesNotThrow(() => [...new Lexer(`
-					%%%
-					block comment with end delimiter, but not followed by LF
-					%%%
-				`.trimEnd(), CONFIG_DEFAULT).generate()])
-			})
-			specify('Block comment delimiters must be on own line.', () => {
-				const tokens: Token[] = [...new Lexer(`
-					%%%
-					these quotes do not end the doc comment%%%
-					%%%nor do these
-					%%%
-					%%% 3 * 2
-					5 + 3 %%%
-					8;
-				`, CONFIG_DEFAULT).generate()]
-				assert.ok(tokens[ 2] instanceof TokenCommentBlock)
-				assert.ok(tokens[ 4] instanceof TokenCommentLine)
-				assert.ok(tokens[12] instanceof TokenCommentLine)
-				assert.strictEqual(tokens[14].source, '8')
+
+							%%%
+							abcde
+							5 + 3
+							%%%
+						8;
+					`, CONFIG_DEFAULT).generate()]
+					assert.ok(tokens[2] instanceof TokenCommentBlock)
+					assert.ok(tokens[4] instanceof TokenCommentBlock)
+					assert.strictEqual(tokens[6].source, '8')
+				})
+				specify('Block comment at end of file end delimiter not followed by LF.', () => {
+					assert.doesNotThrow(() => [...new Lexer(`
+						%%%
+						block comment with end delimiter, but not followed by LF
+						%%%
+					`.trimEnd(), CONFIG_DEFAULT).generate()])
+				})
+				specify('Block comment delimiters must be on own line.', () => {
+					const tokens: Token[] = [...new Lexer(`
+						%%%
+						these quotes do not end the doc comment%%%
+						%%%nor do these
+						%%%
+						%%% 3 * 2
+						5 + 3 %%%
+						8;
+					`, CONFIG_DEFAULT).generate()]
+					assert.ok(tokens[ 2] instanceof TokenCommentBlock)
+					assert.ok(tokens[ 4] instanceof TokenCommentLine)
+					assert.ok(tokens[12] instanceof TokenCommentLine)
+					assert.strictEqual(tokens[14].source, '8')
+				})
+				it('throws when `config.features.comments` is turned off.', () => {
+					assert.throws(() => [...new Lexer(`
+						%%%
+						abcde
+						5 + 3
+						%%%
+
+							%%%
+							abcde
+							5 + 3
+							%%%
+						8;
+					`, comments_off).generate()], LexError01)
+				})
 			})
 		})
 	})

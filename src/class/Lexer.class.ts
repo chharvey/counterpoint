@@ -185,14 +185,14 @@ export default class Lexer {
 				/* we found a template literal middle or tail */
 				token = new TokenTemplate(this, TokenTemplate.DELIM_INTERP_END)
 
-			} else if (Char.eq(TokenCommentLine.DELIM, this._c0)) {
+			} else if (this.config.features.comments && Char.eq(TokenCommentLine.DELIM, this._c0)) {
 				/* we found either a line comment or a block comment */
 				if (this.state_newline && Char.eq(`${TokenCommentBlock.DELIM_START}\n`, this._c0, this._c1, this._c2, this._c3)) {
 					token = new TokenCommentBlock(this)
 				} else {
 					token = new TokenCommentLine(this)
 				}
-			} else if (Char.eq(TokenCommentMulti.DELIM_START, this._c0, this._c1)) {
+			} else if (this.config.features.comments && Char.eq(TokenCommentMulti.DELIM_START, this._c0, this._c1)) {
 				/* we found a multiline comment */
 				token = new TokenCommentMulti(this)
 
