@@ -10,7 +10,7 @@ import type {PartialSolidConfig} from './SolidConfig'
 
 
 const helptext: string = `
-	Usage: solid <command> <filepath> [options]
+	Usage: solid <command> <filepath> [<options>]
 
 	Parse, analyze, and compile a Solid source code file.
 	Executables are in WASM binary format. Plaintext outputs are in WAT format.
@@ -70,14 +70,15 @@ const argv = minimist<{
 		o: 'out',
 		p: 'project',
 	},
+	default: {
+		help    : false,
+		version : false,
+	},
 })
-const valid_args: boolean = (
-	typeof argv.help  === 'boolean' &&
-	typeof argv.version === 'boolean' &&
+if (!(
 	(argv.out     === void 0 || typeof argv.out     === 'string' && argv.out     !== '') &&
 	(argv.project === void 0 || typeof argv.project === 'string' && argv.project !== '')
-)
-if (!valid_args) throw new Error(`
+)) throw new Error(`
 	Invalid CLI arguments!
 	${ helptext }
 `)
@@ -103,11 +104,11 @@ const command: Command =
 		['run'     , Command.RUN],
 		['r'       , Command.RUN],
 	]).get(argv._[0]) || Command.HELP
-if (command === Command.VERSION) {
-	console.log(`solid version ${ require('../package.json').version }`)
-	process.exit(0)
-} else if (command === Command.HELP) {
+if (command === Command.HELP) {
 	console.log(helptext)
+	process.exit(0)
+} else if (command === Command.VERSION) {
+	console.log(`solid version ${ require('../package.json').version }`)
 	process.exit(0)
 }
 
