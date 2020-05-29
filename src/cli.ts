@@ -4,6 +4,7 @@ import * as path from 'path'
 import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
 import * as solid from '../'
+import type SolidConfig from './SolidConfig'
 
 
 
@@ -42,14 +43,17 @@ const helptext: string = `
 	-o, --out=file           Specify the output file.
 	                         Otherwise, the default output filepath is the input filepath except
 	                         with the extension changed to \`.wasm\` (compile) or \`.wat\` (dev).
+	-p, --project=file       Specify a configuration file.
 `
 const argv = minimist<{
 	/** Display help text. */
 	help: boolean;
 	/** Display version number. */
 	version: boolean;
-	/** If compiling, specify output filepath. */
+	/** Specify output filepath. */
 	out: string;
+	/** Specify configuration filepath. */
+	project: string;
 }>(process.argv.slice(2), {
 	boolean: [
 		'help',
@@ -57,17 +61,20 @@ const argv = minimist<{
 	],
 	string: [
 		'out',
+		'project',
 	],
 	alias: {
 		h: 'help',
 		v: 'version',
 		o: 'out',
-	}
+		p: 'project',
+	},
 })
 const valid_args: boolean = (
 	typeof argv.help  === 'boolean' &&
 	typeof argv.version === 'boolean' &&
-	(argv.out === void 0 || typeof argv.out === 'string' && argv.out !== '')
+	(argv.out     === void 0 || typeof argv.out     === 'string' && argv.out     !== '') &&
+	(argv.project === void 0 || typeof argv.project === 'string' && argv.project !== '')
 )
 if (!valid_args) throw new Error(`
 	Invalid CLI arguments!
@@ -102,23 +109,27 @@ if (command === Command.VERSION) {
 	console.log(helptext)
 	process.exit(0)
 }
-
 if (!argv._[1]) throw new Error(`
 	No path specified!
 	${ helptext }
 `)
+
+
 const inputpath: string = path.normalize(argv._[1])
 const inputfilepath: string = path.join(process.cwd(), inputpath)
 
 if (command === Command.COMPILE || command === Command.DEV) {
 	const sourcecode: Promise<string> = fs.promises.readFile(inputfilepath, 'utf8')
 
-	const outputpath: string|null = argv.out ? path.normalize(argv.out) : null
-	const outputfilepath: string = path.join(process.cwd(), outputpath || path.format({
+	const outputfilepath: string = path.join(process.cwd(), argv.out ? path.normalize(argv.out) : path.format({
 		...path.parse(inputpath),
 		base: void 0,
 		ext: command === Command.DEV ? '.wat' : '.wasm',
 	}))
+
+	const config: SolidConfig | Promise<SolidConfig> = argv.project
+		? fs.promises.readFile(path.join(process.cwd(), path.normalize(argv.project)), 'utf8').then((text) => JSON.parse(text))
+		: solid.CONFIG_DEFAULT
 
 	console.log(`
 		Compiling………
@@ -130,7 +141,10 @@ if (command === Command.COMPILE || command === Command.DEV) {
 	`)
 
 	;(async () => {
-		await fs.promises.writeFile(outputfilepath, command === Command.DEV ? solid.print(await sourcecode) : solid.compile(await sourcecode))
+		await fs.promises.writeFile(outputfilepath, command === Command.DEV
+			? solid.print  (await sourcecode, await config)
+			: solid.compile(await sourcecode, await config)
+		)
 		return console.log('Success!')
 	})().catch((err) => {
 		console.error(err)
