@@ -8,14 +8,14 @@
     "solid": "bin/solid"
   },
   "scripts": {
-    "solid"     : "solid",
-    "solid-h"   : "solid -h",
-    "solid-v"   : "solid -v",
-    "solid:c"   : "solid c ./sample/test-v0.1.solid",
-    "solid:c-o" : "solid c ./sample/test-v0.1.solid -o ./sample/testout.wasm",
-    "solid:d"   : "solid d ./sample/test-v0.1.solid",
-    "solid:d-o" : "solid d ./sample/test-v0.1.solid -o ./sample/testout.wat",
-    "solid:r"   : "solid r ./sample/test-v0.1.wasm",
+    "solid": "solid",
+    "solid-h": "solid -h",
+    "solid-v": "solid -v",
+    "solid:c": "solid c ./sample/test-v0.1.solid",
+    "solid:c-o": "solid c ./sample/test-v0.1.solid -o ./sample/testout.wasm",
+    "solid:d": "solid d ./sample/test-v0.1.solid",
+    "solid:d-o": "solid d ./sample/test-v0.1.solid -o ./sample/testout.wat",
+    "solid:r": "solid r ./sample/test-v0.1.wasm",
     "test": "jest"
   },
   "repository": {
