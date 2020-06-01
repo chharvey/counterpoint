@@ -39,10 +39,3 @@ type SolidConfig = {
 	},
 }
 export default SolidConfig // NB https://github.com/microsoft/TypeScript/issues/3792#issuecomment-303526468
-
-
-
-export type PartialSolidConfig = Partial<{
-	readonly features        : Partial<SolidConfig[ 'features'        ]>,
-	readonly compilerOptions : Partial<SolidConfig[ 'compilerOptions' ]>,
-}>

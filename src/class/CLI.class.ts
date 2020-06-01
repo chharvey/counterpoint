@@ -5,13 +5,17 @@ import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleI
 
 import * as solid from '../../'
 import type SolidConfig from '../SolidConfig'
-import type {PartialSolidConfig} from '../SolidConfig'
 
 
 
 type Mutable<T> = { // NB https://github.com/microsoft/TypeScript/issues/24509
 	-readonly[P in keyof T]: Mutable<T[P]>
-};
+}
+
+type PartialSolidConfig = Partial<{
+	readonly features        : Partial<SolidConfig[ 'features'        ]>,
+	readonly compilerOptions : Partial<SolidConfig[ 'compilerOptions' ]>,
+}>
 
 export enum Command {
 	HELP,
