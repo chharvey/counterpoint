@@ -5,6 +5,7 @@ import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleI
 
 import * as solid from '../'
 import type SolidConfig from './SolidConfig'
+import type {PartialSolidConfig} from './SolidConfig'
 
 
 
@@ -109,12 +110,30 @@ if (command === Command.VERSION) {
 	console.log(helptext)
 	process.exit(0)
 }
+
+
+
+async function computeConfig(config: PartialSolidConfig | Promise<PartialSolidConfig>): Promise<SolidConfig> {
+	return {
+		...solid.CONFIG_DEFAULT,
+		...await config,
+		features: {
+			...solid.CONFIG_DEFAULT.features,
+			...(await config).features,
+		},
+		compilerOptions: {
+			...solid.CONFIG_DEFAULT.compilerOptions,
+			...(await config).compilerOptions,
+		},
+	}
+}
+
+
+
 if (!argv._[1]) throw new Error(`
 	No path specified!
 	${ helptext }
 `)
-
-
 const inputpath: string = path.normalize(argv._[1])
 const inputfilepath: string = path.join(process.cwd(), inputpath)
 
@@ -128,7 +147,7 @@ if (command === Command.COMPILE || command === Command.DEV) {
 	}))
 
 	const config: SolidConfig | Promise<SolidConfig> = argv.project
-		? fs.promises.readFile(path.join(process.cwd(), path.normalize(argv.project)), 'utf8').then((text) => JSON.parse(text))
+		? computeConfig(fs.promises.readFile(path.join(process.cwd(), path.normalize(argv.project)), 'utf8').then((text) => JSON.parse(text)))
 		: solid.CONFIG_DEFAULT
 
 	console.log(`
