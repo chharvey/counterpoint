@@ -1,3 +1,5 @@
+import type SolidConfig from '../SolidConfig.d'
+
 import Lexer from './Lexer.class'
 import Token, {
 	TokenWhitespace,
@@ -30,9 +32,10 @@ export default class Screener {
 	/**
 	 * Construct a new Screener object.
 	 * @param source - the entire source text
+	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor(source: string) {
-		this.lexer = new Lexer(source).generate()
+	constructor (source: string, config: SolidConfig) {
+		this.lexer = new Lexer(source, config).generate()
 		this.iterator_result_token = this.lexer.next()
 		this.t0 = this.iterator_result_token.value
 	}

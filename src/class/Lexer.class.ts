@@ -1,3 +1,5 @@
+import type SolidConfig from '../SolidConfig.d'
+
 import Scanner from './Scanner.class'
 import Char from './Char.class'
 import Token, {
@@ -53,8 +55,12 @@ export default class Lexer {
 	/**
 	 * Construct a new Lexer object.
 	 * @param source - the entire source text
+	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor(source: string) {
+	constructor (
+		source: string,
+		readonly config: SolidConfig,
+	) {
 		this.scanner = new Scanner(source).generate()
 		this.iterator_result_char = this.scanner.next()
 
@@ -122,7 +128,7 @@ export default class Lexer {
 					if (Char.inc(Lexer.DIGITS_DEFAULT, this._c1)) {
 						/* a number literal with a unary operator and without an explicit radix */
 						token = new TokenNumber(this, true)
-					} else if (Char.eq(TokenNumber.ESCAPER, this._c1)) {
+					} else if (this.config.features.integerRadices && Char.eq(TokenNumber.ESCAPER, this._c1)) {
 						if (Char.inc(Lexer.BASES_KEYS, this._c2)) {
 							/* a number literal with a unary operator and with an explicit radix */
 							token = new TokenNumber(this, true, true)
@@ -160,7 +166,7 @@ export default class Lexer {
 			} else if (Char.inc(Lexer.DIGITS_DEFAULT, this._c0)) {
 				/* a number literal without a unary operator and without an explicit radix */
 				token = new TokenNumber(this, false)
-			} else if (Char.eq(TokenNumber.ESCAPER, this._c0)) {
+			} else if (this.config.features.integerRadices && Char.eq(TokenNumber.ESCAPER, this._c0)) {
 				if (Char.inc(Lexer.BASES_KEYS, this._c1)) {
 					/* a number literal without a unary operator and with an explicit radix */
 					token = new TokenNumber(this, false, true)
@@ -179,14 +185,14 @@ export default class Lexer {
 				/* we found a template literal middle or tail */
 				token = new TokenTemplate(this, TokenTemplate.DELIM_INTERP_END)
 
-			} else if (Char.eq(TokenCommentLine.DELIM, this._c0)) {
+			} else if (this.config.features.comments && Char.eq(TokenCommentLine.DELIM, this._c0)) {
 				/* we found either a line comment or a block comment */
 				if (this.state_newline && Char.eq(`${TokenCommentBlock.DELIM_START}\n`, this._c0, this._c1, this._c2, this._c3)) {
 					token = new TokenCommentBlock(this)
 				} else {
 					token = new TokenCommentLine(this)
 				}
-			} else if (Char.eq(TokenCommentMulti.DELIM_START, this._c0, this._c1)) {
+			} else if (this.config.features.comments && Char.eq(TokenCommentMulti.DELIM_START, this._c0, this._c1)) {
 				/* we found a multiline comment */
 				token = new TokenCommentMulti(this)
 

@@ -1,0 +1,10 @@
+{
+	"features": {
+		"comments"          : true,
+		"integerRadices"    : true,
+		"numericSeparators" : false
+	},
+	"compilerOptions": {
+		"constantFolding": true
+	}
+}

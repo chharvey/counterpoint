@@ -16,6 +16,7 @@
     "solid:d": "solid d ./sample/test-v0.1.solid",
     "solid:d-o": "solid d ./sample/test-v0.1.solid -o ./sample/testout.wat",
     "solid:r": "solid r ./sample/test-v0.1.wasm",
+    "solid:c-p": "solid c ./sample/test-v0.1.solid -p ./sample/solid-config.json",
     "test": "gulp test",
     "build": "rm -rf ./build/ && gulp build"
   },

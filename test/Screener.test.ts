@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 
+import {CONFIG_DEFAULT} from '../'
 import Screener from '../src/class/Screener.class'
 import Token, {
 	TokenWhitespace,
@@ -28,7 +29,7 @@ const mock: string = `
 describe('Screener.', () => {
 	describe('#generate', () => {
 		it('yields `Token`, non-`TokenWhitespace`, objects.', () => {
-			;[...new Screener(mock).generate()].forEach((token) => {
+			;[...new Screener(mock, CONFIG_DEFAULT).generate()].forEach((token) => {
 				assert.ok(token instanceof Token)
 				assert.ok(!(token instanceof TokenWhitespace))
 			})

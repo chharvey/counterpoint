@@ -3,6 +3,8 @@ import * as path from 'path'
 
 import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
+import type SolidConfig from '../SolidConfig.d'
+
 import {
 	Punctuator,
 } from './Token.class'
@@ -24,9 +26,10 @@ export default class CodeGenerator {
 	/**
 	 * Construct a new CodeGenerator object.
 	 * @param source - the entire source text
+	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor(source: string) {
-		this.output = new Parser(source).parse().decorate().evaluate(this)
+	constructor (source: string, config: SolidConfig) {
+		this.output = new Parser(source, config).parse().decorate().evaluate(this)
 	}
 
 	/**

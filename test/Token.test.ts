@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 
+import {CONFIG_DEFAULT} from '../'
 import Util     from '../src/class/Util.class'
 import Lexer    from '../src/class/Lexer.class'
 import Screener from '../src/class/Screener.class'
@@ -38,7 +39,7 @@ describe('Token', () => {
 	describe('#cook', () => {
 		context('TokenFilebound', () => {
 			it('produces a boolean value.', () => {
-				const tokens: Token[] = [...new Screener(mock).generate()]
+				const tokens: Token[] = [...new Screener(mock, CONFIG_DEFAULT).generate()]
 				assert.strictEqual(tokens[0]       .cook(), true )
 				assert.strictEqual(lastItem(tokens).cook(), false)
 			})
@@ -46,7 +47,7 @@ describe('Token', () => {
 
 		context('TokenPunctuator', () => {
 			it('assigns values 0n–127n to punctuator tokens.', () => {
-				const cooked: bigint[] = [...new Screener(TokenPunctuator.PUNCTUATORS.join(' ')).generate()]
+				const cooked: bigint[] = [...new Screener(TokenPunctuator.PUNCTUATORS.join(' '), CONFIG_DEFAULT).generate()]
 					.filter((token): token is TokenPunctuator => token instanceof TokenPunctuator)
 					.map((punctuator) => punctuator.cook())
 				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i)).slice(0, TokenPunctuator.PUNCTUATORS.length)
@@ -60,7 +61,7 @@ describe('Token', () => {
 
 		context('TokenKeyword', () => {
 			it('assigns values 128n–255n to reserved keywords.', () => {
-				const cooked: bigint[] = [...new Screener(TokenKeyword.KEYWORDS.join(' ')).generate()]
+				const cooked: bigint[] = [...new Screener(TokenKeyword.KEYWORDS.join(' '), CONFIG_DEFAULT).generate()]
 					.filter((token): token is TokenKeyword => token instanceof TokenKeyword)
 					.map((keyword) => keyword.cook())
 				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i + 128)).slice(0, TokenKeyword.KEYWORDS.length)
@@ -80,7 +81,7 @@ describe('Token', () => {
 					_and0 _can1 contain2 numb3rs
 
 					a word _can repeat _with the same id
-				`).generate()]
+				`, CONFIG_DEFAULT).generate()]
 					.filter((token): token is TokenIdentifier => token instanceof TokenIdentifier)
 					.map((identifier) => identifier.cook())
 				it('assigns values 256n or greater.', () => {
@@ -109,7 +110,7 @@ describe('Token', () => {
 					\`this\` \`is\` \`a\` \`unicode word\`
 					\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
 					\`except\` \`back-ticks\` \`.\`
-				`).generate()]
+				`, CONFIG_DEFAULT).generate()]
 					.filter((token): token is TokenIdentifierUnicode => token instanceof TokenIdentifierUnicode)
 					.map((identifier) => identifier.cook())
 				it('assigns values 256n or greater.', () => {
@@ -174,7 +175,13 @@ describe('Token', () => {
 				]]],
 			])].forEach(([name, [source, values]]) => {
 				it(`correctly cooks ${name}.`, () => {
-					;[...new Screener(source).generate()].filter((token) => token instanceof TokenNumber).forEach((token, i) => {
+					;[...new Screener(source, {
+						...CONFIG_DEFAULT,
+						features: {
+							...CONFIG_DEFAULT.features,
+							numericSeparators: true,
+						},
+					}).generate()].filter((token) => token instanceof TokenNumber).forEach((token, i) => {
 						assert.strictEqual(token.cook(), values[i])
 					})
 				})
@@ -190,7 +197,7 @@ describe('Token', () => {
 					'012\\
 					345
 					678';
-				`)).generate()]
+				`), CONFIG_DEFAULT).generate()]
 				assert.strictEqual(tokens[ 5].cook(), ``)
 				assert.strictEqual(tokens[ 7].cook(), `hello`)
 				assert.strictEqual(tokens[11].cook(), `0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`)
@@ -212,7 +219,7 @@ describe('Token', () => {
 					'''012\\
 					345
 					678''';
-				`)).generate()]
+				`), CONFIG_DEFAULT).generate()]
 				assert.strictEqual(tokens[ 3].cook(), ``)
 				assert.strictEqual(tokens[ 7].cook(), `hello`)
 				assert.strictEqual(tokens[13].cook(), `head`)
@@ -228,7 +235,7 @@ describe('Token', () => {
 		it('throws when UTF-16 encoding input is out of range.', () => {
 			const stringtoken: Token = [...new Screener(Util.dedent(`
 				'a string literal with a unicode \\u{a00061} escape sequence out of range';
-			`)).generate()][1]
+			`), CONFIG_DEFAULT).generate()][1]
 			assert.throws(() => stringtoken.cook(), RangeError)
 		})
 	})
@@ -238,7 +245,7 @@ describe('Token', () => {
 			assert.strictEqual([...new Lexer(Util.dedent(`
 				500  +  30; ;  % line comment  *  2
 				8;
-			`)).generate()][11].serialize(), Util.dedent(`
+			`), CONFIG_DEFAULT).generate()][11].serialize(), Util.dedent(`
 				<COMMENT line="1" col="16">% line comment  *  2\n</COMMENT>
 			`).trim())
 		})
@@ -247,7 +254,7 @@ describe('Token', () => {
 				{% multiline
 				that has a {% nestable nested %} multiline
 				comment %}
-			`)).generate()][2].serialize(), Util.dedent(`
+			`), CONFIG_DEFAULT).generate()][2].serialize(), Util.dedent(`
 				<COMMENT line="1" col="1">{% multiline
 				that has a {% nestable nested %} multiline
 				comment %}</COMMENT>
@@ -260,7 +267,7 @@ describe('Token', () => {
 				%%%nor do these
 				%%%
 				;
-			`)).generate()][2].serialize(), Util.dedent(`
+			`), CONFIG_DEFAULT).generate()][2].serialize(), Util.dedent(`
 				<COMMENT line="1" col="1">%%%
 				these quotes do not end the doc comment%%%
 				%%%nor do these

@@ -1,3 +1,5 @@
+import type SolidConfig from '../SolidConfig.d'
+
 import Screener from './Screener.class'
 import type Token from './Token.class'
 import Terminal from './Terminal.class'
@@ -34,10 +36,11 @@ export default class Parser {
 	/**
 	 * Construct a new Parser object.
 	 * @param source - the entire source text
+	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor(source: string) {
+	constructor (source: string, config: SolidConfig) {
 		this.grammar = new Grammar()
-		this.screener = new Screener(source).generate()
+		this.screener = new Screener(source, config).generate()
 		this.iterator_result_token = this.screener.next()
 		this.lookahead = this.iterator_result_token.value as Token
 	}
