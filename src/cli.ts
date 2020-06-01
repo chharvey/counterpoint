@@ -9,6 +9,12 @@ import type {PartialSolidConfig} from './SolidConfig'
 
 
 
+type Mutable<T> = { // NB https://github.com/microsoft/TypeScript/issues/24509
+	-readonly[P in keyof T]: Mutable<T[P]>
+};
+
+
+
 const helptext: string = `
 	Usage: solid <command> <filepath> [<options>]
 
@@ -63,6 +69,7 @@ const configtext: string = `
 
 
 const argv = minimist<{
+	// CLI Options
 	/** Display help text. */
 	help: boolean;
 	/** Display version number. */
@@ -73,13 +80,29 @@ const argv = minimist<{
 	project: string;
 	/** Display configuration options. */
 	config: boolean;
+
+	// Feature Toggles
+	comments          : null | boolean,
+	integerRadices    : null | boolean,
+	numericSeparators : null | boolean,
+
+	// Compiler Options
+	constantFolding : null | boolean,
 }>(process.argv.slice(2), {
 	boolean: [
+		// CLI Options
 		'help',
 		'version',
 		'config',
+		// Feature Toggles
+		'comments',
+		'integerRadices',
+		'numericSeparators',
+		// Compiler Options
+		'constantFolding',
 	],
 	string: [
+		// CLI Options
 		'out',
 		'project',
 	],
@@ -90,9 +113,16 @@ const argv = minimist<{
 		p: 'project',
 	},
 	default: {
+		// CLI Options
 		help    : false,
 		version : false,
 		config  : false,
+		// Feature Toggles
+		comments          : null,
+		integerRadices    : null,
+		numericSeparators : null,
+		// Compiler Options
+		constantFolding : null,
 	},
 	unknown(arg) {
 		if (arg[0] === '-') { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
@@ -147,7 +177,7 @@ if (command === Command.HELP) {
 
 
 async function computeConfig(config: PartialSolidConfig | Promise<PartialSolidConfig>): Promise<SolidConfig> {
-	return {
+	const returned: Mutable<SolidConfig> = {
 		...solid.CONFIG_DEFAULT,
 		...await config,
 		features: {
@@ -159,6 +189,14 @@ async function computeConfig(config: PartialSolidConfig | Promise<PartialSolidCo
 			...(await config).compilerOptions,
 		},
 	}
+
+	if (argv.comments          !== null) returned.features.comments          = argv.comments
+	if (argv.integerRadices    !== null) returned.features.integerRadices    = argv.integerRadices
+	if (argv.numericSeparators !== null) returned.features.numericSeparators = argv.numericSeparators
+
+	if (argv.constantFolding !== null) returned.compilerOptions.constantFolding = argv.constantFolding
+
+	return returned
 }
 
 
@@ -179,9 +217,9 @@ if (command === Command.COMPILE || command === Command.DEV) {
 		ext: command === Command.DEV ? '.wat' : '.wasm',
 	}))
 
-	const config: SolidConfig | Promise<SolidConfig> = argv.project
-		? computeConfig(fs.promises.readFile(path.join(process.cwd(), path.normalize(argv.project)), 'utf8').then((text) => JSON.parse(text)))
-		: solid.CONFIG_DEFAULT
+	const config: SolidConfig | Promise<SolidConfig> = computeConfig(argv.project ?
+		fs.promises.readFile(path.join(process.cwd(), path.normalize(argv.project)), 'utf8').then((text) => JSON.parse(text))
+	: {})
 
 	console.log(`
 		Compiling………
