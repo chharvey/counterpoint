@@ -45,7 +45,23 @@ const helptext: string = `
 	                         Otherwise, the default output filepath is the input filepath except
 	                         with the extension changed to \`.wasm\` (compile) or \`.wat\` (dev).
 	-p, --project=file       Specify a configuration file.
+	--config                 Print all possible configuration options.
 `
+const configtext: string = `
+	The following options set individual feature toggles and compiler options.
+	These options will override those in the configuration file provided by \`--project\`.
+
+	Feature Toggles:
+	--[no-]comments               (on by default)
+	--[no-]integerRadices         (on by default)
+	--[no-]numericSeparators
+
+	Compiler Options:
+	--[no-]constantFolding        (on by default)
+`
+
+
+
 const argv = minimist<{
 	/** Display help text. */
 	help: boolean;
@@ -55,10 +71,13 @@ const argv = minimist<{
 	out: string;
 	/** Specify configuration filepath. */
 	project: string;
+	/** Display configuration options. */
+	config: boolean;
 }>(process.argv.slice(2), {
 	boolean: [
 		'help',
 		'version',
+		'config',
 	],
 	string: [
 		'out',
@@ -73,6 +92,16 @@ const argv = minimist<{
 	default: {
 		help    : false,
 		version : false,
+		config  : false,
+	},
+	unknown(arg) {
+		if (arg[0] === '-') { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
+			throw new Error(`
+				Unknown CLI option: ${ arg }
+				${ helptext }
+			`)
+		}
+		return true
 	},
 })
 if (!(
@@ -92,7 +121,7 @@ enum Command {
 	RUN,
 }
 const command: Command =
-	(argv.help) ? Command.HELP :
+	(argv.help || argv.config) ? Command.HELP :
 	(argv.version) ? Command.VERSION :
 	new Map<string, Command>([
 		['help'    , Command.HELP],
@@ -106,6 +135,9 @@ const command: Command =
 	]).get(argv._[0]) || Command.HELP
 if (command === Command.HELP) {
 	console.log(helptext)
+	if (argv.config) {
+		console.log(configtext)
+	}
 	process.exit(0)
 } else if (command === Command.VERSION) {
 	console.log(`solid version ${ require('../package.json').version }`)
