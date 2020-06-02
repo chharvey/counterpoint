@@ -1,5 +1,6 @@
 import type SolidConfig from '../SolidConfig.d'
 
+import Dev from './Dev.class'
 import Lexer from './Lexer.class'
 import Token, {
 	TokenWhitespace,
@@ -48,7 +49,7 @@ export default class Screener {
 	* generate(): IterableIterator<Token> {
 		while (!this.iterator_result_token.done) {
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
-				if (this.t0 instanceof TokenIdentifier) {
+				if (Dev.supports('variables') && this.t0 instanceof TokenIdentifier) {
 					this._ids.add(this.t0.source)
 					this.t0.setValue(BigInt([...this._ids].indexOf(this.t0.source)))
 				}

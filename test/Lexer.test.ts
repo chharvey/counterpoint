@@ -11,6 +11,7 @@ import Token, {
 	TokenWhitespace,
 	TokenPunctuator,
 	TokenKeyword,
+	TokenIdentifier,
 	TokenIdentifierBasic,
 	TokenIdentifierUnicode,
 	TokenNumber,
@@ -147,7 +148,7 @@ describe('Lexer', () => {
 			})
 		})
 
-		context('recognizes `TokenIdentifier` conditions.', () => {
+		Dev.supports('variables') && context('recognizes `TokenIdentifier` conditions.', () => {
 			context('recognizes `TokenIdentifierBasic` conditions.', () => {
 				specify('Basic identifier beginners.', () => {
 					;[...new Lexer(`
@@ -274,9 +275,13 @@ describe('Lexer', () => {
 					`, radices_off).generate()], LexError01)
 				})
 				specify('invalid sequence.', () => {
-					assert.deepStrictEqual([...new Lexer(`
-						\\d39c
-					`, CONFIG_DEFAULT).generate()].slice(2, -2).map((token) => token.source), ['\\d39', 'c'])
+					Dev.supports('variables')
+						? assert.deepStrictEqual([...new Lexer(`
+							\\d39c
+						`, CONFIG_DEFAULT).generate()].slice(2, -2).map((token) => token.source), ['\\d39', 'c'])
+						: assert.throws(() => [...new Lexer(`
+							\\d39c
+						`, CONFIG_DEFAULT).generate()], /Identifier `c` not yet allowed./)
 				})
 				specify('invalid escape characters.', () => {
 					`
@@ -296,20 +301,27 @@ describe('Lexer', () => {
 				})
 			})
 			context('integers with separators.', () => {
-				it('throws when `config.features.numericSeparators` is turned off.', () => {
-					const tokens: Token[] = [...new Lexer(`
-						12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
-						\\b1_00  \\q0_32  +\\o1_037  -\\d9_037  +\\x0_6  -\\z0_6
-					`, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace))
-					const expected: string[] = `
-						12 +12 -12 0123 +0123 -0123 012 +012 -012
-						\\b1 \\q0 +\\o1 -\\d9 +\\x0 -\\z0
-					`.trim().replace(/\n\t+/g, ' ').split(' ')
-					tokens.filter((_, i) => i % 2 === 0).forEach((token, j) => {
-						assert.ok(token instanceof TokenNumber, 'this token instanceof TokenNumber')
-						assert.ok(!(tokens[j * 2 + 1] instanceof TokenNumber), 'next token not instanceof TokenNumber')
-						assert.strictEqual(token.source, expected[j])
-					})
+				it('tokenizes numeric separators as identifiers when `config.features.numericSeparators` is turned off.', () => {
+					if (Dev.supports('variables')) {
+						const tokens: Token[] = [...new Lexer(`
+							12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
+							\\b1_00  \\q0_32  +\\o1_037  -\\d9_037  +\\x0_6  -\\z0_6
+						`, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace))
+						const expected: string[] = `
+							12 +12 -12 0123 +0123 -0123 012 +012 -012
+							\\b1 \\q0 +\\o1 -\\d9 +\\x0 -\\z0
+						`.trim().replace(/\n\t+/g, ' ').split(' ')
+						tokens.filter((_, i) => i % 2 === 0).forEach((token, j) => {
+							assert.ok(token instanceof TokenNumber, 'this token instanceof TokenNumber')
+							assert.ok(tokens[j * 2 + 1] instanceof TokenIdentifier, 'next token instanceof TokenIdentifierBasic')
+							assert.strictEqual(token.source, expected[j])
+						})
+					} else {
+						assert.throws(() => [...new Lexer(`
+							12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
+							\\b1_00  \\q0_32  +\\o1_037  -\\d9_037  +\\x0_6  -\\z0_6
+						`, CONFIG_DEFAULT).generate()], LexError01)
+					}
 				})
 				it('`config.features.numericSeparators` allows integers with separators.', () => {
 					const source: string = `
@@ -332,8 +344,10 @@ describe('Lexer', () => {
 				specify('numeric separators cannot appear consecutively.', () => {
 					assert.throws(() => [...new Lexer(`12__345`, separators_on).generate()], LexError04)
 				})
-				specify('numeric separator at beginning of token is not a number token.', () => {
-					assert.ok(!([...new Lexer(`_12345`, separators_on).generate()][2] instanceof TokenNumber))
+				specify('numeric separator at beginning of token is an identifier.', () => {
+					Dev.supports('variables')
+						? assert.ok([...new Lexer(`_12345`, separators_on).generate()][2] instanceof TokenIdentifier)
+						: assert.throws(() => [...new Lexer(`_12345`, separators_on).generate()], LexError01)
 				})
 			})
 		})

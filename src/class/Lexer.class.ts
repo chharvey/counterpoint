@@ -149,18 +149,22 @@ export default class Lexer {
 				/* we found a keyword or a basic identifier */
 				const buffer: Char[] = [this.c0]
 				this.advance()
-				while (!this.isDone && TokenIdentifierBasic.CHAR_REST.test(this._c0.source)) {
+				while (!this.isDone && (Dev.supports('variables') ? TokenIdentifierBasic.CHAR_REST : TokenKeyword.CHAR).test(this._c0.source)) {
 					buffer.push(this._c0)
 					this.advance()
 				}
 				const bufferstring: string = buffer.map((char) => char.source).join('')
-				token = ((TokenKeyword.KEYWORDS as string[]).includes(bufferstring))
-					? new TokenKeyword        (this, buffer[0], ...buffer.slice(1))
-					: new TokenIdentifierBasic(this, buffer[0], ...buffer.slice(1))
-			} else if (TokenIdentifierBasic.CHAR_START.test(this._c0.source)) {
+				if ((TokenKeyword.KEYWORDS as string[]).includes(bufferstring)) {
+					token = new TokenKeyword        (this, buffer[0], ...buffer.slice(1))
+				} else if (Dev.supports('variables')) {
+					token = new TokenIdentifierBasic(this, buffer[0], ...buffer.slice(1))
+				} else {
+					throw new Error(`Identifier \`${ bufferstring }\` not yet allowed.`)
+				}
+			} else if (Dev.supports('variables') && TokenIdentifierBasic.CHAR_START.test(this._c0.source)) {
 				/* we found a basic identifier */
 				token = new TokenIdentifierBasic(this)
-			} else if (Char.eq(TokenIdentifierUnicode.DELIM, this._c0)) {
+			} else if (Dev.supports('variables') && Char.eq(TokenIdentifierUnicode.DELIM, this._c0)) {
 				/* we found a unicode identifier */
 				token = new TokenIdentifierUnicode(this)
 

@@ -74,7 +74,7 @@ describe('Token', () => {
 			})
 		})
 
-		context('TokenIdentifier', () => {
+		Dev.supports('variables') && context('TokenIdentifier', () => {
 			context('TokenIdentifierBasic', () => {
 				const cooked: (bigint|null)[] = [...new Screener(`
 					this is a word
