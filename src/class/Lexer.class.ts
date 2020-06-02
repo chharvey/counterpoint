@@ -175,7 +175,7 @@ export default class Lexer {
 					throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}`, this._c0.line_index, this._c0.col_index)
 				}
 
-			} else if (Char.eq(TokenString.DELIM, this._c0)) {
+			} else if (Dev.supports('literalString') && Char.eq(TokenString.DELIM, this._c0)) {
 				/* we found a string literal or a template literal full or head */
 				if (Dev.supports('literalTemplate') && Char.eq(TokenTemplate.DELIM, this._c0, this._c1, this._c2)) {
 					token = new TokenTemplate(this, TokenTemplate.DELIM)

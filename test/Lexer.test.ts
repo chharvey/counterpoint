@@ -40,7 +40,7 @@ const mock: string = `
 
 3 - 50 + * 2
 
-5 + 03 + '' * 'hello' *  -2
+5 + 03 +  *  -2
 
 600  /  3  *  2
 
@@ -103,12 +103,14 @@ describe('Lexer', () => {
 					%%%
 					8;
 				`]],
-				['string', [`
-					'string without end delimiter
-				`, `
-					'string with end delimiter but contains \u0003 character'
-					8;
-				`]],
+				...(Dev.supports('literalString') ? [
+					['string', [`
+						'string without end delimiter
+					`, `
+						'string with end delimiter but contains \u0003 character'
+						8;
+					`]] as [string, string[]],
+				] : []),
 				...(Dev.supports('literalTemplate') ? [
 					['template', [`
 						'''template without end delimiter
@@ -336,7 +338,7 @@ describe('Lexer', () => {
 			})
 		})
 
-		context('recognizes `TokenString` conditions.', () => {
+		Dev.supports('literalString') && context('recognizes `TokenString` conditions.', () => {
 			specify('Basic strings.', () => {
 				const tokens: Token[] = [...new Lexer(`
 					3 - 50 + * 2

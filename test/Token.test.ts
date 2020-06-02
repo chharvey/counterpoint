@@ -25,7 +25,7 @@ const mock: string = `
 
 3 - 50 + * 2
 
-5 + 03 + '' * 'hello' *  -2
+5 + 03 +  *  -2
 
 600  /  3  *  2
 
@@ -189,7 +189,7 @@ describe('Token', () => {
 			})
 		})
 
-		context('TokenString', () => {
+		Dev.supports('literalString') && context('TokenString', () => {
 			it('produces the cooked string value.', () => {
 				const tokens: Token[] = [...new Screener(Util.dedent(`
 					5 + 03 + '' * 'hello' *  -2;
@@ -233,7 +233,7 @@ describe('Token', () => {
 			})
 		})
 
-		it('throws when UTF-16 encoding input is out of range.', () => {
+		Dev.supports('literalString') && it('throws when UTF-16 encoding input is out of range.', () => {
 			const stringtoken: Token = [...new Screener(Util.dedent(`
 				'a string literal with a unicode \\u{a00061} escape sequence out of range';
 			`), CONFIG_DEFAULT).generate()][1]
