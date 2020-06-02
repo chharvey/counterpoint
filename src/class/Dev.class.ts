@@ -36,12 +36,10 @@ export default class Dev {
 		readonly typingImplicit    : string,
 		readonly statements        : string,
 		// v0.3.0
-		readonly literalString       : string,
-		readonly literalTemplate     : string,
-		readonly identifiers         : string,
-		readonly declarationVariable : string,
-		readonly reassignment        : string,
-		readonly typingExplicit      : string,
+		readonly literalString   : string,
+		readonly literalTemplate : string,
+		readonly variables       : string,
+		readonly typingExplicit  : string,
 	} = {
 		// v0.1.0
 		literalNumber   : '>=0.1.0',
@@ -58,12 +56,10 @@ export default class Dev {
 		typingImplicit    : '>=0.2.0',
 		statements        : '>=0.2.0',
 		// v0.3.0
-		literalString       : '>=0.3.0',
-		literalTemplate     : '>=0.3.0',
-		identifiers         : '>=0.3.0',
-		declarationVariable : '>=0.3.0',
-		reassignment        : '>=0.3.0',
-		typingExplicit      : '>=0.3.0',
+		literalString   : '>=0.3.0',
+		literalTemplate : '>=0.3.0',
+		variables       : '>=0.3.0',
+		typingExplicit  : '>=0.3.0',
 	}
 
 	/**
