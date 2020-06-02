@@ -12,16 +12,16 @@ Statement ::=
 
 ### Static Semantics: Decorate (Statements)
 ```w3c
-Decorate(Statement ::= DeclarationVariable) -> SemanticDeclaration
-	:= Decorate(DeclarationVariable);
-Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
-	:= Decorate(StatementAssignment);
+Decorate(Statement ::= ";") -> SemanticStatement
+	:= SemanticStatement {type: "expression"} [];
 Decorate(Statement ::= Expression ";") -> SemanticStatement
 	:= SemanticStatement {type: "expression"} [
 		Decorate(Expression),
 	];
-Decorate(Statement ::= ";") -> SemanticStatement
-	:= SemanticStatement {type: "expression"} [];
+Decorate(Statement ::= DeclarationVariable) -> SemanticDeclaration
+	:= Decorate(DeclarationVariable);
+Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
+	:= Decorate(StatementAssignment);
 ```
 
 

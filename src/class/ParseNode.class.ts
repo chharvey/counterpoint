@@ -261,10 +261,10 @@ export class ParseNodeStatementAssignment extends ParseNode {
 }
 export class ParseNodeStatement extends ParseNode {
 	declare children:
+		| readonly [                     TokenPunctuator]
+		| readonly [ParseNodeExpression, TokenPunctuator]
 		| readonly [ParseNodeDeclarationVariable]
 		| readonly [ParseNodeStatementAssignment]
-		| readonly [ParseNodeExpression, TokenPunctuator]
-		| readonly [TokenPunctuator]
 	decorate(): SemanticStatementType {
 		return (this.children.length === 2)
 			? new SemanticNodeStatementExpression(this, [
