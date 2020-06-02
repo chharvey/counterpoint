@@ -31,15 +31,15 @@ describe('SemanticNode', () => {
 			)
 		`
 
-		context('SemanticNodeNull', () => {
+		context('SemanticNodeGoal ::= SOT EOT', () => {
 			it('prints nop.', () => {
 				assert.strictEqual(new CodeGenerator('', CONFIG_DEFAULT).print(), boilerplate(`(nop)`))
 			})
 		})
 
-		context('SemanticNodeStatementEmpty', () => {
+		context('SemanticNodeStatement ::= ";"', () => {
 			it('prints nop.', () => {
-				assert.strictEqual(new CodeGenerator('', CONFIG_DEFAULT).print(), boilerplate(`(nop)`))
+				assert.strictEqual(new CodeGenerator(';', CONFIG_DEFAULT).print(), boilerplate(`(nop)`))
 			})
 		})
 

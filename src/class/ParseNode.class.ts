@@ -28,7 +28,7 @@ import SemanticNode, {
 	SemanticNodeGoal,
 } from './SemanticNode.class'
 import type {Rule} from './Grammar.class'
-import Production, {
+import {
 	ProductionPrimitiveLiteral,
 	ProductionStringTemplate,
 	ProductionStringTemplate__0__List,
