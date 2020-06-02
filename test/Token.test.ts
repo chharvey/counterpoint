@@ -2,6 +2,7 @@ import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../'
 import Util     from '../src/class/Util.class'
+import Dev from '../src/class/Dev.class'
 import Lexer    from '../src/class/Lexer.class'
 import Screener from '../src/class/Screener.class'
 import Token, {
@@ -206,7 +207,7 @@ describe('Token', () => {
 			})
 		})
 
-		context('TokenTemplate', () => {
+		Dev.supports('literalTemplate') && context('TokenTemplate', () => {
 			it('produces the cooked template value.', () => {
 				const tokens: Token[] = [...new Screener(Util.dedent(`
 					600  /  '''''' * 3 + '''hello''' *  2;

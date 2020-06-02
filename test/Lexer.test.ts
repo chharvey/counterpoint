@@ -3,6 +3,7 @@ import * as assert from 'assert'
 import {CONFIG_DEFAULT} from '../'
 import type SolidConfig from '../src/SolidConfig'
 import Util  from '../src/class/Util.class'
+import Dev from '../src/class/Dev.class'
 import Lexer from '../src/class/Lexer.class'
 import Token, {
 	TemplatePosition,
@@ -108,17 +109,18 @@ describe('Lexer', () => {
 					'string with end delimiter but contains \u0003 character'
 					8;
 				`]],
-				['template', [`
-					'''template without end delimiter
-				`, `
-					'''template with end delimiter but contains \u0003 character'''
-					8;
-				`]],
-				['misc.', [`
-					'''template-full that ends with a single apostrophe ''''
-				`, `
-					}}template-tail that ends with a single apostrophe ''''
-				`]],
+				...(Dev.supports('literalTemplate') ? [
+					['template', [`
+						'''template without end delimiter
+					`, `
+						'''template with end delimiter but contains \u0003 character'''
+						8;
+					`, `
+						'''template-full that ends with a single apostrophe ''''
+					`, `
+						}}template-tail that ends with a single apostrophe ''''
+					`]] as [string, string[]],
+				] : []),
 			])].forEach(([name, sources]) => {
 				it(`throws when ${name} token is unfinished.`, () => {
 					sources.map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
@@ -398,7 +400,7 @@ describe('Lexer', () => {
 			})
 		})
 
-		context('recognizes `TokenTemplate` conditions.', () => {
+		Dev.supports('literalTemplate') && context('recognizes `TokenTemplate` conditions.', () => {
 			specify('Basic templates.', () => {
 				const tokens: Token[] = [...new Lexer(`
 					600  /  '''''' * 3 + '''hello''' *  2
