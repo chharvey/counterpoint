@@ -13,7 +13,6 @@ import Token, {
 } from './Token.class'
 import SemanticNode, {
 	SemanticStatementType,
-	SemanticNodeNull,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
@@ -266,13 +265,11 @@ export class ParseNodeStatement extends ParseNode {
 		| readonly [ParseNodeDeclarationVariable]
 		| readonly [ParseNodeStatementAssignment]
 	decorate(): SemanticStatementType {
-		return (this.children.length === 2)
-			? new SemanticNodeStatementExpression(this, [
+		return (this.children.length === 1 && this.children[0] instanceof ParseNode)
+			? this.children[0].decorate()
+			: new SemanticNodeStatementExpression(this, (this.children.length === 1) ? [] : [
 				this.children[0].decorate(),
 			])
-			: (this.children[0] instanceof ParseNode)
-				? this.children[0].decorate()
-				: new SemanticNodeNull(this)
 	}
 }
 export class ParseNodeStatementList extends ParseNode {
