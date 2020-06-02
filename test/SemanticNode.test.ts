@@ -114,10 +114,12 @@ describe('SemanticNode', () => {
 			})
 			it('returns `String` for SemanticNodeConstant with string value.', () => {
 				;[
-					((new Parser(`'42';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
-						.children[0] as SemanticNodeStatementList)
-						.children[0]
-						.children[0] as SemanticNodeConstant,
+					...(Dev.supports('literalString') ? [
+						((new Parser(`'42';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+							.children[0] as SemanticNodeStatementList)
+							.children[0]
+							.children[0] as SemanticNodeConstant,
+					] : []),
 					...(Dev.supports('literalTemplate') ? [
 						((new Parser(`'''42''';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
 							.children[0] as SemanticNodeStatementList)
@@ -139,7 +141,7 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeOperation).type(), SolidLanguageType.NUMBER)
 			})
 			it('throws for operation of non-numbers.', () => {
-				assert.throws(() => (((new Parser(`'hello' + 5;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+				Dev.supports('literalString') && assert.throws(() => (((new Parser(`'hello' + 5;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
 					.children[0] as SemanticNodeStatementList)
 					.children[0]
 					.children[0] as SemanticNodeOperation).type(), TypeError)

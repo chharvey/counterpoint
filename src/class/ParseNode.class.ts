@@ -131,7 +131,8 @@ export default abstract class ParseNode implements Serializable {
 
 export class ParseNodePrimitiveLiteral extends ParseNode {
 	declare children:
-		| readonly [TokenString | TokenNumber]
+		| readonly [TokenNumber]
+		| readonly [TokenString] // Dev.supports('literalString')
 	;
 	decorate(): SemanticNodeConstant {
 		return new SemanticNodeConstant(this.children[0], this.children[0].cook())

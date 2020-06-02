@@ -82,15 +82,23 @@ export class ProductionPrimitiveLiteral extends Production {
 	get sequences(): [
 		[TerminalNumber],
 		[TerminalString],
+	] | [
+		[TerminalNumber],
 	] {
-		return [
+		return Dev.supports('literalString') ? [
 			[TerminalNumber.instance],
 			[TerminalString.instance],
+		] : [
+			[TerminalNumber.instance],
 		]
 	}
 	random(): string[] {
 		return [
-			Util.randomBool() ? TerminalNumber.instance.random() : TerminalString.instance.random()
+			Dev.supports('literalString')
+				? Util.randomBool()
+					? TerminalNumber.instance.random()
+					: TerminalString.instance.random()
+				: TerminalNumber.instance.random()
 		]
 	}
 }
