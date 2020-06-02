@@ -2,6 +2,7 @@ import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../'
 import Util   from '../src/class/Util.class'
+import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
 import type {
 	SemanticNodeTemplate,
@@ -48,7 +49,7 @@ describe('ParseNode', () => {
 			})
 		})
 
-		context('ExpressionUnit ::= StringTemplate', () => {
+		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
 			const stringTemplateSemanticNode = (goal: SemanticNodeGoal): SemanticNodeTemplate => ((goal
 				.children[0] as SemanticNodeStatementList)
 				.children[0] as SemanticNodeStatementExpression)

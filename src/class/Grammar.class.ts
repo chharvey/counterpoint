@@ -1,6 +1,7 @@
 import * as xjs from 'extrajs'
 
 import Util from './Util.class'
+import Dev from './Dev.class'
 import Token, {
 	Filebound,
 	Punctuator,
@@ -59,8 +60,8 @@ export default class Grammar {
 	constructor() {
 		this.productions = [
 			ProductionPrimitiveLiteral.instance,
-			ProductionStringTemplate.instance,
-			ProductionStringTemplate__0__List.instance,
+			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate         .instance] : []),
+			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate__0__List.instance] : []),
 			ProductionExpressionUnit.instance,
 			ProductionExpressionUnarySymbol.instance,
 			ProductionExpressionExponential.instance,

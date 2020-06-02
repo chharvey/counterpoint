@@ -2,6 +2,7 @@ import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../'
 import Util from '../src/class/Util.class'
+import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
 import type {
 	ParseNodeStringTemplate,
@@ -107,7 +108,7 @@ describe('Parser', () => {
 			})
 		})
 
-		context('ExpressionUnit ::= StringTemplate', () => {
+		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
 			const stringTemplateParseNode = (goal: ParseNodeGoal): ParseNodeStringTemplate => ((((((((goal
 				.children[1] as ParseNodeStatementList)
 				.children[0] as ParseNodeStatement)

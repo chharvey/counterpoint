@@ -1,4 +1,5 @@
 import Util from './Util.class'
+import Dev from './Dev.class'
 import {
 	Filebound,
 	Punctuator,
@@ -149,20 +150,32 @@ export class ProductionExpressionUnit extends Production {
 		[ProductionPrimitiveLiteral],
 		[ProductionStringTemplate  ],
 		[Punctuator, ProductionExpression, Punctuator],
+	] | [
+		[TerminalIdentifier        ],
+		[ProductionPrimitiveLiteral],
+		[Punctuator, ProductionExpression, Punctuator],
 	] {
-		return [
+		return Dev.supports('literalTemplate') ? [
 			[TerminalIdentifier        .instance],
 			[ProductionPrimitiveLiteral.instance],
 			[ProductionStringTemplate  .instance],
+			[Punctuator.GRP_OPN, ProductionExpression.instance, Punctuator.GRP_CLS],
+		] : [
+			[TerminalIdentifier        .instance],
+			[ProductionPrimitiveLiteral.instance],
 			[Punctuator.GRP_OPN, ProductionExpression.instance, Punctuator.GRP_CLS],
 		]
 	}
 	random(): string[] {
 		const random: number = Math.random()
-		return (
-			random < 0.25 ?  ProductionPrimitiveLiteral.instance.random()  :
-			random < 0.50 ?  ProductionStringTemplate  .instance.random()  :
-			random < 0.75 ? [TerminalIdentifier        .instance.random()] :
+		return Dev.supports('literalTemplate') ? (
+			random < 0.25 ? [TerminalIdentifier        .instance.random()] :
+			random < 0.50 ?  ProductionPrimitiveLiteral.instance.random()  :
+			random < 0.75 ?  ProductionStringTemplate  .instance.random()  :
+			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
+		) : (
+			random < 0.333 ? [TerminalIdentifier        .instance.random()] :
+			random < 0.667 ?  ProductionPrimitiveLiteral.instance.random()  :
 			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
 		)
 	}

@@ -4,6 +4,7 @@ import * as path from 'path'
 
 import {CONFIG_DEFAULT} from '../'
 import Util from '../src/class/Util.class'
+import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
 import CodeGenerator from '../src/class/CodeGenerator.class'
 import {
@@ -112,21 +113,22 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeIdentifier).type(), /Not yet supported./)
 			})
 			it('returns `String` for SemanticNodeConstant with string value.', () => {
-				const nodes: SemanticNodeExpression[] = [
+				;[
 					((new Parser(`'42';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
 						.children[0] as SemanticNodeStatementList)
 						.children[0]
 						.children[0] as SemanticNodeConstant,
-					((new Parser(`'''42''';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
-						.children[0] as SemanticNodeStatementList)
-						.children[0]
-						.children[0] as SemanticNodeTemplate,
-					((new Parser(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
-						.children[0] as SemanticNodeStatementList)
-						.children[0]
-						.children[0] as SemanticNodeTemplate,
-				]
-				nodes.forEach((node) => {
+					...(Dev.supports('literalTemplate') ? [
+						((new Parser(`'''42''';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+							.children[0] as SemanticNodeStatementList)
+							.children[0]
+							.children[0] as SemanticNodeTemplate,
+						((new Parser(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+							.children[0] as SemanticNodeStatementList)
+							.children[0]
+							.children[0] as SemanticNodeTemplate,
+					] : []),
+				].forEach((node) => {
 					assert.strictEqual(node.type(), SolidLanguageType.STRING)
 				})
 			})
