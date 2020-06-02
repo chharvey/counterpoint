@@ -16,10 +16,9 @@ import {
 describe('ParseNode', () => {
 	describe('#decorate', () => {
 		context('Goal ::= #x02 #x03', () => {
-			it('makes a SemanticNodeGoal node containing a SemanticNodeNull.', () => {
+			it('makes a SemanticNodeGoal node containing no children.', () => {
 				const goal: SemanticNodeGoal = new Parser('', CONFIG_DEFAULT).parse().decorate()
-				assert.strictEqual(goal.children.length, 1)
-				assert.ok(goal.children[0] instanceof SemanticNodeNull)
+				assert.strictEqual(goal.children.length, 0)
 			})
 		})
 

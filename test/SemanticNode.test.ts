@@ -13,6 +13,7 @@ import {
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
 	SemanticNodeOperation,
+	SemanticNodeStatementList,
 	SemanticNodeGoal,
 } from '../src/class/SemanticNode.class'
 
@@ -99,29 +100,29 @@ describe('SemanticNode', () => {
 	context('SemanticNodeExpression', () => {
 		describe('#type', () => {
 			it('returns `Integer` for SemanticNodeConstant with number value.', () => {
-				assert.strictEqual(((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
-					.children[0]
+				assert.strictEqual((((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+					.children[0] as SemanticNodeStatementList)
 					.children[0]
 					.children[0] as SemanticNodeConstant).type(), SolidLanguageType.NUMBER)
 			})
 			it('throws for identifiers.', () => {
-				assert.throws(() => ((new Parser(`x;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
-					.children[0]
+				assert.throws(() => (((new Parser(`x;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+					.children[0] as SemanticNodeStatementList)
 					.children[0]
 					.children[0] as SemanticNodeIdentifier).type(), /Not yet supported./)
 			})
 			it('returns `String` for SemanticNodeConstant with string value.', () => {
 				const nodes: SemanticNodeExpression[] = [
-					(new Parser(`'42';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
-						.children[0]
+					((new Parser(`'42';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+						.children[0] as SemanticNodeStatementList)
 						.children[0]
 						.children[0] as SemanticNodeConstant,
-					(new Parser(`'''42''';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
-						.children[0]
+					((new Parser(`'''42''';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+						.children[0] as SemanticNodeStatementList)
 						.children[0]
 						.children[0] as SemanticNodeTemplate,
-					(new Parser(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
-						.children[0]
+					((new Parser(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+						.children[0] as SemanticNodeStatementList)
 						.children[0]
 						.children[0] as SemanticNodeTemplate,
 				]
@@ -130,14 +131,14 @@ describe('SemanticNode', () => {
 				})
 			})
 			it('returns `Integer` or any operation of numbers.', () => {
-				assert.strictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
-					.children[0]
+				assert.strictEqual((((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+					.children[0] as SemanticNodeStatementList)
 					.children[0]
 					.children[0] as SemanticNodeOperation).type(), SolidLanguageType.NUMBER)
 			})
 			it('throws for operation of non-numbers.', () => {
-				assert.throws(() => ((new Parser(`'hello' + 5;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
-					.children[0]
+				assert.throws(() => (((new Parser(`'hello' + 5;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+					.children[0] as SemanticNodeStatementList)
 					.children[0]
 					.children[0] as SemanticNodeOperation).type(), TypeError)
 			})

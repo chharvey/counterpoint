@@ -293,10 +293,8 @@ export class ParseNodeGoal extends ParseNode {
 		| readonly [TokenFilebound,                         TokenFilebound]
 		| readonly [TokenFilebound, ParseNodeStatementList, TokenFilebound]
 	decorate(): SemanticNodeGoal {
-		return new SemanticNodeGoal(this, [
-			(this.children.length === 2)
-				? new SemanticNodeNull(this)
-				: this.children[1].decorate()
+		return new SemanticNodeGoal(this, (this.children.length === 2) ? [] : [
+			this.children[1].decorate(),
 		])
 	}
 }

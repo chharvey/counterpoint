@@ -288,12 +288,14 @@ export class SemanticNodeGoal extends SemanticNode {
 	constructor(
 		start_node: ParseNode,
 		readonly children:
-			| readonly [SemanticNodeNull]
+			| readonly []
 			| readonly [SemanticNodeStatementList]
 	) {
 		super(start_node, {}, children)
 	}
 	evaluate(generator: CodeGenerator): string {
-		return this.children[0].evaluate(generator)
+		return (!this.children.length)
+			? generator.nop()
+			: this.children[0].evaluate(generator)
 	}
 }
