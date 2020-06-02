@@ -162,28 +162,49 @@ export class ProductionExpressionUnit extends Production {
 		[TerminalIdentifier        ],
 		[ProductionPrimitiveLiteral],
 		[Punctuator, ProductionExpression, Punctuator],
+	] | [
+		[ProductionPrimitiveLiteral],
+		[ProductionStringTemplate  ],
+		[Punctuator, ProductionExpression, Punctuator],
+	] | [
+		[ProductionPrimitiveLiteral],
+		[Punctuator, ProductionExpression, Punctuator],
 	] {
-		return Dev.supports('literalTemplate') ? [
+		return Dev.supports('variables', 'literalTemplate') ? [
 			[TerminalIdentifier        .instance],
 			[ProductionPrimitiveLiteral.instance],
 			[ProductionStringTemplate  .instance],
 			[Punctuator.GRP_OPN, ProductionExpression.instance, Punctuator.GRP_CLS],
-		] : [
+		] : Dev.supports('variables') ? [
 			[TerminalIdentifier        .instance],
+			[ProductionPrimitiveLiteral.instance],
+			[Punctuator.GRP_OPN, ProductionExpression.instance, Punctuator.GRP_CLS],
+		] : Dev.supports('literalTemplate') ? [
+			[ProductionPrimitiveLiteral.instance],
+			[ProductionStringTemplate  .instance],
+			[Punctuator.GRP_OPN, ProductionExpression.instance, Punctuator.GRP_CLS],
+		] : [
 			[ProductionPrimitiveLiteral.instance],
 			[Punctuator.GRP_OPN, ProductionExpression.instance, Punctuator.GRP_CLS],
 		]
 	}
 	random(): string[] {
 		const random: number = Math.random()
-		return Dev.supports('literalTemplate') ? (
+		return Dev.supports('variables', 'literalTemplate') ? (
 			random < 0.25 ? [TerminalIdentifier        .instance.random()] :
 			random < 0.50 ?  ProductionPrimitiveLiteral.instance.random()  :
 			random < 0.75 ?  ProductionStringTemplate  .instance.random()  :
 			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
-		) : (
+		) : Dev.supports('variables') ? (
 			random < 0.333 ? [TerminalIdentifier        .instance.random()] :
 			random < 0.667 ?  ProductionPrimitiveLiteral.instance.random()  :
+			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
+		) : Dev.supports('literalTemplate') ? (
+			random < 0.333 ? ProductionPrimitiveLiteral.instance.random() :
+			random < 0.667 ? ProductionStringTemplate  .instance.random() :
+			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
+		) : (
+			random < 0.5 ? ProductionPrimitiveLiteral.instance.random()  :
 			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
 		)
 	}

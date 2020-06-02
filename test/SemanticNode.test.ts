@@ -106,7 +106,7 @@ describe('SemanticNode', () => {
 					.children[0]
 					.children[0] as SemanticNodeConstant).type(), SolidLanguageType.NUMBER)
 			})
-			it('throws for identifiers.', () => {
+			Dev.supports('variables') && it('throws for identifiers.', () => {
 				assert.throws(() => (((new Parser(`x;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
 					.children[0] as SemanticNodeStatementList)
 					.children[0]

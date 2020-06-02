@@ -169,7 +169,7 @@ class ParseNodeStringTemplate__0__List extends ParseNode {
 }
 export class ParseNodeExpressionUnit extends ParseNode {
 	declare children:
-		| readonly [TokenIdentifier]
+		| readonly [TokenIdentifier] // Dev.supports('variables')
 		| readonly [ParseNodePrimitiveLiteral]
 		| readonly [ParseNodeStringTemplate] // Dev.supports('literalTemplate')
 		| readonly [TokenPunctuator, ParseNodeExpression, TokenPunctuator]
