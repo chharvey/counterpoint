@@ -13,14 +13,6 @@ import type {
 
 
 
-export type SemanticStatementType =
-	| SemanticNodeDeclaration
-	| SemanticNodeAssignment
-	| SemanticNodeStatementExpression
-	| SemanticNodeNull
-
-
-
 /**
  * @deprecated temporary in lieu of a more full-fledged class.
  */
@@ -91,16 +83,6 @@ export default abstract class SemanticNode implements Serializable {
 
 
 
-export class SemanticNodeNull extends SemanticNode {
-	declare children:
-		| readonly []
-	constructor(start_node: Token|ParseNode) {
-		super(start_node)
-	}
-	evaluate(generator: CodeGenerator): string {
-		return generator.nop()
-	}
-}
 /**
  * A sematic node representing an expression.
  * There are 4 known subclasses:
@@ -208,6 +190,17 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 		return t1
 	}
 }
+/**
+ * A sematic node representing a statement.
+ * There are 3 known subclasses:
+ * - SemanticNodeStatementExpression
+ * - SemanticNodeDeclaration
+ * - SemanticNodeAssignment
+ */
+export type SemanticStatementType =
+	| SemanticNodeDeclaration
+	| SemanticNodeAssignment
+	| SemanticNodeStatementExpression
 export class SemanticNodeDeclaration extends SemanticNode {
 	constructor (
 		start_node: ParseNode,
@@ -262,12 +255,15 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 	constructor(
 		start_node: ParseNode,
 		readonly children:
+			| readonly []
 			| readonly [SemanticNodeExpression]
 	) {
 		super(start_node, {}, children)
 	}
 	evaluate(generator: CodeGenerator): string {
-		return this.children[0].evaluate(generator)
+		return (!this.children.length)
+			? generator.nop()
+			: this.children[0].evaluate(generator)
 	}
 }
 export class SemanticNodeStatementList extends SemanticNode {
@@ -288,12 +284,14 @@ export class SemanticNodeGoal extends SemanticNode {
 	constructor(
 		start_node: ParseNode,
 		readonly children:
-			| readonly [SemanticNodeNull]
+			| readonly []
 			| readonly [SemanticNodeStatementList]
 	) {
 		super(start_node, {}, children)
 	}
 	evaluate(generator: CodeGenerator): string {
-		return this.children[0].evaluate(generator)
+		return (!this.children.length)
+			? generator.nop()
+			: this.children[0].evaluate(generator)
 	}
 }

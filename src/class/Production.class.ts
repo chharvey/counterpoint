@@ -300,25 +300,25 @@ export class ProductionStatementAssignment extends Production {
 export class ProductionStatement extends Production {
 	static readonly instance: ProductionStatement = new ProductionStatement()
 	get sequences(): [
+		[                      Punctuator],
+		[ProductionExpression, Punctuator],
 		[ProductionDeclarationVariable],
 		[ProductionStatementAssignment],
-		[ProductionExpression, Punctuator],
-		[                      Punctuator],
 	] {
 		return [
+			[                               Punctuator.ENDSTAT],
+			[ProductionExpression.instance, Punctuator.ENDSTAT],
 			[ProductionDeclarationVariable.instance],
 			[ProductionStatementAssignment.instance],
-			[ProductionExpression.instance, Punctuator.ENDSTAT],
-			[                               Punctuator.ENDSTAT],
 		]
 	}
 	random(): string[] {
 		const random: number = Math.random()
 		return (
-			random < 0.25 ?     ProductionDeclarationVariable.instance.random() :
-			random < 0.50 ?     ProductionStatementAssignment.instance.random() :
-			random < 0.75 ? [...ProductionExpression.instance.random(), Punctuator.ENDSTAT] :
-			                [                                           Punctuator.ENDSTAT]
+			random < 0.25 ? [                                           Punctuator.ENDSTAT] :
+			random < 0.50 ? [...ProductionExpression.instance.random(), Punctuator.ENDSTAT] :
+			random < 0.75 ? ProductionDeclarationVariable.instance.random() :
+			                ProductionStatementAssignment.instance.random()
 		)
 	}
 }

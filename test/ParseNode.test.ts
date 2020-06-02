@@ -3,8 +3,7 @@ import * as assert from 'assert'
 import {CONFIG_DEFAULT} from '../'
 import Util   from '../src/class/Util.class'
 import Parser from '../src/class/Parser.class'
-import {
-	SemanticNodeNull,
+import type {
 	SemanticNodeTemplate,
 	SemanticNodeStatementExpression,
 	SemanticNodeStatementList,
@@ -16,21 +15,19 @@ import {
 describe('ParseNode', () => {
 	describe('#decorate', () => {
 		context('Goal ::= #x02 #x03', () => {
-			it('makes a SemanticNodeGoal node containing a SemanticNodeNull.', () => {
+			it('makes a SemanticNodeGoal node containing no children.', () => {
 				const goal: SemanticNodeGoal = new Parser('', CONFIG_DEFAULT).parse().decorate()
-				assert.strictEqual(goal.children.length, 1)
-				assert.ok(goal.children[0] instanceof SemanticNodeNull)
+				assert.strictEqual(goal.children.length, 0)
 			})
 		})
 
 		context('Statement ::= ";"', () => {
-			it('makes a SemanticNodeNull node.', () => {
-				const semanticnode: SemanticNodeNull|SemanticNodeGoal = new Parser(';', CONFIG_DEFAULT).parse().decorate()
-				assert.ok(semanticnode instanceof SemanticNodeGoal)
+			it('makes a SemanticNodeStatementExpression node containing no children.', () => {
+				const semanticnode: SemanticNodeGoal = new Parser(';', CONFIG_DEFAULT).parse().decorate()
 				assert.strictEqual(semanticnode.serialize(), `
 					<Goal source="␂ ; ␃">
 						<StatementList line="1" col="1" source=";">
-							<Null line="1" col="1" source=";"/>
+							<StatementExpression line="1" col="1" source=";"/>
 						</StatementList>
 					</Goal>
 				`.replace(/\n\t*/g, ''))

@@ -13,7 +13,6 @@ import Token, {
 } from './Token.class'
 import SemanticNode, {
 	SemanticStatementType,
-	SemanticNodeNull,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
@@ -29,7 +28,7 @@ import SemanticNode, {
 	SemanticNodeGoal,
 } from './SemanticNode.class'
 import type {Rule} from './Grammar.class'
-import Production, {
+import {
 	ProductionPrimitiveLiteral,
 	ProductionStringTemplate,
 	ProductionStringTemplate__0__List,
@@ -261,18 +260,16 @@ export class ParseNodeStatementAssignment extends ParseNode {
 }
 export class ParseNodeStatement extends ParseNode {
 	declare children:
+		| readonly [                     TokenPunctuator]
+		| readonly [ParseNodeExpression, TokenPunctuator]
 		| readonly [ParseNodeDeclarationVariable]
 		| readonly [ParseNodeStatementAssignment]
-		| readonly [ParseNodeExpression, TokenPunctuator]
-		| readonly [TokenPunctuator]
 	decorate(): SemanticStatementType {
-		return (this.children.length === 2)
-			? new SemanticNodeStatementExpression(this, [
+		return (this.children.length === 1 && this.children[0] instanceof ParseNode)
+			? this.children[0].decorate()
+			: new SemanticNodeStatementExpression(this, (this.children.length === 1) ? [] : [
 				this.children[0].decorate(),
 			])
-			: (this.children[0] instanceof ParseNode)
-				? this.children[0].decorate()
-				: new SemanticNodeNull(this)
 	}
 }
 export class ParseNodeStatementList extends ParseNode {
@@ -293,10 +290,8 @@ export class ParseNodeGoal extends ParseNode {
 		| readonly [TokenFilebound,                         TokenFilebound]
 		| readonly [TokenFilebound, ParseNodeStatementList, TokenFilebound]
 	decorate(): SemanticNodeGoal {
-		return new SemanticNodeGoal(this, [
-			(this.children.length === 2)
-				? new SemanticNodeNull(this)
-				: this.children[1].decorate()
+		return new SemanticNodeGoal(this, (this.children.length === 2) ? [] : [
+			this.children[1].decorate(),
 		])
 	}
 }

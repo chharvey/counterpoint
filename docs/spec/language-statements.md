@@ -12,16 +12,26 @@ Statement ::=
 
 ### Static Semantics: Decorate (Statements)
 ```w3c
+Decorate(Statement ::= ";") -> SemanticStatementExpression
+	:= SemanticStatementExpression {} [];
+Decorate(Statement ::= Expression ";") -> SemanticStatementExpression
+	:= SemanticStatementExpression {} [
+		Decorate(Expression),
+	];
 Decorate(Statement ::= DeclarationVariable) -> SemanticDeclaration
 	:= Decorate(DeclarationVariable);
 Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
 	:= Decorate(StatementAssignment);
-Decorate(Statement ::= Expression ";") -> SemanticStatement
-	:= SemanticStatement {type: "expression"} [
-		Decorate(Expression),
-	];
-Decorate(Statement ::= ";") -> SemanticStatement
-	:= SemanticStatement {type: "expression"} [];
+```
+
+
+### Runtime Instructions: Evaluate (Statements)
+```w3c
+Sequence<RealNumber> Evaluate(SemanticStatementExpression stmt) :=
+	1. *Let* `sequence` be an empty sequence of `RealNumber`s.
+	2. *If* `stmt.children.count` is greater than 0:
+		1. *Set* `sequence` to the result of performing `Evaluate(stmt.children.0)`.
+	3. *Return* `sequence`.
 ```
 
 
