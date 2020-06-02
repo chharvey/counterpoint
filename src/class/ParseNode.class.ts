@@ -74,8 +74,8 @@ export default abstract class ParseNode implements Serializable {
 		if (                                   rule.production.equals(ProductionExpressionMultiplicative .instance)) return new ParseNodeExpressionBinary        (rule, children)
 		if (                                   rule.production.equals(ProductionExpressionAdditive       .instance)) return new ParseNodeExpressionBinary        (rule, children)
 		if (                                   rule.production.equals(ProductionExpression               .instance)) return new ParseNodeExpression              (rule, children)
-		if (                                   rule.production.equals(ProductionDeclarationVariable      .instance)) return new ParseNodeDeclarationVariable     (rule, children)
-		if (                                   rule.production.equals(ProductionStatementAssignment      .instance)) return new ParseNodeStatementAssignment     (rule, children)
+		if (Dev.supports('variables')       && rule.production.equals(ProductionDeclarationVariable      .instance)) return new ParseNodeDeclarationVariable     (rule, children)
+		if (Dev.supports('variables')       && rule.production.equals(ProductionStatementAssignment      .instance)) return new ParseNodeStatementAssignment     (rule, children)
 		if (                                   rule.production.equals(ProductionStatement                .instance)) return new ParseNodeStatement               (rule, children)
 		if (                                   rule.production.equals(ProductionGoal.__0__List           .instance)) return new ParseNodeStatementList           (rule, children)
 		if (                                   rule.production.equals(ProductionGoal                     .instance)) return new ParseNodeGoal                    (rule, children)
@@ -264,8 +264,8 @@ export class ParseNodeStatement extends ParseNode {
 	declare children:
 		| readonly [                     TokenPunctuator]
 		| readonly [ParseNodeExpression, TokenPunctuator]
-		| readonly [ParseNodeDeclarationVariable]
-		| readonly [ParseNodeStatementAssignment]
+		| readonly [ParseNodeDeclarationVariable] // Dev.supports('variables')
+		| readonly [ParseNodeStatementAssignment] // Dev.supports('variables')
 	decorate(): SemanticStatementType {
 		return (this.children.length === 1 && this.children[0] instanceof ParseNode)
 			? this.children[0].decorate()

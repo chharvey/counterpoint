@@ -325,21 +325,30 @@ export class ProductionStatement extends Production {
 		[ProductionExpression, Punctuator],
 		[ProductionDeclarationVariable],
 		[ProductionStatementAssignment],
+	] | [
+		[                      Punctuator],
+		[ProductionExpression, Punctuator],
 	] {
-		return [
+		return Dev.supports('variables') ? [
 			[                               Punctuator.ENDSTAT],
 			[ProductionExpression.instance, Punctuator.ENDSTAT],
 			[ProductionDeclarationVariable.instance],
 			[ProductionStatementAssignment.instance],
+		] : [
+			[                               Punctuator.ENDSTAT],
+			[ProductionExpression.instance, Punctuator.ENDSTAT],
 		]
 	}
 	random(): string[] {
 		const random: number = Math.random()
-		return (
+		return Dev.supports('variables') ? (
 			random < 0.25 ? [                                           Punctuator.ENDSTAT] :
 			random < 0.50 ? [...ProductionExpression.instance.random(), Punctuator.ENDSTAT] :
 			random < 0.75 ? ProductionDeclarationVariable.instance.random() :
 			                ProductionStatementAssignment.instance.random()
+		) : (
+			random < 0.50 ? [                                           Punctuator.ENDSTAT] :
+			                [...ProductionExpression.instance.random(), Punctuator.ENDSTAT]
 		)
 	}
 }

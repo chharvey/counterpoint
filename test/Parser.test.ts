@@ -587,7 +587,7 @@ describe('Parser', () => {
 			})
 		})
 
-		context('DeclarationVariable, StatementAssignment', () => {
+		Dev.supports('variables') && context('DeclarationVariable, StatementAssignment', () => {
 			it('makes ParseNodeDeclarationVariable and ParseNodeStatementAssignment nodes.', () => {
 				assert.strictEqual(new Parser(Util.dedent(`
 					let unfixed the_answer = 42;
