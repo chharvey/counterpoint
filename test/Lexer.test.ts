@@ -78,7 +78,7 @@ describe('Lexer', () => {
 		context('unfinished tokens.', () => {
 			;[...new Map<string, string[]>([
 				['line comment', [`
-					% line \u0003 comment containing EOT
+					% line \u0003 comment containing U+0003 END OF TEXT
 					8;
 				`]],
 				['multiline comment', [`
@@ -88,11 +88,11 @@ describe('Lexer', () => {
 					{%unfinished multiline
 					{%comm%}ent
 				`, `
-					{%unfinished multiline
+					{%unfinished multiline containing U+0003 END OF TEXT
 					\u0003
 					{%comm%}ent%}
 				`, `
-					{%unfinished multiline
+					{%unfinished multiline containing U+0003 END OF TEXT
 					{%co\u0003mm%}ent%}
 				`]],
 				['block comment', [`
@@ -100,15 +100,22 @@ describe('Lexer', () => {
 					block comment without end delimiters
 				`, `
 					%%%
-					block comment containing \u0003 character
+					block comment containing \u0003 U+0003 END OF TEXT character
 					%%%
 					8;
 				`]],
+				...(Dev.supports('variables') ? [
+					['unicode identifier', [`
+						\`unicode identifier without end delimiter
+					`, `
+						\`unicode identifier with end delimiter but contains \u0003 U+0003 END OF TEXT character\`
+					`]] as [string, string[]],
+				] : []),
 				...(Dev.supports('literalString') ? [
 					['string', [`
 						'string without end delimiter
 					`, `
-						'string with end delimiter but contains \u0003 character'
+						'string with end delimiter but contains \u0003 U+0003 END OF TEXT character'
 						8;
 					`]] as [string, string[]],
 				] : []),
@@ -116,12 +123,8 @@ describe('Lexer', () => {
 					['template', [`
 						'''template without end delimiter
 					`, `
-						'''template with end delimiter but contains \u0003 character'''
+						'''template with end delimiter but contains \u0003 U+0003 END OF TEXT character'''
 						8;
-					`, `
-						'''template-full that ends with a single apostrophe ''''
-					`, `
-						}}template-tail that ends with a single apostrophe ''''
 					`]] as [string, string[]],
 				] : []),
 			])].forEach(([name, sources]) => {
@@ -193,11 +196,6 @@ describe('Lexer', () => {
 				it('should throw if Unicode identifier contains U+0060 GRAVE ACCENT.', () => {
 					assert.throws(() => [...new Lexer(`
 						\`a \\\` grave accent\`
-					`, CONFIG_DEFAULT).generate()], LexError02)
-				})
-				it('should throw if Unicode identifier contains U+0003 END OF TEXT.', () => {
-					assert.throws(() => [...new Lexer(`
-						\`an \u0003 end of text.\`
 					`, CONFIG_DEFAULT).generate()], LexError02)
 				})
 			})
@@ -512,13 +510,24 @@ describe('Lexer', () => {
 				assert.strictEqual(tokentemplate.source.slice( 6,  8), `\\\n`)
 				assert.strictEqual(tokentemplate.source.slice(16, 17), `\n`)
 			})
-			specify('Invalid characters at end of template.', () => {
-				;[`
-					'''template-head that ends with a single open brace {{{
-				`, `
-					}}template-middle that ends with a single open brace {{{
-				`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
-					assert.throws(() => [...lexer.generate()], LexError01) // TODO change to parse error when `{` becomes punctuator
+			describe('Invalid characters at end of template.', () => {
+				it('should not recognize `{{{` at end of head/middle.', () => {
+					;[`
+						'''template-head that ends with a single open brace {{{
+					`, `
+						}}template-middle that ends with a single open brace {{{
+					`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
+						assert.throws(() => [...lexer.generate()], LexError01) // TODO change to parse error when `{` becomes punctuator
+					})
+				})
+				it('should not recognize `\'\'\'\'` at end of full/tail.', () => {
+					;[`
+						'''template-full that ends with a single apostrophe ''''
+					`, `
+						}}template-tail that ends with a single apostrophe ''''
+					`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
+						assert.throws(() => [...lexer.generate()], LexError02)
+					})
 				})
 			})
 		})
