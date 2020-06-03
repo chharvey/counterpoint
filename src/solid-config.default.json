@@ -5,6 +5,5 @@
 		"numericSeparators" : false
 	},
 	"compilerOptions": {
-		"constantFolding": true
 	}
 }

@@ -66,18 +66,3 @@ With this disabled, number tokens cannot contain the numeric separator character
 
 
 ### Compiler Options
-
-#### `constantFolding`
-```
-@version v0.1.0
-@type    boolean
-@default true
-```
-Compute operations on literals at compile-time if possible.
-
-If enabled, the compiler will attempt to calculate the values of expressions and sub-expressions
-if they contain operations on literals.
-For example, `(3 + 5) / 2` will be replaced with `4` at compile time.
-The compiler will fold until it reaches an unknown: `(3 + 5) * n` will be replaced with `8 * n`.
-
-If disabled, the compiler will not evaluate expressions; evaluation will be deferred until runtime.

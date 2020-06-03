@@ -30,12 +30,6 @@ type SolidConfig = {
 	 * Options for the compiler.
 	 */
 	readonly compilerOptions: {
-		/**
-		 * Compute operations on literals at compile-time if possible.
-		 * @version v0.1.0
-		 * @default true
-		 */
-		readonly constantFolding: boolean,
 	},
 }
 export default SolidConfig // NB https://github.com/microsoft/TypeScript/issues/3792#issuecomment-303526468

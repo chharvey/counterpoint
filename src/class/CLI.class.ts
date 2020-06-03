@@ -44,7 +44,6 @@ type CustomArgsType = {
 	numericSeparators : null | boolean,
 
 	// Compiler Options
-	constantFolding : null | boolean,
 }
 
 
@@ -103,9 +102,6 @@ export default class CLI {
 		--[no-]comments                (on by default)
 		--[no-]integerRadices
 		--[no-]numericSeparators
-
-		Compiler Options:
-		--[no-]constantFolding         (on by default)
 	`.trim().replace(/\n\t\t/g, '\n')
 
 	/** Options argument to `minimist` function. */
@@ -120,7 +116,6 @@ export default class CLI {
 			'integerRadices',
 			'numericSeparators',
 			// Compiler Options
-			'constantFolding',
 		],
 		string: [
 			// CLI Options
@@ -143,7 +138,6 @@ export default class CLI {
 			integerRadices    : null,
 			numericSeparators : null,
 			// Compiler Options
-			constantFolding : null,
 		},
 		unknown(arg) {
 			if (arg[0] === '-') { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
@@ -217,8 +211,6 @@ export default class CLI {
 		if (this.argv.comments          !== null) returned.features.comments          = this.argv.comments
 		if (this.argv.integerRadices    !== null) returned.features.integerRadices    = this.argv.integerRadices
 		if (this.argv.numericSeparators !== null) returned.features.numericSeparators = this.argv.numericSeparators
-
-		if (this.argv.constantFolding !== null) returned.compilerOptions.constantFolding = this.argv.constantFolding
 
 		return returned
 	}
