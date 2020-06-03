@@ -63,10 +63,29 @@ export default class Dev {
 	}
 
 	/**
-	 * Returns `true` if this project supports the given feature.
+	 * Return `true` if this project supports the given feature.
+	 * @param feature the feature to test
 	 * @return is this project’s version number in the range of the feature?
 	 */
-	static supports(...features: (keyof typeof Dev.FEATURES)[]): boolean {
-		return features.every((feature) => semver.satisfies(Dev.VERSION, Dev.FEATURES[feature]))
+	static supports(feature: keyof typeof Dev.FEATURES): boolean {
+		return semver.satisfies(Dev.VERSION, Dev.FEATURES[feature])
+	}
+	/**
+	 * Returns `true` if this project supports at least one of the given features.
+	 * @param features the features to test
+	 * @see Dev.supports
+	 * @return are any of the given features supported?
+	 */
+	static supportsAny(...features: (keyof typeof Dev.FEATURES)[]): boolean {
+		return features.some((feature) => Dev.supports(feature))
+	}
+	/**
+	 * Returns `true` if this project supports every one of the given features.
+	 * @param features the features to test
+	 * @see Dev.supports
+	 * @return are all of the given features supported?
+	 */
+	static supportsAll(...features: (keyof typeof Dev.FEATURES)[]): boolean {
+		return features.every((feature) => Dev.supports(feature))
 	}
 }

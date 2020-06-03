@@ -138,7 +138,7 @@ export class ProductionStringTemplate extends Production {
 export class ProductionExpressionUnit extends Production {
 	static readonly instance: ProductionExpressionUnit = new ProductionExpressionUnit()
 	get sequences(): GrammarSymbol[][] {
-		return Dev.supports('variables', 'literalTemplate') ? [
+		return Dev.supportsAll('variables', 'literalTemplate') ? [
 			[TerminalIdentifier        .instance],
 			[ProductionPrimitiveLiteral.instance],
 			[ProductionStringTemplate  .instance],
@@ -158,7 +158,7 @@ export class ProductionExpressionUnit extends Production {
 	}
 	random(): string[] {
 		const random: number = Math.random()
-		return Dev.supports('variables', 'literalTemplate') ? (
+		return Dev.supportsAll('variables', 'literalTemplate') ? (
 			random < 0.25 ? [TerminalIdentifier        .instance.random()] :
 			random < 0.50 ?  ProductionPrimitiveLiteral.instance.random()  :
 			random < 0.75 ?  ProductionStringTemplate  .instance.random()  :
