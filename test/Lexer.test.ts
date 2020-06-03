@@ -140,10 +140,7 @@ describe('Lexer', () => {
 		})
 
 		it('recognizes `TokenKeyword` conditions.', () => {
-			;[...new Lexer(`
-				let
-				unfixed
-			`, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
+			;[...new Lexer(TokenKeyword.KEYWORDS.join(' '), CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 				assert.ok(token instanceof TokenKeyword)
 			})
 		})

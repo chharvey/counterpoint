@@ -59,7 +59,7 @@ describe('Parser', () => {
 						<FILEBOUND value="true">␂</FILEBOUND>
 						<Goal__0__List line="1" col="1" source=";">
 							<Statement line="1" col="1" source=";">
-								<PUNCTUATOR line="1" col="1" value="8">;</PUNCTUATOR>
+								<PUNCTUATOR line="1" col="1" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
@@ -99,7 +99,7 @@ describe('Parser', () => {
 										</ExpressionMultiplicative>
 									</ExpressionAdditive>
 								</Expression>
-								<PUNCTUATOR line="1" col="3" value="8">;</PUNCTUATOR>
+								<PUNCTUATOR line="1" col="3" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
@@ -415,7 +415,7 @@ describe('Parser', () => {
 										</ExpressionMultiplicative>
 									</ExpressionAdditive>
 								</Expression>
-								<PUNCTUATOR line="1" col="9" value="8">;</PUNCTUATOR>
+								<PUNCTUATOR line="1" col="9" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
@@ -449,7 +449,7 @@ describe('Parser', () => {
 										</ExpressionMultiplicative>
 									</ExpressionAdditive>
 								</Expression>
-								<PUNCTUATOR line="1" col="5" value="8">;</PUNCTUATOR>
+								<PUNCTUATOR line="1" col="5" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
@@ -490,7 +490,7 @@ describe('Parser', () => {
 										</ExpressionMultiplicative>
 									</ExpressionAdditive>
 								</Expression>
-								<PUNCTUATOR line="1" col="7" value="8">;</PUNCTUATOR>
+								<PUNCTUATOR line="1" col="7" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
@@ -533,7 +533,7 @@ describe('Parser', () => {
 										</ExpressionMultiplicative>
 									</ExpressionAdditive>
 								</Expression>
-								<PUNCTUATOR line="1" col="7" value="8">;</PUNCTUATOR>
+								<PUNCTUATOR line="1" col="7" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
@@ -578,7 +578,7 @@ describe('Parser', () => {
 										</ExpressionMultiplicative>
 									</ExpressionAdditive>
 								</Expression>
-								<PUNCTUATOR line="1" col="7" value="8">;</PUNCTUATOR>
+								<PUNCTUATOR line="1" col="7" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
@@ -604,7 +604,7 @@ describe('Parser', () => {
 											<KEYWORD line="1" col="1" value="128">let</KEYWORD>
 											<KEYWORD line="1" col="5" value="129">unfixed</KEYWORD>
 											<IDENTIFIER line="1" col="13" value="256">the_answer</IDENTIFIER>
-											<PUNCTUATOR line="1" col="24" value="7">=</PUNCTUATOR>
+											<PUNCTUATOR line="1" col="24" value="8">=</PUNCTUATOR>
 											<Expression line="1" col="26" source="42">
 												<ExpressionAdditive line="1" col="26" source="42">
 													<ExpressionMultiplicative line="1" col="26" source="42">
@@ -620,7 +620,7 @@ describe('Parser', () => {
 													</ExpressionMultiplicative>
 												</ExpressionAdditive>
 											</Expression>
-											<PUNCTUATOR line="1" col="28" value="8">;</PUNCTUATOR>
+											<PUNCTUATOR line="1" col="28" value="7">;</PUNCTUATOR>
 										</DeclarationVariable>
 									</Statement>
 								</Goal__0__List>
@@ -628,7 +628,7 @@ describe('Parser', () => {
 									<DeclarationVariable line="2" col="1" source="let \`the &#xa3; answer\` = the_answer * 10 ;">
 										<KEYWORD line="2" col="1" value="128">let</KEYWORD>
 										<IDENTIFIER line="2" col="5" value="257">\`the £ answer\`</IDENTIFIER>
-										<PUNCTUATOR line="2" col="20" value="7">=</PUNCTUATOR>
+										<PUNCTUATOR line="2" col="20" value="8">=</PUNCTUATOR>
 										<Expression line="2" col="22" source="the_answer * 10">
 											<ExpressionAdditive line="2" col="22" source="the_answer * 10">
 												<ExpressionMultiplicative line="2" col="22" source="the_answer * 10">
@@ -654,14 +654,14 @@ describe('Parser', () => {
 												</ExpressionMultiplicative>
 											</ExpressionAdditive>
 										</Expression>
-										<PUNCTUATOR line="2" col="37" value="8">;</PUNCTUATOR>
+										<PUNCTUATOR line="2" col="37" value="7">;</PUNCTUATOR>
 									</DeclarationVariable>
 								</Statement>
 							</Goal__0__List>
 							<Statement line="3" col="1" source="the_answer = the_answer - &#x5c;z14 ;">
 								<StatementAssignment line="3" col="1" source="the_answer = the_answer - &#x5c;z14 ;">
 									<IDENTIFIER line="3" col="1" value="256">the_answer</IDENTIFIER>
-									<PUNCTUATOR line="3" col="12" value="7">=</PUNCTUATOR>
+									<PUNCTUATOR line="3" col="12" value="8">=</PUNCTUATOR>
 									<Expression line="3" col="14" source="the_answer - &#x5c;z14">
 										<ExpressionAdditive line="3" col="14" source="the_answer - &#x5c;z14">
 											<ExpressionAdditive line="3" col="14" source="the_answer">
@@ -689,7 +689,7 @@ describe('Parser', () => {
 											</ExpressionMultiplicative>
 										</ExpressionAdditive>
 									</Expression>
-									<PUNCTUATOR line="3" col="31" value="8">;</PUNCTUATOR>
+									<PUNCTUATOR line="3" col="31" value="7">;</PUNCTUATOR>
 								</StatementAssignment>
 							</Statement>
 						</Goal__0__List>
