@@ -1,86 +1,14 @@
-import Scanner, { Char } from './Scanner.class'
+import Scanner from './Scanner.class'
+import type Char from './Char.class'
+import Token, {
+	TokenWhitespace,
+	TokenFilebound,
+	TokenNumber,
+	TokenWord,
+	TokenPunctuator,
+} from './Token.class'
+import {LexError01} from '../error/LexError.class'
 
-/** ENDMARK character signifies end of file. */
-const ENDMARK: '\u0003' = '\u0003'
-
-const one_char_symbols: readonly string[] = `+ *`.split(' ')
-const two_char_symbols: readonly string[] = ``.split(' ')
-const three_char_symbols: readonly string[] = ``.split(' ')
-
-const keywords: readonly string[] = ``.split(' ')
-const identifier_chars: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
-const identifier_starts: readonly string[] = `0 1 2 3 4 5 6 7 8 9`.split(' ')
-const whitespace: readonly string[] = [' ', '\t', '\n']
-
-/**
- * The different possible types of tokens.
- */
-export enum TokenType {
-	SYMBOL,
-	KEYWORD,
-	STRING,
-	IDENTIFIER,
-	NUMBER,
-	WHITESPACE,
-	COMMENT,
-	EOF,
-}
-
-
-/**
- * A Token object is the kind of thing that the Lexer returns.
- * It holds:
- * - the text of the token (self.cargo)
- * - the type of token that it is
- * - the line number and column index where the token starts
- *
- * @see http://parsingintro.sourceforge.net/#contents_item_6.4
- */
-export class Token {
-	/** All the characters in this Token. */
-	private _cargo: string;
-	/** Zero-based line number of the first character (first line is line 0). */
-	readonly lineIndex: number;
-	/** Zero-based column number of the first character (first col is col 0). */
-	readonly colIndex: number;
-	/** The token type. */
-	type: TokenType|null;
-
-	/**
-	 * Construct a new Token object.
-	 *
-	 * @param startChar  The starting character of this Token.
-	 */
-	constructor(startChar: Char) {
-		this._cargo     = startChar.cargo
-		this.lineIndex  = startChar.lineIndex
-		this.colIndex   = startChar.colIndex
-		this.type       = null
-	}
-
-	/**
-	 * Get this Token’s cargo.
-	 * @returns All the characters in this Token.
-	 */
-	get cargo(): string {
-		return this._cargo
-	}
-
-	add(cargo: string): void {
-		this._cargo += cargo
-	}
-
-	/**
-	 * Return a row that describes this token in a table.
-	 * @returns a string representation of this token’s data
-	 */
-	show(show_line_numbers: boolean = false) {
-		const s: string = (show_line_numbers)
-			? `    ${this.lineIndex+1}    ${this.colIndex+1}    ` // for some dumb reason, lines and cols start at 1 instad of 0
-			: ''
-		return s  + `${TokenType[this.type || TokenType.SYMBOL]}: ${this._cargo}`
-	}
-}
 
 
 /**
@@ -88,93 +16,113 @@ export class Token {
  * @see http://parsingintro.sourceforge.net/#contents_item_6.5
  */
 export default class Lexer {
+	/** The scanner returning characters for each iteration. */
+	private readonly scanner: Iterator<Char, void>;
+	/** The result of the scanner iterator. */
+	private iterator_result_char: IteratorResult<Char, void>;
+	/** The current character’s cargo. */
+	private c0: string;
+	/** The lookahead(1) character’s cargo. */
+	private c1: string|null;
+
 	/**
-	 * Construct and return the next token in the sourceText.
-	 * @param   sourceText - the entire source text
-	 * @returns the next token, if it does not contain whitespace
+	 * Construct a new Lexer object.
+	 * @param source - the entire source text
 	 */
-	static * generate(sourceText: string): Iterator<Token> {
-		const scanner: Iterator<Char> = Scanner.generate(sourceText)
-		let character: IteratorResult<Char> = scanner.next()
-		let c0: string = character.value.cargo
-		let l1: Char|null = character.value.lookahead()
-		let l2: Char|null = character.value.lookahead(2)
-		let c1: string|null = l1 && l1.cargo
-		let c2: string|null = l2 && l2.cargo
-		/**
-		 * Advance the lexer, scanning the next character and reassigning variables.
-		 * @param   n the number of times to advance
-		 * @throws  {RangeError} if the argument is not a positive integer
-		 */
-		function advance(n: number = 1): void {
-			if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
-			if (n === 1) {
-				character = scanner.next()
-				if (!character.done) {
-					c0 = character.value.cargo
-					l1 = character.value.lookahead()
-					l2 = character.value.lookahead(2)
-					c1 = l1 && l1.cargo
-					c2 = l2 && l2.cargo
-				}
-			} else {
-				advance(n - 1)
-				advance()
+	constructor(source: string) {
+		this.scanner = new Scanner(source).generate()
+		this.iterator_result_char = this.scanner.next()
+
+		this.c0             = (this.iterator_result_char.value as Char).cargo
+		const l1: Char|null = (this.iterator_result_char.value as Char).lookahead()
+		this.c1 = l1 && l1.cargo
+	}
+
+	/**
+	 * Advance this Lexer, scanning the next character and reassigning variables.
+	 * @param   n the number of times to advance
+	 * @throws  {RangeError} if the argument is not a positive integer
+	 */
+	private advance(n: number = 1): void {
+		if (n % 1 !== 0 || n <= 0) throw new RangeError('Argument must be a positive integer.')
+		if (n === 1) {
+			this.iterator_result_char = this.scanner.next()
+			if (!this.iterator_result_char.done) {
+				this.c0 = this.iterator_result_char.value.cargo
+				const l1 = this.iterator_result_char.value.lookahead()
+				this.c1 = l1 && l1.cargo
 			}
+		} else {
+			this.advance(n - 1)
+			this.advance()
 		}
-		while (!character.done) {
-			if (whitespace.includes(c0)) {
-				const wstoken = new Token(character.value)
-				wstoken.type = TokenType.WHITESPACE
-				advance()
-				while (!character.done && whitespace.includes(c0)) {
-					wstoken.add(c0)
-					advance()
+	}
+
+	/**
+	 * Construct and return the next token in the source text.
+	 * @returns the next token, if it does not contain whitespace
+	 * @throws  {LexError01} if an unrecognized character was reached
+	 */
+	* generate(): Iterator<Token, void> {
+		while (!this.iterator_result_char.done) {
+			if (TokenWhitespace.CHARACTERS.includes(this.c0)) {
+				const wstoken: TokenWhitespace = new TokenWhitespace(this.iterator_result_char.value)
+				this.advance()
+				while (!this.iterator_result_char.done && TokenWhitespace.CHARACTERS.includes(this.c0)) {
+					wstoken.add(this.c0)
+					this.advance()
 				}
 				// yield wstoken // only if we want the lexer to return whitespace
 				continue;
 			}
 
-			const token = new Token(character.value)
-			if (c0 === ENDMARK) {
-				token.type = TokenType.EOF
-				advance()
-			// TODO comments
-			} else if (identifier_starts.includes(c0)) {
-				token.type = TokenType.IDENTIFIER
-				advance()
-				while (!character.done && identifier_chars.includes(c0)) {
-					token.add(c0)
-					advance()
+			let token: Token;
+			if (TokenFilebound.CHARACTERS.includes(this.c0)) {
+				token = new TokenFilebound(this.iterator_result_char.value)
+				this.advance()
+			} else if (TokenNumber.CHARACTERS.includes(this.c0)) {
+				token = new TokenNumber(this.iterator_result_char.value)
+				this.advance()
+				while (!this.iterator_result_char.done && TokenNumber.CHARACTERS.includes(this.c0)) {
+					token.add(this.c0)
+					this.advance()
 				}
-				if (keywords.includes(token.cargo)) {
-					token.type = TokenType.KEYWORD
+			} else if (TokenWord.CHARACTERS_START.includes(this.c0)) {
+				token = new TokenWord(this.iterator_result_char.value)
+				this.advance()
+				while (!this.iterator_result_char.done && TokenWord.CHARACTERS_REST.includes(this.c0)) {
+					token.add(this.c0)
+					this.advance()
 				}
-			} else if (one_char_symbols.includes(c0)) {
-				token.type = TokenType.SYMBOL
-				let first_char: string = c0
-				advance() // read past the first character
-				if (two_char_symbols.includes(first_char + c0)) {
-					token.add(c0)
-					let second_char: string = c0
-					advance() // read past the second character
-					if (three_char_symbols.includes(first_char + second_char + c0)) {
-						token.add(c0)
-						advance() // read past the third character
+			} else if (TokenPunctuator.CHARACTERS_1.includes(this.c0)) {
+				if (TokenNumber.PREFIXES.includes(this.c0) && this.c1 && TokenNumber.CHARACTERS.includes(this.c1)) {
+					/* a number */
+					token = new TokenNumber(this.iterator_result_char.value)
+					this.advance()
+					while (!this.iterator_result_char.done && TokenNumber.CHARACTERS.includes(this.c0)) {
+						token.add(this.c0)
+						this.advance()
+					}
+				} else {
+					/* a punctuator*/
+					token = new TokenPunctuator(this.iterator_result_char.value)
+					let first_char: string = this.c0
+					this.advance() // read past the first character
+					// TODO clean this up when we get to multi-char punctuators
+					if (TokenPunctuator.CHARACTERS_2.includes(first_char + this.c0)) {
+						token.add(this.c0)
+						let second_char: string = this.c0
+						this.advance() // read past the second character
+						if (TokenPunctuator.CHARACTERS_3.includes(first_char + second_char + this.c0)) {
+							token.add(this.c0)
+							this.advance() // read past the third character
+						}
 					}
 				}
 			} else {
-				throw new Error(`I found a character or symbol that I do not recognize:
-${c0} on ${character.value.lineIndex + 1}:${character.value.colIndex + 1}.`)
+				throw new LexError01(this.c0, this.iterator_result_char.value.line_index, this.iterator_result_char.value.col_index)
 			}
 			yield token
 		}
-	}
-
-
-	/**
-	 * Construct a new Lexer object.
-	 */
-	private constructor() {
 	}
 }
