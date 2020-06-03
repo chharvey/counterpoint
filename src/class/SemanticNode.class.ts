@@ -198,9 +198,24 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
  * - SemanticNodeAssignment
  */
 export type SemanticStatementType =
+	| SemanticNodeStatementExpression
 	| SemanticNodeDeclaration
 	| SemanticNodeAssignment
-	| SemanticNodeStatementExpression
+export class SemanticNodeStatementExpression extends SemanticNode {
+	constructor(
+		start_node: ParseNode,
+		readonly children:
+			| readonly []
+			| readonly [SemanticNodeExpression]
+	) {
+		super(start_node, {}, children)
+	}
+	evaluate(generator: CodeGenerator): string {
+		return (!this.children.length)
+			? generator.nop()
+			: this.children[0].evaluate(generator)
+	}
+}
 export class SemanticNodeDeclaration extends SemanticNode {
 	constructor (
 		start_node: ParseNode,
@@ -251,12 +266,12 @@ export class SemanticNodeAssigned extends SemanticNode {
 		throw new Error('not yet supported.')
 	}
 }
-export class SemanticNodeStatementExpression extends SemanticNode {
+export class SemanticNodeGoal extends SemanticNode {
 	constructor(
 		start_node: ParseNode,
 		readonly children:
 			| readonly []
-			| readonly [SemanticNodeExpression]
+			| readonly [SemanticNodeStatementList]
 	) {
 		super(start_node, {}, children)
 	}
@@ -278,20 +293,5 @@ export class SemanticNodeStatementList extends SemanticNode {
 		return this.children.map((child) =>
 			child.evaluate(generator)
 		).join('')
-	}
-}
-export class SemanticNodeGoal extends SemanticNode {
-	constructor(
-		start_node: ParseNode,
-		readonly children:
-			| readonly []
-			| readonly [SemanticNodeStatementList]
-	) {
-		super(start_node, {}, children)
-	}
-	evaluate(generator: CodeGenerator): string {
-		return (!this.children.length)
-			? generator.nop()
-			: this.children[0].evaluate(generator)
 	}
 }

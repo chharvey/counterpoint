@@ -2,6 +2,7 @@ import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../'
 import Util from '../src/class/Util.class'
+import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
 import type {
 	ParseNodeStringTemplate,
@@ -12,8 +13,8 @@ import type {
 	ParseNodeDeclarationVariable,
 	ParseNodeStatementAssignment,
 	ParseNodeStatement,
-	ParseNodeStatementList,
 	ParseNodeGoal,
+	ParseNodeGoal__0__List,
 } from '../src/class/ParseNode.class'
 import {
 	Punctuator,
@@ -58,7 +59,7 @@ describe('Parser', () => {
 						<FILEBOUND value="true">␂</FILEBOUND>
 						<Goal__0__List line="1" col="1" source=";">
 							<Statement line="1" col="1" source=";">
-								<PUNCTUATOR line="1" col="1" value="8">;</PUNCTUATOR>
+								<PUNCTUATOR line="1" col="1" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
@@ -66,7 +67,7 @@ describe('Parser', () => {
 				*/
 				const tree: ParseNodeGoal = new Parser(';', CONFIG_DEFAULT).parse()
 				assert_arrayLength(tree.children, 3)
-				const statement_list: ParseNodeStatementList = tree.children[1]
+				const statement_list: ParseNodeGoal__0__List = tree.children[1]
 				assert_arrayLength(statement_list.children, 1)
 				const statement: ParseNodeStatement = statement_list.children[0]
 				assert_arrayLength(statement.children, 1)
@@ -98,7 +99,7 @@ describe('Parser', () => {
 										</ExpressionMultiplicative>
 									</ExpressionAdditive>
 								</Expression>
-								<PUNCTUATOR line="1" col="3" value="8">;</PUNCTUATOR>
+								<PUNCTUATOR line="1" col="3" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
@@ -107,9 +108,9 @@ describe('Parser', () => {
 			})
 		})
 
-		context('ExpressionUnit ::= StringTemplate', () => {
+		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
 			const stringTemplateParseNode = (goal: ParseNodeGoal): ParseNodeStringTemplate => ((((((((goal
-				.children[1] as ParseNodeStatementList)
+				.children[1] as ParseNodeGoal__0__List)
 				.children[0] as ParseNodeStatement)
 				.children[0] as ParseNodeExpression)
 				.children[0] as ParseNodeExpressionBinary)
@@ -414,7 +415,7 @@ describe('Parser', () => {
 										</ExpressionMultiplicative>
 									</ExpressionAdditive>
 								</Expression>
-								<PUNCTUATOR line="1" col="9" value="8">;</PUNCTUATOR>
+								<PUNCTUATOR line="1" col="9" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
@@ -448,7 +449,7 @@ describe('Parser', () => {
 										</ExpressionMultiplicative>
 									</ExpressionAdditive>
 								</Expression>
-								<PUNCTUATOR line="1" col="5" value="8">;</PUNCTUATOR>
+								<PUNCTUATOR line="1" col="5" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
@@ -489,7 +490,7 @@ describe('Parser', () => {
 										</ExpressionMultiplicative>
 									</ExpressionAdditive>
 								</Expression>
-								<PUNCTUATOR line="1" col="7" value="8">;</PUNCTUATOR>
+								<PUNCTUATOR line="1" col="7" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
@@ -532,7 +533,7 @@ describe('Parser', () => {
 										</ExpressionMultiplicative>
 									</ExpressionAdditive>
 								</Expression>
-								<PUNCTUATOR line="1" col="7" value="8">;</PUNCTUATOR>
+								<PUNCTUATOR line="1" col="7" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
@@ -577,7 +578,7 @@ describe('Parser', () => {
 										</ExpressionMultiplicative>
 									</ExpressionAdditive>
 								</Expression>
-								<PUNCTUATOR line="1" col="7" value="8">;</PUNCTUATOR>
+								<PUNCTUATOR line="1" col="7" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>
@@ -586,7 +587,7 @@ describe('Parser', () => {
 			})
 		})
 
-		context('DeclarationVariable, StatementAssignment', () => {
+		Dev.supports('variables') && context('DeclarationVariable, StatementAssignment', () => {
 			it('makes ParseNodeDeclarationVariable and ParseNodeStatementAssignment nodes.', () => {
 				assert.strictEqual(new Parser(Util.dedent(`
 					let unfixed the_answer = 42;
@@ -603,7 +604,7 @@ describe('Parser', () => {
 											<KEYWORD line="1" col="1" value="128">let</KEYWORD>
 											<KEYWORD line="1" col="5" value="129">unfixed</KEYWORD>
 											<IDENTIFIER line="1" col="13" value="256">the_answer</IDENTIFIER>
-											<PUNCTUATOR line="1" col="24" value="7">=</PUNCTUATOR>
+											<PUNCTUATOR line="1" col="24" value="8">=</PUNCTUATOR>
 											<Expression line="1" col="26" source="42">
 												<ExpressionAdditive line="1" col="26" source="42">
 													<ExpressionMultiplicative line="1" col="26" source="42">
@@ -619,7 +620,7 @@ describe('Parser', () => {
 													</ExpressionMultiplicative>
 												</ExpressionAdditive>
 											</Expression>
-											<PUNCTUATOR line="1" col="28" value="8">;</PUNCTUATOR>
+											<PUNCTUATOR line="1" col="28" value="7">;</PUNCTUATOR>
 										</DeclarationVariable>
 									</Statement>
 								</Goal__0__List>
@@ -627,7 +628,7 @@ describe('Parser', () => {
 									<DeclarationVariable line="2" col="1" source="let \`the &#xa3; answer\` = the_answer * 10 ;">
 										<KEYWORD line="2" col="1" value="128">let</KEYWORD>
 										<IDENTIFIER line="2" col="5" value="257">\`the £ answer\`</IDENTIFIER>
-										<PUNCTUATOR line="2" col="20" value="7">=</PUNCTUATOR>
+										<PUNCTUATOR line="2" col="20" value="8">=</PUNCTUATOR>
 										<Expression line="2" col="22" source="the_answer * 10">
 											<ExpressionAdditive line="2" col="22" source="the_answer * 10">
 												<ExpressionMultiplicative line="2" col="22" source="the_answer * 10">
@@ -653,14 +654,14 @@ describe('Parser', () => {
 												</ExpressionMultiplicative>
 											</ExpressionAdditive>
 										</Expression>
-										<PUNCTUATOR line="2" col="37" value="8">;</PUNCTUATOR>
+										<PUNCTUATOR line="2" col="37" value="7">;</PUNCTUATOR>
 									</DeclarationVariable>
 								</Statement>
 							</Goal__0__List>
 							<Statement line="3" col="1" source="the_answer = the_answer - &#x5c;z14 ;">
 								<StatementAssignment line="3" col="1" source="the_answer = the_answer - &#x5c;z14 ;">
 									<IDENTIFIER line="3" col="1" value="256">the_answer</IDENTIFIER>
-									<PUNCTUATOR line="3" col="12" value="7">=</PUNCTUATOR>
+									<PUNCTUATOR line="3" col="12" value="8">=</PUNCTUATOR>
 									<Expression line="3" col="14" source="the_answer - &#x5c;z14">
 										<ExpressionAdditive line="3" col="14" source="the_answer - &#x5c;z14">
 											<ExpressionAdditive line="3" col="14" source="the_answer">
@@ -688,7 +689,7 @@ describe('Parser', () => {
 											</ExpressionMultiplicative>
 										</ExpressionAdditive>
 									</Expression>
-									<PUNCTUATOR line="3" col="31" value="8">;</PUNCTUATOR>
+									<PUNCTUATOR line="3" col="31" value="7">;</PUNCTUATOR>
 								</StatementAssignment>
 							</Statement>
 						</Goal__0__List>

@@ -2,6 +2,7 @@ import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../'
 import Util     from '../src/class/Util.class'
+import Dev from '../src/class/Dev.class'
 import Lexer    from '../src/class/Lexer.class'
 import Screener from '../src/class/Screener.class'
 import Token, {
@@ -24,7 +25,7 @@ const mock: string = `
 
 3 - 50 + * 2
 
-5 + 03 + '' * 'hello' *  -2
+5 + 03 +  *  -2
 
 600  /  3  *  2
 
@@ -73,7 +74,7 @@ describe('Token', () => {
 			})
 		})
 
-		context('TokenIdentifier', () => {
+		Dev.supports('variables') && context('TokenIdentifier', () => {
 			context('TokenIdentifierBasic', () => {
 				const cooked: (bigint|null)[] = [...new Screener(`
 					this is a word
@@ -188,7 +189,7 @@ describe('Token', () => {
 			})
 		})
 
-		context('TokenString', () => {
+		Dev.supports('literalString') && context('TokenString', () => {
 			it('produces the cooked string value.', () => {
 				const tokens: Token[] = [...new Screener(Util.dedent(`
 					5 + 03 + '' * 'hello' *  -2;
@@ -206,7 +207,7 @@ describe('Token', () => {
 			})
 		})
 
-		context('TokenTemplate', () => {
+		Dev.supports('literalTemplate') && context('TokenTemplate', () => {
 			it('produces the cooked template value.', () => {
 				const tokens: Token[] = [...new Screener(Util.dedent(`
 					600  /  '''''' * 3 + '''hello''' *  2;
@@ -232,7 +233,7 @@ describe('Token', () => {
 			})
 		})
 
-		it('throws when UTF-16 encoding input is out of range.', () => {
+		Dev.supports('literalString') && it('throws when UTF-16 encoding input is out of range.', () => {
 			const stringtoken: Token = [...new Screener(Util.dedent(`
 				'a string literal with a unicode \\u{a00061} escape sequence out of range';
 			`), CONFIG_DEFAULT).generate()][1]

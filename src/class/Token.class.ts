@@ -2,6 +2,7 @@ import {CONFIG_DEFAULT} from '../../'
 import type SolidConfig from '../SolidConfig.d'
 
 import Util from './Util.class'
+import Dev from './Dev.class'
 import type Serializable from '../iface/Serializable.iface'
 import Char from './Char.class'
 import type Lexer from './Lexer.class'
@@ -29,15 +30,15 @@ export enum Punctuator {
 	DIV     = '/',
 	ADD     = '+',
 	SUB     = '-',
-	ASSIGN  = '=',
 	ENDSTAT = ';',
+	ASSIGN  = '=', // Dev.supports('variables')
 }
 
 export enum Keyword {
 	// Storage
-	LET = 'let',
+	LET = 'let', // Dev.supports('variables')
 	// Modifier
-	UNFIXED = 'unfixed',
+	UNFIXED = 'unfixed', // Dev.supports('variables')
 }
 
 
@@ -160,7 +161,9 @@ export class TokenWhitespace extends Token {
 	}
 }
 export class TokenPunctuator extends Token {
-	static readonly PUNCTUATORS: readonly Punctuator[] = [...new Set(Object.values(Punctuator))] // remove duplicates
+	static readonly PUNCTUATORS: readonly Punctuator[] = [...new Set( // remove duplicates
+		Object.values(Punctuator).filter((p) => Dev.supports('variables') ? true : !['='].includes(p))
+	)]
 	declare source: Punctuator;
 	constructor (lexer: Lexer, count: 1n|2n|3n = 1n) {
 		super('PUNCTUATOR', lexer, ...lexer.advance())
@@ -176,7 +179,9 @@ export class TokenPunctuator extends Token {
 }export class TokenKeyword extends Token {
 	private static readonly MINIMUM_VALUE: bigint = 0x80n
 	static readonly CHAR: RegExp = /^[a-z]$/
-	static readonly KEYWORDS: readonly Keyword[] = [...new Set<Keyword>(Object.values(Keyword))] // remove duplicates
+	static readonly KEYWORDS: readonly Keyword[] = [...new Set<Keyword>( // remove duplicates
+		Object.values(Keyword).filter((kw) => Dev.supports('variables') ? true : !['let', 'unfixed'].includes(kw))
+	)]
 	declare source: Keyword;
 	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
 		super('KEYWORD', lexer, start_char, ...more_chars)

@@ -1,5 +1,6 @@
 import type SolidConfig from '../SolidConfig.d'
 
+import Dev from './Dev.class'
 import Scanner from './Scanner.class'
 import Char from './Char.class'
 import Token, {
@@ -148,18 +149,22 @@ export default class Lexer {
 				/* we found a keyword or a basic identifier */
 				const buffer: Char[] = [this.c0]
 				this.advance()
-				while (!this.isDone && TokenIdentifierBasic.CHAR_REST.test(this._c0.source)) {
+				while (!this.isDone && (Dev.supports('variables') ? TokenIdentifierBasic.CHAR_REST : TokenKeyword.CHAR).test(this._c0.source)) {
 					buffer.push(this._c0)
 					this.advance()
 				}
 				const bufferstring: string = buffer.map((char) => char.source).join('')
-				token = ((TokenKeyword.KEYWORDS as string[]).includes(bufferstring))
-					? new TokenKeyword        (this, buffer[0], ...buffer.slice(1))
-					: new TokenIdentifierBasic(this, buffer[0], ...buffer.slice(1))
-			} else if (TokenIdentifierBasic.CHAR_START.test(this._c0.source)) {
+				if ((TokenKeyword.KEYWORDS as string[]).includes(bufferstring)) {
+					token = new TokenKeyword        (this, buffer[0], ...buffer.slice(1))
+				} else if (Dev.supports('variables')) {
+					token = new TokenIdentifierBasic(this, buffer[0], ...buffer.slice(1))
+				} else {
+					throw new Error(`Identifier \`${ bufferstring }\` not yet allowed.`)
+				}
+			} else if (Dev.supports('variables') && TokenIdentifierBasic.CHAR_START.test(this._c0.source)) {
 				/* we found a basic identifier */
 				token = new TokenIdentifierBasic(this)
-			} else if (Char.eq(TokenIdentifierUnicode.DELIM, this._c0)) {
+			} else if (Dev.supports('variables') && Char.eq(TokenIdentifierUnicode.DELIM, this._c0)) {
 				/* we found a unicode identifier */
 				token = new TokenIdentifierUnicode(this)
 
@@ -174,14 +179,14 @@ export default class Lexer {
 					throw new LexError03(`${this._c0.source}${this._c1 && this._c1.source || ''}`, this._c0.line_index, this._c0.col_index)
 				}
 
-			} else if (Char.eq(TokenString.DELIM, this._c0)) {
+			} else if (Dev.supports('literalString') && Char.eq(TokenString.DELIM, this._c0)) {
 				/* we found a string literal or a template literal full or head */
-				if (Char.eq(TokenTemplate.DELIM, this._c0, this._c1, this._c2)) {
+				if (Dev.supports('literalTemplate') && Char.eq(TokenTemplate.DELIM, this._c0, this._c1, this._c2)) {
 					token = new TokenTemplate(this, TokenTemplate.DELIM)
 				} else {
 					token = new TokenString(this)
 				}
-			} else if (Char.eq(TokenTemplate.DELIM_INTERP_END, this._c0, this._c1)) {
+			} else if (Dev.supports('literalTemplate') && Char.eq(TokenTemplate.DELIM_INTERP_END, this._c0, this._c1)) {
 				/* we found a template literal middle or tail */
 				token = new TokenTemplate(this, TokenTemplate.DELIM_INTERP_END)
 

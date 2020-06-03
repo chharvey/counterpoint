@@ -3,6 +3,7 @@ import * as assert from 'assert'
 import {CONFIG_DEFAULT} from '../'
 import type SolidConfig from '../src/SolidConfig'
 import Util  from '../src/class/Util.class'
+import Dev from '../src/class/Dev.class'
 import Lexer from '../src/class/Lexer.class'
 import Token, {
 	TemplatePosition,
@@ -10,6 +11,7 @@ import Token, {
 	TokenWhitespace,
 	TokenPunctuator,
 	TokenKeyword,
+	TokenIdentifier,
 	TokenIdentifierBasic,
 	TokenIdentifierUnicode,
 	TokenNumber,
@@ -39,7 +41,7 @@ const mock: string = `
 
 3 - 50 + * 2
 
-5 + 03 + '' * 'hello' *  -2
+5 + 03 +  *  -2
 
 600  /  3  *  2
 
@@ -76,7 +78,7 @@ describe('Lexer', () => {
 		context('unfinished tokens.', () => {
 			;[...new Map<string, string[]>([
 				['line comment', [`
-					% line \u0003 comment containing EOT
+					% line \u0003 comment containing U+0003 END OF TEXT
 					8;
 				`]],
 				['multiline comment', [`
@@ -86,11 +88,11 @@ describe('Lexer', () => {
 					{%unfinished multiline
 					{%comm%}ent
 				`, `
-					{%unfinished multiline
+					{%unfinished multiline containing U+0003 END OF TEXT
 					\u0003
 					{%comm%}ent%}
 				`, `
-					{%unfinished multiline
+					{%unfinished multiline containing U+0003 END OF TEXT
 					{%co\u0003mm%}ent%}
 				`]],
 				['block comment', [`
@@ -98,27 +100,33 @@ describe('Lexer', () => {
 					block comment without end delimiters
 				`, `
 					%%%
-					block comment containing \u0003 character
+					block comment containing \u0003 U+0003 END OF TEXT character
 					%%%
 					8;
 				`]],
-				['string', [`
-					'string without end delimiter
-				`, `
-					'string with end delimiter but contains \u0003 character'
-					8;
-				`]],
-				['template', [`
-					'''template without end delimiter
-				`, `
-					'''template with end delimiter but contains \u0003 character'''
-					8;
-				`]],
-				['misc.', [`
-					'''template-full that ends with a single apostrophe ''''
-				`, `
-					}}template-tail that ends with a single apostrophe ''''
-				`]],
+				...(Dev.supports('variables') ? [
+					['unicode identifier', [`
+						\`unicode identifier without end delimiter
+					`, `
+						\`unicode identifier with end delimiter but contains \u0003 U+0003 END OF TEXT character\`
+					`]] as [string, string[]],
+				] : []),
+				...(Dev.supports('literalString') ? [
+					['string', [`
+						'string without end delimiter
+					`, `
+						'string with end delimiter but contains \u0003 U+0003 END OF TEXT character'
+						8;
+					`]] as [string, string[]],
+				] : []),
+				...(Dev.supports('literalTemplate') ? [
+					['template', [`
+						'''template without end delimiter
+					`, `
+						'''template with end delimiter but contains \u0003 U+0003 END OF TEXT character'''
+						8;
+					`]] as [string, string[]],
+				] : []),
 			])].forEach(([name, sources]) => {
 				it(`throws when ${name} token is unfinished.`, () => {
 					sources.map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
@@ -135,15 +143,12 @@ describe('Lexer', () => {
 		})
 
 		it('recognizes `TokenKeyword` conditions.', () => {
-			;[...new Lexer(`
-				let
-				unfixed
-			`, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
+			;[...new Lexer(TokenKeyword.KEYWORDS.join(' '), CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 				assert.ok(token instanceof TokenKeyword)
 			})
 		})
 
-		context('recognizes `TokenIdentifier` conditions.', () => {
+		Dev.supports('variables') && context('recognizes `TokenIdentifier` conditions.', () => {
 			context('recognizes `TokenIdentifierBasic` conditions.', () => {
 				specify('Basic identifier beginners.', () => {
 					;[...new Lexer(`
@@ -191,11 +196,6 @@ describe('Lexer', () => {
 				it('should throw if Unicode identifier contains U+0060 GRAVE ACCENT.', () => {
 					assert.throws(() => [...new Lexer(`
 						\`a \\\` grave accent\`
-					`, CONFIG_DEFAULT).generate()], LexError02)
-				})
-				it('should throw if Unicode identifier contains U+0003 END OF TEXT.', () => {
-					assert.throws(() => [...new Lexer(`
-						\`an \u0003 end of text.\`
 					`, CONFIG_DEFAULT).generate()], LexError02)
 				})
 			})
@@ -270,9 +270,13 @@ describe('Lexer', () => {
 					`, radices_off).generate()], LexError01)
 				})
 				specify('invalid sequence.', () => {
-					assert.deepStrictEqual([...new Lexer(`
-						\\d39c
-					`, CONFIG_DEFAULT).generate()].slice(2, -2).map((token) => token.source), ['\\d39', 'c'])
+					Dev.supports('variables')
+						? assert.deepStrictEqual([...new Lexer(`
+							\\d39c
+						`, CONFIG_DEFAULT).generate()].slice(2, -2).map((token) => token.source), ['\\d39', 'c'])
+						: assert.throws(() => [...new Lexer(`
+							\\d39c
+						`, CONFIG_DEFAULT).generate()], /Identifier `c` not yet allowed./)
 				})
 				specify('invalid escape characters.', () => {
 					`
@@ -292,20 +296,27 @@ describe('Lexer', () => {
 				})
 			})
 			context('integers with separators.', () => {
-				it('throws when `config.features.numericSeparators` is turned off.', () => {
-					const tokens: Token[] = [...new Lexer(`
-						12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
-						\\b1_00  \\q0_32  +\\o1_037  -\\d9_037  +\\x0_6  -\\z0_6
-					`, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace))
-					const expected: string[] = `
-						12 +12 -12 0123 +0123 -0123 012 +012 -012
-						\\b1 \\q0 +\\o1 -\\d9 +\\x0 -\\z0
-					`.trim().replace(/\n\t+/g, ' ').split(' ')
-					tokens.filter((_, i) => i % 2 === 0).forEach((token, j) => {
-						assert.ok(token instanceof TokenNumber, 'this token instanceof TokenNumber')
-						assert.ok(!(tokens[j * 2 + 1] instanceof TokenNumber), 'next token not instanceof TokenNumber')
-						assert.strictEqual(token.source, expected[j])
-					})
+				it('tokenizes numeric separators as identifiers when `config.features.numericSeparators` is turned off.', () => {
+					if (Dev.supports('variables')) {
+						const tokens: Token[] = [...new Lexer(`
+							12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
+							\\b1_00  \\q0_32  +\\o1_037  -\\d9_037  +\\x0_6  -\\z0_6
+						`, CONFIG_DEFAULT).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace))
+						const expected: string[] = `
+							12 +12 -12 0123 +0123 -0123 012 +012 -012
+							\\b1 \\q0 +\\o1 -\\d9 +\\x0 -\\z0
+						`.trim().replace(/\n\t+/g, ' ').split(' ')
+						tokens.filter((_, i) => i % 2 === 0).forEach((token, j) => {
+							assert.ok(token instanceof TokenNumber, 'this token instanceof TokenNumber')
+							assert.ok(tokens[j * 2 + 1] instanceof TokenIdentifier, 'next token instanceof TokenIdentifierBasic')
+							assert.strictEqual(token.source, expected[j])
+						})
+					} else {
+						assert.throws(() => [...new Lexer(`
+							12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
+							\\b1_00  \\q0_32  +\\o1_037  -\\d9_037  +\\x0_6  -\\z0_6
+						`, CONFIG_DEFAULT).generate()], LexError01)
+					}
 				})
 				it('`config.features.numericSeparators` allows integers with separators.', () => {
 					const source: string = `
@@ -328,13 +339,15 @@ describe('Lexer', () => {
 				specify('numeric separators cannot appear consecutively.', () => {
 					assert.throws(() => [...new Lexer(`12__345`, separators_on).generate()], LexError04)
 				})
-				specify('numeric separator at beginning of token is not a number token.', () => {
-					assert.ok(!([...new Lexer(`_12345`, separators_on).generate()][2] instanceof TokenNumber))
+				specify('numeric separator at beginning of token is an identifier.', () => {
+					Dev.supports('variables')
+						? assert.ok([...new Lexer(`_12345`, separators_on).generate()][2] instanceof TokenIdentifier)
+						: assert.throws(() => [...new Lexer(`_12345`, separators_on).generate()], LexError01)
 				})
 			})
 		})
 
-		context('recognizes `TokenString` conditions.', () => {
+		Dev.supports('literalString') && context('recognizes `TokenString` conditions.', () => {
 			specify('Basic strings.', () => {
 				const tokens: Token[] = [...new Lexer(`
 					3 - 50 + * 2
@@ -398,7 +411,7 @@ describe('Lexer', () => {
 			})
 		})
 
-		context('recognizes `TokenTemplate` conditions.', () => {
+		Dev.supports('literalTemplate') && context('recognizes `TokenTemplate` conditions.', () => {
 			specify('Basic templates.', () => {
 				const tokens: Token[] = [...new Lexer(`
 					600  /  '''''' * 3 + '''hello''' *  2
@@ -497,13 +510,24 @@ describe('Lexer', () => {
 				assert.strictEqual(tokentemplate.source.slice( 6,  8), `\\\n`)
 				assert.strictEqual(tokentemplate.source.slice(16, 17), `\n`)
 			})
-			specify('Invalid characters at end of template.', () => {
-				;[`
-					'''template-head that ends with a single open brace {{{
-				`, `
-					}}template-middle that ends with a single open brace {{{
-				`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
-					assert.throws(() => [...lexer.generate()], LexError01) // TODO change to parse error when `{` becomes punctuator
+			describe('Invalid characters at end of template.', () => {
+				it('should not recognize `{{{` at end of head/middle.', () => {
+					;[`
+						'''template-head that ends with a single open brace {{{
+					`, `
+						}}template-middle that ends with a single open brace {{{
+					`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
+						assert.throws(() => [...lexer.generate()], LexError01) // TODO change to parse error when `{` becomes punctuator
+					})
+				})
+				it('should not recognize `\'\'\'\'` at end of full/tail.', () => {
+					;[`
+						'''template-full that ends with a single apostrophe ''''
+					`, `
+						}}template-tail that ends with a single apostrophe ''''
+					`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
+						assert.throws(() => [...lexer.generate()], LexError02)
+					})
 				})
 			})
 		})

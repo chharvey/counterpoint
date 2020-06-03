@@ -1,3 +1,4 @@
+import Dev from './class/Dev.class'
 import CLI, {
 	Command,
 } from './class/CLI.class'
@@ -12,7 +13,7 @@ import CLI, {
 			console.log(CLI.CONFIGTEXT)
 		}
 	} else if (cli.command === Command.VERSION) {
-		console.log(`solid version ${ require('../package.json').version }`)
+		console.log(`solid version ${ Dev.VERSION }`)
 	} else if (cli.command === Command.COMPILE || cli.command === Command.DEV) {
 		const result: Promise<[string, void]> = cli.compileOrDev(process.cwd())
 		console.log((await result)[0])
