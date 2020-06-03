@@ -198,9 +198,24 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
  * - SemanticNodeAssignment
  */
 export type SemanticStatementType =
+	| SemanticNodeStatementExpression
 	| SemanticNodeDeclaration
 	| SemanticNodeAssignment
-	| SemanticNodeStatementExpression
+export class SemanticNodeStatementExpression extends SemanticNode {
+	constructor(
+		start_node: ParseNode,
+		readonly children:
+			| readonly []
+			| readonly [SemanticNodeExpression]
+	) {
+		super(start_node, {}, children)
+	}
+	evaluate(generator: CodeGenerator): string {
+		return (!this.children.length)
+			? generator.nop()
+			: this.children[0].evaluate(generator)
+	}
+}
 export class SemanticNodeDeclaration extends SemanticNode {
 	constructor (
 		start_node: ParseNode,
@@ -249,21 +264,6 @@ export class SemanticNodeAssigned extends SemanticNode {
 	}
 	evaluate(generator: CodeGenerator): string {
 		throw new Error('not yet supported.')
-	}
-}
-export class SemanticNodeStatementExpression extends SemanticNode {
-	constructor(
-		start_node: ParseNode,
-		readonly children:
-			| readonly []
-			| readonly [SemanticNodeExpression]
-	) {
-		super(start_node, {}, children)
-	}
-	evaluate(generator: CodeGenerator): string {
-		return (!this.children.length)
-			? generator.nop()
-			: this.children[0].evaluate(generator)
 	}
 }
 export class SemanticNodeStatementList extends SemanticNode {
