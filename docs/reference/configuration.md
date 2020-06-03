@@ -36,7 +36,7 @@ block coments
 ```
 @version v0.2.0
 @type    boolean
-@default true
+@default false
 ```
 Allows integers with a non-decimal radices.
 

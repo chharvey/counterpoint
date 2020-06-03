@@ -101,7 +101,7 @@ export default class CLI {
 
 		Feature Toggles:
 		--[no-]comments                (on by default)
-		--[no-]integerRadices          (on by default)
+		--[no-]integerRadices
 		--[no-]numericSeparators
 
 		Compiler Options:
