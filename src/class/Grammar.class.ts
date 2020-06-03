@@ -11,7 +11,6 @@ import Terminal from './Terminal.class'
 import Production, {
 	ProductionPrimitiveLiteral,
 	ProductionStringTemplate,
-	ProductionStringTemplate__0__List,
 	ProductionExpressionUnit,
 	ProductionExpressionUnarySymbol,
 	ProductionExpressionExponential,
@@ -60,8 +59,8 @@ export default class Grammar {
 	constructor() {
 		this.productions = [
 			ProductionPrimitiveLiteral.instance,
-			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate         .instance] : []),
-			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate__0__List.instance] : []),
+			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate          .instance] : []),
+			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate.__0__List.instance] : []),
 			ProductionExpressionUnit.instance,
 			ProductionExpressionUnarySymbol.instance,
 			ProductionExpressionExponential.instance,

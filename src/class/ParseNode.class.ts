@@ -32,7 +32,6 @@ import type {Rule} from './Grammar.class'
 import {
 	ProductionPrimitiveLiteral,
 	ProductionStringTemplate,
-	ProductionStringTemplate__0__List,
 	ProductionExpressionUnit,
 	ProductionExpressionUnarySymbol,
 	ProductionExpressionExponential,
@@ -67,7 +66,7 @@ export default abstract class ParseNode implements Serializable {
 		// NOTE: Need to use a chained if-else instead of a Map because cannot create instance of abstract class (`typeof ParseNode`).
 		if (                                   rule.production.equals(ProductionPrimitiveLiteral         .instance)) return new ParseNodePrimitiveLiteral        (rule, children)
 		if (Dev.supports('literalTemplate') && rule.production.equals(ProductionStringTemplate           .instance)) return new ParseNodeStringTemplate          (rule, children)
-		if (Dev.supports('literalTemplate') && rule.production.equals(ProductionStringTemplate__0__List  .instance)) return new ParseNodeStringTemplate__0__List (rule, children)
+		if (Dev.supports('literalTemplate') && rule.production.equals(ProductionStringTemplate.__0__List .instance)) return new ParseNodeStringTemplate__0__List (rule, children)
 		if (                                   rule.production.equals(ProductionExpressionUnit           .instance)) return new ParseNodeExpressionUnit          (rule, children)
 		if (                                   rule.production.equals(ProductionExpressionUnarySymbol    .instance)) return new ParseNodeExpressionUnary         (rule, children)
 		if (                                   rule.production.equals(ProductionExpressionExponential    .instance)) return new ParseNodeExpressionBinary        (rule, children)
@@ -77,8 +76,8 @@ export default abstract class ParseNode implements Serializable {
 		if (Dev.supports('variables')       && rule.production.equals(ProductionDeclarationVariable      .instance)) return new ParseNodeDeclarationVariable     (rule, children)
 		if (Dev.supports('variables')       && rule.production.equals(ProductionStatementAssignment      .instance)) return new ParseNodeStatementAssignment     (rule, children)
 		if (                                   rule.production.equals(ProductionStatement                .instance)) return new ParseNodeStatement               (rule, children)
-		if (                                   rule.production.equals(ProductionGoal.__0__List           .instance)) return new ParseNodeStatementList           (rule, children)
 		if (                                   rule.production.equals(ProductionGoal                     .instance)) return new ParseNodeGoal                    (rule, children)
+		if (                                   rule.production.equals(ProductionGoal.__0__List           .instance)) return new ParseNodeGoal__0__List           (rule, children)
 		throw new Error(`The given rule \`${ rule.toString() }\` does not match any known grammar productions.`)
 	}
 
@@ -274,26 +273,26 @@ export class ParseNodeStatement extends ParseNode {
 			])
 	}
 }
-export class ParseNodeStatementList extends ParseNode {
+export class ParseNodeGoal extends ParseNode {
+	declare children:
+		| readonly [TokenFilebound,                         TokenFilebound]
+		| readonly [TokenFilebound, ParseNodeGoal__0__List, TokenFilebound]
+	decorate(): SemanticNodeGoal {
+		return new SemanticNodeGoal(this, (this.children.length === 2) ? [] : [
+			this.children[1].decorate(),
+		])
+	}
+}
+export class ParseNodeGoal__0__List extends ParseNode {
 	declare children:
 		| readonly [                        ParseNodeStatement]
-		| readonly [ParseNodeStatementList, ParseNodeStatement]
+		| readonly [ParseNodeGoal__0__List, ParseNodeStatement]
 	decorate(): SemanticNodeStatementList {
 		return new SemanticNodeStatementList(this, this.children.length === 1 ?
 			[this.children[0].decorate()]
 		: [
 			...this.children[0].decorate().children,
 			this.children[1].decorate()
-		])
-	}
-}
-export class ParseNodeGoal extends ParseNode {
-	declare children:
-		| readonly [TokenFilebound,                         TokenFilebound]
-		| readonly [TokenFilebound, ParseNodeStatementList, TokenFilebound]
-	decorate(): SemanticNodeGoal {
-		return new SemanticNodeGoal(this, (this.children.length === 2) ? [] : [
-			this.children[1].decorate(),
 		])
 	}
 }

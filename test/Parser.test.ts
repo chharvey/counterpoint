@@ -13,8 +13,8 @@ import type {
 	ParseNodeDeclarationVariable,
 	ParseNodeStatementAssignment,
 	ParseNodeStatement,
-	ParseNodeStatementList,
 	ParseNodeGoal,
+	ParseNodeGoal__0__List,
 } from '../src/class/ParseNode.class'
 import {
 	Punctuator,
@@ -67,7 +67,7 @@ describe('Parser', () => {
 				*/
 				const tree: ParseNodeGoal = new Parser(';', CONFIG_DEFAULT).parse()
 				assert_arrayLength(tree.children, 3)
-				const statement_list: ParseNodeStatementList = tree.children[1]
+				const statement_list: ParseNodeGoal__0__List = tree.children[1]
 				assert_arrayLength(statement_list.children, 1)
 				const statement: ParseNodeStatement = statement_list.children[0]
 				assert_arrayLength(statement.children, 1)
@@ -110,7 +110,7 @@ describe('Parser', () => {
 
 		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
 			const stringTemplateParseNode = (goal: ParseNodeGoal): ParseNodeStringTemplate => ((((((((goal
-				.children[1] as ParseNodeStatementList)
+				.children[1] as ParseNodeGoal__0__List)
 				.children[0] as ParseNodeStatement)
 				.children[0] as ParseNodeExpression)
 				.children[0] as ParseNodeExpressionBinary)
