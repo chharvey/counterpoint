@@ -104,6 +104,17 @@ export class SemanticNodeGoal extends SemanticNode {
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {
+	private static FOLD_UNARY: Map<Operator, (z: number) => number> = new Map<Operator, (z: number) => number>([
+		[Operator.AFF, (z) =>  z],
+		[Operator.NEG, (z) => -z],
+	])
+	private static FOLD_BINARY: Map<Operator, (x: number, y: number) => number> = new Map<Operator, (x: number, y: number) => number>([
+		[Operator.EXP, (x, y) => x ** y],
+		[Operator.MUL, (x, y) => x *  y],
+		[Operator.DIV, (x, y) => x /  y],
+		[Operator.ADD, (x, y) => x +  y],
+		[Operator.SUB, (x, y) => x -  y],
+	])
 	constructor(
 		start_node: ParseNode,
 		private readonly operator: Operator,
@@ -112,6 +123,21 @@ export class SemanticNodeExpression extends SemanticNode {
 			readonly [SemanticNodeConstant|SemanticNodeExpression, SemanticNodeConstant|SemanticNodeExpression],
 	) {
 		super(start_node, {operator: Operator[operator]}, children)
+	}
+	/**
+	 * Assess the value of this node at compile-time, if possible.
+	 * @return the computed value of this node, or `null` if the value cannot be computed
+	 */
+	assess(): number | null {
+		const assessment0: number | null = this.children[0].assess()
+		if (assessment0 === null) return null
+		if (this.children.length === 1) {
+			return SemanticNodeExpression.FOLD_UNARY.get(this.operator)!(assessment0)
+		} else {
+			const assessment1: number | null = this.children[1].assess()
+			if (assessment1 === null) return null
+			return SemanticNodeExpression.FOLD_BINARY.get(this.operator)!(assessment0, assessment1)
+		}
 	}
 	evaluate(generator: CodeGenerator): string {
 		return (this.children.length === 1)
@@ -125,6 +151,13 @@ export class SemanticNodeConstant extends SemanticNode {
 		private readonly value: number,
 	) {
 		super(start_node, {value})
+	}
+	/**
+	 * Assess the value of this node at compile-time, if possible.
+	 * @return the computed value of this node, or `null` if the value cannot be computed
+	 */
+	assess(): number {
+		return this.value
 	}
 	evaluate(generator: CodeGenerator): string {
 		return generator.const(this.value)

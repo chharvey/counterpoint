@@ -14,6 +14,22 @@ Decorate(Expression ::= ExpressionAdditive)
 ```
 
 
+### AbstractOperation: AssessNumericBinaryExpression
+```w3c
+Or<Number, Null> AssessNumericBinaryExpression(SemanticExpression expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `Type(operand0)` is `Null`:
+		1. *Return:* `Null`.
+	4. *Let* `operand1` be the result of performing `Assess(expr.children.1)`.
+	5. *If* `Type(operand1)` is `Null`:
+		1. *Return:* `Null`.
+	6. *Assert:* `Type(operand0)` and `Type(operand1)` are both `Number`.
+	7. *Let* `result` be the result of performing `EvaluateNumericBinaryExpression(expr.operator, operand0, operand1)`.
+	8. *Return:* `result`.
+```
+
+
 ### Abstract Operation: EvaluateNumericBinaryExpression
 ```w3c
 EvaluateNumericBinaryExpression(op, operand1, operand2) :=
@@ -51,6 +67,13 @@ Decorate(NUMBER)
 where `MV` is [Mathematical Value](./lexical-structure.md#static-semantics-mathematical-value).
 
 
+### Static Semantics: Assess (Expression Units)
+```w3c
+Number Assess(SemanticConstant const) :=
+	1. *Return:* `const.value`.
+```
+
+
 ### Runtime Instructions: Evaluation (Expression Units)
 ```w3c
 Evaluate(SemanticConstant) :=
@@ -75,6 +98,20 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol)
 	:= SemanticExpression {operator: NEG} [
 		Decorate(ExpressionUnarySymbol),
 	]
+```
+
+
+### Static Semantics: Assess (Unary Operators)
+```w3c
+Or<Number, Null> Assess(SemanticExpression expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `Type(operand)` is `Null`:
+		1. *Return:* `Null`.
+	4. *Assert:* `Type(operand)` is `Number`.
+	5. *Let* `negation` be the additive inverse, `-operand`,
+		obtained by negating `operand`.
+	6. *Return* `negation`.
 ```
 
 
@@ -105,6 +142,14 @@ Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponenti
 		Decorate(ExpressionUnarySymbol),
 		Decorate(ExpressionExponential),
 	]
+```
+
+
+### Static Semantics: Assess (Exponentiation)
+```w3c
+Or<Number, Null> Assess(SemanticExpression[operator=EXP] expr) :=
+	1. *Let* `power` be the result of performing `AssessNumericBinaryExpression(expr)`.
+	2. *Return:* `power`.
 ```
 
 
@@ -140,6 +185,17 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 		Decorate(ExpressionMultiplicative),
 		Decorate(ExpressionExponential),
 	]
+```
+
+
+### Static Semantics: Assess (Multiplication/Division)
+```w3c
+Or<Number, Null> Assess(SemanticExpression[operator=MUL] expr) :=
+	1. *Let* `product` be the result of performing `AssessNumericBinaryExpression(expr)`.
+	2. *Return* `product`.
+Or<Number, Null> Assess(SemanticExpression[operator=DIV] expr) :=
+	1. *Let* `quotient` be the result of performing `AssessNumericBinaryExpression(expr)`.
+	2. *Return* `quotient`.
 ```
 
 
@@ -183,6 +239,14 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 			Decorate(ExpressionMultiplicative),
 		],
 	]
+```
+
+
+### Static Semantics: Assess (Addition/Subtraction)
+```w3c
+Or<Number, Null> Assess(SemanticExpression[operator=ADD] expr) :=
+	1. *Let* `sum` be the result of performing `AssessNumericBinaryExpression(expr)`.
+	2. *Return* `sum`.
 ```
 
 
