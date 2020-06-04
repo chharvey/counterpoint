@@ -36,10 +36,7 @@ test('Compile file with single token.', () => {
 
 test('Compile file with simple expression, add.', () => {
 	expect(new CodeGenerator('42 + 420').print()).toBe(boilerplate(`
-		(i32.add
-			(i32.const 42)
-			(i32.const 420)
-		)
+		(i32.const ${ 42 + 420 })
 	`))
 })
 
@@ -47,10 +44,7 @@ test('Compile file with simple expression, add.', () => {
 
 test('Compile file with simple expression, subtract.', () => {
 	expect(new CodeGenerator('42 - 420').print()).toBe(boilerplate(`
-		(i32.add
-			(i32.const 42)
-			(call $neg (i32.const 420))
-		)
+		(i32.const ${ 42 + -420 })
 	`))
 })
 
@@ -58,26 +52,14 @@ test('Compile file with simple expression, subtract.', () => {
 
 test('Compile file with compound expression.', () => {
 	expect(new CodeGenerator('42 ^ 2 * 420').print()).toBe(boilerplate(`
-		(i32.mul
-			(call $exp
-				(i32.const 42)
-				(i32.const 2)
-			)
-			(i32.const 420)
-		)
+		(i32.const ${ 42 ** 2 * 420 })
 	`))
 })
 
 
 
 test('Compile file with compound expression, grouping.', () => {
-	expect(new CodeGenerator('-(42) ^ +(2 * 420)').print()).toBe(boilerplate(`
-		(call $exp
-			(call $neg (i32.const 42))
-			(i32.mul
-				(i32.const 2)
-				(i32.const 420)
-			)
-		)
+	expect(new CodeGenerator('-(5) ^ +(2 * 3)').print()).toBe(boilerplate(`
+		(i32.const ${(-(5)) ** +(2 * 3)})
 	`))
 })
