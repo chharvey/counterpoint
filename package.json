@@ -16,7 +16,8 @@
     "solid:d": "solid d ./sample/test-v0.1.solid",
     "solid:d-o": "solid d ./sample/test-v0.1.solid -o ./sample/testout.wat",
     "solid:r": "solid r ./sample/test-v0.1.wasm",
-    "test": "jest"
+    "build": "rm -rf ./build/ && gulp build",
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",
