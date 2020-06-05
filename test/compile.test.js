@@ -50,9 +50,59 @@ test('Compile file with simple expression, subtract.', () => {
 
 
 
+test('Compile file with simple expression, divide.', () => {
+	expect(new CodeGenerator('126 / 3').print()).toBe(boilerplate(`
+		(i32.const ${ Math.trunc(126 / 3) })
+	`))
+	expect(new CodeGenerator('-126 / 3').print()).toBe(boilerplate(`
+		(i32.const ${ Math.trunc(-126 / 3) })
+	`))
+	expect(new CodeGenerator('126 / -3').print()).toBe(boilerplate(`
+		(i32.const ${ Math.trunc(126 / -3) })
+	`))
+	expect(new CodeGenerator('-126 / -3').print()).toBe(boilerplate(`
+		(i32.const ${ Math.trunc(-126 / -3) })
+	`))
+})
+
+
+
+test('Compile file with simple expression, indivisible.', () => {
+	expect(new CodeGenerator('200 / 3').print()).toBe(boilerplate(`
+		(i32.const ${ Math.trunc(200 / 3) })
+	`))
+	expect(new CodeGenerator('200 / -3').print()).toBe(boilerplate(`
+		(i32.const ${ Math.trunc(200 / -3) })
+	`))
+	expect(new CodeGenerator('-200 / 3').print()).toBe(boilerplate(`
+		(i32.const ${ Math.trunc(-200 / 3) })
+	`))
+	expect(new CodeGenerator('-200 / -3').print()).toBe(boilerplate(`
+		(i32.const ${ Math.trunc(-200 / -3) })
+	`))
+})
+
+
+
 test('Compile file with compound expression.', () => {
 	expect(new CodeGenerator('42 ^ 2 * 420').print()).toBe(boilerplate(`
-		(i32.const ${ 42 ** 2 * 420 })
+		(i32.const ${ (42 ** 2 * 420) % (2 ** 16) })
+	`))
+})
+
+
+
+test('Compile file with compound expression, overflow.', () => {
+	expect(new CodeGenerator('2 ^ 15 + 2 ^ 14').print()).toBe(boilerplate(`
+		(i32.const ${ -(2 ** 14) })
+	`))
+})
+
+
+
+test('Compile file with compound expression, underflow.', () => {
+	expect(new CodeGenerator('-(2 ^ 14) - 2 ^ 15').print()).toBe(boilerplate(`
+		(i32.const ${ 2 ** 14 })
 	`))
 })
 

@@ -1,4 +1,8 @@
 import type Serializable from '../iface/Serializable.iface'
+import Int16 from '../vm/Int16.class'
+import {
+	NanError02,
+} from '../error/NanError.class'
 import type CodeGenerator from './CodeGenerator.class'
 import {SOT, EOT} from './Char.class'
 import type ParseNode from './ParseNode.class'
@@ -105,15 +109,15 @@ export class SemanticNodeGoal extends SemanticNode {
 }
 export class SemanticNodeExpression extends SemanticNode {
 	private static FOLD_UNARY: Map<Operator, (z: number) => number> = new Map<Operator, (z: number) => number>([
-		[Operator.AFF, (z) =>  z],
-		[Operator.NEG, (z) => -z],
+		[Operator.AFF, (z) => Number(new Int16(BigInt(z))      .toNumeric())],
+		[Operator.NEG, (z) => Number(new Int16(BigInt(z)).neg().toNumeric())],
 	])
 	private static FOLD_BINARY: Map<Operator, (x: number, y: number) => number> = new Map<Operator, (x: number, y: number) => number>([
-		[Operator.EXP, (x, y) => x ** y],
-		[Operator.MUL, (x, y) => x *  y],
-		[Operator.DIV, (x, y) => x /  y],
-		[Operator.ADD, (x, y) => x +  y],
-		[Operator.SUB, (x, y) => x -  y],
+		[Operator.EXP, (x, y) => Number(new Int16(BigInt(x)).exp    (new Int16(BigInt(y))).toNumeric())],
+		[Operator.MUL, (x, y) => Number(new Int16(BigInt(x)).times  (new Int16(BigInt(y))).toNumeric())],
+		[Operator.DIV, (x, y) => Number(new Int16(BigInt(x)).divide (new Int16(BigInt(y))).toNumeric())],
+		[Operator.ADD, (x, y) => Number(new Int16(BigInt(x)).plus   (new Int16(BigInt(y))).toNumeric())],
+		[Operator.SUB, (x, y) => Number(new Int16(BigInt(x)).minus  (new Int16(BigInt(y))).toNumeric())],
 	])
 	constructor(
 		start_node: ParseNode,
@@ -136,6 +140,9 @@ export class SemanticNodeExpression extends SemanticNode {
 		} else {
 			const assessment1: number | null = this.children[1].assess()
 			if (assessment1 === null) return null
+			if (this.operator === Operator.DIV && assessment1 === 0) {
+				throw new NanError02(this.children[1])
+			}
 			return SemanticNodeExpression.FOLD_BINARY.get(this.operator)!(assessment0, assessment1)
 		}
 	}
