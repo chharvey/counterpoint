@@ -41,10 +41,9 @@ Type typeOf(SemanticOperation operation) :=
 ```
 
 
-### Abstract Operation: EvaluateNumericBinaryExpression
-The abstract operation `EvaluateNumericBinaryExpression` performs a binary stack operation.
+### Abstract Operation: PerformNumericBinaryOperation
 ```w3c
-Void EvaluateNumericBinaryExpression(Text op, operand1, operand2) :=
+PerformNumericBinaryOperation(op, operand1, operand2) :=
 	1. *Let* `operation` be a function obtained from the following record, keyed by `op`: {
 		`ADD`: Return the sum, `arg1 + arg2`,
 			obtained by adding `arg1` (the augend) to `arg2` (the addend).
@@ -53,9 +52,40 @@ Void EvaluateNumericBinaryExpression(Text op, operand1, operand2) :=
 		`DIV`: Return the quotient, `arg1 / arg2`,
 			obtained by dividing `arg1` (the dividend) by `arg2` (the divisor).
 		`EXP`: Return the power, `arg1 ^ arg2`,
-				obtained by raising `arg1` (the base) to `arg2` (the exponent).
+			obtained by raising `arg1` (the base) to `arg2` (the exponent).
 	}
 	2. *Return* `operation(operand1, operand2)`.
+```
+
+
+### AbstractOperation: AssessSemanticOperationBinary
+```w3c
+Or<Number, Null> AssessSemanticOperationBinary(SemanticExpression expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `Type(operand0)` is `Null`:
+		1. *Return:* `Null`.
+	4. *Let* `operand1` be the result of performing `Assess(expr.children.1)`.
+	5. *If* `Type(operand1)` is `Null`:
+		1. *Return:* `Null`.
+	6. *Assert:* `Type(operand0)` and `Type(operand1)` are both `Number`.
+	7. *Let* `result` be the result of performing `PerformNumericBinaryOperation(expr.operator, operand0, operand1)`.
+	8. *Return:* `result`.
+```
+
+
+### Abstract Operation: BuildSemanticOperationBinary
+```w3c
+Sequence<Instruction> BuildSemanticOperationBinary(SemanticExpression expr) :=
+	1. *Let* `assess` be the result of performing `Assess(expr)`.
+	2. *If* `Type(assess)` is `Number`:
+		1. *Return:* <"Push `assess` onto the operand stack.">.
+	3. *Else:*
+		1. *Assert:* `Type(assess)` is `Null`.
+		2. *Assert:* `SemanticExpression.children.count` is 2.
+		3. *Let* `instr0` be the result of performing `Build(expr.children.0)`.
+		4. *Let* `instr1` be the result of performing `Build(expr.children.1)`.
+		5. *Return:* <instr0, instr1, "Perform stack operation `expr.operator`.">.
 ```
 
 
@@ -134,10 +164,25 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 ```
 
 
+### Static Semantics: Assess (Literals)
+```w3c
+Number Assess(SemanticConstant const) :=
+	1. *Return:* `const.value`.
+```
+
+
+### Static Semantics: Build (Literals)
+```w3c
+Sequence<Instruction> Build(SemanticExpression[operator=MUL] expr) :=
+	1. *Let* `assess` be the result of performing `Assess(expr)`.
+	2. *Return:* <"Push `assess` onto the operand stack.">.
+```
+
+
 ### Runtime Instructions: Evaluate (Literals)
 ```w3c
-Or<Number, String> Evaluate(SemanticConstant const) :=
-	1. *Return* `const.value`.
+Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Number value) :=
+	1. Push `value` onto the operand stack.
 ```
 
 
@@ -163,6 +208,20 @@ Decorate(ExpressionUnit ::= StringTemplate) -> SemanticTemplate
 	:= Decorate(StringTemplate);
 Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticConstant | SemanticIdentifier | SemanticTemplate | SemanticOperation
 	:= Decorate(Expression);
+```
+
+
+### Static Semantics: Assess (Expression Units)
+```w3c
+Number Assess(SemanticIdentifier iden) :=
+	/* TO BE DETERMINED */
+```
+
+
+### Static Semantics: Build (Expression Units)
+```w3c
+Sequence<Instruction> Build(SemanticIdentifier iden) :=
+	/* TO BE DETERMINED */
 ```
 
 
@@ -193,14 +252,41 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperati
 ```
 
 
+### Static Semantics: Assess (Unary Operators)
+```w3c
+Or<Number, Null> Assess(SemanticExpression[operator=NEG] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `Type(operand)` is `Null`:
+		1. *Return:* `Null`.
+	4. *Assert:* `Type(operand)` is `Number`.
+	5. *Let* `negation` be the additive inverse, `-operand`,
+		obtained by negating `operand`.
+	6. *Return* `negation`.
+```
+
+
+### Static Semantics: Build (Unary Operators)
+```w3c
+Sequence<Instruction> Build(SemanticExpression[operator=NEG] expr) :=
+	1. *Let* `assess` be the result of performing `Assess(expr)`.
+	2. *If* `Type(assess)` is `Number`:
+		1. *Return:* <"Push `assess` onto the operand stack.">.
+	3. *Else:*
+		1. *Assert:* `Type(assess)` is `Null`.
+		2. *Assert:* `SemanticExpression.children.count` is 1.
+		3. *Let* `instr0` be the result of performing `Build(expr.children.0)`.
+		4. *Return:* <instr0, "Perform stack operation NEG.">.
+```
+
+
 ### Runtime Instructions: Evaluate (Unary Operators)
 ```w3c
-Number Evaluate(SemanticOperation[operator=NEG] expr) :=
-	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `operand` be the result of performing `Evaluate(expr.children.0)`.
-	3. *Let* `negation` be the additive inverse, `-operand`,
+Void Evaluate(Instruction :::= "Perform stack operation NEG.") :=
+	1. Pop `operand` from the operand stack.
+	2. *Let* `negation` be the additive inverse, `-operand`,
 		obtained by negating `operand`.
-	4. *Return* `negation`.
+	3. Push `negation` onto the operand stack.
 ```
 
 
@@ -223,14 +309,29 @@ Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponenti
 ```
 
 
+### Static Semantics: Assess (Exponentiation)
+```w3c
+Or<Number, Null> Assess(SemanticExpression[operator=EXP] expr) :=
+	1. *Let* `power` be the result of performing `AssessSemanticOperationBinary(expr)`.
+	2. *Return:* `power`.
+```
+
+
+### Static Semantics: Build (Exponentiation)
+```w3c
+Sequence<Instruction> Build(SemanticExpression[operator=EXP] expr) :=
+	1. *Let* `build` be the result of performing `BuildSemanticOperationBinary(expr)`.
+	2. *Return:* `build`.
+```
+
+
 ### Runtime Instructions: Evaluate (Exponentiation)
 ```w3c
-Number Evaluate(SemanticOperation[operator=EXP] expr) :=
-	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `operand1` be the result of performing `Evaluate(expr.children.0)`.
-	3. *Let* `operand2` be the result of performing `Evaluate(expr.children.1)`.
-	4. *Let* `power` be the result of performing `EvaluateNumericBinaryExpression(EXP, operand1, operand2)`.
-	5. *Return* `power`.
+Void Evaluate(Instruction :::= "Perform stack operation EXP.") :=
+	1. Pop `operand1` from the operand stack.
+	2. Pop `operand0` from the operand stack.
+	3. *Let* `power` be the result of performing `PerformNumericBinaryOperation(EXP, operand0, operand1)`.
+	4. Push `power` onto the operand stack.
 ```
 
 
@@ -258,20 +359,40 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 ```
 
 
+### Static Semantics: Assess (Multiplicative)
+```w3c
+Or<Number, Null> Assess(SemanticExpression[operator=MUL] expr) :=
+	1. *Let* `product` be the result of performing `AssessSemanticOperationBinary(expr)`.
+	2. *Return* `product`.
+Or<Number, Null> Assess(SemanticExpression[operator=DIV] expr) :=
+	1. *Let* `quotient` be the result of performing `AssessSemanticOperationBinary(expr)`.
+	2. *Return* `quotient`.
+```
+
+
+### Static Semantics: Build (Multiplicative)
+```w3c
+Sequence<Instruction> Build(SemanticExpression[operator=MUL] expr) :=
+	1. *Let* `build` be the result of performing `BuildSemanticOperationBinary(expr)`.
+	2. *Return:* `build`.
+Sequence<Instruction> Build(SemanticExpression[operator=DIV] expr) :=
+	1. *Let* `build` be the result of performing `BuildSemanticOperationBinary(expr)`.
+	2. *Return:* `build`.
+```
+
+
 ### Runtime Instructions: Evaluate (Multiplicative)
 ```w3c
-Number Evaluate(SemanticOperation[operator=MUL] expr) :=
-	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `operand1` be the result of performing `Evaluate(expr.children.0)`.
-	3. *Let* `operand2` be the result of performing `Evaluate(expr.children.1)`.
-	4. *Let* `product` be the result of performing `EvaluateNumericBinaryExpression(MUL, operand1, operand2)`.
-	5. *Return* `product`.
-Number Evaluate(SemanticOperation[operator=DIV] expr) :=
-	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `operand1` be the result of performing `Evaluate(expr.children.0)`.
-	3. *Let* `operand2` be the result of performing `Evaluate(expr.children.1)`.
-	4. *Let* `quotient` be the result of performing `EvaluateNumericBinaryExpression(DIV, operand1, operand2)`.
-	5. *Return* `quotient`.
+Void Evaluate(Instruction :::= "Perform stack operation MUL.") :=
+	1. Pop `operand1` from the operand stack.
+	2. Pop `operand0` from the operand stack.
+	3. *Let* `product` be the result of performing `PerformNumericBinaryOperation(MUL, operand0, operand1)`.
+	4. Push `product` onto the operand stack.
+Void Evaluate(Instruction :::= "Perform stack operation DIV.") :=
+	1. Pop `operand1` from the operand stack.
+	2. Pop `operand0` from the operand stack.
+	3. *Let* `quotient` be the result of performing `PerformNumericBinaryOperation(DIV, operand0, operand1)`.
+	4. Push `quotient` onto the operand stack.
 ```
 
 
@@ -301,12 +422,27 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 ```
 
 
+### Static Semantics: Assess (Additive)
+```w3c
+Or<Number, Null> Assess(SemanticExpression[operator=ADD] expr) :=
+	1. *Let* `sum` be the result of performing `AssessSemanticOperationBinary(expr)`.
+	2. *Return* `sum`.
+```
+
+
+### Static Semantics: Build (Additive)
+```w3c
+Sequence<Instruction> Build(SemanticExpression[operator=ADD] expr) :=
+	1. *Let* `build` be the result of performing `BuildSemanticOperationBinary(expr)`.
+	2. *Return:* `build`.
+```
+
+
 ### Runtime Instructions: Evaluate (Additive)
 ```w3c
-Number Evaluate(SemanticOperation[operator=ADD] expr) :=
-	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `operand1` be the result of performing `Evaluate(expr.children.0)`.
-	3. *Let* `operand2` be the result of performing `Evaluate(expr.children.1)`.
-	4. *Let* `sum` be the result of performing `EvaluateNumericBinaryExpression(ADD, operand1, operand2)`.
-	5. *Return* `sum`.
+Void Evaluate(Instruction :::= "Perform stack operation ADD.") :=
+	1. Pop `operand1` from the operand stack.
+	2. Pop `operand0` from the operand stack.
+	3. *Let* `sum` be the result of performing `PerformNumericBinaryOperation(ADD, operand0, operand1)`.
+	4. Push `sum` onto the operand stack.
 ```

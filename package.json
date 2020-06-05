@@ -1,6 +1,6 @@
 {
   "name": "@chharvey/solid",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "A robust programming language.",
   "main": "index.js",
@@ -17,15 +17,15 @@
     "solid:d-o": "solid d ./sample/test-v0.1.solid -o ./sample/testout.wat",
     "solid:r": "solid r ./sample/test-v0.1.wasm",
     "solid:c-p": "solid c ./sample/test-v0.1.solid -p ./sample/solid-config.json",
-    "test": "gulp test",
-    "build": "rm -rf ./build/ && gulp build"
+    "build": "rm -rf ./build/ && gulp build",
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chharvey/solid.git"
   },
   "author": "Chris Harvey <chrisharvey2pi@gmail.com> (https://chharvey.github.io/)",
-  "license": "UNLICENSED",
+  "license": "AGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/chharvey/solid/issues"
   },

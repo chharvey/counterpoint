@@ -29,7 +29,7 @@ export default class CodeGenerator {
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (source: string, config: SolidConfig) {
-		this.output = new Parser(source, config).parse().decorate().evaluate(this)
+		this.output = new Parser(source, config).parse().decorate().build(this)
 	}
 
 	/**
@@ -66,7 +66,7 @@ export default class CodeGenerator {
 		return `(${ new Map<Punctuator, string>([
 			[Punctuator.AFF, `nop`],
 			[Punctuator.NEG, `call $neg`],
-		]).get(op)! } ${ arg.evaluate(this) })`
+		]).get(op)! } ${ arg.build(this) })`
 	}
 
 	/**
@@ -83,7 +83,7 @@ export default class CodeGenerator {
 			[Punctuator.MUL, `i32.mul`],
 			[Punctuator.DIV, `i32.div_s`],
 			[Punctuator.EXP, `call $exp`],
-		]).get(op)! } ${ arg1.evaluate(this) } ${ arg2.evaluate(this) })`
+		]).get(op)! } ${ arg1.build(this) } ${ arg2.build(this) })`
 	}
 
 	/**

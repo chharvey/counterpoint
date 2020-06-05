@@ -21,7 +21,7 @@ import {
 
 
 describe('SemanticNode', () => {
-	describe('#compile', () => {
+	describe('#build', () => {
 		const boilerplate = (expected: string) => `
 			(module
 				${ fs.readFileSync(path.join(__dirname, '../src/neg.wat'), 'utf8') }
@@ -58,40 +58,56 @@ describe('SemanticNode', () => {
 		context('SemanticNodeOperation', () => {
 			specify('ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative', () => {
 				assert.strictEqual(new CodeGenerator('42 + 420;', CONFIG_DEFAULT).print(), boilerplate(`
-					(i32.add
-						(i32.const 42)
-						(i32.const 420)
-					)
+					(i32.const ${ 42 + 420 })
 				`))
 			})
 			specify('ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative', () => {
 				assert.strictEqual(new CodeGenerator('42 - 420;', CONFIG_DEFAULT).print(), boilerplate(`
-					(i32.add
-						(i32.const 42)
-						(call $neg (i32.const 420))
-					)
+					(i32.const ${ 42 + -420 })
+				`))
+			})
+			specify('ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential', () => {
+				assert.strictEqual(new CodeGenerator('126 / 3;', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const ${ Math.trunc(126 / 3) })
+				`))
+				assert.strictEqual(new CodeGenerator('-126 / 3;', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const ${ Math.trunc(-126 / 3) })
+				`))
+				assert.strictEqual(new CodeGenerator('126 / -3;', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const ${ Math.trunc(126 / -3) })
+				`))
+				assert.strictEqual(new CodeGenerator('-126 / -3;', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const ${ Math.trunc(-126 / -3) })
+				`))
+				assert.strictEqual(new CodeGenerator('200 / 3;', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const ${ Math.trunc(200 / 3) })
+				`))
+				assert.strictEqual(new CodeGenerator('200 / -3;', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const ${ Math.trunc(200 / -3) })
+				`))
+				assert.strictEqual(new CodeGenerator('-200 / 3;', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const ${ Math.trunc(-200 / 3) })
+				`))
+				assert.strictEqual(new CodeGenerator('-200 / -3;', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const ${ Math.trunc(-200 / -3) })
 				`))
 			})
 			specify('compound expression.', () => {
 				assert.strictEqual(new CodeGenerator('42 ^ 2 * 420;', CONFIG_DEFAULT).print(), boilerplate(`
-					(i32.mul
-						(call $exp
-							(i32.const 42)
-							(i32.const 2)
-						)
-						(i32.const 420)
-					)
+					(i32.const ${ (42 ** 2 * 420) % (2 ** 16) })
+				`))
+			})
+			specify('overflow.', () => {
+				assert.strictEqual(new CodeGenerator('2 ^ 15 + 2 ^ 14;', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const ${ -(2 ** 14) })
+				`))
+				assert.strictEqual(new CodeGenerator('-(2 ^ 14) - 2 ^ 15;', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const ${ 2 ** 14 })
 				`))
 			})
 			specify('compound expression with grouping.', () => {
-				assert.strictEqual(new CodeGenerator('-(42) ^ +(2 * 420);', CONFIG_DEFAULT).print(), boilerplate(`
-					(call $exp
-						(call $neg (i32.const 42))
-						(i32.mul
-							(i32.const 2)
-							(i32.const 420)
-						)
-					)
+				assert.strictEqual(new CodeGenerator('-(5) ^ +(2 * 3);', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const ${(-(5)) ** +(2 * 3)})
 				`))
 			})
 		})
