@@ -72,18 +72,18 @@ export default class CodeGenerator {
 	/**
 	 * Perform a binary operation on the stack.
 	 * @param op a punctuator representing the operation to perform
-	 * @param arg1 the first operand
-	 * @param arg2 the second operand
-	 * @return `'(op arg1 arg2)'`
+	 * @param arg0 the first operand
+	 * @param arg1 the second operand
+	 * @return `'(op arg0 arg1)'`
 	 */
-	binop(op: Punctuator, arg1: SemanticNode, arg2: SemanticNode): string {
+	binop(op: Punctuator, arg0: SemanticNode, arg1: SemanticNode): string {
 		return `(${ new Map<Punctuator, string>([
 			[Punctuator.ADD, `i32.add`],
 			[Punctuator.SUB, `i32.sub`],
 			[Punctuator.MUL, `i32.mul`],
 			[Punctuator.DIV, `i32.div_s`],
 			[Punctuator.EXP, `call $exp`],
-		]).get(op)! } ${ arg1.build(this) } ${ arg2.build(this) })`
+		]).get(op)! } ${ arg0.build(this) } ${ arg1.build(this) })`
 	}
 
 	/**
