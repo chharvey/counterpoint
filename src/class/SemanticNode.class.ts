@@ -99,6 +99,11 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	 * The Type of this expression.
 	 */
 	abstract type(): SolidLanguageType;
+	/**
+	 * Assess the value of this node at compile-time, if possible.
+	 * @return the computed value of this node, or `null` if the value cannot be computed by the compiler
+	 */
+	abstract assess(): number | null;
 }
 export class SemanticNodeConstant extends SemanticNodeExpression {
 	declare children:
@@ -109,17 +114,6 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 	) {
 		super(start_node, {value})
 	}
-	/**
-	 * Assess the value of this node at compile-time, if possible.
-	 * @return the computed value of this node, or `null` if the value cannot be computed
-	 */
-	assess(): number {
-		if (typeof this.value === 'number') {
-			return this.value
-		} else {
-			throw new Error('not yet supported.')
-		}
-	}
 	build(generator: CodeGenerator): string {
 		return (typeof this.value === 'number')
 			? generator.const(this.assess())
@@ -129,6 +123,13 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		return (typeof this.value === 'number')
 			? SolidLanguageType.NUMBER
 			: SolidLanguageType.STRING
+	}
+	assess(): number {
+		if (typeof this.value === 'number') {
+			return this.value
+		} else {
+			throw new Error('not yet supported.')
+		}
 	}
 }
 export class SemanticNodeIdentifier extends SemanticNodeExpression {
@@ -141,6 +142,9 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 		throw new Error('not yet supported.')
 	}
 	type(): SolidLanguageType {
+		throw new Error('Not yet supported.')
+	}
+	assess(): number | null {
 		throw new Error('Not yet supported.')
 	}
 }
@@ -162,6 +166,9 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	}
 	type(): SolidLanguageType {
 		return SolidLanguageType.STRING
+	}
+	assess(): number | null {
+		throw new Error('Not yet supported.')
 	}
 }
 type SemanticNodeTemplatePartialChildrenType = // FIXME spread types
@@ -202,24 +209,6 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 	) {
 		super(start_node, {operator}, children)
 	}
-	/**
-	 * Assess the value of this node at compile-time, if possible.
-	 * @return the computed value of this node, or `null` if the value cannot be computed
-	 */
-	assess(): number | null {
-		const assessment0: number | null = this.children[0].assess()
-		if (assessment0 === null) return null
-		if (this.children.length === 1) {
-			return SemanticNodeOperation.FOLD_UNARY.get(this.operator)!(assessment0)
-		} else {
-			const assessment1: number | null = this.children[1].assess()
-			if (assessment1 === null) return null
-			if (this.operator === Punctuator.DIV && assessment1 === 0) {
-				throw new NanError02(this.children[1])
-			}
-			return SemanticNodeOperation.FOLD_BINARY.get(this.operator)!(assessment0, assessment1)
-		}
-	}
 	build(generator: CodeGenerator): string {
 		const assessment: number | null = this.assess()
 		return (assessment !== null)
@@ -234,6 +223,20 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 			throw new TypeError('Invalid operation.')
 		}
 		return t1
+	}
+	assess(): number | null {
+		const assessment0: number | null = this.children[0].assess()
+		if (assessment0 === null) return null
+		if (this.children.length === 1) {
+			return SemanticNodeOperation.FOLD_UNARY.get(this.operator)!(assessment0)
+		} else {
+			const assessment1: number | null = this.children[1].assess()
+			if (assessment1 === null) return null
+			if (this.operator === Punctuator.DIV && assessment1 === 0) {
+				throw new NanError02(this.children[1])
+			}
+			return SemanticNodeOperation.FOLD_BINARY.get(this.operator)!(assessment0, assessment1)
+		}
 	}
 }
 /**

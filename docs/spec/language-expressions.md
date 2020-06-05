@@ -78,14 +78,13 @@ Or<Number, Null> AssessSemanticOperationBinary(SemanticExpression expr) :=
 ```w3c
 Sequence<Instruction> BuildSemanticOperationBinary(SemanticExpression expr) :=
 	1. *Let* `assess` be the result of performing `Assess(expr)`.
-	2. *If* `Type(assess)` is `Number`:
-		1. *Return:* <"Push `assess` onto the operand stack.">.
-	3. *Else:*
-		1. *Assert:* `Type(assess)` is `Null`.
-		2. *Assert:* `SemanticExpression.children.count` is 2.
-		3. *Let* `instr0` be the result of performing `Build(expr.children.0)`.
-		4. *Let* `instr1` be the result of performing `Build(expr.children.1)`.
-		5. *Return:* <instr0, instr1, "Perform stack operation `expr.operator`.">.
+	2. *If* `Type(assess)` is `Null`:
+		1. *Assert:* `SemanticExpression.children.count` is 2.
+		2. *Let* `instrs0` be the result of performing `Build(expr.children.0)`.
+		3. *Let* `instrs1` be the result of performing `Build(expr.children.1)`.
+		4. *Return:* <...instrs0, ...instrs1, "Perform stack operation `expr.operator`.">.
+	3. *Assert:* `Type(assess)` is `Number`.
+	4. *Return:* <"Push `assess` onto the operand stack.">.
 ```
 
 
@@ -270,13 +269,12 @@ Or<Number, Null> Assess(SemanticExpression[operator=NEG] expr) :=
 ```w3c
 Sequence<Instruction> Build(SemanticExpression[operator=NEG] expr) :=
 	1. *Let* `assess` be the result of performing `Assess(expr)`.
-	2. *If* `Type(assess)` is `Number`:
-		1. *Return:* <"Push `assess` onto the operand stack.">.
-	3. *Else:*
-		1. *Assert:* `Type(assess)` is `Null`.
-		2. *Assert:* `SemanticExpression.children.count` is 1.
-		3. *Let* `instr0` be the result of performing `Build(expr.children.0)`.
-		4. *Return:* <instr0, "Perform stack operation NEG.">.
+	2. *If* `Type(assess)` is `Null`:
+		1. *Assert:* `SemanticExpression.children.count` is 1.
+		2. *Let* `instrs` be the result of performing `Build(expr.children.0)`.
+		3. *Return:* <...instrs, "Perform stack operation NEG.">.
+	3. *Assert:* `Type(assess)` is `Number`.
+	4. *Return:* <"Push `assess` onto the operand stack.">.
 ```
 
 
@@ -361,21 +359,15 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 
 ### Static Semantics: Assess (Multiplicative)
 ```w3c
-Or<Number, Null> Assess(SemanticExpression[operator=MUL] expr) :=
-	1. *Let* `product` be the result of performing `AssessSemanticOperationBinary(expr)`.
-	2. *Return* `product`.
-Or<Number, Null> Assess(SemanticExpression[operator=DIV] expr) :=
-	1. *Let* `quotient` be the result of performing `AssessSemanticOperationBinary(expr)`.
-	2. *Return* `quotient`.
+Or<Number, Null> Assess(SemanticOperation[operator=MUL|DIV] expr) :=
+	1. *Let* `product_or_quotient` be the result of performing `AssessSemanticOperationBinary(expr)`.
+	2. *Return:* `product_or_quotient`.
 ```
 
 
 ### Static Semantics: Build (Multiplicative)
 ```w3c
-Sequence<Instruction> Build(SemanticExpression[operator=MUL] expr) :=
-	1. *Let* `build` be the result of performing `BuildSemanticOperationBinary(expr)`.
-	2. *Return:* `build`.
-Sequence<Instruction> Build(SemanticExpression[operator=DIV] expr) :=
+Sequence<Instruction> Build(SemanticOperation[operator=MUL|DIV] expr) :=
 	1. *Let* `build` be the result of performing `BuildSemanticOperationBinary(expr)`.
 	2. *Return:* `build`.
 ```
