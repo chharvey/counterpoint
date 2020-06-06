@@ -7,9 +7,13 @@ import Util from '../src/class/Util.class'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
 import CodeGenerator from '../src/class/CodeGenerator.class'
+import type {
+	ParseNodeExpression,
+	ParseNodeStatement,
+	ParseNodeGoal__0__List,
+} from '../src/class/ParseNode.class'
 import {
 	SolidLanguageType,
-	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
@@ -21,7 +25,47 @@ import {
 
 
 describe('SemanticNode', () => {
-	describe('#compile', () => {
+	describe('#assess', () => {
+		it('computes the value of a constant expression.', () => {
+			assert.deepStrictEqual([
+				'42 + 420;',
+				'42 - 420;',
+				'126 / 3;',
+				'-126 / 3;',
+				'126 / -3;',
+				'-126 / -3;',
+				'200 / 3;',
+				'200 / -3;',
+				'-200 / 3;',
+				'-200 / -3;',
+				'42 ^ 2 * 420;',
+				'2 ^ 15 + 2 ^ 14;',
+				'-(2 ^ 14) - 2 ^ 15;',
+				'-(5) ^ +(2 * 3);',
+			].map((src) => (((new Parser(src, CONFIG_DEFAULT).parse()
+				.children[1] as ParseNodeGoal__0__List)
+				.children[0] as ParseNodeStatement)
+				.children[0] as ParseNodeExpression
+			).decorate().assess()), [
+				42 + 420,
+				42 + -420,
+				126 / 3,
+				-126 / 3,
+				126 / -3,
+				-126 / -3,
+				Math.trunc(200 / 3),
+				Math.trunc(200 / -3),
+				Math.trunc(-200 / 3),
+				Math.trunc(-200 / -3),
+				(42 ** 2 * 420) % (2 ** 16),
+				-(2 ** 14),
+				2 ** 14,
+				(-(5)) ** +(2 * 3),
+			])
+		})
+	})
+
+	describe('#build', () => {
 		const boilerplate = (expected: string) => `
 			(module
 				${ fs.readFileSync(path.join(__dirname, '../src/neg.wat'), 'utf8') }
@@ -46,8 +90,11 @@ describe('SemanticNode', () => {
 
 		context('SemanticNodeConstant', () => {
 			it('pushes the constant onto the stack.', () => {
-				const outs = ['42;', '+42;', '-42;'].map((src) => new CodeGenerator(src, CONFIG_DEFAULT).print())
-				assert.deepStrictEqual(outs, [
+				assert.deepStrictEqual([
+					'42;',
+					'+42;',
+					'-42;',
+				].map((src) => new CodeGenerator(src, CONFIG_DEFAULT).print()), [
 					`(i32.const 42)`,
 					`(i32.const 42)`,
 					`(i32.const -42)`,
@@ -58,40 +105,53 @@ describe('SemanticNode', () => {
 		context('SemanticNodeOperation', () => {
 			specify('ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative', () => {
 				assert.strictEqual(new CodeGenerator('42 + 420;', CONFIG_DEFAULT).print(), boilerplate(`
-					(i32.add
-						(i32.const 42)
-						(i32.const 420)
-					)
+					(i32.const ${ 42 + 420 })
 				`))
 			})
 			specify('ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative', () => {
 				assert.strictEqual(new CodeGenerator('42 - 420;', CONFIG_DEFAULT).print(), boilerplate(`
-					(i32.add
-						(i32.const 42)
-						(call $neg (i32.const 420))
-					)
+					(i32.const ${ 42 + -420 })
 				`))
+			})
+			specify('ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential', () => {
+				assert.deepStrictEqual([
+					'126 / 3;',
+					'-126 / 3;',
+					'126 / -3;',
+					'-126 / -3;',
+					'200 / 3;',
+					'200 / -3;',
+					'-200 / 3;',
+					'-200 / -3;',
+				].map((src) => new CodeGenerator(src, CONFIG_DEFAULT).print()), [
+					126 / 3,
+					-126 / 3,
+					126 / -3,
+					-126 / -3,
+					200 / 3,
+					200 / -3,
+					-200 / 3,
+					-200 / -3,
+				].map((v) => boilerplate(`
+					(i32.const ${ Math.trunc(v) })
+				`)))
 			})
 			specify('compound expression.', () => {
 				assert.strictEqual(new CodeGenerator('42 ^ 2 * 420;', CONFIG_DEFAULT).print(), boilerplate(`
-					(i32.mul
-						(call $exp
-							(i32.const 42)
-							(i32.const 2)
-						)
-						(i32.const 420)
-					)
+					(i32.const ${ (42 ** 2 * 420) % (2 ** 16) })
+				`))
+			})
+			specify('overflow.', () => {
+				assert.strictEqual(new CodeGenerator('2 ^ 15 + 2 ^ 14;', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const ${ -(2 ** 14) })
+				`))
+				assert.strictEqual(new CodeGenerator('-(2 ^ 14) - 2 ^ 15;', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const ${ 2 ** 14 })
 				`))
 			})
 			specify('compound expression with grouping.', () => {
-				assert.strictEqual(new CodeGenerator('-(42) ^ +(2 * 420);', CONFIG_DEFAULT).print(), boilerplate(`
-					(call $exp
-						(call $neg (i32.const 42))
-						(i32.mul
-							(i32.const 2)
-							(i32.const 420)
-						)
-					)
+				assert.strictEqual(new CodeGenerator('-(5) ^ +(2 * 3);', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const ${ (-(5)) ** +(2 * 3) })
 				`))
 			})
 		})

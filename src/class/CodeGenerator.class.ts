@@ -29,7 +29,7 @@ export default class CodeGenerator {
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (source: string, config: SolidConfig) {
-		this.output = new Parser(source, config).parse().decorate().evaluate(this)
+		this.output = new Parser(source, config).parse().decorate().build(this)
 	}
 
 	/**
@@ -66,24 +66,24 @@ export default class CodeGenerator {
 		return `(${ new Map<Punctuator, string>([
 			[Punctuator.AFF, `nop`],
 			[Punctuator.NEG, `call $neg`],
-		]).get(op)! } ${ arg.evaluate(this) })`
+		]).get(op)! } ${ arg.build(this) })`
 	}
 
 	/**
 	 * Perform a binary operation on the stack.
 	 * @param op a punctuator representing the operation to perform
-	 * @param arg1 the first operand
-	 * @param arg2 the second operand
-	 * @return `'(op arg1 arg2)'`
+	 * @param arg0 the first operand
+	 * @param arg1 the second operand
+	 * @return `'(op arg0 arg1)'`
 	 */
-	binop(op: Punctuator, arg1: SemanticNode, arg2: SemanticNode): string {
+	binop(op: Punctuator, arg0: SemanticNode, arg1: SemanticNode): string {
 		return `(${ new Map<Punctuator, string>([
 			[Punctuator.ADD, `i32.add`],
 			[Punctuator.SUB, `i32.sub`],
 			[Punctuator.MUL, `i32.mul`],
 			[Punctuator.DIV, `i32.div_s`],
 			[Punctuator.EXP, `call $exp`],
-		]).get(op)! } ${ arg1.evaluate(this) } ${ arg2.evaluate(this) })`
+		]).get(op)! } ${ arg0.build(this) } ${ arg1.build(this) })`
 	}
 
 	/**

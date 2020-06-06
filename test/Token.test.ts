@@ -180,6 +180,7 @@ describe('Token', () => {
 						...CONFIG_DEFAULT,
 						features: {
 							...CONFIG_DEFAULT.features,
+							integerRadices: true,
 							numericSeparators: true,
 						},
 					}).generate()].filter((token) => token instanceof TokenNumber).forEach((token, i) => {
