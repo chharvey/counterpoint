@@ -66,6 +66,13 @@ Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER "=" Expression ";") 
 ```
 
 
+### Runtime Instructions: Build (Variable Declaration)
+```w3c
+Sequence<Instruction> Build(SemanticDeclaration decl) :=
+	/* TO BE DETERMINED */
+```
+
+
 
 ## Variable Assignment
 ```w3c
@@ -84,4 +91,11 @@ Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";") -> SemanticAssig
 			Decorate(Expression),
 		],
 	];
+```
+
+
+### Runtime Instructions: Build (Variable Assignment)
+```w3c
+Sequence<Instruction> Build(SemanticAssignment assign) :=
+	/* TO BE DETERMINED */
 ```

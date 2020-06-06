@@ -170,6 +170,9 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 ```w3c
 Number Assess(SemanticConstant const) :=
 	1. *Return:* `const.value`.
+
+Void Assess(SemanticTemplate tpl) :=
+	/* TO BE DETERMINED */
 ```
 
 
@@ -178,6 +181,9 @@ Number Assess(SemanticConstant const) :=
 Sequence<Instruction> Build(SemanticConstant const) :=
 	1. *Let* `assess` be the result of performing `Assess(const)`.
 	2. *Return:* <"Push `assess` onto the operand stack.">.
+
+Void Build(SemanticTemplate tpl) :=
+	/* TO BE DETERMINED */
 ```
 
 
