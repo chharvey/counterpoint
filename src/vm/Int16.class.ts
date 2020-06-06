@@ -207,6 +207,8 @@ export default class Int16 {
 	 * 		(exponent === 0) ? 1 :
 	 * 		(exponent === 1) ? base :
 	 * 		(exponent === 2) ? base * base :
+	 * 		(base === 0) ? 0 :
+	 * 		(base === 1) ? 1 :
 	 * 		(exponent % 2 === 0)
 	 * 			?        expFast(base ** 2,  exponent      / 2)
 	 * 			: base * expFast(base ** 2, (exponent - 1) / 2)
@@ -223,6 +225,8 @@ export default class Int16 {
 			(exponent.eq0()) ? Int16.UNIT       :
 			(exponent.eq1()) ? this             :
 			(exponent.eq2()) ? this.times(this) :
+			(this.eq0()) ? Int16.ZERO :
+			(this.eq1()) ? Int16.UNIT :
 			(exponent.isEven())
 				?            this.exp(Int16.RADIX).exp(exponent                  .divide(Int16.RADIX))
 				: this.times(this.exp(Int16.RADIX).exp(exponent.minus(Int16.UNIT).divide(Int16.RADIX)))
