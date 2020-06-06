@@ -684,5 +684,34 @@ describe('Parser', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 		})
+
+		context('Goal__0__List ::= Goal__0__List Statement', () => {
+			it('parses multiple statements.', () => {
+				/*
+					<Goal>
+						<FILEBOUND.../>...</FILEBOUND>
+						<Goal__0__List>
+							<Goal__0__List>
+								<Statement source="42 ;">...</Statement>
+							</Goal__0__List>
+							<Statement source="420 ;"/>...</Statement>
+						</Goal__0__List>
+						<FILEBOUND.../>...</FILEBOUND>
+					</Goal>
+				*/
+				const goal: ParseNodeGoal = new Parser('42; 420;', CONFIG_DEFAULT).parse()
+				assert_arrayLength(goal.children, 3, 'goal should have 3 children')
+				const stat_list: ParseNodeGoal__0__List = goal.children[1]
+				assert_arrayLength(stat_list.children, 2, 'stat_list should have 2 children')
+				const stat0: ParseNodeStatement = (() => {
+					const stat_list_sub: ParseNodeGoal__0__List = stat_list.children[0]
+					assert_arrayLength(stat_list_sub.children, 1)
+					return stat_list_sub.children[0]
+				})()
+				const stat1: ParseNodeStatement = stat_list.children[1]
+				assert.strictEqual(stat0.source, '42 ;')
+				assert.strictEqual(stat1.source, '420 ;')
+			})
+		})
 	})
 })

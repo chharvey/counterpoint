@@ -71,7 +71,7 @@ describe('SemanticNode', () => {
 				${ fs.readFileSync(path.join(__dirname, '../src/neg.wat'), 'utf8') }
 				${ fs.readFileSync(path.join(__dirname, '../src/exp.wat'), 'utf8') }
 				(func (export "run") (result i32)
-					${ Util.dedent(expected).trim().replace(/\n\t+\(/g, ' \(').replace(/\n\t*\)/g, '\)') }
+					${ Util.dedent(expected).trim().replace(/\n\t*\(/g, ' \(').replace(/\n\t*\)/g, '\)') }
 				)
 			)
 		`
@@ -152,6 +152,12 @@ describe('SemanticNode', () => {
 			specify('compound expression with grouping.', () => {
 				assert.strictEqual(new CodeGenerator('-(5) ^ +(2 * 3);', CONFIG_DEFAULT).print(), boilerplate(`
 					(i32.const ${ (-(5)) ** +(2 * 3) })
+				`))
+			})
+			specify('multiple statements.', () => {
+				assert.strictEqual(new CodeGenerator('42; 420;', CONFIG_DEFAULT).print(), boilerplate(`
+					(i32.const 42)
+					(i32.const 420)
 				`))
 			})
 		})

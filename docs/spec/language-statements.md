@@ -25,12 +25,13 @@ Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
 ```
 
 
-### Runtime Instructions: Evaluate (Statements)
+### Runtime Instructions: Build (Statements)
 ```w3c
-Sequence<RealNumber> Evaluate(SemanticStatementExpression stmt) :=
-	1. *Let* `sequence` be an empty sequence of `RealNumber`s.
+Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
+	1. *Let* `sequence` be an empty sequence of `Instruction`s.
 	2. *If* `stmt.children.count` is greater than 0:
-		1. *Set* `sequence` to the result of performing `Evaluate(stmt.children.0)`.
+		1. *Let* `expr` be `stmt.children.0`.
+		2. *Set* `sequence` to the result of performing `Build(expr)`.
 	3. *Return* `sequence`.
 ```
 
