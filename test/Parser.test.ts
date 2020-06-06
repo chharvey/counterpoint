@@ -22,28 +22,14 @@ import {
 	TokenPunctuator,
 } from '../src/class/Token.class'
 
+import {
+	assert_arrayLength,
+} from './assert-helpers'
+
 
 
 describe('Parser', () => {
 	describe('#parse', () => {
-		function assert_ok(value: unknown, message?: string|Error): asserts value {
-			return assert.ok(value, message)
-		}
-
-		function assert_arrayLength(array: readonly unknown[], length: 0      , message?: string|Error): asserts array is readonly [                                                                      ];
-		function assert_arrayLength(array: readonly unknown[], length: 1      , message?: string|Error): asserts array is readonly [unknown,                                                              ];
-		function assert_arrayLength(array: readonly unknown[], length: 2      , message?: string|Error): asserts array is readonly [unknown, unknown,                                                     ];
-		function assert_arrayLength(array: readonly unknown[], length: 3      , message?: string|Error): asserts array is readonly [unknown, unknown, unknown,                                            ];
-		function assert_arrayLength(array: readonly unknown[], length: 4      , message?: string|Error): asserts array is readonly [unknown, unknown, unknown, unknown,                                   ];
-		function assert_arrayLength(array: readonly unknown[], length: 5      , message?: string|Error): asserts array is readonly [unknown, unknown, unknown, unknown, unknown,                          ];
-		function assert_arrayLength(array: readonly unknown[], length: 6      , message?: string|Error): asserts array is readonly [unknown, unknown, unknown, unknown, unknown, unknown,                 ];
-		function assert_arrayLength(array: readonly unknown[], length: 7      , message?: string|Error): asserts array is readonly [unknown, unknown, unknown, unknown, unknown, unknown, unknown,        ];
-		function assert_arrayLength(array: readonly unknown[], length: 8      , message?: string|Error): asserts array is readonly [unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown];
-		function assert_arrayLength(array: readonly unknown[], length: number , message?: string|Error): void;
-		function assert_arrayLength(array: readonly unknown[], length: number , message?: string|Error): void {
-			return assert.strictEqual(array.length, length, message)
-		}
-
 		context('Goal ::= #x02 #x03', () => {
 			it('returns only file bounds.', () => {
 				const tree: ParseNodeGoal = new Parser('', CONFIG_DEFAULT).parse()
@@ -72,7 +58,7 @@ describe('Parser', () => {
 				const statement: ParseNodeStatement = statement_list.children[0]
 				assert_arrayLength(statement.children, 1)
 				const token: ParseNodeDeclarationVariable|ParseNodeStatementAssignment|TokenPunctuator = statement.children[0]
-				assert_ok(token instanceof TokenPunctuator)
+				assert.ok(token instanceof TokenPunctuator)
 				assert.strictEqual(token.source, Punctuator.ENDSTAT)
 			})
 		})
