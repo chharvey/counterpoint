@@ -1,4 +1,8 @@
 import type Serializable from '../iface/Serializable.iface'
+import Int16 from '../vm/Int16.class'
+import {
+	NanError02,
+} from '../error/NanError.class'
 import type CodeGenerator from './CodeGenerator.class'
 import {SOT, EOT} from './Char.class'
 import type ParseNode from './ParseNode.class'
@@ -58,7 +62,7 @@ export default class SemanticNode implements Serializable {
 	 * @param generator the generator to direct
 	 * @return the directions to print
 	 */
-	evaluate(generator: CodeGenerator): string {
+	build(generator: CodeGenerator): string {
 		return generator.unreachable() // TODO make `ParseNode` and `SemanticNode` abstract classes
 	}
 
@@ -87,7 +91,7 @@ export class SemanticNodeNull extends SemanticNode {
 	constructor(start_node: ParseNode) {
 		super(start_node)
 	}
-	evaluate(generator: CodeGenerator): string {
+	build(generator: CodeGenerator): string {
 		return generator.nop()
 	}
 }
@@ -99,11 +103,22 @@ export class SemanticNodeGoal extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	evaluate(generator: CodeGenerator): string {
-		return this.children[0].evaluate(generator)
+	build(generator: CodeGenerator): string {
+		return this.children[0].build(generator)
 	}
 }
 export class SemanticNodeExpression extends SemanticNode {
+	private static FOLD_UNARY: Map<Operator, (z: number) => number> = new Map<Operator, (z: number) => number>([
+		[Operator.AFF, (z) => Number(new Int16(BigInt(z))      .toNumeric())],
+		[Operator.NEG, (z) => Number(new Int16(BigInt(z)).neg().toNumeric())],
+	])
+	private static FOLD_BINARY: Map<Operator, (x: number, y: number) => number> = new Map<Operator, (x: number, y: number) => number>([
+		[Operator.EXP, (x, y) => Number(new Int16(BigInt(x)).exp    (new Int16(BigInt(y))).toNumeric())],
+		[Operator.MUL, (x, y) => Number(new Int16(BigInt(x)).times  (new Int16(BigInt(y))).toNumeric())],
+		[Operator.DIV, (x, y) => Number(new Int16(BigInt(x)).divide (new Int16(BigInt(y))).toNumeric())],
+		[Operator.ADD, (x, y) => Number(new Int16(BigInt(x)).plus   (new Int16(BigInt(y))).toNumeric())],
+		[Operator.SUB, (x, y) => Number(new Int16(BigInt(x)).minus  (new Int16(BigInt(y))).toNumeric())],
+	])
 	constructor(
 		start_node: ParseNode,
 		private readonly operator: Operator,
@@ -113,10 +128,31 @@ export class SemanticNodeExpression extends SemanticNode {
 	) {
 		super(start_node, {operator: Operator[operator]}, children)
 	}
-	evaluate(generator: CodeGenerator): string {
-		return (this.children.length === 1)
-			? generator.unop (this.operator, ...this.children)
-			: generator.binop(this.operator, ...this.children)
+	/**
+	 * Assess the value of this node at compile-time, if possible.
+	 * @return the computed value of this node, or `null` if the value cannot be computed
+	 */
+	assess(): number | null {
+		const assessment0: number | null = this.children[0].assess()
+		if (assessment0 === null) return null
+		if (this.children.length === 1) {
+			return SemanticNodeExpression.FOLD_UNARY.get(this.operator)!(assessment0)
+		} else {
+			const assessment1: number | null = this.children[1].assess()
+			if (assessment1 === null) return null
+			if (this.operator === Operator.DIV && assessment1 === 0) {
+				throw new NanError02(this.children[1])
+			}
+			return SemanticNodeExpression.FOLD_BINARY.get(this.operator)!(assessment0, assessment1)
+		}
+	}
+	build(generator: CodeGenerator): string {
+		const assessment: number | null = this.assess()
+		return (assessment !== null)
+			? generator.const(assessment)
+			: (this.children.length === 1)
+				? generator.unop (this.operator, ...this.children)
+				: generator.binop(this.operator, ...this.children)
 	}
 }
 export class SemanticNodeConstant extends SemanticNode {
@@ -126,7 +162,14 @@ export class SemanticNodeConstant extends SemanticNode {
 	) {
 		super(start_node, {value})
 	}
-	evaluate(generator: CodeGenerator): string {
-		return generator.const(this.value)
+	/**
+	 * Assess the value of this node at compile-time, if possible.
+	 * @return the computed value of this node, or `null` if the value cannot be computed
+	 */
+	assess(): number {
+		return this.value
+	}
+	build(generator: CodeGenerator): string {
+		return generator.const(this.assess())
 	}
 }

@@ -25,7 +25,7 @@ export default class CodeGenerator {
 	 * @param source - the entire source text
 	 */
 	constructor(source: string) {
-		this.output = new Parser(source).parse().decorate().evaluate(this)
+		this.output = new Parser(source).parse().decorate().build(this)
 	}
 
 	/**
@@ -67,7 +67,7 @@ export default class CodeGenerator {
 			[Operator.MUL, `i32.mul`],
 			[Operator.DIV, `i32.div_s`],
 			[Operator.EXP, `call $exp`],
-		]).get(op)! } ${ arg1.evaluate(this) } ${ arg2.evaluate(this) })`
+		]).get(op)! } ${ arg1.build(this) } ${ arg2.build(this) })`
 	}
 
 	/**
@@ -79,7 +79,7 @@ export default class CodeGenerator {
 		return `(${ new Map<Operator, string>([
 			[Operator.AFF, `nop`],
 			[Operator.NEG, `call $neg`],
-		]).get(op)! } ${ arg.evaluate(this) })`
+		]).get(op)! } ${ arg.build(this) })`
 	}
 
 	/**
