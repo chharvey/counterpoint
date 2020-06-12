@@ -6,6 +6,13 @@ Goal ::= #x02 Statement* #x03;
 ```
 
 
+### Static Semantics: Semantic Schema (Goal Symbols)
+```w3c
+SemanticGoal
+	::= SemanticStatementList?;
+```
+
+
 ### Static Semantics: Decorate (Goal Symbols)
 ```w3c
 Decorate(Goal ::= #x02 #x03) -> SemanticGoal
@@ -30,6 +37,13 @@ Sequence<Instruction> Build(SemanticGoal goal) :=
 
 
 ## Statement Lists
+
+
+### Static Semantics: Semantic Schema (Statement Lists)
+```w3c
+SemanticStatementList
+	::= SemanticStatement+;
+```
 
 
 ### Static Semantics: Decorate (Statement Lists)

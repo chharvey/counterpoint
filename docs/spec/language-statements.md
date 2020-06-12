@@ -10,6 +10,16 @@ Statement ::=
 ```
 
 
+### Static Semantics: Semantic Schema (Statements)
+```w3c
+SemanticStatement =:=
+	| SemanticStatementExpression
+	| SemanticDeclaration
+	| SemanticAssignment
+;
+```
+
+
 ### Static Semantics: Decorate (Statements)
 ```w3c
 Decorate(Statement ::= ";") -> SemanticStatementExpression
@@ -40,6 +50,19 @@ Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 ## Variable Declaration
 ```w3c
 DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";";
+```
+
+
+### Static Semantics: Semantic Schema (Variable Declaration)
+```w3c
+SemanticDeclaration[type: "variable"][unfixed: Boolean]
+	::= SemanticAssignee SemanticAssigned;
+
+SemanticAssignee
+	::= SemanticIdentifier;
+
+SemanticAssigned
+	::= SemanticExpression;
 ```
 
 
@@ -77,6 +100,13 @@ Sequence<Instruction> Build(SemanticDeclaration decl) :=
 ## Variable Assignment
 ```w3c
 StatementAssignment ::= IDENTIFIER "=" Expression ";";
+```
+
+
+### Static Semantics: Semantic Schema (Variable Assignment)
+```w3c
+SemanticAssignment
+	::= SemanticAssignee SemanticAssigned;
 ```
 
 
