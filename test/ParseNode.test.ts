@@ -4,12 +4,16 @@ import {CONFIG_DEFAULT} from '../'
 import Util   from '../src/class/Util.class'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
-import type {
+import {
 	SemanticNodeTemplate,
 	SemanticNodeStatementExpression,
 	SemanticNodeStatementList,
 	SemanticNodeGoal,
 } from '../src/class/SemanticNode.class'
+
+import {
+	assert_arrayLength,
+} from './assert-helpers'
 
 
 
@@ -319,6 +323,27 @@ describe('ParseNode', () => {
 						</StatementList>
 					</Goal>
 				`.replace(/\n\t*/g, ''))
+			})
+		})
+
+		context('Goal__0__List ::= Goal__0__List Statement', () => {
+			it('decorates multiple statements.', () => {
+				/*
+					<Goal>
+						<StatementList>
+							<StatementExpression source="42 ;">...</StatementExpression>
+							<StatementExpression source="420 ;">...</StatementExpression>
+						</StatementList>
+					</Goal>
+				*/
+				const goal: SemanticNodeGoal = new Parser('42; 420;', CONFIG_DEFAULT).parse().decorate()
+				assert_arrayLength(goal.children, 1, 'goal should have 1 child')
+				const stat_list: SemanticNodeStatementList = goal.children[0]
+				assert.strictEqual(stat_list.children.length, 2, 'stat_list should have 2 children')
+				assert.deepStrictEqual(stat_list.children.map((stat) => {
+					assert.ok(stat instanceof SemanticNodeStatementExpression)
+					return stat.source
+				}), ['42 ;', '420 ;'])
 			})
 		})
 	})

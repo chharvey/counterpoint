@@ -33,7 +33,7 @@ export default abstract class SemanticNode implements Serializable {
 	/** The name of the type of this SemanticNode. */
 	readonly tagname: string = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
 	/** The concatenation of the source text of all children. */
-	private readonly source: string;
+	readonly source: string;
 	/** The index of the first token in source text. */
 	readonly source_index: number;
 	/** Zero-based line number of the first token (first line is line 0). */
@@ -315,6 +315,20 @@ export class SemanticNodeAssigned extends SemanticNode {
 		throw new Error('not yet supported.')
 	}
 }
+export class SemanticNodeStatementList extends SemanticNode {
+	constructor(
+		start_node: ParseNode,
+		readonly children:
+			| readonly SemanticStatementType[]
+	) {
+		super(start_node, {}, children)
+	}
+	build(generator: CodeGenerator): string {
+		return this.children.map((child) =>
+			child.build(generator)
+		).join(' ')
+	}
+}
 export class SemanticNodeGoal extends SemanticNode {
 	constructor(
 		start_node: ParseNode,
@@ -328,19 +342,5 @@ export class SemanticNodeGoal extends SemanticNode {
 		return (!this.children.length)
 			? generator.nop()
 			: this.children[0].build(generator)
-	}
-}
-export class SemanticNodeStatementList extends SemanticNode {
-	constructor(
-		start_node: ParseNode,
-		readonly children:
-			| readonly SemanticStatementType[]
-	) {
-		super(start_node, {}, children)
-	}
-	build(generator: CodeGenerator): string {
-		return this.children.map((child) =>
-			child.build(generator)
-		).join('')
 	}
 }
