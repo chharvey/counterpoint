@@ -18,7 +18,6 @@ import SemanticNode, {
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
-	SemanticNodeTemplatePartial,
 	SemanticNodeOperation,
 	SemanticNodeDeclaration,
 	SemanticNodeAssignment,
@@ -109,7 +108,7 @@ export default abstract class ParseNode implements Serializable {
 	 * Return a Semantic Node, a node of the Semantic Tree or “decorated/abstract syntax tree”.
 	 * @returns a semantic node containing this parse node’s semantics
 	 */
-	abstract decorate(): SemanticNode;
+	abstract decorate(): SemanticNode | SemanticNode[];
 
 	/**
 	 * @implements Serializable
@@ -148,22 +147,28 @@ export class ParseNodeStringTemplate extends ParseNode {
 		return new SemanticNodeTemplate(this, (this.children as readonly (TokenTemplate | ParseNodeExpression | ParseNodeStringTemplate__0__List)[]).flatMap((c) =>
 			c instanceof Token ? [new SemanticNodeConstant(c, c.cook())] :
 			c instanceof ParseNodeExpression ? [c.decorate()] :
-			c.decorate().children
+			c.decorate()
 		))
 	}
 }
+type TemplatePartialType = // FIXME spread types
+	| [                        SemanticNodeConstant                        ]
+	| [                        SemanticNodeConstant, SemanticNodeExpression]
+	// | [...TemplatePartialType, SemanticNodeConstant                        ]
+	// | [...TemplatePartialType, SemanticNodeConstant, SemanticNodeExpression]
+	| SemanticNodeExpression[]
 class ParseNodeStringTemplate__0__List extends ParseNode {
 	declare children:
 		| readonly [                                  TokenTemplate                     ]
 		| readonly [                                  TokenTemplate, ParseNodeExpression]
 		| readonly [ParseNodeStringTemplate__0__List, TokenTemplate                     ]
 		| readonly [ParseNodeStringTemplate__0__List, TokenTemplate, ParseNodeExpression]
-	decorate(): SemanticNodeTemplatePartial {
-		return new SemanticNodeTemplatePartial(this, (this.children as readonly (TokenTemplate | ParseNodeExpression | ParseNodeStringTemplate__0__List)[]).flatMap((c) =>
+	decorate(): TemplatePartialType {
+		return (this.children as readonly (TokenTemplate | ParseNodeExpression | ParseNodeStringTemplate__0__List)[]).flatMap((c) =>
 			c instanceof Token ? [new SemanticNodeConstant(c, c.cook())] :
 			c instanceof ParseNodeExpression ? [c.decorate()] :
-			c.decorate().children
-		))
+			c.decorate()
+		)
 	}
 }
 export class ParseNodeExpressionUnit extends ParseNode {

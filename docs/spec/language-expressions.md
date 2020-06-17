@@ -158,34 +158,34 @@ Decorate(StringTemplate ::= TEMPLATE_HEAD Expression TEMPLATE_TAIL) -> SemanticT
 Decorate(StringTemplate ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
 	:= (SemanticTemplate[type="substitution"]
 		(SemanticConstant[value=TokenWorth(TEMPLATE_HEAD)])
-		...Decorate(StringTemplate__0__List).children
+		...Decorate(StringTemplate__0__List)
 		(SemanticConstant[value=TokenWorth(TEMPLATE_TAIL)])
 	);
 Decorate(StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
 	:= (SemanticTemplate[type="substitution"]
 		(SemanticConstant[value=TokenWorth(TEMPLATE_HEAD)])
 		Decorate(Expression)
-		...Decorate(StringTemplate__0__List).children
+		...Decorate(StringTemplate__0__List)
 		(SemanticConstant[value=TokenWorth(TEMPLATE_TAIL)])
 	);
 
-Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE) -> SemanticTemplatePartial
+Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE) -> Sequence<SemanticConstant, SemanticExpression?>
 	:= (SemanticTemplatePartial
 		(SemanticConstant[value=TokenWorth(TEMPLATE_MIDDLE)])
 	);
-Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE Expression) -> SemanticTemplatePartial
+Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE Expression) -> Sequence<SemanticConstant, SemanticExpression?>
 	:= (SemanticTemplatePartial
 		(SemanticConstant[value=TokenWorth(TEMPLATE_MIDDLE)])
 		Decorate(Expression)
 	);
-Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE) -> SemanticTemplatePartial
+Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE) -> Sequence<SemanticConstant, SemanticExpression?>
 	:= (SemanticTemplatePartial
-		...Decorate(StringTemplate__0__List).children
+		...Decorate(StringTemplate__0__List)
 		(SemanticConstant[value=TokenWorth(TEMPLATE_MIDDLE)])
 	);
-Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression) -> SemanticTemplatePartial
+Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression) -> Sequence<SemanticConstant, SemanticExpression?>
 	:= (SemanticTemplatePartial
-		...Decorate(StringTemplate__0__List).children
+		...Decorate(StringTemplate__0__List)
 		(SemanticConstant[value=TokenWorth(TEMPLATE_MIDDLE)])
 		Decorate(Expression)
 	);

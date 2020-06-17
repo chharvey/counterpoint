@@ -171,23 +171,6 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 		throw new Error('Not yet supported.')
 	}
 }
-type SemanticNodeTemplatePartialChildrenType = // FIXME spread types
-	| readonly [                                            SemanticNodeConstant                        ]
-	| readonly [                                            SemanticNodeConstant, SemanticNodeExpression]
-	// | readonly [...SemanticNodeTemplatePartialChildrenType, SemanticNodeConstant                        ]
-	// | readonly [...SemanticNodeTemplatePartialChildrenType, SemanticNodeConstant, SemanticNodeExpression]
-	| readonly SemanticNodeExpression[]
-export class SemanticNodeTemplatePartial extends SemanticNode {
-	constructor(
-		start_node: ParseNode,
-		readonly children: SemanticNodeTemplatePartialChildrenType,
-	) {
-		super(start_node, {}, children)
-	}
-	build(generator: CodeGenerator): string {
-		throw new Error('not yet supported.')
-	}
-}
 export class SemanticNodeOperation extends SemanticNodeExpression {
 	private static FOLD_UNARY: Map<Punctuator, (z: number) => number> = new Map<Punctuator, (z: number) => number>([
 		[Punctuator.AFF, (z) => Number(new Int16(BigInt(z))      .toNumeric())],
