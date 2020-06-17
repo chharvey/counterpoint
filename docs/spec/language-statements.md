@@ -23,11 +23,9 @@ SemanticStatement =:=
 ### Static Semantics: Decorate (Statements)
 ```w3c
 Decorate(Statement ::= ";") -> SemanticStatementExpression
-	:= SemanticStatementExpression {} [];
+	:= (SemanticStatementExpression);
 Decorate(Statement ::= Expression ";") -> SemanticStatementExpression
-	:= SemanticStatementExpression {} [
-		Decorate(Expression),
-	];
+	:= (SemanticStatementExpression Decorate(Expression));
 Decorate(Statement ::= DeclarationVariable) -> SemanticDeclaration
 	:= Decorate(DeclarationVariable);
 Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
@@ -69,23 +67,19 @@ SemanticAssigned
 ### Static Semantics: Decorate (Variable Declaration)
 ```w3c
 Decorate(DeclarationVariable ::= "let" IDENTIFIER "=" Expression ";") -> SemanticDeclaration
-	:= SemanticDeclaration {type: "variable", unfixed: false} [
-		SemanticAssignee {} [
-			SemanticIdentifier {id: TokenWorth(IDENTIFIER)} [],
-		],
-		SemanticAssigned {} [
-			Decorate(Expression),
-		],
-	];
+	:= (SemanticDeclaration[type="variable"][unfixed=false]
+		(SemanticAssignee
+			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+		)
+		(SemanticAssigned Decorate(Expression))
+	);
 Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER "=" Expression ";") -> SemanticDeclaration
-	:= SemanticDeclaration {type: "variable", unfixed: true} [
-		SemanticAssignee {} [
-			SemanticIdentifier {id: TokenWorth(IDENTIFIER)} [],
-		],
-		SemanticAssigned {} [
-			Decorate(Expression),
-		],
-	];
+	:= (SemanticDeclaration[type="variable"][unfixed=true]
+		(SemanticAssignee
+			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+		)
+		(SemanticAssigned Decorate(Expression))
+	);
 ```
 
 
@@ -113,14 +107,12 @@ SemanticAssignment
 ### Static Semantics: Decorate (Variable Assignment)
 ```w3c
 Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";") -> SemanticAssignment
-	:= SemanticAssignment {} [
-		SemanticAssignee {} [
-			SemanticIdentifier {id: TokenWorth(IDENTIFIER)} [],
-		],
-		SemanticAssigned {} [
-			Decorate(Expression),
-		],
-	];
+	:= (SemanticAssignment
+		(SemanticAssignee
+			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+		)
+		(SemanticAssigned Decorate(Expression))
+	);
 ```
 
 

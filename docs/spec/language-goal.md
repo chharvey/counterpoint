@@ -16,11 +16,9 @@ SemanticGoal
 ### Static Semantics: Decorate (Goal Symbols)
 ```w3c
 Decorate(Goal ::= #x02 #x03) -> SemanticGoal
-	:= SemanticGoal {} [];
+	:= (SemanticGoal);
 Decorate(Goal ::= #x02 Statement__List #x03) -> SemanticGoal
-	:= SemanticGoal {} [
-		Decorate(Statement__List),
-	];
+	:= (SemanticGoal Decorate(Statement__List));
 ```
 
 
@@ -49,14 +47,12 @@ SemanticStatementList
 ### Static Semantics: Decorate (Statement Lists)
 ```w3c
 Decorate(Statement__List ::= Statement) -> SemanticStatementList
-	:= SemanticStatementList {} [
-		Decorate(Statement),
-	];
+	:= (SemanticStatementList Decorate(Statement));
 Decorate(Statement__List ::= Statement__List Statement) -> SemanticStatementList
-	:= SemanticStatementList {} [
-		...Decorate(Statement__List),
-		Decorate(Statement),
-	];
+	:= (SemanticStatementList
+		...Decorate(Statement__List)
+		Decorate(Statement)
+	);
 ```
 
 
