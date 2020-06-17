@@ -24,7 +24,6 @@ import SemanticNode, {
 	SemanticNodeAssignee,
 	SemanticNodeAssigned,
 	SemanticNodeStatementExpression,
-	SemanticNodeStatementList,
 	SemanticNodeGoal,
 } from './SemanticNode.class'
 import type {Rule} from './Grammar.class'
@@ -283,21 +282,19 @@ export class ParseNodeGoal extends ParseNode {
 		| readonly [TokenFilebound,                         TokenFilebound]
 		| readonly [TokenFilebound, ParseNodeGoal__0__List, TokenFilebound]
 	decorate(): SemanticNodeGoal {
-		return new SemanticNodeGoal(this, (this.children.length === 2) ? [] : [
-			this.children[1].decorate(),
-		])
+		return new SemanticNodeGoal(this, (this.children.length === 2) ? [] : this.children[1].decorate())
 	}
 }
 export class ParseNodeGoal__0__List extends ParseNode {
 	declare children:
 		| readonly [                        ParseNodeStatement]
 		| readonly [ParseNodeGoal__0__List, ParseNodeStatement]
-	decorate(): SemanticNodeStatementList {
-		return new SemanticNodeStatementList(this, this.children.length === 1 ?
+	decorate(): SemanticStatementType[] {
+		return this.children.length === 1 ?
 			[this.children[0].decorate()]
 		: [
-			...this.children[0].decorate().children,
+			...this.children[0].decorate(),
 			this.children[1].decorate()
-		])
+		]
 	}
 }
