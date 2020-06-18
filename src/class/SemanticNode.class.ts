@@ -24,6 +24,8 @@ export enum SolidLanguageType {
 	STRING,
 }
 
+export type Assessment = InstanceType<typeof SemanticNodeExpression.Assessment>
+
 
 
 /**
@@ -101,9 +103,22 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	abstract type(): SolidLanguageType;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
-	 * @return the computed value of this node, or `null` if the value cannot be computed by the compiler
+	 * @return the computed value of this node, or a SemanticNode if the value cannot be computed by the compiler
 	 */
-	abstract assess(): number | null;
+	abstract assess(): Assessment;
+
+	public static Assessment = class Assessment {
+		constructor (readonly value: number | SemanticNodeExpression) {
+		}
+		get isDetermined(): boolean {
+			return !(this.value instanceof SemanticNodeExpression)
+		}
+		build(generator: CodeGenerator): string {
+			return (typeof this.value === 'number')
+				? generator.const(this.value)
+				: this.value.build(generator)
+		}
+	}
 }
 export class SemanticNodeConstant extends SemanticNodeExpression {
 	declare children:
@@ -124,9 +139,9 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 			? SolidLanguageType.NUMBER
 			: SolidLanguageType.STRING
 	}
-	assess(): number {
+	assess(): Assessment {
 		if (typeof this.value === 'number') {
-			return this.value
+			return new SemanticNodeExpression.Assessment(this.value)
 		} else {
 			throw new Error('not yet supported.')
 		}
@@ -144,7 +159,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	type(): SolidLanguageType {
 		throw new Error('Not yet supported.')
 	}
-	assess(): number | null {
+	assess(): Assessment {
 		throw new Error('Not yet supported.')
 	}
 }
@@ -167,7 +182,7 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	type(): SolidLanguageType {
 		return SolidLanguageType.STRING
 	}
-	assess(): number | null {
+	assess(): Assessment {
 		throw new Error('Not yet supported.')
 	}
 }
@@ -207,18 +222,18 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 		}
 		return t1
 	}
-	assess(): number | null {
-		const assessment0: number | null = this.children[0].assess()
-		if (assessment0 === null) return null
+	assess(): Assessment {
+		const assessment0: Assessment = this.children[0].assess()
+		if (!assessment0.isDetermined) return new SemanticNodeExpression.Assessment(this)
 		if (this.children.length === 1) {
-			return SemanticNodeOperation.FOLD_UNARY.get(this.operator)!(assessment0)
+			return new SemanticNodeExpression.Assessment(SemanticNodeOperation.FOLD_UNARY.get(this.operator)!(assessment0.value as number))
 		} else {
-			const assessment1: number | null = this.children[1].assess()
-			if (assessment1 === null) return null
-			if (this.operator === Punctuator.DIV && assessment1 === 0) {
+			const assessment1: Assessment = this.children[1].assess()
+			if (!assessment1.isDetermined) return new SemanticNodeExpression.Assessment(this)
+			if (this.operator === Punctuator.DIV && assessment1.value === 0) {
 				throw new NanError02(this.children[1])
 			}
-			return SemanticNodeOperation.FOLD_BINARY.get(this.operator)!(assessment0, assessment1)
+			return new SemanticNodeExpression.Assessment(SemanticNodeOperation.FOLD_BINARY.get(this.operator)!(assessment0.value as number, assessment1.value as number))
 		}
 	}
 }

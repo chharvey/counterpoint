@@ -14,6 +14,7 @@ import type {
 } from '../src/class/ParseNode.class'
 import {
 	SolidLanguageType,
+	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
@@ -27,7 +28,7 @@ import {
 describe('SemanticNode', () => {
 	describe('#assess', () => {
 		it('computes the value of a constant expression.', () => {
-			assert.deepStrictEqual([
+			const values: (number | SemanticNodeExpression)[] = [
 				'42 + 420;',
 				'42 - 420;',
 				'126 / 3;',
@@ -46,7 +47,11 @@ describe('SemanticNode', () => {
 				.children[1] as ParseNodeGoal__0__List)
 				.children[0] as ParseNodeStatement)
 				.children[0] as ParseNodeExpression
-			).decorate().assess()), [
+			).decorate().assess().value)
+			values.forEach((value) => {
+				assert.ok(typeof value === 'number')
+			})
+			assert.deepStrictEqual(values, [
 				42 + 420,
 				42 + -420,
 				126 / 3,
