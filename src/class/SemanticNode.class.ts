@@ -130,9 +130,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		super(start_node, {value})
 	}
 	build(generator: CodeGenerator): string {
-		return (typeof this.value === 'number')
-			? generator.const(this.assess())
-			: generator.nop() // TODO strings
+		return this.assess().build(generator)
 	}
 	type(): SolidLanguageType {
 		return (typeof this.value === 'number')
@@ -208,12 +206,9 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 		super(start_node, {operator}, children)
 	}
 	build(generator: CodeGenerator): string {
-		const assessment: number | null = this.assess()
-		return (assessment !== null)
-			? generator.const(assessment)
-			: (this.children.length === 1)
-				? generator.unop (this.operator, ...this.children)
-				: generator.binop(this.operator, ...this.children)
+		return (this.children.length === 1)
+			? generator.unop (this.operator, this.children[0].assess())
+			: generator.binop(this.operator, this.children[0].assess(), this.children[1].assess())
 	}
 	type(): SolidLanguageType {
 		const t1: SolidLanguageType = this.children[0].type()
@@ -260,7 +255,7 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 	build(generator: CodeGenerator): string {
 		return (!this.children.length)
 			? generator.nop()
-			: this.children[0].build(generator)
+			: this.children[0].assess().build(generator)
 	}
 }
 export class SemanticNodeDeclaration extends SemanticNode {

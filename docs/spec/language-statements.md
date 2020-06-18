@@ -41,7 +41,7 @@ Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
 Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 	1. *Let* `sequence` be an empty sequence of `Instruction`s.
 	2. *If* `stmt.children.count` is greater than 0:
-		1. *Set* `sequence` to the result of performing `Build(stmt.children.0)`.
+		1. *Set* `sequence` to the result of performing `Build(Assess(stmt.children.0))`.
 	3. *Return* `sequence`.
 ```
 
