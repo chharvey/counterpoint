@@ -10,9 +10,9 @@ Expression ::= ExpressionAdditive;
 ```w3c
 SemanticExpression =:=
 	| SemanticConstant
-	| SemanticNodeIdentifier
-	| SemanticNodeTemplate
-	| SemanticNodeOperation
+	| SemanticIdentifier
+	| SemanticTemplate
+	| SemanticOperation
 ;
 ```
 
