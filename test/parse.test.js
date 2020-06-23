@@ -85,6 +85,33 @@ test('Parse unary symbol.', () => {
 
 
 
+test('Parse unary on negative number literal.', () => {
+	expect(new Parser('--2').parse().serialize()).toBe(`
+		<File source=\"␂ - -2 ␃\">
+			<FILEBOUND value=\"true\">␂</FILEBOUND>
+			<Expression line=\"1\" col=\"1\" source=\"- -2\">
+				<ExpressionAdditive line=\"1\" col=\"1\" source=\"- -2\">
+					<ExpressionMultiplicative line=\"1\" col=\"1\" source=\"- -2\">
+						<ExpressionExponential line=\"1\" col=\"1\" source=\"- -2\">
+							<ExpressionUnarySymbol line=\"1\" col=\"1\" source=\"- -2\">
+								<PUNCTUATOR line=\"1\" col=\"1\">-</PUNCTUATOR>
+								<ExpressionUnarySymbol line=\"1\" col=\"2\" source=\"-2\">
+									<ExpressionUnit line=\"1\" col=\"2\" source=\"-2\">
+										<NUMBER line=\"1\" col=\"2\" value=\"-2\">-2</NUMBER>
+									</ExpressionUnit>
+								</ExpressionUnarySymbol>
+							</ExpressionUnarySymbol>
+						</ExpressionExponential>
+					</ExpressionMultiplicative>
+				</ExpressionAdditive>
+			</Expression>
+			<FILEBOUND value=\"false\">␃</FILEBOUND>
+		</File>
+	`.replace(/\n\t*/g, ''))
+})
+
+
+
 test('Parse exponential.', () => {
 	const tree = new Parser('2 ^ -3').parse()
 	expect(tree.serialize()).toBe(`
