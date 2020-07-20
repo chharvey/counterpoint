@@ -159,7 +159,7 @@ Some punctuators are operators, which perform computations on values, and
 some punctuators are delimiters, which separate certain code constructs from each other or group them together.
 
 #### Static Semantics: TokenWorth (Punctuators)
-The Token Worth of a Punctuator token is the unique [real number] (link pending) ID
+The Token Worth of a Punctuator token is the unique [real number](./data-types.md#realnumber) ID
 that distinguishes the punctuator from the other punctuators.
 Token Worth quantities for punctuators are predetermined by the lexical grammar and are independent of any instance program.
 Token Worth quantities for punctuators are integers ranging from *0* to *127* (inclusive).
@@ -200,7 +200,7 @@ and enumerated in the lexical grammar.
 Keywords convey certain semantics to the compiler and to programmers.
 
 #### Static Semantics: TokenWorth (Keywords)
-The Token Worth of a Keyword token is the unique [real number] (link pending) ID
+The Token Worth of a Keyword token is the unique [real number](./data-types.md#realnumber) ID
 that distinguishes the keyword from the other keywords.
 Token Worth quantities for keywords are predetermined by the lexical grammar and are independent of any instance program.
 Token Worth quantities for keywords are integers ranging from *128* to *255* (inclusive).
@@ -225,7 +225,7 @@ Unicode identifiers are enclosed in back-ticks (`` `…` `` **U+0060 GRAVE ACCEN
 and may contain any number of characters from the Unicode character set.
 
 #### Static Semantics: TokenWorth (Identifiers)
-The Token Worth of an Identifier token is the unique [real number] (link pending) ID
+The Token Worth of an Identifier token is the unique [real number](./data-types.md#realnumber) ID
 that distinguishes the identifier from other identifiers within a given program.
 Token Worth quantities for identifiers are integers strictly greater than *255*.
 
@@ -261,7 +261,7 @@ Numbers are literal constants that represent numeric mathematical values.
 Currently, only positive and negative (and zero) integers are supported.
 
 #### Static Semantics: TokenWorth (Numbers)
-The Token Worth of a Number token is the [real number] (link pending) that the token represents.
+The Token Worth of a Number token is the [real number](./data-types.md#realnumber) that the token represents.
 
 There is a many-to-one relationship between tokens and Token Worth quantities.
 For example, both the tokens containing `0042` and `+42`
@@ -374,7 +374,7 @@ String tokens are sequences of Unicode characters enclosed in delimiters.
 Strings are snippets of textual data.
 
 #### Static Semantics: TokenWorth (Strings)
-The Token Worth of a String token is a [sequence] (link pending) of [code points] (link pending)
+The Token Worth of a String token is a [sequence](./data-types.md#sequence) of [code points](#static-semantics-codepoint)
 computed by the various parts of the token.
 
 There is a many-to-one relationship between tokens and Token Worth quantities.

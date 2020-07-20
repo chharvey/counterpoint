@@ -961,8 +961,8 @@ In an attribute grammar, attributes are defined on nodes of a parse tree via the
 of a context-free grammar.
 In this specification, attributes are “synthesized” and thus propagate in a bottom-up manner:
 given a parse node, computing an attribute of that node might require looking at its children.
-Attributes are [Solid Specification Values] (link pending), such as computed values,
-or entire objects representing semantic nodes with children.
+Attributes are always [normal completion structures](/.data-types.md#completionstructure).
+For notational convenience, only the value of the completion structure is written.
 
 
 ### Example
@@ -976,11 +976,14 @@ Value([0-9] :::= "1") -> Integer := 1;
 ...
 Value([0-9] :::= "9") -> Integer := 9;
 ```
-This example illustrates a hypothetical attribute grammar that defines an attribute called `Value` on an `INT` token.
+This example illustrates a hypothetical attribute grammar that defines an attribute
+called `Value` on an `INT` token.
+The attributes themselves are completion structures whose «type» properties are *normal* and whose
+«value» properties are of type `Integer`.
 Each rule defines the attribute on the token matching a different pattern defined by a CFG,
 and then denotes that the returned object will be an integer.
 The first line could be read aloud as,
-“The `Value` of `INT` matching `[0-9]` is the `Value` of `[0-9]`, which is an `Integer`.”
+“The `Value` of `INT` matching `[0-9]` is the `Value` of `[0-9]`.”
 
 
 ### Token Worth
@@ -1012,7 +1015,7 @@ as an argument and “returning” a value.
 of the specified lexical/syntactic production.)
 The “return type” of the attribute production is indicated after a thin arrow `->`
 following the attribute production name, and the “return value” is
-a [Solid Specification Value] (link pending) followed by the definition symbol `:=`.
+a [Solid Specification Value](./data-types.md#solid-specification-types) followed by the definition symbol `:=`.
 ```
 ‹AttributeName›(‹CFGProduction›) -> ‹ReturnType›
 	:= ‹ReturnValue›;
@@ -1063,7 +1066,7 @@ The TokenWorth attribute is computed by invoking itself on children elements.
 Other than its functional behavior, attribute grammars are much simpler
 than their context-free counterparts. There are no operations or expansions.
 The complexity lies within the values they return, which are further described
-in the chapter [Solid Data Types and Values] (link pending).
+in the chapter [Data Types and Values](./data-types.md).
 
 #### Formal Grammar (AG)
 The grammar below (which is a CFG) describes the formal AGs that describe the Solid language.
@@ -1112,8 +1115,7 @@ Steps may be nested an arbitrary number of levels.
 
 Algorithms may perform basic mathematical operations of numeric values, which include
 addition `+`, subtraction `-`, multiplication `*`, division `/`, and exponentiation `^`.
-These operations are implied with their typical meaning in the context of real and complex numbers,
-but are specified in more detail under [Mathematical Operations] (link pending).
+These operations are implied with their typical meaning in the context of real and complex numbers.
 
 
 ### Algorithm Steps
@@ -1123,6 +1125,11 @@ If a step does not match one of the given categories, its behavior is open to in
 #### Assert
 Steps that begin with “*Assert:* …” are informative and are meant only to provide clarification to the reader.
 These steps explicitly indicate that a conditon is true when it would otherwise only be implicit.
+Making an assertion only provides information to the reader and does not add any functionality.
+If the intent is to exit abruptly, then a comination of *If* and *Throw* steps should be used.
+
+#### Note
+Steps that begin with “*Note:* …” are informative notes to the reader. They have no effect on the algorithm.
 
 #### Perform
 Steps that begin with “*Perform:* …” invoke another algorithm expect it to be performed.
@@ -1130,9 +1137,8 @@ The current algorithm is halted on this step and waits for the invoked algorithm
 
 #### Let/Set
 Algorithms may make the use of variable references, such as, “*Let* \`x\` be \`someValue\`.”
-Such a step indicates that \`x\` is a pointer to the value \`someValue\`,
-which itself may refer to a [Solid Language Value] (link pending), an [Internal Specification Value] (link pending),
-or the result of performing another algorithm.
+Such a step indicates that \`x\` is a pointer to the value \`someValue\`, which itself may refer to
+a [Solid Language Value or Solid Specification Value](./data-types.md).
 
 The variable \`x\` is treated as a pointer in that if \`someValue\` is mutated in some way,
 then that effect will also be seen on \`x\`.
@@ -1149,12 +1155,41 @@ each containing the substeps respective to that branch.
 A step that specifies a loop must have as its substeps the steps to be performed for each iteration.
 A loop step begins with “*While* …:”
 
+#### Continue
+A step within the substeps of a loop may direct the algorithm to **continue**,
+which is to say the rest of the substeps within the current iteration should be skipped,
+and the loop should proceed to the next iteration.
+Such a step says “*Continue.*”.
+
+#### Break
+A step within the substeps of a loop may direct the algorithm to **break**,
+which is to say the rest of the loop should be skipped,
+and the algorithm should proceed to the next step after the loop, if that step exists.
+If that next step does not exist, the algorithm should complete.
+Such a step says “*Break.*”.
+
+A step that begins with “*Break:* …” may contain a positive integer, which indicates
+the number of nested loops to terminate. For example, if such a step is nested within 2 loops,
+then “*Break:* 1.” would indicate that only the inner loop be terminated, but that the algorithm
+continue with the outer loop. “*Break:* 2.” would indicate both loops terminate.
+A step that says “*Break.*” (with no number) implies “*Break:* 1.”.
+
 #### Return
 An algorithm must output either no value or one value.
-The output value, if it exists, is a [Solid Specification Value] returned by the algorithm to its invoker.
+The output value, if it exists, is a value returned by the algorithm to its invoker.
+Algorithms most often return [completion structures](/.data-types.md#completionstructure).
 The output type is specified before the name of the algorithm in its header, but
 if the algorithm does not output a value, the output type is specified as “Void”.
 If an algorithm outputs a value, it must do so via a step beginning with “*Return:* …”.
+
+When an algorithm step reads “*Return:* ‹x›.” (where ‹x› is a metavariable representing any value),
+a normal completion structure whose value is ‹x› is returned.
+That is, the step is shorthand for “*Return:* *[type= normal, value= ‹x›]*.”.
+
+#### Throw
+When an algorithm step reads “*Throw:* ‹x›.” (where ‹x› is a metavariable representing any value),
+a throw completion structure whose value is ‹x› is returned.
+That is, the step is shorthand for “*Return:* *[type= throw, value= ‹x›]*.”.
 
 
 ### Runtime Instructions
