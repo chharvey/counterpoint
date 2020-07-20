@@ -3,6 +3,53 @@ This chapter describes notational conventions used throughout this specification
 
 
 
+## Value Notation
+Metavariables are variables used within this specification as placeholder values.
+They are delimited with left and right single-angle quotes.
+In the following example, `T` and `U` are not actual Solid Language Types,
+but placeholders for such types.
+> If `‹T›` and `‹U›` are Solid Language Types, then `Or<‹T›, ‹U›>` is the Solid Language Type
+that contains values of either type `‹T›` or type `‹U›` (or both).
+
+Snippets of specification are delimited with double-angle quotes. Below is an example of
+prose that might appear in this specification; the double-angle quotes refer to wording used in the
+steps of a hypothetical [specification algorithm](#algorithms).
+> In an algorithm, a step that reads «*Let* \`x\` be the value of \`X\`.» means to say
+«If \`X\` is a completion structure, then let \`x\` be \`X.value\`; otherwise let \`x\` be \`X\`.»
+
+
+### Solid Specification Values
+[Solid Specification Values](./data-types.md#solid-specification-types) are indicated with an *italic typeface*.
+For instance, a sequence of real numbers can be written as *[2, 4, 6]*.
+
+#### Sequences
+Sequences are denoted within left and right square brackets, with comma-separated entries.
+The notation *[`1685`, `'Bach'`]* represents a sequence containing two items:
+the [Integer](#integer) representing the real number *1685*, and the [String value](#string) `'Bach'`.
+
+Entries of a sequence may be accessed using 0-origin dot notation.
+If the example sequence above were assigned to the specification variable «\`bach\`»,
+then «\`bach.0\`» is shorthand for «the 0th entry of \`bach\`», which is the value `1685`.
+
+#### Structures
+Structures are denoted with left and right square brackets,
+and name–value pairs are delimited with equals signs `=`.
+For example, a structure with a *name* property of `'Bach'` and a *yob* property of `1685` would be represented as
+*[name= `'Bach'`, yob= `1685`]*.
+
+Entries of a structure can be accessed using dot notation.
+If the example structure above were assigned to the specification variable «\`bach\`»,
+then «\`bach.name\`» is shorthand for «the \`name\` property of \`bach\`», which is the value `'Bach'`.
+
+
+### Solid Language Values
+[Solid Language Values](./data-types.md#solid-language-types) are displayed with a `monospace typeface`.
+Examples include `true`, `42.0`, and `'hello'`.
+There is no notational distinction between Solid Language Values and longer code snippets
+such as `let n: int = 42;`; however, the semantics will be apparent in context.
+
+
+
 ## Context-Free Grammars
 Context-free grammars define the lexical and syntactic composition of Solid programs.
 
@@ -1123,26 +1170,26 @@ The steps allowed in an algorithm fall into categories, whose semantics are defi
 If a step does not match one of the given categories, its behavior is open to interpretation.
 
 #### Assert
-Steps that begin with “*Assert:* …” are informative and are meant only to provide clarification to the reader.
+Steps that begin with «*Assert:* …» are informative and are meant only to provide clarification to the reader.
 These steps explicitly indicate that a conditon is true when it would otherwise only be implicit.
 Making an assertion only provides information to the reader and does not add any functionality.
 If the intent is to exit abruptly, then a comination of *If* and *Throw* steps should be used.
 
 #### Note
-Steps that begin with “*Note:* …” are informative notes to the reader. They have no effect on the algorithm.
+Steps that begin with «*Note:* …» are informative notes to the reader. They have no effect on the algorithm.
 
 #### Perform
-Steps that begin with “*Perform:* …” invoke another algorithm expect it to be performed.
+Steps that begin with «*Perform:* …» invoke another algorithm and expect it to be performed.
 The current algorithm is halted on this step and waits for the invoked algorithm to complete before proceeding.
 
 #### Let/Set
-Algorithms may make the use of variable references, such as, “*Let* \`x\` be \`someValue\`.”
+Algorithms may make the use of variable references, such as, «*Let* \`x\` be \`someValue\`.»
 Such a step indicates that \`x\` is a pointer to the value \`someValue\`, which itself may refer to
 a [Solid Language Value or Solid Specification Value](./data-types.md).
 
 The variable \`x\` is treated as a pointer in that if \`someValue\` is mutated in some way,
 then that effect will also be seen on \`x\`.
-An algorithm may specify that a variable be reassigned, e.g., “*Set* \`x\` to \`someOtherValue\`.”
+An algorithm may specify that a variable be reassigned, e.g., «*Set* \`x\` to \`someOtherValue\`.»
 In that case, the pointer \`x\` is changed to the new value.
 
 #### If/Else, While
@@ -1150,46 +1197,46 @@ Conditional and loop programming structures may appear in algorithms.
 For conditionals, the ‘if branch’ and ‘else branch’ are parallel steps,
 each containing the substeps respective to that branch.
 (The ‘else branch’ is not always necessary, e.g. if the ‘if branch’ completes the algorithm.)
-‘If’ steps begin with “If …:” and ‘else’ steps begin with “Else:”.
+‘If’ steps begin with «*If* …:» and ‘else’ steps begin with «*Else:*».
 
 A step that specifies a loop must have as its substeps the steps to be performed for each iteration.
-A loop step begins with “*While* …:”
+A loop step begins with «*While* …:».
 
 #### Continue
 A step within the substeps of a loop may direct the algorithm to **continue**,
 which is to say the rest of the substeps within the current iteration should be skipped,
 and the loop should proceed to the next iteration.
-Such a step says “*Continue.*”.
+Such a step says «*Continue.*».
 
 #### Break
 A step within the substeps of a loop may direct the algorithm to **break**,
 which is to say the rest of the loop should be skipped,
 and the algorithm should proceed to the next step after the loop, if that step exists.
 If that next step does not exist, the algorithm should complete.
-Such a step says “*Break.*”.
+Such a step says «*Break.*».
 
-A step that begins with “*Break:* …” may contain a positive integer, which indicates
+A step that begins with «*Break:* …» may contain a positive integer, which indicates
 the number of nested loops to terminate. For example, if such a step is nested within 2 loops,
-then “*Break:* 1.” would indicate that only the inner loop be terminated, but that the algorithm
-continue with the outer loop. “*Break:* 2.” would indicate both loops terminate.
-A step that says “*Break.*” (with no number) implies “*Break:* 1.”.
+then «*Break:* 1.» would indicate that only the inner loop be terminated, but that the algorithm
+continue with the outer loop. «*Break:* 2.» would indicate both loops terminate.
+A step that says «*Break.*» (with no number) implies «*Break:* 1.».
 
 #### Return
 An algorithm must output either no value or one value.
 The output value, if it exists, is a value returned by the algorithm to its invoker.
 Algorithms most often return [completion structures](/.data-types.md#completionstructure).
 The output type is specified before the name of the algorithm in its header, but
-if the algorithm does not output a value, the output type is specified as “Void”.
-If an algorithm outputs a value, it must do so via a step beginning with “*Return:* …”.
+if the algorithm does not output a value, the output type is specified as «Void».
+If an algorithm outputs a value, it must do so via a step beginning with «*Return:* …».
 
-When an algorithm step reads “*Return:* ‹x›.” (where ‹x› is a metavariable representing any value),
-a normal completion structure whose value is ‹x› is returned.
-That is, the step is shorthand for “*Return:* *[type= normal, value= ‹x›]*.”.
+When an algorithm step reads «*Return:* ‹v›.» (where ‹v› is a metavariable representing any value),
+a normal completion structure whose value is ‹v› is returned.
+That is, the step is shorthand for «*Return:* [type= normal, value= ‹v›].».
 
 #### Throw
-When an algorithm step reads “*Throw:* ‹x›.” (where ‹x› is a metavariable representing any value),
-a throw completion structure whose value is ‹x› is returned.
-That is, the step is shorthand for “*Return:* *[type= throw, value= ‹x›]*.”.
+When an algorithm step reads «*Throw:* ‹v›.» (where ‹v› is a metavariable representing any value),
+a throw completion structure whose value is ‹v› is returned.
+That is, the step is shorthand for «*Return:* [type= throw, value= ‹v›].».
 
 
 ### Runtime Instructions
@@ -1211,7 +1258,8 @@ RType AlgorithmName(PType1 param1, PType2 param2) :=
 ```
 where `AlgorithmName` is the algorithm name, `RType` is the output type of the algorithm,
 and `PType1` and `PType2` are the types of the parameters `param1` and `param2` respectively.
-If the algorithm is invoked in another algorithm, it is written in a similar manner, e.g., `AlgorithmName(arg1, arg2)`.
+If the algorithm is invoked in another algorithm, it is written in a similar manner,
+e.g., `AlgorithmName(arg1, arg2)`.
 The symbol `:=` delimits the algorithm head from its body (its steps).
 Typically, algorithm names are written in PascalCase while parameter/argument names are written in snake_case.
 Within the steps of an algorithm, referenced local variables, parameters, other algorithm names, and code snippets
