@@ -94,7 +94,7 @@ Sequence<Instruction> BuildSemanticOperationBinary(SemanticOperation expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `instrs0` be the result of performing `Build(Assess(expr.children.0))`.
 	3. *Let* `instrs1` be the result of performing `Build(Assess(expr.children.1))`.
-	4. *Return:* <...instrs0, ...instrs1, "Perform stack operation `expr.operator`.">.
+	4. *Return:* [...instrs0, ...instrs1, "Perform stack operation `expr.operator`."].
 ```
 
 
@@ -201,7 +201,7 @@ Void Assess(SemanticTemplate tpl) :=
 ### Static Semantics: Build (Literals)
 ```w3c
 Sequence<Instruction> Build(Number n) :=
-	1. *Return:* <"Push `n` onto the operand stack.">.
+	1. *Return:* ["Push `n` onto the operand stack."].
 
 Sequence<Instruction> Build(SemanticConstant const) :=
 	1. *Return:* `Build(Assess(const))`.
@@ -315,7 +315,7 @@ Or<Number, SemanticExpression> Assess(SemanticOperation[operator=NEG] expr) :=
 Sequence<Instruction> Build(SemanticOperation[operator=NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `instrs` be the result of performing `Build(Assess(expr.children.0))`.
-	3. *Return:* <...instrs, "Perform stack operation NEG.">.
+	3. *Return:* [...instrs, "Perform stack operation NEG."].
 ```
 
 

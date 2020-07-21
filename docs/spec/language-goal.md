@@ -40,10 +40,10 @@ Sequence<Instruction> Build(SemanticGoal goal) :=
 ### Static Semantics: Decorate (Statement Lists)
 ```w3c
 Decorate(Statement__List ::= Statement) -> Sequence<SemanticStatement>
-	:= <Decorate(Statement)>;
+	:= [Decorate(Statement)];
 Decorate(Statement__List ::= Statement__List Statement) -> Sequence<SemanticStatement>
-	:= <
+	:= [
 		...Decorate(Statement__List),
 		Decorate(Statement),
-	>;
+	];
 ```
