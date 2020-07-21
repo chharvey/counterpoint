@@ -387,12 +387,12 @@ export class TokenString extends Token {
 			} else {
 				/* a backslash escapes the following character */
 				return [
-					...Util.utf16Encoding(text.codePointAt(1) !),
+					...Util.utf16Encoding(text.codePointAt(1)!),
 					...TokenString.tokenWorth(text.slice(2), allow_separators),
 				]
 			}
 		} else return [
-			...Util.utf16Encoding(text.codePointAt(0) !),
+			...Util.utf16Encoding(text.codePointAt(0)!),
 			...TokenString.tokenWorth(text.slice(1), allow_separators),
 		]
 	}
@@ -471,7 +471,7 @@ export class TokenTemplate extends Token {
 	private static tokenWorth(text: string): number[] {
 		if (text.length === 0) return []
 		return [
-			...Util.utf16Encoding(text.codePointAt(0) !),
+			...Util.utf16Encoding(text.codePointAt(0)!),
 			...TokenTemplate.tokenWorth(text.slice(1)),
 		]
 	}
