@@ -128,6 +128,7 @@ export default abstract class ParseNode implements Serializable {
 
 export class ParseNodePrimitiveLiteral extends ParseNode {
 	declare children:
+		| readonly [TokenKeyword]
 		| readonly [TokenNumber]
 		| readonly [TokenString] // Dev.supports('literalString')
 	;

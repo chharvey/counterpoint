@@ -5,6 +5,7 @@ import Util from '../src/class/Util.class'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
 import type {
+	ParseNodePrimitiveLiteral,
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
 	ParseNodeExpressionUnary,
@@ -18,8 +19,12 @@ import type {
 } from '../src/class/ParseNode.class'
 import {
 	Punctuator,
+	Keyword,
 	TokenFilebound,
 	TokenPunctuator,
+	TokenKeyword,
+	TokenNumber,
+	TokenString,
 } from '../src/class/Token.class'
 
 import {
@@ -64,6 +69,57 @@ describe('Parser', () => {
 		})
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
+			it('parses NULL.', () => {
+				/*
+					<Goal source="␂ null ; ␃">
+						<FILEBOUND value="true">␂</FILEBOUND>
+						<Goal__0__List line="1" col="1" source=";">
+							<Statement line="1" col="1" source=";">
+								<Expression line="1" col="1" source="null">
+									<ExpressionAdditive line="1" col="1" source="null">
+										<ExpressionMultiplicative line="1" col="1" source="null">
+											<ExpressionExponential line="1" col="1" source="null">
+												<ExpressionUnarySymbol line="1" col="1" source="null">
+													<ExpressionUnit line="1" col="1" source="null">
+														<PrimitiveLiteral line="1" col="1" source="null">
+															<KEYWORD line="1" col="1" value="128">null</KEYWORD>
+														</PrimitiveLiteral>
+													</ExpressionUnit>
+												</ExpressionUnarySymbol>
+											</ExpressionExponential>
+										</ExpressionMultiplicative>
+									</ExpressionAdditive>
+								</Expression>
+								<PUNCTUATOR line="1" col="5" value="7">;</PUNCTUATOR>
+							</Statement>
+						</Goal__0__List>
+						<FILEBOUND value="false">␃</FILEBOUND>
+					</Goal>
+				*/
+				const tree: ParseNodeGoal = new Parser('null;', CONFIG_DEFAULT).parse()
+				assert_arrayLength(tree.children, 3)
+				const statement_list: ParseNodeGoal__0__List = tree.children[1]
+				assert_arrayLength(statement_list.children, 1)
+				const statement: ParseNodeStatement = statement_list.children[0]
+				assert_arrayLength(statement.children, 2)
+				const expression: ParseNodeExpression = statement.children[0]
+				assert_arrayLength(expression.children, 1)
+				const expression_add: ParseNodeExpressionBinary = expression.children[0]
+				assert_arrayLength(expression_add.children, 1)
+				const expression_mul: ParseNodeExpressionBinary = expression_add.children[0] as ParseNodeExpressionBinary
+				assert_arrayLength(expression_mul.children, 1)
+				const expression_exp: ParseNodeExpressionBinary = expression_mul.children[0] as ParseNodeExpressionBinary
+				assert_arrayLength(expression_exp.children, 1)
+				const expression_un: ParseNodeExpressionUnary = expression_exp.children[0] as ParseNodeExpressionUnary
+				assert_arrayLength(expression_un.children, 1)
+				const expression_atom: ParseNodeExpressionUnit = expression_un.children[0]
+				assert_arrayLength(expression_atom.children, 1)
+				const literal: ParseNodePrimitiveLiteral = expression_atom.children[0] as ParseNodePrimitiveLiteral
+				assert_arrayLength(literal.children, 1)
+				const token: TokenKeyword | TokenNumber | TokenString = literal.children[0]
+				assert.ok(token instanceof TokenKeyword)
+				assert.strictEqual(token.source, Keyword.NULL)
+			})
 			it('parses a NUMBER or STRING', () => {
 				assert.strictEqual(new Parser('42;', CONFIG_DEFAULT).parse().serialize(), `
 					<Goal source="␂ 42 ; ␃">

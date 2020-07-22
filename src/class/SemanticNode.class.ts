@@ -125,7 +125,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		| readonly []
 	constructor(
 		start_node: Token|ParseNodeExpressionUnit,
-		private readonly value: string|number,
+		private readonly value: string | number | bigint,
 	) {
 		super(start_node, {value})
 	}

@@ -102,6 +102,7 @@ Sequence<Instruction> BuildSemanticOperationBinary(SemanticOperation expr) :=
 ## Literals
 ```w3c
 PrimitiveLiteral ::=
+	| "null"
 	| NUMBER
 	| STRING
 ;
