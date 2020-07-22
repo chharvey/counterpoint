@@ -271,13 +271,13 @@ export class TokenNumber extends Token {
 		[36n, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
 	])
 	/**
-	 * Compute the mathematical value of a `TokenNumber` token.
+	 * Compute the token worth of a `TokenNumber` token.
 	 * @param   text  - the string to compute
 	 * @param   radix - the base in which to compute
 	 * @param   allow_separators - Should numeric separators be allowed?
 	 * @returns         the mathematical value of the string in the given base
 	 */
-	static mv(
+	static tokenWorth(
 		text: string,
 		radix: RadixType = TokenNumber.RADIX_DEFAULT,
 		allow_separators: SolidConfig['features']['numericSeparators'] = CONFIG_DEFAULT.features.numericSeparators,
@@ -292,8 +292,8 @@ export class TokenNumber extends Token {
 			return digitvalue
 		}
 		return Number(radix) *
-			TokenNumber.mv(text.slice(0, -1)    , radix, allow_separators) +
-			TokenNumber.mv(text[text.length - 1], radix, allow_separators)
+			TokenNumber.tokenWorth(text.slice(0, -1),     radix, allow_separators) +
+			TokenNumber.tokenWorth(text[text.length - 1], radix, allow_separators)
 	}
 	private readonly has_unary: boolean;
 	private readonly has_radix: boolean;
@@ -338,7 +338,7 @@ export class TokenNumber extends Token {
 		const multiplier: number = (text[0] === Punctuator.NEG) ? -1 : 1
 		if (this.has_unary) text = text.slice(1) // cut off unary, if any
 		if (this.has_radix) text = text.slice(2) // cut off radix, if any
-		return multiplier * TokenNumber.mv(text, this.radix, this.lexer.config.features.numericSeparators)
+		return multiplier * TokenNumber.tokenWorth(text, this.radix, this.lexer.config.features.numericSeparators)
 	}
 }
 export class TokenString extends Token {
@@ -346,13 +346,12 @@ export class TokenString extends Token {
 	static readonly ESCAPER : string = '\\'
 	static readonly ESCAPES: readonly string[] = [TokenString.DELIM, TokenString.ESCAPER, 's','t','n','r']
 	/**
-	 * Compute the string value of a `TokenString` token
-	 * or any segment of such token.
+	 * Compute the token worth of a `TokenString` token or any segment of such token.
 	 * @param   text - the string to compute
 	 * @param   allow_separators - Should numeric separators be allowed?
-	 * @returns        the string value of the argument, a sequence of Unicode code points
+	 * @returns        the string value of the argument, a sequence of code units
 	 */
-	private static sv(
+	private static tokenWorth(
 		text: string,
 		allow_separators: SolidConfig['features']['numericSeparators'] = CONFIG_DEFAULT.features.numericSeparators,
 	): number[] {
@@ -363,38 +362,38 @@ export class TokenString extends Token {
 				/* an escaped character literal */
 				return [
 					new Map<string, number>([
-						[TokenString.DELIM, TokenString.DELIM.codePointAt(0) !],
+						[TokenString.DELIM, TokenString.DELIM.charCodeAt(0)!],
 						[TokenString.ESCAPER , 0x5c],
 						['s'                 , 0x20],
 						['t'                 , 0x09],
 						['n'                 , 0x0a],
 						['r'                 , 0x0d],
 					]).get(text[1]) !,
-					...TokenString.sv(text.slice(2), allow_separators),
+					...TokenString.tokenWorth(text.slice(2), allow_separators),
 				]
 
 			} else if ('u{' === `${text[1]}${text[2]}`) {
 				/* an escape sequence */
 				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
 				return [
-					...Util.utf16Encoding(TokenNumber.mv(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
-					...TokenString.sv(text.slice(sequence[0].length), allow_separators),
+					...Util.utf16Encoding(TokenNumber.tokenWorth(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
+					...TokenString.tokenWorth(text.slice(sequence[0].length), allow_separators),
 				]
 
 			} else if ('\n' === text[1]) {
 				/* a line continuation (LF) */
-				return [0x20, ...TokenString.sv(text.slice(2), allow_separators)]
+				return [0x20, ...TokenString.tokenWorth(text.slice(2), allow_separators)]
 
 			} else {
 				/* a backslash escapes the following character */
 				return [
-					...Util.utf16Encoding(text.codePointAt(1) !),
-					...TokenString.sv(text.slice(2), allow_separators),
+					text.charCodeAt(1),
+					...TokenString.tokenWorth(text.slice(2), allow_separators),
 				]
 			}
 		} else return [
-			...Util.utf16Encoding(text.codePointAt(0) !),
-			...TokenString.sv(text.slice(1), allow_separators),
+			text.charCodeAt(0),
+			...TokenString.tokenWorth(text.slice(1), allow_separators),
 		]
 	}
 	constructor (lexer: Lexer) {
@@ -454,7 +453,7 @@ export class TokenString extends Token {
 		this.advance()
 	}
 	cook(): string {
-		return String.fromCodePoint(...TokenString.sv(
+		return String.fromCharCode(...TokenString.tokenWorth(
 			this.source.slice(1, -1), // cut off the string delimiters
 			this.lexer.config.features.numericSeparators,
 		))
@@ -465,16 +464,15 @@ export class TokenTemplate extends Token {
 	static readonly DELIM_INTERP_START : '{{' = '{{'
 	static readonly DELIM_INTERP_END   : '}}' = '}}'
 	/**
-	 * Compute the template value of a `TokenTemplate` token
-	 * or any segment of such token.
+	 * Compute the token worth of a `TokenTemplate` token or any segment of such token.
 	 * @param   text - the string to compute
-	 * @returns        the template value of the argument, a sequence of Unicode code points
+	 * @returns        the template value of the argument, a sequence of code units
 	 */
-	private static tv(text: string): number[] {
+	private static tokenWorth(text: string): number[] {
 		if (text.length === 0) return []
 		return [
-			...Util.utf16Encoding(text.codePointAt(0) !),
-			...TokenTemplate.tv(text.slice(1)),
+			text.charCodeAt(0),
+			...TokenTemplate.tokenWorth(text.slice(1)),
 		]
 	}
 	private readonly delim_end  : typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_START;
@@ -523,7 +521,7 @@ export class TokenTemplate extends Token {
 		this.position = [...positions][0]
 	}
 	cook(): string {
-		return String.fromCodePoint(...TokenTemplate.tv(
+		return String.fromCharCode(...TokenTemplate.tokenWorth(
 			this.source.slice(this.delim_start.length, -this.delim_end.length) // cut off the template delimiters
 		))
 	}

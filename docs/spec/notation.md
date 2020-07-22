@@ -1160,10 +1160,6 @@ Algorithm steps may include substeps, which are formatted by an additional inden
 Substeps may include their own “subsubsteps”, and so on, with each level corresponding to a new indentation.
 Steps may be nested an arbitrary number of levels.
 
-Algorithms may perform basic mathematical operations of numeric values, which include
-addition `+`, subtraction `-`, multiplication `*`, division `/`, and exponentiation `^`.
-These operations are implied with their typical meaning in the context of real and complex numbers.
-
 
 ### Algorithm Steps
 The steps allowed in an algorithm fall into categories, whose semantics are defined here.
