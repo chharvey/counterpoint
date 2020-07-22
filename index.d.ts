@@ -1,3 +1,11 @@
+/*
+ * Note: this file exists only for typescript declaration.
+ * It is not meant to be compiled.
+ * See `./index.js` for the manual output.
+ */
+
+
+
 import type SolidConfig from './src/SolidConfig'
 
 /** The default configuration settings. */
