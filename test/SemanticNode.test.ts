@@ -20,56 +20,11 @@ import {
 	SemanticNodeTemplate,
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
-	SemanticNodeGoal,
 } from '../src/class/SemanticNode.class'
 
 
 
 describe('SemanticNode', () => {
-	describe('#assess', () => {
-		it('computes the value of a constant expression.', () => {
-			const values: (number | SemanticNodeExpression)[] = [
-				'42 + 420;',
-				'42 - 420;',
-				'126 / 3;',
-				'-126 / 3;',
-				'126 / -3;',
-				'-126 / -3;',
-				'200 / 3;',
-				'200 / -3;',
-				'-200 / 3;',
-				'-200 / -3;',
-				'42 ^ 2 * 420;',
-				'2 ^ 15 + 2 ^ 14;',
-				'-(2 ^ 14) - 2 ^ 15;',
-				'-(5) ^ +(2 * 3);',
-			].map((src) => (((new Parser(src, CONFIG_DEFAULT).parse()
-				.children[1] as ParseNodeGoal__0__List)
-				.children[0] as ParseNodeStatement)
-				.children[0] as ParseNodeExpression
-			).decorate().assess().value)
-			values.forEach((value) => {
-				assert.ok(typeof value === 'number')
-			})
-			assert.deepStrictEqual(values, [
-				42 + 420,
-				42 + -420,
-				126 / 3,
-				-126 / 3,
-				126 / -3,
-				-126 / -3,
-				Math.trunc(200 / 3),
-				Math.trunc(200 / -3),
-				Math.trunc(-200 / 3),
-				Math.trunc(-200 / -3),
-				(42 ** 2 * 420) % (2 ** 16),
-				-(2 ** 14),
-				2 ** 14,
-				(-(5)) ** +(2 * 3),
-			])
-		})
-	})
-
 	describe('#build', () => {
 		const boilerplate = (expected: string) => `
 			(module
@@ -172,27 +127,27 @@ describe('SemanticNode', () => {
 	context('SemanticNodeExpression', () => {
 		describe('#type', () => {
 			it('returns `Integer` for SemanticNodeConstant with number value.', () => {
-				assert.strictEqual((((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+				assert.strictEqual(((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeConstant).type(), SolidLanguageType.NUMBER)
 			})
 			Dev.supports('variables') && it('throws for identifiers.', () => {
-				assert.throws(() => (((new Parser(`x;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+				assert.throws(() => ((new Parser(`x;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeIdentifier).type(), /Not yet supported./)
 			})
 			it('returns `String` for SemanticNodeConstant with string value.', () => {
 				;[
 					...(Dev.supports('literalString') ? [
-						((new Parser(`'42';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+						(new Parser(`'42';`, CONFIG_DEFAULT).parse().decorate()
 							.children[0] as SemanticNodeStatementExpression)
 							.children[0] as SemanticNodeConstant,
 					] : []),
 					...(Dev.supports('literalTemplate') ? [
-						((new Parser(`'''42''';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+						(new Parser(`'''42''';`, CONFIG_DEFAULT).parse().decorate()
 							.children[0] as SemanticNodeStatementExpression)
 							.children[0] as SemanticNodeTemplate,
-						((new Parser(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+						(new Parser(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).parse().decorate()
 							.children[0] as SemanticNodeStatementExpression)
 							.children[0] as SemanticNodeTemplate,
 					] : []),
@@ -201,14 +156,58 @@ describe('SemanticNode', () => {
 				})
 			})
 			it('returns `Integer` or any operation of numbers.', () => {
-				assert.strictEqual((((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+				assert.strictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).type(), SolidLanguageType.NUMBER)
 			})
 			it('throws for operation of non-numbers.', () => {
-				Dev.supports('literalString') && assert.throws(() => (((new Parser(`'hello' + 5;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+				Dev.supports('literalString') && assert.throws(() => ((new Parser(`'hello' + 5;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).type(), TypeError)
+			})
+		})
+
+		describe('#assess', () => {
+			it('computes the value of a constant expression.', () => {
+				const values: (number | SemanticNodeExpression)[] = [
+					'42 + 420;',
+					'42 - 420;',
+					'126 / 3;',
+					'-126 / 3;',
+					'126 / -3;',
+					'-126 / -3;',
+					'200 / 3;',
+					'200 / -3;',
+					'-200 / 3;',
+					'-200 / -3;',
+					'42 ^ 2 * 420;',
+					'2 ^ 15 + 2 ^ 14;',
+					'-(2 ^ 14) - 2 ^ 15;',
+					'-(5) ^ +(2 * 3);',
+				].map((src) => (((new Parser(src, CONFIG_DEFAULT).parse()
+					.children[1] as ParseNodeGoal__0__List)
+					.children[0] as ParseNodeStatement)
+					.children[0] as ParseNodeExpression
+				).decorate().assess().value)
+				values.forEach((value) => {
+					assert.ok(typeof value === 'number')
+				})
+				assert.deepStrictEqual(values, [
+					42 + 420,
+					42 + -420,
+					126 / 3,
+					-126 / 3,
+					126 / -3,
+					-126 / -3,
+					Math.trunc(200 / 3),
+					Math.trunc(200 / -3),
+					Math.trunc(-200 / 3),
+					Math.trunc(-200 / -3),
+					(42 ** 2 * 420) % (2 ** 16),
+					-(2 ** 14),
+					2 ** 14,
+					(-(5)) ** +(2 * 3),
+				])
 			})
 		})
 	})
