@@ -6,40 +6,44 @@ Goal ::= #x02 Statement* #x03;
 ```
 
 
+### Static Semantics: Semantic Schema (Goal Symbols)
+```w3c
+SemanticGoal
+	::= SemanticStatement*;
+```
+
+
 ### Static Semantics: Decorate (Goal Symbols)
 ```w3c
 Decorate(Goal ::= #x02 #x03) -> SemanticGoal
-	:= SemanticGoal {} [];
+	:= (SemanticGoal);
 Decorate(Goal ::= #x02 Statement__List #x03) -> SemanticGoal
-	:= SemanticGoal {} [
-		Decorate(Statement__List),
-	];
-
-Decorate(Statement__List ::= Statement) -> SemanticStatementList
-	:= SemanticStatementList {} [
-		Decorate(Statement),
-	];
-Decorate(Statement__List ::= Statement__List Statement) -> SemanticStatementList
-	:= SemanticStatementList {} [
-		...Decorate(Statement__List),
-		Decorate(Statement),
-	];
+	:= (SemanticGoal Decorate(Statement__List));
 ```
 
 
 ### Runtime Instructions: Build (Goal Symbols)
 ```w3c
-Sequence<Instruction> Build(SemanticStatementList statements) :=
-	1. *Let* `sequence` be an empty sequence of `Instruction`s.
-	2. For each `child` in `statements.children`:
-		1. *Let* `instr` be the result of performing `Build(child)`.
-		2. Push `instr` to `sequence`.
-	3. *Return* `sequence`.
-
 Sequence<Instruction> Build(SemanticGoal goal) :=
 	1. *Let* `sequence` be an empty sequence of `Instruction`s.
-	2. *If* `goal.children.count` is greater than 0:
-		1. *Let* `statements` be `goal.children.0`.
-		1. *Set* `sequence` to the result of performing `Build(statements)`.
+	2. For each `stmt` in `goal.children`:
+		1. *Let* `instrs` be the result of performing `Build(stmt)`.
+		2. Push `...instrs` to `sequence`.
 	3. *Return* `sequence`.
+```
+
+
+
+## Statement Lists
+
+
+### Static Semantics: Decorate (Statement Lists)
+```w3c
+Decorate(Statement__List ::= Statement) -> Sequence<SemanticStatement>
+	:= [Decorate(Statement)];
+Decorate(Statement__List ::= Statement__List Statement) -> Sequence<SemanticStatement>
+	:= [
+		...Decorate(Statement__List),
+		Decorate(Statement),
+	];
 ```

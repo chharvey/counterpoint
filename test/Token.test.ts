@@ -199,12 +199,15 @@ describe('Token', () => {
 					'012\\
 					345
 					678';
+					'\u{10001}' '\\\u{10001}';
 				`), CONFIG_DEFAULT).generate()]
 				assert.strictEqual(tokens[ 5].cook(), ``)
 				assert.strictEqual(tokens[ 7].cook(), `hello`)
 				assert.strictEqual(tokens[11].cook(), `0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`)
 				assert.strictEqual(tokens[13].cook(), `0 $ 1 _ 2 \0 3`)
 				assert.strictEqual(tokens[15].cook(), `012 345\n678`)
+				assert.strictEqual(tokens[17].cook(), `\u{10001}`)
+				assert.strictEqual(tokens[18].cook(), `\u{10001}`)
 			})
 		})
 

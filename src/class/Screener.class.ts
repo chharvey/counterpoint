@@ -22,7 +22,7 @@ import Token, {
  */
 export default class Screener {
 	/** The lexer returning tokens for each iteration. */
-	private readonly lexer: IterableIterator<Token>;
+	private readonly lexer: Generator<Token>;
 	/** The result of the lexer iterator. */
 	private iterator_result_token: IteratorResult<Token, void>;
 	/** The current token. */
@@ -46,7 +46,7 @@ export default class Screener {
 	 * Whitespace and comment tokens are filtered out.
 	 * @returns the next token
 	 */
-	* generate(): IterableIterator<Token> {
+	* generate(): Generator<Token> {
 		while (!this.iterator_result_token.done) {
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
 				if (Dev.supports('variables') && this.t0 instanceof TokenIdentifier) {

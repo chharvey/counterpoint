@@ -10,14 +10,25 @@ Statement ::=
 ```
 
 
+### Static Semantics: Semantic Schema (Statements)
+```w3c
+SemanticStatement =:=
+	| SemanticStatementExpression
+	| SemanticDeclaration
+	| SemanticAssignment
+;
+
+SemanticStatementExpression
+	::= SemanticExpression?;
+```
+
+
 ### Static Semantics: Decorate (Statements)
 ```w3c
 Decorate(Statement ::= ";") -> SemanticStatementExpression
-	:= SemanticStatementExpression {} [];
+	:= (SemanticStatementExpression);
 Decorate(Statement ::= Expression ";") -> SemanticStatementExpression
-	:= SemanticStatementExpression {} [
-		Decorate(Expression),
-	];
+	:= (SemanticStatementExpression Decorate(Expression));
 Decorate(Statement ::= DeclarationVariable) -> SemanticDeclaration
 	:= Decorate(DeclarationVariable);
 Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
@@ -30,8 +41,7 @@ Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
 Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 	1. *Let* `sequence` be an empty sequence of `Instruction`s.
 	2. *If* `stmt.children.count` is greater than 0:
-		1. *Let* `expr` be `stmt.children.0`.
-		2. *Set* `sequence` to the result of performing `Build(expr)`.
+		1. *Set* `sequence` to the result of performing `Build(Assess(stmt.children.0))`.
 	3. *Return* `sequence`.
 ```
 
@@ -43,26 +53,35 @@ DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";";
 ```
 
 
+### Static Semantics: Semantic Schema (Variable Declaration)
+```w3c
+SemanticDeclaration[type: "variable"][unfixed: Boolean]
+	::= SemanticAssignee SemanticAssigned;
+
+SemanticAssignee
+	::= SemanticIdentifier;
+
+SemanticAssigned
+	::= SemanticExpression;
+```
+
+
 ### Static Semantics: Decorate (Variable Declaration)
 ```w3c
 Decorate(DeclarationVariable ::= "let" IDENTIFIER "=" Expression ";") -> SemanticDeclaration
-	:= SemanticDeclaration {type: "variable", unfixed: false} [
-		SemanticAssignee {} [
-			SemanticIdentifier {id: TokenWorth(IDENTIFIER)} [],
-		],
-		SemanticAssigned {} [
-			Decorate(Expression),
-		],
-	];
+	:= (SemanticDeclaration[type="variable"][unfixed=false]
+		(SemanticAssignee
+			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+		)
+		(SemanticAssigned Decorate(Expression))
+	);
 Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER "=" Expression ";") -> SemanticDeclaration
-	:= SemanticDeclaration {type: "variable", unfixed: true} [
-		SemanticAssignee {} [
-			SemanticIdentifier {id: TokenWorth(IDENTIFIER)} [],
-		],
-		SemanticAssigned {} [
-			Decorate(Expression),
-		],
-	];
+	:= (SemanticDeclaration[type="variable"][unfixed=true]
+		(SemanticAssignee
+			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+		)
+		(SemanticAssigned Decorate(Expression))
+	);
 ```
 
 
@@ -80,17 +99,22 @@ StatementAssignment ::= IDENTIFIER "=" Expression ";";
 ```
 
 
+### Static Semantics: Semantic Schema (Variable Assignment)
+```w3c
+SemanticAssignment
+	::= SemanticAssignee SemanticAssigned;
+```
+
+
 ### Static Semantics: Decorate (Variable Assignment)
 ```w3c
 Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";") -> SemanticAssignment
-	:= SemanticAssignment {} [
-		SemanticAssignee {} [
-			SemanticIdentifier {id: TokenWorth(IDENTIFIER)} [],
-		],
-		SemanticAssigned {} [
-			Decorate(Expression),
-		],
-	];
+	:= (SemanticAssignment
+		(SemanticAssignee
+			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+		)
+		(SemanticAssigned Decorate(Expression))
+	);
 ```
 
 

@@ -8,7 +8,9 @@ import type SolidConfig from '../SolidConfig.d'
 import {
 	Punctuator,
 } from './Token.class'
-import type SemanticNode from './SemanticNode.class'
+import type {
+	Assessment,
+} from './SemanticNode.class'
 import Parser from './Parser.class'
 
 const i32_neg: string = fs.readFileSync(path.join(__dirname, '../../src/neg.wat'), 'utf8')
@@ -60,9 +62,10 @@ export default class CodeGenerator {
 	/**
 	 * Perform a unary operation on the stack.
 	 * @param op a punctuator representing the operation to perform
+	 * @param arg the operand
 	 * @return `'(op arg)'`
 	 */
-	unop(op: Punctuator, arg: SemanticNode): string {
+	unop(op: Punctuator, arg: Assessment): string {
 		return `(${ new Map<Punctuator, string>([
 			[Punctuator.AFF, `nop`],
 			[Punctuator.NEG, `call $neg`],
@@ -76,7 +79,7 @@ export default class CodeGenerator {
 	 * @param arg1 the second operand
 	 * @return `'(op arg0 arg1)'`
 	 */
-	binop(op: Punctuator, arg0: SemanticNode, arg1: SemanticNode): string {
+	binop(op: Punctuator, arg0: Assessment, arg1: Assessment): string {
 		return `(${ new Map<Punctuator, string>([
 			[Punctuator.ADD, `i32.add`],
 			[Punctuator.SUB, `i32.sub`],
