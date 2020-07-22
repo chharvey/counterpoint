@@ -5,6 +5,7 @@ import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleI
 
 import * as solid from '../../'
 import type SolidConfig from '../SolidConfig'
+import CodeGenerator from './CodeGenerator.class'
 
 
 
@@ -234,13 +235,15 @@ export default class CLI {
 	 */
 	async compileOrDev(cwd: string): Promise<[string, void]> {
 		const inputfilepath: string = this.inputPath(cwd)
-		const sourcecode: Promise<string> = fs.promises.readFile(inputfilepath, 'utf8')
-		const config: Promise<SolidConfig> = this.computeConfig(cwd)
 		const outputfilepath: string = this.argv.out ? path.join(cwd, path.normalize(this.argv.out)) : path.format({
 			...path.parse(inputfilepath),
 			base: void 0,
 			ext: this.command === Command.DEV ? '.wat' : '.wasm',
 		})
+		const cg: CodeGenerator = new CodeGenerator(...await Promise.all([
+			fs.promises.readFile(inputfilepath, 'utf8'),
+			this.computeConfig(cwd),
+		]))
 		return Promise.all([
 			`
 				Compiling………
@@ -250,10 +253,7 @@ export default class CLI {
 					: `Destination binary file:`
 				} ${ outputfilepath }
 			`.trim().replace(/\n\t\t\t\t/g, '\n'),
-			fs.promises.writeFile(outputfilepath, this.command === Command.DEV
-				? solid.print  (await sourcecode, await config)
-				: await solid.compile(await sourcecode, await config)
-			),
+			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? cg.print() : await cg.compile()),
 		])
 	}
 
