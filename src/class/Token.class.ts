@@ -362,7 +362,7 @@ export class TokenString extends Token {
 				/* an escaped character literal */
 				return [
 					new Map<string, number>([
-						[TokenString.DELIM, TokenString.DELIM.codePointAt(0) !],
+						[TokenString.DELIM, TokenString.DELIM.charCodeAt(0)!],
 						[TokenString.ESCAPER , 0x5c],
 						['s'                 , 0x20],
 						['t'                 , 0x09],
@@ -387,12 +387,12 @@ export class TokenString extends Token {
 			} else {
 				/* a backslash escapes the following character */
 				return [
-					...Util.utf16Encoding(text.codePointAt(1)!),
+					text.charCodeAt(1),
 					...TokenString.tokenWorth(text.slice(2), allow_separators),
 				]
 			}
 		} else return [
-			...Util.utf16Encoding(text.codePointAt(0)!),
+			text.charCodeAt(0),
 			...TokenString.tokenWorth(text.slice(1), allow_separators),
 		]
 	}
@@ -453,7 +453,7 @@ export class TokenString extends Token {
 		this.advance()
 	}
 	cook(): string {
-		return String.fromCodePoint(...TokenString.tokenWorth(
+		return String.fromCharCode(...TokenString.tokenWorth(
 			this.source.slice(1, -1), // cut off the string delimiters
 			this.lexer.config.features.numericSeparators,
 		))
@@ -471,7 +471,7 @@ export class TokenTemplate extends Token {
 	private static tokenWorth(text: string): number[] {
 		if (text.length === 0) return []
 		return [
-			...Util.utf16Encoding(text.codePointAt(0)!),
+			text.charCodeAt(0),
 			...TokenTemplate.tokenWorth(text.slice(1)),
 		]
 	}
@@ -521,7 +521,7 @@ export class TokenTemplate extends Token {
 		this.position = [...positions][0]
 	}
 	cook(): string {
-		return String.fromCodePoint(...TokenTemplate.tokenWorth(
+		return String.fromCharCode(...TokenTemplate.tokenWorth(
 			this.source.slice(this.delim_start.length, -this.delim_end.length) // cut off the template delimiters
 		))
 	}
