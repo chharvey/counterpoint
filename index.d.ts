@@ -17,4 +17,4 @@ export declare function print(sourcecode: string, config?: SolidConfig): string;
  * @param sourcecode - the Solid source text
  * @return the output as a binary format
  */
-export declare function compile(sourcecode: string, config?: SolidConfig): Uint8Array;
+export declare function compile(sourcecode: string, config?: SolidConfig): Promise<Uint8Array>;

@@ -252,7 +252,7 @@ export default class CLI {
 			`.trim().replace(/\n\t\t\t\t/g, '\n'),
 			fs.promises.writeFile(outputfilepath, this.command === Command.DEV
 				? solid.print  (await sourcecode, await config)
-				: solid.compile(await sourcecode, await config)
+				: await solid.compile(await sourcecode, await config)
 			),
 		])
 	}

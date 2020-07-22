@@ -108,8 +108,8 @@ export default class CodeGenerator {
 	 * Return a binary format of the program.
 	 * @return a binary output in WASM format, which can be executed
 	 */
-	compile(): Uint8Array {
-		const waModule = wabt().parseWat('', this.print(), {})
+	async compile(): Promise<Uint8Array> {
+		const waModule = (await wabt()).parseWat('', this.print(), {})
 		waModule.validate()
 		return waModule.toBinary({}).buffer
 	}
