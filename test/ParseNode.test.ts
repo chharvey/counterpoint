@@ -38,6 +38,13 @@ describe('ParseNode', () => {
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
 			it('makes a SemanticNodeConstant node.', () => {
+				assert.strictEqual(new Parser('null;', CONFIG_DEFAULT).parse().decorate().serialize(), `
+					<Goal source="␂ null ; ␃">
+						<StatementExpression line="1" col="1" source="null ;">
+							<Constant line="1" col="1" source="null" value="null"/>
+						</StatementExpression>
+					</Goal>
+				`.replace(/\n\t*/g, ''))
 				assert.strictEqual(new Parser('42;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ 42 ; ␃">
 						<StatementExpression line="1" col="1" source="42 ;">

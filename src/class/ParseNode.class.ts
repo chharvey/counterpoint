@@ -1,3 +1,4 @@
+import SolidNull from '../vm/Null.class'
 import Util from './Util.class'
 import Dev from './Dev.class'
 import type Serializable from '../iface/Serializable.iface'
@@ -133,7 +134,8 @@ export class ParseNodePrimitiveLiteral extends ParseNode {
 		| readonly [TokenString] // Dev.supports('literalString')
 	;
 	decorate(): SemanticNodeConstant {
-		return new SemanticNodeConstant(this.children[0], this.children[0].cook())
+		const cooked: bigint | number | string = this.children[0].cook()
+		return new SemanticNodeConstant(this.children[0], (typeof cooked === 'bigint') ? SolidNull.NULL : cooked)
 	}
 }
 export class ParseNodeStringTemplate extends ParseNode {

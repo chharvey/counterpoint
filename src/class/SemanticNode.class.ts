@@ -1,5 +1,6 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
+import type SolidNull from '../vm/Null.class'
 import Int16 from '../vm/Int16.class'
 import {
 	NanError02,
@@ -52,7 +53,7 @@ export default abstract class SemanticNode implements Serializable {
 	 */
 	constructor(
 		start_node: Token|ParseNode,
-		private readonly attributes: { [key: string]: CookValueType } = {},
+		private readonly attributes: { [key: string]: CookValueType | SolidNull } = {},
 		readonly children: readonly SemanticNode[] = [],
 	) {
 		this.source       = start_node.source
@@ -78,7 +79,7 @@ export default abstract class SemanticNode implements Serializable {
 			attributes.set('col' , `${this.col_index  + 1}`)
 		}
 		attributes.set('source', this.source)
-		Object.entries<CookValueType>(this.attributes).forEach(([key, value]) => {
+		Object.entries<CookValueType | SolidNull>(this.attributes).forEach(([key, value]) => {
 			attributes.set(key, `${value}`)
 		})
 		const contents: string = this.children.map((child) => child.serialize()).join('')
@@ -125,7 +126,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		| readonly []
 	constructor(
 		start_node: Token|ParseNodeExpressionUnit,
-		private readonly value: string | number | bigint,
+		private readonly value: number | string | SolidNull,
 	) {
 		super(start_node, {value})
 	}

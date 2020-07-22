@@ -116,7 +116,7 @@ StringTemplate ::=
 
 ### Static Semantics: Semantic Schema (Literals)
 ```w3c
-SemanticConstant[value: Number]
+SemanticConstant[value: Null | RealNumber | Sequence<RealNumber>]
 	::= ();
 
 SemanticTemplate[type: "full"]
@@ -131,6 +131,9 @@ SemanticTemplatePartial
 
 ### Static Semantics: Decorate (Literals)
 ```w3c
+Decorate(PrimitiveLiteral ::= "null") -> SemanticConstant
+	:= (SemanticConstant[value=null);
+
 Decorate(PrimitiveLiteral ::= NUMBER) -> SemanticConstant
 	:= (SemanticConstant[value=TokenWorth(NUMBER));
 
