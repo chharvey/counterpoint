@@ -184,8 +184,8 @@ TokenWorth(Punctuator :::= "-") -> RealNumber := \x03;
 TokenWorth(Punctuator :::= "^") -> RealNumber := \x04;
 TokenWorth(Punctuator :::= "*") -> RealNumber := \x05;
 TokenWorth(Punctuator :::= "/") -> RealNumber := \x06;
-TokenWorth(Punctuator :::= "=") -> RealNumber := \x07;
-TokenWorth(Punctuator :::= ";") -> RealNumber := \x08;
+TokenWorth(Punctuator :::= ";") -> RealNumber := \x07;
+TokenWorth(Punctuator :::= "=") -> RealNumber := \x08;
 ```
 
 
