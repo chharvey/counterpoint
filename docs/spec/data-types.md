@@ -53,6 +53,11 @@ Such numbers include the following:
 - *tau*, the ratio of a circle’s circumference to its radius, approximately *6.283185*
 - *e*, Euler’s number, approximately *2.718282*
 
+#### Mathematical Operators
+Algorithms in this specification may perform basic mathematical operations of RealNumber values, which include
+addition `+`, subtraction `-`, multiplication `*`, division `/`, and exponentiation `^`.
+These operations are implied with their typical meaning in the context of real numbers.
+
 
 ### Sequence
 A **Sequence** is an ordered list of values. The values may be a mix of any type.

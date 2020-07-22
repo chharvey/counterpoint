@@ -43,12 +43,21 @@ during which line and column numbers of any invalid source input might be report
 The abstract operation `UTF16Encoding` encodes a code point using the UTF-16 encoding algorithm.
 ```w3c
 Sequence<RealNumber> UTF16Encoding(RealNumber n) :=
-	1. /* TO BE DESCRIBED */
+	1. *If* `n` is less than 0 or greater than \x10ffff:
+		1. Throw a ParseError.
+	2. *If* `n` is less than or equal to \xffff:
+		1. *Return:* [n].
+	3. *Let* `d` be `n - \x10000`.
+	4. *Let* `cu1` be the integer quotient of `d / \x400`.
+	5. *Let* `cu2` be the integer remainder of `d / \x400`.
+	6. *Return:* [cu1 + \xd800, cu2 + \xdc00].
 ```
 
 
 ### Static Semantics: CodePoint
 The `CodePoint` of a character is the integer index of its placement in the Unicode character set.
+A code point is *not* a code unit. A code point is simply Unicode’s index of a character,
+whereas a code unit is the [UTF-16-encoded](#abstract-operation-utf16encoding) value of that code point.
 ```w3c
 CodePoint([#x00-#x10ffff]) -> RealNumber
 	:= /* TO BE DESCRIBED */;
@@ -374,12 +383,17 @@ String tokens are sequences of Unicode characters enclosed in delimiters.
 Strings are snippets of textual data.
 
 #### Static Semantics: TokenWorth (Strings)
-The Token Worth of a String token is a [sequence](./data-types.md#sequence) of [code points](#static-semantics-codepoint)
-computed by the various parts of the token.
+The Token Worth of a String token is a [sequence](./data-types.md#sequence)
+of UTF-16-encoded code units computed by the various parts of the token.
+
+A **code unit** is a [real integer number](./data-types.md#real-integer-numbers)
+representing one character or part of a character in a string.
+In the [UTF-16 encoding](#abstract-operation-utf16encoding),
+characters in the Unicode character set are represented by either one or two code units.
 
 There is a many-to-one relationship between tokens and Token Worth quantities.
 For example, both the tokens containing `'ABC'` and `'\u{41}\u{42}\u{43}'`
-have the same Token Worth: the sequence of integers *[65, 66, 67]*.
+have the same Token Worth: the sequence of code units *[65, 66, 67]*.
 
 ```w3c
 TokenWorth(String :::= "'" "'") -> Sequence<RealNumber>

@@ -349,7 +349,7 @@ export class TokenString extends Token {
 	 * Compute the token worth of a `TokenString` token or any segment of such token.
 	 * @param   text - the string to compute
 	 * @param   allow_separators - Should numeric separators be allowed?
-	 * @returns        the string value of the argument, a sequence of Unicode code points
+	 * @returns        the string value of the argument, a sequence of code units
 	 */
 	private static tokenWorth(
 		text: string,
@@ -466,7 +466,7 @@ export class TokenTemplate extends Token {
 	/**
 	 * Compute the token worth of a `TokenTemplate` token or any segment of such token.
 	 * @param   text - the string to compute
-	 * @returns        the template value of the argument, a sequence of Unicode code points
+	 * @returns        the template value of the argument, a sequence of code units
 	 */
 	private static tokenWorth(text: string): number[] {
 		if (text.length === 0) return []
