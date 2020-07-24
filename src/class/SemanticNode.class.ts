@@ -1,6 +1,6 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
-import type SolidNull from '../vm/Null.class'
+import SolidNull from '../vm/Null.class'
 import Int16 from '../vm/Int16.class'
 import {
 	NanError02,
@@ -8,12 +8,14 @@ import {
 import type CodeGenerator from './CodeGenerator.class'
 import Token, {
 	Punctuator,
+	TokenKeyword,
+	TokenIdentifier,
+	TokenNumber,
+	TokenString,
+	TokenTemplate,
 } from './Token.class'
 import type {CookValueType} from './Token.class'
 import type ParseNode from './ParseNode.class'
-import type {
-	ParseNodeExpressionUnit,
-} from './ParseNode.class'
 
 
 
@@ -124,11 +126,12 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 export class SemanticNodeConstant extends SemanticNodeExpression {
 	declare children:
 		| readonly []
-	constructor(
-		start_node: Token|ParseNodeExpressionUnit,
-		private readonly value: number | string | SolidNull,
-	) {
+	private readonly value: number | string | SolidNull;
+	constructor (start_node: TokenKeyword | TokenNumber | TokenString | TokenTemplate) {
+		const cooked: number | bigint | string = start_node.cook()
+		const value: number | string | SolidNull = (typeof cooked === 'bigint') ? SolidNull.NULL : cooked;
 		super(start_node, {value})
+		this.value = value
 	}
 	build(generator: CodeGenerator): string {
 		return this.assess().build(generator)
@@ -149,7 +152,8 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	declare children:
 		| readonly []
-	constructor(start_node: Token, id: bigint|null) {
+	constructor (start_node: TokenIdentifier) {
+		const id: bigint | null = start_node.cook()
 		super(start_node, {id})
 	}
 	build(generator: CodeGenerator): string {
