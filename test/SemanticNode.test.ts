@@ -28,8 +28,20 @@ import {
 
 describe('SemanticNode', () => {
 	describe('#assess', () => {
+		it('computes the value of constant null expression.', () => {
+			const values: (number | SemanticNodeExpression | SolidNull)[] = [
+				'null;',
+			].map((src) => (((new Parser(src, CONFIG_DEFAULT).parse()
+				.children[1] as ParseNodeGoal__0__List)
+				.children[0] as ParseNodeStatement)
+				.children[0] as ParseNodeExpression
+			).decorate().assess().value)
+			values.forEach((value) => {
+				assert.strictEqual(value, SolidNull.NULL)
+			})
+		})
 		it('computes the value of a constant expression.', () => {
-			const values: (number | SemanticNodeExpression)[] = [
+			const values: (number | SemanticNodeExpression | SolidNull)[] = [
 				'42 + 420;',
 				'42 - 420;',
 				'126 / 3;',
@@ -50,7 +62,7 @@ describe('SemanticNode', () => {
 				.children[0] as ParseNodeExpression
 			).decorate().assess().value)
 			values.forEach((value) => {
-				assert.ok(typeof value === 'number')
+				assert.strictEqual(typeof value, 'number')
 			})
 			assert.deepStrictEqual(values, [
 				42 + 420,

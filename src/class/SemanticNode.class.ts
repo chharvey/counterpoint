@@ -109,15 +109,17 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	abstract assess(): Assessment;
 
 	public static Assessment = class Assessment {
-		constructor (readonly value: number | SemanticNodeExpression) {
+		constructor (readonly value: number | SolidNull | SemanticNodeExpression) {
 		}
 		get isDetermined(): boolean {
 			return !(this.value instanceof SemanticNodeExpression)
 		}
 		build(generator: CodeGenerator): string {
-			return (typeof this.value === 'number')
-				? generator.const(this.value)
-				: this.value.build(generator)
+			return (
+				(this.value instanceof SolidNull) ? 'TODO' :
+				(typeof this.value === 'number') ? generator.const(this.value) :
+				this.value.build(generator)
+			)
 		}
 	}
 }
@@ -141,7 +143,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		)
 	}
 	assess(): Assessment {
-		if (typeof this.value === 'number') {
+		if (this.value instanceof SolidNull || typeof this.value === 'number') {
 			return new SemanticNodeExpression.Assessment(this.value)
 		} else {
 			throw new Error('not yet supported.')

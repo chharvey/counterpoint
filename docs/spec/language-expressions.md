@@ -118,7 +118,7 @@ StringTemplate ::=
 
 ### Static Semantics: Semantic Schema (Literals)
 ```w3c
-SemanticConstant[value: Null | RealNumber | Sequence<RealNumber>]
+SemanticConstant[value: Null | Number]
 	::= ();
 
 SemanticTemplate[type: "full"]
@@ -196,7 +196,7 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 
 ### Static Semantics: Assess (Literals)
 ```w3c
-Number Assess(SemanticConstant const) :=
+Or<Null, Number> Assess(SemanticConstant const) :=
 	1. *Return:* `const.value`.
 
 Void Assess(SemanticTemplate tpl) :=
