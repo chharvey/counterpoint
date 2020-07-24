@@ -1222,7 +1222,7 @@ An algorithm must output either no value or one value.
 The output value, if it exists, is a value returned by the algorithm to its invoker.
 Algorithms most often return [completion structures](/.data-types.md#completionstructure).
 The output type is specified before the name of the algorithm in its header, but
-if the algorithm does not output a value, the output type is specified as «Void».
+if the algorithm does not output a value, the output type is specified as [«Void»](./data-types.md#void).
 If an algorithm outputs a value, it must do so via a step beginning with «*Return:* …».
 
 When an algorithm step reads «*Return:* ‹v›.» (where ‹v› is a metavariable representing any value),

@@ -100,6 +100,15 @@ export default abstract class SemanticNode implements Serializable {
  * - SemanticNodeOperation
  */
 export abstract class SemanticNodeExpression extends SemanticNode {
+	constructor (
+		start_node: Token|ParseNode,
+		attributes: { [key: string]: CookValueType | SolidNull } = {},
+		children: readonly SemanticNode[] = [],
+	) {
+		super(start_node, attributes, children)
+		this.type() // assert does not throw
+	}
+
 	/**
 	 * The Type of this expression.
 	 */
@@ -260,6 +269,7 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 			| readonly [SemanticNodeExpression]
 	) {
 		super(start_node, {}, children)
+		this.children.length && this.children[0].type() // assert does not throw
 	}
 	build(generator: CodeGenerator): string {
 		return (!this.children.length)
@@ -276,9 +286,17 @@ export class SemanticNodeDeclaration extends SemanticNode {
 			| readonly [SemanticNodeAssignee, SemanticNodeAssigned]
 	) {
 		super(start_node, {type, unfixed}, children)
+		this.typeCheck()
 	}
 	build(generator: CodeGenerator): string {
 		throw new Error('not yet supported.')
+	}
+	/**
+	 * Type-check the node as part of semantic analysis.
+	 */
+	private typeCheck(): void {
+		throw new Error('not yet supported.')
+		// const assignedType = this.children[1].type()
 	}
 }
 export class SemanticNodeAssignment extends SemanticNode {
@@ -288,9 +306,17 @@ export class SemanticNodeAssignment extends SemanticNode {
 			| readonly [SemanticNodeAssignee, SemanticNodeAssigned]
 	) {
 		super(start_node, {}, children)
+		this.typeCheck()
 	}
 	build(generator: CodeGenerator): string {
 		throw new Error('not yet supported.')
+	}
+	/**
+	 * Type-check the node as part of semantic analysis.
+	 */
+	private typeCheck(): void {
+		throw new Error('not yet supported.')
+		// const assignedType = this.children[1].type()
 	}
 }
 export class SemanticNodeAssignee extends SemanticNode {
@@ -312,9 +338,16 @@ export class SemanticNodeAssigned extends SemanticNode {
 			| readonly [SemanticNodeExpression]
 	) {
 		super(start_node, {}, children)
+		this.type() // assert does not throw
 	}
 	build(generator: CodeGenerator): string {
 		throw new Error('not yet supported.')
+	}
+	/**
+	 * The Type of the assigned expression.
+	 */
+	type(): SolidLanguageType | typeof SolidNull {
+		return this.children[0].type()
 	}
 }
 export class SemanticNodeGoal extends SemanticNode {

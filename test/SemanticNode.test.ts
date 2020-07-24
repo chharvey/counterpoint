@@ -26,6 +26,60 @@ import {
 
 
 describe('SemanticNode', () => {
+	describe('.constructor', () => {
+		context('SemanticNodeExpression', () => {
+			it('rethrows `this.type()`.', () => {
+				[
+					`null;`,
+					`42;`,
+					`21 + 21;`,
+				].forEach((src) => {
+					(new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeExpression
+				})
+				assert.throws(() => {
+					(new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeExpression
+				}, TypeError)
+			})
+		})
+
+		context('SemanticNodeStatementExpression', () => {
+			it('rethrows the type of the expression.', () => {
+				[
+					`null;`,
+					`42;`,
+					`21 + 21;`,
+				].forEach((src) => {
+					new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression
+				})
+				assert.throws(() => {
+					new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression
+				}, TypeError)
+			})
+		})
+
+		context('SemanticNodeGoal', () => {
+			it('rethrows the type of each statement.', () => {
+				[
+					`null;`,
+					`42;`,
+					`21 + 21;`,
+				].forEach((src) => {
+					new Parser(src, CONFIG_DEFAULT).parse().decorate()
+				})
+				assert.throws(() => {
+					new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
+				}, TypeError)
+			})
+		})
+	})
+
+
 	describe('#build', () => {
 		const boilerplate = (expected: string) => `
 			(module
