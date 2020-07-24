@@ -116,7 +116,7 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 		}
 		build(generator: CodeGenerator): string {
 			return (
-				(this.value instanceof SolidNull) ? 'TODO' :
+				(this.value instanceof SolidNull) ? generator.const(0) :
 				(typeof this.value === 'number') ? generator.const(this.value) :
 				this.value.build(generator)
 			)

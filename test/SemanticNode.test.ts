@@ -109,10 +109,12 @@ describe('SemanticNode', () => {
 		context('SemanticNodeConstant', () => {
 			it('pushes the constant onto the stack.', () => {
 				assert.deepStrictEqual([
+					'null;',
 					'42;',
 					'+42;',
 					'-42;',
 				].map((src) => new CodeGenerator(src, CONFIG_DEFAULT).print()), [
+					`(i32.const 0)`,
 					`(i32.const 42)`,
 					`(i32.const 42)`,
 					`(i32.const -42)`,

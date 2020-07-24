@@ -206,6 +206,9 @@ Void Assess(SemanticTemplate tpl) :=
 
 ### Static Semantics: Build (Literals)
 ```w3c
+Sequence<Instruction> Build(Null n) :=
+	1. *Return:* ["Push `0` onto the operand stack."].
+
 Sequence<Instruction> Build(Number n) :=
 	1. *Return:* ["Push `n` onto the operand stack."].
 
