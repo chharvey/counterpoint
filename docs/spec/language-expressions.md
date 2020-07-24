@@ -28,6 +28,8 @@ Decorate(Expression ::= ExpressionAdditive) -> SemanticExpression
 The abstract operation `TypeOf` returns the [Solid Language Type] of an expression.
 ```
 Type typeOf(SemanticConstant constant) :=
+	1. If `constant.value` is `null`:
+		1. Return: `Null`.
 	1. If `constant.value` is a `RealNumber`:
 		1. Return: `Number`.
 	2. Else:

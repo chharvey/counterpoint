@@ -1,6 +1,6 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
-import type SolidNull from '../vm/Null.class'
+import SolidNull from '../vm/Null.class'
 import Int16 from '../vm/Int16.class'
 import {
 	NanError02,
@@ -101,7 +101,7 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	/**
 	 * The Type of this expression.
 	 */
-	abstract type(): SolidLanguageType;
+	abstract type(): SolidLanguageType | typeof SolidNull;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
 	 * @return the computed value of this node, or a SemanticNode if the value cannot be computed by the compiler
@@ -133,10 +133,12 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 	build(generator: CodeGenerator): string {
 		return this.assess().build(generator)
 	}
-	type(): SolidLanguageType {
-		return (typeof this.value === 'number')
-			? SolidLanguageType.NUMBER
-			: SolidLanguageType.STRING
+	type(): SolidLanguageType | typeof SolidNull {
+		return (
+			(this.value instanceof SolidNull) ? SolidNull :
+			(typeof this.value === 'number') ? SolidLanguageType.NUMBER :
+			                                   SolidLanguageType.STRING
+		)
 	}
 	assess(): Assessment {
 		if (typeof this.value === 'number') {
@@ -155,7 +157,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	build(generator: CodeGenerator): string {
 		throw new Error('not yet supported.')
 	}
-	type(): SolidLanguageType {
+	type(): SolidLanguageType | typeof SolidNull {
 		throw new Error('Not yet supported.')
 	}
 	assess(): Assessment {
@@ -178,7 +180,7 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	build(generator: CodeGenerator): string {
 		throw new Error('not yet supported.')
 	}
-	type(): SolidLanguageType {
+	type(): SolidLanguageType | typeof SolidNull {
 		return SolidLanguageType.STRING
 	}
 	assess(): Assessment {
@@ -211,8 +213,8 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 			? generator.unop (this.operator, this.children[0].assess())
 			: generator.binop(this.operator, this.children[0].assess(), this.children[1].assess())
 	}
-	type(): SolidLanguageType {
-		const t1: SolidLanguageType = this.children[0].type()
+	type(): SolidLanguageType | typeof SolidNull {
+		const t1: SolidLanguageType | typeof SolidNull = this.children[0].type()
 		if (t1 !== SolidLanguageType.NUMBER || this.children.length === 2 && this.children[1].type() !== SolidLanguageType.NUMBER) {
 			throw new TypeError('Invalid operation.')
 		}

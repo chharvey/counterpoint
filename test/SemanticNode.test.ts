@@ -3,6 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import {CONFIG_DEFAULT} from '../'
+import SolidNull from '../src/vm/Null.class'
 import Util from '../src/class/Util.class'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
@@ -171,6 +172,11 @@ describe('SemanticNode', () => {
 
 	context('SemanticNodeExpression', () => {
 		describe('#type', () => {
+			it('returns `Null` for SemanticNodeConstant with null value.', () => {
+				assert.strictEqual((((new Parser(`null;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeConstant).type(), SolidNull)
+			})
 			it('returns `Integer` for SemanticNodeConstant with number value.', () => {
 				assert.strictEqual((((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
 					.children[0] as SemanticNodeStatementExpression)
@@ -206,6 +212,9 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeOperation).type(), SolidLanguageType.NUMBER)
 			})
 			it('throws for operation of non-numbers.', () => {
+				assert.throws(() => ((new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation).type(), TypeError)
 				Dev.supports('literalString') && assert.throws(() => (((new Parser(`'hello' + 5;`, CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal)
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).type(), TypeError)
