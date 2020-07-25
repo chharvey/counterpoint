@@ -3,7 +3,9 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import {CONFIG_DEFAULT} from '../'
-import SolidNull from '../src/vm/Null.class'
+import {
+	SolidNull,
+} from '../src/vm/SolidLanguageValue.class'
 import Util from '../src/class/Util.class'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
@@ -14,7 +16,7 @@ import type {
 	ParseNodeGoal__0__List,
 } from '../src/class/ParseNode.class'
 import {
-	SolidLanguageType,
+	SolidLanguageTypeDraft,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
@@ -191,7 +193,7 @@ describe('SemanticNode', () => {
 			it('returns `Integer` for SemanticNodeConstant with number value.', () => {
 				assert.strictEqual(((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeConstant).type(), SolidLanguageType.NUMBER)
+					.children[0] as SemanticNodeConstant).type(), SolidLanguageTypeDraft.NUMBER)
 			})
 			Dev.supports('variables') && it('throws for identifiers.', () => {
 				assert.throws(() => ((new Parser(`x;`, CONFIG_DEFAULT).parse().decorate()
@@ -214,13 +216,13 @@ describe('SemanticNode', () => {
 							.children[0] as SemanticNodeTemplate,
 					] : []),
 				].forEach((node) => {
-					assert.strictEqual(node.type(), SolidLanguageType.STRING)
+					assert.strictEqual(node.type(), SolidLanguageTypeDraft.STRING)
 				})
 			})
 			it('returns `Integer` or any operation of numbers.', () => {
 				assert.strictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), SolidLanguageType.NUMBER)
+					.children[0] as SemanticNodeOperation).type(), SolidLanguageTypeDraft.NUMBER)
 			})
 			it('throws for operation of non-numbers.', () => {
 				assert.throws(() => ((new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
