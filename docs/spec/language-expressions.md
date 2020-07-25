@@ -75,6 +75,8 @@ Sequence<Instruction> BuildSemanticOperationBinary(SemanticOperation expr) :=
 ```w3c
 PrimitiveLiteral ::=
 	| "null"
+	| "false"
+	| "true"
 	| NUMBER
 	| STRING
 ;
