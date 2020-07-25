@@ -1,5 +1,6 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
+import SolidNull from '../vm/Null.class'
 import Int16 from '../vm/Int16.class'
 import {
 	NanError02,
@@ -7,12 +8,14 @@ import {
 import type CodeGenerator from './CodeGenerator.class'
 import Token, {
 	Punctuator,
+	TokenKeyword,
+	TokenIdentifier,
+	TokenNumber,
+	TokenString,
+	TokenTemplate,
 } from './Token.class'
 import type {CookValueType} from './Token.class'
 import type ParseNode from './ParseNode.class'
-import type {
-	ParseNodeExpressionUnit,
-} from './ParseNode.class'
 
 
 
@@ -52,7 +55,7 @@ export default abstract class SemanticNode implements Serializable {
 	 */
 	constructor(
 		start_node: Token|ParseNode,
-		private readonly attributes: { [key: string]: CookValueType } = {},
+		private readonly attributes: { [key: string]: CookValueType | SolidNull } = {},
 		readonly children: readonly SemanticNode[] = [],
 	) {
 		this.source       = start_node.source
@@ -78,7 +81,7 @@ export default abstract class SemanticNode implements Serializable {
 			attributes.set('col' , `${this.col_index  + 1}`)
 		}
 		attributes.set('source', this.source)
-		Object.entries<CookValueType>(this.attributes).forEach(([key, value]) => {
+		Object.entries<CookValueType | SolidNull>(this.attributes).forEach(([key, value]) => {
 			attributes.set(key, `${value}`)
 		})
 		const contents: string = this.children.map((child) => child.serialize()).join('')
@@ -97,10 +100,19 @@ export default abstract class SemanticNode implements Serializable {
  * - SemanticNodeOperation
  */
 export abstract class SemanticNodeExpression extends SemanticNode {
+	constructor (
+		start_node: Token|ParseNode,
+		attributes: { [key: string]: CookValueType | SolidNull } = {},
+		children: readonly SemanticNode[] = [],
+	) {
+		super(start_node, attributes, children)
+		this.type() // assert does not throw
+	}
+
 	/**
 	 * The Type of this expression.
 	 */
-	abstract type(): SolidLanguageType;
+	abstract type(): SolidLanguageType | typeof SolidNull;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
 	 * @return the computed value of this node, or a SemanticNode if the value cannot be computed by the compiler
@@ -108,37 +120,42 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	abstract assess(): Assessment;
 
 	public static Assessment = class Assessment {
-		constructor (readonly value: number | SemanticNodeExpression) {
+		constructor (readonly value: number | SolidNull | SemanticNodeExpression) {
 		}
 		get isDetermined(): boolean {
 			return !(this.value instanceof SemanticNodeExpression)
 		}
 		build(generator: CodeGenerator): string {
-			return (typeof this.value === 'number')
-				? generator.const(this.value)
-				: this.value.build(generator)
+			return (
+				(this.value instanceof SolidNull) ? generator.const(0) :
+				(typeof this.value === 'number') ? generator.const(this.value) :
+				this.value.build(generator)
+			)
 		}
 	}
 }
 export class SemanticNodeConstant extends SemanticNodeExpression {
 	declare children:
 		| readonly []
-	constructor(
-		start_node: Token|ParseNodeExpressionUnit,
-		private readonly value: string|number,
-	) {
+	private readonly value: number | string | SolidNull;
+	constructor (start_node: TokenKeyword | TokenNumber | TokenString | TokenTemplate) {
+		const cooked: number | bigint | string = start_node.cook()
+		const value: number | string | SolidNull = (typeof cooked === 'bigint') ? SolidNull.NULL : cooked;
 		super(start_node, {value})
+		this.value = value
 	}
 	build(generator: CodeGenerator): string {
 		return this.assess().build(generator)
 	}
-	type(): SolidLanguageType {
-		return (typeof this.value === 'number')
-			? SolidLanguageType.NUMBER
-			: SolidLanguageType.STRING
+	type(): SolidLanguageType | typeof SolidNull {
+		return (
+			(this.value instanceof SolidNull) ? SolidNull :
+			(typeof this.value === 'number') ? SolidLanguageType.NUMBER :
+			                                   SolidLanguageType.STRING
+		)
 	}
 	assess(): Assessment {
-		if (typeof this.value === 'number') {
+		if (this.value instanceof SolidNull || typeof this.value === 'number') {
 			return new SemanticNodeExpression.Assessment(this.value)
 		} else {
 			throw new Error('not yet supported.')
@@ -148,13 +165,14 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	declare children:
 		| readonly []
-	constructor(start_node: Token, id: bigint|null) {
+	constructor (start_node: TokenIdentifier) {
+		const id: bigint | null = start_node.cook()
 		super(start_node, {id})
 	}
 	build(generator: CodeGenerator): string {
 		throw new Error('not yet supported.')
 	}
-	type(): SolidLanguageType {
+	type(): SolidLanguageType | typeof SolidNull {
 		throw new Error('Not yet supported.')
 	}
 	assess(): Assessment {
@@ -177,7 +195,7 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	build(generator: CodeGenerator): string {
 		throw new Error('not yet supported.')
 	}
-	type(): SolidLanguageType {
+	type(): SolidLanguageType | typeof SolidNull {
 		return SolidLanguageType.STRING
 	}
 	assess(): Assessment {
@@ -210,8 +228,8 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 			? generator.unop (this.operator, this.children[0].assess())
 			: generator.binop(this.operator, this.children[0].assess(), this.children[1].assess())
 	}
-	type(): SolidLanguageType {
-		const t1: SolidLanguageType = this.children[0].type()
+	type(): SolidLanguageType | typeof SolidNull {
+		const t1: SolidLanguageType | typeof SolidNull = this.children[0].type()
 		if (t1 !== SolidLanguageType.NUMBER || this.children.length === 2 && this.children[1].type() !== SolidLanguageType.NUMBER) {
 			throw new TypeError('Invalid operation.')
 		}
@@ -251,6 +269,7 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 			| readonly [SemanticNodeExpression]
 	) {
 		super(start_node, {}, children)
+		this.children.length && this.children[0].type() // assert does not throw
 	}
 	build(generator: CodeGenerator): string {
 		return (!this.children.length)
@@ -267,9 +286,17 @@ export class SemanticNodeDeclaration extends SemanticNode {
 			| readonly [SemanticNodeAssignee, SemanticNodeAssigned]
 	) {
 		super(start_node, {type, unfixed}, children)
+		this.typeCheck()
 	}
 	build(generator: CodeGenerator): string {
 		throw new Error('not yet supported.')
+	}
+	/**
+	 * Type-check the node as part of semantic analysis.
+	 */
+	private typeCheck(): void {
+		throw new Error('not yet supported.')
+		// const assignedType = this.children[1].type()
 	}
 }
 export class SemanticNodeAssignment extends SemanticNode {
@@ -279,9 +306,17 @@ export class SemanticNodeAssignment extends SemanticNode {
 			| readonly [SemanticNodeAssignee, SemanticNodeAssigned]
 	) {
 		super(start_node, {}, children)
+		this.typeCheck()
 	}
 	build(generator: CodeGenerator): string {
 		throw new Error('not yet supported.')
+	}
+	/**
+	 * Type-check the node as part of semantic analysis.
+	 */
+	private typeCheck(): void {
+		throw new Error('not yet supported.')
+		// const assignedType = this.children[1].type()
 	}
 }
 export class SemanticNodeAssignee extends SemanticNode {
@@ -303,9 +338,16 @@ export class SemanticNodeAssigned extends SemanticNode {
 			| readonly [SemanticNodeExpression]
 	) {
 		super(start_node, {}, children)
+		this.type() // assert does not throw
 	}
 	build(generator: CodeGenerator): string {
 		throw new Error('not yet supported.')
+	}
+	/**
+	 * The Type of the assigned expression.
+	 */
+	type(): SolidLanguageType | typeof SolidNull {
+		return this.children[0].type()
 	}
 }
 export class SemanticNodeGoal extends SemanticNode {

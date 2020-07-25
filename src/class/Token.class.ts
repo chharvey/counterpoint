@@ -35,9 +35,11 @@ export enum Punctuator {
 }
 
 export enum Keyword {
-	// Storage
+	// literal
+	NULL = 'null',
+	// storage
 	LET = 'let', // Dev.supports('variables')
-	// Modifier
+	// modifier
 	UNFIXED = 'unfixed', // Dev.supports('variables')
 }
 

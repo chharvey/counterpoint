@@ -14,6 +14,11 @@ Solid Specification Types are only used internally within this specification to 
 They are not directly observable from Solid code.
 
 
+### Void
+The **Void** type has no value, but signifies the completion of an algorithm.
+The algorithm returns no value.
+
+
 ### RealNumber
 The **RealNumber** type represents arbitrary real numbers used in specific situations.
 Real numbers cannot be represented accurately in a computer program,
