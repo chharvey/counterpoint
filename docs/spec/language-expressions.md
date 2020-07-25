@@ -90,7 +90,7 @@ StringTemplate ::=
 
 ### Static Semantics: Semantic Schema (Literals)
 ```w3c
-SemanticConstant[value: Null | Number]
+SemanticConstant[value: Null | Boolean | Number]
 	::= ();
 
 SemanticTemplate[type: "full"]
@@ -106,10 +106,15 @@ SemanticTemplatePartial
 ### Static Semantics: Decorate (Literals)
 ```w3c
 Decorate(PrimitiveLiteral ::= "null") -> SemanticConstant
-	:= (SemanticConstant[value=null);
+	:= (SemanticConstant[value=null]);
+
+Decorate(PrimitiveLiteral ::= "false") -> SemanticConstant
+	:= (SemanticConstant[value=false]);
+Decorate(PrimitiveLiteral ::= "true") -> SemanticConstant
+	:= (SemanticConstant[value=true]);
 
 Decorate(PrimitiveLiteral ::= NUMBER) -> SemanticConstant
-	:= (SemanticConstant[value=TokenWorth(NUMBER));
+	:= (SemanticConstant[value=TokenWorth(NUMBER)]);
 
 Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 	:= (SemanticConstant[value=TokenWorth(STRING)]);
@@ -168,7 +173,7 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 
 ### Static Semantics: Assess (Literals)
 ```w3c
-Or<Null, Number> Assess(SemanticConstant const) :=
+Or<Null, Boolean, Number> Assess(SemanticConstant const) :=
 	1. *Return:* `const.value`.
 
 Void Assess(SemanticTemplate tpl) :=

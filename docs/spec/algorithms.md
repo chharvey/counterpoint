@@ -10,9 +10,11 @@ of an expression.
 Type TypeOf(SemanticConstant constant) :=
 	1. If `constant.value` is `null`:
 		1. Return: `Null`.
-	1. If `constant.value` is a `RealNumber`:
+	2. *If* `constant.value` is `false` or `true`:
+		1. *Return:* `Boolean`.
+	3. If `constant.value` is a `RealNumber`:
 		1. Return: `Number`.
-	2. Else:
+	4. Else:
 		1. Assert: `constant.value` is a `Sequence<RealNumber>`.
 		2. Return: `String`.
 

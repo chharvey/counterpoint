@@ -11,6 +11,7 @@ import {
 import type CodeGenerator from './CodeGenerator.class'
 import Token, {
 	Punctuator,
+	Keyword,
 	TokenKeyword,
 	TokenIdentifier,
 	TokenNumber,
@@ -145,10 +146,14 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 export class SemanticNodeConstant extends SemanticNodeExpression {
 	declare children:
 		| readonly []
-	private readonly value: number | string | SolidNull;
+	readonly value: number | string | SolidNull | SolidBoolean;
 	constructor (start_node: TokenKeyword | TokenNumber | TokenString | TokenTemplate) {
 		const cooked: number | bigint | string = start_node.cook()
-		const value: number | string | SolidNull = (typeof cooked === 'bigint') ? SolidNull.NULL : cooked;
+		const value: number | string | SolidNull | SolidBoolean = (typeof cooked === 'bigint') ?
+			(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
+			(start_node.source === Keyword.TRUE) ? SolidBoolean.TRUE :
+			SolidNull.NULL
+		: cooked
 		super(start_node, {value})
 		this.value = value
 	}
@@ -158,6 +163,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 	type(): SolidLanguageType {
 		return (
 			(this.value instanceof SolidNull) ? SolidNull :
+			(this.value instanceof SolidBoolean) ? SolidBoolean :
 			(typeof this.value === 'number') ? SolidLanguageTypeDraft.NUMBER :
 			                                   SolidLanguageTypeDraft.STRING
 		)

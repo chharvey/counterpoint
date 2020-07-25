@@ -5,6 +5,7 @@ import * as path from 'path'
 import {CONFIG_DEFAULT} from '../'
 import {
 	SolidNull,
+	SolidBoolean,
 } from '../src/vm/SolidLanguageValue.class'
 import Util from '../src/class/Util.class'
 import Dev from '../src/class/Dev.class'
@@ -44,7 +45,7 @@ describe('SemanticNode', () => {
 					(new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeExpression
-				}, TypeError)
+				}, /Invalid operation./)
 			})
 		})
 
@@ -61,7 +62,7 @@ describe('SemanticNode', () => {
 				assert.throws(() => {
 					new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression
-				}, TypeError)
+				}, /Invalid operation./)
 			})
 		})
 
@@ -190,6 +191,16 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeConstant).type(), SolidNull)
 			})
+			it('returns `Boolean` for SemanticNodeConstant with bool value.', () => {
+				[
+					`false;`,
+					`true;`,
+				].forEach((src) => {
+					assert.strictEqual(((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeConstant).type(), SolidBoolean)
+				})
+			})
 			it('returns `Integer` for SemanticNodeConstant with number value.', () => {
 				assert.strictEqual(((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
@@ -225,12 +236,18 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeOperation).type(), SolidLanguageTypeDraft.NUMBER)
 			})
 			it('throws for operation of non-numbers.', () => {
-				assert.throws(() => ((new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), TypeError)
-				Dev.supports('literalString') && assert.throws(() => ((new Parser(`'hello' + 5;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), TypeError)
+				[
+					`null + 5;`,
+					`5 * null;`,
+					`false - 2;`,
+					`2 / true;`,
+					`null ^ false;`,
+					...(Dev.supports('literalString') ? [`'hello' + 5;`] : []),
+				].forEach((src) => {
+					assert.throws(() => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation).type(), /Invalid operation./)
+				})
 			})
 		})
 
