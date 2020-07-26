@@ -3,8 +3,7 @@ import * as path from 'path'
 
 import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
-import * as solid from '../../'
-import type SolidConfig from '../SolidConfig'
+import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 import CodeGenerator from './CodeGenerator.class'
 
 
@@ -197,14 +196,14 @@ export default class CLI {
 		: {}
 
 		const returned: Mutable<SolidConfig> = {
-			...solid.CONFIG_DEFAULT,
+			...CONFIG_DEFAULT,
 			...await config,
 			features: {
-				...solid.CONFIG_DEFAULT.features,
+				...CONFIG_DEFAULT.features,
 				...(await config).features,
 			},
 			compilerOptions: {
-				...solid.CONFIG_DEFAULT.compilerOptions,
+				...CONFIG_DEFAULT.compilerOptions,
 				...(await config).compilerOptions,
 			},
 		}

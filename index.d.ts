@@ -8,8 +8,6 @@
 
 import type SolidConfig from './src/SolidConfig'
 
-/** The default configuration settings. */
-export declare const CONFIG_DEFAULT: SolidConfig;
 
 /**
  * Compile Solid source code into a readable text format for development purposes.

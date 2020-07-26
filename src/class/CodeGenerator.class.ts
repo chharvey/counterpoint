@@ -3,7 +3,7 @@ import * as path from 'path'
 
 import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
-import type SolidConfig from '../SolidConfig.d'
+import type SolidConfig from '../SolidConfig'
 
 import {
 	Punctuator,

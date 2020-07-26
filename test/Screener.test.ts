@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 
-import {CONFIG_DEFAULT} from '../'
+import {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Screener from '../src/class/Screener.class'
 import Token, {
 	TokenWhitespace,
