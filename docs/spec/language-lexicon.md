@@ -41,7 +41,7 @@ during which line and column numbers of any invalid source input might be report
 
 ### Abstract Operation: UTF16Encoding
 The abstract operation `UTF16Encoding` encodes a code point using the UTF-16 encoding algorithm.
-```w3c
+```
 Sequence<RealNumber> UTF16Encoding(RealNumber n) :=
 	1. *If* `n` is less than 0 or greater than \x10ffff:
 		1. Throw a ParseError.
@@ -58,7 +58,7 @@ Sequence<RealNumber> UTF16Encoding(RealNumber n) :=
 The `CodePoint` of a character is the integer index of its placement in the Unicode character set.
 A code point is *not* a code unit. A code point is simply Unicode’s index of a character,
 whereas a code unit is the [UTF-16-encoded](#abstract-operation-utf16encoding) value of that code point.
-```w3c
+```
 CodePoint([#x00-#x10ffff]) -> RealNumber
 	:= /* TO BE DESCRIBED */;
 ```
@@ -75,7 +75,7 @@ which form the lowest-level building blocks of the language.
 
 There are a small number of token types, each of which have a specific purpose.
 
-```w3c
+```
 Goal<Comment, Radix, Separator> :::=
 	| Filebound
 	| Whitespace
@@ -104,7 +104,7 @@ Goal<Comment, Radix, Separator> :::=
 
 
 ### File Bounds
-```w3c
+```
 Filebound :::= #x02 | #x03;
 ```
 File bound tokens are tokens that consist of exactly 1 character:
@@ -112,7 +112,7 @@ either **U+0002 START OF TEXT**, or **U+0003 END OF TEXT**.
 
 
 ### Whitespace
-```w3c
+```
 Whitespace :::= (#x20 | #x09 | #x0A)+;
 ```
 Whitespace tokens consist of combinations of the following characters.
@@ -159,7 +159,7 @@ U+3000     | IDEOGRAPHIC SPACE         | CJK Symbols and Punctuation | Separator
 
 
 ### Punctuators
-```w3c
+```
 Punctuator :::= "(" | ")" | "+" | "-" | "^" | "*" | "/" | "=" | ";";
 ```
 Punctuators are non-alphanumeric characters in the ASCII character set, or spans of such characters,
@@ -176,7 +176,7 @@ Token Worth quantities for punctuators are integers ranging from *0* to *127* (i
 This specification uses the term “ID” to refer to the identification,
 as not to be confused with [Identifier tokens](#identifiers).
 
-```w3c
+```
 TokenWorth(Punctuator :::= "(") -> RealNumber := \x00;
 TokenWorth(Punctuator :::= ")") -> RealNumber := \x01;
 TokenWorth(Punctuator :::= "+") -> RealNumber := \x02;
@@ -190,7 +190,7 @@ TokenWorth(Punctuator :::= "=") -> RealNumber := \x08;
 
 
 ### Keywords
-```w3c
+```
 Keyword :::=
 	// literal
 	| "null"
@@ -212,7 +212,7 @@ that distinguishes the keyword from the other keywords.
 Token Worth quantities for keywords are predetermined by the lexical grammar and are independent of any instance program.
 Token Worth quantities for keywords are integers ranging from *128* to *255* (inclusive).
 
-```w3c
+```
 TokenWorth(Keyword :::= "null")    -> RealNumber := \x80;
 TokenWorth(Keyword :::= "false")   -> RealNumber := \x81;
 TokenWorth(Keyword :::= "true")    -> RealNumber := \x82;
@@ -222,7 +222,7 @@ TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x84;
 
 
 ### Identifiers
-```w3c
+```
 Identifier :::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - Keyword;
 ```
 Identifiers are sequences of alphanumeric characters that do not match the [Keyword](#keywords) production.
@@ -239,14 +239,14 @@ The Token Worth of an Identifier token is the unique [real number](./data-types.
 that distinguishes the identifier from other identifiers within a given program.
 Token Worth quantities for identifiers are integers strictly greater than *255*.
 
-```w3c
+```
 TokenWorth(Identifier) -> RealNumber
 	:= /* TO BE DESCRIBED */
 ```
 
 
 ### Numbers
-```w3c
+```
 Number<Radix, Separator>
 	:::= ("+" | "-")? IntegerLiteral<?Radix, ?Separator>;
 
@@ -277,7 +277,7 @@ There is a many-to-one relationship between tokens and Token Worth quantities.
 For example, both the tokens containing `0042` and `+42`
 have the same Token Worth: the integer *42*.
 
-```w3c
+```
 TokenWorth(Number :::= IntegerLiteral) -> RealNumber
 	:= TokenWorth(IntegerLiteral);
 TokenWorth(Number :::= "+" IntegerLiteral) -> RealNumber
@@ -363,7 +363,7 @@ TokenWorth([0-9a-z] :::= "z") -> RealNumber  :=  \x023;
 
 
 ### String Literals
-```w3c
+```
 String
 	:::= "'" StringChars? "'";
 
@@ -396,7 +396,7 @@ There is a many-to-one relationship between tokens and Token Worth quantities.
 For example, both the tokens containing `'ABC'` and `'\u{41}\u{42}\u{43}'`
 have the same Token Worth: the sequence of code units *[65, 66, 67]*.
 
-```w3c
+```
 TokenWorth(String :::= "'" "'") -> Sequence<RealNumber>
 	:= [];
 TokenWorth(String :::= "'" StringChars "'") -> Sequence<RealNumber>
@@ -433,7 +433,7 @@ TokenWorth(StringEscape :::= [^'\stnru#x0D#x0A#x03]) -> Sequence<RealNumber>
 
 
 ### Template Literals
-```w3c
+```
 TemplateFull   :::= "'''" TemplateChars__EndDelim ? "'''";
 TemplateHead   :::= "'''" TemplateChars__EndInterp? "{{" ;
 TempalteMiddle :::= "}}"  TemplateChars__EndInterp? "{{" ;
@@ -485,7 +485,7 @@ specific ways determined by the formal syntactic grammar.
 #### Static Semantics: TokenWorth (Templates)
 The Token Worth of a Template token is the analogue of the Token Worth of a String token.
 
-```w3c
+```
 TokenWorth(TemplateFull :::= "'''" "'''") -> Sequence<RealNumber>
 	:= [];
 TokenWorth(TemplateFull :::= "'''" TemplateChars__EndDelim "'''") -> Sequence<RealNumber>
@@ -617,7 +617,7 @@ TokenWorth(TemplateChars__EndInterp__StartInterp :::= "{''" TemplateChars__EndIn
 
 
 ### Comments
-```w3c
+```
 Comment :::=
 	| CommentLine
 	| CommentMulti

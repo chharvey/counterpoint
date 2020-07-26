@@ -39,7 +39,7 @@ Type TypeOf(SemanticOperation operation) :=
 
 ## TypeCheck
 The **TypeCheck** algorithm performs the type-checking piece during semantic analysis.
-```w3c
+```
 Void TypeCheck(SemanticExpression expr) :=
 	1. *Perform:* `TypeOf(expr)`.
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.

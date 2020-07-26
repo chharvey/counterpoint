@@ -1275,7 +1275,7 @@ are delimited with \`back-ticks\`.
 
 Algorithm instructions (*If*, *Perform*, etc.) are written in *italics*.
 
-```w3c
+```
 Void AlgorithmName(RealNumber param) :=
 	1. Step 1.
 	2. Step 2.
