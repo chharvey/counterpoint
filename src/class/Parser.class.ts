@@ -1,4 +1,4 @@
-import type SolidConfig from '../SolidConfig.d'
+import type SolidConfig from '../SolidConfig'
 
 import Screener from './Screener.class'
 import type Token from './Token.class'

@@ -24,13 +24,14 @@ function test() {
 }
 
 async function test_dev() {
+	const {CONFIG_DEFAULT}         = require('./build/SolidConfig.js')
 	const {default: Scanner      } = require('./build/class/Scanner.class.js')
 	const {default: Lexer        } = require('./build/class/Lexer.class.js')
 	const {default: Screener     } = require('./build/class/Screener.class.js')
 	const {default: Parser       } = require('./build/class/Parser.class.js')
 	const {default: CodeGenerator} = require('./build/class/CodeGenerator.class.js')
 
-	const input = fsPromise.readFile('./test/test-v0.2.solid', 'utf8')
+	const input = fsPromise.readFile('./sample/test-v0.2.solid', 'utf8')
 
 	console.log("\n\nHere are the characters returned by the scanner:")
 	console.log("  line col  character")
@@ -42,7 +43,7 @@ async function test_dev() {
 	}
 
 	console.log("\n\nHere are the tokens returned by the lexer:")
-	const lexer = new Lexer(await input).generate()
+	const lexer = new Lexer(await input, CONFIG_DEFAULT).generate()
 	let iterator_result_token = lexer.next()
 	while (!iterator_result_token.done) {
 		console.log(iterator_result_token.value.serialize())
@@ -50,15 +51,15 @@ async function test_dev() {
 	}
 
 	console.log("\n\nHere are the tokens returned by the screener:")
-	const screener = new Screener(await input).generate()
+	const screener = new Screener(await input, CONFIG_DEFAULT).generate()
 	let iterator_result_screen = screener.next()
 	while (!iterator_result_screen.done) {
 		if (iterator_result_screen.value !== null) console.log(iterator_result_screen.value.serialize())
 		iterator_result_screen = screener.next()
 	}
 
-	const tree = new Parser(await input).parse()
-	const code = new CodeGenerator(await input).print()
+	const tree = new Parser(await input, CONFIG_DEFAULT).parse()
+	const code = new CodeGenerator(await input, CONFIG_DEFAULT).print()
 	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
 	console.log("\n\nThe semantic tree returned by the decorator is written to file: `./sample/output-1.xml`")
 	console.log("\n\nThe compiled output returned by the compiler is written to file: `./sample/output-2.wat`")

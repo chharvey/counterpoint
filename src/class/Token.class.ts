@@ -1,5 +1,4 @@
-import {CONFIG_DEFAULT} from '../../'
-import type SolidConfig from '../SolidConfig.d'
+import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 
 import Util from './Util.class'
 import Dev from './Dev.class'

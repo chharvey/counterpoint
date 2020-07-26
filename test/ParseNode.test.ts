@@ -1,10 +1,6 @@
 import * as assert from 'assert'
 
-import {CONFIG_DEFAULT} from '../'
-import {
-	SolidNull,
-	SolidBoolean,
-} from '../src/vm/SolidLanguageValue.class'
+import {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Util   from '../src/class/Util.class'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
@@ -16,6 +12,10 @@ import {
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
 } from '../src/class/SemanticNode.class'
+import {
+	SolidNull,
+	SolidBoolean,
+} from '../src/vm/SolidLanguageValue.class'
 
 import {
 	assert_arrayLength,
