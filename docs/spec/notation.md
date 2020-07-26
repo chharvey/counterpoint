@@ -4,18 +4,27 @@ This chapter describes notational conventions used throughout this specification
 
 
 ## Value Notation
-Metavariables are variables used within this specification as placeholder values.
-They are delimited with left and right single-angle quotes.
-In the following example, `T` and `U` are not actual Solid Language Types,
-but placeholders for such types.
-> If `‹T›` and `‹U›` are Solid Language Types, then `Or<‹T›, ‹U›>` is the Solid Language Type
-that contains values of either type `‹T›` or type `‹U›` (or both).
-
-Snippets of specification are delimited with double-angle quotes. Below is an example of
+Snippets of specification text are delimited with double-angle quotes. Below is an example of
 prose that might appear in this specification; the double-angle quotes refer to wording used in the
 steps of a hypothetical [specification algorithm](#algorithms).
 > In an algorithm, a step that reads «*Let* \`x\` be the value of \`X\`.» means to say
 «If \`X\` is a completion structure, then let \`x\` be \`X.value\`; otherwise let \`x\` be \`X\`.»
+
+Algorithm variables and values are delimited with \`back-ticks\` as illustrated above.
+
+Snippets of program code (be it a Solid program or another kind of program such as a context-free grammar)
+are written in `monospace font`.
+> The Solid code `let x: int = X.value;` is a statement
+that assigns the `value` property of `X` to the newly declared variable `x`.
+>
+> The grammar production `N ::= A B` defines the nonterminal `N` as a concatenation of nonterminals `A` and `B`.
+
+Metavariables are variables used within this specification as placeholder values.
+They are delimited with left and right single-angle quotes.
+In the following example, `‹T›` and `‹U›` are not actual Solid Language Types,
+but placeholders for such types.
+> If `‹T›` and `‹U›` are Solid Language Types, then `Or<‹T›, ‹U›>` is the Solid Language Type
+that contains values of either type `‹T›` or type `‹U›` (or both).
 
 
 ### Solid Specification Values
@@ -290,7 +299,7 @@ N
 ```
 transforms to
 ```
-N
+N ::=
 	| A
 	| B
 ;
@@ -1079,14 +1088,14 @@ Since different AGs can “return” different types, the “return type” is i
 An AG production may define several forms of a CFG production as its parameter:
 ```
 Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticTemplate
-	:= SemanticTemplate {type: "full"} [
-		SemanticConstant {value: TokenWorth(TEMPLATE_FULL)} [],
-	];
+	:= (SemanticTemplate[type="full"]
+		(SemanticConstant[value=TokenWorth(TEMPLATE_FULL)])
+	);
 Decorate(StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticTemplate
-	:= SemanticTemplate {type: "substitution"} [
-		SemanticConstant {value: TokenWorth(TEMPLATE_HEAD)} [],
-		SemanticConstant {value: TokenWorth(TEMPLATE_TAIL)} [],
-	];
+	:= (SemanticTemplate[type="substitution"]
+		(SemanticConstant[value=TokenWorth(TEMPLATE_HEAD)])
+		(SemanticConstant[value=TokenWorth(TEMPLATE_TAIL)])
+	);
 ```
 The AG example above defines a Decoration attribute on `StringTemplate` productions.
 If the production matches `TEMPLATE_FULL`, then one value is returned;
@@ -1100,9 +1109,9 @@ AG productions may also invoke each other, and they may do so recursively.
 TokenWorth(TemplateFull :::= "'''" TemplateChars__EndDelim "'''") -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim)
 TokenWorth(TemplateChars__EndDelim :::= [^'{#x03]) -> Sequence<RealNumber>
-	:= <UTF16Encoding(CodePoint([^'{#x03]))>
+	:= [UTF16Encoding(CodePoint([^'{#x03]))]
 TokenWorth(TemplateChars__EndDelim :::= [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
-	:= <UTF16Encoding(CodePoint([^'{#x03])), ...TokenWorth(TemplateChars__EndDelim)>
+	:= [UTF16Encoding(CodePoint([^'{#x03])), ...TokenWorth(TemplateChars__EndDelim)]
 TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartDelim) -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim__StartDelim)
 TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartInterp) -> Sequence<RealNumber>
@@ -1169,7 +1178,8 @@ If a step does not match one of the given categories, its behavior is open to in
 Steps that begin with «*Assert:* …» are informative and are meant only to provide clarification to the reader.
 These steps explicitly indicate that a conditon is true when it would otherwise only be implicit.
 Making an assertion only provides information to the reader and does not add any functionality.
-If the intent is to exit abruptly, then a comination of *If* and *Throw* steps should be used.
+If the intent is to exit abruptly, then a comination of
+[If](#if-else-while) and [Throw](#throw) steps should be used.
 
 #### Note
 Steps that begin with «*Note:* …» are informative notes to the reader. They have no effect on the algorithm.
@@ -1256,10 +1266,13 @@ where `AlgorithmName` is the algorithm name, `RType` is the output type of the a
 and `PType1` and `PType2` are the types of the parameters `param1` and `param2` respectively.
 If the algorithm is invoked in another algorithm, it is written in a similar manner,
 e.g., `AlgorithmName(arg1, arg2)`.
+
 The symbol `:=` delimits the algorithm head from its body (its steps).
 Typically, algorithm names are written in PascalCase while parameter/argument names are written in snake_case.
+
 Within the steps of an algorithm, referenced local variables, parameters, other algorithm names, and code snippets
 are delimited with \`back-ticks\`.
+
 Algorithm instructions (*If*, *Perform*, etc.) are written in *italics*.
 
 ```w3c
