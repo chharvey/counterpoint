@@ -69,7 +69,7 @@ describe('Parser', () => {
 		})
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
-			it('parses NULL.', () => {
+			it('parses NULL or BOOLEAN.', () => {
 				/*
 					<Goal source="␂ null ; ␃">
 						<FILEBOUND value="true">␂</FILEBOUND>
@@ -96,29 +96,39 @@ describe('Parser', () => {
 						<FILEBOUND value="false">␃</FILEBOUND>
 					</Goal>
 				*/
-				const tree: ParseNodeGoal = new Parser('null;', CONFIG_DEFAULT).parse()
-				assert_arrayLength(tree.children, 3)
-				const statement_list: ParseNodeGoal__0__List = tree.children[1]
-				assert_arrayLength(statement_list.children, 1)
-				const statement: ParseNodeStatement = statement_list.children[0]
-				assert_arrayLength(statement.children, 2)
-				const expression: ParseNodeExpression = statement.children[0]
-				assert_arrayLength(expression.children, 1)
-				const expression_add: ParseNodeExpressionBinary = expression.children[0]
-				assert_arrayLength(expression_add.children, 1)
-				const expression_mul: ParseNodeExpressionBinary = expression_add.children[0] as ParseNodeExpressionBinary
-				assert_arrayLength(expression_mul.children, 1)
-				const expression_exp: ParseNodeExpressionBinary = expression_mul.children[0] as ParseNodeExpressionBinary
-				assert_arrayLength(expression_exp.children, 1)
-				const expression_un: ParseNodeExpressionUnary = expression_exp.children[0] as ParseNodeExpressionUnary
-				assert_arrayLength(expression_un.children, 1)
-				const expression_atom: ParseNodeExpressionUnit = expression_un.children[0]
-				assert_arrayLength(expression_atom.children, 1)
-				const literal: ParseNodePrimitiveLiteral = expression_atom.children[0] as ParseNodePrimitiveLiteral
-				assert_arrayLength(literal.children, 1)
-				const token: TokenKeyword | TokenNumber | TokenString = literal.children[0]
-				assert.ok(token instanceof TokenKeyword)
-				assert.strictEqual(token.source, Keyword.NULL)
+				[
+					`null;`,
+					`false;`,
+					`true;`,
+				].forEach((src, i) => {
+					const tree: ParseNodeGoal = new Parser(src, CONFIG_DEFAULT).parse()
+					assert_arrayLength(tree.children, 3)
+					const statement_list: ParseNodeGoal__0__List = tree.children[1]
+					assert_arrayLength(statement_list.children, 1)
+					const statement: ParseNodeStatement = statement_list.children[0]
+					assert_arrayLength(statement.children, 2)
+					const expression: ParseNodeExpression = statement.children[0]
+					assert_arrayLength(expression.children, 1)
+					const expression_add: ParseNodeExpressionBinary = expression.children[0]
+					assert_arrayLength(expression_add.children, 1)
+					const expression_mul: ParseNodeExpressionBinary = expression_add.children[0] as ParseNodeExpressionBinary
+					assert_arrayLength(expression_mul.children, 1)
+					const expression_exp: ParseNodeExpressionBinary = expression_mul.children[0] as ParseNodeExpressionBinary
+					assert_arrayLength(expression_exp.children, 1)
+					const expression_un: ParseNodeExpressionUnary = expression_exp.children[0] as ParseNodeExpressionUnary
+					assert_arrayLength(expression_un.children, 1)
+					const expression_atom: ParseNodeExpressionUnit = expression_un.children[0]
+					assert_arrayLength(expression_atom.children, 1)
+					const literal: ParseNodePrimitiveLiteral = expression_atom.children[0] as ParseNodePrimitiveLiteral
+					assert_arrayLength(literal.children, 1)
+					const token: TokenKeyword | TokenNumber | TokenString = literal.children[0]
+					assert.ok(token instanceof TokenKeyword)
+					assert.strictEqual(token.source, [
+						Keyword.NULL,
+						Keyword.FALSE,
+						Keyword.TRUE,
+					][i])
+				});
 			})
 			it('parses a NUMBER or STRING', () => {
 				assert.strictEqual(new Parser('42;', CONFIG_DEFAULT).parse().serialize(), `

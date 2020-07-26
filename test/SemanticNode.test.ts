@@ -3,7 +3,10 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import {CONFIG_DEFAULT} from '../'
-import SolidNull from '../src/vm/Null.class'
+import SolidLanguageValue, {
+	SolidNull,
+	SolidBoolean,
+} from '../src/vm/SolidLanguageValue.class'
 import Util from '../src/class/Util.class'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
@@ -14,7 +17,7 @@ import type {
 	ParseNodeGoal__0__List,
 } from '../src/class/ParseNode.class'
 import {
-	SolidLanguageType,
+	SolidLanguageTypeDraft,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
@@ -42,7 +45,7 @@ describe('SemanticNode', () => {
 					(new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeExpression
-				}, TypeError)
+				}, /Invalid operation./)
 			})
 		})
 
@@ -59,7 +62,7 @@ describe('SemanticNode', () => {
 				assert.throws(() => {
 					new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression
-				}, TypeError)
+				}, /Invalid operation./)
 			})
 		})
 
@@ -107,11 +110,15 @@ describe('SemanticNode', () => {
 			it('pushes the constant onto the stack.', () => {
 				assert.deepStrictEqual([
 					'null;',
+					'false;',
+					'true;',
 					'42;',
 					'+42;',
 					'-42;',
 				].map((src) => new CodeGenerator(src, CONFIG_DEFAULT).print()), [
 					`(i32.const 0)`,
+					`(i32.const 0)`,
+					`(i32.const 1)`,
 					`(i32.const 42)`,
 					`(i32.const 42)`,
 					`(i32.const -42)`,
@@ -188,10 +195,20 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeConstant).type(), SolidNull)
 			})
+			it('returns `Boolean` for SemanticNodeConstant with bool value.', () => {
+				[
+					`false;`,
+					`true;`,
+				].forEach((src) => {
+					assert.strictEqual(((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeConstant).type(), SolidBoolean)
+				})
+			})
 			it('returns `Integer` for SemanticNodeConstant with number value.', () => {
 				assert.strictEqual(((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeConstant).type(), SolidLanguageType.NUMBER)
+					.children[0] as SemanticNodeConstant).type(), SolidLanguageTypeDraft.NUMBER)
 			})
 			Dev.supports('variables') && it('throws for identifiers.', () => {
 				assert.throws(() => ((new Parser(`x;`, CONFIG_DEFAULT).parse().decorate()
@@ -214,39 +231,48 @@ describe('SemanticNode', () => {
 							.children[0] as SemanticNodeTemplate,
 					] : []),
 				].forEach((node) => {
-					assert.strictEqual(node.type(), SolidLanguageType.STRING)
+					assert.strictEqual(node.type(), SolidLanguageTypeDraft.STRING)
 				})
 			})
 			it('returns `Integer` or any operation of numbers.', () => {
 				assert.strictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), SolidLanguageType.NUMBER)
+					.children[0] as SemanticNodeOperation).type(), SolidLanguageTypeDraft.NUMBER)
 			})
 			it('throws for operation of non-numbers.', () => {
-				assert.throws(() => ((new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), TypeError)
-				Dev.supports('literalString') && assert.throws(() => ((new Parser(`'hello' + 5;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), TypeError)
+				[
+					`null + 5;`,
+					`5 * null;`,
+					`false - 2;`,
+					`2 / true;`,
+					`null ^ false;`,
+					...(Dev.supports('literalString') ? [`'hello' + 5;`] : []),
+				].forEach((src) => {
+					assert.throws(() => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation).type(), /Invalid operation./)
+				})
 			})
 		})
 
 		describe('#assess', () => {
-			it('computes the value of constant null expression.', () => {
-				const values: (number | SemanticNodeExpression | SolidNull)[] = [
+			it('computes the value of constant null or boolean expression.', () => {
+				assert.deepStrictEqual([
 					'null;',
+					'false;',
+					'true;',
 				].map((src) => (((new Parser(src, CONFIG_DEFAULT).parse()
 					.children[1] as ParseNodeGoal__0__List)
 					.children[0] as ParseNodeStatement)
 					.children[0] as ParseNodeExpression
-				).decorate().assess().value)
-				values.forEach((value) => {
-					assert.strictEqual(value, SolidNull.NULL)
-				})
+				).decorate().assess().value), [
+					SolidNull.NULL,
+					SolidBoolean.FALSE,
+					SolidBoolean.TRUE,
+				])
 			})
 			it('computes the value of a constant numeric expression.', () => {
-				const values: (number | SemanticNodeExpression | SolidNull)[] = [
+				const values: (number | SolidLanguageValue | SemanticNodeExpression)[] = [
 					'42 + 420;',
 					'42 - 420;',
 					'126 / 3;',

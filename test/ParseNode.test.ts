@@ -1,11 +1,18 @@
 import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../'
+import {
+	SolidNull,
+	SolidBoolean,
+} from '../src/vm/SolidLanguageValue.class'
 import Util   from '../src/class/Util.class'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
 import {
 	SemanticNodeTemplate,
+	SemanticNodeExpression,
+	SemanticNodeConstant,
+	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
 } from '../src/class/SemanticNode.class'
@@ -38,20 +45,33 @@ describe('ParseNode', () => {
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
 			it('makes a SemanticNodeConstant node.', () => {
-				assert.strictEqual(new Parser('null;', CONFIG_DEFAULT).parse().decorate().serialize(), `
+				/*
 					<Goal source="␂ null ; ␃">
 						<StatementExpression line="1" col="1" source="null ;">
 							<Constant line="1" col="1" source="null" value="null"/>
 						</StatementExpression>
 					</Goal>
-				`.replace(/\n\t*/g, ''))
-				assert.strictEqual(new Parser('42;', CONFIG_DEFAULT).parse().decorate().serialize(), `
-					<Goal source="␂ 42 ; ␃">
-						<StatementExpression line="1" col="1" source="42 ;">
-							<Constant line="1" col="1" source="42" value="42"/>
-						</StatementExpression>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
+				*/
+				[
+					`null;`,
+					`false;`,
+					`true;`,
+					`42;`,
+				].forEach((src, i) => {
+					const goal: SemanticNodeGoal = new Parser(src, CONFIG_DEFAULT).parse().decorate()
+					assert_arrayLength(goal.children, 1, 'goal should have 1 child')
+					const stmt: SemanticStatementType = goal.children[0] as SemanticStatementType
+					assert.ok(stmt instanceof SemanticNodeStatementExpression)
+					assert_arrayLength(stmt.children, 1, 'statement should have 1 child')
+					const expr: SemanticNodeExpression = stmt.children[0]
+					assert.ok(expr instanceof SemanticNodeConstant)
+					assert.deepStrictEqual(expr.value, [
+						SolidNull.NULL,
+						SolidBoolean.FALSE,
+						SolidBoolean.TRUE,
+						42,
+					][i])
+				})
 			})
 		})
 

@@ -8,29 +8,31 @@ The abstract algorithm **TypeOf** returns the [Solid Language Type](./data-types
 of an expression.
 ```
 Type TypeOf(SemanticConstant constant) :=
-	1. If `constant.value` is `null`:
-		1. Return: `Null`.
-	1. If `constant.value` is a `RealNumber`:
-		1. Return: `Number`.
-	2. Else:
-		1. Assert: `constant.value` is a `Sequence<RealNumber>`.
-		2. Return: `String`.
+	1. *If* `constant.value` is `null`:
+		1. *Return:* `Null`.
+	2. *If* `constant.value` is `false` or `true`:
+		1. *Return:* `Boolean`.
+	3. *If* `constant.value` is a `RealNumber`:
+		1. *Return:* `Number`.
+	4. Else:
+		1. *Assert:* `constant.value` is a `Sequence<RealNumber>`.
+		2. *Return:* `String`.
 
 Type TypeOf(StringTemplate template) :=
-	1. Return: `String`.
+	1. *Return:* `String`.
 
 Type TypeOf(SemanticIdentifier id) :=
 	/* TO BE DETERMINED */
 
 Type TypeOf(SemanticOperation operation) :=
-	1. If `TypeOf(operation.children.0)` is `Number`:
-		1. If `operation.children.count` is 1:
-			1. Return: `Number`.
-		2. Else:
-			1. Assert: `operation.children.count` is 2.
-			2. If `TypeOf(operation.children.1)` is `Number`:
-				1. Return: `Number`.
-	2. Throw a TypeError "Invalid operation.".
+	1. *If* `TypeOf(operation.children.0)` is `Number`:
+		1. *If* `operation.children.count` is 1:
+			1. *Return:* `Number`.
+		2. *Else:*
+			1. *Assert:* `operation.children.count` is 2.
+			2. *If* `TypeOf(operation.children.1)` is `Number`:
+				1. *Return:* `Number`.
+	2. *Throw:* TypeError "Invalid operation.".
 ```
 
 

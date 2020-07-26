@@ -36,7 +36,9 @@ export enum Punctuator {
 
 export enum Keyword {
 	// literal
-	NULL = 'null',
+	NULL  = 'null',
+	FALSE = 'false',
+	TRUE  = 'true',
 	// storage
 	LET = 'let', // Dev.supports('variables')
 	// modifier
