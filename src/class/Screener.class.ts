@@ -1,4 +1,4 @@
-import type SolidConfig from '../SolidConfig.d'
+import type SolidConfig from '../SolidConfig'
 
 import Dev from './Dev.class'
 import Lexer from './Lexer.class'

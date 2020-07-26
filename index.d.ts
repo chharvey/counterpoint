@@ -1,7 +1,13 @@
+/*
+ * Note: this file exists only for typescript declaration.
+ * It is not meant to be compiled.
+ * See `./index.js` for the manual output.
+ */
+
+
+
 import type SolidConfig from './src/SolidConfig'
 
-/** The default configuration settings. */
-export declare const CONFIG_DEFAULT: SolidConfig;
 
 /**
  * Compile Solid source code into a readable text format for development purposes.
@@ -17,4 +23,4 @@ export declare function print(sourcecode: string, config?: SolidConfig): string;
  * @param sourcecode - the Solid source text
  * @return the output as a binary format
  */
-export declare function compile(sourcecode: string, config?: SolidConfig): Uint8Array;
+export declare function compile(sourcecode: string, config?: SolidConfig): Promise<Uint8Array>;

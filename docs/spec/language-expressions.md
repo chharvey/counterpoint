@@ -24,34 +24,6 @@ Decorate(Expression ::= ExpressionAdditive) -> SemanticExpression
 ```
 
 
-### Abstract Operation: TypeOf
-The abstract operation `TypeOf` returns the [Solid Language Type] of an expression.
-```
-Type typeOf(SemanticConstant constant) :=
-	1. If `constant.value` is a `RealNumber`:
-		1. Return: `Number`.
-	2. Else:
-		1. Assert: `constant.value` is a `Sequence<RealNumber>`.
-		2. Return: `String`.
-
-Type typeOf(StringTemplate template) :=
-	1. Return: `String`.
-
-Type typeOf(SemanticIdentifier id) :=
-	/* TO BE DETERMINED */
-
-Type typeOf(SemanticOperation operation) :=
-	1. If `typeOf(operation.children.0)` is `Number`:
-		1. If `operation.children.count` is 1:
-			1. Return: `Number`.
-		2. Else:
-			1. Assert: `operation.children.count` is 2.
-			2. If `typeOf(operation.children.1)` is `Number`:
-				1. Return: `Number`.
-	2. Throw a TypeError "Invalid operation.".
-```
-
-
 ### Abstract Operation: PerformNumericBinaryOperation
 ```w3c
 Number PerformNumericBinaryOperation(Text op, Number operand0, Number operand1) :=
@@ -102,6 +74,9 @@ Sequence<Instruction> BuildSemanticOperationBinary(SemanticOperation expr) :=
 ## Literals
 ```w3c
 PrimitiveLiteral ::=
+	| "null"
+	| "false"
+	| "true"
 	| NUMBER
 	| STRING
 ;
@@ -115,7 +90,7 @@ StringTemplate ::=
 
 ### Static Semantics: Semantic Schema (Literals)
 ```w3c
-SemanticConstant[value: Number]
+SemanticConstant[value: Null | Boolean | Number]
 	::= ();
 
 SemanticTemplate[type: "full"]
@@ -130,8 +105,16 @@ SemanticTemplatePartial
 
 ### Static Semantics: Decorate (Literals)
 ```w3c
+Decorate(PrimitiveLiteral ::= "null") -> SemanticConstant
+	:= (SemanticConstant[value=null]);
+
+Decorate(PrimitiveLiteral ::= "false") -> SemanticConstant
+	:= (SemanticConstant[value=false]);
+Decorate(PrimitiveLiteral ::= "true") -> SemanticConstant
+	:= (SemanticConstant[value=true]);
+
 Decorate(PrimitiveLiteral ::= NUMBER) -> SemanticConstant
-	:= (SemanticConstant[value=TokenWorth(NUMBER));
+	:= (SemanticConstant[value=TokenWorth(NUMBER)]);
 
 Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 	:= (SemanticConstant[value=TokenWorth(STRING)]);
@@ -190,7 +173,7 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 
 ### Static Semantics: Assess (Literals)
 ```w3c
-Number Assess(SemanticConstant const) :=
+Or<Null, Boolean, Number> Assess(SemanticConstant const) :=
 	1. *Return:* `const.value`.
 
 Void Assess(SemanticTemplate tpl) :=
@@ -200,6 +183,15 @@ Void Assess(SemanticTemplate tpl) :=
 
 ### Static Semantics: Build (Literals)
 ```w3c
+Sequence<Instruction> Build(Null n) :=
+	1. *Return:* ["Push `0` onto the operand stack."].
+
+Sequence<Instruction> Build(Boolean b) :=
+	1. *If* `b` is `true`:
+		1. *Return:* ["Push `1` onto the operand stack."].
+	2. *Assert:* `b` is `false`.
+	3. *Return:* ["Push `0` onto the operand stack."].
+
 Sequence<Instruction> Build(Number n) :=
 	1. *Return:* ["Push `n` onto the operand stack."].
 

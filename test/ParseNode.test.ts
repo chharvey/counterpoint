@@ -1,14 +1,21 @@
 import * as assert from 'assert'
 
-import {CONFIG_DEFAULT} from '../'
+import {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Util   from '../src/class/Util.class'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
 import {
 	SemanticNodeTemplate,
+	SemanticNodeExpression,
+	SemanticNodeConstant,
+	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
 } from '../src/class/SemanticNode.class'
+import {
+	SolidNull,
+	SolidBoolean,
+} from '../src/vm/SolidLanguageValue.class'
 
 import {
 	assert_arrayLength,
@@ -38,13 +45,33 @@ describe('ParseNode', () => {
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
 			it('makes a SemanticNodeConstant node.', () => {
-				assert.strictEqual(new Parser('42;', CONFIG_DEFAULT).parse().decorate().serialize(), `
-					<Goal source="␂ 42 ; ␃">
-						<StatementExpression line="1" col="1" source="42 ;">
-							<Constant line="1" col="1" source="42" value="42"/>
+				/*
+					<Goal source="␂ null ; ␃">
+						<StatementExpression line="1" col="1" source="null ;">
+							<Constant line="1" col="1" source="null" value="null"/>
 						</StatementExpression>
 					</Goal>
-				`.replace(/\n\t*/g, ''))
+				*/
+				[
+					`null;`,
+					`false;`,
+					`true;`,
+					`42;`,
+				].forEach((src, i) => {
+					const goal: SemanticNodeGoal = new Parser(src, CONFIG_DEFAULT).parse().decorate()
+					assert_arrayLength(goal.children, 1, 'goal should have 1 child')
+					const stmt: SemanticStatementType = goal.children[0] as SemanticStatementType
+					assert.ok(stmt instanceof SemanticNodeStatementExpression)
+					assert_arrayLength(stmt.children, 1, 'statement should have 1 child')
+					const expr: SemanticNodeExpression = stmt.children[0]
+					assert.ok(expr instanceof SemanticNodeConstant)
+					assert.deepStrictEqual(expr.value, [
+						SolidNull.NULL,
+						SolidBoolean.FALSE,
+						SolidBoolean.TRUE,
+						42,
+					][i])
+				})
 			})
 		})
 
@@ -55,7 +82,7 @@ describe('ParseNode', () => {
 			specify('head, tail.', () => {
 				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
 					'''head1{{}}tail1''';
-				`), CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal).serialize(), `
+				`), CONFIG_DEFAULT).parse().decorate()).serialize(), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Constant line="1" col="11" source="}}tail1&apos;&apos;&apos;" value="tail1"/>
@@ -65,7 +92,7 @@ describe('ParseNode', () => {
 			specify('head, expr, tail.', () => {
 				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
 					'''head1{{ '''full1''' }}tail1''';
-				`), CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal).serialize(), `
+				`), CONFIG_DEFAULT).parse().decorate()).serialize(), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -78,7 +105,7 @@ describe('ParseNode', () => {
 			specify('head, expr, middle, tail.', () => {
 				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{}}tail1''';
-				`), CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal).serialize(), `
+				`), CONFIG_DEFAULT).parse().decorate()).serialize(), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -92,7 +119,7 @@ describe('ParseNode', () => {
 			specify('head, expr, middle, expr, tail.', () => {
 				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1''';
-				`), CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal).serialize(), `
+				`), CONFIG_DEFAULT).parse().decorate()).serialize(), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -109,7 +136,7 @@ describe('ParseNode', () => {
 			specify('head, expr, middle, expr, middle, tail.', () => {
 				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1''';
-				`), CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal).serialize(), `
+				`), CONFIG_DEFAULT).parse().decorate()).serialize(), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -127,7 +154,7 @@ describe('ParseNode', () => {
 			specify('head, expr, middle, expr, middle, expr, tail.', () => {
 				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1''';
-				`), CONFIG_DEFAULT).parse().decorate() as SemanticNodeGoal).serialize(), `
+				`), CONFIG_DEFAULT).parse().decorate()).serialize(), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ &apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">

@@ -1,5 +1,4 @@
-import {CONFIG_DEFAULT} from '../../'
-import type SolidConfig from '../SolidConfig.d'
+import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 
 import Util from './Util.class'
 import Dev from './Dev.class'
@@ -35,9 +34,13 @@ export enum Punctuator {
 }
 
 export enum Keyword {
-	// Storage
+	// literal
+	NULL  = 'null',
+	FALSE = 'false',
+	TRUE  = 'true',
+	// storage
 	LET = 'let', // Dev.supports('variables')
-	// Modifier
+	// modifier
 	UNFIXED = 'unfixed', // Dev.supports('variables')
 }
 
@@ -162,7 +165,9 @@ export class TokenWhitespace extends Token {
 }
 export class TokenPunctuator extends Token {
 	static readonly PUNCTUATORS: readonly Punctuator[] = [...new Set( // remove duplicates
-		Object.values(Punctuator).filter((p) => Dev.supports('variables') ? true : !['='].includes(p))
+		Object.values(Punctuator).filter((p) => Dev.supports('variables') ? true : ![
+			Punctuator.ASSIGN,
+		].includes(p))
 	)]
 	declare source: Punctuator;
 	constructor (lexer: Lexer, count: 1n|2n|3n = 1n) {
@@ -180,7 +185,10 @@ export class TokenPunctuator extends Token {
 	private static readonly MINIMUM_VALUE: bigint = 0x80n
 	static readonly CHAR: RegExp = /^[a-z]$/
 	static readonly KEYWORDS: readonly Keyword[] = [...new Set<Keyword>( // remove duplicates
-		Object.values(Keyword).filter((kw) => Dev.supports('variables') ? true : !['let', 'unfixed'].includes(kw))
+		Object.values(Keyword).filter((kw) => Dev.supports('variables') ? true : ![
+			Keyword.LET,
+			Keyword.UNFIXED,
+		].includes(kw))
 	)]
 	declare source: Keyword;
 	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {

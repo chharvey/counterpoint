@@ -184,23 +184,21 @@ TokenWorth(Punctuator :::= "-") -> RealNumber := \x03;
 TokenWorth(Punctuator :::= "^") -> RealNumber := \x04;
 TokenWorth(Punctuator :::= "*") -> RealNumber := \x05;
 TokenWorth(Punctuator :::= "/") -> RealNumber := \x06;
-TokenWorth(Punctuator :::= "=") -> RealNumber := \x07;
-TokenWorth(Punctuator :::= ";") -> RealNumber := \x08;
+TokenWorth(Punctuator :::= ";") -> RealNumber := \x07;
+TokenWorth(Punctuator :::= "=") -> RealNumber := \x08;
 ```
 
 
 ### Keywords
 ```w3c
 Keyword :::=
-	| KeywordStorage
-	| KeywordModifier
-;
-
-KeywordStorage :::=
+	// literal
+	| "null"
+	| "false"
+	| "true"
+	// storage
 	| "let"
-;
-
-KeywordModifier :::=
+	// modifier
 	| "unfixed"
 ;
 ```
@@ -215,8 +213,11 @@ Token Worth quantities for keywords are predetermined by the lexical grammar and
 Token Worth quantities for keywords are integers ranging from *128* to *255* (inclusive).
 
 ```w3c
-TokenWorth(Keyword :::= "let"    ) -> RealNumber := \x80;
-TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x81;
+TokenWorth(Keyword :::= "null")    -> RealNumber := \x80;
+TokenWorth(Keyword :::= "false")   -> RealNumber := \x81;
+TokenWorth(Keyword :::= "true")    -> RealNumber := \x82;
+TokenWorth(Keyword :::= "let")     -> RealNumber := \x83;
+TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x84;
 ```
 
 

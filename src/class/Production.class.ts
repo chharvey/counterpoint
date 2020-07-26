@@ -81,19 +81,31 @@ export class ProductionPrimitiveLiteral extends Production {
 	static readonly instance: ProductionPrimitiveLiteral = new ProductionPrimitiveLiteral()
 	get sequences(): GrammarSymbol[][] {
 		return Dev.supports('literalString') ? [
+			[Keyword.NULL],
+			[Keyword.FALSE],
+			[Keyword.TRUE],
 			[TerminalNumber.instance],
 			[TerminalString.instance],
 		] : [
+			[Keyword.NULL],
+			[Keyword.FALSE],
+			[Keyword.TRUE],
 			[TerminalNumber.instance],
 		]
 	}
 	random(): string[] {
-		return [
-			Dev.supports('literalString')
-				? Util.randomBool()
-					? TerminalNumber.instance.random()
-					: TerminalString.instance.random()
-				: TerminalNumber.instance.random()
+		const random: number = Math.random()
+		return Dev.supports('literalString') ? [
+			random < 0.2 ? Keyword.NULL :
+			random < 0.4 ? Keyword.FALSE :
+			random < 0.6 ? Keyword.TRUE :
+			random < 0.8 ? TerminalNumber.instance.random() :
+			               TerminalString.instance.random()
+		] : [
+			random < 0.25 ? Keyword.NULL :
+			random < 0.50 ? Keyword.FALSE :
+			random < 0.75 ? Keyword.TRUE :
+			                TerminalNumber.instance.random()
 		]
 	}
 }
