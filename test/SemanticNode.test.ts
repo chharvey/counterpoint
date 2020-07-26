@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import {CONFIG_DEFAULT} from '../'
-import {
+import SolidLanguageValue, {
 	SolidNull,
 	SolidBoolean,
 } from '../src/vm/SolidLanguageValue.class'
@@ -110,11 +110,15 @@ describe('SemanticNode', () => {
 			it('pushes the constant onto the stack.', () => {
 				assert.deepStrictEqual([
 					'null;',
+					'false;',
+					'true;',
 					'42;',
 					'+42;',
 					'-42;',
 				].map((src) => new CodeGenerator(src, CONFIG_DEFAULT).print()), [
 					`(i32.const 0)`,
+					`(i32.const 0)`,
+					`(i32.const 1)`,
 					`(i32.const 42)`,
 					`(i32.const 42)`,
 					`(i32.const -42)`,
@@ -252,20 +256,23 @@ describe('SemanticNode', () => {
 		})
 
 		describe('#assess', () => {
-			it('computes the value of constant null expression.', () => {
-				const values: (number | SemanticNodeExpression | SolidNull)[] = [
+			it('computes the value of constant null or boolean expression.', () => {
+				assert.deepStrictEqual([
 					'null;',
+					'false;',
+					'true;',
 				].map((src) => (((new Parser(src, CONFIG_DEFAULT).parse()
 					.children[1] as ParseNodeGoal__0__List)
 					.children[0] as ParseNodeStatement)
 					.children[0] as ParseNodeExpression
-				).decorate().assess().value)
-				values.forEach((value) => {
-					assert.strictEqual(value, SolidNull.NULL)
-				})
+				).decorate().assess().value), [
+					SolidNull.NULL,
+					SolidBoolean.FALSE,
+					SolidBoolean.TRUE,
+				])
 			})
 			it('computes the value of a constant numeric expression.', () => {
-				const values: (number | SemanticNodeExpression | SolidNull)[] = [
+				const values: (number | SolidLanguageValue | SemanticNodeExpression)[] = [
 					'42 + 420;',
 					'42 - 420;',
 					'126 / 3;',

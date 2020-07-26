@@ -186,6 +186,12 @@ Void Assess(SemanticTemplate tpl) :=
 Sequence<Instruction> Build(Null n) :=
 	1. *Return:* ["Push `0` onto the operand stack."].
 
+Sequence<Instruction> Build(Boolean b) :=
+	1. *If* `b` is `true`:
+		1. *Return:* ["Push `1` onto the operand stack."].
+	2. *Assert:* `b` is `false`.
+	3. *Return:* ["Push `0` onto the operand stack."].
+
 Sequence<Instruction> Build(Number n) :=
 	1. *Return:* ["Push `n` onto the operand stack."].
 

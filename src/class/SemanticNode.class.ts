@@ -129,16 +129,21 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	abstract assess(): Assessment;
 
 	public static Assessment = class Assessment {
-		constructor (readonly value: number | SolidNull | SemanticNodeExpression) {
+		constructor (readonly value: number | SolidLanguageValue | SemanticNodeExpression) {
 		}
 		get isDetermined(): boolean {
 			return !(this.value instanceof SemanticNodeExpression)
 		}
 		build(generator: CodeGenerator): string {
 			return (
-				(this.value instanceof SolidNull) ? generator.const(0) :
+				(this.value instanceof SemanticNodeExpression) ? this.value.build(generator) :
+				(this.value instanceof SolidLanguageValue) ?
+					(this.value === SolidBoolean.TRUE)
+						? generator.const(1)
+						: generator.const(0) // FALSE or NULL
+				:
 				(typeof this.value === 'number') ? generator.const(this.value) :
-				this.value.build(generator)
+				generator.nop()
 			)
 		}
 	}
@@ -146,10 +151,10 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 export class SemanticNodeConstant extends SemanticNodeExpression {
 	declare children:
 		| readonly []
-	readonly value: number | string | SolidNull | SolidBoolean;
+	readonly value: number | string | SolidLanguageValue;
 	constructor (start_node: TokenKeyword | TokenNumber | TokenString | TokenTemplate) {
 		const cooked: number | bigint | string = start_node.cook()
-		const value: number | string | SolidNull | SolidBoolean = (typeof cooked === 'bigint') ?
+		const value: number | string | SolidLanguageValue = (typeof cooked === 'bigint') ?
 			(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
 			(start_node.source === Keyword.TRUE) ? SolidBoolean.TRUE :
 			SolidNull.NULL
@@ -169,7 +174,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		)
 	}
 	assess(): Assessment {
-		if (this.value instanceof SolidNull || typeof this.value === 'number') {
+		if (this.value instanceof SolidLanguageValue || typeof this.value === 'number') {
 			return new SemanticNodeExpression.Assessment(this.value)
 		} else {
 			throw new Error('not yet supported.')
