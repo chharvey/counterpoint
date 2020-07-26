@@ -84,25 +84,27 @@ describe('SemanticNode', () => {
 
 
 	describe('#build', () => {
-		const boilerplate = (expected: string) => `
+		const boilerplate = (expected: string): string => boilerplate_mod(boilerplate_stmt(expected, 0n))
+		const boilerplate_mod = (stmt: string): string => `
 			(module
 				${ fs.readFileSync(path.join(__dirname, '../src/neg.wat'), 'utf8') }
 				${ fs.readFileSync(path.join(__dirname, '../src/exp.wat'), 'utf8') }
-				(func (export "run") (result i32)
-					${ Util.dedent(expected).trim().replace(/\n\t*\(/g, ' \(').replace(/\n\t*\)/g, '\)') }
-				)
+				${ Util.dedent(stmt).trim() }
 			)
 		`
+		const boilerplate_stmt = (expr: string, index: bigint): string => `
+			(func (export "f${ index }") (result i32) ${ Util.dedent(expr).trim() })
+		`.trim()
 
 		context('SemanticNodeGoal ::= SOT EOT', () => {
 			it('prints nop.', () => {
-				assert.strictEqual(new CodeGenerator('', CONFIG_DEFAULT).print(), boilerplate(`(nop)`))
+				assert.strictEqual(new CodeGenerator('', CONFIG_DEFAULT).print(), boilerplate_mod(`(nop)`))
 			})
 		})
 
 		context('SemanticNodeStatement ::= ";"', () => {
 			it('prints nop.', () => {
-				assert.strictEqual(new CodeGenerator(';', CONFIG_DEFAULT).print(), boilerplate(`(nop)`))
+				assert.strictEqual(new CodeGenerator(';', CONFIG_DEFAULT).print(), boilerplate_mod(`(nop)`))
 			})
 		})
 
@@ -179,10 +181,10 @@ describe('SemanticNode', () => {
 				`))
 			})
 			specify('multiple statements.', () => {
-				assert.strictEqual(new CodeGenerator('42; 420;', CONFIG_DEFAULT).print(), boilerplate(`
-					(i32.const 42)
-					(i32.const 420)
-				`))
+				assert.strictEqual(new CodeGenerator('42; 420;', CONFIG_DEFAULT).print(), boilerplate_mod([
+					`(i32.const 42)`,
+					`(i32.const 420)`,
+				].map((out, i) => boilerplate_stmt(out, BigInt(i))).join('\n')))
 			})
 		})
 	})

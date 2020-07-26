@@ -10,6 +10,7 @@ import {
 } from './Token.class'
 import type {
 	Assessment,
+	SemanticStatementType,
 } from './SemanticNode.class'
 import Parser from './Parser.class'
 
@@ -22,6 +23,8 @@ const i32_exp: string = fs.readFileSync(path.join(__dirname, '../../src/exp.wat'
  * The Code Generator.
  */
 export default class CodeGenerator {
+	/** A counter for statements. */
+	private stmt_count: bigint = 0n;
 	/** The output code to produce. */
 	private readonly output: string;
 
@@ -90,6 +93,23 @@ export default class CodeGenerator {
 	}
 
 	/**
+	 * Create a new operand stack.
+	 * @param expr the assessment of an expression
+	 * @return a new function evaluating the argument
+	 */
+	stmt(expr: Assessment): string {
+		return `(func (export "f${ this.stmt_count++ }") (result i32) ${ expr.build(this) })`
+	}
+
+	/**
+	 * Return the semantic goal of a program.
+	 * @return the list of top-level components
+	 */
+	goal(comps: readonly SemanticStatementType[]): string {
+		return comps.map((comp) => comp.build(this)).join('\n')
+	}
+
+	/**
 	 * Return the instructions to print to file.
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
@@ -98,9 +118,7 @@ export default class CodeGenerator {
 			(module
 				${ i32_neg }
 				${ i32_exp }
-				(func (export "run") (result i32)
-					${ this.output }
-				)
+				${ this.output }
 			)
 		`
 	}

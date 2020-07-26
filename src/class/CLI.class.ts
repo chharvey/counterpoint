@@ -260,7 +260,7 @@ export default class CLI {
 	 * Run the command `run`.
 	 * @param cwd the current working directory, `process.cwd()`
 	 */
-	async run(cwd: string): Promise<[string, unknown]> {
+	async run(cwd: string): Promise<[string, ...unknown[]]> {
 		const inputfilepath: string = this.inputPath(cwd)
 		const bytes: Promise<Buffer> = fs.promises.readFile(inputfilepath)
 		return [
@@ -268,7 +268,7 @@ export default class CLI {
 				Executing………
 				Binary path: ${ inputfilepath }
 			`.trim().replace(/\n\t\t\t\t/g, '\n'),
-			((await WebAssembly.instantiate(await bytes)).instance.exports.run as Function)(),
+			...(Object.values((await WebAssembly.instantiate(await bytes)).instance.exports) as Function[]).map((func) => func()),
 		]
 	}
 }

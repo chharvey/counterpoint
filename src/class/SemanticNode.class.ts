@@ -293,7 +293,7 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 	build(generator: CodeGenerator): string {
 		return (!this.children.length)
 			? generator.nop()
-			: this.children[0].assess().build(generator)
+			: generator.stmt(this.children[0].assess())
 	}
 }
 export class SemanticNodeDeclaration extends SemanticNode {
@@ -381,8 +381,6 @@ export class SemanticNodeGoal extends SemanticNode {
 	build(generator: CodeGenerator): string {
 		return (!this.children.length)
 			? generator.nop()
-			: (this.children as SemanticStatementType[]).map((child) =>
-				child.build(generator)
-			).join(' ')
+			: generator.goal(this.children)
 	}
 }
