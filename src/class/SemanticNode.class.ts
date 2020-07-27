@@ -8,7 +8,7 @@ import Int16 from '../vm/Int16.class'
 import {
 	NanError02,
 } from '../error/NanError.class'
-import type CodeGenerator from './CodeGenerator.class'
+import CodeGenerator from './CodeGenerator.class'
 import Token, {
 	Punctuator,
 	Keyword,
@@ -139,11 +139,11 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 				(this.value instanceof SemanticNodeExpression) ? this.value.build(generator) :
 				(this.value instanceof SolidLanguageValue) ?
 					(this.value === SolidBoolean.TRUE)
-						? generator.const(1)
-						: generator.const(0) // FALSE or NULL
+						? CodeGenerator.const(1)
+						: CodeGenerator.const(0) // FALSE or NULL
 				:
-				(typeof this.value === 'number') ? generator.const(this.value) :
-				generator.nop()
+				(typeof this.value === 'number') ? CodeGenerator.const(this.value) :
+				CodeGenerator.nop()
 			)
 		}
 	}
@@ -244,8 +244,8 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 	}
 	build(generator: CodeGenerator): string {
 		return (this.children.length === 1)
-			? generator.unop (this.operator, this.children[0].assess())
-			: generator.binop(this.operator, this.children[0].assess(), this.children[1].assess())
+			? CodeGenerator.unop (this.operator, this.children[0].assess().build(generator))
+			: CodeGenerator.binop(this.operator, this.children[0].assess().build(generator), this.children[1].assess().build(generator))
 	}
 	type(): SolidLanguageType {
 		const t1: SolidLanguageType = this.children[0].type()
@@ -292,7 +292,7 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 	}
 	build(generator: CodeGenerator): string {
 		return (!this.children.length)
-			? generator.nop()
+			? CodeGenerator.nop()
 			: generator.stmt(this.children[0].assess())
 	}
 }
@@ -380,7 +380,7 @@ export class SemanticNodeGoal extends SemanticNode {
 	}
 	build(generator: CodeGenerator): string {
 		return (!this.children.length)
-			? generator.nop()
+			? CodeGenerator.nop()
 			: generator.goal(this.children)
 	}
 }

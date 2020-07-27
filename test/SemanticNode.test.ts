@@ -3,7 +3,6 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import {CONFIG_DEFAULT} from '../src/SolidConfig'
-import Util from '../src/class/Util.class'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
 import CodeGenerator from '../src/class/CodeGenerator.class'
@@ -84,17 +83,14 @@ describe('SemanticNode', () => {
 
 
 	describe('#build', () => {
-		const boilerplate = (expected: string): string => boilerplate_mod(boilerplate_stmt(expected, 0n))
-		const boilerplate_mod = (stmt: string): string => `
-			(module
-				${ fs.readFileSync(path.join(__dirname, '../src/neg.wat'), 'utf8') }
-				${ fs.readFileSync(path.join(__dirname, '../src/exp.wat'), 'utf8') }
-				${ Util.dedent(stmt).trim() }
-			)
-		`
-		const boilerplate_stmt = (expr: string, index: bigint): string => `
-			(func (export "f${ index }") (result i32) ${ Util.dedent(expr).trim() })
-		`.trim()
+		const i32_neg: string = fs.readFileSync(path.join(__dirname, '../src/neg.wat'), 'utf8')
+		const i32_exp: string = fs.readFileSync(path.join(__dirname, '../src/exp.wat'), 'utf8')
+		function boilerplate(expected: string): string {
+			return boilerplate_mod(CodeGenerator.stmt(0n, expected))
+		}
+		function boilerplate_mod(stmt: string): string {
+			return CodeGenerator.mod(i32_neg, i32_exp, stmt)
+		}
 
 		context('SemanticNodeGoal ::= SOT EOT', () => {
 			it('prints nop.', () => {
@@ -132,12 +128,12 @@ describe('SemanticNode', () => {
 			specify('ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative', () => {
 				assert.strictEqual(new CodeGenerator('42 + 420;', CONFIG_DEFAULT).print(), boilerplate(`
 					(i32.const ${ 42 + 420 })
-				`))
+				`.trim()))
 			})
 			specify('ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative', () => {
 				assert.strictEqual(new CodeGenerator('42 - 420;', CONFIG_DEFAULT).print(), boilerplate(`
 					(i32.const ${ 42 + -420 })
-				`))
+				`.trim()))
 			})
 			specify('ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential', () => {
 				assert.deepStrictEqual([
@@ -158,33 +154,31 @@ describe('SemanticNode', () => {
 					200 / -3,
 					-200 / 3,
 					-200 / -3,
-				].map((v) => boilerplate(`
-					(i32.const ${ Math.trunc(v) })
-				`)))
+				].map((v) => boilerplate(`(i32.const ${ Math.trunc(v) })`)))
 			})
 			specify('compound expression.', () => {
 				assert.strictEqual(new CodeGenerator('42 ^ 2 * 420;', CONFIG_DEFAULT).print(), boilerplate(`
 					(i32.const ${ (42 ** 2 * 420) % (2 ** 16) })
-				`))
+				`.trim()))
 			})
 			specify('overflow.', () => {
 				assert.strictEqual(new CodeGenerator('2 ^ 15 + 2 ^ 14;', CONFIG_DEFAULT).print(), boilerplate(`
 					(i32.const ${ -(2 ** 14) })
-				`))
+				`.trim()))
 				assert.strictEqual(new CodeGenerator('-(2 ^ 14) - 2 ^ 15;', CONFIG_DEFAULT).print(), boilerplate(`
 					(i32.const ${ 2 ** 14 })
-				`))
+				`.trim()))
 			})
 			specify('compound expression with grouping.', () => {
 				assert.strictEqual(new CodeGenerator('-(5) ^ +(2 * 3);', CONFIG_DEFAULT).print(), boilerplate(`
 					(i32.const ${ (-(5)) ** +(2 * 3) })
-				`))
+				`.trim()))
 			})
 			specify('multiple statements.', () => {
 				assert.strictEqual(new CodeGenerator('42; 420;', CONFIG_DEFAULT).print(), boilerplate_mod([
 					`(i32.const 42)`,
 					`(i32.const 420)`,
-				].map((out, i) => boilerplate_stmt(out, BigInt(i))).join('\n')))
+				].map((out, i) => CodeGenerator.stmt(BigInt(i), out)).join('\n')))
 			})
 		})
 	})
