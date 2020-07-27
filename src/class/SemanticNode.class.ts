@@ -6,7 +6,7 @@ import SolidLanguageValue, {
 } from '../vm/SolidLanguageValue.class'
 import Int16 from '../vm/Int16.class'
 import Instruction, {
-	InstructionNop,
+	InstructionNone,
 	InstructionConst,
 	InstructionUnop,
 	InstructionBinop,
@@ -150,8 +150,7 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 						? new InstructionConst(1)
 						: new InstructionConst() // FALSE or NULL
 				:
-				(typeof this.value === 'number') ? new InstructionConst(this.value) :
-				new InstructionNop()
+				new InstructionConst(this.value)
 			)
 		}
 	}
@@ -298,9 +297,9 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 		super(start_node, {}, children)
 		this.children.length && this.children[0].type() // assert does not throw
 	}
-	build(generator: CodeGenerator): InstructionNop | InstructionStatement {
+	build(generator: CodeGenerator): InstructionNone | InstructionStatement {
 		return (!this.children.length)
-			? new InstructionNop()
+			? new InstructionNone()
 			: generator.stmt(this.children[0])
 	}
 }
@@ -386,13 +385,9 @@ export class SemanticNodeGoal extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	build(generator: CodeGenerator): InstructionModule {
+	build(generator: CodeGenerator): InstructionNone | InstructionModule {
 		return (!this.children.length)
-			? new InstructionModule([
-				require('fs').readFileSync(require('path').join(__dirname, '../../src/neg.wat'), 'utf8'),
-				require('fs').readFileSync(require('path').join(__dirname, '../../src/exp.wat'), 'utf8'),
-				new InstructionNop(),
-			])
+			? new InstructionNone()
 			: generator.goal(this.children)
 	}
 }

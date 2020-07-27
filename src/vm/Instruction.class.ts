@@ -8,6 +8,17 @@ export default abstract class Instruction {
 
 
 /**
+ * Absence of instruction.
+ */
+export class InstructionNone extends Instruction {
+	/**
+	 * @return `''`
+	 */
+	toString(): string {
+		return ''
+	}
+}
+/**
  * Throw an error at runtime.
  */
 class InstructionUnreachable extends Instruction {
@@ -21,7 +32,7 @@ class InstructionUnreachable extends Instruction {
 /**
  * Do nothing at runtime.
  */
-export class InstructionNop extends Instruction {
+class InstructionNop extends Instruction {
 	/**
 	 * @return `'(nop)'`
 	 */

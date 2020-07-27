@@ -101,14 +101,14 @@ describe('SemanticNode', () => {
 		}
 
 		context('SemanticNodeGoal ::= SOT EOT', () => {
-			it('prints nop.', () => {
-				assert.strictEqual(new CodeGenerator('', CONFIG_DEFAULT).print(), boilerplate_mod(`(nop)`))
+			it('prints nothing.', () => {
+				assert.strictEqual(new CodeGenerator('', CONFIG_DEFAULT).print(), '')
 			})
 		})
 
 		context('SemanticNodeStatement ::= ";"', () => {
-			it('prints nop.', () => {
-				assert.strictEqual(new CodeGenerator(';', CONFIG_DEFAULT).print(), boilerplate_mod(`(nop)`))
+			it('prints empty module.', () => {
+				assert.strictEqual(new CodeGenerator(';', CONFIG_DEFAULT).print(), boilerplate_mod(''))
 			})
 		})
 
