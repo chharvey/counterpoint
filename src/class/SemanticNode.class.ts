@@ -36,7 +36,7 @@ type SolidLanguageType =
 	| typeof SolidNull
 	| typeof SolidBoolean
 
-export type Assessment = InstanceType<typeof SemanticNodeExpression.Assessment>
+type Assessment = InstanceType<typeof SemanticNodeExpression.Assessment>
 
 
 
@@ -128,7 +128,7 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	 */
 	abstract assess(): Assessment;
 
-	public static Assessment = class Assessment {
+	public static Assessment = class {
 		constructor (readonly value: number | SolidLanguageValue | SemanticNodeExpression) {
 		}
 		get isDetermined(): boolean {
@@ -293,7 +293,7 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 	build(generator: CodeGenerator): string {
 		return (!this.children.length)
 			? CodeGenerator.nop()
-			: generator.stmt(this.children[0].assess())
+			: generator.stmt(this.children[0])
 	}
 }
 export class SemanticNodeDeclaration extends SemanticNode {

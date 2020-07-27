@@ -9,7 +9,7 @@ import {
 	Punctuator,
 } from './Token.class'
 import type {
-	Assessment,
+	SemanticNodeExpression,
 	SemanticStatementType,
 } from './SemanticNode.class'
 import Parser from './Parser.class'
@@ -115,11 +115,11 @@ export default class CodeGenerator {
 
 	/**
 	 * Return a new statement-expression.
-	 * @param expr the assessment of an expression
+	 * @param expr a semantic expression
 	 * @return a call to {@link CodeGenerator.stmt}
 	 */
-	stmt(expr: Assessment): string {
-		return CodeGenerator.stmt(this.stmt_count++, expr.build(this))
+	stmt(expr: SemanticNodeExpression): string {
+		return CodeGenerator.stmt(this.stmt_count++, expr.assess().build(this))
 	}
 
 	/**
