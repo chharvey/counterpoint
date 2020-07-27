@@ -24,6 +24,11 @@ import SolidLanguageValue, {
 	SolidNull,
 	SolidBoolean,
 } from '../src/vm/SolidLanguageValue.class'
+import {
+	InstructionConst,
+	InstructionStatement,
+	InstructionModule,
+} from '../src/vm/Instruction.class'
 
 
 
@@ -86,10 +91,13 @@ describe('SemanticNode', () => {
 		const i32_neg: string = fs.readFileSync(path.join(__dirname, '../src/neg.wat'), 'utf8')
 		const i32_exp: string = fs.readFileSync(path.join(__dirname, '../src/exp.wat'), 'utf8')
 		function boilerplate(expected: string): string {
-			return boilerplate_mod(CodeGenerator.stmt(0n, expected))
+			return boilerplate_mod(stmt(0n, expected))
 		}
-		function boilerplate_mod(stmt: string): string {
-			return CodeGenerator.mod(i32_neg, i32_exp, stmt)
+		function boilerplate_mod(...stmts: string[]): string {
+			return new InstructionModule([i32_neg, i32_exp, ...stmts]).toString()
+		}
+		function stmt(count: bigint, expr: string): string {
+			return new InstructionStatement(count, new InstructionConst(+expr.slice(11, -1))).toString()
 		}
 
 		context('SemanticNodeGoal ::= SOT EOT', () => {
@@ -175,10 +183,10 @@ describe('SemanticNode', () => {
 				`.trim()))
 			})
 			specify('multiple statements.', () => {
-				assert.strictEqual(new CodeGenerator('42; 420;', CONFIG_DEFAULT).print(), boilerplate_mod([
+				assert.strictEqual(new CodeGenerator('42; 420;', CONFIG_DEFAULT).print(), boilerplate_mod(...[
 					`(i32.const 42)`,
 					`(i32.const 420)`,
-				].map((out, i) => CodeGenerator.stmt(BigInt(i), out)).join('\n')))
+				].map((out, i) => stmt(BigInt(i), out))))
 			})
 		})
 	})
