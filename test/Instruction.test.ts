@@ -4,8 +4,8 @@ import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Parser from '../src/class/Parser.class'
-import CodeGenerator from '../src/vm/Builder.class'
 import {Punctuator} from '../src/class/Token.class'
+import Builder from '../src/vm/Builder.class'
 import {
 	InstructionNone,
 	InstructionConst,
@@ -92,7 +92,7 @@ describe('Instruction', () => {
 					`;`,
 				].map((src) => {
 					const srcs: [string, SolidConfig] = [src, CONFIG_DEFAULT]
-					return new Parser(...srcs).parse().decorate().build(new CodeGenerator(...srcs))
+					return new Parser(...srcs).parse().decorate().build(new Builder(...srcs))
 				})
 				assert.ok(mods[0] instanceof InstructionNone)
 				assert.strictEqual(mods[0].toString(), ``)

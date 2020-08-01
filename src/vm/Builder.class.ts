@@ -4,16 +4,16 @@ import * as path from 'path'
 import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
 import type SolidConfig from '../SolidConfig'
-import {
-	InstructionStatement,
-	InstructionModule,
-} from './Instruction.class'
 import type {
 	SemanticNodeExpression,
 	SemanticStatementType,
 	SemanticNodeGoal,
 } from '../class/SemanticNode.class'
 import Parser from '../class/Parser.class'
+import {
+	InstructionStatement,
+	InstructionModule,
+} from './Instruction.class'
 
 const i32_neg: string = fs.readFileSync(path.join(__dirname, '../../src/neg.wat'), 'utf8')
 const i32_exp: string = fs.readFileSync(path.join(__dirname, '../../src/exp.wat'), 'utf8')
@@ -21,16 +21,16 @@ const i32_exp: string = fs.readFileSync(path.join(__dirname, '../../src/exp.wat'
 
 
 /**
- * The Code Generator.
+ * The Builder generates assembly code.
  */
-export default class CodeGenerator {
+export default class Builder {
 	/** A counter for statements. */
 	private stmt_count: bigint = 0n;
 	/** The goal symbol of the program. */
 	private readonly _goal: SemanticNodeGoal;
 
 	/**
-	 * Construct a new CodeGenerator object.
+	 * Construct a new Builder object.
 	 * @param source - the entire source text
 	 * @param config - The configuration settings for an instance program.
 	 */

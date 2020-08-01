@@ -1,5 +1,6 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
+import type Builder from '../vm/Builder.class'
 import SolidLanguageValue, {
 	SolidNull,
 	SolidBoolean,
@@ -16,7 +17,6 @@ import Instruction, {
 import {
 	NanError02,
 } from '../error/NanError.class'
-import type CodeGenerator from '../vm/Builder.class'
 import Token, {
 	Punctuator,
 	Keyword,
@@ -86,7 +86,7 @@ export default abstract class SemanticNode implements Serializable {
 	 * @param generator the generator to direct
 	 * @return the directions to print
 	 */
-	abstract build(generator: CodeGenerator): Instruction;
+	abstract build(generator: Builder): Instruction;
 
 	/**
 	 * @implements Serializable
@@ -142,7 +142,7 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 		get isDetermined(): boolean {
 			return !(this.value instanceof SemanticNodeExpression)
 		}
-		build(generator: CodeGenerator): Instruction {
+		build(generator: Builder): Instruction {
 			return (
 				(this.value instanceof SemanticNodeExpression) ? this.value.build(generator) :
 				(this.value instanceof SolidLanguageValue) ?
@@ -169,7 +169,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		super(start_node, {value})
 		this.value = value
 	}
-	build(generator: CodeGenerator): InstructionConst {
+	build(generator: Builder): InstructionConst {
 		return this.assess().build(generator) as InstructionConst
 	}
 	type(): SolidLanguageType {
@@ -195,7 +195,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 		const id: bigint | null = start_node.cook()
 		super(start_node, {id})
 	}
-	build(generator: CodeGenerator): Instruction {
+	build(generator: Builder): Instruction {
 		throw new Error('not yet supported.')
 	}
 	type(): SolidLanguageType {
@@ -218,7 +218,7 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	) {
 		super(start_node, {}, children)
 	}
-	build(generator: CodeGenerator): Instruction {
+	build(generator: Builder): Instruction {
 		throw new Error('not yet supported.')
 	}
 	type(): SolidLanguageType {
@@ -249,7 +249,7 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 	) {
 		super(start_node, {operator}, children)
 	}
-	build(generator: CodeGenerator): InstructionUnop | InstructionBinop {
+	build(generator: Builder): InstructionUnop | InstructionBinop {
 		return (this.children.length === 1)
 			? new InstructionUnop (this.operator, this.children[0].assess().build(generator))
 			: new InstructionBinop(this.operator, this.children[0].assess().build(generator), this.children[1].assess().build(generator))
@@ -296,7 +296,7 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	build(generator: CodeGenerator): InstructionNone | InstructionStatement {
+	build(generator: Builder): InstructionNone | InstructionStatement {
 		return (!this.children.length)
 			? new InstructionNone()
 			: generator.stmt(this.children[0])
@@ -313,7 +313,7 @@ export class SemanticNodeDeclaration extends SemanticNode {
 		super(start_node, {type, unfixed}, children)
 		this.typeCheck()
 	}
-	build(generator: CodeGenerator): Instruction {
+	build(generator: Builder): Instruction {
 		throw new Error('not yet supported.')
 	}
 	/**
@@ -333,7 +333,7 @@ export class SemanticNodeAssignment extends SemanticNode {
 		super(start_node, {}, children)
 		this.typeCheck()
 	}
-	build(generator: CodeGenerator): Instruction {
+	build(generator: Builder): Instruction {
 		throw new Error('not yet supported.')
 	}
 	/**
@@ -352,7 +352,7 @@ export class SemanticNodeAssignee extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	build(generator: CodeGenerator): Instruction {
+	build(generator: Builder): Instruction {
 		throw new Error('not yet supported.')
 	}
 }
@@ -364,7 +364,7 @@ export class SemanticNodeAssigned extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	build(generator: CodeGenerator): Instruction {
+	build(generator: Builder): Instruction {
 		throw new Error('not yet supported.')
 	}
 	/**
@@ -383,7 +383,7 @@ export class SemanticNodeGoal extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	build(generator: CodeGenerator): InstructionNone | InstructionModule {
+	build(generator: Builder): InstructionNone | InstructionModule {
 		return (!this.children.length)
 			? new InstructionNone()
 			: generator.goal(this.children)

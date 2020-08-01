@@ -3,7 +3,6 @@ import * as assert from 'assert'
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
-import CodeGenerator from '../src/vm/Builder.class'
 import {Punctuator} from '../src/class/Token.class'
 import type {
 	ParseNodeExpression,
@@ -19,6 +18,7 @@ import {
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
 } from '../src/class/SemanticNode.class'
+import Builder from '../src/vm/Builder.class'
 import SolidLanguageValue, {
 	SolidNull,
 	SolidBoolean,
@@ -93,7 +93,7 @@ describe('SemanticNode', () => {
 			it('returns InstructionNone.', () => {
 				const src: [string, SolidConfig] = [``, CONFIG_DEFAULT]
 				const instr: InstructionNone | InstructionModule = new Parser(...src).parse().decorate()
-					.build(new CodeGenerator(...src))
+					.build(new Builder(...src))
 				assert.ok(instr instanceof InstructionNone)
 			})
 		})
@@ -103,7 +103,7 @@ describe('SemanticNode', () => {
 				const src: [string, SolidConfig] = [`;`, CONFIG_DEFAULT]
 				const instr: InstructionNone | InstructionStatement = (new Parser(...src).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.build(new CodeGenerator(...src))
+					.build(new Builder(...src))
 				assert.ok(instr instanceof InstructionNone)
 			})
 		})
@@ -121,7 +121,7 @@ describe('SemanticNode', () => {
 					((new Parser(...srcs).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeConstant)
-						.build(new CodeGenerator(...srcs))
+						.build(new Builder(...srcs))
 				), [
 					0,
 					0,
@@ -139,10 +139,10 @@ describe('SemanticNode', () => {
 				const expr: SemanticNodeOperation = ((new Parser(...srcs).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation)
-				assert.deepStrictEqual(expr.assess().build(new CodeGenerator(...srcs)), new InstructionConst(
+				assert.deepStrictEqual(expr.assess().build(new Builder(...srcs)), new InstructionConst(
 					42 + 420,
 				))
-				assert.deepStrictEqual(expr.build(new CodeGenerator(...srcs)), new InstructionBinop(
+				assert.deepStrictEqual(expr.build(new Builder(...srcs)), new InstructionBinop(
 					Punctuator.ADD,
 					new InstructionConst(42),
 					new InstructionConst(420),
@@ -153,10 +153,10 @@ describe('SemanticNode', () => {
 				const expr: SemanticNodeOperation = ((new Parser(...srcs).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation)
-				assert.deepStrictEqual(expr.assess().build(new CodeGenerator(...srcs)), new InstructionConst(
+				assert.deepStrictEqual(expr.assess().build(new Builder(...srcs)), new InstructionConst(
 					42 + -420,
 				))
-				assert.deepStrictEqual(expr.build(new CodeGenerator(...srcs)), new InstructionBinop(
+				assert.deepStrictEqual(expr.build(new Builder(...srcs)), new InstructionBinop(
 					Punctuator.ADD,
 					new InstructionConst(42),
 					new InstructionConst(-420),
@@ -176,7 +176,7 @@ describe('SemanticNode', () => {
 					const expr: SemanticNodeOperation = ((new Parser(...srcs).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeOperation)
-					assert.deepStrictEqual(expr.assess().build(new CodeGenerator(...srcs)), new InstructionConst([
+					assert.deepStrictEqual(expr.assess().build(new Builder(...srcs)), new InstructionConst([
 						Math.trunc( 126 /  3),
 						Math.trunc(-126 /  3),
 						Math.trunc( 126 / -3),
@@ -186,7 +186,7 @@ describe('SemanticNode', () => {
 						Math.trunc(-200 /  3),
 						Math.trunc(-200 / -3),
 					][i]))
-					assert.deepStrictEqual(expr.build(new CodeGenerator(...srcs)), new InstructionBinop(
+					assert.deepStrictEqual(expr.build(new Builder(...srcs)), new InstructionBinop(
 						Punctuator.DIV,
 						new InstructionConst([
 							 126,
@@ -216,10 +216,10 @@ describe('SemanticNode', () => {
 				const expr: SemanticNodeOperation = ((new Parser(...srcs).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation)
-				assert.deepStrictEqual(expr.assess().build(new CodeGenerator(...srcs)), new InstructionConst(
+				assert.deepStrictEqual(expr.assess().build(new Builder(...srcs)), new InstructionConst(
 					(42 ** 2 * 420) % (2 ** 16),
 				))
-				assert.deepStrictEqual(expr.build(new CodeGenerator(...srcs)), new InstructionBinop(
+				assert.deepStrictEqual(expr.build(new Builder(...srcs)), new InstructionBinop(
 					Punctuator.MUL,
 					new InstructionConst(42 ** 2),
 					new InstructionConst(420),
@@ -233,11 +233,11 @@ describe('SemanticNode', () => {
 					const expr: SemanticNodeOperation = ((new Parser(...srcs).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeOperation)
-					assert.deepStrictEqual(expr.assess().build(new CodeGenerator(...srcs)), new InstructionConst([
+					assert.deepStrictEqual(expr.assess().build(new Builder(...srcs)), new InstructionConst([
 						-(2 ** 14),
 						2 ** 14,
 					][i]))
-					assert.deepStrictEqual(expr.build(new CodeGenerator(...srcs)), new InstructionBinop(
+					assert.deepStrictEqual(expr.build(new Builder(...srcs)), new InstructionBinop(
 						Punctuator.ADD,
 						new InstructionConst([
 							-(2 ** 15), // negative becuase of overflow
@@ -255,10 +255,10 @@ describe('SemanticNode', () => {
 				const expr: SemanticNodeOperation = ((new Parser(...srcs).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation)
-				assert.deepStrictEqual(expr.assess().build(new CodeGenerator(...srcs)), new InstructionConst(
+				assert.deepStrictEqual(expr.assess().build(new Builder(...srcs)), new InstructionConst(
 					(-5) ** (2 * 3),
 				))
-				assert.deepStrictEqual(expr.build(new CodeGenerator(...srcs)), new InstructionBinop(
+				assert.deepStrictEqual(expr.build(new Builder(...srcs)), new InstructionBinop(
 					Punctuator.EXP,
 					new InstructionConst(-5),
 					new InstructionConst(2 * 3),
@@ -266,7 +266,7 @@ describe('SemanticNode', () => {
 			})
 			specify('multiple statements.', () => {
 				const srcs: [string, SolidConfig] = [`42; 420;`, CONFIG_DEFAULT]
-				const generator: CodeGenerator = new CodeGenerator(...srcs)
+				const generator: Builder = new Builder(...srcs)
 				new Parser(...srcs).parse().decorate().children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof SemanticNodeStatementExpression)
 					assert.deepStrictEqual(stmt.build(generator), new InstructionStatement(BigInt(i), new InstructionConst([
