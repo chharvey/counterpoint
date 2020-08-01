@@ -72,13 +72,13 @@ export class InstructionUnop extends Instruction {
 		super()
 	}
 	/**
-	 * @return `'(op ‹arg›)'`
+	 * @return `'(‹op› ‹arg›)'`
 	 */
 	toString(): string {
 		return `(${ new Map<Punctuator, string>([
 			[Punctuator.AFF, `nop`],
 			[Punctuator.NEG, `call $neg`],
-		]).get(this.op)! } ${ this.arg })`
+		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg })`
 	}
 }
 /**
@@ -98,7 +98,7 @@ export class InstructionBinop extends Instruction {
 		super()
 	}
 	/**
-	 * @return `'(op ‹arg0› ‹arg1›)'`
+	 * @return `'(‹op› ‹arg0› ‹arg1›)'`
 	 */
 	toString(): string {
 		return `(${ new Map<Punctuator, string>([
@@ -107,7 +107,7 @@ export class InstructionBinop extends Instruction {
 			[Punctuator.MUL, `i32.mul`],
 			[Punctuator.DIV, `i32.div_s`],
 			[Punctuator.EXP, `call $exp`],
-		]).get(this.op)! } ${ this.arg0 } ${ this.arg1 })`
+		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg0 } ${ this.arg1 })`
 	}
 }
 /**
