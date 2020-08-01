@@ -169,8 +169,8 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		super(start_node, {value})
 		this.value = value
 	}
-	build(generator: CodeGenerator): Instruction {
-		return this.assess().build(generator)
+	build(generator: CodeGenerator): InstructionConst {
+		return this.assess().build(generator) as InstructionConst
 	}
 	type(): SolidLanguageType {
 		return (

@@ -49,7 +49,8 @@ export default class CodeGenerator {
 
 	/**
 	 * Return the semantic goal of a program.
-	 * @return the list of top-level components
+	 * @param comps the top-level components
+	 * @return an instruction for the list of top-level components
 	 */
 	goal(comps: readonly SemanticStatementType[]): InstructionModule {
 		return new InstructionModule([
