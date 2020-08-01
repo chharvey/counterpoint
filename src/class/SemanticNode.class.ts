@@ -1,5 +1,8 @@
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
+import {
+	CompletionStructureAssessment,
+} from '../spec/CompletionStructure.class'
 import type Builder from '../vm/Builder.class'
 import SolidLanguageValue, {
 	SolidNull,
@@ -43,8 +46,6 @@ type SolidLanguageType =
 	| SolidLanguageTypeDraft
 	| typeof SolidNull
 	| typeof SolidBoolean
-
-export type Assessment = InstanceType<typeof SemanticNodeExpression.Assessment>
 
 
 
@@ -134,22 +135,7 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	 * Assess the value of this node at compile-time, if possible.
 	 * @return the computed value of this node, or a SemanticNode if the value cannot be computed by the compiler
 	 */
-	abstract assess(): Assessment | null;
-
-	public static Assessment = class {
-		constructor (readonly value: number | SolidLanguageValue) {
-		}
-		build(): Instruction {
-			return (
-				(this.value instanceof SolidLanguageValue) ?
-					(this.value === SolidBoolean.TRUE)
-						? new InstructionConst(1)
-						: new InstructionConst() // FALSE or NULL
-				:
-				new InstructionConst(this.value)
-			)
-		}
-	}
+	abstract assess(): CompletionStructureAssessment | null;
 }
 export class SemanticNodeConstant extends SemanticNodeExpression {
 	declare children:
@@ -176,9 +162,9 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 			                                   SolidLanguageTypeDraft.STRING
 		)
 	}
-	assess(): Assessment {
+	assess(): CompletionStructureAssessment {
 		if (this.value instanceof SolidLanguageValue || typeof this.value === 'number') {
-			return new SemanticNodeExpression.Assessment(this.value)
+			return new CompletionStructureAssessment(this.value)
 		} else {
 			throw new Error('not yet supported.')
 		}
@@ -197,7 +183,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	type(): SolidLanguageType {
 		throw new Error('Not yet supported.')
 	}
-	assess(): Assessment {
+	assess(): CompletionStructureAssessment {
 		throw new Error('Not yet supported.')
 	}
 }
@@ -220,7 +206,7 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	type(): SolidLanguageType {
 		return SolidLanguageTypeDraft.STRING
 	}
-	assess(): Assessment {
+	assess(): CompletionStructureAssessment {
 		throw new Error('Not yet supported.')
 	}
 }
@@ -236,8 +222,8 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 		[Punctuator.ADD, (x, y) => Number(new Int16(BigInt(x)).plus   (new Int16(BigInt(y))).toNumeric())],
 		[Punctuator.SUB, (x, y) => Number(new Int16(BigInt(x)).minus  (new Int16(BigInt(y))).toNumeric())],
 	])
-	private assessment0:  Assessment | null;
-	private assessment1?: Assessment | null;
+	private assessment0:  CompletionStructureAssessment | null;
+	private assessment1?: CompletionStructureAssessment | null;
 	constructor(
 		start_node: ParseNode,
 		private readonly operator: Punctuator,
@@ -267,16 +253,16 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 		}
 		return t1
 	}
-	assess(): Assessment | null {
+	assess(): CompletionStructureAssessment | null {
 		if (!this.assessment0) return null
 		if (this.children.length === 1) {
-			return new SemanticNodeExpression.Assessment(SemanticNodeOperation.FOLD_UNARY.get(this.operator)!(this.assessment0.value as number))
+			return new CompletionStructureAssessment(SemanticNodeOperation.FOLD_UNARY.get(this.operator)!(this.assessment0.value as number))
 		} else {
 			if (!this.assessment1) return null
 			if (this.operator === Punctuator.DIV && this.assessment1.value === 0) {
 				throw new NanError02(this.children[1])
 			}
-			return new SemanticNodeExpression.Assessment(SemanticNodeOperation.FOLD_BINARY.get(this.operator)!(this.assessment0.value as number, this.assessment1.value as number))
+			return new CompletionStructureAssessment(SemanticNodeOperation.FOLD_BINARY.get(this.operator)!(this.assessment0.value as number, this.assessment1.value as number))
 		}
 	}
 }

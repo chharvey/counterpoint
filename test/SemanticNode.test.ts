@@ -10,7 +10,6 @@ import type {
 	ParseNodeGoal__0__List,
 } from '../src/class/ParseNode.class'
 import {
-	Assessment,
 	SolidLanguageTypeDraft,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
@@ -19,6 +18,9 @@ import {
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
 } from '../src/class/SemanticNode.class'
+import type {
+	CompletionStructureAssessment,
+} from '../src/spec/CompletionStructure.class'
 import Builder from '../src/vm/Builder.class'
 import SolidLanguageValue, {
 	SolidNull,
@@ -334,7 +336,7 @@ describe('SemanticNode', () => {
 					'false;',
 					'true;',
 				].map((src) => {
-					const assess: Assessment | null = (((new Parser(src, CONFIG_DEFAULT).parse()
+					const assess: CompletionStructureAssessment | null = (((new Parser(src, CONFIG_DEFAULT).parse()
 						.children[1] as ParseNodeGoal__0__List)
 						.children[0] as ParseNodeStatement)
 						.children[0] as ParseNodeExpression
@@ -364,7 +366,7 @@ describe('SemanticNode', () => {
 					'-(2 ^ 14) - 2 ^ 15;',
 					'-(5) ^ +(2 * 3);',
 				].map((src) => {
-					const assess: Assessment | null = (((new Parser(src, CONFIG_DEFAULT).parse()
+					const assess: CompletionStructureAssessment | null = (((new Parser(src, CONFIG_DEFAULT).parse()
 						.children[1] as ParseNodeGoal__0__List)
 						.children[0] as ParseNodeStatement)
 						.children[0] as ParseNodeExpression
