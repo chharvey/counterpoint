@@ -46,14 +46,14 @@ Number PerformNumericBinaryOperation(Text op, Number operand0, Number operand1) 
 
 ### AbstractOperation: AssessSemanticOperationBinary
 ```w3c
-Or<Number, SemanticExpression> AssessSemanticOperationBinary(SemanticOperation expr) :=
+Number? AssessSemanticOperationBinary(SemanticOperation expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
-	3. *If* `TypeOf(operand0)` is `SemanticExpression`:
-		1. *Return:* `expr`.
+	3. *If* `TypeOf(operand0)` is `Void`:
+		1. *Return*.
 	4. *Let* `operand1` be the result of performing `Assess(expr.children.1)`.
-	5. *If* `TypeOf(operand1)` is `SemanticExpression`:
-		1. *Return:* `expr`.
+	5. *If* `TypeOf(operand1)` is `Void`:
+		1. *Return*.
 	6. *Assert:* `TypeOf(operand0)` and `TypeOf(operand1)` are both `Number`.
 	7. *Let* `result` be the result of performing `PerformNumericBinaryOperation(expr.operator, operand0, operand1)`.
 	8. *Return:* `result`.
@@ -290,7 +290,7 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperati
 
 ### Static Semantics: Assess (Unary Operators)
 ```w3c
-Or<Number, SemanticExpression> Assess(SemanticOperation[operator=NEG] expr) :=
+Number? Assess(SemanticOperation[operator=NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
 	3. *If* `TypeOf(operand)` is `SemanticExpression`:
@@ -349,7 +349,7 @@ Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponenti
 
 ### Static Semantics: Assess (Exponentiation)
 ```w3c
-Or<Number, SemanticExpression> Assess(SemanticOperation[operator=EXP] expr) :=
+Number? Assess(SemanticOperation[operator=EXP] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 
@@ -404,7 +404,7 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 
 ### Static Semantics: Assess (Multiplicative)
 ```w3c
-Or<Number, SemanticExpression> Assess(SemanticOperation[operator=MUL|DIV] expr) :=
+Number? Assess(SemanticOperation[operator=MUL|DIV] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 
@@ -464,7 +464,7 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 
 ### Static Semantics: Assess (Additive)
 ```w3c
-Or<Number, SemanticExpression> Assess(SemanticOperation[operator=ADD] expr) :=
+Number? Assess(SemanticOperation[operator=ADD] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 

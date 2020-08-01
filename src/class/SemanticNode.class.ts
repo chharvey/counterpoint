@@ -44,7 +44,7 @@ type SolidLanguageType =
 	| typeof SolidNull
 	| typeof SolidBoolean
 
-type Assessment = InstanceType<typeof SemanticNodeExpression.Assessment>
+export type Assessment = InstanceType<typeof SemanticNodeExpression.Assessment>
 
 
 
@@ -134,17 +134,13 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	 * Assess the value of this node at compile-time, if possible.
 	 * @return the computed value of this node, or a SemanticNode if the value cannot be computed by the compiler
 	 */
-	abstract assess(): Assessment;
+	abstract assess(): Assessment | null;
 
 	public static Assessment = class {
-		constructor (readonly value: number | SolidLanguageValue | SemanticNodeExpression) {
+		constructor (readonly value: number | SolidLanguageValue) {
 		}
-		get isDetermined(): boolean {
-			return !(this.value instanceof SemanticNodeExpression)
-		}
-		build(generator: Builder): Instruction {
+		build(): Instruction {
 			return (
-				(this.value instanceof SemanticNodeExpression) ? this.value.build(generator) :
 				(this.value instanceof SolidLanguageValue) ?
 					(this.value === SolidBoolean.TRUE)
 						? new InstructionConst(1)
@@ -169,8 +165,8 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		super(start_node, {value})
 		this.value = value
 	}
-	build(generator: Builder): InstructionConst {
-		return this.assess().build(generator) as InstructionConst
+	build(_generator: Builder): InstructionConst {
+		return this.assess().build() as InstructionConst
 	}
 	type(): SolidLanguageType {
 		return (
@@ -240,6 +236,8 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 		[Punctuator.ADD, (x, y) => Number(new Int16(BigInt(x)).plus   (new Int16(BigInt(y))).toNumeric())],
 		[Punctuator.SUB, (x, y) => Number(new Int16(BigInt(x)).minus  (new Int16(BigInt(y))).toNumeric())],
 	])
+	private assessment0:  Assessment | null;
+	private assessment1?: Assessment | null;
 	constructor(
 		start_node: ParseNode,
 		private readonly operator: Punctuator,
@@ -248,11 +246,19 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 			| readonly [SemanticNodeExpression, SemanticNodeExpression]
 	) {
 		super(start_node, {operator}, children)
+		this.assessment0 = this.children[0].assess()
+		if (this.children.length > 1) {
+			this.assessment1 = this.children[1]!.assess()
+		}
 	}
 	build(generator: Builder): InstructionUnop | InstructionBinop {
-		return (this.children.length === 1)
-			? new InstructionUnop (this.operator, this.children[0].assess().build(generator))
-			: new InstructionBinop(this.operator, this.children[0].assess().build(generator), this.children[1].assess().build(generator))
+		const operand0: Instruction = (this.assessment0) ? this.assessment0.build() : this.children[0].build(generator)
+		if (this.children.length === 1) {
+			return new InstructionUnop(this.operator, operand0)
+		} else {
+			const operand1: Instruction = (this.assessment1) ? this.assessment1.build() : this.children[1].build(generator)
+			return new InstructionBinop(this.operator, operand0, operand1)
+		}
 	}
 	type(): SolidLanguageType {
 		const t1: SolidLanguageType = this.children[0].type()
@@ -261,18 +267,16 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 		}
 		return t1
 	}
-	assess(): Assessment {
-		const assessment0: Assessment = this.children[0].assess()
-		if (!assessment0.isDetermined) return new SemanticNodeExpression.Assessment(this)
+	assess(): Assessment | null {
+		if (!this.assessment0) return null
 		if (this.children.length === 1) {
-			return new SemanticNodeExpression.Assessment(SemanticNodeOperation.FOLD_UNARY.get(this.operator)!(assessment0.value as number))
+			return new SemanticNodeExpression.Assessment(SemanticNodeOperation.FOLD_UNARY.get(this.operator)!(this.assessment0.value as number))
 		} else {
-			const assessment1: Assessment = this.children[1].assess()
-			if (!assessment1.isDetermined) return new SemanticNodeExpression.Assessment(this)
-			if (this.operator === Punctuator.DIV && assessment1.value === 0) {
+			if (!this.assessment1) return null
+			if (this.operator === Punctuator.DIV && this.assessment1.value === 0) {
 				throw new NanError02(this.children[1])
 			}
-			return new SemanticNodeExpression.Assessment(SemanticNodeOperation.FOLD_BINARY.get(this.operator)!(assessment0.value as number, assessment1.value as number))
+			return new SemanticNodeExpression.Assessment(SemanticNodeOperation.FOLD_BINARY.get(this.operator)!(this.assessment0.value as number, this.assessment1.value as number))
 		}
 	}
 }

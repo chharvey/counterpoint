@@ -5,6 +5,7 @@ import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop =
 
 import type SolidConfig from '../SolidConfig'
 import type {
+	Assessment,
 	SemanticNodeExpression,
 	SemanticStatementType,
 	SemanticNodeGoal,
@@ -44,7 +45,8 @@ export default class Builder {
 	 * @return a call to {@link CodeGenerator.stmt}
 	 */
 	stmt(expr: SemanticNodeExpression): InstructionStatement {
-		return new InstructionStatement(this.stmt_count++, expr.assess().build(this))
+		const assess: Assessment | null = expr.assess()
+		return new InstructionStatement(this.stmt_count++, (assess) ? assess.build() : expr.build(this))
 	}
 
 	/**
