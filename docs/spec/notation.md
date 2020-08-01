@@ -570,6 +570,8 @@ Notice that a nonterminal on the right-hand side `P<⊛F, ⊗G>` is *not* equiva
 The former (`P<⊛F, ⊗G>`) acts like a disjunction (`P<⊛F> | P<⊗G> | P<⊛F><⊗G>`), while
 the latter (`P<⊛F><⊗G>`) acts like a conjunction (only `P<⊛F><⊗G>`).
 
+However, a nonterminal on the right-hand side `P<?F, ?G>` *is* equivalent to `P<?F><?G>`.
+
 ##### Production Conditionals
 A production conditional determines whether or not an item appears in the sequence of a production.
 ```
@@ -1244,6 +1246,66 @@ When an algorithm step reads «*Throw:* ‹v›.» (where ‹v› is a metavaria
 a throw completion structure whose value is ‹v› is returned.
 That is, the step is shorthand for «*Return:* [type= throw, value= ‹v›].».
 
+#### Shorthand Notation
+Algorithm steps may contain shorthand notation that desugar to the types of steps listed above.
+
+##### Else If
+A step that begins with «*Else If* …:» desugars to an ‘else' step with an ‘if’ substep.
+```
+1. *If* x:
+	1. A.
+2. *Else If* y:
+	1. B.
+3. *Else*:
+	1. C.
+```
+is shorthand for
+```
+1. *If* x:
+	1. A.
+2. *Else*:
+	1. *If* y:
+		1. B.
+	2. *Else*:
+		1. C.
+```
+
+##### If And
+A step that begins with «*If* … *and* …:» desugars to an ‘if' step with an ‘if’ substep.
+```
+1. *If* x *and* y:
+	1. A.
+2. *Else*:
+	1. B.
+```
+is shorthand for
+```
+1. *If* x:
+	1. *If* y:
+		1. A.
+	2. *Else*:
+		1. B.
+2. *Else*:
+	1. B.
+```
+
+##### If Or
+A step that begins with «*If* … *or* …:» desugars to two ‘if' steps with the same substeps.
+```
+1. *If* x *or* y:
+	1. A.
+2. *Else*:
+	1. B.
+```
+is shorthand for
+```
+1. *If* x:
+	1. A.
+2. *Else If* y:
+	1. A.
+3. *Else*:
+	1. B.
+```
 
 ### Runtime Instructions
 Algorithms that specify behavior to be performed at runtime are called **runtime instructions**.
