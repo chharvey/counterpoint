@@ -1224,6 +1224,7 @@ Algorithms most often return [completion structures](/.data-types.md#completions
 The output type is specified before the name of the algorithm in its header, but
 if the algorithm does not output a value, the output type is specified as [«Void»](./data-types.md#void).
 If an algorithm outputs a value, it must do so via a step beginning with «*Return:* …».
+A step reading «*Return*.» indicates the output is void.
 
 When an algorithm step reads «*Return:* ‹v›.» (where ‹v› is a metavariable representing any value),
 a normal completion structure whose value is ‹v› is returned.

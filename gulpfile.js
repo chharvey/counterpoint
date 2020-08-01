@@ -29,7 +29,7 @@ async function test_dev() {
 	const {default: Lexer        } = require('./build/class/Lexer.class.js')
 	const {default: Screener     } = require('./build/class/Screener.class.js')
 	const {default: Parser       } = require('./build/class/Parser.class.js')
-	const {default: CodeGenerator} = require('./build/class/CodeGenerator.class.js')
+	const {default: CodeGenerator} = require('./build/vm/Builder.class.js')
 
 	const input = fsPromise.readFile('./sample/test-v0.2.solid', 'utf8')
 

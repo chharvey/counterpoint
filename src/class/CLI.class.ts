@@ -4,7 +4,7 @@ import * as path from 'path'
 import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
-import CodeGenerator from './CodeGenerator.class'
+import Builder from '../vm/Builder.class'
 
 
 
@@ -239,7 +239,7 @@ export default class CLI {
 			base: void 0,
 			ext: this.command === Command.DEV ? '.wat' : '.wasm',
 		})
-		const cg: CodeGenerator = new CodeGenerator(...await Promise.all([
+		const cg: Builder = new Builder(...await Promise.all([
 			fs.promises.readFile(inputfilepath, 'utf8'),
 			this.computeConfig(cwd),
 		]))
@@ -260,7 +260,7 @@ export default class CLI {
 	 * Run the command `run`.
 	 * @param cwd the current working directory, `process.cwd()`
 	 */
-	async run(cwd: string): Promise<[string, unknown]> {
+	async run(cwd: string): Promise<[string, ...unknown[]]> {
 		const inputfilepath: string = this.inputPath(cwd)
 		const bytes: Promise<Buffer> = fs.promises.readFile(inputfilepath)
 		return [
@@ -268,7 +268,7 @@ export default class CLI {
 				Executing………
 				Binary path: ${ inputfilepath }
 			`.trim().replace(/\n\t\t\t\t/g, '\n'),
-			((await WebAssembly.instantiate(await bytes)).instance.exports.run as Function)(),
+			...(Object.values((await WebAssembly.instantiate(await bytes)).instance.exports) as Function[]).map((func) => func()),
 		]
 	}
 }
