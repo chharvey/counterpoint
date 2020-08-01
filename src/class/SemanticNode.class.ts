@@ -295,7 +295,6 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 			| readonly [SemanticNodeExpression]
 	) {
 		super(start_node, {}, children)
-		this.children.length && this.children[0].type() // assert does not throw
 	}
 	build(generator: CodeGenerator): InstructionNone | InstructionStatement {
 		return (!this.children.length)
@@ -364,7 +363,6 @@ export class SemanticNodeAssigned extends SemanticNode {
 			| readonly [SemanticNodeExpression]
 	) {
 		super(start_node, {}, children)
-		this.type() // assert does not throw
 	}
 	build(generator: CodeGenerator): Instruction {
 		throw new Error('not yet supported.')
