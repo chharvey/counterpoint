@@ -3,7 +3,7 @@ import * as assert from 'assert'
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
-import CodeGenerator from '../src/class/CodeGenerator.class'
+import CodeGenerator from '../src/vm/Builder.class'
 import {Punctuator} from '../src/class/Token.class'
 import type {
 	ParseNodeExpression,

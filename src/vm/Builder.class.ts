@@ -7,13 +7,13 @@ import type SolidConfig from '../SolidConfig'
 import {
 	InstructionStatement,
 	InstructionModule,
-} from '../vm/Instruction.class'
+} from './Instruction.class'
 import type {
 	SemanticNodeExpression,
 	SemanticStatementType,
 	SemanticNodeGoal,
-} from './SemanticNode.class'
-import Parser from './Parser.class'
+} from '../class/SemanticNode.class'
+import Parser from '../class/Parser.class'
 
 const i32_neg: string = fs.readFileSync(path.join(__dirname, '../../src/neg.wat'), 'utf8')
 const i32_exp: string = fs.readFileSync(path.join(__dirname, '../../src/exp.wat'), 'utf8')

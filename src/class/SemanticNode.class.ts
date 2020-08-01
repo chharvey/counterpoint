@@ -16,7 +16,7 @@ import Instruction, {
 import {
 	NanError02,
 } from '../error/NanError.class'
-import type CodeGenerator from './CodeGenerator.class'
+import type CodeGenerator from '../vm/Builder.class'
 import Token, {
 	Punctuator,
 	Keyword,
