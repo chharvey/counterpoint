@@ -28,30 +28,30 @@ describe('Instruction', () => {
 					42,
 					-42,
 					  42 + 420,
-					 126 /   3,
-					-126 /   3,
-					 126 /  -3,
-					-126 /  -3,
-					 200 /   3,
-					 200 /  -3,
-					-200 /   3,
-					-200 /  -3,
-				].map((v) => new InstructionConst(v).toString()), [
+					Math.trunc( 126 /   3),
+					Math.trunc(-126 /   3),
+					Math.trunc( 126 /  -3),
+					Math.trunc(-126 /  -3),
+					Math.trunc( 200 /   3),
+					Math.trunc( 200 /  -3),
+					Math.trunc(-200 /   3),
+					Math.trunc(-200 /  -3),
+				].map((x) => new InstructionConst(BigInt(x)).toString()), [
 					`(i32.const 0)`,
 					`(i32.const 0)`,
 					`(i32.const 1)`,
 					`(i32.const 42)`,
 					`(i32.const 42)`,
 					`(i32.const -42)`,
-					`(i32.const ${   42 + 420 })`,
-					`(i32.const ${  126 /   3 })`,
-					`(i32.const ${ -126 /   3 })`,
-					`(i32.const ${  126 /  -3 })`,
-					`(i32.const ${ -126 /  -3 })`,
-					`(i32.const ${  200 /   3 })`,
-					`(i32.const ${  200 /  -3 })`,
-					`(i32.const ${ -200 /   3 })`,
-					`(i32.const ${ -200 /  -3 })`,
+					`(i32.const ${ Math.trunc(  42 + 420) })`,
+					`(i32.const ${ Math.trunc( 126 /   3) })`,
+					`(i32.const ${ Math.trunc(-126 /   3) })`,
+					`(i32.const ${ Math.trunc( 126 /  -3) })`,
+					`(i32.const ${ Math.trunc(-126 /  -3) })`,
+					`(i32.const ${ Math.trunc( 200 /   3) })`,
+					`(i32.const ${ Math.trunc( 200 /  -3) })`,
+					`(i32.const ${ Math.trunc(-200 /   3) })`,
+					`(i32.const ${ Math.trunc(-200 /  -3) })`,
 				])
 			})
 		})
@@ -60,15 +60,15 @@ describe('Instruction', () => {
 			it('performs a unary operation.', () => {
 				assert.strictEqual(new InstructionUnop(
 					Punctuator.AFF,
-					new InstructionConst(42),
-				).toString(), `(nop ${ new InstructionConst(42).toString() })`)
+					new InstructionConst(42n),
+				).toString(), `(nop ${ new InstructionConst(42n).toString() })`)
 				assert.strictEqual(new InstructionUnop(
 					Punctuator.NEG,
-					new InstructionConst(42),
-				).toString(), `(call $neg ${ new InstructionConst(42).toString() })`)
+					new InstructionConst(42n),
+				).toString(), `(call $neg ${ new InstructionConst(42n).toString() })`)
 				assert.throws(() => new InstructionUnop(
 					Punctuator.MUL,
-					new InstructionConst(42),
+					new InstructionConst(42n),
 				).toString(), TypeError)
 			})
 		})
@@ -77,9 +77,9 @@ describe('Instruction', () => {
 			it('performs a binary operation.', () => {
 				assert.strictEqual(new InstructionBinop(
 					Punctuator.MUL,
-					new InstructionConst(21),
-					new InstructionConst(2),
-				).toString(), `(i32.mul ${ new InstructionConst(21).toString() } ${ new InstructionConst(2).toString() })`)
+					new InstructionConst(21n),
+					new InstructionConst(2n),
+				).toString(), `(i32.mul ${ new InstructionConst(21n).toString() } ${ new InstructionConst(2n).toString() })`)
 			})
 		})
 

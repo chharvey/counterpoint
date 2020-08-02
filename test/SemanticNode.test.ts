@@ -127,12 +127,12 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeConstant)
 						.build(new Builder(...srcs))
 				), [
-					0,
-					0,
-					1,
-					42,
-					42,
-					-42,
+					0n,
+					0n,
+					1n,
+					42n,
+					42n,
+					-42n,
 				].map((v) => new InstructionConst(v)))
 			})
 		})
@@ -146,8 +146,8 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeOperation
 				).build(new Builder(...srcs)), new InstructionBinop(
 					Punctuator.ADD,
-					new InstructionConst(42),
-					new InstructionConst(420),
+					new InstructionConst(42n),
+					new InstructionConst(420n),
 				))
 			})
 			specify('ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative', () => {
@@ -158,8 +158,8 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeOperation
 				).build(new Builder(...srcs)), new InstructionBinop(
 					Punctuator.ADD,
-					new InstructionConst(42),
-					new InstructionConst(-420),
+					new InstructionConst(42n),
+					new InstructionConst(-420n),
 				))
 			})
 			specify('ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential', () => {
@@ -180,24 +180,24 @@ describe('SemanticNode', () => {
 					).build(new Builder(...srcs)), new InstructionBinop(
 						Punctuator.DIV,
 						new InstructionConst([
-							 126,
-							-126,
-							 126,
-							-126,
-							 200,
-							 200,
-							-200,
-							-200,
+							 126n,
+							-126n,
+							 126n,
+							-126n,
+							 200n,
+							 200n,
+							-200n,
+							-200n,
 						][i]),
 						new InstructionConst([
-							 3,
-							 3,
-							-3,
-							-3,
-							 3,
-							-3,
-							 3,
-							-3,
+							 3n,
+							 3n,
+							-3n,
+							-3n,
+							 3n,
+							-3n,
+							 3n,
+							-3n,
 						][i]),
 					))
 				})
@@ -210,8 +210,8 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeOperation
 				).build(new Builder(...srcs)), new InstructionBinop(
 					Punctuator.MUL,
-					new InstructionConst(42 ** 2),
-					new InstructionConst(420),
+					new InstructionConst(42n ** 2n),
+					new InstructionConst(420n),
 				))
 			})
 			specify('overflow.', () => {
@@ -226,12 +226,12 @@ describe('SemanticNode', () => {
 					).build(new Builder(...srcs)), new InstructionBinop(
 						Punctuator.ADD,
 						new InstructionConst([
-							-(2 ** 15), // negative becuase of overflow
-							-(2 ** 14),
+							-(2n ** 15n), // negative becuase of overflow
+							-(2n ** 14n),
 						][i]),
 						new InstructionConst([
-							2 ** 14,
-							-(2 ** 15),
+							2n ** 14n,
+							-(2n ** 15n),
 						][i]),
 					))
 				})
@@ -244,8 +244,8 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeOperation
 				).build(new Builder(...srcs)), new InstructionBinop(
 					Punctuator.EXP,
-					new InstructionConst(-5),
-					new InstructionConst(2 * 3),
+					new InstructionConst(-5n),
+					new InstructionConst(2n * 3n),
 				))
 			})
 			specify('multiple statements.', () => {
@@ -254,8 +254,8 @@ describe('SemanticNode', () => {
 				new Parser(...srcs).parse().decorate().children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof SemanticNodeStatementExpression)
 					assert.deepStrictEqual(stmt.build(generator), new InstructionStatement(BigInt(i), new InstructionConst([
-						42,
-						420,
+						42n,
+						420n,
 					][i])))
 				})
 			})

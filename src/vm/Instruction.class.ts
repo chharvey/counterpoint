@@ -47,7 +47,7 @@ export class InstructionConst extends Instruction {
 	/**
 	 * @param i32 the constant to push
 	 */
-	constructor (private readonly i32: number = 0) {
+	constructor (private readonly i32: bigint = 0n) {
 		super()
 	}
 	/**

@@ -24,7 +24,7 @@ describe('CompletionStructureAssessment', () => {
 				.assess()
 			assert.ok(assessment)
 			assert.deepStrictEqual(assessment.build(), new InstructionConst(
-				42 + 420,
+				42n + 420n,
 			))
 		})
 		specify('ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative', () => {
@@ -34,7 +34,7 @@ describe('CompletionStructureAssessment', () => {
 				.assess()
 			assert.ok(assessment)
 			assert.deepStrictEqual(assessment.build(), new InstructionConst(
-				42 + -420,
+				42n + -420n,
 			))
 		})
 		specify('ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential', () => {
@@ -54,15 +54,15 @@ describe('CompletionStructureAssessment', () => {
 					.assess()
 				assert.ok(assessment)
 				assert.deepStrictEqual(assessment.build(), new InstructionConst([
-					Math.trunc( 126 /  3),
-					Math.trunc(-126 /  3),
-					Math.trunc( 126 / -3),
-					Math.trunc(-126 / -3),
-					Math.trunc( 200 /  3),
-					Math.trunc( 200 / -3),
-					Math.trunc(-200 /  3),
-					Math.trunc(-200 / -3),
-				][i]))
+					 126 /  3,
+					-126 /  3,
+					 126 / -3,
+					-126 / -3,
+					 200 /  3,
+					 200 / -3,
+					-200 /  3,
+					-200 / -3,
+				].map((x) => BigInt(Math.trunc(x)))[i]))
 			})
 		})
 		specify('compound expression.', () => {
@@ -72,7 +72,7 @@ describe('CompletionStructureAssessment', () => {
 				.assess()
 			assert.ok(assessment)
 			assert.deepStrictEqual(assessment.build(), new InstructionConst(
-				(42 ** 2 * 420) % (2 ** 16),
+				(42n ** 2n * 420n) % (2n ** 16n),
 			))
 		})
 		specify('overflow.', () => {
@@ -86,8 +86,8 @@ describe('CompletionStructureAssessment', () => {
 					.assess()
 				assert.ok(assessment)
 				assert.deepStrictEqual(assessment.build(), new InstructionConst([
-					-(2 ** 14),
-					2 ** 14,
+					-(2n ** 14n),
+					2n ** 14n,
 				][i]))
 			})
 		})
@@ -98,7 +98,7 @@ describe('CompletionStructureAssessment', () => {
 				.assess()
 			assert.ok(assessment)
 			assert.deepStrictEqual(assessment.build(), new InstructionConst(
-				(-5) ** (2 * 3),
+				(-5n) ** (2n * 3n),
 			))
 		})
 	})

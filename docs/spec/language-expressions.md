@@ -196,7 +196,7 @@ Sequence<Instruction> Build(Boolean b) :=
 	3. *Return:* ["Push `0` onto the operand stack."].
 
 Sequence<Instruction> Build(Integer n) :=
-	1. *Return:* ["Push `RealNumber(n)` onto the operand stack."].
+	1. *Return:* ["Push `n` onto the operand stack."].
 
 Sequence<Instruction> Build(SemanticConstant const) :=
 	1. *Return:* `Build(Assess(const))`.
@@ -208,7 +208,7 @@ Void Build(SemanticTemplate tpl) :=
 
 ### Runtime Instructions: Evaluate (Literals)
 ```w3c
-Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", RealNumber value) :=
+Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Integer value) :=
 	1. Push `value` onto the operand stack.
 ```
 

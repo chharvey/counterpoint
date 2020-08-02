@@ -55,8 +55,8 @@ export class CompletionStructureAssessment extends CompletionStructure {
 	build(): Instruction {
 		return (
 			(this.value instanceof SolidNull)    ? new InstructionConst() :
-			(this.value instanceof SolidBoolean) ? new InstructionConst((this.value === SolidBoolean.FALSE) ? 0 : 1) :
-			(this.value instanceof Int16)        ? new InstructionConst(Number(this.value.toNumeric())) :
+			(this.value instanceof SolidBoolean) ? new InstructionConst((this.value === SolidBoolean.FALSE) ? 0n : 1n) :
+			(this.value instanceof Int16)        ? new InstructionConst(this.value.toNumeric()) :
 			(() => { throw new Error('not yet supported.') })()
 		)
 	}
