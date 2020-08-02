@@ -268,14 +268,14 @@ IntegerDigits<Radix, Separator> :::=
 Float<Separator>
 	:::= SignedDigitSequenceDec<?Separator> "." (FractionalPart<?Separator> ExponentPart<?Separator>?)?;
 
-SignedDigitSequenceDec<Separator>
-	:::= ("+" | "-")? DigitSequenceDec<?Separator>;
-
 FractionalPart<Separator>
 	:::= DigitSequenceDec<?Separator>;
 
 ExponentPart<Separator>
 	:::= "e" SignedDigitSequenceDec<?Separator>;
+
+SignedDigitSequenceDec<Separator>
+	:::= ("+" | "-")? DigitSequenceDec<?Separator>;
 
 DigitSequenceBin<Separator> :::= (DigitSequenceBin <Separator+>"_"?)? [0-1];
 DigitSequenceQua<Separator> :::= (DigitSequenceQua <Separator+>"_"?)? [0-3];
@@ -295,11 +295,14 @@ For example, both the tokens containing `0042` and `+42`
 have the same Token Worth: the integer *42*.
 
 ```w3c
-TokenWorth(Integer :::= IntegerDigits) -> RealNumber
+TokenWorth(Number :::= Integer) -> RealNumber
+	:= TokenWorth(Integer)
+TokenWorth(Number :::= Float) -> RealNumber
+	:= TokenWorth(Float)
+
+TokenWorth(Integer :::= "+"? IntegerDigits) -> RealNumber
 	:= TokenWorth(IntegerDigits);
-TokenWorth(Integer :::= "+" IntegerDigits) -> RealNumber
-	:= TokenWorth(IntegerDigits);
-TokenWorth(Integer :::= "-" IntegerDigits) -> RealNumber
+TokenWorth(Integer :::= "-"  IntegerDigits) -> RealNumber
 	:= -1 * TokenWorth(IntegerDigits);
 
 TokenWorth(IntegerDigits :::= "\b"  DigitSequenceBin) -> RealNumber
@@ -314,6 +317,24 @@ TokenWorth(IntegerDigits :::= "\x"  DigitSequenceHex) -> RealNumber
 	:= TokenWorth(DigitSequenceHex);
 TokenWorth(IntegerDigits :::= "\z"  DigitSequenceHTD) -> RealNumber
 	:= TokenWorth(DigitSequenceHTD);
+
+TokenWorth(Float :::= SignedDigitSequenceDec ".") -> RealNumber
+	:= TokenWorth(SignedDigitSequenceDec);
+TokenWorth(Float :::= SignedDigitSequenceDec "." FractionalPart) -> RealNumber
+	:= TokenWorth(SignedDigitSequenceDec) + TokenWorth(FractionalPart);
+TokenWorth(Float :::= SignedDigitSequenceDec "." FractionalPart ExponentPart) -> RealNumber
+	:= (TokenWorth(SignedDigitSequenceDec) + TokenWorth(FractionalPart)) * TokenWorth(ExponentPart);
+
+TokenWorth(FractionalPart :::= DigitSequenceDec) -> RealNumber
+	:= TokenWorth(DigitSequenceDec) * 10 ^ (-1 * DigitCount(DigitSequenceDec));
+
+TokenWorth(ExponentPart :::= "e" SignedDigitSequenceDec) -> RealNumber
+	:= 10 ^ TokenWorth(SignedDigitSequenceDec);
+
+TokenWorth(SignedDigitSequenceDec :::= "+"? DigitSequenceDec) -> RealNumber
+	:= TokenWorth(DigitSequenceDec);
+TokenWorth(SignedDigitSequenceDec :::= "-"  DigitSequenceDec) -> RealNumber
+	:= -1 * TokenWorth(DigitSequenceDec);
 
 TokenWorth(DigitSequenceBin :::= [0-1]) -> RealNumber
 	:= TokenWorth([0-1]);
@@ -376,6 +397,11 @@ TokenWorth([0-9a-z] :::= "w") -> RealNumber  :=  \x020;
 TokenWorth([0-9a-z] :::= "x") -> RealNumber  :=  \x021;
 TokenWorth([0-9a-z] :::= "y") -> RealNumber  :=  \x022;
 TokenWorth([0-9a-z] :::= "z") -> RealNumber  :=  \x023;
+
+DigitCount(DigitSequenceDec :::= [0-9]) -> RealNumber
+	:= 1;
+DigitCount(DigitSequenceDec :::= DigitSequenceDec "_"? [0-9]) -> RealNumber
+	:= DigitCount(DigitSequenceDec) + DigitCount([0-9]);
 ```
 
 
