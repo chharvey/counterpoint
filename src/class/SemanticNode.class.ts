@@ -38,7 +38,6 @@ import type ParseNode from './ParseNode.class'
  * @deprecated temporary in lieu of a more full-fledged class.
  */
 export enum SolidLanguageTypeDraft {
-	NUMBER,
 	STRING,
 }
 
@@ -46,6 +45,7 @@ type SolidLanguageType =
 	| SolidLanguageTypeDraft
 	| typeof SolidNull
 	| typeof SolidBoolean
+	| typeof Int16
 
 
 
@@ -158,7 +158,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		return (
 			(this.value instanceof SolidNull) ? SolidNull :
 			(this.value instanceof SolidBoolean) ? SolidBoolean :
-			(typeof this.value === 'number') ? SolidLanguageTypeDraft.NUMBER :
+			(typeof this.value === 'number') ? Int16 :
 			                                   SolidLanguageTypeDraft.STRING
 		)
 	}
@@ -248,7 +248,7 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 	}
 	type(): SolidLanguageType {
 		const t1: SolidLanguageType = this.children[0].type()
-		if (t1 !== SolidLanguageTypeDraft.NUMBER || this.children.length === 2 && this.children[1].type() !== SolidLanguageTypeDraft.NUMBER) {
+		if (t1 !== Int16 || this.children.length === 2 && this.children[1].type() !== Int16) {
 			throw new TypeError('Invalid operation.')
 		}
 		return t1

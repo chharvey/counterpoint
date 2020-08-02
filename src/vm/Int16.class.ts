@@ -1,3 +1,7 @@
+import SolidLanguageValue from './SolidLanguageValue.class'
+
+
+
 type Int16Datatype = readonly [boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean]
 type Int16DatatypeMutable =   [boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean]
 
@@ -6,7 +10,7 @@ type Int16DatatypeMutable =   [boolean, boolean, boolean, boolean, boolean, bool
 /**
  * A 16-bit signed integer in two’s complement.
  */
-export default class Int16 {
+export default class Int16 extends SolidLanguageValue {
 	private static readonly BITCOUNT: number = 16
 
 	private static readonly ZERO  : Int16 = new Int16(    new Array(Int16.BITCOUNT    ).fill(false)               as Int16DatatypeMutable)
@@ -24,10 +28,16 @@ export default class Int16 {
 	 * @param data - a numeric value or data
 	 * @returns the value represented as a 16-bit signed integer
 	 */
-	constructor(data: bigint|Int16Datatype) {
+	constructor (data: bigint | Int16Datatype) {
+		super()
 		this.internal = (typeof data === 'bigint')
 			? [...Int16.mod(data, 2n ** BigInt(Int16.BITCOUNT)).toString(2).padStart(Int16.BITCOUNT, '0')].map((bit) => !!+bit) as Int16DatatypeMutable
 			: data
+	}
+
+	/** @override */
+	toString(): string {
+		return `${ this.toNumeric() }`
 	}
 
 	/**
@@ -38,6 +48,7 @@ export default class Int16 {
 		const unsigned: number = this.internal.map((bit, i) => +bit * 2 ** (Int16.BITCOUNT - 1 - i)).reduce((a, b) => a + b)
 		return BigInt(unsigned < 2 ** (Int16.BITCOUNT - 1) ? unsigned : unsigned - 2 ** Int16.BITCOUNT)
 	}
+
 	/**
 	 * Add two 16-bit signed integers in two’s complement.
 	 * @param addend - the integer addend
@@ -261,7 +272,7 @@ export default class Int16 {
 	 * @param int - the integer
 	 * @return a left bit shift of 1 bit, dropping the first bit and appending `false` to the end
 	 */
-	bsl(): Int16 {
+	private bsl(): Int16 {
 		return new Int16([
 			...this.internal.slice(1),
 			false,
@@ -273,7 +284,7 @@ export default class Int16 {
 	 * @param int - the integer
 	 * @return a right bit shift of 1 bit, dropping the last bit and prepending a copy of the original first bit
 	 */
-	bsr(): Int16 {
+	private bsr(): Int16 {
 		return new Int16([
 			this.internal[0],
 			...this.internal.slice(0, -1)

@@ -26,27 +26,30 @@ Decorate(Expression ::= ExpressionAdditive) -> SemanticExpression
 
 ### Abstract Operation: PerformNumericBinaryOperation
 ```w3c
-Number PerformNumericBinaryOperation(Text op, Number operand0, Number operand1) :=
+RealNumber PerformNumericBinaryOperation(Text op, RealNumber operand0, RealNumber operand1) :=
 	1. *If* `op` is `EXP`:
 		1. *Let* `result` be the power, `operand0 ^ operand1`,
 			obtained by raising `operand0` (the base) to `operand1` (the exponent).
+		2. *Return:* `result`.
 	2. *Else If* `op` is `MUL`:
 		1. *Let* `result` be the product, `operand0 * operand1`,
 			obtained by multiplying `operand0` (the multiplicand) by `operand1` (the multiplier).
+		2. *Return:* `result`.
 	3. *Else If* `op` is `DIV`:
 		1. *Let* `result` be the quotient, `operand0 / operand1`,
 			obtained by dividing `operand0` (the dividend) by `operand1` (the divisor).
+		2. *Return:* `result`.
 	4. *Else If* `op` is `ADD`:
 		1. *Let* `result` be the sum, `operand0 + operand1`,
 			obtained by adding `operand0` (the augend) to `operand1` (the addend).
-	5. *Assert:* `TypeOf(result)` is `Number`.
-	6. *Return:* `result`.
+		2. *Return:* `result`.
+	5. *Throw:* TypeError "Invalid operation.".
 ```
 
 
 ### AbstractOperation: AssessSemanticOperationBinary
 ```w3c
-Number? AssessSemanticOperationBinary(SemanticOperation expr) :=
+RealNumber? AssessSemanticOperationBinary(SemanticOperation expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
 	3. *If* `TypeOf(operand0)` is `Void`:
@@ -54,7 +57,7 @@ Number? AssessSemanticOperationBinary(SemanticOperation expr) :=
 	4. *Let* `operand1` be the result of performing `Assess(expr.children.1)`.
 	5. *If* `TypeOf(operand1)` is `Void`:
 		1. *Return*.
-	6. *Assert:* `TypeOf(operand0)` and `TypeOf(operand1)` are both `Number`.
+	6. *Assert:* `TypeOf(operand0)` and `TypeOf(operand1)` are both `RealNumber`.
 	7. *Let* `result` be the result of performing `PerformNumericBinaryOperation(expr.operator, operand0, operand1)`.
 	8. *Return:* `result`.
 ```
@@ -90,7 +93,7 @@ StringTemplate ::=
 
 ### Static Semantics: Semantic Schema (Literals)
 ```w3c
-SemanticConstant[value: Null | Boolean | Number]
+SemanticConstant[value: Null | Boolean | RealNumber | Sequence<RealNumber>]
 	::= ();
 
 SemanticTemplate[type: "full"]
@@ -173,7 +176,7 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 
 ### Static Semantics: Assess (Literals)
 ```w3c
-Or<Null, Boolean, Number> Assess(SemanticConstant const) :=
+Or<Null, Boolean, RealNumber> Assess(SemanticConstant const) :=
 	1. *Return:* `const.value`.
 
 Void Assess(SemanticTemplate tpl) :=
@@ -192,7 +195,7 @@ Sequence<Instruction> Build(Boolean b) :=
 	2. *Assert:* `b` is `false`.
 	3. *Return:* ["Push `0` onto the operand stack."].
 
-Sequence<Instruction> Build(Number n) :=
+Sequence<Instruction> Build(RealNumber n) :=
 	1. *Return:* ["Push `n` onto the operand stack."].
 
 Sequence<Instruction> Build(SemanticConstant const) :=
@@ -205,7 +208,7 @@ Void Build(SemanticTemplate tpl) :=
 
 ### Runtime Instructions: Evaluate (Literals)
 ```w3c
-Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Number value) :=
+Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", RealNumber value) :=
 	1. Push `value` onto the operand stack.
 ```
 
@@ -224,7 +227,7 @@ ExpressionUnit ::=
 
 ### Static Semantics: Semantic Schema (Expression Units)
 ```w3c
-SemanticIdentifier[id: Number]
+SemanticIdentifier[id: Unknown]
 	::= ();
 ```
 
@@ -244,7 +247,7 @@ Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticExpression
 
 ### Static Semantics: Assess (Expression Units)
 ```w3c
-Number Assess(SemanticIdentifier iden) :=
+Unknown Assess(SemanticIdentifier iden) :=
 	/* TO BE DETERMINED */
 ```
 
@@ -290,12 +293,12 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperati
 
 ### Static Semantics: Assess (Unary Operators)
 ```w3c
-Number? Assess(SemanticOperation[operator=NEG] expr) :=
+RealNumber? Assess(SemanticOperation[operator=NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
-	3. *If* `TypeOf(operand)` is `SemanticExpression`:
-		1. *Return:* `expr`.
-	4. *Assert:* `TypeOf(operand)` is `Number`.
+	3. *If* `TypeOf(operand)` is `Void`:
+		1. *Return*.
+	4. *Assert:* `TypeOf(operand)` is `RealNumber`.
 	5. *Let* `negation` be the additive inverse, `-operand`,
 		obtained by negating `operand`.
 	6. *Return:* `negation`.
@@ -349,7 +352,7 @@ Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponenti
 
 ### Static Semantics: Assess (Exponentiation)
 ```w3c
-Number? Assess(SemanticOperation[operator=EXP] expr) :=
+RealNumber? Assess(SemanticOperation[operator=EXP] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 
@@ -404,7 +407,7 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 
 ### Static Semantics: Assess (Multiplicative)
 ```w3c
-Number? Assess(SemanticOperation[operator=MUL|DIV] expr) :=
+RealNumber? Assess(SemanticOperation[operator=MUL|DIV] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 
@@ -464,7 +467,7 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 
 ### Static Semantics: Assess (Additive)
 ```w3c
-Number? Assess(SemanticOperation[operator=ADD] expr) :=
+RealNumber? Assess(SemanticOperation[operator=ADD] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 

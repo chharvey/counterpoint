@@ -26,6 +26,7 @@ import SolidLanguageValue, {
 	SolidNull,
 	SolidBoolean,
 } from '../src/vm/SolidLanguageValue.class'
+import Int16 from '../src/vm/Int16.class'
 import {
 	InstructionNone,
 	InstructionConst,
@@ -282,7 +283,7 @@ describe('SemanticNode', () => {
 			it('returns `Integer` for SemanticNodeConstant with number value.', () => {
 				assert.strictEqual(((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeConstant).type(), SolidLanguageTypeDraft.NUMBER)
+					.children[0] as SemanticNodeConstant).type(), Int16)
 			})
 			Dev.supports('variables') && it('throws for identifiers.', () => {
 				assert.throws(() => ((new Parser(`x;`, CONFIG_DEFAULT).parse().decorate()
@@ -311,7 +312,7 @@ describe('SemanticNode', () => {
 			it('returns `Integer` or any operation of numbers.', () => {
 				assert.strictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), SolidLanguageTypeDraft.NUMBER)
+					.children[0] as SemanticNodeOperation).type(), Int16)
 			})
 			it('throws for operation of non-numbers.', () => {
 				[

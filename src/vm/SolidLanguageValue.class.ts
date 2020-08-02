@@ -3,6 +3,7 @@
  * Known subclasses:
  * - Null
  * - Boolean
+ * - Int16
  */
 export default class SolidLanguageValue {
 }
