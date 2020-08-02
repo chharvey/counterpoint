@@ -41,3 +41,9 @@ export class LexError04 extends LexError {
 		super(`Numeric separator not allowed: at line ${char.line_index + 1} col ${char.col_index + 1}.`, LexError04.CODE, char.line_index, char.col_index)
 	}
 }
+export class LexError05 extends LexError {
+	static readonly CODE = 5
+	constructor (char: Char) {
+		super(`Invalid exponential notation: at line ${char.line_index + 1} col ${char.col_index + 1}.`, LexError05.CODE, char.line_index, char.col_index)
+	}
+}

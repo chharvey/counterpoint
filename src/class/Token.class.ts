@@ -10,6 +10,7 @@ import {
 	LexError02,
 	LexError03,
 	LexError04,
+	LexError05,
 } from '../error/LexError.class'
 
 
@@ -334,12 +335,16 @@ export class TokenNumber extends Token {
 			if (Char.inc(digits, this.lexer.c0)) {
 				this.lexDigitSequence(digits)
 				if (Char.eq(TokenNumber.EXPONENT, this.lexer.c0)) {
-					if (Char.inc(TokenNumber.UNARY, this.lexer.c1) && Char.inc(digits, this.lexer.c2)) {
-						this.advance(3n)
-						this.lexDigitSequence(digits)
-					} else if (Char.inc(digits, this.lexer.c1)) {
+					const err: LexError05 = new LexError05(this.lexer.c0)
+					this.advance()
+					if (Char.inc(TokenNumber.UNARY, this.lexer.c0) && Char.inc(digits, this.lexer.c1)) {
 						this.advance(2n)
 						this.lexDigitSequence(digits)
+					} else if (Char.inc(digits, this.lexer.c0)) {
+						this.advance()
+						this.lexDigitSequence(digits)
+					} else {
+						throw err
 					}
 				}
 			}

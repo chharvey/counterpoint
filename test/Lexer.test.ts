@@ -26,6 +26,7 @@ import {
 	LexError02,
 	LexError03,
 	LexError04,
+	LexError05,
 } from '../src/error/LexError.class'
 
 const lastItem  = (iter: any): any     => iter[lastIndex(iter)]
@@ -318,6 +319,7 @@ describe('Lexer', () => {
 						55.  -55.  033.  -033.  2.007  -2.007
 						91.27e4  -91.27e4  91.27e-4  -91.27e-4
 						-0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
+						34.-78
 					`, CONFIG_DEFAULT).generate()]
 					assert.strictEqual(tokens[ 2].source, `55.`)
 					assert.strictEqual(tokens[ 4].source, `-55.`)
@@ -335,6 +337,8 @@ describe('Lexer', () => {
 					assert.strictEqual(tokens[28].source, `6.8e-0`)
 					assert.strictEqual(tokens[30].source, `0.0e+0`)
 					assert.strictEqual(tokens[32].source, `-0.0e-0`)
+					assert.strictEqual(tokens[34].source, `34.`)
+					assert.strictEqual(tokens[35].source, `-78`)
 				})
 				it('recognizes exponent part not following fraction part as identifier.', () => {
 					if (Dev.supports('variables')) {
@@ -403,13 +407,15 @@ describe('Lexer', () => {
 					assert.throws(() => [...new Lexer(`12__345`, separators_on).generate()], LexError04)
 				})
 				specify('numeric separator at beginning of token is an identifier.', () => {
+					assert.throws(() => [...new Lexer(`6.7e_12345`, separators_on).generate()], LexError05)
+					assert.throws(() => [...new Lexer(`6.7e-_12345`, separators_on).generate()], LexError05)
 					if (Dev.supports('variables')) {
 						function tokenTypeAndSource(index: number, type: NewableFunction, source: string) {
 							assert.ok(tokens[index] instanceof type, `Token \`${ tokens[index].source }\` (${ index }) is not instance of ${ type.name }.`)
 							assert.strictEqual(tokens[index].source, source)
 						}
 						const tokens: Token[] = [...new Lexer(`
-							_12345  -_12345  6._12345  6.7e_12345  6.-_12345  6.7e-_12345
+							_12345  -_12345  6._12345  6.-_12345
 						`, separators_on).generate()]
 						tokenTypeAndSource(2, TokenIdentifier, `_12345`)
 
@@ -419,24 +425,14 @@ describe('Lexer', () => {
 						tokenTypeAndSource(7, TokenNumber, `6.`)
 						tokenTypeAndSource(8, TokenIdentifier, `_12345`)
 
-						tokenTypeAndSource(10, TokenNumber, `6.7`)
-						tokenTypeAndSource(11, TokenIdentifier, `e_12345`)
-
-						tokenTypeAndSource(13, TokenNumber, `6.`)
-						tokenTypeAndSource(14, TokenPunctuator, `-`)
-						tokenTypeAndSource(15, TokenIdentifier, `_12345`)
-
-						tokenTypeAndSource(17, TokenNumber, `6.7`)
-						tokenTypeAndSource(18, TokenIdentifier, `e`)
-						tokenTypeAndSource(19, TokenPunctuator, `-`)
-						tokenTypeAndSource(20, TokenIdentifier, `_12345`)
+						tokenTypeAndSource(10, TokenNumber, `6.`)
+						tokenTypeAndSource(11, TokenPunctuator, `-`)
+						tokenTypeAndSource(12, TokenIdentifier, `_12345`)
 					} else {
 						assert.throws(() => [...new Lexer(`_12345`, separators_on).generate()], LexError01)
 						assert.throws(() => [...new Lexer(`-_12345`, separators_on).generate()], LexError01)
 						assert.throws(() => [...new Lexer(`6._12345`, separators_on).generate()], LexError01)
-						assert.throws(() => [...new Lexer(`6.7e_12345`, separators_on).generate()], /Identifier `e` not yet allowed./)
 						assert.throws(() => [...new Lexer(`6.-_12345`, separators_on).generate()], LexError01)
-						assert.throws(() => [...new Lexer(`6.7e-_12345`, separators_on).generate()], /Identifier `e` not yet allowed./)
 					}
 				})
 			})
