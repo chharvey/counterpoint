@@ -312,30 +312,74 @@ describe('Lexer', () => {
 					])
 				})
 			})
-			context('integers with separators.', () => {
+			context('floats.', () => {
+				it('tokenizes floats.', () => {
+					const tokens: Token[] = [...new Lexer(`
+						55.  -55.  033.  -033.  2.007  -2.007
+						91.27e4  -91.27e4  91.27e-4  -91.27e-4
+						-0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
+					`, CONFIG_DEFAULT).generate()]
+					assert.strictEqual(tokens[ 2].source, `55.`)
+					assert.strictEqual(tokens[ 4].source, `-55.`)
+					assert.strictEqual(tokens[ 6].source, `033.`)
+					assert.strictEqual(tokens[ 8].source, `-033.`)
+					assert.strictEqual(tokens[10].source, `2.007`)
+					assert.strictEqual(tokens[12].source, `-2.007`)
+					assert.strictEqual(tokens[14].source, `91.27e4`)
+					assert.strictEqual(tokens[16].source, `-91.27e4`)
+					assert.strictEqual(tokens[18].source, `91.27e-4`)
+					assert.strictEqual(tokens[20].source, `-91.27e-4`)
+					assert.strictEqual(tokens[22].source, `-0.`)
+					assert.strictEqual(tokens[24].source, `-0.0`)
+					assert.strictEqual(tokens[26].source, `6.8e+0`)
+					assert.strictEqual(tokens[28].source, `6.8e-0`)
+					assert.strictEqual(tokens[30].source, `0.0e+0`)
+					assert.strictEqual(tokens[32].source, `-0.0e-0`)
+				})
+				it('recognizes exponent part not following fraction part as identifier.', () => {
+					if (Dev.supports('variables')) {
+						const tokens: Token[] = [...new Lexer(`91.e27`, CONFIG_DEFAULT).generate()]
+						assert.ok(tokens[2] instanceof TokenNumber)
+						assert.strictEqual(tokens[2].source, `91.`)
+						assert.ok(tokens[3] instanceof TokenIdentifier)
+						assert.strictEqual(tokens[3].source, `e27`)
+					} else {
+						assert.throws(() => [...new Lexer(`91.e27`, CONFIG_DEFAULT).generate()], /Identifier `e` not yet allowed./)
+					}
+				})
+			})
+			context('numbers with separators.', () => {
 				it('tokenizes numeric separators as identifiers when `config.features.numericSeparators` is turned off.', () => {
 					if (Dev.supports('variables')) {
 						const tokens: Token[] = [...new Lexer(`
 							12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
 							\\b1_00  \\q0_32  +\\o1_037  -\\d9_037  +\\x0_6  -\\z0_6
+							91.2e4_7  81.2e+4_7  71.2e-4_7  2.00_7  -1.00_7
 						`, radices_on).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace))
 						const expected: string[] = `
 							12 +12 -12 0123 +0123 -0123 012 +012 -012
 							\\b1 \\q0 +\\o1 -\\d9 +\\x0 -\\z0
+							91.2e4 81.2e+4 71.2e-4 2.00 -1.00
 						`.trim().replace(/\n\t+/g, ' ').split(' ')
 						tokens.filter((_, i) => i % 2 === 0).forEach((token, j) => {
 							assert.ok(token instanceof TokenNumber, 'this token instanceof TokenNumber')
 							assert.ok(tokens[j * 2 + 1] instanceof TokenIdentifier, 'next token instanceof TokenIdentifierBasic')
 							assert.strictEqual(token.source, expected[j])
 						})
+						;`5_5.  -5_5.`.split('  ').forEach((src) => {
+							assert.throws(() => [...new Lexer(src, radices_on).generate()], LexError01)
+						})
 					} else {
-						assert.throws(() => [...new Lexer(`
+						;`
 							12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
 							\\b1_00  \\q0_32  +\\o1_037  -\\d9_037  +\\x0_6  -\\z0_6
-						`, radices_on).generate()], LexError01)
+							91.2e4_7  81.2e+4_7  71.2e-4_7  2.00_7  -1.00_7
+						`.trim().replace(/\n\t*/g, '  ').split('  ').forEach((src) => {
+							assert.throws(() => [...new Lexer(src, radices_on).generate()], LexError01)
+						})
 					}
 				})
-				it('`config.features.numericSeparators` allows integers with separators.', () => {
+				it('`config.features.numericSeparators` allows numbers with separators.', () => {
 					const source: string = `
 						12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
 						\\b1_00  \\b0_01  +\\b1_000  -\\b1_000  +\\b0_1  -\\b0_1
@@ -344,6 +388,8 @@ describe('Lexer', () => {
 						\\d3_70  \\d0_37  +\\d9_037  -\\d9_037  +\\d0_6  -\\d0_6
 						\\xe_70  \\x0_e7  +\\x9_0e7  -\\x9_0e7  +\\x0_6  -\\x0_6
 						\\ze_70  \\z0_e7  +\\z9_0e7  -\\z9_0e7  +\\z0_6  -\\z0_6
+						5_5.  -5_5.  2.00_7  -2.00_7
+						91.2e4_7  91.2e+4_7  91.2e-4_7
 					`.trim().replace(/\n\t+/g, '  ')
 					;[...new Lexer(source, both_on).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
 						assert.ok(token instanceof TokenNumber)
@@ -358,18 +404,39 @@ describe('Lexer', () => {
 				})
 				specify('numeric separator at beginning of token is an identifier.', () => {
 					if (Dev.supports('variables')) {
+						function tokenTypeAndSource(index: number, type: NewableFunction, source: string) {
+							assert.ok(tokens[index] instanceof type, `Token \`${ tokens[index].source }\` (${ index }) is not instance of ${ type.name }.`)
+							assert.strictEqual(tokens[index].source, source)
+						}
 						const tokens: Token[] = [...new Lexer(`
-							_12345  -_12345
+							_12345  -_12345  6._12345  6.7e_12345  6.-_12345  6.7e-_12345
 						`, separators_on).generate()]
-						assert.ok(tokens[2] instanceof TokenIdentifier)
-						assert.strictEqual(tokens[2].source, `_12345`)
-						assert.ok(tokens[4] instanceof TokenPunctuator)
-						assert.strictEqual(tokens[4].source, `-`)
-						assert.ok(tokens[5] instanceof TokenIdentifier)
-						assert.strictEqual(tokens[5].source, `_12345`)
+						tokenTypeAndSource(2, TokenIdentifier, `_12345`)
+
+						tokenTypeAndSource(4, TokenPunctuator, `-`)
+						tokenTypeAndSource(5, TokenIdentifier, `_12345`)
+
+						tokenTypeAndSource(7, TokenNumber, `6.`)
+						tokenTypeAndSource(8, TokenIdentifier, `_12345`)
+
+						tokenTypeAndSource(10, TokenNumber, `6.7`)
+						tokenTypeAndSource(11, TokenIdentifier, `e_12345`)
+
+						tokenTypeAndSource(13, TokenNumber, `6.`)
+						tokenTypeAndSource(14, TokenPunctuator, `-`)
+						tokenTypeAndSource(15, TokenIdentifier, `_12345`)
+
+						tokenTypeAndSource(17, TokenNumber, `6.7`)
+						tokenTypeAndSource(18, TokenIdentifier, `e`)
+						tokenTypeAndSource(19, TokenPunctuator, `-`)
+						tokenTypeAndSource(20, TokenIdentifier, `_12345`)
 					} else {
 						assert.throws(() => [...new Lexer(`_12345`, separators_on).generate()], LexError01)
 						assert.throws(() => [...new Lexer(`-_12345`, separators_on).generate()], LexError01)
+						assert.throws(() => [...new Lexer(`6._12345`, separators_on).generate()], LexError01)
+						assert.throws(() => [...new Lexer(`6.7e_12345`, separators_on).generate()], /Identifier `e` not yet allowed./)
+						assert.throws(() => [...new Lexer(`6.-_12345`, separators_on).generate()], LexError01)
+						assert.throws(() => [...new Lexer(`6.7e-_12345`, separators_on).generate()], /Identifier `e` not yet allowed./)
 					}
 				})
 			})

@@ -258,6 +258,8 @@ export class TokenNumber extends Token {
 	static readonly RADIX_DEFAULT: RadixType = 10n
 	static readonly ESCAPER   : string = '\\'
 	static readonly SEPARATOR : string = '_'
+	static readonly POINT     : string = '.'
+	static readonly EXPONENT  : string = 'e'
 	static readonly UNARY: readonly Punctuator[] = [
 		Punctuator.AFF,
 		Punctuator.NEG,
@@ -326,10 +328,29 @@ export class TokenNumber extends Token {
 		this.has_unary = has_unary
 		this.has_radix = has_radix
 		this.radix     = radix
-		while (!this.lexer.isDone && Char.inc([
+		this.lexDigitSequence(digits)
+		if (!this.has_radix && Char.eq(TokenNumber.POINT, this.lexer.c0)) {
+			this.advance()
+			if (Char.inc(digits, this.lexer.c0)) {
+				this.lexDigitSequence(digits)
+				if (Char.eq(TokenNumber.EXPONENT, this.lexer.c0)) {
+					if (Char.inc(TokenNumber.UNARY, this.lexer.c1) && Char.inc(digits, this.lexer.c2)) {
+						this.advance(3n)
+						this.lexDigitSequence(digits)
+					} else if (Char.inc(digits, this.lexer.c1)) {
+						this.advance(2n)
+						this.lexDigitSequence(digits)
+					}
+				}
+			}
+		}
+	}
+	private lexDigitSequence(digits: readonly string[]): void {
+		const allowedchars: string[] = [
 			...digits,
 			...(this.lexer.config.features.numericSeparators ? [TokenNumber.SEPARATOR] : [])
-		], this.lexer.c0)) {
+		]
+		while (!this.lexer.isDone && Char.inc(allowedchars, this.lexer.c0)) {
 			if (Char.inc(digits, this.lexer.c0)) {
 				this.advance()
 			} else if (this.lexer.config.features.numericSeparators && Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {

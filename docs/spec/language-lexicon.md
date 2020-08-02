@@ -249,6 +249,7 @@ TokenWorth(Identifier) -> RealNumber
 ```w3c
 Number<Radix, Separator> :::=
 	| Integer<?Radix, ?Separator>
+	| Float<?Separator>
 ;
 
 Integer<Radix, Separator>
@@ -263,6 +264,18 @@ IntegerDigits<Radix, Separator> :::=
 	| <Radix+>("\x"  DigitSequenceHex<?Separator>)
 	| <Radix+>("\z"  DigitSequenceHTD<?Separator>)
 ;
+
+Float<Separator>
+	:::= SignedDigitSequenceDec<?Separator> "." (FractionalPart<?Separator> ExponentPart<?Separator>?)?;
+
+SignedDigitSequenceDec<Separator>
+	:::= ("+" | "-")? DigitSequenceDec<?Separator>;
+
+FractionalPart<Separator>
+	:::= DigitSequenceDec<?Separator>;
+
+ExponentPart<Separator>
+	:::= "e" SignedDigitSequenceDec<?Separator>;
 
 DigitSequenceBin<Separator> :::= (DigitSequenceBin <Separator+>"_"?)? [0-1];
 DigitSequenceQua<Separator> :::= (DigitSequenceQua <Separator+>"_"?)? [0-3];
