@@ -9,7 +9,7 @@ import type ParseNode from './ParseNode.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
 import {
 	TerminalIdentifier,
-	TerminalNumber,
+	TerminalInteger,
 	TerminalString,
 	TerminalTemplateFull,
 	TerminalTemplateHead,
@@ -84,13 +84,13 @@ export class ProductionPrimitiveLiteral extends Production {
 			[Keyword.NULL],
 			[Keyword.FALSE],
 			[Keyword.TRUE],
-			[TerminalNumber.instance],
+			[TerminalInteger.instance],
 			[TerminalString.instance],
 		] : [
 			[Keyword.NULL],
 			[Keyword.FALSE],
 			[Keyword.TRUE],
-			[TerminalNumber.instance],
+			[TerminalInteger.instance],
 		]
 	}
 	random(): string[] {
@@ -99,13 +99,13 @@ export class ProductionPrimitiveLiteral extends Production {
 			random < 0.2 ? Keyword.NULL :
 			random < 0.4 ? Keyword.FALSE :
 			random < 0.6 ? Keyword.TRUE :
-			random < 0.8 ? TerminalNumber.instance.random() :
+			random < 0.8 ? TerminalInteger.instance.random() :
 			               TerminalString.instance.random()
 		] : [
 			random < 0.25 ? Keyword.NULL :
 			random < 0.50 ? Keyword.FALSE :
 			random < 0.75 ? Keyword.TRUE :
-			                TerminalNumber.instance.random()
+			                TerminalInteger.instance.random()
 		]
 	}
 }

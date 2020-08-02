@@ -247,10 +247,14 @@ TokenWorth(Identifier) -> RealNumber
 
 ### Numbers
 ```w3c
-Number<Radix, Separator>
-	:::= ("+" | "-")? IntegerLiteral<?Radix, ?Separator>;
+Number<Radix, Separator> :::=
+	| Integer<?Radix, ?Separator>
+;
 
-IntegerLiteral<Radix, Separator> :::=
+Integer<Radix, Separator>
+	:::= ("+" | "-")? IntegerDigits<?Radix, ?Separator>;
+
+IntegerDigits<Radix, Separator> :::=
 	| <Radix->DigitSequenceDec<?Separator>
 	| <Radix+>("\b"  DigitSequenceBin<?Separator>)
 	| <Radix+>("\q"  DigitSequenceQua<?Separator>)
@@ -271,31 +275,31 @@ Numbers are literal constants that represent numeric mathematical values.
 Currently, only positive and negative (and zero) integers are supported.
 
 #### Static Semantics: TokenWorth (Numbers)
-The Token Worth of a Number token is the [real number](./data-types.md#realnumber) that the token represents.
+The Token Worth of a number token is the [real number](./data-types.md#realnumber) that the token represents.
 
 There is a many-to-one relationship between tokens and Token Worth quantities.
 For example, both the tokens containing `0042` and `+42`
 have the same Token Worth: the integer *42*.
 
 ```w3c
-TokenWorth(Number :::= IntegerLiteral) -> RealNumber
-	:= TokenWorth(IntegerLiteral);
-TokenWorth(Number :::= "+" IntegerLiteral) -> RealNumber
-	:= TokenWorth(IntegerLiteral);
-TokenWorth(Number :::= "-" IntegerLiteral) -> RealNumber
-	:= -1 * TokenWorth(IntegerLiteral);
+TokenWorth(Integer :::= IntegerDigits) -> RealNumber
+	:= TokenWorth(IntegerDigits);
+TokenWorth(Integer :::= "+" IntegerDigits) -> RealNumber
+	:= TokenWorth(IntegerDigits);
+TokenWorth(Integer :::= "-" IntegerDigits) -> RealNumber
+	:= -1 * TokenWorth(IntegerDigits);
 
-TokenWorth(IntegerLiteral :::= "\b"  DigitSequenceBin) -> RealNumber
+TokenWorth(IntegerDigits :::= "\b"  DigitSequenceBin) -> RealNumber
 	:= TokenWorth(DigitSequenceBin);
-TokenWorth(IntegerLiteral :::= "\q"  DigitSequenceQua) -> RealNumber
+TokenWorth(IntegerDigits :::= "\q"  DigitSequenceQua) -> RealNumber
 	:= TokenWorth(DigitSequenceQua);
-TokenWorth(IntegerLiteral :::= "\o"  DigitSequenceOct) -> RealNumber
+TokenWorth(IntegerDigits :::= "\o"  DigitSequenceOct) -> RealNumber
 	:= TokenWorth(DigitSequenceOct);
-TokenWorth(IntegerLiteral :::= "\d"? DigitSequenceDec) -> RealNumber
+TokenWorth(IntegerDigits :::= "\d"? DigitSequenceDec) -> RealNumber
 	:= TokenWorth(DigitSequenceDec);
-TokenWorth(IntegerLiteral :::= "\x"  DigitSequenceHex) -> RealNumber
+TokenWorth(IntegerDigits :::= "\x"  DigitSequenceHex) -> RealNumber
 	:= TokenWorth(DigitSequenceHex);
-TokenWorth(IntegerLiteral :::= "\z"  DigitSequenceHTD) -> RealNumber
+TokenWorth(IntegerDigits :::= "\z"  DigitSequenceHTD) -> RealNumber
 	:= TokenWorth(DigitSequenceHTD);
 
 TokenWorth(DigitSequenceBin :::= [0-1]) -> RealNumber

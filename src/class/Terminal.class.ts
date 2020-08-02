@@ -68,19 +68,19 @@ export class TerminalIdentifier extends Terminal {
 		return candidate instanceof TokenIdentifier
 	}
 }
-export class TerminalNumber extends Terminal {
-	static readonly instance: TerminalNumber = new TerminalNumber()
+export class TerminalInteger extends Terminal {
+	static readonly instance: TerminalInteger = new TerminalInteger()
 	static digitSequence(radix: RadixType): string {
 		return `${
-			Util.randomBool() ? '' : `${TerminalNumber.digitSequence(radix)}${Util.randomBool() ? '' : TokenNumber.SEPARATOR}`
+			Util.randomBool() ? '' : `${TerminalInteger.digitSequence(radix)}${Util.randomBool() ? '' : TokenNumber.SEPARATOR}`
 		}${Util.arrayRandom(TokenNumber.DIGITS.get(radix) !)}`
 	}
 	random(): string {
 		const [base, radix]: [string, RadixType] = Util.arrayRandom([...TokenNumber.BASES])
 		return `${ Util.randomBool() ? '' : Util.arrayRandom(TokenNumber.UNARY) }${
 			Util.randomBool()
-				? TerminalNumber.digitSequence(TokenNumber.RADIX_DEFAULT)
-			: `${ TokenNumber.ESCAPER }${ base }${ TerminalNumber.digitSequence(radix) }`
+				? TerminalInteger.digitSequence(TokenNumber.RADIX_DEFAULT)
+			: `${ TokenNumber.ESCAPER }${ base }${ TerminalInteger.digitSequence(radix) }`
 		}`
 	}
 	match(candidate: Token): boolean {
@@ -91,7 +91,7 @@ export class TerminalString extends Terminal {
 	static readonly instance: TerminalString = new TerminalString()
 	private static readonly escape_opts: readonly (() => string)[] = [
 		(): string => Util.arrayRandom(TokenString.ESCAPES),
-		(): string => `u{${ Util.randomBool() ? '' : TerminalNumber.digitSequence(16n) }}`,
+		(): string => `u{${ Util.randomBool() ? '' : TerminalInteger.digitSequence(16n) }}`,
 		(): string => `\u000a`,
 		(): string => Util.randomChar([TokenString.DELIM, TokenString.ESCAPER, ...'s t n r u \u000a'.split(' '), Filebound.EOT]),
 	]
