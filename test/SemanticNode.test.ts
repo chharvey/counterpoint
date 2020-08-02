@@ -18,7 +18,7 @@ import {
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
 } from '../src/class/SemanticNode.class'
-import type {
+import {
 	CompletionStructureAssessment,
 } from '../src/spec/CompletionStructure.class'
 import Builder from '../src/vm/Builder.class'
@@ -351,16 +351,16 @@ describe('SemanticNode', () => {
 				])
 			})
 			it('computes the value of a constant numeric expression.', () => {
-				const values: (number | SolidLanguageValue | SemanticNodeExpression)[] = [
+				assert.deepStrictEqual([
 					'42 + 420;',
 					'42 - 420;',
-					'126 / 3;',
-					'-126 / 3;',
-					'126 / -3;',
+					' 126 /  3;',
+					'-126 /  3;',
+					' 126 / -3;',
 					'-126 / -3;',
-					'200 / 3;',
-					'200 / -3;',
-					'-200 / 3;',
+					' 200 /  3;',
+					' 200 / -3;',
+					'-200 /  3;',
 					'-200 / -3;',
 					'42 ^ 2 * 420;',
 					'2 ^ 15 + 2 ^ 14;',
@@ -373,27 +373,24 @@ describe('SemanticNode', () => {
 						.children[0] as ParseNodeExpression
 					).decorate().assess()
 					assert.ok(assess)
-					return assess.value
-				})
-				values.forEach((value) => {
-					assert.strictEqual(typeof value, 'number')
-				})
-				assert.deepStrictEqual(values, [
+					assert.ok(assess.value instanceof Int16)
+					return assess
+				}), [
 					42 + 420,
 					42 + -420,
-					126 / 3,
-					-126 / 3,
-					126 / -3,
-					-126 / -3,
-					Math.trunc(200 / 3),
-					Math.trunc(200 / -3),
-					Math.trunc(-200 / 3),
+					Math.trunc( 126 /  3),
+					Math.trunc(-126 /  3),
+					Math.trunc( 126 / -3),
+					Math.trunc(-126 / -3),
+					Math.trunc( 200 /  3),
+					Math.trunc( 200 / -3),
+					Math.trunc(-200 /  3),
 					Math.trunc(-200 / -3),
 					(42 ** 2 * 420) % (2 ** 16),
 					-(2 ** 14),
 					2 ** 14,
 					(-(5)) ** +(2 * 3),
-				])
+				].map((v) => new CompletionStructureAssessment(new Int16(BigInt(v)))))
 			})
 		})
 	})

@@ -19,7 +19,7 @@ Type TypeOf(SemanticConstant constant) :=
 		1. *Return:* `Null`.
 	2. *If* `constant.value` is `false` or `true`:
 		1. *Return:* `Boolean`.
-	3. *If* `constant.value` is a `RealNumber`:
+	3. *If* `constant.value` is a `Integer`:
 		1. *Return:* `Integer`.
 	4. Else:
 		1. *Assert:* `constant.value` is a `Sequence<RealNumber>`.

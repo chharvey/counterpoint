@@ -16,6 +16,7 @@ import {
 	SolidNull,
 	SolidBoolean,
 } from '../src/vm/SolidLanguageValue.class'
+import Int16 from '../src/vm/Int16.class'
 
 import {
 	assert_arrayLength,
@@ -69,7 +70,7 @@ describe('ParseNode', () => {
 						SolidNull.NULL,
 						SolidBoolean.FALSE,
 						SolidBoolean.TRUE,
-						42,
+						new Int16(42n),
 					][i])
 				})
 			})

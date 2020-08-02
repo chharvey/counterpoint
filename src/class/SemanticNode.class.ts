@@ -140,14 +140,17 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 export class SemanticNodeConstant extends SemanticNodeExpression {
 	declare children:
 		| readonly []
-	readonly value: number | string | SolidLanguageValue;
+	readonly value: string | SolidLanguageValue;
 	constructor (start_node: TokenKeyword | TokenNumber | TokenString | TokenTemplate) {
 		const cooked: number | bigint | string = start_node.cook()
-		const value: number | string | SolidLanguageValue = (typeof cooked === 'bigint') ?
-			(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
-			(start_node.source === Keyword.TRUE) ? SolidBoolean.TRUE :
-			SolidNull.NULL
-		: cooked
+		const value: string | SolidLanguageValue =
+			(typeof cooked === 'bigint') ?
+				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
+				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUE  :
+				SolidNull.NULL
+			:
+			(typeof cooked === 'number') ? new Int16(BigInt(cooked)) :
+			cooked
 		super(start_node, {value})
 		this.value = value
 	}
@@ -156,14 +159,14 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 	}
 	type(): SolidLanguageType {
 		return (
-			(this.value instanceof SolidNull) ? SolidNull :
+			(this.value instanceof SolidNull)    ? SolidNull :
 			(this.value instanceof SolidBoolean) ? SolidBoolean :
-			(typeof this.value === 'number') ? Int16 :
-			                                   SolidLanguageTypeDraft.STRING
+			(this.value instanceof Int16)        ? Int16 :
+			SolidLanguageTypeDraft.STRING
 		)
 	}
 	assess(): CompletionStructureAssessment {
-		if (this.value instanceof SolidLanguageValue || typeof this.value === 'number') {
+		if (this.value instanceof SolidLanguageValue) {
 			return new CompletionStructureAssessment(this.value)
 		} else {
 			throw new Error('not yet supported.')
@@ -211,16 +214,16 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	}
 }
 export class SemanticNodeOperation extends SemanticNodeExpression {
-	private static FOLD_UNARY: Map<Punctuator, (z: number) => number> = new Map<Punctuator, (z: number) => number>([
-		[Punctuator.AFF, (z) => Number(new Int16(BigInt(z))      .toNumeric())],
-		[Punctuator.NEG, (z) => Number(new Int16(BigInt(z)).neg().toNumeric())],
+	private static FOLD_UNARY: Map<Punctuator, (z: Int16) => Int16> = new Map<Punctuator, (z: Int16) => Int16>([
+		[Punctuator.AFF, (z) => z      ],
+		[Punctuator.NEG, (z) => z.neg()],
 	])
-	private static FOLD_BINARY: Map<Punctuator, (x: number, y: number) => number> = new Map<Punctuator, (x: number, y: number) => number>([
-		[Punctuator.EXP, (x, y) => Number(new Int16(BigInt(x)).exp    (new Int16(BigInt(y))).toNumeric())],
-		[Punctuator.MUL, (x, y) => Number(new Int16(BigInt(x)).times  (new Int16(BigInt(y))).toNumeric())],
-		[Punctuator.DIV, (x, y) => Number(new Int16(BigInt(x)).divide (new Int16(BigInt(y))).toNumeric())],
-		[Punctuator.ADD, (x, y) => Number(new Int16(BigInt(x)).plus   (new Int16(BigInt(y))).toNumeric())],
-		[Punctuator.SUB, (x, y) => Number(new Int16(BigInt(x)).minus  (new Int16(BigInt(y))).toNumeric())],
+	private static FOLD_BINARY: Map<Punctuator, (x: Int16, y: Int16) => Int16> = new Map<Punctuator, (x: Int16, y: Int16) => Int16>([
+		[Punctuator.EXP, (x, y) => x.exp    (y)],
+		[Punctuator.MUL, (x, y) => x.times  (y)],
+		[Punctuator.DIV, (x, y) => x.divide (y)],
+		[Punctuator.ADD, (x, y) => x.plus   (y)],
+		[Punctuator.SUB, (x, y) => x.minus  (y)],
 	])
 	private assessment0:  CompletionStructureAssessment | null;
 	private assessment1?: CompletionStructureAssessment | null;
@@ -256,13 +259,13 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 	assess(): CompletionStructureAssessment | null {
 		if (!this.assessment0) return null
 		if (this.children.length === 1) {
-			return new CompletionStructureAssessment(SemanticNodeOperation.FOLD_UNARY.get(this.operator)!(this.assessment0.value as number))
+			return new CompletionStructureAssessment(SemanticNodeOperation.FOLD_UNARY.get(this.operator)!(this.assessment0.value as Int16))
 		} else {
 			if (!this.assessment1) return null
-			if (this.operator === Punctuator.DIV && this.assessment1.value === 0) {
+			if (this.operator === Punctuator.DIV && (this.assessment1.value as Int16).eq0()) {
 				throw new NanError02(this.children[1])
 			}
-			return new CompletionStructureAssessment(SemanticNodeOperation.FOLD_BINARY.get(this.operator)!(this.assessment0.value as number, this.assessment1.value as number))
+			return new CompletionStructureAssessment(SemanticNodeOperation.FOLD_BINARY.get(this.operator)!(this.assessment0.value as Int16, this.assessment1.value as Int16))
 		}
 	}
 }

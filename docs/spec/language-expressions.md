@@ -49,7 +49,7 @@ RealNumber PerformNumericBinaryOperation(Text op, RealNumber operand0, RealNumbe
 
 ### AbstractOperation: AssessSemanticOperationBinary
 ```w3c
-RealNumber? AssessSemanticOperationBinary(SemanticOperation expr) :=
+Integer? AssessSemanticOperationBinary(SemanticOperation expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
 	3. *If* `TypeOf(operand0)` is `Void`:
@@ -57,7 +57,7 @@ RealNumber? AssessSemanticOperationBinary(SemanticOperation expr) :=
 	4. *Let* `operand1` be the result of performing `Assess(expr.children.1)`.
 	5. *If* `TypeOf(operand1)` is `Void`:
 		1. *Return*.
-	6. *Assert:* `TypeOf(operand0)` and `TypeOf(operand1)` are both `RealNumber`.
+	6. *Assert:* `TypeOf(operand0)` and `TypeOf(operand1)` are both `Integer`.
 	7. *Let* `result` be the result of performing `PerformNumericBinaryOperation(expr.operator, operand0, operand1)`.
 	8. *Return:* `result`.
 ```
@@ -93,7 +93,7 @@ StringTemplate ::=
 
 ### Static Semantics: Semantic Schema (Literals)
 ```w3c
-SemanticConstant[value: Null | Boolean | RealNumber | Sequence<RealNumber>]
+SemanticConstant[value: Null | Boolean | Integer | Sequence<RealNumber>]
 	::= ();
 
 SemanticTemplate[type: "full"]
@@ -117,7 +117,7 @@ Decorate(PrimitiveLiteral ::= "true") -> SemanticConstant
 	:= (SemanticConstant[value=true]);
 
 Decorate(PrimitiveLiteral ::= NUMBER) -> SemanticConstant
-	:= (SemanticConstant[value=TokenWorth(NUMBER)]);
+	:= (SemanticConstant[value=Integer(TokenWorth(NUMBER))]);
 
 Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 	:= (SemanticConstant[value=TokenWorth(STRING)]);
@@ -176,7 +176,7 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 
 ### Static Semantics: Assess (Literals)
 ```w3c
-Or<Null, Boolean, RealNumber> Assess(SemanticConstant const) :=
+Or<Null, Boolean, Integer> Assess(SemanticConstant const) :=
 	1. *Return:* `const.value`.
 
 Void Assess(SemanticTemplate tpl) :=
@@ -195,8 +195,8 @@ Sequence<Instruction> Build(Boolean b) :=
 	2. *Assert:* `b` is `false`.
 	3. *Return:* ["Push `0` onto the operand stack."].
 
-Sequence<Instruction> Build(RealNumber n) :=
-	1. *Return:* ["Push `n` onto the operand stack."].
+Sequence<Instruction> Build(Integer n) :=
+	1. *Return:* ["Push `RealNumber(n)` onto the operand stack."].
 
 Sequence<Instruction> Build(SemanticConstant const) :=
 	1. *Return:* `Build(Assess(const))`.
@@ -293,12 +293,12 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperati
 
 ### Static Semantics: Assess (Unary Operators)
 ```w3c
-RealNumber? Assess(SemanticOperation[operator=NEG] expr) :=
+Integer? Assess(SemanticOperation[operator=NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
 	3. *If* `TypeOf(operand)` is `Void`:
 		1. *Return*.
-	4. *Assert:* `TypeOf(operand)` is `RealNumber`.
+	4. *Assert:* `TypeOf(operand)` is `Integer`.
 	5. *Let* `negation` be the additive inverse, `-operand`,
 		obtained by negating `operand`.
 	6. *Return:* `negation`.
@@ -352,7 +352,7 @@ Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponenti
 
 ### Static Semantics: Assess (Exponentiation)
 ```w3c
-RealNumber? Assess(SemanticOperation[operator=EXP] expr) :=
+Integer? Assess(SemanticOperation[operator=EXP] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 
@@ -407,7 +407,7 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 
 ### Static Semantics: Assess (Multiplicative)
 ```w3c
-RealNumber? Assess(SemanticOperation[operator=MUL|DIV] expr) :=
+Integer? Assess(SemanticOperation[operator=MUL|DIV] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 
@@ -467,7 +467,7 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 
 ### Static Semantics: Assess (Additive)
 ```w3c
-RealNumber? Assess(SemanticOperation[operator=ADD] expr) :=
+Integer? Assess(SemanticOperation[operator=ADD] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 

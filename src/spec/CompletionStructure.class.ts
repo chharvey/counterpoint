@@ -2,7 +2,7 @@ import SolidLanguageValue, {
 	SolidNull,
 	SolidBoolean,
 } from '../vm/SolidLanguageValue.class'
-import type Int16 from '../vm/Int16.class'
+import Int16 from '../vm/Int16.class'
 import Instruction, {
 	InstructionConst,
 } from '../vm/Instruction.class'
@@ -29,7 +29,7 @@ export default class CompletionStructure {
 	 * @param type  The type of completion that occurred.
 	 */
 	constructor (
-		readonly value: number | SolidLanguageValue,
+		readonly value: SolidLanguageValue,
 		readonly type: CompletionType = CompletionType.NORMAL,
 	) {
 	}
@@ -45,7 +45,7 @@ export class CompletionStructureAssessment extends CompletionStructure {
 	 * Construct a new CompletionStructureAssessment object.
 	 * @param value The value produced by this completion structure.
 	 */
-	constructor (value: number | SolidLanguageValue) { // TODO Decorate(PrimitiveLiteral ::= NUMBER) -> SemanticConstant[value: Int16]
+	constructor (value: SolidLanguageValue) {
 		super(value)
 	}
 	/**
@@ -53,10 +53,11 @@ export class CompletionStructureAssessment extends CompletionStructure {
 	 * @return the directions to print
 	 */
 	build(): Instruction {
-		return (this.value instanceof SolidLanguageValue)
-			? (this.value === SolidBoolean.TRUE)
-				? new InstructionConst(1)
-				: new InstructionConst() // FALSE or NULL
-			: new InstructionConst(this.value)
+		return (
+			(this.value instanceof SolidNull)    ? new InstructionConst() :
+			(this.value instanceof SolidBoolean) ? new InstructionConst((this.value === SolidBoolean.FALSE) ? 0 : 1) :
+			(this.value instanceof Int16)        ? new InstructionConst(Number(this.value.toNumeric())) :
+			(() => { throw new Error('not yet supported.') })()
+		)
 	}
 }

@@ -294,7 +294,7 @@ export default class Int16 extends SolidLanguageValue {
 	 * Is the 16-bit signed integer equal to 0?
 	 * @returns Is this integer equal to 0?
 	 */
-	private eq0(): boolean {
+	eq0(): boolean {
 		return this === Int16.ZERO || this.equals(Int16.ZERO)
 	}
 	/**
