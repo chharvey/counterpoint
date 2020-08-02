@@ -147,6 +147,16 @@ describe('Lexer', () => {
 			})
 		})
 
+		!Dev.supports('variables') && context('throws when variables are turned off and a non-keywords is given.', () => {
+			it('throws when non-keyword /^[a-z]+$/ is given', () => {
+				assert.throws(() => [...new Lexer(`abc`, CONFIG_DEFAULT).generate()], /Identifier `abc` not yet allowed./)
+			})
+			it('throws when /^[a-z]+[A-Za-z0-9_]+$/ is given', () => {
+				assert.throws(() => [...new Lexer(`falseTrue`, CONFIG_DEFAULT).generate()], LexError01)
+				assert.throws(() => [...new Lexer(`false_true`, CONFIG_DEFAULT).generate()], LexError01)
+			})
+		})
+
 		Dev.supports('variables') && context('recognizes `TokenIdentifier` conditions.', () => {
 			context('recognizes `TokenIdentifierBasic` conditions.', () => {
 				specify('Basic identifier beginners.', () => {
@@ -347,9 +357,20 @@ describe('Lexer', () => {
 					assert.throws(() => [...new Lexer(`12__345`, separators_on).generate()], LexError04)
 				})
 				specify('numeric separator at beginning of token is an identifier.', () => {
-					Dev.supports('variables')
-						? assert.ok([...new Lexer(`_12345`, separators_on).generate()][2] instanceof TokenIdentifier)
-						: assert.throws(() => [...new Lexer(`_12345`, separators_on).generate()], LexError01)
+					if (Dev.supports('variables')) {
+						const tokens: Token[] = [...new Lexer(`
+							_12345  -_12345
+						`, separators_on).generate()]
+						assert.ok(tokens[2] instanceof TokenIdentifier)
+						assert.strictEqual(tokens[2].source, `_12345`)
+						assert.ok(tokens[4] instanceof TokenPunctuator)
+						assert.strictEqual(tokens[4].source, `-`)
+						assert.ok(tokens[5] instanceof TokenIdentifier)
+						assert.strictEqual(tokens[5].source, `_12345`)
+					} else {
+						assert.throws(() => [...new Lexer(`_12345`, separators_on).generate()], LexError01)
+						assert.throws(() => [...new Lexer(`-_12345`, separators_on).generate()], LexError01)
+					}
 				})
 			})
 		})
