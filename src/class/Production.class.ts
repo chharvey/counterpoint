@@ -7,7 +7,7 @@ import {
 } from './Token.class'
 import type ParseNode from './ParseNode.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
-import {
+import Terminal, {
 	TerminalIdentifier,
 	TerminalInteger,
 	TerminalFloat,
@@ -128,8 +128,8 @@ export class ProductionStringTemplate extends Production {
 	random(): string[] {
 		return Util.randomBool() ? [TerminalTemplateFull.instance.random()] : [
 			TerminalTemplateHead.instance.random(),
-			...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
-			...(Util.randomBool() ? [] : ProductionStringTemplate.__0__List.instance.random()),
+			...Terminal.maybeA(ProductionExpression.instance.random),
+			...Terminal.maybeA(ProductionStringTemplate.__0__List.instance.random),
 			TerminalTemplateTail.instance.random(),
 		]
 	}
@@ -145,9 +145,9 @@ export class ProductionStringTemplate extends Production {
 		}
 		random(): string[] {
 			return [
-				...(Util.randomBool() ? [] : this.random()),
+				...Terminal.maybeA(this.random),
 				TerminalTemplateMiddle.instance.random(),
-				...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
+				...Terminal.maybeA(ProductionExpression.instance.random),
 			]
 		}
 	}
@@ -220,7 +220,7 @@ export class ProductionExpressionExponential extends Production {
 	random(): string[] {
 		return [
 			...ProductionExpressionUnarySymbol.instance.random(),
-			...(Util.randomBool() ? [] : [Punctuator.EXP, ...this.random()]),
+			...Terminal.maybeA(() => [Punctuator.EXP, ...this.random()]),
 		]
 	}
 }
@@ -235,7 +235,7 @@ export class ProductionExpressionMultiplicative extends Production {
 	}
 	random(): string[] {
 		return [
-			...(Util.randomBool() ? [] : [...this.random(), Util.arrayRandom([Punctuator.MUL, Punctuator.DIV])]),
+			...Terminal.maybeA(() => [...this.random(), Util.arrayRandom([Punctuator.MUL, Punctuator.DIV])]),
 			...ProductionExpressionExponential.instance.random(),
 		]
 	}
@@ -251,7 +251,7 @@ export class ProductionExpressionAdditive extends Production {
 	}
 	random(): string[] {
 		return [
-			...(Util.randomBool() ? [] : [...this.random(), Util.arrayRandom([Punctuator.ADD, Punctuator.SUB])]),
+			...Terminal.maybeA(() => [...this.random(), Util.arrayRandom([Punctuator.ADD, Punctuator.SUB])]),
 			...ProductionExpressionMultiplicative.instance.random(),
 		]
 	}
@@ -278,7 +278,7 @@ export class ProductionDeclarationVariable extends Production {
 	random(): string[] {
 		return [
 			Keyword.LET,
-			Util.randomBool() ? '' : Keyword.UNFIXED,
+			Terminal.maybe(() => Keyword.UNFIXED),
 			TerminalIdentifier.instance.random(),
 			Punctuator.ASSIGN,
 			...ProductionExpression.instance.random(),
@@ -349,7 +349,7 @@ export class ProductionGoal extends Production {
 		}
 		random(): string[] {
 			return [
-				...(Util.randomBool() ? [] : this.random()),
+				...Terminal.maybeA(this.random),
 				...ProductionStatement.instance.random(),
 			]
 		}
