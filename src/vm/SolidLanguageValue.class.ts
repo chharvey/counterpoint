@@ -4,6 +4,7 @@
  * - Null
  * - Boolean
  * - Int16
+ * - Float64
  */
 export default class SolidLanguageValue {
 }
@@ -52,6 +53,21 @@ export class SolidBoolean extends SolidLanguageValue {
 	/** The Solid Language Value `true`. */
 	static readonly TRUE: SolidBoolean = new SolidBoolean(true)
 	protected constructor (private readonly value: boolean = false) {
+		super()
+	}
+	toString(): string {
+		return `${ this.value }`
+	}
+}
+
+
+
+/**
+ * A 64-bit floating-point number.
+ * @final
+ */
+export class Float64 extends SolidLanguageValue {
+	constructor (private readonly value: number = 0) {
 		super()
 	}
 	toString(): string {

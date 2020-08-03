@@ -9,6 +9,7 @@ type Int16DatatypeMutable =   [boolean, boolean, boolean, boolean, boolean, bool
 
 /**
  * A 16-bit signed integer in two’s complement.
+ * @final
  */
 export default class Int16 extends SolidLanguageValue {
 	private static readonly BITCOUNT: number = 16

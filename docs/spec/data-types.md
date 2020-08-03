@@ -123,7 +123,7 @@ The Boolean type has two logical values, called `true` and `false`.
 
 
 ### Integer
-The Integer type represents [mathematical integers](#realnumber).
+The Integer type represents [mathematical integers](#real-integer-numbers).
 The Solid compiler represents Integers as 16-bit signed two’s complement values.
 
 `0` and `-0` represent the same value, *0*.
@@ -139,3 +139,11 @@ For example, the sum represented by *32,767 + 1* will overflow and produce the v
 The behavior of performing arithmetic operations that are invalid in the integers
 (such as dividing by a non-factor, or raising to a negative exponent) are defined in each respective operation.
 Dividing by zero results in an error.
+
+
+### Float
+The Float type represents [mathematical rational numbers](#real-rational-numbers)
+whose decimals terminate in base 10.
+(That is, numbers that can be expressed as a finite sum of multiples of powers of 10.)
+The Float type contains “floating-point numbers”, which are 64-bit format values as specified in the
+*IEEE Standard for Binary Floating-Point Arithmetic ([IEEE 754-2019](https://standards.ieee.org/standard/754-2019.html))*.

@@ -94,7 +94,7 @@ StringTemplate ::=
 
 ### Static Semantics: Semantic Schema (Literals)
 ```w3c
-SemanticConstant[value: Null | Boolean | Integer | Sequence<RealNumber>]
+SemanticConstant[value: Null | Boolean | Integer | FLoat | Sequence<RealNumber>]
 	::= ();
 
 SemanticTemplate[type: "full"]
@@ -117,8 +117,11 @@ Decorate(PrimitiveLiteral ::= "false") -> SemanticConstant
 Decorate(PrimitiveLiteral ::= "true") -> SemanticConstant
 	:= (SemanticConstant[value=true]);
 
-Decorate(PrimitiveLiteral ::= NUMBER) -> SemanticConstant
-	:= (SemanticConstant[value=Integer(TokenWorth(NUMBER))]);
+Decorate(PrimitiveLiteral ::= INTEGER) -> SemanticConstant
+	:= (SemanticConstant[value=Integer(TokenWorth(INTEGER))]);
+
+Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticConstant
+	:= (SemanticConstant[value=Float(TokenWorth(FLOAT))]);
 
 Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 	:= (SemanticConstant[value=TokenWorth(STRING)]);

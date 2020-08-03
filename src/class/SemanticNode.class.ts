@@ -7,6 +7,7 @@ import type Builder from '../vm/Builder.class'
 import SolidLanguageValue, {
 	SolidNull,
 	SolidBoolean,
+	Float64,
 } from '../vm/SolidLanguageValue.class'
 import Int16 from '../vm/Int16.class'
 import Instruction, {
@@ -46,6 +47,7 @@ type SolidLanguageType =
 	| typeof SolidNull
 	| typeof SolidBoolean
 	| typeof Int16
+	| typeof Float64
 
 
 
@@ -144,12 +146,14 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 	constructor (start_node: TokenKeyword | TokenNumber | TokenString | TokenTemplate) {
 		const cooked: number | bigint | string = start_node.cook()
 		const value: string | SolidLanguageValue =
-			(typeof cooked === 'bigint') ?
+			(start_node instanceof TokenKeyword) ?
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUE  :
 				SolidNull.NULL
 			:
-			(typeof cooked === 'number') ? new Int16(BigInt(cooked)) :
+			(start_node instanceof TokenNumber) ?
+				start_node.isFloat ? new Float64(cooked as number) : new Int16(BigInt(cooked as number))
+			:
 			cooked
 		super(start_node, {value})
 		this.value = value
@@ -162,6 +166,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 			(this.value instanceof SolidNull)    ? SolidNull :
 			(this.value instanceof SolidBoolean) ? SolidBoolean :
 			(this.value instanceof Int16)        ? Int16 :
+			(this.value instanceof Float64)      ? Float64 :
 			SolidLanguageTypeDraft.STRING
 		)
 	}

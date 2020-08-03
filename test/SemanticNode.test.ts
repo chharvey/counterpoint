@@ -22,9 +22,10 @@ import {
 	CompletionStructureAssessment,
 } from '../src/spec/CompletionStructure.class'
 import Builder from '../src/vm/Builder.class'
-import SolidLanguageValue, {
+import {
 	SolidNull,
 	SolidBoolean,
+	Float64,
 } from '../src/vm/SolidLanguageValue.class'
 import Int16 from '../src/vm/Int16.class'
 import {
@@ -280,10 +281,15 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeConstant).type(), SolidBoolean)
 				})
 			})
-			it('returns `Integer` for SemanticNodeConstant with number value.', () => {
+			it('returns `Integer` for SemanticNodeConstant with integer value.', () => {
 				assert.strictEqual(((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeConstant).type(), Int16)
+			})
+			it('returns `Float` for SemanticNodeConstant with float value.', () => {
+				assert.strictEqual(((new Parser(`4.2e+1;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeConstant).type(), Float64)
 			})
 			Dev.supports('variables') && it('throws for identifiers.', () => {
 				assert.throws(() => ((new Parser(`x;`, CONFIG_DEFAULT).parse().decorate()
