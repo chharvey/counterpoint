@@ -21,7 +21,7 @@ describe('Instruction', () => {
 	describe('#toString', () => {
 		context('InstructionConstInt', () => {
 			it('pushes the constant integer onto the stack.', () => {
-				assert.deepStrictEqual([
+				const values: number[] = [
 					0,
 					0,
 					1,
@@ -37,23 +37,11 @@ describe('Instruction', () => {
 					Math.trunc( 200 /  -3),
 					Math.trunc(-200 /   3),
 					Math.trunc(-200 /  -3),
-				].map((x) => new InstructionConstInt(BigInt(x)).toString()), [
-					`(i32.const 0)`,
-					`(i32.const 0)`,
-					`(i32.const 1)`,
-					`(i32.const 42)`,
-					`(i32.const 42)`,
-					`(i32.const -42)`,
-					`(i32.const ${ Math.trunc(  42 + 420) })`,
-					`(i32.const ${ Math.trunc( 126 /   3) })`,
-					`(i32.const ${ Math.trunc(-126 /   3) })`,
-					`(i32.const ${ Math.trunc( 126 /  -3) })`,
-					`(i32.const ${ Math.trunc(-126 /  -3) })`,
-					`(i32.const ${ Math.trunc( 200 /   3) })`,
-					`(i32.const ${ Math.trunc( 200 /  -3) })`,
-					`(i32.const ${ Math.trunc(-200 /   3) })`,
-					`(i32.const ${ Math.trunc(-200 /  -3) })`,
-				])
+				]
+				assert.deepStrictEqual(
+					values.map((x) => new InstructionConstInt(BigInt(x)).toString()),
+					values.map((x) => `(i32.const ${ x })`),
+				)
 			})
 		})
 
