@@ -12,6 +12,7 @@ import {
 	InstructionUnop,
 	InstructionBinop,
 	InstructionModule,
+	InstructionConstFloat,
 } from '../src/vm/Instruction.class'
 
 
@@ -53,6 +54,19 @@ describe('Instruction', () => {
 					`(i32.const ${ Math.trunc(-200 /   3) })`,
 					`(i32.const ${ Math.trunc(-200 /  -3) })`,
 				])
+			})
+		})
+
+		context('InstructionConstFloat', () => {
+			it('pushes the constant float onto the stack.', () => {
+				const values: number[] = [
+					55, -55, 33, -33, 2.007, -2.007,
+					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
+				]
+				assert.deepStrictEqual(
+					values.map((x) => new InstructionConstFloat(x).toString()),
+					values.map((x) => `(f64.const ${ x })`),
+				)
 			})
 		})
 

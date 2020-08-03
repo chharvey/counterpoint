@@ -1,10 +1,12 @@
 import SolidLanguageValue, {
 	SolidNull,
 	SolidBoolean,
+	Float64,
 } from '../vm/SolidLanguageValue.class'
 import Int16 from '../vm/Int16.class'
 import Instruction, {
 	InstructionConstInt,
+	InstructionConstFloat,
 } from '../vm/Instruction.class'
 
 
@@ -57,6 +59,7 @@ export class CompletionStructureAssessment extends CompletionStructure {
 			(this.value instanceof SolidNull)    ? new InstructionConstInt() :
 			(this.value instanceof SolidBoolean) ? new InstructionConstInt((this.value === SolidBoolean.FALSE) ? 0n : 1n) :
 			(this.value instanceof Int16)        ? new InstructionConstInt(this.value.toNumeric()) :
+			(this.value instanceof Float64)      ? new InstructionConstFloat(this.value.value) :
 			(() => { throw new Error('not yet supported.') })()
 		)
 	}

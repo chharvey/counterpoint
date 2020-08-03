@@ -58,6 +58,23 @@ export class InstructionConstInt extends Instruction {
 	}
 }
 /**
+ * Push a constant float onto the stack.
+ */
+export class InstructionConstFloat extends Instruction {
+	/**
+	 * @param f64 the constant to push
+	 */
+	constructor (private readonly f64: number = 0) {
+		super()
+	}
+	/**
+	 * @return `'(f64.const ‹f64›)'`
+	 */
+	toString(): string {
+		return `(f64.const ${ this.f64 })`
+	}
+}
+/**
  * Perform a unary operation on the stack.
  */
 export class InstructionUnop extends Instruction {

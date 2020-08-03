@@ -6,17 +6,30 @@ import type {
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
 } from '../src/class/SemanticNode.class'
-import type {
+import {
 	CompletionStructureAssessment,
 } from '../src/spec/CompletionStructure.class'
+import {Float64} from '../src/vm/SolidLanguageValue.class'
 import {
-	InstructionConst,
+	InstructionConstInt,
+	InstructionConstFloat,
 } from '../src/vm/Instruction.class'
 
 
 
 describe('CompletionStructureAssessment', () => {
 	describe('#build', () => {
+		specify('CompletionStructureAssessment[value: Float]', () => {
+			const values: number[] = [
+				55, -55, 33, -33, 2.007, -2.007,
+				91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
+				-0, -0, 6.8, 6.8, 0, -0,
+			]
+			assert.deepStrictEqual(
+				values.map((x) => new CompletionStructureAssessment(new Float64(x)).build()),
+				values.map((x) => new InstructionConstFloat(x)),
+			)
+		})
 		specify('ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative', () => {
 			const assessment: CompletionStructureAssessment | null = ((new Parser(`42 + 420;`, CONFIG_DEFAULT).parse().decorate()
 				.children[0] as SemanticNodeStatementExpression)
