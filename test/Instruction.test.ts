@@ -8,7 +8,7 @@ import {Punctuator} from '../src/class/Token.class'
 import Builder from '../src/vm/Builder.class'
 import {
 	InstructionNone,
-	InstructionConst,
+	InstructionConstInt,
 	InstructionUnop,
 	InstructionBinop,
 	InstructionModule,
@@ -18,8 +18,8 @@ import {
 
 describe('Instruction', () => {
 	describe('#toString', () => {
-		context('InstructionConst', () => {
-			it('pushes the constant onto the stack.', () => {
+		context('InstructionConstInt', () => {
+			it('pushes the constant integer onto the stack.', () => {
 				assert.deepStrictEqual([
 					0,
 					0,
@@ -36,7 +36,7 @@ describe('Instruction', () => {
 					Math.trunc( 200 /  -3),
 					Math.trunc(-200 /   3),
 					Math.trunc(-200 /  -3),
-				].map((x) => new InstructionConst(BigInt(x)).toString()), [
+				].map((x) => new InstructionConstInt(BigInt(x)).toString()), [
 					`(i32.const 0)`,
 					`(i32.const 0)`,
 					`(i32.const 1)`,
@@ -60,15 +60,15 @@ describe('Instruction', () => {
 			it('performs a unary operation.', () => {
 				assert.strictEqual(new InstructionUnop(
 					Punctuator.AFF,
-					new InstructionConst(42n),
-				).toString(), `(nop ${ new InstructionConst(42n).toString() })`)
+					new InstructionConstInt(42n),
+				).toString(), `(nop ${ new InstructionConstInt(42n).toString() })`)
 				assert.strictEqual(new InstructionUnop(
 					Punctuator.NEG,
-					new InstructionConst(42n),
-				).toString(), `(call $neg ${ new InstructionConst(42n).toString() })`)
+					new InstructionConstInt(42n),
+				).toString(), `(call $neg ${ new InstructionConstInt(42n).toString() })`)
 				assert.throws(() => new InstructionUnop(
 					Punctuator.MUL,
-					new InstructionConst(42n),
+					new InstructionConstInt(42n),
 				).toString(), TypeError)
 			})
 		})
@@ -77,9 +77,9 @@ describe('Instruction', () => {
 			it('performs a binary operation.', () => {
 				assert.strictEqual(new InstructionBinop(
 					Punctuator.MUL,
-					new InstructionConst(21n),
-					new InstructionConst(2n),
-				).toString(), `(i32.mul ${ new InstructionConst(21n).toString() } ${ new InstructionConst(2n).toString() })`)
+					new InstructionConstInt(21n),
+					new InstructionConstInt(2n),
+				).toString(), `(i32.mul ${ new InstructionConstInt(21n).toString() } ${ new InstructionConstInt(2n).toString() })`)
 			})
 		})
 

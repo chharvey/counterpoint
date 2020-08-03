@@ -23,7 +23,7 @@ describe('CompletionStructureAssessment', () => {
 				.children[0] as SemanticNodeOperation)
 				.assess()
 			assert.ok(assessment)
-			assert.deepStrictEqual(assessment.build(), new InstructionConst(
+			assert.deepStrictEqual(assessment.build(), new InstructionConstInt(
 				42n + 420n,
 			))
 		})
@@ -33,7 +33,7 @@ describe('CompletionStructureAssessment', () => {
 				.children[0] as SemanticNodeOperation)
 				.assess()
 			assert.ok(assessment)
-			assert.deepStrictEqual(assessment.build(), new InstructionConst(
+			assert.deepStrictEqual(assessment.build(), new InstructionConstInt(
 				42n + -420n,
 			))
 		})
@@ -53,7 +53,7 @@ describe('CompletionStructureAssessment', () => {
 					.children[0] as SemanticNodeOperation)
 					.assess()
 				assert.ok(assessment)
-				assert.deepStrictEqual(assessment.build(), new InstructionConst([
+				assert.deepStrictEqual(assessment.build(), new InstructionConstInt([
 					 126 /  3,
 					-126 /  3,
 					 126 / -3,
@@ -71,7 +71,7 @@ describe('CompletionStructureAssessment', () => {
 				.children[0] as SemanticNodeOperation)
 				.assess()
 			assert.ok(assessment)
-			assert.deepStrictEqual(assessment.build(), new InstructionConst(
+			assert.deepStrictEqual(assessment.build(), new InstructionConstInt(
 				(42n ** 2n * 420n) % (2n ** 16n),
 			))
 		})
@@ -85,7 +85,7 @@ describe('CompletionStructureAssessment', () => {
 					.children[0] as SemanticNodeOperation)
 					.assess()
 				assert.ok(assessment)
-				assert.deepStrictEqual(assessment.build(), new InstructionConst([
+				assert.deepStrictEqual(assessment.build(), new InstructionConstInt([
 					-(2n ** 14n),
 					2n ** 14n,
 				][i]))
@@ -97,7 +97,7 @@ describe('CompletionStructureAssessment', () => {
 				.children[0] as SemanticNodeOperation)
 				.assess()
 			assert.ok(assessment)
-			assert.deepStrictEqual(assessment.build(), new InstructionConst(
+			assert.deepStrictEqual(assessment.build(), new InstructionConstInt(
 				(-5n) ** (2n * 3n),
 			))
 		})

@@ -41,9 +41,9 @@ class InstructionNop extends Instruction {
 	}
 }
 /**
- * Push a constant onto the stack.
+ * Push a constant integer onto the stack.
  */
-export class InstructionConst extends Instruction {
+export class InstructionConstInt extends Instruction {
 	/**
 	 * @param i32 the constant to push
 	 */
