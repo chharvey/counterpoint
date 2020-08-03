@@ -22,7 +22,7 @@ export default abstract class Terminal {
 		return Util.randomBool() ? '' : fun()
 	}
 	static maybeA(fun: () => string[]): string[] {
-		return Util.randomBool() ? [''] : fun()
+		return Util.randomBool() ? [] : fun()
 	}
 
 
