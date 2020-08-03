@@ -50,25 +50,25 @@ export default abstract class Terminal {
 
 export class TerminalIdentifier extends Terminal {
 	static readonly instance: TerminalIdentifier = new TerminalIdentifier()
+	private static charsBasic(start: boolean = false): string {
+		let c: string;
+		const pass: RegExp = start ? TokenIdentifierBasic.CHAR_START : TokenIdentifierBasic.CHAR_REST
+		do {
+			c = Util.randomChar()
+		} while (!pass.test(c))
+		return start ? c : [c, Terminal.maybe(TerminalIdentifier.charsBasic)].join('')
+	}
+	private static charsUnicode(): string {
+		return [Terminal.maybe(TerminalIdentifier.charsUnicode), Util.randomChar(['`'])].join('')
+	}
 	random(): string {
-		const charsBasic = (start: boolean = false): string => {
-			let c: string;
-			const pass: RegExp = start ? TokenIdentifierBasic.CHAR_START : TokenIdentifierBasic.CHAR_REST
-			do {
-				c = Util.randomChar()
-			} while (!pass.test(c))
-			return start ? c : [c, Terminal.maybe(charsBasic)].join('')
-		}
-		const charsUnicode = (): string => {
-			return [Terminal.maybe(charsUnicode), Util.randomChar(['`'])].join('')
-		}
 		let returned: string;
 		if (Util.randomBool()) {
 			do {
-				returned = [charsBasic(true), Terminal.maybe(charsBasic)].join('')
+				returned = [TerminalIdentifier.charsBasic(true), Terminal.maybe(TerminalIdentifier.charsBasic)].join('')
 			} while ((TokenKeyword.KEYWORDS as string[]).includes(returned))
 		} else {
-			returned = `\`${ Terminal.maybe(charsUnicode) }\``
+			returned = `\`${ Terminal.maybe(TerminalIdentifier.charsUnicode) }\``
 		}
 		return returned
 	}
@@ -78,7 +78,7 @@ export class TerminalIdentifier extends Terminal {
 }
 export class TerminalInteger extends Terminal {
 	static readonly instance: TerminalInteger = new TerminalInteger()
-	static digitSequence(radix: RadixType): string {
+	static digitSequence(radix: RadixType = TokenNumber.RADIX_DEFAULT): string {
 		return [
 			...Terminal.maybeA(() => [
 				TerminalInteger.digitSequence(radix),
@@ -92,7 +92,7 @@ export class TerminalInteger extends Terminal {
 		return [
 			Terminal.maybe(() => Util.arrayRandom(TokenNumber.UNARY)),
 			...(Util.randomBool() ? [
-				TerminalInteger.digitSequence(TokenNumber.RADIX_DEFAULT),
+				TerminalInteger.digitSequence(),
 			] : [
 				TokenNumber.ESCAPER,
 				base,
@@ -109,14 +109,14 @@ export class TerminalFloat extends Terminal {
 	random(): string {
 		return [
 			Terminal.maybe(() => Util.arrayRandom(TokenNumber.UNARY)),
-			TerminalInteger.digitSequence(TokenNumber.RADIX_DEFAULT),
+			TerminalInteger.digitSequence(),
 			TokenNumber.POINT,
 			...Terminal.maybeA(() => [
-				TerminalInteger.digitSequence(TokenNumber.RADIX_DEFAULT),
+				TerminalInteger.digitSequence(),
 				...Terminal.maybeA(() => [
 					TokenNumber.EXPONENT,
 					Terminal.maybe(() => Util.arrayRandom(TokenNumber.UNARY)),
-					TerminalInteger.digitSequence(TokenNumber.RADIX_DEFAULT),
+					TerminalInteger.digitSequence(),
 				]),
 			]),
 		].join('')
@@ -133,76 +133,75 @@ export class TerminalString extends Terminal {
 		(): string => `\u000a`,
 		(): string => Util.randomChar([TokenString.DELIM, TokenString.ESCAPER, ...'s t n r u \u000a'.split(' '), Filebound.EOT]),
 	]
+	private static maybeChars(): string {
+		const random: number = Math.random()
+		return Terminal.maybe(() => (
+			random < 1/3 ? [Util.randomChar([TokenString.DELIM, TokenString.ESCAPER, Filebound.EOT]),                                     TerminalString.maybeChars()]   :
+			random < 2/3 ? [TokenString.ESCAPER,                                Util.arrayRandom(TerminalString.escape_opts)(),           TerminalString.maybeChars()]   :
+			               [TokenString.ESCAPER, 'u', ...Terminal.maybeA(() => [Util.randomChar([TokenString.DELIM, '{', Filebound.EOT]), TerminalString.maybeChars()])]
+		).join(''))
+	}
 	random(): string {
-		const maybeChars = (): string => Terminal.maybe(chars)
-		const chars = (): string => {
-			const random: number = Math.random()
-			return (
-				random < 1/3 ? [Util.randomChar([TokenString.DELIM, TokenString.ESCAPER, Filebound.EOT]), maybeChars()] :
-				random < 2/3 ? [TokenString.ESCAPER, Util.arrayRandom(TerminalString.escape_opts)(), maybeChars()] :
-				               [TokenString.ESCAPER, 'u', ...Terminal.maybeA(() => [Util.randomChar([TokenString.DELIM, '{', Filebound.EOT]), maybeChars()])]
-			).join('')
-		}
-		return [TokenString.DELIM, maybeChars(), TokenString.DELIM].join('')
+		return [TokenString.DELIM, TerminalString.maybeChars(), TokenString.DELIM].join('')
 	}
 	match(candidate: Token): boolean {
 		return candidate instanceof TokenString
 	}
 }
 abstract class TerminalTemplate extends Terminal {
+	private static forbidden(): string { return Util.randomChar('\' { \u0003'.split(' ')) }
+	private static charsEndDelim(): string {
+		const random: number = Math.random()
+		return (
+			random < 1/3 ? [TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndDelim)].join('') :
+			random < 2/3 ? TerminalTemplate.charsEndDelimStartDelim() :
+			               TerminalTemplate.charsEndDelimStartInterp()
+		)
+	}
+	private static charsEndDelimStartDelim(): string {
+		const random: number = Math.random()
+		return (
+			random < 1/4 ? [`'`,                                                 TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndDelim)                                                 ] :
+			random < 2/4 ? [`''`,                                                TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndDelim)                                                 ] :
+			random < 3/4 ? [`'{`,  ...Terminal.maybeA(() => Util.randomBool() ? [TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndDelim)] : [TerminalTemplate.charsEndDelimStartDelim()])] :
+			               [`''{`, ...Terminal.maybeA(() => Util.randomBool() ? [TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndDelim)] : [TerminalTemplate.charsEndDelimStartDelim()])]
+		).join('')
+	}
+	private static charsEndDelimStartInterp(): string {
+		const random: number = Math.random()
+		return (
+			random < 1/3 ? [`{`,   ...(Util.randomBool() ? [TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndDelim)] : [''                                         ])] :
+			random < 2/3 ? [`{'`,  ...(Util.randomBool() ? [TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndDelim)] : [TerminalTemplate.charsEndDelimStartInterp()])] :
+			               [`{''`, ...(Util.randomBool() ? [TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndDelim)] : [TerminalTemplate.charsEndDelimStartInterp()])]
+		).join('')
+	}
+	private static charsEndInterp(): string {
+		const random: number = Math.random()
+		return (
+			random < 1/3 ? [TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndInterp)].join('') :
+			random < 2/3 ? TerminalTemplate.charsEndInterpStartDelim() :
+			               TerminalTemplate.charsEndInterpStartInterp()
+		)
+	}
+	private static charsEndInterpStartDelim(): string {
+		const random: number = Math.random()
+		return (
+			random < 1/4 ? [`'`,   ...(Util.randomBool() ? [TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndInterp)] : [''                                         ])] :
+			random < 2/4 ? [`''`,  ...(Util.randomBool() ? [TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndInterp)] : [''                                         ])] :
+			random < 3/4 ? [`'{`,  ...(Util.randomBool() ? [TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndInterp)] : [TerminalTemplate.charsEndInterpStartDelim()])] :
+			               [`''{`, ...(Util.randomBool() ? [TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndInterp)] : [TerminalTemplate.charsEndInterpStartDelim()])]
+		).join('')
+	}
+	private static charsEndInterpStartInterp(): string {
+		const random: number = Math.random()
+		return (
+			random < 1/3 ? [`{`,                                                 TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndInterp)                                                   ] :
+			random < 2/3 ? [`{'`,  ...Terminal.maybeA(() => Util.randomBool() ? [TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndInterp)] : [TerminalTemplate.charsEndInterpStartInterp()])] :
+			               [`{''`, ...Terminal.maybeA(() => Util.randomBool() ? [TerminalTemplate.forbidden(), Terminal.maybe(TerminalTemplate.charsEndInterp)] : [TerminalTemplate.charsEndInterpStartInterp()])]
+		).join('')
+	}
 	random(start: string = TokenTemplate.DELIM, end: string = TokenTemplate.DELIM): string {
-		const forbidden = (): string => Util.randomChar('\' { \u0003'.split(' '))
-		const charsEndDelim = (): string => {
-			const random: number = Math.random()
-			return (
-				random < 1/3 ? [forbidden(), Terminal.maybe(charsEndDelim)].join('') :
-				random < 2/3 ? charsEndDelimStartDelim() :
-				               charsEndDelimStartInterp()
-			)
-		}
-		const charsEndDelimStartDelim = (): string => {
-			const random: number = Math.random()
-			return (
-				random < 1/4 ? [`'`,                                                 forbidden(), Terminal.maybe(charsEndDelim)                                ] :
-				random < 2/4 ? [`''`,                                                forbidden(), Terminal.maybe(charsEndDelim)                                ] :
-				random < 3/4 ? [`'{`,  ...Terminal.maybeA(() => Util.randomBool() ? [forbidden(), Terminal.maybe(charsEndDelim)] : [charsEndDelimStartDelim()])] :
-				               [`''{`, ...Terminal.maybeA(() => Util.randomBool() ? [forbidden(), Terminal.maybe(charsEndDelim)] : [charsEndDelimStartDelim()])]
-			).join('')
-		}
-		const charsEndDelimStartInterp = (): string => {
-			const random: number = Math.random()
-			return (
-				random < 1/3 ? [`{`,   ...(Util.randomBool() ? [forbidden(), Terminal.maybe(charsEndDelim)] : [''                        ])] :
-				random < 2/3 ? [`{'`,  ...(Util.randomBool() ? [forbidden(), Terminal.maybe(charsEndDelim)] : [charsEndDelimStartInterp()])] :
-				               [`{''`, ...(Util.randomBool() ? [forbidden(), Terminal.maybe(charsEndDelim)] : [charsEndDelimStartInterp()])]
-			).join('')
-		}
-		const charsEndInterp = (): string => {
-			const random: number = Math.random()
-			return (
-				random < 1/3 ? [forbidden(), Terminal.maybe(charsEndInterp)].join('') :
-				random < 2/3 ? charsEndInterpStartDelim() :
-				               charsEndInterpStartInterp()
-			)
-		}
-		const charsEndInterpStartDelim = (): string => {
-			const random: number = Math.random()
-			return (
-				random < 1/4 ? [`'`,   ...(Util.randomBool() ? [forbidden(), Terminal.maybe(charsEndInterp)] : [''                        ])] :
-				random < 2/4 ? [`''`,  ...(Util.randomBool() ? [forbidden(), Terminal.maybe(charsEndInterp)] : [''                        ])] :
-				random < 3/4 ? [`'{`,  ...(Util.randomBool() ? [forbidden(), Terminal.maybe(charsEndInterp)] : [charsEndInterpStartDelim()])] :
-				               [`''{`, ...(Util.randomBool() ? [forbidden(), Terminal.maybe(charsEndInterp)] : [charsEndInterpStartDelim()])]
-			).join('')
-		}
-		const charsEndInterpStartInterp = (): string => {
-			const random: number = Math.random()
-			return (
-				random < 1/3 ? [`{`,                                                 forbidden(), Terminal.maybe(charsEndInterp)                                  ] :
-				random < 2/3 ? [`{'`,  ...Terminal.maybeA(() => Util.randomBool() ? [forbidden(), Terminal.maybe(charsEndInterp)] : [charsEndInterpStartInterp()])] :
-				               [`{''`, ...Terminal.maybeA(() => Util.randomBool() ? [forbidden(), Terminal.maybe(charsEndInterp)] : [charsEndInterpStartInterp()])]
-			).join('')
-		}
-		return [start, Terminal.maybe(end === TokenTemplate.DELIM ? charsEndDelim : charsEndInterp), end].join('')
+		return [start, Terminal.maybe(end === TokenTemplate.DELIM ? TerminalTemplate.charsEndDelim : TerminalTemplate.charsEndInterp), end].join('')
 	}
 	match(candidate: Token, position: TemplatePosition = TemplatePosition.FULL): boolean {
 		return candidate instanceof TokenTemplate && candidate.position === position
