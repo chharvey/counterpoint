@@ -99,16 +99,16 @@ export class ProductionPrimitiveLiteral extends Production {
 	random(): string[] {
 		const random: number = Math.random()
 		return Dev.supports('literalString') ? [
-			random < 1/6 ? Keyword.NULL :
+			random < 1/6 ? Keyword.NULL  :
 			random < 2/6 ? Keyword.FALSE :
-			random < 3/6 ? Keyword.TRUE :
+			random < 3/6 ? Keyword.TRUE  :
 			random < 4/6 ? TerminalInteger.instance.random() :
 			random < 5/6 ? TerminalFloat  .instance.random() :
 			               TerminalString .instance.random()
 		] : [
-			random < 1/5 ? Keyword.NULL :
+			random < 1/5 ? Keyword.NULL  :
 			random < 2/5 ? Keyword.FALSE :
-			random < 3/5 ? Keyword.TRUE :
+			random < 3/5 ? Keyword.TRUE  :
 			random < 4/5 ? TerminalInteger.instance.random() :
 			               TerminalFloat  .instance.random()
 		]
@@ -176,20 +176,20 @@ export class ProductionExpressionUnit extends Production {
 	random(): string[] {
 		const random: number = Math.random()
 		return Dev.supportsAll('variables', 'literalTemplate') ? (
-			random < 0.25 ? [TerminalIdentifier        .instance.random()] :
-			random < 0.50 ?  ProductionPrimitiveLiteral.instance.random()  :
-			random < 0.75 ?  ProductionStringTemplate  .instance.random()  :
+			random < 1/4 ? [TerminalIdentifier        .instance.random()] :
+			random < 2/4 ?  ProductionPrimitiveLiteral.instance.random()  :
+			random < 3/4 ?  ProductionStringTemplate  .instance.random()  :
 			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
 		) : Dev.supports('variables') ? (
-			random < 0.333 ? [TerminalIdentifier        .instance.random()] :
-			random < 0.667 ?  ProductionPrimitiveLiteral.instance.random()  :
+			random < 1/3 ? [TerminalIdentifier        .instance.random()] :
+			random < 2/3 ?  ProductionPrimitiveLiteral.instance.random()  :
 			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
 		) : Dev.supports('literalTemplate') ? (
-			random < 0.333 ? ProductionPrimitiveLiteral.instance.random() :
-			random < 0.667 ? ProductionStringTemplate  .instance.random() :
+			random < 1/3 ? ProductionPrimitiveLiteral.instance.random() :
+			random < 2/3 ? ProductionStringTemplate  .instance.random() :
 			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
 		) : (
-			random < 0.5 ? ProductionPrimitiveLiteral.instance.random()  :
+			random < 1/2 ? ProductionPrimitiveLiteral.instance.random()  :
 			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
 		)
 	}
@@ -318,13 +318,13 @@ export class ProductionStatement extends Production {
 	random(): string[] {
 		const random: number = Math.random()
 		return Dev.supports('variables') ? (
-			random < 0.25 ? [                                           Punctuator.ENDSTAT] :
-			random < 0.50 ? [...ProductionExpression.instance.random(), Punctuator.ENDSTAT] :
-			random < 0.75 ? ProductionDeclarationVariable.instance.random() :
-			                ProductionStatementAssignment.instance.random()
+			random < 1/4 ? [                                           Punctuator.ENDSTAT] :
+			random < 2/4 ? [...ProductionExpression.instance.random(), Punctuator.ENDSTAT] :
+			random < 3/4 ? ProductionDeclarationVariable.instance.random() :
+			               ProductionStatementAssignment.instance.random()
 		) : (
-			random < 0.50 ? [                                           Punctuator.ENDSTAT] :
-			                [...ProductionExpression.instance.random(), Punctuator.ENDSTAT]
+			random < 1/2 ? [                                           Punctuator.ENDSTAT] :
+			               [...ProductionExpression.instance.random(), Punctuator.ENDSTAT]
 		)
 	}
 }
