@@ -10,6 +10,7 @@ import {GrammarSymbol, Rule} from './Grammar.class'
 import {
 	TerminalIdentifier,
 	TerminalInteger,
+	TerminalFloat,
 	TerminalString,
 	TerminalTemplateFull,
 	TerminalTemplateHead,
@@ -85,27 +86,31 @@ export class ProductionPrimitiveLiteral extends Production {
 			[Keyword.FALSE],
 			[Keyword.TRUE],
 			[TerminalInteger.instance],
-			[TerminalString.instance],
+			[TerminalFloat  .instance],
+			[TerminalString .instance],
 		] : [
 			[Keyword.NULL],
 			[Keyword.FALSE],
 			[Keyword.TRUE],
 			[TerminalInteger.instance],
+			[TerminalFloat  .instance],
 		]
 	}
 	random(): string[] {
 		const random: number = Math.random()
 		return Dev.supports('literalString') ? [
-			random < 0.2 ? Keyword.NULL :
-			random < 0.4 ? Keyword.FALSE :
-			random < 0.6 ? Keyword.TRUE :
-			random < 0.8 ? TerminalInteger.instance.random() :
-			               TerminalString.instance.random()
+			random < 1/6 ? Keyword.NULL :
+			random < 2/6 ? Keyword.FALSE :
+			random < 3/6 ? Keyword.TRUE :
+			random < 4/6 ? TerminalInteger.instance.random() :
+			random < 5/6 ? TerminalFloat  .instance.random() :
+			               TerminalString .instance.random()
 		] : [
-			random < 0.25 ? Keyword.NULL :
-			random < 0.50 ? Keyword.FALSE :
-			random < 0.75 ? Keyword.TRUE :
-			                TerminalInteger.instance.random()
+			random < 1/5 ? Keyword.NULL :
+			random < 2/5 ? Keyword.FALSE :
+			random < 3/5 ? Keyword.TRUE :
+			random < 4/5 ? TerminalInteger.instance.random() :
+			               TerminalFloat  .instance.random()
 		]
 	}
 }

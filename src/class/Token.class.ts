@@ -405,7 +405,7 @@ export class TokenNumber extends Token {
 	 * Is this token a floating-point number?
 	 * @returns whether this token contains a decimal point
 	 */
-	private get isFloat(): boolean {
+	get isFloat(): boolean {
 		return this.source.indexOf(TokenNumber.POINT) > 0
 	}
 }

@@ -84,7 +84,28 @@ export class TerminalInteger extends Terminal {
 		}`
 	}
 	match(candidate: Token): boolean {
-		return candidate instanceof TokenNumber
+		return candidate instanceof TokenNumber && !candidate.isFloat
+	}
+}
+export class TerminalFloat extends Terminal {
+	static readonly instance: TerminalFloat = new TerminalFloat()
+	random(): string {
+		return [
+			Util.randomBool() ? '' : Util.arrayRandom(TokenNumber.UNARY),
+			TerminalInteger.digitSequence(TokenNumber.RADIX_DEFAULT),
+			TokenNumber.POINT,
+			...(Util.randomBool() ? [''] : [
+				TerminalInteger.digitSequence(TokenNumber.RADIX_DEFAULT),
+				...(Util.randomBool() ? [''] : [
+					TokenNumber.EXPONENT,
+					Util.randomBool() ? '' : Util.arrayRandom(TokenNumber.UNARY),
+					TerminalInteger.digitSequence(TokenNumber.RADIX_DEFAULT),
+				]),
+			]),
+		].join('')
+	}
+	match(candidate: Token): boolean {
+		return candidate instanceof TokenNumber && candidate.isFloat
 	}
 }
 export class TerminalString extends Terminal {

@@ -80,7 +80,8 @@ PrimitiveLiteral ::=
 	| "null"
 	| "false"
 	| "true"
-	| NUMBER
+	| INTEGER
+	| FLOAT
 	| STRING
 ;
 
