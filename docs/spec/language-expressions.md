@@ -180,7 +180,7 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 
 ### Static Semantics: Assess (Literals)
 ```w3c
-Or<Null, Boolean, Integer> Assess(SemanticConstant const) :=
+Or<Null, Boolean, Integer, Float> Assess(SemanticConstant const) :=
 	1. *Return:* `const.value`.
 
 Void Assess(SemanticTemplate tpl) :=

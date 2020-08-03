@@ -356,7 +356,7 @@ describe('SemanticNode', () => {
 					SolidBoolean.TRUE,
 				])
 			})
-			it('computes the value of a constant numeric expression.', () => {
+			it('computes the value of a constant integer expression.', () => {
 				assert.deepStrictEqual([
 					'42 + 420;',
 					'42 - 420;',
@@ -397,6 +397,26 @@ describe('SemanticNode', () => {
 					2 ** 14,
 					(-(5)) ** +(2 * 3),
 				].map((v) => new CompletionStructureAssessment(new Int16(BigInt(v)))))
+			})
+			it('computes the value of a constant float expression.', () => {
+				assert.deepStrictEqual(`
+					55.  -55.  033.  -033.  2.007  -2.007
+					91.27e4  -91.27e4  91.27e-4  -91.27e-4
+					-0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
+				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => {
+					const assess: CompletionStructureAssessment | null = (((new Parser(`${ src };`, CONFIG_DEFAULT).parse()
+						.children[1] as ParseNodeGoal__0__List)
+						.children[0] as ParseNodeStatement)
+						.children[0] as ParseNodeExpression
+					).decorate().assess()
+					assert.ok(assess)
+					assert.ok(assess.value instanceof Float64)
+					return assess
+				}), [
+						55, -55, 33, -33, 2.007, -2.007,
+						91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
+						-0, -0, 6.8, 6.8, 0, -0,
+				].map((v) => new CompletionStructureAssessment(new Float64(v))))
 			})
 		})
 	})
