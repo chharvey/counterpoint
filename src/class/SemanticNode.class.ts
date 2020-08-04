@@ -230,8 +230,9 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 		[Punctuator.ADD, (x, y) => x.plus   (y)],
 		[Punctuator.SUB, (x, y) => x.minus  (y)],
 	])
-	private assessment0:  CompletionStructureAssessment | null;
+	private assessment0:  CompletionStructureAssessment | null = null
 	private assessment1?: CompletionStructureAssessment | null;
+	private is_folded: boolean = false
 	constructor(
 		start_node: ParseNode,
 		private readonly operator: Punctuator,
@@ -240,12 +241,9 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 			| readonly [SemanticNodeExpression, SemanticNodeExpression]
 	) {
 		super(start_node, {operator}, children)
-		this.assessment0 = this.children[0].assess()
-		if (this.children.length > 1) {
-			this.assessment1 = this.children[1]!.assess()
-		}
 	}
 	build(generator: Builder): InstructionUnop | InstructionBinop {
+		if (!this.is_folded) { this.fold() }
 		const operand0: Instruction = (this.assessment0) ? this.assessment0.build() : this.children[0].build(generator)
 		if (this.children.length === 1) {
 			return new InstructionUnop(this.operator, operand0)
@@ -262,6 +260,7 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 		return t1
 	}
 	assess(): CompletionStructureAssessment | null {
+		if (!this.is_folded) { this.fold() }
 		if (!this.assessment0) return null
 		if (this.children.length === 1) {
 			return new CompletionStructureAssessment(SemanticNodeOperation.FOLD_UNARY.get(this.operator)!(this.assessment0.value as Int16))
@@ -272,6 +271,13 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 			}
 			return new CompletionStructureAssessment(SemanticNodeOperation.FOLD_BINARY.get(this.operator)!(this.assessment0.value as Int16, this.assessment1.value as Int16))
 		}
+	}
+	private fold(): void {
+		this.assessment0 = this.children[0].assess()
+		if (this.children.length > 1) {
+			this.assessment1 = this.children[1]!.assess()
+		}
+		this.is_folded = true
 	}
 }
 /**
