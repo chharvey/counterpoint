@@ -1,13 +1,13 @@
 # Solid Language: Expressions
 This chapter defines the syntax, semantics, and behavior of expressions in the Solid programming language.
 
-```w3c
+```
 Expression ::= ExpressionAdditive;
 ```
 
 
 ### Static Semantics: Semantic Schema (Expressions)
-```w3c
+```
 SemanticExpression =:=
 	| SemanticConstant
 	| SemanticIdentifier
@@ -18,14 +18,14 @@ SemanticExpression =:=
 
 
 ### Static Semantics: Decorate (Expressions)
-```w3c
+```
 Decorate(Expression ::= ExpressionAdditive) -> SemanticExpression
 	:= Decorate(ExpressionAdditive);
 ```
 
 
 ### Abstract Operation: PerformNumericBinaryOperation
-```w3c
+```
 RealNumber PerformNumericBinaryOperation(Text op, RealNumber operand0, RealNumber operand1) :=
 	1. *If* `op` is `EXP`:
 		1. *Let* `result` be the power, `operand0 ^ operand1`,
@@ -48,7 +48,7 @@ RealNumber PerformNumericBinaryOperation(Text op, RealNumber operand0, RealNumbe
 
 
 ### AbstractOperation: AssessSemanticOperationBinary
-```w3c
+```
 Or<Integer, Float>? AssessSemanticOperationBinary(SemanticOperation expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
@@ -68,7 +68,7 @@ Or<Integer, Float>? AssessSemanticOperationBinary(SemanticOperation expr) :=
 
 
 ### Abstract Operation: BuildSemanticOperationBinary
-```w3c
+```
 Sequence<Instruction> BuildSemanticOperationBinary(SemanticOperation expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `instrs0` be the result of performing `Build(Assess(expr.children.0))`.
@@ -79,7 +79,7 @@ Sequence<Instruction> BuildSemanticOperationBinary(SemanticOperation expr) :=
 
 
 ## Literals
-```w3c
+```
 PrimitiveLiteral ::=
 	| "null"
 	| "false"
@@ -97,7 +97,7 @@ StringTemplate ::=
 
 
 ### Static Semantics: Semantic Schema (Literals)
-```w3c
+```
 SemanticConstant[value: Null | Boolean | Integer | FLoat | Sequence<RealNumber>]
 	::= ();
 
@@ -112,7 +112,7 @@ SemanticTemplatePartial
 
 
 ### Static Semantics: Decorate (Literals)
-```w3c
+```
 Decorate(PrimitiveLiteral ::= "null") -> SemanticConstant
 	:= (SemanticConstant[value=null]);
 
@@ -183,7 +183,7 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 
 
 ### Static Semantics: Assess (Literals)
-```w3c
+```
 Or<Null, Boolean, Integer, Float> Assess(SemanticConstant const) :=
 	1. *Return:* `const.value`.
 
@@ -193,7 +193,7 @@ Void Assess(SemanticTemplate tpl) :=
 
 
 ### Static Semantics: Build (Literals)
-```w3c
+```
 Sequence<Instruction> Build(Null n) :=
 	1. *Return:* ["Push `0` onto the operand stack."].
 
@@ -215,7 +215,7 @@ Void Build(SemanticTemplate tpl) :=
 
 
 ### Runtime Instructions: Evaluate (Literals)
-```w3c
+```
 Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Or<Integer, Float> value) :=
 	1. Push `value` onto the operand stack.
 ```
@@ -223,7 +223,7 @@ Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Or<Intege
 
 
 ## Expression Units
-```w3c
+```
 ExpressionUnit ::=
 	| IDENTIFIER
 	| PrimitiveLiteral
@@ -234,14 +234,14 @@ ExpressionUnit ::=
 
 
 ### Static Semantics: Semantic Schema (Expression Units)
-```w3c
+```
 SemanticIdentifier[id: Unknown]
 	::= ();
 ```
 
 
 ### Static Semantics: Decorate (Expression Units)
-```w3c
+```
 Decorate(ExpressionUnit ::= IDENTIFIER) -> SemanticIdentifier
 	:= (SemanticIdentifier[id=TokenWorth(IDENTIFIER)]);
 Decorate(ExpressionUnit ::= PrimitiveLiteral) -> SemanticConstant
@@ -254,21 +254,21 @@ Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticExpression
 
 
 ### Static Semantics: Assess (Expression Units)
-```w3c
+```
 Unknown Assess(SemanticIdentifier iden) :=
 	/* TO BE DETERMINED */
 ```
 
 
 ### Static Semantics: Build (Expression Units)
-```w3c
+```
 Sequence<Instruction> Build(SemanticIdentifier iden) :=
 	/* TO BE DETERMINED */
 ```
 
 
 ### Runtime Instructions: Evaluate (Expression Units)
-```w3c
+```
 Void Evaluate(SemanticIdentifier iden) :=
 	/* TO BE DETERMINED */
 ```
@@ -276,20 +276,20 @@ Void Evaluate(SemanticIdentifier iden) :=
 
 
 ## Unary Operators
-```w3c
+```
 ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol;
 ```
 
 
 ### Static Semantics: Semantic Schema (Unary Operators)
-```w3c
+```
 SemanticOperation[operator: NEG]
 	::= SemanticExpression;
 ```
 
 
 ### Static Semantics: Decorate (Unary Operators)
-```w3c
+```
 Decorate(ExpressionUnarySymbol ::= ExpressionUnit) -> SemanticExpression
 	:= Decorate(ExpressionUnit);
 Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticExpression
@@ -300,7 +300,7 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperati
 
 
 ### Static Semantics: Assess (Unary Operators)
-```w3c
+```
 Or<Integer, Float>? Assess(SemanticOperation[operator=NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
@@ -315,7 +315,7 @@ Or<Integer, Float>? Assess(SemanticOperation[operator=NEG] expr) :=
 
 
 ### Static Semantics: Build (Unary Operators)
-```w3c
+```
 Sequence<Instruction> Build(SemanticOperation[operator=NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `instrs` be the result of performing `Build(Assess(expr.children.0))`.
@@ -324,7 +324,7 @@ Sequence<Instruction> Build(SemanticOperation[operator=NEG] expr) :=
 
 
 ### Runtime Instructions: Evaluate (Unary Operators)
-```w3c
+```
 Void Evaluate(Instruction :::= "Perform stack operation NEG.") :=
 	1. Pop `operand` from the operand stack.
 	2. *Let* `negation` be the additive inverse, `-operand`,
@@ -335,20 +335,20 @@ Void Evaluate(Instruction :::= "Perform stack operation NEG.") :=
 
 
 ## Exponentiation
-```w3c
+```
 ExpressionExponential ::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
 ```
 
 
 ### Static Semantics: Semantic Schema (Exponentiation)
-```w3c
+```
 SemanticOperation[operator: EXP]
 	::= SemanticExpression SemanticExpression;
 ```
 
 
 ### Static Semantics: Decorate (Exponentiation)
-```w3c
+```
 Decorate(ExpressionExponential ::= ExpressionUnarySymbol) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol);
 Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential) -> SemanticOperation
@@ -360,21 +360,21 @@ Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponenti
 
 
 ### Static Semantics: Assess (Exponentiation)
-```w3c
+```
 Or<Integer, Float>? Assess(SemanticOperation[operator=EXP] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 
 
 ### Static Semantics: Build (Exponentiation)
-```w3c
+```
 Sequence<Instruction> Build(SemanticOperation[operator=EXP] expr) :=
 	1. *Return:* `BuildSemanticOperationBinary(expr)`.
 ```
 
 
 ### Runtime Instructions: Evaluate (Exponentiation)
-```w3c
+```
 Void Evaluate(Instruction :::= "Perform stack operation EXP.") :=
 	1. Pop `operand1` from the operand stack.
 	2. Pop `operand0` from the operand stack.
@@ -385,20 +385,20 @@ Void Evaluate(Instruction :::= "Perform stack operation EXP.") :=
 
 
 ## Multiplicative
-```w3c
+```
 ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential;
 ```
 
 
 ### Static Semantics: Semantic Schema (Multiplicative)
-```w3c
+```
 SemanticOperation[operator: MUL | DIV]
 	::= SemanticExpression SemanticExpression;
 ```
 
 
 ### Static Semantics: Decorate (Multiplicative)
-```w3c
+```
 Decorate(ExpressionMultiplicative ::= ExpressionExponential) -> SemanticExpression
 	:= Decorate(ExpressionExponential);
 Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential) -> SemanticOperation
@@ -415,21 +415,21 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 
 
 ### Static Semantics: Assess (Multiplicative)
-```w3c
+```
 Or<Integer, Float>? Assess(SemanticOperation[operator=MUL|DIV] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 
 
 ### Static Semantics: Build (Multiplicative)
-```w3c
+```
 Sequence<Instruction> Build(SemanticOperation[operator=MUL|DIV] expr) :=
 	1. *Return:* `BuildSemanticOperationBinary(expr)`.
 ```
 
 
 ### Runtime Instructions: Evaluate (Multiplicative)
-```w3c
+```
 Void Evaluate(Instruction :::= "Perform stack operation MUL.") :=
 	1. Pop `operand1` from the operand stack.
 	2. Pop `operand0` from the operand stack.
@@ -445,20 +445,20 @@ Void Evaluate(Instruction :::= "Perform stack operation DIV.") :=
 
 
 ## Additive
-```w3c
+```
 ExpressionAdditive ::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicative;
 ```
 
 
 ### Static Semantics: Semantic Schema (Additive)
-```w3c
+```
 SemanticOperation[operator: ADD]
 	::= SemanticExpression SemanticExpression;
 ```
 
 
 ### Static Semantics: Decorate (Additive)
-```w3c
+```
 Decorate(ExpressionAdditive ::= ExpressionMultiplicative) -> SemanticExpression
 	:= Decorate(ExpressionMultiplicative);
 Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative) -> SemanticOperation
@@ -475,21 +475,21 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 
 
 ### Static Semantics: Assess (Additive)
-```w3c
+```
 Or<Integer, Float>? Assess(SemanticOperation[operator=ADD] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 
 
 ### Static Semantics: Build (Additive)
-```w3c
+```
 Sequence<Instruction> Build(SemanticOperation[operator=ADD] expr) :=
 	1. *Return:* `BuildSemanticOperationBinary(expr)`.
 ```
 
 
 ### Runtime Instructions: Evaluate (Additive)
-```w3c
+```
 Void Evaluate(Instruction :::= "Perform stack operation ADD.") :=
 	1. Pop `operand1` from the operand stack.
 	2. Pop `operand0` from the operand stack.

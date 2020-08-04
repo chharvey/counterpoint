@@ -1,7 +1,7 @@
 # Solid Language: Statements
 This chapter defines the syntax, semantics, and behavior of statements in the Solid programming language.
 
-```w3c
+```
 Statement ::=
 	| Expression? ";"
 	| DeclarationVariable
@@ -11,7 +11,7 @@ Statement ::=
 
 
 ### Static Semantics: Semantic Schema (Statements)
-```w3c
+```
 SemanticStatement =:=
 	| SemanticStatementExpression
 	| SemanticDeclaration
@@ -24,7 +24,7 @@ SemanticStatementExpression
 
 
 ### Static Semantics: Decorate (Statements)
-```w3c
+```
 Decorate(Statement ::= ";") -> SemanticStatementExpression
 	:= (SemanticStatementExpression);
 Decorate(Statement ::= Expression ";") -> SemanticStatementExpression
@@ -37,7 +37,7 @@ Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
 
 
 ### Runtime Instructions: Build (Statements)
-```w3c
+```
 Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 	1. *Let* `sequence` be an empty sequence of `Instruction`s.
 	2. *If* `stmt.children.count` is greater than 0:
@@ -52,13 +52,13 @@ Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 
 
 ## Variable Declaration
-```w3c
+```
 DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";";
 ```
 
 
 ### Static Semantics: Semantic Schema (Variable Declaration)
-```w3c
+```
 SemanticDeclaration[type: "variable"][unfixed: Boolean]
 	::= SemanticAssignee SemanticAssigned;
 
@@ -71,7 +71,7 @@ SemanticAssigned
 
 
 ### Static Semantics: Decorate (Variable Declaration)
-```w3c
+```
 Decorate(DeclarationVariable ::= "let" IDENTIFIER "=" Expression ";") -> SemanticDeclaration
 	:= (SemanticDeclaration[type="variable"][unfixed=false]
 		(SemanticAssignee
@@ -90,7 +90,7 @@ Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER "=" Expression ";") 
 
 
 ### Runtime Instructions: Build (Variable Declaration)
-```w3c
+```
 Sequence<Instruction> Build(SemanticDeclaration decl) :=
 	/* TO BE DETERMINED */
 ```
@@ -98,20 +98,20 @@ Sequence<Instruction> Build(SemanticDeclaration decl) :=
 
 
 ## Variable Assignment
-```w3c
+```
 StatementAssignment ::= IDENTIFIER "=" Expression ";";
 ```
 
 
 ### Static Semantics: Semantic Schema (Variable Assignment)
-```w3c
+```
 SemanticAssignment
 	::= SemanticAssignee SemanticAssigned;
 ```
 
 
 ### Static Semantics: Decorate (Variable Assignment)
-```w3c
+```
 Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";") -> SemanticAssignment
 	:= (SemanticAssignment
 		(SemanticAssignee
@@ -123,7 +123,7 @@ Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";") -> SemanticAssig
 
 
 ### Runtime Instructions: Build (Variable Assignment)
-```w3c
+```
 Sequence<Instruction> Build(SemanticAssignment assign) :=
 	/* TO BE DETERMINED */
 ```
