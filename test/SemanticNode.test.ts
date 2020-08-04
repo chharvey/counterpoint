@@ -31,6 +31,7 @@ import Float64 from '../src/vm/Float64.class'
 import {
 	InstructionNone,
 	InstructionConstInt,
+	InstructionConstFloat,
 	InstructionBinop,
 	InstructionStatement,
 	InstructionModule,
@@ -152,15 +153,27 @@ describe('SemanticNode', () => {
 				))
 			})
 			specify('ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative', () => {
-				const srcs: [string, SolidConfig] = [`42 - 420;`, CONFIG_DEFAULT]
+				const srcs: [string, SolidConfig][] = [
+					`42 - 420;`,
+					`3.0e1 - 201.0e-1;`,
+				].map((src) => [src, CONFIG_DEFAULT])
 				assert.deepStrictEqual((
-					(new Parser(...srcs).parse().decorate()
+					(new Parser(...srcs[0]).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeOperation
-				).build(new Builder(...srcs)), new InstructionBinop(
+				).build(new Builder(...srcs[0])), new InstructionBinop(
 					Punctuator.ADD,
 					new InstructionConstInt(42n),
 					new InstructionConstInt(-420n),
+				))
+				assert.deepStrictEqual((
+					(new Parser(...srcs[1]).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation
+				).build(new Builder(...srcs[1])), new InstructionBinop(
+					Punctuator.ADD,
+					new InstructionConstFloat(30),
+					new InstructionConstFloat(-20.1),
 				))
 			})
 			specify('ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential', () => {

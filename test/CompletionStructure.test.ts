@@ -40,6 +40,7 @@ describe('CompletionStructureAssessment', () => {
 				55, -55, 33, -33, 2.007, -2.007,
 				91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 				-0, -0, 6.8, 6.8, 0, -0,
+				3.0 - 2.7,
 			]
 			assert.deepStrictEqual(
 				values.map((x) => new CompletionStructureAssessment(new Float64(x)).build()),
