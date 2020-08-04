@@ -4,12 +4,13 @@ import {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Util from '../src/class/Util.class'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
-import type {
+import {
 	ParseNodePrimitiveLiteral,
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
 	ParseNodeExpressionUnary,
 	ParseNodeExpressionBinary,
+	ParseNodeExpressionConditional,
 	ParseNodeExpression,
 	ParseNodeDeclarationVariable,
 	ParseNodeStatementAssignment,
@@ -109,7 +110,8 @@ describe('Parser', () => {
 					assert_arrayLength(statement.children, 2)
 					const expression: ParseNodeExpression = statement.children[0]
 					assert_arrayLength(expression.children, 1)
-					const expression_add: ParseNodeExpressionBinary = expression.children[0]
+					const expression_add: ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression.children[0]
+					assert.ok(expression_add instanceof ParseNodeExpressionBinary)
 					assert_arrayLength(expression_add.children, 1)
 					const expression_mul: ParseNodeExpressionBinary = expression_add.children[0] as ParseNodeExpressionBinary
 					assert_arrayLength(expression_mul.children, 1)
@@ -662,6 +664,61 @@ describe('Parser', () => {
 						<FILEBOUND value="false">␃</FILEBOUND>
 					</Goal>
 				`.replace(/\n\t*/g, ''))
+			})
+		})
+
+		context('ExpressionConditional ::= "if" Expression "then" Expression "else" Expression', () => {
+			it('makes a ParseNodeExpressionConditional node.', () => {
+				/*
+					<Goal>
+						<FILEBOUND>␂</FILEBOUND>
+						<Goal__0__List>
+							<Statement>
+								<Expression>
+									<ExpressionConditional>
+										<KEYWORD>if</KEYWORD>
+										<Expression>
+											<ExpressionAdditive>...<KEYWORD>true</KEYWORD>...</ExpressionAdditive>
+										</Expression>
+										<KEYWORD>then</KEYWORD>
+										<Expression>
+											<ExpressionAdditive>...<NUMBER>2</NUMBER>...</ExpressionAdditive>
+										</Expression>
+										<KEYWORD>else</KEYWORD>
+										<Expression>
+											<ExpressionAdditive>...<NUMBER>3</NUMBER>...</ExpressionAdditive>
+										</Expression>
+									</ExpressionConditional>
+								</Expression>
+								<PUNCTUATOR>;</PUNCTUATOR>
+							</Statement>
+						</Goal__0__List>
+						<FILEBOUND>␃</FILEBOUND>
+					</Goal>
+				*/
+				const tree: ParseNodeGoal = new Parser(`if true then 2 else 3;`, CONFIG_DEFAULT).parse()
+				assert_arrayLength(tree.children, 3)
+				const statement_list: ParseNodeGoal__0__List = tree.children[1]
+				assert_arrayLength(statement_list.children, 1)
+				const statement: ParseNodeStatement = statement_list.children[0]
+				assert_arrayLength(statement.children, 2)
+				const expression: ParseNodeExpression = statement.children[0]
+				assert_arrayLength(expression.children, 1)
+				const expression_cond: ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression.children[0]
+				assert.ok(expression_cond instanceof ParseNodeExpressionConditional)
+				const _if:   TokenKeyword = expression_cond.children[0]
+				const _then: TokenKeyword = expression_cond.children[2]
+				const _else: TokenKeyword = expression_cond.children[4]
+				const condition:   ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression_cond.children[1].children[0]
+				const consequent:  ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression_cond.children[3].children[0]
+				const alternative: ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression_cond.children[5].children[0]
+				assert.ok(condition   instanceof ParseNodeExpressionBinary)
+				assert.ok(consequent  instanceof ParseNodeExpressionBinary)
+				assert.ok(alternative instanceof ParseNodeExpressionBinary)
+				assert.deepStrictEqual(
+					[_if.source, condition.source, _then.source, consequent.source, _else.source, alternative.source],
+					[Keyword.IF, `true`,           Keyword.THEN, `2`,               Keyword.ELSE, `3`],
+				)
 			})
 		})
 

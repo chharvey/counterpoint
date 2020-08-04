@@ -2,7 +2,10 @@
 This chapter defines the syntax, semantics, and behavior of expressions in the Solid programming language.
 
 ```
-Expression ::= ExpressionAdditive;
+Expression ::=
+	| ExpressionAdditive
+	| ExpressionConditional
+;
 ```
 
 
@@ -277,7 +280,8 @@ Void Evaluate(SemanticIdentifier iden) :=
 
 ## Unary Operators
 ```
-ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol;
+ExpressionUnarySymbol
+	::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol;
 ```
 
 
@@ -336,7 +340,8 @@ Void Evaluate(Instruction :::= "Perform stack operation NEG.") :=
 
 ## Exponentiation
 ```
-ExpressionExponential ::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
+ExpressionExponential
+	::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
 ```
 
 
@@ -386,7 +391,8 @@ Void Evaluate(Instruction :::= "Perform stack operation EXP.") :=
 
 ## Multiplicative
 ```
-ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential;
+ExpressionMultiplicative
+	::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential;
 ```
 
 
@@ -446,7 +452,8 @@ Void Evaluate(Instruction :::= "Perform stack operation DIV.") :=
 
 ## Additive
 ```
-ExpressionAdditive ::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicative;
+ExpressionAdditive
+	::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicative;
 ```
 
 
@@ -495,4 +502,12 @@ Void Evaluate(Instruction :::= "Perform stack operation ADD.") :=
 	2. Pop `operand0` from the operand stack.
 	3. *Let* `sum` be the result of performing `PerformNumericBinaryOperation(ADD, operand0, operand1)`.
 	4. Push `sum` onto the operand stack.
+```
+
+
+
+## Conditional
+```
+ExpressionConditional
+	::= "if" Expression "then" Expression "else" Expression;
 ```

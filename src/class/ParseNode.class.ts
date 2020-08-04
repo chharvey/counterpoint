@@ -35,6 +35,7 @@ import {
 	ProductionExpressionExponential,
 	ProductionExpressionMultiplicative,
 	ProductionExpressionAdditive,
+	ProductionExpressionConditional,
 	ProductionExpression,
 	ProductionDeclarationVariable,
 	ProductionStatementAssignment,
@@ -70,6 +71,7 @@ export default abstract class ParseNode implements Serializable {
 		if (                                   rule.production.equals(ProductionExpressionExponential    .instance)) return new ParseNodeExpressionBinary        (rule, children)
 		if (                                   rule.production.equals(ProductionExpressionMultiplicative .instance)) return new ParseNodeExpressionBinary        (rule, children)
 		if (                                   rule.production.equals(ProductionExpressionAdditive       .instance)) return new ParseNodeExpressionBinary        (rule, children)
+		if (                                   rule.production.equals(ProductionExpressionConditional    .instance)) return new ParseNodeExpressionConditional   (rule, children)
 		if (                                   rule.production.equals(ProductionExpression               .instance)) return new ParseNodeExpression              (rule, children)
 		if (Dev.supports('variables')       && rule.production.equals(ProductionDeclarationVariable      .instance)) return new ParseNodeDeclarationVariable     (rule, children)
 		if (Dev.supports('variables')       && rule.production.equals(ProductionStatementAssignment      .instance)) return new ParseNodeStatementAssignment     (rule, children)
@@ -224,9 +226,21 @@ export class ParseNodeExpressionBinary extends ParseNode {
 				])
 	}
 }
+export class ParseNodeExpressionConditional extends ParseNode {
+	declare children:
+		| readonly [
+			TokenKeyword, ParseNodeExpression,
+			TokenKeyword, ParseNodeExpression,
+			TokenKeyword, ParseNodeExpression,
+		]
+	decorate(): SemanticNodeOperation {
+		throw new Error('not yet supported')
+	}
+}
 export class ParseNodeExpression extends ParseNode {
 	declare children:
 		| readonly [ParseNodeExpressionBinary]
+		| readonly [ParseNodeExpressionConditional]
 	decorate(): SemanticNodeExpression {
 		return this.children[0].decorate()
 	}

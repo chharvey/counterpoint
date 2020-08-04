@@ -256,11 +256,31 @@ export class ProductionExpressionAdditive extends Production {
 		]
 	}
 }
+export class ProductionExpressionConditional extends Production {
+	static readonly instance: ProductionExpressionConditional = new ProductionExpressionConditional()
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[
+				Keyword.IF,   ProductionExpression.instance,
+				Keyword.THEN, ProductionExpression.instance,
+				Keyword.ELSE, ProductionExpression.instance,
+			],
+		]
+	}
+	random(): string[] {
+		return [
+			Keyword.IF,   ...ProductionExpression.instance.random(),
+			Keyword.THEN, ...ProductionExpression.instance.random(),
+			Keyword.ELSE, ...ProductionExpression.instance.random(),
+		]
+	}
+}
 export class ProductionExpression extends Production {
 	static readonly instance: ProductionExpression = new ProductionExpression()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[ProductionExpressionAdditive.instance],
+			[ProductionExpressionAdditive   .instance],
+			[ProductionExpressionConditional.instance],
 		]
 	}
 	random(): string[] {
