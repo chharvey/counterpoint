@@ -41,13 +41,13 @@ class InstructionNop extends Instruction {
 	}
 }
 /**
- * Push a constant onto the stack.
+ * Push a constant integer onto the stack.
  */
-export class InstructionConst extends Instruction {
+export class InstructionConstInt extends Instruction {
 	/**
 	 * @param i32 the constant to push
 	 */
-	constructor (private readonly i32: number = 0) {
+	constructor (private readonly i32: bigint = 0n) {
 		super()
 	}
 	/**
@@ -55,6 +55,23 @@ export class InstructionConst extends Instruction {
 	 */
 	toString(): string {
 		return `(i32.const ${ this.i32 })`
+	}
+}
+/**
+ * Push a constant float onto the stack.
+ */
+export class InstructionConstFloat extends Instruction {
+	/**
+	 * @param f64 the constant to push
+	 */
+	constructor (private readonly f64: number = 0) {
+		super()
+	}
+	/**
+	 * @return `'(f64.const ‹f64›)'`
+	 */
+	toString(): string {
+		return `(f64.const ${ this.f64 })`
 	}
 }
 /**

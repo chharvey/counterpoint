@@ -10,6 +10,7 @@ import {
 	LexError02,
 	LexError03,
 	LexError04,
+	LexError05,
 } from '../error/LexError.class'
 
 
@@ -258,6 +259,8 @@ export class TokenNumber extends Token {
 	static readonly RADIX_DEFAULT: RadixType = 10n
 	static readonly ESCAPER   : string = '\\'
 	static readonly SEPARATOR : string = '_'
+	static readonly POINT     : string = '.'
+	static readonly EXPONENT  : string = 'e'
 	static readonly UNARY: readonly Punctuator[] = [
 		Punctuator.AFF,
 		Punctuator.NEG,
@@ -279,17 +282,19 @@ export class TokenNumber extends Token {
 		[36n, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
 	])
 	/**
-	 * Compute the token worth of a `TokenNumber` token.
+	 * Compute the token worth of a `TokenNumber` token in Integer format.
 	 * @param   text  - the string to compute
 	 * @param   radix - the base in which to compute
 	 * @param   allow_separators - Should numeric separators be allowed?
 	 * @returns         the mathematical value of the string in the given base
 	 */
-	static tokenWorth(
+	static tokenWorthInt(
 		text: string,
 		radix: RadixType = TokenNumber.RADIX_DEFAULT,
 		allow_separators: SolidConfig['features']['numericSeparators'] = CONFIG_DEFAULT.features.numericSeparators,
 	): number {
+		if (text[0] === Punctuator.AFF) { return  TokenNumber.tokenWorthInt(text.slice(1), radix, allow_separators) }
+		if (text[0] === Punctuator.NEG) { return -TokenNumber.tokenWorthInt(text.slice(1), radix, allow_separators) }
 		if (allow_separators && text[text.length-1] === TokenNumber.SEPARATOR) {
 			text = text.slice(0, -1)
 		}
@@ -300,8 +305,30 @@ export class TokenNumber extends Token {
 			return digitvalue
 		}
 		return Number(radix) *
-			TokenNumber.tokenWorth(text.slice(0, -1),     radix, allow_separators) +
-			TokenNumber.tokenWorth(text[text.length - 1], radix, allow_separators)
+			TokenNumber.tokenWorthInt(text.slice(0, -1),     radix, allow_separators) +
+			TokenNumber.tokenWorthInt(text[text.length - 1], radix, allow_separators)
+	}
+	/**
+	 * Compute the token worth of a `TokenNumber` token in Float format.
+	 * @param   text  - the string to compute
+	 * @param   allow_separators - Should numeric separators be allowed?
+	 * @returns the mathematical value of the string in the given base
+	 */
+	static tokenWorthFloat(
+		text: string,
+		allow_separators: SolidConfig['features']['numericSeparators'] = CONFIG_DEFAULT.features.numericSeparators,
+	): number {
+		const base:       number = Number(TokenNumber.RADIX_DEFAULT)
+		const pointindex: number = text.indexOf(TokenNumber.POINT)
+		const expindex:   number = text.indexOf(TokenNumber.EXPONENT)
+		const wholepart:  string = text.slice(0, pointindex)
+		const fracpart:   string = ((expindex < 0) ? text.slice(pointindex + 1) : text.slice(pointindex + 1, expindex)) || '0'
+		const exppart:    string =  (expindex < 0) ? '0'                        : text.slice(expindex   + 1)
+		const wholevalue: number =                  TokenNumber.tokenWorthInt(wholepart, TokenNumber.RADIX_DEFAULT, allow_separators)
+		const fracvalue:  number =                  TokenNumber.tokenWorthInt(fracpart,  TokenNumber.RADIX_DEFAULT, allow_separators) * base ** -fracpart.length
+		const expvalue:   number = parseFloat(`1e${ TokenNumber.tokenWorthInt(exppart,   TokenNumber.RADIX_DEFAULT, allow_separators) }`) // HACK: more accurate than `base ** exp`
+		// const expvalue: number = base ** TokenNumber.tokenWorthInt(exppart, TokenNumber.RADIX_DEFAULT, allow_separators)
+		return (wholevalue + fracvalue) * expvalue
 	}
 	private readonly has_unary: boolean;
 	private readonly has_radix: boolean;
@@ -326,10 +353,33 @@ export class TokenNumber extends Token {
 		this.has_unary = has_unary
 		this.has_radix = has_radix
 		this.radix     = radix
-		while (!this.lexer.isDone && Char.inc([
+		this.lexDigitSequence(digits)
+		if (!this.has_radix && Char.eq(TokenNumber.POINT, this.lexer.c0)) {
+			this.advance()
+			if (Char.inc(digits, this.lexer.c0)) {
+				this.lexDigitSequence(digits)
+				if (Char.eq(TokenNumber.EXPONENT, this.lexer.c0)) {
+					const err: LexError05 = new LexError05(this.lexer.c0)
+					this.advance()
+					if (Char.inc(TokenNumber.UNARY, this.lexer.c0) && Char.inc(digits, this.lexer.c1)) {
+						this.advance(2n)
+						this.lexDigitSequence(digits)
+					} else if (Char.inc(digits, this.lexer.c0)) {
+						this.advance()
+						this.lexDigitSequence(digits)
+					} else {
+						throw err
+					}
+				}
+			}
+		}
+	}
+	private lexDigitSequence(digits: readonly string[]): void {
+		const allowedchars: string[] = [
 			...digits,
 			...(this.lexer.config.features.numericSeparators ? [TokenNumber.SEPARATOR] : [])
-		], this.lexer.c0)) {
+		]
+		while (!this.lexer.isDone && Char.inc(allowedchars, this.lexer.c0)) {
 			if (Char.inc(digits, this.lexer.c0)) {
 				this.advance()
 			} else if (this.lexer.config.features.numericSeparators && Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
@@ -346,7 +396,17 @@ export class TokenNumber extends Token {
 		const multiplier: number = (text[0] === Punctuator.NEG) ? -1 : 1
 		if (this.has_unary) text = text.slice(1) // cut off unary, if any
 		if (this.has_radix) text = text.slice(2) // cut off radix, if any
-		return multiplier * TokenNumber.tokenWorth(text, this.radix, this.lexer.config.features.numericSeparators)
+		return multiplier * (this.isFloat
+			? TokenNumber.tokenWorthFloat(text,             this.lexer.config.features.numericSeparators)
+			: TokenNumber.tokenWorthInt  (text, this.radix, this.lexer.config.features.numericSeparators)
+		)
+	}
+	/**
+	 * Is this token a floating-point number?
+	 * @returns whether this token contains a decimal point
+	 */
+	get isFloat(): boolean {
+		return this.source.indexOf(TokenNumber.POINT) > 0
 	}
 }
 export class TokenString extends Token {
@@ -384,7 +444,7 @@ export class TokenString extends Token {
 				/* an escape sequence */
 				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
 				return [
-					...Util.utf16Encoding(TokenNumber.tokenWorth(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
+					...Util.utf16Encoding(TokenNumber.tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
 					...TokenString.tokenWorth(text.slice(sequence[0].length), allow_separators),
 				]
 

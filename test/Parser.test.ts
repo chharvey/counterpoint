@@ -130,7 +130,7 @@ describe('Parser', () => {
 					][i])
 				});
 			})
-			it('parses a NUMBER or STRING', () => {
+			it('parses an INTEGER, FLOAT, or STRING', () => {
 				assert.strictEqual(new Parser('42;', CONFIG_DEFAULT).parse().serialize(), `
 					<Goal source="␂ 42 ; ␃">
 						<FILEBOUND value="true">␂</FILEBOUND>
@@ -152,6 +152,32 @@ describe('Parser', () => {
 									</ExpressionAdditive>
 								</Expression>
 								<PUNCTUATOR line="1" col="3" value="7">;</PUNCTUATOR>
+							</Statement>
+						</Goal__0__List>
+						<FILEBOUND value="false">␃</FILEBOUND>
+					</Goal>
+				`.replace(/\n\t*/g, ''))
+				assert.strictEqual(new Parser('4.2e+1;', CONFIG_DEFAULT).parse().serialize(), `
+					<Goal source="␂ 4.2e+1 ; ␃">
+						<FILEBOUND value="true">␂</FILEBOUND>
+						<Goal__0__List line="1" col="1" source="4.2e+1 ;">
+							<Statement line="1" col="1" source="4.2e+1 ;">
+								<Expression line="1" col="1" source="4.2e+1">
+									<ExpressionAdditive line="1" col="1" source="4.2e+1">
+										<ExpressionMultiplicative line="1" col="1" source="4.2e+1">
+											<ExpressionExponential line="1" col="1" source="4.2e+1">
+												<ExpressionUnarySymbol line="1" col="1" source="4.2e+1">
+													<ExpressionUnit line="1" col="1" source="4.2e+1">
+														<PrimitiveLiteral line="1" col="1" source="4.2e+1">
+															<NUMBER line="1" col="1" value="42">4.2e+1</NUMBER>
+														</PrimitiveLiteral>
+													</ExpressionUnit>
+												</ExpressionUnarySymbol>
+											</ExpressionExponential>
+										</ExpressionMultiplicative>
+									</ExpressionAdditive>
+								</Expression>
+								<PUNCTUATOR line="1" col="7" value="7">;</PUNCTUATOR>
 							</Statement>
 						</Goal__0__List>
 						<FILEBOUND value="false">␃</FILEBOUND>

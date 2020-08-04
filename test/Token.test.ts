@@ -154,6 +154,15 @@ describe('Token', () => {
 						 3696, 231,  37095,  -37095, 6, -6,
 						18396, 511, 420415, -420415, 6, -6,
 				]]],
+				['floats', [`
+					55.  -55.  033.  -033.  2.007  -2.007
+					91.27e4  -91.27e4  91.27e-4  -91.27e-4
+					-0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
+				`, [
+					55.0, -55.0, 33.0, -33.0, 2.007, -2.007,
+					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
+					-0.0, -0.0, 6.8, 6.8, 0.0, -0.0,
+				]]],
 				['implicit radix integers with separators', [`
 					12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
 				`, [
@@ -176,16 +185,16 @@ describe('Token', () => {
 				]]],
 			])].forEach(([name, [source, values]]) => {
 				it(`correctly cooks ${name}.`, () => {
-					;[...new Screener(source, {
+					assert.deepStrictEqual([...new Screener(source, {
 						...CONFIG_DEFAULT,
 						features: {
 							...CONFIG_DEFAULT.features,
 							integerRadices: true,
 							numericSeparators: true,
 						},
-					}).generate()].filter((token) => token instanceof TokenNumber).forEach((token, i) => {
-						assert.strictEqual(token.cook(), values[i])
-					})
+					}).generate()]
+						.filter((token) => token instanceof TokenNumber)
+						.map((token) => token.cook()), values)
 				})
 			})
 		})

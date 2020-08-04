@@ -1,3 +1,10 @@
+import {
+	SolidNumber,
+} from './SolidLanguageValue.class'
+import Float64 from './Float64.class'
+
+
+
 type Int16Datatype = readonly [boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean]
 type Int16DatatypeMutable =   [boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean]
 
@@ -5,8 +12,9 @@ type Int16DatatypeMutable =   [boolean, boolean, boolean, boolean, boolean, bool
 
 /**
  * A 16-bit signed integer in two’s complement.
+ * @final
  */
-export default class Int16 {
+export default class Int16 extends SolidNumber<Int16> {
 	private static readonly BITCOUNT: number = 16
 
 	private static readonly ZERO  : Int16 = new Int16(    new Array(Int16.BITCOUNT    ).fill(false)               as Int16DatatypeMutable)
@@ -24,12 +32,21 @@ export default class Int16 {
 	 * @param data - a numeric value or data
 	 * @returns the value represented as a 16-bit signed integer
 	 */
-	constructor(data: bigint|Int16Datatype) {
+	constructor (data: bigint | Int16Datatype) {
+		super()
 		this.internal = (typeof data === 'bigint')
 			? [...Int16.mod(data, 2n ** BigInt(Int16.BITCOUNT)).toString(2).padStart(Int16.BITCOUNT, '0')].map((bit) => !!+bit) as Int16DatatypeMutable
 			: data
 	}
 
+	/** @override */
+	toString(): string {
+		return `${ this.toNumeric() }`
+	}
+	/** @override */
+	toFloat(): Float64 {
+		return new Float64(Number(this.toNumeric()))
+	}
 	/**
 	 * Return the signed interpretation of this integer.
 	 * @returns the numeric value
@@ -38,11 +55,8 @@ export default class Int16 {
 		const unsigned: number = this.internal.map((bit, i) => +bit * 2 ** (Int16.BITCOUNT - 1 - i)).reduce((a, b) => a + b)
 		return BigInt(unsigned < 2 ** (Int16.BITCOUNT - 1) ? unsigned : unsigned - 2 ** Int16.BITCOUNT)
 	}
-	/**
-	 * Add two 16-bit signed integers in two’s complement.
-	 * @param addend - the integer addend
-	 * @return the sum, `this augend + addend`
-	 */
+
+	/** @override */
 	plus(addend: Int16): Int16 {
 		type Carry = [bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint]
 		const sum   : Carry = [...new Array(Int16.BITCOUNT).fill(0n)] as Carry
@@ -60,16 +74,12 @@ export default class Int16 {
 		}
 		return new Int16(sum.map((bit) => !!bit) as Int16DatatypeMutable)
 	}
-	/**
-	 * Subtract two 16-bit signed integers in two’s complement.
-	 * @param subtrahend - the integer subtrahend
-	 * @return the difference, `this minuend - subtrahend`
-	 */
+	/** @override */
 	minus(subtrahend: Int16): Int16 {
 		return this.plus(subtrahend.neg())
 	}
 	/**
-	 * Multiply two 16-bit signed integers in two’s complement.
+	 * @override
 	 * ```ts
 	 * function mulSlow(multiplier: number, multiplicand: number): number {
 	 * 	return (
@@ -98,8 +108,6 @@ export default class Int16 {
 	 * 	)
 	 * }
 	 * ```
-	 * @param multiplicand - the integer multiplicand
-	 * @return the product, `this multiplier * multiplicand`
 	 */
 	times(multiplicand: Int16): Int16 {
 		return (
@@ -116,7 +124,7 @@ export default class Int16 {
 		)
 	}
 	/**
-	 * Divide two 16-bit signed integers in two’s complement.
+	 * @override
 	 * ```ts
 	 * function divSlow(dividend: number, divisor: number): number {
 	 * 	return (
@@ -160,13 +168,11 @@ export default class Int16 {
 	 * 	)
 	 * }
 	 * ```
-	 * @param divisor - the integer divisor
-	 * @return the quotient, `this dividend / divisor`
 	 */
 	divide(divisor: Int16): Int16 {
 		return (
-			(divisor.eq0()) ? (() => { throw new Error('Division by zero.') })() :
-			(this   .eq0()) ? Int16.ZERO                                         :
+			(divisor.eq0()) ? (() => { throw new RangeError('Division by zero.') })() :
+			(this   .eq0()) ? Int16.ZERO                       :
 			(divisor.lt0()) ? this.divide(divisor.neg()).neg() :
 			(this   .lt0()) ? this.neg().divide(divisor).neg() :
 			(divisor.eq1()) ? this       :
@@ -190,8 +196,8 @@ export default class Int16 {
 		)
 	}
 	/**
-	 * Exponentiate two 16-bit signed integers in two’s complement.
-	 * ```
+	 * @override
+	 * ```ts
 	 * function expSlow(base: number, exponent: number): number {
 	 * 	return (
 	 * 		(exponent <   0) ? 0 :
@@ -214,8 +220,6 @@ export default class Int16 {
 	 * }
 	 * ```
 	 * @see https://stackoverflow.com/a/101613/877703
-	 * @param exponent - the integer exponent
-	 * @return the power, `this base ^ exponent`
 	 */
 	exp(exponent: Int16): Int16 {
 		return (
@@ -239,10 +243,8 @@ export default class Int16 {
 		// return returned
 	}
 	/**
-	 * Return the negation (additive inverse) of a 16-bit signed integer in two’s complement.
+	 * @override
 	 * Equivalently, this is the “two’s complement” of the integer.
-	 * @param int - the integer
-	 * @return the additive inverse of the integer
 	 */
 	neg(): Int16 {
 		return this.cpl().plus(Int16.UNIT)
@@ -261,7 +263,7 @@ export default class Int16 {
 	 * @param int - the integer
 	 * @return a left bit shift of 1 bit, dropping the first bit and appending `false` to the end
 	 */
-	bsl(): Int16 {
+	private bsl(): Int16 {
 		return new Int16([
 			...this.internal.slice(1),
 			false,
@@ -273,29 +275,27 @@ export default class Int16 {
 	 * @param int - the integer
 	 * @return a right bit shift of 1 bit, dropping the last bit and prepending a copy of the original first bit
 	 */
-	bsr(): Int16 {
+	private bsr(): Int16 {
 		return new Int16([
 			this.internal[0],
 			...this.internal.slice(0, -1)
 		] as Int16DatatypeMutable)
 	}
 	/**
-	 * Is the 16-bit signed integer equal to 0?
-	 * @returns Is this integer equal to 0?
+	 * @override
+	 * Is the 16-bit signed integer equal to `0`?
 	 */
-	private eq0(): boolean {
+	eq0(): boolean {
 		return this === Int16.ZERO || this.equals(Int16.ZERO)
 	}
 	/**
-	 * Is the 16-bit signed integer equal to 1?
-	 * @returns Is this integer equal to 1?
+	 * Is the 16-bit signed integer equal to `1`?
 	 */
 	private eq1(): boolean {
 		return this === Int16.UNIT || this.equals(Int16.UNIT)
 	}
 	/**
-	 * Is the 16-bit signed integer equal to 2?
-	 * @returns Is this integer equal to 2?
+	 * Is the 16-bit signed integer equal to `2`?
 	 */
 	private eq2(): boolean {
 		return this === Int16.RADIX || this.equals(Int16.RADIX)
@@ -309,14 +309,14 @@ export default class Int16 {
 	}
 	/**
 	 * Is the 16-bit signed integer negative?
-	 * @returns Is this integer less than 0?
+	 * @returns Is this integer less than `0`?
 	 */
 	private lt0(): boolean {
 		return this.internal[0] === true
 	}
 	/**
 	 * Is the 16-bit signed integer even?
-	 * @returns Is this integer divisible by 2?
+	 * @returns Is this integer divisible by `2`?
 	 */
 	private isEven(): boolean {
 		return this.internal[Int16.BITCOUNT - 1] === false

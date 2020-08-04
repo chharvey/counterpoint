@@ -8,19 +8,20 @@ import {Punctuator} from '../src/class/Token.class'
 import Builder from '../src/vm/Builder.class'
 import {
 	InstructionNone,
-	InstructionConst,
+	InstructionConstInt,
 	InstructionUnop,
 	InstructionBinop,
 	InstructionModule,
+	InstructionConstFloat,
 } from '../src/vm/Instruction.class'
 
 
 
 describe('Instruction', () => {
 	describe('#toString', () => {
-		context('InstructionConst', () => {
-			it('pushes the constant onto the stack.', () => {
-				assert.deepStrictEqual([
+		context('InstructionConstInt', () => {
+			it('pushes the constant integer onto the stack.', () => {
+				const values: number[] = [
 					0,
 					0,
 					1,
@@ -28,31 +29,32 @@ describe('Instruction', () => {
 					42,
 					-42,
 					  42 + 420,
-					 126 /   3,
-					-126 /   3,
-					 126 /  -3,
-					-126 /  -3,
-					 200 /   3,
-					 200 /  -3,
-					-200 /   3,
-					-200 /  -3,
-				].map((v) => new InstructionConst(v).toString()), [
-					`(i32.const 0)`,
-					`(i32.const 0)`,
-					`(i32.const 1)`,
-					`(i32.const 42)`,
-					`(i32.const 42)`,
-					`(i32.const -42)`,
-					`(i32.const ${   42 + 420 })`,
-					`(i32.const ${  126 /   3 })`,
-					`(i32.const ${ -126 /   3 })`,
-					`(i32.const ${  126 /  -3 })`,
-					`(i32.const ${ -126 /  -3 })`,
-					`(i32.const ${  200 /   3 })`,
-					`(i32.const ${  200 /  -3 })`,
-					`(i32.const ${ -200 /   3 })`,
-					`(i32.const ${ -200 /  -3 })`,
-				])
+					Math.trunc( 126 /   3),
+					Math.trunc(-126 /   3),
+					Math.trunc( 126 /  -3),
+					Math.trunc(-126 /  -3),
+					Math.trunc( 200 /   3),
+					Math.trunc( 200 /  -3),
+					Math.trunc(-200 /   3),
+					Math.trunc(-200 /  -3),
+				]
+				assert.deepStrictEqual(
+					values.map((x) => new InstructionConstInt(BigInt(x)).toString()),
+					values.map((x) => `(i32.const ${ x })`),
+				)
+			})
+		})
+
+		context('InstructionConstFloat', () => {
+			it('pushes the constant float onto the stack.', () => {
+				const values: number[] = [
+					55, -55, 33, -33, 2.007, -2.007,
+					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
+				]
+				assert.deepStrictEqual(
+					values.map((x) => new InstructionConstFloat(x).toString()),
+					values.map((x) => `(f64.const ${ x })`),
+				)
 			})
 		})
 
@@ -60,15 +62,15 @@ describe('Instruction', () => {
 			it('performs a unary operation.', () => {
 				assert.strictEqual(new InstructionUnop(
 					Punctuator.AFF,
-					new InstructionConst(42),
-				).toString(), `(nop ${ new InstructionConst(42).toString() })`)
+					new InstructionConstInt(42n),
+				).toString(), `(nop ${ new InstructionConstInt(42n).toString() })`)
 				assert.strictEqual(new InstructionUnop(
 					Punctuator.NEG,
-					new InstructionConst(42),
-				).toString(), `(call $neg ${ new InstructionConst(42).toString() })`)
+					new InstructionConstInt(42n),
+				).toString(), `(call $neg ${ new InstructionConstInt(42n).toString() })`)
 				assert.throws(() => new InstructionUnop(
 					Punctuator.MUL,
-					new InstructionConst(42),
+					new InstructionConstInt(42n),
 				).toString(), TypeError)
 			})
 		})
@@ -77,9 +79,9 @@ describe('Instruction', () => {
 			it('performs a binary operation.', () => {
 				assert.strictEqual(new InstructionBinop(
 					Punctuator.MUL,
-					new InstructionConst(21),
-					new InstructionConst(2),
-				).toString(), `(i32.mul ${ new InstructionConst(21).toString() } ${ new InstructionConst(2).toString() })`)
+					new InstructionConstInt(21n),
+					new InstructionConstInt(2n),
+				).toString(), `(i32.mul ${ new InstructionConstInt(21n).toString() } ${ new InstructionConstInt(2n).toString() })`)
 			})
 		})
 

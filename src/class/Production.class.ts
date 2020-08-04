@@ -7,9 +7,10 @@ import {
 } from './Token.class'
 import type ParseNode from './ParseNode.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
-import {
+import Terminal, {
 	TerminalIdentifier,
-	TerminalNumber,
+	TerminalInteger,
+	TerminalFloat,
 	TerminalString,
 	TerminalTemplateFull,
 	TerminalTemplateHead,
@@ -84,28 +85,32 @@ export class ProductionPrimitiveLiteral extends Production {
 			[Keyword.NULL],
 			[Keyword.FALSE],
 			[Keyword.TRUE],
-			[TerminalNumber.instance],
-			[TerminalString.instance],
+			[TerminalInteger.instance],
+			[TerminalFloat  .instance],
+			[TerminalString .instance],
 		] : [
 			[Keyword.NULL],
 			[Keyword.FALSE],
 			[Keyword.TRUE],
-			[TerminalNumber.instance],
+			[TerminalInteger.instance],
+			[TerminalFloat  .instance],
 		]
 	}
 	random(): string[] {
 		const random: number = Math.random()
 		return Dev.supports('literalString') ? [
-			random < 0.2 ? Keyword.NULL :
-			random < 0.4 ? Keyword.FALSE :
-			random < 0.6 ? Keyword.TRUE :
-			random < 0.8 ? TerminalNumber.instance.random() :
-			               TerminalString.instance.random()
+			random < 1/6 ? Keyword.NULL  :
+			random < 2/6 ? Keyword.FALSE :
+			random < 3/6 ? Keyword.TRUE  :
+			random < 4/6 ? TerminalInteger.instance.random() :
+			random < 5/6 ? TerminalFloat  .instance.random() :
+			               TerminalString .instance.random()
 		] : [
-			random < 0.25 ? Keyword.NULL :
-			random < 0.50 ? Keyword.FALSE :
-			random < 0.75 ? Keyword.TRUE :
-			                TerminalNumber.instance.random()
+			random < 1/5 ? Keyword.NULL  :
+			random < 2/5 ? Keyword.FALSE :
+			random < 3/5 ? Keyword.TRUE  :
+			random < 4/5 ? TerminalInteger.instance.random() :
+			               TerminalFloat  .instance.random()
 		]
 	}
 }
@@ -123,8 +128,8 @@ export class ProductionStringTemplate extends Production {
 	random(): string[] {
 		return Util.randomBool() ? [TerminalTemplateFull.instance.random()] : [
 			TerminalTemplateHead.instance.random(),
-			...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
-			...(Util.randomBool() ? [] : ProductionStringTemplate.__0__List.instance.random()),
+			...Terminal.maybeA(ProductionExpression.instance.random),
+			...Terminal.maybeA(ProductionStringTemplate.__0__List.instance.random),
 			TerminalTemplateTail.instance.random(),
 		]
 	}
@@ -140,9 +145,9 @@ export class ProductionStringTemplate extends Production {
 		}
 		random(): string[] {
 			return [
-				...(Util.randomBool() ? [] : this.random()),
+				...Terminal.maybeA(this.random),
 				TerminalTemplateMiddle.instance.random(),
-				...(Util.randomBool() ? [] : ProductionExpression.instance.random()),
+				...Terminal.maybeA(ProductionExpression.instance.random),
 			]
 		}
 	}
@@ -171,20 +176,20 @@ export class ProductionExpressionUnit extends Production {
 	random(): string[] {
 		const random: number = Math.random()
 		return Dev.supportsAll('variables', 'literalTemplate') ? (
-			random < 0.25 ? [TerminalIdentifier        .instance.random()] :
-			random < 0.50 ?  ProductionPrimitiveLiteral.instance.random()  :
-			random < 0.75 ?  ProductionStringTemplate  .instance.random()  :
+			random < 1/4 ? [TerminalIdentifier        .instance.random()] :
+			random < 2/4 ?  ProductionPrimitiveLiteral.instance.random()  :
+			random < 3/4 ?  ProductionStringTemplate  .instance.random()  :
 			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
 		) : Dev.supports('variables') ? (
-			random < 0.333 ? [TerminalIdentifier        .instance.random()] :
-			random < 0.667 ?  ProductionPrimitiveLiteral.instance.random()  :
+			random < 1/3 ? [TerminalIdentifier        .instance.random()] :
+			random < 2/3 ?  ProductionPrimitiveLiteral.instance.random()  :
 			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
 		) : Dev.supports('literalTemplate') ? (
-			random < 0.333 ? ProductionPrimitiveLiteral.instance.random() :
-			random < 0.667 ? ProductionStringTemplate  .instance.random() :
+			random < 1/3 ? ProductionPrimitiveLiteral.instance.random() :
+			random < 2/3 ? ProductionStringTemplate  .instance.random() :
 			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
 		) : (
-			random < 0.5 ? ProductionPrimitiveLiteral.instance.random()  :
+			random < 1/2 ? ProductionPrimitiveLiteral.instance.random()  :
 			[Punctuator.GRP_OPN, ...ProductionExpression.instance.random(), Punctuator.GRP_CLS]
 		)
 	}
@@ -215,7 +220,7 @@ export class ProductionExpressionExponential extends Production {
 	random(): string[] {
 		return [
 			...ProductionExpressionUnarySymbol.instance.random(),
-			...(Util.randomBool() ? [] : [Punctuator.EXP, ...this.random()]),
+			...Terminal.maybeA(() => [Punctuator.EXP, ...this.random()]),
 		]
 	}
 }
@@ -230,7 +235,7 @@ export class ProductionExpressionMultiplicative extends Production {
 	}
 	random(): string[] {
 		return [
-			...(Util.randomBool() ? [] : [...this.random(), Util.arrayRandom([Punctuator.MUL, Punctuator.DIV])]),
+			...Terminal.maybeA(() => [...this.random(), Util.arrayRandom([Punctuator.MUL, Punctuator.DIV])]),
 			...ProductionExpressionExponential.instance.random(),
 		]
 	}
@@ -246,7 +251,7 @@ export class ProductionExpressionAdditive extends Production {
 	}
 	random(): string[] {
 		return [
-			...(Util.randomBool() ? [] : [...this.random(), Util.arrayRandom([Punctuator.ADD, Punctuator.SUB])]),
+			...Terminal.maybeA(() => [...this.random(), Util.arrayRandom([Punctuator.ADD, Punctuator.SUB])]),
 			...ProductionExpressionMultiplicative.instance.random(),
 		]
 	}
@@ -273,7 +278,7 @@ export class ProductionDeclarationVariable extends Production {
 	random(): string[] {
 		return [
 			Keyword.LET,
-			Util.randomBool() ? '' : Keyword.UNFIXED,
+			Terminal.maybe(() => Keyword.UNFIXED),
 			TerminalIdentifier.instance.random(),
 			Punctuator.ASSIGN,
 			...ProductionExpression.instance.random(),
@@ -313,13 +318,13 @@ export class ProductionStatement extends Production {
 	random(): string[] {
 		const random: number = Math.random()
 		return Dev.supports('variables') ? (
-			random < 0.25 ? [                                           Punctuator.ENDSTAT] :
-			random < 0.50 ? [...ProductionExpression.instance.random(), Punctuator.ENDSTAT] :
-			random < 0.75 ? ProductionDeclarationVariable.instance.random() :
-			                ProductionStatementAssignment.instance.random()
+			random < 1/4 ? [                                           Punctuator.ENDSTAT] :
+			random < 2/4 ? [...ProductionExpression.instance.random(), Punctuator.ENDSTAT] :
+			random < 3/4 ? ProductionDeclarationVariable.instance.random() :
+			               ProductionStatementAssignment.instance.random()
 		) : (
-			random < 0.50 ? [                                           Punctuator.ENDSTAT] :
-			                [...ProductionExpression.instance.random(), Punctuator.ENDSTAT]
+			random < 1/2 ? [                                           Punctuator.ENDSTAT] :
+			               [...ProductionExpression.instance.random(), Punctuator.ENDSTAT]
 		)
 	}
 }
@@ -344,7 +349,7 @@ export class ProductionGoal extends Production {
 		}
 		random(): string[] {
 			return [
-				...(Util.randomBool() ? [] : this.random()),
+				...Terminal.maybeA(this.random),
 				...ProductionStatement.instance.random(),
 			]
 		}

@@ -18,17 +18,20 @@ import {
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
 } from '../src/class/SemanticNode.class'
-import type {
+import {
 	CompletionStructureAssessment,
 } from '../src/spec/CompletionStructure.class'
 import Builder from '../src/vm/Builder.class'
-import SolidLanguageValue, {
+import {
 	SolidNull,
 	SolidBoolean,
 } from '../src/vm/SolidLanguageValue.class'
+import Int16 from '../src/vm/Int16.class'
+import Float64 from '../src/vm/Float64.class'
 import {
 	InstructionNone,
-	InstructionConst,
+	InstructionConstInt,
+	InstructionConstFloat,
 	InstructionBinop,
 	InstructionStatement,
 	InstructionModule,
@@ -126,13 +129,13 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeConstant)
 						.build(new Builder(...srcs))
 				), [
-					0,
-					0,
-					1,
-					42,
-					42,
-					-42,
-				].map((v) => new InstructionConst(v)))
+					0n,
+					0n,
+					1n,
+					42n,
+					42n,
+					-42n,
+				].map((v) => new InstructionConstInt(v)))
 			})
 		})
 
@@ -145,24 +148,36 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeOperation
 				).build(new Builder(...srcs)), new InstructionBinop(
 					Punctuator.ADD,
-					new InstructionConst(42),
-					new InstructionConst(420),
+					new InstructionConstInt(42n),
+					new InstructionConstInt(420n),
 				))
 			})
 			specify('ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative', () => {
-				const srcs: [string, SolidConfig] = [`42 - 420;`, CONFIG_DEFAULT]
+				const srcs: [string, SolidConfig][] = [
+					`42 - 420;`,
+					`3.0e1 - 201.0e-1;`,
+				].map((src) => [src, CONFIG_DEFAULT])
 				assert.deepStrictEqual((
-					(new Parser(...srcs).parse().decorate()
+					(new Parser(...srcs[0]).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeOperation
-				).build(new Builder(...srcs)), new InstructionBinop(
+				).build(new Builder(...srcs[0])), new InstructionBinop(
 					Punctuator.ADD,
-					new InstructionConst(42),
-					new InstructionConst(-420),
+					new InstructionConstInt(42n),
+					new InstructionConstInt(-420n),
+				))
+				assert.deepStrictEqual((
+					(new Parser(...srcs[1]).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation
+				).build(new Builder(...srcs[1])), new InstructionBinop(
+					Punctuator.ADD,
+					new InstructionConstFloat(30),
+					new InstructionConstFloat(-20.1),
 				))
 			})
 			specify('ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential', () => {
-				;[
+				assert.deepStrictEqual([
 					' 126 /  3;',
 					'-126 /  3;',
 					' 126 / -3;',
@@ -171,35 +186,24 @@ describe('SemanticNode', () => {
 					' 200 / -3;',
 					'-200 /  3;',
 					'-200 / -3;',
-				].map((src) => [src, CONFIG_DEFAULT] as [string, SolidConfig]).forEach((srcs, i) => {
-					assert.deepStrictEqual((
-						(new Parser(...srcs).parse().decorate()
-							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeOperation
-					).build(new Builder(...srcs)), new InstructionBinop(
-						Punctuator.DIV,
-						new InstructionConst([
-							 126,
-							-126,
-							 126,
-							-126,
-							 200,
-							 200,
-							-200,
-							-200,
-						][i]),
-						new InstructionConst([
-							 3,
-							 3,
-							-3,
-							-3,
-							 3,
-							-3,
-							 3,
-							-3,
-						][i]),
-					))
-				})
+				].map((src) => (
+					(new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation
+				).build(new Builder(src, CONFIG_DEFAULT))), [
+					[ 126n,  3n],
+					[-126n,  3n],
+					[ 126n, -3n],
+					[-126n, -3n],
+					[ 200n,  3n],
+					[ 200n, -3n],
+					[-200n,  3n],
+					[-200n, -3n],
+				].map(([a, b]) => new InstructionBinop(
+					Punctuator.DIV,
+					new InstructionConstInt(a),
+					new InstructionConstInt(b),
+				)))
 			})
 			specify('compound expression.', () => {
 				const srcs: [string, SolidConfig] = [`42 ^ 2 * 420;`, CONFIG_DEFAULT]
@@ -209,31 +213,26 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeOperation
 				).build(new Builder(...srcs)), new InstructionBinop(
 					Punctuator.MUL,
-					new InstructionConst(42 ** 2),
-					new InstructionConst(420),
+					new InstructionConstInt(42n ** 2n),
+					new InstructionConstInt(420n),
 				))
 			})
 			specify('overflow.', () => {
-				;[
+				assert.deepStrictEqual([
 					`2 ^ 15 + 2 ^ 14;`,
 					`-(2 ^ 14) - 2 ^ 15;`,
-				].map((src) => [src, CONFIG_DEFAULT] as [string, SolidConfig]).forEach((srcs, i) => {
-					assert.deepStrictEqual((
-						(new Parser(...srcs).parse().decorate()
-							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeOperation
-					).build(new Builder(...srcs)), new InstructionBinop(
-						Punctuator.ADD,
-						new InstructionConst([
-							-(2 ** 15), // negative becuase of overflow
-							-(2 ** 14),
-						][i]),
-						new InstructionConst([
-							2 ** 14,
-							-(2 ** 15),
-						][i]),
-					))
-				})
+				].map((src) => (
+					(new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation
+				).build(new Builder(src, CONFIG_DEFAULT))), [
+					[-(2n ** 15n) /* negative becuase of overflow */, 2n ** 14n],
+					[-(2n ** 14n), -(2n ** 15n)],
+				].map(([a, b]) => new InstructionBinop(
+					Punctuator.ADD,
+					new InstructionConstInt(a),
+					new InstructionConstInt(b),
+				)))
 			})
 			specify('compound expression with grouping.', () => {
 				const srcs: [string, SolidConfig] = [`-(5) ^ +(2 * 3);`, CONFIG_DEFAULT]
@@ -243,8 +242,8 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeOperation
 				).build(new Builder(...srcs)), new InstructionBinop(
 					Punctuator.EXP,
-					new InstructionConst(-5),
-					new InstructionConst(2 * 3),
+					new InstructionConstInt(-5n),
+					new InstructionConstInt(2n * 3n),
 				))
 			})
 			specify('multiple statements.', () => {
@@ -252,9 +251,9 @@ describe('SemanticNode', () => {
 				const generator: Builder = new Builder(...srcs)
 				new Parser(...srcs).parse().decorate().children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof SemanticNodeStatementExpression)
-					assert.deepStrictEqual(stmt.build(generator), new InstructionStatement(BigInt(i), new InstructionConst([
-						42,
-						420,
+					assert.deepStrictEqual(stmt.build(generator), new InstructionStatement(BigInt(i), new InstructionConstInt([
+						42n,
+						420n,
 					][i])))
 				})
 			})
@@ -279,10 +278,15 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeConstant).type(), SolidBoolean)
 				})
 			})
-			it('returns `Integer` for SemanticNodeConstant with number value.', () => {
+			it('returns `Integer` for SemanticNodeConstant with integer value.', () => {
 				assert.strictEqual(((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeConstant).type(), SolidLanguageTypeDraft.NUMBER)
+					.children[0] as SemanticNodeConstant).type(), Int16)
+			})
+			it('returns `Float` for SemanticNodeConstant with float value.', () => {
+				assert.strictEqual(((new Parser(`4.2e+1;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeConstant).type(), Float64)
 			})
 			Dev.supports('variables') && it('throws for identifiers.', () => {
 				assert.throws(() => ((new Parser(`x;`, CONFIG_DEFAULT).parse().decorate()
@@ -308,10 +312,18 @@ describe('SemanticNode', () => {
 					assert.strictEqual(node.type(), SolidLanguageTypeDraft.STRING)
 				})
 			})
-			it('returns `Integer` or any operation of numbers.', () => {
+			it('returns `Integer` for any operation of integers.', () => {
 				assert.strictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), SolidLanguageTypeDraft.NUMBER)
+					.children[0] as SemanticNodeOperation).type(), Int16)
+			})
+			it('returns `Float` for any operation of mix of integers and floats.', () => {
+				assert.strictEqual(((new Parser(`3.0 * 2.7;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation).type(), Float64)
+				assert.strictEqual(((new Parser(`7 * 3.0 * 2;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation).type(), Float64)
 			})
 			it('throws for operation of non-numbers.', () => {
 				[
@@ -349,17 +361,17 @@ describe('SemanticNode', () => {
 					SolidBoolean.TRUE,
 				])
 			})
-			it('computes the value of a constant numeric expression.', () => {
-				const values: (number | SolidLanguageValue | SemanticNodeExpression)[] = [
+			it('computes the value of an integer operation of constants.', () => {
+				assert.deepStrictEqual([
 					'42 + 420;',
 					'42 - 420;',
-					'126 / 3;',
-					'-126 / 3;',
-					'126 / -3;',
+					' 126 /  3;',
+					'-126 /  3;',
+					' 126 / -3;',
 					'-126 / -3;',
-					'200 / 3;',
-					'200 / -3;',
-					'-200 / 3;',
+					' 200 /  3;',
+					' 200 / -3;',
+					'-200 /  3;',
 					'-200 / -3;',
 					'42 ^ 2 * 420;',
 					'2 ^ 15 + 2 ^ 14;',
@@ -372,27 +384,49 @@ describe('SemanticNode', () => {
 						.children[0] as ParseNodeExpression
 					).decorate().assess()
 					assert.ok(assess)
-					return assess.value
-				})
-				values.forEach((value) => {
-					assert.strictEqual(typeof value, 'number')
-				})
-				assert.deepStrictEqual(values, [
+					assert.ok(assess.value instanceof Int16)
+					return assess
+				}), [
 					42 + 420,
 					42 + -420,
-					126 / 3,
-					-126 / 3,
-					126 / -3,
-					-126 / -3,
-					Math.trunc(200 / 3),
-					Math.trunc(200 / -3),
-					Math.trunc(-200 / 3),
+					Math.trunc( 126 /  3),
+					Math.trunc(-126 /  3),
+					Math.trunc( 126 / -3),
+					Math.trunc(-126 / -3),
+					Math.trunc( 200 /  3),
+					Math.trunc( 200 / -3),
+					Math.trunc(-200 /  3),
 					Math.trunc(-200 / -3),
 					(42 ** 2 * 420) % (2 ** 16),
 					-(2 ** 14),
 					2 ** 14,
 					(-(5)) ** +(2 * 3),
-				])
+				].map((v) => new CompletionStructureAssessment(new Int16(BigInt(v)))))
+			})
+			it('computes the value of a constant float expression.', () => {
+				assert.deepStrictEqual(`
+					55.  -55.  033.  -033.  2.007  -2.007
+					91.27e4  -91.27e4  91.27e-4  -91.27e-4
+					-0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
+				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => {
+					const assess: CompletionStructureAssessment | null = (((new Parser(`${ src };`, CONFIG_DEFAULT).parse()
+						.children[1] as ParseNodeGoal__0__List)
+						.children[0] as ParseNodeStatement)
+						.children[0] as ParseNodeExpression
+					).decorate().assess()
+					assert.ok(assess)
+					assert.ok(assess.value instanceof Float64)
+					return assess
+				}), [
+					55, -55, 33, -33, 2.007, -2.007,
+					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
+					-0, -0, 6.8, 6.8, 0, -0,
+				].map((v) => new CompletionStructureAssessment(new Float64(v))))
+			})
+			it('computes the value of a float operation of constants.', () => {
+				assert.deepStrictEqual(((new Parser(`3.0e1 - 201.0e-1;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation).assess(), new CompletionStructureAssessment(new Float64(30 - 20.1)))
 			})
 		})
 	})

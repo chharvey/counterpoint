@@ -7,13 +7,22 @@ This chapter lists and defines common abstract algorithms used throughout this s
 The abstract algorithm **TypeOf** returns the [Solid Language Type](./data-types.md#solid-language-types)
 of an expression.
 ```
+Type =:=
+	| `Null`
+	| `Boolean`
+	| `Integer`
+	| `String`
+;
+
 Type TypeOf(SemanticConstant constant) :=
 	1. *If* `constant.value` is `null`:
 		1. *Return:* `Null`.
 	2. *If* `constant.value` is `false` or `true`:
 		1. *Return:* `Boolean`.
-	3. *If* `constant.value` is a `RealNumber`:
-		1. *Return:* `Number`.
+	3. *If* `constant.value` is a `Integer`:
+		1. *Return:* `Integer`.
+	4. *If* `constant.value` is a `Float`:
+		1. *Return:* `Float`.
 	4. Else:
 		1. *Assert:* `constant.value` is a `Sequence<RealNumber>`.
 		2. *Return:* `String`.
@@ -25,14 +34,38 @@ Type TypeOf(SemanticIdentifier id) :=
 	/* TO BE DETERMINED */
 
 Type TypeOf(SemanticOperation operation) :=
-	1. *If* `TypeOf(operation.children.0)` is `Number`:
+	1. *Let* `t0` be `TypeOf(operation.children.0)`.
+	2. *If* `t0` is `Integer` or `Float`:
 		1. *If* `operation.children.count` is 1:
-			1. *Return:* `Number`.
+			1. *Return:* `t0`.
 		2. *Else:*
 			1. *Assert:* `operation.children.count` is 2.
-			2. *If* `TypeOf(operation.children.1)` is `Number`:
-				1. *Return:* `Number`.
-	2. *Throw:* TypeError "Invalid operation.".
+			2. *Let* `t1` be `TypeOf(operation.children.1)`.
+			3. *If* `t1` is `Integer` or `Float`:
+				1. *If* `t0` is `Float` *or* `t1` is `Float`:
+					1. *Return:* `Float`.
+				2. *Else*:
+					1. *Return:* `Integer`.
+	3. *Throw:* TypeError "Invalid operation.".
+```
+
+
+
+### Abstract Operation: IsNumeric
+The `IsNumeric` operation determines whether Solid Language Value is of a numeric type,
+that is, either an [Integer](./data-types.md#integer) or a [Float](./data-types.md#float).
+```
+Object =:=
+	| Null
+	| Boolean
+	| Integer
+	| String
+;
+
+Boolean IsNumeric(Object v) :=
+	1. *If* `TypeOf(v)` is `Integer` *or* `TypeOf(v)` is `Float`:
+		1. *Return*: `true`.
+	2. *Return*: `false`.
 ```
 
 
