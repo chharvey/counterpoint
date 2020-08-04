@@ -348,7 +348,7 @@ describe('SemanticNode', () => {
 					SolidBoolean.TRUE,
 				])
 			})
-			it('computes the value of a constant integer expression.', () => {
+			it('computes the value of an integer operation of constants.', () => {
 				assert.deepStrictEqual([
 					'42 + 420;',
 					'42 - 420;',
@@ -409,6 +409,11 @@ describe('SemanticNode', () => {
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					-0, -0, 6.8, 6.8, 0, -0,
 				].map((v) => new CompletionStructureAssessment(new Float64(v))))
+			})
+			it('computes the value of a float operation of constants.', () => {
+				assert.deepStrictEqual(((new Parser(`3.0e1 - 201.0e-1;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation).assess(), new CompletionStructureAssessment(new Float64(30 - 20.1)))
 			})
 		})
 	})

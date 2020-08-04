@@ -16,6 +16,10 @@ export default class Float64 extends SolidNumber<Float64> {
 	toString(): string {
 		return `${ this.value }`
 	}
+	/** @override */
+	toFloat(): this {
+		return this
+	}
 
 	/** @override */
 	plus(addend: Float64): Float64 {

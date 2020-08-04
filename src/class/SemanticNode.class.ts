@@ -7,6 +7,7 @@ import type Builder from '../vm/Builder.class'
 import SolidLanguageValue, {
 	SolidNull,
 	SolidBoolean,
+	SolidNumber,
 } from '../vm/SolidLanguageValue.class'
 import Int16 from '../vm/Int16.class'
 import Float64 from '../vm/Float64.class'
@@ -223,17 +224,23 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	}
 }
 export class SemanticNodeOperation extends SemanticNodeExpression {
-	private static FOLD_UNARY: Map<Punctuator, (z: Int16) => Int16> = new Map<Punctuator, (z: Int16) => Int16>([
-		[Punctuator.AFF, (z) => z      ],
-		[Punctuator.NEG, (z) => z.neg()],
-	])
-	private static FOLD_BINARY: Map<Punctuator, (x: Int16, y: Int16) => Int16> = new Map<Punctuator, (x: Int16, y: Int16) => Int16>([
-		[Punctuator.EXP, (x, y) => x.exp    (y)],
-		[Punctuator.MUL, (x, y) => x.times  (y)],
-		[Punctuator.DIV, (x, y) => x.divide (y)],
-		[Punctuator.ADD, (x, y) => x.plus   (y)],
-		[Punctuator.SUB, (x, y) => x.minus  (y)],
-	])
+	private static foldUnary<T extends SolidNumber<T>>(op: Punctuator, z: T): T {
+		const map: Map<Punctuator, (z: T) => T> = new Map([
+			[Punctuator.AFF, (z) => z      ],
+			[Punctuator.NEG, (z) => z.neg()],
+		])
+		return map.get(op)!(z)
+	}
+	private static foldBinary<T extends SolidNumber<T>>(op: Punctuator, x: T, y: T): T {
+		const map: Map<Punctuator, (x: T, y: T) => T> = new Map([
+			[Punctuator.EXP, (x, y) => x.exp    (y)],
+			[Punctuator.MUL, (x, y) => x.times  (y)],
+			[Punctuator.DIV, (x, y) => x.divide (y)],
+			[Punctuator.ADD, (x, y) => x.plus   (y)],
+			[Punctuator.SUB, (x, y) => x.minus  (y)],
+		])
+		return map.get(op)!(x, y)
+	}
 	private assessment0:  CompletionStructureAssessment | null = null
 	private assessment1?: CompletionStructureAssessment | null;
 	private is_folded: boolean = false
@@ -272,14 +279,22 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 	assess(): CompletionStructureAssessment | null {
 		if (!this.is_folded) { this.fold() }
 		if (!this.assessment0) return null
+		const v0: SolidLanguageValue = this.assessment0.value
 		if (this.children.length === 1) {
-			return new CompletionStructureAssessment(SemanticNodeOperation.FOLD_UNARY.get(this.operator)!(this.assessment0.value as Int16))
+			return (v0 instanceof SolidNumber)
+				? new CompletionStructureAssessment(SemanticNodeOperation.foldUnary(this.operator, v0))
+				: (() => {throw new TypeError('Invalid operation.')})()
 		} else {
 			if (!this.assessment1) return null
-			if (this.operator === Punctuator.DIV && (this.assessment1.value as Int16).eq0()) {
+			const v1: SolidLanguageValue = this.assessment1.value
+			if (this.operator === Punctuator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
 				throw new NanError02(this.children[1])
 			}
-			return new CompletionStructureAssessment(SemanticNodeOperation.FOLD_BINARY.get(this.operator)!(this.assessment0.value as Int16, this.assessment1.value as Int16))
+			return (
+				(v0 instanceof Int16       && v1 instanceof Int16)       ? new CompletionStructureAssessment(SemanticNodeOperation.foldBinary(this.operator, v0,           v1))           :
+				(v0 instanceof SolidNumber && v1 instanceof SolidNumber) ? new CompletionStructureAssessment(SemanticNodeOperation.foldBinary(this.operator, v0.toFloat(), v1.toFloat())) :
+				(() => { throw new TypeError('Invalid operation.') })()
+			)
 		}
 	}
 	private fold(): void {

@@ -1,3 +1,7 @@
+import type Float64 from './Float64.class'
+
+
+
 /**
  * Parent class for all Solid Language Values.
  * Known subclasses:
@@ -66,6 +70,12 @@ export class SolidBoolean extends SolidLanguageValue {
  * A numeric Solid Language Value.
  */
 export abstract class SolidNumber<T> extends SolidLanguageValue {
+	/**
+	 * Type-coerse this number into a float.
+	 * @returns the equivalent floating-point value
+	 */
+	abstract toFloat(): Float64;
+
 	/**
 	 * Add two numbers.
 	 * @param addend - the addend

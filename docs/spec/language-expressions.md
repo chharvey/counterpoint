@@ -49,7 +49,7 @@ RealNumber PerformNumericBinaryOperation(Text op, RealNumber operand0, RealNumbe
 
 ### AbstractOperation: AssessSemanticOperationBinary
 ```w3c
-Integer? AssessSemanticOperationBinary(SemanticOperation expr) :=
+Or<Integer, Float>? AssessSemanticOperationBinary(SemanticOperation expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
 	3. *If* `TypeOf(operand0)` is `Void`:
@@ -57,9 +57,13 @@ Integer? AssessSemanticOperationBinary(SemanticOperation expr) :=
 	4. *Let* `operand1` be the result of performing `Assess(expr.children.1)`.
 	5. *If* `TypeOf(operand1)` is `Void`:
 		1. *Return*.
-	6. *Assert:* `TypeOf(operand0)` and `TypeOf(operand1)` are both `Integer`.
-	7. *Let* `result` be the result of performing `PerformNumericBinaryOperation(expr.operator, operand0, operand1)`.
-	8. *Return:* `result`.
+	6. *If* `TypeOf(operand0)` is `Integer` *and* `TypeOf(operand1)` is `Integer`:
+		1. *Return:* `Integer(PerformNumericBinaryOperation(expr.operator, operand0, operand1))`.
+	7. *If* `IsNumeric(operand0)` *and* `IsNumeric(operand1)`:
+		1. *Let* `float0` be the type-conversion of `operand0` into type `Float`.
+		2. *Let* `float1` be the type-conversion of `operand1` into type `Float`.
+		3. *Return:* `Float(PerformNumericBinaryOperation(expr.operator, float0, float1))`.
+	8. *Throw:* TypeError "Invalid operation.".
 ```
 
 
@@ -297,15 +301,16 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperati
 
 ### Static Semantics: Assess (Unary Operators)
 ```w3c
-Integer? Assess(SemanticOperation[operator=NEG] expr) :=
+Or<Integer, Float>? Assess(SemanticOperation[operator=NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
 	3. *If* `TypeOf(operand)` is `Void`:
 		1. *Return*.
-	4. *Assert:* `TypeOf(operand)` is `Integer`.
-	5. *Let* `negation` be the additive inverse, `-operand`,
-		obtained by negating `operand`.
-	6. *Return:* `negation`.
+	4. *If* `IsNumeric(operand)` is `true`:
+		1. *Let* `negation` be the additive inverse, `-operand`,
+			obtained by negating `operand`.
+		2. *Return:* `negation`.
+	5. *Throw:* TypeError "Invalid operation.".
 ```
 
 
@@ -356,7 +361,7 @@ Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponenti
 
 ### Static Semantics: Assess (Exponentiation)
 ```w3c
-Integer? Assess(SemanticOperation[operator=EXP] expr) :=
+Or<Integer, Float>? Assess(SemanticOperation[operator=EXP] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 
@@ -411,7 +416,7 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 
 ### Static Semantics: Assess (Multiplicative)
 ```w3c
-Integer? Assess(SemanticOperation[operator=MUL|DIV] expr) :=
+Or<Integer, Float>? Assess(SemanticOperation[operator=MUL|DIV] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 
@@ -471,7 +476,7 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 
 ### Static Semantics: Assess (Additive)
 ```w3c
-Integer? Assess(SemanticOperation[operator=ADD] expr) :=
+Or<Integer, Float>? Assess(SemanticOperation[operator=ADD] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 

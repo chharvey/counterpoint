@@ -8,10 +8,10 @@ The abstract algorithm **TypeOf** returns the [Solid Language Type](./data-types
 of an expression.
 ```
 Type =:=
-	| Null
-	| Boolean
-	| Integer
-	| String
+	| `Null`
+	| `Boolean`
+	| `Integer`
+	| `String`
 ;
 
 Type TypeOf(SemanticConstant constant) :=
@@ -47,6 +47,25 @@ Type TypeOf(SemanticOperation operation) :=
 				2. *Else*:
 					1. *Return:* `Integer`.
 	3. *Throw:* TypeError "Invalid operation.".
+```
+
+
+
+### Abstract Operation: IsNumeric
+The `IsNumeric` operation determines whether Solid Language Value is of a numeric type,
+that is, either an [Integer](./data-types.md#integer) or a [Float](./data-types.md#float).
+```
+Object =:=
+	| Null
+	| Boolean
+	| Integer
+	| String
+;
+
+Boolean IsNumeric(Object v) :=
+	1. *If* `TypeOf(v)` is `Integer` *or* `TypeOf(v)` is `Float`:
+		1. *Return*: `true`.
+	2. *Return*: `false`.
 ```
 
 

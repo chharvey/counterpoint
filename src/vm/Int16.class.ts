@@ -1,6 +1,7 @@
 import {
 	SolidNumber,
 } from './SolidLanguageValue.class'
+import Float64 from './Float64.class'
 
 
 
@@ -42,7 +43,10 @@ export default class Int16 extends SolidNumber<Int16> {
 	toString(): string {
 		return `${ this.toNumeric() }`
 	}
-
+	/** @override */
+	toFloat(): Float64 {
+		return new Float64(Number(this.toNumeric()))
+	}
 	/**
 	 * Return the signed interpretation of this integer.
 	 * @returns the numeric value
