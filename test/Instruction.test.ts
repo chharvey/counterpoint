@@ -5,14 +5,15 @@ import * as assert from 'assert'
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Parser from '../src/class/Parser.class'
 import {Punctuator} from '../src/class/Token.class'
+import Int16 from '../src/vm/Int16.class'
+import Float64 from '../src/vm/Float64.class'
 import Builder from '../src/vm/Builder.class'
 import {
 	InstructionNone,
-	InstructionConstInt,
+	InstructionConst,
 	InstructionUnop,
 	InstructionBinop,
 	InstructionModule,
-	InstructionConstFloat,
 } from '../src/vm/Instruction.class'
 
 
@@ -39,7 +40,7 @@ describe('Instruction', () => {
 					Math.trunc(-200 /  -3),
 				]
 				assert.deepStrictEqual(
-					values.map((x) => new InstructionConstInt(BigInt(x)).toString()),
+					values.map((x) => new InstructionConst(new Int16(BigInt(x))).toString()),
 					values.map((x) => `(i32.const ${ x })`),
 				)
 			})
@@ -52,7 +53,7 @@ describe('Instruction', () => {
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 				]
 				assert.deepStrictEqual(
-					values.map((x) => new InstructionConstFloat(x).toString()),
+					values.map((x) => new InstructionConst(new Float64(x)).toString()),
 					values.map((x) => `(f64.const ${ x })`),
 				)
 			})
@@ -62,15 +63,15 @@ describe('Instruction', () => {
 			it('performs a unary operation.', () => {
 				assert.strictEqual(new InstructionUnop(
 					Punctuator.AFF,
-					new InstructionConstInt(42n),
-				).toString(), `(nop ${ new InstructionConstInt(42n).toString() })`)
+					new InstructionConst(new Int16(42n)),
+				).toString(), `(nop ${ new InstructionConst(new Int16(42n)).toString() })`)
 				assert.strictEqual(new InstructionUnop(
 					Punctuator.NEG,
-					new InstructionConstInt(42n),
-				).toString(), `(call $neg ${ new InstructionConstInt(42n).toString() })`)
+					new InstructionConst(new Int16(42n)),
+				).toString(), `(call $neg ${ new InstructionConst(new Int16(42n)).toString() })`)
 				assert.throws(() => new InstructionUnop(
 					Punctuator.MUL,
-					new InstructionConstInt(42n),
+					new InstructionConst(new Int16(42n)),
 				).toString(), TypeError)
 			})
 		})
@@ -79,9 +80,9 @@ describe('Instruction', () => {
 			it('performs a binary operation.', () => {
 				assert.strictEqual(new InstructionBinop(
 					Punctuator.MUL,
-					new InstructionConstInt(21n),
-					new InstructionConstInt(2n),
-				).toString(), `(i32.mul ${ new InstructionConstInt(21n).toString() } ${ new InstructionConstInt(2n).toString() })`)
+					new InstructionConst(new Int16(21n)),
+					new InstructionConst(new Int16(2n)),
+				).toString(), `(i32.mul ${ new InstructionConst(new Int16(21n)).toString() } ${ new InstructionConst(new Int16(2n)).toString() })`)
 			})
 		})
 

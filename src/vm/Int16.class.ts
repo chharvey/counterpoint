@@ -17,9 +17,9 @@ type Int16DatatypeMutable =   [boolean, boolean, boolean, boolean, boolean, bool
 export default class Int16 extends SolidNumber<Int16> {
 	private static readonly BITCOUNT: number = 16
 
-	private static readonly ZERO  : Int16 = new Int16(    new Array(Int16.BITCOUNT    ).fill(false)               as Int16DatatypeMutable)
-	private static readonly UNIT  : Int16 = new Int16([...new Array(Int16.BITCOUNT - 1).fill(false)      , true ] as Int16DatatypeMutable)
-	private static readonly RADIX : Int16 = new Int16([...new Array(Int16.BITCOUNT - 2).fill(false), true, false] as Int16DatatypeMutable)
+	        static readonly ZERO  : Int16 = new Int16(0n)
+	        static readonly UNIT  : Int16 = new Int16(1n)
+	private static readonly RADIX : Int16 = new Int16(2n)
 
 	private static mod(n: bigint, modulus: bigint): bigint {
 		return (n % modulus + modulus) % modulus
@@ -32,7 +32,7 @@ export default class Int16 extends SolidNumber<Int16> {
 	 * @param data - a numeric value or data
 	 * @returns the value represented as a 16-bit signed integer
 	 */
-	constructor (data: bigint | Int16Datatype) {
+	constructor (data: bigint | Int16Datatype = 0n) {
 		super()
 		this.internal = (typeof data === 'bigint')
 			? [...Int16.mod(data, 2n ** BigInt(Int16.BITCOUNT)).toString(2).padStart(Int16.BITCOUNT, '0')].map((bit) => !!+bit) as Int16DatatypeMutable

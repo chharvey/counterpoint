@@ -9,7 +9,7 @@ import {
  * @final
  */
 export default class Float64 extends SolidNumber<Float64> {
-	constructor (readonly value: number = 0) {
+	constructor (private readonly value: number = 0) {
 		super()
 	}
 	/** @override */

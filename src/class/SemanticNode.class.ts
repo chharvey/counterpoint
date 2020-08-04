@@ -13,7 +13,7 @@ import Int16 from '../vm/Int16.class'
 import Float64 from '../vm/Float64.class'
 import Instruction, {
 	InstructionNone,
-	InstructionConstInt,
+	InstructionConst,
 	InstructionUnop,
 	InstructionBinop,
 	InstructionStatement,
@@ -163,8 +163,8 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		super(start_node, {value})
 		this.value = value
 	}
-	build(_generator: Builder): InstructionConstInt {
-		return this.assess().build() as InstructionConstInt
+	build(_generator: Builder): InstructionConst {
+		return this.assess().build()
 	}
 	type(): SolidLanguageType {
 		return (

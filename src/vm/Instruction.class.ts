@@ -1,4 +1,6 @@
 import {Punctuator} from '../class/Token.class'
+import type {SolidNumber} from './SolidLanguageValue.class'
+import Int16 from './Int16.class'
 
 
 
@@ -41,37 +43,20 @@ class InstructionNop extends Instruction {
 	}
 }
 /**
- * Push a constant integer onto the stack.
+ * Push a constant onto the stack.
  */
-export class InstructionConstInt extends Instruction {
+export class InstructionConst extends Instruction {
 	/**
-	 * @param i32 the constant to push
+	 * @param value the constant to push
 	 */
-	constructor (private readonly i32: bigint = 0n) {
+	constructor (private readonly value: SolidNumber<unknown>) {
 		super()
 	}
 	/**
-	 * @return `'(i32.const ‹i32›)'`
+	 * @return `'(i32.const ‹value›)'` or `'(f64.const ‹value›)'`
 	 */
 	toString(): string {
-		return `(i32.const ${ this.i32 })`
-	}
-}
-/**
- * Push a constant float onto the stack.
- */
-export class InstructionConstFloat extends Instruction {
-	/**
-	 * @param f64 the constant to push
-	 */
-	constructor (private readonly f64: number = 0) {
-		super()
-	}
-	/**
-	 * @return `'(f64.const ‹f64›)'`
-	 */
-	toString(): string {
-		return `(f64.const ${ this.f64 })`
+		return `(${ (this.value instanceof Int16) ? 'i32' : 'f64' }.const ${ this.value })`
 	}
 }
 /**
