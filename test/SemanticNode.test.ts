@@ -25,9 +25,9 @@ import Builder from '../src/vm/Builder.class'
 import {
 	SolidNull,
 	SolidBoolean,
-	Float64,
 } from '../src/vm/SolidLanguageValue.class'
 import Int16 from '../src/vm/Int16.class'
+import Float64 from '../src/vm/Float64.class'
 import {
 	InstructionNone,
 	InstructionConstInt,

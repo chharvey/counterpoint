@@ -7,9 +7,9 @@ import type Builder from '../vm/Builder.class'
 import SolidLanguageValue, {
 	SolidNull,
 	SolidBoolean,
-	Float64,
 } from '../vm/SolidLanguageValue.class'
 import Int16 from '../vm/Int16.class'
+import Float64 from '../vm/Float64.class'
 import Instruction, {
 	InstructionNone,
 	InstructionConstInt,
