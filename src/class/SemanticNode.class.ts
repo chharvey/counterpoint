@@ -49,6 +49,10 @@ type SolidLanguageType =
 	| typeof Int16
 	| typeof Float64
 
+function isNumericType(t: SolidLanguageType): boolean {
+	return t === Int16 || t === Float64 // ([Int16, Float64] as SolidLanguageType[]).includes(t)
+}
+
 
 
 /**
@@ -253,11 +257,17 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 		}
 	}
 	type(): SolidLanguageType {
-		const t1: SolidLanguageType = this.children[0].type()
-		if (t1 !== Int16 || this.children.length === 2 && this.children[1].type() !== Int16) {
-			throw new TypeError('Invalid operation.')
+		const t0: SolidLanguageType = this.children[0].type()
+		if (isNumericType(t0)) {
+			if (this.children.length === 1) {
+				return t0
+			}
+			const t1: SolidLanguageType = this.children[1].type()
+			if (isNumericType(t1)) {
+				return ([t0, t1].includes(Float64)) ? Float64 : Int16
+			}
 		}
-		return t1
+		throw new TypeError('Invalid operation.')
 	}
 	assess(): CompletionStructureAssessment | null {
 		if (!this.is_folded) { this.fold() }

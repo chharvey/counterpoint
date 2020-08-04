@@ -299,10 +299,18 @@ describe('SemanticNode', () => {
 					assert.strictEqual(node.type(), SolidLanguageTypeDraft.STRING)
 				})
 			})
-			it('returns `Integer` or any operation of numbers.', () => {
+			it('returns `Integer` for any operation of integers.', () => {
 				assert.strictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).type(), Int16)
+			})
+			it('returns `Float` for any operation of mix of integers and floats.', () => {
+				assert.strictEqual(((new Parser(`3.0 * 2.7;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation).type(), Float64)
+				assert.strictEqual(((new Parser(`7 * 3.0 * 2;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation).type(), Float64)
 			})
 			it('throws for operation of non-numbers.', () => {
 				[

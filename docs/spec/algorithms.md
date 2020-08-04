@@ -34,14 +34,19 @@ Type TypeOf(SemanticIdentifier id) :=
 	/* TO BE DETERMINED */
 
 Type TypeOf(SemanticOperation operation) :=
-	1. *If* `TypeOf(operation.children.0)` is `Integer`:
+	1. *Let* `t0` be `TypeOf(operation.children.0)`.
+	2. *If* `t0` is `Integer` or `Float`:
 		1. *If* `operation.children.count` is 1:
-			1. *Return:* `Integer`.
+			1. *Return:* `t0`.
 		2. *Else:*
 			1. *Assert:* `operation.children.count` is 2.
-			2. *If* `TypeOf(operation.children.1)` is `Integer`:
-				1. *Return:* `Integer`.
-	2. *Throw:* TypeError "Invalid operation.".
+			2. *Let* `t1` be `TypeOf(operation.children.1)`.
+			3. *If* `t1` is `Integer` or `Float`:
+				1. *If* `t0` is `Float` *or* `t1` is `Float`:
+					1. *Return:* `Float`.
+				2. *Else*:
+					1. *Return:* `Integer`.
+	3. *Throw:* TypeError "Invalid operation.".
 ```
 
 
