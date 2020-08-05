@@ -91,7 +91,7 @@ export class InstructionUnop extends InstructionExpression {
 	toString(): string {
 		return `(${ new Map<Punctuator, string>([
 			[Punctuator.AFF, `nop`],
-			[Punctuator.NEG, `call $neg`],
+			[Punctuator.NEG, (!this.isFloat) ? `call $neg` : `f64.neg`],
 		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg })`
 	}
 	get isFloat(): boolean {
@@ -123,7 +123,7 @@ export class InstructionBinop extends InstructionExpression {
 			[Punctuator.SUB, (!this.isFloat) ? `i32.sub`   : `f64.sub`],
 			[Punctuator.MUL, (!this.isFloat) ? `i32.mul`   : `f64.mul`],
 			[Punctuator.DIV, (!this.isFloat) ? `i32.div_s` : `f64.div`],
-			[Punctuator.EXP, `call $exp`],
+			[Punctuator.EXP, (!this.isFloat) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
 		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg0 } ${ this.arg1 })`
 	}
 	get isFloat(): boolean {

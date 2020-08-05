@@ -65,11 +65,11 @@ describe('Instruction', () => {
 				assert.strictEqual(new InstructionUnop(
 					Punctuator.AFF,
 					instructionConstInt(42n),
-				).toString(), `(nop ${ instructionConstInt(42n).toString() })`)
+				).toString(), `(nop ${ instructionConstInt(42n) })`)
 				assert.strictEqual(new InstructionUnop(
 					Punctuator.NEG,
 					instructionConstInt(42n),
-				).toString(), `(call $neg ${ instructionConstInt(42n).toString() })`)
+				).toString(), `(call $neg ${ instructionConstInt(42n) })`)
 				assert.throws(() => new InstructionUnop(
 					Punctuator.MUL,
 					instructionConstInt(42n),
@@ -83,17 +83,12 @@ describe('Instruction', () => {
 					Punctuator.MUL,
 					instructionConstInt(21n),
 					instructionConstInt(2n),
-				).toString(), `(i32.mul ${ instructionConstInt(21n).toString() } ${ instructionConstInt(2n).toString() })`)
+				).toString(), `(i32.mul ${ instructionConstInt(21n) } ${ instructionConstInt(2n) })`)
 				assert.strictEqual(new InstructionBinop(
 					Punctuator.ADD,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
-				).toString(), `(f64.add ${ instructionConstFloat(30.1).toString() } ${ instructionConstFloat(18.1).toString() })`)
-				assert.strictEqual(new InstructionBinop(
-					Punctuator.ADD,
-					instructionConstFloat(30),
-					instructionConstFloat(18.1),
-				).toString(), `(f64.add ${ instructionConstFloat(30).toString() } ${ instructionConstFloat(18.1).toString() })`)
+				).toString(), `(f64.add ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
 			})
 		})
 
