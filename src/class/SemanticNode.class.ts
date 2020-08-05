@@ -290,7 +290,7 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 		if (this.children.length === 1) {
 			return (v0 instanceof SolidNumber)
 				? new CompletionStructureAssessment(SemanticNodeOperation.foldUnary(this.operator, v0))
-				: (() => {throw new TypeError('Invalid operation.')})()
+				: (() => { throw new TypeError('Invalid operation.') })()
 		} else {
 			if (!this.assessment1) return null
 			const v1: SolidLanguageValue = this.assessment1.value

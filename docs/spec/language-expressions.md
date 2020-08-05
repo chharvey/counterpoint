@@ -59,11 +59,10 @@ Or<Integer, Float>? AssessSemanticOperationBinary(SemanticOperation expr) :=
 		1. *Return*.
 	6. *If* `TypeOf(operand0)` is `Integer` *and* `TypeOf(operand1)` is `Integer`:
 		1. *Return:* `Integer(PerformNumericBinaryOperation(expr.operator, operand0, operand1))`.
-	7. *If* `IsNumeric(operand0)` *and* `IsNumeric(operand1)`:
-		1. *Let* `float0` be the type-conversion of `operand0` into type `Float`.
-		2. *Let* `float1` be the type-conversion of `operand1` into type `Float`.
-		3. *Return:* `Float(PerformNumericBinaryOperation(expr.operator, float0, float1))`.
-	8. *Throw:* TypeError "Invalid operation.".
+	7. *Assert*: `IsNumeric(operand0)` *and* `IsNumeric(operand1)`.
+	8. *Let* `float0` be the type-conversion of `operand0` into type `Float`.
+	9. *Let* `float1` be the type-conversion of `operand1` into type `Float`.
+	10. *Return:* `Float(PerformNumericBinaryOperation(expr.operator, float0, float1))`.
 ```
 
 
@@ -71,9 +70,17 @@ Or<Integer, Float>? AssessSemanticOperationBinary(SemanticOperation expr) :=
 ```
 Sequence<Instruction> BuildSemanticOperationBinary(SemanticOperation expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `instrs0` be the result of performing `Build(Assess(expr.children.0))`.
-	3. *Let* `instrs1` be the result of performing `Build(Assess(expr.children.1))`.
-	4. *Return:* [...instrs0, ...instrs1, "Perform stack operation `expr.operator`."].
+	2. *Let* `assess0` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `TypeOf(assess0)` is `Void`:
+		1. *Let* `instrs0` be the result of performing `Build(expr.children.0)`.
+	4. *Else*:
+		1. *Let* `instrs0` be the result of performing `Build(assess0)`.
+	5. *Let* `assess1` be the result of performing `Assess(expr.children.1)`.
+	6. *If* `TypeOf(assess1)` is `Void`:
+		1. *Let* `instrs1` be the result of performing `Build(expr.children.1)`.
+	7. *Else*:
+		1. *Let* `instrs1` be the result of performing `Build(assess1)`.
+	8. *Return:* [...instrs0, ...instrs1, "Perform stack operation `expr.operator`."].
 ```
 
 
@@ -306,11 +313,10 @@ Or<Integer, Float>? Assess(SemanticOperation[operator=NEG] expr) :=
 	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
 	3. *If* `TypeOf(operand)` is `Void`:
 		1. *Return*.
-	4. *If* `IsNumeric(operand)` is `true`:
-		1. *Let* `negation` be the additive inverse, `-operand`,
-			obtained by negating `operand`.
-		2. *Return:* `negation`.
-	5. *Throw:* TypeError "Invalid operation.".
+	4. *Assert:* `IsNumeric(operand)` is `true`.
+	5. *Let* `negation` be the additive inverse, `-operand`,
+		obtained by negating `operand`.
+	6. *Return:* `negation`.
 ```
 
 
@@ -318,8 +324,13 @@ Or<Integer, Float>? Assess(SemanticOperation[operator=NEG] expr) :=
 ```
 Sequence<Instruction> Build(SemanticOperation[operator=NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `instrs` be the result of performing `Build(Assess(expr.children.0))`.
-	3. *Return:* [...instrs, "Perform stack operation NEG."].
+	2. *Let* `assess` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `TypeOf(assess)` is `Void`:
+		1. *Let* `instrs` be the result of performing `Build(expr.children.0)`.
+	4. *Else:*
+		1. *Assert*: `TypeOf(assess)` is `Or<Null, Boolean, Integer, Float>`.
+		2. *Let* `instrs` be the result of performing `Build(assess)`.
+	5. *Return:* [...instrs, "Perform stack operation NEG."].
 ```
 
 
