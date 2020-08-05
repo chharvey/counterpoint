@@ -1,4 +1,6 @@
 import {Punctuator} from '../class/Token.class'
+import type {SolidNumber} from './SolidLanguageValue.class'
+import Float64 from './Float64.class'
 
 
 
@@ -41,50 +43,45 @@ class InstructionNop extends Instruction {
 	}
 }
 /**
- * Push a constant integer onto the stack.
+ * A superclass abstracting:
+ * - InstructionConst
+ * - InstructionUnop
+ * - InstructionBinop
  */
-export class InstructionConstInt extends Instruction {
-	/**
-	 * @param i32 the constant to push
-	 */
-	constructor (private readonly i32: bigint = 0n) {
-		super()
-	}
-	/**
-	 * @return `'(i32.const ‹i32›)'`
-	 */
-	toString(): string {
-		return `(i32.const ${ this.i32 })`
-	}
+export abstract class InstructionExpression extends Instruction {
+	abstract get isFloat(): boolean;
 }
 /**
- * Push a constant float onto the stack.
+ * Push a constant onto the stack.
  */
-export class InstructionConstFloat extends Instruction {
+export class InstructionConst extends InstructionExpression {
 	/**
-	 * @param f64 the constant to push
+	 * @param value the constant to push
 	 */
-	constructor (private readonly f64: number = 0) {
+	constructor (private readonly value: SolidNumber<unknown>) {
 		super()
 	}
 	/**
-	 * @return `'(f64.const ‹f64›)'`
+	 * @return `'(i32.const ‹value›)'` or `'(f64.const ‹value›)'`
 	 */
 	toString(): string {
-		return `(f64.const ${ this.f64 })`
+		return `(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ this.value })`
+	}
+	get isFloat(): boolean {
+		return this.value instanceof Float64
 	}
 }
 /**
  * Perform a unary operation on the stack.
  */
-export class InstructionUnop extends Instruction {
+export class InstructionUnop extends InstructionExpression {
 	/**
 	 * @param op a punctuator representing the operation to perform
 	 * @param arg the operand
 	 */
 	constructor (
 		private readonly op: Punctuator,
-		private readonly arg: Instruction,
+		private readonly arg: InstructionExpression,
 	) {
 		super()
 	}
@@ -94,14 +91,17 @@ export class InstructionUnop extends Instruction {
 	toString(): string {
 		return `(${ new Map<Punctuator, string>([
 			[Punctuator.AFF, `nop`],
-			[Punctuator.NEG, `call $neg`],
+			[Punctuator.NEG, (!this.isFloat) ? `call $neg` : `f64.neg`],
 		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg })`
+	}
+	get isFloat(): boolean {
+		return this.arg.isFloat
 	}
 }
 /**
  * Perform a binary operation on the stack.
  */
-export class InstructionBinop extends Instruction {
+export class InstructionBinop extends InstructionExpression {
 	/**
 	 * @param op a punctuator representing the operation to perform
 	 * @param arg0 the first operand
@@ -109,22 +109,28 @@ export class InstructionBinop extends Instruction {
 	 */
 	constructor (
 		private readonly op: Punctuator,
-		private readonly arg0: Instruction,
-		private readonly arg1: Instruction,
+		private readonly arg0: InstructionExpression,
+		private readonly arg1: InstructionExpression,
 	) {
 		super()
+		if (this.isFloat && (!this.arg0.isFloat || !this.arg1.isFloat)) {
+			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`)
+		}
 	}
 	/**
 	 * @return `'(‹op› ‹arg0› ‹arg1›)'`
 	 */
 	toString(): string {
 		return `(${ new Map<Punctuator, string>([
-			[Punctuator.ADD, `i32.add`],
-			[Punctuator.SUB, `i32.sub`],
-			[Punctuator.MUL, `i32.mul`],
-			[Punctuator.DIV, `i32.div_s`],
-			[Punctuator.EXP, `call $exp`],
+			[Punctuator.ADD, (!this.isFloat) ? `i32.add`   : `f64.add`],
+			[Punctuator.SUB, (!this.isFloat) ? `i32.sub`   : `f64.sub`],
+			[Punctuator.MUL, (!this.isFloat) ? `i32.mul`   : `f64.mul`],
+			[Punctuator.DIV, (!this.isFloat) ? `i32.div_s` : `f64.div`],
+			[Punctuator.EXP, (!this.isFloat) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
 		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg0 } ${ this.arg1 })`
+	}
+	get isFloat(): boolean {
+		return this.arg0.isFloat || this.arg1.isFloat
 	}
 }
 /**

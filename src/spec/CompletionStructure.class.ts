@@ -1,12 +1,11 @@
 import SolidLanguageValue, {
 	SolidNull,
 	SolidBoolean,
+	SolidNumber,
 } from '../vm/SolidLanguageValue.class'
 import Int16 from '../vm/Int16.class'
-import Float64 from '../vm/Float64.class'
-import Instruction, {
-	InstructionConstInt,
-	InstructionConstFloat,
+import {
+	InstructionConst,
 } from '../vm/Instruction.class'
 
 
@@ -52,14 +51,14 @@ export class CompletionStructureAssessment extends CompletionStructure {
 	}
 	/**
 	 * Give directions to the runtime code generator.
+	 * @param to_float Should the value be type-coersed into a floating-point number?
 	 * @return the directions to print
 	 */
-	build(): Instruction {
+	build(to_float: boolean = false): InstructionConst {
 		return (
-			(this.value instanceof SolidNull)    ? new InstructionConstInt() :
-			(this.value instanceof SolidBoolean) ? new InstructionConstInt((this.value === SolidBoolean.FALSE) ? 0n : 1n) :
-			(this.value instanceof Int16)        ? new InstructionConstInt(this.value.toNumeric()) :
-			(this.value instanceof Float64)      ? new InstructionConstFloat(this.value.value) :
+			(this.value instanceof SolidNull)    ? new InstructionConst(Int16.ZERO) :
+			(this.value instanceof SolidBoolean) ? new InstructionConst((this.value === SolidBoolean.FALSE) ? Int16.ZERO : Int16.UNIT) :
+			(this.value instanceof SolidNumber)  ? new InstructionConst(to_float ? this.value.toFloat() : this.value) :
 			(() => { throw new Error('not yet supported.') })()
 		)
 	}
