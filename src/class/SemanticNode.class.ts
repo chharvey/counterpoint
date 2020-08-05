@@ -12,6 +12,7 @@ import SolidLanguageValue, {
 import Int16 from '../vm/Int16.class'
 import Float64 from '../vm/Float64.class'
 import Instruction, {
+	Operator,
 	InstructionNone,
 	InstructionExpression,
 	InstructionConst,
@@ -24,7 +25,6 @@ import {
 	NanError02,
 } from '../error/NanError.class'
 import Token, {
-	Punctuator,
 	Keyword,
 	TokenKeyword,
 	TokenIdentifier,
@@ -230,29 +230,27 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	}
 }
 export class SemanticNodeOperation extends SemanticNodeExpression {
-	private static foldUnary<T extends SolidNumber<T>>(op: Punctuator, z: T): T {
-		const map: Map<Punctuator, (z: T) => T> = new Map([
-			[Punctuator.AFF, (z) => z      ],
-			[Punctuator.NEG, (z) => z.neg()],
-		])
-		return map.get(op)!(z)
+	private static foldUnary<T extends SolidNumber<T>>(op: Operator, z: T): T {
+		return new Map<Operator, (z: T) => T>([
+			[Operator.AFF, (z) => z      ],
+			[Operator.NEG, (z) => z.neg()],
+		]).get(op)!(z)
 	}
-	private static foldBinary<T extends SolidNumber<T>>(op: Punctuator, x: T, y: T): T {
-		const map: Map<Punctuator, (x: T, y: T) => T> = new Map([
-			[Punctuator.EXP, (x, y) => x.exp    (y)],
-			[Punctuator.MUL, (x, y) => x.times  (y)],
-			[Punctuator.DIV, (x, y) => x.divide (y)],
-			[Punctuator.ADD, (x, y) => x.plus   (y)],
-			[Punctuator.SUB, (x, y) => x.minus  (y)],
-		])
-		return map.get(op)!(x, y)
+	private static foldBinary<T extends SolidNumber<T>>(op: Operator, x: T, y: T): T {
+		return new Map<Operator, (x: T, y: T) => T>([
+			[Operator.EXP, (x, y) => x.exp    (y)],
+			[Operator.MUL, (x, y) => x.times  (y)],
+			[Operator.DIV, (x, y) => x.divide (y)],
+			[Operator.ADD, (x, y) => x.plus   (y)],
+			[Operator.SUB, (x, y) => x.minus  (y)],
+		]).get(op)!(x, y)
 	}
 	private assessment0:  CompletionStructureAssessment | null = null
 	private assessment1?: CompletionStructureAssessment | null;
 	private is_folded: boolean = false
 	constructor(
 		start_node: ParseNode,
-		private readonly operator: Punctuator,
+		private readonly operator: Operator,
 		readonly children:
 			| readonly [SemanticNodeExpression                        ]
 			| readonly [SemanticNodeExpression, SemanticNodeExpression]
@@ -294,7 +292,7 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 		} else {
 			if (!this.assessment1) return null
 			const v1: SolidLanguageValue = this.assessment1.value
-			if (this.operator === Punctuator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
+			if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
 				throw new NanError02(this.children[1])
 			}
 			return (

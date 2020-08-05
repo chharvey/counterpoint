@@ -3,7 +3,6 @@ import * as assert from 'assert'
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
-import {Punctuator} from '../src/class/Token.class'
 import type {
 	ParseNodeExpression,
 	ParseNodeStatement,
@@ -29,6 +28,7 @@ import {
 import Int16 from '../src/vm/Int16.class'
 import Float64 from '../src/vm/Float64.class'
 import {
+	Operator,
 	InstructionNone,
 	InstructionBinop,
 	InstructionStatement,
@@ -154,22 +154,22 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeOperation
 				).build(new Builder(src, CONFIG_DEFAULT))), [
 					new InstructionBinop(
-						Punctuator.ADD,
+						Operator.ADD,
 						instructionConstInt(42n),
 						instructionConstInt(420n),
 					),
 					new InstructionBinop(
-						Punctuator.ADD,
+						Operator.ADD,
 						instructionConstInt(42n),
 						instructionConstInt(-420n),
 					),
 					new InstructionBinop(
-						Punctuator.ADD,
+						Operator.ADD,
 						instructionConstFloat(30.0),
 						instructionConstFloat(-20.1),
 					),
 					new InstructionBinop(
-						Punctuator.MUL,
+						Operator.MUL,
 						instructionConstFloat(3.0),
 						instructionConstFloat(2.1),
 					),
@@ -199,7 +199,7 @@ describe('SemanticNode', () => {
 					[-200n,  3n],
 					[-200n, -3n],
 				].map(([a, b]) => new InstructionBinop(
-					Punctuator.DIV,
+					Operator.DIV,
 					instructionConstInt(a),
 					instructionConstInt(b),
 				)))
@@ -211,7 +211,7 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeOperation
 				).build(new Builder(...srcs)), new InstructionBinop(
-					Punctuator.MUL,
+					Operator.MUL,
 					instructionConstInt(42n ** 2n),
 					instructionConstInt(420n),
 				))
@@ -228,7 +228,7 @@ describe('SemanticNode', () => {
 					[-(2n ** 15n) /* negative becuase of overflow */, 2n ** 14n],
 					[-(2n ** 14n), -(2n ** 15n)],
 				].map(([a, b]) => new InstructionBinop(
-					Punctuator.ADD,
+					Operator.ADD,
 					instructionConstInt(a),
 					instructionConstInt(b),
 				)))
@@ -243,12 +243,12 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeOperation
 				).build(new Builder(src, CONFIG_DEFAULT))), [
 					new InstructionBinop(
-						Punctuator.ADD,
+						Operator.ADD,
 						instructionConstInt(6n),
 						instructionConstInt(5n),
 					),
 					new InstructionBinop(
-						Punctuator.ADD,
+						Operator.ADD,
 						instructionConstFloat(6.0),
 						instructionConstFloat(5.0),
 					),
@@ -261,7 +261,7 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeOperation
 				).build(new Builder(...srcs)), new InstructionBinop(
-					Punctuator.EXP,
+					Operator.EXP,
 					instructionConstInt(-5n),
 					instructionConstInt(2n * 3n),
 				))

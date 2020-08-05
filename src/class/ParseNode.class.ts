@@ -1,6 +1,7 @@
 import Util from './Util.class'
 import Dev from './Dev.class'
 import type Serializable from '../iface/Serializable.iface'
+import {Operator} from '../vm/Instruction.class'
 import Token, {
 	Punctuator,
 	Keyword,
@@ -189,6 +190,10 @@ export class ParseNodeExpressionUnit extends ParseNode {
 	}
 }
 export class ParseNodeExpressionUnary extends ParseNode {
+	private static readonly OPERATORS: Map<Punctuator, Operator> = new Map<Punctuator, Operator>([
+		[Punctuator.AFF, Operator.AFF],
+		[Punctuator.NEG, Operator.NEG],
+	])
 	declare children:
 		| readonly [ParseNodeExpressionUnit]
 		| readonly [TokenPunctuator, ParseNodeExpressionUnary]
@@ -199,12 +204,19 @@ export class ParseNodeExpressionUnary extends ParseNode {
 			(this.children[0].source === Punctuator.AFF) ? // `+a` is a no-op
 				this.children[1].decorate()
 			:
-				new SemanticNodeOperation(this, this.children[0].source, [
+				new SemanticNodeOperation(this, ParseNodeExpressionUnary.OPERATORS.get(this.children[0].source)!, [
 					this.children[1].decorate(),
 				])
 	}
 }
 export class ParseNodeExpressionBinary extends ParseNode {
+	private static readonly OPERATORS: Map<Punctuator, Operator> = new Map<Punctuator, Operator>([
+		[Punctuator.ADD, Operator.ADD],
+		[Punctuator.SUB, Operator.SUB],
+		[Punctuator.MUL, Operator.MUL],
+		[Punctuator.DIV, Operator.DIV],
+		[Punctuator.EXP, Operator.EXP],
+	])
 	declare children:
 		| readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary                                            ]
 		| readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary]
@@ -213,14 +225,14 @@ export class ParseNodeExpressionBinary extends ParseNode {
 			this.children[0].decorate()
 		:
 			(this.children[1].source === Punctuator.SUB) ? // `a - b` is syntax sugar for `a + -(b)`
-				new SemanticNodeOperation(this, Punctuator.ADD, [
+				new SemanticNodeOperation(this, Operator.ADD, [
 					this.children[0].decorate(),
-					new SemanticNodeOperation(this.children[2], Punctuator.NEG, [
+					new SemanticNodeOperation(this.children[2], Operator.NEG, [
 						this.children[2].decorate(),
 					]),
 				])
 			:
-				new SemanticNodeOperation(this, this.children[1].source, [
+				new SemanticNodeOperation(this, ParseNodeExpressionBinary.OPERATORS.get(this.children[1].source)!, [
 					this.children[0].decorate(),
 					this.children[2].decorate(),
 				])

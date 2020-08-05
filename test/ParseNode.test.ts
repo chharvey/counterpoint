@@ -184,7 +184,7 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Parser('(2 + -3);', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ ( 2 + -3 ) ; ␃">
 						<StatementExpression line="1" col="1" source="( 2 + -3 ) ;">
-							<Operation line="1" col="2" source="2 + -3" operator="+">
+							<Operation line="1" col="2" source="2 + -3" operator="5">
 								<Constant line="1" col="2" source="2" value="2"/>
 								<Constant line="1" col="6" source="-3" value="-3"/>
 							</Operation>
@@ -196,11 +196,11 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Parser('(-(42) ^ +(2 * 420));', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ ( - ( 42 ) ^ + ( 2 * 420 ) ) ; ␃">
 						<StatementExpression line="1" col="1" source="( - ( 42 ) ^ + ( 2 * 420 ) ) ;">
-							<Operation line="1" col="2" source="- ( 42 ) ^ + ( 2 * 420 )" operator="^">
-								<Operation line="1" col="2" source="- ( 42 )" operator="-">
+							<Operation line="1" col="2" source="- ( 42 ) ^ + ( 2 * 420 )" operator="2">
+								<Operation line="1" col="2" source="- ( 42 )" operator="1">
 									<Constant line="1" col="4" source="42" value="42"/>
 								</Operation>
-								<Operation line="1" col="12" source="2 * 420" operator="*">
+								<Operation line="1" col="12" source="2 * 420" operator="3">
 									<Constant line="1" col="12" source="2" value="2"/>
 									<Constant line="1" col="16" source="420" value="420"/>
 								</Operation>
@@ -216,7 +216,7 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Parser('- 42;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ - 42 ; ␃">
 						<StatementExpression line="1" col="1" source="- 42 ;">
-							<Operation line="1" col="1" source="- 42" operator="-">
+							<Operation line="1" col="1" source="- 42" operator="1">
 								<Constant line="1" col="3" source="42" value="42"/>
 							</Operation>
 						</StatementExpression>
@@ -230,7 +230,7 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Parser('2 ^ -3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ 2 ^ -3 ; ␃">
 						<StatementExpression line="1" col="1" source="2 ^ -3 ;">
-							<Operation line="1" col="1" source="2 ^ -3" operator="^">
+							<Operation line="1" col="1" source="2 ^ -3" operator="2">
 								<Constant line="1" col="1" source="2" value="2"/>
 								<Constant line="1" col="5" source="-3" value="-3"/>
 							</Operation>
@@ -245,7 +245,7 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Parser('2 * -3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ 2 * -3 ; ␃">
 						<StatementExpression line="1" col="1" source="2 * -3 ;">
-							<Operation line="1" col="1" source="2 * -3" operator="*">
+							<Operation line="1" col="1" source="2 * -3" operator="3">
 								<Constant line="1" col="1" source="2" value="2"/>
 								<Constant line="1" col="5" source="-3" value="-3"/>
 							</Operation>
@@ -260,7 +260,7 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Parser('2 + -3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ 2 + -3 ; ␃">
 						<StatementExpression line="1" col="1" source="2 + -3 ;">
-							<Operation line="1" col="1" source="2 + -3" operator="+">
+							<Operation line="1" col="1" source="2 + -3" operator="5">
 								<Constant line="1" col="1" source="2" value="2"/>
 								<Constant line="1" col="5" source="-3" value="-3"/>
 							</Operation>
@@ -275,9 +275,9 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Parser('2 - 3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ 2 - 3 ; ␃">
 						<StatementExpression line="1" col="1" source="2 - 3 ;">
-							<Operation line="1" col="1" source="2 - 3" operator="+">
+							<Operation line="1" col="1" source="2 - 3" operator="5">
 								<Constant line="1" col="1" source="2" value="2"/>
-								<Operation line="1" col="5" source="3" operator="-">
+								<Operation line="1" col="5" source="3" operator="1">
 									<Constant line="1" col="5" source="3" value="3"/>
 								</Operation>
 							</Operation>

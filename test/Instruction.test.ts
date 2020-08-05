@@ -4,9 +4,9 @@ import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Parser from '../src/class/Parser.class'
-import {Punctuator} from '../src/class/Token.class'
 import Builder from '../src/vm/Builder.class'
 import {
+	Operator,
 	InstructionNone,
 	InstructionUnop,
 	InstructionBinop,
@@ -24,7 +24,7 @@ describe('Instruction', () => {
 		context('InstructionBinop', () => {
 			it('throws when operands are a mix of ints and floats.', () => {
 				assert.throws(() => new InstructionBinop(
-					Punctuator.MUL,
+					Operator.MUL,
 					instructionConstInt(5n),
 					instructionConstFloat(2.5),
 				), TypeError)
@@ -75,15 +75,15 @@ describe('Instruction', () => {
 		context('InstructionUnop', () => {
 			it('performs a unary operation.', () => {
 				assert.strictEqual(new InstructionUnop(
-					Punctuator.AFF,
+					Operator.AFF,
 					instructionConstInt(42n),
 				).toString(), `(nop ${ instructionConstInt(42n) })`)
 				assert.strictEqual(new InstructionUnop(
-					Punctuator.NEG,
+					Operator.NEG,
 					instructionConstInt(42n),
 				).toString(), `(call $neg ${ instructionConstInt(42n) })`)
 				assert.throws(() => new InstructionUnop(
-					Punctuator.MUL,
+					Operator.MUL,
 					instructionConstInt(42n),
 				).toString(), TypeError)
 			})
@@ -92,12 +92,12 @@ describe('Instruction', () => {
 		context('InstructionBinop', () => {
 			it('performs a binary operation.', () => {
 				assert.strictEqual(new InstructionBinop(
-					Punctuator.MUL,
+					Operator.MUL,
 					instructionConstInt(21n),
 					instructionConstInt(2n),
 				).toString(), `(i32.mul ${ instructionConstInt(21n) } ${ instructionConstInt(2n) })`)
 				assert.strictEqual(new InstructionBinop(
-					Punctuator.ADD,
+					Operator.ADD,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
 				).toString(), `(f64.add ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)

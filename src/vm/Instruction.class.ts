@@ -1,6 +1,18 @@
-import {Punctuator} from '../class/Token.class'
 import type {SolidNumber} from './SolidLanguageValue.class'
 import Float64 from './Float64.class'
+
+
+
+// HACK: this is defined here, instead of in `../class/SemanticNode.class`, to avoid circular imports.
+export enum Operator {
+	AFF,
+	NEG,
+	EXP,
+	MUL,
+	DIV,
+	ADD,
+	SUB,
+}
 
 
 
@@ -80,7 +92,7 @@ export class InstructionUnop extends InstructionExpression {
 	 * @param arg the operand
 	 */
 	constructor (
-		private readonly op: Punctuator,
+		private readonly op: Operator,
 		private readonly arg: InstructionExpression,
 	) {
 		super()
@@ -89,9 +101,9 @@ export class InstructionUnop extends InstructionExpression {
 	 * @return `'(‹op› ‹arg›)'`
 	 */
 	toString(): string {
-		return `(${ new Map<Punctuator, string>([
-			[Punctuator.AFF, `nop`],
-			[Punctuator.NEG, (!this.isFloat) ? `call $neg` : `f64.neg`],
+		return `(${ new Map<Operator, string>([
+			[Operator.AFF, `nop`],
+			[Operator.NEG, (!this.isFloat) ? `call $neg` : `f64.neg`],
 		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg })`
 	}
 	get isFloat(): boolean {
@@ -108,7 +120,7 @@ export class InstructionBinop extends InstructionExpression {
 	 * @param arg1 the second operand
 	 */
 	constructor (
-		private readonly op: Punctuator,
+		private readonly op: Operator,
 		private readonly arg0: InstructionExpression,
 		private readonly arg1: InstructionExpression,
 	) {
@@ -121,12 +133,12 @@ export class InstructionBinop extends InstructionExpression {
 	 * @return `'(‹op› ‹arg0› ‹arg1›)'`
 	 */
 	toString(): string {
-		return `(${ new Map<Punctuator, string>([
-			[Punctuator.ADD, (!this.isFloat) ? `i32.add`   : `f64.add`],
-			[Punctuator.SUB, (!this.isFloat) ? `i32.sub`   : `f64.sub`],
-			[Punctuator.MUL, (!this.isFloat) ? `i32.mul`   : `f64.mul`],
-			[Punctuator.DIV, (!this.isFloat) ? `i32.div_s` : `f64.div`],
-			[Punctuator.EXP, (!this.isFloat) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
+		return `(${ new Map<Operator, string>([
+			[Operator.ADD, (!this.isFloat) ? `i32.add`   : `f64.add`],
+			[Operator.SUB, (!this.isFloat) ? `i32.sub`   : `f64.sub`],
+			[Operator.MUL, (!this.isFloat) ? `i32.mul`   : `f64.mul`],
+			[Operator.DIV, (!this.isFloat) ? `i32.div_s` : `f64.div`],
+			[Operator.EXP, (!this.isFloat) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
 		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg0 } ${ this.arg1 })`
 	}
 	get isFloat(): boolean {
