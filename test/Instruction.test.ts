@@ -8,16 +8,30 @@ import {Punctuator} from '../src/class/Token.class'
 import Builder from '../src/vm/Builder.class'
 import {
 	InstructionNone,
-	InstructionConstInt,
 	InstructionUnop,
 	InstructionBinop,
 	InstructionModule,
-	InstructionConstFloat,
 } from '../src/vm/Instruction.class'
+import {
+	instructionConstInt,
+	instructionConstFloat,
+} from './helpers'
 
 
 
 describe('Instruction', () => {
+	describe('.constructor', () => {
+		context('InstructionBinop', () => {
+			it('throws when operands are a mix of ints and floats.', () => {
+				assert.throws(() => new InstructionBinop(
+					Punctuator.MUL,
+					instructionConstInt(5n),
+					instructionConstFloat(2.5),
+				), TypeError)
+			})
+		})
+	})
+
 	describe('#toString', () => {
 		context('InstructionConstInt', () => {
 			it('pushes the constant integer onto the stack.', () => {
@@ -39,7 +53,7 @@ describe('Instruction', () => {
 					Math.trunc(-200 /  -3),
 				]
 				assert.deepStrictEqual(
-					values.map((x) => new InstructionConstInt(BigInt(x)).toString()),
+					values.map((x) => instructionConstInt(BigInt(x)).toString()),
 					values.map((x) => `(i32.const ${ x })`),
 				)
 			})
@@ -52,7 +66,7 @@ describe('Instruction', () => {
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 				]
 				assert.deepStrictEqual(
-					values.map((x) => new InstructionConstFloat(x).toString()),
+					values.map((x) => instructionConstFloat(x).toString()),
 					values.map((x) => `(f64.const ${ x })`),
 				)
 			})
@@ -62,15 +76,15 @@ describe('Instruction', () => {
 			it('performs a unary operation.', () => {
 				assert.strictEqual(new InstructionUnop(
 					Punctuator.AFF,
-					new InstructionConstInt(42n),
-				).toString(), `(nop ${ new InstructionConstInt(42n).toString() })`)
+					instructionConstInt(42n),
+				).toString(), `(nop ${ instructionConstInt(42n) })`)
 				assert.strictEqual(new InstructionUnop(
 					Punctuator.NEG,
-					new InstructionConstInt(42n),
-				).toString(), `(call $neg ${ new InstructionConstInt(42n).toString() })`)
+					instructionConstInt(42n),
+				).toString(), `(call $neg ${ instructionConstInt(42n) })`)
 				assert.throws(() => new InstructionUnop(
 					Punctuator.MUL,
-					new InstructionConstInt(42n),
+					instructionConstInt(42n),
 				).toString(), TypeError)
 			})
 		})
@@ -79,9 +93,14 @@ describe('Instruction', () => {
 			it('performs a binary operation.', () => {
 				assert.strictEqual(new InstructionBinop(
 					Punctuator.MUL,
-					new InstructionConstInt(21n),
-					new InstructionConstInt(2n),
-				).toString(), `(i32.mul ${ new InstructionConstInt(21n).toString() } ${ new InstructionConstInt(2n).toString() })`)
+					instructionConstInt(21n),
+					instructionConstInt(2n),
+				).toString(), `(i32.mul ${ instructionConstInt(21n) } ${ instructionConstInt(2n) })`)
+				assert.strictEqual(new InstructionBinop(
+					Punctuator.ADD,
+					instructionConstFloat(30.1),
+					instructionConstFloat(18.1),
+				).toString(), `(f64.add ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
 			})
 		})
 

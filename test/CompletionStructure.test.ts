@@ -6,8 +6,7 @@ import {
 import Int16 from '../src/vm/Int16.class'
 import Float64 from '../src/vm/Float64.class'
 import {
-	InstructionConstInt,
-	InstructionConstFloat,
+	InstructionConst,
 } from '../src/vm/Instruction.class'
 
 
@@ -32,7 +31,7 @@ describe('CompletionStructureAssessment', () => {
 			]
 			assert.deepStrictEqual(
 				values.map((x) => new CompletionStructureAssessment(new Int16(x)).build()),
-				values.map((x) => new InstructionConstInt(x)),
+				values.map((x) => new InstructionConst(new Int16(x))),
 			)
 		})
 		specify('CompletionStructureAssessment[value: Float]', () => {
@@ -44,8 +43,15 @@ describe('CompletionStructureAssessment', () => {
 			]
 			assert.deepStrictEqual(
 				values.map((x) => new CompletionStructureAssessment(new Float64(x)).build()),
-				values.map((x) => new InstructionConstFloat(x)),
+				values.map((x) => new InstructionConst(new Float64(x))),
 			)
+		})
+		context('with @to_float === true', () => {
+			specify('CompletionStructureAssessment[value: Integer]', () => {
+				const build: InstructionConst = new CompletionStructureAssessment(new Int16(42n)).build(true)
+				assert.deepStrictEqual   (build, new InstructionConst(new Float64(42)))
+				assert.notDeepStrictEqual(build, new InstructionConst(new Int16(42n)))
+			})
 		})
 	})
 })
