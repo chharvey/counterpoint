@@ -113,6 +113,9 @@ export class InstructionBinop extends InstructionExpression {
 		private readonly arg1: InstructionExpression,
 	) {
 		super()
+		if (this.isFloat && (!this.arg0.isFloat || !this.arg1.isFloat)) {
+			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`)
+		}
 	}
 	/**
 	 * @return `'(‹op› ‹arg0› ‹arg1›)'`

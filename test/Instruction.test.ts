@@ -20,6 +20,18 @@ import {
 
 
 describe('Instruction', () => {
+	describe('.constructor', () => {
+		context('InstructionBinop', () => {
+			it('throws when operands are a mix of ints and floats.', () => {
+				assert.throws(() => new InstructionBinop(
+					Punctuator.MUL,
+					instructionConstInt(5n),
+					instructionConstFloat(2.5),
+				), TypeError)
+			})
+		})
+	})
+
 	describe('#toString', () => {
 		context('InstructionConstInt', () => {
 			it('pushes the constant integer onto the stack.', () => {

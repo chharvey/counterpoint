@@ -147,7 +147,7 @@ describe('SemanticNode', () => {
 					`42 + 420;`,
 					`42 - 420;`,
 					`3.0e1 - 201.0e-1;`,
-					`3 * 2.1;`,
+					// `3 * 2.1;`,
 				].map((src) => (
 					(new Parser(src, CONFIG_DEFAULT).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
@@ -168,12 +168,21 @@ describe('SemanticNode', () => {
 						instructionConstFloat(30),
 						instructionConstFloat(-20.1),
 					),
-					new InstructionBinop(
-						Punctuator.MUL,
-						instructionConstInt(3n),
-						instructionConstFloat(2.1),
-					),
+					// new InstructionBinop(
+					// 	Punctuator.MUL,
+					// 	instructionConstInt(3n),
+					// 	instructionConstFloat(2.1),
+					// ),
 				])
+				assert.throws(() => {
+					;[
+						`3 * 2.1;`,
+					].map((src) => (
+						(new Parser(src, CONFIG_DEFAULT).parse().decorate()
+							.children[0] as SemanticNodeStatementExpression)
+							.children[0] as SemanticNodeOperation
+					).build(new Builder(src, CONFIG_DEFAULT)), TypeError)
+				})
 			})
 			specify('SemanticNodeOperation[operator: DIV] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 				assert.deepStrictEqual([
