@@ -142,43 +142,40 @@ describe('SemanticNode', () => {
 		})
 
 		context('SemanticNodeOperation', () => {
-			specify('ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative', () => {
-				const srcs: [string, SolidConfig] = [`42 + 420;`, CONFIG_DEFAULT]
-				assert.deepStrictEqual((
-					(new Parser(...srcs).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeOperation
-				).build(new Builder(...srcs)), new InstructionBinop(
-					Punctuator.ADD,
-					instructionConstInt(42n),
-					instructionConstInt(420n),
-				))
-			})
-			specify('ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative', () => {
-				const srcs: [string, SolidConfig][] = [
+			specify('SemanticNodeOperation[operator: ADD | SUB | MUL] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+				assert.deepStrictEqual([
+					`42 + 420;`,
 					`42 - 420;`,
 					`3.0e1 - 201.0e-1;`,
-				].map((src) => [src, CONFIG_DEFAULT])
-				assert.deepStrictEqual((
-					(new Parser(...srcs[0]).parse().decorate()
+					`3 * 2.1;`,
+				].map((src) => (
+					(new Parser(src, CONFIG_DEFAULT).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeOperation
-				).build(new Builder(...srcs[0])), new InstructionBinop(
-					Punctuator.ADD,
-					instructionConstInt(42n),
-					instructionConstInt(-420n),
-				))
-				assert.deepStrictEqual((
-					(new Parser(...srcs[1]).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeOperation
-				).build(new Builder(...srcs[1])), new InstructionBinop(
-					Punctuator.ADD,
-					instructionConstFloat(30),
-					instructionConstFloat(-20.1),
-				))
+				).build(new Builder(src, CONFIG_DEFAULT))), [
+					new InstructionBinop(
+						Punctuator.ADD,
+						instructionConstInt(42n),
+						instructionConstInt(420n),
+					),
+					new InstructionBinop(
+						Punctuator.ADD,
+						instructionConstInt(42n),
+						instructionConstInt(-420n),
+					),
+					new InstructionBinop(
+						Punctuator.ADD,
+						instructionConstFloat(30),
+						instructionConstFloat(-20.1),
+					),
+					new InstructionBinop(
+						Punctuator.MUL,
+						instructionConstInt(3n),
+						instructionConstFloat(2.1),
+					),
+				])
 			})
-			specify('ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential', () => {
+			specify('SemanticNodeOperation[operator: DIV] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 				assert.deepStrictEqual([
 					' 126 /  3;',
 					'-126 /  3;',

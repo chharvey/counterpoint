@@ -13,6 +13,7 @@ import Int16 from '../vm/Int16.class'
 import Float64 from '../vm/Float64.class'
 import Instruction, {
 	InstructionNone,
+	InstructionExpression,
 	InstructionConst,
 	InstructionUnop,
 	InstructionBinop,
@@ -135,6 +136,10 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	}
 
 	/**
+	 * @override
+	 */
+	abstract build(generator: Builder): InstructionExpression;
+	/**
 	 * The Type of this expression.
 	 */
 	abstract type(): SolidLanguageType;
@@ -190,7 +195,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 		const id: bigint | null = start_node.cook()
 		super(start_node, {id})
 	}
-	build(generator: Builder): Instruction {
+	build(generator: Builder): InstructionExpression {
 		throw new Error('not yet supported.')
 	}
 	type(): SolidLanguageType {
@@ -213,7 +218,7 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	) {
 		super(start_node, {}, children)
 	}
-	build(generator: Builder): Instruction {
+	build(generator: Builder): InstructionExpression {
 		throw new Error('not yet supported.')
 	}
 	type(): SolidLanguageType {
@@ -255,11 +260,11 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 	}
 	build(generator: Builder): InstructionUnop | InstructionBinop {
 		if (!this.is_folded) { this.fold() }
-		const operand0: Instruction = (this.assessment0) ? this.assessment0.build() : this.children[0].build(generator)
+		const operand0: InstructionExpression = (this.assessment0) ? this.assessment0.build() : this.children[0].build(generator)
 		if (this.children.length === 1) {
 			return new InstructionUnop(this.operator, operand0)
 		} else {
-			const operand1: Instruction = (this.assessment1) ? this.assessment1.build() : this.children[1].build(generator)
+			const operand1: InstructionExpression = (this.assessment1) ? this.assessment1.build() : this.children[1].build(generator)
 			return new InstructionBinop(this.operator, operand0, operand1)
 		}
 	}

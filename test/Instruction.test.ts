@@ -84,6 +84,16 @@ describe('Instruction', () => {
 					instructionConstInt(21n),
 					instructionConstInt(2n),
 				).toString(), `(i32.mul ${ instructionConstInt(21n).toString() } ${ instructionConstInt(2n).toString() })`)
+				assert.strictEqual(new InstructionBinop(
+					Punctuator.ADD,
+					instructionConstFloat(30.1),
+					instructionConstFloat(18.1),
+				).toString(), `(f64.add ${ instructionConstFloat(30.1).toString() } ${ instructionConstFloat(18.1).toString() })`)
+				assert.strictEqual(new InstructionBinop(
+					Punctuator.ADD,
+					instructionConstFloat(30),
+					instructionConstFloat(18.1),
+				).toString(), `(f64.add ${ instructionConstFloat(30).toString() } ${ instructionConstFloat(18.1).toString() })`)
 			})
 		})
 

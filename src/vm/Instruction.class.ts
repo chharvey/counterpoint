@@ -1,6 +1,6 @@
 import {Punctuator} from '../class/Token.class'
 import type {SolidNumber} from './SolidLanguageValue.class'
-import Int16 from './Int16.class'
+import Float64 from './Float64.class'
 
 
 
@@ -43,9 +43,18 @@ class InstructionNop extends Instruction {
 	}
 }
 /**
+ * A superclass abstracting:
+ * - InstructionConst
+ * - InstructionUnop
+ * - InstructionBinop
+ */
+export abstract class InstructionExpression extends Instruction {
+	abstract get isFloat(): boolean;
+}
+/**
  * Push a constant onto the stack.
  */
-export class InstructionConst extends Instruction {
+export class InstructionConst extends InstructionExpression {
 	/**
 	 * @param value the constant to push
 	 */
@@ -56,20 +65,23 @@ export class InstructionConst extends Instruction {
 	 * @return `'(i32.const ‹value›)'` or `'(f64.const ‹value›)'`
 	 */
 	toString(): string {
-		return `(${ (this.value instanceof Int16) ? 'i32' : 'f64' }.const ${ this.value })`
+		return `(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ this.value })`
+	}
+	get isFloat(): boolean {
+		return this.value instanceof Float64
 	}
 }
 /**
  * Perform a unary operation on the stack.
  */
-export class InstructionUnop extends Instruction {
+export class InstructionUnop extends InstructionExpression {
 	/**
 	 * @param op a punctuator representing the operation to perform
 	 * @param arg the operand
 	 */
 	constructor (
 		private readonly op: Punctuator,
-		private readonly arg: Instruction,
+		private readonly arg: InstructionExpression,
 	) {
 		super()
 	}
@@ -82,11 +94,14 @@ export class InstructionUnop extends Instruction {
 			[Punctuator.NEG, `call $neg`],
 		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg })`
 	}
+	get isFloat(): boolean {
+		return this.arg.isFloat
+	}
 }
 /**
  * Perform a binary operation on the stack.
  */
-export class InstructionBinop extends Instruction {
+export class InstructionBinop extends InstructionExpression {
 	/**
 	 * @param op a punctuator representing the operation to perform
 	 * @param arg0 the first operand
@@ -94,8 +109,8 @@ export class InstructionBinop extends Instruction {
 	 */
 	constructor (
 		private readonly op: Punctuator,
-		private readonly arg0: Instruction,
-		private readonly arg1: Instruction,
+		private readonly arg0: InstructionExpression,
+		private readonly arg1: InstructionExpression,
 	) {
 		super()
 	}
@@ -104,12 +119,15 @@ export class InstructionBinop extends Instruction {
 	 */
 	toString(): string {
 		return `(${ new Map<Punctuator, string>([
-			[Punctuator.ADD, `i32.add`],
-			[Punctuator.SUB, `i32.sub`],
-			[Punctuator.MUL, `i32.mul`],
-			[Punctuator.DIV, `i32.div_s`],
+			[Punctuator.ADD, (!this.isFloat) ? `i32.add`   : `f64.add`],
+			[Punctuator.SUB, (!this.isFloat) ? `i32.sub`   : `f64.sub`],
+			[Punctuator.MUL, (!this.isFloat) ? `i32.mul`   : `f64.mul`],
+			[Punctuator.DIV, (!this.isFloat) ? `i32.div_s` : `f64.div`],
 			[Punctuator.EXP, `call $exp`],
 		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg0 } ${ this.arg1 })`
+	}
+	get isFloat(): boolean {
+		return this.arg0.isFloat || this.arg1.isFloat
 	}
 }
 /**
