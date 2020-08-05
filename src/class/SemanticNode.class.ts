@@ -252,8 +252,9 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 		start_node: ParseNode,
 		private readonly operator: Operator,
 		readonly children:
-			| readonly [SemanticNodeExpression                        ]
+			| readonly [SemanticNodeExpression]
 			| readonly [SemanticNodeExpression, SemanticNodeExpression]
+			| readonly [SemanticNodeExpression, SemanticNodeExpression, SemanticNodeExpression]
 	) {
 		super(start_node, {operator}, children)
 	}

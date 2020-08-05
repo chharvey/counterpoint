@@ -522,3 +522,21 @@ Void Evaluate(Instruction :::= "Perform stack operation ADD.") :=
 ExpressionConditional
 	::= "if" Expression "then" Expression "else" Expression;
 ```
+
+
+### Static Semantics: Semantic Schema (Conditional)
+```
+SemanticOperation[operator: COND]
+	::= SemanticExpression SemanticExpression SemanticExpression;
+```
+
+
+### Static Semantics: Decorate (Conditional)
+```
+Decorate(ExpressionConditional ::= "if" Expression__0 "then" Expression__1 "else" Expression__2)
+	:= (SemanticOperation[operator=COND]
+		Decorate(Expression__0),
+		Decorate(Expression__1),
+		Decorate(Expression__2),
+	);
+```

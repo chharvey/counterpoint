@@ -12,6 +12,7 @@ export enum Operator {
 	DIV,
 	ADD,
 	SUB,
+	COND,
 }
 
 

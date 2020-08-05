@@ -287,6 +287,23 @@ describe('ParseNode', () => {
 			})
 		})
 
+		context('ExpressionConditional ::= "if" Expression "then" Expression "else" Expression', () => {
+			it('makes a SemanticNodeOperation with the COND operator and 3 children.', () => {
+				/*
+					<Goal>
+						<StatementExpression>
+							<Operation operator=COND>
+								<Constant value=true/>
+								<Constant value=2n/>
+								<Constant value=3n/>
+							</Operation>
+						</StatementExpression>
+					</Goal>
+				*/
+				assert.throws(new Parser('if true then 2 else 3;', CONFIG_DEFAULT).parse().decorate, TypeError)
+			})
+		})
+
 		Dev.supports('variables') && context('DeclarationVariable, StatementAssignment', () => {
 			it('makes SemanticNodeDeclaration and SemanticNodeAssignment nodes.', () => {
 				assert.strictEqual(new Parser(Util.dedent(`

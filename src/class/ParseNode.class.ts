@@ -246,7 +246,11 @@ export class ParseNodeExpressionConditional extends ParseNode {
 			TokenKeyword, ParseNodeExpression,
 		]
 	decorate(): SemanticNodeOperation {
-		throw new Error('not yet supported')
+		return new SemanticNodeOperation(this, Operator.COND, [
+			this.children[1].decorate(),
+			this.children[3].decorate(),
+			this.children[5].decorate(),
+		])
 	}
 }
 export class ParseNodeExpression extends ParseNode {
