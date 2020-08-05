@@ -147,7 +147,7 @@ describe('SemanticNode', () => {
 					`42 + 420;`,
 					`42 - 420;`,
 					`3.0e1 - 201.0e-1;`,
-					// `3 * 2.1;`,
+					`3 * 2.1;`,
 				].map((src) => (
 					(new Parser(src, CONFIG_DEFAULT).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
@@ -165,24 +165,15 @@ describe('SemanticNode', () => {
 					),
 					new InstructionBinop(
 						Punctuator.ADD,
-						instructionConstFloat(30),
+						instructionConstFloat(30.0),
 						instructionConstFloat(-20.1),
 					),
-					// new InstructionBinop(
-					// 	Punctuator.MUL,
-					// 	instructionConstInt(3n),
-					// 	instructionConstFloat(2.1),
-					// ),
+					new InstructionBinop(
+						Punctuator.MUL,
+						instructionConstFloat(3.0),
+						instructionConstFloat(2.1),
+					),
 				])
-				assert.throws(() => {
-					;[
-						`3 * 2.1;`,
-					].map((src) => (
-						(new Parser(src, CONFIG_DEFAULT).parse().decorate()
-							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeOperation
-					).build(new Builder(src, CONFIG_DEFAULT)), TypeError)
-				})
 			})
 			specify('SemanticNodeOperation[operator: DIV] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 				assert.deepStrictEqual([
@@ -241,6 +232,27 @@ describe('SemanticNode', () => {
 					instructionConstInt(a),
 					instructionConstInt(b),
 				)))
+			})
+			specify('compound expression.', () => {
+				assert.deepStrictEqual([
+					`2 * 3 + 5;`,
+					`2 * 3 + 5.0;`,
+				].map((src) => (
+					(new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation
+				).build(new Builder(src, CONFIG_DEFAULT))), [
+					new InstructionBinop(
+						Punctuator.ADD,
+						instructionConstInt(6n),
+						instructionConstInt(5n),
+					),
+					new InstructionBinop(
+						Punctuator.ADD,
+						instructionConstFloat(6.0),
+						instructionConstFloat(5.0),
+					),
+				])
 			})
 			specify('compound expression with grouping.', () => {
 				const srcs: [string, SolidConfig] = [`-(5) ^ +(2 * 3);`, CONFIG_DEFAULT]
@@ -435,6 +447,9 @@ describe('SemanticNode', () => {
 				assert.deepStrictEqual(((new Parser(`3.0e1 - 201.0e-1;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).assess(), new CompletionStructureAssessment(new Float64(30 - 20.1)))
+				assert.deepStrictEqual(((new Parser(`3 * 2.1;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation).assess(), new CompletionStructureAssessment(new Float64(3 * 2.1)))
 			})
 		})
 	})

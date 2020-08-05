@@ -46,5 +46,12 @@ describe('CompletionStructureAssessment', () => {
 				values.map((x) => new InstructionConst(new Float64(x))),
 			)
 		})
+		context('with @to_float === true', () => {
+			specify('CompletionStructureAssessment[value: Integer]', () => {
+				const build: InstructionConst = new CompletionStructureAssessment(new Int16(42n)).build(true)
+				assert.deepStrictEqual   (build, new InstructionConst(new Float64(42)))
+				assert.notDeepStrictEqual(build, new InstructionConst(new Int16(42n)))
+			})
+		})
 	})
 })

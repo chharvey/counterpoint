@@ -91,11 +91,11 @@ export default abstract class SemanticNode implements Serializable {
 	}
 
 	/**
-	 * Give directions to the runtime code generator.
-	 * @param generator the generator to direct
+	 * Give directions to the runtime code builder.
+	 * @param builder the builder to direct
 	 * @return the directions to print
 	 */
-	abstract build(generator: Builder): Instruction;
+	abstract build(builder: Builder): Instruction;
 
 	/**
 	 * @implements Serializable
@@ -137,8 +137,9 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 
 	/**
 	 * @override
+	 * @param to_float Should the returned instruction be type-coersed into a floating-point number?
 	 */
-	abstract build(generator: Builder): InstructionExpression;
+	abstract build(builder: Builder, to_float?: boolean): InstructionExpression;
 	/**
 	 * The Type of this expression.
 	 */
@@ -168,8 +169,8 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		super(start_node, {value})
 		this.value = value
 	}
-	build(_generator: Builder): InstructionConst {
-		return this.assess().build()
+	build(_builder: Builder, to_float: boolean = false): InstructionConst {
+		return this.assess().build(to_float)
 	}
 	type(): SolidLanguageType {
 		return (
@@ -258,13 +259,14 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 	) {
 		super(start_node, {operator}, children)
 	}
-	build(generator: Builder): InstructionUnop | InstructionBinop {
+	build(builder: Builder, to_float: boolean = false): InstructionUnop | InstructionBinop {
+		const _to_float: boolean = to_float || this.type() === Float64
 		if (!this.is_folded) { this.fold() }
-		const operand0: InstructionExpression = (this.assessment0) ? this.assessment0.build() : this.children[0].build(generator)
+		const operand0: InstructionExpression = (this.assessment0) ? this.assessment0.build(_to_float) : this.children[0].build(builder, _to_float)
 		if (this.children.length === 1) {
 			return new InstructionUnop(this.operator, operand0)
 		} else {
-			const operand1: InstructionExpression = (this.assessment1) ? this.assessment1.build() : this.children[1].build(generator)
+			const operand1: InstructionExpression = (this.assessment1) ? this.assessment1.build(_to_float) : this.children[1].build(builder, _to_float)
 			return new InstructionBinop(this.operator, operand0, operand1)
 		}
 	}

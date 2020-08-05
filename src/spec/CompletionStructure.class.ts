@@ -51,13 +51,14 @@ export class CompletionStructureAssessment extends CompletionStructure {
 	}
 	/**
 	 * Give directions to the runtime code generator.
+	 * @param to_float Should the value be type-coersed into a floating-point number?
 	 * @return the directions to print
 	 */
-	build(): InstructionConst {
+	build(to_float: boolean = false): InstructionConst {
 		return (
 			(this.value instanceof SolidNull)    ? new InstructionConst(Int16.ZERO) :
 			(this.value instanceof SolidBoolean) ? new InstructionConst((this.value === SolidBoolean.FALSE) ? Int16.ZERO : Int16.UNIT) :
-			(this.value instanceof SolidNumber)  ? new InstructionConst(this.value) :
+			(this.value instanceof SolidNumber)  ? new InstructionConst(to_float ? this.value.toFloat() : this.value) :
 			(() => { throw new Error('not yet supported.') })()
 		)
 	}
