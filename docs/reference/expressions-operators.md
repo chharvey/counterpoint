@@ -64,6 +64,13 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td>Subtraction</td>
 			<td><code>… - …</code></td>
 		</tr>
+		<tr>
+			<th>6</th>
+			<td>Conditional</td>
+			<td>ternary infix</td>
+			<td>n/a</td>
+			<td><code>if … then … else …</code></td>
+		</tr>
 	</tbody>
 </table>
 
@@ -86,9 +93,13 @@ Operations that are associative are indicated as so in their respective sections
 
 
 
-## Mathematical Affirmation `+`, Mathematical Negation `-`
-The **mathematical affirmation** operator, `+`,
-and the **mathematical negation** operator, `-`,
+## Mathematical Affirmation, Mathematical Negation
+```
+`+` <int | float>
+`-` <int | float>
+```
+The **mathematical affirmation** operator, `+`, and
+the **mathematical negation** operator, `-`,
 are valid only on number types.
 The affirmation is a no-op (the number itself is produced),
 and the negation computes the additive inverse, or “negation”, of the number.
@@ -119,9 +130,11 @@ this is important to mention because it could affect how we write
 
 
 
-## Exponentiation `^`
-The **exponentiation** operator, `^`,
-is valid only on number types.
+## Exponentiation
+```
+<int | float> `^` <int | float>
+```
+The **exponentiation** operator is valid only on number types.
 It produces the result of raising the left-hand operand to the power of the right-hand operand.
 Integer bases can be mixed.
 
@@ -143,7 +156,7 @@ where *a<sup>b<sup>c</sup></sup>* is interpreted as *a<sup>(b<sup>c</sup>)</sup>
 
 ### Exponentiation: Order of Operations
 In mathematics, exponents are applied before negation (which is multiplication).
-However, in Solid, [mathematical negation](#mathematical-affirmation--mathematical-negation--)
+However, in Solid, [mathematical negation](#mathematical-affirmation-mathematical-negation)
 is a unary operator, which is stronger than any binary operator.
 **Mathematical negation is not considered multiplication**,
 even if it indeed produces the same mathematical result of multiplying by -1.
@@ -171,8 +184,12 @@ and then negate, the expression should be written `-(3 ^ 2)` or `-1 * 3 ^ 2`.
 
 
 
-## Multiplicative `*`, `/`
-The **multiplication** operator, `*` and
+## Multiplicative
+```
+<int | float> `*` <int | float>
+<int | float> `/` <int | float>
+```
+The **multiplication** operator, `*`, and
 the **division** operator, `/`,
 are valid only on number types.
 They produce the respective mathematical product and quotient of the operands.
@@ -197,9 +214,13 @@ and division by `0` will result in an error.
 
 
 
-## Additive `+`, `-`
-The **addition** operator, `+`,
-and the **subtraction** operator, `-`,
+## Additive
+```
+<int | float> `+` <int | float>
+<int | float> `-` <int | float>
+```
+The **addition** operator, `+`, and
+the **subtraction** operator, `-`,
 are valid only on number types.
 They produce the respective mathematical sum and difference of the operands.
 Integer bases can be mixed.
@@ -218,7 +239,7 @@ when going beyond the maximum/minimum integer values.
 
 
 ### Parsing Additive Expressions
-[Previously in this chapter](#mathematical-affirmation--mathematical-negation--)
+[Previously in this chapter](#mathematical-affirmation-mathematical-negation)
 we saw that number tokens can begin with **U+002B PLUS SIGN** or **U+002D HYPHEN-MINUS**.
 Since those characters are the same as the additive operator symbols,
 this could affect how additive expressions are parsed.
@@ -239,3 +260,25 @@ To fix the error, we must use whitespace indicate token boundaries.
 Now the lexer produces three tokens: a number `3`, a punctuator `+`, and a number `1`.
 The parser receives these tokens and produces the correct expression.
 (Note that the code `3+ 1` would be sufficient, but perhaps not as readable.)
+
+
+
+## Conditional
+```
+`if` <bool> `then` <unknown> `else` <unknown>
+```
+The conditional operator is a ternary operator that takes three operand expressions:
+a condition, a consequent, and an alternative.
+The condition must be a boolean expression, and the consequent and alternative may be of any type.
+The consequent and alternative expressions are sometimes called “branches”:
+the “then branch” and the “else branch” respectively.
+
+The result of the conditional expression is either the consequent or the alterantive,
+depending on the value of the condition.
+If the condition is true, the consequent is produced, otherwise the alternative is produced.
+
+Evaluation of a conditional expression is short-circuited: Only the produced branch is evaluated.
+For example, if the condition evalutes to `false`, then only the alternative is evaluated and then produced;
+the consequent does not even get evaluated.
+This is meaningful when evaluation of an expression produces side-effects, such as a routine call.
+Because one of the branches is not evaluated, its side-effects (if any) will not occur.
