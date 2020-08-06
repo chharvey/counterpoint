@@ -52,7 +52,7 @@ function isNumericType(t: SolidLanguageType): boolean {
  */
 export default abstract class SemanticNode implements Serializable {
 	/** The name of the type of this SemanticNode. */
-	readonly tagname: string = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
+	protected readonly tagname: string = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
 	/** The concatenation of the source text of all children. */
 	readonly source: string;
 	/** The index of the first token in source text. */
@@ -219,14 +219,78 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 		throw new Error('Not yet supported.')
 	}
 }
-export class SemanticNodeOperation extends SemanticNodeExpression {
-	private static foldUnary<T extends SolidNumber<T>>(op: Operator, z: T): T {
+export abstract class SemanticNodeOperation extends SemanticNodeExpression {
+	/** @override */
+	protected readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
+	private is_folded: boolean = false
+	protected assessments: (CompletionStructureAssessment | null)[] = []
+	constructor(
+		start_node: ParseNode,
+		readonly operator: Operator,
+		readonly children:
+			| readonly SemanticNodeExpression[]
+	) {
+		super(start_node, {operator}, children)
+	}
+	/** @final */
+	build(builder: Builder, to_float: boolean = false): InstructionUnop | InstructionBinop {
+		if (!this.is_folded) {
+			this.fold()
+		}
+		return this.build_do(builder, to_float || this.type() === Float64)
+	}
+	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionUnop | InstructionBinop;
+	/** @final */
+	assess(): CompletionStructureAssessment | null {
+		if (!this.is_folded) {
+			this.fold()
+		}
+		return (this.assessments.some((a) => a === null))
+			? null
+			: this.assess_do(...this.assessments.map((a) => a!.value))
+	}
+	protected abstract assess_do(...values: SolidLanguageValue[]): CompletionStructureAssessment | null;
+	private fold(): void {
+		this.assessments = this.children.map((child) => child.assess())
+		this.is_folded = true
+	}
+}
+export class SemanticNodeOperationUnary extends SemanticNodeOperation {
+	private static fold<T extends SolidNumber<T>>(op: Operator, z: T): T {
 		return new Map<Operator, (z: T) => T>([
 			[Operator.AFF, (z) => z      ],
 			[Operator.NEG, (z) => z.neg()],
 		]).get(op)!(z)
 	}
-	private static foldBinary<T extends SolidNumber<T>>(op: Operator, x: T, y: T): T {
+	declare assessments: [
+		CompletionStructureAssessment | null,
+	];
+	constructor(
+		start_node: ParseNode,
+		operator: Operator,
+		readonly children:
+			| readonly [SemanticNodeExpression]
+	) {
+		super(start_node, operator, children)
+	}
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop | InstructionBinop {
+		return new InstructionUnop(
+			this.operator,
+			(this.assessments[0]) ? this.assessments[0].build(to_float) : this.children[0].build(builder, to_float),
+		)
+	}
+	type(): SolidLanguageType {
+		const t0: SolidLanguageType = this.children[0].type()
+		return (isNumericType(t0)) ? t0 : (() => { throw new TypeError('Invalid operation.') })()
+	}
+	protected assess_do(v0: SolidLanguageValue): CompletionStructureAssessment | null {
+		return (v0 instanceof SolidNumber)
+			? new CompletionStructureAssessment(SemanticNodeOperationUnary.fold(this.operator, v0))
+			: (() => { throw new TypeError('Invalid operation.') })()
+	}
+}
+export class SemanticNodeOperationBinary extends SemanticNodeOperation {
+	private static fold<T extends SolidNumber<T>>(op: Operator, x: T, y: T): T {
 		return new Map<Operator, (x: T, y: T) => T>([
 			[Operator.EXP, (x, y) => x.exp    (y)],
 			[Operator.MUL, (x, y) => x.times  (y)],
@@ -235,72 +299,68 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 			[Operator.SUB, (x, y) => x.minus  (y)],
 		]).get(op)!(x, y)
 	}
-	private assessment0:  CompletionStructureAssessment | null = null
-	private assessment1?: CompletionStructureAssessment | null;
-	private is_folded: boolean = false
+	declare assessments: [
+		CompletionStructureAssessment | null,
+		CompletionStructureAssessment | null,
+	];
 	constructor(
 		start_node: ParseNode,
-		readonly operator: Operator,
+		operator: Operator,
 		readonly children:
-			| readonly [SemanticNodeExpression]
 			| readonly [SemanticNodeExpression, SemanticNodeExpression]
-			| readonly [SemanticNodeExpression, SemanticNodeExpression, SemanticNodeExpression]
 	) {
-		super(start_node, {operator}, children)
+		super(start_node, operator, children)
 	}
-	build(builder: Builder, to_float: boolean = false): InstructionUnop | InstructionBinop {
-		const _to_float: boolean = to_float || this.type() === Float64
-		if (!this.is_folded) { this.fold() }
-		const operand0: InstructionExpression = (this.assessment0) ? this.assessment0.build(_to_float) : this.children[0].build(builder, _to_float)
-		if (this.children.length === 1) {
-			return new InstructionUnop(this.operator, operand0)
-		} else {
-			const operand1: InstructionExpression = (this.assessment1) ? this.assessment1.build(_to_float) : this.children[1].build(builder, _to_float)
-			return new InstructionBinop(this.operator, operand0, operand1)
-		}
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop | InstructionBinop {
+		return new InstructionBinop(
+			this.operator,
+			(this.assessments[0]) ? this.assessments[0].build(to_float) : this.children[0].build(builder, to_float),
+			(this.assessments[1]) ? this.assessments[1].build(to_float) : this.children[1].build(builder, to_float),
+		)
 	}
 	type(): SolidLanguageType {
 		const t0: SolidLanguageType = this.children[0].type()
-		const throwErr: () => never = () => { throw new TypeError('Invalid operation.') }
-		if (this.children.length === 1) {
-			return (isNumericType(t0)) ? t0 : throwErr()
-		}
 		const t1: SolidLanguageType = this.children[1].type()
-		if (this.children.length === 2) {
-			return (isNumericType(t0) && isNumericType(t1)) ?
-				([t0, t1].includes(Float64)) ? Float64 : Int16
-			: throwErr()
+		return (isNumericType(t0) && isNumericType(t1)) ?
+			([t0, t1].includes(Float64)) ? Float64 : Int16
+		: (() => { throw new TypeError('Invalid operation.') })()
+	}
+	protected assess_do(v0: SolidLanguageValue, v1: SolidLanguageValue): CompletionStructureAssessment | null {
+		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
+			throw new NanError02(this.children[1])
 		}
+		return (
+			(v0 instanceof Int16       && v1 instanceof Int16)       ? new CompletionStructureAssessment(SemanticNodeOperationBinary.fold(this.operator, v0,           v1))           :
+			(v0 instanceof SolidNumber && v1 instanceof SolidNumber) ? new CompletionStructureAssessment(SemanticNodeOperationBinary.fold(this.operator, v0.toFloat(), v1.toFloat())) :
+			(() => { throw new TypeError('Invalid operation.') })()
+		)
+	}
+}
+export class SemanticNodeOperationTernary extends SemanticNodeOperation {
+	declare assessments: [
+		CompletionStructureAssessment | null,
+		CompletionStructureAssessment | null,
+		CompletionStructureAssessment | null,
+	];
+	constructor(
+		start_node: ParseNode,
+		operator: Operator,
+		readonly children:
+			| readonly [SemanticNodeExpression, SemanticNodeExpression, SemanticNodeExpression]
+	) {
+		super(start_node, operator, children)
+	}
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop | InstructionBinop {
+		throw 'not yet supported'
+	}
+	type(): SolidLanguageType {
+		const t0: SolidLanguageType = this.children[0].type()
+		const t1: SolidLanguageType = this.children[1].type()
 		const t2: SolidLanguageType = this.children[2].type()
-		return (t0 === SolidBoolean) ? new SolidTypeUnion(t1, t2) : throwErr()
+		return (t0 === SolidBoolean) ? new SolidTypeUnion(t1, t2) : (() => { throw new TypeError('Invalid operation.') })()
 	}
-	assess(): CompletionStructureAssessment | null {
-		if (!this.is_folded) { this.fold() }
-		if (!this.assessment0) return null
-		const v0: SolidLanguageValue = this.assessment0.value
-		if (this.children.length === 1) {
-			return (v0 instanceof SolidNumber)
-				? new CompletionStructureAssessment(SemanticNodeOperation.foldUnary(this.operator, v0))
-				: (() => { throw new TypeError('Invalid operation.') })()
-		} else {
-			if (!this.assessment1) return null
-			const v1: SolidLanguageValue = this.assessment1.value
-			if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
-				throw new NanError02(this.children[1])
-			}
-			return (
-				(v0 instanceof Int16       && v1 instanceof Int16)       ? new CompletionStructureAssessment(SemanticNodeOperation.foldBinary(this.operator, v0,           v1))           :
-				(v0 instanceof SolidNumber && v1 instanceof SolidNumber) ? new CompletionStructureAssessment(SemanticNodeOperation.foldBinary(this.operator, v0.toFloat(), v1.toFloat())) :
-				(() => { throw new TypeError('Invalid operation.') })()
-			)
-		}
-	}
-	private fold(): void {
-		this.assessment0 = this.children[0].assess()
-		if (this.children.length > 1) {
-			this.assessment1 = this.children[1]!.assess()
-		}
-		this.is_folded = true
+	protected assess_do(v0: SolidLanguageValue, v1: SolidLanguageValue, v2: SolidLanguageValue): CompletionStructureAssessment | null {
+		throw 'not yet supported'
 	}
 }
 /**

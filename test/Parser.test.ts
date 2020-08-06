@@ -109,7 +109,6 @@ describe('Parser', () => {
 					const statement: ParseNodeStatement = statement_list.children[0]
 					assert_arrayLength(statement.children, 2)
 					const expression: ParseNodeExpression = statement.children[0]
-					assert_arrayLength(expression.children, 1)
 					const expression_add: ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression.children[0]
 					assert.ok(expression_add instanceof ParseNodeExpressionBinary)
 					assert_arrayLength(expression_add.children, 1)
@@ -703,7 +702,6 @@ describe('Parser', () => {
 				const statement: ParseNodeStatement = statement_list.children[0]
 				assert_arrayLength(statement.children, 2)
 				const expression: ParseNodeExpression = statement.children[0]
-				assert_arrayLength(expression.children, 1)
 				const expression_cond: ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression.children[0]
 				assert.ok(expression_cond instanceof ParseNodeExpressionConditional)
 				const _if:   TokenKeyword = expression_cond.children[0]

@@ -8,7 +8,7 @@ import {
 	SemanticNodeTemplate,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
-	SemanticNodeOperation,
+	SemanticNodeOperationTernary,
 	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
@@ -306,9 +306,8 @@ describe('ParseNode', () => {
 				const statements: SemanticStatementType = goal.children[0]
 				assert_arrayLength(statements.children, 1)
 				const expression: SemanticNodeExpression = statements.children[0]
-				assert.ok(expression instanceof SemanticNodeOperation)
+				assert.ok(expression instanceof SemanticNodeOperationTernary)
 				assert.strictEqual(expression.operator, Operator.COND)
-				assert_arrayLength(expression.children, 3)
 				expression.children.forEach((child) => {
 					assert.ok(child instanceof SemanticNodeConstant)
 				})

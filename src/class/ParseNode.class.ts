@@ -19,7 +19,9 @@ import SemanticNode, {
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
-	SemanticNodeOperation,
+	SemanticNodeOperationUnary,
+	SemanticNodeOperationBinary,
+	SemanticNodeOperationTernary,
 	SemanticNodeDeclaration,
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
@@ -204,7 +206,7 @@ export class ParseNodeExpressionUnary extends ParseNode {
 			(this.children[0].source === Punctuator.AFF) ? // `+a` is a no-op
 				this.children[1].decorate()
 			:
-				new SemanticNodeOperation(this, ParseNodeExpressionUnary.OPERATORS.get(this.children[0].source)!, [
+				new SemanticNodeOperationUnary(this, ParseNodeExpressionUnary.OPERATORS.get(this.children[0].source)!, [
 					this.children[1].decorate(),
 				])
 	}
@@ -225,14 +227,14 @@ export class ParseNodeExpressionBinary extends ParseNode {
 			this.children[0].decorate()
 		:
 			(this.children[1].source === Punctuator.SUB) ? // `a - b` is syntax sugar for `a + -(b)`
-				new SemanticNodeOperation(this, Operator.ADD, [
+				new SemanticNodeOperationBinary(this, Operator.ADD, [
 					this.children[0].decorate(),
-					new SemanticNodeOperation(this.children[2], Operator.NEG, [
+					new SemanticNodeOperationUnary(this.children[2], Operator.NEG, [
 						this.children[2].decorate(),
 					]),
 				])
 			:
-				new SemanticNodeOperation(this, ParseNodeExpressionBinary.OPERATORS.get(this.children[1].source)!, [
+				new SemanticNodeOperationBinary(this, ParseNodeExpressionBinary.OPERATORS.get(this.children[1].source)!, [
 					this.children[0].decorate(),
 					this.children[2].decorate(),
 				])
@@ -245,8 +247,8 @@ export class ParseNodeExpressionConditional extends ParseNode {
 			TokenKeyword, ParseNodeExpression,
 			TokenKeyword, ParseNodeExpression,
 		]
-	decorate(): SemanticNodeOperation {
-		return new SemanticNodeOperation(this, Operator.COND, [
+	decorate(): SemanticNodeOperationTernary {
+		return new SemanticNodeOperationTernary(this, Operator.COND, [
 			this.children[1].decorate(),
 			this.children[3].decorate(),
 			this.children[5].decorate(),
