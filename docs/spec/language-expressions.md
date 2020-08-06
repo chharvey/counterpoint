@@ -561,3 +561,44 @@ Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator=COND] expr)
 			1. *Return*.
 		3. *Return:* `alternative`.
 ```
+
+
+### Static Semantics: Build (Conditional)
+```
+Sequence<Instruction> Build(SemanticOperation[operator=COND] expr) :=
+	1. *Assert:* `expr.children.count` is 3.
+	2. *Let* `condition` be the result of performing `Assess(expr.children.0)`.
+	3. *Assert:* `TypeOf(condition)` is `Void`.
+	4. *Let* `instrs0` be the result of performing `Build(expr.children.0)`.
+	5. *Let* `consequent` be the result of performing `Assess(expr.children.1)`.
+	6. *If* `TypeOf(consequent)` is `Void`:
+		1. *Let* `instrs1` be the result of performing `Build(expr.children.1)`.
+	7. *Else*:
+		1. *Let* `instrs1` be the result of performing `Build(consequent)`.
+	8. *Let* `alternative` be the result of performing `Assess(expr.children.2)`.
+	9. *If* `TypeOf(alternative)` is `Void`:
+		1. *Let* `instrs2` be the result of performing `Build(expr.children.2)`.
+	10. *Else*:
+		1. *Let* `instrs2` be the result of performing `Build(alternative)`.
+	11. *Return:* [
+		...instrs0,
+		"IF",
+		...instrs1,
+		"ELSE",
+		...instrs2,
+		"END",
+	].
+```
+
+
+### Runtime Instructions: Evaluate (Conditional)
+```
+Void Evaluate(Instruction :::= "IF") :=
+	1. Pop `condition` from the operand stack.
+	2. *If* `condition` is non-zero:
+		1. *Let* `consequent` be the result of performing the next instructions until an "ELSE" instruction is reached.
+		2. Push `consequent` onto the operand stack.
+	3. *Else:*
+		1. *Let* `alternative` be the result of performing the instructions from the next "ELSE" and until an "END" instruction is reached.
+		2. Push `alternative` onto the operand stack.
+```

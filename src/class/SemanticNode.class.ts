@@ -22,6 +22,7 @@ import Instruction, {
 	InstructionConst,
 	InstructionUnop,
 	InstructionBinop,
+	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
 } from '../vm/Instruction.class'
@@ -233,13 +234,13 @@ export abstract class SemanticNodeOperation extends SemanticNodeExpression {
 		super(start_node, {operator}, children)
 	}
 	/** @final */
-	build(builder: Builder, to_float: boolean = false): InstructionUnop | InstructionBinop {
+	build(builder: Builder, to_float: boolean = false): InstructionExpression {
 		if (!this.is_folded) {
 			this.fold()
 		}
 		return this.build_do(builder, to_float || this.type() === Float64)
 	}
-	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionUnop | InstructionBinop;
+	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionExpression;
 	/** @final */
 	assess(): CompletionStructureAssessment | null {
 		if (!this.is_folded) {
@@ -271,7 +272,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 	) {
 		super(start_node, operator, children)
 	}
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop | InstructionBinop {
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop {
 		return new InstructionUnop(
 			this.operator,
 			(this.assessments[0]) ? this.assessments[0].build(to_float) : this.children[0].build(builder, to_float),
@@ -313,7 +314,7 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 	) {
 		super(start_node, operator, children)
 	}
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop | InstructionBinop {
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
 		return new InstructionBinop(
 			this.operator,
 			(this.assessments[0]) ? this.assessments[0].build(to_float) : this.children[0].build(builder, to_float),
@@ -357,8 +358,13 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 	) {
 		super(start_node, operator, children)
 	}
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop | InstructionBinop {
-		throw 'not yet supported'
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionCond {
+		!this.assessments[0]; // assert
+		return new InstructionCond(
+			                                                              this.children[0].build(builder, to_float),
+			(this.assessments[0]) ? this.assessments[0].build(to_float) : this.children[0].build(builder, to_float),
+			(this.assessments[1]) ? this.assessments[1].build(to_float) : this.children[1].build(builder, to_float),
+		)
 	}
 	type(): SolidLanguageType {
 		const t0: SolidLanguageType = this.children[0].type()
