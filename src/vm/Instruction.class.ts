@@ -185,7 +185,7 @@ export class InstructionStatement extends Instruction {
 	 */
 	constructor (
 		private readonly count: bigint,
-		private readonly expr: Instruction,
+		private readonly expr: InstructionExpression,
 	) {
 		super()
 	}
@@ -194,7 +194,7 @@ export class InstructionStatement extends Instruction {
 	 */
 	toString(): string {
 		return `
-			(func (export "f${ this.count }") (result i32)
+			(func (export "f${ this.count }") (result ${ (!this.expr.isFloat) ? `i32` : `f64` })
 				${ this.expr }
 			)
 		`
