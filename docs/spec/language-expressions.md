@@ -540,3 +540,24 @@ Decorate(ExpressionConditional ::= "if" Expression__0 "then" Expression__1 "else
 		Decorate(Expression__2),
 	);
 ```
+
+
+### Static Semantics: Assess (Conditional)
+```
+Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator=COND] expr) :=
+	1. *Assert:* `expr.children.count` is 3.
+	2. *Let* `condition` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `TypeOf(condition)` is `Void`:
+		1. *Return*.
+	4. *Assert:* `TypeOf(condition)` is `Boolean`.
+	5. *If* `condition` is `true`:
+		1. *Let* `consequent` be the result of performing `Assess(expr.children.1)`.
+		2. *If* `TypeOf(consequent)` is `Void`:
+			1. *Return*.
+		3. *Return:* `consequent`.
+	6. *Else:*
+		1. *Let* `alternative` be the result of performing `Assess(expr.children.2)`.
+		2. *If* `TypeOf(alternative)` is `Void`:
+			1. *Return*.
+		3. *Return:* `alternative`.
+```

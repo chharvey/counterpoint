@@ -245,11 +245,9 @@ export abstract class SemanticNodeOperation extends SemanticNodeExpression {
 		if (!this.is_folded) {
 			this.fold()
 		}
-		return (this.assessments.some((a) => a === null))
-			? null
-			: this.assess_do(...this.assessments.map((a) => a!.value))
+		return this.assess_do()
 	}
-	protected abstract assess_do(...values: SolidLanguageValue[]): CompletionStructureAssessment | null;
+	protected abstract assess_do(): CompletionStructureAssessment | null;
 	private fold(): void {
 		this.assessments = this.children.map((child) => child.assess())
 		this.is_folded = true
@@ -283,7 +281,11 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		const t0: SolidLanguageType = this.children[0].type()
 		return (isNumericType(t0)) ? t0 : (() => { throw new TypeError('Invalid operation.') })()
 	}
-	protected assess_do(v0: SolidLanguageValue): CompletionStructureAssessment | null {
+	protected assess_do(): CompletionStructureAssessment | null {
+		if (!this.assessments[0]) {
+			return null
+		}
+		const v0: SolidLanguageValue = this.assessments[0].value
 		return (v0 instanceof SolidNumber)
 			? new CompletionStructureAssessment(SemanticNodeOperationUnary.fold(this.operator, v0))
 			: (() => { throw new TypeError('Invalid operation.') })()
@@ -325,7 +327,12 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 			([t0, t1].includes(Float64)) ? Float64 : Int16
 		: (() => { throw new TypeError('Invalid operation.') })()
 	}
-	protected assess_do(v0: SolidLanguageValue, v1: SolidLanguageValue): CompletionStructureAssessment | null {
+	protected assess_do(): CompletionStructureAssessment | null {
+		if (!this.assessments[0] || !this.assessments[1]) {
+			return null
+		}
+		const v0: SolidLanguageValue = this.assessments[0].value
+		const v1: SolidLanguageValue = this.assessments[1].value
 		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
 			throw new NanError02(this.children[1])
 		}
@@ -359,8 +366,12 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 		const t2: SolidLanguageType = this.children[2].type()
 		return (t0 === SolidBoolean) ? new SolidTypeUnion(t1, t2) : (() => { throw new TypeError('Invalid operation.') })()
 	}
-	protected assess_do(v0: SolidLanguageValue, v1: SolidLanguageValue, v2: SolidLanguageValue): CompletionStructureAssessment | null {
-		throw 'not yet supported'
+	protected assess_do(): CompletionStructureAssessment | null {
+		return this.assessments[0] && (
+			(this.assessments[0].value === SolidBoolean.TRUE)
+				? this.assessments[1] && new CompletionStructureAssessment(this.assessments[1].value)
+				: this.assessments[2] && new CompletionStructureAssessment(this.assessments[2].value)
+		)
 	}
 }
 /**

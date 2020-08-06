@@ -469,6 +469,23 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).assess(), new CompletionStructureAssessment(new Float64(3 * 2.1)))
 			})
+			it('computes the value of a conditional expression.', () => {
+				assert.deepStrictEqual([
+					`if true then false else 2;`,
+					`if false then 3.0 else null;`,
+					`if true then 2 else 3.0;`,
+					`if false then 2 + 3.0 else 1.0 * 2;`,
+				].map((src) => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation)
+					.assess()
+				), [
+					new CompletionStructureAssessment(SolidBoolean.FALSE),
+					new CompletionStructureAssessment(SolidNull.NULL),
+					new CompletionStructureAssessment(new Int16(2n)),
+					new CompletionStructureAssessment(new Float64(2.0)),
+				])
+			})
 		})
 	})
 })
