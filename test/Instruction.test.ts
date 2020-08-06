@@ -4,12 +4,13 @@ import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Parser from '../src/class/Parser.class'
-import {Punctuator} from '../src/class/Token.class'
 import Builder from '../src/vm/Builder.class'
 import {
+	Operator,
 	InstructionNone,
 	InstructionUnop,
 	InstructionBinop,
+	InstructionCond,
 	InstructionModule,
 } from '../src/vm/Instruction.class'
 import {
@@ -24,9 +25,18 @@ describe('Instruction', () => {
 		context('InstructionBinop', () => {
 			it('throws when operands are a mix of ints and floats.', () => {
 				assert.throws(() => new InstructionBinop(
-					Punctuator.MUL,
+					Operator.MUL,
 					instructionConstInt(5n),
 					instructionConstFloat(2.5),
+				), TypeError)
+			})
+		})
+		context('InstructionCond', () => {
+			it('throws when branches are a mix of ints and floats.', () => {
+				assert.throws(() => new InstructionCond(
+					instructionConstInt(0n),
+					instructionConstInt(2n),
+					instructionConstFloat(3.3),
 				), TypeError)
 			})
 		})
@@ -75,15 +85,15 @@ describe('Instruction', () => {
 		context('InstructionUnop', () => {
 			it('performs a unary operation.', () => {
 				assert.strictEqual(new InstructionUnop(
-					Punctuator.AFF,
+					Operator.AFF,
 					instructionConstInt(42n),
 				).toString(), `(nop ${ instructionConstInt(42n) })`)
 				assert.strictEqual(new InstructionUnop(
-					Punctuator.NEG,
+					Operator.NEG,
 					instructionConstInt(42n),
 				).toString(), `(call $neg ${ instructionConstInt(42n) })`)
 				assert.throws(() => new InstructionUnop(
-					Punctuator.MUL,
+					Operator.MUL,
 					instructionConstInt(42n),
 				).toString(), TypeError)
 			})
@@ -92,15 +102,30 @@ describe('Instruction', () => {
 		context('InstructionBinop', () => {
 			it('performs a binary operation.', () => {
 				assert.strictEqual(new InstructionBinop(
-					Punctuator.MUL,
+					Operator.MUL,
 					instructionConstInt(21n),
 					instructionConstInt(2n),
 				).toString(), `(i32.mul ${ instructionConstInt(21n) } ${ instructionConstInt(2n) })`)
 				assert.strictEqual(new InstructionBinop(
-					Punctuator.ADD,
+					Operator.ADD,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
 				).toString(), `(f64.add ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
+			})
+		})
+
+		context('InstructionCond', () => {
+			it('performs a conditional operation.', () => {
+				assert.strictEqual(new InstructionCond(
+					instructionConstInt(1n),
+					instructionConstInt(2n),
+					instructionConstInt(3n),
+				).toString(), `(if (result i32) ${ instructionConstInt(1n) } (then ${ instructionConstInt(2n) }) (else ${ instructionConstInt(3n) }))`)
+				assert.strictEqual(new InstructionCond(
+					instructionConstInt(0n),
+					instructionConstFloat(2.2),
+					instructionConstFloat(3.3),
+				).toString(), `(if (result f64) ${ instructionConstInt(0n) } (then ${ instructionConstFloat(2.2) }) (else ${ instructionConstFloat(3.3) }))`)
 			})
 		})
 

@@ -193,13 +193,17 @@ TokenWorth(Punctuator :::= "=") -> RealNumber := \x08;
 ```
 Keyword :::=
 	// literal
-	| "null"
-	| "false"
-	| "true"
+		| "null"
+		| "false"
+		| "true"
+	// operator
+		| "if"
+		| "then"
+		| "else"
 	// storage
-	| "let"
+		| "let"
 	// modifier
-	| "unfixed"
+		| "unfixed"
 ;
 ```
 Keywords are sequences of alphanumeric characters reserved by the Solid language
@@ -216,8 +220,11 @@ Token Worth quantities for keywords are integers ranging from *128* to *255* (in
 TokenWorth(Keyword :::= "null")    -> RealNumber := \x80;
 TokenWorth(Keyword :::= "false")   -> RealNumber := \x81;
 TokenWorth(Keyword :::= "true")    -> RealNumber := \x82;
-TokenWorth(Keyword :::= "let")     -> RealNumber := \x83;
-TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x84;
+TokenWorth(Keyword :::= "if")      -> RealNumber := \x83;
+TokenWorth(Keyword :::= "then")    -> RealNumber := \x84;
+TokenWorth(Keyword :::= "else")    -> RealNumber := \x85;
+TokenWorth(Keyword :::= "let")     -> RealNumber := \x86;
+TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x87;
 ```
 
 

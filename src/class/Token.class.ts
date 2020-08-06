@@ -36,13 +36,17 @@ export enum Punctuator {
 
 export enum Keyword {
 	// literal
-	NULL  = 'null',
-	FALSE = 'false',
-	TRUE  = 'true',
+		NULL  = 'null',
+		FALSE = 'false',
+		TRUE  = 'true',
+	// operator
+		IF   = 'if',
+		THEN = 'then',
+		ELSE = 'else',
 	// storage
-	LET = 'let', // Dev.supports('variables')
+		LET = 'let', // Dev.supports('variables')
 	// modifier
-	UNFIXED = 'unfixed', // Dev.supports('variables')
+		UNFIXED = 'unfixed', // Dev.supports('variables')
 }
 
 
@@ -182,7 +186,8 @@ export class TokenPunctuator extends Token {
 	cook(): bigint {
 		return BigInt(TokenPunctuator.PUNCTUATORS.indexOf(this.source))
 	}
-}export class TokenKeyword extends Token {
+}
+export class TokenKeyword extends Token {
 	private static readonly MINIMUM_VALUE: bigint = 0x80n
 	static readonly CHAR: RegExp = /^[a-z]$/
 	static readonly KEYWORDS: readonly Keyword[] = [...new Set<Keyword>( // remove duplicates

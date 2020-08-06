@@ -35,7 +35,13 @@ ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"          ExpressionE
 ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential     ;
 ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-"))? ExpressionMultiplicative  ;
 
-Expression ::= ExpressionAdditive;
+ExpressionConditional
+	::= "if" Expression "then" Expression "else" Expression;
+
+Expression ::=
+	| ExpressionAdditive
+	| ExpressionConditional
+;
 
 
 

@@ -118,3 +118,8 @@ export abstract class SolidNumber<T> extends SolidLanguageValue {
 	 */
 	abstract eq0(): boolean;
 }
+
+
+
+export class SolidString extends SolidLanguageValue {
+}

@@ -8,6 +8,7 @@ import {
 	SemanticNodeTemplate,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
+	SemanticNodeOperationTernary,
 	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
@@ -17,6 +18,7 @@ import {
 	SolidBoolean,
 } from '../src/vm/SolidLanguageValue.class'
 import Int16 from '../src/vm/Int16.class'
+import {Operator} from '../src/vm/Instruction.class'
 
 import {
 	assert_arrayLength,
@@ -184,7 +186,7 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Parser('(2 + -3);', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ ( 2 + -3 ) ; ␃">
 						<StatementExpression line="1" col="1" source="( 2 + -3 ) ;">
-							<Operation line="1" col="2" source="2 + -3" operator="+">
+							<Operation line="1" col="2" source="2 + -3" operator="5">
 								<Constant line="1" col="2" source="2" value="2"/>
 								<Constant line="1" col="6" source="-3" value="-3"/>
 							</Operation>
@@ -196,11 +198,11 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Parser('(-(42) ^ +(2 * 420));', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ ( - ( 42 ) ^ + ( 2 * 420 ) ) ; ␃">
 						<StatementExpression line="1" col="1" source="( - ( 42 ) ^ + ( 2 * 420 ) ) ;">
-							<Operation line="1" col="2" source="- ( 42 ) ^ + ( 2 * 420 )" operator="^">
-								<Operation line="1" col="2" source="- ( 42 )" operator="-">
+							<Operation line="1" col="2" source="- ( 42 ) ^ + ( 2 * 420 )" operator="2">
+								<Operation line="1" col="2" source="- ( 42 )" operator="1">
 									<Constant line="1" col="4" source="42" value="42"/>
 								</Operation>
-								<Operation line="1" col="12" source="2 * 420" operator="*">
+								<Operation line="1" col="12" source="2 * 420" operator="3">
 									<Constant line="1" col="12" source="2" value="2"/>
 									<Constant line="1" col="16" source="420" value="420"/>
 								</Operation>
@@ -216,7 +218,7 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Parser('- 42;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ - 42 ; ␃">
 						<StatementExpression line="1" col="1" source="- 42 ;">
-							<Operation line="1" col="1" source="- 42" operator="-">
+							<Operation line="1" col="1" source="- 42" operator="1">
 								<Constant line="1" col="3" source="42" value="42"/>
 							</Operation>
 						</StatementExpression>
@@ -230,7 +232,7 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Parser('2 ^ -3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ 2 ^ -3 ; ␃">
 						<StatementExpression line="1" col="1" source="2 ^ -3 ;">
-							<Operation line="1" col="1" source="2 ^ -3" operator="^">
+							<Operation line="1" col="1" source="2 ^ -3" operator="2">
 								<Constant line="1" col="1" source="2" value="2"/>
 								<Constant line="1" col="5" source="-3" value="-3"/>
 							</Operation>
@@ -245,7 +247,7 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Parser('2 * -3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ 2 * -3 ; ␃">
 						<StatementExpression line="1" col="1" source="2 * -3 ;">
-							<Operation line="1" col="1" source="2 * -3" operator="*">
+							<Operation line="1" col="1" source="2 * -3" operator="3">
 								<Constant line="1" col="1" source="2" value="2"/>
 								<Constant line="1" col="5" source="-3" value="-3"/>
 							</Operation>
@@ -260,7 +262,7 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Parser('2 + -3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ 2 + -3 ; ␃">
 						<StatementExpression line="1" col="1" source="2 + -3 ;">
-							<Operation line="1" col="1" source="2 + -3" operator="+">
+							<Operation line="1" col="1" source="2 + -3" operator="5">
 								<Constant line="1" col="1" source="2" value="2"/>
 								<Constant line="1" col="5" source="-3" value="-3"/>
 							</Operation>
@@ -275,15 +277,45 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Parser('2 - 3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ 2 - 3 ; ␃">
 						<StatementExpression line="1" col="1" source="2 - 3 ;">
-							<Operation line="1" col="1" source="2 - 3" operator="+">
+							<Operation line="1" col="1" source="2 - 3" operator="5">
 								<Constant line="1" col="1" source="2" value="2"/>
-								<Operation line="1" col="5" source="3" operator="-">
+								<Operation line="1" col="5" source="3" operator="1">
 									<Constant line="1" col="5" source="3" value="3"/>
 								</Operation>
 							</Operation>
 						</StatementExpression>
 					</Goal>
 				`.replace(/\n\t*/g, ''))
+			})
+		})
+
+		context('ExpressionConditional ::= "if" Expression "then" Expression "else" Expression', () => {
+			it('makes a SemanticNodeOperation with the COND operator and 3 children.', () => {
+				/*
+					<Goal>
+						<StatementExpression>
+							<Operation operator=COND>
+								<Constant value=true/>
+								<Constant value=2n/>
+								<Constant value=3n/>
+							</Operation>
+						</StatementExpression>
+					</Goal>
+				*/
+				const goal: SemanticNodeGoal = new Parser('if true then 2 else 3;', CONFIG_DEFAULT).parse().decorate()
+				const statements: SemanticStatementType = goal.children[0]
+				assert_arrayLength(statements.children, 1)
+				const expression: SemanticNodeExpression = statements.children[0]
+				assert.ok(expression instanceof SemanticNodeOperationTernary)
+				assert.strictEqual(expression.operator, Operator.COND)
+				expression.children.forEach((child) => {
+					assert.ok(child instanceof SemanticNodeConstant)
+				})
+				assert.deepStrictEqual(expression.children.map((child) => (child as SemanticNodeConstant).value), [
+					SolidBoolean.TRUE,
+					new Int16(2n),
+					new Int16(3n),
+				])
 			})
 		})
 

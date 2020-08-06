@@ -2,7 +2,10 @@
 This chapter defines the syntax, semantics, and behavior of expressions in the Solid programming language.
 
 ```
-Expression ::= ExpressionAdditive;
+Expression ::=
+	| ExpressionAdditive
+	| ExpressionConditional
+;
 ```
 
 
@@ -284,14 +287,15 @@ Void Evaluate(SemanticIdentifier iden) :=
 
 ## Unary Operators
 ```
-ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol;
+ExpressionUnarySymbol
+	::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol;
 ```
 
 
 ### Static Semantics: Semantic Schema (Unary Operators)
 ```
 SemanticOperation[operator: NEG]
-	::= SemanticExpression;
+	::= SemanticExpression[type=Integer | Float];
 ```
 
 
@@ -347,14 +351,15 @@ Void Evaluate(Instruction :::= "Perform stack operation NEG.") :=
 
 ## Exponentiation
 ```
-ExpressionExponential ::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
+ExpressionExponential
+	::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
 ```
 
 
 ### Static Semantics: Semantic Schema (Exponentiation)
 ```
 SemanticOperation[operator: EXP]
-	::= SemanticExpression SemanticExpression;
+	::= SemanticExpression[type=Integer | Float] SemanticExpression[type=Integer | Float];
 ```
 
 
@@ -397,14 +402,15 @@ Void Evaluate(Instruction :::= "Perform stack operation EXP.") :=
 
 ## Multiplicative
 ```
-ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential;
+ExpressionMultiplicative
+	::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential;
 ```
 
 
 ### Static Semantics: Semantic Schema (Multiplicative)
 ```
 SemanticOperation[operator: MUL | DIV]
-	::= SemanticExpression SemanticExpression;
+	::= SemanticExpression[type=Integer | Float] SemanticExpression[type=Integer | Float];
 ```
 
 
@@ -457,14 +463,15 @@ Void Evaluate(Instruction :::= "Perform stack operation DIV.") :=
 
 ## Additive
 ```
-ExpressionAdditive ::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicative;
+ExpressionAdditive
+	::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicative;
 ```
 
 
 ### Static Semantics: Semantic Schema (Additive)
 ```
 SemanticOperation[operator: ADD]
-	::= SemanticExpression SemanticExpression;
+	::= SemanticExpression[type=Integer | Float] SemanticExpression[type=Integer | Float];
 ```
 
 
@@ -506,4 +513,92 @@ Void Evaluate(Instruction :::= "Perform stack operation ADD.") :=
 	2. Pop `operand0` from the operand stack.
 	3. *Let* `sum` be the result of performing `PerformNumericBinaryOperation(ADD, operand0, operand1)`.
 	4. Push `sum` onto the operand stack.
+```
+
+
+
+## Conditional
+```
+ExpressionConditional
+	::= "if" Expression "then" Expression "else" Expression;
+```
+
+
+### Static Semantics: Semantic Schema (Conditional)
+```
+SemanticOperation[operator: COND]
+	::= SemanticExpression[type=Boolean] SemanticExpression SemanticExpression;
+```
+
+
+### Static Semantics: Decorate (Conditional)
+```
+Decorate(ExpressionConditional ::= "if" Expression__0 "then" Expression__1 "else" Expression__2)
+	:= (SemanticOperation[operator=COND]
+		Decorate(Expression__0),
+		Decorate(Expression__1),
+		Decorate(Expression__2),
+	);
+```
+
+
+### Static Semantics: Assess (Conditional)
+```
+Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator=COND] expr) :=
+	1. *Assert:* `expr.children.count` is 3.
+	2. *Let* `condition` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `TypeOf(condition)` is `Void`:
+		1. *Return*.
+	4. *Assert:* `TypeOf(condition)` is `Boolean`.
+	5. *If* `condition` is `true`:
+		1. *Let* `consequent` be the result of performing `Assess(expr.children.1)`.
+		2. *If* `TypeOf(consequent)` is `Void`:
+			1. *Return*.
+		3. *Return:* `consequent`.
+	6. *Else:*
+		1. *Let* `alternative` be the result of performing `Assess(expr.children.2)`.
+		2. *If* `TypeOf(alternative)` is `Void`:
+			1. *Return*.
+		3. *Return:* `alternative`.
+```
+
+
+### Static Semantics: Build (Conditional)
+```
+Sequence<Instruction> Build(SemanticOperation[operator=COND] expr) :=
+	1. *Assert:* `expr.children.count` is 3.
+	2. *Let* `condition` be the result of performing `Assess(expr.children.0)`.
+	3. *Assert:* `TypeOf(condition)` is `Void`.
+	4. *Let* `instrs0` be the result of performing `Build(expr.children.0)`.
+	5. *Let* `consequent` be the result of performing `Assess(expr.children.1)`.
+	6. *If* `TypeOf(consequent)` is `Void`:
+		1. *Let* `instrs1` be the result of performing `Build(expr.children.1)`.
+	7. *Else*:
+		1. *Let* `instrs1` be the result of performing `Build(consequent)`.
+	8. *Let* `alternative` be the result of performing `Assess(expr.children.2)`.
+	9. *If* `TypeOf(alternative)` is `Void`:
+		1. *Let* `instrs2` be the result of performing `Build(expr.children.2)`.
+	10. *Else*:
+		1. *Let* `instrs2` be the result of performing `Build(alternative)`.
+	11. *Return:* [
+		...instrs0,
+		"IF",
+		...instrs1,
+		"ELSE",
+		...instrs2,
+		"END",
+	].
+```
+
+
+### Runtime Instructions: Evaluate (Conditional)
+```
+Void Evaluate(Instruction :::= "IF") :=
+	1. Pop `condition` from the operand stack.
+	2. *If* `condition` is non-zero:
+		1. *Let* `consequent` be the result of performing the next instructions until an "ELSE" instruction is reached.
+		2. Push `consequent` onto the operand stack.
+	3. *Else:*
+		1. *Let* `alternative` be the result of performing the instructions from the next "ELSE" and until an "END" instruction is reached.
+		2. Push `alternative` onto the operand stack.
 ```
