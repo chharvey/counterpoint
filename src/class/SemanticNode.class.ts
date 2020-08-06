@@ -240,7 +240,7 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 	private is_folded: boolean = false
 	constructor(
 		start_node: ParseNode,
-		private readonly operator: Operator,
+		readonly operator: Operator,
 		readonly children:
 			| readonly [SemanticNodeExpression]
 			| readonly [SemanticNodeExpression, SemanticNodeExpression]
@@ -261,16 +261,18 @@ export class SemanticNodeOperation extends SemanticNodeExpression {
 	}
 	type(): SolidLanguageType {
 		const t0: SolidLanguageType = this.children[0].type()
-		if (isNumericType(t0)) {
-			if (this.children.length === 1) {
-				return t0
-			}
-			const t1: SolidLanguageType = this.children[1].type()
-			if (isNumericType(t1)) {
-				return ([t0, t1].includes(Float64)) ? Float64 : Int16
-			}
+		const throwErr: () => never = () => { throw new TypeError('Invalid operation.') }
+		if (this.children.length === 1) {
+			return (isNumericType(t0)) ? t0 : throwErr()
 		}
-		throw new TypeError('Invalid operation.')
+		const t1: SolidLanguageType = this.children[1].type()
+		if (this.children.length === 2) {
+			return (isNumericType(t0) && isNumericType(t1)) ?
+				([t0, t1].includes(Float64)) ? Float64 : Int16
+			: throwErr()
+		}
+		const t2: SolidLanguageType = this.children[2].type()
+		return (t0 === SolidBoolean) ? new SolidTypeUnion(t1, t2) : throwErr()
 	}
 	assess(): CompletionStructureAssessment | null {
 		if (!this.is_folded) { this.fold() }

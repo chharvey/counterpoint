@@ -8,6 +8,7 @@ import {
 	SemanticNodeTemplate,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
+	SemanticNodeOperation,
 	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
@@ -17,6 +18,7 @@ import {
 	SolidBoolean,
 } from '../src/vm/SolidLanguageValue.class'
 import Int16 from '../src/vm/Int16.class'
+import {Operator} from '../src/vm/Instruction.class'
 
 import {
 	assert_arrayLength,
@@ -300,7 +302,21 @@ describe('ParseNode', () => {
 						</StatementExpression>
 					</Goal>
 				*/
-				assert.throws(new Parser('if true then 2 else 3;', CONFIG_DEFAULT).parse().decorate, TypeError)
+				const goal: SemanticNodeGoal = new Parser('if true then 2 else 3;', CONFIG_DEFAULT).parse().decorate()
+				const statements: SemanticStatementType = goal.children[0]
+				assert_arrayLength(statements.children, 1)
+				const expression: SemanticNodeExpression = statements.children[0]
+				assert.ok(expression instanceof SemanticNodeOperation)
+				assert.strictEqual(expression.operator, Operator.COND)
+				assert_arrayLength(expression.children, 3)
+				expression.children.forEach((child) => {
+					assert.ok(child instanceof SemanticNodeConstant)
+				})
+				assert.deepStrictEqual(expression.children.map((child) => (child as SemanticNodeConstant).value), [
+					SolidBoolean.TRUE,
+					new Int16(2n),
+					new Int16(3n),
+				])
 			})
 		})
 

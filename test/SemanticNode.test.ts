@@ -20,6 +20,7 @@ import {
 	CompletionStructureAssessment,
 } from '../src/spec/CompletionStructure.class'
 import Builder from '../src/vm/Builder.class'
+import {SolidTypeUnion} from '../src/vm/SolidLanguageType.class'
 import {
 	SolidNull,
 	SolidBoolean,
@@ -345,7 +346,24 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).type(), Float64)
 			})
-			it('throws for operation of non-numbers.', () => {
+			it('returns `A | B` for conditionals', () => {
+				assert.deepStrictEqual([
+					`if true then false else 2;`,
+					`if false then 3.0 else null;`,
+					`if true then 2 else 3.0;`,
+					`if false then 2 + 3.0 else 1.0 * 2;`,
+				].map((src) => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation)
+					.type()
+				), [
+					new SolidTypeUnion(SolidBoolean, Int16),
+					new SolidTypeUnion(Float64, SolidNull),
+					new SolidTypeUnion(Int16, Float64),
+					new SolidTypeUnion(Float64, Float64),
+				])
+			})
+			it('throws for numeric operation of non-numbers.', () => {
 				[
 					`null + 5;`,
 					`5 * null;`,

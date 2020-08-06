@@ -295,7 +295,7 @@ ExpressionUnarySymbol
 ### Static Semantics: Semantic Schema (Unary Operators)
 ```
 SemanticOperation[operator: NEG]
-	::= SemanticExpression;
+	::= SemanticExpression[type=Integer | Float];
 ```
 
 
@@ -359,7 +359,7 @@ ExpressionExponential
 ### Static Semantics: Semantic Schema (Exponentiation)
 ```
 SemanticOperation[operator: EXP]
-	::= SemanticExpression SemanticExpression;
+	::= SemanticExpression[type=Integer | Float] SemanticExpression[type=Integer | Float];
 ```
 
 
@@ -410,7 +410,7 @@ ExpressionMultiplicative
 ### Static Semantics: Semantic Schema (Multiplicative)
 ```
 SemanticOperation[operator: MUL | DIV]
-	::= SemanticExpression SemanticExpression;
+	::= SemanticExpression[type=Integer | Float] SemanticExpression[type=Integer | Float];
 ```
 
 
@@ -471,7 +471,7 @@ ExpressionAdditive
 ### Static Semantics: Semantic Schema (Additive)
 ```
 SemanticOperation[operator: ADD]
-	::= SemanticExpression SemanticExpression;
+	::= SemanticExpression[type=Integer | Float] SemanticExpression[type=Integer | Float];
 ```
 
 
@@ -527,7 +527,7 @@ ExpressionConditional
 ### Static Semantics: Semantic Schema (Conditional)
 ```
 SemanticOperation[operator: COND]
-	::= SemanticExpression SemanticExpression SemanticExpression;
+	::= SemanticExpression[type=Boolean] SemanticExpression SemanticExpression;
 ```
 
 
