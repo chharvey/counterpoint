@@ -9,7 +9,6 @@ import type {
 	ParseNodeGoal__0__List,
 } from '../src/class/ParseNode.class'
 import {
-	SolidLanguageTypeDraft,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
@@ -24,6 +23,7 @@ import Builder from '../src/vm/Builder.class'
 import {
 	SolidNull,
 	SolidBoolean,
+	SolidString,
 } from '../src/vm/SolidLanguageValue.class'
 import Int16 from '../src/vm/Int16.class'
 import Float64 from '../src/vm/Float64.class'
@@ -329,7 +329,7 @@ describe('SemanticNode', () => {
 							.children[0] as SemanticNodeTemplate,
 					] : []),
 				].forEach((node) => {
-					assert.strictEqual(node.type(), SolidLanguageTypeDraft.STRING)
+					assert.strictEqual(node.type(), SolidString)
 				})
 			})
 			it('returns `Integer` for any operation of integers.', () => {

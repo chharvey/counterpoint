@@ -4,10 +4,14 @@ import {
 	CompletionStructureAssessment,
 } from '../spec/CompletionStructure.class'
 import type Builder from '../vm/Builder.class'
+import SolidLanguageType, {
+	SolidTypeUnion,
+} from '../vm/SolidLanguageType.class'
 import SolidLanguageValue, {
 	SolidNull,
 	SolidBoolean,
 	SolidNumber,
+	SolidString,
 } from '../vm/SolidLanguageValue.class'
 import Int16 from '../vm/Int16.class'
 import Float64 from '../vm/Float64.class'
@@ -36,20 +40,6 @@ import type {CookValueType} from './Token.class'
 import type ParseNode from './ParseNode.class'
 
 
-
-/**
- * @deprecated temporary in lieu of a more full-fledged class.
- */
-export enum SolidLanguageTypeDraft {
-	STRING,
-}
-
-type SolidLanguageType =
-	| SolidLanguageTypeDraft
-	| typeof SolidNull
-	| typeof SolidBoolean
-	| typeof Int16
-	| typeof Float64
 
 function isNumericType(t: SolidLanguageType): boolean {
 	return t === Int16 || t === Float64 // ([Int16, Float64] as SolidLanguageType[]).includes(t)
@@ -178,7 +168,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 			(this.value instanceof SolidBoolean) ? SolidBoolean :
 			(this.value instanceof Int16)        ? Int16 :
 			(this.value instanceof Float64)      ? Float64 :
-			SolidLanguageTypeDraft.STRING
+			SolidString
 		)
 	}
 	assess(): CompletionStructureAssessment {
@@ -223,7 +213,7 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 		throw new Error('not yet supported.')
 	}
 	type(): SolidLanguageType {
-		return SolidLanguageTypeDraft.STRING
+		return SolidString
 	}
 	assess(): CompletionStructureAssessment {
 		throw new Error('Not yet supported.')
