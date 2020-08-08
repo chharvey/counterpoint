@@ -33,27 +33,27 @@ Type TypeOf(StringTemplate template) :=
 Type TypeOf(SemanticIdentifier id) :=
 	/* TO BE DETERMINED */
 
-Type TypeOf(SemanticOperation[operator= AFF | NEG] operation) :=
-	1. *Assert:* `operation.children.count` is 1.
-	2. *Let* `t0` be `TypeOf(operation.children.0)`.
+Type TypeOf(SemanticOperation[operator: AFF | NEG] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `t0` be `TypeOf(expr.children.0)`.
 	3. *If* `IsNumeric(t0)`:
 		1. *Return:* `t0`.
 	4. *Throw:* TypeError "Invalid operation.".
-Type TypeOf(SemanticOperation[operator=EXP | MUL | DIV | ADD | SUB] operation) :=
-	1. *Assert:* `operation.children.count` is 2.
-	2. *Let* `t0` be `TypeOf(operation.children.0)`.
-	3. *Let* `t1` be `TypeOf(operation.children.1)`.
+Type TypeOf(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `t0` be `TypeOf(expr.children.0)`.
+	3. *Let* `t1` be `TypeOf(expr.children.1)`.
 	4. *If* `IsNumeric(t0)` *and* `IsNumeric(t1)`:
 		1. *If* `t0` is `Float` *or* `t1` is `Float`:
 			1. *Return:* `Float`.
 		2. *Else*:
 			1. *Return:* `Integer`.
 	5. *Throw:* TypeError "Invalid operation.".
-Type TypeOf(SemanticOperation[operator=COND] operation) :=
-	1. *Assert:* `operation.children.count` is 3.
-	2. *Let* `t0` be `TypeOf(operation.children.0)`.
-	3. *Let* `t1` be `TypeOf(operation.children.1)`.
-	4. *Let* `t2` be `TypeOf(operation.children.2)`.
+Type TypeOf(SemanticOperation[operator: COND] expr) :=
+	1. *Assert:* `expr.children.count` is 3.
+	2. *Let* `t0` be `TypeOf(expr.children.0)`.
+	3. *Let* `t1` be `TypeOf(expr.children.1)`.
+	4. *Let* `t2` be `TypeOf(expr.children.2)`.
 	5. *If* `TypeOf(t0)` is `Boolean`:
 		1. *Return:* `TypeUnion(t1, t2)`.
 	6. *Throw:* TypeError "Invalid operation.".

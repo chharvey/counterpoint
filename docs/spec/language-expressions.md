@@ -295,7 +295,7 @@ ExpressionUnarySymbol
 ### Static Semantics: Semantic Schema (Unary Operators)
 ```
 SemanticOperation[operator: NEG]
-	::= SemanticExpression[type=Integer | Float];
+	::= SemanticExpression[type: Integer | Float];
 ```
 
 
@@ -312,7 +312,7 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperati
 
 ### Static Semantics: Assess (Unary Operators)
 ```
-Or<Integer, Float>? Assess(SemanticOperation[operator=NEG] expr) :=
+Or<Integer, Float>? Assess(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
 	3. *If* `TypeOf(operand)` is `Void`:
@@ -326,7 +326,7 @@ Or<Integer, Float>? Assess(SemanticOperation[operator=NEG] expr) :=
 
 ### Static Semantics: Build (Unary Operators)
 ```
-Sequence<Instruction> Build(SemanticOperation[operator=NEG] expr) :=
+Sequence<Instruction> Build(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `assess` be the result of performing `Assess(expr.children.0)`.
 	3. *If* `TypeOf(assess)` is `Void`:
@@ -359,7 +359,7 @@ ExpressionExponential
 ### Static Semantics: Semantic Schema (Exponentiation)
 ```
 SemanticOperation[operator: EXP]
-	::= SemanticExpression[type=Integer | Float] SemanticExpression[type=Integer | Float];
+	::= SemanticExpression[type: Integer | Float] SemanticExpression[type: Integer | Float];
 ```
 
 
@@ -377,14 +377,14 @@ Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponenti
 
 ### Static Semantics: Assess (Exponentiation)
 ```
-Or<Integer, Float>? Assess(SemanticOperation[operator=EXP] expr) :=
+Or<Integer, Float>? Assess(SemanticOperation[operator: EXP] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 
 
 ### Static Semantics: Build (Exponentiation)
 ```
-Sequence<Instruction> Build(SemanticOperation[operator=EXP] expr) :=
+Sequence<Instruction> Build(SemanticOperation[operator: EXP] expr) :=
 	1. *Return:* `BuildSemanticOperationBinary(expr)`.
 ```
 
@@ -410,7 +410,7 @@ ExpressionMultiplicative
 ### Static Semantics: Semantic Schema (Multiplicative)
 ```
 SemanticOperation[operator: MUL | DIV]
-	::= SemanticExpression[type=Integer | Float] SemanticExpression[type=Integer | Float];
+	::= SemanticExpression[type: Integer | Float] SemanticExpression[type: Integer | Float];
 ```
 
 
@@ -433,14 +433,14 @@ Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExp
 
 ### Static Semantics: Assess (Multiplicative)
 ```
-Or<Integer, Float>? Assess(SemanticOperation[operator=MUL|DIV] expr) :=
+Or<Integer, Float>? Assess(SemanticOperation[operator: MUL | DIV] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 
 
 ### Static Semantics: Build (Multiplicative)
 ```
-Sequence<Instruction> Build(SemanticOperation[operator=MUL|DIV] expr) :=
+Sequence<Instruction> Build(SemanticOperation[operator: MUL | DIV] expr) :=
 	1. *Return:* `BuildSemanticOperationBinary(expr)`.
 ```
 
@@ -471,7 +471,7 @@ ExpressionAdditive
 ### Static Semantics: Semantic Schema (Additive)
 ```
 SemanticOperation[operator: ADD]
-	::= SemanticExpression[type=Integer | Float] SemanticExpression[type=Integer | Float];
+	::= SemanticExpression[type: Integer | Float] SemanticExpression[type: Integer | Float];
 ```
 
 
@@ -494,14 +494,14 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 
 ### Static Semantics: Assess (Additive)
 ```
-Or<Integer, Float>? Assess(SemanticOperation[operator=ADD] expr) :=
+Or<Integer, Float>? Assess(SemanticOperation[operator: ADD] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 ```
 
 
 ### Static Semantics: Build (Additive)
 ```
-Sequence<Instruction> Build(SemanticOperation[operator=ADD] expr) :=
+Sequence<Instruction> Build(SemanticOperation[operator: ADD] expr) :=
 	1. *Return:* `BuildSemanticOperationBinary(expr)`.
 ```
 
@@ -527,7 +527,7 @@ ExpressionConditional
 ### Static Semantics: Semantic Schema (Conditional)
 ```
 SemanticOperation[operator: COND]
-	::= SemanticExpression[type=Boolean] SemanticExpression SemanticExpression;
+	::= SemanticExpression[type: Boolean] SemanticExpression SemanticExpression;
 ```
 
 
@@ -535,16 +535,16 @@ SemanticOperation[operator: COND]
 ```
 Decorate(ExpressionConditional ::= "if" Expression__0 "then" Expression__1 "else" Expression__2)
 	:= (SemanticOperation[operator=COND]
-		Decorate(Expression__0),
-		Decorate(Expression__1),
-		Decorate(Expression__2),
+		Decorate(Expression__0)
+		Decorate(Expression__1)
+		Decorate(Expression__2)
 	);
 ```
 
 
 ### Static Semantics: Assess (Conditional)
 ```
-Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator=COND] expr) :=
+Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
 	2. *Let* `condition` be the result of performing `Assess(expr.children.0)`.
 	3. *If* `TypeOf(condition)` is `Void`:
@@ -565,7 +565,7 @@ Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator=COND] expr)
 
 ### Static Semantics: Build (Conditional)
 ```
-Sequence<Instruction> Build(SemanticOperation[operator=COND] expr) :=
+Sequence<Instruction> Build(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
 	2. *Let* `condition` be the result of performing `Assess(expr.children.0)`.
 	3. *Assert:* `TypeOf(condition)` is `Void`.

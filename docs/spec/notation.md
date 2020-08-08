@@ -973,8 +973,8 @@ Grammar
 	::= #x02 Production* #x03;
 
 Production ::=
-	| NonterminalDefinition "::=" "|"? Choice ";"
-	| IDENTIFIER            "=:=" "|"? Choice ";"
+	| Nonterminal "::=" "|"? Choice ";"
+	| IDENTIFIER  "=:=" "|"? Choice ";"
 ;
 
 Choice   ::= (Choice   "|")? Sequence;
@@ -984,29 +984,24 @@ Item
 	::= Unit ("+" | "*")? "?"?;
 
 Unit ::=
-	| NonterminalReference
+	| Nonterminal
 	| "(" Choice ")"
 ;
 
-NonterminalDefinition ::= IDENTIFIER AttributeParameter*;
-NonterminalReference  ::= IDENTIFIER AttributeArgument*;
+Nonterminal
+	::= IDENTIFIER Attribute*;
 
-AttributeParameter ::= "[" IDENTIFIER ":" Type  "]";
-AttributeArgument  ::= "[" IDENTIFIER "=" Value "]";
+Attribute
+	::= "[" IDENTIFIER ":" Type "]";
 
 Type
 	::= (Type "|")? TypeUnit;
 
 TypeUnit ::=
-	| Value
-	| IDENTIFIER "<" Type ">"
-	| "(" Type ")"
-;
-
-Value ::=
-	| IDENTIFIER
 	| NUMBER
 	| STRING
+	| IDENTIFIER ("<" Type ">")?
+	| "(" Type ")"
 ;
 ```
 
