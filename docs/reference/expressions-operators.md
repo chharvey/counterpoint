@@ -64,6 +64,13 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td>Subtraction</td>
 			<td><code>… - …</code></td>
 		</tr>
+		<tr>
+			<th>6</th>
+			<td>Conditional</td>
+			<td>ternary infix</td>
+			<td>n/a</td>
+			<td><code>if … then … else …</code></td>
+		</tr>
 	</tbody>
 </table>
 
@@ -86,45 +93,54 @@ Operations that are associative are indicated as so in their respective sections
 
 
 
-## Mathematical Affirmation `+`, Mathematical Negation `-`
-The **mathematical affirmation** operator, `+`,
-and the **mathematical negation** operator, `-`,
+## Mathematical Affirmation, Mathematical Negation
+```
+`+` <int | float>
+`-` <int | float>
+```
+The **mathematical affirmation** operator, `+`, and
+the **mathematical negation** operator, `-`,
 are valid only on number types.
 The affirmation is a no-op (the number itself is produced),
 and the negation computes the additive inverse, or “negation”, of the number.
+Any integer base can be used.
 
 These operators can be chained, and when done so, are grouped right-to-left.
 For example, `-+-8` is equivalent to `-(+(-8))`.
 
 ```
 let int_p = 512;
-let int_n = -512;
+let int_n = -\x200;
 
-+int_p; % 512
-+int_n; % -512
++int_p; %== 512
++int_n; %== -512
 
--int_p; % -512
--int_n; % 512
+-int_p; %== -512
+-int_n; %== 512
 ```
 
-Recognize that number tokens can begin with **U+002B PLUS SIGN** or **U+002D HYPHEN-MINUS**.
-For example, `-512` is lexed as a single token, and not two tokens `-` and `512`.
-The same is true for `+512`.
-These tokens’ values are the same as the computed values of
-the expressions `-(512)` and `+(512)`,
-but this is important to mention because it could affect how we write
-[Additive](#parsing-additive-expressions) expressions.
+Recognize that number tokens can begin with **U+002B PLUS SIGN** or **U+002D HYPHEN-MINUS**,
+even if they’re prefixed with a radix.
+For example, `-\x200` is lexed as a single token, and not two tokens `-` and `\x200`.
+The same is true for `+\x200`.
+Even though these tokens’ values are the same as the computed values of
+the expressions `-(\x200)` and `+(\x200)`,
+this is important to mention because it could affect how we write
+[additive expressions](#parsing-additive-expressions).
 
 
 
-## Exponentiation `^`
-The **exponentiation** operator, `^`,
-is valid only on number types.
+## Exponentiation
+```
+<int | float> `^` <int | float>
+```
+The **exponentiation** operator is valid only on number types.
 It produces the result of raising the left-hand operand to the power of the right-hand operand.
+Integer bases can be mixed.
 
 ```
-3 ^ 2; % 9
-2 ^ 3; % 8
+3 ^ 2;    %== 9
+2 ^ \b11; %== 8
 ```
 
 Expressions involving exponentiation can be imprecise.
@@ -134,13 +150,13 @@ which is not an integer. Since integers are truncated, `3 ^ -2` will produce `0`
 Exponentiation is *grouped right-to-left*.
 This means that where grouping is ambiguous, the expression is evaluated from right to left.
 For example, `a ^ b ^ c` is equivalent to `a ^ (b ^ c)` and not `(a ^ b) ^ c`.
-The reason is that this is consistent with mathematical notation,
+This is consistent with mathematical notation,
 where *a<sup>b<sup>c</sup></sup>* is interpreted as *a<sup>(b<sup>c</sup>)</sup>*.
 
 
 ### Exponentiation: Order of Operations
 In mathematics, exponents are applied before negation (which is multiplication).
-However, in Solid, [mathematical negation](#mathematical-affirmation-+-mathematical-negation--)
+However, in Solid, [mathematical negation](#mathematical-affirmation-mathematical-negation)
 is a unary operator, which is stronger than any binary operator.
 **Mathematical negation is not considered multiplication**,
 even if it indeed produces the same mathematical result of multiplying by -1.
@@ -149,9 +165,10 @@ Therefore, we can end up with confusing syntax such as this:
 -3 ^ 2
 ```
 While *mathematically*, *&minus;3<sup>2</sup>* is equivalent to *&minus;1&middot;3<sup>2</sup>*,
-producing `-9`, the Solid expression `-3 ^ 2`, is *not equivalent*.
+producing *&minus;9*, the Solid expression `-3 ^ 2`, is *not equivalent*.
 Mathematical negation is stronger than exponentiation, so Solid will compute `-3`
-first as a unary operation, and then raise that value to the power of `2`, producing `9`.
+first as a unary operation (or, in this case, as a single token),
+and then raise that value to the power of `2`, producing `9`.
 Writing such an ambiguous syntax could cause developers to scratch their heads
 wondering why `-3 ^ 2` is `9`.
 
@@ -167,11 +184,16 @@ and then negate, the expression should be written `-(3 ^ 2)` or `-1 * 3 ^ 2`.
 
 
 
-## Multiplicative `*`, `/`
-The **multiplication** operator, `*` and
+## Multiplicative
+```
+<int | float> `*` <int | float>
+<int | float> `/` <int | float>
+```
+The **multiplication** operator, `*`, and
 the **division** operator, `/`,
 are valid only on number types.
 They produce the respective mathematical product and quotient of the operands.
+Integer bases can be mixed.
 
 Multiplication is **associative**, which means the following expressions produce the same result,
 for any numbers `‹a›`, `‹b›`, and `‹c›`:
@@ -185,18 +207,23 @@ Multiplication and division perform the standard arithmetic operations,
 keeping in mind that the result of division `/` on integers are truncated,
 and division by `0` will result in an error.
 ```
-10 / 5; % produces `2`
- 3 / 2; % produces `1`, since 1.5 gets truncated
- 4 / 0; % runtime error
+\o12 / \q11; % produces `2`
+3 / 2;       % produces `1`, since 1.5 gets truncated
+4 / 0;       % runtime error
 ```
 
 
 
-## Additive `+`, `-`
-The **addition** operator, `+`,
-and the **subtraction** operator, `-`,
+## Additive
+```
+<int | float> `+` <int | float>
+<int | float> `-` <int | float>
+```
+The **addition** operator, `+`, and
+the **subtraction** operator, `-`,
 are valid only on number types.
 They produce the respective mathematical sum and difference of the operands.
+Integer bases can be mixed.
 
 Addition is **associative**, which means the following expressions produce the same result,
 for any numbers `‹a›`, `‹b›`, and `‹c›`:
@@ -212,7 +239,7 @@ when going beyond the maximum/minimum integer values.
 
 
 ### Parsing Additive Expressions
-[Previously in this chapter](#mathematical-affirmation-+-mathematical-negation--)
+[Previously in this chapter](#mathematical-affirmation-mathematical-negation)
 we saw that number tokens can begin with **U+002B PLUS SIGN** or **U+002D HYPHEN-MINUS**.
 Since those characters are the same as the additive operator symbols,
 this could affect how additive expressions are parsed.
@@ -233,3 +260,25 @@ To fix the error, we must use whitespace indicate token boundaries.
 Now the lexer produces three tokens: a number `3`, a punctuator `+`, and a number `1`.
 The parser receives these tokens and produces the correct expression.
 (Note that the code `3+ 1` would be sufficient, but perhaps not as readable.)
+
+
+
+## Conditional
+```
+`if` <bool> `then` <unknown> `else` <unknown>
+```
+The conditional operator is a ternary operator that takes three operand expressions:
+a condition, a consequent, and an alternative.
+The condition must be a boolean expression, and the consequent and alternative may be of any type.
+The consequent and alternative expressions are sometimes called “branches”:
+the “then branch” and the “else branch” respectively.
+
+The result of the conditional expression is either the consequent or the alterantive,
+depending on the value of the condition.
+If the condition is true, the consequent is produced, otherwise the alternative is produced.
+
+Evaluation of a conditional expression is short-circuited: Only the produced branch is evaluated.
+For example, if the condition evalutes to `false`, then only the alternative is evaluated and then produced;
+the consequent does not even get evaluated.
+This is meaningful when evaluation of an expression produces side-effects, such as a routine call.
+Because one of the branches is not evaluated, its side-effects (if any) will not occur.

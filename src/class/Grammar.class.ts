@@ -1,20 +1,31 @@
+import * as xjs from 'extrajs'
+
 import Util from './Util.class'
-import {SOT, EOT} from './Char.class'
-import type Token from './Token.class'
+import Dev from './Dev.class'
+import Token, {
+	Filebound,
+	Punctuator,
+	Keyword,
+} from './Token.class'
 import Terminal from './Terminal.class'
 import Production, {
-	ProductionFile,
-	ProductionExpression,
-	ProductionExpressionAdditive,
-	ProductionExpressionMultiplicative,
-	ProductionExpressionExponential,
-	ProductionExpressionUnarySymbol,
+	ProductionPrimitiveLiteral,
+	ProductionStringTemplate,
 	ProductionExpressionUnit,
+	ProductionExpressionUnarySymbol,
+	ProductionExpressionExponential,
+	ProductionExpressionMultiplicative,
+	ProductionExpressionAdditive,
+	ProductionExpression,
+	ProductionDeclarationVariable,
+	ProductionStatementAssignment,
+	ProductionStatement,
+	ProductionGoal,
 } from './Production.class'
 
 
 export type GrammarSymbol   = GrammarTerminal|Production
-export type GrammarTerminal = string|Terminal
+export type GrammarTerminal = Filebound|Punctuator|Keyword|Terminal
 
 
 
@@ -27,17 +38,19 @@ export type GrammarTerminal = string|Terminal
 const stringOfSymbols = (arr: readonly GrammarSymbol[]): string =>
 	arr.map((symbol) => (typeof symbol === 'string') ?
 		`"${ symbol }"`
-			.replace(SOT, '\u2402') // SYMBOL FOR START OF TEXT
-			.replace(EOT, '\u2403') // SYMBOL FOR END   OF TEXT
+			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 		: symbol.displayName
 	).join(' ')
 
 
 
 export default class Grammar {
-	/* The set of all productions in this Grammar. */
+	/** The set of all productions in this Grammar. */
 	readonly productions: readonly Production[];
-	/** The productions of this grammar decomposed into rules. There are likely many rules per production. */
+	/** The goal production of this Grammar. */
+	readonly goal: Production = ProductionGoal.instance
+	/** The productions of this Grammar decomposed into rules. There are likely many rules per production. */
 	readonly rules: readonly Rule[];
 
 	/**
@@ -45,15 +58,22 @@ export default class Grammar {
 	 */
 	constructor() {
 		this.productions = [
-			ProductionFile.instance,
-			ProductionExpression.instance,
-			ProductionExpressionAdditive.instance,
-			ProductionExpressionMultiplicative.instance,
-			ProductionExpressionExponential.instance,
-			ProductionExpressionUnarySymbol.instance,
+			ProductionPrimitiveLiteral.instance,
+			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate          .instance] : []),
+			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate.__0__List.instance] : []),
 			ProductionExpressionUnit.instance,
+			ProductionExpressionUnarySymbol.instance,
+			ProductionExpressionExponential.instance,
+			ProductionExpressionMultiplicative.instance,
+			ProductionExpressionAdditive.instance,
+			ProductionExpression.instance,
+			...(Dev.supports('variables') ? [ProductionDeclarationVariable.instance] : []),
+			...(Dev.supports('variables') ? [ProductionStatementAssignment.instance] : []),
+			ProductionStatement.instance,
+			ProductionGoal.instance,
+			ProductionGoal.__0__List.instance,
 		]
-		if (!this.productions.length) throw new Error('Grammar must ahve at least one production.')
+		if (!this.productions.length) throw new Error('Grammar must have at least one production.')
 		this.productions.forEach((prod) => {
 			if (!prod.sequences.length) throw new Error('Grammar production must have at least one sequence.')
 			prod.sequences.forEach((seq) => {
@@ -114,7 +134,7 @@ export default class Grammar {
 	 * @returns                  the closure set
 	 */
 	closure(configurations: ReadonlySet<Configuration>
-		= new Set<Configuration>(this.productions[0].toRules().map((rule) => new Configuration(rule)))
+		= new Set<Configuration>(this.goal.toRules().map((rule) => new Configuration(rule)))
 	): Set<Configuration> {
 		const closure: Set<Configuration> = new Set<Configuration>(configurations)
 		closure.forEach((config) => { // callback will visit any new items added to the set before `.forEach()` returns
@@ -123,8 +143,8 @@ export default class Grammar {
 			if (expand instanceof Production) {
 				expand.toRules().forEach((rule) => {
 					/* equivalent configurations (differ only by lookahead set) */
-					const similar: Configuration|null = [...closure].find((c) => c.rule.equals(rule) && c.marker === 0) || null
-					const new_config: Configuration = new Configuration(rule, 0, ...[
+					const similar: Configuration|null = [...closure].find((c) => c.rule.equals(rule) && c.marker === 0n) || null
+					const new_config: Configuration = new Configuration(rule, 0n, ...[
 						...(follow ? this.first(follow) : config.lookaheads),
 						...(similar ? similar.lookaheads : []),
 					])
@@ -149,9 +169,12 @@ export default class Grammar {
 		let returned: string[]|null = null
 		for (let i = 0; i < 64; i++) {
 			try {
-				returned = this.productions[0].random()
+				returned = this.goal.random()
 				break;
-			} catch { // RangeError: Maximum call stack size exceeded
+			} catch (err) { // RangeError: Maximum call stack size exceeded
+				if (err.message !== 'Maximum call stack size exceeded') {
+					throw err
+				}
 			}
 		}
 		return returned || []
@@ -210,9 +233,9 @@ export class Rule {
  */
 export class Configuration {
 	/** The set of symbols before the current marker. */
-	readonly before: readonly GrammarSymbol[] = this.rule.symbols.slice(0, this.marker)
+	readonly before: readonly GrammarSymbol[] = this.rule.symbols.slice(0, Number(this.marker))
 	/** The set of symbols after the current marker. */
-	readonly after: readonly GrammarSymbol[] = this.rule.symbols.slice(this.marker)
+	readonly after: readonly GrammarSymbol[] = this.rule.symbols.slice(Number(this.marker))
 	/** Is this configuration done? That is, is the marker past all of the symbols in the rule? */
 	readonly done: boolean = this.after.length === 0
 	/** The set of terminal symbols that may succeed the symbols in this configuration’s rule. */
@@ -228,7 +251,7 @@ export class Configuration {
 	 */
 	constructor(
 		readonly rule: Rule,
-		readonly marker: number = 0,
+		readonly marker: bigint = 0n,
 		...lookaheads: readonly GrammarTerminal[]
 	) {
 		if (this.marker > this.rule.symbols.length) throw new Error('Cannot advance past end of rule.')
@@ -241,7 +264,10 @@ export class Configuration {
 	 * @returns             is the Token, or the Token’s cargo, in this lookahead set?
 	 */
 	hasLookahead(candidate: Token): boolean {
-		return this.lookaheads.has(candidate.source) || [...this.lookaheads].some((l) => l instanceof Terminal && l.match(candidate))
+		return [...this.lookaheads].some((l) =>
+			l === candidate.source ||
+			l instanceof Terminal && l.match(candidate)
+		)
 	}
 	/**
 	 * Produce a new configuration that represents this configuartion with its marker advanced to the next symbol.
@@ -249,8 +275,8 @@ export class Configuration {
 	 * @param   step - number of steps to advance the marker; a positive integer
 	 * @returns        a new Configuration with the marker moved forward 1 step
 	 */
-	advance(step: number = 1): Configuration {
-		return new Configuration(this.rule, this.marker + Math.max(1, Math.floor(step)), ...this.lookaheads)
+	advance(step: bigint = 1n): Configuration {
+		return new Configuration(this.rule, this.marker + xjs.Math.maxBigInt(1n, step), ...this.lookaheads)
 	}
 
 	/**

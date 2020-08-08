@@ -1,5 +1,4 @@
 ;; # Exponent Operator for Integers
-;; Relies upon the fact that
 ;; ```
 ;; x ^ y
 ;; 	:=     (x^2) ^ (y / 2)       if y is even

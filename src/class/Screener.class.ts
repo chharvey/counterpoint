@@ -1,12 +1,11 @@
+import type SolidConfig from '../SolidConfig'
+
+import Dev from './Dev.class'
 import Lexer from './Lexer.class'
-import {SOT, EOT} from './Char.class'
 import Token, {
-	TokenFilebound,
 	TokenWhitespace,
+	TokenIdentifier,
 	TokenComment,
-	TokenString,
-	TokenNumber,
-	TokenWord,
 } from './Token.class'
 
 
@@ -14,74 +13,49 @@ import Token, {
 /**
  * A screener prepares the tokens for the parser.
  * It performs certian operations such as
- * - computing the mathematical value of numerical constants
- * - performing escapes of escape sequences in strings
+ * - removing whitespace and comment tokens
+ * - stripping out compiler directives (“pragmas”) and sending them
+ * 	separately to the compiler
+ * - computing the mathematical values of numerical constants
+ * - computing the string values, including escaping, of string constants (“cooking”)
  * - optimizing identifiers
  */
 export default class Screener {
 	/** The lexer returning tokens for each iteration. */
-	private readonly lexer: Iterator<Token, void>;
+	private readonly lexer: Generator<Token>;
 	/** The result of the lexer iterator. */
 	private iterator_result_token: IteratorResult<Token, void>;
 	/** The current token. */
 	private t0: Token|void;
-	/** The running identifier count. Used as an id for identifier tokens. */
-	private idcount: number = 0
+	/** A set of all unique identifiers in the program. */
+	private _ids: Set<string> = new Set()
 
 	/**
 	 * Construct a new Screener object.
 	 * @param source - the entire source text
+	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor(source: string) {
-		this.lexer = new Lexer(source).generate()
+	constructor (source: string, config: SolidConfig) {
+		this.lexer = new Lexer(source, config).generate()
 		this.iterator_result_token = this.lexer.next()
 		this.t0 = this.iterator_result_token.value
 	}
 
 	/**
-	 * Construct and return the next token in the source text.
-	 * @returns the next token, if it does not contain whitespace
+	 * Prepare the next token for the parser.
+	 * Whitespace and comment tokens are filtered out.
+	 * @returns the next token
 	 */
-	* generate(): Iterator<Token, void> {
+	* generate(): Generator<Token> {
 		while (!this.iterator_result_token.done) {
-			if (this.t0 instanceof TokenFilebound) {
-				this.t0.value = new Map<string, boolean>([
-					[SOT, true ],
-					[EOT, false],
-				]).get(this.t0.source) !
-				yield this.t0
-			} else if (this.t0 instanceof TokenWhitespace) {
-				// we do not want to send whitespace to the parser
-			} else if (this.t0 instanceof TokenComment) {
-				// we do not want to send comments to the parser
-			} else if (this.t0 instanceof TokenString) {
-				this.t0.value = this.t0.source // here is where we perform character escapes
-				yield this.t0
-			} else if (this.t0 instanceof TokenNumber) {
-				/**
-				 * Compute the mathematical value of a `TokenNumber` token.
-				 * @param   cargo the string to compute
-				 * @returns the mathematical value of the string
-				 */
-				const mv_dec = (cargo: string): number => { // base 10 // TODO let `base` be an instance field of `TokenNumber`
-					if (cargo.length === 0) throw new Error('Cannot compute mathematical value of empty string.')
-					return (cargo.length === 1) ?
-						parseInt(cargo)
-					: (TokenNumber.PREFIXES.includes(cargo[0])) ?
-						new Map<string, number>([
-							['+',  1],
-							['-', -1],
-						]).get(cargo[0]) ! * mv_dec(cargo.slice(1))
-					:
-						10 * mv_dec(cargo.slice(0, -1)) + mv_dec(cargo[cargo.length-1])
+			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
+				if (Dev.supports('variables') && this.t0 instanceof TokenIdentifier) {
+					this._ids.add(this.t0.source)
+					this.t0.setValue(BigInt([...this._ids].indexOf(this.t0.source)))
 				}
-				this.t0.value = mv_dec(this.t0.source)
-				yield this.t0
-			} else if (this.t0 instanceof TokenWord) {
-				this.t0.id = this.idcount++;
-				yield this.t0
-			} else if (this.t0 instanceof Token) {
-				yield this.t0
+				if (this.t0 instanceof Token) {
+					yield this.t0
+				}
 			}
 			this.iterator_result_token = this.lexer.next()
 			this.t0 = this.iterator_result_token.value

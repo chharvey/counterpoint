@@ -1,0 +1,9 @@
+{
+	"features": {
+		"comments"          : true,
+		"integerRadices"    : false,
+		"numericSeparators" : false
+	},
+	"compilerOptions": {
+	}
+}
