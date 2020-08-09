@@ -8,8 +8,10 @@ import {
 	SemanticNodeTemplate,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
+	SemanticNodeOperation,
+	SemanticNodeOperationUnary,
+	SemanticNodeOperationBinary,
 	SemanticNodeOperationTernary,
-	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
 } from '../src/class/SemanticNode.class'
@@ -23,6 +25,11 @@ import {Operator} from '../src/vm/Instruction.class'
 import {
 	assert_arrayLength,
 } from './assert-helpers'
+import {
+	statementExpressionFromSource,
+	constantFromStatementExpression,
+	operationFromStatementExpression,
+} from './helpers-semantic'
 
 
 
@@ -31,18 +38,15 @@ describe('ParseNode', () => {
 		context('Goal ::= #x02 #x03', () => {
 			it('makes a SemanticNodeGoal node containing no children.', () => {
 				const goal: SemanticNodeGoal = new Parser('', CONFIG_DEFAULT).parse().decorate()
-				assert.strictEqual(goal.children.length, 0)
+				assert_arrayLength(goal.children, 0, 'semantic goal should have 0 children')
 			})
 		})
 
 		context('Statement ::= ";"', () => {
 			it('makes a SemanticNodeStatementExpression node containing no children.', () => {
-				const semanticnode: SemanticNodeGoal = new Parser(';', CONFIG_DEFAULT).parse().decorate()
-				assert.strictEqual(semanticnode.serialize(), `
-					<Goal source="␂ ; ␃">
-						<StatementExpression line="1" col="1" source=";"/>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
+				const statement: SemanticNodeStatementExpression = statementExpressionFromSource(`;`)
+				assert_arrayLength(statement.children, 0, 'semantic statement should have 0 children')
+				assert.strictEqual(statement.source, `;`)
 			})
 		})
 
@@ -55,26 +59,21 @@ describe('ParseNode', () => {
 						</StatementExpression>
 					</Goal>
 				*/
-				[
+				assert.deepStrictEqual([
 					`null;`,
 					`false;`,
 					`true;`,
 					`42;`,
-				].forEach((src, i) => {
-					const goal: SemanticNodeGoal = new Parser(src, CONFIG_DEFAULT).parse().decorate()
-					assert_arrayLength(goal.children, 1, 'goal should have 1 child')
-					const stmt: SemanticStatementType = goal.children[0] as SemanticStatementType
-					assert.ok(stmt instanceof SemanticNodeStatementExpression)
-					assert_arrayLength(stmt.children, 1, 'statement should have 1 child')
-					const expr: SemanticNodeExpression = stmt.children[0]
-					assert.ok(expr instanceof SemanticNodeConstant)
-					assert.deepStrictEqual(expr.value, [
-						SolidNull.NULL,
-						SolidBoolean.FALSE,
-						SolidBoolean.TRUE,
-						new Int16(42n),
-					][i])
-				})
+				].map((src) =>
+					constantFromStatementExpression(
+						statementExpressionFromSource(src)
+					).value
+				), [
+					SolidNull.NULL,
+					SolidBoolean.FALSE,
+					SolidBoolean.TRUE,
+					new Int16(42n),
+				])
 			})
 		})
 
@@ -183,135 +182,147 @@ describe('ParseNode', () => {
 
 		context('ExpressionUnit ::= "(" Expression ")"', () => {
 			it('returns the inner Expression node.', () => {
-				assert.strictEqual(new Parser('(2 + -3);', CONFIG_DEFAULT).parse().decorate().serialize(), `
-					<Goal source="␂ ( 2 + -3 ) ; ␃">
-						<StatementExpression line="1" col="1" source="( 2 + -3 ) ;">
-							<Operation line="1" col="2" source="2 + -3" operator="5">
-								<Constant line="1" col="2" source="2" value="2"/>
-								<Constant line="1" col="6" source="-3" value="-3"/>
-							</Operation>
-						</StatementExpression>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
+				/*
+					<Operation operator=ADD>
+						<Constant source="2"/>
+						<Constant source="-3"/>
+					</Operation>
+				*/
+				const operation: SemanticNodeOperation = operationFromStatementExpression(
+					statementExpressionFromSource(`(2 + -3);`)
+				)
+				assert.ok(operation instanceof SemanticNodeOperationBinary)
+				const [left, right]: readonly SemanticNodeExpression[] = operation.children
+				assert.ok(left instanceof SemanticNodeConstant)
+				assert.ok(right instanceof SemanticNodeConstant)
+				assert.deepStrictEqual(
+					[left.source, operation.operator, right.source],
+					[`2`,         Operator.ADD,       `-3`],
+				)
 			})
 			it('recursively applies to several sub-expressions.', () => {
-				assert.strictEqual(new Parser('(-(42) ^ +(2 * 420));', CONFIG_DEFAULT).parse().decorate().serialize(), `
-					<Goal source="␂ ( - ( 42 ) ^ + ( 2 * 420 ) ) ; ␃">
-						<StatementExpression line="1" col="1" source="( - ( 42 ) ^ + ( 2 * 420 ) ) ;">
-							<Operation line="1" col="2" source="- ( 42 ) ^ + ( 2 * 420 )" operator="2">
-								<Operation line="1" col="2" source="- ( 42 )" operator="1">
-									<Constant line="1" col="4" source="42" value="42"/>
-								</Operation>
-								<Operation line="1" col="12" source="2 * 420" operator="3">
-									<Constant line="1" col="12" source="2" value="2"/>
-									<Constant line="1" col="16" source="420" value="420"/>
-								</Operation>
-							</Operation>
-						</StatementExpression>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
+				/*
+					<Operation operator=EXP>
+						<Operation operator=NEG>
+							<Constant source="42"/>
+						</Operation>
+						<Operation operator=MUL>
+							<Constant source="2"/>
+							<Constant source="420"/>
+						</Operation>
+					</Operation>
+				*/
+				const operation: SemanticNodeOperation = operationFromStatementExpression(
+					statementExpressionFromSource(`(-(42) ^ +(2 * 420));`)
+				)
+				assert.ok(operation instanceof SemanticNodeOperationBinary)
+				assert.strictEqual(operation.operator, Operator.EXP)
+				const [left, right]: readonly SemanticNodeExpression[] = operation.children
+				assert.ok(left instanceof SemanticNodeOperationUnary)
+				assert.strictEqual(left.operator, Operator.NEG)
+				assert_arrayLength(left.children, 1)
+				assert.ok(left.children[0] instanceof SemanticNodeConstant)
+				assert.strictEqual(left.children[0].source, `42`)
+
+				assert.ok(right instanceof SemanticNodeOperationBinary)
+				assert.strictEqual(right.operator, Operator.MUL)
+				assert_arrayLength(right.children, 2)
+				assert.deepStrictEqual(right.children.map((child) => {
+					assert.ok(child instanceof SemanticNodeConstant)
+					return child.source
+				}), [`2`, `420`])
 			})
 		})
 
 		context('ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol', () => {
 			it('makes a SemanticNodeOperation node with 1 child.', () => {
-				assert.strictEqual(new Parser('- 42;', CONFIG_DEFAULT).parse().decorate().serialize(), `
-					<Goal source="␂ - 42 ; ␃">
-						<StatementExpression line="1" col="1" source="- 42 ;">
-							<Operation line="1" col="1" source="- 42" operator="1">
-								<Constant line="1" col="3" source="42" value="42"/>
-							</Operation>
-						</StatementExpression>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
+				/*
+					<Operation operator=NEG>
+						<Constant source="42"/>
+					</Operation>
+				*/
+				const operation: SemanticNodeOperation = operationFromStatementExpression(
+					statementExpressionFromSource(`- 42;`)
+				)
+				assert.ok(operation instanceof SemanticNodeOperationUnary)
+				assert.strictEqual(operation.operator, Operator.NEG)
+				const operand: SemanticNodeExpression = operation.children[0]
+				assert.ok(operand instanceof SemanticNodeConstant)
+				assert.strictEqual(operand.source, `42`)
 			})
 		})
 
-		context('ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential', () => {
+		context('SemanticOperation ::= SemanticExpression SemanticExpression', () => {
 			it('makes a SemanticNodeOperation node with 2 children.', () => {
-				assert.strictEqual(new Parser('2 ^ -3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
-					<Goal source="␂ 2 ^ -3 ; ␃">
-						<StatementExpression line="1" col="1" source="2 ^ -3 ;">
-							<Operation line="1" col="1" source="2 ^ -3" operator="2">
-								<Constant line="1" col="1" source="2" value="2"/>
-								<Constant line="1" col="5" source="-3" value="-3"/>
-							</Operation>
-						</StatementExpression>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
-			})
-		})
-
-		context('ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential', () => {
-			it('makes a SemanticNodeOperation node with 2 children.', () => {
-				assert.strictEqual(new Parser('2 * -3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
-					<Goal source="␂ 2 * -3 ; ␃">
-						<StatementExpression line="1" col="1" source="2 * -3 ;">
-							<Operation line="1" col="1" source="2 * -3" operator="3">
-								<Constant line="1" col="1" source="2" value="2"/>
-								<Constant line="1" col="5" source="-3" value="-3"/>
-							</Operation>
-						</StatementExpression>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
-			})
-		})
-
-		context('ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative', () => {
-			it('makes a SemanticNodeOperation node with 2 children.', () => {
-				assert.strictEqual(new Parser('2 + -3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
-					<Goal source="␂ 2 + -3 ; ␃">
-						<StatementExpression line="1" col="1" source="2 + -3 ;">
-							<Operation line="1" col="1" source="2 + -3" operator="5">
-								<Constant line="1" col="1" source="2" value="2"/>
-								<Constant line="1" col="5" source="-3" value="-3"/>
-							</Operation>
-						</StatementExpression>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
+				/*
+					<Operation operator=EXP>
+						<Constant source="2"/>
+						<Constant source="-3"/>
+					</Operation>
+				*/
+				;([
+					[`2 ^ -3;`, Operator.EXP],
+					[`2 * -3;`, Operator.MUL],
+					[`2 + -3;`, Operator.ADD],
+				] as [string, Operator][]).forEach(([src, op]) => {
+					const operation: SemanticNodeOperation = operationFromStatementExpression(
+						statementExpressionFromSource(src)
+					)
+					assert.ok(operation instanceof SemanticNodeOperationBinary)
+					assert.strictEqual(operation.operator, op)
+					assert.deepStrictEqual(operation.children.map((operand) => {
+						assert.ok(operand instanceof SemanticNodeConstant)
+						return operand.source
+					}), [`2`, `-3`])
+				})
 			})
 		})
 
 		context('ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative', () => {
 			it('makes a SemanticNodeOperation with the `+` operator and negates the 2nd operand.', () => {
-				assert.strictEqual(new Parser('2 - 3;', CONFIG_DEFAULT).parse().decorate().serialize(), `
-					<Goal source="␂ 2 - 3 ; ␃">
-						<StatementExpression line="1" col="1" source="2 - 3 ;">
-							<Operation line="1" col="1" source="2 - 3" operator="5">
-								<Constant line="1" col="1" source="2" value="2"/>
-								<Operation line="1" col="5" source="3" operator="1">
-									<Constant line="1" col="5" source="3" value="3"/>
-								</Operation>
-							</Operation>
-						</StatementExpression>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
+				/*
+					<Operation operator=ADD>
+						<Constant source="2"/>
+						<Operation operator=NEG>
+							<Constant source="3"/>
+						</Operation>
+					</Operation>
+				*/
+				const operation: SemanticNodeOperation = operationFromStatementExpression(
+					statementExpressionFromSource(`2 - 3;`)
+				)
+				assert.ok(operation instanceof SemanticNodeOperationBinary)
+				assert.strictEqual(operation.operator, Operator.ADD)
+				const left: SemanticNodeExpression = operation.children[0]
+				const right: SemanticNodeExpression = operation.children[1]
+				assert.ok(left instanceof SemanticNodeConstant)
+				assert.ok(right instanceof SemanticNodeOperationUnary)
+				assert.ok(right.children[0] instanceof SemanticNodeConstant)
+				assert.deepStrictEqual(
+					[left.source, right.operator, right.children[0].source],
+					[`2`,         Operator.NEG,   `3`],
+				)
 			})
 		})
 
 		context('ExpressionConditional ::= "if" Expression "then" Expression "else" Expression', () => {
 			it('makes a SemanticNodeOperation with the COND operator and 3 children.', () => {
 				/*
-					<Goal>
-						<StatementExpression>
-							<Operation operator=COND>
-								<Constant value=true/>
-								<Constant value=2n/>
-								<Constant value=3n/>
-							</Operation>
-						</StatementExpression>
-					</Goal>
+					<Operation operator=COND>
+						<Constant value=true/>
+						<Constant value=2n/>
+						<Constant value=3n/>
+					</Operation>
 				*/
-				const goal: SemanticNodeGoal = new Parser('if true then 2 else 3;', CONFIG_DEFAULT).parse().decorate()
-				const statements: SemanticStatementType = goal.children[0]
-				assert_arrayLength(statements.children, 1)
-				const expression: SemanticNodeExpression = statements.children[0]
-				assert.ok(expression instanceof SemanticNodeOperationTernary)
-				assert.strictEqual(expression.operator, Operator.COND)
-				expression.children.forEach((child) => {
+				const operation: SemanticNodeOperation = operationFromStatementExpression(
+					statementExpressionFromSource(`if true then 2 else 3;`)
+				)
+				assert.ok(operation instanceof SemanticNodeOperationTernary)
+				assert.strictEqual(operation.operator, Operator.COND)
+				assert.deepStrictEqual(operation.children.map((child) => {
 					assert.ok(child instanceof SemanticNodeConstant)
-				})
-				assert.deepStrictEqual(expression.children.map((child) => (child as SemanticNodeConstant).value), [
+					return child.value
+				}), [
 					SolidBoolean.TRUE,
 					new Int16(2n),
 					new Int16(3n),

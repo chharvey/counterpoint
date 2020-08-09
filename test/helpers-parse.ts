@@ -41,9 +41,9 @@ export function statementFromSource(src: string, config: SolidConfig = CONFIG_DE
 }
 export function expressionFromStatement(statement: ParseNodeStatement): ParseNodeExpression {
 	assert_arrayLength(statement.children, 2, 'statment should have 2 children')
-	const [expr, endstat]: readonly [ParseNodeExpression, TokenPunctuator] = statement.children
+	const [expression, endstat]: readonly [ParseNodeExpression, TokenPunctuator] = statement.children
 	assert.strictEqual(endstat.source, Punctuator.ENDSTAT)
-	return expr
+	return expression
 }
 export function conditionalExpressionFromExpression(expression: ParseNodeExpression): ParseNodeExpressionConditional {
 	const expression_cond: ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression.children[0]
