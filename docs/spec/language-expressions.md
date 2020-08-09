@@ -288,7 +288,7 @@ Void Evaluate(SemanticIdentifier iden) :=
 ## Unary Operators
 ```
 ExpressionUnarySymbol
-	::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol;
+	::= ExpressionUnit | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
 ```
 
 
