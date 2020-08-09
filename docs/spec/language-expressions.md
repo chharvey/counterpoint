@@ -316,6 +316,15 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperati
 
 ### Static Semantics: Assess (Unary Operators)
 ```
+Boolean? Assess(SemanticOperation[operator: NOT | EMPTY] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `TypeOf(operand)` is `Void`:
+		1. *Return*.
+	4. *Let* `is_truthy` be the result of performing `ToBoolean(operand)`.
+	5. *If* `is_truthy` is `true`:
+		1. *Return:* `false`.
+	6. *Return:* `true`.
 Or<Integer, Float>? Assess(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.

@@ -11,6 +11,17 @@ import type Float64 from './Float64.class'
  * - Float64
  */
 export default class SolidLanguageValue {
+	/**
+	 * Return the “logical value” of this value.
+	 * @returns the associated Boolean value of this value
+	 */
+	get isTruthy(): SolidBoolean {
+		return (
+			(this instanceof SolidNull) ? SolidBoolean.FALSE :
+			(this instanceof SolidBoolean) ? this :
+			SolidBoolean.TRUE
+		)
+	}
 }
 
 
@@ -61,6 +72,13 @@ export class SolidBoolean extends SolidLanguageValue {
 	}
 	toString(): string {
 		return `${ this.value }`
+	}
+	/**
+	 * Return the negation of this Boolean.
+	 * @return `true <-|-> false`
+	 */
+	get negation(): SolidBoolean {
+		return (this.value === true) ? SolidBoolean.FALSE : SolidBoolean.TRUE
 	}
 }
 

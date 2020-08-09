@@ -362,6 +362,38 @@ describe('SemanticNode', () => {
 					SolidBoolean.TRUE,
 				])
 			})
+			it('computes the value of a boolean unary operation of anything.', () => {
+				assert.deepStrictEqual([
+					`!false;`,
+					`!true;`,
+					`!null;`,
+					`!42;`,
+					`!4.2e+1;`,
+					`?false;`,
+					`?true;`,
+					`?null;`,
+					`?42;`,
+					`?4.2e+1;`,
+				].map((src) => {
+					const assess: CompletionStructureAssessment | null = ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation).assess()
+					assert.ok(assess)
+					assert.ok(assess.value instanceof SolidBoolean)
+					return assess
+				}), [
+					true,
+					false,
+					true,
+					false,
+					false,
+					true,
+					false,
+					true,
+					false,
+					false,
+				].map((b) => new CompletionStructureAssessment((b) ? SolidBoolean.TRUE : SolidBoolean.FALSE)))
+			})
 			it('computes the value of an integer operation of constants.', () => {
 				assert.deepStrictEqual([
 					'42 + 420;',
