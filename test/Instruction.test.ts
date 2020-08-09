@@ -43,7 +43,7 @@ describe('Instruction', () => {
 	})
 
 	describe('#toString', () => {
-		context('InstructionConstInt', () => {
+		context('InstructionConst', () => {
 			it('pushes the constant integer onto the stack.', () => {
 				const values: number[] = [
 					0,
@@ -67,9 +67,6 @@ describe('Instruction', () => {
 					values.map((x) => `(i32.const ${ x })`),
 				)
 			})
-		})
-
-		context('InstructionConstFloat', () => {
 			it('pushes the constant float onto the stack.', () => {
 				const values: number[] = [
 					55, -55, 33, -33, 2.007, -2.007,

@@ -68,22 +68,34 @@ describe('SemanticNode', () => {
 					'null;',
 					'false;',
 					'true;',
+					'0;',
+					'+0;',
+					'-0;',
 					'42;',
 					'+42;',
 					'-42;',
+					'0.0;',
+					'+0.0;',
+					'-0.0;',
 				].map((src) => [src, CONFIG_DEFAULT] as [string, SolidConfig]).map((srcs) =>
 					((new Parser(...srcs).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeConstant)
 						.build(new Builder(...srcs))
 				), [
-					0n,
-					0n,
-					1n,
-					42n,
-					42n,
-					-42n,
-				].map((v) => instructionConstInt(v)))
+					instructionConstInt(0n),
+					instructionConstInt(0n),
+					instructionConstInt(1n),
+					instructionConstInt(0n),
+					instructionConstInt(0n),
+					instructionConstInt(0n),
+					instructionConstInt(42n),
+					instructionConstInt(42n),
+					instructionConstInt(-42n),
+					instructionConstFloat(0.0),
+					instructionConstFloat(0.0),
+					instructionConstFloat(-0.0),
+				])
 			})
 		})
 
