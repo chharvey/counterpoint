@@ -286,6 +286,9 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		)
 	}
 	type(): SolidLanguageType {
+		if ([Operator.NOT, Operator.EMPTY].includes(this.operator)) {
+			return SolidBoolean
+		}
 		const t0: SolidLanguageType = this.children[0].type()
 		return (isNumericType(t0)) ? t0 : (() => { throw new TypeError('Invalid operation.') })()
 	}

@@ -193,8 +193,10 @@ export class ParseNodeExpressionUnit extends ParseNode {
 }
 export class ParseNodeExpressionUnary extends ParseNode {
 	private static readonly OPERATORS: Map<Punctuator, Operator> = new Map<Punctuator, Operator>([
-		[Punctuator.AFF, Operator.AFF],
-		[Punctuator.NEG, Operator.NEG],
+		[Punctuator.NOT,   Operator.NOT],
+		[Punctuator.EMPTY, Operator.EMPTY],
+		[Punctuator.AFF,   Operator.AFF],
+		[Punctuator.NEG,   Operator.NEG],
 	])
 	declare children:
 		| readonly [ParseNodeExpressionUnit]

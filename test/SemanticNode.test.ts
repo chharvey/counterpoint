@@ -278,6 +278,24 @@ describe('SemanticNode', () => {
 					assert.strictEqual(node.type(), SolidString)
 				})
 			})
+			it('returns `Boolean` for boolean unary operation of anything.', () => {
+				;[
+					`!false;`,
+					`!true;`,
+					`!null;`,
+					`!42;`,
+					`!4.2e+1;`,
+					`?false;`,
+					`?true;`,
+					`?null;`,
+					`?42;`,
+					`?4.2e+1;`,
+				].forEach((src) => {
+					assert.strictEqual(((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation).type(), SolidBoolean)
+				})
+			})
 			it('returns `Integer` for any operation of integers.', () => {
 				assert.strictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)

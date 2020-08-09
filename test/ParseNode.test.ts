@@ -249,21 +249,30 @@ describe('ParseNode', () => {
 			})
 		})
 
-		context('ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol', () => {
+		context('ExpressionUnarySymbol ::= ("!" | "?" | "-") ExpressionUnarySymbol', () => {
 			it('makes a SemanticNodeOperation node with 1 child.', () => {
 				/*
 					<Operation operator=NEG>
 						<Constant source="42"/>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromStatementExpression(
-					statementExpressionFromSource(`- 42;`)
-				)
-				assert.ok(operation instanceof SemanticNodeOperationUnary)
-				assert.strictEqual(operation.operator, Operator.NEG)
-				const operand: SemanticNodeExpression = operation.children[0]
-				assert.ok(operand instanceof SemanticNodeConstant)
-				assert.strictEqual(operand.source, `42`)
+				assert.deepStrictEqual([
+					`!null;`,
+					`?41;`,
+					`- 42;`,
+				].map((src) => {
+					const operation: SemanticNodeOperation = operationFromStatementExpression(
+						statementExpressionFromSource(src)
+					)
+					assert.ok(operation instanceof SemanticNodeOperationUnary)
+					const operand: SemanticNodeExpression = operation.children[0]
+					assert.ok(operand instanceof SemanticNodeConstant)
+					return [operand.source, operation.operator]
+				}), [
+					[`null`, Operator.NOT],
+					[`41`, Operator.EMPTY],
+					[`42`, Operator.NEG],
+				])
 			})
 		})
 

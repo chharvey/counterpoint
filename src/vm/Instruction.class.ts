@@ -5,6 +5,8 @@ import Float64 from './Float64.class'
 
 // HACK: this is defined here, instead of in `../class/SemanticNode.class`, to avoid circular imports.
 export enum Operator {
+	NOT,
+	EMPTY,
 	AFF,
 	NEG,
 	EXP,

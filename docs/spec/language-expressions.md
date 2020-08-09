@@ -303,6 +303,10 @@ SemanticOperation[operator: NEG]
 ```
 Decorate(ExpressionUnarySymbol ::= ExpressionUnit) -> SemanticExpression
 	:= Decorate(ExpressionUnit);
+Decorate(ExpressionUnarySymbol ::= "!" ExpressionUnarySymbol) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT] Decorate(ExpressionUnarySymbol));
+Decorate(ExpressionUnarySymbol ::= "?" ExpressionUnarySymbol) -> SemanticOperation
+	:= (SemanticOperation[operator=EMPTY] Decorate(ExpressionUnarySymbol));
 Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol);
 Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperation
