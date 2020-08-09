@@ -260,21 +260,25 @@ describe('ParseNode', () => {
 						<Constant source="-3"/>
 					</Operation>
 				*/
-				;([
-					[`2 ^ -3;`, Operator.EXP],
-					[`2 * -3;`, Operator.MUL],
-					[`2 + -3;`, Operator.ADD],
-				] as [string, Operator][]).forEach(([src, op]) => {
+				assert.deepStrictEqual([
+					`2 ^ -3;`,
+					`2 * -3;`,
+					`2 + -3;`,
+				].map((src) => {
 					const operation: SemanticNodeOperation = operationFromStatementExpression(
 						statementExpressionFromSource(src)
 					)
 					assert.ok(operation instanceof SemanticNodeOperationBinary)
-					assert.strictEqual(operation.operator, op)
 					assert.deepStrictEqual(operation.children.map((operand) => {
 						assert.ok(operand instanceof SemanticNodeConstant)
 						return operand.source
 					}), [`2`, `-3`])
-				})
+					return operation.operator
+				}), [
+					Operator.EXP,
+					Operator.MUL,
+					Operator.ADD,
+				])
 			})
 		})
 

@@ -126,11 +126,11 @@ describe('SemanticNode', () => {
 					'42;',
 					'+42;',
 					'-42;',
-				].map((src) => [src, CONFIG_DEFAULT] as [string, SolidConfig]).map((srcs) =>
-					((new Parser(...srcs).parse().decorate()
+				].map((src) =>
+					((new Parser(src, CONFIG_DEFAULT).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeConstant)
-						.build(new Builder(...srcs))
+						.build(new Builder(src, CONFIG_DEFAULT))
 				), [
 					0n,
 					0n,
