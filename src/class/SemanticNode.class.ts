@@ -82,6 +82,11 @@ export default abstract class SemanticNode implements Serializable {
 	}
 
 	/**
+	 * Type-check the node as part of semantic analysis.
+	 */
+	abstract typeCheck(): void;
+
+	/**
 	 * Give directions to the runtime code builder.
 	 * @param builder the builder to direct
 	 * @return the directions to print
@@ -123,9 +128,11 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 		children: typeof SemanticNode.prototype.children = [],
 	) {
 		super(start_node, attributes, children)
-		this.type() // assert does not throw
 	}
 
+	typeCheck(): void {
+		this.type() // assert does not throw
+	}
 	/**
 	 * @override
 	 * @param to_float Should the returned instruction be type-coersed into a floating-point number?
@@ -400,6 +407,9 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
+	typeCheck(): void {
+		this.children[0] && this.children[0].type() // assert does not throw // COMBAK this.children[0]?.type()
+	}
 	build(generator: Builder): InstructionNone | InstructionStatement {
 		return (!this.children.length)
 			? new InstructionNone()
@@ -415,17 +425,13 @@ export class SemanticNodeDeclaration extends SemanticNode {
 			| readonly [SemanticNodeAssignee, SemanticNodeAssigned]
 	) {
 		super(start_node, {type, unfixed}, children)
-		this.typeCheck()
+	}
+	typeCheck(): void {
+		throw new Error('not yet supported.')
+		// const assignedType = this.children[1].type()
 	}
 	build(generator: Builder): Instruction {
 		throw new Error('not yet supported.')
-	}
-	/**
-	 * Type-check the node as part of semantic analysis.
-	 */
-	private typeCheck(): void {
-		throw new Error('not yet supported.')
-		// const assignedType = this.children[1].type()
 	}
 }
 export class SemanticNodeAssignment extends SemanticNode {
@@ -435,17 +441,13 @@ export class SemanticNodeAssignment extends SemanticNode {
 			| readonly [SemanticNodeAssignee, SemanticNodeAssigned]
 	) {
 		super(start_node, {}, children)
-		this.typeCheck()
+	}
+	typeCheck(): void {
+		throw new Error('not yet supported.')
+		// const assignedType = this.children[1].type()
 	}
 	build(generator: Builder): Instruction {
 		throw new Error('not yet supported.')
-	}
-	/**
-	 * Type-check the node as part of semantic analysis.
-	 */
-	private typeCheck(): void {
-		throw new Error('not yet supported.')
-		// const assignedType = this.children[1].type()
 	}
 }
 export class SemanticNodeAssignee extends SemanticNode {
@@ -455,6 +457,9 @@ export class SemanticNodeAssignee extends SemanticNode {
 			| readonly [SemanticNodeIdentifier]
 	) {
 		super(start_node, {}, children)
+	}
+	typeCheck(): void {
+		throw new Error('not yet supported.')
 	}
 	build(generator: Builder): Instruction {
 		throw new Error('not yet supported.')
@@ -467,6 +472,9 @@ export class SemanticNodeAssigned extends SemanticNode {
 			| readonly [SemanticNodeExpression]
 	) {
 		super(start_node, {}, children)
+	}
+	typeCheck(): void {
+		this.type() // assert does not throw
 	}
 	build(generator: Builder): Instruction {
 		throw new Error('not yet supported.')
@@ -486,6 +494,11 @@ export class SemanticNodeGoal extends SemanticNode {
 			| readonly SemanticStatementType[]
 	) {
 		super(start_node, {}, children)
+	}
+	typeCheck(): void {
+		this.children.forEach((child) => {
+			child.typeCheck()
+		})
 	}
 	build(generator: Builder): InstructionNone | InstructionModule {
 		return (!this.children.length)

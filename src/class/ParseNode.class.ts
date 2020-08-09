@@ -316,7 +316,9 @@ export class ParseNodeGoal extends ParseNode {
 		| readonly [TokenFilebound,                         TokenFilebound]
 		| readonly [TokenFilebound, ParseNodeGoal__0__List, TokenFilebound]
 	decorate(): SemanticNodeGoal {
-		return new SemanticNodeGoal(this, (this.children.length === 2) ? [] : this.children[1].decorate())
+		const goal: SemanticNodeGoal = new SemanticNodeGoal(this, (this.children.length === 2) ? [] : this.children[1].decorate())
+		goal.typeCheck() // assert does not throw
+		return goal
 	}
 }
 export class ParseNodeGoal__0__List extends ParseNode {

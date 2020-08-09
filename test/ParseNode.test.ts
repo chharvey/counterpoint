@@ -35,6 +35,21 @@ import {
 
 describe('ParseNode', () => {
 	describe('#decorate', () => {
+		describe('type-checks the input source.', () => {
+			it('does not throw for valid type operations.', () => {
+				;[
+					`null;`,
+					`42;`,
+					`21 + 21;`,
+				].forEach((src) => {
+					new Parser(src, CONFIG_DEFAULT).parse().decorate()
+				})
+			})
+			it('throws for invalid type operations.', () => {
+				assert.throws(() => new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate(), /Invalid operation./)
+			})
+		})
+
 		context('Goal ::= #x02 #x03', () => {
 			it('makes a SemanticNodeGoal node containing no children.', () => {
 				const goal: SemanticNodeGoal = new Parser('', CONFIG_DEFAULT).parse().decorate()
