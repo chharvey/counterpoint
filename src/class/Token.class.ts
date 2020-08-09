@@ -23,6 +23,8 @@ export enum Filebound {
 export enum Punctuator {
 	GRP_OPN = '(',
 	GRP_CLS = ')',
+	NOT     = '!',
+	EMPTY   = '?',
 	AFF     = '+',
 	NEG     = '-',
 	EXP     = '^',

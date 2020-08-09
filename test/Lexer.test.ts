@@ -67,7 +67,7 @@ describe('Lexer', () => {
 			})
 		})
 		it('rejects unrecognized characters.', () => {
-			`. ~ , [ ] | & ! { } : # $ "`.split(' ').map((c) => new Lexer(`
+			`. ~ , [ ] | & { } : # $ @ "${ !Dev.supports('variables') ? ' =' : '' }`.split(' ').map((c) => new Lexer(`
 				5  +  30
 				+ 6 ^ - (${c} - 37 *
 			`, CONFIG_DEFAULT)).forEach((lexer) => {
