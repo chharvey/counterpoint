@@ -30,6 +30,7 @@ import Float64 from '../src/vm/Float64.class'
 import {
 	Operator,
 	InstructionNone,
+	InstructionUnop,
 	InstructionBinop,
 	InstructionStatement,
 	InstructionModule,
@@ -88,6 +89,34 @@ describe('SemanticNode', () => {
 		})
 
 		context('SemanticNodeOperation', () => {
+			specify('SemanticNodeOperation[operator: NOT | EMPTY] ::= SemanticNodeConstant', () => {
+				assert.deepStrictEqual([
+					`!false;`,
+					`!true;`,
+					`!null;`,
+					`!42;`,
+					`!4.2;`,
+					`?false;`,
+					`?true;`,
+					`?null;`,
+					`?42;`,
+					`?4.2;`,
+				].map((src) => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation
+				).build(new Builder(src, CONFIG_DEFAULT))), [
+					new InstructionUnop(Operator.NOT,   instructionConstInt(0n)),
+					new InstructionUnop(Operator.NOT,   instructionConstInt(1n)),
+					new InstructionUnop(Operator.NOT,   instructionConstInt(0n)),
+					new InstructionUnop(Operator.NOT,   instructionConstInt(42n)),
+					new InstructionUnop(Operator.NOT,   instructionConstFloat(4.2)),
+					new InstructionUnop(Operator.EMPTY, instructionConstInt(0n)),
+					new InstructionUnop(Operator.EMPTY, instructionConstInt(1n)),
+					new InstructionUnop(Operator.EMPTY, instructionConstInt(0n)),
+					new InstructionUnop(Operator.EMPTY, instructionConstInt(42n)),
+					new InstructionUnop(Operator.EMPTY, instructionConstFloat(4.2)),
+				])
+			})
 			specify('SemanticNodeOperation[operator: ADD | SUB | MUL] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 				assert.deepStrictEqual([
 					`42 + 420;`,

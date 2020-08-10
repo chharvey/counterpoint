@@ -339,6 +339,15 @@ Or<Integer, Float>? Assess(SemanticOperation[operator: NEG] expr) :=
 
 ### Static Semantics: Build (Unary Operators)
 ```
+Sequence<Instruction> Build(SemanticOperation[operator: NOT | EMPTY] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `assess` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `TypeOf(assess)` is `Void`:
+		1. *Let* `instrs` be the result of performing `Build(expr.children.0)`.
+	4. *Else:*
+		1. *Assert*: `TypeOf(assess)` is `Or<Null, Boolean, Integer, Float>`.
+		2. *Let* `instrs` be the result of performing `Build(assess)`.
+	5. *Return:* [...instrs, "Perform stack operation NOT."].
 Sequence<Instruction> Build(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `assess` be the result of performing `Assess(expr.children.0)`.
