@@ -30,6 +30,7 @@ import Float64 from '../src/vm/Float64.class'
 import {
 	Operator,
 	InstructionNone,
+	InstructionConst,
 	InstructionUnop,
 	InstructionBinop,
 	InstructionStatement,
@@ -72,47 +73,53 @@ describe('SemanticNode', () => {
 					'42;',
 					'+42;',
 					'-42;',
+					'0.0;',
+					'-0.0;',
+					'-4.2e-2;',
 				].map((src) => [src, CONFIG_DEFAULT] as [string, SolidConfig]).map((srcs) =>
 					((new Parser(...srcs).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeConstant)
 						.build(new Builder(...srcs))
 				), [
-					0n,
-					0n,
-					1n,
-					42n,
-					42n,
-					-42n,
-				].map((v) => instructionConstInt(v)))
+					new InstructionConst(SolidNull.NULL),
+					new InstructionConst(SolidBoolean.FALSE),
+					new InstructionConst(SolidBoolean.TRUE),
+					instructionConstInt(42n),
+					instructionConstInt(42n),
+					instructionConstInt(-42n),
+					instructionConstFloat(0),
+					instructionConstFloat(-0),
+					instructionConstFloat(-0.042),
+				])
 			})
 		})
 
 		context('SemanticNodeOperation', () => {
 			specify('SemanticNodeOperation[operator: NOT | EMPTY] ::= SemanticNodeConstant', () => {
 				assert.deepStrictEqual([
+					`!null;`,
 					`!false;`,
 					`!true;`,
-					`!null;`,
 					`!42;`,
 					`!4.2;`,
+					`?null;`,
 					`?false;`,
 					`?true;`,
-					`?null;`,
 					`?42;`,
 					`?4.2;`,
 				].map((src) => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation
 				).build(new Builder(src, CONFIG_DEFAULT))), [
-					new InstructionUnop(Operator.NOT,   instructionConstInt(0n)),
-					new InstructionUnop(Operator.NOT,   instructionConstInt(1n)),
-					new InstructionUnop(Operator.NOT,   instructionConstInt(0n)),
+					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidNull.NULL)),
+					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidBoolean.FALSE)),
+					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidBoolean.TRUE)),
 					new InstructionUnop(Operator.NOT,   instructionConstInt(42n)),
 					new InstructionUnop(Operator.NOT,   instructionConstFloat(4.2)),
-					new InstructionUnop(Operator.EMPTY, instructionConstInt(0n)),
-					new InstructionUnop(Operator.EMPTY, instructionConstInt(1n)),
-					new InstructionUnop(Operator.EMPTY, instructionConstInt(0n)),
+					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidNull.NULL)),
+					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidBoolean.FALSE)),
+					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidBoolean.TRUE)),
 					new InstructionUnop(Operator.EMPTY, instructionConstInt(42n)),
 					new InstructionUnop(Operator.EMPTY, instructionConstFloat(4.2)),
 				])

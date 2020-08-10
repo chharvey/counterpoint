@@ -5,9 +5,11 @@ import * as assert from 'assert'
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Parser from '../src/class/Parser.class'
 import Builder from '../src/vm/Builder.class'
+import SolidLanguageValue, {SolidNull, SolidBoolean} from '../src/vm/SolidLanguageValue.class'
 import {
 	Operator,
 	InstructionNone,
+	InstructionConst,
 	InstructionUnop,
 	InstructionBinop,
 	InstructionCond,
@@ -43,7 +45,22 @@ describe('Instruction', () => {
 	})
 
 	describe('#toString', () => {
-		context('InstructionConstInt', () => {
+		context('InstructionConst', () => {
+			it('pushes the constant null or boolean onto the stack.', () => {
+				const values: SolidLanguageValue[] = [
+					SolidNull.NULL,
+					SolidBoolean.FALSE,
+					SolidBoolean.TRUE,
+				]
+				assert.deepStrictEqual(
+					values.map((x) => new InstructionConst(x).toString()),
+					[
+						0,
+						0,
+						1,
+					].map((x) => `(i32.const ${ x })`),
+				)
+			})
 			it('pushes the constant integer onto the stack.', () => {
 				const values: number[] = [
 					0,
@@ -67,9 +84,6 @@ describe('Instruction', () => {
 					values.map((x) => `(i32.const ${ x })`),
 				)
 			})
-		})
-
-		context('InstructionConstFloat', () => {
 			it('pushes the constant float onto the stack.', () => {
 				const values: number[] = [
 					55, -55, 33, -33, 2.007, -2.007,
