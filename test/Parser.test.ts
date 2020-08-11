@@ -399,7 +399,7 @@ describe('Parser', () => {
 			})
 		})
 
-		context('ExpressionUnarySymbol ::= ("+" | "-") ExpressionUnarySymbol', () => {
+		context('ExpressionUnarySymbol ::= ("!" | "?" | "+" | "-") ExpressionUnarySymbol', () => {
 			it('makes a ParseNodeExpressionUnary node.', () => {
 				/*
 					<ExpressionUnarySymbol>
@@ -408,6 +408,8 @@ describe('Parser', () => {
 					</ExpressionUnarySymbol>
 				*/
 				assert.deepStrictEqual([
+					`!false;`,
+					`?true;`,
 					`- 42;`,
 					`--2;`,
 				].map((src) => {
@@ -424,12 +426,13 @@ describe('Parser', () => {
 					)
 					assert_arrayLength(expression_unary.children, 2, 'outer unary expression should have 2 children')
 					const [op, operand]: readonly [TokenPunctuator, ParseNodeExpressionUnary] = expression_unary.children
-					assert.strictEqual(op.source, Punctuator.NEG)
 					assert_arrayLength(operand.children, 1, 'inner unary expression should have 1 child')
-					return operand.source
+					return [operand.source, op.source]
 				}), [
-					`42`,
-					`-2`,
+					[`false`, Punctuator.NOT],
+					[`true`, Punctuator.EMPTY],
+					[`42`, Punctuator.NEG],
+					[`-2`, Punctuator.NEG],
 				])
 			})
 		})

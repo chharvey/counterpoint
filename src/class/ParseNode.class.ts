@@ -193,8 +193,10 @@ export class ParseNodeExpressionUnit extends ParseNode {
 }
 export class ParseNodeExpressionUnary extends ParseNode {
 	private static readonly OPERATORS: Map<Punctuator, Operator> = new Map<Punctuator, Operator>([
-		[Punctuator.AFF, Operator.AFF],
-		[Punctuator.NEG, Operator.NEG],
+		[Punctuator.NOT,   Operator.NOT],
+		[Punctuator.EMPTY, Operator.EMPTY],
+		[Punctuator.AFF,   Operator.AFF],
+		[Punctuator.NEG,   Operator.NEG],
 	])
 	declare children:
 		| readonly [ParseNodeExpressionUnit]
@@ -316,7 +318,9 @@ export class ParseNodeGoal extends ParseNode {
 		| readonly [TokenFilebound,                         TokenFilebound]
 		| readonly [TokenFilebound, ParseNodeGoal__0__List, TokenFilebound]
 	decorate(): SemanticNodeGoal {
-		return new SemanticNodeGoal(this, (this.children.length === 2) ? [] : this.children[1].decorate())
+		const goal: SemanticNodeGoal = new SemanticNodeGoal(this, (this.children.length === 2) ? [] : this.children[1].decorate())
+		goal.typeCheck() // assert does not throw
+		return goal
 	}
 }
 export class ParseNodeGoal__0__List extends ParseNode {

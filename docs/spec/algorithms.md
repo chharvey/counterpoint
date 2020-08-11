@@ -33,6 +33,8 @@ Type TypeOf(StringTemplate template) :=
 Type TypeOf(SemanticIdentifier id) :=
 	/* TO BE DETERMINED */
 
+Type TypeOf(SemanticOperation[operator: NOT | EMPTY] expr) :=
+	1. *Return:* `Boolean`.
 Type TypeOf(SemanticOperation[operator: AFF | NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be `TypeOf(expr.children.0)`.

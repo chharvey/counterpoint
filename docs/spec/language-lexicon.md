@@ -160,7 +160,7 @@ U+3000     | IDEOGRAPHIC SPACE         | CJK Symbols and Punctuation | Separator
 
 ### Punctuators
 ```
-Punctuator :::= "(" | ")" | "+" | "-" | "^" | "*" | "/" | "=" | ";";
+Punctuator :::= "(" | ")" | "!" | "?" | "+" | "-" | "^" | "*" | "/" | "=" | ";";
 ```
 Punctuators are non-alphanumeric characters in the ASCII character set, or spans of such characters,
 that add to the semantics of the Solid language.
@@ -179,13 +179,15 @@ as not to be confused with [Identifier tokens](#identifiers).
 ```
 TokenWorth(Punctuator :::= "(") -> RealNumber := \x00;
 TokenWorth(Punctuator :::= ")") -> RealNumber := \x01;
-TokenWorth(Punctuator :::= "+") -> RealNumber := \x02;
-TokenWorth(Punctuator :::= "-") -> RealNumber := \x03;
-TokenWorth(Punctuator :::= "^") -> RealNumber := \x04;
-TokenWorth(Punctuator :::= "*") -> RealNumber := \x05;
-TokenWorth(Punctuator :::= "/") -> RealNumber := \x06;
-TokenWorth(Punctuator :::= ";") -> RealNumber := \x07;
-TokenWorth(Punctuator :::= "=") -> RealNumber := \x08;
+TokenWorth(Punctuator :::= "!") -> RealNumber := \x02;
+TokenWorth(Punctuator :::= "?") -> RealNumber := \x03;
+TokenWorth(Punctuator :::= "+") -> RealNumber := \x04;
+TokenWorth(Punctuator :::= "-") -> RealNumber := \x05;
+TokenWorth(Punctuator :::= "^") -> RealNumber := \x06;
+TokenWorth(Punctuator :::= "*") -> RealNumber := \x07;
+TokenWorth(Punctuator :::= "/") -> RealNumber := \x08;
+TokenWorth(Punctuator :::= ";") -> RealNumber := \x09;
+TokenWorth(Punctuator :::= "=") -> RealNumber := \x0a;
 ```
 
 

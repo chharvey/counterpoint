@@ -9,7 +9,6 @@ import type {
 	ParseNodeGoal__0__List,
 } from '../src/class/ParseNode.class'
 import {
-	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
@@ -43,60 +42,6 @@ import {
 
 
 describe('SemanticNode', () => {
-	describe('.constructor', () => {
-		context('SemanticNodeExpression', () => {
-			it('rethrows `this.type()`.', () => {
-				[
-					`null;`,
-					`42;`,
-					`21 + 21;`,
-				].forEach((src) => {
-					(new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeExpression
-				})
-				assert.throws(() => {
-					(new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeExpression
-				}, /Invalid operation./)
-			})
-		})
-
-		context('SemanticNodeStatementExpression', () => {
-			it('rethrows the type of the expression.', () => {
-				[
-					`null;`,
-					`42;`,
-					`21 + 21;`,
-				].forEach((src) => {
-					new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression
-				})
-				assert.throws(() => {
-					new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression
-				}, /Invalid operation./)
-			})
-		})
-
-		context('SemanticNodeGoal', () => {
-			it('rethrows the type of each statement.', () => {
-				[
-					`null;`,
-					`42;`,
-					`21 + 21;`,
-				].forEach((src) => {
-					new Parser(src, CONFIG_DEFAULT).parse().decorate()
-				})
-				assert.throws(() => {
-					new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
-				}, TypeError)
-			})
-		})
-	})
-
-
 	describe('#build', () => {
 		context('SemanticNodeGoal ::= SOT EOT', () => {
 			it('returns InstructionNone.', () => {
@@ -331,6 +276,24 @@ describe('SemanticNode', () => {
 					] : []),
 				].forEach((node) => {
 					assert.strictEqual(node.type(), SolidString)
+				})
+			})
+			it('returns `Boolean` for boolean unary operation of anything.', () => {
+				;[
+					`!false;`,
+					`!true;`,
+					`!null;`,
+					`!42;`,
+					`!4.2e+1;`,
+					`?false;`,
+					`?true;`,
+					`?null;`,
+					`?42;`,
+					`?4.2e+1;`,
+				].forEach((src) => {
+					assert.strictEqual(((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation).type(), SolidBoolean)
 				})
 			})
 			it('returns `Integer` for any operation of integers.', () => {

@@ -29,7 +29,8 @@ ExpressionUnit ::=
 	| "(" Expression ")"
 ;
 
-ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol;
+ExpressionUnarySymbol
+	::= ExpressionUnit | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
 
 ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"          ExpressionExponential   )?;
 ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential     ;
