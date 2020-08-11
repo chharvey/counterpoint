@@ -42,12 +42,6 @@ import type ParseNode from './ParseNode.class'
 
 
 
-function isNumericType(t: SolidLanguageType): boolean {
-	return t === Int16 || t === Float64 // ([Int16, Float64] as SolidLanguageType[]).includes(t)
-}
-
-
-
 /**
  * A SemanticNode holds only the semantics of a {@link ParseNode}.
  */
@@ -280,7 +274,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 	}
 	type(): SolidLanguageType {
 		const t0: SolidLanguageType = this.children[0].type()
-		return (isNumericType(t0)) ? t0 : (() => { throw new TypeError('Invalid operation.') })()
+		return (SolidLanguageType.isNumericType(t0)) ? t0 : (() => { throw new TypeError('Invalid operation.') })()
 	}
 	protected assess_do(): CompletionStructureAssessment | null {
 		if (!this.assessments[0]) {
@@ -324,7 +318,7 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 	type(): SolidLanguageType {
 		const t0: SolidLanguageType = this.children[0].type()
 		const t1: SolidLanguageType = this.children[1].type()
-		return (isNumericType(t0) && isNumericType(t1)) ?
+		return (SolidLanguageType.isNumericType(t0) && SolidLanguageType.isNumericType(t1)) ?
 			([t0, t1].includes(Float64)) ? Float64 : Int16
 		: (() => { throw new TypeError('Invalid operation.') })()
 	}

@@ -7,13 +7,6 @@ This chapter lists and defines common abstract algorithms used throughout this s
 The abstract algorithm **TypeOf** returns the [Solid Language Type](./data-types.md#solid-language-types)
 of an expression.
 ```
-Type =:=
-	| `Null`
-	| `Boolean`
-	| `Integer`
-	| `String`
-;
-
 Type TypeOf(SemanticConstant constant) :=
 	1. *If* `constant.value` is `null`:
 		1. *Return:* `Null`.
@@ -65,15 +58,8 @@ Type TypeOf(SemanticOperation[operator: COND] expr) :=
 The `IsNumeric` operation determines whether Solid Language Value is of a numeric type,
 that is, either an [Integer](./data-types.md#integer) or a [Float](./data-types.md#float).
 ```
-Object =:=
-	| Null
-	| Boolean
-	| Integer
-	| String
-;
-
-Boolean IsNumeric(Object v) :=
-	1. *If* `TypeOf(v)` is `Integer` *or* `TypeOf(v)` is `Float`:
+Boolean IsNumeric(Type t) :=
+	1. *If* `t` is `Integer` *or* `t` is `Float`:
 		1. *Return*: `true`.
 	2. *Return*: `false`.
 ```

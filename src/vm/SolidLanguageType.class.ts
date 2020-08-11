@@ -1,3 +1,8 @@
+import Int16 from './Int16.class'
+import Float64 from './Float64.class'
+
+
+
 /**
  * Parent class for all Solid Language Types.
  * Known subclasses:
@@ -5,6 +10,19 @@
  * - Union
  */
 export default class SolidLanguageType {
+	/**
+	 * Return whether the given class is a numeric type, i.e., an Integer or a Float.
+	 * @todo TODO: this should be an instance method, where SolidLanguageValue classes are instances of this class
+	```
+	isNumericType(): boolean {
+		return this === Int16 || this === Float64
+	}
+	```
+	 * @return Is the given class Integer or Float?
+	 */
+	static isNumericType(t: SolidLanguageType): boolean {
+		return t === Int16 || t === Float64
+	}
 }
 
 
