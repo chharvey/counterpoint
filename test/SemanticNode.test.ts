@@ -435,18 +435,16 @@ describe('SemanticNode', () => {
 					SolidBoolean.TRUE,
 				])
 			})
-			it('computes the value of a boolean unary operation of anything.', () => {
+			it('computes the value of a logical negation of anything.', () => {
 				assert.deepStrictEqual([
 					`!false;`,
 					`!true;`,
 					`!null;`,
+					`!0;`,
 					`!42;`,
+					`!0.0;`,
+					`!-0.0;`,
 					`!4.2e+1;`,
-					`?false;`,
-					`?true;`,
-					`?null;`,
-					`?42;`,
-					`?4.2e+1;`,
 				].map((src) => {
 					const assess: CompletionStructureAssessment | null = ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
@@ -460,12 +458,38 @@ describe('SemanticNode', () => {
 					true,
 					false,
 					false,
+					false,
+					false,
+					false,
+				].map((b) => new CompletionStructureAssessment(SolidBoolean.fromBoolean(b))))
+			})
+			it('computes the value of emptiness of anything.', () => {
+				assert.deepStrictEqual([
+					`?false;`,
+					`?true;`,
+					`?null;`,
+					`?0;`,
+					`?42;`,
+					`?0.0;`,
+					`?-0.0;`,
+					`?4.2e+1;`,
+				].map((src) => {
+					const assess: CompletionStructureAssessment | null = ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation).assess()
+					assert.ok(assess)
+					assert.ok(assess.value instanceof SolidBoolean)
+					return assess
+				}), [
 					true,
 					false,
 					true,
+					true,
 					false,
+					true,
+					true,
 					false,
-				].map((b) => new CompletionStructureAssessment((b) ? SolidBoolean.TRUE : SolidBoolean.FALSE)))
+				].map((b) => new CompletionStructureAssessment(SolidBoolean.fromBoolean(b))))
 			})
 			it('computes the value of an integer operation of constants.', () => {
 				assert.deepStrictEqual([
