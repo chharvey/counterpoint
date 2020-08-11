@@ -354,7 +354,7 @@ Or<Integer, Float>? Assess(SemanticOperation[operator: NEG] expr) :=
 
 ### Static Semantics: Build (Unary Operators)
 ```
-Sequence<Instruction> Build(SemanticOperation[operator: NOT | EMPTY] expr) :=
+Sequence<Instruction> Build(SemanticOperation[operator: NOT | EMPTY | NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `assess` be the result of performing `Assess(expr.children.0)`.
 	3. *If* `TypeOf(assess)` is `Void`:
@@ -362,21 +362,24 @@ Sequence<Instruction> Build(SemanticOperation[operator: NOT | EMPTY] expr) :=
 	4. *Else:*
 		1. *Assert*: `TypeOf(assess)` is `Or<Null, Boolean, Integer, Float>`.
 		2. *Let* `instrs` be the result of performing `Build(assess)`.
-	5. *Return:* [...instrs, "Perform stack operation NOT."].
-Sequence<Instruction> Build(SemanticOperation[operator: NEG] expr) :=
-	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `assess` be the result of performing `Assess(expr.children.0)`.
-	3. *If* `TypeOf(assess)` is `Void`:
-		1. *Let* `instrs` be the result of performing `Build(expr.children.0)`.
-	4. *Else:*
-		1. *Assert*: `TypeOf(assess)` is `Or<Null, Boolean, Integer, Float>`.
-		2. *Let* `instrs` be the result of performing `Build(assess)`.
-	5. *Return:* [...instrs, "Perform stack operation NEG."].
+	5. *Return:* [...instrs, "Perform stack operation `expr.operator`."].
 ```
 
 
 ### Runtime Instructions: Evaluate (Unary Operators)
 ```
+Void Evaluate(Instruction :::= "Perform stack operation NOT.") :=
+	1. Pop `operand` from the operand stack.
+	2. *If* `TypeOf(operand)` is `Integer` *and* `operand` is `0`:
+		1. Push `1` onto the operand stack.
+	3. Push `0` onto the operand stack.
+Void Evaluate(Instruction :::= "Perform stack operation EMPTY.") :=
+	1. Pop `operand` from the operand stack.
+	2. *If* `TypeOf(operand)` is `Integer` *and* `operand` is `0`:
+		1. Push `1` onto the operand stack.
+	3. *If* `TypeOf(operand)` is `Float` *and* `operand` is `0.0` or `-0.0`:
+		1. Push `1` onto the operand stack.
+	4. Push `0` onto the operand stack.
 Void Evaluate(Instruction :::= "Perform stack operation NEG.") :=
 	1. Pop `operand` from the operand stack.
 	2. *Let* `negation` be the additive inverse, `-operand`,
