@@ -98,14 +98,41 @@ describe('Instruction', () => {
 
 		context('InstructionUnop', () => {
 			it('performs a unary operation.', () => {
-				assert.strictEqual(new InstructionUnop(
-					Operator.AFF,
-					instructionConstInt(42n),
-				).toString(), `(nop ${ instructionConstInt(42n) })`)
-				assert.strictEqual(new InstructionUnop(
-					Operator.NEG,
-					instructionConstInt(42n),
-				).toString(), `(call $neg ${ instructionConstInt(42n) })`)
+				assert.deepStrictEqual([
+					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidNull.NULL)),
+					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidBoolean.FALSE)),
+					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidBoolean.TRUE)),
+					new InstructionUnop(Operator.NOT,   instructionConstInt(0n)),
+					new InstructionUnop(Operator.NOT,   instructionConstInt(42n)),
+					new InstructionUnop(Operator.NOT,   instructionConstFloat(0.0)),
+					new InstructionUnop(Operator.NOT,   instructionConstFloat(4.2)),
+					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidNull.NULL)),
+					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidBoolean.FALSE)),
+					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidBoolean.TRUE)),
+					new InstructionUnop(Operator.EMPTY, instructionConstInt(0n)),
+					new InstructionUnop(Operator.EMPTY, instructionConstInt(42n)),
+					new InstructionUnop(Operator.EMPTY, instructionConstFloat(0.0)),
+					new InstructionUnop(Operator.EMPTY, instructionConstFloat(4.2)),
+					new InstructionUnop(Operator.AFF,   instructionConstInt(42n)),
+					new InstructionUnop(Operator.NEG,   instructionConstInt(42n)),
+				].map((inst) => inst.toString()), [
+					`(call $inot ${ instructionConstInt(0n) })`,
+					`(call $inot ${ instructionConstInt(0n) })`,
+					`(call $inot ${ instructionConstInt(1n) })`,
+					`(call $inot ${ instructionConstInt(0n) })`,
+					`(call $inot ${ instructionConstInt(42n) })`,
+					`(i32.const 0)`,
+					`(i32.const 0)`,
+					`(call $inot ${ instructionConstInt(0n) })`,
+					`(call $inot ${ instructionConstInt(0n) })`,
+					`(call $inot ${ instructionConstInt(1n) })`,
+					`(call $inot ${ instructionConstInt(0n) })`,
+					`(call $inot ${ instructionConstInt(42n) })`,
+					`(i32.const 0)`,
+					`(i32.const 0)`,
+					`(nop ${ instructionConstInt(42n) })`,
+					`(call $neg ${ instructionConstInt(42n) })`,
+				])
 				assert.throws(() => new InstructionUnop(
 					Operator.MUL,
 					instructionConstInt(42n),
@@ -145,6 +172,7 @@ describe('Instruction', () => {
 
 		context('InstructionModule', () => {
 			it('creates a program.', () => {
+				const i32_not: string = fs.readFileSync(path.join(__dirname, '../src/not.wat'), 'utf8')
 				const i32_neg: string = fs.readFileSync(path.join(__dirname, '../src/neg.wat'), 'utf8')
 				const i32_exp: string = fs.readFileSync(path.join(__dirname, '../src/exp.wat'), 'utf8')
 				const mods: (InstructionNone | InstructionModule)[] = [
@@ -158,17 +186,11 @@ describe('Instruction', () => {
 				assert.strictEqual(mods[0].toString(), ``)
 				assert.ok(mods[1] instanceof InstructionModule)
 				assert.deepStrictEqual(mods[1], new InstructionModule([
+					i32_not,
 					i32_neg,
 					i32_exp,
 					new InstructionNone(),
 				]))
-				assert.strictEqual(mods[1].toString().trim().replace(/\n\t+/g, '\n'), `
-					(module
-						${ i32_neg }
-						${ i32_exp }
-						${ new InstructionNone() }
-					)
-				`.trim().replace(/\n\t+/g, '\n'))
 			})
 		})
 	})

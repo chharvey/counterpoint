@@ -18,6 +18,7 @@ import {
 	InstructionModule,
 } from './Instruction.class'
 
+const i32_not: string = fs.readFileSync(path.join(__dirname, '../../src/not.wat'), 'utf8')
 const i32_neg: string = fs.readFileSync(path.join(__dirname, '../../src/neg.wat'), 'utf8')
 const i32_exp: string = fs.readFileSync(path.join(__dirname, '../../src/exp.wat'), 'utf8')
 
@@ -58,6 +59,7 @@ export default class Builder {
 	 */
 	goal(comps: readonly SemanticStatementType[]): InstructionModule {
 		return new InstructionModule([
+			i32_not,
 			i32_neg,
 			i32_exp,
 			...comps.map((comp) => comp.build(this)),
