@@ -68,22 +68,34 @@ describe('SemanticNode', () => {
 					'null;',
 					'false;',
 					'true;',
+					'0;',
+					'+0;',
+					'-0;',
 					'42;',
 					'+42;',
 					'-42;',
-				].map((src) => [src, CONFIG_DEFAULT] as [string, SolidConfig]).map((srcs) =>
-					((new Parser(...srcs).parse().decorate()
+					'0.0;',
+					'+0.0;',
+					'-0.0;',
+				].map((src) =>
+					((new Parser(src, CONFIG_DEFAULT).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeConstant)
-						.build(new Builder(...srcs))
+						.build(new Builder(src, CONFIG_DEFAULT))
 				), [
-					0n,
-					0n,
-					1n,
-					42n,
-					42n,
-					-42n,
-				].map((v) => instructionConstInt(v)))
+					instructionConstInt(0n),
+					instructionConstInt(0n),
+					instructionConstInt(1n),
+					instructionConstInt(0n),
+					instructionConstInt(0n),
+					instructionConstInt(0n),
+					instructionConstInt(42n),
+					instructionConstInt(42n),
+					instructionConstInt(-42n),
+					instructionConstFloat(0.0),
+					instructionConstFloat(0.0),
+					instructionConstFloat(-0.0),
+				])
 			})
 		})
 
@@ -308,6 +320,35 @@ describe('SemanticNode', () => {
 				assert.strictEqual(((new Parser(`7 * 3.0 * 2;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).type(), Float64)
+			})
+			it('computes type for AND and OR.', () => {
+				assert.deepStrictEqual([
+					`null  && false;`,
+					`false && null;`,
+					`true  && null;`,
+					`false && 42;`,
+					`4.2   && true;`,
+					`null  || false;`,
+					`false || null;`,
+					`true  || null;`,
+					`false || 42;`,
+					`4.2   || true;`,
+				].map((src) => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation)
+					.type()
+				), [
+					SolidNull,
+					new SolidTypeUnion(SolidBoolean, SolidNull),
+					new SolidTypeUnion(SolidBoolean, SolidNull),
+					new SolidTypeUnion(SolidBoolean, Int16),
+					new SolidTypeUnion(Float64, SolidBoolean),
+					SolidBoolean,
+					new SolidTypeUnion(SolidBoolean, SolidNull),
+					new SolidTypeUnion(SolidBoolean, SolidNull),
+					new SolidTypeUnion(SolidBoolean, Int16),
+					new SolidTypeUnion(Float64, SolidBoolean),
+				])
 			})
 			it('returns `A | B` for conditionals', () => {
 				assert.deepStrictEqual([
