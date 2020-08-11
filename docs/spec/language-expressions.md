@@ -3,7 +3,7 @@ This chapter defines the syntax, semantics, and behavior of expressions in the S
 
 ```
 Expression ::=
-	| ExpressionAdditive
+	| ExpressionDisjunctive
 	| ExpressionConditional
 ;
 ```
@@ -517,6 +517,22 @@ Void Evaluate(Instruction :::= "Perform stack operation ADD.") :=
 	2. Pop `operand0` from the operand stack.
 	3. *Let* `sum` be the result of performing `PerformNumericBinaryOperation(ADD, operand0, operand1)`.
 	4. Push `sum` onto the operand stack.
+```
+
+
+
+## Conjunctive
+```
+ExpressionConjunctive
+	::= (ExpressionConjunctive ("&&" | "!&"))? ExpressionAdditive;
+```
+
+
+
+## Disjunctive
+```
+ExpressionDisjunctive
+	::= (ExpressionDisjunctive ("||" | "!|"))? ExpressionConjunctive;
 ```
 
 

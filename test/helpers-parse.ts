@@ -58,10 +58,22 @@ export function multiplicativeExpressionFromAdditiveExpression(expression_add: P
 	assert.ok(expression_mul instanceof ParseNodeExpressionBinary)
 	return expression_mul
 }
-export function additiveExpressionFromExpression(expression: ParseNodeExpression): ParseNodeExpressionBinary {
-	const expression_add: ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression.children[0]
+export function additiveExpressionFromConjunctiveExpression(expression_conj: ParseNodeExpressionBinary): ParseNodeExpressionBinary {
+	assert_arrayLength(expression_conj.children, 1, 'conjunctive expression should have 1 child')
+	const expression_add: ParseNodeExpressionUnary | ParseNodeExpressionBinary = expression_conj.children[0]
 	assert.ok(expression_add instanceof ParseNodeExpressionBinary)
 	return expression_add
+}
+export function conjunctiveExpressionFromDisjunctiveExpression(expression_disj: ParseNodeExpressionBinary): ParseNodeExpressionBinary {
+	assert_arrayLength(expression_disj.children, 1, 'disjunctive expression should have 1 child')
+	const expression_conj: ParseNodeExpressionUnary | ParseNodeExpressionBinary = expression_disj.children[0]
+	assert.ok(expression_conj instanceof ParseNodeExpressionBinary)
+	return expression_conj
+}
+export function disjunctiveExpressionFromExpression(expression: ParseNodeExpression): ParseNodeExpressionBinary {
+	const expression_disj: ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression.children[0]
+	assert.ok(expression_disj instanceof ParseNodeExpressionBinary)
+	return expression_disj
 }
 export function conditionalExpressionFromExpression(expression: ParseNodeExpression): ParseNodeExpressionConditional {
 	const expression_cond: ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression.children[0]
