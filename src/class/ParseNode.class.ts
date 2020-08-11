@@ -221,11 +221,15 @@ export class ParseNodeExpressionUnary extends ParseNode {
 }
 export class ParseNodeExpressionBinary extends ParseNode {
 	private static readonly OPERATORS: Map<Punctuator, Operator> = new Map<Punctuator, Operator>([
-		[Punctuator.ADD, Operator.ADD],
-		[Punctuator.SUB, Operator.SUB],
-		[Punctuator.MUL, Operator.MUL],
-		[Punctuator.DIV, Operator.DIV],
-		[Punctuator.EXP, Operator.EXP],
+		[Punctuator.EXP,  Operator.EXP],
+		[Punctuator.MUL,  Operator.MUL],
+		[Punctuator.DIV,  Operator.DIV],
+		[Punctuator.ADD,  Operator.ADD],
+		[Punctuator.SUB,  Operator.SUB],
+		[Punctuator.AND,  Operator.AND],
+		[Punctuator.NAND, Operator.NAND],
+		[Punctuator.OR,   Operator.OR],
+		[Punctuator.NOR,  Operator.NOR],
 	])
 	declare children:
 		| readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary                                            ]
@@ -238,6 +242,20 @@ export class ParseNodeExpressionBinary extends ParseNode {
 				new SemanticNodeOperationBinary(this, Operator.ADD, [
 					this.children[0].decorate(),
 					new SemanticNodeOperationUnary(this.children[2], Operator.NEG, [
+						this.children[2].decorate(),
+					]),
+				])
+			: (this.children[1].source === Punctuator.NAND) ? // `a !& b` is syntax sugar for `!(a && b)`
+				new SemanticNodeOperationUnary(this, Operator.NOT, [
+					new SemanticNodeOperationBinary(this.children[0], Operator.AND, [
+						this.children[0].decorate(),
+						this.children[2].decorate(),
+					]),
+				])
+			: (this.children[1].source === Punctuator.NOR) ? // `a !| b` is syntax sugar for `!(a || b)`
+				new SemanticNodeOperationUnary(this, Operator.NOT, [
+					new SemanticNodeOperationBinary(this.children[0], Operator.OR, [
+						this.children[0].decorate(),
 						this.children[2].decorate(),
 					]),
 				])

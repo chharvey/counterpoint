@@ -528,11 +528,63 @@ ExpressionConjunctive
 ```
 
 
+### Static Semantics: Semantic Schema (Conjunctive)
+```
+SemanticOperation[operator: AND]
+	::= SemanticExpression SemanticExpression;
+```
+
+
+### Static Semantics: Decorate (Conjunctive)
+```
+Decorate(ExpressionConjunctive ::= ExpressionAdditive) -> SemanticExpression
+	:= Decorate(ExpressionAdditive);
+Decorate(ExpressionConjunctive ::= ExpressionConjunctive "&&" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=AND]
+		Decorate(ExpressionConjunctive)
+		Decorate(ExpressionAdditive)
+	);
+Decorate(ExpressionConjunctive ::= ExpressionConjunctive "!&" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=AND]
+			Decorate(ExpressionConjunctive)
+			Decorate(ExpressionAdditive)
+		)
+	);
+```
+
+
 
 ## Disjunctive
 ```
 ExpressionDisjunctive
 	::= (ExpressionDisjunctive ("||" | "!|"))? ExpressionConjunctive;
+```
+
+
+### Static Semantics: Semantic Schema (Disjunctive)
+```
+SemanticOperation[operator: OR]
+	::= SemanticExpression SemanticExpression;
+```
+
+
+### Static Semantics: Decorate (Disjunctive)
+```
+Decorate(ExpressionDisjunctive ::= ExpressionConjunctive) -> SemanticOperation
+	:= Decorate(ExpressionConjunctive);
+Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "||" ExpressionConjunctive) -> SemanticOperation
+	:= (SemanticOperation[operator=OR]
+		Decorate(ExpressionDisjunctive)
+		Decorate(ExpressionConjunctive)
+	);
+Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "!|" ExpressionConjunctive) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=OR]
+			Decorate(ExpressionDisjunctive)
+			Decorate(ExpressionConjunctive)
+		)
+	);
 ```
 
 

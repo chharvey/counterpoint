@@ -321,14 +321,70 @@ describe('ParseNode', () => {
 				)
 				assert.ok(operation instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(operation.operator, Operator.ADD)
-				const left: SemanticNodeExpression = operation.children[0]
+				const left:  SemanticNodeExpression = operation.children[0]
 				const right: SemanticNodeExpression = operation.children[1]
-				assert.ok(left instanceof SemanticNodeConstant)
+				assert.ok(left  instanceof SemanticNodeConstant)
 				assert.ok(right instanceof SemanticNodeOperationUnary)
 				assert.ok(right.children[0] instanceof SemanticNodeConstant)
 				assert.deepStrictEqual(
 					[left.source, right.operator, right.children[0].source],
 					[`2`,         Operator.NEG,   `3`],
+				)
+			})
+		})
+
+		context('ExpressionConjunctive ::= ExpressionConjunctive "!&" ExpressionAdditive', () => {
+			it('makes a SemanticNodeOperation with the `&&` operator and logically negates the result.', () => {
+				/*
+					<Operation operator=NOT>
+						<Operation operator=AND>
+							<Constant source="2"/>
+							<Constant source="3"/>
+						</Operation>
+					</Operation>
+				*/
+				const operation: SemanticNodeOperation = operationFromStatementExpression(
+					statementExpressionFromSource(`2 !& 3;`)
+				)
+				assert.ok(operation instanceof SemanticNodeOperationUnary)
+				assert.strictEqual(operation.operator, Operator.NOT)
+				const child: SemanticNodeExpression = operation.children[0]
+				assert.ok(child instanceof SemanticNodeOperationBinary)
+				const left:  SemanticNodeExpression = child.children[0]
+				const right: SemanticNodeExpression = child.children[1]
+				assert.ok(left  instanceof SemanticNodeConstant)
+				assert.ok(right instanceof SemanticNodeConstant)
+				assert.deepStrictEqual(
+					[left.source, child.operator, right.source],
+					[`2`,         Operator.AND,   `3`],
+				)
+			})
+		})
+
+		context('ExpressionDisjunctive ::= ExpressionDisjunctive "!|" ExpressionConjunctive', () => {
+			it('makes a SemanticNodeOperation with the `||` operator and logically negates the result.', () => {
+				/*
+					<Operation operator=NOT>
+						<Operation operator=OR>
+							<Constant source="2"/>
+							<Constant source="3"/>
+						</Operation>
+					</Operation>
+				*/
+				const operation: SemanticNodeOperation = operationFromStatementExpression(
+					statementExpressionFromSource(`2 !| 3;`)
+				)
+				assert.ok(operation instanceof SemanticNodeOperationUnary)
+				assert.strictEqual(operation.operator, Operator.NOT)
+				const child: SemanticNodeExpression = operation.children[0]
+				assert.ok(child instanceof SemanticNodeOperationBinary)
+				const left:  SemanticNodeExpression = child.children[0]
+				const right: SemanticNodeExpression = child.children[1]
+				assert.ok(left  instanceof SemanticNodeConstant)
+				assert.ok(right instanceof SemanticNodeConstant)
+				assert.deepStrictEqual(
+					[left.source, child.operator, right.source],
+					[`2`,         Operator.OR,    `3`],
 				)
 			})
 		})
