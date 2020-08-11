@@ -294,6 +294,8 @@ ExpressionUnarySymbol
 
 ### Static Semantics: Semantic Schema (Unary Operators)
 ```
+SemanticOperation[operator: NOT | EMPTY]
+	::= SemanticExpression;
 SemanticOperation[operator: NEG]
 	::= SemanticExpression[type: Integer | Float];
 ```
