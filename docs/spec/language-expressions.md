@@ -3,7 +3,7 @@ This chapter defines the syntax, semantics, and behavior of expressions in the S
 
 ```
 Expression ::=
-	| ExpressionAdditive
+	| ExpressionDisjunctive
 	| ExpressionConditional
 ;
 ```
@@ -294,6 +294,8 @@ ExpressionUnarySymbol
 
 ### Static Semantics: Semantic Schema (Unary Operators)
 ```
+SemanticOperation[operator: NOT | EMPTY]
+	::= SemanticExpression;
 SemanticOperation[operator: NEG]
 	::= SemanticExpression[type: Integer | Float];
 ```
@@ -535,6 +537,74 @@ Void Evaluate(Instruction :::= "Perform stack operation ADD.") :=
 	2. Pop `operand0` from the operand stack.
 	3. *Let* `sum` be the result of performing `PerformNumericBinaryOperation(ADD, operand0, operand1)`.
 	4. Push `sum` onto the operand stack.
+```
+
+
+
+## Conjunctive
+```
+ExpressionConjunctive
+	::= (ExpressionConjunctive ("&&" | "!&"))? ExpressionAdditive;
+```
+
+
+### Static Semantics: Semantic Schema (Conjunctive)
+```
+SemanticOperation[operator: AND]
+	::= SemanticExpression SemanticExpression;
+```
+
+
+### Static Semantics: Decorate (Conjunctive)
+```
+Decorate(ExpressionConjunctive ::= ExpressionAdditive) -> SemanticExpression
+	:= Decorate(ExpressionAdditive);
+Decorate(ExpressionConjunctive ::= ExpressionConjunctive "&&" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=AND]
+		Decorate(ExpressionConjunctive)
+		Decorate(ExpressionAdditive)
+	);
+Decorate(ExpressionConjunctive ::= ExpressionConjunctive "!&" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=AND]
+			Decorate(ExpressionConjunctive)
+			Decorate(ExpressionAdditive)
+		)
+	);
+```
+
+
+
+## Disjunctive
+```
+ExpressionDisjunctive
+	::= (ExpressionDisjunctive ("||" | "!|"))? ExpressionConjunctive;
+```
+
+
+### Static Semantics: Semantic Schema (Disjunctive)
+```
+SemanticOperation[operator: OR]
+	::= SemanticExpression SemanticExpression;
+```
+
+
+### Static Semantics: Decorate (Disjunctive)
+```
+Decorate(ExpressionDisjunctive ::= ExpressionConjunctive) -> SemanticOperation
+	:= Decorate(ExpressionConjunctive);
+Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "||" ExpressionConjunctive) -> SemanticOperation
+	:= (SemanticOperation[operator=OR]
+		Decorate(ExpressionDisjunctive)
+		Decorate(ExpressionConjunctive)
+	);
+Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "!|" ExpressionConjunctive) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=OR]
+			Decorate(ExpressionDisjunctive)
+			Decorate(ExpressionConjunctive)
+		)
+	);
 ```
 
 

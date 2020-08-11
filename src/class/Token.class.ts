@@ -21,19 +21,27 @@ export enum Filebound {
 }
 
 export enum Punctuator {
-	GRP_OPN = '(',
-	GRP_CLS = ')',
-	NOT     = '!',
-	EMPTY   = '?',
-	AFF     = '+',
-	NEG     = '-',
-	EXP     = '^',
-	MUL     = '*',
-	DIV     = '/',
-	ADD     = '+',
-	SUB     = '-',
-	ENDSTAT = ';',
-	ASSIGN  = '=', // Dev.supports('variables')
+	// grouping
+		GRP_OPN = '(',
+		GRP_CLS = ')',
+	// unary
+		NOT   = '!',
+		EMPTY = '?',
+		AFF   = '+',
+		NEG   = '-',
+	// binary
+		EXP  = '^',
+		MUL  = '*',
+		DIV  = '/',
+		ADD  = '+',
+		SUB  = '-',
+		AND  = '&&',
+		NAND = '!&',
+		OR   = '||',
+		NOR  = '!|',
+	// statement
+		ENDSTAT = ';',
+		ASSIGN  = '=', // Dev.supports('variables')
 }
 
 export enum Keyword {

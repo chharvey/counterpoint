@@ -337,9 +337,12 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 	type(): SolidLanguageType {
 		const t0: SolidLanguageType = this.children[0].type()
 		const t1: SolidLanguageType = this.children[1].type()
-		return (isNumericType(t0) && isNumericType(t1)) ?
-			([t0, t1].includes(Float64)) ? Float64 : Int16
-		: (() => { throw new TypeError('Invalid operation.') })()
+		return (
+			(this.operator === Operator.AND) ? (t0 === SolidNull) ? t0 : new SolidTypeUnion(t0, t1) :
+			(this.operator === Operator.OR)  ? (t0 === SolidNull) ? t1 : new SolidTypeUnion(t0, t1) :
+			(isNumericType(t0) && isNumericType(t1)) ? ([t0, t1].includes(Float64)) ? Float64 : Int16 :
+			(() => { throw new TypeError('Invalid operation.') })()
+		)
 	}
 	protected assess_do(): CompletionStructureAssessment | null {
 		if (!this.assessments[0] || !this.assessments[1]) {

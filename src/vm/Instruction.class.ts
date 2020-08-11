@@ -17,6 +17,10 @@ export enum Operator {
 	DIV,
 	ADD,
 	SUB,
+	AND,
+	NAND,
+	OR,
+	NOR,
 	COND,
 }
 
