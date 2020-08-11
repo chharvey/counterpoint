@@ -321,6 +321,35 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).type(), Float64)
 			})
+			it('computes type for AND and OR.', () => {
+				assert.deepStrictEqual([
+					`null  && false;`,
+					`false && null;`,
+					`true  && null;`,
+					`false && 42;`,
+					`4.2   && true;`,
+					`null  || false;`,
+					`false || null;`,
+					`true  || null;`,
+					`false || 42;`,
+					`4.2   || true;`,
+				].map((src) => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation)
+					.type()
+				), [
+					SolidNull,
+					new SolidTypeUnion(SolidBoolean, SolidNull),
+					new SolidTypeUnion(SolidBoolean, SolidNull),
+					new SolidTypeUnion(SolidBoolean, Int16),
+					new SolidTypeUnion(Float64, SolidBoolean),
+					SolidBoolean,
+					new SolidTypeUnion(SolidBoolean, SolidNull),
+					new SolidTypeUnion(SolidBoolean, SolidNull),
+					new SolidTypeUnion(SolidBoolean, Int16),
+					new SolidTypeUnion(Float64, SolidBoolean),
+				])
+			})
 			it('returns `A | B` for conditionals', () => {
 				assert.deepStrictEqual([
 					`if true then false else 2;`,
