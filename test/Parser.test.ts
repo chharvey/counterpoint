@@ -31,15 +31,15 @@ import {
 	assert_arrayLength,
 } from './assert-helpers'
 import {
-	statementFromSource,
-	expressionFromStatement,
-	conditionalExpressionFromExpression,
-	additiveExpressionFromExpression,
-	multiplicativeExpressionFromAdditiveExpression,
-	exponentialExpressionFromMultiplicativeExpression,
-	unaryExpressionFromExponentialExpression,
-	unitExpressionFromUnaryExpression,
 	tokenLiteralFromExpressionUnit,
+	unitExpressionFromUnaryExpression,
+	unaryExpressionFromExponentialExpression,
+	exponentialExpressionFromMultiplicativeExpression,
+	multiplicativeExpressionFromAdditiveExpression,
+	additiveExpressionFromExpression,
+	conditionalExpressionFromExpression,
+	expressionFromStatement,
+	statementFromSource,
 } from './helpers-parse'
 
 

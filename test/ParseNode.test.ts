@@ -26,9 +26,9 @@ import {
 	assert_arrayLength,
 } from './assert-helpers'
 import {
-	statementExpressionFromSource,
 	constantFromStatementExpression,
 	operationFromStatementExpression,
+	statementExpressionFromSource,
 } from './helpers-semantic'
 
 
