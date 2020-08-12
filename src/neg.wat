@@ -1,4 +1,4 @@
-;; # Negation Operator for Integers
+;; # Mathematical Negation Operator for Integers
 ;; ```
 ;; function neg(x) {
 ;; 	return (x XOR -1) + 1

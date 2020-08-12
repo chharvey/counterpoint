@@ -123,13 +123,13 @@ describe('Instruction', () => {
 					`(call $inot ${ instructionConstInt(42n) })`,
 					`(i32.const 0)`,
 					`(i32.const 0)`,
-					`(call $inot ${ instructionConstInt(0n) })`,
-					`(call $inot ${ instructionConstInt(0n) })`,
-					`(call $inot ${ instructionConstInt(1n) })`,
-					`(call $inot ${ instructionConstInt(0n) })`,
-					`(call $inot ${ instructionConstInt(42n) })`,
-					`(i32.const 0)`,
-					`(i32.const 0)`,
+					`(call $iemp ${ instructionConstInt(0n) })`,
+					`(call $iemp ${ instructionConstInt(0n) })`,
+					`(call $iemp ${ instructionConstInt(1n) })`,
+					`(call $iemp ${ instructionConstInt(0n) })`,
+					`(call $iemp ${ instructionConstInt(42n) })`,
+					`(call $femp ${ instructionConstFloat(0.0) })`,
+					`(call $femp ${ instructionConstFloat(4.2) })`,
 					`(nop ${ instructionConstInt(42n) })`,
 					`(call $neg ${ instructionConstInt(42n) })`,
 				])
@@ -172,9 +172,10 @@ describe('Instruction', () => {
 
 		context('InstructionModule', () => {
 			it('creates a program.', () => {
-				const i32_not: string = fs.readFileSync(path.join(__dirname, '../src/not.wat'), 'utf8')
-				const i32_neg: string = fs.readFileSync(path.join(__dirname, '../src/neg.wat'), 'utf8')
-				const i32_exp: string = fs.readFileSync(path.join(__dirname, '../src/exp.wat'), 'utf8')
+				const not: string = fs.readFileSync(path.join(__dirname, '../src/not.wat'), 'utf8')
+				const emp: string = fs.readFileSync(path.join(__dirname, '../src/emp.wat'), 'utf8')
+				const neg: string = fs.readFileSync(path.join(__dirname, '../src/neg.wat'), 'utf8')
+				const exp: string = fs.readFileSync(path.join(__dirname, '../src/exp.wat'), 'utf8')
 				const mods: (InstructionNone | InstructionModule)[] = [
 					``,
 					`;`,
@@ -186,9 +187,10 @@ describe('Instruction', () => {
 				assert.strictEqual(mods[0].toString(), ``)
 				assert.ok(mods[1] instanceof InstructionModule)
 				assert.deepStrictEqual(mods[1], new InstructionModule([
-					i32_not,
-					i32_neg,
-					i32_exp,
+					not,
+					emp,
+					neg,
+					exp,
 					new InstructionNone(),
 				]))
 			})

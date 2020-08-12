@@ -297,12 +297,15 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 			return null
 		}
 		const v0: SolidLanguageValue = this.assessments[0].value
-		if ([Operator.NOT, Operator.EMPTY].includes(this.operator)) {
-			return new CompletionStructureAssessment(v0.isTruthy.negation)
-		}
-		return (v0 instanceof SolidNumber)
-			? new CompletionStructureAssessment(SemanticNodeOperationUnary.fold(this.operator, v0))
-			: (() => { throw new TypeError('Invalid operation.') })()
+		return new CompletionStructureAssessment(
+			(this.operator === Operator.NOT)   ? v0.isTruthy.not :
+			(this.operator === Operator.EMPTY) ? v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0())) :
+			(
+				(v0 instanceof SolidNumber)
+					? (SemanticNodeOperationUnary.fold(this.operator, v0))
+					: (() => { throw new TypeError('Invalid operation.') })()
+			)
+		)
 	}
 }
 export class SemanticNodeOperationBinary extends SemanticNodeOperation {
