@@ -137,15 +137,17 @@ A value is said to be “falsy” if its “logical value” is `false`. Otherwi
 | -------------- | --------------- |
 | `null`         |                 |
 | `false`        | `true`          |
-|                | integers (including `0`)
-|                | floats (including `0.0` and `-0.0`)
-|                | strings (including `''`)
+|                | all integers (including `0`)
+|                | all floats   (including `0.0` and `-0.0`)
+|                | all strings  (including `''`)
 |                | any other value
 
 The operator `!` logically negates the “logical value” of the operand.
 If the value is “falsy”, `true` is produced; otherwise `false` is produced.
 
-The emptiness operator `?` currently doubles as logical negation, but its semantics will expand in the future.
+The emptiness operator `?` determines whether a value is considered “empty”.
+A value is “empty” if it’s “falsy”, if it’s a zero numeric value (`0`, `0.0`, or `-0.0`), or if it’s an empty string.
+In future versions its semantics will be expanded to collections (such as arrays and sets, etc.).
 
 
 
