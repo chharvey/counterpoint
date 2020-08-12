@@ -165,3 +165,17 @@ Void TypeCheck(SemanticGoal goal) :=
 	1. For each `SemanticStatment stmt` in `goal.children`:
 		1. *Perform:* `TypeCheck(stmt)`.
 ```
+
+
+
+## ToBoolean
+The **ToBoolean** algorithm returns an associated [boolean value](./data-types#boolean),
+`true` or `false`, with a Solid Language Value.
+```
+Boolean ToBoolean(SolidLanguageValue value) :=
+	1. *If* `TypeOf(value)` is `Null`:
+		1. *Return:* `false`.
+	2. *If* `TypeOf(value)` is `Boolean`:
+		1. *Return:* `value`.
+	3. *Return*: `true`.
+```

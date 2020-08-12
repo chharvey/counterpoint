@@ -30,6 +30,8 @@ import Float64 from '../src/vm/Float64.class'
 import {
 	Operator,
 	InstructionNone,
+	InstructionConst,
+	InstructionUnop,
 	InstructionBinop,
 	InstructionStatement,
 	InstructionModule,
@@ -77,29 +79,59 @@ describe('SemanticNode', () => {
 					'0.0;',
 					'+0.0;',
 					'-0.0;',
+					'-4.2e-2;',
 				].map((src) =>
 					((new Parser(src, CONFIG_DEFAULT).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeConstant)
 						.build(new Builder(src, CONFIG_DEFAULT))
 				), [
-					instructionConstInt(0n),
-					instructionConstInt(0n),
-					instructionConstInt(1n),
+					new InstructionConst(SolidNull.NULL),
+					new InstructionConst(SolidBoolean.FALSE),
+					new InstructionConst(SolidBoolean.TRUE),
 					instructionConstInt(0n),
 					instructionConstInt(0n),
 					instructionConstInt(0n),
 					instructionConstInt(42n),
 					instructionConstInt(42n),
 					instructionConstInt(-42n),
-					instructionConstFloat(0.0),
-					instructionConstFloat(0.0),
-					instructionConstFloat(-0.0),
+					instructionConstFloat(0),
+					instructionConstFloat(0),
+					instructionConstFloat(-0),
+					instructionConstFloat(-0.042),
 				])
 			})
 		})
 
 		context('SemanticNodeOperation', () => {
+			specify('SemanticNodeOperation[operator: NOT | EMPTY] ::= SemanticNodeConstant', () => {
+				assert.deepStrictEqual([
+					`!null;`,
+					`!false;`,
+					`!true;`,
+					`!42;`,
+					`!4.2;`,
+					`?null;`,
+					`?false;`,
+					`?true;`,
+					`?42;`,
+					`?4.2;`,
+				].map((src) => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation
+				).build(new Builder(src, CONFIG_DEFAULT))), [
+					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidNull.NULL)),
+					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidBoolean.FALSE)),
+					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidBoolean.TRUE)),
+					new InstructionUnop(Operator.NOT,   instructionConstInt(42n)),
+					new InstructionUnop(Operator.NOT,   instructionConstFloat(4.2)),
+					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidNull.NULL)),
+					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidBoolean.FALSE)),
+					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidBoolean.TRUE)),
+					new InstructionUnop(Operator.EMPTY, instructionConstInt(42n)),
+					new InstructionUnop(Operator.EMPTY, instructionConstFloat(4.2)),
+				])
+			})
 			specify('SemanticNodeOperation[operator: ADD | SUB | MUL] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 				assert.deepStrictEqual([
 					`42 + 420;`,
@@ -402,6 +434,62 @@ describe('SemanticNode', () => {
 					SolidBoolean.FALSE,
 					SolidBoolean.TRUE,
 				])
+			})
+			it('computes the value of a logical negation of anything.', () => {
+				assert.deepStrictEqual([
+					`!false;`,
+					`!true;`,
+					`!null;`,
+					`!0;`,
+					`!42;`,
+					`!0.0;`,
+					`!-0.0;`,
+					`!4.2e+1;`,
+				].map((src) => {
+					const assess: CompletionStructureAssessment | null = ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation).assess()
+					assert.ok(assess)
+					assert.ok(assess.value instanceof SolidBoolean)
+					return assess
+				}), [
+					true,
+					false,
+					true,
+					false,
+					false,
+					false,
+					false,
+					false,
+				].map((b) => new CompletionStructureAssessment(SolidBoolean.fromBoolean(b))))
+			})
+			it('computes the value of emptiness of anything.', () => {
+				assert.deepStrictEqual([
+					`?false;`,
+					`?true;`,
+					`?null;`,
+					`?0;`,
+					`?42;`,
+					`?0.0;`,
+					`?-0.0;`,
+					`?4.2e+1;`,
+				].map((src) => {
+					const assess: CompletionStructureAssessment | null = ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation).assess()
+					assert.ok(assess)
+					assert.ok(assess.value instanceof SolidBoolean)
+					return assess
+				}), [
+					true,
+					false,
+					true,
+					true,
+					false,
+					true,
+					true,
+					false,
+				].map((b) => new CompletionStructureAssessment(SolidBoolean.fromBoolean(b))))
 			})
 			it('computes the value of an integer operation of constants.', () => {
 				assert.deepStrictEqual([

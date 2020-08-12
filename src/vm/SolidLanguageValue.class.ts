@@ -11,6 +11,17 @@ import type Float64 from './Float64.class'
  * - Float64
  */
 export default class SolidLanguageValue {
+	/**
+	 * Return the “logical value” of this value.
+	 * @returns the associated Boolean value of this value
+	 */
+	get isTruthy(): SolidBoolean {
+		return (
+			(this instanceof SolidNull) ? SolidBoolean.FALSE :
+			(this instanceof SolidBoolean) ? this :
+			SolidBoolean.TRUE
+		)
+	}
 }
 
 
@@ -56,11 +67,42 @@ export class SolidBoolean extends SolidLanguageValue {
 	static readonly FALSE: SolidBoolean = new SolidBoolean()
 	/** The Solid Language Value `true`. */
 	static readonly TRUE: SolidBoolean = new SolidBoolean(true)
+	/**
+	 * Return the Solid Language Value `true` or `false` based on the argument.
+	 * @param b a native boolean value
+	 * @returns the argument converted into a SolidBoolean
+	 */
+	static fromBoolean(b: boolean): SolidBoolean {
+		return (b) ? SolidBoolean.TRUE : SolidBoolean.FALSE
+	}
 	protected constructor (private readonly value: boolean = false) {
 		super()
 	}
 	toString(): string {
 		return `${ this.value }`
+	}
+	/**
+	 * Return the negation of this Boolean.
+	 * @returns `true <-|-> false`
+	 */
+	get not(): SolidBoolean {
+		return SolidBoolean.fromBoolean(!this.value)
+	}
+	/**
+	 * Compute the logical conjunction of this value with the argument.
+	 * @param sb the right-hand operator
+	 * @returns `this && sb`
+	 */
+	and(sb: SolidBoolean): SolidBoolean {
+		return SolidBoolean.fromBoolean(this.value && sb.value)
+	}
+	/**
+	 * Compute the logical disjunction of this value with the argument.
+	 * @param sb the right-hand operator
+	 * @returns `this || sb`
+	 */
+	or(sb: SolidBoolean): SolidBoolean {
+		return SolidBoolean.fromBoolean(this.value || sb.value)
 	}
 }
 
