@@ -25,10 +25,18 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>( … )</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">2</th>
+			<th rowspan="4">2</th>
+			<td>Logical Negation</td>
+			<td rowspan="4">unary prefix</td>
+			<td rowspan="4">right-to-left</td>
+			<td><code>! …</code></td>
+		</tr>
+		<tr>
+			<td>Emptiness</td>
+			<td><code>? …</code></td>
+		</tr>
+		<tr>
 			<td>Mathematical Affirmation</td>
-			<td rowspan="2">unary prefix</td>
-			<td rowspan="2">right-to-left</td>
 			<td><code>+ …</code></td>
 		</tr>
 		<tr>
@@ -65,7 +73,29 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… - …</code></td>
 		</tr>
 		<tr>
-			<th>6</th>
+			<th rowspan="2">6</th>
+			<td>Conjunction</td>
+			<td rowspan="2">binary infix</td>
+			<td rowspan="2">left-to-right</td>
+			<td><code>… && …</code></td>
+		</tr>
+		<tr>
+			<td>Alternative Denial</td>
+			<td><code>… !& …</code></td>
+		</tr>
+		<tr>
+			<th rowspan="2">7</th>
+			<td>Disjunction</td>
+			<td rowspan="2">binary infix</td>
+			<td rowspan="2">left-to-right</td>
+			<td><code>… || …</code></td>
+		</tr>
+		<tr>
+			<td>Joint Denial</td>
+			<td><code>… !| …</code></td>
+		</tr>
+		<tr>
+			<th>8</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
@@ -90,6 +120,34 @@ whether left-to-right or right-to-left, would yield the same mathematical result
 Addition is an example of this. Whether we group *left-to-right* `(a + b) + c`
 or *right-to-left* `a + (b + c)`, the output remains the same.
 Operations that are associative are indicated as so in their respective sections below.
+
+
+
+## Logical Negation, Emptiness
+```
+`!` <unknown>
+`?` <unknown>
+```
+The **logical negation** operator, `!` returns the opposite boolean value of the operand’s “logical value”.
+
+A value’s “logical value” is the boolean value that most closely corresponds to that value.
+A value is said to be “falsy” if its “logical value” is `false`. Otherwise the value is said to be “truthy”.
+
+| “Falsy” Values | “Truthy” Values |
+| -------------- | --------------- |
+| `null`         |                 |
+| `false`        | `true`          |
+|                | all integers (including `0`)
+|                | all floats   (including `0.0` and `-0.0`)
+|                | all strings  (including `''`)
+|                | any other value
+
+The operator `!` logically negates the “logical value” of the operand.
+If the value is “falsy”, `true` is produced; otherwise `false` is produced.
+
+The emptiness operator `?` determines whether a value is considered “empty”.
+A value is “empty” if it’s “falsy”, if it’s a zero numeric value (`0`, `0.0`, or `-0.0`), or if it’s an empty string.
+In future versions its semantics will be expanded to collections (such as arrays and sets, etc.).
 
 
 
@@ -260,6 +318,62 @@ To fix the error, we must use whitespace indicate token boundaries.
 Now the lexer produces three tokens: a number `3`, a punctuator `+`, and a number `1`.
 The parser receives these tokens and produces the correct expression.
 (Note that the code `3+ 1` would be sufficient, but perhaps not as readable.)
+
+
+
+## Conjunctive
+```
+<unknown> `&&` <unknown>
+<unknown> `!&` <unknown>
+```
+The **logical conjunction** operator `&&` (”and”) produces the left-hand operand if it is “falsy”;
+otherwise it produces the right-hand operand. The operands may be of any type.
+
+The `&&` operator short-circuits, in that evaluation of the right-hand operand does not take place
+if it does not need to. If the left-hand operand of an `&&` operation is “falsy”,
+then that operand is produced and the right-hand operand is not evaluated.
+Short-circuiting can speed up runtime computation if the “simpler” expression is on the left.
+
+Logical conjunction is **associative**, which means the following expressions produce the same result,
+for any values `‹a›`, `‹b›`, and `‹c›`:
+```
+‹a› && ‹b› && ‹c›
+(‹a› && ‹b›) && ‹c›
+‹a› && (‹b› && ‹c›)
+```
+
+The **logical alternative denial** operator `!&` (“nand”) is the logical negation of conjunction.
+```
+a !& b; % sugar for `!(a && b)`
+```
+
+
+
+## Disjunctive
+```
+<unknown> `||` <unknown>
+<unknown> `!|` <unknown>
+```
+The **logical disjunction** operator `||` (“or”) produces the left-hand operand if it is “truthy”;
+otherwise it produces the right-hand operand. The operands may be of any type.
+
+The `||` operator short-circuits, in that evaluation of the right-hand operand does not take place
+if it does not need to. If the left-hand operand of an `||` operation is “truthy”,
+then that operand is produced and the right-hand operand is not evaluated.
+Short-circuiting can speed up runtime computation if the “simpler” expression is on the left.
+
+Logical disjunction is **associative**, which means the following expressions produce the same result,
+for any values `‹a›`, `‹b›`, and `‹c›`:
+```
+‹a› || ‹b› || ‹c›
+(‹a› || ‹b›) || ‹c›
+‹a› || (‹b› || ‹c›)
+```
+
+The **logical joint denial** operator `!|` (“nor”) is the logical negation of disjunction.
+```
+a !| b; % sugar for `!(a || b)`
+```
 
 
 

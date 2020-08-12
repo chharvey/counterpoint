@@ -1,10 +1,15 @@
-import type {SolidNumber} from './SolidLanguageValue.class'
+import SolidLanguageValue, {
+	SolidNull,
+	SolidBoolean,
+} from './SolidLanguageValue.class'
 import Float64 from './Float64.class'
 
 
 
 // HACK: this is defined here, instead of in `../class/SemanticNode.class`, to avoid circular imports.
 export enum Operator {
+	NOT,
+	EMPTY,
 	AFF,
 	NEG,
 	EXP,
@@ -12,6 +17,10 @@ export enum Operator {
 	DIV,
 	ADD,
 	SUB,
+	AND,
+	NAND,
+	OR,
+	NOR,
 	COND,
 }
 
@@ -71,14 +80,18 @@ export class InstructionConst extends InstructionExpression {
 	/**
 	 * @param value the constant to push
 	 */
-	constructor (private readonly value: SolidNumber<unknown>) {
+	constructor (private readonly value: SolidLanguageValue) {
 		super()
 	}
 	/**
 	 * @return `'(i32.const ‹value›)'` or `'(f64.const ‹value›)'`
 	 */
 	toString(): string {
-		return `(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ this.value })`
+		return (
+			([SolidNull.NULL, SolidBoolean.FALSE].includes(this.value)) ? `(i32.const 0)` :
+			(this.value === SolidBoolean.TRUE) ? `(i32.const 1)` :
+			`(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ this.value })`
+		)
 	}
 	get isFloat(): boolean {
 		return this.value instanceof Float64
@@ -103,9 +116,11 @@ export class InstructionUnop extends InstructionExpression {
 	 */
 	toString(): string {
 		return `(${ new Map<Operator, string>([
-			[Operator.AFF, `nop`],
-			[Operator.NEG, (!this.isFloat) ? `call $neg` : `f64.neg`],
-		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg })`
+			[Operator.NOT,   (!this.isFloat) ? `call $inot ${ this.arg }` : `i32.const 0`],
+			[Operator.EMPTY, `${ (!this.isFloat) ? `call $iemp` : `call $femp` } ${ this.arg }`],
+			[Operator.AFF,   `nop ${ this.arg }`],
+			[Operator.NEG,   `${ (!this.isFloat) ? `call $neg`  : `f64.neg`    } ${ this.arg }`],
+		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() })`
 	}
 	get isFloat(): boolean {
 		return this.arg.isFloat

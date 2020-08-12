@@ -3,7 +3,7 @@ This chapter defines the syntax, semantics, and behavior of expressions in the S
 
 ```
 Expression ::=
-	| ExpressionAdditive
+	| ExpressionDisjunctive
 	| ExpressionConditional
 ;
 ```
@@ -288,12 +288,14 @@ Void Evaluate(SemanticIdentifier iden) :=
 ## Unary Operators
 ```
 ExpressionUnarySymbol
-	::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol;
+	::= ExpressionUnit | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
 ```
 
 
 ### Static Semantics: Semantic Schema (Unary Operators)
 ```
+SemanticOperation[operator: NOT | EMPTY]
+	::= SemanticExpression;
 SemanticOperation[operator: NEG]
 	::= SemanticExpression[type: Integer | Float];
 ```
@@ -303,6 +305,10 @@ SemanticOperation[operator: NEG]
 ```
 Decorate(ExpressionUnarySymbol ::= ExpressionUnit) -> SemanticExpression
 	:= Decorate(ExpressionUnit);
+Decorate(ExpressionUnarySymbol ::= "!" ExpressionUnarySymbol) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT] Decorate(ExpressionUnarySymbol));
+Decorate(ExpressionUnarySymbol ::= "?" ExpressionUnarySymbol) -> SemanticOperation
+	:= (SemanticOperation[operator=EMPTY] Decorate(ExpressionUnarySymbol));
 Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol);
 Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperation
@@ -312,6 +318,28 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperati
 
 ### Static Semantics: Assess (Unary Operators)
 ```
+Boolean? Assess(SemanticOperation[operator: NOT] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `TypeOf(operand)` is `Void`:
+		1. *Return*.
+	4. *Let* `is_truthy` be the result of performing `ToBoolean(operand)`.
+	5. *If* `is_truthy` is `true`:
+		1. *Return:* `false`.
+	6. *Return:* `true`.
+Boolean? Assess(SemanticOperation[operator: EMPTY] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `TypeOf(operand)` is `Void`:
+		1. *Return*.
+	4. *Let* `is_truthy` be the result of performing `ToBoolean(operand)`.
+	5. *If* `is_truthy` is `false`:
+		1. *Return:* `true`.
+	6. *If* `TypeOf(operand)` is `Integer` *and* `operand` is `0`:
+		1. *Return:* `true`.
+	7. *If* `TypeOf(operand)` is `Float` *and* `operand` is `0.0` or `-0.0`:
+		1. *Return:* `true`.
+	8. *Return:* `false`.
 Or<Integer, Float>? Assess(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
@@ -326,7 +354,7 @@ Or<Integer, Float>? Assess(SemanticOperation[operator: NEG] expr) :=
 
 ### Static Semantics: Build (Unary Operators)
 ```
-Sequence<Instruction> Build(SemanticOperation[operator: NEG] expr) :=
+Sequence<Instruction> Build(SemanticOperation[operator: NOT | EMPTY | NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `assess` be the result of performing `Assess(expr.children.0)`.
 	3. *If* `TypeOf(assess)` is `Void`:
@@ -334,12 +362,24 @@ Sequence<Instruction> Build(SemanticOperation[operator: NEG] expr) :=
 	4. *Else:*
 		1. *Assert*: `TypeOf(assess)` is `Or<Null, Boolean, Integer, Float>`.
 		2. *Let* `instrs` be the result of performing `Build(assess)`.
-	5. *Return:* [...instrs, "Perform stack operation NEG."].
+	5. *Return:* [...instrs, "Perform stack operation `expr.operator`."].
 ```
 
 
 ### Runtime Instructions: Evaluate (Unary Operators)
 ```
+Void Evaluate(Instruction :::= "Perform stack operation NOT.") :=
+	1. Pop `operand` from the operand stack.
+	2. *If* `TypeOf(operand)` is `Integer` *and* `operand` is `0`:
+		1. Push `1` onto the operand stack.
+	3. Push `0` onto the operand stack.
+Void Evaluate(Instruction :::= "Perform stack operation EMPTY.") :=
+	1. Pop `operand` from the operand stack.
+	2. *If* `TypeOf(operand)` is `Integer` *and* `operand` is `0`:
+		1. Push `1` onto the operand stack.
+	3. *If* `TypeOf(operand)` is `Float` *and* `operand` is `0.0` or `-0.0`:
+		1. Push `1` onto the operand stack.
+	4. Push `0` onto the operand stack.
 Void Evaluate(Instruction :::= "Perform stack operation NEG.") :=
 	1. Pop `operand` from the operand stack.
 	2. *Let* `negation` be the additive inverse, `-operand`,
@@ -513,6 +553,74 @@ Void Evaluate(Instruction :::= "Perform stack operation ADD.") :=
 	2. Pop `operand0` from the operand stack.
 	3. *Let* `sum` be the result of performing `PerformNumericBinaryOperation(ADD, operand0, operand1)`.
 	4. Push `sum` onto the operand stack.
+```
+
+
+
+## Conjunctive
+```
+ExpressionConjunctive
+	::= (ExpressionConjunctive ("&&" | "!&"))? ExpressionAdditive;
+```
+
+
+### Static Semantics: Semantic Schema (Conjunctive)
+```
+SemanticOperation[operator: AND]
+	::= SemanticExpression SemanticExpression;
+```
+
+
+### Static Semantics: Decorate (Conjunctive)
+```
+Decorate(ExpressionConjunctive ::= ExpressionAdditive) -> SemanticExpression
+	:= Decorate(ExpressionAdditive);
+Decorate(ExpressionConjunctive ::= ExpressionConjunctive "&&" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=AND]
+		Decorate(ExpressionConjunctive)
+		Decorate(ExpressionAdditive)
+	);
+Decorate(ExpressionConjunctive ::= ExpressionConjunctive "!&" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=AND]
+			Decorate(ExpressionConjunctive)
+			Decorate(ExpressionAdditive)
+		)
+	);
+```
+
+
+
+## Disjunctive
+```
+ExpressionDisjunctive
+	::= (ExpressionDisjunctive ("||" | "!|"))? ExpressionConjunctive;
+```
+
+
+### Static Semantics: Semantic Schema (Disjunctive)
+```
+SemanticOperation[operator: OR]
+	::= SemanticExpression SemanticExpression;
+```
+
+
+### Static Semantics: Decorate (Disjunctive)
+```
+Decorate(ExpressionDisjunctive ::= ExpressionConjunctive) -> SemanticOperation
+	:= Decorate(ExpressionConjunctive);
+Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "||" ExpressionConjunctive) -> SemanticOperation
+	:= (SemanticOperation[operator=OR]
+		Decorate(ExpressionDisjunctive)
+		Decorate(ExpressionConjunctive)
+	);
+Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "!|" ExpressionConjunctive) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=OR]
+			Decorate(ExpressionDisjunctive)
+			Decorate(ExpressionConjunctive)
+		)
+	);
 ```
 
 

@@ -199,14 +199,21 @@ export class ProductionExpressionUnarySymbol extends Production {
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[ProductionExpressionUnit.instance],
-			[Punctuator.AFF, this],
-			[Punctuator.NEG, this],
+			[Punctuator.NOT,   this],
+			[Punctuator.EMPTY, this],
+			[Punctuator.AFF,   this],
+			[Punctuator.NEG,   this],
 		]
 	}
 	random(): string[] {
 		return Util.randomBool() ?
 			ProductionExpressionUnit.instance.random() :
-			[Util.arrayRandom([Punctuator.AFF, Punctuator.NEG]), ...this.random()]
+			[Util.arrayRandom([
+				Punctuator.NOT,
+				Punctuator.EMPTY,
+				Punctuator.AFF,
+				Punctuator.NEG,
+			]), ...this.random()]
 	}
 }
 export class ProductionExpressionExponential extends Production {
@@ -256,6 +263,38 @@ export class ProductionExpressionAdditive extends Production {
 		]
 	}
 }
+export class ProductionExpressionConjunctive extends Production {
+	static readonly instance: ProductionExpressionConjunctive = new ProductionExpressionConjunctive()
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[                       ProductionExpressionAdditive.instance],
+			[this, Punctuator.AND,  ProductionExpressionAdditive.instance],
+			[this, Punctuator.NAND, ProductionExpressionAdditive.instance],
+		]
+	}
+	random(): string[] {
+		return [
+			...Terminal.maybeA(() => [...this.random(), Util.arrayRandom([Punctuator.AND, Punctuator.NAND])]),
+			...ProductionExpressionAdditive.instance.random(),
+		]
+	}
+}
+export class ProductionExpressionDisjunctive extends Production {
+	static readonly instance: ProductionExpressionDisjunctive = new ProductionExpressionDisjunctive()
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[                      ProductionExpressionConjunctive.instance],
+			[this, Punctuator.OR,  ProductionExpressionConjunctive.instance],
+			[this, Punctuator.NOR, ProductionExpressionConjunctive.instance],
+		]
+	}
+	random(): string[] {
+		return [
+			...Terminal.maybeA(() => [...this.random(), Util.arrayRandom([Punctuator.OR, Punctuator.NOR])]),
+			...ProductionExpressionConjunctive.instance.random(),
+		]
+	}
+}
 export class ProductionExpressionConditional extends Production {
 	static readonly instance: ProductionExpressionConditional = new ProductionExpressionConditional()
 	get sequences(): GrammarSymbol[][] {
@@ -279,7 +318,7 @@ export class ProductionExpression extends Production {
 	static readonly instance: ProductionExpression = new ProductionExpression()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[ProductionExpressionAdditive   .instance],
+			[ProductionExpressionDisjunctive.instance],
 			[ProductionExpressionConditional.instance],
 		]
 	}

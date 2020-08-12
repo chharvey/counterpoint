@@ -5,7 +5,6 @@ import Util from '../src/class/Util.class'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
 import {
-	ParseNodePrimitiveLiteral,
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
 	ParseNodeExpressionUnary,
@@ -31,6 +30,19 @@ import {
 import {
 	assert_arrayLength,
 } from './assert-helpers'
+import {
+	tokenLiteralFromExpressionUnit,
+	unitExpressionFromUnaryExpression,
+	unaryExpressionFromExponentialExpression,
+	exponentialExpressionFromMultiplicativeExpression,
+	multiplicativeExpressionFromAdditiveExpression,
+	additiveExpressionFromConjunctiveExpression,
+	conjunctiveExpressionFromDisjunctiveExpression,
+	disjunctiveExpressionFromExpression,
+	conditionalExpressionFromExpression,
+	expressionFromStatement,
+	statementFromSource,
+} from './helpers-parse'
 
 
 
@@ -57,11 +69,7 @@ describe('Parser', () => {
 						<FILEBOUND value="false">␃</FILEBOUND>
 					</Goal>
 				*/
-				const tree: ParseNodeGoal = new Parser(';', CONFIG_DEFAULT).parse()
-				assert_arrayLength(tree.children, 3)
-				const statement_list: ParseNodeGoal__0__List = tree.children[1]
-				assert_arrayLength(statement_list.children, 1)
-				const statement: ParseNodeStatement = statement_list.children[0]
+				const statement: ParseNodeStatement = statementFromSource(`;`)
 				assert_arrayLength(statement.children, 1)
 				const token: ParseNodeDeclarationVariable|ParseNodeStatementAssignment|TokenPunctuator = statement.children[0]
 				assert.ok(token instanceof TokenPunctuator)
@@ -70,120 +78,42 @@ describe('Parser', () => {
 		})
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
-			it('parses NULL or BOOLEAN.', () => {
-				/*
-					<Goal source="␂ null ; ␃">
-						<FILEBOUND value="true">␂</FILEBOUND>
-						<Goal__0__List line="1" col="1" source=";">
-							<Statement line="1" col="1" source=";">
-								<Expression line="1" col="1" source="null">
-									<ExpressionAdditive line="1" col="1" source="null">
-										<ExpressionMultiplicative line="1" col="1" source="null">
-											<ExpressionExponential line="1" col="1" source="null">
-												<ExpressionUnarySymbol line="1" col="1" source="null">
-													<ExpressionUnit line="1" col="1" source="null">
-														<PrimitiveLiteral line="1" col="1" source="null">
-															<KEYWORD line="1" col="1" value="128">null</KEYWORD>
-														</PrimitiveLiteral>
-													</ExpressionUnit>
-												</ExpressionUnarySymbol>
-											</ExpressionExponential>
-										</ExpressionMultiplicative>
-									</ExpressionAdditive>
-								</Expression>
-								<PUNCTUATOR line="1" col="5" value="7">;</PUNCTUATOR>
-							</Statement>
-						</Goal__0__List>
-						<FILEBOUND value="false">␃</FILEBOUND>
-					</Goal>
-				*/
-				[
-					`null;`,
-					`false;`,
-					`true;`,
-				].forEach((src, i) => {
-					const tree: ParseNodeGoal = new Parser(src, CONFIG_DEFAULT).parse()
-					assert_arrayLength(tree.children, 3)
-					const statement_list: ParseNodeGoal__0__List = tree.children[1]
-					assert_arrayLength(statement_list.children, 1)
-					const statement: ParseNodeStatement = statement_list.children[0]
-					assert_arrayLength(statement.children, 2)
-					const expression: ParseNodeExpression = statement.children[0]
-					const expression_add: ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression.children[0]
-					assert.ok(expression_add instanceof ParseNodeExpressionBinary)
-					assert_arrayLength(expression_add.children, 1)
-					const expression_mul: ParseNodeExpressionBinary = expression_add.children[0] as ParseNodeExpressionBinary
-					assert_arrayLength(expression_mul.children, 1)
-					const expression_exp: ParseNodeExpressionBinary = expression_mul.children[0] as ParseNodeExpressionBinary
-					assert_arrayLength(expression_exp.children, 1)
-					const expression_un: ParseNodeExpressionUnary = expression_exp.children[0] as ParseNodeExpressionUnary
-					assert_arrayLength(expression_un.children, 1)
-					const expression_atom: ParseNodeExpressionUnit = expression_un.children[0]
-					assert_arrayLength(expression_atom.children, 1)
-					const literal: ParseNodePrimitiveLiteral = expression_atom.children[0] as ParseNodePrimitiveLiteral
-					assert_arrayLength(literal.children, 1)
-					const token: TokenKeyword | TokenNumber | TokenString = literal.children[0]
-					assert.ok(token instanceof TokenKeyword)
-					assert.strictEqual(token.source, [
-						Keyword.NULL,
-						Keyword.FALSE,
-						Keyword.TRUE,
-					][i])
-				});
-			})
-			it('parses an INTEGER, FLOAT, or STRING', () => {
-				assert.strictEqual(new Parser('42;', CONFIG_DEFAULT).parse().serialize(), `
-					<Goal source="␂ 42 ; ␃">
-						<FILEBOUND value="true">␂</FILEBOUND>
-						<Goal__0__List line="1" col="1" source="42 ;">
-							<Statement line="1" col="1" source="42 ;">
-								<Expression line="1" col="1" source="42">
-									<ExpressionAdditive line="1" col="1" source="42">
-										<ExpressionMultiplicative line="1" col="1" source="42">
-											<ExpressionExponential line="1" col="1" source="42">
-												<ExpressionUnarySymbol line="1" col="1" source="42">
-													<ExpressionUnit line="1" col="1" source="42">
-														<PrimitiveLiteral line="1" col="1" source="42">
-															<NUMBER line="1" col="1" value="42">42</NUMBER>
-														</PrimitiveLiteral>
-													</ExpressionUnit>
-												</ExpressionUnarySymbol>
-											</ExpressionExponential>
-										</ExpressionMultiplicative>
-									</ExpressionAdditive>
-								</Expression>
-								<PUNCTUATOR line="1" col="3" value="7">;</PUNCTUATOR>
-							</Statement>
-						</Goal__0__List>
-						<FILEBOUND value="false">␃</FILEBOUND>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
-				assert.strictEqual(new Parser('4.2e+1;', CONFIG_DEFAULT).parse().serialize(), `
-					<Goal source="␂ 4.2e+1 ; ␃">
-						<FILEBOUND value="true">␂</FILEBOUND>
-						<Goal__0__List line="1" col="1" source="4.2e+1 ;">
-							<Statement line="1" col="1" source="4.2e+1 ;">
-								<Expression line="1" col="1" source="4.2e+1">
-									<ExpressionAdditive line="1" col="1" source="4.2e+1">
-										<ExpressionMultiplicative line="1" col="1" source="4.2e+1">
-											<ExpressionExponential line="1" col="1" source="4.2e+1">
-												<ExpressionUnarySymbol line="1" col="1" source="4.2e+1">
-													<ExpressionUnit line="1" col="1" source="4.2e+1">
-														<PrimitiveLiteral line="1" col="1" source="4.2e+1">
-															<NUMBER line="1" col="1" value="42">4.2e+1</NUMBER>
-														</PrimitiveLiteral>
-													</ExpressionUnit>
-												</ExpressionUnarySymbol>
-											</ExpressionExponential>
-										</ExpressionMultiplicative>
-									</ExpressionAdditive>
-								</Expression>
-								<PUNCTUATOR line="1" col="7" value="7">;</PUNCTUATOR>
-							</Statement>
-						</Goal__0__List>
-						<FILEBOUND value="false">␃</FILEBOUND>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
+			it('parses NULL, BOOLEAN, INTEGER, FLOAT, or STRING.', () => {
+				assert.deepStrictEqual(([
+					[`null;`,   TokenKeyword],
+					[`false;`,  TokenKeyword],
+					[`true;`,   TokenKeyword],
+					[`42;`,     TokenNumber],
+					[`4.2e+1;`, TokenNumber],
+				] as [string, typeof TokenKeyword | typeof TokenNumber][]).map(([src, tokentype]) => {
+					const token: TokenKeyword | TokenNumber | TokenString = tokenLiteralFromExpressionUnit(
+						unitExpressionFromUnaryExpression(
+							unaryExpressionFromExponentialExpression(
+								exponentialExpressionFromMultiplicativeExpression(
+									multiplicativeExpressionFromAdditiveExpression(
+										additiveExpressionFromConjunctiveExpression(
+											conjunctiveExpressionFromDisjunctiveExpression(
+												disjunctiveExpressionFromExpression(
+													expressionFromStatement(
+														statementFromSource(src)
+													)
+												)
+											)
+										)
+									)
+								)
+							)
+						)
+					)
+					assert.ok(token instanceof tokentype)
+					return token.source
+				}), [
+					Keyword.NULL,
+					Keyword.FALSE,
+					Keyword.TRUE,
+					'42',
+					'4.2e+1',
+				]);
 			})
 		})
 
@@ -446,302 +376,241 @@ describe('Parser', () => {
 
 		context('ExpressionUnit ::= "(" Expression ")"', () => {
 			it('makes an ExpressionUnit node containing an Expression node.', () => {
-				assert.strictEqual(new Parser('(2 + -3);', CONFIG_DEFAULT).parse().serialize(), `
-					<Goal source="␂ ( 2 + -3 ) ; ␃">
-						<FILEBOUND value="true">␂</FILEBOUND>
-						<Goal__0__List line="1" col="1" source="( 2 + -3 ) ;">
-							<Statement line="1" col="1" source="( 2 + -3 ) ;">
-								<Expression line="1" col="1" source="( 2 + -3 )">
-									<ExpressionAdditive line="1" col="1" source="( 2 + -3 )">
-										<ExpressionMultiplicative line="1" col="1" source="( 2 + -3 )">
-											<ExpressionExponential line="1" col="1" source="( 2 + -3 )">
-												<ExpressionUnarySymbol line="1" col="1" source="( 2 + -3 )">
-													<ExpressionUnit line="1" col="1" source="( 2 + -3 )">
-														<PUNCTUATOR line="1" col="1" value="0">(</PUNCTUATOR>
-														<Expression line="1" col="2" source="2 + -3">
-															<ExpressionAdditive line="1" col="2" source="2 + -3">
-																<ExpressionAdditive line="1" col="2" source="2">
-																	<ExpressionMultiplicative line="1" col="2" source="2">
-																		<ExpressionExponential line="1" col="2" source="2">
-																			<ExpressionUnarySymbol line="1" col="2" source="2">
-																				<ExpressionUnit line="1" col="2" source="2">
-																					<PrimitiveLiteral line="1" col="2" source="2">
-																						<NUMBER line="1" col="2" value="2">2</NUMBER>
-																					</PrimitiveLiteral>
-																				</ExpressionUnit>
-																			</ExpressionUnarySymbol>
-																		</ExpressionExponential>
-																	</ExpressionMultiplicative>
-																</ExpressionAdditive>
-																<PUNCTUATOR line="1" col="4" value="2">+</PUNCTUATOR>
-																<ExpressionMultiplicative line="1" col="6" source="-3">
-																	<ExpressionExponential line="1" col="6" source="-3">
-																		<ExpressionUnarySymbol line="1" col="6" source="-3">
-																			<ExpressionUnit line="1" col="6" source="-3">
-																				<PrimitiveLiteral line="1" col="6" source="-3">
-																					<NUMBER line="1" col="6" value="-3">-3</NUMBER>
-																				</PrimitiveLiteral>
-																			</ExpressionUnit>
-																		</ExpressionUnarySymbol>
-																	</ExpressionExponential>
-																</ExpressionMultiplicative>
-															</ExpressionAdditive>
-														</Expression>
-														<PUNCTUATOR line="1" col="8" value="1">)</PUNCTUATOR>
-													</ExpressionUnit>
-												</ExpressionUnarySymbol>
-											</ExpressionExponential>
-										</ExpressionMultiplicative>
-									</ExpressionAdditive>
-								</Expression>
-								<PUNCTUATOR line="1" col="9" value="7">;</PUNCTUATOR>
-							</Statement>
-						</Goal__0__List>
-						<FILEBOUND value="false">␃</FILEBOUND>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
+				/*
+					<ExpressionUnit>
+						<PUNCTUATOR>(</PUNCTUATOR>
+						<Expression source="2 + -3">...</Expression>
+						<PUNCTUATOR>)</PUNCTUATOR>
+					</ExpressionUnit>
+				*/
+				const expression_unit: ParseNodeExpressionUnit = unitExpressionFromUnaryExpression(
+					unaryExpressionFromExponentialExpression(
+						exponentialExpressionFromMultiplicativeExpression(
+							multiplicativeExpressionFromAdditiveExpression(
+								additiveExpressionFromConjunctiveExpression(
+									conjunctiveExpressionFromDisjunctiveExpression(
+										disjunctiveExpressionFromExpression(
+											expressionFromStatement(
+												statementFromSource(`(2 + -3);`)
+											)
+										)
+									)
+								)
+							)
+						)
+					)
+				)
+				assert_arrayLength(expression_unit.children, 3)
+				const [open, expr, close]: readonly [TokenPunctuator, ParseNodeExpression, TokenPunctuator] = expression_unit.children
+				assert.deepStrictEqual(
+					[open.source,        expr.source, close.source],
+					[Punctuator.GRP_OPN, `2 + -3`,    Punctuator.GRP_CLS],
+				)
 			})
 		})
 
-		context('ExpressionUnarySymbol ::= ("+" | "-") ExpressionUnarySymbol', () => {
+		context('ExpressionUnarySymbol ::= ("!" | "?" | "+" | "-") ExpressionUnarySymbol', () => {
 			it('makes a ParseNodeExpressionUnary node.', () => {
-				assert.strictEqual(new Parser('- 42;', CONFIG_DEFAULT).parse().serialize(), `
-					<Goal source="␂ - 42 ; ␃">
-						<FILEBOUND value="true">␂</FILEBOUND>
-						<Goal__0__List line="1" col="1" source="- 42 ;">
-							<Statement line="1" col="1" source="- 42 ;">
-								<Expression line="1" col="1" source="- 42">
-									<ExpressionAdditive line="1" col="1" source="- 42">
-										<ExpressionMultiplicative line="1" col="1" source="- 42">
-											<ExpressionExponential line="1" col="1" source="- 42">
-												<ExpressionUnarySymbol line="1" col="1" source="- 42">
-													<PUNCTUATOR line="1" col="1" value="3">-</PUNCTUATOR>
-													<ExpressionUnarySymbol line="1" col="3" source="42">
-														<ExpressionUnit line="1" col="3" source="42">
-															<PrimitiveLiteral line="1" col="3" source="42">
-																<NUMBER line="1" col="3" value="42">42</NUMBER>
-															</PrimitiveLiteral>
-														</ExpressionUnit>
-													</ExpressionUnarySymbol>
-												</ExpressionUnarySymbol>
-											</ExpressionExponential>
-										</ExpressionMultiplicative>
-									</ExpressionAdditive>
-								</Expression>
-								<PUNCTUATOR line="1" col="5" value="7">;</PUNCTUATOR>
-							</Statement>
-						</Goal__0__List>
-						<FILEBOUND value="false">␃</FILEBOUND>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
-				assert.strictEqual(new Parser('--2;', CONFIG_DEFAULT).parse().serialize(), `
-					<Goal source="␂ - -2 ; ␃">
-						<FILEBOUND value="true">␂</FILEBOUND>
-						<Goal__0__List line="1" col="1" source="- -2 ;">
-							<Statement line="1" col="1" source="- -2 ;">
-								<Expression line="1" col="1" source="- -2">
-									<ExpressionAdditive line="1" col="1" source="- -2">
-										<ExpressionMultiplicative line="1" col="1" source="- -2">
-											<ExpressionExponential line="1" col="1" source="- -2">
-												<ExpressionUnarySymbol line="1" col="1" source="- -2">
-													<PUNCTUATOR line="1" col="1" value="3">-</PUNCTUATOR>
-													<ExpressionUnarySymbol line="1" col="2" source="-2">
-														<ExpressionUnit line="1" col="2" source="-2">
-															<PrimitiveLiteral line="1" col="2" source="-2">
-																<NUMBER line="1" col="2" value="-2">-2</NUMBER>
-															</PrimitiveLiteral>
-														</ExpressionUnit>
-													</ExpressionUnarySymbol>
-												</ExpressionUnarySymbol>
-											</ExpressionExponential>
-										</ExpressionMultiplicative>
-									</ExpressionAdditive>
-								</Expression>
-								<PUNCTUATOR line="1" col="4" value="7">;</PUNCTUATOR>
-							</Statement>
-						</Goal__0__List>
-						<FILEBOUND value="false">␃</FILEBOUND>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
+				/*
+					<ExpressionUnarySymbol>
+						<PUNCTUATOR>-</PUNCTUATOR>
+						<ExpressionUnarySymbol source="42">...</ExpressionUnarySymbol>
+					</ExpressionUnarySymbol>
+				*/
+				assert.deepStrictEqual([
+					`!false;`,
+					`?true;`,
+					`- 42;`,
+					`--2;`,
+				].map((src) => {
+					const expression_unary: ParseNodeExpressionUnary = unaryExpressionFromExponentialExpression(
+						exponentialExpressionFromMultiplicativeExpression(
+							multiplicativeExpressionFromAdditiveExpression(
+								additiveExpressionFromConjunctiveExpression(
+									conjunctiveExpressionFromDisjunctiveExpression(
+										disjunctiveExpressionFromExpression(
+											expressionFromStatement(
+												statementFromSource(src)
+											)
+										)
+									)
+								)
+							)
+						)
+					)
+					assert_arrayLength(expression_unary.children, 2, 'outer unary expression should have 2 children')
+					const [op, operand]: readonly [TokenPunctuator, ParseNodeExpressionUnary] = expression_unary.children
+					assert_arrayLength(operand.children, 1, 'inner unary expression should have 1 child')
+					return [operand.source, op.source]
+				}), [
+					[`false`, Punctuator.NOT],
+					[`true`, Punctuator.EMPTY],
+					[`42`, Punctuator.NEG],
+					[`-2`, Punctuator.NEG],
+				])
 			})
 		})
 
 		context('ExpressionExponential ::=  ExpressionUnarySymbol "^" ExpressionExponential', () => {
 			it('makes a ParseNodeExpressionBinary node.', () => {
-				assert.strictEqual(new Parser('2 ^ -3;', CONFIG_DEFAULT).parse().serialize(), `
-					<Goal source="␂ 2 ^ -3 ; ␃">
-						<FILEBOUND value="true">␂</FILEBOUND>
-						<Goal__0__List line="1" col="1" source="2 ^ -3 ;">
-							<Statement line="1" col="1" source="2 ^ -3 ;">
-								<Expression line="1" col="1" source="2 ^ -3">
-									<ExpressionAdditive line="1" col="1" source="2 ^ -3">
-										<ExpressionMultiplicative line="1" col="1" source="2 ^ -3">
-											<ExpressionExponential line="1" col="1" source="2 ^ -3">
-												<ExpressionUnarySymbol line="1" col="1" source="2">
-													<ExpressionUnit line="1" col="1" source="2">
-														<PrimitiveLiteral line="1" col="1" source="2">
-															<NUMBER line="1" col="1" value="2">2</NUMBER>
-														</PrimitiveLiteral>
-													</ExpressionUnit>
-												</ExpressionUnarySymbol>
-												<PUNCTUATOR line="1" col="3" value="4">^</PUNCTUATOR>
-												<ExpressionExponential line="1" col="5" source="-3">
-													<ExpressionUnarySymbol line="1" col="5" source="-3">
-														<ExpressionUnit line="1" col="5" source="-3">
-															<PrimitiveLiteral line="1" col="5" source="-3">
-																<NUMBER line="1" col="5" value="-3">-3</NUMBER>
-															</PrimitiveLiteral>
-														</ExpressionUnit>
-													</ExpressionUnarySymbol>
-												</ExpressionExponential>
-											</ExpressionExponential>
-										</ExpressionMultiplicative>
-									</ExpressionAdditive>
-								</Expression>
-								<PUNCTUATOR line="1" col="7" value="7">;</PUNCTUATOR>
-							</Statement>
-						</Goal__0__List>
-						<FILEBOUND value="false">␃</FILEBOUND>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
+				/*
+					<ExpressionExponential>
+						<ExpressionUnarySymbol source="2">...</ExpressionUnarySymbol>
+						<PUNCTUATOR>^</PUNCTUATOR>
+						<ExpressionExponential source="-3">...</ExpressionExponential>
+					</ExpressionExponential>
+				*/
+				const expression_exp: ParseNodeExpressionBinary = exponentialExpressionFromMultiplicativeExpression(
+					multiplicativeExpressionFromAdditiveExpression(
+						additiveExpressionFromConjunctiveExpression(
+							conjunctiveExpressionFromDisjunctiveExpression(
+								disjunctiveExpressionFromExpression(
+									expressionFromStatement(
+										statementFromSource(`2 ^ -3;`)
+									)
+								)
+							)
+						)
+					)
+				)
+				assert_arrayLength(expression_exp.children, 3, 'exponential expression should have 3 children')
+				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary] = expression_exp.children
+				assert.ok(left instanceof ParseNodeExpressionUnary)
+				assert.deepStrictEqual(
+					[left.source, op.source,      right.source],
+					['2',         Punctuator.EXP, '-3'],
+				)
 			})
 		})
 
 		context('ExpressionMultiplicative ::= ExpressionMultiplicative ("*" | "/") ExpressionExponential', () => {
 			it('makes a ParseNodeExpressionBinary node.', () => {
-				assert.strictEqual(new Parser('2 * -3;', CONFIG_DEFAULT).parse().serialize(), `
-					<Goal source="␂ 2 * -3 ; ␃">
-						<FILEBOUND value="true">␂</FILEBOUND>
-						<Goal__0__List line="1" col="1" source="2 * -3 ;">
-							<Statement line="1" col="1" source="2 * -3 ;">
-								<Expression line="1" col="1" source="2 * -3">
-									<ExpressionAdditive line="1" col="1" source="2 * -3">
-										<ExpressionMultiplicative line="1" col="1" source="2 * -3">
-											<ExpressionMultiplicative line="1" col="1" source="2">
-												<ExpressionExponential line="1" col="1" source="2">
-													<ExpressionUnarySymbol line="1" col="1" source="2">
-														<ExpressionUnit line="1" col="1" source="2">
-															<PrimitiveLiteral line="1" col="1" source="2">
-																<NUMBER line="1" col="1" value="2">2</NUMBER>
-															</PrimitiveLiteral>
-														</ExpressionUnit>
-													</ExpressionUnarySymbol>
-												</ExpressionExponential>
-											</ExpressionMultiplicative>
-											<PUNCTUATOR line="1" col="3" value="5">*</PUNCTUATOR>
-											<ExpressionExponential line="1" col="5" source="-3">
-												<ExpressionUnarySymbol line="1" col="5" source="-3">
-													<ExpressionUnit line="1" col="5" source="-3">
-														<PrimitiveLiteral line="1" col="5" source="-3">
-															<NUMBER line="1" col="5" value="-3">-3</NUMBER>
-														</PrimitiveLiteral>
-													</ExpressionUnit>
-												</ExpressionUnarySymbol>
-											</ExpressionExponential>
-										</ExpressionMultiplicative>
-									</ExpressionAdditive>
-								</Expression>
-								<PUNCTUATOR line="1" col="7" value="7">;</PUNCTUATOR>
-							</Statement>
-						</Goal__0__List>
-						<FILEBOUND value="false">␃</FILEBOUND>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
+				/*
+					<ExpressionMultiplicative>
+						<ExpressionMultiplicative source="2">...</ExpressionMultiplicative>
+						<PUNCTUATOR>*</PUNCTUATOR>
+						<ExpressionExponential source="-3">...</ExpressionExponential>
+					</ExpressionMultiplicative>
+				*/
+				const expression_mul: ParseNodeExpressionBinary = multiplicativeExpressionFromAdditiveExpression(
+					additiveExpressionFromConjunctiveExpression(
+						conjunctiveExpressionFromDisjunctiveExpression(
+							disjunctiveExpressionFromExpression(
+								expressionFromStatement(
+									statementFromSource(`2 * -3;`)
+								)
+							)
+						)
+					)
+				)
+				assert_arrayLength(expression_mul.children, 3, 'multiplicative expression should have 3 children')
+				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary] = expression_mul.children
+				assert.ok(left instanceof ParseNodeExpressionBinary)
+				assert.deepStrictEqual(
+					[left.source, op.source,      right.source],
+					['2',         Punctuator.MUL, '-3'],
+				)
 			})
 		})
 
 		context('ExpressionAdditive ::= ExpressionAdditive ("+" | "-") ExpressionMultiplicative', () => {
 			it('makes a ParseNodeExpressionBinary node.', () => {
-				assert.strictEqual(new Parser('2 + -3;', CONFIG_DEFAULT).parse().serialize(), `
-					<Goal source="␂ 2 + -3 ; ␃">
-						<FILEBOUND value="true">␂</FILEBOUND>
-						<Goal__0__List line="1" col="1" source="2 + -3 ;">
-							<Statement line="1" col="1" source="2 + -3 ;">
-								<Expression line="1" col="1" source="2 + -3">
-									<ExpressionAdditive line="1" col="1" source="2 + -3">
-										<ExpressionAdditive line="1" col="1" source="2">
-											<ExpressionMultiplicative line="1" col="1" source="2">
-												<ExpressionExponential line="1" col="1" source="2">
-													<ExpressionUnarySymbol line="1" col="1" source="2">
-														<ExpressionUnit line="1" col="1" source="2">
-															<PrimitiveLiteral line="1" col="1" source="2">
-																<NUMBER line="1" col="1" value="2">2</NUMBER>
-															</PrimitiveLiteral>
-														</ExpressionUnit>
-													</ExpressionUnarySymbol>
-												</ExpressionExponential>
-											</ExpressionMultiplicative>
-										</ExpressionAdditive>
-										<PUNCTUATOR line="1" col="3" value="2">+</PUNCTUATOR>
-										<ExpressionMultiplicative line="1" col="5" source="-3">
-											<ExpressionExponential line="1" col="5" source="-3">
-												<ExpressionUnarySymbol line="1" col="5" source="-3">
-													<ExpressionUnit line="1" col="5" source="-3">
-														<PrimitiveLiteral line="1" col="5" source="-3">
-															<NUMBER line="1" col="5" value="-3">-3</NUMBER>
-														</PrimitiveLiteral>
-													</ExpressionUnit>
-												</ExpressionUnarySymbol>
-											</ExpressionExponential>
-										</ExpressionMultiplicative>
-									</ExpressionAdditive>
-								</Expression>
-								<PUNCTUATOR line="1" col="7" value="7">;</PUNCTUATOR>
-							</Statement>
-						</Goal__0__List>
-						<FILEBOUND value="false">␃</FILEBOUND>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
+				/*
+					<ExpressionAdditive>
+						<ExpressionAdditive source="2">...</ExpressionAdditive>
+						<PUNCTUATOR>+</PUNCTUATOR>
+						<ExpressionMultiplicative source="-3">...</ExpressionMultiplicative>
+					</ExpressionAdditive>
+				*/
+				const expression_add: ParseNodeExpressionBinary = additiveExpressionFromConjunctiveExpression(
+					conjunctiveExpressionFromDisjunctiveExpression(
+						disjunctiveExpressionFromExpression(
+							expressionFromStatement(
+								statementFromSource(`2 + -3;`)
+							)
+						)
+					)
+				)
+				assert_arrayLength(expression_add.children, 3, 'additive expression should have 3 children')
+				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary] = expression_add.children
+				assert.ok(left instanceof ParseNodeExpressionBinary)
+				assert.deepStrictEqual(
+					[left.source, op.source,      right.source],
+					['2',         Punctuator.ADD, '-3'],
+				)
+			})
+		})
+
+		context('ExpressionConjunctive ::= ExpressionConjunctive ("&&" | "!&") ExpressionAdditive', () => {
+			it('makes a ParseNodeExpressionBinary node.', () => {
+				/*
+					<ExpressionConjunctive>
+						<ExpressionConjunctive source="2">...</ExpressionConjunctive>
+						<PUNCTUATOR>&&</PUNCTUATOR>
+						<ExpressionAdditive source="-3">...</ExpressionAdditive>
+					</ExpressionConjunctive>
+				*/
+				const expression_conj: ParseNodeExpressionBinary = conjunctiveExpressionFromDisjunctiveExpression(
+					disjunctiveExpressionFromExpression(
+						expressionFromStatement(
+							statementFromSource(`2 && -3;`)
+						)
+					)
+				)
+				assert_arrayLength(expression_conj.children, 3, 'conjunctive expression should have 3 children')
+				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary] = expression_conj.children
+				assert.ok(left instanceof ParseNodeExpressionBinary)
+				assert.deepStrictEqual(
+					[left.source, op.source,      right.source],
+					['2',         Punctuator.AND, '-3'],
+				)
+			})
+		})
+
+		context('ExpressionDisjunctive ::= ExpressionDisjunctive ("||" | "!|") ExpressionConjunctive', () => {
+			it('makes a ParseNodeExpressionBinary node.', () => {
+				/*
+					<ExpressionDisjunctive>
+						<ExpressionDisjunctive source="2">...</ExpressionDisjunctive>
+						<PUNCTUATOR>||</PUNCTUATOR>
+						<ExpressionConjunctive source="-3">...</ExpressionConjunctive>
+					</ExpressionDisjunctive>
+				*/
+				const expression_conj: ParseNodeExpressionBinary = disjunctiveExpressionFromExpression(
+					expressionFromStatement(
+						statementFromSource(`2 || -3;`)
+					)
+				)
+				assert_arrayLength(expression_conj.children, 3, 'disjunctive expression should have 3 children')
+				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary] = expression_conj.children
+				assert.ok(left instanceof ParseNodeExpressionBinary)
+				assert.deepStrictEqual(
+					[left.source, op.source,     right.source],
+					['2',         Punctuator.OR, '-3'],
+				)
 			})
 		})
 
 		context('ExpressionConditional ::= "if" Expression "then" Expression "else" Expression', () => {
 			it('makes a ParseNodeExpressionConditional node.', () => {
 				/*
-					<Goal>
-						<FILEBOUND>␂</FILEBOUND>
-						<Goal__0__List>
-							<Statement>
-								<Expression>
-									<ExpressionConditional>
-										<KEYWORD>if</KEYWORD>
-										<Expression>
-											<ExpressionAdditive>...<KEYWORD>true</KEYWORD>...</ExpressionAdditive>
-										</Expression>
-										<KEYWORD>then</KEYWORD>
-										<Expression>
-											<ExpressionAdditive>...<NUMBER>2</NUMBER>...</ExpressionAdditive>
-										</Expression>
-										<KEYWORD>else</KEYWORD>
-										<Expression>
-											<ExpressionAdditive>...<NUMBER>3</NUMBER>...</ExpressionAdditive>
-										</Expression>
-									</ExpressionConditional>
-								</Expression>
-								<PUNCTUATOR>;</PUNCTUATOR>
-							</Statement>
-						</Goal__0__List>
-						<FILEBOUND>␃</FILEBOUND>
-					</Goal>
+					<ExpressionConditional>
+						<KEYWORD>if</KEYWORD>
+						<Expression source="true">...</Expression>
+						<KEYWORD>then</KEYWORD>
+						<Expression source="2">...</Expression>
+						<KEYWORD>else</KEYWORD>
+						<Expression source="3">...</Expression>
+					</ExpressionConditional>
 				*/
-				const tree: ParseNodeGoal = new Parser(`if true then 2 else 3;`, CONFIG_DEFAULT).parse()
-				assert_arrayLength(tree.children, 3)
-				const statement_list: ParseNodeGoal__0__List = tree.children[1]
-				assert_arrayLength(statement_list.children, 1)
-				const statement: ParseNodeStatement = statement_list.children[0]
-				assert_arrayLength(statement.children, 2)
-				const expression: ParseNodeExpression = statement.children[0]
-				const expression_cond: ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression.children[0]
-				assert.ok(expression_cond instanceof ParseNodeExpressionConditional)
-				const _if:   TokenKeyword = expression_cond.children[0]
-				const _then: TokenKeyword = expression_cond.children[2]
-				const _else: TokenKeyword = expression_cond.children[4]
-				const condition:   ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression_cond.children[1].children[0]
-				const consequent:  ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression_cond.children[3].children[0]
-				const alternative: ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression_cond.children[5].children[0]
-				assert.ok(condition   instanceof ParseNodeExpressionBinary)
-				assert.ok(consequent  instanceof ParseNodeExpressionBinary)
-				assert.ok(alternative instanceof ParseNodeExpressionBinary)
+				const expression_cond: ParseNodeExpressionConditional = conditionalExpressionFromExpression(
+					expressionFromStatement(
+						statementFromSource(`if true then 2 else 3;`)
+					)
+				)
+				const
+					[_if,          condition,           _then,        consequent,          _else,        alternative]: readonly
+					[TokenKeyword, ParseNodeExpression, TokenKeyword, ParseNodeExpression, TokenKeyword, ParseNodeExpression] = expression_cond.children
 				assert.deepStrictEqual(
 					[_if.source, condition.source, _then.source, consequent.source, _else.source, alternative.source],
 					[Keyword.IF, `true`,           Keyword.THEN, `2`,               Keyword.ELSE, `3`],

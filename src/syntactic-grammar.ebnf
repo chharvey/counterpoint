@@ -29,17 +29,20 @@ ExpressionUnit ::=
 	| "(" Expression ")"
 ;
 
-ExpressionUnarySymbol ::= ExpressionUnit | ("+" | "-") ExpressionUnarySymbol;
+ExpressionUnarySymbol
+	::= ExpressionUnit | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
 
-ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"          ExpressionExponential   )?;
-ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential     ;
-ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-"))? ExpressionMultiplicative  ;
+ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"            ExpressionExponential)?;
+ExpressionMultiplicative ::= (ExpressionMultiplicative ("*"  | "/" ))? ExpressionExponential;
+ExpressionAdditive       ::= (ExpressionAdditive       ("+"  | "-" ))? ExpressionMultiplicative;
+ExpressionConjunctive    ::= (ExpressionConjunctive    ("&&" | "!&"))? ExpressionAdditive;
+ExpressionDisjunctive    ::= (ExpressionDisjunctive    ("||" | "!|"))? ExpressionConjunctive;
 
 ExpressionConditional
 	::= "if" Expression "then" Expression "else" Expression;
 
 Expression ::=
-	| ExpressionAdditive
+	| ExpressionDisjunctive
 	| ExpressionConditional
 ;
 

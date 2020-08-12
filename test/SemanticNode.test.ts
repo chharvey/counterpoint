@@ -9,7 +9,6 @@ import type {
 	ParseNodeGoal__0__List,
 } from '../src/class/ParseNode.class'
 import {
-	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
@@ -31,6 +30,8 @@ import Float64 from '../src/vm/Float64.class'
 import {
 	Operator,
 	InstructionNone,
+	InstructionConst,
+	InstructionUnop,
 	InstructionBinop,
 	InstructionStatement,
 	InstructionModule,
@@ -43,60 +44,6 @@ import {
 
 
 describe('SemanticNode', () => {
-	describe('.constructor', () => {
-		context('SemanticNodeExpression', () => {
-			it('rethrows `this.type()`.', () => {
-				[
-					`null;`,
-					`42;`,
-					`21 + 21;`,
-				].forEach((src) => {
-					(new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeExpression
-				})
-				assert.throws(() => {
-					(new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeExpression
-				}, /Invalid operation./)
-			})
-		})
-
-		context('SemanticNodeStatementExpression', () => {
-			it('rethrows the type of the expression.', () => {
-				[
-					`null;`,
-					`42;`,
-					`21 + 21;`,
-				].forEach((src) => {
-					new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression
-				})
-				assert.throws(() => {
-					new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression
-				}, /Invalid operation./)
-			})
-		})
-
-		context('SemanticNodeGoal', () => {
-			it('rethrows the type of each statement.', () => {
-				[
-					`null;`,
-					`42;`,
-					`21 + 21;`,
-				].forEach((src) => {
-					new Parser(src, CONFIG_DEFAULT).parse().decorate()
-				})
-				assert.throws(() => {
-					new Parser(`null + 5;`, CONFIG_DEFAULT).parse().decorate()
-				}, TypeError)
-			})
-		})
-	})
-
-
 	describe('#build', () => {
 		context('SemanticNodeGoal ::= SOT EOT', () => {
 			it('returns InstructionNone.', () => {
@@ -123,26 +70,68 @@ describe('SemanticNode', () => {
 					'null;',
 					'false;',
 					'true;',
+					'0;',
+					'+0;',
+					'-0;',
 					'42;',
 					'+42;',
 					'-42;',
-				].map((src) => [src, CONFIG_DEFAULT] as [string, SolidConfig]).map((srcs) =>
-					((new Parser(...srcs).parse().decorate()
+					'0.0;',
+					'+0.0;',
+					'-0.0;',
+					'-4.2e-2;',
+				].map((src) =>
+					((new Parser(src, CONFIG_DEFAULT).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeConstant)
-						.build(new Builder(...srcs))
+						.build(new Builder(src, CONFIG_DEFAULT))
 				), [
-					0n,
-					0n,
-					1n,
-					42n,
-					42n,
-					-42n,
-				].map((v) => instructionConstInt(v)))
+					new InstructionConst(SolidNull.NULL),
+					new InstructionConst(SolidBoolean.FALSE),
+					new InstructionConst(SolidBoolean.TRUE),
+					instructionConstInt(0n),
+					instructionConstInt(0n),
+					instructionConstInt(0n),
+					instructionConstInt(42n),
+					instructionConstInt(42n),
+					instructionConstInt(-42n),
+					instructionConstFloat(0),
+					instructionConstFloat(0),
+					instructionConstFloat(-0),
+					instructionConstFloat(-0.042),
+				])
 			})
 		})
 
 		context('SemanticNodeOperation', () => {
+			specify('SemanticNodeOperation[operator: NOT | EMPTY] ::= SemanticNodeConstant', () => {
+				assert.deepStrictEqual([
+					`!null;`,
+					`!false;`,
+					`!true;`,
+					`!42;`,
+					`!4.2;`,
+					`?null;`,
+					`?false;`,
+					`?true;`,
+					`?42;`,
+					`?4.2;`,
+				].map((src) => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation
+				).build(new Builder(src, CONFIG_DEFAULT))), [
+					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidNull.NULL)),
+					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidBoolean.FALSE)),
+					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidBoolean.TRUE)),
+					new InstructionUnop(Operator.NOT,   instructionConstInt(42n)),
+					new InstructionUnop(Operator.NOT,   instructionConstFloat(4.2)),
+					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidNull.NULL)),
+					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidBoolean.FALSE)),
+					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidBoolean.TRUE)),
+					new InstructionUnop(Operator.EMPTY, instructionConstInt(42n)),
+					new InstructionUnop(Operator.EMPTY, instructionConstFloat(4.2)),
+				])
+			})
 			specify('SemanticNodeOperation[operator: ADD | SUB | MUL] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 				assert.deepStrictEqual([
 					`42 + 420;`,
@@ -333,6 +322,24 @@ describe('SemanticNode', () => {
 					assert.strictEqual(node.type(), SolidString)
 				})
 			})
+			it('returns `Boolean` for boolean unary operation of anything.', () => {
+				;[
+					`!false;`,
+					`!true;`,
+					`!null;`,
+					`!42;`,
+					`!4.2e+1;`,
+					`?false;`,
+					`?true;`,
+					`?null;`,
+					`?42;`,
+					`?4.2e+1;`,
+				].forEach((src) => {
+					assert.strictEqual(((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation).type(), SolidBoolean)
+				})
+			})
 			it('returns `Integer` for any operation of integers.', () => {
 				assert.strictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
@@ -345,6 +352,35 @@ describe('SemanticNode', () => {
 				assert.strictEqual(((new Parser(`7 * 3.0 * 2;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).type(), Float64)
+			})
+			it('computes type for AND and OR.', () => {
+				assert.deepStrictEqual([
+					`null  && false;`,
+					`false && null;`,
+					`true  && null;`,
+					`false && 42;`,
+					`4.2   && true;`,
+					`null  || false;`,
+					`false || null;`,
+					`true  || null;`,
+					`false || 42;`,
+					`4.2   || true;`,
+				].map((src) => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation)
+					.type()
+				), [
+					SolidNull,
+					new SolidTypeUnion(SolidBoolean, SolidNull),
+					new SolidTypeUnion(SolidBoolean, SolidNull),
+					new SolidTypeUnion(SolidBoolean, Int16),
+					new SolidTypeUnion(Float64, SolidBoolean),
+					SolidBoolean,
+					new SolidTypeUnion(SolidBoolean, SolidNull),
+					new SolidTypeUnion(SolidBoolean, SolidNull),
+					new SolidTypeUnion(SolidBoolean, Int16),
+					new SolidTypeUnion(Float64, SolidBoolean),
+				])
 			})
 			it('returns `A | B` for conditionals', () => {
 				assert.deepStrictEqual([
@@ -398,6 +434,62 @@ describe('SemanticNode', () => {
 					SolidBoolean.FALSE,
 					SolidBoolean.TRUE,
 				])
+			})
+			it('computes the value of a logical negation of anything.', () => {
+				assert.deepStrictEqual([
+					`!false;`,
+					`!true;`,
+					`!null;`,
+					`!0;`,
+					`!42;`,
+					`!0.0;`,
+					`!-0.0;`,
+					`!4.2e+1;`,
+				].map((src) => {
+					const assess: CompletionStructureAssessment | null = ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation).assess()
+					assert.ok(assess)
+					assert.ok(assess.value instanceof SolidBoolean)
+					return assess
+				}), [
+					true,
+					false,
+					true,
+					false,
+					false,
+					false,
+					false,
+					false,
+				].map((b) => new CompletionStructureAssessment(SolidBoolean.fromBoolean(b))))
+			})
+			it('computes the value of emptiness of anything.', () => {
+				assert.deepStrictEqual([
+					`?false;`,
+					`?true;`,
+					`?null;`,
+					`?0;`,
+					`?42;`,
+					`?0.0;`,
+					`?-0.0;`,
+					`?4.2e+1;`,
+				].map((src) => {
+					const assess: CompletionStructureAssessment | null = ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+						.children[0] as SemanticNodeStatementExpression)
+						.children[0] as SemanticNodeOperation).assess()
+					assert.ok(assess)
+					assert.ok(assess.value instanceof SolidBoolean)
+					return assess
+				}), [
+					true,
+					false,
+					true,
+					true,
+					false,
+					true,
+					true,
+					false,
+				].map((b) => new CompletionStructureAssessment(SolidBoolean.fromBoolean(b))))
 			})
 			it('computes the value of an integer operation of constants.', () => {
 				assert.deepStrictEqual([
