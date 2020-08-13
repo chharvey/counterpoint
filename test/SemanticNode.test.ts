@@ -40,6 +40,10 @@ import {
 	instructionConstInt,
 	instructionConstFloat,
 } from './helpers'
+import {
+	operationFromStatementExpression,
+	statementExpressionFromSource,
+} from './helpers-semantic'
 
 
 
@@ -560,6 +564,35 @@ describe('SemanticNode', () => {
 				assert.deepStrictEqual(((new Parser(`3 * 2.1;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).assess(), new CompletionStructureAssessment(new Float64(3 * 2.1)))
+			})
+			it('computes the value of AND and OR operators.', () => {
+				assert.deepStrictEqual([
+					`null && 5;`,
+					`null || 5;`,
+					`5 && null;`,
+					`5 || null;`,
+					`5.1 && true;`,
+					`5.1 || true;`,
+					`3.1 && 5;`,
+					`3.1 || 5;`,
+					`false && null;`,
+					`false || null;`,
+				].map((src) => {
+					const assess: CompletionStructureAssessment | null = operationFromStatementExpression(statementExpressionFromSource(src)).assess()
+					assert.ok(assess)
+					return assess
+				}), [
+					SolidNull.NULL,
+					new Int16(5n),
+					SolidNull.NULL,
+					new Int16(5n),
+					SolidBoolean.TRUE,
+					new Float64(5.1),
+					new Int16(5n),
+					new Float64(3.1),
+					SolidBoolean.FALSE,
+					SolidNull.NULL,
+				].map((v) => new CompletionStructureAssessment(v)))
 			})
 			it('computes the value of a conditional expression.', () => {
 				assert.deepStrictEqual([

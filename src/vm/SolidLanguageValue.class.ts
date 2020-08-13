@@ -75,7 +75,7 @@ export class SolidBoolean extends SolidLanguageValue {
 	static fromBoolean(b: boolean): SolidBoolean {
 		return (b) ? SolidBoolean.TRUE : SolidBoolean.FALSE
 	}
-	protected constructor (private readonly value: boolean = false) {
+	protected constructor (readonly value: boolean = false) {
 		super()
 	}
 	toString(): string {

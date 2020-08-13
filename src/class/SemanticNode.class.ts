@@ -342,6 +342,16 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		)
 	}
 	protected assess_do(): CompletionStructureAssessment | null {
+		if ([Operator.AND, Operator.OR].includes(this.operator)) {
+			if (!this.assessments[0]) {
+				return null
+			}
+			const v0: SolidLanguageValue = this.assessments[0].value
+			return (
+				this.operator === Operator.AND && !v0.isTruthy.value ||
+				this.operator === Operator.OR  &&  v0.isTruthy.value
+			) ? new CompletionStructureAssessment(v0) : this.assessments[1]
+		}
 		if (!this.assessments[0] || !this.assessments[1]) {
 			return null
 		}

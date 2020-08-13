@@ -590,6 +590,19 @@ Decorate(ExpressionConjunctive ::= ExpressionConjunctive "!&" ExpressionAdditive
 ```
 
 
+### Static Semantics: Assess (Conjunctive)
+```
+Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator: AND] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `TypeOf(operand0)` is `Void`:
+		1. *Return*.
+	4. *If* `ToBoolean(operand0)` is `false`:
+		1. *Return:* `operand0`.
+	5. *Return:* `Assess(expr.children.1)`.
+```
+
+
 
 ## Disjunctive
 ```
@@ -621,6 +634,19 @@ Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "!|" ExpressionConjunct
 			Decorate(ExpressionConjunctive)
 		)
 	);
+```
+
+
+### Static Semantics: Assess (Disjunctive)
+```
+Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator: OR] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `TypeOf(operand0)` is `Void`:
+		1. *Return*.
+	4. *If* `ToBoolean(operand0)` is `true`:
+		1. *Return:* `operand0`.
+	5. *Return:* `Assess(expr.children.1)`.
 ```
 
 
