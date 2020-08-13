@@ -291,13 +291,13 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 			return null
 		}
 		const v0: SolidLanguageValue = this.assessments[0].value
-		return new CompletionStructureAssessment(
-			(this.operator === Operator.NOT)   ? v0.isTruthy.not :
-			(this.operator === Operator.EMPTY) ? v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0())) :
+		return (
+			(this.operator === Operator.NOT)   ? new CompletionStructureAssessment(v0.isTruthy.not) :
+			(this.operator === Operator.EMPTY) ? new CompletionStructureAssessment(v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0()))) :
 			(
 				(v0 instanceof SolidNumber)
-					? (SemanticNodeOperationUnary.fold(this.operator, v0))
-					: (() => { throw new TypeError('Invalid operation.') })()
+					? new CompletionStructureAssessment(SemanticNodeOperationUnary.fold(this.operator, v0))
+					: null
 			)
 		)
 	}
@@ -363,7 +363,7 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		return (
 			(v0 instanceof Int16       && v1 instanceof Int16)       ? new CompletionStructureAssessment(SemanticNodeOperationBinary.fold(this.operator, v0,           v1))           :
 			(v0 instanceof SolidNumber && v1 instanceof SolidNumber) ? new CompletionStructureAssessment(SemanticNodeOperationBinary.fold(this.operator, v0.toFloat(), v1.toFloat())) :
-			(() => { throw new TypeError('Invalid operation.') })()
+			null
 		)
 	}
 }

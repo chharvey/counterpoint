@@ -63,9 +63,7 @@ Or<Integer, Float>? AssessSemanticOperationBinary(SemanticOperation expr) :=
 	6. *If* `TypeOf(operand0)` is `Integer` *and* `TypeOf(operand1)` is `Integer`:
 		1. *Return:* `Integer(PerformNumericBinaryOperation(expr.operator, operand0, operand1))`.
 	7. *Assert*: `IsNumeric(operand0)` *and* `IsNumeric(operand1)`.
-	8. *Let* `float0` be the type-conversion of `operand0` into type `Float`.
-	9. *Let* `float1` be the type-conversion of `operand1` into type `Float`.
-	10. *Return:* `Float(PerformNumericBinaryOperation(expr.operator, float0, float1))`.
+	8. *Return:* `Float(PerformNumericBinaryOperation(expr.operator, Float(float0), Float(float1)))`.
 ```
 
 
@@ -685,15 +683,9 @@ Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator: COND] expr
 		1. *Return*.
 	4. *Assert:* `TypeOf(condition)` is `Boolean`.
 	5. *If* `condition` is `true`:
-		1. *Let* `consequent` be the result of performing `Assess(expr.children.1)`.
-		2. *If* `TypeOf(consequent)` is `Void`:
-			1. *Return*.
-		3. *Return:* `consequent`.
+		1. *Return:* `Assess(expr.children.1)`.
 	6. *Else:*
-		1. *Let* `alternative` be the result of performing `Assess(expr.children.2)`.
-		2. *If* `TypeOf(alternative)` is `Void`:
-			1. *Return*.
-		3. *Return:* `alternative`.
+		1. *Return:* `Assess(expr.children.2)`.
 ```
 
 
