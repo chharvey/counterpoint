@@ -2,17 +2,6 @@
 This chapter defines the syntax, semantics, and behavior of expressions in the Solid programming language.
 
 
-### Static Semantics: Semantic Schema (Expressions)
-```
-SemanticExpression =:=
-	| SemanticConstant
-	| SemanticIdentifier
-	| SemanticTemplate
-	| SemanticOperation
-;
-```
-
-
 ### Static Semantics: Decorate (Expressions)
 ```
 Decorate(Expression ::= ExpressionAdditive) -> SemanticExpression
@@ -86,21 +75,6 @@ Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperation
 
 
 ## Literals
-
-
-### Static Semantics: Semantic Schema (Literals)
-```
-SemanticConstant[value: Null | Boolean | Integer | FLoat | Sequence<RealNumber>]
-	::= ();
-
-SemanticTemplate[type: "full"]
-	::= SemanticConstant;
-SemanticTemplate[type: "substitution"]
-	::= (SemanticConstant SemanticExpression?)+ SemanticConstant;
-
-SemanticTemplatePartial
-	::= (SemanticConstant SemanticExpression?)+;
-```
 
 
 ### Static Semantics: Decorate (Literals)
@@ -217,13 +191,6 @@ Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Or<Intege
 ## Expression Units
 
 
-### Static Semantics: Semantic Schema (Expression Units)
-```
-SemanticIdentifier[id: Unknown]
-	::= ();
-```
-
-
 ### Static Semantics: Decorate (Expression Units)
 ```
 Decorate(ExpressionUnit ::= IDENTIFIER) -> SemanticIdentifier
@@ -260,15 +227,6 @@ Void Evaluate(SemanticIdentifier iden) :=
 
 
 ## Unary Operators
-
-
-### Static Semantics: Semantic Schema (Unary Operators)
-```
-SemanticOperation[operator: NOT | EMPTY]
-	::= SemanticExpression;
-SemanticOperation[operator: NEG]
-	::= SemanticExpression[type: Integer | Float];
-```
 
 
 ### Static Semantics: Decorate (Unary Operators)
@@ -360,13 +318,6 @@ Void Evaluate(Instruction :::= "NEG") :=
 ## Exponentiation
 
 
-### Static Semantics: Semantic Schema (Exponentiation)
-```
-SemanticOperation[operator: EXP]
-	::= SemanticExpression[type: Integer | Float] SemanticExpression[type: Integer | Float];
-```
-
-
 ### Static Semantics: Decorate (Exponentiation)
 ```
 Decorate(ExpressionExponential ::= ExpressionUnarySymbol) -> SemanticExpression
@@ -410,13 +361,6 @@ Void Evaluate(Instruction :::= "EXP") :=
 
 
 ## Multiplicative
-
-
-### Static Semantics: Semantic Schema (Multiplicative)
-```
-SemanticOperation[operator: MUL | DIV]
-	::= SemanticExpression[type: Integer | Float] SemanticExpression[type: Integer | Float];
-```
 
 
 ### Static Semantics: Decorate (Multiplicative)
@@ -474,13 +418,6 @@ Void Evaluate(Instruction :::= "DIV") :=
 ## Additive
 
 
-### Static Semantics: Semantic Schema (Additive)
-```
-SemanticOperation[operator: ADD]
-	::= SemanticExpression[type: Integer | Float] SemanticExpression[type: Integer | Float];
-```
-
-
 ### Static Semantics: Decorate (Additive)
 ```
 Decorate(ExpressionAdditive ::= ExpressionMultiplicative) -> SemanticExpression
@@ -529,13 +466,6 @@ Void Evaluate(Instruction :::= "ADD") :=
 
 
 ## Conjunctive
-
-
-### Static Semantics: Semantic Schema (Conjunctive)
-```
-SemanticOperation[operator: AND]
-	::= SemanticExpression SemanticExpression;
-```
 
 
 ### Static Semantics: Decorate (Conjunctive)
@@ -592,13 +522,6 @@ Sequence<Instruction> Build(SemanticOperation[operator: AND] expr) :=
 ## Disjunctive
 
 
-### Static Semantics: Semantic Schema (Disjunctive)
-```
-SemanticOperation[operator: OR]
-	::= SemanticExpression SemanticExpression;
-```
-
-
 ### Static Semantics: Decorate (Disjunctive)
 ```
 Decorate(ExpressionDisjunctive ::= ExpressionConjunctive) -> SemanticOperation
@@ -651,13 +574,6 @@ Sequence<Instruction> Build(SemanticOperation[operator: OR] expr) :=
 
 
 ## Conditional
-
-
-### Static Semantics: Semantic Schema (Conditional)
-```
-SemanticOperation[operator: COND]
-	::= SemanticExpression[type: Boolean] SemanticExpression SemanticExpression;
-```
 
 
 ### Static Semantics: Decorate (Conditional)

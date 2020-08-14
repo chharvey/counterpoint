@@ -1,0 +1,76 @@
+SemanticExpression =:=
+	| SemanticConstant
+	| SemanticIdentifier
+	| SemanticTemplate
+	| SemanticOperation
+;
+
+
+
+SemanticConstant[value: Null | Boolean | Integer | FLoat | Sequence<RealNumber>]
+	::= ();
+
+SemanticIdentifier[id: Unknown]
+	::= ();
+
+SemanticTemplate[type: "full"]
+	::= SemanticConstant;
+SemanticTemplate[type: "substitution"]
+	::= (SemanticConstant SemanticExpression?)+ SemanticConstant;
+
+SemanticTemplatePartial
+	::= (SemanticConstant SemanticExpression?)+;
+
+
+
+SemanticOperation[operator: NOT | EMPTY]
+	::= SemanticExpression;
+SemanticOperation[operator: NEG]
+	::= SemanticExpression[type: Integer | Float];
+
+SemanticOperation[operator: EXP]
+	::= SemanticExpression[type: Integer | Float] SemanticExpression[type: Integer | Float];
+SemanticOperation[operator: MUL | DIV]
+	::= SemanticExpression[type: Integer | Float] SemanticExpression[type: Integer | Float];
+SemanticOperation[operator: ADD]
+	::= SemanticExpression[type: Integer | Float] SemanticExpression[type: Integer | Float];
+
+SemanticOperation[operator: AND]
+	::= SemanticExpression SemanticExpression;
+SemanticOperation[operator: OR]
+	::= SemanticExpression SemanticExpression;
+
+SemanticOperation[operator: COND]
+	::= SemanticExpression[type: Boolean] SemanticExpression SemanticExpression;
+
+
+
+SemanticStatement =:=
+	| SemanticStatementExpression
+	| SemanticDeclaration
+	| SemanticAssignment
+;
+
+
+
+SemanticStatementExpression
+	::= SemanticExpression?;
+
+
+
+SemanticDeclaration[type: "variable"][unfixed: Boolean]
+	::= SemanticAssignee SemanticAssigned;
+
+SemanticAssignment
+	::= SemanticAssignee SemanticAssigned;
+
+SemanticAssignee
+	::= SemanticIdentifier;
+
+SemanticAssigned
+	::= SemanticExpression;
+
+
+
+SemanticGoal
+	::= SemanticStatement*;

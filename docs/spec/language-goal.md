@@ -2,13 +2,6 @@
 This chapter defines the syntax, semantics, and behavior of goal symbols in the Solid programming language.
 
 
-### Static Semantics: Semantic Schema (Goal Symbols)
-```
-SemanticGoal
-	::= SemanticStatement*;
-```
-
-
 ### Static Semantics: Decorate (Goal Symbols)
 ```
 Decorate(Goal ::= #x02 #x03) -> SemanticGoal

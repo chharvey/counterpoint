@@ -2,19 +2,6 @@
 This chapter defines the syntax, semantics, and behavior of statements in the Solid programming language.
 
 
-### Static Semantics: Semantic Schema (Statements)
-```
-SemanticStatement =:=
-	| SemanticStatementExpression
-	| SemanticDeclaration
-	| SemanticAssignment
-;
-
-SemanticStatementExpression
-	::= SemanticExpression?;
-```
-
-
 ### Static Semantics: Decorate (Statements)
 ```
 Decorate(Statement ::= ";") -> SemanticStatementExpression
@@ -40,19 +27,6 @@ Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 
 
 ## Variable Declaration
-
-
-### Static Semantics: Semantic Schema (Variable Declaration)
-```
-SemanticDeclaration[type: "variable"][unfixed: Boolean]
-	::= SemanticAssignee SemanticAssigned;
-
-SemanticAssignee
-	::= SemanticIdentifier;
-
-SemanticAssigned
-	::= SemanticExpression;
-```
 
 
 ### Static Semantics: Decorate (Variable Declaration)
@@ -83,13 +57,6 @@ Sequence<Instruction> Build(SemanticDeclaration decl) :=
 
 
 ## Variable Assignment
-
-
-### Static Semantics: Semantic Schema (Variable Assignment)
-```
-SemanticAssignment
-	::= SemanticAssignee SemanticAssigned;
-```
 
 
 ### Static Semantics: Decorate (Variable Assignment)
