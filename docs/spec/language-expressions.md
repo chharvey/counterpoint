@@ -70,16 +70,6 @@ Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperation
 ## Literals
 
 
-### Static Semantics: Assess (Literals)
-```
-Or<Null, Boolean, Integer, Float> Assess(SemanticConstant const) :=
-	1. *Return:* `const.value`.
-
-Void Assess(SemanticTemplate tpl) :=
-	/* TO BE DETERMINED */
-```
-
-
 ### Static Semantics: Build (Literals)
 ```
 Sequence<Instruction> Build(Null n) :=
@@ -113,13 +103,6 @@ Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Or<Intege
 ## Expression Units
 
 
-### Static Semantics: Assess (Expression Units)
-```
-Unknown Assess(SemanticIdentifier iden) :=
-	/* TO BE DETERMINED */
-```
-
-
 ### Static Semantics: Build (Expression Units)
 ```
 Sequence<Instruction> Build(SemanticIdentifier iden) :=
@@ -136,42 +119,6 @@ Void Evaluate(SemanticIdentifier iden) :=
 
 
 ## Unary Operators
-
-
-### Static Semantics: Assess (Unary Operators)
-```
-Boolean? Assess(SemanticOperation[operator: NOT] expr) :=
-	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
-	3. *If* `TypeOf(operand)` is `Void`:
-		1. *Return*.
-	4. *Let* `is_truthy` be the result of performing `ToBoolean(operand)`.
-	5. *If* `is_truthy` is `true`:
-		1. *Return:* `false`.
-	6. *Return:* `true`.
-Boolean? Assess(SemanticOperation[operator: EMPTY] expr) :=
-	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
-	3. *If* `TypeOf(operand)` is `Void`:
-		1. *Return*.
-	4. *Let* `is_truthy` be the result of performing `ToBoolean(operand)`.
-	5. *If* `is_truthy` is `false`:
-		1. *Return:* `true`.
-	6. *If* `TypeOf(operand)` is `Integer` *and* `operand` is `0`:
-		1. *Return:* `true`.
-	7. *If* `TypeOf(operand)` is `Float` *and* `operand` is `0.0` or `-0.0`:
-		1. *Return:* `true`.
-	8. *Return:* `false`.
-Or<Integer, Float>? Assess(SemanticOperation[operator: NEG] expr) :=
-	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
-	3. *If* `TypeOf(operand)` is `Void`:
-		1. *Return*.
-	4. *Assert:* `IsNumeric(operand)` is `true`.
-	5. *Let* `negation` be the additive inverse, `-operand`,
-		obtained by negating `operand`.
-	6. *Return:* `negation`.
-```
 
 
 ### Static Semantics: Build (Unary Operators)
@@ -212,13 +159,6 @@ Void Evaluate(Instruction :::= "NEG") :=
 ## Exponentiation
 
 
-### Static Semantics: Assess (Exponentiation)
-```
-Or<Integer, Float>? Assess(SemanticOperation[operator: EXP] expr) :=
-	1. *Return:* `AssessSemanticOperationBinary(expr)`.
-```
-
-
 ### Static Semantics: Build (Exponentiation)
 ```
 Sequence<Instruction> Build(SemanticOperation[operator: EXP] expr) :=
@@ -243,13 +183,6 @@ Void Evaluate(Instruction :::= "EXP") :=
 
 
 ## Multiplicative
-
-
-### Static Semantics: Assess (Multiplicative)
-```
-Or<Integer, Float>? Assess(SemanticOperation[operator: MUL | DIV] expr) :=
-	1. *Return:* `AssessSemanticOperationBinary(expr)`.
-```
 
 
 ### Static Semantics: Build (Multiplicative)
@@ -283,13 +216,6 @@ Void Evaluate(Instruction :::= "DIV") :=
 ## Additive
 
 
-### Static Semantics: Assess (Additive)
-```
-Or<Integer, Float>? Assess(SemanticOperation[operator: ADD] expr) :=
-	1. *Return:* `AssessSemanticOperationBinary(expr)`.
-```
-
-
 ### Static Semantics: Build (Additive)
 ```
 Sequence<Instruction> Build(SemanticOperation[operator: ADD] expr) :=
@@ -316,19 +242,6 @@ Void Evaluate(Instruction :::= "ADD") :=
 ## Conjunctive
 
 
-### Static Semantics: Assess (Conjunctive)
-```
-Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator: AND] expr) :=
-	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
-	3. *If* `TypeOf(operand0)` is `Void`:
-		1. *Return*.
-	4. *If* `ToBoolean(operand0)` is `false`:
-		1. *Return:* `operand0`.
-	5. *Return:* `Assess(expr.children.1)`.
-```
-
-
 ### Static Semantics: Build (Conjunctive)
 ```
 Sequence<Instruction> Build(SemanticOperation[operator: AND] expr) :=
@@ -351,19 +264,6 @@ Sequence<Instruction> Build(SemanticOperation[operator: AND] expr) :=
 ## Disjunctive
 
 
-### Static Semantics: Assess (Disjunctive)
-```
-Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator: OR] expr) :=
-	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
-	3. *If* `TypeOf(operand0)` is `Void`:
-		1. *Return*.
-	4. *If* `ToBoolean(operand0)` is `true`:
-		1. *Return:* `operand0`.
-	5. *Return:* `Assess(expr.children.1)`.
-```
-
-
 ### Static Semantics: Build (Disjunctive)
 ```
 Sequence<Instruction> Build(SemanticOperation[operator: OR] expr) :=
@@ -384,21 +284,6 @@ Sequence<Instruction> Build(SemanticOperation[operator: OR] expr) :=
 
 
 ## Conditional
-
-
-### Static Semantics: Assess (Conditional)
-```
-Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator: COND] expr) :=
-	1. *Assert:* `expr.children.count` is 3.
-	2. *Let* `condition` be the result of performing `Assess(expr.children.0)`.
-	3. *If* `TypeOf(condition)` is `Void`:
-		1. *Return*.
-	4. *Assert:* `TypeOf(condition)` is `Boolean`.
-	5. *If* `condition` is `true`:
-		1. *Return:* `Assess(expr.children.1)`.
-	6. *Else:*
-		1. *Return:* `Assess(expr.children.2)`.
-```
 
 
 ### Static Semantics: Build (Conditional)
