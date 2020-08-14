@@ -40,7 +40,7 @@ during which line and column numbers of any invalid source input might be report
 
 
 ### Abstract Operation: UTF16Encoding
-The abstract operation `UTF16Encoding` encodes a code point using the UTF-16 encoding algorithm.
+The abstract operation **UTF16Encoding** encodes a code point using the UTF-16 encoding algorithm.
 ```
 Sequence<RealNumber> UTF16Encoding(RealNumber n) :=
 	1. *If* `n` is less than 0 or greater than \x10ffff:
@@ -55,7 +55,7 @@ Sequence<RealNumber> UTF16Encoding(RealNumber n) :=
 
 
 ### Static Semantics: CodePoint
-The `CodePoint` of a character is the integer index of its placement in the Unicode character set.
+The **CodePoint** of a character is the integer index of its placement in the Unicode character set.
 A code point is *not* a code unit. A code point is simply Unicode’s index of a character,
 whereas a code unit is the [UTF-16-encoded](#abstract-operation-utf16encoding) value of that code point.
 ```
@@ -65,13 +65,14 @@ CodePoint([#x00-#x10ffff]) -> RealNumber
 
 
 ### Static Semantics: TokenWorth
-The [TokenWorth](./grammar/tokenworth.ebnf) attribute grammar assigns a
+The [**TokenWorth**](./grammar/tokenworth.ebnf) attribute grammar assigns a
 [Solid Specification Value](./data-types#solid-specification-types)
 to a Token produced by the Tokenizer piece of the Solid compiler.
 
 
 ### Static Semantics: DigitCount
-The **DigitCount** attribute grammar gives the number of numeric (non-separator) digits in a digit sequence.
+The **DigitCount** attribute grammar gives the [number](./data-types.md#real-integer-numbers) of
+numeric (non-separator) digits in a digit sequence.
 ```
 DigitCount(DigitSequenceDec :::= [0-9]) -> RealNumber
 	:= 1;
@@ -158,7 +159,7 @@ Some punctuators are operators, which perform computations on values, and
 some punctuators are delimiters, which separate certain code constructs from each other or group them together.
 
 #### TokenWorth (Punctuators)
-The Token Worth of a Punctuator token is the unique [real number](./data-types.md#realnumber) ID
+The Token Worth of a Punctuator token is the unique [real integer number](./data-types.md#real-integer-numbers) ID
 that distinguishes the punctuator from the other punctuators.
 Token Worth quantities for punctuators are predetermined by the lexical grammar and are independent of any instance program.
 Token Worth quantities for punctuators are integers ranging from *0* to *127* (inclusive).
@@ -173,7 +174,7 @@ and enumerated in the lexical grammar.
 Keywords convey certain semantics to the compiler and to programmers.
 
 #### TokenWorth (Keywords)
-The Token Worth of a Keyword token is the unique [real number](./data-types.md#realnumber) ID
+The Token Worth of a Keyword token is the unique [real integer number](./data-types.md#real-integer-numbers) ID
 that distinguishes the keyword from the other keywords.
 Token Worth quantities for keywords are predetermined by the lexical grammar and are independent of any instance program.
 Token Worth quantities for keywords are integers ranging from *128* to *255* (inclusive).
@@ -190,7 +191,7 @@ Unicode identifiers are enclosed in back-ticks (`` `…` `` **U+0060 GRAVE ACCEN
 and may contain any number of characters from the Unicode character set.
 
 #### TokenWorth (Identifiers)
-The Token Worth of an Identifier token is the unique [real number](./data-types.md#realnumber) ID
+The Token Worth of an Identifier token is the unique [real integer number](./data-types.md#real-integer-numbers) ID
 that distinguishes the identifier from other identifiers within a given program.
 Token Worth quantities for identifiers are integers strictly greater than *255*.
 
