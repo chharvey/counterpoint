@@ -7,23 +7,31 @@ TokenWorth(Punctuator :::= "-")  -> RealNumber := \x05;
 TokenWorth(Punctuator :::= "^")  -> RealNumber := \x06;
 TokenWorth(Punctuator :::= "*")  -> RealNumber := \x07;
 TokenWorth(Punctuator :::= "/")  -> RealNumber := \x08;
-TokenWorth(Punctuator :::= "&&") -> RealNumber := \x09;
-TokenWorth(Punctuator :::= "!&") -> RealNumber := \x0a;
-TokenWorth(Punctuator :::= "||") -> RealNumber := \x0b;
-TokenWorth(Punctuator :::= "!|") -> RealNumber := \x0c;
-TokenWorth(Punctuator :::= ";")  -> RealNumber := \x0d;
-TokenWorth(Punctuator :::= "=")  -> RealNumber := \x0e;
+TokenWorth(Punctuator :::= "<")  -> RealNumber := \x09;
+TokenWorth(Punctuator :::= ">")  -> RealNumber := \x0a;
+TokenWorth(Punctuator :::= "<=") -> RealNumber := \x0b;
+TokenWorth(Punctuator :::= ">=") -> RealNumber := \x0c;
+TokenWorth(Punctuator :::= "!<") -> RealNumber := \x0d;
+TokenWorth(Punctuator :::= "!>") -> RealNumber := \x0e;
+TokenWorth(Punctuator :::= "&&") -> RealNumber := \x0f;
+TokenWorth(Punctuator :::= "!&") -> RealNumber := \x10;
+TokenWorth(Punctuator :::= "||") -> RealNumber := \x11;
+TokenWorth(Punctuator :::= "!|") -> RealNumber := \x12;
+TokenWorth(Punctuator :::= ";")  -> RealNumber := \x13;
+TokenWorth(Punctuator :::= "=")  -> RealNumber := \x14;
 
 
 
 TokenWorth(Keyword :::= "null")    -> RealNumber := \x80;
 TokenWorth(Keyword :::= "false")   -> RealNumber := \x81;
 TokenWorth(Keyword :::= "true")    -> RealNumber := \x82;
-TokenWorth(Keyword :::= "if")      -> RealNumber := \x83;
-TokenWorth(Keyword :::= "then")    -> RealNumber := \x84;
-TokenWorth(Keyword :::= "else")    -> RealNumber := \x85;
-TokenWorth(Keyword :::= "let")     -> RealNumber := \x86;
-TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x87;
+TokenWorth(Keyword :::= "is")      -> RealNumber := \x83;
+TokenWorth(Keyword :::= "isnt")    -> RealNumber := \x84;
+TokenWorth(Keyword :::= "if")      -> RealNumber := \x85;
+TokenWorth(Keyword :::= "then")    -> RealNumber := \x86;
+TokenWorth(Keyword :::= "else")    -> RealNumber := \x87;
+TokenWorth(Keyword :::= "let")     -> RealNumber := \x88;
+TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x89;
 
 
 
