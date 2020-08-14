@@ -1,14 +1,6 @@
 # Solid Language: Statements
 This chapter defines the syntax, semantics, and behavior of statements in the Solid programming language.
 
-```
-Statement ::=
-	| Expression? ";"
-	| DeclarationVariable
-	| StatementAssignment
-;
-```
-
 
 ### Static Semantics: Semantic Schema (Statements)
 ```
@@ -48,9 +40,6 @@ Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 
 
 ## Variable Declaration
-```
-DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";";
-```
 
 
 ### Static Semantics: Semantic Schema (Variable Declaration)
@@ -94,9 +83,6 @@ Sequence<Instruction> Build(SemanticDeclaration decl) :=
 
 
 ## Variable Assignment
-```
-StatementAssignment ::= IDENTIFIER "=" Expression ";";
-```
 
 
 ### Static Semantics: Semantic Schema (Variable Assignment)

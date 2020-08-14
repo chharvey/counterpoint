@@ -1,13 +1,6 @@
 # Solid Language: Expressions
 This chapter defines the syntax, semantics, and behavior of expressions in the Solid programming language.
 
-```
-Expression ::=
-	| ExpressionDisjunctive
-	| ExpressionConditional
-;
-```
-
 
 ### Static Semantics: Semantic Schema (Expressions)
 ```
@@ -93,21 +86,6 @@ Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperation
 
 
 ## Literals
-```
-PrimitiveLiteral ::=
-	| "null"
-	| "false"
-	| "true"
-	| INTEGER
-	| FLOAT
-	| STRING
-;
-
-StringTemplate ::=
-	| TEMPLATE_FULL
-	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
-;
-```
 
 
 ### Static Semantics: Semantic Schema (Literals)
@@ -237,14 +215,6 @@ Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Or<Intege
 
 
 ## Expression Units
-```
-ExpressionUnit ::=
-	| IDENTIFIER
-	| PrimitiveLiteral
-	| StringTemplate
-	| "(" Expression ")"
-;
-```
 
 
 ### Static Semantics: Semantic Schema (Expression Units)
@@ -290,10 +260,6 @@ Void Evaluate(SemanticIdentifier iden) :=
 
 
 ## Unary Operators
-```
-ExpressionUnarySymbol
-	::= ExpressionUnit | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
-```
 
 
 ### Static Semantics: Semantic Schema (Unary Operators)
@@ -392,10 +358,6 @@ Void Evaluate(Instruction :::= "NEG") :=
 
 
 ## Exponentiation
-```
-ExpressionExponential
-	::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
-```
 
 
 ### Static Semantics: Semantic Schema (Exponentiation)
@@ -448,10 +410,6 @@ Void Evaluate(Instruction :::= "EXP") :=
 
 
 ## Multiplicative
-```
-ExpressionMultiplicative
-	::= (ExpressionMultiplicative ("*" | "/"))? ExpressionExponential;
-```
 
 
 ### Static Semantics: Semantic Schema (Multiplicative)
@@ -514,10 +472,6 @@ Void Evaluate(Instruction :::= "DIV") :=
 
 
 ## Additive
-```
-ExpressionAdditive
-	::= (ExpressionAdditive ("+" | "-"))? ExpressionMultiplicative;
-```
 
 
 ### Static Semantics: Semantic Schema (Additive)
@@ -575,10 +529,6 @@ Void Evaluate(Instruction :::= "ADD") :=
 
 
 ## Conjunctive
-```
-ExpressionConjunctive
-	::= (ExpressionConjunctive ("&&" | "!&"))? ExpressionAdditive;
-```
 
 
 ### Static Semantics: Semantic Schema (Conjunctive)
@@ -640,10 +590,6 @@ Sequence<Instruction> Build(SemanticOperation[operator: AND] expr) :=
 
 
 ## Disjunctive
-```
-ExpressionDisjunctive
-	::= (ExpressionDisjunctive ("||" | "!|"))? ExpressionConjunctive;
-```
 
 
 ### Static Semantics: Semantic Schema (Disjunctive)
@@ -705,10 +651,6 @@ Sequence<Instruction> Build(SemanticOperation[operator: OR] expr) :=
 
 
 ## Conditional
-```
-ExpressionConditional
-	::= "if" Expression "then" Expression "else" Expression;
-```
 
 
 ### Static Semantics: Semantic Schema (Conditional)
