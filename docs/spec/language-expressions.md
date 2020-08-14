@@ -694,8 +694,10 @@ Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator: COND] expr
 Sequence<Instruction> Build(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
 	2. *Let* `condition` be the result of performing `Assess(expr.children.0)`.
-	3. *Assert:* `TypeOf(condition)` is `Void`.
-	4. *Let* `instrs0` be the result of performing `Build(expr.children.0)`.
+	3. *If* `TypeOf(condition)` is `Void`:
+		1. *Let* `instrs0` be the result of performing `Build(expr.children.0)`.
+	4. *Else*:
+		1. *Let* `instrs0` be the result of performing `Build(condition)`.
 	5. *Let* `consequent` be the result of performing `Assess(expr.children.1)`.
 	6. *If* `TypeOf(consequent)` is `Void`:
 		1. *Let* `instrs1` be the result of performing `Build(expr.children.1)`.

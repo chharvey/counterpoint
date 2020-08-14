@@ -382,11 +382,11 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 		super(start_node, operator, children)
 	}
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionCond {
-		!this.assessments[0]; // assert
+		const _to_float: boolean = to_float || [this.children[1].type(), this.children[2].type()].includes(Float64)
 		return new InstructionCond(
-			                                                              this.children[0].build(builder, to_float),
-			(this.assessments[0]) ? this.assessments[0].build(to_float) : this.children[0].build(builder, to_float),
-			(this.assessments[1]) ? this.assessments[1].build(to_float) : this.children[1].build(builder, to_float),
+			(this.assessments[0]) ? this.assessments[0].build(false)     : this.children[0].build(builder, false),
+			(this.assessments[1]) ? this.assessments[1].build(_to_float) : this.children[1].build(builder, _to_float),
+			(this.assessments[2]) ? this.assessments[2].build(_to_float) : this.children[2].build(builder, _to_float),
 		)
 	}
 	type(): SolidLanguageType {

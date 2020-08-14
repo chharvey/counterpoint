@@ -55,11 +55,11 @@ export class CompletionStructureAssessment extends CompletionStructure {
 	 * @return the directions to print
 	 */
 	build(to_float: boolean = false): InstructionConst {
-		return new InstructionConst(
+		const value: SolidNumber<unknown> =
 			(this.value instanceof SolidNull)    ? Int16.ZERO :
 			(this.value instanceof SolidBoolean) ? (this.value.value) ? Int16.UNIT : Int16.ZERO :
-			(this.value instanceof SolidNumber)  ? to_float ? this.value.toFloat() : this.value :
+			(this.value instanceof SolidNumber)  ? this.value :
 			(() => { throw new Error('not yet supported.') })()
-		)
+		return new InstructionConst((to_float) ? value.toFloat() : value)
 	}
 }

@@ -81,7 +81,7 @@ export class InstructionConst extends InstructionExpression {
 		super()
 	}
 	/**
-	 * @return `'(i32.const ‹value›)'` or `'(f64.const ‹value›)'`
+	 * @return `'({i32|f64}.const ‹value›)'`
 	 */
 	toString(): string {
 		return `(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ this.value })`

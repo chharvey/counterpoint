@@ -30,8 +30,10 @@ import Float64 from '../src/vm/Float64.class'
 import {
 	Operator,
 	InstructionNone,
+	InstructionConst,
 	InstructionUnop,
 	InstructionBinop,
+	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
 } from '../src/vm/Instruction.class'
@@ -196,6 +198,22 @@ describe('SemanticNode', () => {
 					instructionConstInt(a),
 					instructionConstInt(b),
 				)))
+			})
+			specify('ExpressionConditional ::= "if" Expression "then" Expression "else" Expression;', () => {
+				assert.deepStrictEqual([
+					`if true  then false   else 2;`,
+					`if false then 3.0     else null;`,
+					`if true  then 2       else 3.0;`,
+					`if false then 2 + 3.0 else 1.0 * 2;`,
+				].map((src) => operationFromStatementExpression(statementExpressionFromSource(src)).build(new Builder(src, CONFIG_DEFAULT))), ([
+					[new Int16(1n), new Int16(0n),    new Int16(2n)],
+					[new Int16(0n), new Float64(3.0), new Float64(0.0)],
+					[new Int16(1n), new Float64(2.0), new Float64(3.0)],
+					[new Int16(0n), new Float64(5.0), new Float64(2.0)],
+				])
+					.map((arr) => arr.map((v) => new InstructionConst(v)))
+					.map(([cond, cons, alt]) => new InstructionCond(cond, cons, alt))
+				)
 			})
 			specify('compound expression.', () => {
 				const srcs: [string, SolidConfig] = [`42 ^ 2 * 420;`, CONFIG_DEFAULT]
