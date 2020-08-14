@@ -199,6 +199,41 @@ describe('SemanticNode', () => {
 					instructionConstInt(b),
 				)))
 			})
+			specify('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+				assert.deepStrictEqual([
+					`42 && 420;`,
+					`4.2 || -420;`,
+					`null && 201.0e-1;`,
+					`true && 201.0e-1;`,
+					`false || null;`,
+				].map((src) => operationFromStatementExpression(statementExpressionFromSource(src)).build(new Builder(src, CONFIG_DEFAULT))), [
+					new InstructionBinop(
+						Operator.AND,
+						instructionConstInt(42n),
+						instructionConstInt(420n),
+					),
+					new InstructionBinop(
+						Operator.OR,
+						instructionConstFloat(4.2),
+						instructionConstFloat(-420.0),
+					),
+					new InstructionBinop(
+						Operator.AND,
+						instructionConstFloat(0.0),
+						instructionConstFloat(20.1),
+					),
+					new InstructionBinop(
+						Operator.AND,
+						instructionConstFloat(1.0),
+						instructionConstFloat(20.1),
+					),
+					new InstructionBinop(
+						Operator.OR,
+						instructionConstInt(0n),
+						instructionConstInt(0n),
+					),
+				])
+			})
 			specify('ExpressionConditional ::= "if" Expression "then" Expression "else" Expression;', () => {
 				assert.deepStrictEqual([
 					`if true  then false   else 2;`,

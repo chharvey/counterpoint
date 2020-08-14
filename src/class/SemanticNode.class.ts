@@ -325,6 +325,9 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		super(start_node, operator, children)
 	}
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
+		if ([Operator.AND, Operator.OR].includes(this.operator)) {
+			to_float = to_float || [this.children[0].type(), this.children[1].type()].includes(Float64)
+		}
 		return new InstructionBinop(
 			this.operator,
 			(this.assessments[0]) ? this.assessments[0].build(to_float) : this.children[0].build(builder, to_float),
