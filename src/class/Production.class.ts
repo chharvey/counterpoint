@@ -199,10 +199,10 @@ export class ProductionExpressionUnarySymbol extends Production {
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[ProductionExpressionUnit.instance],
-			[Punctuator.NOT,   this],
-			[Punctuator.EMPTY, this],
-			[Punctuator.AFF,   this],
-			[Punctuator.NEG,   this],
+			[Punctuator.NOT, this],
+			[Punctuator.EMP, this],
+			[Punctuator.AFF, this],
+			[Punctuator.NEG, this],
 		]
 	}
 	random(): string[] {
@@ -210,7 +210,7 @@ export class ProductionExpressionUnarySymbol extends Production {
 			ProductionExpressionUnit.instance.random() :
 			[Util.arrayRandom([
 				Punctuator.NOT,
-				Punctuator.EMPTY,
+				Punctuator.EMP,
 				Punctuator.AFF,
 				Punctuator.NEG,
 			]), ...this.random()]

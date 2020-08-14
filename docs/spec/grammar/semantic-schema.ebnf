@@ -23,7 +23,7 @@ SemanticTemplatePartial
 
 
 
-SemanticOperation[operator: NOT | EMPTY]
+SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
 SemanticOperation[operator: NEG]
 	::= SemanticExpression[type: Integer | Float];

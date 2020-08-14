@@ -81,7 +81,7 @@ Decorate(ExpressionUnarySymbol ::= ExpressionUnit) -> SemanticExpression
 Decorate(ExpressionUnarySymbol ::= "!" ExpressionUnarySymbol) -> SemanticOperation
 	:= (SemanticOperation[operator=NOT] Decorate(ExpressionUnarySymbol));
 Decorate(ExpressionUnarySymbol ::= "?" ExpressionUnarySymbol) -> SemanticOperation
-	:= (SemanticOperation[operator=EMPTY] Decorate(ExpressionUnarySymbol));
+	:= (SemanticOperation[operator=EMP] Decorate(ExpressionUnarySymbol));
 Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol);
 Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperation

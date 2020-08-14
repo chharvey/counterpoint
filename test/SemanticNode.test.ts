@@ -109,7 +109,7 @@ describe('SemanticNode', () => {
 		})
 
 		context('SemanticNodeOperation', () => {
-			specify('SemanticNodeOperation[operator: NOT | EMPTY] ::= SemanticNodeConstant', () => {
+			specify('SemanticNodeOperation[operator: NOT | EMP] ::= SemanticNodeConstant', () => {
 				assert.deepStrictEqual([
 					`!null;`,
 					`!false;`,
@@ -125,16 +125,16 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation
 				).build(new Builder(src, CONFIG_DEFAULT))), [
-					new InstructionUnop(Operator.NOT,   instructionConstInt(0n)),
-					new InstructionUnop(Operator.NOT,   instructionConstInt(0n)),
-					new InstructionUnop(Operator.NOT,   instructionConstInt(1n)),
-					new InstructionUnop(Operator.NOT,   instructionConstInt(42n)),
-					new InstructionUnop(Operator.NOT,   instructionConstFloat(4.2)),
-					new InstructionUnop(Operator.EMPTY, instructionConstInt(0n)),
-					new InstructionUnop(Operator.EMPTY, instructionConstInt(0n)),
-					new InstructionUnop(Operator.EMPTY, instructionConstInt(1n)),
-					new InstructionUnop(Operator.EMPTY, instructionConstInt(42n)),
-					new InstructionUnop(Operator.EMPTY, instructionConstFloat(4.2)),
+					new InstructionUnop(Operator.NOT, instructionConstInt(0n)),
+					new InstructionUnop(Operator.NOT, instructionConstInt(0n)),
+					new InstructionUnop(Operator.NOT, instructionConstInt(1n)),
+					new InstructionUnop(Operator.NOT, instructionConstInt(42n)),
+					new InstructionUnop(Operator.NOT, instructionConstFloat(4.2)),
+					new InstructionUnop(Operator.EMP, instructionConstInt(0n)),
+					new InstructionUnop(Operator.EMP, instructionConstInt(0n)),
+					new InstructionUnop(Operator.EMP, instructionConstInt(1n)),
+					new InstructionUnop(Operator.EMP, instructionConstInt(42n)),
+					new InstructionUnop(Operator.EMP, instructionConstFloat(4.2)),
 				])
 			})
 			specify('SemanticNodeOperation[operator: ADD | SUB | MUL] ::= SemanticNodeConstant SemanticNodeConstant', () => {

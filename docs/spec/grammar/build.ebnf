@@ -21,7 +21,7 @@ Void Build(SemanticTemplate tpl) :=
 
 
 
-Sequence<Instruction> Build(SemanticOperation[operator: NOT | EMPTY | NEG] expr) :=
+Sequence<Instruction> Build(SemanticOperation[operator: NOT | EMP | NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `instrs` be the result of performing `TryAssessAndBuild(expr.children.0)`.
 	3. *Return:* [

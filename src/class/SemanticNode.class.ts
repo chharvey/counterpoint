@@ -280,7 +280,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		)
 	}
 	type(): SolidLanguageType {
-		if ([Operator.NOT, Operator.EMPTY].includes(this.operator)) {
+		if ([Operator.NOT, Operator.EMP].includes(this.operator)) {
 			return SolidBoolean
 		}
 		const t0: SolidLanguageType = this.children[0].type()
@@ -292,8 +292,8 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		}
 		const v0: SolidLanguageValue = this.assessments[0].value
 		return (
-			(this.operator === Operator.NOT)   ? new CompletionStructureAssessment(v0.isTruthy.not) :
-			(this.operator === Operator.EMPTY) ? new CompletionStructureAssessment(v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0()))) :
+			(this.operator === Operator.NOT) ? new CompletionStructureAssessment(v0.isTruthy.not) :
+			(this.operator === Operator.EMP) ? new CompletionStructureAssessment(v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0()))) :
 			(
 				(v0 instanceof SolidNumber)
 					? new CompletionStructureAssessment(SemanticNodeOperationUnary.fold(this.operator, v0))

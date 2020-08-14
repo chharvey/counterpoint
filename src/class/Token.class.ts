@@ -25,10 +25,10 @@ export enum Punctuator {
 		GRP_OPN = '(',
 		GRP_CLS = ')',
 	// unary
-		NOT   = '!',
-		EMPTY = '?',
-		AFF   = '+',
-		NEG   = '-',
+		NOT = '!',
+		EMP = '?',
+		AFF = '+',
+		NEG = '-',
 	// binary
 		EXP  = '^',
 		MUL  = '*',

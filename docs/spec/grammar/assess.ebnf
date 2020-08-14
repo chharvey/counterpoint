@@ -19,7 +19,7 @@ Boolean? Assess(SemanticOperation[operator: NOT] expr) :=
 		1. *Return:* `false`.
 	6. *Return:* `true`.
 
-Boolean? Assess(SemanticOperation[operator: EMPTY] expr) :=
+Boolean? Assess(SemanticOperation[operator: EMP] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be the result of performing `Assess(expr.children.0)`.
 	3. *If* `TypeOf(operand)` is `Void`:

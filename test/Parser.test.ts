@@ -444,9 +444,9 @@ describe('Parser', () => {
 					return [operand.source, op.source]
 				}), [
 					[`false`, Punctuator.NOT],
-					[`true`, Punctuator.EMPTY],
-					[`42`, Punctuator.NEG],
-					[`-2`, Punctuator.NEG],
+					[`true`,  Punctuator.EMP],
+					[`42`,    Punctuator.NEG],
+					[`-2`,    Punctuator.NEG],
 				])
 			})
 		})

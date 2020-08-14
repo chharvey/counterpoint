@@ -84,16 +84,16 @@ describe('Instruction', () => {
 		context('InstructionUnop', () => {
 			it('performs a unary operation.', () => {
 				assert.deepStrictEqual([
-					new InstructionUnop(Operator.NOT,   instructionConstInt(0n)),
-					new InstructionUnop(Operator.NOT,   instructionConstInt(42n)),
-					new InstructionUnop(Operator.NOT,   instructionConstFloat(0.0)),
-					new InstructionUnop(Operator.NOT,   instructionConstFloat(4.2)),
-					new InstructionUnop(Operator.EMPTY, instructionConstInt(0n)),
-					new InstructionUnop(Operator.EMPTY, instructionConstInt(42n)),
-					new InstructionUnop(Operator.EMPTY, instructionConstFloat(0.0)),
-					new InstructionUnop(Operator.EMPTY, instructionConstFloat(4.2)),
-					new InstructionUnop(Operator.AFF,   instructionConstInt(42n)),
-					new InstructionUnop(Operator.NEG,   instructionConstInt(42n)),
+					new InstructionUnop(Operator.NOT, instructionConstInt(0n)),
+					new InstructionUnop(Operator.NOT, instructionConstInt(42n)),
+					new InstructionUnop(Operator.NOT, instructionConstFloat(0.0)),
+					new InstructionUnop(Operator.NOT, instructionConstFloat(4.2)),
+					new InstructionUnop(Operator.EMP, instructionConstInt(0n)),
+					new InstructionUnop(Operator.EMP, instructionConstInt(42n)),
+					new InstructionUnop(Operator.EMP, instructionConstFloat(0.0)),
+					new InstructionUnop(Operator.EMP, instructionConstFloat(4.2)),
+					new InstructionUnop(Operator.AFF, instructionConstInt(42n)),
+					new InstructionUnop(Operator.NEG, instructionConstInt(42n)),
 				].map((inst) => inst.toString()), [
 					`(call $inot ${ instructionConstInt(0n) })`,
 					`(call $inot ${ instructionConstInt(42n) })`,

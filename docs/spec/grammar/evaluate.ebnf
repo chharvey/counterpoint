@@ -7,7 +7,7 @@ Void Evaluate(Instruction :::= "NOT") :=
 		1. Push `1` onto the operand stack.
 	3. Push `0` onto the operand stack.
 
-Void Evaluate(Instruction :::= "EMPTY") :=
+Void Evaluate(Instruction :::= "EMP") :=
 	1. Pop `operand` from the operand stack.
 	2. *If* `TypeOf(operand)` is `Integer` *and* `operand` is `0`:
 		1. Push `1` onto the operand stack.

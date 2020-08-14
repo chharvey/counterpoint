@@ -270,8 +270,8 @@ describe('ParseNode', () => {
 					return [operand.source, operation.operator]
 				}), [
 					[`null`, Operator.NOT],
-					[`41`, Operator.EMPTY],
-					[`42`, Operator.NEG],
+					[`41`,   Operator.EMP],
+					[`42`,   Operator.NEG],
 				])
 			})
 		})
