@@ -109,14 +109,14 @@ export class InstructionUnop extends InstructionExpression {
 	 */
 	toString(): string {
 		return `(${ new Map<Operator, string>([
-			[Operator.NOT,   (!this.isFloat) ? `call $inot ${ this.arg }` : `i32.const 0`],
-			[Operator.EMPTY, `${ (!this.isFloat) ? `call $iemp` : `call $femp` } ${ this.arg }`],
-			[Operator.AFF,   `nop ${ this.arg }`],
-			[Operator.NEG,   `${ (!this.isFloat) ? `call $neg`  : `f64.neg`    } ${ this.arg }`],
-		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() })`
+			[Operator.AFF,   `nop`],
+			[Operator.NEG,   (!this.arg.isFloat) ? `call $neg`  : `f64.neg`],
+			[Operator.NOT,   (!this.arg.isFloat) ? `call $inot` : `call $fnot`],
+			[Operator.EMPTY, (!this.arg.isFloat) ? `call $iemp` : `call $femp`],
+		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg })`
 	}
 	get isFloat(): boolean {
-		return this.arg.isFloat
+		return [Operator.AFF, Operator.NEG].includes(this.op) && this.arg.isFloat
 	}
 }
 /**

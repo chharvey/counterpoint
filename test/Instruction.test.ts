@@ -95,8 +95,8 @@ describe('Instruction', () => {
 				].map((inst) => inst.toString()), [
 					`(call $inot ${ instructionConstInt(0n) })`,
 					`(call $inot ${ instructionConstInt(42n) })`,
-					`(i32.const 0)`,
-					`(i32.const 0)`,
+					`(call $fnot (f64.const 0))`,
+					`(call $fnot (f64.const 4.2))`,
 					`(call $iemp ${ instructionConstInt(0n) })`,
 					`(call $iemp ${ instructionConstInt(42n) })`,
 					`(call $femp ${ instructionConstFloat(0.0) })`,
