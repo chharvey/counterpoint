@@ -67,21 +67,27 @@ Or<Integer, Float>? AssessSemanticOperationBinary(SemanticOperation expr) :=
 ```
 
 
-### Abstract Operation: BuildSemanticOperationBinary
+### Abstract Operation: TryAssessAndBuild
+The abstract operation **TryAssessAndBuild** attempts to assess a semantic node first and then build the assessment;
+if the assessment fails, it builds the semantic node.
 ```
-Sequence<Instruction> BuildSemanticOperationBinary(SemanticOperation expr) :=
+Sequence<Instruction> TryAssessAndBuild(SemanticExpression expr) :=
+	1. *Let* `assess` be the result of performing `Assess(expr)`.
+	2. *If* `TypeOf(assess)` is `Void`:
+		1. *Let* `instrs` be the result of performing `Build(expr)`.
+	3. *Else:*
+		1. *Let* `instrs` be the result of performing `Build(assess)`.
+	4. *Return:* `instrs`.
+```
+
+
+### Abstract Operation: PrebuildSemanticOperationBinary
+```
+Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperationBinary(SemanticOperation expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `assess0` be the result of performing `Assess(expr.children.0)`.
-	3. *If* `TypeOf(assess0)` is `Void`:
-		1. *Let* `instrs0` be the result of performing `Build(expr.children.0)`.
-	4. *Else*:
-		1. *Let* `instrs0` be the result of performing `Build(assess0)`.
-	5. *Let* `assess1` be the result of performing `Assess(expr.children.1)`.
-	6. *If* `TypeOf(assess1)` is `Void`:
-		1. *Let* `instrs1` be the result of performing `Build(expr.children.1)`.
-	7. *Else*:
-		1. *Let* `instrs1` be the result of performing `Build(assess1)`.
-	8. *Return:* [...instrs0, ...instrs1, "Perform stack operation `expr.operator`."].
+	2. *Let* `instrs0` be the result of performing `TryAssessAndBuild(expr.children.0)`.
+	3. *Let* `instrs1` be the result of performing `TryAssessAndBuild(expr.children.1)`.
+	4. *Return:* [instrs0, instrs1].
 ```
 
 
@@ -354,31 +360,29 @@ Or<Integer, Float>? Assess(SemanticOperation[operator: NEG] expr) :=
 ```
 Sequence<Instruction> Build(SemanticOperation[operator: NOT | EMPTY | NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `assess` be the result of performing `Assess(expr.children.0)`.
-	3. *If* `TypeOf(assess)` is `Void`:
-		1. *Let* `instrs` be the result of performing `Build(expr.children.0)`.
-	4. *Else:*
-		1. *Assert*: `TypeOf(assess)` is `Or<Null, Boolean, Integer, Float>`.
-		2. *Let* `instrs` be the result of performing `Build(assess)`.
-	5. *Return:* [...instrs, "Perform stack operation `expr.operator`."].
+	2. *Let* `instrs` be the result of performing `TryAssessAndBuild(expr.children.0)`.
+	3. *Return:* [
+		...instrs,
+		"`expr.operator`",
+	].
 ```
 
 
 ### Runtime Instructions: Evaluate (Unary Operators)
 ```
-Void Evaluate(Instruction :::= "Perform stack operation NOT.") :=
+Void Evaluate(Instruction :::= "NOT") :=
 	1. Pop `operand` from the operand stack.
 	2. *If* `TypeOf(operand)` is `Integer` *and* `operand` is `0`:
 		1. Push `1` onto the operand stack.
 	3. Push `0` onto the operand stack.
-Void Evaluate(Instruction :::= "Perform stack operation EMPTY.") :=
+Void Evaluate(Instruction :::= "EMPTY") :=
 	1. Pop `operand` from the operand stack.
 	2. *If* `TypeOf(operand)` is `Integer` *and* `operand` is `0`:
 		1. Push `1` onto the operand stack.
 	3. *If* `TypeOf(operand)` is `Float` *and* `operand` is `0.0` or `-0.0`:
 		1. Push `1` onto the operand stack.
 	4. Push `0` onto the operand stack.
-Void Evaluate(Instruction :::= "Perform stack operation NEG.") :=
+Void Evaluate(Instruction :::= "NEG") :=
 	1. Pop `operand` from the operand stack.
 	2. *Let* `negation` be the additive inverse, `-operand`,
 		obtained by negating `operand`.
@@ -423,13 +427,18 @@ Or<Integer, Float>? Assess(SemanticOperation[operator: EXP] expr) :=
 ### Static Semantics: Build (Exponentiation)
 ```
 Sequence<Instruction> Build(SemanticOperation[operator: EXP] expr) :=
-	1. *Return:* `BuildSemanticOperationBinary(expr)`.
+	1. *Let* `builds` be `PrebuildSemanticOperationBinary(expr)`.
+	2. *Return:* [
+		...builds.0,
+		...builds.1,
+		"EXP",
+	].
 ```
 
 
 ### Runtime Instructions: Evaluate (Exponentiation)
 ```
-Void Evaluate(Instruction :::= "Perform stack operation EXP.") :=
+Void Evaluate(Instruction :::= "EXP") :=
 	1. Pop `operand1` from the operand stack.
 	2. Pop `operand0` from the operand stack.
 	3. *Let* `power` be the result of performing `PerformNumericBinaryOperation(EXP, operand0, operand1)`.
@@ -479,18 +488,23 @@ Or<Integer, Float>? Assess(SemanticOperation[operator: MUL | DIV] expr) :=
 ### Static Semantics: Build (Multiplicative)
 ```
 Sequence<Instruction> Build(SemanticOperation[operator: MUL | DIV] expr) :=
-	1. *Return:* `BuildSemanticOperationBinary(expr)`.
+	1. *Let* `builds` be `PrebuildSemanticOperationBinary(expr)`.
+	2. *Return:* [
+		...builds.0,
+		...builds.1,
+		"`expr.operator`",
+	].
 ```
 
 
 ### Runtime Instructions: Evaluate (Multiplicative)
 ```
-Void Evaluate(Instruction :::= "Perform stack operation MUL.") :=
+Void Evaluate(Instruction :::= "MUL") :=
 	1. Pop `operand1` from the operand stack.
 	2. Pop `operand0` from the operand stack.
 	3. *Let* `product` be the result of performing `PerformNumericBinaryOperation(MUL, operand0, operand1)`.
 	4. Push `product` onto the operand stack.
-Void Evaluate(Instruction :::= "Perform stack operation DIV.") :=
+Void Evaluate(Instruction :::= "DIV") :=
 	1. Pop `operand1` from the operand stack.
 	2. Pop `operand0` from the operand stack.
 	3. *Let* `quotient` be the result of performing `PerformNumericBinaryOperation(DIV, operand0, operand1)`.
@@ -540,13 +554,18 @@ Or<Integer, Float>? Assess(SemanticOperation[operator: ADD] expr) :=
 ### Static Semantics: Build (Additive)
 ```
 Sequence<Instruction> Build(SemanticOperation[operator: ADD] expr) :=
-	1. *Return:* `BuildSemanticOperationBinary(expr)`.
+	1. *Let* `builds` be `PrebuildSemanticOperationBinary(expr)`.
+	2. *Return:* [
+		...builds.0,
+		...builds.1,
+		"ADD",
+	].
 ```
 
 
 ### Runtime Instructions: Evaluate (Additive)
 ```
-Void Evaluate(Instruction :::= "Perform stack operation ADD.") :=
+Void Evaluate(Instruction :::= "ADD") :=
 	1. Pop `operand1` from the operand stack.
 	2. Pop `operand0` from the operand stack.
 	3. *Let* `sum` be the result of performing `PerformNumericBinaryOperation(ADD, operand0, operand1)`.
@@ -693,22 +712,10 @@ Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator: COND] expr
 ```
 Sequence<Instruction> Build(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
-	2. *Let* `condition` be the result of performing `Assess(expr.children.0)`.
-	3. *If* `TypeOf(condition)` is `Void`:
-		1. *Let* `instrs0` be the result of performing `Build(expr.children.0)`.
-	4. *Else*:
-		1. *Let* `instrs0` be the result of performing `Build(condition)`.
-	5. *Let* `consequent` be the result of performing `Assess(expr.children.1)`.
-	6. *If* `TypeOf(consequent)` is `Void`:
-		1. *Let* `instrs1` be the result of performing `Build(expr.children.1)`.
-	7. *Else*:
-		1. *Let* `instrs1` be the result of performing `Build(consequent)`.
-	8. *Let* `alternative` be the result of performing `Assess(expr.children.2)`.
-	9. *If* `TypeOf(alternative)` is `Void`:
-		1. *Let* `instrs2` be the result of performing `Build(expr.children.2)`.
-	10. *Else*:
-		1. *Let* `instrs2` be the result of performing `Build(alternative)`.
-	11. *Return:* [
+	2. *Let* `instrs0` be the result of performing `TryAssessAndBuild(expr.children.0)`.
+	3. *Let* `instrs1` be the result of performing `TryAssessAndBuild(expr.children.1)`.
+	4. *Let* `instrs2` be the result of performing `TryAssessAndBuild(expr.children.2)`.
+	5. *Return:* [
 		...instrs0,
 		"IF",
 		...instrs1,
