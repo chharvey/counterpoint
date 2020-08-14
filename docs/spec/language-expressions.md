@@ -70,95 +70,24 @@ Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperation
 ## Literals
 
 
-### Runtime Instructions: Evaluate (Literals)
-```
-Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Or<Integer, Float> value) :=
-	1. Push `value` onto the operand stack.
-```
-
-
 
 ## Expression Units
-
-
-### Runtime Instructions: Evaluate (Expression Units)
-```
-Void Evaluate(SemanticIdentifier iden) :=
-	/* TO BE DETERMINED */
-```
 
 
 
 ## Unary Operators
 
 
-### Runtime Instructions: Evaluate (Unary Operators)
-```
-Void Evaluate(Instruction :::= "NOT") :=
-	1. Pop `operand` from the operand stack.
-	2. *If* `TypeOf(operand)` is `Integer` *and* `operand` is `0`:
-		1. Push `1` onto the operand stack.
-	3. Push `0` onto the operand stack.
-Void Evaluate(Instruction :::= "EMPTY") :=
-	1. Pop `operand` from the operand stack.
-	2. *If* `TypeOf(operand)` is `Integer` *and* `operand` is `0`:
-		1. Push `1` onto the operand stack.
-	3. *If* `TypeOf(operand)` is `Float` *and* `operand` is `0.0` or `-0.0`:
-		1. Push `1` onto the operand stack.
-	4. Push `0` onto the operand stack.
-Void Evaluate(Instruction :::= "NEG") :=
-	1. Pop `operand` from the operand stack.
-	2. *Let* `negation` be the additive inverse, `-operand`,
-		obtained by negating `operand`.
-	3. Push `negation` onto the operand stack.
-```
-
-
 
 ## Exponentiation
-
-
-### Runtime Instructions: Evaluate (Exponentiation)
-```
-Void Evaluate(Instruction :::= "EXP") :=
-	1. Pop `operand1` from the operand stack.
-	2. Pop `operand0` from the operand stack.
-	3. *Let* `power` be the result of performing `PerformNumericBinaryOperation(EXP, operand0, operand1)`.
-	4. Push `power` onto the operand stack.
-```
 
 
 
 ## Multiplicative
 
 
-### Runtime Instructions: Evaluate (Multiplicative)
-```
-Void Evaluate(Instruction :::= "MUL") :=
-	1. Pop `operand1` from the operand stack.
-	2. Pop `operand0` from the operand stack.
-	3. *Let* `product` be the result of performing `PerformNumericBinaryOperation(MUL, operand0, operand1)`.
-	4. Push `product` onto the operand stack.
-Void Evaluate(Instruction :::= "DIV") :=
-	1. Pop `operand1` from the operand stack.
-	2. Pop `operand0` from the operand stack.
-	3. *Let* `quotient` be the result of performing `PerformNumericBinaryOperation(DIV, operand0, operand1)`.
-	4. Push `quotient` onto the operand stack.
-```
-
-
 
 ## Additive
-
-
-### Runtime Instructions: Evaluate (Additive)
-```
-Void Evaluate(Instruction :::= "ADD") :=
-	1. Pop `operand1` from the operand stack.
-	2. Pop `operand0` from the operand stack.
-	3. *Let* `sum` be the result of performing `PerformNumericBinaryOperation(ADD, operand0, operand1)`.
-	4. Push `sum` onto the operand stack.
-```
 
 
 
@@ -171,16 +100,3 @@ Void Evaluate(Instruction :::= "ADD") :=
 
 
 ## Conditional
-
-
-### Runtime Instructions: Evaluate (Conditional)
-```
-Void Evaluate(Instruction :::= "IF") :=
-	1. Pop `condition` from the operand stack.
-	2. *If* `condition` is non-zero:
-		1. *Let* `consequent` be the result of performing the next instructions until an "ELSE" instruction is reached.
-		2. Push `consequent` onto the operand stack.
-	3. *Else:*
-		1. *Let* `alternative` be the result of performing the instructions from the next "ELSE" and until an "END" instruction is reached.
-		2. Push `alternative` onto the operand stack.
-```
