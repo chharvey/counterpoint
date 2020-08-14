@@ -30,7 +30,6 @@ import Float64 from '../src/vm/Float64.class'
 import {
 	Operator,
 	InstructionNone,
-	InstructionConst,
 	InstructionUnop,
 	InstructionBinop,
 	InstructionStatement,
@@ -90,9 +89,9 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeConstant)
 						.build(new Builder(src, CONFIG_DEFAULT))
 				), [
-					new InstructionConst(SolidNull.NULL),
-					new InstructionConst(SolidBoolean.FALSE),
-					new InstructionConst(SolidBoolean.TRUE),
+					instructionConstInt(0n),
+					instructionConstInt(0n),
+					instructionConstInt(1n),
 					instructionConstInt(0n),
 					instructionConstInt(0n),
 					instructionConstInt(0n),
@@ -124,14 +123,14 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation
 				).build(new Builder(src, CONFIG_DEFAULT))), [
-					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidNull.NULL)),
-					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidBoolean.FALSE)),
-					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidBoolean.TRUE)),
+					new InstructionUnop(Operator.NOT,   instructionConstInt(0n)),
+					new InstructionUnop(Operator.NOT,   instructionConstInt(0n)),
+					new InstructionUnop(Operator.NOT,   instructionConstInt(1n)),
 					new InstructionUnop(Operator.NOT,   instructionConstInt(42n)),
 					new InstructionUnop(Operator.NOT,   instructionConstFloat(4.2)),
-					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidNull.NULL)),
-					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidBoolean.FALSE)),
-					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidBoolean.TRUE)),
+					new InstructionUnop(Operator.EMPTY, instructionConstInt(0n)),
+					new InstructionUnop(Operator.EMPTY, instructionConstInt(0n)),
+					new InstructionUnop(Operator.EMPTY, instructionConstInt(1n)),
 					new InstructionUnop(Operator.EMPTY, instructionConstInt(42n)),
 					new InstructionUnop(Operator.EMPTY, instructionConstFloat(4.2)),
 				])

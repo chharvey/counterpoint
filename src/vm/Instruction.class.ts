@@ -1,7 +1,4 @@
-import SolidLanguageValue, {
-	SolidNull,
-	SolidBoolean,
-} from './SolidLanguageValue.class'
+import type {SolidNumber} from './SolidLanguageValue.class'
 import Float64 from './Float64.class'
 
 
@@ -80,18 +77,14 @@ export class InstructionConst extends InstructionExpression {
 	/**
 	 * @param value the constant to push
 	 */
-	constructor (private readonly value: SolidLanguageValue) {
+	constructor (private readonly value: SolidNumber<unknown>) {
 		super()
 	}
 	/**
 	 * @return `'(i32.const ‹value›)'` or `'(f64.const ‹value›)'`
 	 */
 	toString(): string {
-		return (
-			([SolidNull.NULL, SolidBoolean.FALSE].includes(this.value)) ? `(i32.const 0)` :
-			(this.value === SolidBoolean.TRUE) ? `(i32.const 1)` :
-			`(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ this.value })`
-		)
+		return `(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ this.value })`
 	}
 	get isFloat(): boolean {
 		return this.value instanceof Float64
