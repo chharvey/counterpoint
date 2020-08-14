@@ -75,23 +75,6 @@ which form the lowest-level building blocks of the language.
 
 There are a small number of token types, each of which have a specific purpose.
 
-```
-Goal<Comment, Radix, Separator> :::=
-	| Filebound
-	| Whitespace
-	| Punctuator
-	| Keyword
-	| Identifier
-	| Number<?Radix, ?Separator>
-	| String
-	| TemplateFull
-	| TemplateHead
-	| TemplateMiddle
-	| TemplateTail
-	| <Comment+>Comment
-;
-```
-
 1. [File Bounds](#file-bounds)
 1. [Whitespace](#whitespace)
 1. [Punctuators](#punctuators)
@@ -104,17 +87,11 @@ Goal<Comment, Radix, Separator> :::=
 
 
 ### File Bounds
-```
-Filebound :::= #x02 | #x03;
-```
 File bound tokens are tokens that consist of exactly 1 character:
 either **U+0002 START OF TEXT**, or **U+0003 END OF TEXT**.
 
 
 ### Whitespace
-```
-Whitespace :::= (#x20 | #x09 | #x0A)+;
-```
 Whitespace tokens consist of combinations of the following characters.
 Any consecutive sequence of these characters is put into a single whitespace token.
 
@@ -159,18 +136,6 @@ U+3000     | IDEOGRAPHIC SPACE         | CJK Symbols and Punctuation | Separator
 
 
 ### Punctuators
-```
-Punctuator :::=
-	// grouping
-		| "(" | ")"
-	// unary
-		| "!" | "?" | "+" | "-"
-	// binary
-		| "^" | "*" | "/" | "&&" | "!&" | "||" | "!|"
-	// statement
-		| ";" | "="
-;
-```
 Punctuators are non-alphanumeric characters in the ASCII character set, or spans of such characters,
 that add to the semantics of the Solid language.
 Some punctuators are operators, which perform computations on values, and
@@ -205,22 +170,6 @@ TokenWorth(Punctuator :::= "=")  -> RealNumber := \x0e;
 
 
 ### Keywords
-```
-Keyword :::=
-	// literal
-		| "null"
-		| "false"
-		| "true"
-	// operator
-		| "if"
-		| "then"
-		| "else"
-	// storage
-		| "let"
-	// modifier
-		| "unfixed"
-;
-```
 Keywords are sequences of alphanumeric characters reserved by the Solid language
 and enumerated in the lexical grammar.
 Keywords convey certain semantics to the compiler and to programmers.
@@ -244,9 +193,6 @@ TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x87;
 
 
 ### Identifiers
-```
-Identifier :::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - Keyword;
-```
 Identifiers are sequences of alphanumeric characters that do not match the [Keyword](#keywords) production.
 Identifiers are author-defined and point to values in a program.
 
@@ -268,44 +214,6 @@ TokenWorth(Identifier) -> RealNumber
 
 
 ### Numbers
-```
-Number<Radix, Separator> :::=
-	| Integer<?Radix, ?Separator>
-	| Float<?Separator>
-;
-
-Integer<Radix, Separator>
-	:::= ("+" | "-")? IntegerDigits<?Radix, ?Separator>;
-
-IntegerDigits<Radix, Separator> :::=
-	| <Radix->DigitSequenceDec<?Separator>
-	| <Radix+>("\b"  DigitSequenceBin<?Separator>)
-	| <Radix+>("\q"  DigitSequenceQua<?Separator>)
-	| <Radix+>("\o"  DigitSequenceOct<?Separator>)
-	| <Radix+>("\d"? DigitSequenceDec<?Separator>)
-	| <Radix+>("\x"  DigitSequenceHex<?Separator>)
-	| <Radix+>("\z"  DigitSequenceHTD<?Separator>)
-;
-
-Float<Separator>
-	:::= SignedDigitSequenceDec<?Separator> "." (FractionalPart<?Separator> ExponentPart<?Separator>?)?;
-
-FractionalPart<Separator>
-	:::= DigitSequenceDec<?Separator>;
-
-ExponentPart<Separator>
-	:::= "e" SignedDigitSequenceDec<?Separator>;
-
-SignedDigitSequenceDec<Separator>
-	:::= ("+" | "-")? DigitSequenceDec<?Separator>;
-
-DigitSequenceBin<Separator> :::= (DigitSequenceBin <Separator+>"_"?)? [0-1];
-DigitSequenceQua<Separator> :::= (DigitSequenceQua <Separator+>"_"?)? [0-3];
-DigitSequenceOct<Separator> :::= (DigitSequenceOct <Separator+>"_"?)? [0-7];
-DigitSequenceDec<Separator> :::= (DigitSequenceDec <Separator+>"_"?)? [0-9];
-DigitSequenceHex<Separator> :::= (DigitSequenceHex <Separator+>"_"?)? [0-9a-f];
-DigitSequenceHTD<Separator> :::= (DigitSequenceHTD <Separator+>"_"?)? [0-9a-z];
-```
 Numbers are literal constants that represent numeric mathematical values.
 Currently, only positive and negative (and zero) integers are supported.
 
@@ -428,23 +336,6 @@ DigitCount(DigitSequenceDec :::= DigitSequenceDec "_"? [0-9]) -> RealNumber
 
 
 ### String Literals
-```
-String
-	:::= "'" StringChars? "'";
-
-StringChars :::=
-	| [^'\#x03]               StringChars?
-	| "\"        StringEscape StringChars?
-	| "\u"      ([^'{#x03]    StringChars?)?
-;
-
-StringEscape :::=
-	| "'" | "\" | "s" | "t" | "n" | "r"
-	| "u{" DigitSequenceHex? "}"
-	| #x0A
-	| [^'\stnru#x0A#x03]
-;
-```
 String tokens are sequences of Unicode characters enclosed in delimiters.
 Strings are snippets of textual data.
 
@@ -498,50 +389,6 @@ TokenWorth(StringEscape :::= [^'\stnru#x0D#x0A#x03]) -> Sequence<RealNumber>
 
 
 ### Template Literals
-```
-TemplateFull   :::= "'''" TemplateChars__EndDelim ? "'''";
-TemplateHead   :::= "'''" TemplateChars__EndInterp? "{{" ;
-TempalteMiddle :::= "}}"  TemplateChars__EndInterp? "{{" ;
-TempalteTail   :::= "}}"  TemplateChars__EndDelim ? "'''";
-
-TemplateChars__EndDelim :::=
-	| [^'{#x03] TemplateChars__EndDelim?
-	| TemplateChars__EndDelim__StartDelim
-	| TemplateChars__EndDelim__StartInterp
-;
-
-TemplateChars__EndDelim__StartDelim :::=
-	| "'"    [^'{#x03] TemplateChars__EndDelim?
-	| "''"   [^'{#x03] TemplateChars__EndDelim?
-	| "'{"  ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)?
-	| "''{" ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)?
-;
-
-TemplateChars__EndDelim__StartInterp :::=
-	| "{"   ([^'{#x03] TemplateChars__EndDelim?                                       )?
-	| "{'"  ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)
-	| "{''" ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)
-;
-
-TemplateChars__EndInterp :::=
-	| [^'{#x03] TemplateChars__EndInterp?
-	| TemplateChars__EndInterp__StartDelim
-	| TemplateChars__EndInterp__StartInterp
-;
-
-TemplateChars__EndInterp__StartDelim :::=
-	| "'"   ([^'{#x03] TemplateChars__EndInterp?                                       )?
-	| "''"  ([^'{#x03] TemplateChars__EndInterp?                                       )?
-	| "'{"  ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)
-	| "''{" ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)
-;
-
-TemplateChars__EndInterp__StartInterp :::=
-	| "{"    [^'{#x03] TemplateChars__EndInterp?
-	| "{'"  ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)?
-	| "{''" ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)?
-;
-```
 Template tokens are almost exactly like string tokens, except that
 they use different delimiters, and their “cooked” values are computed differently.
 Template literal tokens can be combined together in
@@ -682,53 +529,21 @@ TokenWorth(TemplateChars__EndInterp__StartInterp :::= "{''" TemplateChars__EndIn
 
 
 ### Comments
-```
-Comment :::=
-	| CommentLine
-	| CommentMulti
-	| CommentBlock
-;
-```
 Comments are tokens of arbitrary text,
 mainly used to add human-readable language to code
 or to provide other types of annotations.
 Comment tokens are not sent to the Solid parser.
 
 #### Line Comments
-```
-CommentLine
-	:::= "%" [^#x0A#x03]* #x0A;
-```
 Line comments begin with `%` (**U+0025 PERCENT SIGN**).
 The compiler will ignore all source text starting from `%` and onward,
 up to and including the next line break (**U+000A LINE FEED (LF)**).
 
 #### Multiline Comments
-```
-CommentMulti
-	:::= "{%" CommentMultiNestChars? "%}";
-
-CommentMultiChars :::=
-	| [^{%#x03] CommentMultiChars?
-	| "{"+ [^%#x03] CommentMultiChars?
-	| "%"+ ([^}#x03] CommentMultiChars?)?
-	| CommentMulti CommentMultiChars?
-;
-```
 Multiline comments are contained in the delimiters `{% %}`
 (**U+007B LEFT CURLY BRACKET**, **U+007C RIGHT CURLY BRACKET**, with adjacent percent signs),
 and may contain line breaks and may be nested.
 
 #### Block Comments
-```
-CommentBlock
-	:::=
-		{following: #x0A [#x09#x20]*}"%%%"
-		#x0A
-		({unequal: [#x09#x20]* "%%%"}[^#x03]* #x0A)?
-		[#x09#x20]* "%%%"
-		{lookahead: #x0A}
-	;
-```
 Block comments begin and end with triple percent signs `%%%`.
 These delimiters *must* be on their own lines (with or without leading/trailing whitespace).
