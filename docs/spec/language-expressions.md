@@ -70,28 +70,6 @@ Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperation
 ## Literals
 
 
-### Static Semantics: Build (Literals)
-```
-Sequence<Instruction> Build(Null n) :=
-	1. *Return:* ["Push `0` onto the operand stack."].
-
-Sequence<Instruction> Build(Boolean b) :=
-	1. *If* `b` is `true`:
-		1. *Return:* ["Push `1` onto the operand stack."].
-	2. *Assert:* `b` is `false`.
-	3. *Return:* ["Push `0` onto the operand stack."].
-
-Sequence<Instruction> Build(Or<Integer, Float> n) :=
-	1. *Return:* ["Push `n` onto the operand stack."].
-
-Sequence<Instruction> Build(SemanticConstant const) :=
-	1. *Return:* `Build(Assess(const))`.
-
-Void Build(SemanticTemplate tpl) :=
-	/* TO BE DETERMINED */
-```
-
-
 ### Runtime Instructions: Evaluate (Literals)
 ```
 Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Or<Integer, Float> value) :=
@@ -103,13 +81,6 @@ Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Or<Intege
 ## Expression Units
 
 
-### Static Semantics: Build (Expression Units)
-```
-Sequence<Instruction> Build(SemanticIdentifier iden) :=
-	/* TO BE DETERMINED */
-```
-
-
 ### Runtime Instructions: Evaluate (Expression Units)
 ```
 Void Evaluate(SemanticIdentifier iden) :=
@@ -119,18 +90,6 @@ Void Evaluate(SemanticIdentifier iden) :=
 
 
 ## Unary Operators
-
-
-### Static Semantics: Build (Unary Operators)
-```
-Sequence<Instruction> Build(SemanticOperation[operator: NOT | EMPTY | NEG] expr) :=
-	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `instrs` be the result of performing `TryAssessAndBuild(expr.children.0)`.
-	3. *Return:* [
-		...instrs,
-		"`expr.operator`",
-	].
-```
 
 
 ### Runtime Instructions: Evaluate (Unary Operators)
@@ -159,18 +118,6 @@ Void Evaluate(Instruction :::= "NEG") :=
 ## Exponentiation
 
 
-### Static Semantics: Build (Exponentiation)
-```
-Sequence<Instruction> Build(SemanticOperation[operator: EXP] expr) :=
-	1. *Let* `builds` be `PrebuildSemanticOperationBinary(expr)`.
-	2. *Return:* [
-		...builds.0,
-		...builds.1,
-		"EXP",
-	].
-```
-
-
 ### Runtime Instructions: Evaluate (Exponentiation)
 ```
 Void Evaluate(Instruction :::= "EXP") :=
@@ -183,18 +130,6 @@ Void Evaluate(Instruction :::= "EXP") :=
 
 
 ## Multiplicative
-
-
-### Static Semantics: Build (Multiplicative)
-```
-Sequence<Instruction> Build(SemanticOperation[operator: MUL | DIV] expr) :=
-	1. *Let* `builds` be `PrebuildSemanticOperationBinary(expr)`.
-	2. *Return:* [
-		...builds.0,
-		...builds.1,
-		"`expr.operator`",
-	].
-```
 
 
 ### Runtime Instructions: Evaluate (Multiplicative)
@@ -216,18 +151,6 @@ Void Evaluate(Instruction :::= "DIV") :=
 ## Additive
 
 
-### Static Semantics: Build (Additive)
-```
-Sequence<Instruction> Build(SemanticOperation[operator: ADD] expr) :=
-	1. *Let* `builds` be `PrebuildSemanticOperationBinary(expr)`.
-	2. *Return:* [
-		...builds.0,
-		...builds.1,
-		"ADD",
-	].
-```
-
-
 ### Runtime Instructions: Evaluate (Additive)
 ```
 Void Evaluate(Instruction :::= "ADD") :=
@@ -242,66 +165,12 @@ Void Evaluate(Instruction :::= "ADD") :=
 ## Conjunctive
 
 
-### Static Semantics: Build (Conjunctive)
-```
-Sequence<Instruction> Build(SemanticOperation[operator: AND] expr) :=
-	1. *Let* `builds` be `PrebuildSemanticOperationBinary(expr)`.
-	2. *Return:* [
-		...builds.0,
-		"TEE the local variable `operand0`.",
-		"NOT",
-		"NOT",
-		"IF",
-		...builds.1,
-		"ELSE",
-		"GET the local variable `operand0`.",
-		"END",
-	].
-```
-
-
 
 ## Disjunctive
 
 
-### Static Semantics: Build (Disjunctive)
-```
-Sequence<Instruction> Build(SemanticOperation[operator: OR] expr) :=
-	1. *Let* `builds` be `PrebuildSemanticOperationBinary(expr)`.
-	2. *Return:* [
-		...builds.0,
-		"TEE the local variable `operand0`.",
-		"NOT",
-		"NOT",
-		"IF",
-		"GET the local variable `operand0`.",
-		"ELSE",
-		...builds.1,
-		"END",
-	].
-```
-
-
 
 ## Conditional
-
-
-### Static Semantics: Build (Conditional)
-```
-Sequence<Instruction> Build(SemanticOperation[operator: COND] expr) :=
-	1. *Assert:* `expr.children.count` is 3.
-	2. *Let* `instrs0` be the result of performing `TryAssessAndBuild(expr.children.0)`.
-	3. *Let* `instrs1` be the result of performing `TryAssessAndBuild(expr.children.1)`.
-	4. *Let* `instrs2` be the result of performing `TryAssessAndBuild(expr.children.2)`.
-	5. *Return:* [
-		...instrs0,
-		"IF",
-		...instrs1,
-		"ELSE",
-		...instrs2,
-		"END",
-	].
-```
 
 
 ### Runtime Instructions: Evaluate (Conditional)
