@@ -5,11 +5,11 @@ import * as assert from 'assert'
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Parser from '../src/class/Parser.class'
 import Builder from '../src/vm/Builder.class'
-import SolidLanguageValue, {SolidNull, SolidBoolean} from '../src/vm/SolidLanguageValue.class'
 import {
 	Operator,
 	InstructionNone,
-	InstructionConst,
+	InstructionGet,
+	InstructionTee,
 	InstructionUnop,
 	InstructionBinop,
 	InstructionCond,
@@ -46,21 +46,6 @@ describe('Instruction', () => {
 
 	describe('#toString', () => {
 		context('InstructionConst', () => {
-			it('pushes the constant null or boolean onto the stack.', () => {
-				const values: SolidLanguageValue[] = [
-					SolidNull.NULL,
-					SolidBoolean.FALSE,
-					SolidBoolean.TRUE,
-				]
-				assert.deepStrictEqual(
-					values.map((x) => new InstructionConst(x).toString()),
-					[
-						0,
-						0,
-						1,
-					].map((x) => `(i32.const ${ x })`),
-				)
-			})
 			it('pushes the constant integer onto the stack.', () => {
 				const values: number[] = [
 					0,
@@ -99,16 +84,10 @@ describe('Instruction', () => {
 		context('InstructionUnop', () => {
 			it('performs a unary operation.', () => {
 				assert.deepStrictEqual([
-					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidNull.NULL)),
-					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidBoolean.FALSE)),
-					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidBoolean.TRUE)),
 					new InstructionUnop(Operator.NOT,   instructionConstInt(0n)),
 					new InstructionUnop(Operator.NOT,   instructionConstInt(42n)),
 					new InstructionUnop(Operator.NOT,   instructionConstFloat(0.0)),
 					new InstructionUnop(Operator.NOT,   instructionConstFloat(4.2)),
-					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidNull.NULL)),
-					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidBoolean.FALSE)),
-					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidBoolean.TRUE)),
 					new InstructionUnop(Operator.EMPTY, instructionConstInt(0n)),
 					new InstructionUnop(Operator.EMPTY, instructionConstInt(42n)),
 					new InstructionUnop(Operator.EMPTY, instructionConstFloat(0.0)),
@@ -117,15 +96,9 @@ describe('Instruction', () => {
 					new InstructionUnop(Operator.NEG,   instructionConstInt(42n)),
 				].map((inst) => inst.toString()), [
 					`(call $inot ${ instructionConstInt(0n) })`,
-					`(call $inot ${ instructionConstInt(0n) })`,
-					`(call $inot ${ instructionConstInt(1n) })`,
-					`(call $inot ${ instructionConstInt(0n) })`,
 					`(call $inot ${ instructionConstInt(42n) })`,
-					`(i32.const 0)`,
-					`(i32.const 0)`,
-					`(call $iemp ${ instructionConstInt(0n) })`,
-					`(call $iemp ${ instructionConstInt(0n) })`,
-					`(call $iemp ${ instructionConstInt(1n) })`,
+					`(call $fnot (f64.const 0))`,
+					`(call $fnot (f64.const 4.2))`,
 					`(call $iemp ${ instructionConstInt(0n) })`,
 					`(call $iemp ${ instructionConstInt(42n) })`,
 					`(call $femp ${ instructionConstFloat(0.0) })`,
@@ -152,6 +125,24 @@ describe('Instruction', () => {
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
 				).toString(), `(f64.add ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
+				assert.strictEqual(new InstructionBinop(
+					Operator.AND,
+					instructionConstInt(30n),
+					instructionConstInt(18n),
+				).toString(), ((varname) => `(local ${ varname } i32) ${ new InstructionCond(
+					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, instructionConstInt(30n)))),
+					instructionConstInt(18n),
+					new InstructionGet(varname, false),
+				) }`)('$operand0'))
+				assert.strictEqual(new InstructionBinop(
+					Operator.OR,
+					instructionConstFloat(30.1),
+					instructionConstFloat(18.1),
+				).toString(), ((varname) => `(local ${ varname } f64) ${ new InstructionCond(
+					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, instructionConstFloat(30.1)))),
+					new InstructionGet(varname, true),
+					instructionConstFloat(18.1),
+				) }`)('$operand0'))
 			})
 		})
 

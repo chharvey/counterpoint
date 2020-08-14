@@ -33,6 +33,7 @@ import {
 	InstructionConst,
 	InstructionUnop,
 	InstructionBinop,
+	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
 } from '../src/vm/Instruction.class'
@@ -40,6 +41,10 @@ import {
 	instructionConstInt,
 	instructionConstFloat,
 } from './helpers'
+import {
+	operationFromStatementExpression,
+	statementExpressionFromSource,
+} from './helpers-semantic'
 
 
 
@@ -86,9 +91,9 @@ describe('SemanticNode', () => {
 						.children[0] as SemanticNodeConstant)
 						.build(new Builder(src, CONFIG_DEFAULT))
 				), [
-					new InstructionConst(SolidNull.NULL),
-					new InstructionConst(SolidBoolean.FALSE),
-					new InstructionConst(SolidBoolean.TRUE),
+					instructionConstInt(0n),
+					instructionConstInt(0n),
+					instructionConstInt(1n),
 					instructionConstInt(0n),
 					instructionConstInt(0n),
 					instructionConstInt(0n),
@@ -120,14 +125,14 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation
 				).build(new Builder(src, CONFIG_DEFAULT))), [
-					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidNull.NULL)),
-					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidBoolean.FALSE)),
-					new InstructionUnop(Operator.NOT,   new InstructionConst(SolidBoolean.TRUE)),
+					new InstructionUnop(Operator.NOT,   instructionConstInt(0n)),
+					new InstructionUnop(Operator.NOT,   instructionConstInt(0n)),
+					new InstructionUnop(Operator.NOT,   instructionConstInt(1n)),
 					new InstructionUnop(Operator.NOT,   instructionConstInt(42n)),
 					new InstructionUnop(Operator.NOT,   instructionConstFloat(4.2)),
-					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidNull.NULL)),
-					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidBoolean.FALSE)),
-					new InstructionUnop(Operator.EMPTY, new InstructionConst(SolidBoolean.TRUE)),
+					new InstructionUnop(Operator.EMPTY, instructionConstInt(0n)),
+					new InstructionUnop(Operator.EMPTY, instructionConstInt(0n)),
+					new InstructionUnop(Operator.EMPTY, instructionConstInt(1n)),
 					new InstructionUnop(Operator.EMPTY, instructionConstInt(42n)),
 					new InstructionUnop(Operator.EMPTY, instructionConstFloat(4.2)),
 				])
@@ -193,6 +198,57 @@ describe('SemanticNode', () => {
 					instructionConstInt(a),
 					instructionConstInt(b),
 				)))
+			})
+			specify('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+				assert.deepStrictEqual([
+					`42 && 420;`,
+					`4.2 || -420;`,
+					`null && 201.0e-1;`,
+					`true && 201.0e-1;`,
+					`false || null;`,
+				].map((src) => operationFromStatementExpression(statementExpressionFromSource(src)).build(new Builder(src, CONFIG_DEFAULT))), [
+					new InstructionBinop(
+						Operator.AND,
+						instructionConstInt(42n),
+						instructionConstInt(420n),
+					),
+					new InstructionBinop(
+						Operator.OR,
+						instructionConstFloat(4.2),
+						instructionConstFloat(-420.0),
+					),
+					new InstructionBinop(
+						Operator.AND,
+						instructionConstFloat(0.0),
+						instructionConstFloat(20.1),
+					),
+					new InstructionBinop(
+						Operator.AND,
+						instructionConstFloat(1.0),
+						instructionConstFloat(20.1),
+					),
+					new InstructionBinop(
+						Operator.OR,
+						instructionConstInt(0n),
+						instructionConstInt(0n),
+					),
+				])
+			})
+			specify('ExpressionConditional ::= "if" Expression "then" Expression "else" Expression;', () => {
+				assert.deepStrictEqual([
+					`if true  then false   else 2;`,
+					`if false then 3.0     else null;`,
+					`if true  then 2       else 3.0;`,
+					`if false then 2 + 3.0 else 1.0 * 2;`,
+				].map((src) => operationFromStatementExpression(statementExpressionFromSource(src)).build(new Builder(src, CONFIG_DEFAULT))), ([
+					[new Int16(1n), new Int16(0n),    new Int16(2n)],
+					[new Int16(0n), new Float64(3.0), new Float64(0.0)],
+					[new Int16(1n), new Float64(2.0), new Float64(3.0)],
+					[new Int16(0n), new Float64(5.0), new Float64(2.0)],
+				])
+					.map((arr) => arr.map((v) => new InstructionConst(v)))
+					.map(([cond, cons, alt]) => new InstructionCond(cond, cons, alt))
+				)
 			})
 			specify('compound expression.', () => {
 				const srcs: [string, SolidConfig] = [`42 ^ 2 * 420;`, CONFIG_DEFAULT]
@@ -560,6 +616,35 @@ describe('SemanticNode', () => {
 				assert.deepStrictEqual(((new Parser(`3 * 2.1;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).assess(), new CompletionStructureAssessment(new Float64(3 * 2.1)))
+			})
+			it('computes the value of AND and OR operators.', () => {
+				assert.deepStrictEqual([
+					`null && 5;`,
+					`null || 5;`,
+					`5 && null;`,
+					`5 || null;`,
+					`5.1 && true;`,
+					`5.1 || true;`,
+					`3.1 && 5;`,
+					`3.1 || 5;`,
+					`false && null;`,
+					`false || null;`,
+				].map((src) => {
+					const assess: CompletionStructureAssessment | null = operationFromStatementExpression(statementExpressionFromSource(src)).assess()
+					assert.ok(assess)
+					return assess
+				}), [
+					SolidNull.NULL,
+					new Int16(5n),
+					SolidNull.NULL,
+					new Int16(5n),
+					SolidBoolean.TRUE,
+					new Float64(5.1),
+					new Int16(5n),
+					new Float64(3.1),
+					SolidBoolean.FALSE,
+					SolidNull.NULL,
+				].map((v) => new CompletionStructureAssessment(v)))
 			})
 			it('computes the value of a conditional expression.', () => {
 				assert.deepStrictEqual([

@@ -291,13 +291,13 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 			return null
 		}
 		const v0: SolidLanguageValue = this.assessments[0].value
-		return new CompletionStructureAssessment(
-			(this.operator === Operator.NOT)   ? v0.isTruthy.not :
-			(this.operator === Operator.EMPTY) ? v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0())) :
+		return (
+			(this.operator === Operator.NOT)   ? new CompletionStructureAssessment(v0.isTruthy.not) :
+			(this.operator === Operator.EMPTY) ? new CompletionStructureAssessment(v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0()))) :
 			(
 				(v0 instanceof SolidNumber)
-					? (SemanticNodeOperationUnary.fold(this.operator, v0))
-					: (() => { throw new TypeError('Invalid operation.') })()
+					? new CompletionStructureAssessment(SemanticNodeOperationUnary.fold(this.operator, v0))
+					: null
 			)
 		)
 	}
@@ -325,6 +325,9 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		super(start_node, operator, children)
 	}
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
+		if ([Operator.AND, Operator.OR].includes(this.operator)) {
+			to_float = to_float || [this.children[0].type(), this.children[1].type()].includes(Float64)
+		}
 		return new InstructionBinop(
 			this.operator,
 			(this.assessments[0]) ? this.assessments[0].build(to_float) : this.children[0].build(builder, to_float),
@@ -342,6 +345,16 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		)
 	}
 	protected assess_do(): CompletionStructureAssessment | null {
+		if ([Operator.AND, Operator.OR].includes(this.operator)) {
+			if (!this.assessments[0]) {
+				return null
+			}
+			const v0: SolidLanguageValue = this.assessments[0].value
+			return (
+				this.operator === Operator.AND && !v0.isTruthy.value ||
+				this.operator === Operator.OR  &&  v0.isTruthy.value
+			) ? new CompletionStructureAssessment(v0) : this.assessments[1]
+		}
 		if (!this.assessments[0] || !this.assessments[1]) {
 			return null
 		}
@@ -353,7 +366,7 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		return (
 			(v0 instanceof Int16       && v1 instanceof Int16)       ? new CompletionStructureAssessment(SemanticNodeOperationBinary.fold(this.operator, v0,           v1))           :
 			(v0 instanceof SolidNumber && v1 instanceof SolidNumber) ? new CompletionStructureAssessment(SemanticNodeOperationBinary.fold(this.operator, v0.toFloat(), v1.toFloat())) :
-			(() => { throw new TypeError('Invalid operation.') })()
+			null
 		)
 	}
 }
@@ -372,11 +385,11 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 		super(start_node, operator, children)
 	}
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionCond {
-		!this.assessments[0]; // assert
+		const _to_float: boolean = to_float || [this.children[1].type(), this.children[2].type()].includes(Float64)
 		return new InstructionCond(
-			                                                              this.children[0].build(builder, to_float),
-			(this.assessments[0]) ? this.assessments[0].build(to_float) : this.children[0].build(builder, to_float),
-			(this.assessments[1]) ? this.assessments[1].build(to_float) : this.children[1].build(builder, to_float),
+			(this.assessments[0]) ? this.assessments[0].build(false)     : this.children[0].build(builder, false),
+			(this.assessments[1]) ? this.assessments[1].build(_to_float) : this.children[1].build(builder, _to_float),
+			(this.assessments[2]) ? this.assessments[2].build(_to_float) : this.children[2].build(builder, _to_float),
 		)
 	}
 	type(): SolidLanguageType {
