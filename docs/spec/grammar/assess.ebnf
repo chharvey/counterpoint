@@ -45,11 +45,7 @@ Or<Integer, Float>? Assess(SemanticOperation[operator: NEG] expr) :=
 
 
 
-Or<Integer, Float>? Assess(SemanticOperation[operator: EXP] expr) :=
-	1. *Return:* `AssessSemanticOperationBinary(expr)`.
-Or<Integer, Float>? Assess(SemanticOperation[operator: MUL | DIV] expr) :=
-	1. *Return:* `AssessSemanticOperationBinary(expr)`.
-Or<Integer, Float>? Assess(SemanticOperation[operator: ADD] expr) :=
+Or<Integer, Float>? Assess(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	1. *Return:* `AssessSemanticOperationBinary(expr)`.
 
 

@@ -31,26 +31,12 @@ Sequence<Instruction> Build(SemanticOperation[operator: NOT | EMPTY | NEG] expr)
 
 
 
-Sequence<Instruction> Build(SemanticOperation[operator: EXP] expr) :=
-	1. *Let* `builds` be `PrebuildSemanticOperationBinary(expr)`.
-	2. *Return:* [
-		...builds.0,
-		...builds.1,
-		"EXP",
-	].
-Sequence<Instruction> Build(SemanticOperation[operator: MUL | DIV] expr) :=
+Sequence<Instruction> Build(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	1. *Let* `builds` be `PrebuildSemanticOperationBinary(expr)`.
 	2. *Return:* [
 		...builds.0,
 		...builds.1,
 		"`expr.operator`",
-	].
-Sequence<Instruction> Build(SemanticOperation[operator: ADD] expr) :=
-	1. *Let* `builds` be `PrebuildSemanticOperationBinary(expr)`.
-	2. *Return:* [
-		...builds.0,
-		...builds.1,
-		"ADD",
 	].
 
 

@@ -28,16 +28,10 @@ SemanticOperation[operator: NOT | EMPTY]
 SemanticOperation[operator: NEG]
 	::= SemanticExpression[type: Integer | Float];
 
-SemanticOperation[operator: EXP]
-	::= SemanticExpression[type: Integer | Float] SemanticExpression[type: Integer | Float];
-SemanticOperation[operator: MUL | DIV]
-	::= SemanticExpression[type: Integer | Float] SemanticExpression[type: Integer | Float];
-SemanticOperation[operator: ADD]
+SemanticOperation[operator: EXP | MUL | DIV | ADD]
 	::= SemanticExpression[type: Integer | Float] SemanticExpression[type: Integer | Float];
 
-SemanticOperation[operator: AND]
-	::= SemanticExpression SemanticExpression;
-SemanticOperation[operator: OR]
+SemanticOperation[operator: AND | OR]
 	::= SemanticExpression SemanticExpression;
 
 SemanticOperation[operator: COND]

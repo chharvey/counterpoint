@@ -172,8 +172,10 @@ Decorate(ExpressionConditional ::= "if" Expression__0 "then" Expression__1 "else
 
 
 
-Decorate(Expression ::= ExpressionAdditive) -> SemanticExpression
-	:= Decorate(ExpressionAdditive);
+Decorate(Expression ::= ExpressionDisjunctive) -> SemanticExpression
+	:= Decorate(ExpressionDisjunctive);
+Decorate(Expression ::= ExpressionConditional) -> SemanticExpression
+	:= Decorate(ExpressionConditional);
 
 
 
