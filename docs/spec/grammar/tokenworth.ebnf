@@ -28,14 +28,14 @@ TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x87;
 
 
 TokenWorth(Identifier) -> RealNumber
-	:= /* TO BE DESCRIBED */
+	:=; // TO BE DESCRIBED
 
 
 
 TokenWorth(Number :::= Integer) -> RealNumber
-	:= TokenWorth(Integer)
+	:= TokenWorth(Integer);
 TokenWorth(Number :::= Float) -> RealNumber
-	:= TokenWorth(Float)
+	:= TokenWorth(Float);
 
 TokenWorth(Integer :::= "+"? IntegerDigits) -> RealNumber
 	:= TokenWorth(IntegerDigits);

@@ -2,10 +2,10 @@ Or<Null, Boolean, Integer, Float> Assess(SemanticConstant const) :=
 	1. *Return:* `const.value`.
 
 Unknown Assess(SemanticIdentifier iden) :=
-	/* TO BE DETERMINED */
+	// TO BE DETERMINED
 
 Void Assess(SemanticTemplate tpl) :=
-	/* TO BE DETERMINED */
+	// TO BE DETERMINED
 
 
 

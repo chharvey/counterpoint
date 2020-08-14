@@ -14,10 +14,10 @@ Sequence<Instruction> Build(SemanticConstant const) :=
 	1. *Return:* `Build(Assess(const))`.
 
 Sequence<Instruction> Build(SemanticIdentifier iden) :=
-	/* TO BE DETERMINED */
+	// TO BE DETERMINED
 
 Void Build(SemanticTemplate tpl) :=
-	/* TO BE DETERMINED */
+	// TO BE DETERMINED
 
 
 
@@ -98,10 +98,10 @@ Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 
 
 Sequence<Instruction> Build(SemanticDeclaration decl) :=
-	/* TO BE DETERMINED */
+	// TO BE DETERMINED
 
 Sequence<Instruction> Build(SemanticAssignment assign) :=
-	/* TO BE DETERMINED */
+	// TO BE DETERMINED
 
 
 

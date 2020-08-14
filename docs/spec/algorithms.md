@@ -24,7 +24,7 @@ Type TypeOf(StringTemplate template) :=
 	1. *Return:* `String`.
 
 Type TypeOf(SemanticIdentifier id) :=
-	/* TO BE DETERMINED */
+	// TO BE DETERMINED
 
 Type TypeOf(SemanticOperation[operator: NOT | EMPTY] expr) :=
 	1. *Return:* `Boolean`.

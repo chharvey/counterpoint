@@ -48,9 +48,11 @@ Expression ::=
 
 
 
-DeclarationVariable ::= "let" "unfixed"? IDENTIFIER "=" Expression ";";
+DeclarationVariable
+	::= "let" "unfixed"? IDENTIFIER "=" Expression ";";
 
-StatementAssignment ::= IDENTIFIER "=" Expression ";";
+StatementAssignment
+	::= IDENTIFIER "=" Expression ";";
 
 Statement ::=
 	| Expression? ";"

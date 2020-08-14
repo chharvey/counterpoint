@@ -7,7 +7,7 @@ SemanticExpression =:=
 
 
 
-SemanticConstant[value: Null | Boolean | Integer | FLoat | Sequence<RealNumber>]
+SemanticConstant[value: Null | Boolean | Integer | Float | Sequence<RealNumber>]
 	::= ();
 
 SemanticIdentifier[id: Unknown]

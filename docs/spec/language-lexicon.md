@@ -60,7 +60,7 @@ A code point is *not* a code unit. A code point is simply Unicode’s index of a
 whereas a code unit is the [UTF-16-encoded](#abstract-operation-utf16encoding) value of that code point.
 ```
 CodePoint([#x00-#x10ffff]) -> RealNumber
-	:= /* TO BE DESCRIBED */;
+	:=; // TO BE DESCRIBED
 ```
 
 

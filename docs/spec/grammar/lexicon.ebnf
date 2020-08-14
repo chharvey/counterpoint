@@ -1,8 +1,10 @@
-Filebound :::= #x02 | #x03;
+Filebound
+	:::= #x02 | #x03;
 
 
 
-Whitespace :::= (#x20 | #x09 | #x0A)+;
+Whitespace
+	:::= (#x20 | #x09 | #x0A)+;
 
 
 
@@ -36,7 +38,8 @@ Keyword :::=
 
 
 
-Identifier :::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - Keyword;
+Identifier
+	:::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - Keyword;
 
 
 
@@ -59,7 +62,7 @@ IntegerDigits<Radix, Separator> :::=
 ;
 
 Float<Separator>
-	:::= SignedDigitSequenceDec<?Separator> "." (FractionalPart<?Separator> ExponentPart<?Separator>?)?;
+	:::= SignedDigitSequenceDec<?Separator> "." ( FractionalPart<?Separator> ExponentPart<?Separator>? )?;
 
 FractionalPart<Separator>
 	:::= DigitSequenceDec<?Separator>;
@@ -70,12 +73,12 @@ ExponentPart<Separator>
 SignedDigitSequenceDec<Separator>
 	:::= ("+" | "-")? DigitSequenceDec<?Separator>;
 
-DigitSequenceBin<Separator> :::= (DigitSequenceBin <Separator+>"_"?)? [0-1];
-DigitSequenceQua<Separator> :::= (DigitSequenceQua <Separator+>"_"?)? [0-3];
-DigitSequenceOct<Separator> :::= (DigitSequenceOct <Separator+>"_"?)? [0-7];
-DigitSequenceDec<Separator> :::= (DigitSequenceDec <Separator+>"_"?)? [0-9];
-DigitSequenceHex<Separator> :::= (DigitSequenceHex <Separator+>"_"?)? [0-9a-f];
-DigitSequenceHTD<Separator> :::= (DigitSequenceHTD <Separator+>"_"?)? [0-9a-z];
+DigitSequenceBin<Separator> :::= ( DigitSequenceBin <Separator+>"_"? )? [0-1];
+DigitSequenceQua<Separator> :::= ( DigitSequenceQua <Separator+>"_"? )? [0-3];
+DigitSequenceOct<Separator> :::= ( DigitSequenceOct <Separator+>"_"? )? [0-7];
+DigitSequenceDec<Separator> :::= ( DigitSequenceDec <Separator+>"_"? )? [0-9];
+DigitSequenceHex<Separator> :::= ( DigitSequenceHex <Separator+>"_"? )? [0-9a-f];
+DigitSequenceHTD<Separator> :::= ( DigitSequenceHTD <Separator+>"_"? )? [0-9a-z];
 
 
 
@@ -83,9 +86,9 @@ String
 	:::= "'" StringChars? "'";
 
 StringChars :::=
-	| [^'\#x03]               StringChars?
-	| "\"        StringEscape StringChars?
-	| "\u"      ([^'{#x03]    StringChars?)?
+	| [^'\#x03]                StringChars?
+	| "\"         StringEscape StringChars?
+	| "\u"      ( [^'{#x03]    StringChars? )?
 ;
 
 StringEscape :::=
@@ -157,7 +160,7 @@ CommentMulti
 CommentMultiChars :::=
 	| [^{%#x03] CommentMultiChars?
 	| "{"+ [^%#x03] CommentMultiChars?
-	| "%"+ ([^}#x03] CommentMultiChars?)?
+	| "%"+ ( [^}#x03] CommentMultiChars? )?
 	| CommentMulti CommentMultiChars?
 ;
 
