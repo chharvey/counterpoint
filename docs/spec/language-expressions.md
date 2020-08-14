@@ -2,13 +2,6 @@
 This chapter defines the syntax, semantics, and behavior of expressions in the Solid programming language.
 
 
-### Static Semantics: Decorate (Expressions)
-```
-Decorate(Expression ::= ExpressionAdditive) -> SemanticExpression
-	:= Decorate(ExpressionAdditive);
-```
-
-
 ### Abstract Operation: PerformNumericBinaryOperation
 ```
 RealNumber PerformNumericBinaryOperation(Text op, RealNumber operand0, RealNumber operand1) :=
@@ -77,77 +70,6 @@ Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperation
 ## Literals
 
 
-### Static Semantics: Decorate (Literals)
-```
-Decorate(PrimitiveLiteral ::= "null") -> SemanticConstant
-	:= (SemanticConstant[value=null]);
-
-Decorate(PrimitiveLiteral ::= "false") -> SemanticConstant
-	:= (SemanticConstant[value=false]);
-Decorate(PrimitiveLiteral ::= "true") -> SemanticConstant
-	:= (SemanticConstant[value=true]);
-
-Decorate(PrimitiveLiteral ::= INTEGER) -> SemanticConstant
-	:= (SemanticConstant[value=Integer(TokenWorth(INTEGER))]);
-
-Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticConstant
-	:= (SemanticConstant[value=Float(TokenWorth(FLOAT))]);
-
-Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
-	:= (SemanticConstant[value=TokenWorth(STRING)]);
-
-Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticTemplate
-	:= (SemanticTemplate[type="full"]
-		(SemanticConstant[value=TokenWorth(TEMPLATE_FULL)])
-	);
-Decorate(StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate[type="substitution"]
-		(SemanticConstant[value=TokenWorth(TEMPLATE_HEAD)])
-		(SemanticConstant[value=TokenWorth(TEMPLATE_TAIL)])
-	);
-Decorate(StringTemplate ::= TEMPLATE_HEAD Expression TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate[type="substitution"]
-		(SemanticConstant[value=TokenWorth(TEMPLATE_HEAD)])
-		Decorate(Expression)
-		(SemanticConstant[value=TokenWorth(TEMPLATE_TAIL)])
-	);
-Decorate(StringTemplate ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate[type="substitution"]
-		(SemanticConstant[value=TokenWorth(TEMPLATE_HEAD)])
-		...Decorate(StringTemplate__0__List)
-		(SemanticConstant[value=TokenWorth(TEMPLATE_TAIL)])
-	);
-Decorate(StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate[type="substitution"]
-		(SemanticConstant[value=TokenWorth(TEMPLATE_HEAD)])
-		Decorate(Expression)
-		...Decorate(StringTemplate__0__List)
-		(SemanticConstant[value=TokenWorth(TEMPLATE_TAIL)])
-	);
-
-Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE) -> Sequence<SemanticConstant, SemanticExpression?>
-	:= (SemanticTemplatePartial
-		(SemanticConstant[value=TokenWorth(TEMPLATE_MIDDLE)])
-	);
-Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE Expression) -> Sequence<SemanticConstant, SemanticExpression?>
-	:= (SemanticTemplatePartial
-		(SemanticConstant[value=TokenWorth(TEMPLATE_MIDDLE)])
-		Decorate(Expression)
-	);
-Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE) -> Sequence<SemanticConstant, SemanticExpression?>
-	:= (SemanticTemplatePartial
-		...Decorate(StringTemplate__0__List)
-		(SemanticConstant[value=TokenWorth(TEMPLATE_MIDDLE)])
-	);
-Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression) -> Sequence<SemanticConstant, SemanticExpression?>
-	:= (SemanticTemplatePartial
-		...Decorate(StringTemplate__0__List)
-		(SemanticConstant[value=TokenWorth(TEMPLATE_MIDDLE)])
-		Decorate(Expression)
-	);
-```
-
-
 ### Static Semantics: Assess (Literals)
 ```
 Or<Null, Boolean, Integer, Float> Assess(SemanticConstant const) :=
@@ -191,19 +113,6 @@ Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Or<Intege
 ## Expression Units
 
 
-### Static Semantics: Decorate (Expression Units)
-```
-Decorate(ExpressionUnit ::= IDENTIFIER) -> SemanticIdentifier
-	:= (SemanticIdentifier[id=TokenWorth(IDENTIFIER)]);
-Decorate(ExpressionUnit ::= PrimitiveLiteral) -> SemanticConstant
-	:= Decorate(PrimitiveLiteral);
-Decorate(ExpressionUnit ::= StringTemplate) -> SemanticTemplate
-	:= Decorate(StringTemplate);
-Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticExpression
-	:= Decorate(Expression);
-```
-
-
 ### Static Semantics: Assess (Expression Units)
 ```
 Unknown Assess(SemanticIdentifier iden) :=
@@ -227,21 +136,6 @@ Void Evaluate(SemanticIdentifier iden) :=
 
 
 ## Unary Operators
-
-
-### Static Semantics: Decorate (Unary Operators)
-```
-Decorate(ExpressionUnarySymbol ::= ExpressionUnit) -> SemanticExpression
-	:= Decorate(ExpressionUnit);
-Decorate(ExpressionUnarySymbol ::= "!" ExpressionUnarySymbol) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT] Decorate(ExpressionUnarySymbol));
-Decorate(ExpressionUnarySymbol ::= "?" ExpressionUnarySymbol) -> SemanticOperation
-	:= (SemanticOperation[operator=EMPTY] Decorate(ExpressionUnarySymbol));
-Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticExpression
-	:= Decorate(ExpressionUnarySymbol);
-Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperation
-	:= (SemanticOperation[operator=NEG] Decorate(ExpressionUnarySymbol));
-```
 
 
 ### Static Semantics: Assess (Unary Operators)
@@ -318,18 +212,6 @@ Void Evaluate(Instruction :::= "NEG") :=
 ## Exponentiation
 
 
-### Static Semantics: Decorate (Exponentiation)
-```
-Decorate(ExpressionExponential ::= ExpressionUnarySymbol) -> SemanticExpression
-	:= Decorate(ExpressionUnarySymbol);
-Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential) -> SemanticOperation
-	:= (SemanticOperation[operator=EXP]
-		Decorate(ExpressionUnarySymbol)
-		Decorate(ExpressionExponential)
-	);
-```
-
-
 ### Static Semantics: Assess (Exponentiation)
 ```
 Or<Integer, Float>? Assess(SemanticOperation[operator: EXP] expr) :=
@@ -361,23 +243,6 @@ Void Evaluate(Instruction :::= "EXP") :=
 
 
 ## Multiplicative
-
-
-### Static Semantics: Decorate (Multiplicative)
-```
-Decorate(ExpressionMultiplicative ::= ExpressionExponential) -> SemanticExpression
-	:= Decorate(ExpressionExponential);
-Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential) -> SemanticOperation
-	:= (SemanticOperation[operator=MUL]
-		Decorate(ExpressionMultiplicative)
-		Decorate(ExpressionExponential)
-	);
-Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential) -> SemanticOperation
-	:= (SemanticOperation[operator=DIV]
-		Decorate(ExpressionMultiplicative)
-		Decorate(ExpressionExponential)
-	);
-```
 
 
 ### Static Semantics: Assess (Multiplicative)
@@ -418,23 +283,6 @@ Void Evaluate(Instruction :::= "DIV") :=
 ## Additive
 
 
-### Static Semantics: Decorate (Additive)
-```
-Decorate(ExpressionAdditive ::= ExpressionMultiplicative) -> SemanticExpression
-	:= Decorate(ExpressionMultiplicative);
-Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative) -> SemanticOperation
-	:= (SemanticOperation[operator=ADD]
-		Decorate(ExpressionAdditive)
-		Decorate(ExpressionMultiplicative)
-	);
-Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative) -> SemanticOperation
-	:= (SemanticOperation[operator=ADD]
-		Decorate(ExpressionAdditive)
-		(SemanticOperation[operator=NEG] Decorate(ExpressionMultiplicative))
-	);
-```
-
-
 ### Static Semantics: Assess (Additive)
 ```
 Or<Integer, Float>? Assess(SemanticOperation[operator: ADD] expr) :=
@@ -466,25 +314,6 @@ Void Evaluate(Instruction :::= "ADD") :=
 
 
 ## Conjunctive
-
-
-### Static Semantics: Decorate (Conjunctive)
-```
-Decorate(ExpressionConjunctive ::= ExpressionAdditive) -> SemanticExpression
-	:= Decorate(ExpressionAdditive);
-Decorate(ExpressionConjunctive ::= ExpressionConjunctive "&&" ExpressionAdditive) -> SemanticOperation
-	:= (SemanticOperation[operator=AND]
-		Decorate(ExpressionConjunctive)
-		Decorate(ExpressionAdditive)
-	);
-Decorate(ExpressionConjunctive ::= ExpressionConjunctive "!&" ExpressionAdditive) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=AND]
-			Decorate(ExpressionConjunctive)
-			Decorate(ExpressionAdditive)
-		)
-	);
-```
 
 
 ### Static Semantics: Assess (Conjunctive)
@@ -522,25 +351,6 @@ Sequence<Instruction> Build(SemanticOperation[operator: AND] expr) :=
 ## Disjunctive
 
 
-### Static Semantics: Decorate (Disjunctive)
-```
-Decorate(ExpressionDisjunctive ::= ExpressionConjunctive) -> SemanticOperation
-	:= Decorate(ExpressionConjunctive);
-Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "||" ExpressionConjunctive) -> SemanticOperation
-	:= (SemanticOperation[operator=OR]
-		Decorate(ExpressionDisjunctive)
-		Decorate(ExpressionConjunctive)
-	);
-Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "!|" ExpressionConjunctive) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=OR]
-			Decorate(ExpressionDisjunctive)
-			Decorate(ExpressionConjunctive)
-		)
-	);
-```
-
-
 ### Static Semantics: Assess (Disjunctive)
 ```
 Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator: OR] expr) :=
@@ -574,17 +384,6 @@ Sequence<Instruction> Build(SemanticOperation[operator: OR] expr) :=
 
 
 ## Conditional
-
-
-### Static Semantics: Decorate (Conditional)
-```
-Decorate(ExpressionConditional ::= "if" Expression__0 "then" Expression__1 "else" Expression__2)
-	:= (SemanticOperation[operator=COND]
-		Decorate(Expression__0)
-		Decorate(Expression__1)
-		Decorate(Expression__2)
-	);
-```
 
 
 ### Static Semantics: Assess (Conditional)

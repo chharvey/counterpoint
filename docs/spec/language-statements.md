@@ -2,19 +2,6 @@
 This chapter defines the syntax, semantics, and behavior of statements in the Solid programming language.
 
 
-### Static Semantics: Decorate (Statements)
-```
-Decorate(Statement ::= ";") -> SemanticStatementExpression
-	:= (SemanticStatementExpression);
-Decorate(Statement ::= Expression ";") -> SemanticStatementExpression
-	:= (SemanticStatementExpression Decorate(Expression));
-Decorate(Statement ::= DeclarationVariable) -> SemanticDeclaration
-	:= Decorate(DeclarationVariable);
-Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
-	:= Decorate(StatementAssignment);
-```
-
-
 ### Runtime Instructions: Build (Statements)
 ```
 Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
@@ -29,25 +16,6 @@ Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 ## Variable Declaration
 
 
-### Static Semantics: Decorate (Variable Declaration)
-```
-Decorate(DeclarationVariable ::= "let" IDENTIFIER "=" Expression ";") -> SemanticDeclaration
-	:= (SemanticDeclaration[type="variable"][unfixed=false]
-		(SemanticAssignee
-			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
-		)
-		(SemanticAssigned Decorate(Expression))
-	);
-Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER "=" Expression ";") -> SemanticDeclaration
-	:= (SemanticDeclaration[type="variable"][unfixed=true]
-		(SemanticAssignee
-			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
-		)
-		(SemanticAssigned Decorate(Expression))
-	);
-```
-
-
 ### Runtime Instructions: Build (Variable Declaration)
 ```
 Sequence<Instruction> Build(SemanticDeclaration decl) :=
@@ -57,18 +25,6 @@ Sequence<Instruction> Build(SemanticDeclaration decl) :=
 
 
 ## Variable Assignment
-
-
-### Static Semantics: Decorate (Variable Assignment)
-```
-Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";") -> SemanticAssignment
-	:= (SemanticAssignment
-		(SemanticAssignee
-			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
-		)
-		(SemanticAssigned Decorate(Expression))
-	);
-```
 
 
 ### Runtime Instructions: Build (Variable Assignment)
