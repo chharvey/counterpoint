@@ -91,6 +91,51 @@ export class InstructionConst extends InstructionExpression {
 	}
 }
 /**
+ * Local variable operations.
+ */
+abstract class InstructionLocal extends InstructionExpression {
+	/**
+	 * @param name the variable name (must begin with `'$'`)
+	 * @param op an optional expression to manipulate, or a type to declare
+	 */
+	constructor (
+		protected readonly name: string,
+		protected readonly op: InstructionExpression | boolean = false,
+	) {
+		super()
+	}
+	get isFloat(): boolean {
+		return this.op instanceof InstructionExpression ? this.op.isFloat : this.op
+	}
+}
+/**
+ * Set a local variable.
+ */
+class InstructionSet extends InstructionLocal {
+	/** @return `'(local.set ‹name› ‹op›?)'` */
+	toString(): string {
+		return `(local.set ${ this.name } ${ this.op instanceof InstructionExpression ? this.op : ''})`
+	}
+}
+/**
+ * Get a local variable.
+ */
+export class InstructionGet extends InstructionLocal {
+	/** @return `'(local.get ‹name› ‹op›?)'` */
+	toString(): string {
+		return `(local.get ${ this.name } ${ this.op instanceof InstructionExpression ? this.op : ''})`
+	}
+}
+/**
+ * Tee a local variable.
+ */
+export class InstructionTee extends InstructionLocal {
+	/** @return `'(local.tee ‹name› ‹op›?)'` */
+	toString(): string {
+		return `(local.tee ${ this.name } ${ this.op instanceof InstructionExpression ? this.op : ''})`
+	}
+}
+/**
  * Perform a unary operation on the stack.
  */
 export class InstructionUnop extends InstructionExpression {
@@ -142,6 +187,17 @@ export class InstructionBinop extends InstructionExpression {
 	 * @return `'(‹op› ‹arg0› ‹arg1›)'`
 	 */
 	toString(): string {
+		if ([Operator.AND, Operator.OR].includes(this.op)) {
+			const varname: string = `$operand0`
+			const condition: InstructionExpression = new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, this.arg0)))
+			const left:      InstructionExpression = new InstructionGet(varname, this.arg0.isFloat)
+			const right:     InstructionExpression = this.arg1
+			return `(local ${ varname } ${ (!this.arg0.isFloat) ? `i32` : `f64` }) ${
+				(this.op === Operator.AND)
+					? new InstructionCond(condition, right, left)
+					: new InstructionCond(condition, left, right)
+			}`
+		}
 		return `(${ new Map<Operator, string>([
 			[Operator.ADD, (!this.isFloat) ? `i32.add`   : `f64.add`],
 			[Operator.SUB, (!this.isFloat) ? `i32.sub`   : `f64.sub`],

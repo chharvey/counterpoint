@@ -8,6 +8,8 @@ import Builder from '../src/vm/Builder.class'
 import {
 	Operator,
 	InstructionNone,
+	InstructionGet,
+	InstructionTee,
 	InstructionUnop,
 	InstructionBinop,
 	InstructionCond,
@@ -123,6 +125,24 @@ describe('Instruction', () => {
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
 				).toString(), `(f64.add ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
+				assert.strictEqual(new InstructionBinop(
+					Operator.AND,
+					instructionConstInt(30n),
+					instructionConstInt(18n),
+				).toString(), ((varname) => `(local ${ varname } i32) ${ new InstructionCond(
+					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, instructionConstInt(30n)))),
+					instructionConstInt(18n),
+					new InstructionGet(varname, false),
+				) }`)('$operand0'))
+				assert.strictEqual(new InstructionBinop(
+					Operator.OR,
+					instructionConstFloat(30.1),
+					instructionConstFloat(18.1),
+				).toString(), ((varname) => `(local ${ varname } f64) ${ new InstructionCond(
+					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, instructionConstFloat(30.1)))),
+					new InstructionGet(varname, true),
+					instructionConstFloat(18.1),
+				) }`)('$operand0'))
 			})
 		})
 

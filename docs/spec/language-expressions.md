@@ -620,6 +620,24 @@ Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator: AND] expr)
 ```
 
 
+### Static Semantics: Build (Conjunctive)
+```
+Sequence<Instruction> Build(SemanticOperation[operator: AND] expr) :=
+	1. *Let* `builds` be `PrebuildSemanticOperationBinary(expr)`.
+	2. *Return:* [
+		...builds.0,
+		"TEE the local variable `operand0`.",
+		"NOT",
+		"NOT",
+		"IF",
+		...builds.1,
+		"ELSE",
+		"GET the local variable `operand0`.",
+		"END",
+	].
+```
+
+
 
 ## Disjunctive
 ```
@@ -664,6 +682,24 @@ Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator: OR] expr) 
 	4. *If* `ToBoolean(operand0)` is `true`:
 		1. *Return:* `operand0`.
 	5. *Return:* `Assess(expr.children.1)`.
+```
+
+
+### Static Semantics: Build (Disjunctive)
+```
+Sequence<Instruction> Build(SemanticOperation[operator: OR] expr) :=
+	1. *Let* `builds` be `PrebuildSemanticOperationBinary(expr)`.
+	2. *Return:* [
+		...builds.0,
+		"TEE the local variable `operand0`.",
+		"NOT",
+		"NOT",
+		"IF",
+		"GET the local variable `operand0`.",
+		"ELSE",
+		...builds.1,
+		"END",
+	].
 ```
 
 
