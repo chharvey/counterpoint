@@ -576,7 +576,7 @@ describe('Parser', () => {
 						<ExpressionAdditive source="-3">...</ExpressionAdditive>
 					</ExpressionComparative>
 				*/
-				const expression_inc: ParseNodeExpressionBinary = comparativeExpressionFromEqualityExpression(
+				const expression_compare: ParseNodeExpressionBinary = comparativeExpressionFromEqualityExpression(
 					equalityExpressionFromConjunctiveExpression(
 						conjunctiveExpressionFromDisjunctiveExpression(
 							disjunctiveExpressionFromExpression(
@@ -587,8 +587,8 @@ describe('Parser', () => {
 						)
 					)
 				)
-				assert_arrayLength(expression_inc.children, 3, 'additive expression should have 3 children')
-				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary] = expression_inc.children
+				assert_arrayLength(expression_compare.children, 3, 'comparative expression should have 3 children')
+				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary] = expression_compare.children
 				assert.ok(left instanceof ParseNodeExpressionBinary)
 				assert.deepStrictEqual(
 					[left.source, op.source,     right.source],
@@ -597,7 +597,7 @@ describe('Parser', () => {
 			})
 		})
 
-		context('ExpressionEquality ::= ExpressionEquality ("is" | "isnt") ExpressionComparative', () => {
+		context('ExpressionEquality ::= ExpressionEquality ("is" | "isnt" | "==" | "!=") ExpressionComparative', () => {
 			it('makes a ParseNodeExpressionBinary node.', () => {
 				/*
 					<ExpressionEquality>
@@ -606,22 +606,27 @@ describe('Parser', () => {
 						<ExpressionComparative source="-3">...</ExpressionComparative>
 					</ExpressionEquality>
 				*/
-				const expression_eq: ParseNodeExpressionBinary = equalityExpressionFromConjunctiveExpression(
-					conjunctiveExpressionFromDisjunctiveExpression(
-						disjunctiveExpressionFromExpression(
-							expressionFromStatement(
-								statementFromSource(`2 is -3;`)
+				assert.deepStrictEqual([
+					`2 is -3;`,
+					`2 == -3;`,
+				].map((src) => {
+					const expression_eq: ParseNodeExpressionBinary = equalityExpressionFromConjunctiveExpression(
+						conjunctiveExpressionFromDisjunctiveExpression(
+							disjunctiveExpressionFromExpression(
+								expressionFromStatement(
+									statementFromSource(src)
+								)
 							)
 						)
 					)
-				)
-				assert_arrayLength(expression_eq.children, 3, 'additive expression should have 3 children')
-				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary] = expression_eq.children
-				assert.ok(left instanceof ParseNodeExpressionBinary)
-				assert.deepStrictEqual(
-					[left.source, op.source,  right.source],
-					['2',         Keyword.IS, '-3'],
-				)
+					assert_arrayLength(expression_eq.children, 3, 'equality expression should have 3 children')
+					const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary] = expression_eq.children
+					assert.ok(left instanceof ParseNodeExpressionBinary)
+					return [left.source, op.source, right.source]
+				}), [
+					['2', Keyword.IS,    '-3'],
+					['2', Punctuator.EQ, '-3'],
+				])
 			})
 		})
 

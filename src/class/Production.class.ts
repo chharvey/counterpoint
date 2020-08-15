@@ -294,14 +294,21 @@ export class ProductionExpressionEquality extends Production {
 	static readonly instance: ProductionExpressionEquality = new ProductionExpressionEquality()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[                    ProductionExpressionComparative.instance],
-			[this, Keyword.IS,   ProductionExpressionComparative.instance],
-			[this, Keyword.ISNT, ProductionExpressionComparative.instance],
+			[                       ProductionExpressionComparative.instance],
+			[this, Keyword   .IS,   ProductionExpressionComparative.instance],
+			[this, Keyword   .ISNT, ProductionExpressionComparative.instance],
+			[this, Punctuator.EQ,   ProductionExpressionComparative.instance],
+			[this, Punctuator.NEQ,  ProductionExpressionComparative.instance],
 		]
 	}
 	random(): string[] {
 		return [
-			...Terminal.maybeA(() => [...this.random(), Util.arrayRandom([Keyword.IS, Keyword.ISNT])]),
+			...Terminal.maybeA(() => [...this.random(), Util.arrayRandom([
+				Keyword   .IS,
+				Keyword   .ISNT,
+				Punctuator.EQ,
+				Punctuator.NEQ,
+			])]),
 			...ProductionExpressionComparative.instance.random(),
 		]
 	}
