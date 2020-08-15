@@ -635,6 +635,39 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).assess(), new CompletionStructureAssessment(new Float64(3 * 2.1)))
 			})
+			it('computes the value of comparison operators.', () => {
+				const tests: [string, boolean][] = [
+					[`3 <  3;`,     false],
+					[`3 >  3;`,     false],
+					[`3 <= 3;`,     true],
+					[`3 >= 3;`,     true],
+					[`5.2 <  7.0;`, true],
+					[`5.2 >  7.0;`, false],
+					[`5.2 <= 7.0;`, true],
+					[`5.2 >= 7.0;`, false],
+				]
+				assert.deepStrictEqual(tests.map(([src, _result]) => {
+					const assess: CompletionStructureAssessment | null = operationFromStatementExpression(
+						statementExpressionFromSource(src)
+					).assess()
+					assert.ok(assess)
+					return assess
+				}), tests.map(([_src, result]) => new CompletionStructureAssessment(SolidBoolean.fromBoolean(result))))
+				;[ // TODO should be allowed after type-coersion
+					`5.2 <  9;`, // true
+					`5.2 >  9;`, // false
+					`5.2 <= 9;`, // true
+					`5.2 >= 9;`, // false
+					`5 <  9.2;`, // true
+					`5 >  9.2;`, // false
+					`5 <= 9.2;`, // true
+					`5 >= 9.2;`, // false
+				].forEach((src) => {
+					assert.strictEqual(operationFromStatementExpression(
+						statementExpressionFromSource(src)
+					).assess(), null)
+				})
+			})
 			it('computes the value of IS and EQ operators.', () => {
 				const tests: [string, boolean][] = [
 					[`null is null;`, true],

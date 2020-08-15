@@ -50,6 +50,19 @@ Or<Integer, Float>? Assess(SemanticOperation[operator: EXP | MUL | DIV | ADD] ex
 
 
 
+Boolean? Assess(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `TypeOf(operand0)` is `Void`:
+		1. *Return*.
+	4. *Let* `operand1` be the result of performing `Assess(expr.children.1)`.
+	5. *If* `TypeOf(operand1)` is `Void`:
+		1. *Return*.
+	6. *Assert*: `IsNumeric(operand0)` *and* `IsNumeric(operand1)`.
+	7. *Return:* `PerformBinaryCompare(expr.operator, operand0, operand1)`.
+
+
+
 Boolean? Assess(SemanticOperation[operator: ID] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.

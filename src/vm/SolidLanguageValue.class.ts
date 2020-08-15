@@ -224,6 +224,11 @@ export abstract class SolidNumber<T> extends SolidLanguageValue {
 	 * @returns Is the number equal to zero?
 	 */
 	abstract eq0(): boolean;
+	/**
+	 * Is the number strictly less than the argument?
+	 * @returns Is the number strictly less than the argument?
+	 */
+	abstract lt(y: T): boolean;
 }
 
 

@@ -72,4 +72,8 @@ export default class Float64 extends SolidNumber<Float64> {
 	eq0(): boolean {
 		return this.value === 0
 	}
+	/** @override */
+	lt(y: Float64): boolean {
+		return this.value < y.value
+	}
 }

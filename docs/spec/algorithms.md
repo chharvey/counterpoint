@@ -225,3 +225,31 @@ Boolean Equal(Object a, Object b) :=
 	// 3. TODO: custom equality operators
 	4. Return `false`.
 ```
+
+
+
+### Abstract Operation: PerformBinaryCompare
+```
+Boolean PerformBinaryCompare(Text op, RealNumber operand0, RealNumber operand1) :=
+	1. *If* `op` is `LT`:
+		1. *If* `operand0` is strictly less than `operand1`:
+			1. *Return:* `true`.
+		2. *Return:* `false`.
+	2. *Else If* `op` is `GT`:
+		1. *If* `operand1` is strictly less than `operand0`:
+			1. *Return:* `true`.
+		2. *Return:* `false`.
+	3. *Else If* `op` is `LE`:
+		1. *If* `operand0` is equal to `operand1`:
+			1. *Return:* `true`.
+		2. *If* `operand0` is strictly less than `operand1`:
+			1. *Return:* `true`.
+		3. *Return:* `false`.
+	4. *Else If* `op` is `GE`:
+		1. *If* `operand0` is equal to `operand1`:
+			1. *Return:* `true`.
+		2. *If* `operand1` is strictly less than `operand0`:
+			1. *Return:* `true`.
+		3. *Return:* `false`.
+	5. *Throw:* TypeError "Invalid operation.".
+```

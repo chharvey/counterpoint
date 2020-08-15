@@ -285,6 +285,10 @@ export default class Int16 extends SolidNumber<Int16> {
 	private eq2(): boolean {
 		return this.eq(Int16.RADIX)
 	}
+	/** @override */
+	lt(y: Int16): boolean {
+		return this.minus(y).lt0()
+	}
 	/**
 	 * Return the ones’ complement of a 16-bit signed integer.
 	 * @see https://en.wikipedia.org/wiki/Ones%27_complement

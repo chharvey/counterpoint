@@ -374,6 +374,8 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		const v0: SolidLanguageValue = this.assessments[0].value
 		const v1: SolidLanguageValue = this.assessments[1].value
 		const both_numeric: boolean = v0 instanceof SolidNumber && v1 instanceof SolidNumber
+		const both_ints:    boolean = v0 instanceof Int16       && v1 instanceof Int16
+		const both_floats:  boolean = v0 instanceof Float64     && v1 instanceof Float64
 		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
 			throw new NanError02(this.children[1])
 		}
@@ -399,13 +401,16 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 				Operator.GE,
 				Operator.NLT,
 				Operator.NGT,
-			].includes(this.operator) && both_numeric) ? new CompletionStructureAssessment(this.foldRelational(v0, v1)) :
+			].includes(this.operator) && (both_ints || both_floats)) ? new CompletionStructureAssessment(this.foldComparative(
+				v0 as Int16 | Float64,
+				v1 as Int16 | Float64,
+			)) :
 			([
 				Operator.IS,
 				Operator.ISNT,
 				Operator.EQ,
 				Operator.NEQ,
-			].includes(this.operator)) ? new CompletionStructureAssessment(this.foldRelational(v0, v1)) :
+			].includes(this.operator)) ? new CompletionStructureAssessment(this.foldEquality(v0, v1)) :
 			null
 		)
 	}
@@ -418,14 +423,18 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 			[Operator.SUB, (x, y) => x.minus  (y)],
 		]).get(this.operator)!(x, y)
 	}
-	private foldRelational(x: SolidLanguageValue, y: SolidLanguageValue): SolidBoolean {
+	private foldComparative<T extends SolidNumber<T>>(x: T, y: T): SolidBoolean {
+		return SolidBoolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
+			[Operator.LT,   (x, y) => x.lt(y)],
+			[Operator.GT,   (x, y) => y.lt(x)],
+			[Operator.LE,   (x, y) => x.equal(y) || x.lt(y)],
+			[Operator.GE,   (x, y) => x.equal(y) || y.lt(x)],
+			[Operator.NLT,  (x, y) => !x.lt(y)],
+			[Operator.NGT,  (x, y) => !y.lt(x)],
+		]).get(this.operator)!(x, y))
+	}
+	private foldEquality(x: SolidLanguageValue, y: SolidLanguageValue): SolidBoolean {
 		return SolidBoolean.fromBoolean(new Map<Operator, (x: SolidLanguageValue, y: SolidLanguageValue) => boolean>([
-			[Operator.LT,   (x, y) => { throw 'todo' }],
-			[Operator.GT,   (x, y) => { throw 'todo' }],
-			[Operator.LE,   (x, y) => { throw 'todo' }],
-			[Operator.GE,   (x, y) => { throw 'todo' }],
-			[Operator.NLT,  (x, y) => { throw 'todo' }],
-			[Operator.NGT,  (x, y) => { throw 'todo' }],
 			[Operator.IS,   (x, y) =>  x.identical(y)],
 			[Operator.ISNT, (x, y) => !x.identical(y)],
 			[Operator.EQ,   (x, y) =>  x.equal(y)],
