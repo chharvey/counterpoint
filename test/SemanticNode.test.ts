@@ -1,13 +1,9 @@
 import * as assert from 'assert'
+import * as xjs from 'extrajs'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Dev from '../src/class/Dev.class'
 import Parser from '../src/class/Parser.class'
-import type {
-	ParseNodeExpression,
-	ParseNodeStatement,
-	ParseNodeGoal__0__List,
-} from '../src/class/ParseNode.class'
 import {
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
@@ -20,7 +16,7 @@ import {
 } from '../src/spec/CompletionStructure.class'
 import Builder from '../src/vm/Builder.class'
 import {SolidTypeUnion} from '../src/vm/SolidLanguageType.class'
-import {
+import SolidLanguageValue, {
 	SolidNull,
 	SolidBoolean,
 	SolidString,
@@ -44,6 +40,7 @@ import {
 import {
 	operationFromStatementExpression,
 	statementExpressionFromSource,
+	constantFromStatementExpression,
 } from './helpers-semantic'
 
 
@@ -490,153 +487,87 @@ describe('SemanticNode', () => {
 		})
 
 		describe('#assess', () => {
+			function assessOperations(tests: Map<string, SolidLanguageValue>): void {
+				assert.deepStrictEqual([...tests.keys()].map((src) => operationFromStatementExpression(
+					statementExpressionFromSource(src)
+				).assess()), [...tests.values()].map((result) => new CompletionStructureAssessment(result)))
+			}
 			it('computes the value of constant null or boolean expression.', () => {
 				assert.deepStrictEqual([
 					'null;',
 					'false;',
 					'true;',
-				].map((src) => {
-					const assess: CompletionStructureAssessment | null = (((new Parser(src, CONFIG_DEFAULT).parse()
-						.children[1] as ParseNodeGoal__0__List)
-						.children[0] as ParseNodeStatement)
-						.children[0] as ParseNodeExpression
-					).decorate().assess()
-					assert.ok(assess)
-					return assess.value
-				}), [
+				].map((src) => constantFromStatementExpression(
+					statementExpressionFromSource(src)
+				).assess()), [
 					SolidNull.NULL,
 					SolidBoolean.FALSE,
 					SolidBoolean.TRUE,
-				])
-			})
-			it('computes the value of a logical negation of anything.', () => {
-				assert.deepStrictEqual([
-					`!false;`,
-					`!true;`,
-					`!null;`,
-					`!0;`,
-					`!42;`,
-					`!0.0;`,
-					`!-0.0;`,
-					`!4.2e+1;`,
-				].map((src) => {
-					const assess: CompletionStructureAssessment | null = ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeOperation).assess()
-					assert.ok(assess)
-					assert.ok(assess.value instanceof SolidBoolean)
-					return assess
-				}), [
-					true,
-					false,
-					true,
-					false,
-					false,
-					false,
-					false,
-					false,
-				].map((b) => new CompletionStructureAssessment(SolidBoolean.fromBoolean(b))))
-			})
-			it('computes the value of emptiness of anything.', () => {
-				assert.deepStrictEqual([
-					`?false;`,
-					`?true;`,
-					`?null;`,
-					`?0;`,
-					`?42;`,
-					`?0.0;`,
-					`?-0.0;`,
-					`?4.2e+1;`,
-				].map((src) => {
-					const assess: CompletionStructureAssessment | null = ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeOperation).assess()
-					assert.ok(assess)
-					assert.ok(assess.value instanceof SolidBoolean)
-					return assess
-				}), [
-					true,
-					false,
-					true,
-					true,
-					false,
-					true,
-					true,
-					false,
-				].map((b) => new CompletionStructureAssessment(SolidBoolean.fromBoolean(b))))
-			})
-			it('computes the value of an integer operation of constants.', () => {
-				assert.deepStrictEqual([
-					'42 + 420;',
-					'42 - 420;',
-					' 126 /  3;',
-					'-126 /  3;',
-					' 126 / -3;',
-					'-126 / -3;',
-					' 200 /  3;',
-					' 200 / -3;',
-					'-200 /  3;',
-					'-200 / -3;',
-					'42 ^ 2 * 420;',
-					'2 ^ 15 + 2 ^ 14;',
-					'-(2 ^ 14) - 2 ^ 15;',
-					'-(5) ^ +(2 * 3);',
-				].map((src) => {
-					const assess: CompletionStructureAssessment | null = (((new Parser(src, CONFIG_DEFAULT).parse()
-						.children[1] as ParseNodeGoal__0__List)
-						.children[0] as ParseNodeStatement)
-						.children[0] as ParseNodeExpression
-					).decorate().assess()
-					assert.ok(assess)
-					assert.ok(assess.value instanceof Int16)
-					return assess
-				}), [
-					42 + 420,
-					42 + -420,
-					Math.trunc( 126 /  3),
-					Math.trunc(-126 /  3),
-					Math.trunc( 126 / -3),
-					Math.trunc(-126 / -3),
-					Math.trunc( 200 /  3),
-					Math.trunc( 200 / -3),
-					Math.trunc(-200 /  3),
-					Math.trunc(-200 / -3),
-					(42 ** 2 * 420) % (2 ** 16),
-					-(2 ** 14),
-					2 ** 14,
-					(-(5)) ** +(2 * 3),
-				].map((v) => new CompletionStructureAssessment(new Int16(BigInt(v)))))
+				].map((v) => new CompletionStructureAssessment(v)))
 			})
 			it('computes the value of a constant float expression.', () => {
 				assert.deepStrictEqual(`
 					55.  -55.  033.  -033.  2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
 					-0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => {
-					const assess: CompletionStructureAssessment | null = (((new Parser(`${ src };`, CONFIG_DEFAULT).parse()
-						.children[1] as ParseNodeGoal__0__List)
-						.children[0] as ParseNodeStatement)
-						.children[0] as ParseNodeExpression
-					).decorate().assess()
-					assert.ok(assess)
-					assert.ok(assess.value instanceof Float64)
-					return assess
-				}), [
+				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromStatementExpression(
+					statementExpressionFromSource(`${ src };`)
+				).assess()), [
 					55, -55, 33, -33, 2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					-0, -0, 6.8, 6.8, 0, -0,
 				].map((v) => new CompletionStructureAssessment(new Float64(v))))
 			})
+			it('computes the value of a logical negation of anything.', () => {
+				assessOperations(new Map([
+					[`!false;`,  SolidBoolean.TRUE],
+					[`!true;`,   SolidBoolean.FALSE],
+					[`!null;`,   SolidBoolean.TRUE],
+					[`!0;`,      SolidBoolean.FALSE],
+					[`!42;`,     SolidBoolean.FALSE],
+					[`!0.0;`,    SolidBoolean.FALSE],
+					[`!-0.0;`,   SolidBoolean.FALSE],
+					[`!4.2e+1;`, SolidBoolean.FALSE],
+				]))
+			})
+			it('computes the value of emptiness of anything.', () => {
+				assessOperations(new Map([
+					[`?false;`,  SolidBoolean.TRUE],
+					[`?true;`,   SolidBoolean.FALSE],
+					[`?null;`,   SolidBoolean.TRUE],
+					[`?0;`,      SolidBoolean.TRUE],
+					[`?42;`,     SolidBoolean.FALSE],
+					[`?0.0;`,    SolidBoolean.TRUE],
+					[`?-0.0;`,   SolidBoolean.TRUE],
+					[`?4.2e+1;`, SolidBoolean.FALSE],
+				]))
+			})
+			it('computes the value of an integer operation of constants.', () => {
+				assessOperations(xjs.Map.mapValues(new Map([
+					[`42 + 420;`,           42 + 420],
+					[`42 - 420;`,           42 + -420],
+					[` 126 /  3;`,          Math.trunc( 126 /  3)],
+					[`-126 /  3;`,          Math.trunc(-126 /  3)],
+					[` 126 / -3;`,          Math.trunc( 126 / -3)],
+					[`-126 / -3;`,          Math.trunc(-126 / -3)],
+					[` 200 /  3;`,          Math.trunc( 200 /  3)],
+					[` 200 / -3;`,          Math.trunc( 200 / -3)],
+					[`-200 /  3;`,          Math.trunc(-200 /  3)],
+					[`-200 / -3;`,          Math.trunc(-200 / -3)],
+					[`42 ^ 2 * 420;`,       (42 ** 2 * 420) % (2 ** 16)],
+					[`2 ^ 15 + 2 ^ 14;`,    -(2 ** 14)],
+					[`-(2 ^ 14) - 2 ^ 15;`, 2 ** 14],
+					[`-(5) ^ +(2 * 3);`,    (-(5)) ** +(2 * 3)],
+				]), (val) => new Int16(BigInt(val))))
+			})
 			it('computes the value of a float operation of constants.', () => {
-				assert.deepStrictEqual(((new Parser(`3.0e1 - 201.0e-1;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).assess(), new CompletionStructureAssessment(new Float64(30 - 20.1)))
-				assert.deepStrictEqual(((new Parser(`3 * 2.1;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).assess(), new CompletionStructureAssessment(new Float64(3 * 2.1)))
+				assessOperations(new Map<string, SolidLanguageValue>([
+					[`3.0e1 - 201.0e-1;`,     new Float64(30 - 20.1)],
+					[`3 * 2.1;`,     new Float64(3 * 2.1)],
+				]))
 			})
 			it('computes the value of comparison operators.', () => {
-				const tests: [string, boolean][] = [
+				assessOperations(xjs.Map.mapValues(new Map([
 					[`3 <  3;`,     false],
 					[`3 >  3;`,     false],
 					[`3 <= 3;`,     true],
@@ -661,17 +592,10 @@ describe('SemanticNode', () => {
 					[`3 >  3.0;`, false],
 					[`3 <= 3.0;`, true],
 					[`3 >= 3.0;`, true],
-				]
-				assert.deepStrictEqual(tests.map(([src, _result]) => {
-					const assess: CompletionStructureAssessment | null = operationFromStatementExpression(
-						statementExpressionFromSource(src)
-					).assess()
-					assert.ok(assess)
-					return assess
-				}), tests.map(([_src, result]) => new CompletionStructureAssessment(SolidBoolean.fromBoolean(result))))
+				]), (val) => SolidBoolean.fromBoolean(val)))
 			})
 			it('computes the value of IS and EQ operators.', () => {
-				const tests: [string, boolean][] = [
+				assessOperations(xjs.Map.mapValues(new Map([
 					[`null is null;`, true],
 					[`null == null;`, true],
 					[`null is 5;`,    false],
@@ -688,60 +612,29 @@ describe('SemanticNode', () => {
 					[`0.0 == 0.0;`,   true],
 					[`0.0 is -0.0;`,  false],
 					[`0.0 == -0.0;`,  true],
-				]
-				assert.deepStrictEqual(tests.map(([src, _result]) => {
-					const assess: CompletionStructureAssessment | null = operationFromStatementExpression(
-						statementExpressionFromSource(src)
-					).assess()
-					assert.ok(assess)
-					return assess
-				}), tests.map(([_src, result]) => new CompletionStructureAssessment(SolidBoolean.fromBoolean(result))))
+				]), (val) => SolidBoolean.fromBoolean(val)))
 			})
 			it('computes the value of AND and OR operators.', () => {
-				assert.deepStrictEqual([
-					`null && 5;`,
-					`null || 5;`,
-					`5 && null;`,
-					`5 || null;`,
-					`5.1 && true;`,
-					`5.1 || true;`,
-					`3.1 && 5;`,
-					`3.1 || 5;`,
-					`false && null;`,
-					`false || null;`,
-				].map((src) => {
-					const assess: CompletionStructureAssessment | null = operationFromStatementExpression(statementExpressionFromSource(src)).assess()
-					assert.ok(assess)
-					return assess
-				}), [
-					SolidNull.NULL,
-					new Int16(5n),
-					SolidNull.NULL,
-					new Int16(5n),
-					SolidBoolean.TRUE,
-					new Float64(5.1),
-					new Int16(5n),
-					new Float64(3.1),
-					SolidBoolean.FALSE,
-					SolidNull.NULL,
-				].map((v) => new CompletionStructureAssessment(v)))
+				assessOperations(new Map<string, SolidLanguageValue>([
+					[`null && 5;`,     SolidNull.NULL],
+					[`null || 5;`,     new Int16(5n)],
+					[`5 && null;`,     SolidNull.NULL],
+					[`5 || null;`,     new Int16(5n)],
+					[`5.1 && true;`,   SolidBoolean.TRUE],
+					[`5.1 || true;`,   new Float64(5.1)],
+					[`3.1 && 5;`,      new Int16(5n)],
+					[`3.1 || 5;`,      new Float64(3.1)],
+					[`false && null;`, SolidBoolean.FALSE],
+					[`false || null;`, SolidNull.NULL],
+				]))
 			})
 			it('computes the value of a conditional expression.', () => {
-				assert.deepStrictEqual([
-					`if true then false else 2;`,
-					`if false then 3.0 else null;`,
-					`if true then 2 else 3.0;`,
-					`if false then 2 + 3.0 else 1.0 * 2;`,
-				].map((src) => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation)
-					.assess()
-				), [
-					new CompletionStructureAssessment(SolidBoolean.FALSE),
-					new CompletionStructureAssessment(SolidNull.NULL),
-					new CompletionStructureAssessment(new Int16(2n)),
-					new CompletionStructureAssessment(new Float64(2.0)),
-				])
+				assessOperations(new Map<string, SolidLanguageValue>([
+					[`if true then false else 2;`,          SolidBoolean.FALSE],
+					[`if false then 3.0 else null;`,        SolidNull.NULL],
+					[`if true then 2 else 3.0;`,            new Int16(2n)],
+					[`if false then 2 + 3.0 else 1.0 * 2;`, new Float64(2.0)],
+				]))
 			})
 		})
 	})

@@ -25,23 +25,6 @@ Or<Integer, Float> PerformBinaryArithmetic(Text op, Or<Integer, Float> operand0,
 ```
 
 
-### AbstractOperation: AssessSemanticOperationBinary
-```
-Or<Integer, Float>? AssessSemanticOperationBinary(SemanticOperation expr) :=
-	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
-	3. *If* `TypeOf(operand0)` is `Void`:
-		1. *Return*.
-	4. *Let* `operand1` be the result of performing `Assess(expr.children.1)`.
-	5. *If* `TypeOf(operand1)` is `Void`:
-		1. *Return*.
-	6. *If* `TypeOf(operand0)` is `Integer` *and* `TypeOf(operand1)` is `Integer`:
-		1. *Return:* `Integer(PerformBinaryArithmetic(expr.operator, operand0, operand1))`.
-	7. *Assert*: `IsNumeric(operand0)` *and* `IsNumeric(operand1)`.
-	8. *Return:* `Float(PerformBinaryArithmetic(expr.operator, Float(float0), Float(float1)))`.
-```
-
-
 ### Abstract Operation: TryAssessAndBuild
 The abstract operation **TryAssessAndBuild** attempts to assess a semantic node first and then build the assessment;
 if the assessment fails, it builds the semantic node.
