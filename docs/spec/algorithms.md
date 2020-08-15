@@ -26,7 +26,7 @@ Type TypeOf(StringTemplate template) :=
 Type TypeOf(SemanticIdentifier id) :=
 	// TO BE DETERMINED
 
-Type TypeOf(SemanticOperation[operator: NOT | EMP | LT | LE | GT | GE | IS | EQ] expr) :=
+Type TypeOf(SemanticOperation[operator: NOT | EMP] expr) :=
 	1. *Return:* `Boolean`.
 Type TypeOf(SemanticOperation[operator: AFF | NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
@@ -44,6 +44,21 @@ Type TypeOf(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
 		2. *Else*:
 			1. *Return:* `Integer`.
 	5. *Throw:* TypeError "Invalid operation.".
+Type TypeOf(SemanticOperation[operator: LT | GT | LE | GE | NLT | NGT] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `t0` be `TypeOf(expr.children.0)`.
+	3. *Let* `t1` be `TypeOf(expr.children.1)`.
+	4. *If* `IsNumeric(t0)` *and* `IsNumeric(t1)`:
+		1. *Return:* `Boolean`.
+	5. *Throw:* TypeError "Invalid operation.".
+Type TypeOf(SemanticOperation[operator: IS | ISNT | EQ | NEQ] expr) :=
+	// 1. *Assert:* `expr.children.count` is 2.
+	// 2. *Let* `t0` be `TypeOf(expr.children.0)`.
+	// 3. *Let* `t1` be `TypeOf(expr.children.1)`.
+	// 4. *If* `t0` and `t1` overlap:
+	// 	1. *Return:* `Boolean`.
+	// 5. *Throw:* TypeError "Invalid operation.".
+	6. *Return:* `Boolean`.
 Type TypeOf(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be `TypeOf(expr.children.0)`.
@@ -83,7 +98,7 @@ Type TypeOf(SemanticOperation[operator: COND] expr) :=
 	2. *Let* `t0` be `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be `TypeOf(expr.children.1)`.
 	4. *Let* `t2` be `TypeOf(expr.children.2)`.
-	5. *If* `TypeOf(t0)` is `Boolean`:
+	5. *If* `t0` is `Boolean`:
 		1. *Return:* `TypeUnion(t1, t2)`.
 	6. *Throw:* TypeError "Invalid operation.".
 ```

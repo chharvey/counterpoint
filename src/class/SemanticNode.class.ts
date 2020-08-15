@@ -335,26 +335,34 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		)
 	}
 	type(): SolidLanguageType {
-		if ([
-			Operator.LT,
-			Operator.GT,
-			Operator.LE,
-			Operator.GE,
-			Operator.NLT,
-			Operator.NGT,
-			Operator.IS,
-			Operator.ISNT,
-			Operator.EQ,
-			Operator.NEQ,
-		].includes(this.operator)) {
-			return SolidBoolean
-		}
 		const t0: SolidLanguageType = this.children[0].type()
 		const t1: SolidLanguageType = this.children[1].type()
+		const both_numeric: boolean = SolidLanguageType.isNumericType(t0) && SolidLanguageType.isNumericType(t1)
 		return (
+			([
+				Operator.EXP,
+				Operator.MUL,
+				Operator.DIV,
+				Operator.ADD,
+				Operator.SUB,
+			].includes(this.operator) && both_numeric) ? ([t0, t1].includes(Float64)) ? Float64 : Int16 :
+			([
+				Operator.LT,
+				Operator.GT,
+				Operator.LE,
+				Operator.GE,
+				Operator.NLT,
+				Operator.NGT,
+			].includes(this.operator) && both_numeric) ? SolidBoolean :
+			([
+				Operator.IS,
+				Operator.ISNT,
+				Operator.EQ,
+				Operator.NEQ,
+			].includes(this.operator)) ? SolidBoolean :
 			(this.operator === Operator.AND) ? (t0 === SolidNull) ? t0 : new SolidTypeUnion(t0, t1) :
 			(this.operator === Operator.OR)  ? (t0 === SolidNull) ? t1 : new SolidTypeUnion(t0, t1) :
-			(SolidLanguageType.isNumericType(t0) && SolidLanguageType.isNumericType(t1)) ? ([t0, t1].includes(Float64)) ? Float64 : Int16 :
+			(both_numeric) ? ([t0, t1].includes(Float64)) ? Float64 : Int16 :
 			(() => { throw new TypeError('Invalid operation.') })()
 		)
 	}
