@@ -182,6 +182,18 @@ Decorate(ExpressionEquality ::= ExpressionEquality "isnt" ExpressionComparative)
 			Decorate(ExpressionComparative)
 		)
 	);
+Decorate(ExpressionEquality ::= ExpressionEquality "==" ExpressionComparative) -> SemanticOperation
+	:= (SemanticOperation[operator=EQ]
+		Decorate(ExpressionEquality)
+		Decorate(ExpressionComparative)
+	);
+Decorate(ExpressionEquality ::= ExpressionEquality "!=" ExpressionComparative) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=EQ]
+			Decorate(ExpressionEquality)
+			Decorate(ExpressionComparative)
+		)
+	);
 
 
 

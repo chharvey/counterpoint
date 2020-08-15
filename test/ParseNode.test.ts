@@ -333,7 +333,7 @@ describe('ParseNode', () => {
 			})
 		})
 
-		context('ExpressionComparative ::= ExpressionComparative "!<" ExpressionAdditive', () => {
+		context('ExpressionComparative ::= ExpressionComparative ("!<" | "!>") ExpressionAdditive', () => {
 			it('makes a SemanticNodeOperation with the `<` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
@@ -359,9 +359,6 @@ describe('ParseNode', () => {
 					[`2`,         Operator.LT,    `3`],
 				)
 			})
-		})
-
-		context('ExpressionComparative ::= ExpressionComparative "!>" ExpressionAdditive', () => {
 			it('makes a SemanticNodeOperation with the `>` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
@@ -389,7 +386,7 @@ describe('ParseNode', () => {
 			})
 		})
 
-		context('ExpressionEquality ::= ExpressionEquality "isnt" ExpressionComparative', () => {
+		context('ExpressionEquality ::= ExpressionEquality ("isnt" | "!=") ExpressionComparative', () => {
 			it('makes a SemanticNodeOperation with the `is` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
@@ -413,6 +410,31 @@ describe('ParseNode', () => {
 				assert.deepStrictEqual(
 					[left.source, child.operator, right.source],
 					[`2`,         Operator.IS,    `3`],
+				)
+			})
+			it('makes a SemanticNodeOperation with the `==` operator and logically negates the result.', () => {
+				/*
+					<Operation operator=NOT>
+						<Operation operator=EQ>
+							<Constant source="2"/>
+							<Constant source="3"/>
+						</Operation>
+					</Operation>
+				*/
+				const operation: SemanticNodeOperation = operationFromStatementExpression(
+					statementExpressionFromSource(`2 != 3;`)
+				)
+				assert.ok(operation instanceof SemanticNodeOperationUnary)
+				assert.strictEqual(operation.operator, Operator.NOT)
+				const child: SemanticNodeExpression = operation.children[0]
+				assert.ok(child instanceof SemanticNodeOperationBinary)
+				const left:  SemanticNodeExpression = child.children[0]
+				const right: SemanticNodeExpression = child.children[1]
+				assert.ok(left  instanceof SemanticNodeConstant)
+				assert.ok(right instanceof SemanticNodeConstant)
+				assert.deepStrictEqual(
+					[left.source, child.operator, right.source],
+					[`2`,         Operator.EQ,    `3`],
 				)
 			})
 		})

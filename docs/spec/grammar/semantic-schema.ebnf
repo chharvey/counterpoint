@@ -31,7 +31,7 @@ SemanticOperation[operator: NEG]
 SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | LE | GT | GE]
 	::= SemanticExpression[type: Integer | Float] SemanticExpression[type: Integer | Float];
 
-SemanticOperation[operator: IS]
+SemanticOperation[operator: IS | EQ]
 	::= SemanticExpression[type: Object] SemanticExpression[type: Object];
 
 SemanticOperation[operator: AND | OR]
