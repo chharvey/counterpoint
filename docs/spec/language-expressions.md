@@ -4,7 +4,7 @@ This chapter defines the syntax, semantics, and behavior of expressions in the S
 
 ### Abstract Operation: PerformBinaryArithmetic
 ```
-RealNumber PerformBinaryArithmetic(Text op, RealNumber operand0, RealNumber operand1) :=
+Or<Integer, Float> PerformBinaryArithmetic(Text op, Or<Integer, Float> operand0, Or<Integer, Float> operand1) :=
 	1. *If* `op` is `EXP`:
 		1. *Let* `result` be the power, `operand0 ^ operand1`,
 			obtained by raising `operand0` (the base) to `operand1` (the exponent).

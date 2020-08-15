@@ -374,8 +374,6 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		const v0: SolidLanguageValue = this.assessments[0].value
 		const v1: SolidLanguageValue = this.assessments[1].value
 		const both_numeric: boolean = v0 instanceof SolidNumber && v1 instanceof SolidNumber
-		const both_ints:    boolean = v0 instanceof Int16       && v1 instanceof Int16
-		const both_floats:  boolean = v0 instanceof Float64     && v1 instanceof Float64
 		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
 			throw new NanError02(this.children[1])
 		}
@@ -401,10 +399,14 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 				Operator.GE,
 				Operator.NLT,
 				Operator.NGT,
-			].includes(this.operator) && (both_ints || both_floats)) ? new CompletionStructureAssessment(this.foldComparative(
-				v0 as Int16 | Float64,
-				v1 as Int16 | Float64,
-			)) :
+			].includes(this.operator) && both_numeric) ? new CompletionStructureAssessment(
+				(v0 instanceof Int16 && v1 instanceof Int16)
+					? this.foldComparative(v0, v1)
+					: this.foldComparative(
+						(v0 as SolidNumber<unknown>).toFloat(),
+						(v1 as SolidNumber<unknown>).toFloat(),
+					)
+			) :
 			([
 				Operator.IS,
 				Operator.ISNT,

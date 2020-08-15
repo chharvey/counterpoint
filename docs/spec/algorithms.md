@@ -230,9 +230,9 @@ Boolean Equal(Object a, Object b) :=
 
 
 
-### Abstract Operation: PerformBinaryCompare
+## PerformBinaryCompare
 ```
-Boolean PerformBinaryCompare(Text op, RealNumber operand0, RealNumber operand1) :=
+Boolean PerformBinaryCompare(Text op, Or<Integer, Float> operand0, Or<Integer, Float> operand1) :=
 	1. *If* `op` is `LT`:
 		1. *If* `operand0` is strictly less than `operand1`:
 			1. *Return:* `true`.

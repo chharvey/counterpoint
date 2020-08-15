@@ -645,6 +645,22 @@ describe('SemanticNode', () => {
 					[`5.2 >  7.0;`, false],
 					[`5.2 <= 7.0;`, true],
 					[`5.2 >= 7.0;`, false],
+					[`5.2 <  9;`, true],
+					[`5.2 >  9;`, false],
+					[`5.2 <= 9;`, true],
+					[`5.2 >= 9;`, false],
+					[`5 <  9.2;`, true],
+					[`5 >  9.2;`, false],
+					[`5 <= 9.2;`, true],
+					[`5 >= 9.2;`, false],
+					[`3.0 <  3;`, false],
+					[`3.0 >  3;`, false],
+					[`3.0 <= 3;`, true],
+					[`3.0 >= 3;`, true],
+					[`3 <  3.0;`, false],
+					[`3 >  3.0;`, false],
+					[`3 <= 3.0;`, true],
+					[`3 >= 3.0;`, true],
 				]
 				assert.deepStrictEqual(tests.map(([src, _result]) => {
 					const assess: CompletionStructureAssessment | null = operationFromStatementExpression(
@@ -653,20 +669,6 @@ describe('SemanticNode', () => {
 					assert.ok(assess)
 					return assess
 				}), tests.map(([_src, result]) => new CompletionStructureAssessment(SolidBoolean.fromBoolean(result))))
-				;[ // TODO should be allowed after type-coersion
-					`5.2 <  9;`, // true
-					`5.2 >  9;`, // false
-					`5.2 <= 9;`, // true
-					`5.2 >= 9;`, // false
-					`5 <  9.2;`, // true
-					`5 >  9.2;`, // false
-					`5 <= 9.2;`, // true
-					`5 >= 9.2;`, // false
-				].forEach((src) => {
-					assert.strictEqual(operationFromStatementExpression(
-						statementExpressionFromSource(src)
-					).assess(), null)
-				})
 			})
 			it('computes the value of IS and EQ operators.', () => {
 				const tests: [string, boolean][] = [

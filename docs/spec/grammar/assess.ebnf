@@ -58,8 +58,10 @@ Boolean? Assess(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	4. *Let* `operand1` be the result of performing `Assess(expr.children.1)`.
 	5. *If* `TypeOf(operand1)` is `Void`:
 		1. *Return*.
-	6. *Assert*: `IsNumeric(operand0)` *and* `IsNumeric(operand1)`.
-	7. *Return:* `PerformBinaryCompare(expr.operator, operand0, operand1)`.
+	6. *Assert*: `IsNumeric(TypeOf(operand0))` *and* `IsNumeric(TypeOf(operand1))`.
+	7. *If* `TypeOf(operand0)` is `Integer` *and* `TypeOf(operand1)` is `Integer`:
+		1. *Return:* `PerformBinaryCompare(expr.operator, operand0, operand1)`.
+	8. *Return:* `PerformBinaryCompare(expr.operator, Float(float0), Float(float1))`.
 
 
 
