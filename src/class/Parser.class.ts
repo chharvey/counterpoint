@@ -109,8 +109,9 @@ export default class Parser {
 			} else if (reductions.length) {
 				throw new Error(`Reduce-Reduce Conflict:\n${reductions.map((r) => r.toString())}`)
 			}
+			throw new Error(`Unexpected token: ${this.lookahead.serialize()}`)
 		}
-		throw new Error(`Unexpected token: ${this.lookahead.serialize()}`)
+		throw new Error(`There are no finished configurations; I cannot reduce now.`)
 	}
 
 	/**

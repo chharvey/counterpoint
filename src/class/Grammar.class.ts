@@ -225,6 +225,7 @@ export class Rule {
 	 */
 	equals(rule: Rule) {
 		return this === rule ||
+			this.production.displayName === rule.production.displayName &&
 			Util.equalArrays<GrammarSymbol>(this.symbols, rule.symbols)
 	}
 
