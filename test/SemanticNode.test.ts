@@ -635,6 +635,33 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).assess(), new CompletionStructureAssessment(new Float64(3 * 2.1)))
 			})
+			it('computes the value of IS and EQ operators.', () => {
+				const tests: [string, boolean][] = [
+					[`null is null;`, true],
+					[`null == null;`, true],
+					[`null is 5;`,    false],
+					[`null == 5;`,    false],
+					[`true is 5.1;`,  false],
+					[`true == 5.1;`,  false],
+					[`true is true;`, true],
+					[`true == true;`, true],
+					[`3.0 is 3;`,     false],
+					[`3.0 == 3;`,     false],
+					[`3 is 3.0;`,     false],
+					[`3 == 3.0;`,     false],
+					[`0.0 is 0.0;`,   true],
+					[`0.0 == 0.0;`,   true],
+					[`0.0 is -0.0;`,  false],
+					[`0.0 == -0.0;`,  true],
+				]
+				assert.deepStrictEqual(tests.map(([src, _result]) => {
+					const assess: CompletionStructureAssessment | null = operationFromStatementExpression(
+						statementExpressionFromSource(src)
+					).assess()
+					assert.ok(assess)
+					return assess
+				}), tests.map(([_src, result]) => new CompletionStructureAssessment(SolidBoolean.fromBoolean(result))))
+			})
 			it('computes the value of AND and OR operators.', () => {
 				assert.deepStrictEqual([
 					`null && 5;`,

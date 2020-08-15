@@ -180,3 +180,48 @@ Boolean ToBoolean(SolidLanguageValue value) :=
 		1. *Return:* `value`.
 	3. *Return*: `true`.
 ```
+
+
+
+## Identical
+The abstract operation **Identical** compares two objects and returns whether they are the exact same object.
+```
+Boolean Identical(Object a, Object b) :=
+	1. *If* `a` is the value `null` and `b` is the value `null`:
+		1. *Return:* `true`.
+	2. *If* `a` is the value `false` *and* `b` is the value `false`:
+		1. *Return:* `true`.
+	3. *If* `a` is the value `true` *and* `b` is the value `true`:
+		1. *Return:* `true`.
+	4. *If* `a` is of type `Integer` *and* `b` is of type `Integer`:
+		1. If `a` and `b` have the same bitwise encoding:
+			1. *Return:* `true`.
+	5. *If* `a` is of type `Float` *and* `b` is of type `Float`:
+		1. If `a` and `b` have the same bitwise encoding:
+			1. *Return:* `true`.
+	// 6. *If* `a` is of type `String` *and* `b` is of type `String`:
+	// 	1. If `a` and `b` are exactly the same sequence of code units
+	// 		(same length and same code units at corresponding indices):
+	// 		1. *Return:* `true`.
+	// 7. *If* `a` and `b` are the same object:
+	// 	1. *Return:* `true`.
+	8. Return `false`.
+```
+
+
+
+## Equal
+The abstract operation **Equal** compares two objects and returns whether they are
+considered “equal” by some definition.
+```
+Boolean Equal(Object a, Object b) :=
+	1. *If* `Identical(a, b)` is `true`:
+		1. *Return:* `true`.
+	2. *If* `a` is of type `Float` *and* `b` is of type `Float`:
+		1. If `a` is `0.0` *and* `b` is `-0.0`:
+			1. *Return:* `true`.
+		2. If `a` is `-0.0` *and* `b` is `0.0`:
+			1. *Return:* `true`.
+	// 3. TODO: custom equality operators
+	4. Return `false`.
+```

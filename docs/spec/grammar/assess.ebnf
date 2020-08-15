@@ -50,6 +50,28 @@ Or<Integer, Float>? Assess(SemanticOperation[operator: EXP | MUL | DIV | ADD] ex
 
 
 
+Boolean? Assess(SemanticOperation[operator: ID] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `TypeOf(operand0)` is `Void`:
+		1. *Return*.
+	4. *Let* `operand1` be the result of performing `Assess(expr.children.1)`.
+	5. *If* `TypeOf(operand1)` is `Void`:
+		1. *Return*.
+	6. *Return:* `Identical(operand0, operand1)`.
+
+Boolean? Assess(SemanticOperation[operator: EQ] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
+	3. *If* `TypeOf(operand0)` is `Void`:
+		1. *Return*.
+	4. *Let* `operand1` be the result of performing `Assess(expr.children.1)`.
+	5. *If* `TypeOf(operand1)` is `Void`:
+		1. *Return*.
+	6. *Return:* `Equal(operand0, operand1)`.
+
+
+
 Or<Null, Boolean, Integer, Float>? Assess(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.

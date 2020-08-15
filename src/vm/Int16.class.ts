@@ -1,4 +1,4 @@
-import {
+import SolidLanguageValue, {
 	SolidNumber,
 } from './SolidLanguageValue.class'
 import Float64 from './Float64.class'
@@ -42,6 +42,14 @@ export default class Int16 extends SolidNumber<Int16> {
 	/** @override */
 	toString(): string {
 		return `${ this.toNumeric() }`
+	}
+	/** @override @final */
+	protected identical_helper(value: SolidLanguageValue): boolean {
+		return value instanceof Int16 && this.is(value)
+	}
+	/** @override @final */
+	protected equal_helper(value: SolidLanguageValue): boolean {
+		return value instanceof Int16 && this.eq(value)
 	}
 	/** @override */
 	toFloat(): Float64 {
@@ -253,6 +261,30 @@ export default class Int16 extends SolidNumber<Int16> {
 	neg(): Int16 {
 		return this.cpl().plus(Int16.UNIT)
 	}
+	/** @override */
+	protected is(int: Int16): boolean {
+		return this === int || this.internal.every((bit, i) => bit === int.internal[i])
+	}
+	/** @override */
+	protected eq(int: Int16): boolean {
+		return this.is(int)
+	}
+	/** @override */
+	eq0(): boolean {
+		return this.eq(Int16.ZERO)
+	}
+	/**
+	 * Is the 16-bit signed integer equal to `1`?
+	 */
+	private eq1(): boolean {
+		return this.eq(Int16.UNIT)
+	}
+	/**
+	 * Is the 16-bit signed integer equal to `2`?
+	 */
+	private eq2(): boolean {
+		return this.eq(Int16.RADIX)
+	}
 	/**
 	 * Return the ones’ complement of a 16-bit signed integer.
 	 * @see https://en.wikipedia.org/wiki/Ones%27_complement
@@ -284,32 +316,6 @@ export default class Int16 extends SolidNumber<Int16> {
 			this.internal[0],
 			...this.internal.slice(0, -1)
 		] as Int16DatatypeMutable)
-	}
-	/**
-	 * @override
-	 * Is the 16-bit signed integer equal to `0`?
-	 */
-	eq0(): boolean {
-		return this === Int16.ZERO || this.equals(Int16.ZERO)
-	}
-	/**
-	 * Is the 16-bit signed integer equal to `1`?
-	 */
-	private eq1(): boolean {
-		return this === Int16.UNIT || this.equals(Int16.UNIT)
-	}
-	/**
-	 * Is the 16-bit signed integer equal to `2`?
-	 */
-	private eq2(): boolean {
-		return this === Int16.RADIX || this.equals(Int16.RADIX)
-	}
-	/**
-	 * Are the 16-bit signed integers equal?
-	 * @returns Are the integers equal in value?
-	 */
-	private equals(int: Int16): boolean {
-		return this === int || this.internal.every((bit, i) => bit === int.internal[i])
 	}
 	/**
 	 * Is the 16-bit signed integer negative?
