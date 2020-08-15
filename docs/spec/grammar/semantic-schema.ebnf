@@ -28,8 +28,11 @@ SemanticOperation[operator: NOT | EMP]
 SemanticOperation[operator: NEG]
 	::= SemanticExpression[type: Integer | Float];
 
-SemanticOperation[operator: EXP | MUL | DIV | ADD]
+SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | LE | GT | GE]
 	::= SemanticExpression[type: Integer | Float] SemanticExpression[type: Integer | Float];
+
+SemanticOperation[operator: IS]
+	::= SemanticExpression[type: Object] SemanticExpression[type: Object];
 
 SemanticOperation[operator: AND | OR]
 	::= SemanticExpression SemanticExpression;

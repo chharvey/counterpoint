@@ -129,18 +129,74 @@ Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative)
 
 
 
-Decorate(ExpressionConjunctive ::= ExpressionAdditive) -> SemanticExpression
+Decorate(ExpressionComparative ::= ExpressionAdditive) -> SemanticOperation
 	:= Decorate(ExpressionAdditive);
-Decorate(ExpressionConjunctive ::= ExpressionConjunctive "&&" ExpressionAdditive) -> SemanticOperation
-	:= (SemanticOperation[operator=AND]
-		Decorate(ExpressionConjunctive)
+Decorate(ExpressionComparative ::= ExpressionComparative "<" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=LT]
+		Decorate(ExpressionComparative)
 		Decorate(ExpressionAdditive)
 	);
-Decorate(ExpressionConjunctive ::= ExpressionConjunctive "!&" ExpressionAdditive) -> SemanticOperation
+Decorate(ExpressionComparative ::= ExpressionComparative ">" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=GT]
+		Decorate(ExpressionComparative)
+		Decorate(ExpressionAdditive)
+	);
+Decorate(ExpressionComparative ::= ExpressionComparative "<=" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=LE]
+		Decorate(ExpressionComparative)
+		Decorate(ExpressionAdditive)
+	);
+Decorate(ExpressionComparative ::= ExpressionComparative ">=" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=GE]
+		Decorate(ExpressionComparative)
+		Decorate(ExpressionAdditive)
+	);
+Decorate(ExpressionComparative ::= ExpressionComparative "!<" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=LT]
+			Decorate(ExpressionComparative)
+			Decorate(ExpressionAdditive)
+		)
+	);
+Decorate(ExpressionComparative ::= ExpressionComparative "!>" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=GT]
+			Decorate(ExpressionComparative)
+			Decorate(ExpressionAdditive)
+		)
+	);
+
+
+
+Decorate(ExpressionEquality ::= ExpressionComparative) -> SemanticOperation
+	:= Decorate(ExpressionComparative);
+Decorate(ExpressionEquality ::= ExpressionEquality "is" ExpressionComparative) -> SemanticOperation
+	:= (SemanticOperation[operator=IS]
+		Decorate(ExpressionEquality)
+		Decorate(ExpressionComparative)
+	);
+Decorate(ExpressionEquality ::= ExpressionEquality "isnt" ExpressionComparative) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=IS]
+			Decorate(ExpressionEquality)
+			Decorate(ExpressionComparative)
+		)
+	);
+
+
+
+Decorate(ExpressionConjunctive ::= ExpressionEquality) -> SemanticExpression
+	:= Decorate(ExpressionEquality);
+Decorate(ExpressionConjunctive ::= ExpressionConjunctive "&&" ExpressionEquality) -> SemanticOperation
+	:= (SemanticOperation[operator=AND]
+		Decorate(ExpressionConjunctive)
+		Decorate(ExpressionEquality)
+	);
+Decorate(ExpressionConjunctive ::= ExpressionConjunctive "!&" ExpressionEquality) -> SemanticOperation
 	:= (SemanticOperation[operator=NOT]
 		(SemanticOperation[operator=AND]
 			Decorate(ExpressionConjunctive)
-			Decorate(ExpressionAdditive)
+			Decorate(ExpressionEquality)
 		)
 	);
 
