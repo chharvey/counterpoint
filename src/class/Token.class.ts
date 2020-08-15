@@ -41,6 +41,8 @@ export enum Punctuator {
 		GE   = '>=',
 		NLT  = '!<',
 		NGT  = '!>',
+		EQ   = '==',
+		NEQ  = '!=',
 		AND  = '&&',
 		NAND = '!&',
 		OR   = '||',
