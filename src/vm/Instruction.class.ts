@@ -22,6 +22,8 @@ export enum Operator {
 	NGT,
 	IS,
 	ISNT,
+	EQ,
+	NEQ,
 	AND,
 	NAND,
 	OR,
