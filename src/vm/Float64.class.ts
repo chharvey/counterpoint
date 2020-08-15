@@ -25,7 +25,7 @@ export default class Float64 extends SolidNumber<Float64> {
 	}
 	/** @override @final */
 	protected equal_helper(value: SolidLanguageValue): boolean {
-		return value instanceof Float64 && this.eq(value)
+		return value instanceof SolidNumber && this.eq(value.toFloat())
 	}
 	/** @override */
 	toFloat(): this {

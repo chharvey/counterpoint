@@ -49,7 +49,9 @@ export default class Int16 extends SolidNumber<Int16> {
 	}
 	/** @override @final */
 	protected equal_helper(value: SolidLanguageValue): boolean {
-		return value instanceof Int16 && this.eq(value)
+		return (value instanceof Float64)
+			? this.toFloat().equal(value)
+			: value instanceof Int16 && this.eq(value)
 	}
 	/** @override */
 	toFloat(): Float64 {

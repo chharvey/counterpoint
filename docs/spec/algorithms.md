@@ -217,7 +217,9 @@ considered “equal” by some definition.
 Boolean Equal(Object a, Object b) :=
 	1. *If* `Identical(a, b)` is `true`:
 		1. *Return:* `true`.
-	2. *If* `a` is of type `Float` *and* `b` is of type `Float`:
+	2. *If* `a` is of type `Float` *or* `b` is of type `Float`:
+		1. *Return:* `Equal(Float(a), Float(b))`.
+	3. *If* `a` is of type `Float` *and* `b` is of type `Float`:
 		1. If `a` is `0.0` *and* `b` is `-0.0`:
 			1. *Return:* `true`.
 		2. If `a` is `-0.0` *and* `b` is `0.0`:
