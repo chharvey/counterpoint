@@ -91,6 +91,14 @@ Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperation
 
 
 
+## Comparative
+
+
+
+## Equality
+
+
+
 ## Conjunctive
 
 

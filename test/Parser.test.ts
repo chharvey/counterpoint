@@ -36,7 +36,9 @@ import {
 	unaryExpressionFromExponentialExpression,
 	exponentialExpressionFromMultiplicativeExpression,
 	multiplicativeExpressionFromAdditiveExpression,
-	additiveExpressionFromConjunctiveExpression,
+	additiveExpressionFromComparativeExpression,
+	comparativeExpressionFromEqualityExpression,
+	equalityExpressionFromConjunctiveExpression,
 	conjunctiveExpressionFromDisjunctiveExpression,
 	disjunctiveExpressionFromExpression,
 	conditionalExpressionFromExpression,
@@ -91,11 +93,15 @@ describe('Parser', () => {
 							unaryExpressionFromExponentialExpression(
 								exponentialExpressionFromMultiplicativeExpression(
 									multiplicativeExpressionFromAdditiveExpression(
-										additiveExpressionFromConjunctiveExpression(
-											conjunctiveExpressionFromDisjunctiveExpression(
-												disjunctiveExpressionFromExpression(
-													expressionFromStatement(
-														statementFromSource(src)
+										additiveExpressionFromComparativeExpression(
+											comparativeExpressionFromEqualityExpression(
+												equalityExpressionFromConjunctiveExpression(
+													conjunctiveExpressionFromDisjunctiveExpression(
+														disjunctiveExpressionFromExpression(
+															expressionFromStatement(
+																statementFromSource(src)
+															)
+														)
 													)
 												)
 											)
@@ -387,11 +393,15 @@ describe('Parser', () => {
 					unaryExpressionFromExponentialExpression(
 						exponentialExpressionFromMultiplicativeExpression(
 							multiplicativeExpressionFromAdditiveExpression(
-								additiveExpressionFromConjunctiveExpression(
-									conjunctiveExpressionFromDisjunctiveExpression(
-										disjunctiveExpressionFromExpression(
-											expressionFromStatement(
-												statementFromSource(`(2 + -3);`)
+								additiveExpressionFromComparativeExpression(
+									comparativeExpressionFromEqualityExpression(
+										equalityExpressionFromConjunctiveExpression(
+											conjunctiveExpressionFromDisjunctiveExpression(
+												disjunctiveExpressionFromExpression(
+													expressionFromStatement(
+														statementFromSource(`(2 + -3);`)
+													)
+												)
 											)
 										)
 									)
@@ -426,11 +436,15 @@ describe('Parser', () => {
 					const expression_unary: ParseNodeExpressionUnary = unaryExpressionFromExponentialExpression(
 						exponentialExpressionFromMultiplicativeExpression(
 							multiplicativeExpressionFromAdditiveExpression(
-								additiveExpressionFromConjunctiveExpression(
-									conjunctiveExpressionFromDisjunctiveExpression(
-										disjunctiveExpressionFromExpression(
-											expressionFromStatement(
-												statementFromSource(src)
+								additiveExpressionFromComparativeExpression(
+									comparativeExpressionFromEqualityExpression(
+										equalityExpressionFromConjunctiveExpression(
+											conjunctiveExpressionFromDisjunctiveExpression(
+												disjunctiveExpressionFromExpression(
+													expressionFromStatement(
+														statementFromSource(src)
+													)
+												)
 											)
 										)
 									)
@@ -462,11 +476,15 @@ describe('Parser', () => {
 				*/
 				const expression_exp: ParseNodeExpressionBinary = exponentialExpressionFromMultiplicativeExpression(
 					multiplicativeExpressionFromAdditiveExpression(
-						additiveExpressionFromConjunctiveExpression(
+						additiveExpressionFromComparativeExpression(
 							conjunctiveExpressionFromDisjunctiveExpression(
-								disjunctiveExpressionFromExpression(
-									expressionFromStatement(
-										statementFromSource(`2 ^ -3;`)
+								comparativeExpressionFromEqualityExpression(
+									equalityExpressionFromConjunctiveExpression(
+										disjunctiveExpressionFromExpression(
+											expressionFromStatement(
+												statementFromSource(`2 ^ -3;`)
+											)
+										)
 									)
 								)
 							)
@@ -493,11 +511,15 @@ describe('Parser', () => {
 					</ExpressionMultiplicative>
 				*/
 				const expression_mul: ParseNodeExpressionBinary = multiplicativeExpressionFromAdditiveExpression(
-					additiveExpressionFromConjunctiveExpression(
-						conjunctiveExpressionFromDisjunctiveExpression(
-							disjunctiveExpressionFromExpression(
-								expressionFromStatement(
-									statementFromSource(`2 * -3;`)
+					additiveExpressionFromComparativeExpression(
+						comparativeExpressionFromEqualityExpression(
+							equalityExpressionFromConjunctiveExpression(
+								conjunctiveExpressionFromDisjunctiveExpression(
+									disjunctiveExpressionFromExpression(
+										expressionFromStatement(
+											statementFromSource(`2 * -3;`)
+										)
+									)
 								)
 							)
 						)
@@ -522,11 +544,15 @@ describe('Parser', () => {
 						<ExpressionMultiplicative source="-3">...</ExpressionMultiplicative>
 					</ExpressionAdditive>
 				*/
-				const expression_add: ParseNodeExpressionBinary = additiveExpressionFromConjunctiveExpression(
-					conjunctiveExpressionFromDisjunctiveExpression(
-						disjunctiveExpressionFromExpression(
-							expressionFromStatement(
-								statementFromSource(`2 + -3;`)
+				const expression_add: ParseNodeExpressionBinary = additiveExpressionFromComparativeExpression(
+					comparativeExpressionFromEqualityExpression(
+						equalityExpressionFromConjunctiveExpression(
+							conjunctiveExpressionFromDisjunctiveExpression(
+								disjunctiveExpressionFromExpression(
+									expressionFromStatement(
+										statementFromSource(`2 + -3;`)
+									)
+								)
 							)
 						)
 					)
@@ -541,7 +567,65 @@ describe('Parser', () => {
 			})
 		})
 
-		context('ExpressionConjunctive ::= ExpressionConjunctive ("&&" | "!&") ExpressionAdditive', () => {
+		context('ExpressionComparative ::= ExpressionComparative ("<" | ">" | "<=" | ">=" | "!<" | "!>") ExpressionAdditive', () => {
+			it('makes a ParseNodeExpressionBinary node.', () => {
+				/*
+					<ExpressionComparative>
+						<ExpressionComparative source="2">...</ExpressionComparative>
+						<PUNCTUATOR>&lt;</PUNCTUATOR>
+						<ExpressionAdditive source="-3">...</ExpressionAdditive>
+					</ExpressionComparative>
+				*/
+				const expression_inc: ParseNodeExpressionBinary = comparativeExpressionFromEqualityExpression(
+					equalityExpressionFromConjunctiveExpression(
+						conjunctiveExpressionFromDisjunctiveExpression(
+							disjunctiveExpressionFromExpression(
+								expressionFromStatement(
+									statementFromSource(`2 < -3;`)
+								)
+							)
+						)
+					)
+				)
+				assert_arrayLength(expression_inc.children, 3, 'additive expression should have 3 children')
+				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary] = expression_inc.children
+				assert.ok(left instanceof ParseNodeExpressionBinary)
+				assert.deepStrictEqual(
+					[left.source, op.source,     right.source],
+					['2',         Punctuator.LT, '-3'],
+				)
+			})
+		})
+
+		context('ExpressionEquality ::= ExpressionEquality ("is" | "isnt") ExpressionComparative', () => {
+			it('makes a ParseNodeExpressionBinary node.', () => {
+				/*
+					<ExpressionEquality>
+						<ExpressionEquality source="2">...</ExpressionEquality>
+						<PUNCTUATOR>is</PUNCTUATOR>
+						<ExpressionComparative source="-3">...</ExpressionComparative>
+					</ExpressionEquality>
+				*/
+				const expression_eq: ParseNodeExpressionBinary = equalityExpressionFromConjunctiveExpression(
+					conjunctiveExpressionFromDisjunctiveExpression(
+						disjunctiveExpressionFromExpression(
+							expressionFromStatement(
+								statementFromSource(`2 is -3;`)
+							)
+						)
+					)
+				)
+				assert_arrayLength(expression_eq.children, 3, 'additive expression should have 3 children')
+				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary] = expression_eq.children
+				assert.ok(left instanceof ParseNodeExpressionBinary)
+				assert.deepStrictEqual(
+					[left.source, op.source,  right.source],
+					['2',         Keyword.IS, '-3'],
+				)
+			})
+		})
+
+		context('ExpressionConjunctive ::= ExpressionConjunctive ("&&" | "!&") ExpressionEquality', () => {
 			it('makes a ParseNodeExpressionBinary node.', () => {
 				/*
 					<ExpressionConjunctive>

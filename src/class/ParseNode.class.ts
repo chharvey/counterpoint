@@ -38,6 +38,8 @@ import {
 	ProductionExpressionExponential,
 	ProductionExpressionMultiplicative,
 	ProductionExpressionAdditive,
+	ProductionExpressionComparative,
+	ProductionExpressionEquality,
 	ProductionExpressionConjunctive,
 	ProductionExpressionDisjunctive,
 	ProductionExpressionConditional,
@@ -77,6 +79,8 @@ export default abstract class ParseNode implements Serializable {
 			(                                   rule.production.equals(ProductionExpressionExponential    .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
 			(                                   rule.production.equals(ProductionExpressionMultiplicative .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
 			(                                   rule.production.equals(ProductionExpressionAdditive       .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(ProductionExpressionComparative    .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(ProductionExpressionEquality       .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
 			(                                   rule.production.equals(ProductionExpressionConjunctive    .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
 			(                                   rule.production.equals(ProductionExpressionDisjunctive    .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
 			(                                   rule.production.equals(ProductionExpressionConditional    .instance)) ? new ParseNodeExpressionConditional   (rule, children) :
