@@ -418,9 +418,9 @@ describe('SemanticNode', () => {
 					`2 !< 3;`,
 					`2 !> 3;`,
 					`2 is 3;`,
-					`2 is 3;`,
 					`2 isnt 3;`,
-					`2 isnt 3;`,
+					`2 == 3;`,
+					`2 != 3;`,
 				].forEach((src) => {
 					assert.strictEqual(operationFromStatementExpression(
 						statementExpressionFromSource(src)

@@ -344,6 +344,8 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 			Operator.NGT,
 			Operator.IS,
 			Operator.ISNT,
+			Operator.EQ,
+			Operator.NEQ,
 		].includes(this.operator)) {
 			return SolidBoolean
 		}
