@@ -335,6 +335,18 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		)
 	}
 	type(): SolidLanguageType {
+		if ([
+			Operator.LT,
+			Operator.GT,
+			Operator.LE,
+			Operator.GE,
+			Operator.NLT,
+			Operator.NGT,
+			Operator.IS,
+			Operator.ISNT,
+		].includes(this.operator)) {
+			return SolidBoolean
+		}
 		const t0: SolidLanguageType = this.children[0].type()
 		const t1: SolidLanguageType = this.children[1].type()
 		return (

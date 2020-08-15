@@ -409,6 +409,24 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeOperation).type(), Float64)
 			})
+			it('computes type for equality and comparison.', () => {
+				;[
+					`2 < 3;`,
+					`2 > 3;`,
+					`2 <= 3;`,
+					`2 >= 3;`,
+					`2 !< 3;`,
+					`2 !> 3;`,
+					`2 is 3;`,
+					`2 is 3;`,
+					`2 isnt 3;`,
+					`2 isnt 3;`,
+				].forEach((src) => {
+					assert.strictEqual(operationFromStatementExpression(
+						statementExpressionFromSource(src)
+					).type(), SolidBoolean)
+				})
+			})
 			it('computes type for AND and OR.', () => {
 				assert.deepStrictEqual([
 					`null  && false;`,
