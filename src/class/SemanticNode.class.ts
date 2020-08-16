@@ -1,3 +1,5 @@
+import * as xjs from 'extrajs'
+
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import {
@@ -27,6 +29,7 @@ import Instruction, {
 	InstructionModule,
 } from '../vm/Instruction.class'
 import {
+	NanError01,
 	NanError02,
 } from '../error/NanError.class'
 import Token, {
@@ -424,13 +427,21 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		)
 	}
 	private foldNumeric<T extends SolidNumber<T>>(x: T, y: T): T {
-		return new Map<Operator, (x: T, y: T) => T>([
-			[Operator.EXP, (x, y) => x.exp    (y)],
-			[Operator.MUL, (x, y) => x.times  (y)],
-			[Operator.DIV, (x, y) => x.divide (y)],
-			[Operator.ADD, (x, y) => x.plus   (y)],
-			[Operator.SUB, (x, y) => x.minus  (y)],
-		]).get(this.operator)!(x, y)
+		try {
+			return new Map<Operator, (x: T, y: T) => T>([
+				[Operator.EXP, (x, y) => x.exp(y)],
+				[Operator.MUL, (x, y) => x.times(y)],
+				[Operator.DIV, (x, y) => x.divide(y)],
+				[Operator.ADD, (x, y) => x.plus(y)],
+				[Operator.SUB, (x, y) => x.minus(y)],
+			]).get(this.operator)!(x, y)
+		} catch (err) {
+			if (err instanceof xjs.NaNError) {
+				throw new NanError01(this)
+			} else {
+				throw err
+			}
+		}
 	}
 	private foldComparative<T extends SolidNumber<T>>(x: T, y: T): SolidBoolean {
 		return SolidBoolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([

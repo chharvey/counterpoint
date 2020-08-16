@@ -11,6 +11,7 @@ import {
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
 } from '../src/class/SemanticNode.class'
+import {NanError01} from '../src/error/NanError.class'
 import {
 	CompletionStructureAssessment,
 } from '../src/spec/CompletionStructure.class'
@@ -565,6 +566,11 @@ describe('SemanticNode', () => {
 					[`3.0e1 - 201.0e-1;`,     new Float64(30 - 20.1)],
 					[`3 * 2.1;`,     new Float64(3 * 2.1)],
 				]))
+			})
+			it('should throw when performing an operation that does not yield a valid number.', () => {
+				assert.throws(() => operationFromStatementExpression(
+					statementExpressionFromSource(`-4 ^ -0.5;`)
+				).assess(), NanError01)
 			})
 			it('computes the value of comparison operators.', () => {
 				assessOperations(xjs.Map.mapValues(new Map([

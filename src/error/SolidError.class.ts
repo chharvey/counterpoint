@@ -11,8 +11,6 @@ export default class SolidError extends Error {
 	readonly code       : number;
 	readonly line_index : number|null;
 	readonly col_index  : number|null;
-	constructor (message: string);
-	constructor (props: ErrorConstructorProperties);
 	constructor (props: string|ErrorConstructorProperties) {
 		if (typeof props === 'string') {
 			props = { message: props }
