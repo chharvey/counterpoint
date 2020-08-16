@@ -1,3 +1,5 @@
+import * as xjs from 'extrajs'
+
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import {
@@ -27,6 +29,7 @@ import Instruction, {
 	InstructionModule,
 } from '../vm/Instruction.class'
 import {
+	NanError01,
 	NanError02,
 } from '../error/NanError.class'
 import Token, {
@@ -280,7 +283,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		)
 	}
 	type(): SolidLanguageType {
-		if ([Operator.NOT, Operator.EMPTY].includes(this.operator)) {
+		if ([Operator.NOT, Operator.EMP].includes(this.operator)) {
 			return SolidBoolean
 		}
 		const t0: SolidLanguageType = this.children[0].type()
@@ -292,8 +295,8 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		}
 		const v0: SolidLanguageValue = this.assessments[0].value
 		return (
-			(this.operator === Operator.NOT)   ? new CompletionStructureAssessment(v0.isTruthy.not) :
-			(this.operator === Operator.EMPTY) ? new CompletionStructureAssessment(v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0()))) :
+			(this.operator === Operator.NOT) ? new CompletionStructureAssessment(v0.isTruthy.not) :
+			(this.operator === Operator.EMP) ? new CompletionStructureAssessment(v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0()))) :
 			(
 				(v0 instanceof SolidNumber)
 					? new CompletionStructureAssessment(SemanticNodeOperationUnary.fold(this.operator, v0))
@@ -303,15 +306,6 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 	}
 }
 export class SemanticNodeOperationBinary extends SemanticNodeOperation {
-	private static fold<T extends SolidNumber<T>>(op: Operator, x: T, y: T): T {
-		return new Map<Operator, (x: T, y: T) => T>([
-			[Operator.EXP, (x, y) => x.exp    (y)],
-			[Operator.MUL, (x, y) => x.times  (y)],
-			[Operator.DIV, (x, y) => x.divide (y)],
-			[Operator.ADD, (x, y) => x.plus   (y)],
-			[Operator.SUB, (x, y) => x.minus  (y)],
-		]).get(op)!(x, y)
-	}
 	declare assessments: [
 		CompletionStructureAssessment | null,
 		CompletionStructureAssessment | null,
@@ -325,7 +319,14 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		super(start_node, operator, children)
 	}
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
-		if ([Operator.AND, Operator.OR].includes(this.operator)) {
+		if ([
+			Operator.LT,
+			Operator.GT,
+			Operator.LE,
+			Operator.GE,
+			Operator.AND,
+			Operator.OR,
+		].includes(this.operator)) {
 			to_float = to_float || [this.children[0].type(), this.children[1].type()].includes(Float64)
 		}
 		return new InstructionBinop(
@@ -337,10 +338,32 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 	type(): SolidLanguageType {
 		const t0: SolidLanguageType = this.children[0].type()
 		const t1: SolidLanguageType = this.children[1].type()
+		const both_numeric: boolean = SolidLanguageType.isNumericType(t0) && SolidLanguageType.isNumericType(t1)
 		return (
+			([
+				Operator.EXP,
+				Operator.MUL,
+				Operator.DIV,
+				Operator.ADD,
+				Operator.SUB,
+			].includes(this.operator) && both_numeric) ? ([t0, t1].includes(Float64)) ? Float64 : Int16 :
+			([
+				Operator.LT,
+				Operator.GT,
+				Operator.LE,
+				Operator.GE,
+				Operator.NLT,
+				Operator.NGT,
+			].includes(this.operator) && both_numeric) ? SolidBoolean :
+			([
+				Operator.IS,
+				Operator.ISNT,
+				Operator.EQ,
+				Operator.NEQ,
+			].includes(this.operator)) ? SolidBoolean :
 			(this.operator === Operator.AND) ? (t0 === SolidNull) ? t0 : new SolidTypeUnion(t0, t1) :
 			(this.operator === Operator.OR)  ? (t0 === SolidNull) ? t1 : new SolidTypeUnion(t0, t1) :
-			(SolidLanguageType.isNumericType(t0) && SolidLanguageType.isNumericType(t1)) ? ([t0, t1].includes(Float64)) ? Float64 : Int16 :
+			(both_numeric) ? ([t0, t1].includes(Float64)) ? Float64 : Int16 :
 			(() => { throw new TypeError('Invalid operation.') })()
 		)
 	}
@@ -360,14 +383,83 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		}
 		const v0: SolidLanguageValue = this.assessments[0].value
 		const v1: SolidLanguageValue = this.assessments[1].value
+		const both_numeric: boolean = v0 instanceof SolidNumber && v1 instanceof SolidNumber
 		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
 			throw new NanError02(this.children[1])
 		}
 		return (
-			(v0 instanceof Int16       && v1 instanceof Int16)       ? new CompletionStructureAssessment(SemanticNodeOperationBinary.fold(this.operator, v0,           v1))           :
-			(v0 instanceof SolidNumber && v1 instanceof SolidNumber) ? new CompletionStructureAssessment(SemanticNodeOperationBinary.fold(this.operator, v0.toFloat(), v1.toFloat())) :
+			([
+				Operator.EXP,
+				Operator.MUL,
+				Operator.DIV,
+				Operator.ADD,
+				Operator.SUB,
+			].includes(this.operator) && both_numeric) ? new CompletionStructureAssessment(
+				(v0 instanceof Int16 && v1 instanceof Int16)
+					? this.foldNumeric(v0, v1)
+					: this.foldNumeric(
+						(v0 as SolidNumber<unknown>).toFloat(),
+						(v1 as SolidNumber<unknown>).toFloat(),
+					)
+			) :
+			([
+				Operator.LT,
+				Operator.GT,
+				Operator.LE,
+				Operator.GE,
+				Operator.NLT,
+				Operator.NGT,
+			].includes(this.operator) && both_numeric) ? new CompletionStructureAssessment(
+				(v0 instanceof Int16 && v1 instanceof Int16)
+					? this.foldComparative(v0, v1)
+					: this.foldComparative(
+						(v0 as SolidNumber<unknown>).toFloat(),
+						(v1 as SolidNumber<unknown>).toFloat(),
+					)
+			) :
+			([
+				Operator.IS,
+				Operator.ISNT,
+				Operator.EQ,
+				Operator.NEQ,
+			].includes(this.operator)) ? new CompletionStructureAssessment(this.foldEquality(v0, v1)) :
 			null
 		)
+	}
+	private foldNumeric<T extends SolidNumber<T>>(x: T, y: T): T {
+		try {
+			return new Map<Operator, (x: T, y: T) => T>([
+				[Operator.EXP, (x, y) => x.exp(y)],
+				[Operator.MUL, (x, y) => x.times(y)],
+				[Operator.DIV, (x, y) => x.divide(y)],
+				[Operator.ADD, (x, y) => x.plus(y)],
+				[Operator.SUB, (x, y) => x.minus(y)],
+			]).get(this.operator)!(x, y)
+		} catch (err) {
+			if (err instanceof xjs.NaNError) {
+				throw new NanError01(this)
+			} else {
+				throw err
+			}
+		}
+	}
+	private foldComparative<T extends SolidNumber<T>>(x: T, y: T): SolidBoolean {
+		return SolidBoolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
+			[Operator.LT,   (x, y) => x.lt(y)],
+			[Operator.GT,   (x, y) => y.lt(x)],
+			[Operator.LE,   (x, y) => x.equal(y) || x.lt(y)],
+			[Operator.GE,   (x, y) => x.equal(y) || y.lt(x)],
+			[Operator.NLT,  (x, y) => !x.lt(y)],
+			[Operator.NGT,  (x, y) => !y.lt(x)],
+		]).get(this.operator)!(x, y))
+	}
+	private foldEquality(x: SolidLanguageValue, y: SolidLanguageValue): SolidBoolean {
+		return SolidBoolean.fromBoolean(new Map<Operator, (x: SolidLanguageValue, y: SolidLanguageValue) => boolean>([
+			[Operator.IS,   (x, y) =>  x.identical(y)],
+			[Operator.ISNT, (x, y) => !x.identical(y)],
+			[Operator.EQ,   (x, y) =>  x.equal(y)],
+			[Operator.NEQ,  (x, y) => !x.equal(y)],
+		]).get(this.operator)!(x, y))
 	}
 }
 export class SemanticNodeOperationTernary extends SemanticNodeOperation {

@@ -58,11 +58,23 @@ export function multiplicativeExpressionFromAdditiveExpression(expression_add: P
 	assert.ok(expression_mul instanceof ParseNodeExpressionBinary)
 	return expression_mul
 }
-export function additiveExpressionFromConjunctiveExpression(expression_conj: ParseNodeExpressionBinary): ParseNodeExpressionBinary {
-	assert_arrayLength(expression_conj.children, 1, 'conjunctive expression should have 1 child')
-	const expression_add: ParseNodeExpressionUnary | ParseNodeExpressionBinary = expression_conj.children[0]
+export function additiveExpressionFromComparativeExpression(expression_compare: ParseNodeExpressionBinary): ParseNodeExpressionBinary {
+	assert_arrayLength(expression_compare.children, 1, 'comparative expression should have 1 child')
+	const expression_add: ParseNodeExpressionUnary | ParseNodeExpressionBinary = expression_compare.children[0]
 	assert.ok(expression_add instanceof ParseNodeExpressionBinary)
 	return expression_add
+}
+export function comparativeExpressionFromEqualityExpression(expression_eq: ParseNodeExpressionBinary): ParseNodeExpressionBinary {
+	assert_arrayLength(expression_eq.children, 1, 'equality expression should have 1 child')
+	const expression_compare: ParseNodeExpressionUnary | ParseNodeExpressionBinary = expression_eq.children[0]
+	assert.ok(expression_compare instanceof ParseNodeExpressionBinary)
+	return expression_compare
+}
+export function equalityExpressionFromConjunctiveExpression(expression_conj: ParseNodeExpressionBinary): ParseNodeExpressionBinary {
+	assert_arrayLength(expression_conj.children, 1, 'conjunctive expression should have 1 child')
+	const expression_eq: ParseNodeExpressionUnary | ParseNodeExpressionBinary = expression_conj.children[0]
+	assert.ok(expression_eq instanceof ParseNodeExpressionBinary)
+	return expression_eq
 }
 export function conjunctiveExpressionFromDisjunctiveExpression(expression_disj: ParseNodeExpressionBinary): ParseNodeExpressionBinary {
 	assert_arrayLength(expression_disj.children, 1, 'disjunctive expression should have 1 child')

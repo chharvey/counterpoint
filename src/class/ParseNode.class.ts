@@ -38,6 +38,8 @@ import {
 	ProductionExpressionExponential,
 	ProductionExpressionMultiplicative,
 	ProductionExpressionAdditive,
+	ProductionExpressionComparative,
+	ProductionExpressionEquality,
 	ProductionExpressionConjunctive,
 	ProductionExpressionDisjunctive,
 	ProductionExpressionConditional,
@@ -77,6 +79,8 @@ export default abstract class ParseNode implements Serializable {
 			(                                   rule.production.equals(ProductionExpressionExponential    .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
 			(                                   rule.production.equals(ProductionExpressionMultiplicative .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
 			(                                   rule.production.equals(ProductionExpressionAdditive       .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(ProductionExpressionComparative    .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(ProductionExpressionEquality       .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
 			(                                   rule.production.equals(ProductionExpressionConjunctive    .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
 			(                                   rule.production.equals(ProductionExpressionDisjunctive    .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
 			(                                   rule.production.equals(ProductionExpressionConditional    .instance)) ? new ParseNodeExpressionConditional   (rule, children) :
@@ -199,10 +203,10 @@ export class ParseNodeExpressionUnit extends ParseNode {
 }
 export class ParseNodeExpressionUnary extends ParseNode {
 	private static readonly OPERATORS: Map<Punctuator, Operator> = new Map<Punctuator, Operator>([
-		[Punctuator.NOT,   Operator.NOT],
-		[Punctuator.EMPTY, Operator.EMPTY],
-		[Punctuator.AFF,   Operator.AFF],
-		[Punctuator.NEG,   Operator.NEG],
+		[Punctuator.NOT, Operator.NOT],
+		[Punctuator.EMP, Operator.EMP],
+		[Punctuator.AFF, Operator.AFF],
+		[Punctuator.NEG, Operator.NEG],
 	])
 	declare children:
 		| readonly [ParseNodeExpressionUnit]
@@ -220,20 +224,30 @@ export class ParseNodeExpressionUnary extends ParseNode {
 	}
 }
 export class ParseNodeExpressionBinary extends ParseNode {
-	private static readonly OPERATORS: Map<Punctuator, Operator> = new Map<Punctuator, Operator>([
+	private static readonly OPERATORS: Map<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
 		[Punctuator.EXP,  Operator.EXP],
 		[Punctuator.MUL,  Operator.MUL],
 		[Punctuator.DIV,  Operator.DIV],
 		[Punctuator.ADD,  Operator.ADD],
 		[Punctuator.SUB,  Operator.SUB],
+		[Punctuator.LT,   Operator.LT],
+		[Punctuator.GT,   Operator.GT],
+		[Punctuator.LE,   Operator.LE],
+		[Punctuator.GE,   Operator.GE],
+		[Punctuator.NLT,  Operator.NLT],
+		[Punctuator.NGT,  Operator.NGT],
+		[Keyword   .IS,   Operator.IS],
+		[Keyword   .ISNT, Operator.ISNT],
+		[Punctuator.EQ,   Operator.EQ],
+		[Punctuator.NEQ,  Operator.NEQ],
 		[Punctuator.AND,  Operator.AND],
 		[Punctuator.NAND, Operator.NAND],
 		[Punctuator.OR,   Operator.OR],
 		[Punctuator.NOR,  Operator.NOR],
 	])
 	declare children:
-		| readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary                                            ]
-		| readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary]
+		| readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary]
+		| readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary]
 	decorate(): SemanticNodeExpression {
 		return (this.children.length === 1) ?
 			this.children[0].decorate()
@@ -242,6 +256,34 @@ export class ParseNodeExpressionBinary extends ParseNode {
 				new SemanticNodeOperationBinary(this, Operator.ADD, [
 					this.children[0].decorate(),
 					new SemanticNodeOperationUnary(this.children[2], Operator.NEG, [
+						this.children[2].decorate(),
+					]),
+				])
+			: (this.children[1].source === Punctuator.NLT) ? // `a !< b` is syntax sugar for `!(a < b)`
+				new SemanticNodeOperationUnary(this, Operator.NOT, [
+					new SemanticNodeOperationBinary(this.children[0], Operator.LT, [
+						this.children[0].decorate(),
+						this.children[2].decorate(),
+					]),
+				])
+			: (this.children[1].source === Punctuator.NGT) ? // `a !> b` is syntax sugar for `!(a > b)`
+				new SemanticNodeOperationUnary(this, Operator.NOT, [
+					new SemanticNodeOperationBinary(this.children[0], Operator.GT, [
+						this.children[0].decorate(),
+						this.children[2].decorate(),
+					]),
+				])
+			: (this.children[1].source === Keyword.ISNT) ? // `a isnt b` is syntax sugar for `!(a is b)`
+				new SemanticNodeOperationUnary(this, Operator.NOT, [
+					new SemanticNodeOperationBinary(this.children[0], Operator.IS, [
+						this.children[0].decorate(),
+						this.children[2].decorate(),
+					]),
+				])
+			: (this.children[1].source === Punctuator.NEQ) ? // `a != b` is syntax sugar for `!(a == b)`
+				new SemanticNodeOperationUnary(this, Operator.NOT, [
+					new SemanticNodeOperationBinary(this.children[0], Operator.EQ, [
+						this.children[0].decorate(),
 						this.children[2].decorate(),
 					]),
 				])

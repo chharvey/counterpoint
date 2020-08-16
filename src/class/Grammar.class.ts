@@ -16,6 +16,11 @@ import Production, {
 	ProductionExpressionExponential,
 	ProductionExpressionMultiplicative,
 	ProductionExpressionAdditive,
+	ProductionExpressionComparative,
+	ProductionExpressionEquality,
+	ProductionExpressionConjunctive,
+	ProductionExpressionDisjunctive,
+	ProductionExpressionConditional,
 	ProductionExpression,
 	ProductionDeclarationVariable,
 	ProductionStatementAssignment,
@@ -66,6 +71,11 @@ export default class Grammar {
 			ProductionExpressionExponential.instance,
 			ProductionExpressionMultiplicative.instance,
 			ProductionExpressionAdditive.instance,
+			ProductionExpressionComparative.instance,
+			ProductionExpressionEquality.instance,
+			ProductionExpressionConjunctive.instance,
+			ProductionExpressionDisjunctive.instance,
+			ProductionExpressionConditional.instance,
 			ProductionExpression.instance,
 			...(Dev.supports('variables') ? [ProductionDeclarationVariable.instance] : []),
 			...(Dev.supports('variables') ? [ProductionStatementAssignment.instance] : []),
@@ -215,6 +225,7 @@ export class Rule {
 	 */
 	equals(rule: Rule) {
 		return this === rule ||
+			this.production.displayName === rule.production.displayName &&
 			Util.equalArrays<GrammarSymbol>(this.symbols, rule.symbols)
 	}
 

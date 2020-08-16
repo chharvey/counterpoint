@@ -24,9 +24,9 @@ Type TypeOf(StringTemplate template) :=
 	1. *Return:* `String`.
 
 Type TypeOf(SemanticIdentifier id) :=
-	/* TO BE DETERMINED */
+	// TO BE DETERMINED
 
-Type TypeOf(SemanticOperation[operator: NOT | EMPTY] expr) :=
+Type TypeOf(SemanticOperation[operator: NOT | EMP] expr) :=
 	1. *Return:* `Boolean`.
 Type TypeOf(SemanticOperation[operator: AFF | NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
@@ -44,6 +44,21 @@ Type TypeOf(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
 		2. *Else*:
 			1. *Return:* `Integer`.
 	5. *Throw:* TypeError "Invalid operation.".
+Type TypeOf(SemanticOperation[operator: LT | GT | LE | GE | NLT | NGT] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `t0` be `TypeOf(expr.children.0)`.
+	3. *Let* `t1` be `TypeOf(expr.children.1)`.
+	4. *If* `IsNumeric(t0)` *and* `IsNumeric(t1)`:
+		1. *Return:* `Boolean`.
+	5. *Throw:* TypeError "Invalid operation.".
+Type TypeOf(SemanticOperation[operator: IS | ISNT | EQ | NEQ] expr) :=
+	// 1. *Assert:* `expr.children.count` is 2.
+	// 2. *Let* `t0` be `TypeOf(expr.children.0)`.
+	// 3. *Let* `t1` be `TypeOf(expr.children.1)`.
+	// 4. *If* `t0` and `t1` overlap:
+	// 	1. *Return:* `Boolean`.
+	// 5. *Throw:* TypeError "Invalid operation.".
+	6. *Return:* `Boolean`.
 Type TypeOf(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be `TypeOf(expr.children.0)`.
@@ -83,7 +98,7 @@ Type TypeOf(SemanticOperation[operator: COND] expr) :=
 	2. *Let* `t0` be `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be `TypeOf(expr.children.1)`.
 	4. *Let* `t2` be `TypeOf(expr.children.2)`.
-	5. *If* `TypeOf(t0)` is `Boolean`:
+	5. *If* `t0` is `Boolean`:
 		1. *Return:* `TypeUnion(t1, t2)`.
 	6. *Throw:* TypeError "Invalid operation.".
 ```
@@ -164,4 +179,79 @@ Boolean ToBoolean(SolidLanguageValue value) :=
 	2. *If* `TypeOf(value)` is `Boolean`:
 		1. *Return:* `value`.
 	3. *Return*: `true`.
+```
+
+
+
+## Identical
+The abstract operation **Identical** compares two objects and returns whether they are the exact same object.
+```
+Boolean Identical(Object a, Object b) :=
+	1. *If* `a` is the value `null` and `b` is the value `null`:
+		1. *Return:* `true`.
+	2. *If* `a` is the value `false` *and* `b` is the value `false`:
+		1. *Return:* `true`.
+	3. *If* `a` is the value `true` *and* `b` is the value `true`:
+		1. *Return:* `true`.
+	4. *If* `a` is of type `Integer` *and* `b` is of type `Integer`:
+		1. If `a` and `b` have the same bitwise encoding:
+			1. *Return:* `true`.
+	5. *If* `a` is of type `Float` *and* `b` is of type `Float`:
+		1. If `a` and `b` have the same bitwise encoding:
+			1. *Return:* `true`.
+	// 6. *If* `a` is of type `String` *and* `b` is of type `String`:
+	// 	1. If `a` and `b` are exactly the same sequence of code units
+	// 		(same length and same code units at corresponding indices):
+	// 		1. *Return:* `true`.
+	// 7. *If* `a` and `b` are the same object:
+	// 	1. *Return:* `true`.
+	8. Return `false`.
+```
+
+
+
+## Equal
+The abstract operation **Equal** compares two objects and returns whether they are
+considered “equal” by some definition.
+```
+Boolean Equal(Object a, Object b) :=
+	1. *If* `Identical(a, b)` is `true`:
+		1. *Return:* `true`.
+	2. *If* `a` is of type `Float` *or* `b` is of type `Float`:
+		1. *Return:* `Equal(Float(a), Float(b))`.
+	3. *If* `a` is of type `Float` *and* `b` is of type `Float`:
+		1. If `a` is `0.0` *and* `b` is `-0.0`:
+			1. *Return:* `true`.
+		2. If `a` is `-0.0` *and* `b` is `0.0`:
+			1. *Return:* `true`.
+	// 3. TODO: custom equality operators
+	4. Return `false`.
+```
+
+
+
+## PerformBinaryCompare
+```
+Boolean PerformBinaryCompare(Text op, Or<Integer, Float> operand0, Or<Integer, Float> operand1) :=
+	1. *If* `op` is `LT`:
+		1. *If* `operand0` is strictly less than `operand1`:
+			1. *Return:* `true`.
+		2. *Return:* `false`.
+	2. *Else If* `op` is `GT`:
+		1. *If* `operand1` is strictly less than `operand0`:
+			1. *Return:* `true`.
+		2. *Return:* `false`.
+	3. *Else If* `op` is `LE`:
+		1. *If* `operand0` is equal to `operand1`:
+			1. *Return:* `true`.
+		2. *If* `operand0` is strictly less than `operand1`:
+			1. *Return:* `true`.
+		3. *Return:* `false`.
+	4. *Else If* `op` is `GE`:
+		1. *If* `operand0` is equal to `operand1`:
+			1. *Return:* `true`.
+		2. *If* `operand1` is strictly less than `operand0`:
+			1. *Return:* `true`.
+		3. *Return:* `false`.
+	5. *Throw:* TypeError "Invalid operation.".
 ```

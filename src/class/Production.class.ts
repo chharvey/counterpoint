@@ -199,10 +199,10 @@ export class ProductionExpressionUnarySymbol extends Production {
 	get sequences(): GrammarSymbol[][] {
 		return [
 			[ProductionExpressionUnit.instance],
-			[Punctuator.NOT,   this],
-			[Punctuator.EMPTY, this],
-			[Punctuator.AFF,   this],
-			[Punctuator.NEG,   this],
+			[Punctuator.NOT, this],
+			[Punctuator.EMP, this],
+			[Punctuator.AFF, this],
+			[Punctuator.NEG, this],
 		]
 	}
 	random(): string[] {
@@ -210,7 +210,7 @@ export class ProductionExpressionUnarySymbol extends Production {
 			ProductionExpressionUnit.instance.random() :
 			[Util.arrayRandom([
 				Punctuator.NOT,
-				Punctuator.EMPTY,
+				Punctuator.EMP,
 				Punctuator.AFF,
 				Punctuator.NEG,
 			]), ...this.random()]
@@ -263,19 +263,69 @@ export class ProductionExpressionAdditive extends Production {
 		]
 	}
 }
+export class ProductionExpressionComparative extends Production {
+	static readonly instance: ProductionExpressionComparative = new ProductionExpressionComparative()
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[                      ProductionExpressionAdditive.instance],
+			[this, Punctuator.LT,  ProductionExpressionAdditive.instance],
+			[this, Punctuator.GT,  ProductionExpressionAdditive.instance],
+			[this, Punctuator.LE,  ProductionExpressionAdditive.instance],
+			[this, Punctuator.GE,  ProductionExpressionAdditive.instance],
+			[this, Punctuator.NLT, ProductionExpressionAdditive.instance],
+			[this, Punctuator.NGT, ProductionExpressionAdditive.instance],
+		]
+	}
+	random(): string[] {
+		return [
+			...Terminal.maybeA(() => [...this.random(), Util.arrayRandom([
+				Punctuator.LT,
+				Punctuator.GT,
+				Punctuator.LE,
+				Punctuator.GE,
+				Punctuator.NLT,
+				Punctuator.NGT,
+			])]),
+			...ProductionExpressionAdditive.instance.random(),
+		]
+	}
+}
+export class ProductionExpressionEquality extends Production {
+	static readonly instance: ProductionExpressionEquality = new ProductionExpressionEquality()
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[                       ProductionExpressionComparative.instance],
+			[this, Keyword   .IS,   ProductionExpressionComparative.instance],
+			[this, Keyword   .ISNT, ProductionExpressionComparative.instance],
+			[this, Punctuator.EQ,   ProductionExpressionComparative.instance],
+			[this, Punctuator.NEQ,  ProductionExpressionComparative.instance],
+		]
+	}
+	random(): string[] {
+		return [
+			...Terminal.maybeA(() => [...this.random(), Util.arrayRandom([
+				Keyword   .IS,
+				Keyword   .ISNT,
+				Punctuator.EQ,
+				Punctuator.NEQ,
+			])]),
+			...ProductionExpressionComparative.instance.random(),
+		]
+	}
+}
 export class ProductionExpressionConjunctive extends Production {
 	static readonly instance: ProductionExpressionConjunctive = new ProductionExpressionConjunctive()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[                       ProductionExpressionAdditive.instance],
-			[this, Punctuator.AND,  ProductionExpressionAdditive.instance],
-			[this, Punctuator.NAND, ProductionExpressionAdditive.instance],
+			[                       ProductionExpressionEquality.instance],
+			[this, Punctuator.AND,  ProductionExpressionEquality.instance],
+			[this, Punctuator.NAND, ProductionExpressionEquality.instance],
 		]
 	}
 	random(): string[] {
 		return [
 			...Terminal.maybeA(() => [...this.random(), Util.arrayRandom([Punctuator.AND, Punctuator.NAND])]),
-			...ProductionExpressionAdditive.instance.random(),
+			...ProductionExpressionEquality.instance.random(),
 		]
 	}
 }

@@ -73,7 +73,53 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… - …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">6</th>
+			<th rowspan="6">6</th>
+			<td>Less Than</td>
+			<td rowspan="6">binary infix</td>
+			<td rowspan="6">left-to-right</td>
+			<td><code>… < …</code></td>
+		</tr>
+		<tr>
+			<td>Greater Than</td>
+			<td><code>… > …</code></td>
+		</tr>
+		<tr>
+			<td>Less Than or Equal To</td>
+			<td><code>… <= …</code></td>
+		</tr>
+		<tr>
+			<td>Greater Than or Equal To</td>
+			<td><code>… >= …</code></td>
+		</tr>
+		<tr>
+			<td>Not Less Than</td>
+			<td><code>… !< …</code></td>
+		</tr>
+		<tr>
+			<td>Not Greater Than</td>
+			<td><code>… !> …</code></td>
+		</tr>
+		<tr>
+			<th rowspan="4">7</th>
+			<td>Identity</td>
+			<td rowspan="4">binary infix</td>
+			<td rowspan="4">left-to-right</td>
+			<td><code>… is …</code></td>
+		</tr>
+		<tr>
+			<td>Non-Identity</td>
+			<td><code>… isnt …</code></td>
+		</tr>
+		<tr>
+			<td>Equality</td>
+			<td><code>… == …</code></td>
+		</tr>
+		<tr>
+			<td>Non-Equality</td>
+			<td><code>… != …</code></td>
+		</tr>
+		<tr>
+			<th rowspan="2">8</th>
 			<td>Conjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -84,7 +130,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !& …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">7</th>
+			<th rowspan="2">9</th>
 			<td>Disjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -95,7 +141,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !| …</code></td>
 		</tr>
 		<tr>
-			<th>8</th>
+			<th>10</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
@@ -194,7 +240,7 @@ this is important to mention because it could affect how we write
 ```
 The **exponentiation** operator is valid only on number types.
 It produces the result of raising the left-hand operand to the power of the right-hand operand.
-Integer bases can be mixed.
+Integer bases as well as integers and floats can be mixed.
 
 ```
 3 ^ 2;    %== 9
@@ -251,7 +297,7 @@ The **multiplication** operator, `*`, and
 the **division** operator, `/`,
 are valid only on number types.
 They produce the respective mathematical product and quotient of the operands.
-Integer bases can be mixed.
+Integer bases as well as integers and floats can be mixed.
 
 Multiplication is **associative**, which means the following expressions produce the same result,
 for any numbers `‹a›`, `‹b›`, and `‹c›`:
@@ -281,7 +327,7 @@ The **addition** operator, `+`, and
 the **subtraction** operator, `-`,
 are valid only on number types.
 They produce the respective mathematical sum and difference of the operands.
-Integer bases can be mixed.
+Integer bases as well as integers and floats can be mixed.
 
 Addition is **associative**, which means the following expressions produce the same result,
 for any numbers `‹a›`, `‹b›`, and `‹c›`:
@@ -319,6 +365,77 @@ Now the lexer produces three tokens: a number `3`, a punctuator `+`, and a numbe
 The parser receives these tokens and produces the correct expression.
 (Note that the code `3+ 1` would be sufficient, but perhaps not as readable.)
 
+
+
+## Comparative
+```
+<int | float> `<`  <int | float>
+<int | float> `>`  <int | float>
+<int | float> `<=` <int | float>
+<int | float> `>=` <int | float>
+<int | float> `!<` <int | float>
+<int | float> `!>` <int | float>
+```
+The comparative operators,
+
+- **less than** `<`
+- **greater than** `>`
+- **less than or equal to** `<=`
+- **greater than or equal to** `>=`
+- **not less than** `!<`
+- **not greater than** `!>`
+
+compare number types in the usual sense. The result is a boolean value.
+Integer bases as well as integers and floats can be mixed.
+
+In numerical uses, `!<` is equivalent to `>=`, and `!>` is equivalent to `<=`.
+In general, however, this might not hold for future operator overloads.
+For instance, if the relational operators were overloaded to mean “subset” for sets,
+then `a !< b` (“`a` is not a strict subset of `b`”) does not necessarily mean
+that `a >= b` (“`a` is a superset of ”).
+
+
+
+## Equality
+```
+<unknown> `is`   <unknown>
+<unknown> `isnt` <unknown>
+<unknown> `==`   <unknown>
+<unknown> `!=`   <unknown>
+```
+These operators compare two values.
+Any type of operands are valid. The result is a boolean value.
+Integer bases as well as integers and floats can be mixed.
+
+The **identity** operator `is` determines whether two operands are the exactly same object.
+It produces whether the bitwise representations of both operands are the same,
+and whether they exist at the same location in memory.
+Primitive values such as `null`, boolean values, number values, and string values
+only exist once, so any two of “the same” values will be identical.
+For other types, identity and equality might not necessarily be the same:
+objects that are considered equal might not be identical.
+
+Per the [IEEE-754-2019] specification, the floating-point values `0.0` and `-0.0` do not have
+the same bitwise representation; therefore the expression `0.0 is -0.0` evaluates to `false`.
+Floatint-point values and integer values are never identical, so the expression `42 is 42.0` is also `false`.
+
+The **equality** operator `==` determines whether two operands are considered “equal” by some definition,
+based on the type of the operands.
+For `null` and boolean values, equality is one in the same with identity.
+For number values, equality is determined by mathematical quantity, thus `0.0 == -0.0` is `true`.
+Mixed numbers of the same quantity are equal, so `42 == 42.0` is also `true`.
+
+The non-identity operator `isnt` is simply the logical negation of `is`, and
+the non-equality operator `!=` is simply the logical negation of `==`.
+
+All four of these operators are **commutative**, meaning the order of operands does not change the resulting value.
+```
+‹a› is   ‹b›; % same as `‹b› is   ‹a›`
+‹a› isnt ‹b›; % same as `‹b› isnt ‹a›`
+‹a› ==   ‹b›; % same as `‹b› ==   ‹a›`
+‹a› !=   ‹b›; % same as `‹b› !=   ‹a›`
+```
+Remember: Expressions are always evaluated from left to right, so side-effects could still be observed.
 
 
 ## Conjunctive

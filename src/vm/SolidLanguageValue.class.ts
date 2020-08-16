@@ -22,6 +22,41 @@ export default class SolidLanguageValue {
 			SolidBoolean.TRUE
 		)
 	}
+	/**
+	 * Is this value the same exact object as the argument?
+	 * @param value the object to compare
+	 * @returns are the objects identically the same?
+	 * @final
+	 */
+	identical(value: SolidLanguageValue): boolean {
+		return this === value || this.identical_helper(value)
+	}
+	/**
+	 * Helper method for {@link this.identical}. Override as needed.
+	 * @param _value the object to compare
+	 * @returns are the objects identically the same?
+	 */
+	protected identical_helper(_value: SolidLanguageValue): boolean {
+		return false
+	}
+	/**
+	 * Are the values considered equal?
+	 * If {@link this.identical} returns `true`, this method will return `true`.
+	 * @param value the object to compare
+	 * @returns are the objects equal?
+	 * @final
+	 */
+	equal(value: SolidLanguageValue): boolean {
+		return this.identical(value) || this.equal_helper(value)
+	}
+	/**
+	 * Helper method for {@link this.equal}. Override as needed.
+	 * @param _value the object to compare
+	 * @returns are the objects equal?
+	 */
+	protected equal_helper(_value: SolidLanguageValue): boolean {
+		return false
+	}
 }
 
 
@@ -46,8 +81,13 @@ export class SolidNull extends SolidLanguageValue {
 	private constructor () {
 		super()
 	}
+	/** @override */
 	toString(): string {
 		return 'null'
+	}
+	/** @override */
+	protected identical_helper(value: SolidLanguageValue): boolean {
+		return value instanceof SolidNull
 	}
 }
 
@@ -82,8 +122,13 @@ export class SolidBoolean extends SolidLanguageValue {
 	protected constructor (readonly value: boolean = false) {
 		super()
 	}
+	/** @override */
 	toString(): string {
 		return `${ this.value }`
+	}
+	/** @override */
+	protected identical_helper(value: SolidLanguageValue): boolean {
+		return value instanceof SolidBoolean && this.value === value.value
 	}
 	/**
 	 * Return the negation of this Boolean.
@@ -159,10 +204,31 @@ export abstract class SolidNumber<T> extends SolidLanguageValue {
 	 */
 	abstract neg(): T;
 	/**
+	 * Does this number have the same (an identical) bit-wise encoding as the argument?
+	 * Note that while the integer values `0` and `-0` are encoded the same,
+	 * the floating-point values `0.0` and `-0.0` do not have the same encoding.
+	 * @param x the number to compare
+	 * @returns are the numbers identically the same?
+	 */
+	protected abstract is(x: T): boolean;
+	/**
+	 * Are the numbers mathematically equal?
+	 * This treats all integer and all non-zero floating-point numbers the same as does {@link #is},
+	 * while also returning `true` for the floating-point values `0.0` and `-0.0`.
+	 * @param x the number to compare
+	 * @returns do the numbers have the same mathematical value?
+	 */
+	protected abstract eq(x: T): boolean;
+	/**
 	 * Is the number equal to zero?
 	 * @returns Is the number equal to zero?
 	 */
 	abstract eq0(): boolean;
+	/**
+	 * Is the number strictly less than the argument?
+	 * @returns Is the number strictly less than the argument?
+	 */
+	abstract lt(y: T): boolean;
 }
 
 

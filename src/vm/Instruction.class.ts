@@ -6,7 +6,7 @@ import Float64 from './Float64.class'
 // HACK: this is defined here, instead of in `../class/SemanticNode.class`, to avoid circular imports.
 export enum Operator {
 	NOT,
-	EMPTY,
+	EMP,
 	AFF,
 	NEG,
 	EXP,
@@ -14,6 +14,16 @@ export enum Operator {
 	DIV,
 	ADD,
 	SUB,
+	LT,
+	GT,
+	LE,
+	GE,
+	NLT,
+	NGT,
+	IS,
+	ISNT,
+	EQ,
+	NEQ,
 	AND,
 	NAND,
 	OR,
@@ -154,10 +164,10 @@ export class InstructionUnop extends InstructionExpression {
 	 */
 	toString(): string {
 		return `(${ new Map<Operator, string>([
-			[Operator.AFF,   `nop`],
-			[Operator.NEG,   (!this.arg.isFloat) ? `call $neg`  : `f64.neg`],
-			[Operator.NOT,   (!this.arg.isFloat) ? `call $inot` : `call $fnot`],
-			[Operator.EMPTY, (!this.arg.isFloat) ? `call $iemp` : `call $femp`],
+			[Operator.AFF, `nop`],
+			[Operator.NEG, (!this.arg.isFloat) ? `call $neg`  : `f64.neg`],
+			[Operator.NOT, (!this.arg.isFloat) ? `call $inot` : `call $fnot`],
+			[Operator.EMP, (!this.arg.isFloat) ? `call $iemp` : `call $femp`],
 		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg })`
 	}
 	get isFloat(): boolean {
@@ -204,6 +214,12 @@ export class InstructionBinop extends InstructionExpression {
 			[Operator.MUL, (!this.isFloat) ? `i32.mul`   : `f64.mul`],
 			[Operator.DIV, (!this.isFloat) ? `i32.div_s` : `f64.div`],
 			[Operator.EXP, (!this.isFloat) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
+			[Operator.LT,  (!this.isFloat) ? `i32.lt_s`  : `f64.lt`],
+			[Operator.GT,  (!this.isFloat) ? `i32.gt_s`  : `f64.gt`],
+			[Operator.LE,  (!this.isFloat) ? `i32.le_s`  : `f64.le`],
+			[Operator.GE,  (!this.isFloat) ? `i32.ge_s`  : `f64.ge`],
+			[Operator.IS,  (!this.isFloat) ? `i32.eq`    : `call $fis`],
+			[Operator.EQ,  (!this.isFloat) ? `i32.eq`    : `f64.eq`],
 		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg0 } ${ this.arg1 })`
 	}
 	get isFloat(): boolean {
