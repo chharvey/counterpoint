@@ -3,9 +3,8 @@ This chapter lists and defines common abstract algorithms used throughout this s
 
 
 
-## Abstract Operation: TypeOf
-The abstract algorithm **TypeOf** returns the [Solid Language Type](./data-types.md#solid-language-types)
-of an expression.
+## TypeOf
+Returns the [Solid Language Type](./data-types.md#solid-language-types) of an expression.
 ```
 Type TypeOf(SemanticConstant constant) :=
 	1. *If* `constant.value` is `null`:
@@ -105,8 +104,8 @@ Type TypeOf(SemanticOperation[operator: COND] expr) :=
 
 
 
-## Abstract Operation: FalsifyType
-The `FalsifyType` operation extracts the “falsy” types from a type and returns them.
+## FalsifyType
+Extracts the “falsy” types from a type and returns them.
 ```
 Type FalsifyType(Type t) :=
 	1. *If* `t` is `Null`:
@@ -122,8 +121,8 @@ Type FalsifyType(Type t) :=
 
 
 
-## Abstract Operation: TruthifyType
-The `TruthifyType` operation extracts the “truthy” types from a type and returns them.
+## TruthifyType
+Extracts the “truthy” types from a type and returns them.
 ```
 Type TruthifyType(Type t) :=
 	1. *If* `t` is `Null`:
@@ -140,7 +139,7 @@ Type TruthifyType(Type t) :=
 
 
 ## Abstract Operation: IsNumeric
-The `IsNumeric` operation determines whether Solid Language Value is of a numeric type,
+Determines whether Solid Language Value is of a numeric type,
 that is, either an [Integer](./data-types.md#integer) or a [Float](./data-types.md#float).
 ```
 Boolean IsNumeric(Type t) :=
@@ -152,7 +151,7 @@ Boolean IsNumeric(Type t) :=
 
 
 ## TypeCheck
-The **TypeCheck** algorithm performs the type-checking piece during semantic analysis.
+Performs the type-checking piece during semantic analysis.
 ```
 Void TypeCheck(SemanticExpression expr) :=
 	1. *Perform:* `TypeOf(expr)`.
@@ -170,8 +169,7 @@ Void TypeCheck(SemanticGoal goal) :=
 
 
 ## ToBoolean
-The **ToBoolean** algorithm returns an associated [boolean value](./data-types#boolean),
-`true` or `false`, with a Solid Language Value.
+Returns an associated [boolean value](./data-types#boolean), `true` or `false`, with a Solid Language Value.
 ```
 Boolean ToBoolean(SolidLanguageValue value) :=
 	1. *If* `TypeOf(value)` is `Null`:
@@ -184,7 +182,7 @@ Boolean ToBoolean(SolidLanguageValue value) :=
 
 
 ## Identical
-The abstract operation **Identical** compares two objects and returns whether they are the exact same object.
+Compares two objects and returns whether they are the exact same object.
 ```
 Boolean Identical(Object a, Object b) :=
 	1. *If* `a` is the value `null` and `b` is the value `null`:
@@ -211,8 +209,7 @@ Boolean Identical(Object a, Object b) :=
 
 
 ## Equal
-The abstract operation **Equal** compares two objects and returns whether they are
-considered “equal” by some definition.
+Compares two objects and returns whether they are considered “equal” by some definition.
 ```
 Boolean Equal(Object a, Object b) :=
 	1. *If* `Identical(a, b)` is `true`:
@@ -230,7 +227,32 @@ Boolean Equal(Object a, Object b) :=
 
 
 
+### Abstract Operation: PerformBinaryArithmetic
+Performs a binary arithmetic operation.
+```
+Or<Integer, Float> PerformBinaryArithmetic(Text op, Or<Integer, Float> operand0, Or<Integer, Float> operand1) :=
+	1. *If* `op` is `EXP`:
+		1. *Let* `result` be the power, `operand0 ^ operand1`,
+			obtained by raising `operand0` (the base) to `operand1` (the exponent).
+		2. *Return:* `result`.
+	2. *Else If* `op` is `MUL`:
+		1. *Let* `result` be the product, `operand0 * operand1`,
+			obtained by multiplying `operand0` (the multiplicand) by `operand1` (the multiplier).
+		2. *Return:* `result`.
+	3. *Else If* `op` is `DIV`:
+		1. *Let* `result` be the quotient, `operand0 / operand1`,
+			obtained by dividing `operand0` (the dividend) by `operand1` (the divisor).
+		2. *Return:* `result`.
+	4. *Else If* `op` is `ADD`:
+		1. *Let* `result` be the sum, `operand0 + operand1`,
+			obtained by adding `operand0` (the augend) to `operand1` (the addend).
+		2. *Return:* `result`.
+	5. *Throw:* TypeError "Invalid operation.".
+```
+
+
 ## PerformBinaryCompare
+Performs a binary comparison operation.
 ```
 Boolean PerformBinaryCompare(Text op, Or<Integer, Float> operand0, Or<Integer, Float> operand1) :=
 	1. *If* `op` is `LT`:

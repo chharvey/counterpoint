@@ -111,3 +111,24 @@ Sequence<Instruction> Build(SemanticGoal goal) :=
 		1. *Let* `instrs` be the result of performing `Build(stmt)`.
 		2. Push `...instrs` to `sequence`.
 	3. *Return* `sequence`.
+
+
+
+// Prepares instructions for a binary operation.
+Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperationBinary(SemanticOperation expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `instrs0` be the result of performing `TryAssessAndBuild(expr.children.0)`.
+	3. *Let* `instrs1` be the result of performing `TryAssessAndBuild(expr.children.1)`.
+	4. *Return:* [instrs0, instrs1].
+
+
+
+// Attempts to assess a semantic node first and then build the assessment;
+// if the assessment fails, builds the semantic node.
+Sequence<Instruction> TryAssessAndBuild(SemanticExpression expr) :=
+	1. *Let* `assess` be the result of performing `Assess(expr)`.
+	2. *If* `TypeOf(assess)` is `Void`:
+		1. *Let* `instrs` be the result of performing `Build(expr)`.
+	3. *Else:*
+		1. *Let* `instrs` be the result of performing `Build(assess)`.
+	4. *Return:* `instrs`.
