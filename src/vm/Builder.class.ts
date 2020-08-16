@@ -22,6 +22,7 @@ const not: string = fs.readFileSync(path.join(__dirname, '../../src/not.wat'), '
 const emp: string = fs.readFileSync(path.join(__dirname, '../../src/emp.wat'), 'utf8')
 const neg: string = fs.readFileSync(path.join(__dirname, '../../src/neg.wat'), 'utf8')
 const exp: string = fs.readFileSync(path.join(__dirname, '../../src/exp.wat'), 'utf8')
+const fis: string = fs.readFileSync(path.join(__dirname, '../../src/fis.wat'), 'utf8')
 
 
 
@@ -64,6 +65,7 @@ export default class Builder {
 			emp,
 			neg,
 			exp,
+			fis,
 			...comps.map((comp) => comp.build(this)),
 		])
 	}

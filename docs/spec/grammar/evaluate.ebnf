@@ -21,29 +21,17 @@ Void Evaluate(Instruction :::= "NEG") :=
 		obtained by negating `operand`.
 	3. Push `negation` onto the operand stack.
 
-Void Evaluate(Instruction :::= "EXP") :=
+Void Evaluate(Instruction :::= "EXP" | "MUL" | "DIV" | "ADD") :=
 	1. Pop `operand1` from the operand stack.
 	2. Pop `operand0` from the operand stack.
-	3. *Let* `power` be the result of performing `PerformNumericBinaryOperation(EXP, operand0, operand1)`.
-	4. Push `power` onto the operand stack.
+	3. *Let* `result` be the result of performing `PerformBinaryArithmetic(Instruction, operand0, operand1)`.
+	4. Push `result` onto the operand stack.
 
-Void Evaluate(Instruction :::= "MUL") :=
+Void Evaluate(Instruction :::= "LT" | "GT" | "LE" | "GE") :=
 	1. Pop `operand1` from the operand stack.
 	2. Pop `operand0` from the operand stack.
-	3. *Let* `product` be the result of performing `PerformNumericBinaryOperation(MUL, operand0, operand1)`.
-	4. Push `product` onto the operand stack.
-
-Void Evaluate(Instruction :::= "DIV") :=
-	1. Pop `operand1` from the operand stack.
-	2. Pop `operand0` from the operand stack.
-	3. *Let* `quotient` be the result of performing `PerformNumericBinaryOperation(DIV, operand0, operand1)`.
-	4. Push `quotient` onto the operand stack.
-
-Void Evaluate(Instruction :::= "ADD") :=
-	1. Pop `operand1` from the operand stack.
-	2. Pop `operand0` from the operand stack.
-	3. *Let* `sum` be the result of performing `PerformNumericBinaryOperation(ADD, operand0, operand1)`.
-	4. Push `sum` onto the operand stack.
+	3. *Let* `result` be the result of performing `PerformBinaryCompare(Instruction, operand0, operand1)`.
+	4. Push `result` onto the operand stack.
 
 Void Evaluate(Instruction :::= "IF") :=
 	1. Pop `condition` from the operand stack.

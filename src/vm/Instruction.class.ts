@@ -214,6 +214,12 @@ export class InstructionBinop extends InstructionExpression {
 			[Operator.MUL, (!this.isFloat) ? `i32.mul`   : `f64.mul`],
 			[Operator.DIV, (!this.isFloat) ? `i32.div_s` : `f64.div`],
 			[Operator.EXP, (!this.isFloat) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
+			[Operator.LT,  (!this.isFloat) ? `i32.lt_s`  : `f64.lt`],
+			[Operator.GT,  (!this.isFloat) ? `i32.gt_s`  : `f64.gt`],
+			[Operator.LE,  (!this.isFloat) ? `i32.le_s`  : `f64.le`],
+			[Operator.GE,  (!this.isFloat) ? `i32.ge_s`  : `f64.ge`],
+			[Operator.IS,  (!this.isFloat) ? `i32.eq`    : `call $fis`],
+			[Operator.EQ,  (!this.isFloat) ? `i32.eq`    : `f64.eq`],
 		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg0 } ${ this.arg1 })`
 	}
 	get isFloat(): boolean {

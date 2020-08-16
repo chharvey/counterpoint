@@ -11,11 +11,7 @@
 
 ;; # Empty Operator for Floats
 (func $femp (param $p0 f64) (result i32)
-	(if (result i32)
-		(i32.or
-			(f64.eq (local.get $p0) (f64.const 0.0))
-			(f64.eq (local.get $p0) (f64.const -0.0))
-		)
+	(if (result i32) (f64.eq (local.get $p0) (f64.const 0.0)) ;; also takes care of -0.0
 		(then (i32.const 1))
 	(else
 		(i32.const 0)

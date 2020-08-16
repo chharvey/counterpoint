@@ -2,9 +2,9 @@
 This chapter defines the syntax, semantics, and behavior of expressions in the Solid programming language.
 
 
-### Abstract Operation: PerformNumericBinaryOperation
+### Abstract Operation: PerformBinaryArithmetic
 ```
-RealNumber PerformNumericBinaryOperation(Text op, RealNumber operand0, RealNumber operand1) :=
+Or<Integer, Float> PerformBinaryArithmetic(Text op, Or<Integer, Float> operand0, Or<Integer, Float> operand1) :=
 	1. *If* `op` is `EXP`:
 		1. *Let* `result` be the power, `operand0 ^ operand1`,
 			obtained by raising `operand0` (the base) to `operand1` (the exponent).
@@ -22,23 +22,6 @@ RealNumber PerformNumericBinaryOperation(Text op, RealNumber operand0, RealNumbe
 			obtained by adding `operand0` (the augend) to `operand1` (the addend).
 		2. *Return:* `result`.
 	5. *Throw:* TypeError "Invalid operation.".
-```
-
-
-### AbstractOperation: AssessSemanticOperationBinary
-```
-Or<Integer, Float>? AssessSemanticOperationBinary(SemanticOperation expr) :=
-	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `operand0` be the result of performing `Assess(expr.children.0)`.
-	3. *If* `TypeOf(operand0)` is `Void`:
-		1. *Return*.
-	4. *Let* `operand1` be the result of performing `Assess(expr.children.1)`.
-	5. *If* `TypeOf(operand1)` is `Void`:
-		1. *Return*.
-	6. *If* `TypeOf(operand0)` is `Integer` *and* `TypeOf(operand1)` is `Integer`:
-		1. *Return:* `Integer(PerformNumericBinaryOperation(expr.operator, operand0, operand1))`.
-	7. *Assert*: `IsNumeric(operand0)` *and* `IsNumeric(operand1)`.
-	8. *Return:* `Float(PerformNumericBinaryOperation(expr.operator, Float(float0), Float(float1)))`.
 ```
 
 

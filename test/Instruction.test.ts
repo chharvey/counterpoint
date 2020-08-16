@@ -143,6 +143,26 @@ describe('Instruction', () => {
 					new InstructionGet(varname, true),
 					instructionConstFloat(18.1),
 				) }`)('$operand0'))
+				assert.strictEqual(new InstructionBinop(
+					Operator.LT,
+					instructionConstInt(30n),
+					instructionConstInt(18n),
+				).toString(), `(i32.lt_s ${ instructionConstInt(30n) } ${ instructionConstInt(18n) })`)
+				assert.strictEqual(new InstructionBinop(
+					Operator.GE,
+					instructionConstFloat(30.1),
+					instructionConstFloat(18.1),
+				).toString(), `(f64.ge ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
+				assert.strictEqual(new InstructionBinop(
+					Operator.IS,
+					instructionConstInt(30n),
+					instructionConstInt(18n),
+				).toString(), `(i32.eq ${ instructionConstInt(30n) } ${ instructionConstInt(18n) })`)
+				assert.strictEqual(new InstructionBinop(
+					Operator.IS,
+					instructionConstFloat(30.1),
+					instructionConstFloat(18.1),
+				).toString(), `(call $fis ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
 			})
 		})
 
@@ -167,6 +187,7 @@ describe('Instruction', () => {
 				const emp: string = fs.readFileSync(path.join(__dirname, '../src/emp.wat'), 'utf8')
 				const neg: string = fs.readFileSync(path.join(__dirname, '../src/neg.wat'), 'utf8')
 				const exp: string = fs.readFileSync(path.join(__dirname, '../src/exp.wat'), 'utf8')
+				const fis: string = fs.readFileSync(path.join(__dirname, '../src/fis.wat'), 'utf8')
 				const mods: (InstructionNone | InstructionModule)[] = [
 					``,
 					`;`,
@@ -182,6 +203,7 @@ describe('Instruction', () => {
 					emp,
 					neg,
 					exp,
+					fis,
 					new InstructionNone(),
 				]))
 			})
