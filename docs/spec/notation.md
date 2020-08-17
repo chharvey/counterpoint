@@ -1252,6 +1252,36 @@ a throw completion structure whose \`value\` is ‹v› is returned.
 That is, the step is shorthand for «*Return:* [type= throw, value= ‹v›].».
 Note that such a completion structure is “abrupt”.
 
+#### Unwrap
+An algorithm step that contains «*Unwrap:* ‹CS›» (where ‹CS› is a completion structure or algorithm call)
+is shorthand for the following steps:
+```
+1. *If* ‹CS› is an abrupt completion:
+	1. *Return:* ‹CS›.
+2. *Assert:* ‹CS› is a normal completion.
+3. *If* ‹CS› has a `value` property:
+	1. Perform the «Unwrap» step replacing ‹CS› with `‹CS›.value`.
+4. *Else:*
+	1. Perform the «Unwrap» step replacing ‹CS› with `void`.
+```
+
+For example, setting a variable to an unwrap step …
+```
+1. *Let* `call` be the result of performing `AlgorithmCall()`.
+2. *Let* `v` be *Unwrap:* `call`.
+```
+… is shorthand for returning if abrupt.
+```
+1. *Let* `call` be the result of performing `AlgorithmCall()`.
+2. *If* `call` is an abrupt completion:
+	1. *Return:* `call`.
+3. *Assert:* `call` is a normal completion.
+4. *If* `call` has a `value` property:
+	1. *Let* `v` be `call.value`.
+5. *Else:*
+	1. *Let* `v` be `void`.
+```
+
 #### Shorthand Notation
 Algorithm steps may contain shorthand notation that desugar to the types of steps listed above.
 The metavariables ‹x›, ‹y›, ‹A›, ‹B›, and ‹C› represent any snippets of algorithm prose.

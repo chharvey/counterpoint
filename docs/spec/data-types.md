@@ -21,6 +21,18 @@ An algorithm with output type Void returns a [completion structure](#completions
 with no \`value\` property.
 
 
+### Enumerated Words
+Some sections in this specification may define a set of enumerated words used for a specific purpose.
+The enumerated words along with any associated meanings are defined together within the relevant section.
+These words are considered Solid Specification Values, but with no defined type;
+for intents and purposes they can be thought of as strings.
+Where a type description is required (such as in the input of an algorithm), the type «Text» may be used.
+
+For example, a section of this specification may define the enumerated set of arithmetic operands
+*ADD*, *SUB*, *MUL*, *DIV*, and *EXP*.
+The words might or might not have associated descriptions defined with them.
+
+
 ### RealNumber
 The **RealNumber** type represents arbitrary real numbers used in specific situations.
 Real numbers cannot be represented accurately in a computer program,
@@ -150,3 +162,24 @@ whose decimals terminate in base 10.
 (That is, numbers that can be expressed as a finite sum of multiples of powers of 10.)
 The Float type contains “floating-point numbers”, which are 64-bit format values as specified in the
 *IEEE Standard for Binary Floating-Point Arithmetic ([IEEE 754-2019](https://standards.ieee.org/standard/754-2019.html))*.
+
+
+
+## Type Operations
+
+
+### Intersection
+A data type specified as \`And<‹T›, ‹U›>\`,
+where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
+is a data type that contains values matching *both* type \`‹T›\` and type \`‹U›\`.
+Such a data type is called the **intersection** of \`‹T›\` and \`‹U›\`.
+
+
+### Union
+A data type specified as \`Or<‹T›, ‹U›>\`,
+where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
+is a data type that contains values matching *either* type \`‹T›\` or type \`‹U›\` (or both).
+Such a data type is called the **union** of \`‹T›\` and \`‹U›\`.
+
+For example, the type \`Or<Integer, Null>\` contains values of either \`Integer\` or \`Null\`.
+(Since there is no overlap, there are no values of both \`Integer\` *and* \`Null\`.)
