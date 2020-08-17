@@ -259,12 +259,6 @@ export abstract class SemanticNodeOperation extends SemanticNodeExpression {
 	}
 }
 export class SemanticNodeOperationUnary extends SemanticNodeOperation {
-	private static fold<T extends SolidNumber<T>>(op: Operator, z: T): T {
-		return new Map<Operator, (z: T) => T>([
-			[Operator.AFF, (z) => z      ],
-			[Operator.NEG, (z) => z.neg()],
-		]).get(op)!(z)
-	}
 	declare assessments: [
 		CompletionStructureAssessment | null,
 	];
@@ -299,10 +293,24 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 			(this.operator === Operator.EMP) ? new CompletionStructureAssessment(v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0()))) :
 			(
 				(v0 instanceof SolidNumber)
-					? new CompletionStructureAssessment(SemanticNodeOperationUnary.fold(this.operator, v0))
+					? new CompletionStructureAssessment(this.foldNumeric(v0))
 					: null
 			)
 		)
+	}
+	private foldNumeric<T extends SolidNumber<T>>(z: T): T {
+		try {
+			return new Map<Operator, (z: T) => T>([
+				[Operator.AFF, (z) => z],
+				[Operator.NEG, (z) => z.neg()],
+			]).get(this.operator)!(z)
+		} catch (err) {
+			if (err instanceof xjs.NaNError) {
+				throw new NanError01(this)
+			} else {
+				throw err
+			}
+		}
 	}
 }
 export class SemanticNodeOperationBinary extends SemanticNodeOperation {
