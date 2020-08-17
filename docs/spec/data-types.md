@@ -15,8 +15,10 @@ They are not directly observable from Solid code.
 
 
 ### Void
-The **Void** type has no value, but signifies the completion of an algorithm.
-The algorithm does not return a value.
+The **Void** type has one value called \`void\`.
+It signifies a variable with no meaningful value.
+An algorithm with output type Void returns a [completion structure](#completionstructure)
+with no \`value\` property.
 
 
 ### RealNumber
@@ -76,18 +78,18 @@ A **Structure** is an unordered list of name–value pairs. The names are unique
 A name–value pair of a structure is called a **property**.
 
 #### CompletionStructure
-A **CompletionStructure** is a specific subtype of [Structure](#structure) with two mandatory properties:
-«type» and «value».
-The «type» property must be one of the enumerated specification values
+A **CompletionStructure** is a specific subtype of [Structure](#structure) with
+a mandatory property \`type\` and an optional property \`value\`.
+The value of the \`type\` property must be one of the [enumerated](#enumerated-values) specification values
 *normal*, *break*, *continue*, *return*, or *throw*, which are described below.
-The «value» property must be a [Solid Language Value](#solid-language-types).
+The value of the \`value\` property must be a [Solid Language Value](#solid-language-types).
 
 Completion structures are the default values returned by all specification algorithms,
 unless explicitly stated otherwise.
 
 This table summarizes the enumerated values of a completion structure’s «type» property.
 
-Value      | Meaning
+Type       | Meaning
 ---------- | -------
 *normal*   | TODO
 *continue* | TODO
@@ -95,7 +97,8 @@ Value      | Meaning
 *return*   | TODO
 *throw*    | TODO
 
-The term “abrupt completion” refers to any completion with a «type» other than *normal*.
+The term “normal completion” refers to any completion with a \`type\` of *normal*, and
+the term “abrupt completion” refers to any completion with a \`type\` other than *normal*.
 
 
 

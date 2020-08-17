@@ -10,7 +10,7 @@ steps of a hypothetical [specification algorithm](#algorithms).
 > In an algorithm, a step that reads «*Let* \`x\` be the value of \`X\`.» means to say
 «If \`X\` is a completion structure, then let \`x\` be \`X.value\`; otherwise let \`x\` be \`X\`.»
 
-Algorithm variables and values are delimited with \`back-ticks\` as illustrated above.
+Algorithm variables, values, and identifiers are delimited with \`back-ticks\` as illustrated above.
 
 Snippets of program code (be it a Solid program or another kind of program such as a context-free grammar)
 are written in `monospace font`.
@@ -21,10 +21,10 @@ that assigns the `value` property of `X` to the newly declared variable `x`.
 
 Metavariables are variables used within this specification as placeholder values.
 They are delimited with left and right single-angle quotes.
-In the following example, `‹T›` and `‹U›` are not actual Solid Language Types,
+In the following example, \`‹T›\` and \`‹U›\` are not actual Solid Language Types,
 but placeholders for such types.
-> If `‹T›` and `‹U›` are Solid Language Types, then `Or<‹T›, ‹U›>` is the Solid Language Type
-that contains values of either type `‹T›` or type `‹U›` (or both).
+> If \`‹T›\` and \`‹U›\` are Solid Language Types, then \`Or<‹T›, ‹U›>\` is the Solid Language Type
+that contains values of either type \`‹T›\` or type \`‹U›\` (or both).
 
 
 ### Solid Specification Values
@@ -34,21 +34,22 @@ For instance, a sequence of real numbers can be written as *[2, 4, 6]*.
 #### Sequences
 Sequences are denoted within left and right square brackets, with comma-separated entries.
 The notation *[`1685`, `'Bach'`]* represents a sequence containing two items:
-the [Integer](#integer) representing the real number *1685*, and the [String value](#string) `'Bach'`.
+the [Integer](./data-types.md#integer) representing the real number *1685*,
+and the [String value](./data-types.md#string) `'Bach'`.
 
 Entries of a sequence may be accessed using 0-origin dot notation.
-If the example sequence above were assigned to the specification variable «\`bach\`»,
-then «\`bach.0\`» is shorthand for «the 0th entry of \`bach\`», which is the value `1685`.
+If the example sequence above were assigned to the specification variable \`bach\`,
+then \`bach.0\` is shorthand for «the 0th entry of \`bach\`», which is the value `1685`.
 
 #### Structures
 Structures are denoted with left and right square brackets,
 and name–value pairs are delimited with equals signs `=`.
-For example, a structure with a *name* property of `'Bach'` and a *yob* property of `1685` would be represented as
-*[name= `'Bach'`, yob= `1685`]*.
+For example, a structure with a \`name\` property of `'Bach'` and a \`yob\` property of `1685`
+would be written as *[name= `'Bach'`, yob= `1685`]*.
 
 Entries of a structure can be accessed using dot notation.
-If the example structure above were assigned to the specification variable «\`bach\`»,
-then «\`bach.name\`» is shorthand for «the \`name\` property of \`bach\`», which is the value `'Bach'`.
+If the example structure above were assigned to the specification variable \`bach\`,
+then \`bach.name\` is shorthand for «the \`name\` property of \`bach\`», which is the value `'Bach'`.
 
 
 ### Solid Language Values
@@ -1020,23 +1021,23 @@ For notational convenience, only the value of the completion structure is writte
 
 ### Example
 ```
-Value(INT :::= [0-9]) -> Integer
-	:= Value([0-9]);
-Value(INT :::= INT [0-9]) -> Integer
-	:= 10 * Value(INT) + Value([0-9]);
-Value([0-9] :::= "0") -> Integer := 0;
-Value([0-9] :::= "1") -> Integer := 1;
+Quantity(INT :::= [0-9]) -> Integer
+	:= Quantity([0-9]);
+Quantity(INT :::= INT [0-9]) -> Integer
+	:= 10 * Quantity(INT) + Quantity([0-9]);
+Quantity([0-9] :::= "0") -> Integer := 0;
+Quantity([0-9] :::= "1") -> Integer := 1;
 ...
-Value([0-9] :::= "9") -> Integer := 9;
+Quantity([0-9] :::= "9") -> Integer := 9;
 ```
 This example illustrates a hypothetical attribute grammar that defines an attribute
-called `Value` on an `INT` token.
-The attributes themselves are completion structures whose «type» properties are *normal* and whose
-«value» properties are of type `Integer`.
+called `Quantity` on an `INT` token.
+The attributes themselves are [completion structures](./data-types.md#completionstructure)
+whose \`type\` properties are *normal* and whose \`value\` properties are of type `Integer`.
 Each rule defines the attribute on the token matching a different pattern defined by a CFG,
 and then denotes that the returned object will be an integer.
 The first line could be read aloud as,
-“The `Value` of `INT` matching `[0-9]` is the `Value` of `[0-9]`.”
+“The `Quantity` of `INT` matching `[0-9]` is the `Quantity` of `[0-9]`.”
 
 
 ### Token Worth
@@ -1162,6 +1163,18 @@ An algorithm consists of a name, an output type, zero or more parameters, and a 
 The steps are formatted as an ordered list;
 the list is *ordered* in that the outcome could change if the steps were not performed in the order given.
 
+An algorithm must always output a [CompletionStructure](/.data-types.md#completionstructure) object,
+which is returned by the algorithm to its invoker.
+The completion structure might or might not have a \`value\`.
+
+The output type of an algorithm is the type of the \`value\` (if it exists) of
+a returned normal completion structure, and it is specified before
+the name of the algorithm in its header.
+If an algorithm outputs a normal completion structure without a \`value\`,
+the output type is specified as [Void](./data-types.md#void).
+If an algorithm outputs an *abrupt* completion structure, its \`value\`, if it exists,
+though it is still included in the returned structure, is *not* indicated in the output type.
+
 Algorithm steps may include substeps, which are formatted by an additional indentation level.
 Substeps may include their own “subsubsteps”, and so on, with each level corresponding to a new indentation.
 Steps may be nested an arbitrary number of levels.
@@ -1187,8 +1200,7 @@ The current algorithm is halted on this step and waits for the invoked algorithm
 
 #### Let/Set
 Algorithms may make the use of variable references, such as, «*Let* \`x\` be \`someValue\`.»
-Such a step indicates that \`x\` is a pointer to the value \`someValue\`, which itself may refer to
-a [Solid Language Value or Solid Specification Value](./data-types.md).
+Such a step indicates that \`x\` is a pointer to the value \`someValue\`, which itself may be any value.
 
 The variable \`x\` is treated as a pointer in that if \`someValue\` is mutated in some way,
 then that effect will also be seen on \`x\`.
@@ -1225,82 +1237,81 @@ continue with the outer loop. «*Break:* 2.» would indicate both loops terminat
 A step that says «*Break.*» (with no number) implies «*Break:* 1.».
 
 #### Return
-An algorithm must output either no value or one value.
-The output value, if it exists, is a value returned by the algorithm to its invoker.
-Algorithms most often return [completion structures](/.data-types.md#completionstructure).
-The output type is specified before the name of the algorithm in its header, but
-if the algorithm does not output a value, the output type is specified as [«Void»](./data-types.md#void).
-If an algorithm outputs a value, it must do so via a step beginning with «*Return:* …».
-A step reading «*Return*.» indicates the output is void.
+An algorithm step that reads «*Return:* ‹v›.» (where ‹v› is a metavariable representing a completion value)
+is shorthand for «*Return:* [type= normal, value= ‹v›].», meaning
+the algorithm outputs a normal completion structure with a \`value\` of ‹v›.
+However, an algorithm step that reads «*Return:* [type= ‹type›, value= ‹v›].» is to be interpreted as-is,
+as returning the completion record itself, not “wrapped” in a normal completion.
 
-When an algorithm step reads «*Return:* ‹v›.» (where ‹v› is a metavariable representing any value),
-a normal completion structure whose value is ‹v› is returned.
-That is, the step is shorthand for «*Return:* [type= normal, value= ‹v›].».
+An algorithm step that reads «*Return*.» is shorthand for «*Return:* [type= normal].», that is,
+it outputs a normal completion structure without a \`value\` (thus the output type is Void).
 
 #### Throw
-When an algorithm step reads «*Throw:* ‹v›.» (where ‹v› is a metavariable representing any value),
-a throw completion structure whose value is ‹v› is returned.
+When an algorithm step reads «*Throw:* ‹v›.» (where ‹v› is a metavariable representing a completion value),
+a throw completion structure whose \`value\` is ‹v› is returned.
 That is, the step is shorthand for «*Return:* [type= throw, value= ‹v›].».
+Note that such a completion structure is “abrupt”.
 
 #### Shorthand Notation
 Algorithm steps may contain shorthand notation that desugar to the types of steps listed above.
+The metavariables ‹x›, ‹y›, ‹A›, ‹B›, and ‹C› represent any snippets of algorithm prose.
 
 ##### Else If
 A step that begins with «*Else If* …:» desugars to an ‘else' step with an ‘if’ substep.
 ```
-1. *If* x:
-	1. A.
-2. *Else If* y:
-	1. B.
+1. *If* ‹x›:
+	1. ‹A›.
+2. *Else If* ‹y›:
+	1. ‹B›.
 3. *Else*:
-	1. C.
+	1. ‹C›.
 ```
 is shorthand for
 ```
-1. *If* x:
-	1. A.
+1. *If* ‹x›:
+	1. ‹A›.
 2. *Else*:
-	1. *If* y:
-		1. B.
+	1. *If* ‹y›:
+		1. ‹B›.
 	2. *Else*:
-		1. C.
+		1. ‹C›.
 ```
 
 ##### If And
-A step that begins with «*If* … *and* …:» desugars to an ‘if' step with an ‘if’ substep.
+A step that begins with «*If* … *and* …:» desugars to an ‘if’ step with an ‘if’ substep.
 ```
-1. *If* x *and* y:
-	1. A.
+1. *If* ‹x› *and* ‹y›:
+	1. ‹A›.
 2. *Else*:
-	1. B.
+	1. ‹B›.
 ```
 is shorthand for
 ```
-1. *If* x:
-	1. *If* y:
-		1. A.
+1. *If* ‹x›:
+	1. *If* ‹y›:
+		1. ‹A›.
 	2. *Else*:
-		1. B.
+		1. ‹B›.
 2. *Else*:
-	1. B.
+	1. ‹B›.
 ```
 
 ##### If Or
-A step that begins with «*If* … *or* …:» desugars to two ‘if' steps with the same substeps.
+A step that begins with «*If* … *or* …:» desugars to two ‘if’ steps with the same substeps.
 ```
-1. *If* x *or* y:
-	1. A.
+1. *If* ‹x› *or* ‹y›:
+	1. ‹A›.
 2. *Else*:
-	1. B.
+	1. ‹B›.
 ```
 is shorthand for
 ```
-1. *If* x:
-	1. A.
-2. *Else If* y:
-	1. A.
+1. *If* ‹x›:
+	1. ‹A›.
+2. *Else If* ‹y›:
+	1. ‹A›.
 3. *Else*:
-	1. B.
+	1. ‹B›.
 ```
 
 ### Runtime Instructions
