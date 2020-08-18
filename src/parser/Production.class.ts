@@ -1,10 +1,10 @@
-import Util from './Util.class'
-import Dev from './Dev.class'
+import Util from '../class/Util.class'
+import Dev from '../class/Dev.class'
 import {
 	Filebound,
 	Punctuator,
 	Keyword,
-} from '../lexer/'
+} from '../lexer'
 import type ParseNode from './ParseNode.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
 import Terminal, {

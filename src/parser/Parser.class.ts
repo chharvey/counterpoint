@@ -3,7 +3,7 @@ import type SolidConfig from '../SolidConfig'
 import {
 	Screener,
 	Token,
-} from '../lexer/'
+} from '../lexer'
 import Terminal from './Terminal.class'
 import ParseNode, {
 	ParseNodeGoal,

@@ -9,7 +9,7 @@ import type {
 	SemanticStatementType,
 	SemanticNodeGoal,
 } from '../class/SemanticNode.class'
-import Parser from '../class/Parser.class'
+import Parser from '../parser/Parser.class'
 import type {
 	CompletionStructureAssessment,
 } from '../spec/CompletionStructure.class'

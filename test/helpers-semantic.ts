@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
-import Parser from '../src/class/Parser.class'
+import Parser from '../src/parser/Parser.class'
 import {
 	assert_arrayLength,
 } from './assert-helpers'

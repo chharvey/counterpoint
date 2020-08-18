@@ -1,5 +1,5 @@
-import Util from './Util.class'
-import Dev from './Dev.class'
+import Util from '../class/Util.class'
+import Dev from '../class/Dev.class'
 import type Serializable from '../iface/Serializable.iface'
 import {Operator} from '../vm/Instruction.class'
 import {
@@ -13,7 +13,7 @@ import {
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from '../lexer/'
+} from '../lexer'
 import SemanticNode, {
 	SemanticStatementType,
 	SemanticNodeExpression,
@@ -29,7 +29,7 @@ import SemanticNode, {
 	SemanticNodeAssigned,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
-} from './SemanticNode.class'
+} from '../class/SemanticNode.class'
 import type {Rule} from './Grammar.class'
 import {
 	ProductionPrimitiveLiteral,

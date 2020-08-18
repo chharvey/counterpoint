@@ -1,9 +1,9 @@
 import * as assert from 'assert'
 
-import {CONFIG_DEFAULT} from '../src/SolidConfig'
-import Util   from '../src/class/Util.class'
-import Dev from '../src/class/Dev.class'
-import Parser from '../src/class/Parser.class'
+import {CONFIG_DEFAULT} from '../../src/SolidConfig'
+import Util   from '../../src/class/Util.class'
+import Dev from '../../src/class/Dev.class'
+import Parser from '../../src/parser/Parser.class'
 import {
 	SemanticNodeTemplate,
 	SemanticNodeExpression,
@@ -14,20 +14,20 @@ import {
 	SemanticNodeOperationTernary,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
-} from '../src/class/SemanticNode.class'
-import SolidNull    from '../src/vm/SolidNull.class'
-import SolidBoolean from '../src/vm/SolidBoolean.class'
-import Int16 from '../src/vm/Int16.class'
-import {Operator} from '../src/vm/Instruction.class'
+} from '../../src/class/SemanticNode.class'
+import SolidNull    from '../../src/vm/SolidNull.class'
+import SolidBoolean from '../../src/vm/SolidBoolean.class'
+import Int16 from '../../src/vm/Int16.class'
+import {Operator} from '../../src/vm/Instruction.class'
 
 import {
 	assert_arrayLength,
-} from './assert-helpers'
+} from '../assert-helpers'
 import {
 	constantFromStatementExpression,
 	operationFromStatementExpression,
 	statementExpressionFromSource,
-} from './helpers-semantic'
+} from '../helpers-semantic'
 
 
 

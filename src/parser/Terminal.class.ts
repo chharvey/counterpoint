@@ -1,4 +1,4 @@
-import Util from './Util.class'
+import Util from '../class/Util.class'
 import {
 	Filebound,
 	RadixType,
@@ -10,7 +10,7 @@ import {
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from '../lexer/'
+} from '../lexer'
 
 
 

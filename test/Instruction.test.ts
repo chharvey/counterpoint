@@ -3,7 +3,7 @@ import * as path from 'path'
 import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
-import Parser from '../src/class/Parser.class'
+import Parser from '../src/parser/Parser.class'
 import Builder from '../src/vm/Builder.class'
 import {
 	Operator,

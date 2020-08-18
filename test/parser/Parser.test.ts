@@ -1,9 +1,9 @@
 import * as assert from 'assert'
 
-import {CONFIG_DEFAULT} from '../src/SolidConfig'
-import Util from '../src/class/Util.class'
-import Dev from '../src/class/Dev.class'
-import Parser from '../src/class/Parser.class'
+import {CONFIG_DEFAULT} from '../../src/SolidConfig'
+import Util from '../../src/class/Util.class'
+import Dev from '../../src/class/Dev.class'
+import Parser from '../../src/parser/Parser.class'
 import {
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
@@ -16,7 +16,7 @@ import {
 	ParseNodeStatement,
 	ParseNodeGoal,
 	ParseNodeGoal__0__List,
-} from '../src/class/ParseNode.class'
+} from '../../src/parser/ParseNode.class'
 import {
 	Punctuator,
 	Keyword,
@@ -25,11 +25,11 @@ import {
 	TokenKeyword,
 	TokenNumber,
 	TokenString,
-} from '../src/lexer/'
+} from '../../src/lexer/'
 
 import {
 	assert_arrayLength,
-} from './assert-helpers'
+} from '../assert-helpers'
 import {
 	tokenLiteralFromExpressionUnit,
 	unitExpressionFromUnaryExpression,
@@ -44,7 +44,7 @@ import {
 	conditionalExpressionFromExpression,
 	expressionFromStatement,
 	statementFromSource,
-} from './helpers-parse'
+} from '../helpers-parse'
 
 
 

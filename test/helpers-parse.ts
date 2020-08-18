@@ -22,8 +22,8 @@ import {
 	ParseNodeStatement,
 	ParseNodeGoal,
 	ParseNodeGoal__0__List,
-} from '../src/class/ParseNode.class'
-import Parser from '../src/class/Parser.class'
+} from '../src/parser/ParseNode.class'
+import Parser from '../src/parser/Parser.class'
 import {
 	assert_arrayLength,
 } from './assert-helpers'
