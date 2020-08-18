@@ -4,7 +4,7 @@ import {
 } from '../src/typer/'
 import {
 	InstructionConst,
-} from '../src/vm/Instruction.class'
+} from '../src/builder/Instruction.class'
 
 
 

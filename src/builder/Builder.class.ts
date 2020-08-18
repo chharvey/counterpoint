@@ -9,20 +9,20 @@ import type {
 	SemanticStatementType,
 	SemanticNodeGoal,
 	CompletionStructureAssessment,
-} from '../typer/'
+} from '../typer'
 import {
 	Parser,
-} from '../parser/'
+} from '../parser'
 import {
 	InstructionStatement,
 	InstructionModule,
 } from './Instruction.class'
 
-const not: string = fs.readFileSync(path.join(__dirname, '../../src/not.wat'), 'utf8')
-const emp: string = fs.readFileSync(path.join(__dirname, '../../src/emp.wat'), 'utf8')
-const neg: string = fs.readFileSync(path.join(__dirname, '../../src/neg.wat'), 'utf8')
-const exp: string = fs.readFileSync(path.join(__dirname, '../../src/exp.wat'), 'utf8')
-const fis: string = fs.readFileSync(path.join(__dirname, '../../src/fis.wat'), 'utf8')
+const not: string = fs.readFileSync(path.join(__dirname, '../../src/builder/not.wat'), 'utf8')
+const emp: string = fs.readFileSync(path.join(__dirname, '../../src/builder/emp.wat'), 'utf8')
+const neg: string = fs.readFileSync(path.join(__dirname, '../../src/builder/neg.wat'), 'utf8')
+const exp: string = fs.readFileSync(path.join(__dirname, '../../src/builder/exp.wat'), 'utf8')
+const fis: string = fs.readFileSync(path.join(__dirname, '../../src/builder/fis.wat'), 'utf8')
 
 
 

@@ -20,7 +20,7 @@ import {
 	SolidBoolean,
 	Int16,
 } from '../../src/typer/'
-import {Operator} from '../../src/vm/Instruction.class'
+import {Operator} from '../../src/builder/Instruction.class'
 
 import {
 	assert_arrayLength,

@@ -2,11 +2,11 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as assert from 'assert'
 
-import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
+import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import {
 	Parser,
-} from '../src/parser/'
-import Builder from '../src/vm/Builder.class'
+} from '../../src/parser'
+import Builder from '../../src/builder/Builder.class'
 import {
 	Operator,
 	InstructionNone,
@@ -16,11 +16,11 @@ import {
 	InstructionBinop,
 	InstructionCond,
 	InstructionModule,
-} from '../src/vm/Instruction.class'
+} from '../../src/builder/Instruction.class'
 import {
 	instructionConstInt,
 	instructionConstFloat,
-} from './helpers'
+} from '../helpers'
 
 
 
@@ -185,11 +185,11 @@ describe('Instruction', () => {
 
 		context('InstructionModule', () => {
 			it('creates a program.', () => {
-				const not: string = fs.readFileSync(path.join(__dirname, '../src/not.wat'), 'utf8')
-				const emp: string = fs.readFileSync(path.join(__dirname, '../src/emp.wat'), 'utf8')
-				const neg: string = fs.readFileSync(path.join(__dirname, '../src/neg.wat'), 'utf8')
-				const exp: string = fs.readFileSync(path.join(__dirname, '../src/exp.wat'), 'utf8')
-				const fis: string = fs.readFileSync(path.join(__dirname, '../src/fis.wat'), 'utf8')
+				const not: string = fs.readFileSync(path.join(__dirname, '../../src/builder/not.wat'), 'utf8')
+				const emp: string = fs.readFileSync(path.join(__dirname, '../../src/builder/emp.wat'), 'utf8')
+				const neg: string = fs.readFileSync(path.join(__dirname, '../../src/builder/neg.wat'), 'utf8')
+				const exp: string = fs.readFileSync(path.join(__dirname, '../../src/builder/exp.wat'), 'utf8')
+				const fis: string = fs.readFileSync(path.join(__dirname, '../../src/builder/fis.wat'), 'utf8')
 				const mods: (InstructionNone | InstructionModule)[] = [
 					``,
 					`;`,

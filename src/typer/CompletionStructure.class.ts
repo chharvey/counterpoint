@@ -5,7 +5,7 @@ import SolidNumber  from './SolidNumber.class'
 import Int16        from './Int16.class'
 import {
 	InstructionConst,
-} from '../vm/Instruction.class'
+} from '../builder/Instruction.class'
 
 
 

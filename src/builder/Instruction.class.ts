@@ -1,7 +1,7 @@
 import {
 	SolidNumber,
 	Float64,
-} from '../typer/'
+} from '../typer'
 
 
 
