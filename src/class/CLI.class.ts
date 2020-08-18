@@ -4,7 +4,9 @@ import * as path from 'path'
 import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
-import Builder from '../builder/Builder.class'
+import {
+	Builder,
+} from '../builder/'
 
 
 

@@ -22,8 +22,8 @@ import {
 	SolidTypeUnion,
 } from '../../src/typer/'
 import {NanError01} from '../../src/error/NanError.class'
-import Builder from '../../src/builder/Builder.class'
 import {
+	Builder,
 	Operator,
 	InstructionNone,
 	InstructionConst,
@@ -32,7 +32,7 @@ import {
 	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
-} from '../../src/builder/Instruction.class'
+} from '../../src/builder/'
 import {
 	instructionConstInt,
 	instructionConstFloat,

@@ -1,7 +1,7 @@
 import Util from '../class/Util.class'
 import Dev from '../class/Dev.class'
 import type Serializable from '../iface/Serializable.iface'
-import {Operator} from '../builder/Instruction.class'
+import {Operator} from '../builder/'
 import {
 	Punctuator,
 	Keyword,

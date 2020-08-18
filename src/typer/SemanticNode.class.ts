@@ -5,7 +5,6 @@ import type Serializable from '../iface/Serializable.iface'
 import {
 	CompletionStructureAssessment,
 } from './CompletionStructure.class'
-import type Builder from '../builder/Builder.class'
 import SolidLanguageType, {
 	SolidTypeUnion,
 } from './SolidLanguageType.class'
@@ -16,7 +15,9 @@ import SolidNumber  from './SolidNumber.class'
 import Int16        from './Int16.class'
 import Float64      from './Float64.class'
 import SolidString  from './SolidString.class'
-import Instruction, {
+import {
+	Builder,
+	Instruction,
 	Operator,
 	InstructionNone,
 	InstructionExpression,
@@ -26,7 +27,7 @@ import Instruction, {
 	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
-} from '../builder/Instruction.class'
+} from '../builder/'
 import {
 	NanError01,
 	NanError02,

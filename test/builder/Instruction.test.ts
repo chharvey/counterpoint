@@ -6,8 +6,8 @@ import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import {
 	Parser,
 } from '../../src/parser'
-import Builder from '../../src/builder/Builder.class'
 import {
+	Builder,
 	Operator,
 	InstructionNone,
 	InstructionGet,
@@ -16,7 +16,7 @@ import {
 	InstructionBinop,
 	InstructionCond,
 	InstructionModule,
-} from '../../src/builder/Instruction.class'
+} from '../../src/builder/'
 import {
 	instructionConstInt,
 	instructionConstFloat,
