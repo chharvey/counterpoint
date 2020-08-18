@@ -10,11 +10,11 @@ import {
 import {
 	SemanticNodeExpression,
 	SemanticNodeConstant,
+	SemanticNodeOperation,
 	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
-	SemanticNodeOperation,
-} from '../src/typer/SemanticNode.class'
+} from '../src/typer/'
 
 
 

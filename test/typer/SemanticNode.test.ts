@@ -12,19 +12,17 @@ import {
 	SemanticNodeTemplate,
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
-} from '../../src/typer/SemanticNode.class'
-import {NanError01} from '../../src/error/NanError.class'
-import {
 	CompletionStructureAssessment,
-} from '../../src/typer/CompletionStructure.class'
+	SolidObject,
+	SolidNull,
+	SolidBoolean,
+	Int16,
+	Float64,
+	SolidString,
+	SolidTypeUnion,
+} from '../../src/typer/'
+import {NanError01} from '../../src/error/NanError.class'
 import Builder from '../../src/vm/Builder.class'
-import {SolidTypeUnion} from '../../src/typer/SolidLanguageType.class'
-import type SolidObject from '../../src/typer/SolidObject.class'
-import SolidNull    from '../../src/typer/SolidNull.class'
-import SolidBoolean from '../../src/typer/SolidBoolean.class'
-import Int16 from '../../src/typer/Int16.class'
-import Float64 from '../../src/typer/Float64.class'
-import SolidString from '../../src/typer/SolidString.class'
 import {
 	Operator,
 	InstructionNone,

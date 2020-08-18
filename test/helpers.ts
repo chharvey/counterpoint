@@ -1,5 +1,7 @@
-import Int16 from '../src/typer/Int16.class'
-import Float64 from '../src/typer/Float64.class'
+import {
+	Int16,
+	Float64,
+} from '../src/typer/'
 import {
 	InstructionConst,
 } from '../src/vm/Instruction.class'

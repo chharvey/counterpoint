@@ -2,9 +2,9 @@ import * as assert from 'assert'
 
 import {
 	CompletionStructureAssessment,
-} from '../../src/typer/CompletionStructure.class'
-import Int16 from '../../src/typer/Int16.class'
-import Float64 from '../../src/typer/Float64.class'
+	Int16,
+	Float64,
+} from '../../src/typer/'
 import {
 	InstructionConst,
 } from '../../src/vm/Instruction.class'

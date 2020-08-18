@@ -14,8 +14,8 @@ import {
 	TokenString,
 	TokenTemplate,
 } from '../lexer'
-import SemanticNode, {
-	SemanticStatementType,
+import {
+	SemanticNode,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
@@ -27,9 +27,10 @@ import SemanticNode, {
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
 	SemanticNodeAssigned,
+	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
-} from '../typer/SemanticNode.class'
+} from '../typer/'
 import type Rule from './Rule.class'
 import {
 	ProductionPrimitiveLiteral,

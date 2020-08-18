@@ -1,5 +1,7 @@
-import type SolidNumber from '../typer/SolidNumber.class'
-import Float64 from '../typer/Float64.class'
+import {
+	SolidNumber,
+	Float64,
+} from '../typer/'
 
 
 
