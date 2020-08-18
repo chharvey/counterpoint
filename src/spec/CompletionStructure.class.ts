@@ -1,8 +1,7 @@
-import SolidLanguageValue, {
-	SolidNull,
-	SolidBoolean,
-	SolidNumber,
-} from '../vm/SolidLanguageValue.class'
+import SolidObject  from '../vm/SolidObject.class'
+import SolidNull    from '../vm/SolidNull.class'
+import SolidBoolean from '../vm/SolidBoolean.class'
+import SolidNumber  from '../vm/SolidNumber.class'
 import Int16 from '../vm/Int16.class'
 import {
 	InstructionConst,
@@ -24,15 +23,28 @@ enum CompletionType {
  * An object returned by specification algorithms.
  */
 export default class CompletionStructure {
+	/** The type of completion that occurred. */
+	readonly type: CompletionType;
+	/** The value produced by this completion structure. */
+	readonly value?: SolidObject;
 	/**
 	 * Construct a new CompletionStructure object.
 	 * @param value The value produced by this completion structure.
-	 * @param type  The type of completion that occurred.
 	 */
-	constructor (
-		readonly value: SolidLanguageValue,
-		readonly type: CompletionType = CompletionType.NORMAL,
-	) {
+	constructor (value: SolidObject);
+	/**
+	 * Construct a new CompletionStructure object.
+	 * @param type  The type of completion that occurred.
+	 * @param value The value produced by this completion structure.
+	 */
+	constructor (type?: CompletionType, value?: SolidObject);
+	constructor (arg0: CompletionType | SolidObject = CompletionType.NORMAL, arg1?: SolidObject) {
+		;[this.type, this.value] = (arg0 instanceof SolidObject)
+			? [CompletionType.NORMAL, arg0]
+			: [arg0, arg1]
+	}
+	get isAbrupt(): boolean {
+		return this.type !== CompletionType.NORMAL
 	}
 }
 
@@ -42,13 +54,6 @@ export default class CompletionStructure {
  * The result of a constant fold.
  */
 export class CompletionStructureAssessment extends CompletionStructure {
-	/**
-	 * Construct a new CompletionStructureAssessment object.
-	 * @param value The value produced by this completion structure.
-	 */
-	constructor (value: SolidLanguageValue) {
-		super(value)
-	}
 	/**
 	 * Give directions to the runtime code generator.
 	 * @param to_float Should the value be type-coersed into a floating-point number?

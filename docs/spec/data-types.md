@@ -15,8 +15,22 @@ They are not directly observable from Solid code.
 
 
 ### Void
-The **Void** type has no value, but signifies the completion of an algorithm.
-The algorithm does not return a value.
+The **Void** type has one value called \`void\`.
+It signifies a variable with no meaningful value.
+An algorithm with output type Void returns a [completion structure](#completionstructure)
+with no \`value\` property.
+
+
+### Enumerated Words
+Some sections in this specification may define a set of enumerated words used for a specific purpose.
+The enumerated words along with any associated meanings are defined together within the relevant section.
+These words are considered Solid Specification Values, but with no defined type;
+for intents and purposes they can be thought of as strings.
+Where a type description is required (such as in the input of an algorithm), the type «Text» may be used.
+
+For example, a section of this specification may define the enumerated set of arithmetic operands
+*ADD*, *SUB*, *MUL*, *DIV*, and *EXP*.
+The words might or might not have associated descriptions defined with them.
 
 
 ### RealNumber
@@ -76,18 +90,18 @@ A **Structure** is an unordered list of name–value pairs. The names are unique
 A name–value pair of a structure is called a **property**.
 
 #### CompletionStructure
-A **CompletionStructure** is a specific subtype of [Structure](#structure) with two mandatory properties:
-«type» and «value».
-The «type» property must be one of the enumerated specification values
+A **CompletionStructure** is a specific subtype of [Structure](#structure) with
+a mandatory property \`type\` and an optional property \`value\`.
+The value of the \`type\` property must be one of the [enumerated](#enumerated-values) specification values
 *normal*, *break*, *continue*, *return*, or *throw*, which are described below.
-The «value» property must be a [Solid Language Value](#solid-language-types).
+The value of the \`value\` property must be a [Solid Language Value](#solid-language-types).
 
 Completion structures are the default values returned by all specification algorithms,
 unless explicitly stated otherwise.
 
 This table summarizes the enumerated values of a completion structure’s «type» property.
 
-Value      | Meaning
+Type       | Meaning
 ---------- | -------
 *normal*   | TODO
 *continue* | TODO
@@ -95,7 +109,8 @@ Value      | Meaning
 *return*   | TODO
 *throw*    | TODO
 
-The term “abrupt completion” refers to any completion with a «type» other than *normal*.
+The term “normal completion” refers to any completion with a \`type\` of *normal*, and
+the term “abrupt completion” refers to any completion with a \`type\` other than *normal*.
 
 
 
@@ -109,9 +124,9 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 - [Null](#null)
 - [Boolean](#boolean)
 - [Integer](#integer)
-- Float
+- [Float](#float)
 - String
-- Object
+- [Object](#object)
 
 
 ### Null
@@ -122,7 +137,13 @@ The Null type has exactly one value, called `null`.
 The Boolean type has two logical values, called `true` and `false`.
 
 
-### Integer
+### Number
+The Number type represents numerical values.
+The Number type is partitioned<sup>*</sup> into two subtypes: Integer and Float.
+
+<sup>*</sup>(mutually exclusive and collectively exhaustive)
+
+#### Integer
 The Integer type represents [mathematical integers](#real-integer-numbers).
 The Solid compiler represents Integers as 16-bit signed two’s complement values.
 
@@ -140,10 +161,35 @@ The behavior of performing arithmetic operations that are invalid in the integer
 (such as dividing by a non-factor, or raising to a negative exponent) are defined in each respective operation.
 Dividing by zero results in an error.
 
-
-### Float
+#### Float
 The Float type represents [mathematical rational numbers](#real-rational-numbers)
 whose decimals terminate in base 10.
 (That is, numbers that can be expressed as a finite sum of multiples of powers of 10.)
 The Float type contains “floating-point numbers”, which are 64-bit format values as specified in the
 *IEEE Standard for Binary Floating-Point Arithmetic ([IEEE 754-2019](https://standards.ieee.org/standard/754-2019.html))*.
+
+
+### Object
+The Object type is the parent type of all Solid Language Types.
+Every Solid Language Value is an Object.
+
+
+
+## Type Operations
+
+
+### Intersection
+A data type specified as \`And<‹T›, ‹U›>\`,
+where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
+is a data type that contains values matching *both* type \`‹T›\` and type \`‹U›\`.
+Such a data type is called the **intersection** of \`‹T›\` and \`‹U›\`.
+
+
+### Union
+A data type specified as \`Or<‹T›, ‹U›>\`,
+where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
+is a data type that contains values matching *either* type \`‹T›\` or type \`‹U›\` (or both).
+Such a data type is called the **union** of \`‹T›\` and \`‹U›\`.
+
+For example, the type \`Or<Integer, Null>\` contains values of either \`Integer\` or \`Null\`.
+(Since there is no overlap, there are no values of both \`Integer\` *and* \`Null\`.)

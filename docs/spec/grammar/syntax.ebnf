@@ -1,5 +1,6 @@
 IDENTIFIER      ::= [../docs/spec/language-lexicon.md#identifiers];
 INTEGER         ::= [../docs/spec/language-lexicon.md#numbers];
+FLOAT           ::= [../docs/spec/language-lexicon.md#numbers];
 STRING          ::= [../docs/spec/language-lexicon.md#string-literals];
 TEMPLATE_FULL   ::= [../docs/spec/language-lexicon.md#template-literals];
 TEMPLATE_HEAD   ::= [../docs/spec/language-lexicon.md#template-literals];

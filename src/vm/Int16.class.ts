@@ -1,6 +1,5 @@
-import SolidLanguageValue, {
-	SolidNumber,
-} from './SolidLanguageValue.class'
+import type SolidObject from './SolidObject.class'
+import SolidNumber from './SolidNumber.class'
 import Float64 from './Float64.class'
 
 
@@ -44,11 +43,11 @@ export default class Int16 extends SolidNumber<Int16> {
 		return `${ this.toNumeric() }`
 	}
 	/** @override @final */
-	protected identical_helper(value: SolidLanguageValue): boolean {
+	protected identical_helper(value: SolidObject): boolean {
 		return value instanceof Int16 && this.is(value)
 	}
 	/** @override @final */
-	protected equal_helper(value: SolidLanguageValue): boolean {
+	protected equal_helper(value: SolidObject): boolean {
 		return (value instanceof Float64)
 			? this.toFloat().equal(value)
 			: value instanceof Int16 && this.eq(value)

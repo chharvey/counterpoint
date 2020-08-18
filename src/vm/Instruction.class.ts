@@ -1,4 +1,4 @@
-import type {SolidNumber} from './SolidLanguageValue.class'
+import type SolidNumber from './SolidNumber.class'
 import Float64 from './Float64.class'
 
 
