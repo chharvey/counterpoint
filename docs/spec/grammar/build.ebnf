@@ -11,7 +11,10 @@ Sequence<Instruction> Build(Or<Integer, Float> n) :=
 	1. *Return:* ["Push `n` onto the operand stack."].
 
 Sequence<Instruction> Build(SemanticConstant const) :=
-	1. *Return:* `Build(Assess(const))`.
+	1. *Let* `assess` be the result of performing `Assess(const)`.
+	2. *Assert:* `assess` is a normal completion.
+	3. *Assert:* `TypeOf(assess.value)` is `Or<Null, Boolean, Integer, Float>`.
+	4. *Return:* `Build(assess.value)`.
 
 Sequence<Instruction> Build(SemanticIdentifier iden) :=
 	// TO BE DETERMINED
@@ -127,8 +130,9 @@ Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperation
 // if the assessment fails, builds the semantic node.
 Sequence<Instruction> TryAssessAndBuild(SemanticExpression expr) :=
 	1. *Let* `assess` be the result of performing `Assess(expr)`.
-	2. *If* `TypeOf(assess)` is `Void`:
+	2. *If* `assess` is an abrupt completion:
 		1. *Let* `instrs` be the result of performing `Build(expr)`.
 	3. *Else:*
-		1. *Let* `instrs` be the result of performing `Build(assess)`.
+		1. *Assert:* `TypeOf(assess.value)` is `Or<Null, Boolean, Integer, Float>`.
+		2. *Let* `instrs` be the result of performing `Build(assess.value)`.
 	4. *Return:* `instrs`.

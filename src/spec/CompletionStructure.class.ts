@@ -24,15 +24,28 @@ enum CompletionType {
  * An object returned by specification algorithms.
  */
 export default class CompletionStructure {
+	/** The type of completion that occurred. */
+	readonly type: CompletionType;
+	/** The value produced by this completion structure. */
+	readonly value?: SolidLanguageValue;
 	/**
 	 * Construct a new CompletionStructure object.
 	 * @param value The value produced by this completion structure.
-	 * @param type  The type of completion that occurred.
 	 */
-	constructor (
-		readonly value: SolidLanguageValue,
-		readonly type: CompletionType = CompletionType.NORMAL,
-	) {
+	constructor (value: SolidLanguageValue);
+	/**
+	 * Construct a new CompletionStructure object.
+	 * @param type  The type of completion that occurred.
+	 * @param value The value produced by this completion structure.
+	 */
+	constructor (type?: CompletionType, value?: SolidLanguageValue);
+	constructor (arg0: CompletionType | SolidLanguageValue = CompletionType.NORMAL, arg1?: SolidLanguageValue) {
+		;[this.type, this.value] = (arg0 instanceof SolidLanguageValue)
+			? [CompletionType.NORMAL, arg0]
+			: [arg0, arg1]
+	}
+	get isAbrupt(): boolean {
+		return this.type !== CompletionType.NORMAL
 	}
 }
 
@@ -42,13 +55,6 @@ export default class CompletionStructure {
  * The result of a constant fold.
  */
 export class CompletionStructureAssessment extends CompletionStructure {
-	/**
-	 * Construct a new CompletionStructureAssessment object.
-	 * @param value The value produced by this completion structure.
-	 */
-	constructor (value: SolidLanguageValue) {
-		super(value)
-	}
 	/**
 	 * Give directions to the runtime code generator.
 	 * @param to_float Should the value be type-coersed into a floating-point number?
