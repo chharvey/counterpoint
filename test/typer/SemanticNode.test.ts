@@ -3,6 +3,7 @@ import * as xjs from 'extrajs'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Dev from '../../src/class/Dev.class'
+import Operator from '../../src/enum/Operator.enum'
 import {
 	Parser,
 } from '../../src/parser'
@@ -24,7 +25,6 @@ import {
 import {NanError01} from '../../src/error/NanError.class'
 import {
 	Builder,
-	Operator,
 	InstructionNone,
 	InstructionConst,
 	InstructionUnop,

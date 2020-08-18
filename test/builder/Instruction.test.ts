@@ -2,13 +2,13 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as assert from 'assert'
 
+import Operator from '../../src/enum/Operator.enum'
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import {
 	Parser,
 } from '../../src/parser'
 import {
 	Builder,
-	Operator,
 	InstructionNone,
 	InstructionGet,
 	InstructionTee,

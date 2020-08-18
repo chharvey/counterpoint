@@ -2,6 +2,7 @@ import * as xjs from 'extrajs'
 
 import Util from '../class/Util.class'
 import type Serializable from '../iface/Serializable.iface'
+import Operator from '../enum/Operator.enum'
 import {
 	CompletionStructureAssessment,
 } from './CompletionStructure.class'
@@ -18,7 +19,6 @@ import SolidString  from './SolidString.class'
 import {
 	Builder,
 	Instruction,
-	Operator,
 	InstructionNone,
 	InstructionExpression,
 	InstructionConst,

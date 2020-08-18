@@ -1,37 +1,8 @@
+import Operator from '../enum/Operator.enum'
 import {
 	SolidNumber,
 	Float64,
 } from '../typer'
-
-
-
-// HACK: this is defined here, instead of in `../class/SemanticNode.class`, to avoid circular imports.
-export enum Operator {
-	NOT,
-	EMP,
-	AFF,
-	NEG,
-	EXP,
-	MUL,
-	DIV,
-	ADD,
-	SUB,
-	LT,
-	GT,
-	LE,
-	GE,
-	NLT,
-	NGT,
-	IS,
-	ISNT,
-	EQ,
-	NEQ,
-	AND,
-	NAND,
-	OR,
-	NOR,
-	COND,
-}
 
 
 

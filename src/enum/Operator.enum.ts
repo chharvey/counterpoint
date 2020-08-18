@@ -1,0 +1,28 @@
+// HACK: this is defined here, instead of in `../class/SemanticNode.class`, to avoid circular imports.
+enum Operator {
+	NOT,
+	EMP,
+	AFF,
+	NEG,
+	EXP,
+	MUL,
+	DIV,
+	ADD,
+	SUB,
+	LT,
+	GT,
+	LE,
+	GE,
+	NLT,
+	NGT,
+	IS,
+	ISNT,
+	EQ,
+	NEQ,
+	AND,
+	NAND,
+	OR,
+	NOR,
+	COND,
+}
+export default Operator
