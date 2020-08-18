@@ -17,10 +17,12 @@ export default class SolidObject {
 	 * @returns the associated Boolean value of this value
 	 */
 	get isTruthy(): SolidBoolean {
+		const SolidNull_Class:    typeof SolidNull    = require('./SolidNull.class').default
+		const SolidBoolean_Class: typeof SolidBoolean = require('./SolidBoolean.class').default
 		return (
-			(this instanceof SolidNull) ? SolidBoolean.FALSE :
-			(this instanceof SolidBoolean) ? this :
-			SolidBoolean.TRUE
+			(this instanceof SolidNull_Class)    ? SolidBoolean_Class.FALSE :
+			(this instanceof SolidBoolean_Class) ? this :
+			SolidBoolean_Class.TRUE
 		)
 	}
 	/**
