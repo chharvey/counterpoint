@@ -185,11 +185,6 @@ describe('Instruction', () => {
 
 		context('InstructionModule', () => {
 			it('creates a program.', () => {
-				const not: string = fs.readFileSync(path.join(__dirname, '../../src/builder/not.wat'), 'utf8')
-				const emp: string = fs.readFileSync(path.join(__dirname, '../../src/builder/emp.wat'), 'utf8')
-				const neg: string = fs.readFileSync(path.join(__dirname, '../../src/builder/neg.wat'), 'utf8')
-				const exp: string = fs.readFileSync(path.join(__dirname, '../../src/builder/exp.wat'), 'utf8')
-				const fis: string = fs.readFileSync(path.join(__dirname, '../../src/builder/fis.wat'), 'utf8')
 				const mods: (InstructionNone | InstructionModule)[] = [
 					``,
 					`;`,
@@ -201,11 +196,7 @@ describe('Instruction', () => {
 				assert.strictEqual(mods[0].toString(), ``)
 				assert.ok(mods[1] instanceof InstructionModule)
 				assert.deepStrictEqual(mods[1], new InstructionModule([
-					not,
-					emp,
-					neg,
-					exp,
-					fis,
+					...Builder.IMPORTS,
 					new InstructionNone(),
 				]))
 			})
