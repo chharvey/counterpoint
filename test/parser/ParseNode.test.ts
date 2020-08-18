@@ -3,7 +3,9 @@ import * as assert from 'assert'
 import {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util   from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
-import Parser from '../../src/parser/Parser.class'
+import {
+	Parser,
+} from '../../src/parser/'
 import {
 	SemanticNodeTemplate,
 	SemanticNodeExpression,

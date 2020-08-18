@@ -3,8 +3,8 @@ import * as assert from 'assert'
 import {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
-import Parser from '../../src/parser/Parser.class'
 import {
+	Parser,
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
 	ParseNodeExpressionUnary,
@@ -16,7 +16,7 @@ import {
 	ParseNodeStatement,
 	ParseNodeGoal,
 	ParseNodeGoal__0__List,
-} from '../../src/parser/ParseNode.class'
+} from '../../src/parser/'
 import {
 	Punctuator,
 	Keyword,

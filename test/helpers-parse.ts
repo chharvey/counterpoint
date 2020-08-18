@@ -12,6 +12,7 @@ import {
 	TokenString,
 } from '../src/lexer/'
 import {
+	Parser,
 	ParseNodePrimitiveLiteral,
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
@@ -22,8 +23,7 @@ import {
 	ParseNodeStatement,
 	ParseNodeGoal,
 	ParseNodeGoal__0__List,
-} from '../src/parser/ParseNode.class'
-import Parser from '../src/parser/Parser.class'
+} from '../src/parser/'
 import {
 	assert_arrayLength,
 } from './assert-helpers'

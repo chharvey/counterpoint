@@ -1,5 +1,5 @@
 import {Filebound} from '../lexer/'
-import type {GrammarSymbol} from '../parser/Grammar.class'
+import type {GrammarSymbol} from '../parser/'
 
 
 

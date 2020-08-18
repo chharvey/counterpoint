@@ -3,7 +3,9 @@ import * as xjs from 'extrajs'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import Dev from '../src/class/Dev.class'
-import Parser from '../src/parser/Parser.class'
+import {
+	Parser,
+} from '../src/parser/'
 import {
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
