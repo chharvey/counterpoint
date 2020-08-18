@@ -3,15 +3,15 @@ Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Number va
 
 Void Evaluate(Instruction :::= "NOT") :=
 	1. Pop `operand` from the operand stack.
-	2. *If* `TypeOf(operand)` is `Integer` *and* `operand` is `0`:
+	2. *If* `operand` is of type `Integer` *and* `operand` is `0`:
 		1. Push `1` onto the operand stack.
 	3. Push `0` onto the operand stack.
 
 Void Evaluate(Instruction :::= "EMP") :=
 	1. Pop `operand` from the operand stack.
-	2. *If* `TypeOf(operand)` is `Integer` *and* `operand` is `0`:
+	2. *If* `operand` is of type `Integer` *and* `operand` is `0`:
 		1. Push `1` onto the operand stack.
-	3. *If* `TypeOf(operand)` is `Float` *and* `operand` is `0.0` or `-0.0`:
+	3. *If* `operand` is of type `Float` *and* `operand` is `0.0` or `-0.0`:
 		1. Push `1` onto the operand stack.
 	4. Push `0` onto the operand stack.
 

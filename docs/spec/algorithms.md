@@ -27,13 +27,13 @@ Type TypeOf(SemanticIdentifier id) :=
 
 Type TypeOf(SemanticOperation[operator: NOT | EMP] expr) :=
 	1. *Return:* `Boolean`.
-Type TypeOf(SemanticOperation[operator: AFF | NEG] expr) :=
+Type TypeOf(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be `TypeOf(expr.children.0)`.
 	3. *If* `IsNumericType(t0)`:
 		1. *Return:* `t0`.
 	4. *Throw:* TypeError "Invalid operation.".
-Type TypeOf(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
+Type TypeOf(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be `TypeOf(expr.children.1)`.
@@ -43,14 +43,14 @@ Type TypeOf(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
 		2. *Else*:
 			1. *Return:* `Integer`.
 	5. *Throw:* TypeError "Invalid operation.".
-Type TypeOf(SemanticOperation[operator: LT | GT | LE | GE | NLT | NGT] expr) :=
+Type TypeOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be `TypeOf(expr.children.1)`.
 	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
 		1. *Return:* `Boolean`.
 	5. *Throw:* TypeError "Invalid operation.".
-Type TypeOf(SemanticOperation[operator: IS | ISNT | EQ | NEQ] expr) :=
+Type TypeOf(SemanticOperation[operator: IS | EQ] expr) :=
 	// 1. *Assert:* `expr.children.count` is 2.
 	// 2. *Let* `t0` be `TypeOf(expr.children.0)`.
 	// 3. *Let* `t1` be `TypeOf(expr.children.1)`.
