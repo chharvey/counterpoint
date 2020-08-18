@@ -124,9 +124,9 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 - [Null](#null)
 - [Boolean](#boolean)
 - [Integer](#integer)
-- Float
+- [Float](#float)
 - String
-- Object
+- [Object](#object)
 
 
 ### Null
@@ -137,7 +137,13 @@ The Null type has exactly one value, called `null`.
 The Boolean type has two logical values, called `true` and `false`.
 
 
-### Integer
+### Number
+The Number type represents numerical values.
+The Number type is partitioned<sup>*</sup> into two subtypes: Integer and Float.
+
+<sup>*</sup>(mutually exclusive and collectively exhaustive)
+
+#### Integer
 The Integer type represents [mathematical integers](#real-integer-numbers).
 The Solid compiler represents Integers as 16-bit signed two’s complement values.
 
@@ -155,13 +161,17 @@ The behavior of performing arithmetic operations that are invalid in the integer
 (such as dividing by a non-factor, or raising to a negative exponent) are defined in each respective operation.
 Dividing by zero results in an error.
 
-
-### Float
+#### Float
 The Float type represents [mathematical rational numbers](#real-rational-numbers)
 whose decimals terminate in base 10.
 (That is, numbers that can be expressed as a finite sum of multiples of powers of 10.)
 The Float type contains “floating-point numbers”, which are 64-bit format values as specified in the
 *IEEE Standard for Binary Floating-Point Arithmetic ([IEEE 754-2019](https://standards.ieee.org/standard/754-2019.html))*.
+
+
+### Object
+The Object type is the parent type of all Solid Language Types.
+Every Solid Language Value is an Object.
 
 
 

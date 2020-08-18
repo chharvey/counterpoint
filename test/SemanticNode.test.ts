@@ -17,7 +17,7 @@ import {
 } from '../src/spec/CompletionStructure.class'
 import Builder from '../src/vm/Builder.class'
 import {SolidTypeUnion} from '../src/vm/SolidLanguageType.class'
-import SolidLanguageValue, {
+import SolidObject, {
 	SolidNull,
 	SolidBoolean,
 	SolidString,
@@ -488,7 +488,7 @@ describe('SemanticNode', () => {
 		})
 
 		describe('#assess', () => {
-			function assessOperations(tests: Map<string, SolidLanguageValue>): void {
+			function assessOperations(tests: Map<string, SolidObject>): void {
 				assert.deepStrictEqual([...tests.keys()].map((src) => operationFromStatementExpression(
 					statementExpressionFromSource(src)
 				).assess()), [...tests.values()].map((result) => new CompletionStructureAssessment(result)))
@@ -562,7 +562,7 @@ describe('SemanticNode', () => {
 				]), (val) => new Int16(BigInt(val))))
 			})
 			it('computes the value of a float operation of constants.', () => {
-				assessOperations(new Map<string, SolidLanguageValue>([
+				assessOperations(new Map<string, SolidObject>([
 					[`3.0e1 - 201.0e-1;`,     new Float64(30 - 20.1)],
 					[`3 * 2.1;`,     new Float64(3 * 2.1)],
 				]))
@@ -621,7 +621,7 @@ describe('SemanticNode', () => {
 				]), (val) => SolidBoolean.fromBoolean(val)))
 			})
 			it('computes the value of AND and OR operators.', () => {
-				assessOperations(new Map<string, SolidLanguageValue>([
+				assessOperations(new Map<string, SolidObject>([
 					[`null && 5;`,     SolidNull.NULL],
 					[`null || 5;`,     new Int16(5n)],
 					[`5 && null;`,     SolidNull.NULL],
@@ -635,7 +635,7 @@ describe('SemanticNode', () => {
 				]))
 			})
 			it('computes the value of a conditional expression.', () => {
-				assessOperations(new Map<string, SolidLanguageValue>([
+				assessOperations(new Map<string, SolidObject>([
 					[`if true then false else 2;`,          SolidBoolean.FALSE],
 					[`if false then 3.0 else null;`,        SolidNull.NULL],
 					[`if true then 2 else 3.0;`,            new Int16(2n)],

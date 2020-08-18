@@ -30,14 +30,14 @@ Type TypeOf(SemanticOperation[operator: NOT | EMP] expr) :=
 Type TypeOf(SemanticOperation[operator: AFF | NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be `TypeOf(expr.children.0)`.
-	3. *If* `IsNumeric(t0)`:
+	3. *If* `IsNumericType(t0)`:
 		1. *Return:* `t0`.
 	4. *Throw:* TypeError "Invalid operation.".
 Type TypeOf(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be `TypeOf(expr.children.1)`.
-	4. *If* `IsNumeric(t0)` *and* `IsNumeric(t1)`:
+	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
 		1. *If* `t0` is `Float` *or* `t1` is `Float`:
 			1. *Return:* `Float`.
 		2. *Else*:
@@ -47,7 +47,7 @@ Type TypeOf(SemanticOperation[operator: LT | GT | LE | GE | NLT | NGT] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be `TypeOf(expr.children.1)`.
-	4. *If* `IsNumeric(t0)` *and* `IsNumeric(t1)`:
+	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
 		1. *Return:* `Boolean`.
 	5. *Throw:* TypeError "Invalid operation.".
 Type TypeOf(SemanticOperation[operator: IS | ISNT | EQ | NEQ] expr) :=
@@ -138,11 +138,11 @@ Type TruthifyType(Type t) :=
 
 
 
-## Abstract Operation: IsNumeric
-Determines whether Solid Language Value is of a numeric type,
-that is, either an [Integer](./data-types.md#integer) or a [Float](./data-types.md#float).
+## IsNumericType
+Determines whether a Solid Language Type is numeric,
+that is, either [Integer](./data-types.md#integer) or [Float](./data-types.md#float).
 ```
-Boolean IsNumeric(Type t) :=
+Boolean IsNumericType(Type t) :=
 	1. *If* `t` is `Integer` *or* `t` is `Float`:
 		1. *Return*: `true`.
 	2. *Return*: `false`.
@@ -171,7 +171,7 @@ Void TypeCheck(SemanticGoal goal) :=
 ## ToBoolean
 Returns an associated [boolean value](./data-types#boolean), `true` or `false`, with a Solid Language Value.
 ```
-Boolean ToBoolean(SolidLanguageValue value) :=
+Boolean ToBoolean(Object value) :=
 	1. *If* `TypeOf(value)` is `Null`:
 		1. *Return:* `false`.
 	2. *If* `TypeOf(value)` is `Boolean`:
@@ -230,7 +230,7 @@ Boolean Equal(Object a, Object b) :=
 ### Abstract Operation: PerformBinaryArithmetic
 Performs a binary arithmetic operation.
 ```
-Or<Integer, Float> PerformBinaryArithmetic(Text op, Or<Integer, Float> operand0, Or<Integer, Float> operand1) :=
+Number PerformBinaryArithmetic(Text op, Number operand0, Number operand1) :=
 	1. *If* `op` is `EXP`:
 		1. *Let* `result` be the power, `operand0 ^ operand1`,
 			obtained by raising `operand0` (the base) to `operand1` (the exponent).
@@ -254,7 +254,7 @@ Or<Integer, Float> PerformBinaryArithmetic(Text op, Or<Integer, Float> operand0,
 ## PerformBinaryCompare
 Performs a binary comparison operation.
 ```
-Boolean PerformBinaryCompare(Text op, Or<Integer, Float> operand0, Or<Integer, Float> operand1) :=
+Boolean PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 	1. *If* `op` is `LT`:
 		1. *If* `operand0` is strictly less than `operand1`:
 			1. *Return:* `true`.

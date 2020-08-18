@@ -1,4 +1,4 @@
-import SolidLanguageValue, {
+import SolidObject, {
 	SolidNull,
 	SolidBoolean,
 	SolidNumber,
@@ -27,20 +27,20 @@ export default class CompletionStructure {
 	/** The type of completion that occurred. */
 	readonly type: CompletionType;
 	/** The value produced by this completion structure. */
-	readonly value?: SolidLanguageValue;
+	readonly value?: SolidObject;
 	/**
 	 * Construct a new CompletionStructure object.
 	 * @param value The value produced by this completion structure.
 	 */
-	constructor (value: SolidLanguageValue);
+	constructor (value: SolidObject);
 	/**
 	 * Construct a new CompletionStructure object.
 	 * @param type  The type of completion that occurred.
 	 * @param value The value produced by this completion structure.
 	 */
-	constructor (type?: CompletionType, value?: SolidLanguageValue);
-	constructor (arg0: CompletionType | SolidLanguageValue = CompletionType.NORMAL, arg1?: SolidLanguageValue) {
-		;[this.type, this.value] = (arg0 instanceof SolidLanguageValue)
+	constructor (type?: CompletionType, value?: SolidObject);
+	constructor (arg0: CompletionType | SolidObject = CompletionType.NORMAL, arg1?: SolidObject) {
+		;[this.type, this.value] = (arg0 instanceof SolidObject)
 			? [CompletionType.NORMAL, arg0]
 			: [arg0, arg1]
 	}

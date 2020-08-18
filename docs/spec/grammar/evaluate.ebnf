@@ -1,4 +1,4 @@
-Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Or<Integer, Float> value) :=
+Void Evaluate(Instruction :::= "Push `value` onto the operand stack.", Number value) :=
 	1. Push `value` onto the operand stack.
 
 Void Evaluate(Instruction :::= "NOT") :=

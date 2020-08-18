@@ -10,7 +10,7 @@ import type Float64 from './Float64.class'
  * - Int16
  * - Float64
  */
-export default class SolidLanguageValue {
+export default class SolidObject {
 	/**
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value
@@ -28,7 +28,7 @@ export default class SolidLanguageValue {
 	 * @returns are the objects identically the same?
 	 * @final
 	 */
-	identical(value: SolidLanguageValue): boolean {
+	identical(value: SolidObject): boolean {
 		return this === value || this.identical_helper(value)
 	}
 	/**
@@ -36,7 +36,7 @@ export default class SolidLanguageValue {
 	 * @param _value the object to compare
 	 * @returns are the objects identically the same?
 	 */
-	protected identical_helper(_value: SolidLanguageValue): boolean {
+	protected identical_helper(_value: SolidObject): boolean {
 		return false
 	}
 	/**
@@ -46,7 +46,7 @@ export default class SolidLanguageValue {
 	 * @returns are the objects equal?
 	 * @final
 	 */
-	equal(value: SolidLanguageValue): boolean {
+	equal(value: SolidObject): boolean {
 		return this.identical(value) || this.equal_helper(value)
 	}
 	/**
@@ -54,7 +54,7 @@ export default class SolidLanguageValue {
 	 * @param _value the object to compare
 	 * @returns are the objects equal?
 	 */
-	protected equal_helper(_value: SolidLanguageValue): boolean {
+	protected equal_helper(_value: SolidObject): boolean {
 		return false
 	}
 }
@@ -75,7 +75,7 @@ export default class SolidLanguageValue {
  *
  * @final
  */
-export class SolidNull extends SolidLanguageValue {
+export class SolidNull extends SolidObject {
 	/** The Solid Language Value `null`. */
 	static readonly NULL: SolidNull = new SolidNull()
 	private constructor () {
@@ -86,7 +86,7 @@ export class SolidNull extends SolidLanguageValue {
 		return 'null'
 	}
 	/** @override */
-	protected identical_helper(value: SolidLanguageValue): boolean {
+	protected identical_helper(value: SolidObject): boolean {
 		return value instanceof SolidNull
 	}
 }
@@ -102,7 +102,7 @@ export class SolidNull extends SolidLanguageValue {
  *
  * @final
  */
-export class SolidBoolean extends SolidLanguageValue {
+export class SolidBoolean extends SolidObject {
 	/** The Solid Language Value `false`. */
 	static readonly FALSE: SolidBoolean = new SolidBoolean()
 	/** The Solid Language Value `true`. */
@@ -127,7 +127,7 @@ export class SolidBoolean extends SolidLanguageValue {
 		return `${ this.value }`
 	}
 	/** @override */
-	protected identical_helper(value: SolidLanguageValue): boolean {
+	protected identical_helper(value: SolidObject): boolean {
 		return value instanceof SolidBoolean && this.value === value.value
 	}
 	/**
@@ -160,7 +160,7 @@ export class SolidBoolean extends SolidLanguageValue {
 /**
  * A numeric Solid Language Value.
  */
-export abstract class SolidNumber<T> extends SolidLanguageValue {
+export abstract class SolidNumber<T> extends SolidObject {
 	/**
 	 * Type-coerse this number into a float.
 	 * @returns the equivalent floating-point value
@@ -233,5 +233,5 @@ export abstract class SolidNumber<T> extends SolidLanguageValue {
 
 
 
-export class SolidString extends SolidLanguageValue {
+export class SolidString extends SolidObject {
 }

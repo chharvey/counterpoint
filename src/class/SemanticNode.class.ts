@@ -9,7 +9,7 @@ import type Builder from '../vm/Builder.class'
 import SolidLanguageType, {
 	SolidTypeUnion,
 } from '../vm/SolidLanguageType.class'
-import SolidLanguageValue, {
+import SolidObject, {
 	SolidNull,
 	SolidBoolean,
 	SolidNumber,
@@ -69,7 +69,7 @@ export default abstract class SemanticNode implements Serializable {
 	 */
 	constructor(
 		start_node: Token|ParseNode,
-		private readonly attributes: {[key: string]: CookValueType | SolidLanguageValue} = {},
+		private readonly attributes: {[key: string]: CookValueType | SolidObject} = {},
 		readonly children: readonly SemanticNode[] = [],
 	) {
 		this.source       = start_node.source
@@ -100,7 +100,7 @@ export default abstract class SemanticNode implements Serializable {
 			attributes.set('col' , `${this.col_index  + 1}`)
 		}
 		attributes.set('source', this.source)
-		Object.entries<CookValueType | SolidLanguageValue>(this.attributes).forEach(([key, value]) => {
+		Object.entries<CookValueType | SolidObject>(this.attributes).forEach(([key, value]) => {
 			attributes.set(key, `${value}`)
 		})
 		const contents: string = this.children.map((child) => child.serialize()).join('')
@@ -148,10 +148,10 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 export class SemanticNodeConstant extends SemanticNodeExpression {
 	declare children:
 		| readonly []
-	readonly value: string | SolidLanguageValue;
+	readonly value: string | SolidObject;
 	constructor (start_node: TokenKeyword | TokenNumber | TokenString | TokenTemplate) {
 		const cooked: number | bigint | string = start_node.cook()
-		const value: string | SolidLanguageValue =
+		const value: string | SolidObject =
 			(start_node instanceof TokenKeyword) ?
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUE  :
@@ -177,7 +177,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		)
 	}
 	assess(): CompletionStructureAssessment {
-		if (this.value instanceof SolidLanguageValue) {
+		if (this.value instanceof SolidObject) {
 			return new CompletionStructureAssessment(this.value)
 		} else {
 			throw new Error('not yet supported.')
@@ -293,7 +293,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		if (this.assessments[0].isAbrupt) {
 			return this.assessments[0]
 		}
-		const v0: SolidLanguageValue = this.assessments[0].value!
+		const v0: SolidObject = this.assessments[0].value!
 		return new CompletionStructureAssessment(
 			(this.operator === Operator.NOT) ? v0.isTruthy.not :
 			(this.operator === Operator.EMP) ? v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0())) :
@@ -368,7 +368,7 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		if (this.assessments[0].isAbrupt) {
 			return this.assessments[0]
 		}
-		const v0: SolidLanguageValue = this.assessments[0].value!
+		const v0: SolidObject = this.assessments[0].value!
 		if ([Operator.AND, Operator.OR].includes(this.operator)) {
 			return (
 				this.operator === Operator.AND && !v0.isTruthy.value ||
@@ -378,7 +378,7 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 		if (this.assessments[1].isAbrupt) {
 			return this.assessments[1]
 		}
-		const v1: SolidLanguageValue = this.assessments[1].value!
+		const v1: SolidObject = this.assessments[1].value!
 		const both_numeric: boolean = v0 instanceof SolidNumber && v1 instanceof SolidNumber
 		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
 			throw new NanError02(this.children[1])
@@ -449,8 +449,8 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 			[Operator.NGT,  (x, y) => !y.lt(x)],
 		]).get(this.operator)!(x, y))
 	}
-	private foldEquality(x: SolidLanguageValue, y: SolidLanguageValue): SolidBoolean {
-		return SolidBoolean.fromBoolean(new Map<Operator, (x: SolidLanguageValue, y: SolidLanguageValue) => boolean>([
+	private foldEquality(x: SolidObject, y: SolidObject): SolidBoolean {
+		return SolidBoolean.fromBoolean(new Map<Operator, (x: SolidObject, y: SolidObject) => boolean>([
 			[Operator.IS,   (x, y) =>  x.identical(y)],
 			[Operator.ISNT, (x, y) => !x.identical(y)],
 			[Operator.EQ,   (x, y) =>  x.equal(y)],
