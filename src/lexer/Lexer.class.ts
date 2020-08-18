@@ -1,6 +1,6 @@
 import type SolidConfig from '../SolidConfig'
 
-import Dev from './Dev.class'
+import Dev from '../class/Dev.class'
 import Scanner from './Scanner.class'
 import Char from './Char.class'
 import Token, {

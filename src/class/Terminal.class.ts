@@ -9,7 +9,7 @@ import Token, {
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from './Token.class'
+} from '../lexer/Token.class'
 
 
 

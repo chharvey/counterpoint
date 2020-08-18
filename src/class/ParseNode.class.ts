@@ -12,7 +12,7 @@ import Token, {
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from './Token.class'
+} from '../lexer/Token.class'
 import SemanticNode, {
 	SemanticStatementType,
 	SemanticNodeExpression,

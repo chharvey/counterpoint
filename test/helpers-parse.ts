@@ -10,7 +10,7 @@ import {
 	TokenIdentifier,
 	TokenNumber,
 	TokenString,
-} from '../src/class/Token.class'
+} from '../src/lexer/Token.class'
 import {
 	ParseNodePrimitiveLiteral,
 	ParseNodeStringTemplate,

@@ -1,7 +1,7 @@
 import type SolidConfig from '../SolidConfig'
 
-import Screener from './Screener.class'
-import type Token from './Token.class'
+import Screener from '../lexer/Screener.class'
+import type Token from '../lexer/Token.class'
 import Terminal from './Terminal.class'
 import ParseNode, {
 	ParseNodeGoal,

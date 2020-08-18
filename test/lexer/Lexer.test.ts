@@ -1,9 +1,9 @@
 import * as assert from 'assert'
 
-import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
-import Util  from '../src/class/Util.class'
-import Dev from '../src/class/Dev.class'
-import Lexer from '../src/class/Lexer.class'
+import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
+import Util  from '../../src/class/Util.class'
+import Dev from '../../src/class/Dev.class'
+import Lexer from '../../src/lexer/Lexer.class'
 import Token, {
 	TemplatePosition,
 	TokenFilebound,
@@ -19,7 +19,7 @@ import Token, {
 	TokenCommentLine,
 	TokenCommentMulti,
 	TokenCommentBlock,
-} from '../src/class/Token.class'
+} from '../../src/lexer/Token.class'
 
 import {
 	LexError01,
@@ -27,7 +27,7 @@ import {
 	LexError03,
 	LexError04,
 	LexError05,
-} from '../src/error/LexError.class'
+} from '../../src/error/LexError.class'
 
 const lastItem  = (iter: any): any     => iter[lastIndex(iter)]
 const lastIndex = (iter: any): number  => iter.length-1

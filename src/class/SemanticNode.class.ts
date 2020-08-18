@@ -38,8 +38,8 @@ import Token, {
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from './Token.class'
-import type {CookValueType} from './Token.class'
+} from '../lexer/Token.class'
+import type {CookValueType} from '../lexer/Token.class'
 import type ParseNode from './ParseNode.class'
 
 

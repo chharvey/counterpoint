@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 
-import Scanner  from '../src/class/Scanner.class'
-import Char from '../src/class/Char.class'
+import Scanner from '../../src/lexer/Scanner.class'
+import Char    from '../../src/lexer/Char.class'
 
 const lastIndex = (iter: any): number  => iter.length-1
 

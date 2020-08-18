@@ -17,7 +17,7 @@ function dist() {
 }
 
 function test() {
-	return gulp.src('./test/*.ts')
+	return gulp.src('./test/**/*.ts')
 		.pipe(mocha({
 			require: 'ts-node/register',
 		}))
@@ -25,9 +25,9 @@ function test() {
 
 async function test_dev() {
 	const {CONFIG_DEFAULT}         = require('./build/SolidConfig.js')
-	const {default: Scanner      } = require('./build/class/Scanner.class.js')
-	const {default: Lexer        } = require('./build/class/Lexer.class.js')
-	const {default: Screener     } = require('./build/class/Screener.class.js')
+	const {default: Scanner}       = require('./build/lexer/Scanner.class.js')
+	const {default: Lexer}         = require('./build/lexer/Lexer.class.js')
+	const {default: Screener}      = require('./build/lexer/Screener.class.js')
 	const {default: Parser       } = require('./build/class/Parser.class.js')
 	const {default: CodeGenerator} = require('./build/vm/Builder.class.js')
 

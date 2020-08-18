@@ -4,7 +4,7 @@ import {
 	Filebound,
 	Punctuator,
 	Keyword,
-} from './Token.class'
+} from '../lexer/Token.class'
 import type ParseNode from './ParseNode.class'
 import {GrammarSymbol, Rule} from './Grammar.class'
 import Terminal, {

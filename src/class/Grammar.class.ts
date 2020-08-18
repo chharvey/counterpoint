@@ -6,7 +6,7 @@ import Token, {
 	Filebound,
 	Punctuator,
 	Keyword,
-} from './Token.class'
+} from '../lexer/Token.class'
 import Terminal from './Terminal.class'
 import Production, {
 	ProductionPrimitiveLiteral,

@@ -1,6 +1,6 @@
 import type SolidConfig from '../SolidConfig'
 
-import Dev from './Dev.class'
+import Dev from '../class/Dev.class'
 import Lexer from './Lexer.class'
 import Token, {
 	TokenWhitespace,
