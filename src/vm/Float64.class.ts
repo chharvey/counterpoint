@@ -1,8 +1,7 @@
 import * as xjs from 'extrajs'
 
-import SolidObject, {
-	SolidNumber,
-} from './SolidLanguageValue.class'
+import type SolidObject from './SolidObject.class'
+import SolidNumber from './SolidNumber.class'
 
 
 

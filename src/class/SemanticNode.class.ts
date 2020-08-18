@@ -9,14 +9,13 @@ import type Builder from '../vm/Builder.class'
 import SolidLanguageType, {
 	SolidTypeUnion,
 } from '../vm/SolidLanguageType.class'
-import SolidObject, {
-	SolidNull,
-	SolidBoolean,
-	SolidNumber,
-	SolidString,
-} from '../vm/SolidLanguageValue.class'
+import SolidObject  from '../vm/SolidObject.class'
+import SolidNull    from '../vm/SolidNull.class'
+import SolidBoolean from '../vm/SolidBoolean.class'
+import SolidNumber  from '../vm/SolidNumber.class'
 import Int16 from '../vm/Int16.class'
 import Float64 from '../vm/Float64.class'
+import SolidString  from '../vm/SolidString.class'
 import Instruction, {
 	Operator,
 	InstructionNone,

@@ -15,10 +15,8 @@ import {
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
 } from '../src/class/SemanticNode.class'
-import {
-	SolidNull,
-	SolidBoolean,
-} from '../src/vm/SolidLanguageValue.class'
+import SolidNull    from '../src/vm/SolidNull.class'
+import SolidBoolean from '../src/vm/SolidBoolean.class'
 import Int16 from '../src/vm/Int16.class'
 import {Operator} from '../src/vm/Instruction.class'
 

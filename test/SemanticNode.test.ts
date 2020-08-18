@@ -17,13 +17,12 @@ import {
 } from '../src/spec/CompletionStructure.class'
 import Builder from '../src/vm/Builder.class'
 import {SolidTypeUnion} from '../src/vm/SolidLanguageType.class'
-import SolidObject, {
-	SolidNull,
-	SolidBoolean,
-	SolidString,
-} from '../src/vm/SolidLanguageValue.class'
+import type SolidObject from '../src/vm/SolidObject.class'
+import SolidNull    from '../src/vm/SolidNull.class'
+import SolidBoolean from '../src/vm/SolidBoolean.class'
 import Int16 from '../src/vm/Int16.class'
 import Float64 from '../src/vm/Float64.class'
+import SolidString from '../src/vm/SolidString.class'
 import {
 	Operator,
 	InstructionNone,
