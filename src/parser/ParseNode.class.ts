@@ -30,7 +30,7 @@ import SemanticNode, {
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
 } from '../class/SemanticNode.class'
-import type {Rule} from './Grammar.class'
+import type Rule from './Rule.class'
 import {
 	ProductionPrimitiveLiteral,
 	ProductionStringTemplate,

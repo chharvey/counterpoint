@@ -10,9 +10,9 @@ import ParseNode, {
 } from './ParseNode.class'
 import Grammar, {
 	GrammarSymbol,
-	Rule,
-	Configuration,
 } from './Grammar.class'
+import type Rule from './Rule.class'
+import type Configuration from './Configuration.class'
 
 
 type State = ReadonlySet<Configuration>

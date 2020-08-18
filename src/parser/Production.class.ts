@@ -6,7 +6,8 @@ import {
 	Keyword,
 } from '../lexer'
 import type ParseNode from './ParseNode.class'
-import {GrammarSymbol, Rule} from './Grammar.class'
+import type {GrammarSymbol} from './Grammar.class'
+import Rule from './Rule.class'
 import Terminal, {
 	TerminalIdentifier,
 	TerminalInteger,
