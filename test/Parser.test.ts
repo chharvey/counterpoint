@@ -25,7 +25,7 @@ import {
 	TokenKeyword,
 	TokenNumber,
 	TokenString,
-} from '../src/lexer/Token.class'
+} from '../src/lexer/'
 
 import {
 	assert_arrayLength,

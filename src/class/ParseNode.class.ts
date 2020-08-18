@@ -2,9 +2,10 @@ import Util from './Util.class'
 import Dev from './Dev.class'
 import type Serializable from '../iface/Serializable.iface'
 import {Operator} from '../vm/Instruction.class'
-import Token, {
+import {
 	Punctuator,
 	Keyword,
+	Token,
 	TokenFilebound,
 	TokenPunctuator,
 	TokenKeyword,
@@ -12,7 +13,7 @@ import Token, {
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from '../lexer/Token.class'
+} from '../lexer/'
 import SemanticNode, {
 	SemanticStatementType,
 	SemanticNodeExpression,

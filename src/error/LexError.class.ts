@@ -1,5 +1,7 @@
-import type Char  from '../lexer/Char.class'
-import type Token from '../lexer/Token.class'
+import type {
+	Char,
+	Token,
+} from '../lexer/'
 
 import SolidError from './SolidError.class'
 

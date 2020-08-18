@@ -2,11 +2,12 @@ import * as xjs from 'extrajs'
 
 import Util from './Util.class'
 import Dev from './Dev.class'
-import Token, {
+import {
 	Filebound,
 	Punctuator,
 	Keyword,
-} from '../lexer/Token.class'
+	Token,
+} from '../lexer/'
 import Terminal from './Terminal.class'
 import Production, {
 	ProductionPrimitiveLiteral,

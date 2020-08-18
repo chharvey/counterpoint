@@ -1,15 +1,16 @@
 import Util from './Util.class'
-import Token, {
+import {
 	Filebound,
 	RadixType,
 	TemplatePosition,
+	Token,
 	TokenKeyword,
 	TokenIdentifier,
 	TokenIdentifierBasic,
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from '../lexer/Token.class'
+} from '../lexer/'
 
 
 

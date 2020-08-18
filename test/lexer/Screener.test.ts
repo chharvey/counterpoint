@@ -1,10 +1,11 @@
 import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../../src/SolidConfig'
-import Screener from '../../src/lexer/Screener.class'
-import Token, {
+import {
+	Screener,
+	Token,
 	TokenWhitespace,
-} from '../../src/lexer/Token.class'
+} from '../../src/lexer/'
 
 const mock: string = `
 5  +  30 \u000d

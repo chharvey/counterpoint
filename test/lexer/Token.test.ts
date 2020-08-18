@@ -3,15 +3,16 @@ import * as assert from 'assert'
 import {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util     from '../../src/class/Util.class'
 import Dev      from '../../src/class/Dev.class'
-import Lexer    from '../../src/lexer/Lexer.class'
-import Screener from '../../src/lexer/Screener.class'
-import Token, {
+import {
+	Lexer,
+	Screener,
+	Token,
 	TokenPunctuator,
 	TokenKeyword,
 	TokenIdentifier,
 	TokenIdentifierUnicode,
 	TokenNumber,
-} from '../../src/lexer/Token.class'
+} from '../../src/lexer/'
 
 const lastItem  = (iter: any): any     => iter[lastIndex(iter)]
 const lastIndex = (iter: any): number  => iter.length-1

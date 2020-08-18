@@ -31,15 +31,16 @@ import {
 	NanError01,
 	NanError02,
 } from '../error/NanError.class'
-import Token, {
+import {
 	Keyword,
+	CookValueType,
+	Token,
 	TokenKeyword,
 	TokenIdentifier,
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from '../lexer/Token.class'
-import type {CookValueType} from '../lexer/Token.class'
+} from '../lexer/'
 import type ParseNode from './ParseNode.class'
 
 

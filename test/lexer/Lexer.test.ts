@@ -3,10 +3,11 @@ import * as assert from 'assert'
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util  from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
-import Lexer from '../../src/lexer/Lexer.class'
-import Token, {
+import {
+	Lexer,
 	TemplatePosition,
 	TokenFilebound,
+	Token,
 	TokenWhitespace,
 	TokenPunctuator,
 	TokenKeyword,
@@ -19,8 +20,7 @@ import Token, {
 	TokenCommentLine,
 	TokenCommentMulti,
 	TokenCommentBlock,
-} from '../../src/lexer/Token.class'
-
+} from '../../src/lexer/'
 import {
 	LexError01,
 	LexError02,
