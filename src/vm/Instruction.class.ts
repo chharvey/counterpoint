@@ -87,7 +87,7 @@ export class InstructionConst extends InstructionExpression {
 	/**
 	 * @param value the constant to push
 	 */
-	constructor (private readonly value: SolidNumber<unknown>) {
+	constructor (private readonly value: SolidNumber) {
 		super()
 	}
 	/**

@@ -160,7 +160,7 @@ export class SolidBoolean extends SolidLanguageValue {
 /**
  * A numeric Solid Language Value.
  */
-export abstract class SolidNumber<T> extends SolidLanguageValue {
+export abstract class SolidNumber<T = unknown> extends SolidLanguageValue {
 	/**
 	 * Type-coerse this number into a float.
 	 * @returns the equivalent floating-point value

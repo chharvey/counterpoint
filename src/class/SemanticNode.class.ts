@@ -406,8 +406,8 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 				(v0 instanceof Int16 && v1 instanceof Int16)
 					? this.foldNumeric(v0, v1)
 					: this.foldNumeric(
-						(v0 as SolidNumber<unknown>).toFloat(),
-						(v1 as SolidNumber<unknown>).toFloat(),
+						(v0 as SolidNumber).toFloat(),
+						(v1 as SolidNumber).toFloat(),
 					)
 			) :
 			([
@@ -421,8 +421,8 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 				(v0 instanceof Int16 && v1 instanceof Int16)
 					? this.foldComparative(v0, v1)
 					: this.foldComparative(
-						(v0 as SolidNumber<unknown>).toFloat(),
-						(v1 as SolidNumber<unknown>).toFloat(),
+						(v0 as SolidNumber).toFloat(),
+						(v1 as SolidNumber).toFloat(),
 					)
 			) :
 			([
