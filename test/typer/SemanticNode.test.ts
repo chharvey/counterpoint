@@ -1,30 +1,30 @@
 import * as assert from 'assert'
 import * as xjs from 'extrajs'
 
-import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
-import Dev from '../src/class/Dev.class'
+import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
+import Dev from '../../src/class/Dev.class'
 import {
 	Parser,
-} from '../src/parser/'
+} from '../../src/parser'
 import {
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
-} from '../src/class/SemanticNode.class'
-import {NanError01} from '../src/error/NanError.class'
+} from '../../src/typer/SemanticNode.class'
+import {NanError01} from '../../src/error/NanError.class'
 import {
 	CompletionStructureAssessment,
-} from '../src/spec/CompletionStructure.class'
-import Builder from '../src/vm/Builder.class'
-import {SolidTypeUnion} from '../src/vm/SolidLanguageType.class'
-import type SolidObject from '../src/vm/SolidObject.class'
-import SolidNull    from '../src/vm/SolidNull.class'
-import SolidBoolean from '../src/vm/SolidBoolean.class'
-import Int16 from '../src/vm/Int16.class'
-import Float64 from '../src/vm/Float64.class'
-import SolidString from '../src/vm/SolidString.class'
+} from '../../src/typer/CompletionStructure.class'
+import Builder from '../../src/vm/Builder.class'
+import {SolidTypeUnion} from '../../src/typer/SolidLanguageType.class'
+import type SolidObject from '../../src/typer/SolidObject.class'
+import SolidNull    from '../../src/typer/SolidNull.class'
+import SolidBoolean from '../../src/typer/SolidBoolean.class'
+import Int16 from '../../src/typer/Int16.class'
+import Float64 from '../../src/typer/Float64.class'
+import SolidString from '../../src/typer/SolidString.class'
 import {
 	Operator,
 	InstructionNone,
@@ -34,16 +34,16 @@ import {
 	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
-} from '../src/vm/Instruction.class'
+} from '../../src/vm/Instruction.class'
 import {
 	instructionConstInt,
 	instructionConstFloat,
-} from './helpers'
+} from '../helpers'
 import {
 	operationFromStatementExpression,
 	statementExpressionFromSource,
 	constantFromStatementExpression,
-} from './helpers-semantic'
+} from '../helpers-semantic'
 
 
 

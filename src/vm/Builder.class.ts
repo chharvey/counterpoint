@@ -8,13 +8,13 @@ import type {
 	SemanticNodeExpression,
 	SemanticStatementType,
 	SemanticNodeGoal,
-} from '../class/SemanticNode.class'
+} from '../typer/SemanticNode.class'
 import {
 	Parser,
 } from '../parser/'
 import type {
 	CompletionStructureAssessment,
-} from '../spec/CompletionStructure.class'
+} from '../typer/CompletionStructure.class'
 import {
 	InstructionStatement,
 	InstructionModule,

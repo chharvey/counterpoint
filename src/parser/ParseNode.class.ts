@@ -29,7 +29,7 @@ import SemanticNode, {
 	SemanticNodeAssigned,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
-} from '../class/SemanticNode.class'
+} from '../typer/SemanticNode.class'
 import type Rule from './Rule.class'
 import {
 	ProductionPrimitiveLiteral,

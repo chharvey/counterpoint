@@ -1,4 +1,4 @@
-import type SemanticNode from '../class/SemanticNode.class'
+import type SemanticNode from '../typer/SemanticNode.class'
 import SolidError from './SolidError.class'
 
 

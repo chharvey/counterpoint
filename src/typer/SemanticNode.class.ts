@@ -1,21 +1,21 @@
 import * as xjs from 'extrajs'
 
-import Util from './Util.class'
+import Util from '../class/Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import {
 	CompletionStructureAssessment,
-} from '../spec/CompletionStructure.class'
+} from './CompletionStructure.class'
 import type Builder from '../vm/Builder.class'
 import SolidLanguageType, {
 	SolidTypeUnion,
-} from '../vm/SolidLanguageType.class'
-import SolidObject  from '../vm/SolidObject.class'
-import SolidNull    from '../vm/SolidNull.class'
-import SolidBoolean from '../vm/SolidBoolean.class'
-import SolidNumber  from '../vm/SolidNumber.class'
-import Int16 from '../vm/Int16.class'
-import Float64 from '../vm/Float64.class'
-import SolidString  from '../vm/SolidString.class'
+} from './SolidLanguageType.class'
+import SolidObject  from './SolidObject.class'
+import SolidNull    from './SolidNull.class'
+import SolidBoolean from './SolidBoolean.class'
+import SolidNumber  from './SolidNumber.class'
+import Int16        from './Int16.class'
+import Float64      from './Float64.class'
+import SolidString  from './SolidString.class'
 import Instruction, {
 	Operator,
 	InstructionNone,
@@ -40,10 +40,10 @@ import {
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from '../lexer/'
+} from '../lexer'
 import type {
 	ParseNode,
-} from '../parser/'
+} from '../parser'
 
 
 

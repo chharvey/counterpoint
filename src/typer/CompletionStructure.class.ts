@@ -1,8 +1,8 @@
-import SolidObject  from '../vm/SolidObject.class'
-import SolidNull    from '../vm/SolidNull.class'
-import SolidBoolean from '../vm/SolidBoolean.class'
-import SolidNumber  from '../vm/SolidNumber.class'
-import Int16 from '../vm/Int16.class'
+import SolidObject  from './SolidObject.class'
+import SolidNull    from './SolidNull.class'
+import SolidBoolean from './SolidBoolean.class'
+import SolidNumber  from './SolidNumber.class'
+import Int16        from './Int16.class'
 import {
 	InstructionConst,
 } from '../vm/Instruction.class'

@@ -1,5 +1,5 @@
-import Int16 from '../src/vm/Int16.class'
-import Float64 from '../src/vm/Float64.class'
+import Int16 from '../src/typer/Int16.class'
+import Float64 from '../src/typer/Float64.class'
 import {
 	InstructionConst,
 } from '../src/vm/Instruction.class'

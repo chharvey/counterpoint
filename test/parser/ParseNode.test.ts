@@ -16,10 +16,10 @@ import {
 	SemanticNodeOperationTernary,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
-} from '../../src/class/SemanticNode.class'
-import SolidNull    from '../../src/vm/SolidNull.class'
-import SolidBoolean from '../../src/vm/SolidBoolean.class'
-import Int16 from '../../src/vm/Int16.class'
+} from '../../src/typer/SemanticNode.class'
+import SolidNull    from '../../src/typer/SolidNull.class'
+import SolidBoolean from '../../src/typer/SolidBoolean.class'
+import Int16 from '../../src/typer/Int16.class'
 import {Operator} from '../../src/vm/Instruction.class'
 
 import {

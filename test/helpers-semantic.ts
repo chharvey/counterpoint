@@ -14,7 +14,7 @@ import {
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
 	SemanticNodeOperation,
-} from '../src/class/SemanticNode.class'
+} from '../src/typer/SemanticNode.class'
 
 
 

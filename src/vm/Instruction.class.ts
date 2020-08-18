@@ -1,5 +1,5 @@
-import type SolidNumber from './SolidNumber.class'
-import Float64 from './Float64.class'
+import type SolidNumber from '../typer/SolidNumber.class'
+import Float64 from '../typer/Float64.class'
 
 
 
