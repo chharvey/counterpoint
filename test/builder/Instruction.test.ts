@@ -94,7 +94,6 @@ describe('Instruction', () => {
 					new InstructionUnop(Operator.EMP, instructionConstInt(42n)),
 					new InstructionUnop(Operator.EMP, instructionConstFloat(0.0)),
 					new InstructionUnop(Operator.EMP, instructionConstFloat(4.2)),
-					new InstructionUnop(Operator.AFF, instructionConstInt(42n)),
 					new InstructionUnop(Operator.NEG, instructionConstInt(42n)),
 				].map((inst) => inst.toString()), [
 					`(call $inot ${ instructionConstInt(0n) })`,
@@ -105,13 +104,8 @@ describe('Instruction', () => {
 					`(call $iemp ${ instructionConstInt(42n) })`,
 					`(call $femp ${ instructionConstFloat(0.0) })`,
 					`(call $femp ${ instructionConstFloat(4.2) })`,
-					`(nop ${ instructionConstInt(42n) })`,
 					`(call $neg ${ instructionConstInt(42n) })`,
 				])
-				assert.throws(() => new InstructionUnop(
-					Operator.MUL,
-					instructionConstInt(42n),
-				).toString(), TypeError)
 			})
 		})
 

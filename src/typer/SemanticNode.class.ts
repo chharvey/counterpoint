@@ -4,6 +4,7 @@ import Util from '../class/Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import Operator, {
 	ValidOperatorUnary,
+	ValidOperatorBinary,
 	ValidOperatorArithmetic,
 	ValidOperatorComparative,
 	ValidOperatorEquality,
@@ -326,7 +327,7 @@ export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation 
 	];
 	constructor(
 		start_node: ParseNode,
-		readonly operator: Operator,
+		readonly operator: ValidOperatorBinary,
 		readonly children:
 			| readonly [SemanticNodeExpression, SemanticNodeExpression]
 	) {

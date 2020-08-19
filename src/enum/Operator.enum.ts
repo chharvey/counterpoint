@@ -33,6 +33,12 @@ export type ValidOperatorUnary =
 	| Operator.EMP
 	| Operator.NEG
 
+export type ValidOperatorBinary =
+	| ValidOperatorArithmetic
+	| ValidOperatorComparative
+	| ValidOperatorEquality
+	| ValidOperatorLogical
+
 export type ValidOperatorArithmetic =
 	| Operator.EXP
 	| Operator.MUL
