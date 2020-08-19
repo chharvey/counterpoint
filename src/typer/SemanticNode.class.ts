@@ -2,7 +2,13 @@ import * as xjs from 'extrajs'
 
 import Util from '../class/Util.class'
 import type Serializable from '../iface/Serializable.iface'
-import Operator from '../enum/Operator.enum'
+import Operator, {
+	ValidOperatorUnary,
+	ValidOperatorArithmetic,
+	ValidOperatorComparative,
+	ValidOperatorEquality,
+	ValidOperatorLogical,
+} from '../enum/Operator.enum'
 import {
 	CompletionStructureAssessment,
 } from './CompletionStructure.class'
@@ -267,7 +273,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 	];
 	constructor(
 		start_node: ParseNode,
-		operator: Operator,
+		readonly operator: ValidOperatorUnary,
 		readonly children:
 			| readonly [SemanticNodeExpression]
 	) {
@@ -294,7 +300,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		return new CompletionStructureAssessment(
 			(this.operator === Operator.NOT) ? v0.isTruthy.not :
 			(this.operator === Operator.EMP) ? v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0())) :
-			([Operator.AFF, Operator.NEG].includes(this.operator)) ? this.foldNumeric(v0 as SolidNumber<any>) :
+			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as SolidNumber<any>) :
 			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
 	}
@@ -313,125 +319,75 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		}
 	}
 }
-export class SemanticNodeOperationBinary extends SemanticNodeOperation {
+export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation {
 	declare assessments: readonly [
 		CompletionStructureAssessment,
 		CompletionStructureAssessment,
 	];
 	constructor(
 		start_node: ParseNode,
-		operator: Operator,
+		readonly operator: Operator,
 		readonly children:
 			| readonly [SemanticNodeExpression, SemanticNodeExpression]
 	) {
 		super(start_node, operator, children)
 	}
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
-		if ([
-			Operator.LT,
-			Operator.GT,
-			Operator.LE,
-			Operator.GE,
-			Operator.AND,
-			Operator.OR,
-		].includes(this.operator)) {
-			to_float = to_float || [this.children[0].type(), this.children[1].type()].includes(Float64)
-		}
 		return new InstructionBinop(
 			this.operator,
 			(!this.assessments[0].isAbrupt) ? this.assessments[0].build(to_float) : this.children[0].build(builder, to_float),
 			(!this.assessments[1].isAbrupt) ? this.assessments[1].build(to_float) : this.children[1].build(builder, to_float),
 		)
 	}
+	/** @final */
 	type(): SolidLanguageType {
-		const t0: SolidLanguageType = this.children[0].type()
-		const t1: SolidLanguageType = this.children[1].type()
-		const both_numeric: boolean = SolidLanguageType.isNumericType(t0) && SolidLanguageType.isNumericType(t1)
-		return (
-			([
-				Operator.EXP,
-				Operator.MUL,
-				Operator.DIV,
-				Operator.ADD,
-				Operator.SUB,
-			].includes(this.operator) && both_numeric) ? ([t0, t1].includes(Float64)) ? Float64 : Int16 :
-			([
-				Operator.LT,
-				Operator.GT,
-				Operator.LE,
-				Operator.GE,
-				Operator.NLT,
-				Operator.NGT,
-			].includes(this.operator) && both_numeric) ? SolidBoolean :
-			([
-				Operator.IS,
-				Operator.ISNT,
-				Operator.EQ,
-				Operator.NEQ,
-			].includes(this.operator)) ? SolidBoolean :
-			(this.operator === Operator.AND) ? (t0 === SolidNull) ? t0 : new SolidTypeUnion(t0, t1) :
-			(this.operator === Operator.OR)  ? (t0 === SolidNull) ? t1 : new SolidTypeUnion(t0, t1) :
-			(both_numeric) ? ([t0, t1].includes(Float64)) ? Float64 : Int16 :
-			(() => { throw new TypeError('Invalid operation.') })()
-		)
+		return this.type_do(this.children[0].type(), this.children[1].type())
 	}
+	protected abstract type_do(t0: SolidLanguageType, t1: SolidLanguageType): SolidLanguageType;
+	/** @final */
 	protected assess_do(): CompletionStructureAssessment {
 		if (this.assessments[0].isAbrupt) {
 			return this.assessments[0]
 		}
 		const v0: SolidObject = this.assessments[0].value!
 		if ([Operator.AND, Operator.OR].includes(this.operator)) {
-			return (
-				this.operator === Operator.AND && !v0.isTruthy.value ||
-				this.operator === Operator.OR  &&  v0.isTruthy.value
-			) ? new CompletionStructureAssessment(v0) : this.assessments[1]
+			return this.assess_do_do(v0)
 		}
 		if (this.assessments[1].isAbrupt) {
 			return this.assessments[1]
 		}
 		const v1: SolidObject = this.assessments[1].value!
-		const both_numeric: boolean = v0 instanceof SolidNumber && v1 instanceof SolidNumber
+		return this.assess_do_do(v0, v1)
+	}
+	protected abstract assess_do_do(v0: SolidObject, v1?: SolidObject): CompletionStructureAssessment;
+}
+export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperationBinary {
+	constructor (
+		start_node: ParseNode,
+		readonly operator: ValidOperatorArithmetic,
+		children: readonly [SemanticNodeExpression, SemanticNodeExpression]
+	) {
+		super(start_node, operator, children)
+	}
+	/** @override */
+	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType): SolidLanguageType {
+		return (SolidLanguageType.isNumericType(t0) && SolidLanguageType.isNumericType(t1))
+			? ([t0, t1].includes(Float64)) ? Float64 : Int16
+			: (() => { throw new TypeError('Invalid operation.') })()
+	}
+	/** @override */
+	protected assess_do_do(v0: SolidObject, v1?: SolidObject): CompletionStructureAssessment {
 		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
 			throw new NanError02(this.children[1])
 		}
-		return new CompletionStructureAssessment(
-			([
-				Operator.EXP,
-				Operator.MUL,
-				Operator.DIV,
-				Operator.ADD,
-				Operator.SUB,
-			].includes(this.operator) && both_numeric) ?
-				(v0 instanceof Int16 && v1 instanceof Int16)
-					? this.foldNumeric(v0, v1)
-					: this.foldNumeric(
-						(v0 as SolidNumber).toFloat(),
-						(v1 as SolidNumber).toFloat(),
-					)
-			:
-			([
-				Operator.LT,
-				Operator.GT,
-				Operator.LE,
-				Operator.GE,
-				Operator.NLT,
-				Operator.NGT,
-			].includes(this.operator) && both_numeric) ?
-				(v0 instanceof Int16 && v1 instanceof Int16)
-					? this.foldComparative(v0, v1)
-					: this.foldComparative(
-						(v0 as SolidNumber).toFloat(),
-						(v1 as SolidNumber).toFloat(),
-					)
-			:
-			([
-				Operator.IS,
-				Operator.ISNT,
-				Operator.EQ,
-				Operator.NEQ,
-			].includes(this.operator)) ? this.foldEquality(v0, v1) :
-			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
-		)
+		return (v0 instanceof SolidNumber && v1 instanceof SolidNumber) ? new CompletionStructureAssessment(
+			(v0 instanceof Int16 && v1 instanceof Int16)
+				? this.foldNumeric(v0, v1)
+				: this.foldNumeric(
+					(v0 as SolidNumber).toFloat(),
+					(v1 as SolidNumber).toFloat(),
+				)
+		) : (() => { throw new TypeError('Both operands must be of type `SolidNumber`.') })()
 	}
 	private foldNumeric<T extends SolidNumber<T>>(x: T, y: T): T {
 		try {
@@ -440,7 +396,7 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 				[Operator.MUL, (x, y) => x.times(y)],
 				[Operator.DIV, (x, y) => x.divide(y)],
 				[Operator.ADD, (x, y) => x.plus(y)],
-				[Operator.SUB, (x, y) => x.minus(y)],
+				// [Operator.SUB, (x, y) => x.minus(y)],
 			]).get(this.operator)!(x, y)
 		} catch (err) {
 			if (err instanceof xjs.NaNError) {
@@ -450,23 +406,96 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 			}
 		}
 	}
+}
+export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperationBinary {
+	constructor (
+		start_node: ParseNode,
+		readonly operator: ValidOperatorComparative,
+		children: readonly [SemanticNodeExpression, SemanticNodeExpression]
+	) {
+		super(start_node, operator, children)
+	}
+	/** @override */
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
+		return super.build_do(builder, to_float || [this.children[0].type(), this.children[1].type()].includes(Float64))
+	}
+	/** @override */
+	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType): SolidLanguageType {
+		return (SolidLanguageType.isNumericType(t0) && SolidLanguageType.isNumericType(t1))
+			? SolidBoolean
+			: (() => { throw new TypeError('Invalid operation.') })()
+	}
+	/** @override */
+	protected assess_do_do(v0: SolidObject, v1?: SolidObject): CompletionStructureAssessment {
+		return (v0 instanceof SolidNumber && v1 instanceof SolidNumber) ? new CompletionStructureAssessment(
+			(v0 instanceof Int16 && v1 instanceof Int16)
+				? this.foldComparative(v0, v1)
+				: this.foldComparative(
+					(v0 as SolidNumber).toFloat(),
+					(v1 as SolidNumber).toFloat(),
+				)
+		) : (() => { throw new TypeError('Both operands must be of type `SolidNumber`.') })()
+	}
 	private foldComparative<T extends SolidNumber<T>>(x: T, y: T): SolidBoolean {
 		return SolidBoolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
-			[Operator.LT,   (x, y) => x.lt(y)],
-			[Operator.GT,   (x, y) => y.lt(x)],
-			[Operator.LE,   (x, y) => x.equal(y) || x.lt(y)],
-			[Operator.GE,   (x, y) => x.equal(y) || y.lt(x)],
-			[Operator.NLT,  (x, y) => !x.lt(y)],
-			[Operator.NGT,  (x, y) => !y.lt(x)],
+			[Operator.LT, (x, y) => x.lt(y)],
+			[Operator.GT, (x, y) => y.lt(x)],
+			[Operator.LE, (x, y) => x.equal(y) || x.lt(y)],
+			[Operator.GE, (x, y) => x.equal(y) || y.lt(x)],
+			// [Operator.NLT, (x, y) => !x.lt(y)],
+			// [Operator.NGT, (x, y) => !y.lt(x)],
 		]).get(this.operator)!(x, y))
+	}
+}
+export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBinary {
+	constructor (
+		start_node: ParseNode,
+		readonly operator: ValidOperatorEquality,
+		children: readonly [SemanticNodeExpression, SemanticNodeExpression]
+	) {
+		super(start_node, operator, children)
+	}
+	protected type_do(_t0: SolidLanguageType, _t1: SolidLanguageType): SolidLanguageType {
+		return SolidBoolean
+	}
+	/** @override */
+	protected assess_do_do(v0: SolidObject, v1?: SolidObject): CompletionStructureAssessment {
+		return (v1 instanceof SolidObject)
+			? new CompletionStructureAssessment(this.foldEquality(v0, v1))
+			: (() => { throw new TypeError('Both operands must be of type `SolidObject`.') })()
 	}
 	private foldEquality(x: SolidObject, y: SolidObject): SolidBoolean {
 		return SolidBoolean.fromBoolean(new Map<Operator, (x: SolidObject, y: SolidObject) => boolean>([
-			[Operator.IS,   (x, y) =>  x.identical(y)],
-			[Operator.ISNT, (x, y) => !x.identical(y)],
-			[Operator.EQ,   (x, y) =>  x.equal(y)],
-			[Operator.NEQ,  (x, y) => !x.equal(y)],
+			[Operator.IS, (x, y) => x.identical(y)],
+			[Operator.EQ, (x, y) => x.equal(y)],
+			// [Operator.ISNT, (x, y) => !x.identical(y)],
+			// [Operator.NEQ,  (x, y) => !x.equal(y)],
 		]).get(this.operator)!(x, y))
+	}
+}
+export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBinary {
+	constructor (
+		start_node: ParseNode,
+		readonly operator: ValidOperatorLogical,
+		children: readonly [SemanticNodeExpression, SemanticNodeExpression]
+	) {
+		super(start_node, operator, children)
+	}
+	/** @override */
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
+		return super.build_do(builder, to_float || [this.children[0].type(), this.children[1].type()].includes(Float64))
+	}
+	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType): SolidLanguageType {
+		return (t0 === SolidNull)
+			? (this.operator === Operator.AND) ? t0 : t1
+			: new SolidTypeUnion(t0, t1)
+	}
+	/** @override */
+	protected assess_do_do(v0: SolidObject, _v1?: SolidObject): CompletionStructureAssessment {
+		return (
+			this.operator === Operator.AND && !v0.isTruthy.value ||
+			this.operator === Operator.OR  &&  v0.isTruthy.value
+		) ? new CompletionStructureAssessment(v0) : this.assessments[1]
 	}
 }
 export class SemanticNodeOperationTernary extends SemanticNodeOperation {
@@ -477,7 +506,7 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 	];
 	constructor(
 		start_node: ParseNode,
-		operator: Operator,
+		readonly operator: Operator.COND,
 		readonly children:
 			| readonly [SemanticNodeExpression, SemanticNodeExpression, SemanticNodeExpression]
 	) {

@@ -26,3 +26,29 @@ enum Operator {
 	COND,
 }
 export default Operator
+
+
+export type ValidOperatorUnary =
+	| Operator.NOT
+	| Operator.EMP
+	| Operator.NEG
+
+export type ValidOperatorArithmetic =
+	| Operator.EXP
+	| Operator.MUL
+	| Operator.DIV
+	| Operator.ADD
+
+export type ValidOperatorComparative =
+	| Operator.LT
+	| Operator.LE
+	| Operator.GT
+	| Operator.GE
+
+export type ValidOperatorEquality =
+	| Operator.IS
+	| Operator.EQ
+
+export type ValidOperatorLogical =
+	| Operator.AND
+	| Operator.OR
