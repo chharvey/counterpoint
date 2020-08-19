@@ -48,6 +48,11 @@ export type ValidOperatorUnary =
 	| Operator.NOT
 	| Operator.EMP
 	| Operator.NEG
+export type ValidOperatorBinary =
+	| ValidOperatorArithmetic
+	| ValidOperatorComparative
+	| ValidOperatorEquality
+	| ValidOperatorLogical
 export type ValidOperatorArithmetic =
 	| Operator.EXP
 	| Operator.MUL
@@ -338,7 +343,7 @@ export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation 
 	];
 	constructor(
 		start_node: ParseNode,
-		readonly operator: Operator,
+		readonly operator: ValidOperatorBinary,
 		readonly children:
 			| readonly [SemanticNodeExpression, SemanticNodeExpression]
 	) {

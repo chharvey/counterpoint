@@ -1,3 +1,7 @@
+import type {
+	ValidOperatorUnary,
+	ValidOperatorBinary,
+} from '../class/SemanticNode.class'
 import type SolidNumber from './SolidNumber.class'
 import Float64 from './Float64.class'
 
@@ -154,7 +158,7 @@ export class InstructionUnop extends InstructionExpression {
 	 * @param arg the operand
 	 */
 	constructor (
-		private readonly op: Operator,
+		private readonly op: ValidOperatorUnary,
 		private readonly arg: InstructionExpression,
 	) {
 		super()
@@ -164,11 +168,11 @@ export class InstructionUnop extends InstructionExpression {
 	 */
 	toString(): string {
 		return `(${ new Map<Operator, string>([
-			[Operator.AFF, `nop`],
+			// [Operator.AFF, `nop`],
 			[Operator.NEG, (!this.arg.isFloat) ? `call $neg`  : `f64.neg`],
 			[Operator.NOT, (!this.arg.isFloat) ? `call $inot` : `call $fnot`],
 			[Operator.EMP, (!this.arg.isFloat) ? `call $iemp` : `call $femp`],
-		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg })`
+		]).get(this.op)! } ${ this.arg })`
 	}
 	get isFloat(): boolean {
 		return [Operator.AFF, Operator.NEG].includes(this.op) && this.arg.isFloat
@@ -184,7 +188,7 @@ export class InstructionBinop extends InstructionExpression {
 	 * @param arg1 the second operand
 	 */
 	constructor (
-		private readonly op: Operator,
+		private readonly op: ValidOperatorBinary,
 		private readonly arg0: InstructionExpression,
 		private readonly arg1: InstructionExpression,
 	) {
@@ -209,18 +213,18 @@ export class InstructionBinop extends InstructionExpression {
 			}`
 		}
 		return `(${ new Map<Operator, string>([
-			[Operator.ADD, (!this.isFloat) ? `i32.add`   : `f64.add`],
-			[Operator.SUB, (!this.isFloat) ? `i32.sub`   : `f64.sub`],
+			[Operator.EXP, (!this.isFloat) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
 			[Operator.MUL, (!this.isFloat) ? `i32.mul`   : `f64.mul`],
 			[Operator.DIV, (!this.isFloat) ? `i32.div_s` : `f64.div`],
-			[Operator.EXP, (!this.isFloat) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
+			[Operator.ADD, (!this.isFloat) ? `i32.add`   : `f64.add`],
+			[Operator.SUB, (!this.isFloat) ? `i32.sub`   : `f64.sub`],
 			[Operator.LT,  (!this.isFloat) ? `i32.lt_s`  : `f64.lt`],
 			[Operator.GT,  (!this.isFloat) ? `i32.gt_s`  : `f64.gt`],
 			[Operator.LE,  (!this.isFloat) ? `i32.le_s`  : `f64.le`],
 			[Operator.GE,  (!this.isFloat) ? `i32.ge_s`  : `f64.ge`],
 			[Operator.IS,  (!this.isFloat) ? `i32.eq`    : `call $fis`],
 			[Operator.EQ,  (!this.isFloat) ? `i32.eq`    : `f64.eq`],
-		]).get(this.op) || (() => { throw new TypeError('Invalid operation.') })() } ${ this.arg0 } ${ this.arg1 })`
+		]).get(this.op)! } ${ this.arg0 } ${ this.arg1 })`
 	}
 	get isFloat(): boolean {
 		return this.arg0.isFloat || this.arg1.isFloat
