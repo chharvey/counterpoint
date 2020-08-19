@@ -15,14 +15,20 @@ import Token, {
 } from './Token.class'
 import SemanticNode, {
 	ValidOperatorUnary,
-	ValidOperatorBinary,
+	ValidOperatorArithmetic,
+	ValidOperatorComparative,
+	ValidOperatorEquality,
+	ValidOperatorLogical,
 	SemanticStatementType,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
 	SemanticNodeOperationUnary,
-	SemanticNodeOperationBinary,
+	SemanticNodeOperationBinaryArithmetic,
+	SemanticNodeOperationBinaryComparative,
+	SemanticNodeOperationBinaryEquality,
+	SemanticNodeOperationBinaryLogical,
 	SemanticNodeOperationTernary,
 	SemanticNodeDeclaration,
 	SemanticNodeAssignment,
@@ -251,63 +257,71 @@ export class ParseNodeExpressionBinary extends ParseNode {
 		| readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary]
 		| readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary]
 	decorate(): SemanticNodeExpression {
-		return (this.children.length === 1) ?
-			this.children[0].decorate()
-		:
-			(this.children[1].source === Punctuator.SUB) ? // `a - b` is syntax sugar for `a + -(b)`
-				new SemanticNodeOperationBinary(this, Operator.ADD, [
-					this.children[0].decorate(),
-					new SemanticNodeOperationUnary(this.children[2], Operator.NEG, [
-						this.children[2].decorate(),
-					]),
-				])
-			: (this.children[1].source === Punctuator.NLT) ? // `a !< b` is syntax sugar for `!(a < b)`
-				new SemanticNodeOperationUnary(this, Operator.NOT, [
-					new SemanticNodeOperationBinary(this.children[0], Operator.LT, [
-						this.children[0].decorate(),
-						this.children[2].decorate(),
-					]),
-				])
-			: (this.children[1].source === Punctuator.NGT) ? // `a !> b` is syntax sugar for `!(a > b)`
-				new SemanticNodeOperationUnary(this, Operator.NOT, [
-					new SemanticNodeOperationBinary(this.children[0], Operator.GT, [
-						this.children[0].decorate(),
-						this.children[2].decorate(),
-					]),
-				])
-			: (this.children[1].source === Keyword.ISNT) ? // `a isnt b` is syntax sugar for `!(a is b)`
-				new SemanticNodeOperationUnary(this, Operator.NOT, [
-					new SemanticNodeOperationBinary(this.children[0], Operator.IS, [
-						this.children[0].decorate(),
-						this.children[2].decorate(),
-					]),
-				])
-			: (this.children[1].source === Punctuator.NEQ) ? // `a != b` is syntax sugar for `!(a == b)`
-				new SemanticNodeOperationUnary(this, Operator.NOT, [
-					new SemanticNodeOperationBinary(this.children[0], Operator.EQ, [
-						this.children[0].decorate(),
-						this.children[2].decorate(),
-					]),
-				])
-			: (this.children[1].source === Punctuator.NAND) ? // `a !& b` is syntax sugar for `!(a && b)`
-				new SemanticNodeOperationUnary(this, Operator.NOT, [
-					new SemanticNodeOperationBinary(this.children[0], Operator.AND, [
-						this.children[0].decorate(),
-						this.children[2].decorate(),
-					]),
-				])
-			: (this.children[1].source === Punctuator.NOR) ? // `a !| b` is syntax sugar for `!(a || b)`
-				new SemanticNodeOperationUnary(this, Operator.NOT, [
-					new SemanticNodeOperationBinary(this.children[0], Operator.OR, [
-						this.children[0].decorate(),
-						this.children[2].decorate(),
-					]),
-				])
-			:
-				new SemanticNodeOperationBinary(this, ParseNodeExpressionBinary.OPERATORS.get(this.children[1].source) as ValidOperatorBinary, [
+		if (this.children.length === 1) {
+			return this.children[0].decorate()
+		} else {
+			const operator: Operator = ParseNodeExpressionBinary.OPERATORS.get(this.children[1].source)!
+			const operands: [SemanticNodeExpression, SemanticNodeExpression] = [
 					this.children[0].decorate(),
 					this.children[2].decorate(),
+				]
+			return ([
+				Operator.EXP,
+				Operator.MUL,
+				Operator.DIV,
+				Operator.ADD,
+			].includes(operator)) ?
+				new SemanticNodeOperationBinaryArithmetic(this, operator as ValidOperatorArithmetic, operands)
+			: (operator === Operator.SUB) ? // `a - b` is syntax sugar for `a + -(b)`
+				new SemanticNodeOperationBinaryArithmetic(this, Operator.ADD, [
+					operands[0],
+					new SemanticNodeOperationUnary(this.children[2], Operator.NEG, [
+						operands[1],
+					]),
 				])
+			: ([
+				Operator.LT,
+				Operator.GT,
+				Operator.LE,
+				Operator.GE,
+			].includes(operator)) ?
+				new SemanticNodeOperationBinaryComparative(this, operator as ValidOperatorComparative, operands)
+			: (operator === Operator.NLT) ? // `a !< b` is syntax sugar for `!(a < b)`
+				new SemanticNodeOperationUnary(this, Operator.NOT, [
+					new SemanticNodeOperationBinaryComparative(this.children[0], Operator.LT, operands),
+				])
+			: (operator === Operator.NGT) ? // `a !> b` is syntax sugar for `!(a > b)`
+				new SemanticNodeOperationUnary(this, Operator.NOT, [
+					new SemanticNodeOperationBinaryComparative(this.children[0], Operator.GT, operands),
+				])
+			: ([
+				Operator.IS,
+				Operator.EQ,
+			].includes(operator)) ?
+				new SemanticNodeOperationBinaryEquality(this, operator as ValidOperatorEquality, operands)
+			: (operator === Operator.ISNT) ? // `a isnt b` is syntax sugar for `!(a is b)`
+				new SemanticNodeOperationUnary(this, Operator.NOT, [
+					new SemanticNodeOperationBinaryEquality(this.children[0], Operator.IS, operands),
+				])
+			: (operator === Operator.NEQ) ? // `a != b` is syntax sugar for `!(a == b)`
+				new SemanticNodeOperationUnary(this, Operator.NOT, [
+					new SemanticNodeOperationBinaryEquality(this.children[0], Operator.EQ, operands),
+				])
+			: ([
+				Operator.AND,
+				Operator.OR,
+			].includes(operator)) ?
+				new SemanticNodeOperationBinaryLogical(this, operator as ValidOperatorLogical, operands)
+			: (operator === Operator.NAND) ? // `a !& b` is syntax sugar for `!(a && b)`
+				new SemanticNodeOperationUnary(this, Operator.NOT, [
+					new SemanticNodeOperationBinaryLogical(this.children[0], Operator.AND, operands),
+				])
+			: (operator === Operator.NOR) ? // `a !| b` is syntax sugar for `!(a || b)`
+				new SemanticNodeOperationUnary(this, Operator.NOT, [
+					new SemanticNodeOperationBinaryLogical(this.children[0], Operator.OR, operands),
+				])
+			: (() => { throw new Error(`Operator ${ Operator[operator] } not found.`) })()
+		}
 	}
 }
 export class ParseNodeExpressionConditional extends ParseNode {
