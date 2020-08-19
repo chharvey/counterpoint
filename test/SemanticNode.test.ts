@@ -166,6 +166,9 @@ describe('SemanticNode', () => {
 						instructionConstFloat(2.1),
 					),
 				])
+				assert.throws(() => operationFromStatementExpression(
+					statementExpressionFromSource(`null + 5;`)
+				).build(new Builder(`null + 5;`, CONFIG_DEFAULT)), /Invalid operation./)
 			})
 			specify('SemanticNodeOperation[operator: DIV] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 				assert.deepStrictEqual([

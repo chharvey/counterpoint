@@ -44,6 +44,27 @@ import type ParseNode from './ParseNode.class'
 
 
 
+export type ValidOperatorUnary =
+	| Operator.NOT
+	| Operator.EMP
+	| Operator.NEG
+
+
+export type ValidOperatorBinary =
+	| Operator.EXP
+	| Operator.MUL
+	| Operator.DIV
+	| Operator.ADD
+	| Operator.LT
+	| Operator.LE
+	| Operator.GT
+	| Operator.GE
+	| Operator.IS
+	| Operator.EQ
+	| Operator.AND
+	| Operator.OR
+
+
 /**
  * A SemanticNode holds only the semantics of a {@link ParseNode}.
  */
@@ -263,7 +284,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 	];
 	constructor(
 		start_node: ParseNode,
-		operator: Operator,
+		readonly operator: ValidOperatorUnary,
 		readonly children:
 			| readonly [SemanticNodeExpression]
 	) {
@@ -290,7 +311,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		return new CompletionStructureAssessment(
 			(this.operator === Operator.NOT) ? v0.isTruthy.not :
 			(this.operator === Operator.EMP) ? v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0())) :
-			([Operator.AFF, Operator.NEG].includes(this.operator)) ? this.foldNumeric(v0 as SolidNumber<any>) :
+			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as SolidNumber<any>) :
 			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
 	}
@@ -316,7 +337,7 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 	];
 	constructor(
 		start_node: ParseNode,
-		operator: Operator,
+		readonly operator: ValidOperatorBinary,
 		readonly children:
 			| readonly [SemanticNodeExpression, SemanticNodeExpression]
 	) {
@@ -349,25 +370,25 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 				Operator.MUL,
 				Operator.DIV,
 				Operator.ADD,
-				Operator.SUB,
 			].includes(this.operator) && both_numeric) ? ([t0, t1].includes(Float64)) ? Float64 : Int16 :
 			([
 				Operator.LT,
 				Operator.GT,
 				Operator.LE,
 				Operator.GE,
-				Operator.NLT,
-				Operator.NGT,
 			].includes(this.operator) && both_numeric) ? SolidBoolean :
 			([
 				Operator.IS,
-				Operator.ISNT,
 				Operator.EQ,
-				Operator.NEQ,
 			].includes(this.operator)) ? SolidBoolean :
-			(this.operator === Operator.AND) ? (t0 === SolidNull) ? t0 : new SolidTypeUnion(t0, t1) :
-			(this.operator === Operator.OR)  ? (t0 === SolidNull) ? t1 : new SolidTypeUnion(t0, t1) :
-			(both_numeric) ? ([t0, t1].includes(Float64)) ? Float64 : Int16 :
+			([
+				Operator.AND,
+				Operator.OR,
+			].includes(this.operator)) ? (
+				(t0 === SolidNull)
+					? (this.operator === Operator.AND) ? t0 : t1
+					: new SolidTypeUnion(t0, t1)
+			) :
 			(() => { throw new TypeError('Invalid operation.') })()
 		)
 	}
@@ -396,7 +417,6 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 				Operator.MUL,
 				Operator.DIV,
 				Operator.ADD,
-				Operator.SUB,
 			].includes(this.operator) && both_numeric) ?
 				(v0 instanceof Int16 && v1 instanceof Int16)
 					? this.foldNumeric(v0, v1)
@@ -410,8 +430,6 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 				Operator.GT,
 				Operator.LE,
 				Operator.GE,
-				Operator.NLT,
-				Operator.NGT,
 			].includes(this.operator) && both_numeric) ?
 				(v0 instanceof Int16 && v1 instanceof Int16)
 					? this.foldComparative(v0, v1)
@@ -422,11 +440,9 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 			:
 			([
 				Operator.IS,
-				Operator.ISNT,
 				Operator.EQ,
-				Operator.NEQ,
 			].includes(this.operator)) ? this.foldEquality(v0, v1) :
-			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
+			(() => { throw new TypeError('Invalid operation.') })()
 		)
 	}
 	private foldNumeric<T extends SolidNumber<T>>(x: T, y: T): T {
@@ -436,7 +452,7 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 				[Operator.MUL, (x, y) => x.times(y)],
 				[Operator.DIV, (x, y) => x.divide(y)],
 				[Operator.ADD, (x, y) => x.plus(y)],
-				[Operator.SUB, (x, y) => x.minus(y)],
+				// [Operator.SUB, (x, y) => x.minus(y)],
 			]).get(this.operator)!(x, y)
 		} catch (err) {
 			if (err instanceof xjs.NaNError) {
@@ -448,20 +464,20 @@ export class SemanticNodeOperationBinary extends SemanticNodeOperation {
 	}
 	private foldComparative<T extends SolidNumber<T>>(x: T, y: T): SolidBoolean {
 		return SolidBoolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
-			[Operator.LT,   (x, y) => x.lt(y)],
-			[Operator.GT,   (x, y) => y.lt(x)],
-			[Operator.LE,   (x, y) => x.equal(y) || x.lt(y)],
-			[Operator.GE,   (x, y) => x.equal(y) || y.lt(x)],
-			[Operator.NLT,  (x, y) => !x.lt(y)],
-			[Operator.NGT,  (x, y) => !y.lt(x)],
+			[Operator.LT, (x, y) => x.lt(y)],
+			[Operator.GT, (x, y) => y.lt(x)],
+			[Operator.LE, (x, y) => x.equal(y) || x.lt(y)],
+			[Operator.GE, (x, y) => x.equal(y) || y.lt(x)],
+			// [Operator.NLT, (x, y) => !x.lt(y)],
+			// [Operator.NGT, (x, y) => !y.lt(x)],
 		]).get(this.operator)!(x, y))
 	}
 	private foldEquality(x: SolidObject, y: SolidObject): SolidBoolean {
 		return SolidBoolean.fromBoolean(new Map<Operator, (x: SolidObject, y: SolidObject) => boolean>([
-			[Operator.IS,   (x, y) =>  x.identical(y)],
-			[Operator.ISNT, (x, y) => !x.identical(y)],
-			[Operator.EQ,   (x, y) =>  x.equal(y)],
-			[Operator.NEQ,  (x, y) => !x.equal(y)],
+			[Operator.IS, (x, y) => x.identical(y)],
+			[Operator.EQ, (x, y) => x.equal(y)],
+			// [Operator.ISNT, (x, y) => !x.identical(y)],
+			// [Operator.NEQ,  (x, y) => !x.equal(y)],
 		]).get(this.operator)!(x, y))
 	}
 }
@@ -473,7 +489,7 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 	];
 	constructor(
 		start_node: ParseNode,
-		operator: Operator,
+		readonly operator: Operator.COND,
 		readonly children:
 			| readonly [SemanticNodeExpression, SemanticNodeExpression, SemanticNodeExpression]
 	) {

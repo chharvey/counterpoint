@@ -14,6 +14,8 @@ import Token, {
 	TokenTemplate,
 } from './Token.class'
 import SemanticNode, {
+	ValidOperatorUnary,
+	ValidOperatorBinary,
 	SemanticStatementType,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
@@ -218,7 +220,7 @@ export class ParseNodeExpressionUnary extends ParseNode {
 			(this.children[0].source === Punctuator.AFF) ? // `+a` is a no-op
 				this.children[1].decorate()
 			:
-				new SemanticNodeOperationUnary(this, ParseNodeExpressionUnary.OPERATORS.get(this.children[0].source)!, [
+				new SemanticNodeOperationUnary(this, ParseNodeExpressionUnary.OPERATORS.get(this.children[0].source) as ValidOperatorUnary, [
 					this.children[1].decorate(),
 				])
 	}
@@ -302,7 +304,7 @@ export class ParseNodeExpressionBinary extends ParseNode {
 					]),
 				])
 			:
-				new SemanticNodeOperationBinary(this, ParseNodeExpressionBinary.OPERATORS.get(this.children[1].source)!, [
+				new SemanticNodeOperationBinary(this, ParseNodeExpressionBinary.OPERATORS.get(this.children[1].source) as ValidOperatorBinary, [
 					this.children[0].decorate(),
 					this.children[2].decorate(),
 				])
