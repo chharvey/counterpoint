@@ -253,8 +253,7 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 export abstract class SemanticNodeOperation extends SemanticNodeExpression {
 	/** @override */
 	protected readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
-	private is_folded: boolean = false
-	protected assessments: readonly CompletionStructureAssessment[] = []
+	protected readonly assessments: CompletionStructureAssessment[] = []
 	constructor(
 		start_node: ParseNode,
 		readonly operator: Operator,
@@ -265,27 +264,15 @@ export abstract class SemanticNodeOperation extends SemanticNodeExpression {
 	}
 	/** @final */
 	build(builder: Builder, to_float: boolean = false): InstructionExpression {
-		if (!this.is_folded) {
-			this.fold()
+		for (let i = 0; i < this.children.length; i++) { // cannot use `.forEach` on sparse arrays
+			this.assessments[i] || (this.assessments[i] = this.children[i].assess()) // COMBAK `this.assessments[i] ||= this.children[i].assess()`
 		}
 		return this.build_do(builder, to_float || this.type() === Float64)
 	}
 	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionExpression;
-	/** @final */
-	assess(): CompletionStructureAssessment {
-		if (!this.is_folded) {
-			this.fold()
-		}
-		return this.assess_do()
-	}
-	protected abstract assess_do(): CompletionStructureAssessment;
-	private fold(): void {
-		this.assessments = this.children.map((child) => child.assess())
-		this.is_folded = true
-	}
 }
 export class SemanticNodeOperationUnary extends SemanticNodeOperation {
-	declare assessments: readonly [
+	declare readonly assessments: [
 		CompletionStructureAssessment,
 	];
 	constructor(
@@ -309,7 +296,9 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		const t0: SolidLanguageType = this.children[0].type()
 		return (SolidLanguageType.isNumericType(t0)) ? t0 : (() => { throw new TypeError('Invalid operation.') })()
 	}
-	protected assess_do(): CompletionStructureAssessment {
+	/** @override */
+	assess(): CompletionStructureAssessment {
+		this.assessments[0] = this.children[0].assess()
 		if (this.assessments[0].isAbrupt) {
 			return this.assessments[0]
 		}
@@ -337,7 +326,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 	}
 }
 export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation {
-	declare assessments: readonly [
+	declare readonly assessments: [
 		CompletionStructureAssessment,
 		CompletionStructureAssessment,
 	];
@@ -361,22 +350,6 @@ export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation 
 		return this.type_do(this.children[0].type(), this.children[1].type())
 	}
 	protected abstract type_do(t0: SolidLanguageType, t1: SolidLanguageType): SolidLanguageType;
-	/** @final */
-	protected assess_do(): CompletionStructureAssessment {
-		if (this.assessments[0].isAbrupt) {
-			return this.assessments[0]
-		}
-		const v0: SolidObject = this.assessments[0].value!
-		if ([Operator.AND, Operator.OR].includes(this.operator)) {
-			return this.assess_do_do(v0)
-		}
-		if (this.assessments[1].isAbrupt) {
-			return this.assessments[1]
-		}
-		const v1: SolidObject = this.assessments[1].value!
-		return this.assess_do_do(v0, v1)
-	}
-	protected abstract assess_do_do(v0: SolidObject, v1?: SolidObject): CompletionStructureAssessment;
 }
 export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperationBinary {
 	constructor (
@@ -393,7 +366,16 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 			: (() => { throw new TypeError('Invalid operation.') })()
 	}
 	/** @override */
-	protected assess_do_do(v0: SolidObject, v1?: SolidObject): CompletionStructureAssessment {
+	assess(): CompletionStructureAssessment {
+		this.assessments[0] = this.children[0].assess()
+		if (this.assessments[0].isAbrupt) {
+			return this.assessments[0]
+		}
+		this.assessments[1] = this.children[1].assess()
+		if (this.assessments[1].isAbrupt) {
+			return this.assessments[1]
+		}
+		const [v0, v1]: [SolidObject, SolidObject] = [this.assessments[0].value!, this.assessments[1].value!]
 		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
 			throw new NanError02(this.children[1])
 		}
@@ -443,7 +425,16 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 			: (() => { throw new TypeError('Invalid operation.') })()
 	}
 	/** @override */
-	protected assess_do_do(v0: SolidObject, v1?: SolidObject): CompletionStructureAssessment {
+	assess(): CompletionStructureAssessment {
+		this.assessments[0] = this.children[0].assess()
+		if (this.assessments[0].isAbrupt) {
+			return this.assessments[0]
+		}
+		this.assessments[1] = this.children[1].assess()
+		if (this.assessments[1].isAbrupt) {
+			return this.assessments[1]
+		}
+		const [v0, v1]: [SolidObject, SolidObject] = [this.assessments[0].value!, this.assessments[1].value!]
 		return (v0 instanceof SolidNumber && v1 instanceof SolidNumber) ? new CompletionStructureAssessment(
 			(v0 instanceof Int16 && v1 instanceof Int16)
 				? this.foldComparative(v0, v1)
@@ -472,11 +463,24 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 	) {
 		super(start_node, operator, children)
 	}
+	/** @override */
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
+		return super.build_do(builder, to_float || this.operator === Operator.EQ && [this.children[0].type(), this.children[1].type()].includes(Float64))
+	}
 	protected type_do(_t0: SolidLanguageType, _t1: SolidLanguageType): SolidLanguageType {
 		return SolidBoolean
 	}
 	/** @override */
-	protected assess_do_do(v0: SolidObject, v1?: SolidObject): CompletionStructureAssessment {
+	assess(): CompletionStructureAssessment {
+		this.assessments[0] = this.children[0].assess()
+		if (this.assessments[0].isAbrupt) {
+			return this.assessments[0]
+		}
+		this.assessments[1] = this.children[1].assess()
+		if (this.assessments[1].isAbrupt) {
+			return this.assessments[1]
+		}
+		const [v0, v1]: [SolidObject, SolidObject] = [this.assessments[0].value!, this.assessments[1].value!]
 		return (v1 instanceof SolidObject)
 			? new CompletionStructureAssessment(this.foldEquality(v0, v1))
 			: (() => { throw new TypeError('Both operands must be of type `SolidObject`.') })()
@@ -508,15 +512,24 @@ export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBin
 			: new SolidTypeUnion(t0, t1)
 	}
 	/** @override */
-	protected assess_do_do(v0: SolidObject, _v1?: SolidObject): CompletionStructureAssessment {
-		return (
+	assess(): CompletionStructureAssessment {
+		this.assessments[0] = this.children[0].assess()
+		if (this.assessments[0].isAbrupt) {
+			return this.assessments[0]
+		}
+		const v0: SolidObject = this.assessments[0].value!
+		if (
 			this.operator === Operator.AND && !v0.isTruthy.value ||
 			this.operator === Operator.OR  &&  v0.isTruthy.value
-		) ? new CompletionStructureAssessment(v0) : this.assessments[1]
+		) {
+			return new CompletionStructureAssessment(v0)
+		}
+		this.assessments[1] = this.children[1].assess()
+		return this.assessments[1]
 	}
 }
 export class SemanticNodeOperationTernary extends SemanticNodeOperation {
-	declare assessments: readonly [
+	declare readonly assessments: [
 		CompletionStructureAssessment,
 		CompletionStructureAssessment,
 		CompletionStructureAssessment,
@@ -543,12 +556,17 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 		const t2: SolidLanguageType = this.children[2].type()
 		return (t0 === SolidBoolean) ? new SolidTypeUnion(t1, t2) : (() => { throw new TypeError('Invalid operation.') })()
 	}
-	protected assess_do(): CompletionStructureAssessment {
-		return (this.assessments[0].isAbrupt) ? this.assessments[0] : (
-			(this.assessments[0].value! === SolidBoolean.TRUE)
-				? this.assessments[1]
-				: this.assessments[2]
-		)
+	/** @override */
+	assess(): CompletionStructureAssessment {
+		this.assessments[0] = this.children[0].assess()
+		if (this.assessments[0].isAbrupt) {
+			return this.assessments[0]
+		}
+		this.assessments[1] = this.children[1].assess()
+		this.assessments[2] = this.children[2].assess()
+		return (this.assessments[0].value! === SolidBoolean.TRUE)
+			? this.assessments[1]
+			: this.assessments[2]
 	}
 }
 /**

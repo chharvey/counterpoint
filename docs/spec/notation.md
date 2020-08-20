@@ -1172,8 +1172,12 @@ a returned normal completion structure, and it is specified before
 the name of the algorithm in its header.
 If an algorithm outputs a normal completion structure without a \`value\`,
 the output type is specified as [Void](./data-types.md#void).
+
 If an algorithm outputs an *abrupt* completion structure, its \`value\`, if it exists,
-though it is still included in the returned structure, is *not* indicated in the output type.
+though it is still included in the returned structure, is *not* indicated in the output type,
+however, an exclamation point `!` is appended to the return type.
+For example, an algorithm with return type `Boolean!` will return a normal completion with
+a \`value\` of type `Boolean`, or an abrupt completion.
 
 Algorithm steps may include substeps, which are formatted by an additional indentation level.
 Substeps may include their own “subsubsteps”, and so on, with each level corresponding to a new indentation.
@@ -1260,9 +1264,9 @@ is shorthand for the following steps:
 	1. *Return:* ‹CS›.
 2. *Assert:* ‹CS› is a normal completion.
 3. *If* ‹CS› has a `value` property:
-	1. Perform the «Unwrap» step replacing ‹CS› with `‹CS›.value`.
+	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹CS› with `‹CS›.value`.
 4. *Else:*
-	1. Perform the «Unwrap» step replacing ‹CS› with `void`.
+	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹CS› with `void`.
 ```
 
 For example, setting a variable to an unwrap step …
@@ -1279,6 +1283,32 @@ For example, setting a variable to an unwrap step …
 4. *If* `call` has a `value` property:
 	1. *Let* `v` be `call.value`.
 5. *Else:*
+	1. *Let* `v` be `void`.
+```
+
+#### UnwrapAffirm
+An algorithm step that contains «*UnwrapAffirm:* ‹CS›» (where ‹CS› is a completion structure or algorithm call)
+is shorthand for the following steps:
+```
+1. *Assert:* ‹CS› is a normal completion.
+2. *If* ‹CS› has a `value` property:
+	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹CS› with `‹CS›.value`.
+3. *Else:*
+	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹CS› with `void`.
+```
+
+For example, setting a variable to an unwrap-affirm step …
+```
+1. *Let* `call` be the result of performing `AlgorithmCall()`.
+2. *Let* `v` be *UnwrapAffirm:* `call`.
+```
+… is shorthand for asserting it is not abrupt.
+```
+1. *Let* `call` be the result of performing `AlgorithmCall()`.
+2. *Assert:* `call` is a normal completion.
+3. *If* `call` has a `value` property:
+	1. *Let* `v` be `call.value`.
+4. *Else:*
 	1. *Let* `v` be `void`.
 ```
 

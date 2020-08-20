@@ -423,7 +423,7 @@ The **equality** operator `==` determines whether two operands are considered â€
 based on the type of the operands.
 For `null` and boolean values, equality is one in the same with identity.
 For number values, equality is determined by mathematical quantity, thus `0.0 == -0.0` is `true`.
-Mixed numbers of the same quantity are equal, so `42 == 42.0` is also `true`.
+Mixed number types of the same quantity are equal, so `42 == 42.0` is also `true`.
 
 The non-identity operator `isnt` is simply the logical negation of `is`, and
 the non-equality operator `!=` is simply the logical negation of `==`.

@@ -199,6 +199,72 @@ describe('SemanticNode', () => {
 					instructionConstInt(b),
 				)))
 			})
+			specify('SemanticNodeOperation[operator: IS | ISNT | EQ | NEQ] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+				assert.deepStrictEqual([
+					`42 == 420;`,
+					`42 != 420;`,
+					`4.2 == 42;`,
+					`42 != 42.0;`,
+					`true is 1;`,
+					`true == 1;`,
+					`null is false;`,
+					`null == false;`,
+					`false == 0.0;`,
+				].map((src) => operationFromStatementExpression(
+					statementExpressionFromSource(src)
+				).build(new Builder(src, CONFIG_DEFAULT))), [
+					new InstructionBinop(
+						Operator.EQ,
+						instructionConstInt(42n),
+						instructionConstInt(420n),
+					),
+					new InstructionUnop(
+						Operator.NOT,
+						instructionConstInt(0n),
+					),
+					new InstructionBinop(
+						Operator.EQ,
+						instructionConstFloat(4.2),
+						instructionConstFloat(42.0),
+					),
+					new InstructionUnop(
+						Operator.NOT,
+						instructionConstInt(1n),
+					),
+					new InstructionBinop(
+						Operator.IS,
+						instructionConstInt(1n),
+						instructionConstInt(1n),
+					),
+					new InstructionBinop(
+						Operator.EQ,
+						instructionConstInt(1n),
+						instructionConstInt(1n),
+					),
+					new InstructionBinop(
+						Operator.IS,
+						instructionConstInt(0n),
+						instructionConstInt(0n),
+					),
+					new InstructionBinop(
+						Operator.EQ,
+						instructionConstInt(0n),
+						instructionConstInt(0n),
+					),
+					new InstructionBinop(
+						Operator.EQ,
+						instructionConstFloat(0.0),
+						instructionConstFloat(0.0),
+					),
+				])
+				;[
+					`false is 0.0;`,
+				].forEach((src) => {
+					assert.throws(() => operationFromStatementExpression(
+						statementExpressionFromSource(src)
+					).build(new Builder(src, CONFIG_DEFAULT)), TypeError, 'IS does not type-coerse ints to floats')
+				})
+			})
 			specify('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 				assert.deepStrictEqual([
 					`42 && 420;`,
@@ -608,6 +674,10 @@ describe('SemanticNode', () => {
 					[`null == null;`, true],
 					[`null is 5;`,    false],
 					[`null == 5;`,    false],
+					[`true is 1;`,    false],
+					[`true == 1;`,    false],
+					[`true is 1.0;`,  false],
+					[`true == 1.0;`,  false],
 					[`true is 5.1;`,  false],
 					[`true == 5.1;`,  false],
 					[`true is true;`, true],
