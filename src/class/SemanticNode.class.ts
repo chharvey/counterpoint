@@ -6,9 +6,7 @@ import {
 	CompletionStructureAssessment,
 } from '../spec/CompletionStructure.class'
 import type Builder from '../vm/Builder.class'
-import SolidLanguageType, {
-	SolidTypeUnion,
-} from '../vm/SolidLanguageType.class'
+import type SolidLanguageType from '../vm/SolidLanguageType.class'
 import SolidObject  from '../vm/SolidObject.class'
 import SolidNull    from '../vm/SolidNull.class'
 import SolidBoolean from '../vm/SolidBoolean.class'
@@ -509,7 +507,7 @@ export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBin
 	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType): SolidLanguageType {
 		return (t0 === SolidNull)
 			? (this.operator === Operator.AND) ? t0 : t1
-			: new SolidTypeUnion(t0, t1)
+			: t0.union(t1)
 	}
 	/** @override */
 	assess(): CompletionStructureAssessment {
@@ -554,7 +552,7 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 		const t0: SolidLanguageType = this.children[0].type()
 		const t1: SolidLanguageType = this.children[1].type()
 		const t2: SolidLanguageType = this.children[2].type()
-		return (t0 === SolidBoolean) ? new SolidTypeUnion(t1, t2) : (() => { throw new TypeError('Invalid operation.') })()
+		return (t0 === SolidBoolean) ? t1.union(t2) : (() => { throw new TypeError('Invalid operation.') })()
 	}
 	/** @override */
 	assess(): CompletionStructureAssessment {

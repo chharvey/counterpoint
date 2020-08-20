@@ -18,73 +18,40 @@ export default class SolidLanguageType {
 	get isNumericType(): boolean {
 		return false
 	}
-}
-
-
-
-/**
- * A type intersection of two types.
- * Indicates a value that must have both one and the other type.
- */
-export class SolidTypeIntersection extends SolidLanguageType {
 	/**
-	 * Construct a new SolidTypeIntersection object.
+	 * Return the type intersection of this type with another.
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type intersection is taken.
-	 * @param operand0 the first type
-	 * @param operand1 the second type
+	 * @param t the other type
+	 * @returns the type intersection
 	 */
-	constructor (
-		private readonly operand0: SolidLanguageType,
-		private readonly operand1: SolidLanguageType,
-	) {
-		super(((operand0: SolidLanguageType, operand1: SolidLanguageType) => {
-			if (operand0 === operand1) {
-				return operand0.properties
-			}
-			const props: Map<string, SolidLanguageType> = new Map([...operand0.properties])
-			;[...operand1.properties].forEach(([name, type_]) => {
-				props.set(name, (props.has(name)) ? new SolidTypeIntersection(props.get(name)!, type_) : type_)
-			})
-			return props
-		})(operand0, operand1))
+	intersect(t: SolidLanguageType): SolidLanguageType {
+		if (this === t) {
+			return this
+		}
+		const props: Map<string, SolidLanguageType> = new Map([...this.properties])
+		;[...t.properties].forEach(([name, type_]) => {
+			props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_)
+		})
+		return new SolidLanguageType(props)
 	}
-	/** @implements SolidLanguageType */
-	get isNumericType(): boolean {
-		return this.operand0.isNumericType || this.operand1.isNumericType
-	}
-}
-/**
- * A type union of two types.
- * Indicates a value that could have either one or the other type.
- */
-export class SolidTypeUnion extends SolidLanguageType {
 	/**
-	 * Construct a new SolidTypeIntersection object.
+	 * Return the type union of this type with another.
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type union is taken.
-	 * @param operand0 the first type
-	 * @param operand1 the second type
+	 * @param t the other type
+	 * @returns the type union
 	 */
-	constructor (
-		private readonly operand0: SolidLanguageType,
-		private readonly operand1: SolidLanguageType,
-	) {
-		super(((operand0: SolidLanguageType, operand1: SolidLanguageType) => {
-			if (operand0 === operand1) {
-				return operand0.properties
+	union(t: SolidLanguageType): SolidLanguageType {
+		if (this === t) {
+			return this
+		}
+		const props: Map<string, SolidLanguageType> = new Map()
+		;[...this.properties].forEach(([name, type_]) => {
+			if (t.properties.has(name)) {
+				props.set(name, type_.union(t.properties.get(name)!))
 			}
-			const props: Map<string, SolidLanguageType> = new Map()
-			;[...operand0.properties].forEach(([name, type_]) => {
-				if (operand1.properties.has(name)) {
-					props.set(name, new SolidTypeUnion(type_, operand1.properties.get(name)!))
-				}
-			})
-			return props
-		})(operand0, operand1))
-	}
-	/** @implements SolidLanguageType */
-	get isNumericType(): boolean {
-		return this.operand0.isNumericType && this.operand1.isNumericType
+		})
+		return new SolidLanguageType(props)
 	}
 }

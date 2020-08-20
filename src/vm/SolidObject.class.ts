@@ -1,4 +1,4 @@
-import type SolidLanguageType from './SolidLanguageType.class'
+import SolidLanguageType from './SolidLanguageType.class'
 import type SolidNull from './SolidNull.class'
 import type SolidBoolean from './SolidBoolean.class'
 
@@ -24,6 +24,10 @@ export default class SolidObject {
 			['equal',     SolidObject /* SolidFunction */],
 		])
 	}
+	/** @implements SolidLanguageType */
+	static intersect: SolidLanguageType['intersect'] = SolidLanguageType.prototype.intersect
+	static union:     SolidLanguageType['union']     = SolidLanguageType.prototype.union
+
 
 	/**
 	 * Return the “logical value” of this value.

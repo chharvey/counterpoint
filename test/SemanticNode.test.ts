@@ -16,7 +16,6 @@ import {
 	CompletionStructureAssessment,
 } from '../src/spec/CompletionStructure.class'
 import Builder from '../src/vm/Builder.class'
-import {SolidTypeUnion} from '../src/vm/SolidLanguageType.class'
 import type SolidObject from '../src/vm/SolidObject.class'
 import SolidNull    from '../src/vm/SolidNull.class'
 import SolidBoolean from '../src/vm/SolidBoolean.class'
@@ -511,15 +510,15 @@ describe('SemanticNode', () => {
 					.type()
 				), [
 					SolidNull,
-					new SolidTypeUnion(SolidBoolean, SolidNull),
-					new SolidTypeUnion(SolidBoolean, SolidNull),
-					new SolidTypeUnion(SolidBoolean, Int16),
-					new SolidTypeUnion(Float64, SolidBoolean),
+					SolidBoolean.union(SolidNull),
+					SolidBoolean.union(SolidNull),
+					SolidBoolean.union(Int16),
+					Float64.union(SolidBoolean),
 					SolidBoolean,
-					new SolidTypeUnion(SolidBoolean, SolidNull),
-					new SolidTypeUnion(SolidBoolean, SolidNull),
-					new SolidTypeUnion(SolidBoolean, Int16),
-					new SolidTypeUnion(Float64, SolidBoolean),
+					SolidBoolean.union(SolidNull),
+					SolidBoolean.union(SolidNull),
+					SolidBoolean.union(Int16),
+					Float64.union(SolidBoolean),
 				])
 			})
 			it('returns `A | B` for conditionals', () => {
@@ -533,10 +532,10 @@ describe('SemanticNode', () => {
 					.children[0] as SemanticNodeOperation)
 					.type()
 				), [
-					new SolidTypeUnion(SolidBoolean, Int16),
-					new SolidTypeUnion(Float64, SolidNull),
-					new SolidTypeUnion(Int16, Float64),
-					new SolidTypeUnion(Float64, Float64),
+					SolidBoolean.union(Int16),
+					Float64.union(SolidNull),
+					Int16.union(Float64),
+					Float64.union(Float64),
 				])
 			})
 			it('throws for numeric operation of non-numbers.', () => {

@@ -1,9 +1,6 @@
 import * as assert from 'assert'
 
-import SolidLanguageType, {
-	SolidTypeIntersection,
-	SolidTypeUnion,
-} from '../../src/vm/SolidLanguageType.class'
+import SolidLanguageType from '../../src/vm/SolidLanguageType.class'
 import SolidObject  from '../../src/vm/SolidObject.class'
 import SolidNull    from '../../src/vm/SolidNull.class'
 import SolidBoolean from '../../src/vm/SolidBoolean.class'
@@ -26,19 +23,19 @@ describe('SolidLanguageType', () => {
 		]))
 		context('SolidTypeIntersection', () => {
 			it('takes the union of properties of constituent types.', () => {
-				assert.deepStrictEqual(new SolidTypeIntersection(t0, t1).properties, new Map<string, SolidLanguageType>([
-					['foo', new SolidTypeIntersection(SolidObject, SolidObject)], // TODO should reduce to `SolidObject`
+				assert.deepStrictEqual(t0.intersect(t1).properties, new Map<string, SolidLanguageType>([
+					['foo', SolidObject],
 					['bar', SolidNull],
 					['qux', SolidNumber],
-					['diz', new SolidTypeIntersection(SolidBoolean, SolidString)],
+					['diz', SolidBoolean.intersect(SolidString)],
 				]))
 			})
 		})
 		context('SolidTypeUnion', () => {
 			it('takes the intersection of properties of constituent types.', () => {
-				assert.deepStrictEqual(new SolidTypeUnion(t0, t1).properties, new Map<string, SolidLanguageType>([
-					['foo', new SolidTypeUnion(SolidObject, SolidObject)], // TODO should reduce to `SolidObject`
-					['diz', new SolidTypeUnion(SolidBoolean, SolidString)],
+				assert.deepStrictEqual(t0.union(t1).properties, new Map<string, SolidLanguageType>([
+					['foo', SolidObject],
+					['diz', SolidBoolean.union(SolidString)],
 				]))
 			})
 		})
