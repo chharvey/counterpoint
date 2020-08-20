@@ -38,8 +38,6 @@ Sequence<Instruction> Build(SemanticOperation[operator: EXP | MUL | DIV | ADD | 
 		"`expr.operator`",
 	].
 
-
-
 Sequence<Instruction> Build(SemanticOperation[operator: AND] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
 	2. *Return:* [
@@ -54,8 +52,6 @@ Sequence<Instruction> Build(SemanticOperation[operator: AND] expr) :=
 		"END",
 	].
 
-
-
 Sequence<Instruction> Build(SemanticOperation[operator: OR] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
 	2. *Return:* [
@@ -69,8 +65,6 @@ Sequence<Instruction> Build(SemanticOperation[operator: OR] expr) :=
 		...builds.1,
 		"END",
 	].
-
-
 
 Sequence<Instruction> Build(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
@@ -125,7 +119,7 @@ Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperation
 // Attempts to assess a semantic node first and then build the assessment;
 // if the assessment fails, builds the semantic node.
 Sequence<Instruction> TryAssessAndBuild(SemanticExpression expr) :=
-	1. *Let* `assess` be the result of performing `Assess(expr)`.
+	1. *Let* `assess` be `Assess(expr)`.
 	2. *If* `assess` is an abrupt completion:
 		1. *Let* `instrs` be *UnwrapAffirm:* `Build(expr)`.
 	3. *Else:*
