@@ -1,8 +1,3 @@
-import Int16 from './Int16.class'
-import Float64 from './Float64.class'
-
-
-
 /**
  * Parent class for all Solid Language Types.
  * Known subclasses:
@@ -12,16 +7,10 @@ import Float64 from './Float64.class'
 export default class SolidLanguageType {
 	/**
 	 * Return whether the given class is a numeric type, i.e., an Integer or a Float.
-	 * @todo TODO: this should be an instance method, where SolidLanguageValue classes are instances of this class
-	```
-	isNumericType(): boolean {
-		return this === Int16 || this === Float64
-	}
-	```
-	 * @return Is the given class Integer or Float?
+	 * @return Is this type Number or a subtype?
 	 */
-	static isNumericType(t: SolidLanguageType): boolean {
-		return t === Int16 || t === Float64
+	get isNumericType(): boolean {
+		return false
 	}
 }
 
@@ -33,10 +22,14 @@ export default class SolidLanguageType {
  */
 export class SolidTypeIntersection extends SolidLanguageType {
 	constructor (
-		private operand0: SolidLanguageType,
-		private operand1: SolidLanguageType,
+		private readonly operand0: SolidLanguageType,
+		private readonly operand1: SolidLanguageType,
 	) {
 		super()
+	}
+	/** @implements SolidLanguageType */
+	get isNumericType(): boolean {
+		return this.operand0.isNumericType || this.operand1.isNumericType
 	}
 }
 /**
@@ -45,9 +38,13 @@ export class SolidTypeIntersection extends SolidLanguageType {
  */
 export class SolidTypeUnion extends SolidLanguageType {
 	constructor (
-		private operand0: SolidLanguageType,
-		private operand1: SolidLanguageType,
+		private readonly operand0: SolidLanguageType,
+		private readonly operand1: SolidLanguageType,
 	) {
 		super()
+	}
+	/** @implements SolidLanguageType */
+	get isNumericType(): boolean {
+		return this.operand0.isNumericType && this.operand1.isNumericType
 	}
 }

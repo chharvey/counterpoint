@@ -12,6 +12,11 @@ import type SolidBoolean from './SolidBoolean.class'
  * - Float64
  */
 export default class SolidObject {
+	/** @implements SolidLanguageType */
+	static get isNumericType(): boolean {
+		return false
+	}
+
 	/**
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value

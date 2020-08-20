@@ -294,7 +294,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 			return SolidBoolean
 		}
 		const t0: SolidLanguageType = this.children[0].type()
-		return (SolidLanguageType.isNumericType(t0)) ? t0 : (() => { throw new TypeError('Invalid operation.') })()
+		return (t0.isNumericType) ? t0 : (() => { throw new TypeError('Invalid operation.') })()
 	}
 	/** @override */
 	assess(): CompletionStructureAssessment {
@@ -361,7 +361,7 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 	}
 	/** @override */
 	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType): SolidLanguageType {
-		return (SolidLanguageType.isNumericType(t0) && SolidLanguageType.isNumericType(t1))
+		return (t0.isNumericType && t1.isNumericType)
 			? ([t0, t1].includes(Float64)) ? Float64 : Int16
 			: (() => { throw new TypeError('Invalid operation.') })()
 	}
@@ -420,7 +420,7 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 	}
 	/** @override */
 	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType): SolidLanguageType {
-		return (SolidLanguageType.isNumericType(t0) && SolidLanguageType.isNumericType(t1))
+		return (t0.isNumericType && t1.isNumericType)
 			? SolidBoolean
 			: (() => { throw new TypeError('Invalid operation.') })()
 	}
