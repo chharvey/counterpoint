@@ -1,3 +1,4 @@
+import type SolidLanguageType from './SolidLanguageType.class'
 import type SolidNull from './SolidNull.class'
 import type SolidBoolean from './SolidBoolean.class'
 
@@ -15,6 +16,13 @@ export default class SolidObject {
 	/** @implements SolidLanguageType */
 	static get isNumericType(): boolean {
 		return false
+	}
+	/** @implements SolidLanguageType */
+	static get properties(): ReadonlyMap<string, SolidLanguageType> {
+		return new Map([
+			['identical', SolidObject /* SolidFunction */],
+			['equal',     SolidObject /* SolidFunction */],
+		])
 	}
 
 	/**
