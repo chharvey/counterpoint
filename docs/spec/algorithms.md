@@ -27,33 +27,33 @@ Type TypeOf(SemanticIdentifier id) :=
 
 Type TypeOf(SemanticOperation[operator: NOT | EMP] expr) :=
 	1. *Return:* `Boolean`.
-Type TypeOf(SemanticOperation[operator: NEG] expr) :=
+Type! TypeOf(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `t0` be `TypeOf(expr.children.0)`.
+	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* `IsNumericType(t0)`:
 		1. *Return:* `t0`.
 	4. *Throw:* TypeError "Invalid operation.".
-Type TypeOf(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
+Type! TypeOf(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `t0` be `TypeOf(expr.children.0)`.
-	3. *Let* `t1` be `TypeOf(expr.children.1)`.
+	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
+	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
 		1. *If* `t0` is `Float` *or* `t1` is `Float`:
 			1. *Return:* `Float`.
 		2. *Else*:
 			1. *Return:* `Integer`.
 	5. *Throw:* TypeError "Invalid operation.".
-Type TypeOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
+Type! TypeOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `t0` be `TypeOf(expr.children.0)`.
-	3. *Let* `t1` be `TypeOf(expr.children.1)`.
+	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
+	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
 		1. *Return:* `Boolean`.
 	5. *Throw:* TypeError "Invalid operation.".
-Type TypeOf(SemanticOperation[operator: IS | EQ] expr) :=
+Type! TypeOf(SemanticOperation[operator: IS | EQ] expr) :=
 	// 1. *Assert:* `expr.children.count` is 2.
-	// 2. *Let* `t0` be `TypeOf(expr.children.0)`.
-	// 3. *Let* `t1` be `TypeOf(expr.children.1)`.
+	// 2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
+	// 3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	// 4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
 	// 	1. *If* `operator` is `IS`:
 	// 		1. *If* `t0` is `Integer` *and* `t1` is `Float`:
@@ -65,14 +65,14 @@ Type TypeOf(SemanticOperation[operator: IS | EQ] expr) :=
 	// 	1. *Return:* `Boolean`.
 	// 6. *Return:* `ToType(false)`.
 	7. *Return:* `Boolean`.
-Type TypeOf(SemanticOperation[operator: AND] expr) :=
+Type! TypeOf(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `t0` be `TypeOf(expr.children.0)`.
+	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* `t0` is `Null`:
 		1. *Return:* `t0`.
 	// 4. *If* `t0` is `ToType(false)`:
 	// 	1. *Return:* `t0`.
-	5. *Let* `t1` be `TypeOf(expr.children.1)`.
+	5. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	// 6. *If* `t0` is a type union containing `Null`, `ToType(false)`, or `Boolean`:
 	// 	1. *Note:* The left-hand operand is either “falsy” or “truthy”;
 	// 		if “falsy”, then it will be produced;
@@ -82,10 +82,10 @@ Type TypeOf(SemanticOperation[operator: AND] expr) :=
 	// 	the right-hand operand will definitely be produced.
 	// 8. *Return:* `t1`.
 	9. *Return:* `TypeUnion(t0, t1)`.
-Type TypeOf(SemanticOperation[operator: OR] expr) :=
+Type! TypeOf(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `t0` be `TypeOf(expr.children.0)`.
-	3. *Let* `t1` be `TypeOf(expr.children.1)`.
+	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
+	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* `t0` is `Null`:
 		1. *Return:* `t1`.
 	// 5. *If* `t0` is `ToType(false)`:
@@ -99,11 +99,11 @@ Type TypeOf(SemanticOperation[operator: OR] expr) :=
 	// 	the left-hand operand will definitely be produced.
 	// 8. *Return:* `t0`.
 	9. *Return:* `TypeUnion(t0, t1)`.
-Type TypeOf(SemanticOperation[operator: COND] expr) :=
+Type! TypeOf(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
-	2. *Let* `t0` be `TypeOf(expr.children.0)`.
-	3. *Let* `t1` be `TypeOf(expr.children.1)`.
-	4. *Let* `t2` be `TypeOf(expr.children.2)`.
+	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
+	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
+	4. *Let* `t2` be *Unwrap:* `TypeOf(expr.children.2)`.
 	5. *If* `t0` is `Boolean`:
 		1. *Return:* `TypeUnion(t1, t2)`.
 	6. *Throw:* TypeError "Invalid operation.".
@@ -160,15 +160,15 @@ Boolean IsNumericType(Type t) :=
 ## TypeCheck
 Performs the type-checking piece during semantic analysis.
 ```
-Void TypeCheck(SemanticExpression expr) :=
-	1. *Perform:* `TypeOf(expr)`.
+Void! TypeCheck(SemanticExpression expr) :=
+	1. *Perform:* *Unwrap:* `TypeOf(expr)`.
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 
-Void TypeCheck(SemanticStatementExpression stmt) :=
+Void! TypeCheck(SemanticStatementExpression stmt) :=
 	1. *If* `stmt.children.count` is greater than 0:
 		1. *Return:* `TypeCheck(stmt.children.0)`.
 
-Void TypeCheck(SemanticGoal goal) :=
+Void! TypeCheck(SemanticGoal goal) :=
 	1. For each `SemanticStatment stmt` in `goal.children`:
 		1. *Perform:* `TypeCheck(stmt)`.
 ```
@@ -235,10 +235,10 @@ Boolean Equal(Object a, Object b) :=
 
 
 
-### Abstract Operation: PerformBinaryArithmetic
+## PerformBinaryArithmetic
 Performs a binary arithmetic operation.
 ```
-Number PerformBinaryArithmetic(Text op, Number operand0, Number operand1) :=
+Number! PerformBinaryArithmetic(Text op, Number operand0, Number operand1) :=
 	1. *If* `op` is `EXP`:
 		1. *Let* `result` be the power, `operand0 ^ operand1`,
 			obtained by raising `operand0` (the base) to `operand1` (the exponent).
@@ -262,7 +262,7 @@ Number PerformBinaryArithmetic(Text op, Number operand0, Number operand1) :=
 ## PerformBinaryCompare
 Performs a binary comparison operation.
 ```
-Boolean PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
+Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 	1. *If* `op` is `LT`:
 		1. *If* `operand0` is strictly less than `operand1`:
 			1. *Return:* `true`.
