@@ -54,10 +54,17 @@ Type TypeOf(SemanticOperation[operator: IS | EQ] expr) :=
 	// 1. *Assert:* `expr.children.count` is 2.
 	// 2. *Let* `t0` be `TypeOf(expr.children.0)`.
 	// 3. *Let* `t1` be `TypeOf(expr.children.1)`.
-	// 4. *If* `t0` and `t1` overlap:
+	// 4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
+	// 	1. *If* `operator` is `IS`:
+	// 		1. *If* `t0` is `Integer` *and* `t1` is `Float`:
+	// 			1. *Return:* `ToType(false)`.
+	// 		2. *If* `t0` is `Float` *and* `t1` is `Integer`:
+	// 			1. *Return:* `ToType(false)`.
+	// 	2. *Return:* `Boolean`.
+	// 5. *If* `t0` and `t1` overlap:
 	// 	1. *Return:* `Boolean`.
-	// 5. *Throw:* TypeError "Invalid operation.".
-	6. *Return:* `Boolean`.
+	// 6. *Return:* `ToType(false)`.
+	7. *Return:* `Boolean`.
 Type TypeOf(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be `TypeOf(expr.children.0)`.
@@ -214,8 +221,9 @@ Compares two objects and returns whether they are considered “equal” by some
 Boolean Equal(Object a, Object b) :=
 	1. *If* `Identical(a, b)` is `true`:
 		1. *Return:* `true`.
-	2. *If* `a` is of type `Float` *or* `b` is of type `Float`:
-		1. *Return:* `Equal(Float(a), Float(b))`.
+	2. *If* `a` is of type `Number` *and* `b` is of type `Number`:
+		1. *If* `a` is of type `Float` *or* `b` is of type `Float`:
+			1. *Return:* `Equal(Float(a), Float(b))`.
 	3. *If* `a` is of type `Float` *and* `b` is of type `Float`:
 		1. If `a` is `0.0` *and* `b` is `-0.0`:
 			1. *Return:* `true`.

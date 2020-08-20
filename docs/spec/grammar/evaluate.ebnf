@@ -33,6 +33,18 @@ Void Evaluate(Instruction :::= "LT" | "GT" | "LE" | "GE") :=
 	3. *Let* `result` be the result of performing `PerformBinaryCompare(Instruction, operand0, operand1)`.
 	4. Push `result` onto the operand stack.
 
+Void Evaluate(Instruction :::= "IS") :=
+	1. Pop `operand1` from the operand stack.
+	2. Pop `operand0` from the operand stack.
+	3. *Let* `result` be the result of performing `Identical(operand0, operand1)`.
+	4. Push `result` onto the operand stack.
+
+Void Evaluate(Instruction :::= "EQ") :=
+	1. Pop `operand1` from the operand stack.
+	2. Pop `operand0` from the operand stack.
+	3. *Let* `result` be the result of performing `Equal(operand0, operand1)`.
+	4. Push `result` onto the operand stack.
+
 Void Evaluate(Instruction :::= "IF") :=
 	1. Pop `condition` from the operand stack.
 	2. *If* `condition` is non-zero:

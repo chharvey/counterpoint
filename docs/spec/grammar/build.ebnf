@@ -32,9 +32,7 @@ Sequence<Instruction> Build(SemanticOperation[operator: NOT | EMP | NEG] expr) :
 		"`expr.operator`",
 	].
 
-
-
-Sequence<Instruction> Build(SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | GT | LE | GE] expr) :=
+Sequence<Instruction> Build(SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | GT | LE | GE | IS | EQ] expr) :=
 	1. *Let* `builds` be `PrebuildSemanticOperationBinary(expr)`.
 	2. *Return:* [
 		...builds.0,

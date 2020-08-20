@@ -472,6 +472,10 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 	) {
 		super(start_node, operator, children)
 	}
+	/** @override */
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
+		return super.build_do(builder, to_float || this.operator === Operator.EQ && [this.children[0].type(), this.children[1].type()].includes(Float64))
+	}
 	protected type_do(_t0: SolidLanguageType, _t1: SolidLanguageType): SolidLanguageType {
 		return SolidBoolean
 	}
