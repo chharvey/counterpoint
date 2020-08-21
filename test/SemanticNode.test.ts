@@ -16,6 +16,9 @@ import {
 	CompletionStructureAssessment,
 } from '../src/spec/CompletionStructure.class'
 import Builder from '../src/vm/Builder.class'
+import {
+	SolidTypeConstant,
+} from '../src/vm/SolidLanguageType.class'
 import type SolidObject from '../src/vm/SolidObject.class'
 import SolidNull    from '../src/vm/SolidNull.class'
 import SolidBoolean from '../src/vm/SolidBoolean.class'
@@ -395,30 +398,38 @@ describe('SemanticNode', () => {
 
 	context('SemanticNodeExpression', () => {
 		describe('#type', () => {
-			it('returns `Null` for SemanticNodeConstant with null value.', () => {
-				assert.strictEqual(((new Parser(`null;`, CONFIG_DEFAULT).parse().decorate()
+			function typeOperations(tests: ReadonlyMap<string, SolidObject>): void {
+				assert.deepStrictEqual([...tests.keys()].map((src) => operationFromStatementExpression(
+					statementExpressionFromSource(src)
+				).type()), [...tests.values()].map((result) => new SolidTypeConstant(result)))
+			}
+			it('returns a constant Null type for SemanticNodeConstant with null value.', () => {
+				assert.deepStrictEqual(((new Parser(`null;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeConstant).type(), SolidNull)
+					.children[0] as SemanticNodeConstant).type(), new SolidTypeConstant(SolidNull.NULL))
 			})
-			it('returns `Boolean` for SemanticNodeConstant with bool value.', () => {
-				[
+			it('returns a constant Boolean type for SemanticNodeConstant with bool value.', () => {
+				assert.deepStrictEqual([
 					`false;`,
 					`true;`,
-				].forEach((src) => {
-					assert.strictEqual(((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+				].map((src) =>
+					((new Parser(src, CONFIG_DEFAULT).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeConstant).type(), SolidBoolean)
-				})
+						.children[0] as SemanticNodeConstant).type()
+				), [
+					new SolidTypeConstant(SolidBoolean.FALSE),
+					new SolidTypeConstant(SolidBoolean.TRUE),
+				])
 			})
-			it('returns `Integer` for SemanticNodeConstant with integer value.', () => {
-				assert.strictEqual(((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate()
+			it('returns a constant Integer type for SemanticNodeConstant with integer value.', () => {
+				assert.deepStrictEqual(((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeConstant).type(), Int16)
+					.children[0] as SemanticNodeConstant).type(), new SolidTypeConstant(new Int16(42n)))
 			})
-			it('returns `Float` for SemanticNodeConstant with float value.', () => {
-				assert.strictEqual(((new Parser(`4.2e+1;`, CONFIG_DEFAULT).parse().decorate()
+			it('returns a constant Float type for SemanticNodeConstant with float value.', () => {
+				assert.deepStrictEqual(((new Parser(`4.2e+1;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeConstant).type(), Float64)
+					.children[0] as SemanticNodeConstant).type(), new SolidTypeConstant(new Float64(42.0)))
 			})
 			Dev.supports('variables') && it('throws for identifiers.', () => {
 				assert.throws(() => ((new Parser(`x;`, CONFIG_DEFAULT).parse().decorate()
@@ -444,100 +455,68 @@ describe('SemanticNode', () => {
 					assert.strictEqual(node.type(), SolidString)
 				})
 			})
-			it('returns `Boolean` for boolean unary operation of anything.', () => {
-				;[
-					`!false;`,
-					`!true;`,
-					`!null;`,
-					`!42;`,
-					`!4.2e+1;`,
-					`?false;`,
-					`?true;`,
-					`?null;`,
-					`?42;`,
-					`?4.2e+1;`,
-				].forEach((src) => {
-					assert.strictEqual(((new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeOperation).type(), SolidBoolean)
-				})
+			it('returns a constant Boolean type for boolean unary operation of anything.', () => {
+				typeOperations(xjs.Map.mapValues(new Map([
+					[`!false;`,  true],
+					[`!true;`,   false],
+					[`!null;`,   true],
+					[`!42;`,     false],
+					[`!4.2e+1;`, false],
+					[`?false;`,  true],
+					[`?true;`,   false],
+					[`?null;`,   true],
+					[`?42;`,     false],
+					[`?4.2e+1;`, false],
+				]), (v) => SolidBoolean.fromBoolean(v)))
 			})
-			it('returns `Integer` for any operation of integers.', () => {
-				assert.strictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
+			it('returns a constant Integer type for any operation of integers.', () => {
+				assert.deepStrictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), Int16)
+					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Int16(7n * 3n * 2n)))
 			})
-			it('returns `Float` for any operation of mix of integers and floats.', () => {
-				assert.strictEqual(((new Parser(`3.0 * 2.7;`, CONFIG_DEFAULT).parse().decorate()
+			it('returns a constant Float type for any operation of mix of integers and floats.', () => {
+				assert.deepStrictEqual(((new Parser(`3.0 * 2.7;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), Float64)
-				assert.strictEqual(((new Parser(`7 * 3.0 * 2;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(3.0 * 2.7)))
+				assert.deepStrictEqual(((new Parser(`7 * 3.0 * 2;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), Float64)
+					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(7 * 3.0 * 2)))
 			})
 			it('computes type for equality and comparison.', () => {
-				;[
-					`2 < 3;`,
-					`2 > 3;`,
-					`2 <= 3;`,
-					`2 >= 3;`,
-					`2 !< 3;`,
-					`2 !> 3;`,
-					`2 is 3;`,
-					`2 isnt 3;`,
-					`2 == 3;`,
-					`2 != 3;`,
-				].forEach((src) => {
-					assert.strictEqual(operationFromStatementExpression(
-						statementExpressionFromSource(src)
-					).type(), SolidBoolean)
-				})
+				typeOperations(xjs.Map.mapValues(new Map([
+					[`2 < 3;`,    true],
+					[`2 > 3;`,    false],
+					[`2 <= 3;`,   true],
+					[`2 >= 3;`,   false],
+					[`2 !< 3;`,   false],
+					[`2 !> 3;`,   true],
+					[`2 is 3;`,   false],
+					[`2 isnt 3;`, true],
+					[`2 == 3;`,   false],
+					[`2 != 3;`,   true],
+				]), (v) => SolidBoolean.fromBoolean(v)))
 			})
 			it('computes type for AND and OR.', () => {
-				assert.deepStrictEqual([
-					`null  && false;`,
-					`false && null;`,
-					`true  && null;`,
-					`false && 42;`,
-					`4.2   && true;`,
-					`null  || false;`,
-					`false || null;`,
-					`true  || null;`,
-					`false || 42;`,
-					`4.2   || true;`,
-				].map((src) => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation)
-					.type()
-				), [
-					SolidNull,
-					SolidBoolean.union(SolidNull),
-					SolidBoolean.union(SolidNull),
-					SolidBoolean.union(Int16),
-					Float64.union(SolidBoolean),
-					SolidBoolean,
-					SolidBoolean.union(SolidNull),
-					SolidBoolean.union(SolidNull),
-					SolidBoolean.union(Int16),
-					Float64.union(SolidBoolean),
-				])
+				typeOperations(new Map<string, SolidObject>([
+					[`null  && false;`, SolidNull.NULL],
+					[`false && null;`,  SolidBoolean.FALSE],
+					[`true  && null;`,  SolidNull.NULL],
+					[`false && 42;`,    SolidBoolean.FALSE],
+					[`4.2   && true;`,  SolidBoolean.TRUE],
+					[`null  || false;`, SolidBoolean.FALSE],
+					[`false || null;`,  SolidNull.NULL],
+					[`true  || null;`,  SolidBoolean.TRUE],
+					[`false || 42;`,    new Int16(42n)],
+					[`4.2   || true;`,  new Float64(4.2)],
+				]))
 			})
-			it('returns `A | B` for conditionals', () => {
-				assert.deepStrictEqual([
-					`if true then false else 2;`,
-					`if false then 3.0 else null;`,
-					`if true then 2 else 3.0;`,
-					`if false then 2 + 3.0 else 1.0 * 2;`,
-				].map((src) => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation)
-					.type()
-				), [
-					SolidBoolean.union(Int16),
-					Float64.union(SolidNull),
-					Int16.union(Float64),
-					Float64.union(Float64),
-				])
+			it('computes type for for conditionals', () => {
+				typeOperations(new Map<string, SolidObject>([
+					[`if true then false else 2;`,          SolidBoolean.FALSE],
+					[`if false then 3.0 else null;`,        SolidNull.NULL],
+					[`if true then 2 else 3.0;`,            new Int16(2n)],
+					[`if false then 2 + 3.0 else 1.0 * 2;`, new Float64(2.0)],
+				]))
 			})
 			it('throws for numeric operation of non-numbers.', () => {
 				[

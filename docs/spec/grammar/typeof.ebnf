@@ -1,20 +1,10 @@
-Type TypeOf(SemanticConstant constant) :=
-	1. *If* `constant.value` is `null`:
-		1. *Return:* `Null`.
-	2. *If* `constant.value` is `false` or `true`:
-		1. *Return:* `Boolean`.
-	3. *If* `constant.value` is a `Integer`:
-		1. *Return:* `Integer`.
-	4. *If* `constant.value` is a `Float`:
-		1. *Return:* `Float`.
-	4. Else:
-		1. *Assert:* `constant.value` is a `Sequence<RealNumber>`.
-		2. *Return:* `String`.
-
-
-
-Type TypeOf(StringTemplate template) :=
-	1. *Return:* `String`.
+Type TypeOf(SemanticConstant const) :=
+	1. *Let* `assess` be *UnwrapAffirm:* `Assess(const)`.
+	2. *Note:* `assess` is `const.value`.
+	3. *If* `assess` is of type `Or<Null, Boolean, Number>`:
+		1. *Return:* `ToType(assess)`.
+	4. *Assert:* `assess` is of type `Sequence<RealNumber>`.
+	5. *Return:* `String`.
 
 
 
@@ -23,17 +13,32 @@ Type TypeOf(SemanticIdentifier id) :=
 
 
 
-Type TypeOf(SemanticOperation[operator: NOT | EMP] expr) :=
+Type TypeOf(StringTemplate template) :=
+	1. *Return:* `String`.
+
+
+
+Type! TypeOf(SemanticOperation expr) :=
+	1. *Let* `t` be *Unrwap:* `TypeOfUnassessedOperation(expr)`.
+	1. *Let* `assess` be `Assess(expr)`.
+	2. *If* `assess` is an abrupt completion:
+		1. *Return:* `t`.
+	3. *Assert:* `assess.value` is not `void`.
+	4. *Return:* `ToType(assess.value)`.
+
+
+
+Type TypeOfUnassessedOperation(SemanticOperation[operator: NOT | EMP] expr) :=
 	1. *Return:* `Boolean`.
 
-Type! TypeOf(SemanticOperation[operator: NEG] expr) :=
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* `IsNumericType(t0)`:
 		1. *Return:* `t0`.
 	4. *Throw:* TypeError "Invalid operation.".
 
-Type! TypeOf(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -44,7 +49,7 @@ Type! TypeOf(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 			1. *Return:* `Integer`.
 	5. *Throw:* TypeError "Invalid operation.".
 
-Type! TypeOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -52,7 +57,7 @@ Type! TypeOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 		1. *Return:* `Boolean`.
 	5. *Throw:* TypeError "Invalid operation.".
 
-Type! TypeOf(SemanticOperation[operator: IS | EQ] expr) :=
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: IS | EQ] expr) :=
 	// 1. *Assert:* `expr.children.count` is 2.
 	// 2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	// 3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -68,7 +73,7 @@ Type! TypeOf(SemanticOperation[operator: IS | EQ] expr) :=
 	// 6. *Return:* `ToType(false)`.
 	7. *Return:* `Boolean`.
 
-Type! TypeOf(SemanticOperation[operator: AND] expr) :=
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* `t0` is `Null`:
@@ -86,7 +91,7 @@ Type! TypeOf(SemanticOperation[operator: AND] expr) :=
 	// 8. *Return:* `t1`.
 	9. *Return:* `TypeUnion(t0, t1)`.
 
-Type! TypeOf(SemanticOperation[operator: OR] expr) :=
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -104,7 +109,7 @@ Type! TypeOf(SemanticOperation[operator: OR] expr) :=
 	// 8. *Return:* `t0`.
 	9. *Return:* `TypeUnion(t0, t1)`.
 
-Type! TypeOf(SemanticOperation[operator: COND] expr) :=
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -112,6 +117,11 @@ Type! TypeOf(SemanticOperation[operator: COND] expr) :=
 	5. *If* `IsBooleanType(t0)`:
 		1. *Return:* `TypeUnion(t1, t2)`.
 	6. *Throw:* TypeError "Invalid operation.".
+
+
+
+TypeConstant ToType(Or<Null, Boolean, Number> v) :=
+	1. *Return:* a new Type object containing only the value `v`.
 
 
 
@@ -143,7 +153,7 @@ Type TruthifyType(Type t) :=
 
 
 Boolean IsBooleanType(Type t) :=
-	1. *If* `t` is `Boolean`:
+	1. *If* `t` is `Boolean` *or* `t` is `ToType(false)` *or* `t` is `ToType(true)`:
 		1. *Return:* `true`.
 	2. *Return*: `false`.
 ;
@@ -159,7 +169,7 @@ Boolean IsNumericType(Type t) :=
 
 
 Boolean IsFloatType(Type t) :=
-	1. *If* `t` is `Float`:
+	1. *If* `t` is `Float` *or* if `t` is `ToType(f)` for some `f` that is of type `Float`:
 		1. *Return*: `true`.
 	2. *Return*: `false`.
 ;

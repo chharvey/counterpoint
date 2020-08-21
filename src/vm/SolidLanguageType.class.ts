@@ -1,3 +1,11 @@
+import type SolidObject  from './SolidObject.class'
+import type SolidNull    from './SolidNull.class'
+import type SolidBoolean from './SolidBoolean.class'
+import type SolidNumber  from './SolidNumber.class'
+import type Float64      from './Float64.class'
+
+
+
 /**
  * Parent class for all Solid Language Types.
  * Known subclasses:
@@ -67,5 +75,40 @@ export default class SolidLanguageType {
 			}
 		})
 		return new SolidLanguageType(props)
+	}
+}
+
+
+
+export class SolidTypeConstant extends SolidLanguageType {
+	constructor (readonly value: SolidObject) {
+		super(((
+			SolidObject_class:  typeof SolidObject,
+			SolidNull_class:    typeof SolidNull,
+			SolidBoolean_class: typeof SolidBoolean,
+			SolidNumber_class:  typeof SolidNumber,
+		) => (
+				(value instanceof SolidNull_class)    ? SolidNull_class.properties :
+				(value instanceof SolidBoolean_class) ? SolidBoolean_class.properties :
+				(value instanceof SolidNumber_class)  ? SolidNumber_class.properties :
+				SolidObject_class.properties
+			))(
+			require('./SolidObject.class').default,
+			require('./SolidNull.class').default,
+			require('./SolidBoolean.class').default,
+			require('./SolidNumber.class').default,
+		))
+	}
+	get isBooleanType(): boolean {
+		const SolidBoolean_class: typeof SolidBoolean = require('./SolidBoolean.class').default
+		return this.value instanceof SolidBoolean_class
+	}
+	get isNumericType(): boolean {
+		const SolidNumber_class: typeof SolidNumber = require('./SolidNumber.class').default
+		return this.value instanceof SolidNumber_class
+	}
+	get isFloatType(): boolean {
+		const Float64_class: typeof Float64 = require('./Float64.class').default
+		return this.value instanceof Float64_class
 	}
 }

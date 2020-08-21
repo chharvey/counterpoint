@@ -1,4 +1,4 @@
-Or<Null, Boolean, Number> Assess(SemanticConstant const) :=
+Or<Null, Boolean, Number, Sequence<RealNumber>> Assess(SemanticConstant const) :=
 	1. *Return:* `const.value`.
 
 Unknown Assess(SemanticIdentifier iden) :=

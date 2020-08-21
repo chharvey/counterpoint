@@ -121,8 +121,6 @@ Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperation
 Sequence<Instruction> TryAssessAndBuild(SemanticExpression expr) :=
 	1. *Let* `assess` be `Assess(expr)`.
 	2. *If* `assess` is an abrupt completion:
-		1. *Let* `instrs` be *UnwrapAffirm:* `Build(expr)`.
-	3. *Else:*
-		1. *Assert:* `assess.value` is not `void`.
-		2. *Let* `instrs` be *UnwrapAffirm:* `Build(assess.value)`.
-	4. *Return:* `instrs`.
+		1. *Return:* `Build(expr)`.
+	3. *Assert:* `assess.value` is not `void`.
+	4. *Return:* `Build(assess.value)`.
