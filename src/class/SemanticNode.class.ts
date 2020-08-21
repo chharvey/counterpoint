@@ -162,7 +162,6 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	 * @param to_float Should the returned instruction be type-coersed into a floating-point number?
 	 */
 	abstract build(builder: Builder, to_float?: boolean): InstructionExpression;
-	protected abstract type_do(): SolidLanguageType;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
 	 * @return the computed value of this node, or a SemanticNode if the value cannot be computed by the compiler
@@ -184,6 +183,7 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 			? type_
 			: new SolidTypeConstant(this.assessed.value!)
 	}
+	protected abstract type_do(): SolidLanguageType;
 }
 export class SemanticNodeConstant extends SemanticNodeExpression {
 	declare children:

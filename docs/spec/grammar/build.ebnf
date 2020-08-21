@@ -1,24 +1,36 @@
 Sequence<Instruction> Build(Null n) :=
 	1. *Return:* ["Push `0` onto the operand stack."].
+;
 
 Sequence<Instruction> Build(Boolean b) :=
 	1. *If* `b` is `true`:
 		1. *Return:* ["Push `1` onto the operand stack."].
 	2. *Assert:* `b` is `false`.
 	3. *Return:* ["Push `0` onto the operand stack."].
+;
 
 Sequence<Instruction> Build(Number n) :=
 	1. *Return:* ["Push `n` onto the operand stack."].
+;
+
+
 
 Sequence<Instruction> Build(SemanticConstant const) :=
 	1. *Let* `assess` be *UnwrapAffirm:* `Assess(const)`.
 	2. *Return:* `Build(assess)`.
+;
+
+
 
 Sequence<Instruction> Build(SemanticIdentifier iden) :=
 	// TO BE DETERMINED
+;
+
+
 
 Void Build(SemanticTemplate tpl) :=
 	// TO BE DETERMINED
+;
 
 
 
@@ -29,6 +41,7 @@ Sequence<Instruction> Build(SemanticOperation[operator: NOT | EMP | NEG] expr) :
 		...instrs,
 		"`expr.operator`",
 	].
+;
 
 Sequence<Instruction> Build(SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | GT | LE | GE | IS | EQ] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
@@ -37,6 +50,7 @@ Sequence<Instruction> Build(SemanticOperation[operator: EXP | MUL | DIV | ADD | 
 		...builds.1,
 		"`expr.operator`",
 	].
+;
 
 Sequence<Instruction> Build(SemanticOperation[operator: AND] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
@@ -51,6 +65,7 @@ Sequence<Instruction> Build(SemanticOperation[operator: AND] expr) :=
 		"GET the local variable `operand0`.",
 		"END",
 	].
+;
 
 Sequence<Instruction> Build(SemanticOperation[operator: OR] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
@@ -65,6 +80,7 @@ Sequence<Instruction> Build(SemanticOperation[operator: OR] expr) :=
 		...builds.1,
 		"END",
 	].
+;
 
 Sequence<Instruction> Build(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
@@ -79,6 +95,7 @@ Sequence<Instruction> Build(SemanticOperation[operator: COND] expr) :=
 		...instrs2,
 		"END",
 	].
+;
 
 
 
@@ -87,14 +104,17 @@ Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 	2. *If* `stmt.children.count` is greater than 0:
 		1. *Set* `sequence` to *UnwrapAffirm:* `TryAssessAndBuild(stmt.children.0)`.
 	3. *Return* `sequence`.
+;
 
 
 
 Sequence<Instruction> Build(SemanticDeclaration decl) :=
 	// TO BE DETERMINED
+;
 
 Sequence<Instruction> Build(SemanticAssignment assign) :=
 	// TO BE DETERMINED
+;
 
 
 
@@ -104,6 +124,7 @@ Sequence<Instruction> Build(SemanticGoal goal) :=
 		1. *Let* `instrs` be *UnwrapAffirm:* `Build(stmt)`.
 		2. Push `...instrs` to `sequence`.
 	3. *Return* `sequence`.
+;
 
 
 
@@ -113,6 +134,7 @@ Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperation
 	2. *Let* `instrs0` be *UnwrapAffirm:* `TryAssessAndBuild(expr.children.0)`.
 	3. *Let* `instrs1` be *UnwrapAffirm:* `TryAssessAndBuild(expr.children.1)`.
 	4. *Return:* [instrs0, instrs1].
+;
 
 
 
@@ -124,3 +146,4 @@ Sequence<Instruction> TryAssessAndBuild(SemanticExpression expr) :=
 		1. *Return:* `Build(expr)`.
 	3. *Assert:* `assess.value` is not `void`.
 	4. *Return:* `Build(assess.value)`.
+;

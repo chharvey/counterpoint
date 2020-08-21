@@ -5,16 +5,19 @@ Type TypeOf(SemanticConstant const) :=
 		1. *Return:* `ToType(assess)`.
 	4. *Assert:* `assess` is of type `Sequence<RealNumber>`.
 	5. *Return:* `String`.
+;
 
 
 
 Type TypeOf(SemanticIdentifier id) :=
 	// TO BE DETERMINED
+;
 
 
 
 Type TypeOf(StringTemplate template) :=
 	1. *Return:* `String`.
+;
 
 
 
@@ -25,11 +28,13 @@ Type! TypeOf(SemanticOperation expr) :=
 		1. *Return:* `t`.
 	3. *Assert:* `assess.value` is not `void`.
 	4. *Return:* `ToType(assess.value)`.
+;
 
 
 
 Type TypeOfUnassessedOperation(SemanticOperation[operator: NOT | EMP] expr) :=
 	1. *Return:* `Boolean`.
+;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
@@ -37,6 +42,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: NEG] expr) :=
 	3. *If* `IsNumericType(t0)`:
 		1. *Return:* `t0`.
 	4. *Throw:* TypeError "Invalid operation.".
+;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
@@ -48,6 +54,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: EXP | MUL | DIV | AD
 		2. *Else*:
 			1. *Return:* `Integer`.
 	5. *Throw:* TypeError "Invalid operation.".
+;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
@@ -56,6 +63,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: LT | GT | LE | GE] e
 	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
 		1. *Return:* `Boolean`.
 	5. *Throw:* TypeError "Invalid operation.".
+;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: IS | EQ] expr) :=
 	// 1. *Assert:* `expr.children.count` is 2.
@@ -72,6 +80,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: IS | EQ] expr) :=
 	// 	1. *Return:* `Boolean`.
 	// 6. *Return:* `ToType(false)`.
 	7. *Return:* `Boolean`.
+;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
@@ -90,6 +99,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: AND] expr) :=
 	// 	the right-hand operand will definitely be produced.
 	// 8. *Return:* `t1`.
 	9. *Return:* `TypeUnion(t0, t1)`.
+;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
@@ -108,6 +118,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: OR] expr) :=
 	// 	the left-hand operand will definitely be produced.
 	// 8. *Return:* `t0`.
 	9. *Return:* `TypeUnion(t0, t1)`.
+;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
@@ -117,11 +128,13 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: COND] expr) :=
 	5. *If* `IsBooleanType(t0)`:
 		1. *Return:* `TypeUnion(t1, t2)`.
 	6. *Throw:* TypeError "Invalid operation.".
+;
 
 
 
 TypeConstant ToType(Or<Null, Boolean, Number> v) :=
 	1. *Return:* a new Type object containing only the value `v`.
+;
 
 
 
@@ -135,6 +148,7 @@ Type FalsifyType(Type t) :=
 	4. *If* `t` is a type union of `Boolean` and another type `s`:
 		1. *Return:* `TypeUnion(ToType(false), FalsifyType(s))`.
 	5. *Return:* `None`.
+;
 
 
 
