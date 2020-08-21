@@ -38,7 +38,7 @@ Type! TypeOf(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
-		1. *If* `t0` is `Float` *or* `t1` is `Float`:
+		1. *If* `IsFloatType(t0)` *or* `IsFloatType(t1)`:
 			1. *Return:* `Float`.
 		2. *Else*:
 			1. *Return:* `Integer`.
@@ -109,7 +109,7 @@ Type! TypeOf(SemanticOperation[operator: COND] expr) :=
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *Let* `t2` be *Unwrap:* `TypeOf(expr.children.2)`.
-	5. *If* `t0` is `Boolean`:
+	5. *If* `IsBooleanType(t0)`:
 		1. *Return:* `TypeUnion(t1, t2)`.
 	6. *Throw:* TypeError "Invalid operation.".
 
@@ -138,10 +138,28 @@ Type TruthifyType(Type t) :=
 	4. *If* `t` is a type union of `Boolean` and another type `s`:
 		1. *Return:* `TypeUnion(ToType(true), TruthifyType(s))`.
 	5. *Return:* `t`.
+;
+
+
+
+Boolean IsBooleanType(Type t) :=
+	1. *If* `t` is `Boolean`:
+		1. *Return:* `true`.
+	2. *Return*: `false`.
+;
 
 
 
 Boolean IsNumericType(Type t) :=
-	1. *If* `t` is `Integer` *or* `t` is `Float`:
+	1. *If* `t` is `Integer` *or* `IsFloatType(t)`:
 		1. *Return*: `true`.
 	2. *Return*: `false`.
+;
+
+
+
+Boolean IsFloatType(Type t) :=
+	1. *If* `t` is `Float`:
+		1. *Return*: `true`.
+	2. *Return*: `false`.
+;

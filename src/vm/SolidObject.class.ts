@@ -14,7 +14,15 @@ import type SolidBoolean from './SolidBoolean.class'
  */
 export default class SolidObject {
 	/** @implements SolidLanguageType */
+	static get isBooleanType(): boolean {
+		return false
+	}
+	/** @implements SolidLanguageType */
 	static get isNumericType(): boolean {
+		return false
+	}
+	/** @implements SolidLanguageType */
+	static get isFloatType(): boolean {
 		return false
 	}
 	/** @implements SolidLanguageType */

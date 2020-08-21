@@ -258,10 +258,11 @@ describe('SemanticNode', () => {
 				])
 				;[
 					`false is 0.0;`,
+					`0.0 is 0;`,
 				].forEach((src) => {
 					assert.throws(() => operationFromStatementExpression(
 						statementExpressionFromSource(src)
-					).build(new Builder(src, CONFIG_DEFAULT)), TypeError, 'IS does not type-coerse ints to floats')
+					).build(new Builder(src, CONFIG_DEFAULT)), TypeError, 'IS does not type-coerce ints to floats')
 				})
 			})
 			specify('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {

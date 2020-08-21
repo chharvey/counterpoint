@@ -265,7 +265,7 @@ export abstract class SemanticNodeOperation extends SemanticNodeExpression {
 		for (let i = 0; i < this.children.length; i++) { // cannot use `.forEach` on sparse arrays
 			this.assessments[i] || (this.assessments[i] = this.children[i].assess()) // COMBAK `this.assessments[i] ||= this.children[i].assess()`
 		}
-		return this.build_do(builder, to_float || this.type() === Float64)
+		return this.build_do(builder, to_float)
 	}
 	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionExpression;
 }
@@ -281,6 +281,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 	) {
 		super(start_node, operator, children)
 	}
+	/** @implements SemanticNodeOperation */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop {
 		return new InstructionUnop(
 			this.operator,
@@ -336,12 +337,20 @@ export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation 
 	) {
 		super(start_node, operator, children)
 	}
+	/**
+	 * @implements SemanticNodeOperation
+	 * @final
+	 */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
+		const tofloat: boolean = to_float || this.build_do_tofloat
 		return new InstructionBinop(
 			this.operator,
-			(!this.assessments[0].isAbrupt) ? this.assessments[0].build(to_float) : this.children[0].build(builder, to_float),
-			(!this.assessments[1].isAbrupt) ? this.assessments[1].build(to_float) : this.children[1].build(builder, to_float),
+			(!this.assessments[0].isAbrupt) ? this.assessments[0].build(tofloat) : this.children[0].build(builder, tofloat),
+			(!this.assessments[1].isAbrupt) ? this.assessments[1].build(tofloat) : this.children[1].build(builder, tofloat),
 		)
+	}
+	protected get build_do_tofloat(): boolean {
+		return this.children[0].type().isFloatType || this.children[1].type().isFloatType
 	}
 	/** @final */
 	type(): SolidLanguageType {
@@ -360,7 +369,7 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 	/** @override */
 	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType): SolidLanguageType {
 		return (t0.isNumericType && t1.isNumericType)
-			? ([t0, t1].includes(Float64)) ? Float64 : Int16
+			? (t0.isFloatType || t1.isFloatType) ? Float64 : Int16
 			: (() => { throw new TypeError('Invalid operation.') })()
 	}
 	/** @override */
@@ -413,10 +422,6 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 		super(start_node, operator, children)
 	}
 	/** @override */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
-		return super.build_do(builder, to_float || [this.children[0].type(), this.children[1].type()].includes(Float64))
-	}
-	/** @override */
 	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType): SolidLanguageType {
 		return (t0.isNumericType && t1.isNumericType)
 			? SolidBoolean
@@ -462,8 +467,8 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 		super(start_node, operator, children)
 	}
 	/** @override */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
-		return super.build_do(builder, to_float || this.operator === Operator.EQ && [this.children[0].type(), this.children[1].type()].includes(Float64))
+	protected get build_do_tofloat(): boolean {
+		return this.operator === Operator.EQ && super.build_do_tofloat
 	}
 	protected type_do(_t0: SolidLanguageType, _t1: SolidLanguageType): SolidLanguageType {
 		return SolidBoolean
@@ -499,10 +504,6 @@ export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBin
 		children: readonly [SemanticNodeExpression, SemanticNodeExpression]
 	) {
 		super(start_node, operator, children)
-	}
-	/** @override */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
-		return super.build_do(builder, to_float || [this.children[0].type(), this.children[1].type()].includes(Float64))
 	}
 	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType): SolidLanguageType {
 		return (t0 === SolidNull)
@@ -540,8 +541,9 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 	) {
 		super(start_node, operator, children)
 	}
+	/** @implements SemanticNodeOperation */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionCond {
-		const _to_float: boolean = to_float || [this.children[1].type(), this.children[2].type()].includes(Float64)
+		const _to_float: boolean = to_float || this.children[1].type().isFloatType || this.children[2].type().isFloatType
 		return new InstructionCond(
 			(!this.assessments[0].isAbrupt) ? this.assessments[0].build(false)     : this.children[0].build(builder, false),
 			(!this.assessments[1].isAbrupt) ? this.assessments[1].build(_to_float) : this.children[1].build(builder, _to_float),
@@ -552,7 +554,7 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 		const t0: SolidLanguageType = this.children[0].type()
 		const t1: SolidLanguageType = this.children[1].type()
 		const t2: SolidLanguageType = this.children[2].type()
-		return (t0 === SolidBoolean) ? t1.union(t2) : (() => { throw new TypeError('Invalid operation.') })()
+		return (t0.isBooleanType) ? t1.union(t2) : (() => { throw new TypeError('Invalid operation.') })()
 	}
 	/** @override */
 	assess(): CompletionStructureAssessment {

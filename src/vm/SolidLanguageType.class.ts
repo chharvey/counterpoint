@@ -12,10 +12,24 @@ export default class SolidLanguageType {
 	constructor (readonly properties: ReadonlyMap<string, SolidLanguageType>) {
 	}
 	/**
+	 * Return whether the given class is a boolean type.
+	 * @return Is this type Boolean or a subtype?
+	 */
+	get isBooleanType(): boolean {
+		return false
+	}
+	/**
 	 * Return whether the given class is a numeric type, i.e., an Integer or a Float.
 	 * @return Is this type Number or a subtype?
 	 */
 	get isNumericType(): boolean {
+		return false
+	}
+	/**
+	 * Return whether the given class is a Float type.
+	 * @return Is this type Float or a subtype?
+	 */
+	get isFloatType(): boolean {
 		return false
 	}
 	/**
