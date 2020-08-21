@@ -146,6 +146,7 @@ export default abstract class SemanticNode implements Serializable {
  */
 export abstract class SemanticNodeExpression extends SemanticNode {
 	private assessed: CompletionStructureAssessment | null = null
+	private typed: SolidLanguageType | null = null
 	constructor (
 		start_node: Token|ParseNode,
 		attributes: typeof SemanticNode.prototype['attributes'] = {},
@@ -177,11 +178,12 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	 * @final
 	 */
 	type(): SolidLanguageType {
-		const type_: SolidLanguageType = this.type_do() // type-check first, to re-throw any TypeErrors
-		this.assessed = this.assess()
-		return (this.assessed.isAbrupt)
-			? type_
-			: new SolidTypeConstant(this.assessed.value!)
+		if (!this.typed) {
+			const type_: SolidLanguageType = this.type_do() // type-check first, to re-throw any TypeErrors
+			this.assessed = this.assess()
+			this.typed = (this.assessed.isAbrupt) ? type_ : new SolidTypeConstant(this.assessed.value!)
+		}
+		return this.typed
 	}
 	protected abstract type_do(): SolidLanguageType;
 }
