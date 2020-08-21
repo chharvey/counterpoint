@@ -272,7 +272,6 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 export abstract class SemanticNodeOperation extends SemanticNodeExpression {
 	/** @override */
 	protected readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
-	protected readonly assessments: CompletionStructureAssessment[] = []
 	constructor(
 		start_node: ParseNode,
 		readonly operator: Operator,
@@ -281,19 +280,8 @@ export abstract class SemanticNodeOperation extends SemanticNodeExpression {
 	) {
 		super(start_node, {operator}, children)
 	}
-	/** @final */
-	build(builder: Builder, to_float: boolean = false): InstructionExpression {
-		for (let i = 0; i < this.children.length; i++) { // cannot use `.forEach` on sparse arrays
-			this.assessments[i] || (this.assessments[i] = this.children[i].assess()) // COMBAK `this.assessments[i] ||= this.children[i].assess()`
-		}
-		return this.build_do(builder, to_float)
-	}
-	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionExpression;
 }
 export class SemanticNodeOperationUnary extends SemanticNodeOperation {
-	declare readonly assessments: [
-		CompletionStructureAssessment,
-	];
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorUnary,
@@ -302,11 +290,12 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements SemanticNodeOperation */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop {
+	/** @implements SemanticNodeExpression */
+	build(builder: Builder, to_float: boolean = false): InstructionUnop {
+		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		return new InstructionUnop(
 			this.operator,
-			(!this.assessments[0].isAbrupt) ? this.assessments[0].build(to_float) : this.children[0].build(builder, to_float),
+			(!assess0.isAbrupt) ? assess0.build(to_float) : this.children[0].build(builder, to_float),
 		)
 	}
 	/** @implements SemanticNodeExpression */
@@ -319,11 +308,11 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
-		this.assessments[0] = this.children[0].assess()
-		if (this.assessments[0].isAbrupt) {
-			return this.assessments[0]
+		const assess0: CompletionStructureAssessment = this.children[0].assess()
+		if (assess0.isAbrupt) {
+			return assess0
 		}
-		const v0: SolidObject = this.assessments[0].value!
+		const v0: SolidObject = assess0.value!
 		return new CompletionStructureAssessment(
 			(this.operator === Operator.NOT) ? v0.isTruthy.not :
 			(this.operator === Operator.EMP) ? v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0())) :
@@ -347,10 +336,6 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 	}
 }
 export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation {
-	declare readonly assessments: [
-		CompletionStructureAssessment,
-		CompletionStructureAssessment,
-	];
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorBinary,
@@ -360,15 +345,17 @@ export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation 
 		super(start_node, operator, children)
 	}
 	/**
-	 * @implements SemanticNodeOperation
+	 * @implements SemanticNodeExpression
 	 * @final
 	 */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
+	build(builder: Builder, to_float: boolean = false): InstructionBinop {
 		const tofloat: boolean = to_float || this.build_do_tofloat
+		const assess0: CompletionStructureAssessment = this.children[0].assess()
+		const assess1: CompletionStructureAssessment = this.children[1].assess()
 		return new InstructionBinop(
 			this.operator,
-			(!this.assessments[0].isAbrupt) ? this.assessments[0].build(tofloat) : this.children[0].build(builder, tofloat),
-			(!this.assessments[1].isAbrupt) ? this.assessments[1].build(tofloat) : this.children[1].build(builder, tofloat),
+			(!assess0.isAbrupt) ? assess0.build(tofloat) : this.children[0].build(builder, tofloat),
+			(!assess1.isAbrupt) ? assess1.build(tofloat) : this.children[1].build(builder, tofloat),
 		)
 	}
 	protected get build_do_tofloat(): boolean {
@@ -399,15 +386,15 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
-		this.assessments[0] = this.children[0].assess()
-		if (this.assessments[0].isAbrupt) {
-			return this.assessments[0]
+		const assess0: CompletionStructureAssessment = this.children[0].assess()
+		if (assess0.isAbrupt) {
+			return assess0
 		}
-		this.assessments[1] = this.children[1].assess()
-		if (this.assessments[1].isAbrupt) {
-			return this.assessments[1]
+		const assess1: CompletionStructureAssessment = this.children[1].assess()
+		if (assess1.isAbrupt) {
+			return assess1
 		}
-		const [v0, v1]: [SolidObject, SolidObject] = [this.assessments[0].value!, this.assessments[1].value!]
+		const [v0, v1]: [SolidObject, SolidObject] = [assess0.value!, assess1.value!]
 		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
 			throw new NanError02(this.children[1])
 		}
@@ -454,15 +441,15 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
-		this.assessments[0] = this.children[0].assess()
-		if (this.assessments[0].isAbrupt) {
-			return this.assessments[0]
+		const assess0: CompletionStructureAssessment = this.children[0].assess()
+		if (assess0.isAbrupt) {
+			return assess0
 		}
-		this.assessments[1] = this.children[1].assess()
-		if (this.assessments[1].isAbrupt) {
-			return this.assessments[1]
+		const assess1: CompletionStructureAssessment = this.children[1].assess()
+		if (assess1.isAbrupt) {
+			return assess1
 		}
-		const [v0, v1]: [SolidObject, SolidObject] = [this.assessments[0].value!, this.assessments[1].value!]
+		const [v0, v1]: [SolidObject, SolidObject] = [assess0.value!, assess1.value!]
 		return (v0 instanceof SolidNumber && v1 instanceof SolidNumber) ? new CompletionStructureAssessment(
 			(v0 instanceof Int16 && v1 instanceof Int16)
 				? this.foldComparative(v0, v1)
@@ -501,15 +488,15 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
-		this.assessments[0] = this.children[0].assess()
-		if (this.assessments[0].isAbrupt) {
-			return this.assessments[0]
+		const assess0: CompletionStructureAssessment = this.children[0].assess()
+		if (assess0.isAbrupt) {
+			return assess0
 		}
-		this.assessments[1] = this.children[1].assess()
-		if (this.assessments[1].isAbrupt) {
-			return this.assessments[1]
+		const assess1: CompletionStructureAssessment = this.children[1].assess()
+		if (assess1.isAbrupt) {
+			return assess1
 		}
-		const [v0, v1]: [SolidObject, SolidObject] = [this.assessments[0].value!, this.assessments[1].value!]
+		const [v0, v1]: [SolidObject, SolidObject] = [assess0.value!, assess1.value!]
 		return (v1 instanceof SolidObject)
 			? new CompletionStructureAssessment(this.foldEquality(v0, v1))
 			: (() => { throw new TypeError('Both operands must be of type `SolidObject`.') })()
@@ -539,27 +526,21 @@ export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBin
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
-		this.assessments[0] = this.children[0].assess()
-		if (this.assessments[0].isAbrupt) {
-			return this.assessments[0]
+		const assess0: CompletionStructureAssessment = this.children[0].assess()
+		if (assess0.isAbrupt) {
+			return assess0
 		}
-		const v0: SolidObject = this.assessments[0].value!
+		const v0: SolidObject = assess0.value!
 		if (
 			this.operator === Operator.AND && !v0.isTruthy.value ||
 			this.operator === Operator.OR  &&  v0.isTruthy.value
 		) {
 			return new CompletionStructureAssessment(v0)
 		}
-		this.assessments[1] = this.children[1].assess()
-		return this.assessments[1]
+		return this.children[1].assess()
 	}
 }
 export class SemanticNodeOperationTernary extends SemanticNodeOperation {
-	declare readonly assessments: [
-		CompletionStructureAssessment,
-		CompletionStructureAssessment,
-		CompletionStructureAssessment,
-	];
 	constructor(
 		start_node: ParseNode,
 		readonly operator: Operator.COND,
@@ -568,13 +549,16 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements SemanticNodeOperation */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionCond {
+	/** @implements SemanticNodeExpression */
+	build(builder: Builder, to_float: boolean = false): InstructionCond {
 		const _to_float: boolean = to_float || this.children[1].type().isFloatType || this.children[2].type().isFloatType
+		const assess0: CompletionStructureAssessment = this.children[0].assess()
+		const assess1: CompletionStructureAssessment = this.children[1].assess()
+		const assess2: CompletionStructureAssessment = this.children[2].assess()
 		return new InstructionCond(
-			(!this.assessments[0].isAbrupt) ? this.assessments[0].build(false)     : this.children[0].build(builder, false),
-			(!this.assessments[1].isAbrupt) ? this.assessments[1].build(_to_float) : this.children[1].build(builder, _to_float),
-			(!this.assessments[2].isAbrupt) ? this.assessments[2].build(_to_float) : this.children[2].build(builder, _to_float),
+			(!assess0.isAbrupt) ? assess0.build(false)     : this.children[0].build(builder, false),
+			(!assess1.isAbrupt) ? assess1.build(_to_float) : this.children[1].build(builder, _to_float),
+			(!assess2.isAbrupt) ? assess2.build(_to_float) : this.children[2].build(builder, _to_float),
 		)
 	}
 	/** @implements SemanticNodeExpression */
@@ -586,15 +570,13 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
-		this.assessments[0] = this.children[0].assess()
-		if (this.assessments[0].isAbrupt) {
-			return this.assessments[0]
+		const assess0: CompletionStructureAssessment = this.children[0].assess()
+		if (assess0.isAbrupt) {
+			return assess0
 		}
-		this.assessments[1] = this.children[1].assess()
-		this.assessments[2] = this.children[2].assess()
-		return (this.assessments[0].value! === SolidBoolean.TRUE)
-			? this.assessments[1]
-			: this.assessments[2]
+		return (assess0.value! === SolidBoolean.TRUE)
+			? this.children[1].assess()
+			: this.children[2].assess()
 	}
 }
 /**
