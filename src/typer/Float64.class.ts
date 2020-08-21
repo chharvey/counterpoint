@@ -10,6 +10,13 @@ import SolidNumber from './SolidNumber.class'
  * @final
  */
 export default class Float64 extends SolidNumber<Float64> {
+	/**
+	 * @override
+	 * @final
+	 */
+	static get isFloatType(): boolean {
+		return true
+	}
 	constructor (private readonly value: number = 0) {
 		super()
 		xjs.Number.assertType(this.value, xjs.NumericType.FINITE)

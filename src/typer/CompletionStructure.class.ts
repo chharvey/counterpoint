@@ -29,15 +29,28 @@ export default class CompletionStructure {
 	readonly value?: SolidObject;
 	/**
 	 * Construct a new CompletionStructure object.
+	 * A normal completion with no value.
+	 */
+	constructor ();
+	/**
+	 * Construct a new CompletionStructure object.
+	 * A normal completion with a given value.
 	 * @param value The value produced by this completion structure.
 	 */
 	constructor (value: SolidObject);
 	/**
 	 * Construct a new CompletionStructure object.
+	 * A specified type of completion with no value.
+	 * @param type The type of completion that occurred.
+	 */
+	constructor (type: CompletionType);
+	/**
+	 * Construct a new CompletionStructure object.
+	 * A specified type of completion with a given value.
 	 * @param type  The type of completion that occurred.
 	 * @param value The value produced by this completion structure.
 	 */
-	constructor (type?: CompletionType, value?: SolidObject);
+	constructor (type: CompletionType, value: SolidObject);
 	constructor (arg0: CompletionType | SolidObject = CompletionType.NORMAL, arg1?: SolidObject) {
 		;[this.type, this.value] = (arg0 instanceof SolidObject)
 			? [CompletionType.NORMAL, arg0]

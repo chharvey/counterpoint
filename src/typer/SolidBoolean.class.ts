@@ -12,6 +12,13 @@ import SolidObject from './SolidObject.class'
  * @final
  */
 export default class SolidBoolean extends SolidObject {
+	/**
+	 * @override
+	 * @final
+	 */
+	static get isBooleanType(): boolean {
+		return true
+	}
 	/** The Solid Language Value `false`. */
 	static readonly FALSE: SolidBoolean = new SolidBoolean()
 	/** The Solid Language Value `true`. */
