@@ -145,6 +145,7 @@ export default abstract class SemanticNode implements Serializable {
  * - SemanticNodeOperation
  */
 export abstract class SemanticNodeExpression extends SemanticNode {
+	private assessed: CompletionStructureAssessment | null = null
 	constructor (
 		start_node: Token|ParseNode,
 		attributes: typeof SemanticNode.prototype['attributes'] = {},
@@ -163,13 +164,26 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	abstract build(builder: Builder, to_float?: boolean): InstructionExpression;
 	/**
 	 * The Type of this expression.
+	 * @final
 	 */
-	abstract type(): SolidLanguageType;
+	type(): SolidLanguageType {
+		const type_: SolidLanguageType = this.type_do() // type-check first, to re-throw any TypeErrors
+		this.assessed = this.assess()
+		return (this.assessed.isAbrupt)
+			? type_
+			: new SolidTypeConstant(this.assessed.value!)
+	}
+	protected abstract type_do(): SolidLanguageType;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
 	 * @return the computed value of this node, or a SemanticNode if the value cannot be computed by the compiler
+	 * @final
 	 */
-	abstract assess(): CompletionStructureAssessment;
+	assess(): CompletionStructureAssessment {
+		this.assessed || (this.assessed = this.assess_do()) // COMBAK `this.assessed ||= this.assess_do()`
+		return this.assessed
+	}
+	protected abstract assess_do(): CompletionStructureAssessment
 }
 export class SemanticNodeConstant extends SemanticNodeExpression {
 	declare children:
@@ -193,7 +207,8 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 	build(_builder: Builder, to_float: boolean = false): InstructionConst {
 		return this.assess().build(to_float)
 	}
-	type(): SolidLanguageType {
+	/** @implements SemanticNodeExpression */
+	protected type_do(): SolidLanguageType {
 		// No need to call `this.assess()` and then unwrap again; just use `this.value`.
 		return (
 			this.value instanceof SolidNull ||
@@ -201,7 +216,8 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 			this.value instanceof SolidNumber
 		) ? new SolidTypeConstant(this.value) : SolidString
 	}
-	assess(): CompletionStructureAssessment {
+	/** @implements SemanticNodeExpression */
+	protected assess_do(): CompletionStructureAssessment {
 		if (this.value instanceof SolidObject) {
 			return new CompletionStructureAssessment(this.value)
 		} else {
@@ -219,10 +235,12 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	build(generator: Builder): InstructionExpression {
 		throw new Error('not yet supported.')
 	}
-	type(): SolidLanguageType {
+	/** @implements SemanticNodeExpression */
+	protected type_do(): SolidLanguageType {
 		throw new Error('Not yet supported.')
 	}
-	assess(): CompletionStructureAssessment {
+	/** @implements SemanticNodeExpression */
+	protected assess_do(): CompletionStructureAssessment {
 		throw new Error('Not yet supported.')
 	}
 }
@@ -242,10 +260,12 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	build(generator: Builder): InstructionExpression {
 		throw new Error('not yet supported.')
 	}
-	type(): SolidLanguageType {
+	/** @implements SemanticNodeExpression */
+	protected type_do(): SolidLanguageType {
 		return SolidString
 	}
-	assess(): CompletionStructureAssessment {
+	/** @implements SemanticNodeExpression */
+	protected assess_do(): CompletionStructureAssessment {
 		throw new Error('Not yet supported.')
 	}
 }
@@ -269,15 +289,6 @@ export abstract class SemanticNodeOperation extends SemanticNodeExpression {
 		return this.build_do(builder, to_float)
 	}
 	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionExpression;
-	/** @final */
-	type(): SolidLanguageType {
-		const type_: SolidLanguageType = this.type_do() // type-check first, to re-throw any TypeErrors
-		const assess: CompletionStructureAssessment = this.assess()
-		return (assess.isAbrupt)
-			? type_
-			: new SolidTypeConstant(assess.value!)
-	}
-	protected abstract type_do(): SolidLanguageType;
 }
 export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 	declare readonly assessments: [
@@ -298,7 +309,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 			(!this.assessments[0].isAbrupt) ? this.assessments[0].build(to_float) : this.children[0].build(builder, to_float),
 		)
 	}
-	/** @implements SemanticNodeOperation */
+	/** @implements SemanticNodeExpression */
 	protected type_do(): SolidLanguageType {
 		if ([Operator.NOT, Operator.EMP].includes(this.operator)) {
 			return SolidBoolean
@@ -306,8 +317,8 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		const t0: SolidLanguageType = this.children[0].type()
 		return (t0.isNumericType) ? t0 : (() => { throw new TypeError('Invalid operation.') })()
 	}
-	/** @override */
-	assess(): CompletionStructureAssessment {
+	/** @implements SemanticNodeExpression */
+	protected assess_do(): CompletionStructureAssessment {
 		this.assessments[0] = this.children[0].assess()
 		if (this.assessments[0].isAbrupt) {
 			return this.assessments[0]
@@ -364,7 +375,7 @@ export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation 
 		return this.children[0].type().isFloatType || this.children[1].type().isFloatType
 	}
 	/**
-	 * @implements SemanticNodeOperation
+	 * @implements SemanticNodeExpression
 	 * @final
 	 */
 	protected type_do(): SolidLanguageType {
@@ -386,8 +397,8 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 			? (t0.isFloatType || t1.isFloatType) ? Float64 : Int16
 			: (() => { throw new TypeError('Invalid operation.') })()
 	}
-	/** @override */
-	assess(): CompletionStructureAssessment {
+	/** @implements SemanticNodeExpression */
+	protected assess_do(): CompletionStructureAssessment {
 		this.assessments[0] = this.children[0].assess()
 		if (this.assessments[0].isAbrupt) {
 			return this.assessments[0]
@@ -441,8 +452,8 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 			? SolidBoolean
 			: (() => { throw new TypeError('Invalid operation.') })()
 	}
-	/** @override */
-	assess(): CompletionStructureAssessment {
+	/** @implements SemanticNodeExpression */
+	protected assess_do(): CompletionStructureAssessment {
 		this.assessments[0] = this.children[0].assess()
 		if (this.assessments[0].isAbrupt) {
 			return this.assessments[0]
@@ -488,8 +499,8 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 	protected type_do_do(_t0: SolidLanguageType, _t1: SolidLanguageType): SolidLanguageType {
 		return SolidBoolean
 	}
-	/** @override */
-	assess(): CompletionStructureAssessment {
+	/** @implements SemanticNodeExpression */
+	protected assess_do(): CompletionStructureAssessment {
 		this.assessments[0] = this.children[0].assess()
 		if (this.assessments[0].isAbrupt) {
 			return this.assessments[0]
@@ -526,8 +537,8 @@ export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBin
 			? (this.operator === Operator.AND) ? t0 : t1
 			: t0.union(t1)
 	}
-	/** @override */
-	assess(): CompletionStructureAssessment {
+	/** @implements SemanticNodeExpression */
+	protected assess_do(): CompletionStructureAssessment {
 		this.assessments[0] = this.children[0].assess()
 		if (this.assessments[0].isAbrupt) {
 			return this.assessments[0]
@@ -566,15 +577,15 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 			(!this.assessments[2].isAbrupt) ? this.assessments[2].build(_to_float) : this.children[2].build(builder, _to_float),
 		)
 	}
-	/** @implements SemanticNodeOperation */
+	/** @implements SemanticNodeExpression */
 	protected type_do(): SolidLanguageType {
 		const t0: SolidLanguageType = this.children[0].type()
 		const t1: SolidLanguageType = this.children[1].type()
 		const t2: SolidLanguageType = this.children[2].type()
 		return (t0.isBooleanType) ? t1.union(t2) : (() => { throw new TypeError('Invalid operation.') })()
 	}
-	/** @override */
-	assess(): CompletionStructureAssessment {
+	/** @implements SemanticNodeExpression */
+	protected assess_do(): CompletionStructureAssessment {
 		this.assessments[0] = this.children[0].assess()
 		if (this.assessments[0].isAbrupt) {
 			return this.assessments[0]
