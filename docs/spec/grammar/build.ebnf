@@ -25,6 +25,35 @@ Sequence<Instruction> Build(SemanticExpression expr) :=
 
 
 
+Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
+	1. *Let* `sequence` be an empty sequence of `Instruction`s.
+	2. *If* `stmt.children.count` is greater than 0:
+		1. *Set* `sequence` to *UnwrapAffirm:* `Build(stmt.children.0)`.
+	3. *Return* `sequence`.
+;
+
+
+
+Sequence<Instruction> Build(SemanticDeclaration decl) :=
+	// TO BE DETERMINED
+;
+
+Sequence<Instruction> Build(SemanticAssignment assign) :=
+	// TO BE DETERMINED
+;
+
+
+
+Sequence<Instruction> Build(SemanticGoal goal) :=
+	1. *Let* `sequence` be an empty sequence of `Instruction`s.
+	2. For each `SemanticStatment stmt` in `goal.children`:
+		1. *Let* `instrs` be *UnwrapAffirm:* `Build(stmt)`.
+		2. Push `...instrs` to `sequence`.
+	3. *Return* `sequence`.
+;
+
+
+
 Sequence<Instruction> BuildExpression(SemanticConstant const) :=
 	1. *Let* `assess` be *UnwrapAffirm:* `Assess(const)`.
 	2. *Return:* `Build(assess)`.
@@ -105,35 +134,6 @@ Sequence<Instruction> BuildExpression(SemanticOperation[operator: COND] expr) :=
 		...instrs2,
 		"END",
 	].
-;
-
-
-
-Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
-	1. *Let* `sequence` be an empty sequence of `Instruction`s.
-	2. *If* `stmt.children.count` is greater than 0:
-		1. *Set* `sequence` to *UnwrapAffirm:* `Build(stmt.children.0)`.
-	3. *Return* `sequence`.
-;
-
-
-
-Sequence<Instruction> Build(SemanticDeclaration decl) :=
-	// TO BE DETERMINED
-;
-
-Sequence<Instruction> Build(SemanticAssignment assign) :=
-	// TO BE DETERMINED
-;
-
-
-
-Sequence<Instruction> Build(SemanticGoal goal) :=
-	1. *Let* `sequence` be an empty sequence of `Instruction`s.
-	2. For each `SemanticStatment stmt` in `goal.children`:
-		1. *Let* `instrs` be *UnwrapAffirm:* `Build(stmt)`.
-		2. Push `...instrs` to `sequence`.
-	3. *Return* `sequence`.
 ;
 
 

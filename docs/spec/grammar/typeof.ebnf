@@ -23,11 +23,11 @@ Type TypeOf(StringTemplate template) :=
 
 Type! TypeOf(SemanticOperation expr) :=
 	1. *Let* `t` be *Unrwap:* `TypeOfUnassessedOperation(expr)`.
-	1. *Let* `assess` be `Assess(expr)`.
-	2. *If* `assess` is an abrupt completion:
+	2. *Let* `assess` be `Assess(expr)`.
+	3. *If* `assess` is an abrupt completion:
 		1. *Return:* `t`.
-	3. *Assert:* `assess.value` is not `void`.
-	4. *Return:* `ToType(assess.value)`.
+	4. *Assert:* `assess.value` exists.
+	5. *Return:* `ToType(assess.value)`.
 ;
 
 
@@ -133,7 +133,9 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: COND] expr) :=
 
 
 TypeConstant ToType(Or<Null, Boolean, Number> v) :=
-	1. *Return:* a new Type object containing only the value `v`.
+	1. *Let* `t` be a new structure of type `Type`.
+	2. *Set* `t.value` to `v`.
+	3. *Return:* `t`.
 ;
 
 
