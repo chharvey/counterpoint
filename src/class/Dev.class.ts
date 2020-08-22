@@ -8,17 +8,17 @@ export default class Dev {
 	static readonly VERSION: string = require('../../package.json').version
 
 	/**
-	 * A map of features to their version numbers.
+	 * A map of development features to their version numbers.
 	 *
-	 * These are flags for enabling development of features in pre-production;
-	 * they are *not* {@link SolidConfig|compiler feature toggles} for production
+	 * These are flags for enabling development of certain features in pre-production;
+	 * they are *not* {@link SolidConfig|language feature toggles} for production
 	 * (which are used by consumers).
 	 * These feature flags are given here in the codebase, whereas
-	 * feature toggles are not given until a consumer provides them per each compile.
+	 * language feature toggles are not given until a consumer provides them per each compile.
 	 *
 	 * Before each release, the feature flags for that release should be removed
 	 * and those features should become fully enabled.
-	 * Released features may have an optional feature toggle defined in {@link SolidConfig}.
+	 * Released features may have an optional language feature toggle defined in {@link SolidConfig}.
 	 */
 	private static readonly FEATURES: {
 		// v0.1.0

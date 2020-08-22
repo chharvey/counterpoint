@@ -214,22 +214,22 @@ describe('Lexer', () => {
 		context('recognizes `TokenNumber` conditions.', () => {
 			const radices_on: SolidConfig = {
 				...CONFIG_DEFAULT,
-				features: {
-					...CONFIG_DEFAULT.features,
+				languageFeatures: {
+					...CONFIG_DEFAULT.languageFeatures,
 					integerRadices: true,
 				},
 			}
 			const separators_on: SolidConfig = {
 				...CONFIG_DEFAULT,
-				features: {
-					...CONFIG_DEFAULT.features,
+				languageFeatures: {
+					...CONFIG_DEFAULT.languageFeatures,
 					numericSeparators: true,
 				},
 			}
 			const both_on: SolidConfig = {
 				...CONFIG_DEFAULT,
-				features: {
-					...CONFIG_DEFAULT.features,
+				languageFeatures: {
+					...CONFIG_DEFAULT.languageFeatures,
 					integerRadices: true,
 					numericSeparators: true,
 				},
@@ -253,7 +253,7 @@ describe('Lexer', () => {
 				assert.strictEqual(tokens[22].source, `-0027`)
 			})
 			context('explicit radix integers.', () => {
-				it('throws when `config.features.integerRadices` is turned off.', () => {
+				it('throws when `config.languageFeatures.integerRadices` is turned off.', () => {
 					assert.throws(() => [...new Lexer(`
 						\\b100  \\b001  +\\b1000  -\\b1000  +\\b01  -\\b01
 						\\q320  \\q032  +\\q1032  -\\q1032  +\\q03  -\\q03
@@ -273,7 +273,7 @@ describe('Lexer', () => {
 						assert.ok(token instanceof TokenNumber)
 					})
 				})
-				it('`config.features.integerRadices` allows integers with explicit radices.', () => {
+				it('`config.languageFeatures.integerRadices` allows integers with explicit radices.', () => {
 					const source: string = `
 						\\b100  \\b001  +\\b1000  -\\b1000  +\\b01  -\\b01
 						\\q320  \\q032  +\\q1032  -\\q1032  +\\q03  -\\q03
@@ -353,7 +353,7 @@ describe('Lexer', () => {
 				})
 			})
 			context('numbers with separators.', () => {
-				it('tokenizes numeric separators as identifiers when `config.features.numericSeparators` is turned off.', () => {
+				it('tokenizes numeric separators as identifiers when `config.languageFeatures.numericSeparators` is turned off.', () => {
 					if (Dev.supports('variables')) {
 						const tokens: Token[] = [...new Lexer(`
 							12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
@@ -383,7 +383,7 @@ describe('Lexer', () => {
 						})
 					}
 				})
-				it('`config.features.numericSeparators` allows numbers with separators.', () => {
+				it('`config.languageFeatures.numericSeparators` allows numbers with separators.', () => {
 					const source: string = `
 						12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
 						\\b1_00  \\b0_01  +\\b1_000  -\\b1_000  +\\b0_1  -\\b0_1
@@ -626,8 +626,8 @@ describe('Lexer', () => {
 		context('recgnizes `TokenComment` conditions.', () => {
 			const comments_off: SolidConfig = {
 				...CONFIG_DEFAULT,
-				features: {
-					...CONFIG_DEFAULT.features,
+				languageFeatures: {
+					...CONFIG_DEFAULT.languageFeatures,
 					comments: false,
 				},
 			}
@@ -651,7 +651,7 @@ describe('Lexer', () => {
 						% line comment not followed by LF
 					`.trimEnd(), CONFIG_DEFAULT).generate()])
 				})
-				it('throws when `config.features.comments` is turned off.', () => {
+				it('throws when `config.languageFeatures.comments` is turned off.', () => {
 					assert.throws(() => [...new Lexer(`
 						%
 						8;
@@ -693,7 +693,7 @@ describe('Lexer', () => {
 					assert.ok(tokens[2] instanceof TokenCommentMulti)
 					assert.ok(tokens[4] instanceof TokenFilebound)
 				})
-				it('throws when `config.features.comments` is turned off.', () => {
+				it('throws when `config.languageFeatures.comments` is turned off.', () => {
 					assert.throws(() => [...new Lexer(`
 						{% multiline
 						that has a {% nestable nested %} multiline
@@ -754,7 +754,7 @@ describe('Lexer', () => {
 					assert.ok(tokens[12] instanceof TokenCommentLine)
 					assert.strictEqual(tokens[14].source, '8')
 				})
-				it('throws when `config.features.comments` is turned off.', () => {
+				it('throws when `config.languageFeatures.comments` is turned off.', () => {
 					assert.throws(() => [...new Lexer(`
 						%%%
 						abcde

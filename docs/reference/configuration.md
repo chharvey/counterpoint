@@ -11,7 +11,8 @@ TODO
 ## Configuration Options
 
 
-### Features
+### Language Features
+Language features are toggleable aspects of the Solid Programming Language.
 
 #### `comments`
 ```

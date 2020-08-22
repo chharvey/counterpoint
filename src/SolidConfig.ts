@@ -3,10 +3,10 @@
  */
 type SolidConfig = {
 	/**
-	 * Toggles for which features to enable/disable.
+	 * Toggles for which language features to enable/disable.
 	 * Disabling features can improve compiler speed.
 	 */
-	readonly features: {
+	readonly languageFeatures: {
 		/**
 		 * Solid code comments.
 		 * @version v0.2.0

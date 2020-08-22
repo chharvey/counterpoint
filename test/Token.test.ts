@@ -187,8 +187,8 @@ describe('Token', () => {
 				it(`correctly cooks ${name}.`, () => {
 					assert.deepStrictEqual([...new Screener(source, {
 						...CONFIG_DEFAULT,
-						features: {
-							...CONFIG_DEFAULT.features,
+						languageFeatures: {
+							...CONFIG_DEFAULT.languageFeatures,
 							integerRadices: true,
 							numericSeparators: true,
 						},
