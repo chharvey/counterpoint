@@ -505,7 +505,16 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 			: (() => { throw new TypeError('Both operands must be of type `SolidObject`.') })()
 	}
 	/** @implements SemanticNodeOperationBinary */
-	protected type_do_do(_t0: SolidLanguageType, _t1: SolidLanguageType): SolidLanguageType {
+	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType): SolidLanguageType {
+		// If `a` and `b` are of disjoint numeric types, then `a is b` will always return `false`.
+		if (this.operator === Operator.IS) {
+			if (
+				t0.isNumericType && t1.isNumericType &&
+				(t0.isFloatType && !t1.isFloatType || !t0.isFloatType && t1.isFloatType)
+			) {
+				return new SolidTypeConstant(SolidBoolean.FALSE)
+			}
+		}
 		return SolidBoolean
 	}
 	private foldEquality(x: SolidObject, y: SolidObject): SolidBoolean {
@@ -542,7 +551,9 @@ export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBin
 	}
 	/** @implements SemanticNodeOperationBinary */
 	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType): SolidLanguageType {
-		return (t0 === SolidNull)
+		// If `a` is of type `null` or `false`, then `typeof (a && b)` is `typeof a`.
+		// If `a` is of type `null` or `false`, then `typeof (a || b)` is `typeof b`.
+		return (t0 instanceof SolidTypeConstant && ([SolidNull.NULL, SolidBoolean.FALSE] as SolidObject[]).includes(t0.value))
 			? (this.operator === Operator.AND) ? t0 : t1
 			: t0.union(t1)
 	}
@@ -577,10 +588,16 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 	}
 	/** @implements SemanticNodeExpression */
 	protected type_do(): SolidLanguageType {
+		// If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
+		// If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
 		const t0: SolidLanguageType = this.children[0].type()
 		const t1: SolidLanguageType = this.children[1].type()
 		const t2: SolidLanguageType = this.children[2].type()
-		return (t0.isBooleanType) ? t1.union(t2) : (() => { throw new TypeError('Invalid operation.') })()
+		return (t0.isBooleanType)
+			? (t0 instanceof SolidTypeConstant)
+				? (t0.value === SolidBoolean.FALSE) ? t2 : t1
+				: t1.union(t2)
+			: (() => { throw new TypeError('Invalid operation.') })()
 	}
 }
 /**
