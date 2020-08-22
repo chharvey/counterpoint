@@ -161,8 +161,13 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	/**
 	 * @override
 	 * @param to_float Should the returned instruction be type-coersed into a floating-point number?
+	 * @final
 	 */
-	abstract build(builder: Builder, to_float?: boolean): InstructionExpression;
+	build(builder: Builder, to_float?: boolean): InstructionExpression {
+		const assess: CompletionStructureAssessment = this.assess()
+		return (!assess.isAbrupt) ? assess.build(to_float) : this.build_do(builder, to_float)
+	}
+	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionExpression;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
 	 * @return the computed value of this node, or a SemanticNode if the value cannot be computed by the compiler
@@ -206,7 +211,8 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		super(start_node, {value})
 		this.value = value
 	}
-	build(_builder: Builder, to_float: boolean = false): InstructionConst {
+	/** @implements SemanticNodeExpression */
+	protected build_do(_builder: Builder, to_float: boolean = false): InstructionConst {
 		return this.assess().build(to_float)
 	}
 	/** @implements SemanticNodeExpression */
@@ -234,7 +240,8 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 		const id: bigint | null = start_node.cook()
 		super(start_node, {id})
 	}
-	build(generator: Builder): InstructionExpression {
+	/** @implements SemanticNodeExpression */
+	protected build_do(builder: Builder): InstructionExpression {
 		throw new Error('not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
@@ -259,7 +266,8 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	) {
 		super(start_node, {}, children)
 	}
-	build(generator: Builder): InstructionExpression {
+	/** @implements SemanticNodeExpression */
+	protected build_do(builder: Builder): InstructionExpression {
 		throw new Error('not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
@@ -293,11 +301,10 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		super(start_node, operator, children)
 	}
 	/** @implements SemanticNodeExpression */
-	build(builder: Builder, to_float: boolean = false): InstructionUnop {
-		const assess0: CompletionStructureAssessment = this.children[0].assess()
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop {
 		return new InstructionUnop(
 			this.operator,
-			(!assess0.isAbrupt) ? assess0.build(to_float) : this.children[0].build(builder, to_float),
+			this.children[0].build(builder, to_float),
 		)
 	}
 	/** @implements SemanticNodeExpression */
@@ -350,14 +357,12 @@ export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation 
 	 * @implements SemanticNodeExpression
 	 * @final
 	 */
-	build(builder: Builder, to_float: boolean = false): InstructionBinop {
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
 		const tofloat: boolean = to_float || this.build_do_tofloat
-		const assess0: CompletionStructureAssessment = this.children[0].assess()
-		const assess1: CompletionStructureAssessment = this.children[1].assess()
 		return new InstructionBinop(
 			this.operator,
-			(!assess0.isAbrupt) ? assess0.build(tofloat) : this.children[0].build(builder, tofloat),
-			(!assess1.isAbrupt) ? assess1.build(tofloat) : this.children[1].build(builder, tofloat),
+			this.children[0].build(builder, tofloat),
+			this.children[1].build(builder, tofloat),
 		)
 	}
 	protected get build_do_tofloat(): boolean {
@@ -552,15 +557,12 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 		super(start_node, operator, children)
 	}
 	/** @implements SemanticNodeExpression */
-	build(builder: Builder, to_float: boolean = false): InstructionCond {
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionCond {
 		const _to_float: boolean = to_float || this.children[1].type().isFloatType || this.children[2].type().isFloatType
-		const assess0: CompletionStructureAssessment = this.children[0].assess()
-		const assess1: CompletionStructureAssessment = this.children[1].assess()
-		const assess2: CompletionStructureAssessment = this.children[2].assess()
 		return new InstructionCond(
-			(!assess0.isAbrupt) ? assess0.build(false)     : this.children[0].build(builder, false),
-			(!assess1.isAbrupt) ? assess1.build(_to_float) : this.children[1].build(builder, _to_float),
-			(!assess2.isAbrupt) ? assess2.build(_to_float) : this.children[2].build(builder, _to_float),
+			this.children[0].build(builder, false),
+			this.children[1].build(builder, _to_float),
+			this.children[2].build(builder, _to_float),
 		)
 	}
 	/** @implements SemanticNodeExpression */

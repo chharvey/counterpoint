@@ -16,7 +16,7 @@ import {
 	CompletionStructureAssessment,
 } from '../src/spec/CompletionStructure.class'
 import Builder from '../src/vm/Builder.class'
-import {
+import SolidLanguageType, {
 	SolidTypeConstant,
 } from '../src/vm/SolidLanguageType.class'
 import type SolidObject from '../src/vm/SolidObject.class'
@@ -108,7 +108,47 @@ describe('SemanticNode', () => {
 		})
 
 		context('SemanticNodeOperation', () => {
+			/**
+			 * Does `SemanticNodeOperation#build` produce
+			 * `CompletionStructureAssessment.new(SemanticNodeOperation#type#value)#build`?
+			 */
+			function buildOperations(tests: readonly string[]): void {
+				const nodes: readonly [string, SemanticNodeOperation][] = tests.map((src) => [src, operationFromStatementExpression(
+					statementExpressionFromSource(src)
+				)])
+				assert.deepStrictEqual(
+					nodes.map(([src,  node]) => node.build(new Builder(src, CONFIG_DEFAULT))),
+					nodes.map(([_src, node]) => {
+						const t: SolidLanguageType = node.type()
+						assert.ok(t instanceof SolidTypeConstant)
+						return new CompletionStructureAssessment(t.value).build()
+					}),
+				)
+			}
+			/**
+			 * A future compiler toggle that will enable/disable constant folding.
+			 * @todo TODO: make a copiler toggle for this in {@link SolidConfig}.
+			 */
+			const constant_folding: boolean = true
 			specify('SemanticNodeOperation[operator: NOT | EMP] ::= SemanticNodeConstant', () => {
+				constant_folding ?
+				buildOperations([
+					`!null;`,
+					`!false;`,
+					`!true;`,
+					`!42;`,
+					`!4.2;`,
+					`!0;`,
+					`!0.0;`,
+					`?null;`,
+					`?false;`,
+					`?true;`,
+					`?42;`,
+					`?4.2;`,
+					`?0;`,
+					`?0.0;`,
+				])
+				:
 				assert.deepStrictEqual([
 					`!null;`,
 					`!false;`,
@@ -137,6 +177,14 @@ describe('SemanticNode', () => {
 				])
 			})
 			specify('SemanticNodeOperation[operator: ADD | SUB | MUL] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+				constant_folding ?
+				buildOperations([
+					`42 + 420;`,
+					`42 - 420;`,
+					`3.0e1 - 201.0e-1;`,
+					`3 * 2.1;`,
+				])
+				:
 				assert.deepStrictEqual([
 					`42 + 420;`,
 					`42 - 420;`,
@@ -173,6 +221,18 @@ describe('SemanticNode', () => {
 				).build(new Builder(`null + 5;`, CONFIG_DEFAULT)), /Invalid operation./)
 			})
 			specify('SemanticNodeOperation[operator: DIV] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+				constant_folding ?
+				buildOperations([
+					` 126 /  3;`,
+					`-126 /  3;`,
+					` 126 / -3;`,
+					`-126 / -3;`,
+					` 200 /  3;`,
+					` 200 / -3;`,
+					`-200 /  3;`,
+					`-200 / -3;`,
+				])
+				:
 				assert.deepStrictEqual([
 					' 126 /  3;',
 					'-126 /  3;',
@@ -202,6 +262,21 @@ describe('SemanticNode', () => {
 				)))
 			})
 			specify('SemanticNodeOperation[operator: IS | ISNT | EQ | NEQ] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+				constant_folding ?
+				buildOperations([
+					`42 == 420;`,
+					`42 != 420;`,
+					`4.2 == 42;`,
+					`42 != 42.0;`,
+					`true is 1;`,
+					`true == 1;`,
+					`null is false;`,
+					`null == false;`,
+					`false == 0.0;`,
+					`false is 0.0;`,
+					`0.0 is 0;`,
+				])
+				:
 				assert.deepStrictEqual([
 					`42 == 420;`,
 					`42 != 420;`,
@@ -259,16 +334,17 @@ describe('SemanticNode', () => {
 						instructionConstFloat(0.0),
 					),
 				])
-				;[
-					`false is 0.0;`,
-					`0.0 is 0;`,
-				].forEach((src) => {
-					assert.throws(() => operationFromStatementExpression(
-						statementExpressionFromSource(src)
-					).build(new Builder(src, CONFIG_DEFAULT)), TypeError, 'IS does not type-coerce ints to floats')
-				})
 			})
 			specify('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+				constant_folding ?
+				buildOperations([
+					`42 && 420;`,
+					`4.2 || -420;`,
+					`null && 201.0e-1;`,
+					`true && 201.0e-1;`,
+					`false || null;`,
+				])
+				:
 				assert.deepStrictEqual([
 					`42 && 420;`,
 					`4.2 || -420;`,
@@ -304,6 +380,14 @@ describe('SemanticNode', () => {
 				])
 			})
 			specify('ExpressionConditional ::= "if" Expression "then" Expression "else" Expression;', () => {
+				constant_folding ?
+				buildOperations([
+					`if true  then false   else 2;`,
+					`if false then 3.0     else null;`,
+					`if true  then 2       else 3.0;`,
+					`if false then 2 + 3.0 else 1.0 * 2;`,
+				])
+				:
 				assert.deepStrictEqual([
 					`if true  then false   else 2;`,
 					`if false then 3.0     else null;`,
@@ -321,6 +405,11 @@ describe('SemanticNode', () => {
 			})
 			specify('compound expression.', () => {
 				const srcs: [string, SolidConfig] = [`42 ^ 2 * 420;`, CONFIG_DEFAULT]
+				constant_folding ?
+				buildOperations([
+					srcs[0],
+				])
+				:
 				assert.deepStrictEqual((
 					(new Parser(...srcs).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
@@ -332,6 +421,12 @@ describe('SemanticNode', () => {
 				))
 			})
 			specify('overflow.', () => {
+				constant_folding ?
+				buildOperations([
+					`2 ^ 15 + 2 ^ 14;`,
+					`-(2 ^ 14) - 2 ^ 15;`,
+				])
+				:
 				assert.deepStrictEqual([
 					`2 ^ 15 + 2 ^ 14;`,
 					`-(2 ^ 14) - 2 ^ 15;`,
@@ -349,6 +444,12 @@ describe('SemanticNode', () => {
 				)))
 			})
 			specify('compound expression.', () => {
+				constant_folding ?
+				buildOperations([
+					`2 * 3 + 5;`,
+					`2 * 3 + 5.0;`,
+				])
+				:
 				assert.deepStrictEqual([
 					`2 * 3 + 5;`,
 					`2 * 3 + 5.0;`,
@@ -371,6 +472,11 @@ describe('SemanticNode', () => {
 			})
 			specify('compound expression with grouping.', () => {
 				const srcs: [string, SolidConfig] = [`-(5) ^ +(2 * 3);`, CONFIG_DEFAULT]
+				constant_folding ?
+				buildOperations([
+					srcs[0],
+				])
+				:
 				assert.deepStrictEqual((
 					(new Parser(...srcs).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
@@ -386,10 +492,10 @@ describe('SemanticNode', () => {
 				const generator: Builder = new Builder(...srcs)
 				new Parser(...srcs).parse().decorate().children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof SemanticNodeStatementExpression)
-					assert.deepStrictEqual(stmt.build(generator), new InstructionStatement(BigInt(i), instructionConstInt([
-						42n,
-						420n,
-					][i])))
+					assert.deepStrictEqual(
+						stmt.build(generator),
+						new InstructionStatement(BigInt(i), constantFromStatementExpression(stmt).build(generator)),
+					)
 				})
 			})
 		})
@@ -494,6 +600,16 @@ describe('SemanticNode', () => {
 					[`2 isnt 3;`, true],
 					[`2 == 3;`,   false],
 					[`2 != 3;`,   true],
+					[`0 is -0;`,     true],
+					[`0 == -0;`,     true],
+					[`0.0 is 0;`,    false],
+					[`0.0 == 0;`,    true],
+					[`0.0 is -0;`,   false],
+					[`0.0 == -0;`,   true],
+					[`-0.0 is 0;`,   false],
+					[`-0.0 == 0;`,   true],
+					[`-0.0 is 0.0;`, false],
+					[`-0.0 == 0.0;`, true],
 				]), (v) => SolidBoolean.fromBoolean(v)))
 			})
 			it('computes type for AND and OR.', () => {
@@ -669,6 +785,16 @@ describe('SemanticNode', () => {
 					[`0.0 == 0.0;`,   true],
 					[`0.0 is -0.0;`,  false],
 					[`0.0 == -0.0;`,  true],
+					[`0 is -0;`,     true],
+					[`0 == -0;`,     true],
+					[`0.0 is 0;`,    false],
+					[`0.0 == 0;`,    true],
+					[`0.0 is -0;`,   false],
+					[`0.0 == -0;`,   true],
+					[`-0.0 is 0;`,   false],
+					[`-0.0 == 0;`,   true],
+					[`-0.0 is 0.0;`, false],
+					[`-0.0 == 0.0;`, true],
 				]), (val) => SolidBoolean.fromBoolean(val)))
 			})
 			it('computes the value of AND and OR operators.', () => {

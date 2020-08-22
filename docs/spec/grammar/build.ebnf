@@ -15,35 +15,45 @@ Sequence<Instruction> Build(Number n) :=
 
 
 
-Sequence<Instruction> Build(SemanticConstant const) :=
+Sequence<Instruction> Build(SemanticExpression expr) :=
+	1. *Let* `assess` be `Assess(expr)`.
+	2. *If* `assess` is an abrupt completion:
+		1. *Return:* `BuildExpression(expr)`.
+	3. *Assert:* `assess.value` exists.
+	4. *Return:* `Build(assess.value)`.
+;
+
+
+
+Sequence<Instruction> BuildExpression(SemanticConstant const) :=
 	1. *Let* `assess` be *UnwrapAffirm:* `Assess(const)`.
 	2. *Return:* `Build(assess)`.
 ;
 
 
 
-Sequence<Instruction> Build(SemanticIdentifier iden) :=
+Sequence<Instruction> BuildExpression(SemanticIdentifier iden) :=
 	// TO BE DETERMINED
 ;
 
 
 
-Void Build(SemanticTemplate tpl) :=
+Sequence<Instruction> BuildExpression(SemanticTemplate tpl) :=
 	// TO BE DETERMINED
 ;
 
 
 
-Sequence<Instruction> Build(SemanticOperation[operator: NOT | EMP | NEG] expr) :=
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `instrs` be *UnwrapAffirm:* `TryAssessAndBuild(expr.children.0)`.
+	2. *Let* `instrs` be *UnwrapAffirm:* `Build(expr.children.0)`.
 	3. *Return:* [
 		...instrs,
 		"`expr.operator`",
 	].
 ;
 
-Sequence<Instruction> Build(SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | GT | LE | GE | IS | EQ] expr) :=
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | GT | LE | GE | IS | EQ] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
 	2. *Return:* [
 		...builds.0,
@@ -52,7 +62,7 @@ Sequence<Instruction> Build(SemanticOperation[operator: EXP | MUL | DIV | ADD | 
 	].
 ;
 
-Sequence<Instruction> Build(SemanticOperation[operator: AND] expr) :=
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: AND] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
 	2. *Return:* [
 		...builds.0,
@@ -67,7 +77,7 @@ Sequence<Instruction> Build(SemanticOperation[operator: AND] expr) :=
 	].
 ;
 
-Sequence<Instruction> Build(SemanticOperation[operator: OR] expr) :=
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: OR] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
 	2. *Return:* [
 		...builds.0,
@@ -82,11 +92,11 @@ Sequence<Instruction> Build(SemanticOperation[operator: OR] expr) :=
 	].
 ;
 
-Sequence<Instruction> Build(SemanticOperation[operator: COND] expr) :=
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
-	2. *Let* `instrs0` be *UnwrapAffirm:* `TryAssessAndBuild(expr.children.0)`.
-	3. *Let* `instrs1` be *UnwrapAffirm:* `TryAssessAndBuild(expr.children.1)`.
-	4. *Let* `instrs2` be *UnwrapAffirm:* `TryAssessAndBuild(expr.children.2)`.
+	2. *Let* `instrs0` be *UnwrapAffirm:* `Build(expr.children.0)`.
+	3. *Let* `instrs1` be *UnwrapAffirm:* `Build(expr.children.1)`.
+	4. *Let* `instrs2` be *UnwrapAffirm:* `Build(expr.children.2)`.
 	5. *Return:* [
 		...instrs0,
 		"IF",
@@ -102,7 +112,7 @@ Sequence<Instruction> Build(SemanticOperation[operator: COND] expr) :=
 Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 	1. *Let* `sequence` be an empty sequence of `Instruction`s.
 	2. *If* `stmt.children.count` is greater than 0:
-		1. *Set* `sequence` to *UnwrapAffirm:* `TryAssessAndBuild(stmt.children.0)`.
+		1. *Set* `sequence` to *UnwrapAffirm:* `Build(stmt.children.0)`.
 	3. *Return* `sequence`.
 ;
 
@@ -131,19 +141,7 @@ Sequence<Instruction> Build(SemanticGoal goal) :=
 // Prepares instructions for a binary operation.
 Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperationBinary(SemanticOperation expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `instrs0` be *UnwrapAffirm:* `TryAssessAndBuild(expr.children.0)`.
-	3. *Let* `instrs1` be *UnwrapAffirm:* `TryAssessAndBuild(expr.children.1)`.
+	2. *Let* `instrs0` be *UnwrapAffirm:* `Build(expr.children.0)`.
+	3. *Let* `instrs1` be *UnwrapAffirm:* `Build(expr.children.1)`.
 	4. *Return:* [instrs0, instrs1].
-;
-
-
-
-// Attempts to assess a semantic node first and then build the assessment;
-// if the assessment fails, builds the semantic node.
-Sequence<Instruction> TryAssessAndBuild(SemanticExpression expr) :=
-	1. *Let* `assess` be `Assess(expr)`.
-	2. *If* `assess` is an abrupt completion:
-		1. *Return:* `Build(expr)`.
-	3. *Assert:* `assess.value` is not `void`.
-	4. *Return:* `Build(assess.value)`.
 ;
