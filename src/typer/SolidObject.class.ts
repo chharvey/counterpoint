@@ -14,18 +14,6 @@ import type SolidBoolean from './SolidBoolean.class'
  */
 export default class SolidObject {
 	/** @implements SolidLanguageType */
-	static get isBooleanType(): boolean {
-		return false
-	}
-	/** @implements SolidLanguageType */
-	static get isNumericType(): boolean {
-		return false
-	}
-	/** @implements SolidLanguageType */
-	static get isFloatType(): boolean {
-		return false
-	}
-	/** @implements SolidLanguageType */
 	static get properties(): ReadonlyMap<string, SolidLanguageType> {
 		return new Map([
 			['identical', SolidObject /* SolidFunction */],
@@ -33,8 +21,15 @@ export default class SolidObject {
 		])
 	}
 	/** @implements SolidLanguageType */
+	static isBooleanType: SolidLanguageType['isBooleanType'] = SolidLanguageType.prototype.isBooleanType
+	/** @implements SolidLanguageType */
+	static isNumericType: SolidLanguageType['isNumericType'] = SolidLanguageType.prototype.isNumericType
+	/** @implements SolidLanguageType */
+	static isFloatType: SolidLanguageType['isFloatType'] = SolidLanguageType.prototype.isFloatType
+	/** @implements SolidLanguageType */
 	static intersect: SolidLanguageType['intersect'] = SolidLanguageType.prototype.intersect
-	static union:     SolidLanguageType['union']     = SolidLanguageType.prototype.union
+	/** @implements SolidLanguageType */
+	static union: SolidLanguageType['union'] = SolidLanguageType.prototype.union
 
 
 	/**

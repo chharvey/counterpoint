@@ -1,11 +1,18 @@
 Or<Null, Boolean, Number, Sequence<RealNumber>> Assess(SemanticConstant const) :=
 	1. *Return:* `const.value`.
+;
+
+
 
 Unknown Assess(SemanticIdentifier iden) :=
 	// TO BE DETERMINED
+;
+
+
 
 Void Assess(SemanticTemplate tpl) :=
 	// TO BE DETERMINED
+;
 
 
 
@@ -17,6 +24,7 @@ Boolean! Assess(SemanticOperation[operator: NOT] expr) :=
 	5. *If* `is_truthy` is `true`:
 		1. *Return:* `false`.
 	6. *Return:* `true`.
+;
 
 Boolean! Assess(SemanticOperation[operator: EMP] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
@@ -30,6 +38,7 @@ Boolean! Assess(SemanticOperation[operator: EMP] expr) :=
 	7. *If* `operand` is of type `Float` *and* `operand` is `0.0` or `-0.0`:
 		1. *Return:* `true`.
 	8. *Return:* `false`.
+;
 
 Number! Assess(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
@@ -38,8 +47,7 @@ Number! Assess(SemanticOperation[operator: NEG] expr) :=
 	4. *Let* `negation` be the additive inverse, `-operand`,
 		obtained by negating `operand`.
 	5. *Return:* `negation`.
-
-
+;
 
 Number! Assess(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
@@ -49,8 +57,7 @@ Number! Assess(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	5. *If* both `operand0` and `operand1` are of type `Integer`:
 		1. *Return:* `Integer(*UnwrapAffirm:* PerformBinaryArithmetic(expr.operator, operand0, operand1))`.
 	6. *Return:* `Float(*UnwrapAffirm:* PerformBinaryArithmetic(expr.operator, Float(operand0), Float(operand1)))`.
-
-
+;
 
 Boolean! Assess(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
@@ -60,8 +67,7 @@ Boolean! Assess(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	5. *If* both `operand0` and `operand1` are of type `Integer`:
 		1. *Return:* `PerformBinaryCompare(expr.operator, operand0, operand1)`.
 	6. *Return:* `PerformBinaryCompare(expr.operator, Float(float0), Float(float1))`.
-
-
+;
 
 Boolean! Assess(SemanticOperation[operator: ID] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
@@ -69,6 +75,7 @@ Boolean! Assess(SemanticOperation[operator: ID] expr) :=
 	3. *Let* `operand1` be *Unwrap:* `Assess(expr.children.1)`.
 	4. *Assert*: Neither `operand0` nor `operand1` is `void`.
 	5. *Return:* `Identical(operand0, operand1)`.
+;
 
 Boolean! Assess(SemanticOperation[operator: EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
@@ -76,8 +83,7 @@ Boolean! Assess(SemanticOperation[operator: EQ] expr) :=
 	3. *Let* `operand1` be *Unwrap:* `Assess(expr.children.1)`.
 	4. *Assert*: Neither `operand0` nor `operand1` is `void`.
 	5. *Return:* `Equal(operand0, operand1)`.
-
-
+;
 
 Object! Assess(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
@@ -86,8 +92,7 @@ Object! Assess(SemanticOperation[operator: AND] expr) :=
 	4. *If* `ToBoolean(operand0)` is `false`:
 		1. *Return:* `operand0`.
 	5. *Return:* `Assess(expr.children.1)`.
-
-
+;
 
 Object! Assess(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
@@ -96,8 +101,7 @@ Object! Assess(SemanticOperation[operator: OR] expr) :=
 	4. *If* `ToBoolean(operand0)` is `true`:
 		1. *Return:* `operand0`.
 	5. *Return:* `Assess(expr.children.1)`.
-
-
+;
 
 Object! Assess(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
@@ -107,3 +111,4 @@ Object! Assess(SemanticOperation[operator: COND] expr) :=
 		1. *Return:* `Assess(expr.children.1)`.
 	5. *Else:*
 		1. *Return:* `Assess(expr.children.2)`.
+;

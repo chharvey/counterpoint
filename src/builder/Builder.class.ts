@@ -8,7 +8,6 @@ import type {
 	SemanticNodeExpression,
 	SemanticStatementType,
 	SemanticNodeGoal,
-	CompletionStructureAssessment,
 } from '../typer'
 import {
 	Parser,
@@ -51,8 +50,7 @@ export default class Builder {
 	 * @return a call to {@link CodeGenerator.stmt}
 	 */
 	stmt(expr: SemanticNodeExpression): InstructionStatement {
-		const assess: CompletionStructureAssessment | null = expr.assess()
-		return new InstructionStatement(this.stmt_count++, (assess) ? assess.build() : expr.build(this))
+		return new InstructionStatement(this.stmt_count++, expr.build(this))
 	}
 
 	/**
