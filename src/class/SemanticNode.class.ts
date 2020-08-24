@@ -3,6 +3,7 @@ import * as xjs from 'extrajs'
 import Util from './Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import {
+	CompletionType,
 	CompletionStructureAssessment,
 } from '../spec/CompletionStructure.class'
 import type Builder from '../vm/Builder.class'
@@ -164,18 +165,22 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	 * @final
 	 */
 	build(builder: Builder, to_float?: boolean): InstructionExpression {
-		const assess: CompletionStructureAssessment = this.assess()
+		const assess: CompletionStructureAssessment = this.assess(builder.config.compilerOptions.constantFolding)
 		return (!assess.isAbrupt) ? assess.build(to_float) : this.build_do(builder, to_float)
 	}
 	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionExpression;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
+	 * @param const_fold Should this expression be constant-folded at compile-time? (See {@link SolidConfig} for info.)
 	 * @return the computed value of this node, or a SemanticNode if the value cannot be computed by the compiler
 	 * @final
 	 */
-	assess(): CompletionStructureAssessment {
-		this.assessed || (this.assessed = this.assess_do()) // COMBAK `this.assessed ||= this.assess_do()`
-		return this.assessed
+	assess(const_fold: boolean = true): CompletionStructureAssessment {
+		if (const_fold) {
+			this.assessed || (this.assessed = this.assess_do()) // COMBAK `this.assessed ||= this.assess_do()`
+			return this.assessed
+		}
+		return new CompletionStructureAssessment(CompletionType.THROW)
 	}
 	protected abstract assess_do(): CompletionStructureAssessment
 	/**

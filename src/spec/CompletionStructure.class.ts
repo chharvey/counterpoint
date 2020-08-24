@@ -9,7 +9,7 @@ import {
 
 
 
-enum CompletionType {
+export enum CompletionType {
 	NORMAL,
 	CONTINUE,
 	BREAK,
