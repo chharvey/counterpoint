@@ -160,7 +160,7 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	}
 	/**
 	 * @override
-	 * @param to_float Should the returned instruction be type-coersed into a floating-point number?
+	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
 	 * @final
 	 */
 	build(builder: Builder, to_float?: boolean): InstructionExpression {
