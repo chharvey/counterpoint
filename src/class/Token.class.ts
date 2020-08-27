@@ -642,49 +642,17 @@ export class TokenCommentLine extends TokenComment {
 	}
 }
 export class TokenCommentMulti extends TokenComment {
-	static readonly DELIM_START : '{%' = '{%'
-	static readonly DELIM_END   : '%}' = '%}'
+	static readonly DELIM_START: '%%' = '%%'
+	static readonly DELIM_END:   '%%' = '%%'
 	constructor (lexer: Lexer) {
 		super(lexer, ...lexer.advance(2n))
-		let comment_multiline_level: bigint = 0n
-		comment_multiline_level++;
-		while (comment_multiline_level !== 0n) {
 			while (!this.lexer.isDone && !Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)) {
 				if (Char.eq(Filebound.EOT, lexer.c0)) {
 					throw new LexError02(this)
 				}
-				if (Char.eq(TokenCommentMulti.DELIM_START, this.lexer.c0, this.lexer.c1)) {
-					this.advance(2n)
-					comment_multiline_level++;
-				} else {
-					this.advance()
-				}
+				this.advance()
 			}
 			// add ending delim to token
 			this.advance(2n)
-			comment_multiline_level--;
-		}
-	}
-}
-export class TokenCommentBlock extends TokenComment {
-	static readonly DELIM_START : '%%%' = '%%%'
-	static readonly DELIM_END   : '%%%' = '%%%'
-	constructor (lexer: Lexer) {
-		super(lexer, ...lexer.advance(4n))
-		while (!this.lexer.isDone) {
-			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
-				throw new LexError02(this)
-			}
-			if (
-				!Char.eq(`${TokenCommentBlock.DELIM_END}\n`, this.lexer.c0, this.lexer.c1, this.lexer.c2, this.lexer.c3) ||
-				this.source.slice(this.source.lastIndexOf('\n') + 1).trim() !== '' // the tail end of this token does not match `/\n(\s)*/` (a newline followed by whitespace)
-			) {
-				this.advance()
-			} else {
-				break;
-			}
-		}
-		// add ending delim to token
-		this.advance(3n)
 	}
 }
