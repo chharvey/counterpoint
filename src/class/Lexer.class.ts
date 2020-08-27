@@ -190,7 +190,7 @@ export default class Lexer {
 			} else if (this.config.features.comments && Char.eq(TokenCommentMulti.DELIM_START, this._c0, this._c1)) {
 				/* we found a multiline comment */
 				token = new TokenCommentMulti(this)
-			} else if (this.config.features.comments && Char.eq(TokenCommentLine.DELIM, this._c0)) {
+			} else if (this.config.features.comments && Char.eq(TokenCommentLine.DELIM_START, this._c0)) {
 				/* we found a single-line comment */
 				token = new TokenCommentLine(this)
 
