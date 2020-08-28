@@ -153,30 +153,13 @@ TemplateChars__EndInterp__StartInterp :::=
 Comment :::=
 	| CommentLine
 	| CommentMulti
-	| CommentBlock
 ;
 
 CommentLine
-	:::= "%" [^#x0A#x03]* #x0A;
+	:::= "%" ([^%#x0A#x03] [^#x0A#x03]*)? #x0A;
 
 CommentMulti
-	:::= "{%" CommentMultiNestChars? "%}";
-
-CommentMultiChars :::=
-	| [^{%#x03] CommentMultiChars?
-	| "{"+ [^%#x03] CommentMultiChars?
-	| "%"+ ( [^}#x03] CommentMultiChars? )?
-	| CommentMulti CommentMultiChars?
-;
-
-CommentBlock
-	:::=
-		{following: #x0A [#x09#x20]*}"%%%"
-		#x0A
-		({unequal: [#x09#x20]* "%%%"}[^#x03]* #x0A)?
-		[#x09#x20]* "%%%"
-		{lookahead: #x0A}
-	;
+	:::= "%%" ("%"? [^%#x03])* "%%";
 
 
 
