@@ -373,6 +373,8 @@ describe('SemanticNode', () => {
 					statementExpressionFromSource(src)
 				).type()), [...tests.values()].map((result) => new SolidTypeConstant(result)))
 			}
+			context('with constant folding on.', () => {
+				context('SemanticNodeConstant', () => {
 			it('returns a constant Null type for SemanticNodeConstant with null value.', () => {
 				assert.deepStrictEqual(((new Parser(`null;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
@@ -425,6 +427,60 @@ describe('SemanticNode', () => {
 					assert.strictEqual(node.type(), SolidString)
 				})
 			})
+				})
+				context('SemanticNodeOperationBinaryArithmetic', () => {
+			it('returns a constant Integer type for any operation of integers.', () => {
+				assert.deepStrictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Int16(7n * 3n * 2n)))
+			})
+			it('returns a constant Float type for any operation of mix of integers and floats.', () => {
+				assert.deepStrictEqual(((new Parser(`3.0 * 2.7;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(3.0 * 2.7)))
+				assert.deepStrictEqual(((new Parser(`7 * 3.0 * 2;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(7 * 3.0 * 2)))
+			})
+				})
+			})
+			context('with constant folding off.', () => {
+				const folding_off: SolidConfig = {
+					...CONFIG_DEFAULT,
+					compilerOptions: {
+						...CONFIG_DEFAULT.compilerOptions,
+						constantFolding: false,
+					},
+				}
+				context('SemanticNodeOperationBinaryArithmetic', () => {
+					it('returns Integer for integer arithmetic.', () => {
+						const node: SemanticNodeOperation = operationFromStatementExpression(
+							statementExpressionFromSource(`(7 + 3) * 2;`, folding_off)
+						)
+						assert.deepStrictEqual(
+							[node.type(), node.children.length],
+							[Int16,       2],
+						)
+						assert.deepStrictEqual(
+							[node.children[0].type(), node.children[1].type()],
+							[Int16,                   Int16],
+						)
+					})
+					it('returns Float for float arithmetic.', () => {
+						const node: SemanticNodeOperation = operationFromStatementExpression(
+							statementExpressionFromSource(`7 * 3.0 ^ 2;`, folding_off)
+						)
+						assert.deepStrictEqual(
+							[node.type(false), node.children.length],
+							[Float64,     2],
+						)
+						assert.deepStrictEqual(
+							[node.children[0].type(), node.children[1].type()],
+							[Int16,                   Float64],
+						)
+					})
+				})
+			})
 			it('returns a constant Boolean type for boolean unary operation of anything.', () => {
 				typeOperations(xjs.Map.mapValues(new Map([
 					[`!false;`,  true],
@@ -438,19 +494,6 @@ describe('SemanticNode', () => {
 					[`?42;`,     false],
 					[`?4.2e+1;`, false],
 				]), (v) => SolidBoolean.fromBoolean(v)))
-			})
-			it('returns a constant Integer type for any operation of integers.', () => {
-				assert.deepStrictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Int16(7n * 3n * 2n)))
-			})
-			it('returns a constant Float type for any operation of mix of integers and floats.', () => {
-				assert.deepStrictEqual(((new Parser(`3.0 * 2.7;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(3.0 * 2.7)))
-				assert.deepStrictEqual(((new Parser(`7 * 3.0 * 2;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(7 * 3.0 * 2)))
 			})
 			it('computes type for equality and comparison.', () => {
 				typeOperations(xjs.Map.mapValues(new Map([
