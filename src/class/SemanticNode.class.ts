@@ -1,6 +1,7 @@
 import * as xjs from 'extrajs'
 
 import Util from './Util.class'
+import type SolidConfig from '../SolidConfig'
 import type Serializable from '../iface/Serializable.iface'
 import {
 	CompletionType,
@@ -107,8 +108,9 @@ export default abstract class SemanticNode implements Serializable {
 
 	/**
 	 * Type-check the node as part of semantic analysis.
+	 * @param opts a set of compiler options
 	 */
-	abstract typeCheck(): void;
+	abstract typeCheck(opts: SolidConfig['compilerOptions']): void;
 
 	/**
 	 * Give directions to the runtime code builder.
@@ -156,7 +158,7 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 		super(start_node, attributes, children)
 	}
 
-	typeCheck(): void {
+	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		this.type() // assert does not throw
 	}
 	/**
@@ -625,8 +627,8 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	typeCheck(): void {
-		this.children[0] && this.children[0].type() // assert does not throw // COMBAK this.children[0]?.type()
+	typeCheck(opts: SolidConfig['compilerOptions']): void {
+		this.children[0] && this.children[0].typeCheck(opts) // assert does not throw // COMBAK this.children[0]?.type()
 	}
 	build(generator: Builder): InstructionNone | InstructionStatement {
 		return (!this.children.length)
@@ -644,7 +646,7 @@ export class SemanticNodeDeclaration extends SemanticNode {
 	) {
 		super(start_node, {type, unfixed}, children)
 	}
-	typeCheck(): void {
+	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		throw new Error('not yet supported.')
 		// const assignedType = this.children[1].type()
 	}
@@ -660,7 +662,7 @@ export class SemanticNodeAssignment extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	typeCheck(): void {
+	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		throw new Error('not yet supported.')
 		// const assignedType = this.children[1].type()
 	}
@@ -676,7 +678,7 @@ export class SemanticNodeAssignee extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	typeCheck(): void {
+	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		throw new Error('not yet supported.')
 	}
 	build(generator: Builder): Instruction {
@@ -691,7 +693,7 @@ export class SemanticNodeAssigned extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	typeCheck(): void {
+	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		this.type() // assert does not throw
 	}
 	build(generator: Builder): Instruction {
@@ -713,9 +715,9 @@ export class SemanticNodeGoal extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	typeCheck(): void {
+	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		this.children.forEach((child) => {
-			child.typeCheck()
+			child.typeCheck(opts)
 		})
 	}
 	build(generator: Builder): InstructionNone | InstructionModule {

@@ -405,7 +405,7 @@ export class ParseNodeGoal extends ParseNode {
 		| readonly [TokenFilebound, ParseNodeGoal__0__List, TokenFilebound]
 	decorate(): SemanticNodeGoal {
 		const goal: SemanticNodeGoal = new SemanticNodeGoal(this, (this.children.length === 2) ? [] : this.children[1].decorate())
-		goal.typeCheck() // assert does not throw
+		goal.typeCheck(this.config.compilerOptions) // assert does not throw
 		return goal
 	}
 }
