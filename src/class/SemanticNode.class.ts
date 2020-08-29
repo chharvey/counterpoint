@@ -162,7 +162,7 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 		this.type(opts.constantFolding) // assert does not throw
 	}
 	/**
-	 * @override
+	 * @implements SemanticNode
 	 * @param to_float Should the returned instruction be type-coersed into a floating-point number?
 	 * @final
 	 */
@@ -222,7 +222,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 	}
 	/** @implements SemanticNodeExpression */
 	protected build_do(_builder: Builder, to_float: boolean = false): InstructionConst {
-		return this.assess().build(to_float)
+		return this.assess_do().build(to_float)
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
