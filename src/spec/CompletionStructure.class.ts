@@ -73,6 +73,9 @@ export class CompletionStructureAssessment extends CompletionStructure {
 	 * @return the directions to print
 	 */
 	build(to_float: boolean = false): InstructionConst {
+		if (this.isAbrupt) {
+			throw new Error('Cannot build an abrupt completion structure.')
+		}
 		const value: SolidNumber =
 			(this.value instanceof SolidNull)    ? Int16.ZERO :
 			(this.value instanceof SolidBoolean) ? (this.value.value) ? Int16.UNIT : Int16.ZERO :

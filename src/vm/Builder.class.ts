@@ -41,7 +41,7 @@ export default class Builder {
 		source: string,
 		readonly config: SolidConfig,
 	) {
-		this._goal = new Parser(source, config).parse().decorate()
+		this._goal = new Parser(source, this.config).parse().decorate()
 	}
 
 	/**
