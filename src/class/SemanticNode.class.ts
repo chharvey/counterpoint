@@ -167,22 +167,19 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	 * @final
 	 */
 	build(builder: Builder, to_float?: boolean): InstructionExpression {
-		const assess: CompletionStructureAssessment = this.assess(builder.config.compilerOptions.constantFolding)
-		return (!assess.isAbrupt) ? assess.build(to_float) : this.build_do(builder, to_float)
+		const assess: CompletionStructureAssessment | null = (builder.config.compilerOptions.constantFolding) ? this.assess() : null
+		return (assess && !assess.isAbrupt) ? assess.build(to_float) : this.build_do(builder, to_float)
 	}
 	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionExpression;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
-	 * @param const_fold Should this expression be constant-folded at compile-time? (See {@link SolidConfig} for info.)
+	 * If {@link SolidConfig|constant folding} is off, this should not be called.
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 * @final
 	 */
-	assess(const_fold: boolean = CONFIG_DEFAULT.compilerOptions.constantFolding): CompletionStructureAssessment {
-		if (const_fold) {
-			this.assessed || (this.assessed = this.assess_do()) // COMBAK `this.assessed ||= this.assess_do()`
-			return this.assessed
-		}
-		return new CompletionStructureAssessment(CompletionType.THROW)
+	assess(): CompletionStructureAssessment {
+		this.assessed || (this.assessed = this.assess_do()) // COMBAK `this.assessed ||= this.assess_do()`
+		return this.assessed
 	}
 	protected abstract assess_do(): CompletionStructureAssessment
 	/**
@@ -194,8 +191,12 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	type(const_fold: boolean = CONFIG_DEFAULT.compilerOptions.constantFolding): SolidLanguageType {
 		if (!this.typed) {
 			const type_: SolidLanguageType = this.type_do(const_fold) // type-check first, to re-throw any TypeErrors
-			this.assessed = this.assess(const_fold)
-			this.typed = (this.assessed.isAbrupt) ? type_ : new SolidTypeConstant(this.assessed.value!)
+			if (const_fold) {
+				this.assessed = this.assess()
+				this.typed = (this.assessed.isAbrupt) ? type_ : new SolidTypeConstant(this.assessed.value!)
+			} else {
+				this.typed = type_
+			}
 		}
 		return this.typed
 	}
