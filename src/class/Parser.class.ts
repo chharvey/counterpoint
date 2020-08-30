@@ -38,9 +38,9 @@ export default class Parser {
 	 * @param source - the entire source text
 	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor (source: string, config: SolidConfig) {
+	constructor (source: string, readonly config: SolidConfig) {
 		this.grammar = new Grammar()
-		this.screener = new Screener(source, config).generate()
+		this.screener = new Screener(source, this.config).generate()
 		this.iterator_result_token = this.screener.next()
 		this.lookahead = this.iterator_result_token.value as Token
 	}
@@ -95,7 +95,7 @@ export default class Parser {
 			if (reductions.length === 1) {
 				const rule: Rule = reductions[0].rule
 				const children: (Token|ParseNode)[] = rule.symbols.map(() => this.stack.pop() ![0]).reverse()
-				const node: ParseNode = ParseNode.from(rule, children)
+				const node: ParseNode = ParseNode.from(rule, children, this.config)
 				const next_state: Set<Configuration> = new Set<Configuration>((this.stack.length) ?
 					[...this.stack[this.stack.length-1][1]]
 						.filter((config) => config.after[0] === rule.production)

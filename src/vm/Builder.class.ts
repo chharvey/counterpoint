@@ -4,12 +4,11 @@ import * as path from 'path'
 import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
 import type SolidConfig from '../SolidConfig'
+import Validator from '../validator/Validator.class'
 import type {
 	SemanticNodeExpression,
 	SemanticStatementType,
-	SemanticNodeGoal,
 } from '../class/SemanticNode.class'
-import Parser from '../class/Parser.class'
 import {
 	InstructionStatement,
 	InstructionModule,
@@ -29,16 +28,19 @@ const fis: string = fs.readFileSync(path.join(__dirname, '../../src/fis.wat'), '
 export default class Builder {
 	/** A counter for statements. */
 	private stmt_count: bigint = 0n;
-	/** The goal symbol of the program. */
-	private readonly _goal: SemanticNodeGoal;
+	/** The validator. */
+	private readonly validator: Validator;
 
 	/**
 	 * Construct a new Builder object.
 	 * @param source - the entire source text
 	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor (source: string, config: SolidConfig) {
-		this._goal = new Parser(source, config).parse().decorate()
+	constructor (
+		source: string,
+		readonly config: SolidConfig,
+	) {
+		this.validator = new Validator(source, this.config)
 	}
 
 	/**
@@ -71,7 +73,7 @@ export default class Builder {
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
 	print(): string {
-		return this._goal.build(this).toString();
+		return this.validator.validate().build(this).toString()
 	}
 
 	/**
