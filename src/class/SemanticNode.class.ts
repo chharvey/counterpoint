@@ -76,15 +76,15 @@ export type ValidOperatorLogical =
  * A SemanticNode holds only the semantics of a {@link ParseNode}.
  */
 export default abstract class SemanticNode implements Serializable {
-	/** The name of the type of this SemanticNode. */
-	protected readonly tagname: string = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
-	/** The concatenation of the source text of all children. */
+	/** @implements Serializable */
+	readonly tagname: string = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
+	/** @implements Serializable */
 	readonly source: string;
-	/** The index of the first token in source text. */
+	/** @implements Serializable */
 	readonly source_index: number;
-	/** Zero-based line number of the first token (first line is line 0). */
+	/** @implements Serializable */
 	readonly line_index: number;
-	/** Zero-based column number of the first token (first col is col 0). */
+	/** @implements Serializable */
 	readonly col_index: number;
 
 	/**
@@ -295,7 +295,7 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 }
 export abstract class SemanticNodeOperation extends SemanticNodeExpression {
 	/** @override */
-	protected readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
+	readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
 	constructor(
 		start_node: ParseNode,
 		readonly operator: Operator,

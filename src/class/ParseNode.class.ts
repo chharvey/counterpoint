@@ -105,15 +105,15 @@ export default abstract class ParseNode implements Serializable {
 	}
 
 
-	/** The name of the type of this ParseNode. */
+	/** @implements Serializable */
 	readonly tagname: string = this.rule.production.displayName
-	/** The concatenation of the source text of all children. */
+	/** @implements Serializable */
 	readonly source: string = this.children.map((child) => child.source).join(' ')
-	/** The index of the first token in source text. */
+	/** @implements Serializable */
 	readonly source_index: number = this.children[0].source_index
-	/** Zero-based line number of the first token (first line is line 0). */
+	/** @implements Serializable */
 	readonly line_index: number = this.children[0].line_index
-	/** Zero-based column number of the first token (first col is col 0). */
+	/** @implements Serializable */
 	readonly col_index: number = this.children[0].col_index
 
 	/**
