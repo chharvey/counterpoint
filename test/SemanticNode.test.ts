@@ -477,7 +477,7 @@ describe('SemanticNode', () => {
 							statementExpressionFromSource(`7 * 3.0 ^ 2;`, folding_off)
 						)
 						assert.deepStrictEqual(
-							[node.type(false), node.children.length],
+							[node.type(), node.children.length],
 							[Float64,     2],
 						)
 						assert.deepStrictEqual(
