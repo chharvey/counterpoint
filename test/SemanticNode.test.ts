@@ -285,6 +285,9 @@ describe('SemanticNode', () => {
 							instructionConstFloat(0.0),
 						),
 					])
+					assert.throws(() => operationFromStatementExpression(
+						statementExpressionFromSource(`42.0 is 42;`, folding_off)
+					).build(new Builder(`42.0 is 42;`, folding_off)), /Both operands must be either integers or floats, but not a mix./, 'IS operator does not coerce to floats')
 				})
 				specify('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 					assert.deepStrictEqual([

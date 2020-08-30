@@ -157,6 +157,11 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 	) {
 		super(start_node, attributes, children)
 	}
+	/**
+	 * Determine whether this expression should build to a float-type instruction.
+	 * @return Should the built instruction be type-coerced into a floating-point number?
+	 */
+	abstract get shouldFloat(): boolean;
 
 	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		this.type(opts.constantFolding) // assert does not throw
@@ -222,6 +227,10 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		this.value = value
 	}
 	/** @implements SemanticNodeExpression */
+	get shouldFloat(): boolean {
+		return this.value instanceof Float64
+	}
+	/** @implements SemanticNodeExpression */
 	protected build_do(_builder: Builder, to_float: boolean = false): InstructionConst {
 		return this.assess_do().build(to_float)
 	}
@@ -256,6 +265,10 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 		super(start_node, {id})
 	}
 	/** @implements SemanticNodeExpression */
+	get shouldFloat(): boolean {
+		throw new Error('not yet supported.')
+	}
+	/** @implements SemanticNodeExpression */
 	protected build_do(builder: Builder): InstructionExpression {
 		throw new Error('not yet supported.')
 	}
@@ -280,6 +293,10 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 			| readonly SemanticNodeExpression[]
 	) {
 		super(start_node, {}, children)
+	}
+	/** @implements SemanticNodeExpression */
+	get shouldFloat(): boolean {
+		throw new Error('not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
 	protected build_do(builder: Builder): InstructionExpression {
@@ -316,10 +333,15 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		super(start_node, operator, children)
 	}
 	/** @implements SemanticNodeExpression */
+	get shouldFloat(): boolean {
+		return this.children[0].shouldFloat
+	}
+	/** @implements SemanticNodeExpression */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop {
+		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionUnop(
 			this.operator,
-			this.children[0].build(builder, to_float),
+			this.children[0].build(builder, tofloat),
 		)
 	}
 	/** @implements SemanticNodeExpression */
@@ -368,20 +390,21 @@ export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation 
 	) {
 		super(start_node, operator, children)
 	}
+	/** @implements SemanticNodeExpression */
+	get shouldFloat(): boolean {
+		return this.children[0].shouldFloat || this.children[1].shouldFloat
+	}
 	/**
 	 * @implements SemanticNodeExpression
 	 * @final
 	 */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
-		const tofloat: boolean = to_float || this.build_do_tofloat
+		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionBinop(
 			this.operator,
 			this.children[0].build(builder, tofloat),
 			this.children[1].build(builder, tofloat),
 		)
-	}
-	protected get build_do_tofloat(): boolean {
-		return this.children[0].type().isFloatType || this.children[1].type().isFloatType
 	}
 	/**
 	 * @implements SemanticNodeExpression
@@ -501,8 +524,8 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 		super(start_node, operator, children)
 	}
 	/** @override */
-	protected get build_do_tofloat(): boolean {
-		return this.operator === Operator.EQ && super.build_do_tofloat
+	get shouldFloat(): boolean {
+		return this.operator === Operator.EQ && super.shouldFloat
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
@@ -583,12 +606,16 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 		super(start_node, operator, children)
 	}
 	/** @implements SemanticNodeExpression */
+	get shouldFloat(): boolean {
+		return this.children[1].shouldFloat || this.children[2].shouldFloat
+	}
+	/** @implements SemanticNodeExpression */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionCond {
-		const _to_float: boolean = to_float || this.children[1].type().isFloatType || this.children[2].type().isFloatType
+		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionCond(
 			this.children[0].build(builder, false),
-			this.children[1].build(builder, _to_float),
-			this.children[2].build(builder, _to_float),
+			this.children[1].build(builder, tofloat),
+			this.children[2].build(builder, tofloat),
 		)
 	}
 	/** @implements SemanticNodeExpression */
