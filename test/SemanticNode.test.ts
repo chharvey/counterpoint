@@ -16,7 +16,7 @@ import {
 	CompletionStructureAssessment,
 } from '../src/spec/CompletionStructure.class'
 import Builder from '../src/vm/Builder.class'
-import SolidLanguageType, {
+import {
 	SolidTypeConstant,
 } from '../src/vm/SolidLanguageType.class'
 import type SolidObject from '../src/vm/SolidObject.class'

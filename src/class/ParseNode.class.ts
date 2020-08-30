@@ -160,7 +160,6 @@ export class ParseNodePrimitiveLiteral extends ParseNode {
 		| readonly [TokenString] // Dev.supports('literalString')
 	;
 	decorate(): SemanticNodeConstant {
-		const cooked: bigint | number | string = this.children[0].cook()
 		return new SemanticNodeConstant(this.children[0])
 	}
 }

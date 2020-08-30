@@ -4,7 +4,6 @@ import Util from './Util.class'
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 import type Serializable from '../iface/Serializable.iface'
 import {
-	CompletionType,
 	CompletionStructureAssessment,
 } from '../spec/CompletionStructure.class'
 import type Builder from '../vm/Builder.class'
@@ -256,7 +255,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 		super(start_node, {id})
 	}
 	/** @implements SemanticNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
+	protected build_do(_builder: Builder): InstructionExpression {
 		throw new Error('not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
@@ -264,7 +263,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 		throw new Error('Not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
-	protected type_do(const_fold: boolean): SolidLanguageType {
+	protected type_do(_const_fold: boolean): SolidLanguageType {
 		throw new Error('Not yet supported.')
 	}
 }
@@ -282,7 +281,7 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
+	protected build_do(_builder: Builder): InstructionExpression {
 		throw new Error('not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
@@ -290,7 +289,7 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 		throw new Error('Not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
-	protected type_do(const_fold: boolean): SolidLanguageType {
+	protected type_do(_const_fold: boolean): SolidLanguageType {
 		return SolidString
 	}
 }
@@ -657,12 +656,12 @@ export class SemanticNodeDeclaration extends SemanticNode {
 		super(start_node, {type, unfixed}, children)
 	}
 	/** @implements SemanticNode */
-	typeCheck(opts: SolidConfig['compilerOptions']): void {
+	typeCheck(_opts: SolidConfig['compilerOptions']): void {
 		throw new Error('not yet supported.')
 		// const assignedType = this.children[1].type()
 	}
 	/** @implements SemanticNode */
-	build(generator: Builder): Instruction {
+	build(_builder: Builder): Instruction {
 		throw new Error('not yet supported.')
 	}
 }
@@ -675,12 +674,12 @@ export class SemanticNodeAssignment extends SemanticNode {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNode */
-	typeCheck(opts: SolidConfig['compilerOptions']): void {
+	typeCheck(_opts: SolidConfig['compilerOptions']): void {
 		throw new Error('not yet supported.')
 		// const assignedType = this.children[1].type()
 	}
 	/** @implements SemanticNode */
-	build(generator: Builder): Instruction {
+	build(_builder: Builder): Instruction {
 		throw new Error('not yet supported.')
 	}
 }
@@ -693,11 +692,11 @@ export class SemanticNodeAssignee extends SemanticNode {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNode */
-	typeCheck(opts: SolidConfig['compilerOptions']): void {
+	typeCheck(_opts: SolidConfig['compilerOptions']): void {
 		throw new Error('not yet supported.')
 	}
 	/** @implements SemanticNode */
-	build(generator: Builder): Instruction {
+	build(_builder: Builder): Instruction {
 		throw new Error('not yet supported.')
 	}
 }
@@ -710,11 +709,11 @@ export class SemanticNodeAssigned extends SemanticNode {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNode */
-	typeCheck(opts: SolidConfig['compilerOptions']): void {
+	typeCheck(_opts: SolidConfig['compilerOptions']): void {
 		this.type() // assert does not throw
 	}
 	/** @implements SemanticNode */
-	build(generator: Builder): Instruction {
+	build(_builder: Builder): Instruction {
 		throw new Error('not yet supported.')
 	}
 	/**
