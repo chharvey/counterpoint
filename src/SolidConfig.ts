@@ -3,10 +3,10 @@
  */
 type SolidConfig = {
 	/**
-	 * Toggles for which features to enable/disable.
+	 * Toggles for which language features to enable/disable.
 	 * Disabling features can improve compiler speed.
 	 */
-	readonly features: {
+	readonly languageFeatures: {
 		/**
 		 * Solid code comments.
 		 * @version v0.2.0
@@ -30,6 +30,12 @@ type SolidConfig = {
 	 * Options for the compiler.
 	 */
 	readonly compilerOptions: {
+		/**
+		 * Compute constant expressions at compile-time.
+		 * @version v0.1.0
+		 * @default true
+		 */
+		readonly constantFolding: boolean,
 	},
 }
 export default SolidConfig // NB https://github.com/microsoft/TypeScript/issues/3792#issuecomment-303526468
