@@ -467,12 +467,12 @@ describe('SemanticNode', () => {
 							statementExpressionFromSource(`(7 + 3) * 2;`, folding_off)
 						)
 						assert.deepStrictEqual(
-							[node.type(), node.children.length],
-							[Int16,       2],
+							[node.type(false), node.children.length],
+							[Int16,            2],
 						)
 						assert.deepStrictEqual(
-							[node.children[0].type(), node.children[1].type()],
-							[Int16,                   Int16],
+							[node.children[0].type(false), node.children[1].type(false)],
+							[Int16,                        Int16],
 						)
 					})
 					it('returns Float for float arithmetic.', () => {
@@ -480,12 +480,12 @@ describe('SemanticNode', () => {
 							statementExpressionFromSource(`7 * 3.0 ^ 2;`, folding_off)
 						)
 						assert.deepStrictEqual(
-							[node.type(), node.children.length],
-							[Float64,     2],
+							[node.type(false), node.children.length],
+							[Float64,          2],
 						)
 						assert.deepStrictEqual(
-							[node.children[0].type(), node.children[1].type()],
-							[Int16,                   Float64],
+							[node.children[0].type(false), node.children[1].type(false)],
+							[Int16,                        Float64],
 						)
 					})
 				})
