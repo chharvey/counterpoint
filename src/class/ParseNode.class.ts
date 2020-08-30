@@ -328,6 +328,18 @@ export class ParseNodeExpressionBinary extends ParseNode {
 		}
 	}
 }
+/*
+class ParseNodeExpressionBinaryStrongest extends ParseNodeExpressionBinary {
+	declare children:
+		| readonly [ParseNodeExpressionUnary]
+		| readonly [ParseNodeExpressionUnary, TokenPunctuator, ParseNodeExpressionBinary]
+}
+class ParseNodeExpressionBinaryWeak extends ParseNodeExpressionBinary {
+	declare children:
+		| readonly [ParseNodeExpressionBinary]
+		| readonly [ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary]
+}
+*/
 export class ParseNodeExpressionConditional extends ParseNode {
 	declare children:
 		| readonly [
