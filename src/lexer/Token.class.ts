@@ -316,7 +316,7 @@ export class TokenNumber extends Token {
 	static tokenWorthInt(
 		text: string,
 		radix: RadixType = TokenNumber.RADIX_DEFAULT,
-		allow_separators: SolidConfig['features']['numericSeparators'] = CONFIG_DEFAULT.features.numericSeparators,
+		allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
 	): number {
 		if (text[0] === Punctuator.AFF) { return  TokenNumber.tokenWorthInt(text.slice(1), radix, allow_separators) }
 		if (text[0] === Punctuator.NEG) { return -TokenNumber.tokenWorthInt(text.slice(1), radix, allow_separators) }
@@ -341,7 +341,7 @@ export class TokenNumber extends Token {
 	 */
 	static tokenWorthFloat(
 		text: string,
-		allow_separators: SolidConfig['features']['numericSeparators'] = CONFIG_DEFAULT.features.numericSeparators,
+		allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
 	): number {
 		const base:       number = Number(TokenNumber.RADIX_DEFAULT)
 		const pointindex: number = text.indexOf(TokenNumber.POINT)
@@ -402,12 +402,12 @@ export class TokenNumber extends Token {
 	private lexDigitSequence(digits: readonly string[]): void {
 		const allowedchars: string[] = [
 			...digits,
-			...(this.lexer.config.features.numericSeparators ? [TokenNumber.SEPARATOR] : [])
+			...(this.lexer.config.languageFeatures.numericSeparators ? [TokenNumber.SEPARATOR] : [])
 		]
 		while (!this.lexer.isDone && Char.inc(allowedchars, this.lexer.c0)) {
 			if (Char.inc(digits, this.lexer.c0)) {
 				this.advance()
-			} else if (this.lexer.config.features.numericSeparators && Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
+			} else if (this.lexer.config.languageFeatures.numericSeparators && Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
 				if (Char.inc(digits, this.lexer.c1)) {
 					this.advance(2n)
 				} else {
@@ -422,8 +422,8 @@ export class TokenNumber extends Token {
 		if (this.has_unary) text = text.slice(1) // cut off unary, if any
 		if (this.has_radix) text = text.slice(2) // cut off radix, if any
 		return multiplier * (this.isFloat
-			? TokenNumber.tokenWorthFloat(text,             this.lexer.config.features.numericSeparators)
-			: TokenNumber.tokenWorthInt  (text, this.radix, this.lexer.config.features.numericSeparators)
+			? TokenNumber.tokenWorthFloat(text,             this.lexer.config.languageFeatures.numericSeparators)
+			: TokenNumber.tokenWorthInt  (text, this.radix, this.lexer.config.languageFeatures.numericSeparators)
 		)
 	}
 	/**
@@ -446,7 +446,7 @@ export class TokenString extends Token {
 	 */
 	private static tokenWorth(
 		text: string,
-		allow_separators: SolidConfig['features']['numericSeparators'] = CONFIG_DEFAULT.features.numericSeparators,
+		allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
 	): number[] {
 		if (text.length === 0) return []
 		if (TokenString.ESCAPER === text[0]) {
@@ -548,7 +548,7 @@ export class TokenString extends Token {
 	cook(): string {
 		return String.fromCharCode(...TokenString.tokenWorth(
 			this.source.slice(1, -1), // cut off the string delimiters
-			this.lexer.config.features.numericSeparators,
+			this.lexer.config.languageFeatures.numericSeparators,
 		))
 	}
 }

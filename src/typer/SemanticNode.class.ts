@@ -1,5 +1,6 @@
 import * as xjs from 'extrajs'
 
+import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 import Util from '../class/Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import Operator, {
@@ -11,6 +12,7 @@ import Operator, {
 	ValidOperatorLogical,
 } from '../enum/Operator.enum'
 import {
+	CompletionType,
 	CompletionStructureAssessment,
 } from './CompletionStructure.class'
 import SolidLanguageType, {
@@ -90,8 +92,9 @@ export default abstract class SemanticNode implements Serializable {
 
 	/**
 	 * Type-check the node as part of semantic analysis.
+	 * @param opts a set of compiler options
 	 */
-	abstract typeCheck(): void;
+	abstract typeCheck(opts: SolidConfig['compilerOptions']): void;
 
 	/**
 	 * Give directions to the runtime code builder.
@@ -139,42 +142,48 @@ export abstract class SemanticNodeExpression extends SemanticNode {
 		super(start_node, attributes, children)
 	}
 
-	typeCheck(): void {
-		this.type() // assert does not throw
+	typeCheck(opts: SolidConfig['compilerOptions']): void {
+		this.type(opts.constantFolding) // assert does not throw
 	}
 	/**
-	 * @override
+	 * @implements SemanticNode
 	 * @param to_float Should the returned instruction be type-coersed into a floating-point number?
 	 * @final
 	 */
 	build(builder: Builder, to_float?: boolean): InstructionExpression {
-		const assess: CompletionStructureAssessment = this.assess()
+		const assess: CompletionStructureAssessment = this.assess(builder.config.compilerOptions.constantFolding)
 		return (!assess.isAbrupt) ? assess.build(to_float) : this.build_do(builder, to_float)
 	}
 	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionExpression;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
-	 * @return the computed value of this node, or a SemanticNode if the value cannot be computed by the compiler
+	 * @param const_fold Should this expression be constant-folded at compile-time? (See {@link SolidConfig} for info.)
+	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 * @final
 	 */
-	assess(): CompletionStructureAssessment {
-		this.assessed || (this.assessed = this.assess_do()) // COMBAK `this.assessed ||= this.assess_do()`
-		return this.assessed
+	assess(const_fold: boolean = CONFIG_DEFAULT.compilerOptions.constantFolding): CompletionStructureAssessment {
+		if (const_fold) {
+			this.assessed || (this.assessed = this.assess_do()) // COMBAK `this.assessed ||= this.assess_do()`
+			return this.assessed
+		}
+		return new CompletionStructureAssessment(CompletionType.THROW)
 	}
 	protected abstract assess_do(): CompletionStructureAssessment
 	/**
 	 * The Type of this expression.
+	 * @param const_fold Should this expression be constant-folded at compile-time? (See {@link SolidConfig} for info.)
+	 * @return the compile-time type of this node
 	 * @final
 	 */
-	type(): SolidLanguageType {
+	type(const_fold: boolean = CONFIG_DEFAULT.compilerOptions.constantFolding): SolidLanguageType {
 		if (!this.typed) {
-			const type_: SolidLanguageType = this.type_do() // type-check first, to re-throw any TypeErrors
-			this.assessed = this.assess()
+			const type_: SolidLanguageType = this.type_do(const_fold) // type-check first, to re-throw any TypeErrors
+			this.assessed = this.assess(const_fold)
 			this.typed = (this.assessed.isAbrupt) ? type_ : new SolidTypeConstant(this.assessed.value!)
 		}
 		return this.typed
 	}
-	protected abstract type_do(): SolidLanguageType;
+	protected abstract type_do(const_fold: boolean): SolidLanguageType;
 }
 export class SemanticNodeConstant extends SemanticNodeExpression {
 	declare children:
@@ -197,7 +206,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 	}
 	/** @implements SemanticNodeExpression */
 	protected build_do(_builder: Builder, to_float: boolean = false): InstructionConst {
-		return this.assess().build(to_float)
+		return this.assess_do().build(to_float)
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
@@ -208,13 +217,18 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		}
 	}
 	/** @implements SemanticNodeExpression */
-	protected type_do(): SolidLanguageType {
+	protected type_do(const_fold: boolean): SolidLanguageType {
 		// No need to call `this.assess()` and then unwrap again; just use `this.value`.
-		return (
+		return (const_fold && (
 			this.value instanceof SolidNull ||
 			this.value instanceof SolidBoolean ||
 			this.value instanceof SolidNumber
-		) ? new SolidTypeConstant(this.value) : SolidString
+		)) ? new SolidTypeConstant(this.value) :
+		(this.value instanceof SolidNull)    ? SolidNull :
+		(this.value instanceof SolidBoolean) ? SolidBoolean :
+		(this.value instanceof Int16)        ? Int16 :
+		(this.value instanceof Float64)      ? Float64 :
+		SolidString
 	}
 }
 export class SemanticNodeIdentifier extends SemanticNodeExpression {
@@ -233,7 +247,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 		throw new Error('Not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
-	protected type_do(): SolidLanguageType {
+	protected type_do(const_fold: boolean): SolidLanguageType {
 		throw new Error('Not yet supported.')
 	}
 }
@@ -259,7 +273,7 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 		throw new Error('Not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
-	protected type_do(): SolidLanguageType {
+	protected type_do(const_fold: boolean): SolidLanguageType {
 		return SolidString
 	}
 }
@@ -306,11 +320,11 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		)
 	}
 	/** @implements SemanticNodeExpression */
-	protected type_do(): SolidLanguageType {
+	protected type_do(const_fold: boolean): SolidLanguageType {
 		if ([Operator.NOT, Operator.EMP].includes(this.operator)) {
 			return SolidBoolean
 		}
-		const t0: SolidLanguageType = this.children[0].type()
+		const t0: SolidLanguageType = this.children[0].type(const_fold)
 		return (t0.isNumericType) ? t0 : (() => { throw new TypeError('Invalid operation.') })()
 	}
 	private foldNumeric<T extends SolidNumber<T>>(z: T): T {
@@ -356,8 +370,8 @@ export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation 
 	 * @implements SemanticNodeExpression
 	 * @final
 	 */
-	protected type_do(): SolidLanguageType {
-		return this.type_do_do(this.children[0].type(), this.children[1].type())
+	protected type_do(const_fold: boolean): SolidLanguageType {
+		return this.type_do_do(this.children[0].type(const_fold), this.children[1].type(const_fold))
 	}
 	protected abstract type_do_do(t0: SolidLanguageType, t1: SolidLanguageType): SolidLanguageType;
 }
@@ -571,12 +585,12 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 			: this.children[2].assess()
 	}
 	/** @implements SemanticNodeExpression */
-	protected type_do(): SolidLanguageType {
+	protected type_do(const_fold: boolean): SolidLanguageType {
 		// If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
 		// If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
-		const t0: SolidLanguageType = this.children[0].type()
-		const t1: SolidLanguageType = this.children[1].type()
-		const t2: SolidLanguageType = this.children[2].type()
+		const t0: SolidLanguageType = this.children[0].type(const_fold)
+		const t1: SolidLanguageType = this.children[1].type(const_fold)
+		const t2: SolidLanguageType = this.children[2].type(const_fold)
 		return (t0.isBooleanType)
 			? (t0 instanceof SolidTypeConstant)
 				? (t0.value === SolidBoolean.FALSE) ? t2 : t1
@@ -604,8 +618,8 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	typeCheck(): void {
-		this.children[0] && this.children[0].type() // assert does not throw // COMBAK this.children[0]?.type()
+	typeCheck(opts: SolidConfig['compilerOptions']): void {
+		this.children[0] && this.children[0].typeCheck(opts) // assert does not throw // COMBAK this.children[0]?.type()
 	}
 	build(generator: Builder): InstructionNone | InstructionStatement {
 		return (!this.children.length)
@@ -623,7 +637,7 @@ export class SemanticNodeDeclaration extends SemanticNode {
 	) {
 		super(start_node, {type, unfixed}, children)
 	}
-	typeCheck(): void {
+	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		throw new Error('not yet supported.')
 		// const assignedType = this.children[1].type()
 	}
@@ -639,7 +653,7 @@ export class SemanticNodeAssignment extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	typeCheck(): void {
+	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		throw new Error('not yet supported.')
 		// const assignedType = this.children[1].type()
 	}
@@ -655,7 +669,7 @@ export class SemanticNodeAssignee extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	typeCheck(): void {
+	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		throw new Error('not yet supported.')
 	}
 	build(generator: Builder): Instruction {
@@ -670,7 +684,7 @@ export class SemanticNodeAssigned extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	typeCheck(): void {
+	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		this.type() // assert does not throw
 	}
 	build(generator: Builder): Instruction {
@@ -692,9 +706,9 @@ export class SemanticNodeGoal extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	typeCheck(): void {
+	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		this.children.forEach((child) => {
-			child.typeCheck()
+			child.typeCheck(opts)
 		})
 	}
 	build(generator: Builder): InstructionNone | InstructionModule {

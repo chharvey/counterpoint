@@ -27,6 +27,7 @@ import {NanError01} from '../../src/error/NanError.class'
 import {
 	Builder,
 	InstructionNone,
+	InstructionExpression,
 	InstructionConst,
 	InstructionUnop,
 	InstructionBinop,
@@ -107,31 +108,8 @@ describe('SemanticNode', () => {
 		})
 
 		context('SemanticNodeOperation', () => {
-			/**
-			 * Does `SemanticNodeOperation#build` produce
-			 * `CompletionStructureAssessment.new(SemanticNodeOperation#type#value)#build`?
-			 */
-			function buildOperations(tests: readonly string[]): void {
-				const nodes: readonly [string, SemanticNodeOperation][] = tests.map((src) => [src, operationFromStatementExpression(
-					statementExpressionFromSource(src)
-				)])
-				assert.deepStrictEqual(
-					nodes.map(([src,  node]) => node.build(new Builder(src, CONFIG_DEFAULT))),
-					nodes.map(([_src, node]) => {
-						const t: SolidLanguageType = node.type()
-						assert.ok(t instanceof SolidTypeConstant)
-						return new CompletionStructureAssessment(t.value).build()
-					}),
-				)
-			}
-			/**
-			 * A future compiler toggle that will enable/disable constant folding.
-			 * @todo TODO: make a copiler toggle for this in {@link SolidConfig}.
-			 */
-			const constant_folding: boolean = true
-			specify('SemanticNodeOperation[operator: NOT | EMP] ::= SemanticNodeConstant', () => {
-				constant_folding ?
-				buildOperations([
+			specify('with constant folding on.', () => {
+				const nodes: readonly [string, SemanticNodeOperation][] = [
 					`!null;`,
 					`!false;`,
 					`!true;`,
@@ -146,82 +124,10 @@ describe('SemanticNode', () => {
 					`?4.2;`,
 					`?0;`,
 					`?0.0;`,
-				])
-				:
-				assert.deepStrictEqual([
-					`!null;`,
-					`!false;`,
-					`!true;`,
-					`!42;`,
-					`!4.2;`,
-					`?null;`,
-					`?false;`,
-					`?true;`,
-					`?42;`,
-					`?4.2;`,
-				].map((src) => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation
-				).build(new Builder(src, CONFIG_DEFAULT))), [
-					new InstructionUnop(Operator.NOT, instructionConstInt(0n)),
-					new InstructionUnop(Operator.NOT, instructionConstInt(0n)),
-					new InstructionUnop(Operator.NOT, instructionConstInt(1n)),
-					new InstructionUnop(Operator.NOT, instructionConstInt(42n)),
-					new InstructionUnop(Operator.NOT, instructionConstFloat(4.2)),
-					new InstructionUnop(Operator.EMP, instructionConstInt(0n)),
-					new InstructionUnop(Operator.EMP, instructionConstInt(0n)),
-					new InstructionUnop(Operator.EMP, instructionConstInt(1n)),
-					new InstructionUnop(Operator.EMP, instructionConstInt(42n)),
-					new InstructionUnop(Operator.EMP, instructionConstFloat(4.2)),
-				])
-			})
-			specify('SemanticNodeOperation[operator: ADD | SUB | MUL] ::= SemanticNodeConstant SemanticNodeConstant', () => {
-				constant_folding ?
-				buildOperations([
 					`42 + 420;`,
 					`42 - 420;`,
 					`3.0e1 - 201.0e-1;`,
 					`3 * 2.1;`,
-				])
-				:
-				assert.deepStrictEqual([
-					`42 + 420;`,
-					`42 - 420;`,
-					`3.0e1 - 201.0e-1;`,
-					`3 * 2.1;`,
-				].map((src) => (
-					(new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeOperation
-				).build(new Builder(src, CONFIG_DEFAULT))), [
-					new InstructionBinop(
-						Operator.ADD,
-						instructionConstInt(42n),
-						instructionConstInt(420n),
-					),
-					new InstructionBinop(
-						Operator.ADD,
-						instructionConstInt(42n),
-						instructionConstInt(-420n),
-					),
-					new InstructionBinop(
-						Operator.ADD,
-						instructionConstFloat(30.0),
-						instructionConstFloat(-20.1),
-					),
-					new InstructionBinop(
-						Operator.MUL,
-						instructionConstFloat(3.0),
-						instructionConstFloat(2.1),
-					),
-				])
-				assert.throws(() => operationFromStatementExpression(
-					statementExpressionFromSource(`null + 5;`)
-				).build(new Builder(`null + 5;`, CONFIG_DEFAULT)), /Invalid operation./)
-			})
-			specify('SemanticNodeOperation[operator: DIV] ::= SemanticNodeConstant SemanticNodeConstant', () => {
-				constant_folding ?
-				buildOperations([
 					` 126 /  3;`,
 					`-126 /  3;`,
 					` 126 / -3;`,
@@ -230,39 +136,6 @@ describe('SemanticNode', () => {
 					` 200 / -3;`,
 					`-200 /  3;`,
 					`-200 / -3;`,
-				])
-				:
-				assert.deepStrictEqual([
-					' 126 /  3;',
-					'-126 /  3;',
-					' 126 / -3;',
-					'-126 / -3;',
-					' 200 /  3;',
-					' 200 / -3;',
-					'-200 /  3;',
-					'-200 / -3;',
-				].map((src) => (
-					(new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeOperation
-				).build(new Builder(src, CONFIG_DEFAULT))), [
-					[ 126n,  3n],
-					[-126n,  3n],
-					[ 126n, -3n],
-					[-126n, -3n],
-					[ 200n,  3n],
-					[ 200n, -3n],
-					[-200n,  3n],
-					[-200n, -3n],
-				].map(([a, b]) => new InstructionBinop(
-					Operator.DIV,
-					instructionConstInt(a),
-					instructionConstInt(b),
-				)))
-			})
-			specify('SemanticNodeOperation[operator: IS | ISNT | EQ | NEQ] ::= SemanticNodeConstant SemanticNodeConstant', () => {
-				constant_folding ?
-				buildOperations([
 					`42 == 420;`,
 					`42 != 420;`,
 					`4.2 == 42;`,
@@ -274,217 +147,214 @@ describe('SemanticNode', () => {
 					`false == 0.0;`,
 					`false is 0.0;`,
 					`0.0 is 0;`,
-				])
-				:
-				assert.deepStrictEqual([
-					`42 == 420;`,
-					`42 != 420;`,
-					`4.2 == 42;`,
-					`42 != 42.0;`,
-					`true is 1;`,
-					`true == 1;`,
-					`null is false;`,
-					`null == false;`,
-					`false == 0.0;`,
-				].map((src) => operationFromStatementExpression(
+					`42 && 420;`,
+					`4.2 || -420;`,
+					`null && 201.0e-1;`,
+					`true && 201.0e-1;`,
+					`false || null;`,
+					`if true  then false   else 2;`,
+					`if false then 3.0     else null;`,
+					`if true  then 2       else 3.0;`,
+					`if false then 2 + 3.0 else 1.0 * 2;`,
+					`42 ^ 2 * 420;`,
+					`2 ^ 15 + 2 ^ 14;`,
+					`-(2 ^ 14) - 2 ^ 15;`,
+					`2 * 3 + 5;`,
+					`2 * 3 + 5.0;`,
+					`-(5) ^ +(2 * 3);`,
+				].map((src) => [src, operationFromStatementExpression(
 					statementExpressionFromSource(src)
-				).build(new Builder(src, CONFIG_DEFAULT))), [
-					new InstructionBinop(
-						Operator.EQ,
-						instructionConstInt(42n),
-						instructionConstInt(420n),
-					),
-					new InstructionUnop(
-						Operator.NOT,
-						instructionConstInt(0n),
-					),
-					new InstructionBinop(
-						Operator.EQ,
-						instructionConstFloat(4.2),
-						instructionConstFloat(42.0),
-					),
-					new InstructionUnop(
-						Operator.NOT,
-						instructionConstInt(1n),
-					),
-					new InstructionBinop(
-						Operator.IS,
-						instructionConstInt(1n),
-						instructionConstInt(1n),
-					),
-					new InstructionBinop(
-						Operator.EQ,
-						instructionConstInt(1n),
-						instructionConstInt(1n),
-					),
-					new InstructionBinop(
-						Operator.IS,
-						instructionConstInt(0n),
-						instructionConstInt(0n),
-					),
-					new InstructionBinop(
-						Operator.EQ,
-						instructionConstInt(0n),
-						instructionConstInt(0n),
-					),
-					new InstructionBinop(
-						Operator.EQ,
-						instructionConstFloat(0.0),
-						instructionConstFloat(0.0),
-					),
-				])
-			})
-			specify('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
-				constant_folding ?
-				buildOperations([
-					`42 && 420;`,
-					`4.2 || -420;`,
-					`null && 201.0e-1;`,
-					`true && 201.0e-1;`,
-					`false || null;`,
-				])
-				:
-				assert.deepStrictEqual([
-					`42 && 420;`,
-					`4.2 || -420;`,
-					`null && 201.0e-1;`,
-					`true && 201.0e-1;`,
-					`false || null;`,
-				].map((src) => operationFromStatementExpression(statementExpressionFromSource(src)).build(new Builder(src, CONFIG_DEFAULT))), [
-					new InstructionBinop(
-						Operator.AND,
-						instructionConstInt(42n),
-						instructionConstInt(420n),
-					),
-					new InstructionBinop(
-						Operator.OR,
-						instructionConstFloat(4.2),
-						instructionConstFloat(-420.0),
-					),
-					new InstructionBinop(
-						Operator.AND,
-						instructionConstFloat(0.0),
-						instructionConstFloat(20.1),
-					),
-					new InstructionBinop(
-						Operator.AND,
-						instructionConstFloat(1.0),
-						instructionConstFloat(20.1),
-					),
-					new InstructionBinop(
-						Operator.OR,
-						instructionConstInt(0n),
-						instructionConstInt(0n),
-					),
-				])
-			})
-			specify('ExpressionConditional ::= "if" Expression "then" Expression "else" Expression;', () => {
-				constant_folding ?
-				buildOperations([
-					`if true  then false   else 2;`,
-					`if false then 3.0     else null;`,
-					`if true  then 2       else 3.0;`,
-					`if false then 2 + 3.0 else 1.0 * 2;`,
-				])
-				:
-				assert.deepStrictEqual([
-					`if true  then false   else 2;`,
-					`if false then 3.0     else null;`,
-					`if true  then 2       else 3.0;`,
-					`if false then 2 + 3.0 else 1.0 * 2;`,
-				].map((src) => operationFromStatementExpression(statementExpressionFromSource(src)).build(new Builder(src, CONFIG_DEFAULT))), ([
-					[new Int16(1n), new Int16(0n),    new Int16(2n)],
-					[new Int16(0n), new Float64(3.0), new Float64(0.0)],
-					[new Int16(1n), new Float64(2.0), new Float64(3.0)],
-					[new Int16(0n), new Float64(5.0), new Float64(2.0)],
-				])
-					.map((arr) => arr.map((v) => new InstructionConst(v)))
-					.map(([cond, cons, alt]) => new InstructionCond(cond, cons, alt))
+				)])
+				assert.deepStrictEqual(
+					nodes.map(([src,  node]) => node.build(new Builder(src, CONFIG_DEFAULT))),
+					nodes.map(([_src, node]) => {
+						const assess: CompletionStructureAssessment = node.assess()
+						assert.ok(!assess.isAbrupt)
+						return assess.build()
+					}),
+					'produces `CompletionStructureAssessment.new(SemanticNodeOperation#assess#value)#build`',
 				)
-			})
-			specify('compound expression.', () => {
-				const srcs: [string, SolidConfig] = [`42 ^ 2 * 420;`, CONFIG_DEFAULT]
-				constant_folding ?
-				buildOperations([
-					srcs[0],
-				])
-				:
-				assert.deepStrictEqual((
-					(new Parser(...srcs).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeOperation
-				).build(new Builder(...srcs)), new InstructionBinop(
-					Operator.MUL,
-					instructionConstInt(42n ** 2n),
-					instructionConstInt(420n),
-				))
-			})
-			specify('overflow.', () => {
-				constant_folding ?
-				buildOperations([
-					`2 ^ 15 + 2 ^ 14;`,
-					`-(2 ^ 14) - 2 ^ 15;`,
-				])
-				:
-				assert.deepStrictEqual([
-					`2 ^ 15 + 2 ^ 14;`,
-					`-(2 ^ 14) - 2 ^ 15;`,
-				].map((src) => (
-					(new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeOperation
-				).build(new Builder(src, CONFIG_DEFAULT))), [
-					[-(2n ** 15n) /* negative becuase of overflow */, 2n ** 14n],
-					[-(2n ** 14n), -(2n ** 15n)],
-				].map(([a, b]) => new InstructionBinop(
-					Operator.ADD,
-					instructionConstInt(a),
-					instructionConstInt(b),
-				)))
-			})
-			specify('compound expression.', () => {
-				constant_folding ?
-				buildOperations([
-					`2 * 3 + 5;`,
-					`2 * 3 + 5.0;`,
-				])
-				:
-				assert.deepStrictEqual([
-					`2 * 3 + 5;`,
-					`2 * 3 + 5.0;`,
-				].map((src) => (
-					(new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeOperation
-				).build(new Builder(src, CONFIG_DEFAULT))), [
-					new InstructionBinop(
-						Operator.ADD,
-						instructionConstInt(6n),
-						instructionConstInt(5n),
-					),
-					new InstructionBinop(
-						Operator.ADD,
-						instructionConstFloat(6.0),
-						instructionConstFloat(5.0),
-					),
-				])
-			})
-			specify('compound expression with grouping.', () => {
-				const srcs: [string, SolidConfig] = [`-(5) ^ +(2 * 3);`, CONFIG_DEFAULT]
-				constant_folding ?
-				buildOperations([
-					srcs[0],
-				])
-				:
-				assert.deepStrictEqual((
-					(new Parser(...srcs).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeOperation
-				).build(new Builder(...srcs)), new InstructionBinop(
-					Operator.EXP,
-					instructionConstInt(-5n),
-					instructionConstInt(2n * 3n),
-				))
+			}).timeout(5000)
+			context('with constant folding off.', () => {
+				const folding_off: SolidConfig = {
+					...CONFIG_DEFAULT,
+					compilerOptions: {
+						...CONFIG_DEFAULT.compilerOptions,
+						constantFolding: false,
+					},
+				}
+				function buildOperations(tests: ReadonlyMap<string, InstructionExpression>): void {
+					assert.deepStrictEqual(
+						[...tests.keys()].map((src) => operationFromStatementExpression(
+							statementExpressionFromSource(src, folding_off)
+						).build(new Builder(src, folding_off))),
+						[...tests.values()],
+					)
+				}
+				specify('SemanticNodeOperation[operator: NOT | EMP] ::= SemanticNodeConstant', () => {
+					buildOperations(new Map<string, InstructionUnop>([
+						[`!null;`,  new InstructionUnop(Operator.NOT, instructionConstInt(0n))],
+						[`!false;`, new InstructionUnop(Operator.NOT, instructionConstInt(0n))],
+						[`!true;`,  new InstructionUnop(Operator.NOT, instructionConstInt(1n))],
+						[`!42;`,    new InstructionUnop(Operator.NOT, instructionConstInt(42n))],
+						[`!4.2;`,   new InstructionUnop(Operator.NOT, instructionConstFloat(4.2))],
+						[`?null;`,  new InstructionUnop(Operator.EMP, instructionConstInt(0n))],
+						[`?false;`, new InstructionUnop(Operator.EMP, instructionConstInt(0n))],
+						[`?true;`,  new InstructionUnop(Operator.EMP, instructionConstInt(1n))],
+						[`?42;`,    new InstructionUnop(Operator.EMP, instructionConstInt(42n))],
+						[`?4.2;`,   new InstructionUnop(Operator.EMP, instructionConstFloat(4.2))],
+					]))
+				})
+				specify('SemanticNodeOperation[operator: NEG] ::= SemanticNodeConstant', () => {
+					buildOperations(new Map<string, InstructionUnop>([
+						[`-(4);`,   new InstructionUnop(Operator.NEG, instructionConstInt(4n))],
+						[`-(4.2);`, new InstructionUnop(Operator.NEG, instructionConstFloat(4.2))],
+					]))
+				})
+				specify('SemanticNodeOperation[operator: ADD | MUL] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+					buildOperations(new Map([
+						[`42 + 420;`, new InstructionBinop(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
+						[`3 * 2.1;`,  new InstructionBinop(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
+					]))
+					assert.throws(() => operationFromStatementExpression(
+						statementExpressionFromSource(`null + 5;`)
+					).build(new Builder(`null + 5;`, CONFIG_DEFAULT)), /Invalid operation./)
+				})
+				specify('SemanticNodeOperation[operator: DIV] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+					buildOperations(xjs.Map.mapValues(new Map([
+						[' 126 /  3;', [ 126n,  3n]],
+						['-126 /  3;', [-126n,  3n]],
+						[' 126 / -3;', [ 126n, -3n]],
+						['-126 / -3;', [-126n, -3n]],
+						[' 200 /  3;', [ 200n,  3n]],
+						[' 200 / -3;', [ 200n, -3n]],
+						['-200 /  3;', [-200n,  3n]],
+						['-200 / -3;', [-200n, -3n]],
+					]), ([a, b]) => new InstructionBinop(
+						Operator.DIV,
+						instructionConstInt(a),
+						instructionConstInt(b),
+					)))
+				})
+				specify('SemanticNodeOperation[operator: IS | EQ] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+					assert.deepStrictEqual([
+						`42 == 420;`,
+						`4.2 == 42;`,
+						`true is 1;`,
+						`true == 1;`,
+						`null is false;`,
+						`null == false;`,
+						`false == 0.0;`,
+					].map((src) => operationFromStatementExpression(
+						statementExpressionFromSource(src, folding_off)
+					).build(new Builder(src, folding_off))), [
+						new InstructionBinop(
+							Operator.EQ,
+							instructionConstInt(42n),
+							instructionConstInt(420n),
+						),
+						new InstructionBinop(
+							Operator.EQ,
+							instructionConstFloat(4.2),
+							instructionConstFloat(42.0),
+						),
+						new InstructionBinop(
+							Operator.IS,
+							instructionConstInt(1n),
+							instructionConstInt(1n),
+						),
+						new InstructionBinop(
+							Operator.EQ,
+							instructionConstInt(1n),
+							instructionConstInt(1n),
+						),
+						new InstructionBinop(
+							Operator.IS,
+							instructionConstInt(0n),
+							instructionConstInt(0n),
+						),
+						new InstructionBinop(
+							Operator.EQ,
+							instructionConstInt(0n),
+							instructionConstInt(0n),
+						),
+						new InstructionBinop(
+							Operator.EQ,
+							instructionConstFloat(0.0),
+							instructionConstFloat(0.0),
+						),
+					])
+				})
+				specify('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+					assert.deepStrictEqual([
+						`42 && 420;`,
+						`4.2 || -420;`,
+						`null && 201.0e-1;`,
+						`true && 201.0e-1;`,
+						`false || null;`,
+					].map((src) => operationFromStatementExpression(
+						statementExpressionFromSource(src, folding_off)
+					).build(new Builder(src, folding_off))), [
+						new InstructionBinop(
+							Operator.AND,
+							instructionConstInt(42n),
+							instructionConstInt(420n),
+						),
+						new InstructionBinop(
+							Operator.OR,
+							instructionConstFloat(4.2),
+							instructionConstFloat(-420.0),
+						),
+						new InstructionBinop(
+							Operator.AND,
+							instructionConstFloat(0.0),
+							instructionConstFloat(20.1),
+						),
+						new InstructionBinop(
+							Operator.AND,
+							instructionConstFloat(1.0),
+							instructionConstFloat(20.1),
+						),
+						new InstructionBinop(
+							Operator.OR,
+							instructionConstInt(0n),
+							instructionConstInt(0n),
+						),
+					])
+				})
+				specify('ExpressionConditional ::= "if" Expression "then" Expression "else" Expression;', () => {
+					buildOperations(xjs.Map.mapValues(new Map([
+						[`if true  then false   else 2;`,       [new Int16(1n), new Int16(0n),    new Int16(2n)]],
+						[`if false then 3.0     else null;`,    [new Int16(0n), new Float64(3.0), new Float64(0.0)]],
+						[`if true  then 2       else 3.0;`,     [new Int16(1n), new Float64(2.0), new Float64(3.0)]],
+					]), ([cond, cons, alt]) => new InstructionCond(
+						new InstructionConst(cond),
+						new InstructionConst(cons),
+						new InstructionConst(alt),
+					)))
+				})
+				specify('compound expression.', () => {
+					buildOperations(new Map([
+						[`42 ^ 2 * 420;`, new InstructionBinop(
+							Operator.MUL,
+							new InstructionBinop(
+								Operator.EXP,
+								instructionConstInt(42n),
+								instructionConstInt(2n),
+							),
+							instructionConstInt(420n),
+						)],
+						[`2 * 3.0 + 5;`, new InstructionBinop(
+							Operator.ADD,
+							new InstructionBinop(
+								Operator.MUL,
+								instructionConstFloat(2.0),
+								instructionConstFloat(3.0),
+							),
+							instructionConstFloat(5.0),
+						)],
+					]))
+				})
 			})
 			specify('multiple statements.', () => {
 				const srcs: [string, SolidConfig] = [`42; 420;`, CONFIG_DEFAULT]
@@ -508,6 +378,8 @@ describe('SemanticNode', () => {
 					statementExpressionFromSource(src)
 				).type()), [...tests.values()].map((result) => new SolidTypeConstant(result)))
 			}
+			context('with constant folding on.', () => {
+				context('SemanticNodeConstant', () => {
 			it('returns a constant Null type for SemanticNodeConstant with null value.', () => {
 				assert.deepStrictEqual(((new Parser(`null;`, CONFIG_DEFAULT).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
@@ -560,6 +432,60 @@ describe('SemanticNode', () => {
 					assert.strictEqual(node.type(), SolidString)
 				})
 			})
+				})
+				context('SemanticNodeOperationBinaryArithmetic', () => {
+			it('returns a constant Integer type for any operation of integers.', () => {
+				assert.deepStrictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Int16(7n * 3n * 2n)))
+			})
+			it('returns a constant Float type for any operation of mix of integers and floats.', () => {
+				assert.deepStrictEqual(((new Parser(`3.0 * 2.7;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(3.0 * 2.7)))
+				assert.deepStrictEqual(((new Parser(`7 * 3.0 * 2;`, CONFIG_DEFAULT).parse().decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(7 * 3.0 * 2)))
+			})
+				})
+			})
+			context('with constant folding off.', () => {
+				const folding_off: SolidConfig = {
+					...CONFIG_DEFAULT,
+					compilerOptions: {
+						...CONFIG_DEFAULT.compilerOptions,
+						constantFolding: false,
+					},
+				}
+				context('SemanticNodeOperationBinaryArithmetic', () => {
+					it('returns Integer for integer arithmetic.', () => {
+						const node: SemanticNodeOperation = operationFromStatementExpression(
+							statementExpressionFromSource(`(7 + 3) * 2;`, folding_off)
+						)
+						assert.deepStrictEqual(
+							[node.type(), node.children.length],
+							[Int16,       2],
+						)
+						assert.deepStrictEqual(
+							[node.children[0].type(), node.children[1].type()],
+							[Int16,                   Int16],
+						)
+					})
+					it('returns Float for float arithmetic.', () => {
+						const node: SemanticNodeOperation = operationFromStatementExpression(
+							statementExpressionFromSource(`7 * 3.0 ^ 2;`, folding_off)
+						)
+						assert.deepStrictEqual(
+							[node.type(false), node.children.length],
+							[Float64,     2],
+						)
+						assert.deepStrictEqual(
+							[node.children[0].type(), node.children[1].type()],
+							[Int16,                   Float64],
+						)
+					})
+				})
+			})
 			it('returns a constant Boolean type for boolean unary operation of anything.', () => {
 				typeOperations(xjs.Map.mapValues(new Map([
 					[`!false;`,  true],
@@ -573,19 +499,6 @@ describe('SemanticNode', () => {
 					[`?42;`,     false],
 					[`?4.2e+1;`, false],
 				]), (v) => SolidBoolean.fromBoolean(v)))
-			})
-			it('returns a constant Integer type for any operation of integers.', () => {
-				assert.deepStrictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Int16(7n * 3n * 2n)))
-			})
-			it('returns a constant Float type for any operation of mix of integers and floats.', () => {
-				assert.deepStrictEqual(((new Parser(`3.0 * 2.7;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(3.0 * 2.7)))
-				assert.deepStrictEqual(((new Parser(`7 * 3.0 * 2;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(7 * 3.0 * 2)))
 			})
 			it('computes type for equality and comparison.', () => {
 				typeOperations(xjs.Map.mapValues(new Map([
@@ -722,6 +635,17 @@ describe('SemanticNode', () => {
 					[`-(2 ^ 14) - 2 ^ 15;`, 2 ** 14],
 					[`-(5) ^ +(2 * 3);`,    (-(5)) ** +(2 * 3)],
 				]), (val) => new Int16(BigInt(val))))
+			})
+			it('overflows integers properly.', () => {
+				assert.deepStrictEqual([
+					`2 ^ 15 + 2 ^ 14;`,
+					`-(2 ^ 14) - 2 ^ 15;`,
+				].map((src) => operationFromStatementExpression(
+					statementExpressionFromSource(src)
+				).assess()), [
+					new CompletionStructureAssessment(new Int16(-(2n ** 14n))),
+					new CompletionStructureAssessment(new Int16(2n ** 14n)),
+				])
 			})
 			it('computes the value of a float operation of constants.', () => {
 				assessOperations(new Map<string, SolidObject>([

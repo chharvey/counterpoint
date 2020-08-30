@@ -40,8 +40,11 @@ export default class Builder {
 	 * @param source - the entire source text
 	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor (source: string, config: SolidConfig) {
-		this._goal = new Parser(source, config).parse().decorate()
+	constructor (
+		source: string,
+		readonly config: SolidConfig,
+	) {
+		this._goal = new Parser(source, this.config).parse().decorate()
 	}
 
 	/**

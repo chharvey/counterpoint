@@ -15,8 +15,8 @@ type Mutable<T> = { // NB https://github.com/microsoft/TypeScript/issues/24509
 }
 
 type PartialSolidConfig = Partial<{
-	readonly features        : Partial<SolidConfig[ 'features'        ]>,
-	readonly compilerOptions : Partial<SolidConfig[ 'compilerOptions' ]>,
+	readonly languageFeatures: Partial<SolidConfig['languageFeatures']>,
+	readonly compilerOptions:  Partial<SolidConfig['compilerOptions']>,
 }>
 
 export enum Command {
@@ -40,7 +40,7 @@ type CustomArgsType = {
 	/** Display configuration options. */
 	config: boolean;
 
-	// Feature Toggles
+	// Language Feature Toggles
 	comments          : null | boolean,
 	integerRadices    : null | boolean,
 	numericSeparators : null | boolean,
@@ -97,13 +97,16 @@ export default class CLI {
 
 	/** Text to print on --config. */
 	static readonly CONFIGTEXT: string = `
-		The following options set individual feature toggles and compiler options.
+		The following options set individual language feature toggles and compiler options.
 		These options will override those in the configuration file provided by \`--project\`.
 
-		Feature Toggles:
+		Language Feature Toggles:
 		--[no-]comments                (on by default)
 		--[no-]integerRadices
 		--[no-]numericSeparators
+
+		Compiler Options:
+		--[no-]constantFolding         (on by default)
 	`.trim().replace(/\n\t\t/g, '\n')
 
 	/** Options argument to `minimist` function. */
@@ -113,11 +116,12 @@ export default class CLI {
 			'help',
 			'version',
 			'config',
-			// Feature Toggles
+			// Language Feature Toggles
 			'comments',
 			'integerRadices',
 			'numericSeparators',
 			// Compiler Options
+			'constantFolding',
 		],
 		string: [
 			// CLI Options
@@ -135,11 +139,12 @@ export default class CLI {
 			help    : false,
 			version : false,
 			config  : false,
-			// Feature Toggles
+			// Language Feature Toggles
 			comments          : null,
 			integerRadices    : null,
 			numericSeparators : null,
 			// Compiler Options
+			constantFolding: null,
 		},
 		unknown(arg) {
 			if (arg[0] === '-') { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
@@ -200,9 +205,9 @@ export default class CLI {
 		const returned: Mutable<SolidConfig> = {
 			...CONFIG_DEFAULT,
 			...await config,
-			features: {
-				...CONFIG_DEFAULT.features,
-				...(await config).features,
+			languageFeatures: {
+				...CONFIG_DEFAULT.languageFeatures,
+				...(await config).languageFeatures,
 			},
 			compilerOptions: {
 				...CONFIG_DEFAULT.compilerOptions,
@@ -210,9 +215,10 @@ export default class CLI {
 			},
 		}
 
-		if (this.argv.comments          !== null) returned.features.comments          = this.argv.comments
-		if (this.argv.integerRadices    !== null) returned.features.integerRadices    = this.argv.integerRadices
-		if (this.argv.numericSeparators !== null) returned.features.numericSeparators = this.argv.numericSeparators
+		if (this.argv.comments          !== null) returned.languageFeatures.comments          = this.argv.comments
+		if (this.argv.integerRadices    !== null) returned.languageFeatures.integerRadices    = this.argv.integerRadices
+		if (this.argv.numericSeparators !== null) returned.languageFeatures.numericSeparators = this.argv.numericSeparators
+		if (this.argv.constantFolding   !== null) returned.compilerOptions.constantFolding    = this.argv.constantFolding
 
 		return returned
 	}
