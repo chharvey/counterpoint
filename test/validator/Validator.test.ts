@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 
-import {CONFIG_DEFAULT} from '../../src/SolidConfig'
+import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Validator from '../../src/validator/Validator.class'
 
 
@@ -18,7 +18,21 @@ describe('Validator', () => {
 				})
 			})
 			it('throws for invalid type operations.', () => {
-				assert.throws(() => new Validator(`null + 5;`, CONFIG_DEFAULT).validate(), /Invalid operation./)
+				assert.throws(() => new Validator(`null + 5;`,    CONFIG_DEFAULT).validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
+				assert.throws(() => new Validator(`7.0 <= null;`, CONFIG_DEFAULT).validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
+			})
+			context('with int coercion off.', () => {
+				const coercion_off: SolidConfig = {
+					...CONFIG_DEFAULT,
+					compilerOptions: {
+						...CONFIG_DEFAULT.compilerOptions,
+						intCoercion: false,
+					},
+				}
+				it('throws if operands have different numeric types.', () => {
+					assert.throws(() => new Validator(`7.0 + 3;`,  coercion_off).validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
+					assert.throws(() => new Validator(`7.0 <= 3;`, coercion_off).validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
+				})
 			})
 		})
 	})

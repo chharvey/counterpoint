@@ -382,7 +382,47 @@ describe('SemanticNode', () => {
 					statementExpressionFromSource(src)
 				).type()), [...tests.values()].map((result) => new SolidTypeConstant(result)))
 			}
-			context('with constant folding on.', () => {
+			context('with int coercion off.', () => {
+				const coercion_off: SolidConfig = {
+					...CONFIG_DEFAULT,
+					compilerOptions: {
+						...CONFIG_DEFAULT.compilerOptions,
+						intCoercion: false,
+					},
+				}
+				describe('SemanticNodeOperationBinaryArithmetic', () => {
+					it('returns `Integer` if both operands are ints.', () => {
+						assert.deepStrictEqual(operationFromStatementExpression(
+							statementExpressionFromSource(`7 * 3;`, coercion_off)
+						).type(false, false), Int16)
+					})
+					it('returns `Float` if both operands are floats.', () => {
+						assert.deepStrictEqual(operationFromStatementExpression(
+							statementExpressionFromSource(`7.0 - 3.0;`, coercion_off)
+						).type(false, false), Float64)
+					})
+				})
+				describe('SemanticNodeOperationBinaryComparative', () => {
+					it('returns `Boolean` if both operands are of the same numeric type.', () => {
+						assert.deepStrictEqual(operationFromStatementExpression(
+							statementExpressionFromSource(`7 < 3;`, coercion_off)
+						).type(false, false), SolidBoolean)
+						assert.deepStrictEqual(operationFromStatementExpression(
+							statementExpressionFromSource(`7.0 >= 3.0;`, coercion_off)
+						).type(false, false), SolidBoolean)
+					})
+					it('throws TypeError if operands have different types.', () => {
+					})
+				})
+				describe('SemanticNodeOperationBinaryEquality[operator=EQ]', () => {
+					it('returns `false` if operands are of different numeric types.', () => {
+						assert.deepStrictEqual(operationFromStatementExpression(
+							statementExpressionFromSource(`7 == 7.0;`, coercion_off)
+						).type(false, false), new SolidTypeConstant(SolidBoolean.FALSE))
+					})
+				})
+			})
+			context('with constant folding on, with int coersion on.', () => {
 				context('SemanticNodeConstant', () => {
 			it('returns a constant Null type for SemanticNodeConstant with null value.', () => {
 				assert.deepStrictEqual(((new Parser(`null;`, CONFIG_DEFAULT).parse().decorate()
@@ -453,7 +493,7 @@ describe('SemanticNode', () => {
 			})
 				})
 			})
-			context('with constant folding off.', () => {
+			context('with constant folding off, with int coersion on.', () => {
 				const folding_off: SolidConfig = {
 					...CONFIG_DEFAULT,
 					compilerOptions: {
@@ -488,6 +528,14 @@ describe('SemanticNode', () => {
 							[Int16,                        Float64],
 						)
 					})
+				})
+				it('allows coercing of ints to floats if there are any floats.', () => {
+					assert.deepStrictEqual(operationFromStatementExpression(
+						statementExpressionFromSource(`7.0 > 3;`)
+					).type(false, true), SolidBoolean)
+					assert.deepStrictEqual(operationFromStatementExpression(
+						statementExpressionFromSource(`7 == 7.0;`)
+					).type(false, true), SolidBoolean)
 				})
 			})
 			it('returns a constant Boolean type for boolean unary operation of anything.', () => {
