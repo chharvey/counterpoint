@@ -3,7 +3,7 @@ import type {
 	Filebound,
 	Punctuator,
 	Keyword,
-} from '../lexer'
+} from '../lexer/'
 import type Rule from './Rule.class'
 import Configuration from './Configuration.class'
 import Terminal from './Terminal.class'

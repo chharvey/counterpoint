@@ -20,7 +20,7 @@ import {
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from '../lexer'
+} from '../lexer/'
 import {
 	SemanticNode,
 	SemanticNodeExpression,

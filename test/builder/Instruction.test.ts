@@ -6,7 +6,7 @@ import Operator from '../../src/enum/Operator.enum'
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import {
 	Parser,
-} from '../../src/parser'
+} from '../../src/parser/'
 import {
 	Builder,
 	InstructionNone,

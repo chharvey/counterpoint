@@ -50,10 +50,10 @@ import {
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from '../lexer'
+} from '../lexer/'
 import type {
 	ParseNode,
-} from '../parser'
+} from '../parser/'
 
 
 

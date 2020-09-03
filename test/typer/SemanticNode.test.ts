@@ -6,7 +6,7 @@ import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {
 	Parser,
-} from '../../src/parser'
+} from '../../src/parser/'
 import {
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,

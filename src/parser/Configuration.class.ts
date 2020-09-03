@@ -3,7 +3,7 @@ import * as xjs from 'extrajs'
 import Util from '../class/Util.class'
 import type {
 	Token,
-} from '../lexer'
+} from '../lexer/'
 import type {
 	GrammarSymbol,
 	GrammarTerminal,
