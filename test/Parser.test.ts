@@ -595,6 +595,26 @@ describe('Parser', () => {
 					['2',         Punctuator.LT, '-3'],
 				)
 			})
+			it('allows chaining of `<` and `>`.', () => {
+				const expression_compare: ParseNodeExpressionBinary = comparativeExpressionFromEqualityExpression(
+					equalityExpressionFromConjunctiveExpression(
+						conjunctiveExpressionFromDisjunctiveExpression(
+							disjunctiveExpressionFromExpression(
+								expressionFromStatement(
+									statementFromSource(`2 < 3 > 4;`)
+								)
+							)
+						)
+					)
+				)
+				assert_arrayLength(expression_compare.children, 3, 'comparative expression should have 3 children')
+				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary] = expression_compare.children
+				assert.ok(left instanceof ParseNodeExpressionBinary)
+				assert.deepStrictEqual(
+					[left.source, op.source,     right.source],
+					['2 < 3',     Punctuator.GT, '4'],
+				)
+			})
 		})
 
 		context('ExpressionEquality ::= ExpressionEquality ("is" | "isnt" | "==" | "!=") ExpressionComparative', () => {
