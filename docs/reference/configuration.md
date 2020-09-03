@@ -90,3 +90,18 @@ it will only produce assembly code for that output.
 
 With this disabled, compilation will be faster,
 but all computations and short-circuiting will take place at runtime.
+
+#### `intCoercion`
+```
+@version v0.2.0
+@type    boolean
+@default true
+```
+Allows mixing integer and float operands in arithmetic expressions.
+
+If enabled, allows expressions such as `2 + 3.0` where integer and float types may be mixed.
+Before the computation is made, the integer operands are coerced into floats (e.g. becoming `2.0 + 3.0`).
+If the value is known, the coercion is made at compile-time. If, however, the value is unknown
+(e.g. `x + 3.0` where `x` is an integer), the coercion is made at runtime.
+
+If disabled, mixing different numeric types will result in a type error.

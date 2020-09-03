@@ -16,7 +16,7 @@ export default abstract class SolidNumber<T = unknown> extends SolidObject {
 	}
 
 	/**
-	 * Type-coerse this number into a float.
+	 * Type-coerce this number into a float.
 	 * @returns the equivalent floating-point value
 	 */
 	abstract toFloat(): Float64;

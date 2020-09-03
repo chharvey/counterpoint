@@ -38,7 +38,10 @@ export default class Parser {
 	 * @param source - the entire source text
 	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor (source: string, readonly config: SolidConfig) {
+	constructor (
+		source: string,
+		private readonly config: SolidConfig,
+	) {
 		this.grammar = new Grammar()
 		this.screener = new Screener(source, this.config).generate()
 		this.iterator_result_token = this.screener.next()
