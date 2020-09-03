@@ -79,6 +79,9 @@ describe('Instruction', () => {
 					values.map((x) => `(f64.const ${ x })`),
 				)
 			})
+			it('prints Float64 negative zero correctly.', () => {
+				assert.strictEqual(instructionConstFloat(-0.0).toString(), `(f64.const -0.0)`)
+			})
 		})
 
 		context('InstructionUnop', () => {

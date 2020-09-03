@@ -98,7 +98,7 @@ export class InstructionConst extends InstructionExpression {
 	 * @return `'({i32|f64}.const ‹value›)'`
 	 */
 	toString(): string {
-		return `(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ this.value })`
+		return `(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ (this.value.identical(new Float64(-0.0))) ? '-0.0' : this.value })`
 	}
 	get isFloat(): boolean {
 		return this.value instanceof Float64
