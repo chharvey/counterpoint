@@ -36,6 +36,12 @@ type SolidConfig = {
 		 * @default true
 		 */
 		readonly constantFolding: boolean,
+		/**
+		 * Coerce integers into floats if mixed with floats in arithmetic expressions.
+		 * @version v0.2.0
+		 * @default true
+		 */
+		readonly intCoercion: boolean,
 	},
 }
 export default SolidConfig // NB https://github.com/microsoft/TypeScript/issues/3792#issuecomment-303526468
