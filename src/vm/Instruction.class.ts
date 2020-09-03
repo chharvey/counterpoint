@@ -182,6 +182,7 @@ export class InstructionUnop extends InstructionExpression {
  * Perform a binary operation on the stack.
  */
 export class InstructionBinop extends InstructionExpression {
+	private readonly floatarg: boolean = this.arg0.isFloat || this.arg1.isFloat
 	/**
 	 * @param op a punctuator representing the operation to perform
 	 * @param arg0 the first operand
@@ -193,7 +194,7 @@ export class InstructionBinop extends InstructionExpression {
 		private readonly arg1: InstructionExpression,
 	) {
 		super()
-		if (this.isFloat && (!this.arg0.isFloat || !this.arg1.isFloat)) {
+		if (this.floatarg && (!this.arg0.isFloat || !this.arg1.isFloat)) {
 			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`)
 		}
 	}
@@ -213,21 +214,28 @@ export class InstructionBinop extends InstructionExpression {
 			}`
 		}
 		return `(${ new Map<Operator, string>([
-			[Operator.EXP, (!this.isFloat) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
-			[Operator.MUL, (!this.isFloat) ? `i32.mul`   : `f64.mul`],
-			[Operator.DIV, (!this.isFloat) ? `i32.div_s` : `f64.div`],
-			[Operator.ADD, (!this.isFloat) ? `i32.add`   : `f64.add`],
-			[Operator.SUB, (!this.isFloat) ? `i32.sub`   : `f64.sub`],
-			[Operator.LT,  (!this.isFloat) ? `i32.lt_s`  : `f64.lt`],
-			[Operator.GT,  (!this.isFloat) ? `i32.gt_s`  : `f64.gt`],
-			[Operator.LE,  (!this.isFloat) ? `i32.le_s`  : `f64.le`],
-			[Operator.GE,  (!this.isFloat) ? `i32.ge_s`  : `f64.ge`],
-			[Operator.IS,  (!this.isFloat) ? `i32.eq`    : `call $fis`],
-			[Operator.EQ,  (!this.isFloat) ? `i32.eq`    : `f64.eq`],
+			[Operator.EXP, (!this.floatarg) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
+			[Operator.MUL, (!this.floatarg) ? `i32.mul`   : `f64.mul`],
+			[Operator.DIV, (!this.floatarg) ? `i32.div_s` : `f64.div`],
+			[Operator.ADD, (!this.floatarg) ? `i32.add`   : `f64.add`],
+			[Operator.SUB, (!this.floatarg) ? `i32.sub`   : `f64.sub`],
+			[Operator.LT,  (!this.floatarg) ? `i32.lt_s`  : `f64.lt`],
+			[Operator.GT,  (!this.floatarg) ? `i32.gt_s`  : `f64.gt`],
+			[Operator.LE,  (!this.floatarg) ? `i32.le_s`  : `f64.le`],
+			[Operator.GE,  (!this.floatarg) ? `i32.ge_s`  : `f64.ge`],
+			[Operator.IS,  (!this.floatarg) ? `i32.eq`    : `call $fis`],
+			[Operator.EQ,  (!this.floatarg) ? `i32.eq`    : `f64.eq`],
 		]).get(this.op)! } ${ this.arg0 } ${ this.arg1 })`
 	}
 	get isFloat(): boolean {
-		return this.arg0.isFloat || this.arg1.isFloat
+		return ([
+			Operator.LT,
+			Operator.GT,
+			Operator.LE,
+			Operator.GE,
+			Operator.IS,
+			Operator.EQ,
+		].includes(this.op)) ? false : this.floatarg
 	}
 }
 /**
