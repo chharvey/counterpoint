@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
-import Parser from '../src/class/Parser.class'
+import Validator from '../src/validator/Validator.class'
 import {
 	assert_arrayLength,
 } from './assert-helpers'
@@ -29,7 +29,7 @@ export function operationFromStatementExpression(statement: SemanticNodeStatemen
 	return expression
 }
 export function statementExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeStatementExpression {
-	const goal: SemanticNodeGoal = new Parser(src, config).parse().decorate()
+	const goal: SemanticNodeGoal = new Validator(src, config).validate()
 	assert_arrayLength(goal.children, 1, 'semantic goal should have 1 child')
 	const statement: SemanticStatementType = goal.children[0] as SemanticStatementType
 	assert.ok(statement instanceof SemanticNodeStatementExpression)

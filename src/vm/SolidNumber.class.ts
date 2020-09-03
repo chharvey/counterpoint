@@ -8,7 +8,15 @@ import type Float64 from './Float64.class'
  */
 export default abstract class SolidNumber<T = unknown> extends SolidObject {
 	/**
-	 * Type-coerse this number into a float.
+	 * @override
+	 * @final
+	 */
+	static get isNumericType(): boolean {
+		return true
+	}
+
+	/**
+	 * Type-coerce this number into a float.
 	 * @returns the equivalent floating-point value
 	 */
 	abstract toFloat(): Float64;

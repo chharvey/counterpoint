@@ -11,7 +11,8 @@ TODO
 ## Configuration Options
 
 
-### Features
+### Language Features
+Language features are toggleable aspects of the Solid Programming Language.
 
 #### `comments`
 ```
@@ -66,3 +67,41 @@ With this disabled, number tokens cannot contain the numeric separator character
 
 
 ### Compiler Options
+Compiler options control how source code is compiled into assembly code.
+
+#### `constantFolding`
+```
+@version v0.1.0
+@type    boolean
+@default true
+```
+Computes constant expressions at compile-time.
+
+If enabled, expressions with values known at compile-time will be computed and simplified in the ouptut.
+For example, the expression `2 * (3 + 5)` is computable and will be reduced to `16` during compilation.
+
+Constant folding encompasses short-circuited expressions,
+and in this context is sometimes called “dead code elimination”.
+E.g., `true || x` reduces to `true` and `false || x` reduces to `x`,
+even though the value of `x` is not known at compile-time.
+Similar reductions are made to conditional expressions.
+If the compiler can determine the outcome of an expression based on a condition,
+it will only produce assembly code for that output.
+
+With this disabled, compilation will be faster,
+but all computations and short-circuiting will take place at runtime.
+
+#### `intCoercion`
+```
+@version v0.2.0
+@type    boolean
+@default true
+```
+Allows mixing integer and float operands in arithmetic expressions.
+
+If enabled, allows expressions such as `2 + 3.0` where integer and float types may be mixed.
+Before the computation is made, the integer operands are coerced into floats (e.g. becoming `2.0 + 3.0`).
+If the value is known, the coercion is made at compile-time. If, however, the value is unknown
+(e.g. `x + 3.0` where `x` is an integer), the coercion is made at runtime.
+
+If disabled, mixing different numeric types will result in a type error.

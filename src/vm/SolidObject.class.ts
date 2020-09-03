@@ -1,3 +1,4 @@
+import SolidLanguageType from './SolidLanguageType.class'
 import type SolidNull from './SolidNull.class'
 import type SolidBoolean from './SolidBoolean.class'
 
@@ -12,6 +13,25 @@ import type SolidBoolean from './SolidBoolean.class'
  * - Float64
  */
 export default class SolidObject {
+	/** @implements SolidLanguageType */
+	static get properties(): ReadonlyMap<string, SolidLanguageType> {
+		return new Map([
+			['identical', SolidObject /* SolidFunction */],
+			['equal',     SolidObject /* SolidFunction */],
+		])
+	}
+	/** @implements SolidLanguageType */
+	static isBooleanType: SolidLanguageType['isBooleanType'] = SolidLanguageType.prototype.isBooleanType
+	/** @implements SolidLanguageType */
+	static isNumericType: SolidLanguageType['isNumericType'] = SolidLanguageType.prototype.isNumericType
+	/** @implements SolidLanguageType */
+	static isFloatType: SolidLanguageType['isFloatType'] = SolidLanguageType.prototype.isFloatType
+	/** @implements SolidLanguageType */
+	static intersect: SolidLanguageType['intersect'] = SolidLanguageType.prototype.intersect
+	/** @implements SolidLanguageType */
+	static union: SolidLanguageType['union'] = SolidLanguageType.prototype.union
+
+
 	/**
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value

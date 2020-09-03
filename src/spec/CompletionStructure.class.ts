@@ -9,7 +9,7 @@ import {
 
 
 
-enum CompletionType {
+export enum CompletionType {
 	NORMAL,
 	CONTINUE,
 	BREAK,
@@ -69,10 +69,13 @@ export default class CompletionStructure {
 export class CompletionStructureAssessment extends CompletionStructure {
 	/**
 	 * Give directions to the runtime code generator.
-	 * @param to_float Should the value be type-coersed into a floating-point number?
+	 * @param to_float Should the value be type-coerced into a floating-point number?
 	 * @return the directions to print
 	 */
 	build(to_float: boolean = false): InstructionConst {
+		if (this.isAbrupt) {
+			throw new Error('Cannot build an abrupt completion structure.')
+		}
 		const value: SolidNumber =
 			(this.value instanceof SolidNull)    ? Int16.ZERO :
 			(this.value instanceof SolidBoolean) ? (this.value.value) ? Int16.UNIT : Int16.ZERO :
