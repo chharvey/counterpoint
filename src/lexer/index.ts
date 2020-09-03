@@ -23,5 +23,4 @@ export {
 	TokenTemplate,
 	TokenCommentLine,
 	TokenCommentMulti,
-	TokenCommentBlock,
 } from './Token.class'

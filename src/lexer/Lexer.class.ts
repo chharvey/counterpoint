@@ -16,7 +16,6 @@ import Token, {
 	TokenTemplate,
 	TokenCommentLine,
 	TokenCommentMulti,
-	TokenCommentBlock,
 } from './Token.class'
 
 import {
@@ -42,8 +41,6 @@ export default class Lexer {
 	private readonly scanner: Generator<Char>;
 	/** The result of the scanner iterator. */
 	private iterator_result_char: IteratorResult<Char, void>;
-	/** Did this Lexer just pass a token that contains `\n`? */
-	private state_newline: boolean = false
 	/** The current character. */
 	private _c0: Char;
 	/** The lookahead(1) character. */
@@ -190,21 +187,16 @@ export default class Lexer {
 				/* we found a template literal middle or tail */
 				token = new TokenTemplate(this, TokenTemplate.DELIM_INTERP_END)
 
-			} else if (this.config.languageFeatures.comments && Char.eq(TokenCommentLine.DELIM, this._c0)) {
-				/* we found either a line comment or a block comment */
-				if (this.state_newline && Char.eq(`${TokenCommentBlock.DELIM_START}\n`, this._c0, this._c1, this._c2, this._c3)) {
-					token = new TokenCommentBlock(this)
-				} else {
-					token = new TokenCommentLine(this)
-				}
 			} else if (this.config.languageFeatures.comments && Char.eq(TokenCommentMulti.DELIM_START, this._c0, this._c1)) {
 				/* we found a multiline comment */
 				token = new TokenCommentMulti(this)
+			} else if (this.config.languageFeatures.comments && Char.eq(TokenCommentLine.DELIM_START, this._c0)) {
+				/* we found a single-line comment */
+				token = new TokenCommentLine(this)
 
 			} else {
 				throw new LexError01(this._c0)
 			}
-			this.state_newline = token instanceof TokenWhitespace && [...token.source].includes('\n')
 			yield token
 		}
 	}

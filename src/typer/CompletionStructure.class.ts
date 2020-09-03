@@ -69,7 +69,7 @@ export default class CompletionStructure {
 export class CompletionStructureAssessment extends CompletionStructure {
 	/**
 	 * Give directions to the runtime code generator.
-	 * @param to_float Should the value be type-coersed into a floating-point number?
+	 * @param to_float Should the value be type-coerced into a floating-point number?
 	 * @return the directions to print
 	 */
 	build(to_float: boolean = false): InstructionConst {

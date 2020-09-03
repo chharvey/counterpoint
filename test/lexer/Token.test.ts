@@ -266,27 +266,13 @@ describe('Token', () => {
 		})
 		specify('TokenCommentMulti', () => {
 			assert.strictEqual([...new Lexer(Util.dedent(`
-				{% multiline
-				that has a {% nestable nested %} multiline
-				comment %}
+				%% multiline
+				that has a
+				comment %%
 			`), CONFIG_DEFAULT).generate()][2].serialize(), Util.dedent(`
-				<COMMENT line="1" col="1">{% multiline
-				that has a {% nestable nested %} multiline
-				comment %}</COMMENT>
-			`).trim())
-		})
-		specify('TokenCommentBlock', () => {
-			assert.strictEqual([...new Lexer(Util.dedent(`
-				%%%
-				these quotes do not end the doc comment%%%
-				%%%nor do these
-				%%%
-				;
-			`), CONFIG_DEFAULT).generate()][2].serialize(), Util.dedent(`
-				<COMMENT line="1" col="1">%%%
-				these quotes do not end the doc comment%%%
-				%%%nor do these
-				%%%</COMMENT>
+				<COMMENT line="1" col="1">%% multiline
+				that has a
+				comment %%</COMMENT>
 			`).trim())
 		})
 	})
