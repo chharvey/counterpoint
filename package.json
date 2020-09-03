@@ -13,10 +13,11 @@
     "solid-v": "solid -v",
     "solid:c": "solid c ./sample/test-v0.2.solid",
     "solid:c-o": "solid c ./sample/test-v0.2.solid -o ./sample/testout.wasm",
+    "solid:c-p": "solid c ./sample/test-v0.2.solid -p ./sample/solid-config.json",
     "solid:d": "solid d ./sample/test-v0.2.solid",
     "solid:d-o": "solid d ./sample/test-v0.2.solid -o ./sample/testout.wat",
+    "solid:d-p": "solid d ./sample/test-v0.2.solid -p ./sample/solid-config.json",
     "solid:r": "solid r ./sample/test-v0.2.wasm",
-    "solid:c-p": "solid c ./sample/test-v0.2.solid -p ./sample/solid-config.json",
     "build": "rm -rf ./build/ && gulp build",
     "test": "gulp test"
   },
