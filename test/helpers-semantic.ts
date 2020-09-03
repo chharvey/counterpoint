@@ -1,18 +1,18 @@
 import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
-import Validator from '../src/validator/Validator.class'
 import {
 	assert_arrayLength,
 } from './assert-helpers'
 import {
+	Validator,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeOperation,
 	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
-} from '../src/typer/'
+} from '../src/validator/'
 
 
 

@@ -2,7 +2,7 @@ import type SolidConfig from '../SolidConfig'
 import {Parser} from '../parser/'
 import type {
 	SemanticNodeGoal,
-} from '../typer/'
+} from './SemanticNode.class'
 
 
 

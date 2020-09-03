@@ -40,7 +40,7 @@ import {
 	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
-} from '../typer/'
+} from '../validator/'
 import type Rule from './Rule.class'
 import {
 	ProductionPrimitiveLiteral,

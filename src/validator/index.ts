@@ -1,3 +1,4 @@
+export {default as Validator}    from './Validator.class'
 export {default as SemanticNode} from './SemanticNode.class'
 
 export {

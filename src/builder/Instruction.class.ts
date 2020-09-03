@@ -5,7 +5,7 @@ import Operator, {
 import {
 	SolidNumber,
 	Float64,
-} from '../typer'
+} from '../validator/'
 
 
 

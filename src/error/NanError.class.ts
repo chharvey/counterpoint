@@ -1,6 +1,6 @@
 import type {
 	SemanticNode,
-} from '../typer/'
+} from '../validator/'
 import SolidError from './SolidError.class'
 
 

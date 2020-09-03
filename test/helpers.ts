@@ -1,7 +1,7 @@
 import {
 	Int16,
 	Float64,
-} from '../src/typer/'
+} from '../src/validator/'
 import {
 	InstructionConst,
 } from '../src/builder/'

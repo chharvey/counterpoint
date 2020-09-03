@@ -20,7 +20,7 @@ import {
 	SolidNull,
 	SolidBoolean,
 	Int16,
-} from '../../src/typer/'
+} from '../../src/validator/'
 
 import {
 	assert_arrayLength,

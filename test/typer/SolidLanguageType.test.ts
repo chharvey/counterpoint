@@ -7,7 +7,7 @@ import {
 	SolidBoolean,
 	SolidNumber,
 	SolidString,
-} from '../../src/typer/'
+} from '../../src/validator/'
 
 
 

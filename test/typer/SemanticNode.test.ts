@@ -21,7 +21,7 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-} from '../../src/typer/'
+} from '../../src/validator/'
 import {NanError01} from '../../src/error/NanError.class'
 import {
 	Builder,

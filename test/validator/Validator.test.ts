@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
-import Validator from '../../src/validator/Validator.class'
+import {Validator} from '../../src/validator/'
 
 
 
