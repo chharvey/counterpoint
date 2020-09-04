@@ -127,12 +127,10 @@ Sequence<Instruction> BuildExpression(SemanticOperation[operator: COND] expr) :=
 	3. *Let* `instrs1` be *UnwrapAffirm:* `Build(expr.children.1)`.
 	4. *Let* `instrs2` be *UnwrapAffirm:* `Build(expr.children.2)`.
 	5. *Return:* [
-		...instrs0,
-		"IF",
 		...instrs1,
-		"ELSE",
 		...instrs2,
-		"END",
+		...instrs0,
+		"SELECT",
 	].
 ;
 

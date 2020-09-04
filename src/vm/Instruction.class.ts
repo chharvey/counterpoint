@@ -243,9 +243,9 @@ export class InstructionBinop extends InstructionExpression {
  */
 export class InstructionCond extends InstructionExpression {
 	/**
-	 * @param arg0 the first operand
-	 * @param arg1 the second operand
-	 * @param arg2 the third operand
+	 * @param arg0 the condition
+	 * @param arg1 the consequent
+	 * @param arg2 the alterantive
 	 */
 	constructor (
 		private readonly arg0: InstructionExpression,
@@ -258,10 +258,10 @@ export class InstructionCond extends InstructionExpression {
 		}
 	}
 	/**
-	 * @return `'(if (result {i32|f64}) ‹arg0› (then ‹arg1›) (else ‹arg2›))'`
+	 * @return `'(select ‹arg1› ‹arg2› ‹arg0›)'`
 	 */
 	toString(): string {
-		return `(if (result ${ (!this.isFloat) ? `i32` : `f64` }) ${ this.arg0 } (then ${ this.arg1 }) (else ${ this.arg2 }))`
+		return `(select ${ this.arg1 } ${ this.arg2 } ${ this.arg0 })`
 	}
 	get isFloat(): boolean {
 		return this.arg1.isFloat || this.arg2.isFloat
