@@ -204,8 +204,8 @@ export class InstructionBinop extends InstructionExpression {
 	toString(): string {
 		if ([Operator.AND, Operator.OR].includes(this.op)) {
 			const varname: string = `$operand0`
-			const condition: InstructionExpression = new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, this.arg0)))
-			const left:      InstructionExpression = new InstructionGet(varname, this.arg0.isFloat)
+			const condition: InstructionExpression = new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionGet(varname, this.arg0.isFloat)))
+			const left:      InstructionExpression = new InstructionTee(varname, this.arg0)
 			const right:     InstructionExpression = this.arg1
 			return `(local ${ varname } ${ (!this.arg0.isFloat) ? `i32` : `f64` }) ${
 				(this.op === Operator.AND)
