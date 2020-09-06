@@ -8,6 +8,8 @@ import Builder from '../src/vm/Builder.class'
 import {
 	Operator,
 	InstructionNone,
+	InstructionConst,
+	InstructionSet,
 	InstructionGet,
 	InstructionTee,
 	InstructionUnop,
@@ -45,6 +47,12 @@ describe('Instruction', () => {
 	})
 
 	describe('#toString', () => {
+		specify('InstructionLocal', () => {
+			const expr: InstructionConst = instructionConstInt(42n)
+			assert.strictEqual(new InstructionSet('$x', expr).toString(),  `(local.set $x ${ instructionConstInt(42n) })`)
+			assert.strictEqual(new InstructionGet('$x', false).toString(), `(local.get $x)`)
+			assert.strictEqual(new InstructionTee('$x', expr).toString(),  `(local.tee $x ${ instructionConstInt(42n) })`)
+		})
 		context('InstructionConst', () => {
 			it('pushes the constant integer onto the stack.', () => {
 				const values: number[] = [

@@ -125,28 +125,37 @@ abstract class InstructionLocal extends InstructionExpression {
 /**
  * Set a local variable.
  */
-class InstructionSet extends InstructionLocal {
-	/** @return `'(local.set ‹name› ‹op›?)'` */
+export class InstructionSet extends InstructionLocal {
+	constructor (name: string, op: InstructionExpression) {
+		super(name, op)
+	}
+	/** @return `'(local.set ‹name› ‹op›)'` */
 	toString(): string {
-		return `(local.set ${ this.name } ${ this.op instanceof InstructionExpression ? this.op : ''})`
+		return `(local.set ${ this.name } ${ this.op })`
 	}
 }
 /**
  * Get a local variable.
  */
 export class InstructionGet extends InstructionLocal {
-	/** @return `'(local.get ‹name› ‹op›?)'` */
+	constructor (name: string, to_float: boolean = false) {
+		super(name, to_float)
+	}
+	/** @return `'(local.get ‹name›)'` */
 	toString(): string {
-		return `(local.get ${ this.name } ${ this.op instanceof InstructionExpression ? this.op : ''})`
+		return `(local.get ${ this.name })`
 	}
 }
 /**
  * Tee a local variable.
  */
 export class InstructionTee extends InstructionLocal {
-	/** @return `'(local.tee ‹name› ‹op›?)'` */
+	constructor (name: string, op: InstructionExpression) {
+		super(name, op)
+	}
+	/** @return `'(local.tee ‹name› ‹op›)'` */
 	toString(): string {
-		return `(local.tee ${ this.name } ${ this.op instanceof InstructionExpression ? this.op : ''})`
+		return `(local.tee ${ this.name } ${ this.op })`
 	}
 }
 /**
