@@ -6,6 +6,7 @@ import Operator from '../../src/enum/Operator.enum'
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import {
 	Parser,
+	ParseNodeGoal,
 } from '../../src/parser/'
 import {
 	Builder,
@@ -200,7 +201,8 @@ describe('Instruction', () => {
 					`;`,
 				].map((src) => {
 					const srcs: [string, SolidConfig] = [src, CONFIG_DEFAULT]
-					return new Parser(...srcs).parse().decorate().build(new Validator(...srcs).builder)
+					const parsegoal: ParseNodeGoal = new Parser(...srcs).parse()
+					return parsegoal.decorate().build(new Validator(parsegoal, srcs[1]).builder)
 				})
 				assert.ok(mods[0] instanceof InstructionNone)
 				assert.strictEqual(mods[0].toString(), ``)

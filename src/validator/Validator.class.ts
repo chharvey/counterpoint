@@ -1,5 +1,7 @@
 import type SolidConfig from '../SolidConfig'
-import {Parser} from '../parser/'
+import type {
+	ParseNodeGoal,
+} from '../parser/'
 import {Builder} from '../builder/'
 import type {
 	SemanticNodeGoal,
@@ -11,20 +13,15 @@ import type {
  * The Validator is responsible for semantically analyzing, type-checking, and validating source code.
  */
 export default class Valdator {
-	/** The parser. */
-	private readonly parser: Parser;
-	/** The semantic goal symbol of the program. */
-
 	/**
 	 * Construct a new Validator object.
-	 * @param source - the entire source text
+	 * @param parsegoal - A syntactic goal produced by a parser.
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		source: string,
+		private readonly parsegoal: ParseNodeGoal,
 		private readonly config: SolidConfig,
 	) {
-		this.parser = new Parser(source, this.config)
 	}
 
 	/**
@@ -33,7 +30,7 @@ export default class Valdator {
 	 * @return the decorated goal parse node
 	 */
 	validate(): SemanticNodeGoal {
-		const semantic_goal: SemanticNodeGoal = this.parser.parse().decorate()
+		const semantic_goal: SemanticNodeGoal = this.parsegoal.decorate()
 		semantic_goal.typeCheck(this.config.compilerOptions) // assert does not throw
 		return semantic_goal
 	}
