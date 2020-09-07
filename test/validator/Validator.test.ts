@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
-import {Lexer} from '../../src/lexer/'
+import {Scanner} from '../../src/lexer/'
 
 
 
@@ -14,12 +14,12 @@ describe('Validator', () => {
 					`42;`,
 					`21 + 21;`,
 				].forEach((src) => {
-					new Lexer(src, CONFIG_DEFAULT).screener.parser.validator.validate()
+					new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator.validate()
 				})
 			})
 			it('throws for invalid type operations.', () => {
-				assert.throws(() => new Lexer(`null + 5;`,    CONFIG_DEFAULT).screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
-				assert.throws(() => new Lexer(`7.0 <= null;`, CONFIG_DEFAULT).screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
+				assert.throws(() => new Scanner(`null + 5;`,    CONFIG_DEFAULT).lexer.screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
+				assert.throws(() => new Scanner(`7.0 <= null;`, CONFIG_DEFAULT).lexer.screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
 			})
 			context('with int coercion off.', () => {
 				const coercion_off: SolidConfig = {
@@ -30,8 +30,8 @@ describe('Validator', () => {
 					},
 				}
 				it('throws if operands have different numeric types.', () => {
-					assert.throws(() => new Lexer(`7.0 + 3;`,  coercion_off).screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
-					assert.throws(() => new Lexer(`7.0 <= 3;`, coercion_off).screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
+					assert.throws(() => new Scanner(`7.0 + 3;`,  coercion_off).lexer.screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
+					assert.throws(() => new Scanner(`7.0 <= 3;`, coercion_off).lexer.screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
 				})
 			})
 		})

@@ -5,7 +5,7 @@ import Util   from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {
-	Lexer,
+	Scanner,
 } from '../../src/lexer/'
 import {
 	SemanticNodeTemplate,
@@ -37,7 +37,7 @@ describe('ParseNode', () => {
 	describe('#decorate', () => {
 		context('Goal ::= #x02 #x03', () => {
 			it('makes a SemanticNodeGoal node containing no children.', () => {
-				const goal: SemanticNodeGoal = new Lexer('', CONFIG_DEFAULT).screener.parser.parse().decorate()
+				const goal: SemanticNodeGoal = new Scanner('', CONFIG_DEFAULT).lexer.screener.parser.parse().decorate()
 				assert_arrayLength(goal.children, 0, 'semantic goal should have 0 children')
 			})
 		})
@@ -79,7 +79,7 @@ describe('ParseNode', () => {
 
 		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
 			function stringTemplateSemanticNode(src: string): string {
-				return ((new Lexer(src, CONFIG_DEFAULT).screener.parser
+				return ((new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser
 					.parse()
 					.decorate()
 					.children[0] as SemanticNodeStatementExpression)
@@ -512,11 +512,11 @@ describe('ParseNode', () => {
 
 		Dev.supports('variables') && context('DeclarationVariable, StatementAssignment', () => {
 			it('makes SemanticNodeDeclaration and SemanticNodeAssignment nodes.', () => {
-				assert.strictEqual(new Lexer(Util.dedent(`
+				assert.strictEqual(new Scanner(Util.dedent(`
 					let unfixed the_answer = 42;
 					let \`the £ answer\` = the_answer * 10;
 					the_answer = the_answer - \\z14;
-				`), CONFIG_DEFAULT).screener.parser.parse().decorate().serialize(), `
+				`), CONFIG_DEFAULT).lexer.screener.parser.parse().decorate().serialize(), `
 					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
 						<Declaration line="1" col="1" source="let unfixed the_answer = 42 ;" type="variable" unfixed="true">
 							<Assignee line="1" col="13" source="the_answer">
@@ -563,7 +563,7 @@ describe('ParseNode', () => {
 						<StatementExpression source="420 ;">...</StatementExpression>
 					</Goal>
 				*/
-				const goal: SemanticNodeGoal = new Lexer(`42; 420;`, CONFIG_DEFAULT).screener.parser.parse().decorate()
+				const goal: SemanticNodeGoal = new Scanner(`42; 420;`, CONFIG_DEFAULT).lexer.screener.parser.parse().decorate()
 				assert_arrayLength(goal.children, 2, 'goal should have 2 children')
 				assert.deepStrictEqual(goal.children.map((stat) => {
 					assert.ok(stat instanceof SemanticNodeStatementExpression)

@@ -5,7 +5,7 @@ import * as assert from 'assert'
 import Operator from '../../src/enum/Operator.enum'
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import {
-	Lexer,
+	Scanner,
 } from '../../src/lexer/'
 import {
 	Builder,
@@ -197,8 +197,8 @@ describe('Instruction', () => {
 					`;`,
 				].map((src) => {
 					const srcs: [string, SolidConfig] = [src, CONFIG_DEFAULT]
-					return new Lexer(...srcs).screener.parser.parse().decorate().build(
-						new Lexer(...srcs).screener.parser.validator.builder
+					return new Scanner(...srcs).lexer.screener.parser.parse().decorate().build(
+						new Scanner(...srcs).lexer.screener.parser.validator.builder
 					)
 				})
 				assert.ok(mods[0] instanceof InstructionNone)

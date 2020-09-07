@@ -1,7 +1,6 @@
 import type SolidConfig from '../SolidConfig'
 
 import Dev from '../class/Dev.class'
-import Scanner from './Scanner.class'
 import Screener from './Screener.class'
 import Char from './Char.class'
 import Token, {
@@ -38,8 +37,6 @@ export default class Lexer {
 	private static readonly DIGITS_DEFAULT: readonly string[] = TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT)!
 
 
-	/** The scanner returning characters for each iteration. */
-	private readonly scanner: Generator<Char>;
 	/** The result of the scanner iterator. */
 	private iterator_result_char: IteratorResult<Char, void>;
 	/** The current character. */
@@ -53,15 +50,14 @@ export default class Lexer {
 
 	/**
 	 * Construct a new Lexer object.
-	 * @param source - the entire source text
+	 * @param chargenerator - A character generator produced by a Scanner.
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		source: string,
+		private readonly chargenerator: Generator<Char>,
 		readonly config: SolidConfig,
 	) {
-		this.scanner = new Scanner(source).generate()
-		this.iterator_result_char = this.scanner.next()
+		this.iterator_result_char = this.chargenerator.next()
 
 		this._c0 = this.iterator_result_char.value as Char
 		this._c1 = this._c0.lookahead()
@@ -87,7 +83,7 @@ export default class Lexer {
 		if (n <= 0n) throw new RangeError('Argument must be a positive integer.')
 		if (n === 1n) {
 			const returned: Char = this._c0
-			this.iterator_result_char = this.scanner.next()
+			this.iterator_result_char = this.chargenerator.next()
 			if (!this.iterator_result_char.done) {
 				this._c0 = this.iterator_result_char.value
 				this._c1 = this._c0.lookahead()

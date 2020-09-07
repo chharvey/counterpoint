@@ -5,7 +5,7 @@ import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {
-	Lexer,
+	Scanner,
 } from '../../src/lexer/'
 import {
 	SemanticNodeIdentifier,
@@ -50,8 +50,8 @@ describe('SemanticNode', () => {
 		context('SemanticNodeGoal ::= SOT EOT', () => {
 			it('returns InstructionNone.', () => {
 				const src: [string, SolidConfig] = [``, CONFIG_DEFAULT]
-				const instr: InstructionNone | InstructionModule = new Lexer(...src).screener.parser.parse().decorate()
-					.build(new Lexer(...src).screener.parser.validator.builder)
+				const instr: InstructionNone | InstructionModule = new Scanner(...src).lexer.screener.parser.parse().decorate()
+					.build(new Scanner(...src).lexer.screener.parser.validator.builder)
 				assert.ok(instr instanceof InstructionNone)
 			})
 		})
@@ -59,9 +59,9 @@ describe('SemanticNode', () => {
 		context('SemanticNodeStatement ::= ";"', () => {
 			it('returns InstructionNone.', () => {
 				const src: [string, SolidConfig] = [`;`, CONFIG_DEFAULT]
-				const instr: InstructionNone | InstructionStatement = (new Lexer(...src).screener.parser.parse().decorate()
+				const instr: InstructionNone | InstructionStatement = (new Scanner(...src).lexer.screener.parser.parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.build(new Lexer(...src).screener.parser.validator.builder)
+					.build(new Scanner(...src).lexer.screener.parser.validator.builder)
 				assert.ok(instr instanceof InstructionNone)
 			})
 		})
@@ -85,7 +85,7 @@ describe('SemanticNode', () => {
 				].map((src) =>
 					constantFromStatementExpression(
 						statementExpressionFromSource(src)
-					).build(new Lexer(src, CONFIG_DEFAULT).screener.parser.validator.builder)
+					).build(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator.builder)
 				), [
 					instructionConstInt(0n),
 					instructionConstInt(0n),
@@ -163,7 +163,7 @@ describe('SemanticNode', () => {
 					statementExpressionFromSource(src)
 				)])
 				assert.deepStrictEqual(
-					nodes.map(([src,  node]) => node.build(new Lexer(src, CONFIG_DEFAULT).screener.parser.validator.builder)),
+					nodes.map(([src,  node]) => node.build(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator.builder)),
 					nodes.map(([_src, node]) => {
 						const assess: CompletionStructureAssessment = node.assess()
 						assert.ok(!assess.isAbrupt)
@@ -184,7 +184,7 @@ describe('SemanticNode', () => {
 					assert.deepStrictEqual(
 						[...tests.keys()].map((src) => operationFromStatementExpression(
 							statementExpressionFromSource(src, folding_off)
-						).build(new Lexer(src, folding_off).screener.parser.validator.builder)),
+						).build(new Scanner(src, folding_off).lexer.screener.parser.validator.builder)),
 						[...tests.values()],
 					)
 				}
@@ -215,7 +215,7 @@ describe('SemanticNode', () => {
 					]))
 					assert.throws(() => operationFromStatementExpression(
 						statementExpressionFromSource(`null + 5;`)
-					).build(new Lexer(`null + 5;`, CONFIG_DEFAULT).screener.parser.validator.builder), /Invalid operation./)
+					).build(new Scanner(`null + 5;`, CONFIG_DEFAULT).lexer.screener.parser.validator.builder), /Invalid operation./)
 				})
 				specify('SemanticNodeOperation[operator: DIV] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 					buildOperations(xjs.Map.mapValues(new Map([
@@ -244,7 +244,7 @@ describe('SemanticNode', () => {
 						`false == 0.0;`,
 					].map((src) => operationFromStatementExpression(
 						statementExpressionFromSource(src, folding_off)
-					).build(new Lexer(src, folding_off).screener.parser.validator.builder)), [
+					).build(new Scanner(src, folding_off).lexer.screener.parser.validator.builder)), [
 						new InstructionBinop(
 							Operator.EQ,
 							instructionConstInt(42n),
@@ -283,7 +283,7 @@ describe('SemanticNode', () => {
 					])
 					assert.throws(() => operationFromStatementExpression(
 						statementExpressionFromSource(`42.0 is 42;`, folding_off)
-					).build(new Lexer(`42.0 is 42;`, folding_off).screener.parser.validator.builder), /Both operands must be either integers or floats, but not a mix./, 'IS operator does not coerce to floats')
+					).build(new Scanner(`42.0 is 42;`, folding_off).lexer.screener.parser.validator.builder), /Both operands must be either integers or floats, but not a mix./, 'IS operator does not coerce to floats')
 				})
 				specify('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 					assert.deepStrictEqual([
@@ -294,7 +294,7 @@ describe('SemanticNode', () => {
 						`false || null;`,
 					].map((src) => operationFromStatementExpression(
 						statementExpressionFromSource(src, folding_off)
-					).build(new Lexer(src, folding_off).screener.parser.validator.builder)), [
+					).build(new Scanner(src, folding_off).lexer.screener.parser.validator.builder)), [
 						new InstructionBinop(
 							Operator.AND,
 							instructionConstInt(42n),
@@ -358,8 +358,8 @@ describe('SemanticNode', () => {
 			})
 			specify('multiple statements.', () => {
 				const srcs: [string, SolidConfig] = [`42; 420;`, CONFIG_DEFAULT]
-				const generator: Builder = new Lexer(...srcs).screener.parser.validator.builder
-				new Lexer(...srcs).screener.parser.parse().decorate().children.forEach((stmt, i) => {
+				const generator: Builder = new Scanner(...srcs).lexer.screener.parser.validator.builder
+				new Scanner(...srcs).lexer.screener.parser.parse().decorate().children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof SemanticNodeStatementExpression)
 					assert.deepStrictEqual(
 						stmt.build(generator),
@@ -447,7 +447,7 @@ describe('SemanticNode', () => {
 						).type(), new SolidTypeConstant(new Float64(42.0)))
 					})
 					Dev.supports('variables') && it('throws for identifiers.', () => {
-						assert.throws(() => ((new Lexer(`x;`, CONFIG_DEFAULT).screener.parser.parse().decorate()
+						assert.throws(() => ((new Scanner(`x;`, CONFIG_DEFAULT).lexer.screener.parser.parse().decorate()
 							.children[0] as SemanticNodeStatementExpression)
 							.children[0] as SemanticNodeIdentifier).type(), /Not yet supported./)
 					})
@@ -459,10 +459,10 @@ describe('SemanticNode', () => {
 								),
 							] : []),
 							...(Dev.supports('literalTemplate') ? [
-								(new Lexer(`'''42''';`, CONFIG_DEFAULT).screener.parser.parse().decorate()
+								(new Scanner(`'''42''';`, CONFIG_DEFAULT).lexer.screener.parser.parse().decorate()
 									.children[0] as SemanticNodeStatementExpression)
 									.children[0] as SemanticNodeTemplate,
-								(new Lexer(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).screener.parser.parse().decorate()
+								(new Scanner(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).lexer.screener.parser.parse().decorate()
 									.children[0] as SemanticNodeStatementExpression)
 									.children[0] as SemanticNodeTemplate,
 							] : []),
