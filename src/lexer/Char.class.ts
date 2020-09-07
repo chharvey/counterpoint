@@ -1,3 +1,5 @@
+import Util from '../class/Util.class'
+import type Serializable from '../iface/Serializable.iface'
 import type Scanner from './Scanner.class'
 import {
 	Filebound,
@@ -9,7 +11,7 @@ import {
  * A character in source code.
  * @see http://parsingintro.sourceforge.net/#contents_item_4.1
  */
-export default class Char {
+export default class Char implements Serializable {
 	/**
 	 * Test whether the characters given, when joined, equal the expected string.
 	 * If any character argument is `null`, return `false`.
@@ -51,11 +53,13 @@ export default class Char {
 	}
 
 
-	/** The actual character string. */
+	/** @implements Serializable */
+	readonly tagname: string = 'char'
+	/** @implements Serializable */
 	readonly source: string = this.scanner.source_text[this.source_index]
-	/** Zero-based line number of this character (first line is line 0).*/
+	/** @implements Serializable */
 	readonly line_index: number;
-	/** Zero-based column number of this character (first col is col 0). */
+	/** @implements Serializable */
 	readonly col_index: number;
 
 	/**
@@ -65,6 +69,7 @@ export default class Char {
 	 */
 	constructor(
 		private readonly scanner: Scanner,
+		/** @implements Serializable */
 		readonly source_index: number,
 	) {
 		/** Array of characters from source start until current iteration (not including current character). */
@@ -92,19 +97,18 @@ export default class Char {
 	}
 
 	/**
-	 * @override
-	 * Return a row that describes this character in a table.
-	 * @returns a string representation of this character’s data
+	 * @implements Serializable
 	 */
-	toString(): string {
+	serialize(): string {
 		const formatted: string = this.source
 			.replace('\u0000'      /* NULL                 \u0000 */, '\u2400' /* SYMBOL FOR NULL                  */)
 			.replace(' '           /* SPACE                \u0020 */, '\u2420' /* SYMBOL FOR SPACE                 */)
 			.replace('\t'          /* CHARACTER TABULATION \u0009 */, '\u2409' /* SYMBOL FOR HORIZONTAL TABULATION */)
 			.replace('\n'          /* LINE FEED (LF)       \u000a */, '\u240a' /* SYMBOL FOR LINE FEED             */)
 			.replace('\r'          /* CARRIAGE RETURN (CR) \u000d */, '\u240d' /* SYMBOL FOR CARRIAGE RETURN       */)
-			.replace(Filebound.SOT /* START OF TEXT        \u0002 */, '\u2402' /* SYMBOL FOR START OF TEXT         */)
-			.replace(Filebound.EOT /* END OF TEXT          \u0003 */, '\u2403' /* SYMBOL FOR END OF TEXT           */)
-		return `    ${this.line_index+1}    ${this.col_index+1}    ${formatted}` // for some dumb reason, lines and cols start at 1 instad of 0
+		return `<${ this.tagname } ${ Util.stringifyAttributes(new Map<string, string>([
+			['line', `${ this.line_index + 1 }`],
+			['col',  `${ this.col_index  + 1 }`],
+		])) }>${ Util.sanitizeContent(formatted) }</${ this.tagname }>`
 	}
 }

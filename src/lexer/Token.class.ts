@@ -93,14 +93,15 @@ export type CookValueType = string|number|bigint|boolean|null
  * @see http://parsingintro.sourceforge.net/#contents_item_6.4
  */
 export default abstract class Token implements Serializable {
+	/** @implements Serializable */
+	readonly source_index: number;
+	/** @implements Serializable */
+	readonly line_index: number;
+	/** @implements Serializable */
+	readonly col_index: number;
+
 	/** All the characters in this Token. */
 	private _cargo: string;
-	/** The index of the first character in source text. */
-	readonly source_index: number;
-	/** Zero-based line number of the first character (first line is line 0). */
-	readonly line_index: number;
-	/** Zero-based column number of the first character (first col is col 0). */
-	readonly col_index: number;
 
 	/**
 	 * Construct a new Token object.
@@ -110,6 +111,7 @@ export default abstract class Token implements Serializable {
 	 * @param more_chars - additional characters to add upon construction
 	 */
 	constructor (
+		/** @implements Serializable */
 		readonly tagname: string,
 		protected readonly lexer: Lexer,
 		start_char: Char,
@@ -123,6 +125,7 @@ export default abstract class Token implements Serializable {
 
 	/**
 	 * Get the sum of this Token’s cargo.
+	 * @implements Serializable
 	 * @returns all the source characters in this Token
 	 */
 	get source(): string {
@@ -168,7 +171,7 @@ export default abstract class Token implements Serializable {
 
 export class TokenFilebound extends Token {
 	static readonly CHARS: readonly Filebound[] = [Filebound.SOT, Filebound.EOT]
-	declare source: Filebound;
+	declare readonly source: Filebound;
 	constructor (lexer: Lexer) {
 		super('FILEBOUND', lexer, ...lexer.advance())
 	}
@@ -194,7 +197,7 @@ export class TokenPunctuator extends Token {
 			Punctuator.ASSIGN,
 		].includes(p))
 	)]
-	declare source: Punctuator;
+	declare readonly source: Punctuator;
 	constructor (lexer: Lexer, count: 1n|2n|3n = 1n) {
 		super('PUNCTUATOR', lexer, ...lexer.advance())
 		if (count >= 3n) {
@@ -216,7 +219,7 @@ export class TokenKeyword extends Token {
 			Keyword.UNFIXED,
 		].includes(kw))
 	)]
-	declare source: Keyword;
+	declare readonly source: Keyword;
 	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
 		super('KEYWORD', lexer, start_char, ...more_chars)
 	}

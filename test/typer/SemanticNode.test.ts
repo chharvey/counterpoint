@@ -422,73 +422,73 @@ describe('SemanticNode', () => {
 			})
 			context('with constant folding on, with int coersion on.', () => {
 				context('SemanticNodeConstant', () => {
-			it('returns a constant Null type for SemanticNodeConstant with null value.', () => {
-				assert.deepStrictEqual(((new Parser(`null;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeConstant).type(), new SolidTypeConstant(SolidNull.NULL))
-			})
-			it('returns a constant Boolean type for SemanticNodeConstant with bool value.', () => {
-				assert.deepStrictEqual([
-					`false;`,
-					`true;`,
-				].map((src) =>
-					((new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeConstant).type()
-				), [
-					new SolidTypeConstant(SolidBoolean.FALSE),
-					new SolidTypeConstant(SolidBoolean.TRUE),
-				])
-			})
-			it('returns a constant Integer type for SemanticNodeConstant with integer value.', () => {
-				assert.deepStrictEqual(((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeConstant).type(), new SolidTypeConstant(new Int16(42n)))
-			})
-			it('returns a constant Float type for SemanticNodeConstant with float value.', () => {
-				assert.deepStrictEqual(((new Parser(`4.2e+1;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeConstant).type(), new SolidTypeConstant(new Float64(42.0)))
-			})
-			Dev.supports('variables') && it('throws for identifiers.', () => {
-				assert.throws(() => ((new Parser(`x;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeIdentifier).type(), /Not yet supported./)
-			})
-			it('returns `String` for SemanticNodeConstant with string value.', () => {
-				;[
-					...(Dev.supports('literalString') ? [
-						(new Parser(`'42';`, CONFIG_DEFAULT).parse().decorate()
+					it('returns a constant Null type for SemanticNodeConstant with null value.', () => {
+						assert.deepStrictEqual(((new Parser(`null;`, CONFIG_DEFAULT).parse().decorate()
 							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeConstant,
-					] : []),
-					...(Dev.supports('literalTemplate') ? [
-						(new Parser(`'''42''';`, CONFIG_DEFAULT).parse().decorate()
+							.children[0] as SemanticNodeConstant).type(), new SolidTypeConstant(SolidNull.NULL))
+					})
+					it('returns a constant Boolean type for SemanticNodeConstant with bool value.', () => {
+						assert.deepStrictEqual([
+							`false;`,
+							`true;`,
+						].map((src) =>
+							((new Parser(src, CONFIG_DEFAULT).parse().decorate()
+								.children[0] as SemanticNodeStatementExpression)
+								.children[0] as SemanticNodeConstant).type()
+						), [
+							new SolidTypeConstant(SolidBoolean.FALSE),
+							new SolidTypeConstant(SolidBoolean.TRUE),
+						])
+					})
+					it('returns a constant Integer type for SemanticNodeConstant with integer value.', () => {
+						assert.deepStrictEqual(((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate()
 							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeTemplate,
-						(new Parser(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).parse().decorate()
+							.children[0] as SemanticNodeConstant).type(), new SolidTypeConstant(new Int16(42n)))
+					})
+					it('returns a constant Float type for SemanticNodeConstant with float value.', () => {
+						assert.deepStrictEqual(((new Parser(`4.2e+1;`, CONFIG_DEFAULT).parse().decorate()
 							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeTemplate,
-					] : []),
-				].forEach((node) => {
-					assert.strictEqual(node.type(), SolidString)
-				})
-			})
+							.children[0] as SemanticNodeConstant).type(), new SolidTypeConstant(new Float64(42.0)))
+					})
+					Dev.supports('variables') && it('throws for identifiers.', () => {
+						assert.throws(() => ((new Parser(`x;`, CONFIG_DEFAULT).parse().decorate()
+							.children[0] as SemanticNodeStatementExpression)
+							.children[0] as SemanticNodeIdentifier).type(), /Not yet supported./)
+					})
+					it('returns `String` for SemanticNodeConstant with string value.', () => {
+						;[
+							...(Dev.supports('literalString') ? [
+								(new Parser(`'42';`, CONFIG_DEFAULT).parse().decorate()
+									.children[0] as SemanticNodeStatementExpression)
+									.children[0] as SemanticNodeConstant,
+							] : []),
+							...(Dev.supports('literalTemplate') ? [
+								(new Parser(`'''42''';`, CONFIG_DEFAULT).parse().decorate()
+									.children[0] as SemanticNodeStatementExpression)
+									.children[0] as SemanticNodeTemplate,
+								(new Parser(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).parse().decorate()
+									.children[0] as SemanticNodeStatementExpression)
+									.children[0] as SemanticNodeTemplate,
+							] : []),
+						].forEach((node) => {
+							assert.strictEqual(node.type(), SolidString)
+						})
+					})
 				})
 				context('SemanticNodeOperationBinaryArithmetic', () => {
-			it('returns a constant Integer type for any operation of integers.', () => {
-				assert.deepStrictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Int16(7n * 3n * 2n)))
-			})
-			it('returns a constant Float type for any operation of mix of integers and floats.', () => {
-				assert.deepStrictEqual(((new Parser(`3.0 * 2.7;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(3.0 * 2.7)))
-				assert.deepStrictEqual(((new Parser(`7 * 3.0 * 2;`, CONFIG_DEFAULT).parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(7 * 3.0 * 2)))
-			})
+					it('returns a constant Integer type for any operation of integers.', () => {
+						assert.deepStrictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
+							.children[0] as SemanticNodeStatementExpression)
+							.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Int16(7n * 3n * 2n)))
+					})
+					it('returns a constant Float type for any operation of mix of integers and floats.', () => {
+						assert.deepStrictEqual(((new Parser(`3.0 * 2.7;`, CONFIG_DEFAULT).parse().decorate()
+							.children[0] as SemanticNodeStatementExpression)
+							.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(3.0 * 2.7)))
+						assert.deepStrictEqual(((new Parser(`7 * 3.0 * 2;`, CONFIG_DEFAULT).parse().decorate()
+							.children[0] as SemanticNodeStatementExpression)
+							.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(7 * 3.0 * 2)))
+					})
 				})
 			})
 			context('with constant folding off, with int coersion on.', () => {

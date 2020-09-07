@@ -36,7 +36,7 @@ async function test_dev() {
 	const scanner = new Scanner(await input).generate()
 	let iterator_result_char = scanner.next()
 	while (!iterator_result_char.done) {
-		console.log(iterator_result_char.value.toString())
+		console.log(iterator_result_char.value.serialize())
 		iterator_result_char = scanner.next()
 	}
 

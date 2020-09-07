@@ -70,7 +70,7 @@ export class InstructionConst extends InstructionExpression {
 	 * @return `'({i32|f64}.const ‹value›)'`
 	 */
 	toString(): string {
-		return `(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ this.value })`
+		return `(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ (this.value.identical(new Float64(-0.0))) ? '-0.0' : this.value })`
 	}
 	get isFloat(): boolean {
 		return this.value instanceof Float64
@@ -97,28 +97,37 @@ abstract class InstructionLocal extends InstructionExpression {
 /**
  * Set a local variable.
  */
-class InstructionSet extends InstructionLocal {
-	/** @return `'(local.set ‹name› ‹op›?)'` */
+export class InstructionSet extends InstructionLocal {
+	constructor (name: string, op: InstructionExpression) {
+		super(name, op)
+	}
+	/** @return `'(local.set ‹name› ‹op›)'` */
 	toString(): string {
-		return `(local.set ${ this.name } ${ this.op instanceof InstructionExpression ? this.op : ''})`
+		return `(local.set ${ this.name } ${ this.op })`
 	}
 }
 /**
  * Get a local variable.
  */
 export class InstructionGet extends InstructionLocal {
-	/** @return `'(local.get ‹name› ‹op›?)'` */
+	constructor (name: string, to_float: boolean = false) {
+		super(name, to_float)
+	}
+	/** @return `'(local.get ‹name›)'` */
 	toString(): string {
-		return `(local.get ${ this.name } ${ this.op instanceof InstructionExpression ? this.op : ''})`
+		return `(local.get ${ this.name })`
 	}
 }
 /**
  * Tee a local variable.
  */
 export class InstructionTee extends InstructionLocal {
-	/** @return `'(local.tee ‹name› ‹op›?)'` */
+	constructor (name: string, op: InstructionExpression) {
+		super(name, op)
+	}
+	/** @return `'(local.tee ‹name› ‹op›)'` */
 	toString(): string {
-		return `(local.tee ${ this.name } ${ this.op instanceof InstructionExpression ? this.op : ''})`
+		return `(local.tee ${ this.name } ${ this.op })`
 	}
 }
 /**
@@ -154,6 +163,7 @@ export class InstructionUnop extends InstructionExpression {
  * Perform a binary operation on the stack.
  */
 export class InstructionBinop extends InstructionExpression {
+	private readonly floatarg: boolean = this.arg0.isFloat || this.arg1.isFloat
 	/**
 	 * @param op a punctuator representing the operation to perform
 	 * @param arg0 the first operand
@@ -165,7 +175,7 @@ export class InstructionBinop extends InstructionExpression {
 		private readonly arg1: InstructionExpression,
 	) {
 		super()
-		if (this.isFloat && (!this.arg0.isFloat || !this.arg1.isFloat)) {
+		if (this.floatarg && (!this.arg0.isFloat || !this.arg1.isFloat)) {
 			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`)
 		}
 	}
@@ -175,8 +185,8 @@ export class InstructionBinop extends InstructionExpression {
 	toString(): string {
 		if ([Operator.AND, Operator.OR].includes(this.op)) {
 			const varname: string = `$operand0`
-			const condition: InstructionExpression = new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, this.arg0)))
-			const left:      InstructionExpression = new InstructionGet(varname, this.arg0.isFloat)
+			const condition: InstructionExpression = new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionGet(varname, this.arg0.isFloat)))
+			const left:      InstructionExpression = new InstructionTee(varname, this.arg0)
 			const right:     InstructionExpression = this.arg1
 			return `(local ${ varname } ${ (!this.arg0.isFloat) ? `i32` : `f64` }) ${
 				(this.op === Operator.AND)
@@ -185,21 +195,28 @@ export class InstructionBinop extends InstructionExpression {
 			}`
 		}
 		return `(${ new Map<Operator, string>([
-			[Operator.EXP, (!this.isFloat) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
-			[Operator.MUL, (!this.isFloat) ? `i32.mul`   : `f64.mul`],
-			[Operator.DIV, (!this.isFloat) ? `i32.div_s` : `f64.div`],
-			[Operator.ADD, (!this.isFloat) ? `i32.add`   : `f64.add`],
-			[Operator.SUB, (!this.isFloat) ? `i32.sub`   : `f64.sub`],
-			[Operator.LT,  (!this.isFloat) ? `i32.lt_s`  : `f64.lt`],
-			[Operator.GT,  (!this.isFloat) ? `i32.gt_s`  : `f64.gt`],
-			[Operator.LE,  (!this.isFloat) ? `i32.le_s`  : `f64.le`],
-			[Operator.GE,  (!this.isFloat) ? `i32.ge_s`  : `f64.ge`],
-			[Operator.IS,  (!this.isFloat) ? `i32.eq`    : `call $fis`],
-			[Operator.EQ,  (!this.isFloat) ? `i32.eq`    : `f64.eq`],
+			[Operator.EXP, (!this.floatarg) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
+			[Operator.MUL, (!this.floatarg) ? `i32.mul`   : `f64.mul`],
+			[Operator.DIV, (!this.floatarg) ? `i32.div_s` : `f64.div`],
+			[Operator.ADD, (!this.floatarg) ? `i32.add`   : `f64.add`],
+			[Operator.SUB, (!this.floatarg) ? `i32.sub`   : `f64.sub`],
+			[Operator.LT,  (!this.floatarg) ? `i32.lt_s`  : `f64.lt`],
+			[Operator.GT,  (!this.floatarg) ? `i32.gt_s`  : `f64.gt`],
+			[Operator.LE,  (!this.floatarg) ? `i32.le_s`  : `f64.le`],
+			[Operator.GE,  (!this.floatarg) ? `i32.ge_s`  : `f64.ge`],
+			[Operator.IS,  (!this.floatarg) ? `i32.eq`    : `call $fis`],
+			[Operator.EQ,  (!this.floatarg) ? `i32.eq`    : `f64.eq`],
 		]).get(this.op)! } ${ this.arg0 } ${ this.arg1 })`
 	}
 	get isFloat(): boolean {
-		return this.arg0.isFloat || this.arg1.isFloat
+		return ([
+			Operator.LT,
+			Operator.GT,
+			Operator.LE,
+			Operator.GE,
+			Operator.IS,
+			Operator.EQ,
+		].includes(this.op)) ? false : this.floatarg
 	}
 }
 /**
@@ -207,9 +224,9 @@ export class InstructionBinop extends InstructionExpression {
  */
 export class InstructionCond extends InstructionExpression {
 	/**
-	 * @param arg0 the first operand
-	 * @param arg1 the second operand
-	 * @param arg2 the third operand
+	 * @param arg0 the condition
+	 * @param arg1 the consequent
+	 * @param arg2 the alterantive
 	 */
 	constructor (
 		private readonly arg0: InstructionExpression,
@@ -222,10 +239,10 @@ export class InstructionCond extends InstructionExpression {
 		}
 	}
 	/**
-	 * @return `'(if (result {i32|f64}) ‹arg0› (then ‹arg1›) (else ‹arg2›))'`
+	 * @return `'(select ‹arg1› ‹arg2› ‹arg0›)'`
 	 */
 	toString(): string {
-		return `(if (result ${ (!this.isFloat) ? `i32` : `f64` }) ${ this.arg0 } (then ${ this.arg1 }) (else ${ this.arg2 }))`
+		return `(select ${ this.arg1 } ${ this.arg2 } ${ this.arg0 })`
 	}
 	get isFloat(): boolean {
 		return this.arg1.isFloat || this.arg2.isFloat

@@ -10,6 +10,8 @@ import {
 import {
 	Builder,
 	InstructionNone,
+	InstructionConst,
+	InstructionSet,
 	InstructionGet,
 	InstructionTee,
 	InstructionUnop,
@@ -47,6 +49,12 @@ describe('Instruction', () => {
 	})
 
 	describe('#toString', () => {
+		specify('InstructionLocal', () => {
+			const expr: InstructionConst = instructionConstInt(42n)
+			assert.strictEqual(new InstructionSet('$x', expr).toString(),  `(local.set $x ${ instructionConstInt(42n) })`)
+			assert.strictEqual(new InstructionGet('$x', false).toString(), `(local.get $x)`)
+			assert.strictEqual(new InstructionTee('$x', expr).toString(),  `(local.tee $x ${ instructionConstInt(42n) })`)
+		})
 		context('InstructionConst', () => {
 			it('pushes the constant integer onto the stack.', () => {
 				const values: number[] = [
@@ -80,6 +88,9 @@ describe('Instruction', () => {
 					values.map((x) => instructionConstFloat(x).toString()),
 					values.map((x) => `(f64.const ${ x })`),
 				)
+			})
+			it('prints Float64 negative zero correctly.', () => {
+				assert.strictEqual(instructionConstFloat(-0.0).toString(), `(f64.const -0.0)`)
 			})
 		})
 
@@ -122,24 +133,6 @@ describe('Instruction', () => {
 					instructionConstFloat(18.1),
 				).toString(), `(f64.add ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
 				assert.strictEqual(new InstructionBinop(
-					Operator.AND,
-					instructionConstInt(30n),
-					instructionConstInt(18n),
-				).toString(), ((varname) => `(local ${ varname } i32) ${ new InstructionCond(
-					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, instructionConstInt(30n)))),
-					instructionConstInt(18n),
-					new InstructionGet(varname, false),
-				) }`)('$operand0'))
-				assert.strictEqual(new InstructionBinop(
-					Operator.OR,
-					instructionConstFloat(30.1),
-					instructionConstFloat(18.1),
-				).toString(), ((varname) => `(local ${ varname } f64) ${ new InstructionCond(
-					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, instructionConstFloat(30.1)))),
-					new InstructionGet(varname, true),
-					instructionConstFloat(18.1),
-				) }`)('$operand0'))
-				assert.strictEqual(new InstructionBinop(
 					Operator.LT,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
@@ -160,6 +153,26 @@ describe('Instruction', () => {
 					instructionConstFloat(18.1),
 				).toString(), `(call $fis ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
 			})
+			it('prints (select) for AND and OR', () => {
+				assert.strictEqual(new InstructionBinop(
+					Operator.AND,
+					instructionConstInt(30n),
+					instructionConstInt(18n),
+				).toString(), ((varname) => `(local ${ varname } i32) ${ new InstructionCond(
+					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionGet(varname, false))),
+					instructionConstInt(18n),
+					new InstructionTee(varname, instructionConstInt(30n)),
+				) }`)('$operand0'))
+				assert.strictEqual(new InstructionBinop(
+					Operator.OR,
+					instructionConstFloat(30.1),
+					instructionConstFloat(18.1),
+				).toString(), ((varname) => `(local ${ varname } f64) ${ new InstructionCond(
+					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionGet(varname, true))),
+					new InstructionTee(varname, instructionConstFloat(30.1)),
+					instructionConstFloat(18.1),
+				) }`)('$operand0'))
+			})
 		})
 
 		context('InstructionCond', () => {
@@ -168,12 +181,12 @@ describe('Instruction', () => {
 					instructionConstInt(1n),
 					instructionConstInt(2n),
 					instructionConstInt(3n),
-				).toString(), `(if (result i32) ${ instructionConstInt(1n) } (then ${ instructionConstInt(2n) }) (else ${ instructionConstInt(3n) }))`)
+				).toString(), `(select ${ instructionConstInt(2n) } ${ instructionConstInt(3n) } ${ instructionConstInt(1n) })`)
 				assert.strictEqual(new InstructionCond(
 					instructionConstInt(0n),
 					instructionConstFloat(2.2),
 					instructionConstFloat(3.3),
-				).toString(), `(if (result f64) ${ instructionConstInt(0n) } (then ${ instructionConstFloat(2.2) }) (else ${ instructionConstFloat(3.3) }))`)
+				).toString(), `(select ${ instructionConstFloat(2.2) } ${ instructionConstFloat(3.3) } ${ instructionConstInt(0n) })`)
 			})
 		})
 

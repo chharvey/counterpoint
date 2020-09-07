@@ -4,6 +4,7 @@ export {
 	InstructionNone,
 	InstructionExpression,
 	InstructionConst,
+	InstructionSet,
 	InstructionGet,
 	InstructionTee,
 	InstructionUnop,
