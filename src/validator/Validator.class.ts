@@ -1,5 +1,6 @@
 import type SolidConfig from '../SolidConfig'
 import {Parser} from '../parser/'
+import {Builder} from '../builder/'
 import type {
 	SemanticNodeGoal,
 } from './SemanticNode.class'
@@ -35,5 +36,13 @@ export default class Valdator {
 		const semantic_goal: SemanticNodeGoal = this.parser.parse().decorate()
 		semantic_goal.typeCheck(this.config.compilerOptions) // assert does not throw
 		return semantic_goal
+	}
+
+	/**
+	 * Construct a new Builder object from this Validator.
+	 * @return a new Builder with this Validator as its argument
+	 */
+	get builder(): Builder {
+		return new Builder(this.validate(), this.config)
 	}
 }
