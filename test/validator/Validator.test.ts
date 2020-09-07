@@ -2,7 +2,6 @@ import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import {Parser} from '../../src/parser/'
-import {Validator} from '../../src/validator/'
 
 
 
@@ -15,12 +14,12 @@ describe('Validator', () => {
 					`42;`,
 					`21 + 21;`,
 				].forEach((src) => {
-					new Validator(new Parser(src, CONFIG_DEFAULT).parse(), CONFIG_DEFAULT).validate()
+					new Parser(src, CONFIG_DEFAULT).validator.validate()
 				})
 			})
 			it('throws for invalid type operations.', () => {
-				assert.throws(() => new Validator(new Parser(`null + 5;`,    CONFIG_DEFAULT).parse(), CONFIG_DEFAULT).validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
-				assert.throws(() => new Validator(new Parser(`7.0 <= null;`, CONFIG_DEFAULT).parse(), CONFIG_DEFAULT).validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
+				assert.throws(() => new Parser(`null + 5;`,    CONFIG_DEFAULT).validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
+				assert.throws(() => new Parser(`7.0 <= null;`, CONFIG_DEFAULT).validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
 			})
 			context('with int coercion off.', () => {
 				const coercion_off: SolidConfig = {
@@ -31,8 +30,8 @@ describe('Validator', () => {
 					},
 				}
 				it('throws if operands have different numeric types.', () => {
-					assert.throws(() => new Validator(new Parser(`7.0 + 3;`,  coercion_off).parse(), coercion_off).validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
-					assert.throws(() => new Validator(new Parser(`7.0 <= 3;`, coercion_off).parse(), coercion_off).validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
+					assert.throws(() => new Parser(`7.0 + 3;`,  coercion_off).validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
+					assert.throws(() => new Parser(`7.0 <= 3;`, coercion_off).validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
 				})
 			})
 		})

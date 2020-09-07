@@ -36,9 +36,6 @@ import {
 	InstructionModule,
 } from '../../src/builder/'
 import {
-	Validator,
-} from '../../src/validator/'
-import {
 	instructionConstInt,
 	instructionConstFloat,
 } from '../helpers'
@@ -55,9 +52,8 @@ describe('SemanticNode', () => {
 		context('SemanticNodeGoal ::= SOT EOT', () => {
 			it('returns InstructionNone.', () => {
 				const src: [string, SolidConfig] = [``, CONFIG_DEFAULT]
-				const parsegoal: ParseNodeGoal = new Parser(...src).parse()
-				const instr: InstructionNone | InstructionModule = parsegoal.decorate()
-					.build(new Validator(parsegoal, src[1]).builder)
+				const instr: InstructionNone | InstructionModule = new Parser(...src).parse().decorate()
+					.build(new Parser(...src).validator.builder)
 				assert.ok(instr instanceof InstructionNone)
 			})
 		})
@@ -65,10 +61,9 @@ describe('SemanticNode', () => {
 		context('SemanticNodeStatement ::= ";"', () => {
 			it('returns InstructionNone.', () => {
 				const src: [string, SolidConfig] = [`;`, CONFIG_DEFAULT]
-				const parsegoal: ParseNodeGoal = new Parser(...src).parse()
-				const instr: InstructionNone | InstructionStatement = (parsegoal.decorate()
+				const instr: InstructionNone | InstructionStatement = (new Parser(...src).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.build(new Validator(parsegoal, src[1]).builder)
+					.build(new Parser(...src).validator.builder)
 				assert.ok(instr instanceof InstructionNone)
 			})
 		})
@@ -93,7 +88,7 @@ describe('SemanticNode', () => {
 					((new Parser(src, CONFIG_DEFAULT).parse().decorate()
 						.children[0] as SemanticNodeStatementExpression)
 						.children[0] as SemanticNodeConstant)
-						.build(new Validator(new Parser(src, CONFIG_DEFAULT).parse(), CONFIG_DEFAULT).builder)
+						.build(new Parser(src, CONFIG_DEFAULT).validator.builder)
 				), [
 					instructionConstInt(0n),
 					instructionConstInt(0n),
@@ -171,7 +166,7 @@ describe('SemanticNode', () => {
 					statementExpressionFromSource(src)
 				)])
 				assert.deepStrictEqual(
-					nodes.map(([src,  node]) => node.build(new Validator(new Parser(src, CONFIG_DEFAULT).parse(), CONFIG_DEFAULT).builder)),
+					nodes.map(([src,  node]) => node.build(new Parser(src, CONFIG_DEFAULT).validator.builder)),
 					nodes.map(([_src, node]) => {
 						const assess: CompletionStructureAssessment = node.assess()
 						assert.ok(!assess.isAbrupt)
@@ -192,7 +187,7 @@ describe('SemanticNode', () => {
 					assert.deepStrictEqual(
 						[...tests.keys()].map((src) => operationFromStatementExpression(
 							statementExpressionFromSource(src, folding_off)
-						).build(new Validator(new Parser(src, folding_off).parse(), folding_off).builder)),
+						).build(new Parser(src, folding_off).validator.builder)),
 						[...tests.values()],
 					)
 				}
@@ -223,7 +218,7 @@ describe('SemanticNode', () => {
 					]))
 					assert.throws(() => operationFromStatementExpression(
 						statementExpressionFromSource(`null + 5;`)
-					).build(new Validator(new Parser(`null + 5;`, CONFIG_DEFAULT).parse(), CONFIG_DEFAULT).builder), /Invalid operation./)
+					).build(new Parser(`null + 5;`, CONFIG_DEFAULT).validator.builder), /Invalid operation./)
 				})
 				specify('SemanticNodeOperation[operator: DIV] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 					buildOperations(xjs.Map.mapValues(new Map([
@@ -252,7 +247,7 @@ describe('SemanticNode', () => {
 						`false == 0.0;`,
 					].map((src) => operationFromStatementExpression(
 						statementExpressionFromSource(src, folding_off)
-					).build(new Validator(new Parser(src, folding_off).parse(), folding_off).builder)), [
+					).build(new Parser(src, folding_off).validator.builder)), [
 						new InstructionBinop(
 							Operator.EQ,
 							instructionConstInt(42n),
@@ -291,7 +286,7 @@ describe('SemanticNode', () => {
 					])
 					assert.throws(() => operationFromStatementExpression(
 						statementExpressionFromSource(`42.0 is 42;`, folding_off)
-					).build(new Validator(new Parser(`42.0 is 42;`, folding_off).parse(), folding_off).builder), /Both operands must be either integers or floats, but not a mix./, 'IS operator does not coerce to floats')
+					).build(new Parser(`42.0 is 42;`, folding_off).validator.builder), /Both operands must be either integers or floats, but not a mix./, 'IS operator does not coerce to floats')
 				})
 				specify('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 					assert.deepStrictEqual([
@@ -302,7 +297,7 @@ describe('SemanticNode', () => {
 						`false || null;`,
 					].map((src) => operationFromStatementExpression(
 						statementExpressionFromSource(src, folding_off)
-					).build(new Validator(new Parser(src, folding_off).parse(), folding_off).builder)), [
+					).build(new Parser(src, folding_off).validator.builder)), [
 						new InstructionBinop(
 							Operator.AND,
 							instructionConstInt(42n),
@@ -366,9 +361,8 @@ describe('SemanticNode', () => {
 			})
 			specify('multiple statements.', () => {
 				const srcs: [string, SolidConfig] = [`42; 420;`, CONFIG_DEFAULT]
-				const parsegoal: ParseNodeGoal = new Parser(...srcs).parse()
-				const generator: Builder = new Validator(parsegoal, srcs[1]).builder
-				parsegoal.decorate().children.forEach((stmt, i) => {
+				const generator: Builder = new Parser(...srcs).validator.builder
+				new Parser(...srcs).parse().decorate().children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof SemanticNodeStatementExpression)
 					assert.deepStrictEqual(
 						stmt.build(generator),

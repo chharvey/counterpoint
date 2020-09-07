@@ -7,9 +7,6 @@ import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 import {
 	Parser,
 } from '../parser/'
-import {
-	Validator,
-} from '../validator/'
 import type {
 	Builder,
 } from '../builder/'
@@ -259,10 +256,10 @@ export default class CLI {
 			base: void 0,
 			ext: this.command === Command.DEV ? '.wat' : '.wasm',
 		})
-		const cg: Builder = new Validator(new Parser(...await Promise.all([
+		const cg: Builder = new Parser(...await Promise.all([
 			fs.promises.readFile(inputfilepath, 'utf8'),
 			this.computeConfig(cwd),
-		])).parse(), await this.computeConfig(cwd)).builder
+		])).validator.builder
 		return Promise.all([
 			`
 				Compiling………

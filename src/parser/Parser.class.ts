@@ -4,6 +4,9 @@ import {
 	Screener,
 	Token,
 } from '../lexer/'
+import {
+	Validator,
+} from '../validator/'
 import Terminal from './Terminal.class'
 import ParseNode, {
 	ParseNodeGoal,
@@ -143,5 +146,13 @@ export default class Parser {
 		if (this.stack.length < 1) throw new Error('Somehow, the stack was emptied. It should have 1 final element, a top-level rule.')
 		if (this.stack.length > 1) throw new Error('There is still unfinished business: The Stack should have only 1 element left.')
 		return this.stack[0][0] as ParseNodeGoal
+	}
+
+	/**
+	 * Construct a new Validator object from this Parser.
+	 * @return a new Validator with this Parser as its argument
+	 */
+	get validator(): Validator {
+		return new Validator(this.parse(), this.config)
 	}
 }

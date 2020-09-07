@@ -21,9 +21,6 @@ import {
 	InstructionModule,
 } from '../../src/builder/'
 import {
-	Validator,
-} from '../../src/validator'
-import {
 	instructionConstInt,
 	instructionConstFloat,
 } from '../helpers'
@@ -201,8 +198,7 @@ describe('Instruction', () => {
 					`;`,
 				].map((src) => {
 					const srcs: [string, SolidConfig] = [src, CONFIG_DEFAULT]
-					const parsegoal: ParseNodeGoal = new Parser(...srcs).parse()
-					return parsegoal.decorate().build(new Validator(parsegoal, srcs[1]).builder)
+					return new Parser(...srcs).parse().decorate().build(new Parser(...srcs).validator.builder)
 				})
 				assert.ok(mods[0] instanceof InstructionNone)
 				assert.strictEqual(mods[0].toString(), ``)
