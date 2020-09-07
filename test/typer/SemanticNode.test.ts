@@ -8,11 +8,6 @@ import {
 	Screener,
 } from '../../src/lexer/'
 import {
-	Parser,
-	ParseNodeGoal,
-} from '../../src/parser/'
-import {
-	SemanticNodeConstant,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
 	SemanticNodeOperation,
@@ -55,8 +50,8 @@ describe('SemanticNode', () => {
 		context('SemanticNodeGoal ::= SOT EOT', () => {
 			it('returns InstructionNone.', () => {
 				const src: [string, SolidConfig] = [``, CONFIG_DEFAULT]
-				const instr: InstructionNone | InstructionModule = new Parser(new Screener(...src).generate(), src[1]).parse().decorate()
-					.build(new Parser(new Screener(...src).generate(), src[1]).validator.builder)
+				const instr: InstructionNone | InstructionModule = new Screener(...src).parser.parse().decorate()
+					.build(new Screener(...src).parser.validator.builder)
 				assert.ok(instr instanceof InstructionNone)
 			})
 		})
@@ -64,9 +59,9 @@ describe('SemanticNode', () => {
 		context('SemanticNodeStatement ::= ";"', () => {
 			it('returns InstructionNone.', () => {
 				const src: [string, SolidConfig] = [`;`, CONFIG_DEFAULT]
-				const instr: InstructionNone | InstructionStatement = (new Parser(new Screener(...src).generate(), src[1]).parse().decorate()
+				const instr: InstructionNone | InstructionStatement = (new Screener(...src).parser.parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.build(new Parser(new Screener(...src).generate(), src[1]).validator.builder)
+					.build(new Screener(...src).parser.validator.builder)
 				assert.ok(instr instanceof InstructionNone)
 			})
 		})
@@ -90,7 +85,7 @@ describe('SemanticNode', () => {
 				].map((src) =>
 					constantFromStatementExpression(
 						statementExpressionFromSource(src)
-					).build(new Parser(new Screener(src, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).validator.builder)
+					).build(new Screener(src, CONFIG_DEFAULT).parser.validator.builder)
 				), [
 					instructionConstInt(0n),
 					instructionConstInt(0n),
@@ -168,7 +163,7 @@ describe('SemanticNode', () => {
 					statementExpressionFromSource(src)
 				)])
 				assert.deepStrictEqual(
-					nodes.map(([src,  node]) => node.build(new Parser(new Screener(src, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).validator.builder)),
+					nodes.map(([src,  node]) => node.build(new Screener(src, CONFIG_DEFAULT).parser.validator.builder)),
 					nodes.map(([_src, node]) => {
 						const assess: CompletionStructureAssessment = node.assess()
 						assert.ok(!assess.isAbrupt)
@@ -189,7 +184,7 @@ describe('SemanticNode', () => {
 					assert.deepStrictEqual(
 						[...tests.keys()].map((src) => operationFromStatementExpression(
 							statementExpressionFromSource(src, folding_off)
-						).build(new Parser(new Screener(src, folding_off).generate(), folding_off).validator.builder)),
+						).build(new Screener(src, folding_off).parser.validator.builder)),
 						[...tests.values()],
 					)
 				}
@@ -220,7 +215,7 @@ describe('SemanticNode', () => {
 					]))
 					assert.throws(() => operationFromStatementExpression(
 						statementExpressionFromSource(`null + 5;`)
-					).build(new Parser(new Screener(`null + 5;`, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).validator.builder), /Invalid operation./)
+					).build(new Screener(`null + 5;`, CONFIG_DEFAULT).parser.validator.builder), /Invalid operation./)
 				})
 				specify('SemanticNodeOperation[operator: DIV] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 					buildOperations(xjs.Map.mapValues(new Map([
@@ -249,7 +244,7 @@ describe('SemanticNode', () => {
 						`false == 0.0;`,
 					].map((src) => operationFromStatementExpression(
 						statementExpressionFromSource(src, folding_off)
-					).build(new Parser(new Screener(src, folding_off).generate(), folding_off).validator.builder)), [
+					).build(new Screener(src, folding_off).parser.validator.builder)), [
 						new InstructionBinop(
 							Operator.EQ,
 							instructionConstInt(42n),
@@ -288,7 +283,7 @@ describe('SemanticNode', () => {
 					])
 					assert.throws(() => operationFromStatementExpression(
 						statementExpressionFromSource(`42.0 is 42;`, folding_off)
-					).build(new Parser(new Screener(`42.0 is 42;`, folding_off).generate(), folding_off).validator.builder), /Both operands must be either integers or floats, but not a mix./, 'IS operator does not coerce to floats')
+					).build(new Screener(`42.0 is 42;`, folding_off).parser.validator.builder), /Both operands must be either integers or floats, but not a mix./, 'IS operator does not coerce to floats')
 				})
 				specify('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 					assert.deepStrictEqual([
@@ -299,7 +294,7 @@ describe('SemanticNode', () => {
 						`false || null;`,
 					].map((src) => operationFromStatementExpression(
 						statementExpressionFromSource(src, folding_off)
-					).build(new Parser(new Screener(src, folding_off).generate(), folding_off).validator.builder)), [
+					).build(new Screener(src, folding_off).parser.validator.builder)), [
 						new InstructionBinop(
 							Operator.AND,
 							instructionConstInt(42n),
@@ -363,8 +358,8 @@ describe('SemanticNode', () => {
 			})
 			specify('multiple statements.', () => {
 				const srcs: [string, SolidConfig] = [`42; 420;`, CONFIG_DEFAULT]
-				const generator: Builder = new Parser(new Screener(...srcs).generate(), srcs[1]).validator.builder
-				new Parser(new Screener(...srcs).generate(), srcs[1]).parse().decorate().children.forEach((stmt, i) => {
+				const generator: Builder = new Screener(...srcs).parser.validator.builder
+				new Screener(...srcs).parser.parse().decorate().children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof SemanticNodeStatementExpression)
 					assert.deepStrictEqual(
 						stmt.build(generator),
@@ -452,7 +447,7 @@ describe('SemanticNode', () => {
 						).type(), new SolidTypeConstant(new Float64(42.0)))
 					})
 					Dev.supports('variables') && it('throws for identifiers.', () => {
-						assert.throws(() => ((new Parser(new Screener(`x;`, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).parse().decorate()
+						assert.throws(() => ((new Screener(`x;`, CONFIG_DEFAULT).parser.parse().decorate()
 							.children[0] as SemanticNodeStatementExpression)
 							.children[0] as SemanticNodeIdentifier).type(), /Not yet supported./)
 					})
@@ -464,10 +459,10 @@ describe('SemanticNode', () => {
 								),
 							] : []),
 							...(Dev.supports('literalTemplate') ? [
-								(new Parser(new Screener(`'''42''';`, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).parse().decorate()
+								(new Screener(`'''42''';`, CONFIG_DEFAULT).parser.parse().decorate()
 									.children[0] as SemanticNodeStatementExpression)
 									.children[0] as SemanticNodeTemplate,
-								(new Parser(new Screener(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).parse().decorate()
+								(new Screener(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).parser.parse().decorate()
 									.children[0] as SemanticNodeStatementExpression)
 									.children[0] as SemanticNodeTemplate,
 							] : []),

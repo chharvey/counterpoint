@@ -15,12 +15,12 @@ describe('Validator', () => {
 					`42;`,
 					`21 + 21;`,
 				].forEach((src) => {
-					new Parser(new Screener(src, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).validator.validate()
+					new Screener(src, CONFIG_DEFAULT).parser.validator.validate()
 				})
 			})
 			it('throws for invalid type operations.', () => {
-				assert.throws(() => new Parser(new Screener(`null + 5;`,    CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
-				assert.throws(() => new Parser(new Screener(`7.0 <= null;`, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
+				assert.throws(() => new Screener(`null + 5;`,    CONFIG_DEFAULT).parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
+				assert.throws(() => new Screener(`7.0 <= null;`, CONFIG_DEFAULT).parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
 			})
 			context('with int coercion off.', () => {
 				const coercion_off: SolidConfig = {
@@ -31,8 +31,8 @@ describe('Validator', () => {
 					},
 				}
 				it('throws if operands have different numeric types.', () => {
-					assert.throws(() => new Parser(new Screener(`7.0 + 3;`,  coercion_off).generate(), coercion_off).validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
-					assert.throws(() => new Parser(new Screener(`7.0 <= 3;`, coercion_off).generate(), coercion_off).validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
+					assert.throws(() => new Screener(`7.0 + 3;`,  coercion_off).parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
+					assert.throws(() => new Screener(`7.0 <= 3;`, coercion_off).parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
 				})
 			})
 		})

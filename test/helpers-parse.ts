@@ -13,7 +13,6 @@ import {
 	TokenString,
 } from '../src/lexer/'
 import {
-	Parser,
 	ParseNodePrimitiveLiteral,
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
@@ -100,7 +99,7 @@ export function expressionFromStatement(statement: ParseNodeStatement): ParseNod
 	return expression
 }
 export function statementFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeStatement {
-	const goal: ParseNodeGoal = new Parser(new Screener(src, config).generate(), config).parse()
+	const goal: ParseNodeGoal = new Screener(src, config).parser.parse()
 	assert_arrayLength(goal.children, 3, 'goal should have 3 children')
 	const [sot, stat_list, eot]: readonly [TokenFilebound, ParseNodeGoal__0__List, TokenFilebound] = goal.children
 	assert.strictEqual(sot.source, Filebound.SOT)

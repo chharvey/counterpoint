@@ -8,10 +8,6 @@ import {
 	Screener,
 } from '../../src/lexer/'
 import {
-	Parser,
-	ParseNodeGoal,
-} from '../../src/parser/'
-import {
 	Builder,
 	InstructionNone,
 	InstructionConst,
@@ -201,8 +197,8 @@ describe('Instruction', () => {
 					`;`,
 				].map((src) => {
 					const srcs: [string, SolidConfig] = [src, CONFIG_DEFAULT]
-					return new Parser(new Screener(...srcs).generate(), srcs[1]).parse().decorate().build(
-						new Parser(new Screener(...srcs).generate(), srcs[1]).validator.builder
+					return new Screener(...srcs).parser.parse().decorate().build(
+						new Screener(...srcs).parser.validator.builder
 					)
 				})
 				assert.ok(mods[0] instanceof InstructionNone)

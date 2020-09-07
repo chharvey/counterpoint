@@ -7,6 +7,7 @@ import Token, {
 	TokenIdentifier,
 	TokenComment,
 } from './Token.class'
+import type {Parser} from '../parser/'
 
 
 
@@ -35,7 +36,10 @@ export default class Screener {
 	 * @param source - the entire source text
 	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor (source: string, config: SolidConfig) {
+	constructor (
+		source: string,
+		private readonly config: SolidConfig,
+	) {
 		this.lexer = new Lexer(source, config).generate()
 		this.iterator_result_token = this.lexer.next()
 		this.t0 = this.iterator_result_token.value
@@ -60,5 +64,14 @@ export default class Screener {
 			this.iterator_result_token = this.lexer.next()
 			this.t0 = this.iterator_result_token.value
 		}
+	}
+
+	/**
+	 * Construct a new Parser object from this Screener.
+	 * @return a new Parser with this Screener as its argument
+	 */
+	get parser(): Parser {
+		const Parser_class: typeof Parser = require('../parser/').Parser
+		return new Parser_class(this.generate(), this.config)
 	}
 }
