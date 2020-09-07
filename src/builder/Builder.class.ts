@@ -4,10 +4,10 @@ import * as path from 'path'
 import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
 import type SolidConfig from '../SolidConfig'
-import {
-	Validator,
+import type {
 	SemanticNodeExpression,
 	SemanticStatementType,
+	SemanticNodeGoal,
 } from '../validator/'
 import {
 	InstructionStatement,
@@ -29,19 +29,16 @@ export default class Builder {
 	]
 	/** A counter for statements. */
 	private stmt_count: bigint = 0n;
-	/** The validator. */
-	private readonly validator: Validator;
 
 	/**
 	 * Construct a new Builder object.
-	 * @param source - the entire source text
+	 * @param semanticgoal - A semantic goal produced by a Validator.
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		source: string,
+		private readonly semanticgoal: SemanticNodeGoal,
 		readonly config: SolidConfig,
 	) {
-		this.validator = new Validator(source, this.config)
 	}
 
 	/**
@@ -70,7 +67,7 @@ export default class Builder {
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
 	print(): string {
-		return this.validator.validate().build(this).toString()
+		return this.semanticgoal.build(this).toString()
 	}
 
 	/**

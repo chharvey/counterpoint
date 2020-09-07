@@ -5,6 +5,9 @@ import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleI
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 import {
+	Validator,
+} from '../validator/'
+import {
 	Builder,
 } from '../builder/'
 
@@ -253,10 +256,11 @@ export default class CLI {
 			base: void 0,
 			ext: this.command === Command.DEV ? '.wat' : '.wasm',
 		})
-		const cg: Builder = new Builder(...await Promise.all([
+		const config: Promise<SolidConfig> = this.computeConfig(cwd)
+		const cg: Builder = new Builder(new Validator(...await Promise.all([
 			fs.promises.readFile(inputfilepath, 'utf8'),
-			this.computeConfig(cwd),
-		]))
+			config,
+		])).validate(), await config)
 		return Promise.all([
 			`
 				Compiling………
