@@ -5,6 +5,9 @@ import Util   from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {
+	Screener,
+} from '../../src/lexer/'
+import {
 	Parser,
 } from '../../src/parser/'
 import {
@@ -37,7 +40,7 @@ describe('ParseNode', () => {
 	describe('#decorate', () => {
 		context('Goal ::= #x02 #x03', () => {
 			it('makes a SemanticNodeGoal node containing no children.', () => {
-				const goal: SemanticNodeGoal = new Parser('', CONFIG_DEFAULT).parse().decorate()
+				const goal: SemanticNodeGoal = new Parser(new Screener('', CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).parse().decorate()
 				assert_arrayLength(goal.children, 0, 'semantic goal should have 0 children')
 			})
 		})
@@ -78,13 +81,18 @@ describe('ParseNode', () => {
 		})
 
 		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
-			const stringTemplateSemanticNode = (goal: SemanticNodeGoal): SemanticNodeTemplate => (goal
-				.children[0] as SemanticNodeStatementExpression)
-				.children[0] as SemanticNodeTemplate
+			function stringTemplateSemanticNode(src: string): string {
+				return ((new Parser(new Screener(src, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT)
+					.parse()
+					.decorate()
+					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as SemanticNodeTemplate)
+					.serialize()
+			}
 			specify('head, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
+				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
 					'''head1{{}}tail1''';
-				`), CONFIG_DEFAULT).parse().decorate()).serialize(), `
+				`)), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Constant line="1" col="11" source="}}tail1&apos;&apos;&apos;" value="tail1"/>
@@ -92,9 +100,9 @@ describe('ParseNode', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
+				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
 					'''head1{{ '''full1''' }}tail1''';
-				`), CONFIG_DEFAULT).parse().decorate()).serialize(), `
+				`)), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -105,9 +113,9 @@ describe('ParseNode', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
+				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{}}tail1''';
-				`), CONFIG_DEFAULT).parse().decorate()).serialize(), `
+				`)), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -119,9 +127,9 @@ describe('ParseNode', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, expr, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
+				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1''';
-				`), CONFIG_DEFAULT).parse().decorate()).serialize(), `
+				`)), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -136,9 +144,9 @@ describe('ParseNode', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, expr, middle, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
+				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1''';
-				`), CONFIG_DEFAULT).parse().decorate()).serialize(), `
+				`)), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -154,9 +162,9 @@ describe('ParseNode', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, expr, middle, expr, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(new Parser(Util.dedent(`
+				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1''';
-				`), CONFIG_DEFAULT).parse().decorate()).serialize(), `
+				`)), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ &apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -507,11 +515,11 @@ describe('ParseNode', () => {
 
 		Dev.supports('variables') && context('DeclarationVariable, StatementAssignment', () => {
 			it('makes SemanticNodeDeclaration and SemanticNodeAssignment nodes.', () => {
-				assert.strictEqual(new Parser(Util.dedent(`
+				assert.strictEqual(new Parser(new Screener(Util.dedent(`
 					let unfixed the_answer = 42;
 					let \`the £ answer\` = the_answer * 10;
 					the_answer = the_answer - \\z14;
-				`), CONFIG_DEFAULT).parse().decorate().serialize(), `
+				`), CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).parse().decorate().serialize(), `
 					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
 						<Declaration line="1" col="1" source="let unfixed the_answer = 42 ;" type="variable" unfixed="true">
 							<Assignee line="1" col="13" source="the_answer">
@@ -558,7 +566,7 @@ describe('ParseNode', () => {
 						<StatementExpression source="420 ;">...</StatementExpression>
 					</Goal>
 				*/
-				const goal: SemanticNodeGoal = new Parser('42; 420;', CONFIG_DEFAULT).parse().decorate()
+				const goal: SemanticNodeGoal = new Parser(new Screener(`42; 420;`, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).parse().decorate()
 				assert_arrayLength(goal.children, 2, 'goal should have 2 children')
 				assert.deepStrictEqual(goal.children.map((stat) => {
 					assert.ok(stat instanceof SemanticNodeStatementExpression)

@@ -2,6 +2,7 @@ import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import {
+	Screener,
 	Filebound,
 	Punctuator,
 	TokenFilebound,
@@ -99,7 +100,7 @@ export function expressionFromStatement(statement: ParseNodeStatement): ParseNod
 	return expression
 }
 export function statementFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeStatement {
-	const goal: ParseNodeGoal = new Parser(src, config).parse()
+	const goal: ParseNodeGoal = new Parser(new Screener(src, config).generate(), config).parse()
 	assert_arrayLength(goal.children, 3, 'goal should have 3 children')
 	const [sot, stat_list, eot]: readonly [TokenFilebound, ParseNodeGoal__0__List, TokenFilebound] = goal.children
 	assert.strictEqual(sot.source, Filebound.SOT)

@@ -5,6 +5,9 @@ import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {
+	Screener,
+} from '../../src/lexer/'
+import {
 	Parser,
 	ParseNodeGoal,
 } from '../../src/parser/'
@@ -52,8 +55,8 @@ describe('SemanticNode', () => {
 		context('SemanticNodeGoal ::= SOT EOT', () => {
 			it('returns InstructionNone.', () => {
 				const src: [string, SolidConfig] = [``, CONFIG_DEFAULT]
-				const instr: InstructionNone | InstructionModule = new Parser(...src).parse().decorate()
-					.build(new Parser(...src).validator.builder)
+				const instr: InstructionNone | InstructionModule = new Parser(new Screener(...src).generate(), src[1]).parse().decorate()
+					.build(new Parser(new Screener(...src).generate(), src[1]).validator.builder)
 				assert.ok(instr instanceof InstructionNone)
 			})
 		})
@@ -61,9 +64,9 @@ describe('SemanticNode', () => {
 		context('SemanticNodeStatement ::= ";"', () => {
 			it('returns InstructionNone.', () => {
 				const src: [string, SolidConfig] = [`;`, CONFIG_DEFAULT]
-				const instr: InstructionNone | InstructionStatement = (new Parser(...src).parse().decorate()
+				const instr: InstructionNone | InstructionStatement = (new Parser(new Screener(...src).generate(), src[1]).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
-					.build(new Parser(...src).validator.builder)
+					.build(new Parser(new Screener(...src).generate(), src[1]).validator.builder)
 				assert.ok(instr instanceof InstructionNone)
 			})
 		})
@@ -85,10 +88,9 @@ describe('SemanticNode', () => {
 					'-0.0;',
 					'-4.2e-2;',
 				].map((src) =>
-					((new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeConstant)
-						.build(new Parser(src, CONFIG_DEFAULT).validator.builder)
+					constantFromStatementExpression(
+						statementExpressionFromSource(src)
+					).build(new Parser(new Screener(src, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).validator.builder)
 				), [
 					instructionConstInt(0n),
 					instructionConstInt(0n),
@@ -166,7 +168,7 @@ describe('SemanticNode', () => {
 					statementExpressionFromSource(src)
 				)])
 				assert.deepStrictEqual(
-					nodes.map(([src,  node]) => node.build(new Parser(src, CONFIG_DEFAULT).validator.builder)),
+					nodes.map(([src,  node]) => node.build(new Parser(new Screener(src, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).validator.builder)),
 					nodes.map(([_src, node]) => {
 						const assess: CompletionStructureAssessment = node.assess()
 						assert.ok(!assess.isAbrupt)
@@ -187,7 +189,7 @@ describe('SemanticNode', () => {
 					assert.deepStrictEqual(
 						[...tests.keys()].map((src) => operationFromStatementExpression(
 							statementExpressionFromSource(src, folding_off)
-						).build(new Parser(src, folding_off).validator.builder)),
+						).build(new Parser(new Screener(src, folding_off).generate(), folding_off).validator.builder)),
 						[...tests.values()],
 					)
 				}
@@ -218,7 +220,7 @@ describe('SemanticNode', () => {
 					]))
 					assert.throws(() => operationFromStatementExpression(
 						statementExpressionFromSource(`null + 5;`)
-					).build(new Parser(`null + 5;`, CONFIG_DEFAULT).validator.builder), /Invalid operation./)
+					).build(new Parser(new Screener(`null + 5;`, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).validator.builder), /Invalid operation./)
 				})
 				specify('SemanticNodeOperation[operator: DIV] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 					buildOperations(xjs.Map.mapValues(new Map([
@@ -247,7 +249,7 @@ describe('SemanticNode', () => {
 						`false == 0.0;`,
 					].map((src) => operationFromStatementExpression(
 						statementExpressionFromSource(src, folding_off)
-					).build(new Parser(src, folding_off).validator.builder)), [
+					).build(new Parser(new Screener(src, folding_off).generate(), folding_off).validator.builder)), [
 						new InstructionBinop(
 							Operator.EQ,
 							instructionConstInt(42n),
@@ -286,7 +288,7 @@ describe('SemanticNode', () => {
 					])
 					assert.throws(() => operationFromStatementExpression(
 						statementExpressionFromSource(`42.0 is 42;`, folding_off)
-					).build(new Parser(`42.0 is 42;`, folding_off).validator.builder), /Both operands must be either integers or floats, but not a mix./, 'IS operator does not coerce to floats')
+					).build(new Parser(new Screener(`42.0 is 42;`, folding_off).generate(), folding_off).validator.builder), /Both operands must be either integers or floats, but not a mix./, 'IS operator does not coerce to floats')
 				})
 				specify('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 					assert.deepStrictEqual([
@@ -297,7 +299,7 @@ describe('SemanticNode', () => {
 						`false || null;`,
 					].map((src) => operationFromStatementExpression(
 						statementExpressionFromSource(src, folding_off)
-					).build(new Parser(src, folding_off).validator.builder)), [
+					).build(new Parser(new Screener(src, folding_off).generate(), folding_off).validator.builder)), [
 						new InstructionBinop(
 							Operator.AND,
 							instructionConstInt(42n),
@@ -361,8 +363,8 @@ describe('SemanticNode', () => {
 			})
 			specify('multiple statements.', () => {
 				const srcs: [string, SolidConfig] = [`42; 420;`, CONFIG_DEFAULT]
-				const generator: Builder = new Parser(...srcs).validator.builder
-				new Parser(...srcs).parse().decorate().children.forEach((stmt, i) => {
+				const generator: Builder = new Parser(new Screener(...srcs).generate(), srcs[1]).validator.builder
+				new Parser(new Screener(...srcs).generate(), srcs[1]).parse().decorate().children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof SemanticNodeStatementExpression)
 					assert.deepStrictEqual(
 						stmt.build(generator),
@@ -424,50 +426,48 @@ describe('SemanticNode', () => {
 			context('with constant folding on, with int coersion on.', () => {
 				context('SemanticNodeConstant', () => {
 					it('returns a constant Null type for SemanticNodeConstant with null value.', () => {
-						assert.deepStrictEqual(((new Parser(`null;`, CONFIG_DEFAULT).parse().decorate()
-							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeConstant).type(), new SolidTypeConstant(SolidNull.NULL))
+						assert.deepStrictEqual(constantFromStatementExpression(
+							statementExpressionFromSource(`null;`)
+						).type(), new SolidTypeConstant(SolidNull.NULL))
 					})
 					it('returns a constant Boolean type for SemanticNodeConstant with bool value.', () => {
 						assert.deepStrictEqual([
 							`false;`,
 							`true;`,
-						].map((src) =>
-							((new Parser(src, CONFIG_DEFAULT).parse().decorate()
-								.children[0] as SemanticNodeStatementExpression)
-								.children[0] as SemanticNodeConstant).type()
-						), [
+						].map((src) => constantFromStatementExpression(
+							statementExpressionFromSource(src)
+						).type()), [
 							new SolidTypeConstant(SolidBoolean.FALSE),
 							new SolidTypeConstant(SolidBoolean.TRUE),
 						])
 					})
 					it('returns a constant Integer type for SemanticNodeConstant with integer value.', () => {
-						assert.deepStrictEqual(((new Parser(`42;`, CONFIG_DEFAULT).parse().decorate()
-							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeConstant).type(), new SolidTypeConstant(new Int16(42n)))
+						assert.deepStrictEqual(constantFromStatementExpression(
+							statementExpressionFromSource(`42;`)
+						).type(), new SolidTypeConstant(new Int16(42n)))
 					})
 					it('returns a constant Float type for SemanticNodeConstant with float value.', () => {
-						assert.deepStrictEqual(((new Parser(`4.2e+1;`, CONFIG_DEFAULT).parse().decorate()
-							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeConstant).type(), new SolidTypeConstant(new Float64(42.0)))
+						assert.deepStrictEqual(constantFromStatementExpression(
+							statementExpressionFromSource(`4.2e+1;`)
+						).type(), new SolidTypeConstant(new Float64(42.0)))
 					})
 					Dev.supports('variables') && it('throws for identifiers.', () => {
-						assert.throws(() => ((new Parser(`x;`, CONFIG_DEFAULT).parse().decorate()
+						assert.throws(() => ((new Parser(new Screener(`x;`, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).parse().decorate()
 							.children[0] as SemanticNodeStatementExpression)
 							.children[0] as SemanticNodeIdentifier).type(), /Not yet supported./)
 					})
 					it('returns `String` for SemanticNodeConstant with string value.', () => {
 						;[
 							...(Dev.supports('literalString') ? [
-								(new Parser(`'42';`, CONFIG_DEFAULT).parse().decorate()
-									.children[0] as SemanticNodeStatementExpression)
-									.children[0] as SemanticNodeConstant,
+								constantFromStatementExpression(
+									statementExpressionFromSource(`'42';`)
+								),
 							] : []),
 							...(Dev.supports('literalTemplate') ? [
-								(new Parser(`'''42''';`, CONFIG_DEFAULT).parse().decorate()
+								(new Parser(new Screener(`'''42''';`, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).parse().decorate()
 									.children[0] as SemanticNodeStatementExpression)
 									.children[0] as SemanticNodeTemplate,
-								(new Parser(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).parse().decorate()
+								(new Parser(new Screener(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).generate(), CONFIG_DEFAULT).parse().decorate()
 									.children[0] as SemanticNodeStatementExpression)
 									.children[0] as SemanticNodeTemplate,
 							] : []),
@@ -478,17 +478,17 @@ describe('SemanticNode', () => {
 				})
 				context('SemanticNodeOperationBinaryArithmetic', () => {
 					it('returns a constant Integer type for any operation of integers.', () => {
-						assert.deepStrictEqual(((new Parser(`7 * 3 * 2;`, CONFIG_DEFAULT).parse().decorate()
-							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Int16(7n * 3n * 2n)))
+						assert.deepStrictEqual(operationFromStatementExpression(
+							statementExpressionFromSource(`7 * 3 * 2;`)
+						).type(), new SolidTypeConstant(new Int16(7n * 3n * 2n)))
 					})
 					it('returns a constant Float type for any operation of mix of integers and floats.', () => {
-						assert.deepStrictEqual(((new Parser(`3.0 * 2.7;`, CONFIG_DEFAULT).parse().decorate()
-							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(3.0 * 2.7)))
-						assert.deepStrictEqual(((new Parser(`7 * 3.0 * 2;`, CONFIG_DEFAULT).parse().decorate()
-							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeOperation).type(), new SolidTypeConstant(new Float64(7 * 3.0 * 2)))
+						assert.deepStrictEqual(operationFromStatementExpression(
+							statementExpressionFromSource(`3.0 * 2.7;`)
+						).type(), new SolidTypeConstant(new Float64(3.0 * 2.7)))
+						assert.deepStrictEqual(operationFromStatementExpression(
+							statementExpressionFromSource(`7 * 3.0 * 2;`)
+						).type(), new SolidTypeConstant(new Float64(7 * 3.0 * 2)))
 					})
 				})
 			})
@@ -606,9 +606,9 @@ describe('SemanticNode', () => {
 					`null ^ false;`,
 					...(Dev.supports('literalString') ? [`'hello' + 5;`] : []),
 				].forEach((src) => {
-					assert.throws(() => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeOperation).type(), /Invalid operation./)
+					assert.throws(() => operationFromStatementExpression(
+						statementExpressionFromSource(src)
+					).type(), /Invalid operation./)
 				})
 			})
 		})

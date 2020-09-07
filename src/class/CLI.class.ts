@@ -5,6 +5,9 @@ import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleI
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 import {
+	Screener,
+} from '../lexer/'
+import {
 	Parser,
 } from '../parser/'
 import type {
@@ -256,10 +259,10 @@ export default class CLI {
 			base: void 0,
 			ext: this.command === Command.DEV ? '.wat' : '.wasm',
 		})
-		const cg: Builder = new Parser(...await Promise.all([
+		const cg: Builder = new Parser(new Screener(...await Promise.all([
 			fs.promises.readFile(inputfilepath, 'utf8'),
 			this.computeConfig(cwd),
-		])).validator.builder
+		])).generate(), await this.computeConfig(cwd)).validator.builder
 		return Promise.all([
 			`
 				Compiling………

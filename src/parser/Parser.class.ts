@@ -1,7 +1,6 @@
 import type SolidConfig from '../SolidConfig'
 
-import {
-	Screener,
+import type {
 	Token,
 } from '../lexer/'
 import {
@@ -29,8 +28,6 @@ type State = ReadonlySet<Configuration>
 export default class Parser {
 	/** The syntactic grammar of the language used in parsing. */
 	private readonly grammar: Grammar;
-	/** The screener returning tokens for each iteration. */
-	private readonly screener: Generator<Token>;
 	/** The result of the screener iterator. */
 	private iterator_result_token: IteratorResult<Token, void>;
 	/** Working stack of tokens, nodes, and configuration states. */
@@ -40,16 +37,15 @@ export default class Parser {
 
 	/**
 	 * Construct a new Parser object.
-	 * @param source - the entire source text
+	 * @param tokengenerator - A token generator produced by a Screener.
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		source: string,
+		private readonly tokengenerator: Generator<Token>,
 		private readonly config: SolidConfig,
 	) {
 		this.grammar = new Grammar()
-		this.screener = new Screener(source, this.config).generate()
-		this.iterator_result_token = this.screener.next()
+		this.iterator_result_token = this.tokengenerator.next()
 		this.lookahead = this.iterator_result_token.value as Token
 	}
 
@@ -82,7 +78,7 @@ export default class Parser {
 		let shifted: boolean = false
 		if (next_state.size > 0) {
 			this.stack.push([this.lookahead, this.grammar.closure(next_state)])
-			this.iterator_result_token = this.screener.next()
+			this.iterator_result_token = this.tokengenerator.next()
 			this.lookahead = this.iterator_result_token.value as Token
 			shifted = true
 		}
