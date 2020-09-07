@@ -1,8 +1,7 @@
 import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
-import {Screener} from '../../src/lexer/'
-import {Parser} from '../../src/parser/'
+import {Lexer} from '../../src/lexer/'
 
 
 
@@ -15,12 +14,12 @@ describe('Validator', () => {
 					`42;`,
 					`21 + 21;`,
 				].forEach((src) => {
-					new Screener(src, CONFIG_DEFAULT).parser.validator.validate()
+					new Lexer(src, CONFIG_DEFAULT).screener.parser.validator.validate()
 				})
 			})
 			it('throws for invalid type operations.', () => {
-				assert.throws(() => new Screener(`null + 5;`,    CONFIG_DEFAULT).parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
-				assert.throws(() => new Screener(`7.0 <= null;`, CONFIG_DEFAULT).parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
+				assert.throws(() => new Lexer(`null + 5;`,    CONFIG_DEFAULT).screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
+				assert.throws(() => new Lexer(`7.0 <= null;`, CONFIG_DEFAULT).screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
 			})
 			context('with int coercion off.', () => {
 				const coercion_off: SolidConfig = {
@@ -31,8 +30,8 @@ describe('Validator', () => {
 					},
 				}
 				it('throws if operands have different numeric types.', () => {
-					assert.throws(() => new Screener(`7.0 + 3;`,  coercion_off).parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
-					assert.throws(() => new Screener(`7.0 <= 3;`, coercion_off).parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
+					assert.throws(() => new Lexer(`7.0 + 3;`,  coercion_off).screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
+					assert.throws(() => new Lexer(`7.0 <= 3;`, coercion_off).screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
 				})
 			})
 		})

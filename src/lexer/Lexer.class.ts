@@ -2,6 +2,7 @@ import type SolidConfig from '../SolidConfig'
 
 import Dev from '../class/Dev.class'
 import Scanner from './Scanner.class'
+import Screener from './Screener.class'
 import Char from './Char.class'
 import Token, {
 	Punctuator,
@@ -199,5 +200,13 @@ export default class Lexer {
 			}
 			yield token
 		}
+	}
+
+	/**
+	 * Construct a new Screener object from this Lexer.
+	 * @return a new Screener with this Lexer as its argument
+	 */
+	get screener(): Screener {
+		return new Screener(this.generate(), this.config)
 	}
 }

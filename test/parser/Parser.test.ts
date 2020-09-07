@@ -17,7 +17,7 @@ import {
 	ParseNodeGoal__0__List,
 } from '../../src/parser/'
 import {
-	Screener,
+	Lexer,
 	Punctuator,
 	Keyword,
 	TokenFilebound,
@@ -52,7 +52,7 @@ describe('Parser', () => {
 	describe('#parse', () => {
 		context('Goal ::= #x02 #x03', () => {
 			it('returns only file bounds.', () => {
-				const tree: ParseNodeGoal = new Screener('', CONFIG_DEFAULT).parser.parse()
+				const tree: ParseNodeGoal = new Lexer('', CONFIG_DEFAULT).screener.parser.parse()
 				assert.strictEqual(tree.children.length, 2)
 				tree.children.forEach((child) => assert.ok(child instanceof TokenFilebound))
 			})
@@ -125,7 +125,7 @@ describe('Parser', () => {
 
 		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
 			function stringTemplateParseNode (src: string): string {
-				return (((((((((new Screener(src, CONFIG_DEFAULT).parser
+				return (((((((((new Lexer(src, CONFIG_DEFAULT).screener.parser
 					.parse()
 					.children[1] as ParseNodeGoal__0__List)
 					.children[0] as ParseNodeStatement)
@@ -368,19 +368,19 @@ describe('Parser', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			it('throws when reaching an orphaned head.', () => {
-				assert.throws(() => new Screener(`
+				assert.throws(() => new Lexer(`
 					'''A string template head token not followed by a middle or tail {{ 1;
-				`, CONFIG_DEFAULT).parser.parse(), /Unexpected token/)
+				`, CONFIG_DEFAULT).screener.parser.parse(), /Unexpected token/)
 			})
 			it('throws when reaching an orphaned middle.', () => {
-				assert.throws(() => new Screener(`
+				assert.throws(() => new Lexer(`
 					2 }} a string template middle token not preceded by a head/middle and not followed by a middle/tail {{ 3;
-				`, CONFIG_DEFAULT).parser.parse(), /Unexpected token/)
+				`, CONFIG_DEFAULT).screener.parser.parse(), /Unexpected token/)
 			})
 			it('throws when reaching an orphaned tail.', () => {
-				assert.throws(() => new Screener(`
+				assert.throws(() => new Lexer(`
 					4 }} a string template tail token not preceded by a head or middle''';
-				`, CONFIG_DEFAULT).parser.parse(), /Unexpected token/)
+				`, CONFIG_DEFAULT).screener.parser.parse(), /Unexpected token/)
 			})
 		})
 
@@ -733,11 +733,11 @@ describe('Parser', () => {
 
 		Dev.supports('variables') && context('DeclarationVariable, StatementAssignment', () => {
 			it('makes ParseNodeDeclarationVariable and ParseNodeStatementAssignment nodes.', () => {
-				assert.strictEqual(new Screener(Util.dedent(`
+				assert.strictEqual(new Lexer(Util.dedent(`
 					let unfixed the_answer = 42;
 					let \`the £ answer\` = the_answer * 10;
 					the_answer = the_answer - \\z14;
-				`), CONFIG_DEFAULT).parser.parse().serialize(), `
+				`), CONFIG_DEFAULT).screener.parser.parse().serialize(), `
 					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
 						<FILEBOUND value="true">␂</FILEBOUND>
 						<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ;">
@@ -857,7 +857,7 @@ describe('Parser', () => {
 						<FILEBOUND.../>...</FILEBOUND>
 					</Goal>
 				*/
-				const goal: ParseNodeGoal = new Screener(`42; 420;`, CONFIG_DEFAULT).parser.parse()
+				const goal: ParseNodeGoal = new Lexer(`42; 420;`, CONFIG_DEFAULT).screener.parser.parse()
 				assert_arrayLength(goal.children, 3, 'goal should have 3 children')
 				const stat_list: ParseNodeGoal__0__List = goal.children[1]
 				assert_arrayLength(stat_list.children, 2, 'stat_list should have 2 children')

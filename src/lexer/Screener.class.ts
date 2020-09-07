@@ -1,7 +1,6 @@
 import type SolidConfig from '../SolidConfig'
 
 import Dev from '../class/Dev.class'
-import Lexer from './Lexer.class'
 import Token, {
 	TokenWhitespace,
 	TokenIdentifier,
@@ -22,8 +21,6 @@ import type {Parser} from '../parser/'
  * - optimizing identifiers
  */
 export default class Screener {
-	/** The lexer returning tokens for each iteration. */
-	private readonly lexer: Generator<Token>;
 	/** The result of the lexer iterator. */
 	private iterator_result_token: IteratorResult<Token, void>;
 	/** The current token. */
@@ -33,15 +30,14 @@ export default class Screener {
 
 	/**
 	 * Construct a new Screener object.
-	 * @param source - the entire source text
+	 * @param tokengenerator - A token generator produced by a Lexer.
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		source: string,
+		private readonly tokengenerator: Generator<Token>,
 		private readonly config: SolidConfig,
 	) {
-		this.lexer = new Lexer(source, config).generate()
-		this.iterator_result_token = this.lexer.next()
+		this.iterator_result_token = this.tokengenerator.next()
 		this.t0 = this.iterator_result_token.value
 	}
 
@@ -61,7 +57,7 @@ export default class Screener {
 					yield this.t0
 				}
 			}
-			this.iterator_result_token = this.lexer.next()
+			this.iterator_result_token = this.tokengenerator.next()
 			this.t0 = this.iterator_result_token.value
 		}
 	}
