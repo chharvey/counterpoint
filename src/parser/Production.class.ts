@@ -63,6 +63,7 @@ export default abstract class Production {
 	 *
 	 * @param   prod - the production to compare
 	 * @returns        is this production “equal to” the argument?
+	 * @final
 	 */
 	equals(prod: Production) {
 		return this === prod ||
@@ -72,6 +73,7 @@ export default abstract class Production {
 	/**
 	 * Generate grammar rules from this Production.
 	 * @returns this Production split into several rules
+	 * @final
 	 */
 	toRules(): Rule[] {
 		return this.sequences.map((_, i) => new Rule(this, i))
