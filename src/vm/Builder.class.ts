@@ -6,11 +6,9 @@ import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop =
 import type SolidConfig from '../SolidConfig'
 import Validator from '../validator/Validator.class'
 import type {
-	SemanticNodeExpression,
 	SemanticStatementType,
 } from '../class/SemanticNode.class'
 import {
-	InstructionStatement,
 	InstructionModule,
 } from './Instruction.class'
 
@@ -44,12 +42,11 @@ export default class Builder {
 	}
 
 	/**
-	 * Return a new statement-expression.
-	 * @param expr a semantic expression
-	 * @return a call to {@link CodeGenerator.stmt}
+	 * Return this Builder’s statement count, and then increment it.
+	 * @return this Builder’s current statement counter
 	 */
-	stmt(expr: SemanticNodeExpression): InstructionStatement {
-		return new InstructionStatement(this.stmt_count++, expr.build(this))
+	get stmtCount(): bigint {
+		return this.stmt_count++
 	}
 
 	/**

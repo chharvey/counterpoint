@@ -688,10 +688,10 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 		this.children[0] && this.children[0].typeCheck(opts) // assert does not throw // COMBAK this.children[0]?.type()
 	}
 	/** @implements SemanticNode */
-	build(generator: Builder): InstructionNone | InstructionStatement {
+	build(builder: Builder): InstructionNone | InstructionStatement {
 		return (!this.children.length)
 			? new InstructionNone()
-			: generator.stmt(this.children[0])
+			: new InstructionStatement(builder.stmtCount, this.children[0].build(builder))
 	}
 }
 export class SemanticNodeDeclaration extends SemanticNode {

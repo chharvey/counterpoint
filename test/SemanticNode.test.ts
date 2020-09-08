@@ -59,13 +59,33 @@ describe('SemanticNode', () => {
 			})
 		})
 
-		context('SemanticNodeStatement ::= ";"', () => {
-			it('returns InstructionNone.', () => {
+		describe('SemanticNodeStatementExpression', () => {
+			it('returns InstructionNone for empty statement expression.', () => {
 				const src: [string, SolidConfig] = [`;`, CONFIG_DEFAULT]
 				const instr: InstructionNone | InstructionStatement = (new Parser(...src).parse().decorate()
 					.children[0] as SemanticNodeStatementExpression)
 					.build(new Builder(...src))
 				assert.ok(instr instanceof InstructionNone)
+			})
+			it('returns InstructionStatement for nonempty statement expression.', () => {
+				const srcs: [string, SolidConfig] = [`42 + 420;`, CONFIG_DEFAULT]
+				const builder: Builder = new Builder(...srcs)
+				const stmt: SemanticNodeStatementExpression = statementExpressionFromSource(srcs[0])
+				assert.deepStrictEqual(
+					stmt.build(builder),
+					new InstructionStatement(0n, operationFromStatementExpression(stmt).build(builder))
+				)
+			})
+			specify('multiple statements.', () => {
+				const srcs: [string, SolidConfig] = [`42; 420;`, CONFIG_DEFAULT]
+				const generator: Builder = new Builder(...srcs)
+				new Parser(...srcs).parse().decorate().children.forEach((stmt, i) => {
+					assert.ok(stmt instanceof SemanticNodeStatementExpression)
+					assert.deepStrictEqual(
+						stmt.build(generator),
+						new InstructionStatement(BigInt(i), constantFromStatementExpression(stmt).build(generator)),
+					)
+				})
 			})
 		})
 
@@ -358,17 +378,6 @@ describe('SemanticNode', () => {
 							instructionConstFloat(5.0),
 						)],
 					]))
-				})
-			})
-			specify('multiple statements.', () => {
-				const srcs: [string, SolidConfig] = [`42; 420;`, CONFIG_DEFAULT]
-				const generator: Builder = new Builder(...srcs)
-				new Parser(...srcs).parse().decorate().children.forEach((stmt, i) => {
-					assert.ok(stmt instanceof SemanticNodeStatementExpression)
-					assert.deepStrictEqual(
-						stmt.build(generator),
-						new InstructionStatement(BigInt(i), constantFromStatementExpression(stmt).build(generator)),
-					)
 				})
 			})
 		})

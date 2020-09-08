@@ -3,6 +3,7 @@ import * as path from 'path'
 import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
+import Util from '../src/class/Util.class'
 import Parser from '../src/class/Parser.class'
 import Builder from '../src/vm/Builder.class'
 import {
@@ -15,6 +16,7 @@ import {
 	InstructionUnop,
 	InstructionBinop,
 	InstructionCond,
+	InstructionStatement,
 	InstructionModule,
 } from '../src/vm/Instruction.class'
 import {
@@ -185,6 +187,24 @@ describe('Instruction', () => {
 					instructionConstFloat(2.2),
 					instructionConstFloat(3.3),
 				).toString(), `(select ${ instructionConstFloat(2.2) } ${ instructionConstFloat(3.3) } ${ instructionConstInt(0n) })`)
+			})
+		})
+
+		describe('InstructionStatement', () => {
+			it('returns a wasm function.', () => {
+				const expr: InstructionBinop = new InstructionBinop(
+					Operator.MUL,
+					instructionConstInt(21n),
+					instructionConstInt(2n),
+				)
+				assert.strictEqual(
+					Util.dedent(new InstructionStatement(0n, expr).toString()),
+					Util.dedent(`
+						(func (export "f0") (result i32)
+							${ expr }
+						)
+					`),
+				)
 			})
 		})
 
