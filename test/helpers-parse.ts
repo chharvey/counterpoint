@@ -2,6 +2,7 @@ import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import {
+	Scanner,
 	Filebound,
 	Punctuator,
 	TokenFilebound,
@@ -12,7 +13,6 @@ import {
 	TokenString,
 } from '../src/lexer/'
 import {
-	Parser,
 	ParseNodePrimitiveLiteral,
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
@@ -99,7 +99,7 @@ export function expressionFromStatement(statement: ParseNodeStatement): ParseNod
 	return expression
 }
 export function statementFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeStatement {
-	const goal: ParseNodeGoal = new Parser(src, config).parse()
+	const goal: ParseNodeGoal = new Scanner(src, config).lexer.screener.parser.parse()
 	assert_arrayLength(goal.children, 3, 'goal should have 3 children')
 	const [sot, stat_list, eot]: readonly [TokenFilebound, ParseNodeGoal__0__List, TokenFilebound] = goal.children
 	assert.strictEqual(sot.source, Filebound.SOT)
