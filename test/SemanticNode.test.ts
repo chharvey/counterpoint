@@ -311,42 +311,73 @@ describe('SemanticNode', () => {
 						statementExpressionFromSource(`42.0 is 42;`, folding_off)
 					).build(new Builder(`42.0 is 42;`, folding_off)), /Both operands must be either integers or floats, but not a mix./, 'IS operator does not coerce to floats')
 				})
-				specify('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
-					assert.deepStrictEqual([
-						`42 && 420;`,
-						`4.2 || -420;`,
-						`null && 201.0e-1;`,
-						`true && 201.0e-1;`,
-						`false || null;`,
-					].map((src) => operationFromStatementExpression(
-						statementExpressionFromSource(src, folding_off)
-					).build(new Builder(src, folding_off))), [
-						new InstructionBinopLogical(
-							Operator.AND,
-							instructionConstInt(42n),
-							instructionConstInt(420n),
-						),
-						new InstructionBinopLogical(
-							Operator.OR,
-							instructionConstFloat(4.2),
-							instructionConstFloat(-420.0),
-						),
-						new InstructionBinopLogical(
-							Operator.AND,
-							instructionConstFloat(0.0),
-							instructionConstFloat(20.1),
-						),
-						new InstructionBinopLogical(
-							Operator.AND,
-							instructionConstFloat(1.0),
-							instructionConstFloat(20.1),
-						),
-						new InstructionBinopLogical(
-							Operator.OR,
-							instructionConstInt(0n),
-							instructionConstInt(0n),
-						),
-					])
+				describe('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+					it('returns InstructionBinopLogical.', () => {
+						assert.deepStrictEqual([
+							`42 && 420;`,
+							`4.2 || -420;`,
+							`null && 201.0e-1;`,
+							`true && 201.0e-1;`,
+							`false || null;`,
+						].map((src) => operationFromStatementExpression(
+							statementExpressionFromSource(src, folding_off)
+						).build(new Builder(src, folding_off))), [
+							new InstructionBinopLogical(
+								0n,
+								Operator.AND,
+								instructionConstInt(42n),
+								instructionConstInt(420n),
+							),
+							new InstructionBinopLogical(
+								0n,
+								Operator.OR,
+								instructionConstFloat(4.2),
+								instructionConstFloat(-420.0),
+							),
+							new InstructionBinopLogical(
+								0n,
+								Operator.AND,
+								instructionConstFloat(0.0),
+								instructionConstFloat(20.1),
+							),
+							new InstructionBinopLogical(
+								0n,
+								Operator.AND,
+								instructionConstFloat(1.0),
+								instructionConstFloat(20.1),
+							),
+							new InstructionBinopLogical(
+								0n,
+								Operator.OR,
+								instructionConstInt(0n),
+								instructionConstInt(0n),
+							),
+						])
+					})
+					it('counts internal variables correctly.', () => {
+						const src: string = `1 && 2 || 3 && 4;`
+						assert.deepStrictEqual(
+							operationFromStatementExpression(
+								statementExpressionFromSource(src, folding_off)
+							).build(new Builder(src, folding_off)),
+							new InstructionBinopLogical(
+								0n,
+								Operator.OR,
+								new InstructionBinopLogical(
+									1n,
+									Operator.AND,
+									instructionConstInt(1n),
+									instructionConstInt(2n),
+								),
+								new InstructionBinopLogical(
+									2n,
+									Operator.AND,
+									instructionConstInt(3n),
+									instructionConstInt(4n),
+								),
+							),
+						)
+					})
 				})
 				specify('ExpressionConditional ::= "if" Expression "then" Expression "else" Expression;', () => {
 					buildOperations(xjs.Map.mapValues(new Map([

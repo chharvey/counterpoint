@@ -297,11 +297,13 @@ export class InstructionBinopEquality extends InstructionBinop {
 }
 export class InstructionBinopLogical extends InstructionBinop {
 	/**
+	 * @param count the index of a temporary optimization variable
 	 * @param op an operator representing the operation to perform
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
 	 */
 	constructor (
+		private readonly count: bigint,
 		op:   ValidOperatorLogical,
 		arg0: InstructionExpression,
 		arg1: InstructionExpression,
@@ -312,7 +314,7 @@ export class InstructionBinopLogical extends InstructionBinop {
 	 * @return a `(select)` instruction determining which operand to produce
 	 */
 	toString(): string {
-		const varname: string = `$operand0`
+		const varname: string = `$o${ this.count }`
 		const condition: InstructionExpression = new InstructionUnop(
 			Operator.NOT,
 			new InstructionUnop(

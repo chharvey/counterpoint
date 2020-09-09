@@ -158,6 +158,7 @@ describe('Instruction', () => {
 			})
 			it('prints (select) for AND and OR', () => {
 				assert.strictEqual(new InstructionBinopLogical(
+					0n,
 					Operator.AND,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
@@ -165,8 +166,9 @@ describe('Instruction', () => {
 					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionGet(varname, false))),
 					instructionConstInt(18n),
 					new InstructionTee(varname, instructionConstInt(30n)),
-				) }`)('$operand0'))
+				) }`)('$o0'))
 				assert.strictEqual(new InstructionBinopLogical(
+					3n,
 					Operator.OR,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
@@ -174,7 +176,7 @@ describe('Instruction', () => {
 					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionGet(varname, true))),
 					new InstructionTee(varname, instructionConstFloat(30.1)),
 					instructionConstFloat(18.1),
-				) }`)('$operand0'))
+				) }`)('$o3'))
 			})
 		})
 

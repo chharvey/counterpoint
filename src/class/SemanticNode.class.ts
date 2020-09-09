@@ -615,6 +615,7 @@ export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBin
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopLogical {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionBinopLogical(
+			builder.varCount,
 			this.operator,
 			this.children[0].build(builder, tofloat),
 			this.children[1].build(builder, tofloat),
