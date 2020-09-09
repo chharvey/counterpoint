@@ -23,7 +23,10 @@ import Instruction, {
 	InstructionExpression,
 	InstructionConst,
 	InstructionUnop,
-	InstructionBinop,
+	InstructionBinopArithmetic,
+	InstructionBinopComparative,
+	InstructionBinopEquality,
+	InstructionBinopLogical,
 	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
@@ -399,18 +402,6 @@ export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation 
 	 * @implements SemanticNodeExpression
 	 * @final
 	 */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinop {
-		const tofloat: boolean = to_float || this.shouldFloat
-		return new InstructionBinop(
-			this.operator,
-			this.children[0].build(builder, tofloat),
-			this.children[1].build(builder, tofloat),
-		)
-	}
-	/**
-	 * @implements SemanticNodeExpression
-	 * @final
-	 */
 	protected type_do(const_fold: boolean, int_coercion: boolean): SolidLanguageType {
 		return this.type_do_do(
 			this.children[0].type(const_fold, int_coercion),
@@ -427,6 +418,15 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 		children: readonly [SemanticNodeExpression, SemanticNodeExpression]
 	) {
 		super(start_node, operator, children)
+	}
+	/** @implements SemanticNodeExpression */
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopArithmetic {
+		const tofloat: boolean = to_float || this.shouldFloat
+		return new InstructionBinopArithmetic(
+			this.operator,
+			this.children[0].build(builder, tofloat),
+			this.children[1].build(builder, tofloat),
+		)
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
@@ -489,6 +489,15 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 		super(start_node, operator, children)
 	}
 	/** @implements SemanticNodeExpression */
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopComparative {
+		const tofloat: boolean = to_float || this.shouldFloat
+		return new InstructionBinopComparative(
+			this.operator,
+			this.children[0].build(builder, tofloat),
+			this.children[1].build(builder, tofloat),
+		)
+	}
+	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
 		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		if (assess0.isAbrupt) {
@@ -542,6 +551,15 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 		return this.operator === Operator.EQ && super.shouldFloat
 	}
 	/** @implements SemanticNodeExpression */
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopEquality {
+		const tofloat: boolean = to_float || this.shouldFloat
+		return new InstructionBinopEquality(
+			this.operator,
+			this.children[0].build(builder, tofloat),
+			this.children[1].build(builder, tofloat),
+		)
+	}
+	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
 		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		if (assess0.isAbrupt) {
@@ -592,6 +610,16 @@ export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBin
 		children: readonly [SemanticNodeExpression, SemanticNodeExpression]
 	) {
 		super(start_node, operator, children)
+	}
+	/** @implements SemanticNodeExpression */
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopLogical {
+		const tofloat: boolean = to_float || this.shouldFloat
+		return new InstructionBinopLogical(
+			builder.varCount,
+			this.operator,
+			this.children[0].build(builder, tofloat),
+			this.children[1].build(builder, tofloat),
+		)
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
@@ -688,10 +716,10 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 		this.children[0] && this.children[0].typeCheck(opts) // assert does not throw // COMBAK this.children[0]?.type()
 	}
 	/** @implements SemanticNode */
-	build(generator: Builder): InstructionNone | InstructionStatement {
+	build(builder: Builder): InstructionNone | InstructionStatement {
 		return (!this.children.length)
 			? new InstructionNone()
-			: generator.stmt(this.children[0])
+			: new InstructionStatement(builder.stmtCount, this.children[0].build(builder))
 	}
 }
 export class SemanticNodeDeclaration extends SemanticNode {
