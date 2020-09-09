@@ -211,7 +211,7 @@ export class TokenPunctuator extends Token {
 	}
 }
 export class TokenKeyword extends Token {
-	private static readonly MINIMUM_VALUE: bigint = 0x80n
+	private static readonly MINIMUM_VALUE: 0x80n = 0x80n
 	static readonly CHAR: RegExp = /^[a-z]$/
 	static readonly KEYWORDS: readonly Keyword[] = [...new Set<Keyword>( // remove duplicates
 		Object.values(Keyword).filter((kw) => Dev.supports('variables') ? true : ![
@@ -228,7 +228,7 @@ export class TokenKeyword extends Token {
 	}
 }
 export abstract class TokenIdentifier extends Token {
-	private static readonly MINIMUM_VALUE: bigint = 0x100n
+	private static readonly MINIMUM_VALUE: 0x100n = 0x100n
 	/**
 	 * The cooked value of this Token.
 	 * If the token is a keyword, the cooked value is its contents.
@@ -284,11 +284,11 @@ export class TokenIdentifierUnicode extends TokenIdentifier {
 	}
 }
 export class TokenNumber extends Token {
-	static readonly RADIX_DEFAULT: RadixType = 10n
-	static readonly ESCAPER   : string = '\\'
-	static readonly SEPARATOR : string = '_'
-	static readonly POINT     : string = '.'
-	static readonly EXPONENT  : string = 'e'
+	static readonly RADIX_DEFAULT: 10n = 10n
+	static readonly ESCAPER:   '\\' = '\\'
+	static readonly SEPARATOR: '_' = '_'
+	static readonly POINT:     '.' = '.'
+	static readonly EXPONENT:  'e' = 'e'
 	static readonly UNARY: readonly Punctuator[] = [
 		Punctuator.AFF,
 		Punctuator.NEG,
@@ -438,8 +438,8 @@ export class TokenNumber extends Token {
 	}
 }
 export class TokenString extends Token {
-	static readonly DELIM   : string = '\''
-	static readonly ESCAPER : string = '\\'
+	static readonly DELIM:   '\'' = '\''
+	static readonly ESCAPER: '\\' = '\\'
 	static readonly ESCAPES: readonly string[] = [TokenString.DELIM, TokenString.ESCAPER, 's','t','n','r']
 	/**
 	 * Compute the token worth of a `TokenString` token or any segment of such token.
