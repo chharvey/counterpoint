@@ -1,6 +1,10 @@
 import Operator, {
 	ValidOperatorUnary,
 	ValidOperatorBinary,
+	ValidOperatorArithmetic,
+	ValidOperatorComparative,
+	ValidOperatorEquality,
+	ValidOperatorLogical,
 } from '../enum/Operator.enum'
 import {
 	SolidNumber,
@@ -162,61 +166,144 @@ export class InstructionUnop extends InstructionExpression {
 /**
  * Perform a binary operation on the stack.
  */
-export class InstructionBinop extends InstructionExpression {
-	private readonly floatarg: boolean = this.arg0.isFloat || this.arg1.isFloat
+export abstract class InstructionBinop extends InstructionExpression {
+	protected readonly floatarg: boolean = this.arg0.isFloat || this.arg1.isFloat
 	/**
 	 * @param op a punctuator representing the operation to perform
 	 * @param arg0 the first operand
 	 * @param arg1 the second operand
 	 */
 	constructor (
-		private readonly op: ValidOperatorBinary,
-		private readonly arg0: InstructionExpression,
-		private readonly arg1: InstructionExpression,
+		protected readonly op:   ValidOperatorBinary,
+		protected readonly arg0: InstructionExpression,
+		protected readonly arg1: InstructionExpression,
 	) {
 		super()
 		if (this.floatarg && (!this.arg0.isFloat || !this.arg1.isFloat)) {
 			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`)
 		}
 	}
+}
+export class InstructionBinopArithmetic extends InstructionBinop {
+	/**
+	 * @param op an operator representing the operation to perform
+	 * @param arg0 the first operand
+	 * @param arg1 the second operand
+	 */
+	constructor (
+		op:   ValidOperatorArithmetic,
+		arg0: InstructionExpression,
+		arg1: InstructionExpression,
+	) {
+		super(op, arg0, arg1)
+	}
 	/**
 	 * @return `'(‹op› ‹arg0› ‹arg1›)'`
 	 */
 	toString(): string {
-		if ([Operator.AND, Operator.OR].includes(this.op)) {
-			const varname: string = `$operand0`
-			const condition: InstructionExpression = new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionGet(varname, this.arg0.isFloat)))
-			const left:      InstructionExpression = new InstructionTee(varname, this.arg0)
-			const right:     InstructionExpression = this.arg1
-			return `(local ${ varname } ${ (!this.arg0.isFloat) ? `i32` : `f64` }) ${
-				(this.op === Operator.AND)
-					? new InstructionCond(condition, right, left)
-					: new InstructionCond(condition, left, right)
-			}`
-		}
 		return `(${ new Map<Operator, string>([
 			[Operator.EXP, (!this.floatarg) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
 			[Operator.MUL, (!this.floatarg) ? `i32.mul`   : `f64.mul`],
 			[Operator.DIV, (!this.floatarg) ? `i32.div_s` : `f64.div`],
 			[Operator.ADD, (!this.floatarg) ? `i32.add`   : `f64.add`],
 			[Operator.SUB, (!this.floatarg) ? `i32.sub`   : `f64.sub`],
-			[Operator.LT,  (!this.floatarg) ? `i32.lt_s`  : `f64.lt`],
-			[Operator.GT,  (!this.floatarg) ? `i32.gt_s`  : `f64.gt`],
-			[Operator.LE,  (!this.floatarg) ? `i32.le_s`  : `f64.le`],
-			[Operator.GE,  (!this.floatarg) ? `i32.ge_s`  : `f64.ge`],
-			[Operator.IS,  (!this.floatarg) ? `i32.eq`    : `call $fis`],
-			[Operator.EQ,  (!this.floatarg) ? `i32.eq`    : `f64.eq`],
 		]).get(this.op)! } ${ this.arg0 } ${ this.arg1 })`
 	}
 	get isFloat(): boolean {
-		return ([
-			Operator.LT,
-			Operator.GT,
-			Operator.LE,
-			Operator.GE,
-			Operator.IS,
-			Operator.EQ,
-		].includes(this.op)) ? false : this.floatarg
+		return this.floatarg
+	}
+}
+export class InstructionBinopComparative extends InstructionBinop {
+	/**
+	 * @param op an operator representing the operation to perform
+	 * @param arg0 the first operand
+	 * @param arg1 the second operand
+	 */
+	constructor (
+		op:   ValidOperatorComparative,
+		arg0: InstructionExpression,
+		arg1: InstructionExpression,
+	) {
+		super(op, arg0, arg1)
+	}
+	/**
+	 * @return `'(‹op› ‹arg0› ‹arg1›)'`
+	 */
+	toString(): string {
+		return `(${ new Map<Operator, string>([
+			[Operator.LT, (!this.floatarg) ? `i32.lt_s` : `f64.lt`],
+			[Operator.GT, (!this.floatarg) ? `i32.gt_s` : `f64.gt`],
+			[Operator.LE, (!this.floatarg) ? `i32.le_s` : `f64.le`],
+			[Operator.GE, (!this.floatarg) ? `i32.ge_s` : `f64.ge`],
+		]).get(this.op)! } ${ this.arg0 } ${ this.arg1 })`
+	}
+	get isFloat(): boolean {
+		return false
+	}
+}
+export class InstructionBinopEquality extends InstructionBinop {
+	/**
+	 * @param op an operator representing the operation to perform
+	 * @param arg0 the first operand
+	 * @param arg1 the second operand
+	 */
+	constructor (
+		op:   ValidOperatorEquality,
+		arg0: InstructionExpression,
+		arg1: InstructionExpression,
+	) {
+		super(op, arg0, arg1)
+	}
+	/**
+	 * @return `'(‹op› ‹arg0› ‹arg1›)'`
+	 */
+	toString(): string {
+		return `(${ new Map<Operator, string>([
+			[Operator.IS, (!this.floatarg) ? `i32.eq` : `call $fis`],
+			[Operator.EQ, (!this.floatarg) ? `i32.eq` : `f64.eq`],
+		]).get(this.op)! } ${ this.arg0 } ${ this.arg1 })`
+	}
+	get isFloat(): boolean {
+		return false
+	}
+}
+export class InstructionBinopLogical extends InstructionBinop {
+	/**
+	 * @param count the index of a temporary optimization variable
+	 * @param op an operator representing the operation to perform
+	 * @param arg0 the first operand
+	 * @param arg1 the second operand
+	 */
+	constructor (
+		private readonly count: bigint,
+		op:   ValidOperatorLogical,
+		arg0: InstructionExpression,
+		arg1: InstructionExpression,
+	) {
+		super(op, arg0, arg1)
+	}
+	/**
+	 * @return a `(select)` instruction determining which operand to produce
+	 */
+	toString(): string {
+		const varname: string = `$o${ this.count }`
+		const condition: InstructionExpression = new InstructionUnop(
+			Operator.NOT,
+			new InstructionUnop(
+				Operator.NOT,
+				new InstructionGet(varname, this.arg0.isFloat),
+			),
+		)
+		const left:  InstructionExpression = new InstructionTee(varname, this.arg0)
+		const right: InstructionExpression = this.arg1
+		return `(local ${ varname } ${ (!this.arg0.isFloat) ? `i32` : `f64` }) ${
+			(this.op === Operator.AND)
+				? new InstructionCond(condition, right, left)
+				: new InstructionCond(condition, left, right)
+		}`
+	}
+	get isFloat(): boolean {
+		return this.floatarg
 	}
 }
 /**
