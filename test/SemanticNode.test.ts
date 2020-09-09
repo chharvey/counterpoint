@@ -30,7 +30,9 @@ import {
 	InstructionNone,
 	InstructionConst,
 	InstructionUnop,
-	InstructionBinop,
+	InstructionBinopArithmetic,
+	InstructionBinopEquality,
+	InstructionBinopLogical,
 	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
@@ -234,8 +236,8 @@ describe('SemanticNode', () => {
 				})
 				specify('SemanticNodeOperation[operator: ADD | MUL] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 					buildOperations(new Map([
-						[`42 + 420;`, new InstructionBinop(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
-						[`3 * 2.1;`,  new InstructionBinop(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
+						[`42 + 420;`, new InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
+						[`3 * 2.1;`,  new InstructionBinopArithmetic(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
 					]))
 					assert.throws(() => operationFromStatementExpression(
 						statementExpressionFromSource(`null + 5;`)
@@ -251,7 +253,7 @@ describe('SemanticNode', () => {
 						[' 200 / -3;', [ 200n, -3n]],
 						['-200 /  3;', [-200n,  3n]],
 						['-200 / -3;', [-200n, -3n]],
-					]), ([a, b]) => new InstructionBinop(
+					]), ([a, b]) => new InstructionBinopArithmetic(
 						Operator.DIV,
 						instructionConstInt(a),
 						instructionConstInt(b),
@@ -269,37 +271,37 @@ describe('SemanticNode', () => {
 					].map((src) => operationFromStatementExpression(
 						statementExpressionFromSource(src, folding_off)
 					).build(new Builder(src, folding_off))), [
-						new InstructionBinop(
+						new InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstInt(42n),
 							instructionConstInt(420n),
 						),
-						new InstructionBinop(
+						new InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstFloat(4.2),
 							instructionConstFloat(42.0),
 						),
-						new InstructionBinop(
+						new InstructionBinopEquality(
 							Operator.IS,
 							instructionConstInt(1n),
 							instructionConstInt(1n),
 						),
-						new InstructionBinop(
+						new InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstInt(1n),
 							instructionConstInt(1n),
 						),
-						new InstructionBinop(
+						new InstructionBinopEquality(
 							Operator.IS,
 							instructionConstInt(0n),
 							instructionConstInt(0n),
 						),
-						new InstructionBinop(
+						new InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstInt(0n),
 							instructionConstInt(0n),
 						),
-						new InstructionBinop(
+						new InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstFloat(0.0),
 							instructionConstFloat(0.0),
@@ -319,27 +321,27 @@ describe('SemanticNode', () => {
 					].map((src) => operationFromStatementExpression(
 						statementExpressionFromSource(src, folding_off)
 					).build(new Builder(src, folding_off))), [
-						new InstructionBinop(
+						new InstructionBinopLogical(
 							Operator.AND,
 							instructionConstInt(42n),
 							instructionConstInt(420n),
 						),
-						new InstructionBinop(
+						new InstructionBinopLogical(
 							Operator.OR,
 							instructionConstFloat(4.2),
 							instructionConstFloat(-420.0),
 						),
-						new InstructionBinop(
+						new InstructionBinopLogical(
 							Operator.AND,
 							instructionConstFloat(0.0),
 							instructionConstFloat(20.1),
 						),
-						new InstructionBinop(
+						new InstructionBinopLogical(
 							Operator.AND,
 							instructionConstFloat(1.0),
 							instructionConstFloat(20.1),
 						),
-						new InstructionBinop(
+						new InstructionBinopLogical(
 							Operator.OR,
 							instructionConstInt(0n),
 							instructionConstInt(0n),
@@ -359,18 +361,18 @@ describe('SemanticNode', () => {
 				})
 				specify('compound expression.', () => {
 					buildOperations(new Map([
-						[`42 ^ 2 * 420;`, new InstructionBinop(
+						[`42 ^ 2 * 420;`, new InstructionBinopArithmetic(
 							Operator.MUL,
-							new InstructionBinop(
+							new InstructionBinopArithmetic(
 								Operator.EXP,
 								instructionConstInt(42n),
 								instructionConstInt(2n),
 							),
 							instructionConstInt(420n),
 						)],
-						[`2 * 3.0 + 5;`, new InstructionBinop(
+						[`2 * 3.0 + 5;`, new InstructionBinopArithmetic(
 							Operator.ADD,
-							new InstructionBinop(
+							new InstructionBinopArithmetic(
 								Operator.MUL,
 								instructionConstFloat(2.0),
 								instructionConstFloat(3.0),

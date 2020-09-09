@@ -14,7 +14,10 @@ import {
 	InstructionGet,
 	InstructionTee,
 	InstructionUnop,
-	InstructionBinop,
+	InstructionBinopArithmetic,
+	InstructionBinopComparative,
+	InstructionBinopEquality,
+	InstructionBinopLogical,
 	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
@@ -30,7 +33,7 @@ describe('Instruction', () => {
 	describe('.constructor', () => {
 		context('InstructionBinop', () => {
 			it('throws when operands are a mix of ints and floats.', () => {
-				assert.throws(() => new InstructionBinop(
+				assert.throws(() => new InstructionBinopArithmetic(
 					Operator.MUL,
 					instructionConstInt(5n),
 					instructionConstFloat(2.5),
@@ -122,39 +125,39 @@ describe('Instruction', () => {
 
 		context('InstructionBinop', () => {
 			it('performs a binary operation.', () => {
-				assert.strictEqual(new InstructionBinop(
+				assert.strictEqual(new InstructionBinopArithmetic(
 					Operator.MUL,
 					instructionConstInt(21n),
 					instructionConstInt(2n),
 				).toString(), `(i32.mul ${ instructionConstInt(21n) } ${ instructionConstInt(2n) })`)
-				assert.strictEqual(new InstructionBinop(
+				assert.strictEqual(new InstructionBinopArithmetic(
 					Operator.ADD,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
 				).toString(), `(f64.add ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
-				assert.strictEqual(new InstructionBinop(
+				assert.strictEqual(new InstructionBinopComparative(
 					Operator.LT,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
 				).toString(), `(i32.lt_s ${ instructionConstInt(30n) } ${ instructionConstInt(18n) })`)
-				assert.strictEqual(new InstructionBinop(
+				assert.strictEqual(new InstructionBinopComparative(
 					Operator.GE,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
 				).toString(), `(f64.ge ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
-				assert.strictEqual(new InstructionBinop(
+				assert.strictEqual(new InstructionBinopEquality(
 					Operator.IS,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
 				).toString(), `(i32.eq ${ instructionConstInt(30n) } ${ instructionConstInt(18n) })`)
-				assert.strictEqual(new InstructionBinop(
+				assert.strictEqual(new InstructionBinopEquality(
 					Operator.IS,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
 				).toString(), `(call $fis ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
 			})
 			it('prints (select) for AND and OR', () => {
-				assert.strictEqual(new InstructionBinop(
+				assert.strictEqual(new InstructionBinopLogical(
 					Operator.AND,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
@@ -163,7 +166,7 @@ describe('Instruction', () => {
 					instructionConstInt(18n),
 					new InstructionTee(varname, instructionConstInt(30n)),
 				) }`)('$operand0'))
-				assert.strictEqual(new InstructionBinop(
+				assert.strictEqual(new InstructionBinopLogical(
 					Operator.OR,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
@@ -192,7 +195,7 @@ describe('Instruction', () => {
 
 		describe('InstructionStatement', () => {
 			it('returns a wasm function.', () => {
-				const expr: InstructionBinop = new InstructionBinop(
+				const expr: InstructionBinopArithmetic = new InstructionBinopArithmetic(
 					Operator.MUL,
 					instructionConstInt(21n),
 					instructionConstInt(2n),
