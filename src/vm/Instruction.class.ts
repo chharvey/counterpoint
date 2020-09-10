@@ -207,7 +207,7 @@ export abstract class InstructionBinop extends InstructionExpression {
 		protected readonly arg1: InstructionExpression,
 	) {
 		super()
-		if (this.floatarg && (!this.arg0.isFloat || !this.arg1.isFloat)) {
+		if (this.op !== Operator.IS && this.floatarg && (!this.arg0.isFloat || !this.arg1.isFloat)) {
 			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`)
 		}
 	}
@@ -287,7 +287,12 @@ export class InstructionBinopEquality extends InstructionBinop {
 	 */
 	toString(): string {
 		return `(${ new Map<Operator, string>([
-			[Operator.IS, (!this.floatarg) ? `i32.eq` : `call $fis`],
+			[Operator.IS, (
+				(!this.arg0.isFloat && !this.arg1.isFloat) ? `i32.eq` :
+				(!this.arg0.isFloat &&  this.arg1.isFloat) ? `call $i_f_is` :
+				( this.arg0.isFloat && !this.arg1.isFloat) ? `call $f_i_is` :
+				`call $fis`
+			)],
 			[Operator.EQ, (!this.floatarg) ? `i32.eq` : `f64.eq`],
 		]).get(this.op)! } ${ this.arg0 } ${ this.arg1 })`
 	}

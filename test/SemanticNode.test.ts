@@ -262,6 +262,8 @@ describe('SemanticNode', () => {
 				specify('SemanticNodeOperation[operator: IS | EQ] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 					assert.deepStrictEqual([
 						`42 == 420;`,
+						`4.2 is 42;`,
+						`42 is 4.2;`,
 						`4.2 == 42;`,
 						`true is 1;`,
 						`true == 1;`,
@@ -275,6 +277,16 @@ describe('SemanticNode', () => {
 							Operator.EQ,
 							instructionConstInt(42n),
 							instructionConstInt(420n),
+						),
+						new InstructionBinopEquality(
+							Operator.IS,
+							instructionConstFloat(4.2),
+							instructionConstInt(42n),
+						),
+						new InstructionBinopEquality(
+							Operator.IS,
+							instructionConstInt(42n),
+							instructionConstFloat(4.2),
 						),
 						new InstructionBinopEquality(
 							Operator.EQ,
@@ -307,9 +319,6 @@ describe('SemanticNode', () => {
 							instructionConstFloat(0.0),
 						),
 					])
-					assert.throws(() => operationFromStatementExpression(
-						statementExpressionFromSource(`42.0 is 42;`, folding_off)
-					).build(new Builder(`42.0 is 42;`, folding_off)), /Both operands must be either integers or floats, but not a mix./, 'IS operator does not coerce to floats')
 				})
 				describe('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 					it('returns InstructionBinopLogical.', () => {
