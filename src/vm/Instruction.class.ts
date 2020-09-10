@@ -195,6 +195,9 @@ export class InstructionUnop extends InstructionExpression {
  * Perform a binary operation on the stack.
  */
 export abstract class InstructionBinop extends InstructionExpression {
+	/** Is either one of the arguments of type `i32`? */
+	protected readonly intarg: boolean = !this.arg0.isFloat || !this.arg1.isFloat
+	/** Is either one of the arguments of type `f64`? */
 	protected readonly floatarg: boolean = this.arg0.isFloat || this.arg1.isFloat
 	/**
 	 * @param op a punctuator representing the operation to perform
@@ -207,9 +210,6 @@ export abstract class InstructionBinop extends InstructionExpression {
 		protected readonly arg1: InstructionExpression,
 	) {
 		super()
-		if (this.op !== Operator.IS && this.floatarg && (!this.arg0.isFloat || !this.arg1.isFloat)) {
-			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`)
-		}
 	}
 }
 export class InstructionBinopArithmetic extends InstructionBinop {
@@ -224,6 +224,9 @@ export class InstructionBinopArithmetic extends InstructionBinop {
 		arg1: InstructionExpression,
 	) {
 		super(op, arg0, arg1)
+		if (this.intarg && this.floatarg) {
+			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`)
+		}
 	}
 	/**
 	 * @return `'(‹op› ‹arg0› ‹arg1›)'`
@@ -253,6 +256,9 @@ export class InstructionBinopComparative extends InstructionBinop {
 		arg1: InstructionExpression,
 	) {
 		super(op, arg0, arg1)
+		if (this.intarg && this.floatarg) {
+			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`)
+		}
 	}
 	/**
 	 * @return `'(‹op› ‹arg0› ‹arg1›)'`
@@ -286,15 +292,15 @@ export class InstructionBinopEquality extends InstructionBinop {
 	 * @return `'(‹op› ‹arg0› ‹arg1›)'`
 	 */
 	toString(): string {
-		return `(${ new Map<Operator, string>([
-			[Operator.IS, (
-				(!this.arg0.isFloat && !this.arg1.isFloat) ? `i32.eq` :
-				(!this.arg0.isFloat &&  this.arg1.isFloat) ? `call $i_f_is` :
-				( this.arg0.isFloat && !this.arg1.isFloat) ? `call $f_i_is` :
-				`call $fis`
-			)],
-			[Operator.EQ, (!this.floatarg) ? `i32.eq` : `f64.eq`],
-		]).get(this.op)! } ${ this.arg0 } ${ this.arg1 })`
+		return `(${
+			(!this.arg0.isFloat && !this.arg1.isFloat) ? `i32.eq` :
+			(!this.arg0.isFloat &&  this.arg1.isFloat) ? `call $i_f_is` :
+			( this.arg0.isFloat && !this.arg1.isFloat) ? `call $f_i_is` :
+			new Map<Operator, string>([
+				[Operator.IS, `call $fis`],
+				[Operator.EQ, `f64.eq`],
+			]).get(this.op)!
+		} ${ this.arg0 } ${ this.arg1 })`
 	}
 	get isFloat(): boolean {
 		return false
@@ -314,6 +320,9 @@ export class InstructionBinopLogical extends InstructionBinop {
 		arg1: InstructionExpression,
 	) {
 		super(op, arg0, arg1)
+		if (this.intarg && this.floatarg) {
+			throw new TypeError(`Both operands must be either integers or floats, but not a mix.\nOperands: ${ this.arg0 } ${ this.arg1 }`)
+		}
 	}
 	/**
 	 * @return a `(select)` instruction determining which operand to produce
@@ -354,7 +363,7 @@ export class InstructionCond extends InstructionExpression {
 		private readonly arg2: InstructionExpression,
 	) {
 		super()
-		if (this.isFloat && (!this.arg1.isFloat || !this.arg2.isFloat)) {
+		if ((this.arg1.isFloat || this.arg2.isFloat) && (!this.arg1.isFloat || !this.arg2.isFloat)) {
 			throw new TypeError(`Both branches must be either integers or floats, but not a mix.\nOperands: ${ this.arg1 } ${ this.arg2 }`)
 		}
 	}

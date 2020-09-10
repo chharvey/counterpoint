@@ -165,6 +165,16 @@ describe('Instruction', () => {
 					instructionConstFloat(18.1),
 					instructionConstInt(30n),
 				).toString(), `(call $f_i_is ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`)
+				assert.strictEqual(new InstructionBinopEquality(
+					Operator.EQ,
+					instructionConstFloat(18.1),
+					instructionConstInt(30n),
+				).toString(), `(call $f_i_is ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`)
+				assert.strictEqual(new InstructionBinopEquality(
+					Operator.EQ,
+					instructionConstInt(30n),
+					instructionConstFloat(18.1),
+				).toString(), `(call $i_f_is ${ instructionConstInt(30n) } ${ instructionConstFloat(18.1) })`)
 			})
 			it('prints (select) for AND and OR', () => {
 				assert.strictEqual(new InstructionBinopLogical(

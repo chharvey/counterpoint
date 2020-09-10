@@ -422,6 +422,37 @@ describe('SemanticNode', () => {
 					]))
 				})
 			})
+			context('with constant folding off, int coercion off.', () => {
+				const folding_coercion_off: SolidConfig = {
+					...CONFIG_DEFAULT,
+					compilerOptions: {
+						...CONFIG_DEFAULT.compilerOptions,
+						constantFolding: false,
+						intCoercion: false,
+					},
+				}
+				describe('SemanticNodeOperation[operator: EQ]', () => {
+					it('does not coerce operands into floats.', () => {
+						assert.deepStrictEqual([
+							`42 == 420;`,
+							`4.2 == 42;`,
+							`42 == 4.2;`,
+							`null == 0.0;`,
+							`false == 0.0;`,
+							`true == 1.0;`,
+						].map((src) => operationFromStatementExpression(
+							statementExpressionFromSource(src, folding_coercion_off)
+						).build(new Builder(src, folding_coercion_off))), [
+							[instructionConstInt(42n),   instructionConstInt(420n)],
+							[instructionConstFloat(4.2), instructionConstInt(42n)],
+							[instructionConstInt(42n),   instructionConstFloat(4.2)],
+							[instructionConstInt(0n),    instructionConstFloat(0.0)],
+							[instructionConstInt(0n),    instructionConstFloat(0.0)],
+							[instructionConstInt(1n),    instructionConstFloat(1.0)],
+						].map(([left, right]) => new InstructionBinopEquality(Operator.EQ, left, right)))
+					})
+				})
+			})
 		})
 	})
 

@@ -551,8 +551,8 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 		return this.operator === Operator.EQ && super.shouldFloat
 	}
 	/** @implements SemanticNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopEquality {
-		const tofloat: boolean = to_float || this.shouldFloat
+	protected build_do(builder: Builder, _to_float: boolean = false): InstructionBinopEquality {
+		const tofloat: boolean = builder.config.compilerOptions.intCoercion && this.shouldFloat
 		return new InstructionBinopEquality(
 			this.operator,
 			this.children[0].build(builder, tofloat),
