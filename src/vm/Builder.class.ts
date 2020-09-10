@@ -6,11 +6,9 @@ import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop =
 import type SolidConfig from '../SolidConfig'
 import Validator from '../validator/Validator.class'
 import type {
-	SemanticNodeExpression,
 	SemanticStatementType,
 } from '../class/SemanticNode.class'
 import {
-	InstructionStatement,
 	InstructionModule,
 } from './Instruction.class'
 
@@ -26,6 +24,8 @@ const fis: string = fs.readFileSync(path.join(__dirname, '../../src/fis.wat'), '
  * The Builder generates assembly code.
  */
 export default class Builder {
+	/** A counter for internal variables. Used for optimizing short-circuited expressions. */
+	private var_count: bigint = 0n
 	/** A counter for statements. */
 	private stmt_count: bigint = 0n;
 	/** The validator. */
@@ -44,12 +44,21 @@ export default class Builder {
 	}
 
 	/**
-	 * Return a new statement-expression.
-	 * @param expr a semantic expression
-	 * @return a call to {@link CodeGenerator.stmt}
+	 * Return this Builder’s short-circuit variable count, and then increment it.
+	 * @return this Builder’s current variable counter
 	 */
-	stmt(expr: SemanticNodeExpression): InstructionStatement {
-		return new InstructionStatement(this.stmt_count++, expr.build(this))
+	get varCount(): bigint {
+		return this.var_count++
+	}
+
+	/**
+	 * Return this Builder’s statement count, and then increment it.
+	 * Also resets the short-circuit variable count.
+	 * @return this Builder’s current statement counter
+	 */
+	get stmtCount(): bigint {
+		this.var_count = 0n
+		return this.stmt_count++
 	}
 
 	/**

@@ -625,10 +625,7 @@ export class TokenTemplate extends Token {
 export abstract class TokenComment extends Token {
 	constructor (lexer: Lexer, start_delim: string, end_delim: string) {
 		super('COMMENT', lexer, ...lexer.advance(BigInt(start_delim.length)))
-		while (!this.lexer.isDone && (
-			end_delim.length === 1 && !Char.eq(end_delim, this.lexer.c0) ||
-			end_delim.length === 2 && !Char.eq(end_delim, this.lexer.c0, this.lexer.c1)
-		)) {
+		while (!this.lexer.isDone && !this.stopAdvancing()) {
 			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
 			}
@@ -640,6 +637,11 @@ export abstract class TokenComment extends Token {
 	/** @final */ cook(): null {
 		return null // we do not want to send comments to the parser
 	}
+	/**
+	 * Helper method used in the constructor.
+	 * @return When should the lexer stop advancing?
+	 */
+	protected abstract stopAdvancing(): boolean;
 }
 export class TokenCommentLine extends TokenComment {
 	static readonly DELIM_START: '%'  = '%'
@@ -647,11 +649,17 @@ export class TokenCommentLine extends TokenComment {
 	constructor (lexer: Lexer) {
 		super(lexer, TokenCommentLine.DELIM_START, TokenCommentLine.DELIM_END)
 	}
+	protected stopAdvancing() {
+		return Char.eq(TokenCommentLine.DELIM_END, this.lexer.c0)
+	}
 }
 export class TokenCommentMulti extends TokenComment {
 	static readonly DELIM_START: '%%' = '%%'
 	static readonly DELIM_END:   '%%' = '%%'
 	constructor (lexer: Lexer) {
 		super(lexer, TokenCommentMulti.DELIM_START, TokenCommentMulti.DELIM_END)
+	}
+	protected stopAdvancing() {
+		return Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)
 	}
 }

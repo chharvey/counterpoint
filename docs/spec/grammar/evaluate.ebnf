@@ -53,6 +53,16 @@ Void Evaluate(Instruction :::= "EQ") :=
 	4. Push `result` onto the operand stack.
 ;
 
+Void Evaluate(Instruction :::= "SELECT") :=
+	1. Pop `condition` from the operand stack.
+	2. Pop `alternative` from the operand stack.
+	3. Pop `consequent` from the operand stack.
+	4. *If* `condition` is non-zero:
+		1. Push `consequent` onto the operand stack.
+	5. *Else:*
+		1. Push `alternative` onto the operand stack.
+;
+
 Void Evaluate(Instruction :::= "IF") :=
 	1. Pop `condition` from the operand stack.
 	2. *If* `condition` is non-zero:

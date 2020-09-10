@@ -12,3 +12,15 @@
 		)
 	)
 )
+
+;; # Identity Operator for Int/Float
+;; Returns false, as an Int is never identical to a Float
+(func $i_f_is (param $p0 i32) (param $p1 f64) (result i32)
+	(i32.const 0)
+)
+
+;; # Identity Operator for Float/Int
+;; Returns false, as a Float is never identical to an Int
+(func $f_i_is (param $p0 f64) (param $p1 i32) (result i32)
+	(i32.const 0)
+)
