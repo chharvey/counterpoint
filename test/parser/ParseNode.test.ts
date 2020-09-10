@@ -515,9 +515,9 @@ describe('ParseNode', () => {
 				assert.strictEqual(new Scanner(Util.dedent(`
 					let unfixed the_answer = 42;
 					let \`the £ answer\` = the_answer * 10;
-					the_answer = the_answer - \\z14;
+					the_answer = the_answer - 40;
 				`), CONFIG_DEFAULT).lexer.screener.parser.parse().decorate().serialize(), `
-					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
+					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - 40 ; ␃">
 						<Declaration line="1" col="1" source="let unfixed the_answer = 42 ;" type="variable" unfixed="true">
 							<Assignee line="1" col="13" source="the_answer">
 								<Identifier line="1" col="13" source="the_answer" id="256"/>
@@ -531,21 +531,21 @@ describe('ParseNode', () => {
 								<Identifier line="2" col="5" source="\`the &#xa3; answer\`" id="257"/>
 							</Assignee>
 							<Assigned line="2" col="22" source="the_answer * 10">
-								<Operation line="2" col="22" source="the_answer * 10" operator="*">
+								<Operation line="2" col="22" source="the_answer * 10" operator="5">
 									<Identifier line="2" col="22" source="the_answer" id="256"/>
 									<Constant line="2" col="35" source="10" value="10"/>
 								</Operation>
 							</Assigned>
 						</Declaration>
-						<Assignment line="3" col="1" source="the_answer = the_answer - &#x5c;z14 ;">
+						<Assignment line="3" col="1" source="the_answer = the_answer - 40 ;">
 							<Assignee line="3" col="1" source="the_answer">
 								<Identifier line="3" col="1" source="the_answer" id="256"/>
 							</Assignee>
-							<Assigned line="3" col="14" source="the_answer - &#x5c;z14">
-								<Operation line="3" col="14" source="the_answer - &#x5c;z14" operator="+">
+							<Assigned line="3" col="14" source="the_answer - 40">
+								<Operation line="3" col="14" source="the_answer - 40" operator="7">
 									<Identifier line="3" col="14" source="the_answer" id="256"/>
-									<Operation line="3" col="27" source="&#x5c;z14" operator="-">
-										<Constant line="3" col="27" source="&#x5c;z14" value="40"/>
+									<Operation line="3" col="27" source="40" operator="3">
+										<Constant line="3" col="27" source="40" value="40"/>
 									</Operation>
 								</Operation>
 							</Assigned>

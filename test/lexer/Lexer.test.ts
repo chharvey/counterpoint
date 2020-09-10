@@ -152,12 +152,12 @@ describe('Lexer', () => {
 					})
 				})
 				specify('Identifier continuations.', () => {
-					let tokens: Token[] = [...new Scanner(`
-						this is a word
+					const tokens: Token[] = [...new Scanner(`
+						this be a word
 						_words _can _start _with _underscores
 						_and0 _can1 contain2 numb3rs
 					`, CONFIG_DEFAULT).lexer.generate()]
-					tokens = tokens.slice(1, -1).filter((token) => !(token instanceof TokenWhitespace))
+						.slice(1, -1).filter((token) => !(token instanceof TokenWhitespace))
 					tokens.forEach((token) => {
 						assert.ok(token instanceof TokenIdentifierBasic)
 					})
@@ -165,11 +165,11 @@ describe('Lexer', () => {
 				})
 				specify('Identifiers cannot start with a digit.', () => {
 					assert.deepStrictEqual([...new Scanner(`
-						this is 0a word
+						this be 0a word
 						_words 1c_an _start 2w_ith _underscores
 						_and0 3c_an1 contain2 44numb3rs
 					`, CONFIG_DEFAULT).lexer.generate()].slice(1, -1).filter((token) => token instanceof TokenIdentifierBasic).map((token) => token.source), `
-						this is a word _words c_an _start w_ith _underscores _and0 c_an1 contain2 numb3rs
+						this be a word _words c_an _start w_ith _underscores _and0 c_an1 contain2 numb3rs
 					`.trim().split(' '))
 				})
 			})

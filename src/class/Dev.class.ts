@@ -35,10 +35,11 @@ export default class Dev {
 		readonly typingImplicit    : string,
 		readonly statements        : string,
 		// v0.3.0
-		readonly literalString   : string,
-		readonly literalTemplate : string,
 		readonly variables       : string,
 		readonly typingExplicit  : string,
+		// v0.3.1 (temp)
+		readonly literalString   : string,
+		readonly literalTemplate : string,
 	} = {
 		// v0.1.0
 		literalNumber:   '>=0.1.*',
@@ -54,10 +55,11 @@ export default class Dev {
 		typingImplicit:    '>=0.2.*',
 		statements:        '>=0.2.*',
 		// v0.3.0
-		literalString:   '>=0.3.*',
-		literalTemplate: '>=0.3.*',
 		variables:       '>=0.3.*',
 		typingExplicit:  '>=0.3.*',
+		// v0.3.1 (temp)
+		literalString:   '>=0.3.1',
+		literalTemplate: '>=0.3.1',
 	}
 
 	/**

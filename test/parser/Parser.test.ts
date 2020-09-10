@@ -736,20 +736,24 @@ describe('Parser', () => {
 				assert.strictEqual(new Scanner(Util.dedent(`
 					let unfixed the_answer = 42;
 					let \`the £ answer\` = the_answer * 10;
-					the_answer = the_answer - \\z14;
+					the_answer = the_answer - 40;
 				`), CONFIG_DEFAULT).lexer.screener.parser.parse().serialize(), `
-					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
+					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - 40 ; ␃">
 						<FILEBOUND value="true">␂</FILEBOUND>
-						<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ;">
+						<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - 40 ;">
 							<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ;">
 								<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ;">
 									<Statement line="1" col="1" source="let unfixed the_answer = 42 ;">
 										<DeclarationVariable line="1" col="1" source="let unfixed the_answer = 42 ;">
-											<KEYWORD line="1" col="1" value="128">let</KEYWORD>
-											<KEYWORD line="1" col="5" value="129">unfixed</KEYWORD>
+											<KEYWORD line="1" col="1" value="136">let</KEYWORD>
+											<KEYWORD line="1" col="5" value="137">unfixed</KEYWORD>
 											<IDENTIFIER line="1" col="13" value="256">the_answer</IDENTIFIER>
-											<PUNCTUATOR line="1" col="24" value="8">=</PUNCTUATOR>
+											<PUNCTUATOR line="1" col="24" value="22">=</PUNCTUATOR>
 											<Expression line="1" col="26" source="42">
+												<ExpressionDisjunctive line="1" col="26" source="42">
+													<ExpressionConjunctive line="1" col="26" source="42">
+														<ExpressionEquality line="1" col="26" source="42">
+															<ExpressionComparative line="1" col="26" source="42">
 												<ExpressionAdditive line="1" col="26" source="42">
 													<ExpressionMultiplicative line="1" col="26" source="42">
 														<ExpressionExponential line="1" col="26" source="42">
@@ -763,17 +767,25 @@ describe('Parser', () => {
 														</ExpressionExponential>
 													</ExpressionMultiplicative>
 												</ExpressionAdditive>
+															</ExpressionComparative>
+														</ExpressionEquality>
+													</ExpressionConjunctive>
+												</ExpressionDisjunctive>
 											</Expression>
-											<PUNCTUATOR line="1" col="28" value="7">;</PUNCTUATOR>
+											<PUNCTUATOR line="1" col="28" value="21">;</PUNCTUATOR>
 										</DeclarationVariable>
 									</Statement>
 								</Goal__0__List>
 								<Statement line="2" col="1" source="let \`the &#xa3; answer\` = the_answer * 10 ;">
 									<DeclarationVariable line="2" col="1" source="let \`the &#xa3; answer\` = the_answer * 10 ;">
-										<KEYWORD line="2" col="1" value="128">let</KEYWORD>
+										<KEYWORD line="2" col="1" value="136">let</KEYWORD>
 										<IDENTIFIER line="2" col="5" value="257">\`the £ answer\`</IDENTIFIER>
-										<PUNCTUATOR line="2" col="20" value="8">=</PUNCTUATOR>
+										<PUNCTUATOR line="2" col="20" value="22">=</PUNCTUATOR>
 										<Expression line="2" col="22" source="the_answer * 10">
+											<ExpressionDisjunctive line="2" col="22" source="the_answer * 10">
+												<ExpressionConjunctive line="2" col="22" source="the_answer * 10">
+													<ExpressionEquality line="2" col="22" source="the_answer * 10">
+														<ExpressionComparative line="2" col="22" source="the_answer * 10">
 											<ExpressionAdditive line="2" col="22" source="the_answer * 10">
 												<ExpressionMultiplicative line="2" col="22" source="the_answer * 10">
 													<ExpressionMultiplicative line="2" col="22" source="the_answer">
@@ -785,7 +797,7 @@ describe('Parser', () => {
 															</ExpressionUnarySymbol>
 														</ExpressionExponential>
 													</ExpressionMultiplicative>
-													<PUNCTUATOR line="2" col="33" value="5">*</PUNCTUATOR>
+													<PUNCTUATOR line="2" col="33" value="7">*</PUNCTUATOR>
 													<ExpressionExponential line="2" col="35" source="10">
 														<ExpressionUnarySymbol line="2" col="35" source="10">
 															<ExpressionUnit line="2" col="35" source="10">
@@ -797,17 +809,25 @@ describe('Parser', () => {
 													</ExpressionExponential>
 												</ExpressionMultiplicative>
 											</ExpressionAdditive>
+														</ExpressionComparative>
+													</ExpressionEquality>
+												</ExpressionConjunctive>
+											</ExpressionDisjunctive>
 										</Expression>
-										<PUNCTUATOR line="2" col="37" value="7">;</PUNCTUATOR>
+										<PUNCTUATOR line="2" col="37" value="21">;</PUNCTUATOR>
 									</DeclarationVariable>
 								</Statement>
 							</Goal__0__List>
-							<Statement line="3" col="1" source="the_answer = the_answer - &#x5c;z14 ;">
-								<StatementAssignment line="3" col="1" source="the_answer = the_answer - &#x5c;z14 ;">
+							<Statement line="3" col="1" source="the_answer = the_answer - 40 ;">
+								<StatementAssignment line="3" col="1" source="the_answer = the_answer - 40 ;">
 									<IDENTIFIER line="3" col="1" value="256">the_answer</IDENTIFIER>
-									<PUNCTUATOR line="3" col="12" value="8">=</PUNCTUATOR>
-									<Expression line="3" col="14" source="the_answer - &#x5c;z14">
-										<ExpressionAdditive line="3" col="14" source="the_answer - &#x5c;z14">
+									<PUNCTUATOR line="3" col="12" value="22">=</PUNCTUATOR>
+									<Expression line="3" col="14" source="the_answer - 40">
+										<ExpressionDisjunctive line="3" col="14" source="the_answer - 40">
+											<ExpressionConjunctive line="3" col="14" source="the_answer - 40">
+												<ExpressionEquality line="3" col="14" source="the_answer - 40">
+													<ExpressionComparative line="3" col="14" source="the_answer - 40">
+										<ExpressionAdditive line="3" col="14" source="the_answer - 40">
 											<ExpressionAdditive line="3" col="14" source="the_answer">
 												<ExpressionMultiplicative line="3" col="14" source="the_answer">
 													<ExpressionExponential line="3" col="14" source="the_answer">
@@ -819,21 +839,25 @@ describe('Parser', () => {
 													</ExpressionExponential>
 												</ExpressionMultiplicative>
 											</ExpressionAdditive>
-											<PUNCTUATOR line="3" col="25" value="3">-</PUNCTUATOR>
-											<ExpressionMultiplicative line="3" col="27" source="&#x5c;z14">
-												<ExpressionExponential line="3" col="27" source="&#x5c;z14">
-													<ExpressionUnarySymbol line="3" col="27" source="&#x5c;z14">
-														<ExpressionUnit line="3" col="27" source="&#x5c;z14">
-															<PrimitiveLiteral line="3" col="27" source="&#x5c;z14">
-																<NUMBER line="3" col="27" value="40">&#x5c;z14</NUMBER>
+											<PUNCTUATOR line="3" col="25" value="5">-</PUNCTUATOR>
+											<ExpressionMultiplicative line="3" col="27" source="40">
+												<ExpressionExponential line="3" col="27" source="40">
+													<ExpressionUnarySymbol line="3" col="27" source="40">
+														<ExpressionUnit line="3" col="27" source="40">
+															<PrimitiveLiteral line="3" col="27" source="40">
+																<NUMBER line="3" col="27" value="40">40</NUMBER>
 															</PrimitiveLiteral>
 														</ExpressionUnit>
 													</ExpressionUnarySymbol>
 												</ExpressionExponential>
 											</ExpressionMultiplicative>
 										</ExpressionAdditive>
+													</ExpressionComparative>
+												</ExpressionEquality>
+											</ExpressionConjunctive>
+										</ExpressionDisjunctive>
 									</Expression>
-									<PUNCTUATOR line="3" col="31" value="7">;</PUNCTUATOR>
+									<PUNCTUATOR line="3" col="29" value="21">;</PUNCTUATOR>
 								</StatementAssignment>
 							</Statement>
 						</Goal__0__List>

@@ -77,7 +77,7 @@ describe('Token', () => {
 		Dev.supports('variables') && context('TokenIdentifier', () => {
 			context('TokenIdentifierBasic', () => {
 				const cooked: (bigint|null)[] = [...new Scanner(`
-					this is a word
+					this be a word
 					_words _can _start _with _underscores
 					_and0 _can1 contain2 numb3rs
 
