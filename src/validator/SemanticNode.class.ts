@@ -1,24 +1,32 @@
 import * as xjs from 'extrajs'
 
-import Util from './Util.class'
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
+import Util from '../class/Util.class'
 import type Serializable from '../iface/Serializable.iface'
+import Operator, {
+	ValidOperatorUnary,
+	ValidOperatorBinary,
+	ValidOperatorArithmetic,
+	ValidOperatorComparative,
+	ValidOperatorEquality,
+	ValidOperatorLogical,
+} from '../enum/Operator.enum'
 import {
 	CompletionStructureAssessment,
-} from '../spec/CompletionStructure.class'
-import type Builder from '../vm/Builder.class'
+} from './CompletionStructure.class'
 import SolidLanguageType, {
 	SolidTypeConstant,
-} from '../vm/SolidLanguageType.class'
-import SolidObject  from '../vm/SolidObject.class'
-import SolidNull    from '../vm/SolidNull.class'
-import SolidBoolean from '../vm/SolidBoolean.class'
-import SolidNumber  from '../vm/SolidNumber.class'
-import Int16 from '../vm/Int16.class'
-import Float64 from '../vm/Float64.class'
-import SolidString  from '../vm/SolidString.class'
-import Instruction, {
-	Operator,
+} from './SolidLanguageType.class'
+import SolidObject  from './SolidObject.class'
+import SolidNull    from './SolidNull.class'
+import SolidBoolean from './SolidBoolean.class'
+import SolidNumber  from './SolidNumber.class'
+import Int16        from './Int16.class'
+import Float64      from './Float64.class'
+import SolidString  from './SolidString.class'
+import {
+	Builder,
+	Instruction,
 	InstructionNone,
 	InstructionExpression,
 	InstructionConst,
@@ -30,49 +38,25 @@ import Instruction, {
 	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
-} from '../vm/Instruction.class'
+} from '../builder/'
 import {
 	NanError01,
 	NanError02,
 } from '../error/NanError.class'
-import Token, {
+import {
 	Keyword,
+	CookValueType,
+	Token,
 	TokenKeyword,
 	TokenIdentifier,
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from './Token.class'
-import type {CookValueType} from './Token.class'
-import type ParseNode from './ParseNode.class'
+} from '../lexer/'
+import type {
+	ParseNode,
+} from '../parser/'
 
-
-
-export type ValidOperatorUnary =
-	| Operator.NOT
-	| Operator.EMP
-	| Operator.NEG
-export type ValidOperatorBinary =
-	| ValidOperatorArithmetic
-	| ValidOperatorComparative
-	| ValidOperatorEquality
-	| ValidOperatorLogical
-export type ValidOperatorArithmetic =
-	| Operator.EXP
-	| Operator.MUL
-	| Operator.DIV
-	| Operator.ADD
-export type ValidOperatorComparative =
-	| Operator.LT
-	| Operator.LE
-	| Operator.GT
-	| Operator.GE
-export type ValidOperatorEquality =
-	| Operator.IS
-	| Operator.EQ
-export type ValidOperatorLogical =
-	| Operator.AND
-	| Operator.OR
 
 
 /**

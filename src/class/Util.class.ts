@@ -1,3 +1,8 @@
+import {Filebound} from '../lexer/'
+import type {GrammarSymbol} from '../parser/'
+
+
+
 /**
  * Utility fields and methods.
  */
@@ -128,6 +133,20 @@ export default class Util {
 			.replace('\u0003', '\u2403') // SYMBOL FOR END   OF TEXT
 			.replace(/[^\u0020-\u007e\u2402-\u2403]/g, (match) => `&#x${ match.codePointAt(0)!.toString(16) };`)
 		}"`).join(' ')
+	}
+	/**
+	 * Display a string of grammar symbols for debugging purposes.
+	 *
+	 * @param   arr - the array of grammar symbols
+	 * @returns       a string representing the sequence of those symbols
+	 */
+	static stringOfSymbols(arr: readonly GrammarSymbol[]): string {
+		return arr.map((symbol) => (typeof symbol === 'string') ?
+			`"${ symbol }"`
+				.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
+				.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
+			: symbol.displayName
+		).join(' ')
 	}
 	/**
 	 * Sanitize a string for the text content of an XML element.

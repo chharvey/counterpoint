@@ -2,12 +2,12 @@ import * as assert from 'assert'
 
 import {
 	CompletionStructureAssessment,
-} from '../src/spec/CompletionStructure.class'
-import Int16 from '../src/vm/Int16.class'
-import Float64 from '../src/vm/Float64.class'
+	Int16,
+	Float64,
+} from '../../src/validator/'
 import {
 	InstructionConst,
-} from '../src/vm/Instruction.class'
+} from '../../src/builder/'
 
 
 

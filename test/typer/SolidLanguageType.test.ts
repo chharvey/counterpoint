@@ -1,11 +1,13 @@
 import * as assert from 'assert'
 
-import SolidLanguageType from '../../src/vm/SolidLanguageType.class'
-import SolidObject  from '../../src/vm/SolidObject.class'
-import SolidNull    from '../../src/vm/SolidNull.class'
-import SolidBoolean from '../../src/vm/SolidBoolean.class'
-import SolidNumber  from '../../src/vm/SolidNumber.class'
-import SolidString  from '../../src/vm/SolidString.class'
+import {
+	SolidLanguageType,
+	SolidObject,
+	SolidNull,
+	SolidBoolean,
+	SolidNumber,
+	SolidString,
+} from '../../src/validator/'
 
 
 

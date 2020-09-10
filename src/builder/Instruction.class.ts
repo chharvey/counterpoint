@@ -1,43 +1,15 @@
-import type {
+import Operator, {
 	ValidOperatorUnary,
 	ValidOperatorBinary,
 	ValidOperatorArithmetic,
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-} from '../class/SemanticNode.class'
-import type SolidNumber from './SolidNumber.class'
-import Float64 from './Float64.class'
-
-
-
-// HACK: this is defined here, instead of in `../class/SemanticNode.class`, to avoid circular imports.
-export enum Operator {
-	NOT,
-	EMP,
-	AFF,
-	NEG,
-	EXP,
-	MUL,
-	DIV,
-	ADD,
-	SUB,
-	LT,
-	GT,
-	LE,
-	GE,
-	NLT,
-	NGT,
-	IS,
-	ISNT,
-	EQ,
-	NEQ,
-	AND,
-	NAND,
-	OR,
-	NOR,
-	COND,
-}
+} from '../enum/Operator.enum'
+import {
+	SolidNumber,
+	Float64,
+} from '../validator/'
 
 
 

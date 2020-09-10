@@ -25,9 +25,7 @@ function test() {
 
 async function test_dev() {
 	const {CONFIG_DEFAULT}         = require('./build/SolidConfig.js')
-	const {default: Scanner      } = require('./build/class/Scanner.class.js')
-	const {default: Lexer        } = require('./build/class/Lexer.class.js')
-	const {default: Screener     } = require('./build/class/Screener.class.js')
+	const {Scanner, Lexer, Screener} = require('./build/lexer/')
 	const {default: Parser       } = require('./build/class/Parser.class.js')
 	const {default: CodeGenerator} = require('./build/vm/Builder.class.js')
 

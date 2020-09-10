@@ -1,9 +1,8 @@
 import * as assert from 'assert'
 
-import {CONFIG_DEFAULT} from '../src/SolidConfig'
-import Util from '../src/class/Util.class'
-import Dev from '../src/class/Dev.class'
-import Parser from '../src/class/Parser.class'
+import {CONFIG_DEFAULT} from '../../src/SolidConfig'
+import Util from '../../src/class/Util.class'
+import Dev from '../../src/class/Dev.class'
 import {
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
@@ -16,8 +15,9 @@ import {
 	ParseNodeStatement,
 	ParseNodeGoal,
 	ParseNodeGoal__0__List,
-} from '../src/class/ParseNode.class'
+} from '../../src/parser/'
 import {
+	Scanner,
 	Punctuator,
 	Keyword,
 	TokenFilebound,
@@ -25,11 +25,11 @@ import {
 	TokenKeyword,
 	TokenNumber,
 	TokenString,
-} from '../src/class/Token.class'
+} from '../../src/lexer/'
 
 import {
 	assert_arrayLength,
-} from './assert-helpers'
+} from '../assert-helpers'
 import {
 	tokenLiteralFromExpressionUnit,
 	unitExpressionFromUnaryExpression,
@@ -44,7 +44,7 @@ import {
 	conditionalExpressionFromExpression,
 	expressionFromStatement,
 	statementFromSource,
-} from './helpers-parse'
+} from '../helpers-parse'
 
 
 
@@ -52,7 +52,7 @@ describe('Parser', () => {
 	describe('#parse', () => {
 		context('Goal ::= #x02 #x03', () => {
 			it('returns only file bounds.', () => {
-				const tree: ParseNodeGoal = new Parser('', CONFIG_DEFAULT).parse()
+				const tree: ParseNodeGoal = new Scanner('', CONFIG_DEFAULT).lexer.screener.parser.parse()
 				assert.strictEqual(tree.children.length, 2)
 				tree.children.forEach((child) => assert.ok(child instanceof TokenFilebound))
 			})
@@ -124,20 +124,24 @@ describe('Parser', () => {
 		})
 
 		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
-			const stringTemplateParseNode = (goal: ParseNodeGoal): ParseNodeStringTemplate => ((((((((goal
-				.children[1] as ParseNodeGoal__0__List)
-				.children[0] as ParseNodeStatement)
-				.children[0] as ParseNodeExpression)
-				.children[0] as ParseNodeExpressionBinary)
-				.children[0] as ParseNodeExpressionBinary)
-				.children[0] as ParseNodeExpressionBinary)
-				.children[0] as ParseNodeExpressionUnary)
-				.children[0] as ParseNodeExpressionUnit)
-				.children[0] as ParseNodeStringTemplate
+			function stringTemplateParseNode (src: string): string {
+				return (((((((((new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser
+					.parse()
+					.children[1] as ParseNodeGoal__0__List)
+					.children[0] as ParseNodeStatement)
+					.children[0] as ParseNodeExpression)
+					.children[0] as ParseNodeExpressionBinary)
+					.children[0] as ParseNodeExpressionBinary)
+					.children[0] as ParseNodeExpressionBinary)
+					.children[0] as ParseNodeExpressionUnary)
+					.children[0] as ParseNodeExpressionUnit)
+					.children[0] as ParseNodeStringTemplate)
+					.serialize()
+			}
 			specify('head, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(new Parser(Util.dedent(`
+				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
 					'''head1{{}}tail1''';
-				`), CONFIG_DEFAULT).parse()).serialize(), `
+				`)), `
 					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ }}tail1&apos;&apos;&apos;">
 						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
 						<TEMPLATE line="1" col="11" value="tail1">}}tail1'''</TEMPLATE>
@@ -145,9 +149,9 @@ describe('Parser', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(new Parser(Util.dedent(`
+				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
 					'''head1{{ '''full1''' }}tail1''';
-				`), CONFIG_DEFAULT).parse()).serialize(), `
+				`)), `
 					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
 						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -170,9 +174,9 @@ describe('Parser', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(new Parser(Util.dedent(`
+				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{}}tail1''';
-				`), CONFIG_DEFAULT).parse()).serialize(), `
+				`)), `
 					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ }}tail1&apos;&apos;&apos;">
 						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
 						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -198,9 +202,9 @@ describe('Parser', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, expr, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(new Parser(Util.dedent(`
+				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1''';
-				`), CONFIG_DEFAULT).parse()).serialize(), `
+				`)), `
 					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
 						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -241,9 +245,9 @@ describe('Parser', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, expr, middle, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(new Parser(Util.dedent(`
+				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1''';
-				`), CONFIG_DEFAULT).parse()).serialize(), `
+				`)), `
 					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ }}tail1&apos;&apos;&apos;">
 						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
 						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -287,9 +291,9 @@ describe('Parser', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, expr, middle, expr, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(new Parser(Util.dedent(`
+				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1''';
-				`), CONFIG_DEFAULT).parse()).serialize(), `
+				`)), `
 					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ &apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
 						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -364,19 +368,19 @@ describe('Parser', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			it('throws when reaching an orphaned head.', () => {
-				assert.throws(() => new Parser(`
+				assert.throws(() => new Scanner(`
 					'''A string template head token not followed by a middle or tail {{ 1;
-				`, CONFIG_DEFAULT).parse(), /Unexpected token/)
+				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), /Unexpected token/)
 			})
 			it('throws when reaching an orphaned middle.', () => {
-				assert.throws(() => new Parser(`
+				assert.throws(() => new Scanner(`
 					2 }} a string template middle token not preceded by a head/middle and not followed by a middle/tail {{ 3;
-				`, CONFIG_DEFAULT).parse(), /Unexpected token/)
+				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), /Unexpected token/)
 			})
 			it('throws when reaching an orphaned tail.', () => {
-				assert.throws(() => new Parser(`
+				assert.throws(() => new Scanner(`
 					4 }} a string template tail token not preceded by a head or middle''';
-				`, CONFIG_DEFAULT).parse(), /Unexpected token/)
+				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), /Unexpected token/)
 			})
 		})
 
@@ -729,11 +733,11 @@ describe('Parser', () => {
 
 		Dev.supports('variables') && context('DeclarationVariable, StatementAssignment', () => {
 			it('makes ParseNodeDeclarationVariable and ParseNodeStatementAssignment nodes.', () => {
-				assert.strictEqual(new Parser(Util.dedent(`
+				assert.strictEqual(new Scanner(Util.dedent(`
 					let unfixed the_answer = 42;
 					let \`the £ answer\` = the_answer * 10;
 					the_answer = the_answer - \\z14;
-				`), CONFIG_DEFAULT).parse().serialize(), `
+				`), CONFIG_DEFAULT).lexer.screener.parser.parse().serialize(), `
 					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ; ␃">
 						<FILEBOUND value="true">␂</FILEBOUND>
 						<Goal__0__List line="1" col="1" source="let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - &#x5c;z14 ;">
@@ -853,7 +857,7 @@ describe('Parser', () => {
 						<FILEBOUND.../>...</FILEBOUND>
 					</Goal>
 				*/
-				const goal: ParseNodeGoal = new Parser('42; 420;', CONFIG_DEFAULT).parse()
+				const goal: ParseNodeGoal = new Scanner(`42; 420;`, CONFIG_DEFAULT).lexer.screener.parser.parse()
 				assert_arrayLength(goal.children, 3, 'goal should have 3 children')
 				const stat_list: ParseNodeGoal__0__List = goal.children[1]
 				assert_arrayLength(stat_list.children, 2, 'stat_list should have 2 children')

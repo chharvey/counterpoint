@@ -1,11 +1,17 @@
-import Util from './Util.class'
-import Dev from './Dev.class'
-import type SolidConfig from '../SolidConfig'
+import Util from '../class/Util.class'
+import Dev from '../class/Dev.class'
 import type Serializable from '../iface/Serializable.iface'
-import {Operator} from '../vm/Instruction.class'
-import Token, {
+import Operator, {
+	ValidOperatorUnary,
+	ValidOperatorArithmetic,
+	ValidOperatorComparative,
+	ValidOperatorEquality,
+	ValidOperatorLogical,
+} from '../enum/Operator.enum'
+import {
 	Punctuator,
 	Keyword,
+	Token,
 	TokenFilebound,
 	TokenPunctuator,
 	TokenKeyword,
@@ -13,14 +19,9 @@ import Token, {
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from './Token.class'
-import SemanticNode, {
-	ValidOperatorUnary,
-	ValidOperatorArithmetic,
-	ValidOperatorComparative,
-	ValidOperatorEquality,
-	ValidOperatorLogical,
-	SemanticStatementType,
+} from '../lexer/'
+import {
+	SemanticNode,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
@@ -35,10 +36,11 @@ import SemanticNode, {
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
 	SemanticNodeAssigned,
+	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
-} from './SemanticNode.class'
-import type {Rule} from './Grammar.class'
+} from '../validator/'
+import type Rule from './Rule.class'
 import {
 	ProductionPrimitiveLiteral,
 	ProductionStringTemplate,
@@ -75,31 +77,30 @@ export default abstract class ParseNode implements Serializable {
 	 *
 	 * @param rule     - The Rule used to create this ParseNode.
 	 * @param children - The set of child inputs that creates this ParseNode.
-	 * @param config   - The configuration settings for an instance program.
 	 * @returns          a new ParseNode object
 	 */
-	static from(rule: Rule, children: readonly (Token | ParseNode)[], config: SolidConfig): ParseNode {
+	static from(rule: Rule, children: readonly (Token | ParseNode)[]): ParseNode {
 		// NOTE: Need to use a chained if-else instead of a Map because cannot create instance of abstract class (`typeof ParseNode`).
 		return (
-			(                                   rule.production.equals(ProductionPrimitiveLiteral         .instance)) ? new ParseNodePrimitiveLiteral        (rule, children, config) :
-			(Dev.supports('literalTemplate') && rule.production.equals(ProductionStringTemplate           .instance)) ? new ParseNodeStringTemplate          (rule, children, config) :
-			(Dev.supports('literalTemplate') && rule.production.equals(ProductionStringTemplate.__0__List .instance)) ? new ParseNodeStringTemplate__0__List (rule, children, config) :
-			(                                   rule.production.equals(ProductionExpressionUnit           .instance)) ? new ParseNodeExpressionUnit          (rule, children, config) :
-			(                                   rule.production.equals(ProductionExpressionUnarySymbol    .instance)) ? new ParseNodeExpressionUnary         (rule, children, config) :
-			(                                   rule.production.equals(ProductionExpressionExponential    .instance)) ? new ParseNodeExpressionBinary        (rule, children, config) :
-			(                                   rule.production.equals(ProductionExpressionMultiplicative .instance)) ? new ParseNodeExpressionBinary        (rule, children, config) :
-			(                                   rule.production.equals(ProductionExpressionAdditive       .instance)) ? new ParseNodeExpressionBinary        (rule, children, config) :
-			(                                   rule.production.equals(ProductionExpressionComparative    .instance)) ? new ParseNodeExpressionBinary        (rule, children, config) :
-			(                                   rule.production.equals(ProductionExpressionEquality       .instance)) ? new ParseNodeExpressionBinary        (rule, children, config) :
-			(                                   rule.production.equals(ProductionExpressionConjunctive    .instance)) ? new ParseNodeExpressionBinary        (rule, children, config) :
-			(                                   rule.production.equals(ProductionExpressionDisjunctive    .instance)) ? new ParseNodeExpressionBinary        (rule, children, config) :
-			(                                   rule.production.equals(ProductionExpressionConditional    .instance)) ? new ParseNodeExpressionConditional   (rule, children, config) :
-			(                                   rule.production.equals(ProductionExpression               .instance)) ? new ParseNodeExpression              (rule, children, config) :
-			(Dev.supports('variables')       && rule.production.equals(ProductionDeclarationVariable      .instance)) ? new ParseNodeDeclarationVariable     (rule, children, config) :
-			(Dev.supports('variables')       && rule.production.equals(ProductionStatementAssignment      .instance)) ? new ParseNodeStatementAssignment     (rule, children, config) :
-			(                                   rule.production.equals(ProductionStatement                .instance)) ? new ParseNodeStatement               (rule, children, config) :
-			(                                   rule.production.equals(ProductionGoal                     .instance)) ? new ParseNodeGoal                    (rule, children, config) :
-			(                                   rule.production.equals(ProductionGoal.__0__List           .instance)) ? new ParseNodeGoal__0__List           (rule, children, config) :
+			(                                   rule.production.equals(ProductionPrimitiveLiteral         .instance)) ? new ParseNodePrimitiveLiteral        (rule, children) :
+			(Dev.supports('literalTemplate') && rule.production.equals(ProductionStringTemplate           .instance)) ? new ParseNodeStringTemplate          (rule, children) :
+			(Dev.supports('literalTemplate') && rule.production.equals(ProductionStringTemplate.__0__List .instance)) ? new ParseNodeStringTemplate__0__List (rule, children) :
+			(                                   rule.production.equals(ProductionExpressionUnit           .instance)) ? new ParseNodeExpressionUnit          (rule, children) :
+			(                                   rule.production.equals(ProductionExpressionUnarySymbol    .instance)) ? new ParseNodeExpressionUnary         (rule, children) :
+			(                                   rule.production.equals(ProductionExpressionExponential    .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(ProductionExpressionMultiplicative .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(ProductionExpressionAdditive       .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(ProductionExpressionComparative    .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(ProductionExpressionEquality       .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(ProductionExpressionConjunctive    .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(ProductionExpressionDisjunctive    .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(ProductionExpressionConditional    .instance)) ? new ParseNodeExpressionConditional   (rule, children) :
+			(                                   rule.production.equals(ProductionExpression               .instance)) ? new ParseNodeExpression              (rule, children) :
+			(Dev.supports('variables')       && rule.production.equals(ProductionDeclarationVariable      .instance)) ? new ParseNodeDeclarationVariable     (rule, children) :
+			(Dev.supports('variables')       && rule.production.equals(ProductionStatementAssignment      .instance)) ? new ParseNodeStatementAssignment     (rule, children) :
+			(                                   rule.production.equals(ProductionStatement                .instance)) ? new ParseNodeStatement               (rule, children) :
+			(                                   rule.production.equals(ProductionGoal                     .instance)) ? new ParseNodeGoal                    (rule, children) :
+			(                                   rule.production.equals(ProductionGoal.__0__List           .instance)) ? new ParseNodeGoal__0__List           (rule, children) :
 			(() => { throw new Error(`The given rule \`${ rule.toString() }\` does not match any known grammar productions.`) })()
 		)
 	}
@@ -121,12 +122,10 @@ export default abstract class ParseNode implements Serializable {
 	 *
 	 * @param rule     - The Rule used to create this ParseNode.
 	 * @param children - The set of child inputs that creates this ParseNode.
-	 * @param config   - The configuration settings for an instance program.
 	 */
 	protected constructor(
 		readonly rule: Rule,
 		readonly children: readonly (Token|ParseNode)[],
-		readonly config: SolidConfig,
 	) {
 	}
 

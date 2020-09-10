@@ -4,19 +4,13 @@ import * as path from 'path'
 import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
 import type SolidConfig from '../SolidConfig'
-import Validator from '../validator/Validator.class'
 import type {
 	SemanticStatementType,
-} from '../class/SemanticNode.class'
+	SemanticNodeGoal,
+} from '../validator/'
 import {
 	InstructionModule,
 } from './Instruction.class'
-
-const not: string = fs.readFileSync(path.join(__dirname, '../../src/not.wat'), 'utf8')
-const emp: string = fs.readFileSync(path.join(__dirname, '../../src/emp.wat'), 'utf8')
-const neg: string = fs.readFileSync(path.join(__dirname, '../../src/neg.wat'), 'utf8')
-const exp: string = fs.readFileSync(path.join(__dirname, '../../src/exp.wat'), 'utf8')
-const fis: string = fs.readFileSync(path.join(__dirname, '../../src/fis.wat'), 'utf8')
 
 
 
@@ -24,23 +18,29 @@ const fis: string = fs.readFileSync(path.join(__dirname, '../../src/fis.wat'), '
  * The Builder generates assembly code.
  */
 export default class Builder {
+	static readonly IMPORTS: readonly string[] = [
+		fs.readFileSync(path.join(__dirname, '../../src/builder/not.wat'), 'utf8'),
+		fs.readFileSync(path.join(__dirname, '../../src/builder/emp.wat'), 'utf8'),
+		fs.readFileSync(path.join(__dirname, '../../src/builder/neg.wat'), 'utf8'),
+		fs.readFileSync(path.join(__dirname, '../../src/builder/exp.wat'), 'utf8'),
+		fs.readFileSync(path.join(__dirname, '../../src/builder/fis.wat'), 'utf8'),
+	]
+
+
 	/** A counter for internal variables. Used for optimizing short-circuited expressions. */
 	private var_count: bigint = 0n
 	/** A counter for statements. */
 	private stmt_count: bigint = 0n;
-	/** The validator. */
-	private readonly validator: Validator;
 
 	/**
 	 * Construct a new Builder object.
-	 * @param source - the entire source text
+	 * @param semanticgoal - A semantic goal produced by a Validator.
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		source: string,
+		private readonly semanticgoal: SemanticNodeGoal,
 		readonly config: SolidConfig,
 	) {
-		this.validator = new Validator(source, this.config)
 	}
 
 	/**
@@ -68,11 +68,7 @@ export default class Builder {
 	 */
 	goal(comps: readonly SemanticStatementType[]): InstructionModule {
 		return new InstructionModule([
-			not,
-			emp,
-			neg,
-			exp,
-			fis,
+			...Builder.IMPORTS,
 			...comps.map((comp) => comp.build(this)),
 		])
 	}
@@ -82,7 +78,7 @@ export default class Builder {
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
 	print(): string {
-		return this.validator.validate().build(this).toString()
+		return this.semanticgoal.build(this).toString()
 	}
 
 	/**

@@ -2,12 +2,14 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as assert from 'assert'
 
-import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
-import Util from '../src/class/Util.class'
-import Parser from '../src/class/Parser.class'
-import Builder from '../src/vm/Builder.class'
+import Operator from '../../src/enum/Operator.enum'
+import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
+import Util from '../../src/class/Util.class'
 import {
-	Operator,
+	Scanner,
+} from '../../src/lexer/'
+import {
+	Builder,
 	InstructionNone,
 	InstructionConst,
 	InstructionSet,
@@ -21,11 +23,11 @@ import {
 	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
-} from '../src/vm/Instruction.class'
+} from '../../src/builder/'
 import {
 	instructionConstInt,
 	instructionConstFloat,
-} from './helpers'
+} from '../helpers'
 
 
 
@@ -235,27 +237,20 @@ describe('Instruction', () => {
 
 		context('InstructionModule', () => {
 			it('creates a program.', () => {
-				const not: string = fs.readFileSync(path.join(__dirname, '../src/not.wat'), 'utf8')
-				const emp: string = fs.readFileSync(path.join(__dirname, '../src/emp.wat'), 'utf8')
-				const neg: string = fs.readFileSync(path.join(__dirname, '../src/neg.wat'), 'utf8')
-				const exp: string = fs.readFileSync(path.join(__dirname, '../src/exp.wat'), 'utf8')
-				const fis: string = fs.readFileSync(path.join(__dirname, '../src/fis.wat'), 'utf8')
 				const mods: (InstructionNone | InstructionModule)[] = [
 					``,
 					`;`,
 				].map((src) => {
 					const srcs: [string, SolidConfig] = [src, CONFIG_DEFAULT]
-					return new Parser(...srcs).parse().decorate().build(new Builder(...srcs))
+					return new Scanner(...srcs).lexer.screener.parser.parse().decorate().build(
+						new Scanner(...srcs).lexer.screener.parser.validator.builder
+					)
 				})
 				assert.ok(mods[0] instanceof InstructionNone)
 				assert.strictEqual(mods[0].toString(), ``)
 				assert.ok(mods[1] instanceof InstructionModule)
 				assert.deepStrictEqual(mods[1], new InstructionModule([
-					not,
-					emp,
-					neg,
-					exp,
-					fis,
+					...Builder.IMPORTS,
 					new InstructionNone(),
 				]))
 			})

@@ -4,7 +4,12 @@ import * as path from 'path'
 import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
-import Builder from '../vm/Builder.class'
+import {
+	Scanner,
+} from '../lexer/'
+import type {
+	Builder,
+} from '../builder/'
 
 
 
@@ -251,10 +256,10 @@ export default class CLI {
 			base: void 0,
 			ext: this.command === Command.DEV ? '.wat' : '.wasm',
 		})
-		const cg: Builder = new Builder(...await Promise.all([
+		const cg: Builder = new Scanner(...await Promise.all([
 			fs.promises.readFile(inputfilepath, 'utf8'),
 			this.computeConfig(cwd),
-		]))
+		])).lexer.screener.parser.validator.builder
 		return Promise.all([
 			`
 				Compiling………

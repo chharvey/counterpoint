@@ -1,10 +1,11 @@
 import * as assert from 'assert'
 
-import {CONFIG_DEFAULT} from '../src/SolidConfig'
-import Screener from '../src/class/Screener.class'
-import Token, {
+import {CONFIG_DEFAULT} from '../../src/SolidConfig'
+import {
+	Scanner,
+	Token,
 	TokenWhitespace,
-} from '../src/class/Token.class'
+} from '../../src/lexer/'
 
 const mock: string = `
 5  +  30 \u000d
@@ -29,7 +30,7 @@ const mock: string = `
 describe('Screener.', () => {
 	describe('#generate', () => {
 		it('yields `Token`, non-`TokenWhitespace`, objects.', () => {
-			;[...new Screener(mock, CONFIG_DEFAULT).generate()].forEach((token) => {
+			;[...new Scanner(mock, CONFIG_DEFAULT).lexer.screener.generate()].forEach((token) => {
 				assert.ok(token instanceof Token)
 				assert.ok(!(token instanceof TokenWhitespace))
 			})

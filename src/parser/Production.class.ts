@@ -1,12 +1,13 @@
-import Util from './Util.class'
-import Dev from './Dev.class'
+import Util from '../class/Util.class'
+import Dev from '../class/Dev.class'
 import {
 	Filebound,
 	Punctuator,
 	Keyword,
-} from './Token.class'
+} from '../lexer/'
 import type ParseNode from './ParseNode.class'
-import {GrammarSymbol, Rule} from './Grammar.class'
+import type {GrammarSymbol} from './Grammar.class'
+import Rule from './Rule.class'
 import Terminal, {
 	TerminalIdentifier,
 	TerminalInteger,
@@ -62,6 +63,7 @@ export default abstract class Production {
 	 *
 	 * @param   prod - the production to compare
 	 * @returns        is this production “equal to” the argument?
+	 * @final
 	 */
 	equals(prod: Production) {
 		return this === prod ||
@@ -71,6 +73,7 @@ export default abstract class Production {
 	/**
 	 * Generate grammar rules from this Production.
 	 * @returns this Production split into several rules
+	 * @final
 	 */
 	toRules(): Rule[] {
 		return this.sequences.map((_, i) => new Rule(this, i))

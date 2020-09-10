@@ -1,4 +1,6 @@
-import type SemanticNode from '../class/SemanticNode.class'
+import type {
+	SemanticNode,
+} from '../validator/'
 import SolidError from './SolidError.class'
 
 
