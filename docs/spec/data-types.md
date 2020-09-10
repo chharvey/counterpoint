@@ -74,15 +74,15 @@ Such numbers include the following:
 
 #### Mathematical Operators
 Algorithms in this specification may perform basic mathematical operations of RealNumber values, which include
-addition «+», subtraction «-», multiplication «*», division «/», and exponentiation «^».
+addition \`+\`, subtraction \`-\`, multiplication \`*\`, division \`/\`, and exponentiation \`^\`.
 These operations are implied with their typical meaning in the context of real numbers.
 
 
 ### Sequence
 A **Sequence** is an ordered list of values. The values may be a mix of any type.
-If the values fall within a certain type «‹T›» (a metavariable),
-the Sequence type is denoted «Sequence<‹T›>».
-For example, a sequence of Integers is denoted «Sequence&lt;T&gt;».
+If the values fall within a certain type \`‹T›\` (a metavariable),
+the Sequence type is denoted \`Sequence<‹T›>\`.
+For example, a sequence of Integers is denoted \`Sequence&lt;Integer&gt;\`.
 
 
 ### Structure
@@ -99,7 +99,7 @@ The value of the \`value\` property must be a [Solid Language Value](#solid-lang
 Completion structures are the default values returned by all specification algorithms,
 unless explicitly stated otherwise.
 
-This table summarizes the enumerated values of a completion structure’s «type» property.
+This table summarizes the enumerated values of a completion structure’s \`type\` property.
 
 Type       | Meaning
 ---------- | -------

@@ -4,13 +4,14 @@ This chapter describes notational conventions used throughout this specification
 
 
 ## Value Notation
-Snippets of specification text are delimited with double-angle quotes. Below is an example of
+Snippets of specification text are delimited with double-angle quotes (**U+00AB**, **U+00BB**).
+Below is an example of
 prose that might appear in this specification; the double-angle quotes refer to wording used in the
 steps of a hypothetical [specification algorithm](#algorithms).
 > In an algorithm, a step that reads «*Let* \`x\` be the value of \`X\`.» means to say
 «If \`X\` is a completion structure, then let \`x\` be \`X.value\`; otherwise let \`x\` be \`X\`.»
 
-Algorithm variables, values, and identifiers are delimited with \`back-ticks\` as illustrated above.
+Algorithm variables, values, and identifiers are delimited with \`back-ticks\` (**U+0060**) as illustrated above.
 
 Snippets of program code (be it a Solid program or another kind of program such as a context-free grammar)
 are written in `monospace font`.
@@ -20,7 +21,7 @@ that assigns the `value` property of `X` to the newly declared variable `x`.
 > The grammar production `N ::= A B` defines the nonterminal `N` as a concatenation of nonterminals `A` and `B`.
 
 Metavariables are variables used within this specification as placeholder values.
-They are delimited with left and right single-angle quotes.
+They are delimited with single-angle quotes (**U+2039**, **U+203A**).
 In the following example, \`‹T›\` and \`‹U›\` are not actual Solid Language Types,
 but placeholders for such types.
 > If \`‹T›\` and \`‹U›\` are Solid Language Types, then \`Or<‹T›, ‹U›>\` is the Solid Language Type
@@ -32,18 +33,18 @@ that contains values of either type \`‹T›\` or type \`‹U›\` (or both).
 For instance, a sequence of real numbers can be written as *[2, 4, 6]*.
 
 #### Sequences
-Sequences are denoted within left and right square brackets, with comma-separated entries.
+Sequences are denoted within square brackets (**U+005B**, **U+005D**), with comma-separated (**U+002C**) entries.
 The notation *[`1685`, `'Bach'`]* represents a sequence containing two items:
 the [Integer](./data-types.md#integer) representing the real number *1685*,
 and the [String value](./data-types.md#string) `'Bach'`.
 
-Entries of a sequence may be accessed using 0-origin dot notation.
+Entries of a sequence may be accessed using 0-origin dot notation (**U+002E**).
 If the example sequence above were assigned to the specification variable \`bach\`,
 then \`bach.0\` is shorthand for «the 0th entry of \`bach\`», which is the value `1685`.
 
 #### Structures
 Structures are denoted with left and right square brackets,
-and name–value pairs are delimited with equals signs `=`.
+and name–value pairs are delimited with equals signs (**U+003D**).
 For example, a structure with a \`name\` property of `'Bach'` and a \`yob\` property of `1685`
 would be written as *[name= `'Bach'`, yob= `1685`]*.
 
@@ -174,7 +175,7 @@ In this section, however, we will stick with `::=` in the absense of context.
 
 The nonterminal representative `‹Choice›` may define one or more alternatives
 for **sequences** that replace the nonterminal `‹ProductionDefinition›`.
-In that case, we delimit the sequences with pipes (**U+007C VERTICAL LINE**),
+In that case, we delimit the sequences with pipes (**U+007C**),
 and place each sequence on its own line.
 ```
 ‹ProductionDefinition› ::=
@@ -391,7 +392,7 @@ Optional repetition is stronger than concatenation:
 `A B*` is equivalent to `A (B*)`.
 
 ##### Comma-Separated Repetition
-Comma-separated repetition is a repetition of one or more items with commas (**U+002C COMMA**) in between them.
+Comma-separated repetition is a repetition of one or more items with commas (**U+002C**) in between them.
 Comma-separated repetition only specifies commas *between* the items, but does not necessarily
 specify a leading or trailing comma.
 
@@ -1117,9 +1118,9 @@ TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartInterp) ->
 ```
 The TokenWorth attribute is computed by invoking itself on children elements.
 
-Other than its functional behavior, attribute grammars are much simpler
-than their context-free counterparts. There are no operations or expansions.
-The complexity lies within the values they return, which are further described
+Other than its functional behavior, the attribute grammar is much simpler
+than its context-free counterpart. There are no operations or expansions.
+The complexity lies within the values the productions return, which are further described
 in the chapter [Data Types and Values](./data-types.md).
 
 #### Formal Grammar (AG)
@@ -1155,7 +1156,7 @@ The syntax of the return value is the syntax of its type.
 
 
 ## Algorithms
-This specification uses abstract algorithms to describe the runtime behavior of a program.
+This specification uses abstract algorithms to describe the behavior of the compiler and virtual machine.
 The algorithms are called “abstract” since they do not specify an implementation technique or technology,
 and their steps are written in prose.
 
@@ -1257,16 +1258,16 @@ That is, the step is shorthand for «*Return:* [type= throw, value= ‹v›].».
 Note that such a completion structure is “abrupt”.
 
 #### Unwrap
-An algorithm step that contains «*Unwrap:* ‹CS›» (where ‹CS› is a completion structure or algorithm call)
+An algorithm step that contains «*Unwrap:* ‹s›» (where ‹s› is a completion structure or algorithm call)
 is shorthand for the following steps:
 ```
-1. *If* ‹CS› is an abrupt completion:
-	1. *Return:* ‹CS›.
-2. *Assert:* ‹CS› is a normal completion.
-3. *If* ‹CS› has a `value` property:
-	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹CS› with `‹CS›.value`.
+1. *If* ‹s› is an abrupt completion:
+	1. *Return:* ‹s›.
+2. *Assert:* ‹s› is a normal completion.
+3. *If* ‹s› has a `value` property:
+	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with `‹s›.value`.
 4. *Else:*
-	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹CS› with `void`.
+	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with `void`.
 ```
 
 For example, setting a variable to an unwrap step …
@@ -1287,14 +1288,14 @@ For example, setting a variable to an unwrap step …
 ```
 
 #### UnwrapAffirm
-An algorithm step that contains «*UnwrapAffirm:* ‹CS›» (where ‹CS› is a completion structure or algorithm call)
+An algorithm step that contains «*UnwrapAffirm:* ‹s›» (where ‹s› is a completion structure or algorithm call)
 is shorthand for the following steps:
 ```
-1. *Assert:* ‹CS› is a normal completion.
-2. *If* ‹CS› has a `value` property:
-	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹CS› with `‹CS›.value`.
+1. *Assert:* ‹s› is a normal completion.
+2. *If* ‹s› has a `value` property:
+	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with `‹s›.value`.
 3. *Else:*
-	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹CS› with `void`.
+	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with `void`.
 ```
 
 For example, setting a variable to an unwrap-affirm step …
