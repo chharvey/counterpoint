@@ -30,6 +30,12 @@ import {
 
 
 
+export function tokenIdentifierFromExpressionUnit(expression_unit: ParseNodeExpressionUnit): TokenIdentifier {
+	assert_arrayLength(expression_unit.children, 1)
+	const unit: TokenIdentifier | ParseNodePrimitiveLiteral | ParseNodeStringTemplate = expression_unit.children[0]
+	assert.ok(unit instanceof TokenIdentifier)
+	return unit
+}
 export function tokenLiteralFromExpressionUnit(expression_unit: ParseNodeExpressionUnit): TokenKeyword | TokenNumber | TokenString {
 	assert_arrayLength(expression_unit.children, 1)
 	const unit: TokenIdentifier | ParseNodePrimitiveLiteral | ParseNodeStringTemplate = expression_unit.children[0]
