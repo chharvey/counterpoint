@@ -18,6 +18,31 @@ PrimitiveLiteral ::=
 	| STRING
 ;
 
+
+
+TypeKeyword ::=
+	| "null"
+	| "bool"
+	| "int"
+	| "float"
+	| "obj"
+;
+
+TypeUnit ::=
+	| PrimitiveLiteral
+	| TypeKeyword
+	| "(" Type ")"
+;
+
+TypeIntersection ::= (TypeIntersection "&")? TypeUnit;
+TypeUnion        ::= (TypeUnion        "|")? TypeIntersection;
+
+Type ::=
+	| TypeUnion
+;
+
+
+
 StringTemplate ::=
 	| TEMPLATE_FULL
 	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL

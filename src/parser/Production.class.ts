@@ -117,6 +117,87 @@ export class ProductionPrimitiveLiteral extends Production {
 		]
 	}
 }
+export class ProductionTypeKeyword extends Production {
+	static readonly instance: ProductionTypeKeyword = new ProductionTypeKeyword()
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[Keyword.NULL],
+			[Keyword.BOOL],
+			[Keyword.INT],
+			[Keyword.FLOAT],
+			[Keyword.OBJ],
+		]
+	}
+	random(): string[] {
+		const random: number = Math.random()
+		return [
+			random < 1/5 ? Keyword.NULL  :
+			random < 2/5 ? Keyword.BOOL  :
+			random < 3/5 ? Keyword.INT   :
+			random < 4/5 ? Keyword.FLOAT :
+			               Keyword.OBJ
+		]
+	}
+}
+export class ProductionTypeUnit extends Production {
+	static readonly instance: ProductionTypeUnit = new ProductionTypeUnit()
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[ProductionPrimitiveLiteral.instance],
+			[ProductionTypeKeyword     .instance],
+			[Punctuator.GRP_OPN, ProductionType.instance, Punctuator.GRP_CLS],
+		]
+	}
+	random(): string[] {
+		const random: number = Math.random()
+		return (
+			random < 1/3 ? ProductionPrimitiveLiteral.instance.random() :
+			random < 2/3 ? ProductionTypeKeyword     .instance.random() :
+			[Punctuator.GRP_OPN, ...ProductionType.instance.random(), Punctuator.GRP_CLS]
+		)
+	}
+}
+export class ProductionTypeIntersection extends Production {
+	static readonly instance: ProductionTypeIntersection = new ProductionTypeIntersection()
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[                         ProductionTypeUnit.instance],
+			[this, Punctuator.INTSEC, ProductionTypeUnit.instance],
+		]
+	}
+	random(): string[] {
+		return [
+			...Terminal.maybeA(() => [...this.random(), Punctuator.INTSEC]),
+			...ProductionTypeUnit.instance.random(),
+		]
+	}
+}
+export class ProductionTypeUnion extends Production {
+	static readonly instance: ProductionTypeUnion = new ProductionTypeUnion()
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[                        ProductionTypeIntersection.instance],
+			[this, Punctuator.UNION, ProductionTypeIntersection.instance],
+		]
+	}
+	random(): string[] {
+		return [
+			...Terminal.maybeA(() => [...this.random(), Punctuator.UNION]),
+			...ProductionTypeIntersection.instance.random(),
+		]
+	}
+}
+export class ProductionType extends Production {
+	static readonly instance: ProductionType = new ProductionType()
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[ProductionTypeUnion.instance],
+		]
+	}
+	random(): string[] {
+		return ProductionTypeUnion.instance.random()
+	}
+}
 export class ProductionStringTemplate extends Production {
 	static readonly instance: ProductionStringTemplate = new ProductionStringTemplate()
 	get sequences(): GrammarSymbol[][] {
@@ -376,7 +457,9 @@ export class ProductionExpression extends Production {
 		]
 	}
 	random(): string[] {
-		return ProductionExpressionAdditive.instance.random()
+		return Util.randomBool()
+			? ProductionExpressionDisjunctive.instance.random()
+			: ProductionExpressionConditional.instance.random()
 	}
 }
 export class ProductionDeclarationVariable extends Production {

@@ -9,6 +9,11 @@ import Configuration from './Configuration.class'
 import Terminal from './Terminal.class'
 import Production, {
 	ProductionPrimitiveLiteral,
+	ProductionTypeKeyword,
+	ProductionTypeUnit,
+	ProductionTypeIntersection,
+	ProductionTypeUnion,
+	ProductionType,
 	ProductionStringTemplate,
 	ProductionExpressionUnit,
 	ProductionExpressionUnarySymbol,
@@ -47,6 +52,11 @@ export default class Grammar {
 	constructor() {
 		this.productions = [
 			ProductionPrimitiveLiteral.instance,
+			...(Dev.supports('typingExplicit')  ? [ProductionTypeKeyword             .instance] : []),
+			...(Dev.supports('typingExplicit')  ? [ProductionTypeUnit                .instance] : []),
+			...(Dev.supports('typingExplicit')  ? [ProductionTypeIntersection        .instance] : []),
+			...(Dev.supports('typingExplicit')  ? [ProductionTypeUnion               .instance] : []),
+			...(Dev.supports('typingExplicit')  ? [ProductionType                    .instance] : []),
 			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate          .instance] : []),
 			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate.__0__List.instance] : []),
 			ProductionExpressionUnit.instance,
