@@ -47,16 +47,23 @@ export enum Punctuator {
 		NAND = '!&',
 		OR   = '||',
 		NOR  = '!|',
+		INTSEC = '&', // Dev.supports('typingExplicit')
+		UNION  = '|', // Dev.supports('typingExplicit')
 	// statement
 		ENDSTAT = ';',
-		ASSIGN  = '=', // Dev.supports('variables')
+		ISTYPE  = ':', // Dev.supports('typingExplicit')
+		ASSIGN  = '=', // Dev.supportsAll('variables', 'typingExplicit')
 }
 
 export enum Keyword {
 	// literal
 		NULL  = 'null',
+		BOOL  = 'bool',   // Dev.supports('typingExplicit')
 		FALSE = 'false',
 		TRUE  = 'true',
+		INT   = 'int',    // Dev.supports('typingExplicit')
+		FLOAT = 'float',  // Dev.supports('typingExplicit')
+		OBJ   = 'obj',    // Dev.supports('typingExplicit')
 	// operator
 		IS   = 'is',
 		ISNT = 'isnt',

@@ -66,7 +66,7 @@ describe('Lexer', () => {
 			})
 		})
 		it('rejects unrecognized characters.', () => {
-			`. ~ , [ ] | & { } : # $ @ "${ !Dev.supports('variables') ? ' =' : '' }`.split(' ').map((c) => new Scanner(`
+			`. ~ , [ ] { } # $ @ "`.split(' ').map((c) => new Scanner(`
 				5  +  30
 				+ 6 ^ - (${c} - 37 *
 			`, CONFIG_DEFAULT).lexer).forEach((lexer) => {

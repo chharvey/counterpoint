@@ -18,8 +18,9 @@ Punctuator :::=
 		| "<" | ">" | "<=" | ">=" | "!<" | "!>"
 		| "==" | "!="
 		| "&&" | "!&" | "||" | "!|"
+		| "&" | "|"
 	// statement
-		| ";" | "="
+		| ";" | ":" | "="
 ;
 
 
@@ -27,8 +28,12 @@ Punctuator :::=
 Keyword :::=
 	// literal
 		| "null"
+		| "bool"
 		| "false"
 		| "true"
+		| "int"
+		| "float"
+		| "obj"
 	// operator
 		| "is"
 		| "isnt"
