@@ -1436,6 +1436,7 @@ a lexical error is raised.
 1102. The lexer reached the end of the file before it found the end of the current token.
 1103. The lexer found an escape sequence of an invalid format.
 1104. The lexer found a numeric separator where it is not allowed.
+1105. The lexer found a float literal in an invalid format.
 
 
 ### Parse Errors (12xx)
