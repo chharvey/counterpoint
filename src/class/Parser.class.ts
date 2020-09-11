@@ -1,5 +1,5 @@
 import type SolidConfig from '../SolidConfig'
-
+import {ParseError01} from '../error/ParseError.class'
 import Screener from './Screener.class'
 import type Token from './Token.class'
 import Terminal from './Terminal.class'
@@ -112,9 +112,8 @@ export default class Parser {
 			} else if (reductions.length) {
 				throw new Error(`Reduce-Reduce Conflict:\n${reductions.map((r) => r.toString())}`)
 			}
-			throw new Error(`Unexpected token: ${this.lookahead.serialize()}`)
 		}
-		throw new Error(`There are no finished configurations; I cannot reduce now.`)
+		throw new ParseError01(this.lookahead)
 	}
 
 	/**

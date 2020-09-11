@@ -1443,3 +1443,6 @@ a lexical error is raised.
 When the Solid source text fails to parse correctly per
 the [syntactic grammar](#the-syntactic-grammar) rules,
 a parse error is raised.
+
+1200. A general parse error not covered by one of the following cases.
+1201. The parser reached a token that the syntax does not allow.
