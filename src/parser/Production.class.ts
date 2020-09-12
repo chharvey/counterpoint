@@ -161,13 +161,13 @@ export class ProductionTypeIntersection extends Production {
 	static readonly instance: ProductionTypeIntersection = new ProductionTypeIntersection()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[                         ProductionTypeUnit.instance],
-			[this, Punctuator.INTSEC, ProductionTypeUnit.instance],
+			[                        ProductionTypeUnit.instance],
+			[this, Punctuator.INTER, ProductionTypeUnit.instance],
 		]
 	}
 	random(): string[] {
 		return [
-			...Terminal.maybeA(() => [...this.random(), Punctuator.INTSEC]),
+			...Terminal.maybeA(() => [...this.random(), Punctuator.INTER]),
 			...ProductionTypeUnit.instance.random(),
 		]
 	}
