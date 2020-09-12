@@ -1421,7 +1421,7 @@ Void AlgorithmName(RealNumber param) :=
 ## Syntax Errors (1xxx)
 Syntax Errors arise when a Solid source text does not adhere to the language’s
 formal lexical or syntactic grammar rules.
-If this is the case, the code is said to be “not well-formed”.
+If this is the case, the code is said to be “ill-formed” (“not well-formed”).
 
 There are two main types of syntax errors: lexical errors and parse errors.
 
@@ -1446,3 +1446,17 @@ a parse error is raised.
 
 1200. A general parse error not covered by one of the following cases.
 1201. The parser reached a token that the syntax does not allow.
+
+
+
+## Semantic Errors(2xxx)
+Semantic Errors arise when a Solid source text does not adhere to the language’s
+formal validation rules.
+If this is the case, the code is said to be “invalid” (“not valid”).
+
+
+### Type Errors (23xx)
+When the compiler recognizes a type mismatch, a type error is raised.
+
+2300. A general type error not covered by one of the following cases.
+2301. The validator encountered an operation with an invalid operand.

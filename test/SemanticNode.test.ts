@@ -11,6 +11,9 @@ import {
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
 } from '../src/class/SemanticNode.class'
+import {
+	TypeError01,
+} from '../src/error/SolidTypeError.class'
 import {NanError01} from '../src/error/NanError.class'
 import {
 	CompletionStructureAssessment,
@@ -239,9 +242,6 @@ describe('SemanticNode', () => {
 						[`42 + 420;`, new InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
 						[`3 * 2.1;`,  new InstructionBinopArithmetic(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
 					]))
-					assert.throws(() => operationFromStatementExpression(
-						statementExpressionFromSource(`null + 5;`)
-					).build(new Builder(`null + 5;`, CONFIG_DEFAULT)), /Invalid operation./)
 				})
 				specify('SemanticNodeOperation[operator: DIV] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 					buildOperations(xjs.Map.mapValues(new Map([
@@ -689,9 +689,9 @@ describe('SemanticNode', () => {
 					`null ^ false;`,
 					...(Dev.supports('literalString') ? [`'hello' + 5;`] : []),
 				].forEach((src) => {
-					assert.throws(() => ((new Parser(src, CONFIG_DEFAULT).parse().decorate()
-						.children[0] as SemanticNodeStatementExpression)
-						.children[0] as SemanticNodeOperation).type(), /Invalid operation./)
+					assert.throws(() => operationFromStatementExpression(
+						statementExpressionFromSource(src)
+					).type(), TypeError01)
 				})
 			})
 		})

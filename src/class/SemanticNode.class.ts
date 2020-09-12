@@ -32,6 +32,9 @@ import Instruction, {
 	InstructionModule,
 } from '../vm/Instruction.class'
 import {
+	TypeError01,
+} from '../error/SolidTypeError.class'
+import {
 	NanError01,
 	NanError02,
 } from '../error/NanError.class'
@@ -368,7 +371,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 			return SolidBoolean
 		}
 		const t0: SolidLanguageType = this.children[0].type(const_fold, int_coercion)
-		return (t0.isNumericType) ? t0 : (() => { throw new TypeError('Invalid operation.') })()
+		return (t0.isNumericType) ? t0 : (() => { throw new TypeError01(this) })()
 	}
 	private foldNumeric<T extends SolidNumber<T>>(z: T): T {
 		try {
@@ -442,14 +445,18 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
 			throw new NanError02(this.children[1])
 		}
-		return (v0 instanceof SolidNumber && v1 instanceof SolidNumber) ? new CompletionStructureAssessment(
+		if (!(v0 instanceof SolidNumber) || !(v1 instanceof SolidNumber)) {
+			// using an internal TypeError, not a SolidTypeError, as it should already be valid per `this#type`
+			throw new TypeError('Both operands must be of type `SolidNumber`.')
+		}
+		return new CompletionStructureAssessment(
 			(v0 instanceof Int16 && v1 instanceof Int16)
 				? this.foldNumeric(v0, v1)
 				: this.foldNumeric(
 					(v0 as SolidNumber).toFloat(),
 					(v1 as SolidNumber).toFloat(),
 				)
-		) : (() => { throw new TypeError('Both operands must be of type `SolidNumber`.') })()
+		)
 	}
 	/** @implements SemanticNodeOperationBinary */
 	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
@@ -460,7 +467,7 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 			if ( t0.isFloatType &&  t1.isFloatType) { return Float64 }
 			if (!t0.isFloatType && !t1.isFloatType) { return Int16 }
 		}
-		throw new TypeError('Invalid operation.')
+		throw new TypeError01(this)
 	}
 	private foldNumeric<T extends SolidNumber<T>>(x: T, y: T): T {
 		try {
@@ -508,14 +515,18 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 			return assess1
 		}
 		const [v0, v1]: [SolidObject, SolidObject] = [assess0.value!, assess1.value!]
-		return (v0 instanceof SolidNumber && v1 instanceof SolidNumber) ? new CompletionStructureAssessment(
+		if (!(v0 instanceof SolidNumber) || !(v1 instanceof SolidNumber)) {
+			// using an internal TypeError, not a SolidTypeError, as it should already be valid per `this#type`
+			throw new TypeError('Both operands must be of type `SolidNumber`.')
+		}
+		return new CompletionStructureAssessment(
 			(v0 instanceof Int16 && v1 instanceof Int16)
 				? this.foldComparative(v0, v1)
 				: this.foldComparative(
 					(v0 as SolidNumber).toFloat(),
 					(v1 as SolidNumber).toFloat(),
 				)
-		) : (() => { throw new TypeError('Both operands must be of type `SolidNumber`.') })()
+		)
 	}
 	/** @implements SemanticNodeOperationBinary */
 	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
@@ -525,7 +536,7 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 		))) {
 			return SolidBoolean
 		}
-		throw new TypeError('Invalid operation.')
+		throw new TypeError01(this)
 	}
 	private foldComparative<T extends SolidNumber<T>>(x: T, y: T): SolidBoolean {
 		return SolidBoolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
@@ -688,7 +699,7 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 			? (t0 instanceof SolidTypeConstant)
 				? (t0.value === SolidBoolean.FALSE) ? t2 : t1
 				: t1.union(t2)
-			: (() => { throw new TypeError('Invalid operation.') })()
+			: (() => { throw new TypeError01(this) })()
 	}
 }
 /**
