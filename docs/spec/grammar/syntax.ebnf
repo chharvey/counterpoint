@@ -21,7 +21,6 @@ PrimitiveLiteral ::=
 
 
 TypeKeyword ::=
-	| "null"
 	| "bool"
 	| "int"
 	| "float"

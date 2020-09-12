@@ -102,7 +102,7 @@ describe('Parser', () => {
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= PrimitiveLiteral', () => {
 			it('parses NULL, BOOLEAN, INTEGER, FLOAT, or STRING.', () => {
 				assert.deepStrictEqual(([
-					// [`null`,   TokenKeyword],
+					[`null`,   TokenKeyword],
 					[`false`,  TokenKeyword],
 					[`true`,   TokenKeyword],
 					[`42`,     TokenNumber],
@@ -122,7 +122,7 @@ describe('Parser', () => {
 					assert.ok(token instanceof tokentype)
 					return token.source
 				}), [
-					// Keyword.NULL,
+					Keyword.NULL,
 					Keyword.FALSE,
 					Keyword.TRUE,
 					'42',
@@ -132,9 +132,8 @@ describe('Parser', () => {
 		})
 
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= TypeKeyword', () => {
-			it('parses keywords `null`, `bool`, `int`, `float`, `obj`.', () => {
+			it('parses keywords `bool`, `int`, `float`, `obj`.', () => {
 				assert.deepStrictEqual(([
-					// `null`,
 					`bool`,
 					`int`,
 					`float`,
@@ -150,7 +149,6 @@ describe('Parser', () => {
 						)
 					)
 				).source), [
-					// Keyword.NULL,
 					Keyword.BOOL,
 					Keyword.INT,
 					Keyword.FLOAT,
