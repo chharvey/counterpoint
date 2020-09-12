@@ -29,6 +29,7 @@ export enum Punctuator {
 		EMP = '?',
 		AFF = '+',
 		NEG = '-',
+		ORNULL = '!', // Dev.supports('typingExplicit')
 	// binary
 		EXP  = '^',
 		MUL  = '*',

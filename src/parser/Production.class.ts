@@ -157,18 +157,32 @@ export class ProductionTypeUnit extends Production {
 		)
 	}
 }
+export class ProductionTypeUnarySymbol extends Production {
+	static readonly instance: ProductionTypeUnarySymbol = new ProductionTypeUnarySymbol()
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[ProductionTypeUnit.instance],
+			[this, Punctuator.ORNULL],
+		]
+	}
+	random(): string[] {
+		return Util.randomBool()
+			? ProductionTypeUnit.instance.random()
+			: [...this.random(), Punctuator.ORNULL]
+	}
+}
 export class ProductionTypeIntersection extends Production {
 	static readonly instance: ProductionTypeIntersection = new ProductionTypeIntersection()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[                        ProductionTypeUnit.instance],
-			[this, Punctuator.INTER, ProductionTypeUnit.instance],
+			[                        ProductionTypeUnarySymbol.instance],
+			[this, Punctuator.INTER, ProductionTypeUnarySymbol.instance],
 		]
 	}
 	random(): string[] {
 		return [
 			...Terminal.maybeA(() => [...this.random(), Punctuator.INTER]),
-			...ProductionTypeUnit.instance.random(),
+			...ProductionTypeUnarySymbol.instance.random(),
 		]
 	}
 }
@@ -290,9 +304,9 @@ export class ProductionExpressionUnarySymbol extends Production {
 		]
 	}
 	random(): string[] {
-		return Util.randomBool() ?
-			ProductionExpressionUnit.instance.random() :
-			[Util.arrayRandom([
+		return Util.randomBool()
+			? ProductionExpressionUnit.instance.random()
+			: [Util.arrayRandom([
 				Punctuator.NOT,
 				Punctuator.EMP,
 				Punctuator.AFF,
