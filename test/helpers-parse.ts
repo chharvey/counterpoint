@@ -14,6 +14,11 @@ import {
 } from '../src/lexer/'
 import {
 	ParseNodePrimitiveLiteral,
+	ParseNodeTypeKeyword,
+	ParseNodeTypeUnit,
+	ParseNodeTypeUnary,
+	ParseNodeTypeBinary,
+	ParseNodeType,
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
 	ParseNodeExpressionUnary,
@@ -30,6 +35,37 @@ import {
 
 
 
+export function tokenLiteralFromTypeUnit(type_unit: ParseNodeTypeUnit): TokenKeyword | TokenNumber | TokenString {
+	assert_arrayLength(type_unit.children, 1, 'type unit should have 1 child')
+	const unit: ParseNodePrimitiveLiteral | ParseNodeTypeKeyword = type_unit.children[0]
+	assert.ok(unit instanceof ParseNodePrimitiveLiteral, 'unit should be a ParseNodePrimitiveLiteral')
+	return unit.children[0]
+}
+export function tokenKeywordFromTypeUnit(type_unit: ParseNodeTypeUnit): TokenKeyword {
+	assert_arrayLength(type_unit.children, 1, 'type unit should have 1 child')
+	const unit: ParseNodePrimitiveLiteral | ParseNodeTypeKeyword = type_unit.children[0]
+	assert.ok(unit instanceof ParseNodeTypeKeyword, 'unit shoudl be a ParseNodeTypeKeyword')
+	return unit.children[0]
+}
+export function unitTypeFromUnaryType(type_unary: ParseNodeTypeUnary): ParseNodeTypeUnit {
+	assert_arrayLength(type_unary.children, 1, 'unary type should have 1 child')
+	return type_unary.children[0]
+}
+export function unaryTypeFromIntersectionType(type_intersection: ParseNodeTypeBinary): ParseNodeTypeUnary {
+	assert_arrayLength(type_intersection.children, 1, 'intersection type should have 1 child')
+	const type_unary: ParseNodeTypeBinary | ParseNodeTypeUnary = type_intersection.children[0]
+	assert.ok(type_unary instanceof ParseNodeTypeUnary, 'type_unary shoudl be a ParseNodeTypeUnary')
+	return type_unary
+}
+export function intersectionTypeFromUnionType(type_union: ParseNodeTypeBinary): ParseNodeTypeBinary {
+	assert_arrayLength(type_union.children, 1, 'union type should have 1 child')
+	const type_intersection: ParseNodeTypeBinary | ParseNodeTypeUnary = type_union.children[0]
+	assert.ok(type_intersection instanceof ParseNodeTypeBinary, 'type_intersection shoudl be a ParseNodeTypeBinary')
+	return type_intersection
+}
+export function unionTypeFromType(type_: ParseNodeType): ParseNodeTypeBinary {
+	return type_.children[0]
+}
 export function tokenIdentifierFromExpressionUnit(expression_unit: ParseNodeExpressionUnit): TokenIdentifier {
 	assert_arrayLength(expression_unit.children, 1)
 	const unit: TokenIdentifier | ParseNodePrimitiveLiteral | ParseNodeStringTemplate = expression_unit.children[0]

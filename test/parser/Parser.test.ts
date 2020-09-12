@@ -80,6 +80,16 @@ describe('Parser', () => {
 			})
 		})
 
+		Dev.supports('typingExplicit') && describe('TypeUnit ::= PrimitiveLiteral', () => {
+		})
+		Dev.supports('typingExplicit') && describe('TypeUnit ::= "(" Type ")"', () => {
+		})
+		Dev.supports('typingExplicit') && describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
+		})
+		Dev.supports('typingExplicit') && describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
+		})
+		Dev.supports('typingExplicit') && describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
+		})
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
 			Dev.supports('variables') && it('parses IDENTIFIER.', () => {
 				assert.strictEqual(tokenIdentifierFromExpressionUnit(
