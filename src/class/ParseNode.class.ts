@@ -100,7 +100,7 @@ export default abstract class ParseNode implements Serializable {
 			(                                   rule.production.equals(ProductionStatement                .instance)) ? new ParseNodeStatement               (rule, children, config) :
 			(                                   rule.production.equals(ProductionGoal                     .instance)) ? new ParseNodeGoal                    (rule, children, config) :
 			(                                   rule.production.equals(ProductionGoal.__0__List           .instance)) ? new ParseNodeGoal__0__List           (rule, children, config) :
-			(() => { throw new Error(`The given rule \`${ rule.toString() }\` does not match any known grammar productions.`) })()
+			(() => { throw new ReferenceError(`The given rule \`${ rule.toString() }\` does not match any known grammar productions.`) })()
 		)
 	}
 
@@ -323,7 +323,7 @@ export class ParseNodeExpressionBinary extends ParseNode {
 				new SemanticNodeOperationUnary(this, Operator.NOT, [
 					new SemanticNodeOperationBinaryLogical(this.children[0], Operator.OR, operands),
 				])
-			: (() => { throw new Error(`Operator ${ Operator[operator] } not found.`) })()
+			: (() => { throw new ReferenceError(`Operator ${ Operator[operator] } not found.`) })()
 		}
 	}
 }
