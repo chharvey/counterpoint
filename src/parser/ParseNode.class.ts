@@ -43,6 +43,12 @@ import {
 import type Rule from './Rule.class'
 import {
 	ProductionPrimitiveLiteral,
+	ProductionTypeKeyword,
+	ProductionTypeUnit,
+	ProductionTypeUnarySymbol,
+	ProductionTypeIntersection,
+	ProductionTypeUnion,
+	ProductionType,
 	ProductionStringTemplate,
 	ProductionExpressionUnit,
 	ProductionExpressionUnarySymbol,
@@ -83,6 +89,12 @@ export default abstract class ParseNode implements Serializable {
 		// NOTE: Need to use a chained if-else instead of a Map because cannot create instance of abstract class (`typeof ParseNode`).
 		return (
 			(                                   rule.production.equals(ProductionPrimitiveLiteral         .instance)) ? new ParseNodePrimitiveLiteral        (rule, children) :
+			(Dev.supports('typingExplicit')  && rule.production.equals(ProductionTypeKeyword              .instance)) ? new ParseNodeTypeKeyword             (rule, children) :
+			(Dev.supports('typingExplicit')  && rule.production.equals(ProductionTypeUnit                 .instance)) ? new ParseNodeTypeUnit                (rule, children) :
+			(Dev.supports('typingExplicit')  && rule.production.equals(ProductionTypeUnarySymbol          .instance)) ? new ParseNodeTypeUnary               (rule, children) :
+			(Dev.supports('typingExplicit')  && rule.production.equals(ProductionTypeIntersection         .instance)) ? new ParseNodeTypeBinary              (rule, children) :
+			(Dev.supports('typingExplicit')  && rule.production.equals(ProductionTypeUnion                .instance)) ? new ParseNodeTypeBinary              (rule, children) :
+			(Dev.supports('typingExplicit')  && rule.production.equals(ProductionType                     .instance)) ? new ParseNodeType                    (rule, children) :
 			(Dev.supports('literalTemplate') && rule.production.equals(ProductionStringTemplate           .instance)) ? new ParseNodeStringTemplate          (rule, children) :
 			(Dev.supports('literalTemplate') && rule.production.equals(ProductionStringTemplate.__0__List .instance)) ? new ParseNodeStringTemplate__0__List (rule, children) :
 			(                                   rule.production.equals(ProductionExpressionUnit           .instance)) ? new ParseNodeExpressionUnit          (rule, children) :
@@ -160,6 +172,45 @@ export class ParseNodePrimitiveLiteral extends ParseNode {
 	;
 	decorate(): SemanticNodeConstant {
 		return new SemanticNodeConstant(this.children[0])
+	}
+}
+export class ParseNodeTypeKeyword extends ParseNode {
+	declare children:
+		| readonly [TokenKeyword]
+	decorate(): SemanticNode {
+		throw new Error('ParseNodeTypeKeyword#decorate not yet supported.')
+	}
+}
+export class ParseNodeTypeUnit extends ParseNode {
+	declare children:
+		| readonly [ParseNodePrimitiveLiteral]
+		| readonly [ParseNodeTypeKeyword]
+		| readonly [TokenPunctuator, ParseNodeType, TokenPunctuator]
+	decorate(): SemanticNode {
+		throw new Error('ParseNodeTypeUnit#decorate not yet supported.')
+	}
+}
+export class ParseNodeTypeUnary extends ParseNode {
+	declare children:
+		| readonly [ParseNodeTypeUnit]
+		| readonly [ParseNodeTypeUnary, TokenPunctuator]
+	decorate(): SemanticNode {
+		throw new Error('ParseNodeTypeUnary#decorate not yet supported.')
+	}
+}
+export class ParseNodeTypeBinary extends ParseNode {
+	declare children:
+		| readonly [                                      ParseNodeTypeUnary | ParseNodeTypeBinary]
+		| readonly [ParseNodeTypeBinary, TokenPunctuator, ParseNodeTypeUnary | ParseNodeTypeBinary]
+	decorate(): SemanticNode {
+		throw new Error('ParseNodeTypeBinary#decorate not yet supported.')
+	}
+}
+export class ParseNodeType extends ParseNode {
+	declare children:
+		| readonly [ParseNodeTypeBinary]
+	decorate(): SemanticNode {
+		throw new Error('ParseNodeType#decorate not yet supported.')
 	}
 }
 export class ParseNodeStringTemplate extends ParseNode {
@@ -256,8 +307,10 @@ export class ParseNodeExpressionBinary extends ParseNode {
 		[Punctuator.NOR,  Operator.NOR],
 	])
 	declare children:
-		| readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary]
-		| readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary]
+		| readonly [ParseNodeExpressionUnary                                            ] // Exponential
+		| readonly [ParseNodeExpressionUnary, TokenPunctuator, ParseNodeExpressionBinary] // Exponential
+		| readonly [                                                           ParseNodeExpressionBinary]
+		| readonly [ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary]
 	decorate(): SemanticNodeExpression {
 		if (this.children.length === 1) {
 			return this.children[0].decorate()
@@ -326,18 +379,6 @@ export class ParseNodeExpressionBinary extends ParseNode {
 		}
 	}
 }
-/*
-class ParseNodeExpressionBinaryStrongest extends ParseNodeExpressionBinary {
-	declare children:
-		| readonly [ParseNodeExpressionUnary]
-		| readonly [ParseNodeExpressionUnary, TokenPunctuator, ParseNodeExpressionBinary]
-}
-class ParseNodeExpressionBinaryWeak extends ParseNodeExpressionBinary {
-	declare children:
-		| readonly [ParseNodeExpressionBinary]
-		| readonly [ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary]
-}
-*/
 export class ParseNodeExpressionConditional extends ParseNode {
 	declare children:
 		| readonly [
@@ -363,8 +404,8 @@ export class ParseNodeExpression extends ParseNode {
 }
 export class ParseNodeDeclarationVariable extends ParseNode {
 	declare children:
-		| readonly [TokenKeyword,               TokenIdentifier, TokenPunctuator, ParseNodeExpression, TokenPunctuator]
-		| readonly [TokenKeyword, TokenKeyword, TokenIdentifier, TokenPunctuator, ParseNodeExpression, TokenPunctuator]
+		| readonly [TokenKeyword,               TokenIdentifier, TokenPunctuator, ParseNodeType, TokenPunctuator, ParseNodeExpression, TokenPunctuator]
+		| readonly [TokenKeyword, TokenKeyword, TokenIdentifier, TokenPunctuator, ParseNodeType, TokenPunctuator, ParseNodeExpression, TokenPunctuator]
 	decorate(): SemanticNodeDeclaration {
 		const is_unfixed: boolean             = this.children[1].source === Keyword.UNFIXED
 		const identifier: TokenIdentifier     = this.children[is_unfixed ? 2 : 1] as TokenIdentifier

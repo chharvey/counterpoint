@@ -8,6 +8,11 @@ export {default as Production}    from './Production.class'
 
 export {
 	ParseNodePrimitiveLiteral,
+	ParseNodeTypeKeyword,
+	ParseNodeTypeUnit,
+	ParseNodeTypeUnary,
+	ParseNodeTypeBinary,
+	ParseNodeType,
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
 	ParseNodeExpressionUnary,

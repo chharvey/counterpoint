@@ -21,7 +21,6 @@ PrimitiveLiteral ::=
 
 
 TypeKeyword ::=
-	| "null"
 	| "bool"
 	| "int"
 	| "float"
@@ -34,7 +33,12 @@ TypeUnit ::=
 	| "(" Type ")"
 ;
 
-TypeIntersection ::= (TypeIntersection "&")? TypeUnit;
+TypeUnarySymbol ::=
+	| TypeUnit
+	| TypeUnarySymbol "!"
+;
+
+TypeIntersection ::= (TypeIntersection "&")? TypeUnarySymbol;
 TypeUnion        ::= (TypeUnion        "|")? TypeIntersection;
 
 Type ::=
@@ -55,10 +59,14 @@ ExpressionUnit ::=
 	| "(" Expression ")"
 ;
 
-ExpressionUnarySymbol
-	::= ExpressionUnit | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
+ExpressionUnarySymbol ::=
+	| ExpressionUnit
+	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol
+;
 
-ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"                                      ExpressionExponential)?;
+ExpressionExponential
+	::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
+
 ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/" ))?                            ExpressionExponential;
 ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-" ))?                            ExpressionMultiplicative;
 ExpressionComparative    ::= (ExpressionComparative    ("<" | ">" | "<=" | ">=" | "!<" | "!>"))? ExpressionAdditive;
@@ -77,7 +85,7 @@ Expression ::=
 
 
 DeclarationVariable
-	::= "let" "unfixed"? IDENTIFIER "=" Expression ";";
+	::= "let" "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
 
 StatementAssignment
 	::= IDENTIFIER "=" Expression ";";

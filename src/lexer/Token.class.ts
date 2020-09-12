@@ -29,6 +29,7 @@ export enum Punctuator {
 		EMP = '?',
 		AFF = '+',
 		NEG = '-',
+		ORNULL = '!', // Dev.supports('typingExplicit')
 	// binary
 		EXP  = '^',
 		MUL  = '*',
@@ -47,8 +48,8 @@ export enum Punctuator {
 		NAND = '!&',
 		OR   = '||',
 		NOR  = '!|',
-		INTSEC = '&', // Dev.supports('typingExplicit')
-		UNION  = '|', // Dev.supports('typingExplicit')
+		INTER = '&', // Dev.supports('typingExplicit')
+		UNION = '|', // Dev.supports('typingExplicit')
 	// statement
 		ENDSTAT = ';',
 		ISTYPE  = ':', // Dev.supports('typingExplicit')

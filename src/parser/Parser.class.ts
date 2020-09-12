@@ -111,7 +111,7 @@ export default class Parser {
 				}
 				return true
 			} else if (reductions.length) {
-				throw new Error(`Reduce-Reduce Conflict:\n${reductions.map((r) => r.toString())}`)
+				throw new Error(`Reduce-Reduce Conflict:\n${reductions.map((r) => r.toString()).join('\n')}`)
 			}
 			throw new Error(`Unexpected token: ${this.lookahead.serialize()}`)
 		}

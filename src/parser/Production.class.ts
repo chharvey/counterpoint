@@ -121,7 +121,6 @@ export class ProductionTypeKeyword extends Production {
 	static readonly instance: ProductionTypeKeyword = new ProductionTypeKeyword()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[Keyword.NULL],
 			[Keyword.BOOL],
 			[Keyword.INT],
 			[Keyword.FLOAT],
@@ -131,10 +130,9 @@ export class ProductionTypeKeyword extends Production {
 	random(): string[] {
 		const random: number = Math.random()
 		return [
-			random < 1/5 ? Keyword.NULL  :
-			random < 2/5 ? Keyword.BOOL  :
-			random < 3/5 ? Keyword.INT   :
-			random < 4/5 ? Keyword.FLOAT :
+			random < 1/4 ? Keyword.BOOL  :
+			random < 2/4 ? Keyword.INT   :
+			random < 3/4 ? Keyword.FLOAT :
 			               Keyword.OBJ
 		]
 	}
@@ -157,18 +155,32 @@ export class ProductionTypeUnit extends Production {
 		)
 	}
 }
+export class ProductionTypeUnarySymbol extends Production {
+	static readonly instance: ProductionTypeUnarySymbol = new ProductionTypeUnarySymbol()
+	get sequences(): GrammarSymbol[][] {
+		return [
+			[ProductionTypeUnit.instance],
+			[this, Punctuator.ORNULL],
+		]
+	}
+	random(): string[] {
+		return Util.randomBool()
+			? ProductionTypeUnit.instance.random()
+			: [...this.random(), Punctuator.ORNULL]
+	}
+}
 export class ProductionTypeIntersection extends Production {
 	static readonly instance: ProductionTypeIntersection = new ProductionTypeIntersection()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[                         ProductionTypeUnit.instance],
-			[this, Punctuator.INTSEC, ProductionTypeUnit.instance],
+			[                        ProductionTypeUnarySymbol.instance],
+			[this, Punctuator.INTER, ProductionTypeUnarySymbol.instance],
 		]
 	}
 	random(): string[] {
 		return [
-			...Terminal.maybeA(() => [...this.random(), Punctuator.INTSEC]),
-			...ProductionTypeUnit.instance.random(),
+			...Terminal.maybeA(() => [...this.random(), Punctuator.INTER]),
+			...ProductionTypeUnarySymbol.instance.random(),
 		]
 	}
 }
@@ -290,9 +302,9 @@ export class ProductionExpressionUnarySymbol extends Production {
 		]
 	}
 	random(): string[] {
-		return Util.randomBool() ?
-			ProductionExpressionUnit.instance.random() :
-			[Util.arrayRandom([
+		return Util.randomBool()
+			? ProductionExpressionUnit.instance.random()
+			: [Util.arrayRandom([
 				Punctuator.NOT,
 				Punctuator.EMP,
 				Punctuator.AFF,
@@ -466,8 +478,8 @@ export class ProductionDeclarationVariable extends Production {
 	static readonly instance: ProductionDeclarationVariable = new ProductionDeclarationVariable()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[Keyword.LET,                  TerminalIdentifier.instance, Punctuator.ASSIGN, ProductionExpression.instance, Punctuator.ENDSTAT],
-			[Keyword.LET, Keyword.UNFIXED, TerminalIdentifier.instance, Punctuator.ASSIGN, ProductionExpression.instance, Punctuator.ENDSTAT],
+			[Keyword.LET,                  TerminalIdentifier.instance, Punctuator.ISTYPE, ProductionType.instance, Punctuator.ASSIGN, ProductionExpression.instance, Punctuator.ENDSTAT],
+			[Keyword.LET, Keyword.UNFIXED, TerminalIdentifier.instance, Punctuator.ISTYPE, ProductionType.instance, Punctuator.ASSIGN, ProductionExpression.instance, Punctuator.ENDSTAT],
 		]
 	}
 	random(): string[] {
