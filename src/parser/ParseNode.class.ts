@@ -307,8 +307,10 @@ export class ParseNodeExpressionBinary extends ParseNode {
 		[Punctuator.NOR,  Operator.NOR],
 	])
 	declare children:
-		| readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary]
-		| readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary]
+		| readonly [ParseNodeExpressionUnary                                            ] // Exponential
+		| readonly [ParseNodeExpressionUnary, TokenPunctuator, ParseNodeExpressionBinary] // Exponential
+		| readonly [                                                           ParseNodeExpressionBinary]
+		| readonly [ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary]
 	decorate(): SemanticNodeExpression {
 		if (this.children.length === 1) {
 			return this.children[0].decorate()
@@ -377,18 +379,6 @@ export class ParseNodeExpressionBinary extends ParseNode {
 		}
 	}
 }
-/*
-class ParseNodeExpressionBinaryStrongest extends ParseNodeExpressionBinary {
-	declare children:
-		| readonly [ParseNodeExpressionUnary]
-		| readonly [ParseNodeExpressionUnary, TokenPunctuator, ParseNodeExpressionBinary]
-}
-class ParseNodeExpressionBinaryWeak extends ParseNodeExpressionBinary {
-	declare children:
-		| readonly [ParseNodeExpressionBinary]
-		| readonly [ParseNodeExpressionBinary, TokenPunctuator, ParseNodeExpressionBinary]
-}
-*/
 export class ParseNodeExpressionConditional extends ParseNode {
 	declare children:
 		| readonly [
