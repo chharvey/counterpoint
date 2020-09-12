@@ -32,7 +32,7 @@ import {
 	SemanticNodeOperationBinaryEquality,
 	SemanticNodeOperationBinaryLogical,
 	SemanticNodeOperationTernary,
-	SemanticNodeDeclaration,
+	SemanticNodeDeclarationVariable,
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
 	SemanticNodeAssigned,
@@ -406,11 +406,11 @@ export class ParseNodeDeclarationVariable extends ParseNode {
 	declare children:
 		| readonly [TokenKeyword,               TokenIdentifier, TokenPunctuator, ParseNodeType, TokenPunctuator, ParseNodeExpression, TokenPunctuator]
 		| readonly [TokenKeyword, TokenKeyword, TokenIdentifier, TokenPunctuator, ParseNodeType, TokenPunctuator, ParseNodeExpression, TokenPunctuator]
-	decorate(): SemanticNodeDeclaration {
+	decorate(): SemanticNodeDeclarationVariable {
 		const is_unfixed: boolean             = this.children[1].source === Keyword.UNFIXED
 		const identifier: TokenIdentifier     = this.children[is_unfixed ? 2 : 1] as TokenIdentifier
 		const expression: ParseNodeExpression = this.children[is_unfixed ? 4 : 3] as ParseNodeExpression
-		return new SemanticNodeDeclaration(this, 'variable', is_unfixed, [
+		return new SemanticNodeDeclarationVariable(this, is_unfixed, [
 			new SemanticNodeAssignee(identifier, [
 				new SemanticNodeIdentifier(identifier),
 			]),

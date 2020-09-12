@@ -684,7 +684,7 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
  */
 export type SemanticStatementType =
 	| SemanticNodeStatementExpression
-	| SemanticNodeDeclaration
+	| SemanticNodeDeclarationVariable
 	| SemanticNodeAssignment
 export class SemanticNodeStatementExpression extends SemanticNode {
 	constructor(
@@ -706,15 +706,14 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 			: new InstructionStatement(builder.stmtCount, this.children[0].build(builder))
 	}
 }
-export class SemanticNodeDeclaration extends SemanticNode {
+export class SemanticNodeDeclarationVariable extends SemanticNode {
 	constructor (
 		start_node: ParseNode,
-		type: string,
 		unfixed: boolean,
 		readonly children:
 			| readonly [SemanticNodeAssignee, SemanticNodeAssigned]
 	) {
-		super(start_node, {type, unfixed}, children)
+		super(start_node, {unfixed}, children)
 	}
 	/** @implements SemanticNode */
 	typeCheck(_opts: SolidConfig['compilerOptions']): void {

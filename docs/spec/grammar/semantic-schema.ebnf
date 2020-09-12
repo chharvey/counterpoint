@@ -25,6 +25,7 @@ SemanticTemplatePartial
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
+
 SemanticOperation[operator: NEG]
 	::= SemanticExpression[type: Number];
 
@@ -55,7 +56,7 @@ SemanticStatementExpression
 
 
 
-SemanticDeclaration[type: "variable"][unfixed: Boolean]
+SemanticDeclarationVariable[unfixed: Boolean]
 	::= SemanticAssignee SemanticAssigned;
 
 SemanticAssignment

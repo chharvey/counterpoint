@@ -14,7 +14,7 @@ export {
 	SemanticNodeOperationBinaryEquality,
 	SemanticNodeOperationBinaryLogical,
 	SemanticNodeOperationTernary,
-	SemanticNodeDeclaration,
+	SemanticNodeDeclarationVariable,
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
 	SemanticNodeAssigned,
