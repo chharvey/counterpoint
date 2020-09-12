@@ -4,8 +4,10 @@ import {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
 import {
+	ParseNodeTypeUnit,
 	ParseNodeTypeUnary,
 	ParseNodeTypeBinary,
+	ParseNodeType,
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
 	ParseNodeExpressionUnary,
@@ -33,6 +35,9 @@ import {
 	assert_arrayLength,
 } from '../assert-helpers'
 import {
+	tokenLiteralFromTypeUnit,
+	tokenKeywordFromTypeUnit,
+	unitTypeFromUnaryType,
 	unaryTypeFromIntersectionType,
 	intersectionTypeFromUnionType,
 	unionTypeFromType,
@@ -49,6 +54,8 @@ import {
 	disjunctiveExpressionFromExpression,
 	conditionalExpressionFromExpression,
 	expressionFromStatement,
+	typeFromVariableDeclaration,
+	variableDeclarationFromStatement,
 	statementFromSource,
 } from '../helpers-parse'
 
@@ -56,6 +63,13 @@ import {
 
 describe('Parser', () => {
 	describe('#parse', () => {
+		function typeFromString(typesrc: string): ParseNodeType {
+			return typeFromVariableDeclaration(
+				variableDeclarationFromStatement(
+					statementFromSource(`let x: ${ typesrc } = null;`)
+				)
+			)
+		}
 		context('Goal ::= #x02 #x03', () => {
 			it('returns only file bounds.', () => {
 				const tree: ParseNodeGoal = new Scanner('', CONFIG_DEFAULT).lexer.screener.parser.parse()
@@ -86,15 +100,181 @@ describe('Parser', () => {
 		})
 
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= PrimitiveLiteral', () => {
+			it('parses NULL, BOOLEAN, INTEGER, FLOAT, or STRING.', () => {
+				assert.deepStrictEqual(([
+					// [`null`,   TokenKeyword],
+					[`false`,  TokenKeyword],
+					[`true`,   TokenKeyword],
+					[`42`,     TokenNumber],
+					[`4.2e+1`, TokenNumber],
+				] as [string, typeof TokenKeyword | typeof TokenNumber][]).map(([src, tokentype]) => {
+					const token: TokenKeyword | TokenNumber | TokenString = tokenLiteralFromTypeUnit(
+						unitTypeFromUnaryType(
+							unaryTypeFromIntersectionType(
+								intersectionTypeFromUnionType(
+									unionTypeFromType(
+										typeFromString(src)
+									)
+								)
+							)
+						)
+					)
+					assert.ok(token instanceof tokentype)
+					return token.source
+				}), [
+					// Keyword.NULL,
+					Keyword.FALSE,
+					Keyword.TRUE,
+					'42',
+					'4.2e+1',
+				]);
+			})
 		})
+
+		Dev.supports('typingExplicit') && describe('TypeUnit ::= TypeKeyword', () => {
+			it('parses keywords `null`, `bool`, `int`, `float`, `obj`.', () => {
+				assert.deepStrictEqual(([
+					// `null`,
+					`bool`,
+					`int`,
+					`float`,
+					`obj`,
+				]).map((src) => tokenKeywordFromTypeUnit(
+					unitTypeFromUnaryType(
+						unaryTypeFromIntersectionType(
+							intersectionTypeFromUnionType(
+								unionTypeFromType(
+									typeFromString(src)
+								)
+							)
+						)
+					)
+				).source), [
+					// Keyword.NULL,
+					Keyword.BOOL,
+					Keyword.INT,
+					Keyword.FLOAT,
+					Keyword.OBJ,
+				]);
+			})
+			it('throws when given a non-type keyword.', () => {
+				assert.throws(() => tokenLiteralFromTypeUnit(
+					unitTypeFromUnaryType(
+						unaryTypeFromIntersectionType(
+							intersectionTypeFromUnionType(
+								unionTypeFromType(
+									typeFromString(`isnt`)
+								)
+							)
+						)
+					)
+				), /I cannot reduce now/)
+			})
+		})
+
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= "(" Type ")"', () => {
+			it('makes an TypeUnit node containing a Type node.', () => {
+				/*
+					<TypeUnit>
+						<PUNCTUATOR>(</PUNCTUATOR>
+						<Type source="(obj | int) & float">...</Type>
+						<PUNCTUATOR>)</PUNCTUATOR>
+					</TypeUnit>
+				*/
+				const type_unit: ParseNodeTypeUnit = unitTypeFromUnaryType(
+					unaryTypeFromIntersectionType(
+						intersectionTypeFromUnionType(
+							unionTypeFromType(
+								typeFromString(`(obj | int & float)`)
+							)
+						)
+					)
+				)
+				assert_arrayLength(type_unit.children, 3)
+				const [open, typ, close]: readonly [TokenPunctuator, ParseNodeType, TokenPunctuator] = type_unit.children
+				assert.deepStrictEqual(
+					[open.source, typ.source, close.source],
+					[Punctuator.GRP_OPN, [
+						Keyword.OBJ,
+						Punctuator.UNION,
+						Keyword.INT,
+						Punctuator.INTER,
+						Keyword.FLOAT,
+					].join(' '), Punctuator.GRP_CLS],
+				)
+			})
 		})
+
 		Dev.supports('typingExplicit') && describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
+			it('makes a ParseNodeTypeUnary node.', () => {
+				/*
+					<TypeUnarySymbol>
+						<TypeUnarySymbol source="int">...</TypeUnarySymbol>
+						<PUNCTUATOR>!</PUNCTUATOR>
+					</TypeUnarySymbol>
+				*/
+				const type_unary: ParseNodeTypeUnary = unaryTypeFromIntersectionType(
+					intersectionTypeFromUnionType(
+						unionTypeFromType(
+							typeFromString(`int!`)
+						)
+					)
+				)
+				assert_arrayLength(type_unary.children, 2)
+				const [unary, op]: readonly [ParseNodeTypeUnary, TokenPunctuator] = type_unary.children
+				assert.deepStrictEqual(
+					[unary.source, op.source],
+					[Keyword.INT,  Punctuator.ORNULL],
+				)
+			})
 		})
+
 		Dev.supports('typingExplicit') && describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
+			it('makes a ParseNodeTypeBinary node.', () => {
+				/*
+					<TypeIntersection>
+						<TypeIntersection source="int">...</TypeIntersection>
+						<PUNCTUATOR>&</PUNCTUATOR>
+						<TypeUnarySymbol source="float">...</TypeUnarySymbol>
+					</TypeIntersection>
+				*/
+				const type_intersection: ParseNodeTypeBinary = intersectionTypeFromUnionType(
+					unionTypeFromType(
+						typeFromString(`int & float`)
+					)
+				)
+				assert_arrayLength(type_intersection.children, 3)
+				const [left, op, right]: readonly [ParseNodeTypeBinary, TokenPunctuator, ParseNodeTypeBinary | ParseNodeTypeUnary] = type_intersection.children
+				assert.ok(right instanceof ParseNodeTypeUnary)
+				assert.deepStrictEqual(
+					[left.source, op.source,        right.source],
+					[Keyword.INT, Punctuator.INTER, Keyword.FLOAT],
+				)
+			})
 		})
+
 		Dev.supports('typingExplicit') && describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
+			it('makes a ParseNodeTypeBinary node.', () => {
+				/*
+					<TypeUnion>
+						<TypeUnion source="int">...</TypeUnion>
+						<PUNCTUATOR>|</PUNCTUATOR>
+						<TypeIntersection source="float">...</TypeIntersection>
+					</TypeUnion>
+				*/
+				const type_union: ParseNodeTypeBinary = unionTypeFromType(
+					typeFromString(`int | float`)
+				)
+				assert_arrayLength(type_union.children, 3)
+				const [left, op, right]: readonly [ParseNodeTypeBinary, TokenPunctuator, ParseNodeTypeBinary | ParseNodeTypeUnary] = type_union.children
+				assert.ok(right instanceof ParseNodeTypeBinary)
+				assert.deepStrictEqual(
+					[left.source, op.source,        right.source],
+					[Keyword.INT, Punctuator.UNION, Keyword.FLOAT],
+				)
+			})
 		})
+
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
 			Dev.supports('variables') && it('parses IDENTIFIER.', () => {
 				assert.strictEqual(tokenIdentifierFromExpressionUnit(
@@ -788,43 +968,22 @@ describe('Parser', () => {
 				</Statement>
 			*/
 			it('makes a ParseNodeDeclarationVariable node with 7 children (not unfixed).', () => {
-				const stmt: ParseNodeStatement = statementFromSource(`let  the_answer:  int | float =  21  *  2;`)
-				assert_arrayLength(stmt.children, 1)
-				const decl: TokenPunctuator | ParseNodeDeclarationVariable | ParseNodeStatementAssignment = stmt.children[0]
-				assert.ok(decl instanceof ParseNodeDeclarationVariable)
+				const decl: ParseNodeDeclarationVariable = variableDeclarationFromStatement(
+					statementFromSource(`let  the_answer:  int | float =  21  *  2;`)
+				)
 				assert_arrayLength(decl.children, 7)
 				assert.deepStrictEqual(decl.children.map((child) => child.source), [
 					'let', 'the_answer', ':', 'int | float', '=', '21 * 2', ';',
 				])
-				const type_union: ParseNodeTypeBinary = unionTypeFromType(decl.children[3])
-				assert_arrayLength(type_union.children, 3)
-				const [left, op, right]: readonly [ParseNodeTypeBinary, TokenPunctuator, ParseNodeTypeBinary | ParseNodeTypeUnary] = type_union.children
-				assert.ok(right instanceof ParseNodeTypeBinary)
-				assert.deepStrictEqual(
-					[left.source, op.source, right.source],
-					['int',       '|',       'float'],
-				)
 			})
 			it('makes a ParseNodeDeclarationVariable node with 8 children (unfixed).', () => {
-				const stmt: ParseNodeStatement = statementFromSource(`let  unfixed  the_answer:  int!  =  21  *  2;`)
-				assert_arrayLength(stmt.children, 1)
-				const decl: TokenPunctuator | ParseNodeDeclarationVariable | ParseNodeStatementAssignment = stmt.children[0]
-				assert.ok(decl instanceof ParseNodeDeclarationVariable)
+				const decl: ParseNodeDeclarationVariable = variableDeclarationFromStatement(
+					statementFromSource(`let  unfixed  the_answer:  int!  =  21  *  2;`)
+				)
 				assert_arrayLength(decl.children, 8)
 				assert.deepStrictEqual(decl.children.map((child) => child.source), [
 					'let', 'unfixed', 'the_answer', ':', 'int !', '=', '21 * 2', ';',
 				])
-				const type_unary: ParseNodeTypeUnary = unaryTypeFromIntersectionType(
-					intersectionTypeFromUnionType(
-						unionTypeFromType(decl.children[4])
-					)
-				)
-				assert_arrayLength(type_unary.children, 2)
-				const [unary, op]: readonly [ParseNodeTypeUnary, TokenPunctuator] = type_unary.children
-				assert.deepStrictEqual(
-					[unary.source, op.source],
-					['int',       '!'],
-				)
 			})
 		})
 

@@ -25,6 +25,8 @@ import {
 	ParseNodeExpressionBinary,
 	ParseNodeExpressionConditional,
 	ParseNodeExpression,
+	ParseNodeDeclarationVariable,
+	ParseNodeStatementAssignment,
 	ParseNodeStatement,
 	ParseNodeGoal,
 	ParseNodeGoal__0__List,
@@ -139,6 +141,15 @@ export function expressionFromStatement(statement: ParseNodeStatement): ParseNod
 	const [expression, endstat]: readonly [ParseNodeExpression, TokenPunctuator] = statement.children
 	assert.strictEqual(endstat.source, Punctuator.ENDSTAT)
 	return expression
+}
+export function typeFromVariableDeclaration(var_decl: ParseNodeDeclarationVariable): ParseNodeType {
+	return (var_decl.children.length === 7) ? var_decl.children[3] : var_decl.children[4]
+}
+export function variableDeclarationFromStatement(statement: ParseNodeStatement): ParseNodeDeclarationVariable {
+	assert_arrayLength(statement.children, 1, 'statement should have 1 child')
+	const var_decl: TokenPunctuator | ParseNodeDeclarationVariable | ParseNodeStatementAssignment = statement.children[0]
+	assert.ok(var_decl instanceof ParseNodeDeclarationVariable)
+	return var_decl
 }
 export function statementFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeStatement {
 	const goal: ParseNodeGoal = new Scanner(src, config).lexer.screener.parser.parse()
