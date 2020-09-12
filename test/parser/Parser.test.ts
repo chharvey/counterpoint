@@ -4,6 +4,8 @@ import {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
 import {
+	ParseNodeTypeUnary,
+	ParseNodeTypeBinary,
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
 	ParseNodeExpressionUnary,
@@ -31,6 +33,9 @@ import {
 	assert_arrayLength,
 } from '../assert-helpers'
 import {
+	unaryTypeFromIntersectionType,
+	intersectionTypeFromUnionType,
+	unionTypeFromType,
 	tokenIdentifierFromExpressionUnit,
 	tokenLiteralFromExpressionUnit,
 	unitExpressionFromUnaryExpression,
@@ -767,38 +772,59 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('variables') && describe('DeclarationVariable', () => {
+		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationVariable', () => {
 			/*
 				<Statement>
 					<DeclarationVariable>
 						<KEYWORD>let</KEYWORD>
 						<KEYWORD>unfixed</KEYWORD>
 						<IDENTIFIER>the_answer</IDENTIFIER>
+						<PUNCTUATOR>:</PUNCTUATOR>
+						<Type source="int | float">...</Type>
 						<PUNCTUATOR>=</PUNCTUATOR>
 						<Expression source="21 * 2">...</Expression>
 						<PUNCTUATOR>;</PUNCTUATOR>
 					</DeclarationVariable>
 				</Statement>
 			*/
-			it('makes a ParseNodeDeclarationVariable node with 5 children (not unfixed).', () => {
-				const stmt: ParseNodeStatement = statementFromSource(`let  the_answer  =  21  *  2;`)
+			it('makes a ParseNodeDeclarationVariable node with 7 children (not unfixed).', () => {
+				const stmt: ParseNodeStatement = statementFromSource(`let  the_answer:  int | float =  21  *  2;`)
 				assert_arrayLength(stmt.children, 1)
 				const decl: TokenPunctuator | ParseNodeDeclarationVariable | ParseNodeStatementAssignment = stmt.children[0]
 				assert.ok(decl instanceof ParseNodeDeclarationVariable)
-				assert_arrayLength(decl.children, 5)
+				assert_arrayLength(decl.children, 7)
 				assert.deepStrictEqual(decl.children.map((child) => child.source), [
-					'let', 'the_answer', '=', '21 * 2', ';',
+					'let', 'the_answer', ':', 'int | float', '=', '21 * 2', ';',
 				])
+				const type_union: ParseNodeTypeBinary = unionTypeFromType(decl.children[3])
+				assert_arrayLength(type_union.children, 3)
+				const [left, op, right]: readonly [ParseNodeTypeBinary, TokenPunctuator, ParseNodeTypeBinary | ParseNodeTypeUnary] = type_union.children
+				assert.ok(right instanceof ParseNodeTypeBinary)
+				assert.deepStrictEqual(
+					[left.source, op.source, right.source],
+					['int',       '|',       'float'],
+				)
 			})
-			it('makes a ParseNodeDeclarationVariable node with 6 children (unfixed).', () => {
-				const stmt: ParseNodeStatement = statementFromSource(`let  unfixed  the_answer  =  21  *  2;`)
+			it('makes a ParseNodeDeclarationVariable node with 8 children (unfixed).', () => {
+				const stmt: ParseNodeStatement = statementFromSource(`let  unfixed  the_answer:  int!  =  21  *  2;`)
 				assert_arrayLength(stmt.children, 1)
 				const decl: TokenPunctuator | ParseNodeDeclarationVariable | ParseNodeStatementAssignment = stmt.children[0]
 				assert.ok(decl instanceof ParseNodeDeclarationVariable)
-				assert_arrayLength(decl.children, 6)
+				assert_arrayLength(decl.children, 8)
 				assert.deepStrictEqual(decl.children.map((child) => child.source), [
-					'let', 'unfixed', 'the_answer', '=', '21 * 2', ';',
+					'let', 'unfixed', 'the_answer', ':', 'int !', '=', '21 * 2', ';',
 				])
+				const type_unary: ParseNodeTypeUnary = unaryTypeFromIntersectionType(
+					intersectionTypeFromUnionType(
+						unionTypeFromType(decl.children[4])
+					)
+				)
+				assert_arrayLength(type_unary.children, 2)
+				const [unary, op]: readonly [ParseNodeTypeUnary, TokenPunctuator] = type_unary.children
+				assert.deepStrictEqual(
+					[unary.source, op.source],
+					['int',       '!'],
+				)
 			})
 		})
 

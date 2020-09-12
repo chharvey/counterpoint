@@ -510,7 +510,7 @@ describe('ParseNode', () => {
 			})
 		})
 
-		Dev.supports('variables') && context('DeclarationVariable, StatementAssignment', () => {
+		Dev.supports('variables') && context.skip('DeclarationVariable, StatementAssignment', () => {
 			it('makes SemanticNodeDeclaration and SemanticNodeAssignment nodes.', () => {
 				assert.strictEqual(new Scanner(Util.dedent(`
 					let unfixed the_answer = 42;

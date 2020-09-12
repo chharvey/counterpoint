@@ -480,8 +480,8 @@ export class ProductionDeclarationVariable extends Production {
 	static readonly instance: ProductionDeclarationVariable = new ProductionDeclarationVariable()
 	get sequences(): GrammarSymbol[][] {
 		return [
-			[Keyword.LET,                  TerminalIdentifier.instance, Punctuator.ASSIGN, ProductionExpression.instance, Punctuator.ENDSTAT],
-			[Keyword.LET, Keyword.UNFIXED, TerminalIdentifier.instance, Punctuator.ASSIGN, ProductionExpression.instance, Punctuator.ENDSTAT],
+			[Keyword.LET,                  TerminalIdentifier.instance, Punctuator.ISTYPE, ProductionType.instance, Punctuator.ASSIGN, ProductionExpression.instance, Punctuator.ENDSTAT],
+			[Keyword.LET, Keyword.UNFIXED, TerminalIdentifier.instance, Punctuator.ISTYPE, ProductionType.instance, Punctuator.ASSIGN, ProductionExpression.instance, Punctuator.ENDSTAT],
 		]
 	}
 	random(): string[] {

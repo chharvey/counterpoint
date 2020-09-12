@@ -86,7 +86,7 @@ Expression ::=
 
 
 DeclarationVariable
-	::= "let" "unfixed"? IDENTIFIER "=" Expression ";";
+	::= "let" "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
 
 StatementAssignment
 	::= IDENTIFIER "=" Expression ";";
