@@ -4,6 +4,7 @@ import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 import Util from '../class/Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import Operator, {
+	ValidTypeOperator,
 	ValidOperatorUnary,
 	ValidOperatorBinary,
 	ValidOperatorArithmetic,
@@ -124,6 +125,62 @@ export default abstract class SemanticNode implements Serializable {
 }
 
 
+
+/**
+ * A sematic node representing a type.
+ * There are 2 known subclasses:
+ * - SemanticNodeTypeConstant
+ * - SemanticNodeTypeOperation
+ */
+export abstract class SemanticNodeType extends SemanticNode {
+	private readonly __foo = null;
+	/** @implements SemanticNode */
+	typeCheck(_opts: SolidConfig['compilerOptions']): void {
+		return; // for now, all types are valid // TODO: dereferencing type variables
+	}
+	/**
+	 * @implements SemanticNode
+	 * @final
+	 */
+	build(_builder: Builder): InstructionNone {
+		return new InstructionNone()
+	}
+}
+export class SemanticNodeTypeConstant extends SemanticNodeType {
+	declare children:
+		| readonly []
+	readonly value: string | SolidLanguageType;
+	constructor (start_node: TokenKeyword | TokenNumber | TokenString) {
+		const value: SolidLanguageType =
+			(start_node instanceof TokenKeyword) ?
+				(start_node.source === Keyword.BOOL)  ? SolidBoolean :
+				(start_node.source === Keyword.FALSE) ? new SolidTypeConstant(SolidBoolean.FALSE) :
+				(start_node.source === Keyword.TRUE ) ? new SolidTypeConstant(SolidBoolean.TRUE) :
+				(start_node.source === Keyword.INT)   ? Int16 :
+				(start_node.source === Keyword.FLOAT) ? Float64 :
+				(start_node.source === Keyword.OBJ)   ? SolidObject :
+				SolidNull
+			: (start_node instanceof TokenNumber) ?
+				new SolidTypeConstant(
+					start_node.isFloat
+						? new Float64(start_node.cook())
+						: new Int16(BigInt(start_node.cook()))
+				)
+			: SolidString
+		super(start_node, {value: value.toString()})
+		this.value = value
+	}
+}
+export class SemanticNodeTypeOperation extends SemanticNodeType {
+	constructor (
+		start_node: ParseNode,
+		operator: ValidTypeOperator,
+		children:
+			| readonly SemanticNodeType[]
+	) {
+		super(start_node, {operator}, children)
+	}
+}
 
 /**
  * A sematic node representing an expression.

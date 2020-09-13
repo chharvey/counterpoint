@@ -1,9 +1,24 @@
+SemanticType =:=
+	| SemanticTypeConstant
+	| SemanticTypeOperation
+;
+
 SemanticExpression =:=
 	| SemanticConstant
 	| SemanticIdentifier
 	| SemanticTemplate
 	| SemanticOperation
 ;
+
+
+
+SemanticTypeConstant[value: Type]
+	::= ();
+
+SemanticTypeOperation[operator: ORNULL]
+	::= SemanticType;
+SemanticTypeOperation[operator: AND | OR]
+	::= SemanticType SemanticType;
 
 
 

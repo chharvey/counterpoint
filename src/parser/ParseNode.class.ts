@@ -2,6 +2,7 @@ import Util from '../class/Util.class'
 import Dev from '../class/Dev.class'
 import type Serializable from '../iface/Serializable.iface'
 import Operator, {
+	ValidTypeOperator,
 	ValidOperatorUnary,
 	ValidOperatorArithmetic,
 	ValidOperatorComparative,
@@ -22,6 +23,9 @@ import {
 } from '../lexer/'
 import {
 	SemanticNode,
+	SemanticNodeType,
+	SemanticNodeTypeConstant,
+	SemanticNodeTypeOperation,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
@@ -177,8 +181,8 @@ export class ParseNodePrimitiveLiteral extends ParseNode {
 export class ParseNodeTypeKeyword extends ParseNode {
 	declare children:
 		| readonly [TokenKeyword]
-	decorate(): SemanticNode {
-		throw new Error('ParseNodeTypeKeyword#decorate not yet supported.')
+	decorate(): SemanticNodeTypeConstant {
+		return new SemanticNodeTypeConstant(this.children[0])
 	}
 }
 export class ParseNodeTypeUnit extends ParseNode {
@@ -186,31 +190,51 @@ export class ParseNodeTypeUnit extends ParseNode {
 		| readonly [ParseNodePrimitiveLiteral]
 		| readonly [ParseNodeTypeKeyword]
 		| readonly [TokenPunctuator, ParseNodeType, TokenPunctuator]
-	decorate(): SemanticNode {
-		throw new Error('ParseNodeTypeUnit#decorate not yet supported.')
+	decorate(): SemanticNodeType {
+		return (this.children.length === 1)
+			? (this.children[0] instanceof ParseNodePrimitiveLiteral)
+				? new SemanticNodeTypeConstant(this.children[0].children[0])
+				: this.children[0].decorate()
+			: this.children[1].decorate()
 	}
 }
 export class ParseNodeTypeUnary extends ParseNode {
+	private static readonly OPERATORS: Map<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
+		[Punctuator.ORNULL, Operator.ORNULL],
+	])
 	declare children:
 		| readonly [ParseNodeTypeUnit]
 		| readonly [ParseNodeTypeUnary, TokenPunctuator]
-	decorate(): SemanticNode {
-		throw new Error('ParseNodeTypeUnary#decorate not yet supported.')
+	decorate(): SemanticNodeType {
+		return (this.children.length === 1)
+			? this.children[0].decorate()
+			: new SemanticNodeTypeOperation(this, ParseNodeTypeUnary.OPERATORS.get(this.children[1].source)!, [
+				this.children[0].decorate(),
+			])
 	}
 }
 export class ParseNodeTypeBinary extends ParseNode {
+	private static readonly OPERATORS: Map<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
+		[Punctuator.INTER, Operator.AND],
+		[Punctuator.UNION, Operator.OR],
+	])
 	declare children:
 		| readonly [                                      ParseNodeTypeUnary | ParseNodeTypeBinary]
 		| readonly [ParseNodeTypeBinary, TokenPunctuator, ParseNodeTypeUnary | ParseNodeTypeBinary]
-	decorate(): SemanticNode {
-		throw new Error('ParseNodeTypeBinary#decorate not yet supported.')
+	decorate(): SemanticNodeType {
+		return (this.children.length === 1)
+			? this.children[0].decorate()
+			: new SemanticNodeTypeOperation(this, ParseNodeTypeBinary.OPERATORS.get(this.children[1].source)!, [
+				this.children[0].decorate(),
+				this.children[2].decorate(),
+			])
 	}
 }
 export class ParseNodeType extends ParseNode {
 	declare children:
 		| readonly [ParseNodeTypeBinary]
-	decorate(): SemanticNode {
-		throw new Error('ParseNodeType#decorate not yet supported.')
+	decorate(): SemanticNodeType {
+		return this.children[0].decorate()
 	}
 }
 export class ParseNodeStringTemplate extends ParseNode {
