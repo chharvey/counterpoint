@@ -38,18 +38,24 @@ import {
 
 
 export function tokenLiteralFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TokenKeyword | TokenNumber | TokenString {
+	return primitiveTypeFromString(typestring, config).children[0]
+}
+export function tokenKeywordFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TokenKeyword {
+	return keywordTypeFromString(typestring, config).children[0]
+}
+export function primitiveTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodePrimitiveLiteral {
 	const type_unit: ParseNodeTypeUnit = unitTypeFromString(typestring, config)
 	assert_arrayLength(type_unit.children, 1, 'type unit should have 1 child')
 	const unit: ParseNodePrimitiveLiteral | ParseNodeTypeKeyword = type_unit.children[0]
 	assert.ok(unit instanceof ParseNodePrimitiveLiteral, 'unit should be a ParseNodePrimitiveLiteral')
-	return unit.children[0]
+	return unit
 }
-export function tokenKeywordFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TokenKeyword {
+export function keywordTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeTypeKeyword {
 	const type_unit: ParseNodeTypeUnit = unitTypeFromString(typestring, config)
 	assert_arrayLength(type_unit.children, 1, 'type unit should have 1 child')
 	const unit: ParseNodePrimitiveLiteral | ParseNodeTypeKeyword = type_unit.children[0]
 	assert.ok(unit instanceof ParseNodeTypeKeyword, 'unit should be a ParseNodeTypeKeyword')
-	return unit.children[0]
+	return unit
 }
 export function unitTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeTypeUnit {
 	const type_unary: ParseNodeTypeUnary = unaryTypeFromString(typestring, config)
@@ -77,6 +83,9 @@ export function unionTypeFromString(typestring: string, config: SolidConfig = CO
 function typeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeType {
 	return typeFromSource(`let x: ${ typestring } = null;`, config)
 }
+export function tokenLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TokenKeyword | TokenNumber | TokenString {
+	return primitiveLiteralFromSource(src, config).children[0]
+}
 export function tokenIdentifierFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TokenIdentifier {
 	const expression_unit: ParseNodeExpressionUnit = unitExpressionFromSource(src, config)
 	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child')
@@ -84,12 +93,12 @@ export function tokenIdentifierFromSource(src: string, config: SolidConfig = CON
 	assert.ok(unit instanceof TokenIdentifier, 'unit should be a TokenIdentifier')
 	return unit
 }
-export function tokenLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TokenKeyword | TokenNumber | TokenString {
+export function primitiveLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodePrimitiveLiteral {
 	const expression_unit: ParseNodeExpressionUnit = unitExpressionFromSource(src, config)
 	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child')
 	const unit: TokenIdentifier | ParseNodePrimitiveLiteral | ParseNodeStringTemplate = expression_unit.children[0]
 	assert.ok(unit instanceof ParseNodePrimitiveLiteral, 'unit should be a ParseNodePrimitiveLiteral')
-	return unit.children[0]
+	return unit
 }
 export function unitExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionUnit {
 	const expression_unary: ParseNodeExpressionUnary = unaryExpressionFromSource(src, config)

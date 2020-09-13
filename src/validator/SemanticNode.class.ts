@@ -174,8 +174,8 @@ export class SemanticNodeTypeConstant extends SemanticNodeType {
 export class SemanticNodeTypeOperation extends SemanticNodeType {
 	constructor (
 		start_node: ParseNode,
-		operator: ValidTypeOperator,
-		children:
+		readonly operator: ValidTypeOperator,
+		readonly children:
 			| readonly SemanticNodeType[]
 	) {
 		super(start_node, {operator}, children)
