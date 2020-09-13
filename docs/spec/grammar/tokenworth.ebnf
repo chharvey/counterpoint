@@ -19,21 +19,28 @@ TokenWorth(Punctuator :::= "&&") -> RealNumber := \x11;
 TokenWorth(Punctuator :::= "!&") -> RealNumber := \x12;
 TokenWorth(Punctuator :::= "||") -> RealNumber := \x13;
 TokenWorth(Punctuator :::= "!|") -> RealNumber := \x14;
-TokenWorth(Punctuator :::= ";")  -> RealNumber := \x15;
-TokenWorth(Punctuator :::= "=")  -> RealNumber := \x16;
+TokenWorth(Punctuator :::= "&")  -> RealNumber := \x15;
+TokenWorth(Punctuator :::= "|")  -> RealNumber := \x16;
+TokenWorth(Punctuator :::= ";")  -> RealNumber := \x17;
+TokenWorth(Punctuator :::= ":")  -> RealNumber := \x18;
+TokenWorth(Punctuator :::= "=")  -> RealNumber := \x19;
 
 
 
 TokenWorth(Keyword :::= "null")    -> RealNumber := \x80;
-TokenWorth(Keyword :::= "false")   -> RealNumber := \x81;
-TokenWorth(Keyword :::= "true")    -> RealNumber := \x82;
-TokenWorth(Keyword :::= "is")      -> RealNumber := \x83;
-TokenWorth(Keyword :::= "isnt")    -> RealNumber := \x84;
-TokenWorth(Keyword :::= "if")      -> RealNumber := \x85;
-TokenWorth(Keyword :::= "then")    -> RealNumber := \x86;
-TokenWorth(Keyword :::= "else")    -> RealNumber := \x87;
-TokenWorth(Keyword :::= "let")     -> RealNumber := \x88;
-TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x89;
+TokenWorth(Keyword :::= "bool")    -> RealNumber := \x81;
+TokenWorth(Keyword :::= "false")   -> RealNumber := \x82;
+TokenWorth(Keyword :::= "true")    -> RealNumber := \x83;
+TokenWorth(Keyword :::= "int")     -> RealNumber := \x84;
+TokenWorth(Keyword :::= "float")   -> RealNumber := \x85;
+TokenWorth(Keyword :::= "obj")     -> RealNumber := \x86;
+TokenWorth(Keyword :::= "is")      -> RealNumber := \x87;
+TokenWorth(Keyword :::= "isnt")    -> RealNumber := \x88;
+TokenWorth(Keyword :::= "if")      -> RealNumber := \x89;
+TokenWorth(Keyword :::= "then")    -> RealNumber := \x8a;
+TokenWorth(Keyword :::= "else")    -> RealNumber := \x8b;
+TokenWorth(Keyword :::= "let")     -> RealNumber := \x8c;
+TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x8d;
 
 
 
