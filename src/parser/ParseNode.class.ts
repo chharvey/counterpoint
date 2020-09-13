@@ -431,10 +431,10 @@ export class ParseNodeDeclarationVariable extends ParseNode {
 		| readonly [TokenKeyword,               TokenIdentifier, TokenPunctuator, ParseNodeType, TokenPunctuator, ParseNodeExpression, TokenPunctuator]
 		| readonly [TokenKeyword, TokenKeyword, TokenIdentifier, TokenPunctuator, ParseNodeType, TokenPunctuator, ParseNodeExpression, TokenPunctuator]
 	decorate(): SemanticNodeDeclarationVariable {
-		const is_unfixed: boolean             = this.children[1].source === Keyword.UNFIXED
-		const identifier: TokenIdentifier     = this.children[is_unfixed ? 2 : 1] as TokenIdentifier
-		const expression: ParseNodeExpression = this.children[is_unfixed ? 4 : 3] as ParseNodeExpression
-		return new SemanticNodeDeclarationVariable(this, is_unfixed, [
+		const identifier: TokenIdentifier     = (this.children.length === 7) ? this.children[1] : this.children[2]
+		const type_:      ParseNodeType       = (this.children.length === 7) ? this.children[3] : this.children[4]
+		const expression: ParseNodeExpression = (this.children.length === 7) ? this.children[5] : this.children[6]
+		return new SemanticNodeDeclarationVariable(this, this.children.length === 8, [
 			new SemanticNodeAssignee(identifier, [
 				new SemanticNodeIdentifier(identifier),
 			]),

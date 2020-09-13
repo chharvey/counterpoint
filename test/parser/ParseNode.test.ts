@@ -85,7 +85,7 @@ describe('ParseNode', () => {
 			})
 		})
 
-		describe('TypeKeyword ::= "bool" | "int" | "float" | "obj"', () => {
+		Dev.supports('typingExplicit') && describe('TypeKeyword ::= "bool" | "int" | "float" | "obj"', () => {
 			it('makes a SemanticNodeTypeConstant.', () => {
 				/*
 					<TypeConstant source="bool" value="Boolean"/>
@@ -104,7 +104,7 @@ describe('ParseNode', () => {
 			})
 		})
 
-		describe('TypeUnit ::= PrimitiveLiteral', () => {
+		Dev.supports('typingExplicit') && describe('TypeUnit ::= PrimitiveLiteral', () => {
 			it('makes a SemanticNodeTypeConstant.', () => {
 				/*
 					<TypeConstant source="null" value="SolidNull"/>
@@ -129,7 +129,7 @@ describe('ParseNode', () => {
 			})
 		})
 
-		describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
+		Dev.supports('typingExplicit') && describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
 			it('makes a SemanticTypeOperation.', () => {
 				/*
 					<TypeOperation operator="!">
@@ -146,7 +146,7 @@ describe('ParseNode', () => {
 			})
 		})
 
-		describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
+		Dev.supports('typingExplicit') && describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
 			it('makes a SemanticTypeOperation.', () => {
 				/*
 					<TypeOperation operator="&">
@@ -165,7 +165,7 @@ describe('ParseNode', () => {
 			})
 		})
 
-		describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
+		Dev.supports('typingExplicit') && describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
 			it('makes a SemanticTypeOperation.', () => {
 				/*
 					<TypeOperation operator="|">
@@ -184,7 +184,7 @@ describe('ParseNode', () => {
 			})
 		})
 
-		describe('Type ::= TypeUnion', () => {
+		Dev.supports('typingExplicit') && describe('Type ::= TypeUnion', () => {
 			it('makes a SemanticTypeOperation.', () => {
 				/*
 					<TypeOperation operator="&">
