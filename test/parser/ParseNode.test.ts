@@ -8,23 +8,37 @@ import {
 	Scanner,
 } from '../../src/lexer/'
 import {
-	SemanticNodeTemplate,
+	SemanticNodeType,
+	SemanticNodeTypeConstant,
+	SemanticNodeTypeOperation,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
+	SemanticNodeTemplate,
 	SemanticNodeOperation,
 	SemanticNodeOperationUnary,
 	SemanticNodeOperationBinary,
 	SemanticNodeOperationTernary,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
+	SolidTypeConstant,
+	SolidObject,
 	SolidNull,
 	SolidBoolean,
 	Int16,
+	Float64,
 } from '../../src/validator/'
 
 import {
 	assert_arrayLength,
 } from '../assert-helpers'
+import {
+	keywordTypeFromString,
+	unitTypeFromString,
+	unaryTypeFromString,
+	intersectionTypeFromString,
+	unionTypeFromString,
+	primitiveLiteralFromSource,
+} from '../helpers-parse'
 import {
 	constantFromStatementExpression,
 	operationFromStatementExpression,
@@ -47,6 +61,145 @@ describe('ParseNode', () => {
 				const statement: SemanticNodeStatementExpression = statementExpressionFromSource(`;`)
 				assert_arrayLength(statement.children, 0, 'semantic statement should have 0 children')
 				assert.strictEqual(statement.source, `;`)
+			})
+		})
+
+		describe('PrimitiveLiteral ::= "null" | "false" | "true" | INTEGER | FLOAT | STRING', () => {
+			it('makes a SemanticNodeConstant.', () => {
+				/*
+					<Constant source="null" value="null"/>
+				*/
+				assert.deepStrictEqual([
+					`null;`,
+					`false;`,
+					`true;`,
+					`42;`,
+					`4.2;`,
+				].map((src) => primitiveLiteralFromSource(src).decorate().value), [
+					SolidNull.NULL,
+					SolidBoolean.FALSE,
+					SolidBoolean.TRUE,
+					new Int16(42n),
+					new Float64(4.2),
+				])
+			})
+		})
+
+		describe('TypeKeyword ::= "bool" | "int" | "float" | "obj"', () => {
+			it('makes a SemanticNodeTypeConstant.', () => {
+				/*
+					<TypeConstant source="bool" value="Boolean"/>
+				*/
+				assert.deepStrictEqual([
+					`bool`,
+					`int`,
+					`float`,
+					`obj`,
+				].map((src) => keywordTypeFromString(src).decorate().value), [
+					SolidBoolean,
+					Int16,
+					Float64,
+					SolidObject,
+				])
+			})
+		})
+
+		describe('TypeUnit ::= PrimitiveLiteral', () => {
+			it('makes a SemanticNodeTypeConstant.', () => {
+				/*
+					<TypeConstant source="null" value="SolidNull"/>
+				*/
+				assert.deepStrictEqual([
+					`null`,
+					`false`,
+					`true`,
+					`42`,
+					`4.2`,
+				].map((src) => {
+					const constant: SemanticNodeType = unitTypeFromString(src).decorate()
+					assert.ok(constant instanceof SemanticNodeTypeConstant)
+					return constant.value
+				}), [
+					SolidNull,
+					new SolidTypeConstant(SolidBoolean.FALSE),
+					new SolidTypeConstant(SolidBoolean.TRUE),
+					new SolidTypeConstant(new Int16(42n)),
+					new SolidTypeConstant(new Float64(4.2)),
+				])
+			})
+		})
+
+		describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
+			it('makes a SemanticTypeOperation.', () => {
+				/*
+					<TypeOperation operator="!">
+						<TypeConstant source="int" value="Int16"/>
+					</TypeOperation>
+				*/
+				const operation: SemanticNodeType = unaryTypeFromString(`int!`).decorate()
+				assert.ok(operation instanceof SemanticNodeTypeOperation)
+				const operand: SemanticNodeType = operation.children[0]
+				assert.deepStrictEqual(
+					[operand.source, operation.operator],
+					[`int`,          Operator.ORNULL],
+				)
+			})
+		})
+
+		describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
+			it('makes a SemanticTypeOperation.', () => {
+				/*
+					<TypeOperation operator="&">
+						<TypeConstant source="int"/>
+						<TypeConstant source="3"/>
+					</TypeOperation>
+				*/
+				const operation: SemanticNodeType = intersectionTypeFromString(`int & 3`).decorate()
+				assert.ok(operation instanceof SemanticNodeTypeOperation)
+				const left:  SemanticNodeType = operation.children[0]
+				const right: SemanticNodeType = operation.children[1]
+				assert.deepStrictEqual(
+					[left.source, operation.operator, right.source],
+					[`int`,       Operator.AND,       `3`],
+				)
+			})
+		})
+
+		describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
+			it('makes a SemanticTypeOperation.', () => {
+				/*
+					<TypeOperation operator="|">
+						<TypeOperation source="4.2 !">...</TypeOperation>
+						<TypeOperation source="int & int">...</TypeOperation>
+					</TypeOperation>
+				*/
+				const operation: SemanticNodeType = unionTypeFromString(`4.2! | int & int`).decorate()
+				assert.ok(operation instanceof SemanticNodeTypeOperation)
+				const left:  SemanticNodeType = operation.children[0]
+				const right: SemanticNodeType = operation.children[1]
+				assert.deepStrictEqual(
+					[left.source, operation.operator, right.source],
+					[`4.2 !`,     Operator.OR,        `int & int`],
+				)
+			})
+		})
+
+		describe('Type ::= TypeUnion', () => {
+			it('makes a SemanticTypeOperation.', () => {
+				/*
+					<TypeOperation operator="&">
+						<TypeOperation source="4.2 !">...</TypeOperation>
+						<TypeOperation source="int | int">...</TypeOperation>
+					</TypeOperation>
+				*/
+				const operation: SemanticNodeType = unionTypeFromString(`4.2! & (int | int)`).decorate()
+				assert.ok(operation instanceof SemanticNodeTypeOperation)
+				const left:  SemanticNodeType = operation.children[0]
+				const right: SemanticNodeType = operation.children[1]
+				assert.deepStrictEqual(
+					[left.source, operation.operator, right.source],
+					[`4.2 !`,     Operator.AND,       `int | int`],
+				)
 			})
 		})
 
@@ -498,7 +651,6 @@ describe('ParseNode', () => {
 					statementExpressionFromSource(`if true then 2 else 3;`)
 				)
 				assert.ok(operation instanceof SemanticNodeOperationTernary)
-				assert.strictEqual(operation.operator, Operator.COND)
 				assert.deepStrictEqual(operation.children.map((child) => {
 					assert.ok(child instanceof SemanticNodeConstant)
 					return child.value

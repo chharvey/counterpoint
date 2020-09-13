@@ -4,6 +4,7 @@ import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 import Util from '../class/Util.class'
 import type Serializable from '../iface/Serializable.iface'
 import Operator, {
+	ValidTypeOperator,
 	ValidOperatorUnary,
 	ValidOperatorBinary,
 	ValidOperatorArithmetic,
@@ -126,6 +127,62 @@ export default abstract class SemanticNode implements Serializable {
 
 
 /**
+ * A sematic node representing a type.
+ * There are 2 known subclasses:
+ * - SemanticNodeTypeConstant
+ * - SemanticNodeTypeOperation
+ */
+export abstract class SemanticNodeType extends SemanticNode {
+	private readonly __foo = null;
+	/** @implements SemanticNode */
+	typeCheck(_opts: SolidConfig['compilerOptions']): void {
+		return; // for now, all types are valid // TODO: dereferencing type variables
+	}
+	/**
+	 * @implements SemanticNode
+	 * @final
+	 */
+	build(_builder: Builder): InstructionNone {
+		return new InstructionNone()
+	}
+}
+export class SemanticNodeTypeConstant extends SemanticNodeType {
+	declare children:
+		| readonly []
+	readonly value: string | SolidLanguageType;
+	constructor (start_node: TokenKeyword | TokenNumber | TokenString) {
+		const value: SolidLanguageType =
+			(start_node instanceof TokenKeyword) ?
+				(start_node.source === Keyword.BOOL)  ? SolidBoolean :
+				(start_node.source === Keyword.FALSE) ? new SolidTypeConstant(SolidBoolean.FALSE) :
+				(start_node.source === Keyword.TRUE ) ? new SolidTypeConstant(SolidBoolean.TRUE) :
+				(start_node.source === Keyword.INT)   ? Int16 :
+				(start_node.source === Keyword.FLOAT) ? Float64 :
+				(start_node.source === Keyword.OBJ)   ? SolidObject :
+				SolidNull
+			: (start_node instanceof TokenNumber) ?
+				new SolidTypeConstant(
+					start_node.isFloat
+						? new Float64(start_node.cook())
+						: new Int16(BigInt(start_node.cook()))
+				)
+			: SolidString
+		super(start_node, {value: value.toString()})
+		this.value = value
+	}
+}
+export class SemanticNodeTypeOperation extends SemanticNodeType {
+	constructor (
+		start_node: ParseNode,
+		readonly operator: ValidTypeOperator,
+		readonly children:
+			| readonly SemanticNodeType[]
+	) {
+		super(start_node, {operator}, children)
+	}
+}
+
+/**
  * A sematic node representing an expression.
  * There are 4 known subclasses:
  * - SemanticNodeConstant
@@ -135,19 +192,11 @@ export default abstract class SemanticNode implements Serializable {
  */
 export abstract class SemanticNodeExpression extends SemanticNode {
 	private assessed: CompletionStructureAssessment | null = null
-	constructor (
-		start_node: Token|ParseNode,
-		attributes: typeof SemanticNode.prototype['attributes'] = {},
-		children: typeof SemanticNode.prototype.children = [],
-	) {
-		super(start_node, attributes, children)
-	}
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
 	 * @return Should the built instruction be type-coerced into a floating-point number?
 	 */
 	abstract get shouldFloat(): boolean;
-
 	/** @implements SemanticNode */
 	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		this.type(opts.constantFolding, opts.intCoercion) // assert does not throw
@@ -200,7 +249,6 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		| readonly []
 	readonly value: string | SolidObject;
 	constructor (start_node: TokenKeyword | TokenNumber | TokenString | TokenTemplate) {
-		const cooked: number | bigint | string = start_node.cook()
 		const value: string | SolidObject =
 			(start_node instanceof TokenKeyword) ?
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
@@ -208,9 +256,9 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 				SolidNull.NULL
 			:
 			(start_node instanceof TokenNumber) ?
-				start_node.isFloat ? new Float64(cooked as number) : new Int16(BigInt(cooked as number))
+				start_node.isFloat ? new Float64(start_node.cook()) : new Int16(BigInt(start_node.cook()))
 			:
-			cooked as string
+			start_node.cook()
 		super(start_node, {value})
 		this.value = value
 	}
@@ -249,8 +297,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	declare children:
 		| readonly []
 	constructor (start_node: TokenIdentifier) {
-		const id: bigint | null = start_node.cook()
-		super(start_node, {id})
+		super(start_node, {id: start_node.cook()})
 	}
 	/** @implements SemanticNodeExpression */
 	get shouldFloat(): boolean {
@@ -304,7 +351,7 @@ export abstract class SemanticNodeOperation extends SemanticNodeExpression {
 	readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
 	constructor(
 		start_node: ParseNode,
-		readonly operator: Operator,
+		operator: Operator,
 		readonly children:
 			| readonly SemanticNodeExpression[]
 	) {
@@ -684,7 +731,7 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
  */
 export type SemanticStatementType =
 	| SemanticNodeStatementExpression
-	| SemanticNodeDeclaration
+	| SemanticNodeDeclarationVariable
 	| SemanticNodeAssignment
 export class SemanticNodeStatementExpression extends SemanticNode {
 	constructor(
@@ -706,15 +753,14 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 			: new InstructionStatement(builder.stmtCount, this.children[0].build(builder))
 	}
 }
-export class SemanticNodeDeclaration extends SemanticNode {
+export class SemanticNodeDeclarationVariable extends SemanticNode {
 	constructor (
 		start_node: ParseNode,
-		type: string,
 		unfixed: boolean,
 		readonly children:
 			| readonly [SemanticNodeAssignee, SemanticNodeAssigned]
 	) {
-		super(start_node, {type, unfixed}, children)
+		super(start_node, {unfixed}, children)
 	}
 	/** @implements SemanticNode */
 	typeCheck(_opts: SolidConfig['compilerOptions']): void {

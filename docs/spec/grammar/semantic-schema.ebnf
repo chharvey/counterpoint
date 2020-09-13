@@ -1,9 +1,24 @@
+SemanticType =:=
+	| SemanticTypeConstant
+	| SemanticTypeOperation
+;
+
 SemanticExpression =:=
 	| SemanticConstant
 	| SemanticIdentifier
 	| SemanticTemplate
 	| SemanticOperation
 ;
+
+
+
+SemanticTypeConstant[value: Type]
+	::= ();
+
+SemanticTypeOperation[operator: ORNULL]
+	::= SemanticType;
+SemanticTypeOperation[operator: AND | OR]
+	::= SemanticType SemanticType;
 
 
 
@@ -27,16 +42,12 @@ SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
 SemanticOperation[operator: NEG]
 	::= SemanticExpression[type: Number];
-
 SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | LE | GT | GE]
 	::= SemanticExpression[type: Number] SemanticExpression[type: Number];
-
 SemanticOperation[operator: IS | EQ]
 	::= SemanticExpression[type: Object] SemanticExpression[type: Object];
-
 SemanticOperation[operator: AND | OR]
 	::= SemanticExpression SemanticExpression;
-
 SemanticOperation[operator: COND]
 	::= SemanticExpression[type: Boolean] SemanticExpression SemanticExpression;
 
@@ -55,7 +66,7 @@ SemanticStatementExpression
 
 
 
-SemanticDeclaration[type: "variable"][unfixed: Boolean]
+SemanticDeclarationVariable[unfixed: Boolean]
 	::= SemanticAssignee SemanticAssigned;
 
 SemanticAssignment

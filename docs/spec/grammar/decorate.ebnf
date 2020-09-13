@@ -13,6 +13,62 @@ Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticConstant
 Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 	:= (SemanticConstant[value=TokenWorth(STRING)]);
 
+
+
+Decorate(TypeKeyword ::= "bool") -> SemanticTypeConstant
+	:= (SemanticTypeConstant[value=Boolean]);
+Decorate(TypeKeyword ::= "int") -> SemanticTypeConstant
+	:= (SemanticTypeConstant[value=Integer]);
+Decorate(TypeKeyword ::= "float") -> SemanticTypeConstant
+	:= (SemanticTypeConstant[value=Float]);
+Decorate(TypeKeyword ::= "obj") -> SemanticTypeConstant
+	:= (SemanticTypeConstant[value=Object]);
+
+
+
+Decorate(TypeUnit ::= PrimitiveLiteral) -> SemanticTypeConstant
+	:= (SemanticTypeConstant[value=ToType(Decorate(PrimitiveLiteral).value)]);
+Decorate(TypeUnit ::= TypeKeyword) -> SemanticTypeConstant
+	:= Decorate(TypeKeyword);
+Decorate(TypeUnit ::= "(" Type ")") -> SemanticType
+	:= Decorate(Type);
+
+
+
+Decorate(TypeUnarySymbol ::= TypeUnit) -> SemanticType
+	:= Decorate(TypeUnit);
+Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation
+	:= (SemanticTypeOperation[operator=ORNULL]
+		Decorate(TypeUnarySymbol)
+	);
+
+
+
+Decorate(TypeIntersection ::= TypeUnarySymbol) -> SemanticType
+	:= Decorate(TypeUnarySymbol);
+Decorate(TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol) -> SemanticTypeOperation
+	:= (SemanticTypeOperation[operator=AND]
+		Decorate(TypeIntersection)
+		Decorate(TypeUnarySymbol)
+	);
+
+
+
+Decorate(TypeUnion ::= TypeIntersection) -> SemanticType
+	:= Decorate(TypeIntersection);
+Decorate(TypeUnion ::= TypeUnion "|" TypeIntersection) -> SemanticTypeOperation
+	:= (SemanticTypeOperation[operator=OR]
+		Decorate(TypeUnion)
+		Decorate(TypeIntersection)
+	);
+
+
+
+Decorate(Type ::= TypeUnion) -> SemanticType
+	:= Decorate(TypeUnion);
+
+
+
 Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticTemplate
 	:= (SemanticTemplate[type="full"]
 		(SemanticConstant[value=TokenWorth(TEMPLATE_FULL)])
@@ -79,13 +135,19 @@ Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticExpression
 Decorate(ExpressionUnarySymbol ::= ExpressionUnit) -> SemanticExpression
 	:= Decorate(ExpressionUnit);
 Decorate(ExpressionUnarySymbol ::= "!" ExpressionUnarySymbol) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT] Decorate(ExpressionUnarySymbol));
+	:= (SemanticOperation[operator=NOT]
+		Decorate(ExpressionUnarySymbol)
+	);
 Decorate(ExpressionUnarySymbol ::= "?" ExpressionUnarySymbol) -> SemanticOperation
-	:= (SemanticOperation[operator=EMP] Decorate(ExpressionUnarySymbol));
+	:= (SemanticOperation[operator=EMP]
+		Decorate(ExpressionUnarySymbol)
+	);
 Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol);
 Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperation
-	:= (SemanticOperation[operator=NEG] Decorate(ExpressionUnarySymbol));
+	:= (SemanticOperation[operator=NEG]
+		Decorate(ExpressionUnarySymbol)
+	);
 
 
 
