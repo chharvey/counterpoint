@@ -40,19 +40,14 @@ SemanticTemplatePartial
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
-
 SemanticOperation[operator: NEG]
 	::= SemanticExpression[type: Number];
-
 SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | LE | GT | GE]
 	::= SemanticExpression[type: Number] SemanticExpression[type: Number];
-
 SemanticOperation[operator: IS | EQ]
 	::= SemanticExpression[type: Object] SemanticExpression[type: Object];
-
 SemanticOperation[operator: AND | OR]
 	::= SemanticExpression SemanticExpression;
-
 SemanticOperation[operator: COND]
 	::= SemanticExpression[type: Boolean] SemanticExpression SemanticExpression;
 

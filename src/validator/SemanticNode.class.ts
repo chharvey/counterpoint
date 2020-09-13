@@ -192,19 +192,11 @@ export class SemanticNodeTypeOperation extends SemanticNodeType {
  */
 export abstract class SemanticNodeExpression extends SemanticNode {
 	private assessed: CompletionStructureAssessment | null = null
-	constructor (
-		start_node: Token|ParseNode,
-		attributes: typeof SemanticNode.prototype['attributes'] = {},
-		children: typeof SemanticNode.prototype.children = [],
-	) {
-		super(start_node, attributes, children)
-	}
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
 	 * @return Should the built instruction be type-coerced into a floating-point number?
 	 */
 	abstract get shouldFloat(): boolean;
-
 	/** @implements SemanticNode */
 	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		this.type(opts.constantFolding, opts.intCoercion) // assert does not throw
@@ -257,7 +249,6 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		| readonly []
 	readonly value: string | SolidObject;
 	constructor (start_node: TokenKeyword | TokenNumber | TokenString | TokenTemplate) {
-		const cooked: number | bigint | string = start_node.cook()
 		const value: string | SolidObject =
 			(start_node instanceof TokenKeyword) ?
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
@@ -265,9 +256,9 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 				SolidNull.NULL
 			:
 			(start_node instanceof TokenNumber) ?
-				start_node.isFloat ? new Float64(cooked as number) : new Int16(BigInt(cooked as number))
+				start_node.isFloat ? new Float64(start_node.cook()) : new Int16(BigInt(start_node.cook()))
 			:
-			cooked as string
+			start_node.cook()
 		super(start_node, {value})
 		this.value = value
 	}
@@ -306,8 +297,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	declare children:
 		| readonly []
 	constructor (start_node: TokenIdentifier) {
-		const id: bigint | null = start_node.cook()
-		super(start_node, {id})
+		super(start_node, {id: start_node.cook()})
 	}
 	/** @implements SemanticNodeExpression */
 	get shouldFloat(): boolean {
@@ -361,7 +351,7 @@ export abstract class SemanticNodeOperation extends SemanticNodeExpression {
 	readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
 	constructor(
 		start_node: ParseNode,
-		readonly operator: Operator,
+		operator: Operator,
 		readonly children:
 			| readonly SemanticNodeExpression[]
 	) {

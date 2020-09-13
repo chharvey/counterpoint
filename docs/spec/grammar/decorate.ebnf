@@ -135,13 +135,19 @@ Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticExpression
 Decorate(ExpressionUnarySymbol ::= ExpressionUnit) -> SemanticExpression
 	:= Decorate(ExpressionUnit);
 Decorate(ExpressionUnarySymbol ::= "!" ExpressionUnarySymbol) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT] Decorate(ExpressionUnarySymbol));
+	:= (SemanticOperation[operator=NOT]
+		Decorate(ExpressionUnarySymbol)
+	);
 Decorate(ExpressionUnarySymbol ::= "?" ExpressionUnarySymbol) -> SemanticOperation
-	:= (SemanticOperation[operator=EMP] Decorate(ExpressionUnarySymbol));
+	:= (SemanticOperation[operator=EMP]
+		Decorate(ExpressionUnarySymbol)
+	);
 Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol);
 Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperation
-	:= (SemanticOperation[operator=NEG] Decorate(ExpressionUnarySymbol));
+	:= (SemanticOperation[operator=NEG]
+		Decorate(ExpressionUnarySymbol)
+	);
 
 
 

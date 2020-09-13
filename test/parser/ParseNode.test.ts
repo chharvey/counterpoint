@@ -651,7 +651,6 @@ describe('ParseNode', () => {
 					statementExpressionFromSource(`if true then 2 else 3;`)
 				)
 				assert.ok(operation instanceof SemanticNodeOperationTernary)
-				assert.strictEqual(operation.operator, Operator.COND)
 				assert.deepStrictEqual(operation.children.map((child) => {
 					assert.ok(child instanceof SemanticNodeConstant)
 					return child.value
