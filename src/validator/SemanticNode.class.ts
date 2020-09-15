@@ -133,7 +133,6 @@ export default abstract class SemanticNode implements Serializable {
  * - SemanticNodeTypeOperation
  */
 export abstract class SemanticNodeType extends SemanticNode {
-	private readonly __foo = null;
 	/** @implements SemanticNode */
 	typeCheck(_opts: SolidConfig['compilerOptions']): void {
 		return; // for now, all types are valid // TODO: dereferencing type variables
@@ -846,9 +845,12 @@ export class SemanticNodeGoal extends SemanticNode {
 		})
 	}
 	/** @implements SemanticNode */
-	build(generator: Builder): InstructionNone | InstructionModule {
+	build(builder: Builder): InstructionNone | InstructionModule {
 		return (!this.children.length)
 			? new InstructionNone()
-			: generator.goal(this.children)
+			: new InstructionModule([
+				...Builder.IMPORTS,
+				...(this.children as readonly SemanticStatementType[]).map((child) => child.build(builder)),
+			])
 	}
 }
