@@ -133,7 +133,7 @@ export default abstract class SemanticNode implements Serializable {
  * - SemanticNodeTypeOperation
  */
 export abstract class SemanticNodeType extends SemanticNode {
-	private readonly __foo = null;
+	private assessed: SolidLanguageType | null = null
 	/** @implements SemanticNode */
 	typeCheck(_opts: SolidConfig['compilerOptions']): void {
 		return; // for now, all types are valid // TODO: dereferencing type variables
@@ -145,11 +145,21 @@ export abstract class SemanticNodeType extends SemanticNode {
 	build(_builder: Builder): InstructionNone {
 		return new InstructionNone()
 	}
+	/**
+	 * Assess the type-value of this node at compile-time.
+	 * @returns the computed type-value of this node
+	 * @final
+	 */
+	assess(): SolidLanguageType {
+		this.assessed || (this.assessed = this.assess_do()) // COMBAK `this.assessed ||= this.assess_do()`
+		return this.assessed
+	}
+	protected abstract assess_do(): SolidLanguageType
 }
 export class SemanticNodeTypeConstant extends SemanticNodeType {
 	declare children:
 		| readonly []
-	readonly value: string | SolidLanguageType;
+	readonly value: SolidLanguageType;
 	constructor (start_node: TokenKeyword | TokenNumber | TokenString) {
 		const value: SolidLanguageType =
 			(start_node instanceof TokenKeyword) ?
@@ -169,6 +179,10 @@ export class SemanticNodeTypeConstant extends SemanticNodeType {
 			: SolidString
 		super(start_node, {value: value.toString()})
 		this.value = value
+	}
+	/** @implements SemanticNodeType */
+	protected assess_do(): SolidLanguageType {
+		return this.value
 	}
 }
 export abstract class SemanticNodeTypeOperation extends SemanticNodeType {
@@ -190,6 +204,12 @@ export class SemanticNodeTypeOperationUnary extends SemanticNodeTypeOperation {
 	) {
 		super(start_node, operator, children)
 	}
+	/** @implements SemanticNodeType */
+	protected assess_do(): SolidLanguageType {
+		return (this.operator === Operator.ORNULL)
+			? this.children[0].assess().union(SolidNull)
+			: (() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
+	}
 }
 export class SemanticNodeTypeOperationBinary extends SemanticNodeTypeOperation {
 	constructor (
@@ -199,6 +219,14 @@ export class SemanticNodeTypeOperationBinary extends SemanticNodeTypeOperation {
 			| readonly [SemanticNodeType, SemanticNodeType]
 	) {
 		super(start_node, operator, children)
+	}
+	/** @implements SemanticNodeType */
+	protected assess_do(): SolidLanguageType {
+		return (
+			(this.operator === Operator.AND) ? this.children[0].assess().intersect(this.children[1].assess()) :
+			(this.operator === Operator.OR)  ? this.children[0].assess().union    (this.children[1].assess()) :
+			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
+		)
 	}
 }
 
@@ -295,7 +323,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		if (this.value instanceof SolidObject) {
 			return new CompletionStructureAssessment(this.value)
 		} else {
-			throw new Error('not yet supported.')
+			throw new Error('`SemanticNodeConstant[value:string]#assess_do` not yet supported.')
 		}
 	}
 	/** @implements SemanticNodeExpression */

@@ -36,9 +36,17 @@ import {
 	InstructionModule,
 } from '../../src/builder/'
 import {
+	typeConstInt,
+	typeConstFloat,
 	instructionConstInt,
 	instructionConstFloat,
 } from '../helpers'
+import {
+	unitTypeFromString,
+	unaryTypeFromString,
+	intersectionTypeFromString,
+	unionTypeFromString,
+} from '../helpers-parse'
 import {
 	operationFromStatementExpression,
 	statementExpressionFromSource,
@@ -448,6 +456,56 @@ describe('SemanticNode', () => {
 						].map(([left, right]) => new InstructionBinopEquality(Operator.EQ, left, right)))
 					})
 				})
+			})
+		})
+	})
+
+
+	describe('SemanticNodeType', () => {
+		describe('#assess', () => {
+			it('computes the value of constant null, boolean, or number types.', () => {
+				assert.deepStrictEqual([
+					`null`,
+					`false`,
+					`true`,
+					`42`,
+					`4.2e+3`,
+				].map((src) => unitTypeFromString(src).decorate().assess()), [
+					SolidNull,
+					new SolidTypeConstant(SolidBoolean.FALSE),
+					new SolidTypeConstant(SolidBoolean.TRUE),
+					new SolidTypeConstant(new Int16(42n)),
+					new SolidTypeConstant(new Float64(4.2e+3)),
+				])
+			})
+			it('computes the value of keyword type.', () => {
+				assert.deepStrictEqual([
+					'bool',
+					'int',
+					'float',
+					'obj',
+				].map((src) => unitTypeFromString(src).decorate().assess()), [
+					SolidBoolean,
+					Int16,
+					Float64,
+					SolidObject,
+				])
+			})
+			it('computes the value of a nullified (ORNULL) type.', () => {
+				assert.deepStrictEqual(
+					unaryTypeFromString(`int!`).decorate().assess(),
+					Int16.union(SolidNull),
+				)
+			})
+			it('computes the value of AND and OR operators', () => {
+				assert.deepStrictEqual(
+					intersectionTypeFromString(`obj & 3`).decorate().assess(),
+					SolidObject.intersect(typeConstInt(3n)),
+				)
+				assert.deepStrictEqual(
+					unionTypeFromString(`4.2 | int`).decorate().assess(),
+					typeConstFloat(4.2).union(Int16),
+				)
 			})
 		})
 	})
