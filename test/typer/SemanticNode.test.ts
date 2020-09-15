@@ -52,7 +52,8 @@ describe('SemanticNode', () => {
 		context('SemanticNodeGoal ::= SOT EOT', () => {
 			it('returns InstructionNone.', () => {
 				const src: [string, SolidConfig] = [``, CONFIG_DEFAULT]
-				const instr: InstructionNone | InstructionModule = new Scanner(...src).lexer.screener.parser.parse().decorate()
+				const instr: InstructionNone | InstructionModule = new Scanner(...src).lexer.screener.parser.validator
+					.validate()
 					.build(new Scanner(...src).lexer.screener.parser.validator.builder)
 				assert.ok(instr instanceof InstructionNone)
 			})
@@ -61,8 +62,7 @@ describe('SemanticNode', () => {
 		describe('SemanticNodeStatementExpression', () => {
 			it('returns InstructionNone for empty statement expression.', () => {
 				const src: [string, SolidConfig] = [`;`, CONFIG_DEFAULT]
-				const instr: InstructionNone | InstructionStatement = (new Scanner(...src).lexer.screener.parser.parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
+				const instr: InstructionNone | InstructionStatement = statementExpressionFromSource(src[0])
 					.build(new Scanner(...src).lexer.screener.parser.validator.builder)
 				assert.ok(instr instanceof InstructionNone)
 			})
@@ -78,7 +78,7 @@ describe('SemanticNode', () => {
 			specify('multiple statements.', () => {
 				const srcs: [string, SolidConfig] = [`42; 420;`, CONFIG_DEFAULT]
 				const generator: Builder = new Scanner(...srcs).lexer.screener.parser.validator.builder
-				new Scanner(...srcs).lexer.screener.parser.parse().decorate().children.forEach((stmt, i) => {
+				new Scanner(...srcs).lexer.screener.parser.validator.validate().children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof SemanticNodeStatementExpression)
 					assert.deepStrictEqual(
 						stmt.build(generator),
@@ -529,7 +529,8 @@ describe('SemanticNode', () => {
 						).type(), new SolidTypeConstant(new Float64(42.0)))
 					})
 					Dev.supports('variables') && it('throws for identifiers.', () => {
-						assert.throws(() => ((new Scanner(`x;`, CONFIG_DEFAULT).lexer.screener.parser.parse().decorate()
+						assert.throws(() => ((new Scanner(`x;`, CONFIG_DEFAULT).lexer.screener.parser.validator
+							.validate()
 							.children[0] as SemanticNodeStatementExpression)
 							.children[0] as SemanticNodeIdentifier).type(), /Not yet supported./)
 					})
@@ -541,10 +542,12 @@ describe('SemanticNode', () => {
 								),
 							] : []),
 							...(Dev.supports('literalTemplate') ? [
-								(new Scanner(`'''42''';`, CONFIG_DEFAULT).lexer.screener.parser.parse().decorate()
+								(new Scanner(`'''42''';`, CONFIG_DEFAULT).lexer.screener.parser.validator
+									.validate()
 									.children[0] as SemanticNodeStatementExpression)
 									.children[0] as SemanticNodeTemplate,
-								(new Scanner(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).lexer.screener.parser.parse().decorate()
+								(new Scanner(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).lexer.screener.parser.validator
+									.validate()
 									.children[0] as SemanticNodeStatementExpression)
 									.children[0] as SemanticNodeTemplate,
 							] : []),

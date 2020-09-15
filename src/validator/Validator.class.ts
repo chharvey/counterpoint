@@ -30,7 +30,7 @@ export default class Valdator {
 	 * @return the decorated goal parse node
 	 */
 	validate(): SemanticNodeGoal {
-		const semantic_goal: SemanticNodeGoal = this.parsegoal.decorate()
+		const semantic_goal: SemanticNodeGoal = this.parsegoal.decorate(this)
 		semantic_goal.typeCheck(this.config.compilerOptions) // assert does not throw
 		return semantic_goal
 	}
