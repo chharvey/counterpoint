@@ -10,7 +10,8 @@ import {
 import {
 	SemanticNodeType,
 	SemanticNodeTypeConstant,
-	SemanticNodeTypeOperation,
+	SemanticNodeTypeOperationUnary,
+	SemanticNodeTypeOperationBinary,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeTemplate,
@@ -137,7 +138,7 @@ describe('ParseNode', () => {
 					</TypeOperation>
 				*/
 				const operation: SemanticNodeType = unaryTypeFromString(`int!`).decorate()
-				assert.ok(operation instanceof SemanticNodeTypeOperation)
+				assert.ok(operation instanceof SemanticNodeTypeOperationUnary)
 				const operand: SemanticNodeType = operation.children[0]
 				assert.deepStrictEqual(
 					[operand.source, operation.operator],
@@ -155,7 +156,7 @@ describe('ParseNode', () => {
 					</TypeOperation>
 				*/
 				const operation: SemanticNodeType = intersectionTypeFromString(`int & 3`).decorate()
-				assert.ok(operation instanceof SemanticNodeTypeOperation)
+				assert.ok(operation instanceof SemanticNodeTypeOperationBinary)
 				const left:  SemanticNodeType = operation.children[0]
 				const right: SemanticNodeType = operation.children[1]
 				assert.deepStrictEqual(
@@ -174,7 +175,7 @@ describe('ParseNode', () => {
 					</TypeOperation>
 				*/
 				const operation: SemanticNodeType = unionTypeFromString(`4.2! | int & int`).decorate()
-				assert.ok(operation instanceof SemanticNodeTypeOperation)
+				assert.ok(operation instanceof SemanticNodeTypeOperationBinary)
 				const left:  SemanticNodeType = operation.children[0]
 				const right: SemanticNodeType = operation.children[1]
 				assert.deepStrictEqual(
@@ -193,7 +194,7 @@ describe('ParseNode', () => {
 					</TypeOperation>
 				*/
 				const operation: SemanticNodeType = unionTypeFromString(`4.2! & (int | int)`).decorate()
-				assert.ok(operation instanceof SemanticNodeTypeOperation)
+				assert.ok(operation instanceof SemanticNodeTypeOperationBinary)
 				const left:  SemanticNodeType = operation.children[0]
 				const right: SemanticNodeType = operation.children[1]
 				assert.deepStrictEqual(

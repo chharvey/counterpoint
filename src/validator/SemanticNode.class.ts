@@ -171,7 +171,7 @@ export class SemanticNodeTypeConstant extends SemanticNodeType {
 		this.value = value
 	}
 }
-export class SemanticNodeTypeOperation extends SemanticNodeType {
+export abstract class SemanticNodeTypeOperation extends SemanticNodeType {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidTypeOperator,
@@ -179,6 +179,26 @@ export class SemanticNodeTypeOperation extends SemanticNodeType {
 			| readonly SemanticNodeType[]
 	) {
 		super(start_node, {operator}, children)
+	}
+}
+export class SemanticNodeTypeOperationUnary extends SemanticNodeTypeOperation {
+	constructor (
+		start_node: ParseNode,
+		operator: ValidTypeOperator,
+		readonly children:
+			| readonly [SemanticNodeType]
+	) {
+		super(start_node, operator, children)
+	}
+}
+export class SemanticNodeTypeOperationBinary extends SemanticNodeTypeOperation {
+	constructor (
+		start_node: ParseNode,
+		operator: ValidTypeOperator,
+		readonly children:
+			| readonly [SemanticNodeType, SemanticNodeType]
+	) {
+		super(start_node, operator, children)
 	}
 }
 
