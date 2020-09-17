@@ -41,7 +41,6 @@ import {
 	SemanticNodeDeclarationVariable,
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
-	SemanticNodeAssigned,
 	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
@@ -456,9 +455,7 @@ export class ParseNodeDeclarationVariable extends ParseNode {
 				new SemanticNodeIdentifier(identifier),
 			]),
 			type_.decorate(validator),
-			new SemanticNodeAssigned(expression, [
-				expression.decorate(validator),
-			]),
+			expression.decorate(validator),
 		])
 	}
 }
@@ -473,9 +470,7 @@ export class ParseNodeStatementAssignment extends ParseNode {
 			new SemanticNodeAssignee(identifier, [
 				new SemanticNodeIdentifier(identifier),
 			]),
-			new SemanticNodeAssigned(expression, [
-				expression.decorate(validator),
-			]),
+			expression.decorate(validator),
 		])
 	}
 }

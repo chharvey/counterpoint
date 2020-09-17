@@ -815,7 +815,7 @@ export class SemanticNodeDeclarationVariable extends SemanticNode {
 		start_node: ParseNode,
 		unfixed: boolean,
 		readonly children:
-			| readonly [SemanticNodeAssignee, SemanticNodeType, SemanticNodeAssigned]
+			| readonly [SemanticNodeAssignee, SemanticNodeType, SemanticNodeExpression]
 	) {
 		super(start_node, {unfixed}, children)
 	}
@@ -833,7 +833,7 @@ export class SemanticNodeAssignment extends SemanticNode {
 	constructor (
 		start_node: ParseNode,
 		readonly children:
-			| readonly [SemanticNodeAssignee, SemanticNodeAssigned]
+			| readonly [SemanticNodeAssignee, SemanticNodeExpression]
 	) {
 		super(start_node, {}, children)
 	}
@@ -862,29 +862,6 @@ export class SemanticNodeAssignee extends SemanticNode {
 	/** @implements SemanticNode */
 	build(_builder: Builder): Instruction {
 		throw new Error('SemanticNodeAssignee#build not yet supported.')
-	}
-}
-export class SemanticNodeAssigned extends SemanticNode {
-	constructor(
-		start_node: ParseNode,
-		readonly children:
-			| readonly [SemanticNodeExpression]
-	) {
-		super(start_node, {}, children)
-	}
-	/** @implements SemanticNode */
-	typeCheck(opts: SolidConfig['compilerOptions']): void {
-		this.type(opts) // assert does not throw
-	}
-	/** @implements SemanticNode */
-	build(_builder: Builder): Instruction {
-		throw new Error('SemanticNodeAssigned#build not yet supported.')
-	}
-	/**
-	 * The Type of the assigned expression.
-	 */
-	type(opts: SolidConfig['compilerOptions']): SolidLanguageType {
-		return this.children[0].type(opts.constantFolding, opts.intCoercion)
 	}
 }
 export class SemanticNodeGoal extends SemanticNode {

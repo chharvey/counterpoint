@@ -67,16 +67,13 @@ SemanticStatementExpression
 
 
 SemanticDeclarationVariable[unfixed: Boolean]
-	::= SemanticAssignee SemanticType SemanticAssigned;
+	::= SemanticAssignee SemanticType SemanticExpression;
 
 SemanticAssignment
-	::= SemanticAssignee SemanticAssigned;
+	::= SemanticAssignee SemanticExpression;
 
 SemanticAssignee
 	::= SemanticIdentifier;
-
-SemanticAssigned
-	::= SemanticExpression;
 
 
 

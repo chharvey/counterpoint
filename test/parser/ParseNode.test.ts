@@ -684,9 +684,7 @@ describe('ParseNode', () => {
 							<Identifier source="the_answer" id=256n/>
 						</Assignee>
 						<TypeOperation operator=OR source="int | float">...</TypeOperation>
-						<Assigned>
-							<Operation operator=MUL source="21 * 2">...</Operation>
-						</Assigned>
+						<Operation operator=MUL source="21 * 2">...</Operation>
 					</SemanticDeclarationVariable>
 				*/
 				const src: string = `let  the_answer:  int | float =  21  *  2;`
@@ -697,7 +695,7 @@ describe('ParseNode', () => {
 				const type_: SemanticNodeType = decl.children[1]
 				assert.ok(type_ instanceof SemanticNodeTypeOperationBinary)
 				assert.strictEqual(type_.operator, Operator.OR)
-				const assigned_expr: SemanticNodeExpression = decl.children[2].children[0]
+				const assigned_expr: SemanticNodeExpression = decl.children[2]
 				assert.ok(assigned_expr instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(assigned_expr.operator, Operator.MUL)
 				assert.deepStrictEqual(decl.children.map((child) => child.source), [
@@ -711,12 +709,10 @@ describe('ParseNode', () => {
 							<Identifier source="`the £ answer`" id=256n/>
 						</Assignee>
 						<TypeConstant source="int | float">...</TypeOperation>
-						<Assigned>
-							<Operation operator=MUL source="the_answer * 10">
-								<Identifier source="the_answer" id=257n/>
-								<Constant source="10" value=10/>
-							</Operation>
-						</Assigned>
+						<Operation operator=MUL source="the_answer * 10">
+							<Identifier source="the_answer" id=257n/>
+							<Constant source="10" value=10/>
+						</Operation>
 					</SemanticDeclarationVariable>
 				*/
 				const src: string = `let \`the £ answer\`: int = the_answer * 10;`
@@ -726,7 +722,7 @@ describe('ParseNode', () => {
 				// assert.strictEqual(decl.children[0].children[0].id, 256n)
 				const type_: SemanticNodeType = decl.children[1]
 				assert.ok(type_ instanceof SemanticNodeTypeConstant)
-				const assigned_expr: SemanticNodeExpression = decl.children[2].children[0]
+				const assigned_expr: SemanticNodeExpression = decl.children[2]
 				assert.ok(assigned_expr instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(assigned_expr.operator, Operator.MUL)
 				// assert.strictEqual(assigned_expr.children[0].children[1].id, 257n)
