@@ -121,12 +121,19 @@ values directly manipulated by a Solid program.
 Solid has the following built-in types.
 This list is not exhaustive, as Solid Types may be created in any Solid program.
 
+- [Never](#never)
 - [Null](#null)
 - [Boolean](#boolean)
 - [Integer](#integer)
 - [Float](#float)
 - String
 - [Object](#object)
+- [Unknown](#unknown)
+
+
+### Never
+The Botton Type represents the set of no values, called `never`.
+No value or expression is assignable to `never`.
 
 
 ### Null
@@ -139,9 +146,7 @@ The Boolean type has two logical values, called `true` and `false`.
 
 ### Number
 The Number type represents numerical values.
-The Number type is partitioned<sup>*</sup> into two subtypes: Integer and Float.
-
-<sup>*</sup>(mutually exclusive and collectively exhaustive)
+The Number type is partitioned into two disjoint subtypes: Integer and Float.
 
 #### Integer
 The Integer type represents [mathematical integers](#real-integer-numbers).
@@ -174,6 +179,11 @@ The Object type is the parent type of all Solid Language Types.
 Every Solid Language Value is an Object.
 
 
+### Unknown
+The Top Type represents the set of all possible values, called `unknown`.
+Any value or expression is assignable to `unknown`.
+
+
 
 ## Type Operations
 
@@ -181,15 +191,85 @@ Every Solid Language Value is an Object.
 ### Intersection
 A data type specified as \`And<‹T›, ‹U›>\`,
 where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
-is a data type that contains values matching *both* type \`‹T›\` and type \`‹U›\`.
+is a data type that contains values assignable to *both* type \`‹T›\` and type \`‹U›\`.
 Such a data type is called the **intersection** of \`‹T›\` and \`‹U›\`.
 
 
 ### Union
 A data type specified as \`Or<‹T›, ‹U›>\`,
 where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
-is a data type that contains values matching *either* type \`‹T›\` or type \`‹U›\` (or both).
+is a data type that contains values assignable to *either* type \`‹T›\` or type \`‹U›\` (or both).
 Such a data type is called the **union** of \`‹T›\` and \`‹U›\`.
 
 For example, the type \`Or<Integer, Null>\` contains values of either \`Integer\` or \`Null\`.
 (Since there is no overlap, there are no values of both \`Integer\` *and* \`Null\`.)
+
+
+### Subtype
+A type \`‹T›\` is a **subtype** of type \`‹U›\` iff every value assignable to \`‹T›\` is also assignable to \`‹U›\`.
+
+
+### Equality
+A type \`‹T›\` is **equal** to type \`‹U›\` iff \`‹T›\` is a subtype of \`‹U›\` and \`‹U›\` is a subtype of \`‹T›\`.
+
+
+### Disjoint
+A type \`‹T›\` is **disjoint** with type \`‹U›\` iff \`‹T›\` and \`‹U›\` have no values in common.
+That is, their intersection is empty, or equal to the [Bottom Type](#never).
+
+
+
+## Type Laws
+The following tables describe laws that hold true for all types in general.
+
+For brevity, this section uses the following notational conventions:
+- Metavariables such as \`‹A›\`, \`‹B›\`, \`‹C›\` denote placeholders for Solid Language Types
+	and do not refer to real variables or real types.
+- Angle quotes and back-ticks will be omitted. Instead, a `monospace font face` is used.
+- The [intersection](#intersection) of `A` and `B`, `And<A, B>`, is written `A & B`.
+- The [union](#union)               of `A` and `B`, `Or<A, B>`,  is written `A | B`. The symbol `|`  is weaker than `&`.
+- If `A` is a [subtype](#subtype) of `B`, we write `A <: B`.                         The symbol `<:` is weaker than `|`.
+- If `A` is [equal](#equality)    to `B`, we write `A == B`.                         The symbol `==` is weaker than `<:`.
+- Where ‹X› and ‹Y› represent statements in prose:
+	- `‹X› &&  ‹Y›` denotes “‹X› and            ‹Y›”. The symbol `&&`  is weaker than `<:`.
+	- `‹X› ||  ‹Y›` denotes “‹X› or             ‹Y›”. The symbol `||`  is weaker than `&&`.
+	- `‹X› --> ‹Y›` denotes “‹X› implies        ‹Y›”. The symbol `-->` is weaker than `||`.
+	- `‹X› <-> ‹Y›` denotes “‹X› if and only if ‹Y›”. The symbol `<->` is weaker than `-->`.
+
+
+### Special Elements
+\# | Law | Description
+-- | --- | -----------
+1  | `never <: T`             | Bottom is a subtype of any type.
+2  | `T     <: unknown`       | Any type is a subtype of Top.
+3  | `T & never   == never`   | Bottom is The Absorption Element of Intersection (follows from 1 and 18)
+4  | `T & unknown == T`       | Top    is The Identity   Element of Intersection (follows from 2 and 18)
+5  | `T | never   == T`       | Bottom is The Identity   Element of Union        (follows from 1 and 19)
+6  | `T | unknown == unknown` | Top    is The Absorption Element of Union        (follows from 2 and 19)
+
+
+### Operation Properties
+\# | Law | Description
+-- | --- | -----------
+ 7 | `A & B == B & A`                   | Intersection is Comutative
+ 8 | `A | B == B | A`                   | Union        is Commutative
+ 9 | `(A & B) & C == A & (B & C)`       | Intersection is Associative
+10 | `(A | B) | C == A | (B | C)`       | Union        is Associative
+11 | `A & (B | C) == (A & B) | (A & C)` | Intersection Distributes over Union
+12 | `A | (B & C) == (A | B) & (A | C)` | Union        Distributes over Intersection
+13 | `A <: A`                           | Subtype is Reflexive
+14 | `A <: B  &&  B <: A  -->  A == B`  | Subtype is Anti-Symmetric
+15 | `A <: B  &&  B <: C  -->  A <: C`  | Subtype is Transitive
+
+
+### Other
+\# | Law | Description
+-- | --- | -----------
+16 | `A & B <: A  &&  A & B <: B` | Any intersection is a subtype of each of its consituent parts.
+17 | `A <: A | B  &&  B <: A | B` | Each constituent part of any union is a subtype of that union.
+18 | `A <: B  <->  A & B == A` | The intersection of a subtype and a supertype is the subtype.
+19 | `A <: B  <->  A | B == B` | The union        of a subtype and a supertype is the supertype.
+20 | `A <: C  &&  A <: D  <->  A <: C & D` | Subtype is Left-Factorable      under Conjunction, and       Left-Distributive      over Intersection
+21 | `A <: C  ||  A <: D  -->  A <: C | D` | Subtype is Left-Factorable      under Disjunction (but *not* Left-Distributive      over Union)
+22 | `A <: C  &&  B <: C  <->  A | B <: C` | Subtype is Right-Antifactorable under Conjunction, and       Right-Antidistributive over Union
+23 | `A <: C  ||  B <: C  -->  A & B <: C` | Subtype is Right-Antifactorable under Disjunction (but *not* Right-Antidistributive over Intersection)
