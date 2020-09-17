@@ -1,5 +1,3 @@
-import * as fs from 'fs'
-import * as path from 'path'
 import * as assert from 'assert'
 
 import Operator from '../../src/enum/Operator.enum'
@@ -242,9 +240,10 @@ describe('Instruction', () => {
 					`;`,
 				].map((src) => {
 					const srcs: [string, SolidConfig] = [src, CONFIG_DEFAULT]
-					return new Scanner(...srcs).lexer.screener.parser.parse().decorate().build(
-						new Scanner(...srcs).lexer.screener.parser.validator.builder
-					)
+					return new Scanner(...srcs).lexer.screener.parser
+						.parse()
+						.decorate(new Scanner(...srcs).lexer.screener.parser.validator)
+						.build(new Scanner(...srcs).lexer.screener.parser.validator.builder)
 				})
 				assert.ok(mods[0] instanceof InstructionNone)
 				assert.strictEqual(mods[0].toString(), ``)

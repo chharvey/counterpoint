@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 
-import {CONFIG_DEFAULT} from '../../src/SolidConfig'
+import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util   from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
@@ -8,6 +8,7 @@ import {
 	Scanner,
 } from '../../src/lexer/'
 import {
+	Validator,
 	SemanticNodeType,
 	SemanticNodeTypeConstant,
 	SemanticNodeTypeOperation,
@@ -49,9 +50,14 @@ import {
 
 describe('ParseNode', () => {
 	describe('#decorate', () => {
+		function validatorFromType(typestring: string, config: SolidConfig = CONFIG_DEFAULT): Validator {
+			return new Scanner(`let x: ${ typestring } = null;`, config).lexer.screener.parser.validator
+		}
 		context('Goal ::= #x02 #x03', () => {
 			it('makes a SemanticNodeGoal node containing no children.', () => {
-				const goal: SemanticNodeGoal = new Scanner('', CONFIG_DEFAULT).lexer.screener.parser.parse().decorate()
+				const goal: SemanticNodeGoal = new Scanner(``, CONFIG_DEFAULT).lexer.screener.parser
+					.parse()
+					.decorate(new Scanner(``, CONFIG_DEFAULT).lexer.screener.parser.validator)
 				assert_arrayLength(goal.children, 0, 'semantic goal should have 0 children')
 			})
 		})
@@ -75,7 +81,7 @@ describe('ParseNode', () => {
 					`true;`,
 					`42;`,
 					`4.2;`,
-				].map((src) => primitiveLiteralFromSource(src).decorate().value), [
+				].map((src) => primitiveLiteralFromSource(src).decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator).value), [
 					SolidNull.NULL,
 					SolidBoolean.FALSE,
 					SolidBoolean.TRUE,
@@ -95,7 +101,7 @@ describe('ParseNode', () => {
 					`int`,
 					`float`,
 					`obj`,
-				].map((src) => keywordTypeFromString(src).decorate().value), [
+				].map((src) => keywordTypeFromString(src).decorate(validatorFromType(src)).value), [
 					SolidBoolean,
 					Int16,
 					Float64,
@@ -116,7 +122,8 @@ describe('ParseNode', () => {
 					`42`,
 					`4.2`,
 				].map((src) => {
-					const constant: SemanticNodeType = unitTypeFromString(src).decorate()
+					const constant: SemanticNodeType = unitTypeFromString(src)
+						.decorate(validatorFromType(src))
 					assert.ok(constant instanceof SemanticNodeTypeConstant)
 					return constant.value
 				}), [
@@ -136,7 +143,8 @@ describe('ParseNode', () => {
 						<TypeConstant source="int" value="Int16"/>
 					</TypeOperation>
 				*/
-				const operation: SemanticNodeType = unaryTypeFromString(`int!`).decorate()
+				const operation: SemanticNodeType = unaryTypeFromString(`int!`)
+					.decorate(validatorFromType(`int!`))
 				assert.ok(operation instanceof SemanticNodeTypeOperation)
 				const operand: SemanticNodeType = operation.children[0]
 				assert.deepStrictEqual(
@@ -154,7 +162,8 @@ describe('ParseNode', () => {
 						<TypeConstant source="3"/>
 					</TypeOperation>
 				*/
-				const operation: SemanticNodeType = intersectionTypeFromString(`int & 3`).decorate()
+				const operation: SemanticNodeType = intersectionTypeFromString(`int & 3`)
+					.decorate(validatorFromType(`int & 3`))
 				assert.ok(operation instanceof SemanticNodeTypeOperation)
 				const left:  SemanticNodeType = operation.children[0]
 				const right: SemanticNodeType = operation.children[1]
@@ -173,7 +182,8 @@ describe('ParseNode', () => {
 						<TypeOperation source="int & int">...</TypeOperation>
 					</TypeOperation>
 				*/
-				const operation: SemanticNodeType = unionTypeFromString(`4.2! | int & int`).decorate()
+				const operation: SemanticNodeType = unionTypeFromString(`4.2! | int & int`)
+					.decorate(validatorFromType(`4.2! | int & int`))
 				assert.ok(operation instanceof SemanticNodeTypeOperation)
 				const left:  SemanticNodeType = operation.children[0]
 				const right: SemanticNodeType = operation.children[1]
@@ -192,7 +202,8 @@ describe('ParseNode', () => {
 						<TypeOperation source="int | int">...</TypeOperation>
 					</TypeOperation>
 				*/
-				const operation: SemanticNodeType = unionTypeFromString(`4.2! & (int | int)`).decorate()
+				const operation: SemanticNodeType = unionTypeFromString(`4.2! & (int | int)`)
+					.decorate(validatorFromType(`4.2! & (int | int)`))
 				assert.ok(operation instanceof SemanticNodeTypeOperation)
 				const left:  SemanticNodeType = operation.children[0]
 				const right: SemanticNodeType = operation.children[1]
@@ -234,7 +245,7 @@ describe('ParseNode', () => {
 			function stringTemplateSemanticNode(src: string): string {
 				return ((new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser
 					.parse()
-					.decorate()
+					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator)
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeTemplate)
 					.serialize()
@@ -664,11 +675,15 @@ describe('ParseNode', () => {
 
 		Dev.supports('variables') && context.skip('DeclarationVariable, StatementAssignment', () => {
 			it('makes SemanticNodeDeclaration and SemanticNodeAssignment nodes.', () => {
-				assert.strictEqual(new Scanner(Util.dedent(`
+				const srcs: [string, SolidConfig] = [Util.dedent(`
 					let unfixed the_answer = 42;
 					let \`the £ answer\` = the_answer * 10;
 					the_answer = the_answer - 40;
-				`), CONFIG_DEFAULT).lexer.screener.parser.parse().decorate().serialize(), `
+				`), CONFIG_DEFAULT]
+				assert.strictEqual(new Scanner(...srcs).lexer.screener.parser
+					.parse()
+					.decorate(new Scanner(...srcs).lexer.screener.parser.validator)
+					.serialize(), `
 					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - 40 ; ␃">
 						<Declaration line="1" col="1" source="let unfixed the_answer = 42 ;" type="variable" unfixed="true">
 							<Assignee line="1" col="13" source="the_answer">
@@ -715,7 +730,9 @@ describe('ParseNode', () => {
 						<StatementExpression source="420 ;">...</StatementExpression>
 					</Goal>
 				*/
-				const goal: SemanticNodeGoal = new Scanner(`42; 420;`, CONFIG_DEFAULT).lexer.screener.parser.parse().decorate()
+				const goal: SemanticNodeGoal = new Scanner(`42; 420;`, CONFIG_DEFAULT).lexer.screener.parser
+					.parse()
+					.decorate(new Scanner(`42; 420;`, CONFIG_DEFAULT).lexer.screener.parser.validator)
 				assert_arrayLength(goal.children, 2, 'goal should have 2 children')
 				assert.deepStrictEqual(goal.children.map((stat) => {
 					assert.ok(stat instanceof SemanticNodeStatementExpression)
