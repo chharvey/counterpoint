@@ -1,6 +1,9 @@
 import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
+import {
+	TypeError01,
+} from '../../src/error/SolidTypeError.class'
 import {Scanner} from '../../src/lexer/'
 
 
@@ -18,8 +21,8 @@ describe('Validator', () => {
 				})
 			})
 			it('throws for invalid type operations.', () => {
-				assert.throws(() => new Scanner(`null + 5;`,    CONFIG_DEFAULT).lexer.screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
-				assert.throws(() => new Scanner(`7.0 <= null;`, CONFIG_DEFAULT).lexer.screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
+				assert.throws(() => new Scanner(`null + 5;`,    CONFIG_DEFAULT).lexer.screener.parser.validator.validate(), TypeError01, 'SemanticNodeOperationBinaryArithmetic')
+				assert.throws(() => new Scanner(`7.0 <= null;`, CONFIG_DEFAULT).lexer.screener.parser.validator.validate(), TypeError01, 'SemanticNodeOperationBinaryComparative')
 			})
 			context('with int coercion off.', () => {
 				const coercion_off: SolidConfig = {
@@ -30,8 +33,8 @@ describe('Validator', () => {
 					},
 				}
 				it('throws if operands have different numeric types.', () => {
-					assert.throws(() => new Scanner(`7.0 + 3;`,  coercion_off).lexer.screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryArithmetic')
-					assert.throws(() => new Scanner(`7.0 <= 3;`, coercion_off).lexer.screener.parser.validator.validate(), /Invalid operation./, 'SemanticNodeOperationBinaryComparative')
+					assert.throws(() => new Scanner(`7.0 + 3;`,  coercion_off).lexer.screener.parser.validator.validate(), TypeError01, 'SemanticNodeOperationBinaryArithmetic')
+					assert.throws(() => new Scanner(`7.0 <= 3;`, coercion_off).lexer.screener.parser.validator.validate(), TypeError01, 'SemanticNodeOperationBinaryComparative')
 				})
 			})
 		})

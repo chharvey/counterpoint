@@ -5,6 +5,10 @@ import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {
+	TypeError01,
+} from '../../src/error/SolidTypeError.class'
+import {NanError01} from '../../src/error/NanError.class'
+import {
 	Scanner,
 } from '../../src/lexer/'
 import {
@@ -22,7 +26,6 @@ import {
 	Float64,
 	SolidString,
 } from '../../src/validator/'
-import {NanError01} from '../../src/error/NanError.class'
 import {
 	Builder,
 	InstructionNone,
@@ -244,9 +247,6 @@ describe('SemanticNode', () => {
 						[`42 + 420;`, new InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
 						[`3 * 2.1;`,  new InstructionBinopArithmetic(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
 					]))
-					assert.throws(() => operationFromStatementExpression(
-						statementExpressionFromSource(`null + 5;`)
-					).build(new Scanner(`null + 5;`, CONFIG_DEFAULT).lexer.screener.parser.validator.builder), /Invalid operation./)
 				})
 				specify('SemanticNodeOperation[operator: DIV] ::= SemanticNodeConstant SemanticNodeConstant', () => {
 					buildOperations(xjs.Map.mapValues(new Map([
@@ -594,7 +594,7 @@ describe('SemanticNode', () => {
 						assert.throws(() => ((new Scanner(`x;`, CONFIG_DEFAULT).lexer.screener.parser.validator
 							.validate()
 							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeIdentifier).type(), /Not yet supported./)
+							.children[0] as SemanticNodeIdentifier).type(), /not yet supported/)
 					})
 					it('returns `String` for SemanticNodeConstant with string value.', () => {
 						;[
@@ -750,7 +750,7 @@ describe('SemanticNode', () => {
 				].forEach((src) => {
 					assert.throws(() => operationFromStatementExpression(
 						statementExpressionFromSource(src)
-					).type(), /Invalid operation./)
+					).type(), TypeError01)
 				})
 			})
 		})
