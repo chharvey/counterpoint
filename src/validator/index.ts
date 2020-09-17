@@ -5,6 +5,8 @@ export {
 	SemanticNodeType,
 	SemanticNodeTypeConstant,
 	SemanticNodeTypeOperation,
+	SemanticNodeTypeOperationUnary,
+	SemanticNodeTypeOperationBinary,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,

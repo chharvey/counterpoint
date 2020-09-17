@@ -21,6 +21,8 @@ export default class SolidObject {
 		])
 	}
 	/** @implements SolidLanguageType */
+	static isEmpty: SolidLanguageType['isEmpty'] = false
+	/** @implements SolidLanguageType */
 	static isBooleanType: SolidLanguageType['isBooleanType'] = SolidLanguageType.prototype.isBooleanType
 	/** @implements SolidLanguageType */
 	static isNumericType: SolidLanguageType['isNumericType'] = SolidLanguageType.prototype.isNumericType
@@ -30,6 +32,10 @@ export default class SolidObject {
 	static intersect: SolidLanguageType['intersect'] = SolidLanguageType.prototype.intersect
 	/** @implements SolidLanguageType */
 	static union: SolidLanguageType['union'] = SolidLanguageType.prototype.union
+	/** @implements SolidLanguageType */
+	static isSubtypeOf: SolidLanguageType['isSubtypeOf'] = SolidLanguageType.prototype.isSubtypeOf
+	/** @implements SolidLanguageType */
+	static equals: SolidLanguageType['equals'] = SolidLanguageType.prototype.equals
 
 
 	/**

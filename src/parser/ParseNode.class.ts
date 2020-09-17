@@ -26,7 +26,8 @@ import {
 	SemanticNode,
 	SemanticNodeType,
 	SemanticNodeTypeConstant,
-	SemanticNodeTypeOperation,
+	SemanticNodeTypeOperationUnary,
+	SemanticNodeTypeOperationBinary,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
@@ -214,7 +215,7 @@ export class ParseNodeTypeUnary extends ParseNode {
 	decorate(validator: Validator): SemanticNodeType {
 		return (this.children.length === 1)
 			? this.children[0].decorate(validator)
-			: new SemanticNodeTypeOperation(this, ParseNodeTypeUnary.OPERATORS.get(this.children[1].source)!, [
+			: new SemanticNodeTypeOperationUnary(this, ParseNodeTypeUnary.OPERATORS.get(this.children[1].source)!, [
 				this.children[0].decorate(validator),
 			])
 	}
@@ -231,7 +232,7 @@ export class ParseNodeTypeBinary extends ParseNode {
 	decorate(validator: Validator): SemanticNodeType {
 		return (this.children.length === 1)
 			? this.children[0].decorate(validator)
-			: new SemanticNodeTypeOperation(this, ParseNodeTypeBinary.OPERATORS.get(this.children[1].source)!, [
+			: new SemanticNodeTypeOperationBinary(this, ParseNodeTypeBinary.OPERATORS.get(this.children[1].source)!, [
 				this.children[0].decorate(validator),
 				this.children[2].decorate(validator),
 			])
