@@ -61,27 +61,27 @@ describe('SolidLanguageType', () => {
 				['diz', SolidBoolean.intersect(SolidString)],
 			]))))
 		})
-		it('3  | `T & never   == never`', () => {
+		it('3  | `T  & never   == never`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.intersect(SolidLanguageType.NEVER).equals(SolidLanguageType.NEVER), `${ t }`)
 			})
 		})
-		it('4  | `T & unknown == T`', () => {
+		it('4  | `T  & unknown == T`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.intersect(SolidObject).equals(t), `${ t }`)
 			})
 		})
-		it('7 | `A & B == B & A`', () => {
+		it('7 | `A  & B == B  & A`', () => {
 			predicate2(builtin_types, (a, b) => {
 				assert.ok(a.intersect(b).equals(b.intersect(a)), `${ a }, ${ b }`)
 			})
 		})
-		it('9 | `(A & B) & C == A & (B & C)`', () => {
+		it('9 | `(A  & B)  & C == A  & (B  & C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.intersect(b).intersect(c).equals(a.intersect(b.intersect(c))), `${ a }, ${ b }, ${ c }`)
 			})
 		})
-		it('11 | `A & (B | C) == (A & B) | (A & C)`', () => {
+		it('11 | `A  & (B \| C) == (A  & B) \| (A  & C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.intersect(b.union(c)).equals(a.intersect(b).union(a.intersect(c))), `${ a }, ${ b }, ${ c }`)
 			})
@@ -96,27 +96,27 @@ describe('SolidLanguageType', () => {
 				['diz', SolidBoolean.union(SolidString)],
 			]))))
 		})
-		it('5  | `T | never   == T`', () => {
+		it('5  | `T \| never   == T`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.union(SolidLanguageType.NEVER).equals(t), `${ t }`)
 			})
 		})
-		it('6  | `T | unknown == unknown`', () => {
+		it('6  | `T \| unknown == unknown`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.union(SolidObject).equals(SolidObject), `${ t }`)
 			})
 		})
-		it('8 | `A | B == B | A`', () => {
+		it('8 | `A \| B == B \| A`', () => {
 			predicate2(builtin_types, (a, b) => {
 				assert.ok(a.union(b).equals(b.union(a)), `${ a }, ${ b }`)
 			})
 		})
-		it('10 | `(A | B) | C == A | (B | C)`', () => {
+		it('10 | `(A \| B) \| C == A \| (B \| C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.union(b).union(c).equals(a.union(b.union(c))), `${ a }, ${ b }, ${ c }`)
 			})
 		})
-		it('12 | `A | (B & C) == (A | B) & (A | C)`', () => {
+		it('12 | `A \| (B  & C) == (A \| B)  & (A \| C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.union(b.intersect(c)).equals(a.union(b).intersect(a.union(c))), `${ a }, ${ b }, ${ c }`)
 			})
@@ -135,12 +135,12 @@ describe('SolidLanguageType', () => {
 				['qux', SolidNumber],
 			])).isSubtypeOf(t0))
 		})
-		it('1. never <: T', () => {
+		it('1  | `never <: T`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(SolidLanguageType.NEVER.isSubtypeOf(t), `${ t }`)
 			})
 		})
-		it('2. T <: Object', () => {
+		it('2  | `T     <: unknown`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.isSubtypeOf(SolidObject), `${ t }`)
 			})
@@ -164,19 +164,19 @@ describe('SolidLanguageType', () => {
 				}
 			})
 		})
-		it('16 | `A & B <: A  &&  A & B <: B`', () => {
+		it('16 | `A  & B <: A  &&  A  & B <: B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				assert.ok(a.intersect(b).isSubtypeOf(a), `${ a }, ${ b }`)
 				assert.ok(a.intersect(b).isSubtypeOf(b), `${ a }, ${ b }`)
 			})
 		})
-		it('17 | `A <: A | B  &&  B <: A | B`', () => {
+		it('17 | `A <: A \| B  &&  B <: A \| B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				assert.ok(a.isSubtypeOf(a.union(b)), `${ a }, ${ b }`)
 				assert.ok(b.isSubtypeOf(a.union(b)), `${ a }, ${ b }`)
 			})
 		})
-		it('18 | `A <: B  <->  A & B == A`', () => {
+		it('18 | `A <: B  <->  A  & B == A`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.isSubtypeOf(b)) {
 					assert.ok(a.intersect(b).equals(a), `forward: ${ a }, ${ b }`)
@@ -186,7 +186,7 @@ describe('SolidLanguageType', () => {
 				}
 			})
 		})
-		it('19 | `A <: B  <->  A | B == B`', () => {
+		it('19 | `A <: B  <->  A \| B == B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.isSubtypeOf(b)) {
 					assert.ok(a.union(b).equals(b), `forward: ${ a }, ${ b }`)
@@ -196,7 +196,7 @@ describe('SolidLanguageType', () => {
 				}
 			})
 		})
-		it('20 | `A <: C  &&  A <: D  <->  A <: C & D`', () => {
+		it('20 | `A <: C    &&  A <: D  <->  A <: C  & D`', () => {
 			predicate3(builtin_types, (a, c, d) => {
 				if (a.isSubtypeOf(c) && a.isSubtypeOf(d)) {
 					assert.ok(a.isSubtypeOf(c.intersect(d)), `forward: ${ a }, ${ c }, ${ d }`)
@@ -206,14 +206,14 @@ describe('SolidLanguageType', () => {
 				}
 			})
 		})
-		it('21 | `A <: C  ||  A <: D  -->  A <: C | D`', () => {
+		it('21 | `A <: C  \|\|  A <: D  -->  A <: C \| D`', () => {
 			predicate3(builtin_types, (a, c, d) => {
 				if (a.isSubtypeOf(c) || a.isSubtypeOf(d)) {
 					assert.ok(a.isSubtypeOf(c.union(d)), `${ a }, ${ c }, ${ d }`)
 				}
 			})
 		})
-		it('22 | `A <: C  &&  B <: C  <->  A | B <: C`', () => {
+		it('22 | `A <: C    &&  B <: C  <->  A \| B <: C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(c) && b.isSubtypeOf(c)) {
 					assert.ok(a.union(b).isSubtypeOf(c), `forward: ${ a }, ${ b }, ${ c }`)
@@ -223,7 +223,7 @@ describe('SolidLanguageType', () => {
 				}
 			})
 		})
-		it('23 | `A <: C  ||  B <: C  -->  A & B <: C`', () => {
+		it('23 | `A <: C  \|\|  B <: C  -->  A  & B <: C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(c) || b.isSubtypeOf(c)) {
 					assert.ok(a.intersect(b).isSubtypeOf(c), `${ a }, ${ b }, ${ c }`)

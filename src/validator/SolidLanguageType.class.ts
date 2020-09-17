@@ -34,14 +34,14 @@ export default class SolidLanguageType {
 		isFloatType: true,
 		/**
 		 * @implements SolidLanguageType
-		 * 3  | `T & never   == never`
+		 * 3  | `T  & never   == never`
 		 */
 		intersect(_t: SolidLanguageType): SolidLanguageType {
 			return this
 		},
 		/**
 		 * @implements SolidLanguageType
-		 * 5  | `T | never   == T`
+		 * 5  | `T \| never   == T`
 		 */
 		union(t: SolidLanguageType): SolidLanguageType {
 			return t
@@ -102,9 +102,9 @@ export default class SolidLanguageType {
 	 * @returns the type intersection
 	 */
 	intersect(t: SolidLanguageType): SolidLanguageType {
-		/** 3  | `T & never   == never` */
+		/** 3  | `T  & never   == never` */
 		if (t.isEmpty) { return SolidLanguageType.NEVER }
-		/** 18 | `A <: B  <->  A & B == A` */
+		/** 18 | `A <: B  <->  A  & B == A` */
 		if (this.isSubtypeOf(t)) { return this }
 
 		const props: Map<string, SolidLanguageType> = new Map([...this.properties])
@@ -121,9 +121,9 @@ export default class SolidLanguageType {
 	 * @returns the type union
 	 */
 	union(t: SolidLanguageType): SolidLanguageType {
-		/** 5  | `T | never   == T` */
+		/** 5  | `T \| never   == T` */
 		if (t.isEmpty) { return this }
-		/** 19 | `A <: B  <->  A | B == B` */
+		/** 19 | `A <: B  <->  A \| B == B` */
 		if (this.isSubtypeOf(t)) { return t }
 
 		const props: Map<string, SolidLanguageType> = new Map()
