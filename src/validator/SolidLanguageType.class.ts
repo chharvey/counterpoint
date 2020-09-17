@@ -14,10 +14,64 @@ import type Float64      from './Float64.class'
  */
 export default class SolidLanguageType {
 	/**
+	 * The Bottom Type, containing no values.
+	 * Not subclassable or instantiable, thus not a class.
+	 */
+	static readonly NEVER: SolidLanguageType = {
+		/** @implements SolidLanguageType */
+		get properties(): ReadonlyMap<string, SolidLanguageType> {
+			return new Map([
+				['_', SolidLanguageType.NEVER],
+			])
+		},
+		/** @implements SolidLanguageType */
+		isEmpty: true,
+		/** @implements SolidLanguageType */
+		isBooleanType: true,
+		/** @implements SolidLanguageType */
+		isNumericType: true,
+		/** @implements SolidLanguageType */
+		isFloatType: true,
+		/**
+		 * @implements SolidLanguageType
+		 * 3  | `T & never   == never`
+		 */
+		intersect(_t: SolidLanguageType): SolidLanguageType {
+			return this
+		},
+		/**
+		 * @implements SolidLanguageType
+		 * 5  | `T | never   == T`
+		 */
+		union(t: SolidLanguageType): SolidLanguageType {
+			return t
+		},
+		/**
+		 * @implements SolidLanguageType
+		 * 1  | `never <: T`
+		 */
+		isSubtypeOf(_t: SolidLanguageType): boolean {
+			return true
+		},
+		/** @implements SolidLanguageType */
+		equals(t: SolidLanguageType): boolean {
+			return t.isEmpty
+		},
+	}
+	/**
 	 * Construct a new SolidLanguageType object.
 	 * @param properties a map of this type’s members’ names along with their associated types
 	 */
 	constructor (readonly properties: ReadonlyMap<string, SolidLanguageType>) {
+	}
+	/**
+	 * Return whether this type has no values assignable to it,
+	 * i.e., it is equal to the Bottom Type (`never`).
+	 * Used for special cases of {@link isSubTypeOf} and {@link equals}.
+	 * @returns Is this type equal to `never`?
+	 */
+	get isEmpty(): boolean {
+		return [...this.properties.values()].some((value) => value.isEmpty)
 	}
 	/**
 	 * Return whether the given class is a boolean type.
@@ -48,8 +102,11 @@ export default class SolidLanguageType {
 	 * @returns the type intersection
 	 */
 	intersect(t: SolidLanguageType): SolidLanguageType {
+		/** 3  | `T & never   == never` */
+		if (t.isEmpty) { return SolidLanguageType.NEVER }
 		/** 18 | `A <: B  <->  A & B == A` */
 		if (this.isSubtypeOf(t)) { return this }
+
 		const props: Map<string, SolidLanguageType> = new Map([...this.properties])
 		;[...t.properties].forEach(([name, type_]) => {
 			props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_)
@@ -64,8 +121,11 @@ export default class SolidLanguageType {
 	 * @returns the type union
 	 */
 	union(t: SolidLanguageType): SolidLanguageType {
+		/** 5  | `T | never   == T` */
+		if (t.isEmpty) { return this }
 		/** 19 | `A <: B  <->  A | B == B` */
 		if (this.isSubtypeOf(t)) { return t }
+
 		const props: Map<string, SolidLanguageType> = new Map()
 		;[...this.properties].forEach(([name, type_]) => {
 			if (t.properties.has(name)) {
@@ -83,6 +143,9 @@ export default class SolidLanguageType {
 	 * @returns Is this type a subtype of the argument?
 	 */
 	isSubtypeOf(t: SolidLanguageType): boolean {
+		/** `T <: never  -->  T == never` (not in docs, but follows from 3 and 18) */
+		if (t.isEmpty) { return this.isEmpty }
+
 		return this === t || [...t.properties].every(([name, type_]) =>
 			this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
 		)

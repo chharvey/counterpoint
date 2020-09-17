@@ -21,6 +21,8 @@ export default class SolidObject {
 		])
 	}
 	/** @implements SolidLanguageType */
+	static isEmpty: SolidLanguageType['isEmpty'] = false
+	/** @implements SolidLanguageType */
 	static isBooleanType: SolidLanguageType['isBooleanType'] = SolidLanguageType.prototype.isBooleanType
 	/** @implements SolidLanguageType */
 	static isNumericType: SolidLanguageType['isNumericType'] = SolidLanguageType.prototype.isNumericType
