@@ -1,4 +1,8 @@
-import type {SemanticNodeOperation} from '../validator/'
+import type {
+	SemanticNodeOperation,
+	SemanticNodeDeclarationVariable,
+	SolidLanguageType,
+} from '../validator/'
 import SolidError from './SolidError.class'
 
 
@@ -42,5 +46,21 @@ export class TypeError01 extends SolidTypeError {
 	 */
 	constructor (expression: SemanticNodeOperation) {
 		super(`Invalid operation: \`${ expression.source }\` at line ${ expression.line_index + 1 } col ${ expression.col_index + 1 }.`, TypeError01.CODE, expression.line_index, expression.col_index)
+	}
+}
+/**
+ * A TypeError02 is thrown when an expression is assigned to a type to which it is not assignable.
+ */
+export class TypeError02 extends SolidTypeError {
+	/** The number series of this class of errors. */
+	static readonly CODE = 2
+	/**
+	 * Construct a new TypeError02 object.
+	 * @param assignment    - the node where the assignment took place
+	 * @param assignee_type - the type to which the expression is assigned
+	 * @param assigned_type - the type of the expression
+	 */
+	constructor (assignment: SemanticNodeDeclarationVariable, assignee_type: SolidLanguageType, assigned_type: SolidLanguageType) {
+		super(`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }`, TypeError02.CODE, assignment.line_index, assignment.col_index)
 	}
 }

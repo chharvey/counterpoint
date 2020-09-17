@@ -6,6 +6,7 @@ import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {
 	TypeError01,
+	TypeError02,
 } from '../../src/error/SolidTypeError.class'
 import {NanError01} from '../../src/error/NanError.class'
 import {
@@ -17,6 +18,7 @@ import {
 	SemanticNodeTemplate,
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
+	SemanticNodeDeclarationVariable,
 	CompletionStructureAssessment,
 	SolidTypeConstant,
 	SolidObject,
@@ -50,6 +52,7 @@ import {
 	unaryTypeFromString,
 	intersectionTypeFromString,
 	unionTypeFromString,
+	variableDeclarationFromSource,
 } from '../helpers-parse'
 import {
 	operationFromStatementExpression,
@@ -457,6 +460,40 @@ describe('SemanticNode', () => {
 						].map(([left, right]) => new InstructionBinopEquality(Operator.EQ, left, right)))
 					})
 				})
+			})
+		})
+	})
+
+
+	describe('#typeCheck', () => {
+		describe('SemanticNodeDeclarationVariable', () => {
+			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
+				const src: string = `let  the_answer:  int | float =  21  *  2;`
+				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src)
+					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator)
+				decl.typeCheck(CONFIG_DEFAULT.compilerOptions)
+			})
+			it.skip('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
+				// FIXME! int should not be a subtype of null
+				const src: string = `let  the_answer:  null =  21  *  2;`
+				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src)
+					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator)
+				assert.throws(() => decl.typeCheck(CONFIG_DEFAULT.compilerOptions), TypeError02)
+			})
+			it('with int coersion on, allows assigning ints to floats.', () => {
+				const src: string = `let x: float = 42;`
+				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src)
+					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator)
+				decl.typeCheck(CONFIG_DEFAULT.compilerOptions)
+			})
+			it('with int coersion off, throws when assigning int to float.', () => {
+				const src: string = `let x: float = 42;`
+				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src)
+					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator)
+				assert.throws(() => decl.typeCheck({
+					...CONFIG_DEFAULT.compilerOptions,
+					intCoercion: false,
+				}), TypeError02)
 			})
 		})
 	})

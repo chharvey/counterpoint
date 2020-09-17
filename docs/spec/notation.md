@@ -1460,3 +1460,4 @@ When the compiler recognizes a type mismatch, a type error is raised.
 
 2300. A general type error not covered by one of the following cases.
 2301. The validator encountered an operation with an invalid operand.
+2302. An expression was assigned to a type to which it is not assignable.
