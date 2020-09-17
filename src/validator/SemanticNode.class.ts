@@ -815,7 +815,7 @@ export class SemanticNodeDeclarationVariable extends SemanticNode {
 		start_node: ParseNode,
 		unfixed: boolean,
 		readonly children:
-			| readonly [SemanticNodeAssignee, SemanticNodeAssigned]
+			| readonly [SemanticNodeAssignee, SemanticNodeType, SemanticNodeAssigned]
 	) {
 		super(start_node, {unfixed}, children)
 	}

@@ -21,6 +21,7 @@ import {
 	SemanticNodeOperationBinary,
 	SemanticNodeOperationTernary,
 	SemanticNodeStatementExpression,
+	SemanticNodeDeclarationVariable,
 	SemanticNodeGoal,
 	SolidTypeConstant,
 	SolidObject,
@@ -40,6 +41,7 @@ import {
 	intersectionTypeFromString,
 	unionTypeFromString,
 	primitiveLiteralFromSource,
+	variableDeclarationFromSource,
 } from '../helpers-parse'
 import {
 	constantFromStatementExpression,
@@ -674,11 +676,69 @@ describe('ParseNode', () => {
 			})
 		})
 
-		Dev.supports('variables') && context.skip('DeclarationVariable, StatementAssignment', () => {
-			it('makes SemanticNodeDeclaration and SemanticNodeAssignment nodes.', () => {
+		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationVariable', () => {
+			it('makes an unfixed SemanticNodeDeclarationVariable node.', () => {
+				/*
+					<SemanticDeclarationVariable unfixed=true>
+						<Assignee>
+							<Identifier source="the_answer" id=256n/>
+						</Assignee>
+						<TypeOperation operator=OR source="int | float">...</TypeOperation>
+						<Assigned>
+							<Operation operator=MUL source="21 * 2">...</Operation>
+						</Assigned>
+					</SemanticDeclarationVariable>
+				*/
+				const src: string = `let  the_answer:  int | float =  21  *  2;`
+				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src)
+					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator)
+				// assert.strictEqual(decl.unfixed, true)
+				// assert.strictEqual(decl.children[0].children[0].id, 256n)
+				const type_: SemanticNodeType = decl.children[1]
+				assert.ok(type_ instanceof SemanticNodeTypeOperationBinary)
+				assert.strictEqual(type_.operator, Operator.OR)
+				const assigned_expr: SemanticNodeExpression = decl.children[2].children[0]
+				assert.ok(assigned_expr instanceof SemanticNodeOperationBinary)
+				assert.strictEqual(assigned_expr.operator, Operator.MUL)
+				assert.deepStrictEqual(decl.children.map((child) => child.source), [
+					`the_answer`, `int | float`, `21 * 2`,
+				])
+			})
+			it('makes a fixed SemanticNodeDeclarationVariable node.', () => {
+				/*
+					<SemanticDeclarationVariable unfixed=false>
+						<Assignee>
+							<Identifier source="`the £ answer`" id=256n/>
+						</Assignee>
+						<TypeConstant source="int | float">...</TypeOperation>
+						<Assigned>
+							<Operation operator=MUL source="the_answer * 10">
+								<Identifier source="the_answer" id=257n/>
+								<Constant source="10" value=10/>
+							</Operation>
+						</Assigned>
+					</SemanticDeclarationVariable>
+				*/
+				const src: string = `let \`the £ answer\`: int = the_answer * 10;`
+				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src)
+					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator)
+				// assert.strictEqual(decl.unfixed, false)
+				// assert.strictEqual(decl.children[0].children[0].id, 256n)
+				const type_: SemanticNodeType = decl.children[1]
+				assert.ok(type_ instanceof SemanticNodeTypeConstant)
+				const assigned_expr: SemanticNodeExpression = decl.children[2].children[0]
+				assert.ok(assigned_expr instanceof SemanticNodeOperationBinary)
+				assert.strictEqual(assigned_expr.operator, Operator.MUL)
+				// assert.strictEqual(assigned_expr.children[0].children[1].id, 257n)
+				assert.deepStrictEqual(decl.children.map((child) => child.source), [
+					`\`the £ answer\``, `int`, `the_answer * 10`,
+				])
+			})
+		})
+
+		Dev.supports('variables') && describe.skip('StatementAssignment', () => {
+			it('makes SemanticNodeAssignment nodes.', () => {
 				const srcs: [string, SolidConfig] = [Util.dedent(`
-					let unfixed the_answer = 42;
-					let \`the £ answer\` = the_answer * 10;
 					the_answer = the_answer - 40;
 				`), CONFIG_DEFAULT]
 				assert.strictEqual(new Scanner(...srcs).lexer.screener.parser
@@ -686,25 +746,6 @@ describe('ParseNode', () => {
 					.decorate(new Scanner(...srcs).lexer.screener.parser.validator)
 					.serialize(), `
 					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - 40 ; ␃">
-						<Declaration line="1" col="1" source="let unfixed the_answer = 42 ;" type="variable" unfixed="true">
-							<Assignee line="1" col="13" source="the_answer">
-								<Identifier line="1" col="13" source="the_answer" id="256"/>
-							</Assignee>
-							<Assigned line="1" col="26" source="42">
-								<Constant line="1" col="26" source="42" value="42"/>
-							</Assigned>
-						</Declaration>
-						<Declaration line="2" col="1" source="let \`the &#xa3; answer\` = the_answer * 10 ;" type="variable" unfixed="false">
-							<Assignee line="2" col="5" source="\`the &#xa3; answer\`">
-								<Identifier line="2" col="5" source="\`the &#xa3; answer\`" id="257"/>
-							</Assignee>
-							<Assigned line="2" col="22" source="the_answer * 10">
-								<Operation line="2" col="22" source="the_answer * 10" operator="5">
-									<Identifier line="2" col="22" source="the_answer" id="256"/>
-									<Constant line="2" col="35" source="10" value="10"/>
-								</Operation>
-							</Assigned>
-						</Declaration>
 						<Assignment line="3" col="1" source="the_answer = the_answer - 40 ;">
 							<Assignee line="3" col="1" source="the_answer">
 								<Identifier line="3" col="1" source="the_answer" id="256"/>

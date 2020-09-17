@@ -455,6 +455,7 @@ export class ParseNodeDeclarationVariable extends ParseNode {
 			new SemanticNodeAssignee(identifier, [
 				new SemanticNodeIdentifier(identifier),
 			]),
+			type_.decorate(validator),
 			new SemanticNodeAssigned(expression, [
 				expression.decorate(validator),
 			]),
