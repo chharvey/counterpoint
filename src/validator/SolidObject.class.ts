@@ -30,6 +30,10 @@ export default class SolidObject {
 	static intersect: SolidLanguageType['intersect'] = SolidLanguageType.prototype.intersect
 	/** @implements SolidLanguageType */
 	static union: SolidLanguageType['union'] = SolidLanguageType.prototype.union
+	/** @implements SolidLanguageType */
+	static isSubtypeOf: SolidLanguageType['isSubtypeOf'] = SolidLanguageType.prototype.isSubtypeOf
+	/** @implements SolidLanguageType */
+	static equals: SolidLanguageType['equals'] = SolidLanguageType.prototype.equals
 
 
 	/**

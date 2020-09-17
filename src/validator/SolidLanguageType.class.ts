@@ -48,9 +48,8 @@ export default class SolidLanguageType {
 	 * @returns the type intersection
 	 */
 	intersect(t: SolidLanguageType): SolidLanguageType {
-		if (this === t) {
-			return this
-		}
+		/** 18 | `A <: B  <->  A & B == A` */
+		if (this.isSubtypeOf(t)) { return this }
 		const props: Map<string, SolidLanguageType> = new Map([...this.properties])
 		;[...t.properties].forEach(([name, type_]) => {
 			props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_)
@@ -65,9 +64,8 @@ export default class SolidLanguageType {
 	 * @returns the type union
 	 */
 	union(t: SolidLanguageType): SolidLanguageType {
-		if (this === t) {
-			return this
-		}
+		/** 19 | `A <: B  <->  A | B == B` */
+		if (this.isSubtypeOf(t)) { return t }
 		const props: Map<string, SolidLanguageType> = new Map()
 		;[...this.properties].forEach(([name, type_]) => {
 			if (t.properties.has(name)) {
@@ -75,6 +73,28 @@ export default class SolidLanguageType {
 			}
 		})
 		return new SolidLanguageType(props)
+	}
+	/**
+	 * Return whether this type is a structural subtype of the given type.
+	 * In the general case, `S` is a subtype of `T` if every property of `T` exists in `S`,
+	 * and for each of those properties `#prop`, the type of `S#prop` is a subtype of `T#prop`.
+	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
+	 * @param t the type to compare
+	 * @returns Is this type a subtype of the argument?
+	 */
+	isSubtypeOf(t: SolidLanguageType): boolean {
+		return this === t || [...t.properties].every(([name, type_]) =>
+			this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
+		)
+	}
+	/**
+	 * Return whether this type is structurally equal to the given type.
+	 * Two types are structurally equal if they are subtypes of each other.
+	 * @param t the type to compare
+	 * @returns Is this type equal to the argument?
+	 */
+	equals(t: SolidLanguageType): boolean {
+		return this.isSubtypeOf(t) && t.isSubtypeOf(this)
 	}
 }
 
