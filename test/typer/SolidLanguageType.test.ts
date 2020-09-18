@@ -2,6 +2,7 @@ import * as assert from 'assert'
 
 import {
 	SolidLanguageType,
+	SolidTypeConstant,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -228,6 +229,23 @@ describe('SolidLanguageType', () => {
 				if (a.isSubtypeOf(c) || b.isSubtypeOf(c)) {
 					assert.ok(a.intersect(b).isSubtypeOf(c), `${ a }, ${ b }, ${ c }`)
 				}
+			})
+		})
+
+		describe('SolidTypeConstant', () => {
+			it('constant Boolean types should be subtypes of `bool`.', () => {
+				assert.ok(SolidBoolean.FALSETYPE.isSubtypeOf(SolidBoolean), 'SolidBoolean.FALSETYPE')
+				assert.ok(SolidBoolean.TRUETYPE .isSubtypeOf(SolidBoolean), 'SolidBoolean.TRUETYPE')
+			})
+			it('constant Integer types should be subtypes of `int`.', () => {
+				;[42n, -42n, 0n, -0n].map((v) => new SolidTypeConstant(new Int16(v))).forEach((itype) => {
+					assert.ok(itype.isSubtypeOf(Int16), `${ itype }`)
+				})
+			})
+			it('constant Float types should be subtypes of `float`.', () => {
+				;[4.2, -4.2e-2, 0.0, -0.0].map((v) => new SolidTypeConstant(new Float64(v))).forEach((ftype) => {
+					assert.ok(ftype.isSubtypeOf(Float64), `${ ftype }`)
+				})
 			})
 		})
 	})

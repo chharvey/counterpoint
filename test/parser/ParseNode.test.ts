@@ -122,8 +122,8 @@ describe('ParseNode', () => {
 					return constant.value
 				}), [
 					SolidNull,
-					new SolidTypeConstant(SolidBoolean.FALSE),
-					new SolidTypeConstant(SolidBoolean.TRUE),
+					SolidBoolean.FALSETYPE,
+					SolidBoolean.TRUETYPE,
 					new SolidTypeConstant(new Int16(42n)),
 					new SolidTypeConstant(new Float64(4.2)),
 				])

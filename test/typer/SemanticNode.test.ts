@@ -472,8 +472,8 @@ describe('SemanticNode', () => {
 					`4.2e+3`,
 				].map((src) => unitTypeFromString(src).decorate().assess()), [
 					SolidNull,
-					new SolidTypeConstant(SolidBoolean.FALSE),
-					new SolidTypeConstant(SolidBoolean.TRUE),
+					SolidBoolean.FALSETYPE,
+					SolidBoolean.TRUETYPE,
 					new SolidTypeConstant(new Int16(42n)),
 					new SolidTypeConstant(new Float64(4.2e+3)),
 				])
@@ -554,16 +554,16 @@ describe('SemanticNode', () => {
 					it('returns `false` if operands are of different numeric types.', () => {
 						assert.deepStrictEqual(operationFromStatementExpression(
 							statementExpressionFromSource(`7 == 7.0;`, coercion_off)
-						).type(false, false), new SolidTypeConstant(SolidBoolean.FALSE))
+						).type(false, false), SolidBoolean.FALSETYPE)
 					})
 				})
 			})
 			context('with constant folding on, with int coersion on.', () => {
 				context('SemanticNodeConstant', () => {
 					it('returns a constant Null type for SemanticNodeConstant with null value.', () => {
-						assert.deepStrictEqual(constantFromStatementExpression(
+						assert.ok(constantFromStatementExpression(
 							statementExpressionFromSource(`null;`)
-						).type(), new SolidTypeConstant(SolidNull.NULL))
+						).type().equals(SolidNull))
 					})
 					it('returns a constant Boolean type for SemanticNodeConstant with bool value.', () => {
 						assert.deepStrictEqual([
@@ -572,8 +572,8 @@ describe('SemanticNode', () => {
 						].map((src) => constantFromStatementExpression(
 							statementExpressionFromSource(src)
 						).type()), [
-							new SolidTypeConstant(SolidBoolean.FALSE),
-							new SolidTypeConstant(SolidBoolean.TRUE),
+							SolidBoolean.FALSETYPE,
+							SolidBoolean.TRUETYPE,
 						])
 					})
 					it('returns a constant Integer type for SemanticNodeConstant with integer value.', () => {

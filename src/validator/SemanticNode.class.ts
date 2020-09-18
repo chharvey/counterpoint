@@ -164,8 +164,8 @@ export class SemanticNodeTypeConstant extends SemanticNodeType {
 		const value: SolidLanguageType =
 			(start_node instanceof TokenKeyword) ?
 				(start_node.source === Keyword.BOOL)  ? SolidBoolean :
-				(start_node.source === Keyword.FALSE) ? new SolidTypeConstant(SolidBoolean.FALSE) :
-				(start_node.source === Keyword.TRUE ) ? new SolidTypeConstant(SolidBoolean.TRUE) :
+				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSETYPE :
+				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
 				(start_node.source === Keyword.INT)   ? Int16 :
 				(start_node.source === Keyword.FLOAT) ? Float64 :
 				(start_node.source === Keyword.OBJ)   ? SolidObject :
@@ -663,13 +663,13 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 				!t0.isFloatType &&  t1.isFloatType
 			) {
 				if (this.operator === Operator.IS || !int_coercion) {
-					return new SolidTypeConstant(SolidBoolean.FALSE)
+					return SolidBoolean.FALSETYPE
 				}
 			}
 			// return SolidBoolean
 		}
 		// if ("`t0` and `t1` do not overlap") {
-		// 	return new SolidTypeConstant(SolidBoolean.FALSE)
+		// 	return SolidBoolean.FALSETYPE
 		// }
 		return SolidBoolean
 	}

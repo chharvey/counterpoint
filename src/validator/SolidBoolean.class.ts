@@ -1,3 +1,6 @@
+import {
+	SolidTypeConstant,
+} from './SolidLanguageType.class'
 import SolidObject from './SolidObject.class'
 
 
@@ -23,6 +26,10 @@ export default class SolidBoolean extends SolidObject {
 	static readonly FALSE: SolidBoolean = new SolidBoolean()
 	/** The Solid Language Value `true`. */
 	static readonly TRUE: SolidBoolean = new SolidBoolean(true)
+	/** A Unit Type containing only the Solid Language Value `false`. */
+	static readonly FALSETYPE: SolidTypeConstant = new SolidTypeConstant(SolidBoolean.FALSE)
+	/** A Unit Type containing only the Solid Language Value `true`. */
+	static readonly TRUETYPE: SolidTypeConstant = new SolidTypeConstant(SolidBoolean.TRUE)
 	/**
 	 * Return the Solid Language Value `true` or `false` based on the argument.
 	 * @param b a native boolean value

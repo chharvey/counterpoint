@@ -182,6 +182,9 @@ export class SolidTypeConstant extends SolidLanguageType {
 			require('./SolidNumber.class').default,
 		))
 	}
+	get isEmpty(): boolean {
+		return false
+	}
 	get isBooleanType(): boolean {
 		const SolidBoolean_class: typeof SolidBoolean = require('./SolidBoolean.class').default
 		return this.value instanceof SolidBoolean_class
@@ -193,5 +196,8 @@ export class SolidTypeConstant extends SolidLanguageType {
 	get isFloatType(): boolean {
 		const Float64_class: typeof Float64 = require('./Float64.class').default
 		return this.value instanceof Float64_class
+	}
+	isSubtypeOf(t: SolidLanguageType): boolean {
+		return t instanceof Function && this.value instanceof t || super.isSubtypeOf(t)
 	}
 }
