@@ -147,6 +147,20 @@ describe('SolidLanguageType', () => {
 				assert.ok(t.isSubtypeOf(SolidLanguageType.UNKNOWN), `${ t }`)
 			})
 		})
+		it('1-3 | `T       <: never  <->  T == never`', () => {
+			builtin_types.forEach((t) => {
+				if (t.isSubtypeOf(SolidLanguageType.NEVER)) {
+					assert.ok(t.equals(SolidLanguageType.NEVER), `${ t }`)
+				}
+			})
+		})
+		it('1-4 | `unknown <: T      <->  T == unknown`', () => {
+			builtin_types.forEach((t) => {
+				if (SolidLanguageType.UNKNOWN.isSubtypeOf(t)) {
+					assert.ok(t.equals(SolidLanguageType.UNKNOWN), `${ t }`)
+				}
+			})
+		})
 		it('2-7 | `A <: A`', () => {
 			builtin_types.forEach((a) => {
 				assert.ok(a.isSubtypeOf(a), `${ a }`)

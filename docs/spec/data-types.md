@@ -240,8 +240,10 @@ For brevity, this section uses the following notational conventions:
 ### Special Elements
 \# | Law | Description
 -- | --- | -----------
-1-1 | `never <: T`              | Bottom is a subtype of any type.
-1-2 | `T     <: unknown`        | Any type is a subtype of Top.
+1-1 | `never <: T`              | Bottom is a subtype   of any type.
+1-2 | `T     <: unknown`        | Top    is a supertype of any type.
+1-3 | `T       <: never  <->  T == never`   | Any subtype   of Bottom is Bottom (follows from 3-3, 1-5, 2-7)
+1-4 | `unknown <: T      <->  T == unknown` | Any supertype of Top    is Top    (follows from 3-4, 1-8, 2-7)
 1-5 | `T  & never   == never`   | Bottom is The Absorption Element of Intersection (follows from 1-1 and 3-3)
 1-6 | `T  & unknown == T`       | Top    is The Identity   Element of Intersection (follows from 1-2 and 3-3)
 1-7 | `T \| never   == T`       | Bottom is The Identity   Element of Union        (follows from 1-1 and 3-4)

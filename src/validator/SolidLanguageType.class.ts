@@ -121,7 +121,7 @@ export default class SolidLanguageType {
 	 * @returns Is this type a subtype of the argument?
 	 */
 	isSubtypeOf(t: SolidLanguageType): boolean {
-		/** `T <: never  <->  T == never` (not in docs, but follows from 3-3, 1-5, 2-7) */
+		/** 1-3 | `T       <: never  <->  T == never` */
 		if (t.isEmpty) { return this.isEmpty }
 		/** 1-2 | `T     <: unknown` */
 		if (t.isUniverse) { return true }
@@ -281,7 +281,7 @@ class SolidTypeUnknown extends SolidLanguageType {
 	}
 	/**
 	 * @override
-	 * `unknown <: T  <->  T == unknown` (not in docs, but follows from 3-4, 1-6, 2-7)
+	 * 1-4 | `unknown <: T      <->  T == unknown`
 	 */
 	isSubtypeOf(t: SolidLanguageType): boolean {
 		return t.isUniverse
