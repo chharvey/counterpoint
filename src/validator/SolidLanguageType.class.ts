@@ -13,66 +13,24 @@ import type Float64      from './Float64.class'
  * - Union
  */
 export default class SolidLanguageType {
+	/** The Bottom Type, containing no values. */
+	static get NEVER(): SolidTypeNever { return SolidTypeNever.INSTANCE }
+
+
 	/**
-	 * The Bottom Type, containing no values.
-	 * Not subclassable or instantiable, thus not a class.
+	 * Whether this type has no values assignable to it,
+	 * i.e., it is equal to the Bottom Type (`never`).
+	 * Used internally for special cases of computations.
 	 */
-	static readonly NEVER: SolidLanguageType = {
-		/** @implements SolidLanguageType */
-		get properties(): ReadonlyMap<string, SolidLanguageType> {
-			return new Map([
-				['_', SolidLanguageType.NEVER],
-			])
-		},
-		/** @implements SolidLanguageType */
-		isEmpty: true,
-		/** @implements SolidLanguageType */
-		isBooleanType: true,
-		/** @implements SolidLanguageType */
-		isNumericType: true,
-		/** @implements SolidLanguageType */
-		isFloatType: true,
-		/**
-		 * @implements SolidLanguageType
-		 * 3  | `T  & never   == never`
-		 */
-		intersect(_t: SolidLanguageType): SolidLanguageType {
-			return this
-		},
-		/**
-		 * @implements SolidLanguageType
-		 * 5  | `T \| never   == T`
-		 */
-		union(t: SolidLanguageType): SolidLanguageType {
-			return t
-		},
-		/**
-		 * @implements SolidLanguageType
-		 * 1  | `never <: T`
-		 */
-		isSubtypeOf(_t: SolidLanguageType): boolean {
-			return true
-		},
-		/** @implements SolidLanguageType */
-		equals(t: SolidLanguageType): boolean {
-			return t.isEmpty
-		},
-	}
+	readonly isEmpty: boolean = [...this.properties.values()].some((value) => value.isEmpty)
+
 	/**
 	 * Construct a new SolidLanguageType object.
 	 * @param properties a map of this type’s members’ names along with their associated types
 	 */
 	constructor (readonly properties: ReadonlyMap<string, SolidLanguageType>) {
 	}
-	/**
-	 * Return whether this type has no values assignable to it,
-	 * i.e., it is equal to the Bottom Type (`never`).
-	 * Used for special cases of {@link isSubTypeOf} and {@link equals}.
-	 * @returns Is this type equal to `never`?
-	 */
-	get isEmpty(): boolean {
-		return [...this.properties.values()].some((value) => value.isEmpty)
-	}
+
 	/**
 	 * Return whether the given class is a boolean type.
 	 * @return Is this type Boolean or a subtype?
@@ -143,7 +101,7 @@ export default class SolidLanguageType {
 	 * @returns Is this type a subtype of the argument?
 	 */
 	isSubtypeOf(t: SolidLanguageType): boolean {
-		/** `T <: never  -->  T == never` (not in docs, but follows from 3 and 18) */
+		/** `T <: never  <->  T == never` (not in docs, but follows from 18, 3, 13) */
 		if (t.isEmpty) { return this.isEmpty }
 
 		return this === t || [...t.properties].every(([name, type_]) =>
@@ -163,7 +121,61 @@ export default class SolidLanguageType {
 
 
 
+/**
+ * Class for constructing the Bottom Type, the type containing no values.
+ */
+class SolidTypeNever extends SolidLanguageType {
+	static readonly INSTANCE: SolidTypeNever = new SolidTypeNever()
+
+	/** @override */
+	readonly isEmpty: boolean = true
+
+	private constructor () {
+		super(new Map())
+	}
+
+	/** @override */
+	get isBooleanType(): boolean { return true }
+	/** @override */
+	get isNumericType(): boolean { return true }
+	/** @override */
+	get isFloatType(): boolean { return true }
+	/**
+	 * @override
+	 * 3  | `T  & never   == never`
+	 */
+	intersect(_t: SolidLanguageType): SolidLanguageType {
+		return this
+	}
+	/**
+	 * @override
+	 * 5  | `T \| never   == T`
+	 */
+	union(t: SolidLanguageType): SolidLanguageType {
+		return t
+	}
+	/**
+	 * @override
+	 * 1  | `never <: T`
+	 */
+	isSubtypeOf(_t: SolidLanguageType): boolean {
+		return true
+	}
+	/** @override */
+	equals(t: SolidLanguageType): boolean {
+		return t.isEmpty
+	}
+}
+
+
+
+/**
+ * Class for constructing constant types / unit types, types that contain one value.
+ */
 export class SolidTypeConstant extends SolidLanguageType {
+	/** @override */
+	readonly isEmpty: boolean = false
+
 	constructor (readonly value: SolidObject) {
 		super(((
 			SolidObject_class:  typeof SolidObject,
@@ -182,9 +194,7 @@ export class SolidTypeConstant extends SolidLanguageType {
 			require('./SolidNumber.class').default,
 		))
 	}
-	get isEmpty(): boolean {
-		return false
-	}
+
 	get isBooleanType(): boolean {
 		const SolidBoolean_class: typeof SolidBoolean = require('./SolidBoolean.class').default
 		return this.value instanceof SolidBoolean_class
