@@ -42,7 +42,7 @@ import {
 } from '../builder/'
 import {
 	TypeError01,
-	TypeError02,
+	TypeError03,
 } from '../error/SolidTypeError.class'
 import {
 	NanError01,
@@ -824,13 +824,11 @@ export class SemanticNodeDeclarationVariable extends SemanticNode {
 	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		const assignee_type: SolidLanguageType = this.children[1].assess()
 		const assigned_type: SolidLanguageType = this.children[2].type(opts.constantFolding, opts.intCoercion)
-		if (assigned_type.equals(Int16) && assignee_type.equals(Float64)) {
-			if (!opts.intCoercion) {
-				throw new TypeError02(this, assignee_type, assigned_type)
-			}
-		}
-		if (!assigned_type.isSubtypeOf(assignee_type)) {
-			throw new TypeError02(this, assignee_type, assigned_type)
+		if (
+			assigned_type.equals(Int16) && assignee_type.equals(Float64) && !opts.intCoercion ||
+			!assigned_type.isSubtypeOf(assignee_type)
+		) {
+			throw new TypeError03(this, assignee_type, assigned_type)
 		}
 	}
 	/** @implements SemanticNode */

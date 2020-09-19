@@ -6,7 +6,7 @@ import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {
 	TypeError01,
-	TypeError02,
+	TypeError03,
 } from '../../src/error/SolidTypeError.class'
 import {NanError01} from '../../src/error/NanError.class'
 import {
@@ -478,7 +478,7 @@ describe('SemanticNode', () => {
 				const src: string = `let  the_answer:  null =  21  *  2;`
 				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src)
 					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator)
-				assert.throws(() => decl.typeCheck(CONFIG_DEFAULT.compilerOptions), TypeError02)
+				assert.throws(() => decl.typeCheck(CONFIG_DEFAULT.compilerOptions), TypeError03)
 			})
 			it('with int coersion on, allows assigning ints to floats.', () => {
 				const src: string = `let x: float = 42;`
@@ -493,7 +493,7 @@ describe('SemanticNode', () => {
 				assert.throws(() => decl.typeCheck({
 					...CONFIG_DEFAULT.compilerOptions,
 					intCoercion: false,
-				}), TypeError02)
+				}), TypeError03)
 			})
 		})
 	})

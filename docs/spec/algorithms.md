@@ -19,7 +19,7 @@ Void! TypeCheck(SemanticDeclarationVariable stmt) :=
 	2. *Let* `assignee_type` be *UnwrapAffirm:* `Assess(stmt.children.1)`.
 	3. *Let* `assigned_type` be *Unwrap:* `TypeOf(stmt.children.2)`.
 	4. *If* `assigned_type` is not a subtype of `assignee_type`:
-		1. *Throw:* a new TypeError02.
+		1. *Throw:* a new TypeError03.
 
 Void! TypeCheck(SemanticGoal goal) :=
 	1. For each `SemanticStatment stmt` in `goal.children`:

@@ -36,6 +36,8 @@ export default class SolidTypeError extends SolidError {
 
 /**
  * A TypeError01 is thrown when the parser encounters an invalid operation.
+ * @example
+ * true + false; % TypeError01: Invalid operation.
  */
 export class TypeError01 extends SolidTypeError {
 	/** The number series of this class of errors. */
@@ -49,18 +51,36 @@ export class TypeError01 extends SolidTypeError {
 	}
 }
 /**
- * A TypeError02 is thrown when an expression is assigned to a type to which it is not assignable.
+ * A TypeError02 is thrown when one type is expected to narrow another type, but does not.
+ * A general error used for different cases, such as compound types’s components, generic constraints, or throwing non-Exceptions.
  */
 export class TypeError02 extends SolidTypeError {
 	/** The number series of this class of errors. */
 	static readonly CODE = 2
 	/**
 	 * Construct a new TypeError02 object.
+	 * @param subtype   - the expected subtype
+	 * @param supertype - the supertype
+	 */
+	constructor (subtype: SolidLanguageType, supertype: SolidLanguageType, line_index: number, col_index: number) {
+		super(`Type ${ subtype } is not a subtype of type ${ supertype }.`, TypeError02.CODE, line_index, col_index)
+	}
+}
+/**
+ * A TypeError03 is thrown when an expression is assigned to a type to which it is not assignable.
+ * @example
+ * let x: int = true; % TypeError03: Expression of type `true` is not assignable to type `int`.
+ */
+export class TypeError03 extends SolidTypeError {
+	/** The number series of this class of errors. */
+	static readonly CODE = 3
+	/**
+	 * Construct a new TypeError03 object.
 	 * @param assignment    - the node where the assignment took place
 	 * @param assignee_type - the type to which the expression is assigned
 	 * @param assigned_type - the type of the expression
 	 */
 	constructor (assignment: SemanticNodeDeclarationVariable, assignee_type: SolidLanguageType, assigned_type: SolidLanguageType) {
-		super(`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }`, TypeError02.CODE, assignment.line_index, assignment.col_index)
+		super(`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }.`, TypeError03.CODE, assignment.line_index, assignment.col_index)
 	}
 }
