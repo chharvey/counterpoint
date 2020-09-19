@@ -68,12 +68,12 @@ export default class SolidLanguageType {
 	 * @returns the type intersection
 	 */
 	intersect(t: SolidLanguageType): SolidLanguageType {
-		/** 3  | `T  & never   == never` */
+		/** 1-5 | `T  & never   == never` */
 		if (t.isEmpty) { return SolidLanguageType.NEVER }
 		if (
-			/** 4  | `T  & unknown == T` */
+			/** 1-6 | `T  & unknown == T` */
 			t.isUniverse ||
-			/** 18 | `A <: B  <->  A  & B == A` */
+			/** 3-3 | `A <: B  <->  A  & B == A` */
 			this.isSubtypeOf(t)
 		) {
 			return this
@@ -93,12 +93,12 @@ export default class SolidLanguageType {
 	 * @returns the type union
 	 */
 	union(t: SolidLanguageType): SolidLanguageType {
-		/** 5  | `T \| never   == T` */
+		/** 1-7 | `T \| never   == T` */
 		if (t.isEmpty) { return this }
 		if (
-			/** 6  | `T \| unknown == unknown` */
+			/** 1-8 | `T \| unknown == unknown` */
 			t.isUniverse ||
-			/** 19 | `A <: B  <->  A \| B == B` */
+			/** 3-4 | `A <: B  <->  A \| B == B` */
 			this.isSubtypeOf(t)
 		) {
 			return t
@@ -121,18 +121,22 @@ export default class SolidLanguageType {
 	 * @returns Is this type a subtype of the argument?
 	 */
 	isSubtypeOf(t: SolidLanguageType): boolean {
-		/** `T <: never  <->  T == never` (not in docs, but follows from 18, 3, 13) */
+		/** `T <: never  <->  T == never` (not in docs, but follows from 3-3, 1-5, 2-7) */
 		if (t.isEmpty) { return this.isEmpty }
-		/** 2  | `T     <: unknown` */
+		/** 1-2 | `T     <: unknown` */
 		if (t.isUniverse) { return true }
+		/** 2-7 | `A <: A` */
+		if (this === t) { return true }
 
-		return this === t || [...t.properties].every(([name, type_]) =>
+		return [...t.properties].every(([name, type_]) =>
 			this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
 		)
 	}
 	/**
 	 * Return whether this type is structurally equal to the given type.
 	 * Two types are structurally equal if they are subtypes of each other.
+	 *
+	 * 2-8 | `A <: B  &&  B <: A  -->  A == B`
 	 * @param t the type to compare
 	 * @returns Is this type equal to the argument?
 	 */
@@ -166,21 +170,21 @@ class SolidTypeNever extends SolidLanguageType {
 	get isFloatType(): boolean { return true }
 	/**
 	 * @override
-	 * 3  | `T  & never   == never`
+	 * 1-5 | `T  & never   == never`
 	 */
 	intersect(_t: SolidLanguageType): SolidLanguageType {
 		return this
 	}
 	/**
 	 * @override
-	 * 5  | `T \| never   == T`
+	 * 1-7 | `T \| never   == T`
 	 */
 	union(t: SolidLanguageType): SolidLanguageType {
 		return t
 	}
 	/**
 	 * @override
-	 * 1  | `never <: T`
+	 * 1-1 | `never <: T`
 	 */
 	isSubtypeOf(_t: SolidLanguageType): boolean {
 		return true
@@ -263,21 +267,21 @@ class SolidTypeUnknown extends SolidLanguageType {
 	get isFloatType(): boolean { return false }
 	/**
 	 * @override
-	 * 4  | `T  & unknown == T`
+	 * 1-6 | `T  & unknown == T`
 	 */
 	intersect(t: SolidLanguageType): SolidLanguageType {
 		return t
 	}
 	/**
 	 * @override
-	 * 6  | `T \| unknown == unknown`
+	 * 1-8 | `T \| unknown == unknown`
 	 */
 	union(_t: SolidLanguageType): SolidLanguageType {
 		return this
 	}
 	/**
 	 * @override
-	 * `unknown <: T  <->  T == unknown` (not in docs, but follows from 19, 4, 13)
+	 * `unknown <: T  <->  T == unknown` (not in docs, but follows from 3-4, 1-6, 2-7)
 	 */
 	isSubtypeOf(t: SolidLanguageType): boolean {
 		return t.isUniverse

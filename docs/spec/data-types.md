@@ -240,36 +240,36 @@ For brevity, this section uses the following notational conventions:
 ### Special Elements
 \# | Law | Description
 -- | --- | -----------
-1  | `never <: T`              | Bottom is a subtype of any type.
-2  | `T     <: unknown`        | Any type is a subtype of Top.
-3  | `T  & never   == never`   | Bottom is The Absorption Element of Intersection (follows from 1 and 18)
-4  | `T  & unknown == T`       | Top    is The Identity   Element of Intersection (follows from 2 and 18)
-5  | `T \| never   == T`       | Bottom is The Identity   Element of Union        (follows from 1 and 19)
-6  | `T \| unknown == unknown` | Top    is The Absorption Element of Union        (follows from 2 and 19)
+1-1 | `never <: T`              | Bottom is a subtype of any type.
+1-2 | `T     <: unknown`        | Any type is a subtype of Top.
+1-5 | `T  & never   == never`   | Bottom is The Absorption Element of Intersection (follows from 1-1 and 3-3)
+1-6 | `T  & unknown == T`       | Top    is The Identity   Element of Intersection (follows from 1-2 and 3-3)
+1-7 | `T \| never   == T`       | Bottom is The Identity   Element of Union        (follows from 1-1 and 3-4)
+1-8 | `T \| unknown == unknown` | Top    is The Absorption Element of Union        (follows from 1-2 and 3-4)
 
 
 ### Operation Properties
 \# | Law | Description
 -- | --- | -----------
- 7 | `A  & B == B  & A`               | Intersection is Comutative
- 8 | `A \| B == B \| A`               | Union        is Commutative
- 9 | `(A  & B)  & C == A  & (B  & C)` | Intersection is Associative
-10 | `(A \| B) \| C == A \| (B \| C)` | Union        is Associative
-11 | `A  & (B \| C) == (A  & B) \| (A  & C)` | Intersection Distributes over Union
-12 | `A \| (B  & C) == (A \| B)  & (A \| C)` | Union        Distributes over Intersection
-13 | `A <: A`                          | Subtype is Reflexive
-14 | `A <: B  &&  B <: A  -->  A == B` | Subtype is Anti-Symmetric
-15 | `A <: B  &&  B <: C  -->  A <: C` | Subtype is Transitive
+2-1 | `A  & B == B  & A`               | Intersection is Comutative
+2-2 | `A \| B == B \| A`               | Union        is Commutative
+2-3 | `(A  & B)  & C == A  & (B  & C)` | Intersection is Associative
+2-4 | `(A \| B) \| C == A \| (B \| C)` | Union        is Associative
+2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)` | Intersection Distributes over Union
+2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)` | Union        Distributes over Intersection
+2-7 | `A <: A`                          | Subtype is Reflexive
+2-8 | `A <: B  &&  B <: A  -->  A == B` | Subtype is Anti-Symmetric
+2-9 | `A <: B  &&  B <: C  -->  A <: C` | Subtype is Transitive
 
 
 ### Other
 \# | Law | Description
 -- | --- | -----------
-16 | `A  & B <: A  &&  A  & B <: B` | Any intersection is a subtype of each of its consituent parts.
-17 | `A <: A \| B  &&  B <: A \| B` | Each constituent part of any union is a subtype of that union.
-18 | `A <: B  <->  A  & B == A` | The intersection of a subtype and a supertype is the subtype.
-19 | `A <: B  <->  A \| B == B` | The union        of a subtype and a supertype is the supertype.
-20 | `A <: C    &&  A <: D  <->  A <: C  & D` | Subtype is Left-Factorable      under Conjunction, and       Left-Distributive      over Intersection
-21 | `A <: C  \|\|  A <: D  -->  A <: C \| D` | Subtype is Left-Factorable      under Disjunction (but *not* Left-Distributive      over Union)
-22 | `A <: C    &&  B <: C  <->  A \| B <: C` | Subtype is Right-Antifactorable under Conjunction, and       Right-Antidistributive over Union
-23 | `A <: C  \|\|  B <: C  -->  A  & B <: C` | Subtype is Right-Antifactorable under Disjunction (but *not* Right-Antidistributive over Intersection)
+3-1 | `A  & B <: A  &&  A  & B <: B` | Any intersection is a subtype of each of its consituent parts.
+3-2 | `A <: A \| B  &&  B <: A \| B` | Each constituent part of any union is a subtype of that union.
+3-3 | `A <: B  <->  A  & B == A` | The intersection of a subtype and a supertype is the subtype.
+3-4 | `A <: B  <->  A \| B == B` | The union        of a subtype and a supertype is the supertype.
+3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` | Subtype is Left-Factorable      under Conjunction, and       Left-Distributive      over Intersection
+3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` | Subtype is Left-Factorable      under Disjunction (but *not* Left-Distributive      over Union)
+3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` | Subtype is Right-Antifactorable under Conjunction, and       Right-Antidistributive over Union
+3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` | Subtype is Right-Antifactorable under Disjunction (but *not* Right-Antidistributive over Intersection)
