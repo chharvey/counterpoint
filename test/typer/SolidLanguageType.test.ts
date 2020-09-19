@@ -32,6 +32,8 @@ describe('SolidLanguageType', () => {
 		})
 	}
 	const builtin_types: SolidLanguageType[] = [
+		SolidLanguageType.NEVER,
+		SolidLanguageType.UNKNOWN,
 		SolidObject,
 		SolidNull,
 		SolidBoolean,
@@ -39,7 +41,6 @@ describe('SolidLanguageType', () => {
 		Int16,
 		Float64,
 		SolidString,
-		SolidLanguageType.NEVER,
 	]
 	const t0: SolidLanguageType = new SolidLanguageType(new Map<string, SolidLanguageType>([
 		['foo', SolidObject],
@@ -69,7 +70,7 @@ describe('SolidLanguageType', () => {
 		})
 		it('4  | `T  & unknown == T`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.intersect(SolidObject).equals(t), `${ t }`)
+				assert.ok(t.intersect(SolidLanguageType.UNKNOWN).equals(t), `${ t }`)
 			})
 		})
 		it('7 | `A  & B == B  & A`', () => {
@@ -104,7 +105,7 @@ describe('SolidLanguageType', () => {
 		})
 		it('6  | `T \| unknown == unknown`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.union(SolidObject).equals(SolidObject), `${ t }`)
+				assert.ok(t.union(SolidLanguageType.UNKNOWN).equals(SolidLanguageType.UNKNOWN), `${ t }`)
 			})
 		})
 		it('8 | `A \| B == B \| A`', () => {
@@ -143,7 +144,7 @@ describe('SolidLanguageType', () => {
 		})
 		it('2  | `T     <: unknown`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.isSubtypeOf(SolidObject), `${ t }`)
+				assert.ok(t.isSubtypeOf(SolidLanguageType.UNKNOWN), `${ t }`)
 			})
 		})
 		it('13 | `A <: A`', () => {

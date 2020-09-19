@@ -15,6 +15,8 @@ import type Float64      from './Float64.class'
 export default class SolidLanguageType {
 	/** The Bottom Type, containing no values. */
 	static get NEVER(): SolidTypeNever { return SolidTypeNever.INSTANCE }
+	/** The Top Type, containing all values. */
+	static get UNKNOWN(): SolidTypeUnknown { return SolidTypeUnknown.INSTANCE }
 
 
 	/**
@@ -23,6 +25,12 @@ export default class SolidLanguageType {
 	 * Used internally for special cases of computations.
 	 */
 	readonly isEmpty: boolean = [...this.properties.values()].some((value) => value.isEmpty)
+	/**
+	 * Whether this type has all values assignable to it,
+	 * i.e., it is equal to the Top Type (`unknown`).
+	 * Used internally for special cases of computations.
+	 */
+	readonly isUniverse: boolean = this.properties.size === 0
 
 	/**
 	 * Construct a new SolidLanguageType object.
@@ -62,8 +70,14 @@ export default class SolidLanguageType {
 	intersect(t: SolidLanguageType): SolidLanguageType {
 		/** 3  | `T  & never   == never` */
 		if (t.isEmpty) { return SolidLanguageType.NEVER }
-		/** 18 | `A <: B  <->  A  & B == A` */
-		if (this.isSubtypeOf(t)) { return this }
+		if (
+			/** 4  | `T  & unknown == T` */
+			t.isUniverse ||
+			/** 18 | `A <: B  <->  A  & B == A` */
+			this.isSubtypeOf(t)
+		) {
+			return this
+		}
 
 		const props: Map<string, SolidLanguageType> = new Map([...this.properties])
 		;[...t.properties].forEach(([name, type_]) => {
@@ -81,8 +95,14 @@ export default class SolidLanguageType {
 	union(t: SolidLanguageType): SolidLanguageType {
 		/** 5  | `T \| never   == T` */
 		if (t.isEmpty) { return this }
-		/** 19 | `A <: B  <->  A \| B == B` */
-		if (this.isSubtypeOf(t)) { return t }
+		if (
+			/** 6  | `T \| unknown == unknown` */
+			t.isUniverse ||
+			/** 19 | `A <: B  <->  A \| B == B` */
+			this.isSubtypeOf(t)
+		) {
+			return t
+		}
 
 		const props: Map<string, SolidLanguageType> = new Map()
 		;[...this.properties].forEach(([name, type_]) => {
@@ -103,6 +123,8 @@ export default class SolidLanguageType {
 	isSubtypeOf(t: SolidLanguageType): boolean {
 		/** `T <: never  <->  T == never` (not in docs, but follows from 18, 3, 13) */
 		if (t.isEmpty) { return this.isEmpty }
+		/** 2  | `T     <: unknown` */
+		if (t.isUniverse) { return true }
 
 		return this === t || [...t.properties].every(([name, type_]) =>
 			this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
@@ -129,6 +151,8 @@ class SolidTypeNever extends SolidLanguageType {
 
 	/** @override */
 	readonly isEmpty: boolean = true
+	/** @override */
+	readonly isUniverse: boolean = false
 
 	private constructor () {
 		super(new Map())
@@ -175,6 +199,8 @@ class SolidTypeNever extends SolidLanguageType {
 export class SolidTypeConstant extends SolidLanguageType {
 	/** @override */
 	readonly isEmpty: boolean = false
+	/** @override */
+	readonly isUniverse: boolean = false
 
 	constructor (readonly value: SolidObject) {
 		super(((
@@ -209,5 +235,55 @@ export class SolidTypeConstant extends SolidLanguageType {
 	}
 	isSubtypeOf(t: SolidLanguageType): boolean {
 		return t instanceof Function && this.value instanceof t || super.isSubtypeOf(t)
+	}
+}
+
+
+
+/**
+ * Class for constructing the Top Type, the type containing all values.
+ */
+class SolidTypeUnknown extends SolidLanguageType {
+	static readonly INSTANCE: SolidTypeUnknown = new SolidTypeUnknown()
+
+	/** @override */
+	readonly isEmpty: boolean = false
+	/** @override */
+	readonly isUniverse: boolean = true
+
+	private constructor () {
+		super(new Map())
+	}
+
+	/** @override */
+	get isBooleanType(): boolean { return false }
+	/** @override */
+	get isNumericType(): boolean { return false }
+	/** @override */
+	get isFloatType(): boolean { return false }
+	/**
+	 * @override
+	 * 4  | `T  & unknown == T`
+	 */
+	intersect(t: SolidLanguageType): SolidLanguageType {
+		return t
+	}
+	/**
+	 * @override
+	 * 6  | `T \| unknown == unknown`
+	 */
+	union(_t: SolidLanguageType): SolidLanguageType {
+		return this
+	}
+	/**
+	 * @override
+	 * `unknown <: T  <->  T == unknown` (not in docs, but follows from 19, 4, 13)
+	 */
+	isSubtypeOf(t: SolidLanguageType): boolean {
+		return t.isUniverse
+	}
+	/** @override */
+	equals(t: SolidLanguageType): boolean {
+		return t.isUniverse
 	}
 }
