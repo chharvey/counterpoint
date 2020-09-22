@@ -3,6 +3,7 @@ import * as assert from 'assert'
 import {
 	SolidLanguageType,
 	SolidTypeConstant,
+	SolidTypeInterface,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -42,12 +43,12 @@ describe('SolidLanguageType', () => {
 		Float64,
 		SolidString,
 	]
-	const t0: SolidLanguageType = new SolidLanguageType(new Map<string, SolidLanguageType>([
+	const t0: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidLanguageType>([
 		['foo', SolidObject],
 		['bar', SolidNull],
 		['diz', SolidBoolean],
 	]))
-	const t1: SolidLanguageType = new SolidLanguageType(new Map<string, SolidLanguageType>([
+	const t1: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidLanguageType>([
 		['foo', SolidObject],
 		['qux', SolidNumber],
 		['diz', SolidString],
@@ -55,14 +56,6 @@ describe('SolidLanguageType', () => {
 
 
 	describe('#intersect', () => {
-		it('takes the union of properties of constituent types.', () => {
-			assert.ok(t0.intersect(t1).equals(new SolidLanguageType(new Map<string, SolidLanguageType>([
-				['foo', SolidObject],
-				['bar', SolidNull],
-				['qux', SolidNumber],
-				['diz', SolidBoolean.intersect(SolidString)],
-			]))))
-		})
 		it('1-5 | `T  & never   == never`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.intersect(SolidLanguageType.NEVER).equals(SolidLanguageType.NEVER), `${ t }`)
@@ -88,16 +81,20 @@ describe('SolidLanguageType', () => {
 				assert.ok(a.intersect(b.union(c)).equals(a.intersect(b).union(a.intersect(c))), `${ a }, ${ b }, ${ c }`)
 			})
 		})
+		describe('SolidInterfaceType', () => {
+			it('takes the union of properties of constituent types.', () => {
+				assert.ok(t0.intersect(t1).equals(new SolidTypeInterface(new Map<string, SolidLanguageType>([
+					['foo', SolidObject],
+					['bar', SolidNull],
+					['qux', SolidNumber],
+					['diz', SolidBoolean.intersect(SolidString)],
+				]))))
+			})
+		})
 	})
 
 
 	describe('#union', () => {
-		it('takes the intersection of properties of constituent types.', () => {
-			assert.ok(t0.union(t1).equals(new SolidLanguageType(new Map<string, SolidLanguageType>([
-				['foo', SolidObject],
-				['diz', SolidBoolean.union(SolidString)],
-			]))))
-		})
 		it('1-7 | `T \| never   == T`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(t.union(SolidLanguageType.NEVER).equals(t), `${ t }`)
@@ -123,20 +120,18 @@ describe('SolidLanguageType', () => {
 				assert.ok(a.union(b.intersect(c)).equals(a.union(b).intersect(a.union(c))), `${ a }, ${ b }, ${ c }`)
 			})
 		})
+		describe('SolidInterfaceType', () => {
+			it('takes the intersection of properties of constituent types.', () => {
+				assert.ok(t0.union(t1).equals(new SolidTypeInterface(new Map<string, SolidLanguageType>([
+					['foo', SolidObject],
+					['diz', SolidBoolean.union(SolidString)],
+				]))))
+			})
+		})
 	})
 
 
 	describe('#isSubtypeOf', () => {
-		it('returns `true` if the subtype contains at least the properties of the supertype.', () => {
-			assert.ok(!t0.isSubtypeOf(t1))
-			assert.ok(!t1.isSubtypeOf(t0))
-			assert.ok(new SolidLanguageType(new Map<string, SolidLanguageType>([
-				['foo', SolidString],
-				['bar', SolidNull],
-				['diz', SolidBoolean],
-				['qux', SolidNumber],
-			])).isSubtypeOf(t0))
-		})
 		it('1-1 | `never <: T`', () => {
 			builtin_types.forEach((t) => {
 				assert.ok(SolidLanguageType.NEVER.isSubtypeOf(t), `${ t }`)
@@ -261,6 +256,18 @@ describe('SolidLanguageType', () => {
 				;[4.2, -4.2e-2, 0.0, -0.0].map((v) => new SolidTypeConstant(new Float64(v))).forEach((ftype) => {
 					assert.ok(ftype.isSubtypeOf(Float64), `${ ftype }`)
 				})
+			})
+		})
+		describe('SolidTypeInterface', () => {
+			it('returns `true` if the subtype contains at least the properties of the supertype.', () => {
+				assert.ok(!t0.isSubtypeOf(t1))
+				assert.ok(!t1.isSubtypeOf(t0))
+				assert.ok(new SolidTypeInterface(new Map<string, SolidLanguageType>([
+					['foo', SolidString],
+					['bar', SolidNull],
+					['diz', SolidBoolean],
+					['qux', SolidNumber],
+				])).isSubtypeOf(t0))
 			})
 		})
 	})

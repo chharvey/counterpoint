@@ -1,4 +1,6 @@
-import SolidLanguageType from './SolidLanguageType.class'
+import SolidLanguageType, {
+	SolidTypeInterface,
+} from './SolidLanguageType.class'
 import type SolidNull from './SolidNull.class'
 import type SolidBoolean from './SolidBoolean.class'
 
@@ -14,16 +16,13 @@ import type SolidBoolean from './SolidBoolean.class'
  */
 export default class SolidObject {
 	/** @implements SolidLanguageType */
-	static get properties(): ReadonlyMap<string, SolidLanguageType> {
-		return new Map([
-			['identical', SolidObject /* SolidFunction */],
-			['equal',     SolidObject /* SolidFunction */],
-		])
-	}
-	/** @implements SolidLanguageType */
 	static isEmpty: SolidLanguageType['isEmpty'] = false
 	/** @implements SolidLanguageType */
 	static isUniverse: SolidLanguageType['isUniverse'] = false
+	/** @implements SolidLanguageType */
+	static includes(v: SolidObject): boolean {
+		return v instanceof this/*static*/
+	}
 	/** @implements SolidLanguageType */
 	static isBooleanType: SolidLanguageType['isBooleanType'] = SolidLanguageType.prototype.isBooleanType
 	/** @implements SolidLanguageType */
@@ -38,6 +37,20 @@ export default class SolidObject {
 	static isSubtypeOf: SolidLanguageType['isSubtypeOf'] = SolidLanguageType.prototype.isSubtypeOf
 	/** @implements SolidLanguageType */
 	static equals: SolidLanguageType['equals'] = SolidLanguageType.prototype.equals
+
+	/** @implements SolidTypeInterface */
+	static get properties(): SolidTypeInterface['properties'] {
+		return new Map([
+			['identical', SolidObject /* SolidFunction */],
+			['equal',     SolidObject /* SolidFunction */],
+		])
+	}
+	/** @implements SolidTypeInterface */
+	static intersect_do: SolidTypeInterface['intersect_do'] = SolidTypeInterface.prototype.intersect_do
+	/** @implements SolidTypeInterface */
+	static union_do: SolidTypeInterface['union_do'] = SolidTypeInterface.prototype.union_do
+	/** @implements SolidTypeInterface */
+	static isSubtypeOf_do: SolidTypeInterface['isSubtypeOf_do'] = SolidTypeInterface.prototype.isSubtypeOf_do
 
 
 	/**
