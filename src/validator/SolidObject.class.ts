@@ -20,8 +20,6 @@ export default class SolidObject {
 	/** @implements SolidLanguageType */
 	static values: SolidLanguageType['values'] = new Set()
 	/** @implements SolidLanguageType */
-	static isBooleanType: SolidLanguageType['isBooleanType'] = SolidLanguageType.prototype.isBooleanType
-	/** @implements SolidLanguageType */
 	static isNumericType: SolidLanguageType['isNumericType'] = SolidLanguageType.prototype.isNumericType
 	/** @implements SolidLanguageType */
 	static isFloatType: SolidLanguageType['isFloatType'] = SolidLanguageType.prototype.isFloatType

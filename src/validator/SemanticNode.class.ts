@@ -763,7 +763,7 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 		const t0: SolidLanguageType = this.children[0].type(const_fold, int_coercion)
 		const t1: SolidLanguageType = this.children[1].type(const_fold, int_coercion)
 		const t2: SolidLanguageType = this.children[2].type(const_fold, int_coercion)
-		return (t0.isBooleanType)
+		return (t0.isSubtypeOf(SolidBoolean))
 			? (t0 instanceof SolidTypeConstant)
 				? (t0.value === SolidBoolean.FALSE) ? t2 : t1
 				: t1.union(t2)

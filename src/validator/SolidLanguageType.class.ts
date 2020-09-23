@@ -1,7 +1,6 @@
 import * as xjs from 'extrajs'
 
 import type SolidObject  from './SolidObject.class'
-import type SolidBoolean from './SolidBoolean.class'
 import type SolidNumber  from './SolidNumber.class'
 import type Float64      from './Float64.class'
 
@@ -46,13 +45,6 @@ export default abstract class SolidLanguageType {
 	) {
 	}
 
-	/**
-	 * Return whether the given class is a boolean type.
-	 * @return Is this type Boolean or a subtype?
-	 */
-	get isBooleanType(): boolean {
-		return false
-	}
 	/**
 	 * Return whether the given class is a numeric type, i.e., an Integer or a Float.
 	 * @return Is this type Number or a subtype?
@@ -304,8 +296,6 @@ class SolidTypeNever extends SolidLanguageType {
 	}
 
 	/** @override */
-	get isBooleanType(): boolean { return true }
-	/** @override */
 	get isNumericType(): boolean { return true }
 	/** @override */
 	get isFloatType(): boolean { return true }
@@ -341,10 +331,6 @@ export class SolidTypeConstant extends SolidLanguageType {
 		super(new Set([value]))
 	}
 
-	get isBooleanType(): boolean {
-		const SolidBoolean_class: typeof SolidBoolean = require('./SolidBoolean.class').default
-		return this.value instanceof SolidBoolean_class
-	}
 	get isNumericType(): boolean {
 		const SolidNumber_class: typeof SolidNumber = require('./SolidNumber.class').default
 		return this.value instanceof SolidNumber_class
@@ -380,8 +366,6 @@ class SolidTypeUnknown extends SolidLanguageType {
 		super()
 	}
 
-	/** @override */
-	get isBooleanType(): boolean { return false }
 	/** @override */
 	get isNumericType(): boolean { return false }
 	/** @override */

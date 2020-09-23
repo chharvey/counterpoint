@@ -119,7 +119,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: COND] expr) :=
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *Let* `t2` be *Unwrap:* `TypeOf(expr.children.2)`.
-	5. *If* `IsBooleanType(t0)`:
+	5. *If* `t0` is a subtype of `Boolean`:
 		1. *If* `t0` is `ToType(false)`:
 			1. *Return:* `t2`.
 		2. *If* `t0` is `ToType(true)`:
@@ -162,14 +162,6 @@ Type TruthifyType(Type t) :=
 	4. *If* `t` is a type union of `Boolean` and another type `s`:
 		1. *Return:* `Union(ToType(true), TruthifyType(s))`.
 	5. *Return:* `t`.
-;
-
-
-
-Boolean IsBooleanType(Type t) :=
-	1. *If* `t` is `Boolean` *or* `t` is `ToType(false)` *or* `t` is `ToType(true)`:
-		1. *Return:* `true`.
-	2. *Return*: `false`.
 ;
 
 
