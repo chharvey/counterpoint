@@ -1,3 +1,4 @@
+import type SolidLanguageType from './SolidLanguageType.class'
 import SolidObject from './SolidObject.class'
 
 
@@ -19,6 +20,10 @@ import SolidObject from './SolidObject.class'
 export default class SolidNull extends SolidObject {
 	/** The Solid Language Value `null`. */
 	static readonly NULL: SolidNull = new SolidNull()
+	/** @override */
+	static values: SolidLanguageType['values'] = new Set([SolidNull.NULL])
+
+
 	private constructor () {
 		super()
 	}

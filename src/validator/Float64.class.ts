@@ -1,5 +1,6 @@
 import * as xjs from 'extrajs'
 
+import type SolidLanguageType from './SolidLanguageType.class'
 import type SolidObject from './SolidObject.class'
 import SolidNumber from './SolidNumber.class'
 
@@ -10,6 +11,8 @@ import SolidNumber from './SolidNumber.class'
  * @final
  */
 export default class Float64 extends SolidNumber<Float64> {
+	/** @override */
+	static values: SolidLanguageType['values'] = new Set([new Float64(0.0)])
 	/**
 	 * @override
 	 * @final

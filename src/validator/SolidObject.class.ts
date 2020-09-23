@@ -1,6 +1,4 @@
-import SolidLanguageType, {
-	SolidTypeInterface,
-} from './SolidLanguageType.class'
+import SolidLanguageType from './SolidLanguageType.class'
 import type SolidNull from './SolidNull.class'
 import type SolidBoolean from './SolidBoolean.class'
 
@@ -34,25 +32,21 @@ export default class SolidObject {
 	/** @implements SolidLanguageType */
 	static intersect: SolidLanguageType['intersect'] = SolidLanguageType.prototype.intersect
 	/** @implements SolidLanguageType */
+	static intersect_do: SolidLanguageType['intersect_do'] = SolidLanguageType.prototype.intersect_do
+	/** @implements SolidLanguageType */
 	static union: SolidLanguageType['union'] = SolidLanguageType.prototype.union
+	/** @implements SolidLanguageType */
+	static union_do: SolidLanguageType['union_do'] = SolidLanguageType.prototype.union_do
 	/** @implements SolidLanguageType */
 	static isSubtypeOf: SolidLanguageType['isSubtypeOf'] = SolidLanguageType.prototype.isSubtypeOf
 	/** @implements SolidLanguageType */
-	static equals: SolidLanguageType['equals'] = SolidLanguageType.prototype.equals
-
-	/** @implements SolidTypeInterface */
-	static get properties(): SolidTypeInterface['properties'] {
-		return new Map([
-			['identical', SolidObject /* SolidFunction */],
-			['equal',     SolidObject /* SolidFunction */],
-		])
+	static isSubtypeOf_do(t: SolidLanguageType): boolean {
+		return (t instanceof Function)
+			? this/*static*/.prototype instanceof t
+			: SolidLanguageType.prototype.isSubtypeOf_do.call(this, t)
 	}
-	/** @implements SolidTypeInterface */
-	static intersect_do: SolidTypeInterface['intersect_do'] = SolidTypeInterface.prototype.intersect_do
-	/** @implements SolidTypeInterface */
-	static union_do: SolidTypeInterface['union_do'] = SolidTypeInterface.prototype.union_do
-	/** @implements SolidTypeInterface */
-	static isSubtypeOf_do: SolidTypeInterface['isSubtypeOf_do'] = SolidTypeInterface.prototype.isSubtypeOf_do
+	/** @implements SolidLanguageType */
+	static equals: SolidLanguageType['equals'] = SolidLanguageType.prototype.equals
 
 
 	/**

@@ -1,7 +1,6 @@
 import * as xjs from 'extrajs'
 
 import type SolidObject  from './SolidObject.class'
-import type SolidNull    from './SolidNull.class'
 import type SolidBoolean from './SolidBoolean.class'
 import type SolidNumber  from './SolidNumber.class'
 import type Float64      from './Float64.class'
@@ -292,7 +291,7 @@ export class SolidTypeInterface extends SolidLanguageType {
 /**
  * Class for constructing the Bottom Type, the type containing no values.
  */
-class SolidTypeNever extends SolidTypeInterface {
+class SolidTypeNever extends SolidLanguageType {
 	static readonly INSTANCE: SolidTypeNever = new SolidTypeNever()
 
 	/** @override */
@@ -301,7 +300,7 @@ class SolidTypeNever extends SolidTypeInterface {
 	readonly isUniverse: boolean = false
 
 	private constructor () {
-		super(new Map())
+		super()
 	}
 
 	/** @override */
@@ -332,29 +331,14 @@ class SolidTypeNever extends SolidTypeInterface {
 /**
  * Class for constructing constant types / unit types, types that contain one value.
  */
-export class SolidTypeConstant extends SolidTypeInterface {
+export class SolidTypeConstant extends SolidLanguageType {
 	/** @override */
 	readonly isEmpty: boolean = false
 	/** @override */
 	readonly isUniverse: boolean = false
 
 	constructor (readonly value: SolidObject) {
-		super(((
-			SolidObject_class:  typeof SolidObject,
-			SolidNull_class:    typeof SolidNull,
-			SolidBoolean_class: typeof SolidBoolean,
-			SolidNumber_class:  typeof SolidNumber,
-		) => (
-				(value instanceof SolidNull_class)    ? SolidNull_class.properties :
-				(value instanceof SolidBoolean_class) ? SolidBoolean_class.properties :
-				(value instanceof SolidNumber_class)  ? SolidNumber_class.properties :
-				SolidObject_class.properties
-			))(
-			require('./SolidObject.class').default,
-			require('./SolidNull.class').default,
-			require('./SolidBoolean.class').default,
-			require('./SolidNumber.class').default,
-		))
+		super(new Set([value]))
 	}
 
 	get isBooleanType(): boolean {
@@ -384,7 +368,7 @@ export class SolidTypeConstant extends SolidTypeInterface {
 /**
  * Class for constructing the Top Type, the type containing all values.
  */
-class SolidTypeUnknown extends SolidTypeInterface {
+class SolidTypeUnknown extends SolidLanguageType {
 	static readonly INSTANCE: SolidTypeUnknown = new SolidTypeUnknown()
 
 	/** @override */
@@ -393,7 +377,7 @@ class SolidTypeUnknown extends SolidTypeInterface {
 	readonly isUniverse: boolean = true
 
 	private constructor () {
-		super(new Map())
+		super()
 	}
 
 	/** @override */

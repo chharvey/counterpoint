@@ -38,10 +38,8 @@ describe('SolidLanguageType', () => {
 		SolidObject,
 		SolidNull,
 		SolidBoolean,
-		SolidNumber,
 		Int16,
 		Float64,
-		SolidString,
 	]
 	const t0: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidLanguageType>([
 		['foo', SolidObject],
@@ -223,6 +221,12 @@ describe('SolidLanguageType', () => {
 					assert.ok(a.isSubtypeOf(c.union(d)), `${ a }, ${ c }, ${ d }`)
 				}
 			})
+			assert.ok(
+				SolidNull.union(Int16).isSubtypeOf(SolidNull.union(Int16)) &&
+				!SolidNull.union(Int16).isSubtypeOf(SolidNull) &&
+				!SolidNull.union(Int16).isSubtypeOf(Int16),
+				'exists A, C, D s.t. `A <: C | D` but `!(A <: C)` and `!(A <: D)`'
+			)
 		})
 		it('3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
@@ -239,6 +243,26 @@ describe('SolidLanguageType', () => {
 				if (a.isSubtypeOf(c) || b.isSubtypeOf(c)) {
 					assert.ok(a.intersect(b).isSubtypeOf(c), `${ a }, ${ b }, ${ c }`)
 				}
+			})
+			assert.ok(
+				SolidNull.intersect(Int16).isSubtypeOf(SolidNull.intersect(Int16)) &&
+				!SolidNull.isSubtypeOf(SolidNull.intersect(Int16)) &&
+				!Int16.isSubtypeOf(SolidNull.intersect(Int16)),
+				'exists A, B, C s.t. `A & B <: C` but `!(A <: C)` and `!(B <: C)`'
+			)
+		})
+
+		it('discrete types.', () => {
+			;[
+				SolidNull,
+				SolidBoolean,
+				Int16,
+				Float64,
+				SolidString,
+			].forEach((t, _, arr) => {
+				arr.filter((u) => u !== t).forEach((u) => {
+					assert.ok(!u.isSubtypeOf(t), `${ u }, ${ t }`)
+				})
 			})
 		})
 
