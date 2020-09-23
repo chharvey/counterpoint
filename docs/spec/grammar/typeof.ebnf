@@ -49,7 +49,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: EXP | MUL | DIV | AD
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
-		1. *If* `IsFloatType(t0)` *or* `IsFloatType(t1)`:
+		1. *If* `t0` is a subtype of `Float` *or* `t1` is a subtype of `Float`:
 			1. *Return:* `Float`.
 		2. *Else*:
 			1. *Return:* `Integer`.
@@ -70,8 +70,8 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: IS | EQ] expr) :=
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
-		1. *If* `t0` is `Integer` *or* `t1` is `Integer`:
-			1. *If* `t0` is `Float` *or* `t1` is `Float`:
+		1. *If* `t0` is a subtype of `Integer` *or* `t1` is a subtype of `Integer`:
+			1. *If* `t0` is a subtype of `Float` *or* `t1` is a subtype of `Float`:
 				1. *If* `operator` is `IS`:
 					1. *Return:* `ToType(false)`.
 		2. *Return:* `Boolean`.
@@ -167,15 +167,7 @@ Type TruthifyType(Type t) :=
 
 
 Boolean IsNumericType(Type t) :=
-	1. *If* `t` is `Integer` *or* `IsFloatType(t)`:
-		1. *Return*: `true`.
-	2. *Return*: `false`.
-;
-
-
-
-Boolean IsFloatType(Type t) :=
-	1. *If* `t` is `Float` *or* if `t` is `ToType(f)` for some `f` that is of type `Float`:
+	1. *If* `t` is a subtype of `Integer` *or* `t` is a subtype of `Float`:
 		1. *Return*: `true`.
 	2. *Return*: `false`.
 ;

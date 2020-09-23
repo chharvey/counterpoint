@@ -2,7 +2,6 @@ import * as xjs from 'extrajs'
 
 import type SolidObject  from './SolidObject.class'
 import type SolidNumber  from './SolidNumber.class'
-import type Float64      from './Float64.class'
 
 
 
@@ -50,13 +49,6 @@ export default abstract class SolidLanguageType {
 	 * @return Is this type Number or a subtype?
 	 */
 	get isNumericType(): boolean {
-		return false
-	}
-	/**
-	 * Return whether the given class is a Float type.
-	 * @return Is this type Float or a subtype?
-	 */
-	get isFloatType(): boolean {
 		return false
 	}
 
@@ -297,8 +289,6 @@ class SolidTypeNever extends SolidLanguageType {
 
 	/** @override */
 	get isNumericType(): boolean { return true }
-	/** @override */
-	get isFloatType(): boolean { return true }
 
 	includes(_v: SolidObject): boolean {
 		return false
@@ -335,10 +325,6 @@ export class SolidTypeConstant extends SolidLanguageType {
 		const SolidNumber_class: typeof SolidNumber = require('./SolidNumber.class').default
 		return this.value instanceof SolidNumber_class
 	}
-	get isFloatType(): boolean {
-		const Float64_class: typeof Float64 = require('./Float64.class').default
-		return this.value instanceof Float64_class
-	}
 
 	includes(_v: SolidObject): boolean {
 		return this.value.equal(_v)
@@ -368,8 +354,6 @@ class SolidTypeUnknown extends SolidLanguageType {
 
 	/** @override */
 	get isNumericType(): boolean { return false }
-	/** @override */
-	get isFloatType(): boolean { return false }
 
 	includes(_v: SolidObject): boolean {
 		return true

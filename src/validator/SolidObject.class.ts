@@ -22,8 +22,6 @@ export default class SolidObject {
 	/** @implements SolidLanguageType */
 	static isNumericType: SolidLanguageType['isNumericType'] = SolidLanguageType.prototype.isNumericType
 	/** @implements SolidLanguageType */
-	static isFloatType: SolidLanguageType['isFloatType'] = SolidLanguageType.prototype.isFloatType
-	/** @implements SolidLanguageType */
 	static includes(v: SolidObject): boolean {
 		return v instanceof this/*static*/
 	}

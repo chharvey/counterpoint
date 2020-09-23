@@ -60,6 +60,21 @@ import type {
 
 
 
+function eitherFloats(t0: SolidLanguageType, t1: SolidLanguageType): boolean {
+	return t0.isSubtypeOf(Float64) || t1.isSubtypeOf(Float64)
+}
+function bothFloats(t0: SolidLanguageType, t1: SolidLanguageType): boolean {
+	return t0.isSubtypeOf(Float64) && t1.isSubtypeOf(Float64)
+}
+function neitherFloats(t0: SolidLanguageType, t1: SolidLanguageType): boolean {
+	return !eitherFloats(t0, t1)
+}
+function oneFloats(t0: SolidLanguageType, t1: SolidLanguageType): boolean {
+	return !neitherFloats(t0, t1) && !bothFloats(t0, t1)
+}
+
+
+
 /**
  * A SemanticNode holds only the semantics of a {@link ParseNode}.
  */
@@ -534,10 +549,10 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
 		if (t0.isNumericType && t1.isNumericType) {
 			if (int_coercion) {
-				return (t0.isFloatType || t1.isFloatType) ? Float64 : Int16
+				return (eitherFloats(t0, t1)) ? Float64 : Int16
 			}
-			if ( t0.isFloatType &&  t1.isFloatType) { return Float64 }
-			if (!t0.isFloatType && !t1.isFloatType) { return Int16 }
+			if (bothFloats   (t0, t1)) { return Float64 }
+			if (neitherFloats(t0, t1)) { return Int16 }
 		}
 		throw new TypeError('Invalid operation.')
 	}
@@ -599,8 +614,7 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 	/** @implements SemanticNodeOperationBinary */
 	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
 		if (t0.isNumericType && t1.isNumericType && (int_coercion || (
-			 t0.isFloatType &&  t1.isFloatType ||
-			!t0.isFloatType && !t1.isFloatType
+			bothFloats(t0, t1) || neitherFloats(t0, t1)
 		))) {
 			return SolidBoolean
 		}
@@ -658,10 +672,7 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 		// If `a` and `b` are of disjoint numeric types, then `a is b` will always return `false`.
 		// If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
 		if (t0.isNumericType && t1.isNumericType) {
-			if (
-				 t0.isFloatType && !t1.isFloatType ||
-				!t0.isFloatType &&  t1.isFloatType
-			) {
+			if (oneFloats(t0, t1)) {
 				if (this.operator === Operator.IS || !int_coercion) {
 					return SolidBoolean.FALSETYPE
 				}
