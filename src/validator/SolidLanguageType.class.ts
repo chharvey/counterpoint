@@ -1,3 +1,5 @@
+import * as xjs from 'extrajs'
+
 import type SolidObject  from './SolidObject.class'
 import type SolidNull    from './SolidNull.class'
 import type SolidBoolean from './SolidBoolean.class'
@@ -11,8 +13,12 @@ import type Float64      from './Float64.class'
  * Known subclasses:
  * - Intersection
  * - Union
+ * - TypeInterface
+ * - TypeNever
+ * - TypeConstant
+ * - TypeUnknown
  */
-export default class SolidLanguageType {
+export default abstract class SolidLanguageType {
 	/** The Bottom Type, containing no values. */
 	static get NEVER(): SolidTypeNever { return SolidTypeNever.INSTANCE }
 	/** The Top Type, containing all values. */
@@ -24,7 +30,7 @@ export default class SolidLanguageType {
 	 * i.e., it is equal to the Bottom Type (`never`).
 	 * Used internally for special cases of computations.
 	 */
-	readonly isEmpty: boolean = false // this.equals(SolidLanguageType.NEVER)
+	readonly isEmpty: boolean = this.values.size === 0
 	/**
 	 * Whether this type has all values assignable to it,
 	 * i.e., it is equal to the Top Type (`unknown`).
@@ -33,29 +39,12 @@ export default class SolidLanguageType {
 	readonly isUniverse: boolean = false // this.equals(SolidLanguageType.UNKNOWN)
 
 	/**
-	 * Return whether this type “includes” the value, i.e.,
-	 * whether the value is assignable to this type.
-	 * @param v the value to check
-	 * @returns Is `v` assignable to this type?
-	 */
-	readonly includes: (v: SolidObject) => boolean;
-
-	/**
 	 * Construct a new SolidLanguageType object.
 	 * @param values an enumerated set of values that are assignable to this type
 	 */
-	constructor (values: ReadonlySet<SolidObject>);
-	/**
-	 * Construct a new SolidType object.
-	 * @param includes a predicate to determine if a value is assignable to this type
-	 */
-	constructor (includes: (v: SolidObject) => boolean);
 	constructor (
-		arg: ReadonlySet<SolidObject> | ((v: SolidObject) => boolean),
+		readonly values: ReadonlySet<SolidObject> = new Set(),
 	) {
-		this.includes = (arg instanceof Function)
-			? arg
-			: (v) => arg.has(v)
 	}
 
 	/**
@@ -79,6 +68,16 @@ export default class SolidLanguageType {
 	get isFloatType(): boolean {
 		return false
 	}
+
+	/**
+	 * Return whether this type “includes” the value, i.e.,
+	 * whether the value is assignable to this type.
+	 * @param v the value to check
+	 * @returns Is `v` assignable to this type?
+	 */
+	includes(v: SolidObject): boolean {
+		return this.values.has(v)
+	}
 	/**
 	 * Return the type intersection of this type with another.
 	 * @param t the other type
@@ -88,8 +87,10 @@ export default class SolidLanguageType {
 	intersect(t: SolidLanguageType): SolidLanguageType {
 		/** 1-5 | `T  & never   == never` */
 		if (t.isEmpty) { return SolidLanguageType.NEVER }
+		if (this.isEmpty) { return this }
 		/** 1-6 | `T  & unknown == T` */
 		if (t.isUniverse) { return this }
+		if (this.isUniverse) { return t }
 
 		/** 3-3 | `A <: B  <->  A  & B == A` */
 		if (this.isSubtypeOf(t)) { return this }
@@ -98,7 +99,7 @@ export default class SolidLanguageType {
 		return this.intersect_do(t)
 	}
 	intersect_do(t: SolidLanguageType): SolidLanguageType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
-		return new SolidLanguageType((v) => this.includes(v) && t.includes(v))
+		return new SolidTypeIntersection(this, t)
 	}
 	/**
 	 * Return the type union of this type with another.
@@ -109,8 +110,10 @@ export default class SolidLanguageType {
 	union(t: SolidLanguageType): SolidLanguageType {
 		/** 1-7 | `T \| never   == T` */
 		if (t.isEmpty) { return this }
+		if (this.isEmpty) { return t }
 		/** 1-8 | `T \| unknown == unknown` */
 		if (t.isUniverse) { return t }
+		if (this.isUniverse) { return this }
 
 		/** 3-4 | `A <: B  <->  A \| B == B` */
 		if (this.isSubtypeOf(t)) { return t }
@@ -119,7 +122,7 @@ export default class SolidLanguageType {
 		return this.union_do(t)
 	}
 	union_do(t: SolidLanguageType): SolidLanguageType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
-		return new SolidLanguageType((v) => this.includes(v) || t.includes(v))
+		return new SolidTypeUnion(this, t)
 	}
 	/**
 	 * Return whether this type is a structural subtype of the given type.
@@ -135,10 +138,21 @@ export default class SolidLanguageType {
 		/** 2-7 | `A <: A` */
 		if (this === t) { return true }
 
+		if (t instanceof SolidTypeIntersection) {
+			/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
+			return this.isSubtypeOf(t.left) && this.isSubtypeOf(t.right)
+		}
+		if (t instanceof SolidTypeUnion) {
+			/** 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
+			if (this.isSubtypeOf(t.left) || this.isSubtypeOf(t.right)) { return true }
+			/** 3-2 | `A <: A \| B  &&  B <: A \| B` */
+			if (this.equals(t.left) || this.equals(t.right)) { return true }
+		}
+
 		return this.isSubtypeOf_do(t)
 	}
 	isSubtypeOf_do(t: SolidLanguageType): boolean { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
-		throw 'SolidLanguageType#isSubtypeOf_do not yet supported'
+		return [...this.values].every((v) => t.includes(v))
 	}
 	/**
 	 * Return whether this type is structurally equal to the given type.
@@ -147,10 +161,68 @@ export default class SolidLanguageType {
 	 * 2-8 | `A <: B  &&  B <: A  -->  A == B`
 	 * @param t the type to compare
 	 * @returns Is this type equal to the argument?
-	 * @final
 	 */
 	equals(t: SolidLanguageType): boolean {
 		return this.isSubtypeOf(t) && t.isSubtypeOf(this)
+	}
+}
+
+
+
+/**
+ * A type intersection of two types `T` and `U` is the type
+ * that contains values either assignable to `T` *or* assignable to `U`.
+ */
+class SolidTypeIntersection extends SolidLanguageType {
+	/**
+	 * Construct a new SolidTypeIntersection object.
+	 * @param left the first type
+	 * @param right the second type
+	 */
+	constructor (
+		readonly left:  SolidLanguageType,
+		readonly right: SolidLanguageType,
+	) {
+		super(xjs.Set.intersection(left.values, right.values))
+	}
+	includes(v: SolidObject): boolean {
+		return this.left.includes(v) && this.right.includes(v)
+	}
+	/** @implement SolidLanguageType */
+	isSubtypeOf_do(t: SolidLanguageType): boolean {
+		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
+		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) { return true }
+		/** 3-1 | `A  & B <: A  &&  A  & B <: B` */
+		if (t.equals(this.left) || t.equals(this.right)) { return true }
+		return super.isSubtypeOf_do(t)
+	}
+}
+
+
+
+/**
+ * A type union of two types `T` and `U` is the type
+ * that contains values both assignable to `T` *and* assignable to `U`.
+ */
+class SolidTypeUnion extends SolidLanguageType {
+	/**
+	 * Construct a new SolidTypeUnion object.
+	 * @param left the first type
+	 * @param right the second type
+	 */
+	constructor (
+		readonly left:  SolidLanguageType,
+		readonly right: SolidLanguageType,
+	) {
+		super(xjs.Set.union(left.values, right.values))
+	}
+	includes(v: SolidObject): boolean {
+		return this.left.includes(v) || this.right.includes(v)
+	}
+	/** @implement SolidLanguageType */
+	isSubtypeOf_do(t: SolidLanguageType): boolean {
+		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
+		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
 	}
 }
 
@@ -166,23 +238,16 @@ export class SolidTypeInterface extends SolidLanguageType {
 	readonly isUniverse: boolean = this.properties.size === 0
 
 	/**
-	 * Argument to pass to the `super()` call inside `SolidTypeInterface.constructor`.
-	 * We cannot use a lambda because `assert.deepStrictEqual` will not compare functions.
-	 */
-	private static _constructor_super_arg(this: SolidTypeInterface, v: SolidObject): boolean {
-		return [...this.properties.keys()].every((key) => key in v)
-	}
-
-
-	/**
 	 * Construct a new SolidLanguageType object.
 	 * @param properties a map of this type’s members’ names along with their associated types
 	 */
 	constructor (readonly properties: ReadonlyMap<string, SolidLanguageType>) {
-		// super((v) => [...properties.keys()].every((key) => key in v)) // NOTE: cannot use lambda because `assert.deepStrictEqual` will not compare functions
-		super(SolidTypeInterface._constructor_super_arg)
+		super()
 	}
 
+	includes(v: SolidObject): boolean {
+		return [...this.properties.keys()].every((key) => key in v)
+	}
 	/**
 	 * @override
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `T` with the set of properties on `S`.
@@ -210,7 +275,7 @@ export class SolidTypeInterface extends SolidLanguageType {
 		return new SolidTypeInterface(props)
 	}
 	/**
-	 * @override
+	 * @implement SolidLanguageType
 	 * In the general case, `S` is a subtype of `T` if every property of `T` exists in `S`,
 	 * and for each of those properties `#prop`, the type of `S#prop` is a subtype of `T#prop`.
 	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
@@ -245,25 +310,15 @@ class SolidTypeNever extends SolidTypeInterface {
 	get isNumericType(): boolean { return true }
 	/** @override */
 	get isFloatType(): boolean { return true }
-	/**
-	 * @override
-	 * 1-5 | `T  & never   == never`
-	 */
-	intersect(_t: SolidLanguageType): SolidTypeInterface {
-		return this
+
+	includes(_v: SolidObject): boolean {
+		return false
 	}
 	/**
-	 * @override
-	 * 1-7 | `T \| never   == T`
-	 */
-	union(t: SolidTypeInterface): SolidTypeInterface {
-		return t
-	}
-	/**
-	 * @override
+	 * @implement SolidLanguageType
 	 * 1-1 | `never <: T`
 	 */
-	isSubtypeOf(_t: SolidLanguageType): boolean {
+	isSubtypeOf_do(_t: SolidLanguageType): boolean {
 		return true
 	}
 	/** @override */
@@ -314,8 +369,13 @@ export class SolidTypeConstant extends SolidTypeInterface {
 		const Float64_class: typeof Float64 = require('./Float64.class').default
 		return this.value instanceof Float64_class
 	}
-	isSubtypeOf(t: SolidTypeInterface): boolean {
-		return t instanceof Function && this.value instanceof t || super.isSubtypeOf(t)
+
+	includes(_v: SolidObject): boolean {
+		return this.value.equal(_v)
+	}
+	/** @implement SolidLanguageType */
+	isSubtypeOf_do(t: SolidTypeInterface): boolean {
+		return t instanceof Function && this.value instanceof t || t.includes(this.value)
 	}
 }
 
@@ -342,25 +402,15 @@ class SolidTypeUnknown extends SolidTypeInterface {
 	get isNumericType(): boolean { return false }
 	/** @override */
 	get isFloatType(): boolean { return false }
-	/**
-	 * @override
-	 * 1-6 | `T  & unknown == T`
-	 */
-	intersect(t: SolidTypeInterface): SolidTypeInterface {
-		return t
+
+	includes(_v: SolidObject): boolean {
+		return true
 	}
 	/**
-	 * @override
-	 * 1-8 | `T \| unknown == unknown`
-	 */
-	union(_t: SolidLanguageType): SolidTypeInterface {
-		return this
-	}
-	/**
-	 * @override
+	 * @implement SolidLanguageType
 	 * 1-4 | `unknown <: T      <->  T == unknown`
 	 */
-	isSubtypeOf(t: SolidLanguageType): boolean {
+	isSubtypeOf_do(t: SolidLanguageType): boolean {
 		return t.isUniverse
 	}
 	/** @override */

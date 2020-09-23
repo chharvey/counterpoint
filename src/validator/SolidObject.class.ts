@@ -20,15 +20,17 @@ export default class SolidObject {
 	/** @implements SolidLanguageType */
 	static isUniverse: SolidLanguageType['isUniverse'] = false
 	/** @implements SolidLanguageType */
-	static includes(v: SolidObject): boolean {
-		return v instanceof this/*static*/
-	}
+	static values: SolidLanguageType['values'] = new Set()
 	/** @implements SolidLanguageType */
 	static isBooleanType: SolidLanguageType['isBooleanType'] = SolidLanguageType.prototype.isBooleanType
 	/** @implements SolidLanguageType */
 	static isNumericType: SolidLanguageType['isNumericType'] = SolidLanguageType.prototype.isNumericType
 	/** @implements SolidLanguageType */
 	static isFloatType: SolidLanguageType['isFloatType'] = SolidLanguageType.prototype.isFloatType
+	/** @implements SolidLanguageType */
+	static includes(v: SolidObject): boolean {
+		return v instanceof this/*static*/
+	}
 	/** @implements SolidLanguageType */
 	static intersect: SolidLanguageType['intersect'] = SolidLanguageType.prototype.intersect
 	/** @implements SolidLanguageType */
