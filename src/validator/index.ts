@@ -36,6 +36,7 @@ export {default as SolidLanguageType} from './SolidLanguageType.class'
 
 export {
 	SolidTypeConstant,
+	SolidTypeInterface,
 } from './SolidLanguageType.class'
 
 export {default as SolidObject}  from './SolidObject.class'

@@ -724,14 +724,6 @@ describe('SemanticNode', () => {
 					[`4.2   || true;`,  new Float64(4.2)],
 				]))
 			})
-			it('computes type for for conditionals', () => {
-				typeOperations(new Map<string, SolidObject>([
-					[`if true then false else 2;`,          SolidBoolean.FALSE],
-					[`if false then 3.0 else null;`,        SolidNull.NULL],
-					[`if true then 2 else 3.0;`,            new Int16(2n)],
-					[`if false then 2 + 3.0 else 1.0 * 2;`, new Float64(2.0)],
-				]))
-			})
 			it('throws for numeric operation of non-numbers.', () => {
 				[
 					`null + 5;`,
@@ -744,6 +736,23 @@ describe('SemanticNode', () => {
 					assert.throws(() => operationFromStatementExpression(
 						statementExpressionFromSource(src)
 					).type(), /Invalid operation./)
+				})
+			})
+			describe('SemanticNodeOperationTernary', () => {
+				context('with constant folding on', () => {
+					it('computes type for for conditionals', () => {
+						typeOperations(new Map<string, SolidObject>([
+							[`if true then false else 2;`,          SolidBoolean.FALSE],
+							[`if false then 3.0 else null;`,        SolidNull.NULL],
+							[`if true then 2 else 3.0;`,            new Int16(2n)],
+							[`if false then 2 + 3.0 else 1.0 * 2;`, new Float64(2.0)],
+						]))
+					})
+				})
+				it('throws when condition is not boolean.', () => {
+					assert.throws(() => operationFromStatementExpression(
+						statementExpressionFromSource(`if 2 then true else false;`)
+					).type(), /Invalid operation\./)
 				})
 			})
 		})
