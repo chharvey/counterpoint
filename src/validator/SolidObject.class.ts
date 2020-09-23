@@ -20,8 +20,6 @@ export default class SolidObject {
 	/** @implements SolidLanguageType */
 	static values: SolidLanguageType['values'] = new Set()
 	/** @implements SolidLanguageType */
-	static isNumericType: SolidLanguageType['isNumericType'] = SolidLanguageType.prototype.isNumericType
-	/** @implements SolidLanguageType */
 	static includes(v: SolidObject): boolean {
 		return v instanceof this/*static*/
 	}

@@ -1,7 +1,6 @@
 import * as xjs from 'extrajs'
 
 import type SolidObject  from './SolidObject.class'
-import type SolidNumber  from './SolidNumber.class'
 
 
 
@@ -42,14 +41,6 @@ export default abstract class SolidLanguageType {
 	constructor (
 		readonly values: ReadonlySet<SolidObject> = new Set(),
 	) {
-	}
-
-	/**
-	 * Return whether the given class is a numeric type, i.e., an Integer or a Float.
-	 * @return Is this type Number or a subtype?
-	 */
-	get isNumericType(): boolean {
-		return false
 	}
 
 	/**
@@ -287,9 +278,6 @@ class SolidTypeNever extends SolidLanguageType {
 		super()
 	}
 
-	/** @override */
-	get isNumericType(): boolean { return true }
-
 	includes(_v: SolidObject): boolean {
 		return false
 	}
@@ -321,11 +309,6 @@ export class SolidTypeConstant extends SolidLanguageType {
 		super(new Set([value]))
 	}
 
-	get isNumericType(): boolean {
-		const SolidNumber_class: typeof SolidNumber = require('./SolidNumber.class').default
-		return this.value instanceof SolidNumber_class
-	}
-
 	includes(_v: SolidObject): boolean {
 		return this.value.equal(_v)
 	}
@@ -351,9 +334,6 @@ class SolidTypeUnknown extends SolidLanguageType {
 	private constructor () {
 		super()
 	}
-
-	/** @override */
-	get isNumericType(): boolean { return false }
 
 	includes(_v: SolidObject): boolean {
 		return true

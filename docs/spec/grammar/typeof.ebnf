@@ -39,7 +39,7 @@ Type TypeOfUnassessedOperation(SemanticOperation[operator: NOT | EMP] expr) :=
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
-	3. *If* `IsNumericType(t0)`:
+	3. *If* `t0` is a subtype of `Union(Integer, Float)`:
 		1. *Return:* `t0`.
 	4. *Throw:* TypeError "Invalid operation.".
 ;
@@ -48,7 +48,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: EXP | MUL | DIV | AD
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
+	4. *If* `t0` is a subtype of `Union(Integer, Float)` *and* `t1` is a subtype of `Union(Integer, Float)`:
 		1. *If* `t0` is a subtype of `Float` *or* `t1` is a subtype of `Float`:
 			1. *Return:* `Float`.
 		2. *Else*:
@@ -60,7 +60,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: LT | GT | LE | GE] e
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
+	4. *If* `t0` is a subtype of `Union(Integer, Float)` *and* `t1` is a subtype of `Union(Integer, Float)`:
 		1. *Return:* `Boolean`.
 	5. *Throw:* TypeError "Invalid operation.".
 ;
@@ -69,7 +69,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: IS | EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
+	4. *If* `t0` is a subtype of `Union(Integer, Float)` *and* `t1` is a subtype of `Union(Integer, Float)`:
 		1. *If* `t0` is a subtype of `Integer` *or* `t1` is a subtype of `Integer`:
 			1. *If* `t0` is a subtype of `Float` *or* `t1` is a subtype of `Float`:
 				1. *If* `operator` is `IS`:
@@ -162,12 +162,4 @@ Type TruthifyType(Type t) :=
 	4. *If* `t` is a type union of `Boolean` and another type `s`:
 		1. *Return:* `Union(ToType(true), TruthifyType(s))`.
 	5. *Return:* `t`.
-;
-
-
-
-Boolean IsNumericType(Type t) :=
-	1. *If* `t` is a subtype of `Integer` *or* `t` is a subtype of `Float`:
-		1. *Return*: `true`.
-	2. *Return*: `false`.
 ;
