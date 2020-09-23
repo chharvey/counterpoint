@@ -556,6 +556,11 @@ describe('SemanticNode', () => {
 							statementExpressionFromSource(`7 == 7.0;`, coercion_off)
 						).type(false, false), SolidBoolean.FALSETYPE)
 					})
+					it('returns `false` if operands are of disjoint types in general.', () => {
+						assert.deepStrictEqual(operationFromStatementExpression(
+							statementExpressionFromSource(`7 == null;`, coercion_off)
+						).type(false, false), SolidBoolean.FALSETYPE)
+					})
 				})
 			})
 			context('with constant folding on, with int coersion on.', () => {
@@ -670,6 +675,13 @@ describe('SemanticNode', () => {
 					assert.deepStrictEqual(operationFromStatementExpression(
 						statementExpressionFromSource(`7 == 7.0;`)
 					).type(false, true), SolidBoolean)
+				})
+				describe('SemanticNodeOperationBinaryEquality[operator=IS]', () => {
+					it('returns `false` if operands are of different numeric types.', () => {
+						assert.deepStrictEqual(operationFromStatementExpression(
+							statementExpressionFromSource(`7 is 7.0;`, folding_off)
+						).type(false, true), SolidBoolean.FALSETYPE)
+					})
 				})
 			})
 			it('returns a constant Boolean type for boolean unary operation of anything.', () => {

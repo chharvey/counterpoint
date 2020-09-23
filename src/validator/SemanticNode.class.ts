@@ -675,16 +675,14 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 		// If `a` and `b` are of disjoint numeric types, then `a is b` will always return `false`.
 		// If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
 		if (bothNumeric(t0, t1)) {
-			if (oneFloats(t0, t1)) {
-				if (this.operator === Operator.IS || !int_coercion) {
-					return SolidBoolean.FALSETYPE
-				}
+			if (oneFloats(t0, t1) && (this.operator === Operator.IS || !int_coercion)) {
+				return SolidBoolean.FALSETYPE
 			}
-			// return SolidBoolean
+			return SolidBoolean
 		}
-		// if ("`t0` and `t1` do not overlap") {
-		// 	return SolidBoolean.FALSETYPE
-		// }
+		if (t0.intersect(t1).isEmpty) {
+			return SolidBoolean.FALSETYPE
+		}
 		return SolidBoolean
 	}
 	private foldEquality(x: SolidObject, y: SolidObject): SolidBoolean {

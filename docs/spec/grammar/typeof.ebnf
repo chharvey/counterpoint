@@ -75,8 +75,8 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: IS | EQ] expr) :=
 				1. *If* `operator` is `IS`:
 					1. *Return:* `ToType(false)`.
 		2. *Return:* `Boolean`.
-	// 5. *If* `t0` and `t1` are disjoint:
-	// 	1. *Return:* `ToType(false)`.
+	5. *If* `t0` and `t1` are disjoint:
+		1. *Return:* `ToType(false)`.
 	6. *Return:* `Boolean`.
 ;
 
