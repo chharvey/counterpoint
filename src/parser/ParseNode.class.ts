@@ -304,7 +304,7 @@ export class ParseNodeExpressionUnary extends ParseNode {
 			(this.children[0].source === Punctuator.AFF) ? // `+a` is a no-op
 				this.children[1].decorate()
 			:
-				new SemanticNodeOperationUnary(this, ParseNodeExpressionUnary.OPERATORS.get(this.children[0].source) as ValidOperatorUnary, [
+				new SemanticNodeOperationUnary(this, ParseNodeExpressionUnary.OPERATORS.get(this.children[0].source as Punctuator) as ValidOperatorUnary, [
 					this.children[1].decorate(),
 				])
 	}
@@ -340,7 +340,7 @@ export class ParseNodeExpressionBinary extends ParseNode {
 		if (this.children.length === 1) {
 			return this.children[0].decorate()
 		} else {
-			const operator: Operator = ParseNodeExpressionBinary.OPERATORS.get(this.children[1].source)!
+			const operator: Operator = ParseNodeExpressionBinary.OPERATORS.get(this.children[1].source as Punctuator | Keyword)!
 			const operands: [SemanticNodeExpression, SemanticNodeExpression] = [
 					this.children[0].decorate(),
 					this.children[2].decorate(),
