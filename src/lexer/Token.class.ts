@@ -171,7 +171,7 @@ export default abstract class Token implements Serializable {
 
 export class TokenFilebound extends Token {
 	static readonly CHARS: readonly Filebound[] = [Filebound.SOT, Filebound.EOT]
-	declare readonly source: Filebound;
+	// declare readonly source: Filebound; // NB: https://github.com/microsoft/TypeScript/issues/40220
 	constructor (lexer: Lexer) {
 		super('FILEBOUND', lexer, ...lexer.advance())
 	}
@@ -197,7 +197,7 @@ export class TokenPunctuator extends Token {
 			Punctuator.ASSIGN,
 		].includes(p))
 	)]
-	declare readonly source: Punctuator;
+	// declare readonly source: Punctuator; // NB: https://github.com/microsoft/TypeScript/issues/40220
 	constructor (lexer: Lexer, count: 1n|2n|3n = 1n) {
 		super('PUNCTUATOR', lexer, ...lexer.advance())
 		if (count >= 3n) {
@@ -207,7 +207,7 @@ export class TokenPunctuator extends Token {
 		}
 	}
 	cook(): bigint {
-		return BigInt(TokenPunctuator.PUNCTUATORS.indexOf(this.source))
+		return BigInt(TokenPunctuator.PUNCTUATORS.indexOf(this.source as Punctuator))
 	}
 }
 export class TokenKeyword extends Token {
@@ -219,12 +219,12 @@ export class TokenKeyword extends Token {
 			Keyword.UNFIXED,
 		].includes(kw))
 	)]
-	declare readonly source: Keyword;
+	// declare readonly source: Keyword; // NB: https://github.com/microsoft/TypeScript/issues/40220
 	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
 		super('KEYWORD', lexer, start_char, ...more_chars)
 	}
 	cook(): bigint {
-		return BigInt(TokenKeyword.KEYWORDS.indexOf(this.source)) + TokenKeyword.MINIMUM_VALUE
+		return BigInt(TokenKeyword.KEYWORDS.indexOf(this.source as Keyword)) + TokenKeyword.MINIMUM_VALUE
 	}
 }
 export abstract class TokenIdentifier extends Token {
