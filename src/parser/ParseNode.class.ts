@@ -209,7 +209,7 @@ export class ParseNodeTypeUnary extends ParseNode {
 	decorate(): SemanticNodeType {
 		return (this.children.length === 1)
 			? this.children[0].decorate()
-			: new SemanticNodeTypeOperationUnary(this, ParseNodeTypeUnary.OPERATORS.get(this.children[1].source)!, [
+			: new SemanticNodeTypeOperationUnary(this, ParseNodeTypeUnary.OPERATORS.get(this.children[1].source as Punctuator)!, [
 				this.children[0].decorate(),
 			])
 	}
@@ -225,7 +225,7 @@ export class ParseNodeTypeBinary extends ParseNode {
 	decorate(): SemanticNodeType {
 		return (this.children.length === 1)
 			? this.children[0].decorate()
-			: new SemanticNodeTypeOperationBinary(this, ParseNodeTypeBinary.OPERATORS.get(this.children[1].source)!, [
+			: new SemanticNodeTypeOperationBinary(this, ParseNodeTypeBinary.OPERATORS.get(this.children[1].source as Punctuator)!, [
 				this.children[0].decorate(),
 				this.children[2].decorate(),
 			])
