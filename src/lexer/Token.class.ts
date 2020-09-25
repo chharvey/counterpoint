@@ -209,9 +209,11 @@ export class TokenPunctuator extends Token {
 		].includes(p))
 	)]
 	// declare readonly source: Punctuator; // NB: https://github.com/microsoft/TypeScript/issues/40220
-	constructor (lexer: Lexer, count: 1n|2n|3n = 1n) {
+	constructor (lexer: Lexer, count: 1n | 2n | 3n | 4n = 1n) {
 		super('PUNCTUATOR', lexer, ...lexer.advance())
-		if (count >= 3n) {
+		if (count >= 4n) {
+			this.advance(2n)
+		} else if (count >= 3n) {
 			this.advance(2n)
 		} else if (count >= 2n) {
 			this.advance()

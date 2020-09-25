@@ -33,6 +33,7 @@ export {
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
+	TokenComment,
 	TokenCommentLine,
 	TokenCommentMulti,
 } from './Token.class'

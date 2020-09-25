@@ -698,8 +698,8 @@ Unary
 	::= Unit ("+" | "*" | "#")? "?"?;
 
 Unit ::=
-	| STRING
 	| CHARCODE
+	| STRING
 	| CHARCLASS
 	| NonterminalReference
 	| "(" Choice ")"
@@ -709,31 +709,9 @@ NonterminalDefinition ::= IDENTIFIER ("<" IDENTIFIER#                     ">")?;
 NonterminalReference  ::= IDENTIFIER ("<" (("+" | "-" | "?") IDENTIFIER)# ">")?;
 Condition             ::=             "<" (IDENTIFIER ("+" | "-")      )# ">"  ;
 ```
-The non-literal terminal symbols of the syntax grammar above are defined in this lexical grammar:
-```
-CHARCLASS  :::= CharClass;
-CHARCODE   :::= CharCode;
-STRING     :::= String;
-IDENTIFIER :::= Identifier;
+The non-literal terminal symbols of the syntax grammar above are defined in
+a separate [lexical grammar](./grammar/ebnf-lexicon.ebnf)
 
-CharClass
-	:::= "[" "^"? (Char | CharCode | Char "-" Char | CharCode "-" CharCode)+ "]";
-
-CharCode
-	:::= "#x" [0-9a-f]+;
-
-Char
-	:::= [#x20-#x5c#x5e-#7e]; // excluding close brace "]"
-
-String
-	:::= #x22 [^"]* #x22; // '"' [^"]* '"'
-
-Identifier
-	:::= [A-Z] [A-Za-z0-9_]*;
-
-Comment
-	:::= "//" [^#x0a#03]* #x0a;
-```
 For those not faint of heart, the shorthand grammars above expand into the following formal grammar.
 The following is non-normative; if there are any discrepancies, the grammars above take precedence.
 ```
