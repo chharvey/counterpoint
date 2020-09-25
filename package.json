@@ -1,6 +1,6 @@
 {
   "name": "@chharvey/solid",
-  "version": "0.2.0-beta.0",
+  "version": "0.2.0-beta.1",
   "private": true,
   "description": "A robust programming language.",
   "main": "index.js",
