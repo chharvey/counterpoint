@@ -5,7 +5,7 @@ import {
 	assert_arrayLength,
 } from './assert-helpers'
 import {
-	Scanner,
+	ScannerSolid as Scanner,
 } from '../src/lexer/'
 import {
 	SemanticNodeExpression,

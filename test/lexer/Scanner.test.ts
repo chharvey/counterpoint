@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 
 import {
-	Scanner,
+	ScannerSolid as Scanner,
 	Char,
 } from '../../src/lexer/'
 

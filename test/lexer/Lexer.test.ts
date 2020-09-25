@@ -4,7 +4,7 @@ import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util  from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
 import {
-	Scanner,
+	ScannerSolid as Scanner,
 	TemplatePosition,
 	TokenFilebound,
 	Token,

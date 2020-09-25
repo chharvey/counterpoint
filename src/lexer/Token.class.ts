@@ -4,7 +4,7 @@ import Util from '../class/Util.class'
 import Dev from '../class/Dev.class'
 import type Serializable from '../iface/Serializable.iface'
 import Char from './Char.class'
-import type Lexer from './Lexer.class'
+import type {LexerSolid as Lexer} from './Lexer.class'
 
 import {
 	LexError02,

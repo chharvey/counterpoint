@@ -1,7 +1,7 @@
 import type SolidConfig from '../SolidConfig'
 
 import Dev from '../class/Dev.class'
-import Screener from './Screener.class'
+import {ScreenerSolid as Screener} from './Screener.class'
 import Char from './Char.class'
 import Token, {
 	Punctuator,
@@ -29,7 +29,7 @@ import {
  * A Lexer (aka: Tokenizer, Lexical Analyzer).
  * @see http://parsingintro.sourceforge.net/#contents_item_6.5
  */
-abstract class Lexer {
+export abstract class Lexer {
 	/** The result of the scanner iterator. */
 	private iterator_result_char: IteratorResult<Char, void>;
 	/** The current character. */
@@ -101,7 +101,7 @@ abstract class Lexer {
 
 
 
-export default class LexerSolid extends Lexer {
+export class LexerSolid extends Lexer {
 	private static readonly PUNCTUATORS_3: readonly Punctuator[] = TokenPunctuator.PUNCTUATORS.filter((p) => p.length === 3)
 	private static readonly PUNCTUATORS_2: readonly Punctuator[] = TokenPunctuator.PUNCTUATORS.filter((p) => p.length === 2)
 	private static readonly PUNCTUATORS_1: readonly Punctuator[] = TokenPunctuator.PUNCTUATORS.filter((p) => p.length === 1)

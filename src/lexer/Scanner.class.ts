@@ -1,5 +1,5 @@
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
-import Lexer from './Lexer.class'
+import {LexerSolid as Lexer} from './Lexer.class'
 import Char from './Char.class'
 import {
 	Filebound,
@@ -11,7 +11,7 @@ import {
  * A Scanner object reads through the source text and returns one character at a time.
  * @see http://parsingintro.sourceforge.net/#contents_item_4.2
  */
-abstract class Scanner {
+export abstract class Scanner {
 	/** The entire source text of the program. */
 	readonly source_text: string
 
@@ -34,7 +34,7 @@ abstract class Scanner {
 
 
 
-export default class ScannerSolid extends Scanner {
+export class ScannerSolid extends Scanner {
 	/**
 	 * Construct a new ScannerSolid object.
 	 * @param source - the source text

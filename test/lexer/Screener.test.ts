@@ -2,7 +2,7 @@ import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import {
-	Scanner,
+	ScannerSolid as Scanner,
 	Token,
 	TokenWhitespace,
 } from '../../src/lexer/'

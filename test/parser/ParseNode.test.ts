@@ -5,7 +5,7 @@ import Util   from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {
-	Scanner,
+	ScannerSolid as Scanner,
 } from '../../src/lexer/'
 import {
 	SemanticNodeType,

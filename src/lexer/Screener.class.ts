@@ -20,7 +20,7 @@ import type {Parser} from '../parser/'
  * - computing the string values, including escaping, of string constants (“cooking”)
  * - optimizing identifiers
  */
-abstract class Screener {
+export abstract class Screener {
 	/** The result of the lexer iterator. */
 	private iterator_result_token: IteratorResult<Token, void>;
 	/** The current token. */
@@ -60,7 +60,7 @@ abstract class Screener {
 
 
 
-export default class ScreenerSolid extends Screener {
+export class ScreenerSolid extends Screener {
 	/** A set of all unique identifiers in the program. */
 	private _ids: Set<string> = new Set()
 

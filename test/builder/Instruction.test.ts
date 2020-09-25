@@ -6,7 +6,7 @@ import Operator from '../../src/enum/Operator.enum'
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util from '../../src/class/Util.class'
 import {
-	Scanner,
+	ScannerSolid as Scanner,
 } from '../../src/lexer/'
 import {
 	Builder,
