@@ -44,6 +44,24 @@ export default class Util {
 	}
 
 	/**
+	 * Transform `PascalCase` into `SCREAMING_CASE`.
+	 * @param s the string to transform, in `AbcDef` format
+	 * @return the string in `ABC_DEF` format
+	 */
+	static pascalToScreaming(s: string): string {
+		return s.replace(/[A-Z]/g, '_$&').slice(1).toUpperCase()
+	}
+
+	/**
+	 * Transform `SCREAMING_CASE` into `PascalCase`.
+	 * @param s the string to transform, in `ABC_DEF` format
+	 * @return the string in `AbcDef` format
+	 */
+	static screamingToPascal(s: string): string {
+		return s.split('_').map((ss) => `${ ss[0] }${ ss.slice(1).toLowerCase() }`).join('')
+	}
+
+	/**
 	 * Remove indentation from string templates, and appends a line feed.
 	 * @param   s the string to remove indentation from each line
 	 * @returns   the string with indentation removed and a line feed appended

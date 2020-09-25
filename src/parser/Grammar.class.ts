@@ -35,7 +35,7 @@ import Production, {
 
 
 export type GrammarSymbol   = GrammarTerminal|Production
-export type GrammarTerminal = Filebound|Punctuator|Keyword|Terminal
+export type GrammarTerminal = string | Filebound | Punctuator | Keyword | Terminal
 
 
 

@@ -21,6 +21,13 @@ import Terminal, {
 
 
 
+export type KleenePlus<T> = readonly [T, ...readonly T[]]
+type JSONSequence = KleenePlus<JSONItem>
+type JSONItem =
+	| string
+	| { term: string }
+	| { prod: string }
+
 /**
  * A Production is an item in a formal context-free grammar.
  * It consists of a nonterminal on the left-hand side, which serves as the identifier of the production,
@@ -28,6 +35,54 @@ import Terminal, {
  * which can be reduced to the left-hand side nonterminal in a parsing action.
  */
 export default abstract class Production {
+	/**
+	 * Takes a list of JSON objects representing syntactic productions
+	 * and returns a string in TypeScript language representing subclasses of {@link Production}.
+	 * @param json JSON objects representing a production
+	 * @returns a string to print to a TypeScript file
+	 */
+	static fromJSON(jsons: {
+		name: string,
+		defn: KleenePlus<JSONSequence>,
+	}[]): string {
+		function randomCallback(it: JSONItem) {
+			return (
+				(typeof it === 'string') ? it :
+				('term' in it) ? `Terminal.Terminal${ Util.screamingToPascal(it.term) }.instance.random()` :
+				`...Production${ it.prod }.instance.random()`
+			)
+		}
+		return `
+			import type {GrammarSymbol}     from './Grammar.class';
+			import * as Terminal            from './Terminal.class';
+			import Production, {KleenePlus} from './Production.class';
+			${ jsons.map((json) => `
+				export class Production${ json.name } extends Production {
+					static readonly instance: Production${ json.name } = new Production${ json.name }();
+					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+						return [
+							${ json.defn.map((seq) => `[${ seq.map((it) =>
+								(typeof it === 'string') ? it :
+								('term' in it) ? `Terminal.Terminal${ Util.screamingToPascal(it.term) }.instance` :
+								`Production${ it.prod }.instance`
+							) }]`) },
+						];
+					}
+					random(): string[] {
+						const random: number = Math.random();
+						return (
+							${ json.defn.slice(0, -1).map((seq, i) =>
+								`random < ${ i + 1 }/${ json.defn.length } ? [${ seq.map(randomCallback) }] :`
+							).join(' ') }
+							[${ json.defn[json.defn.length - 1].map(randomCallback) }]
+						);
+					}
+				}
+			`).join('') }
+		`
+	}
+
+
 	protected constructor() {}
 
 	/** @final */ get displayName(): string {
@@ -37,7 +92,7 @@ export default abstract class Production {
 	/**
 	 * A set of sequences of parse symbols (terminals and/or nonterminals) in this production.
 	 */
-	abstract get sequences(): GrammarSymbol[][];
+	abstract get sequences(): readonly (readonly GrammarSymbol[])[];
 
 	/**
 	 * Generate a random instance of this Production.

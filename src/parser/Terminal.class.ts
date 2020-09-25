@@ -30,7 +30,7 @@ export default abstract class Terminal {
 	protected constructor() {}
 
 	/** @final */ get displayName(): string {
-		return this.constructor.name.replace(/[A-Z]/g, '_$&').slice('_Terminal_'.length).toUpperCase()
+		return Util.pascalToScreaming(this.constructor.name.slice('Terminal'.length)) || '_'
 	}
 
 	/**
