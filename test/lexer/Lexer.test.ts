@@ -51,7 +51,7 @@ const mock: string = `
 
 
 
-describe('Lexer', () => {
+describe('LexerSolid', () => {
 	describe('#generate', () => {
 		it('recognizes `TokenFilebound` conditions.', () => {
 			const tokens: Token[] = [...new Scanner(mock, CONFIG_DEFAULT).lexer.generate()]

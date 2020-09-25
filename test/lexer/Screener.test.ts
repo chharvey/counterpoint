@@ -27,7 +27,7 @@ const mock: string = `
 
 
 
-describe('Screener.', () => {
+describe('ScreenerSolid.', () => {
 	describe('#generate', () => {
 		it('yields `Token`, non-`TokenWhitespace`, objects.', () => {
 			;[...new Scanner(mock, CONFIG_DEFAULT).lexer.screener.generate()].forEach((token) => {

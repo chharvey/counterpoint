@@ -48,11 +48,13 @@ describe('Scanner', () => {
 		})
 	})
 
-	describe('#generate', () => {
-		it('yields Character objects.', () => {
-			const scanner: Scanner = new Scanner(mock)
-			;[...scanner.generate()].forEach((char) => {
-				assert.ok(char instanceof Char)
+	describe('ScannerSolid', () => {
+		describe('#generate', () => {
+			it('yields Character objects.', () => {
+				const scanner: Scanner = new Scanner(mock)
+				;[...scanner.generate()].forEach((char) => {
+					assert.ok(char instanceof Char)
+				})
 			})
 		})
 	})
