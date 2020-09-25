@@ -1,0 +1,205 @@
+[
+	{
+		"name": "PrimitiveLiteral",
+		"defn": [
+			["'null'"],
+			["'false'"],
+			["'true'"],
+			[{"term": "INTEGER"}],
+			[{"term": "FLOAT"}],
+			[{"term": "STRING"}]
+		]
+	},
+	{
+		"name": "TypeKeyword",
+		"defn": [
+			["'bool'"],
+			["'int'"],
+			["'float'"],
+			["'obj'"]
+		]
+	},
+	{
+		"name": "TypeUnit",
+		"defn": [
+			[{"prod": "PrimitiveLiteral"}],
+			[{"prod": "TypeKeyword"}],
+			["'('", {"prod": "Type"}, "')'"]
+		]
+	},
+	{
+		"name": "TypeUnarySymbol",
+		"defn": [
+			[{"prod": "TypeUnit"}],
+			[{"prod": "TypeUnarySymbol"}, "'!'"]
+		]
+	},
+	{
+		"name": "TypeIntersection",
+		"defn": [
+			[                                     {"prod": "TypeUnarySymbol"}],
+			[{"prod": "TypeIntersection"}, "'&'", {"prod": "TypeUnarySymbol"}]
+		]
+	},
+	{
+		"name": "TypeUnion",
+		"defn": [
+			[                              {"prod": "TypeIntersection"}],
+			[{"prod": "TypeUnion"}, "'|'", {"prod": "TypeIntersection"}]
+		]
+	},
+	{
+		"name": "Type",
+		"defn": [
+			[{"prod": "TypeUnion"}]
+		]
+	},
+	{
+		"name": "StringTemplate",
+		"defn": [
+			[{"term": "TEMPLATE_FULL"}],
+			[{"term": "TEMPLATE_HEAD"},                                                              {"term": "TEMPLATE_TAIL"}],
+			[{"term": "TEMPLATE_HEAD"}, {"prod": "Expression"},                                      {"term": "TEMPLATE_TAIL"}],
+			[{"term": "TEMPLATE_HEAD"},                         {"prod": "StringTemplate__0__List"}, {"term": "TEMPLATE_TAIL"}],
+			[{"term": "TEMPLATE_HEAD"}, {"prod": "Expression"}, {"prod": "StringTemplate__0__List"}, {"term": "TEMPLATE_TAIL"}]
+		]
+	},
+	{
+		"name": "StringTemplate__0__List",
+		"defn": [
+			[                                     {"term": "TEMPLATE_MIDDLE"}                        ],
+			[                                     {"term": "TEMPLATE_MIDDLE"}, {"prod": "Expression"}],
+			[{"prod": "StringTemplate__0__List"}, {"term": "TEMPLATE_MIDDLE"}                        ],
+			[{"prod": "StringTemplate__0__List"}, {"term": "TEMPLATE_MIDDLE"}, {"prod": "Expression"}]
+		]
+	},
+	{
+		"name": "ExpressionUnit",
+		"defn": [
+			[{"term": "IDENTIFIER"}],
+			[{"prod": "PrimitiveLiteral"}],
+			[{"prod": "StringTemplate"}],
+			["'('", {"prod": "Expression"}, "')'"]
+		]
+	},
+	{
+		"name": "ExpressionUnarySymbol",
+		"defn": [
+			[{"prod": "ExpressionUnit"}],
+			["'!'", {"prod": "ExpressionUnarySymbol"}],
+			["'?'", {"prod": "ExpressionUnarySymbol"}],
+			["'+'", {"prod": "ExpressionUnarySymbol"}],
+			["'-'", {"prod": "ExpressionUnarySymbol"}]
+		]
+	},
+	{
+		"name": "ExpressionExponential",
+		"defn": [
+			[{"prod": "ExpressionUnarySymbol"}                                          ],
+			[{"prod": "ExpressionUnarySymbol"}, "'^'", {"prod": "ExpressionExponential"}]
+		]
+	},
+	{
+		"name": "ExpressionMultiplicative",
+		"defn": [
+			[                                             {"prod": "ExpressionExponential"}],
+			[{"prod": "ExpressionMultiplicative"}, "'*'", {"prod": "ExpressionExponential"}],
+			[{"prod": "ExpressionMultiplicative"}, "'/'", {"prod": "ExpressionExponential"}]
+		]
+	},
+	{
+		"name": "ExpressionAdditive",
+		"defn": [
+			[                                       {"prod": "ExpressionMultiplicative"}],
+			[{"prod": "ExpressionAdditive"}, "'+'", {"prod": "ExpressionMultiplicative"}],
+			[{"prod": "ExpressionAdditive"}, "'-'", {"prod": "ExpressionMultiplicative"}]
+		]
+	},
+	{
+		"name": "ExpressionComparative",
+		"defn": [
+			[                                           {"prod": "ExpressionAdditive"}],
+			[{"prod": "ExpressionComparative"}, "'<'",  {"prod": "ExpressionAdditive"}],
+			[{"prod": "ExpressionComparative"}, "'>'",  {"prod": "ExpressionAdditive"}],
+			[{"prod": "ExpressionComparative"}, "'<='", {"prod": "ExpressionAdditive"}],
+			[{"prod": "ExpressionComparative"}, "'>='", {"prod": "ExpressionAdditive"}],
+			[{"prod": "ExpressionComparative"}, "'!<'", {"prod": "ExpressionAdditive"}],
+			[{"prod": "ExpressionComparative"}, "'!>'", {"prod": "ExpressionAdditive"}]
+		]
+	},
+	{
+		"name": "ExpressionEquality",
+		"defn": [
+			[                                          {"prod": "ExpressionComparative"}],
+			[{"prod": "ExpressionEquality"}, "'is'",   {"prod": "ExpressionComparative"}],
+			[{"prod": "ExpressionEquality"}, "'isnt'", {"prod": "ExpressionComparative"}],
+			[{"prod": "ExpressionEquality"}, "'=='",   {"prod": "ExpressionComparative"}],
+			[{"prod": "ExpressionEquality"}, "'!='",   {"prod": "ExpressionComparative"}]
+		]
+	},
+	{
+		"name": "ExpressionConjunctive",
+		"defn": [
+			[                                           {"prod": "ExpressionEquality"}],
+			[{"prod": "ExpressionConjunctive"}, "'&&'", {"prod": "ExpressionEquality"}],
+			[{"prod": "ExpressionConjunctive"}, "'!&'", {"prod": "ExpressionEquality"}]
+		]
+	},
+	{
+		"name": "ExpressionDisjunctive",
+		"defn": [
+			[                                           {"prod": "ExpressionConjunctive"}],
+			[{"prod": "ExpressionDisjunctive"}, "'||'", {"prod": "ExpressionConjunctive"}],
+			[{"prod": "ExpressionDisjunctive"}, "'!|'", {"prod": "ExpressionConjunctive"}]
+		]
+	},
+	{
+		"name": "ExpressionConditional",
+		"defn": [
+			["'if'", {"prod": "Expression"}, "'then'", {"prod": "Expression"}, "'else'", {"prod": "Expression"}]
+		]
+	},
+	{
+		"name": "Expression",
+		"defn": [
+			[{"prod": "ExpressionDisjunctive"}],
+			[{"prod": "ExpressionConditional"}]
+		]
+	},
+	{
+		"name": "DeclarationVariable",
+		"defn": [
+			["'let'",              {"term": "IDENTIFIER"}, "':'", {"prod": "Type"}, "'='", {"prod": "Expression"}, "';'"],
+			["'let'", "'unfixed'", {"term": "IDENTIFIER"}, "':'", {"prod": "Type"}, "'='", {"prod": "Expression"}, "';'"]
+		]
+	},
+	{
+		"name": "StatementAssignment",
+		"defn": [
+			[{"term": "IDENTIFIER"}, "'='", {"prod": "Expression"}, "';'"]
+		]
+	},
+	{
+		"name": "Statement",
+		"defn": [
+			[                        "';'"],
+			[{"prod": "Expression"}, "';'"],
+			[{"prod": "DeclarationVariable"}],
+			[{"prod": "StatementAssignment"}]
+		]
+	},
+	{
+		"name": "Goal",
+		"defn": [
+			["'\\u0002'",                            "'\\u0003'"],
+			["'\\u0002'", {"prod": "Goal__0__List"}, "'\\u0003'"]
+		]
+	},
+	{
+		"name": "Goal__0__List",
+		"defn": [
+			[                           {"prod": "Statement"}],
+			[{"prod": "Goal__0__List"}, {"prod": "Statement"}]
+		]
+	}
+]

@@ -7,7 +7,8 @@ import type {
 import type Rule from './Rule.class'
 import Configuration from './Configuration.class'
 import Terminal from './Terminal.class'
-import Production, {
+import Production from './Production.class'
+import {
 	ProductionPrimitiveLiteral,
 	ProductionTypeKeyword,
 	ProductionTypeUnit,
@@ -16,6 +17,7 @@ import Production, {
 	ProductionTypeUnion,
 	ProductionType,
 	ProductionStringTemplate,
+	ProductionStringTemplate__0__List,
 	ProductionExpressionUnit,
 	ProductionExpressionUnarySymbol,
 	ProductionExpressionExponential,
@@ -31,7 +33,8 @@ import Production, {
 	ProductionStatementAssignment,
 	ProductionStatement,
 	ProductionGoal,
-} from './Production.class'
+	ProductionGoal__0__List,
+} from './Production.auto'
 
 
 export type GrammarSymbol   = GrammarTerminal|Production
@@ -60,7 +63,7 @@ export default class Grammar {
 			...(Dev.supports('typingExplicit')  ? [ProductionTypeUnion               .instance] : []),
 			...(Dev.supports('typingExplicit')  ? [ProductionType                    .instance] : []),
 			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate          .instance] : []),
-			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate.__0__List.instance] : []),
+			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate__0__List .instance] : []),
 			ProductionExpressionUnit.instance,
 			ProductionExpressionUnarySymbol.instance,
 			ProductionExpressionExponential.instance,
@@ -76,7 +79,7 @@ export default class Grammar {
 			...(Dev.supports   ('variables')                   ? [ProductionStatementAssignment.instance] : []),
 			ProductionStatement.instance,
 			ProductionGoal.instance,
-			ProductionGoal.__0__List.instance,
+			ProductionGoal__0__List.instance,
 		]
 		if (!this.productions.length) throw new Error('Grammar must have at least one production.')
 		this.productions.forEach((prod) => {

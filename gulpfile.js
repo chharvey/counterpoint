@@ -1,3 +1,4 @@
+const fs = require('fs')
 const fsPromise = require('fs').promises
 
 const gulp       = require('gulp')
@@ -14,6 +15,19 @@ function dist() {
 	return gulp.src('./src/**/*.ts')
 		.pipe(typescript(tsconfig.compilerOptions))
 		.pipe(gulp.dest('./build/'))
+}
+
+async function postdist() {
+	const {default: Production} = require('./build/parser/Production.class.js')
+	return fs.promises.writeFile('./src/parser/Production.auto.ts', `
+		/*-------------------------------------------------------/
+		| WARNING: Do not manually update this file!             |
+		| It is auto-generated via                               |
+		| </src/parser/Production.class.ts#Production#fromJSON>. |
+		| If you need to make updates, make them there.          |
+		/-------------------------------------------------------*/
+		${ await Production.fromJSON(require('./docs/spec/grammar/syntax.json')) }
+	`)
 }
 
 function test() {
@@ -69,7 +83,7 @@ async function test_dev() {
 	])
 }
 
-const build = gulp.parallel(dist, test)
+const build = gulp.parallel(gulp.series(dist, postdist), test)
 
 const dev = gulp.series(dist, test_dev)
 
@@ -97,6 +111,7 @@ async function random() {
 module.exports = {
 	build,
 		dist,
+		postdist,
 		test,
 	dev,
 		test_dev,

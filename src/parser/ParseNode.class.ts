@@ -55,6 +55,7 @@ import {
 	ProductionTypeUnion,
 	ProductionType,
 	ProductionStringTemplate,
+	ProductionStringTemplate__0__List,
 	ProductionExpressionUnit,
 	ProductionExpressionUnarySymbol,
 	ProductionExpressionExponential,
@@ -70,7 +71,8 @@ import {
 	ProductionStatementAssignment,
 	ProductionStatement,
 	ProductionGoal,
-} from './Production.class'
+	ProductionGoal__0__List,
+} from './Production.auto'
 
 
 
@@ -101,7 +103,7 @@ export default abstract class ParseNode implements Serializable {
 			(Dev.supports('typingExplicit')  && rule.production.equals(ProductionTypeUnion                .instance)) ? new ParseNodeTypeBinary              (rule, children) :
 			(Dev.supports('typingExplicit')  && rule.production.equals(ProductionType                     .instance)) ? new ParseNodeType                    (rule, children) :
 			(Dev.supports('literalTemplate') && rule.production.equals(ProductionStringTemplate           .instance)) ? new ParseNodeStringTemplate          (rule, children) :
-			(Dev.supports('literalTemplate') && rule.production.equals(ProductionStringTemplate.__0__List .instance)) ? new ParseNodeStringTemplate__0__List (rule, children) :
+			(Dev.supports('literalTemplate') && rule.production.equals(ProductionStringTemplate__0__List  .instance)) ? new ParseNodeStringTemplate__0__List (rule, children) :
 			(                                   rule.production.equals(ProductionExpressionUnit           .instance)) ? new ParseNodeExpressionUnit          (rule, children) :
 			(                                   rule.production.equals(ProductionExpressionUnarySymbol    .instance)) ? new ParseNodeExpressionUnary         (rule, children) :
 			(                                   rule.production.equals(ProductionExpressionExponential    .instance)) ? new ParseNodeExpressionBinary        (rule, children) :
@@ -117,7 +119,7 @@ export default abstract class ParseNode implements Serializable {
 			(Dev.supports('variables')       && rule.production.equals(ProductionStatementAssignment      .instance)) ? new ParseNodeStatementAssignment     (rule, children) :
 			(                                   rule.production.equals(ProductionStatement                .instance)) ? new ParseNodeStatement               (rule, children) :
 			(                                   rule.production.equals(ProductionGoal                     .instance)) ? new ParseNodeGoal                    (rule, children) :
-			(                                   rule.production.equals(ProductionGoal.__0__List           .instance)) ? new ParseNodeGoal__0__List           (rule, children) :
+			(                                   rule.production.equals(ProductionGoal__0__List            .instance)) ? new ParseNodeGoal__0__List           (rule, children) :
 			(() => { throw new Error(`The given rule \`${ rule.toString() }\` does not match any known grammar productions.`) })()
 		)
 	}
