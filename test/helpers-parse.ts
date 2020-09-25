@@ -2,7 +2,7 @@ import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import {
-	Scanner,
+	ScannerSolid as Scanner,
 	Filebound,
 	Punctuator,
 	TokenFilebound,

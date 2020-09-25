@@ -1,7 +1,9 @@
 import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
-import {Scanner} from '../../src/lexer/'
+import {
+	ScannerSolid as Scanner,
+} from '../../src/lexer/'
 
 
 

@@ -21,7 +21,7 @@ import {
 	ParseNodeGoal__0__List,
 } from '../../src/parser/'
 import {
-	Scanner,
+	ScannerSolid as Scanner,
 	Punctuator,
 	Keyword,
 	TokenFilebound,

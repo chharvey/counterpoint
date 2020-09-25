@@ -20,25 +20,34 @@ import type {Parser} from '../parser/'
  * - computing the string values, including escaping, of string constants (“cooking”)
  * - optimizing identifiers
  */
-export default class Screener {
+export abstract class Screener {
 	/** The result of the lexer iterator. */
 	private iterator_result_token: IteratorResult<Token, void>;
 	/** The current token. */
-	private t0: Token|void;
-	/** A set of all unique identifiers in the program. */
-	private _ids: Set<string> = new Set()
+	private _t0: Token;
 
 	/**
 	 * Construct a new Screener object.
 	 * @param tokengenerator - A token generator produced by a Lexer.
-	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
 		private readonly tokengenerator: Generator<Token>,
-		private readonly config: SolidConfig,
 	) {
 		this.iterator_result_token = this.tokengenerator.next()
-		this.t0 = this.iterator_result_token.value
+		this._t0 = this.iterator_result_token.value as Token
+	}
+
+	get t0(): Token { return this._t0 }
+	get isDone(): boolean { return !!this.iterator_result_token.done }
+
+	/**
+	 * Advance this Screener, lexing the next token and reassigning variables.
+	 */
+	advance(): void {
+		this.iterator_result_token = this.tokengenerator.next()
+		if (!this.iterator_result_token.done) {
+			this._t0 = this.iterator_result_token.value
+		}
 	}
 
 	/**
@@ -46,19 +55,37 @@ export default class Screener {
 	 * Whitespace and comment tokens are filtered out.
 	 * @returns the next token
 	 */
+	abstract generate(): Generator<Token>;
+}
+
+
+
+export class ScreenerSolid extends Screener {
+	/** A set of all unique identifiers in the program. */
+	private _ids: Set<string> = new Set()
+
+	/**
+	 * Construct a new ScreenerSolid object.
+	 * @param tokengenerator - A token generator produced by a Lexer.
+	 * @param config - The configuration settings for an instance program.
+	 */
+	constructor (
+		tokengenerator: Generator<Token>,
+		private readonly config: SolidConfig,
+	) {
+		super(tokengenerator)
+	}
+
 	* generate(): Generator<Token> {
-		while (!this.iterator_result_token.done) {
+		while (!this.isDone) {
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
 				if (Dev.supports('variables') && this.t0 instanceof TokenIdentifier) {
 					this._ids.add(this.t0.source)
 					this.t0.setValue(BigInt([...this._ids].indexOf(this.t0.source)))
 				}
-				if (this.t0 instanceof Token) {
-					yield this.t0
-				}
+				yield this.t0
 			}
-			this.iterator_result_token = this.tokengenerator.next()
-			this.t0 = this.iterator_result_token.value
+			this.advance()
 		}
 	}
 

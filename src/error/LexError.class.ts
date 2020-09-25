@@ -28,7 +28,7 @@ export class LexError01 extends LexError {
 export class LexError02 extends LexError {
 	static readonly CODE = 2
 	constructor (token: Token) {
-		super(`Found end of file before end of ${token.tagname}.`, LexError02.CODE, token.line_index, token.col_index)
+		super(`Found end of file before end of ${ token.tagname }: \`${ token.source }\`.`, LexError02.CODE, token.line_index, token.col_index)
 	}
 }
 export class LexError03 extends LexError {

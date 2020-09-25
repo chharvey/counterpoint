@@ -1,6 +1,6 @@
 import Util from '../class/Util.class'
 import type Serializable from '../iface/Serializable.iface'
-import type Scanner from './Scanner.class'
+import type {Scanner} from './Scanner.class'
 import {
 	Filebound,
 } from './Token.class'

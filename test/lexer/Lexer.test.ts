@@ -4,7 +4,7 @@ import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util  from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
 import {
-	Scanner,
+	ScannerSolid as Scanner,
 	TemplatePosition,
 	TokenFilebound,
 	Token,
@@ -51,7 +51,7 @@ const mock: string = `
 
 
 
-describe('Lexer', () => {
+describe('LexerSolid', () => {
 	describe('#generate', () => {
 		it('recognizes `TokenFilebound` conditions.', () => {
 			const tokens: Token[] = [...new Scanner(mock, CONFIG_DEFAULT).lexer.generate()]

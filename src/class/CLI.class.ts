@@ -5,7 +5,7 @@ import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleI
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 import {
-	Scanner,
+	ScannerSolid as Scanner,
 } from '../lexer/'
 import type {
 	Builder,
