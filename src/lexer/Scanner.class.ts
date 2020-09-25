@@ -11,7 +11,7 @@ import {
  * A Scanner object reads through the source text and returns one character at a time.
  * @see http://parsingintro.sourceforge.net/#contents_item_4.2
  */
-export abstract class Scanner {
+export class Scanner {
 	/** The entire source text of the program. */
 	readonly source_text: string
 
@@ -29,7 +29,11 @@ export abstract class Scanner {
 	 * Return the next character in source text.
 	 * @returns the next character in source text
 	 */
-	abstract generate(): Generator<Char>;
+	* generate(): Generator<Char> {
+		for (let source_index: number = 0; source_index < this.source_text.length; source_index++) {
+			yield new Char(this, source_index)
+		}
+	}
 }
 
 
@@ -45,12 +49,6 @@ export class ScannerSolid extends Scanner {
 		private readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
 		super(source)
-	}
-
-	* generate(): Generator<Char> {
-		for (let source_index: number = 0; source_index < this.source_text.length; source_index++) {
-			yield new Char(this, source_index)
-		}
 	}
 
 	/**

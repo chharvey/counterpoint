@@ -4,7 +4,10 @@ import Util from '../class/Util.class'
 import Dev from '../class/Dev.class'
 import type Serializable from '../iface/Serializable.iface'
 import Char from './Char.class'
-import type {LexerSolid as Lexer} from './Lexer.class'
+import type {
+	Lexer,
+	LexerSolid,
+} from './Lexer.class'
 
 import {
 	LexError02,
@@ -366,10 +369,11 @@ export class TokenNumber extends Token {
 		// const expvalue: number = base ** TokenNumber.tokenWorthInt(exppart, TokenNumber.RADIX_DEFAULT, allow_separators)
 		return (wholevalue + fracvalue) * expvalue
 	}
+	declare protected readonly lexer: LexerSolid;
 	private readonly has_unary: boolean;
 	private readonly has_radix: boolean;
 	private readonly radix: RadixType;
-	constructor (lexer: Lexer, has_unary: boolean, has_radix: boolean = false) {
+	constructor (lexer: LexerSolid, has_unary: boolean, has_radix: boolean = false) {
 		// NB https://github.com/microsoft/TypeScript/issues/8277
 		const buffer: Char[] = []
 		if (has_unary) { // prefixed with leading unary operator "+" or "-"
@@ -500,7 +504,8 @@ export class TokenString extends Token {
 			...TokenString.tokenWorth(text.slice(1), allow_separators),
 		]
 	}
-	constructor (lexer: Lexer) {
+	declare protected readonly lexer: LexerSolid;
+	constructor (lexer: LexerSolid) {
 		super('STRING', lexer, ...lexer.advance())
 		while (!this.lexer.isDone && !Char.eq(TokenString.DELIM, this.lexer.c0)) {
 			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
