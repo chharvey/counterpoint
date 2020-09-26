@@ -9,9 +9,9 @@
 			import type {
 				KleenePlus,
 				GrammarSymbol,
-			} from './Grammar.class';
+			} from '../parser/Grammar.class';
+			import Production from '../parser/Production.class';
 			import * as TERMINAL from './Terminal.class';
-			import Production    from './Production.class';
 			
 				export class ProductionPrimitiveLiteral extends Production {
 					static readonly instance: ProductionPrimitiveLiteral = new ProductionPrimitiveLiteral();

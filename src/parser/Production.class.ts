@@ -42,9 +42,9 @@ export default abstract class Production {
 			import type {
 				KleenePlus,
 				GrammarSymbol,
-			} from './Grammar.class';
+			} from '../parser/Grammar.class';
+			import Production from '../parser/Production.class';
 			import * as TERMINAL from './Terminal.class';
-			import Production    from './Production.class';
 			${ jsons.map((json) => `
 				export class Production${ json.name } extends Production {
 					static readonly instance: Production${ json.name } = new Production${ json.name }();
