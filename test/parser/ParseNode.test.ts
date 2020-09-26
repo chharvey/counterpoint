@@ -48,7 +48,7 @@ import {
 
 
 
-describe('ParseNode', () => {
+describe('ParseNodeSolid', () => {
 	describe('#decorate', () => {
 		context('Goal ::= #x02 #x03', () => {
 			it('makes a SemanticNodeGoal node containing no children.', () => {

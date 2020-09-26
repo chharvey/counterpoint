@@ -116,10 +116,19 @@ export abstract class Parser {
 	}
 
 	/**
+	 * Construct a speific subtype of ParseNode depending on which production the rule belongs to.
+	 *
+	 * @param rule     - The Rule used to create this ParseNode.
+	 * @param children - The set of child inputs that creates this ParseNode.
+	 * @returns          a new ParseNode object
+	 */
+	protected abstract makeParseNode(rule: Rule, children: readonly (Token | PARSENODE.ParseNode)[]): PARSENODE.ParseNode;
+
+	/**
 	 * Main parsing function.
 	 * @returns          a token representing the grammar’s goal symbol
 	 */
-	parse(): PARSENODE.ParseNodeGoal {
+	parse(): PARSENODE.ParseNode {
 		while (!this.iterator_result_token.done) {
 			const curr_state: State = this.stack.length ? this.stack[this.stack.length - 1][1] : this.grammar.closure()
 			const shifted: boolean = this.shift(curr_state)
@@ -138,17 +147,8 @@ export abstract class Parser {
 		}
 		if (this.stack.length < 1) throw new Error('Somehow, the stack was emptied. It should have 1 final element, a top-level rule.')
 		if (this.stack.length > 1) throw new Error('There is still unfinished business: The Stack should have only 1 element left.')
-		return this.stack[0][0] as PARSENODE.ParseNodeGoal
+		return this.stack[0][0] as PARSENODE.ParseNode
 	}
-
-	/**
-	 * Construct a speific subtype of ParseNode depending on which production the rule belongs to.
-	 *
-	 * @param rule     - The Rule used to create this ParseNode.
-	 * @param children - The set of child inputs that creates this ParseNode.
-	 * @returns          a new ParseNode object
-	 */
-	protected abstract makeParseNode(rule: Rule, children: readonly (Token | PARSENODE.ParseNode)[]): PARSENODE.ParseNode;
 }
 
 
@@ -222,6 +222,10 @@ export class ParserSolid extends Parser {
 			(                                   rule.production.equals(PRODUCTION.ProductionGoal__0__List            .instance)) ? new PARSENODE.ParseNodeGoal__0__List           (rule, children) :
 			(() => { throw new Error(`The given rule \`${ rule.toString() }\` does not match any known grammar productions.`) })()
 		)
+	}
+
+	parse(): PARSENODE.ParseNodeGoal {
+		return super.parse() as PARSENODE.ParseNodeGoal
 	}
 
 	/**

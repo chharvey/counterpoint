@@ -82,12 +82,6 @@ export abstract class ParseNode implements Serializable {
 	}
 
 	/**
-	 * Return a Semantic Node, a node of the Semantic Tree or “decorated/abstract syntax tree”.
-	 * @returns a semantic node containing this parse node’s semantics
-	 */
-	abstract decorate(): SemanticNode | SemanticNode[];
-
-	/**
 	 * @implements Serializable
 	 */
 	serialize(): string {
@@ -104,7 +98,17 @@ export abstract class ParseNode implements Serializable {
 
 
 
-export class ParseNodePrimitiveLiteral extends ParseNode {
+abstract class ParseNodeSolid extends ParseNode {
+	/**
+	 * Return a Semantic Node, a node of the Semantic Tree or “decorated/abstract syntax tree”.
+	 * @returns a semantic node containing this parse node’s semantics
+	 */
+	abstract decorate(): SemanticNode | SemanticNode[];
+}
+
+
+
+export class ParseNodePrimitiveLiteral extends ParseNodeSolid {
 	declare children:
 		| readonly [TokenKeyword]
 		| readonly [TokenNumber]
@@ -114,14 +118,14 @@ export class ParseNodePrimitiveLiteral extends ParseNode {
 		return new SemanticNodeConstant(this.children[0])
 	}
 }
-export class ParseNodeTypeKeyword extends ParseNode {
+export class ParseNodeTypeKeyword extends ParseNodeSolid {
 	declare children:
 		| readonly [TokenKeyword]
 	decorate(): SemanticNodeTypeConstant {
 		return new SemanticNodeTypeConstant(this.children[0])
 	}
 }
-export class ParseNodeTypeUnit extends ParseNode {
+export class ParseNodeTypeUnit extends ParseNodeSolid {
 	declare children:
 		| readonly [ParseNodePrimitiveLiteral]
 		| readonly [ParseNodeTypeKeyword]
@@ -134,7 +138,7 @@ export class ParseNodeTypeUnit extends ParseNode {
 			: this.children[1].decorate()
 	}
 }
-export class ParseNodeTypeUnary extends ParseNode {
+export class ParseNodeTypeUnary extends ParseNodeSolid {
 	private static readonly OPERATORS: Map<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
 		[Punctuator.ORNULL, Operator.ORNULL],
 	])
@@ -149,7 +153,7 @@ export class ParseNodeTypeUnary extends ParseNode {
 			])
 	}
 }
-export class ParseNodeTypeBinary extends ParseNode {
+export class ParseNodeTypeBinary extends ParseNodeSolid {
 	private static readonly OPERATORS: Map<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
 		[Punctuator.INTER, Operator.AND],
 		[Punctuator.UNION, Operator.OR],
@@ -166,14 +170,14 @@ export class ParseNodeTypeBinary extends ParseNode {
 			])
 	}
 }
-export class ParseNodeType extends ParseNode {
+export class ParseNodeType extends ParseNodeSolid {
 	declare children:
 		| readonly [ParseNodeTypeBinary]
 	decorate(): SemanticNodeType {
 		return this.children[0].decorate()
 	}
 }
-export class ParseNodeStringTemplate extends ParseNode {
+export class ParseNodeStringTemplate extends ParseNodeSolid {
 	declare children:
 		| readonly [TokenTemplate]
 		| readonly [TokenTemplate,                                                        TokenTemplate]
@@ -194,7 +198,7 @@ type TemplatePartialType = // FIXME spread types
 	// | [...TemplatePartialType, SemanticNodeConstant                        ]
 	// | [...TemplatePartialType, SemanticNodeConstant, SemanticNodeExpression]
 	| SemanticNodeExpression[]
-export class ParseNodeStringTemplate__0__List extends ParseNode {
+export class ParseNodeStringTemplate__0__List extends ParseNodeSolid {
 	declare children:
 		| readonly [                                  TokenTemplate                     ]
 		| readonly [                                  TokenTemplate, ParseNodeExpression]
@@ -208,7 +212,7 @@ export class ParseNodeStringTemplate__0__List extends ParseNode {
 		)
 	}
 }
-export class ParseNodeExpressionUnit extends ParseNode {
+export class ParseNodeExpressionUnit extends ParseNodeSolid {
 	declare children:
 		| readonly [TokenIdentifier] // Dev.supports('variables')
 		| readonly [ParseNodePrimitiveLiteral]
@@ -222,7 +226,7 @@ export class ParseNodeExpressionUnit extends ParseNode {
 			this.children[1].decorate()
 	}
 }
-export class ParseNodeExpressionUnary extends ParseNode {
+export class ParseNodeExpressionUnary extends ParseNodeSolid {
 	private static readonly OPERATORS: Map<Punctuator, Operator> = new Map<Punctuator, Operator>([
 		[Punctuator.NOT, Operator.NOT],
 		[Punctuator.EMP, Operator.EMP],
@@ -244,7 +248,7 @@ export class ParseNodeExpressionUnary extends ParseNode {
 				])
 	}
 }
-export class ParseNodeExpressionBinary extends ParseNode {
+export class ParseNodeExpressionBinary extends ParseNodeSolid {
 	private static readonly OPERATORS: Map<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
 		[Punctuator.EXP,  Operator.EXP],
 		[Punctuator.MUL,  Operator.MUL],
@@ -339,7 +343,7 @@ export class ParseNodeExpressionBinary extends ParseNode {
 		}
 	}
 }
-export class ParseNodeExpressionConditional extends ParseNode {
+export class ParseNodeExpressionConditional extends ParseNodeSolid {
 	declare children:
 		| readonly [
 			TokenKeyword, ParseNodeExpression,
@@ -362,7 +366,7 @@ export class ParseNodeExpression extends ParseNode {
 		return this.children[0].decorate()
 	}
 }
-export class ParseNodeDeclarationVariable extends ParseNode {
+export class ParseNodeDeclarationVariable extends ParseNodeSolid {
 	declare children:
 		| readonly [TokenKeyword,               TokenIdentifier, TokenPunctuator, ParseNodeType, TokenPunctuator, ParseNodeExpression, TokenPunctuator]
 		| readonly [TokenKeyword, TokenKeyword, TokenIdentifier, TokenPunctuator, ParseNodeType, TokenPunctuator, ParseNodeExpression, TokenPunctuator]
@@ -380,7 +384,7 @@ export class ParseNodeDeclarationVariable extends ParseNode {
 		])
 	}
 }
-export class ParseNodeStatementAssignment extends ParseNode {
+export class ParseNodeStatementAssignment extends ParseNodeSolid {
 	declare children:
 		| readonly [TokenIdentifier, TokenPunctuator, ParseNodeExpression, TokenPunctuator]
 	decorate(): SemanticNodeAssignment {
@@ -396,7 +400,7 @@ export class ParseNodeStatementAssignment extends ParseNode {
 		])
 	}
 }
-export class ParseNodeStatement extends ParseNode {
+export class ParseNodeStatement extends ParseNodeSolid {
 	declare children:
 		| readonly [                     TokenPunctuator]
 		| readonly [ParseNodeExpression, TokenPunctuator]
@@ -410,7 +414,7 @@ export class ParseNodeStatement extends ParseNode {
 			])
 	}
 }
-export class ParseNodeGoal extends ParseNode {
+export class ParseNodeGoal extends ParseNodeSolid {
 	declare children:
 		| readonly [TokenFilebound,                         TokenFilebound]
 		| readonly [TokenFilebound, ParseNodeGoal__0__List, TokenFilebound]
@@ -418,7 +422,7 @@ export class ParseNodeGoal extends ParseNode {
 		return new SemanticNodeGoal(this, (this.children.length === 2) ? [] : this.children[1].decorate())
 	}
 }
-export class ParseNodeGoal__0__List extends ParseNode {
+export class ParseNodeGoal__0__List extends ParseNodeSolid {
 	declare children:
 		| readonly [                        ParseNodeStatement]
 		| readonly [ParseNodeGoal__0__List, ParseNodeStatement]

@@ -14,7 +14,6 @@ import {
 	Rule,
 	ParseNode,
 } from '../parser/'
-import type {SemanticNode} from '../validator/'
 import * as TOKEN from './Token.class'
 import * as PRODUCTION from './Production.auto'
 import {
@@ -111,8 +110,14 @@ export class ParserEBNF extends Parser {
 	}
 	protected makeParseNode(rule: Rule, children: readonly (Token | ParseNode)[]): ParseNode {
 		return new (class extends ParseNode {
-			decorate(): SemanticNode {
-				throw new Error('TODO')
+			/**
+			 * Return a JSON object describing an EBNF production.
+			 * Similar to a node of the Semantic Tree or “decorated/abstract syntax tree”.
+			 * @returns a JSON object containing this parse node’s semantics
+			 */
+			decorate(): object {
+				return {
+				}
 			}
 		})(rule, children)
 	}
