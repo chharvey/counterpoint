@@ -7,13 +7,11 @@ import type {
 import {
 	Validator,
 } from '../validator/'
-import Terminal from './Terminal.class'
-import ParseNode, {
-	ParseNodeGoal,
-} from './ParseNode.class'
+import * as PARSENODE from './ParseNode.class'
 import Grammar, {
 	GrammarSymbol,
 } from './Grammar.class'
+import Terminal from './Terminal.class'
 import * as PRODUCTION from './Production.auto'
 import type Rule from './Rule.class'
 import type Configuration from './Configuration.class'
@@ -27,11 +25,11 @@ type State = ReadonlySet<Configuration>
  * An LR(1), shift-reduce Parser.
  * @see http://www2.lawrence.edu/fast/GREGGJ/CMSC515/parsing/LR_parsing.html
  */
-class Parser {
+abstract class Parser {
 	/** The result of the screener iterator. */
 	private iterator_result_token: IteratorResult<Token, void>;
 	/** Working stack of tokens, nodes, and configuration states. */
-	private readonly stack: [Token|ParseNode, State][] = []
+	private readonly stack: [Token | PARSENODE.ParseNode, State][] = []
 	/** Lookahead into the input stream. */
 	private lookahead: Token;
 
@@ -97,8 +95,8 @@ class Parser {
 			)
 			if (reductions.length === 1) {
 				const rule: Rule = reductions[0].rule
-				const children: (Token|ParseNode)[] = rule.symbols.map(() => this.stack.pop() ![0]).reverse()
-				const node: ParseNode = ParseNode.from(rule, children)
+				const children: (Token | PARSENODE.ParseNode)[] = rule.symbols.map(() => this.stack.pop()![0]).reverse()
+				const node: PARSENODE.ParseNode = this.makeParseNode(rule, children)
 				const next_state: Set<Configuration> = new Set<Configuration>((this.stack.length) ?
 					[...this.stack[this.stack.length-1][1]]
 						.filter((config) => config.after[0] === rule.production)
@@ -121,7 +119,7 @@ class Parser {
 	 * Main parsing function.
 	 * @returns          a token representing the grammar’s goal symbol
 	 */
-	parse(): ParseNodeGoal {
+	parse(): PARSENODE.ParseNodeGoal {
 		while (!this.iterator_result_token.done) {
 			const curr_state: State = this.stack.length ? this.stack[this.stack.length - 1][1] : this.grammar.closure()
 			const shifted: boolean = this.shift(curr_state)
@@ -140,8 +138,17 @@ class Parser {
 		}
 		if (this.stack.length < 1) throw new Error('Somehow, the stack was emptied. It should have 1 final element, a top-level rule.')
 		if (this.stack.length > 1) throw new Error('There is still unfinished business: The Stack should have only 1 element left.')
-		return this.stack[0][0] as ParseNodeGoal
+		return this.stack[0][0] as PARSENODE.ParseNodeGoal
 	}
+
+	/**
+	 * Construct a speific subtype of ParseNode depending on which production the rule belongs to.
+	 *
+	 * @param rule     - The Rule used to create this ParseNode.
+	 * @param children - The set of child inputs that creates this ParseNode.
+	 * @returns          a new ParseNode object
+	 */
+	protected abstract makeParseNode(rule: Rule, children: readonly (Token | PARSENODE.ParseNode)[]): PARSENODE.ParseNode;
 }
 
 
@@ -183,6 +190,38 @@ export class ParserSolid extends Parser {
 			PRODUCTION.ProductionGoal.instance,
 			PRODUCTION.ProductionGoal__0__List.instance,
 		], PRODUCTION.ProductionGoal.instance))
+	}
+
+	protected makeParseNode(rule: Rule, children: readonly (Token | PARSENODE.ParseNode)[]): PARSENODE.ParseNode {
+		// NOTE: Need to use a chained if-else instead of a Map because cannot create instance of abstract class (`typeof ParseNode`).
+		return (
+			(                                   rule.production.equals(PRODUCTION.ProductionPrimitiveLiteral         .instance)) ? new PARSENODE.ParseNodePrimitiveLiteral        (rule, children) :
+			(Dev.supports('typingExplicit')  && rule.production.equals(PRODUCTION.ProductionTypeKeyword              .instance)) ? new PARSENODE.ParseNodeTypeKeyword             (rule, children) :
+			(Dev.supports('typingExplicit')  && rule.production.equals(PRODUCTION.ProductionTypeUnit                 .instance)) ? new PARSENODE.ParseNodeTypeUnit                (rule, children) :
+			(Dev.supports('typingExplicit')  && rule.production.equals(PRODUCTION.ProductionTypeUnarySymbol          .instance)) ? new PARSENODE.ParseNodeTypeUnary               (rule, children) :
+			(Dev.supports('typingExplicit')  && rule.production.equals(PRODUCTION.ProductionTypeIntersection         .instance)) ? new PARSENODE.ParseNodeTypeBinary              (rule, children) :
+			(Dev.supports('typingExplicit')  && rule.production.equals(PRODUCTION.ProductionTypeUnion                .instance)) ? new PARSENODE.ParseNodeTypeBinary              (rule, children) :
+			(Dev.supports('typingExplicit')  && rule.production.equals(PRODUCTION.ProductionType                     .instance)) ? new PARSENODE.ParseNodeType                    (rule, children) :
+			(Dev.supports('literalTemplate') && rule.production.equals(PRODUCTION.ProductionStringTemplate           .instance)) ? new PARSENODE.ParseNodeStringTemplate          (rule, children) :
+			(Dev.supports('literalTemplate') && rule.production.equals(PRODUCTION.ProductionStringTemplate__0__List  .instance)) ? new PARSENODE.ParseNodeStringTemplate__0__List (rule, children) :
+			(                                   rule.production.equals(PRODUCTION.ProductionExpressionUnit           .instance)) ? new PARSENODE.ParseNodeExpressionUnit          (rule, children) :
+			(                                   rule.production.equals(PRODUCTION.ProductionExpressionUnarySymbol    .instance)) ? new PARSENODE.ParseNodeExpressionUnary         (rule, children) :
+			(                                   rule.production.equals(PRODUCTION.ProductionExpressionExponential    .instance)) ? new PARSENODE.ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(PRODUCTION.ProductionExpressionMultiplicative .instance)) ? new PARSENODE.ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(PRODUCTION.ProductionExpressionAdditive       .instance)) ? new PARSENODE.ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(PRODUCTION.ProductionExpressionComparative    .instance)) ? new PARSENODE.ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(PRODUCTION.ProductionExpressionEquality       .instance)) ? new PARSENODE.ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(PRODUCTION.ProductionExpressionConjunctive    .instance)) ? new PARSENODE.ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(PRODUCTION.ProductionExpressionDisjunctive    .instance)) ? new PARSENODE.ParseNodeExpressionBinary        (rule, children) :
+			(                                   rule.production.equals(PRODUCTION.ProductionExpressionConditional    .instance)) ? new PARSENODE.ParseNodeExpressionConditional   (rule, children) :
+			(                                   rule.production.equals(PRODUCTION.ProductionExpression               .instance)) ? new PARSENODE.ParseNodeExpression              (rule, children) :
+			(Dev.supports('variables')       && rule.production.equals(PRODUCTION.ProductionDeclarationVariable      .instance)) ? new PARSENODE.ParseNodeDeclarationVariable     (rule, children) :
+			(Dev.supports('variables')       && rule.production.equals(PRODUCTION.ProductionStatementAssignment      .instance)) ? new PARSENODE.ParseNodeStatementAssignment     (rule, children) :
+			(                                   rule.production.equals(PRODUCTION.ProductionStatement                .instance)) ? new PARSENODE.ParseNodeStatement               (rule, children) :
+			(                                   rule.production.equals(PRODUCTION.ProductionGoal                     .instance)) ? new PARSENODE.ParseNodeGoal                    (rule, children) :
+			(                                   rule.production.equals(PRODUCTION.ProductionGoal__0__List            .instance)) ? new PARSENODE.ParseNodeGoal__0__List           (rule, children) :
+			(() => { throw new Error(`The given rule \`${ rule.toString() }\` does not match any known grammar productions.`) })()
+		)
 	}
 
 	/**

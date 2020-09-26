@@ -1,5 +1,5 @@
 import Util from '../class/Util.class'
-import type ParseNode from './ParseNode.class'
+import type {ParseNode} from './ParseNode.class'
 import type {
 	KleenePlus,
 	GrammarSymbol,
