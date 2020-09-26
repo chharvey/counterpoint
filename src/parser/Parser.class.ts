@@ -25,7 +25,7 @@ type State = ReadonlySet<Configuration>
  * An LR(1), shift-reduce Parser.
  * @see http://www2.lawrence.edu/fast/GREGGJ/CMSC515/parsing/LR_parsing.html
  */
-abstract class Parser {
+export abstract class Parser {
 	/** The result of the screener iterator. */
 	private iterator_result_token: IteratorResult<Token, void>;
 	/** Working stack of tokens, nodes, and configuration states. */

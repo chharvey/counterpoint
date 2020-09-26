@@ -9,9 +9,17 @@ import {
 	TokenComment,
 } from '../lexer/'
 import {
+	Parser,
+	Grammar,
+	Rule,
+	ParseNode,
+} from '../parser/'
+import type {SemanticNode} from '../validator/'
+import * as TOKEN from './Token.class'
+import * as PRODUCTION from './Production.auto'
+import {
 	LexError01,
 } from '../error/LexError.class'
-import * as TOKEN from './Token.class'
 
 
 
@@ -76,5 +84,36 @@ export class ScreenerEBNF extends Screener {
 			}
 			this.advance()
 		}
+	}
+}
+
+
+
+export class ParserEBNF extends Parser {
+	constructor (source: string) {
+		super(new ScreenerEBNF(source).generate(), new Grammar([
+			PRODUCTION.ProductionNonterminalDefinition        .instance,
+			PRODUCTION.ProductionIdentifier__CSL              .instance,
+			PRODUCTION.ProductionNonterminalReference         .instance,
+			PRODUCTION.ProductionNonterminalReference__0__CSL .instance,
+			PRODUCTION.ProductionCondition                    .instance,
+			PRODUCTION.ProductionCondition__0__CSL            .instance,
+			PRODUCTION.ProductionUnit                         .instance,
+			PRODUCTION.ProductionUnary                        .instance,
+			PRODUCTION.ProductionItem                         .instance,
+			PRODUCTION.ProductionItem__List                   .instance,
+			PRODUCTION.ProductionSequence                     .instance,
+			PRODUCTION.ProductionChoice                       .instance,
+			PRODUCTION.ProductionProduction                   .instance,
+			PRODUCTION.ProductionGrammar                      .instance,
+			PRODUCTION.ProductionProduction__List             .instance,
+		], PRODUCTION.ProductionGrammar.instance))
+	}
+	protected makeParseNode(rule: Rule, children: readonly (Token | ParseNode)[]): ParseNode {
+		return new (class extends ParseNode {
+			decorate(): SemanticNode {
+				throw new Error('TODO')
+			}
+		})(rule, children)
 	}
 }
