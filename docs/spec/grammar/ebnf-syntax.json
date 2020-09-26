@@ -1,0 +1,123 @@
+[
+	{
+		"name": "NonterminalDefinition",
+		"defn": [
+			[{"term": "IDENTIFIER"}],
+			[{"term": "IDENTIFIER"}, "'<'", {"prod": "Identifier__CSL"}, "'>'"]
+		]
+	},
+	{
+		"name": "Identifier__CSL",
+		"defn": [
+			[                                    {"term": "IDENTIFIER"}],
+			[{"prod": "Identifier__CSL"}, "','", {"term": "IDENTIFIER"}]
+		]
+	},
+	{
+		"name": "NonterminalReference",
+		"defn": [
+			[{"term": "IDENTIFIER"}],
+			[{"term": "IDENTIFIER"}, "'<'", {"prod": "NonterminalReference__0__CSL"}, "'>'"]
+		]
+	},
+	{
+		"name": "NonterminalReference__0__CSL",
+		"defn": [
+			[                                                 "'+'", {"term": "IDENTIFIER"}],
+			[                                                 "'-'", {"term": "IDENTIFIER"}],
+			[                                                 "'?'", {"term": "IDENTIFIER"}],
+			[{"prod": "NonterminalReference__0__CSL"}, "','", "'+'", {"term": "IDENTIFIER"}],
+			[{"prod": "NonterminalReference__0__CSL"}, "','", "'-'", {"term": "IDENTIFIER"}],
+			[{"prod": "NonterminalReference__0__CSL"}, "','", "'?'", {"term": "IDENTIFIER"}]
+		]
+	},
+	{
+		"name": "Condition",
+		"defn": [
+			["'<'", {"prod": "Condition__0__CSL"}, "'>'"]
+		]
+	},
+	{
+		"name": "Condition__0__CSL",
+		"defn": [
+			[                                      {"term": "IDENTIFIER"}, "'+'"],
+			[                                      {"term": "IDENTIFIER"}, "'-'"],
+			[{"prod": "Condition__0__CSL"}, "','", {"term": "IDENTIFIER"}, "'+'"],
+			[{"prod": "Condition__0__CSL"}, "','", {"term": "IDENTIFIER"}, "'-'"]
+		]
+	},
+	{
+		"name": "Unit",
+		"defn": [
+			[{"term": "CHAR_CODE"}],
+			[{"term": "STRING"}],
+			[{"term": "CHAR_CLASS"}],
+			[{"prod": "NonterminalReference"}],
+			["'('", {"prod": "Choice"}, "')'"]
+		]
+	},
+	{
+		"name": "Unary",
+		"defn": [
+			[{"prod": "Unit"}],
+			[{"prod": "Unit"}, "'+'"],
+			[{"prod": "Unit"}, "'*'"],
+			[{"prod": "Unit"}, "'#'"],
+			[{"prod": "Unit"},        "'?'"],
+			[{"prod": "Unit"}, "'+'", "'?'"],
+			[{"prod": "Unit"}, "'*'", "'?'"],
+			[{"prod": "Unit"}, "'#'", "'?'"]
+		]
+	},
+	{
+		"name": "Item",
+		"defn": [
+			[{"prod": "Unary"}],
+			[{"prod": "Condition"}, {"prod": "Item"}]
+		]
+	},
+	{
+		"name": "Item__List",
+		"defn": [
+			[                        {"prod": "Item"}],
+			[{"prod": "Item__List"}, {"prod": "Item"}]
+		]
+	},
+	{
+		"name": "Sequence",
+		"defn": [
+			[                             {"prod": "Item__List"}],
+			[{"prod": "Sequence"}, "'&'", {"prod": "Item__List"}]
+		]
+	},
+	{
+		"name": "Choice",
+		"defn": [
+			[                           {"prod": "Sequence"}],
+			[{"prod": "Choice"}, "'|'", {"prod": "Sequence"}]
+		]
+	},
+	{
+		"name": "Production",
+		"defn": [
+			[{"prod": "NonterminalDefinition"}, "':::='",        {"prod": "Choice"}, "';'"],
+			[{"prod": "NonterminalDefinition"}, "'::='",         {"prod": "Choice"}, "';'"],
+			[{"prod": "NonterminalDefinition"}, "':::='", "'|'", {"prod": "Choice"}, "';'"],
+			[{"prod": "NonterminalDefinition"}, "'::='",  "'|'", {"prod": "Choice"}, "';'"]
+		]
+	},
+	{
+		"name": "Grammar",
+		"defn": [
+			["'\\u0002'",                               "'\\u0003'"],
+			["'\\u0002'", {"prod": "Production__List"}, "'\\u0003'"]
+		]
+	},
+	{
+		"name": "Production__List",
+		"defn": [
+			[                              {"prod": "Production"}],
+			[{"prod": "Production__List"}, {"prod": "Production"}]
+		]
+	}
+]

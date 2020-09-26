@@ -1,0 +1,47 @@
+IDENTIFIER  ::= [./ebnf-lexicon.ebnf#Identifier];
+CHAR_CODE   ::= [./ebnf-lexicon.ebnf#CharCode];
+STRING      ::= [./ebnf-lexicon.ebnf#String];
+CHAR_CLASS  ::= [./ebnf-lexicon.ebnf#CharClass];
+
+
+
+NonterminalDefinition ::= IDENTIFIER ("<" IDENTIFIER#                     ">")?;
+NonterminalReference  ::= IDENTIFIER ("<" (("+" | "-" | "?") IDENTIFIER)# ">")?;
+Condition             ::=             "<" (IDENTIFIER ("+" | "-")      )# ">"  ;
+
+
+
+Unit ::=
+	| CHAR_CODE
+	| STRING
+	| CHAR_CLASS
+	| NonterminalReference
+	| "(" Choice ")"
+;
+
+
+
+Unary
+	::= Unit ("+" | "*" | "#")? "?"?;
+
+
+
+Item ::=
+	| Unary
+	| Condition Item
+;
+
+
+
+Sequence ::= (Sequence "&")? Item+;
+Choice   ::= (Choice   "|")? Sequence;
+
+
+
+Production
+	::= NonterminalDefinition (":::=" | "::=") "|"? Choice ";";
+
+
+
+Grammar
+	::= #x02 Production* #x03;

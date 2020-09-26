@@ -19,15 +19,24 @@ function dist() {
 
 async function postdist() {
 	const {default: Production} = require('./build/parser/Production.class.js')
-	return fs.promises.writeFile('./src/parser/Production.auto.ts', `
+	const preamble = `
 		/*-------------------------------------------------------/
 		| WARNING: Do not manually update this file!             |
 		| It is auto-generated via                               |
 		| </src/parser/Production.class.ts#Production#fromJSON>. |
 		| If you need to make updates, make them there.          |
 		/-------------------------------------------------------*/
-		${ await Production.fromJSON(require('./docs/spec/grammar/syntax.json')) }
-	`)
+	`
+	return Promise.all([
+		fs.promises.writeFile('./src/parser/Production.auto.ts', `
+			${ preamble }
+			${ await Production.fromJSON(require('./docs/spec/grammar/syntax.json')) }
+		`),
+		fs.promises.writeFile('./src/ebnf/Production.auto.ts', `
+			${ preamble }
+			${ await Production.fromJSON(require('./docs/spec/grammar/ebnf-syntax.json')) }
+		`),
+	])
 }
 
 function test() {
