@@ -53,7 +53,7 @@
 			[{"term": "STRING"}],
 			[{"term": "CHAR_CLASS"}],
 			[{"prod": "NonterminalReference"}],
-			["'('", {"prod": "Choice"}, "')'"]
+			["'('", {"prod": "Altern"}, "')'"]
 		]
 	},
 	{
@@ -84,26 +84,26 @@
 		]
 	},
 	{
-		"name": "Sequence",
+		"name": "Concat",
 		"defn": [
-			[                             {"prod": "Item__List"}],
-			[{"prod": "Sequence"}, "'&'", {"prod": "Item__List"}]
+			[                           {"prod": "Item__List"}],
+			[{"prod": "Concat"}, "'&'", {"prod": "Item__List"}]
 		]
 	},
 	{
-		"name": "Choice",
+		"name": "Altern",
 		"defn": [
-			[                           {"prod": "Sequence"}],
-			[{"prod": "Choice"}, "'|'", {"prod": "Sequence"}]
+			[                           {"prod": "Concat"}],
+			[{"prod": "Altern"}, "'|'", {"prod": "Concat"}]
 		]
 	},
 	{
 		"name": "Production",
 		"defn": [
-			[{"prod": "NonterminalDefinition"}, "':::='",        {"prod": "Choice"}, "';'"],
-			[{"prod": "NonterminalDefinition"}, "'::='",         {"prod": "Choice"}, "';'"],
-			[{"prod": "NonterminalDefinition"}, "':::='", "'|'", {"prod": "Choice"}, "';'"],
-			[{"prod": "NonterminalDefinition"}, "'::='",  "'|'", {"prod": "Choice"}, "';'"]
+			[{"prod": "NonterminalDefinition"}, "':::='",        {"prod": "Altern"}, "';'"],
+			[{"prod": "NonterminalDefinition"}, "'::='",         {"prod": "Altern"}, "';'"],
+			[{"prod": "NonterminalDefinition"}, "':::='", "'|'", {"prod": "Altern"}, "';'"],
+			[{"prod": "NonterminalDefinition"}, "'::='",  "'|'", {"prod": "Altern"}, "';'"]
 		]
 	},
 	{

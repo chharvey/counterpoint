@@ -16,7 +16,7 @@ Unit ::=
 	| STRING
 	| CHAR_CLASS
 	| NonterminalReference
-	| "(" Choice ")"
+	| "(" Altern ")"
 ;
 
 
@@ -33,13 +33,13 @@ Item ::=
 
 
 
-Sequence ::= (Sequence "&")? Item+;
-Choice   ::= (Choice   "|")? Sequence;
+Concat ::= (Concat "&")? Item+;
+Altern ::= (Altern "|")? Concat;
 
 
 
 Production
-	::= NonterminalDefinition (":::=" | "::=") "|"? Choice ";";
+	::= NonterminalDefinition (":::=" | "::=") "|"? Altern ";";
 
 
 
