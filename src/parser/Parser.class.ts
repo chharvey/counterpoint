@@ -1,4 +1,5 @@
 import type SolidConfig from '../SolidConfig'
+import Dev from '../class/Dev.class'
 
 import type {
 	Token,
@@ -13,6 +14,7 @@ import ParseNode, {
 import Grammar, {
 	GrammarSymbol,
 } from './Grammar.class'
+import * as PRODUCTION from './Production.auto'
 import type Rule from './Rule.class'
 import type Configuration from './Configuration.class'
 
@@ -25,9 +27,7 @@ type State = ReadonlySet<Configuration>
  * An LR(1), shift-reduce Parser.
  * @see http://www2.lawrence.edu/fast/GREGGJ/CMSC515/parsing/LR_parsing.html
  */
-export default class Parser {
-	/** The syntactic grammar of the language used in parsing. */
-	private readonly grammar: Grammar;
+class Parser {
 	/** The result of the screener iterator. */
 	private iterator_result_token: IteratorResult<Token, void>;
 	/** Working stack of tokens, nodes, and configuration states. */
@@ -38,13 +38,12 @@ export default class Parser {
 	/**
 	 * Construct a new Parser object.
 	 * @param tokengenerator - A token generator produced by a Screener.
-	 * @param config - The configuration settings for an instance program.
+	 * @param grammar - The syntactic grammar of the language used in parsing.
 	 */
 	constructor (
 		private readonly tokengenerator: Generator<Token>,
-		private readonly config: SolidConfig,
+		private readonly grammar: Grammar,
 	) {
-		this.grammar = new Grammar()
 		this.iterator_result_token = this.tokengenerator.next()
 		this.lookahead = this.iterator_result_token.value as Token
 	}
@@ -142,6 +141,48 @@ export default class Parser {
 		if (this.stack.length < 1) throw new Error('Somehow, the stack was emptied. It should have 1 final element, a top-level rule.')
 		if (this.stack.length > 1) throw new Error('There is still unfinished business: The Stack should have only 1 element left.')
 		return this.stack[0][0] as ParseNodeGoal
+	}
+}
+
+
+
+export class ParserSolid extends Parser {
+	/**
+	 * Construct a new ParserSolid object.
+	 * @param tokengenerator - A token generator produced by a Screener.
+	 * @param config - The configuration settings for an instance program.
+	 */
+	constructor (
+		tokengenerator: Generator<Token>,
+		private readonly config: SolidConfig,
+	) {
+		super(tokengenerator, new Grammar([
+			PRODUCTION.ProductionPrimitiveLiteral.instance,
+			...(Dev.supports('typingExplicit')  ? [PRODUCTION.ProductionTypeKeyword             .instance] : []),
+			...(Dev.supports('typingExplicit')  ? [PRODUCTION.ProductionTypeUnit                .instance] : []),
+			...(Dev.supports('typingExplicit')  ? [PRODUCTION.ProductionTypeUnarySymbol         .instance] : []),
+			...(Dev.supports('typingExplicit')  ? [PRODUCTION.ProductionTypeIntersection        .instance] : []),
+			...(Dev.supports('typingExplicit')  ? [PRODUCTION.ProductionTypeUnion               .instance] : []),
+			...(Dev.supports('typingExplicit')  ? [PRODUCTION.ProductionType                    .instance] : []),
+			...(Dev.supports('literalTemplate') ? [PRODUCTION.ProductionStringTemplate          .instance] : []),
+			...(Dev.supports('literalTemplate') ? [PRODUCTION.ProductionStringTemplate__0__List .instance] : []),
+			PRODUCTION.ProductionExpressionUnit           .instance,
+			PRODUCTION.ProductionExpressionUnarySymbol    .instance,
+			PRODUCTION.ProductionExpressionExponential    .instance,
+			PRODUCTION.ProductionExpressionMultiplicative .instance,
+			PRODUCTION.ProductionExpressionAdditive       .instance,
+			PRODUCTION.ProductionExpressionComparative    .instance,
+			PRODUCTION.ProductionExpressionEquality       .instance,
+			PRODUCTION.ProductionExpressionConjunctive    .instance,
+			PRODUCTION.ProductionExpressionDisjunctive    .instance,
+			PRODUCTION.ProductionExpressionConditional    .instance,
+			PRODUCTION.ProductionExpression               .instance,
+			...(Dev.supportsAll('variables', 'typingExplicit') ? [PRODUCTION.ProductionDeclarationVariable.instance] : []),
+			...(Dev.supports   ('variables')                   ? [PRODUCTION.ProductionStatementAssignment.instance] : []),
+			PRODUCTION.ProductionStatement.instance,
+			PRODUCTION.ProductionGoal.instance,
+			PRODUCTION.ProductionGoal__0__List.instance,
+		], PRODUCTION.ProductionGoal.instance))
 	}
 
 	/**

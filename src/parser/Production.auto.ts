@@ -6,22 +6,25 @@
 		| If you need to make updates, make them there.          |
 		/-------------------------------------------------------*/
 		
-			import type {GrammarSymbol}     from './Grammar.class';
-			import * as Terminal            from './Terminal.class';
-			import Production, {KleenePlus} from './Production.class';
+			import type {
+				KleenePlus,
+				GrammarSymbol,
+			} from './Grammar.class';
+			import * as TERMINAL from './Terminal.class';
+			import Production    from './Production.class';
 			
 				export class ProductionPrimitiveLiteral extends Production {
 					static readonly instance: ProductionPrimitiveLiteral = new ProductionPrimitiveLiteral();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							['null'],['false'],['true'],[Terminal.TerminalInteger.instance],[Terminal.TerminalFloat.instance],[Terminal.TerminalString.instance],
+							['null'],['false'],['true'],[TERMINAL.TerminalInteger.instance],[TERMINAL.TerminalFloat.instance],[TERMINAL.TerminalString.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/6 ? ['null'] : random < 2/6 ? ['false'] : random < 3/6 ? ['true'] : random < 4/6 ? [Terminal.TerminalInteger.instance.random()] : random < 5/6 ? [Terminal.TerminalFloat.instance.random()] :
-							[Terminal.TerminalString.instance.random()]
+							random < 1/6 ? ['null'] : random < 2/6 ? ['false'] : random < 3/6 ? ['true'] : random < 4/6 ? [TERMINAL.TerminalInteger.instance.random()] : random < 5/6 ? [TERMINAL.TerminalFloat.instance.random()] :
+							[TERMINAL.TerminalString.instance.random()]
 						);
 					}
 				}
@@ -126,14 +129,14 @@
 					static readonly instance: ProductionStringTemplate = new ProductionStringTemplate();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[Terminal.TerminalTemplateFull.instance],[Terminal.TerminalTemplateHead.instance,Terminal.TerminalTemplateTail.instance],[Terminal.TerminalTemplateHead.instance,ProductionExpression.instance,Terminal.TerminalTemplateTail.instance],[Terminal.TerminalTemplateHead.instance,ProductionStringTemplate__0__List.instance,Terminal.TerminalTemplateTail.instance],[Terminal.TerminalTemplateHead.instance,ProductionExpression.instance,ProductionStringTemplate__0__List.instance,Terminal.TerminalTemplateTail.instance],
+							[TERMINAL.TerminalTemplateFull.instance],[TERMINAL.TerminalTemplateHead.instance,TERMINAL.TerminalTemplateTail.instance],[TERMINAL.TerminalTemplateHead.instance,ProductionExpression.instance,TERMINAL.TerminalTemplateTail.instance],[TERMINAL.TerminalTemplateHead.instance,ProductionStringTemplate__0__List.instance,TERMINAL.TerminalTemplateTail.instance],[TERMINAL.TerminalTemplateHead.instance,ProductionExpression.instance,ProductionStringTemplate__0__List.instance,TERMINAL.TerminalTemplateTail.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/5 ? [Terminal.TerminalTemplateFull.instance.random()] : random < 2/5 ? [Terminal.TerminalTemplateHead.instance.random(),Terminal.TerminalTemplateTail.instance.random()] : random < 3/5 ? [Terminal.TerminalTemplateHead.instance.random(),...ProductionExpression.instance.random(),Terminal.TerminalTemplateTail.instance.random()] : random < 4/5 ? [Terminal.TerminalTemplateHead.instance.random(),...ProductionStringTemplate__0__List.instance.random(),Terminal.TerminalTemplateTail.instance.random()] :
-							[Terminal.TerminalTemplateHead.instance.random(),...ProductionExpression.instance.random(),...ProductionStringTemplate__0__List.instance.random(),Terminal.TerminalTemplateTail.instance.random()]
+							random < 1/5 ? [TERMINAL.TerminalTemplateFull.instance.random()] : random < 2/5 ? [TERMINAL.TerminalTemplateHead.instance.random(),TERMINAL.TerminalTemplateTail.instance.random()] : random < 3/5 ? [TERMINAL.TerminalTemplateHead.instance.random(),...ProductionExpression.instance.random(),TERMINAL.TerminalTemplateTail.instance.random()] : random < 4/5 ? [TERMINAL.TerminalTemplateHead.instance.random(),...ProductionStringTemplate__0__List.instance.random(),TERMINAL.TerminalTemplateTail.instance.random()] :
+							[TERMINAL.TerminalTemplateHead.instance.random(),...ProductionExpression.instance.random(),...ProductionStringTemplate__0__List.instance.random(),TERMINAL.TerminalTemplateTail.instance.random()]
 						);
 					}
 				}
@@ -142,14 +145,14 @@
 					static readonly instance: ProductionStringTemplate__0__List = new ProductionStringTemplate__0__List();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[Terminal.TerminalTemplateMiddle.instance],[Terminal.TerminalTemplateMiddle.instance,ProductionExpression.instance],[ProductionStringTemplate__0__List.instance,Terminal.TerminalTemplateMiddle.instance],[ProductionStringTemplate__0__List.instance,Terminal.TerminalTemplateMiddle.instance,ProductionExpression.instance],
+							[TERMINAL.TerminalTemplateMiddle.instance],[TERMINAL.TerminalTemplateMiddle.instance,ProductionExpression.instance],[ProductionStringTemplate__0__List.instance,TERMINAL.TerminalTemplateMiddle.instance],[ProductionStringTemplate__0__List.instance,TERMINAL.TerminalTemplateMiddle.instance,ProductionExpression.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/4 ? [Terminal.TerminalTemplateMiddle.instance.random()] : random < 2/4 ? [Terminal.TerminalTemplateMiddle.instance.random(),...ProductionExpression.instance.random()] : random < 3/4 ? [...ProductionStringTemplate__0__List.instance.random(),Terminal.TerminalTemplateMiddle.instance.random()] :
-							[...ProductionStringTemplate__0__List.instance.random(),Terminal.TerminalTemplateMiddle.instance.random(),...ProductionExpression.instance.random()]
+							random < 1/4 ? [TERMINAL.TerminalTemplateMiddle.instance.random()] : random < 2/4 ? [TERMINAL.TerminalTemplateMiddle.instance.random(),...ProductionExpression.instance.random()] : random < 3/4 ? [...ProductionStringTemplate__0__List.instance.random(),TERMINAL.TerminalTemplateMiddle.instance.random()] :
+							[...ProductionStringTemplate__0__List.instance.random(),TERMINAL.TerminalTemplateMiddle.instance.random(),...ProductionExpression.instance.random()]
 						);
 					}
 				}
@@ -158,13 +161,13 @@
 					static readonly instance: ProductionExpressionUnit = new ProductionExpressionUnit();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[Terminal.TerminalIdentifier.instance],[ProductionPrimitiveLiteral.instance],[ProductionStringTemplate.instance],['(',ProductionExpression.instance,')'],
+							[TERMINAL.TerminalIdentifier.instance],[ProductionPrimitiveLiteral.instance],[ProductionStringTemplate.instance],['(',ProductionExpression.instance,')'],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/4 ? [Terminal.TerminalIdentifier.instance.random()] : random < 2/4 ? [...ProductionPrimitiveLiteral.instance.random()] : random < 3/4 ? [...ProductionStringTemplate.instance.random()] :
+							random < 1/4 ? [TERMINAL.TerminalIdentifier.instance.random()] : random < 2/4 ? [...ProductionPrimitiveLiteral.instance.random()] : random < 3/4 ? [...ProductionStringTemplate.instance.random()] :
 							['(',...ProductionExpression.instance.random(),')']
 						);
 					}
@@ -334,14 +337,14 @@
 					static readonly instance: ProductionDeclarationVariable = new ProductionDeclarationVariable();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							['let',Terminal.TerminalIdentifier.instance,':',ProductionType.instance,'=',ProductionExpression.instance,';'],['let','unfixed',Terminal.TerminalIdentifier.instance,':',ProductionType.instance,'=',ProductionExpression.instance,';'],
+							['let',TERMINAL.TerminalIdentifier.instance,':',ProductionType.instance,'=',ProductionExpression.instance,';'],['let','unfixed',TERMINAL.TerminalIdentifier.instance,':',ProductionType.instance,'=',ProductionExpression.instance,';'],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/2 ? ['let',Terminal.TerminalIdentifier.instance.random(),':',...ProductionType.instance.random(),'=',...ProductionExpression.instance.random(),';'] :
-							['let','unfixed',Terminal.TerminalIdentifier.instance.random(),':',...ProductionType.instance.random(),'=',...ProductionExpression.instance.random(),';']
+							random < 1/2 ? ['let',TERMINAL.TerminalIdentifier.instance.random(),':',...ProductionType.instance.random(),'=',...ProductionExpression.instance.random(),';'] :
+							['let','unfixed',TERMINAL.TerminalIdentifier.instance.random(),':',...ProductionType.instance.random(),'=',...ProductionExpression.instance.random(),';']
 						);
 					}
 				}
@@ -350,14 +353,14 @@
 					static readonly instance: ProductionStatementAssignment = new ProductionStatementAssignment();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[Terminal.TerminalIdentifier.instance,'=',ProductionExpression.instance,';'],
+							[TERMINAL.TerminalIdentifier.instance,'=',ProductionExpression.instance,';'],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							
-							[Terminal.TerminalIdentifier.instance.random(),'=',...ProductionExpression.instance.random(),';']
+							[TERMINAL.TerminalIdentifier.instance.random(),'=',...ProductionExpression.instance.random(),';']
 						);
 					}
 				}

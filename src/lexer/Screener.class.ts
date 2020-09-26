@@ -6,7 +6,7 @@ import Token, {
 	TokenIdentifier,
 	TokenComment,
 } from './Token.class'
-import type {Parser} from '../parser/'
+import type {ParserSolid as Parser} from '../parser/'
 
 
 
@@ -94,7 +94,7 @@ export class ScreenerSolid extends Screener {
 	 * @return a new Parser with this Screener as its argument
 	 */
 	get parser(): Parser {
-		const Parser_class: typeof Parser = require('../parser/').Parser
+		const Parser_class: typeof Parser = require('../parser/').ParserSolid
 		return new Parser_class(this.generate(), this.config)
 	}
 }

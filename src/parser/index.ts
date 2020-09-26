@@ -1,4 +1,7 @@
-export {default as Parser}        from './Parser.class'
+export {
+	ParserSolid,
+} from './Parser.class'
+
 export {default as ParseNode}     from './ParseNode.class'
 export {default as Grammar}       from './Grammar.class'
 export {default as Rule}          from './Rule.class'
