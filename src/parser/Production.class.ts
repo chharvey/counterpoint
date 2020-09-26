@@ -1,18 +1,16 @@
+import type {
+	KleenePlus,
+	EBNFObject,
+	EBNFItem,
+} from '../types.d'
 import Util from '../class/Util.class'
 import type {ParseNode} from './ParseNode.class'
 import type {
-	KleenePlus,
 	GrammarSymbol,
 } from './Grammar.class'
 import Rule from './Rule.class'
 
 
-
-type JSONSequence = KleenePlus<JSONItem>
-type JSONItem =
-	| string
-	| { term: string }
-	| { prod: string }
 
 /**
  * A Production is an item in a formal context-free grammar.
@@ -27,11 +25,8 @@ export default abstract class Production {
 	 * @param json JSON objects representing a production
 	 * @returns a string to print to a TypeScript file
 	 */
-	static fromJSON(jsons: {
-		name: string,
-		defn: KleenePlus<JSONSequence>,
-	}[]): string {
-		function randomCallback(it: JSONItem) {
+	static fromJSON(jsons: EBNFObject[]): string {
+		function randomCallback(it: EBNFItem) {
 			return (
 				(typeof it === 'string') ? it :
 				('term' in it) ? `TERMINAL.Terminal${ Util.screamingToPascal(it.term) }.instance.random()` :
@@ -41,6 +36,8 @@ export default abstract class Production {
 		return `
 			import type {
 				KleenePlus,
+			} from '../types.d';
+			import type {
 				GrammarSymbol,
 			} from '../parser/Grammar.class';
 			import Production from '../parser/Production.class';

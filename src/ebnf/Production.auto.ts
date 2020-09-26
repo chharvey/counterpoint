@@ -10,6 +10,8 @@
 			
 			import type {
 				KleenePlus,
+			} from '../types.d';
+			import type {
 				GrammarSymbol,
 			} from '../parser/Grammar.class';
 			import Production from '../parser/Production.class';
