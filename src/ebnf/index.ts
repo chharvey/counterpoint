@@ -126,3 +126,49 @@ export class ParserEBNF extends Parser {
 		]))
 	}
 }
+
+
+
+export class Decorator {
+	/**
+	 * Return a JSON object describing an EBNF production.
+	 * Similar to a node of the Semantic Tree or “decorated/abstract syntax tree”.
+	 * @returns a JSON object containing the parse node’s semantics
+	 */
+	decorate(node: PARSENODE.ParseNodeNonterminalDefinition):        any;
+	decorate(node: PARSENODE.ParseNodeIdentifier__CSL):              any;
+	decorate(node: PARSENODE.ParseNodeNonterminalReference):         any;
+	decorate(node: PARSENODE.ParseNodeNonterminalReference__0__CSL): any;
+	decorate(node: PARSENODE.ParseNodeCondition):                    any;
+	decorate(node: PARSENODE.ParseNodeCondition__0__CSL):            any;
+	decorate(node: PARSENODE.ParseNodeUnit):                         any;
+	decorate(node: PARSENODE.ParseNodeUnary):                        any;
+	decorate(node: PARSENODE.ParseNodeItem):                         any;
+	decorate(node: PARSENODE.ParseNodeItem__List):                   any;
+	decorate(node: PARSENODE.ParseNodeConcat):                       any;
+	decorate(node: PARSENODE.ParseNodeAltern):                       any;
+	decorate(node: PARSENODE.ParseNodeProduction):                   any;
+	decorate(node: PARSENODE.ParseNodeGrammar):                      any;
+	decorate(node: PARSENODE.ParseNodeProduction__List):             any;
+	decorate(node: ParseNode): any;
+	decorate(node: ParseNode): any {
+		if (node instanceof PARSENODE.ParseNodeNonterminalDefinition) {
+		} else if (node instanceof PARSENODE.ParseNodeIdentifier__CSL) {
+		} else if (node instanceof PARSENODE.ParseNodeNonterminalReference) {
+		} else if (node instanceof PARSENODE.ParseNodeNonterminalReference__0__CSL) {
+		} else if (node instanceof PARSENODE.ParseNodeCondition) {
+		} else if (node instanceof PARSENODE.ParseNodeCondition__0__CSL) {
+		} else if (node instanceof PARSENODE.ParseNodeUnit) {
+		} else if (node instanceof PARSENODE.ParseNodeUnary) {
+		} else if (node instanceof PARSENODE.ParseNodeItem) {
+		} else if (node instanceof PARSENODE.ParseNodeItem__List) {
+		} else if (node instanceof PARSENODE.ParseNodeConcat) {
+		} else if (node instanceof PARSENODE.ParseNodeAltern) {
+		} else if (node instanceof PARSENODE.ParseNodeProduction) {
+		} else if (node instanceof PARSENODE.ParseNodeGrammar) {
+		} else if (node instanceof PARSENODE.ParseNodeProduction__List) {
+		} else {
+			throw new ReferenceError(`Could not find type of parse node ${ node }.`)
+		}
+	}
+}
