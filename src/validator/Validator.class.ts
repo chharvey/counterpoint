@@ -10,31 +10,17 @@ import Operator, {
 import Token, {
 	Punctuator,
 	Keyword,
+	TokenKeyword,
 	TokenIdentifier,
+	TokenNumber,
+	TokenString,
 	TokenTemplate,
 } from '../lexer/Token.class'
 import {
 	ParseNode,
-	ParseNodePrimitiveLiteral,
-	ParseNodeTypeKeyword,
-	ParseNodeTypeUnit,
-	ParseNodeTypeUnary,
-	ParseNodeTypeBinary,
-	ParseNodeType,
-	ParseNodeStringTemplate,
-	ParseNodeStringTemplate__0__List,
-	ParseNodeExpressionUnit,
-	ParseNodeExpressionUnary,
-	ParseNodeExpressionBinary,
-	ParseNodeExpressionConditional,
-	ParseNodeExpression,
-	ParseNodeDeclarationVariable,
-	ParseNodeStatementAssignment,
-	ParseNodeStatement,
-	ParseNodeGoal,
-	ParseNodeGoal__0__List,
 	TemplatePartialType,
 } from '../parser/ParseNode.class'
+import * as PARSENODE from '../parser/ParseNode.auto'
 import {Builder} from '../builder/'
 import SemanticNode, {
 	SemanticNodeType,
@@ -134,7 +120,7 @@ export default class Validator {
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		private readonly parsegoal: ParseNodeGoal,
+		private readonly parsegoal: PARSENODE.ParseNodeGoal,
 		private readonly config: SolidConfig,
 	) {
 	}
@@ -183,80 +169,88 @@ export default class Validator {
 	 * @param node the parse node to decorate
 	 * @returns a semantic node containing the parse node’s semantics
 	 */
-	decorate(node: ParseNodePrimitiveLiteral):        SemanticNodeConstant;
-	decorate(node: ParseNodeTypeKeyword):             SemanticNodeTypeConstant;
-	decorate(node: ParseNodeTypeUnit):                SemanticNodeType;
-	decorate(node: ParseNodeTypeUnary):               SemanticNodeType;
-	decorate(node: ParseNodeTypeBinary):              SemanticNodeType;
-	decorate(node: ParseNodeType):                    SemanticNodeType;
-	decorate(node: ParseNodeStringTemplate):          SemanticNodeTemplate;
-	decorate(node: ParseNodeStringTemplate__0__List): TemplatePartialType;
-	decorate(node: ParseNodeExpressionUnit):          SemanticNodeExpression;
-	decorate(node: ParseNodeExpressionUnary):         SemanticNodeExpression;
-	decorate(node: ParseNodeExpressionBinary):        SemanticNodeExpression;
-	decorate(node: ParseNodeExpressionConditional):   SemanticNodeOperationTernary;
-	decorate(node: ParseNodeExpression):              SemanticNodeExpression;
-	decorate(node: ParseNodeDeclarationVariable):     SemanticNodeDeclarationVariable;
-	decorate(node: ParseNodeStatementAssignment):     SemanticNodeAssignment;
-	decorate(node: ParseNodeStatement):               SemanticStatementType;
-	decorate(node: ParseNodeGoal):                    SemanticNodeGoal;
-	decorate(node: ParseNodeGoal__0__List):           SemanticStatementType[];
-	decorate(node: ParseNode):                        SemanticNode | SemanticNode[];
-	decorate(node: ParseNode):                        SemanticNode | SemanticNode[] {
-		if (node instanceof ParseNodePrimitiveLiteral) {
-			return new SemanticNodeConstant(node.children[0])
+	decorate(node: PARSENODE.ParseNodePrimitiveLiteral):         SemanticNodeConstant;
+	decorate(node: PARSENODE.ParseNodeTypeKeyword):              SemanticNodeTypeConstant;
+	decorate(node: PARSENODE.ParseNodeTypeUnit):                 SemanticNodeType;
+	decorate(node: PARSENODE.ParseNodeTypeUnarySymbol):          SemanticNodeType;
+	decorate(node: PARSENODE.ParseNodeTypeIntersection):         SemanticNodeType;
+	decorate(node: PARSENODE.ParseNodeTypeUnion):                SemanticNodeType;
+	decorate(node: PARSENODE.ParseNodeType):                     SemanticNodeType;
+	decorate(node: PARSENODE.ParseNodeStringTemplate):           SemanticNodeTemplate;
+	decorate(node: PARSENODE.ParseNodeStringTemplate__0__List):  TemplatePartialType;
+	decorate(node: PARSENODE.ParseNodeExpressionUnit):           SemanticNodeExpression;
+	decorate(node: PARSENODE.ParseNodeExpressionUnarySymbol):    SemanticNodeExpression;
+	decorate(node: PARSENODE.ParseNodeExpressionExponential):    SemanticNodeExpression;
+	decorate(node: PARSENODE.ParseNodeExpressionMultiplicative): SemanticNodeExpression;
+	decorate(node: PARSENODE.ParseNodeExpressionAdditive):       SemanticNodeExpression;
+	decorate(node: PARSENODE.ParseNodeExpressionComparative):    SemanticNodeExpression;
+	decorate(node: PARSENODE.ParseNodeExpressionEquality):       SemanticNodeExpression;
+	decorate(node: PARSENODE.ParseNodeExpressionConjunctive):    SemanticNodeExpression;
+	decorate(node: PARSENODE.ParseNodeExpressionDisjunctive):    SemanticNodeExpression;
+	decorate(node: PARSENODE.ParseNodeExpressionConditional):    SemanticNodeOperationTernary;
+	decorate(node: PARSENODE.ParseNodeExpression):               SemanticNodeExpression;
+	decorate(node: PARSENODE.ParseNodeDeclarationVariable):      SemanticNodeDeclarationVariable;
+	decorate(node: PARSENODE.ParseNodeStatementAssignment):      SemanticNodeAssignment;
+	decorate(node: PARSENODE.ParseNodeStatement):                SemanticStatementType;
+	decorate(node: PARSENODE.ParseNodeGoal):                     SemanticNodeGoal;
+	decorate(node: PARSENODE.ParseNodeGoal__0__List):            SemanticStatementType[];
+	decorate(node: ParseNode): SemanticNode | SemanticNode[];
+	decorate(node: ParseNode): SemanticNode | SemanticNode[] {
+		if (node instanceof PARSENODE.ParseNodePrimitiveLiteral) {
+			return new SemanticNodeConstant(node.children[0] as TokenKeyword | TokenNumber | TokenString)
 
-		} else if (node instanceof ParseNodeTypeKeyword) {
-			return new SemanticNodeTypeConstant(node.children[0])
+		} else if (node instanceof PARSENODE.ParseNodeTypeKeyword) {
+			return new SemanticNodeTypeConstant(node.children[0] as TokenKeyword | TokenNumber | TokenString)
 
-		} else if (node instanceof ParseNodeTypeUnit) {
+		} else if (node instanceof PARSENODE.ParseNodeTypeUnit) {
 			return (node.children.length === 1)
-				? (node.children[0] instanceof ParseNodePrimitiveLiteral)
-					? new SemanticNodeTypeConstant(node.children[0].children[0])
+				? (node.children[0] instanceof PARSENODE.ParseNodePrimitiveLiteral)
+					? new SemanticNodeTypeConstant(node.children[0].children[0] as TokenKeyword | TokenNumber | TokenString)
 					: this.decorate(node.children[0])
 				: this.decorate(node.children[1])
 
-		} else if (node instanceof ParseNodeTypeUnary) {
+		} else if (node instanceof PARSENODE.ParseNodeTypeUnarySymbol) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
 				: new SemanticNodeTypeOperationUnary(node, Validator.TYPEOPERATORS_UNARY.get(node.children[1].source as Punctuator)!, [
 					this.decorate(node.children[0]),
 				])
 
-		} else if (node instanceof ParseNodeTypeBinary) {
+		} else if (node instanceof PARSENODE.ParseNodeTypeIntersection || node instanceof PARSENODE.ParseNodeTypeUnion) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
 				: new SemanticNodeTypeOperationBinary(node, Validator.TYPEOPERATORS_BINARY.get(node.children[1].source as Punctuator)!, [
+					// @ts-expect-error
 					this.decorate(node.children[0]),
 					// @ts-expect-error
 					this.decorate(node.children[2]),
 				])
 
-		} else if (node instanceof ParseNodeType) {
+		} else if (node instanceof PARSENODE.ParseNodeType) {
 			return this.decorate(node.children[0])
 
-		} else if (node instanceof ParseNodeStringTemplate) {
-			return new SemanticNodeTemplate(node, (node.children as readonly (TokenTemplate | ParseNodeExpression | ParseNodeStringTemplate__0__List)[]).flatMap((c) =>
+		} else if (node instanceof PARSENODE.ParseNodeStringTemplate) {
+			return new SemanticNodeTemplate(node, (node.children as readonly (TokenTemplate | PARSENODE.ParseNodeExpression | PARSENODE.ParseNodeStringTemplate__0__List)[]).flatMap((c) =>
 				c instanceof Token ? [new SemanticNodeConstant(c)] :
-				c instanceof ParseNodeExpression ? [this.decorate(c)] :
+				c instanceof PARSENODE.ParseNodeExpression ? [this.decorate(c)] :
 				this.decorate(c)
 			))
 
-		} else if (node instanceof ParseNodeStringTemplate__0__List) {
-			return (node.children as readonly (TokenTemplate | ParseNodeExpression | ParseNodeStringTemplate__0__List)[]).flatMap((c) =>
+		} else if (node instanceof PARSENODE.ParseNodeStringTemplate__0__List) {
+			return (node.children as readonly (TokenTemplate | PARSENODE.ParseNodeExpression | PARSENODE.ParseNodeStringTemplate__0__List)[]).flatMap((c) =>
 				c instanceof Token ? [new SemanticNodeConstant(c)] :
-				c instanceof ParseNodeExpression ? [this.decorate(c)] :
+				c instanceof PARSENODE.ParseNodeExpression ? [this.decorate(c)] :
 				this.decorate(c)
 			)
 
-		} else if (node instanceof ParseNodeExpressionUnit) {
+		} else if (node instanceof PARSENODE.ParseNodeExpressionUnit) {
 			return (node.children.length === 1)
 				? (node.children[0] instanceof ParseNode)
 					? this.decorate(node.children[0])
-					: new SemanticNodeIdentifier(node.children[0])
+					: new SemanticNodeIdentifier(node.children[0] as TokenIdentifier)
 				: this.decorate(node.children[1])
 
-		} else if (node instanceof ParseNodeExpressionUnary) {
+		} else if (node instanceof PARSENODE.ParseNodeExpressionUnarySymbol) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
 				: (node.children[0].source === Punctuator.AFF) // `+a` is a no-op
@@ -265,7 +259,7 @@ export default class Validator {
 						this.decorate(node.children[1]),
 					])
 
-		} else if (node instanceof ParseNodeExpressionBinary) {
+		} else if (node instanceof PARSENODE.ParseNodeExpressionExponential || node instanceof PARSENODE.ParseNodeExpressionMultiplicative || node instanceof PARSENODE.ParseNodeExpressionAdditive || node instanceof PARSENODE.ParseNodeExpressionComparative || node instanceof PARSENODE.ParseNodeExpressionEquality || node instanceof PARSENODE.ParseNodeExpressionDisjunctive || node instanceof PARSENODE.ParseNodeExpressionConjunctive) {
 			if (node.children.length === 1) {
 				return this.decorate(node.children[0])
 			} else {
@@ -273,6 +267,7 @@ export default class Validator {
 				const operands: [SemanticNodeExpression, SemanticNodeExpression] = [
 					// @ts-expect-error
 					this.decorate(node.children[0]),
+					// @ts-expect-error
 					this.decorate(node.children[2]),
 				]
 				return ([
@@ -333,20 +328,20 @@ export default class Validator {
 				: (() => { throw new Error(`Operator ${ Operator[operator] } not found.`) })()
 			}
 
-		} else if (node instanceof ParseNodeExpressionConditional) {
+		} else if (node instanceof PARSENODE.ParseNodeExpressionConditional) {
 			return new SemanticNodeOperationTernary(node, Operator.COND, [
 				this.decorate(node.children[1]),
 				this.decorate(node.children[3]),
 				this.decorate(node.children[5]),
 			])
 
-		} else if (node instanceof ParseNodeExpression) {
+		} else if (node instanceof PARSENODE.ParseNodeExpression) {
 			return this.decorate(node.children[0])
 
-		} else if (node instanceof ParseNodeDeclarationVariable) {
-			const identifier: TokenIdentifier     = (node.children.length === 7) ? node.children[1] : node.children[2]
-			const type_:      ParseNodeType       = (node.children.length === 7) ? node.children[3] : node.children[4]
-			const expression: ParseNodeExpression = (node.children.length === 7) ? node.children[5] : node.children[6]
+		} else if (node instanceof PARSENODE.ParseNodeDeclarationVariable) {
+			const identifier: TokenIdentifier               = ((node.children.length === 7) ? node.children[1] : node.children[2]) as TokenIdentifier
+			const type_:      PARSENODE.ParseNodeType       =  (node.children.length === 7) ? node.children[3] : node.children[4]
+			const expression: PARSENODE.ParseNodeExpression =  (node.children.length === 7) ? node.children[5] : node.children[6]
 			return new SemanticNodeDeclarationVariable(node, node.children.length === 8, [
 				new SemanticNodeAssignee(identifier, [
 					new SemanticNodeIdentifier(identifier),
@@ -355,9 +350,9 @@ export default class Validator {
 				this.decorate(expression),
 			])
 
-		} else if (node instanceof ParseNodeStatementAssignment) {
-			const identifier: TokenIdentifier     = node.children[0]
-			const expression: ParseNodeExpression = node.children[2]
+		} else if (node instanceof PARSENODE.ParseNodeStatementAssignment) {
+			const identifier: TokenIdentifier               = node.children[0] as TokenIdentifier
+			const expression: PARSENODE.ParseNodeExpression = node.children[2]
 			return new SemanticNodeAssignment(node, [
 				new SemanticNodeAssignee(identifier, [
 					new SemanticNodeIdentifier(identifier),
@@ -365,17 +360,17 @@ export default class Validator {
 				this.decorate(expression),
 			])
 
-		} else if (node instanceof ParseNodeStatement) {
+		} else if (node instanceof PARSENODE.ParseNodeStatement) {
 			return (node.children.length === 1 && node.children[0] instanceof ParseNode)
 				? this.decorate(node.children[0])
 				: new SemanticNodeStatementExpression(node, (node.children.length === 1) ? [] : [
 					this.decorate(node.children[0]),
 				])
 
-		} else if (node instanceof ParseNodeGoal) {
+		} else if (node instanceof PARSENODE.ParseNodeGoal) {
 			return new SemanticNodeGoal(node, (node.children.length === 2) ? [] : this.decorate(node.children[1]))
 
-		} else if (node instanceof ParseNodeGoal__0__List) {
+		} else if (node instanceof PARSENODE.ParseNodeGoal__0__List) {
 			return node.children.length === 1 ?
 				[this.decorate(node.children[0])]
 			: [
