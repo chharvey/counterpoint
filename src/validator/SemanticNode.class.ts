@@ -837,9 +837,10 @@ export class SemanticNodeDeclarationVariable extends SemanticNode {
 		const assignee_type: SolidLanguageType = this.children[1].assess()
 		const assigned_type: SolidLanguageType = this.children[2].type(opts.constantFolding, opts.intCoercion)
 		if (
-			assigned_type.equals(Int16) && assignee_type.equals(Float64) && !opts.intCoercion ||
-			!assigned_type.isSubtypeOf(assignee_type)
+			assigned_type.isSubtypeOf(assignee_type) ||
+			opts.intCoercion && assigned_type.isSubtypeOf(Int16) && Float64.isSubtypeOf(assignee_type)
 		) {
+		} else {
 			throw new TypeError03(this, assignee_type, assigned_type)
 		}
 	}

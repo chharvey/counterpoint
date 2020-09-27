@@ -473,8 +473,7 @@ describe('SemanticNode', () => {
 					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator)
 				decl.typeCheck(CONFIG_DEFAULT.compilerOptions)
 			})
-			it.skip('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
-				// FIXME! int should not be a subtype of null
+			it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  null =  21  *  2;`
 				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src)
 					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator)
@@ -808,7 +807,7 @@ describe('SemanticNode', () => {
 				it('throws when condition is not boolean.', () => {
 					assert.throws(() => operationFromStatementExpression(
 						statementExpressionFromSource(`if 2 then true else false;`)
-					).type(), /Invalid operation\./)
+					).type(), TypeError01)
 				})
 			})
 		})
