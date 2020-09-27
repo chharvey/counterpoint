@@ -1,5 +1,7 @@
+import type {
+	EBNFObject,
+} from '../types.d'
 import Util from '../class/Util.class'
-import Dev from '../class/Dev.class'
 import type Serializable from '../iface/Serializable.iface'
 import Operator, {
 	ValidTypeOperator,
@@ -58,6 +60,31 @@ import type Rule from './Rule.class'
  * @see http://parsingintro.sourceforge.net/#contents_item_8.2
  */
 export abstract class ParseNode implements Serializable {
+	/**
+	 * Takes a list of JSON objects representing syntactic productions
+	 * and returns a string in TypeScript language representing subclasses of {@link ParseNode}.
+	 * @param json JSON objects representing a production
+	 * @returns a string to print to a TypeScript file
+	 */
+	static fromJSON(jsons: EBNFObject[]): string {
+		return `
+			import type Token from '../lexer/Token.class';
+			import {ParseNode} from '../parser/ParseNode.class';
+			${ jsons.map((json) => `
+				export class ParseNode${ json.name } extends ParseNode {
+					declare children:
+						${ json.defn.map((seq) => `readonly [${seq.map((it) =>
+							(typeof it === 'string' || 'term' in it)
+								? `Token`
+								: `ParseNode${ it.prod }`
+						) }]`).join(' | ') }
+					;
+				}
+			`).join('') }
+		`
+	}
+
+
 	/** @implements Serializable */
 	readonly tagname: string = this.rule.production.displayName
 	/** @implements Serializable */

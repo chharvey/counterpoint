@@ -1,12 +1,12 @@
 
 			
-		/*-------------------------------------------------------/
-		| WARNING: Do not manually update this file!             |
-		| It is auto-generated via                               |
-		| </src/parser/Production.class.ts#Production#fromJSON>. |
-		| If you need to make updates, make them there.          |
-		/-------------------------------------------------------*/
-	
+			/*----------------------------------------------------------------/
+			| WARNING: Do not manually update this file!
+			| It is auto-generated via
+			| </src/parser/Production.class.ts#Production#fromJSON>.
+			| If you need to make updates, make them there.
+			/----------------------------------------------------------------*/
+		
 			
 			import type {
 				KleenePlus,

@@ -8,6 +8,9 @@ import {
 	ScannerSolid as Scanner,
 } from '../../src/lexer/'
 import {
+	ParseNode,
+} from '../../src/parser/'
+import {
 	SemanticNodeType,
 	SemanticNodeTypeConstant,
 	SemanticNodeTypeOperationUnary,
@@ -45,6 +48,38 @@ import {
 	operationFromStatementExpression,
 	statementExpressionFromSource,
 } from '../helpers-semantic'
+
+
+
+describe('ParseNode', () => {
+	describe('.fromJSON', () => {
+		it('returns a string representing new subclasses of ParseNode.', () => {
+			assert.strictEqual(Util.dedent(ParseNode.fromJSON([{
+				"name": "ExpressionUnit",
+				"defn": [
+					[{"term": "IDENTIFIER"}],
+					[{"prod": "PrimitiveLiteral"}],
+					[{"prod": "StringTemplate"}],
+					["'('", {"prod": "Expression"}, "')'"]
+				]
+			}])), Util.dedent(`
+				import type Token from '../lexer/Token.class';
+				import {ParseNode} from '../parser/ParseNode.class';
+
+					export class ParseNodeExpressionUnit extends ParseNode {
+						declare children:
+							${ [
+								`readonly [Token]`,
+								`readonly [ParseNodePrimitiveLiteral]`,
+								`readonly [ParseNodeStringTemplate]`,
+								`readonly [Token,ParseNodeExpression,Token]`,
+							].join(' | ') }
+						;
+					}
+			`))
+		})
+	})
+})
 
 
 

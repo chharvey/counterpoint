@@ -19,22 +19,33 @@ function dist() {
 
 async function postdist() {
 	const {default: Production} = require('./build/parser/Production.class.js')
-	const preamble = `
-		/*-------------------------------------------------------/
-		| WARNING: Do not manually update this file!             |
-		| It is auto-generated via                               |
-		| </src/parser/Production.class.ts#Production#fromJSON>. |
-		| If you need to make updates, make them there.          |
-		/-------------------------------------------------------*/
-	`
+	const {ParseNode} = require('./build/parser/ParseNode.class.js')
+	function preamble(srcpath) {
+		return `
+			/*----------------------------------------------------------------/
+			| WARNING: Do not manually update this file!
+			| It is auto-generated via
+			| <${ srcpath }>.
+			| If you need to make updates, make them there.
+			/----------------------------------------------------------------*/
+		`
+	}
 	return Promise.all([
 		fs.promises.writeFile('./src/parser/Production.auto.ts', `
-			${ preamble }
+			${ preamble('/src/parser/Production.class.ts#Production#fromJSON') }
 			${ await Production.fromJSON(require('./docs/spec/grammar/syntax.json')) }
 		`),
 		fs.promises.writeFile('./src/ebnf/Production.auto.ts', `
-			${ preamble }
+			${ preamble('/src/parser/Production.class.ts#Production#fromJSON') }
 			${ await Production.fromJSON(require('./docs/spec/grammar/ebnf-syntax.json')) }
+		`),
+		fs.promises.writeFile('./src/parser/ParseNode.auto.ts', `
+			${ preamble('/src/parser/ParseNode.class.ts#ParseNode#fromJSON') }
+			${ await ParseNode.fromJSON(require('./docs/spec/grammar/syntax.json')) }
+		`),
+		fs.promises.writeFile('./src/ebnf/ParseNode.auto.ts', `
+			${ preamble('/src/parser/ParseNode.class.ts#ParseNode#fromJSON') }
+			${ await ParseNode.fromJSON(require('./docs/spec/grammar/ebnf-syntax.json')) }
 		`),
 	])
 }
