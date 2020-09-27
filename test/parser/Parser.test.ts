@@ -1,17 +1,25 @@
 import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../../src/SolidConfig'
+import {ParseError01} from '../../src/error/ParseError.class'
 import Util from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
 import {
 	ParseNodeTypeUnit,
-	ParseNodeTypeUnary,
-	ParseNodeTypeBinary,
+	ParseNodeTypeUnarySymbol,
+	ParseNodeTypeIntersection,
+	ParseNodeTypeUnion,
 	ParseNodeType,
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
-	ParseNodeExpressionUnary,
-	ParseNodeExpressionBinary,
+	ParseNodeExpressionUnarySymbol,
+	ParseNodeExpressionExponential,
+	ParseNodeExpressionMultiplicative,
+	ParseNodeExpressionAdditive,
+	ParseNodeExpressionComparative,
+	ParseNodeExpressionEquality,
+	ParseNodeExpressionConjunctive,
+	ParseNodeExpressionDisjunctive,
 	ParseNodeExpressionConditional,
 	ParseNodeExpression,
 	ParseNodeDeclarationVariable,
@@ -19,11 +27,12 @@ import {
 	ParseNodeStatement,
 	ParseNodeGoal,
 	ParseNodeGoal__0__List,
-} from '../../src/parser/'
+} from '../../src/parser/ParseNode.auto'
 import {
 	ScannerSolid as Scanner,
 	Punctuator,
 	Keyword,
+	Token,
 	TokenFilebound,
 	TokenPunctuator,
 	TokenKeyword,
@@ -40,6 +49,16 @@ import * as h from '../helpers-parse'
 
 describe('Parser', () => {
 	describe('#parse', () => {
+		it('throws a ParseError01 when reaching an unexpected token.', () => {
+			;[
+				`false + /34.56;`,
+				`(true)) || null;`,
+				`234 null;`,
+			].forEach((src) => {
+				assert.throws(() => new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.parse(), ParseError01)
+			})
+		})
+
 		context('Goal ::= #x02 #x03', () => {
 			it('returns only file bounds.', () => {
 				const tree: ParseNodeGoal = new Scanner('', CONFIG_DEFAULT).lexer.screener.parser.parse()
@@ -63,7 +82,7 @@ describe('Parser', () => {
 				*/
 				const statement: ParseNodeStatement = h.statementFromSource(`;`)
 				assert_arrayLength(statement.children, 1)
-				const token: ParseNodeDeclarationVariable|ParseNodeStatementAssignment|TokenPunctuator = statement.children[0]
+				const token: ParseNodeDeclarationVariable | ParseNodeStatementAssignment | Token = statement.children[0]
 				assert.ok(token instanceof TokenPunctuator)
 				assert.strictEqual(token.source, Punctuator.ENDSTAT)
 			})
@@ -106,7 +125,7 @@ describe('Parser', () => {
 				]);
 			})
 			it('throws when given a non-type keyword.', () => {
-				assert.throws(() => h.tokenLiteralFromTypeString(`isnt`), /I cannot reduce now/)
+				assert.throws(() => h.tokenLiteralFromTypeString(`isnt`), ParseError01)
 			})
 		})
 
@@ -121,7 +140,9 @@ describe('Parser', () => {
 				*/
 				const type_unit: ParseNodeTypeUnit = h.unitTypeFromString(`(obj | int & float)`)
 				assert_arrayLength(type_unit.children, 3)
-				const [open, typ, close]: readonly [TokenPunctuator, ParseNodeType, TokenPunctuator] = type_unit.children
+				const [open, typ, close]: readonly [Token, ParseNodeType, Token] = type_unit.children
+				assert.ok(open  instanceof TokenPunctuator)
+				assert.ok(close instanceof TokenPunctuator)
 				assert.deepStrictEqual(
 					[open.source, typ.source, close.source],
 					[Punctuator.GRP_OPN, [
@@ -136,16 +157,17 @@ describe('Parser', () => {
 		})
 
 		Dev.supports('typingExplicit') && describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
-			it('makes a ParseNodeTypeUnary node.', () => {
+			it('makes a ParseNodeTypeUnarySymbol node.', () => {
 				/*
 					<TypeUnarySymbol>
 						<TypeUnarySymbol source="int">...</TypeUnarySymbol>
 						<PUNCTUATOR>!</PUNCTUATOR>
 					</TypeUnarySymbol>
 				*/
-				const type_unary: ParseNodeTypeUnary = h.unaryTypeFromString(`int!`)
+				const type_unary: ParseNodeTypeUnarySymbol = h.unaryTypeFromString(`int!`)
 				assert_arrayLength(type_unary.children, 2)
-				const [unary, op]: readonly [ParseNodeTypeUnary, TokenPunctuator] = type_unary.children
+				const [unary, op]: readonly [ParseNodeTypeUnarySymbol, Token] = type_unary.children
+				assert.ok(op instanceof TokenPunctuator)
 				assert.deepStrictEqual(
 					[unary.source, op.source],
 					[Keyword.INT,  Punctuator.ORNULL],
@@ -154,7 +176,7 @@ describe('Parser', () => {
 		})
 
 		Dev.supports('typingExplicit') && describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
-			it('makes a ParseNodeTypeBinary node.', () => {
+			it('makes a ParseNodeTypeIntersection node.', () => {
 				/*
 					<TypeIntersection>
 						<TypeIntersection source="int">...</TypeIntersection>
@@ -162,10 +184,10 @@ describe('Parser', () => {
 						<TypeUnarySymbol source="float">...</TypeUnarySymbol>
 					</TypeIntersection>
 				*/
-				const type_intersection: ParseNodeTypeBinary = h.intersectionTypeFromString(`int & float`)
+				const type_intersection: ParseNodeTypeIntersection = h.intersectionTypeFromString(`int & float`)
 				assert_arrayLength(type_intersection.children, 3)
-				const [left, op, right]: readonly [ParseNodeTypeBinary, TokenPunctuator, ParseNodeTypeBinary | ParseNodeTypeUnary] = type_intersection.children
-				assert.ok(right instanceof ParseNodeTypeUnary)
+				const [left, op, right]: readonly [ParseNodeTypeIntersection, Token, ParseNodeTypeUnarySymbol] = type_intersection.children
+				assert.ok(op instanceof TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,        right.source],
 					[Keyword.INT, Punctuator.INTER, Keyword.FLOAT],
@@ -174,7 +196,7 @@ describe('Parser', () => {
 		})
 
 		Dev.supports('typingExplicit') && describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
-			it('makes a ParseNodeTypeBinary node.', () => {
+			it('makes a ParseNodeTypeUnion node.', () => {
 				/*
 					<TypeUnion>
 						<TypeUnion source="int">...</TypeUnion>
@@ -182,10 +204,10 @@ describe('Parser', () => {
 						<TypeIntersection source="float">...</TypeIntersection>
 					</TypeUnion>
 				*/
-				const type_union: ParseNodeTypeBinary = h.unionTypeFromString(`int | float`)
+				const type_union: ParseNodeTypeUnion = h.unionTypeFromString(`int | float`)
 				assert_arrayLength(type_union.children, 3)
-				const [left, op, right]: readonly [ParseNodeTypeBinary, TokenPunctuator, ParseNodeTypeBinary | ParseNodeTypeUnary] = type_union.children
-				assert.ok(right instanceof ParseNodeTypeBinary)
+				const [left, op, right]: readonly [ParseNodeTypeUnion, Token, ParseNodeTypeIntersection] = type_union.children
+				assert.ok(op instanceof TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,        right.source],
 					[Keyword.INT, Punctuator.UNION, Keyword.FLOAT],
@@ -220,15 +242,19 @@ describe('Parser', () => {
 
 		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
 			function stringTemplateParseNode (src: string): string {
-				return (((((((((new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser
+				return (((((((((((((new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser
 					.parse()
 					.children[1] as ParseNodeGoal__0__List)
 					.children[0] as ParseNodeStatement)
 					.children[0] as ParseNodeExpression)
-					.children[0] as ParseNodeExpressionBinary)
-					.children[0] as ParseNodeExpressionBinary)
-					.children[0] as ParseNodeExpressionBinary)
-					.children[0] as ParseNodeExpressionUnary)
+					.children[0] as ParseNodeExpressionDisjunctive)
+					.children[0] as ParseNodeExpressionConjunctive)
+					.children[0] as ParseNodeExpressionEquality)
+					.children[0] as ParseNodeExpressionComparative)
+					.children[0] as ParseNodeExpressionAdditive)
+					.children[0] as ParseNodeExpressionMultiplicative)
+					.children[0] as ParseNodeExpressionExponential)
+					.children[0] as ParseNodeExpressionUnarySymbol)
 					.children[0] as ParseNodeExpressionUnit)
 					.children[0] as ParseNodeStringTemplate)
 					.serialize()
@@ -465,17 +491,17 @@ describe('Parser', () => {
 			it('throws when reaching an orphaned head.', () => {
 				assert.throws(() => new Scanner(`
 					'''A string template head token not followed by a middle or tail {{ 1;
-				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), /Unexpected token/)
+				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), ParseError01)
 			})
 			it('throws when reaching an orphaned middle.', () => {
 				assert.throws(() => new Scanner(`
 					2 }} a string template middle token not preceded by a head/middle and not followed by a middle/tail {{ 3;
-				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), /Unexpected token/)
+				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), ParseError01)
 			})
 			it('throws when reaching an orphaned tail.', () => {
 				assert.throws(() => new Scanner(`
 					4 }} a string template tail token not preceded by a head or middle''';
-				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), /Unexpected token/)
+				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), ParseError01)
 			})
 		})
 
@@ -490,7 +516,9 @@ describe('Parser', () => {
 				*/
 				const expression_unit: ParseNodeExpressionUnit = h.unitExpressionFromSource(`(2 + -3);`)
 				assert_arrayLength(expression_unit.children, 3)
-				const [open, expr, close]: readonly [TokenPunctuator, ParseNodeExpression, TokenPunctuator] = expression_unit.children
+				const [open, expr, close]: readonly [Token, ParseNodeExpression, Token] = expression_unit.children
+				assert.ok(open  instanceof TokenPunctuator)
+				assert.ok(close instanceof TokenPunctuator)
 				assert.deepStrictEqual(
 					[open.source,        expr.source, close.source],
 					[Punctuator.GRP_OPN, `2 + -3`,    Punctuator.GRP_CLS],
@@ -499,7 +527,7 @@ describe('Parser', () => {
 		})
 
 		context('ExpressionUnarySymbol ::= ("!" | "?" | "+" | "-") ExpressionUnarySymbol', () => {
-			it('makes a ParseNodeExpressionUnary node.', () => {
+			it('makes a ParseNodeExpressionUnarySymbol node.', () => {
 				/*
 					<ExpressionUnarySymbol>
 						<PUNCTUATOR>-</PUNCTUATOR>
@@ -512,9 +540,10 @@ describe('Parser', () => {
 					`- 42;`,
 					`--2;`,
 				].map((src) => {
-					const expression_unary: ParseNodeExpressionUnary = h.unaryExpressionFromSource(src)
+					const expression_unary: ParseNodeExpressionUnarySymbol = h.unaryExpressionFromSource(src)
 					assert_arrayLength(expression_unary.children, 2, 'outer unary expression should have 2 children')
-					const [op, operand]: readonly [TokenPunctuator, ParseNodeExpressionUnary] = expression_unary.children
+					const [op, operand]: readonly [Token, ParseNodeExpressionUnarySymbol] = expression_unary.children
+					assert.ok(op instanceof TokenPunctuator)
 					assert_arrayLength(operand.children, 1, 'inner unary expression should have 1 child')
 					return [operand.source, op.source]
 				}), [
@@ -527,7 +556,7 @@ describe('Parser', () => {
 		})
 
 		context('ExpressionExponential ::=  ExpressionUnarySymbol "^" ExpressionExponential', () => {
-			it('makes a ParseNodeExpressionBinary node.', () => {
+			it('makes a ParseNodeExpressionExponential node.', () => {
 				/*
 					<ExpressionExponential>
 						<ExpressionUnarySymbol source="2">...</ExpressionUnarySymbol>
@@ -535,10 +564,10 @@ describe('Parser', () => {
 						<ExpressionExponential source="-3">...</ExpressionExponential>
 					</ExpressionExponential>
 				*/
-				const expression_exp: ParseNodeExpressionBinary = h.exponentialExpressionFromSource(`2 ^ -3;`)
+				const expression_exp: ParseNodeExpressionExponential = h.exponentialExpressionFromSource(`2 ^ -3;`)
 				assert_arrayLength(expression_exp.children, 3, 'exponential expression should have 3 children')
-				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary] = expression_exp.children
-				assert.ok(left instanceof ParseNodeExpressionUnary)
+				const [left, op, right]: readonly [ParseNodeExpressionUnarySymbol, Token, ParseNodeExpressionExponential] = expression_exp.children
+				assert.ok(op instanceof TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,      right.source],
 					['2',         Punctuator.EXP, '-3'],
@@ -547,7 +576,7 @@ describe('Parser', () => {
 		})
 
 		context('ExpressionMultiplicative ::= ExpressionMultiplicative ("*" | "/") ExpressionExponential', () => {
-			it('makes a ParseNodeExpressionBinary node.', () => {
+			it('makes a ParseNodeExpressionMultiplicative node.', () => {
 				/*
 					<ExpressionMultiplicative>
 						<ExpressionMultiplicative source="2">...</ExpressionMultiplicative>
@@ -555,10 +584,10 @@ describe('Parser', () => {
 						<ExpressionExponential source="-3">...</ExpressionExponential>
 					</ExpressionMultiplicative>
 				*/
-				const expression_mul: ParseNodeExpressionBinary = h.multiplicativeExpressionFromSource(`2 * -3;`)
+				const expression_mul: ParseNodeExpressionMultiplicative = h.multiplicativeExpressionFromSource(`2 * -3;`)
 				assert_arrayLength(expression_mul.children, 3, 'multiplicative expression should have 3 children')
-				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary] = expression_mul.children
-				assert.ok(left instanceof ParseNodeExpressionBinary)
+				const [left, op, right]: readonly [ParseNodeExpressionMultiplicative, Token, ParseNodeExpressionExponential] = expression_mul.children
+				assert.ok(op instanceof TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,      right.source],
 					['2',         Punctuator.MUL, '-3'],
@@ -567,7 +596,7 @@ describe('Parser', () => {
 		})
 
 		context('ExpressionAdditive ::= ExpressionAdditive ("+" | "-") ExpressionMultiplicative', () => {
-			it('makes a ParseNodeExpressionBinary node.', () => {
+			it('makes a ParseNodeExpressionAdditive node.', () => {
 				/*
 					<ExpressionAdditive>
 						<ExpressionAdditive source="2">...</ExpressionAdditive>
@@ -575,10 +604,10 @@ describe('Parser', () => {
 						<ExpressionMultiplicative source="-3">...</ExpressionMultiplicative>
 					</ExpressionAdditive>
 				*/
-				const expression_add: ParseNodeExpressionBinary = h.additiveExpressionFromSource(`2 + -3;`)
+				const expression_add: ParseNodeExpressionAdditive = h.additiveExpressionFromSource(`2 + -3;`)
 				assert_arrayLength(expression_add.children, 3, 'additive expression should have 3 children')
-				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary] = expression_add.children
-				assert.ok(left instanceof ParseNodeExpressionBinary)
+				const [left, op, right]: readonly [ParseNodeExpressionAdditive, Token, ParseNodeExpressionMultiplicative] = expression_add.children
+				assert.ok(op instanceof TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,      right.source],
 					['2',         Punctuator.ADD, '-3'],
@@ -587,7 +616,7 @@ describe('Parser', () => {
 		})
 
 		context('ExpressionComparative ::= ExpressionComparative ("<" | ">" | "<=" | ">=" | "!<" | "!>") ExpressionAdditive', () => {
-			it('makes a ParseNodeExpressionBinary node.', () => {
+			it('makes a ParseNodeExpressionComparative node.', () => {
 				/*
 					<ExpressionComparative>
 						<ExpressionComparative source="2">...</ExpressionComparative>
@@ -595,20 +624,20 @@ describe('Parser', () => {
 						<ExpressionAdditive source="-3">...</ExpressionAdditive>
 					</ExpressionComparative>
 				*/
-				const expression_compare: ParseNodeExpressionBinary = h.comparativeExpressionFromSource(`2 < -3;`)
+				const expression_compare: ParseNodeExpressionComparative = h.comparativeExpressionFromSource(`2 < -3;`)
 				assert_arrayLength(expression_compare.children, 3, 'comparative expression should have 3 children')
-				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary] = expression_compare.children
-				assert.ok(left instanceof ParseNodeExpressionBinary)
+				const [left, op, right]: readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive] = expression_compare.children
+				assert.ok(op instanceof TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,     right.source],
 					['2',         Punctuator.LT, '-3'],
 				)
 			})
 			it('allows chaining of `<` and `>`.', () => {
-				const expression_compare: ParseNodeExpressionBinary = h.comparativeExpressionFromSource(`2 < 3 > 4;`)
+				const expression_compare: ParseNodeExpressionComparative = h.comparativeExpressionFromSource(`2 < 3 > 4;`)
 				assert_arrayLength(expression_compare.children, 3, 'comparative expression should have 3 children')
-				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary] = expression_compare.children
-				assert.ok(left instanceof ParseNodeExpressionBinary)
+				const [left, op, right]: readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive] = expression_compare.children
+				assert.ok(op instanceof TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,     right.source],
 					['2 < 3',     Punctuator.GT, '4'],
@@ -617,7 +646,7 @@ describe('Parser', () => {
 		})
 
 		context('ExpressionEquality ::= ExpressionEquality ("is" | "isnt" | "==" | "!=") ExpressionComparative', () => {
-			it('makes a ParseNodeExpressionBinary node.', () => {
+			it('makes a ParseNodeExpressionEquality node.', () => {
 				/*
 					<ExpressionEquality>
 						<ExpressionEquality source="2">...</ExpressionEquality>
@@ -628,11 +657,11 @@ describe('Parser', () => {
 				assert.deepStrictEqual([
 					`2 is -3;`,
 					`2 == -3;`,
-				].map((src) => {
-					const expression_eq: ParseNodeExpressionBinary = h.equalityExpressionFromSource(src)
+				].map((src, i) => {
+					const expression_eq: ParseNodeExpressionEquality = h.equalityExpressionFromSource(src)
 					assert_arrayLength(expression_eq.children, 3, 'equality expression should have 3 children')
-					const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary] = expression_eq.children
-					assert.ok(left instanceof ParseNodeExpressionBinary)
+					const [left, op, right]: readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative] = expression_eq.children
+					assert.ok(op instanceof [TokenKeyword, TokenPunctuator][i])
 					return [left.source, op.source, right.source]
 				}), [
 					['2', Keyword.IS,    '-3'],
@@ -642,7 +671,7 @@ describe('Parser', () => {
 		})
 
 		context('ExpressionConjunctive ::= ExpressionConjunctive ("&&" | "!&") ExpressionEquality', () => {
-			it('makes a ParseNodeExpressionBinary node.', () => {
+			it('makes a ParseNodeExpressionConjunctive node.', () => {
 				/*
 					<ExpressionConjunctive>
 						<ExpressionConjunctive source="2">...</ExpressionConjunctive>
@@ -650,10 +679,10 @@ describe('Parser', () => {
 						<ExpressionAdditive source="-3">...</ExpressionAdditive>
 					</ExpressionConjunctive>
 				*/
-				const expression_conj: ParseNodeExpressionBinary = h.conjunctiveExpressionFromSource(`2 && -3;`)
+				const expression_conj: ParseNodeExpressionConjunctive = h.conjunctiveExpressionFromSource(`2 && -3;`)
 				assert_arrayLength(expression_conj.children, 3, 'conjunctive expression should have 3 children')
-				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary] = expression_conj.children
-				assert.ok(left instanceof ParseNodeExpressionBinary)
+				const [left, op, right]: readonly [ParseNodeExpressionConjunctive, Token, ParseNodeExpressionEquality] = expression_conj.children
+				assert.ok(op instanceof TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,      right.source],
 					['2',         Punctuator.AND, '-3'],
@@ -662,7 +691,7 @@ describe('Parser', () => {
 		})
 
 		context('ExpressionDisjunctive ::= ExpressionDisjunctive ("||" | "!|") ExpressionConjunctive', () => {
-			it('makes a ParseNodeExpressionBinary node.', () => {
+			it('makes a ParseNodeExpressionDisjunctive node.', () => {
 				/*
 					<ExpressionDisjunctive>
 						<ExpressionDisjunctive source="2">...</ExpressionDisjunctive>
@@ -670,10 +699,10 @@ describe('Parser', () => {
 						<ExpressionConjunctive source="-3">...</ExpressionConjunctive>
 					</ExpressionDisjunctive>
 				*/
-				const expression_disj: ParseNodeExpressionBinary = h.disjunctiveExpressionFromSource(`2 || -3;`)
+				const expression_disj: ParseNodeExpressionDisjunctive = h.disjunctiveExpressionFromSource(`2 || -3;`)
 				assert_arrayLength(expression_disj.children, 3, 'disjunctive expression should have 3 children')
-				const [left, op, right]: readonly [ParseNodeExpressionUnary | ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary] = expression_disj.children
-				assert.ok(left instanceof ParseNodeExpressionBinary)
+				const [left, op, right]: readonly [ParseNodeExpressionDisjunctive, Token, ParseNodeExpressionConjunctive] = expression_disj.children
+				assert.ok(op instanceof TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,     right.source],
 					['2',         Punctuator.OR, '-3'],
@@ -697,8 +726,11 @@ describe('Parser', () => {
 					if true then 2 else 3;
 				`)
 				const
-					[_if,          condition,           _then,        consequent,          _else,        alternative]: readonly
-					[TokenKeyword, ParseNodeExpression, TokenKeyword, ParseNodeExpression, TokenKeyword, ParseNodeExpression] = expression_cond.children
+					[_if,   condition,           _then, consequent,          _else, alternative]: readonly
+					[Token, ParseNodeExpression, Token, ParseNodeExpression, Token, ParseNodeExpression] = expression_cond.children
+				assert.ok(_if   instanceof TokenKeyword)
+				assert.ok(_then instanceof TokenKeyword)
+				assert.ok(_else instanceof TokenKeyword)
 				assert.deepStrictEqual(
 					[_if.source, condition.source, _then.source, consequent.source, _else.source, alternative.source],
 					[Keyword.IF, `true`,           Keyword.THEN, `2`,               Keyword.ELSE, `3`],
@@ -755,7 +787,7 @@ describe('Parser', () => {
 			it('makes a ParseNodeStatementAssignment node.', () => {
 				const stmt: ParseNodeStatement = h.statementFromSource(`this_answer  =  that_answer  -  40;`)
 				assert_arrayLength(stmt.children, 1)
-				const decl: TokenPunctuator | ParseNodeDeclarationVariable | ParseNodeStatementAssignment = stmt.children[0]
+				const decl: Token | ParseNodeDeclarationVariable | ParseNodeStatementAssignment = stmt.children[0]
 				assert.ok(decl instanceof ParseNodeStatementAssignment)
 				assert.deepStrictEqual(decl.children.map((child) => child.source), [
 					'this_answer', '=', 'that_answer - 40', ';',

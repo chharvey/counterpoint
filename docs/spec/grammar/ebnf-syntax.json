@@ -1,6 +1,6 @@
 [
 	{
-		"name": "NonterminalDefinition",
+		"name": "NonterminalName",
 		"defn": [
 			[{"term": "IDENTIFIER"}],
 			[{"term": "IDENTIFIER"}, "'<'", {"prod": "Identifier__CSL"}, "'>'"]
@@ -14,36 +14,36 @@
 		]
 	},
 	{
-		"name": "NonterminalReference",
+		"name": "NonterminalRef",
 		"defn": [
 			[{"term": "IDENTIFIER"}],
-			[{"term": "IDENTIFIER"}, "'<'", {"prod": "NonterminalReference__0__CSL"}, "'>'"]
+			[{"term": "IDENTIFIER"}, "'<'", {"prod": "NonterminalRef__0__CSL"}, "'>'"]
 		]
 	},
 	{
-		"name": "NonterminalReference__0__CSL",
+		"name": "NonterminalRef__0__CSL",
 		"defn": [
-			[                                                 "'+'", {"term": "IDENTIFIER"}],
-			[                                                 "'-'", {"term": "IDENTIFIER"}],
-			[                                                 "'?'", {"term": "IDENTIFIER"}],
-			[{"prod": "NonterminalReference__0__CSL"}, "','", "'+'", {"term": "IDENTIFIER"}],
-			[{"prod": "NonterminalReference__0__CSL"}, "','", "'-'", {"term": "IDENTIFIER"}],
-			[{"prod": "NonterminalReference__0__CSL"}, "','", "'?'", {"term": "IDENTIFIER"}]
+			[                                           "'+'", {"term": "IDENTIFIER"}],
+			[                                           "'-'", {"term": "IDENTIFIER"}],
+			[                                           "'?'", {"term": "IDENTIFIER"}],
+			[{"prod": "NonterminalRef__0__CSL"}, "','", "'+'", {"term": "IDENTIFIER"}],
+			[{"prod": "NonterminalRef__0__CSL"}, "','", "'-'", {"term": "IDENTIFIER"}],
+			[{"prod": "NonterminalRef__0__CSL"}, "','", "'?'", {"term": "IDENTIFIER"}]
 		]
 	},
 	{
-		"name": "Condition",
+		"name": "ConditionSet",
 		"defn": [
-			["'<'", {"prod": "Condition__0__CSL"}, "'>'"]
+			["'<'", {"prod": "ConditionSet__0__CSL"}, "'>'"]
 		]
 	},
 	{
-		"name": "Condition__0__CSL",
+		"name": "ConditionSet__0__CSL",
 		"defn": [
-			[                                      {"term": "IDENTIFIER"}, "'+'"],
-			[                                      {"term": "IDENTIFIER"}, "'-'"],
-			[{"prod": "Condition__0__CSL"}, "','", {"term": "IDENTIFIER"}, "'+'"],
-			[{"prod": "Condition__0__CSL"}, "','", {"term": "IDENTIFIER"}, "'-'"]
+			[                                         {"term": "IDENTIFIER"}, "'+'"],
+			[                                         {"term": "IDENTIFIER"}, "'-'"],
+			[{"prod": "ConditionSet__0__CSL"}, "','", {"term": "IDENTIFIER"}, "'+'"],
+			[{"prod": "ConditionSet__0__CSL"}, "','", {"term": "IDENTIFIER"}, "'-'"]
 		]
 	},
 	{
@@ -52,8 +52,8 @@
 			[{"term": "CHAR_CODE"}],
 			[{"term": "STRING"}],
 			[{"term": "CHAR_CLASS"}],
-			[{"prod": "NonterminalReference"}],
-			["'('", {"prod": "Choice"}, "')'"]
+			[{"prod": "NonterminalRef"}],
+			["'('", {"prod": "Definition"}, "')'"]
 		]
 	},
 	{
@@ -73,7 +73,7 @@
 		"name": "Item",
 		"defn": [
 			[{"prod": "Unary"}],
-			[{"prod": "Condition"}, {"prod": "Item"}]
+			[{"prod": "ConditionSet"}, {"prod": "Item"}]
 		]
 	},
 	{
@@ -84,26 +84,32 @@
 		]
 	},
 	{
-		"name": "Sequence",
+		"name": "Concat",
 		"defn": [
-			[                             {"prod": "Item__List"}],
-			[{"prod": "Sequence"}, "'&'", {"prod": "Item__List"}]
+			[                           {"prod": "Item__List"}],
+			[{"prod": "Concat"}, "'&'", {"prod": "Item__List"}]
 		]
 	},
 	{
-		"name": "Choice",
+		"name": "Altern",
 		"defn": [
-			[                           {"prod": "Sequence"}],
-			[{"prod": "Choice"}, "'|'", {"prod": "Sequence"}]
+			[                           {"prod": "Concat"}],
+			[{"prod": "Altern"}, "'|'", {"prod": "Concat"}]
+		]
+	},
+	{
+		"name": "Definition",
+		"defn": [
+			[{"prod": "Altern"}]
 		]
 	},
 	{
 		"name": "Production",
 		"defn": [
-			[{"prod": "NonterminalDefinition"}, "':::='",        {"prod": "Choice"}, "';'"],
-			[{"prod": "NonterminalDefinition"}, "'::='",         {"prod": "Choice"}, "';'"],
-			[{"prod": "NonterminalDefinition"}, "':::='", "'|'", {"prod": "Choice"}, "';'"],
-			[{"prod": "NonterminalDefinition"}, "'::='",  "'|'", {"prod": "Choice"}, "';'"]
+			[{"prod": "NonterminalName"}, "':::='",        {"prod": "Definition"}, "';'"],
+			[{"prod": "NonterminalName"}, "'::='",         {"prod": "Definition"}, "';'"],
+			[{"prod": "NonterminalName"}, "':::='", "'|'", {"prod": "Definition"}, "';'"],
+			[{"prod": "NonterminalName"}, "'::='",  "'|'", {"prod": "Definition"}, "';'"]
 		]
 	},
 	{

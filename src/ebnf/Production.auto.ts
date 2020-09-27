@@ -1,22 +1,24 @@
 
 			
-		/*-------------------------------------------------------/
-		| WARNING: Do not manually update this file!             |
-		| It is auto-generated via                               |
-		| </src/parser/Production.class.ts#Production#fromJSON>. |
-		| If you need to make updates, make them there.          |
-		/-------------------------------------------------------*/
-	
+			/*----------------------------------------------------------------/
+			| WARNING: Do not manually update this file!
+			| It is auto-generated via
+			| </src/parser/Production.class.ts#Production#fromJSON>.
+			| If you need to make updates, make them there.
+			/----------------------------------------------------------------*/
+		
 			
 			import type {
 				KleenePlus,
+			} from '../types.d';
+			import type {
 				GrammarSymbol,
 			} from '../parser/Grammar.class';
 			import Production from '../parser/Production.class';
 			import * as TERMINAL from './Terminal.class';
 			
-				export class ProductionNonterminalDefinition extends Production {
-					static readonly instance: ProductionNonterminalDefinition = new ProductionNonterminalDefinition();
+				export class ProductionNonterminalName extends Production {
+					static readonly instance: ProductionNonterminalName = new ProductionNonterminalName();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
 							[TERMINAL.TerminalIdentifier.instance],[TERMINAL.TerminalIdentifier.instance,'<',ProductionIdentifier__CSL.instance,'>'],
@@ -47,66 +49,66 @@
 					}
 				}
 			
-				export class ProductionNonterminalReference extends Production {
-					static readonly instance: ProductionNonterminalReference = new ProductionNonterminalReference();
+				export class ProductionNonterminalRef extends Production {
+					static readonly instance: ProductionNonterminalRef = new ProductionNonterminalRef();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[TERMINAL.TerminalIdentifier.instance],[TERMINAL.TerminalIdentifier.instance,'<',ProductionNonterminalReference__0__CSL.instance,'>'],
+							[TERMINAL.TerminalIdentifier.instance],[TERMINAL.TerminalIdentifier.instance,'<',ProductionNonterminalRef__0__CSL.instance,'>'],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							random < 1/2 ? [TERMINAL.TerminalIdentifier.instance.random()] :
-							[TERMINAL.TerminalIdentifier.instance.random(),'<',...ProductionNonterminalReference__0__CSL.instance.random(),'>']
+							[TERMINAL.TerminalIdentifier.instance.random(),'<',...ProductionNonterminalRef__0__CSL.instance.random(),'>']
 						);
 					}
 				}
 			
-				export class ProductionNonterminalReference__0__CSL extends Production {
-					static readonly instance: ProductionNonterminalReference__0__CSL = new ProductionNonterminalReference__0__CSL();
+				export class ProductionNonterminalRef__0__CSL extends Production {
+					static readonly instance: ProductionNonterminalRef__0__CSL = new ProductionNonterminalRef__0__CSL();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							['+',TERMINAL.TerminalIdentifier.instance],['-',TERMINAL.TerminalIdentifier.instance],['?',TERMINAL.TerminalIdentifier.instance],[ProductionNonterminalReference__0__CSL.instance,',','+',TERMINAL.TerminalIdentifier.instance],[ProductionNonterminalReference__0__CSL.instance,',','-',TERMINAL.TerminalIdentifier.instance],[ProductionNonterminalReference__0__CSL.instance,',','?',TERMINAL.TerminalIdentifier.instance],
+							['+',TERMINAL.TerminalIdentifier.instance],['-',TERMINAL.TerminalIdentifier.instance],['?',TERMINAL.TerminalIdentifier.instance],[ProductionNonterminalRef__0__CSL.instance,',','+',TERMINAL.TerminalIdentifier.instance],[ProductionNonterminalRef__0__CSL.instance,',','-',TERMINAL.TerminalIdentifier.instance],[ProductionNonterminalRef__0__CSL.instance,',','?',TERMINAL.TerminalIdentifier.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/6 ? ['+',TERMINAL.TerminalIdentifier.instance.random()] : random < 2/6 ? ['-',TERMINAL.TerminalIdentifier.instance.random()] : random < 3/6 ? ['?',TERMINAL.TerminalIdentifier.instance.random()] : random < 4/6 ? [...ProductionNonterminalReference__0__CSL.instance.random(),',','+',TERMINAL.TerminalIdentifier.instance.random()] : random < 5/6 ? [...ProductionNonterminalReference__0__CSL.instance.random(),',','-',TERMINAL.TerminalIdentifier.instance.random()] :
-							[...ProductionNonterminalReference__0__CSL.instance.random(),',','?',TERMINAL.TerminalIdentifier.instance.random()]
+							random < 1/6 ? ['+',TERMINAL.TerminalIdentifier.instance.random()] : random < 2/6 ? ['-',TERMINAL.TerminalIdentifier.instance.random()] : random < 3/6 ? ['?',TERMINAL.TerminalIdentifier.instance.random()] : random < 4/6 ? [...ProductionNonterminalRef__0__CSL.instance.random(),',','+',TERMINAL.TerminalIdentifier.instance.random()] : random < 5/6 ? [...ProductionNonterminalRef__0__CSL.instance.random(),',','-',TERMINAL.TerminalIdentifier.instance.random()] :
+							[...ProductionNonterminalRef__0__CSL.instance.random(),',','?',TERMINAL.TerminalIdentifier.instance.random()]
 						);
 					}
 				}
 			
-				export class ProductionCondition extends Production {
-					static readonly instance: ProductionCondition = new ProductionCondition();
+				export class ProductionConditionSet extends Production {
+					static readonly instance: ProductionConditionSet = new ProductionConditionSet();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							['<',ProductionCondition__0__CSL.instance,'>'],
+							['<',ProductionConditionSet__0__CSL.instance,'>'],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							
-							['<',...ProductionCondition__0__CSL.instance.random(),'>']
+							['<',...ProductionConditionSet__0__CSL.instance.random(),'>']
 						);
 					}
 				}
 			
-				export class ProductionCondition__0__CSL extends Production {
-					static readonly instance: ProductionCondition__0__CSL = new ProductionCondition__0__CSL();
+				export class ProductionConditionSet__0__CSL extends Production {
+					static readonly instance: ProductionConditionSet__0__CSL = new ProductionConditionSet__0__CSL();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[TERMINAL.TerminalIdentifier.instance,'+'],[TERMINAL.TerminalIdentifier.instance,'-'],[ProductionCondition__0__CSL.instance,',',TERMINAL.TerminalIdentifier.instance,'+'],[ProductionCondition__0__CSL.instance,',',TERMINAL.TerminalIdentifier.instance,'-'],
+							[TERMINAL.TerminalIdentifier.instance,'+'],[TERMINAL.TerminalIdentifier.instance,'-'],[ProductionConditionSet__0__CSL.instance,',',TERMINAL.TerminalIdentifier.instance,'+'],[ProductionConditionSet__0__CSL.instance,',',TERMINAL.TerminalIdentifier.instance,'-'],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/4 ? [TERMINAL.TerminalIdentifier.instance.random(),'+'] : random < 2/4 ? [TERMINAL.TerminalIdentifier.instance.random(),'-'] : random < 3/4 ? [...ProductionCondition__0__CSL.instance.random(),',',TERMINAL.TerminalIdentifier.instance.random(),'+'] :
-							[...ProductionCondition__0__CSL.instance.random(),',',TERMINAL.TerminalIdentifier.instance.random(),'-']
+							random < 1/4 ? [TERMINAL.TerminalIdentifier.instance.random(),'+'] : random < 2/4 ? [TERMINAL.TerminalIdentifier.instance.random(),'-'] : random < 3/4 ? [...ProductionConditionSet__0__CSL.instance.random(),',',TERMINAL.TerminalIdentifier.instance.random(),'+'] :
+							[...ProductionConditionSet__0__CSL.instance.random(),',',TERMINAL.TerminalIdentifier.instance.random(),'-']
 						);
 					}
 				}
@@ -115,14 +117,14 @@
 					static readonly instance: ProductionUnit = new ProductionUnit();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[TERMINAL.TerminalCharCode.instance],[TERMINAL.TerminalString.instance],[TERMINAL.TerminalCharClass.instance],[ProductionNonterminalReference.instance],['(',ProductionChoice.instance,')'],
+							[TERMINAL.TerminalCharCode.instance],[TERMINAL.TerminalString.instance],[TERMINAL.TerminalCharClass.instance],[ProductionNonterminalRef.instance],['(',ProductionDefinition.instance,')'],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/5 ? [TERMINAL.TerminalCharCode.instance.random()] : random < 2/5 ? [TERMINAL.TerminalString.instance.random()] : random < 3/5 ? [TERMINAL.TerminalCharClass.instance.random()] : random < 4/5 ? [...ProductionNonterminalReference.instance.random()] :
-							['(',...ProductionChoice.instance.random(),')']
+							random < 1/5 ? [TERMINAL.TerminalCharCode.instance.random()] : random < 2/5 ? [TERMINAL.TerminalString.instance.random()] : random < 3/5 ? [TERMINAL.TerminalCharClass.instance.random()] : random < 4/5 ? [...ProductionNonterminalRef.instance.random()] :
+							['(',...ProductionDefinition.instance.random(),')']
 						);
 					}
 				}
@@ -147,14 +149,14 @@
 					static readonly instance: ProductionItem = new ProductionItem();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[ProductionUnary.instance],[ProductionCondition.instance,ProductionItem.instance],
+							[ProductionUnary.instance],[ProductionConditionSet.instance,ProductionItem.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							random < 1/2 ? [...ProductionUnary.instance.random()] :
-							[...ProductionCondition.instance.random(),...ProductionItem.instance.random()]
+							[...ProductionConditionSet.instance.random(),...ProductionItem.instance.random()]
 						);
 					}
 				}
@@ -175,34 +177,50 @@
 					}
 				}
 			
-				export class ProductionSequence extends Production {
-					static readonly instance: ProductionSequence = new ProductionSequence();
+				export class ProductionConcat extends Production {
+					static readonly instance: ProductionConcat = new ProductionConcat();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[ProductionItem__List.instance],[ProductionSequence.instance,'&',ProductionItem__List.instance],
+							[ProductionItem__List.instance],[ProductionConcat.instance,'&',ProductionItem__List.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							random < 1/2 ? [...ProductionItem__List.instance.random()] :
-							[...ProductionSequence.instance.random(),'&',...ProductionItem__List.instance.random()]
+							[...ProductionConcat.instance.random(),'&',...ProductionItem__List.instance.random()]
 						);
 					}
 				}
 			
-				export class ProductionChoice extends Production {
-					static readonly instance: ProductionChoice = new ProductionChoice();
+				export class ProductionAltern extends Production {
+					static readonly instance: ProductionAltern = new ProductionAltern();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[ProductionSequence.instance],[ProductionChoice.instance,'|',ProductionSequence.instance],
+							[ProductionConcat.instance],[ProductionAltern.instance,'|',ProductionConcat.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/2 ? [...ProductionSequence.instance.random()] :
-							[...ProductionChoice.instance.random(),'|',...ProductionSequence.instance.random()]
+							random < 1/2 ? [...ProductionConcat.instance.random()] :
+							[...ProductionAltern.instance.random(),'|',...ProductionConcat.instance.random()]
+						);
+					}
+				}
+			
+				export class ProductionDefinition extends Production {
+					static readonly instance: ProductionDefinition = new ProductionDefinition();
+					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+						return [
+							[ProductionAltern.instance],
+						];
+					}
+					random(): string[] {
+						const random: number = Math.random();
+						return (
+							
+							[...ProductionAltern.instance.random()]
 						);
 					}
 				}
@@ -211,14 +229,14 @@
 					static readonly instance: ProductionProduction = new ProductionProduction();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[ProductionNonterminalDefinition.instance,':::=',ProductionChoice.instance,';'],[ProductionNonterminalDefinition.instance,'::=',ProductionChoice.instance,';'],[ProductionNonterminalDefinition.instance,':::=','|',ProductionChoice.instance,';'],[ProductionNonterminalDefinition.instance,'::=','|',ProductionChoice.instance,';'],
+							[ProductionNonterminalName.instance,':::=',ProductionDefinition.instance,';'],[ProductionNonterminalName.instance,'::=',ProductionDefinition.instance,';'],[ProductionNonterminalName.instance,':::=','|',ProductionDefinition.instance,';'],[ProductionNonterminalName.instance,'::=','|',ProductionDefinition.instance,';'],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/4 ? [...ProductionNonterminalDefinition.instance.random(),':::=',...ProductionChoice.instance.random(),';'] : random < 2/4 ? [...ProductionNonterminalDefinition.instance.random(),'::=',...ProductionChoice.instance.random(),';'] : random < 3/4 ? [...ProductionNonterminalDefinition.instance.random(),':::=','|',...ProductionChoice.instance.random(),';'] :
-							[...ProductionNonterminalDefinition.instance.random(),'::=','|',...ProductionChoice.instance.random(),';']
+							random < 1/4 ? [...ProductionNonterminalName.instance.random(),':::=',...ProductionDefinition.instance.random(),';'] : random < 2/4 ? [...ProductionNonterminalName.instance.random(),'::=',...ProductionDefinition.instance.random(),';'] : random < 3/4 ? [...ProductionNonterminalName.instance.random(),':::=','|',...ProductionDefinition.instance.random(),';'] :
+							[...ProductionNonterminalName.instance.random(),'::=','|',...ProductionDefinition.instance.random(),';']
 						);
 					}
 				}

@@ -1,3 +1,4 @@
+import type {KleenePlus} from '../types.d'
 import type {
 	Filebound,
 	Punctuator,
@@ -9,7 +10,6 @@ import Terminal from './Terminal.class'
 import Production from './Production.class'
 
 
-export type KleenePlus<T> = readonly [T, ...readonly T[]]
 
 export type GrammarSymbol =
 	| GrammarTerminal

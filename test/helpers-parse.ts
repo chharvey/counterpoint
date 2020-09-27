@@ -5,6 +5,7 @@ import {
 	ScannerSolid as Scanner,
 	Filebound,
 	Punctuator,
+	Token,
 	TokenFilebound,
 	TokenPunctuator,
 	TokenKeyword,
@@ -16,13 +17,20 @@ import {
 	ParseNodePrimitiveLiteral,
 	ParseNodeTypeKeyword,
 	ParseNodeTypeUnit,
-	ParseNodeTypeUnary,
-	ParseNodeTypeBinary,
+	ParseNodeTypeUnarySymbol,
+	ParseNodeTypeIntersection,
+	ParseNodeTypeUnion,
 	ParseNodeType,
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
-	ParseNodeExpressionUnary,
-	ParseNodeExpressionBinary,
+	ParseNodeExpressionUnarySymbol,
+	ParseNodeExpressionExponential,
+	ParseNodeExpressionMultiplicative,
+	ParseNodeExpressionAdditive,
+	ParseNodeExpressionComparative,
+	ParseNodeExpressionEquality,
+	ParseNodeExpressionConjunctive,
+	ParseNodeExpressionDisjunctive,
 	ParseNodeExpressionConditional,
 	ParseNodeExpression,
 	ParseNodeDeclarationVariable,
@@ -30,7 +38,7 @@ import {
 	ParseNodeStatement,
 	ParseNodeGoal,
 	ParseNodeGoal__0__List,
-} from '../src/parser/'
+} from '../src/parser/ParseNode.auto'
 import {
 	assert_arrayLength,
 } from './assert-helpers'
@@ -38,10 +46,18 @@ import {
 
 
 export function tokenLiteralFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TokenKeyword | TokenNumber | TokenString {
-	return primitiveTypeFromString(typestring, config).children[0]
+	const token: Token = primitiveTypeFromString(typestring, config).children[0]
+	assert.ok(
+		token instanceof TokenKeyword ||
+		token instanceof TokenNumber  ||
+		token instanceof TokenString
+	, 'token should be a TokenKeyword or TokenNumber or TokenString')
+	return token
 }
 export function tokenKeywordFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TokenKeyword {
-	return keywordTypeFromString(typestring, config).children[0]
+	const token: Token = keywordTypeFromString(typestring, config).children[0]
+	assert.ok(token instanceof TokenKeyword, 'token should be a TokenKeyword')
+	return token
 }
 export function primitiveTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodePrimitiveLiteral {
 	const type_unit: ParseNodeTypeUnit = unitTypeFromString(typestring, config)
@@ -58,118 +74,106 @@ export function keywordTypeFromString(typestring: string, config: SolidConfig = 
 	return unit
 }
 export function unitTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeTypeUnit {
-	const type_unary: ParseNodeTypeUnary = unaryTypeFromString(typestring, config)
+	const type_unary: ParseNodeTypeUnarySymbol = unaryTypeFromString(typestring, config)
 	assert_arrayLength(type_unary.children, 1, 'unary type should have 1 child')
 	return type_unary.children[0]
 }
-export function unaryTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeTypeUnary {
-	const type_intersection: ParseNodeTypeBinary = intersectionTypeFromString(typestring, config)
+export function unaryTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeTypeUnarySymbol {
+	const type_intersection: ParseNodeTypeIntersection = intersectionTypeFromString(typestring, config)
 	assert_arrayLength(type_intersection.children, 1, 'intersection type should have 1 child')
-	const type_unary: ParseNodeTypeBinary | ParseNodeTypeUnary = type_intersection.children[0]
-	assert.ok(type_unary instanceof ParseNodeTypeUnary, 'type_unary should be a ParseNodeTypeUnary')
-	return type_unary
+	return type_intersection.children[0]
 }
-export function intersectionTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeTypeBinary {
-	const type_union: ParseNodeTypeBinary = unionTypeFromString(typestring, config)
+export function intersectionTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeTypeIntersection {
+	const type_union: ParseNodeTypeUnion = unionTypeFromString(typestring, config)
 	assert_arrayLength(type_union.children, 1, 'union type should have 1 child')
-	const type_intersection: ParseNodeTypeBinary | ParseNodeTypeUnary = type_union.children[0]
-	assert.ok(type_intersection instanceof ParseNodeTypeBinary, 'type_intersection should be a ParseNodeTypeBinary')
-	return type_intersection
+	return type_union.children[0]
 }
-export function unionTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeTypeBinary {
-	const type_: ParseNodeType = typeFromString(typestring, config)
-	return type_.children[0]
+export function unionTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeTypeUnion {
+	return typeFromString(typestring, config).children[0]
 }
 function typeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeType {
 	return typeFromSource(`let x: ${ typestring } = null;`, config)
 }
 export function tokenLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TokenKeyword | TokenNumber | TokenString {
-	return primitiveLiteralFromSource(src, config).children[0]
+	const token: Token = primitiveLiteralFromSource(src, config).children[0]
+	assert.ok(
+		token instanceof TokenKeyword ||
+		token instanceof TokenNumber  ||
+		token instanceof TokenString
+	, 'token should be a TokenKeyword or TokenNumber or TokenString')
+	return token
 }
 export function tokenIdentifierFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TokenIdentifier {
 	const expression_unit: ParseNodeExpressionUnit = unitExpressionFromSource(src, config)
 	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child')
-	const unit: TokenIdentifier | ParseNodePrimitiveLiteral | ParseNodeStringTemplate = expression_unit.children[0]
+	const unit: Token | ParseNodePrimitiveLiteral | ParseNodeStringTemplate = expression_unit.children[0]
 	assert.ok(unit instanceof TokenIdentifier, 'unit should be a TokenIdentifier')
 	return unit
 }
 export function primitiveLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodePrimitiveLiteral {
 	const expression_unit: ParseNodeExpressionUnit = unitExpressionFromSource(src, config)
 	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child')
-	const unit: TokenIdentifier | ParseNodePrimitiveLiteral | ParseNodeStringTemplate = expression_unit.children[0]
+	const unit: Token | ParseNodePrimitiveLiteral | ParseNodeStringTemplate = expression_unit.children[0]
 	assert.ok(unit instanceof ParseNodePrimitiveLiteral, 'unit should be a ParseNodePrimitiveLiteral')
 	return unit
 }
 export function unitExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionUnit {
-	const expression_unary: ParseNodeExpressionUnary = unaryExpressionFromSource(src, config)
+	const expression_unary: ParseNodeExpressionUnarySymbol = unaryExpressionFromSource(src, config)
 	assert_arrayLength(expression_unary.children, 1, 'unary expression should have 1 child')
 	return expression_unary.children[0]
 }
-export function unaryExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionUnary {
-	const expression_exp: ParseNodeExpressionBinary = exponentialExpressionFromSource(src, config)
+export function unaryExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionUnarySymbol {
+	const expression_exp: ParseNodeExpressionExponential = exponentialExpressionFromSource(src, config)
 	assert_arrayLength(expression_exp.children, 1, 'exponential expression should have 1 child')
-	const expression_unary: ParseNodeExpressionUnary | ParseNodeExpressionBinary = expression_exp.children[0]
-	assert.ok(expression_unary instanceof ParseNodeExpressionUnary, 'expression_unary should be a ParseNodeExpressionUnary')
-	return expression_unary
+	return expression_exp.children[0]
 }
-export function exponentialExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionBinary {
-	const expression_mul: ParseNodeExpressionBinary = multiplicativeExpressionFromSource(src, config)
+export function exponentialExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionExponential {
+	const expression_mul: ParseNodeExpressionMultiplicative = multiplicativeExpressionFromSource(src, config)
 	assert_arrayLength(expression_mul.children, 1, 'multiplicative expression should have 1 child')
-	const expression_exp: ParseNodeExpressionUnary | ParseNodeExpressionBinary = expression_mul.children[0]
-	assert.ok(expression_exp instanceof ParseNodeExpressionBinary, 'expression_exp should be a ParseNodeExpressionBinary')
-	return expression_exp
+	return expression_mul.children[0]
 }
-export function multiplicativeExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionBinary {
-	const expression_add: ParseNodeExpressionBinary = additiveExpressionFromSource(src, config)
+export function multiplicativeExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionMultiplicative {
+	const expression_add: ParseNodeExpressionAdditive = additiveExpressionFromSource(src, config)
 	assert_arrayLength(expression_add.children, 1, 'additive expression should have 1 child')
-	const expression_mul: ParseNodeExpressionUnary | ParseNodeExpressionBinary = expression_add.children[0]
-	assert.ok(expression_mul instanceof ParseNodeExpressionBinary, 'expression_mul should be a ParseNodeExpressionBinary')
-	return expression_mul
+	return expression_add.children[0]
 }
-export function additiveExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionBinary {
-	const expression_compare: ParseNodeExpressionBinary = comparativeExpressionFromSource(src, config)
+export function additiveExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionAdditive {
+	const expression_compare: ParseNodeExpressionComparative = comparativeExpressionFromSource(src, config)
 	assert_arrayLength(expression_compare.children, 1, 'comparative expression should have 1 child')
-	const expression_add: ParseNodeExpressionUnary | ParseNodeExpressionBinary = expression_compare.children[0]
-	assert.ok(expression_add instanceof ParseNodeExpressionBinary, 'expression_add should be a ParseNodeExpressionBinary')
-	return expression_add
+	return expression_compare.children[0]
 }
-export function comparativeExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionBinary {
-	const expression_eq: ParseNodeExpressionBinary = equalityExpressionFromSource(src, config)
+export function comparativeExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionComparative {
+	const expression_eq: ParseNodeExpressionEquality = equalityExpressionFromSource(src, config)
 	assert_arrayLength(expression_eq.children, 1, 'equality expression should have 1 child')
-	const expression_compare: ParseNodeExpressionUnary | ParseNodeExpressionBinary = expression_eq.children[0]
-	assert.ok(expression_compare instanceof ParseNodeExpressionBinary, 'expression_compare should be a ParseNodeExpressionBinary')
-	return expression_compare
+	return expression_eq.children[0]
 }
-export function equalityExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionBinary {
-	const expression_conj: ParseNodeExpressionBinary = conjunctiveExpressionFromSource(src, config)
+export function equalityExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionEquality {
+	const expression_conj: ParseNodeExpressionConjunctive = conjunctiveExpressionFromSource(src, config)
 	assert_arrayLength(expression_conj.children, 1, 'conjunctive expression should have 1 child')
-	const expression_eq: ParseNodeExpressionUnary | ParseNodeExpressionBinary = expression_conj.children[0]
-	assert.ok(expression_eq instanceof ParseNodeExpressionBinary, 'expression_eq should be a ParseNodeExpressionBinary')
-	return expression_eq
+	return expression_conj.children[0]
 }
-export function conjunctiveExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionBinary {
-	const expression_disj: ParseNodeExpressionBinary = disjunctiveExpressionFromSource(src, config)
+export function conjunctiveExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionConjunctive {
+	const expression_disj: ParseNodeExpressionDisjunctive = disjunctiveExpressionFromSource(src, config)
 	assert_arrayLength(expression_disj.children, 1, 'disjunctive expression should have 1 child')
-	const expression_conj: ParseNodeExpressionUnary | ParseNodeExpressionBinary = expression_disj.children[0]
-	assert.ok(expression_conj instanceof ParseNodeExpressionBinary, 'expression_conj should be a ParseNodeExpressionBinary')
-	return expression_conj
+	return expression_disj.children[0]
 }
-export function disjunctiveExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionBinary {
+export function disjunctiveExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionDisjunctive {
 	const expression: ParseNodeExpression = expressionFromSource(src, config)
-	const expression_disj: ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression.children[0]
-	assert.ok(expression_disj instanceof ParseNodeExpressionBinary, 'expression_disj should be a ParseNodeExpressionBinary')
+	const expression_disj: ParseNodeExpressionDisjunctive | ParseNodeExpressionConditional = expression.children[0]
+	assert.ok(expression_disj instanceof ParseNodeExpressionDisjunctive, 'expression_disj should be a ParseNodeExpressionDisjunctive')
 	return expression_disj
 }
 export function conditionalExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpressionConditional {
 	const expression: ParseNodeExpression = expressionFromSource(src, config)
-	const expression_cond: ParseNodeExpressionBinary | ParseNodeExpressionConditional = expression.children[0]
+	const expression_cond: ParseNodeExpressionDisjunctive | ParseNodeExpressionConditional = expression.children[0]
 	assert.ok(expression_cond instanceof ParseNodeExpressionConditional, 'expression_cond should be a ParseNodeExpressionConditional')
 	return expression_cond
 }
 function expressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeExpression {
 	const statement: ParseNodeStatement = statementFromSource(src, config)
 	assert_arrayLength(statement.children, 2, 'statment should have 2 children')
-	const [expression, endstat]: readonly [ParseNodeExpression, TokenPunctuator] = statement.children
+	const [expression, endstat]: readonly [ParseNodeExpression, Token] = statement.children
+	assert.ok(endstat instanceof TokenPunctuator)
 	assert.strictEqual(endstat.source, Punctuator.ENDSTAT)
 	return expression
 }
@@ -180,14 +184,16 @@ function typeFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): Pars
 export function variableDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeDeclarationVariable {
 	const statement: ParseNodeStatement = statementFromSource(src, config)
 	assert_arrayLength(statement.children, 1, 'statement should have 1 child')
-	const var_decl: TokenPunctuator | ParseNodeDeclarationVariable | ParseNodeStatementAssignment = statement.children[0]
+	const var_decl: Token | ParseNodeDeclarationVariable | ParseNodeStatementAssignment = statement.children[0]
 	assert.ok(var_decl instanceof ParseNodeDeclarationVariable)
 	return var_decl
 }
 export function statementFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeStatement {
 	const goal: ParseNodeGoal = new Scanner(src, config).lexer.screener.parser.parse()
 	assert_arrayLength(goal.children, 3, 'goal should have 3 children')
-	const [sot, stat_list, eot]: readonly [TokenFilebound, ParseNodeGoal__0__List, TokenFilebound] = goal.children
+	const [sot, stat_list, eot]: readonly [Token, ParseNodeGoal__0__List, Token] = goal.children
+	assert.ok(sot instanceof TokenFilebound)
+	assert.ok(eot instanceof TokenFilebound)
 	assert.strictEqual(sot.source, Filebound.SOT)
 	assert.strictEqual(eot.source, Filebound.EOT)
 	assert_arrayLength(stat_list.children, 1, 'statement list should have 1 child')
