@@ -85,20 +85,20 @@ type SymbolInfo = {
  * 	to `(sum (const 2) (const 3))`
  */
 export default class Validator {
-	private static readonly TYPEOPERATORS_UNARY: Map<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
+	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
 		[Punctuator.ORNULL, Operator.ORNULL],
 	])
-	private static readonly TYPEOPERATORS_BINARY: Map<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
+	private static readonly TYPEOPERATORS_BINARY: ReadonlyMap<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
 		[Punctuator.INTER, Operator.AND],
 		[Punctuator.UNION, Operator.OR],
 	])
-	private static readonly OPERATORS_UNARY: Map<Punctuator, Operator> = new Map<Punctuator, Operator>([
+	private static readonly OPERATORS_UNARY: ReadonlyMap<Punctuator, Operator> = new Map<Punctuator, Operator>([
 		[Punctuator.NOT, Operator.NOT],
 		[Punctuator.EMP, Operator.EMP],
 		[Punctuator.AFF, Operator.AFF],
 		[Punctuator.NEG, Operator.NEG],
 	])
-	private static readonly OPERATORS_BINARY: Map<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
+	private static readonly OPERATORS_BINARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
 		[Punctuator.EXP,  Operator.EXP],
 		[Punctuator.MUL,  Operator.MUL],
 		[Punctuator.DIV,  Operator.DIV],

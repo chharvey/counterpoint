@@ -3,6 +3,7 @@ import * as assert from 'assert'
 import {
 	ScannerSolid as Scanner,
 	Char,
+	Filebound,
 } from '../../src/lexer/'
 
 const lastItem  = (iter: any): any     => iter[lastIndex(iter)]
@@ -32,11 +33,11 @@ describe('Scanner', () => {
 	describe('.constructor', () => {
 		it('wraps source text.', () => {
 			const scanner: Scanner = new Scanner(mock)
-			assert.strictEqual(scanner.source_text[0], '\u0002')
+			assert.strictEqual(scanner.source_text[0], Filebound.SOT)
 			assert.strictEqual(scanner.source_text[1], '\n')
 			assert.strictEqual(scanner.source_text[3], '5')
 			assert.strictEqual(scanner.source_text[scanner.source_text.length - 2], '\n')
-			assert.strictEqual(lastItem(scanner.source_text), '\u0003')
+			assert.strictEqual(lastItem(scanner.source_text), Filebound.EOT)
 		})
 		it('normalizes line endings.', () => {
 			const scanner: Scanner = new Scanner(mock)

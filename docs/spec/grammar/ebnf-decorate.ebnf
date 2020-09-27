@@ -17,34 +17,30 @@ Decorate(Identifier__CSL ::= Identifier__CSL "," IDENTIFIER) -> Sequence<Semanti
 
 
 
-Decorate(NonterminalRef ::= IDENTIFIER) -> SemanticRef
-	:= (SemanticRef[name=TokenWorth(IDENTIFIER)]);
-Decorate(NonterminalRef ::= IDENTIFIER "<" NonterminalRef__0__CSL ">") -> SemanticRef
-	:= (SemanticRef[name=TokenWorth(IDENTIFIER)]
-		...Decorate(NonterminalRef__0__CSL)
-	);
+Decorate(ArgumentSet ::= "<" ArgumentSet__0__CSL ">") -> Sequence<SemanticArg>
+	:= Decorate(ArgumentSet__0__CSL);
 
 
 
-Decorate(NonterminalRef__0__CSL ::= "+" IDENTIFIER) -> Sequence<SemanticArg>
+Decorate(ArgumentSet__0__CSL ::= "+" IDENTIFIER) -> Sequence<SemanticArg>
 	:= [(SemanticArg[name=TokenWorth(IDENTIFIER)][append=TRUE])];
-Decorate(NonterminalRef__0__CSL ::= "-" IDENTIFIER) -> Sequence<SemanticArg>
+Decorate(ArgumentSet__0__CSL ::= "-" IDENTIFIER) -> Sequence<SemanticArg>
 	:= [(SemanticArg[name=TokenWorth(IDENTIFIER)][append=FALSE])];
-Decorate(NonterminalRef__0__CSL ::= "?" IDENTIFIER) -> Sequence<SemanticArg>
+Decorate(ArgumentSet__0__CSL ::= "?" IDENTIFIER) -> Sequence<SemanticArg>
 	:= [(SemanticArg[name=TokenWorth(IDENTIFIER)][append=INHERIT])];
-Decorate(NonterminalRef__0__CSL ::= NonterminalRef__0__CSL "," "+" IDENTIFIER) -> Sequence<SemanticArg>
+Decorate(ArgumentSet__0__CSL ::= ArgumentSet__0__CSL "," "+" IDENTIFIER) -> Sequence<SemanticArg>
 	:= [
-		...Decorate(NonterminalRef__0__CSL),
+		...Decorate(ArgumentSet__0__CSL),
 		(SemanticArg[name=TokenWorth(IDENTIFIER)][append=TRUE]),
 	];
-Decorate(NonterminalRef__0__CSL ::= NonterminalRef__0__CSL "," "-" IDENTIFIER) -> Sequence<SemanticArg>
+Decorate(ArgumentSet__0__CSL ::= ArgumentSet__0__CSL "," "-" IDENTIFIER) -> Sequence<SemanticArg>
 	:= [
-		...Decorate(NonterminalRef__0__CSL),
+		...Decorate(ArgumentSet__0__CSL),
 		(SemanticArg[name=TokenWorth(IDENTIFIER)][append=FALSE]),
 	];
-Decorate(NonterminalRef__0__CSL ::= NonterminalRef__0__CSL "," "?" IDENTIFIER) -> Sequence<SemanticArg>
+Decorate(ArgumentSet__0__CSL ::= ArgumentSet__0__CSL "," "?" IDENTIFIER) -> Sequence<SemanticArg>
 	:= [
-		...Decorate(NonterminalRef__0__CSL),
+		...Decorate(ArgumentSet__0__CSL),
 		(SemanticArg[name=TokenWorth(IDENTIFIER)][append=INHERIT]),
 	];
 
@@ -70,6 +66,15 @@ Decorate(ConditionSet__0__CSL ::= ConditionSet__0__CSL "," IDENTIFIER "-") -> Se
 		(SemanticCondition[name=TokenWorth(IDENTIFIER)][include=FALSE]),
 	];
 
+
+
+Decorate(NonterminalRef ::= IDENTIFIER) -> SemanticRef
+	:= (SemanticRef[name=TokenWorth(IDENTIFIER)]);
+Decorate(NonterminalRef ::= NonterminalRef ArgumentSet) -> SemanticRef
+	:= (SemanticRef[name=Decorate(NonterminalRef).name]
+		Decorate(NonterminalRef)
+		...Decorate(ArgumentSet)
+	);
 
 
 
@@ -134,22 +139,22 @@ Decorate(Item ::= ConditionSet Item) -> SemanticItem
 	);
 
 
-Decorate(Item__List ::= Item) -> SemanticExpr
+Decorate(Order ::= Item) -> SemanticExpr
 	:= Decorate(Item);
-Decorate(Item__List ::= Item__List Item) -> SematicOp
+Decorate(Order ::= Order "."? Item) -> SematicOp
 	:= (SematicOp[operator=ORDER]
-		Decorate(Item__List)
+		Decorate(Order)
 		Decorate(Item)
 	);
 
 
 
-Decorate(Concat ::= Item__List) -> SemanticExpr
-	:= Decorate(Item__List);
-Decorate(Concat ::= Concat "&" Item__List) -> SematicOp
+Decorate(Concat ::= Order) -> SemanticExpr
+	:= Decorate(Order);
+Decorate(Concat ::= Concat "&" Order) -> SematicOp
 	:= (SematicOp[operator=CONCAT]
 		Decorate(Concat)
-		Decorate(Item__List)
+		Decorate(Order)
 	);
 
 

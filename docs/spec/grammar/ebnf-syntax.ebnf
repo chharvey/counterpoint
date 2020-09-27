@@ -6,8 +6,14 @@ CHAR_CLASS  ::= [./ebnf-lexicon.ebnf#CharClass];
 
 
 NonterminalName ::= IDENTIFIER ("<" IDENTIFIER#                     ">")?;
-NonterminalRef  ::= IDENTIFIER ("<" (("+" | "-" | "?") IDENTIFIER)# ">")?;
+ArgumentSet     ::=             "<" (("+" | "-" | "?") IDENTIFIER)# ">"  ;
 ConditionSet    ::=             "<" (IDENTIFIER ("+" | "-")      )# ">"  ;
+
+
+
+NonterminalRef ::=
+	| IDENTIFIER
+	| NonterminalRef ArgumentSet;
 
 
 
@@ -32,9 +38,9 @@ Item ::=
 ;
 
 
-
-Concat ::= (Concat "&")? Item+;
-Altern ::= (Altern "|")? Concat;
+Order  ::= ( Order  "."? )? Item;
+Concat ::= ( Concat "&"  )? Order;
+Altern ::= ( Altern "|"  )? Concat;
 
 
 

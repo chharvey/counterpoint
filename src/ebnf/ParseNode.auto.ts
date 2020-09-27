@@ -23,15 +23,15 @@
 					;
 				}
 			
-				export class ParseNodeNonterminalRef extends ParseNode {
+				export class ParseNodeArgumentSet extends ParseNode {
 					declare children:
-						readonly [Token] | readonly [Token,Token,ParseNodeNonterminalRef__0__CSL,Token]
+						readonly [Token,ParseNodeArgumentSet__0__CSL,Token]
 					;
 				}
 			
-				export class ParseNodeNonterminalRef__0__CSL extends ParseNode {
+				export class ParseNodeArgumentSet__0__CSL extends ParseNode {
 					declare children:
-						readonly [Token,Token] | readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeNonterminalRef__0__CSL,Token,Token,Token] | readonly [ParseNodeNonterminalRef__0__CSL,Token,Token,Token] | readonly [ParseNodeNonterminalRef__0__CSL,Token,Token,Token]
+						readonly [Token,Token] | readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeArgumentSet__0__CSL,Token,Token,Token] | readonly [ParseNodeArgumentSet__0__CSL,Token,Token,Token] | readonly [ParseNodeArgumentSet__0__CSL,Token,Token,Token]
 					;
 				}
 			
@@ -44,6 +44,12 @@
 				export class ParseNodeConditionSet__0__CSL extends ParseNode {
 					declare children:
 						readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeConditionSet__0__CSL,Token,Token,Token] | readonly [ParseNodeConditionSet__0__CSL,Token,Token,Token]
+					;
+				}
+			
+				export class ParseNodeNonterminalRef extends ParseNode {
+					declare children:
+						readonly [Token] | readonly [ParseNodeNonterminalRef,ParseNodeArgumentSet]
 					;
 				}
 			
@@ -65,15 +71,15 @@
 					;
 				}
 			
-				export class ParseNodeItem__List extends ParseNode {
+				export class ParseNodeOrder extends ParseNode {
 					declare children:
-						readonly [ParseNodeItem] | readonly [ParseNodeItem__List,ParseNodeItem]
+						readonly [ParseNodeItem] | readonly [ParseNodeOrder,ParseNodeItem] | readonly [ParseNodeOrder,Token,ParseNodeItem]
 					;
 				}
 			
 				export class ParseNodeConcat extends ParseNode {
 					declare children:
-						readonly [ParseNodeItem__List] | readonly [ParseNodeConcat,Token,ParseNodeItem__List]
+						readonly [ParseNodeOrder] | readonly [ParseNodeConcat,Token,ParseNodeOrder]
 					;
 				}
 			
