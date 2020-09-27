@@ -24,6 +24,7 @@ import {
 	TokenTemplate,
 } from '../lexer/'
 import {
+	Validator,
 	SemanticNode,
 	SemanticNodeType,
 	SemanticNodeTypeConstant,
@@ -42,7 +43,6 @@ import {
 	SemanticNodeDeclarationVariable,
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
-	SemanticNodeAssigned,
 	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
@@ -128,9 +128,10 @@ export abstract class ParseNode implements Serializable {
 abstract class ParseNodeSolid extends ParseNode {
 	/**
 	 * Return a Semantic Node, a node of the Semantic Tree or “decorated/abstract syntax tree”.
+	 * @param validator the validator, which stores information about the program
 	 * @returns a semantic node containing this parse node’s semantics
 	 */
-	abstract decorate(): SemanticNode | SemanticNode[];
+	abstract decorate(validator: Validator): SemanticNode | SemanticNode[];
 }
 
 
@@ -141,14 +142,16 @@ export class ParseNodePrimitiveLiteral extends ParseNodeSolid {
 		| readonly [TokenNumber]
 		| readonly [TokenString] // Dev.supports('literalString')
 	;
-	decorate(): SemanticNodeConstant {
+	/** @implement ParseNode */
+	decorate(_validator: Validator): SemanticNodeConstant {
 		return new SemanticNodeConstant(this.children[0])
 	}
 }
 export class ParseNodeTypeKeyword extends ParseNodeSolid {
 	declare children:
 		| readonly [TokenKeyword]
-	decorate(): SemanticNodeTypeConstant {
+	/** @implement ParseNode */
+	decorate(_validator: Validator): SemanticNodeTypeConstant {
 		return new SemanticNodeTypeConstant(this.children[0])
 	}
 }
@@ -157,12 +160,13 @@ export class ParseNodeTypeUnit extends ParseNodeSolid {
 		| readonly [ParseNodePrimitiveLiteral]
 		| readonly [ParseNodeTypeKeyword]
 		| readonly [TokenPunctuator, ParseNodeType, TokenPunctuator]
-	decorate(): SemanticNodeType {
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticNodeType {
 		return (this.children.length === 1)
 			? (this.children[0] instanceof ParseNodePrimitiveLiteral)
 				? new SemanticNodeTypeConstant(this.children[0].children[0])
-				: this.children[0].decorate()
-			: this.children[1].decorate()
+				: this.children[0].decorate(validator)
+			: this.children[1].decorate(validator)
 	}
 }
 export class ParseNodeTypeUnary extends ParseNodeSolid {
@@ -172,11 +176,12 @@ export class ParseNodeTypeUnary extends ParseNodeSolid {
 	declare children:
 		| readonly [ParseNodeTypeUnit]
 		| readonly [ParseNodeTypeUnary, TokenPunctuator]
-	decorate(): SemanticNodeType {
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticNodeType {
 		return (this.children.length === 1)
-			? this.children[0].decorate()
+			? this.children[0].decorate(validator)
 			: new SemanticNodeTypeOperationUnary(this, ParseNodeTypeUnary.OPERATORS.get(this.children[1].source as Punctuator)!, [
-				this.children[0].decorate(),
+				this.children[0].decorate(validator),
 			])
 	}
 }
@@ -188,20 +193,22 @@ export class ParseNodeTypeBinary extends ParseNodeSolid {
 	declare children:
 		| readonly [                                      ParseNodeTypeUnary | ParseNodeTypeBinary]
 		| readonly [ParseNodeTypeBinary, TokenPunctuator, ParseNodeTypeUnary | ParseNodeTypeBinary]
-	decorate(): SemanticNodeType {
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticNodeType {
 		return (this.children.length === 1)
-			? this.children[0].decorate()
+			? this.children[0].decorate(validator)
 			: new SemanticNodeTypeOperationBinary(this, ParseNodeTypeBinary.OPERATORS.get(this.children[1].source as Punctuator)!, [
-				this.children[0].decorate(),
-				this.children[2].decorate(),
+				this.children[0].decorate(validator),
+				this.children[2].decorate(validator),
 			])
 	}
 }
 export class ParseNodeType extends ParseNodeSolid {
 	declare children:
 		| readonly [ParseNodeTypeBinary]
-	decorate(): SemanticNodeType {
-		return this.children[0].decorate()
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticNodeType {
+		return this.children[0].decorate(validator)
 	}
 }
 export class ParseNodeStringTemplate extends ParseNodeSolid {
@@ -211,11 +218,12 @@ export class ParseNodeStringTemplate extends ParseNodeSolid {
 		| readonly [TokenTemplate, ParseNodeExpression,                                   TokenTemplate]
 		| readonly [TokenTemplate,                      ParseNodeStringTemplate__0__List, TokenTemplate]
 		| readonly [TokenTemplate, ParseNodeExpression, ParseNodeStringTemplate__0__List, TokenTemplate]
-	decorate(): SemanticNodeTemplate {
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticNodeTemplate {
 		return new SemanticNodeTemplate(this, (this.children as readonly (TokenTemplate | ParseNodeExpression | ParseNodeStringTemplate__0__List)[]).flatMap((c) =>
 			c instanceof Token ? [new SemanticNodeConstant(c)] :
-			c instanceof ParseNodeExpression ? [c.decorate()] :
-			c.decorate()
+			c instanceof ParseNodeExpression ? [c.decorate(validator)] :
+			c.decorate(validator)
 		))
 	}
 }
@@ -231,11 +239,12 @@ export class ParseNodeStringTemplate__0__List extends ParseNodeSolid {
 		| readonly [                                  TokenTemplate, ParseNodeExpression]
 		| readonly [ParseNodeStringTemplate__0__List, TokenTemplate                     ]
 		| readonly [ParseNodeStringTemplate__0__List, TokenTemplate, ParseNodeExpression]
-	decorate(): TemplatePartialType {
+	/** @implement ParseNode */
+	decorate(validator: Validator): TemplatePartialType {
 		return (this.children as readonly (TokenTemplate | ParseNodeExpression | ParseNodeStringTemplate__0__List)[]).flatMap((c) =>
 			c instanceof Token ? [new SemanticNodeConstant(c)] :
-			c instanceof ParseNodeExpression ? [c.decorate()] :
-			c.decorate()
+			c instanceof ParseNodeExpression ? [c.decorate(validator)] :
+			c.decorate(validator)
 		)
 	}
 }
@@ -245,12 +254,13 @@ export class ParseNodeExpressionUnit extends ParseNodeSolid {
 		| readonly [ParseNodePrimitiveLiteral]
 		| readonly [ParseNodeStringTemplate] // Dev.supports('literalTemplate')
 		| readonly [TokenPunctuator, ParseNodeExpression, TokenPunctuator]
-	decorate(): SemanticNodeExpression {
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticNodeExpression {
 		return (this.children.length === 1) ?
-			(this.children[0] instanceof ParseNode) ? this.children[0].decorate() :
+			(this.children[0] instanceof ParseNode) ? this.children[0].decorate(validator) :
 				new SemanticNodeIdentifier(this.children[0])
 		:
-			this.children[1].decorate()
+			this.children[1].decorate(validator)
 	}
 }
 export class ParseNodeExpressionUnary extends ParseNodeSolid {
@@ -263,15 +273,16 @@ export class ParseNodeExpressionUnary extends ParseNodeSolid {
 	declare children:
 		| readonly [ParseNodeExpressionUnit]
 		| readonly [TokenPunctuator, ParseNodeExpressionUnary]
-	decorate(): SemanticNodeExpression {
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticNodeExpression {
 		return (this.children.length === 1) ?
-			this.children[0].decorate()
+			this.children[0].decorate(validator)
 		:
 			(this.children[0].source === Punctuator.AFF) ? // `+a` is a no-op
-				this.children[1].decorate()
+				this.children[1].decorate(validator)
 			:
 				new SemanticNodeOperationUnary(this, ParseNodeExpressionUnary.OPERATORS.get(this.children[0].source as Punctuator) as ValidOperatorUnary, [
-					this.children[1].decorate(),
+					this.children[1].decorate(validator),
 				])
 	}
 }
@@ -302,14 +313,15 @@ export class ParseNodeExpressionBinary extends ParseNodeSolid {
 		| readonly [ParseNodeExpressionUnary, TokenPunctuator, ParseNodeExpressionBinary] // Exponential
 		| readonly [                                                           ParseNodeExpressionBinary]
 		| readonly [ParseNodeExpressionBinary, TokenPunctuator | TokenKeyword, ParseNodeExpressionBinary]
-	decorate(): SemanticNodeExpression {
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticNodeExpression {
 		if (this.children.length === 1) {
-			return this.children[0].decorate()
+			return this.children[0].decorate(validator)
 		} else {
 			const operator: Operator = ParseNodeExpressionBinary.OPERATORS.get(this.children[1].source as Punctuator | Keyword)!
 			const operands: [SemanticNodeExpression, SemanticNodeExpression] = [
-					this.children[0].decorate(),
-					this.children[2].decorate(),
+				this.children[0].decorate(validator),
+				this.children[2].decorate(validator),
 				]
 			return ([
 				Operator.EXP,
@@ -366,7 +378,7 @@ export class ParseNodeExpressionBinary extends ParseNodeSolid {
 				new SemanticNodeOperationUnary(this, Operator.NOT, [
 					new SemanticNodeOperationBinaryLogical(this.children[0], Operator.OR, operands),
 				])
-			: (() => { throw new Error(`Operator ${ Operator[operator] } not found.`) })()
+			: (() => { throw new ReferenceError(`Operator ${ Operator[operator] } not found.`) })()
 		}
 	}
 }
@@ -377,11 +389,12 @@ export class ParseNodeExpressionConditional extends ParseNodeSolid {
 			TokenKeyword, ParseNodeExpression,
 			TokenKeyword, ParseNodeExpression,
 		]
-	decorate(): SemanticNodeOperationTernary {
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticNodeOperationTernary {
 		return new SemanticNodeOperationTernary(this, Operator.COND, [
-			this.children[1].decorate(),
-			this.children[3].decorate(),
-			this.children[5].decorate(),
+			this.children[1].decorate(validator),
+			this.children[3].decorate(validator),
+			this.children[5].decorate(validator),
 		])
 	}
 }
@@ -389,15 +402,17 @@ export class ParseNodeExpression extends ParseNode {
 	declare children:
 		| readonly [ParseNodeExpressionBinary]
 		| readonly [ParseNodeExpressionConditional]
-	decorate(): SemanticNodeExpression {
-		return this.children[0].decorate()
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticNodeExpression {
+		return this.children[0].decorate(validator)
 	}
 }
 export class ParseNodeDeclarationVariable extends ParseNodeSolid {
 	declare children:
 		| readonly [TokenKeyword,               TokenIdentifier, TokenPunctuator, ParseNodeType, TokenPunctuator, ParseNodeExpression, TokenPunctuator]
 		| readonly [TokenKeyword, TokenKeyword, TokenIdentifier, TokenPunctuator, ParseNodeType, TokenPunctuator, ParseNodeExpression, TokenPunctuator]
-	decorate(): SemanticNodeDeclarationVariable {
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticNodeDeclarationVariable {
 		const identifier: TokenIdentifier     = (this.children.length === 7) ? this.children[1] : this.children[2]
 		const type_:      ParseNodeType       = (this.children.length === 7) ? this.children[3] : this.children[4]
 		const expression: ParseNodeExpression = (this.children.length === 7) ? this.children[5] : this.children[6]
@@ -405,25 +420,23 @@ export class ParseNodeDeclarationVariable extends ParseNodeSolid {
 			new SemanticNodeAssignee(identifier, [
 				new SemanticNodeIdentifier(identifier),
 			]),
-			new SemanticNodeAssigned(expression, [
-				expression.decorate(),
-			]),
+			type_.decorate(validator),
+			expression.decorate(validator),
 		])
 	}
 }
 export class ParseNodeStatementAssignment extends ParseNodeSolid {
 	declare children:
 		| readonly [TokenIdentifier, TokenPunctuator, ParseNodeExpression, TokenPunctuator]
-	decorate(): SemanticNodeAssignment {
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticNodeAssignment {
 		const identifier: TokenIdentifier     = this.children[0]
 		const expression: ParseNodeExpression = this.children[2]
 		return new SemanticNodeAssignment(this, [
 			new SemanticNodeAssignee(identifier, [
 				new SemanticNodeIdentifier(identifier),
 			]),
-			new SemanticNodeAssigned(expression, [
-				expression.decorate(),
-			]),
+			expression.decorate(validator),
 		])
 	}
 }
@@ -433,11 +446,12 @@ export class ParseNodeStatement extends ParseNodeSolid {
 		| readonly [ParseNodeExpression, TokenPunctuator]
 		| readonly [ParseNodeDeclarationVariable] // Dev.supports('variables')
 		| readonly [ParseNodeStatementAssignment] // Dev.supports('variables')
-	decorate(): SemanticStatementType {
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticStatementType {
 		return (this.children.length === 1 && this.children[0] instanceof ParseNode)
-			? this.children[0].decorate()
+			? this.children[0].decorate(validator)
 			: new SemanticNodeStatementExpression(this, (this.children.length === 1) ? [] : [
-				this.children[0].decorate(),
+				this.children[0].decorate(validator),
 			])
 	}
 }
@@ -445,20 +459,22 @@ export class ParseNodeGoal extends ParseNodeSolid {
 	declare children:
 		| readonly [TokenFilebound,                         TokenFilebound]
 		| readonly [TokenFilebound, ParseNodeGoal__0__List, TokenFilebound]
-	decorate(): SemanticNodeGoal {
-		return new SemanticNodeGoal(this, (this.children.length === 2) ? [] : this.children[1].decorate())
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticNodeGoal {
+		return new SemanticNodeGoal(this, (this.children.length === 2) ? [] : this.children[1].decorate(validator))
 	}
 }
 export class ParseNodeGoal__0__List extends ParseNodeSolid {
 	declare children:
 		| readonly [                        ParseNodeStatement]
 		| readonly [ParseNodeGoal__0__List, ParseNodeStatement]
-	decorate(): SemanticStatementType[] {
+	/** @implement ParseNode */
+	decorate(validator: Validator): SemanticStatementType[] {
 		return this.children.length === 1 ?
-			[this.children[0].decorate()]
+			[this.children[0].decorate(validator)]
 		: [
-			...this.children[0].decorate(),
-			this.children[1].decorate()
+			...this.children[0].decorate(validator),
+			this.children[1].decorate(validator)
 		]
 	}
 }

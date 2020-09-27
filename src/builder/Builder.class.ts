@@ -5,12 +5,8 @@ import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop =
 
 import type SolidConfig from '../SolidConfig'
 import type {
-	SemanticStatementType,
 	SemanticNodeGoal,
 } from '../validator/'
-import {
-	InstructionModule,
-} from './Instruction.class'
 
 
 
@@ -59,18 +55,6 @@ export default class Builder {
 	get stmtCount(): bigint {
 		this.var_count = 0n
 		return this.stmt_count++
-	}
-
-	/**
-	 * Return the semantic goal of a program.
-	 * @param comps the top-level components
-	 * @return an instruction for the list of top-level components
-	 */
-	goal(comps: readonly SemanticStatementType[]): InstructionModule {
-		return new InstructionModule([
-			...Builder.IMPORTS,
-			...comps.map((comp) => comp.build(this)),
-		])
 	}
 
 	/**

@@ -1,6 +1,6 @@
 import type SolidConfig from '../SolidConfig'
 import Dev from '../class/Dev.class'
-
+import {ParseError01} from '../error/ParseError.class'
 import type {
 	Token,
 } from '../lexer/'
@@ -110,9 +110,8 @@ export abstract class Parser {
 			} else if (reductions.length) {
 				throw new Error(`Reduce-Reduce Conflict:\n${reductions.map((r) => r.toString()).join('\n')}`)
 			}
-			throw new Error(`Unexpected token: ${this.lookahead.serialize()}`)
 		}
-		throw new Error(`There are no finished configurations; I cannot reduce now.`)
+		throw new ParseError01(this.lookahead)
 	}
 
 	/**
@@ -220,7 +219,7 @@ export class ParserSolid extends Parser {
 			(                                   rule.production.equals(PRODUCTION.ProductionStatement                .instance)) ? new PARSENODE.ParseNodeStatement               (rule, children) :
 			(                                   rule.production.equals(PRODUCTION.ProductionGoal                     .instance)) ? new PARSENODE.ParseNodeGoal                    (rule, children) :
 			(                                   rule.production.equals(PRODUCTION.ProductionGoal__0__List            .instance)) ? new PARSENODE.ParseNodeGoal__0__List           (rule, children) :
-			(() => { throw new Error(`The given rule \`${ rule.toString() }\` does not match any known grammar productions.`) })()
+			(() => { throw new ReferenceError(`The given rule \`${ rule.toString() }\` does not match any known grammar productions.`) })()
 		)
 	}
 
