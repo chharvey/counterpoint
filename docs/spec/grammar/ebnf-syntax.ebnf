@@ -6,8 +6,14 @@ CHAR_CLASS  ::= [./ebnf-lexicon.ebnf#CharClass];
 
 
 NonterminalName ::= IDENTIFIER ("<" IDENTIFIER#                     ">")?;
-NonterminalRef  ::= IDENTIFIER ("<" (("+" | "-" | "?") IDENTIFIER)# ">")?;
+ArgumentSet     ::=             "<" (("+" | "-" | "?") IDENTIFIER)# ">"  ;
 ConditionSet    ::=             "<" (IDENTIFIER ("+" | "-")      )# ">"  ;
+
+
+
+NonterminalRef ::=
+	| IDENTIFIER
+	| NonterminalRef ArgumentSet;
 
 
 

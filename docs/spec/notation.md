@@ -627,6 +627,17 @@ N<X, Y> ::=
 	| <X-><Y+>L
 	| <X-><Y->M
 ;
+
+O<X> ::=
+	| <X+, X+>P
+	| <X+, X->Q
+	| <X-, X+>R
+	| <X-, X->S
+	| <X+><X+>T
+	| <X+><X->U
+	| <X-><X+>V
+	| <X-><X->W
+;
 ```
 transforms to
 ```
@@ -666,6 +677,20 @@ N__X__Y ::=
 	| H
 	| J
 ;
+
+
+O ::=
+	| Q
+	| R
+	| S
+	| W
+;
+O__X ::=
+	| P
+	| Q
+	| R
+	| T
+;
 ```
 Notice that the conditional `<F⊛, G⊗>P` is *not* equivalent to `<F⊛><G⊗>P`.
 (`⊛` and `⊗` are metavariables representing one of the symbols `+` and `-`.)
@@ -690,7 +715,7 @@ This informative table summarizes the right-hand side appearances.
 `<X+><Y->K` |     | `N__X` |        |
 `<X-><Y+>L` |     |        | `N__Y` |
 `<X-><Y->M` | `N` |        |        |
-—           |     |        |        |
+`<X+><X->O` |     |        |        |
 
 #### Formal Grammar (CFG)
 The [EBNF syntax grammar](./grammar/ebnf-syntax.ebnf) describes the formal CFGs that describe the Solid language.

@@ -23,15 +23,15 @@
 					;
 				}
 			
-				export class ParseNodeNonterminalRef extends ParseNode {
+				export class ParseNodeArgumentSet extends ParseNode {
 					declare children:
-						readonly [Token] | readonly [Token,Token,ParseNodeNonterminalRef__0__CSL,Token]
+						readonly [Token,ParseNodeArgumentSet__0__CSL,Token]
 					;
 				}
 			
-				export class ParseNodeNonterminalRef__0__CSL extends ParseNode {
+				export class ParseNodeArgumentSet__0__CSL extends ParseNode {
 					declare children:
-						readonly [Token,Token] | readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeNonterminalRef__0__CSL,Token,Token,Token] | readonly [ParseNodeNonterminalRef__0__CSL,Token,Token,Token] | readonly [ParseNodeNonterminalRef__0__CSL,Token,Token,Token]
+						readonly [Token,Token] | readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeArgumentSet__0__CSL,Token,Token,Token] | readonly [ParseNodeArgumentSet__0__CSL,Token,Token,Token] | readonly [ParseNodeArgumentSet__0__CSL,Token,Token,Token]
 					;
 				}
 			
@@ -44,6 +44,12 @@
 				export class ParseNodeConditionSet__0__CSL extends ParseNode {
 					declare children:
 						readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeConditionSet__0__CSL,Token,Token,Token] | readonly [ParseNodeConditionSet__0__CSL,Token,Token,Token]
+					;
+				}
+			
+				export class ParseNodeNonterminalRef extends ParseNode {
+					declare children:
+						readonly [Token] | readonly [ParseNodeNonterminalRef,ParseNodeArgumentSet]
 					;
 				}
 			

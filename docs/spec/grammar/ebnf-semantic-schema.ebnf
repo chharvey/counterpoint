@@ -23,8 +23,10 @@ SemanticCondition[name: Text, include: TRUE | FALSE]
 SemanticConst[value: Text]
 	::= ();
 
-SemanticRef[name: Text]
-	::= SemanticArg*;
+SemanticRef[name: Text] ::=
+	| ()
+	| SemanticRef SemanticArg*
+;
 
 SemanticItem
 	::= SemanticItem SemanticCondition*;
