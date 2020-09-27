@@ -85,7 +85,7 @@ function oneFloats(t0: SolidLanguageType, t1: SolidLanguageType): boolean {
 /**
  * A SemanticNode holds only the semantics of a {@link ParseNode}.
  */
-export default abstract class SemanticNode implements Serializable {
+export class SemanticNode implements Serializable {
 	/** @implements Serializable */
 	readonly tagname: string = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
 	/** @implements Serializable */
@@ -106,13 +106,49 @@ export default abstract class SemanticNode implements Serializable {
 	 */
 	constructor(
 		start_node: Token|ParseNode,
-		private readonly attributes: {[key: string]: CookValueType | SolidObject} = {},
+		private readonly attributes: {[key: string]: unknown} = {},
 		readonly children: readonly SemanticNode[] = [],
 	) {
 		this.source       = start_node.source
 		this.source_index = start_node.source_index
 		this.line_index   = start_node.line_index
 		this.col_index    = start_node.col_index
+	}
+
+	/**
+	 * @implements Serializable
+	 */
+	serialize(): string {
+		const attributes: Map<string, string> = new Map<string, string>()
+		if (!(this instanceof SemanticNodeGoal)) {
+			attributes.set('line', `${this.line_index + 1}`)
+			attributes.set('col' , `${this.col_index  + 1}`)
+		}
+		attributes.set('source', this.source)
+		Object.entries(this.attributes).forEach(([key, value]) => {
+			attributes.set(key, `${value}`)
+		})
+		const contents: string = this.children.map((child) => child.serialize()).join('')
+		return (contents) ? `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>` : `<${this.tagname} ${Util.stringifyAttributes(attributes)}/>`
+	}
+}
+
+
+
+abstract class SemanticNodeSolid extends SemanticNode {
+	/**
+	 * Construct a new SemanticNodeSolid object.
+	 *
+	 * @param start_node - The initial node in the parse tree to which this SemanticNode corresponds.
+	 * @param children   - The set of child inputs that creates this SemanticNode.
+	 * @param attributes - Any other attributes to attach.
+	 */
+	constructor(
+		start_node: Token|ParseNode,
+		attributes: {[key: string]: CookValueType | SolidObject} = {},
+		children: readonly SemanticNode[] = [],
+	) {
+		super(start_node, attributes, children)
 	}
 
 	/**
@@ -127,23 +163,6 @@ export default abstract class SemanticNode implements Serializable {
 	 * @return the directions to print
 	 */
 	abstract build(builder: Builder): Instruction;
-
-	/**
-	 * @implements Serializable
-	 */
-	serialize(): string {
-		const attributes: Map<string, string> = new Map<string, string>()
-		if (!(this instanceof SemanticNodeGoal)) {
-			attributes.set('line', `${this.line_index + 1}`)
-			attributes.set('col' , `${this.col_index  + 1}`)
-		}
-		attributes.set('source', this.source)
-		Object.entries<CookValueType | SolidObject>(this.attributes).forEach(([key, value]) => {
-			attributes.set(key, `${value}`)
-		})
-		const contents: string = this.children.map((child) => child.serialize()).join('')
-		return (contents) ? `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>` : `<${this.tagname} ${Util.stringifyAttributes(attributes)}/>`
-	}
 }
 
 
@@ -154,14 +173,14 @@ export default abstract class SemanticNode implements Serializable {
  * - SemanticNodeTypeConstant
  * - SemanticNodeTypeOperation
  */
-export abstract class SemanticNodeType extends SemanticNode {
+export abstract class SemanticNodeType extends SemanticNodeSolid {
 	private assessed: SolidLanguageType | null = null
-	/** @implements SemanticNode */
+	/** @implements SemanticNodeSolid */
 	typeCheck(_opts: SolidConfig['compilerOptions']): void {
 		return; // for now, all types are valid // TODO: dereferencing type variables
 	}
 	/**
-	 * @implements SemanticNode
+	 * @implements SemanticNodeSolid
 	 * @final
 	 */
 	build(_builder: Builder): InstructionNone {
@@ -260,19 +279,19 @@ export class SemanticNodeTypeOperationBinary extends SemanticNodeTypeOperation {
  * - SemanticNodeTemplate
  * - SemanticNodeOperation
  */
-export abstract class SemanticNodeExpression extends SemanticNode {
+export abstract class SemanticNodeExpression extends SemanticNodeSolid {
 	private assessed: CompletionStructureAssessment | null = null
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
 	 * @return Should the built instruction be type-coerced into a floating-point number?
 	 */
 	abstract get shouldFloat(): boolean;
-	/** @implements SemanticNode */
+	/** @implements SemanticNodeSolid */
 	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		this.type(opts.constantFolding, opts.intCoercion) // assert does not throw
 	}
 	/**
-	 * @implements SemanticNode
+	 * @implements SemanticNodeSolid
 	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
 	 * @final
 	 */
@@ -803,7 +822,7 @@ export type SemanticStatementType =
 	| SemanticNodeStatementExpression
 	| SemanticNodeDeclarationVariable
 	| SemanticNodeAssignment
-export class SemanticNodeStatementExpression extends SemanticNode {
+export class SemanticNodeStatementExpression extends SemanticNodeSolid {
 	constructor(
 		start_node: ParseNode,
 		readonly children:
@@ -812,18 +831,18 @@ export class SemanticNodeStatementExpression extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	/** @implements SemanticNode */
+	/** @implements SemanticNodeSolid */
 	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		this.children[0] && this.children[0].typeCheck(opts) // assert does not throw // COMBAK this.children[0]?.type()
 	}
-	/** @implements SemanticNode */
+	/** @implements SemanticNodeSolid */
 	build(builder: Builder): InstructionNone | InstructionStatement {
 		return (!this.children.length)
 			? new InstructionNone()
 			: new InstructionStatement(builder.stmtCount, this.children[0].build(builder))
 	}
 }
-export class SemanticNodeDeclarationVariable extends SemanticNode {
+export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		unfixed: boolean,
@@ -832,7 +851,7 @@ export class SemanticNodeDeclarationVariable extends SemanticNode {
 	) {
 		super(start_node, {unfixed}, children)
 	}
-	/** @implements SemanticNode */
+	/** @implements SemanticNodeSolid */
 	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		const assignee_type: SolidLanguageType = this.children[1].assess()
 		const assigned_type: SolidLanguageType = this.children[2].type(opts.constantFolding, opts.intCoercion)
@@ -844,12 +863,12 @@ export class SemanticNodeDeclarationVariable extends SemanticNode {
 			throw new TypeError03(this, assignee_type, assigned_type)
 		}
 	}
-	/** @implements SemanticNode */
+	/** @implements SemanticNodeSolid */
 	build(_builder: Builder): Instruction {
 		throw new Error('SemanticNodeDeclaration#build not yet supported.')
 	}
 }
-export class SemanticNodeAssignment extends SemanticNode {
+export class SemanticNodeAssignment extends SemanticNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly children:
@@ -857,17 +876,17 @@ export class SemanticNodeAssignment extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	/** @implements SemanticNode */
+	/** @implements SemanticNodeSolid */
 	typeCheck(_opts: SolidConfig['compilerOptions']): void {
 		throw new Error('SemanticNodeAssignment#typeCheck not yet supported.')
 		// const assignedType = this.children[1].type()
 	}
-	/** @implements SemanticNode */
+	/** @implements SemanticNodeSolid */
 	build(_builder: Builder): Instruction {
 		throw new Error('SemanticNodeAssignment#build not yet supported.')
 	}
 }
-export class SemanticNodeAssignee extends SemanticNode {
+export class SemanticNodeAssignee extends SemanticNodeSolid {
 	constructor(
 		start_node: Token,
 		readonly children:
@@ -875,16 +894,16 @@ export class SemanticNodeAssignee extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	/** @implements SemanticNode */
+	/** @implements SemanticNodeSolid */
 	typeCheck(_opts: SolidConfig['compilerOptions']): void {
 		throw new Error('SemanticNodeAssignee#typeCheck not yet supported.')
 	}
-	/** @implements SemanticNode */
+	/** @implements SemanticNodeSolid */
 	build(_builder: Builder): Instruction {
 		throw new Error('SemanticNodeAssignee#build not yet supported.')
 	}
 }
-export class SemanticNodeGoal extends SemanticNode {
+export class SemanticNodeGoal extends SemanticNodeSolid {
 	constructor(
 		start_node: ParseNode,
 		readonly children:
@@ -893,13 +912,13 @@ export class SemanticNodeGoal extends SemanticNode {
 	) {
 		super(start_node, {}, children)
 	}
-	/** @implements SemanticNode */
+	/** @implements SemanticNodeSolid */
 	typeCheck(opts: SolidConfig['compilerOptions']): void {
 		this.children.forEach((child) => {
 			child.typeCheck(opts)
 		})
 	}
-	/** @implements SemanticNode */
+	/** @implements SemanticNodeSolid */
 	build(builder: Builder): InstructionNone | InstructionModule {
 		return (!this.children.length)
 			? new InstructionNone()

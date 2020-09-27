@@ -21,7 +21,8 @@ import {
 } from '../parser/ParseNode.class'
 import * as PARSENODE from '../parser/ParseNode.auto'
 import {Builder} from '../builder/'
-import SemanticNode, {
+import {
+	SemanticNode,
 	SemanticNodeType,
 	SemanticNodeTypeConstant,
 	SemanticNodeTypeOperationUnary,
