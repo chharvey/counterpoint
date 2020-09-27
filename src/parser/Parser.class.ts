@@ -27,7 +27,7 @@ type State = ReadonlySet<Configuration>
  * An LR(1), shift-reduce Parser.
  * @see http://www2.lawrence.edu/fast/GREGGJ/CMSC515/parsing/LR_parsing.html
  */
-export abstract class Parser {
+export class Parser {
 	/** The result of the screener iterator. */
 	private iterator_result_token: IteratorResult<Token, void>;
 	/** Working stack of tokens, nodes, and configuration states. */
@@ -43,6 +43,7 @@ export abstract class Parser {
 	constructor (
 		private readonly tokengenerator: Generator<Token>,
 		private readonly grammar: Grammar,
+		private readonly parsenode_map: Map<Production, typeof ParseNode>,
 	) {
 		this.iterator_result_token = this.tokengenerator.next()
 		this.lookahead = this.iterator_result_token.value as Token
@@ -123,7 +124,15 @@ export abstract class Parser {
 	 * @param children - The set of child inputs that creates this ParseNode.
 	 * @returns          a new ParseNode object
 	 */
-	protected abstract makeParseNode(rule: Rule, children: readonly (Token | ParseNode)[]): ParseNode;
+	private makeParseNode(rule: Rule, children: readonly (Token | ParseNode)[]): ParseNode {
+		let returned: ParseNode = new ParseNode(rule, children)
+		this.parsenode_map.forEach((nodetype, prod) => {
+			if (rule.production.equals(prod)) {
+				returned = new nodetype(rule, children)
+			}
+		})
+		return returned
+	}
 
 	/**
 	 * Main parsing function.
@@ -190,12 +199,7 @@ export class ParserSolid extends Parser {
 			PRODUCTION.ProductionStatement.instance,
 			PRODUCTION.ProductionGoal.instance,
 			PRODUCTION.ProductionGoal__0__List.instance,
-		], PRODUCTION.ProductionGoal.instance))
-	}
-
-	protected makeParseNode(rule: Rule, children: readonly (Token | ParseNode)[]): ParseNode {
-		let returned: ParseNode | null = new ParseNode(rule, children)
-		new Map<Production, typeof ParseNode>([
+		], PRODUCTION.ProductionGoal.instance), new Map<Production, typeof ParseNode>([
 			[PRODUCTION.ProductionPrimitiveLiteral.instance, PARSENODE.ParseNodePrimitiveLiteral],
 			...(Dev.supports('typingExplicit')  ? [[PRODUCTION.ProductionTypeKeyword             .instance, PARSENODE.ParseNodeTypeKeyword]             as const] : []),
 			...(Dev.supports('typingExplicit')  ? [[PRODUCTION.ProductionTypeUnit                .instance, PARSENODE.ParseNodeTypeUnit]                as const] : []),
@@ -221,12 +225,7 @@ export class ParserSolid extends Parser {
 			[PRODUCTION.ProductionStatement     .instance, PARSENODE.ParseNodeStatement],
 			[PRODUCTION.ProductionGoal          .instance, PARSENODE.ParseNodeGoal],
 			[PRODUCTION.ProductionGoal__0__List .instance, PARSENODE.ParseNodeGoal__0__List],
-		]).forEach((nodetype, prod) => {
-			if (rule.production.equals(prod)) {
-				returned = new nodetype(rule, children)
-			}
-		})
-		return returned
+		]))
 	}
 
 	parse(): PARSENODE.ParseNodeGoal {

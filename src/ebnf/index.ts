@@ -11,11 +11,12 @@ import {
 import {
 	Parser,
 	Grammar,
-	Rule,
+	Production,
 	ParseNode,
 } from '../parser/'
 import * as TOKEN from './Token.class'
 import * as PRODUCTION from './Production.auto'
+import * as PARSENODE from './ParseNode.auto'
 import {
 	LexError01,
 } from '../error/LexError.class'
@@ -106,19 +107,22 @@ export class ParserEBNF extends Parser {
 			PRODUCTION.ProductionProduction                   .instance,
 			PRODUCTION.ProductionGrammar                      .instance,
 			PRODUCTION.ProductionProduction__List             .instance,
-		], PRODUCTION.ProductionGrammar.instance))
-	}
-	protected makeParseNode(rule: Rule, children: readonly (Token | ParseNode)[]): ParseNode {
-		return new (class extends ParseNode {
-			/**
-			 * Return a JSON object describing an EBNF production.
-			 * Similar to a node of the Semantic Tree or “decorated/abstract syntax tree”.
-			 * @returns a JSON object containing this parse node’s semantics
-			 */
-			decorate(): object {
-				return {
-				}
-			}
-		})(rule, children)
+		], PRODUCTION.ProductionGrammar.instance), new Map<Production, typeof ParseNode>([
+			[PRODUCTION.ProductionNonterminalDefinition        .instance, PARSENODE.ParseNodeNonterminalDefinition],
+			[PRODUCTION.ProductionIdentifier__CSL              .instance, PARSENODE.ParseNodeIdentifier__CSL],
+			[PRODUCTION.ProductionNonterminalReference         .instance, PARSENODE.ParseNodeNonterminalReference],
+			[PRODUCTION.ProductionNonterminalReference__0__CSL .instance, PARSENODE.ParseNodeNonterminalReference__0__CSL],
+			[PRODUCTION.ProductionCondition                    .instance, PARSENODE.ParseNodeCondition],
+			[PRODUCTION.ProductionCondition__0__CSL            .instance, PARSENODE.ParseNodeCondition__0__CSL],
+			[PRODUCTION.ProductionUnit                         .instance, PARSENODE.ParseNodeUnit],
+			[PRODUCTION.ProductionUnary                        .instance, PARSENODE.ParseNodeUnary],
+			[PRODUCTION.ProductionItem                         .instance, PARSENODE.ParseNodeItem],
+			[PRODUCTION.ProductionItem__List                   .instance, PARSENODE.ParseNodeItem__List],
+			[PRODUCTION.ProductionConcat                       .instance, PARSENODE.ParseNodeConcat],
+			[PRODUCTION.ProductionAltern                       .instance, PARSENODE.ParseNodeAltern],
+			[PRODUCTION.ProductionProduction                   .instance, PARSENODE.ParseNodeProduction],
+			[PRODUCTION.ProductionGrammar                      .instance, PARSENODE.ParseNodeGrammar],
+			[PRODUCTION.ProductionProduction__List             .instance, PARSENODE.ParseNodeProduction__List],
+		]))
 	}
 }
