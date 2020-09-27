@@ -3,6 +3,7 @@ import * as assert from 'assert'
 import {
 	ScannerSolid as Scanner,
 	Char,
+	Filebound,
 } from '../../src/lexer/'
 
 const lastIndex = (iter: any): number  => iter.length-1
@@ -45,7 +46,7 @@ describe('Char', () => {
 		it('if last is null.', () => {
 			const scanner: Scanner = new Scanner(mock)
 			const char: Char = new Char(scanner, lastIndex(scanner.source_text))
-			assert.strictEqual(char.source, '\u0003')
+			assert.strictEqual(char.source, Filebound.EOT)
 			assert.strictEqual(char.lookahead(), null)
 		})
 	})

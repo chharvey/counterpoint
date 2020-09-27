@@ -94,41 +94,41 @@ export class ScreenerEBNF extends Screener {
 export class ParserEBNF extends Parser {
 	constructor (source: string) {
 		super(new ScreenerEBNF(source).generate(), new Grammar([
-			PRODUCTION.ProductionNonterminalName        .instance,
-			PRODUCTION.ProductionIdentifier__CSL        .instance,
-			PRODUCTION.ProductionArgumentSet            .instance,
-			PRODUCTION.ProductionArgumentSet__0__CSL    .instance,
-			PRODUCTION.ProductionConditionSet           .instance,
-			PRODUCTION.ProductionConditionSet__0__CSL   .instance,
-			PRODUCTION.ProductionNonterminalRef         .instance,
-			PRODUCTION.ProductionUnit                   .instance,
-			PRODUCTION.ProductionUnary                  .instance,
-			PRODUCTION.ProductionItem                   .instance,
-			PRODUCTION.ProductionOrder                  .instance,
-			PRODUCTION.ProductionConcat                 .instance,
-			PRODUCTION.ProductionAltern                 .instance,
-			PRODUCTION.ProductionDefinition             .instance,
-			PRODUCTION.ProductionProduction             .instance,
-			PRODUCTION.ProductionGrammar                .instance,
-			PRODUCTION.ProductionProduction__List       .instance,
+			PRODUCTION.ProductionNonterminalName      .instance,
+			PRODUCTION.ProductionIdentifier__CSL      .instance,
+			PRODUCTION.ProductionArgumentSet          .instance,
+			PRODUCTION.ProductionArgumentSet__0__CSL  .instance,
+			PRODUCTION.ProductionConditionSet         .instance,
+			PRODUCTION.ProductionConditionSet__0__CSL .instance,
+			PRODUCTION.ProductionNonterminalRef       .instance,
+			PRODUCTION.ProductionUnit                 .instance,
+			PRODUCTION.ProductionUnary                .instance,
+			PRODUCTION.ProductionItem                 .instance,
+			PRODUCTION.ProductionOrder                .instance,
+			PRODUCTION.ProductionConcat               .instance,
+			PRODUCTION.ProductionAltern               .instance,
+			PRODUCTION.ProductionDefinition           .instance,
+			PRODUCTION.ProductionProduction           .instance,
+			PRODUCTION.ProductionGrammar              .instance,
+			PRODUCTION.ProductionProduction__List     .instance,
 		], PRODUCTION.ProductionGrammar.instance), new Map<Production, typeof ParseNode>([
-			[PRODUCTION.ProductionNonterminalName        .instance, PARSENODE.ParseNodeNonterminalName],
-			[PRODUCTION.ProductionIdentifier__CSL        .instance, PARSENODE.ParseNodeIdentifier__CSL],
-			[PRODUCTION.ProductionArgumentSet            .instance, PARSENODE.ParseNodeArgumentSet],
-			[PRODUCTION.ProductionArgumentSet__0__CSL    .instance, PARSENODE.ParseNodeArgumentSet__0__CSL],
-			[PRODUCTION.ProductionConditionSet           .instance, PARSENODE.ParseNodeConditionSet],
-			[PRODUCTION.ProductionConditionSet__0__CSL   .instance, PARSENODE.ParseNodeConditionSet__0__CSL],
-			[PRODUCTION.ProductionNonterminalRef         .instance, PARSENODE.ParseNodeNonterminalRef],
-			[PRODUCTION.ProductionUnit                   .instance, PARSENODE.ParseNodeUnit],
-			[PRODUCTION.ProductionUnary                  .instance, PARSENODE.ParseNodeUnary],
-			[PRODUCTION.ProductionItem                   .instance, PARSENODE.ParseNodeItem],
-			[PRODUCTION.ProductionOrder                  .instance, PARSENODE.ParseNodeOrder],
-			[PRODUCTION.ProductionConcat                 .instance, PARSENODE.ParseNodeConcat],
-			[PRODUCTION.ProductionAltern                 .instance, PARSENODE.ParseNodeAltern],
-			[PRODUCTION.ProductionDefinition             .instance, PARSENODE.ParseNodeDefinition],
-			[PRODUCTION.ProductionProduction             .instance, PARSENODE.ParseNodeProduction],
-			[PRODUCTION.ProductionGrammar                .instance, PARSENODE.ParseNodeGrammar],
-			[PRODUCTION.ProductionProduction__List       .instance, PARSENODE.ParseNodeProduction__List],
+			[PRODUCTION.ProductionNonterminalName      .instance, PARSENODE.ParseNodeNonterminalName],
+			[PRODUCTION.ProductionIdentifier__CSL      .instance, PARSENODE.ParseNodeIdentifier__CSL],
+			[PRODUCTION.ProductionArgumentSet          .instance, PARSENODE.ParseNodeArgumentSet],
+			[PRODUCTION.ProductionArgumentSet__0__CSL  .instance, PARSENODE.ParseNodeArgumentSet__0__CSL],
+			[PRODUCTION.ProductionConditionSet         .instance, PARSENODE.ParseNodeConditionSet],
+			[PRODUCTION.ProductionConditionSet__0__CSL .instance, PARSENODE.ParseNodeConditionSet__0__CSL],
+			[PRODUCTION.ProductionNonterminalRef       .instance, PARSENODE.ParseNodeNonterminalRef],
+			[PRODUCTION.ProductionUnit                 .instance, PARSENODE.ParseNodeUnit],
+			[PRODUCTION.ProductionUnary                .instance, PARSENODE.ParseNodeUnary],
+			[PRODUCTION.ProductionItem                 .instance, PARSENODE.ParseNodeItem],
+			[PRODUCTION.ProductionOrder                .instance, PARSENODE.ParseNodeOrder],
+			[PRODUCTION.ProductionConcat               .instance, PARSENODE.ParseNodeConcat],
+			[PRODUCTION.ProductionAltern               .instance, PARSENODE.ParseNodeAltern],
+			[PRODUCTION.ProductionDefinition           .instance, PARSENODE.ParseNodeDefinition],
+			[PRODUCTION.ProductionProduction           .instance, PARSENODE.ParseNodeProduction],
+			[PRODUCTION.ProductionGrammar              .instance, PARSENODE.ParseNodeGrammar],
+			[PRODUCTION.ProductionProduction__List     .instance, PARSENODE.ParseNodeProduction__List],
 		]))
 	}
 }
@@ -159,23 +159,23 @@ export class Decorator {
 	 * Similar to a node of the Semantic Tree or “decorated/abstract syntax tree”.
 	 * @returns a JSON object containing the parse node’s semantics
 	 */
-	decorate(node: PARSENODE.ParseNodeNonterminalName):        SEMANTICNODE.SemanticNodeNonterminal;
-	decorate(node: PARSENODE.ParseNodeIdentifier__CSL):        KleenePlus<SEMANTICNODE.SemanticNodeParam>;
-	decorate(node: PARSENODE.ParseNodeArgumentSet):            KleenePlus<SEMANTICNODE.SemanticNodeArg>;
-	decorate(node: PARSENODE.ParseNodeArgumentSet__0__CSL):    KleenePlus<SEMANTICNODE.SemanticNodeArg>;
-	decorate(node: PARSENODE.ParseNodeConditionSet):           KleenePlus<SEMANTICNODE.SemanticNodeCondition>;
-	decorate(node: PARSENODE.ParseNodeConditionSet__0__CSL):   KleenePlus<SEMANTICNODE.SemanticNodeCondition>;
-	decorate(node: PARSENODE.ParseNodeNonterminalRef):         SEMANTICNODE.SemanticNodeRef;
-	decorate(node: PARSENODE.ParseNodeUnit):                   SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeUnary):                  SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeItem):                   SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeOrder):                  SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeConcat):                 SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeAltern):                 SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeDefinition):             SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeProduction):             SEMANTICNODE.SemanticNodeProduction;
-	decorate(node: PARSENODE.ParseNodeGrammar):                SEMANTICNODE.SemanticNodeGrammar;
-	decorate(node: PARSENODE.ParseNodeProduction__List):       KleenePlus<SEMANTICNODE.SemanticNodeProduction>;
+	decorate(node: PARSENODE.ParseNodeNonterminalName):      SEMANTICNODE.SemanticNodeNonterminal;
+	decorate(node: PARSENODE.ParseNodeIdentifier__CSL):      KleenePlus<SEMANTICNODE.SemanticNodeParam>;
+	decorate(node: PARSENODE.ParseNodeArgumentSet):          KleenePlus<SEMANTICNODE.SemanticNodeArg>;
+	decorate(node: PARSENODE.ParseNodeArgumentSet__0__CSL):  KleenePlus<SEMANTICNODE.SemanticNodeArg>;
+	decorate(node: PARSENODE.ParseNodeConditionSet):         KleenePlus<SEMANTICNODE.SemanticNodeCondition>;
+	decorate(node: PARSENODE.ParseNodeConditionSet__0__CSL): KleenePlus<SEMANTICNODE.SemanticNodeCondition>;
+	decorate(node: PARSENODE.ParseNodeNonterminalRef):       SEMANTICNODE.SemanticNodeRef;
+	decorate(node: PARSENODE.ParseNodeUnit):                 SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeUnary):                SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeItem):                 SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeOrder):                SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeConcat):               SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeAltern):               SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeDefinition):           SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeProduction):           SEMANTICNODE.SemanticNodeProduction;
+	decorate(node: PARSENODE.ParseNodeGrammar):              SEMANTICNODE.SemanticNodeGrammar;
+	decorate(node: PARSENODE.ParseNodeProduction__List):     KleenePlus<SEMANTICNODE.SemanticNodeProduction>;
 	decorate(node: ParseNode): SEMANTICNODE.SemanticNodeEBNF | readonly SEMANTICNODE.SemanticNodeEBNF[];
 	decorate(node: ParseNode): SEMANTICNODE.SemanticNodeEBNF | readonly SEMANTICNODE.SemanticNodeEBNF[] {
 		if (node instanceof PARSENODE.ParseNodeNonterminalName) {

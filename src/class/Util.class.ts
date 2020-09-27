@@ -147,8 +147,8 @@ export default class Util {
 			.replace(/\t/g, '&#x09;')
 			.replace(/\n/g, '&#x0a;')
 			.replace(/\r/g, '&#x0d;')
-			.replace('\u0002', '\u2402') // SYMBOL FOR START OF TEXT
-			.replace('\u0003', '\u2403') // SYMBOL FOR END   OF TEXT
+			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 			.replace(/[^\u0020-\u007e\u2402-\u2403]/g, (match) => `&#x${ match.codePointAt(0)!.toString(16) };`)
 		}"`).join(' ')
 	}
@@ -171,13 +171,13 @@ export default class Util {
 	 * @param   contents the original element contents
 	 * @returns contents with XML special characters escaped
 	 */
-static sanitizeContent(contents: string): string {
+	static sanitizeContent(contents: string): string {
 		return contents
 			.replace(/\&/g, '&amp;' )
 			.replace(/\</g, '&lt;'  )
 			.replace(/\>/g, '&gt;'  )
 			.replace(/\\/g, '&#x5c;')
-			.replace('\u0002', '\u2402') // SYMBOL FOR START OF TEXT
-			.replace('\u0003', '\u2403') // SYMBOL FOR END   OF TEXT
+			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 	}
 }
