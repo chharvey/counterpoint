@@ -65,15 +65,15 @@
 					;
 				}
 			
-				export class ParseNodeItem__List extends ParseNode {
+				export class ParseNodeOrder extends ParseNode {
 					declare children:
-						readonly [ParseNodeItem] | readonly [ParseNodeItem__List,ParseNodeItem]
+						readonly [ParseNodeItem] | readonly [ParseNodeOrder,ParseNodeItem] | readonly [ParseNodeOrder,Token,ParseNodeItem]
 					;
 				}
 			
 				export class ParseNodeConcat extends ParseNode {
 					declare children:
-						readonly [ParseNodeItem__List] | readonly [ParseNodeConcat,Token,ParseNodeItem__List]
+						readonly [ParseNodeOrder] | readonly [ParseNodeConcat,Token,ParseNodeOrder]
 					;
 				}
 			

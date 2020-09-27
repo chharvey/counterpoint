@@ -103,7 +103,7 @@ export class ParserEBNF extends Parser {
 			PRODUCTION.ProductionUnit                   .instance,
 			PRODUCTION.ProductionUnary                  .instance,
 			PRODUCTION.ProductionItem                   .instance,
-			PRODUCTION.ProductionItem__List             .instance,
+			PRODUCTION.ProductionOrder                  .instance,
 			PRODUCTION.ProductionConcat                 .instance,
 			PRODUCTION.ProductionAltern                 .instance,
 			PRODUCTION.ProductionDefinition             .instance,
@@ -120,7 +120,7 @@ export class ParserEBNF extends Parser {
 			[PRODUCTION.ProductionUnit                   .instance, PARSENODE.ParseNodeUnit],
 			[PRODUCTION.ProductionUnary                  .instance, PARSENODE.ParseNodeUnary],
 			[PRODUCTION.ProductionItem                   .instance, PARSENODE.ParseNodeItem],
-			[PRODUCTION.ProductionItem__List             .instance, PARSENODE.ParseNodeItem__List],
+			[PRODUCTION.ProductionOrder                  .instance, PARSENODE.ParseNodeOrder],
 			[PRODUCTION.ProductionConcat                 .instance, PARSENODE.ParseNodeConcat],
 			[PRODUCTION.ProductionAltern                 .instance, PARSENODE.ParseNodeAltern],
 			[PRODUCTION.ProductionDefinition             .instance, PARSENODE.ParseNodeDefinition],
@@ -140,7 +140,8 @@ export class Decorator {
 		[`#`, 'hash'],
 		[`?`, 'opt'],
 	])
-	private static readonly OPS_BIN: ReadonlyMap<string, 'concat' | 'altern'> = new Map<string, 'concat' | 'altern'>([
+	private static readonly OPS_BIN: ReadonlyMap<string, 'order' | 'concat' | 'altern'> = new Map<string, 'order' | 'concat' | 'altern'>([
+		[`.`, 'order'],
 		[`&`, 'concat'],
 		[`|`, 'altern'],
 	])
@@ -165,7 +166,7 @@ export class Decorator {
 	decorate(node: PARSENODE.ParseNodeUnit):                   SEMANTICNODE.SemanticNodeExpr;
 	decorate(node: PARSENODE.ParseNodeUnary):                  SEMANTICNODE.SemanticNodeExpr;
 	decorate(node: PARSENODE.ParseNodeItem):                   SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeItem__List):             SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeOrder):                  SEMANTICNODE.SemanticNodeExpr;
 	decorate(node: PARSENODE.ParseNodeConcat):                 SEMANTICNODE.SemanticNodeExpr;
 	decorate(node: PARSENODE.ParseNodeAltern):                 SEMANTICNODE.SemanticNodeExpr;
 	decorate(node: PARSENODE.ParseNodeDefinition):             SEMANTICNODE.SemanticNodeExpr;
@@ -276,14 +277,14 @@ export class Decorator {
 					this.decorate(node.children[0]),
 				)
 
-		} else if (node instanceof PARSENODE.ParseNodeItem__List) {
+		} else if (node instanceof PARSENODE.ParseNodeOrder) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
 				: new SEMANTICNODE.SemanticNodeOpBin(
 					node,
 					'order',
 					this.decorate(node.children[0]),
-					this.decorate(node.children[1]),
+					this.decorate((node.children.length === 2) ? node.children[1] : node.children[2]),
 				)
 
 		} else if (

@@ -161,18 +161,18 @@
 					}
 				}
 			
-				export class ProductionItem__List extends Production {
-					static readonly instance: ProductionItem__List = new ProductionItem__List();
+				export class ProductionOrder extends Production {
+					static readonly instance: ProductionOrder = new ProductionOrder();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[ProductionItem.instance],[ProductionItem__List.instance,ProductionItem.instance],
+							[ProductionItem.instance],[ProductionOrder.instance,ProductionItem.instance],[ProductionOrder.instance,'.',ProductionItem.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/2 ? [...ProductionItem.instance.random()] :
-							[...ProductionItem__List.instance.random(),...ProductionItem.instance.random()]
+							random < 1/3 ? [...ProductionItem.instance.random()] : random < 2/3 ? [...ProductionOrder.instance.random(),...ProductionItem.instance.random()] :
+							[...ProductionOrder.instance.random(),'.',...ProductionItem.instance.random()]
 						);
 					}
 				}
@@ -181,14 +181,14 @@
 					static readonly instance: ProductionConcat = new ProductionConcat();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[ProductionItem__List.instance],[ProductionConcat.instance,'&',ProductionItem__List.instance],
+							[ProductionOrder.instance],[ProductionConcat.instance,'&',ProductionOrder.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/2 ? [...ProductionItem__List.instance.random()] :
-							[...ProductionConcat.instance.random(),'&',...ProductionItem__List.instance.random()]
+							random < 1/2 ? [...ProductionOrder.instance.random()] :
+							[...ProductionConcat.instance.random(),'&',...ProductionOrder.instance.random()]
 						);
 					}
 				}

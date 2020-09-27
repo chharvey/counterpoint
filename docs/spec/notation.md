@@ -248,6 +248,22 @@ N__0
 	::= B C;
 ```
 
+##### Ordered Concatenation
+Ordered Concatenation is exactly the same as a sequence of symbols as described above.
+
+Ordered Concatenation syntax uses the optional symbol `.`, but it is equivalent to whitespace.
+```
+N
+	::= A . B;
+```
+is equivalent to
+```
+N
+	::= A B;
+```
+
+Usage of an explicit symbol can help control grouping and separation of items in a sequence.
+
 ##### Unordered Concatenation
 Unordered Concatenation of symbols is concatenation where the order is not important.
 

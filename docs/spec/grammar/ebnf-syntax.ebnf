@@ -32,9 +32,9 @@ Item ::=
 ;
 
 
-
-Concat ::= (Concat "&")? Item+;
-Altern ::= (Altern "|")? Concat;
+Order  ::= ( Order  "."? )? Item;
+Concat ::= ( Concat "&"  )? Order;
+Altern ::= ( Altern "|"  )? Concat;
 
 
 

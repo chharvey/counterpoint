@@ -134,22 +134,22 @@ Decorate(Item ::= ConditionSet Item) -> SemanticItem
 	);
 
 
-Decorate(Item__List ::= Item) -> SemanticExpr
+Decorate(Order ::= Item) -> SemanticExpr
 	:= Decorate(Item);
-Decorate(Item__List ::= Item__List Item) -> SematicOp
+Decorate(Order ::= Order "."? Item) -> SematicOp
 	:= (SematicOp[operator=ORDER]
-		Decorate(Item__List)
+		Decorate(Order)
 		Decorate(Item)
 	);
 
 
 
-Decorate(Concat ::= Item__List) -> SemanticExpr
-	:= Decorate(Item__List);
-Decorate(Concat ::= Concat "&" Item__List) -> SematicOp
+Decorate(Concat ::= Order) -> SemanticExpr
+	:= Decorate(Order);
+Decorate(Concat ::= Concat "&" Order) -> SematicOp
 	:= (SematicOp[operator=CONCAT]
 		Decorate(Concat)
-		Decorate(Item__List)
+		Decorate(Order)
 	);
 
 
