@@ -11,7 +11,7 @@
 			import type Token from '../lexer/Token.class';
 			import {ParseNode} from '../parser/ParseNode.class';
 			
-				export class ParseNodeNonterminalDefinition extends ParseNode {
+				export class ParseNodeNonterminalName extends ParseNode {
 					declare children:
 						readonly [Token] | readonly [Token,Token,ParseNodeIdentifier__CSL,Token]
 					;
@@ -23,33 +23,33 @@
 					;
 				}
 			
-				export class ParseNodeNonterminalReference extends ParseNode {
+				export class ParseNodeNonterminalRef extends ParseNode {
 					declare children:
-						readonly [Token] | readonly [Token,Token,ParseNodeNonterminalReference__0__CSL,Token]
+						readonly [Token] | readonly [Token,Token,ParseNodeNonterminalRef__0__CSL,Token]
 					;
 				}
 			
-				export class ParseNodeNonterminalReference__0__CSL extends ParseNode {
+				export class ParseNodeNonterminalRef__0__CSL extends ParseNode {
 					declare children:
-						readonly [Token,Token] | readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeNonterminalReference__0__CSL,Token,Token,Token] | readonly [ParseNodeNonterminalReference__0__CSL,Token,Token,Token] | readonly [ParseNodeNonterminalReference__0__CSL,Token,Token,Token]
+						readonly [Token,Token] | readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeNonterminalRef__0__CSL,Token,Token,Token] | readonly [ParseNodeNonterminalRef__0__CSL,Token,Token,Token] | readonly [ParseNodeNonterminalRef__0__CSL,Token,Token,Token]
 					;
 				}
 			
-				export class ParseNodeCondition extends ParseNode {
+				export class ParseNodeConditionSet extends ParseNode {
 					declare children:
-						readonly [Token,ParseNodeCondition__0__CSL,Token]
+						readonly [Token,ParseNodeConditionSet__0__CSL,Token]
 					;
 				}
 			
-				export class ParseNodeCondition__0__CSL extends ParseNode {
+				export class ParseNodeConditionSet__0__CSL extends ParseNode {
 					declare children:
-						readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeCondition__0__CSL,Token,Token,Token] | readonly [ParseNodeCondition__0__CSL,Token,Token,Token]
+						readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeConditionSet__0__CSL,Token,Token,Token] | readonly [ParseNodeConditionSet__0__CSL,Token,Token,Token]
 					;
 				}
 			
 				export class ParseNodeUnit extends ParseNode {
 					declare children:
-						readonly [Token] | readonly [Token] | readonly [Token] | readonly [ParseNodeNonterminalReference] | readonly [Token,ParseNodeAltern,Token]
+						readonly [Token] | readonly [Token] | readonly [Token] | readonly [ParseNodeNonterminalRef] | readonly [Token,ParseNodeDefinition,Token]
 					;
 				}
 			
@@ -61,7 +61,7 @@
 			
 				export class ParseNodeItem extends ParseNode {
 					declare children:
-						readonly [ParseNodeUnary] | readonly [ParseNodeCondition,ParseNodeItem]
+						readonly [ParseNodeUnary] | readonly [ParseNodeConditionSet,ParseNodeItem]
 					;
 				}
 			
@@ -83,9 +83,15 @@
 					;
 				}
 			
+				export class ParseNodeDefinition extends ParseNode {
+					declare children:
+						readonly [ParseNodeAltern]
+					;
+				}
+			
 				export class ParseNodeProduction extends ParseNode {
 					declare children:
-						readonly [ParseNodeNonterminalDefinition,Token,ParseNodeAltern,Token] | readonly [ParseNodeNonterminalDefinition,Token,ParseNodeAltern,Token] | readonly [ParseNodeNonterminalDefinition,Token,Token,ParseNodeAltern,Token] | readonly [ParseNodeNonterminalDefinition,Token,Token,ParseNodeAltern,Token]
+						readonly [ParseNodeNonterminalName,Token,ParseNodeDefinition,Token] | readonly [ParseNodeNonterminalName,Token,ParseNodeDefinition,Token] | readonly [ParseNodeNonterminalName,Token,Token,ParseNodeDefinition,Token] | readonly [ParseNodeNonterminalName,Token,Token,ParseNodeDefinition,Token]
 					;
 				}
 			

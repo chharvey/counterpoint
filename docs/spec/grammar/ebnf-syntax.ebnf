@@ -5,9 +5,9 @@ CHAR_CLASS  ::= [./ebnf-lexicon.ebnf#CharClass];
 
 
 
-NonterminalDefinition ::= IDENTIFIER ("<" IDENTIFIER#                     ">")?;
-NonterminalReference  ::= IDENTIFIER ("<" (("+" | "-" | "?") IDENTIFIER)# ">")?;
-Condition             ::=             "<" (IDENTIFIER ("+" | "-")      )# ">"  ;
+NonterminalName ::= IDENTIFIER ("<" IDENTIFIER#                     ">")?;
+NonterminalRef  ::= IDENTIFIER ("<" (("+" | "-" | "?") IDENTIFIER)# ">")?;
+ConditionSet    ::=             "<" (IDENTIFIER ("+" | "-")      )# ">"  ;
 
 
 
@@ -15,8 +15,8 @@ Unit ::=
 	| CHAR_CODE
 	| STRING
 	| CHAR_CLASS
-	| NonterminalReference
-	| "(" Altern ")"
+	| NonterminalRef
+	| "(" Definition ")"
 ;
 
 
@@ -28,7 +28,7 @@ Unary
 
 Item ::=
 	| Unary
-	| Condition Item
+	| ConditionSet Item
 ;
 
 
@@ -38,8 +38,13 @@ Altern ::= (Altern "|")? Concat;
 
 
 
+Definition
+	::= Altern;
+
+
+
 Production
-	::= NonterminalDefinition (":::=" | "::=") "|"? Altern ";";
+	::= NonterminalName (":::=" | "::=") "|"? Definition ";";
 
 
 
