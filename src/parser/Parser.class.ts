@@ -7,12 +7,13 @@ import type {
 import {
 	Validator,
 } from '../validator/'
-import type {ParseNode} from './ParseNode.class'
+import {ParseNode} from './ParseNode.class'
 import * as PARSENODE from './ParseNode.auto'
 import Grammar, {
 	GrammarSymbol,
 } from './Grammar.class'
 import Terminal from './Terminal.class'
+import type Production from './Production.class'
 import * as PRODUCTION from './Production.auto'
 import type Rule from './Rule.class'
 import type Configuration from './Configuration.class'
@@ -193,35 +194,39 @@ export class ParserSolid extends Parser {
 	}
 
 	protected makeParseNode(rule: Rule, children: readonly (Token | ParseNode)[]): ParseNode {
-		// NOTE: Need to use a chained if-else instead of a Map because cannot create instance of abstract class (`typeof ParseNode`).
-		return (
-			(                                   rule.production.equals(PRODUCTION.ProductionPrimitiveLiteral         .instance)) ? new PARSENODE.ParseNodePrimitiveLiteral         (rule, children) :
-			(Dev.supports('typingExplicit')  && rule.production.equals(PRODUCTION.ProductionTypeKeyword              .instance)) ? new PARSENODE.ParseNodeTypeKeyword              (rule, children) :
-			(Dev.supports('typingExplicit')  && rule.production.equals(PRODUCTION.ProductionTypeUnit                 .instance)) ? new PARSENODE.ParseNodeTypeUnit                 (rule, children) :
-			(Dev.supports('typingExplicit')  && rule.production.equals(PRODUCTION.ProductionTypeUnarySymbol          .instance)) ? new PARSENODE.ParseNodeTypeUnarySymbol          (rule, children) :
-			(Dev.supports('typingExplicit')  && rule.production.equals(PRODUCTION.ProductionTypeIntersection         .instance)) ? new PARSENODE.ParseNodeTypeIntersection         (rule, children) :
-			(Dev.supports('typingExplicit')  && rule.production.equals(PRODUCTION.ProductionTypeUnion                .instance)) ? new PARSENODE.ParseNodeTypeUnion                (rule, children) :
-			(Dev.supports('typingExplicit')  && rule.production.equals(PRODUCTION.ProductionType                     .instance)) ? new PARSENODE.ParseNodeType                     (rule, children) :
-			(Dev.supports('literalTemplate') && rule.production.equals(PRODUCTION.ProductionStringTemplate           .instance)) ? new PARSENODE.ParseNodeStringTemplate           (rule, children) :
-			(Dev.supports('literalTemplate') && rule.production.equals(PRODUCTION.ProductionStringTemplate__0__List  .instance)) ? new PARSENODE.ParseNodeStringTemplate__0__List  (rule, children) :
-			(                                   rule.production.equals(PRODUCTION.ProductionExpressionUnit           .instance)) ? new PARSENODE.ParseNodeExpressionUnit           (rule, children) :
-			(                                   rule.production.equals(PRODUCTION.ProductionExpressionUnarySymbol    .instance)) ? new PARSENODE.ParseNodeExpressionUnarySymbol    (rule, children) :
-			(                                   rule.production.equals(PRODUCTION.ProductionExpressionExponential    .instance)) ? new PARSENODE.ParseNodeExpressionExponential    (rule, children) :
-			(                                   rule.production.equals(PRODUCTION.ProductionExpressionMultiplicative .instance)) ? new PARSENODE.ParseNodeExpressionMultiplicative (rule, children) :
-			(                                   rule.production.equals(PRODUCTION.ProductionExpressionAdditive       .instance)) ? new PARSENODE.ParseNodeExpressionAdditive       (rule, children) :
-			(                                   rule.production.equals(PRODUCTION.ProductionExpressionComparative    .instance)) ? new PARSENODE.ParseNodeExpressionComparative    (rule, children) :
-			(                                   rule.production.equals(PRODUCTION.ProductionExpressionEquality       .instance)) ? new PARSENODE.ParseNodeExpressionEquality       (rule, children) :
-			(                                   rule.production.equals(PRODUCTION.ProductionExpressionConjunctive    .instance)) ? new PARSENODE.ParseNodeExpressionConjunctive    (rule, children) :
-			(                                   rule.production.equals(PRODUCTION.ProductionExpressionDisjunctive    .instance)) ? new PARSENODE.ParseNodeExpressionDisjunctive    (rule, children) :
-			(                                   rule.production.equals(PRODUCTION.ProductionExpressionConditional    .instance)) ? new PARSENODE.ParseNodeExpressionConditional    (rule, children) :
-			(                                   rule.production.equals(PRODUCTION.ProductionExpression               .instance)) ? new PARSENODE.ParseNodeExpression               (rule, children) :
-			(Dev.supports('variables')       && rule.production.equals(PRODUCTION.ProductionDeclarationVariable      .instance)) ? new PARSENODE.ParseNodeDeclarationVariable      (rule, children) :
-			(Dev.supports('variables')       && rule.production.equals(PRODUCTION.ProductionStatementAssignment      .instance)) ? new PARSENODE.ParseNodeStatementAssignment      (rule, children) :
-			(                                   rule.production.equals(PRODUCTION.ProductionStatement                .instance)) ? new PARSENODE.ParseNodeStatement                (rule, children) :
-			(                                   rule.production.equals(PRODUCTION.ProductionGoal                     .instance)) ? new PARSENODE.ParseNodeGoal                     (rule, children) :
-			(                                   rule.production.equals(PRODUCTION.ProductionGoal__0__List            .instance)) ? new PARSENODE.ParseNodeGoal__0__List            (rule, children) :
-			(() => { throw new ReferenceError(`The given rule \`${ rule.toString() }\` does not match any known grammar productions.`) })()
-		)
+		let returned: ParseNode | null = new ParseNode(rule, children)
+		new Map<Production, typeof ParseNode>([
+			[PRODUCTION.ProductionPrimitiveLiteral.instance, PARSENODE.ParseNodePrimitiveLiteral],
+			...(Dev.supports('typingExplicit')  ? [[PRODUCTION.ProductionTypeKeyword             .instance, PARSENODE.ParseNodeTypeKeyword]             as const] : []),
+			...(Dev.supports('typingExplicit')  ? [[PRODUCTION.ProductionTypeUnit                .instance, PARSENODE.ParseNodeTypeUnit]                as const] : []),
+			...(Dev.supports('typingExplicit')  ? [[PRODUCTION.ProductionTypeUnarySymbol         .instance, PARSENODE.ParseNodeTypeUnarySymbol]         as const] : []),
+			...(Dev.supports('typingExplicit')  ? [[PRODUCTION.ProductionTypeIntersection        .instance, PARSENODE.ParseNodeTypeIntersection]        as const] : []),
+			...(Dev.supports('typingExplicit')  ? [[PRODUCTION.ProductionTypeUnion               .instance, PARSENODE.ParseNodeTypeUnion]               as const] : []),
+			...(Dev.supports('typingExplicit')  ? [[PRODUCTION.ProductionType                    .instance, PARSENODE.ParseNodeType]                    as const] : []),
+			...(Dev.supports('literalTemplate') ? [[PRODUCTION.ProductionStringTemplate          .instance, PARSENODE.ParseNodeStringTemplate]          as const] : []),
+			...(Dev.supports('literalTemplate') ? [[PRODUCTION.ProductionStringTemplate__0__List .instance, PARSENODE.ParseNodeStringTemplate__0__List] as const] : []),
+			[PRODUCTION.ProductionExpressionUnit           .instance, PARSENODE.ParseNodeExpressionUnit],
+			[PRODUCTION.ProductionExpressionUnarySymbol    .instance, PARSENODE.ParseNodeExpressionUnarySymbol],
+			[PRODUCTION.ProductionExpressionExponential    .instance, PARSENODE.ParseNodeExpressionExponential],
+			[PRODUCTION.ProductionExpressionMultiplicative .instance, PARSENODE.ParseNodeExpressionMultiplicative],
+			[PRODUCTION.ProductionExpressionAdditive       .instance, PARSENODE.ParseNodeExpressionAdditive],
+			[PRODUCTION.ProductionExpressionComparative    .instance, PARSENODE.ParseNodeExpressionComparative],
+			[PRODUCTION.ProductionExpressionEquality       .instance, PARSENODE.ParseNodeExpressionEquality],
+			[PRODUCTION.ProductionExpressionConjunctive    .instance, PARSENODE.ParseNodeExpressionConjunctive],
+			[PRODUCTION.ProductionExpressionDisjunctive    .instance, PARSENODE.ParseNodeExpressionDisjunctive],
+			[PRODUCTION.ProductionExpressionConditional    .instance, PARSENODE.ParseNodeExpressionConditional],
+			[PRODUCTION.ProductionExpression               .instance, PARSENODE.ParseNodeExpression],
+			...(Dev.supports('variables') ? [[PRODUCTION.ProductionDeclarationVariable.instance, PARSENODE.ParseNodeDeclarationVariable] as const] : []),
+			...(Dev.supports('variables') ? [[PRODUCTION.ProductionStatementAssignment.instance, PARSENODE.ParseNodeStatementAssignment] as const] : []),
+			[PRODUCTION.ProductionStatement     .instance, PARSENODE.ParseNodeStatement],
+			[PRODUCTION.ProductionGoal          .instance, PARSENODE.ParseNodeGoal],
+			[PRODUCTION.ProductionGoal__0__List .instance, PARSENODE.ParseNodeGoal__0__List],
+		]).forEach((nodetype, prod) => {
+			if (rule.production.equals(prod)) {
+				returned = new nodetype(rule, children)
+			}
+		})
+		return returned
 	}
 
 	parse(): PARSENODE.ParseNodeGoal {

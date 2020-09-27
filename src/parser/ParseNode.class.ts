@@ -6,10 +6,6 @@ import type Serializable from '../iface/Serializable.iface'
 import type {
 	Token,
 } from '../lexer/'
-import type {
-	SemanticNodeExpression,
-	SemanticNodeConstant,
-} from '../validator/'
 import type Rule from './Rule.class'
 
 
@@ -22,7 +18,7 @@ import type Rule from './Rule.class'
  *
  * @see http://parsingintro.sourceforge.net/#contents_item_8.2
  */
-export abstract class ParseNode implements Serializable {
+export class ParseNode implements Serializable {
 	/**
 	 * Takes a list of JSON objects representing syntactic productions
 	 * and returns a string in TypeScript language representing subclasses of {@link ParseNode}.
@@ -83,12 +79,3 @@ export abstract class ParseNode implements Serializable {
 		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`
 	}
 }
-
-
-
-export type TemplatePartialType = // FIXME spread types
-	| [                        SemanticNodeConstant                        ]
-	| [                        SemanticNodeConstant, SemanticNodeExpression]
-	// | [...TemplatePartialType, SemanticNodeConstant                        ]
-	// | [...TemplatePartialType, SemanticNodeConstant, SemanticNodeExpression]
-	| SemanticNodeExpression[]

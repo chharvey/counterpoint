@@ -18,7 +18,6 @@ import Token, {
 } from '../lexer/Token.class'
 import {
 	ParseNode,
-	TemplatePartialType,
 } from '../parser/ParseNode.class'
 import * as PARSENODE from '../parser/ParseNode.auto'
 import {Builder} from '../builder/'
@@ -48,6 +47,15 @@ import type SolidLanguageType from './SolidLanguageType.class'
 
 
 
+type TemplatePartialType = // FIXME spread types
+	| [                        SemanticNodeConstant                        ]
+	| [                        SemanticNodeConstant, SemanticNodeExpression]
+	// | [...TemplatePartialType, SemanticNodeConstant                        ]
+	// | [...TemplatePartialType, SemanticNodeConstant, SemanticNodeExpression]
+	| SemanticNodeExpression[]
+
+
+
 /**
  * An object containing symbol information.
  * A “symbol” is a variable or other declaration in source code.
@@ -62,6 +70,7 @@ type SymbolInfo = {
 	line: number;
 	col:  number;
 }
+
 
 
 /**
@@ -216,14 +225,15 @@ export default class Validator {
 					this.decorate(node.children[0]),
 				])
 
-		} else if (node instanceof PARSENODE.ParseNodeTypeIntersection || node instanceof PARSENODE.ParseNodeTypeUnion) {
+		} else if (
+			node instanceof PARSENODE.ParseNodeTypeIntersection ||
+			node instanceof PARSENODE.ParseNodeTypeUnion
+		) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
 				: new SemanticNodeTypeOperationBinary(node, Validator.TYPEOPERATORS_BINARY.get(node.children[1].source as Punctuator)!, [
-					// @ts-expect-error
-					this.decorate(node.children[0]),
-					// @ts-expect-error
-					this.decorate(node.children[2]),
+					this.decorate(node.children[0]) as SemanticNodeType,
+					this.decorate(node.children[2]) as SemanticNodeType,
 				])
 
 		} else if (node instanceof PARSENODE.ParseNodeType) {
@@ -259,73 +269,73 @@ export default class Validator {
 						this.decorate(node.children[1]),
 					])
 
-		} else if (node instanceof PARSENODE.ParseNodeExpressionExponential || node instanceof PARSENODE.ParseNodeExpressionMultiplicative || node instanceof PARSENODE.ParseNodeExpressionAdditive || node instanceof PARSENODE.ParseNodeExpressionComparative || node instanceof PARSENODE.ParseNodeExpressionEquality || node instanceof PARSENODE.ParseNodeExpressionDisjunctive || node instanceof PARSENODE.ParseNodeExpressionConjunctive) {
+		} else if (
+			node instanceof PARSENODE.ParseNodeExpressionExponential    ||
+			node instanceof PARSENODE.ParseNodeExpressionMultiplicative ||
+			node instanceof PARSENODE.ParseNodeExpressionAdditive       ||
+			node instanceof PARSENODE.ParseNodeExpressionComparative    ||
+			node instanceof PARSENODE.ParseNodeExpressionEquality       ||
+			node instanceof PARSENODE.ParseNodeExpressionConjunctive    ||
+			node instanceof PARSENODE.ParseNodeExpressionDisjunctive
+		) {
 			if (node.children.length === 1) {
 				return this.decorate(node.children[0])
 			} else {
 				const operator: Operator = Validator.OPERATORS_BINARY.get(node.children[1].source as Punctuator | Keyword)!
 				const operands: [SemanticNodeExpression, SemanticNodeExpression] = [
-					// @ts-expect-error
-					this.decorate(node.children[0]),
-					// @ts-expect-error
-					this.decorate(node.children[2]),
+					this.decorate(node.children[0]) as SemanticNodeExpression,
+					this.decorate(node.children[2]) as SemanticNodeExpression,
 				]
-				return ([
-					Operator.EXP,
-					Operator.MUL,
-					Operator.DIV,
-					Operator.ADD,
-				].includes(operator)) ?
-					new SemanticNodeOperationBinaryArithmetic(node, operator as ValidOperatorArithmetic, operands)
-				: (operator === Operator.SUB) ? // `a - b` is syntax sugar for `a + -(b)`
-					new SemanticNodeOperationBinaryArithmetic(node, Operator.ADD, [
+				return (
+					node instanceof PARSENODE.ParseNodeExpressionExponential    ||
+					node instanceof PARSENODE.ParseNodeExpressionMultiplicative ||
+					node instanceof PARSENODE.ParseNodeExpressionAdditive
+				) ? (
+					// `a - b` is syntax sugar for `a + -(b)`
+					(operator === Operator.SUB) ? new SemanticNodeOperationBinaryArithmetic(node, Operator.ADD, [
 						operands[0],
 						new SemanticNodeOperationUnary(node.children[2], Operator.NEG, [
 							operands[1],
 						]),
-					])
-				: ([
-					Operator.LT,
-					Operator.GT,
-					Operator.LE,
-					Operator.GE,
-				].includes(operator)) ?
-					new SemanticNodeOperationBinaryComparative(node, operator as ValidOperatorComparative, operands)
-				: (operator === Operator.NLT) ? // `a !< b` is syntax sugar for `!(a < b)`
-					new SemanticNodeOperationUnary(node, Operator.NOT, [
+					]) :
+					new SemanticNodeOperationBinaryArithmetic(node, operator as ValidOperatorArithmetic, operands)
+
+				) : (node instanceof PARSENODE.ParseNodeExpressionComparative) ? (
+					// `a !< b` is syntax sugar for `!(a < b)`
+					(operator === Operator.NLT) ? new SemanticNodeOperationUnary(node, Operator.NOT, [
 						new SemanticNodeOperationBinaryComparative(node.children[0], Operator.LT, operands),
-					])
-				: (operator === Operator.NGT) ? // `a !> b` is syntax sugar for `!(a > b)`
-					new SemanticNodeOperationUnary(node, Operator.NOT, [
+					]) :
+					// `a !> b` is syntax sugar for `!(a > b)`
+					(operator === Operator.NGT) ? new SemanticNodeOperationUnary(node, Operator.NOT, [
 						new SemanticNodeOperationBinaryComparative(node.children[0], Operator.GT, operands),
-					])
-				: ([
-					Operator.IS,
-					Operator.EQ,
-				].includes(operator)) ?
-					new SemanticNodeOperationBinaryEquality(node, operator as ValidOperatorEquality, operands)
-				: (operator === Operator.ISNT) ? // `a isnt b` is syntax sugar for `!(a is b)`
-					new SemanticNodeOperationUnary(node, Operator.NOT, [
+					]) :
+					new SemanticNodeOperationBinaryComparative(node, operator as ValidOperatorComparative, operands)
+
+				) : (node instanceof PARSENODE.ParseNodeExpressionEquality) ? (
+					// `a isnt b` is syntax sugar for `!(a is b)`
+					(operator === Operator.ISNT) ? new SemanticNodeOperationUnary(node, Operator.NOT, [
 						new SemanticNodeOperationBinaryEquality(node.children[0], Operator.IS, operands),
-					])
-				: (operator === Operator.NEQ) ? // `a != b` is syntax sugar for `!(a == b)`
-					new SemanticNodeOperationUnary(node, Operator.NOT, [
+					]) :
+					// `a != b` is syntax sugar for `!(a == b)`
+					(operator === Operator.NEQ) ? new SemanticNodeOperationUnary(node, Operator.NOT, [
 						new SemanticNodeOperationBinaryEquality(node.children[0], Operator.EQ, operands),
-					])
-				: ([
-					Operator.AND,
-					Operator.OR,
-				].includes(operator)) ?
-					new SemanticNodeOperationBinaryLogical(node, operator as ValidOperatorLogical, operands)
-				: (operator === Operator.NAND) ? // `a !& b` is syntax sugar for `!(a && b)`
-					new SemanticNodeOperationUnary(node, Operator.NOT, [
+					]) :
+					new SemanticNodeOperationBinaryEquality(node, operator as ValidOperatorEquality, operands)
+
+				) : /* (
+					node instanceof PARSENODE.ParseNodeExpressionConjunctive ||
+					node instanceof PARSENODE.ParseNodeExpressionDisjunctive
+				) ? */ (
+					// `a !& b` is syntax sugar for `!(a && b)`
+					(operator === Operator.NAND) ? new SemanticNodeOperationUnary(node, Operator.NOT, [
 						new SemanticNodeOperationBinaryLogical(node.children[0], Operator.AND, operands),
-					])
-				: (operator === Operator.NOR) ? // `a !| b` is syntax sugar for `!(a || b)`
-					new SemanticNodeOperationUnary(node, Operator.NOT, [
+					]) :
+					// `a !| b` is syntax sugar for `!(a || b)`
+					(operator === Operator.NOR) ? new SemanticNodeOperationUnary(node, Operator.NOT, [
 						new SemanticNodeOperationBinaryLogical(node.children[0], Operator.OR, operands),
-					])
-				: (() => { throw new Error(`Operator ${ Operator[operator] } not found.`) })()
+					]) :
+					new SemanticNodeOperationBinaryLogical(node, operator as ValidOperatorLogical, operands)
+				)
 			}
 
 		} else if (node instanceof PARSENODE.ParseNodeExpressionConditional) {
