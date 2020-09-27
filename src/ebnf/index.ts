@@ -1,3 +1,4 @@
+import type {KleenePlus} from '../types.d'
 import {
 	Scanner,
 	Lexer,
@@ -17,6 +18,7 @@ import {
 import * as TOKEN from './Token.class'
 import * as PRODUCTION from './Production.auto'
 import * as PARSENODE from './ParseNode.auto'
+import * as SEMANTICNODE from './SemanticNode.class'
 import {
 	LexError01,
 } from '../error/LexError.class'
@@ -132,45 +134,194 @@ export class ParserEBNF extends Parser {
 
 
 export class Decorator {
+	private static readonly OPS_UN: ReadonlyMap<string, 'plus' | 'star' | 'hash' | 'opt'> = new Map<string, 'plus' | 'star' | 'hash' | 'opt'>([
+		[`+`, 'plus'],
+		[`*`, 'star'],
+		[`#`, 'hash'],
+		[`?`, 'opt'],
+	])
+	private static readonly OPS_BIN: ReadonlyMap<string, 'concat' | 'altern'> = new Map<string, 'concat' | 'altern'>([
+		[`&`, 'concat'],
+		[`|`, 'altern'],
+	])
+	private static readonly PARAMOPS: ReadonlyMap<string, boolean | 'inherit'> = new Map<string, boolean | 'inherit'>([
+		[`+`, true],
+		[`-`, false],
+		[`?`, 'inherit'],
+	])
+
+
 	/**
 	 * Return a JSON object describing an EBNF production.
 	 * Similar to a node of the Semantic Tree or “decorated/abstract syntax tree”.
 	 * @returns a JSON object containing the parse node’s semantics
 	 */
-	decorate(node: PARSENODE.ParseNodeNonterminalName):        any;
-	decorate(node: PARSENODE.ParseNodeIdentifier__CSL):        any;
-	decorate(node: PARSENODE.ParseNodeNonterminalRef):         any;
-	decorate(node: PARSENODE.ParseNodeNonterminalRef__0__CSL): any;
-	decorate(node: PARSENODE.ParseNodeConditionSet):           any;
-	decorate(node: PARSENODE.ParseNodeConditionSet__0__CSL):   any;
-	decorate(node: PARSENODE.ParseNodeUnit):                   any;
-	decorate(node: PARSENODE.ParseNodeUnary):                  any;
-	decorate(node: PARSENODE.ParseNodeItem):                   any;
-	decorate(node: PARSENODE.ParseNodeItem__List):             any;
-	decorate(node: PARSENODE.ParseNodeConcat):                 any;
-	decorate(node: PARSENODE.ParseNodeAltern):                 any;
-	decorate(node: PARSENODE.ParseNodeDefinition):             any;
-	decorate(node: PARSENODE.ParseNodeProduction):             any;
-	decorate(node: PARSENODE.ParseNodeGrammar):                any;
-	decorate(node: PARSENODE.ParseNodeProduction__List):       any;
-	decorate(node: ParseNode): any;
-	decorate(node: ParseNode): any {
+	decorate(node: PARSENODE.ParseNodeNonterminalName):        SEMANTICNODE.SemanticNodeNonterminal;
+	decorate(node: PARSENODE.ParseNodeIdentifier__CSL):        KleenePlus<SEMANTICNODE.SemanticNodeParam>;
+	decorate(node: PARSENODE.ParseNodeNonterminalRef):         SEMANTICNODE.SemanticNodeRef;
+	decorate(node: PARSENODE.ParseNodeNonterminalRef__0__CSL): KleenePlus<SEMANTICNODE.SemanticNodeArg>;
+	decorate(node: PARSENODE.ParseNodeConditionSet):           KleenePlus<SEMANTICNODE.SemanticNodeCondition>;
+	decorate(node: PARSENODE.ParseNodeConditionSet__0__CSL):   KleenePlus<SEMANTICNODE.SemanticNodeCondition>;
+	decorate(node: PARSENODE.ParseNodeUnit):                   SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeUnary):                  SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeItem):                   SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeItem__List):             SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeConcat):                 SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeAltern):                 SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeDefinition):             SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeProduction):             SEMANTICNODE.SemanticNodeProduction;
+	decorate(node: PARSENODE.ParseNodeGrammar):                SEMANTICNODE.SemanticNodeGrammar;
+	decorate(node: PARSENODE.ParseNodeProduction__List):       KleenePlus<SEMANTICNODE.SemanticNodeProduction>;
+	decorate(node: ParseNode): SEMANTICNODE.SemanticNodeEBNF | readonly SEMANTICNODE.SemanticNodeEBNF[];
+	decorate(node: ParseNode): SEMANTICNODE.SemanticNodeEBNF | readonly SEMANTICNODE.SemanticNodeEBNF[] {
 		if (node instanceof PARSENODE.ParseNodeNonterminalName) {
+			return new SEMANTICNODE.SemanticNodeNonterminal(
+				node.children[0] as TOKEN.TokenIdentifier,
+				(node.children.length === 4) ? this.decorate(node.children[2]) : [],
+			)
+
 		} else if (node instanceof PARSENODE.ParseNodeIdentifier__CSL) {
+			function decorateParam(identifier: TOKEN.TokenIdentifier): SEMANTICNODE.SemanticNodeParam {
+				return new SEMANTICNODE.SemanticNodeParam(identifier)
+			}
+			return (node.children.length === 1)
+				? [
+					decorateParam(node.children[0] as TOKEN.TokenIdentifier),
+				]
+				: [
+					...this.decorate(node.children[0]),
+					decorateParam(node.children[2] as TOKEN.TokenIdentifier),
+				]
+
 		} else if (node instanceof PARSENODE.ParseNodeNonterminalRef) {
+			return new SEMANTICNODE.SemanticNodeRef(
+				node.children[0] as TOKEN.TokenIdentifier,
+				(node.children.length === 4) ? this.decorate(node.children[2]) : [],
+			)
+
 		} else if (node instanceof PARSENODE.ParseNodeNonterminalRef__0__CSL) {
+			function decorateArg(name: TOKEN.TokenIdentifier, append: TOKEN.TokenPunctuator): SEMANTICNODE.SemanticNodeArg {
+				return new SEMANTICNODE.SemanticNodeArg(name, Decorator.PARAMOPS.get(append.source)!)
+			}
+			return (node.children.length === 2)
+				? [
+					decorateArg(
+						node.children[1] as TOKEN.TokenIdentifier,
+						node.children[0] as TOKEN.TokenPunctuator,
+					),
+				]
+				: [
+					...this.decorate(node.children[0]),
+					decorateArg(
+						node.children[3] as TOKEN.TokenIdentifier,
+						node.children[2] as TOKEN.TokenPunctuator,
+					),
+				]
+
 		} else if (node instanceof PARSENODE.ParseNodeConditionSet) {
+			return this.decorate(node.children[1])
+
 		} else if (node instanceof PARSENODE.ParseNodeConditionSet__0__CSL) {
+			function decorateCondition(name: TOKEN.TokenIdentifier, include: TOKEN.TokenPunctuator): SEMANTICNODE.SemanticNodeCondition {
+				return new SEMANTICNODE.SemanticNodeCondition(name, Decorator.PARAMOPS.get(include.source) as boolean)
+			}
+			return (node.children.length === 2)
+				? [
+					decorateCondition(
+						node.children[0] as TOKEN.TokenIdentifier,
+						node.children[1] as TOKEN.TokenPunctuator,
+					),
+				]
+				: [
+					...this.decorate(node.children[0]),
+					decorateCondition(
+						node.children[2] as TOKEN.TokenIdentifier,
+						node.children[3] as TOKEN.TokenPunctuator,
+					),
+				]
+
 		} else if (node instanceof PARSENODE.ParseNodeUnit) {
+			return (node.children.length === 1)
+				? (node.children[0] instanceof Token)
+					? new SEMANTICNODE.SemanticNodeConst(node.children[0] as TOKEN.TokenCharCode | TOKEN.TokenString | TOKEN.TokenCharClass)
+					: this.decorate(node.children[0])
+				: this.decorate(node.children[1])
+
 		} else if (node instanceof PARSENODE.ParseNodeUnary) {
+			let operand = this.decorate(node.children[0])
+			if (node.children.length === 1) {
+				return operand
+			}
+			operand = new SEMANTICNODE.SemanticNodeOpUn(
+				node,
+				Decorator.OPS_UN.get(node.children[1].source)!,
+				operand,
+			)
+			if (node.children.length === 2) {
+				return operand
+			}
+			operand = new SEMANTICNODE.SemanticNodeOpUn(
+				node,
+				'opt',
+				operand,
+			)
+			return operand
+
 		} else if (node instanceof PARSENODE.ParseNodeItem) {
+			return (node.children.length === 1)
+				? this.decorate(node.children[0])
+				: new SEMANTICNODE.SemanticNodeItem(
+					node,
+					this.decorate(node.children[1]),
+					this.decorate(node.children[0]),
+				)
+
 		} else if (node instanceof PARSENODE.ParseNodeItem__List) {
-		} else if (node instanceof PARSENODE.ParseNodeConcat) {
-		} else if (node instanceof PARSENODE.ParseNodeAltern) {
+			return (node.children.length === 1)
+				? this.decorate(node.children[0])
+				: new SEMANTICNODE.SemanticNodeOpBin(
+					node,
+					'order',
+					this.decorate(node.children[0]),
+					this.decorate(node.children[1]),
+				)
+
+		} else if (
+			node instanceof PARSENODE.ParseNodeConcat ||
+			node instanceof PARSENODE.ParseNodeAltern
+		) {
+			return (node.children.length === 1)
+				? this.decorate(node.children[0])
+				: new SEMANTICNODE.SemanticNodeOpBin(
+					node,
+					Decorator.OPS_BIN.get(node.children[1].source)!,
+					this.decorate(node.children[0]) as SEMANTICNODE.SemanticNodeExpr,
+					this.decorate(node.children[2]) as SEMANTICNODE.SemanticNodeExpr,
+				)
+
 		} else if (node instanceof PARSENODE.ParseNodeDefinition) {
+			return this.decorate(node.children[0])
+
 		} else if (node instanceof PARSENODE.ParseNodeProduction) {
+			return new SEMANTICNODE.SemanticNodeProduction(
+				node,
+				this.decorate(node.children[0]),
+				this.decorate((node.children.length === 4) ? node.children[2] : node.children[3]),
+			)
+
 		} else if (node instanceof PARSENODE.ParseNodeGrammar) {
+			return new SEMANTICNODE.SemanticNodeGrammar(node, (node.children.length === 2) ? [] : this.decorate(node.children[1]))
+
 		} else if (node instanceof PARSENODE.ParseNodeProduction__List) {
+			return (node.children.length === 1)
+				? [
+					this.decorate(node.children[0]),
+				]
+				: [
+					...this.decorate(node.children[0]),
+					this.decorate(node.children[1]),
+				]
+
 		} else {
 			throw new ReferenceError(`Could not find type of parse node ${ node }.`)
 		}

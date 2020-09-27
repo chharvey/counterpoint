@@ -1,0 +1,46 @@
+SemanticExpr =:=
+	| SemanticConst
+	| SemanticRef
+	| SemanticItem
+	| SemanticOp
+;
+
+Text =:= Sequence<RealNumber>;
+
+
+
+SemanticParam[name: Text]
+	::= ();
+
+SemanticArg[name: Text, append: TRUE | FALSE | INHERIT]
+	::= ();
+
+SemanticCondition[name: Text, include: TRUE | FALSE]
+	::= ();
+
+
+
+SemanticConst[value: Text]
+	::= ();
+
+SemanticRef[name: Text]
+	::= SemanticArg*;
+
+SemanticItem
+	::= SemanticItem SemanticCondition*;
+
+SemanticOp[operator: PLUS | STAR | HASH | OPT]
+	::= SemanticExpr;
+SemanticOp[operator: ORDER | CONCAT | ALTERN]
+	::= SemanticExpr SemanticExpr;
+
+
+
+SemanticNonterminal[name: Text]
+	::= SemanticParam*;
+
+SemanticProduction
+	::= SemanticNonterminal SemanticExpr;
+
+SemanticGrammar
+	::= SemanticProduction*;
