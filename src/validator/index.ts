@@ -22,7 +22,6 @@ export {
 	SemanticNodeDeclarationVariable,
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
-	SemanticNodeAssigned,
 	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,

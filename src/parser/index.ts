@@ -14,25 +14,5 @@ export {default as Terminal}      from './Terminal.class'
 export {default as Production}    from './Production.class'
 
 export {
-	ParseNodePrimitiveLiteral,
-	ParseNodeTypeKeyword,
-	ParseNodeTypeUnit,
-	ParseNodeTypeUnary,
-	ParseNodeTypeBinary,
-	ParseNodeType,
-	ParseNodeStringTemplate,
-	ParseNodeExpressionUnit,
-	ParseNodeExpressionUnary,
-	ParseNodeExpressionBinary,
-	ParseNodeExpressionConditional,
-	ParseNodeExpression,
-	ParseNodeDeclarationVariable,
-	ParseNodeStatementAssignment,
-	ParseNodeStatement,
-	ParseNodeGoal,
-	ParseNodeGoal__0__List,
-} from './ParseNode.class'
-
-export {
 	GrammarSymbol,
 } from './Grammar.class'
