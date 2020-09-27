@@ -469,26 +469,26 @@ describe('SemanticNode', () => {
 		describe('SemanticNodeDeclarationVariable', () => {
 			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  int | float =  21  *  2;`
-				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src)
-					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator)
+				const decl: SemanticNodeDeclarationVariable = new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator
+					.decorate(variableDeclarationFromSource(src))
 				decl.typeCheck(CONFIG_DEFAULT.compilerOptions)
 			})
 			it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  null =  21  *  2;`
-				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src)
-					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator)
+				const decl: SemanticNodeDeclarationVariable = new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator
+					.decorate(variableDeclarationFromSource(src))
 				assert.throws(() => decl.typeCheck(CONFIG_DEFAULT.compilerOptions), TypeError03)
 			})
 			it('with int coersion on, allows assigning ints to floats.', () => {
 				const src: string = `let x: float = 42;`
-				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src)
-					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator)
+				const decl: SemanticNodeDeclarationVariable = new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator
+					.decorate(variableDeclarationFromSource(src))
 				decl.typeCheck(CONFIG_DEFAULT.compilerOptions)
 			})
 			it('with int coersion off, throws when assigning int to float.', () => {
 				const src: string = `let x: float = 42;`
-				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src)
-					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator)
+				const decl: SemanticNodeDeclarationVariable = new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator
+					.decorate(variableDeclarationFromSource(src))
 				assert.throws(() => decl.typeCheck({
 					...CONFIG_DEFAULT.compilerOptions,
 					intCoercion: false,
@@ -510,7 +510,7 @@ describe('SemanticNode', () => {
 					`true`,
 					`42`,
 					`4.2e+3`,
-				].map((src) => unitTypeFromString(src).decorate(validatorFromType(src)).assess()), [
+				].map((src) => validatorFromType(src).decorate(unitTypeFromString(src)).assess()), [
 					SolidNull,
 					SolidBoolean.FALSETYPE,
 					SolidBoolean.TRUETYPE,
@@ -524,7 +524,7 @@ describe('SemanticNode', () => {
 					'int',
 					'float',
 					'obj',
-				].map((src) => unitTypeFromString(src).decorate(validatorFromType(src)).assess()), [
+				].map((src) => validatorFromType(src).decorate(unitTypeFromString(src)).assess()), [
 					SolidBoolean,
 					Int16,
 					Float64,
@@ -533,17 +533,17 @@ describe('SemanticNode', () => {
 			})
 			it('computes the value of a nullified (ORNULL) type.', () => {
 				assert.deepStrictEqual(
-					unaryTypeFromString(`int!`).decorate(validatorFromType(`int!`)).assess(),
+					validatorFromType(`int!`).decorate(unaryTypeFromString(`int!`)).assess(),
 					Int16.union(SolidNull),
 				)
 			})
 			it('computes the value of AND and OR operators', () => {
 				assert.deepStrictEqual(
-					intersectionTypeFromString(`obj & 3`).decorate(validatorFromType(`obj & 3`)).assess(),
+					validatorFromType(`obj & 3`).decorate(intersectionTypeFromString(`obj & 3`)).assess(),
 					SolidObject.intersect(typeConstInt(3n)),
 				)
 				assert.deepStrictEqual(
-					unionTypeFromString(`4.2 | int`).decorate(validatorFromType(`4.2 | int`)).assess(),
+					validatorFromType(`4.2 | int`).decorate(unionTypeFromString(`4.2 | int`)).assess(),
 					typeConstFloat(4.2).union(Int16),
 				)
 			})

@@ -240,9 +240,8 @@ describe('Instruction', () => {
 					`;`,
 				].map((src) => {
 					const srcs: [string, SolidConfig] = [src, CONFIG_DEFAULT]
-					return new Scanner(...srcs).lexer.screener.parser
-						.parse()
-						.decorate(new Scanner(...srcs).lexer.screener.parser.validator)
+					return new Scanner(...srcs).lexer.screener.parser.validator
+						.decorate(new Scanner(...srcs).lexer.screener.parser.parse())
 						.build(new Scanner(...srcs).lexer.screener.parser.validator.builder)
 				})
 				assert.ok(mods[0] instanceof InstructionNone)
