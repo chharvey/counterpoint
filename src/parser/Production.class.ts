@@ -1,11 +1,13 @@
 import Util from '../class/Util.class'
-import type ParseNode from './ParseNode.class'
-import type {GrammarSymbol} from './Grammar.class'
+import type {ParseNode} from './ParseNode.class'
+import type {
+	KleenePlus,
+	GrammarSymbol,
+} from './Grammar.class'
 import Rule from './Rule.class'
 
 
 
-export type KleenePlus<T> = readonly [T, ...readonly T[]]
 type JSONSequence = KleenePlus<JSONItem>
 type JSONItem =
 	| string
@@ -32,14 +34,17 @@ export default abstract class Production {
 		function randomCallback(it: JSONItem) {
 			return (
 				(typeof it === 'string') ? it :
-				('term' in it) ? `Terminal.Terminal${ Util.screamingToPascal(it.term) }.instance.random()` :
+				('term' in it) ? `TERMINAL.Terminal${ Util.screamingToPascal(it.term) }.instance.random()` :
 				`...Production${ it.prod }.instance.random()`
 			)
 		}
 		return `
-			import type {GrammarSymbol}     from './Grammar.class';
-			import * as Terminal            from './Terminal.class';
-			import Production, {KleenePlus} from './Production.class';
+			import type {
+				KleenePlus,
+				GrammarSymbol,
+			} from '../parser/Grammar.class';
+			import Production from '../parser/Production.class';
+			import * as TERMINAL from './Terminal.class';
 			${ jsons.map((json) => `
 				export class Production${ json.name } extends Production {
 					static readonly instance: Production${ json.name } = new Production${ json.name }();
@@ -47,7 +52,7 @@ export default abstract class Production {
 						return [
 							${ json.defn.map((seq) => `[${ seq.map((it) =>
 								(typeof it === 'string') ? it :
-								('term' in it) ? `Terminal.Terminal${ Util.screamingToPascal(it.term) }.instance` :
+								('term' in it) ? `TERMINAL.Terminal${ Util.screamingToPascal(it.term) }.instance` :
 								`Production${ it.prod }.instance`
 							) }]`) },
 						];

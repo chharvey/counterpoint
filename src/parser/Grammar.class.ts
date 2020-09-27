@@ -1,4 +1,3 @@
-import Dev from '../class/Dev.class'
 import type {
 	Filebound,
 	Punctuator,
@@ -8,86 +7,36 @@ import type Rule from './Rule.class'
 import Configuration from './Configuration.class'
 import Terminal from './Terminal.class'
 import Production from './Production.class'
-import {
-	ProductionPrimitiveLiteral,
-	ProductionTypeKeyword,
-	ProductionTypeUnit,
-	ProductionTypeUnarySymbol,
-	ProductionTypeIntersection,
-	ProductionTypeUnion,
-	ProductionType,
-	ProductionStringTemplate,
-	ProductionStringTemplate__0__List,
-	ProductionExpressionUnit,
-	ProductionExpressionUnarySymbol,
-	ProductionExpressionExponential,
-	ProductionExpressionMultiplicative,
-	ProductionExpressionAdditive,
-	ProductionExpressionComparative,
-	ProductionExpressionEquality,
-	ProductionExpressionConjunctive,
-	ProductionExpressionDisjunctive,
-	ProductionExpressionConditional,
-	ProductionExpression,
-	ProductionDeclarationVariable,
-	ProductionStatementAssignment,
-	ProductionStatement,
-	ProductionGoal,
-	ProductionGoal__0__List,
-} from './Production.auto'
 
 
-export type GrammarSymbol   = GrammarTerminal|Production
-export type GrammarTerminal = string | Filebound | Punctuator | Keyword | Terminal
+export type KleenePlus<T> = readonly [T, ...readonly T[]]
+
+export type GrammarSymbol =
+	| GrammarTerminal
+	| Production
+
+export type GrammarTerminal =
+	| string
+	| Filebound
+	| Punctuator
+	| Keyword
+	| Terminal
 
 
 
 export default class Grammar {
-	/** The set of all productions in this Grammar. */
-	readonly productions: readonly Production[];
-	/** The goal production of this Grammar. */
-	readonly goal: Production = ProductionGoal.instance
 	/** The productions of this Grammar decomposed into rules. There are likely many rules per production. */
 	readonly rules: readonly Rule[];
 
 	/**
 	 * Construct a new Grammar object.
+	 * @param productions The set of all productions in this Grammar.
+	 * @param goal        The goal production of this Grammar.
 	 */
-	constructor() {
-		this.productions = [
-			ProductionPrimitiveLiteral.instance,
-			...(Dev.supports('typingExplicit')  ? [ProductionTypeKeyword             .instance] : []),
-			...(Dev.supports('typingExplicit')  ? [ProductionTypeUnit                .instance] : []),
-			...(Dev.supports('typingExplicit')  ? [ProductionTypeUnarySymbol         .instance] : []),
-			...(Dev.supports('typingExplicit')  ? [ProductionTypeIntersection        .instance] : []),
-			...(Dev.supports('typingExplicit')  ? [ProductionTypeUnion               .instance] : []),
-			...(Dev.supports('typingExplicit')  ? [ProductionType                    .instance] : []),
-			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate          .instance] : []),
-			...(Dev.supports('literalTemplate') ? [ProductionStringTemplate__0__List .instance] : []),
-			ProductionExpressionUnit.instance,
-			ProductionExpressionUnarySymbol.instance,
-			ProductionExpressionExponential.instance,
-			ProductionExpressionMultiplicative.instance,
-			ProductionExpressionAdditive.instance,
-			ProductionExpressionComparative.instance,
-			ProductionExpressionEquality.instance,
-			ProductionExpressionConjunctive.instance,
-			ProductionExpressionDisjunctive.instance,
-			ProductionExpressionConditional.instance,
-			ProductionExpression.instance,
-			...(Dev.supportsAll('variables', 'typingExplicit') ? [ProductionDeclarationVariable.instance] : []),
-			...(Dev.supports   ('variables')                   ? [ProductionStatementAssignment.instance] : []),
-			ProductionStatement.instance,
-			ProductionGoal.instance,
-			ProductionGoal__0__List.instance,
-		]
-		if (!this.productions.length) throw new Error('Grammar must have at least one production.')
-		this.productions.forEach((prod) => {
-			if (!prod.sequences.length) throw new Error('Grammar production must have at least one sequence.')
-			prod.sequences.forEach((seq) => {
-				if (!seq.length) throw new Error('Grammar sequence must have at least one symbol.')
-			})
-		})
+	constructor (
+		readonly productions: KleenePlus<Production>,
+		readonly goal: Production,
+	) {
 		this.rules = this.productions.map((prod) => prod.toRules()).flat()
 	}
 
