@@ -39,6 +39,7 @@ export class Parser {
 	 * Construct a new Parser object.
 	 * @param tokengenerator - A token generator produced by a Screener.
 	 * @param grammar - The syntactic grammar of the language used in parsing.
+	 * @param parsenode_map - A mapping of productions to parse node types.
 	 */
 	constructor (
 		private readonly tokengenerator: Generator<Token>,

@@ -120,10 +120,8 @@ export class SemanticNode implements Serializable {
 	 */
 	serialize(): string {
 		const attributes: Map<string, string> = new Map<string, string>()
-		if (!(this instanceof SemanticNodeGoal)) {
-			attributes.set('line', `${this.line_index + 1}`)
-			attributes.set('col' , `${this.col_index  + 1}`)
-		}
+		attributes.set('line', `${ this.line_index + 1 }`)
+		attributes.set('col',  `${ this.col_index  + 1 }`)
 		attributes.set('source', this.source)
 		Object.entries(this.attributes).forEach(([key, value]) => {
 			attributes.set(key, `${value}`)

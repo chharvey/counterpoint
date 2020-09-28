@@ -72,8 +72,8 @@ export class ParseNode implements Serializable {
 	 */
 	serialize(): string {
 		const attributes: Map<string, string> = new Map<string, string>()
-		attributes.set('line', `${this.line_index + 1}`)
-		attributes.set('col' , `${this.col_index  + 1}`)
+		attributes.set('line', `${ this.line_index + 1 }`)
+		attributes.set('col',  `${ this.col_index  + 1 }`)
 		attributes.set('source', this.source)
 		const contents: string = this.children.map((child) => child.serialize()).join('')
 		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>`

@@ -167,10 +167,8 @@ export default abstract class Token implements Serializable {
 	serialize(): string {
 		const cooked: CookValueType = this.cook()
 		const attributes: Map<string, string> = new Map<string, string>()
-		if (!(this instanceof TokenFilebound)) {
-			attributes.set('line', `${this.line_index + 1}`)
-			attributes.set('col' , `${this.col_index  + 1}`)
-		}
+		attributes.set('line', `${ this.line_index + 1 }`)
+		attributes.set('col',  `${ this.col_index  + 1 }`)
 		if (cooked !== null) {
 			attributes.set('value', cooked.toString())
 		}
