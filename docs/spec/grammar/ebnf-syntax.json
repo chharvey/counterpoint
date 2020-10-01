@@ -46,10 +46,10 @@
 		]
 	},
 	{
-		"name": "NonterminalRef",
+		"name": "Reference",
 		"defn": [
 			[{"term": "IDENTIFIER"}],
-			[{"prod": "NonterminalRef"}, {"prod": "ArgumentSet"}]
+			[{"prod": "Reference"}, {"prod": "ArgumentSet"}]
 		]
 	},
 	{
@@ -58,7 +58,7 @@
 			[{"term": "CHAR_CODE"}],
 			[{"term": "STRING"}],
 			[{"term": "CHAR_CLASS"}],
-			[{"prod": "NonterminalRef"}],
+			[{"prod": "Reference"}],
 			["'('", {"prod": "Definition"}, "')'"]
 		]
 	},

@@ -113,18 +113,18 @@
 					}
 				}
 			
-				export class ProductionNonterminalRef extends Production {
-					static readonly instance: ProductionNonterminalRef = new ProductionNonterminalRef();
+				export class ProductionReference extends Production {
+					static readonly instance: ProductionReference = new ProductionReference();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[TERMINAL.TerminalIdentifier.instance],[ProductionNonterminalRef.instance,ProductionArgumentSet.instance],
+							[TERMINAL.TerminalIdentifier.instance],[ProductionReference.instance,ProductionArgumentSet.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							random < 1/2 ? [TERMINAL.TerminalIdentifier.instance.random()] :
-							[...ProductionNonterminalRef.instance.random(),...ProductionArgumentSet.instance.random()]
+							[...ProductionReference.instance.random(),...ProductionArgumentSet.instance.random()]
 						);
 					}
 				}
@@ -133,13 +133,13 @@
 					static readonly instance: ProductionUnit = new ProductionUnit();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[TERMINAL.TerminalCharCode.instance],[TERMINAL.TerminalString.instance],[TERMINAL.TerminalCharClass.instance],[ProductionNonterminalRef.instance],['(',ProductionDefinition.instance,')'],
+							[TERMINAL.TerminalCharCode.instance],[TERMINAL.TerminalString.instance],[TERMINAL.TerminalCharClass.instance],[ProductionReference.instance],['(',ProductionDefinition.instance,')'],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/5 ? [TERMINAL.TerminalCharCode.instance.random()] : random < 2/5 ? [TERMINAL.TerminalString.instance.random()] : random < 3/5 ? [TERMINAL.TerminalCharClass.instance.random()] : random < 4/5 ? [...ProductionNonterminalRef.instance.random()] :
+							random < 1/5 ? [TERMINAL.TerminalCharCode.instance.random()] : random < 2/5 ? [TERMINAL.TerminalString.instance.random()] : random < 3/5 ? [TERMINAL.TerminalCharClass.instance.random()] : random < 4/5 ? [...ProductionReference.instance.random()] :
 							['(',...ProductionDefinition.instance.random(),')']
 						);
 					}

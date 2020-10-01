@@ -100,7 +100,7 @@ export class ParserEBNF extends Parser {
 			PRODUCTION.ProductionArgumentSet__0__CSL  .instance,
 			PRODUCTION.ProductionConditionSet         .instance,
 			PRODUCTION.ProductionConditionSet__0__CSL .instance,
-			PRODUCTION.ProductionNonterminalRef       .instance,
+			PRODUCTION.ProductionReference            .instance,
 			PRODUCTION.ProductionUnit                 .instance,
 			PRODUCTION.ProductionUnary                .instance,
 			PRODUCTION.ProductionItem                 .instance,
@@ -118,7 +118,7 @@ export class ParserEBNF extends Parser {
 			[PRODUCTION.ProductionArgumentSet__0__CSL  .instance, PARSENODE.ParseNodeArgumentSet__0__CSL],
 			[PRODUCTION.ProductionConditionSet         .instance, PARSENODE.ParseNodeConditionSet],
 			[PRODUCTION.ProductionConditionSet__0__CSL .instance, PARSENODE.ParseNodeConditionSet__0__CSL],
-			[PRODUCTION.ProductionNonterminalRef       .instance, PARSENODE.ParseNodeNonterminalRef],
+			[PRODUCTION.ProductionReference            .instance, PARSENODE.ParseNodeReference],
 			[PRODUCTION.ProductionUnit                 .instance, PARSENODE.ParseNodeUnit],
 			[PRODUCTION.ProductionUnary                .instance, PARSENODE.ParseNodeUnary],
 			[PRODUCTION.ProductionItem                 .instance, PARSENODE.ParseNodeItem],
@@ -165,7 +165,7 @@ export class Decorator {
 	decorate(node: PARSENODE.ParseNodeArgumentSet__0__CSL):  KleenePlus<SEMANTICNODE.SemanticNodeArg>;
 	decorate(node: PARSENODE.ParseNodeConditionSet):         KleenePlus<SEMANTICNODE.SemanticNodeCondition>;
 	decorate(node: PARSENODE.ParseNodeConditionSet__0__CSL): KleenePlus<SEMANTICNODE.SemanticNodeCondition>;
-	decorate(node: PARSENODE.ParseNodeNonterminalRef):       SEMANTICNODE.SemanticNodeRef;
+	decorate(node: PARSENODE.ParseNodeReference):            SEMANTICNODE.SemanticNodeRef;
 	decorate(node: PARSENODE.ParseNodeUnit):                 SEMANTICNODE.SemanticNodeExpr;
 	decorate(node: PARSENODE.ParseNodeUnary):                SEMANTICNODE.SemanticNodeExpr;
 	decorate(node: PARSENODE.ParseNodeItem):                 SEMANTICNODE.SemanticNodeExpr;
@@ -241,7 +241,7 @@ export class Decorator {
 					),
 				]
 
-		} else if (node instanceof PARSENODE.ParseNodeNonterminalRef) {
+		} else if (node instanceof PARSENODE.ParseNodeReference) {
 			return (node.children.length === 1)
 				? new SEMANTICNODE.SemanticNodeRef(
 					node,
