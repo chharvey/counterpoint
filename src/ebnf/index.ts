@@ -201,8 +201,8 @@ export class Decorator {
 			return this.decorate(node.children[1])
 
 		} else if (node instanceof PARSENODE.ParseNodeArgumentSet__0__CSL) {
-			function decorateArg(name: TOKEN.TokenIdentifier, append: TOKEN.TokenPunctuator): SEMANTICNODE.SemanticNodeArg {
-				return new SEMANTICNODE.SemanticNodeArg(name, Decorator.PARAMOPS.get(append.source)!)
+			function decorateArg(identifier: TOKEN.TokenIdentifier, append: TOKEN.TokenPunctuator): SEMANTICNODE.SemanticNodeArg {
+				return new SEMANTICNODE.SemanticNodeArg(identifier, Decorator.PARAMOPS.get(append.source)!)
 			}
 			return (node.children.length === 2)
 				? [
@@ -223,8 +223,8 @@ export class Decorator {
 			return this.decorate(node.children[1])
 
 		} else if (node instanceof PARSENODE.ParseNodeConditionSet__0__CSL) {
-			function decorateCondition(name: TOKEN.TokenIdentifier, include: TOKEN.TokenPunctuator): SEMANTICNODE.SemanticNodeCondition {
-				return new SEMANTICNODE.SemanticNodeCondition(name, Decorator.PARAMOPS.get(include.source) as boolean)
+			function decorateCondition(identifier: TOKEN.TokenIdentifier, include: TOKEN.TokenPunctuator): SEMANTICNODE.SemanticNodeCondition {
+				return new SEMANTICNODE.SemanticNodeCondition(identifier, Decorator.PARAMOPS.get(include.source) as boolean)
 			}
 			return (node.children.length === 2)
 				? [
