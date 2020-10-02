@@ -1,0 +1,42 @@
+type ProductionData = [
+	name: Text,
+	dfn: NonemptySequence<NonemptySequence<
+		| Text
+		| [term: Text]
+		| [prod: Text]
+	>>,
+];
+
+
+
+Sequence<Text> Transform(SemanticNonterminal nt) :=
+	1. *Let* `power_suffix` be the power sequence of `nt.children`, preserving order.
+		1. *Note:* A “power set” is the set of all subsets of a set.
+			For example, the power set of `["a", "b", "c"]` is
+			`[[], ["a"], ["b"], ["c"], ["a", "b"], ["a", "c"], ["b", "c"], ["a", "b", "c"]]`.
+			A “power sequence” is the ordered analog of a power set, wherein order is preserved,
+			i.e., the sequence `["a", "b"]` is not the same as the sequence `["b", "a"]`.
+	2. *Let* `names` be an empty sequence.
+	3. *For* `i` in `power_suffix`:
+		1. *Let* `suffix` be a mapping from `power_suffix[i]` indexed by `j` to `power_suffix[i][j].name`.
+		2. *Set* `suffix` to the concatenation of each element of `suffix`, separated by "__".
+		3. *Let* `name` be the concatenation of `nt.name` with `suffix`.
+		4. *Push* `name` to `names`.
+	4. *Return:* `names`.
+;
+
+
+
+Sequence<ProductionData> Transform(SemanticProduction prod) :=
+	1. *Assert:* `prod.children.count` is 2.
+	2. *Let* `names` be *UnwrapAffirm:* `Transform(prod.children.0)`
+	3. *Let* `defn` be *UnwrapAffirm:* `Transform(prod.children.1)`.
+	4. *Let* `prods` be a mapping from `names` indexed by `i` to [name= names[i], defn= defn].
+	5. *Return:* `prods`.
+;
+
+
+
+Sequence<ProductionData> Transform(SemanticGrammar grammar) :=
+	1. *Return:* `Transform(grammar.children)`.
+;

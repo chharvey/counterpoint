@@ -1203,6 +1203,34 @@ is shorthand for
 	1. ‹B›.
 ```
 
+##### For
+A step that reads «*For* ‹i› in ‹s›:» (where ‹i› is a variable and ‹s› is a sequence)
+is shorthand for the following steps:
+```
+1. *Let* `‹i›` be 0.
+2. *While* `‹i›` is less than `‹s›.count`:
+	1. Perform the substeps listed under the *For* step.
+	2. Increment `‹i›`.
+```
+
+##### Mappings
+A step that contains «a mapping of ‹x› indexed by ‹i› to ‹y›» is shorthand for a *While* loop
+that populates a new sequence, where ‹x› is a starting sequence, ‹i› is an index variable,
+and ‹y› is an expression possibly containing ‹x› and ‹i›.
+The new sequence is the result of mapping each item in the starting sequence to
+a value prescribed by the expression ‹y›.
+
+(In the example below, assume `sequence` is a sequence of RealNumber values.)
+```
+1. *Let* `result` be a mapping of `sequence` indexed by `i` to `sequence[i] + 1`.
+```
+is shorthand for
+```
+1. *Let* `result` be an empty sequence.
+2. *For* `i` in `sequence`:
+	1. Push `sequence[i] + 1` to `result`.
+```
+
 ### Runtime Instructions
 Algorithms that specify behavior to be performed at runtime are called **runtime instructions**.
 These algorithms are derived from the [static semantics](#decoration) of a program.

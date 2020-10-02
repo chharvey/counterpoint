@@ -1,4 +1,7 @@
-import type {KleenePlus} from '../types.d'
+import type {
+	KleenePlus,
+	EBNFObject,
+} from '../types.d'
 import type {
 	Token,
 } from '../lexer/'
@@ -104,25 +107,60 @@ export class SemanticNodeOpBin extends SemanticNodeOp {
 export class SemanticNodeNonterminal extends SemanticNodeEBNF {
 	constructor (
 		start_node: TOKEN.TokenIdentifier,
-		params:     readonly SemanticNodeParam[] = [],
+		private readonly params: readonly SemanticNodeParam[] = [],
 	) {
 		super(start_node, {name: start_node.source}, params)
+	}
+	/**
+	 * Expands this nonterminal in its abstract form into a set of nonterminals with concrete parameters.
+	 * E.g., expands `N<X, Y>` into `[N, N__X, N__Y, N__X__Y]`.
+	 * @returns an array of objects representing nonterminals
+	 */
+	expand(): ConcreteNonterminal[] {
+		return [...new Array(2 ** this.params.length)].map((_, count) => new ConcreteNonterminal(
+			this.source,
+			[...count.toString(2).padStart(this.params.length, '0')].map((d, i) =>
+				[this.params[i], !!+d] as const
+			).filter(([_param, b]) => !!b).map(([param, _b]) => param),
+		))
 	}
 }
 export class SemanticNodeProduction extends SemanticNodeEBNF {
 	constructor (
-		start_node:  ParseNode,
-		nonterminal: SemanticNodeNonterminal,
-		definition:  SemanticNodeExpr,
+		start_node: ParseNode,
+		private readonly nonterminal: SemanticNodeNonterminal,
+		private readonly definition:  SemanticNodeExpr,
 	) {
 		super(start_node, {}, [nonterminal, definition])
+	}
+	transform(): EBNFObject[] {
+		return this.nonterminal.expand().map((nt) => ({
+			name: nt.toString(),
+			defn: [[this.definition.source]],
+		}))
 	}
 }
 export class SemanticNodeGrammar extends SemanticNodeEBNF {
 	constructor (
-		start_node:  ParseNode,
-		productions: readonly SemanticNodeProduction[] = [],
+		start_node: ParseNode,
+		private readonly productions: readonly SemanticNodeProduction[] = [],
 	) {
 		super(start_node, {}, productions)
+	}
+	transform(): EBNFObject[] {
+		return this.productions.flatMap((prod) => prod.transform())
+	}
+}
+
+
+
+class ConcreteNonterminal {
+	constructor(
+		private name: string,
+		private suffixes: SemanticNodeParam[],
+	) {
+	}
+	toString(): string {
+		return `${ this.name }${ this.suffixes.map((s) => `__${ s.source }`).join('') }`
 	}
 }
