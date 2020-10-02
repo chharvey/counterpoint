@@ -1,9 +1,5 @@
-Decorate(NonterminalName ::= IDENTIFIER) -> SemanticNonterminal
-	:= (SemanticNonterminal);
-Decorate(NonterminalName ::= IDENTIFIER "<" Identifier__CSL ">") -> SemanticNonterminal
-	:= (SemanticNonterminal
-		...Decorate(Identifier__CSL)
-	);
+Decorate(ParameterSet ::= "<" Identifier__CSL ">") -> Sequence<SemanticParam>
+	:= Decorate(Identifier__CSL);
 
 
 
@@ -171,6 +167,16 @@ Decorate(Altern ::= Altern "|" Concat) -> SematicOp
 
 Decorate(Definition ::= Altern) -> SemanticExpr
 	:= Decorate(Altern);
+
+
+
+Decorate(NonterminalName ::= IDENTIFIER) -> SemanticNonterminal
+	:= (SemanticNonterminal[name=TokenWorth(IDENTIFIER)]);
+Decorate(NonterminalName ::= NonterminalName ParameterSet) -> SemanticNonterminal
+	:= (SemanticNonterminal[name=Decorate(NonterminalName).name]
+		Decorate(NonterminalName)
+		...Decorate(ParameterSet)
+	);
 
 
 

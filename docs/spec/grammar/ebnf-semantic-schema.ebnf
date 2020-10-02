@@ -38,8 +38,10 @@ SemanticOp[operator: ORDER | CONCAT | ALTERN]
 
 
 
-SemanticNonterminal[name: Text]
-	::= SemanticParam*;
+SemanticNonterminal[name: Text] ::=
+	| ()
+	| SemanticNonterminal SemanticParam*
+;
 
 SemanticProduction
 	::= SemanticNonterminal SemanticExpr;

@@ -17,18 +17,18 @@
 			import Production from '../parser/Production.class';
 			import * as TERMINAL from './Terminal.class';
 			
-				export class ProductionNonterminalName extends Production {
-					static readonly instance: ProductionNonterminalName = new ProductionNonterminalName();
+				export class ProductionParameterSet extends Production {
+					static readonly instance: ProductionParameterSet = new ProductionParameterSet();
 					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
 						return [
-							[TERMINAL.TerminalIdentifier.instance],[TERMINAL.TerminalIdentifier.instance,'<',ProductionIdentifier__CSL.instance,'>'],
+							['<',ProductionIdentifier__CSL.instance,'>'],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/2 ? [TERMINAL.TerminalIdentifier.instance.random()] :
-							[TERMINAL.TerminalIdentifier.instance.random(),'<',...ProductionIdentifier__CSL.instance.random(),'>']
+							
+							['<',...ProductionIdentifier__CSL.instance.random(),'>']
 						);
 					}
 				}
@@ -237,6 +237,22 @@
 						return (
 							
 							[...ProductionAltern.instance.random()]
+						);
+					}
+				}
+			
+				export class ProductionNonterminalName extends Production {
+					static readonly instance: ProductionNonterminalName = new ProductionNonterminalName();
+					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+						return [
+							[TERMINAL.TerminalIdentifier.instance],[ProductionNonterminalName.instance,ProductionParameterSet.instance],
+						];
+					}
+					random(): string[] {
+						const random: number = Math.random();
+						return (
+							random < 1/2 ? [TERMINAL.TerminalIdentifier.instance.random()] :
+							[...ProductionNonterminalName.instance.random(),...ProductionParameterSet.instance.random()]
 						);
 					}
 				}

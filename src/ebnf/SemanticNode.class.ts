@@ -55,7 +55,7 @@ export class SemanticNodeRef extends SemanticNodeExpr {
 		super(
 			start_node,
 			{name: name_},
-			(ref instanceof SemanticNodeRef) ? [ref, ...args] : args,
+			(ref instanceof SemanticNodeRef) ? [ref, ...args] : [],
 		)
 		this.name = name_
 	}
@@ -90,8 +90,21 @@ export class SemanticNodeOpBin extends SemanticNodeOp {
 	}
 }
 export class SemanticNodeNonterminal extends SemanticNodeEBNF {
-	constructor (name: TOKEN.TokenIdentifier, params: readonly SemanticNodeParam[] = []) {
-		super(name, {name: name.source}, params)
+	private readonly name: string;
+	constructor (start_node: ParseNode, nonterm: TOKEN.TokenIdentifier);
+	constructor (start_node: ParseNode, nonterm: SemanticNodeNonterminal, params: readonly SemanticNodeParam[]);
+	constructor (
+		start_node: ParseNode,
+		nonterm: TOKEN.TokenIdentifier | SemanticNodeNonterminal,
+		params: readonly SemanticNodeParam[] = [],
+	) {
+		const name_: string = (nonterm instanceof SemanticNodeNonterminal) ? nonterm.name : nonterm.source
+		super(
+			start_node,
+			{name: name_},
+			(nonterm instanceof SemanticNodeNonterminal) ? [nonterm, ...params] : [],
+		)
+		this.name = name_
 	}
 }
 export class SemanticNodeProduction extends SemanticNodeEBNF {

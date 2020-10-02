@@ -94,7 +94,7 @@ export class ScreenerEBNF extends Screener {
 export class ParserEBNF extends Parser {
 	constructor (source: string) {
 		super(new ScreenerEBNF(source).generate(), new Grammar([
-			PRODUCTION.ProductionNonterminalName      .instance,
+			PRODUCTION.ProductionParameterSet         .instance,
 			PRODUCTION.ProductionIdentifier__CSL      .instance,
 			PRODUCTION.ProductionArgumentSet          .instance,
 			PRODUCTION.ProductionArgumentSet__0__CSL  .instance,
@@ -108,11 +108,12 @@ export class ParserEBNF extends Parser {
 			PRODUCTION.ProductionConcat               .instance,
 			PRODUCTION.ProductionAltern               .instance,
 			PRODUCTION.ProductionDefinition           .instance,
+			PRODUCTION.ProductionNonterminalName      .instance,
 			PRODUCTION.ProductionProduction           .instance,
 			PRODUCTION.ProductionGrammar              .instance,
 			PRODUCTION.ProductionProduction__List     .instance,
 		], PRODUCTION.ProductionGrammar.instance), new Map<Production, typeof ParseNode>([
-			[PRODUCTION.ProductionNonterminalName      .instance, PARSENODE.ParseNodeNonterminalName],
+			[PRODUCTION.ProductionParameterSet         .instance, PARSENODE.ParseNodeParameterSet],
 			[PRODUCTION.ProductionIdentifier__CSL      .instance, PARSENODE.ParseNodeIdentifier__CSL],
 			[PRODUCTION.ProductionArgumentSet          .instance, PARSENODE.ParseNodeArgumentSet],
 			[PRODUCTION.ProductionArgumentSet__0__CSL  .instance, PARSENODE.ParseNodeArgumentSet__0__CSL],
@@ -126,6 +127,7 @@ export class ParserEBNF extends Parser {
 			[PRODUCTION.ProductionConcat               .instance, PARSENODE.ParseNodeConcat],
 			[PRODUCTION.ProductionAltern               .instance, PARSENODE.ParseNodeAltern],
 			[PRODUCTION.ProductionDefinition           .instance, PARSENODE.ParseNodeDefinition],
+			[PRODUCTION.ProductionNonterminalName      .instance, PARSENODE.ParseNodeNonterminalName],
 			[PRODUCTION.ProductionProduction           .instance, PARSENODE.ParseNodeProduction],
 			[PRODUCTION.ProductionGrammar              .instance, PARSENODE.ParseNodeGrammar],
 			[PRODUCTION.ProductionProduction__List     .instance, PARSENODE.ParseNodeProduction__List],
@@ -159,7 +161,7 @@ export class Decorator {
 	 * Similar to a node of the Semantic Tree or “decorated/abstract syntax tree”.
 	 * @returns a JSON object containing the parse node’s semantics
 	 */
-	decorate(node: PARSENODE.ParseNodeNonterminalName):      SEMANTICNODE.SemanticNodeNonterminal;
+	decorate(node: PARSENODE.ParseNodeParameterSet):         KleenePlus<SEMANTICNODE.SemanticNodeParam>;
 	decorate(node: PARSENODE.ParseNodeIdentifier__CSL):      KleenePlus<SEMANTICNODE.SemanticNodeParam>;
 	decorate(node: PARSENODE.ParseNodeArgumentSet):          KleenePlus<SEMANTICNODE.SemanticNodeArg>;
 	decorate(node: PARSENODE.ParseNodeArgumentSet__0__CSL):  KleenePlus<SEMANTICNODE.SemanticNodeArg>;
@@ -173,16 +175,14 @@ export class Decorator {
 	decorate(node: PARSENODE.ParseNodeConcat):               SEMANTICNODE.SemanticNodeExpr;
 	decorate(node: PARSENODE.ParseNodeAltern):               SEMANTICNODE.SemanticNodeExpr;
 	decorate(node: PARSENODE.ParseNodeDefinition):           SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeNonterminalName):      SEMANTICNODE.SemanticNodeNonterminal;
 	decorate(node: PARSENODE.ParseNodeProduction):           SEMANTICNODE.SemanticNodeProduction;
 	decorate(node: PARSENODE.ParseNodeGrammar):              SEMANTICNODE.SemanticNodeGrammar;
 	decorate(node: PARSENODE.ParseNodeProduction__List):     KleenePlus<SEMANTICNODE.SemanticNodeProduction>;
 	decorate(node: ParseNode): SEMANTICNODE.SemanticNodeEBNF | readonly SEMANTICNODE.SemanticNodeEBNF[];
 	decorate(node: ParseNode): SEMANTICNODE.SemanticNodeEBNF | readonly SEMANTICNODE.SemanticNodeEBNF[] {
-		if (node instanceof PARSENODE.ParseNodeNonterminalName) {
-			return new SEMANTICNODE.SemanticNodeNonterminal(
-				node.children[0] as TOKEN.TokenIdentifier,
-				(node.children.length === 4) ? this.decorate(node.children[2]) : [],
-			)
+		if (node instanceof PARSENODE.ParseNodeParameterSet) {
+			return this.decorate(node.children[1])
 
 		} else if (node instanceof PARSENODE.ParseNodeIdentifier__CSL) {
 			function decorateParam(identifier: TOKEN.TokenIdentifier): SEMANTICNODE.SemanticNodeParam {
@@ -314,6 +314,18 @@ export class Decorator {
 
 		} else if (node instanceof PARSENODE.ParseNodeDefinition) {
 			return this.decorate(node.children[0])
+
+		} else if (node instanceof PARSENODE.ParseNodeNonterminalName) {
+			return (node.children.length === 1)
+				? new SEMANTICNODE.SemanticNodeNonterminal(
+					node,
+					node.children[0] as TOKEN.TokenIdentifier,
+				)
+				: new SEMANTICNODE.SemanticNodeNonterminal(
+					node,
+					this.decorate(node.children[0]),
+					this.decorate(node.children[1]),
+				)
 
 		} else if (node instanceof PARSENODE.ParseNodeProduction) {
 			return new SEMANTICNODE.SemanticNodeProduction(

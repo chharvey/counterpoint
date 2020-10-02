@@ -11,9 +11,9 @@
 			import type Token from '../lexer/Token.class';
 			import {ParseNode} from '../parser/ParseNode.class';
 			
-				export class ParseNodeNonterminalName extends ParseNode {
+				export class ParseNodeParameterSet extends ParseNode {
 					declare children:
-						readonly [Token] | readonly [Token,Token,ParseNodeIdentifier__CSL,Token]
+						readonly [Token,ParseNodeIdentifier__CSL,Token]
 					;
 				}
 			
@@ -92,6 +92,12 @@
 				export class ParseNodeDefinition extends ParseNode {
 					declare children:
 						readonly [ParseNodeAltern]
+					;
+				}
+			
+				export class ParseNodeNonterminalName extends ParseNode {
+					declare children:
+						readonly [Token] | readonly [ParseNodeNonterminalName,ParseNodeParameterSet]
 					;
 				}
 			

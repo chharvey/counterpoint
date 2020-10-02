@@ -1,9 +1,8 @@
 [
 	{
-		"name": "NonterminalName",
+		"name": "ParameterSet",
 		"defn": [
-			[{"term": "IDENTIFIER"}],
-			[{"term": "IDENTIFIER"}, "'<'", {"prod": "Identifier__CSL"}, "'>'"]
+			["'<'", {"prod": "Identifier__CSL"}, "'>'"]
 		]
 	},
 	{
@@ -108,6 +107,13 @@
 		"name": "Definition",
 		"defn": [
 			[{"prod": "Altern"}]
+		]
+	},
+	{
+		"name": "NonterminalName",
+		"defn": [
+			[{"term": "IDENTIFIER"}],
+			[{"prod": "NonterminalName"}, {"prod": "ParameterSet"}]
 		]
 	},
 	{

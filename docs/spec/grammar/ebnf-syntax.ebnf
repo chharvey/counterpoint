@@ -5,9 +5,9 @@ CHAR_CLASS  ::= [./ebnf-lexicon.ebnf#CharClass];
 
 
 
-NonterminalName ::= IDENTIFIER ("<" IDENTIFIER#                     ">")?;
-ArgumentSet     ::=             "<" (("+" | "-" | "?") IDENTIFIER)# ">"  ;
-ConditionSet    ::=             "<" (IDENTIFIER ("+" | "-")      )# ">"  ;
+ParameterSet ::= "<"                    IDENTIFIER             # ">";
+ArgumentSet  ::= "<" (("+" | "-" | "?") IDENTIFIER            )# ">";
+ConditionSet ::= "<" (                  IDENTIFIER ("+" | "-"))# ">";
 
 
 
@@ -46,6 +46,12 @@ Altern ::= ( Altern "|"  )? Concat;
 
 Definition
 	::= Altern;
+
+
+
+NonterminalName ::=
+	| IDENTIFIER
+	| NonterminalName ParameterSet;
 
 
 
