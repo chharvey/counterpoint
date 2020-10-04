@@ -1213,6 +1213,14 @@ is shorthand for the following steps:
 	2. Increment `‹i›`.
 ```
 
+##### Spread
+An algorithm step that contains «...‹s›» (where ‹s› is a sequence)
+is shorthand for the following steps:
+```
+1. *For* `i` in ‹s›:
+	1. Perform the step in which «...» appeared, replacing `...‹s›` with `‹s›[i]`.
+```
+
 ##### Mappings
 A step that contains «a mapping of ‹x› indexed by ‹i› to ‹y›» is shorthand for a *While* loop
 that populates a new sequence, where ‹x› is a starting sequence, ‹i› is an index variable,
@@ -1229,6 +1237,23 @@ is shorthand for
 1. *Let* `result` be an empty sequence.
 2. *For* `i` in `sequence`:
 	1. Push `sequence[i] + 1` to `result`.
+```
+
+##### Flattened Mappings
+A step that contains «a flattened mapping of ‹x› indexed by ‹i› to ‹y›» is similar to a [Mapping](#mappings) step,
+except that the expression ‹y› must be a sequence, and the resulting sequence,
+rather than being a sequence of sequences, is instead a sequence of values perscribed by items of ‹y›.
+
+(In the example below, assume `sequence` is a sequence of RealNumber values.)
+```
+1. *Let* `result` be a flattened mapping of `sequence` indexed by `i` to `[sequence[i], sequence[i] + 1]`.
+```
+is shorthand for
+```
+1. *Let* `map` be a mapping of `sequence` indexed by `i` to `[sequence[i], sequence[i] + 1]`.
+2. *Let* `result` be an empty sequence.
+3. *For* `i` in `map`:
+	1. Push `...map` to `result`.
 ```
 
 ### Runtime Instructions

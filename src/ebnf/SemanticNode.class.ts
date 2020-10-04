@@ -13,6 +13,15 @@ import type * as TOKEN from './Token.class'
 
 
 
+function NonemptyArray_flatMap<T, U>(arr: KleenePlus<T>, callback: (it: T) => KleenePlus<U>): KleenePlus<U> {
+	return arr.flatMap((it) => callback(it)) as readonly U[] as KleenePlus<U>
+}
+/** @temp */ function toDefn(op: SemanticNodeExpr): EBNFObject['defn'] {
+	return (op instanceof SemanticNodeOpBin) ? op.expand() : [[op.source]]
+}
+
+
+
 export class SemanticNodeEBNF extends SemanticNode {
 	constructor (
 		start_node: ParseNode | Token,
@@ -97,11 +106,30 @@ export class SemanticNodeOpUn extends SemanticNodeOp {
 export class SemanticNodeOpBin extends SemanticNodeOp {
 	constructor (
 		start_node: ParseNode,
-		operator:   'order' | 'concat' | 'altern',
-		operand0:   SemanticNodeExpr,
-		operand1:   SemanticNodeExpr,
+		private readonly operator: 'order' | 'concat' | 'altern',
+		private readonly operand0: SemanticNodeExpr,
+		private readonly operand1: SemanticNodeExpr,
 	) {
 		super(start_node, operator, [operand0, operand1])
+	}
+	expand(): EBNFObject['defn'] {
+		return new Map<string, EBNFObject['defn']>([
+			['order', NonemptyArray_flatMap(toDefn(this.operand0), (seq0) =>
+				NonemptyArray_flatMap(toDefn(this.operand1), (seq1) => [
+					[...seq0, ...seq1],
+				])
+			)],
+			['concat', NonemptyArray_flatMap(toDefn(this.operand0), (seq0) =>
+				NonemptyArray_flatMap(toDefn(this.operand1), (seq1) => [
+					[...seq0, ...seq1],
+					[...seq1, ...seq0],
+				])
+			)],
+			['altern', [
+				...toDefn(this.operand0),
+				...toDefn(this.operand1),
+			]],
+		]).get(this.operator)!
 	}
 }
 export class SemanticNodeNonterminal extends SemanticNodeEBNF {
@@ -136,7 +164,7 @@ export class SemanticNodeProduction extends SemanticNodeEBNF {
 	transform(): EBNFObject[] {
 		return this.nonterminal.expand().map((nt) => ({
 			name: nt.toString(),
-			defn: [[this.definition.source]],
+			defn: toDefn(this.definition),
 		}))
 	}
 }

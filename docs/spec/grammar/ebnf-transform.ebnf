@@ -1,11 +1,46 @@
 type ProductionData = [
 	name: Text,
-	dfn: NonemptySequence<NonemptySequence<
-		| Text
-		| [term: Text]
-		| [prod: Text]
-	>>,
+	defn: ChoiceData,
 ];
+type ChoiceData = NonemptySequence<NonemptySequence<
+	| Text
+	| [term: Text]
+	| [prod: Text]
+>>;
+
+
+
+ChoiceData Transform(SemanticOp[operator: ORDER] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be *UnwrapAffirm:* Transform(expr.children.0).
+	3. *Let* `operand1` be *UnwrapAffirm:* Transform(expr.children.1).
+	4. *Return:* a flattened mapping from `operand0` indexed by `i` to
+		a flattened mapping from `operand1` indexed by `j` to [
+			[...operand0[i]],
+			[...operand1[j]],
+		].
+;
+
+ChoiceData Transform(SemanticOp[operator: CONCAT] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be *UnwrapAffirm:* Transform(expr.children.0).
+	3. *Let* `operand1` be *UnwrapAffirm:* Transform(expr.children.1).
+	4. *Return:* a flattened mapping from `operand0` indexed by `i` to
+		a flattened mapping from `operand1` indexed by `j` to [
+			[...operand0[i], ...operand1[j]],
+			[...operand1[j], ...operand0[i]],
+		].
+;
+
+ChoiceData Transform(SemanticOp[operator: ALTERN] expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `operand0` be *UnwrapAffirm:* Transform(expr.children.0).
+	3. *Let* `operand1` be *UnwrapAffirm:* Transform(expr.children.1).
+	4. *Return:* a flattened mapping from `operand0` indexed by `i` to
+		a flattened mapping from `operand1` indexed by `j` to [
+			[...operand0[i], ...operand1[j]],
+		].
+;
 
 
 
