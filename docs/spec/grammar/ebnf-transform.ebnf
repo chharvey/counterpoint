@@ -10,6 +10,67 @@ type ChoiceData = NonemptySequence<NonemptySequence<
 
 
 
+ChoiceData Transform(SemanticOp[operator: PLUS] expr, SemanticNonterminal nt, Sequence<ProductionData> data) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `operand` be *UnwrapAffirm:* Transform(expr.children.0, nt, data).
+	3. *Let* `newname` be the concatenation of `nt.source` with "_‹n›_List", where ‹n› is the nth subexpression of `nt`.
+	4. *Let* `flatmap` be a flattened mapping from `operand` indexed by `i` to [
+			[                 ...operand[i]],
+			[[prod= newname], ...operand[i]],
+		].
+	5. Push [
+			name= newname,
+			defn= flatmap,
+		] to `prods`.
+	6. *Return:* [
+		[[prod= newname]],
+	].
+;
+
+ChoiceData Transform(SemanticOp[operator: STAR] expr, SemanticNonterminal nt, Sequence<ProductionData> data) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `operand` be *UnwrapAffirm:* Transform(expr.children.0, nt, data).
+	3. *Let* `newname` be the concatenation of `nt.source` with "_‹n›_List", where ‹n› is the nth subexpression of `nt`.
+	4. *Let* `flatmap` be a flattened mapping from `operand` indexed by `i` to [
+			[                 ...operand[i]],
+			[[prod= newname], ...operand[i]],
+		].
+	5. Push [
+			name= newname,
+			defn= flatmap,
+		] to `prods`.
+	6. *Return:* [
+		[""],
+		[[prod= newname]],
+	].
+;
+
+ChoiceData Transform(SemanticOp[operator: HASH] expr, SemanticNonterminal nt, Sequence<ProductionData> data) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `operand` be *UnwrapAffirm:* Transform(expr.children.0, nt, data).
+	3. *Let* `newname` be the concatenation of `nt.source` with "_‹n›_List", where ‹n› is the nth subexpression of `nt`.
+	4. *Let* `flatmap` be a flattened mapping from `operand` indexed by `i` to [
+			[                      ...operand[i]],
+			[[prod= newname], ",", ...operand[i]],
+		].
+	5. Push [
+			name= newname,
+			defn= flatmap,
+		] to `prods`.
+	6. *Return:* [
+		[[prod= newname]],
+	].
+;
+
+ChoiceData Transform(SemanticOp[operator: OPT] expr, SemanticNonterminal nt, Sequence<ProductionData> data) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `operand` be *UnwrapAffirm:* Transform(expr.children.0, nt, data).
+	3. *Return:* [
+		[""],
+		...operand,
+	].
+;
+
 ChoiceData Transform(SemanticOp[operator: ORDER] expr, SemanticNonterminal nt, Sequence<ProductionData> data) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *UnwrapAffirm:* Transform(expr.children.0, nt, data).
