@@ -1,4 +1,4 @@
-import type {KleenePlus} from '../types.d'
+import type {NonemptyArray} from '../types.d'
 import type {
 	Filebound,
 	Punctuator,
@@ -34,7 +34,7 @@ export default class Grammar {
 	 * @param goal        The goal production of this Grammar.
 	 */
 	constructor (
-		readonly productions: KleenePlus<Production>,
+		readonly productions: NonemptyArray<Production>,
 		readonly goal: Production,
 	) {
 		this.rules = this.productions.map((prod) => prod.toRules()).flat()

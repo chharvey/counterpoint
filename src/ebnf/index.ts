@@ -1,4 +1,4 @@
-import type {KleenePlus} from '../types.d'
+import type {NonemptyArray} from '../types.d'
 import {
 	Scanner,
 	Lexer,
@@ -161,12 +161,12 @@ export class Decorator {
 	 * Similar to a node of the Semantic Tree or “decorated/abstract syntax tree”.
 	 * @returns a JSON object containing the parse node’s semantics
 	 */
-	decorate(node: PARSENODE.ParseNodeParameterSet):         KleenePlus<SEMANTICNODE.SemanticNodeParam>;
-	decorate(node: PARSENODE.ParseNodeIdentifier__CSL):      KleenePlus<SEMANTICNODE.SemanticNodeParam>;
-	decorate(node: PARSENODE.ParseNodeArgumentSet):          KleenePlus<SEMANTICNODE.SemanticNodeArg>;
-	decorate(node: PARSENODE.ParseNodeArgumentSet__0__CSL):  KleenePlus<SEMANTICNODE.SemanticNodeArg>;
-	decorate(node: PARSENODE.ParseNodeConditionSet):         KleenePlus<SEMANTICNODE.SemanticNodeCondition>;
-	decorate(node: PARSENODE.ParseNodeConditionSet__0__CSL): KleenePlus<SEMANTICNODE.SemanticNodeCondition>;
+	decorate(node: PARSENODE.ParseNodeParameterSet):         NonemptyArray<SEMANTICNODE.SemanticNodeParam>;
+	decorate(node: PARSENODE.ParseNodeIdentifier__CSL):      NonemptyArray<SEMANTICNODE.SemanticNodeParam>;
+	decorate(node: PARSENODE.ParseNodeArgumentSet):          NonemptyArray<SEMANTICNODE.SemanticNodeArg>;
+	decorate(node: PARSENODE.ParseNodeArgumentSet__0__CSL):  NonemptyArray<SEMANTICNODE.SemanticNodeArg>;
+	decorate(node: PARSENODE.ParseNodeConditionSet):         NonemptyArray<SEMANTICNODE.SemanticNodeCondition>;
+	decorate(node: PARSENODE.ParseNodeConditionSet__0__CSL): NonemptyArray<SEMANTICNODE.SemanticNodeCondition>;
 	decorate(node: PARSENODE.ParseNodeNonterminalRef):       SEMANTICNODE.SemanticNodeRef;
 	decorate(node: PARSENODE.ParseNodeUnit):                 SEMANTICNODE.SemanticNodeExpr;
 	decorate(node: PARSENODE.ParseNodeUnary):                SEMANTICNODE.SemanticNodeExpr;
@@ -178,7 +178,7 @@ export class Decorator {
 	decorate(node: PARSENODE.ParseNodeNonterminalName):      SEMANTICNODE.SemanticNodeNonterminal;
 	decorate(node: PARSENODE.ParseNodeProduction):           SEMANTICNODE.SemanticNodeProduction;
 	decorate(node: PARSENODE.ParseNodeGrammar):              SEMANTICNODE.SemanticNodeGrammar;
-	decorate(node: PARSENODE.ParseNodeProduction__List):     KleenePlus<SEMANTICNODE.SemanticNodeProduction>;
+	decorate(node: PARSENODE.ParseNodeProduction__List):     NonemptyArray<SEMANTICNODE.SemanticNodeProduction>;
 	decorate(node: ParseNode): SEMANTICNODE.SemanticNodeEBNF | readonly SEMANTICNODE.SemanticNodeEBNF[];
 	decorate(node: ParseNode): SEMANTICNODE.SemanticNodeEBNF | readonly SEMANTICNODE.SemanticNodeEBNF[] {
 		if (node instanceof PARSENODE.ParseNodeParameterSet) {

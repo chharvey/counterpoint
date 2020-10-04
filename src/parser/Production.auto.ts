@@ -9,7 +9,7 @@
 		
 			
 			import type {
-				KleenePlus,
+				NonemptyArray,
 			} from '../types.d';
 			import type {
 				GrammarSymbol,
@@ -19,7 +19,7 @@
 			
 				export class ProductionPrimitiveLiteral extends Production {
 					static readonly instance: ProductionPrimitiveLiteral = new ProductionPrimitiveLiteral();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							['null'],['false'],['true'],[TERMINAL.TerminalInteger.instance],[TERMINAL.TerminalFloat.instance],[TERMINAL.TerminalString.instance],
 						];
@@ -35,7 +35,7 @@
 			
 				export class ProductionTypeKeyword extends Production {
 					static readonly instance: ProductionTypeKeyword = new ProductionTypeKeyword();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							['bool'],['int'],['float'],['obj'],
 						];
@@ -51,7 +51,7 @@
 			
 				export class ProductionTypeUnit extends Production {
 					static readonly instance: ProductionTypeUnit = new ProductionTypeUnit();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionPrimitiveLiteral.instance],[ProductionTypeKeyword.instance],['(',ProductionType.instance,')'],
 						];
@@ -67,7 +67,7 @@
 			
 				export class ProductionTypeUnarySymbol extends Production {
 					static readonly instance: ProductionTypeUnarySymbol = new ProductionTypeUnarySymbol();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionTypeUnit.instance],[ProductionTypeUnarySymbol.instance,'!'],
 						];
@@ -83,7 +83,7 @@
 			
 				export class ProductionTypeIntersection extends Production {
 					static readonly instance: ProductionTypeIntersection = new ProductionTypeIntersection();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionTypeUnarySymbol.instance],[ProductionTypeIntersection.instance,'&',ProductionTypeUnarySymbol.instance],
 						];
@@ -99,7 +99,7 @@
 			
 				export class ProductionTypeUnion extends Production {
 					static readonly instance: ProductionTypeUnion = new ProductionTypeUnion();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionTypeIntersection.instance],[ProductionTypeUnion.instance,'|',ProductionTypeIntersection.instance],
 						];
@@ -115,7 +115,7 @@
 			
 				export class ProductionType extends Production {
 					static readonly instance: ProductionType = new ProductionType();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionTypeUnion.instance],
 						];
@@ -131,7 +131,7 @@
 			
 				export class ProductionStringTemplate extends Production {
 					static readonly instance: ProductionStringTemplate = new ProductionStringTemplate();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[TERMINAL.TerminalTemplateFull.instance],[TERMINAL.TerminalTemplateHead.instance,TERMINAL.TerminalTemplateTail.instance],[TERMINAL.TerminalTemplateHead.instance,ProductionExpression.instance,TERMINAL.TerminalTemplateTail.instance],[TERMINAL.TerminalTemplateHead.instance,ProductionStringTemplate__0__List.instance,TERMINAL.TerminalTemplateTail.instance],[TERMINAL.TerminalTemplateHead.instance,ProductionExpression.instance,ProductionStringTemplate__0__List.instance,TERMINAL.TerminalTemplateTail.instance],
 						];
@@ -147,7 +147,7 @@
 			
 				export class ProductionStringTemplate__0__List extends Production {
 					static readonly instance: ProductionStringTemplate__0__List = new ProductionStringTemplate__0__List();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[TERMINAL.TerminalTemplateMiddle.instance],[TERMINAL.TerminalTemplateMiddle.instance,ProductionExpression.instance],[ProductionStringTemplate__0__List.instance,TERMINAL.TerminalTemplateMiddle.instance],[ProductionStringTemplate__0__List.instance,TERMINAL.TerminalTemplateMiddle.instance,ProductionExpression.instance],
 						];
@@ -163,7 +163,7 @@
 			
 				export class ProductionExpressionUnit extends Production {
 					static readonly instance: ProductionExpressionUnit = new ProductionExpressionUnit();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[TERMINAL.TerminalIdentifier.instance],[ProductionPrimitiveLiteral.instance],[ProductionStringTemplate.instance],['(',ProductionExpression.instance,')'],
 						];
@@ -179,7 +179,7 @@
 			
 				export class ProductionExpressionUnarySymbol extends Production {
 					static readonly instance: ProductionExpressionUnarySymbol = new ProductionExpressionUnarySymbol();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionExpressionUnit.instance],['!',ProductionExpressionUnarySymbol.instance],['?',ProductionExpressionUnarySymbol.instance],['+',ProductionExpressionUnarySymbol.instance],['-',ProductionExpressionUnarySymbol.instance],
 						];
@@ -195,7 +195,7 @@
 			
 				export class ProductionExpressionExponential extends Production {
 					static readonly instance: ProductionExpressionExponential = new ProductionExpressionExponential();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionExpressionUnarySymbol.instance],[ProductionExpressionUnarySymbol.instance,'^',ProductionExpressionExponential.instance],
 						];
@@ -211,7 +211,7 @@
 			
 				export class ProductionExpressionMultiplicative extends Production {
 					static readonly instance: ProductionExpressionMultiplicative = new ProductionExpressionMultiplicative();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionExpressionExponential.instance],[ProductionExpressionMultiplicative.instance,'*',ProductionExpressionExponential.instance],[ProductionExpressionMultiplicative.instance,'/',ProductionExpressionExponential.instance],
 						];
@@ -227,7 +227,7 @@
 			
 				export class ProductionExpressionAdditive extends Production {
 					static readonly instance: ProductionExpressionAdditive = new ProductionExpressionAdditive();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionExpressionMultiplicative.instance],[ProductionExpressionAdditive.instance,'+',ProductionExpressionMultiplicative.instance],[ProductionExpressionAdditive.instance,'-',ProductionExpressionMultiplicative.instance],
 						];
@@ -243,7 +243,7 @@
 			
 				export class ProductionExpressionComparative extends Production {
 					static readonly instance: ProductionExpressionComparative = new ProductionExpressionComparative();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionExpressionAdditive.instance],[ProductionExpressionComparative.instance,'<',ProductionExpressionAdditive.instance],[ProductionExpressionComparative.instance,'>',ProductionExpressionAdditive.instance],[ProductionExpressionComparative.instance,'<=',ProductionExpressionAdditive.instance],[ProductionExpressionComparative.instance,'>=',ProductionExpressionAdditive.instance],[ProductionExpressionComparative.instance,'!<',ProductionExpressionAdditive.instance],[ProductionExpressionComparative.instance,'!>',ProductionExpressionAdditive.instance],
 						];
@@ -259,7 +259,7 @@
 			
 				export class ProductionExpressionEquality extends Production {
 					static readonly instance: ProductionExpressionEquality = new ProductionExpressionEquality();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionExpressionComparative.instance],[ProductionExpressionEquality.instance,'is',ProductionExpressionComparative.instance],[ProductionExpressionEquality.instance,'isnt',ProductionExpressionComparative.instance],[ProductionExpressionEquality.instance,'==',ProductionExpressionComparative.instance],[ProductionExpressionEquality.instance,'!=',ProductionExpressionComparative.instance],
 						];
@@ -275,7 +275,7 @@
 			
 				export class ProductionExpressionConjunctive extends Production {
 					static readonly instance: ProductionExpressionConjunctive = new ProductionExpressionConjunctive();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionExpressionEquality.instance],[ProductionExpressionConjunctive.instance,'&&',ProductionExpressionEquality.instance],[ProductionExpressionConjunctive.instance,'!&',ProductionExpressionEquality.instance],
 						];
@@ -291,7 +291,7 @@
 			
 				export class ProductionExpressionDisjunctive extends Production {
 					static readonly instance: ProductionExpressionDisjunctive = new ProductionExpressionDisjunctive();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionExpressionConjunctive.instance],[ProductionExpressionDisjunctive.instance,'||',ProductionExpressionConjunctive.instance],[ProductionExpressionDisjunctive.instance,'!|',ProductionExpressionConjunctive.instance],
 						];
@@ -307,7 +307,7 @@
 			
 				export class ProductionExpressionConditional extends Production {
 					static readonly instance: ProductionExpressionConditional = new ProductionExpressionConditional();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							['if',ProductionExpression.instance,'then',ProductionExpression.instance,'else',ProductionExpression.instance],
 						];
@@ -323,7 +323,7 @@
 			
 				export class ProductionExpression extends Production {
 					static readonly instance: ProductionExpression = new ProductionExpression();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionExpressionDisjunctive.instance],[ProductionExpressionConditional.instance],
 						];
@@ -339,7 +339,7 @@
 			
 				export class ProductionDeclarationVariable extends Production {
 					static readonly instance: ProductionDeclarationVariable = new ProductionDeclarationVariable();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							['let',TERMINAL.TerminalIdentifier.instance,':',ProductionType.instance,'=',ProductionExpression.instance,';'],['let','unfixed',TERMINAL.TerminalIdentifier.instance,':',ProductionType.instance,'=',ProductionExpression.instance,';'],
 						];
@@ -355,7 +355,7 @@
 			
 				export class ProductionStatementAssignment extends Production {
 					static readonly instance: ProductionStatementAssignment = new ProductionStatementAssignment();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[TERMINAL.TerminalIdentifier.instance,'=',ProductionExpression.instance,';'],
 						];
@@ -371,7 +371,7 @@
 			
 				export class ProductionStatement extends Production {
 					static readonly instance: ProductionStatement = new ProductionStatement();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[';'],[ProductionExpression.instance,';'],[ProductionDeclarationVariable.instance],[ProductionStatementAssignment.instance],
 						];
@@ -387,7 +387,7 @@
 			
 				export class ProductionGoal extends Production {
 					static readonly instance: ProductionGoal = new ProductionGoal();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							['\u0002','\u0003'],['\u0002',ProductionGoal__0__List.instance,'\u0003'],
 						];
@@ -403,7 +403,7 @@
 			
 				export class ProductionGoal__0__List extends Production {
 					static readonly instance: ProductionGoal__0__List = new ProductionGoal__0__List();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							[ProductionStatement.instance],[ProductionGoal__0__List.instance,ProductionStatement.instance],
 						];

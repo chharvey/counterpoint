@@ -1,12 +1,12 @@
-export type KleenePlus<T> = readonly [T, ...readonly T[]]
+export type NonemptyArray<T> = readonly [T, ...readonly T[]]
 
 
 export type EBNFObject = {
 	name: string,
-	defn: KleenePlus<EBNFSequence>,
+	defn: NonemptyArray<EBNFSequence>,
 }
 
-export type EBNFSequence = KleenePlus<EBNFItem>
+export type EBNFSequence = NonemptyArray<EBNFItem>
 
 export type EBNFItem =
 	| string

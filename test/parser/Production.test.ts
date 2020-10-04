@@ -20,7 +20,7 @@ describe('Production', () => {
 				]
 			}])), Util.dedent(`
 				import type {
-					KleenePlus,
+					NonemptyArray,
 				} from '../types.d';
 				import type {
 					GrammarSymbol,
@@ -30,7 +30,7 @@ describe('Production', () => {
 
 					export class ProductionExpressionUnit extends Production {
 						static readonly instance: ProductionExpressionUnit = new ProductionExpressionUnit();
-						get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+						get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 							return [
 								${ `
 									[TERMINAL.TerminalIdentifier.instance],

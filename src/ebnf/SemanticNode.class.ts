@@ -1,4 +1,4 @@
-import type {KleenePlus} from '../types.d'
+import type {NonemptyArray} from '../types.d'
 import type {
 	Token,
 } from '../lexer/'
@@ -66,7 +66,7 @@ export class SemanticNodeItem extends SemanticNodeExpr {
 	}
 }
 abstract class SemanticNodeOp extends SemanticNodeExpr {
-	constructor (start_node: ParseNode, operator: string, operands: KleenePlus<SemanticNodeExpr>) {
+	constructor (start_node: ParseNode, operator: string, operands: NonemptyArray<SemanticNodeExpr>) {
 		super(start_node, {operator}, operands)
 	}
 }

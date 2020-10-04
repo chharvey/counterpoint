@@ -1,5 +1,5 @@
 import type {
-	KleenePlus,
+	NonemptyArray,
 	EBNFObject,
 	EBNFItem,
 } from '../types.d'
@@ -35,7 +35,7 @@ export default abstract class Production {
 		}
 		return `
 			import type {
-				KleenePlus,
+				NonemptyArray,
 			} from '../types.d';
 			import type {
 				GrammarSymbol,
@@ -45,7 +45,7 @@ export default abstract class Production {
 			${ jsons.map((json) => `
 				export class Production${ json.name } extends Production {
 					static readonly instance: Production${ json.name } = new Production${ json.name }();
-					get sequences(): KleenePlus<KleenePlus<GrammarSymbol>> {
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
 							${ json.defn.map((seq) => `[${ seq.map((it) =>
 								(typeof it === 'string') ? it :
@@ -78,7 +78,7 @@ export default abstract class Production {
 	/**
 	 * A set of sequences of parse symbols (terminals and/or nonterminals) in this production.
 	 */
-	abstract get sequences(): KleenePlus<KleenePlus<GrammarSymbol>>;
+	abstract get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>>;
 
 	/**
 	 * Generate a random instance of this Production.
