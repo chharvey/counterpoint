@@ -16,8 +16,8 @@ import type * as TOKEN from './Token.class'
 function NonemptyArray_flatMap<T, U>(arr: KleenePlus<T>, callback: (it: T) => KleenePlus<U>): KleenePlus<U> {
 	return arr.flatMap((it) => callback(it)) as readonly U[] as KleenePlus<U>
 }
-/** @temp */ function toDefn(op: SemanticNodeExpr): EBNFObject['defn'] {
-	return (op instanceof SemanticNodeOpBin) ? op.expand() : [[op.source]]
+/** @temp */ function toDefn(op: SemanticNodeExpr, nt: SemanticNodeNonterminal, data: EBNFObject[]): EBNFObject['defn'] {
+	return (op instanceof SemanticNodeOpBin) ? op.expand(nt, data) : [[op.source]]
 }
 
 
@@ -112,24 +112,24 @@ export class SemanticNodeOpBin extends SemanticNodeOp {
 	) {
 		super(start_node, operator, [operand0, operand1])
 	}
-	expand(): EBNFObject['defn'] {
-		return new Map<string, EBNFObject['defn']>([
-			['order', NonemptyArray_flatMap(toDefn(this.operand0), (seq0) =>
-				NonemptyArray_flatMap(toDefn(this.operand1), (seq1) => [
+	expand(nt: SemanticNodeNonterminal, data: EBNFObject[]): EBNFObject['defn'] {
+		return new Map<string, () => EBNFObject['defn']>([
+			['order', () => NonemptyArray_flatMap(toDefn(this.operand0, nt, data), (seq0) =>
+				NonemptyArray_flatMap(toDefn(this.operand1, nt, data), (seq1) => [
 					[...seq0, ...seq1],
 				])
 			)],
-			['concat', NonemptyArray_flatMap(toDefn(this.operand0), (seq0) =>
-				NonemptyArray_flatMap(toDefn(this.operand1), (seq1) => [
+			['concat', () => NonemptyArray_flatMap(toDefn(this.operand0, nt, data), (seq0) =>
+				NonemptyArray_flatMap(toDefn(this.operand1, nt, data), (seq1) => [
 					[...seq0, ...seq1],
 					[...seq1, ...seq0],
 				])
 			)],
-			['altern', [
-				...toDefn(this.operand0),
-				...toDefn(this.operand1),
+			['altern', () => [
+				...toDefn(this.operand0, nt, data),
+				...toDefn(this.operand1, nt, data),
 			]],
-		]).get(this.operator)!
+		]).get(this.operator)!()
 	}
 }
 export class SemanticNodeNonterminal extends SemanticNodeEBNF {
@@ -162,10 +162,12 @@ export class SemanticNodeProduction extends SemanticNodeEBNF {
 		super(start_node, {}, [nonterminal, definition])
 	}
 	transform(): EBNFObject[] {
-		return this.nonterminal.expand().map((nt) => ({
-			name: nt.toString(),
-			defn: toDefn(this.definition),
-		}))
+		const productions_data: EBNFObject[] = []
+		productions_data.push(...this.nonterminal.expand().map((n) => ({
+			name: n.toString(),
+			defn: toDefn(this.definition, this.nonterminal, productions_data),
+		})))
+		return productions_data
 	}
 }
 export class SemanticNodeGrammar extends SemanticNodeEBNF {
