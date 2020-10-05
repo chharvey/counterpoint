@@ -186,8 +186,8 @@ export default class Validator {
 	decorate(node: PARSENODE.ParseNodeTypeIntersection):         SemanticNodeType;
 	decorate(node: PARSENODE.ParseNodeTypeUnion):                SemanticNodeType;
 	decorate(node: PARSENODE.ParseNodeType):                     SemanticNodeType;
+	decorate(node: PARSENODE.ParseNodeStringTemplate__1__List):  TemplatePartialType;
 	decorate(node: PARSENODE.ParseNodeStringTemplate):           SemanticNodeTemplate;
-	decorate(node: PARSENODE.ParseNodeStringTemplate__0__List):  TemplatePartialType;
 	decorate(node: PARSENODE.ParseNodeExpressionUnit):           SemanticNodeExpression;
 	decorate(node: PARSENODE.ParseNodeExpressionUnarySymbol):    SemanticNodeExpression;
 	decorate(node: PARSENODE.ParseNodeExpressionExponential):    SemanticNodeExpression;
@@ -202,8 +202,8 @@ export default class Validator {
 	decorate(node: PARSENODE.ParseNodeDeclarationVariable):      SemanticNodeDeclarationVariable;
 	decorate(node: PARSENODE.ParseNodeStatementAssignment):      SemanticNodeAssignment;
 	decorate(node: PARSENODE.ParseNodeStatement):                SemanticStatementType;
-	decorate(node: PARSENODE.ParseNodeGoal):                     SemanticNodeGoal;
 	decorate(node: PARSENODE.ParseNodeGoal__0__List):            SemanticStatementType[];
+	decorate(node: PARSENODE.ParseNodeGoal):                     SemanticNodeGoal;
 	decorate(node: ParseNode): SemanticNode | SemanticNode[];
 	decorate(node: ParseNode): SemanticNode | SemanticNode[] {
 		if (node instanceof PARSENODE.ParseNodePrimitiveLiteral) {
@@ -240,19 +240,19 @@ export default class Validator {
 		} else if (node instanceof PARSENODE.ParseNodeType) {
 			return this.decorate(node.children[0])
 
-		} else if (node instanceof PARSENODE.ParseNodeStringTemplate) {
-			return new SemanticNodeTemplate(node, (node.children as readonly (TokenTemplate | PARSENODE.ParseNodeExpression | PARSENODE.ParseNodeStringTemplate__0__List)[]).flatMap((c) =>
-				c instanceof Token ? [new SemanticNodeConstant(c)] :
-				c instanceof PARSENODE.ParseNodeExpression ? [this.decorate(c)] :
-				this.decorate(c)
-			))
-
-		} else if (node instanceof PARSENODE.ParseNodeStringTemplate__0__List) {
-			return (node.children as readonly (TokenTemplate | PARSENODE.ParseNodeExpression | PARSENODE.ParseNodeStringTemplate__0__List)[]).flatMap((c) =>
+		} else if (node instanceof PARSENODE.ParseNodeStringTemplate__1__List) {
+			return (node.children as readonly (TokenTemplate | PARSENODE.ParseNodeExpression | PARSENODE.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
 				c instanceof Token ? [new SemanticNodeConstant(c)] :
 				c instanceof PARSENODE.ParseNodeExpression ? [this.decorate(c)] :
 				this.decorate(c)
 			)
+
+		} else if (node instanceof PARSENODE.ParseNodeStringTemplate) {
+			return new SemanticNodeTemplate(node, (node.children as readonly (TokenTemplate | PARSENODE.ParseNodeExpression | PARSENODE.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
+				c instanceof Token ? [new SemanticNodeConstant(c)] :
+				c instanceof PARSENODE.ParseNodeExpression ? [this.decorate(c)] :
+				this.decorate(c)
+			))
 
 		} else if (node instanceof PARSENODE.ParseNodeExpressionUnit) {
 			return (node.children.length === 1)
@@ -378,9 +378,6 @@ export default class Validator {
 					this.decorate(node.children[0]),
 				])
 
-		} else if (node instanceof PARSENODE.ParseNodeGoal) {
-			return new SemanticNodeGoal(node, (node.children.length === 2) ? [] : this.decorate(node.children[1]))
-
 		} else if (node instanceof PARSENODE.ParseNodeGoal__0__List) {
 			return node.children.length === 1 ?
 				[this.decorate(node.children[0])]
@@ -388,6 +385,9 @@ export default class Validator {
 				...this.decorate(node.children[0]),
 				this.decorate(node.children[1])
 			]
+
+		} else if (node instanceof PARSENODE.ParseNodeGoal) {
+			return new SemanticNodeGoal(node, (node.children.length === 2) ? [] : this.decorate(node.children[1]))
 
 		} else {
 			throw new ReferenceError(`Could not find type of parse node ${ node }.`)

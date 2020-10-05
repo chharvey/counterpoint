@@ -182,8 +182,8 @@ export class ParserSolid extends Parser {
 			...(Dev.supports('typingExplicit')  ? [PRODUCTION.ProductionTypeIntersection        .instance] : []),
 			...(Dev.supports('typingExplicit')  ? [PRODUCTION.ProductionTypeUnion               .instance] : []),
 			...(Dev.supports('typingExplicit')  ? [PRODUCTION.ProductionType                    .instance] : []),
+			...(Dev.supports('literalTemplate') ? [PRODUCTION.ProductionStringTemplate__1__List .instance] : []),
 			...(Dev.supports('literalTemplate') ? [PRODUCTION.ProductionStringTemplate          .instance] : []),
-			...(Dev.supports('literalTemplate') ? [PRODUCTION.ProductionStringTemplate__0__List .instance] : []),
 			PRODUCTION.ProductionExpressionUnit           .instance,
 			PRODUCTION.ProductionExpressionUnarySymbol    .instance,
 			PRODUCTION.ProductionExpressionExponential    .instance,
@@ -198,8 +198,8 @@ export class ParserSolid extends Parser {
 			...(Dev.supportsAll('variables', 'typingExplicit') ? [PRODUCTION.ProductionDeclarationVariable.instance] : []),
 			...(Dev.supports   ('variables')                   ? [PRODUCTION.ProductionStatementAssignment.instance] : []),
 			PRODUCTION.ProductionStatement.instance,
-			PRODUCTION.ProductionGoal.instance,
 			PRODUCTION.ProductionGoal__0__List.instance,
+			PRODUCTION.ProductionGoal.instance,
 		], PRODUCTION.ProductionGoal.instance), new Map<Production, typeof ParseNode>([
 			[PRODUCTION.ProductionPrimitiveLiteral.instance, PARSENODE.ParseNodePrimitiveLiteral],
 			...(Dev.supports('typingExplicit')  ? [[PRODUCTION.ProductionTypeKeyword             .instance, PARSENODE.ParseNodeTypeKeyword]             as const] : []),
@@ -208,8 +208,8 @@ export class ParserSolid extends Parser {
 			...(Dev.supports('typingExplicit')  ? [[PRODUCTION.ProductionTypeIntersection        .instance, PARSENODE.ParseNodeTypeIntersection]        as const] : []),
 			...(Dev.supports('typingExplicit')  ? [[PRODUCTION.ProductionTypeUnion               .instance, PARSENODE.ParseNodeTypeUnion]               as const] : []),
 			...(Dev.supports('typingExplicit')  ? [[PRODUCTION.ProductionType                    .instance, PARSENODE.ParseNodeType]                    as const] : []),
+			...(Dev.supports('literalTemplate') ? [[PRODUCTION.ProductionStringTemplate__1__List .instance, PARSENODE.ParseNodeStringTemplate__1__List] as const] : []),
 			...(Dev.supports('literalTemplate') ? [[PRODUCTION.ProductionStringTemplate          .instance, PARSENODE.ParseNodeStringTemplate]          as const] : []),
-			...(Dev.supports('literalTemplate') ? [[PRODUCTION.ProductionStringTemplate__0__List .instance, PARSENODE.ParseNodeStringTemplate__0__List] as const] : []),
 			[PRODUCTION.ProductionExpressionUnit           .instance, PARSENODE.ParseNodeExpressionUnit],
 			[PRODUCTION.ProductionExpressionUnarySymbol    .instance, PARSENODE.ParseNodeExpressionUnarySymbol],
 			[PRODUCTION.ProductionExpressionExponential    .instance, PARSENODE.ParseNodeExpressionExponential],
@@ -224,8 +224,8 @@ export class ParserSolid extends Parser {
 			...(Dev.supports('variables') ? [[PRODUCTION.ProductionDeclarationVariable.instance, PARSENODE.ParseNodeDeclarationVariable] as const] : []),
 			...(Dev.supports('variables') ? [[PRODUCTION.ProductionStatementAssignment.instance, PARSENODE.ParseNodeStatementAssignment] as const] : []),
 			[PRODUCTION.ProductionStatement     .instance, PARSENODE.ParseNodeStatement],
-			[PRODUCTION.ProductionGoal          .instance, PARSENODE.ParseNodeGoal],
 			[PRODUCTION.ProductionGoal__0__List .instance, PARSENODE.ParseNodeGoal__0__List],
+			[PRODUCTION.ProductionGoal          .instance, PARSENODE.ParseNodeGoal],
 		]))
 	}
 

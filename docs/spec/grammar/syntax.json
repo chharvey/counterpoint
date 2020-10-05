@@ -55,22 +55,22 @@
 		]
 	},
 	{
+		"name": "StringTemplate__1__List",
+		"defn": [
+			[                                     {"term": "TEMPLATE_MIDDLE"}                        ],
+			[                                     {"term": "TEMPLATE_MIDDLE"}, {"prod": "Expression"}],
+			[{"prod": "StringTemplate__1__List"}, {"term": "TEMPLATE_MIDDLE"}                        ],
+			[{"prod": "StringTemplate__1__List"}, {"term": "TEMPLATE_MIDDLE"}, {"prod": "Expression"}]
+		]
+	},
+	{
 		"name": "StringTemplate",
 		"defn": [
 			[{"term": "TEMPLATE_FULL"}],
 			[{"term": "TEMPLATE_HEAD"},                                                              {"term": "TEMPLATE_TAIL"}],
 			[{"term": "TEMPLATE_HEAD"}, {"prod": "Expression"},                                      {"term": "TEMPLATE_TAIL"}],
-			[{"term": "TEMPLATE_HEAD"},                         {"prod": "StringTemplate__0__List"}, {"term": "TEMPLATE_TAIL"}],
-			[{"term": "TEMPLATE_HEAD"}, {"prod": "Expression"}, {"prod": "StringTemplate__0__List"}, {"term": "TEMPLATE_TAIL"}]
-		]
-	},
-	{
-		"name": "StringTemplate__0__List",
-		"defn": [
-			[                                     {"term": "TEMPLATE_MIDDLE"}                        ],
-			[                                     {"term": "TEMPLATE_MIDDLE"}, {"prod": "Expression"}],
-			[{"prod": "StringTemplate__0__List"}, {"term": "TEMPLATE_MIDDLE"}                        ],
-			[{"prod": "StringTemplate__0__List"}, {"term": "TEMPLATE_MIDDLE"}, {"prod": "Expression"}]
+			[{"term": "TEMPLATE_HEAD"},                         {"prod": "StringTemplate__1__List"}, {"term": "TEMPLATE_TAIL"}],
+			[{"term": "TEMPLATE_HEAD"}, {"prod": "Expression"}, {"prod": "StringTemplate__1__List"}, {"term": "TEMPLATE_TAIL"}]
 		]
 	},
 	{
@@ -189,17 +189,17 @@
 		]
 	},
 	{
-		"name": "Goal",
-		"defn": [
-			["'\\u0002'",                            "'\\u0003'"],
-			["'\\u0002'", {"prod": "Goal__0__List"}, "'\\u0003'"]
-		]
-	},
-	{
 		"name": "Goal__0__List",
 		"defn": [
 			[                           {"prod": "Statement"}],
 			[{"prod": "Goal__0__List"}, {"prod": "Statement"}]
+		]
+	},
+	{
+		"name": "Goal",
+		"defn": [
+			["'\\u0002'",                            "'\\u0003'"],
+			["'\\u0002'", {"prod": "Goal__0__List"}, "'\\u0003'"]
 		]
 	}
 ]
