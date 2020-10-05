@@ -64,11 +64,11 @@ Decorate(ConditionSet__0__CSL ::= ConditionSet__0__CSL "," IDENTIFIER "-") -> Se
 
 
 
-Decorate(NonterminalRef ::= IDENTIFIER) -> SemanticRef
+Decorate(Reference ::= IDENTIFIER) -> SemanticRef
 	:= (SemanticRef[name=TokenWorth(IDENTIFIER)]);
-Decorate(NonterminalRef ::= NonterminalRef ArgumentSet) -> SemanticRef
-	:= (SemanticRef[name=Decorate(NonterminalRef).name]
-		Decorate(NonterminalRef)
+Decorate(Reference ::= Reference ArgumentSet) -> SemanticRef
+	:= (SemanticRef[name=Decorate(Reference).name]
+		Decorate(Reference)
 		...Decorate(ArgumentSet)
 	);
 
@@ -80,8 +80,8 @@ Decorate(Unit ::= STRING) -> SemanticConst
 	:= (SemanticConst[value=STRING.source]);
 Decorate(Unit ::= CHAR_CLASS) -> SemanticConst
 	:= (SemanticConst[value=CHAR_CLASS.source]);
-Decorate(Unit ::= NonterminalRef) -> SemanticRef
-	:= Decorate(NonterminalRef);
+Decorate(Unit ::= Reference) -> SemanticRef
+	:= Decorate(Reference);
 Decorate(Unit ::= "(" Definition ")") -> SemanticExpr
 	:= Decorate(Definition);
 

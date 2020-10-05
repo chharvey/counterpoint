@@ -47,15 +47,15 @@
 					;
 				}
 			
-				export class ParseNodeNonterminalRef extends ParseNode {
+				export class ParseNodeReference extends ParseNode {
 					declare children:
-						readonly [Token] | readonly [ParseNodeNonterminalRef,ParseNodeArgumentSet]
+						readonly [Token] | readonly [ParseNodeReference,ParseNodeArgumentSet]
 					;
 				}
 			
 				export class ParseNodeUnit extends ParseNode {
 					declare children:
-						readonly [Token] | readonly [Token] | readonly [Token] | readonly [ParseNodeNonterminalRef] | readonly [Token,ParseNodeDefinition,Token]
+						readonly [Token] | readonly [Token] | readonly [Token] | readonly [ParseNodeReference] | readonly [Token,ParseNodeDefinition,Token]
 					;
 				}
 			

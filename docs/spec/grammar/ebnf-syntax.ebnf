@@ -11,9 +11,9 @@ ConditionSet ::= "<" (                  IDENTIFIER ("+" | "-"))# ">";
 
 
 
-NonterminalRef ::=
+Reference ::=
 	| IDENTIFIER
-	| NonterminalRef ArgumentSet;
+	| Reference ArgumentSet;
 
 
 
