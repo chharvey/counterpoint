@@ -146,11 +146,12 @@ export class SemanticNodeOpUn extends SemanticNodeOp {
 	}
 	transform(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
 		const name: string = `${ nt }__${ nt.subCount }__List`
+		const trans: EBNFChoice = this.operand.transform(nt, data)
 		return new Map<string, () => EBNFChoice>([
 			['plus', () => {
 				data.push({
 					name,
-					defn: NonemptyArray_flatMap(this.operand.transform(nt, data), (seq) => [
+					defn: NonemptyArray_flatMap(trans, (seq) => [
 						seq,
 						[{prod: name}, ...seq],
 					]),
@@ -162,7 +163,7 @@ export class SemanticNodeOpUn extends SemanticNodeOp {
 			['star', () => {
 				data.push({
 					name,
-					defn: NonemptyArray_flatMap(this.operand.transform(nt, data), (seq) => [
+					defn: NonemptyArray_flatMap(trans, (seq) => [
 						seq,
 						[{prod: name}, ...seq],
 					]),
@@ -175,7 +176,7 @@ export class SemanticNodeOpUn extends SemanticNodeOp {
 			['hash', () => {
 				data.push({
 					name,
-					defn: NonemptyArray_flatMap(this.operand.transform(nt, data), (seq) => [
+					defn: NonemptyArray_flatMap(trans, (seq) => [
 						seq,
 						[{prod: name}, '\',\'', ...seq],
 					]),
@@ -203,21 +204,23 @@ export class SemanticNodeOpBin extends SemanticNodeOp {
 		super(start_node, operator, [operand0, operand1])
 	}
 	transform(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
+		const trans0: EBNFChoice = this.operand0.transform(nt, data)
+		const trans1: EBNFChoice = this.operand1.transform(nt, data)
 		return new Map<string, () => EBNFChoice>([
-			['order', () => NonemptyArray_flatMap(this.operand0.transform(nt, data), (seq0) =>
-				NonemptyArray_flatMap(this.operand1.transform(nt, data), (seq1) => [
+			['order', () => NonemptyArray_flatMap(trans0, (seq0) =>
+				NonemptyArray_flatMap(trans1, (seq1) => [
 					[...seq0, ...seq1],
 				])
 			)],
-			['concat', () => NonemptyArray_flatMap(this.operand0.transform(nt, data), (seq0) =>
-				NonemptyArray_flatMap(this.operand1.transform(nt, data), (seq1) => [
+			['concat', () => NonemptyArray_flatMap(trans0, (seq0) =>
+				NonemptyArray_flatMap(trans1, (seq1) => [
 					[...seq0, ...seq1],
 					[...seq1, ...seq0],
 				])
 			)],
 			['altern', () => [
-				...this.operand0.transform(nt, data),
-				...this.operand1.transform(nt, data),
+				...trans0,
+				...trans1,
 			]],
 		]).get(this.operator)!()
 	}

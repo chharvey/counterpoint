@@ -59,15 +59,9 @@
 					;
 				}
 			
-				export class ParseNodeStringTemplate__3__List extends ParseNode {
-					declare children:
-						readonly [Token] | readonly [ParseNodeStringTemplate__3__List,Token] | readonly [Token,ParseNodeExpression] | readonly [ParseNodeStringTemplate__3__List,Token,ParseNodeExpression]
-					;
-				}
-			
 				export class ParseNodeStringTemplate extends ParseNode {
 					declare children:
-						readonly [Token] | readonly [Token,Token] | readonly [Token,ParseNodeStringTemplate__1__List,Token] | readonly [Token,ParseNodeExpression,Token] | readonly [Token,ParseNodeExpression,ParseNodeStringTemplate__3__List,Token]
+						readonly [Token] | readonly [Token,Token] | readonly [Token,ParseNodeStringTemplate__1__List,Token] | readonly [Token,ParseNodeExpression,Token] | readonly [Token,ParseNodeExpression,ParseNodeStringTemplate__1__List,Token]
 					;
 				}
 			
