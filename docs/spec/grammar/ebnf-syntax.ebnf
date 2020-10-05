@@ -1,7 +1,7 @@
-IDENTIFIER  ::= [./ebnf-lexicon.ebnf#Identifier];
-CHAR_CODE   ::= [./ebnf-lexicon.ebnf#CharCode];
-STRING      ::= [./ebnf-lexicon.ebnf#String];
-CHAR_CLASS  ::= [./ebnf-lexicon.ebnf#CharClass];
+// IDENTIFIER  ::= [./ebnf-lexicon.ebnf#Identifier];
+// CHAR_CODE   ::= [./ebnf-lexicon.ebnf#CharCode];
+// STRING      ::= [./ebnf-lexicon.ebnf#String];
+// CHAR_CLASS  ::= [./ebnf-lexicon.ebnf#CharClass];
 
 
 

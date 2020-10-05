@@ -1,11 +1,11 @@
-IDENTIFIER      ::= [./lexicon.ebnf#Identifier];
-INTEGER         ::= [./lexicon.ebnf#Integer];
-FLOAT           ::= [./lexicon.ebnf#Float];
-STRING          ::= [./lexicon.ebnf#String];
-TEMPLATE_FULL   ::= [./lexicon.ebnf#TemplateFull];
-TEMPLATE_HEAD   ::= [./lexicon.ebnf#TemplateHead];
-TEMPLATE_MIDDLE ::= [./lexicon.ebnf#TempalteMiddle];
-TEMPLATE_TAIL   ::= [./lexicon.ebnf#TempalteTail];
+// IDENTIFIER      ::= [./lexicon.ebnf#Identifier];
+// INTEGER         ::= [./lexicon.ebnf#Integer];
+// FLOAT           ::= [./lexicon.ebnf#Float];
+// STRING          ::= [./lexicon.ebnf#String];
+// TEMPLATE_FULL   ::= [./lexicon.ebnf#TemplateFull];
+// TEMPLATE_HEAD   ::= [./lexicon.ebnf#TemplateHead];
+// TEMPLATE_MIDDLE ::= [./lexicon.ebnf#TempalteMiddle];
+// TEMPLATE_TAIL   ::= [./lexicon.ebnf#TempalteTail];
 
 
 

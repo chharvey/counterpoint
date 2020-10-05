@@ -37,14 +37,14 @@
 					static readonly instance: ProductionParameterSet = new ProductionParameterSet();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							['<',ProductionParameterSet__0__List.instance,'>'],
+							["<",ProductionParameterSet__0__List.instance,">"],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							
-							['<',...ProductionParameterSet__0__List.instance.random(),'>']
+							["<",...ProductionParameterSet__0__List.instance.random(),">"]
 						);
 					}
 				}
@@ -53,14 +53,14 @@
 					static readonly instance: ProductionArgumentSet__0__List = new ProductionArgumentSet__0__List();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							['+',TERMINAL.TerminalIdentifier.instance],['-',TERMINAL.TerminalIdentifier.instance],['?',TERMINAL.TerminalIdentifier.instance],[ProductionArgumentSet__0__List.instance,',','+',TERMINAL.TerminalIdentifier.instance],[ProductionArgumentSet__0__List.instance,',','-',TERMINAL.TerminalIdentifier.instance],[ProductionArgumentSet__0__List.instance,',','?',TERMINAL.TerminalIdentifier.instance],
+							["+",TERMINAL.TerminalIdentifier.instance],[ProductionArgumentSet__0__List.instance,',',"+",TERMINAL.TerminalIdentifier.instance],["-",TERMINAL.TerminalIdentifier.instance],[ProductionArgumentSet__0__List.instance,',',"-",TERMINAL.TerminalIdentifier.instance],["?",TERMINAL.TerminalIdentifier.instance],[ProductionArgumentSet__0__List.instance,',',"?",TERMINAL.TerminalIdentifier.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/6 ? ['+',TERMINAL.TerminalIdentifier.instance.random()] : random < 2/6 ? ['-',TERMINAL.TerminalIdentifier.instance.random()] : random < 3/6 ? ['?',TERMINAL.TerminalIdentifier.instance.random()] : random < 4/6 ? [...ProductionArgumentSet__0__List.instance.random(),',','+',TERMINAL.TerminalIdentifier.instance.random()] : random < 5/6 ? [...ProductionArgumentSet__0__List.instance.random(),',','-',TERMINAL.TerminalIdentifier.instance.random()] :
-							[...ProductionArgumentSet__0__List.instance.random(),',','?',TERMINAL.TerminalIdentifier.instance.random()]
+							random < 1/6 ? ["+",TERMINAL.TerminalIdentifier.instance.random()] : random < 2/6 ? [...ProductionArgumentSet__0__List.instance.random(),',',"+",TERMINAL.TerminalIdentifier.instance.random()] : random < 3/6 ? ["-",TERMINAL.TerminalIdentifier.instance.random()] : random < 4/6 ? [...ProductionArgumentSet__0__List.instance.random(),',',"-",TERMINAL.TerminalIdentifier.instance.random()] : random < 5/6 ? ["?",TERMINAL.TerminalIdentifier.instance.random()] :
+							[...ProductionArgumentSet__0__List.instance.random(),',',"?",TERMINAL.TerminalIdentifier.instance.random()]
 						);
 					}
 				}
@@ -69,14 +69,14 @@
 					static readonly instance: ProductionArgumentSet = new ProductionArgumentSet();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							['<',ProductionArgumentSet__0__List.instance,'>'],
+							["<",ProductionArgumentSet__0__List.instance,">"],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							
-							['<',...ProductionArgumentSet__0__List.instance.random(),'>']
+							["<",...ProductionArgumentSet__0__List.instance.random(),">"]
 						);
 					}
 				}
@@ -85,14 +85,14 @@
 					static readonly instance: ProductionConditionSet__0__List = new ProductionConditionSet__0__List();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							[TERMINAL.TerminalIdentifier.instance,'+'],[TERMINAL.TerminalIdentifier.instance,'-'],[ProductionConditionSet__0__List.instance,',',TERMINAL.TerminalIdentifier.instance,'+'],[ProductionConditionSet__0__List.instance,',',TERMINAL.TerminalIdentifier.instance,'-'],
+							[TERMINAL.TerminalIdentifier.instance,"+"],[ProductionConditionSet__0__List.instance,',',TERMINAL.TerminalIdentifier.instance,"+"],[TERMINAL.TerminalIdentifier.instance,"-"],[ProductionConditionSet__0__List.instance,',',TERMINAL.TerminalIdentifier.instance,"-"],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/4 ? [TERMINAL.TerminalIdentifier.instance.random(),'+'] : random < 2/4 ? [TERMINAL.TerminalIdentifier.instance.random(),'-'] : random < 3/4 ? [...ProductionConditionSet__0__List.instance.random(),',',TERMINAL.TerminalIdentifier.instance.random(),'+'] :
-							[...ProductionConditionSet__0__List.instance.random(),',',TERMINAL.TerminalIdentifier.instance.random(),'-']
+							random < 1/4 ? [TERMINAL.TerminalIdentifier.instance.random(),"+"] : random < 2/4 ? [...ProductionConditionSet__0__List.instance.random(),',',TERMINAL.TerminalIdentifier.instance.random(),"+"] : random < 3/4 ? [TERMINAL.TerminalIdentifier.instance.random(),"-"] :
+							[...ProductionConditionSet__0__List.instance.random(),',',TERMINAL.TerminalIdentifier.instance.random(),"-"]
 						);
 					}
 				}
@@ -101,14 +101,14 @@
 					static readonly instance: ProductionConditionSet = new ProductionConditionSet();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							['<',ProductionConditionSet__0__List.instance,'>'],
+							["<",ProductionConditionSet__0__List.instance,">"],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							
-							['<',...ProductionConditionSet__0__List.instance.random(),'>']
+							["<",...ProductionConditionSet__0__List.instance.random(),">"]
 						);
 					}
 				}
@@ -133,14 +133,14 @@
 					static readonly instance: ProductionUnit = new ProductionUnit();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							[TERMINAL.TerminalCharCode.instance],[TERMINAL.TerminalString.instance],[TERMINAL.TerminalCharClass.instance],[ProductionReference.instance],['(',ProductionDefinition.instance,')'],
+							[TERMINAL.TerminalCharCode.instance],[TERMINAL.TerminalString.instance],[TERMINAL.TerminalCharClass.instance],[ProductionReference.instance],["(",ProductionDefinition.instance,")"],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							random < 1/5 ? [TERMINAL.TerminalCharCode.instance.random()] : random < 2/5 ? [TERMINAL.TerminalString.instance.random()] : random < 3/5 ? [TERMINAL.TerminalCharClass.instance.random()] : random < 4/5 ? [...ProductionReference.instance.random()] :
-							['(',...ProductionDefinition.instance.random(),')']
+							["(",...ProductionDefinition.instance.random(),")"]
 						);
 					}
 				}
@@ -149,14 +149,14 @@
 					static readonly instance: ProductionUnary = new ProductionUnary();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							[ProductionUnit.instance],[ProductionUnit.instance,'+'],[ProductionUnit.instance,'*'],[ProductionUnit.instance,'#'],[ProductionUnit.instance,'?'],[ProductionUnit.instance,'+','?'],[ProductionUnit.instance,'*','?'],[ProductionUnit.instance,'#','?'],
+							[ProductionUnit.instance],[ProductionUnit.instance,"?"],[ProductionUnit.instance,"+"],[ProductionUnit.instance,"+","?"],[ProductionUnit.instance,"*"],[ProductionUnit.instance,"*","?"],[ProductionUnit.instance,"#"],[ProductionUnit.instance,"#","?"],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/8 ? [...ProductionUnit.instance.random()] : random < 2/8 ? [...ProductionUnit.instance.random(),'+'] : random < 3/8 ? [...ProductionUnit.instance.random(),'*'] : random < 4/8 ? [...ProductionUnit.instance.random(),'#'] : random < 5/8 ? [...ProductionUnit.instance.random(),'?'] : random < 6/8 ? [...ProductionUnit.instance.random(),'+','?'] : random < 7/8 ? [...ProductionUnit.instance.random(),'*','?'] :
-							[...ProductionUnit.instance.random(),'#','?']
+							random < 1/8 ? [...ProductionUnit.instance.random()] : random < 2/8 ? [...ProductionUnit.instance.random(),"?"] : random < 3/8 ? [...ProductionUnit.instance.random(),"+"] : random < 4/8 ? [...ProductionUnit.instance.random(),"+","?"] : random < 5/8 ? [...ProductionUnit.instance.random(),"*"] : random < 6/8 ? [...ProductionUnit.instance.random(),"*","?"] : random < 7/8 ? [...ProductionUnit.instance.random(),"#"] :
+							[...ProductionUnit.instance.random(),"#","?"]
 						);
 					}
 				}
@@ -181,14 +181,14 @@
 					static readonly instance: ProductionOrder = new ProductionOrder();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							[ProductionItem.instance],[ProductionOrder.instance,ProductionItem.instance],[ProductionOrder.instance,'.',ProductionItem.instance],
+							[ProductionItem.instance],[ProductionOrder.instance,ProductionItem.instance],[ProductionOrder.instance,".",ProductionItem.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							random < 1/3 ? [...ProductionItem.instance.random()] : random < 2/3 ? [...ProductionOrder.instance.random(),...ProductionItem.instance.random()] :
-							[...ProductionOrder.instance.random(),'.',...ProductionItem.instance.random()]
+							[...ProductionOrder.instance.random(),".",...ProductionItem.instance.random()]
 						);
 					}
 				}
@@ -197,14 +197,14 @@
 					static readonly instance: ProductionConcat = new ProductionConcat();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							[ProductionOrder.instance],[ProductionConcat.instance,'&',ProductionOrder.instance],
+							[ProductionOrder.instance],[ProductionConcat.instance,"&",ProductionOrder.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							random < 1/2 ? [...ProductionOrder.instance.random()] :
-							[...ProductionConcat.instance.random(),'&',...ProductionOrder.instance.random()]
+							[...ProductionConcat.instance.random(),"&",...ProductionOrder.instance.random()]
 						);
 					}
 				}
@@ -213,14 +213,14 @@
 					static readonly instance: ProductionAltern = new ProductionAltern();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							[ProductionConcat.instance],[ProductionAltern.instance,'|',ProductionConcat.instance],
+							[ProductionConcat.instance],[ProductionAltern.instance,"|",ProductionConcat.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							random < 1/2 ? [...ProductionConcat.instance.random()] :
-							[...ProductionAltern.instance.random(),'|',...ProductionConcat.instance.random()]
+							[...ProductionAltern.instance.random(),"|",...ProductionConcat.instance.random()]
 						);
 					}
 				}
@@ -261,14 +261,14 @@
 					static readonly instance: ProductionProduction = new ProductionProduction();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							[ProductionNonterminalName.instance,':::=',ProductionDefinition.instance,';'],[ProductionNonterminalName.instance,'::=',ProductionDefinition.instance,';'],[ProductionNonterminalName.instance,':::=','|',ProductionDefinition.instance,';'],[ProductionNonterminalName.instance,'::=','|',ProductionDefinition.instance,';'],
+							[ProductionNonterminalName.instance,":::=",ProductionDefinition.instance,";"],[ProductionNonterminalName.instance,":::=","|",ProductionDefinition.instance,";"],[ProductionNonterminalName.instance,"::=",ProductionDefinition.instance,";"],[ProductionNonterminalName.instance,"::=","|",ProductionDefinition.instance,";"],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/4 ? [...ProductionNonterminalName.instance.random(),':::=',...ProductionDefinition.instance.random(),';'] : random < 2/4 ? [...ProductionNonterminalName.instance.random(),'::=',...ProductionDefinition.instance.random(),';'] : random < 3/4 ? [...ProductionNonterminalName.instance.random(),':::=','|',...ProductionDefinition.instance.random(),';'] :
-							[...ProductionNonterminalName.instance.random(),'::=','|',...ProductionDefinition.instance.random(),';']
+							random < 1/4 ? [...ProductionNonterminalName.instance.random(),":::=",...ProductionDefinition.instance.random(),";"] : random < 2/4 ? [...ProductionNonterminalName.instance.random(),":::=","|",...ProductionDefinition.instance.random(),";"] : random < 3/4 ? [...ProductionNonterminalName.instance.random(),"::=",...ProductionDefinition.instance.random(),";"] :
+							[...ProductionNonterminalName.instance.random(),"::=","|",...ProductionDefinition.instance.random(),";"]
 						);
 					}
 				}

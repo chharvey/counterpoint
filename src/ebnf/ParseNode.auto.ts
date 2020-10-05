@@ -25,7 +25,7 @@
 			
 				export class ParseNodeArgumentSet__0__List extends ParseNode {
 					declare children:
-						readonly [Token,Token] | readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeArgumentSet__0__List,Token,Token,Token] | readonly [ParseNodeArgumentSet__0__List,Token,Token,Token] | readonly [ParseNodeArgumentSet__0__List,Token,Token,Token]
+						readonly [Token,Token] | readonly [ParseNodeArgumentSet__0__List,Token,Token,Token] | readonly [Token,Token] | readonly [ParseNodeArgumentSet__0__List,Token,Token,Token] | readonly [Token,Token] | readonly [ParseNodeArgumentSet__0__List,Token,Token,Token]
 					;
 				}
 			
@@ -37,7 +37,7 @@
 			
 				export class ParseNodeConditionSet__0__List extends ParseNode {
 					declare children:
-						readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeConditionSet__0__List,Token,Token,Token] | readonly [ParseNodeConditionSet__0__List,Token,Token,Token]
+						readonly [Token,Token] | readonly [ParseNodeConditionSet__0__List,Token,Token,Token] | readonly [Token,Token] | readonly [ParseNodeConditionSet__0__List,Token,Token,Token]
 					;
 				}
 			
@@ -61,7 +61,7 @@
 			
 				export class ParseNodeUnary extends ParseNode {
 					declare children:
-						readonly [ParseNodeUnit] | readonly [ParseNodeUnit,Token] | readonly [ParseNodeUnit,Token] | readonly [ParseNodeUnit,Token] | readonly [ParseNodeUnit,Token] | readonly [ParseNodeUnit,Token,Token] | readonly [ParseNodeUnit,Token,Token] | readonly [ParseNodeUnit,Token,Token]
+						readonly [ParseNodeUnit] | readonly [ParseNodeUnit,Token] | readonly [ParseNodeUnit,Token] | readonly [ParseNodeUnit,Token,Token] | readonly [ParseNodeUnit,Token] | readonly [ParseNodeUnit,Token,Token] | readonly [ParseNodeUnit,Token] | readonly [ParseNodeUnit,Token,Token]
 					;
 				}
 			
@@ -103,7 +103,7 @@
 			
 				export class ParseNodeProduction extends ParseNode {
 					declare children:
-						readonly [ParseNodeNonterminalName,Token,ParseNodeDefinition,Token] | readonly [ParseNodeNonterminalName,Token,ParseNodeDefinition,Token] | readonly [ParseNodeNonterminalName,Token,Token,ParseNodeDefinition,Token] | readonly [ParseNodeNonterminalName,Token,Token,ParseNodeDefinition,Token]
+						readonly [ParseNodeNonterminalName,Token,ParseNodeDefinition,Token] | readonly [ParseNodeNonterminalName,Token,Token,ParseNodeDefinition,Token] | readonly [ParseNodeNonterminalName,Token,ParseNodeDefinition,Token] | readonly [ParseNodeNonterminalName,Token,Token,ParseNodeDefinition,Token]
 					;
 				}
 			

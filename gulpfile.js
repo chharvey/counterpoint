@@ -1,4 +1,5 @@
 const fs = require('fs')
+const path = require('path')
 const fsPromise = require('fs').promises
 
 const gulp       = require('gulp')
@@ -18,6 +19,7 @@ function dist() {
 }
 
 async function postdist() {
+	const {ParserEBNF: Parser, Decorator} = require('./build/ebnf/')
 	const {default: Production} = require('./build/parser/Production.class.js')
 	const {ParseNode} = require('./build/parser/ParseNode.class.js')
 	function preamble(srcpath) {
@@ -30,22 +32,30 @@ async function postdist() {
 			/----------------------------------------------------------------*/
 		`
 	}
+	const syntaxes = Promise.all([
+		new Decorator().decorate(new Parser(
+			await fs.promises.readFile(path.join(__dirname, './docs/spec/grammar/ebnf-syntax.ebnf'), 'utf8')
+		).parse()).transform(),
+		new Decorator().decorate(new Parser(
+			await fs.promises.readFile(path.join(__dirname, './docs/spec/grammar/syntax.ebnf'), 'utf8')
+		).parse()).transform(),
+	])
 	return Promise.all([
-		fs.promises.writeFile('./src/parser/Production.auto.ts', `
+		fs.promises.writeFile(path.join(__dirname, './src/ebnf/Production.auto.ts'), `
 			${ preamble('/src/parser/Production.class.ts#Production#fromJSON') }
-			${ await Production.fromJSON(require('./docs/spec/grammar/syntax.json')) }
+			${ Production.fromJSON((await syntaxes)[0]) }
 		`),
-		fs.promises.writeFile('./src/ebnf/Production.auto.ts', `
+		fs.promises.writeFile(path.join(__dirname, './src/ebnf/ParseNode.auto.ts'), `
+			${ preamble('/src/parser/ParseNode.class.ts#ParseNode#fromJSON') }
+			${ ParseNode.fromJSON((await syntaxes)[0]) }
+		`),
+		fs.promises.writeFile(path.join(__dirname, './src/parser/Production.auto.ts'), `
 			${ preamble('/src/parser/Production.class.ts#Production#fromJSON') }
-			${ await Production.fromJSON(require('./docs/spec/grammar/ebnf-syntax.json')) }
+			${ Production.fromJSON((await syntaxes)[1]) }
 		`),
-		fs.promises.writeFile('./src/parser/ParseNode.auto.ts', `
+		fs.promises.writeFile(path.join(__dirname, './src/parser/ParseNode.auto.ts'), `
 			${ preamble('/src/parser/ParseNode.class.ts#ParseNode#fromJSON') }
-			${ await ParseNode.fromJSON(require('./docs/spec/grammar/syntax.json')) }
-		`),
-		fs.promises.writeFile('./src/ebnf/ParseNode.auto.ts', `
-			${ preamble('/src/parser/ParseNode.class.ts#ParseNode#fromJSON') }
-			${ await ParseNode.fromJSON(require('./docs/spec/grammar/ebnf-syntax.json')) }
+			${ ParseNode.fromJSON((await syntaxes)[1]) }
 		`),
 	])
 }
