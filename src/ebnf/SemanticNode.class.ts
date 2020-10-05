@@ -18,7 +18,7 @@ function NonemptyArray_flatMap<T, U>(arr: KleenePlus<T>, callback: (it: T) => Kl
 	return arr.flatMap((it) => callback(it)) as readonly U[] as KleenePlus<U>
 }
 /** @temp */ function toDefn(op: SemanticNodeExpr, nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
-	return (op instanceof SemanticNodeOp) ? op.expand(nt, data) : [[op.source]]
+	return (op instanceof SemanticNodeOp || op instanceof SemanticNodeItem) ? op.expand(nt, data) : [[op.source]]
 }
 
 
@@ -51,7 +51,7 @@ export class SemanticNodeArg extends SemanticNodeEBNF {
 export class SemanticNodeCondition extends SemanticNodeEBNF {
 	constructor (
 		start_node: TOKEN.TokenIdentifier,
-		include:    boolean,
+		readonly include: boolean,
 	) {
 		super(start_node, {name: start_node.source, include})
 	}
@@ -84,10 +84,17 @@ export class SemanticNodeRef extends SemanticNodeExpr {
 export class SemanticNodeItem extends SemanticNodeExpr {
 	constructor (
 		start_node: ParseNode,
-		item:       SemanticNodeExpr,
-		conditions: readonly SemanticNodeCondition[] = [],
+		private readonly item:       SemanticNodeExpr,
+		private readonly conditions: readonly SemanticNodeCondition[] = [],
 	) {
 		super(start_node, {}, [item, ...conditions])
+	}
+	expand(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
+		return (this.conditions.some((cond) => cond.include === nt.hasSuffix(cond)))
+			? toDefn(this.item, nt, data)
+			: [
+				['\'\''],
+			]
 	}
 }
 abstract class SemanticNodeOp extends SemanticNodeExpr {
@@ -251,5 +258,8 @@ class ConcreteNonterminal {
 	}
 	toString(): string {
 		return `${ this.name }${ this.suffixes.map((s) => `_${ s.source }`).join('') }`
+	}
+	hasSuffix(p: SemanticNodeParam | SemanticNodeArg | SemanticNodeCondition): boolean {
+		return !!this.suffixes.find((suffix) => suffix.source === p.source)
 	}
 }

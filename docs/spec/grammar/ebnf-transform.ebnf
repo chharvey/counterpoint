@@ -10,6 +10,21 @@ type ChoiceData = NonemptySequence<NonemptySequence<
 
 
 
+ChoiceData Transform(SemanticItem expr, Text nt, Sequence<ProductionData> data) :=
+	1. *Assert:* `expr.children.count` is at least 1.
+	2. *Let* `operand` be *UnwrapAffirm:* Transform(expr.children.0, nt, data).
+	3. *Let* `i` be 1.
+	4. *While* `i` is less than `expr.children.count`:
+		1. *If* `expr.children[i].include` is TRUE *and* `nt` contains the suffix `expr.children[i].name`:
+			1. *Return:* `operand`.
+		2. *If* `expr.children[i].include` is FALSE *and* `nt` does not contain the suffix `expr.children[i].name`:
+			1. *Return:* `operand`.
+		3. Increment `i`.
+	5. *Return:* [[""]].
+;
+
+
+
 ChoiceData Transform(SemanticOp[operator: PLUS] expr, Text nt, Sequence<ProductionData> data) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *UnwrapAffirm:* Transform(expr.children.0, nt, data).

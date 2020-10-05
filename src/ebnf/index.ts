@@ -286,7 +286,7 @@ export class Decorator {
 				: new SEMANTICNODE.SemanticNodeItem(
 					node,
 					this.decorate(node.children[1]),
-					this.decorate(node.children[0]),
+					this.decorate(node.children[0]) as KleenePlus<SEMANTICNODE.SemanticNodeCondition>,
 				)
 
 		} else if (node instanceof PARSENODE.ParseNodeOrder) {
