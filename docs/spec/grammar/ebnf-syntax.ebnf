@@ -21,7 +21,7 @@ Unit ::=
 	| CHAR_CODE
 	| STRING
 	| CHAR_CLASS
-	| NonterminalRef
+	| Reference
 	| "(" Definition ")"
 ;
 
