@@ -2,6 +2,8 @@ import type {
 	KleenePlus,
 	EBNFObject,
 	EBNFChoice,
+	EBNFSequence,
+	EBNFItem,
 } from '../types.d'
 import type {
 	Token,
@@ -10,7 +12,7 @@ import type {
 	ParseNode
 } from '../parser/'
 import {SemanticNode} from '../validator/'
-import type * as TOKEN from './Token.class'
+import * as TOKEN from './Token.class'
 
 
 
@@ -63,12 +65,18 @@ export abstract class SemanticNodeExpr extends SemanticNodeEBNF {
 	abstract transform(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice;
 }
 export class SemanticNodeConst extends SemanticNodeExpr {
-	constructor (start_node: TOKEN.TokenCharCode | TOKEN.TokenString | TOKEN.TokenCharClass) {
+	constructor (
+		private readonly start_node: TOKEN.TokenCharCode | TOKEN.TokenString | TOKEN.TokenCharClass,
+	) {
 		super(start_node, {value: start_node.source})
 	}
 	transform(_nt: ConcreteNonterminal, _data: EBNFObject[]): EBNFChoice {
 		return [
-			[this.source],
+			[
+				(this.start_node instanceof TOKEN.TokenCharCode) ? `'\\u${ this.source.slice(2).padStart(4, '0') }'` :
+				(this.start_node instanceof TOKEN.TokenCharClass) ? `'${ this.source }'` :
+				this.source
+			],
 		]
 	}
 }
@@ -260,7 +268,10 @@ export class SemanticNodeGrammar extends SemanticNodeEBNF {
 		super(start_node, {}, productions)
 	}
 	transform(): EBNFObject[] {
-		return this.productions.flatMap((prod) => prod.transform())
+		return this.productions.flatMap((prod) => prod.transform()).map((prod) => ({
+			name: prod.name,
+			defn: prod.defn.map((seq) => seq.filter((item) => item !== '\'\'') as readonly EBNFItem[] as EBNFSequence) as readonly EBNFSequence[] as EBNFChoice
+		}))
 	}
 }
 
