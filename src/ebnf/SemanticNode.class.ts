@@ -18,7 +18,7 @@ function NonemptyArray_flatMap<T, U>(arr: KleenePlus<T>, callback: (it: T) => Kl
 	return arr.flatMap((it) => callback(it)) as readonly U[] as KleenePlus<U>
 }
 /** @temp */ function toDefn(op: SemanticNodeExpr, nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
-	return (op instanceof SemanticNodeOp || op instanceof SemanticNodeItem) ? op.expand(nt, data) : [[op.source]]
+	return (op instanceof SemanticNodeOp || op instanceof SemanticNodeItem || op instanceof SemanticNodeRef) ? op.expand(nt, data) : [[op.source]]
 }
 
 
@@ -43,7 +43,7 @@ export class SemanticNodeParam extends SemanticNodeEBNF {
 export class SemanticNodeArg extends SemanticNodeEBNF {
 	constructor (
 		start_node: TOKEN.TokenIdentifier,
-		append:     boolean | 'inherit',
+		readonly append: boolean | 'inherit',
 	) {
 		super(start_node, {name: start_node.source, append})
 	}
@@ -69,16 +69,33 @@ export class SemanticNodeRef extends SemanticNodeExpr {
 	constructor (start_node: ParseNode, ref: SemanticNodeRef, args: readonly SemanticNodeArg[]);
 	constructor (
 		start_node: ParseNode,
-		ref:        TOKEN.TokenIdentifier | SemanticNodeRef,
-		args:       readonly SemanticNodeArg[] = [],
+		private readonly ref:  TOKEN.TokenIdentifier | SemanticNodeRef,
+		private readonly args: readonly SemanticNodeArg[] = [],
 	) {
-		const name_: string = (ref instanceof SemanticNodeRef) ? ref.name : ref.source
 		super(
 			start_node,
-			{name: name_},
+			{name: (ref instanceof SemanticNodeRef) ? ref.name : ref.source},
 			(ref instanceof SemanticNodeRef) ? [ref, ...args] : args,
 		)
-		this.name = name_
+		this.name = (ref instanceof SemanticNodeRef) ? ref.name : ref.source
+	}
+	expand(nt: ConcreteNonterminal, _data: EBNFObject[]): EBNFChoice {
+		return (this.name === this.name.toUpperCase())
+			/* ALLCAPS: terminal identifier */
+			? [[{term: this.name}]]
+			/* TitleCase: production identifier */
+			: [[{
+				prod: `${ this.name }${ (this.ref instanceof SemanticNodeRef)
+					/* with arguments */
+					? this.args.map((arg) =>
+						(arg.append === true || arg.append === 'inherit' && nt.hasSuffix(arg))
+							? `_${ arg.source }`
+							: ''
+					).join('')
+					/* no arguments */
+					: ''
+				}`
+			}]]
 	}
 }
 export class SemanticNodeItem extends SemanticNodeExpr {
