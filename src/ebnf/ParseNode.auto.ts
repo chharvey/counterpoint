@@ -11,39 +11,39 @@
 			import type Token from '../lexer/Token.class';
 			import {ParseNode} from '../parser/ParseNode.class';
 			
-				export class ParseNodeParameterSet extends ParseNode {
+				export class ParseNodeParameterSet__0__List extends ParseNode {
 					declare children:
-						readonly [Token,ParseNodeIdentifier__CSL,Token]
+						readonly [Token] | readonly [ParseNodeParameterSet__0__List,Token,Token]
 					;
 				}
 			
-				export class ParseNodeIdentifier__CSL extends ParseNode {
+				export class ParseNodeParameterSet extends ParseNode {
 					declare children:
-						readonly [Token] | readonly [ParseNodeIdentifier__CSL,Token,Token]
+						readonly [Token,ParseNodeParameterSet__0__List,Token]
+					;
+				}
+			
+				export class ParseNodeArgumentSet__0__List extends ParseNode {
+					declare children:
+						readonly [Token,Token] | readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeArgumentSet__0__List,Token,Token,Token] | readonly [ParseNodeArgumentSet__0__List,Token,Token,Token] | readonly [ParseNodeArgumentSet__0__List,Token,Token,Token]
 					;
 				}
 			
 				export class ParseNodeArgumentSet extends ParseNode {
 					declare children:
-						readonly [Token,ParseNodeArgumentSet__0__CSL,Token]
+						readonly [Token,ParseNodeArgumentSet__0__List,Token]
 					;
 				}
 			
-				export class ParseNodeArgumentSet__0__CSL extends ParseNode {
+				export class ParseNodeConditionSet__0__List extends ParseNode {
 					declare children:
-						readonly [Token,Token] | readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeArgumentSet__0__CSL,Token,Token,Token] | readonly [ParseNodeArgumentSet__0__CSL,Token,Token,Token] | readonly [ParseNodeArgumentSet__0__CSL,Token,Token,Token]
+						readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeConditionSet__0__List,Token,Token,Token] | readonly [ParseNodeConditionSet__0__List,Token,Token,Token]
 					;
 				}
 			
 				export class ParseNodeConditionSet extends ParseNode {
 					declare children:
-						readonly [Token,ParseNodeConditionSet__0__CSL,Token]
-					;
-				}
-			
-				export class ParseNodeConditionSet__0__CSL extends ParseNode {
-					declare children:
-						readonly [Token,Token] | readonly [Token,Token] | readonly [ParseNodeConditionSet__0__CSL,Token,Token,Token] | readonly [ParseNodeConditionSet__0__CSL,Token,Token,Token]
+						readonly [Token,ParseNodeConditionSet__0__List,Token]
 					;
 				}
 			
@@ -107,15 +107,15 @@
 					;
 				}
 			
-				export class ParseNodeGrammar extends ParseNode {
+				export class ParseNodeGrammar__0__List extends ParseNode {
 					declare children:
-						readonly [Token,Token] | readonly [Token,ParseNodeProduction__List,Token]
+						readonly [ParseNodeProduction] | readonly [ParseNodeGrammar__0__List,ParseNodeProduction]
 					;
 				}
 			
-				export class ParseNodeProduction__List extends ParseNode {
+				export class ParseNodeGrammar extends ParseNode {
 					declare children:
-						readonly [ParseNodeProduction] | readonly [ParseNodeProduction__List,ParseNodeProduction]
+						readonly [Token,Token] | readonly [Token,ParseNodeGrammar__0__List,Token]
 					;
 				}
 			

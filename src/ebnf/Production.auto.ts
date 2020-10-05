@@ -1,13 +1,13 @@
 
-
+			
 			/*----------------------------------------------------------------/
 			| WARNING: Do not manually update this file!
 			| It is auto-generated via
 			| </src/parser/Production.class.ts#Production#fromJSON>.
 			| If you need to make updates, make them there.
 			/----------------------------------------------------------------*/
-
-
+		
+			
 			import type {
 				NonemptyArray,
 			} from '../types.d';
@@ -16,103 +16,103 @@
 			} from '../parser/Grammar.class';
 			import Production from '../parser/Production.class';
 			import * as TERMINAL from './Terminal.class';
-
-				export class ProductionParameterSet extends Production {
-					static readonly instance: ProductionParameterSet = new ProductionParameterSet();
+			
+				export class ProductionParameterSet__0__List extends Production {
+					static readonly instance: ProductionParameterSet__0__List = new ProductionParameterSet__0__List();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							['<',ProductionIdentifier__CSL.instance,'>'],
-						];
-					}
-					random(): string[] {
-						const random: number = Math.random();
-						return (
-
-							['<',...ProductionIdentifier__CSL.instance.random(),'>']
-						);
-					}
-				}
-
-				export class ProductionIdentifier__CSL extends Production {
-					static readonly instance: ProductionIdentifier__CSL = new ProductionIdentifier__CSL();
-					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
-						return [
-							[TERMINAL.TerminalIdentifier.instance],[ProductionIdentifier__CSL.instance,',',TERMINAL.TerminalIdentifier.instance],
+							[TERMINAL.TerminalIdentifier.instance],[ProductionParameterSet__0__List.instance,',',TERMINAL.TerminalIdentifier.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							random < 1/2 ? [TERMINAL.TerminalIdentifier.instance.random()] :
-							[...ProductionIdentifier__CSL.instance.random(),',',TERMINAL.TerminalIdentifier.instance.random()]
+							[...ProductionParameterSet__0__List.instance.random(),',',TERMINAL.TerminalIdentifier.instance.random()]
 						);
 					}
 				}
-
+			
+				export class ProductionParameterSet extends Production {
+					static readonly instance: ProductionParameterSet = new ProductionParameterSet();
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+						return [
+							['<',ProductionParameterSet__0__List.instance,'>'],
+						];
+					}
+					random(): string[] {
+						const random: number = Math.random();
+						return (
+							
+							['<',...ProductionParameterSet__0__List.instance.random(),'>']
+						);
+					}
+				}
+			
+				export class ProductionArgumentSet__0__List extends Production {
+					static readonly instance: ProductionArgumentSet__0__List = new ProductionArgumentSet__0__List();
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+						return [
+							['+',TERMINAL.TerminalIdentifier.instance],['-',TERMINAL.TerminalIdentifier.instance],['?',TERMINAL.TerminalIdentifier.instance],[ProductionArgumentSet__0__List.instance,',','+',TERMINAL.TerminalIdentifier.instance],[ProductionArgumentSet__0__List.instance,',','-',TERMINAL.TerminalIdentifier.instance],[ProductionArgumentSet__0__List.instance,',','?',TERMINAL.TerminalIdentifier.instance],
+						];
+					}
+					random(): string[] {
+						const random: number = Math.random();
+						return (
+							random < 1/6 ? ['+',TERMINAL.TerminalIdentifier.instance.random()] : random < 2/6 ? ['-',TERMINAL.TerminalIdentifier.instance.random()] : random < 3/6 ? ['?',TERMINAL.TerminalIdentifier.instance.random()] : random < 4/6 ? [...ProductionArgumentSet__0__List.instance.random(),',','+',TERMINAL.TerminalIdentifier.instance.random()] : random < 5/6 ? [...ProductionArgumentSet__0__List.instance.random(),',','-',TERMINAL.TerminalIdentifier.instance.random()] :
+							[...ProductionArgumentSet__0__List.instance.random(),',','?',TERMINAL.TerminalIdentifier.instance.random()]
+						);
+					}
+				}
+			
 				export class ProductionArgumentSet extends Production {
 					static readonly instance: ProductionArgumentSet = new ProductionArgumentSet();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							['<',ProductionArgumentSet__0__CSL.instance,'>'],
+							['<',ProductionArgumentSet__0__List.instance,'>'],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-
-							['<',...ProductionArgumentSet__0__CSL.instance.random(),'>']
+							
+							['<',...ProductionArgumentSet__0__List.instance.random(),'>']
 						);
 					}
 				}
-
-				export class ProductionArgumentSet__0__CSL extends Production {
-					static readonly instance: ProductionArgumentSet__0__CSL = new ProductionArgumentSet__0__CSL();
+			
+				export class ProductionConditionSet__0__List extends Production {
+					static readonly instance: ProductionConditionSet__0__List = new ProductionConditionSet__0__List();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							['+',TERMINAL.TerminalIdentifier.instance],['-',TERMINAL.TerminalIdentifier.instance],['?',TERMINAL.TerminalIdentifier.instance],[ProductionArgumentSet__0__CSL.instance,',','+',TERMINAL.TerminalIdentifier.instance],[ProductionArgumentSet__0__CSL.instance,',','-',TERMINAL.TerminalIdentifier.instance],[ProductionArgumentSet__0__CSL.instance,',','?',TERMINAL.TerminalIdentifier.instance],
+							[TERMINAL.TerminalIdentifier.instance,'+'],[TERMINAL.TerminalIdentifier.instance,'-'],[ProductionConditionSet__0__List.instance,',',TERMINAL.TerminalIdentifier.instance,'+'],[ProductionConditionSet__0__List.instance,',',TERMINAL.TerminalIdentifier.instance,'-'],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-							random < 1/6 ? ['+',TERMINAL.TerminalIdentifier.instance.random()] : random < 2/6 ? ['-',TERMINAL.TerminalIdentifier.instance.random()] : random < 3/6 ? ['?',TERMINAL.TerminalIdentifier.instance.random()] : random < 4/6 ? [...ProductionArgumentSet__0__CSL.instance.random(),',','+',TERMINAL.TerminalIdentifier.instance.random()] : random < 5/6 ? [...ProductionArgumentSet__0__CSL.instance.random(),',','-',TERMINAL.TerminalIdentifier.instance.random()] :
-							[...ProductionArgumentSet__0__CSL.instance.random(),',','?',TERMINAL.TerminalIdentifier.instance.random()]
+							random < 1/4 ? [TERMINAL.TerminalIdentifier.instance.random(),'+'] : random < 2/4 ? [TERMINAL.TerminalIdentifier.instance.random(),'-'] : random < 3/4 ? [...ProductionConditionSet__0__List.instance.random(),',',TERMINAL.TerminalIdentifier.instance.random(),'+'] :
+							[...ProductionConditionSet__0__List.instance.random(),',',TERMINAL.TerminalIdentifier.instance.random(),'-']
 						);
 					}
 				}
-
+			
 				export class ProductionConditionSet extends Production {
 					static readonly instance: ProductionConditionSet = new ProductionConditionSet();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							['<',ProductionConditionSet__0__CSL.instance,'>'],
+							['<',ProductionConditionSet__0__List.instance,'>'],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-
-							['<',...ProductionConditionSet__0__CSL.instance.random(),'>']
+							
+							['<',...ProductionConditionSet__0__List.instance.random(),'>']
 						);
 					}
 				}
-
-				export class ProductionConditionSet__0__CSL extends Production {
-					static readonly instance: ProductionConditionSet__0__CSL = new ProductionConditionSet__0__CSL();
-					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
-						return [
-							[TERMINAL.TerminalIdentifier.instance,'+'],[TERMINAL.TerminalIdentifier.instance,'-'],[ProductionConditionSet__0__CSL.instance,',',TERMINAL.TerminalIdentifier.instance,'+'],[ProductionConditionSet__0__CSL.instance,',',TERMINAL.TerminalIdentifier.instance,'-'],
-						];
-					}
-					random(): string[] {
-						const random: number = Math.random();
-						return (
-							random < 1/4 ? [TERMINAL.TerminalIdentifier.instance.random(),'+'] : random < 2/4 ? [TERMINAL.TerminalIdentifier.instance.random(),'-'] : random < 3/4 ? [...ProductionConditionSet__0__CSL.instance.random(),',',TERMINAL.TerminalIdentifier.instance.random(),'+'] :
-							[...ProductionConditionSet__0__CSL.instance.random(),',',TERMINAL.TerminalIdentifier.instance.random(),'-']
-						);
-					}
-				}
-
+			
 				export class ProductionReference extends Production {
 					static readonly instance: ProductionReference = new ProductionReference();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -128,7 +128,7 @@
 						);
 					}
 				}
-
+			
 				export class ProductionUnit extends Production {
 					static readonly instance: ProductionUnit = new ProductionUnit();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -144,7 +144,7 @@
 						);
 					}
 				}
-
+			
 				export class ProductionUnary extends Production {
 					static readonly instance: ProductionUnary = new ProductionUnary();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -160,7 +160,7 @@
 						);
 					}
 				}
-
+			
 				export class ProductionItem extends Production {
 					static readonly instance: ProductionItem = new ProductionItem();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -176,7 +176,7 @@
 						);
 					}
 				}
-
+			
 				export class ProductionOrder extends Production {
 					static readonly instance: ProductionOrder = new ProductionOrder();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -192,7 +192,7 @@
 						);
 					}
 				}
-
+			
 				export class ProductionConcat extends Production {
 					static readonly instance: ProductionConcat = new ProductionConcat();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -208,7 +208,7 @@
 						);
 					}
 				}
-
+			
 				export class ProductionAltern extends Production {
 					static readonly instance: ProductionAltern = new ProductionAltern();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -224,7 +224,7 @@
 						);
 					}
 				}
-
+			
 				export class ProductionDefinition extends Production {
 					static readonly instance: ProductionDefinition = new ProductionDefinition();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -235,12 +235,12 @@
 					random(): string[] {
 						const random: number = Math.random();
 						return (
-
+							
 							[...ProductionAltern.instance.random()]
 						);
 					}
 				}
-
+			
 				export class ProductionNonterminalName extends Production {
 					static readonly instance: ProductionNonterminalName = new ProductionNonterminalName();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -256,7 +256,7 @@
 						);
 					}
 				}
-
+			
 				export class ProductionProduction extends Production {
 					static readonly instance: ProductionProduction = new ProductionProduction();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -272,35 +272,38 @@
 						);
 					}
 				}
-
-				export class ProductionGrammar extends Production {
-					static readonly instance: ProductionGrammar = new ProductionGrammar();
+			
+				export class ProductionGrammar__0__List extends Production {
+					static readonly instance: ProductionGrammar__0__List = new ProductionGrammar__0__List();
 					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 						return [
-							['\u0002','\u0003'],['\u0002',ProductionProduction__List.instance,'\u0003'],
-						];
-					}
-					random(): string[] {
-						const random: number = Math.random();
-						return (
-							random < 1/2 ? ['\u0002','\u0003'] :
-							['\u0002',...ProductionProduction__List.instance.random(),'\u0003']
-						);
-					}
-				}
-
-				export class ProductionProduction__List extends Production {
-					static readonly instance: ProductionProduction__List = new ProductionProduction__List();
-					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
-						return [
-							[ProductionProduction.instance],[ProductionProduction__List.instance,ProductionProduction.instance],
+							[ProductionProduction.instance],[ProductionGrammar__0__List.instance,ProductionProduction.instance],
 						];
 					}
 					random(): string[] {
 						const random: number = Math.random();
 						return (
 							random < 1/2 ? [...ProductionProduction.instance.random()] :
-							[...ProductionProduction__List.instance.random(),...ProductionProduction.instance.random()]
+							[...ProductionGrammar__0__List.instance.random(),...ProductionProduction.instance.random()]
 						);
 					}
 				}
+			
+				export class ProductionGrammar extends Production {
+					static readonly instance: ProductionGrammar = new ProductionGrammar();
+					get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+						return [
+							['\u0002','\u0003'],['\u0002',ProductionGrammar__0__List.instance,'\u0003'],
+						];
+					}
+					random(): string[] {
+						const random: number = Math.random();
+						return (
+							random < 1/2 ? ['\u0002','\u0003'] :
+							['\u0002',...ProductionGrammar__0__List.instance.random(),'\u0003']
+						);
+					}
+				}
+			
+		
+		

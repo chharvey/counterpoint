@@ -94,43 +94,43 @@ export class ScreenerEBNF extends Screener {
 export class ParserEBNF extends Parser {
 	constructor (source: string) {
 		super(new ScreenerEBNF(source).generate(), new Grammar([
-			PRODUCTION.ProductionParameterSet         .instance,
-			PRODUCTION.ProductionIdentifier__CSL      .instance,
-			PRODUCTION.ProductionArgumentSet          .instance,
-			PRODUCTION.ProductionArgumentSet__0__CSL  .instance,
-			PRODUCTION.ProductionConditionSet         .instance,
-			PRODUCTION.ProductionConditionSet__0__CSL .instance,
-			PRODUCTION.ProductionReference            .instance,
-			PRODUCTION.ProductionUnit                 .instance,
-			PRODUCTION.ProductionUnary                .instance,
-			PRODUCTION.ProductionItem                 .instance,
-			PRODUCTION.ProductionOrder                .instance,
-			PRODUCTION.ProductionConcat               .instance,
-			PRODUCTION.ProductionAltern               .instance,
-			PRODUCTION.ProductionDefinition           .instance,
-			PRODUCTION.ProductionNonterminalName      .instance,
-			PRODUCTION.ProductionProduction           .instance,
-			PRODUCTION.ProductionGrammar              .instance,
-			PRODUCTION.ProductionProduction__List     .instance,
+			PRODUCTION.ProductionParameterSet__0__List .instance,
+			PRODUCTION.ProductionParameterSet          .instance,
+			PRODUCTION.ProductionArgumentSet__0__List  .instance,
+			PRODUCTION.ProductionArgumentSet           .instance,
+			PRODUCTION.ProductionConditionSet__0__List .instance,
+			PRODUCTION.ProductionConditionSet          .instance,
+			PRODUCTION.ProductionReference             .instance,
+			PRODUCTION.ProductionUnit                  .instance,
+			PRODUCTION.ProductionUnary                 .instance,
+			PRODUCTION.ProductionItem                  .instance,
+			PRODUCTION.ProductionOrder                 .instance,
+			PRODUCTION.ProductionConcat                .instance,
+			PRODUCTION.ProductionAltern                .instance,
+			PRODUCTION.ProductionDefinition            .instance,
+			PRODUCTION.ProductionNonterminalName       .instance,
+			PRODUCTION.ProductionProduction            .instance,
+			PRODUCTION.ProductionGrammar__0__List      .instance,
+			PRODUCTION.ProductionGrammar               .instance,
 		], PRODUCTION.ProductionGrammar.instance), new Map<Production, typeof ParseNode>([
-			[PRODUCTION.ProductionParameterSet         .instance, PARSENODE.ParseNodeParameterSet],
-			[PRODUCTION.ProductionIdentifier__CSL      .instance, PARSENODE.ParseNodeIdentifier__CSL],
-			[PRODUCTION.ProductionArgumentSet          .instance, PARSENODE.ParseNodeArgumentSet],
-			[PRODUCTION.ProductionArgumentSet__0__CSL  .instance, PARSENODE.ParseNodeArgumentSet__0__CSL],
-			[PRODUCTION.ProductionConditionSet         .instance, PARSENODE.ParseNodeConditionSet],
-			[PRODUCTION.ProductionConditionSet__0__CSL .instance, PARSENODE.ParseNodeConditionSet__0__CSL],
-			[PRODUCTION.ProductionReference            .instance, PARSENODE.ParseNodeReference],
-			[PRODUCTION.ProductionUnit                 .instance, PARSENODE.ParseNodeUnit],
-			[PRODUCTION.ProductionUnary                .instance, PARSENODE.ParseNodeUnary],
-			[PRODUCTION.ProductionItem                 .instance, PARSENODE.ParseNodeItem],
-			[PRODUCTION.ProductionOrder                .instance, PARSENODE.ParseNodeOrder],
-			[PRODUCTION.ProductionConcat               .instance, PARSENODE.ParseNodeConcat],
-			[PRODUCTION.ProductionAltern               .instance, PARSENODE.ParseNodeAltern],
-			[PRODUCTION.ProductionDefinition           .instance, PARSENODE.ParseNodeDefinition],
-			[PRODUCTION.ProductionNonterminalName      .instance, PARSENODE.ParseNodeNonterminalName],
-			[PRODUCTION.ProductionProduction           .instance, PARSENODE.ParseNodeProduction],
-			[PRODUCTION.ProductionGrammar              .instance, PARSENODE.ParseNodeGrammar],
-			[PRODUCTION.ProductionProduction__List     .instance, PARSENODE.ParseNodeProduction__List],
+			[PRODUCTION.ProductionParameterSet__0__List .instance, PARSENODE.ParseNodeParameterSet__0__List],
+			[PRODUCTION.ProductionParameterSet          .instance, PARSENODE.ParseNodeParameterSet],
+			[PRODUCTION.ProductionArgumentSet__0__List  .instance, PARSENODE.ParseNodeArgumentSet__0__List],
+			[PRODUCTION.ProductionArgumentSet           .instance, PARSENODE.ParseNodeArgumentSet],
+			[PRODUCTION.ProductionConditionSet__0__List .instance, PARSENODE.ParseNodeConditionSet__0__List],
+			[PRODUCTION.ProductionConditionSet          .instance, PARSENODE.ParseNodeConditionSet],
+			[PRODUCTION.ProductionReference             .instance, PARSENODE.ParseNodeReference],
+			[PRODUCTION.ProductionUnit                  .instance, PARSENODE.ParseNodeUnit],
+			[PRODUCTION.ProductionUnary                 .instance, PARSENODE.ParseNodeUnary],
+			[PRODUCTION.ProductionItem                  .instance, PARSENODE.ParseNodeItem],
+			[PRODUCTION.ProductionOrder                 .instance, PARSENODE.ParseNodeOrder],
+			[PRODUCTION.ProductionConcat                .instance, PARSENODE.ParseNodeConcat],
+			[PRODUCTION.ProductionAltern                .instance, PARSENODE.ParseNodeAltern],
+			[PRODUCTION.ProductionDefinition            .instance, PARSENODE.ParseNodeDefinition],
+			[PRODUCTION.ProductionNonterminalName       .instance, PARSENODE.ParseNodeNonterminalName],
+			[PRODUCTION.ProductionProduction            .instance, PARSENODE.ParseNodeProduction],
+			[PRODUCTION.ProductionGrammar__0__List      .instance, PARSENODE.ParseNodeGrammar__0__List],
+			[PRODUCTION.ProductionGrammar               .instance, PARSENODE.ParseNodeGrammar],
 		]))
 	}
 }
@@ -161,30 +161,27 @@ export class Decorator {
 	 * Similar to a node of the Semantic Tree or “decorated/abstract syntax tree”.
 	 * @returns a JSON object containing the parse node’s semantics
 	 */
-	decorate(node: PARSENODE.ParseNodeParameterSet):         NonemptyArray<SEMANTICNODE.SemanticNodeParam>;
-	decorate(node: PARSENODE.ParseNodeIdentifier__CSL):      NonemptyArray<SEMANTICNODE.SemanticNodeParam>;
-	decorate(node: PARSENODE.ParseNodeArgumentSet):          NonemptyArray<SEMANTICNODE.SemanticNodeArg>;
-	decorate(node: PARSENODE.ParseNodeArgumentSet__0__CSL):  NonemptyArray<SEMANTICNODE.SemanticNodeArg>;
-	decorate(node: PARSENODE.ParseNodeConditionSet):         NonemptyArray<SEMANTICNODE.SemanticNodeCondition>;
-	decorate(node: PARSENODE.ParseNodeConditionSet__0__CSL): NonemptyArray<SEMANTICNODE.SemanticNodeCondition>;
-	decorate(node: PARSENODE.ParseNodeReference):            SEMANTICNODE.SemanticNodeRef;
-	decorate(node: PARSENODE.ParseNodeUnit):                 SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeUnary):                SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeItem):                 SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeOrder):                SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeConcat):               SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeAltern):               SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeDefinition):           SEMANTICNODE.SemanticNodeExpr;
-	decorate(node: PARSENODE.ParseNodeNonterminalName):      SEMANTICNODE.SemanticNodeNonterminal;
-	decorate(node: PARSENODE.ParseNodeProduction):           SEMANTICNODE.SemanticNodeProduction;
-	decorate(node: PARSENODE.ParseNodeGrammar):              SEMANTICNODE.SemanticNodeGrammar;
-	decorate(node: PARSENODE.ParseNodeProduction__List):     NonemptyArray<SEMANTICNODE.SemanticNodeProduction>;
+	decorate(node: PARSENODE.ParseNodeParameterSet__0__List): NonemptyArray<SEMANTICNODE.SemanticNodeParam>;
+	decorate(node: PARSENODE.ParseNodeParameterSet):          NonemptyArray<SEMANTICNODE.SemanticNodeParam>;
+	decorate(node: PARSENODE.ParseNodeArgumentSet__0__List):  NonemptyArray<SEMANTICNODE.SemanticNodeArg>;
+	decorate(node: PARSENODE.ParseNodeArgumentSet):           NonemptyArray<SEMANTICNODE.SemanticNodeArg>;
+	decorate(node: PARSENODE.ParseNodeConditionSet__0__List): NonemptyArray<SEMANTICNODE.SemanticNodeCondition>;
+	decorate(node: PARSENODE.ParseNodeConditionSet):          NonemptyArray<SEMANTICNODE.SemanticNodeCondition>;
+	decorate(node: PARSENODE.ParseNodeReference):             SEMANTICNODE.SemanticNodeRef;
+	decorate(node: PARSENODE.ParseNodeUnit):                  SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeUnary):                 SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeItem):                  SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeOrder):                 SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeConcat):                SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeAltern):                SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeDefinition):            SEMANTICNODE.SemanticNodeExpr;
+	decorate(node: PARSENODE.ParseNodeNonterminalName):       SEMANTICNODE.SemanticNodeNonterminal;
+	decorate(node: PARSENODE.ParseNodeProduction):            SEMANTICNODE.SemanticNodeProduction;
+	decorate(node: PARSENODE.ParseNodeGrammar__0__List):      NonemptyArray<SEMANTICNODE.SemanticNodeProduction>;
+	decorate(node: PARSENODE.ParseNodeGrammar):               SEMANTICNODE.SemanticNodeGrammar;
 	decorate(node: ParseNode): SEMANTICNODE.SemanticNodeEBNF | readonly SEMANTICNODE.SemanticNodeEBNF[];
 	decorate(node: ParseNode): SEMANTICNODE.SemanticNodeEBNF | readonly SEMANTICNODE.SemanticNodeEBNF[] {
-		if (node instanceof PARSENODE.ParseNodeParameterSet) {
-			return this.decorate(node.children[1])
-
-		} else if (node instanceof PARSENODE.ParseNodeIdentifier__CSL) {
+		if (node instanceof PARSENODE.ParseNodeParameterSet__0__List) {
 			function decorateParam(identifier: TOKEN.TokenIdentifier): SEMANTICNODE.SemanticNodeParam {
 				return new SEMANTICNODE.SemanticNodeParam(identifier)
 			}
@@ -197,10 +194,10 @@ export class Decorator {
 					decorateParam(node.children[2] as TOKEN.TokenIdentifier),
 				]
 
-		} else if (node instanceof PARSENODE.ParseNodeArgumentSet) {
+		} else if (node instanceof PARSENODE.ParseNodeParameterSet) {
 			return this.decorate(node.children[1])
 
-		} else if (node instanceof PARSENODE.ParseNodeArgumentSet__0__CSL) {
+		} else if (node instanceof PARSENODE.ParseNodeArgumentSet__0__List) {
 			function decorateArg(identifier: TOKEN.TokenIdentifier, append: TOKEN.TokenPunctuator): SEMANTICNODE.SemanticNodeArg {
 				return new SEMANTICNODE.SemanticNodeArg(identifier, Decorator.PARAMOPS.get(append.source)!)
 			}
@@ -219,10 +216,10 @@ export class Decorator {
 					),
 				]
 
-		} else if (node instanceof PARSENODE.ParseNodeConditionSet) {
+		} else if (node instanceof PARSENODE.ParseNodeArgumentSet) {
 			return this.decorate(node.children[1])
 
-		} else if (node instanceof PARSENODE.ParseNodeConditionSet__0__CSL) {
+		} else if (node instanceof PARSENODE.ParseNodeConditionSet__0__List) {
 			function decorateCondition(identifier: TOKEN.TokenIdentifier, include: TOKEN.TokenPunctuator): SEMANTICNODE.SemanticNodeCondition {
 				return new SEMANTICNODE.SemanticNodeCondition(identifier, Decorator.PARAMOPS.get(include.source) as boolean)
 			}
@@ -240,6 +237,9 @@ export class Decorator {
 						node.children[3] as TOKEN.TokenPunctuator,
 					),
 				]
+
+		} else if (node instanceof PARSENODE.ParseNodeConditionSet) {
+			return this.decorate(node.children[1])
 
 		} else if (node instanceof PARSENODE.ParseNodeReference) {
 			return (node.children.length === 1)
@@ -334,10 +334,7 @@ export class Decorator {
 				this.decorate((node.children.length === 4) ? node.children[2] : node.children[3]),
 			)
 
-		} else if (node instanceof PARSENODE.ParseNodeGrammar) {
-			return new SEMANTICNODE.SemanticNodeGrammar(node, (node.children.length === 2) ? [] : this.decorate(node.children[1]))
-
-		} else if (node instanceof PARSENODE.ParseNodeProduction__List) {
+		} else if (node instanceof PARSENODE.ParseNodeGrammar__0__List) {
 			return (node.children.length === 1)
 				? [
 					this.decorate(node.children[0]),
@@ -346,6 +343,9 @@ export class Decorator {
 					...this.decorate(node.children[0]),
 					this.decorate(node.children[1]),
 				]
+
+		} else if (node instanceof PARSENODE.ParseNodeGrammar) {
+			return new SEMANTICNODE.SemanticNodeGrammar(node, (node.children.length === 2) ? [] : this.decorate(node.children[1]))
 
 		} else {
 			throw new ReferenceError(`Could not find type of parse node ${ node }.`)
