@@ -10,6 +10,14 @@ type ChoiceData = NonemptySequence<NonemptySequence<
 
 
 
+ChoiceData Transform(SemanticConst expr, Text nt, Sequence<ProductionData> data) :=
+	1. *Return:* [
+		[expr.value],
+	].
+;
+
+
+
 ChoiceData Transform(SemanticRef expr, Text nt, Sequence<ProductionData> data) :=
 	1. *If* `expr.name` is in all-uppercase:
 		1. *Note:* The identifier represents a non-literal terminal symbol.

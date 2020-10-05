@@ -17,9 +17,6 @@ import type * as TOKEN from './Token.class'
 function NonemptyArray_flatMap<T, U>(arr: KleenePlus<T>, callback: (it: T) => KleenePlus<U>): KleenePlus<U> {
 	return arr.flatMap((it) => callback(it)) as readonly U[] as KleenePlus<U>
 }
-/** @temp */ function toDefn(op: SemanticNodeExpr, nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
-	return (op instanceof SemanticNodeOp || op instanceof SemanticNodeItem || op instanceof SemanticNodeRef) ? op.expand(nt, data) : [[op.source]]
-}
 
 
 
@@ -57,10 +54,22 @@ export class SemanticNodeCondition extends SemanticNodeEBNF {
 	}
 }
 export abstract class SemanticNodeExpr extends SemanticNodeEBNF {
+	/**
+	 * Transform this semantic expression into JSON data.
+	 * @param nt a specific nonterminal symbol that contains this expression
+	 * @param data the bank of JSON data
+	 * @return data representing an EBNF choice
+	 */
+	abstract transform(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice;
 }
 export class SemanticNodeConst extends SemanticNodeExpr {
 	constructor (start_node: TOKEN.TokenCharCode | TOKEN.TokenString | TOKEN.TokenCharClass) {
 		super(start_node, {value: start_node.source})
+	}
+	transform(_nt: ConcreteNonterminal, _data: EBNFObject[]): EBNFChoice {
+		return [
+			[this.source],
+		]
 	}
 }
 export class SemanticNodeRef extends SemanticNodeExpr {
@@ -79,7 +88,7 @@ export class SemanticNodeRef extends SemanticNodeExpr {
 		)
 		this.name = (ref instanceof SemanticNodeRef) ? ref.name : ref.source
 	}
-	expand(nt: ConcreteNonterminal, _data: EBNFObject[]): EBNFChoice {
+	transform(nt: ConcreteNonterminal, _data: EBNFObject[]): EBNFChoice {
 		return (this.name === this.name.toUpperCase())
 			/* ALLCAPS: terminal identifier */
 			? [[{term: this.name}]]
@@ -106,9 +115,9 @@ export class SemanticNodeItem extends SemanticNodeExpr {
 	) {
 		super(start_node, {}, [item, ...conditions])
 	}
-	expand(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
+	transform(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
 		return (this.conditions.some((cond) => cond.include === nt.hasSuffix(cond)))
-			? toDefn(this.item, nt, data)
+			? this.item.transform(nt, data)
 			: [
 				['\'\''],
 			]
@@ -118,7 +127,6 @@ abstract class SemanticNodeOp extends SemanticNodeExpr {
 	constructor (start_node: ParseNode, operator: string, operands: KleenePlus<SemanticNodeExpr>) {
 		super(start_node, {operator}, operands)
 	}
-	abstract expand(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice;
 }
 export class SemanticNodeOpUn extends SemanticNodeOp {
 	constructor (
@@ -128,13 +136,13 @@ export class SemanticNodeOpUn extends SemanticNodeOp {
 	) {
 		super(start_node, operator, [operand])
 	}
-	expand(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
+	transform(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
 		const name: string = `${ nt }__${ nt.subCount }__List`
 		return new Map<string, () => EBNFChoice>([
 			['plus', () => {
 				data.push({
 					name,
-					defn: NonemptyArray_flatMap(toDefn(this.operand, nt, data), (seq) => [
+					defn: NonemptyArray_flatMap(this.operand.transform(nt, data), (seq) => [
 						seq,
 						[{prod: name}, ...seq],
 					]),
@@ -146,7 +154,7 @@ export class SemanticNodeOpUn extends SemanticNodeOp {
 			['star', () => {
 				data.push({
 					name,
-					defn: NonemptyArray_flatMap(toDefn(this.operand, nt, data), (seq) => [
+					defn: NonemptyArray_flatMap(this.operand.transform(nt, data), (seq) => [
 						seq,
 						[{prod: name}, ...seq],
 					]),
@@ -159,7 +167,7 @@ export class SemanticNodeOpUn extends SemanticNodeOp {
 			['hash', () => {
 				data.push({
 					name,
-					defn: NonemptyArray_flatMap(toDefn(this.operand, nt, data), (seq) => [
+					defn: NonemptyArray_flatMap(this.operand.transform(nt, data), (seq) => [
 						seq,
 						[{prod: name}, '\',\'', ...seq],
 					]),
@@ -171,7 +179,7 @@ export class SemanticNodeOpUn extends SemanticNodeOp {
 			['opt', () => {
 				return [
 					['\'\''],
-					...toDefn(this.operand, nt, data),
+					...this.operand.transform(nt, data),
 				]
 			}],
 		]).get(this.operator)!()
@@ -186,22 +194,22 @@ export class SemanticNodeOpBin extends SemanticNodeOp {
 	) {
 		super(start_node, operator, [operand0, operand1])
 	}
-	expand(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
+	transform(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
 		return new Map<string, () => EBNFChoice>([
-			['order', () => NonemptyArray_flatMap(toDefn(this.operand0, nt, data), (seq0) =>
-				NonemptyArray_flatMap(toDefn(this.operand1, nt, data), (seq1) => [
+			['order', () => NonemptyArray_flatMap(this.operand0.transform(nt, data), (seq0) =>
+				NonemptyArray_flatMap(this.operand1.transform(nt, data), (seq1) => [
 					[...seq0, ...seq1],
 				])
 			)],
-			['concat', () => NonemptyArray_flatMap(toDefn(this.operand0, nt, data), (seq0) =>
-				NonemptyArray_flatMap(toDefn(this.operand1, nt, data), (seq1) => [
+			['concat', () => NonemptyArray_flatMap(this.operand0.transform(nt, data), (seq0) =>
+				NonemptyArray_flatMap(this.operand1.transform(nt, data), (seq1) => [
 					[...seq0, ...seq1],
 					[...seq1, ...seq0],
 				])
 			)],
 			['altern', () => [
-				...toDefn(this.operand0, nt, data),
-				...toDefn(this.operand1, nt, data),
+				...this.operand0.transform(nt, data),
+				...this.operand1.transform(nt, data),
 			]],
 		]).get(this.operator)!()
 	}
@@ -239,7 +247,7 @@ export class SemanticNodeProduction extends SemanticNodeEBNF {
 		const productions_data: EBNFObject[] = []
 		productions_data.push(...this.nonterminal.expand().map((n) => ({
 			name: n.toString(),
-			defn: toDefn(this.definition, n, productions_data),
+			defn: this.definition.transform(n, productions_data),
 		})))
 		return productions_data
 	}
