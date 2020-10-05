@@ -17,7 +17,7 @@ import type * as TOKEN from './Token.class'
 function NonemptyArray_flatMap<T, U>(arr: KleenePlus<T>, callback: (it: T) => KleenePlus<U>): KleenePlus<U> {
 	return arr.flatMap((it) => callback(it)) as readonly U[] as KleenePlus<U>
 }
-/** @temp */ function toDefn(op: SemanticNodeExpr, nt: SemanticNodeNonterminal, data: EBNFObject[]): EBNFChoice {
+/** @temp */ function toDefn(op: SemanticNodeExpr, nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
 	return (op instanceof SemanticNodeOp) ? op.expand(nt, data) : [[op.source]]
 }
 
@@ -94,7 +94,7 @@ abstract class SemanticNodeOp extends SemanticNodeExpr {
 	constructor (start_node: ParseNode, operator: string, operands: KleenePlus<SemanticNodeExpr>) {
 		super(start_node, {operator}, operands)
 	}
-	abstract expand(nt: SemanticNodeNonterminal, data: EBNFObject[]): EBNFChoice;
+	abstract expand(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice;
 }
 export class SemanticNodeOpUn extends SemanticNodeOp {
 	constructor (
@@ -104,8 +104,8 @@ export class SemanticNodeOpUn extends SemanticNodeOp {
 	) {
 		super(start_node, operator, [operand])
 	}
-	expand(nt: SemanticNodeNonterminal, data: EBNFObject[]): EBNFChoice {
-		const name: string = `${ nt.source }_${ nt.subCount }_List`
+	expand(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
+		const name: string = `${ nt }__${ nt.subCount }__List`
 		return new Map<string, () => EBNFChoice>([
 			['plus', () => {
 				data.push({
@@ -162,7 +162,7 @@ export class SemanticNodeOpBin extends SemanticNodeOp {
 	) {
 		super(start_node, operator, [operand0, operand1])
 	}
-	expand(nt: SemanticNodeNonterminal, data: EBNFObject[]): EBNFChoice {
+	expand(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
 		return new Map<string, () => EBNFChoice>([
 			['order', () => NonemptyArray_flatMap(toDefn(this.operand0, nt, data), (seq0) =>
 				NonemptyArray_flatMap(toDefn(this.operand1, nt, data), (seq1) => [
@@ -183,20 +183,11 @@ export class SemanticNodeOpBin extends SemanticNodeOp {
 	}
 }
 export class SemanticNodeNonterminal extends SemanticNodeEBNF {
-	/** A counter for internal sub-expressions. Used for naming automated productions. */
-	private sub_count: bigint = 0n
 	constructor (
 		start_node: TOKEN.TokenIdentifier,
 		private readonly params: readonly SemanticNodeParam[] = [],
 	) {
 		super(start_node, {name: start_node.source}, params)
-	}
-	/**
-	 * Return the sub-expression count, and then increment it.
-	 * @return this ConcreteNonterminal’s current sub-expression counter
-	 */
-	get subCount(): bigint {
-		return this.sub_count++
 	}
 	/**
 	 * Expands this nonterminal in its abstract form into a set of nonterminals with concrete parameters.
@@ -224,7 +215,7 @@ export class SemanticNodeProduction extends SemanticNodeEBNF {
 		const productions_data: EBNFObject[] = []
 		productions_data.push(...this.nonterminal.expand().map((n) => ({
 			name: n.toString(),
-			defn: toDefn(this.definition, this.nonterminal, productions_data),
+			defn: toDefn(this.definition, n, productions_data),
 		})))
 		return productions_data
 	}
@@ -244,12 +235,21 @@ export class SemanticNodeGrammar extends SemanticNodeEBNF {
 
 
 class ConcreteNonterminal {
+	/** A counter for internal sub-expressions. Used for naming automated productions. */
+	private sub_count: bigint = 0n
 	constructor(
-		private name: string,
-		private suffixes: SemanticNodeParam[],
+		readonly name: string,
+		private readonly suffixes: SemanticNodeParam[],
 	) {
 	}
+	/**
+	 * Return the sub-expression count, and then increment it.
+	 * @return this ConcreteNonterminal’s current sub-expression counter
+	 */
+	get subCount(): bigint {
+		return this.sub_count++
+	}
 	toString(): string {
-		return `${ this.name }${ this.suffixes.map((s) => `__${ s.source }`).join('') }`
+		return `${ this.name }${ this.suffixes.map((s) => `_${ s.source }`).join('') }`
 	}
 }
