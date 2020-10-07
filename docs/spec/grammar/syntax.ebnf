@@ -47,51 +47,51 @@ Type ::=
 
 
 
-StringTemplate ::=
+StringTemplate<Dynamic> ::=
 	| TEMPLATE_FULL
-	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
+	| TEMPLATE_HEAD Expression<?Dynamic>? (TEMPLATE_MIDDLE Expression<?Dynamic>?)* TEMPLATE_TAIL
 ;
 
-ExpressionUnit ::=
-	| IDENTIFIER
+ExpressionUnit<Dynamic> ::=
+	| <Dynamic+>IDENTIFIER
 	| PrimitiveLiteral
-	| StringTemplate
-	| "(" Expression ")"
+	| StringTemplate<?Dynamic>
+	| "(" Expression<?Dynamic> ")"
 ;
 
-ExpressionUnarySymbol ::=
-	| ExpressionUnit
-	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol
+ExpressionUnarySymbol<Dynamic> ::=
+	| ExpressionUnit<?Dynamic>
+	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol<?Dynamic>
 ;
 
-ExpressionExponential
-	::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
+ExpressionExponential<Dynamic>
+	::= ExpressionUnarySymbol<?Dynamic> ("^" ExpressionExponential<?Dynamic>)?;
 
-ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/" ))?                            ExpressionExponential;
-ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-" ))?                            ExpressionMultiplicative;
-ExpressionComparative    ::= (ExpressionComparative    ("<" | ">" | "<=" | ">=" | "!<" | "!>"))? ExpressionAdditive;
-ExpressionEquality       ::= (ExpressionEquality       ("is" | "isnt" | "==" | "!="))?           ExpressionComparative;
-ExpressionConjunctive    ::= (ExpressionConjunctive    ("&&" | "!&"))?                           ExpressionEquality;
-ExpressionDisjunctive    ::= (ExpressionDisjunctive    ("||" | "!|"))?                           ExpressionConjunctive;
+ExpressionMultiplicative <Dynamic> ::= (ExpressionMultiplicative <?Dynamic> ("*" | "/" ))?                            ExpressionExponential    <?Dynamic>;
+ExpressionAdditive       <Dynamic> ::= (ExpressionAdditive       <?Dynamic> ("+" | "-" ))?                            ExpressionMultiplicative <?Dynamic>;
+ExpressionComparative    <Dynamic> ::= (ExpressionComparative    <?Dynamic> ("<" | ">" | "<=" | ">=" | "!<" | "!>"))? ExpressionAdditive       <?Dynamic>;
+ExpressionEquality       <Dynamic> ::= (ExpressionEquality       <?Dynamic> ("is" | "isnt" | "==" | "!="))?           ExpressionComparative    <?Dynamic>;
+ExpressionConjunctive    <Dynamic> ::= (ExpressionConjunctive    <?Dynamic> ("&&" | "!&"))?                           ExpressionEquality       <?Dynamic>;
+ExpressionDisjunctive    <Dynamic> ::= (ExpressionDisjunctive    <?Dynamic> ("||" | "!|"))?                           ExpressionConjunctive    <?Dynamic>;
 
-ExpressionConditional
-	::= "if" Expression "then" Expression "else" Expression;
+ExpressionConditional<Dynamic>
+	::= "if" Expression<?Dynamic> "then" Expression<?Dynamic> "else" Expression<?Dynamic>;
 
-Expression ::=
-	| ExpressionDisjunctive
-	| ExpressionConditional
+Expression<Dynamic> ::=
+	| ExpressionDisjunctive<?Dynamic>
+	| ExpressionConditional<?Dynamic>
 ;
 
 
 
 DeclarationVariable
-	::= "let" "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
+	::= "let" "unfixed"? IDENTIFIER ":" Type "=" Expression<+Dynamic> ";";
 
 StatementAssignment
-	::= IDENTIFIER "=" Expression ";";
+	::= IDENTIFIER "=" Expression<+Dynamic> ";";
 
 Statement ::=
-	| Expression? ";"
+	| Expression<+Dynamic>? ";"
 	| DeclarationVariable
 	| StatementAssignment
 ;
