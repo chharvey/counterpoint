@@ -5,7 +5,7 @@ import Util   from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {
-	ScannerSolid as Scanner,
+	LexerSolid as Lexer,
 } from '../../src/lexer/'
 import {
 	ParseNode,
@@ -89,12 +89,12 @@ describe('ParseNode', () => {
 describe('ParseNodeSolid', () => {
 	describe('#decorate', () => {
 		function validatorFromType(typestring: string, config: SolidConfig = CONFIG_DEFAULT): Validator {
-			return new Scanner(`let x: ${ typestring } = null;`, config).lexer.screener.parser.validator
+			return new Lexer(`let x: ${ typestring } = null;`, config).screener.parser.validator
 		}
 		context('Goal ::= #x02 #x03', () => {
 			it('makes a SemanticNodeGoal node containing no children.', () => {
-				const goal: SemanticNodeGoal = new Scanner(``, CONFIG_DEFAULT).lexer.screener.parser.validator
-					.decorate(new Scanner(``, CONFIG_DEFAULT).lexer.screener.parser.parse())
+				const goal: SemanticNodeGoal = new Lexer(``, CONFIG_DEFAULT).screener.parser.validator
+					.decorate(new Lexer(``, CONFIG_DEFAULT).screener.parser.parse())
 				assert_arrayLength(goal.children, 0, 'semantic goal should have 0 children')
 			})
 		})
@@ -118,7 +118,7 @@ describe('ParseNodeSolid', () => {
 					`true;`,
 					`42;`,
 					`4.2;`,
-				].map((src) => new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator.decorate(primitiveLiteralFromSource(src)).value), [
+				].map((src) => new Lexer(src, CONFIG_DEFAULT).screener.parser.validator.decorate(primitiveLiteralFromSource(src)).value), [
 					SolidNull.NULL,
 					SolidBoolean.FALSE,
 					SolidBoolean.TRUE,
@@ -280,8 +280,8 @@ describe('ParseNodeSolid', () => {
 
 		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
 			function stringTemplateSemanticNode(src: string): string {
-				return ((new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator
-					.decorate(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.parse())
+				return ((new Lexer(src, CONFIG_DEFAULT).screener.parser.validator
+					.decorate(new Lexer(src, CONFIG_DEFAULT).screener.parser.parse())
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeTemplate)
 					.serialize()
@@ -721,7 +721,7 @@ describe('ParseNodeSolid', () => {
 					</SemanticDeclarationVariable>
 				*/
 				const src: string = `let  the_answer:  int | float =  21  *  2;`
-				const decl: SemanticNodeDeclarationVariable = new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator
+				const decl: SemanticNodeDeclarationVariable = new Lexer(src, CONFIG_DEFAULT).screener.parser.validator
 					.decorate(variableDeclarationFromSource(src))
 				// assert.strictEqual(decl.unfixed, true)
 				// assert.strictEqual(decl.children[0].children[0].id, 256n)
@@ -749,7 +749,7 @@ describe('ParseNodeSolid', () => {
 					</SemanticDeclarationVariable>
 				*/
 				const src: string = `let \`the £ answer\`: int = the_answer * 10;`
-				const decl: SemanticNodeDeclarationVariable = new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator
+				const decl: SemanticNodeDeclarationVariable = new Lexer(src, CONFIG_DEFAULT).screener.parser.validator
 					.decorate(variableDeclarationFromSource(src))
 				// assert.strictEqual(decl.unfixed, false)
 				// assert.strictEqual(decl.children[0].children[0].id, 256n)
@@ -770,8 +770,8 @@ describe('ParseNodeSolid', () => {
 				const srcs: [string, SolidConfig] = [Util.dedent(`
 					the_answer = the_answer - 40;
 				`), CONFIG_DEFAULT]
-				assert.strictEqual(new Scanner(...srcs).lexer.screener.parser.validator
-					.decorate(new Scanner(...srcs).lexer.screener.parser.parse())
+				assert.strictEqual(new Lexer(...srcs).screener.parser.validator
+					.decorate(new Lexer(...srcs).screener.parser.parse())
 					.serialize(), `
 					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - 40 ; ␃">
 						<Assignment line="3" col="1" source="the_answer = the_answer - 40 ;">
@@ -800,8 +800,8 @@ describe('ParseNodeSolid', () => {
 						<StatementExpression source="420 ;">...</StatementExpression>
 					</Goal>
 				*/
-				const goal: SemanticNodeGoal = new Scanner(`42; 420;`, CONFIG_DEFAULT).lexer.screener.parser.validator
-					.decorate(new Scanner(`42; 420;`, CONFIG_DEFAULT).lexer.screener.parser.parse())
+				const goal: SemanticNodeGoal = new Lexer(`42; 420;`, CONFIG_DEFAULT).screener.parser.validator
+					.decorate(new Lexer(`42; 420;`, CONFIG_DEFAULT).screener.parser.parse())
 				assert_arrayLength(goal.children, 2, 'goal should have 2 children')
 				assert.deepStrictEqual(goal.children.map((stat) => {
 					assert.ok(stat instanceof SemanticNodeStatementExpression)

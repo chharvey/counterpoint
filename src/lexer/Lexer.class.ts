@@ -38,14 +38,14 @@ export class LexerSolid extends Lexer {
 
 	/**
 	 * Construct a new LexerSolid object.
-	 * @param chargenerator - A character generator produced by a Scanner.
+	 * @param source - the source text
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		chargenerator: Generator<Char>,
+		source: string,
 		readonly config: SolidConfig,
 	) {
-		super(chargenerator)
+		super(source)
 	}
 
 	protected generate_do(): Token | null {
@@ -138,6 +138,7 @@ export class LexerSolid extends Lexer {
 	 * @return a new Screener with this Lexer as its argument
 	 */
 	get screener(): Screener {
+		// @ts-expect-error
 		return new Screener(this.generate(), this.config)
 	}
 }

@@ -1,8 +1,4 @@
 export {
-	ScannerSolid,
-} from './Scanner.class'
-
-export {
 	LexerSolid,
 } from './Lexer.class'
 
