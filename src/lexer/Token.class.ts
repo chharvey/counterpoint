@@ -4,6 +4,7 @@ import {
 	Token,
 	TokenComment,
 	Lexer,
+	LexError02,
 } from '@chharvey/parser';
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
@@ -15,7 +16,6 @@ import type {
 } from './Lexer.class'
 
 import {
-	LexError02,
 	LexError03,
 	LexError04,
 	LexError05,

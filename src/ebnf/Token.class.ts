@@ -4,11 +4,8 @@ import {
 	TokenFilebound,
 	TokenComment,
 	Lexer,
-} from '@chharvey/parser';
-
-import {
 	LexError02,
-} from '../error/LexError.class'
+} from '@chharvey/parser';
 
 
 

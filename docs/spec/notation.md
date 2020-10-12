@@ -1312,9 +1312,6 @@ When the Solid source text fails to produce a token per
 the [lexical grammar](#the-lexical-grammar) rules,
 a lexical error is raised.
 
-1100. A general lexical error not covered by one of the following cases.
-1101. The lexer reached a character that it does not recognize.
-1102. The lexer reached the end of the file before it found the end of the current token.
 1103. The lexer found an escape sequence of an invalid format.
 1104. The lexer found a numeric separator where it is not allowed.
 1105. The lexer found a float literal in an invalid format.

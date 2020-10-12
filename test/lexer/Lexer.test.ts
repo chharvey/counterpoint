@@ -1,6 +1,8 @@
 import {
 	Token,
 	TokenWhitespace,
+	LexError01,
+	LexError02,
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
@@ -22,8 +24,6 @@ import {
 	TokenCommentMulti,
 } from '../../src/lexer/'
 import {
-	LexError01,
-	LexError02,
 	LexError03,
 	LexError04,
 	LexError05,
