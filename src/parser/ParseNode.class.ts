@@ -1,8 +1,11 @@
 import type {
+	Serializable,
+} from '@chharvey/parser';
+
+import type {
 	EBNFObject,
 } from '../types.d'
 import Util from '../class/Util.class'
-import type Serializable from '../iface/Serializable.iface'
 import type {
 	Token,
 } from '../lexer/'

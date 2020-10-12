@@ -1,9 +1,9 @@
 import {
 	Filebound,
+	Serializable,
 } from '@chharvey/parser';
 
 import Util from '../class/Util.class'
-import type Serializable from '../iface/Serializable.iface'
 import type {Scanner} from './Scanner.class'
 import {
 } from './Token.class'

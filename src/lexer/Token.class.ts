@@ -1,12 +1,12 @@
 import {
 	Filebound,
+	Serializable,
 } from '@chharvey/parser';
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 
 import Util from '../class/Util.class'
 import Dev from '../class/Dev.class'
-import type Serializable from '../iface/Serializable.iface'
 import Char from './Char.class'
 import type {
 	Lexer,

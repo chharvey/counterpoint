@@ -1,8 +1,10 @@
+import type {
+	Serializable,
+} from '@chharvey/parser';
 import * as xjs from 'extrajs'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 import Util from '../class/Util.class'
-import type Serializable from '../iface/Serializable.iface'
 import Operator, {
 	ValidTypeOperator,
 	ValidOperatorUnary,
