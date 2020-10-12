@@ -3,7 +3,6 @@ export {
 } from './Scanner.class'
 
 export {
-	Lexer,
 	LexerSolid,
 } from './Lexer.class'
 

@@ -3,11 +3,9 @@ import {
 	Token,
 	TokenFilebound,
 	TokenComment,
+	Lexer,
 } from '@chharvey/parser';
 
-import type {
-	Lexer,
-} from '../lexer/'
 import {
 	LexError02,
 } from '../error/LexError.class'

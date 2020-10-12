@@ -1,15 +1,13 @@
 import {
 	Char,
 	Token,
-	TokenFilebound,
 	TokenWhitespace,
 	TokenComment,
-	Scanner,
+	Lexer,
 } from '@chharvey/parser';
 
 import type {NonemptyArray} from '../types.d'
 import {
-	Lexer,
 	Screener,
 } from '../lexer/'
 import {
@@ -22,26 +20,13 @@ import * as TOKEN from './Token.class'
 import * as PRODUCTION from './Production.auto'
 import * as PARSENODE from './ParseNode.auto'
 import * as SEMANTICNODE from './SemanticNode.class'
-import {
-	LexError01,
-} from '../error/LexError.class'
 
 
 
 export class LexerEBNF extends Lexer {
-	constructor (source: string) {
-		super(new Scanner(source).generate())
-	}
-	* generate(): Generator<Token> {
-		while (!this.isDone) {
+	protected generate_do(): Token | null {
 			let token: Token;
-			if (Char.inc(TokenFilebound.CHARS, this.c0)) {
-				token = new TokenFilebound(this)
-
-			} else if (Char.inc(TokenWhitespace.CHARS, this.c0)) {
-				token = new TokenWhitespace(this)
-
-			} else if (Char.inc(TOKEN.TokenPunctuator.PUNCTUATORS_4, this.c0, this.c1, this.c2, this.c3)) {
+			if (Char.inc(TOKEN.TokenPunctuator.PUNCTUATORS_4, this.c0, this.c1, this.c2, this.c3)) {
 				token = new TOKEN.TokenPunctuator(this, 4n)
 			} else if (Char.inc(TOKEN.TokenPunctuator.PUNCTUATORS_3, this.c0, this.c1, this.c2)) {
 				token = new TOKEN.TokenPunctuator(this, 3n)
@@ -69,10 +54,9 @@ export class LexerEBNF extends Lexer {
 				token = new TOKEN.TokenCommentEBNF(this)
 
 			} else {
-				throw new LexError01(this.c0)
+				return null
 			}
-			yield token
-		}
+			return token
 	}
 }
 

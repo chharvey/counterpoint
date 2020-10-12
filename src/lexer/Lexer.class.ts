@@ -1,8 +1,7 @@
 import {
 	Char,
 	Token,
-	TokenFilebound,
-	TokenWhitespace,
+	Lexer,
 } from '@chharvey/parser';
 
 import type SolidConfig from '../SolidConfig'
@@ -24,85 +23,8 @@ import {
 } from './Token.class'
 
 import {
-	LexError01,
 	LexError03,
 } from '../error/LexError.class'
-
-
-
-/**
- * A Lexer (aka: Tokenizer, Lexical Analyzer).
- * @see http://parsingintro.sourceforge.net/#contents_item_6.5
- */
-export abstract class Lexer {
-	/** The result of the scanner iterator. */
-	private iterator_result_char: IteratorResult<Char, void>;
-	/** The current character. */
-	private _c0: Char;
-	/** The lookahead(1) character. */
-	private _c1: Char|null;
-	/** The lookahead(2) character. */
-	private _c2: Char|null;
-	/** The lookahead(3) character. */
-	private _c3: Char|null;
-
-	/**
-	 * Construct a new Lexer object.
-	 * @param chargenerator - A character generator produced by a Scanner.
-	 */
-	constructor (
-		private readonly chargenerator: Generator<Char>,
-	) {
-		this.iterator_result_char = this.chargenerator.next()
-
-		this._c0 = this.iterator_result_char.value as Char
-		this._c1 = this._c0.lookahead()
-		this._c2 = this._c0.lookahead(2n)
-		this._c3 = this._c0.lookahead(3n)
-	}
-
-	get c0(): Char      { return this._c0 }
-	get c1(): Char|null { return this._c1 }
-	get c2(): Char|null { return this._c2 }
-	get c3(): Char|null { return this._c3 }
-	get isDone(): boolean { return !!this.iterator_result_char.done }
-
-	/**
-	 * Advance this Lexer, scanning the next character and reassigning variables.
-	 * @param   n - the number of times to advance
-	 * @returns all the characters scanned since the last advance
-	 * @throws  {RangeError} if the argument is not a positive integer
-	 */
-	advance(n?: 1n): [Char];
-	advance(n: bigint): [Char, ...Char[]];
-	advance(n: bigint = 1n): [Char, ...Char[]] {
-		if (n <= 0n) throw new RangeError('Argument must be a positive integer.')
-		if (n === 1n) {
-			const returned: Char = this._c0
-			this.iterator_result_char = this.chargenerator.next()
-			if (!this.iterator_result_char.done) {
-				this._c0 = this.iterator_result_char.value
-				this._c1 = this._c0.lookahead()
-				this._c2 = this._c0.lookahead(2n)
-				this._c3 = this._c0.lookahead(3n)
-			}
-			return [returned]
-		} else {
-			return [
-				...this.advance(),
-				...this.advance(n - 1n),
-			] as [Char, ...Char[]]
-		}
-	}
-
-	/**
-	 * Construct and return the next token in the source text.
-	 * @returns the next token
-	 * @throws  {LexError01} if an unrecognized character was reached
-	 * @throws  {LexError03} if an invalid escape sequence was reached
-	 */
-	abstract generate(): Generator<Token>;
-}
 
 
 
@@ -126,16 +48,9 @@ export class LexerSolid extends Lexer {
 		super(chargenerator)
 	}
 
-	* generate(): Generator<TokenSolid> {
-		while (!this.isDone) {
-			let token: TokenSolid;
-			if (Char.inc(TokenFilebound.CHARS, this.c0)) {
-				token = new TokenFilebound(this)
-
-			} else if (Char.inc(TokenWhitespace.CHARS, this.c0)) {
-				token = new TokenWhitespace(this)
-
-			} else if (Char.inc(LexerSolid.PUNCTUATORS_3, this.c0, this.c1, this.c2)) {
+	protected generate_do(): Token | null {
+			let token: Token;
+			if (Char.inc(LexerSolid.PUNCTUATORS_3, this.c0, this.c1, this.c2)) {
 				token = new TokenPunctuator(this, 3n)
 			} else if (Char.inc(LexerSolid.PUNCTUATORS_2, this.c0, this.c1)) {
 				token = new TokenPunctuator(this, 2n)
@@ -213,10 +128,9 @@ export class LexerSolid extends Lexer {
 				token = new TokenCommentLine(this)
 
 			} else {
-				throw new LexError01(this.c0)
+				return null
 			}
-			yield token
-		}
+			return token
 	}
 
 	/**

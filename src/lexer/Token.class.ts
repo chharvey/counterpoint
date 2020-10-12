@@ -3,6 +3,7 @@ import {
 	Char,
 	Token,
 	TokenComment,
+	Lexer,
 } from '@chharvey/parser';
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
@@ -10,7 +11,6 @@ import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 import Util from '../class/Util.class'
 import Dev from '../class/Dev.class'
 import type {
-	Lexer,
 	LexerSolid,
 } from './Lexer.class'
 
