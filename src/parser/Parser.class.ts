@@ -1,5 +1,6 @@
-import type {
+import {
 	Token,
+	ParseNode,
 } from '@chharvey/parser';
 
 import type SolidConfig from '../SolidConfig'
@@ -11,7 +12,6 @@ import type {
 import {
 	Validator,
 } from '../validator/'
-import {ParseNode} from './ParseNode.class'
 import * as PARSENODE from './ParseNode.auto'
 import Grammar, {
 	GrammarSymbol,
@@ -130,10 +130,10 @@ export class Parser {
 	 * @returns          a new ParseNode object
 	 */
 	private makeParseNode(rule: Rule, children: readonly (Token | ParseNode)[]): ParseNode {
-		let returned: ParseNode = new ParseNode(rule, children)
+		let returned: ParseNode = new ParseNode(children)
 		this.parsenode_map.forEach((nodetype, prod) => {
 			if (rule.production.equals(prod)) {
-				returned = new nodetype(rule, children)
+				returned = new nodetype(children)
 			}
 		})
 		return returned

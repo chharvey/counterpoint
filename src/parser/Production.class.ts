@@ -1,10 +1,12 @@
 import type {
+	ParseNode,
+} from '@chharvey/parser';
+import type {
 	NonemptyArray,
 	EBNFObject,
 	EBNFItem,
 } from '../types.d'
 import Util from '../class/Util.class'
-import type {ParseNode} from './ParseNode.class'
 import type {
 	GrammarSymbol,
 } from './Grammar.class'
@@ -85,16 +87,6 @@ export default abstract class Production {
 	 * @returns a well-formed sequence of strings satisfying this Production
 	 */
 	abstract random(): string[];
-
-	/**
-	 * Does the given ParseNode satisfy a Rule in this Production?
-	 * @param   candidate - a ParseNode to test
-	 * @returns             Does the given ParseNode satisfy a Rule in this Production?
-	 * @final
-	 */
-	match(candidate: ParseNode): boolean {
-		return candidate.rule.production.equals(this)
-	}
 
 	/**
 	 * Is this production “equal to” the argument?

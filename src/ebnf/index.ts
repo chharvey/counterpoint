@@ -3,6 +3,7 @@ import {
 	Token,
 	TokenWhitespace,
 	TokenComment,
+	ParseNode,
 	Lexer,
 } from '@chharvey/parser';
 
@@ -14,7 +15,6 @@ import {
 	Parser,
 	Grammar,
 	Production,
-	ParseNode,
 } from '../parser/'
 import * as TOKEN from './Token.class'
 import * as PRODUCTION from './Production.auto'

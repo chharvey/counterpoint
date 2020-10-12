@@ -1,6 +1,7 @@
 import type {
 	Serializable,
 	Token,
+	ParseNode,
 } from '@chharvey/parser';
 import * as xjs from 'extrajs'
 
@@ -60,9 +61,6 @@ import {
 	TokenString,
 	TokenTemplate,
 } from '../lexer/'
-import type {
-	ParseNode,
-} from '../parser/'
 
 
 

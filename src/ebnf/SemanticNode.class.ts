@@ -1,5 +1,6 @@
 import type {
 	Token,
+	ParseNode,
 } from '@chharvey/parser';
 
 import type {
@@ -9,9 +10,6 @@ import type {
 	EBNFSequence,
 	EBNFItem,
 } from '../types.d'
-import type {
-	ParseNode
-} from '../parser/'
 import {SemanticNode} from '../validator/'
 import * as TOKEN from './Token.class'
 

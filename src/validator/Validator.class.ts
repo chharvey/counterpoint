@@ -1,3 +1,6 @@
+import {
+	ParseNode,
+} from '@chharvey/parser';
 import type SolidConfig from '../SolidConfig'
 import Operator, {
 	ValidTypeOperator,
@@ -16,9 +19,6 @@ import {
 	TokenString,
 	TokenTemplate,
 } from '../lexer/Token.class'
-import {
-	ParseNode,
-} from '../parser/ParseNode.class'
 import * as PARSENODE from '../parser/ParseNode.auto'
 import {Builder} from '../builder/'
 import {
