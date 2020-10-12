@@ -38,14 +38,6 @@ const mock: string = `
 
 describe('TokenSolid', () => {
 	describe('#cook', () => {
-		context('TokenFilebound', () => {
-			it('produces a boolean value.', () => {
-				const tokens: Token[] = [...new Scanner(mock, CONFIG_DEFAULT).lexer.screener.generate()]
-				assert.strictEqual(tokens[0]       .cook(), true )
-				assert.strictEqual(lastItem(tokens).cook(), false)
-			})
-		})
-
 		context('TokenPunctuator', () => {
 			it('assigns values 0n–127n to punctuator tokens.', () => {
 				const cooked: bigint[] = [...new Scanner(TokenPunctuator.PUNCTUATORS.join(' '), CONFIG_DEFAULT).lexer.screener.generate()]

@@ -1,5 +1,6 @@
-import type {
+import {
 	Token,
+	TokenFilebound,
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
@@ -35,7 +36,6 @@ import {
 	ScannerSolid as Scanner,
 	Punctuator,
 	Keyword,
-	TokenFilebound,
 	TokenPunctuator,
 	TokenKeyword,
 	TokenNumber,

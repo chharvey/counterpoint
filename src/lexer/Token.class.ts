@@ -2,6 +2,7 @@ import {
 	Filebound,
 	Char,
 	Token,
+	TokenComment,
 } from '@chharvey/parser';
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
@@ -107,28 +108,6 @@ export abstract class TokenSolid extends Token {
 
 
 
-export class TokenFilebound extends TokenSolid {
-	static readonly CHARS: readonly Filebound[] = [Filebound.SOT, Filebound.EOT]
-	// declare readonly source: Filebound; // NB: https://github.com/microsoft/TypeScript/issues/40220
-	constructor (lexer: Lexer) {
-		super('FILEBOUND', lexer, ...lexer.advance())
-	}
-	cook(): boolean {
-		return this.source === Filebound.SOT
-	}
-}
-export class TokenWhitespace extends TokenSolid {
-	static readonly CHARS: readonly string[] = [' ', '\t', '\n']
-	constructor (lexer: Lexer) {
-		super('WHITESPACE', lexer, ...lexer.advance())
-		while (!this.lexer.isDone && Char.inc(TokenWhitespace.CHARS, this.lexer.c0)) {
-			this.advance()
-		}
-	}
-	cook(): null {
-		return null // we do not want to send whitespace to the parser
-	}
-}
 export class TokenPunctuator extends TokenSolid {
 	static readonly PUNCTUATORS: readonly Punctuator[] = [...new Set( // remove duplicates
 		Object.values(Punctuator).filter((p) => Dev.supports('variables') ? true : ![
@@ -563,27 +542,6 @@ export class TokenTemplate extends TokenSolid {
 			this.source.slice(this.delim_start.length, -this.delim_end.length) // cut off the template delimiters
 		))
 	}
-}
-export abstract class TokenComment extends TokenSolid {
-	constructor (lexer: Lexer, start_delim: string, end_delim: string) {
-		super('COMMENT', lexer, ...lexer.advance(BigInt(start_delim.length)))
-		while (!this.lexer.isDone && !this.stopAdvancing()) {
-			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
-				throw new LexError02(this)
-			}
-			this.advance()
-		}
-		// add end delim to token
-		this.advance(BigInt(end_delim.length))
-	}
-	/** @final */ cook(): null {
-		return null // we do not want to send comments to the parser
-	}
-	/**
-	 * Helper method used in the constructor.
-	 * @return When should the lexer stop advancing?
-	 */
-	protected abstract stopAdvancing(): boolean;
 }
 export class TokenCommentLine extends TokenComment {
 	static readonly DELIM_START: '%'  = '%'

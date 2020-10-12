@@ -1,6 +1,9 @@
 import {
 	Char,
 	Token,
+	TokenFilebound,
+	TokenWhitespace,
+	TokenComment,
 	Scanner,
 } from '@chharvey/parser';
 
@@ -8,9 +11,6 @@ import type {NonemptyArray} from '../types.d'
 import {
 	Lexer,
 	Screener,
-	TokenFilebound,
-	TokenWhitespace,
-	TokenComment,
 } from '../lexer/'
 import {
 	Parser,

@@ -1,6 +1,6 @@
 import {
-	Filebound,
 	Token,
+	TokenWhitespace,
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
@@ -10,8 +10,6 @@ import Dev from '../../src/class/Dev.class'
 import {
 	ScannerSolid as Scanner,
 	TemplatePosition,
-	TokenFilebound,
-	TokenWhitespace,
 	TokenPunctuator,
 	TokenKeyword,
 	TokenIdentifier,
@@ -56,18 +54,6 @@ const mock: string = `
 
 describe('LexerSolid', () => {
 	describe('#generate', () => {
-		it('recognizes `TokenFilebound` conditions.', () => {
-			const tokens: Token[] = [...new Scanner(mock, CONFIG_DEFAULT).lexer.generate()]
-			assert.ok(tokens[0] instanceof TokenFilebound)
-			assert.strictEqual(tokens[0].source, Filebound.SOT)
-			assert.ok(lastItem(tokens) instanceof TokenFilebound)
-			assert.strictEqual(lastItem(tokens).source, Filebound.EOT)
-		})
-		it('recognizes `TokenWhitespace` conditions.', () => {
-			;[...new Scanner(TokenWhitespace.CHARS.join(''), CONFIG_DEFAULT).lexer.generate()].slice(1, -1).forEach((value) => {
-				assert.ok(value instanceof TokenWhitespace)
-			})
-		})
 		it('rejects unrecognized characters.', () => {
 			`. ~ , [ ] { } # $ @ "`.split(' ').map((c) => new Scanner(`
 				5  +  30

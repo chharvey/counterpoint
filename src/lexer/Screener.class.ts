@@ -1,5 +1,7 @@
-import type {
+import {
 	Token,
+	TokenWhitespace,
+	TokenComment,
 } from '@chharvey/parser';
 
 import type SolidConfig from '../SolidConfig'
@@ -7,9 +9,7 @@ import type SolidConfig from '../SolidConfig'
 import Dev from '../class/Dev.class'
 import {
 	TokenSolid,
-	TokenWhitespace,
 	TokenIdentifier,
-	TokenComment,
 } from './Token.class'
 import type {ParserSolid as Parser} from '../parser/'
 

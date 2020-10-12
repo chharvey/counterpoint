@@ -1,9 +1,11 @@
+import {
+	TokenWhitespace,
+} from '@chharvey/parser';
 import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import {
 	ScannerSolid as Scanner,
-	TokenWhitespace,
 } from '../../src/lexer/'
 
 const mock: string = `

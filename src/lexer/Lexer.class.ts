@@ -1,6 +1,8 @@
 import {
 	Char,
 	Token,
+	TokenFilebound,
+	TokenWhitespace,
 } from '@chharvey/parser';
 
 import type SolidConfig from '../SolidConfig'
@@ -10,8 +12,6 @@ import {ScreenerSolid as Screener} from './Screener.class'
 import {
 	Punctuator,
 	TokenSolid,
-	TokenFilebound,
-	TokenWhitespace,
 	TokenPunctuator,
 	TokenKeyword,
 	TokenIdentifierBasic,

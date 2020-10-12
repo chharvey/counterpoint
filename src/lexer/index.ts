@@ -19,8 +19,6 @@ export {
 	TemplatePosition,
 	CookValueType,
 	TokenSolid,
-	TokenFilebound,
-	TokenWhitespace,
 	TokenPunctuator,
 	TokenKeyword,
 	TokenIdentifier,
@@ -29,7 +27,6 @@ export {
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-	TokenComment,
 	TokenCommentLine,
 	TokenCommentMulti,
 } from './Token.class'
