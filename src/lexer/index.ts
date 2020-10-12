@@ -1,5 +1,4 @@
 export {
-	Scanner,
 	ScannerSolid,
 } from './Scanner.class'
 

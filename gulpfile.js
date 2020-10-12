@@ -68,8 +68,9 @@ function test() {
 }
 
 async function test_dev() {
+	const {Scanner} = require('@chharvey/parser');
 	const {CONFIG_DEFAULT}         = require('./build/SolidConfig.js')
-	const {Scanner, Lexer, Screener} = require('./build/lexer/')
+	const {Lexer, Screener} = require('./build/lexer/')
 	const {default: Parser       } = require('./build/class/Parser.class.js')
 	const {default: CodeGenerator} = require('./build/vm/Builder.class.js')
 

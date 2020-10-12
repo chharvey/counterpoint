@@ -1,10 +1,10 @@
 import {
 	Char,
+	Scanner,
 } from '@chharvey/parser';
 
 import type {NonemptyArray} from '../types.d'
 import {
-	Scanner,
 	Lexer,
 	Screener,
 	Token,
