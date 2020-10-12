@@ -8,7 +8,7 @@
 			/----------------------------------------------------------------*/
 		
 			
-			import type Token from '../lexer/Token.class';
+			import type {Token} from '@chharvey/parser';
 			import {ParseNode} from '../parser/ParseNode.class';
 			
 				export class ParseNodePrimitiveLiteral extends ParseNode {

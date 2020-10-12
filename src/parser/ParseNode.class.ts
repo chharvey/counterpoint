@@ -1,14 +1,12 @@
 import type {
 	Serializable,
+	Token,
 } from '@chharvey/parser';
 
 import type {
 	EBNFObject,
 } from '../types.d'
 import Util from '../class/Util.class'
-import type {
-	Token,
-} from '../lexer/'
 import type Rule from './Rule.class'
 
 
@@ -30,7 +28,7 @@ export class ParseNode implements Serializable {
 	 */
 	static fromJSON(jsons: EBNFObject[]): string {
 		return `
-			import type Token from '../lexer/Token.class';
+			import type {Token} from '@chharvey/parser';
 			import {ParseNode} from '../parser/ParseNode.class';
 			${ jsons.map((json) => `
 				export class ParseNode${ json.name } extends ParseNode {

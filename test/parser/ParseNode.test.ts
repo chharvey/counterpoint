@@ -66,7 +66,7 @@ describe('ParseNode', () => {
 					["'('", {"prod": "Expression"}, "')'"]
 				]
 			}])), Util.dedent(`
-				import type Token from '../lexer/Token.class';
+				import type {Token} from '@chharvey/parser';
 				import {ParseNode} from '../parser/ParseNode.class';
 
 					export class ParseNodeExpressionUnit extends ParseNode {

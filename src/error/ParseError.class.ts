@@ -1,4 +1,7 @@
-import type {Token} from '../lexer/'
+import type {
+	Token,
+} from '@chharvey/parser';
+
 import SolidError from './SolidError.class'
 
 

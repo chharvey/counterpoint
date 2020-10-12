@@ -5,7 +5,7 @@ import Util     from '../../src/class/Util.class'
 import Dev      from '../../src/class/Dev.class'
 import {
 	ScannerSolid as Scanner,
-	Token,
+	TokenSolid as Token,
 	TokenPunctuator,
 	TokenKeyword,
 	TokenIdentifier,
@@ -36,7 +36,7 @@ const mock: string = `
 
 
 
-describe('Token', () => {
+describe('TokenSolid', () => {
 	describe('#cook', () => {
 		context('TokenFilebound', () => {
 			it('produces a boolean value.', () => {

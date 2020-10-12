@@ -1,13 +1,15 @@
 import {
 	Char,
+	Token,
 } from '@chharvey/parser';
 
 import type SolidConfig from '../SolidConfig'
 
 import Dev from '../class/Dev.class'
 import {ScreenerSolid as Screener} from './Screener.class'
-import Token, {
+import {
 	Punctuator,
+	TokenSolid,
 	TokenFilebound,
 	TokenWhitespace,
 	TokenPunctuator,
@@ -124,9 +126,9 @@ export class LexerSolid extends Lexer {
 		super(chargenerator)
 	}
 
-	* generate(): Generator<Token> {
+	* generate(): Generator<TokenSolid> {
 		while (!this.isDone) {
-			let token: Token;
+			let token: TokenSolid;
 			if (Char.inc(TokenFilebound.CHARS, this.c0)) {
 				token = new TokenFilebound(this)
 

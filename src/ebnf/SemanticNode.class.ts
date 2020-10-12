@@ -1,13 +1,14 @@
 import type {
+	Token,
+} from '@chharvey/parser';
+
+import type {
 	NonemptyArray,
 	EBNFObject,
 	EBNFChoice,
 	EBNFSequence,
 	EBNFItem,
 } from '../types.d'
-import type {
-	Token,
-} from '../lexer/'
 import type {
 	ParseNode
 } from '../parser/'

@@ -3,7 +3,6 @@ import * as assert from 'assert'
 import {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import {
 	ScannerSolid as Scanner,
-	Token,
 	TokenWhitespace,
 } from '../../src/lexer/'
 
@@ -31,7 +30,6 @@ describe('ScreenerSolid.', () => {
 	describe('#generate', () => {
 		it('yields `Token`, non-`TokenWhitespace`, objects.', () => {
 			;[...new Scanner(mock, CONFIG_DEFAULT).lexer.screener.generate()].forEach((token) => {
-				assert.ok(token instanceof Token)
 				assert.ok(!(token instanceof TokenWhitespace))
 			})
 		})

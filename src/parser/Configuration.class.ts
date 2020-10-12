@@ -1,9 +1,9 @@
+import type {
+	Token,
+} from '@chharvey/parser';
 import * as xjs from 'extrajs'
 
 import Util from '../class/Util.class'
-import type {
-	Token,
-} from '../lexer/'
 import type {
 	GrammarSymbol,
 	GrammarTerminal,

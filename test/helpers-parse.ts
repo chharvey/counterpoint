@@ -1,5 +1,6 @@
 import {
 	Filebound,
+	Token,
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
@@ -7,7 +8,6 @@ import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import {
 	ScannerSolid as Scanner,
 	Punctuator,
-	Token,
 	TokenFilebound,
 	TokenPunctuator,
 	TokenKeyword,

@@ -1,3 +1,6 @@
+import type {
+	Token,
+} from '@chharvey/parser';
 import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../../src/SolidConfig'
@@ -32,7 +35,6 @@ import {
 	ScannerSolid as Scanner,
 	Punctuator,
 	Keyword,
-	Token,
 	TokenFilebound,
 	TokenPunctuator,
 	TokenKeyword,

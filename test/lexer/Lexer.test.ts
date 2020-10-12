@@ -1,5 +1,6 @@
 import {
 	Filebound,
+	Token,
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
@@ -10,7 +11,6 @@ import {
 	ScannerSolid as Scanner,
 	TemplatePosition,
 	TokenFilebound,
-	Token,
 	TokenWhitespace,
 	TokenPunctuator,
 	TokenKeyword,

@@ -7,7 +7,7 @@ import Operator, {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from '../enum/Operator.enum'
-import Token, {
+import {
 	Punctuator,
 	Keyword,
 	TokenKeyword,
@@ -242,14 +242,14 @@ export default class Validator {
 
 		} else if (node instanceof PARSENODE.ParseNodeStringTemplate__1__List) {
 			return (node.children as readonly (TokenTemplate | PARSENODE.ParseNodeExpression | PARSENODE.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
-				c instanceof Token ? [new SemanticNodeConstant(c)] :
+				c instanceof TokenTemplate ? [new SemanticNodeConstant(c)] :
 				c instanceof PARSENODE.ParseNodeExpression ? [this.decorate(c)] :
 				this.decorate(c)
 			)
 
 		} else if (node instanceof PARSENODE.ParseNodeStringTemplate) {
 			return new SemanticNodeTemplate(node, (node.children as readonly (TokenTemplate | PARSENODE.ParseNodeExpression | PARSENODE.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
-				c instanceof Token ? [new SemanticNodeConstant(c)] :
+				c instanceof TokenTemplate ? [new SemanticNodeConstant(c)] :
 				c instanceof PARSENODE.ParseNodeExpression ? [this.decorate(c)] :
 				this.decorate(c)
 			))

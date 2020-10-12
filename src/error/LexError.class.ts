@@ -1,10 +1,7 @@
 import type {
 	Char,
-} from '@chharvey/parser';
-
-import type {
 	Token,
-} from '../lexer/'
+} from '@chharvey/parser';
 
 import SolidError from './SolidError.class'
 

@@ -1,12 +1,12 @@
 import {
 	Filebound,
+	Token,
 } from '@chharvey/parser';
 
 import Util from '../class/Util.class'
 import {
 	RadixType,
 	TemplatePosition,
-	Token,
 	TokenKeyword,
 	TokenIdentifier,
 	TokenIdentifierBasic,

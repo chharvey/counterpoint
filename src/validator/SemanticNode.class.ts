@@ -1,5 +1,6 @@
 import type {
 	Serializable,
+	Token,
 } from '@chharvey/parser';
 import * as xjs from 'extrajs'
 
@@ -53,7 +54,6 @@ import {
 import {
 	Keyword,
 	CookValueType,
-	Token,
 	TokenKeyword,
 	TokenIdentifier,
 	TokenNumber,

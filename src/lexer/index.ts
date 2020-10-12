@@ -12,14 +12,13 @@ export {
 	ScreenerSolid,
 } from './Screener.class'
 
-export {default as Token}    from './Token.class'
-
 export {
 	Punctuator,
 	Keyword,
 	RadixType,
 	TemplatePosition,
 	CookValueType,
+	TokenSolid,
 	TokenFilebound,
 	TokenWhitespace,
 	TokenPunctuator,

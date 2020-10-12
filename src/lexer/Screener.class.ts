@@ -1,7 +1,12 @@
+import type {
+	Token,
+} from '@chharvey/parser';
+
 import type SolidConfig from '../SolidConfig'
 
 import Dev from '../class/Dev.class'
-import Token, {
+import {
+	TokenSolid,
 	TokenWhitespace,
 	TokenIdentifier,
 	TokenComment,
@@ -61,6 +66,8 @@ export abstract class Screener {
 
 
 export class ScreenerSolid extends Screener {
+	// @ts-expect-error
+	declare readonly t0: TokenSolid; // NB https://github.com/microsoft/TypeScript/issues/40220
 	/** A set of all unique identifiers in the program. */
 	private _ids: Set<string> = new Set()
 
@@ -70,13 +77,13 @@ export class ScreenerSolid extends Screener {
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		tokengenerator: Generator<Token>,
+		tokengenerator: Generator<TokenSolid>,
 		private readonly config: SolidConfig,
 	) {
 		super(tokengenerator)
 	}
 
-	* generate(): Generator<Token> {
+	* generate(): Generator<TokenSolid> {
 		while (!this.isDone) {
 			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
 				if (Dev.supports('variables') && this.t0 instanceof TokenIdentifier) {

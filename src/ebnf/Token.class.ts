@@ -1,10 +1,10 @@
 import {
 	Char,
+	Token,
 } from '@chharvey/parser';
 
 import {
 	Lexer,
-	Token,
 	TokenFilebound,
 	TokenComment,
 } from '../lexer/'

@@ -1,8 +1,12 @@
+import type {
+	Token,
+} from '@chharvey/parser';
+
 import type SolidConfig from '../SolidConfig'
 import Dev from '../class/Dev.class'
 import {ParseError01} from '../error/ParseError.class'
 import type {
-	Token,
+	TokenSolid,
 } from '../lexer/'
 import {
 	Validator,
@@ -171,7 +175,7 @@ export class ParserSolid extends Parser {
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		tokengenerator: Generator<Token>,
+		tokengenerator: Generator<TokenSolid>,
 		private readonly config: SolidConfig,
 	) {
 		super(tokengenerator, new Grammar([
