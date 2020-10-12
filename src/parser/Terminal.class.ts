@@ -1,6 +1,9 @@
-import Util from '../class/Util.class'
 import {
 	Filebound,
+} from '@chharvey/parser';
+
+import Util from '../class/Util.class'
+import {
 	RadixType,
 	TemplatePosition,
 	Token,

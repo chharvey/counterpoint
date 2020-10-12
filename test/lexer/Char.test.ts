@@ -1,9 +1,11 @@
+import {
+	Filebound,
+} from '@chharvey/parser';
 import * as assert from 'assert'
 
 import {
 	ScannerSolid as Scanner,
 	Char,
-	Filebound,
 } from '../../src/lexer/'
 
 const lastIndex = (iter: any): number  => iter.length-1

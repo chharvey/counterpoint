@@ -1,3 +1,7 @@
+import {
+	Filebound,
+} from '@chharvey/parser';
+
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 
 import Util from '../class/Util.class'
@@ -17,11 +21,6 @@ import {
 } from '../error/LexError.class'
 
 
-
-export enum Filebound {
-	SOT = '\u0002',
-	EOT = '\u0003',
-}
 
 export enum Punctuator {
 	// grouping

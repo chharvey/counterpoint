@@ -1,4 +1,6 @@
-import type {Filebound} from '../lexer/'
+import {
+	Filebound,
+} from '@chharvey/parser';
 import type {GrammarSymbol} from '../parser/'
 
 
@@ -137,7 +139,6 @@ export default class Util {
 	 * @returns            an XML string of space-separated attributes
 	 */
 	static stringifyAttributes(attributes: Map<string, string>): string {
-		const Filebound_enum: typeof Filebound = require('../lexer/').Filebound
 		return [...attributes].map(([attr, val]) => `${ attr }="${ val
 			.replace(/\&/g, '&amp;' )
 			.replace(/\</g, '&lt;'  )
@@ -148,8 +149,8 @@ export default class Util {
 			.replace(/\t/g, '&#x09;')
 			.replace(/\n/g, '&#x0a;')
 			.replace(/\r/g, '&#x0d;')
-			.replace(Filebound_enum.SOT, '\u2402') // SYMBOL FOR START OF TEXT
-			.replace(Filebound_enum.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
+			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 			.replace(/[^\u0020-\u007e\u2402-\u2403]/g, (match) => `&#x${ match.codePointAt(0)!.toString(16) };`)
 		}"`).join(' ')
 	}
@@ -160,11 +161,10 @@ export default class Util {
 	 * @returns       a string representing the sequence of those symbols
 	 */
 	static stringOfSymbols(arr: readonly GrammarSymbol[]): string {
-		const Filebound_enum: typeof Filebound = require('../lexer/').Filebound
 		return arr.map((symbol) => (typeof symbol === 'string') ?
 			`"${ symbol }"`
-				.replace(Filebound_enum.SOT, '\u2402') // SYMBOL FOR START OF TEXT
-				.replace(Filebound_enum.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
+				.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
+				.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 			: symbol.displayName
 		).join(' ')
 	}
@@ -174,13 +174,12 @@ export default class Util {
 	 * @returns contents with XML special characters escaped
 	 */
 	static sanitizeContent(contents: string): string {
-		const Filebound_enum: typeof Filebound = require('../lexer/').Filebound
 		return contents
 			.replace(/\&/g, '&amp;' )
 			.replace(/\</g, '&lt;'  )
 			.replace(/\>/g, '&gt;'  )
 			.replace(/\\/g, '&#x5c;')
-			.replace(Filebound_enum.SOT, '\u2402') // SYMBOL FOR START OF TEXT
-			.replace(Filebound_enum.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
+			.replace(Filebound.SOT, '\u2402') // SYMBOL FOR START OF TEXT
+			.replace(Filebound.EOT, '\u2403') // SYMBOL FOR END   OF TEXT
 	}
 }

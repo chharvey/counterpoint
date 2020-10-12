@@ -1,6 +1,9 @@
-import type {NonemptyArray} from '../types.d'
 import type {
 	Filebound,
+} from '@chharvey/parser';
+
+import type {NonemptyArray} from '../types.d'
+import type {
 	Punctuator,
 	Keyword,
 } from '../lexer/'
