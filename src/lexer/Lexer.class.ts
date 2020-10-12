@@ -1,8 +1,11 @@
+import {
+	Char,
+} from '@chharvey/parser';
+
 import type SolidConfig from '../SolidConfig'
 
 import Dev from '../class/Dev.class'
 import {ScreenerSolid as Screener} from './Screener.class'
-import Char from './Char.class'
 import Token, {
 	Punctuator,
 	TokenFilebound,
@@ -52,8 +55,8 @@ export abstract class Lexer {
 
 		this._c0 = this.iterator_result_char.value as Char
 		this._c1 = this._c0.lookahead()
-		this._c2 = this._c0.lookahead(2)
-		this._c3 = this._c0.lookahead(3)
+		this._c2 = this._c0.lookahead(2n)
+		this._c3 = this._c0.lookahead(3n)
 	}
 
 	get c0(): Char      { return this._c0 }
@@ -78,8 +81,8 @@ export abstract class Lexer {
 			if (!this.iterator_result_char.done) {
 				this._c0 = this.iterator_result_char.value
 				this._c1 = this._c0.lookahead()
-				this._c2 = this._c0.lookahead(2)
-				this._c3 = this._c0.lookahead(3)
+				this._c2 = this._c0.lookahead(2n)
+				this._c3 = this._c0.lookahead(3n)
 			}
 			return [returned]
 		} else {

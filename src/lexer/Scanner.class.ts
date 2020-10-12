@@ -1,10 +1,10 @@
 import {
 	Filebound,
+	Char,
 } from '@chharvey/parser';
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 import {LexerSolid as Lexer} from './Lexer.class'
-import Char from './Char.class'
 
 
 

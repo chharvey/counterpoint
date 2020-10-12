@@ -1,13 +1,13 @@
 import {
 	Filebound,
 	Serializable,
+	Char,
 } from '@chharvey/parser';
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 
 import Util from '../class/Util.class'
 import Dev from '../class/Dev.class'
-import Char from './Char.class'
 import type {
 	Lexer,
 	LexerSolid,

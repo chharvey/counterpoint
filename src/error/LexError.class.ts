@@ -1,5 +1,8 @@
 import type {
 	Char,
+} from '@chharvey/parser';
+
+import type {
 	Token,
 } from '../lexer/'
 

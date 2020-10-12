@@ -1,9 +1,12 @@
+import {
+	Char,
+} from '@chharvey/parser';
+
 import type {NonemptyArray} from '../types.d'
 import {
 	Scanner,
 	Lexer,
 	Screener,
-	Char,
 	Token,
 	TokenFilebound,
 	TokenWhitespace,

@@ -1,11 +1,11 @@
 import {
 	Filebound,
+	Char,
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
 import {
 	ScannerSolid as Scanner,
-	Char,
 } from '../../src/lexer/'
 
 const lastItem  = (iter: any): any     => iter[lastIndex(iter)]

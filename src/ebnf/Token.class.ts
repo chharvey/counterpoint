@@ -1,6 +1,9 @@
 import {
-	Lexer,
 	Char,
+} from '@chharvey/parser';
+
+import {
+	Lexer,
 	Token,
 	TokenFilebound,
 	TokenComment,

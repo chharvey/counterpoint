@@ -13,7 +13,6 @@ export {
 	ScreenerSolid,
 } from './Screener.class'
 
-export {default as Char}     from './Char.class'
 export {default as Token}    from './Token.class'
 
 export {
