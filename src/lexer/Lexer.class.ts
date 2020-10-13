@@ -6,11 +6,11 @@ import {
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
 import Dev from '../class/Dev.class'
-import {ScreenerSolid as Screener} from './Screener.class'
 import {
 	Punctuator,
 	TokenPunctuator,
 	TokenKeyword,
+	TokenIdentifier,
 	TokenIdentifierBasic,
 	TokenIdentifierUnicode,
 	TokenNumber,
@@ -19,6 +19,7 @@ import {
 	TokenCommentLine,
 	TokenCommentMulti,
 } from './Token.class'
+import type {ParserSolid} from '../parser/'
 
 import {
 	LexError03,
@@ -33,6 +34,9 @@ export class LexerSolid extends Lexer {
 	private static readonly BASES_KEYS: readonly string[] = [...TokenNumber.BASES.keys()]
 	private static readonly DIGITS_DEFAULT: readonly string[] = TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT)!
 
+
+	/** A set of all unique identifiers in the program, for optimization purposes. */
+	private _ids: Set<string> = new Set()
 
 	/**
 	 * Construct a new LexerSolid object.
@@ -87,15 +91,18 @@ export class LexerSolid extends Lexer {
 					token = new TokenKeyword        (this, buffer[0], ...buffer.slice(1))
 				} else if (Dev.supports('variables')) {
 					token = new TokenIdentifierBasic(this, buffer[0], ...buffer.slice(1))
+					this.setIdentifierValue(token as TokenIdentifierBasic);
 				} else {
 					throw new Error(`Identifier \`${ bufferstring }\` not yet allowed.`)
 				}
 			} else if (Dev.supports('variables') && TokenIdentifierBasic.CHAR_START.test(this.c0.source)) {
 				/* we found a basic identifier */
 				token = new TokenIdentifierBasic(this)
+				this.setIdentifierValue(token as TokenIdentifierBasic);
 			} else if (Dev.supports('variables') && Char.eq(TokenIdentifierUnicode.DELIM, this.c0)) {
 				/* we found a unicode identifier */
 				token = new TokenIdentifierUnicode(this)
+				this.setIdentifierValue(token as TokenIdentifierUnicode);
 
 			} else if (Char.inc(LexerSolid.DIGITS_DEFAULT, this.c0)) {
 				/* a number literal without a unary operator and without an explicit radix */
@@ -132,11 +139,37 @@ export class LexerSolid extends Lexer {
 	}
 
 	/**
+	 * Sets a unique integer value to an Identifier token to optimize performance.
+	 * @param id_token the Identifier token
+	 */
+	private setIdentifierValue(id_token: TokenIdentifier): void {
+		this._ids.add(id_token.source);
+		return id_token.setValue(BigInt([...this._ids].indexOf(id_token.source)));
+	}
+
+	/**
 	 * Construct a new Screener object from this Lexer.
 	 * @return a new Screener with this Lexer as its argument
 	 */
-	get screener(): Screener {
-		// @ts-expect-error
-		return new Screener(this.generate(), this.config)
+	get screener(): {
+		parser: ParserSolid,
+		generate(): Generator<TokenSolid>,
+	} {
+		const self: this = this;
+		const ParserSolid_class: typeof ParserSolid = require('../parser/').ParserSolid;
+		return {
+			/**
+			 * Construct a new Parser object from this Screener.
+			 * @return a new Parser with this Screener as its argument
+			 */
+			get parser(): ParserSolid {
+				// @ts-expect-error
+				return new ParserSolid_class(this.generate(), this.config);
+			},
+			generate(): Generator<TokenSolid> {
+				// @ts-expect-error
+				return self.generate();
+			},
+		};
 	}
 }

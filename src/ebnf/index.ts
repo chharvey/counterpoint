@@ -1,17 +1,12 @@
 import {
 	Char,
 	Token,
-	TokenWhitespace,
-	TokenComment,
 	ParseNode,
 	Lexer,
 	Parser,
 } from '@chharvey/parser';
 
 import type {NonemptyArray} from '../types.d'
-import {
-	Screener,
-} from '../lexer/'
 import {
 	Grammar,
 	Production,
@@ -57,22 +52,6 @@ export class LexerEBNF extends Lexer {
 				return null
 			}
 			return token
-	}
-}
-
-
-
-export class ScreenerEBNF extends Screener {
-	constructor (source: string) {
-		super(new LexerEBNF(source).generate())
-	}
-	* generate(): Generator<Token> {
-		while (!this.isDone) {
-			if (!(this.t0 instanceof TokenWhitespace) && !(this.t0 instanceof TokenComment)) {
-				yield this.t0
-			}
-			this.advance()
-		}
 	}
 }
 

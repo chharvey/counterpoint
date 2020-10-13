@@ -3,11 +3,6 @@ export {
 } from './Lexer.class'
 
 export {
-	Screener,
-	ScreenerSolid,
-} from './Screener.class'
-
-export {
 	Punctuator,
 	Keyword,
 	RadixType,
