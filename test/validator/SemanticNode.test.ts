@@ -13,6 +13,9 @@ import {
 	LexerSolid as Lexer,
 } from '../../src/lexer/'
 import {
+	ParserSolid as Parser,
+} from '../../src/parser/';
+import {
 	Validator,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
@@ -67,9 +70,9 @@ describe('SemanticNode', () => {
 		context('SemanticNodeGoal ::= SOT EOT', () => {
 			it('returns InstructionNone.', () => {
 				const src: [string, SolidConfig] = [``, CONFIG_DEFAULT]
-				const instr: InstructionNone | InstructionModule = new Lexer(...src).screener.parser.validator
+				const instr: InstructionNone | InstructionModule = new Parser(...src).validator
 					.validate()
-					.build(new Lexer(...src).screener.parser.validator.builder)
+					.build(new Parser(...src).validator.builder)
 				assert.ok(instr instanceof InstructionNone)
 			})
 		})
@@ -78,12 +81,12 @@ describe('SemanticNode', () => {
 			it('returns InstructionNone for empty statement expression.', () => {
 				const src: [string, SolidConfig] = [`;`, CONFIG_DEFAULT]
 				const instr: InstructionNone | InstructionStatement = statementExpressionFromSource(src[0])
-					.build(new Lexer(...src).screener.parser.validator.builder)
+					.build(new Parser(...src).validator.builder)
 				assert.ok(instr instanceof InstructionNone)
 			})
 			it('returns InstructionStatement for nonempty statement expression.', () => {
 				const srcs: [string, SolidConfig] = [`42 + 420;`, CONFIG_DEFAULT]
-				const builder: Builder = new Lexer(...srcs).screener.parser.validator.builder
+				const builder: Builder = new Parser(...srcs).validator.builder
 				const stmt: SemanticNodeStatementExpression = statementExpressionFromSource(srcs[0])
 				assert.deepStrictEqual(
 					stmt.build(builder),
@@ -92,8 +95,8 @@ describe('SemanticNode', () => {
 			})
 			specify('multiple statements.', () => {
 				const srcs: [string, SolidConfig] = [`42; 420;`, CONFIG_DEFAULT]
-				const generator: Builder = new Lexer(...srcs).screener.parser.validator.builder
-				new Lexer(...srcs).screener.parser.validator.validate().children.forEach((stmt, i) => {
+				const generator: Builder = new Parser(...srcs).validator.builder
+				new Parser(...srcs).validator.validate().children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof SemanticNodeStatementExpression)
 					assert.deepStrictEqual(
 						stmt.build(generator),
@@ -122,7 +125,7 @@ describe('SemanticNode', () => {
 				].map((src) =>
 					constantFromStatementExpression(
 						statementExpressionFromSource(src)
-					).build(new Lexer(src, CONFIG_DEFAULT).screener.parser.validator.builder)
+					).build(new Parser(src, CONFIG_DEFAULT).validator.builder)
 				), [
 					instructionConstInt(0n),
 					instructionConstInt(0n),
@@ -200,7 +203,7 @@ describe('SemanticNode', () => {
 					statementExpressionFromSource(src)
 				)])
 				assert.deepStrictEqual(
-					nodes.map(([src,  node]) => node.build(new Lexer(src, CONFIG_DEFAULT).screener.parser.validator.builder)),
+					nodes.map(([src,  node]) => node.build(new Parser(src, CONFIG_DEFAULT).validator.builder)),
 					nodes.map(([_src, node]) => {
 						const assess: CompletionStructureAssessment = node.assess()
 						assert.ok(!assess.isAbrupt)
@@ -221,7 +224,7 @@ describe('SemanticNode', () => {
 					assert.deepStrictEqual(
 						[...tests.keys()].map((src) => operationFromStatementExpression(
 							statementExpressionFromSource(src, folding_off)
-						).build(new Lexer(src, folding_off).screener.parser.validator.builder)),
+						).build(new Parser(src, folding_off).validator.builder)),
 						[...tests.values()],
 					)
 				}
@@ -280,7 +283,7 @@ describe('SemanticNode', () => {
 						`false == 0.0;`,
 					].map((src) => operationFromStatementExpression(
 						statementExpressionFromSource(src, folding_off)
-					).build(new Lexer(src, folding_off).screener.parser.validator.builder)), [
+					).build(new Parser(src, folding_off).validator.builder)), [
 						new InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstInt(42n),
@@ -338,7 +341,7 @@ describe('SemanticNode', () => {
 							`false || null;`,
 						].map((src) => operationFromStatementExpression(
 							statementExpressionFromSource(src, folding_off)
-						).build(new Lexer(src, folding_off).screener.parser.validator.builder)), [
+						).build(new Parser(src, folding_off).validator.builder)), [
 							new InstructionBinopLogical(
 								0n,
 								Operator.AND,
@@ -376,7 +379,7 @@ describe('SemanticNode', () => {
 						assert.deepStrictEqual(
 							operationFromStatementExpression(
 								statementExpressionFromSource(src, folding_off)
-							).build(new Lexer(src, folding_off).screener.parser.validator.builder),
+							).build(new Parser(src, folding_off).validator.builder),
 							new InstructionBinopLogical(
 								0n,
 								Operator.OR,
@@ -450,7 +453,7 @@ describe('SemanticNode', () => {
 							`true == 1.0;`,
 						].map((src) => operationFromStatementExpression(
 							statementExpressionFromSource(src, folding_coercion_off)
-						).build(new Lexer(src, folding_coercion_off).screener.parser.validator.builder)), [
+						).build(new Parser(src, folding_coercion_off).validator.builder)), [
 							[instructionConstInt(42n),   instructionConstInt(420n)],
 							[instructionConstFloat(4.2), instructionConstInt(42n)],
 							[instructionConstInt(42n),   instructionConstFloat(4.2)],
@@ -469,25 +472,25 @@ describe('SemanticNode', () => {
 		describe('SemanticNodeDeclarationVariable', () => {
 			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  int | float =  21  *  2;`
-				const decl: SemanticNodeDeclarationVariable = new Lexer(src, CONFIG_DEFAULT).screener.parser.validator
+				const decl: SemanticNodeDeclarationVariable = new Parser(src, CONFIG_DEFAULT).validator
 					.decorate(variableDeclarationFromSource(src))
 				decl.typeCheck(CONFIG_DEFAULT.compilerOptions)
 			})
 			it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  null =  21  *  2;`
-				const decl: SemanticNodeDeclarationVariable = new Lexer(src, CONFIG_DEFAULT).screener.parser.validator
+				const decl: SemanticNodeDeclarationVariable = new Parser(src, CONFIG_DEFAULT).validator
 					.decorate(variableDeclarationFromSource(src))
 				assert.throws(() => decl.typeCheck(CONFIG_DEFAULT.compilerOptions), TypeError03)
 			})
 			it('with int coersion on, allows assigning ints to floats.', () => {
 				const src: string = `let x: float = 42;`
-				const decl: SemanticNodeDeclarationVariable = new Lexer(src, CONFIG_DEFAULT).screener.parser.validator
+				const decl: SemanticNodeDeclarationVariable = new Parser(src, CONFIG_DEFAULT).validator
 					.decorate(variableDeclarationFromSource(src))
 				decl.typeCheck(CONFIG_DEFAULT.compilerOptions)
 			})
 			it('with int coersion off, throws when assigning int to float.', () => {
 				const src: string = `let x: float = 42;`
-				const decl: SemanticNodeDeclarationVariable = new Lexer(src, CONFIG_DEFAULT).screener.parser.validator
+				const decl: SemanticNodeDeclarationVariable = new Parser(src, CONFIG_DEFAULT).validator
 					.decorate(variableDeclarationFromSource(src))
 				assert.throws(() => decl.typeCheck({
 					...CONFIG_DEFAULT.compilerOptions,
@@ -501,7 +504,7 @@ describe('SemanticNode', () => {
 	describe('SemanticNodeType', () => {
 		describe('#assess', () => {
 			function validatorFromType(typestring: string, config: SolidConfig = CONFIG_DEFAULT): Validator {
-				return new Lexer(`let x: ${ typestring } = null;`, config).screener.parser.validator
+				return new Parser(`let x: ${ typestring } = null;`, config).validator
 			}
 			it('computes the value of constant null, boolean, or number types.', () => {
 				assert.deepStrictEqual([
@@ -632,7 +635,7 @@ describe('SemanticNode', () => {
 						).type(), new SolidTypeConstant(new Float64(42.0)))
 					})
 					Dev.supports('variables') && it('throws for identifiers.', () => {
-						assert.throws(() => ((new Lexer(`x;`, CONFIG_DEFAULT).screener.parser.validator
+						assert.throws(() => ((new Parser(`x;`, CONFIG_DEFAULT).validator
 							.validate()
 							.children[0] as SemanticNodeStatementExpression)
 							.children[0] as SemanticNodeIdentifier).type(), /not yet supported/)
@@ -645,11 +648,11 @@ describe('SemanticNode', () => {
 								),
 							] : []),
 							...(Dev.supports('literalTemplate') ? [
-								(new Lexer(`'''42''';`, CONFIG_DEFAULT).screener.parser.validator
+								(new Parser(`'''42''';`, CONFIG_DEFAULT).validator
 									.validate()
 									.children[0] as SemanticNodeStatementExpression)
 									.children[0] as SemanticNodeTemplate,
-								(new Lexer(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).screener.parser.validator
+								(new Parser(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).validator
 									.validate()
 									.children[0] as SemanticNodeStatementExpression)
 									.children[0] as SemanticNodeTemplate,

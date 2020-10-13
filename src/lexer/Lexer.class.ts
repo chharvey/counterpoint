@@ -19,7 +19,6 @@ import {
 	TokenCommentLine,
 	TokenCommentMulti,
 } from './Token.class'
-import type {ParserSolid} from '../parser/'
 
 import {
 	LexError03,
@@ -145,31 +144,5 @@ export class LexerSolid extends Lexer {
 	private setIdentifierValue(id_token: TokenIdentifier): void {
 		this._ids.add(id_token.source);
 		return id_token.setValue(BigInt([...this._ids].indexOf(id_token.source)));
-	}
-
-	/**
-	 * Construct a new Screener object from this Lexer.
-	 * @return a new Screener with this Lexer as its argument
-	 */
-	get screener(): {
-		parser: ParserSolid,
-		generate(): Generator<TokenSolid>,
-	} {
-		const self: this = this;
-		const ParserSolid_class: typeof ParserSolid = require('../parser/').ParserSolid;
-		return {
-			/**
-			 * Construct a new Parser object from this Screener.
-			 * @return a new Parser with this Screener as its argument
-			 */
-			get parser(): ParserSolid {
-				// @ts-expect-error
-				return new ParserSolid_class(this.generate(), this.config);
-			},
-			generate(): Generator<TokenSolid> {
-				// @ts-expect-error
-				return self.generate();
-			},
-		};
 	}
 }

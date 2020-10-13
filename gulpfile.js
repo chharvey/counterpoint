@@ -127,11 +127,10 @@ const build = gulp.parallel(gulp.series(dist, postdist), test)
 const dev = gulp.series(dist, test_dev)
 
 async function random() {
-	const {Scanner} = require('./build/lexer/')
-	const {Grammar} = require('./build/parser/')
+	const {ParserSolid, Grammar} = require('./build/parser/')
 	const sample = new Grammar().random().join(' ').replace(/\u0002|\u0003/g, '') // inserted by Scanner
 	console.log(sample.replace(/\u000d/g, '\u240d'))
-	const parser = new Scanner(sample).lexer.screener.parser
+	const parser = new ParserSolid(sample)
 	let tree;
 	try {
 		tree = parser.parse()

@@ -2,8 +2,8 @@ import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import {
-	LexerSolid as Lexer,
-} from '../../src/lexer/'
+	ParserSolid as Parser,
+} from '../../src/parser/';
 import {
 	TypeError01,
 } from '../../src/error/SolidTypeError.class'
@@ -19,12 +19,12 @@ describe('Validator', () => {
 					`42;`,
 					`21 + 21;`,
 				].forEach((src) => {
-					new Lexer(src, CONFIG_DEFAULT).screener.parser.validator.validate()
+					new Parser(src, CONFIG_DEFAULT).validator.validate()
 				})
 			})
 			it('throws for invalid type operations.', () => {
-				assert.throws(() => new Lexer(`null + 5;`,    CONFIG_DEFAULT).screener.parser.validator.validate(), TypeError01, 'SemanticNodeOperationBinaryArithmetic')
-				assert.throws(() => new Lexer(`7.0 <= null;`, CONFIG_DEFAULT).screener.parser.validator.validate(), TypeError01, 'SemanticNodeOperationBinaryComparative')
+				assert.throws(() => new Parser(`null + 5;`,    CONFIG_DEFAULT).validator.validate(), TypeError01, 'SemanticNodeOperationBinaryArithmetic')
+				assert.throws(() => new Parser(`7.0 <= null;`, CONFIG_DEFAULT).validator.validate(), TypeError01, 'SemanticNodeOperationBinaryComparative')
 			})
 			context('with int coercion off.', () => {
 				const coercion_off: SolidConfig = {
@@ -35,8 +35,8 @@ describe('Validator', () => {
 					},
 				}
 				it('throws if operands have different numeric types.', () => {
-					assert.throws(() => new Lexer(`7.0 + 3;`,  coercion_off).screener.parser.validator.validate(), TypeError01, 'SemanticNodeOperationBinaryArithmetic')
-					assert.throws(() => new Lexer(`7.0 <= 3;`, coercion_off).screener.parser.validator.validate(), TypeError01, 'SemanticNodeOperationBinaryComparative')
+					assert.throws(() => new Parser(`7.0 + 3;`,  coercion_off).validator.validate(), TypeError01, 'SemanticNodeOperationBinaryArithmetic')
+					assert.throws(() => new Parser(`7.0 <= 3;`, coercion_off).validator.validate(), TypeError01, 'SemanticNodeOperationBinaryComparative')
 				})
 			})
 		})

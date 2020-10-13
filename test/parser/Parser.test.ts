@@ -9,6 +9,9 @@ import {ParseError01} from '../../src/error/ParseError.class'
 import Util from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
 import {
+	ParserSolid as Parser,
+} from '../../src/parser/';
+import {
 	ParseNodeTypeUnit,
 	ParseNodeTypeUnarySymbol,
 	ParseNodeTypeIntersection,
@@ -33,7 +36,6 @@ import {
 	ParseNodeGoal__0__List,
 } from '../../src/parser/ParseNode.auto'
 import {
-	LexerSolid as Lexer,
 	Punctuator,
 	Keyword,
 	TokenPunctuator,
@@ -57,13 +59,13 @@ describe('Parser', () => {
 				`(true)) || null;`,
 				`234 null;`,
 			].forEach((src) => {
-				assert.throws(() => new Lexer(src, CONFIG_DEFAULT).screener.parser.parse(), ParseError01)
+				assert.throws(() => new Parser(src, CONFIG_DEFAULT).parse(), ParseError01)
 			})
 		})
 
 		context('Goal ::= #x02 #x03', () => {
 			it('returns only file bounds.', () => {
-				const tree: ParseNodeGoal = new Lexer('', CONFIG_DEFAULT).screener.parser.parse()
+				const tree: ParseNodeGoal = new Parser('', CONFIG_DEFAULT).parse()
 				assert.strictEqual(tree.children.length, 2)
 				tree.children.forEach((child) => assert.ok(child instanceof TokenFilebound))
 			})
@@ -244,7 +246,7 @@ describe('Parser', () => {
 
 		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
 			function stringTemplateParseNode (src: string): string {
-				return (((((((((((((new Lexer(src, CONFIG_DEFAULT).screener.parser
+				return (((((((((((((new Parser(src, CONFIG_DEFAULT)
 					.parse()
 					.children[1] as ParseNodeGoal__0__List)
 					.children[0] as ParseNodeStatement)
@@ -491,19 +493,19 @@ describe('Parser', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			it('throws when reaching an orphaned head.', () => {
-				assert.throws(() => new Lexer(`
+				assert.throws(() => new Parser(`
 					'''A string template head token not followed by a middle or tail {{ 1;
-				`, CONFIG_DEFAULT).screener.parser.parse(), ParseError01)
+				`, CONFIG_DEFAULT).parse(), ParseError01)
 			})
 			it('throws when reaching an orphaned middle.', () => {
-				assert.throws(() => new Lexer(`
+				assert.throws(() => new Parser(`
 					2 }} a string template middle token not preceded by a head/middle and not followed by a middle/tail {{ 3;
-				`, CONFIG_DEFAULT).screener.parser.parse(), ParseError01)
+				`, CONFIG_DEFAULT).parse(), ParseError01)
 			})
 			it('throws when reaching an orphaned tail.', () => {
-				assert.throws(() => new Lexer(`
+				assert.throws(() => new Parser(`
 					4 }} a string template tail token not preceded by a head or middle''';
-				`, CONFIG_DEFAULT).screener.parser.parse(), ParseError01)
+				`, CONFIG_DEFAULT).parse(), ParseError01)
 			})
 		})
 
@@ -811,7 +813,7 @@ describe('Parser', () => {
 						<FILEBOUND.../>...</FILEBOUND>
 					</Goal>
 				*/
-				const goal: ParseNodeGoal = new Lexer(`42; 420;`, CONFIG_DEFAULT).screener.parser.parse()
+				const goal: ParseNodeGoal = new Parser(`42; 420;`, CONFIG_DEFAULT).parse()
 				assert_arrayLength(goal.children, 3, 'goal should have 3 children')
 				const stat_list: ParseNodeGoal__0__List = goal.children[1]
 				assert_arrayLength(stat_list.children, 2, 'stat_list should have 2 children')

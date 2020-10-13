@@ -4,8 +4,8 @@ import Operator from '../../src/enum/Operator.enum'
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util from '../../src/class/Util.class'
 import {
-	LexerSolid as Lexer,
-} from '../../src/lexer/'
+	ParserSolid as Parser,
+} from '../../src/parser/';
 import {
 	Builder,
 	InstructionNone,
@@ -240,9 +240,9 @@ describe('Instruction', () => {
 					`;`,
 				].map((src) => {
 					const srcs: [string, SolidConfig] = [src, CONFIG_DEFAULT]
-					return new Lexer(...srcs).screener.parser.validator
-						.decorate(new Lexer(...srcs).screener.parser.parse())
-						.build(new Lexer(...srcs).screener.parser.validator.builder)
+					return new Parser(...srcs).validator
+						.decorate(new Parser(...srcs).parse())
+						.build(new Parser(...srcs).validator.builder)
 				})
 				assert.ok(mods[0] instanceof InstructionNone)
 				assert.strictEqual(mods[0].toString(), ``)

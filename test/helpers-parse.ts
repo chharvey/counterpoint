@@ -7,7 +7,6 @@ import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import {
-	LexerSolid as Lexer,
 	Punctuator,
 	TokenPunctuator,
 	TokenKeyword,
@@ -15,6 +14,9 @@ import {
 	TokenNumber,
 	TokenString,
 } from '../src/lexer/'
+import {
+	ParserSolid as Parser,
+} from '../src/parser/';
 import {
 	ParseNodePrimitiveLiteral,
 	ParseNodeTypeKeyword,
@@ -191,7 +193,7 @@ export function variableDeclarationFromSource(src: string, config: SolidConfig =
 	return var_decl
 }
 export function statementFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ParseNodeStatement {
-	const goal: ParseNodeGoal = new Lexer(src, config).screener.parser.parse()
+	const goal: ParseNodeGoal = new Parser(src, config).parse()
 	assert_arrayLength(goal.children, 3, 'goal should have 3 children')
 	const [sot, stat_list, eot]: readonly [Token, ParseNodeGoal__0__List, Token] = goal.children
 	assert.ok(sot instanceof TokenFilebound)

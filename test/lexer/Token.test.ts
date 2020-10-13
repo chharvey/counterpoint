@@ -40,7 +40,7 @@ describe('TokenSolid', () => {
 	describe('#cook', () => {
 		context('TokenPunctuator', () => {
 			it('assigns values 0n–127n to punctuator tokens.', () => {
-				const cooked: bigint[] = [...new Lexer(TokenPunctuator.PUNCTUATORS.join(' '), CONFIG_DEFAULT).screener.generate()]
+				const cooked: bigint[] = [...new Lexer(TokenPunctuator.PUNCTUATORS.join(' '), CONFIG_DEFAULT).generate()]
 					.filter((token): token is TokenPunctuator => token instanceof TokenPunctuator)
 					.map((punctuator) => punctuator.cook())
 				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i)).slice(0, TokenPunctuator.PUNCTUATORS.length)
@@ -54,7 +54,7 @@ describe('TokenSolid', () => {
 
 		context('TokenKeyword', () => {
 			it('assigns values 128n–255n to reserved keywords.', () => {
-				const cooked: bigint[] = [...new Lexer(TokenKeyword.KEYWORDS.join(' '), CONFIG_DEFAULT).screener.generate()]
+				const cooked: bigint[] = [...new Lexer(TokenKeyword.KEYWORDS.join(' '), CONFIG_DEFAULT).generate()]
 					.filter((token): token is TokenKeyword => token instanceof TokenKeyword)
 					.map((keyword) => keyword.cook())
 				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i + 128)).slice(0, TokenKeyword.KEYWORDS.length)
@@ -74,7 +74,7 @@ describe('TokenSolid', () => {
 					_and0 _can1 contain2 numb3rs
 
 					a word _can repeat _with the same id
-				`, CONFIG_DEFAULT).screener.generate()]
+				`, CONFIG_DEFAULT).generate()]
 					.filter((token): token is TokenIdentifier => token instanceof TokenIdentifier)
 					.map((identifier) => identifier.cook())
 				it('assigns values 256n or greater.', () => {
@@ -103,7 +103,7 @@ describe('TokenSolid', () => {
 					\`this\` \`is\` \`a\` \`unicode word\`
 					\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
 					\`except\` \`back-ticks\` \`.\`
-				`, CONFIG_DEFAULT).screener.generate()]
+				`, CONFIG_DEFAULT).generate()]
 					.filter((token): token is TokenIdentifierUnicode => token instanceof TokenIdentifierUnicode)
 					.map((identifier) => identifier.cook())
 				it('assigns values 256n or greater.', () => {
@@ -184,7 +184,7 @@ describe('TokenSolid', () => {
 							integerRadices: true,
 							numericSeparators: true,
 						},
-					}).screener.generate()]
+					}).generate()]
 						.filter((token) => token instanceof TokenNumber)
 						.map((token) => token.cook()), values)
 				})
@@ -201,7 +201,7 @@ describe('TokenSolid', () => {
 					345
 					678';
 					'\u{10001}' '\\\u{10001}';
-				`), CONFIG_DEFAULT).screener.generate()]
+				`), CONFIG_DEFAULT).generate()]
 				assert.strictEqual(tokens[ 5].cook(), ``)
 				assert.strictEqual(tokens[ 7].cook(), `hello`)
 				assert.strictEqual(tokens[11].cook(), `0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`)
@@ -225,7 +225,7 @@ describe('TokenSolid', () => {
 					'''012\\
 					345
 					678''';
-				`), CONFIG_DEFAULT).screener.generate()]
+				`), CONFIG_DEFAULT).generate()]
 				assert.strictEqual(tokens[ 3].cook(), ``)
 				assert.strictEqual(tokens[ 7].cook(), `hello`)
 				assert.strictEqual(tokens[13].cook(), `head`)
@@ -241,7 +241,7 @@ describe('TokenSolid', () => {
 		Dev.supports('literalString') && it('throws when UTF-16 encoding input is out of range.', () => {
 			const stringtoken: Token = [...new Lexer(Util.dedent(`
 				'a string literal with a unicode \\u{a00061} escape sequence out of range';
-			`), CONFIG_DEFAULT).screener.generate()][1]
+			`), CONFIG_DEFAULT).generate()][1]
 			assert.throws(() => stringtoken.cook(), RangeError)
 		})
 	})
