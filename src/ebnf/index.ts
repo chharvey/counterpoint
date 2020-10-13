@@ -4,12 +4,12 @@ import {
 	ParseNode,
 	Lexer,
 	Parser,
+	Production,
 } from '@chharvey/parser';
 
 import type {NonemptyArray} from '../types.d'
 import {
 	Grammar,
-	Production,
 } from '../parser/'
 import * as TOKEN from './Token.class'
 import * as PRODUCTION from './Production.auto'

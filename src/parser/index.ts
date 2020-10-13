@@ -5,7 +5,6 @@ export {
 export {default as Grammar}       from './Grammar.class'
 export {default as Rule}          from './Rule.class'
 export {default as Configuration} from './Configuration.class'
-export {default as Production}    from './Production.class'
 
 export {
 	GrammarSymbol,

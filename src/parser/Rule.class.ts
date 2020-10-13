@@ -1,6 +1,8 @@
+import type {
+	Production,
+} from '@chharvey/parser';
 import Util from '../class/Util.class'
 import type {GrammarSymbol} from './Grammar.class'
-import type Production from './Production.class'
 
 
 

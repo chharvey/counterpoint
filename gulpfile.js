@@ -20,8 +20,7 @@ function dist() {
 
 async function postdist() {
 	const {ParserEBNF: Parser, Decorator} = require('./build/ebnf/')
-	const {default: Production} = require('./build/parser/Production.class.js')
-	const {ParseNode} = require('@chharvey/parser')
+	const {ParseNode, Production} = require('@chharvey/parser')
 	function preamble(srcpath) {
 		return `
 			/*----------------------------------------------------------------/
@@ -43,7 +42,15 @@ async function postdist() {
 	return Promise.all([
 		fs.promises.writeFile(path.join(__dirname, './src/ebnf/Production.auto.ts'), `
 			${ preamble('/src/parser/Production.class.ts#Production#fromJSON') }
-			${ Production.fromJSON((await syntaxes)[0]) }
+			import {
+				GrammarSymbol,
+				Production,
+			} from '@chharvey/parser';
+			import type {
+				NonemptyArray,
+			} from '../types.d';
+			import * as TERMINAL from './Terminal.class';
+			${ (await syntaxes)[0].map((prod) => Production.fromJSON(prod)).join('') }
 		`),
 		fs.promises.writeFile(path.join(__dirname, './src/ebnf/ParseNode.auto.ts'), `
 			${ preamble('/src/parser/ParseNode.class.ts#ParseNode#fromJSON') }
@@ -55,7 +62,15 @@ async function postdist() {
 		`),
 		fs.promises.writeFile(path.join(__dirname, './src/parser/Production.auto.ts'), `
 			${ preamble('/src/parser/Production.class.ts#Production#fromJSON') }
-			${ Production.fromJSON((await syntaxes)[1]) }
+			import {
+				GrammarSymbol,
+				Production,
+			} from '@chharvey/parser';
+			import type {
+				NonemptyArray,
+			} from '../types.d';
+			import * as TERMINAL from './Terminal.class';
+			${ (await syntaxes)[1].map((prod) => Production.fromJSON(prod)).join('') }
 		`),
 		fs.promises.writeFile(path.join(__dirname, './src/parser/ParseNode.auto.ts'), `
 			${ preamble('/src/parser/ParseNode.class.ts#ParseNode#fromJSON') }

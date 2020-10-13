@@ -1,6 +1,7 @@
 import {
 	Filebound,
 	Terminal,
+	Production,
 } from '@chharvey/parser';
 
 import type {NonemptyArray} from '../types.d'
@@ -10,7 +11,6 @@ import type {
 } from '../lexer/'
 import type Rule from './Rule.class'
 import Configuration from './Configuration.class'
-import Production from './Production.class'
 
 
 
@@ -129,7 +129,7 @@ export default class Grammar {
 		let returned: string[]|null = null
 		for (let i = 0; i < 64; i++) {
 			try {
-				returned = this.goal.random()
+				returned = ['this.goal.random()']
 				break;
 			} catch (err) { // RangeError: Maximum call stack size exceeded
 				if (err.message !== 'Maximum call stack size exceeded') {

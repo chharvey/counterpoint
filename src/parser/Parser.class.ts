@@ -1,6 +1,7 @@
 import {
 	ParseNode,
 	Parser,
+	Production,
 } from '@chharvey/parser';
 
 import type SolidConfig from '../SolidConfig'
@@ -14,7 +15,6 @@ import {
 import * as PARSENODE from './ParseNode.auto'
 import Grammar, {
 } from './Grammar.class'
-import type Production from './Production.class'
 import * as PRODUCTION from './Production.auto'
 
 
