@@ -1,3 +1,6 @@
+import type {
+	Token,
+} from '@chharvey/parser';
 import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../../src/SolidConfig'
@@ -5,12 +8,13 @@ import Util     from '../../src/class/Util.class'
 import Dev      from '../../src/class/Dev.class'
 import {
 	LexerSolid as Lexer,
-	TokenSolid as Token,
+	TokenSolid,
 	TokenPunctuator,
 	TokenKeyword,
 	TokenIdentifier,
 	TokenIdentifierUnicode,
 	TokenNumber,
+	TokenString,
 } from '../../src/lexer/'
 
 const lastItem  = (iter: any): any     => iter[lastIndex(iter)]
@@ -186,7 +190,7 @@ describe('TokenSolid', () => {
 						},
 					}).generate()]
 						.filter((token) => token instanceof TokenNumber)
-						.map((token) => token.cook()), values)
+						.map((token) => (token as TokenNumber).cook()), values)
 				})
 			})
 		})
@@ -202,13 +206,13 @@ describe('TokenSolid', () => {
 					678';
 					'\u{10001}' '\\\u{10001}';
 				`), CONFIG_DEFAULT).generate()]
-				assert.strictEqual(tokens[ 5].cook(), ``)
-				assert.strictEqual(tokens[ 7].cook(), `hello`)
-				assert.strictEqual(tokens[11].cook(), `0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`)
-				assert.strictEqual(tokens[13].cook(), `0 $ 1 _ 2 \0 3`)
-				assert.strictEqual(tokens[15].cook(), `012 345\n678`)
-				assert.strictEqual(tokens[17].cook(), `\u{10001}`)
-				assert.strictEqual(tokens[18].cook(), `\u{10001}`)
+				assert.strictEqual((tokens[ 5] as TokenSolid).cook(), ``)
+				assert.strictEqual((tokens[ 7] as TokenSolid).cook(), `hello`)
+				assert.strictEqual((tokens[11] as TokenSolid).cook(), `0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`)
+				assert.strictEqual((tokens[13] as TokenSolid).cook(), `0 $ 1 _ 2 \0 3`)
+				assert.strictEqual((tokens[15] as TokenSolid).cook(), `012 345\n678`)
+				assert.strictEqual((tokens[17] as TokenSolid).cook(), `\u{10001}`)
+				assert.strictEqual((tokens[18] as TokenSolid).cook(), `\u{10001}`)
 			})
 		})
 
@@ -226,22 +230,22 @@ describe('TokenSolid', () => {
 					345
 					678''';
 				`), CONFIG_DEFAULT).generate()]
-				assert.strictEqual(tokens[ 3].cook(), ``)
-				assert.strictEqual(tokens[ 7].cook(), `hello`)
-				assert.strictEqual(tokens[13].cook(), `head`)
-				assert.strictEqual(tokens[18].cook(), `midl`)
-				assert.strictEqual(tokens[23].cook(), `tail`)
-				assert.strictEqual(tokens[26].cook(), `0 \\\` 1`)
-				assert.strictEqual(tokens[28].cook(), `0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`)
-				assert.strictEqual(tokens[30].cook(), `0 \\u{24} 1 \\u{005f} 2 \\u{} 3`)
-				assert.strictEqual(tokens[32].cook(), `012\\\n345\n678`)
+				assert.strictEqual((tokens[ 3] as TokenSolid).cook(), ``)
+				assert.strictEqual((tokens[ 7] as TokenSolid).cook(), `hello`)
+				assert.strictEqual((tokens[13] as TokenSolid).cook(), `head`)
+				assert.strictEqual((tokens[18] as TokenSolid).cook(), `midl`)
+				assert.strictEqual((tokens[23] as TokenSolid).cook(), `tail`)
+				assert.strictEqual((tokens[26] as TokenSolid).cook(), `0 \\\` 1`)
+				assert.strictEqual((tokens[28] as TokenSolid).cook(), `0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`)
+				assert.strictEqual((tokens[30] as TokenSolid).cook(), `0 \\u{24} 1 \\u{005f} 2 \\u{} 3`)
+				assert.strictEqual((tokens[32] as TokenSolid).cook(), `012\\\n345\n678`)
 			})
 		})
 
 		Dev.supports('literalString') && it('throws when UTF-16 encoding input is out of range.', () => {
-			const stringtoken: Token = [...new Lexer(Util.dedent(`
+			const stringtoken: TokenString = [...new Lexer(Util.dedent(`
 				'a string literal with a unicode \\u{a00061} escape sequence out of range';
-			`), CONFIG_DEFAULT).generate()][1]
+			`), CONFIG_DEFAULT).generate()][1] as TokenString
 			assert.throws(() => stringtoken.cook(), RangeError)
 		})
 	})
