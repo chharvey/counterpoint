@@ -7,6 +7,9 @@ import {
 	ParserSolid as Parser,
 } from '../../src/parser/';
 import {
+	Validator,
+} from '../../src/validator/';
+import {
 	Builder,
 	InstructionNone,
 	InstructionConst,
@@ -240,9 +243,9 @@ describe('Instruction', () => {
 					`;`,
 				].map((src) => {
 					const srcs: [string, SolidConfig] = [src, CONFIG_DEFAULT]
-					return new Parser(...srcs).validator
+					return new Validator(...srcs)
 						.decorate(new Parser(...srcs).parse())
-						.build(new Parser(...srcs).validator.builder)
+						.build(new Validator(...srcs).builder)
 				})
 				assert.ok(mods[0] instanceof InstructionNone)
 				assert.strictEqual(mods[0].toString(), ``)

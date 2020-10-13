@@ -88,12 +88,4 @@ export class ParserSolid extends Parser {
 	parse(): PARSENODE.ParseNodeGoal {
 		return super.parse() as PARSENODE.ParseNodeGoal
 	}
-
-	/**
-	 * Construct a new Validator object from this Parser.
-	 * @return a new Validator with this Parser as its argument
-	 */
-	get validator(): Validator {
-		return new Validator(this.parse(), this.config)
-	}
 }

@@ -19,6 +19,9 @@ import {
 	TokenString,
 	TokenTemplate,
 } from '../lexer/Token.class'
+import {
+	ParserSolid as Parser,
+} from '../parser/'
 import * as PARSENODE from '../parser/ParseNode.auto'
 import {Builder} from '../builder/'
 import {
@@ -121,18 +124,21 @@ export default class Validator {
 	])
 
 
+	/** A syntactic goal produced by a parser. */
+	private readonly parsegoal: PARSENODE.ParseNodeGoal;
 	/** A symbol table, which keeps tracks of variables. */
 	private readonly symbol_table: Map<string, SymbolInfo> = new Map()
 
 	/**
 	 * Construct a new Validator object.
-	 * @param parsegoal - A syntactic goal produced by a parser.
+	 * @param source - the source text
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		private readonly parsegoal: PARSENODE.ParseNodeGoal,
+		source: string,
 		private readonly config: SolidConfig,
 	) {
+		this.parsegoal = new Parser(source, config).parse();
 	}
 
 	/**

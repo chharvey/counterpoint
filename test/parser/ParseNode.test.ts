@@ -54,11 +54,11 @@ import {
 describe('ParseNodeSolid', () => {
 	describe('#decorate', () => {
 		function validatorFromType(typestring: string, config: SolidConfig = CONFIG_DEFAULT): Validator {
-			return new Parser(`let x: ${ typestring } = null;`, config).validator
+			return new Validator(`let x: ${ typestring } = null;`, config)
 		}
 		context('Goal ::= #x02 #x03', () => {
 			it('makes a SemanticNodeGoal node containing no children.', () => {
-				const goal: SemanticNodeGoal = new Parser(``, CONFIG_DEFAULT).validator
+				const goal: SemanticNodeGoal = new Validator(``, CONFIG_DEFAULT)
 					.decorate(new Parser(``, CONFIG_DEFAULT).parse())
 				assert_arrayLength(goal.children, 0, 'semantic goal should have 0 children')
 			})
@@ -83,7 +83,7 @@ describe('ParseNodeSolid', () => {
 					`true;`,
 					`42;`,
 					`4.2;`,
-				].map((src) => new Parser(src, CONFIG_DEFAULT).validator.decorate(primitiveLiteralFromSource(src)).value), [
+				].map((src) => new Validator(src, CONFIG_DEFAULT).decorate(primitiveLiteralFromSource(src)).value), [
 					SolidNull.NULL,
 					SolidBoolean.FALSE,
 					SolidBoolean.TRUE,
@@ -245,7 +245,7 @@ describe('ParseNodeSolid', () => {
 
 		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
 			function stringTemplateSemanticNode(src: string): string {
-				return ((new Parser(src, CONFIG_DEFAULT).validator
+				return ((new Validator(src, CONFIG_DEFAULT)
 					.decorate(new Parser(src, CONFIG_DEFAULT).parse())
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeTemplate)
@@ -686,7 +686,7 @@ describe('ParseNodeSolid', () => {
 					</SemanticDeclarationVariable>
 				*/
 				const src: string = `let  the_answer:  int | float =  21  *  2;`
-				const decl: SemanticNodeDeclarationVariable = new Parser(src, CONFIG_DEFAULT).validator
+				const decl: SemanticNodeDeclarationVariable = new Validator(src, CONFIG_DEFAULT)
 					.decorate(variableDeclarationFromSource(src))
 				// assert.strictEqual(decl.unfixed, true)
 				// assert.strictEqual(decl.children[0].children[0].id, 256n)
@@ -714,7 +714,7 @@ describe('ParseNodeSolid', () => {
 					</SemanticDeclarationVariable>
 				*/
 				const src: string = `let \`the £ answer\`: int = the_answer * 10;`
-				const decl: SemanticNodeDeclarationVariable = new Parser(src, CONFIG_DEFAULT).validator
+				const decl: SemanticNodeDeclarationVariable = new Validator(src, CONFIG_DEFAULT)
 					.decorate(variableDeclarationFromSource(src))
 				// assert.strictEqual(decl.unfixed, false)
 				// assert.strictEqual(decl.children[0].children[0].id, 256n)
@@ -735,7 +735,7 @@ describe('ParseNodeSolid', () => {
 				const srcs: [string, SolidConfig] = [Util.dedent(`
 					the_answer = the_answer - 40;
 				`), CONFIG_DEFAULT]
-				assert.strictEqual(new Parser(...srcs).validator
+				assert.strictEqual(new Validator(...srcs)
 					.decorate(new Parser(...srcs).parse())
 					.serialize(), `
 					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - 40 ; ␃">
@@ -765,7 +765,7 @@ describe('ParseNodeSolid', () => {
 						<StatementExpression source="420 ;">...</StatementExpression>
 					</Goal>
 				*/
-				const goal: SemanticNodeGoal = new Parser(`42; 420;`, CONFIG_DEFAULT).validator
+				const goal: SemanticNodeGoal = new Validator(`42; 420;`, CONFIG_DEFAULT)
 					.decorate(new Parser(`42; 420;`, CONFIG_DEFAULT).parse())
 				assert_arrayLength(goal.children, 2, 'goal should have 2 children')
 				assert.deepStrictEqual(goal.children.map((stat) => {

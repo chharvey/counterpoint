@@ -2,8 +2,8 @@ import * as assert from 'assert'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import {
-	ParserSolid as Parser,
-} from '../../src/parser/';
+	Validator,
+} from '../../src/validator/';
 import {
 	TypeError01,
 } from '../../src/error/SolidTypeError.class'
@@ -19,12 +19,12 @@ describe('Validator', () => {
 					`42;`,
 					`21 + 21;`,
 				].forEach((src) => {
-					new Parser(src, CONFIG_DEFAULT).validator.validate()
+					new Validator(src, CONFIG_DEFAULT).validate()
 				})
 			})
 			it('throws for invalid type operations.', () => {
-				assert.throws(() => new Parser(`null + 5;`,    CONFIG_DEFAULT).validator.validate(), TypeError01, 'SemanticNodeOperationBinaryArithmetic')
-				assert.throws(() => new Parser(`7.0 <= null;`, CONFIG_DEFAULT).validator.validate(), TypeError01, 'SemanticNodeOperationBinaryComparative')
+				assert.throws(() => new Validator(`null + 5;`,    CONFIG_DEFAULT).validate(), TypeError01, 'SemanticNodeOperationBinaryArithmetic')
+				assert.throws(() => new Validator(`7.0 <= null;`, CONFIG_DEFAULT).validate(), TypeError01, 'SemanticNodeOperationBinaryComparative')
 			})
 			context('with int coercion off.', () => {
 				const coercion_off: SolidConfig = {
@@ -35,8 +35,8 @@ describe('Validator', () => {
 					},
 				}
 				it('throws if operands have different numeric types.', () => {
-					assert.throws(() => new Parser(`7.0 + 3;`,  coercion_off).validator.validate(), TypeError01, 'SemanticNodeOperationBinaryArithmetic')
-					assert.throws(() => new Parser(`7.0 <= 3;`, coercion_off).validator.validate(), TypeError01, 'SemanticNodeOperationBinaryComparative')
+					assert.throws(() => new Validator(`7.0 + 3;`,  coercion_off).validate(), TypeError01, 'SemanticNodeOperationBinaryArithmetic')
+					assert.throws(() => new Validator(`7.0 <= 3;`, coercion_off).validate(), TypeError01, 'SemanticNodeOperationBinaryComparative')
 				})
 			})
 		})
