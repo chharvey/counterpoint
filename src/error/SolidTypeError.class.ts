@@ -1,16 +1,19 @@
+import {
+	ErrorCode,
+} from '@chharvey/parser';
+
 import type {
 	SemanticNodeOperation,
 	SemanticNodeDeclarationVariable,
 	SolidLanguageType,
 } from '../validator/'
-import SolidError from './SolidError.class'
 
 
 
 /**
  * A TypeError is thrown when the validator recognizes a type mismatch.
  */
-export default class SolidTypeError extends SolidError {
+export default class SolidTypeError extends ErrorCode {
 	/** The name of this class of errors. */
 	static readonly NAME: string = 'TypeError'
 	/** The number series of this class of errors. */

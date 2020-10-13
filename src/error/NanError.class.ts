@@ -1,10 +1,10 @@
-import type {
+import {
 	ASTNode,
+	ErrorCode,
 } from '@chharvey/parser';
-import SolidError from './SolidError.class'
 
 
-export default class NanError extends SolidError {
+export default class NanError extends ErrorCode {
 	static readonly NAME: string = 'NanError'
 	static readonly CODE: number = 3200
 	constructor (message: string, code: number = 0, line?: number, col?: number) {
