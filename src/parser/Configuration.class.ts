@@ -1,5 +1,6 @@
-import type {
+import {
 	Token,
+	Terminal,
 } from '@chharvey/parser';
 import * as xjs from 'extrajs'
 
@@ -9,7 +10,6 @@ import type {
 	GrammarTerminal,
 } from './Grammar.class'
 import type Rule from './Rule.class'
-import Terminal from './Terminal.class'
 
 
 /**

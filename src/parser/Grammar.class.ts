@@ -1,5 +1,6 @@
-import type {
+import {
 	Filebound,
+	Terminal,
 } from '@chharvey/parser';
 
 import type {NonemptyArray} from '../types.d'
@@ -9,7 +10,6 @@ import type {
 } from '../lexer/'
 import type Rule from './Rule.class'
 import Configuration from './Configuration.class'
-import Terminal from './Terminal.class'
 import Production from './Production.class'
 
 

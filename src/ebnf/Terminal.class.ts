@@ -1,8 +1,8 @@
-import type {
+import {
 	Token,
+	Terminal,
 } from '@chharvey/parser';
 
-import {Terminal} from '../parser/'
 import * as TOKEN from './Token.class'
 
 
