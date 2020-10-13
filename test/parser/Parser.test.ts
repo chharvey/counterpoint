@@ -1,11 +1,11 @@
 import {
 	Token,
 	TokenFilebound,
+	ParseError01,
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../../src/SolidConfig'
-import {ParseError01} from '../../src/error/ParseError.class'
 import Util from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
 import {
