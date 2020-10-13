@@ -19,68 +19,22 @@ function dist() {
 }
 
 async function postdist() {
-	const {ParserEBNF: Parser, Decorator} = require('./build/ebnf/')
-	const {ParseNode, Production} = require('@chharvey/parser')
-	function preamble(srcpath) {
-		return `
-			/*----------------------------------------------------------------/
-			| WARNING: Do not manually update this file!
-			| It is auto-generated via
-			| <${ srcpath }>.
-			| If you need to make updates, make them there.
-			/----------------------------------------------------------------*/
-		`
-	}
-	const syntaxes = Promise.all([
-		new Decorator().decorate(new Parser(
-			await fs.promises.readFile(path.join(__dirname, './docs/spec/grammar/ebnf-syntax.ebnf'), 'utf8')
-		).parse()).transform(),
-		new Decorator().decorate(new Parser(
-			await fs.promises.readFile(path.join(__dirname, './docs/spec/grammar/syntax.ebnf'), 'utf8')
-		).parse()).transform(),
-	])
-	return Promise.all([
-		fs.promises.writeFile(path.join(__dirname, './src/ebnf/Production.auto.ts'), `
-			${ preamble('/src/parser/Production.class.ts#Production#fromJSON') }
-			import {
-				GrammarSymbol,
-				Production,
-			} from '@chharvey/parser';
-			import type {
-				NonemptyArray,
-			} from '../types.d';
-			import * as TERMINAL from './Terminal.class';
-			${ (await syntaxes)[0].map((prod) => Production.fromJSON(prod)).join('') }
-		`),
-		fs.promises.writeFile(path.join(__dirname, './src/ebnf/ParseNode.auto.ts'), `
-			${ preamble('/src/parser/ParseNode.class.ts#ParseNode#fromJSON') }
-			import {
-				Token,
-				ParseNode,
-			} from '@chharvey/parser';
-			${ (await syntaxes)[0].map((prod) => ParseNode.fromJSON(prod)).join('') }
-		`),
-		fs.promises.writeFile(path.join(__dirname, './src/parser/Production.auto.ts'), `
-			${ preamble('/src/parser/Production.class.ts#Production#fromJSON') }
-			import {
-				GrammarSymbol,
-				Production,
-			} from '@chharvey/parser';
-			import type {
-				NonemptyArray,
-			} from '../types.d';
-			import * as TERMINAL from './Terminal.class';
-			${ (await syntaxes)[1].map((prod) => Production.fromJSON(prod)).join('') }
-		`),
-		fs.promises.writeFile(path.join(__dirname, './src/parser/ParseNode.auto.ts'), `
-			${ preamble('/src/parser/ParseNode.class.ts#ParseNode#fromJSON') }
-			import {
-				Token,
-				ParseNode,
-			} from '@chharvey/parser';
-			${ (await syntaxes)[1].map((prod) => ParseNode.fromJSON(prod)).join('') }
-		`),
-	])
+	const {generate} = require('@chharvey/parser');
+	const grammar_solid = fs.promises.readFile(path.join(__dirname, './docs/spec/grammar/syntax.ebnf'), 'utf8');
+	return fs.promises.writeFile(path.join(__dirname, './src/parser/Parser.auto.ts'), `
+		/*----------------------------------------------------------------/
+		| WARNING: Do not manually update this file!
+		| It is auto-generated via <@chharvey/parser>.
+		| If you need to make updates, make them there.
+		/----------------------------------------------------------------*/
+		${ generate(await grammar_solid, 'Solid') }
+	`.replace(`
+		import {LexerSolid} from './Lexer';
+		import * as TERMINAL from './Terminal';
+	`, `
+		import {LexerSolid} from '../lexer/Lexer.class';
+		import * as TERMINAL from './Terminal.class';
+	`));
 }
 
 function test() {
