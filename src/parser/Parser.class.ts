@@ -23,12 +23,8 @@ export class ParserSolid extends Parser {
 	/**
 	 * Construct a new ParserSolid object.
 	 * @param source - the source text
-	 * @param config - The configuration settings for an instance program.
 	 */
-	constructor (
-		source: string,
-		private readonly config: SolidConfig,
-	) {
+	constructor (source: string) {
 		// @ts-expect-error
 		super(source, LexerSolid, new Grammar([
 			PRODUCTION.ProductionPrimitiveLiteral.instance,

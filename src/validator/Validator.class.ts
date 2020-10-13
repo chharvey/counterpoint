@@ -138,7 +138,7 @@ export default class Validator {
 		source: string,
 		private readonly config: SolidConfig,
 	) {
-		this.parsegoal = new Parser(source, config).parse();
+		this.parsegoal = new Parser(source).parse();
 	}
 
 	/**

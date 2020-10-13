@@ -59,7 +59,7 @@ describe('ParseNodeSolid', () => {
 		context('Goal ::= #x02 #x03', () => {
 			it('makes a SemanticNodeGoal node containing no children.', () => {
 				const goal: SemanticNodeGoal = new Validator(``, CONFIG_DEFAULT)
-					.decorate(new Parser(``, CONFIG_DEFAULT).parse())
+					.decorate(new Parser(``).parse())
 				assert_arrayLength(goal.children, 0, 'semantic goal should have 0 children')
 			})
 		})
@@ -246,7 +246,7 @@ describe('ParseNodeSolid', () => {
 		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
 			function stringTemplateSemanticNode(src: string): string {
 				return ((new Validator(src, CONFIG_DEFAULT)
-					.decorate(new Parser(src, CONFIG_DEFAULT).parse())
+					.decorate(new Parser(src).parse())
 					.children[0] as SemanticNodeStatementExpression)
 					.children[0] as SemanticNodeTemplate)
 					.serialize()
@@ -736,7 +736,7 @@ describe('ParseNodeSolid', () => {
 					the_answer = the_answer - 40;
 				`), CONFIG_DEFAULT]
 				assert.strictEqual(new Validator(...srcs)
-					.decorate(new Parser(...srcs).parse())
+					.decorate(new Parser(srcs[0]).parse())
 					.serialize(), `
 					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - 40 ; ␃">
 						<Assignment line="3" col="1" source="the_answer = the_answer - 40 ;">
@@ -766,7 +766,7 @@ describe('ParseNodeSolid', () => {
 					</Goal>
 				*/
 				const goal: SemanticNodeGoal = new Validator(`42; 420;`, CONFIG_DEFAULT)
-					.decorate(new Parser(`42; 420;`, CONFIG_DEFAULT).parse())
+					.decorate(new Parser(`42; 420;`).parse())
 				assert_arrayLength(goal.children, 2, 'goal should have 2 children')
 				assert.deepStrictEqual(goal.children.map((stat) => {
 					assert.ok(stat instanceof SemanticNodeStatementExpression)
