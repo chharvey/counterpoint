@@ -79,7 +79,7 @@ async function test_dev() {
 	const {Scanner} = require('@chharvey/parser');
 	const {CONFIG_DEFAULT}         = require('./build/SolidConfig.js')
 	const {Lexer, Screener} = require('./build/lexer/')
-	const {default: Parser       } = require('./build/class/Parser.class.js')
+	const {ParserSolid: Parser} = require('./build/class/Parser.class.js');
 	const {default: CodeGenerator} = require('./build/vm/Builder.class.js')
 
 	const input = fsPromise.readFile('./sample/test-v0.2.solid', 'utf8')

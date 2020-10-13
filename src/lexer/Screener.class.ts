@@ -102,6 +102,7 @@ export class ScreenerSolid extends Screener {
 	 */
 	get parser(): Parser {
 		const Parser_class: typeof Parser = require('../parser/').ParserSolid
+		// @ts-expect-error
 		return new Parser_class(this.generate(), this.config)
 	}
 }

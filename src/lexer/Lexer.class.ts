@@ -4,13 +4,11 @@ import {
 	Lexer,
 } from '@chharvey/parser';
 
-import type SolidConfig from '../SolidConfig'
-
+import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
 import Dev from '../class/Dev.class'
 import {ScreenerSolid as Screener} from './Screener.class'
 import {
 	Punctuator,
-	TokenSolid,
 	TokenPunctuator,
 	TokenKeyword,
 	TokenIdentifierBasic,
@@ -43,7 +41,7 @@ export class LexerSolid extends Lexer {
 	 */
 	constructor (
 		source: string,
-		readonly config: SolidConfig,
+		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
 		super(source)
 	}

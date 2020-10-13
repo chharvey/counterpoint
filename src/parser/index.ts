@@ -1,5 +1,4 @@
 export {
-	Parser,
 	ParserSolid,
 } from './Parser.class'
 

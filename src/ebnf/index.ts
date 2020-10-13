@@ -5,6 +5,7 @@ import {
 	TokenComment,
 	ParseNode,
 	Lexer,
+	Parser,
 } from '@chharvey/parser';
 
 import type {NonemptyArray} from '../types.d'
@@ -12,7 +13,6 @@ import {
 	Screener,
 } from '../lexer/'
 import {
-	Parser,
 	Grammar,
 	Production,
 } from '../parser/'
@@ -80,7 +80,8 @@ export class ScreenerEBNF extends Screener {
 
 export class ParserEBNF extends Parser {
 	constructor (source: string) {
-		super(new ScreenerEBNF(source).generate(), new Grammar([
+		// @ts-expect-error
+		super(source, LexerEBNF, new Grammar([
 			PRODUCTION.ProductionParameterSet__0__List .instance,
 			PRODUCTION.ProductionParameterSet          .instance,
 			PRODUCTION.ProductionArgumentSet__0__List  .instance,
