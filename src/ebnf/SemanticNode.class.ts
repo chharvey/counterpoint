@@ -1,6 +1,7 @@
-import type {
+import {
 	Token,
 	ParseNode,
+	ASTNode,
 } from '@chharvey/parser';
 
 import type {
@@ -10,7 +11,6 @@ import type {
 	EBNFSequence,
 	EBNFItem,
 } from '../types.d'
-import {SemanticNode} from '../validator/'
 import * as TOKEN from './Token.class'
 
 
@@ -21,11 +21,11 @@ function NonemptyArray_flatMap<T, U>(arr: NonemptyArray<T>, callback: (it: T) =>
 
 
 
-export class SemanticNodeEBNF extends SemanticNode {
+export class SemanticNodeEBNF extends ASTNode {
 	constructor (
 		start_node: ParseNode | Token,
 		attributes: {[key: string]: boolean | string} = {},
-		children: readonly SemanticNode[] = [],
+		children: readonly SemanticNodeEBNF[] = [],
 	) {
 		super(start_node, attributes, children)
 	}

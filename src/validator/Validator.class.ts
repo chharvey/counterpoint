@@ -22,7 +22,7 @@ import {
 import * as PARSENODE from '../parser/ParseNode.auto'
 import {Builder} from '../builder/'
 import {
-	SemanticNode,
+	SemanticNodeSolid,
 	SemanticNodeType,
 	SemanticNodeTypeConstant,
 	SemanticNodeTypeOperationUnary,
@@ -204,8 +204,8 @@ export default class Validator {
 	decorate(node: PARSENODE.ParseNodeStatement):                SemanticStatementType;
 	decorate(node: PARSENODE.ParseNodeGoal__0__List):            SemanticStatementType[];
 	decorate(node: PARSENODE.ParseNodeGoal):                     SemanticNodeGoal;
-	decorate(node: ParseNode): SemanticNode | SemanticNode[];
-	decorate(node: ParseNode): SemanticNode | SemanticNode[] {
+	decorate(node: ParseNode): SemanticNodeSolid | SemanticNodeSolid[];
+	decorate(node: ParseNode): SemanticNodeSolid | SemanticNodeSolid[] {
 		if (node instanceof PARSENODE.ParseNodePrimitiveLiteral) {
 			return new SemanticNodeConstant(node.children[0] as TokenKeyword | TokenNumber | TokenString)
 

@@ -1,6 +1,6 @@
 import type {
-	SemanticNode,
-} from '../validator/'
+	ASTNode,
+} from '@chharvey/parser';
 import SolidError from './SolidError.class'
 
 
@@ -19,13 +19,13 @@ export default class NanError extends SolidError {
 }
 export class NanError01 extends NanError {
 	static readonly CODE = 1
-	constructor (node: SemanticNode) {
+	constructor (node: ASTNode) {
 		super(`Not a valid number.`, NanError01.CODE, node.line_index, node.col_index)
 	}
 }
 export class NanError02 extends NanError {
 	static readonly CODE = 2
-	constructor (node: SemanticNode) {
+	constructor (node: ASTNode) {
 		super(`Division by zero.`, NanError02.CODE, node.line_index, node.col_index)
 	}
 }
