@@ -245,7 +245,7 @@ describe('Instruction', () => {
 					const srcs: [string, SolidConfig] = [src, CONFIG_DEFAULT]
 					return new Validator(...srcs)
 						.decorate(new Parser(srcs[0]).parse())
-						.build(new Validator(...srcs).builder)
+						.build(new Builder(...srcs))
 				})
 				assert.ok(mods[0] instanceof InstructionNone)
 				assert.strictEqual(mods[0].toString(), ``)

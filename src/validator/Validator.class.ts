@@ -23,7 +23,6 @@ import {
 	ParserSolid as Parser,
 } from '../parser/'
 import * as PARSENODE from '../parser/ParseNode.auto'
-import {Builder} from '../builder/'
 import {
 	SemanticNodeSolid,
 	SemanticNodeType,
@@ -410,13 +409,5 @@ export default class Validator {
 		const semantic_goal: SemanticNodeGoal = this.decorate(this.parsegoal)
 		semantic_goal.typeCheck(this.config.compilerOptions) // assert does not throw
 		return semantic_goal
-	}
-
-	/**
-	 * Construct a new Builder object from this Validator.
-	 * @return a new Builder with this Validator as its argument
-	 */
-	get builder(): Builder {
-		return new Builder(this.validate(), this.config)
 	}
 }

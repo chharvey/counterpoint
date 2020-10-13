@@ -66,7 +66,7 @@ describe('SemanticNode', () => {
 				const src: [string, SolidConfig] = [``, CONFIG_DEFAULT]
 				const instr: InstructionNone | InstructionModule = new Validator(...src)
 					.validate()
-					.build(new Validator(...src).builder)
+					.build(new Builder(...src))
 				assert.ok(instr instanceof InstructionNone)
 			})
 		})
@@ -75,12 +75,12 @@ describe('SemanticNode', () => {
 			it('returns InstructionNone for empty statement expression.', () => {
 				const src: [string, SolidConfig] = [`;`, CONFIG_DEFAULT]
 				const instr: InstructionNone | InstructionStatement = statementExpressionFromSource(src[0])
-					.build(new Validator(...src).builder)
+					.build(new Builder(...src))
 				assert.ok(instr instanceof InstructionNone)
 			})
 			it('returns InstructionStatement for nonempty statement expression.', () => {
 				const srcs: [string, SolidConfig] = [`42 + 420;`, CONFIG_DEFAULT]
-				const builder: Builder = new Validator(...srcs).builder
+				const builder: Builder = new Builder(...srcs)
 				const stmt: SemanticNodeStatementExpression = statementExpressionFromSource(srcs[0])
 				assert.deepStrictEqual(
 					stmt.build(builder),
@@ -89,7 +89,7 @@ describe('SemanticNode', () => {
 			})
 			specify('multiple statements.', () => {
 				const srcs: [string, SolidConfig] = [`42; 420;`, CONFIG_DEFAULT]
-				const generator: Builder = new Validator(...srcs).builder
+				const generator: Builder = new Builder(...srcs)
 				new Validator(...srcs).validate().children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof SemanticNodeStatementExpression)
 					assert.deepStrictEqual(
@@ -119,7 +119,7 @@ describe('SemanticNode', () => {
 				].map((src) =>
 					constantFromStatementExpression(
 						statementExpressionFromSource(src)
-					).build(new Validator(src, CONFIG_DEFAULT).builder)
+					).build(new Builder(src, CONFIG_DEFAULT))
 				), [
 					instructionConstInt(0n),
 					instructionConstInt(0n),
@@ -197,7 +197,7 @@ describe('SemanticNode', () => {
 					statementExpressionFromSource(src)
 				)])
 				assert.deepStrictEqual(
-					nodes.map(([src,  node]) => node.build(new Validator(src, CONFIG_DEFAULT).builder)),
+					nodes.map(([src,  node]) => node.build(new Builder(src, CONFIG_DEFAULT))),
 					nodes.map(([_src, node]) => {
 						const assess: CompletionStructureAssessment = node.assess()
 						assert.ok(!assess.isAbrupt)
@@ -218,7 +218,7 @@ describe('SemanticNode', () => {
 					assert.deepStrictEqual(
 						[...tests.keys()].map((src) => operationFromStatementExpression(
 							statementExpressionFromSource(src, folding_off)
-						).build(new Validator(src, folding_off).builder)),
+						).build(new Builder(src, folding_off))),
 						[...tests.values()],
 					)
 				}
@@ -277,7 +277,7 @@ describe('SemanticNode', () => {
 						`false == 0.0;`,
 					].map((src) => operationFromStatementExpression(
 						statementExpressionFromSource(src, folding_off)
-					).build(new Validator(src, folding_off).builder)), [
+					).build(new Builder(src, folding_off))), [
 						new InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstInt(42n),
@@ -335,7 +335,7 @@ describe('SemanticNode', () => {
 							`false || null;`,
 						].map((src) => operationFromStatementExpression(
 							statementExpressionFromSource(src, folding_off)
-						).build(new Validator(src, folding_off).builder)), [
+						).build(new Builder(src, folding_off))), [
 							new InstructionBinopLogical(
 								0n,
 								Operator.AND,
@@ -373,7 +373,7 @@ describe('SemanticNode', () => {
 						assert.deepStrictEqual(
 							operationFromStatementExpression(
 								statementExpressionFromSource(src, folding_off)
-							).build(new Validator(src, folding_off).builder),
+							).build(new Builder(src, folding_off)),
 							new InstructionBinopLogical(
 								0n,
 								Operator.OR,
@@ -447,7 +447,7 @@ describe('SemanticNode', () => {
 							`true == 1.0;`,
 						].map((src) => operationFromStatementExpression(
 							statementExpressionFromSource(src, folding_coercion_off)
-						).build(new Validator(src, folding_coercion_off).builder)), [
+						).build(new Builder(src, folding_coercion_off))), [
 							[instructionConstInt(42n),   instructionConstInt(420n)],
 							[instructionConstFloat(4.2), instructionConstInt(42n)],
 							[instructionConstInt(42n),   instructionConstFloat(4.2)],
