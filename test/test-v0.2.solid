@@ -1,0 +1,33 @@
+5; x =+  '3';
+
+y  =  3 *  2;
+
+z = 3 *  '''''';
+
+'a string literal with a unicode \u{00_61} escape sequence with numeric separators'
+
++ 4 *
+
+8;
+
+'
+<html>
+	<body class="js" id=\'top\'>
+		hello
+		\n
+		world
+		\
+		&nbsp;
+	</body>
+</html>
+'
+
++'''
+<html>
+	<body class="js" id='top'>
+		hello {{ 7 + 2 }} world
+		hello \{\{ 7 + 2 \}\} world
+		hello {{ '{{ 7 + 2 }}' }} world
+	</body>
+</html>
+''';

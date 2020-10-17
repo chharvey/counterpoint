@@ -1,0 +1,68 @@
+IDENTIFIER      ::= [../docs/spec/language-lexicon.md#identifiers];
+INTEGER         ::= [../docs/spec/language-lexicon.md#numbers];
+FLOAT           ::= [../docs/spec/language-lexicon.md#numbers];
+STRING          ::= [../docs/spec/language-lexicon.md#string-literals];
+TEMPLATE_FULL   ::= [../docs/spec/language-lexicon.md#template-literals];
+TEMPLATE_HEAD   ::= [../docs/spec/language-lexicon.md#template-literals];
+TEMPLATE_MIDDLE ::= [../docs/spec/language-lexicon.md#template-literals];
+TEMPLATE_TAIL   ::= [../docs/spec/language-lexicon.md#template-literals];
+
+
+
+PrimitiveLiteral ::=
+	| "null"
+	| "false"
+	| "true"
+	| INTEGER
+	| FLOAT
+	| STRING
+;
+
+StringTemplate ::=
+	| TEMPLATE_FULL
+	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
+;
+
+ExpressionUnit ::=
+	| IDENTIFIER
+	| PrimitiveLiteral
+	| StringTemplate
+	| "(" Expression ")"
+;
+
+ExpressionUnarySymbol
+	::= ExpressionUnit | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
+
+ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"                                      ExpressionExponential)?;
+ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/" ))?                            ExpressionExponential;
+ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-" ))?                            ExpressionMultiplicative;
+ExpressionComparative    ::= (ExpressionComparative    ("<" | ">" | "<=" | ">=" | "!<" | "!>"))? ExpressionAdditive;
+ExpressionEquality       ::= (ExpressionEquality       ("is" | "isnt" | "==" | "!="))?           ExpressionComparative;
+ExpressionConjunctive    ::= (ExpressionConjunctive    ("&&" | "!&"))?                           ExpressionEquality;
+ExpressionDisjunctive    ::= (ExpressionDisjunctive    ("||" | "!|"))?                           ExpressionConjunctive;
+
+ExpressionConditional
+	::= "if" Expression "then" Expression "else" Expression;
+
+Expression ::=
+	| ExpressionDisjunctive
+	| ExpressionConditional
+;
+
+
+
+DeclarationVariable
+	::= "let" "unfixed"? IDENTIFIER "=" Expression ";";
+
+StatementAssignment
+	::= IDENTIFIER "=" Expression ";";
+
+Statement ::=
+	| Expression? ";"
+	| DeclarationVariable
+	| StatementAssignment
+;
+
+
+
+Goal ::= #x02 Statement* #x03;

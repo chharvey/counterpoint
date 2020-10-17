@@ -6,6 +6,8 @@
 		"strict"            : true,
 		"importsNotUsedAsValues": "error",
 		"noImplicitReturns" : true,
+		"noUnusedLocals":     false,
+		"noUnusedParameters": false,
 		"removeComments"    : true,
 		"noEmitOnError"     : true
 	},

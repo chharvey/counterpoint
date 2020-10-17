@@ -1,0 +1,301 @@
+Decorate(PrimitiveLiteral ::= "null") -> SemanticConstant
+	:= (SemanticConstant[value=null]);
+Decorate(PrimitiveLiteral ::= "false") -> SemanticConstant
+	:= (SemanticConstant[value=false]);
+Decorate(PrimitiveLiteral ::= "true") -> SemanticConstant
+	:= (SemanticConstant[value=true]);
+
+Decorate(PrimitiveLiteral ::= INTEGER) -> SemanticConstant
+	:= (SemanticConstant[value=Integer(TokenWorth(INTEGER))]);
+Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticConstant
+	:= (SemanticConstant[value=Float(TokenWorth(FLOAT))]);
+
+Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
+	:= (SemanticConstant[value=TokenWorth(STRING)]);
+
+Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticTemplate
+	:= (SemanticTemplate[type="full"]
+		(SemanticConstant[value=TokenWorth(TEMPLATE_FULL)])
+	);
+Decorate(StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticTemplate
+	:= (SemanticTemplate[type="substitution"]
+		(SemanticConstant[value=TokenWorth(TEMPLATE_HEAD)])
+		(SemanticConstant[value=TokenWorth(TEMPLATE_TAIL)])
+	);
+Decorate(StringTemplate ::= TEMPLATE_HEAD Expression TEMPLATE_TAIL) -> SemanticTemplate
+	:= (SemanticTemplate[type="substitution"]
+		(SemanticConstant[value=TokenWorth(TEMPLATE_HEAD)])
+		Decorate(Expression)
+		(SemanticConstant[value=TokenWorth(TEMPLATE_TAIL)])
+	);
+Decorate(StringTemplate ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
+	:= (SemanticTemplate[type="substitution"]
+		(SemanticConstant[value=TokenWorth(TEMPLATE_HEAD)])
+		...Decorate(StringTemplate__0__List)
+		(SemanticConstant[value=TokenWorth(TEMPLATE_TAIL)])
+	);
+Decorate(StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
+	:= (SemanticTemplate[type="substitution"]
+		(SemanticConstant[value=TokenWorth(TEMPLATE_HEAD)])
+		Decorate(Expression)
+		...Decorate(StringTemplate__0__List)
+		(SemanticConstant[value=TokenWorth(TEMPLATE_TAIL)])
+	);
+
+Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE) -> Sequence<SemanticConstant, SemanticExpression?>
+	:= (SemanticTemplatePartial
+		(SemanticConstant[value=TokenWorth(TEMPLATE_MIDDLE)])
+	);
+Decorate(StringTemplate__0__List ::= TEMPLATE_MIDDLE Expression) -> Sequence<SemanticConstant, SemanticExpression?>
+	:= (SemanticTemplatePartial
+		(SemanticConstant[value=TokenWorth(TEMPLATE_MIDDLE)])
+		Decorate(Expression)
+	);
+Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE) -> Sequence<SemanticConstant, SemanticExpression?>
+	:= (SemanticTemplatePartial
+		...Decorate(StringTemplate__0__List)
+		(SemanticConstant[value=TokenWorth(TEMPLATE_MIDDLE)])
+	);
+Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression) -> Sequence<SemanticConstant, SemanticExpression?>
+	:= (SemanticTemplatePartial
+		...Decorate(StringTemplate__0__List)
+		(SemanticConstant[value=TokenWorth(TEMPLATE_MIDDLE)])
+		Decorate(Expression)
+	);
+
+
+
+Decorate(ExpressionUnit ::= IDENTIFIER) -> SemanticIdentifier
+	:= (SemanticIdentifier[id=TokenWorth(IDENTIFIER)]);
+Decorate(ExpressionUnit ::= PrimitiveLiteral) -> SemanticConstant
+	:= Decorate(PrimitiveLiteral);
+Decorate(ExpressionUnit ::= StringTemplate) -> SemanticTemplate
+	:= Decorate(StringTemplate);
+Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticExpression
+	:= Decorate(Expression);
+
+
+
+Decorate(ExpressionUnarySymbol ::= ExpressionUnit) -> SemanticExpression
+	:= Decorate(ExpressionUnit);
+Decorate(ExpressionUnarySymbol ::= "!" ExpressionUnarySymbol) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT] Decorate(ExpressionUnarySymbol));
+Decorate(ExpressionUnarySymbol ::= "?" ExpressionUnarySymbol) -> SemanticOperation
+	:= (SemanticOperation[operator=EMP] Decorate(ExpressionUnarySymbol));
+Decorate(ExpressionUnarySymbol ::= "+" ExpressionUnarySymbol) -> SemanticExpression
+	:= Decorate(ExpressionUnarySymbol);
+Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperation
+	:= (SemanticOperation[operator=NEG] Decorate(ExpressionUnarySymbol));
+
+
+
+Decorate(ExpressionExponential ::= ExpressionUnarySymbol) -> SemanticExpression
+	:= Decorate(ExpressionUnarySymbol);
+Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential) -> SemanticOperation
+	:= (SemanticOperation[operator=EXP]
+		Decorate(ExpressionUnarySymbol)
+		Decorate(ExpressionExponential)
+	);
+
+
+
+Decorate(ExpressionMultiplicative ::= ExpressionExponential) -> SemanticExpression
+	:= Decorate(ExpressionExponential);
+Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "*" ExpressionExponential) -> SemanticOperation
+	:= (SemanticOperation[operator=MUL]
+		Decorate(ExpressionMultiplicative)
+		Decorate(ExpressionExponential)
+	);
+Decorate(ExpressionMultiplicative ::= ExpressionMultiplicative "/" ExpressionExponential) -> SemanticOperation
+	:= (SemanticOperation[operator=DIV]
+		Decorate(ExpressionMultiplicative)
+		Decorate(ExpressionExponential)
+	);
+
+
+
+Decorate(ExpressionAdditive ::= ExpressionMultiplicative) -> SemanticExpression
+	:= Decorate(ExpressionMultiplicative);
+Decorate(ExpressionAdditive ::= ExpressionAdditive "+" ExpressionMultiplicative) -> SemanticOperation
+	:= (SemanticOperation[operator=ADD]
+		Decorate(ExpressionAdditive)
+		Decorate(ExpressionMultiplicative)
+	);
+Decorate(ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative) -> SemanticOperation
+	:= (SemanticOperation[operator=ADD]
+		Decorate(ExpressionAdditive)
+		(SemanticOperation[operator=NEG] Decorate(ExpressionMultiplicative))
+	);
+
+
+
+Decorate(ExpressionComparative ::= ExpressionAdditive) -> SemanticOperation
+	:= Decorate(ExpressionAdditive);
+Decorate(ExpressionComparative ::= ExpressionComparative "<" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=LT]
+		Decorate(ExpressionComparative)
+		Decorate(ExpressionAdditive)
+	);
+Decorate(ExpressionComparative ::= ExpressionComparative ">" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=GT]
+		Decorate(ExpressionComparative)
+		Decorate(ExpressionAdditive)
+	);
+Decorate(ExpressionComparative ::= ExpressionComparative "<=" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=LE]
+		Decorate(ExpressionComparative)
+		Decorate(ExpressionAdditive)
+	);
+Decorate(ExpressionComparative ::= ExpressionComparative ">=" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=GE]
+		Decorate(ExpressionComparative)
+		Decorate(ExpressionAdditive)
+	);
+Decorate(ExpressionComparative ::= ExpressionComparative "!<" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=LT]
+			Decorate(ExpressionComparative)
+			Decorate(ExpressionAdditive)
+		)
+	);
+Decorate(ExpressionComparative ::= ExpressionComparative "!>" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=GT]
+			Decorate(ExpressionComparative)
+			Decorate(ExpressionAdditive)
+		)
+	);
+
+
+
+Decorate(ExpressionEquality ::= ExpressionComparative) -> SemanticOperation
+	:= Decorate(ExpressionComparative);
+Decorate(ExpressionEquality ::= ExpressionEquality "is" ExpressionComparative) -> SemanticOperation
+	:= (SemanticOperation[operator=IS]
+		Decorate(ExpressionEquality)
+		Decorate(ExpressionComparative)
+	);
+Decorate(ExpressionEquality ::= ExpressionEquality "isnt" ExpressionComparative) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=IS]
+			Decorate(ExpressionEquality)
+			Decorate(ExpressionComparative)
+		)
+	);
+Decorate(ExpressionEquality ::= ExpressionEquality "==" ExpressionComparative) -> SemanticOperation
+	:= (SemanticOperation[operator=EQ]
+		Decorate(ExpressionEquality)
+		Decorate(ExpressionComparative)
+	);
+Decorate(ExpressionEquality ::= ExpressionEquality "!=" ExpressionComparative) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=EQ]
+			Decorate(ExpressionEquality)
+			Decorate(ExpressionComparative)
+		)
+	);
+
+
+
+Decorate(ExpressionConjunctive ::= ExpressionEquality) -> SemanticExpression
+	:= Decorate(ExpressionEquality);
+Decorate(ExpressionConjunctive ::= ExpressionConjunctive "&&" ExpressionEquality) -> SemanticOperation
+	:= (SemanticOperation[operator=AND]
+		Decorate(ExpressionConjunctive)
+		Decorate(ExpressionEquality)
+	);
+Decorate(ExpressionConjunctive ::= ExpressionConjunctive "!&" ExpressionEquality) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=AND]
+			Decorate(ExpressionConjunctive)
+			Decorate(ExpressionEquality)
+		)
+	);
+
+
+
+Decorate(ExpressionDisjunctive ::= ExpressionConjunctive) -> SemanticOperation
+	:= Decorate(ExpressionConjunctive);
+Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "||" ExpressionConjunctive) -> SemanticOperation
+	:= (SemanticOperation[operator=OR]
+		Decorate(ExpressionDisjunctive)
+		Decorate(ExpressionConjunctive)
+	);
+Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "!|" ExpressionConjunctive) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=OR]
+			Decorate(ExpressionDisjunctive)
+			Decorate(ExpressionConjunctive)
+		)
+	);
+
+
+
+Decorate(ExpressionConditional ::= "if" Expression__0 "then" Expression__1 "else" Expression__2)
+	:= (SemanticOperation[operator=COND]
+		Decorate(Expression__0)
+		Decorate(Expression__1)
+		Decorate(Expression__2)
+	);
+
+
+
+Decorate(Expression ::= ExpressionDisjunctive) -> SemanticExpression
+	:= Decorate(ExpressionDisjunctive);
+Decorate(Expression ::= ExpressionConditional) -> SemanticExpression
+	:= Decorate(ExpressionConditional);
+
+
+
+Decorate(DeclarationVariable ::= "let" IDENTIFIER "=" Expression ";") -> SemanticDeclaration
+	:= (SemanticDeclaration[type="variable"][unfixed=false]
+		(SemanticAssignee
+			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+		)
+		(SemanticAssigned Decorate(Expression))
+	);
+Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER "=" Expression ";") -> SemanticDeclaration
+	:= (SemanticDeclaration[type="variable"][unfixed=true]
+		(SemanticAssignee
+			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+		)
+		(SemanticAssigned Decorate(Expression))
+	);
+
+
+
+Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";") -> SemanticAssignment
+	:= (SemanticAssignment
+		(SemanticAssignee
+			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+		)
+		(SemanticAssigned Decorate(Expression))
+	);
+
+
+
+Decorate(Statement ::= ";") -> SemanticStatementExpression
+	:= (SemanticStatementExpression);
+Decorate(Statement ::= Expression ";") -> SemanticStatementExpression
+	:= (SemanticStatementExpression Decorate(Expression));
+Decorate(Statement ::= DeclarationVariable) -> SemanticDeclaration
+	:= Decorate(DeclarationVariable);
+Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
+	:= Decorate(StatementAssignment);
+
+
+
+Decorate(Statement__List ::= Statement) -> Sequence<SemanticStatement>
+	:= [Decorate(Statement)];
+Decorate(Statement__List ::= Statement__List Statement) -> Sequence<SemanticStatement>
+	:= [
+		...Decorate(Statement__List),
+		Decorate(Statement),
+	];
+
+
+
+Decorate(Goal ::= #x02 #x03) -> SemanticGoal
+	:= (SemanticGoal);
+Decorate(Goal ::= #x02 Statement__List #x03) -> SemanticGoal
+	:= (SemanticGoal Decorate(Statement__List));
