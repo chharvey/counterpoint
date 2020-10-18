@@ -40,6 +40,9 @@ import {
 	InstructionModule,
 } from '../builder/'
 import {
+	TypeError01,
+} from '../error/SolidTypeError.class'
+import {
 	NanError01,
 	NanError02,
 } from '../error/NanError.class'
@@ -227,7 +230,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		if (this.value instanceof SolidObject) {
 			return new CompletionStructureAssessment(this.value)
 		} else {
-			throw new Error('not yet supported.')
+			throw new Error('SemanticNodeConstant[value:string]#assess_do not yet supported.')
 		}
 	}
 	/** @implements SemanticNodeExpression */
@@ -254,19 +257,19 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	}
 	/** @implements SemanticNodeExpression */
 	get shouldFloat(): boolean {
-		throw new Error('not yet supported.')
+		throw new Error('SemanticNodeIdentifier#shouldFloat not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
 	protected build_do(_builder: Builder): InstructionExpression {
-		throw new Error('not yet supported.')
+		throw new Error('SemanticNodeIdentifier#build_do not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
-		throw new Error('Not yet supported.')
+		throw new Error('SemanticNodeIdentifier#assess_do not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
 	protected type_do(_const_fold: boolean, _int_coercion: boolean): SolidLanguageType {
-		throw new Error('Not yet supported.')
+		throw new Error('SemanticNodeIdentifier#type_do not yet supported.')
 	}
 }
 export class SemanticNodeTemplate extends SemanticNodeExpression {
@@ -284,15 +287,15 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	}
 	/** @implements SemanticNodeExpression */
 	get shouldFloat(): boolean {
-		throw new Error('not yet supported.')
+		throw new Error('SemanticNodeTemplate#shouldFloat not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
 	protected build_do(_builder: Builder): InstructionExpression {
-		throw new Error('not yet supported.')
+		throw new Error('SemanticNodeTemplate#build_do not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
-		throw new Error('Not yet supported.')
+		throw new Error('SemanticNodeTemplate#assess_do not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
 	protected type_do(_const_fold: boolean, _int_coercion: boolean): SolidLanguageType {
@@ -343,7 +346,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 			(this.operator === Operator.NOT) ? v0.isTruthy.not :
 			(this.operator === Operator.EMP) ? v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0())) :
 			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as SolidNumber<any>) :
-			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
+			(() => { throw new ReferenceError(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
 	}
 	/** @implements SemanticNodeExpression */
@@ -352,7 +355,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 			return SolidBoolean
 		}
 		const t0: SolidLanguageType = this.children[0].type(const_fold, int_coercion)
-		return (t0.isNumericType) ? t0 : (() => { throw new TypeError('Invalid operation.') })()
+		return (t0.isNumericType) ? t0 : (() => { throw new TypeError01(this) })()
 	}
 	private foldNumeric<T extends SolidNumber<T>>(z: T): T {
 		try {
@@ -426,14 +429,18 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
 			throw new NanError02(this.children[1])
 		}
-		return (v0 instanceof SolidNumber && v1 instanceof SolidNumber) ? new CompletionStructureAssessment(
+		if (!(v0 instanceof SolidNumber) || !(v1 instanceof SolidNumber)) {
+			// using an internal TypeError, not a SolidTypeError, as it should already be valid per `this#type`
+			throw new TypeError('Both operands must be of type `SolidNumber`.')
+		}
+		return new CompletionStructureAssessment(
 			(v0 instanceof Int16 && v1 instanceof Int16)
 				? this.foldNumeric(v0, v1)
 				: this.foldNumeric(
 					(v0 as SolidNumber).toFloat(),
 					(v1 as SolidNumber).toFloat(),
 				)
-		) : (() => { throw new TypeError('Both operands must be of type `SolidNumber`.') })()
+		)
 	}
 	/** @implements SemanticNodeOperationBinary */
 	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
@@ -444,7 +451,7 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 			if ( t0.isFloatType &&  t1.isFloatType) { return Float64 }
 			if (!t0.isFloatType && !t1.isFloatType) { return Int16 }
 		}
-		throw new TypeError('Invalid operation.')
+		throw new TypeError01(this)
 	}
 	private foldNumeric<T extends SolidNumber<T>>(x: T, y: T): T {
 		try {
@@ -492,14 +499,18 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 			return assess1
 		}
 		const [v0, v1]: [SolidObject, SolidObject] = [assess0.value!, assess1.value!]
-		return (v0 instanceof SolidNumber && v1 instanceof SolidNumber) ? new CompletionStructureAssessment(
+		if (!(v0 instanceof SolidNumber) || !(v1 instanceof SolidNumber)) {
+			// using an internal TypeError, not a SolidTypeError, as it should already be valid per `this#type`
+			throw new TypeError('Both operands must be of type `SolidNumber`.')
+		}
+		return new CompletionStructureAssessment(
 			(v0 instanceof Int16 && v1 instanceof Int16)
 				? this.foldComparative(v0, v1)
 				: this.foldComparative(
 					(v0 as SolidNumber).toFloat(),
 					(v1 as SolidNumber).toFloat(),
 				)
-		) : (() => { throw new TypeError('Both operands must be of type `SolidNumber`.') })()
+		)
 	}
 	/** @implements SemanticNodeOperationBinary */
 	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
@@ -509,7 +520,7 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 		))) {
 			return SolidBoolean
 		}
-		throw new TypeError('Invalid operation.')
+		throw new TypeError01(this)
 	}
 	private foldComparative<T extends SolidNumber<T>>(x: T, y: T): SolidBoolean {
 		return SolidBoolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
@@ -554,9 +565,7 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 			return assess1
 		}
 		const [v0, v1]: [SolidObject, SolidObject] = [assess0.value!, assess1.value!]
-		return (v1 instanceof SolidObject)
-			? new CompletionStructureAssessment(this.foldEquality(v0, v1))
-			: (() => { throw new TypeError('Both operands must be of type `SolidObject`.') })()
+		return new CompletionStructureAssessment(this.foldEquality(v0, v1))
 	}
 	/** @implements SemanticNodeOperationBinary */
 	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
@@ -672,7 +681,7 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 			? (t0 instanceof SolidTypeConstant)
 				? (t0.value === SolidBoolean.FALSE) ? t2 : t1
 				: t1.union(t2)
-			: (() => { throw new TypeError('Invalid operation.') })()
+			: (() => { throw new TypeError01(this) })()
 	}
 }
 /**
@@ -718,12 +727,12 @@ export class SemanticNodeDeclaration extends SemanticNode {
 	}
 	/** @implements SemanticNode */
 	typeCheck(_opts: SolidConfig['compilerOptions']): void {
-		throw new Error('not yet supported.')
+		throw new Error('SemanticNodeDeclaration#typeCheck not yet supported.')
 		// const assignedType = this.children[1].type()
 	}
 	/** @implements SemanticNode */
 	build(_builder: Builder): Instruction {
-		throw new Error('not yet supported.')
+		throw new Error('SemanticNodeDeclaration#build not yet supported.')
 	}
 }
 export class SemanticNodeAssignment extends SemanticNode {
@@ -736,12 +745,12 @@ export class SemanticNodeAssignment extends SemanticNode {
 	}
 	/** @implements SemanticNode */
 	typeCheck(_opts: SolidConfig['compilerOptions']): void {
-		throw new Error('not yet supported.')
+		throw new Error('SemanticNodeAssignment#typeCheck not yet supported.')
 		// const assignedType = this.children[1].type()
 	}
 	/** @implements SemanticNode */
 	build(_builder: Builder): Instruction {
-		throw new Error('not yet supported.')
+		throw new Error('SemanticNodeAssignment#build not yet supported.')
 	}
 }
 export class SemanticNodeAssignee extends SemanticNode {
@@ -754,11 +763,11 @@ export class SemanticNodeAssignee extends SemanticNode {
 	}
 	/** @implements SemanticNode */
 	typeCheck(_opts: SolidConfig['compilerOptions']): void {
-		throw new Error('not yet supported.')
+		throw new Error('SemanticNodeAssignee#typeCheck not yet supported.')
 	}
 	/** @implements SemanticNode */
 	build(_builder: Builder): Instruction {
-		throw new Error('not yet supported.')
+		throw new Error('SemanticNodeAssignee#build not yet supported.')
 	}
 }
 export class SemanticNodeAssigned extends SemanticNode {
@@ -775,7 +784,7 @@ export class SemanticNodeAssigned extends SemanticNode {
 	}
 	/** @implements SemanticNode */
 	build(_builder: Builder): Instruction {
-		throw new Error('not yet supported.')
+		throw new Error('SemanticNodeAssigned#build not yet supported.')
 	}
 	/**
 	 * The Type of the assigned expression.

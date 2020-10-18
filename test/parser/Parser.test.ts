@@ -3,7 +3,9 @@ import * as assert from 'assert'
 import {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
+import {ParseError01} from '../../src/error/ParseError.class'
 import {
+	Parser,
 	ParseNodeStringTemplate,
 	ParseNodeExpressionUnit,
 	ParseNodeExpressionUnary,
@@ -51,6 +53,16 @@ import {
 
 describe('Parser', () => {
 	describe('#parse', () => {
+		it('throws a ParseError01 when reaching an unexpected token.', () => {
+			;[
+				`false + /34.56;`,
+				`(true)) || null;`,
+				`234 null;`,
+			].forEach((src) => {
+				assert.throws(() => new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.parse(), ParseError01)
+			})
+		})
+
 		context('Goal ::= #x02 #x03', () => {
 			it('returns only file bounds.', () => {
 				const tree: ParseNodeGoal = new Scanner('', CONFIG_DEFAULT).lexer.screener.parser.parse()
@@ -396,17 +408,17 @@ describe('Parser', () => {
 			it('throws when reaching an orphaned head.', () => {
 				assert.throws(() => new Scanner(`
 					'''A string template head token not followed by a middle or tail {{ 1;
-				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), /Unexpected token/)
+				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), ParseError01)
 			})
 			it('throws when reaching an orphaned middle.', () => {
 				assert.throws(() => new Scanner(`
 					2 }} a string template middle token not preceded by a head/middle and not followed by a middle/tail {{ 3;
-				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), /Unexpected token/)
+				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), ParseError01)
 			})
 			it('throws when reaching an orphaned tail.', () => {
 				assert.throws(() => new Scanner(`
 					4 }} a string template tail token not preceded by a head or middle''';
-				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), /Unexpected token/)
+				`, CONFIG_DEFAULT).lexer.screener.parser.parse(), ParseError01)
 			})
 		})
 

@@ -15,6 +15,7 @@ import Grammar, {
 } from './Grammar.class'
 import type Rule from './Rule.class'
 import type Configuration from './Configuration.class'
+import {ParseError01} from '../error/ParseError.class'
 
 
 type State = ReadonlySet<Configuration>
@@ -113,9 +114,8 @@ export default class Parser {
 			} else if (reductions.length) {
 				throw new Error(`Reduce-Reduce Conflict:\n${reductions.map((r) => r.toString())}`)
 			}
-			throw new Error(`Unexpected token: ${this.lookahead.serialize()}`)
 		}
-		throw new Error(`There are no finished configurations; I cannot reduce now.`)
+		throw new ParseError01(this.lookahead)
 	}
 
 	/**

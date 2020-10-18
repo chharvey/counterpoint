@@ -340,10 +340,10 @@ export class InstructionCond extends InstructionExpression {
 		}
 	}
 	/**
-	 * @return `'(select ‹arg1› ‹arg2› ‹arg0›)'`
+	 * @return `'(if (result {i32|f64}) ‹arg0› (then ‹arg1›) (else ‹arg2›))'`
 	 */
 	toString(): string {
-		return `(select ${ this.arg1 } ${ this.arg2 } ${ this.arg0 })`
+		return `(if (result ${ (!this.isFloat) ? `i32` : `f64` }) ${ this.arg0 } (then ${ this.arg1 }) (else ${ this.arg2 }))`
 	}
 	get isFloat(): boolean {
 		return this.arg1.isFloat || this.arg2.isFloat
