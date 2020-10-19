@@ -28,11 +28,7 @@ async function postdist() {
 		| If you need to make updates, make them there.
 		/----------------------------------------------------------------*/
 		${ generate(await grammar_solid, 'Solid') }
-	`.replace(`
-		import * as TERMINAL from './Terminal';
-	`, `
-		import * as TERMINAL from './Terminal.class';
-	`));
+	`);
 }
 
 function test() {

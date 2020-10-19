@@ -15,7 +15,7 @@
 			GrammarSymbol,
 		} from '@chharvey/parser';
 		import {LexerSolid} from './Lexer';
-		import * as TERMINAL from './Terminal.class';
+		import * as TERMINAL from './Terminal';
 		
 			export class ProductionPrimitiveLiteral extends Production {
 				static readonly instance: ProductionPrimitiveLiteral = new ProductionPrimitiveLiteral();
