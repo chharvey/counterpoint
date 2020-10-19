@@ -13,13 +13,7 @@ import Operator, {
 import {
 	Punctuator,
 	Keyword,
-	TokenKeyword,
-	TokenIdentifier,
-	TokenNumber,
-	TokenString,
-	TokenTemplate,
-} from '../parser/Token';
-import {
+	TOKEN,
 	ParserSolid as Parser,
 	PARSER,
 } from '../parser/'
@@ -212,15 +206,15 @@ export default class Validator {
 	decorate(node: ParseNode): SemanticNodeSolid | SemanticNodeSolid[];
 	decorate(node: ParseNode): SemanticNodeSolid | SemanticNodeSolid[] {
 		if (node instanceof PARSER.ParseNodePrimitiveLiteral) {
-			return new SemanticNodeConstant(node.children[0] as TokenKeyword | TokenNumber | TokenString)
+			return new SemanticNodeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString)
 
 		} else if (node instanceof PARSER.ParseNodeTypeKeyword) {
-			return new SemanticNodeTypeConstant(node.children[0] as TokenKeyword | TokenNumber | TokenString)
+			return new SemanticNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString)
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnit) {
 			return (node.children.length === 1)
 				? (node.children[0] instanceof PARSER.ParseNodePrimitiveLiteral)
-					? new SemanticNodeTypeConstant(node.children[0].children[0] as TokenKeyword | TokenNumber | TokenString)
+					? new SemanticNodeTypeConstant(node.children[0].children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString)
 					: this.decorate(node.children[0])
 				: this.decorate(node.children[1])
 
@@ -246,15 +240,15 @@ export default class Validator {
 			return this.decorate(node.children[0])
 
 		} else if (node instanceof PARSER.ParseNodeStringTemplate__1__List) {
-			return (node.children as readonly (TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
-				c instanceof TokenTemplate ? [new SemanticNodeConstant(c)] :
+			return (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
+				c instanceof TOKEN.TokenTemplate ? [new SemanticNodeConstant(c)] :
 				c instanceof PARSER.ParseNodeExpression ? [this.decorate(c)] :
 				this.decorate(c)
 			)
 
 		} else if (node instanceof PARSER.ParseNodeStringTemplate) {
-			return new SemanticNodeTemplate(node, (node.children as readonly (TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
-				c instanceof TokenTemplate ? [new SemanticNodeConstant(c)] :
+			return new SemanticNodeTemplate(node, (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
+				c instanceof TOKEN.TokenTemplate ? [new SemanticNodeConstant(c)] :
 				c instanceof PARSER.ParseNodeExpression ? [this.decorate(c)] :
 				this.decorate(c)
 			))
@@ -263,7 +257,7 @@ export default class Validator {
 			return (node.children.length === 1)
 				? (node.children[0] instanceof ParseNode)
 					? this.decorate(node.children[0])
-					: new SemanticNodeIdentifier(node.children[0] as TokenIdentifier)
+					: new SemanticNodeIdentifier(node.children[0] as TOKEN.TokenIdentifier)
 				: this.decorate(node.children[1])
 
 		} else if (node instanceof PARSER.ParseNodeExpressionUnarySymbol) {
@@ -355,7 +349,7 @@ export default class Validator {
 			return this.decorate(node.children[0])
 
 		} else if (node instanceof PARSER.ParseNodeDeclarationVariable) {
-			const identifier: TokenIdentifier            = ((node.children.length === 7) ? node.children[1] : node.children[2]) as TokenIdentifier
+			const identifier: TOKEN.TokenIdentifier      = ((node.children.length === 7) ? node.children[1] : node.children[2]) as TOKEN.TokenIdentifier
 			const type_:      PARSER.ParseNodeType       =  (node.children.length === 7) ? node.children[3] : node.children[4]
 			const expression: PARSER.ParseNodeExpression =  (node.children.length === 7) ? node.children[5] : node.children[6]
 			return new SemanticNodeDeclarationVariable(node, node.children.length === 8, [
@@ -367,7 +361,7 @@ export default class Validator {
 			])
 
 		} else if (node instanceof PARSER.ParseNodeStatementAssignment) {
-			const identifier: TokenIdentifier            = node.children[0] as TokenIdentifier
+			const identifier: TOKEN.TokenIdentifier      = node.children[0] as TOKEN.TokenIdentifier
 			const expression: PARSER.ParseNodeExpression = node.children[2]
 			return new SemanticNodeAssignment(node, [
 				new SemanticNodeAssignee(identifier, [

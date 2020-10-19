@@ -8,13 +8,7 @@ import * as assert from 'assert'
 import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
 import {
 	Punctuator,
-	TokenPunctuator,
-	TokenKeyword,
-	TokenIdentifier,
-	TokenNumber,
-	TokenString,
-} from '../src/parser/Token';
-import {
+	TOKEN,
 	PARSER,
 	ParserSolid as Parser,
 } from '../src/parser/';
@@ -24,18 +18,18 @@ import {
 
 
 
-export function tokenLiteralFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TokenKeyword | TokenNumber | TokenString {
+export function tokenLiteralFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString {
 	const token: Token = primitiveTypeFromString(typestring, config).children[0]
 	assert.ok(
-		token instanceof TokenKeyword ||
-		token instanceof TokenNumber  ||
-		token instanceof TokenString
+		token instanceof TOKEN.TokenKeyword ||
+		token instanceof TOKEN.TokenNumber  ||
+		token instanceof TOKEN.TokenString
 	, 'token should be a TokenKeyword or TokenNumber or TokenString')
 	return token
 }
-export function tokenKeywordFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TokenKeyword {
+export function tokenKeywordFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenKeyword {
 	const token: Token = keywordTypeFromString(typestring, config).children[0]
-	assert.ok(token instanceof TokenKeyword, 'token should be a TokenKeyword')
+	assert.ok(token instanceof TOKEN.TokenKeyword, 'token should be a TokenKeyword')
 	return token
 }
 export function primitiveTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodePrimitiveLiteral {
@@ -73,20 +67,20 @@ export function unionTypeFromString(typestring: string, config: SolidConfig = CO
 function typeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeType {
 	return typeFromSource(`let x: ${ typestring } = null;`, config)
 }
-export function tokenLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TokenKeyword | TokenNumber | TokenString {
+export function tokenLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString {
 	const token: Token = primitiveLiteralFromSource(src, config).children[0]
 	assert.ok(
-		token instanceof TokenKeyword ||
-		token instanceof TokenNumber  ||
-		token instanceof TokenString
+		token instanceof TOKEN.TokenKeyword ||
+		token instanceof TOKEN.TokenNumber  ||
+		token instanceof TOKEN.TokenString
 	, 'token should be a TokenKeyword or TokenNumber or TokenString')
 	return token
 }
-export function tokenIdentifierFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TokenIdentifier {
+export function tokenIdentifierFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenIdentifier {
 	const expression_unit: PARSER.ParseNodeExpressionUnit = unitExpressionFromSource(src, config)
 	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child')
 	const unit: Token | PARSER.ParseNodePrimitiveLiteral | PARSER.ParseNodeStringTemplate = expression_unit.children[0]
-	assert.ok(unit instanceof TokenIdentifier, 'unit should be a TokenIdentifier')
+	assert.ok(unit instanceof TOKEN.TokenIdentifier, 'unit should be a TokenIdentifier')
 	return unit
 }
 export function primitiveLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodePrimitiveLiteral {
@@ -152,7 +146,7 @@ function expressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT)
 	const statement: PARSER.ParseNodeStatement = statementFromSource(src, config)
 	assert_arrayLength(statement.children, 2, 'statment should have 2 children')
 	const [expression, endstat]: readonly [PARSER.ParseNodeExpression, Token] = statement.children
-	assert.ok(endstat instanceof TokenPunctuator)
+	assert.ok(endstat instanceof TOKEN.TokenPunctuator)
 	assert.strictEqual(endstat.source, Punctuator.ENDSTAT)
 	return expression
 }

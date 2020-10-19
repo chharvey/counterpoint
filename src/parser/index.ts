@@ -1,4 +1,14 @@
 export {
+	Punctuator,
+	Keyword,
+	RadixType,
+	TemplatePosition,
+	CookValueType,
+	TokenSolid,
+} from './Token';
+export * as TOKEN from './Token';
+
+export {
 	LexerSolid,
 } from './Lexer';
 

@@ -56,12 +56,8 @@ import {
 import {
 	Keyword,
 	CookValueType,
-	TokenKeyword,
-	TokenIdentifier,
-	TokenNumber,
-	TokenString,
-	TokenTemplate,
-} from '../parser/Token';
+	TOKEN,
+} from '../parser/';
 
 
 
@@ -149,9 +145,9 @@ export class SemanticNodeTypeConstant extends SemanticNodeType {
 	declare children:
 		| readonly []
 	readonly value: SolidLanguageType;
-	constructor (start_node: TokenKeyword | TokenNumber | TokenString) {
+	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) {
 		const value: SolidLanguageType =
-			(start_node instanceof TokenKeyword) ?
+			(start_node instanceof TOKEN.TokenKeyword) ?
 				(start_node.source === Keyword.BOOL)  ? SolidBoolean :
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSETYPE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
@@ -159,7 +155,7 @@ export class SemanticNodeTypeConstant extends SemanticNodeType {
 				(start_node.source === Keyword.FLOAT) ? Float64 :
 				(start_node.source === Keyword.OBJ)   ? SolidObject :
 				SolidNull
-			: (start_node instanceof TokenNumber) ?
+			: (start_node instanceof TOKEN.TokenNumber) ?
 				new SolidTypeConstant(
 					start_node.isFloat
 						? new Float64(start_node.cook())
@@ -285,14 +281,14 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 	declare children:
 		| readonly []
 	readonly value: string | SolidObject;
-	constructor (start_node: TokenKeyword | TokenNumber | TokenString | TokenTemplate) {
+	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString | TOKEN.TokenTemplate) {
 		const value: string | SolidObject =
-			(start_node instanceof TokenKeyword) ?
+			(start_node instanceof TOKEN.TokenKeyword) ?
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUE  :
 				SolidNull.NULL
 			:
-			(start_node instanceof TokenNumber) ?
+			(start_node instanceof TOKEN.TokenNumber) ?
 				start_node.isFloat ? new Float64(start_node.cook()) : new Int16(BigInt(start_node.cook()))
 			:
 			start_node.cook()
@@ -333,7 +329,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	declare children:
 		| readonly []
-	constructor (start_node: TokenIdentifier) {
+	constructor (start_node: TOKEN.TokenIdentifier) {
 		super(start_node, {id: start_node.cook()})
 	}
 	/** @implements SemanticNodeExpression */
