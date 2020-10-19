@@ -4,7 +4,8 @@ import * as path from 'path'
 import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
 import type SolidConfig from '../SolidConfig'
-import type {
+import {
+	Validator,
 	SemanticNodeGoal,
 } from '../validator/'
 
@@ -23,6 +24,8 @@ export default class Builder {
 	]
 
 
+	/** A semantic goal produced by a Validator. */
+	private readonly semanticgoal: SemanticNodeGoal;
 	/** A counter for internal variables. Used for optimizing short-circuited expressions. */
 	private var_count: bigint = 0n
 	/** A counter for statements. */
@@ -30,13 +33,14 @@ export default class Builder {
 
 	/**
 	 * Construct a new Builder object.
-	 * @param semanticgoal - A semantic goal produced by a Validator.
+	 * @param source - the source text
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		private readonly semanticgoal: SemanticNodeGoal,
+		source: string,
 		readonly config: SolidConfig,
 	) {
+		this.semanticgoal = new Validator(source, config).validate();
 	}
 
 	/**

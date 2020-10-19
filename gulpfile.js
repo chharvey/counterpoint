@@ -19,45 +19,22 @@ function dist() {
 }
 
 async function postdist() {
-	const {ParserEBNF: Parser, Decorator} = require('./build/ebnf/')
-	const {default: Production} = require('./build/parser/Production.class.js')
-	const {ParseNode} = require('./build/parser/ParseNode.class.js')
-	function preamble(srcpath) {
-		return `
-			/*----------------------------------------------------------------/
-			| WARNING: Do not manually update this file!
-			| It is auto-generated via
-			| <${ srcpath }>.
-			| If you need to make updates, make them there.
-			/----------------------------------------------------------------*/
-		`
-	}
-	const syntaxes = Promise.all([
-		new Decorator().decorate(new Parser(
-			await fs.promises.readFile(path.join(__dirname, './docs/spec/grammar/ebnf-syntax.ebnf'), 'utf8')
-		).parse()).transform(),
-		new Decorator().decorate(new Parser(
-			await fs.promises.readFile(path.join(__dirname, './docs/spec/grammar/syntax.ebnf'), 'utf8')
-		).parse()).transform(),
-	])
-	return Promise.all([
-		fs.promises.writeFile(path.join(__dirname, './src/ebnf/Production.auto.ts'), `
-			${ preamble('/src/parser/Production.class.ts#Production#fromJSON') }
-			${ Production.fromJSON((await syntaxes)[0]) }
-		`),
-		fs.promises.writeFile(path.join(__dirname, './src/ebnf/ParseNode.auto.ts'), `
-			${ preamble('/src/parser/ParseNode.class.ts#ParseNode#fromJSON') }
-			${ ParseNode.fromJSON((await syntaxes)[0]) }
-		`),
-		fs.promises.writeFile(path.join(__dirname, './src/parser/Production.auto.ts'), `
-			${ preamble('/src/parser/Production.class.ts#Production#fromJSON') }
-			${ Production.fromJSON((await syntaxes)[1]) }
-		`),
-		fs.promises.writeFile(path.join(__dirname, './src/parser/ParseNode.auto.ts'), `
-			${ preamble('/src/parser/ParseNode.class.ts#ParseNode#fromJSON') }
-			${ ParseNode.fromJSON((await syntaxes)[1]) }
-		`),
-	])
+	const {generate} = require('@chharvey/parser');
+	const grammar_solid = fs.promises.readFile(path.join(__dirname, './docs/spec/grammar/syntax.ebnf'), 'utf8');
+	return fs.promises.writeFile(path.join(__dirname, './src/parser/Parser.auto.ts'), `
+		/*----------------------------------------------------------------/
+		| WARNING: Do not manually update this file!
+		| It is auto-generated via <@chharvey/parser>.
+		| If you need to make updates, make them there.
+		/----------------------------------------------------------------*/
+		${ generate(await grammar_solid, 'Solid') }
+	`.replace(`
+		import {LexerSolid} from './Lexer';
+		import * as TERMINAL from './Terminal';
+	`, `
+		import {LexerSolid} from '../lexer/Lexer.class';
+		import * as TERMINAL from './Terminal.class';
+	`));
 }
 
 function test() {
@@ -68,9 +45,10 @@ function test() {
 }
 
 async function test_dev() {
+	const {Scanner} = require('@chharvey/parser');
 	const {CONFIG_DEFAULT}         = require('./build/SolidConfig.js')
-	const {Scanner, Lexer, Screener} = require('./build/lexer/')
-	const {default: Parser       } = require('./build/class/Parser.class.js')
+	const {Lexer, Screener} = require('./build/lexer/')
+	const {ParserSolid: Parser} = require('./build/class/Parser.class.js');
 	const {default: CodeGenerator} = require('./build/vm/Builder.class.js')
 
 	const input = fsPromise.readFile('./sample/test-v0.2.solid', 'utf8')
@@ -118,11 +96,10 @@ const build = gulp.parallel(gulp.series(dist, postdist), test)
 const dev = gulp.series(dist, test_dev)
 
 async function random() {
-	const {Scanner} = require('./build/lexer/')
-	const {Grammar} = require('./build/parser/')
+	const {ParserSolid, Grammar} = require('./build/parser/')
 	const sample = new Grammar().random().join(' ').replace(/\u0002|\u0003/g, '') // inserted by Scanner
 	console.log(sample.replace(/\u000d/g, '\u240d'))
-	const parser = new Scanner(sample).lexer.screener.parser
+	const parser = new ParserSolid(sample)
 	let tree;
 	try {
 		tree = parser.parse()

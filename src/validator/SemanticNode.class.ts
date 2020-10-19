@@ -1,8 +1,13 @@
+import {
+	Serializable,
+	Token,
+	ParseNode,
+	ASTNode,
+} from '@chharvey/parser';
 import * as xjs from 'extrajs'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 import Util from '../class/Util.class'
-import type Serializable from '../iface/Serializable.iface'
 import Operator, {
 	ValidTypeOperator,
 	ValidOperatorUnary,
@@ -51,16 +56,12 @@ import {
 import {
 	Keyword,
 	CookValueType,
-	Token,
 	TokenKeyword,
 	TokenIdentifier,
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
 } from '../lexer/'
-import type {
-	ParseNode,
-} from '../parser/'
 
 
 
@@ -82,58 +83,7 @@ function oneFloats(t0: SolidLanguageType, t1: SolidLanguageType): boolean {
 
 
 
-/**
- * A SemanticNode holds only the semantics of a {@link ParseNode}.
- */
-export class SemanticNode implements Serializable {
-	/** @implements Serializable */
-	readonly tagname: string = this.constructor.name.slice('SemanticNode'.length) || 'Unknown'
-	/** @implements Serializable */
-	readonly source: string;
-	/** @implements Serializable */
-	readonly source_index: number;
-	/** @implements Serializable */
-	readonly line_index: number;
-	/** @implements Serializable */
-	readonly col_index: number;
-
-	/**
-	 * Construct a new SemanticNode object.
-	 *
-	 * @param start_node - The initial node in the parse tree to which this SemanticNode corresponds.
-	 * @param children   - The set of child inputs that creates this SemanticNode.
-	 * @param attributes - Any other attributes to attach.
-	 */
-	constructor(
-		start_node: Token|ParseNode,
-		private readonly attributes: {[key: string]: unknown} = {},
-		readonly children: readonly SemanticNode[] = [],
-	) {
-		this.source       = start_node.source
-		this.source_index = start_node.source_index
-		this.line_index   = start_node.line_index
-		this.col_index    = start_node.col_index
-	}
-
-	/**
-	 * @implements Serializable
-	 */
-	serialize(): string {
-		const attributes: Map<string, string> = new Map<string, string>()
-		attributes.set('line', `${ this.line_index + 1 }`)
-		attributes.set('col',  `${ this.col_index  + 1 }`)
-		attributes.set('source', this.source)
-		Object.entries(this.attributes).forEach(([key, value]) => {
-			attributes.set(key, `${value}`)
-		})
-		const contents: string = this.children.map((child) => child.serialize()).join('')
-		return (contents) ? `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${contents}</${this.tagname}>` : `<${this.tagname} ${Util.stringifyAttributes(attributes)}/>`
-	}
-}
-
-
-
-abstract class SemanticNodeSolid extends SemanticNode {
+export abstract class SemanticNodeSolid extends ASTNode {
 	/**
 	 * Construct a new SemanticNodeSolid object.
 	 *
@@ -144,7 +94,7 @@ abstract class SemanticNodeSolid extends SemanticNode {
 	constructor(
 		start_node: Token|ParseNode,
 		attributes: {[key: string]: CookValueType | SolidObject} = {},
-		children: readonly SemanticNode[] = [],
+		children: readonly SemanticNodeSolid[] = [],
 	) {
 		super(start_node, attributes, children)
 	}

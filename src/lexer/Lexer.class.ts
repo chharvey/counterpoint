@@ -1,14 +1,16 @@
-import type SolidConfig from '../SolidConfig'
+import {
+	Char,
+	Token,
+	Lexer,
+} from '@chharvey/parser';
 
+import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
 import Dev from '../class/Dev.class'
-import {ScreenerSolid as Screener} from './Screener.class'
-import Char from './Char.class'
-import Token, {
+import {
 	Punctuator,
-	TokenFilebound,
-	TokenWhitespace,
 	TokenPunctuator,
 	TokenKeyword,
+	TokenIdentifier,
 	TokenIdentifierBasic,
 	TokenIdentifierUnicode,
 	TokenNumber,
@@ -19,85 +21,8 @@ import Token, {
 } from './Token.class'
 
 import {
-	LexError01,
 	LexError03,
 } from '../error/LexError.class'
-
-
-
-/**
- * A Lexer (aka: Tokenizer, Lexical Analyzer).
- * @see http://parsingintro.sourceforge.net/#contents_item_6.5
- */
-export abstract class Lexer {
-	/** The result of the scanner iterator. */
-	private iterator_result_char: IteratorResult<Char, void>;
-	/** The current character. */
-	private _c0: Char;
-	/** The lookahead(1) character. */
-	private _c1: Char|null;
-	/** The lookahead(2) character. */
-	private _c2: Char|null;
-	/** The lookahead(3) character. */
-	private _c3: Char|null;
-
-	/**
-	 * Construct a new Lexer object.
-	 * @param chargenerator - A character generator produced by a Scanner.
-	 */
-	constructor (
-		private readonly chargenerator: Generator<Char>,
-	) {
-		this.iterator_result_char = this.chargenerator.next()
-
-		this._c0 = this.iterator_result_char.value as Char
-		this._c1 = this._c0.lookahead()
-		this._c2 = this._c0.lookahead(2)
-		this._c3 = this._c0.lookahead(3)
-	}
-
-	get c0(): Char      { return this._c0 }
-	get c1(): Char|null { return this._c1 }
-	get c2(): Char|null { return this._c2 }
-	get c3(): Char|null { return this._c3 }
-	get isDone(): boolean { return !!this.iterator_result_char.done }
-
-	/**
-	 * Advance this Lexer, scanning the next character and reassigning variables.
-	 * @param   n - the number of times to advance
-	 * @returns all the characters scanned since the last advance
-	 * @throws  {RangeError} if the argument is not a positive integer
-	 */
-	advance(n?: 1n): [Char];
-	advance(n: bigint): [Char, ...Char[]];
-	advance(n: bigint = 1n): [Char, ...Char[]] {
-		if (n <= 0n) throw new RangeError('Argument must be a positive integer.')
-		if (n === 1n) {
-			const returned: Char = this._c0
-			this.iterator_result_char = this.chargenerator.next()
-			if (!this.iterator_result_char.done) {
-				this._c0 = this.iterator_result_char.value
-				this._c1 = this._c0.lookahead()
-				this._c2 = this._c0.lookahead(2)
-				this._c3 = this._c0.lookahead(3)
-			}
-			return [returned]
-		} else {
-			return [
-				...this.advance(),
-				...this.advance(n - 1n),
-			] as [Char, ...Char[]]
-		}
-	}
-
-	/**
-	 * Construct and return the next token in the source text.
-	 * @returns the next token
-	 * @throws  {LexError01} if an unrecognized character was reached
-	 * @throws  {LexError03} if an invalid escape sequence was reached
-	 */
-	abstract generate(): Generator<Token>;
-}
 
 
 
@@ -109,28 +34,24 @@ export class LexerSolid extends Lexer {
 	private static readonly DIGITS_DEFAULT: readonly string[] = TokenNumber.DIGITS.get(TokenNumber.RADIX_DEFAULT)!
 
 
+	/** A set of all unique identifiers in the program, for optimization purposes. */
+	private _ids: Set<string> = new Set()
+
 	/**
 	 * Construct a new LexerSolid object.
-	 * @param chargenerator - A character generator produced by a Scanner.
+	 * @param source - the source text
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		chargenerator: Generator<Char>,
-		readonly config: SolidConfig,
+		source: string,
+		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
-		super(chargenerator)
+		super(source)
 	}
 
-	* generate(): Generator<Token> {
-		while (!this.isDone) {
+	protected generate_do(): Token | null {
 			let token: Token;
-			if (Char.inc(TokenFilebound.CHARS, this.c0)) {
-				token = new TokenFilebound(this)
-
-			} else if (Char.inc(TokenWhitespace.CHARS, this.c0)) {
-				token = new TokenWhitespace(this)
-
-			} else if (Char.inc(LexerSolid.PUNCTUATORS_3, this.c0, this.c1, this.c2)) {
+			if (Char.inc(LexerSolid.PUNCTUATORS_3, this.c0, this.c1, this.c2)) {
 				token = new TokenPunctuator(this, 3n)
 			} else if (Char.inc(LexerSolid.PUNCTUATORS_2, this.c0, this.c1)) {
 				token = new TokenPunctuator(this, 2n)
@@ -169,15 +90,18 @@ export class LexerSolid extends Lexer {
 					token = new TokenKeyword        (this, buffer[0], ...buffer.slice(1))
 				} else if (Dev.supports('variables')) {
 					token = new TokenIdentifierBasic(this, buffer[0], ...buffer.slice(1))
+					this.setIdentifierValue(token as TokenIdentifierBasic);
 				} else {
 					throw new Error(`Identifier \`${ bufferstring }\` not yet allowed.`)
 				}
 			} else if (Dev.supports('variables') && TokenIdentifierBasic.CHAR_START.test(this.c0.source)) {
 				/* we found a basic identifier */
 				token = new TokenIdentifierBasic(this)
+				this.setIdentifierValue(token as TokenIdentifierBasic);
 			} else if (Dev.supports('variables') && Char.eq(TokenIdentifierUnicode.DELIM, this.c0)) {
 				/* we found a unicode identifier */
 				token = new TokenIdentifierUnicode(this)
+				this.setIdentifierValue(token as TokenIdentifierUnicode);
 
 			} else if (Char.inc(LexerSolid.DIGITS_DEFAULT, this.c0)) {
 				/* a number literal without a unary operator and without an explicit radix */
@@ -208,17 +132,17 @@ export class LexerSolid extends Lexer {
 				token = new TokenCommentLine(this)
 
 			} else {
-				throw new LexError01(this.c0)
+				return null
 			}
-			yield token
-		}
+			return token
 	}
 
 	/**
-	 * Construct a new Screener object from this Lexer.
-	 * @return a new Screener with this Lexer as its argument
+	 * Sets a unique integer value to an Identifier token to optimize performance.
+	 * @param id_token the Identifier token
 	 */
-	get screener(): Screener {
-		return new Screener(this.generate(), this.config)
+	private setIdentifierValue(id_token: TokenIdentifier): void {
+		this._ids.add(id_token.source);
+		return id_token.setValue(BigInt([...this._ids].indexOf(id_token.source)));
 	}
 }

@@ -1,27 +1,27 @@
+import {
+	Filebound,
+	Char,
+	Token,
+	TokenComment,
+	Lexer,
+	LexError02,
+} from '@chharvey/parser';
+
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 
 import Util from '../class/Util.class'
 import Dev from '../class/Dev.class'
-import type Serializable from '../iface/Serializable.iface'
-import Char from './Char.class'
 import type {
-	Lexer,
 	LexerSolid,
 } from './Lexer.class'
 
 import {
-	LexError02,
 	LexError03,
 	LexError04,
 	LexError05,
 } from '../error/LexError.class'
 
 
-
-export enum Filebound {
-	SOT = '\u0002',
-	EOT = '\u0003',
-}
 
 export enum Punctuator {
 	// grouping
@@ -95,63 +95,7 @@ export type CookValueType = string|number|bigint|boolean|null
 
 
 
-/**
- * A Token object is the kind of thing that the Lexer returns.
- * It holds:
- * - the text of the token (self.cargo)
- * - the line number and column index where the token starts
- *
- * @see http://parsingintro.sourceforge.net/#contents_item_6.4
- */
-export default abstract class Token implements Serializable {
-	/** @implements Serializable */
-	readonly source_index: number;
-	/** @implements Serializable */
-	readonly line_index: number;
-	/** @implements Serializable */
-	readonly col_index: number;
-
-	/** All the characters in this Token. */
-	private _cargo: string;
-
-	/**
-	 * Construct a new Token object.
-	 * @param tagname    - The name of the type of this Token.
-	 * @param lexer      - The lexer used to construct this Token.
-	 * @param start_char - the starting character of this Token
-	 * @param more_chars - additional characters to add upon construction
-	 */
-	constructor (
-		/** @implements Serializable */
-		readonly tagname: string,
-		protected readonly lexer: Lexer,
-		start_char: Char,
-		...more_chars: Char[]
-	) {
-		this._cargo       = [start_char, ...more_chars].map((char) => char.source).join('')
-		this.source_index = start_char.source_index
-		this.line_index   = start_char.line_index
-		this.col_index    = start_char.col_index
-	}
-
-	/**
-	 * Get the sum of this Token’s cargo.
-	 * @implements Serializable
-	 * @returns all the source characters in this Token
-	 */
-	get source(): string {
-		return this._cargo
-	}
-
-	/**
-	 * Add to this Token’s cargo.
-	 * @param lexer - the lexer whose characters to take from
-	 * @param n     - the number of characters to append
-	 */
-	protected advance(n: bigint = 1n): void {
-		this._cargo += this.lexer.advance(n).map((char) => char.source).join('')
-	}
-
+export abstract class TokenSolid extends Token {
 	/**
 	 * Return this Token’s cooked value.
 	 * The cooked value is the computed or evaluated contents of this Token,
@@ -160,47 +104,11 @@ export default abstract class Token implements Serializable {
 	 * @returns              the computed value of this token, or `null`
 	 */
 	abstract cook(): CookValueType;
-
-	/**
-	 * @implements Serializable
-	 */
-	serialize(): string {
-		const cooked: CookValueType = this.cook()
-		const attributes: Map<string, string> = new Map<string, string>()
-		attributes.set('line', `${ this.line_index + 1 }`)
-		attributes.set('col',  `${ this.col_index  + 1 }`)
-		if (cooked !== null) {
-			attributes.set('value', cooked.toString())
-		}
-		return `<${this.tagname} ${Util.stringifyAttributes(attributes)}>${Util.sanitizeContent(this.source)}</${this.tagname}>`
-	}
 }
 
 
 
-export class TokenFilebound extends Token {
-	static readonly CHARS: readonly Filebound[] = [Filebound.SOT, Filebound.EOT]
-	// declare readonly source: Filebound; // NB: https://github.com/microsoft/TypeScript/issues/40220
-	constructor (lexer: Lexer) {
-		super('FILEBOUND', lexer, ...lexer.advance())
-	}
-	cook(): boolean {
-		return this.source === Filebound.SOT
-	}
-}
-export class TokenWhitespace extends Token {
-	static readonly CHARS: readonly string[] = [' ', '\t', '\n']
-	constructor (lexer: Lexer) {
-		super('WHITESPACE', lexer, ...lexer.advance())
-		while (!this.lexer.isDone && Char.inc(TokenWhitespace.CHARS, this.lexer.c0)) {
-			this.advance()
-		}
-	}
-	cook(): null {
-		return null // we do not want to send whitespace to the parser
-	}
-}
-export class TokenPunctuator extends Token {
+export class TokenPunctuator extends TokenSolid {
 	static readonly PUNCTUATORS: readonly Punctuator[] = [...new Set( // remove duplicates
 		Object.values(Punctuator).filter((p) => Dev.supports('variables') ? true : ![
 			Punctuator.ASSIGN,
@@ -221,7 +129,7 @@ export class TokenPunctuator extends Token {
 		return BigInt(TokenPunctuator.PUNCTUATORS.indexOf(this.source as Punctuator))
 	}
 }
-export class TokenKeyword extends Token {
+export class TokenKeyword extends TokenSolid {
 	private static readonly MINIMUM_VALUE: 0x80n = 0x80n
 	static readonly CHAR: RegExp = /^[a-z]$/
 	static readonly KEYWORDS: readonly Keyword[] = [...new Set<Keyword>( // remove duplicates
@@ -238,7 +146,7 @@ export class TokenKeyword extends Token {
 		return BigInt(TokenKeyword.KEYWORDS.indexOf(this.source as Keyword)) + TokenKeyword.MINIMUM_VALUE
 	}
 }
-export abstract class TokenIdentifier extends Token {
+export abstract class TokenIdentifier extends TokenSolid {
 	private static readonly MINIMUM_VALUE: 0x100n = 0x100n
 	/**
 	 * The cooked value of this Token.
@@ -294,7 +202,7 @@ export class TokenIdentifierUnicode extends TokenIdentifier {
 		this.advance()
 	}
 }
-export class TokenNumber extends Token {
+export class TokenNumber extends TokenSolid {
 	static readonly RADIX_DEFAULT: 10n = 10n
 	static readonly ESCAPER:   '\\' = '\\'
 	static readonly SEPARATOR: '_' = '_'
@@ -449,7 +357,7 @@ export class TokenNumber extends Token {
 		return this.source.indexOf(TokenNumber.POINT) > 0
 	}
 }
-export class TokenString extends Token {
+export class TokenString extends TokenSolid {
 	static readonly DELIM:   '\'' = '\''
 	static readonly ESCAPER: '\\' = '\\'
 	static readonly ESCAPES: readonly string[] = [TokenString.DELIM, TokenString.ESCAPER, 's','t','n','r']
@@ -568,7 +476,7 @@ export class TokenString extends Token {
 		))
 	}
 }
-export class TokenTemplate extends Token {
+export class TokenTemplate extends TokenSolid {
 	static readonly DELIM              : '\'\'\'' = '\'\'\''
 	static readonly DELIM_INTERP_START : '{{' = '{{'
 	static readonly DELIM_INTERP_END   : '}}' = '}}'
@@ -634,27 +542,6 @@ export class TokenTemplate extends Token {
 			this.source.slice(this.delim_start.length, -this.delim_end.length) // cut off the template delimiters
 		))
 	}
-}
-export abstract class TokenComment extends Token {
-	constructor (lexer: Lexer, start_delim: string, end_delim: string) {
-		super('COMMENT', lexer, ...lexer.advance(BigInt(start_delim.length)))
-		while (!this.lexer.isDone && !this.stopAdvancing()) {
-			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
-				throw new LexError02(this)
-			}
-			this.advance()
-		}
-		// add end delim to token
-		this.advance(BigInt(end_delim.length))
-	}
-	/** @final */ cook(): null {
-		return null // we do not want to send comments to the parser
-	}
-	/**
-	 * Helper method used in the constructor.
-	 * @return When should the lexer stop advancing?
-	 */
-	protected abstract stopAdvancing(): boolean;
 }
 export class TokenCommentLine extends TokenComment {
 	static readonly DELIM_START: '%'  = '%'

@@ -1,7 +1,7 @@
 export {default as Validator}    from './Validator.class'
 
 export {
-	SemanticNode,
+	SemanticNodeSolid,
 	SemanticNodeType,
 	SemanticNodeTypeConstant,
 	SemanticNodeTypeOperation,
