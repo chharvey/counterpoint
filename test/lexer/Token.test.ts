@@ -7,7 +7,6 @@ import {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util     from '../../src/class/Util.class'
 import Dev      from '../../src/class/Dev.class'
 import {
-	LexerSolid as Lexer,
 	TokenSolid,
 	TokenPunctuator,
 	TokenKeyword,
@@ -16,6 +15,9 @@ import {
 	TokenNumber,
 	TokenString,
 } from '../../src/lexer/'
+import {
+	LexerSolid as Lexer,
+} from '../../src/parser/';
 
 const lastItem  = (iter: any): any     => iter[lastIndex(iter)]
 const lastIndex = (iter: any): number  => iter.length-1

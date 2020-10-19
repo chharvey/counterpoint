@@ -18,7 +18,7 @@ import {
 	TokenTemplate,
 	TokenCommentLine,
 	TokenCommentMulti,
-} from './Token.class'
+} from '../lexer/Token.class'
 
 import {
 	LexError03,

@@ -14,7 +14,7 @@
 			Grammar,
 			GrammarSymbol,
 		} from '@chharvey/parser';
-		import {LexerSolid} from '../lexer/Lexer.class';
+		import {LexerSolid} from './Lexer';
 		import * as TERMINAL from './Terminal.class';
 		
 			export class ProductionPrimitiveLiteral extends Production {

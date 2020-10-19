@@ -29,10 +29,8 @@ async function postdist() {
 		/----------------------------------------------------------------*/
 		${ generate(await grammar_solid, 'Solid') }
 	`.replace(`
-		import {LexerSolid} from './Lexer';
 		import * as TERMINAL from './Terminal';
 	`, `
-		import {LexerSolid} from '../lexer/Lexer.class';
 		import * as TERMINAL from './Terminal.class';
 	`));
 }

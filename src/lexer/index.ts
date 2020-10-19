@@ -1,8 +1,4 @@
 export {
-	LexerSolid,
-} from './Lexer.class'
-
-export {
 	Punctuator,
 	Keyword,
 	RadixType,

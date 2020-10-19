@@ -10,7 +10,6 @@ import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util  from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
 import {
-	LexerSolid as Lexer,
 	TemplatePosition,
 	TokenPunctuator,
 	TokenKeyword,
@@ -23,6 +22,9 @@ import {
 	TokenCommentLine,
 	TokenCommentMulti,
 } from '../../src/lexer/'
+import {
+	LexerSolid as Lexer,
+} from '../../src/parser/'
 import {
 	LexError03,
 	LexError04,
