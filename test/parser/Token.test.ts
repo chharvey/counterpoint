@@ -14,7 +14,7 @@ import {
 	TokenIdentifierUnicode,
 	TokenNumber,
 	TokenString,
-} from '../../src/lexer/'
+} from '../../src/parser/Token';
 import {
 	LexerSolid as Lexer,
 } from '../../src/parser/';

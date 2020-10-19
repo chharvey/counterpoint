@@ -13,7 +13,7 @@ import Util from '../class/Util.class'
 import Dev from '../class/Dev.class'
 import type {
 	LexerSolid,
-} from '../parser/Lexer'
+} from './Lexer';
 
 import {
 	LexError03,

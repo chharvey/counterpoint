@@ -13,7 +13,7 @@ import {
 	TokenIdentifier,
 	TokenNumber,
 	TokenString,
-} from '../src/lexer/'
+} from '../src/parser/Token';
 import {
 	PARSER,
 	ParserSolid as Parser,

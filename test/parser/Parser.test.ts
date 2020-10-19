@@ -19,7 +19,7 @@ import {
 	TokenKeyword,
 	TokenNumber,
 	TokenString,
-} from '../../src/lexer/'
+} from '../../src/parser/Token';
 
 import {
 	assert_arrayLength,

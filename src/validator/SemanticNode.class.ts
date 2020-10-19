@@ -61,7 +61,7 @@ import {
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from '../lexer/'
+} from '../parser/Token';
 
 
 

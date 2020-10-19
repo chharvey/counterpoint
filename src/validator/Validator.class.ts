@@ -18,7 +18,7 @@ import {
 	TokenNumber,
 	TokenString,
 	TokenTemplate,
-} from '../lexer/Token.class'
+} from '../parser/Token';
 import {
 	ParserSolid as Parser,
 	PARSER,
