@@ -738,7 +738,7 @@ describe('Validator', () => {
 					the_answer = the_answer - 40;
 				`), CONFIG_DEFAULT]
 				assert.strictEqual(new Validator(...srcs)
-					.decorate(new Parser(srcs[0]).parse())
+					.decorate(new Parser(...srcs).parse())
 					.serialize(), `
 					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - 40 ; ␃">
 						<Assignment line="3" col="1" source="the_answer = the_answer - 40 ;">

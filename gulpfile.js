@@ -27,7 +27,10 @@ async function postdist() {
 		| It is auto-generated via <@chharvey/parser>.
 		| If you need to make updates, make them there.
 		/----------------------------------------------------------------*/
-		${ generate(await grammar_solid, 'Solid') }
+		import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
+		${ generate(await grammar_solid, 'Solid')
+			.replace(`constructor (source: string)`, `constructor (source: string, config: SolidConfig = CONFIG_DEFAULT)`)
+			.replace(`new LexerSolid(source)`, `new LexerSolid(source, config)`) }
 	`);
 }
 

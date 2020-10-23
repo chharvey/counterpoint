@@ -162,7 +162,7 @@ export function variableDeclarationFromSource(src: string, config: SolidConfig =
 	return var_decl
 }
 export function statementFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeStatement {
-	const goal: PARSER.ParseNodeGoal = new Parser(src).parse()
+	const goal: PARSER.ParseNodeGoal = new Parser(src, config).parse()
 	assert_arrayLength(goal.children, 3, 'goal should have 3 children')
 	const [sot, stat_list, eot]: readonly [Token, PARSER.ParseNodeGoal__0__List, Token] = goal.children
 	assert.ok(sot instanceof TokenFilebound)
