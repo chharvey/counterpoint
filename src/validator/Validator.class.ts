@@ -1,7 +1,7 @@
 import {
 	ParseNode,
 } from '@chharvey/parser';
-import type SolidConfig from '../SolidConfig'
+import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
 import Operator, {
 	ValidTypeOperator,
 	ValidOperatorUnary,
@@ -129,7 +129,7 @@ export default class Validator {
 	 */
 	constructor (
 		source: string,
-		private readonly config: SolidConfig,
+		private readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
 		this.parsegoal = new Parser(source, config).parse();
 	}

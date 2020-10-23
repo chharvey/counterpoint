@@ -3,7 +3,7 @@ import * as path from 'path'
 
 import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
-import type SolidConfig from '../SolidConfig'
+import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
 import {
 	Validator,
 	SemanticNodeGoal,
@@ -38,7 +38,7 @@ export default class Builder {
 	 */
 	constructor (
 		source: string,
-		readonly config: SolidConfig,
+		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
 		this.semanticgoal = new Validator(source, config).validate();
 	}

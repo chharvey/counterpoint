@@ -241,12 +241,10 @@ describe('Instruction', () => {
 				const mods: (InstructionNone | InstructionModule)[] = [
 					``,
 					`;`,
-				].map((src) => {
-					const srcs: [string, SolidConfig] = [src, CONFIG_DEFAULT]
-					return new Validator(...srcs)
-						.decorate(new Parser(...srcs).parse())
-						.build(new Builder(...srcs))
-				})
+				].map((src) => new Validator(src)
+					.decorate(new Parser(src).parse())
+					.build(new Builder(src))
+				);
 				assert.ok(mods[0] instanceof InstructionNone)
 				assert.strictEqual(mods[0].toString(), ``)
 				assert.ok(mods[1] instanceof InstructionModule)
