@@ -1,3 +1,5 @@
+const fs = require('fs')
+const path = require('path')
 const fsPromise = require('fs').promises
 
 const gulp       = require('gulp')
@@ -16,6 +18,22 @@ function dist() {
 		.pipe(gulp.dest('./build/'))
 }
 
+async function postdist() {
+	const {generate} = require('@chharvey/parser');
+	const grammar_solid = fs.promises.readFile(path.join(__dirname, './docs/spec/grammar/syntax.ebnf'), 'utf8');
+	return fs.promises.writeFile(path.join(__dirname, './src/parser/Parser.auto.ts'), `
+		/*----------------------------------------------------------------/
+		| WARNING: Do not manually update this file!
+		| It is auto-generated via <@chharvey/parser>.
+		| If you need to make updates, make them there.
+		/----------------------------------------------------------------*/
+		import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
+		${ generate(await grammar_solid, 'Solid')
+			.replace(`constructor (source: string)`, `constructor (source: string, config: SolidConfig = CONFIG_DEFAULT)`)
+			.replace(`new LexerSolid(source)`, `new LexerSolid(source, config)`) }
+	`);
+}
+
 function test() {
 	return gulp.src('./test/**/*.ts')
 		.pipe(mocha({
@@ -24,9 +42,10 @@ function test() {
 }
 
 async function test_dev() {
+	const {Scanner} = require('@chharvey/parser');
 	const {CONFIG_DEFAULT}         = require('./build/SolidConfig.js')
-	const {Scanner, Lexer, Screener} = require('./build/lexer/')
-	const {default: Parser       } = require('./build/class/Parser.class.js')
+	const {Lexer, Screener} = require('./build/lexer/')
+	const {ParserSolid: Parser} = require('./build/class/Parser.class.js');
 	const {default: CodeGenerator} = require('./build/vm/Builder.class.js')
 
 	const input = fsPromise.readFile('./sample/test-v0.2.solid', 'utf8')
@@ -69,16 +88,15 @@ async function test_dev() {
 	])
 }
 
-const build = gulp.parallel(dist, test)
+const build = gulp.parallel(gulp.series(dist, postdist), test)
 
 const dev = gulp.series(dist, test_dev)
 
 async function random() {
-	const {Parser} = require('./')
-	const {default: Grammar} = require('./build/class/Grammar.class')
+	const {ParserSolid, Grammar} = require('./build/parser/')
 	const sample = new Grammar().random().join(' ').replace(/\u0002|\u0003/g, '') // inserted by Scanner
 	console.log(sample.replace(/\u000d/g, '\u240d'))
-	const parser = new Parser(sample)
+	const parser = new ParserSolid(sample)
 	let tree;
 	try {
 		tree = parser.parse()
@@ -89,7 +107,6 @@ async function random() {
 	return Promise.all([
 		fsPromise.writeFile('./sample/output.xml', tree.serialize()),
 		fsPromise.writeFile('./sample/output-1.xml', tree.decorate().serialize()),
-		fsPromise.writeFile('./sample/output-2.ts', tree.decorate().compile()),
 	])
 }
 
@@ -97,6 +114,7 @@ async function random() {
 module.exports = {
 	build,
 		dist,
+		postdist,
 		test,
 	dev,
 		test_dev,

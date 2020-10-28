@@ -41,7 +41,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: NEG] expr) :=
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* `t0` is a subtype of `Union(Integer, Float)`:
 		1. *Return:* `t0`.
-	4. *Throw:* TypeError "Invalid operation.".
+	4. *Throw:* a new TypeError01.
 ;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
@@ -53,7 +53,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: EXP | MUL | DIV | AD
 			1. *Return:* `Float`.
 		2. *Else*:
 			1. *Return:* `Integer`.
-	5. *Throw:* TypeError "Invalid operation.".
+	5. *Throw:* a new TypeError01.
 ;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
@@ -62,7 +62,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: LT | GT | LE | GE] e
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* `t0` is a subtype of `Union(Integer, Float)` *and* `t1` is a subtype of `Union(Integer, Float)`:
 		1. *Return:* `Boolean`.
-	5. *Throw:* TypeError "Invalid operation.".
+	5. *Throw:* a new TypeError01.
 ;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: IS | EQ] expr) :=
@@ -125,7 +125,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: COND] expr) :=
 		2. *If* `t0` is `ToType(true)`:
 			1. *Return:* `t1`.
 		3. *Return:* `Union(t1, t2)`.
-	6. *Throw:* TypeError "Invalid operation.".
+	6. *Throw:* a new TypeError01.
 ;
 
 
