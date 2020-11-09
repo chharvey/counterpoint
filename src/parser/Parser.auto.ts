@@ -441,157 +441,248 @@
 				;
 			}
 		
-			export class ParseNodeStringTemplate__1__List extends ParseNode {
+			export abstract class ParseNodeStringTemplate$__1__List extends ParseNode {
+				declare children:
+					| readonly [Token] | readonly [ParseNodeStringTemplate__1__List,Token] | readonly [Token,ParseNodeExpression] | readonly [ParseNodeStringTemplate__1__List,Token,ParseNodeExpression]
+					| readonly [Token] | readonly [ParseNodeStringTemplate_Dynamic__1__List,Token] | readonly [Token,ParseNodeExpression_Dynamic] | readonly [ParseNodeStringTemplate_Dynamic__1__List,Token,ParseNodeExpression_Dynamic]
+				;
+			}
+
+			export class ParseNodeStringTemplate__1__List extends ParseNodeStringTemplate$__1__List {
 				declare children:
 					readonly [Token] | readonly [ParseNodeStringTemplate__1__List,Token] | readonly [Token,ParseNodeExpression] | readonly [ParseNodeStringTemplate__1__List,Token,ParseNodeExpression]
 				;
 			}
 		
-			export class ParseNodeStringTemplate_Dynamic__1__List extends ParseNode {
+			export class ParseNodeStringTemplate_Dynamic__1__List extends ParseNodeStringTemplate$__1__List {
 				declare children:
 					readonly [Token] | readonly [ParseNodeStringTemplate_Dynamic__1__List,Token] | readonly [Token,ParseNodeExpression_Dynamic] | readonly [ParseNodeStringTemplate_Dynamic__1__List,Token,ParseNodeExpression_Dynamic]
 				;
 			}
 		
-			export class ParseNodeStringTemplate extends ParseNode {
+			export abstract class ParseNodeStringTemplate$ extends ParseNode {
+				declare children:
+					| readonly [Token] | readonly [Token,Token] | readonly [Token,ParseNodeStringTemplate__1__List,Token] | readonly [Token,ParseNodeExpression,Token] | readonly [Token,ParseNodeExpression,ParseNodeStringTemplate__1__List,Token]
+					| readonly [Token] | readonly [Token,Token] | readonly [Token,ParseNodeStringTemplate_Dynamic__1__List,Token] | readonly [Token,ParseNodeExpression_Dynamic,Token] | readonly [Token,ParseNodeExpression_Dynamic,ParseNodeStringTemplate_Dynamic__1__List,Token]
+				;
+			}
+
+			export class ParseNodeStringTemplate extends ParseNodeStringTemplate$ {
 				declare children:
 					readonly [Token] | readonly [Token,Token] | readonly [Token,ParseNodeStringTemplate__1__List,Token] | readonly [Token,ParseNodeExpression,Token] | readonly [Token,ParseNodeExpression,ParseNodeStringTemplate__1__List,Token]
 				;
 			}
 		
-			export class ParseNodeStringTemplate_Dynamic extends ParseNode {
+			export class ParseNodeStringTemplate_Dynamic extends ParseNodeStringTemplate$ {
 				declare children:
 					readonly [Token] | readonly [Token,Token] | readonly [Token,ParseNodeStringTemplate_Dynamic__1__List,Token] | readonly [Token,ParseNodeExpression_Dynamic,Token] | readonly [Token,ParseNodeExpression_Dynamic,ParseNodeStringTemplate_Dynamic__1__List,Token]
 				;
 			}
 		
-			export class ParseNodeExpressionUnit extends ParseNode {
+			export abstract class ParseNodeExpressionUnit$ extends ParseNode {
+				declare children:
+					| readonly [ParseNodePrimitiveLiteral] | readonly [ParseNodeStringTemplate] | readonly [Token,ParseNodeExpression,Token]
+					| readonly [Token] | readonly [ParseNodePrimitiveLiteral] | readonly [ParseNodeStringTemplate_Dynamic] | readonly [Token,ParseNodeExpression_Dynamic,Token]
+				;
+			}
+		
+			export class ParseNodeExpressionUnit extends ParseNodeExpressionUnit$ {
 				declare children:
 					readonly [ParseNodePrimitiveLiteral] | readonly [ParseNodeStringTemplate] | readonly [Token,ParseNodeExpression,Token]
 				;
 			}
 		
-			export class ParseNodeExpressionUnit_Dynamic extends ParseNode {
+			export class ParseNodeExpressionUnit_Dynamic extends ParseNodeExpressionUnit$ {
 				declare children:
 					readonly [Token] | readonly [ParseNodePrimitiveLiteral] | readonly [ParseNodeStringTemplate_Dynamic] | readonly [Token,ParseNodeExpression_Dynamic,Token]
 				;
 			}
 		
-			export class ParseNodeExpressionUnarySymbol extends ParseNode {
+			export class ParseNodeExpressionUnarySymbol$ extends ParseNode {
+				declare children:
+					| readonly [ParseNodeExpressionUnit] | readonly [Token,ParseNodeExpressionUnarySymbol] | readonly [Token,ParseNodeExpressionUnarySymbol] | readonly [Token,ParseNodeExpressionUnarySymbol] | readonly [Token,ParseNodeExpressionUnarySymbol]
+					| readonly [ParseNodeExpressionUnit_Dynamic] | readonly [Token,ParseNodeExpressionUnarySymbol_Dynamic] | readonly [Token,ParseNodeExpressionUnarySymbol_Dynamic] | readonly [Token,ParseNodeExpressionUnarySymbol_Dynamic] | readonly [Token,ParseNodeExpressionUnarySymbol_Dynamic]
+				;
+			}
+
+			export class ParseNodeExpressionUnarySymbol extends ParseNodeExpressionUnarySymbol$ {
 				declare children:
 					readonly [ParseNodeExpressionUnit] | readonly [Token,ParseNodeExpressionUnarySymbol] | readonly [Token,ParseNodeExpressionUnarySymbol] | readonly [Token,ParseNodeExpressionUnarySymbol] | readonly [Token,ParseNodeExpressionUnarySymbol]
 				;
 			}
 		
-			export class ParseNodeExpressionUnarySymbol_Dynamic extends ParseNode {
+			export class ParseNodeExpressionUnarySymbol_Dynamic extends ParseNodeExpressionUnarySymbol$ {
 				declare children:
 					readonly [ParseNodeExpressionUnit_Dynamic] | readonly [Token,ParseNodeExpressionUnarySymbol_Dynamic] | readonly [Token,ParseNodeExpressionUnarySymbol_Dynamic] | readonly [Token,ParseNodeExpressionUnarySymbol_Dynamic] | readonly [Token,ParseNodeExpressionUnarySymbol_Dynamic]
 				;
 			}
 		
-			export class ParseNodeExpressionExponential extends ParseNode {
+			export class ParseNodeExpressionExponential$ extends ParseNode {
+				declare children:
+					| readonly [ParseNodeExpressionUnarySymbol] | readonly [ParseNodeExpressionUnarySymbol,Token,ParseNodeExpressionExponential]
+					| readonly [ParseNodeExpressionUnarySymbol_Dynamic] | readonly [ParseNodeExpressionUnarySymbol_Dynamic,Token,ParseNodeExpressionExponential_Dynamic]
+				;
+			}
+
+			export class ParseNodeExpressionExponential extends ParseNodeExpressionExponential$ {
 				declare children:
 					readonly [ParseNodeExpressionUnarySymbol] | readonly [ParseNodeExpressionUnarySymbol,Token,ParseNodeExpressionExponential]
 				;
 			}
 		
-			export class ParseNodeExpressionExponential_Dynamic extends ParseNode {
+			export class ParseNodeExpressionExponential_Dynamic extends ParseNodeExpressionExponential$ {
 				declare children:
 					readonly [ParseNodeExpressionUnarySymbol_Dynamic] | readonly [ParseNodeExpressionUnarySymbol_Dynamic,Token,ParseNodeExpressionExponential_Dynamic]
 				;
 			}
 		
-			export class ParseNodeExpressionMultiplicative extends ParseNode {
+			export class ParseNodeExpressionMultiplicative$ extends ParseNode {
+				declare children:
+					| readonly [ParseNodeExpressionExponential] | readonly [ParseNodeExpressionMultiplicative,Token,ParseNodeExpressionExponential] | readonly [ParseNodeExpressionMultiplicative,Token,ParseNodeExpressionExponential]
+					| readonly [ParseNodeExpressionExponential_Dynamic] | readonly [ParseNodeExpressionMultiplicative_Dynamic,Token,ParseNodeExpressionExponential_Dynamic] | readonly [ParseNodeExpressionMultiplicative_Dynamic,Token,ParseNodeExpressionExponential_Dynamic]
+				;
+			}
+
+			export class ParseNodeExpressionMultiplicative extends ParseNodeExpressionMultiplicative$ {
 				declare children:
 					readonly [ParseNodeExpressionExponential] | readonly [ParseNodeExpressionMultiplicative,Token,ParseNodeExpressionExponential] | readonly [ParseNodeExpressionMultiplicative,Token,ParseNodeExpressionExponential]
 				;
 			}
 		
-			export class ParseNodeExpressionMultiplicative_Dynamic extends ParseNode {
+			export class ParseNodeExpressionMultiplicative_Dynamic extends ParseNodeExpressionMultiplicative$ {
 				declare children:
 					readonly [ParseNodeExpressionExponential_Dynamic] | readonly [ParseNodeExpressionMultiplicative_Dynamic,Token,ParseNodeExpressionExponential_Dynamic] | readonly [ParseNodeExpressionMultiplicative_Dynamic,Token,ParseNodeExpressionExponential_Dynamic]
 				;
 			}
 		
-			export class ParseNodeExpressionAdditive extends ParseNode {
+			export class ParseNodeExpressionAdditive$ extends ParseNode {
+				declare children:
+					| readonly [ParseNodeExpressionMultiplicative] | readonly [ParseNodeExpressionAdditive,Token,ParseNodeExpressionMultiplicative] | readonly [ParseNodeExpressionAdditive,Token,ParseNodeExpressionMultiplicative]
+					| readonly [ParseNodeExpressionMultiplicative_Dynamic] | readonly [ParseNodeExpressionAdditive_Dynamic,Token,ParseNodeExpressionMultiplicative_Dynamic] | readonly [ParseNodeExpressionAdditive_Dynamic,Token,ParseNodeExpressionMultiplicative_Dynamic]
+				;
+			}
+
+			export class ParseNodeExpressionAdditive extends ParseNodeExpressionAdditive$ {
 				declare children:
 					readonly [ParseNodeExpressionMultiplicative] | readonly [ParseNodeExpressionAdditive,Token,ParseNodeExpressionMultiplicative] | readonly [ParseNodeExpressionAdditive,Token,ParseNodeExpressionMultiplicative]
 				;
 			}
 		
-			export class ParseNodeExpressionAdditive_Dynamic extends ParseNode {
+			export class ParseNodeExpressionAdditive_Dynamic extends ParseNodeExpressionAdditive$ {
 				declare children:
 					readonly [ParseNodeExpressionMultiplicative_Dynamic] | readonly [ParseNodeExpressionAdditive_Dynamic,Token,ParseNodeExpressionMultiplicative_Dynamic] | readonly [ParseNodeExpressionAdditive_Dynamic,Token,ParseNodeExpressionMultiplicative_Dynamic]
 				;
 			}
 		
-			export class ParseNodeExpressionComparative extends ParseNode {
+			export class ParseNodeExpressionComparative$ extends ParseNode {
+				declare children:
+					| readonly [ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive]
+					| readonly [ParseNodeExpressionAdditive_Dynamic] | readonly [ParseNodeExpressionComparative_Dynamic,Token,ParseNodeExpressionAdditive_Dynamic] | readonly [ParseNodeExpressionComparative_Dynamic,Token,ParseNodeExpressionAdditive_Dynamic] | readonly [ParseNodeExpressionComparative_Dynamic,Token,ParseNodeExpressionAdditive_Dynamic] | readonly [ParseNodeExpressionComparative_Dynamic,Token,ParseNodeExpressionAdditive_Dynamic] | readonly [ParseNodeExpressionComparative_Dynamic,Token,ParseNodeExpressionAdditive_Dynamic] | readonly [ParseNodeExpressionComparative_Dynamic,Token,ParseNodeExpressionAdditive_Dynamic]
+				;
+			}
+
+			export class ParseNodeExpressionComparative extends ParseNodeExpressionComparative$ {
 				declare children:
 					readonly [ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive]
 				;
 			}
 		
-			export class ParseNodeExpressionComparative_Dynamic extends ParseNode {
+			export class ParseNodeExpressionComparative_Dynamic extends ParseNodeExpressionComparative$ {
 				declare children:
 					readonly [ParseNodeExpressionAdditive_Dynamic] | readonly [ParseNodeExpressionComparative_Dynamic,Token,ParseNodeExpressionAdditive_Dynamic] | readonly [ParseNodeExpressionComparative_Dynamic,Token,ParseNodeExpressionAdditive_Dynamic] | readonly [ParseNodeExpressionComparative_Dynamic,Token,ParseNodeExpressionAdditive_Dynamic] | readonly [ParseNodeExpressionComparative_Dynamic,Token,ParseNodeExpressionAdditive_Dynamic] | readonly [ParseNodeExpressionComparative_Dynamic,Token,ParseNodeExpressionAdditive_Dynamic] | readonly [ParseNodeExpressionComparative_Dynamic,Token,ParseNodeExpressionAdditive_Dynamic]
 				;
 			}
 		
-			export class ParseNodeExpressionEquality extends ParseNode {
+			export class ParseNodeExpressionEquality$ extends ParseNode {
+				declare children:
+					| readonly [ParseNodeExpressionComparative] | readonly [ParseNodeExpressionEquality,Token,ParseNodeExpressionComparative] | readonly [ParseNodeExpressionEquality,Token,ParseNodeExpressionComparative] | readonly [ParseNodeExpressionEquality,Token,ParseNodeExpressionComparative] | readonly [ParseNodeExpressionEquality,Token,ParseNodeExpressionComparative]
+					| readonly [ParseNodeExpressionComparative_Dynamic] | readonly [ParseNodeExpressionEquality_Dynamic,Token,ParseNodeExpressionComparative_Dynamic] | readonly [ParseNodeExpressionEquality_Dynamic,Token,ParseNodeExpressionComparative_Dynamic] | readonly [ParseNodeExpressionEquality_Dynamic,Token,ParseNodeExpressionComparative_Dynamic] | readonly [ParseNodeExpressionEquality_Dynamic,Token,ParseNodeExpressionComparative_Dynamic]
+				;
+			}
+
+			export class ParseNodeExpressionEquality extends ParseNodeExpressionEquality$ {
 				declare children:
 					readonly [ParseNodeExpressionComparative] | readonly [ParseNodeExpressionEquality,Token,ParseNodeExpressionComparative] | readonly [ParseNodeExpressionEquality,Token,ParseNodeExpressionComparative] | readonly [ParseNodeExpressionEquality,Token,ParseNodeExpressionComparative] | readonly [ParseNodeExpressionEquality,Token,ParseNodeExpressionComparative]
 				;
 			}
 		
-			export class ParseNodeExpressionEquality_Dynamic extends ParseNode {
+			export class ParseNodeExpressionEquality_Dynamic extends ParseNodeExpressionEquality$ {
 				declare children:
 					readonly [ParseNodeExpressionComparative_Dynamic] | readonly [ParseNodeExpressionEquality_Dynamic,Token,ParseNodeExpressionComparative_Dynamic] | readonly [ParseNodeExpressionEquality_Dynamic,Token,ParseNodeExpressionComparative_Dynamic] | readonly [ParseNodeExpressionEquality_Dynamic,Token,ParseNodeExpressionComparative_Dynamic] | readonly [ParseNodeExpressionEquality_Dynamic,Token,ParseNodeExpressionComparative_Dynamic]
 				;
 			}
 		
-			export class ParseNodeExpressionConjunctive extends ParseNode {
+			export class ParseNodeExpressionConjunctive$ extends ParseNode {
+				declare children:
+					| readonly [ParseNodeExpressionEquality] | readonly [ParseNodeExpressionConjunctive,Token,ParseNodeExpressionEquality] | readonly [ParseNodeExpressionConjunctive,Token,ParseNodeExpressionEquality]
+					| readonly [ParseNodeExpressionEquality_Dynamic] | readonly [ParseNodeExpressionConjunctive_Dynamic,Token,ParseNodeExpressionEquality_Dynamic] | readonly [ParseNodeExpressionConjunctive_Dynamic,Token,ParseNodeExpressionEquality_Dynamic]
+				;
+			}
+
+			export class ParseNodeExpressionConjunctive extends ParseNodeExpressionConjunctive$ {
 				declare children:
 					readonly [ParseNodeExpressionEquality] | readonly [ParseNodeExpressionConjunctive,Token,ParseNodeExpressionEquality] | readonly [ParseNodeExpressionConjunctive,Token,ParseNodeExpressionEquality]
 				;
 			}
 		
-			export class ParseNodeExpressionConjunctive_Dynamic extends ParseNode {
+			export class ParseNodeExpressionConjunctive_Dynamic extends ParseNodeExpressionConjunctive$ {
 				declare children:
 					readonly [ParseNodeExpressionEquality_Dynamic] | readonly [ParseNodeExpressionConjunctive_Dynamic,Token,ParseNodeExpressionEquality_Dynamic] | readonly [ParseNodeExpressionConjunctive_Dynamic,Token,ParseNodeExpressionEquality_Dynamic]
 				;
 			}
 		
-			export class ParseNodeExpressionDisjunctive extends ParseNode {
+			export class ParseNodeExpressionDisjunctive$ extends ParseNode {
+				declare children:
+					| readonly [ParseNodeExpressionConjunctive] | readonly [ParseNodeExpressionDisjunctive,Token,ParseNodeExpressionConjunctive] | readonly [ParseNodeExpressionDisjunctive,Token,ParseNodeExpressionConjunctive]
+					| readonly [ParseNodeExpressionConjunctive_Dynamic] | readonly [ParseNodeExpressionDisjunctive_Dynamic,Token,ParseNodeExpressionConjunctive_Dynamic] | readonly [ParseNodeExpressionDisjunctive_Dynamic,Token,ParseNodeExpressionConjunctive_Dynamic]
+				;
+			}
+
+			export class ParseNodeExpressionDisjunctive extends ParseNodeExpressionDisjunctive$ {
 				declare children:
 					readonly [ParseNodeExpressionConjunctive] | readonly [ParseNodeExpressionDisjunctive,Token,ParseNodeExpressionConjunctive] | readonly [ParseNodeExpressionDisjunctive,Token,ParseNodeExpressionConjunctive]
 				;
 			}
 		
-			export class ParseNodeExpressionDisjunctive_Dynamic extends ParseNode {
+			export class ParseNodeExpressionDisjunctive_Dynamic extends ParseNodeExpressionDisjunctive$ {
 				declare children:
 					readonly [ParseNodeExpressionConjunctive_Dynamic] | readonly [ParseNodeExpressionDisjunctive_Dynamic,Token,ParseNodeExpressionConjunctive_Dynamic] | readonly [ParseNodeExpressionDisjunctive_Dynamic,Token,ParseNodeExpressionConjunctive_Dynamic]
 				;
 			}
 		
-			export class ParseNodeExpressionConditional extends ParseNode {
+			export class ParseNodeExpressionConditional$ extends ParseNode {
+				declare children:
+					| readonly [Token,ParseNodeExpression,Token,ParseNodeExpression,Token,ParseNodeExpression]
+					| readonly [Token,ParseNodeExpression_Dynamic,Token,ParseNodeExpression_Dynamic,Token,ParseNodeExpression_Dynamic]
+				;
+			}
+
+			export class ParseNodeExpressionConditional extends ParseNodeExpressionConditional$ {
 				declare children:
 					readonly [Token,ParseNodeExpression,Token,ParseNodeExpression,Token,ParseNodeExpression]
 				;
 			}
 		
-			export class ParseNodeExpressionConditional_Dynamic extends ParseNode {
+			export class ParseNodeExpressionConditional_Dynamic extends ParseNodeExpressionConditional$ {
 				declare children:
 					readonly [Token,ParseNodeExpression_Dynamic,Token,ParseNodeExpression_Dynamic,Token,ParseNodeExpression_Dynamic]
 				;
 			}
 		
-			export class ParseNodeExpression extends ParseNode {
+			export class ParseNodeExpression$ extends ParseNode {
+				declare children:
+					| readonly [ParseNodeExpressionDisjunctive] | readonly [ParseNodeExpressionConditional]
+					| readonly [ParseNodeExpressionDisjunctive_Dynamic] | readonly [ParseNodeExpressionConditional_Dynamic]
+				;
+			}
+
+			export class ParseNodeExpression extends ParseNodeExpression$ {
 				declare children:
 					readonly [ParseNodeExpressionDisjunctive] | readonly [ParseNodeExpressionConditional]
 				;
 			}
 		
-			export class ParseNodeExpression_Dynamic extends ParseNode {
+			export class ParseNodeExpression_Dynamic extends ParseNodeExpression$ {
 				declare children:
 					readonly [ParseNodeExpressionDisjunctive_Dynamic] | readonly [ParseNodeExpressionConditional_Dynamic]
 				;

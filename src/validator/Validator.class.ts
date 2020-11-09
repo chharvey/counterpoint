@@ -187,21 +187,21 @@ export default class Validator {
 		| PARSER.ParseNodeTypeUnion
 		| PARSER.ParseNodeType
 	): SemanticNodeType;
-	decorate(node: PARSER.ParseNodeStringTemplate__1__List | PARSER.ParseNodeStringTemplate_Dynamic__1__List): TemplatePartialType;
-	decorate(node: PARSER.ParseNodeStringTemplate          | PARSER.ParseNodeStringTemplate_Dynamic):          SemanticNodeTemplate;
+	decorate(node: PARSER.ParseNodeStringTemplate$__1__List): TemplatePartialType;
+	decorate(node: PARSER.ParseNodeStringTemplate$):          SemanticNodeTemplate;
 	decorate(node:
-		| PARSER.ParseNodeExpressionUnit           | PARSER.ParseNodeExpressionUnit_Dynamic
-		| PARSER.ParseNodeExpressionUnarySymbol    | PARSER.ParseNodeExpressionUnarySymbol_Dynamic
-		| PARSER.ParseNodeExpressionExponential    | PARSER.ParseNodeExpressionExponential_Dynamic
-		| PARSER.ParseNodeExpressionMultiplicative | PARSER.ParseNodeExpressionMultiplicative_Dynamic
-		| PARSER.ParseNodeExpressionAdditive       | PARSER.ParseNodeExpressionAdditive_Dynamic
-		| PARSER.ParseNodeExpressionComparative    | PARSER.ParseNodeExpressionComparative_Dynamic
-		| PARSER.ParseNodeExpressionEquality       | PARSER.ParseNodeExpressionEquality_Dynamic
-		| PARSER.ParseNodeExpressionConjunctive    | PARSER.ParseNodeExpressionConjunctive_Dynamic
-		| PARSER.ParseNodeExpressionDisjunctive    | PARSER.ParseNodeExpressionDisjunctive_Dynamic
-		| PARSER.ParseNodeExpression               | PARSER.ParseNodeExpression_Dynamic
+		| PARSER.ParseNodeExpressionUnit$
+		| PARSER.ParseNodeExpressionUnarySymbol$
+		| PARSER.ParseNodeExpressionExponential$
+		| PARSER.ParseNodeExpressionMultiplicative$
+		| PARSER.ParseNodeExpressionAdditive$
+		| PARSER.ParseNodeExpressionComparative$
+		| PARSER.ParseNodeExpressionEquality$
+		| PARSER.ParseNodeExpressionConjunctive$
+		| PARSER.ParseNodeExpressionDisjunctive$
+		| PARSER.ParseNodeExpression$
 	): SemanticNodeExpression;
-	decorate(node: PARSER.ParseNodeExpressionConditional | PARSER.ParseNodeExpressionConditional_Dynamic): SemanticNodeOperationTernary;
+	decorate(node: PARSER.ParseNodeExpressionConditional$):   SemanticNodeOperationTernary;
 	decorate(node: PARSER.ParseNodeDeclarationVariable):      SemanticNodeDeclarationVariable;
 	decorate(node: PARSER.ParseNodeStatementAssignment):      SemanticNodeAssignment;
 	decorate(node: PARSER.ParseNodeStatement):                SemanticStatementType;
@@ -243,17 +243,17 @@ export default class Validator {
 		} else if (node instanceof PARSER.ParseNodeType) {
 			return this.decorate(node.children[0])
 
-		} else if (node instanceof PARSER.ParseNodeStringTemplate__1__List || node instanceof PARSER.ParseNodeStringTemplate_Dynamic__1__List) {
-			return (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeExpression_Dynamic | PARSER.ParseNodeStringTemplate__1__List | PARSER.ParseNodeStringTemplate_Dynamic__1__List)[]).flatMap((c) =>
+		} else if (node instanceof PARSER.ParseNodeStringTemplate$__1__List) {
+			return (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression$ | PARSER.ParseNodeStringTemplate$__1__List)[]).flatMap((c) =>
 				(c instanceof TOKEN.TokenTemplate) ? [new SemanticNodeConstant(c)] :
-				(c instanceof PARSER.ParseNodeExpression || c instanceof PARSER.ParseNodeExpression_Dynamic) ? [this.decorate(c)] :
+				(c instanceof PARSER.ParseNodeExpression$) ? [this.decorate(c)] :
 				this.decorate(c)
 			)
 
-		} else if (node instanceof PARSER.ParseNodeStringTemplate || node instanceof PARSER.ParseNodeStringTemplate_Dynamic) {
-			return new SemanticNodeTemplate(node, (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeExpression_Dynamic | PARSER.ParseNodeStringTemplate__1__List | PARSER.ParseNodeStringTemplate_Dynamic__1__List)[]).flatMap((c) =>
+		} else if (node instanceof PARSER.ParseNodeStringTemplate$) {
+			return new SemanticNodeTemplate(node, (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression$ | PARSER.ParseNodeStringTemplate$__1__List)[]).flatMap((c) =>
 				(c instanceof TOKEN.TokenTemplate) ? [new SemanticNodeConstant(c)] :
-				(c instanceof PARSER.ParseNodeExpression || c instanceof PARSER.ParseNodeExpression_Dynamic) ? [this.decorate(c)] :
+				(c instanceof PARSER.ParseNodeExpression$) ? [this.decorate(c)] :
 				this.decorate(c)
 			))
 
@@ -269,7 +269,7 @@ export default class Validator {
 					: new SemanticNodeIdentifier(node.children[0] as TOKEN.TokenIdentifier)
 				: this.decorate(node.children[1])
 
-		} else if (node instanceof PARSER.ParseNodeExpressionUnarySymbol || node instanceof PARSER.ParseNodeExpressionUnarySymbol_Dynamic) {
+		} else if (node instanceof PARSER.ParseNodeExpressionUnarySymbol$) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
 				: (node.children[0].source === Punctuator.AFF) // `+a` is a no-op
@@ -279,13 +279,13 @@ export default class Validator {
 					])
 
 		} else if (
-			node instanceof PARSER.ParseNodeExpressionExponential    || node instanceof PARSER.ParseNodeExpressionExponential_Dynamic    ||
-			node instanceof PARSER.ParseNodeExpressionMultiplicative || node instanceof PARSER.ParseNodeExpressionMultiplicative_Dynamic ||
-			node instanceof PARSER.ParseNodeExpressionAdditive       || node instanceof PARSER.ParseNodeExpressionAdditive_Dynamic       ||
-			node instanceof PARSER.ParseNodeExpressionComparative    || node instanceof PARSER.ParseNodeExpressionComparative_Dynamic    ||
-			node instanceof PARSER.ParseNodeExpressionEquality       || node instanceof PARSER.ParseNodeExpressionEquality_Dynamic       ||
-			node instanceof PARSER.ParseNodeExpressionConjunctive    || node instanceof PARSER.ParseNodeExpressionConjunctive_Dynamic    ||
-			node instanceof PARSER.ParseNodeExpressionDisjunctive    || node instanceof PARSER.ParseNodeExpressionDisjunctive_Dynamic
+			node instanceof PARSER.ParseNodeExpressionExponential$    ||
+			node instanceof PARSER.ParseNodeExpressionMultiplicative$ ||
+			node instanceof PARSER.ParseNodeExpressionAdditive$       ||
+			node instanceof PARSER.ParseNodeExpressionComparative$    ||
+			node instanceof PARSER.ParseNodeExpressionEquality$       ||
+			node instanceof PARSER.ParseNodeExpressionConjunctive$    ||
+			node instanceof PARSER.ParseNodeExpressionDisjunctive$
 		) {
 			if (node.children.length === 1) {
 				return this.decorate(node.children[0])
@@ -296,9 +296,9 @@ export default class Validator {
 					this.decorate(node.children[2]),
 				]
 				return (
-					node instanceof PARSER.ParseNodeExpressionExponential    || node instanceof PARSER.ParseNodeExpressionExponential_Dynamic    ||
-					node instanceof PARSER.ParseNodeExpressionMultiplicative || node instanceof PARSER.ParseNodeExpressionMultiplicative_Dynamic ||
-					node instanceof PARSER.ParseNodeExpressionAdditive       || node instanceof PARSER.ParseNodeExpressionAdditive_Dynamic
+					node instanceof PARSER.ParseNodeExpressionExponential$    ||
+					node instanceof PARSER.ParseNodeExpressionMultiplicative$ ||
+					node instanceof PARSER.ParseNodeExpressionAdditive$
 				) ? (
 					// `a - b` is syntax sugar for `a + -(b)`
 					(operator === Operator.SUB) ? new SemanticNodeOperationBinaryArithmetic(node, Operator.ADD, [
@@ -309,7 +309,7 @@ export default class Validator {
 					]) :
 					new SemanticNodeOperationBinaryArithmetic(node, operator as ValidOperatorArithmetic, operands)
 
-				) : (node instanceof PARSER.ParseNodeExpressionComparative || node instanceof PARSER.ParseNodeExpressionComparative_Dynamic) ? (
+				) : (node instanceof PARSER.ParseNodeExpressionComparative$) ? (
 					// `a !< b` is syntax sugar for `!(a < b)`
 					(operator === Operator.NLT) ? new SemanticNodeOperationUnary(node, Operator.NOT, [
 						new SemanticNodeOperationBinaryComparative(node.children[0], Operator.LT, operands),
@@ -320,7 +320,7 @@ export default class Validator {
 					]) :
 					new SemanticNodeOperationBinaryComparative(node, operator as ValidOperatorComparative, operands)
 
-				) : (node instanceof PARSER.ParseNodeExpressionEquality || node instanceof PARSER.ParseNodeExpressionEquality_Dynamic) ? (
+				) : (node instanceof PARSER.ParseNodeExpressionEquality$) ? (
 					// `a isnt b` is syntax sugar for `!(a is b)`
 					(operator === Operator.ISNT) ? new SemanticNodeOperationUnary(node, Operator.NOT, [
 						new SemanticNodeOperationBinaryEquality(node.children[0], Operator.IS, operands),
@@ -332,8 +332,8 @@ export default class Validator {
 					new SemanticNodeOperationBinaryEquality(node, operator as ValidOperatorEquality, operands)
 
 				) : /* (
-					node instanceof PARSER.ParseNodeExpressionConjunctive || node instanceof PARSER.ParseNodeExpressionConjunctive_Dynamic ||
-					node instanceof PARSER.ParseNodeExpressionDisjunctive || node instanceof PARSER.ParseNodeExpressionDisjunctive_Dynamic
+					node instanceof PARSER.ParseNodeExpressionConjunctive$ ||
+					node instanceof PARSER.ParseNodeExpressionDisjunctive$
 				) ? */ (
 					// `a !& b` is syntax sugar for `!(a && b)`
 					(operator === Operator.NAND) ? new SemanticNodeOperationUnary(node, Operator.NOT, [
@@ -347,14 +347,14 @@ export default class Validator {
 				)
 			}
 
-		} else if (node instanceof PARSER.ParseNodeExpressionConditional || node instanceof PARSER.ParseNodeExpressionConditional_Dynamic) {
+		} else if (node instanceof PARSER.ParseNodeExpressionConditional$) {
 			return new SemanticNodeOperationTernary(node, Operator.COND, [
 				this.decorate(node.children[1]),
 				this.decorate(node.children[3]),
 				this.decorate(node.children[5]),
 			])
 
-		} else if (node instanceof PARSER.ParseNodeExpression || node instanceof PARSER.ParseNodeExpression_Dynamic) {
+		} else if (node instanceof PARSER.ParseNodeExpression$) {
 			return this.decorate(node.children[0])
 
 		} else if (node instanceof PARSER.ParseNodeDeclarationVariable) {
