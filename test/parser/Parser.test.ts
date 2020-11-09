@@ -222,17 +222,17 @@ describe('Parser', () => {
 					.parse()
 					.children[1] as PARSER.ParseNodeGoal__0__List)
 					.children[0] as PARSER.ParseNodeStatement)
-					.children[0] as PARSER.ParseNodeExpression)
-					.children[0] as PARSER.ParseNodeExpressionDisjunctive)
-					.children[0] as PARSER.ParseNodeExpressionConjunctive)
-					.children[0] as PARSER.ParseNodeExpressionEquality)
-					.children[0] as PARSER.ParseNodeExpressionComparative)
-					.children[0] as PARSER.ParseNodeExpressionAdditive)
-					.children[0] as PARSER.ParseNodeExpressionMultiplicative)
-					.children[0] as PARSER.ParseNodeExpressionExponential)
-					.children[0] as PARSER.ParseNodeExpressionUnarySymbol)
-					.children[0] as PARSER.ParseNodeExpressionUnit)
-					.children[0] as PARSER.ParseNodeStringTemplate)
+					.children[0] as PARSER.ParseNodeExpression_Dynamic)
+					.children[0] as PARSER.ParseNodeExpressionDisjunctive_Dynamic)
+					.children[0] as PARSER.ParseNodeExpressionConjunctive_Dynamic)
+					.children[0] as PARSER.ParseNodeExpressionEquality_Dynamic)
+					.children[0] as PARSER.ParseNodeExpressionComparative_Dynamic)
+					.children[0] as PARSER.ParseNodeExpressionAdditive_Dynamic)
+					.children[0] as PARSER.ParseNodeExpressionMultiplicative_Dynamic)
+					.children[0] as PARSER.ParseNodeExpressionExponential_Dynamic)
+					.children[0] as PARSER.ParseNodeExpressionUnarySymbol_Dynamic)
+					.children[0] as PARSER.ParseNodeExpressionUnit_Dynamic)
+					.children[0] as PARSER.ParseNodeStringTemplate_Dynamic)
 					.serialize()
 			}
 			specify('head, tail.', () => {
@@ -490,9 +490,9 @@ describe('Parser', () => {
 						<PUNCTUATOR>)</PUNCTUATOR>
 					</ExpressionUnit>
 				*/
-				const expression_unit: PARSER.ParseNodeExpressionUnit = h.unitExpressionFromSource(`(2 + -3);`)
+				const expression_unit: PARSER.ParseNodeExpressionUnit_Dynamic = h.unitExpressionFromSource(`(2 + -3);`)
 				assert_arrayLength(expression_unit.children, 3)
-				const [open, expr, close]: readonly [Token, PARSER.ParseNodeExpression, Token] = expression_unit.children
+				const [open, expr, close]: readonly [Token, PARSER.ParseNodeExpression_Dynamic, Token] = expression_unit.children
 				assert.ok(open  instanceof TOKEN.TokenPunctuator)
 				assert.ok(close instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
@@ -516,9 +516,9 @@ describe('Parser', () => {
 					`- 42;`,
 					`--2;`,
 				].map((src) => {
-					const expression_unary: PARSER.ParseNodeExpressionUnarySymbol = h.unaryExpressionFromSource(src)
+					const expression_unary: PARSER.ParseNodeExpressionUnarySymbol_Dynamic = h.unaryExpressionFromSource(src)
 					assert_arrayLength(expression_unary.children, 2, 'outer unary expression should have 2 children')
-					const [op, operand]: readonly [Token, PARSER.ParseNodeExpressionUnarySymbol] = expression_unary.children
+					const [op, operand]: readonly [Token, PARSER.ParseNodeExpressionUnarySymbol_Dynamic] = expression_unary.children
 					assert.ok(op instanceof TOKEN.TokenPunctuator)
 					assert_arrayLength(operand.children, 1, 'inner unary expression should have 1 child')
 					return [operand.source, op.source]
@@ -540,9 +540,9 @@ describe('Parser', () => {
 						<ExpressionExponential source="-3">...</ExpressionExponential>
 					</ExpressionExponential>
 				*/
-				const expression_exp: PARSER.ParseNodeExpressionExponential = h.exponentialExpressionFromSource(`2 ^ -3;`)
+				const expression_exp: PARSER.ParseNodeExpressionExponential_Dynamic = h.exponentialExpressionFromSource(`2 ^ -3;`)
 				assert_arrayLength(expression_exp.children, 3, 'exponential expression should have 3 children')
-				const [left, op, right]: readonly [PARSER.ParseNodeExpressionUnarySymbol, Token, PARSER.ParseNodeExpressionExponential] = expression_exp.children
+				const [left, op, right]: readonly [PARSER.ParseNodeExpressionUnarySymbol_Dynamic, Token, PARSER.ParseNodeExpressionExponential_Dynamic] = expression_exp.children
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,      right.source],
@@ -560,9 +560,9 @@ describe('Parser', () => {
 						<ExpressionExponential source="-3">...</ExpressionExponential>
 					</ExpressionMultiplicative>
 				*/
-				const expression_mul: PARSER.ParseNodeExpressionMultiplicative = h.multiplicativeExpressionFromSource(`2 * -3;`)
+				const expression_mul: PARSER.ParseNodeExpressionMultiplicative_Dynamic = h.multiplicativeExpressionFromSource(`2 * -3;`)
 				assert_arrayLength(expression_mul.children, 3, 'multiplicative expression should have 3 children')
-				const [left, op, right]: readonly [PARSER.ParseNodeExpressionMultiplicative, Token, PARSER.ParseNodeExpressionExponential] = expression_mul.children
+				const [left, op, right]: readonly [PARSER.ParseNodeExpressionMultiplicative_Dynamic, Token, PARSER.ParseNodeExpressionExponential_Dynamic] = expression_mul.children
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,      right.source],
@@ -580,9 +580,9 @@ describe('Parser', () => {
 						<ExpressionMultiplicative source="-3">...</ExpressionMultiplicative>
 					</ExpressionAdditive>
 				*/
-				const expression_add: PARSER.ParseNodeExpressionAdditive = h.additiveExpressionFromSource(`2 + -3;`)
+				const expression_add: PARSER.ParseNodeExpressionAdditive_Dynamic = h.additiveExpressionFromSource(`2 + -3;`)
 				assert_arrayLength(expression_add.children, 3, 'additive expression should have 3 children')
-				const [left, op, right]: readonly [PARSER.ParseNodeExpressionAdditive, Token, PARSER.ParseNodeExpressionMultiplicative] = expression_add.children
+				const [left, op, right]: readonly [PARSER.ParseNodeExpressionAdditive_Dynamic, Token, PARSER.ParseNodeExpressionMultiplicative_Dynamic] = expression_add.children
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,      right.source],
@@ -600,9 +600,9 @@ describe('Parser', () => {
 						<ExpressionAdditive source="-3">...</ExpressionAdditive>
 					</ExpressionComparative>
 				*/
-				const expression_compare: PARSER.ParseNodeExpressionComparative = h.comparativeExpressionFromSource(`2 < -3;`)
+				const expression_compare: PARSER.ParseNodeExpressionComparative_Dynamic = h.comparativeExpressionFromSource(`2 < -3;`)
 				assert_arrayLength(expression_compare.children, 3, 'comparative expression should have 3 children')
-				const [left, op, right]: readonly [PARSER.ParseNodeExpressionComparative, Token, PARSER.ParseNodeExpressionAdditive] = expression_compare.children
+				const [left, op, right]: readonly [PARSER.ParseNodeExpressionComparative_Dynamic, Token, PARSER.ParseNodeExpressionAdditive_Dynamic] = expression_compare.children
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,     right.source],
@@ -610,9 +610,9 @@ describe('Parser', () => {
 				)
 			})
 			it('allows chaining of `<` and `>`.', () => {
-				const expression_compare: PARSER.ParseNodeExpressionComparative = h.comparativeExpressionFromSource(`2 < 3 > 4;`)
+				const expression_compare: PARSER.ParseNodeExpressionComparative_Dynamic = h.comparativeExpressionFromSource(`2 < 3 > 4;`)
 				assert_arrayLength(expression_compare.children, 3, 'comparative expression should have 3 children')
-				const [left, op, right]: readonly [PARSER.ParseNodeExpressionComparative, Token, PARSER.ParseNodeExpressionAdditive] = expression_compare.children
+				const [left, op, right]: readonly [PARSER.ParseNodeExpressionComparative_Dynamic, Token, PARSER.ParseNodeExpressionAdditive_Dynamic] = expression_compare.children
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,     right.source],
@@ -634,9 +634,9 @@ describe('Parser', () => {
 					`2 is -3;`,
 					`2 == -3;`,
 				].map((src, i) => {
-					const expression_eq: PARSER.ParseNodeExpressionEquality = h.equalityExpressionFromSource(src)
+					const expression_eq: PARSER.ParseNodeExpressionEquality_Dynamic = h.equalityExpressionFromSource(src)
 					assert_arrayLength(expression_eq.children, 3, 'equality expression should have 3 children')
-					const [left, op, right]: readonly [PARSER.ParseNodeExpressionEquality, Token, PARSER.ParseNodeExpressionComparative] = expression_eq.children
+					const [left, op, right]: readonly [PARSER.ParseNodeExpressionEquality_Dynamic, Token, PARSER.ParseNodeExpressionComparative_Dynamic] = expression_eq.children
 					assert.ok(op instanceof [TOKEN.TokenKeyword, TOKEN.TokenPunctuator][i])
 					return [left.source, op.source, right.source]
 				}), [
@@ -655,9 +655,9 @@ describe('Parser', () => {
 						<ExpressionAdditive source="-3">...</ExpressionAdditive>
 					</ExpressionConjunctive>
 				*/
-				const expression_conj: PARSER.ParseNodeExpressionConjunctive = h.conjunctiveExpressionFromSource(`2 && -3;`)
+				const expression_conj: PARSER.ParseNodeExpressionConjunctive_Dynamic = h.conjunctiveExpressionFromSource(`2 && -3;`)
 				assert_arrayLength(expression_conj.children, 3, 'conjunctive expression should have 3 children')
-				const [left, op, right]: readonly [PARSER.ParseNodeExpressionConjunctive, Token, PARSER.ParseNodeExpressionEquality] = expression_conj.children
+				const [left, op, right]: readonly [PARSER.ParseNodeExpressionConjunctive_Dynamic, Token, PARSER.ParseNodeExpressionEquality_Dynamic] = expression_conj.children
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,      right.source],
@@ -675,9 +675,9 @@ describe('Parser', () => {
 						<ExpressionConjunctive source="-3">...</ExpressionConjunctive>
 					</ExpressionDisjunctive>
 				*/
-				const expression_disj: PARSER.ParseNodeExpressionDisjunctive = h.disjunctiveExpressionFromSource(`2 || -3;`)
+				const expression_disj: PARSER.ParseNodeExpressionDisjunctive_Dynamic = h.disjunctiveExpressionFromSource(`2 || -3;`)
 				assert_arrayLength(expression_disj.children, 3, 'disjunctive expression should have 3 children')
-				const [left, op, right]: readonly [PARSER.ParseNodeExpressionDisjunctive, Token, PARSER.ParseNodeExpressionConjunctive] = expression_disj.children
+				const [left, op, right]: readonly [PARSER.ParseNodeExpressionDisjunctive_Dynamic, Token, PARSER.ParseNodeExpressionConjunctive_Dynamic] = expression_disj.children
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,     right.source],
@@ -698,12 +698,12 @@ describe('Parser', () => {
 						<Expression source="3">...</Expression>
 					</ExpressionConditional>
 				*/
-				const expression_cond: PARSER.ParseNodeExpressionConditional = h.conditionalExpressionFromSource(`
+				const expression_cond: PARSER.ParseNodeExpressionConditional_Dynamic = h.conditionalExpressionFromSource(`
 					if true then 2 else 3;
 				`)
 				const
-					[_if,   condition,                  _then, consequent,                 _else, alternative]: readonly
-					[Token, PARSER.ParseNodeExpression, Token, PARSER.ParseNodeExpression, Token, PARSER.ParseNodeExpression] = expression_cond.children
+					[_if,   condition,                          _then, consequent,                         _else, alternative]: readonly
+					[Token, PARSER.ParseNodeExpression_Dynamic, Token, PARSER.ParseNodeExpression_Dynamic, Token, PARSER.ParseNodeExpression_Dynamic] = expression_cond.children
 				assert.ok(_if   instanceof TOKEN.TokenKeyword)
 				assert.ok(_then instanceof TOKEN.TokenKeyword)
 				assert.ok(_else instanceof TOKEN.TokenKeyword)

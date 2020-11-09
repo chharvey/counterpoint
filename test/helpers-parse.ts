@@ -77,75 +77,75 @@ export function tokenLiteralFromSource(src: string, config: SolidConfig = CONFIG
 	return token
 }
 export function tokenIdentifierFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenIdentifier {
-	const expression_unit: PARSER.ParseNodeExpressionUnit = unitExpressionFromSource(src, config)
+	const expression_unit: PARSER.ParseNodeExpressionUnit_Dynamic = unitExpressionFromSource(src, config)
 	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child')
-	const unit: Token | PARSER.ParseNodePrimitiveLiteral | PARSER.ParseNodeStringTemplate = expression_unit.children[0]
+	const unit: Token | PARSER.ParseNodePrimitiveLiteral | PARSER.ParseNodeStringTemplate_Dynamic = expression_unit.children[0]
 	assert.ok(unit instanceof TOKEN.TokenIdentifier, 'unit should be a TokenIdentifier')
 	return unit
 }
 export function primitiveLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodePrimitiveLiteral {
-	const expression_unit: PARSER.ParseNodeExpressionUnit = unitExpressionFromSource(src, config)
+	const expression_unit: PARSER.ParseNodeExpressionUnit_Dynamic = unitExpressionFromSource(src, config)
 	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child')
-	const unit: Token | PARSER.ParseNodePrimitiveLiteral | PARSER.ParseNodeStringTemplate = expression_unit.children[0]
+	const unit: Token | PARSER.ParseNodePrimitiveLiteral | PARSER.ParseNodeStringTemplate_Dynamic = expression_unit.children[0]
 	assert.ok(unit instanceof PARSER.ParseNodePrimitiveLiteral, 'unit should be a ParseNodePrimitiveLiteral')
 	return unit
 }
-export function unitExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionUnit {
-	const expression_unary: PARSER.ParseNodeExpressionUnarySymbol = unaryExpressionFromSource(src, config)
+export function unitExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionUnit_Dynamic {
+	const expression_unary: PARSER.ParseNodeExpressionUnarySymbol_Dynamic = unaryExpressionFromSource(src, config)
 	assert_arrayLength(expression_unary.children, 1, 'unary expression should have 1 child')
 	return expression_unary.children[0]
 }
-export function unaryExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionUnarySymbol {
-	const expression_exp: PARSER.ParseNodeExpressionExponential = exponentialExpressionFromSource(src, config)
+export function unaryExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionUnarySymbol_Dynamic {
+	const expression_exp: PARSER.ParseNodeExpressionExponential_Dynamic = exponentialExpressionFromSource(src, config)
 	assert_arrayLength(expression_exp.children, 1, 'exponential expression should have 1 child')
 	return expression_exp.children[0]
 }
-export function exponentialExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionExponential {
-	const expression_mul: PARSER.ParseNodeExpressionMultiplicative = multiplicativeExpressionFromSource(src, config)
+export function exponentialExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionExponential_Dynamic {
+	const expression_mul: PARSER.ParseNodeExpressionMultiplicative_Dynamic = multiplicativeExpressionFromSource(src, config)
 	assert_arrayLength(expression_mul.children, 1, 'multiplicative expression should have 1 child')
 	return expression_mul.children[0]
 }
-export function multiplicativeExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionMultiplicative {
-	const expression_add: PARSER.ParseNodeExpressionAdditive = additiveExpressionFromSource(src, config)
+export function multiplicativeExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionMultiplicative_Dynamic {
+	const expression_add: PARSER.ParseNodeExpressionAdditive_Dynamic = additiveExpressionFromSource(src, config)
 	assert_arrayLength(expression_add.children, 1, 'additive expression should have 1 child')
 	return expression_add.children[0]
 }
-export function additiveExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionAdditive {
-	const expression_compare: PARSER.ParseNodeExpressionComparative = comparativeExpressionFromSource(src, config)
+export function additiveExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionAdditive_Dynamic {
+	const expression_compare: PARSER.ParseNodeExpressionComparative_Dynamic = comparativeExpressionFromSource(src, config)
 	assert_arrayLength(expression_compare.children, 1, 'comparative expression should have 1 child')
 	return expression_compare.children[0]
 }
-export function comparativeExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionComparative {
-	const expression_eq: PARSER.ParseNodeExpressionEquality = equalityExpressionFromSource(src, config)
+export function comparativeExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionComparative_Dynamic {
+	const expression_eq: PARSER.ParseNodeExpressionEquality_Dynamic = equalityExpressionFromSource(src, config)
 	assert_arrayLength(expression_eq.children, 1, 'equality expression should have 1 child')
 	return expression_eq.children[0]
 }
-export function equalityExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionEquality {
-	const expression_conj: PARSER.ParseNodeExpressionConjunctive = conjunctiveExpressionFromSource(src, config)
+export function equalityExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionEquality_Dynamic {
+	const expression_conj: PARSER.ParseNodeExpressionConjunctive_Dynamic = conjunctiveExpressionFromSource(src, config)
 	assert_arrayLength(expression_conj.children, 1, 'conjunctive expression should have 1 child')
 	return expression_conj.children[0]
 }
-export function conjunctiveExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionConjunctive {
-	const expression_disj: PARSER.ParseNodeExpressionDisjunctive = disjunctiveExpressionFromSource(src, config)
+export function conjunctiveExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionConjunctive_Dynamic {
+	const expression_disj: PARSER.ParseNodeExpressionDisjunctive_Dynamic = disjunctiveExpressionFromSource(src, config)
 	assert_arrayLength(expression_disj.children, 1, 'disjunctive expression should have 1 child')
 	return expression_disj.children[0]
 }
-export function disjunctiveExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionDisjunctive {
-	const expression: PARSER.ParseNodeExpression = expressionFromSource(src, config)
-	const expression_disj: PARSER.ParseNodeExpressionDisjunctive | PARSER.ParseNodeExpressionConditional = expression.children[0]
-	assert.ok(expression_disj instanceof PARSER.ParseNodeExpressionDisjunctive, 'expression_disj should be a ParseNodeExpressionDisjunctive')
+export function disjunctiveExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionDisjunctive_Dynamic {
+	const expression: PARSER.ParseNodeExpression_Dynamic = expressionFromSource(src, config)
+	const expression_disj: PARSER.ParseNodeExpressionDisjunctive_Dynamic | PARSER.ParseNodeExpressionConditional_Dynamic = expression.children[0]
+	assert.ok(expression_disj instanceof PARSER.ParseNodeExpressionDisjunctive_Dynamic, 'expression_disj should be a ParseNodeExpressionDisjunctive')
 	return expression_disj
 }
-export function conditionalExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionConditional {
-	const expression: PARSER.ParseNodeExpression = expressionFromSource(src, config)
-	const expression_cond: PARSER.ParseNodeExpressionDisjunctive | PARSER.ParseNodeExpressionConditional = expression.children[0]
-	assert.ok(expression_cond instanceof PARSER.ParseNodeExpressionConditional, 'expression_cond should be a ParseNodeExpressionConditional')
+export function conditionalExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionConditional_Dynamic {
+	const expression: PARSER.ParseNodeExpression_Dynamic = expressionFromSource(src, config)
+	const expression_cond: PARSER.ParseNodeExpressionDisjunctive_Dynamic | PARSER.ParseNodeExpressionConditional_Dynamic = expression.children[0]
+	assert.ok(expression_cond instanceof PARSER.ParseNodeExpressionConditional_Dynamic, 'expression_cond should be a ParseNodeExpressionConditional')
 	return expression_cond
 }
-function expressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpression {
+function expressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpression_Dynamic {
 	const statement: PARSER.ParseNodeStatement = statementFromSource(src, config)
 	assert_arrayLength(statement.children, 2, 'statment should have 2 children')
-	const [expression, endstat]: readonly [PARSER.ParseNodeExpression, Token] = statement.children
+	const [expression, endstat]: readonly [PARSER.ParseNodeExpression_Dynamic, Token] = statement.children
 	assert.ok(endstat instanceof TOKEN.TokenPunctuator)
 	assert.strictEqual(endstat.source, Punctuator.ENDSTAT)
 	return expression
