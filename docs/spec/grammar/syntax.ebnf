@@ -1,11 +1,11 @@
-IDENTIFIER      ::= [../docs/spec/language-lexicon.md#identifiers];
-INTEGER         ::= [../docs/spec/language-lexicon.md#numbers];
-FLOAT           ::= [../docs/spec/language-lexicon.md#numbers];
-STRING          ::= [../docs/spec/language-lexicon.md#string-literals];
-TEMPLATE_FULL   ::= [../docs/spec/language-lexicon.md#template-literals];
-TEMPLATE_HEAD   ::= [../docs/spec/language-lexicon.md#template-literals];
-TEMPLATE_MIDDLE ::= [../docs/spec/language-lexicon.md#template-literals];
-TEMPLATE_TAIL   ::= [../docs/spec/language-lexicon.md#template-literals];
+// IDENTIFIER      ::= [./lexicon.ebnf#Identifier];
+// INTEGER         ::= [./lexicon.ebnf#Integer];
+// FLOAT           ::= [./lexicon.ebnf#Float];
+// STRING          ::= [./lexicon.ebnf#String];
+// TEMPLATE_FULL   ::= [./lexicon.ebnf#TemplateFull];
+// TEMPLATE_HEAD   ::= [./lexicon.ebnf#TemplateHead];
+// TEMPLATE_MIDDLE ::= [./lexicon.ebnf#TempalteMiddle];
+// TEMPLATE_TAIL   ::= [./lexicon.ebnf#TempalteTail];
 
 
 

@@ -1,13 +1,14 @@
-import * as fs from 'fs'
-import * as path from 'path'
 import * as assert from 'assert'
 
 import Operator from '../../src/enum/Operator.enum'
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util from '../../src/class/Util.class'
 import {
-	Scanner,
-} from '../../src/lexer/'
+	ParserSolid as Parser,
+} from '../../src/parser/';
+import {
+	Validator,
+} from '../../src/validator/';
 import {
 	Builder,
 	InstructionNone,
@@ -240,12 +241,10 @@ describe('Instruction', () => {
 				const mods: (InstructionNone | InstructionModule)[] = [
 					``,
 					`;`,
-				].map((src) => {
-					const srcs: [string, SolidConfig] = [src, CONFIG_DEFAULT]
-					return new Scanner(...srcs).lexer.screener.parser.parse().decorate().build(
-						new Scanner(...srcs).lexer.screener.parser.validator.builder
-					)
-				})
+				].map((src) => new Validator(src)
+					.decorate(new Parser(src).parse())
+					.build(new Builder(src))
+				);
 				assert.ok(mods[0] instanceof InstructionNone)
 				assert.strictEqual(mods[0].toString(), ``)
 				assert.ok(mods[1] instanceof InstructionModule)

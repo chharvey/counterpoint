@@ -104,4 +104,6 @@ Before the computation is made, the integer operands are coerced into floats (e.
 If the value is known, the coercion is made at compile-time. If, however, the value is unknown
 (e.g. `x + 3.0` where `x` is an integer), the coercion is made at runtime.
 
+Put another way: If enabled, allows type `int` to be a subtype of type `float`.
+
 If disabled, mixing different numeric types will result in a type error.
