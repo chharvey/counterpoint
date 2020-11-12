@@ -5,13 +5,17 @@ import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {
-	Scanner,
-} from '../../src/lexer/'
+	TypeError01,
+	TypeError03,
+} from '../../src/error/SolidTypeError.class'
+import {NanError01} from '../../src/error/NanError.class'
 import {
+	Validator,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
+	SemanticNodeDeclarationVariable,
 	CompletionStructureAssessment,
 	SolidTypeConstant,
 	SolidObject,
@@ -21,10 +25,6 @@ import {
 	Float64,
 	SolidString,
 } from '../../src/validator/'
-import {
-	TypeError01,
-} from '../../src/error/SolidTypeError.class'
-import {NanError01} from '../../src/error/NanError.class'
 import {
 	Builder,
 	InstructionNone,
@@ -39,9 +39,18 @@ import {
 	InstructionModule,
 } from '../../src/builder/'
 import {
+	typeConstInt,
+	typeConstFloat,
 	instructionConstInt,
 	instructionConstFloat,
 } from '../helpers'
+import {
+	unitTypeFromString,
+	unaryTypeFromString,
+	intersectionTypeFromString,
+	unionTypeFromString,
+	variableDeclarationFromSource,
+} from '../helpers-parse'
 import {
 	operationFromStatementExpression,
 	statementExpressionFromSource,
@@ -54,34 +63,34 @@ describe('SemanticNode', () => {
 	describe('#build', () => {
 		context('SemanticNodeGoal ::= SOT EOT', () => {
 			it('returns InstructionNone.', () => {
-				const src: [string, SolidConfig] = [``, CONFIG_DEFAULT]
-				const instr: InstructionNone | InstructionModule = new Scanner(...src).lexer.screener.parser.parse().decorate()
-					.build(new Scanner(...src).lexer.screener.parser.validator.builder)
+				const src: string = ``;
+				const instr: InstructionNone | InstructionModule = new Validator(src)
+					.validate()
+					.build(new Builder(src))
 				assert.ok(instr instanceof InstructionNone)
 			})
 		})
 
 		describe('SemanticNodeStatementExpression', () => {
 			it('returns InstructionNone for empty statement expression.', () => {
-				const src: [string, SolidConfig] = [`;`, CONFIG_DEFAULT]
-				const instr: InstructionNone | InstructionStatement = (new Scanner(...src).lexer.screener.parser.parse().decorate()
-					.children[0] as SemanticNodeStatementExpression)
-					.build(new Scanner(...src).lexer.screener.parser.validator.builder)
+				const src: string = `;`;
+				const instr: InstructionNone | InstructionStatement = statementExpressionFromSource(src)
+					.build(new Builder(src))
 				assert.ok(instr instanceof InstructionNone)
 			})
 			it('returns InstructionStatement for nonempty statement expression.', () => {
-				const srcs: [string, SolidConfig] = [`42 + 420;`, CONFIG_DEFAULT]
-				const builder: Builder = new Scanner(...srcs).lexer.screener.parser.validator.builder
-				const stmt: SemanticNodeStatementExpression = statementExpressionFromSource(srcs[0])
+				const src: string = `42 + 420;`;
+				const builder: Builder = new Builder(src);
+				const stmt: SemanticNodeStatementExpression = statementExpressionFromSource(src);
 				assert.deepStrictEqual(
 					stmt.build(builder),
 					new InstructionStatement(0n, operationFromStatementExpression(stmt).build(builder))
 				)
 			})
 			specify('multiple statements.', () => {
-				const srcs: [string, SolidConfig] = [`42; 420;`, CONFIG_DEFAULT]
-				const generator: Builder = new Scanner(...srcs).lexer.screener.parser.validator.builder
-				new Scanner(...srcs).lexer.screener.parser.parse().decorate().children.forEach((stmt, i) => {
+				const src: string = `42; 420;`;
+				const generator: Builder = new Builder(src);
+				new Validator(src).validate().children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof SemanticNodeStatementExpression)
 					assert.deepStrictEqual(
 						stmt.build(generator),
@@ -110,7 +119,7 @@ describe('SemanticNode', () => {
 				].map((src) =>
 					constantFromStatementExpression(
 						statementExpressionFromSource(src)
-					).build(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator.builder)
+					).build(new Builder(src))
 				), [
 					instructionConstInt(0n),
 					instructionConstInt(0n),
@@ -188,7 +197,7 @@ describe('SemanticNode', () => {
 					statementExpressionFromSource(src)
 				)])
 				assert.deepStrictEqual(
-					nodes.map(([src,  node]) => node.build(new Scanner(src, CONFIG_DEFAULT).lexer.screener.parser.validator.builder)),
+					nodes.map(([src,  node]) => node.build(new Builder(src))),
 					nodes.map(([_src, node]) => {
 						const assess: CompletionStructureAssessment = node.assess()
 						assert.ok(!assess.isAbrupt)
@@ -209,7 +218,7 @@ describe('SemanticNode', () => {
 					assert.deepStrictEqual(
 						[...tests.keys()].map((src) => operationFromStatementExpression(
 							statementExpressionFromSource(src, folding_off)
-						).build(new Scanner(src, folding_off).lexer.screener.parser.validator.builder)),
+						).build(new Builder(src, folding_off))),
 						[...tests.values()],
 					)
 				}
@@ -268,7 +277,7 @@ describe('SemanticNode', () => {
 						`false == 0.0;`,
 					].map((src) => operationFromStatementExpression(
 						statementExpressionFromSource(src, folding_off)
-					).build(new Scanner(src, folding_off).lexer.screener.parser.validator.builder)), [
+					).build(new Builder(src, folding_off))), [
 						new InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstInt(42n),
@@ -326,7 +335,7 @@ describe('SemanticNode', () => {
 							`false || null;`,
 						].map((src) => operationFromStatementExpression(
 							statementExpressionFromSource(src, folding_off)
-						).build(new Scanner(src, folding_off).lexer.screener.parser.validator.builder)), [
+						).build(new Builder(src, folding_off))), [
 							new InstructionBinopLogical(
 								0n,
 								Operator.AND,
@@ -364,7 +373,7 @@ describe('SemanticNode', () => {
 						assert.deepStrictEqual(
 							operationFromStatementExpression(
 								statementExpressionFromSource(src, folding_off)
-							).build(new Scanner(src, folding_off).lexer.screener.parser.validator.builder),
+							).build(new Builder(src, folding_off)),
 							new InstructionBinopLogical(
 								0n,
 								Operator.OR,
@@ -438,7 +447,7 @@ describe('SemanticNode', () => {
 							`true == 1.0;`,
 						].map((src) => operationFromStatementExpression(
 							statementExpressionFromSource(src, folding_coercion_off)
-						).build(new Scanner(src, folding_coercion_off).lexer.screener.parser.validator.builder)), [
+						).build(new Builder(src, folding_coercion_off))), [
 							[instructionConstInt(42n),   instructionConstInt(420n)],
 							[instructionConstFloat(4.2), instructionConstInt(42n)],
 							[instructionConstInt(42n),   instructionConstFloat(4.2)],
@@ -448,6 +457,92 @@ describe('SemanticNode', () => {
 						].map(([left, right]) => new InstructionBinopEquality(Operator.EQ, left, right)))
 					})
 				})
+			})
+		})
+	})
+
+
+	describe('#typeCheck', () => {
+		describe('SemanticNodeDeclarationVariable', () => {
+			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
+				const src: string = `let  the_answer:  int | float =  21  *  2;`
+				const decl: SemanticNodeDeclarationVariable = new Validator(src)
+					.decorate(variableDeclarationFromSource(src))
+				decl.typeCheck(CONFIG_DEFAULT.compilerOptions)
+			})
+			it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
+				const src: string = `let  the_answer:  null =  21  *  2;`
+				const decl: SemanticNodeDeclarationVariable = new Validator(src)
+					.decorate(variableDeclarationFromSource(src))
+				assert.throws(() => decl.typeCheck(CONFIG_DEFAULT.compilerOptions), TypeError03)
+			})
+			it('with int coersion on, allows assigning ints to floats.', () => {
+				const src: string = `let x: float = 42;`
+				const decl: SemanticNodeDeclarationVariable = new Validator(src)
+					.decorate(variableDeclarationFromSource(src))
+				decl.typeCheck(CONFIG_DEFAULT.compilerOptions)
+			})
+			it('with int coersion off, throws when assigning int to float.', () => {
+				const src: string = `let x: float = 42;`
+				const decl: SemanticNodeDeclarationVariable = new Validator(src)
+					.decorate(variableDeclarationFromSource(src))
+				assert.throws(() => decl.typeCheck({
+					...CONFIG_DEFAULT.compilerOptions,
+					intCoercion: false,
+				}), TypeError03)
+			})
+		})
+	})
+
+
+	describe('SemanticNodeType', () => {
+		describe('#assess', () => {
+			function validatorFromType(typestring: string, config: SolidConfig = CONFIG_DEFAULT): Validator {
+				return new Validator(`let x: ${ typestring } = null;`, config)
+			}
+			it('computes the value of constant null, boolean, or number types.', () => {
+				assert.deepStrictEqual([
+					`null`,
+					`false`,
+					`true`,
+					`42`,
+					`4.2e+3`,
+				].map((src) => validatorFromType(src).decorate(unitTypeFromString(src)).assess()), [
+					SolidNull,
+					SolidBoolean.FALSETYPE,
+					SolidBoolean.TRUETYPE,
+					new SolidTypeConstant(new Int16(42n)),
+					new SolidTypeConstant(new Float64(4.2e+3)),
+				])
+			})
+			it('computes the value of keyword type.', () => {
+				assert.deepStrictEqual([
+					'bool',
+					'int',
+					'float',
+					'obj',
+				].map((src) => validatorFromType(src).decorate(unitTypeFromString(src)).assess()), [
+					SolidBoolean,
+					Int16,
+					Float64,
+					SolidObject,
+				])
+			})
+			it('computes the value of a nullified (ORNULL) type.', () => {
+				assert.deepStrictEqual(
+					validatorFromType(`int!`).decorate(unaryTypeFromString(`int!`)).assess(),
+					Int16.union(SolidNull),
+				)
+			})
+			it('computes the value of AND and OR operators', () => {
+				assert.deepStrictEqual(
+					validatorFromType(`obj & 3`).decorate(intersectionTypeFromString(`obj & 3`)).assess(),
+					SolidObject.intersect(typeConstInt(3n)),
+				)
+				assert.deepStrictEqual(
+					validatorFromType(`4.2 | int`).decorate(unionTypeFromString(`4.2 | int`)).assess(),
+					typeConstFloat(4.2).union(Int16),
+				)
 			})
 		})
 	})
@@ -496,16 +591,21 @@ describe('SemanticNode', () => {
 					it('returns `false` if operands are of different numeric types.', () => {
 						assert.deepStrictEqual(operationFromStatementExpression(
 							statementExpressionFromSource(`7 == 7.0;`, coercion_off)
-						).type(false, false), new SolidTypeConstant(SolidBoolean.FALSE))
+						).type(false, false), SolidBoolean.FALSETYPE)
+					})
+					it('returns `false` if operands are of disjoint types in general.', () => {
+						assert.deepStrictEqual(operationFromStatementExpression(
+							statementExpressionFromSource(`7 == null;`, coercion_off)
+						).type(false, false), SolidBoolean.FALSETYPE)
 					})
 				})
 			})
 			context('with constant folding on, with int coersion on.', () => {
 				context('SemanticNodeConstant', () => {
 					it('returns a constant Null type for SemanticNodeConstant with null value.', () => {
-						assert.deepStrictEqual(constantFromStatementExpression(
+						assert.ok(constantFromStatementExpression(
 							statementExpressionFromSource(`null;`)
-						).type(), new SolidTypeConstant(SolidNull.NULL))
+						).type().equals(SolidNull))
 					})
 					it('returns a constant Boolean type for SemanticNodeConstant with bool value.', () => {
 						assert.deepStrictEqual([
@@ -514,8 +614,8 @@ describe('SemanticNode', () => {
 						].map((src) => constantFromStatementExpression(
 							statementExpressionFromSource(src)
 						).type()), [
-							new SolidTypeConstant(SolidBoolean.FALSE),
-							new SolidTypeConstant(SolidBoolean.TRUE),
+							SolidBoolean.FALSETYPE,
+							SolidBoolean.TRUETYPE,
 						])
 					})
 					it('returns a constant Integer type for SemanticNodeConstant with integer value.', () => {
@@ -529,9 +629,10 @@ describe('SemanticNode', () => {
 						).type(), new SolidTypeConstant(new Float64(42.0)))
 					})
 					Dev.supports('variables') && it('throws for identifiers.', () => {
-						assert.throws(() => ((new Scanner(`x;`, CONFIG_DEFAULT).lexer.screener.parser.parse().decorate()
+						assert.throws(() => ((new Validator(`x;`)
+							.validate()
 							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeIdentifier).type(), /Not yet supported./)
+							.children[0] as SemanticNodeIdentifier).type(), /not yet supported/)
 					})
 					it('returns `String` for SemanticNodeConstant with string value.', () => {
 						;[
@@ -541,10 +642,12 @@ describe('SemanticNode', () => {
 								),
 							] : []),
 							...(Dev.supports('literalTemplate') ? [
-								(new Scanner(`'''42''';`, CONFIG_DEFAULT).lexer.screener.parser.parse().decorate()
+								(new Validator(`'''42''';`)
+									.validate()
 									.children[0] as SemanticNodeStatementExpression)
 									.children[0] as SemanticNodeTemplate,
-								(new Scanner(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, CONFIG_DEFAULT).lexer.screener.parser.parse().decorate()
+								(new Validator(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`)
+									.validate()
 									.children[0] as SemanticNodeStatementExpression)
 									.children[0] as SemanticNodeTemplate,
 							] : []),
@@ -613,6 +716,13 @@ describe('SemanticNode', () => {
 						statementExpressionFromSource(`7 == 7.0;`)
 					).type(false, true), SolidBoolean)
 				})
+				describe('SemanticNodeOperationBinaryEquality[operator=IS]', () => {
+					it('returns `false` if operands are of different numeric types.', () => {
+						assert.deepStrictEqual(operationFromStatementExpression(
+							statementExpressionFromSource(`7 is 7.0;`, folding_off)
+						).type(false, true), SolidBoolean.FALSETYPE)
+					})
+				})
 			})
 			it('returns a constant Boolean type for boolean unary operation of anything.', () => {
 				typeOperations(xjs.Map.mapValues(new Map([
@@ -666,14 +776,6 @@ describe('SemanticNode', () => {
 					[`4.2   || true;`,  new Float64(4.2)],
 				]))
 			})
-			it('computes type for for conditionals', () => {
-				typeOperations(new Map<string, SolidObject>([
-					[`if true then false else 2;`,          SolidBoolean.FALSE],
-					[`if false then 3.0 else null;`,        SolidNull.NULL],
-					[`if true then 2 else 3.0;`,            new Int16(2n)],
-					[`if false then 2 + 3.0 else 1.0 * 2;`, new Float64(2.0)],
-				]))
-			})
 			it('throws for numeric operation of non-numbers.', () => {
 				[
 					`null + 5;`,
@@ -685,6 +787,23 @@ describe('SemanticNode', () => {
 				].forEach((src) => {
 					assert.throws(() => operationFromStatementExpression(
 						statementExpressionFromSource(src)
+					).type(), TypeError01)
+				})
+			})
+			describe('SemanticNodeOperationTernary', () => {
+				context('with constant folding on', () => {
+					it('computes type for for conditionals', () => {
+						typeOperations(new Map<string, SolidObject>([
+							[`if true then false else 2;`,          SolidBoolean.FALSE],
+							[`if false then 3.0 else null;`,        SolidNull.NULL],
+							[`if true then 2 else 3.0;`,            new Int16(2n)],
+							[`if false then 2 + 3.0 else 1.0 * 2;`, new Float64(2.0)],
+						]))
+					})
+				})
+				it('throws when condition is not boolean.', () => {
+					assert.throws(() => operationFromStatementExpression(
+						statementExpressionFromSource(`if 2 then true else false;`)
 					).type(), TypeError01)
 				})
 			})

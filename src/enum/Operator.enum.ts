@@ -1,5 +1,6 @@
 // HACK: this is defined here, instead of in `../class/SemanticNode.class`, to avoid circular imports.
 enum Operator {
+	ORNULL,
 	NOT,
 	EMP,
 	AFF,
@@ -27,6 +28,11 @@ enum Operator {
 }
 export default Operator
 
+
+export type ValidTypeOperator =
+	| Operator.ORNULL
+	| Operator.AND
+	| Operator.OR
 
 export type ValidOperatorUnary =
 	| Operator.NOT

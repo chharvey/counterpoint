@@ -5,8 +5,8 @@ import {
 	assert_arrayLength,
 } from './assert-helpers'
 import {
-	Scanner,
-} from '../src/lexer/'
+	Validator,
+} from '../src/validator/';
 import {
 	SemanticNodeExpression,
 	SemanticNodeConstant,
@@ -31,7 +31,7 @@ export function operationFromStatementExpression(statement: SemanticNodeStatemen
 	return expression
 }
 export function statementExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeStatementExpression {
-	const goal: SemanticNodeGoal = new Scanner(src, config).lexer.screener.parser.validator.validate()
+	const goal: SemanticNodeGoal = new Validator(src, config).validate()
 	assert_arrayLength(goal.children, 1, 'semantic goal should have 1 child')
 	const statement: SemanticStatementType = goal.children[0] as SemanticStatementType
 	assert.ok(statement instanceof SemanticNodeStatementExpression)

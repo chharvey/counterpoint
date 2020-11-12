@@ -1,26 +1,16 @@
-export {default as Parser}        from './Parser.class'
-export {default as ParseNode}     from './ParseNode.class'
-export {default as Grammar}       from './Grammar.class'
-export {default as Rule}          from './Rule.class'
-export {default as Configuration} from './Configuration.class'
-export {default as Terminal}      from './Terminal.class'
-export {default as Production}    from './Production.class'
+export {
+	Punctuator,
+	Keyword,
+	RadixType,
+	TemplatePosition,
+	CookValueType,
+	TokenSolid,
+} from './Token';
+export * as TOKEN from './Token';
 
 export {
-	ParseNodePrimitiveLiteral,
-	ParseNodeStringTemplate,
-	ParseNodeExpressionUnit,
-	ParseNodeExpressionUnary,
-	ParseNodeExpressionBinary,
-	ParseNodeExpressionConditional,
-	ParseNodeExpression,
-	ParseNodeDeclarationVariable,
-	ParseNodeStatementAssignment,
-	ParseNodeStatement,
-	ParseNodeGoal,
-	ParseNodeGoal__0__List,
-} from './ParseNode.class'
+	LexerSolid,
+} from './Lexer';
 
-export {
-	GrammarSymbol,
-} from './Grammar.class'
+export * as PARSER from './Parser.auto';
+export {ParserSolid} from './Parser.auto';

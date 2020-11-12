@@ -1,7 +1,12 @@
 export {default as Validator}    from './Validator.class'
-export {default as SemanticNode} from './SemanticNode.class'
 
 export {
+	SemanticNodeSolid,
+	SemanticNodeType,
+	SemanticNodeTypeConstant,
+	SemanticNodeTypeOperation,
+	SemanticNodeTypeOperationUnary,
+	SemanticNodeTypeOperationBinary,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
@@ -14,10 +19,9 @@ export {
 	SemanticNodeOperationBinaryEquality,
 	SemanticNodeOperationBinaryLogical,
 	SemanticNodeOperationTernary,
-	SemanticNodeDeclaration,
+	SemanticNodeDeclarationVariable,
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
-	SemanticNodeAssigned,
 	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
@@ -31,6 +35,7 @@ export {default as SolidLanguageType} from './SolidLanguageType.class'
 
 export {
 	SolidTypeConstant,
+	SolidTypeInterface,
 } from './SolidLanguageType.class'
 
 export {default as SolidObject}  from './SolidObject.class'

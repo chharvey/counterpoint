@@ -1,3 +1,4 @@
+import type SolidLanguageType from './SolidLanguageType.class'
 import type SolidObject from './SolidObject.class'
 import SolidNumber from './SolidNumber.class'
 import Float64 from './Float64.class'
@@ -20,6 +21,8 @@ export default class Int16 extends SolidNumber<Int16> {
 	        static readonly UNIT  : Int16 = new Int16(1n)
 	private static readonly RADIX : Int16 = new Int16(2n)
 
+	/** @override */
+	static values: SolidLanguageType['values'] = new Set([Int16.ZERO])
 	private static mod(n: bigint, modulus: bigint): bigint {
 		return (n % modulus + modulus) % modulus
 	}
