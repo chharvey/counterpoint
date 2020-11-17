@@ -7,7 +7,7 @@ import {
 	ParserSolid as Parser,
 } from '../../src/parser/';
 import {
-	Validator,
+	Decorator,
 } from '../../src/validator/';
 import {
 	Builder,
@@ -241,7 +241,7 @@ describe('Instruction', () => {
 				const mods: (InstructionNone | InstructionModule)[] = [
 					``,
 					`;`,
-				].map((src) => new Validator(src)
+				].map((src) => Decorator
 					.decorate(new Parser(src).parse())
 					.build(new Builder(src))
 				);
