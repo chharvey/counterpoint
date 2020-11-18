@@ -1,4 +1,5 @@
 export {default as Validator}    from './Validator.class'
+export {Decorator} from './Decorator';
 
 export {
 	SemanticNodeSolid,
