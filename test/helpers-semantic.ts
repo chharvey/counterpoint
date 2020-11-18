@@ -14,6 +14,7 @@ import {
 	SemanticNodeOperation,
 	SemanticStatementType,
 	SemanticNodeStatementExpression,
+	SemanticNodeDeclarationVariable,
 	SemanticNodeGoal,
 } from '../src/validator/'
 
@@ -39,6 +40,13 @@ export function statementExpressionFromSource(src: string, config: SolidConfig =
 	const statement: SemanticStatementType = goal.children[0] as SemanticStatementType
 	assert.ok(statement instanceof SemanticNodeStatementExpression)
 	return statement
+}
+export function variableDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeDeclarationVariable {
+	const goal: SemanticNodeGoal = goalFromSource(src, config);
+	assert_arrayLength(goal.children, 1, 'semantic goal should have 1 child');
+	const statement: SemanticStatementType = goal.children[0] as SemanticStatementType;
+	assert.ok(statement instanceof SemanticNodeDeclarationVariable);
+	return statement;
 }
 export function goalFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeGoal {
 	return Decorator.decorate(new Parser(src, config).parse());

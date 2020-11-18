@@ -329,8 +329,10 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	declare children:
 		| readonly []
+	readonly id: bigint;
 	constructor (start_node: TOKEN.TokenIdentifier) {
 		super(start_node, {id: start_node.cook()})
+		this.id = start_node.cook()!;
 	}
 	/** @implements SemanticNodeExpression */
 	get shouldFloat(): boolean {
@@ -806,7 +808,7 @@ export class SemanticNodeStatementExpression extends SemanticNodeSolid {
 export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 	constructor (
 		start_node: ParseNode,
-		unfixed: boolean,
+		readonly unfixed: boolean,
 		readonly children:
 			| readonly [SemanticNodeAssignee, SemanticNodeType, SemanticNodeExpression]
 	) {

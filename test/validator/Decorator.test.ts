@@ -22,6 +22,7 @@ import {
 	SemanticNodeStatementExpression,
 	SemanticNodeDeclarationVariable,
 	SemanticNodeGoal,
+	AST,
 	SolidTypeConstant,
 	SolidObject,
 	SolidNull,
@@ -39,11 +40,11 @@ import {
 	intersectionTypeFromString,
 	unionTypeFromString,
 	primitiveLiteralFromSource,
-	variableDeclarationFromSource,
 } from '../helpers-parse'
 import {
 	constantFromSource,
 	operationFromSource,
+	variableDeclarationFromSource,
 	statementExpressionFromSource,
 } from '../helpers-semantic'
 
@@ -646,10 +647,11 @@ describe('Decorator', () => {
 						<Operation operator=MUL source="21 * 2">...</Operation>
 					</SemanticDeclarationVariable>
 				*/
-				const src: string = `let  the_answer:  int | float =  21  *  2;`
-				const decl: SemanticNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src))
-				// assert.strictEqual(decl.unfixed, true)
-				// assert.strictEqual(decl.children[0].children[0].id, 256n)
+				const src: string = `let unfixed the_answer:  int | float =  21  *  2;`
+				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src);
+				assert.strictEqual(decl.unfixed, true);
+				const assignee: AST.SemanticNodeAssignee = decl.children[0];
+				assert.strictEqual(assignee.children[0].id, 256n);
 				const type_: SemanticNodeType = decl.children[1]
 				assert.ok(type_ instanceof SemanticNodeTypeOperationBinary)
 				assert.strictEqual(type_.operator, Operator.OR)
@@ -674,15 +676,17 @@ describe('Decorator', () => {
 					</SemanticDeclarationVariable>
 				*/
 				const src: string = `let \`the £ answer\`: int = the_answer * 10;`
-				const decl: SemanticNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src))
-				// assert.strictEqual(decl.unfixed, false)
-				// assert.strictEqual(decl.children[0].children[0].id, 256n)
+				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src);
+				assert.strictEqual(decl.unfixed, false);
+				const assignee: AST.SemanticNodeAssignee = decl.children[0];
+				assert.strictEqual(assignee.children[0].id, 256n);
 				const type_: SemanticNodeType = decl.children[1]
 				assert.ok(type_ instanceof SemanticNodeTypeConstant)
 				const assigned_expr: SemanticNodeExpression = decl.children[2]
 				assert.ok(assigned_expr instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(assigned_expr.operator, Operator.MUL)
-				// assert.strictEqual(assigned_expr.children[0].children[1].id, 257n)
+				assert.ok(assigned_expr.children[0] instanceof AST.SemanticNodeIdentifier);
+				assert.strictEqual(assigned_expr.children[0].id, 257n);
 				assert.deepStrictEqual(decl.children.map((child) => child.source), [
 					`\`the £ answer\``, `int`, `the_answer * 10`,
 				])

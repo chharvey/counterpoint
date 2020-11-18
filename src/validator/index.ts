@@ -27,6 +27,7 @@ export {
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
 } from './SemanticNode.class'
+export * as AST from './SemanticNode.class';
 
 export {
 	CompletionStructureAssessment,
