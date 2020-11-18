@@ -5,9 +5,10 @@ import {
 	assert_arrayLength,
 } from './assert-helpers'
 import {
-	Validator,
-} from '../src/validator/';
+	ParserSolid as Parser,
+} from '../src/parser/';
 import {
+	Decorator,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeOperation,
@@ -18,22 +19,27 @@ import {
 
 
 
-export function constantFromStatementExpression(statement: SemanticNodeStatementExpression): SemanticNodeConstant {
+export function constantFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeConstant {
+	const statement: SemanticNodeStatementExpression = statementExpressionFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child')
 	const expression: SemanticNodeExpression = statement.children[0]
 	assert.ok(expression instanceof SemanticNodeConstant)
 	return expression
 }
-export function operationFromStatementExpression(statement: SemanticNodeStatementExpression): SemanticNodeOperation {
+export function operationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeOperation {
+	const statement: SemanticNodeStatementExpression = statementExpressionFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child')
 	const expression: SemanticNodeExpression = statement.children[0]
 	assert.ok(expression instanceof SemanticNodeOperation)
 	return expression
 }
 export function statementExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeStatementExpression {
-	const goal: SemanticNodeGoal = new Validator(src, config).validate()
+	const goal: SemanticNodeGoal = goalFromSource(src, config);
 	assert_arrayLength(goal.children, 1, 'semantic goal should have 1 child')
 	const statement: SemanticStatementType = goal.children[0] as SemanticStatementType
 	assert.ok(statement instanceof SemanticNodeStatementExpression)
 	return statement
+}
+export function goalFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeGoal {
+	return Decorator.decorate(new Parser(src, config).parse());
 }
