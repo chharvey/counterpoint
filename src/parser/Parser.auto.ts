@@ -441,6 +441,7 @@
 				;
 			}
 		
+			// WARNING: Manual code. Do not delete!
 			export abstract class ParseNodeStringTemplate$__1__List extends ParseNode {
 				declare readonly children:
 					| readonly [Token] | readonly [ParseNodeStringTemplate__1__List,Token] | readonly [Token,ParseNodeExpression] | readonly [ParseNodeStringTemplate__1__List,Token,ParseNodeExpression]

@@ -84,34 +84,31 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `t0` is a subtype of `Union(Null, ToType(false))`:
+	4. *Let `null_union_false` be `Union(Null, ToType(false))`.
+	5. *If* `t0` is a subtype of `null_union_false`:
 		1. *Return:* `t0`.
-	// 5. *If* `t0` is a supertype of any of `Null`, `ToType(false)`, or `Boolean`:
-	// 	1. *Note:* The left-hand operand is either “falsy” or “truthy”;
-	// 		if “falsy”, then it will be produced;
-	// 		if “truthy”, then the right-hand operand will be produced.
-	// 	2. *Return:* `Union(FalsifyType(t0), t1)`.
-	// 6. *Note:* The left-hand operand is definitely “truthy”, thus
-	// 	the right-hand operand will definitely be produced.
-	// 7. *Return:* `t1`.
-	8. *Return:* `Union(t0, t1)`.
+	6. *If* `null` is assignable to `t0`:
+		1. *If* `false` is assignable to `t0`:
+			1. *Return:* `Union(null_union_false, t1)`.
+		2. *Return:* `Union(Null, t1)`.
+	7. *If* `false` is assignable to `t0`:
+		1. *Return:* `Union(ToType(false), t1)`.
+	8. *Return:* `t1`.
 ;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `t0` is a subtype of `Union(Null, ToType(false))`:
+	4. *Let `null_union_false` be `Union(Null, ToType(false))`.
+	5. *If* `t0` is a subtype of `null_union_false`:
 		1. *Return:* `t1`.
-	// 5. *If* `t0` is a supertype of any of `Null`, `ToType(false)`, or `Boolean`:
-	// 	1. *Note:* The left-hand operand is either “falsy” or “truthy”;
-	// 		if “falsy”, then the right-hand operand will be produced;
-	// 		if “truthy”, then it will be produced.
-	// 	2. *Return:* `Union(TruthifyType(t0), t1)`.
-	// 6. *Note:* The left-hand operand is definitely “truthy”, thus
-	// 	the left-hand operand will definitely be produced.
-	// 7. *Return:* `t0`.
-	8. *Return:* `Union(t0, t1)`.
+	6. *If* `null` is assignable to `t0` *or* `false` is assignable to `t0`:
+		1. *Let* `left` be a new type, containing the values in `t0`.
+		1. Remove `null` from the set of values in `left`.
+		2. Remove `false` from the set of values in `left`.
+		3. *Return:* `Union(left, t1)`.
+	7. *Return:* `t0`.
 ;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: COND] expr) :=
@@ -134,32 +131,4 @@ TypeConstant ToType(Or<Null, Boolean, Number> v) :=
 	1. *Let* `t` be a new structure of type `Type`.
 	2. *Set* `t.value` to `v`.
 	3. *Return:* `t`.
-;
-
-
-
-Type FalsifyType(Type t) :=
-	1. *If* `t` is `Null`:
-		1. *Return:* `Null`.
-	2. *If* `t` is `Boolean`:
-		1. *Return:* `ToType(false)`.
-	3. *If* `t` is a type union of `Null` and another type `s`:
-		1. *Return:* `Union(Null, FalsifyType(s))`.
-	4. *If* `t` is a type union of `Boolean` and another type `s`:
-		1. *Return:* `Union(ToType(false), FalsifyType(s))`.
-	5. *Return:* `Never`.
-;
-
-
-
-Type TruthifyType(Type t) :=
-	1. *If* `t` is `Null`:
-		1. *Return:* `Never`.
-	2. *If* `t` is `Boolean`:
-		1. *Return:* `ToType(true)`.
-	3. *If* `t` is a type union of `Null` and another type `s`:
-		1. *Return:* `TruthifyType(s)`.
-	4. *If* `t` is a type union of `Boolean` and another type `s`:
-		1. *Return:* `Union(ToType(true), TruthifyType(s))`.
-	5. *Return:* `t`.
 ;

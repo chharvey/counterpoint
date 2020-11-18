@@ -164,7 +164,7 @@ offset towards negative infinity by *2<sup>15</sup>*.
 For example, the sum represented by *32,767 + 1* will overflow and produce the value represented by *&minus;32,768*.
 The behavior of performing arithmetic operations that are invalid in the integers
 (such as dividing by a non-factor, or raising to a negative exponent) are defined in each respective operation.
-Dividing by zero results in an error.
+The result of division is rounded towards zero. Dividing by zero results in an error.
 
 #### Float
 The Float type represents [mathematical rational numbers](#real-rational-numbers)

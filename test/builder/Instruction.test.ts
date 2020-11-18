@@ -209,12 +209,12 @@ describe('Instruction', () => {
 					instructionConstInt(1n),
 					instructionConstInt(2n),
 					instructionConstInt(3n),
-				).toString(), `(select ${ instructionConstInt(2n) } ${ instructionConstInt(3n) } ${ instructionConstInt(1n) })`)
+				).toString(), `(if (result i32) ${ instructionConstInt(1n) } (then ${ instructionConstInt(2n) }) (else ${ instructionConstInt(3n) }))`)
 				assert.strictEqual(new InstructionCond(
 					instructionConstInt(0n),
 					instructionConstFloat(2.2),
 					instructionConstFloat(3.3),
-				).toString(), `(select ${ instructionConstFloat(2.2) } ${ instructionConstFloat(3.3) } ${ instructionConstInt(0n) })`)
+				).toString(), `(if (result f64) ${ instructionConstInt(0n) } (then ${ instructionConstFloat(2.2) }) (else ${ instructionConstFloat(3.3) }))`)
 			})
 		})
 

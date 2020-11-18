@@ -702,11 +702,28 @@ export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBin
 	}
 	/** @implements SemanticNodeOperationBinary */
 	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, _int_coercion: boolean): SolidLanguageType {
-		// If `a` is of type `null` or `false`, then `typeof (a && b)` is `typeof a`.
-		// If `a` is of type `null` or `false`, then `typeof (a || b)` is `typeof b`.
-		return (t0 instanceof SolidTypeConstant && ([SolidNull.NULL, SolidBoolean.FALSE] as SolidObject[]).includes(t0.value))
-			? (this.operator === Operator.AND) ? t0 : t1
-			: t0.union(t1)
+		const null_union_false: SolidLanguageType = SolidNull.union(SolidBoolean.FALSETYPE);
+		function truthifyType(t: SolidLanguageType): SolidLanguageType {
+			const values: Set<SolidObject> = new Set(t.values);
+			values.delete(SolidNull.NULL);
+			values.delete(SolidBoolean.FALSE);
+			return [...values].map<SolidLanguageType>((v) => new SolidTypeConstant(v)).reduce((a, b) => a.union(b));
+		}
+		return (this.operator === Operator.AND)
+			? (t0.isSubtypeOf(null_union_false))
+				? t0
+				: (t0.includes(SolidNull.NULL))
+					? (t0.includes(SolidBoolean.FALSE))
+						? null_union_false.union(t1)
+						: SolidNull.union(t1)
+					: (t0.includes(SolidBoolean.FALSE))
+						? SolidBoolean.FALSETYPE.union(t1)
+						: t1
+			: (t0.isSubtypeOf(null_union_false))
+				? t1
+				: (t0.includes(SolidNull.NULL) || t0.includes(SolidBoolean.FALSE))
+					? truthifyType(t0).union(t1)
+					: t0
 	}
 }
 export class SemanticNodeOperationTernary extends SemanticNodeOperation {
