@@ -11,6 +11,7 @@ import {
 	Decorator,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
+	SemanticNodeIdentifier,
 	SemanticNodeOperation,
 	SemanticStatementType,
 	SemanticNodeStatementExpression,
@@ -26,6 +27,13 @@ export function constantFromSource(src: string, config: SolidConfig = CONFIG_DEF
 	const expression: SemanticNodeExpression = statement.children[0]
 	assert.ok(expression instanceof SemanticNodeConstant)
 	return expression
+}
+export function identifierFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeIdentifier {
+	const statement: SemanticNodeStatementExpression = statementExpressionFromSource(src, config);
+	assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child');
+	const expression: SemanticNodeExpression = statement.children[0];
+	assert.ok(expression instanceof SemanticNodeIdentifier);
+	return expression;
 }
 export function operationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeOperation {
 	const statement: SemanticNodeStatementExpression = statementExpressionFromSource(src, config);

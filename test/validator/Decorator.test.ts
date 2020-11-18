@@ -43,9 +43,11 @@ import {
 } from '../helpers-parse'
 import {
 	constantFromSource,
+	identifierFromSource,
 	operationFromSource,
 	variableDeclarationFromSource,
 	statementExpressionFromSource,
+	goalFromSource,
 } from '../helpers-semantic'
 
 
@@ -205,6 +207,62 @@ describe('Decorator', () => {
 				)
 			})
 		})
+
+		Dev.supports('variables') && context('ExpressionUnit ::= IDENTIFIER', () => {
+			it('assigns a unique ID starting from 256.', () => {
+				/*
+					<Goal source="␂ variable ; ␃">
+						<StatementExpression source="variable ;">
+							<Identifier source="variable" id="256"/>
+						</StatementExpression>
+					</Goal>
+				*/
+				assert.deepStrictEqual([
+					`variable;`,
+					`var;`,
+				].map((src) => identifierFromSource(src).id), [
+					256n,
+					256n,
+				]);
+			});
+			it('increments IDs for each variable.', () => {
+				/*
+					<Goal source="␂ variable || var ; ␃">
+						<StatementExpression>
+							<Operation operator=OR>
+								<Identifier source="variable" id="256"/>
+								<Identifier source="var" id="257"/>
+							</Operation>
+						</StatementExpression>
+					</Goal>
+				*/
+				assert.deepStrictEqual(operationFromSource(`variable || var;`).children.map((op) => {
+					assert.ok(op instanceof AST.SemanticNodeIdentifier);
+					return op.id;
+				}), [256n, 257n]);
+			});
+			it('increments IDs even across statements.', () => {
+				/*
+					<Goal source="␂ variable ; var ; ␃">
+						<StatementExpression>
+							<Identifier source="variable" id="256"/>
+						</StatementExpression>
+						<StatementExpression>
+							<Identifier source="var" id="257"/>
+						</StatementExpression>
+					</Goal>
+				*/
+				const goal: AST.SemanticNodeGoal = goalFromSource(`variable; var;`);
+				assert_arrayLength(goal.children, 2);
+				assert.deepStrictEqual(goal.children.map((stmt) => {
+					assert.ok(stmt instanceof AST.SemanticNodeStatementExpression);
+					assert_arrayLength(stmt.children, 1);
+					const ident: AST.SemanticNodeExpression = stmt.children[0];
+					assert.ok(ident instanceof AST.SemanticNodeIdentifier);
+					return ident.id;
+				}), [256n, 257n]);
+			});
+		});
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
 			it('makes a SemanticNodeConstant node.', () => {
