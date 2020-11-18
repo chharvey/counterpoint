@@ -42,8 +42,8 @@ import {
 	variableDeclarationFromSource,
 } from '../helpers-parse'
 import {
-	constantFromStatementExpression,
-	operationFromStatementExpression,
+	constantFromSource,
+	operationFromSource,
 	statementExpressionFromSource,
 } from '../helpers-semantic'
 
@@ -219,11 +219,7 @@ describe('Decorator', () => {
 					`false;`,
 					`true;`,
 					`42;`,
-				].map((src) =>
-					constantFromStatementExpression(
-						statementExpressionFromSource(src)
-					).value
-				), [
+				].map((src) => constantFromSource(src).value), [
 					SolidNull.NULL,
 					SolidBoolean.FALSE,
 					SolidBoolean.TRUE,
@@ -347,9 +343,7 @@ describe('Decorator', () => {
 						<Constant source="-3"/>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromStatementExpression(
-					statementExpressionFromSource(`(2 + -3);`)
-				)
+				const operation: SemanticNodeOperation = operationFromSource(`(2 + -3);`);
 				assert.ok(operation instanceof SemanticNodeOperationBinary)
 				const [left, right]: readonly SemanticNodeExpression[] = operation.children
 				assert.ok(left instanceof SemanticNodeConstant)
@@ -371,9 +365,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromStatementExpression(
-					statementExpressionFromSource(`(-(42) ^ +(2 * 420));`)
-				)
+				const operation: SemanticNodeOperation = operationFromSource(`(-(42) ^ +(2 * 420));`);
 				assert.ok(operation instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(operation.operator, Operator.EXP)
 				const [left, right]: readonly SemanticNodeExpression[] = operation.children
@@ -405,9 +397,7 @@ describe('Decorator', () => {
 					`?41;`,
 					`- 42;`,
 				].map((src) => {
-					const operation: SemanticNodeOperation = operationFromStatementExpression(
-						statementExpressionFromSource(src)
-					)
+					const operation: SemanticNodeOperation = operationFromSource(src);
 					assert.ok(operation instanceof SemanticNodeOperationUnary)
 					const operand: SemanticNodeExpression = operation.children[0]
 					assert.ok(operand instanceof SemanticNodeConstant)
@@ -433,9 +423,7 @@ describe('Decorator', () => {
 					`2 * -3;`,
 					`2 + -3;`,
 				].map((src) => {
-					const operation: SemanticNodeOperation = operationFromStatementExpression(
-						statementExpressionFromSource(src)
-					)
+					const operation: SemanticNodeOperation = operationFromSource(src);
 					assert.ok(operation instanceof SemanticNodeOperationBinary)
 					assert.deepStrictEqual(operation.children.map((operand) => {
 						assert.ok(operand instanceof SemanticNodeConstant)
@@ -460,9 +448,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromStatementExpression(
-					statementExpressionFromSource(`2 - 3;`)
-				)
+				const operation: SemanticNodeOperation = operationFromSource(`2 - 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(operation.operator, Operator.ADD)
 				const left:  SemanticNodeExpression = operation.children[0]
@@ -487,9 +473,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromStatementExpression(
-					statementExpressionFromSource(`2 !< 3;`)
-				)
+				const operation: SemanticNodeOperation = operationFromSource(`2 !< 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: SemanticNodeExpression = operation.children[0]
@@ -512,9 +496,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromStatementExpression(
-					statementExpressionFromSource(`2 !> 3;`)
-				)
+				const operation: SemanticNodeOperation = operationFromSource(`2 !> 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: SemanticNodeExpression = operation.children[0]
@@ -540,9 +522,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromStatementExpression(
-					statementExpressionFromSource(`2 isnt 3;`)
-				)
+				const operation: SemanticNodeOperation = operationFromSource(`2 isnt 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: SemanticNodeExpression = operation.children[0]
@@ -565,9 +545,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromStatementExpression(
-					statementExpressionFromSource(`2 != 3;`)
-				)
+				const operation: SemanticNodeOperation = operationFromSource(`2 != 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: SemanticNodeExpression = operation.children[0]
@@ -593,9 +571,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromStatementExpression(
-					statementExpressionFromSource(`2 !& 3;`)
-				)
+				const operation: SemanticNodeOperation = operationFromSource(`2 !& 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: SemanticNodeExpression = operation.children[0]
@@ -621,9 +597,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromStatementExpression(
-					statementExpressionFromSource(`2 !| 3;`)
-				)
+				const operation: SemanticNodeOperation = operationFromSource(`2 !| 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: SemanticNodeExpression = operation.children[0]
@@ -648,9 +622,7 @@ describe('Decorator', () => {
 						<Constant value=3n/>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromStatementExpression(
-					statementExpressionFromSource(`if true then 2 else 3;`)
-				)
+				const operation: SemanticNodeOperation = operationFromSource(`if true then 2 else 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationTernary)
 				assert.deepStrictEqual(operation.children.map((child) => {
 					assert.ok(child instanceof SemanticNodeConstant)
