@@ -5,7 +5,10 @@ import {
 	assert_arrayLength,
 } from './assert-helpers'
 import {
-	Validator,
+	ParserSolid as Parser,
+} from '../src/parser/';
+import {
+	Decorator,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeOperation,
@@ -38,5 +41,5 @@ export function statementExpressionFromSource(src: string, config: SolidConfig =
 	return statement
 }
 export function goalFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeGoal {
-	return new Validator(src, config).validate();
+	return Decorator.decorate(new Parser(src, config).parse());
 }

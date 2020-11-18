@@ -11,7 +11,6 @@ import {
 import {NanError01} from '../../src/error/NanError.class'
 import {
 	Decorator,
-	Validator,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
 	SemanticNodeOperation,
@@ -56,6 +55,7 @@ import {
 	operationFromSource,
 	statementExpressionFromSource,
 	constantFromSource,
+	goalFromSource,
 } from '../helpers-semantic'
 
 
@@ -65,9 +65,7 @@ describe('SemanticNode', () => {
 		context('SemanticNodeGoal ::= SOT EOT', () => {
 			it('returns InstructionNone.', () => {
 				const src: string = ``;
-				const instr: InstructionNone | InstructionModule = new Validator(src)
-					.validate()
-					.build(new Builder(src))
+				const instr: InstructionNone | InstructionModule = goalFromSource(src).build(new Builder(src));
 				assert.ok(instr instanceof InstructionNone)
 			})
 		})
@@ -91,7 +89,7 @@ describe('SemanticNode', () => {
 			specify('multiple statements.', () => {
 				const src: string = `42; 420;`;
 				const generator: Builder = new Builder(src);
-				new Validator(src).validate().children.forEach((stmt, i) => {
+				goalFromSource(src).children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof SemanticNodeStatementExpression)
 					assert.deepStrictEqual(
 						stmt.build(generator),
@@ -588,8 +586,7 @@ describe('SemanticNode', () => {
 						assert.deepStrictEqual(constantFromSource(`4.2e+1;`).type(), new SolidTypeConstant(new Float64(42.0)));
 					})
 					Dev.supports('variables') && it('throws for identifiers.', () => {
-						assert.throws(() => ((new Validator(`x;`)
-							.validate()
+						assert.throws(() => ((goalFromSource(`x;`)
 							.children[0] as SemanticNodeStatementExpression)
 							.children[0] as SemanticNodeIdentifier).type(), /not yet supported/)
 					})
@@ -599,12 +596,10 @@ describe('SemanticNode', () => {
 								constantFromSource(`'42';`),
 							] : []),
 							...(Dev.supports('literalTemplate') ? [
-								(new Validator(`'''42''';`)
-									.validate()
+								(goalFromSource(`'''42''';`)
 									.children[0] as SemanticNodeStatementExpression)
 									.children[0] as SemanticNodeTemplate,
-								(new Validator(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`)
-									.validate()
+								(goalFromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`)
 									.children[0] as SemanticNodeStatementExpression)
 									.children[0] as SemanticNodeTemplate,
 							] : []),
