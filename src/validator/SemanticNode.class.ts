@@ -17,6 +17,7 @@ import Operator, {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from '../enum/Operator.enum'
+import Validator from './Validator.class';
 import {
 	CompletionStructureAssessment,
 } from './CompletionStructure.class'
@@ -97,9 +98,9 @@ export abstract class SemanticNodeSolid extends ASTNode {
 
 	/**
 	 * Type-check the node as part of semantic analysis.
-	 * @param opts a set of compiler options
+	 * @param validator stores validation information
 	 */
-	abstract typeCheck(opts: SolidConfig['compilerOptions']): void;
+	abstract typeCheck(validator?: Validator): void;
 
 	/**
 	 * Give directions to the runtime code builder.
@@ -120,7 +121,7 @@ export abstract class SemanticNodeSolid extends ASTNode {
 export abstract class SemanticNodeType extends SemanticNodeSolid {
 	private assessed: SolidLanguageType | null = null
 	/** @implements SemanticNodeSolid */
-	typeCheck(_opts: SolidConfig['compilerOptions']): void {
+	typeCheck(_validator: Validator = new Validator()): void {
 		return; // for now, all types are valid // TODO: dereferencing type variables
 	}
 	/**
@@ -231,7 +232,8 @@ export abstract class SemanticNodeExpression extends SemanticNodeSolid {
 	 */
 	abstract get shouldFloat(): boolean;
 	/** @implements SemanticNodeSolid */
-	typeCheck(opts: SolidConfig['compilerOptions']): void {
+	typeCheck(validator: Validator = new Validator()): void {
+		const opts: SolidConfig['compilerOptions'] = validator.config.compilerOptions;
 		this.type(opts.constantFolding, opts.intCoercion) // assert does not throw
 	}
 	/**
@@ -795,8 +797,8 @@ export class SemanticNodeStatementExpression extends SemanticNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNodeSolid */
-	typeCheck(opts: SolidConfig['compilerOptions']): void {
-		this.children[0] && this.children[0].typeCheck(opts) // assert does not throw // COMBAK this.children[0]?.type()
+	typeCheck(validator: Validator = new Validator()): void {
+		this.children[0]?.typeCheck(validator); // assert does not throw
 	}
 	/** @implements SemanticNodeSolid */
 	build(builder: Builder): InstructionNone | InstructionStatement {
@@ -815,7 +817,8 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 		super(start_node, {unfixed}, children)
 	}
 	/** @implements SemanticNodeSolid */
-	typeCheck(opts: SolidConfig['compilerOptions']): void {
+	typeCheck(validator: Validator = new Validator()): void {
+		const opts: SolidConfig['compilerOptions'] = validator.config.compilerOptions;
 		const assignee_type: SolidLanguageType = this.children[1].assess()
 		const assigned_type: SolidLanguageType = this.children[2].type(opts.constantFolding, opts.intCoercion)
 		if (
@@ -840,7 +843,7 @@ export class SemanticNodeAssignment extends SemanticNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNodeSolid */
-	typeCheck(_opts: SolidConfig['compilerOptions']): void {
+	typeCheck(_validator: Validator = new Validator()): void {
 		throw new Error('SemanticNodeAssignment#typeCheck not yet supported.')
 		// const assignedType = this.children[1].type()
 	}
@@ -858,7 +861,7 @@ export class SemanticNodeAssignee extends SemanticNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNodeSolid */
-	typeCheck(_opts: SolidConfig['compilerOptions']): void {
+	typeCheck(_validator: Validator = new Validator()): void {
 		throw new Error('SemanticNodeAssignee#typeCheck not yet supported.')
 	}
 	/** @implements SemanticNodeSolid */
@@ -876,10 +879,8 @@ export class SemanticNodeGoal extends SemanticNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNodeSolid */
-	typeCheck(opts: SolidConfig['compilerOptions']): void {
-		this.children.forEach((child) => {
-			child.typeCheck(opts)
-		})
+	typeCheck(validator: Validator = new Validator()): void {
+		return this.children.forEach((child) => child.typeCheck(validator));
 	}
 	/** @implements SemanticNodeSolid */
 	build(builder: Builder): InstructionNone | InstructionModule {

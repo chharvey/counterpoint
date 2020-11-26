@@ -9,6 +9,7 @@ import {
 } from '../parser/';
 import {
 	Decorator,
+	Validator,
 	SemanticNodeGoal,
 } from '../validator/'
 
@@ -44,7 +45,7 @@ export default class Builder {
 		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
 		this.semanticgoal = Decorator.decorate(new Parser(source, config).parse());
-		this.semanticgoal.typeCheck(this.config.compilerOptions); // assert does not throw
+		this.semanticgoal.typeCheck(new Validator(this.config)); // assert does not throw
 	}
 
 	/**

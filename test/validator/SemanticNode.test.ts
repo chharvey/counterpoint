@@ -11,6 +11,7 @@ import {
 import {NanError01} from '../../src/error/NanError.class'
 import {
 	Decorator,
+	Validator,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
 	SemanticNodeOperation,
@@ -450,25 +451,28 @@ describe('SemanticNode', () => {
 			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  int | float =  21  *  2;`
 				const decl: SemanticNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src))
-				decl.typeCheck(CONFIG_DEFAULT.compilerOptions)
+				decl.typeCheck();
 			})
 			it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  null =  21  *  2;`
 				const decl: SemanticNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src))
-				assert.throws(() => decl.typeCheck(CONFIG_DEFAULT.compilerOptions), TypeError03)
+				assert.throws(() => decl.typeCheck(), TypeError03);
 			})
 			it('with int coersion on, allows assigning ints to floats.', () => {
 				const src: string = `let x: float = 42;`
 				const decl: SemanticNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src))
-				decl.typeCheck(CONFIG_DEFAULT.compilerOptions)
+				decl.typeCheck();
 			})
 			it('with int coersion off, throws when assigning int to float.', () => {
 				const src: string = `let x: float = 42;`
 				const decl: SemanticNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src))
-				assert.throws(() => decl.typeCheck({
-					...CONFIG_DEFAULT.compilerOptions,
-					intCoercion: false,
-				}), TypeError03)
+				assert.throws(() => decl.typeCheck(new Validator({
+					...CONFIG_DEFAULT,
+					compilerOptions: {
+						...CONFIG_DEFAULT.compilerOptions,
+						intCoercion: false,
+					},
+				})), TypeError03);
 			})
 		})
 	})
