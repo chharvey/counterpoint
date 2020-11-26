@@ -14,14 +14,16 @@ import type SolidLanguageType from './SolidLanguageType.class'
 /**
  * An object containing symbol information.
  * A “symbol” is a variable or other declaration in source code.
- * - name: the identifier string
+ * - id: the unique identifier of the variable, the cooked value of the token
  * - type: the type of the variable
+ * - unfixed: may the variable be reassigned?
  * - line: the 0-based line   index of where the varible was declared
  * - col:  the 0-based column index of where the varible was declared
  */
 type SymbolInfo = {
-	name: string;
+	id: bigint;
 	type: SolidLanguageType;
+	unfixed: boolean;
 	line: number;
 	col:  number;
 }
@@ -42,7 +44,7 @@ export default class Validator {
 	/** A syntactic goal produced by a parser. */
 	private readonly parsegoal: PARSER.ParseNodeGoal;
 	/** A symbol table, which keeps tracks of variables. */
-	private readonly symbol_table: Map<string, SymbolInfo> = new Map()
+	private readonly symbol_table: Map<bigint, SymbolInfo> = new Map();
 
 	/**
 	 * Construct a new Validator object.
@@ -58,40 +60,47 @@ export default class Validator {
 
 	/**
 	 * Add a symbol to this Validator’s symbol table.
-	 * @param name  the symbol name to add
+	 * @param id    the id of the symbol to add
 	 * @param type_ the symbol type
+	 * @param unfixed may the symbol be reassigned?
 	 * @param line  the line   number of the symbol’s declaration
 	 * @param col   the column number of the symbol’s declaration
 	 * @returns this
 	 */
-	addSymbol(name: string, type_: SolidLanguageType, line: number, col: number): this {
-		this.symbol_table.set(name, {name, type: type_, line, col})
+	addSymbol(
+		id: bigint,
+		type_: SolidLanguageType,
+		unfixed: boolean,
+		line: number,
+		col: number,
+	): this {
+		this.symbol_table.set(id, {id, type: type_, unfixed, line, col});
 		return this
 	}
 	/**
 	 * Remove a symbol from this Validator’s symbol table.
-	 * @param name the symbol name to remove
+	 * @param id the id of the symbol to remove
 	 * @returns this
 	 */
-	removeSymbool(name: string): this {
-		this.symbol_table.delete(name)
+	removeSymbool(id: bigint): this {
+		this.symbol_table.delete(id);
 		return this
 	}
 	/**
 	 * Check whether this Validator’s symbol table has the symbol.
-	 * @param name the symbol name to check
-	 * @returns Doees the symbol table have a symbol called `name`?
+	 * @param id the symbol id to check
+	 * @returns Doees the symbol table have a symbol with the given id?
 	 */
-	hasSymbol(name: string): boolean {
-		return this.symbol_table.has(name)
+	hasSymbol(id: bigint): boolean {
+		return this.symbol_table.has(id);
 	}
 	/**
 	 * Return the information of a symol in this Validator’s symbol table.
-	 * @param name the symbol name to check
-	 * @returns the symbol information of `name`, or `null` if there is no corresponding entry
+	 * @param id the symbol id to check
+	 * @returns the symbol information of `id`, or `null` if there is no corresponding entry
 	 */
-	getSymbolInfo(name: string): SymbolInfo | null {
-		return this.symbol_table.get(name) || null
+	getSymbolInfo(id: bigint): SymbolInfo | null {
+		return this.symbol_table.get(id) || null;
 	}
 
 	/**
