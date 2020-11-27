@@ -41,21 +41,16 @@ type SymbolInfo = {
  * 	to `(sum (const 2) (const 3))`
  */
 export default class Validator {
-	/** A syntactic goal produced by a parser. */
-	private readonly parsegoal: PARSER.ParseNodeGoal;
 	/** A symbol table, which keeps tracks of variables. */
 	private readonly symbol_table: Map<bigint, SymbolInfo> = new Map();
 
 	/**
 	 * Construct a new Validator object.
-	 * @param source - the source text
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		source: string,
-		private readonly config: SolidConfig = CONFIG_DEFAULT,
+		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
-		this.parsegoal = new Parser(source, config).parse();
 	}
 
 	/**
@@ -101,16 +96,5 @@ export default class Validator {
 	 */
 	getSymbolInfo(id: bigint): SymbolInfo | null {
 		return this.symbol_table.get(id) || null;
-	}
-
-	/**
-	 * Type-check the entire source.
-	 * Assert that there are no type errors, and then return a semantic goal symbol.
-	 * @return the decorated goal parse node
-	 */
-	validate(): SemanticNodeGoal {
-		const semantic_goal: SemanticNodeGoal = Decorator.decorate(this.parsegoal);
-		semantic_goal.typeCheck(this.config.compilerOptions) // assert does not throw
-		return semantic_goal
 	}
 }

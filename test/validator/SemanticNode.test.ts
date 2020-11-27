@@ -547,6 +547,9 @@ describe('SemanticNode', () => {
 					it('returns `Float` if both operands are floats.', () => {
 						assert.deepStrictEqual(operationFromSource(`7.0 - 3.0;`, coercion_off).type(false, false), Float64);
 					})
+					it('throws TypeError for invalid type operations.', () => {
+						assert.throws(() => operationFromSource(`7.0 + 3;`, coercion_off).type(false, false), TypeError01);
+					});
 				})
 				describe('SemanticNodeOperationBinaryComparative', () => {
 					it('returns `Boolean` if both operands are of the same numeric type.', () => {
@@ -554,6 +557,7 @@ describe('SemanticNode', () => {
 						assert.deepStrictEqual(operationFromSource(`7.0 >= 3.0;`, coercion_off).type(false, false), SolidBoolean);
 					})
 					it('throws TypeError if operands have different types.', () => {
+						assert.throws(() => operationFromSource(`7.0 <= 3;`, coercion_off).type(false, false), TypeError01);
 					})
 				})
 				describe('SemanticNodeOperationBinaryEquality[operator=EQ]', () => {
@@ -712,7 +716,7 @@ describe('SemanticNode', () => {
 					[`4.2   || true;`,  new Float64(4.2)],
 				]))
 			})
-			it('throws for numeric operation of non-numbers.', () => {
+			it('throws for arithmetic operation of non-numbers.', () => {
 				[
 					`null + 5;`,
 					`5 * null;`,
@@ -724,6 +728,9 @@ describe('SemanticNode', () => {
 					assert.throws(() => operationFromSource(src).type(), TypeError01);
 				})
 			})
+			it('throws for comparative operation of non-numbers.', () => {
+				assert.throws(() => operationFromSource(`7.0 <= null;`).type(), TypeError01);
+			});
 			describe('SemanticNodeOperationTernary', () => {
 				context('with constant folding on', () => {
 					it('computes type for for conditionals', () => {
