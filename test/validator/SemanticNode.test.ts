@@ -18,6 +18,7 @@ import {
 	SemanticNodeStatementExpression,
 	SemanticNodeDeclarationVariable,
 	CompletionStructureAssessment,
+	SolidLanguageType,
 	SolidTypeConstant,
 	SolidObject,
 	SolidNull,
@@ -536,40 +537,44 @@ describe('SemanticNode', () => {
 					[...tests.values()].map((result) => new SolidTypeConstant(result)),
 				);
 			}
-			context('with int coercion off.', () => {
-				const coercion_off: SolidConfig = {
+			context('with constant folding off, int coercion off.', () => {
+				const folding_coercion_off: SolidConfig = {
 					...CONFIG_DEFAULT,
 					compilerOptions: {
 						...CONFIG_DEFAULT.compilerOptions,
+						constantFolding: false,
 						intCoercion: false,
 					},
 				}
+				function typeOfOperationFromSource(src: string): SolidLanguageType {
+					return operationFromSource(src, folding_coercion_off).type(new Validator(folding_coercion_off));
+				}
 				describe('SemanticNodeOperationBinaryArithmetic', () => {
 					it('returns `Integer` if both operands are ints.', () => {
-						assert.deepStrictEqual(operationFromSource(`7 * 3;`, coercion_off).type(false, false), Int16);
+						assert.deepStrictEqual(typeOfOperationFromSource(`7 * 3;`), Int16);
 					})
 					it('returns `Float` if both operands are floats.', () => {
-						assert.deepStrictEqual(operationFromSource(`7.0 - 3.0;`, coercion_off).type(false, false), Float64);
+						assert.deepStrictEqual(typeOfOperationFromSource(`7.0 - 3.0;`), Float64);
 					})
 					it('throws TypeError for invalid type operations.', () => {
-						assert.throws(() => operationFromSource(`7.0 + 3;`, coercion_off).type(false, false), TypeError01);
+						assert.throws(() => typeOfOperationFromSource(`7.0 + 3;`), TypeError01);
 					});
 				})
 				describe('SemanticNodeOperationBinaryComparative', () => {
 					it('returns `Boolean` if both operands are of the same numeric type.', () => {
-						assert.deepStrictEqual(operationFromSource(`7 < 3;`,      coercion_off).type(false, false), SolidBoolean);
-						assert.deepStrictEqual(operationFromSource(`7.0 >= 3.0;`, coercion_off).type(false, false), SolidBoolean);
+						assert.deepStrictEqual(typeOfOperationFromSource(`7 < 3;`), SolidBoolean);
+						assert.deepStrictEqual(typeOfOperationFromSource(`7.0 >= 3.0;`), SolidBoolean);
 					})
 					it('throws TypeError if operands have different types.', () => {
-						assert.throws(() => operationFromSource(`7.0 <= 3;`, coercion_off).type(false, false), TypeError01);
+						assert.throws(() => typeOfOperationFromSource(`7.0 <= 3;`), TypeError01);
 					})
 				})
 				describe('SemanticNodeOperationBinaryEquality[operator=EQ]', () => {
 					it('returns `false` if operands are of different numeric types.', () => {
-						assert.deepStrictEqual(operationFromSource(`7 == 7.0;`, coercion_off).type(false, false), SolidBoolean.FALSETYPE);
+						assert.deepStrictEqual(typeOfOperationFromSource(`7 == 7.0;`), SolidBoolean.FALSETYPE);
 					})
 					it('returns `false` if operands are of disjoint types in general.', () => {
-						assert.deepStrictEqual(operationFromSource(`7 == null;`, coercion_off).type(false, false), SolidBoolean.FALSETYPE);
+						assert.deepStrictEqual(typeOfOperationFromSource(`7 == null;`), SolidBoolean.FALSETYPE);
 					})
 				})
 			})
@@ -638,33 +643,33 @@ describe('SemanticNode', () => {
 					it('returns Integer for integer arithmetic.', () => {
 						const node: SemanticNodeOperation = operationFromSource(`(7 + 3) * 2;`, folding_off);
 						assert.deepStrictEqual(
-							[node.type(false), node.children.length],
-							[Int16,            2],
+							[node.type(new Validator(folding_off)), node.children.length],
+							[Int16,                                 2],
 						)
 						assert.deepStrictEqual(
-							[node.children[0].type(false), node.children[1].type(false)],
-							[Int16,                        Int16],
+							[node.children[0].type(new Validator(folding_off)), node.children[1].type(new Validator(folding_off))],
+							[Int16,                                             Int16],
 						)
 					})
 					it('returns Float for float arithmetic.', () => {
 						const node: SemanticNodeOperation = operationFromSource(`7 * 3.0 ^ 2;`, folding_off);
 						assert.deepStrictEqual(
-							[node.type(false), node.children.length],
-							[Float64,          2],
+							[node.type(new Validator(folding_off)), node.children.length],
+							[Float64,                               2],
 						)
 						assert.deepStrictEqual(
-							[node.children[0].type(false), node.children[1].type(false)],
-							[Int16,                        Float64],
+							[node.children[0].type(new Validator(folding_off)), node.children[1].type(new Validator(folding_off))],
+							[Int16,                                             Float64],
 						)
 					})
 				})
 				it('allows coercing of ints to floats if there are any floats.', () => {
-					assert.deepStrictEqual(operationFromSource(`7.0 > 3;`) .type(false, true), SolidBoolean);
-					assert.deepStrictEqual(operationFromSource(`7 == 7.0;`).type(false, true), SolidBoolean);
+					assert.deepStrictEqual(operationFromSource(`7.0 > 3;`) .type(new Validator(folding_off)), SolidBoolean);
+					assert.deepStrictEqual(operationFromSource(`7 == 7.0;`).type(new Validator(folding_off)), SolidBoolean);
 				})
 				describe('SemanticNodeOperationBinaryEquality[operator=IS]', () => {
 					it('returns `false` if operands are of different numeric types.', () => {
-						assert.deepStrictEqual(operationFromSource(`7 is 7.0;`, folding_off).type(false, true), SolidBoolean.FALSETYPE);
+						assert.deepStrictEqual(operationFromSource(`7 is 7.0;`, folding_off).type(new Validator(folding_off)), SolidBoolean.FALSETYPE);
 					})
 				})
 			})
