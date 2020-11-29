@@ -18,6 +18,7 @@ import Operator, {
 } from '../enum/Operator.enum'
 import Validator from './Validator.class';
 import {
+	CompletionType,
 	CompletionStructureAssessment,
 } from './CompletionStructure.class'
 import SolidLanguageType, {
@@ -332,7 +333,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	}
 	/** @implements SemanticNodeExpression */
 	get shouldFloat(): boolean {
-		throw new Error('SemanticNodeIdentifier#shouldFloat not yet supported.')
+		return this.type().isSubtypeOf(Float64);
 	}
 	/** @implements SemanticNodeExpression */
 	protected build_do(_builder: Builder): InstructionExpression {
@@ -340,11 +341,14 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
-		throw new Error('SemanticNodeIdentifier#assess_do not yet supported.')
+		return new CompletionStructureAssessment(CompletionType.THROW); // TODO #35 : constant propagation
 	}
 	/** @implements SemanticNodeExpression */
-	protected type_do(_validator: Validator): SolidLanguageType {
-		throw new Error('SemanticNodeIdentifier#type_do not yet supported.')
+	protected type_do(validator: Validator): SolidLanguageType {
+		return (validator.hasSymbol(this.id))
+			? validator.getSymbolInfo(this.id)!.type
+			: SolidLanguageType.UNKNOWN
+		;
 	}
 }
 export class SemanticNodeTemplate extends SemanticNodeExpression {

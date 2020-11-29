@@ -54,6 +54,7 @@ import {
 	variableDeclarationFromSource,
 } from '../helpers-parse'
 import {
+	identifierFromSource,
 	operationFromSource,
 	statementExpressionFromSource,
 	constantFromSource,
@@ -598,11 +599,6 @@ describe('SemanticNode', () => {
 					it('returns a constant Float type for SemanticNodeConstant with float value.', () => {
 						assert.deepStrictEqual(constantFromSource(`4.2e+1;`).type(), new SolidTypeConstant(new Float64(42.0)));
 					})
-					Dev.supports('variables') && it('throws for identifiers.', () => {
-						assert.throws(() => ((goalFromSource(`x;`)
-							.children[0] as SemanticNodeStatementExpression)
-							.children[0] as SemanticNodeIdentifier).type(), /not yet supported/)
-					})
 					it('returns `String` for SemanticNodeConstant with string value.', () => {
 						;[
 							...(Dev.supports('literalString') ? [
@@ -673,6 +669,10 @@ describe('SemanticNode', () => {
 					})
 				})
 			})
+			Dev.supports('variables') && it('returns Unknown for undeclared variables.', () => {
+				// NOTE: a reference error will be thrown at the variable-checking stage
+				assert.strictEqual(identifierFromSource(`x;`).type(), SolidLanguageType.UNKNOWN);
+			});
 			it('returns a constant Boolean type for boolean unary operation of anything.', () => {
 				typeOperations(xjs.Map.mapValues(new Map([
 					[`!false;`,  true],
