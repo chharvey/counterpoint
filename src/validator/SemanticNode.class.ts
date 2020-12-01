@@ -796,7 +796,7 @@ export class SemanticNodeStatementExpression extends SemanticNodeSolid {
 	}
 	/** @implements SemanticNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
-		this.children[0]?.typeCheck(validator); // assert does not throw
+		return this.children[0]?.typeCheck(validator);
 	}
 	/** @implements SemanticNodeSolid */
 	build(builder: Builder): InstructionNone | InstructionStatement {
@@ -840,9 +840,16 @@ export class SemanticNodeAssignment extends SemanticNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNodeSolid */
-	typeCheck(_validator: Validator = new Validator()): void {
-		throw new Error('SemanticNodeAssignment#typeCheck not yet supported.')
-		// const assignedType = this.children[1].type()
+	typeCheck(validator: Validator = new Validator()): void {
+		const assignee_type: SolidLanguageType = this.children[0].children[0].type(validator);
+		const assigned_type: SolidLanguageType = this.children[1].type(validator);
+		if (
+			assigned_type.isSubtypeOf(assignee_type) ||
+			validator.config.compilerOptions.intCoercion && assigned_type.isSubtypeOf(Int16) && Float64.isSubtypeOf(assignee_type)
+		) {
+		} else {
+			throw new TypeError03(this, assignee_type, assigned_type);
+		};
 	}
 	/** @implements SemanticNodeSolid */
 	build(_builder: Builder): Instruction {
@@ -858,8 +865,8 @@ export class SemanticNodeAssignee extends SemanticNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNodeSolid */
-	typeCheck(_validator: Validator = new Validator()): void {
-		throw new Error('SemanticNodeAssignee#typeCheck not yet supported.')
+	typeCheck(validator: Validator = new Validator()): void {
+		return this.children[0].typeCheck(validator);
 	}
 	/** @implements SemanticNodeSolid */
 	build(_builder: Builder): Instruction {
