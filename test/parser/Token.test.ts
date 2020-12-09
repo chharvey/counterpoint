@@ -1,17 +1,15 @@
+import type {
+	Token,
+} from '@chharvey/parser';
 import * as assert from 'assert'
 
 import {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util     from '../../src/class/Util.class'
 import Dev      from '../../src/class/Dev.class'
 import {
-	Scanner,
-	Token,
-	TokenPunctuator,
-	TokenKeyword,
-	TokenIdentifier,
-	TokenIdentifierUnicode,
-	TokenNumber,
-} from '../../src/lexer/'
+	TOKEN,
+	LexerSolid as Lexer,
+} from '../../src/parser/';
 
 const lastItem  = (iter: any): any     => iter[lastIndex(iter)]
 const lastIndex = (iter: any): number  => iter.length-1
@@ -36,22 +34,14 @@ const mock: string = `
 
 
 
-describe('Token', () => {
+describe('TokenSolid', () => {
 	describe('#cook', () => {
-		context('TokenFilebound', () => {
-			it('produces a boolean value.', () => {
-				const tokens: Token[] = [...new Scanner(mock, CONFIG_DEFAULT).lexer.screener.generate()]
-				assert.strictEqual(tokens[0]       .cook(), true )
-				assert.strictEqual(lastItem(tokens).cook(), false)
-			})
-		})
-
 		context('TokenPunctuator', () => {
 			it('assigns values 0n–127n to punctuator tokens.', () => {
-				const cooked: bigint[] = [...new Scanner(TokenPunctuator.PUNCTUATORS.join(' '), CONFIG_DEFAULT).lexer.screener.generate()]
-					.filter((token): token is TokenPunctuator => token instanceof TokenPunctuator)
+				const cooked: bigint[] = [...new Lexer(TOKEN.TokenPunctuator.PUNCTUATORS.join(' '), CONFIG_DEFAULT).generate()]
+					.filter((token): token is TOKEN.TokenPunctuator => token instanceof TOKEN.TokenPunctuator)
 					.map((punctuator) => punctuator.cook())
-				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i)).slice(0, TokenPunctuator.PUNCTUATORS.length)
+				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i)).slice(0, TOKEN.TokenPunctuator.PUNCTUATORS.length)
 				assert.deepStrictEqual(cooked, expected)
 				cooked.forEach((value) => {
 					assert.ok(0n <= value, 'cooked value should be >= 0n.')
@@ -62,10 +52,10 @@ describe('Token', () => {
 
 		context('TokenKeyword', () => {
 			it('assigns values 128n–255n to reserved keywords.', () => {
-				const cooked: bigint[] = [...new Scanner(TokenKeyword.KEYWORDS.join(' '), CONFIG_DEFAULT).lexer.screener.generate()]
-					.filter((token): token is TokenKeyword => token instanceof TokenKeyword)
+				const cooked: bigint[] = [...new Lexer(TOKEN.TokenKeyword.KEYWORDS.join(' '), CONFIG_DEFAULT).generate()]
+					.filter((token): token is TOKEN.TokenKeyword => token instanceof TOKEN.TokenKeyword)
 					.map((keyword) => keyword.cook())
-				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i + 128)).slice(0, TokenKeyword.KEYWORDS.length)
+				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i + 128)).slice(0, TOKEN.TokenKeyword.KEYWORDS.length)
 				assert.deepStrictEqual(cooked, expected)
 				cooked.forEach((value) => {
 					assert.ok(128n <= value, 'cooked value should be >= 128n.')
@@ -76,14 +66,14 @@ describe('Token', () => {
 
 		Dev.supports('variables') && context('TokenIdentifier', () => {
 			context('TokenIdentifierBasic', () => {
-				const cooked: (bigint|null)[] = [...new Scanner(`
+				const cooked: (bigint|null)[] = [...new Lexer(`
 					this be a word
 					_words _can _start _with _underscores
 					_and0 _can1 contain2 numb3rs
 
 					a word _can repeat _with the same id
-				`, CONFIG_DEFAULT).lexer.screener.generate()]
-					.filter((token): token is TokenIdentifier => token instanceof TokenIdentifier)
+				`, CONFIG_DEFAULT).generate()]
+					.filter((token): token is TOKEN.TokenIdentifier => token instanceof TOKEN.TokenIdentifier)
 					.map((identifier) => identifier.cook())
 				it('assigns values 256n or greater.', () => {
 					cooked.forEach((value) => {
@@ -107,12 +97,12 @@ describe('Token', () => {
 			})
 
 			context('TokenIdentifierUnicode', () => {
-				const cooked: (bigint|null)[] = [...new Scanner(`
+				const cooked: (bigint|null)[] = [...new Lexer(`
 					\`this\` \`is\` \`a\` \`unicode word\`
 					\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
 					\`except\` \`back-ticks\` \`.\`
-				`, CONFIG_DEFAULT).lexer.screener.generate()]
-					.filter((token): token is TokenIdentifierUnicode => token instanceof TokenIdentifierUnicode)
+				`, CONFIG_DEFAULT).generate()]
+					.filter((token): token is TOKEN.TokenIdentifierUnicode => token instanceof TOKEN.TokenIdentifierUnicode)
 					.map((identifier) => identifier.cook())
 				it('assigns values 256n or greater.', () => {
 					cooked.forEach((value) => {
@@ -185,23 +175,23 @@ describe('Token', () => {
 				]]],
 			])].forEach(([name, [source, values]]) => {
 				it(`correctly cooks ${name}.`, () => {
-					assert.deepStrictEqual([...new Scanner(source, {
+					assert.deepStrictEqual([...new Lexer(source, {
 						...CONFIG_DEFAULT,
 						languageFeatures: {
 							...CONFIG_DEFAULT.languageFeatures,
 							integerRadices: true,
 							numericSeparators: true,
 						},
-					}).lexer.screener.generate()]
-						.filter((token) => token instanceof TokenNumber)
-						.map((token) => token.cook()), values)
+					}).generate()]
+						.filter((token) => token instanceof TOKEN.TokenNumber)
+						.map((token) => (token as TOKEN.TokenNumber).cook()), values)
 				})
 			})
 		})
 
 		Dev.supports('literalString') && context('TokenString', () => {
 			it('produces the cooked string value.', () => {
-				const tokens: Token[] = [...new Scanner(Util.dedent(`
+				const tokens: Token[] = [...new Lexer(Util.dedent(`
 					5 + 03 + '' * 'hello' *  -2;
 					'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
 					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3';
@@ -209,20 +199,20 @@ describe('Token', () => {
 					345
 					678';
 					'\u{10001}' '\\\u{10001}';
-				`), CONFIG_DEFAULT).lexer.screener.generate()]
-				assert.strictEqual(tokens[ 5].cook(), ``)
-				assert.strictEqual(tokens[ 7].cook(), `hello`)
-				assert.strictEqual(tokens[11].cook(), `0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`)
-				assert.strictEqual(tokens[13].cook(), `0 $ 1 _ 2 \0 3`)
-				assert.strictEqual(tokens[15].cook(), `012 345\n678`)
-				assert.strictEqual(tokens[17].cook(), `\u{10001}`)
-				assert.strictEqual(tokens[18].cook(), `\u{10001}`)
+				`), CONFIG_DEFAULT).generate()]
+				assert.strictEqual((tokens[ 5] as TOKEN.TokenSolid).cook(), ``)
+				assert.strictEqual((tokens[ 7] as TOKEN.TokenSolid).cook(), `hello`)
+				assert.strictEqual((tokens[11] as TOKEN.TokenSolid).cook(), `0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`)
+				assert.strictEqual((tokens[13] as TOKEN.TokenSolid).cook(), `0 $ 1 _ 2 \0 3`)
+				assert.strictEqual((tokens[15] as TOKEN.TokenSolid).cook(), `012 345\n678`)
+				assert.strictEqual((tokens[17] as TOKEN.TokenSolid).cook(), `\u{10001}`)
+				assert.strictEqual((tokens[18] as TOKEN.TokenSolid).cook(), `\u{10001}`)
 			})
 		})
 
 		Dev.supports('literalTemplate') && context('TokenTemplate', () => {
 			it('produces the cooked template value.', () => {
-				const tokens: Token[] = [...new Scanner(Util.dedent(`
+				const tokens: Token[] = [...new Lexer(Util.dedent(`
 					600  /  '''''' * 3 + '''hello''' *  2;
 					3 + '''head{{ * 2
 					3 + }}midl{{ * 2
@@ -233,42 +223,42 @@ describe('Token', () => {
 					'''012\\
 					345
 					678''';
-				`), CONFIG_DEFAULT).lexer.screener.generate()]
-				assert.strictEqual(tokens[ 3].cook(), ``)
-				assert.strictEqual(tokens[ 7].cook(), `hello`)
-				assert.strictEqual(tokens[13].cook(), `head`)
-				assert.strictEqual(tokens[18].cook(), `midl`)
-				assert.strictEqual(tokens[23].cook(), `tail`)
-				assert.strictEqual(tokens[26].cook(), `0 \\\` 1`)
-				assert.strictEqual(tokens[28].cook(), `0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`)
-				assert.strictEqual(tokens[30].cook(), `0 \\u{24} 1 \\u{005f} 2 \\u{} 3`)
-				assert.strictEqual(tokens[32].cook(), `012\\\n345\n678`)
+				`), CONFIG_DEFAULT).generate()]
+				assert.strictEqual((tokens[ 3] as TOKEN.TokenSolid).cook(), ``)
+				assert.strictEqual((tokens[ 7] as TOKEN.TokenSolid).cook(), `hello`)
+				assert.strictEqual((tokens[13] as TOKEN.TokenSolid).cook(), `head`)
+				assert.strictEqual((tokens[18] as TOKEN.TokenSolid).cook(), `midl`)
+				assert.strictEqual((tokens[23] as TOKEN.TokenSolid).cook(), `tail`)
+				assert.strictEqual((tokens[26] as TOKEN.TokenSolid).cook(), `0 \\\` 1`)
+				assert.strictEqual((tokens[28] as TOKEN.TokenSolid).cook(), `0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`)
+				assert.strictEqual((tokens[30] as TOKEN.TokenSolid).cook(), `0 \\u{24} 1 \\u{005f} 2 \\u{} 3`)
+				assert.strictEqual((tokens[32] as TOKEN.TokenSolid).cook(), `012\\\n345\n678`)
 			})
 		})
 
 		Dev.supports('literalString') && it('throws when UTF-16 encoding input is out of range.', () => {
-			const stringtoken: Token = [...new Scanner(Util.dedent(`
+			const stringtoken: TOKEN.TokenString = [...new Lexer(Util.dedent(`
 				'a string literal with a unicode \\u{a00061} escape sequence out of range';
-			`), CONFIG_DEFAULT).lexer.screener.generate()][1]
+			`), CONFIG_DEFAULT).generate()][1] as TOKEN.TokenString
 			assert.throws(() => stringtoken.cook(), RangeError)
 		})
 	})
 
 	describe('#serialize', () => {
 		specify('TokenCommentLine', () => {
-			assert.strictEqual([...new Scanner(Util.dedent(`
+			assert.strictEqual([...new Lexer(Util.dedent(`
 				500  +  30; ;  % line comment  *  2
 				8;
-			`), CONFIG_DEFAULT).lexer.generate()][11].serialize(), Util.dedent(`
+			`), CONFIG_DEFAULT).generate()][11].serialize(), Util.dedent(`
 				<COMMENT line="1" col="16">% line comment  *  2\n</COMMENT>
 			`).trim())
 		})
 		specify('TokenCommentMulti', () => {
-			assert.strictEqual([...new Scanner(Util.dedent(`
+			assert.strictEqual([...new Lexer(Util.dedent(`
 				%% multiline
 				that has a
 				comment %%
-			`), CONFIG_DEFAULT).lexer.generate()][2].serialize(), Util.dedent(`
+			`), CONFIG_DEFAULT).generate()][2].serialize(), Util.dedent(`
 				<COMMENT line="1" col="1">%% multiline
 				that has a
 				comment %%</COMMENT>

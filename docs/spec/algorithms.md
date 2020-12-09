@@ -6,6 +6,9 @@ This chapter lists and defines common abstract algorithms used throughout this s
 ## TypeCheck
 Performs the type-checking piece during semantic analysis.
 ```
+Void TypeCheck(SemanticType type) :=
+	1. *Return*. // NOTE: all SemanticType nodes are valid for now
+
 Void! TypeCheck(SemanticExpression expr) :=
 	1. *Perform:* *Unwrap:* `TypeOf(expr)`.
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
@@ -13,6 +16,25 @@ Void! TypeCheck(SemanticExpression expr) :=
 Void! TypeCheck(SemanticStatementExpression stmt) :=
 	1. *If* `stmt.children.count` is greater than 0:
 		1. *Return:* `TypeCheck(stmt.children.0)`.
+
+Void! TypeCheck(SemanticDeclarationVariable stmt) :=
+	1. *Assert:* `stmt.children.count` is 3.
+	2. *Let* `assignee_type` be *UnwrapAffirm:* `Assess(stmt.children.1)`.
+	3. *Let* `assigned_type` be *Unwrap:* `TypeOf(stmt.children.2)`.
+	4. *If* `assigned_type` is not a subtype of `assignee_type`:
+		1. *Throw:* a new TypeError03.
+
+Void! TypeCheck(SemanticAssignment stmt) :=
+	1. *Assert:* `stmt.children.count` is 2.
+	2. *Let* `assignee` be `stmt.children.0`.
+	3. *Assert:* `assignee.children.count` is 1.
+	4. *Let* `assignee_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
+	5. *Let* `assigned_type` be *Unwrap:* `TypeOf(stmt.children.2)`.
+	6. *If* `assigned_type` is not a subtype of `assignee_type`:
+		1. *Throw:* a new TypeError03.
+
+Void! TypeCheck(SemanticAssignee assignee) :=
+	1. *Return:* `TypeCheck(assignee.children.0)`.
 
 Void! TypeCheck(SemanticGoal goal) :=
 	1. For each `SemanticStatment stmt` in `goal.children`:
@@ -101,7 +123,7 @@ Number! PerformBinaryArithmetic(Text op, Number operand0, Number operand1) :=
 		1. *Let* `result` be the sum, `operand0 + operand1`,
 			obtained by adding `operand0` (the augend) to `operand1` (the addend).
 		2. *Return:* `result`.
-	5. *Throw:* TypeError "Invalid operation.".
+	5. *Throw:* a new TypeError01.
 ```
 
 
@@ -130,5 +152,5 @@ Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 		2. *If* `operand1` is strictly less than `operand0`:
 			1. *Return:* `true`.
 		3. *Return:* `false`.
-	5. *Throw:* TypeError "Invalid operation.".
+	5. *Throw:* a new TypeError01.
 ```

@@ -14,22 +14,33 @@ import type SolidBoolean from './SolidBoolean.class'
  */
 export default class SolidObject {
 	/** @implements SolidLanguageType */
-	static get properties(): ReadonlyMap<string, SolidLanguageType> {
-		return new Map([
-			['identical', SolidObject /* SolidFunction */],
-			['equal',     SolidObject /* SolidFunction */],
-		])
+	static isEmpty: SolidLanguageType['isEmpty'] = false
+	/** @implements SolidLanguageType */
+	static isUniverse: SolidLanguageType['isUniverse'] = false
+	/** @implements SolidLanguageType */
+	static values: SolidLanguageType['values'] = new Set()
+	/** @implements SolidLanguageType */
+	static includes(v: SolidObject): boolean {
+		return v instanceof this/*static*/
 	}
-	/** @implements SolidLanguageType */
-	static isBooleanType: SolidLanguageType['isBooleanType'] = SolidLanguageType.prototype.isBooleanType
-	/** @implements SolidLanguageType */
-	static isNumericType: SolidLanguageType['isNumericType'] = SolidLanguageType.prototype.isNumericType
-	/** @implements SolidLanguageType */
-	static isFloatType: SolidLanguageType['isFloatType'] = SolidLanguageType.prototype.isFloatType
 	/** @implements SolidLanguageType */
 	static intersect: SolidLanguageType['intersect'] = SolidLanguageType.prototype.intersect
 	/** @implements SolidLanguageType */
+	static intersect_do: SolidLanguageType['intersect_do'] = SolidLanguageType.prototype.intersect_do
+	/** @implements SolidLanguageType */
 	static union: SolidLanguageType['union'] = SolidLanguageType.prototype.union
+	/** @implements SolidLanguageType */
+	static union_do: SolidLanguageType['union_do'] = SolidLanguageType.prototype.union_do
+	/** @implements SolidLanguageType */
+	static isSubtypeOf: SolidLanguageType['isSubtypeOf'] = SolidLanguageType.prototype.isSubtypeOf
+	/** @implements SolidLanguageType */
+	static isSubtypeOf_do(t: SolidLanguageType): boolean {
+		return (t instanceof Function)
+			? this/*static*/.prototype instanceof t
+			: SolidLanguageType.prototype.isSubtypeOf_do.call(this, t)
+	}
+	/** @implements SolidLanguageType */
+	static equals: SolidLanguageType['equals'] = SolidLanguageType.prototype.equals
 
 
 	/**

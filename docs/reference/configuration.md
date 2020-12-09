@@ -4,14 +4,32 @@ This chapter describes the ways in which Solid developers can configure their pr
 
 
 ## Configuration Setup
-TODO
+A configuration file is the best way to manage configuration of your compiler instance.
+It’s best to check-in your configuration file into source control.
+Your configuration file must be a JSON file, and
+it should be at the top level of your codebase, named `solid-config.json`.
+*Note: The filename doesn’t matter for now, but in the future this could be a convention. Check back here for updates.*
+Your JSON file should be a single object, with two optional properties: `languageFeatures` and `compilerOptions`.
+[Solid API coming soon]
+
+- Without a config file, the Solid compiler will use the configuration default values, listed in the next section.
+- To use a config file during compilation, you must specify it on the command line. Run `npx solid --help` for details.
+- Even with a config file, you may override it with per-option CLI arguments. Run `npx solid --config` for details.
+
+For example, the default value of [`comments`](#comments) is `true`.
+If in your `solid-config.json` you have `{"languageFeatures": {"comments": false}}`,
+that would override the default. However, if you run
+```shell
+$ npx solid c ./my-program.solid -p=./solid-config.json --comments
+```
+the `--comments` option would override your config file and turn comments back on again.
 
 
 
 ## Configuration Options
 
 
-### Language Features
+### `languageFeatures`
 Language features are toggleable aspects of the Solid Programming Language.
 
 #### `comments`
@@ -25,11 +43,13 @@ With this disabled, the compiler will not recognize comments:
 ```
 % line comments
 
-{% multiline
-comments %}
+%% multiline
+comments %%
+
+%%% inline doc comments %%
 
 %%%
-block coments
+block doc comments
 %%%
 ```
 
@@ -66,7 +86,7 @@ For example, `1_000_000` represents *1,000,000* and `\b1011_0100` represents *18
 With this disabled, number tokens cannot contain the numeric separator character.
 
 
-### Compiler Options
+### `compilerOptions`
 Compiler options control how source code is compiled into assembly code.
 
 #### `constantFolding`
@@ -90,6 +110,7 @@ it will only produce assembly code for that output.
 
 With this disabled, compilation will be faster,
 but all computations and short-circuiting will take place at runtime.
+Disabling is useful for inspecting assembly code during development.
 
 #### `intCoercion`
 ```
@@ -103,5 +124,7 @@ If enabled, allows expressions such as `2 + 3.0` where integer and float types m
 Before the computation is made, the integer operands are coerced into floats (e.g. becoming `2.0 + 3.0`).
 If the value is known, the coercion is made at compile-time. If, however, the value is unknown
 (e.g. `x + 3.0` where `x` is an integer), the coercion is made at runtime.
+
+Put another way: If enabled, allows type `int` to be a subtype of type `float`.
 
 If disabled, mixing different numeric types will result in a type error.

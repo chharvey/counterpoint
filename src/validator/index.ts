@@ -1,10 +1,13 @@
 export {default as Validator}    from './Validator.class'
-export {default as SemanticNode} from './SemanticNode.class'
+export {Decorator} from './Decorator';
 
 export {
+	SemanticNodeSolid,
 	SemanticNodeType,
 	SemanticNodeTypeConstant,
 	SemanticNodeTypeOperation,
+	SemanticNodeTypeOperationUnary,
+	SemanticNodeTypeOperationBinary,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeIdentifier,
@@ -20,11 +23,11 @@ export {
 	SemanticNodeDeclarationVariable,
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
-	SemanticNodeAssigned,
 	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
 } from './SemanticNode.class'
+export * as AST from './SemanticNode.class';
 
 export {
 	CompletionStructureAssessment,
@@ -34,6 +37,7 @@ export {default as SolidLanguageType} from './SolidLanguageType.class'
 
 export {
 	SolidTypeConstant,
+	SolidTypeInterface,
 } from './SolidLanguageType.class'
 
 export {default as SolidObject}  from './SolidObject.class'

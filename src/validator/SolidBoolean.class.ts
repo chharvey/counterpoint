@@ -1,3 +1,6 @@
+import SolidLanguageType, {
+	SolidTypeConstant,
+} from './SolidLanguageType.class'
 import SolidObject from './SolidObject.class'
 
 
@@ -12,17 +15,17 @@ import SolidObject from './SolidObject.class'
  * @final
  */
 export default class SolidBoolean extends SolidObject {
-	/**
-	 * @override
-	 * @final
-	 */
-	static get isBooleanType(): boolean {
-		return true
-	}
 	/** The Solid Language Value `false`. */
 	static readonly FALSE: SolidBoolean = new SolidBoolean()
 	/** The Solid Language Value `true`. */
 	static readonly TRUE: SolidBoolean = new SolidBoolean(true)
+	/** A Unit Type containing only the Solid Language Value `false`. */
+	static readonly FALSETYPE: SolidTypeConstant = new SolidTypeConstant(SolidBoolean.FALSE)
+	/** A Unit Type containing only the Solid Language Value `true`. */
+	static readonly TRUETYPE: SolidTypeConstant = new SolidTypeConstant(SolidBoolean.TRUE)
+	/** @override */
+	static values: SolidLanguageType['values'] = new Set([SolidBoolean.FALSE, SolidBoolean.TRUE])
+
 	/**
 	 * Return the Solid Language Value `true` or `false` based on the argument.
 	 * @param b a native boolean value

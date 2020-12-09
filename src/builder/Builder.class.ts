@@ -3,14 +3,15 @@ import * as path from 'path'
 
 import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
-import type SolidConfig from '../SolidConfig'
-import type {
-	SemanticStatementType,
+import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
+import {
+	ParserSolid as Parser,
+} from '../parser/';
+import {
+	Decorator,
+	Validator,
 	SemanticNodeGoal,
 } from '../validator/'
-import {
-	InstructionModule,
-} from './Instruction.class'
 
 
 
@@ -27,6 +28,8 @@ export default class Builder {
 	]
 
 
+	/** A semantic goal produced by a Validator. */
+	private readonly semanticgoal: SemanticNodeGoal;
 	/** A counter for internal variables. Used for optimizing short-circuited expressions. */
 	private var_count: bigint = 0n
 	/** A counter for statements. */
@@ -34,13 +37,15 @@ export default class Builder {
 
 	/**
 	 * Construct a new Builder object.
-	 * @param semanticgoal - A semantic goal produced by a Validator.
+	 * @param source - the source text
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		private readonly semanticgoal: SemanticNodeGoal,
-		readonly config: SolidConfig,
+		source: string,
+		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
+		this.semanticgoal = Decorator.decorate(new Parser(source, config).parse());
+		this.semanticgoal.typeCheck(new Validator(this.config)); // assert does not throw
 	}
 
 	/**
@@ -59,18 +64,6 @@ export default class Builder {
 	get stmtCount(): bigint {
 		this.var_count = 0n
 		return this.stmt_count++
-	}
-
-	/**
-	 * Return the semantic goal of a program.
-	 * @param comps the top-level components
-	 * @return an instruction for the list of top-level components
-	 */
-	goal(comps: readonly SemanticStatementType[]): InstructionModule {
-		return new InstructionModule([
-			...Builder.IMPORTS,
-			...comps.map((comp) => comp.build(this)),
-		])
 	}
 
 	/**

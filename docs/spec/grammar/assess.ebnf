@@ -1,11 +1,39 @@
+Type Assess(SemanticNodeTypeConstant const) :=
+	1. *Return:* `const.value`.
+;
+
+
+
+Type Assess(SemanticTypeOperation[operator: ORNULL] oper) :=
+	1. *Assert:* `oper.children.count` is 1.
+	2. *Let* `child` be *UnwrapAffirm:* `Assess(oper.children.0)`.
+	3. *Return:* `Union(child, Null)`.
+;
+
+Type Assess(SemanticTypeOperation[operator: AND] oper) :=
+	1. *Assert:* `oper.children.count` is 2.
+	2. *Let* `child0` be *UnwrapAffirm:* `Assess(oper.children.0)`.
+	3. *Let* `child1` be *UnwrapAffirm:* `Assess(oper.children.1)`.
+	4. *Return:* `Intersection(child0, child1)`.
+;
+
+Type Assess(SemanticTypeOperation[operator: OR] oper) :=
+	1. *Assert:* `oper.children.count` is 2.
+	2. *Let* `child0` be *UnwrapAffirm:* `Assess(oper.children.0)`.
+	3. *Let* `child1` be *UnwrapAffirm:* `Assess(oper.children.1)`.
+	4. *Return:* `Union(child0, child1)`.
+;
+
+
+
 Or<Null, Boolean, Number, Sequence<RealNumber>> Assess(SemanticConstant const) :=
 	1. *Return:* `const.value`.
 ;
 
 
 
-Unknown Assess(SemanticIdentifier iden) :=
-	// TO BE DETERMINED
+Void! Assess(SemanticIdentifier iden) :=
+	1. *Throw:* `void`. // NOTE: Update when implementing constant propagation.
 ;
 
 
