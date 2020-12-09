@@ -1,12 +1,4 @@
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
-import {
-	ParserSolid as Parser,
-	PARSER,
-} from '../parser/'
-import {Decorator} from './Decorator';
-import type {
-	SemanticNodeGoal,
-} from './SemanticNode.class'
 import type SolidLanguageType from './SolidLanguageType.class'
 
 
@@ -21,11 +13,11 @@ import type SolidLanguageType from './SolidLanguageType.class'
  * - col:  the 0-based column index of where the varible was declared
  */
 export type SymbolInfo = {
-	id: bigint;
-	type: SolidLanguageType;
+	id:      bigint;
+	type:    SolidLanguageType;
 	unfixed: boolean;
-	line: number;
-	col:  number;
+	line:    number;
+	col:     number;
 }
 
 
@@ -55,21 +47,21 @@ export default class Validator {
 
 	/**
 	 * Add a symbol to this Validator’s symbol table.
-	 * @param id    the id of the symbol to add
-	 * @param type_ the symbol type
+	 * @param id      the id of the symbol to add
+	 * @param type    the symbol type
 	 * @param unfixed may the symbol be reassigned?
-	 * @param line  the line   number of the symbol’s declaration
-	 * @param col   the column number of the symbol’s declaration
+	 * @param line    the line   number of the symbol’s declaration
+	 * @param col     the column number of the symbol’s declaration
 	 * @returns this
 	 */
 	addSymbol(
-		id: bigint,
-		type_: SolidLanguageType,
-		unfixed: boolean,
-		line: number,
-		col: number,
+		id:      SymbolInfo['id'],
+		type:    SymbolInfo['type'],
+		unfixed: SymbolInfo['unfixed'],
+		line:    SymbolInfo['line'],
+		col:     SymbolInfo['col'],
 	): this {
-		this.symbol_table.set(id, {id, type: type_, unfixed, line, col});
+		this.symbol_table.set(id, {id, type, unfixed, line, col});
 		return this
 	}
 	/**
@@ -77,24 +69,32 @@ export default class Validator {
 	 * @param id the id of the symbol to remove
 	 * @returns this
 	 */
-	removeSymbool(id: bigint): this {
+	removeSymbol(id: bigint): this {
 		this.symbol_table.delete(id);
 		return this
 	}
 	/**
 	 * Check whether this Validator’s symbol table has the symbol.
 	 * @param id the symbol id to check
-	 * @returns Doees the symbol table have a symbol with the given id?
+	 * @returns Does the symbol table have a symbol with the given id?
 	 */
 	hasSymbol(id: bigint): boolean {
 		return this.symbol_table.has(id);
 	}
 	/**
-	 * Return the information of a symol in this Validator’s symbol table.
+	 * Return the information of a symbol in this Validator’s symbol table.
 	 * @param id the symbol id to check
 	 * @returns the symbol information of `id`, or `null` if there is no corresponding entry
 	 */
 	getSymbolInfo(id: bigint): SymbolInfo | null {
 		return this.symbol_table.get(id) || null;
+	}
+	/**
+	 * Remove all symbols from this Validator’s symbol table.
+	 * @returns this
+	 */
+	clearSymbols(): this {
+		this.symbol_table.clear();
+		return this;
 	}
 }

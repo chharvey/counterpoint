@@ -936,8 +936,7 @@ export class SemanticNodeAssignee extends SemanticNodeSolid {
 	varCheck(validator: Validator = new Validator()): void {
 		const identifier: SemanticNodeIdentifier = this.children[0];
 		identifier.varCheck(validator);
-		const info: SymbolInfo = validator.getSymbolInfo(identifier.id) as SymbolInfo;
-		if (!info.unfixed) {
+		if (!validator.getSymbolInfo(identifier.id)!.unfixed) {
 			throw new AssignmentError10(identifier);
 		};
 	}
@@ -961,7 +960,8 @@ export class SemanticNodeGoal extends SemanticNodeSolid {
 	}
 	/** @implements SemanticNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
-		return this.children.forEach((c) => c.varCheck(validator));
+		this.children.forEach((c) => c.varCheck(validator));
+		validator.clearSymbols();
 	}
 	/** @implements SemanticNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
