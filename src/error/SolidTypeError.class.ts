@@ -5,6 +5,7 @@ import {
 import type {
 	SemanticNodeOperation,
 	SemanticNodeDeclarationVariable,
+	SemanticNodeAssignment,
 	SolidLanguageType,
 } from '../validator/'
 
@@ -38,7 +39,7 @@ export default class SolidTypeError extends ErrorCode {
 
 
 /**
- * A TypeError01 is thrown when the parser encounters an invalid operation.
+ * A TypeError01 is thrown when the validator encounters an invalid operation.
  * @example
  * true + false; % TypeError01: Invalid operation.
  */
@@ -83,7 +84,7 @@ export class TypeError03 extends SolidTypeError {
 	 * @param assignee_type - the type to which the expression is assigned
 	 * @param assigned_type - the type of the expression
 	 */
-	constructor (assignment: SemanticNodeDeclarationVariable, assignee_type: SolidLanguageType, assigned_type: SolidLanguageType) {
+	constructor (assignment: SemanticNodeDeclarationVariable | SemanticNodeAssignment, assignee_type: SolidLanguageType, assigned_type: SolidLanguageType) {
 		super(`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }.`, TypeError03.CODE, assignment.line_index, assignment.col_index)
 	}
 }

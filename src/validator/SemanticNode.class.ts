@@ -6,7 +6,6 @@ import {
 } from '@chharvey/parser';
 import * as xjs from 'extrajs'
 
-import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 import Util from '../class/Util.class'
 import Operator, {
 	ValidTypeOperator,
@@ -17,7 +16,9 @@ import Operator, {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from '../enum/Operator.enum'
+import Validator from './Validator.class';
 import {
+	CompletionType,
 	CompletionStructureAssessment,
 } from './CompletionStructure.class'
 import SolidLanguageType, {
@@ -97,9 +98,9 @@ export abstract class SemanticNodeSolid extends ASTNode {
 
 	/**
 	 * Type-check the node as part of semantic analysis.
-	 * @param opts a set of compiler options
+	 * @param validator stores validation information
 	 */
-	abstract typeCheck(opts: SolidConfig['compilerOptions']): void;
+	abstract typeCheck(validator?: Validator): void;
 
 	/**
 	 * Give directions to the runtime code builder.
@@ -120,7 +121,7 @@ export abstract class SemanticNodeSolid extends ASTNode {
 export abstract class SemanticNodeType extends SemanticNodeSolid {
 	private assessed: SolidLanguageType | null = null
 	/** @implements SemanticNodeSolid */
-	typeCheck(_opts: SolidConfig['compilerOptions']): void {
+	typeCheck(_validator: Validator = new Validator()): void {
 		return; // for now, all types are valid // TODO: dereferencing type variables
 	}
 	/**
@@ -231,8 +232,8 @@ export abstract class SemanticNodeExpression extends SemanticNodeSolid {
 	 */
 	abstract get shouldFloat(): boolean;
 	/** @implements SemanticNodeSolid */
-	typeCheck(opts: SolidConfig['compilerOptions']): void {
-		this.type(opts.constantFolding, opts.intCoercion) // assert does not throw
+	typeCheck(validator: Validator = new Validator()): void {
+		this.type(validator); // assert does not throw
 	}
 	/**
 	 * @implements SemanticNodeSolid
@@ -257,25 +258,21 @@ export abstract class SemanticNodeExpression extends SemanticNodeSolid {
 	protected abstract assess_do(): CompletionStructureAssessment
 	/**
 	 * The Type of this expression.
-	 * @param const_fold Should this expression be constant-folded at compile-time? (See {@link SolidConfig} for info.)
-	 * @param int_coercion Should this expression allow coercion of ints to floats? (See {@link SolidConfig} for info.)
+	 * @param validator stores validation and configuration information
 	 * @return the compile-time type of this node
 	 * @final
 	 */
-	type(
-		const_fold:   boolean = CONFIG_DEFAULT.compilerOptions.constantFolding,
-		int_coercion: boolean = CONFIG_DEFAULT.compilerOptions.intCoercion,
-	): SolidLanguageType {
-		const type_: SolidLanguageType = this.type_do(const_fold, int_coercion) // type-check first, to re-throw any TypeErrors
-		if (const_fold) {
-			this.assessed = this.assess()
+	type(validator: Validator = new Validator()): SolidLanguageType {
+		const type_: SolidLanguageType = this.type_do(validator); // type-check first, to re-throw any TypeErrors
+		if (validator.config.compilerOptions.constantFolding) {
+			this.assessed || (this.assessed = this.assess()); // COMBAK `this.assessed ||= this.assess()`
 			if (!this.assessed.isAbrupt) {
 				return new SolidTypeConstant(this.assessed.value!)
 			}
 		}
 		return type_
 	}
-	protected abstract type_do(const_fold: boolean, int_coercion: boolean): SolidLanguageType;
+	protected abstract type_do(validator: Validator): SolidLanguageType;
 }
 export class SemanticNodeConstant extends SemanticNodeExpression {
 	declare children:
@@ -312,9 +309,9 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		}
 	}
 	/** @implements SemanticNodeExpression */
-	protected type_do(const_fold: boolean, _int_coercion: boolean): SolidLanguageType {
+	protected type_do(validator: Validator): SolidLanguageType {
 		// No need to call `this.assess()` and then unwrap again; just use `this.value`.
-		return (const_fold && (
+		return (validator.config.compilerOptions.constantFolding && (
 			this.value instanceof SolidNull ||
 			this.value instanceof SolidBoolean ||
 			this.value instanceof SolidNumber
@@ -336,7 +333,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	}
 	/** @implements SemanticNodeExpression */
 	get shouldFloat(): boolean {
-		throw new Error('SemanticNodeIdentifier#shouldFloat not yet supported.')
+		return this.type().isSubtypeOf(Float64);
 	}
 	/** @implements SemanticNodeExpression */
 	protected build_do(_builder: Builder): InstructionExpression {
@@ -344,11 +341,14 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
-		throw new Error('SemanticNodeIdentifier#assess_do not yet supported.')
+		return new CompletionStructureAssessment(CompletionType.THROW); // TODO #35 : constant propagation
 	}
 	/** @implements SemanticNodeExpression */
-	protected type_do(_const_fold: boolean, _int_coercion: boolean): SolidLanguageType {
-		throw new Error('SemanticNodeIdentifier#type_do not yet supported.')
+	protected type_do(validator: Validator): SolidLanguageType {
+		return (validator.hasSymbol(this.id))
+			? validator.getSymbolInfo(this.id)!.type
+			: SolidLanguageType.UNKNOWN
+		;
 	}
 }
 export class SemanticNodeTemplate extends SemanticNodeExpression {
@@ -377,7 +377,7 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 		throw new Error('SemanticNodeTemplate#assess_do not yet supported.')
 	}
 	/** @implements SemanticNodeExpression */
-	protected type_do(_const_fold: boolean, _int_coercion: boolean): SolidLanguageType {
+	protected type_do(_validator: Validator): SolidLanguageType {
 		return SolidString
 	}
 }
@@ -429,11 +429,11 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		)
 	}
 	/** @implements SemanticNodeExpression */
-	protected type_do(const_fold: boolean, int_coercion: boolean): SolidLanguageType {
+	protected type_do(validator: Validator): SolidLanguageType {
 		if ([Operator.NOT, Operator.EMP].includes(this.operator)) {
 			return SolidBoolean
 		}
-		const t0: SolidLanguageType = this.children[0].type(const_fold, int_coercion)
+		const t0: SolidLanguageType = this.children[0].type(validator);
 		return (t0.isSubtypeOf(SolidNumber)) ? t0 : (() => { throw new TypeError01(this) })()
 	}
 	private foldNumeric<T extends SolidNumber<T>>(z: T): T {
@@ -468,11 +468,11 @@ export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation 
 	 * @implements SemanticNodeExpression
 	 * @final
 	 */
-	protected type_do(const_fold: boolean, int_coercion: boolean): SolidLanguageType {
+	protected type_do(validator: Validator): SolidLanguageType {
 		return this.type_do_do(
-			this.children[0].type(const_fold, int_coercion),
-			this.children[1].type(const_fold, int_coercion),
-			int_coercion,
+			this.children[0].type(validator),
+			this.children[1].type(validator),
+			validator.config.compilerOptions.intCoercion,
 		)
 	}
 	protected abstract type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType;
@@ -761,12 +761,12 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 			: this.children[2].assess()
 	}
 	/** @implements SemanticNodeExpression */
-	protected type_do(const_fold: boolean, int_coercion: boolean): SolidLanguageType {
+	protected type_do(validator: Validator): SolidLanguageType {
 		// If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
 		// If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
-		const t0: SolidLanguageType = this.children[0].type(const_fold, int_coercion)
-		const t1: SolidLanguageType = this.children[1].type(const_fold, int_coercion)
-		const t2: SolidLanguageType = this.children[2].type(const_fold, int_coercion)
+		const t0: SolidLanguageType = this.children[0].type(validator);
+		const t1: SolidLanguageType = this.children[1].type(validator);
+		const t2: SolidLanguageType = this.children[2].type(validator);
 		return (t0.isSubtypeOf(SolidBoolean))
 			? (t0 instanceof SolidTypeConstant)
 				? (t0.value === SolidBoolean.FALSE) ? t2 : t1
@@ -795,8 +795,8 @@ export class SemanticNodeStatementExpression extends SemanticNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNodeSolid */
-	typeCheck(opts: SolidConfig['compilerOptions']): void {
-		this.children[0] && this.children[0].typeCheck(opts) // assert does not throw // COMBAK this.children[0]?.type()
+	typeCheck(validator: Validator = new Validator()): void {
+		return this.children[0]?.typeCheck(validator);
 	}
 	/** @implements SemanticNodeSolid */
 	build(builder: Builder): InstructionNone | InstructionStatement {
@@ -815,12 +815,12 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 		super(start_node, {unfixed}, children)
 	}
 	/** @implements SemanticNodeSolid */
-	typeCheck(opts: SolidConfig['compilerOptions']): void {
+	typeCheck(validator: Validator = new Validator()): void {
 		const assignee_type: SolidLanguageType = this.children[1].assess()
-		const assigned_type: SolidLanguageType = this.children[2].type(opts.constantFolding, opts.intCoercion)
+		const assigned_type: SolidLanguageType = this.children[2].type(validator);
 		if (
 			assigned_type.isSubtypeOf(assignee_type) ||
-			opts.intCoercion && assigned_type.isSubtypeOf(Int16) && Float64.isSubtypeOf(assignee_type)
+			validator.config.compilerOptions.intCoercion && assigned_type.isSubtypeOf(Int16) && Float64.isSubtypeOf(assignee_type)
 		) {
 		} else {
 			throw new TypeError03(this, assignee_type, assigned_type)
@@ -840,9 +840,16 @@ export class SemanticNodeAssignment extends SemanticNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNodeSolid */
-	typeCheck(_opts: SolidConfig['compilerOptions']): void {
-		throw new Error('SemanticNodeAssignment#typeCheck not yet supported.')
-		// const assignedType = this.children[1].type()
+	typeCheck(validator: Validator = new Validator()): void {
+		const assignee_type: SolidLanguageType = this.children[0].children[0].type(validator);
+		const assigned_type: SolidLanguageType = this.children[1].type(validator);
+		if (
+			assigned_type.isSubtypeOf(assignee_type) ||
+			validator.config.compilerOptions.intCoercion && assigned_type.isSubtypeOf(Int16) && Float64.isSubtypeOf(assignee_type)
+		) {
+		} else {
+			throw new TypeError03(this, assignee_type, assigned_type);
+		};
 	}
 	/** @implements SemanticNodeSolid */
 	build(_builder: Builder): Instruction {
@@ -858,8 +865,8 @@ export class SemanticNodeAssignee extends SemanticNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNodeSolid */
-	typeCheck(_opts: SolidConfig['compilerOptions']): void {
-		throw new Error('SemanticNodeAssignee#typeCheck not yet supported.')
+	typeCheck(validator: Validator = new Validator()): void {
+		return this.children[0].typeCheck(validator);
 	}
 	/** @implements SemanticNodeSolid */
 	build(_builder: Builder): Instruction {
@@ -876,10 +883,8 @@ export class SemanticNodeGoal extends SemanticNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNodeSolid */
-	typeCheck(opts: SolidConfig['compilerOptions']): void {
-		this.children.forEach((child) => {
-			child.typeCheck(opts)
-		})
+	typeCheck(validator: Validator = new Validator()): void {
+		return this.children.forEach((child) => child.typeCheck(validator));
 	}
 	/** @implements SemanticNodeSolid */
 	build(builder: Builder): InstructionNone | InstructionModule {
