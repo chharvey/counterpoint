@@ -1,4 +1,5 @@
 export {default as Validator}    from './Validator.class'
+export {Decorator} from './Decorator';
 
 export {
 	SemanticNodeSolid,
@@ -26,6 +27,7 @@ export {
 	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
 } from './SemanticNode.class'
+export * as AST from './SemanticNode.class';
 
 export {
 	CompletionStructureAssessment,

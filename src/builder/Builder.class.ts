@@ -5,6 +5,10 @@ import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop =
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
 import {
+	ParserSolid as Parser,
+} from '../parser/';
+import {
+	Decorator,
 	Validator,
 	SemanticNodeGoal,
 } from '../validator/'
@@ -40,7 +44,8 @@ export default class Builder {
 		source: string,
 		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
-		this.semanticgoal = new Validator(source, config).validate();
+		this.semanticgoal = Decorator.decorate(new Parser(source, config).parse());
+		this.semanticgoal.typeCheck(new Validator(this.config)); // assert does not throw
 	}
 
 	/**
