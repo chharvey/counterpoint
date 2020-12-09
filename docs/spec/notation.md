@@ -758,6 +758,22 @@ formal validation rules.
 If this is the case, the code is said to be “invalid” (“not valid”).
 
 
+### Reference Errors (21xx)
+When the compiler fails to dereference an identifier, a reference error is raised.
+
+2100. A general reference error not covered by one of the following cases.
+2101. The validator encountered a variable that was never declared.
+2102. The validator encountered a variable that was used before it was declared.
+
+
+### Assignment Errors (22xx)
+When the compiler detects an illegal declaration or assignment, an assignment error is raised.
+
+2200. A general assignment error not covered by one of the following cases.
+2201. The validator encountered a duplicate variable declaration.
+2210. A reassignment of a fixed variable was attempted.
+
+
 ### Type Errors (23xx)
 When the compiler recognizes a type mismatch, a type error is raised.
 

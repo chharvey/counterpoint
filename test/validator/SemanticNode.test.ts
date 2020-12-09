@@ -5,6 +5,14 @@ import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {
+	ReferenceError01,
+	ReferenceError02,
+} from '../../src/error/SolidReferenceError.class';
+import {
+	AssignmentError01,
+	AssignmentError10,
+} from '../../src/error/AssignmentError.class';
+import {
 	TypeError01,
 	TypeError03,
 } from '../../src/error/SolidTypeError.class'
@@ -460,7 +468,13 @@ describe('SemanticNode', () => {
 					let unfixed i: int = 42;
 					i;
 				`).varCheck(); // assert does not throw
-				assert.throws(() => identifierFromSource(`i;`).varCheck(), {message: "ReferenceError: `i` is not declared."});
+				assert.throws(() => identifierFromSource(`i;`).varCheck(), ReferenceError01);
+			});
+			it.skip('throws when there is a temporal dead zone.', () => {
+				assert.throws(() => goalFromSource(`
+					i;
+					let unfixed i: int = 42;
+				`).varCheck(), ReferenceError02);
 			});
 		});
 		describe('SemanticNodeDeclarationVariable', () => {
@@ -468,7 +482,7 @@ describe('SemanticNode', () => {
 				assert.throws(() => goalFromSource(`
 					let i: int = 42;
 					let i: int = 43;
-				`).varCheck(), {message: "AssignmentError: Duplicate variable declaration: `i`."});
+				`).varCheck(), AssignmentError01);
 			});
 		});
 		describe('SemanticNodeAssignee', () => {
@@ -480,7 +494,7 @@ describe('SemanticNode', () => {
 				assert.throws(() => goalFromSource(`
 					let i: int = 42;
 					i = 43;
-				`).varCheck(), {message: "AssignmentError: Reassignment of a fixed variable: `i`."});
+				`).varCheck(), AssignmentError10);
 			});
 		});
 	});

@@ -49,6 +49,13 @@ import {
 	InstructionModule,
 } from '../builder/'
 import {
+	ReferenceError01,
+} from '../error/SolidReferenceError.class';
+import {
+	AssignmentError01,
+	AssignmentError10,
+} from '../error/AssignmentError.class';
+import {
 	TypeError01,
 	TypeError03,
 } from '../error/SolidTypeError.class'
@@ -357,7 +364,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	/** @implements SemanticNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
 		if (!validator.hasSymbol(this.id)) {
-			throw new Error(`ReferenceError: \`${ this.source }\` is not declared.`);
+			throw new ReferenceError01(this);
 		};
 	}
 	/** @implements SemanticNodeExpression */
@@ -860,7 +867,7 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 		const identifier: SemanticNodeIdentifier = assignee.children[0];
 		const assignee_type: SolidLanguageType   = this.children[1].assess();
 		if (validator.hasSymbol(identifier.id)) {
-			throw new Error(`AssignmentError: Duplicate variable declaration: \`${ identifier.source }\`.`);
+			throw new AssignmentError01(identifier);
 		};
 		validator.addSymbol(
 			identifier.id,
@@ -931,7 +938,7 @@ export class SemanticNodeAssignee extends SemanticNodeSolid {
 		identifier.varCheck(validator);
 		const info: SymbolInfo = validator.getSymbolInfo(identifier.id) as SymbolInfo;
 		if (!info.unfixed) {
-			throw new Error(`AssignmentError: Reassignment of a fixed variable: \`${ identifier.source }\`.`);
+			throw new AssignmentError10(identifier);
 		};
 	}
 	/** @implements SemanticNodeSolid */

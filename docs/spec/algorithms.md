@@ -12,7 +12,8 @@ Void VarCheck(Or<SemanticType, SemanticConstant> node) :=
 
 Void! VarCheck(SemanticIdentifier id) :=
 	1. *If* the validator does not contain a record for `id`:
-		1. *Throw:* a ReferenceError. // Variable is not declared.
+		1. *Throw:* a new ReferenceError01.
+	// TODO: Throw a ReferenceError02 if the variable is declared further down in source.
 ;
 
 Void! VarCheck(Or<SemanticTemplate, SemanticOperation, SemanticStatementExpression, SemanticAssignment, SemanticGoal> list) :=
@@ -26,7 +27,7 @@ Void! VarCheck(SemanticDeclarationVariable decl) :=
 	3. *Assert:* `assignee.children.count` is 1.
 	4. *Let* `id` be `assignee.children.0`.
 	5. *If* the validator contains a record for `id`:
-		1. *Throw:* an AssignmentError. // Duplicate variable declaration.
+		1. *Throw:* a new AssignmentError01.
 	6. Add a record for `id` to the validator. // TODO: to be specified
 	7. *Return:* `VarCheck(decl.children.2)`.
 ;
@@ -38,7 +39,7 @@ Void! VarCheck(SemanticAssignee assignee) :=
 	4. *Assert:* The validator contains a record for `id`.
 	5. *Let* `info` be the record for `id` in the validator.
 	6. *If* `info.unfixed` is `false`:
-		1. *Throw:* an AssignmentError. // Reassignment of a fixed variable.
+		1. *Throw:* a new AssignmentError10.
 ;
 ```
 
