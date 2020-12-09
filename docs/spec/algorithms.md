@@ -3,6 +3,47 @@ This chapter lists and defines common abstract algorithms used throughout this s
 
 
 
+## VarCheck
+Performs the definite assignment piece during semantic analysis.
+```
+Void VarCheck(Or<SemanticType, SemanticConstant> node) :=
+	1. *Return.*
+;
+
+Void! VarCheck(SemanticIdentifier id) :=
+	1. *If* the validator does not contain a record for `id`:
+		1. *Throw:* a ReferenceError. // Variable is not declared.
+;
+
+Void! VarCheck(Or<SemanticTemplate, SemanticOperation, SemanticStatementExpression, SemanticAssignment, SemanticGoal> list) :=
+	1. *For* `i` in `list`:
+		1. Perform *Unwrap:* `VarCheck(list[i])`.
+;
+
+Void! VarCheck(SemanticDeclarationVariable decl) :=
+	1. *Assert:* `decl.children.count` is 3.
+	2. *Let* `assignee` be `decl.children.0`.
+	3. *Assert:* `assignee.children.count` is 1.
+	4. *Let* `id` be `assignee.children.0`.
+	5. *If* the validator contains a record for `id`:
+		1. *Throw:* an AssignmentError. // Duplicate variable declaration.
+	6. Add a record for `id` to the validator. // TODO: to be specified
+	7. *Return:* `VarCheck(decl.children.2)`.
+;
+
+Void! VarCheck(SemanticAssignee assignee) :=
+	1. *Assert:* `assignee.children.count` is 1.
+	2. *Let* `id` be `assignee.children.0`.
+	3. Perform *Unwrap:* `VarCheck(id)`.
+	4. *Assert:* The validator contains a record for `id`.
+	5. *Let* `info` be the record for `id` in the validator.
+	6. *If* `info.unfixed` is `false`:
+		1. *Throw:* an AssignmentError. // Reassignment of a fixed variable.
+;
+```
+
+
+
 ## TypeCheck
 Performs the type-checking piece during semantic analysis.
 ```

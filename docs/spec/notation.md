@@ -494,8 +494,12 @@ A step that says «*Break.*» (with no number) implies «*Break:* 1.».
 An algorithm step that reads «*Return:* ‹v›.» (where ‹v› is a metavariable representing a completion value)
 is shorthand for «*Return:* [type= normal, value= ‹v›].», meaning
 the algorithm outputs a normal completion structure with a \`value\` of ‹v›.
+
 However, an algorithm step that reads «*Return:* [type= ‹type›, value= ‹v›].» is to be interpreted as-is,
-as returning the completion record itself, not “wrapped” in a normal completion.
+as returning the completion structure itself, not “wrapped” in a normal completion.
+Similarly, an algorithm step that reads «*Return:* ‹CS›.»,
+where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
+is also to be interpreted as-is, as returning the completion structure itself.
 
 An algorithm step that reads «*Return*.» is shorthand for «*Return:* [type= normal].», that is,
 it outputs a normal completion structure without a \`value\` (thus the output type is Void).

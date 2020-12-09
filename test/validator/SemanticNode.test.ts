@@ -448,6 +448,44 @@ describe('SemanticNode', () => {
 	})
 
 
+	Dev.supports('variables') && describe('#varCheck', () => {
+		describe('SemanticNodeConstant', () => {
+			it('never throws.', () => {
+				constantFromSource(`42;`).varCheck();
+			});
+		});
+		describe('SemanticNodeIdentifier', () => {
+			it('throws if the validator does not contain a record for the identifier.', () => {
+				goalFromSource(`
+					let unfixed i: int = 42;
+					i;
+				`).varCheck(); // assert does not throw
+				assert.throws(() => identifierFromSource(`i;`).varCheck(), {message: "ReferenceError: `i` is not declared."});
+			});
+		});
+		describe('SemanticNodeDeclarationVariable', () => {
+			it('throws if the validator already contains a record for the variable.', () => {
+				assert.throws(() => goalFromSource(`
+					let i: int = 42;
+					let i: int = 43;
+				`).varCheck(), {message: "AssignmentError: Duplicate variable declaration: `i`."});
+			});
+		});
+		describe('SemanticNodeAssignee', () => {
+			it('throws if the variable is not unfixed.', () => {
+				goalFromSource(`
+					let unfixed i: int = 42;
+					i = 43;
+				`).varCheck(); // assert does not throw
+				assert.throws(() => goalFromSource(`
+					let i: int = 42;
+					i = 43;
+				`).varCheck(), {message: "AssignmentError: Reassignment of a fixed variable: `i`."});
+			});
+		});
+	});
+
+
 	describe('#typeCheck', () => {
 		describe('SemanticNodeDeclarationVariable', () => {
 			it('checks the assigned expression’s type against the variable assignee’s type.', () => {

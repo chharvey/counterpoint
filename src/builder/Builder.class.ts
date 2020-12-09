@@ -45,7 +45,9 @@ export default class Builder {
 		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
 		this.semanticgoal = Decorator.decorate(new Parser(source, config).parse());
-		this.semanticgoal.typeCheck(new Validator(this.config)); // assert does not throw
+		const validator: Validator = new Validator(this.config);
+		this.semanticgoal.varCheck (validator); // assert does not throw
+		this.semanticgoal.typeCheck(validator); // assert does not throw
 	}
 
 	/**

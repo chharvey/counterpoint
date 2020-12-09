@@ -20,7 +20,7 @@ import type SolidLanguageType from './SolidLanguageType.class'
  * - line: the 0-based line   index of where the varible was declared
  * - col:  the 0-based column index of where the varible was declared
  */
-type SymbolInfo = {
+export type SymbolInfo = {
 	id: bigint;
 	type: SolidLanguageType;
 	unfixed: boolean;
