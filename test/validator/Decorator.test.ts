@@ -45,8 +45,9 @@ import {
 	constantFromSource,
 	identifierFromSource,
 	operationFromSource,
-	variableDeclarationFromSource,
 	statementExpressionFromSource,
+	variableDeclarationFromSource,
+	assignmentFromSource,
 	goalFromSource,
 } from '../helpers-semantic'
 
@@ -751,28 +752,31 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('variables') && describe.skip('StatementAssignment', () => {
+		Dev.supports('variables') && describe('StatementAssignment', () => {
 			it('makes SemanticNodeAssignment nodes.', () => {
+				/*
+					<Assignment>
+						<Assignee>
+							<Identifier source="the_answer" id=256n/>
+						</Assignee>
+						<Operation operator=ADD source="the_answer - 40">
+							<Identifier source="the_answer" id="256"/>
+							<Operation operator=NEG source="40">...</Operation>
+						</Operation>
+					</Assignment>
+				*/
 				const src: string = `the_answer = the_answer - 40;`;
-				assert.strictEqual(Decorator
-					.decorate(new Parser(src).parse())
-					.serialize(), `
-					<Goal source="␂ let unfixed the_answer = 42 ; let \`the &#xa3; answer\` = the_answer * 10 ; the_answer = the_answer - 40 ; ␃">
-						<Assignment line="3" col="1" source="the_answer = the_answer - 40 ;">
-							<Assignee line="3" col="1" source="the_answer">
-								<Identifier line="3" col="1" source="the_answer" id="256"/>
-							</Assignee>
-							<Assigned line="3" col="14" source="the_answer - 40">
-								<Operation line="3" col="14" source="the_answer - 40" operator="7">
-									<Identifier line="3" col="14" source="the_answer" id="256"/>
-									<Operation line="3" col="27" source="40" operator="3">
-										<Constant line="3" col="27" source="40" value="40"/>
-									</Operation>
-								</Operation>
-							</Assigned>
-						</Assignment>
-					</Goal>
-				`.replace(/\n\t*/g, ''))
+				const assn: AST.SemanticNodeAssignment = assignmentFromSource(src);
+				const assignee: AST.SemanticNodeAssignee = assn.children[0];
+				assert.strictEqual(assignee.children[0].id, 256n);
+				const assigned_expr: AST.SemanticNodeExpression = assn.children[1];
+				assert.ok(assigned_expr instanceof AST.SemanticNodeOperationBinary);
+				assert.strictEqual(assigned_expr.operator, Operator.ADD);
+				assert.ok(assigned_expr.children[0] instanceof AST.SemanticNodeIdentifier);
+				assert.strictEqual(assigned_expr.children[0].id, 256n);
+				assert.deepStrictEqual(assn.children.map((child) => child.source), [
+					`the_answer`, `the_answer - 40`
+				]);
 			})
 		})
 
