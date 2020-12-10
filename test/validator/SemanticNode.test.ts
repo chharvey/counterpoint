@@ -5,6 +5,14 @@ import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {
+	ReferenceError01,
+	ReferenceError02,
+} from '../../src/error/SolidReferenceError.class';
+import {
+	AssignmentError01,
+	AssignmentError10,
+} from '../../src/error/AssignmentError.class';
+import {
 	TypeError01,
 	TypeError03,
 } from '../../src/error/SolidTypeError.class'
@@ -446,6 +454,50 @@ describe('SemanticNode', () => {
 			})
 		})
 	})
+
+
+	Dev.supports('variables') && describe('#varCheck', () => {
+		describe('SemanticNodeConstant', () => {
+			it('never throws.', () => {
+				constantFromSource(`42;`).varCheck();
+			});
+		});
+		describe('SemanticNodeIdentifier', () => {
+			it('throws if the validator does not contain a record for the identifier.', () => {
+				goalFromSource(`
+					let unfixed i: int = 42;
+					i;
+				`).varCheck(); // assert does not throw
+				assert.throws(() => identifierFromSource(`i;`).varCheck(), ReferenceError01);
+			});
+			it.skip('throws when there is a temporal dead zone.', () => {
+				assert.throws(() => goalFromSource(`
+					i;
+					let unfixed i: int = 42;
+				`).varCheck(), ReferenceError02);
+			});
+		});
+		describe('SemanticNodeDeclarationVariable', () => {
+			it('throws if the validator already contains a record for the variable.', () => {
+				assert.throws(() => goalFromSource(`
+					let i: int = 42;
+					let i: int = 43;
+				`).varCheck(), AssignmentError01);
+			});
+		});
+		describe('SemanticNodeAssignee', () => {
+			it('throws if the variable is not unfixed.', () => {
+				goalFromSource(`
+					let unfixed i: int = 42;
+					i = 43;
+				`).varCheck(); // assert does not throw
+				assert.throws(() => goalFromSource(`
+					let i: int = 42;
+					i = 43;
+				`).varCheck(), AssignmentError10);
+			});
+		});
+	});
 
 
 	describe('#typeCheck', () => {
