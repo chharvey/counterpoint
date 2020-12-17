@@ -328,6 +328,8 @@ Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Express
 
 
 
+Decorate(Declaration ::= DeclarationVariable;) -> SemanticDeclarationVariable
+	:= Decorate(DeclarationVariable);
 Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";") -> SemanticAssignment
 	:= (SemanticAssignment
 		(SemanticAssignee
@@ -342,8 +344,8 @@ Decorate(Statement ::= ";") -> SemanticStatementExpression
 	:= (SemanticStatementExpression);
 Decorate(Statement ::= Expression ";") -> SemanticStatementExpression
 	:= (SemanticStatementExpression Decorate(Expression));
-Decorate(Statement ::= DeclarationVariable) -> SemanticDeclaration
-	:= Decorate(DeclarationVariable);
+Decorate(Statement ::= Declaration) -> SemanticDeclaration
+	:= Decorate(Declaration);
 Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
 	:= Decorate(StatementAssignment);
 

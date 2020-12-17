@@ -40,7 +40,8 @@ TokenWorth(Keyword :::= "if")      -> RealNumber := \x89;
 TokenWorth(Keyword :::= "then")    -> RealNumber := \x8a;
 TokenWorth(Keyword :::= "else")    -> RealNumber := \x8b;
 TokenWorth(Keyword :::= "let")     -> RealNumber := \x8c;
-TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x8d;
+TokenWorth(Keyword :::= "type")    -> RealNumber := \x8d;
+TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x8e;
 
 
 

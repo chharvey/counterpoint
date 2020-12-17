@@ -84,15 +84,20 @@ Expression ::=
 
 
 
-DeclarationVariable
-	::= "let" "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
+DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
+DeclarationType     ::= "type"            IDENTIFIER "=" Type                ";";
+
+Declaration ::=
+	| DeclarationVariable
+	| DeclarationType
+;
 
 StatementAssignment
 	::= IDENTIFIER "=" Expression ";";
 
 Statement ::=
 	| Expression? ";"
-	| DeclarationVariable
+	| Declaration
 	| StatementAssignment
 ;
 

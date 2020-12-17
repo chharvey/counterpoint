@@ -69,6 +69,12 @@ SemanticStatementExpression
 SemanticDeclarationVariable[unfixed: Boolean]
 	::= SemanticAssignee SemanticType SemanticExpression;
 
+SemanticDeclaration =:=
+	| SemanticDeclarationVariable
+;
+
+
+
 SemanticAssignment
 	::= SemanticAssignee SemanticExpression;
 

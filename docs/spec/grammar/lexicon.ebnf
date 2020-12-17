@@ -42,6 +42,7 @@ Keyword :::=
 		| "else"
 	// storage
 		| "let"
+		| "type"
 	// modifier
 		| "unfixed"
 ;
