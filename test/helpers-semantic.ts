@@ -57,6 +57,13 @@ export function variableDeclarationFromSource(src: string, config: SolidConfig =
 	assert.ok(statement instanceof SemanticNodeDeclarationVariable);
 	return statement;
 }
+export function typeDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.SemanticNodeDeclarationType {
+	const goal: AST.SemanticNodeGoal = goalFromSource(src, config);
+	assert_arrayLength(goal.children, 1, 'semantic goal should have 1 child');
+	const statement: AST.SemanticStatementType = goal.children[0] as AST.SemanticStatementType;
+	assert.ok(statement instanceof AST.SemanticNodeDeclarationType);
+	return statement;
+}
 export function assignmentFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.SemanticNodeAssignment {
 	const goal: AST.SemanticNodeGoal = goalFromSource(src, config);
 	assert_arrayLength(goal.children, 1, 'semantic goal should have 1 child');

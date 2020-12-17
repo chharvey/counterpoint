@@ -826,7 +826,7 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
  */
 export type SemanticStatementType =
 	| SemanticNodeStatementExpression
-	| SemanticNodeDeclarationVariable
+	| SemanticDeclaration
 	| SemanticNodeAssignment
 export class SemanticNodeStatementExpression extends SemanticNodeSolid {
 	constructor(
@@ -852,6 +852,16 @@ export class SemanticNodeStatementExpression extends SemanticNodeSolid {
 			: new InstructionStatement(builder.stmtCount, this.children[0].build(builder))
 	}
 }
+/**
+ * A sematic node representing a declaration.
+ * There are 2 known subclasses:
+ * - SemanticNodeDeclarationVariable
+ * - SemanticNodeDeclarationType
+ */
+export type SemanticDeclaration =
+	| SemanticNodeDeclarationVariable
+	| SemanticNodeDeclarationType
+;
 export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 	constructor (
 		start_node: ParseNode,
@@ -893,6 +903,28 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 	/** @implements SemanticNodeSolid */
 	build(_builder: Builder): Instruction {
 		throw new Error('SemanticNodeDeclaration#build not yet supported.')
+	}
+}
+export class SemanticNodeDeclarationType extends SemanticNodeSolid {
+	constructor (
+		start_node: ParseNode,
+		readonly children:
+			| readonly [SemanticNodeAssignee, SemanticNodeType]
+		,
+	) {
+		super(start_node, {}, children);
+	}
+	/** @implements SemanticNodeSolid */
+	varCheck(_validator: Validator = new Validator()): void {
+		throw new Error('SemanticNodeDeclarationType#varCheck not yet supported.');
+	}
+	/** @implements SemanticNodeSolid */
+	typeCheck(_validator: Validator = new Validator()): void {
+		throw new Error('SemanticNodeDeclarationType#typeCheck not yet supported.');
+	}
+	/** @implements SemanticNodeSolid */
+	build(_builder: Builder): Instruction {
+		throw new Error('SemanticNodeDeclarationType#build not yet supported.');
 	}
 }
 export class SemanticNodeAssignment extends SemanticNodeSolid {

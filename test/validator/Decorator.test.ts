@@ -47,6 +47,7 @@ import {
 	operationFromSource,
 	statementExpressionFromSource,
 	variableDeclarationFromSource,
+	typeDeclarationFromSource,
 	assignmentFromSource,
 	goalFromSource,
 } from '../helpers-semantic'
@@ -751,6 +752,29 @@ describe('Decorator', () => {
 				])
 			})
 		})
+
+		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationType', () => {
+			it('makes a SemanticNodeDeclarationType node.', () => {
+				/*
+					<SemanticDeclarationType>
+						<Assignee>
+							<Identifier source="T" id=256n/>
+						</Assignee>
+						<TypeOperation operator=OR source="int | float">...</TypeOperation>
+					</SemanticDeclarationType>
+				*/
+				const decl: AST.SemanticNodeDeclarationType = typeDeclarationFromSource(`
+					type T  =  int | float;
+				`);
+				assert.strictEqual(decl.children[0].children[0].id, 256n);
+				const typ: AST.SemanticNodeType = decl.children[1];
+				assert.ok(typ instanceof AST.SemanticNodeTypeOperationBinary);
+				assert.strictEqual(typ.operator, Operator.OR);
+				assert.deepStrictEqual(decl.children.map((child) => child.source), [
+					`T`, `int | float`,
+				]);
+			});
+		});
 
 		Dev.supports('variables') && describe('StatementAssignment', () => {
 			it('makes SemanticNodeAssignment nodes.', () => {

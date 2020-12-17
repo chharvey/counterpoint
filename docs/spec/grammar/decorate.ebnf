@@ -328,8 +328,23 @@ Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Express
 
 
 
+Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType
+	:= (SemanticDeclarationType
+		(SemanticAssignee
+			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+		)
+		Decorate(Type)
+	);
+
+
+
 Decorate(Declaration ::= DeclarationVariable;) -> SemanticDeclarationVariable
 	:= Decorate(DeclarationVariable);
+Decorate(Declaration ::= DeclarationType;) -> SemanticDeclarationType
+	:= Decorate(DeclarationType);
+
+
+
 Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";") -> SemanticAssignment
 	:= (SemanticAssignment
 		(SemanticAssignee

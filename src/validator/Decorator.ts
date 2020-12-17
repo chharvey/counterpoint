@@ -96,6 +96,7 @@ export class Decorator {
 	): AST.SemanticNodeExpression;
 	static decorate(node: PARSER.ParseNodeExpressionConditional): AST.SemanticNodeOperationTernary;
 	static decorate(node: PARSER.ParseNodeDeclarationVariable):   AST.SemanticNodeDeclarationVariable;
+	static decorate(node: PARSER.ParseNodeDeclarationType):       AST.SemanticNodeDeclarationType;
 	static decorate(node: PARSER.ParseNodeDeclaration):           AST.SemanticDeclaration;
 	static decorate(node: PARSER.ParseNodeStatementAssignment):   AST.SemanticNodeAssignment;
 	static decorate(node: PARSER.ParseNodeStatement):             AST.SemanticStatementType;
@@ -257,6 +258,16 @@ export class Decorator {
 				this.decorate(type_),
 				this.decorate(expression),
 			])
+
+		} else if (node instanceof PARSER.ParseNodeDeclarationType) {
+			const identifier: TOKEN.TokenIdentifier = node.children[1] as TOKEN.TokenIdentifier;
+			const typ:        PARSER.ParseNodeType  = node.children[3];
+			return new AST.SemanticNodeDeclarationType(node, [
+				new AST.SemanticNodeAssignee(identifier, [
+					new AST.SemanticNodeIdentifier(identifier),
+				]),
+				this.decorate(typ),
+			]);
 
 		} else if (node instanceof PARSER.ParseNodeDeclaration) {
 			return this.decorate(node.children[0]);
