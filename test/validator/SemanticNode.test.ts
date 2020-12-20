@@ -7,6 +7,7 @@ import Operator from '../../src/enum/Operator.enum'
 import {
 	ReferenceError01,
 	ReferenceError02,
+	ReferenceError03,
 } from '../../src/error/SolidReferenceError.class';
 import {
 	AssignmentError01,
@@ -473,6 +474,12 @@ describe('SemanticNode', () => {
 					type T = int;
 				`).varCheck(), ReferenceError02);
 			});
+			it('throws if was declared as a value variable.', () => {
+				assert.throws(() => goalFromSource(`
+					let FOO: int = 42;
+					type T = FOO | float;
+				`).varCheck(), ReferenceError03);
+			});
 		});
 		describe('SemanticNodeConstant', () => {
 			it('never throws.', () => {
@@ -492,6 +499,12 @@ describe('SemanticNode', () => {
 					i;
 					let unfixed i: int = 42;
 				`).varCheck(), ReferenceError02);
+			});
+			it('throws if it was declared as a type alias.', () => {
+				assert.throws(() => goalFromSource(`
+					type FOO = int;
+					42 || FOO;
+				`).varCheck(), ReferenceError03);
 			});
 		});
 		describe('SemanticNodeDeclarationVariable', () => {
@@ -533,7 +546,7 @@ describe('SemanticNode', () => {
 				assert.throws(() => goalFromSource(`
 					type T = 42;
 					T = 43;
-				`).varCheck(), AssignmentError10);
+				`).varCheck(), ReferenceError03);
 			});
 		});
 	});

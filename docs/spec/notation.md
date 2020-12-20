@@ -764,6 +764,7 @@ When the compiler fails to dereference an identifier, a reference error is raise
 2100. A general reference error not covered by one of the following cases.
 2101. The validator encountered a variable that was never declared.
 2102. The validator encountered a variable that was used before it was declared.
+2103. The validator encountered a symbol of the wrong kind.
 
 
 ### Assignment Errors (22xx)

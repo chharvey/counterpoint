@@ -8,6 +8,9 @@ Void! VarCheck(SemanticTypeAlias var) :=
 	1. *If* the validator’s symbol table does not contain a SymbolStructure whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceError01.
 	// TODO: Throw a ReferenceError02 if the variable is declared further down in source.
+	2. *Assert:* The the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`.
+	3. *If* `symbol.kind` is *value*:
+		1. *Throw:* a new ReferenceError03.
 ;
 
 
@@ -16,6 +19,9 @@ Void! VarCheck(SemanticVariable var) :=
 	1. *If* the validator’s symbol table does not contain a SymbolStructure whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceError01.
 	// TODO: Throw a ReferenceError02 if the variable is declared further down in source.
+	2. *Assert:* The the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`.
+	3. *If* `symbol.kind` is *type*:
+		1. *Throw:* a new ReferenceError03.
 ;
 
 

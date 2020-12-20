@@ -51,6 +51,7 @@ import {
 } from '../builder/'
 import {
 	ReferenceError01,
+	ReferenceError03,
 } from '../error/SolidReferenceError.class';
 import {
 	AssignmentError01,
@@ -208,6 +209,9 @@ export class SemanticNodeTypeAlias extends SemanticNodeType {
 	varCheck(validator: Validator = new Validator()): void {
 		if (!validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
+		};
+		if (validator.getSymbolInfo(this.id)!.kind === SymbolKind.VALUE) {
+			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
 		};
 	}
 	/** @implements SemanticNodeType */
@@ -400,6 +404,10 @@ export class SemanticNodeVariable extends SemanticNodeExpression {
 	varCheck(validator: Validator = new Validator()): void {
 		if (!validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
+		};
+		if (validator.getSymbolInfo(this.id)!.kind === SymbolKind.TYPE) {
+			throw new ReferenceError03(this, SymbolKind.TYPE, SymbolKind.VALUE);
+			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		};
 	}
 	/** @implements SemanticNodeExpression */
