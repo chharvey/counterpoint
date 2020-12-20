@@ -458,6 +458,23 @@ describe('SemanticNode', () => {
 
 
 	Dev.supports('variables') && describe('#varCheck', () => {
+		describe('SemanticNodeTypeAlias', () => {
+			it('throws if the validator does not contain a record for the identifier.', () => {
+				goalFromSource(`
+					type T = int;
+					type U = float | T;
+				`).varCheck(); // assert does not throw
+				assert.throws(() => goalFromSource(`
+					type U = float | T;
+				`).varCheck(), ReferenceError01);
+			});
+			it.skip('throws when there is a temporal dead zone.', () => {
+				assert.throws(() => goalFromSource(`
+					T;
+					type T = int;
+				`).varCheck(), ReferenceError02);
+			});
+		});
 		describe('SemanticNodeConstant', () => {
 			it('never throws.', () => {
 				constantFromSource(`42;`).varCheck();

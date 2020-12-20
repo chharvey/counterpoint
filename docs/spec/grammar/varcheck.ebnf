@@ -1,18 +1,32 @@
-Void VarCheck(Or<SemanticType, SemanticConstant> node) :=
+Void VarCheck(Or<SemanticTypeConstant, SemanticConstant> node) :=
 	1. *Return.*
 ;
 
 
 
-Void! VarCheck(SemanticVariable var) :=
-	1. *If* the validator does not contain a record for `var`:
+Void! VarCheck(SemanticTypeAlias var) :=
+	1. *If* the validator’s symbol table does not contain a SymbolStructure whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceError01.
 	// TODO: Throw a ReferenceError02 if the variable is declared further down in source.
 ;
 
 
 
-Void! VarCheck(Or<SemanticTemplate, SemanticOperation, SemanticStatementExpression, SemanticAssignment> list) :=
+Void! VarCheck(SemanticVariable var) :=
+	1. *If* the validator’s symbol table does not contain a SymbolStructure whose `id` is `var.id`:
+		1. *Throw:* a new ReferenceError01.
+	// TODO: Throw a ReferenceError02 if the variable is declared further down in source.
+;
+
+
+
+Void! VarCheck(Or<
+	SemanticTypeOperation,
+	SemanticTemplate,
+	SemanticOperation,
+	SemanticStatementExpression,
+	SemanticAssignment,
+> list) :=
 	1. *For* `i` in `list`:
 		1. Perform *Unwrap:* `VarCheck(list[i])`.
 ;
@@ -28,14 +42,16 @@ Void! VarCheck(SemanticDeclarationVariable decl) :=
 			1. *Throw:* a new AssignmentError01.
 		3. *Assert:* `info.kind` is *type*.
 		4. *Throw:* a new AssignmentError02.
-	4. *Let* `symbol` be a new SymbolStructure [
+	4. Perform *Unwrap:* `VarCheck(decl.children.1)`.
+	5. Perform *Unwrap:* `VarCheck(decl.children.2)`.
+	6. *Let* `symbol` be a new SymbolStructure [
 		id=      `id`,
 		kind=    *value*,
 		type=    *UnwrapAffirm:* `Assess(decl.children.1)`,
 		unfixed= `decl.unfixed`,
 	].
-	5. Add `symbol` as a record for `id` to the validator.
-	6. *Return:* `VarCheck(decl.children.2)`.
+	7. Add `symbol` as a record for `id` to the validator.
+	8. *Return*.
 ;
 
 
@@ -49,14 +65,15 @@ Void! VarCheck(SemanticDeclarationType decl) :=
 			1. *Throw:* a new AssignmentError02.
 		3. *Assert:* `info.kind` is *value*.
 		4. *Throw:* a new AssignmentError01.
-	4. *Let* `symbol` be a new SymbolStructure [
+	4. Perform *Unwrap:* `VarCheck(decl.children.1)`.
+	5. *Let* `symbol` be a new SymbolStructure [
 		id=      `id`,
 		kind=    *type*,
 		type=    *UnwrapAffirm:* `Assess(decl.children.1)`,
 		unfixed= `false`,
 	].
-	5. Add `symbol` as a record for `id` to the validator.
-	6. *Return*.
+	6. Add `symbol` as a record for `id` to the validator.
+	7. *Return*.
 ;
 
 

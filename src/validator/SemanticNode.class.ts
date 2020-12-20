@@ -142,10 +142,6 @@ export abstract class SemanticNodeSolid extends ASTNode {
 export abstract class SemanticNodeType extends SemanticNodeSolid {
 	private assessed: SolidLanguageType | null = null
 	/** @implements SemanticNodeSolid */
-	varCheck(_validator: Validator = new Validator()): void {
-		return; // for now, there are no type variables // TODO: dereferencing type variables
-	}
-	/** @implements SemanticNodeSolid */
 	typeCheck(_validator: Validator = new Validator()): void {
 		return; // for now, all types are valid // TODO: dereferencing type variables
 	}
@@ -192,6 +188,10 @@ export class SemanticNodeTypeConstant extends SemanticNodeType {
 		super(start_node, {value: value.toString()})
 		this.value = value
 	}
+	/** @implements SemanticNodeSolid */
+	varCheck(_validator: Validator = new Validator()): void {
+		return; // no validation necessary for constants
+	}
 	/** @implements SemanticNodeType */
 	protected assess_do(_validator: Validator): SolidLanguageType {
 		return this.value
@@ -204,6 +204,12 @@ export class SemanticNodeTypeAlias extends SemanticNodeType {
 	constructor (start_node: TOKEN.TokenIdentifier) {
 		super(start_node, {id: start_node.cook()})
 		this.id = start_node.cook()!;
+	}
+	/** @implements SemanticNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		if (!validator.hasSymbol(this.id)) {
+			throw new ReferenceError01(this);
+		};
 	}
 	/** @implements SemanticNodeType */
 	protected assess_do(validator: Validator): SolidLanguageType {
@@ -224,6 +230,13 @@ export abstract class SemanticNodeTypeOperation extends SemanticNodeType {
 			| readonly SemanticNodeType[]
 	) {
 		super(start_node, {operator}, children)
+	}
+	/**
+	 * @implements SemanticNodeSolid
+	 * @final
+	 */
+	varCheck(validator: Validator = new Validator()): void {
+		return this.children.forEach((c) => c.varCheck(validator));
 	}
 }
 export class SemanticNodeTypeOperationUnary extends SemanticNodeTypeOperation {
@@ -906,6 +919,8 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 			};
 			throw new AssignmentError02(variable);
 		};
+		this.children[1].varCheck(validator);
+		this.children[2].varCheck(validator);
 		validator.addVariableSymbol(
 			variable.id,
 			this.children[1].assess(validator),
@@ -913,7 +928,6 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 			variable.line_index,
 			variable.col_index,
 		);
-		return this.children[2].varCheck(validator);
 	}
 	/** @implements SemanticNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
@@ -950,6 +964,7 @@ export class SemanticNodeDeclarationType extends SemanticNodeSolid {
 			};
 			throw new AssignmentError01(variable);
 		};
+		this.children[1].varCheck(validator);
 		validator.addTypeSymbol(
 			variable.id,
 			this.children[1].assess(validator),
