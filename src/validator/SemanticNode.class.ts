@@ -16,9 +16,7 @@ import Operator, {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from '../enum/Operator.enum'
-import Validator, {
-	SymbolInfo,
-} from './Validator.class';
+import Validator from './Validator.class';
 import {
 	CompletionType,
 	CompletionStructureAssessment,
@@ -875,13 +873,12 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 	varCheck(validator: Validator = new Validator()): void {
 		const assignee:   SemanticNodeAssignee   = this.children[0];
 		const identifier: SemanticNodeIdentifier = assignee.children[0];
-		const assignee_type: SolidLanguageType   = this.children[1].assess();
 		if (validator.hasSymbol(identifier.id)) {
 			throw new AssignmentError01(identifier);
 		};
-		validator.addSymbol(
+		validator.addVariableSymbol(
 			identifier.id,
-			assignee_type,
+			this.children[1].assess(),
 			this.unfixed,
 			assignee.line_index,
 			assignee.col_index,

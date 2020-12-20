@@ -113,6 +113,20 @@ The term “normal completion” refers to any completion with a \`type\` of *no
 the term “abrupt completion” refers to any completion with a \`type\` other than *normal*.
 
 
+### SymbolStructure
+A **SymbolStructure** encapsulates the compile-time information of a declared symbol in Solid source code.
+Symbols are variables/identifiers that refer to Solid Language Values or Solid Language Types.
+
+Each symbol structure must have the following properties:
+
+Property    | Description
+----------- | -----------
+\`id\`      | the unique identifier of the declared symbol
+\`kind\`    | one of the [enumerated](#enumerated-values) values *value* or *type*
+\`type\`    | if \`kind\` is *value*: the Solid Language Type of the variable; if \`kind\` is *type*: the Solid Language Type the variable refers to
+\`unfixed\` | a Boolean, whether the variable may be reassigned
+
+
 
 ## Solid Language Types
 Solid Language Types characterize Solid Language Values, which are

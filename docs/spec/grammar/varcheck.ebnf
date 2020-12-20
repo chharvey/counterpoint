@@ -12,7 +12,7 @@ Void! VarCheck(SemanticIdentifier id) :=
 
 
 
-Void! VarCheck(Or<SemanticTemplate, SemanticOperation, SemanticStatementExpression, SemanticAssignment, SemanticGoal> list) :=
+Void! VarCheck(Or<SemanticTemplate, SemanticOperation, SemanticStatementExpression, SemanticAssignment> list) :=
 	1. *For* `i` in `list`:
 		1. Perform *Unwrap:* `VarCheck(list[i])`.
 ;
@@ -23,11 +23,17 @@ Void! VarCheck(SemanticDeclarationVariable decl) :=
 	1. *Assert:* `decl.children.count` is 3.
 	2. *Let* `assignee` be `decl.children.0`.
 	3. *Assert:* `assignee.children.count` is 1.
-	4. *Let* `id` be `assignee.children.0`.
+	4. *Let* `id` be `assignee.children.0.id`.
 	5. *If* the validator contains a record for `id`:
 		1. *Throw:* a new AssignmentError01.
-	6. Add a record for `id` to the validator. // TODO: to be specified
-	7. *Return:* `VarCheck(decl.children.2)`.
+	6. *Let* `symbol` be a new SymbolStructure [
+		id=      `id`,
+		kind=    *value*,
+		type=    *UnwrapAffirm:* `Assess(decl.children.1)`,
+		unfixed= `decl.unfixed`,
+	].
+	7. Add `symbol` as a record for `id` to the validator.
+	8. *Return:* `VarCheck(decl.children.2)`.
 ;
 
 
@@ -40,4 +46,12 @@ Void! VarCheck(SemanticAssignee assignee) :=
 	5. *Let* `info` be the record for `id` in the validator.
 	6. *If* `info.unfixed` is `false`:
 		1. *Throw:* a new AssignmentError10.
+;
+
+
+
+Void! VarCheck(SemanticGoal list) :=
+	1. *For* `i` in `list`:
+		1. Perform *Unwrap:* `VarCheck(list[i])`.
+	2. Remove all symbol records in the validator.
 ;
