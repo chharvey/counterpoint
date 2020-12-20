@@ -141,9 +141,12 @@ export abstract class SemanticNodeSolid extends ASTNode {
  */
 export abstract class SemanticNodeType extends SemanticNodeSolid {
 	private assessed: SolidLanguageType | null = null
-	/** @implements SemanticNodeSolid */
+	/**
+	 * @implements SemanticNodeSolid
+	 * @final
+	 */
 	typeCheck(_validator: Validator = new Validator()): void {
-		return; // for now, all types are valid // TODO: dereferencing type variables
+		return; // no type-checking necessary for types
 	}
 	/**
 	 * @implements SemanticNodeSolid
@@ -292,7 +295,10 @@ export abstract class SemanticNodeExpression extends SemanticNodeSolid {
 	 * @return Should the built instruction be type-coerced into a floating-point number?
 	 */
 	abstract get shouldFloat(): boolean;
-	/** @implements SemanticNodeSolid */
+	/**
+	 * @implements SemanticNodeSolid
+	 * @final
+	 */
 	typeCheck(validator: Validator = new Validator()): void {
 		this.type(validator); // assert does not throw
 	}
@@ -974,8 +980,8 @@ export class SemanticNodeDeclarationType extends SemanticNodeSolid {
 		);
 	}
 	/** @implements SemanticNodeSolid */
-	typeCheck(_validator: Validator = new Validator()): void {
-		throw new Error('SemanticNodeDeclarationType#typeCheck not yet supported.');
+	typeCheck(validator: Validator = new Validator()): void {
+		return this.children[1].typeCheck(validator);
 	}
 	/** @implements SemanticNodeSolid */
 	build(_builder: Builder): Instruction {
