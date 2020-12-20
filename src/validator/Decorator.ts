@@ -112,9 +112,11 @@ export class Decorator {
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnit) {
 			return (node.children.length === 1)
-				? (node.children[0] instanceof PARSER.ParseNodePrimitiveLiteral)
-					? new AST.SemanticNodeTypeConstant(node.children[0].children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString)
-					: this.decorate(node.children[0])
+				? (node.children[0] instanceof ParseNode)
+					? (node.children[0] instanceof PARSER.ParseNodePrimitiveLiteral)
+						? new AST.SemanticNodeTypeConstant(node.children[0].children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString)
+						: this.decorate(node.children[0])
+					: new AST.SemanticNodeVariable(node.children[0] as TOKEN.TokenIdentifier)
 				: this.decorate(node.children[1])
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnarySymbol) {

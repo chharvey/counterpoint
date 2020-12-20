@@ -86,6 +86,20 @@ describe('Parser', () => {
 			})
 		})
 
+		Dev.supports('typingExplicit') && describe('TypeUnit ::= IDENTIFIER', () => {
+			it('parses type identifiers.', () => {
+				assert.deepStrictEqual([
+					`T`,
+					`U`,
+					`V`,
+				].map((src) => h.tokenIdentifierFromTypeString(src).source), [
+					`T`,
+					`U`,
+					`V`,
+				]);
+			});
+		});
+
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= TypeKeyword', () => {
 			it('parses keywords `bool`, `int`, `float`, `obj`.', () => {
 				assert.deepStrictEqual(([

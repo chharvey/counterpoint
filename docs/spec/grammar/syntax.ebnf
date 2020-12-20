@@ -28,6 +28,7 @@ TypeKeyword ::=
 ;
 
 TypeUnit ::=
+	| IDENTIFIER
 	| PrimitiveLiteral
 	| TypeKeyword
 	| "(" Type ")"
