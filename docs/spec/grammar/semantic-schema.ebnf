@@ -1,5 +1,6 @@
 SemanticType =:=
 	| SemanticTypeConstant
+	| SemanticTypeAlias
 	| SemanticTypeOperation
 ;
 
@@ -13,6 +14,9 @@ SemanticExpression =:=
 
 
 SemanticTypeConstant[value: Type]
+	::= ();
+
+SemanticTypeAlias[id: RealNumber]
 	::= ();
 
 SemanticTypeOperation[operator: ORNULL]
@@ -67,10 +71,10 @@ SemanticStatementExpression
 
 
 SemanticDeclarationVariable[unfixed: Boolean]
-	::= SemanticAssignee SemanticType SemanticExpression;
+	::= SemanticVariable SemanticType SemanticExpression;
 
 SemanticDeclarationType
-	::= SemanticAssignee SemanticType;
+	::= SemanticTypeAlias SemanticType;
 
 SemanticDeclaration =:=
 	| SemanticDeclarationVariable

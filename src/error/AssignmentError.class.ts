@@ -46,7 +46,7 @@ export class AssignmentError01 extends AssignmentError {
 	 * Construct a new AssignmentError01 object.
 	 * @param variable the duplicate variable
 	 */
-	constructor (variable: AST.SemanticNodeVariable) {
+	constructor (variable: AST.SemanticNodeTypeAlias | AST.SemanticNodeVariable) {
 		super(`Duplicate variable declaration: \`${ variable.source }\`.`, AssignmentError01.CODE, variable.line_index, variable.col_index);
 	}
 }
@@ -63,7 +63,7 @@ export class AssignmentError02 extends AssignmentError {
 	 * Construct a new AssignmentError02 object.
 	 * @param variable the duplicate variable
 	 */
-	constructor (variable: AST.SemanticNodeVariable) {
+	constructor (variable: AST.SemanticNodeTypeAlias | AST.SemanticNodeVariable) {
 		super(`Duplicate type declaration: \`${ variable.source }\`.`, AssignmentError02.CODE, variable.line_index, variable.col_index);
 	}
 }

@@ -111,6 +111,40 @@ describe('Decorator', () => {
 			})
 		})
 
+		Dev.supports('typingExplicit') && describe('TypeUnit ::= IDENTIFIER', () => {
+			it('makes a SemanticNodeTypeAlias.', () => {
+				/*
+					<TypeAlias source="Foo" id=257/>
+				*/
+				assert.deepStrictEqual([
+					`Foo`,
+					`Bar`,
+					`Qux`,
+				].map((src) => {
+					const constant: SemanticNodeType = Decorator.decorate(unitTypeFromString(src));
+					assert.ok(constant instanceof AST.SemanticNodeTypeAlias);
+					return constant.id;
+				}), [
+					// 257 because `T` is 256 from `type T = ` in `unitTypeFromString`
+					257n,
+					257n,
+					257n,
+				]);
+			});
+			it('assigns a unique ID starting from 256.', () => {
+				/*
+					<TypeOperation operator=OR>
+						<TypeAlias source="Foo" id=256/>
+						<TypeAlias source="Bar" id=257/>
+					</TypeOperation>
+				*/
+				assert.deepStrictEqual(Decorator.decorate(unionTypeFromString(`Foo | Bar`)).children.map((op) => {
+					assert.ok(op instanceof AST.SemanticNodeTypeAlias);
+					return op.id;
+				}), [257n, 258n]);
+			});
+		});
+
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= PrimitiveLiteral', () => {
 			it('makes a SemanticNodeTypeConstant.', () => {
 				/*
@@ -700,9 +734,7 @@ describe('Decorator', () => {
 			it('makes an unfixed SemanticNodeDeclarationVariable node.', () => {
 				/*
 					<SemanticDeclarationVariable unfixed=true>
-						<Assignee>
-							<Variable source="the_answer" id=256n/>
-						</Assignee>
+						<Variable source="the_answer" id=256n/>
 						<TypeOperation operator=OR source="int | float">...</TypeOperation>
 						<Operation operator=MUL source="21 * 2">...</Operation>
 					</SemanticDeclarationVariable>
@@ -710,8 +742,7 @@ describe('Decorator', () => {
 				const src: string = `let unfixed the_answer:  int | float =  21  *  2;`
 				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src);
 				assert.strictEqual(decl.unfixed, true);
-				const assignee: AST.SemanticNodeAssignee = decl.children[0];
-				assert.strictEqual(assignee.children[0].id, 256n);
+				assert.strictEqual(decl.children[0].id, 256n);
 				const type_: SemanticNodeType = decl.children[1]
 				assert.ok(type_ instanceof SemanticNodeTypeOperationBinary)
 				assert.strictEqual(type_.operator, Operator.OR)
@@ -725,9 +756,7 @@ describe('Decorator', () => {
 			it('makes a fixed SemanticNodeDeclarationVariable node.', () => {
 				/*
 					<SemanticDeclarationVariable unfixed=false>
-						<Assignee>
-							<Variable source="`the £ answer`" id=256n/>
-						</Assignee>
+						<Variable source="`the £ answer`" id=256n/>
 						<TypeConstant source="int | float">...</TypeOperation>
 						<Operation operator=MUL source="the_answer * 10">
 							<Variable source="the_answer" id=257n/>
@@ -738,8 +767,7 @@ describe('Decorator', () => {
 				const src: string = `let \`the £ answer\`: int = the_answer * 10;`
 				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src);
 				assert.strictEqual(decl.unfixed, false);
-				const assignee: AST.SemanticNodeAssignee = decl.children[0];
-				assert.strictEqual(assignee.children[0].id, 256n);
+				assert.strictEqual(decl.children[0].id, 256n);
 				const type_: SemanticNodeType = decl.children[1]
 				assert.ok(type_ instanceof SemanticNodeTypeConstant)
 				const assigned_expr: SemanticNodeExpression = decl.children[2]
@@ -757,16 +785,14 @@ describe('Decorator', () => {
 			it('makes a SemanticNodeDeclarationType node.', () => {
 				/*
 					<SemanticDeclarationType>
-						<Assignee>
-							<Variable source="T" id=256n/>
-						</Assignee>
+						<Variable source="T" id=256n/>
 						<TypeOperation operator=OR source="int | float">...</TypeOperation>
 					</SemanticDeclarationType>
 				*/
 				const decl: AST.SemanticNodeDeclarationType = typeDeclarationFromSource(`
 					type T  =  int | float;
 				`);
-				assert.strictEqual(decl.children[0].children[0].id, 256n);
+				assert.strictEqual(decl.children[0].id, 256n);
 				const typ: AST.SemanticNodeType = decl.children[1];
 				assert.ok(typ instanceof AST.SemanticNodeTypeOperationBinary);
 				assert.strictEqual(typ.operator, Operator.OR);

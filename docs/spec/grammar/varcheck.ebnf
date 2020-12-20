@@ -21,46 +21,42 @@ Void! VarCheck(Or<SemanticTemplate, SemanticOperation, SemanticStatementExpressi
 
 Void! VarCheck(SemanticDeclarationVariable decl) :=
 	1. *Assert:* `decl.children.count` is 3.
-	2. *Let* `assignee` be `decl.children.0`.
-	3. *Assert:* `assignee.children.count` is 1.
-	4. *Let* `id` be `assignee.children.0.id`.
-	5. *If* the validator contains a record for `id`:
+	2. *Let* `id` be `decl.children.0.id`.
+	3. *If* the validator contains a record for `id`:
 		1. *Let* `info` be the record for `id` in the validator.
 		2. *If* `info.kind` is *value*:
 			1. *Throw:* a new AssignmentError01.
 		3. *Assert:* `info.kind` is *type*.
 		4. *Throw:* a new AssignmentError02.
-	6. *Let* `symbol` be a new SymbolStructure [
+	4. *Let* `symbol` be a new SymbolStructure [
 		id=      `id`,
 		kind=    *value*,
 		type=    *UnwrapAffirm:* `Assess(decl.children.1)`,
 		unfixed= `decl.unfixed`,
 	].
-	7. Add `symbol` as a record for `id` to the validator.
-	8. *Return:* `VarCheck(decl.children.2)`.
+	5. Add `symbol` as a record for `id` to the validator.
+	6. *Return:* `VarCheck(decl.children.2)`.
 ;
 
 
 
 Void! VarCheck(SemanticDeclarationType decl) :=
 	1. *Assert:* `decl.children.count` is 2.
-	2. *Let* `assignee` be `decl.children.0`.
-	3. *Assert:* `assignee.children.count` is 1.
-	4. *Let* `id` be `assignee.children.0.id`.
-	5. *If* the validator contains a type record for `id`:
+	2. *Let* `id` be `decl.children.0.id`.
+	3. *If* the validator contains a type record for `id`:
 		1. *Let* `info` be the record for `id` in the validator.
 		2. *If* `info.kind` is *type*:
 			1. *Throw:* a new AssignmentError02.
 		3. *Assert:* `info.kind` is *value*.
 		4. *Throw:* a new AssignmentError01.
-	6. *Let* `symbol` be a new SymbolStructure [
+	4. *Let* `symbol` be a new SymbolStructure [
 		id=      `id`,
 		kind=    *type*,
 		type=    *UnwrapAffirm:* `Assess(decl.children.1)`,
 		unfixed= `false`,
 	].
-	7. Add `symbol` as a record for `id` to the validator.
-	8. *Return*.
+	5. Add `symbol` as a record for `id` to the validator.
+	6. *Return*.
 ;
 
 

@@ -116,7 +116,7 @@ export class Decorator {
 					? (node.children[0] instanceof PARSER.ParseNodePrimitiveLiteral)
 						? new AST.SemanticNodeTypeConstant(node.children[0].children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString)
 						: this.decorate(node.children[0])
-					: new AST.SemanticNodeVariable(node.children[0] as TOKEN.TokenIdentifier)
+					: new AST.SemanticNodeTypeAlias(node.children[0] as TOKEN.TokenIdentifier)
 				: this.decorate(node.children[1])
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnarySymbol) {
@@ -250,25 +250,16 @@ export class Decorator {
 			return this.decorate(node.children[0])
 
 		} else if (node instanceof PARSER.ParseNodeDeclarationVariable) {
-			const identifier: TOKEN.TokenIdentifier      = ((node.children.length === 7) ? node.children[1] : node.children[2]) as TOKEN.TokenIdentifier
-			const type_:      PARSER.ParseNodeType       =  (node.children.length === 7) ? node.children[3] : node.children[4]
-			const expression: PARSER.ParseNodeExpression =  (node.children.length === 7) ? node.children[5] : node.children[6]
 			return new AST.SemanticNodeDeclarationVariable(node, node.children.length === 8, [
-				new AST.SemanticNodeAssignee(identifier, [
-					new AST.SemanticNodeVariable(identifier),
-				]),
-				this.decorate(type_),
-				this.decorate(expression),
+				new AST.SemanticNodeVariable(((node.children.length === 7) ? node.children[1] : node.children[2]) as TOKEN.TokenIdentifier),
+				this.decorate((node.children.length === 7) ? node.children[3] : node.children[4]),
+				this.decorate((node.children.length === 7) ? node.children[5] : node.children[6]),
 			])
 
 		} else if (node instanceof PARSER.ParseNodeDeclarationType) {
-			const identifier: TOKEN.TokenIdentifier = node.children[1] as TOKEN.TokenIdentifier;
-			const typ:        PARSER.ParseNodeType  = node.children[3];
 			return new AST.SemanticNodeDeclarationType(node, [
-				new AST.SemanticNodeAssignee(identifier, [
-					new AST.SemanticNodeVariable(identifier),
-				]),
-				this.decorate(typ),
+				new AST.SemanticNodeTypeAlias(node.children[1] as TOKEN.TokenIdentifier),
+				this.decorate(node.children[3]),
 			]);
 
 		} else if (node instanceof PARSER.ParseNodeDeclaration) {
