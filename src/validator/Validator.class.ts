@@ -14,7 +14,7 @@ export enum SymbolKind {
 
 
 /** An object containing symbol information. */
-type SymbolInfo = {
+export type SymbolInfo = {
 	/** The unique identifier of the symbol, the cooked value of the token. */
 	readonly id: bigint;
 	/** The kind of declaration: value variable or type variable. */

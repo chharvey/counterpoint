@@ -21,6 +21,7 @@ import {NanError01} from '../../src/error/NanError.class'
 import {
 	Decorator,
 	Validator,
+	AST,
 	SemanticNodeTemplate,
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
@@ -575,6 +576,21 @@ describe('SemanticNode', () => {
 					new SolidTypeConstant(new Float64(4.2e+3)),
 				])
 			})
+			it('computes the value of a type alias.', () => {
+				const validator: Validator = new Validator();
+				const goal: AST.SemanticNodeGoal = goalFromSource(`
+					type T = int;
+					type U = T;
+				`);
+				goal.varCheck(validator);
+				assert.deepStrictEqual(
+					((goal
+						.children[1] as AST.SemanticNodeDeclarationType)
+						.children[1] as AST.SemanticNodeTypeAlias)
+						.assess(), // memoized
+					Int16,
+				);
+			});
 			it('computes the value of keyword type.', () => {
 				assert.deepStrictEqual([
 					'bool',

@@ -18,6 +18,7 @@ import Operator, {
 } from '../enum/Operator.enum'
 import Validator, {
 	SymbolKind,
+	SymbolInfo,
 } from './Validator.class';
 import {
 	CompletionType,
@@ -157,14 +158,15 @@ export abstract class SemanticNodeType extends SemanticNodeSolid {
 	}
 	/**
 	 * Assess the type-value of this node at compile-time.
+	 * @param validator a record of declared variable symbols
 	 * @returns the computed type-value of this node
 	 * @final
 	 */
-	assess(): SolidLanguageType {
-		this.assessed || (this.assessed = this.assess_do()) // COMBAK `this.assessed ||= this.assess_do()`
+	assess(validator: Validator = new Validator()): SolidLanguageType {
+		this.assessed || (this.assessed = this.assess_do(validator)); // COMBAK `this.assessed ||= this.assess_do(validator)`
 		return this.assessed
 	}
-	protected abstract assess_do(): SolidLanguageType
+	protected abstract assess_do(validator: Validator): SolidLanguageType
 }
 export class SemanticNodeTypeConstant extends SemanticNodeType {
 	declare children:
@@ -191,7 +193,7 @@ export class SemanticNodeTypeConstant extends SemanticNodeType {
 		this.value = value
 	}
 	/** @implements SemanticNodeType */
-	protected assess_do(): SolidLanguageType {
+	protected assess_do(_validator: Validator): SolidLanguageType {
 		return this.value
 	}
 }
@@ -204,8 +206,14 @@ export class SemanticNodeTypeAlias extends SemanticNodeType {
 		this.id = start_node.cook()!;
 	}
 	/** @implements SemanticNodeType */
-	protected assess_do(): SolidLanguageType {
-		throw new Error('SemanticNodeTypeAlias#assess_do not yet supported.');
+	protected assess_do(validator: Validator): SolidLanguageType {
+		if (validator.hasSymbol(this.id)) {
+			const symbol: SymbolInfo = validator.getSymbolInfo(this.id)!;
+			if (symbol.kind === SymbolKind.TYPE) {
+				return symbol.type;
+			};
+		};
+		return SolidLanguageType.UNKNOWN;
 	}
 }
 export abstract class SemanticNodeTypeOperation extends SemanticNodeType {
@@ -228,9 +236,9 @@ export class SemanticNodeTypeOperationUnary extends SemanticNodeTypeOperation {
 		super(start_node, operator, children)
 	}
 	/** @implements SemanticNodeType */
-	protected assess_do(): SolidLanguageType {
+	protected assess_do(validator: Validator): SolidLanguageType {
 		return (this.operator === Operator.ORNULL)
-			? this.children[0].assess().union(SolidNull)
+			? this.children[0].assess(validator).union(SolidNull)
 			: (() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
 	}
 }
@@ -244,10 +252,10 @@ export class SemanticNodeTypeOperationBinary extends SemanticNodeTypeOperation {
 		super(start_node, operator, children)
 	}
 	/** @implements SemanticNodeType */
-	protected assess_do(): SolidLanguageType {
+	protected assess_do(validator: Validator): SolidLanguageType {
 		return (
-			(this.operator === Operator.AND) ? this.children[0].assess().intersect(this.children[1].assess()) :
-			(this.operator === Operator.OR)  ? this.children[0].assess().union    (this.children[1].assess()) :
+			(this.operator === Operator.AND) ? this.children[0].assess(validator).intersect(this.children[1].assess(validator)) :
+			(this.operator === Operator.OR)  ? this.children[0].assess(validator).union    (this.children[1].assess(validator)) :
 			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
 	}
@@ -392,10 +400,13 @@ export class SemanticNodeVariable extends SemanticNodeExpression {
 	}
 	/** @implements SemanticNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
-		return (validator.hasSymbol(this.id))
-			? validator.getSymbolInfo(this.id)!.type
-			: SolidLanguageType.UNKNOWN
-		;
+		if (validator.hasSymbol(this.id)) {
+			const symbol: SymbolInfo = validator.getSymbolInfo(this.id)!;
+			if (symbol.kind === SymbolKind.VALUE) {
+				return symbol.type;
+			};
+		};
+		return SolidLanguageType.UNKNOWN;
 	}
 }
 export class SemanticNodeTemplate extends SemanticNodeExpression {
@@ -897,7 +908,7 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 		};
 		validator.addVariableSymbol(
 			variable.id,
-			this.children[1].assess(),
+			this.children[1].assess(validator),
 			this.unfixed,
 			variable.line_index,
 			variable.col_index,
@@ -906,7 +917,7 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 	}
 	/** @implements SemanticNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
-		const assignee_type: SolidLanguageType = this.children[1].assess()
+		const assignee_type: SolidLanguageType = this.children[1].assess(validator);
 		const assigned_type: SolidLanguageType = this.children[2].type(validator);
 		if (
 			assigned_type.isSubtypeOf(assignee_type) ||
@@ -941,7 +952,7 @@ export class SemanticNodeDeclarationType extends SemanticNodeSolid {
 		};
 		validator.addTypeSymbol(
 			variable.id,
-			this.children[1].assess(),
+			this.children[1].assess(validator),
 			variable.line_index,
 			variable.col_index,
 		);
