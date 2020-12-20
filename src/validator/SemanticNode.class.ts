@@ -16,7 +16,9 @@ import Operator, {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from '../enum/Operator.enum'
-import Validator from './Validator.class';
+import Validator, {
+	SymbolKind,
+} from './Validator.class';
 import {
 	CompletionType,
 	CompletionStructureAssessment,
@@ -51,6 +53,7 @@ import {
 } from '../error/SolidReferenceError.class';
 import {
 	AssignmentError01,
+	AssignmentError02,
 	AssignmentError10,
 } from '../error/AssignmentError.class';
 import {
@@ -874,7 +877,10 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 		const assignee:   SemanticNodeAssignee   = this.children[0];
 		const identifier: SemanticNodeIdentifier = assignee.children[0];
 		if (validator.hasSymbol(identifier.id)) {
-			throw new AssignmentError01(identifier);
+			if (validator.getSymbolInfo(identifier.id)!.kind === SymbolKind.VALUE) {
+				throw new AssignmentError01(identifier);
+			};
+			throw new AssignmentError02(identifier);
 		};
 		validator.addVariableSymbol(
 			identifier.id,
@@ -912,8 +918,21 @@ export class SemanticNodeDeclarationType extends SemanticNodeSolid {
 		super(start_node, {}, children);
 	}
 	/** @implements SemanticNodeSolid */
-	varCheck(_validator: Validator = new Validator()): void {
-		throw new Error('SemanticNodeDeclarationType#varCheck not yet supported.');
+	varCheck(validator: Validator = new Validator()): void {
+		const assignee:   SemanticNodeAssignee   = this.children[0];
+		const identifier: SemanticNodeIdentifier = assignee.children[0];
+		if (validator.hasSymbol(identifier.id)) {
+			if (validator.getSymbolInfo(identifier.id)!.kind === SymbolKind.TYPE) {
+				throw new AssignmentError02(identifier);
+			};
+			throw new AssignmentError01(identifier);
+		};
+		validator.addTypeSymbol(
+			identifier.id,
+			this.children[1].assess(),
+			assignee.line_index,
+			assignee.col_index,
+		);
 	}
 	/** @implements SemanticNodeSolid */
 	typeCheck(_validator: Validator = new Validator()): void {

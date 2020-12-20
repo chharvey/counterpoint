@@ -771,6 +771,7 @@ When the compiler detects an illegal declaration or assignment, an assignment er
 
 2200. A general assignment error not covered by one of the following cases.
 2201. The validator encountered a duplicate variable declaration.
+2202. The validator encountered a duplicate type declaration.
 2210. A reassignment of a fixed variable was attempted.
 
 

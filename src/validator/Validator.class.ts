@@ -4,7 +4,7 @@ import type SolidLanguageType from './SolidLanguageType.class'
 
 
 /** Kinds of symbols. */
-enum SymbolKind {
+export enum SymbolKind {
 	/** A value variable (a variable holding a Solid Language Value). */
 	VALUE,
 	/** A type variable / type alias. */

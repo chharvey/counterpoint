@@ -51,6 +51,23 @@ export class AssignmentError01 extends AssignmentError {
 	}
 }
 /**
+ * An AssignmentError02 is thrown when the validator encounters a duplicate type declaration.
+ * @example
+ * type MyType = int;
+ * type MyType = float; % AssignmentError02: Duplicate type declaration: `MyType`.
+ */
+export class AssignmentError02 extends AssignmentError {
+	/** The number series of this class of errors. */
+	static readonly CODE = 2;
+	/**
+	 * Construct a new AssignmentError02 object.
+	 * @param identifier the duplicate identifier
+	 */
+	constructor (identifier: AST.SemanticNodeIdentifier) {
+		super(`Duplicate type declaration: \`${ identifier.source }\`.`, AssignmentError02.CODE, identifier.line_index, identifier.col_index);
+	}
+}
+/**
  * A AssignmentError10 is thrown when attempting to reassign a fixed variable.
  * @example
  * let my_var: int = 42;

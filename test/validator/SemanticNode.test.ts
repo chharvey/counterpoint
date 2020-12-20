@@ -10,6 +10,7 @@ import {
 } from '../../src/error/SolidReferenceError.class';
 import {
 	AssignmentError01,
+	AssignmentError02,
 	AssignmentError10,
 } from '../../src/error/AssignmentError.class';
 import {
@@ -484,6 +485,26 @@ describe('SemanticNode', () => {
 					let i: int = 43;
 				`).varCheck(), AssignmentError01);
 			});
+			it('throws if the validator already contains a record for a type alias.', () => {
+				assert.throws(() => goalFromSource(`
+					type FOO = float;
+					let FOO: int = 42;
+				`).varCheck(), AssignmentError02);
+			});
+		});
+		describe('SemanticNodeDeclarationType', () => {
+			it('throws if the validator already contains a record for the type alias.', () => {
+				assert.throws(() => goalFromSource(`
+					type T = int;
+					type T = float;
+				`).varCheck(), AssignmentError02);
+			});
+			it('throws if the validator already contains a record for a value variable.', () => {
+				assert.throws(() => goalFromSource(`
+					let FOO: int = 42;
+					type FOO = float;
+				`).varCheck(), AssignmentError01);
+			});
 		});
 		describe('SemanticNodeAssignee', () => {
 			it('throws if the variable is not unfixed.', () => {
@@ -494,6 +515,12 @@ describe('SemanticNode', () => {
 				assert.throws(() => goalFromSource(`
 					let i: int = 42;
 					i = 43;
+				`).varCheck(), AssignmentError10);
+			});
+			it('always throws for type alias reassignment.', () => {
+				assert.throws(() => goalFromSource(`
+					type T = 42;
+					T = 43;
 				`).varCheck(), AssignmentError10);
 			});
 		});
