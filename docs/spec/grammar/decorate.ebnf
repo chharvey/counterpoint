@@ -121,8 +121,8 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 
 
 
-Decorate(ExpressionUnit ::= IDENTIFIER) -> SemanticIdentifier
-	:= (SemanticIdentifier[id=TokenWorth(IDENTIFIER)]);
+Decorate(ExpressionUnit ::= IDENTIFIER) -> SemanticVariable
+	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
 Decorate(ExpressionUnit ::= PrimitiveLiteral) -> SemanticConstant
 	:= Decorate(PrimitiveLiteral);
 Decorate(ExpressionUnit ::= StringTemplate) -> SemanticTemplate
@@ -312,7 +312,7 @@ Decorate(Expression ::= ExpressionConditional) -> SemanticExpression
 Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=false]
 		(SemanticAssignee
-			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+			(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		)
 		Decorate(Type)
 		Decorate(Expression)
@@ -320,7 +320,7 @@ Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -
 Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticAssignee
-			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+			(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		)
 		Decorate(Type)
 		Decorate(Expression)
@@ -331,7 +331,7 @@ Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Express
 Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType
 	:= (SemanticDeclarationType
 		(SemanticAssignee
-			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+			(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		)
 		Decorate(Type)
 	);
@@ -348,7 +348,7 @@ Decorate(Declaration ::= DeclarationType;) -> SemanticDeclarationType
 Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";") -> SemanticAssignment
 	:= (SemanticAssignment
 		(SemanticAssignee
-			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+			(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		)
 		Decorate(Expression)
 	);

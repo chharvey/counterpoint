@@ -115,7 +115,7 @@ the term “abrupt completion” refers to any completion with a \`type\` other 
 
 ### SymbolStructure
 A **SymbolStructure** encapsulates the compile-time information of a declared symbol in Solid source code.
-Symbols are variables/identifiers that refer to Solid Language Values or Solid Language Types.
+Symbols are identifiers that refer to Solid Language Values or Solid Language Types.
 
 Each symbol structure must have the following properties:
 

@@ -243,7 +243,7 @@ export class SemanticNodeTypeOperationBinary extends SemanticNodeTypeOperation {
  * A sematic node representing an expression.
  * There are 4 known subclasses:
  * - SemanticNodeConstant
- * - SemanticNodeIdentifier
+ * - SemanticNodeVariable
  * - SemanticNodeTemplate
  * - SemanticNodeOperation
  */
@@ -350,7 +350,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		SolidString
 	}
 }
-export class SemanticNodeIdentifier extends SemanticNodeExpression {
+export class SemanticNodeVariable extends SemanticNodeExpression {
 	declare children:
 		| readonly []
 	readonly id: bigint;
@@ -370,7 +370,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	}
 	/** @implements SemanticNodeExpression */
 	protected build_do(_builder: Builder): InstructionExpression {
-		throw new Error('SemanticNodeIdentifier#build_do not yet supported.')
+		throw new Error('SemanticNodeVariable#build_do not yet supported.');
 	}
 	/** @implements SemanticNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
@@ -874,16 +874,16 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 	}
 	/** @implements SemanticNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
-		const assignee:   SemanticNodeAssignee   = this.children[0];
-		const identifier: SemanticNodeIdentifier = assignee.children[0];
-		if (validator.hasSymbol(identifier.id)) {
-			if (validator.getSymbolInfo(identifier.id)!.kind === SymbolKind.VALUE) {
-				throw new AssignmentError01(identifier);
+		const assignee: SemanticNodeAssignee = this.children[0];
+		const variable: SemanticNodeVariable = assignee.children[0];
+		if (validator.hasSymbol(variable.id)) {
+			if (validator.getSymbolInfo(variable.id)!.kind === SymbolKind.VALUE) {
+				throw new AssignmentError01(variable);
 			};
-			throw new AssignmentError02(identifier);
+			throw new AssignmentError02(variable);
 		};
 		validator.addVariableSymbol(
-			identifier.id,
+			variable.id,
 			this.children[1].assess(),
 			this.unfixed,
 			assignee.line_index,
@@ -919,16 +919,16 @@ export class SemanticNodeDeclarationType extends SemanticNodeSolid {
 	}
 	/** @implements SemanticNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
-		const assignee:   SemanticNodeAssignee   = this.children[0];
-		const identifier: SemanticNodeIdentifier = assignee.children[0];
-		if (validator.hasSymbol(identifier.id)) {
-			if (validator.getSymbolInfo(identifier.id)!.kind === SymbolKind.TYPE) {
-				throw new AssignmentError02(identifier);
+		const assignee: SemanticNodeAssignee = this.children[0];
+		const variable: SemanticNodeVariable = assignee.children[0];
+		if (validator.hasSymbol(variable.id)) {
+			if (validator.getSymbolInfo(variable.id)!.kind === SymbolKind.TYPE) {
+				throw new AssignmentError02(variable);
 			};
-			throw new AssignmentError01(identifier);
+			throw new AssignmentError01(variable);
 		};
 		validator.addTypeSymbol(
-			identifier.id,
+			variable.id,
 			this.children[1].assess(),
 			assignee.line_index,
 			assignee.col_index,
@@ -976,16 +976,16 @@ export class SemanticNodeAssignee extends SemanticNodeSolid {
 	constructor(
 		start_node: Token,
 		readonly children:
-			| readonly [SemanticNodeIdentifier]
+			| readonly [SemanticNodeVariable]
 	) {
 		super(start_node, {}, children)
 	}
 	/** @implements SemanticNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
-		const identifier: SemanticNodeIdentifier = this.children[0];
-		identifier.varCheck(validator);
-		if (!validator.getSymbolInfo(identifier.id)!.unfixed) {
-			throw new AssignmentError10(identifier);
+		const variable: SemanticNodeVariable = this.children[0];
+		variable.varCheck(validator);
+		if (!validator.getSymbolInfo(variable.id)!.unfixed) {
+			throw new AssignmentError10(variable);
 		};
 	}
 	/** @implements SemanticNodeSolid */

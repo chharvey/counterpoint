@@ -21,7 +21,6 @@ import {NanError01} from '../../src/error/NanError.class'
 import {
 	Decorator,
 	Validator,
-	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
@@ -63,7 +62,7 @@ import {
 	variableDeclarationFromSource,
 } from '../helpers-parse'
 import {
-	identifierFromSource,
+	variableFromSource,
 	operationFromSource,
 	statementExpressionFromSource,
 	constantFromSource,
@@ -463,13 +462,13 @@ describe('SemanticNode', () => {
 				constantFromSource(`42;`).varCheck();
 			});
 		});
-		describe('SemanticNodeIdentifier', () => {
+		describe('SemanticNodeVariable', () => {
 			it('throws if the validator does not contain a record for the identifier.', () => {
 				goalFromSource(`
 					let unfixed i: int = 42;
 					i;
 				`).varCheck(); // assert does not throw
-				assert.throws(() => identifierFromSource(`i;`).varCheck(), ReferenceError01);
+				assert.throws(() => variableFromSource(`i;`).varCheck(), ReferenceError01);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => goalFromSource(`
@@ -750,7 +749,7 @@ describe('SemanticNode', () => {
 			})
 			Dev.supports('variables') && it('returns Unknown for undeclared variables.', () => {
 				// NOTE: a reference error will be thrown at the variable-checking stage
-				assert.strictEqual(identifierFromSource(`x;`).type(), SolidLanguageType.UNKNOWN);
+				assert.strictEqual(variableFromSource(`x;`).type(), SolidLanguageType.UNKNOWN);
 			});
 			it('returns a constant Boolean type for boolean unary operation of anything.', () => {
 				typeOperations(xjs.Map.mapValues(new Map([

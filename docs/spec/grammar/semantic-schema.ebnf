@@ -5,7 +5,7 @@ SemanticType =:=
 
 SemanticExpression =:=
 	| SemanticConstant
-	| SemanticIdentifier
+	| SemanticVariable
 	| SemanticTemplate
 	| SemanticOperation
 ;
@@ -25,7 +25,7 @@ SemanticTypeOperation[operator: AND | OR]
 SemanticConstant[value: Null | Boolean | Number | Sequence<RealNumber>]
 	::= ();
 
-SemanticIdentifier[id: RealNumber]
+SemanticVariable[id: RealNumber]
 	::= ();
 
 SemanticTemplate[type: "full"]
@@ -83,7 +83,7 @@ SemanticAssignment
 	::= SemanticAssignee SemanticExpression;
 
 SemanticAssignee
-	::= SemanticIdentifier;
+	::= SemanticVariable;
 
 
 

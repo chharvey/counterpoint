@@ -34,7 +34,7 @@ export default class AssignmentError extends ErrorCode {
 
 
 /**
- * A AssignmentError01 is thrown when the validator encounters a duplicate variable declaration.
+ * An AssignmentError01 is thrown when the validator encounters a duplicate variable declaration.
  * @example
  * let my_var: int = 42;
  * let my_var: int = 24; % AssignmentError01: Duplicate variable declaration: `my_var`.
@@ -44,10 +44,10 @@ export class AssignmentError01 extends AssignmentError {
 	static readonly CODE = 1;
 	/**
 	 * Construct a new AssignmentError01 object.
-	 * @param identifier the duplicate identifier
+	 * @param variable the duplicate variable
 	 */
-	constructor (identifier: AST.SemanticNodeIdentifier) {
-		super(`Duplicate variable declaration: \`${ identifier.source }\`.`, AssignmentError01.CODE, identifier.line_index, identifier.col_index);
+	constructor (variable: AST.SemanticNodeVariable) {
+		super(`Duplicate variable declaration: \`${ variable.source }\`.`, AssignmentError01.CODE, variable.line_index, variable.col_index);
 	}
 }
 /**
@@ -61,14 +61,14 @@ export class AssignmentError02 extends AssignmentError {
 	static readonly CODE = 2;
 	/**
 	 * Construct a new AssignmentError02 object.
-	 * @param identifier the duplicate identifier
+	 * @param variable the duplicate variable
 	 */
-	constructor (identifier: AST.SemanticNodeIdentifier) {
-		super(`Duplicate type declaration: \`${ identifier.source }\`.`, AssignmentError02.CODE, identifier.line_index, identifier.col_index);
+	constructor (variable: AST.SemanticNodeVariable) {
+		super(`Duplicate type declaration: \`${ variable.source }\`.`, AssignmentError02.CODE, variable.line_index, variable.col_index);
 	}
 }
 /**
- * A AssignmentError10 is thrown when attempting to reassign a fixed variable.
+ * An AssignmentError10 is thrown when attempting to reassign a fixed variable.
  * @example
  * let my_var: int = 42;
  * my_var = 24;          % AssignmentError10: Reassignment of a fixed variable: `my_var`.
@@ -78,9 +78,9 @@ export class AssignmentError10 extends AssignmentError {
 	static readonly CODE = 10;
 	/**
 	 * Construct a new AssignmentError10 object.
-	 * @param identifier the undeclared identifier
+	 * @param variable the undeclared variable
 	 */
-	constructor (identifier: AST.SemanticNodeIdentifier) {
-		super(`Reassignment of a fixed variable: \`${ identifier.source }\`.`, AssignmentError10.CODE, identifier.line_index, identifier.col_index);
+	constructor (variable: AST.SemanticNodeVariable) {
+		super(`Reassignment of a fixed variable: \`${ variable.source }\`.`, AssignmentError10.CODE, variable.line_index, variable.col_index);
 	}
 }

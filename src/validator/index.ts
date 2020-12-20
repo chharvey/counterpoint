@@ -10,7 +10,6 @@ export {
 	SemanticNodeTypeOperationBinary,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
-	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
 	SemanticNodeOperation,
 	SemanticNodeOperationUnary,

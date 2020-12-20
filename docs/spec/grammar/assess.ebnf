@@ -32,7 +32,7 @@ Or<Null, Boolean, Number, Sequence<RealNumber>> Assess(SemanticConstant const) :
 
 
 
-Void! Assess(SemanticIdentifier iden) :=
+Void! Assess(SemanticVariable var) :=
 	1. *Throw:* `void`. // NOTE: Update when implementing constant propagation.
 ;
 

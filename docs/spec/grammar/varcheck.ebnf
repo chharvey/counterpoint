@@ -4,8 +4,8 @@ Void VarCheck(Or<SemanticType, SemanticConstant> node) :=
 
 
 
-Void! VarCheck(SemanticIdentifier id) :=
-	1. *If* the validator does not contain a record for `id`:
+Void! VarCheck(SemanticVariable var) :=
+	1. *If* the validator does not contain a record for `var`:
 		1. *Throw:* a new ReferenceError01.
 	// TODO: Throw a ReferenceError02 if the variable is declared further down in source.
 ;

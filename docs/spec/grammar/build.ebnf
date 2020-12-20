@@ -61,7 +61,7 @@ Sequence<Instruction> BuildExpression(SemanticConstant const) :=
 
 
 
-Sequence<Instruction> BuildExpression(SemanticIdentifier iden) :=
+Sequence<Instruction> BuildExpression(SemanticVariable var) :=
 	// TO BE DETERMINED
 ;
 

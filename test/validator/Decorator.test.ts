@@ -43,7 +43,7 @@ import {
 } from '../helpers-parse'
 import {
 	constantFromSource,
-	identifierFromSource,
+	variableFromSource,
 	operationFromSource,
 	statementExpressionFromSource,
 	variableDeclarationFromSource,
@@ -215,14 +215,14 @@ describe('Decorator', () => {
 				/*
 					<Goal source="␂ variable ; ␃">
 						<StatementExpression source="variable ;">
-							<Identifier source="variable" id="256"/>
+							<Variable source="variable" id="256"/>
 						</StatementExpression>
 					</Goal>
 				*/
 				assert.deepStrictEqual([
 					`variable;`,
 					`var;`,
-				].map((src) => identifierFromSource(src).id), [
+				].map((src) => variableFromSource(src).id), [
 					256n,
 					256n,
 				]);
@@ -232,14 +232,14 @@ describe('Decorator', () => {
 					<Goal source="␂ variable || var ; ␃">
 						<StatementExpression>
 							<Operation operator=OR>
-								<Identifier source="variable" id="256"/>
-								<Identifier source="var" id="257"/>
+								<Variable source="variable" id="256"/>
+								<Variable source="var" id="257"/>
 							</Operation>
 						</StatementExpression>
 					</Goal>
 				*/
 				assert.deepStrictEqual(operationFromSource(`variable || var;`).children.map((op) => {
-					assert.ok(op instanceof AST.SemanticNodeIdentifier);
+					assert.ok(op instanceof AST.SemanticNodeVariable);
 					return op.id;
 				}), [256n, 257n]);
 			});
@@ -247,10 +247,10 @@ describe('Decorator', () => {
 				/*
 					<Goal source="␂ variable ; var ; ␃">
 						<StatementExpression>
-							<Identifier source="variable" id="256"/>
+							<Variable source="variable" id="256"/>
 						</StatementExpression>
 						<StatementExpression>
-							<Identifier source="var" id="257"/>
+							<Variable source="var" id="257"/>
 						</StatementExpression>
 					</Goal>
 				*/
@@ -260,7 +260,7 @@ describe('Decorator', () => {
 					assert.ok(stmt instanceof AST.SemanticNodeStatementExpression);
 					assert_arrayLength(stmt.children, 1);
 					const ident: AST.SemanticNodeExpression = stmt.children[0];
-					assert.ok(ident instanceof AST.SemanticNodeIdentifier);
+					assert.ok(ident instanceof AST.SemanticNodeVariable);
 					return ident.id;
 				}), [256n, 257n]);
 			});
@@ -701,7 +701,7 @@ describe('Decorator', () => {
 				/*
 					<SemanticDeclarationVariable unfixed=true>
 						<Assignee>
-							<Identifier source="the_answer" id=256n/>
+							<Variable source="the_answer" id=256n/>
 						</Assignee>
 						<TypeOperation operator=OR source="int | float">...</TypeOperation>
 						<Operation operator=MUL source="21 * 2">...</Operation>
@@ -726,11 +726,11 @@ describe('Decorator', () => {
 				/*
 					<SemanticDeclarationVariable unfixed=false>
 						<Assignee>
-							<Identifier source="`the £ answer`" id=256n/>
+							<Variable source="`the £ answer`" id=256n/>
 						</Assignee>
 						<TypeConstant source="int | float">...</TypeOperation>
 						<Operation operator=MUL source="the_answer * 10">
-							<Identifier source="the_answer" id=257n/>
+							<Variable source="the_answer" id=257n/>
 							<Constant source="10" value=10/>
 						</Operation>
 					</SemanticDeclarationVariable>
@@ -745,7 +745,7 @@ describe('Decorator', () => {
 				const assigned_expr: SemanticNodeExpression = decl.children[2]
 				assert.ok(assigned_expr instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(assigned_expr.operator, Operator.MUL)
-				assert.ok(assigned_expr.children[0] instanceof AST.SemanticNodeIdentifier);
+				assert.ok(assigned_expr.children[0] instanceof AST.SemanticNodeVariable);
 				assert.strictEqual(assigned_expr.children[0].id, 257n);
 				assert.deepStrictEqual(decl.children.map((child) => child.source), [
 					`\`the £ answer\``, `int`, `the_answer * 10`,
@@ -758,7 +758,7 @@ describe('Decorator', () => {
 				/*
 					<SemanticDeclarationType>
 						<Assignee>
-							<Identifier source="T" id=256n/>
+							<Variable source="T" id=256n/>
 						</Assignee>
 						<TypeOperation operator=OR source="int | float">...</TypeOperation>
 					</SemanticDeclarationType>
@@ -781,10 +781,10 @@ describe('Decorator', () => {
 				/*
 					<Assignment>
 						<Assignee>
-							<Identifier source="the_answer" id=256n/>
+							<Variable source="the_answer" id=256n/>
 						</Assignee>
 						<Operation operator=ADD source="the_answer - 40">
-							<Identifier source="the_answer" id="256"/>
+							<Variable source="the_answer" id="256"/>
 							<Operation operator=NEG source="40">...</Operation>
 						</Operation>
 					</Assignment>
@@ -796,7 +796,7 @@ describe('Decorator', () => {
 				const assigned_expr: AST.SemanticNodeExpression = assn.children[1];
 				assert.ok(assigned_expr instanceof AST.SemanticNodeOperationBinary);
 				assert.strictEqual(assigned_expr.operator, Operator.ADD);
-				assert.ok(assigned_expr.children[0] instanceof AST.SemanticNodeIdentifier);
+				assert.ok(assigned_expr.children[0] instanceof AST.SemanticNodeVariable);
 				assert.strictEqual(assigned_expr.children[0].id, 256n);
 				assert.deepStrictEqual(assn.children.map((child) => child.source), [
 					`the_answer`, `the_answer - 40`
