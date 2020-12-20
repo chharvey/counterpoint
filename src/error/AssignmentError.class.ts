@@ -34,37 +34,23 @@ export default class AssignmentError extends ErrorCode {
 
 
 /**
- * An AssignmentError01 is thrown when the validator encounters a duplicate variable declaration.
+ * An AssignmentError01 is thrown when the validator encounters a duplicate declaration.
  * @example
  * let my_var: int = 42;
- * let my_var: int = 24; % AssignmentError01: Duplicate variable declaration: `my_var`.
+ * let my_var: int = 24; % AssignmentError01: Duplicate declaration: `my_var` is already declared.
+ * @example
+ * type MyType = int;
+ * type MyType = float; % AssignmentError01: Duplicate declaration: `MyType` is already declared.
  */
 export class AssignmentError01 extends AssignmentError {
 	/** The number series of this class of errors. */
 	static readonly CODE = 1;
 	/**
 	 * Construct a new AssignmentError01 object.
-	 * @param variable the duplicate variable
+	 * @param symbol the duplicate symbol
 	 */
-	constructor (variable: AST.SemanticNodeTypeAlias | AST.SemanticNodeVariable) {
-		super(`Duplicate variable declaration: \`${ variable.source }\`.`, AssignmentError01.CODE, variable.line_index, variable.col_index);
-	}
-}
-/**
- * An AssignmentError02 is thrown when the validator encounters a duplicate type declaration.
- * @example
- * type MyType = int;
- * type MyType = float; % AssignmentError02: Duplicate type declaration: `MyType`.
- */
-export class AssignmentError02 extends AssignmentError {
-	/** The number series of this class of errors. */
-	static readonly CODE = 2;
-	/**
-	 * Construct a new AssignmentError02 object.
-	 * @param variable the duplicate variable
-	 */
-	constructor (variable: AST.SemanticNodeTypeAlias | AST.SemanticNodeVariable) {
-		super(`Duplicate type declaration: \`${ variable.source }\`.`, AssignmentError02.CODE, variable.line_index, variable.col_index);
+	constructor (symbol: AST.SemanticNodeTypeAlias | AST.SemanticNodeVariable) {
+		super(`Duplicate declaration: \`${ symbol.source }\` is already declared.`, AssignmentError01.CODE, symbol.line_index, symbol.col_index);
 	}
 }
 /**

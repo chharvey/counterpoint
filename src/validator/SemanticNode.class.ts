@@ -54,7 +54,6 @@ import {
 } from '../error/SolidReferenceError.class';
 import {
 	AssignmentError01,
-	AssignmentError02,
 	AssignmentError10,
 } from '../error/AssignmentError.class';
 import {
@@ -914,10 +913,7 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 	varCheck(validator: Validator = new Validator()): void {
 		const variable: SemanticNodeVariable = this.children[0];
 		if (validator.hasSymbol(variable.id)) {
-			if (validator.getSymbolInfo(variable.id)!.kind === SymbolKind.VALUE) {
-				throw new AssignmentError01(variable);
-			};
-			throw new AssignmentError02(variable);
+			throw new AssignmentError01(variable);
 		};
 		this.children[1].varCheck(validator);
 		this.children[2].varCheck(validator);
@@ -959,9 +955,6 @@ export class SemanticNodeDeclarationType extends SemanticNodeSolid {
 	varCheck(validator: Validator = new Validator()): void {
 		const variable: SemanticNodeTypeAlias = this.children[0];
 		if (validator.hasSymbol(variable.id)) {
-			if (validator.getSymbolInfo(variable.id)!.kind === SymbolKind.TYPE) {
-				throw new AssignmentError02(variable);
-			};
 			throw new AssignmentError01(variable);
 		};
 		this.children[1].varCheck(validator);

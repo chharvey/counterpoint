@@ -10,7 +10,6 @@ import {
 } from '../../src/error/SolidReferenceError.class';
 import {
 	AssignmentError01,
-	AssignmentError02,
 	AssignmentError10,
 } from '../../src/error/AssignmentError.class';
 import {
@@ -496,27 +495,23 @@ describe('SemanticNode', () => {
 			});
 		});
 		describe('SemanticNodeDeclarationVariable', () => {
-			it('throws if the validator already contains a record for the variable.', () => {
+			it('throws if the validator already contains a record for the symbol.', () => {
 				assert.throws(() => goalFromSource(`
 					let i: int = 42;
 					let i: int = 43;
 				`).varCheck(), AssignmentError01);
-			});
-			it('throws if the validator already contains a record for a type alias.', () => {
 				assert.throws(() => goalFromSource(`
 					type FOO = float;
 					let FOO: int = 42;
-				`).varCheck(), AssignmentError02);
+				`).varCheck(), AssignmentError01);
 			});
 		});
 		describe('SemanticNodeDeclarationType', () => {
-			it('throws if the validator already contains a record for the type alias.', () => {
+			it('throws if the validator already contains a record for the symbol.', () => {
 				assert.throws(() => goalFromSource(`
 					type T = int;
 					type T = float;
-				`).varCheck(), AssignmentError02);
-			});
-			it('throws if the validator already contains a record for a value variable.', () => {
+				`).varCheck(), AssignmentError01);
 				assert.throws(() => goalFromSource(`
 					let FOO: int = 42;
 					type FOO = float;
