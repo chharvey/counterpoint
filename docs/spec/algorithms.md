@@ -3,6 +3,22 @@ This chapter lists and defines common abstract algorithms used throughout this s
 
 
 
+## UTF16Encoding
+Encodes a code point using the UTF-16 encoding algorithm.
+```
+Sequence<RealNumber> UTF16Encoding(RealNumber n) :=
+	1. *If* `n` is less than 0 or greater than \x10ffff:
+		1. Throw a ParseError.
+	2. *If* `n` is less than or equal to \xffff:
+		1. *Return:* [n].
+	3. *Let* `d` be `n - \x10000`.
+	4. *Let* `cu1` be the integer quotient of `d / \x400`.
+	5. *Let* `cu2` be the integer remainder of `d / \x400`.
+	6. *Return:* [cu1 + \xd800, cu2 + \xdc00].
+```
+
+
+
 ## VarCheck
 Performs the definite assignment piece during semantic analysis.
 ```
