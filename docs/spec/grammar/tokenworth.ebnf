@@ -184,8 +184,14 @@ TokenWorth(StringEscape :::= "u{" DigitSequenceHex "}") -> Sequence<RealNumber>
 	:= [...UTF16Encoding(TokenWorth(DigitSequenceHex))];
 TokenWorth(StringEscape :::= #x0A) -> Sequence<RealNumber>
 	:= [\x20]; // U+0020 SPACE
-TokenWorth(StringEscape :::= [^'\stnru#x0D#x0A#x03]) -> Sequence<RealNumber>
-	:= [...UTF16Encoding(CodePoint([^'\stnru#x0D#x0A#x03]))];
+TokenWorth(StringEscape :::= "%" ([^'%#x0a#x03] [^'#x0a#x03]*)?) -> Sequence<RealNumber>
+	:= [];
+TokenWorth(StringEscape :::= "%" ([^'%#x0a#x03] [^'#x0a#x03]*)? #x0a) -> Sequence<RealNumber>
+	:= [\x0a];
+TokenWorth(StringEscape :::= "%%" ("%"? [^'%#x03])* "%%"?) -> Sequence<RealNumber>
+	:= [];
+TokenWorth(StringEscape :::= [^'\stnru#x0a%#x03]) -> Sequence<RealNumber>
+	:= UTF16Encoding(CodePoint([^'\stnru#x0a%#x03]));
 
 
 

@@ -105,7 +105,9 @@ StringEscape :::=
 	| "'" | "\" | "s" | "t" | "n" | "r"
 	| "u{" DigitSequenceHex? "}"
 	| #x0a
-	| [^'\stnru#x0a#x03]
+	| "%" ([^'%#x0a#x03] [^'#x0a#x03]*)? #x0a?
+	| "%%" ("%"? [^'%#x03])* "%%"?
+	| [^'\stnru#x0a%#x03]
 ;
 
 

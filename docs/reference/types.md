@@ -216,6 +216,48 @@ Other than for the special cases listed above, a backslash has no effect.
 >
 > 'Any non-special character may be escaped.'
 
+**There’s one exception to this rule:** The code `\%` does not escape a percent sign —
+it initiates a comment.
+
+#### In-String Comments
+String literals may contain Solid comments.
+Line comments begin with `\%` and continue until (but not including) the next line break, and
+multiline comments begin with `\%%` and continue until (and including) the next `%%`.
+Both kinds of comments will continue until their end delimiter unless the end of the string is reached first.
+The commented content is removed from the string’s cooked value.
+
+-
+	```
+	'The five boxing wizards \% jump quickly.';
+	```
+	> 'The five boxing wizards '
+-
+	```
+	'The five \% boxing wizards
+	jump quickly.';
+	```
+	> 'The five \
+	> jump quickly.'
+-
+	```
+	'The five \%% boxing wizards %% jump quickly.';
+	```
+	> 'The five  jump quickly.'
+-
+	```
+	'The five \%% boxing
+	wizards %% jump
+	quickly.';
+	```
+	> 'The five  jump\
+	> quickly.'
+
+Multiline comments cannot be nested.
+```
+'The \%% five \%% boxing %% wizards %% jump quickly.';
+```
+> 'The  boxing %% wizards %% jump quickly.'
+
 
 ### String Templates
 String templates are dynamic and may contain interpolated expressions.
