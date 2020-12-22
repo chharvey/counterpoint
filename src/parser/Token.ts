@@ -400,6 +400,20 @@ export class TokenString extends TokenSolid {
 				/* a line continuation (LF) */
 				return [0x20, ...TokenString.tokenWorth(text.slice(2), allow_separators)]
 
+			} else if (TokenCommentMulti.DELIM_START === `${ text[1] }${ text[2] }`) {
+				/* an in-string multiline comment */
+				const sequence: RegExpMatchArray = text.match(/\\\%\%(?:\%?[^\'\%])*(?:\%\%)?/)!;
+				return TokenString.tokenWorth(text.slice(sequence[0].length), allow_separators);
+
+			} else if (TokenCommentLine.DELIM_START === text[1]) {
+				/* an in-string line comment */
+				const match: string = text.match(/\\\%[^\'\n]*\n?/)![0];
+				const rest: number[] = TokenString.tokenWorth(text.slice(match.length), allow_separators);
+				return (match[match.length - 1] === '\n') // COMBAK `match.lastItem`
+					? [0x0a, ...rest]
+					: rest
+				;
+
 			} else {
 				/* a backslash escapes the following character */
 				return [
@@ -420,7 +434,7 @@ export class TokenString extends TokenSolid {
 				throw new LexError02(this)
 			}
 			if (Char.eq(TokenString.ESCAPER, this.lexer.c0)) {
-				/* possible escape or line continuation */
+				/* possible escape or line continuation or in-string comment */
 				if (Char.inc(TokenString.ESCAPES, this.lexer.c1)) {
 					/* an escaped character literal */
 					this.advance(2n)
@@ -457,6 +471,45 @@ export class TokenString extends TokenSolid {
 				} else if (Char.eq('\n', this.lexer.c1)) {
 					/* a line continuation (LF) */
 					this.advance(2n)
+
+				} else if (Char.eq(TokenCommentMulti.DELIM_START, this.lexer.c1, this.lexer.c2)) {
+					/* an in-string multiline comment */
+					this.advance(3n);
+					while (
+						   !this.lexer.isDone
+						&& !Char.eq(TokenString.DELIM, this.lexer.c0)
+						&& !Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)
+					) {
+						if (Char.eq(Filebound.EOT, this.lexer.c0)) {
+							throw new LexError02(this);
+						};
+						this.advance();
+					};
+					if (Char.eq(TokenString.DELIM, this.lexer.c0)) {
+						// do nothing, as the ending string delim is not included in the in-string comment
+					} else if (Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)) {
+						// add ending comment delim to in-string comment
+						this.advance(BigInt(TokenCommentMulti.DELIM_END.length));
+					};
+
+				} else if (Char.eq(TokenCommentLine.DELIM_START, this.lexer.c1)) {
+					/* an in-string line comment */
+					this.advance(2n);
+					while (!this.lexer.isDone && !Char.inc([
+						TokenString.DELIM,
+						TokenCommentLine.DELIM_END,
+					], this.lexer.c0)) {
+						if (Char.eq(Filebound.EOT, this.lexer.c0)) {
+							throw new LexError02(this);
+						};
+						this.advance();
+					};
+					if (Char.eq(TokenString.DELIM, this.lexer.c0)) {
+						// do nothing, as the ending string delim is not included in the in-string comment
+					} else if (Char.eq(TokenCommentLine.DELIM_END, this.lexer.c0)) {
+						// add ending comment delim to in-string comment
+						this.advance(BigInt(TokenCommentLine.DELIM_END.length));
+					};
 
 				} else {
 					/* a backslash escapes the following character */
