@@ -364,11 +364,13 @@ export class TokenString extends TokenSolid {
 	/**
 	 * Compute the token worth of a `TokenString` token or any segment of such token.
 	 * @param   text - the string to compute
+	 * @param   allow_comments - Should in-string comments be allowed?
 	 * @param   allow_separators - Should numeric separators be allowed?
 	 * @returns        the string value of the argument, a sequence of code units
 	 */
 	private static tokenWorth(
 		text: string,
+		allow_comments:   SolidConfig['languageFeatures']['comments']          = CONFIG_DEFAULT.languageFeatures.comments,
 		allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
 	): number[] {
 		if (text.length === 0) return []
@@ -385,7 +387,7 @@ export class TokenString extends TokenSolid {
 						['n'                 , 0x0a],
 						['r'                 , 0x0d],
 					]).get(text[1]) !,
-					...TokenString.tokenWorth(text.slice(2), allow_separators),
+					...TokenString.tokenWorth(text.slice(2), allow_comments, allow_separators),
 				]
 
 			} else if ('u{' === `${text[1]}${text[2]}`) {
@@ -393,22 +395,22 @@ export class TokenString extends TokenSolid {
 				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
 				return [
 					...Util.utf16Encoding(TokenNumber.tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
-					...TokenString.tokenWorth(text.slice(sequence[0].length), allow_separators),
+					...TokenString.tokenWorth(text.slice(sequence[0].length), allow_comments, allow_separators),
 				]
 
 			} else if ('\n' === text[1]) {
 				/* a line continuation (LF) */
-				return [0x20, ...TokenString.tokenWorth(text.slice(2), allow_separators)]
+				return [0x20, ...TokenString.tokenWorth(text.slice(2), allow_comments, allow_separators)]
 
-			} else if (TokenCommentMulti.DELIM_START === `${ text[1] }${ text[2] }`) {
+			} else if (allow_comments && TokenCommentMulti.DELIM_START === `${ text[1] }${ text[2] }`) {
 				/* an in-string multiline comment */
 				const sequence: RegExpMatchArray = text.match(/\\\%\%(?:\%?[^\'\%])*(?:\%\%)?/)!;
-				return TokenString.tokenWorth(text.slice(sequence[0].length), allow_separators);
+				return TokenString.tokenWorth(text.slice(sequence[0].length), allow_comments, allow_separators);
 
-			} else if (TokenCommentLine.DELIM_START === text[1]) {
+			} else if (allow_comments && TokenCommentLine.DELIM_START === text[1]) {
 				/* an in-string line comment */
 				const match: string = text.match(/\\\%[^\'\n]*\n?/)![0];
-				const rest: number[] = TokenString.tokenWorth(text.slice(match.length), allow_separators);
+				const rest: number[] = TokenString.tokenWorth(text.slice(match.length), allow_comments, allow_separators);
 				return (match[match.length - 1] === '\n') // COMBAK `match.lastItem`
 					? [0x0a, ...rest]
 					: rest
@@ -418,12 +420,12 @@ export class TokenString extends TokenSolid {
 				/* a backslash escapes the following character */
 				return [
 					text.charCodeAt(1),
-					...TokenString.tokenWorth(text.slice(2), allow_separators),
+					...TokenString.tokenWorth(text.slice(2), allow_comments, allow_separators),
 				]
 			}
 		} else return [
 			text.charCodeAt(0),
-			...TokenString.tokenWorth(text.slice(1), allow_separators),
+			...TokenString.tokenWorth(text.slice(1), allow_comments, allow_separators),
 		]
 	}
 	declare protected readonly lexer: LexerSolid;
@@ -472,7 +474,7 @@ export class TokenString extends TokenSolid {
 					/* a line continuation (LF) */
 					this.advance(2n)
 
-				} else if (Char.eq(TokenCommentMulti.DELIM_START, this.lexer.c1, this.lexer.c2)) {
+				} else if (this.lexer.config.languageFeatures.comments && Char.eq(TokenCommentMulti.DELIM_START, this.lexer.c1, this.lexer.c2)) {
 					/* an in-string multiline comment */
 					this.advance(3n);
 					while (
@@ -492,7 +494,7 @@ export class TokenString extends TokenSolid {
 						this.advance(BigInt(TokenCommentMulti.DELIM_END.length));
 					};
 
-				} else if (Char.eq(TokenCommentLine.DELIM_START, this.lexer.c1)) {
+				} else if (this.lexer.config.languageFeatures.comments && Char.eq(TokenCommentLine.DELIM_START, this.lexer.c1)) {
 					/* an in-string line comment */
 					this.advance(2n);
 					while (!this.lexer.isDone && !Char.inc([
@@ -525,6 +527,7 @@ export class TokenString extends TokenSolid {
 	cook(): string {
 		return String.fromCharCode(...TokenString.tokenWorth(
 			this.source.slice(1, -1), // cut off the string delimiters
+			this.lexer.config.languageFeatures.comments,
 			this.lexer.config.languageFeatures.numericSeparators,
 		))
 	}

@@ -3,7 +3,7 @@ import type {
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
-import {CONFIG_DEFAULT} from '../../src/SolidConfig'
+import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util     from '../../src/class/Util.class'
 import Dev      from '../../src/class/Dev.class'
 import {
@@ -210,27 +210,46 @@ describe('TokenSolid', () => {
 				assert.strictEqual((tokens[18] as TOKEN.TokenSolid).cook(), `\u{10001}`)
 			})
 			describe('In-String Comments', () => {
-				const cooked: TOKEN.CookValueType[] = [...new Lexer(Util.dedent(`
-					'The five boxing wizards \\% jump quickly.'
-					'The five \\% boxing wizards
-					jump quickly.'
-					'The five \\%% boxing wizards %% jump quickly.'
-					'The five \\%% boxing
-					wizards %% jump
-					quickly.'
-				`), CONFIG_DEFAULT).generate()]
-					.filter((token) => token instanceof TOKEN.TokenString)
-					.map((token) => (token as TokenSolid).cook())
-				;
-				new Map<string, [TOKEN.CookValueType, string]>([
-					['removes a line comment not ending in a LF.',   [cooked[0], 'The five boxing wizards ']],
-					['preserves a LF when line comment ends in LF.', [cooked[1], 'The five \njump quickly.']],
-					['ignores multiline comments.',                  [cooked[2], 'The five  jump quickly.']],
-					['ignores multiline comments containing LFs.',   [cooked[3], 'The five  jump\nquickly.']],
-				]).forEach(([actual, expected], testdesc) => {
-					it(testdesc, () => {
-						assert.strictEqual(actual, expected);
-					});
+				function cook(config: SolidConfig): TOKEN.CookValueType[] {
+					return [...new Lexer(Util.dedent(`
+						'The five boxing wizards \\% jump quickly.'
+						'The five \\% boxing wizards
+						jump quickly.'
+						'The five \\%% boxing wizards %% jump quickly.'
+						'The five \\%% boxing
+						wizards %% jump
+						quickly.'
+					`), config).generate()]
+						.filter((token) => token instanceof TOKEN.TokenString)
+						.map((token) => (token as TokenSolid).cook())
+					;
+				}
+				context('with comments enabled.', () => {
+					const data: {testdesc: string, expected: string}[] = [
+						{testdesc: 'removes a line comment not ending in a LF.',   expected: 'The five boxing wizards '},
+						{testdesc: 'preserves a LF when line comment ends in LF.', expected: 'The five \njump quickly.'},
+						{testdesc: 'ignores multiline comments.',                  expected: 'The five  jump quickly.'},
+						{testdesc: 'ignores multiline comments containing LFs.',   expected: 'The five  jump\nquickly.'},
+					];
+					cook(CONFIG_DEFAULT).forEach((actual, i) => {
+						it(data[i].testdesc, () => {
+							assert.strictEqual(actual, data[i].expected);
+						});
+					})
+				});
+				specify('with comments disabled.', () => {
+					assert.deepStrictEqual(cook({
+						...CONFIG_DEFAULT,
+						languageFeatures: {
+							...CONFIG_DEFAULT.languageFeatures,
+							comments: false,
+						},
+					}), [
+						'The five boxing wizards % jump quickly.',
+						'The five % boxing wizards\njump quickly.',
+						'The five %% boxing wizards %% jump quickly.',
+						'The five %% boxing\nwizards %% jump\nquickly.',
+					]);
 				});
 			});
 		})
