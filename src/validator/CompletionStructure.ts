@@ -2,7 +2,7 @@ import SolidObject  from './SolidObject.class'
 import SolidNull    from './SolidNull.class'
 import SolidBoolean from './SolidBoolean.class'
 import SolidNumber  from './SolidNumber.class'
-import Int16        from './Int16.class'
+import {Int16}        from './Int16';
 import {
 	InstructionConst,
 } from '../builder/'
