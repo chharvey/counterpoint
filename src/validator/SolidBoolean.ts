@@ -1,6 +1,7 @@
-import SolidLanguageType, {
+import {
+	SolidLanguageType,
 	SolidTypeConstant,
-} from './SolidLanguageType.class'
+} from './SolidLanguageType';
 import SolidObject from './SolidObject.class'
 
 

@@ -22,9 +22,10 @@ import {
 	CompletionType,
 	CompletionStructureAssessment,
 } from './CompletionStructure';
-import SolidLanguageType, {
+import {
+	SolidLanguageType,
 	SolidTypeConstant,
-} from './SolidLanguageType.class'
+} from './SolidLanguageType';
 import SolidObject  from './SolidObject.class'
 import SolidNull    from './SolidNull.class'
 import {SolidBoolean} from './SolidBoolean';

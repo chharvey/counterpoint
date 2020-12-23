@@ -1,4 +1,4 @@
-import type SolidLanguageType from './SolidLanguageType.class'
+import type {SolidLanguageType} from './SolidLanguageType';
 import SolidObject from './SolidObject.class'
 
 

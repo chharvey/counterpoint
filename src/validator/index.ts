@@ -33,12 +33,11 @@ export {
 	CompletionStructureAssessment,
 } from './CompletionStructure';
 
-export {default as SolidLanguageType} from './SolidLanguageType.class'
-
 export {
+	SolidLanguageType,
 	SolidTypeConstant,
 	SolidTypeInterface,
-} from './SolidLanguageType.class'
+} from './SolidLanguageType';
 
 export {default as SolidObject}  from './SolidObject.class'
 export {default as SolidNull}    from './SolidNull.class'
