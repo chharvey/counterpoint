@@ -1,4 +1,4 @@
-export {default as Validator}    from './Validator.class'
+export {Validator} from './Validator';
 export {Decorator} from './Decorator';
 
 export {

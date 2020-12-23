@@ -15,9 +15,9 @@ import Operator, {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from '../enum/Operator.enum'
-import Validator, {
-	SymbolInfo,
-} from './Validator.class';
+import {
+	Validator,
+} from './Validator';
 import {
 	CompletionType,
 	CompletionStructureAssessment,
