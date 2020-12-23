@@ -10,7 +10,7 @@ import SolidNumber from './SolidNumber.class'
  * A 64-bit floating-point number.
  * @final
  */
-export default class Float64 extends SolidNumber<Float64> {
+export class Float64 extends SolidNumber<Float64> {
 	/** @override */
 	static values: SolidLanguageType['values'] = new Set([new Float64(0.0)])
 

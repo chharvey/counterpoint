@@ -30,7 +30,7 @@ import SolidNull    from './SolidNull.class'
 import SolidBoolean from './SolidBoolean.class'
 import SolidNumber  from './SolidNumber.class'
 import Int16        from './Int16.class'
-import Float64      from './Float64.class'
+import {Float64}      from './Float64';
 import SolidString  from './SolidString.class'
 import {
 	Builder,

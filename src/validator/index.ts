@@ -45,5 +45,5 @@ export {default as SolidNull}    from './SolidNull.class'
 export {default as SolidBoolean} from './SolidBoolean.class'
 export {default as SolidNumber}  from './SolidNumber.class'
 export {default as Int16}        from './Int16.class'
-export {default as Float64}      from './Float64.class'
+export {Float64}      from './Float64';
 export {default as SolidString}  from './SolidString.class'

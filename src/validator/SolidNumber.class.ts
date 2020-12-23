@@ -1,5 +1,5 @@
 import SolidObject from './SolidObject.class'
-import type Float64 from './Float64.class'
+import type {Float64} from './Float64';
 
 
 
