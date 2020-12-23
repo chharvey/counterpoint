@@ -174,7 +174,7 @@ Operations that are associative are indicated as so in their respective sections
 `!` <unknown>
 `?` <unknown>
 ```
-The **logical negation** operator, `!` returns the opposite boolean value of the operand’s “logical value”.
+The **logical negation** operator, `!`, returns the opposite boolean value of the operand’s “logical value”.
 
 A value’s “logical value” is the boolean value that most closely corresponds to that value.
 A value is said to be “falsy” if its “logical value” is `false`. Otherwise the value is said to be “truthy”.
@@ -191,7 +191,7 @@ A value is said to be “falsy” if its “logical value” is `false`. Otherwi
 The operator `!` logically negates the “logical value” of the operand.
 If the value is “falsy”, `true` is produced; otherwise `false` is produced.
 
-The emptiness operator `?` determines whether a value is considered “empty”.
+The **emptiness operator**, `?`, determines whether a value is considered “empty”.
 A value is “empty” if it’s “falsy”, if it’s a zero numeric value (`0`, `0.0`, or `-0.0`), or if it’s an empty string.
 In future versions its semantics will be expanded to collections (such as arrays and sets, etc.).
 
