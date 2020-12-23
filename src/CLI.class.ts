@@ -6,10 +6,10 @@ import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleI
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/';
+} from './core';
 import {
 	Builder,
-} from '../builder/'
+} from './builder';
 
 
 
@@ -59,7 +59,7 @@ type CustomArgsType = {
  * Code for the command line interface.
  * A CLI object is a single instance of a CLI run.
  */
-export default class CLI {
+export class CLI {
 	/** Text to print on --help. */
 	static readonly HELPTEXT: string = `
 		Usage: solid <command> <filepath> [<options>]

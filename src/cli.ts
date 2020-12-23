@@ -1,9 +1,10 @@
 import {
 	Dev,
 } from './core/';
-import CLI, {
+import {
+	CLI,
 	Command,
-} from './class/CLI.class'
+} from './CLI.class';
 
 
 
