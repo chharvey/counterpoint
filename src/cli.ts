@@ -1,4 +1,6 @@
-import Dev from './class/Dev.class'
+import {
+	Dev,
+} from './core/';
 import CLI, {
 	Command,
 } from './class/CLI.class'

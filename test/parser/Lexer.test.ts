@@ -9,9 +9,9 @@ import * as assert from 'assert'
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
+	Dev,
 } from '../../src/core/';
 import Util  from '../../src/class/Util.class'
-import Dev from '../../src/class/Dev.class'
 import {
 	TemplatePosition,
 	TOKEN,

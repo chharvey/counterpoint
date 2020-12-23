@@ -10,10 +10,10 @@ import {
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
+	Dev,
 } from '../core/';
 
 import Util from '../class/Util.class'
-import Dev from '../class/Dev.class'
 import type {
 	LexerSolid,
 } from './Lexer';

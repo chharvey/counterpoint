@@ -4,8 +4,8 @@ import * as xjs from 'extrajs'
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
+	Dev,
 } from '../../src/core/';
-import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {
 	ReferenceError01,

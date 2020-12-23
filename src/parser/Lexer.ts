@@ -7,8 +7,8 @@ import {
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
+	Dev,
 } from '../core/';
-import Dev from '../class/Dev.class'
 import type {
 	Punctuator,
 } from './Token';
