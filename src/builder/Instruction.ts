@@ -13,7 +13,7 @@ import {
 
 
 
-export default abstract class Instruction {
+export abstract class Instruction {
 }
 
 

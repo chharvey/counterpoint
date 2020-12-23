@@ -1,5 +1,5 @@
 export {Builder}     from './Builder';
-export {default as Instruction} from './Instruction.class'
+export {Instruction} from './Instruction';
 export {
 	InstructionNone,
 	InstructionExpression,
@@ -16,4 +16,4 @@ export {
 	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
-} from './Instruction.class'
+} from './Instruction';
