@@ -1,4 +1,4 @@
-export {default as Builder}     from './Builder.class'
+export {Builder}     from './Builder';
 export {default as Instruction} from './Instruction.class'
 export {
 	InstructionNone,

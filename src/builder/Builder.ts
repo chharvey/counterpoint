@@ -21,7 +21,7 @@ import {
 /**
  * The Builder generates assembly code.
  */
-export default class Builder {
+export class Builder {
 	static readonly IMPORTS: readonly string[] = [
 		fs.readFileSync(path.join(__dirname, '../../src/builder/not.wat'), 'utf8'),
 		fs.readFileSync(path.join(__dirname, '../../src/builder/emp.wat'), 'utf8'),
