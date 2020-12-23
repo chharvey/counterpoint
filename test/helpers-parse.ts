@@ -5,7 +5,10 @@ import {
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
-import SolidConfig, {CONFIG_DEFAULT} from '../src/SolidConfig'
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+} from '../src/core/';
 import {
 	Punctuator,
 	TOKEN,

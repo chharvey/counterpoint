@@ -7,7 +7,10 @@ import {
 	LexError02,
 } from '@chharvey/parser';
 
-import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+} from '../core/';
 
 import Util from '../class/Util.class'
 import Dev from '../class/Dev.class'

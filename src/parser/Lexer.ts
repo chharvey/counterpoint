@@ -4,7 +4,10 @@ import {
 	Lexer,
 } from '@chharvey/parser';
 
-import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+} from '../core/';
 import Dev from '../class/Dev.class'
 import type {
 	Punctuator,

@@ -3,7 +3,7 @@ import type {
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
-import {CONFIG_DEFAULT} from '../../src/SolidConfig'
+import {CONFIG_DEFAULT} from '../../src/core/';
 import Util     from '../../src/class/Util.class'
 import Dev      from '../../src/class/Dev.class'
 import {

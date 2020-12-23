@@ -1,7 +1,10 @@
 import * as assert from 'assert'
 import * as xjs from 'extrajs'
 
-import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+} from '../../src/core/';
 import Dev from '../../src/class/Dev.class'
 import Operator from '../../src/enum/Operator.enum'
 import {

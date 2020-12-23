@@ -1,7 +1,6 @@
 import * as assert from 'assert'
 
 import Operator from '../../src/enum/Operator.enum'
-import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util from '../../src/class/Util.class'
 import {
 	ParserSolid as Parser,

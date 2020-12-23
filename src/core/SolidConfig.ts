@@ -1,7 +1,7 @@
 /**
  * Interface for Solid configurations.
  */
-type SolidConfig = {
+export type SolidConfig = {
 	/**
 	 * Toggles for which language features to enable/disable.
 	 * Disabling features can improve compiler speed.
@@ -44,6 +44,5 @@ type SolidConfig = {
 		readonly intCoercion: boolean,
 	},
 }
-export default SolidConfig // NB https://github.com/microsoft/TypeScript/issues/3792#issuecomment-303526468
 
-export const CONFIG_DEFAULT: SolidConfig = require('../src/solid-config.default.json')
+export const CONFIG_DEFAULT: SolidConfig = require('../solid-config.default.json');

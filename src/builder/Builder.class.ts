@@ -3,7 +3,10 @@ import * as path from 'path'
 
 import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
-import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+} from '../core/';
 import {
 	ParserSolid as Parser,
 } from '../parser/';

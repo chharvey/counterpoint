@@ -1,4 +1,7 @@
-import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+} from '../core/';
 import type SolidLanguageType from './SolidLanguageType.class'
 
 
