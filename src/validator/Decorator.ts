@@ -16,7 +16,7 @@ import {
 	TOKEN,
 	PARSER,
 } from '../parser/'
-import * as AST from './SemanticNode.class';
+import * as AST from './ASTNode';
 
 
 
