@@ -32,7 +32,7 @@ import {SolidBoolean} from './SolidBoolean';
 import {SolidNumber}  from './SolidNumber';
 import {Int16}        from './Int16';
 import {Float64}      from './Float64';
-import SolidString  from './SolidString.class'
+import {SolidString}  from './SolidString';
 import {
 	Builder,
 	Instruction,

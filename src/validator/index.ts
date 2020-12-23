@@ -45,4 +45,4 @@ export {SolidBoolean} from './SolidBoolean';
 export {SolidNumber}  from './SolidNumber';
 export {Int16}        from './Int16';
 export {Float64}      from './Float64';
-export {default as SolidString}  from './SolidString.class'
+export {SolidString}  from './SolidString';
