@@ -40,7 +40,7 @@ export {
 } from './SolidLanguageType';
 
 export {default as SolidObject}  from './SolidObject.class'
-export {default as SolidNull}    from './SolidNull.class'
+export {SolidNull}    from './SolidNull';
 export {SolidBoolean} from './SolidBoolean';
 export {default as SolidNumber}  from './SolidNumber.class'
 export {Int16}        from './Int16';

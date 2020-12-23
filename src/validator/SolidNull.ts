@@ -17,7 +17,7 @@ import SolidObject from './SolidObject.class'
  *
  * @final
  */
-export default class SolidNull extends SolidObject {
+export class SolidNull extends SolidObject {
 	/** The Solid Language Value `null`. */
 	static readonly NULL: SolidNull = new SolidNull()
 	/** @override */

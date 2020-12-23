@@ -1,5 +1,5 @@
 import SolidObject  from './SolidObject.class'
-import SolidNull    from './SolidNull.class'
+import {SolidNull}    from './SolidNull';
 import {SolidBoolean} from './SolidBoolean';
 import SolidNumber  from './SolidNumber.class'
 import {Int16}        from './Int16';
