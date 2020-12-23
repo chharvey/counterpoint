@@ -74,7 +74,7 @@ import {
 
 
 
-describe('SemanticNode', () => {
+describe('ASTNodeSolid', () => {
 	describe('#build', () => {
 		context('SemanticNodeGoal ::= SOT EOT', () => {
 			it('returns InstructionNone.', () => {

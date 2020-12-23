@@ -89,18 +89,18 @@ function oneFloats(t0: SolidLanguageType, t1: SolidLanguageType): boolean {
 
 
 
-export abstract class SemanticNodeSolid extends ASTNode {
+export abstract class ASTNodeSolid extends ASTNode {
 	/**
-	 * Construct a new SemanticNodeSolid object.
+	 * Construct a new ASTNodeSolid object.
 	 *
-	 * @param start_node - The initial node in the parse tree to which this SemanticNode corresponds.
-	 * @param children   - The set of child inputs that creates this SemanticNode.
+	 * @param start_node - The initial node in the parse tree to which this ASTNode corresponds.
+	 * @param children   - The set of child inputs that creates this ASTNode.
 	 * @param attributes - Any other attributes to attach.
 	 */
 	constructor(
 		start_node: Token|ParseNode,
 		attributes: {[key: string]: CookValueType | SolidObject} = {},
-		children: readonly SemanticNodeSolid[] = [],
+		children: readonly ASTNodeSolid[] = [],
 	) {
 		super(start_node, attributes, children)
 	}
@@ -136,18 +136,18 @@ export abstract class SemanticNodeSolid extends ASTNode {
  * - SemanticNodeTypeConstant
  * - SemanticNodeTypeOperation
  */
-export abstract class SemanticNodeType extends SemanticNodeSolid {
+export abstract class SemanticNodeType extends ASTNodeSolid {
 	private assessed: SolidLanguageType | null = null
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	varCheck(_validator: Validator = new Validator()): void {
 		return; // for now, there are no type variables // TODO: dereferencing type variables
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	typeCheck(_validator: Validator = new Validator()): void {
 		return; // for now, all types are valid // TODO: dereferencing type variables
 	}
 	/**
-	 * @implements SemanticNodeSolid
+	 * @implements ASTNodeSolid
 	 * @final
 	 */
 	build(_builder: Builder): InstructionNone {
@@ -246,19 +246,19 @@ export class SemanticNodeTypeOperationBinary extends SemanticNodeTypeOperation {
  * - SemanticNodeTemplate
  * - SemanticNodeOperation
  */
-export abstract class SemanticNodeExpression extends SemanticNodeSolid {
+export abstract class SemanticNodeExpression extends ASTNodeSolid {
 	private assessed: CompletionStructureAssessment | null = null
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
 	 * @return Should the built instruction be type-coerced into a floating-point number?
 	 */
 	abstract get shouldFloat(): boolean;
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
 		this.type(validator); // assert does not throw
 	}
 	/**
-	 * @implements SemanticNodeSolid
+	 * @implements ASTNodeSolid
 	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
 	 * @final
 	 */
@@ -318,7 +318,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 	get shouldFloat(): boolean {
 		return this.value instanceof Float64
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	varCheck(_validator: Validator = new Validator()): void {
 		return; // no validation necessary for constants
 	}
@@ -361,7 +361,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 	get shouldFloat(): boolean {
 		return this.type().isSubtypeOf(Float64);
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
 		if (!validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
@@ -400,7 +400,7 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	get shouldFloat(): boolean {
 		throw new Error('SemanticNodeTemplate#shouldFloat not yet supported.')
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
@@ -429,7 +429,7 @@ export abstract class SemanticNodeOperation extends SemanticNodeExpression {
 		super(start_node, {operator}, children)
 	}
 	/**
-	 * @implements SemanticNodeSolid
+	 * @implements ASTNodeSolid
 	 * @final
 	 */
 	varCheck(validator: Validator = new Validator()): void {
@@ -828,7 +828,7 @@ export type SemanticStatementType =
 	| SemanticNodeStatementExpression
 	| SemanticNodeDeclarationVariable
 	| SemanticNodeAssignment
-export class SemanticNodeStatementExpression extends SemanticNodeSolid {
+export class SemanticNodeStatementExpression extends ASTNodeSolid {
 	constructor(
 		start_node: ParseNode,
 		readonly children:
@@ -837,22 +837,22 @@ export class SemanticNodeStatementExpression extends SemanticNodeSolid {
 	) {
 		super(start_node, {}, children)
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
 		return this.children[0]?.typeCheck(validator);
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	build(builder: Builder): InstructionNone | InstructionStatement {
 		return (!this.children.length)
 			? new InstructionNone()
 			: new InstructionStatement(builder.stmtCount, this.children[0].build(builder))
 	}
 }
-export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
+export class SemanticNodeDeclarationVariable extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly unfixed: boolean,
@@ -861,7 +861,7 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 	) {
 		super(start_node, {unfixed}, children)
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
 		const assignee:   SemanticNodeAssignee   = this.children[0];
 		const identifier: SemanticNodeIdentifier = assignee.children[0];
@@ -878,7 +878,7 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 		);
 		return this.children[2].varCheck(validator);
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
 		const assignee_type: SolidLanguageType = this.children[1].assess()
 		const assigned_type: SolidLanguageType = this.children[2].type(validator);
@@ -890,12 +890,12 @@ export class SemanticNodeDeclarationVariable extends SemanticNodeSolid {
 			throw new TypeError03(this, assignee_type, assigned_type)
 		}
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {
 		throw new Error('SemanticNodeDeclaration#build not yet supported.')
 	}
 }
-export class SemanticNodeAssignment extends SemanticNodeSolid {
+export class SemanticNodeAssignment extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly children:
@@ -903,11 +903,11 @@ export class SemanticNodeAssignment extends SemanticNodeSolid {
 	) {
 		super(start_node, {}, children)
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
 		const assignee_type: SolidLanguageType = this.children[0].children[0].type(validator);
 		const assigned_type: SolidLanguageType = this.children[1].type(validator);
@@ -919,12 +919,12 @@ export class SemanticNodeAssignment extends SemanticNodeSolid {
 			throw new TypeError03(this, assignee_type, assigned_type);
 		};
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {
 		throw new Error('SemanticNodeAssignment#build not yet supported.')
 	}
 }
-export class SemanticNodeAssignee extends SemanticNodeSolid {
+export class SemanticNodeAssignee extends ASTNodeSolid {
 	constructor(
 		start_node: Token,
 		readonly children:
@@ -932,7 +932,7 @@ export class SemanticNodeAssignee extends SemanticNodeSolid {
 	) {
 		super(start_node, {}, children)
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
 		const identifier: SemanticNodeIdentifier = this.children[0];
 		identifier.varCheck(validator);
@@ -940,16 +940,16 @@ export class SemanticNodeAssignee extends SemanticNodeSolid {
 			throw new AssignmentError10(identifier);
 		};
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
 		return this.children[0].typeCheck(validator);
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {
 		throw new Error('SemanticNodeAssignee#build not yet supported.')
 	}
 }
-export class SemanticNodeGoal extends SemanticNodeSolid {
+export class SemanticNodeGoal extends ASTNodeSolid {
 	constructor(
 		start_node: ParseNode,
 		readonly children:
@@ -958,16 +958,16 @@ export class SemanticNodeGoal extends SemanticNodeSolid {
 	) {
 		super(start_node, {}, children)
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
 		this.children.forEach((c) => c.varCheck(validator));
 		validator.clearSymbols();
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
 		return this.children.forEach((child) => child.typeCheck(validator));
 	}
-	/** @implements SemanticNodeSolid */
+	/** @implements ASTNodeSolid */
 	build(builder: Builder): InstructionNone | InstructionModule {
 		return (!this.children.length)
 			? new InstructionNone()

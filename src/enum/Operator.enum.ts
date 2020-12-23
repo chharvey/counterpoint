@@ -1,4 +1,4 @@
-// HACK: this is defined here, instead of in `../class/SemanticNode.class`, to avoid circular imports.
+// HACK: this is defined here, instead of in `../validator/ASTNode.ts`, to avoid circular imports.
 enum Operator {
 	ORNULL,
 	NOT,
