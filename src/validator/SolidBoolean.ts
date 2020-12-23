@@ -14,7 +14,7 @@ import SolidObject from './SolidObject.class'
  *
  * @final
  */
-export default class SolidBoolean extends SolidObject {
+export class SolidBoolean extends SolidObject {
 	/** The Solid Language Value `false`. */
 	static readonly FALSE: SolidBoolean = new SolidBoolean()
 	/** The Solid Language Value `true`. */
