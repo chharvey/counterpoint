@@ -7,7 +7,8 @@ import {
 import * as xjs from 'extrajs'
 
 import Util from '../class/Util.class'
-import Operator, {
+import {
+	Operator,
 	ValidTypeOperator,
 	ValidOperatorUnary,
 	ValidOperatorBinary,

@@ -1,4 +1,5 @@
-import Operator, {
+import {
+	Operator,
 	ValidOperatorUnary,
 	ValidOperatorBinary,
 	ValidOperatorArithmetic,
