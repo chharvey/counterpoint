@@ -21,7 +21,7 @@ import Validator, {
 import {
 	CompletionType,
 	CompletionStructureAssessment,
-} from './CompletionStructure.class'
+} from './CompletionStructure';
 import SolidLanguageType, {
 	SolidTypeConstant,
 } from './SolidLanguageType.class'

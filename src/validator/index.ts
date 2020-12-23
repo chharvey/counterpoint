@@ -31,7 +31,7 @@ export * as AST from './SemanticNode.class';
 
 export {
 	CompletionStructureAssessment,
-} from './CompletionStructure.class'
+} from './CompletionStructure';
 
 export {default as SolidLanguageType} from './SolidLanguageType.class'
 

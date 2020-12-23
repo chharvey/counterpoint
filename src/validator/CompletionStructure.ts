@@ -22,7 +22,7 @@ export enum CompletionType {
 /**
  * An object returned by specification algorithms.
  */
-export default class CompletionStructure {
+export class CompletionStructure {
 	/** The type of completion that occurred. */
 	readonly type: CompletionType;
 	/** The value produced by this completion structure. */
