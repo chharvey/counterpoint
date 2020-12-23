@@ -6,8 +6,8 @@ import * as assert from 'assert'
 import {
 	CONFIG_DEFAULT,
 	Dev,
+	Util,
 } from '../../src/core/';
-import Util     from '../../src/class/Util.class'
 import {
 	TOKEN,
 	LexerSolid as Lexer,

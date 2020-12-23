@@ -11,9 +11,9 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
+	Util,
 } from '../core/';
 
-import Util from '../class/Util.class'
 import type {
 	LexerSolid,
 } from './Lexer';

@@ -6,7 +6,6 @@ import {
 } from '@chharvey/parser';
 import * as xjs from 'extrajs'
 
-import Util from '../class/Util.class'
 import Operator, {
 	ValidTypeOperator,
 	ValidOperatorUnary,

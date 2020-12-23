@@ -5,9 +5,9 @@ import {
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
-import Util from '../../src/class/Util.class'
 import {
 	Dev,
+	Util,
 } from '../../src/core/';
 import {
 	Punctuator,

@@ -10,8 +10,8 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
+	Util,
 } from '../../src/core/';
-import Util  from '../../src/class/Util.class'
 import {
 	TemplatePosition,
 	TOKEN,
