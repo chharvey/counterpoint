@@ -39,7 +39,7 @@ export {
 	SolidTypeInterface,
 } from './SolidLanguageType';
 
-export {default as SolidObject}  from './SolidObject.class'
+export {SolidObject}  from './SolidObject';
 export {SolidNull}    from './SolidNull';
 export {SolidBoolean} from './SolidBoolean';
 export {SolidNumber}  from './SolidNumber';

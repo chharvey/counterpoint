@@ -1,4 +1,4 @@
-import SolidObject from './SolidObject.class'
+import {SolidObject} from './SolidObject';
 
 
 

@@ -1,4 +1,4 @@
-import SolidObject  from './SolidObject.class'
+import {SolidObject}  from './SolidObject';
 import {SolidNull}    from './SolidNull';
 import {SolidBoolean} from './SolidBoolean';
 import {SolidNumber}  from './SolidNumber';

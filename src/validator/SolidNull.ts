@@ -1,5 +1,5 @@
 import type {SolidLanguageType} from './SolidLanguageType';
-import SolidObject from './SolidObject.class'
+import {SolidObject} from './SolidObject';
 
 
 

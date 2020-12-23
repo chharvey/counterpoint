@@ -12,7 +12,7 @@ import type {SolidBoolean} from './SolidBoolean';
  * - Int16
  * - Float64
  */
-export default class SolidObject {
+export class SolidObject {
 	/** @implements SolidLanguageType */
 	static isEmpty: SolidLanguageType['isEmpty'] = false
 	/** @implements SolidLanguageType */
