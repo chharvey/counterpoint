@@ -1,5 +1,5 @@
 Void VarCheck(Or<SemanticTypeConstant, SemanticConstant> node) :=
-	1. *Return.*
+	1. *Return*.
 ;
 
 

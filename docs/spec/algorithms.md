@@ -21,7 +21,7 @@ Boolean ToBoolean(Object value) :=
 		1. *Return:* `false`.
 	2. *If* `TypeOf(value)` is `Boolean`:
 		1. *Return:* `value`.
-	3. *Return*: `true`.
+	3. *Return:* `true`.
 ```
 
 

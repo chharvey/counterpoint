@@ -334,9 +334,9 @@ Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarat
 
 
 
-Decorate(Declaration ::= DeclarationVariable;) -> SemanticDeclarationVariable
+Decorate(Declaration ::= DeclarationVariable) -> SemanticDeclarationVariable
 	:= Decorate(DeclarationVariable);
-Decorate(Declaration ::= DeclarationType;) -> SemanticDeclarationType
+Decorate(Declaration ::= DeclarationType) -> SemanticDeclarationType
 	:= Decorate(DeclarationType);
 
 

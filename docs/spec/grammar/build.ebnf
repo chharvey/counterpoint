@@ -29,7 +29,7 @@ Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 	1. *Let* `sequence` be an empty sequence of `Instruction`s.
 	2. *If* `stmt.children.count` is greater than 0:
 		1. *Set* `sequence` to *UnwrapAffirm:* `Build(stmt.children.0)`.
-	3. *Return* `sequence`.
+	3. *Return:* `sequence`.
 ;
 
 
@@ -49,7 +49,7 @@ Sequence<Instruction> Build(SemanticGoal goal) :=
 	2. For each `SemanticStatment stmt` in `goal.children`:
 		1. *Let* `instrs` be *UnwrapAffirm:* `Build(stmt)`.
 		2. Push `...instrs` to `sequence`.
-	3. *Return* `sequence`.
+	3. *Return:* `sequence`.
 ;
 
 
