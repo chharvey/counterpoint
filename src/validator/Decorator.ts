@@ -79,7 +79,7 @@ export class Decorator {
 		| PARSER.ParseNodeTypeIntersection
 		| PARSER.ParseNodeTypeUnion
 		| PARSER.ParseNodeType
-	): AST.SemanticNodeType;
+	): AST.ASTNodeType;
 	static decorate(node: PARSER.ParseNodeStringTemplate__1__List):  TemplatePartialType;
 	static decorate(node: PARSER.ParseNodeStringTemplate):           AST.SemanticNodeTemplate;
 	static decorate(node:

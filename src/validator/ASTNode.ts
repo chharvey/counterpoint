@@ -136,7 +136,7 @@ export abstract class ASTNodeSolid extends ASTNode {
  * - SemanticNodeTypeConstant
  * - SemanticNodeTypeOperation
  */
-export abstract class SemanticNodeType extends ASTNodeSolid {
+export abstract class ASTNodeType extends ASTNodeSolid {
 	private assessed: SolidLanguageType | null = null
 	/** @implements ASTNodeSolid */
 	varCheck(_validator: Validator = new Validator()): void {
@@ -164,7 +164,7 @@ export abstract class SemanticNodeType extends ASTNodeSolid {
 	}
 	protected abstract assess_do(): SolidLanguageType
 }
-export class SemanticNodeTypeConstant extends SemanticNodeType {
+export class SemanticNodeTypeConstant extends ASTNodeType {
 	declare children:
 		| readonly []
 	readonly value: SolidLanguageType;
@@ -188,17 +188,17 @@ export class SemanticNodeTypeConstant extends SemanticNodeType {
 		super(start_node, {value: value.toString()})
 		this.value = value
 	}
-	/** @implements SemanticNodeType */
+	/** @implements ASTNodeType */
 	protected assess_do(): SolidLanguageType {
 		return this.value
 	}
 }
-export abstract class SemanticNodeTypeOperation extends SemanticNodeType {
+export abstract class SemanticNodeTypeOperation extends ASTNodeType {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidTypeOperator,
 		readonly children:
-			| readonly SemanticNodeType[]
+			| readonly ASTNodeType[]
 	) {
 		super(start_node, {operator}, children)
 	}
@@ -208,11 +208,11 @@ export class SemanticNodeTypeOperationUnary extends SemanticNodeTypeOperation {
 		start_node: ParseNode,
 		operator: ValidTypeOperator,
 		readonly children:
-			| readonly [SemanticNodeType]
+			| readonly [ASTNodeType]
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements SemanticNodeType */
+	/** @implements ASTNodeType */
 	protected assess_do(): SolidLanguageType {
 		return (this.operator === Operator.ORNULL)
 			? this.children[0].assess().union(SolidNull)
@@ -224,11 +224,11 @@ export class SemanticNodeTypeOperationBinary extends SemanticNodeTypeOperation {
 		start_node: ParseNode,
 		operator: ValidTypeOperator,
 		readonly children:
-			| readonly [SemanticNodeType, SemanticNodeType]
+			| readonly [ASTNodeType, ASTNodeType]
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements SemanticNodeType */
+	/** @implements ASTNodeType */
 	protected assess_do(): SolidLanguageType {
 		return (
 			(this.operator === Operator.AND) ? this.children[0].assess().intersect(this.children[1].assess()) :
@@ -857,7 +857,7 @@ export class SemanticNodeDeclarationVariable extends ASTNodeSolid {
 		start_node: ParseNode,
 		readonly unfixed: boolean,
 		readonly children:
-			| readonly [SemanticNodeAssignee, SemanticNodeType, SemanticNodeExpression]
+			| readonly [SemanticNodeAssignee, ASTNodeType, SemanticNodeExpression]
 	) {
 		super(start_node, {unfixed}, children)
 	}

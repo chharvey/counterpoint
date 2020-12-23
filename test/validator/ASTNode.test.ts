@@ -535,7 +535,7 @@ describe('ASTNodeSolid', () => {
 	})
 
 
-	describe('SemanticNodeType', () => {
+	describe('ASTNodeType', () => {
 		describe('#assess', () => {
 			it('computes the value of constant null, boolean, or number types.', () => {
 				assert.deepStrictEqual([

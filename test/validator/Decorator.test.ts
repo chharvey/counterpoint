@@ -10,7 +10,6 @@ import {
 } from '../../src/parser/';
 import {
 	Decorator,
-	SemanticNodeType,
 	SemanticNodeTypeConstant,
 	SemanticNodeTypeOperationUnary,
 	SemanticNodeTypeOperationBinary,
@@ -124,7 +123,7 @@ describe('Decorator', () => {
 					`42`,
 					`4.2`,
 				].map((src) => {
-					const constant: SemanticNodeType = Decorator.decorate(unitTypeFromString(src))
+					const constant: AST.ASTNodeType = Decorator.decorate(unitTypeFromString(src));
 					assert.ok(constant instanceof SemanticNodeTypeConstant)
 					return constant.value
 				}), [
@@ -144,9 +143,9 @@ describe('Decorator', () => {
 						<TypeConstant source="int" value="Int16"/>
 					</TypeOperation>
 				*/
-				const operation: SemanticNodeType = Decorator.decorate(unaryTypeFromString(`int!`))
+				const operation: AST.ASTNodeType = Decorator.decorate(unaryTypeFromString(`int!`));
 				assert.ok(operation instanceof SemanticNodeTypeOperationUnary)
-				const operand: SemanticNodeType = operation.children[0]
+				const operand: AST.ASTNodeType = operation.children[0];
 				assert.deepStrictEqual(
 					[operand.source, operation.operator],
 					[`int`,          Operator.ORNULL],
@@ -162,10 +161,10 @@ describe('Decorator', () => {
 						<TypeConstant source="3"/>
 					</TypeOperation>
 				*/
-				const operation: SemanticNodeType = Decorator.decorate(intersectionTypeFromString(`int & 3`))
+				const operation: AST.ASTNodeType = Decorator.decorate(intersectionTypeFromString(`int & 3`));
 				assert.ok(operation instanceof SemanticNodeTypeOperationBinary)
-				const left:  SemanticNodeType = operation.children[0]
-				const right: SemanticNodeType = operation.children[1]
+				const left:  AST.ASTNodeType = operation.children[0];
+				const right: AST.ASTNodeType = operation.children[1];
 				assert.deepStrictEqual(
 					[left.source, operation.operator, right.source],
 					[`int`,       Operator.AND,       `3`],
@@ -181,10 +180,10 @@ describe('Decorator', () => {
 						<TypeOperation source="int & int">...</TypeOperation>
 					</TypeOperation>
 				*/
-				const operation: SemanticNodeType = Decorator.decorate(unionTypeFromString(`4.2! | int & int`))
+				const operation: AST.ASTNodeType = Decorator.decorate(unionTypeFromString(`4.2! | int & int`));
 				assert.ok(operation instanceof SemanticNodeTypeOperationBinary)
-				const left:  SemanticNodeType = operation.children[0]
-				const right: SemanticNodeType = operation.children[1]
+				const left: AST.ASTNodeType = operation.children[0];
+				const right: AST.ASTNodeType = operation.children[1];
 				assert.deepStrictEqual(
 					[left.source, operation.operator, right.source],
 					[`4.2 !`,     Operator.OR,        `int & int`],
@@ -200,10 +199,10 @@ describe('Decorator', () => {
 						<TypeOperation source="int | int">...</TypeOperation>
 					</TypeOperation>
 				*/
-				const operation: SemanticNodeType = Decorator.decorate(unionTypeFromString(`4.2! & (int | int)`))
+				const operation: AST.ASTNodeType = Decorator.decorate(unionTypeFromString(`4.2! & (int | int)`));
 				assert.ok(operation instanceof SemanticNodeTypeOperationBinary)
-				const left:  SemanticNodeType = operation.children[0]
-				const right: SemanticNodeType = operation.children[1]
+				const left:  AST.ASTNodeType = operation.children[0];
+				const right: AST.ASTNodeType = operation.children[1];
 				assert.deepStrictEqual(
 					[left.source, operation.operator, right.source],
 					[`4.2 !`,     Operator.AND,       `int | int`],
@@ -713,7 +712,7 @@ describe('Decorator', () => {
 				assert.strictEqual(decl.unfixed, true);
 				const assignee: AST.SemanticNodeAssignee = decl.children[0];
 				assert.strictEqual(assignee.children[0].id, 256n);
-				const type_: SemanticNodeType = decl.children[1]
+				const type_: AST.ASTNodeType = decl.children[1];
 				assert.ok(type_ instanceof SemanticNodeTypeOperationBinary)
 				assert.strictEqual(type_.operator, Operator.OR)
 				const assigned_expr: SemanticNodeExpression = decl.children[2]
@@ -741,7 +740,7 @@ describe('Decorator', () => {
 				assert.strictEqual(decl.unfixed, false);
 				const assignee: AST.SemanticNodeAssignee = decl.children[0];
 				assert.strictEqual(assignee.children[0].id, 256n);
-				const type_: SemanticNodeType = decl.children[1]
+				const type_: AST.ASTNodeType = decl.children[1];
 				assert.ok(type_ instanceof SemanticNodeTypeConstant)
 				const assigned_expr: SemanticNodeExpression = decl.children[2]
 				assert.ok(assigned_expr instanceof SemanticNodeOperationBinary)
