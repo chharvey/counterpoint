@@ -29,7 +29,7 @@ import {
 import SolidObject  from './SolidObject.class'
 import {SolidNull}    from './SolidNull';
 import {SolidBoolean} from './SolidBoolean';
-import SolidNumber  from './SolidNumber.class'
+import {SolidNumber}  from './SolidNumber';
 import {Int16}        from './Int16';
 import {Float64}      from './Float64';
 import SolidString  from './SolidString.class'

@@ -1,6 +1,6 @@
 import type {SolidLanguageType} from './SolidLanguageType';
 import type SolidObject from './SolidObject.class'
-import SolidNumber from './SolidNumber.class'
+import {SolidNumber} from './SolidNumber';
 import {Float64} from './Float64';
 
 

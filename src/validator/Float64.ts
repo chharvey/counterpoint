@@ -2,7 +2,7 @@ import * as xjs from 'extrajs'
 
 import type {SolidLanguageType} from './SolidLanguageType';
 import type SolidObject from './SolidObject.class'
-import SolidNumber from './SolidNumber.class'
+import {SolidNumber} from './SolidNumber';
 
 
 

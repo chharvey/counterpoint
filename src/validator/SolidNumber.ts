@@ -6,7 +6,7 @@ import type {Float64} from './Float64';
 /**
  * A numeric Solid Language Value.
  */
-export default abstract class SolidNumber<T = unknown> extends SolidObject {
+export abstract class SolidNumber<T = unknown> extends SolidObject {
 	/**
 	 * Type-coerce this number into a float.
 	 * @returns the equivalent floating-point value
