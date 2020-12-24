@@ -134,7 +134,7 @@ export abstract class ASTNodeSolid extends ASTNode {
  * A sematic node representing a type.
  * There are 2 known subclasses:
  * - ASTNodeTypeConstant
- * - SemanticNodeTypeOperation
+ * - ASTNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
 	private assessed: SolidLanguageType | null = null
@@ -193,7 +193,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		return this.value
 	}
 }
-export abstract class SemanticNodeTypeOperation extends ASTNodeType {
+export abstract class ASTNodeTypeOperation extends ASTNodeType {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidTypeOperator,
@@ -203,7 +203,7 @@ export abstract class SemanticNodeTypeOperation extends ASTNodeType {
 		super(start_node, {operator}, children)
 	}
 }
-export class SemanticNodeTypeOperationUnary extends SemanticNodeTypeOperation {
+export class SemanticNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	constructor (
 		start_node: ParseNode,
 		operator: ValidTypeOperator,
@@ -219,7 +219,7 @@ export class SemanticNodeTypeOperationUnary extends SemanticNodeTypeOperation {
 			: (() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
 	}
 }
-export class SemanticNodeTypeOperationBinary extends SemanticNodeTypeOperation {
+export class SemanticNodeTypeOperationBinary extends ASTNodeTypeOperation {
 	constructor (
 		start_node: ParseNode,
 		operator: ValidTypeOperator,

@@ -136,7 +136,7 @@ describe('Decorator', () => {
 		})
 
 		Dev.supports('typingExplicit') && describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
-			it('makes a SemanticTypeOperation.', () => {
+			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="!">
 						<TypeConstant source="int" value="Int16"/>
@@ -153,7 +153,7 @@ describe('Decorator', () => {
 		})
 
 		Dev.supports('typingExplicit') && describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
-			it('makes a SemanticTypeOperation.', () => {
+			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="&">
 						<TypeConstant source="int"/>
@@ -172,7 +172,7 @@ describe('Decorator', () => {
 		})
 
 		Dev.supports('typingExplicit') && describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
-			it('makes a SemanticTypeOperation.', () => {
+			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="|">
 						<TypeOperation source="4.2 !">...</TypeOperation>
@@ -191,7 +191,7 @@ describe('Decorator', () => {
 		})
 
 		Dev.supports('typingExplicit') && describe('Type ::= TypeUnion', () => {
-			it('makes a SemanticTypeOperation.', () => {
+			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="&">
 						<TypeOperation source="4.2 !">...</TypeOperation>
