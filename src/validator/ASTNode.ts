@@ -520,7 +520,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	}
 	protected abstract type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType;
 }
-export class SemanticNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
+export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorArithmetic,

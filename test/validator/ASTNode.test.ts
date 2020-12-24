@@ -603,7 +603,7 @@ describe('ASTNodeSolid', () => {
 				function typeOfOperationFromSource(src: string): SolidLanguageType {
 					return operationFromSource(src, folding_coercion_off).type(new Validator(folding_coercion_off));
 				}
-				describe('SemanticNodeOperationBinaryArithmetic', () => {
+				describe('ASTNodeOperationBinaryArithmetic', () => {
 					it('returns `Integer` if both operands are ints.', () => {
 						assert.deepStrictEqual(typeOfOperationFromSource(`7 * 3;`), Int16);
 					})
@@ -670,7 +670,7 @@ describe('ASTNodeSolid', () => {
 						})
 					})
 				})
-				context('SemanticNodeOperationBinaryArithmetic', () => {
+				context('ASTNodeOperationBinaryArithmetic', () => {
 					it('returns a constant Integer type for any operation of integers.', () => {
 						assert.deepStrictEqual(operationFromSource(`7 * 3 * 2;`).type(), new SolidTypeConstant(new Int16(7n * 3n * 2n)));
 					})
@@ -688,7 +688,7 @@ describe('ASTNodeSolid', () => {
 						constantFolding: false,
 					},
 				}
-				context('SemanticNodeOperationBinaryArithmetic', () => {
+				context('ASTNodeOperationBinaryArithmetic', () => {
 					it('returns Integer for integer arithmetic.', () => {
 						const node: AST.ASTNodeOperation = operationFromSource(`(7 + 3) * 2;`, folding_off);
 						assert.deepStrictEqual(

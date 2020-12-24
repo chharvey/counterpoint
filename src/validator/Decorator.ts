@@ -189,13 +189,13 @@ export class Decorator {
 					node instanceof PARSER.ParseNodeExpressionAdditive
 				) ? (
 					// `a - b` is syntax sugar for `a + -(b)`
-					(operator === Operator.SUB) ? new AST.SemanticNodeOperationBinaryArithmetic(node, Operator.ADD, [
+					(operator === Operator.SUB) ? new AST.ASTNodeOperationBinaryArithmetic(node, Operator.ADD, [
 						operands[0],
 						new AST.ASTNodeOperationUnary(node.children[2], Operator.NEG, [
 							operands[1],
 						]),
 					]) :
-					new AST.SemanticNodeOperationBinaryArithmetic(node, operator as ValidOperatorArithmetic, operands)
+					new AST.ASTNodeOperationBinaryArithmetic(node, operator as ValidOperatorArithmetic, operands)
 
 				) : (node instanceof PARSER.ParseNodeExpressionComparative) ? (
 					// `a !< b` is syntax sugar for `!(a < b)`
