@@ -72,7 +72,7 @@ import {
 
 describe('ASTNodeSolid', () => {
 	describe('#build', () => {
-		context('SemanticNodeGoal ::= SOT EOT', () => {
+		context('SemanticGoal ::= ()', () => {
 			it('returns InstructionNone.', () => {
 				const src: string = ``;
 				const instr: InstructionNone | InstructionModule = goalFromSource(src).build(new Builder(src));

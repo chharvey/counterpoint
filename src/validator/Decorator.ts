@@ -99,7 +99,7 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
 	static decorate(node: PARSER.ParseNodeStatement):             AST.SemanticStatementType;
 	static decorate(node: PARSER.ParseNodeGoal__0__List):         AST.SemanticStatementType[];
-	static decorate(node: PARSER.ParseNodeGoal):                  AST.SemanticNodeGoal;
+	static decorate(node: PARSER.ParseNodeGoal):                  AST.ASTNodeGoal;
 	static decorate(node: ParseNode): AST.ASTNodeSolid | AST.ASTNodeSolid[];
 	static decorate(node: ParseNode): AST.ASTNodeSolid | AST.ASTNodeSolid[] {
 		if (node instanceof PARSER.ParseNodePrimitiveLiteral) {
@@ -283,7 +283,7 @@ export class Decorator {
 			]
 
 		} else if (node instanceof PARSER.ParseNodeGoal) {
-			return new AST.SemanticNodeGoal(node, (node.children.length === 2) ? [] : this.decorate(node.children[1]));
+			return new AST.ASTNodeGoal(node, (node.children.length === 2) ? [] : this.decorate(node.children[1]));
 
 		} else {
 			throw new ReferenceError(`Could not find type of parse node ${ node }.`)

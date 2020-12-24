@@ -949,7 +949,7 @@ export class ASTNodeAssignee extends ASTNodeSolid {
 		throw new Error('ASTNodeAssignee#build not yet supported.')
 	}
 }
-export class SemanticNodeGoal extends ASTNodeSolid {
+export class ASTNodeGoal extends ASTNodeSolid {
 	constructor(
 		start_node: ParseNode,
 		readonly children:

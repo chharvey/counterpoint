@@ -3,7 +3,6 @@ export {Decorator} from './Decorator';
 
 export {
 	SemanticStatementType,
-	SemanticNodeGoal,
 } from './ASTNode';
 export * as AST from './ASTNode';
 

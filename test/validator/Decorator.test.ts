@@ -10,7 +10,6 @@ import {
 } from '../../src/parser/';
 import {
 	Decorator,
-	SemanticNodeGoal,
 	AST,
 	SolidTypeConstant,
 	SolidObject,
@@ -45,8 +44,8 @@ import {
 describe('Decorator', () => {
 	describe('.decorate', () => {
 		context('Goal ::= #x02 #x03', () => {
-			it('makes a SemanticNodeGoal node containing no children.', () => {
-				const goal: SemanticNodeGoal = Decorator.decorate(new Parser(``).parse())
+			it('makes an ASTNodeGoal node containing no children.', () => {
+				const goal: AST.ASTNodeGoal = Decorator.decorate(new Parser(``).parse());
 				assert_arrayLength(goal.children, 0, 'semantic goal should have 0 children')
 			})
 		})
@@ -242,7 +241,7 @@ describe('Decorator', () => {
 						</StatementExpression>
 					</Goal>
 				*/
-				const goal: AST.SemanticNodeGoal = goalFromSource(`variable; var;`);
+				const goal: AST.ASTNodeGoal = goalFromSource(`variable; var;`);
 				assert_arrayLength(goal.children, 2);
 				assert.deepStrictEqual(goal.children.map((stmt) => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
@@ -777,7 +776,7 @@ describe('Decorator', () => {
 						<StatementExpression source="420 ;">...</StatementExpression>
 					</Goal>
 				*/
-				const goal: SemanticNodeGoal = Decorator.decorate(new Parser(`42; 420;`).parse())
+				const goal: AST.ASTNodeGoal = Decorator.decorate(new Parser(`42; 420;`).parse());
 				assert_arrayLength(goal.children, 2, 'goal should have 2 children')
 				assert.deepStrictEqual(goal.children.map((stat) => {
 					assert.ok(stat instanceof AST.ASTNodeStatementExpression);
