@@ -4,7 +4,7 @@ import {
 } from '@chharvey/parser';
 
 
-export default class NanError extends ErrorCode {
+class NanError extends ErrorCode {
 	static readonly NAME: string = 'NanError'
 	static readonly CODE: number = 3200
 	constructor (message: string, code: number = 0, line?: number, col?: number) {

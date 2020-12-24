@@ -1,8 +1,8 @@
-import SolidObject  from './SolidObject.class'
-import SolidNull    from './SolidNull.class'
-import SolidBoolean from './SolidBoolean.class'
-import SolidNumber  from './SolidNumber.class'
-import Int16        from './Int16.class'
+import {SolidObject}  from './SolidObject';
+import {SolidNull}    from './SolidNull';
+import {SolidBoolean} from './SolidBoolean';
+import {SolidNumber}  from './SolidNumber';
+import {Int16}        from './Int16';
 import {
 	InstructionConst,
 } from '../builder/'
@@ -22,7 +22,7 @@ export enum CompletionType {
 /**
  * An object returned by specification algorithms.
  */
-export default class CompletionStructure {
+export class CompletionStructure {
 	/** The type of completion that occurred. */
 	readonly type: CompletionType;
 	/** The value produced by this completion structure. */

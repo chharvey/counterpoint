@@ -1,5 +1,8 @@
-import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
-import type SolidLanguageType from './SolidLanguageType.class'
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+} from '../core/';
+import type {SolidLanguageType} from './SolidLanguageType';
 
 
 
@@ -41,7 +44,7 @@ export type SymbolInfo = {
  * 	from `(additive (additive (... 2)) (token '+') (multiplicative (... 3)))`
  * 	to `(sum (const 2) (const 3))`
  */
-export default class Validator {
+export class Validator {
 	/** A symbol table, which keeps tracks of variables. */
 	private readonly symbol_table: Map<bigint, SymbolInfo> = new Map();
 

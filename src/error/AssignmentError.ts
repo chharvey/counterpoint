@@ -9,7 +9,7 @@ import type {AST} from '../validator/';
 /**
  * An AssignmentError is thrown when the validator detects an illegal declaration or assignment.
  */
-export default class AssignmentError extends ErrorCode {
+class AssignmentError extends ErrorCode {
 	/** The name of this class of errors. */
 	static readonly NAME: string = 'AssignmentError';
 	/** The number series of this class of errors. */
@@ -49,7 +49,7 @@ export class AssignmentError01 extends AssignmentError {
 	 * Construct a new AssignmentError01 object.
 	 * @param symbol the duplicate symbol
 	 */
-	constructor (symbol: AST.SemanticNodeTypeAlias | AST.SemanticNodeVariable) {
+	constructor (symbol: AST.SemanticNodeTypeAlias | AST.ASTNodeVariable) {
 		super(`Duplicate declaration: \`${ symbol.source }\` is already declared.`, AssignmentError01.CODE, symbol.line_index, symbol.col_index);
 	}
 }
@@ -66,7 +66,7 @@ export class AssignmentError10 extends AssignmentError {
 	 * Construct a new AssignmentError10 object.
 	 * @param variable the undeclared variable
 	 */
-	constructor (variable: AST.SemanticNodeVariable) {
+	constructor (variable: AST.ASTNodeVariable) {
 		super(`Reassignment of a fixed variable: \`${ variable.source }\`.`, AssignmentError10.CODE, variable.line_index, variable.col_index);
 	}
 }

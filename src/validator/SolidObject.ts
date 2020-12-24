@@ -1,6 +1,6 @@
-import SolidLanguageType from './SolidLanguageType.class'
-import type SolidNull from './SolidNull.class'
-import type SolidBoolean from './SolidBoolean.class'
+import {SolidLanguageType} from './SolidLanguageType';
+import type {SolidNull}    from './SolidNull';
+import type {SolidBoolean} from './SolidBoolean';
 
 
 
@@ -12,7 +12,7 @@ import type SolidBoolean from './SolidBoolean.class'
  * - Int16
  * - Float64
  */
-export default class SolidObject {
+export class SolidObject {
 	/** @implements SolidLanguageType */
 	static isEmpty: SolidLanguageType['isEmpty'] = false
 	/** @implements SolidLanguageType */
@@ -48,8 +48,8 @@ export default class SolidObject {
 	 * @returns the associated Boolean value of this value
 	 */
 	get isTruthy(): SolidBoolean {
-		const SolidNull_Class:    typeof SolidNull    = require('./SolidNull.class').default
-		const SolidBoolean_Class: typeof SolidBoolean = require('./SolidBoolean.class').default
+		const SolidNull_Class:    typeof SolidNull    = require('./SolidNull')   .SolidNull;
+		const SolidBoolean_Class: typeof SolidBoolean = require('./SolidBoolean').SolidBoolean;
 		return (
 			(this instanceof SolidNull_Class)    ? SolidBoolean_Class.FALSE :
 			(this instanceof SolidBoolean_Class) ? this :

@@ -4,7 +4,9 @@ import {
 	Terminal,
 } from '@chharvey/parser';
 
-import Util from '../class/Util.class'
+import {
+	Util,
+} from '../core/';
 import {
 	RadixType,
 	TemplatePosition,
