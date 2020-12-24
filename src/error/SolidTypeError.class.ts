@@ -3,7 +3,7 @@ import {
 } from '@chharvey/parser';
 
 import type {
-	SemanticNodeOperation,
+	AST,
 	SemanticNodeDeclarationVariable,
 	SemanticNodeAssignment,
 	SolidLanguageType,
@@ -50,7 +50,7 @@ export class TypeError01 extends SolidTypeError {
 	 * Construct a new TypeError01 object.
 	 * @param expression - the invalid operation expression
 	 */
-	constructor (expression: SemanticNodeOperation) {
+	constructor (expression: AST.ASTNodeOperation) {
 		super(`Invalid operation: \`${ expression.source }\` at line ${ expression.line_index + 1 } col ${ expression.col_index + 1 }.`, TypeError01.CODE, expression.line_index, expression.col_index)
 	}
 }

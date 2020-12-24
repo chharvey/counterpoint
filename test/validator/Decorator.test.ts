@@ -10,7 +10,6 @@ import {
 } from '../../src/parser/';
 import {
 	Decorator,
-	SemanticNodeOperation,
 	SemanticNodeOperationUnary,
 	SemanticNodeOperationBinary,
 	SemanticNodeOperationTernary,
@@ -398,7 +397,7 @@ describe('Decorator', () => {
 						<Constant source="-3"/>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromSource(`(2 + -3);`);
+				const operation: AST.ASTNodeOperation = operationFromSource(`(2 + -3);`);
 				assert.ok(operation instanceof SemanticNodeOperationBinary)
 				const [left, right]: readonly AST.ASTNodeExpression[] = operation.children;
 				assert.ok(left  instanceof AST.ASTNodeConstant);
@@ -420,7 +419,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromSource(`(-(42) ^ +(2 * 420));`);
+				const operation: AST.ASTNodeOperation = operationFromSource(`(-(42) ^ +(2 * 420));`);
 				assert.ok(operation instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(operation.operator, Operator.EXP)
 				const [left, right]: readonly AST.ASTNodeExpression[] = operation.children;
@@ -441,7 +440,7 @@ describe('Decorator', () => {
 		})
 
 		context('ExpressionUnarySymbol ::= ("!" | "?" | "-") ExpressionUnarySymbol', () => {
-			it('makes a SemanticNodeOperation node with 1 child.', () => {
+			it('makes an ASTNodeOperation node with 1 child.', () => {
 				/*
 					<Operation operator=NEG>
 						<Constant source="42"/>
@@ -452,7 +451,7 @@ describe('Decorator', () => {
 					`?41;`,
 					`- 42;`,
 				].map((src) => {
-					const operation: SemanticNodeOperation = operationFromSource(src);
+					const operation: AST.ASTNodeOperation = operationFromSource(src);
 					assert.ok(operation instanceof SemanticNodeOperationUnary)
 					const operand: AST.ASTNodeExpression = operation.children[0];
 					assert.ok(operand instanceof AST.ASTNodeConstant);
@@ -466,7 +465,7 @@ describe('Decorator', () => {
 		})
 
 		context('SemanticOperation ::= SemanticExpression SemanticExpression', () => {
-			it('makes a SemanticNodeOperation node with 2 children.', () => {
+			it('makes an ASTNodeOperation node with 2 children.', () => {
 				/*
 					<Operation operator=EXP>
 						<Constant source="2"/>
@@ -478,7 +477,7 @@ describe('Decorator', () => {
 					`2 * -3;`,
 					`2 + -3;`,
 				].map((src) => {
-					const operation: SemanticNodeOperation = operationFromSource(src);
+					const operation: AST.ASTNodeOperation = operationFromSource(src);
 					assert.ok(operation instanceof SemanticNodeOperationBinary)
 					assert.deepStrictEqual(operation.children.map((operand) => {
 						assert.ok(operand instanceof AST.ASTNodeConstant);
@@ -494,7 +493,7 @@ describe('Decorator', () => {
 		})
 
 		context('ExpressionAdditive ::= ExpressionAdditive "-" ExpressionMultiplicative', () => {
-			it('makes a SemanticNodeOperation with the `+` operator and negates the 2nd operand.', () => {
+			it('makes an ASTNodeOperation with the `+` operator and negates the 2nd operand.', () => {
 				/*
 					<Operation operator=ADD>
 						<Constant source="2"/>
@@ -503,7 +502,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromSource(`2 - 3;`);
+				const operation: AST.ASTNodeOperation = operationFromSource(`2 - 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(operation.operator, Operator.ADD)
 				const left:  AST.ASTNodeExpression = operation.children[0];
@@ -519,7 +518,7 @@ describe('Decorator', () => {
 		})
 
 		context('ExpressionComparative ::= ExpressionComparative ("!<" | "!>") ExpressionAdditive', () => {
-			it('makes a SemanticNodeOperation with the `<` operator and logically negates the result.', () => {
+			it('makes an ASTNodeOperation with the `<` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
 						<Operation operator=LT>
@@ -528,7 +527,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromSource(`2 !< 3;`);
+				const operation: AST.ASTNodeOperation = operationFromSource(`2 !< 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: AST.ASTNodeExpression = operation.children[0];
@@ -542,7 +541,7 @@ describe('Decorator', () => {
 					[`2`,         Operator.LT,    `3`],
 				)
 			})
-			it('makes a SemanticNodeOperation with the `>` operator and logically negates the result.', () => {
+			it('makes an ASTNodeOperation with the `>` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
 						<Operation operator=GT>
@@ -551,7 +550,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromSource(`2 !> 3;`);
+				const operation: AST.ASTNodeOperation = operationFromSource(`2 !> 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: AST.ASTNodeExpression = operation.children[0];
@@ -568,7 +567,7 @@ describe('Decorator', () => {
 		})
 
 		context('ExpressionEquality ::= ExpressionEquality ("isnt" | "!=") ExpressionComparative', () => {
-			it('makes a SemanticNodeOperation with the `is` operator and logically negates the result.', () => {
+			it('makes an ASTNodeOperation with the `is` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
 						<Operation operator=IS>
@@ -577,7 +576,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromSource(`2 isnt 3;`);
+				const operation: AST.ASTNodeOperation = operationFromSource(`2 isnt 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: AST.ASTNodeExpression = operation.children[0];
@@ -591,7 +590,7 @@ describe('Decorator', () => {
 					[`2`,         Operator.IS,    `3`],
 				)
 			})
-			it('makes a SemanticNodeOperation with the `==` operator and logically negates the result.', () => {
+			it('makes an ASTNodeOperation with the `==` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
 						<Operation operator=EQ>
@@ -600,7 +599,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromSource(`2 != 3;`);
+				const operation: AST.ASTNodeOperation = operationFromSource(`2 != 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: AST.ASTNodeExpression = operation.children[0];
@@ -617,7 +616,7 @@ describe('Decorator', () => {
 		})
 
 		context('ExpressionConjunctive ::= ExpressionConjunctive "!&" ExpressionEquality', () => {
-			it('makes a SemanticNodeOperation with the `&&` operator and logically negates the result.', () => {
+			it('makes an ASTNodeOperation with the `&&` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
 						<Operation operator=AND>
@@ -626,7 +625,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromSource(`2 !& 3;`);
+				const operation: AST.ASTNodeOperation = operationFromSource(`2 !& 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: AST.ASTNodeExpression = operation.children[0];
@@ -643,7 +642,7 @@ describe('Decorator', () => {
 		})
 
 		context('ExpressionDisjunctive ::= ExpressionDisjunctive "!|" ExpressionConjunctive', () => {
-			it('makes a SemanticNodeOperation with the `||` operator and logically negates the result.', () => {
+			it('makes an ASTNodeOperation with the `||` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
 						<Operation operator=OR>
@@ -652,7 +651,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromSource(`2 !| 3;`);
+				const operation: AST.ASTNodeOperation = operationFromSource(`2 !| 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: AST.ASTNodeExpression = operation.children[0];
@@ -669,7 +668,7 @@ describe('Decorator', () => {
 		})
 
 		context('ExpressionConditional ::= "if" Expression "then" Expression "else" Expression', () => {
-			it('makes a SemanticNodeOperation with the COND operator and 3 children.', () => {
+			it('makes an ASTNodeOperation with the COND operator and 3 children.', () => {
 				/*
 					<Operation operator=COND>
 						<Constant value=true/>
@@ -677,7 +676,7 @@ describe('Decorator', () => {
 						<Constant value=3n/>
 					</Operation>
 				*/
-				const operation: SemanticNodeOperation = operationFromSource(`if true then 2 else 3;`);
+				const operation: AST.ASTNodeOperation = operationFromSource(`if true then 2 else 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationTernary)
 				assert.deepStrictEqual(operation.children.map((child) => {
 					assert.ok(child instanceof AST.ASTNodeConstant);

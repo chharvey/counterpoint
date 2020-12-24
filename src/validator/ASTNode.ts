@@ -244,7 +244,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeConstant
  * - ASTNodeIdentifier
  * - ASTNodeTemplate
- * - SemanticNodeOperation
+ * - ASTNodeOperation
  */
 export abstract class ASTNodeExpression extends ASTNodeSolid {
 	private assessed: CompletionStructureAssessment | null = null
@@ -417,7 +417,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		return SolidString
 	}
 }
-export abstract class SemanticNodeOperation extends ASTNodeExpression {
+export abstract class ASTNodeOperation extends ASTNodeExpression {
 	/** @override */
 	readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
 	constructor(
@@ -436,7 +436,7 @@ export abstract class SemanticNodeOperation extends ASTNodeExpression {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
 }
-export class SemanticNodeOperationUnary extends SemanticNodeOperation {
+export class SemanticNodeOperationUnary extends ASTNodeOperation {
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorUnary,
@@ -494,7 +494,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		}
 	}
 }
-export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation {
+export abstract class SemanticNodeOperationBinary extends ASTNodeOperation {
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorBinary,
@@ -771,7 +771,7 @@ export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBin
 					: t0
 	}
 }
-export class SemanticNodeOperationTernary extends SemanticNodeOperation {
+export class SemanticNodeOperationTernary extends ASTNodeOperation {
 	constructor(
 		start_node: ParseNode,
 		readonly operator: Operator.COND,

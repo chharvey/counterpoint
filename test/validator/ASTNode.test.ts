@@ -24,7 +24,6 @@ import {
 	Decorator,
 	Validator,
 	AST,
-	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
 	SemanticNodeDeclarationVariable,
 	CompletionStructureAssessment,
@@ -146,9 +145,9 @@ describe('ASTNodeSolid', () => {
 			})
 		})
 
-		context('SemanticNodeOperation', () => {
+		context('ASTNodeOperation', () => {
 			specify('with constant folding on.', () => {
-				const nodes: readonly [string, SemanticNodeOperation][] = [
+				const nodes: readonly [string, AST.ASTNodeOperation][] = [
 					`!null;`,
 					`!false;`,
 					`!true;`,
@@ -209,7 +208,7 @@ describe('ASTNodeSolid', () => {
 						assert.ok(!assess.isAbrupt)
 						return assess.build()
 					}),
-					'produces `CompletionStructureAssessment.new(SemanticNodeOperation#assess#value)#build`',
+					'produces `CompletionStructureAssessment.new(ASTNodeOperation#assess#value)#build`',
 				)
 			}).timeout(5000)
 			context('with constant folding off.', () => {
@@ -226,7 +225,7 @@ describe('ASTNodeSolid', () => {
 						[...tests.values()],
 					)
 				}
-				specify('SemanticNodeOperation[operator: NOT | EMP] ::= SemanticConstant', () => {
+				specify('SemanticOperation[operator: NOT | EMP] ::= SemanticConstant', () => {
 					buildOperations(new Map<string, InstructionUnop>([
 						[`!null;`,  new InstructionUnop(Operator.NOT, instructionConstInt(0n))],
 						[`!false;`, new InstructionUnop(Operator.NOT, instructionConstInt(0n))],
@@ -240,19 +239,19 @@ describe('ASTNodeSolid', () => {
 						[`?4.2;`,   new InstructionUnop(Operator.EMP, instructionConstFloat(4.2))],
 					]))
 				})
-				specify('SemanticNodeOperation[operator: NEG] ::= SemanticConstant', () => {
+				specify('SemanticOperation[operator: NEG] ::= SemanticConstant', () => {
 					buildOperations(new Map<string, InstructionUnop>([
 						[`-(4);`,   new InstructionUnop(Operator.NEG, instructionConstInt(4n))],
 						[`-(4.2);`, new InstructionUnop(Operator.NEG, instructionConstFloat(4.2))],
 					]))
 				})
-				specify('SemanticNodeOperation[operator: ADD | MUL] ::= SemanticConstant SemanticConstant', () => {
+				specify('SemanticOperation[operator: ADD | MUL] ::= SemanticConstant SemanticConstant', () => {
 					buildOperations(new Map([
 						[`42 + 420;`, new InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
 						[`3 * 2.1;`,  new InstructionBinopArithmetic(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
 					]))
 				})
-				specify('SemanticNodeOperation[operator: DIV] ::= SemanticConstant SemanticConstant', () => {
+				specify('SemanticOperation[operator: DIV] ::= SemanticConstant SemanticConstant', () => {
 					buildOperations(xjs.Map.mapValues(new Map([
 						[' 126 /  3;', [ 126n,  3n]],
 						['-126 /  3;', [-126n,  3n]],
@@ -268,7 +267,7 @@ describe('ASTNodeSolid', () => {
 						instructionConstInt(b),
 					)))
 				})
-				specify('SemanticNodeOperation[operator: IS | EQ] ::= SemanticConstant SemanticConstant', () => {
+				specify('SemanticOperation[operator: IS | EQ] ::= SemanticConstant SemanticConstant', () => {
 					assert.deepStrictEqual([
 						`42 == 420;`,
 						`4.2 is 42;`,
@@ -327,7 +326,7 @@ describe('ASTNodeSolid', () => {
 						),
 					])
 				})
-				describe('SemanticNodeOperation[operator: AND | OR] ::= SemanticConstant SemanticConstant', () => {
+				describe('SemanticOperation[operator: AND | OR] ::= SemanticConstant SemanticConstant', () => {
 					it('returns InstructionBinopLogical.', () => {
 						assert.deepStrictEqual([
 							`42 && 420;`,
@@ -434,7 +433,7 @@ describe('ASTNodeSolid', () => {
 						intCoercion: false,
 					},
 				}
-				describe('SemanticNodeOperation[operator: EQ]', () => {
+				describe('SemanticOperation[operator: EQ]', () => {
 					it('does not coerce operands into floats.', () => {
 						assert.deepStrictEqual([
 							`42 == 420;`,
@@ -691,7 +690,7 @@ describe('ASTNodeSolid', () => {
 				}
 				context('SemanticNodeOperationBinaryArithmetic', () => {
 					it('returns Integer for integer arithmetic.', () => {
-						const node: SemanticNodeOperation = operationFromSource(`(7 + 3) * 2;`, folding_off);
+						const node: AST.ASTNodeOperation = operationFromSource(`(7 + 3) * 2;`, folding_off);
 						assert.deepStrictEqual(
 							[node.type(new Validator(folding_off)), node.children.length],
 							[Int16,                                 2],
@@ -702,7 +701,7 @@ describe('ASTNodeSolid', () => {
 						)
 					})
 					it('returns Float for float arithmetic.', () => {
-						const node: SemanticNodeOperation = operationFromSource(`7 * 3.0 ^ 2;`, folding_off);
+						const node: AST.ASTNodeOperation = operationFromSource(`7 * 3.0 ^ 2;`, folding_off);
 						assert.deepStrictEqual(
 							[node.type(new Validator(folding_off)), node.children.length],
 							[Float64,                               2],

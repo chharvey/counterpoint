@@ -13,7 +13,6 @@ import {
 import {
 	Decorator,
 	AST,
-	SemanticNodeOperation,
 	SemanticStatementType,
 	SemanticNodeStatementExpression,
 	SemanticNodeDeclarationVariable,
@@ -36,11 +35,11 @@ export function identifierFromSource(src: string, config: SolidConfig = CONFIG_D
 	assert.ok(expression instanceof AST.ASTNodeIdentifier);
 	return expression;
 }
-export function operationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeOperation {
+export function operationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeOperation {
 	const statement: SemanticNodeStatementExpression = statementExpressionFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child')
 	const expression: AST.ASTNodeExpression = statement.children[0];
-	assert.ok(expression instanceof SemanticNodeOperation)
+	assert.ok(expression instanceof AST.ASTNodeOperation);
 	return expression
 }
 export function statementExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeStatementExpression {
