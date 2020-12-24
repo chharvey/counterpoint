@@ -772,14 +772,14 @@ describe('Decorator', () => {
 		})
 
 		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationType', () => {
-			it('makes a SemanticNodeDeclarationType node.', () => {
+			it('makes an ASTNodeDeclarationType node.', () => {
 				/*
 					<SemanticDeclarationType>
 						<Variable source="T" id=256n/>
 						<TypeOperation operator=OR source="int | float">...</TypeOperation>
 					</SemanticDeclarationType>
 				*/
-				const decl: AST.SemanticNodeDeclarationType = typeDeclarationFromSource(`
+				const decl: AST.ASTNodeDeclarationType = typeDeclarationFromSource(`
 					type T  =  int | float;
 				`);
 				assert.strictEqual(decl.children[0].id, 256n);

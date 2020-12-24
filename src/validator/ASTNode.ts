@@ -907,11 +907,11 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
  * A sematic node representing a declaration.
  * There are 2 known subclasses:
  * - ASTNodeDeclarationVariable
- * - SemanticNodeDeclarationType
+ * - ASTNodeDeclarationType
  */
 export type SemanticDeclaration =
 	| ASTNodeDeclarationVariable
-	| SemanticNodeDeclarationType
+	| ASTNodeDeclarationType
 ;
 export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 	constructor (
@@ -955,7 +955,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		throw new Error('ASTNodeDeclarationVariable#build not yet supported.');
 	}
 }
-export class SemanticNodeDeclarationType extends ASTNodeSolid {
+export class ASTNodeDeclarationType extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly children:
@@ -984,7 +984,7 @@ export class SemanticNodeDeclarationType extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {
-		throw new Error('SemanticNodeDeclarationType#build not yet supported.');
+		throw new Error('ASTNodeDeclarationType#build not yet supported.');
 	}
 }
 export class ASTNodeAssignment extends ASTNodeSolid {

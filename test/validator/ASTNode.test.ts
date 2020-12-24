@@ -516,7 +516,7 @@ describe('ASTNodeSolid', () => {
 				`).varCheck(), AssignmentError01);
 			});
 		});
-		describe('SemanticNodeDeclarationType', () => {
+		describe('ASTNodeDeclarationType', () => {
 			it('throws if the validator already contains a record for the symbol.', () => {
 				assert.throws(() => goalFromSource(`
 					type T = int;
@@ -607,7 +607,7 @@ describe('ASTNodeSolid', () => {
 				goal.varCheck(validator);
 				assert.deepStrictEqual(
 					((goal
-						.children[1] as AST.SemanticNodeDeclarationType)
+						.children[1] as AST.ASTNodeDeclarationType)
 						.children[1] as AST.ASTNodeTypeAlias)
 						.assess(), // memoized
 					Int16,
