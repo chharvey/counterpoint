@@ -162,7 +162,7 @@ export class Decorator {
 				? this.decorate(node.children[0])
 				: (node.children[0].source === Punctuator.AFF) // `+a` is a no-op
 					? this.decorate(node.children[1])
-					: new AST.SemanticNodeOperationUnary(node, this.OPERATORS_UNARY.get(node.children[0].source as Punctuator) as ValidOperatorUnary, [
+					: new AST.ASTNodeOperationUnary(node, this.OPERATORS_UNARY.get(node.children[0].source as Punctuator) as ValidOperatorUnary, [
 						this.decorate(node.children[1]),
 					])
 
@@ -191,7 +191,7 @@ export class Decorator {
 					// `a - b` is syntax sugar for `a + -(b)`
 					(operator === Operator.SUB) ? new AST.SemanticNodeOperationBinaryArithmetic(node, Operator.ADD, [
 						operands[0],
-						new AST.SemanticNodeOperationUnary(node.children[2], Operator.NEG, [
+						new AST.ASTNodeOperationUnary(node.children[2], Operator.NEG, [
 							operands[1],
 						]),
 					]) :
@@ -199,22 +199,22 @@ export class Decorator {
 
 				) : (node instanceof PARSER.ParseNodeExpressionComparative) ? (
 					// `a !< b` is syntax sugar for `!(a < b)`
-					(operator === Operator.NLT) ? new AST.SemanticNodeOperationUnary(node, Operator.NOT, [
+					(operator === Operator.NLT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
 						new AST.SemanticNodeOperationBinaryComparative(node.children[0], Operator.LT, operands),
 					]) :
 					// `a !> b` is syntax sugar for `!(a > b)`
-					(operator === Operator.NGT) ? new AST.SemanticNodeOperationUnary(node, Operator.NOT, [
+					(operator === Operator.NGT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
 						new AST.SemanticNodeOperationBinaryComparative(node.children[0], Operator.GT, operands),
 					]) :
 					new AST.SemanticNodeOperationBinaryComparative(node, operator as ValidOperatorComparative, operands)
 
 				) : (node instanceof PARSER.ParseNodeExpressionEquality) ? (
 					// `a isnt b` is syntax sugar for `!(a is b)`
-					(operator === Operator.ISNT) ? new AST.SemanticNodeOperationUnary(node, Operator.NOT, [
+					(operator === Operator.ISNT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
 						new AST.SemanticNodeOperationBinaryEquality(node.children[0], Operator.IS, operands),
 					]) :
 					// `a != b` is syntax sugar for `!(a == b)`
-					(operator === Operator.NEQ) ? new AST.SemanticNodeOperationUnary(node, Operator.NOT, [
+					(operator === Operator.NEQ) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
 						new AST.SemanticNodeOperationBinaryEquality(node.children[0], Operator.EQ, operands),
 					]) :
 					new AST.SemanticNodeOperationBinaryEquality(node, operator as ValidOperatorEquality, operands)
@@ -224,11 +224,11 @@ export class Decorator {
 					node instanceof PARSER.ParseNodeExpressionDisjunctive
 				) ? */ (
 					// `a !& b` is syntax sugar for `!(a && b)`
-					(operator === Operator.NAND) ? new AST.SemanticNodeOperationUnary(node, Operator.NOT, [
+					(operator === Operator.NAND) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
 						new AST.SemanticNodeOperationBinaryLogical(node.children[0], Operator.AND, operands),
 					]) :
 					// `a !| b` is syntax sugar for `!(a || b)`
-					(operator === Operator.NOR) ? new AST.SemanticNodeOperationUnary(node, Operator.NOT, [
+					(operator === Operator.NOR) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
 						new AST.SemanticNodeOperationBinaryLogical(node.children[0], Operator.OR, operands),
 					]) :
 					new AST.SemanticNodeOperationBinaryLogical(node, operator as ValidOperatorLogical, operands)

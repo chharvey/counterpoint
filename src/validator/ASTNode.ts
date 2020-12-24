@@ -436,7 +436,7 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
 }
-export class SemanticNodeOperationUnary extends ASTNodeOperation {
+export class ASTNodeOperationUnary extends ASTNodeOperation {
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorUnary,

@@ -10,7 +10,6 @@ import {
 } from '../../src/parser/';
 import {
 	Decorator,
-	SemanticNodeOperationUnary,
 	SemanticNodeOperationBinary,
 	SemanticNodeOperationTernary,
 	SemanticNodeStatementExpression,
@@ -423,7 +422,7 @@ describe('Decorator', () => {
 				assert.ok(operation instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(operation.operator, Operator.EXP)
 				const [left, right]: readonly AST.ASTNodeExpression[] = operation.children;
-				assert.ok(left instanceof SemanticNodeOperationUnary)
+				assert.ok(left instanceof AST.ASTNodeOperationUnary);
 				assert.strictEqual(left.operator, Operator.NEG)
 				assert_arrayLength(left.children, 1)
 				assert.ok(left.children[0] instanceof AST.ASTNodeConstant);
@@ -452,7 +451,7 @@ describe('Decorator', () => {
 					`- 42;`,
 				].map((src) => {
 					const operation: AST.ASTNodeOperation = operationFromSource(src);
-					assert.ok(operation instanceof SemanticNodeOperationUnary)
+					assert.ok(operation instanceof AST.ASTNodeOperationUnary);
 					const operand: AST.ASTNodeExpression = operation.children[0];
 					assert.ok(operand instanceof AST.ASTNodeConstant);
 					return [operand.source, operation.operator]
@@ -508,7 +507,7 @@ describe('Decorator', () => {
 				const left:  AST.ASTNodeExpression = operation.children[0];
 				const right: AST.ASTNodeExpression = operation.children[1];
 				assert.ok(left  instanceof AST.ASTNodeConstant);
-				assert.ok(right instanceof SemanticNodeOperationUnary)
+				assert.ok(right instanceof AST.ASTNodeOperationUnary);
 				assert.ok(right.children[0] instanceof AST.ASTNodeConstant);
 				assert.deepStrictEqual(
 					[left.source, right.operator, right.children[0].source],
@@ -528,7 +527,7 @@ describe('Decorator', () => {
 					</Operation>
 				*/
 				const operation: AST.ASTNodeOperation = operationFromSource(`2 !< 3;`);
-				assert.ok(operation instanceof SemanticNodeOperationUnary)
+				assert.ok(operation instanceof AST.ASTNodeOperationUnary);
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: AST.ASTNodeExpression = operation.children[0];
 				assert.ok(child instanceof SemanticNodeOperationBinary)
@@ -551,7 +550,7 @@ describe('Decorator', () => {
 					</Operation>
 				*/
 				const operation: AST.ASTNodeOperation = operationFromSource(`2 !> 3;`);
-				assert.ok(operation instanceof SemanticNodeOperationUnary)
+				assert.ok(operation instanceof AST.ASTNodeOperationUnary);
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: AST.ASTNodeExpression = operation.children[0];
 				assert.ok(child instanceof SemanticNodeOperationBinary)
@@ -577,7 +576,7 @@ describe('Decorator', () => {
 					</Operation>
 				*/
 				const operation: AST.ASTNodeOperation = operationFromSource(`2 isnt 3;`);
-				assert.ok(operation instanceof SemanticNodeOperationUnary)
+				assert.ok(operation instanceof AST.ASTNodeOperationUnary);
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: AST.ASTNodeExpression = operation.children[0];
 				assert.ok(child instanceof SemanticNodeOperationBinary)
@@ -600,7 +599,7 @@ describe('Decorator', () => {
 					</Operation>
 				*/
 				const operation: AST.ASTNodeOperation = operationFromSource(`2 != 3;`);
-				assert.ok(operation instanceof SemanticNodeOperationUnary)
+				assert.ok(operation instanceof AST.ASTNodeOperationUnary);
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: AST.ASTNodeExpression = operation.children[0];
 				assert.ok(child instanceof SemanticNodeOperationBinary)
@@ -626,7 +625,7 @@ describe('Decorator', () => {
 					</Operation>
 				*/
 				const operation: AST.ASTNodeOperation = operationFromSource(`2 !& 3;`);
-				assert.ok(operation instanceof SemanticNodeOperationUnary)
+				assert.ok(operation instanceof AST.ASTNodeOperationUnary);
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: AST.ASTNodeExpression = operation.children[0];
 				assert.ok(child instanceof SemanticNodeOperationBinary)
@@ -652,7 +651,7 @@ describe('Decorator', () => {
 					</Operation>
 				*/
 				const operation: AST.ASTNodeOperation = operationFromSource(`2 !| 3;`);
-				assert.ok(operation instanceof SemanticNodeOperationUnary)
+				assert.ok(operation instanceof AST.ASTNodeOperationUnary);
 				assert.strictEqual(operation.operator, Operator.NOT)
 				const child: AST.ASTNodeExpression = operation.children[0];
 				assert.ok(child instanceof SemanticNodeOperationBinary)
