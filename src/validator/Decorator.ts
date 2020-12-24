@@ -118,7 +118,7 @@ export class Decorator {
 		} else if (node instanceof PARSER.ParseNodeTypeUnarySymbol) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: new AST.SemanticNodeTypeOperationUnary(node, this.TYPEOPERATORS_UNARY.get(node.children[1].source as Punctuator)!, [
+				: new AST.ASTNodeTypeOperationUnary(node, this.TYPEOPERATORS_UNARY.get(node.children[1].source as Punctuator)!, [
 					this.decorate(node.children[0]),
 				])
 

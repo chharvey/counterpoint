@@ -203,7 +203,7 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 		super(start_node, {operator}, children)
 	}
 }
-export class SemanticNodeTypeOperationUnary extends ASTNodeTypeOperation {
+export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	constructor (
 		start_node: ParseNode,
 		operator: ValidTypeOperator,

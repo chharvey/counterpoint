@@ -10,7 +10,6 @@ import {
 } from '../../src/parser/';
 import {
 	Decorator,
-	SemanticNodeTypeOperationUnary,
 	SemanticNodeTypeOperationBinary,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
@@ -143,7 +142,7 @@ describe('Decorator', () => {
 					</TypeOperation>
 				*/
 				const operation: AST.ASTNodeType = Decorator.decorate(unaryTypeFromString(`int!`));
-				assert.ok(operation instanceof SemanticNodeTypeOperationUnary)
+				assert.ok(operation instanceof AST.ASTNodeTypeOperationUnary);
 				const operand: AST.ASTNodeType = operation.children[0];
 				assert.deepStrictEqual(
 					[operand.source, operation.operator],
