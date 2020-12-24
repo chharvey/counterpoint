@@ -793,7 +793,7 @@ describe('ASTNodeSolid', () => {
 			it('throws for comparative operation of non-numbers.', () => {
 				assert.throws(() => operationFromSource(`7.0 <= null;`).type(), TypeError01);
 			});
-			describe('SemanticNodeOperationTernary', () => {
+			describe('ASTNodeOperationTernary', () => {
 				context('with constant folding on', () => {
 					it('computes type for for conditionals', () => {
 						typeOperations(new Map<string, SolidObject>([

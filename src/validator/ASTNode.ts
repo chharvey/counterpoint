@@ -771,7 +771,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 					: t0
 	}
 }
-export class SemanticNodeOperationTernary extends ASTNodeOperation {
+export class ASTNodeOperationTernary extends ASTNodeOperation {
 	constructor(
 		start_node: ParseNode,
 		readonly operator: Operator.COND,

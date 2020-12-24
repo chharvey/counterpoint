@@ -10,7 +10,6 @@ import {
 } from '../../src/parser/';
 import {
 	Decorator,
-	SemanticNodeOperationTernary,
 	SemanticNodeStatementExpression,
 	SemanticNodeDeclarationVariable,
 	SemanticNodeGoal,
@@ -675,7 +674,7 @@ describe('Decorator', () => {
 					</Operation>
 				*/
 				const operation: AST.ASTNodeOperation = operationFromSource(`if true then 2 else 3;`);
-				assert.ok(operation instanceof SemanticNodeOperationTernary)
+				assert.ok(operation instanceof AST.ASTNodeOperationTernary);
 				assert.deepStrictEqual(operation.children.map((child) => {
 					assert.ok(child instanceof AST.ASTNodeConstant);
 					return child.value

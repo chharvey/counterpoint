@@ -94,7 +94,7 @@ export class Decorator {
 		| PARSER.ParseNodeExpressionDisjunctive
 		| PARSER.ParseNodeExpression
 	): AST.ASTNodeExpression;
-	static decorate(node: PARSER.ParseNodeExpressionConditional): AST.SemanticNodeOperationTernary;
+	static decorate(node: PARSER.ParseNodeExpressionConditional): AST.ASTNodeOperationTernary;
 	static decorate(node: PARSER.ParseNodeDeclarationVariable):   AST.SemanticNodeDeclarationVariable;
 	static decorate(node: PARSER.ParseNodeStatementAssignment):   AST.SemanticNodeAssignment;
 	static decorate(node: PARSER.ParseNodeStatement):             AST.SemanticStatementType;
@@ -236,7 +236,7 @@ export class Decorator {
 			}
 
 		} else if (node instanceof PARSER.ParseNodeExpressionConditional) {
-			return new AST.SemanticNodeOperationTernary(node, Operator.COND, [
+			return new AST.ASTNodeOperationTernary(node, Operator.COND, [
 				this.decorate(node.children[1]),
 				this.decorate(node.children[3]),
 				this.decorate(node.children[5]),
