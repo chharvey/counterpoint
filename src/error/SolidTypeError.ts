@@ -3,9 +3,7 @@ import {
 } from '@chharvey/parser';
 
 import type {
-	SemanticNodeOperation,
-	SemanticNodeDeclarationVariable,
-	SemanticNodeAssignment,
+	AST,
 	SolidLanguageType,
 } from '../validator/'
 
@@ -14,7 +12,7 @@ import type {
 /**
  * A TypeError is thrown when the validator recognizes a type mismatch.
  */
-export default class SolidTypeError extends ErrorCode {
+class SolidTypeError extends ErrorCode {
 	/** The name of this class of errors. */
 	static readonly NAME: string = 'TypeError'
 	/** The number series of this class of errors. */
@@ -50,7 +48,7 @@ export class TypeError01 extends SolidTypeError {
 	 * Construct a new TypeError01 object.
 	 * @param expression - the invalid operation expression
 	 */
-	constructor (expression: SemanticNodeOperation) {
+	constructor (expression: AST.ASTNodeOperation) {
 		super(`Invalid operation: \`${ expression.source }\` at line ${ expression.line_index + 1 } col ${ expression.col_index + 1 }.`, TypeError01.CODE, expression.line_index, expression.col_index)
 	}
 }
@@ -58,7 +56,8 @@ export class TypeError01 extends SolidTypeError {
  * A TypeError02 is thrown when one type is expected to narrow another type, but does not.
  * A general error used for different cases, such as compound types’s components, generic constraints, or throwing non-Exceptions.
  */
-export class TypeError02 extends SolidTypeError {
+// @ts-expect-error noUnusedLocals
+class TypeError02 extends SolidTypeError {
 	/** The number series of this class of errors. */
 	static readonly CODE = 2
 	/**
@@ -84,7 +83,7 @@ export class TypeError03 extends SolidTypeError {
 	 * @param assignee_type - the type to which the expression is assigned
 	 * @param assigned_type - the type of the expression
 	 */
-	constructor (assignment: SemanticNodeDeclarationVariable | SemanticNodeAssignment, assignee_type: SolidLanguageType, assigned_type: SolidLanguageType) {
+	constructor (assignment: AST.ASTNodeDeclarationVariable | AST.ASTNodeAssignment, assignee_type: SolidLanguageType, assigned_type: SolidLanguageType) {
 		super(`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }.`, TypeError03.CODE, assignment.line_index, assignment.col_index)
 	}
 }

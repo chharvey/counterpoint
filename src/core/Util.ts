@@ -1,7 +1,7 @@
 /**
  * Utility fields and methods.
  */
-export default class Util {
+export class Util {
 	/**
 	 * Return a random boolean value.
 	 * @returns a random boolean value

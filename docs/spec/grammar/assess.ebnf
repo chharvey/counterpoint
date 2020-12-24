@@ -1,4 +1,4 @@
-Type Assess(SemanticNodeTypeConstant const) :=
+Type Assess(SemanticTypeConstant const) :=
 	1. *Return:* `const.value`.
 ;
 

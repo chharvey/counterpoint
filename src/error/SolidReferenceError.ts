@@ -9,7 +9,7 @@ import type {AST} from '../validator/';
 /**
  * A ReferenceError is thrown when the validator fails to dereference an identifier.
  */
-export default class SolidReferenceError extends ErrorCode {
+class SolidReferenceError extends ErrorCode {
 	/** The name of this class of errors. */
 	static readonly NAME: string = 'ReferenceError';
 	/** The number series of this class of errors. */
@@ -45,7 +45,7 @@ export class ReferenceError01 extends SolidReferenceError {
 	 * Construct a new ReferenceError01 object.
 	 * @param identifier the undeclared identifier
 	 */
-	constructor (identifier: AST.SemanticNodeIdentifier) {
+	constructor (identifier: AST.ASTNodeIdentifier) {
 		super(`\`${ identifier.source }\` is never declared.`, ReferenceError01.CODE, identifier.line_index, identifier.col_index);
 	}
 }
@@ -63,7 +63,7 @@ export class ReferenceError02 extends SolidReferenceError {
 	 * Construct a new ReferenceError02 object.
 	 * @param identifier the not-yet-declared identifier
 	 */
-	constructor (identifier: AST.SemanticNodeIdentifier) {
+	constructor (identifier: AST.ASTNodeIdentifier) {
 		super(`\`${ identifier.source }\` is used before it is declared.`, ReferenceError02.CODE, identifier.line_index, identifier.col_index);
 	}
 }
