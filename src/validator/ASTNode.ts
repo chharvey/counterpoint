@@ -494,7 +494,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		}
 	}
 }
-export abstract class SemanticNodeOperationBinary extends ASTNodeOperation {
+export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorBinary,
@@ -520,7 +520,7 @@ export abstract class SemanticNodeOperationBinary extends ASTNodeOperation {
 	}
 	protected abstract type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType;
 }
-export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperationBinary {
+export class SemanticNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorArithmetic,
@@ -564,7 +564,7 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 				)
 		)
 	}
-	/** @implements SemanticNodeOperationBinary */
+	/** @implements ASTNodeOperationBinary */
 	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
 		if (bothNumeric(t0, t1)) {
 			if (int_coercion) {
@@ -593,7 +593,7 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 		}
 	}
 }
-export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperationBinary {
+export class SemanticNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorComparative,
@@ -634,7 +634,7 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 				)
 		)
 	}
-	/** @implements SemanticNodeOperationBinary */
+	/** @implements ASTNodeOperationBinary */
 	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
 		if (bothNumeric(t0, t1) && (int_coercion || (
 			bothFloats(t0, t1) || neitherFloats(t0, t1)
@@ -654,7 +654,7 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 		]).get(this.operator)!(x, y))
 	}
 }
-export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBinary {
+export class SemanticNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorEquality,
@@ -688,7 +688,7 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 		const [v0, v1]: [SolidObject, SolidObject] = [assess0.value!, assess1.value!]
 		return new CompletionStructureAssessment(this.foldEquality(v0, v1))
 	}
-	/** @implements SemanticNodeOperationBinary */
+	/** @implements ASTNodeOperationBinary */
 	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
 		// If `a` and `b` are of disjoint numeric types, then `a is b` will always return `false`.
 		// If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
@@ -712,7 +712,7 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 		]).get(this.operator)!(x, y))
 	}
 }
-export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBinary {
+export class SemanticNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorLogical,
@@ -745,7 +745,7 @@ export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBin
 		}
 		return this.children[1].assess()
 	}
-	/** @implements SemanticNodeOperationBinary */
+	/** @implements ASTNodeOperationBinary */
 	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, _int_coercion: boolean): SolidLanguageType {
 		const null_union_false: SolidLanguageType = SolidNull.union(SolidBoolean.FALSETYPE);
 		function truthifyType(t: SolidLanguageType): SolidLanguageType {
