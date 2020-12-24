@@ -81,7 +81,7 @@ export class Decorator {
 		| PARSER.ParseNodeType
 	): AST.ASTNodeType;
 	static decorate(node: PARSER.ParseNodeStringTemplate__1__List):  TemplatePartialType;
-	static decorate(node: PARSER.ParseNodeStringTemplate):           AST.SemanticNodeTemplate;
+	static decorate(node: PARSER.ParseNodeStringTemplate):           AST.ASTNodeTemplate;
 	static decorate(node:
 		| PARSER.ParseNodeExpressionUnit
 		| PARSER.ParseNodeExpressionUnarySymbol
@@ -144,7 +144,7 @@ export class Decorator {
 			)
 
 		} else if (node instanceof PARSER.ParseNodeStringTemplate) {
-			return new AST.SemanticNodeTemplate(node, (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
+			return new AST.ASTNodeTemplate(node, (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
 				c instanceof TOKEN.TokenTemplate ? [new AST.ASTNodeConstant(c)] :
 				c instanceof PARSER.ParseNodeExpression ? [this.decorate(c)] :
 				this.decorate(c)

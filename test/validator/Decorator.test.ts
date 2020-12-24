@@ -10,7 +10,6 @@ import {
 } from '../../src/parser/';
 import {
 	Decorator,
-	SemanticNodeTemplate,
 	SemanticNodeOperation,
 	SemanticNodeOperationUnary,
 	SemanticNodeOperationBinary,
@@ -289,7 +288,7 @@ describe('Decorator', () => {
 				return ((Decorator
 					.decorate(new Parser(src).parse())
 					.children[0] as SemanticNodeStatementExpression)
-					.children[0] as SemanticNodeTemplate)
+					.children[0] as AST.ASTNodeTemplate)
 					.serialize()
 			}
 			specify('head, tail.', () => {

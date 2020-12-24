@@ -23,7 +23,7 @@ import {NanError01} from '../../src/error/NanError.class'
 import {
 	Decorator,
 	Validator,
-	SemanticNodeTemplate,
+	AST,
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
 	SemanticNodeDeclarationVariable,
@@ -661,10 +661,10 @@ describe('ASTNodeSolid', () => {
 							...(Dev.supports('literalTemplate') ? [
 								(goalFromSource(`'''42''';`)
 									.children[0] as SemanticNodeStatementExpression)
-									.children[0] as SemanticNodeTemplate,
+									.children[0] as AST.ASTNodeTemplate,
 								(goalFromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`)
 									.children[0] as SemanticNodeStatementExpression)
-									.children[0] as SemanticNodeTemplate,
+									.children[0] as AST.ASTNodeTemplate,
 							] : []),
 						].forEach((node) => {
 							assert.strictEqual(node.type(), SolidString)

@@ -243,7 +243,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * There are 4 known subclasses:
  * - ASTNodeConstant
  * - ASTNodeIdentifier
- * - SemanticNodeTemplate
+ * - ASTNodeTemplate
  * - SemanticNodeOperation
  */
 export abstract class ASTNodeExpression extends ASTNodeSolid {
@@ -383,22 +383,22 @@ export class ASTNodeIdentifier extends ASTNodeExpression {
 		;
 	}
 }
-export class SemanticNodeTemplate extends ASTNodeExpression {
+export class ASTNodeTemplate extends ASTNodeExpression {
 	constructor(
 		start_node: ParseNode,
 		readonly children: // FIXME spread types
 			| readonly [ASTNodeConstant]
-			| readonly [ASTNodeConstant,                                                                ASTNodeConstant]
-			| readonly [ASTNodeConstant, ASTNodeExpression,                                             ASTNodeConstant]
-			// | readonly [ASTNodeConstant,                    ...SemanticNodeTemplatePartialChildrenType, ASTNodeConstant]
-			// | readonly [ASTNodeConstant, ASTNodeExpression, ...SemanticNodeTemplatePartialChildrenType, ASTNodeConstant]
+			| readonly [ASTNodeConstant,                                                           ASTNodeConstant]
+			| readonly [ASTNodeConstant, ASTNodeExpression,                                        ASTNodeConstant]
+			// | readonly [ASTNodeConstant,                    ...ASTNodeTemplatePartialChildrenType, ASTNodeConstant]
+			// | readonly [ASTNodeConstant, ASTNodeExpression, ...ASTNodeTemplatePartialChildrenType, ASTNodeConstant]
 			| readonly ASTNodeExpression[]
 	) {
 		super(start_node, {}, children)
 	}
 	/** @implements ASTNodeExpression */
 	get shouldFloat(): boolean {
-		throw new Error('SemanticNodeTemplate#shouldFloat not yet supported.')
+		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
@@ -406,11 +406,11 @@ export class SemanticNodeTemplate extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeExpression */
 	protected build_do(_builder: Builder): InstructionExpression {
-		throw new Error('SemanticNodeTemplate#build_do not yet supported.')
+		throw new Error('ASTNodeTemplate#build_do not yet supported.');
 	}
 	/** @implements ASTNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
-		throw new Error('SemanticNodeTemplate#assess_do not yet supported.')
+		throw new Error('ASTNodeTemplate#assess_do not yet supported.');
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(_validator: Validator): SolidLanguageType {
