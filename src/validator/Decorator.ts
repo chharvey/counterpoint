@@ -21,10 +21,10 @@ import * as AST from './ASTNode';
 
 
 type TemplatePartialType = // FIXME spread types
-	| [                        AST.SemanticNodeConstant                            ]
-	| [                        AST.SemanticNodeConstant, AST.ASTNodeExpression]
-	// | [...TemplatePartialType, AST.SemanticNodeConstant                       ]
-	// | [...TemplatePartialType, AST.SemanticNodeConstant, AST.ASTNodeExpression]
+	| [                        AST.ASTNodeConstant                       ]
+	| [                        AST.ASTNodeConstant, AST.ASTNodeExpression]
+	// | [...TemplatePartialType, AST.ASTNodeConstant                       ]
+	// | [...TemplatePartialType, AST.ASTNodeConstant, AST.ASTNodeExpression]
 	| AST.ASTNodeExpression[]
 ;
 
@@ -71,7 +71,7 @@ export class Decorator {
 	 * @param node the parse node to decorate
 	 * @returns an ASTNode
 	 */
-	static decorate(node: PARSER.ParseNodePrimitiveLiteral): AST.SemanticNodeConstant;
+	static decorate(node: PARSER.ParseNodePrimitiveLiteral): AST.ASTNodeConstant;
 	static decorate(node: PARSER.ParseNodeTypeKeyword):      AST.ASTNodeTypeConstant;
 	static decorate(node:
 		| PARSER.ParseNodeTypeUnit
@@ -103,7 +103,7 @@ export class Decorator {
 	static decorate(node: ParseNode): AST.ASTNodeSolid | AST.ASTNodeSolid[];
 	static decorate(node: ParseNode): AST.ASTNodeSolid | AST.ASTNodeSolid[] {
 		if (node instanceof PARSER.ParseNodePrimitiveLiteral) {
-			return new AST.SemanticNodeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
+			return new AST.ASTNodeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
 
 		} else if (node instanceof PARSER.ParseNodeTypeKeyword) {
 			return new AST.ASTNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
@@ -138,14 +138,14 @@ export class Decorator {
 
 		} else if (node instanceof PARSER.ParseNodeStringTemplate__1__List) {
 			return (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
-				c instanceof TOKEN.TokenTemplate ? [new AST.SemanticNodeConstant(c)] :
+				c instanceof TOKEN.TokenTemplate ? [new AST.ASTNodeConstant(c)] :
 				c instanceof PARSER.ParseNodeExpression ? [this.decorate(c)] :
 				this.decorate(c)
 			)
 
 		} else if (node instanceof PARSER.ParseNodeStringTemplate) {
 			return new AST.SemanticNodeTemplate(node, (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
-				c instanceof TOKEN.TokenTemplate ? [new AST.SemanticNodeConstant(c)] :
+				c instanceof TOKEN.TokenTemplate ? [new AST.ASTNodeConstant(c)] :
 				c instanceof PARSER.ParseNodeExpression ? [this.decorate(c)] :
 				this.decorate(c)
 			))

@@ -2,7 +2,6 @@ export {Validator} from './Validator';
 export {Decorator} from './Decorator';
 
 export {
-	SemanticNodeConstant,
 	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
 	SemanticNodeOperation,

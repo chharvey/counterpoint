@@ -113,7 +113,7 @@ describe('ASTNodeSolid', () => {
 			})
 		})
 
-		context('SemanticNodeConstant', () => {
+		context('ASTNodeConstant', () => {
 			it('returns InstructionConst.', () => {
 				assert.deepStrictEqual([
 					'null;',
@@ -227,7 +227,7 @@ describe('ASTNodeSolid', () => {
 						[...tests.values()],
 					)
 				}
-				specify('SemanticNodeOperation[operator: NOT | EMP] ::= SemanticNodeConstant', () => {
+				specify('SemanticNodeOperation[operator: NOT | EMP] ::= SemanticConstant', () => {
 					buildOperations(new Map<string, InstructionUnop>([
 						[`!null;`,  new InstructionUnop(Operator.NOT, instructionConstInt(0n))],
 						[`!false;`, new InstructionUnop(Operator.NOT, instructionConstInt(0n))],
@@ -241,19 +241,19 @@ describe('ASTNodeSolid', () => {
 						[`?4.2;`,   new InstructionUnop(Operator.EMP, instructionConstFloat(4.2))],
 					]))
 				})
-				specify('SemanticNodeOperation[operator: NEG] ::= SemanticNodeConstant', () => {
+				specify('SemanticNodeOperation[operator: NEG] ::= SemanticConstant', () => {
 					buildOperations(new Map<string, InstructionUnop>([
 						[`-(4);`,   new InstructionUnop(Operator.NEG, instructionConstInt(4n))],
 						[`-(4.2);`, new InstructionUnop(Operator.NEG, instructionConstFloat(4.2))],
 					]))
 				})
-				specify('SemanticNodeOperation[operator: ADD | MUL] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+				specify('SemanticNodeOperation[operator: ADD | MUL] ::= SemanticConstant SemanticConstant', () => {
 					buildOperations(new Map([
 						[`42 + 420;`, new InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
 						[`3 * 2.1;`,  new InstructionBinopArithmetic(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
 					]))
 				})
-				specify('SemanticNodeOperation[operator: DIV] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+				specify('SemanticNodeOperation[operator: DIV] ::= SemanticConstant SemanticConstant', () => {
 					buildOperations(xjs.Map.mapValues(new Map([
 						[' 126 /  3;', [ 126n,  3n]],
 						['-126 /  3;', [-126n,  3n]],
@@ -269,7 +269,7 @@ describe('ASTNodeSolid', () => {
 						instructionConstInt(b),
 					)))
 				})
-				specify('SemanticNodeOperation[operator: IS | EQ] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+				specify('SemanticNodeOperation[operator: IS | EQ] ::= SemanticConstant SemanticConstant', () => {
 					assert.deepStrictEqual([
 						`42 == 420;`,
 						`4.2 is 42;`,
@@ -328,7 +328,7 @@ describe('ASTNodeSolid', () => {
 						),
 					])
 				})
-				describe('SemanticNodeOperation[operator: AND | OR] ::= SemanticNodeConstant SemanticNodeConstant', () => {
+				describe('SemanticNodeOperation[operator: AND | OR] ::= SemanticConstant SemanticConstant', () => {
 					it('returns InstructionBinopLogical.', () => {
 						assert.deepStrictEqual([
 							`42 && 420;`,
@@ -460,7 +460,7 @@ describe('ASTNodeSolid', () => {
 
 
 	Dev.supports('variables') && describe('#varCheck', () => {
-		describe('SemanticNodeConstant', () => {
+		describe('ASTNodeConstant', () => {
 			it('never throws.', () => {
 				constantFromSource(`42;`).varCheck();
 			});
@@ -635,11 +635,11 @@ describe('ASTNodeSolid', () => {
 				})
 			})
 			context('with constant folding on, with int coersion on.', () => {
-				context('SemanticNodeConstant', () => {
-					it('returns a constant Null type for SemanticNodeConstant with null value.', () => {
+				context('ASTNodeConstant', () => {
+					it('returns a constant Null type for ASTNodeConstant with null value.', () => {
 						assert.ok(constantFromSource(`null;`).type().equals(SolidNull));
 					})
-					it('returns a constant Boolean type for SemanticNodeConstant with bool value.', () => {
+					it('returns a constant Boolean type for ASTNodeConstant with bool value.', () => {
 						assert.deepStrictEqual([
 							`false;`,
 							`true;`,
@@ -648,13 +648,13 @@ describe('ASTNodeSolid', () => {
 							SolidBoolean.TRUETYPE,
 						])
 					})
-					it('returns a constant Integer type for SemanticNodeConstant with integer value.', () => {
+					it('returns a constant Integer type for ASTNodeConstant with integer value.', () => {
 						assert.deepStrictEqual(constantFromSource(`42;`).type(), new SolidTypeConstant(new Int16(42n)));
 					})
-					it('returns a constant Float type for SemanticNodeConstant with float value.', () => {
+					it('returns a constant Float type for ASTNodeConstant with float value.', () => {
 						assert.deepStrictEqual(constantFromSource(`4.2e+1;`).type(), new SolidTypeConstant(new Float64(42.0)));
 					})
-					it('returns `String` for SemanticNodeConstant with string value.', () => {
+					it('returns `String` for ASTNodeConstant with string value.', () => {
 						;[
 							...(Dev.supports('literalString') ? [
 								constantFromSource(`'42';`),

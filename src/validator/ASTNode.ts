@@ -241,7 +241,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 /**
  * A sematic node representing an expression.
  * There are 4 known subclasses:
- * - SemanticNodeConstant
+ * - ASTNodeConstant
  * - SemanticNodeIdentifier
  * - SemanticNodeTemplate
  * - SemanticNodeOperation
@@ -296,7 +296,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	}
 	protected abstract type_do(validator: Validator): SolidLanguageType;
 }
-export class SemanticNodeConstant extends ASTNodeExpression {
+export class ASTNodeConstant extends ASTNodeExpression {
 	declare children:
 		| readonly []
 	readonly value: string | SolidObject;
@@ -331,7 +331,7 @@ export class SemanticNodeConstant extends ASTNodeExpression {
 		if (this.value instanceof SolidObject) {
 			return new CompletionStructureAssessment(this.value)
 		} else {
-			throw new Error('SemanticNodeConstant[value:string]#assess_do not yet supported.')
+			throw new Error('ASTNodeConstant[value:string]#assess_do not yet supported.')
 		}
 	}
 	/** @implements ASTNodeExpression */
@@ -387,11 +387,11 @@ export class SemanticNodeTemplate extends ASTNodeExpression {
 	constructor(
 		start_node: ParseNode,
 		readonly children: // FIXME spread types
-			| readonly [SemanticNodeConstant]
-			| readonly [SemanticNodeConstant,                                                                     SemanticNodeConstant]
-			| readonly [SemanticNodeConstant, ASTNodeExpression,                                             SemanticNodeConstant]
-			// | readonly [SemanticNodeConstant,                    ...SemanticNodeTemplatePartialChildrenType, SemanticNodeConstant]
-			// | readonly [SemanticNodeConstant, ASTNodeExpression, ...SemanticNodeTemplatePartialChildrenType, SemanticNodeConstant]
+			| readonly [ASTNodeConstant]
+			| readonly [ASTNodeConstant,                                                                ASTNodeConstant]
+			| readonly [ASTNodeConstant, ASTNodeExpression,                                             ASTNodeConstant]
+			// | readonly [ASTNodeConstant,                    ...SemanticNodeTemplatePartialChildrenType, ASTNodeConstant]
+			// | readonly [ASTNodeConstant, ASTNodeExpression, ...SemanticNodeTemplatePartialChildrenType, ASTNodeConstant]
 			| readonly ASTNodeExpression[]
 	) {
 		super(start_node, {}, children)
