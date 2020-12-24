@@ -857,15 +857,15 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		start_node: ParseNode,
 		readonly unfixed: boolean,
 		readonly children:
-			| readonly [SemanticNodeAssignee, ASTNodeType, ASTNodeExpression]
+			| readonly [ASTNodeAssignee, ASTNodeType, ASTNodeExpression]
 	) {
 		super(start_node, {unfixed}, children)
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
-		const assignee:      SemanticNodeAssignee = this.children[0];
-		const identifier:    ASTNodeIdentifier    = assignee.children[0];
-		const assignee_type: SolidLanguageType    = this.children[1].assess();
+		const assignee:      ASTNodeAssignee   = this.children[0];
+		const identifier:    ASTNodeIdentifier = assignee.children[0];
+		const assignee_type: SolidLanguageType = this.children[1].assess();
 		if (validator.hasSymbol(identifier.id)) {
 			throw new AssignmentError01(identifier);
 		};
@@ -899,7 +899,7 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly children:
-			| readonly [SemanticNodeAssignee, ASTNodeExpression]
+			| readonly [ASTNodeAssignee, ASTNodeExpression]
 	) {
 		super(start_node, {}, children)
 	}
@@ -924,7 +924,7 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 		throw new Error('ASTNodeAssignment#build not yet supported.');
 	}
 }
-export class SemanticNodeAssignee extends ASTNodeSolid {
+export class ASTNodeAssignee extends ASTNodeSolid {
 	constructor(
 		start_node: Token,
 		readonly children:
@@ -946,7 +946,7 @@ export class SemanticNodeAssignee extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {
-		throw new Error('SemanticNodeAssignee#build not yet supported.')
+		throw new Error('ASTNodeAssignee#build not yet supported.')
 	}
 }
 export class SemanticNodeGoal extends ASTNodeSolid {

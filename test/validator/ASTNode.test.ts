@@ -484,7 +484,7 @@ describe('ASTNodeSolid', () => {
 				`).varCheck(), AssignmentError01);
 			});
 		});
-		describe('SemanticNodeAssignee', () => {
+		describe('ASTNodeAssignee', () => {
 			it('throws if the variable is not unfixed.', () => {
 				goalFromSource(`
 					let unfixed i: int = 42;

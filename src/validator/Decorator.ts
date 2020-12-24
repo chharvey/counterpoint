@@ -250,7 +250,7 @@ export class Decorator {
 			const type_:      PARSER.ParseNodeType       =  (node.children.length === 7) ? node.children[3] : node.children[4]
 			const expression: PARSER.ParseNodeExpression =  (node.children.length === 7) ? node.children[5] : node.children[6]
 			return new AST.ASTNodeDeclarationVariable(node, node.children.length === 8, [
-				new AST.SemanticNodeAssignee(identifier, [
+				new AST.ASTNodeAssignee(identifier, [
 					new AST.ASTNodeIdentifier(identifier),
 				]),
 				this.decorate(type_),
@@ -261,7 +261,7 @@ export class Decorator {
 			const identifier: TOKEN.TokenIdentifier      = node.children[0] as TOKEN.TokenIdentifier
 			const expression: PARSER.ParseNodeExpression = node.children[2]
 			return new AST.ASTNodeAssignment(node, [
-				new AST.SemanticNodeAssignee(identifier, [
+				new AST.ASTNodeAssignee(identifier, [
 					new AST.ASTNodeIdentifier(identifier),
 				]),
 				this.decorate(expression),

@@ -698,7 +698,7 @@ describe('Decorator', () => {
 				const src: string = `let unfixed the_answer:  int | float =  21  *  2;`
 				const decl: AST.ASTNodeDeclarationVariable = variableDeclarationFromSource(src);
 				assert.strictEqual(decl.unfixed, true);
-				const assignee: AST.SemanticNodeAssignee = decl.children[0];
+				const assignee: AST.ASTNodeAssignee = decl.children[0];
 				assert.strictEqual(assignee.children[0].id, 256n);
 				const type_: AST.ASTNodeType = decl.children[1];
 				assert.ok(type_ instanceof AST.ASTNodeTypeOperationBinary);
@@ -726,7 +726,7 @@ describe('Decorator', () => {
 				const src: string = `let \`the £ answer\`: int = the_answer * 10;`
 				const decl: AST.ASTNodeDeclarationVariable = variableDeclarationFromSource(src);
 				assert.strictEqual(decl.unfixed, false);
-				const assignee: AST.SemanticNodeAssignee = decl.children[0];
+				const assignee: AST.ASTNodeAssignee = decl.children[0];
 				assert.strictEqual(assignee.children[0].id, 256n);
 				const type_: AST.ASTNodeType = decl.children[1];
 				assert.ok(type_ instanceof AST.ASTNodeTypeConstant);
@@ -756,7 +756,7 @@ describe('Decorator', () => {
 				*/
 				const src: string = `the_answer = the_answer - 40;`;
 				const assn: AST.ASTNodeAssignment = assignmentFromSource(src);
-				const assignee: AST.SemanticNodeAssignee = assn.children[0];
+				const assignee: AST.ASTNodeAssignee = assn.children[0];
 				assert.strictEqual(assignee.children[0].id, 256n);
 				const assigned_expr: AST.ASTNodeExpression = assn.children[1];
 				assert.ok(assigned_expr instanceof AST.ASTNodeOperationBinary);
