@@ -13,7 +13,7 @@ import * as TOKEN from './Token';
 
 import {
 	LexError03,
-} from '../error/LexError.class'
+} from '../error/';
 
 
 

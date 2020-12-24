@@ -3,20 +3,18 @@ import * as xjs from 'extrajs'
 
 import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Dev from '../../src/class/Dev.class'
-import Operator from '../../src/enum/Operator.enum'
+import {
+	Operator,
+} from '../../src/enum/Operator.enum';
 import {
 	ReferenceError01,
 	ReferenceError02,
-} from '../../src/error/SolidReferenceError.class';
-import {
 	AssignmentError01,
 	AssignmentError10,
-} from '../../src/error/AssignmentError.class';
-import {
 	TypeError01,
 	TypeError03,
-} from '../../src/error/SolidTypeError.class'
-import {NanError01} from '../../src/error/NanError.class'
+	NanError01,
+} from '../../src/error/';
 import {
 	Decorator,
 	Validator,

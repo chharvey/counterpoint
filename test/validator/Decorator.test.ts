@@ -2,7 +2,9 @@ import * as assert from 'assert'
 
 import Util from '../../src/class/Util.class'
 import Dev from '../../src/class/Dev.class'
-import Operator from '../../src/enum/Operator.enum'
+import {
+	Operator,
+} from '../../src/enum/Operator.enum';
 import {
 	ParserSolid as Parser,
 } from '../../src/parser/';

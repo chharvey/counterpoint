@@ -2,7 +2,8 @@ import {
 	ParseNode,
 } from '@chharvey/parser';
 
-import Operator, {
+import {
+	Operator,
 	ValidTypeOperator,
 	ValidOperatorUnary,
 	ValidOperatorArithmetic,

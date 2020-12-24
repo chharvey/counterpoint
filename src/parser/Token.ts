@@ -19,7 +19,7 @@ import {
 	LexError03,
 	LexError04,
 	LexError05,
-} from '../error/LexError.class'
+} from '../error/';
 
 
 

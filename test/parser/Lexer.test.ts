@@ -18,7 +18,7 @@ import {
 	LexError03,
 	LexError04,
 	LexError05,
-} from '../../src/error/LexError.class'
+} from '../../src/error/';
 
 const lastItem  = (iter: any): any     => iter[lastIndex(iter)]
 const lastIndex = (iter: any): number  => iter.length-1
