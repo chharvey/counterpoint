@@ -822,12 +822,12 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
  * There are 3 known subclasses:
  * - ASTNodeStatementExpression
  * - ASTNodeDeclarationVariable
- * - SemanticNodeAssignment
+ * - ASTNodeAssignment
  */
 export type SemanticStatementType =
 	| ASTNodeStatementExpression
 	| ASTNodeDeclarationVariable
-	| SemanticNodeAssignment
+	| ASTNodeAssignment
 export class ASTNodeStatementExpression extends ASTNodeSolid {
 	constructor(
 		start_node: ParseNode,
@@ -895,7 +895,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		throw new Error('ASTNodeDeclarationVariable#build not yet supported.');
 	}
 }
-export class SemanticNodeAssignment extends ASTNodeSolid {
+export class ASTNodeAssignment extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly children:
@@ -921,7 +921,7 @@ export class SemanticNodeAssignment extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {
-		throw new Error('SemanticNodeAssignment#build not yet supported.')
+		throw new Error('ASTNodeAssignment#build not yet supported.');
 	}
 }
 export class SemanticNodeAssignee extends ASTNodeSolid {

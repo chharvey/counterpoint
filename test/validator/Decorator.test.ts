@@ -742,7 +742,7 @@ describe('Decorator', () => {
 		})
 
 		Dev.supports('variables') && describe('StatementAssignment', () => {
-			it('makes SemanticNodeAssignment nodes.', () => {
+			it('makes an ASTNodeAssignment node.', () => {
 				/*
 					<Assignment>
 						<Assignee>
@@ -755,7 +755,7 @@ describe('Decorator', () => {
 					</Assignment>
 				*/
 				const src: string = `the_answer = the_answer - 40;`;
-				const assn: AST.SemanticNodeAssignment = assignmentFromSource(src);
+				const assn: AST.ASTNodeAssignment = assignmentFromSource(src);
 				const assignee: AST.SemanticNodeAssignee = assn.children[0];
 				assert.strictEqual(assignee.children[0].id, 256n);
 				const assigned_expr: AST.ASTNodeExpression = assn.children[1];
