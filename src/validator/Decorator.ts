@@ -211,13 +211,13 @@ export class Decorator {
 				) : (node instanceof PARSER.ParseNodeExpressionEquality) ? (
 					// `a isnt b` is syntax sugar for `!(a is b)`
 					(operator === Operator.ISNT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
-						new AST.SemanticNodeOperationBinaryEquality(node.children[0], Operator.IS, operands),
+						new AST.ASTNodeOperationBinaryEquality(node.children[0], Operator.IS, operands),
 					]) :
 					// `a != b` is syntax sugar for `!(a == b)`
 					(operator === Operator.NEQ) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
-						new AST.SemanticNodeOperationBinaryEquality(node.children[0], Operator.EQ, operands),
+						new AST.ASTNodeOperationBinaryEquality(node.children[0], Operator.EQ, operands),
 					]) :
-					new AST.SemanticNodeOperationBinaryEquality(node, operator as ValidOperatorEquality, operands)
+					new AST.ASTNodeOperationBinaryEquality(node, operator as ValidOperatorEquality, operands)
 
 				) : /* (
 					node instanceof PARSER.ParseNodeExpressionConjunctive ||

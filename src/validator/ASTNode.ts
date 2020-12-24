@@ -654,7 +654,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		]).get(this.operator)!(x, y))
 	}
 }
-export class SemanticNodeOperationBinaryEquality extends ASTNodeOperationBinary {
+export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorEquality,

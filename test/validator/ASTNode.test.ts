@@ -623,7 +623,7 @@ describe('ASTNodeSolid', () => {
 						assert.throws(() => typeOfOperationFromSource(`7.0 <= 3;`), TypeError01);
 					})
 				})
-				describe('SemanticNodeOperationBinaryEquality[operator=EQ]', () => {
+				describe('ASTNodeOperationBinaryEquality[operator=EQ]', () => {
 					it('returns `false` if operands are of different numeric types.', () => {
 						assert.deepStrictEqual(typeOfOperationFromSource(`7 == 7.0;`), SolidBoolean.FALSETYPE);
 					})
@@ -716,7 +716,7 @@ describe('ASTNodeSolid', () => {
 					assert.deepStrictEqual(operationFromSource(`7.0 > 3;`) .type(new Validator(folding_off)), SolidBoolean);
 					assert.deepStrictEqual(operationFromSource(`7 == 7.0;`).type(new Validator(folding_off)), SolidBoolean);
 				})
-				describe('SemanticNodeOperationBinaryEquality[operator=IS]', () => {
+				describe('ASTNodeOperationBinaryEquality[operator=IS]', () => {
 					it('returns `false` if operands are of different numeric types.', () => {
 						assert.deepStrictEqual(operationFromSource(`7 is 7.0;`, folding_off).type(new Validator(folding_off)), SolidBoolean.FALSETYPE);
 					})
