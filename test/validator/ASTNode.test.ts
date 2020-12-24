@@ -24,7 +24,6 @@ import {
 	Decorator,
 	Validator,
 	AST,
-	SemanticNodeDeclarationVariable,
 	CompletionStructureAssessment,
 	SolidLanguageType,
 	SolidTypeConstant,
@@ -477,7 +476,7 @@ describe('ASTNodeSolid', () => {
 				`).varCheck(), ReferenceError02);
 			});
 		});
-		describe('SemanticNodeDeclarationVariable', () => {
+		describe('ASTNodeDeclarationVariable', () => {
 			it('throws if the validator already contains a record for the variable.', () => {
 				assert.throws(() => goalFromSource(`
 					let i: int = 42;
@@ -501,25 +500,25 @@ describe('ASTNodeSolid', () => {
 
 
 	describe('#typeCheck', () => {
-		describe('SemanticNodeDeclarationVariable', () => {
+		describe('ASTNodeDeclarationVariable', () => {
 			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  int | float =  21  *  2;`
-				const decl: SemanticNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src))
+				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
 				decl.typeCheck();
 			})
 			it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  null =  21  *  2;`
-				const decl: SemanticNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src))
+				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
 				assert.throws(() => decl.typeCheck(), TypeError03);
 			})
 			it('with int coersion on, allows assigning ints to floats.', () => {
 				const src: string = `let x: float = 42;`
-				const decl: SemanticNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src))
+				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
 				decl.typeCheck();
 			})
 			it('with int coersion off, throws when assigning int to float.', () => {
 				const src: string = `let x: float = 42;`
-				const decl: SemanticNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src))
+				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
 				assert.throws(() => decl.typeCheck(new Validator({
 					...CONFIG_DEFAULT,
 					compilerOptions: {

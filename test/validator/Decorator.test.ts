@@ -10,7 +10,6 @@ import {
 } from '../../src/parser/';
 import {
 	Decorator,
-	SemanticNodeDeclarationVariable,
 	SemanticNodeGoal,
 	AST,
 	SolidTypeConstant,
@@ -686,7 +685,7 @@ describe('Decorator', () => {
 		})
 
 		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationVariable', () => {
-			it('makes an unfixed SemanticNodeDeclarationVariable node.', () => {
+			it('makes an unfixed ASTNodeDeclarationVariable node.', () => {
 				/*
 					<SemanticDeclarationVariable unfixed=true>
 						<Assignee>
@@ -697,7 +696,7 @@ describe('Decorator', () => {
 					</SemanticDeclarationVariable>
 				*/
 				const src: string = `let unfixed the_answer:  int | float =  21  *  2;`
-				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src);
+				const decl: AST.ASTNodeDeclarationVariable = variableDeclarationFromSource(src);
 				assert.strictEqual(decl.unfixed, true);
 				const assignee: AST.SemanticNodeAssignee = decl.children[0];
 				assert.strictEqual(assignee.children[0].id, 256n);
@@ -711,7 +710,7 @@ describe('Decorator', () => {
 					`the_answer`, `int | float`, `21 * 2`,
 				])
 			})
-			it('makes a fixed SemanticNodeDeclarationVariable node.', () => {
+			it('makes a fixed ASTNodeDeclarationVariable node.', () => {
 				/*
 					<SemanticDeclarationVariable unfixed=false>
 						<Assignee>
@@ -725,7 +724,7 @@ describe('Decorator', () => {
 					</SemanticDeclarationVariable>
 				*/
 				const src: string = `let \`the £ answer\`: int = the_answer * 10;`
-				const decl: SemanticNodeDeclarationVariable = variableDeclarationFromSource(src);
+				const decl: AST.ASTNodeDeclarationVariable = variableDeclarationFromSource(src);
 				assert.strictEqual(decl.unfixed, false);
 				const assignee: AST.SemanticNodeAssignee = decl.children[0];
 				assert.strictEqual(assignee.children[0].id, 256n);
