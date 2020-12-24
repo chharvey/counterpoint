@@ -112,15 +112,15 @@ StringChars :::=
 	| [^'\#x03]                StringChars?
 	| "\"         StringEscape StringChars?
 	| "\u"      ( [^'{#x03]    StringChars? )?
+	| "%" ([^'%#x0a#x03] [^'#x0a#x03]*)? #x0a?
+	| "%%" ("%"? [^'%#x03])* "%%"?
 ;
 
 StringEscape :::=
-	| "'" | "\" | "s" | "t" | "n" | "r"
+	| "'" | "%" | "\" | "s" | "t" | "n" | "r"
 	| "u{" DigitSequenceHex? "}"
 	| #x0a
-	| "%" ([^'%#x0a#x03] [^'#x0a#x03]*)? #x0a?
-	| "%%" ("%"? [^'%#x03])* "%%"?
-	| [^'\stnru#x0a%#x03]
+	| [^'%\stnru#x0a%#x03]
 ;
 
 

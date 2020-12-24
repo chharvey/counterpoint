@@ -7,6 +7,7 @@ import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
 import Util     from '../../src/class/Util.class'
 import Dev      from '../../src/class/Dev.class'
 import {
+	CookValueType,
 	TOKEN,
 	TokenSolid,
 	LexerSolid as Lexer,
@@ -192,36 +193,49 @@ describe('TokenSolid', () => {
 
 		Dev.supports('literalString') && context('TokenString', () => {
 			it('produces the cooked string value.', () => {
-				const tokens: Token[] = [...new Lexer(Util.dedent(`
+				assert.deepStrictEqual([...new Lexer(Util.dedent(`
 					5 + 03 + '' * 'hello' *  -2;
 					'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
 					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3';
 					'012\\
-					345
+					345\\%
 					678';
 					'\u{10001}' '\\\u{10001}';
 				`), CONFIG_DEFAULT).generate()]
-				assert.strictEqual((tokens[ 5] as TOKEN.TokenSolid).cook(), ``)
-				assert.strictEqual((tokens[ 7] as TOKEN.TokenSolid).cook(), `hello`)
-				assert.strictEqual((tokens[11] as TOKEN.TokenSolid).cook(), `0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`)
-				assert.strictEqual((tokens[13] as TOKEN.TokenSolid).cook(), `0 $ 1 _ 2 \0 3`)
-				assert.strictEqual((tokens[15] as TOKEN.TokenSolid).cook(), `012 345\n678`)
-				assert.strictEqual((tokens[17] as TOKEN.TokenSolid).cook(), `\u{10001}`)
-				assert.strictEqual((tokens[18] as TOKEN.TokenSolid).cook(), `\u{10001}`)
+					.filter((token): token is TokenSolid => token instanceof TokenSolid)
+					.map((token) => token.cook())
+					.filter((_, i) => [
+						 4,
+						 6,
+						10,
+						12,
+						14,
+						16,
+						17,
+					].includes(i))
+				, [
+					'',
+					'hello',
+					'0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6',
+					'0 $ 1 _ 2 \0 3',
+					'012 345%\n678',
+					'\u{10001}',
+					'\u{10001}',
+				]);
 			})
 			describe('In-String Comments', () => {
-				function cook(config: SolidConfig): TOKEN.CookValueType[] {
+				function cook(config: SolidConfig): CookValueType[] {
 					return [...new Lexer(Util.dedent(`
-						'The five boxing wizards \\% jump quickly.'
-						'The five \\% boxing wizards
+						'The five boxing wizards % jump quickly.'
+						'The five % boxing wizards
 						jump quickly.'
-						'The five \\%% boxing wizards %% jump quickly.'
-						'The five \\%% boxing
+						'The five %% boxing wizards %% jump quickly.'
+						'The five %% boxing
 						wizards %% jump
 						quickly.'
 					`), config).generate()]
-						.filter((token) => token instanceof TOKEN.TokenString)
-						.map((token) => (token as TokenSolid).cook())
+						.filter((token): token is TOKEN.TokenString => token instanceof TOKEN.TokenString)
+						.map((token) => token.cook())
 					;
 				}
 				context('with comments enabled.', () => {
@@ -237,7 +251,7 @@ describe('TokenSolid', () => {
 						});
 					})
 				});
-				specify('with comments disabled.', () => {
+				it('with comments disabled.', () => {
 					assert.deepStrictEqual(cook({
 						...CONFIG_DEFAULT,
 						languageFeatures: {

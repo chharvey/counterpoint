@@ -171,6 +171,7 @@ Raw Input | Output Character     | Output Code
 `\n`      | LINE FEED (LF)       | U+000A
 `\r`      | CARRIAGE RETURN (CR) | U+000D
 `\'`      | APOSTROPHE           | U+0027
+`\%`      | PERCENT SIGN         | U+0025
 `\\`      | REVERSE SOLIDUS      | U+005C
 `\u{24}`  | DOLLAR SIGN          | U+0024
 
@@ -186,6 +187,12 @@ and `\\` prints a literal backslash character without escaping the following one
 
 (Note that the code `\nighttime` would be cooked as a line feed followed by “ighttime”,
 since `\n` is the line feed character.)
+
+The code `\%` prints a literal percent sign without initiating an [in-string comment](#in-string-comments).
+```
+'The 10\% discount was not enough.';
+```
+> 'The 10% discount was not enough.'
 
 The code `\u{‹cp›}` escapes unicode characters, where ‹cp› is the code point of the character.
 For example, `\u{24}` escapes the dollar sign symbol, since its code point is **U+0024**.
@@ -216,36 +223,33 @@ Other than for the special cases listed above, a backslash has no effect.
 >
 > 'Any non-special character may be escaped.'
 
-**There’s one exception to this rule:** The code `\%` does not escape a percent sign —
-it initiates a comment.
-
 #### In-String Comments
 String literals may contain Solid comments.
-Line comments begin with `\%` and continue until (but not including) the next line break, and
-multiline comments begin with `\%%` and continue until (and including) the next `%%`.
+Line comments begin with `%` (**U+0025 PERCENT SIGN**) and continue until (but not including) the next line break, and
+multiline comments begin with `%%` and continue until (and including) the next `%%`.
 Both kinds of comments will continue until their end delimiter unless the end of the string is reached first.
 The commented content is removed from the string’s cooked value.
 
 -
 	```
-	'The five boxing wizards \% jump quickly.';
+	'The five boxing wizards % jump quickly.';
 	```
 	> 'The five boxing wizards '
 -
 	```
-	'The five \% boxing wizards
+	'The five % boxing wizards
 	jump quickly.';
 	```
 	> 'The five \
 	> jump quickly.'
 -
 	```
-	'The five \%% boxing wizards %% jump quickly.';
+	'The five %% boxing wizards %% jump quickly.';
 	```
 	> 'The five  jump quickly.'
 -
 	```
-	'The five \%% boxing
+	'The five %% boxing
 	wizards %% jump
 	quickly.';
 	```
@@ -254,9 +258,9 @@ The commented content is removed from the string’s cooked value.
 
 Multiline comments cannot be nested.
 ```
-'The \%% five \%% boxing %% wizards %% jump quickly.';
+'The %% five %% boxing %% wizards %% jump quickly.';
 ```
-> 'The  boxing %% wizards %% jump quickly.'
+> 'The  boxing  jump quickly.'
 
 
 ### String Templates
@@ -272,7 +276,7 @@ That’s about {{ 365 * years }} days.''';
 String templates may contain interpolated expressions, which are enclosed within double-braces `{{ … }}`.
 An interpolated expression is an expression that computes to a string.
 ```
-let twelve: string = '12!';
+let twelve: str = '12!';
 '''3 times 4 is {{ twelve }}''';
 ```
 > '3 times 4 is 12!'
@@ -312,8 +316,8 @@ Comments *within* string templates are *not* ignored.
 Sphinx of black quartz,    % not a comment
 judge my vow.              \% also not a comment
 
-Sphinx of    %% also not a comment %%        black quartz,
-judge        \%% and this isn’t either %%    my vow.
+Sphinx of    %% also not a comment %%           black quartz,
+judge        \%\% and this isn’t either \%\%    my vow.
 ''';
 ```
 
