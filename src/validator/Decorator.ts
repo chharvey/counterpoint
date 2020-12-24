@@ -100,8 +100,8 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeDeclarationType):       AST.ASTNodeDeclarationType;
 	static decorate(node: PARSER.ParseNodeDeclaration):           AST.SemanticDeclaration;
 	static decorate(node: PARSER.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
-	static decorate(node: PARSER.ParseNodeStatement):             AST.SemanticStatementType;
-	static decorate(node: PARSER.ParseNodeGoal__0__List):         AST.SemanticStatementType[];
+	static decorate(node: PARSER.ParseNodeStatement):             AST.ASTNodeStatement;
+	static decorate(node: PARSER.ParseNodeGoal__0__List):         AST.ASTNodeStatement[];
 	static decorate(node: PARSER.ParseNodeGoal):                  AST.ASTNodeGoal;
 	static decorate(node: ParseNode): AST.ASTNodeSolid | AST.ASTNodeSolid[];
 	static decorate(node: ParseNode): AST.ASTNodeSolid | AST.ASTNodeSolid[] {

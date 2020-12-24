@@ -875,7 +875,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
  * - ASTNodeDeclarationVariable
  * - ASTNodeAssignment
  */
-export type SemanticStatementType =
+export type ASTNodeStatement =
 	| ASTNodeStatementExpression
 	| SemanticDeclaration
 	| ASTNodeAssignment
@@ -1046,7 +1046,7 @@ export class ASTNodeGoal extends ASTNodeSolid {
 		start_node: ParseNode,
 		readonly children:
 			| readonly []
-			| readonly SemanticStatementType[]
+			| readonly ASTNodeStatement[]
 	) {
 		super(start_node, {}, children)
 	}
@@ -1065,7 +1065,7 @@ export class ASTNodeGoal extends ASTNodeSolid {
 			? new InstructionNone()
 			: new InstructionModule([
 				...Builder.IMPORTS,
-				...(this.children as readonly SemanticStatementType[]).map((child) => child.build(builder)),
+				...(this.children as readonly ASTNodeStatement[]).map((child) => child.build(builder)),
 			])
 	}
 }
