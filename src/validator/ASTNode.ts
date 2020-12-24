@@ -133,7 +133,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 /**
  * A sematic node representing a type.
  * There are 2 known subclasses:
- * - SemanticNodeTypeConstant
+ * - ASTNodeTypeConstant
  * - SemanticNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
@@ -164,7 +164,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	}
 	protected abstract assess_do(): SolidLanguageType
 }
-export class SemanticNodeTypeConstant extends ASTNodeType {
+export class ASTNodeTypeConstant extends ASTNodeType {
 	declare children:
 		| readonly []
 	readonly value: SolidLanguageType;

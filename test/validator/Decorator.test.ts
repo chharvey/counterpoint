@@ -10,7 +10,6 @@ import {
 } from '../../src/parser/';
 import {
 	Decorator,
-	SemanticNodeTypeConstant,
 	SemanticNodeTypeOperationUnary,
 	SemanticNodeTypeOperationBinary,
 	SemanticNodeExpression,
@@ -93,7 +92,7 @@ describe('Decorator', () => {
 		})
 
 		Dev.supports('typingExplicit') && describe('TypeKeyword ::= "bool" | "int" | "float" | "obj"', () => {
-			it('makes a SemanticNodeTypeConstant.', () => {
+			it('makes an ASTNodeTypeConstant.', () => {
 				/*
 					<TypeConstant source="bool" value="Boolean"/>
 				*/
@@ -112,7 +111,7 @@ describe('Decorator', () => {
 		})
 
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= PrimitiveLiteral', () => {
-			it('makes a SemanticNodeTypeConstant.', () => {
+			it('makes an ASTNodeTypeConstant.', () => {
 				/*
 					<TypeConstant source="null" value="SolidNull"/>
 				*/
@@ -124,7 +123,7 @@ describe('Decorator', () => {
 					`4.2`,
 				].map((src) => {
 					const constant: AST.ASTNodeType = Decorator.decorate(unitTypeFromString(src));
-					assert.ok(constant instanceof SemanticNodeTypeConstant)
+					assert.ok(constant instanceof AST.ASTNodeTypeConstant);
 					return constant.value
 				}), [
 					SolidNull,
@@ -741,7 +740,7 @@ describe('Decorator', () => {
 				const assignee: AST.SemanticNodeAssignee = decl.children[0];
 				assert.strictEqual(assignee.children[0].id, 256n);
 				const type_: AST.ASTNodeType = decl.children[1];
-				assert.ok(type_ instanceof SemanticNodeTypeConstant)
+				assert.ok(type_ instanceof AST.ASTNodeTypeConstant);
 				const assigned_expr: SemanticNodeExpression = decl.children[2]
 				assert.ok(assigned_expr instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(assigned_expr.operator, Operator.MUL)
