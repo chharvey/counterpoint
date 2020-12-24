@@ -45,7 +45,7 @@ export class ReferenceError01 extends SolidReferenceError {
 	 * Construct a new ReferenceError01 object.
 	 * @param identifier the undeclared identifier
 	 */
-	constructor (identifier: AST.SemanticNodeIdentifier) {
+	constructor (identifier: AST.ASTNodeIdentifier) {
 		super(`\`${ identifier.source }\` is never declared.`, ReferenceError01.CODE, identifier.line_index, identifier.col_index);
 	}
 }
@@ -63,7 +63,7 @@ export class ReferenceError02 extends SolidReferenceError {
 	 * Construct a new ReferenceError02 object.
 	 * @param identifier the not-yet-declared identifier
 	 */
-	constructor (identifier: AST.SemanticNodeIdentifier) {
+	constructor (identifier: AST.ASTNodeIdentifier) {
 		super(`\`${ identifier.source }\` is used before it is declared.`, ReferenceError02.CODE, identifier.line_index, identifier.col_index);
 	}
 }

@@ -7,10 +7,13 @@ import {
 	LexError02,
 } from '@chharvey/parser';
 
-import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Dev,
+	Util,
+} from '../core/';
 
-import Util from '../class/Util.class'
-import Dev from '../class/Dev.class'
 import type {
 	LexerSolid,
 } from './Lexer';

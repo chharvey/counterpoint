@@ -3,7 +3,7 @@ import * as semver from 'semver'
 /**
  * Development utilities. Not for production.
  */
-export default class Dev {
+export class Dev {
 	/** The current version of this project (as defined in `package.json`). */
 	static readonly VERSION: string = require('../../package.json').version
 

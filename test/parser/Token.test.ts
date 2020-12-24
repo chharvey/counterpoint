@@ -3,9 +3,11 @@ import type {
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
-import {CONFIG_DEFAULT} from '../../src/SolidConfig'
-import Util     from '../../src/class/Util.class'
-import Dev      from '../../src/class/Dev.class'
+import {
+	CONFIG_DEFAULT,
+	Dev,
+	Util,
+} from '../../src/core/';
 import {
 	TOKEN,
 	LexerSolid as Lexer,

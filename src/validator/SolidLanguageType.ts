@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs'
 
-import type SolidObject  from './SolidObject.class'
+import type {SolidObject} from './SolidObject';
 
 
 
@@ -14,7 +14,7 @@ import type SolidObject  from './SolidObject.class'
  * - TypeConstant
  * - TypeUnknown
  */
-export default abstract class SolidLanguageType {
+export abstract class SolidLanguageType {
 	/** The Bottom Type, containing no values. */
 	static get NEVER(): SolidTypeNever { return SolidTypeNever.INSTANCE }
 	/** The Top Type, containing all values. */
