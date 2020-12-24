@@ -95,6 +95,29 @@ export type CookValueType = string|number|bigint|boolean|null
 
 
 
+export class TokenCommentLine extends TokenComment {
+	static readonly DELIM_START: '%'  = '%'
+	static readonly DELIM_END:   '\n' = '\n'
+	constructor (lexer: Lexer) {
+		super(lexer, TokenCommentLine.DELIM_START, TokenCommentLine.DELIM_END)
+	}
+	protected stopAdvancing() {
+		return Char.eq(TokenCommentLine.DELIM_END, this.lexer.c0)
+	}
+}
+export class TokenCommentMulti extends TokenComment {
+	static readonly DELIM_START: '%%' = '%%'
+	static readonly DELIM_END:   '%%' = '%%'
+	constructor (lexer: Lexer) {
+		super(lexer, TokenCommentMulti.DELIM_START, TokenCommentMulti.DELIM_END)
+	}
+	protected stopAdvancing() {
+		return Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)
+	}
+}
+
+
+
 export abstract class TokenSolid extends Token {
 	/**
 	 * Return this Token’s cooked value.
@@ -597,25 +620,5 @@ export class TokenTemplate extends TokenSolid {
 		return String.fromCharCode(...TokenTemplate.tokenWorth(
 			this.source.slice(this.delim_start.length, -this.delim_end.length) // cut off the template delimiters
 		))
-	}
-}
-export class TokenCommentLine extends TokenComment {
-	static readonly DELIM_START: '%'  = '%'
-	static readonly DELIM_END:   '\n' = '\n'
-	constructor (lexer: Lexer) {
-		super(lexer, TokenCommentLine.DELIM_START, TokenCommentLine.DELIM_END)
-	}
-	protected stopAdvancing() {
-		return Char.eq(TokenCommentLine.DELIM_END, this.lexer.c0)
-	}
-}
-export class TokenCommentMulti extends TokenComment {
-	static readonly DELIM_START: '%%' = '%%'
-	static readonly DELIM_END:   '%%' = '%%'
-	constructor (lexer: Lexer) {
-		super(lexer, TokenCommentMulti.DELIM_START, TokenCommentMulti.DELIM_END)
-	}
-	protected stopAdvancing() {
-		return Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)
 	}
 }
