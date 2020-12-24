@@ -9,7 +9,7 @@ import type {AST} from '../validator/';
 /**
  * A ReferenceError is thrown when the validator fails to dereference an identifier.
  */
-export default class SolidReferenceError extends ErrorCode {
+class SolidReferenceError extends ErrorCode {
 	/** The name of this class of errors. */
 	static readonly NAME: string = 'ReferenceError';
 	/** The number series of this class of errors. */

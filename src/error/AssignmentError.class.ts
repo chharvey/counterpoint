@@ -9,7 +9,7 @@ import type {AST} from '../validator/';
 /**
  * An AssignmentError is thrown when the validator detects an illegal declaration or assignment.
  */
-export default class AssignmentError extends ErrorCode {
+class AssignmentError extends ErrorCode {
 	/** The name of this class of errors. */
 	static readonly NAME: string = 'AssignmentError';
 	/** The number series of this class of errors. */

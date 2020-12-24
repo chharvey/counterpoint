@@ -14,7 +14,7 @@ import type {
 /**
  * A TypeError is thrown when the validator recognizes a type mismatch.
  */
-export default class SolidTypeError extends ErrorCode {
+class SolidTypeError extends ErrorCode {
 	/** The name of this class of errors. */
 	static readonly NAME: string = 'TypeError'
 	/** The number series of this class of errors. */
@@ -58,7 +58,7 @@ export class TypeError01 extends SolidTypeError {
  * A TypeError02 is thrown when one type is expected to narrow another type, but does not.
  * A general error used for different cases, such as compound types’s components, generic constraints, or throwing non-Exceptions.
  */
-export class TypeError02 extends SolidTypeError {
+class TypeError02 extends SolidTypeError {
 	/** The number series of this class of errors. */
 	static readonly CODE = 2
 	/**

@@ -51,19 +51,13 @@ import {
 } from '../builder/'
 import {
 	ReferenceError01,
-} from '../error/SolidReferenceError.class';
-import {
 	AssignmentError01,
 	AssignmentError10,
-} from '../error/AssignmentError.class';
-import {
 	TypeError01,
 	TypeError03,
-} from '../error/SolidTypeError.class'
-import {
 	NanError01,
 	NanError02,
-} from '../error/NanError.class'
+} from '../error/';
 import {
 	Keyword,
 	CookValueType,
