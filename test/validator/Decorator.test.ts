@@ -723,11 +723,11 @@ describe('Decorator', () => {
 		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationVariable', () => {
 			it('makes an unfixed ASTNodeDeclarationVariable node.', () => {
 				/*
-					<SemanticDeclarationVariable unfixed=true>
+					<DeclarationVariable unfixed=true>
 						<Variable source="the_answer" id=256n/>
 						<TypeOperation operator=OR source="int | float">...</TypeOperation>
 						<Operation operator=MUL source="21 * 2">...</Operation>
-					</SemanticDeclarationVariable>
+					</DeclarationVariable>
 				*/
 				const src: string = `let unfixed the_answer:  int | float =  21  *  2;`
 				const decl: AST.ASTNodeDeclarationVariable = variableDeclarationFromSource(src);
@@ -745,14 +745,14 @@ describe('Decorator', () => {
 			})
 			it('makes a fixed ASTNodeDeclarationVariable node.', () => {
 				/*
-					<SemanticDeclarationVariable unfixed=false>
+					<DeclarationVariable unfixed=false>
 						<Variable source="`the £ answer`" id=256n/>
 						<TypeConstant source="int | float">...</TypeOperation>
 						<Operation operator=MUL source="the_answer * 10">
 							<Variable source="the_answer" id=257n/>
 							<Constant source="10" value=10/>
 						</Operation>
-					</SemanticDeclarationVariable>
+					</DeclarationVariable>
 				*/
 				const src: string = `let \`the £ answer\`: int = the_answer * 10;`
 				const decl: AST.ASTNodeDeclarationVariable = variableDeclarationFromSource(src);
@@ -774,10 +774,10 @@ describe('Decorator', () => {
 		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationType', () => {
 			it('makes an ASTNodeDeclarationType node.', () => {
 				/*
-					<SemanticDeclarationType>
+					<DeclarationType>
 						<Variable source="T" id=256n/>
 						<TypeOperation operator=OR source="int | float">...</TypeOperation>
-					</SemanticDeclarationType>
+					</DeclarationType>
 				*/
 				const decl: AST.ASTNodeDeclarationType = typeDeclarationFromSource(`
 					type T  =  int | float;

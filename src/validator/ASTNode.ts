@@ -872,12 +872,12 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
  * A sematic node representing a statement.
  * There are 3 known subclasses:
  * - ASTNodeStatementExpression
- * - ASTNodeDeclarationVariable
+ * - ASTNodeDeclaration
  * - ASTNodeAssignment
  */
 export type ASTNodeStatement =
 	| ASTNodeStatementExpression
-	| SemanticDeclaration
+	| ASTNodeDeclaration
 	| ASTNodeAssignment
 export class ASTNodeStatementExpression extends ASTNodeSolid {
 	constructor(
@@ -909,7 +909,7 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
  * - ASTNodeDeclarationVariable
  * - ASTNodeDeclarationType
  */
-export type SemanticDeclaration =
+export type ASTNodeDeclaration =
 	| ASTNodeDeclarationVariable
 	| ASTNodeDeclarationType
 ;
