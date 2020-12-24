@@ -593,7 +593,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		}
 	}
 }
-export class SemanticNodeOperationBinaryComparative extends ASTNodeOperationBinary {
+export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorComparative,

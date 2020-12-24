@@ -614,7 +614,7 @@ describe('ASTNodeSolid', () => {
 						assert.throws(() => typeOfOperationFromSource(`7.0 + 3;`), TypeError01);
 					});
 				})
-				describe('SemanticNodeOperationBinaryComparative', () => {
+				describe('ASTNodeOperationBinaryComparative', () => {
 					it('returns `Boolean` if both operands are of the same numeric type.', () => {
 						assert.deepStrictEqual(typeOfOperationFromSource(`7 < 3;`), SolidBoolean);
 						assert.deepStrictEqual(typeOfOperationFromSource(`7.0 >= 3.0;`), SolidBoolean);

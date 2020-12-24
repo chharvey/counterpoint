@@ -200,13 +200,13 @@ export class Decorator {
 				) : (node instanceof PARSER.ParseNodeExpressionComparative) ? (
 					// `a !< b` is syntax sugar for `!(a < b)`
 					(operator === Operator.NLT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
-						new AST.SemanticNodeOperationBinaryComparative(node.children[0], Operator.LT, operands),
+						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.LT, operands),
 					]) :
 					// `a !> b` is syntax sugar for `!(a > b)`
 					(operator === Operator.NGT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
-						new AST.SemanticNodeOperationBinaryComparative(node.children[0], Operator.GT, operands),
+						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.GT, operands),
 					]) :
-					new AST.SemanticNodeOperationBinaryComparative(node, operator as ValidOperatorComparative, operands)
+					new AST.ASTNodeOperationBinaryComparative(node, operator as ValidOperatorComparative, operands)
 
 				) : (node instanceof PARSER.ParseNodeExpressionEquality) ? (
 					// `a isnt b` is syntax sugar for `!(a is b)`
