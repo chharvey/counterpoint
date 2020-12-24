@@ -6,10 +6,10 @@ import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleI
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from './core';
+} from './core/';
 import {
 	Builder,
-} from './builder';
+} from './builder/';
 
 
 
