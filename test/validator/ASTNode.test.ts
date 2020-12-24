@@ -23,7 +23,6 @@ import {NanError01} from '../../src/error/NanError.class'
 import {
 	Decorator,
 	Validator,
-	SemanticNodeIdentifier,
 	SemanticNodeTemplate,
 	SemanticNodeOperation,
 	SemanticNodeStatementExpression,
@@ -465,7 +464,7 @@ describe('ASTNodeSolid', () => {
 				constantFromSource(`42;`).varCheck();
 			});
 		});
-		describe('SemanticNodeIdentifier', () => {
+		describe('ASTNodeIdentifier', () => {
 			it('throws if the validator does not contain a record for the identifier.', () => {
 				goalFromSource(`
 					let unfixed i: int = 42;

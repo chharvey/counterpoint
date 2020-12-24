@@ -242,7 +242,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * A sematic node representing an expression.
  * There are 4 known subclasses:
  * - ASTNodeConstant
- * - SemanticNodeIdentifier
+ * - ASTNodeIdentifier
  * - SemanticNodeTemplate
  * - SemanticNodeOperation
  */
@@ -349,7 +349,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		SolidString
 	}
 }
-export class SemanticNodeIdentifier extends ASTNodeExpression {
+export class ASTNodeIdentifier extends ASTNodeExpression {
 	declare children:
 		| readonly []
 	readonly id: bigint;
@@ -369,7 +369,7 @@ export class SemanticNodeIdentifier extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeExpression */
 	protected build_do(_builder: Builder): InstructionExpression {
-		throw new Error('SemanticNodeIdentifier#build_do not yet supported.')
+		throw new Error('ASTNodeIdentifier#build_do not yet supported.')
 	}
 	/** @implements ASTNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
@@ -863,9 +863,9 @@ export class SemanticNodeDeclarationVariable extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
-		const assignee:   SemanticNodeAssignee   = this.children[0];
-		const identifier: SemanticNodeIdentifier = assignee.children[0];
-		const assignee_type: SolidLanguageType   = this.children[1].assess();
+		const assignee:      SemanticNodeAssignee = this.children[0];
+		const identifier:    ASTNodeIdentifier    = assignee.children[0];
+		const assignee_type: SolidLanguageType    = this.children[1].assess();
 		if (validator.hasSymbol(identifier.id)) {
 			throw new AssignmentError01(identifier);
 		};
@@ -928,13 +928,13 @@ export class SemanticNodeAssignee extends ASTNodeSolid {
 	constructor(
 		start_node: Token,
 		readonly children:
-			| readonly [SemanticNodeIdentifier]
+			| readonly [ASTNodeIdentifier]
 	) {
 		super(start_node, {}, children)
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
-		const identifier: SemanticNodeIdentifier = this.children[0];
+		const identifier: ASTNodeIdentifier = this.children[0];
 		identifier.varCheck(validator);
 		if (!validator.getSymbolInfo(identifier.id)!.unfixed) {
 			throw new AssignmentError10(identifier);

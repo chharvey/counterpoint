@@ -154,7 +154,7 @@ export class Decorator {
 			return (node.children.length === 1)
 				? (node.children[0] instanceof ParseNode)
 					? this.decorate(node.children[0])
-					: new AST.SemanticNodeIdentifier(node.children[0] as TOKEN.TokenIdentifier)
+					: new AST.ASTNodeIdentifier(node.children[0] as TOKEN.TokenIdentifier)
 				: this.decorate(node.children[1])
 
 		} else if (node instanceof PARSER.ParseNodeExpressionUnarySymbol) {
@@ -251,7 +251,7 @@ export class Decorator {
 			const expression: PARSER.ParseNodeExpression =  (node.children.length === 7) ? node.children[5] : node.children[6]
 			return new AST.SemanticNodeDeclarationVariable(node, node.children.length === 8, [
 				new AST.SemanticNodeAssignee(identifier, [
-					new AST.SemanticNodeIdentifier(identifier),
+					new AST.ASTNodeIdentifier(identifier),
 				]),
 				this.decorate(type_),
 				this.decorate(expression),
@@ -262,7 +262,7 @@ export class Decorator {
 			const expression: PARSER.ParseNodeExpression = node.children[2]
 			return new AST.SemanticNodeAssignment(node, [
 				new AST.SemanticNodeAssignee(identifier, [
-					new AST.SemanticNodeIdentifier(identifier),
+					new AST.ASTNodeIdentifier(identifier),
 				]),
 				this.decorate(expression),
 			])

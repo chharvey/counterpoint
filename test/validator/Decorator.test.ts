@@ -234,7 +234,7 @@ describe('Decorator', () => {
 					</Goal>
 				*/
 				assert.deepStrictEqual(operationFromSource(`variable || var;`).children.map((op) => {
-					assert.ok(op instanceof AST.SemanticNodeIdentifier);
+					assert.ok(op instanceof AST.ASTNodeIdentifier);
 					return op.id;
 				}), [256n, 257n]);
 			});
@@ -255,7 +255,7 @@ describe('Decorator', () => {
 					assert.ok(stmt instanceof AST.SemanticNodeStatementExpression);
 					assert_arrayLength(stmt.children, 1);
 					const ident: AST.ASTNodeExpression = stmt.children[0];
-					assert.ok(ident instanceof AST.SemanticNodeIdentifier);
+					assert.ok(ident instanceof AST.ASTNodeIdentifier);
 					return ident.id;
 				}), [256n, 257n]);
 			});
@@ -740,7 +740,7 @@ describe('Decorator', () => {
 				const assigned_expr: AST.ASTNodeExpression = decl.children[2];
 				assert.ok(assigned_expr instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(assigned_expr.operator, Operator.MUL)
-				assert.ok(assigned_expr.children[0] instanceof AST.SemanticNodeIdentifier);
+				assert.ok(assigned_expr.children[0] instanceof AST.ASTNodeIdentifier);
 				assert.strictEqual(assigned_expr.children[0].id, 257n);
 				assert.deepStrictEqual(decl.children.map((child) => child.source), [
 					`\`the £ answer\``, `int`, `the_answer * 10`,
@@ -768,7 +768,7 @@ describe('Decorator', () => {
 				const assigned_expr: AST.ASTNodeExpression = assn.children[1];
 				assert.ok(assigned_expr instanceof AST.SemanticNodeOperationBinary);
 				assert.strictEqual(assigned_expr.operator, Operator.ADD);
-				assert.ok(assigned_expr.children[0] instanceof AST.SemanticNodeIdentifier);
+				assert.ok(assigned_expr.children[0] instanceof AST.ASTNodeIdentifier);
 				assert.strictEqual(assigned_expr.children[0].id, 256n);
 				assert.deepStrictEqual(assn.children.map((child) => child.source), [
 					`the_answer`, `the_answer - 40`
