@@ -1,5 +1,4 @@
 import {
-	Serializable,
 	Token,
 	ParseNode,
 	ASTNode,

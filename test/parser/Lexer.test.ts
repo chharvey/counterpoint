@@ -23,27 +23,6 @@ import {
 	LexError05,
 } from '../../src/error/';
 
-const lastItem  = (iter: any): any     => iter[lastIndex(iter)]
-const lastIndex = (iter: any): number  => iter.length-1
-
-const mock: string = `
-5  +  30 \u000d
-
-6 ^ 2 - 37 *
-
-( 4 * \u000d9 ^ 3
-
-3 - 50 + * 2
-
-5 + 03 +  *  -2
-
-600  /  3  *  2
-
-600  /  (3  *  2
-
-4 * 2 ^ 3
-`
-
 
 
 describe('LexerSolid', () => {
