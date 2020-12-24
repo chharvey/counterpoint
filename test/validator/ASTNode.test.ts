@@ -585,7 +585,7 @@ describe('ASTNodeSolid', () => {
 	})
 
 
-	context('SemanticNodeExpression', () => {
+	context('ASTNodeExpression', () => {
 		describe('#type', () => {
 			function typeOperations(tests: ReadonlyMap<string, SolidObject>): void {
 				return assert.deepStrictEqual(

@@ -246,7 +246,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - SemanticNodeTemplate
  * - SemanticNodeOperation
  */
-export abstract class SemanticNodeExpression extends ASTNodeSolid {
+export abstract class ASTNodeExpression extends ASTNodeSolid {
 	private assessed: CompletionStructureAssessment | null = null
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
@@ -296,7 +296,7 @@ export abstract class SemanticNodeExpression extends ASTNodeSolid {
 	}
 	protected abstract type_do(validator: Validator): SolidLanguageType;
 }
-export class SemanticNodeConstant extends SemanticNodeExpression {
+export class SemanticNodeConstant extends ASTNodeExpression {
 	declare children:
 		| readonly []
 	readonly value: string | SolidObject;
@@ -314,7 +314,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		super(start_node, {value})
 		this.value = value
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	get shouldFloat(): boolean {
 		return this.value instanceof Float64
 	}
@@ -322,11 +322,11 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 	varCheck(_validator: Validator = new Validator()): void {
 		return; // no validation necessary for constants
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected build_do(_builder: Builder, to_float: boolean = false): InstructionConst {
 		return this.assess_do().build(to_float)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
 		if (this.value instanceof SolidObject) {
 			return new CompletionStructureAssessment(this.value)
@@ -334,7 +334,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 			throw new Error('SemanticNodeConstant[value:string]#assess_do not yet supported.')
 		}
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
 		// No need to call `this.assess()` and then unwrap again; just use `this.value`.
 		return (validator.config.compilerOptions.constantFolding && (
@@ -349,7 +349,7 @@ export class SemanticNodeConstant extends SemanticNodeExpression {
 		SolidString
 	}
 }
-export class SemanticNodeIdentifier extends SemanticNodeExpression {
+export class SemanticNodeIdentifier extends ASTNodeExpression {
 	declare children:
 		| readonly []
 	readonly id: bigint;
@@ -357,7 +357,7 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 		super(start_node, {id: start_node.cook()})
 		this.id = start_node.cook()!;
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	get shouldFloat(): boolean {
 		return this.type().isSubtypeOf(Float64);
 	}
@@ -367,15 +367,15 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 			throw new ReferenceError01(this);
 		};
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected build_do(_builder: Builder): InstructionExpression {
 		throw new Error('SemanticNodeIdentifier#build_do not yet supported.')
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
 		return new CompletionStructureAssessment(CompletionType.THROW); // TODO #35 : constant propagation
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
 		return (validator.hasSymbol(this.id))
 			? validator.getSymbolInfo(this.id)!.type
@@ -383,20 +383,20 @@ export class SemanticNodeIdentifier extends SemanticNodeExpression {
 		;
 	}
 }
-export class SemanticNodeTemplate extends SemanticNodeExpression {
+export class SemanticNodeTemplate extends ASTNodeExpression {
 	constructor(
 		start_node: ParseNode,
 		readonly children: // FIXME spread types
 			| readonly [SemanticNodeConstant]
 			| readonly [SemanticNodeConstant,                                                                     SemanticNodeConstant]
-			| readonly [SemanticNodeConstant, SemanticNodeExpression,                                             SemanticNodeConstant]
-			// | readonly [SemanticNodeConstant,                         ...SemanticNodeTemplatePartialChildrenType, SemanticNodeConstant]
-			// | readonly [SemanticNodeConstant, SemanticNodeExpression, ...SemanticNodeTemplatePartialChildrenType, SemanticNodeConstant]
-			| readonly SemanticNodeExpression[]
+			| readonly [SemanticNodeConstant, ASTNodeExpression,                                             SemanticNodeConstant]
+			// | readonly [SemanticNodeConstant,                    ...SemanticNodeTemplatePartialChildrenType, SemanticNodeConstant]
+			// | readonly [SemanticNodeConstant, ASTNodeExpression, ...SemanticNodeTemplatePartialChildrenType, SemanticNodeConstant]
+			| readonly ASTNodeExpression[]
 	) {
 		super(start_node, {}, children)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	get shouldFloat(): boolean {
 		throw new Error('SemanticNodeTemplate#shouldFloat not yet supported.')
 	}
@@ -404,27 +404,27 @@ export class SemanticNodeTemplate extends SemanticNodeExpression {
 	varCheck(validator: Validator = new Validator()): void {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected build_do(_builder: Builder): InstructionExpression {
 		throw new Error('SemanticNodeTemplate#build_do not yet supported.')
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
 		throw new Error('SemanticNodeTemplate#assess_do not yet supported.')
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected type_do(_validator: Validator): SolidLanguageType {
 		return SolidString
 	}
 }
-export abstract class SemanticNodeOperation extends SemanticNodeExpression {
+export abstract class SemanticNodeOperation extends ASTNodeExpression {
 	/** @override */
 	readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
 	constructor(
 		start_node: ParseNode,
 		operator: Operator,
 		readonly children:
-			| readonly SemanticNodeExpression[]
+			| readonly ASTNodeExpression[]
 	) {
 		super(start_node, {operator}, children)
 	}
@@ -441,15 +441,15 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 		start_node: ParseNode,
 		readonly operator: ValidOperatorUnary,
 		readonly children:
-			| readonly [SemanticNodeExpression]
+			| readonly [ASTNodeExpression]
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	get shouldFloat(): boolean {
 		return this.children[0].shouldFloat
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionUnop(
@@ -457,7 +457,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 			this.children[0].build(builder, tofloat),
 		)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
 		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		if (assess0.isAbrupt) {
@@ -471,7 +471,7 @@ export class SemanticNodeOperationUnary extends SemanticNodeOperation {
 			(() => { throw new ReferenceError(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
 		if ([Operator.NOT, Operator.EMP].includes(this.operator)) {
 			return SolidBoolean
@@ -499,16 +499,16 @@ export abstract class SemanticNodeOperationBinary extends SemanticNodeOperation 
 		start_node: ParseNode,
 		readonly operator: ValidOperatorBinary,
 		readonly children:
-			| readonly [SemanticNodeExpression, SemanticNodeExpression]
+			| readonly [ASTNodeExpression, ASTNodeExpression]
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	get shouldFloat(): boolean {
 		return this.children[0].shouldFloat || this.children[1].shouldFloat
 	}
 	/**
-	 * @implements SemanticNodeExpression
+	 * @implements ASTNodeExpression
 	 * @final
 	 */
 	protected type_do(validator: Validator): SolidLanguageType {
@@ -524,11 +524,11 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorArithmetic,
-		children: readonly [SemanticNodeExpression, SemanticNodeExpression]
+		children: readonly [ASTNodeExpression, ASTNodeExpression]
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopArithmetic {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionBinopArithmetic(
@@ -537,7 +537,7 @@ export class SemanticNodeOperationBinaryArithmetic extends SemanticNodeOperation
 			this.children[1].build(builder, tofloat),
 		)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
 		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		if (assess0.isAbrupt) {
@@ -597,11 +597,11 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorComparative,
-		children: readonly [SemanticNodeExpression, SemanticNodeExpression]
+		children: readonly [ASTNodeExpression, ASTNodeExpression]
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopComparative {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionBinopComparative(
@@ -610,7 +610,7 @@ export class SemanticNodeOperationBinaryComparative extends SemanticNodeOperatio
 			this.children[1].build(builder, tofloat),
 		)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
 		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		if (assess0.isAbrupt) {
@@ -658,7 +658,7 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorEquality,
-		children: readonly [SemanticNodeExpression, SemanticNodeExpression]
+		children: readonly [ASTNodeExpression, ASTNodeExpression]
 	) {
 		super(start_node, operator, children)
 	}
@@ -666,7 +666,7 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 	get shouldFloat(): boolean {
 		return this.operator === Operator.EQ && super.shouldFloat
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected build_do(builder: Builder, _to_float: boolean = false): InstructionBinopEquality {
 		const tofloat: boolean = builder.config.compilerOptions.intCoercion && this.shouldFloat
 		return new InstructionBinopEquality(
@@ -675,7 +675,7 @@ export class SemanticNodeOperationBinaryEquality extends SemanticNodeOperationBi
 			this.children[1].build(builder, tofloat),
 		)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
 		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		if (assess0.isAbrupt) {
@@ -716,11 +716,11 @@ export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBin
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorLogical,
-		children: readonly [SemanticNodeExpression, SemanticNodeExpression]
+		children: readonly [ASTNodeExpression, ASTNodeExpression]
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopLogical {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionBinopLogical(
@@ -730,7 +730,7 @@ export class SemanticNodeOperationBinaryLogical extends SemanticNodeOperationBin
 			this.children[1].build(builder, tofloat),
 		)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
 		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		if (assess0.isAbrupt) {
@@ -776,15 +776,15 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 		start_node: ParseNode,
 		readonly operator: Operator.COND,
 		readonly children:
-			| readonly [SemanticNodeExpression, SemanticNodeExpression, SemanticNodeExpression]
+			| readonly [ASTNodeExpression, ASTNodeExpression, ASTNodeExpression]
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	get shouldFloat(): boolean {
 		return this.children[1].shouldFloat || this.children[2].shouldFloat
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionCond {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionCond(
@@ -793,7 +793,7 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 			this.children[2].build(builder, tofloat),
 		)
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
 		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		if (assess0.isAbrupt) {
@@ -803,7 +803,7 @@ export class SemanticNodeOperationTernary extends SemanticNodeOperation {
 			? this.children[1].assess()
 			: this.children[2].assess()
 	}
-	/** @implements SemanticNodeExpression */
+	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
 		// If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
 		// If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
@@ -833,7 +833,7 @@ export class SemanticNodeStatementExpression extends ASTNodeSolid {
 		start_node: ParseNode,
 		readonly children:
 			| readonly []
-			| readonly [SemanticNodeExpression]
+			| readonly [ASTNodeExpression]
 	) {
 		super(start_node, {}, children)
 	}
@@ -857,7 +857,7 @@ export class SemanticNodeDeclarationVariable extends ASTNodeSolid {
 		start_node: ParseNode,
 		readonly unfixed: boolean,
 		readonly children:
-			| readonly [SemanticNodeAssignee, ASTNodeType, SemanticNodeExpression]
+			| readonly [SemanticNodeAssignee, ASTNodeType, ASTNodeExpression]
 	) {
 		super(start_node, {unfixed}, children)
 	}
@@ -899,7 +899,7 @@ export class SemanticNodeAssignment extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly children:
-			| readonly [SemanticNodeAssignee, SemanticNodeExpression]
+			| readonly [SemanticNodeAssignee, ASTNodeExpression]
 	) {
 		super(start_node, {}, children)
 	}

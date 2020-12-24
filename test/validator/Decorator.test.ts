@@ -10,7 +10,6 @@ import {
 } from '../../src/parser/';
 import {
 	Decorator,
-	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeTemplate,
 	SemanticNodeOperation,
@@ -256,7 +255,7 @@ describe('Decorator', () => {
 				assert.deepStrictEqual(goal.children.map((stmt) => {
 					assert.ok(stmt instanceof AST.SemanticNodeStatementExpression);
 					assert_arrayLength(stmt.children, 1);
-					const ident: AST.SemanticNodeExpression = stmt.children[0];
+					const ident: AST.ASTNodeExpression = stmt.children[0];
 					assert.ok(ident instanceof AST.SemanticNodeIdentifier);
 					return ident.id;
 				}), [256n, 257n]);
@@ -403,7 +402,7 @@ describe('Decorator', () => {
 				*/
 				const operation: SemanticNodeOperation = operationFromSource(`(2 + -3);`);
 				assert.ok(operation instanceof SemanticNodeOperationBinary)
-				const [left, right]: readonly SemanticNodeExpression[] = operation.children
+				const [left, right]: readonly AST.ASTNodeExpression[] = operation.children;
 				assert.ok(left instanceof SemanticNodeConstant)
 				assert.ok(right instanceof SemanticNodeConstant)
 				assert.deepStrictEqual(
@@ -426,7 +425,7 @@ describe('Decorator', () => {
 				const operation: SemanticNodeOperation = operationFromSource(`(-(42) ^ +(2 * 420));`);
 				assert.ok(operation instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(operation.operator, Operator.EXP)
-				const [left, right]: readonly SemanticNodeExpression[] = operation.children
+				const [left, right]: readonly AST.ASTNodeExpression[] = operation.children;
 				assert.ok(left instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(left.operator, Operator.NEG)
 				assert_arrayLength(left.children, 1)
@@ -457,7 +456,7 @@ describe('Decorator', () => {
 				].map((src) => {
 					const operation: SemanticNodeOperation = operationFromSource(src);
 					assert.ok(operation instanceof SemanticNodeOperationUnary)
-					const operand: SemanticNodeExpression = operation.children[0]
+					const operand: AST.ASTNodeExpression = operation.children[0];
 					assert.ok(operand instanceof SemanticNodeConstant)
 					return [operand.source, operation.operator]
 				}), [
@@ -509,8 +508,8 @@ describe('Decorator', () => {
 				const operation: SemanticNodeOperation = operationFromSource(`2 - 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(operation.operator, Operator.ADD)
-				const left:  SemanticNodeExpression = operation.children[0]
-				const right: SemanticNodeExpression = operation.children[1]
+				const left:  AST.ASTNodeExpression = operation.children[0];
+				const right: AST.ASTNodeExpression = operation.children[1];
 				assert.ok(left  instanceof SemanticNodeConstant)
 				assert.ok(right instanceof SemanticNodeOperationUnary)
 				assert.ok(right.children[0] instanceof SemanticNodeConstant)
@@ -534,10 +533,10 @@ describe('Decorator', () => {
 				const operation: SemanticNodeOperation = operationFromSource(`2 !< 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
-				const child: SemanticNodeExpression = operation.children[0]
+				const child: AST.ASTNodeExpression = operation.children[0];
 				assert.ok(child instanceof SemanticNodeOperationBinary)
-				const left:  SemanticNodeExpression = child.children[0]
-				const right: SemanticNodeExpression = child.children[1]
+				const left:  AST.ASTNodeExpression = child.children[0];
+				const right: AST.ASTNodeExpression = child.children[1];
 				assert.ok(left  instanceof SemanticNodeConstant)
 				assert.ok(right instanceof SemanticNodeConstant)
 				assert.deepStrictEqual(
@@ -557,10 +556,10 @@ describe('Decorator', () => {
 				const operation: SemanticNodeOperation = operationFromSource(`2 !> 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
-				const child: SemanticNodeExpression = operation.children[0]
+				const child: AST.ASTNodeExpression = operation.children[0];
 				assert.ok(child instanceof SemanticNodeOperationBinary)
-				const left:  SemanticNodeExpression = child.children[0]
-				const right: SemanticNodeExpression = child.children[1]
+				const left:  AST.ASTNodeExpression = child.children[0];
+				const right: AST.ASTNodeExpression = child.children[1];
 				assert.ok(left  instanceof SemanticNodeConstant)
 				assert.ok(right instanceof SemanticNodeConstant)
 				assert.deepStrictEqual(
@@ -583,10 +582,10 @@ describe('Decorator', () => {
 				const operation: SemanticNodeOperation = operationFromSource(`2 isnt 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
-				const child: SemanticNodeExpression = operation.children[0]
+				const child: AST.ASTNodeExpression = operation.children[0];
 				assert.ok(child instanceof SemanticNodeOperationBinary)
-				const left:  SemanticNodeExpression = child.children[0]
-				const right: SemanticNodeExpression = child.children[1]
+				const left:  AST.ASTNodeExpression = child.children[0];
+				const right: AST.ASTNodeExpression = child.children[1];
 				assert.ok(left  instanceof SemanticNodeConstant)
 				assert.ok(right instanceof SemanticNodeConstant)
 				assert.deepStrictEqual(
@@ -606,10 +605,10 @@ describe('Decorator', () => {
 				const operation: SemanticNodeOperation = operationFromSource(`2 != 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
-				const child: SemanticNodeExpression = operation.children[0]
+				const child: AST.ASTNodeExpression = operation.children[0];
 				assert.ok(child instanceof SemanticNodeOperationBinary)
-				const left:  SemanticNodeExpression = child.children[0]
-				const right: SemanticNodeExpression = child.children[1]
+				const left:  AST.ASTNodeExpression = child.children[0];
+				const right: AST.ASTNodeExpression = child.children[1];
 				assert.ok(left  instanceof SemanticNodeConstant)
 				assert.ok(right instanceof SemanticNodeConstant)
 				assert.deepStrictEqual(
@@ -632,10 +631,10 @@ describe('Decorator', () => {
 				const operation: SemanticNodeOperation = operationFromSource(`2 !& 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
-				const child: SemanticNodeExpression = operation.children[0]
+				const child: AST.ASTNodeExpression = operation.children[0];
 				assert.ok(child instanceof SemanticNodeOperationBinary)
-				const left:  SemanticNodeExpression = child.children[0]
-				const right: SemanticNodeExpression = child.children[1]
+				const left:  AST.ASTNodeExpression = child.children[0];
+				const right: AST.ASTNodeExpression = child.children[1];
 				assert.ok(left  instanceof SemanticNodeConstant)
 				assert.ok(right instanceof SemanticNodeConstant)
 				assert.deepStrictEqual(
@@ -658,10 +657,10 @@ describe('Decorator', () => {
 				const operation: SemanticNodeOperation = operationFromSource(`2 !| 3;`);
 				assert.ok(operation instanceof SemanticNodeOperationUnary)
 				assert.strictEqual(operation.operator, Operator.NOT)
-				const child: SemanticNodeExpression = operation.children[0]
+				const child: AST.ASTNodeExpression = operation.children[0];
 				assert.ok(child instanceof SemanticNodeOperationBinary)
-				const left:  SemanticNodeExpression = child.children[0]
-				const right: SemanticNodeExpression = child.children[1]
+				const left:  AST.ASTNodeExpression = child.children[0];
+				const right: AST.ASTNodeExpression = child.children[1];
 				assert.ok(left  instanceof SemanticNodeConstant)
 				assert.ok(right instanceof SemanticNodeConstant)
 				assert.deepStrictEqual(
@@ -712,7 +711,7 @@ describe('Decorator', () => {
 				const type_: AST.ASTNodeType = decl.children[1];
 				assert.ok(type_ instanceof AST.ASTNodeTypeOperationBinary);
 				assert.strictEqual(type_.operator, Operator.OR)
-				const assigned_expr: SemanticNodeExpression = decl.children[2]
+				const assigned_expr: AST.ASTNodeExpression = decl.children[2];
 				assert.ok(assigned_expr instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(assigned_expr.operator, Operator.MUL)
 				assert.deepStrictEqual(decl.children.map((child) => child.source), [
@@ -739,7 +738,7 @@ describe('Decorator', () => {
 				assert.strictEqual(assignee.children[0].id, 256n);
 				const type_: AST.ASTNodeType = decl.children[1];
 				assert.ok(type_ instanceof AST.ASTNodeTypeConstant);
-				const assigned_expr: SemanticNodeExpression = decl.children[2]
+				const assigned_expr: AST.ASTNodeExpression = decl.children[2];
 				assert.ok(assigned_expr instanceof SemanticNodeOperationBinary)
 				assert.strictEqual(assigned_expr.operator, Operator.MUL)
 				assert.ok(assigned_expr.children[0] instanceof AST.SemanticNodeIdentifier);
@@ -767,7 +766,7 @@ describe('Decorator', () => {
 				const assn: AST.SemanticNodeAssignment = assignmentFromSource(src);
 				const assignee: AST.SemanticNodeAssignee = assn.children[0];
 				assert.strictEqual(assignee.children[0].id, 256n);
-				const assigned_expr: AST.SemanticNodeExpression = assn.children[1];
+				const assigned_expr: AST.ASTNodeExpression = assn.children[1];
 				assert.ok(assigned_expr instanceof AST.SemanticNodeOperationBinary);
 				assert.strictEqual(assigned_expr.operator, Operator.ADD);
 				assert.ok(assigned_expr.children[0] instanceof AST.SemanticNodeIdentifier);

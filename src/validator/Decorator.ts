@@ -22,10 +22,10 @@ import * as AST from './ASTNode';
 
 type TemplatePartialType = // FIXME spread types
 	| [                        AST.SemanticNodeConstant                            ]
-	| [                        AST.SemanticNodeConstant, AST.SemanticNodeExpression]
-	// | [...TemplatePartialType, AST.SemanticNodeConstant                            ]
-	// | [...TemplatePartialType, AST.SemanticNodeConstant, AST.SemanticNodeExpression]
-	| AST.SemanticNodeExpression[]
+	| [                        AST.SemanticNodeConstant, AST.ASTNodeExpression]
+	// | [...TemplatePartialType, AST.SemanticNodeConstant                       ]
+	// | [...TemplatePartialType, AST.SemanticNodeConstant, AST.ASTNodeExpression]
+	| AST.ASTNodeExpression[]
 ;
 
 
@@ -93,7 +93,7 @@ export class Decorator {
 		| PARSER.ParseNodeExpressionConjunctive
 		| PARSER.ParseNodeExpressionDisjunctive
 		| PARSER.ParseNodeExpression
-	): AST.SemanticNodeExpression;
+	): AST.ASTNodeExpression;
 	static decorate(node: PARSER.ParseNodeExpressionConditional): AST.SemanticNodeOperationTernary;
 	static decorate(node: PARSER.ParseNodeDeclarationVariable):   AST.SemanticNodeDeclarationVariable;
 	static decorate(node: PARSER.ParseNodeStatementAssignment):   AST.SemanticNodeAssignment;
@@ -179,7 +179,7 @@ export class Decorator {
 				return this.decorate(node.children[0])
 			} else {
 				const operator: Operator = this.OPERATORS_BINARY.get(node.children[1].source as Punctuator | Keyword)!;
-				const operands: [AST.SemanticNodeExpression, AST.SemanticNodeExpression] = [
+				const operands: [AST.ASTNodeExpression, AST.ASTNodeExpression] = [
 					this.decorate(node.children[0]),
 					this.decorate(node.children[2]),
 				];
