@@ -219,7 +219,7 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 			: (() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
 	}
 }
-export class SemanticNodeTypeOperationBinary extends ASTNodeTypeOperation {
+export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 	constructor (
 		start_node: ParseNode,
 		operator: ValidTypeOperator,

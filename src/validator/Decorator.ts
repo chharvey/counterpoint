@@ -128,7 +128,7 @@ export class Decorator {
 		) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: new AST.SemanticNodeTypeOperationBinary(node, this.TYPEOPERATORS_BINARY.get(node.children[1].source as Punctuator)!, [
+				: new AST.ASTNodeTypeOperationBinary(node, this.TYPEOPERATORS_BINARY.get(node.children[1].source as Punctuator)!, [
 					this.decorate(node.children[0]),
 					this.decorate(node.children[2]),
 				])

@@ -10,7 +10,6 @@ import {
 } from '../../src/parser/';
 import {
 	Decorator,
-	SemanticNodeTypeOperationBinary,
 	SemanticNodeExpression,
 	SemanticNodeConstant,
 	SemanticNodeTemplate,
@@ -160,7 +159,7 @@ describe('Decorator', () => {
 					</TypeOperation>
 				*/
 				const operation: AST.ASTNodeType = Decorator.decorate(intersectionTypeFromString(`int & 3`));
-				assert.ok(operation instanceof SemanticNodeTypeOperationBinary)
+				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
 				const left:  AST.ASTNodeType = operation.children[0];
 				const right: AST.ASTNodeType = operation.children[1];
 				assert.deepStrictEqual(
@@ -179,7 +178,7 @@ describe('Decorator', () => {
 					</TypeOperation>
 				*/
 				const operation: AST.ASTNodeType = Decorator.decorate(unionTypeFromString(`4.2! | int & int`));
-				assert.ok(operation instanceof SemanticNodeTypeOperationBinary)
+				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
 				const left: AST.ASTNodeType = operation.children[0];
 				const right: AST.ASTNodeType = operation.children[1];
 				assert.deepStrictEqual(
@@ -198,7 +197,7 @@ describe('Decorator', () => {
 					</TypeOperation>
 				*/
 				const operation: AST.ASTNodeType = Decorator.decorate(unionTypeFromString(`4.2! & (int | int)`));
-				assert.ok(operation instanceof SemanticNodeTypeOperationBinary)
+				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
 				const left:  AST.ASTNodeType = operation.children[0];
 				const right: AST.ASTNodeType = operation.children[1];
 				assert.deepStrictEqual(
@@ -711,7 +710,7 @@ describe('Decorator', () => {
 				const assignee: AST.SemanticNodeAssignee = decl.children[0];
 				assert.strictEqual(assignee.children[0].id, 256n);
 				const type_: AST.ASTNodeType = decl.children[1];
-				assert.ok(type_ instanceof SemanticNodeTypeOperationBinary)
+				assert.ok(type_ instanceof AST.ASTNodeTypeOperationBinary);
 				assert.strictEqual(type_.operator, Operator.OR)
 				const assigned_expr: SemanticNodeExpression = decl.children[2]
 				assert.ok(assigned_expr instanceof SemanticNodeOperationBinary)
