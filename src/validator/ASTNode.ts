@@ -712,7 +712,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		]).get(this.operator)!(x, y))
 	}
 }
-export class SemanticNodeOperationBinaryLogical extends ASTNodeOperationBinary {
+export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorLogical,

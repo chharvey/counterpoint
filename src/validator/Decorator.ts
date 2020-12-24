@@ -225,13 +225,13 @@ export class Decorator {
 				) ? */ (
 					// `a !& b` is syntax sugar for `!(a && b)`
 					(operator === Operator.NAND) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
-						new AST.SemanticNodeOperationBinaryLogical(node.children[0], Operator.AND, operands),
+						new AST.ASTNodeOperationBinaryLogical(node.children[0], Operator.AND, operands),
 					]) :
 					// `a !| b` is syntax sugar for `!(a || b)`
 					(operator === Operator.NOR) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
-						new AST.SemanticNodeOperationBinaryLogical(node.children[0], Operator.OR, operands),
+						new AST.ASTNodeOperationBinaryLogical(node.children[0], Operator.OR, operands),
 					]) :
-					new AST.SemanticNodeOperationBinaryLogical(node, operator as ValidOperatorLogical, operands)
+					new AST.ASTNodeOperationBinaryLogical(node, operator as ValidOperatorLogical, operands)
 				)
 			}
 
