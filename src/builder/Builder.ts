@@ -13,7 +13,7 @@ import {
 import {
 	Decorator,
 	Validator,
-	SemanticNodeGoal,
+	AST,
 } from '../validator/'
 
 
@@ -32,7 +32,7 @@ export class Builder {
 
 
 	/** A semantic goal produced by a Validator. */
-	private readonly semanticgoal: SemanticNodeGoal;
+	private readonly semanticgoal: AST.ASTNodeGoal;
 	/** A counter for internal variables. Used for optimizing short-circuited expressions. */
 	private var_count: bigint = 0n
 	/** A counter for statements. */

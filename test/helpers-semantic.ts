@@ -13,60 +13,53 @@ import {
 import {
 	Decorator,
 	AST,
-	SemanticNodeExpression,
-	SemanticNodeConstant,
-	SemanticNodeIdentifier,
-	SemanticNodeOperation,
 	SemanticStatementType,
-	SemanticNodeStatementExpression,
-	SemanticNodeDeclarationVariable,
-	SemanticNodeGoal,
 } from '../src/validator/'
 
 
 
-export function constantFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeConstant {
-	const statement: SemanticNodeStatementExpression = statementExpressionFromSource(src, config);
+export function constantFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeConstant {
+	const statement: AST.ASTNodeStatementExpression = statementExpressionFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child')
-	const expression: SemanticNodeExpression = statement.children[0]
-	assert.ok(expression instanceof SemanticNodeConstant)
+	const expression: AST.ASTNodeExpression = statement.children[0];
+	assert.ok(expression instanceof AST.ASTNodeConstant);
 	return expression
 }
-export function identifierFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeIdentifier {
-	const statement: SemanticNodeStatementExpression = statementExpressionFromSource(src, config);
+export function identifierFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeIdentifier {
+	const statement: AST.ASTNodeStatementExpression = statementExpressionFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child');
-	const expression: SemanticNodeExpression = statement.children[0];
-	assert.ok(expression instanceof SemanticNodeIdentifier);
+	const expression: AST.ASTNodeExpression = statement.children[0];
+	assert.ok(expression instanceof AST.ASTNodeIdentifier);
 	return expression;
 }
-export function operationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeOperation {
-	const statement: SemanticNodeStatementExpression = statementExpressionFromSource(src, config);
+export function operationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeOperation {
+	const statement: AST.ASTNodeStatementExpression = statementExpressionFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child')
-	const expression: SemanticNodeExpression = statement.children[0]
-	assert.ok(expression instanceof SemanticNodeOperation)
+	const expression: AST.ASTNodeExpression = statement.children[0];
+	assert.ok(expression instanceof AST.ASTNodeOperation);
 	return expression
 }
-export function statementExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeStatementExpression {
-	const goal: SemanticNodeGoal = goalFromSource(src, config);
+export function statementExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeStatementExpression {
+	const goal: AST.ASTNodeGoal = goalFromSource(src, config);
 	assert_arrayLength(goal.children, 1, 'semantic goal should have 1 child')
 	const statement: SemanticStatementType = goal.children[0] as SemanticStatementType
-	assert.ok(statement instanceof SemanticNodeStatementExpression)
+	assert.ok(statement instanceof AST.ASTNodeStatementExpression);
 	return statement
 }
-export function variableDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeDeclarationVariable {
-	const goal: SemanticNodeGoal = goalFromSource(src, config);
+export function variableDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeDeclarationVariable {
+	const goal: AST.ASTNodeGoal = goalFromSource(src, config);
 	assert_arrayLength(goal.children, 1, 'semantic goal should have 1 child');
 	const statement: SemanticStatementType = goal.children[0] as SemanticStatementType;
-	assert.ok(statement instanceof SemanticNodeDeclarationVariable);
+	assert.ok(statement instanceof AST.ASTNodeDeclarationVariable);
 	return statement;
 }
-export function assignmentFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.SemanticNodeAssignment {
-	const goal: AST.SemanticNodeGoal = goalFromSource(src, config);
+export function assignmentFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeAssignment {
+	const goal: AST.ASTNodeGoal = goalFromSource(src, config);
 	assert_arrayLength(goal.children, 1, 'semantic goal should have 1 child');
 	const statement: AST.SemanticStatementType = goal.children[0] as AST.SemanticStatementType;
-	assert.ok(statement instanceof AST.SemanticNodeAssignment);
+	assert.ok(statement instanceof AST.ASTNodeAssignment);
 	return statement;
 }
-export function goalFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): SemanticNodeGoal {
+export function goalFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeGoal {
 	return Decorator.decorate(new Parser(src, config).parse());
 }

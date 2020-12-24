@@ -3,9 +3,7 @@ import {
 } from '@chharvey/parser';
 
 import type {
-	SemanticNodeOperation,
-	SemanticNodeDeclarationVariable,
-	SemanticNodeAssignment,
+	AST,
 	SolidLanguageType,
 } from '../validator/'
 
@@ -50,7 +48,7 @@ export class TypeError01 extends SolidTypeError {
 	 * Construct a new TypeError01 object.
 	 * @param expression - the invalid operation expression
 	 */
-	constructor (expression: SemanticNodeOperation) {
+	constructor (expression: AST.ASTNodeOperation) {
 		super(`Invalid operation: \`${ expression.source }\` at line ${ expression.line_index + 1 } col ${ expression.col_index + 1 }.`, TypeError01.CODE, expression.line_index, expression.col_index)
 	}
 }
@@ -84,7 +82,7 @@ export class TypeError03 extends SolidTypeError {
 	 * @param assignee_type - the type to which the expression is assigned
 	 * @param assigned_type - the type of the expression
 	 */
-	constructor (assignment: SemanticNodeDeclarationVariable | SemanticNodeAssignment, assignee_type: SolidLanguageType, assigned_type: SolidLanguageType) {
+	constructor (assignment: AST.ASTNodeDeclarationVariable | AST.ASTNodeAssignment, assignee_type: SolidLanguageType, assigned_type: SolidLanguageType) {
 		super(`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }.`, TypeError03.CODE, assignment.line_index, assignment.col_index)
 	}
 }

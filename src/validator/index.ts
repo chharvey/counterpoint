@@ -2,32 +2,9 @@ export {Validator} from './Validator';
 export {Decorator} from './Decorator';
 
 export {
-	SemanticNodeSolid,
-	SemanticNodeType,
-	SemanticNodeTypeConstant,
-	SemanticNodeTypeOperation,
-	SemanticNodeTypeOperationUnary,
-	SemanticNodeTypeOperationBinary,
-	SemanticNodeExpression,
-	SemanticNodeConstant,
-	SemanticNodeIdentifier,
-	SemanticNodeTemplate,
-	SemanticNodeOperation,
-	SemanticNodeOperationUnary,
-	SemanticNodeOperationBinary,
-	SemanticNodeOperationBinaryArithmetic,
-	SemanticNodeOperationBinaryComparative,
-	SemanticNodeOperationBinaryEquality,
-	SemanticNodeOperationBinaryLogical,
-	SemanticNodeOperationTernary,
-	SemanticNodeDeclarationVariable,
-	SemanticNodeAssignment,
-	SemanticNodeAssignee,
 	SemanticStatementType,
-	SemanticNodeStatementExpression,
-	SemanticNodeGoal,
-} from './SemanticNode.class'
-export * as AST from './SemanticNode.class';
+} from './ASTNode';
+export * as AST from './ASTNode';
 
 export {
 	CompletionStructureAssessment,
