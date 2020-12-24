@@ -4,7 +4,10 @@
 		| It is auto-generated via <@chharvey/parser>.
 		| If you need to make updates, make them there.
 		/----------------------------------------------------------------*/
-		import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
+		import {
+			SolidConfig,
+			CONFIG_DEFAULT,
+		} from '../core/';
 		
 		import {
 			NonemptyArray,

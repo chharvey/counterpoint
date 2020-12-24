@@ -3,14 +3,17 @@ import * as path from 'path'
 
 import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
-import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+} from '../core/';
 import {
 	ParserSolid as Parser,
 } from '../parser/';
 import {
 	Decorator,
 	Validator,
-	SemanticNodeGoal,
+	AST,
 } from '../validator/'
 
 
@@ -18,7 +21,7 @@ import {
 /**
  * The Builder generates assembly code.
  */
-export default class Builder {
+export class Builder {
 	static readonly IMPORTS: readonly string[] = [
 		fs.readFileSync(path.join(__dirname, '../../src/builder/not.wat'), 'utf8'),
 		fs.readFileSync(path.join(__dirname, '../../src/builder/emp.wat'), 'utf8'),
@@ -29,7 +32,7 @@ export default class Builder {
 
 
 	/** A semantic goal produced by a Validator. */
-	private readonly semanticgoal: SemanticNodeGoal;
+	private readonly semanticgoal: AST.ASTNodeGoal;
 	/** A counter for internal variables. Used for optimizing short-circuited expressions. */
 	private var_count: bigint = 0n
 	/** A counter for statements. */

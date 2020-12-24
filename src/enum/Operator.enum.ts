@@ -1,5 +1,5 @@
-// HACK: this is defined here, instead of in `../class/SemanticNode.class`, to avoid circular imports.
-enum Operator {
+// HACK: this is defined here, instead of in `../validator/ASTNode.ts`, to avoid circular imports.
+export enum Operator {
 	ORNULL,
 	NOT,
 	EMP,
@@ -26,8 +26,6 @@ enum Operator {
 	NOR,
 	COND,
 }
-export default Operator
-
 
 export type ValidTypeOperator =
 	| Operator.ORNULL

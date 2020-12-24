@@ -2,7 +2,8 @@ import {
 	ParseNode,
 } from '@chharvey/parser';
 
-import Operator, {
+import {
+	Operator,
 	ValidTypeOperator,
 	ValidOperatorUnary,
 	ValidOperatorArithmetic,
@@ -16,16 +17,16 @@ import {
 	TOKEN,
 	PARSER,
 } from '../parser/'
-import * as AST from './SemanticNode.class';
+import * as AST from './ASTNode';
 
 
 
 type TemplatePartialType = // FIXME spread types
-	| [                        AST.SemanticNodeConstant                            ]
-	| [                        AST.SemanticNodeConstant, AST.SemanticNodeExpression]
-	// | [...TemplatePartialType, AST.SemanticNodeConstant                            ]
-	// | [...TemplatePartialType, AST.SemanticNodeConstant, AST.SemanticNodeExpression]
-	| AST.SemanticNodeExpression[]
+	| [                        AST.ASTNodeConstant                       ]
+	| [                        AST.ASTNodeConstant, AST.ASTNodeExpression]
+	// | [...TemplatePartialType, AST.ASTNodeConstant                       ]
+	// | [...TemplatePartialType, AST.ASTNodeConstant, AST.ASTNodeExpression]
+	| AST.ASTNodeExpression[]
 ;
 
 
@@ -71,17 +72,17 @@ export class Decorator {
 	 * @param node the parse node to decorate
 	 * @returns an ASTNode
 	 */
-	static decorate(node: PARSER.ParseNodePrimitiveLiteral): AST.SemanticNodeConstant;
-	static decorate(node: PARSER.ParseNodeTypeKeyword):      AST.SemanticNodeTypeConstant;
+	static decorate(node: PARSER.ParseNodePrimitiveLiteral): AST.ASTNodeConstant;
+	static decorate(node: PARSER.ParseNodeTypeKeyword):      AST.ASTNodeTypeConstant;
 	static decorate(node:
 		| PARSER.ParseNodeTypeUnit
 		| PARSER.ParseNodeTypeUnarySymbol
 		| PARSER.ParseNodeTypeIntersection
 		| PARSER.ParseNodeTypeUnion
 		| PARSER.ParseNodeType
-	): AST.SemanticNodeType;
+	): AST.ASTNodeType;
 	static decorate(node: PARSER.ParseNodeStringTemplate__1__List):  TemplatePartialType;
-	static decorate(node: PARSER.ParseNodeStringTemplate):           AST.SemanticNodeTemplate;
+	static decorate(node: PARSER.ParseNodeStringTemplate):           AST.ASTNodeTemplate;
 	static decorate(node:
 		| PARSER.ParseNodeExpressionUnit
 		| PARSER.ParseNodeExpressionUnarySymbol
@@ -93,36 +94,36 @@ export class Decorator {
 		| PARSER.ParseNodeExpressionConjunctive
 		| PARSER.ParseNodeExpressionDisjunctive
 		| PARSER.ParseNodeExpression
-	): AST.SemanticNodeExpression;
-	static decorate(node: PARSER.ParseNodeExpressionConditional): AST.SemanticNodeOperationTernary;
-	static decorate(node: PARSER.ParseNodeDeclarationVariable):   AST.SemanticNodeDeclarationVariable;
-	static decorate(node: PARSER.ParseNodeDeclarationType):       AST.SemanticNodeDeclarationType;
-	static decorate(node: PARSER.ParseNodeDeclaration):           AST.SemanticDeclaration;
-	static decorate(node: PARSER.ParseNodeStatementAssignment):   AST.SemanticNodeAssignment;
-	static decorate(node: PARSER.ParseNodeStatement):             AST.SemanticStatementType;
-	static decorate(node: PARSER.ParseNodeGoal__0__List):         AST.SemanticStatementType[];
-	static decorate(node: PARSER.ParseNodeGoal):                  AST.SemanticNodeGoal;
-	static decorate(node: ParseNode): AST.SemanticNodeSolid | AST.SemanticNodeSolid[];
-	static decorate(node: ParseNode): AST.SemanticNodeSolid | AST.SemanticNodeSolid[] {
+	): AST.ASTNodeExpression;
+	static decorate(node: PARSER.ParseNodeExpressionConditional): AST.ASTNodeOperationTernary;
+	static decorate(node: PARSER.ParseNodeDeclarationVariable):   AST.ASTNodeDeclarationVariable;
+	static decorate(node: PARSER.ParseNodeDeclarationType):       AST.ASTNodeDeclarationType;
+	static decorate(node: PARSER.ParseNodeDeclaration):           AST.ASTNodeDeclaration;
+	static decorate(node: PARSER.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
+	static decorate(node: PARSER.ParseNodeStatement):             AST.ASTNodeStatement;
+	static decorate(node: PARSER.ParseNodeGoal__0__List):         AST.ASTNodeStatement[];
+	static decorate(node: PARSER.ParseNodeGoal):                  AST.ASTNodeGoal;
+	static decorate(node: ParseNode): AST.ASTNodeSolid | AST.ASTNodeSolid[];
+	static decorate(node: ParseNode): AST.ASTNodeSolid | AST.ASTNodeSolid[] {
 		if (node instanceof PARSER.ParseNodePrimitiveLiteral) {
-			return new AST.SemanticNodeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
+			return new AST.ASTNodeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
 
 		} else if (node instanceof PARSER.ParseNodeTypeKeyword) {
-			return new AST.SemanticNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
+			return new AST.ASTNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnit) {
 			return (node.children.length === 1)
 				? (node.children[0] instanceof ParseNode)
 					? (node.children[0] instanceof PARSER.ParseNodePrimitiveLiteral)
-						? new AST.SemanticNodeTypeConstant(node.children[0].children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString)
+						? new AST.ASTNodeTypeConstant(node.children[0].children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString)
 						: this.decorate(node.children[0])
-					: new AST.SemanticNodeTypeAlias(node.children[0] as TOKEN.TokenIdentifier)
+					: new AST.ASTNodeTypeAlias(node.children[0] as TOKEN.TokenIdentifier)
 				: this.decorate(node.children[1])
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnarySymbol) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: new AST.SemanticNodeTypeOperationUnary(node, this.TYPEOPERATORS_UNARY.get(node.children[1].source as Punctuator)!, [
+				: new AST.ASTNodeTypeOperationUnary(node, this.TYPEOPERATORS_UNARY.get(node.children[1].source as Punctuator)!, [
 					this.decorate(node.children[0]),
 				])
 
@@ -132,7 +133,7 @@ export class Decorator {
 		) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: new AST.SemanticNodeTypeOperationBinary(node, this.TYPEOPERATORS_BINARY.get(node.children[1].source as Punctuator)!, [
+				: new AST.ASTNodeTypeOperationBinary(node, this.TYPEOPERATORS_BINARY.get(node.children[1].source as Punctuator)!, [
 					this.decorate(node.children[0]),
 					this.decorate(node.children[2]),
 				])
@@ -142,14 +143,14 @@ export class Decorator {
 
 		} else if (node instanceof PARSER.ParseNodeStringTemplate__1__List) {
 			return (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
-				c instanceof TOKEN.TokenTemplate ? [new AST.SemanticNodeConstant(c)] :
+				c instanceof TOKEN.TokenTemplate ? [new AST.ASTNodeConstant(c)] :
 				c instanceof PARSER.ParseNodeExpression ? [this.decorate(c)] :
 				this.decorate(c)
 			)
 
 		} else if (node instanceof PARSER.ParseNodeStringTemplate) {
-			return new AST.SemanticNodeTemplate(node, (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
-				c instanceof TOKEN.TokenTemplate ? [new AST.SemanticNodeConstant(c)] :
+			return new AST.ASTNodeTemplate(node, (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeStringTemplate__1__List)[]).flatMap((c) =>
+				c instanceof TOKEN.TokenTemplate ? [new AST.ASTNodeConstant(c)] :
 				c instanceof PARSER.ParseNodeExpression ? [this.decorate(c)] :
 				this.decorate(c)
 			))
@@ -158,7 +159,7 @@ export class Decorator {
 			return (node.children.length === 1)
 				? (node.children[0] instanceof ParseNode)
 					? this.decorate(node.children[0])
-					: new AST.SemanticNodeVariable(node.children[0] as TOKEN.TokenIdentifier)
+					: new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier)
 				: this.decorate(node.children[1])
 
 		} else if (node instanceof PARSER.ParseNodeExpressionUnarySymbol) {
@@ -166,7 +167,7 @@ export class Decorator {
 				? this.decorate(node.children[0])
 				: (node.children[0].source === Punctuator.AFF) // `+a` is a no-op
 					? this.decorate(node.children[1])
-					: new AST.SemanticNodeOperationUnary(node, this.OPERATORS_UNARY.get(node.children[0].source as Punctuator) as ValidOperatorUnary, [
+					: new AST.ASTNodeOperationUnary(node, this.OPERATORS_UNARY.get(node.children[0].source as Punctuator) as ValidOperatorUnary, [
 						this.decorate(node.children[1]),
 					])
 
@@ -183,7 +184,7 @@ export class Decorator {
 				return this.decorate(node.children[0])
 			} else {
 				const operator: Operator = this.OPERATORS_BINARY.get(node.children[1].source as Punctuator | Keyword)!;
-				const operands: [AST.SemanticNodeExpression, AST.SemanticNodeExpression] = [
+				const operands: [AST.ASTNodeExpression, AST.ASTNodeExpression] = [
 					this.decorate(node.children[0]),
 					this.decorate(node.children[2]),
 				];
@@ -193,54 +194,54 @@ export class Decorator {
 					node instanceof PARSER.ParseNodeExpressionAdditive
 				) ? (
 					// `a - b` is syntax sugar for `a + -(b)`
-					(operator === Operator.SUB) ? new AST.SemanticNodeOperationBinaryArithmetic(node, Operator.ADD, [
+					(operator === Operator.SUB) ? new AST.ASTNodeOperationBinaryArithmetic(node, Operator.ADD, [
 						operands[0],
-						new AST.SemanticNodeOperationUnary(node.children[2], Operator.NEG, [
+						new AST.ASTNodeOperationUnary(node.children[2], Operator.NEG, [
 							operands[1],
 						]),
 					]) :
-					new AST.SemanticNodeOperationBinaryArithmetic(node, operator as ValidOperatorArithmetic, operands)
+					new AST.ASTNodeOperationBinaryArithmetic(node, operator as ValidOperatorArithmetic, operands)
 
 				) : (node instanceof PARSER.ParseNodeExpressionComparative) ? (
 					// `a !< b` is syntax sugar for `!(a < b)`
-					(operator === Operator.NLT) ? new AST.SemanticNodeOperationUnary(node, Operator.NOT, [
-						new AST.SemanticNodeOperationBinaryComparative(node.children[0], Operator.LT, operands),
+					(operator === Operator.NLT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.LT, operands),
 					]) :
 					// `a !> b` is syntax sugar for `!(a > b)`
-					(operator === Operator.NGT) ? new AST.SemanticNodeOperationUnary(node, Operator.NOT, [
-						new AST.SemanticNodeOperationBinaryComparative(node.children[0], Operator.GT, operands),
+					(operator === Operator.NGT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.GT, operands),
 					]) :
-					new AST.SemanticNodeOperationBinaryComparative(node, operator as ValidOperatorComparative, operands)
+					new AST.ASTNodeOperationBinaryComparative(node, operator as ValidOperatorComparative, operands)
 
 				) : (node instanceof PARSER.ParseNodeExpressionEquality) ? (
 					// `a isnt b` is syntax sugar for `!(a is b)`
-					(operator === Operator.ISNT) ? new AST.SemanticNodeOperationUnary(node, Operator.NOT, [
-						new AST.SemanticNodeOperationBinaryEquality(node.children[0], Operator.IS, operands),
+					(operator === Operator.ISNT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+						new AST.ASTNodeOperationBinaryEquality(node.children[0], Operator.IS, operands),
 					]) :
 					// `a != b` is syntax sugar for `!(a == b)`
-					(operator === Operator.NEQ) ? new AST.SemanticNodeOperationUnary(node, Operator.NOT, [
-						new AST.SemanticNodeOperationBinaryEquality(node.children[0], Operator.EQ, operands),
+					(operator === Operator.NEQ) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+						new AST.ASTNodeOperationBinaryEquality(node.children[0], Operator.EQ, operands),
 					]) :
-					new AST.SemanticNodeOperationBinaryEquality(node, operator as ValidOperatorEquality, operands)
+					new AST.ASTNodeOperationBinaryEquality(node, operator as ValidOperatorEquality, operands)
 
 				) : /* (
 					node instanceof PARSER.ParseNodeExpressionConjunctive ||
 					node instanceof PARSER.ParseNodeExpressionDisjunctive
 				) ? */ (
 					// `a !& b` is syntax sugar for `!(a && b)`
-					(operator === Operator.NAND) ? new AST.SemanticNodeOperationUnary(node, Operator.NOT, [
-						new AST.SemanticNodeOperationBinaryLogical(node.children[0], Operator.AND, operands),
+					(operator === Operator.NAND) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+						new AST.ASTNodeOperationBinaryLogical(node.children[0], Operator.AND, operands),
 					]) :
 					// `a !| b` is syntax sugar for `!(a || b)`
-					(operator === Operator.NOR) ? new AST.SemanticNodeOperationUnary(node, Operator.NOT, [
-						new AST.SemanticNodeOperationBinaryLogical(node.children[0], Operator.OR, operands),
+					(operator === Operator.NOR) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+						new AST.ASTNodeOperationBinaryLogical(node.children[0], Operator.OR, operands),
 					]) :
-					new AST.SemanticNodeOperationBinaryLogical(node, operator as ValidOperatorLogical, operands)
+					new AST.ASTNodeOperationBinaryLogical(node, operator as ValidOperatorLogical, operands)
 				)
 			}
 
 		} else if (node instanceof PARSER.ParseNodeExpressionConditional) {
-			return new AST.SemanticNodeOperationTernary(node, Operator.COND, [
+			return new AST.ASTNodeOperationTernary(node, Operator.COND, [
 				this.decorate(node.children[1]),
 				this.decorate(node.children[3]),
 				this.decorate(node.children[5]),
@@ -250,15 +251,15 @@ export class Decorator {
 			return this.decorate(node.children[0])
 
 		} else if (node instanceof PARSER.ParseNodeDeclarationVariable) {
-			return new AST.SemanticNodeDeclarationVariable(node, node.children.length === 8, [
-				new AST.SemanticNodeVariable(((node.children.length === 7) ? node.children[1] : node.children[2]) as TOKEN.TokenIdentifier),
+			return new AST.ASTNodeDeclarationVariable(node, node.children.length === 8, [
+				new AST.ASTNodeVariable(((node.children.length === 7) ? node.children[1] : node.children[2]) as TOKEN.TokenIdentifier),
 				this.decorate((node.children.length === 7) ? node.children[3] : node.children[4]),
 				this.decorate((node.children.length === 7) ? node.children[5] : node.children[6]),
 			])
 
 		} else if (node instanceof PARSER.ParseNodeDeclarationType) {
-			return new AST.SemanticNodeDeclarationType(node, [
-				new AST.SemanticNodeTypeAlias(node.children[1] as TOKEN.TokenIdentifier),
+			return new AST.ASTNodeDeclarationType(node, [
+				new AST.ASTNodeTypeAlias(node.children[1] as TOKEN.TokenIdentifier),
 				this.decorate(node.children[3]),
 			]);
 
@@ -268,9 +269,9 @@ export class Decorator {
 		} else if (node instanceof PARSER.ParseNodeStatementAssignment) {
 			const identifier: TOKEN.TokenIdentifier      = node.children[0] as TOKEN.TokenIdentifier
 			const expression: PARSER.ParseNodeExpression = node.children[2]
-			return new AST.SemanticNodeAssignment(node, [
-				new AST.SemanticNodeAssignee(identifier, [
-					new AST.SemanticNodeVariable(identifier),
+			return new AST.ASTNodeAssignment(node, [
+				new AST.ASTNodeAssignee(identifier, [
+					new AST.ASTNodeVariable(identifier),
 				]),
 				this.decorate(expression),
 			])
@@ -278,7 +279,7 @@ export class Decorator {
 		} else if (node instanceof PARSER.ParseNodeStatement) {
 			return (node.children.length === 1 && node.children[0] instanceof ParseNode)
 				? this.decorate(node.children[0])
-				: new AST.SemanticNodeStatementExpression(node, (node.children.length === 1) ? [] : [
+				: new AST.ASTNodeStatementExpression(node, (node.children.length === 1) ? [] : [
 					this.decorate(node.children[0]),
 				])
 
@@ -291,7 +292,7 @@ export class Decorator {
 			]
 
 		} else if (node instanceof PARSER.ParseNodeGoal) {
-			return new AST.SemanticNodeGoal(node, (node.children.length === 2) ? [] : this.decorate(node.children[1]));
+			return new AST.ASTNodeGoal(node, (node.children.length === 2) ? [] : this.decorate(node.children[1]));
 
 		} else {
 			throw new ReferenceError(`Could not find type of parse node ${ node }.`)
