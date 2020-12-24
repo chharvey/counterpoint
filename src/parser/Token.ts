@@ -78,7 +78,8 @@ export enum Keyword {
 		THEN = 'then',
 		ELSE = 'else',
 	// storage
-		LET = 'let', // Dev.supports('variables')
+		LET  = 'let',  // Dev.supports('variables')
+		TYPE = 'type', // Dev.supportsAll('variables', 'typingExplicit')
 	// modifier
 		UNFIXED = 'unfixed', // Dev.supports('variables')
 }

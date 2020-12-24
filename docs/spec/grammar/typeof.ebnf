@@ -9,9 +9,10 @@ Type TypeOf(SemanticConstant const) :=
 
 
 
-Type TypeOf(SemanticIdentifier id) :=
-	1. *If* the validator’s symbol table has a record for `id`:
-		1. *Return:* the corresponding Type recorded in the validator’s symbol table.
+Type TypeOf(SemanticVariable var) :=
+	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
+		1. *If* `symbol.kind` is *value*:
+			1. *Return:* `symbol.type`.
 	2. *Return:* `Unknown`.
 ;
 

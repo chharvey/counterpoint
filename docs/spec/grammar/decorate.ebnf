@@ -26,6 +26,8 @@ Decorate(TypeKeyword ::= "obj") -> SemanticTypeConstant
 
 
 
+Decorate(TypeUnit ::= IDENTIFIER) -> SemanticTypeAlias
+	:= (SemanticTypeAlias[id=TokenWorth(IDENTIFIER)]);
 Decorate(TypeUnit ::= PrimitiveLiteral) -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=ToType(Decorate(PrimitiveLiteral).value)]);
 Decorate(TypeUnit ::= TypeKeyword) -> SemanticTypeConstant
@@ -121,8 +123,8 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 
 
 
-Decorate(ExpressionUnit ::= IDENTIFIER) -> SemanticIdentifier
-	:= (SemanticIdentifier[id=TokenWorth(IDENTIFIER)]);
+Decorate(ExpressionUnit ::= IDENTIFIER) -> SemanticVariable
+	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
 Decorate(ExpressionUnit ::= PrimitiveLiteral) -> SemanticConstant
 	:= Decorate(PrimitiveLiteral);
 Decorate(ExpressionUnit ::= StringTemplate) -> SemanticTemplate
@@ -311,27 +313,38 @@ Decorate(Expression ::= ExpressionConditional) -> SemanticExpression
 
 Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=false]
-		(SemanticAssignee
-			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
-		)
+		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression)
 	);
 Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
-		(SemanticAssignee
-			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
-		)
+		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression)
 	);
+
+
+
+Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType
+	:= (SemanticDeclarationType
+		(SemanticTypeAlias[id=TokenWorth(IDENTIFIER)])
+		Decorate(Type)
+	);
+
+
+
+Decorate(Declaration ::= DeclarationVariable) -> SemanticDeclarationVariable
+	:= Decorate(DeclarationVariable);
+Decorate(Declaration ::= DeclarationType) -> SemanticDeclarationType
+	:= Decorate(DeclarationType);
 
 
 
 Decorate(StatementAssignment ::= IDENTIFIER "=" Expression ";") -> SemanticAssignment
 	:= (SemanticAssignment
 		(SemanticAssignee
-			(SemanticIdentifier[id=TokenWorth(IDENTIFIER)])
+			(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		)
 		Decorate(Expression)
 	);
@@ -342,8 +355,8 @@ Decorate(Statement ::= ";") -> SemanticStatementExpression
 	:= (SemanticStatementExpression);
 Decorate(Statement ::= Expression ";") -> SemanticStatementExpression
 	:= (SemanticStatementExpression Decorate(Expression));
-Decorate(Statement ::= DeclarationVariable) -> SemanticDeclaration
-	:= Decorate(DeclarationVariable);
+Decorate(Statement ::= Declaration) -> SemanticDeclaration
+	:= Decorate(Declaration);
 Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
 	:= Decorate(StatementAssignment);
 

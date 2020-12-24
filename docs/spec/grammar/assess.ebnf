@@ -4,6 +4,15 @@ Type Assess(SemanticTypeConstant const) :=
 
 
 
+Type Assess(SemanticTypeAlias var) :=
+	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
+		1. *If* `symbol.kind` is *type*:
+			1. *Return:* `symbol.type`.
+	2. *Return:* `Unknown`.
+;
+
+
+
 Type Assess(SemanticTypeOperation[operator: ORNULL] oper) :=
 	1. *Assert:* `oper.children.count` is 1.
 	2. *Let* `child` be *UnwrapAffirm:* `Assess(oper.children.0)`.
@@ -32,7 +41,7 @@ Or<Null, Boolean, Number, Sequence<RealNumber>> Assess(SemanticConstant const) :
 
 
 
-Void! Assess(SemanticIdentifier iden) :=
+Void! Assess(SemanticVariable var) :=
 	1. *Throw:* `void`. // NOTE: Update when implementing constant propagation.
 ;
 

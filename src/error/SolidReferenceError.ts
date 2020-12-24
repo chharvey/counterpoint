@@ -3,6 +3,9 @@ import {
 } from '@chharvey/parser';
 
 import type {AST} from '../validator/';
+import {
+	SymbolKind,
+} from '../validator/Validator'; // FIXME circular imports
 
 
 
@@ -43,10 +46,10 @@ export class ReferenceError01 extends SolidReferenceError {
 	static readonly CODE = 1;
 	/**
 	 * Construct a new ReferenceError01 object.
-	 * @param identifier the undeclared identifier
+	 * @param variable the undeclared variable
 	 */
-	constructor (identifier: AST.ASTNodeIdentifier) {
-		super(`\`${ identifier.source }\` is never declared.`, ReferenceError01.CODE, identifier.line_index, identifier.col_index);
+	constructor (variable: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
+		super(`\`${ variable.source }\` is never declared.`, ReferenceError01.CODE, variable.line_index, variable.col_index);
 	}
 }
 /**
@@ -61,9 +64,37 @@ export class ReferenceError02 extends SolidReferenceError {
 	static readonly CODE = 2;
 	/**
 	 * Construct a new ReferenceError02 object.
-	 * @param identifier the not-yet-declared identifier
+	 * @param variable the not-yet-declared variable
 	 */
-	constructor (identifier: AST.ASTNodeIdentifier) {
-		super(`\`${ identifier.source }\` is used before it is declared.`, ReferenceError02.CODE, identifier.line_index, identifier.col_index);
+	constructor (variable: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
+		super(`\`${ variable.source }\` is used before it is declared.`, ReferenceError02.CODE, variable.line_index, variable.col_index);
+	}
+}
+/**
+ * A ReferenceError03 is thrown when a symbol of the wrong kind is used.
+ * @example
+ * let FOO: int = 42;
+ * type T = FOO | float; % ReferenceError03: `FOO` refers to a value, but is used as a type.
+ * @example
+ * type FOO = int;
+ * 42 || FOO;      % ReferenceError03: `FOO` refers to a type, but is used as a value.
+ */
+export class ReferenceError03 extends SolidReferenceError {
+	private static SYMBOL_KINDS: ReadonlyMap<SymbolKind, string> = new Map([
+		[SymbolKind.VALUE, 'value'],
+		[SymbolKind.TYPE,  'type'],
+	]);
+	/** The number series of this class of errors. */
+	static readonly CODE = 3;
+	/**
+	 * Construct a new ReferenceError03 object.
+	 * @param symbol    the referenced symbol
+	 * @param refers_to what the symbol was declared as
+	 * @param used_as   what the symbol is used as
+	 */
+	constructor (symbol: AST.ASTNodeTypeAlias | AST.ASTNodeVariable, refers_to: SymbolKind, used_as: SymbolKind) {
+		const kind_refer: string = ReferenceError03.SYMBOL_KINDS.get(refers_to)!;
+		const kind_used:  string = ReferenceError03.SYMBOL_KINDS.get(used_as)!;
+		super(`\`${ symbol.source }\` refers to a ${ kind_refer }, but is used as a ${ kind_used }.`, ReferenceError03.CODE, symbol.line_index, symbol.col_index);
 	}
 }

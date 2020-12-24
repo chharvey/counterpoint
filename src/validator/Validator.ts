@@ -6,22 +6,31 @@ import type {SolidLanguageType} from './SolidLanguageType';
 
 
 
-/**
- * An object containing symbol information.
- * A “symbol” is a variable or other declaration in source code.
- * - id: the unique identifier of the variable, the cooked value of the token
- * - type: the type of the variable
- * - unfixed: may the variable be reassigned?
- * - line: the 0-based line   index of where the varible was declared
- * - col:  the 0-based column index of where the varible was declared
- */
-export type SymbolInfo = {
-	id:      bigint;
-	type:    SolidLanguageType;
-	unfixed: boolean;
-	line:    number;
-	col:     number;
+/** Kinds of symbols. */
+export enum SymbolKind {
+	/** A value variable (a variable holding a Solid Language Value). */
+	VALUE,
+	/** A type variable / type alias. */
+	TYPE,
 }
+
+
+
+/** An object containing symbol information. */
+export type SymbolInfo = {
+	/** The unique identifier of the symbol, the cooked value of the token. */
+	readonly id: bigint;
+	/** The kind of declaration: value variable or type variable. */
+	readonly kind: SymbolKind;
+	/** If `kind` is `VALUE`, the variable’s Type. If `kind` is `TYPE`, the value of the type alias. */
+	readonly type: SolidLanguageType;
+	/** May the symbol be reassigned? */
+	readonly unfixed: boolean;
+	/** The 0-based line index of where the symbol was declared. */
+	readonly line: number;
+	/** Tthe 0-based column index of where the symbol was declared. */
+	readonly col: number;
+};
 
 
 
@@ -49,23 +58,54 @@ export class Validator {
 	}
 
 	/**
-	 * Add a symbol to this Validator’s symbol table.
-	 * @param id      the id of the symbol to add
-	 * @param type    the symbol type
+	 * Add a symbol representing a value variable to this Validator’s symbol table.
+	 * @param id      the unique identifier of the symbol, the cooked value of the token
+	 * @param type    the variable’s Type
 	 * @param unfixed may the symbol be reassigned?
 	 * @param line    the line   number of the symbol’s declaration
 	 * @param col     the column number of the symbol’s declaration
 	 * @returns this
 	 */
-	addSymbol(
+	addVariableSymbol(
 		id:      SymbolInfo['id'],
 		type:    SymbolInfo['type'],
 		unfixed: SymbolInfo['unfixed'],
 		line:    SymbolInfo['line'],
 		col:     SymbolInfo['col'],
 	): this {
-		this.symbol_table.set(id, {id, type, unfixed, line, col});
+		this.symbol_table.set(id, {
+			id,
+			kind: SymbolKind.VALUE,
+			type,
+			unfixed,
+			line,
+			col,
+		});
 		return this
+	}
+	/**
+	 * Add a symbol representing a type variable to this Validator’s symbol table.
+	 * @param id      the unique identifier of the symbol, the cooked value of the token
+	 * @param type    the value of the type variable
+	 * @param line    the line   number of the symbol’s declaration
+	 * @param col     the column number of the symbol’s declaration
+	 * @returns this
+	 */
+	addTypeSymbol(
+		id:   SymbolInfo['id'],
+		type: SymbolInfo['type'],
+		line: SymbolInfo['line'],
+		col:  SymbolInfo['col'],
+	): this {
+		this.symbol_table.set(id, {
+			id,
+			kind: SymbolKind.TYPE,
+			type,
+			unfixed: false,
+			line,
+			col,
+		});
+		return this;
 	}
 	/**
 	 * Remove a symbol from this Validator’s symbol table.

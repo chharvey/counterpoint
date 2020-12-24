@@ -17,6 +17,8 @@ import {
 } from '../enum/Operator.enum'
 import {
 	Validator,
+	SymbolKind,
+	SymbolInfo,
 } from './Validator';
 import {
 	CompletionType,
@@ -50,6 +52,7 @@ import {
 } from '../builder/'
 import {
 	ReferenceError01,
+	ReferenceError03,
 	AssignmentError01,
 	AssignmentError10,
 	TypeError01,
@@ -128,6 +131,7 @@ export abstract class ASTNodeSolid extends ASTNode {
  * A sematic node representing a type.
  * There are 2 known subclasses:
  * - ASTNodeTypeConstant
+ * - ASTNodeTypeAlias
  * - ASTNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
@@ -136,9 +140,12 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	varCheck(_validator: Validator = new Validator()): void {
 		return; // for now, there are no type variables // TODO: dereferencing type variables
 	}
-	/** @implements ASTNodeSolid */
+	/**
+	 * @implements ASTNodeSolid
+	 * @final
+	 */
 	typeCheck(_validator: Validator = new Validator()): void {
-		return; // for now, all types are valid // TODO: dereferencing type variables
+		return; // no type-checking necessary for types
 	}
 	/**
 	 * @implements ASTNodeSolid
@@ -149,14 +156,15 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	}
 	/**
 	 * Assess the type-value of this node at compile-time.
+	 * @param validator a record of declared variable symbols
 	 * @returns the computed type-value of this node
 	 * @final
 	 */
-	assess(): SolidLanguageType {
-		this.assessed || (this.assessed = this.assess_do()) // COMBAK `this.assessed ||= this.assess_do()`
+	assess(validator: Validator = new Validator()): SolidLanguageType {
+		this.assessed || (this.assessed = this.assess_do(validator)); // COMBAK `this.assessed ||= this.assess_do(validator)`
 		return this.assessed
 	}
-	protected abstract assess_do(): SolidLanguageType
+	protected abstract assess_do(validator: Validator): SolidLanguageType
 }
 export class ASTNodeTypeConstant extends ASTNodeType {
 	declare children:
@@ -182,9 +190,41 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		super(start_node, {value: value.toString()})
 		this.value = value
 	}
+	/** @implements ASTNodeSolid */
+	varCheck(_validator: Validator = new Validator()): void {
+		return; // no validation necessary for constants
+	}
 	/** @implements ASTNodeType */
-	protected assess_do(): SolidLanguageType {
+	protected assess_do(_validator: Validator): SolidLanguageType {
 		return this.value
+	}
+}
+export class ASTNodeTypeAlias extends ASTNodeType {
+	declare children:
+		| readonly []
+	readonly id: bigint;
+	constructor (start_node: TOKEN.TokenIdentifier) {
+		super(start_node, {id: start_node.cook()})
+		this.id = start_node.cook()!;
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		if (!validator.hasSymbol(this.id)) {
+			throw new ReferenceError01(this);
+		};
+		if (validator.getSymbolInfo(this.id)!.kind === SymbolKind.VALUE) {
+			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
+		};
+	}
+	/** @implements ASTNodeSolid */
+	protected assess_do(validator: Validator): SolidLanguageType {
+		if (validator.hasSymbol(this.id)) {
+			const symbol: SymbolInfo = validator.getSymbolInfo(this.id)!;
+			if (symbol.kind === SymbolKind.TYPE) {
+				return symbol.type;
+			};
+		};
+		return SolidLanguageType.UNKNOWN;
 	}
 }
 export abstract class ASTNodeTypeOperation extends ASTNodeType {
@@ -195,6 +235,13 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 			| readonly ASTNodeType[]
 	) {
 		super(start_node, {operator}, children)
+	}
+	/**
+	 * @implements ASTNodeSolid
+	 * @final
+	 */
+	varCheck(validator: Validator = new Validator()): void {
+		return this.children.forEach((c) => c.varCheck(validator));
 	}
 }
 export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
@@ -207,9 +254,9 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		super(start_node, operator, children)
 	}
 	/** @implements ASTNodeType */
-	protected assess_do(): SolidLanguageType {
+	protected assess_do(validator: Validator): SolidLanguageType {
 		return (this.operator === Operator.ORNULL)
-			? this.children[0].assess().union(SolidNull)
+			? this.children[0].assess(validator).union(SolidNull)
 			: (() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
 	}
 }
@@ -223,10 +270,10 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 		super(start_node, operator, children)
 	}
 	/** @implements ASTNodeType */
-	protected assess_do(): SolidLanguageType {
+	protected assess_do(validator: Validator): SolidLanguageType {
 		return (
-			(this.operator === Operator.AND) ? this.children[0].assess().intersect(this.children[1].assess()) :
-			(this.operator === Operator.OR)  ? this.children[0].assess().union    (this.children[1].assess()) :
+			(this.operator === Operator.AND) ? this.children[0].assess(validator).intersect(this.children[1].assess(validator)) :
+			(this.operator === Operator.OR)  ? this.children[0].assess(validator).union    (this.children[1].assess(validator)) :
 			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
 	}
@@ -236,7 +283,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * A sematic node representing an expression.
  * There are 4 known subclasses:
  * - ASTNodeConstant
- * - ASTNodeIdentifier
+ * - ASTNodeVariable
  * - ASTNodeTemplate
  * - ASTNodeOperation
  */
@@ -247,7 +294,10 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @return Should the built instruction be type-coerced into a floating-point number?
 	 */
 	abstract get shouldFloat(): boolean;
-	/** @implements ASTNodeSolid */
+	/**
+	 * @implements ASTNodeSolid
+	 * @final
+	 */
 	typeCheck(validator: Validator = new Validator()): void {
 		this.type(validator); // assert does not throw
 	}
@@ -343,7 +393,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		SolidString
 	}
 }
-export class ASTNodeIdentifier extends ASTNodeExpression {
+export class ASTNodeVariable extends ASTNodeExpression {
 	declare children:
 		| readonly []
 	readonly id: bigint;
@@ -360,10 +410,14 @@ export class ASTNodeIdentifier extends ASTNodeExpression {
 		if (!validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
 		};
+		if (validator.getSymbolInfo(this.id)!.kind === SymbolKind.TYPE) {
+			throw new ReferenceError03(this, SymbolKind.TYPE, SymbolKind.VALUE);
+			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
+		};
 	}
 	/** @implements ASTNodeExpression */
 	protected build_do(_builder: Builder): InstructionExpression {
-		throw new Error('ASTNodeIdentifier#build_do not yet supported.')
+		throw new Error('ASTNodeVariable#build_do not yet supported.');
 	}
 	/** @implements ASTNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
@@ -371,10 +425,13 @@ export class ASTNodeIdentifier extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
-		return (validator.hasSymbol(this.id))
-			? validator.getSymbolInfo(this.id)!.type
-			: SolidLanguageType.UNKNOWN
-		;
+		if (validator.hasSymbol(this.id)) {
+			const symbol: SymbolInfo = validator.getSymbolInfo(this.id)!;
+			if (symbol.kind === SymbolKind.VALUE) {
+				return symbol.type;
+			};
+		};
+		return SolidLanguageType.UNKNOWN;
 	}
 }
 export class ASTNodeTemplate extends ASTNodeExpression {
@@ -815,12 +872,12 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
  * A sematic node representing a statement.
  * There are 3 known subclasses:
  * - ASTNodeStatementExpression
- * - ASTNodeDeclarationVariable
+ * - ASTNodeDeclaration
  * - ASTNodeAssignment
  */
-export type SemanticStatementType =
+export type ASTNodeStatement =
 	| ASTNodeStatementExpression
-	| ASTNodeDeclarationVariable
+	| ASTNodeDeclaration
 	| ASTNodeAssignment
 export class ASTNodeStatementExpression extends ASTNodeSolid {
 	constructor(
@@ -846,35 +903,44 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
 			: new InstructionStatement(builder.stmtCount, this.children[0].build(builder))
 	}
 }
+/**
+ * A sematic node representing a declaration.
+ * There are 2 known subclasses:
+ * - ASTNodeDeclarationVariable
+ * - ASTNodeDeclarationType
+ */
+export type ASTNodeDeclaration =
+	| ASTNodeDeclarationVariable
+	| ASTNodeDeclarationType
+;
 export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly unfixed: boolean,
 		readonly children:
-			| readonly [ASTNodeAssignee, ASTNodeType, ASTNodeExpression]
+			| readonly [ASTNodeVariable, ASTNodeType, ASTNodeExpression]
 	) {
 		super(start_node, {unfixed}, children)
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
-		const assignee:      ASTNodeAssignee   = this.children[0];
-		const identifier:    ASTNodeIdentifier = assignee.children[0];
-		const assignee_type: SolidLanguageType = this.children[1].assess();
-		if (validator.hasSymbol(identifier.id)) {
-			throw new AssignmentError01(identifier);
+		const variable: ASTNodeVariable = this.children[0];
+		if (validator.hasSymbol(variable.id)) {
+			throw new AssignmentError01(variable);
 		};
-		validator.addSymbol(
-			identifier.id,
-			assignee_type,
+		this.children[1].varCheck(validator);
+		this.children[2].varCheck(validator);
+		validator.addVariableSymbol(
+			variable.id,
+			this.children[1].assess(validator),
 			this.unfixed,
-			assignee.line_index,
-			assignee.col_index,
+			variable.line_index,
+			variable.col_index,
 		);
-		return this.children[2].varCheck(validator);
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
-		const assignee_type: SolidLanguageType = this.children[1].assess()
+		const assignee_type: SolidLanguageType = this.children[1].assess(validator);
 		const assigned_type: SolidLanguageType = this.children[2].type(validator);
 		if (
 			assigned_type.isSubtypeOf(assignee_type) ||
@@ -887,6 +953,38 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {
 		throw new Error('ASTNodeDeclarationVariable#build not yet supported.');
+	}
+}
+export class ASTNodeDeclarationType extends ASTNodeSolid {
+	constructor (
+		start_node: ParseNode,
+		readonly children:
+			| readonly [ASTNodeTypeAlias, ASTNodeType]
+		,
+	) {
+		super(start_node, {}, children);
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		const variable: ASTNodeTypeAlias = this.children[0];
+		if (validator.hasSymbol(variable.id)) {
+			throw new AssignmentError01(variable);
+		};
+		this.children[1].varCheck(validator);
+		validator.addTypeSymbol(
+			variable.id,
+			this.children[1].assess(validator),
+			variable.line_index,
+			variable.col_index,
+		);
+	}
+	/** @implements ASTNodeSolid */
+	typeCheck(validator: Validator = new Validator()): void {
+		return this.children[1].typeCheck(validator);
+	}
+	/** @implements ASTNodeSolid */
+	build(_builder: Builder): Instruction {
+		throw new Error('ASTNodeDeclarationType#build not yet supported.');
 	}
 }
 export class ASTNodeAssignment extends ASTNodeSolid {
@@ -922,16 +1020,16 @@ export class ASTNodeAssignee extends ASTNodeSolid {
 	constructor(
 		start_node: Token,
 		readonly children:
-			| readonly [ASTNodeIdentifier]
+			| readonly [ASTNodeVariable]
 	) {
 		super(start_node, {}, children)
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
-		const identifier: ASTNodeIdentifier = this.children[0];
-		identifier.varCheck(validator);
-		if (!validator.getSymbolInfo(identifier.id)!.unfixed) {
-			throw new AssignmentError10(identifier);
+		const variable: ASTNodeVariable = this.children[0];
+		variable.varCheck(validator);
+		if (!validator.getSymbolInfo(variable.id)!.unfixed) {
+			throw new AssignmentError10(variable);
 		};
 	}
 	/** @implements ASTNodeSolid */
@@ -948,7 +1046,7 @@ export class ASTNodeGoal extends ASTNodeSolid {
 		start_node: ParseNode,
 		readonly children:
 			| readonly []
-			| readonly SemanticStatementType[]
+			| readonly ASTNodeStatement[]
 	) {
 		super(start_node, {}, children)
 	}
@@ -967,7 +1065,7 @@ export class ASTNodeGoal extends ASTNodeSolid {
 			? new InstructionNone()
 			: new InstructionModule([
 				...Builder.IMPORTS,
-				...(this.children as readonly SemanticStatementType[]).map((child) => child.build(builder)),
+				...(this.children as readonly ASTNodeStatement[]).map((child) => child.build(builder)),
 			])
 	}
 }

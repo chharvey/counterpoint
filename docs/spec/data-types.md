@@ -96,6 +96,11 @@ The value of the \`type\` property must be one of the [enumerated](#enumerated-v
 *normal*, *break*, *continue*, *return*, or *throw*, which are described below.
 The value of the \`value\` property must be a [Solid Language Value](#solid-language-types).
 
+Property  | Description
+--------- | -----------
+\`type\`  | the kind of completion structure
+\`value\` | the Solid Language Value carried with the structure
+
 Completion structures are the default values returned by all specification algorithms,
 unless explicitly stated otherwise.
 
@@ -111,6 +116,20 @@ Type       | Meaning
 
 The term “normal completion” refers to any completion with a \`type\` of *normal*, and
 the term “abrupt completion” refers to any completion with a \`type\` other than *normal*.
+
+
+#### SymbolStructure
+A **SymbolStructure** encapsulates the compile-time information of a declared symbol in Solid source code.
+Symbols are identifiers that refer to Solid Language Values or Solid Language Types.
+
+Each symbol structure must have the following properties:
+
+Property    | Description
+----------- | -----------
+\`id\`      | the unique identifier of the declared symbol
+\`kind\`    | one of the [enumerated](#enumerated-values) values *value* or *type*
+\`type\`    | if \`kind\` is *value*: the Solid Language Type of the variable; if \`kind\` is *type*: the Solid Language Type the variable refers to
+\`unfixed\` | a Boolean, whether the variable may be reassigned
 
 
 

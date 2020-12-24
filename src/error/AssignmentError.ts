@@ -34,24 +34,27 @@ class AssignmentError extends ErrorCode {
 
 
 /**
- * A AssignmentError01 is thrown when the validator encounters a duplicate variable declaration.
+ * An AssignmentError01 is thrown when the validator encounters a duplicate declaration.
  * @example
  * let my_var: int = 42;
- * let my_var: int = 24; % AssignmentError01: Duplicate variable declaration: `my_var`.
+ * let my_var: int = 24; % AssignmentError01: Duplicate declaration: `my_var` is already declared.
+ * @example
+ * type MyType = int;
+ * type MyType = float; % AssignmentError01: Duplicate declaration: `MyType` is already declared.
  */
 export class AssignmentError01 extends AssignmentError {
 	/** The number series of this class of errors. */
 	static readonly CODE = 1;
 	/**
 	 * Construct a new AssignmentError01 object.
-	 * @param identifier the duplicate identifier
+	 * @param symbol the duplicate symbol
 	 */
-	constructor (identifier: AST.ASTNodeIdentifier) {
-		super(`Duplicate variable declaration: \`${ identifier.source }\`.`, AssignmentError01.CODE, identifier.line_index, identifier.col_index);
+	constructor (symbol: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
+		super(`Duplicate declaration: \`${ symbol.source }\` is already declared.`, AssignmentError01.CODE, symbol.line_index, symbol.col_index);
 	}
 }
 /**
- * A AssignmentError10 is thrown when attempting to reassign a fixed variable.
+ * An AssignmentError10 is thrown when attempting to reassign a fixed variable.
  * @example
  * let my_var: int = 42;
  * my_var = 24;          % AssignmentError10: Reassignment of a fixed variable: `my_var`.
@@ -61,9 +64,9 @@ export class AssignmentError10 extends AssignmentError {
 	static readonly CODE = 10;
 	/**
 	 * Construct a new AssignmentError10 object.
-	 * @param identifier the undeclared identifier
+	 * @param variable the undeclared variable
 	 */
-	constructor (identifier: AST.ASTNodeIdentifier) {
-		super(`Reassignment of a fixed variable: \`${ identifier.source }\`.`, AssignmentError10.CODE, identifier.line_index, identifier.col_index);
+	constructor (variable: AST.ASTNodeVariable) {
+		super(`Reassignment of a fixed variable: \`${ variable.source }\`.`, AssignmentError10.CODE, variable.line_index, variable.col_index);
 	}
 }

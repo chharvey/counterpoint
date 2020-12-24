@@ -5,83 +5,11 @@ This chapter lists and defines common abstract algorithms used throughout this s
 
 ## VarCheck
 Performs the definite assignment piece during semantic analysis.
-```
-Void VarCheck(Or<SemanticType, SemanticConstant> node) :=
-	1. *Return.*
-;
-
-Void! VarCheck(SemanticIdentifier id) :=
-	1. *If* the validator does not contain a record for `id`:
-		1. *Throw:* a new ReferenceError01.
-	// TODO: Throw a ReferenceError02 if the variable is declared further down in source.
-;
-
-Void! VarCheck(Or<SemanticTemplate, SemanticOperation, SemanticStatementExpression, SemanticAssignment, SemanticGoal> list) :=
-	1. *For* `i` in `list`:
-		1. Perform *Unwrap:* `VarCheck(list[i])`.
-;
-
-Void! VarCheck(SemanticDeclarationVariable decl) :=
-	1. *Assert:* `decl.children.count` is 3.
-	2. *Let* `assignee` be `decl.children.0`.
-	3. *Assert:* `assignee.children.count` is 1.
-	4. *Let* `id` be `assignee.children.0`.
-	5. *If* the validator contains a record for `id`:
-		1. *Throw:* a new AssignmentError01.
-	6. Add a record for `id` to the validator. // TODO: to be specified
-	7. *Return:* `VarCheck(decl.children.2)`.
-;
-
-Void! VarCheck(SemanticAssignee assignee) :=
-	1. *Assert:* `assignee.children.count` is 1.
-	2. *Let* `id` be `assignee.children.0`.
-	3. Perform *Unwrap:* `VarCheck(id)`.
-	4. *Assert:* The validator contains a record for `id`.
-	5. *Let* `info` be the record for `id` in the validator.
-	6. *If* `info.unfixed` is `false`:
-		1. *Throw:* a new AssignmentError10.
-;
-```
 
 
 
 ## TypeCheck
 Performs the type-checking piece during semantic analysis.
-```
-Void TypeCheck(SemanticType type) :=
-	1. *Return*. // NOTE: all SemanticType nodes are valid for now
-
-Void! TypeCheck(SemanticExpression expr) :=
-	1. *Perform:* *Unwrap:* `TypeOf(expr)`.
-		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
-
-Void! TypeCheck(SemanticStatementExpression stmt) :=
-	1. *If* `stmt.children.count` is greater than 0:
-		1. *Return:* `TypeCheck(stmt.children.0)`.
-
-Void! TypeCheck(SemanticDeclarationVariable stmt) :=
-	1. *Assert:* `stmt.children.count` is 3.
-	2. *Let* `assignee_type` be *UnwrapAffirm:* `Assess(stmt.children.1)`.
-	3. *Let* `assigned_type` be *Unwrap:* `TypeOf(stmt.children.2)`.
-	4. *If* `assigned_type` is not a subtype of `assignee_type`:
-		1. *Throw:* a new TypeError03.
-
-Void! TypeCheck(SemanticAssignment stmt) :=
-	1. *Assert:* `stmt.children.count` is 2.
-	2. *Let* `assignee` be `stmt.children.0`.
-	3. *Assert:* `assignee.children.count` is 1.
-	4. *Let* `assignee_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
-	5. *Let* `assigned_type` be *Unwrap:* `TypeOf(stmt.children.2)`.
-	6. *If* `assigned_type` is not a subtype of `assignee_type`:
-		1. *Throw:* a new TypeError03.
-
-Void! TypeCheck(SemanticAssignee assignee) :=
-	1. *Return:* `TypeCheck(assignee.children.0)`.
-
-Void! TypeCheck(SemanticGoal goal) :=
-	1. For each `SemanticStatment stmt` in `goal.children`:
-		1. *Perform:* `TypeCheck(stmt)`.
-```
 
 
 
@@ -93,7 +21,7 @@ Boolean ToBoolean(Object value) :=
 		1. *Return:* `false`.
 	2. *If* `TypeOf(value)` is `Boolean`:
 		1. *Return:* `value`.
-	3. *Return*: `true`.
+	3. *Return:* `true`.
 ```
 
 

@@ -1,9 +1,6 @@
 export {Validator} from './Validator';
 export {Decorator} from './Decorator';
 
-export {
-	SemanticStatementType,
-} from './ASTNode';
 export * as AST from './ASTNode';
 
 export {

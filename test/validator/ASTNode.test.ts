@@ -12,6 +12,7 @@ import {
 import {
 	ReferenceError01,
 	ReferenceError02,
+	ReferenceError03,
 	AssignmentError01,
 	AssignmentError10,
 	TypeError01,
@@ -59,7 +60,7 @@ import {
 	variableDeclarationFromSource,
 } from '../helpers-parse'
 import {
-	identifierFromSource,
+	variableFromSource,
 	operationFromSource,
 	statementExpressionFromSource,
 	constantFromSource,
@@ -454,18 +455,41 @@ describe('ASTNodeSolid', () => {
 
 
 	Dev.supports('variables') && describe('#varCheck', () => {
+		describe('ASTNodeTypeAlias', () => {
+			it('throws if the validator does not contain a record for the identifier.', () => {
+				goalFromSource(`
+					type T = int;
+					type U = float | T;
+				`).varCheck(); // assert does not throw
+				assert.throws(() => goalFromSource(`
+					type U = float | T;
+				`).varCheck(), ReferenceError01);
+			});
+			it.skip('throws when there is a temporal dead zone.', () => {
+				assert.throws(() => goalFromSource(`
+					T;
+					type T = int;
+				`).varCheck(), ReferenceError02);
+			});
+			it('throws if was declared as a value variable.', () => {
+				assert.throws(() => goalFromSource(`
+					let FOO: int = 42;
+					type T = FOO | float;
+				`).varCheck(), ReferenceError03);
+			});
+		});
 		describe('ASTNodeConstant', () => {
 			it('never throws.', () => {
 				constantFromSource(`42;`).varCheck();
 			});
 		});
-		describe('ASTNodeIdentifier', () => {
+		describe('ASTNodeVariable', () => {
 			it('throws if the validator does not contain a record for the identifier.', () => {
 				goalFromSource(`
 					let unfixed i: int = 42;
 					i;
 				`).varCheck(); // assert does not throw
-				assert.throws(() => identifierFromSource(`i;`).varCheck(), ReferenceError01);
+				assert.throws(() => variableFromSource(`i;`).varCheck(), ReferenceError01);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => goalFromSource(`
@@ -473,12 +497,34 @@ describe('ASTNodeSolid', () => {
 					let unfixed i: int = 42;
 				`).varCheck(), ReferenceError02);
 			});
+			it('throws if it was declared as a type alias.', () => {
+				assert.throws(() => goalFromSource(`
+					type FOO = int;
+					42 || FOO;
+				`).varCheck(), ReferenceError03);
+			});
 		});
 		describe('ASTNodeDeclarationVariable', () => {
 			it('throws if the validator already contains a record for the variable.', () => {
 				assert.throws(() => goalFromSource(`
 					let i: int = 42;
 					let i: int = 43;
+				`).varCheck(), AssignmentError01);
+				assert.throws(() => goalFromSource(`
+					type FOO = float;
+					let FOO: int = 42;
+				`).varCheck(), AssignmentError01);
+			});
+		});
+		describe('ASTNodeDeclarationType', () => {
+			it('throws if the validator already contains a record for the symbol.', () => {
+				assert.throws(() => goalFromSource(`
+					type T = int;
+					type T = float;
+				`).varCheck(), AssignmentError01);
+				assert.throws(() => goalFromSource(`
+					let FOO: int = 42;
+					type FOO = float;
 				`).varCheck(), AssignmentError01);
 			});
 		});
@@ -492,6 +538,12 @@ describe('ASTNodeSolid', () => {
 					let i: int = 42;
 					i = 43;
 				`).varCheck(), AssignmentError10);
+			});
+			it('always throws for type alias reassignment.', () => {
+				assert.throws(() => goalFromSource(`
+					type T = 42;
+					T = 43;
+				`).varCheck(), ReferenceError03);
 			});
 		});
 	});
@@ -546,6 +598,21 @@ describe('ASTNodeSolid', () => {
 					new SolidTypeConstant(new Float64(4.2e+3)),
 				])
 			})
+			it('computes the value of a type alias.', () => {
+				const validator: Validator = new Validator();
+				const goal: AST.ASTNodeGoal = goalFromSource(`
+					type T = int;
+					type U = T;
+				`);
+				goal.varCheck(validator);
+				assert.deepStrictEqual(
+					((goal
+						.children[1] as AST.ASTNodeDeclarationType)
+						.children[1] as AST.ASTNodeTypeAlias)
+						.assess(), // memoized
+					Int16,
+				);
+			});
 			it('computes the value of keyword type.', () => {
 				assert.deepStrictEqual([
 					'bool',
@@ -720,7 +787,7 @@ describe('ASTNodeSolid', () => {
 			})
 			Dev.supports('variables') && it('returns Unknown for undeclared variables.', () => {
 				// NOTE: a reference error will be thrown at the variable-checking stage
-				assert.strictEqual(identifierFromSource(`x;`).type(), SolidLanguageType.UNKNOWN);
+				assert.strictEqual(variableFromSource(`x;`).type(), SolidLanguageType.UNKNOWN);
 			});
 			it('returns a constant Boolean type for boolean unary operation of anything.', () => {
 				typeOperations(xjs.Map.mapValues(new Map([

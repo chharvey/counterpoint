@@ -40,7 +40,8 @@ TokenWorth(Keyword :::= "if")      -> RealNumber := \x89;
 TokenWorth(Keyword :::= "then")    -> RealNumber := \x8a;
 TokenWorth(Keyword :::= "else")    -> RealNumber := \x8b;
 TokenWorth(Keyword :::= "let")     -> RealNumber := \x8c;
-TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x8d;
+TokenWorth(Keyword :::= "type")    -> RealNumber := \x8d;
+TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x8e;
 
 
 
@@ -159,7 +160,7 @@ TokenWorth(String :::= "'" "'") -> Sequence<RealNumber>
 TokenWorth(String :::= "'" StringChars "'") -> Sequence<RealNumber>
 	:= TokenWorth(StringChars);
 TokenWorth(StringChars :::= [^'\#x03]) -> Sequence<RealNumber>
-	:= [...UTF16Encoding(CodePoint([^'\#x03]))];
+	:= UTF16Encoding(CodePoint([^'\#x03]));
 TokenWorth(StringChars :::= [^'\#x03] StringChars) -> Sequence<RealNumber>
 	:= [...UTF16Encoding(CodePoint([^'\#x03])), ...TokenWorth(StringChars)];
 TokenWorth(StringChars :::= "\" StringEscape) -> Sequence<RealNumber>
@@ -181,11 +182,11 @@ TokenWorth(StringEscape :::= "r") -> Sequence<RealNumber> := [\x0d]; // U+000D C
 TokenWorth(StringEscape :::= "u{" "}") -> Sequence<RealNumber>
 	:= [\x00]; // U+0000 NULL
 TokenWorth(StringEscape :::= "u{" DigitSequenceHex "}") -> Sequence<RealNumber>
-	:= [...UTF16Encoding(TokenWorth(DigitSequenceHex))];
-TokenWorth(StringEscape :::= #x0A) -> Sequence<RealNumber>
+	:= UTF16Encoding(TokenWorth(DigitSequenceHex));
+TokenWorth(StringEscape :::= #x0a) -> Sequence<RealNumber>
 	:= [\x20]; // U+0020 SPACE
-TokenWorth(StringEscape :::= [^'\stnru#x0D#x0A#x03]) -> Sequence<RealNumber>
-	:= [...UTF16Encoding(CodePoint([^'\stnru#x0D#x0A#x03]))];
+TokenWorth(StringEscape :::= [^'\stnru#x0a#x03]) -> Sequence<RealNumber>
+	:= UTF16Encoding(CodePoint([^'\stnru#x0a#x03]));
 
 
 

@@ -59,7 +59,7 @@ describe('Parser', () => {
 				*/
 				const statement: PARSER.ParseNodeStatement = h.statementFromSource(`;`)
 				assert_arrayLength(statement.children, 1)
-				const token: PARSER.ParseNodeDeclarationVariable | PARSER.ParseNodeStatementAssignment | Token = statement.children[0]
+				const token: PARSER.ParseNodeDeclaration | PARSER.ParseNodeStatementAssignment | Token = statement.children[0];
 				assert.ok(token instanceof TOKEN.TokenPunctuator)
 				assert.strictEqual(token.source, Punctuator.ENDSTAT)
 			})
@@ -86,6 +86,20 @@ describe('Parser', () => {
 				]);
 			})
 		})
+
+		Dev.supports('typingExplicit') && describe('TypeUnit ::= IDENTIFIER', () => {
+			it('parses type identifiers.', () => {
+				assert.deepStrictEqual([
+					`T`,
+					`U`,
+					`V`,
+				].map((src) => h.tokenIdentifierFromTypeString(src).source), [
+					`T`,
+					`U`,
+					`V`,
+				]);
+			});
+		});
 
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= TypeKeyword', () => {
 			it('parses keywords `bool`, `int`, `float`, `obj`.', () => {
@@ -750,6 +764,28 @@ describe('Parser', () => {
 			})
 		})
 
+		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationType', () => {
+			/*
+				<Statement>
+					<DeclarationType>
+						<KEYWORD>type</KEYWORD>
+						<IDENTIFIER>T</IDENTIFIER>
+						<PUNCTUATOR>=</PUNCTUATOR>
+						<Type source="int | float">...</Type>
+						<PUNCTUATOR>;</PUNCTUATOR>
+					</DeclarationType>
+				</Statement>
+			*/
+			it('makes a ParseNodeDeclarationType node.', () => {
+				const decl: PARSER.ParseNodeDeclarationType = h.typeDeclarationFromSource(`
+					type  T  =  int | float;
+				`);
+				assert.deepStrictEqual(decl.children.map((child) => child.source), [
+					'type', 'T', '=', 'int | float', ';',
+				]);
+			});
+		});
+
 		Dev.supports('variables') && describe('StatementAssignment', () => {
 			/*
 				<Statement>
@@ -764,7 +800,7 @@ describe('Parser', () => {
 			it('makes a ParseNodeStatementAssignment node.', () => {
 				const stmt: PARSER.ParseNodeStatement = h.statementFromSource(`this_answer  =  that_answer  -  40;`)
 				assert_arrayLength(stmt.children, 1)
-				const decl: Token | PARSER.ParseNodeDeclarationVariable | PARSER.ParseNodeStatementAssignment = stmt.children[0]
+				const decl: Token | PARSER.ParseNodeDeclaration | PARSER.ParseNodeStatementAssignment = stmt.children[0];
 				assert.ok(decl instanceof PARSER.ParseNodeStatementAssignment)
 				assert.deepStrictEqual(decl.children.map((child) => child.source), [
 					'this_answer', '=', 'that_answer - 40', ';',

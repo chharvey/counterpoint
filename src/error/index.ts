@@ -7,6 +7,7 @@ export {
 export {
 	ReferenceError01,
 	ReferenceError02,
+	ReferenceError03,
 } from './SolidReferenceError';
 
 export {
