@@ -49,7 +49,7 @@ export class AssignmentError01 extends AssignmentError {
 	 * Construct a new AssignmentError01 object.
 	 * @param symbol the duplicate symbol
 	 */
-	constructor (symbol: AST.SemanticNodeTypeAlias | AST.ASTNodeVariable) {
+	constructor (symbol: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
 		super(`Duplicate declaration: \`${ symbol.source }\` is already declared.`, AssignmentError01.CODE, symbol.line_index, symbol.col_index);
 	}
 }

@@ -131,7 +131,7 @@ export abstract class ASTNodeSolid extends ASTNode {
  * A sematic node representing a type.
  * There are 2 known subclasses:
  * - ASTNodeTypeConstant
- * - SemanticNodeTypeAlias
+ * - ASTNodeTypeAlias
  * - ASTNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
@@ -199,7 +199,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		return this.value
 	}
 }
-export class SemanticNodeTypeAlias extends ASTNodeType {
+export class ASTNodeTypeAlias extends ASTNodeType {
 	declare children:
 		| readonly []
 	readonly id: bigint;
@@ -959,14 +959,14 @@ export class SemanticNodeDeclarationType extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly children:
-			| readonly [SemanticNodeTypeAlias, ASTNodeType]
+			| readonly [ASTNodeTypeAlias, ASTNodeType]
 		,
 	) {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
-		const variable: SemanticNodeTypeAlias = this.children[0];
+		const variable: ASTNodeTypeAlias = this.children[0];
 		if (validator.hasSymbol(variable.id)) {
 			throw new AssignmentError01(variable);
 		};

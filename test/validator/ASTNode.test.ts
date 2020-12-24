@@ -455,7 +455,7 @@ describe('ASTNodeSolid', () => {
 
 
 	Dev.supports('variables') && describe('#varCheck', () => {
-		describe('SemanticNodeTypeAlias', () => {
+		describe('ASTNodeTypeAlias', () => {
 			it('throws if the validator does not contain a record for the identifier.', () => {
 				goalFromSource(`
 					type T = int;
@@ -608,7 +608,7 @@ describe('ASTNodeSolid', () => {
 				assert.deepStrictEqual(
 					((goal
 						.children[1] as AST.SemanticNodeDeclarationType)
-						.children[1] as AST.SemanticNodeTypeAlias)
+						.children[1] as AST.ASTNodeTypeAlias)
 						.assess(), // memoized
 					Int16,
 				);

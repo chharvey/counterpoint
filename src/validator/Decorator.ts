@@ -117,7 +117,7 @@ export class Decorator {
 					? (node.children[0] instanceof PARSER.ParseNodePrimitiveLiteral)
 						? new AST.ASTNodeTypeConstant(node.children[0].children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString)
 						: this.decorate(node.children[0])
-					: new AST.SemanticNodeTypeAlias(node.children[0] as TOKEN.TokenIdentifier)
+					: new AST.ASTNodeTypeAlias(node.children[0] as TOKEN.TokenIdentifier)
 				: this.decorate(node.children[1])
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnarySymbol) {
@@ -259,7 +259,7 @@ export class Decorator {
 
 		} else if (node instanceof PARSER.ParseNodeDeclarationType) {
 			return new AST.SemanticNodeDeclarationType(node, [
-				new AST.SemanticNodeTypeAlias(node.children[1] as TOKEN.TokenIdentifier),
+				new AST.ASTNodeTypeAlias(node.children[1] as TOKEN.TokenIdentifier),
 				this.decorate(node.children[3]),
 			]);
 

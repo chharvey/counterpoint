@@ -102,7 +102,7 @@ describe('Decorator', () => {
 		})
 
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= IDENTIFIER', () => {
-			it('makes a SemanticNodeTypeAlias.', () => {
+			it('makes an ASTNodeTypeAlias.', () => {
 				/*
 					<TypeAlias source="Foo" id=257/>
 				*/
@@ -112,7 +112,7 @@ describe('Decorator', () => {
 					`Qux`,
 				].map((src) => {
 					const constant: AST.ASTNodeType = Decorator.decorate(unitTypeFromString(src));
-					assert.ok(constant instanceof AST.SemanticNodeTypeAlias);
+					assert.ok(constant instanceof AST.ASTNodeTypeAlias);
 					return constant.id;
 				}), [
 					// 257 because `T` is 256 from `type T = ` in `unitTypeFromString`
@@ -129,7 +129,7 @@ describe('Decorator', () => {
 					</TypeOperation>
 				*/
 				assert.deepStrictEqual(Decorator.decorate(unionTypeFromString(`Foo | Bar`)).children.map((op) => {
-					assert.ok(op instanceof AST.SemanticNodeTypeAlias);
+					assert.ok(op instanceof AST.ASTNodeTypeAlias);
 					return op.id;
 				}), [257n, 258n]);
 			});

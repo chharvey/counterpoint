@@ -48,7 +48,7 @@ export class ReferenceError01 extends SolidReferenceError {
 	 * Construct a new ReferenceError01 object.
 	 * @param variable the undeclared variable
 	 */
-	constructor (variable: AST.SemanticNodeTypeAlias | AST.ASTNodeVariable) {
+	constructor (variable: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
 		super(`\`${ variable.source }\` is never declared.`, ReferenceError01.CODE, variable.line_index, variable.col_index);
 	}
 }
@@ -66,7 +66,7 @@ export class ReferenceError02 extends SolidReferenceError {
 	 * Construct a new ReferenceError02 object.
 	 * @param variable the not-yet-declared variable
 	 */
-	constructor (variable: AST.SemanticNodeTypeAlias | AST.ASTNodeVariable) {
+	constructor (variable: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
 		super(`\`${ variable.source }\` is used before it is declared.`, ReferenceError02.CODE, variable.line_index, variable.col_index);
 	}
 }
@@ -92,7 +92,7 @@ export class ReferenceError03 extends SolidReferenceError {
 	 * @param refers_to what the symbol was declared as
 	 * @param used_as   what the symbol is used as
 	 */
-	constructor (symbol: AST.SemanticNodeTypeAlias | AST.ASTNodeVariable, refers_to: SymbolKind, used_as: SymbolKind) {
+	constructor (symbol: AST.ASTNodeTypeAlias | AST.ASTNodeVariable, refers_to: SymbolKind, used_as: SymbolKind) {
 		const kind_refer: string = ReferenceError03.SYMBOL_KINDS.get(refers_to)!;
 		const kind_used:  string = ReferenceError03.SYMBOL_KINDS.get(used_as)!;
 		super(`\`${ symbol.source }\` refers to a ${ kind_refer }, but is used as a ${ kind_used }.`, ReferenceError03.CODE, symbol.line_index, symbol.col_index);
