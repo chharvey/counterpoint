@@ -24,7 +24,6 @@ import {
 	Decorator,
 	Validator,
 	AST,
-	SemanticNodeStatementExpression,
 	SemanticNodeDeclarationVariable,
 	CompletionStructureAssessment,
 	SolidLanguageType,
@@ -82,7 +81,7 @@ describe('ASTNodeSolid', () => {
 			})
 		})
 
-		describe('SemanticNodeStatementExpression', () => {
+		describe('ASTNodeStatementExpression', () => {
 			it('returns InstructionNone for empty statement expression.', () => {
 				const src: string = `;`;
 				const instr: InstructionNone | InstructionStatement = statementExpressionFromSource(src)
@@ -92,7 +91,7 @@ describe('ASTNodeSolid', () => {
 			it('returns InstructionStatement for nonempty statement expression.', () => {
 				const src: string = `42 + 420;`;
 				const builder: Builder = new Builder(src);
-				const stmt: SemanticNodeStatementExpression = statementExpressionFromSource(src);
+				const stmt: AST.ASTNodeStatementExpression = statementExpressionFromSource(src);
 				assert.deepStrictEqual(
 					stmt.build(builder),
 					new InstructionStatement(0n, operationFromSource(src).build(builder)),
@@ -102,7 +101,7 @@ describe('ASTNodeSolid', () => {
 				const src: string = `42; 420;`;
 				const generator: Builder = new Builder(src);
 				goalFromSource(src).children.forEach((stmt, i) => {
-					assert.ok(stmt instanceof SemanticNodeStatementExpression)
+					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 					assert.deepStrictEqual(
 						stmt.build(generator),
 						new InstructionStatement(BigInt(i), constantFromSource(stmt.source).build(generator)),
@@ -659,10 +658,10 @@ describe('ASTNodeSolid', () => {
 							] : []),
 							...(Dev.supports('literalTemplate') ? [
 								(goalFromSource(`'''42''';`)
-									.children[0] as SemanticNodeStatementExpression)
+									.children[0] as AST.ASTNodeStatementExpression)
 									.children[0] as AST.ASTNodeTemplate,
 								(goalFromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`)
-									.children[0] as SemanticNodeStatementExpression)
+									.children[0] as AST.ASTNodeStatementExpression)
 									.children[0] as AST.ASTNodeTemplate,
 							] : []),
 						].forEach((node) => {

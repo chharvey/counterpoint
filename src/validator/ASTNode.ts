@@ -820,15 +820,15 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 /**
  * A sematic node representing a statement.
  * There are 3 known subclasses:
- * - SemanticNodeStatementExpression
+ * - ASTNodeStatementExpression
  * - SemanticNodeDeclaration
  * - SemanticNodeAssignment
  */
 export type SemanticStatementType =
-	| SemanticNodeStatementExpression
+	| ASTNodeStatementExpression
 	| SemanticNodeDeclarationVariable
 	| SemanticNodeAssignment
-export class SemanticNodeStatementExpression extends ASTNodeSolid {
+export class ASTNodeStatementExpression extends ASTNodeSolid {
 	constructor(
 		start_node: ParseNode,
 		readonly children:

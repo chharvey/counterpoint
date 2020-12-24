@@ -10,7 +10,6 @@ import {
 } from '../../src/parser/';
 import {
 	Decorator,
-	SemanticNodeStatementExpression,
 	SemanticNodeDeclarationVariable,
 	SemanticNodeGoal,
 	AST,
@@ -54,8 +53,8 @@ describe('Decorator', () => {
 		})
 
 		context('Statement ::= ";"', () => {
-			it('makes a SemanticNodeStatementExpression node containing no children.', () => {
-				const statement: SemanticNodeStatementExpression = statementExpressionFromSource(`;`)
+			it('makes an ASTNodeStatementExpression node containing no children.', () => {
+				const statement: AST.ASTNodeStatementExpression = statementExpressionFromSource(`;`);
 				assert_arrayLength(statement.children, 0, 'semantic statement should have 0 children')
 				assert.strictEqual(statement.source, `;`)
 			})
@@ -247,7 +246,7 @@ describe('Decorator', () => {
 				const goal: AST.SemanticNodeGoal = goalFromSource(`variable; var;`);
 				assert_arrayLength(goal.children, 2);
 				assert.deepStrictEqual(goal.children.map((stmt) => {
-					assert.ok(stmt instanceof AST.SemanticNodeStatementExpression);
+					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 					assert_arrayLength(stmt.children, 1);
 					const ident: AST.ASTNodeExpression = stmt.children[0];
 					assert.ok(ident instanceof AST.ASTNodeIdentifier);
@@ -283,7 +282,7 @@ describe('Decorator', () => {
 			function stringTemplateSemanticNode(src: string): string {
 				return ((Decorator
 					.decorate(new Parser(src).parse())
-					.children[0] as SemanticNodeStatementExpression)
+					.children[0] as AST.ASTNodeStatementExpression)
 					.children[0] as AST.ASTNodeTemplate)
 					.serialize()
 			}
@@ -782,7 +781,7 @@ describe('Decorator', () => {
 				const goal: SemanticNodeGoal = Decorator.decorate(new Parser(`42; 420;`).parse())
 				assert_arrayLength(goal.children, 2, 'goal should have 2 children')
 				assert.deepStrictEqual(goal.children.map((stat) => {
-					assert.ok(stat instanceof SemanticNodeStatementExpression)
+					assert.ok(stat instanceof AST.ASTNodeStatementExpression);
 					return stat.source
 				}), ['42 ;', '420 ;'])
 			})

@@ -6,7 +6,6 @@ export {
 	SemanticNodeAssignment,
 	SemanticNodeAssignee,
 	SemanticStatementType,
-	SemanticNodeStatementExpression,
 	SemanticNodeGoal,
 } from './ASTNode';
 export * as AST from './ASTNode';
