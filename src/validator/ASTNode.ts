@@ -136,10 +136,6 @@ export abstract class ASTNodeSolid extends ASTNode {
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
 	private assessed: SolidLanguageType | null = null
-	/** @implements ASTNodeSolid */
-	varCheck(_validator: Validator = new Validator()): void {
-		return; // for now, there are no type variables // TODO: dereferencing type variables
-	}
 	/**
 	 * @implements ASTNodeSolid
 	 * @final
