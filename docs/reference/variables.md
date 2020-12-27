@@ -1,5 +1,5 @@
 # Variables
-This chapter describes declaring and accessing local variables.
+This chapter describes declaring and accessing local variables and types.
 
 
 
@@ -199,3 +199,42 @@ But unlike template literals,
 	since they are not delimited by those characters.
 - Unicode identifiers must not contain the character `` ` `` **U+0060 GRAVE ACCENT**,
 	as that would end the token. There is no way to escape this character.
+
+
+
+## Type Declaration
+Types can be declared as variables that refer to types at compile-time.
+They’re like regular variables, but instead of holding runtime values, they hold types.
+The variable that a type is stored in is called a **type alias**.
+```
+type MyType = int | float;
+```
+By convention, type aliases are named in *PascalCase*.
+
+Type aliases are initialized when they’re declared, and they’re always fixed — they can never be reassigned.
+```
+type MyType = int | float;
+MyType = int;              % raises a ParseError or ReferenceError (depending on type expression)
+```
+
+Type aliases can be declared only once within a given scope.
+Attempting to declare a new type alias with the same name will result in a semantic error.
+This behavior is identical to that of regular variables.
+```
+type MyType = str;
+type MyType = int; %> AssignmentError
+```
+> AssignmentError: Duplicate declaration: `MyType` is already declared.
+
+
+Also like variables, type aliases can create temporal dead zones.
+Solid does not hoist type aliases.
+*(NOTE: This may change in future versions.)*
+```
+let my_var: MyType = 'Hello, programmer!'; %> ReferenceError
+%%------------------------
+--- TEMPORAL DEAD ZONE ---
+------------------------%%
+type MyType = str;
+```
+> ReferenceError: `MyType` is used before it is declared.
