@@ -9,7 +9,7 @@ In order to use a variable, it must be **declared** first,
 in what we call a **variable declaration statement**.
 We declare variables with the keyword `let`.
 ```
-let my_var = 'Hello, world!';
+let my_var: str = 'Hello, world!';
 ```
 When we declare a variable, we must assign it a value, using the **assignment operator** `=`.
 In some languages, declaring a variable and at the same time assigning it a value is called **initialization**.
@@ -27,8 +27,8 @@ my_var; %== 'Hello, world!'
 Variables can be declared only once within a given scope.
 Attempting to declare a new varible with the same name will result in a semantic error.
 ```
-let my_var = 'Hello, world!';
-let my_var = '¡Hola, mundo!'; %> AssignmentError
+let my_var: str = 'Hello, world!';
+let my_var: str = '¡Hola, mundo!'; %> AssignmentError
 ```
 > AssignmentError: Duplicate declaration: `my_var` is already declared.
 
@@ -45,7 +45,7 @@ Attempting to access an undeclared variable results in a compile-time error:
 ```
 my_other_var; %> ReferenceError
 ```
-> ReferenceError: `my_other_var` is not declared.
+> ReferenceError: `my_other_var` is never declared.
 
 Even if the variable is declared further down in the code, we get the same error.
 This region of code between where a variable is accessed and where it’s declared
@@ -53,20 +53,20 @@ is called a **temporal dead zone**.
 Solid does not hoist variables.
 ```
 my_other_var;              %> ReferenceError
-{%------------------------
+%%------------------------
 --- TEMPORAL DEAD ZONE ---
-------------------------%}
-let my_other_var = 'Hello, programmer!';
+------------------------%%
+let my_other_var: str = 'Hello, programmer!';
 ```
-> ReferenceError: `my_other_var` is not declared.
+> ReferenceError: `my_other_var` is used before it is declared.
 
 
 
 ## Variable Reassignment
 By default, variables are **fixed** in that they cannot be reassigned.
 ```
-let my_var = 'Hello, world!';
-my_var = '¡Hola, mundo!';     %> AssignmentError
+let my_var: str = 'Hello, world!';
+my_var = '¡Hola, mundo!';          %> AssignmentError
 ```
 > AssignmentError: Reassignment of a fixed variable: `my_var`.
 
@@ -90,27 +90,27 @@ An unfixed variable can be reassigned anywhere in the scope in which it’s visi
 Variables are pointers, which reference preexisting values.
 When we access a variable, we reference the value that it points to.
 ```
-let my_var = 'Hello, world!';
-my_var;                       % references the string `'Hello, world!'`
+let my_var: str = 'Hello, world!';
+my_var;                            % references the string `'Hello, world!'`
 ```
 
 When a variable is assigned another variable, it points to the evaluated value of that variable.
 ```
-let a = 42;
-let b = a;
-a;          %== 42
-b;          % also `42`
+let a: int = 42;
+let b: int = a;
+a;               %== 42
+b;               % also `42`
 ```
 If that first variable is ever reassigned, the second variable will keep its pointer
 to the original value, until it itself is reassigned.
 ```
-let unfixed a = 42;
-let unfixed b = a;
-a;                  %== 42
-b;                  % also `42`
+let unfixed a: int = 42;
+let unfixed b: int = a;
+a;                       %== 42
+b;                       % also `42`
 a = 420;
-a;                  % now `420`
-b;                  % still `42`
+a;                       % now `420`
+b;                       % still `42`
 ```
 
 
@@ -128,7 +128,7 @@ almost any character in the Unicode character set: **Unicode identifiers**.
 By wrapping the identifier name with \`back-ticks\`,
 we can include non-ASCII letters.
 ```
-let `español` = 'Spanish for “Spanish”';
+let `español`: str = 'Spanish for “Spanish”';
 ```
 In the identifier above, notice the letter `ñ`.
 We can access the variable just like any other, as long as we include the name in back-tick delimiters.
@@ -139,43 +139,43 @@ We can access the variable just like any other, as long as we include the name i
 When an identifier is written with back-ticks, it must always be referred to as such,
 even if it doesn’t contain “special characters”. The converse is true as well.
 ```
-let `foo` = 42;
-foo * 2;        %> ReferenceError
-let bar = 420;
-`bar` * 2;      %> ReferenceError
+let `foo`: int = 42;
+foo * 2;             %> ReferenceError
+let bar: int = 420;
+`bar` * 2;           %> ReferenceError
 ```
-> ReferenceError: `foo` is not declared.
+> ReferenceError: `foo` is never declared.
 >
-> ReferenceError: `` `bar` `` is not declared.
+> ReferenceError: `` `bar` `` is never declared.
 
 This means that the identifiers `foo` and `` `foo` `` can refer to different values.
 ```
-let foo = 42;
-let `foo` = 420;
+let foo:   int = 42;
+let `foo`: int = 420;
 ```
 
 We can use Unicode identifiers to name variables with words that appear in the set of reserved keywords.
 ```
-let let = 42; %> ParseError
+let let: int = 42; %> ParseError
 ```
 > ParseError: Unexpeted token `let`.
 
 The reserved keyword `let` cannot be used as an identifier name,
 but we can turn it into a Unicode identifier to work around this limitation.
 ```
-let `let` = 42;
+let `let`: int = 42;
 ```
 
 With Unicode identifiers, we can insert almost any character,
 including spaces and punctuation symbols.
 ```
-let `Svaret på den ultimata frågan.` = 42;
-`Svaret på den ultimata frågan.` / 2;      %== 21
+let `Svaret på den ultimata frågan.`: int = 42;
+`Svaret på den ultimata frågan.` / 2;           %== 21
 ```
 
-Unicode identifiers may also contain no characters: the token `` `​` `` is a valid identifier.
+Unicode identifiers may also contain no characters: The token `` `​` `` is a valid identifier.
 ```
-let `` = 'What’s my name?';
+let ``: str = 'What’s my name?';
 ```
 
 Note that Unicode identifiers *are not strings*; they’re simply names of declared variables.
