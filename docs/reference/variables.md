@@ -24,6 +24,14 @@ When we access the variable, we reference the value it’s assigned.
 my_var; %== 'Hello, world!'
 ```
 
+Variables can be declared only once within a given scope.
+Attempting to declare a new varible with the same name will result in a semantic error.
+```
+let my_var = 'Hello, world!';
+let my_var = '¡Hola, mundo!'; %> AssignmentError
+```
+> AssignmentError: Duplicate declaration: `my_var` is already declared.
+
 All **basic** variable names *must* start with an uppercase or lowercase letter or an underscore.
 The rest of the basic variable name may include letters, digits, and underscores.
 By convention, variables are named in *snake_case*, but it’s not required.
