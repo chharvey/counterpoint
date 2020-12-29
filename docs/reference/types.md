@@ -131,7 +131,7 @@ the “cooked string” is the actual string value.
 “Cooking” is the process of transforming a raw string into its value,
 which follows certain rules based on the kind of string.
 
-There are kinds of strings: string literals and string templates.
+There are two kinds of strings: string literals and string templates.
 
 
 ### String Literals
@@ -208,7 +208,7 @@ Other than for the special cases listed above, a backslash has no effect.
 ```
 'I am using escaped quotation marks: I love \"strings\"!';
 'I am using unescaped quotation marks: I love "strings"!';
-'/Any /non-special /character /may /be /escaped.';
+'\Any non-special \character \may \be \escaped.';
 ```
 > 'I am using escaped quotation marks: I love "strings"!'
 >
@@ -230,16 +230,16 @@ That’s about {{ 365 * years }} days.''';
 String templates may contain interpolated expressions, which are enclosed within double-braces `{{ … }}`.
 An interpolated expression is an expression that computes to a string.
 ```
-let twelve: string = '12!';
+let twelve: string = '12';
 '''3 times 4 is {{ twelve }}''';
 ```
-> '3 times 4 is 12!'
+> '3 times 4 is 12'
 
 If the type of an interpolated expression is not a string, it’s **coerced** into a string at run-time.
 ```
-'''3 times 4 is {{ 3 * 4 }}.''';
+'''3 times 4 is {{ 3 * 4 }}''';
 ```
-> '3 times 4 is 12.'
+> '3 times 4 is 12'
 
 If an interpolated expression is absent, the empty string is assumed.
 ```
@@ -308,6 +308,10 @@ let latex_code: str = '''
 		E   &= \frac{mc^2}{\sqrt{1-\frac{v^2}{c^2}}}
 	\end{align}
 ''';
+let javascript_code: str = '''
+	var nonempty_string = 'Look, ma, no escaping (the apostrophes)!'
+	var empty_string = ''
+''';
 ```
 
 If we want to escape special characters like code points or curly braces,
@@ -320,6 +324,9 @@ But we can interpolate a string literal: {{ '\u{24}' }}.
 We also can’t escape \{\{ curly_braces \}\},
 but we can {{ '{{ interpolate }}' }}.
 
+Apostrophes can’t be escaped either: \'\'\' will print as it looks.
+But here are three, interpolated: {{ '\'\'\'' }}
+
 I {{ '\u{2764}' }} Unicode!
 '''
 ```
@@ -329,6 +336,9 @@ I {{ '\u{2764}' }} Unicode!
 > \
 > We also can’t escape \\{\\{ curly_braces \\}\\},\
 > but we can {{ interpolate }}.\
+> \
+> Apostrophes can’t be escaped either: \\'\\'\\' will print as it looks.\
+> But here are three, interpolated: '''\
 > \
 > I ❤ Unicode!\
 > '
