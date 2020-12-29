@@ -30,6 +30,10 @@ export enum Punctuator {
 	// grouping
 		GRP_OPN = '(',
 		GRP_CLS = ')',
+		BRAK_OPN = '[',   // Dev.supports('literalCollection')
+		BRAK_CLS = ']',   // Dev.supports('literalCollection')
+		COMMA    = ',',   // Dev.supports('literalCollection')
+		MAPTO    = '|->', // Dev.supports('literalCollection')
 	// unary
 		NOT = '!',
 		EMP = '?',
@@ -116,6 +120,11 @@ export class TokenPunctuator extends TokenSolid {
 	static readonly PUNCTUATORS: readonly Punctuator[] = [...new Set( // remove duplicates
 		Object.values(Punctuator).filter((p) => Dev.supports('variables') ? true : ![
 			Punctuator.ASSIGN,
+		].includes(p)).filter((p) => Dev.supports('literalCollection') ? true : ![
+			Punctuator.BRAK_OPN,
+			Punctuator.BRAK_CLS,
+			Punctuator.COMMA,
+			Punctuator.MAPTO,
 		].includes(p))
 	)]
 	// declare readonly source: Punctuator; // NB: https://github.com/microsoft/TypeScript/issues/40220
