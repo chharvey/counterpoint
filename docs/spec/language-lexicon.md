@@ -79,13 +79,13 @@ There are a small number of token types, each of which have a specific purpose.
 
 1. [File Bounds](#file-bounds)
 1. [Whitespace](#whitespace)
+1. [Comments](#comments)
 1. [Punctuators](#punctuators)
 1. [Keywords](#keywords)
 1. [Identifiers](#identifiers)
 1. [Numbers](#numbers)
 1. [String Literals](#string-literals)
 1. [Template Literals](#template-literals)
-1. [Comments](#comments)
 
 
 ### File Bounds
@@ -135,6 +135,27 @@ U+2029     | PARAGRAPH SEPARATOR       | General Punctuation         | Separator
 U+202F     | NARROW NO-BREAK SPACE     | General Punctuation         | Separator, Space [Zs]
 U+205F     | MEDIUM MATHEMATICAL SPACE | General Punctuation         | Separator, Space [Zs]
 U+3000     | IDEOGRAPHIC SPACE         | CJK Symbols and Punctuation | Separator, Space [Zs]
+
+
+### Comments
+Comments are tokens of arbitrary text,
+mainly used to add human-readable language to code
+or to provide other types of annotations.
+Comment tokens are not sent to the Solid parser.
+
+#### Line Comments
+Line comments begin with `%` (**U+0025 PERCENT SIGN**).
+The compiler will ignore all source text starting from `%` and onward,
+up to and including the next line break (**U+000A LINE FEED (LF)**).
+
+#### Multiline Comments
+Multiline comments are contained in the delimiters `%% %%`,
+and may contain line breaks. Nesting is not possible.
+
+##### Documentation Comments
+Documentation comments are multiline comments, but they use the delimiters `%%% %%`.
+The extra percent sign may signal to a separate parser that
+the comment documents the code structure that follows it.
 
 
 ### Punctuators
@@ -219,24 +240,3 @@ specific ways determined by the formal syntactic grammar.
 
 #### TokenWorth (Templates)
 The Token Worth of a Template token is the analogue of the Token Worth of a String token.
-
-
-### Comments
-Comments are tokens of arbitrary text,
-mainly used to add human-readable language to code
-or to provide other types of annotations.
-Comment tokens are not sent to the Solid parser.
-
-#### Line Comments
-Line comments begin with `%` (**U+0025 PERCENT SIGN**).
-The compiler will ignore all source text starting from `%` and onward,
-up to and including the next line break (**U+000A LINE FEED (LF)**).
-
-#### Multiline Comments
-Multiline comments are contained in the delimiters `%% %%`,
-and may contain line breaks. Nesting is not possible.
-
-##### Documentation Comments
-Documentation comments are multiline comments, but they use the delimiters `%%% %%`.
-The extra percent sign may signal to a separate parser that
-the comment documents the code structure that follows it.

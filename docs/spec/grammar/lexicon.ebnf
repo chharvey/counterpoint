@@ -8,6 +8,19 @@ Whitespace
 
 
 
+Comment :::=
+	| CommentLine
+	| CommentMulti
+;
+
+CommentLine
+	:::= "%" ([^%#x0a#x03] [^#x0a#x03]*)? #x0a;
+
+CommentMulti
+	:::= "%%" ("%"? [^%#x03])* "%%";
+
+
+
 Punctuator :::=
 	// grouping
 		| "(" | ")"
@@ -99,13 +112,15 @@ StringChars :::=
 	| [^'\#x03]                StringChars?
 	| "\"         StringEscape StringChars?
 	| "\u"      ( [^'{#x03]    StringChars? )?
+	| "%" ([^'%#x0a#x03] [^'#x0a#x03]*)? #x0a?
+	| "%%" ("%"? [^'%#x03])* "%%"?
 ;
 
 StringEscape :::=
-	| "'" | "\" | "s" | "t" | "n" | "r"
+	| "'" | "%" | "\" | "s" | "t" | "n" | "r"
 	| "u{" DigitSequenceHex? "}"
 	| #x0a
-	| [^'\stnru#x0a#x03]
+	| [^'%\stnru#x0a#x03]
 ;
 
 
@@ -155,22 +170,10 @@ TemplateChars__EndInterp__StartInterp :::=
 
 
 
-Comment :::=
-	| CommentLine
-	| CommentMulti
-;
-
-CommentLine
-	:::= "%" ([^%#x0a#x03] [^#x0a#x03]*)? #x0a;
-
-CommentMulti
-	:::= "%%" ("%"? [^%#x03])* "%%";
-
-
-
 Goal<Comment, Radix, Separator> :::=
 	| Filebound
 	| Whitespace
+	| <Comment+>Comment
 	| Punctuator
 	| Keyword
 	| Identifier
@@ -180,5 +183,4 @@ Goal<Comment, Radix, Separator> :::=
 	| TemplateHead
 	| TemplateMiddle
 	| TemplateTail
-	| <Comment+>Comment
 ;
