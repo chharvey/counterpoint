@@ -1,9 +1,10 @@
+import * as assert from 'assert'
 import {
 	Filebound,
 	Token,
 	TokenFilebound,
+	ParseNode,
 } from '@chharvey/parser';
-import * as assert from 'assert'
 
 import {
 	SolidConfig,
@@ -77,6 +78,18 @@ export function unionTypeFromString(typestring: string, config: SolidConfig = CO
 function typeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeType {
 	return typeDeclarationFromSource(`type T = ${ typestring };`, config).children[3];
 }
+export function propertyFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeProperty {
+	const record: PARSER.ParseNodeRecordLiteral = recordLiteralFromSource(`[${ propertystring }];`, config);
+	assert_arrayLength(record.children, 3, 'record should have 3 children');
+	assert_arrayLength(record.children[1].children, 1, 'property list should have 1 child');
+	return record.children[1].children[0];
+}
+export function caseFromString(casestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeCase {
+	const mapping: PARSER.ParseNodeMapLiteral = mapLiteralFromSource(`[${ casestring }];`, config);
+	assert_arrayLength(mapping.children, 3, 'map should have 3 children');
+	assert_arrayLength(mapping.children[1].children, 1, 'case list should have 1 child');
+	return mapping.children[1].children[0];
+}
 export function tokenLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString {
 	const token: Token = primitiveLiteralFromSource(src, config).children[0]
 	assert.ok(
@@ -89,16 +102,37 @@ export function tokenLiteralFromSource(src: string, config: SolidConfig = CONFIG
 export function tokenIdentifierFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenIdentifier {
 	const expression_unit: PARSER.ParseNodeExpressionUnit = unitExpressionFromSource(src, config)
 	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child')
-	const unit: Token | PARSER.ParseNodePrimitiveLiteral | PARSER.ParseNodeStringTemplate = expression_unit.children[0]
+	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = expression_unit.children[0];
 	assert.ok(unit instanceof TOKEN.TokenIdentifier, 'unit should be a TokenIdentifier')
 	return unit
 }
 export function primitiveLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodePrimitiveLiteral {
 	const expression_unit: PARSER.ParseNodeExpressionUnit = unitExpressionFromSource(src, config)
 	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child')
-	const unit: Token | PARSER.ParseNodePrimitiveLiteral | PARSER.ParseNodeStringTemplate = expression_unit.children[0]
+	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = expression_unit.children[0];
 	assert.ok(unit instanceof PARSER.ParseNodePrimitiveLiteral, 'unit should be a ParseNodePrimitiveLiteral')
 	return unit
+}
+export function listLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeListLiteral {
+	const expression_unit: PARSER.ParseNodeExpressionUnit = unitExpressionFromSource(src, config);
+	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child');
+	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = expression_unit.children[0];
+	assert.ok(unit instanceof PARSER.ParseNodeListLiteral, 'unit should be a ParseNodeListLiteral');
+	return unit;
+}
+export function recordLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeRecordLiteral {
+	const expression_unit: PARSER.ParseNodeExpressionUnit = unitExpressionFromSource(src, config);
+	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child');
+	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = expression_unit.children[0];
+	assert.ok(unit instanceof PARSER.ParseNodeRecordLiteral, 'unit should be a ParseNodeRecordLiteral');
+	return unit;
+}
+export function mapLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeMapLiteral {
+	const expression_unit: PARSER.ParseNodeExpressionUnit = unitExpressionFromSource(src, config);
+	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child');
+	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = expression_unit.children[0];
+	assert.ok(unit instanceof PARSER.ParseNodeMapLiteral, 'unit should be a ParseNodeMapLiteral');
+	return unit;
 }
 export function unitExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionUnit {
 	const expression_unary: PARSER.ParseNodeExpressionUnarySymbol = unaryExpressionFromSource(src, config)
@@ -191,4 +225,41 @@ export function statementFromSource(src: string, config: SolidConfig = CONFIG_DE
 	assert.strictEqual(eot.source, Filebound.EOT)
 	assert_arrayLength(stat_list.children, 1, 'statement list should have 1 child')
 	return stat_list.children[0]
+}
+
+
+
+/**
+ * Tests a production of the form `List ::= (List ",")? Item`,
+ * matching given source strings to each `Item`.
+ * For example, given the following parse node
+ * ```xml
+ * <List>
+ * 	<List>
+ * 		<List>
+ * 			<Item source="a">...</Item>
+ * 		</List>
+ * 		<PUNCTUATOR>,</PUNCTUATOR>
+ * 		<Item source="b">...</Item>
+ * 	</List>
+ * 	<PUNCTUATOR>,</PUNCTUATOR>
+ * 	<Item source="c">...</Item>
+ * </List>
+ * ```
+ * the following test would pass:
+ * @example
+ * hashListSources(parsenode, 'a', 'b', 'c');
+ * @param pnode the parse node to test
+ * @param srcs  the source code strings
+ */
+export function hashListSources(pnode: ParseNode, ...srcs: [string, ...string[]]): void {
+	if (srcs.length === 1) {
+		assert_arrayLength(pnode.children, 1);
+		assert.strictEqual((pnode.children[0] as Token | ParseNode).source, srcs[0]);
+	} else {
+		assert_arrayLength(pnode.children, 3);
+		assert.strictEqual((pnode.children[1] as Token | ParseNode).source, Punctuator.COMMA);
+		assert.strictEqual((pnode.children[2] as Token | ParseNode).source, srcs[srcs.length - 1]); // COMBAK srcs.lastItem
+		return hashListSources(pnode.children[0] as ParseNode, ...srcs.slice(0, -1) as [string, ...string[]]);
+	};
 }

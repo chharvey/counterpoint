@@ -156,11 +156,14 @@ export class Decorator {
 			))
 
 		} else if (node instanceof PARSER.ParseNodeExpressionUnit) {
-			return (node.children.length === 1)
-				? (node.children[0] instanceof ParseNode)
+			return (
+				(node.children.length === 1) ? (node.children[0] instanceof ParseNode)
 					? this.decorate(node.children[0])
 					: new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier)
-				: this.decorate(node.children[1])
+				:
+				(node.children.length === 2) ? (() => { throw new Error('`Decorate(ExpressionUnit ::= "[" "]")` not yet supported.') })() :
+				this.decorate(node.children[1])
+			);
 
 		} else if (node instanceof PARSER.ParseNodeExpressionUnarySymbol) {
 			return (node.children.length === 1)

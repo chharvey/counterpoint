@@ -1,3 +1,4 @@
+// KEYWORD         ::= [./lexicon.ebnf#Keyword];
 // IDENTIFIER      ::= [./lexicon.ebnf#Identifier];
 // INTEGER         ::= [./lexicon.ebnf#Integer];
 // FLOAT           ::= [./lexicon.ebnf#Float];
@@ -6,6 +7,13 @@
 // TEMPLATE_HEAD   ::= [./lexicon.ebnf#TemplateHead];
 // TEMPLATE_MIDDLE ::= [./lexicon.ebnf#TempalteMiddle];
 // TEMPLATE_TAIL   ::= [./lexicon.ebnf#TempalteTail];
+
+
+
+Word ::=
+	| KEYWORD
+	| IDENTIFIER
+;
 
 
 
@@ -53,10 +61,24 @@ StringTemplate ::=
 	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
 ;
 
+ExpressionHash
+	::= Expression#;
+
+Property ::= Word           "="   Expression;
+Case     ::= ExpressionHash "|->" Expression;
+
+ListLiteral   ::= "[" ","? ExpressionHash ","? "]";
+RecordLiteral ::= "[" ","? Property#      ","? "]";
+MapLiteral    ::= "[" ","? Case#          ","? "]";
+
 ExpressionUnit ::=
 	| IDENTIFIER
 	| PrimitiveLiteral
 	| StringTemplate
+	| "[" "]"
+	| ListLiteral
+	| RecordLiteral
+	| MapLiteral
 	| "(" Expression ")"
 ;
 
