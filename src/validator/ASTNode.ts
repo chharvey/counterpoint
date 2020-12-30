@@ -129,7 +129,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 
 /**
  * A sematic node representing a type.
- * There are 2 known subclasses:
+ * There are 3 known subclasses:
  * - ASTNodeTypeConstant
  * - ASTNodeTypeAlias
  * - ASTNodeTypeOperation
@@ -212,7 +212,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
 		};
 	}
-	/** @implements ASTNodeSolid */
+	/** @implements ASTNodeType */
 	protected assess_do(validator: Validator): SolidLanguageType {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolInfo = validator.getSymbolInfo(this.id)!;
