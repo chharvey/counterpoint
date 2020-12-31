@@ -1,3 +1,10 @@
+Decorate(Word ::= IDENTIFIER) -> SemanticKey
+	:= (SemanticKey[id=TokenWorth(IDENTIFIER)]);
+Decorate(Word ::= KEYWORD) -> SemanticKey
+	:= (SemanticKey[id=TokenWorth(KEYWORD)]);
+
+
+
 Decorate(PrimitiveLiteral ::= "null") -> SemanticConstant
 	:= (SemanticConstant[value=null]);
 Decorate(PrimitiveLiteral ::= "false") -> SemanticConstant
@@ -123,12 +130,76 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 
 
 
+Decorate(ExpressionHash ::= ExpressionHash__0__List) -> Sequence<SemanticExpression>
+	:= Decorate(ExpressionHash__0__List);
+
+	Decorate(ExpressionHash__0__List ::= Expression) -> Sequence<SemanticExpression>
+		:= [Decorate(Expression)];
+	Decorate(ExpressionHash__0__List ::= ExpressionHash__0__List "," Expression) -> Sequence<SemanticExpression>
+		:= [
+			...Decorate(ExpressionHash__0__List),
+			Decorate(Expression),
+		];
+
+Decorate(Property ::= Word "=" Expression) -> SemanticProperty
+	:= (SemanticProperty
+		Decorate(Word)
+		Decorate(Expression)
+	);
+
+Decorate(Case ::= ExpressionHash "|->" Expression) -> SemanticCase
+	:= (SemanticCase
+		...Decorate(ExpressionHash)
+		Decorate(Expression)
+	);
+
+Decorate(ListLiteral ::= "[" ","? ExpressionHash ","? "]") -> SemanticList
+	:= (SemanticList
+		...Decorate(ExpressionHash)
+	);
+
+Decorate(RecordLiteral ::= "[" ","? RecordLiteral__1__List ","? "]") -> SemanticRecord
+	:= (SemanticRecord
+		...Decorate(RecordLiteral__1__List)
+	);
+
+	Decorate(RecordLiteral__1__List ::= Property) -> Sequence<SemanticProperty>
+		:= [Decorate(Property)];
+	Decorate(RecordLiteral__1__List ::= RecordLiteral__1__List "," Property) -> Sequence<SemanticProperty>
+		:= [
+			...Decorate(RecordLiteral__1__List),
+			Decorate(Property),
+		];
+
+Decorate(MapLiteral ::= "[" ","? MapLiteral__1__List ","? "]") -> SemanticMap
+	:=(SemanticMap
+		...Decorate(MapLiteral__1__List)
+	);
+
+	Decorate(MapLiteral__1__List ::= Case) -> Sequence<SemanticCase>
+		:= [Decorate(Case)];
+	Decorate(MapLiteral__1__List ::= MapLiteral__1__List "," Case) -> Sequence<SemanticCase>
+		:= [
+			...Decorate(MapLiteral__1__List),
+			Decorate(Case),
+		];
+
+
+
 Decorate(ExpressionUnit ::= IDENTIFIER) -> SemanticVariable
 	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
 Decorate(ExpressionUnit ::= PrimitiveLiteral) -> SemanticConstant
 	:= Decorate(PrimitiveLiteral);
 Decorate(ExpressionUnit ::= StringTemplate) -> SemanticTemplate
 	:= Decorate(StringTemplate);
+Decorate(ExpressionUnit ::= "[" "]") -> SemanticEmptyCollection
+	:= (SemanticEmptyCollection);
+Decorate(ExpressionUnit ::= ListLiteral) -> SemanticList
+	:= Decorate(ListLiteral);
+Decorate(ExpressionUnit ::= RecordLiteral) -> SemanticRecord
+	:= Decorate(RecordLiteral);
+Decorate(ExpressionUnit ::= MapLiteral) -> SemanticMap
+	:= Decorate(MapLiteral);
 Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticExpression
 	:= Decorate(Expression);
 

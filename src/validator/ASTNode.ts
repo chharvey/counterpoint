@@ -5,6 +5,9 @@ import {
 } from '@chharvey/parser';
 import * as xjs from 'extrajs'
 
+import type {
+	NonemptyArray,
+} from '../types.d';
 import {
 	Operator,
 	ValidTypeOperator,
@@ -64,6 +67,7 @@ import {
 	Keyword,
 	CookValueType,
 	TOKEN,
+	PARSER,
 } from '../parser/';
 
 
@@ -278,13 +282,76 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 		)
 	}
 }
-
+export class ASTNodeKey extends ASTNodeSolid {
+	declare children: readonly [];
+	readonly id: bigint;
+	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenIdentifier) {
+		super(start_node, {id: start_node.cook()});
+		this.id = start_node.cook()!;
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeKey#varCheck not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	typeCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeKey#typeCheck not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	build(builder: Builder): Instruction {
+		throw builder && 'ASTNodeKey#build not yet supported.';
+	}
+}
+export class ASTNodeProperty extends ASTNodeSolid {
+	constructor (
+		start_node: PARSER.ParseNodeProperty,
+		readonly children: readonly [ASTNodeKey, ASTNodeExpression],
+	) {
+		super(start_node, {}, children);
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeProperty#varCheck not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	typeCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeProperty#typeCheck not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	build(builder: Builder): Instruction {
+		throw builder && 'ASTNodeProperty#build not yet supported.';
+	}
+}
+export class ASTNodeCase extends ASTNodeSolid {
+	constructor (
+		start_node: PARSER.ParseNodeCase,
+		readonly children: NonemptyArray<ASTNodeExpression>,
+	) {
+		super(start_node, {}, children);
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeCase#varCheck not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	typeCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeCase#typeCheck not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	build(builder: Builder): Instruction {
+		throw builder && 'ASTNodeCase#build not yet supported.';
+	}
+}
 /**
  * A sematic node representing an expression.
  * There are 4 known subclasses:
  * - ASTNodeConstant
  * - ASTNodeVariable
  * - ASTNodeTemplate
+ * - ASTNodeEmptyCollection
+ * - ASTNodeList
+ * - ASTNodeRecord
+ * - ASTNodeMap
  * - ASTNodeOperation
  */
 export abstract class ASTNodeExpression extends ASTNodeSolid {
@@ -466,6 +533,116 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	/** @implements ASTNodeExpression */
 	protected type_do(_validator: Validator): SolidLanguageType {
 		return SolidString
+	}
+}
+export class ASTNodeEmptyCollection extends ASTNodeExpression {
+	declare children: readonly [];
+	constructor (start_node: PARSER.ParseNodeExpressionUnit) {
+		super(start_node);
+	}
+	/** @implements ASTNodeExpression */
+	get shouldFloat(): boolean {
+		throw 'ASTNodeEmptyCollection#shouldFloat not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeEmptyCollection#varCheck not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected build_do(builder: Builder): InstructionExpression {
+		throw builder && 'ASTNodeEmptyCollection#build_do not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected assess_do(): CompletionStructureAssessment {
+		throw 'ASTNodeEmptyCollection#assess_do not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected type_do(validator: Validator): SolidLanguageType {
+		throw validator && 'ASTNodeEmptyCollection#type_do not yet supported.';
+	}
+}
+export class ASTNodeList extends ASTNodeExpression {
+	constructor (
+		start_node: PARSER.ParseNodeListLiteral,
+		readonly children: readonly ASTNodeExpression[],
+	) {
+		super(start_node, {}, children);
+	}
+	/** @implements ASTNodeExpression */
+	get shouldFloat(): boolean {
+		throw 'ASTNodeList#shouldFloat not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeList#varCheck not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected build_do(builder: Builder): InstructionExpression {
+		throw builder && 'ASTNodeList#build_do not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected assess_do(): CompletionStructureAssessment {
+		throw 'ASTNodeList#assess_do not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected type_do(validator: Validator): SolidLanguageType {
+		throw validator && 'ASTNodeList#type_do not yet supported.';
+	}
+}
+export class ASTNodeRecord extends ASTNodeExpression {
+	constructor (
+		start_node: PARSER.ParseNodeRecordLiteral,
+		readonly children: readonly ASTNodeProperty[],
+	) {
+		super(start_node, {}, children);
+	}
+	/** @implements ASTNodeExpression */
+	get shouldFloat(): boolean {
+		throw 'ASTNodeRecord#shouldFloat not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeRecord#varCheck not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected build_do(builder: Builder): InstructionExpression {
+		throw builder && 'ASTNodeRecord#build_do not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected assess_do(): CompletionStructureAssessment {
+		throw 'ASTNodeRecord#assess_do not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected type_do(validator: Validator): SolidLanguageType {
+		throw validator && 'ASTNodeRecord#type_do not yet supported.';
+	}
+}
+export class ASTNodeMap extends ASTNodeExpression {
+	constructor (
+		start_node: PARSER.ParseNodeMapLiteral,
+		readonly children: readonly ASTNodeCase[],
+	) {
+		super(start_node, {}, children);
+	}
+	/** @implements ASTNodeExpression */
+	get shouldFloat(): boolean {
+		throw 'ASTNodeMap#shouldFloat not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeMap#varCheck not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected build_do(builder: Builder): InstructionExpression {
+		throw builder && 'ASTNodeMap#build_do not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected assess_do(): CompletionStructureAssessment {
+		throw 'ASTNodeMap#assess_do not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected type_do(validator: Validator): SolidLanguageType {
+		throw validator && 'ASTNodeMap#type_do not yet supported.';
 	}
 }
 export abstract class ASTNodeOperation extends ASTNodeExpression {

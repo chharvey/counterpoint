@@ -72,7 +72,7 @@ describe('Decorator', () => {
 					`true;`,
 					`42;`,
 					`4.2;`,
-				].map((src) => Decorator.decorate(primitiveLiteralFromSource(src)).value), [
+				].map((src) => (Decorator.decorate(primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).value), [
 					SolidNull.NULL,
 					SolidBoolean.FALSE,
 					SolidBoolean.TRUE,
@@ -92,7 +92,7 @@ describe('Decorator', () => {
 					`int`,
 					`float`,
 					`obj`,
-				].map((src) => Decorator.decorate(keywordTypeFromString(src)).value), [
+				].map((src) => (Decorator.decorate(keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).value), [
 					SolidBoolean,
 					Int16,
 					Float64,
