@@ -288,6 +288,34 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeOperation
  */
 export abstract class ASTNodeExpression extends ASTNodeSolid {
+	/**
+	 * Decorator for {@link ASTNodeExpression#type} method and any overrides.
+	 * Type-checks and re-throws any type errors first,
+	 * then computes assessed value (if applicable), and if successful,
+	 * returns a constant type equal to that assessed value.
+	 * @param   _prototype    the prototype that has the method to be decorated
+	 * @param   _property_key the name of the method to be decorated
+	 * @param   descriptor    the Property Descriptor of the prototype’s method
+	 * @returns               `descriptor`, with a new value that is the decorated method
+	 */
+	protected static typeDeco(
+		_prototype: ASTNodeExpression,
+		_property_key: string,
+		descriptor: TypedPropertyDescriptor<(this: ASTNodeExpression, validator?: Validator) => SolidLanguageType>,
+	): typeof descriptor {
+		const method = descriptor.value!;
+		descriptor.value = function (validator = new Validator()) {
+			const typ: SolidLanguageType = method.call(this, validator); // type-check first, to re-throw any TypeErrors
+			if (validator.config.compilerOptions.constantFolding) {
+				this.assessed || (this.assessed = this.assess()); // COMBAK `this.assessed ||= this.assess()`
+				if (!this.assessed.isAbrupt) {
+					return new SolidTypeConstant(this.assessed.value!)
+				}
+			}
+			return typ;
+		};
+		return descriptor;
+	}
 	private assessed: CompletionStructureAssessment | null = null
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
@@ -315,19 +343,8 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * The Type of this expression.
 	 * @param validator stores validation and configuration information
 	 * @return the compile-time type of this node
-	 * @final
 	 */
-	type(validator: Validator = new Validator()): SolidLanguageType {
-		const type_: SolidLanguageType = this.type_do(validator); // type-check first, to re-throw any TypeErrors
-		if (validator.config.compilerOptions.constantFolding) {
-			this.assessed || (this.assessed = this.assess()); // COMBAK `this.assessed ||= this.assess()`
-			if (!this.assessed.isAbrupt) {
-				return new SolidTypeConstant(this.assessed.value!)
-			}
-		}
-		return type_
-	}
-	protected abstract type_do(validator: Validator): SolidLanguageType;
+	abstract type(validator?: Validator): SolidLanguageType;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
 	 * If {@link SolidConfig|constant folding} is off, this should not be called.
@@ -371,7 +388,8 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return this.assess_do().build(to_float)
 	}
 	/** @implements ASTNodeExpression */
-	protected type_do(validator: Validator): SolidLanguageType {
+	@ASTNodeExpression.typeDeco
+	type(validator: Validator = new Validator()): SolidLanguageType {
 		// No need to call `this.assess()` and then unwrap again; just use `this.value`.
 		return (validator.config.compilerOptions.constantFolding && (
 			this.value instanceof SolidNull ||
@@ -420,7 +438,8 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		throw new Error('ASTNodeVariable#build_do not yet supported.');
 	}
 	/** @implements ASTNodeExpression */
-	protected type_do(validator: Validator): SolidLanguageType {
+	@ASTNodeExpression.typeDeco
+	type(validator: Validator = new Validator()): SolidLanguageType {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolInfo = validator.getSymbolInfo(this.id)!;
 			if (symbol.kind === SymbolKind.VALUE) {
@@ -460,7 +479,8 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		throw new Error('ASTNodeTemplate#build_do not yet supported.');
 	}
 	/** @implements ASTNodeExpression */
-	protected type_do(_validator: Validator): SolidLanguageType {
+	@ASTNodeExpression.typeDeco
+	type(_validator: Validator = new Validator()): SolidLanguageType {
 		return SolidString
 	}
 	/** @implements ASTNodeExpression */
@@ -509,7 +529,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		)
 	}
 	/** @implements ASTNodeExpression */
-	protected type_do(validator: Validator): SolidLanguageType {
+	@ASTNodeExpression.typeDeco
+	type(validator: Validator = new Validator()): SolidLanguageType {
 		if ([Operator.NOT, Operator.EMP].includes(this.operator)) {
 			return SolidBoolean
 		}
@@ -562,14 +583,15 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	 * @implements ASTNodeExpression
 	 * @final
 	 */
-	protected type_do(validator: Validator): SolidLanguageType {
-		return this.type_do_do(
+	@ASTNodeExpression.typeDeco
+	type(validator: Validator = new Validator()): SolidLanguageType {
+		return this.type_do(
 			this.children[0].type(validator),
 			this.children[1].type(validator),
 			validator.config.compilerOptions.intCoercion,
 		)
 	}
-	protected abstract type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType;
+	protected abstract type_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType;
 }
 export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	constructor (
@@ -589,7 +611,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		)
 	}
 	/** @implements ASTNodeOperationBinary */
-	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
+	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
 		if (bothNumeric(t0, t1)) {
 			if (int_coercion) {
 				return (eitherFloats(t0, t1)) ? Float64 : Int16
@@ -662,7 +684,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		)
 	}
 	/** @implements ASTNodeOperationBinary */
-	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
+	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
 		if (bothNumeric(t0, t1) && (int_coercion || (
 			bothFloats(t0, t1) || neitherFloats(t0, t1)
 		))) {
@@ -727,7 +749,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		)
 	}
 	/** @implements ASTNodeOperationBinary */
-	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
+	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
 		// If `a` and `b` are of disjoint numeric types, then `a is b` will always return `false`.
 		// If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
 		if (bothNumeric(t0, t1)) {
@@ -782,7 +804,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		)
 	}
 	/** @implements ASTNodeOperationBinary */
-	protected type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, _int_coercion: boolean): SolidLanguageType {
+	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType, _int_coercion: boolean): SolidLanguageType {
 		const null_union_false: SolidLanguageType = SolidNull.union(SolidBoolean.FALSETYPE);
 		function truthifyType(t: SolidLanguageType): SolidLanguageType {
 			const values: Set<SolidObject> = new Set(t.values);
@@ -845,7 +867,8 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		)
 	}
 	/** @implements ASTNodeExpression */
-	protected type_do(validator: Validator): SolidLanguageType {
+	@ASTNodeExpression.typeDeco
+	type(validator: Validator = new Validator()): SolidLanguageType {
 		// If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
 		// If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
 		const t0: SolidLanguageType = this.children[0].type(validator);
