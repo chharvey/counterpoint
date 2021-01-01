@@ -316,6 +316,27 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 		};
 		return descriptor;
 	}
+	/**
+	 * Decorator for {@link ASTNodeExpression#build} method and any overrides.
+	 * First tries to compute the assessed value, and if successful, builds the assessed value.
+	 * Otherwise builds this node.
+	 * @param   _prototype    the prototype that has the method to be decorated
+	 * @param   _property_key the name of the method to be decorated
+	 * @param   descriptor    the Property Descriptor of the prototype’s method
+	 * @returns               `descriptor`, with a new value that is the decorated method
+	 */
+	protected static buildDeco<T extends InstructionExpression>(
+		_prototype: ASTNodeExpression,
+		_property_key: string,
+		descriptor: TypedPropertyDescriptor<(this: ASTNodeExpression, builder: Builder, to_float?: boolean) => InstructionConst | T>,
+	): typeof descriptor {
+		const method = descriptor.value!;
+		descriptor.value = function (builder, to_float = false) {
+			const assess: CompletionStructureAssessment | null = (builder.config.compilerOptions.constantFolding) ? this.assess() : null
+			return (assess && !assess.isAbrupt) ? assess.build(to_float) : method.call(this, builder, to_float);
+		};
+		return descriptor;
+	}
 	private assessed: CompletionStructureAssessment | null = null
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
@@ -330,15 +351,10 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 		this.type(validator); // assert does not throw
 	}
 	/**
-	 * @implements ASTNodeSolid
+	 * @overrides ASTNodeSolid
 	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
-	 * @final
 	 */
-	build(builder: Builder, to_float?: boolean): InstructionExpression {
-		const assess: CompletionStructureAssessment | null = (builder.config.compilerOptions.constantFolding) ? this.assess() : null
-		return (assess && !assess.isAbrupt) ? assess.build(to_float) : this.build_do(builder, to_float)
-	}
-	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionExpression;
+	abstract build(builder: Builder, to_float?: boolean): InstructionExpression;
 	/**
 	 * The Type of this expression.
 	 * @param validator stores validation and configuration information
@@ -384,7 +400,8 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return; // no validation necessary for constants
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(_builder: Builder, to_float: boolean = false): InstructionConst {
+	@ASTNodeExpression.buildDeco
+	build(_builder: Builder, to_float: boolean = false): InstructionConst {
 		return this.assess_do().build(to_float)
 	}
 	/** @implements ASTNodeExpression */
@@ -434,8 +451,9 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		};
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(_builder: Builder): InstructionExpression {
-		throw new Error('ASTNodeVariable#build_do not yet supported.');
+	@ASTNodeExpression.buildDeco
+	build(_builder: Builder): InstructionExpression {
+		throw new Error('ASTNodeVariable#build not yet supported.');
 	}
 	/** @implements ASTNodeExpression */
 	@ASTNodeExpression.typeDeco
@@ -475,8 +493,9 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(_builder: Builder): InstructionExpression {
-		throw new Error('ASTNodeTemplate#build_do not yet supported.');
+	@ASTNodeExpression.buildDeco
+	build(_builder: Builder): InstructionExpression {
+		throw new Error('ASTNodeTemplate#build not yet supported.');
 	}
 	/** @implements ASTNodeExpression */
 	@ASTNodeExpression.typeDeco
@@ -521,7 +540,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return this.children[0].shouldFloat
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop {
+	@ASTNodeExpression.buildDeco
+	build(builder: Builder, to_float: boolean = false): InstructionConst | InstructionUnop {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionUnop(
 			this.operator,
@@ -602,7 +622,8 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		super(start_node, operator, children)
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopArithmetic {
+	@ASTNodeExpression.buildDeco
+	build(builder: Builder, to_float: boolean = false): InstructionConst | InstructionBinopArithmetic {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionBinopArithmetic(
 			this.operator,
@@ -675,7 +696,8 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		super(start_node, operator, children)
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopComparative {
+	@ASTNodeExpression.buildDeco
+	build(builder: Builder, to_float: boolean = false): InstructionConst | InstructionBinopComparative {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionBinopComparative(
 			this.operator,
@@ -740,7 +762,8 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return this.operator === Operator.EQ && super.shouldFloat
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, _to_float: boolean = false): InstructionBinopEquality {
+	@ASTNodeExpression.buildDeco
+	build(builder: Builder, _to_float: boolean = false): InstructionConst | InstructionBinopEquality {
 		const tofloat: boolean = builder.config.compilerOptions.intCoercion && this.shouldFloat
 		return new InstructionBinopEquality(
 			this.operator,
@@ -794,7 +817,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		super(start_node, operator, children)
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopLogical {
+	@ASTNodeExpression.buildDeco
+	build(builder: Builder, to_float: boolean = false): InstructionConst | InstructionBinopLogical {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionBinopLogical(
 			builder.varCount,
@@ -858,7 +882,8 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		return this.children[1].shouldFloat || this.children[2].shouldFloat
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionCond {
+	@ASTNodeExpression.buildDeco
+	build(builder: Builder, to_float: boolean = false): InstructionConst | InstructionCond {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionCond(
 			this.children[0].build(builder, false),
