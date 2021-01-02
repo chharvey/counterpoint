@@ -28,8 +28,6 @@ export class SolidObject {
 	/** @implements SolidLanguageType */
 	static union: SolidLanguageType['union'] = SolidLanguageType.prototype.union
 	/** @implements SolidLanguageType */
-	static union_do: SolidLanguageType['union_do'] = SolidLanguageType.prototype.union_do
-	/** @implements SolidLanguageType */
 	static isSubtypeOf: SolidLanguageType['isSubtypeOf'] = SolidLanguageType.prototype.isSubtypeOf
 	/** @implements SolidLanguageType */
 	static isSubtypeOf_do(t: SolidLanguageType): boolean {

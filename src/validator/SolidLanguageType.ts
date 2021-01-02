@@ -49,6 +49,36 @@ export abstract class SolidLanguageType {
 		};
 		return descriptor;
 	}
+	/**
+	 * Decorator for {@link SolidLanguageType#union} method and any overrides.
+	 * Contains shortcuts for constructing type unions.
+	 * @param   _prototype    the prototype that has the method to be decorated
+	 * @param   _property_key the name of the method to be decorated
+	 * @param   descriptor    the Property Descriptor of the prototype’s method
+	 * @returns               `descriptor`, with a new value that is the decorated method
+	 */
+	protected static unionDeco(
+		_prototype: SolidLanguageType,
+		_property_key: string,
+		descriptor: TypedPropertyDescriptor<(this: SolidLanguageType, t: SolidLanguageType) => SolidLanguageType>,
+	): typeof descriptor {
+		const method = descriptor.value!;
+		descriptor.value = function (t) {
+			/** 1-7 | `T \| never   == T` */
+			if (t.isEmpty) { return this }
+			if (this.isEmpty) { return t }
+			/** 1-8 | `T \| unknown == unknown` */
+			if (t.isUniverse) { return t }
+			if (this.isUniverse) { return this }
+
+			/** 3-4 | `A <: B  <->  A \| B == B` */
+			if (this.isSubtypeOf(t)) { return t }
+			if (t.isSubtypeOf(this)) { return this }
+
+			return method.call(this, t);
+		};
+		return descriptor;
+	}
 
 
 	/**
@@ -95,23 +125,9 @@ export abstract class SolidLanguageType {
 	 * Return the type union of this type with another.
 	 * @param t the other type
 	 * @returns the type union
-	 * @final
 	 */
+	@SolidLanguageType.unionDeco
 	union(t: SolidLanguageType): SolidLanguageType {
-		/** 1-7 | `T \| never   == T` */
-		if (t.isEmpty) { return this }
-		if (this.isEmpty) { return t }
-		/** 1-8 | `T \| unknown == unknown` */
-		if (t.isUniverse) { return t }
-		if (this.isUniverse) { return this }
-
-		/** 3-4 | `A <: B  <->  A \| B == B` */
-		if (this.isSubtypeOf(t)) { return t }
-		if (t.isSubtypeOf(this)) { return this }
-
-		return this.union_do(t)
-	}
-	union_do(t: SolidLanguageType): SolidLanguageType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
 		return new SolidTypeUnion(this, t)
 	}
 	/**
@@ -256,18 +272,23 @@ export class SolidTypeInterface extends SolidLanguageType {
 		};
 	}
 	/**
-	 * @override
+	 * @overrides SolidLanguageType
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type union is taken.
 	 */
-	union_do(t: SolidTypeInterface): SolidTypeInterface {
-		const props: Map<string, SolidLanguageType> = new Map()
-		;[...this.properties].forEach(([name, type_]) => {
-			if (t.properties.has(name)) {
-				props.set(name, type_.union(t.properties.get(name)!))
-			}
-		})
-		return new SolidTypeInterface(props)
+	@SolidLanguageType.unionDeco
+	union(t: SolidLanguageType): SolidLanguageType {
+		if (t instanceof SolidTypeInterface) {
+			const props: Map<string, SolidLanguageType> = new Map()
+			;[...this.properties].forEach(([name, type_]) => {
+				if (t.properties.has(name)) {
+					props.set(name, type_.union(t.properties.get(name)!))
+				}
+			})
+			return new SolidTypeInterface(props)
+		} else {
+			return super.union(t);
+		};
 	}
 	/**
 	 * @implement SolidLanguageType
