@@ -19,6 +19,36 @@ export abstract class SolidLanguageType {
 	static get NEVER(): SolidTypeNever { return SolidTypeNever.INSTANCE }
 	/** The Top Type, containing all values. */
 	static get UNKNOWN(): SolidTypeUnknown { return SolidTypeUnknown.INSTANCE }
+	/**
+	 * Decorator for {@link SolidLanguageType#intersect} method and any overrides.
+	 * Contains shortcuts for constructing type intersections.
+	 * @param   _prototype    the prototype that has the method to be decorated
+	 * @param   _property_key the name of the method to be decorated
+	 * @param   descriptor    the Property Descriptor of the prototype’s method
+	 * @returns               `descriptor`, with a new value that is the decorated method
+	 */
+	protected static intersectDeco(
+		_prototype: SolidLanguageType,
+		_property_key: string,
+		descriptor: TypedPropertyDescriptor<(this: SolidLanguageType, t: SolidLanguageType) => SolidLanguageType>,
+	): typeof descriptor {
+		const method = descriptor.value!;
+		descriptor.value = function (t) {
+			/** 1-5 | `T  & never   == never` */
+			if (t.isEmpty) { return SolidLanguageType.NEVER }
+			if (this.isEmpty) { return this }
+			/** 1-6 | `T  & unknown == T` */
+			if (t.isUniverse) { return this }
+			if (this.isUniverse) { return t }
+
+			/** 3-3 | `A <: B  <->  A  & B == A` */
+			if (this.isSubtypeOf(t)) { return this }
+			if (t.isSubtypeOf(this)) { return t }
+
+			return method.call(this, t);
+		};
+		return descriptor;
+	}
 
 
 	/**
@@ -56,23 +86,9 @@ export abstract class SolidLanguageType {
 	 * Return the type intersection of this type with another.
 	 * @param t the other type
 	 * @returns the type intersection
-	 * @final
 	 */
+	@SolidLanguageType.intersectDeco
 	intersect(t: SolidLanguageType): SolidLanguageType {
-		/** 1-5 | `T  & never   == never` */
-		if (t.isEmpty) { return SolidLanguageType.NEVER }
-		if (this.isEmpty) { return this }
-		/** 1-6 | `T  & unknown == T` */
-		if (t.isUniverse) { return this }
-		if (this.isUniverse) { return t }
-
-		/** 3-3 | `A <: B  <->  A  & B == A` */
-		if (this.isSubtypeOf(t)) { return this }
-		if (t.isSubtypeOf(this)) { return t }
-
-		return this.intersect_do(t)
-	}
-	intersect_do(t: SolidLanguageType): SolidLanguageType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
 		return new SolidTypeIntersection(this, t)
 	}
 	/**
@@ -223,16 +239,21 @@ export class SolidTypeInterface extends SolidLanguageType {
 		return [...this.properties.keys()].every((key) => key in v)
 	}
 	/**
-	 * @override
+	 * @overrides SolidLanguageType
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type intersection is taken.
 	 */
-	intersect_do(t: SolidTypeInterface): SolidTypeInterface {
-		const props: Map<string, SolidLanguageType> = new Map([...this.properties])
-		;[...t.properties].forEach(([name, type_]) => {
-			props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_)
-		})
-		return new SolidTypeInterface(props)
+	@SolidLanguageType.intersectDeco
+	intersect(t: SolidLanguageType): SolidLanguageType {
+		if (t instanceof SolidTypeInterface) {
+			const props: Map<string, SolidLanguageType> = new Map([...this.properties])
+			;[...t.properties].forEach(([name, type_]) => {
+				props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_)
+			})
+			return new SolidTypeInterface(props)
+		} else {
+			return super.intersect(t);
+		};
 	}
 	/**
 	 * @override

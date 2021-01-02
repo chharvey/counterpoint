@@ -26,8 +26,6 @@ export class SolidObject {
 	/** @implements SolidLanguageType */
 	static intersect: SolidLanguageType['intersect'] = SolidLanguageType.prototype.intersect
 	/** @implements SolidLanguageType */
-	static intersect_do: SolidLanguageType['intersect_do'] = SolidLanguageType.prototype.intersect_do
-	/** @implements SolidLanguageType */
 	static union: SolidLanguageType['union'] = SolidLanguageType.prototype.union
 	/** @implements SolidLanguageType */
 	static union_do: SolidLanguageType['union_do'] = SolidLanguageType.prototype.union_do
