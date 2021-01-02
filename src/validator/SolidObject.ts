@@ -28,12 +28,11 @@ export class SolidObject {
 	/** @implements SolidLanguageType */
 	static union: SolidLanguageType['union'] = SolidLanguageType.prototype.union
 	/** @implements SolidLanguageType */
-	static isSubtypeOf: SolidLanguageType['isSubtypeOf'] = SolidLanguageType.prototype.isSubtypeOf
-	/** @implements SolidLanguageType */
-	static isSubtypeOf_do(t: SolidLanguageType): boolean {
+	@SolidLanguageType.subtypeDeco
+	static isSubtypeOf(t: SolidLanguageType): boolean {
 		return (t instanceof Function)
 			? this/*static*/.prototype instanceof t
-			: SolidLanguageType.prototype.isSubtypeOf_do.call(this, t)
+			: SolidLanguageType.prototype.isSubtypeOf.call(this, t)
 	}
 	/** @implements SolidLanguageType */
 	static equals: SolidLanguageType['equals'] = SolidLanguageType.prototype.equals

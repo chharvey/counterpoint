@@ -79,6 +79,43 @@ export abstract class SolidLanguageType {
 		};
 		return descriptor;
 	}
+	/**
+	 * Decorator for {@link SolidLanguageType#isSubtypeOf} method and any overrides.
+	 * Contains shortcuts for determining subtypes.
+	 * @param   _prototype    the prototype that has the method to be decorated
+	 * @param   _property_key the name of the method to be decorated
+	 * @param   descriptor    the Property Descriptor of the prototype’s method
+	 * @returns               `descriptor`, with a new value that is the decorated method
+	 */
+	static subtypeDeco( // must be public because accessed in SolidObject.ts
+		_prototype: SolidLanguageType,
+		_property_key: string,
+		descriptor: TypedPropertyDescriptor<(this: SolidLanguageType, t: SolidLanguageType) => boolean>,
+	): typeof descriptor {
+		const method = descriptor.value!;
+		descriptor.value = function (t) {
+			/** 1-3 | `T       <: never  <->  T == never` */
+			if (t.isEmpty) { return this.isEmpty }
+			/** 1-2 | `T     <: unknown` */
+			if (t.isUniverse) { return true }
+			/** 2-7 | `A <: A` */
+			if (this === t) { return true }
+
+			if (t instanceof SolidTypeIntersection) {
+				/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
+				return this.isSubtypeOf(t.left) && this.isSubtypeOf(t.right)
+			}
+			if (t instanceof SolidTypeUnion) {
+				/** 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
+				if (this.isSubtypeOf(t.left) || this.isSubtypeOf(t.right)) { return true }
+				/** 3-2 | `A <: A \| B  &&  B <: A \| B` */
+				if (this.equals(t.left) || this.equals(t.right)) { return true }
+			}
+
+			return method.call(this, t);
+		};
+		return descriptor;
+	}
 
 
 	/**
@@ -134,30 +171,9 @@ export abstract class SolidLanguageType {
 	 * Return whether this type is a structural subtype of the given type.
 	 * @param t the type to compare
 	 * @returns Is this type a subtype of the argument?
-	 * @final
 	 */
+	@SolidLanguageType.subtypeDeco
 	isSubtypeOf(t: SolidLanguageType): boolean {
-		/** 1-3 | `T       <: never  <->  T == never` */
-		if (t.isEmpty) { return this.isEmpty }
-		/** 1-2 | `T     <: unknown` */
-		if (t.isUniverse) { return true }
-		/** 2-7 | `A <: A` */
-		if (this === t) { return true }
-
-		if (t instanceof SolidTypeIntersection) {
-			/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
-			return this.isSubtypeOf(t.left) && this.isSubtypeOf(t.right)
-		}
-		if (t instanceof SolidTypeUnion) {
-			/** 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
-			if (this.isSubtypeOf(t.left) || this.isSubtypeOf(t.right)) { return true }
-			/** 3-2 | `A <: A \| B  &&  B <: A \| B` */
-			if (this.equals(t.left) || this.equals(t.right)) { return true }
-		}
-
-		return this.isSubtypeOf_do(t)
-	}
-	isSubtypeOf_do(t: SolidLanguageType): boolean { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
 		return [...this.values].every((v) => t.includes(v))
 	}
 	/**
@@ -194,13 +210,14 @@ class SolidTypeIntersection extends SolidLanguageType {
 	includes(v: SolidObject): boolean {
 		return this.left.includes(v) && this.right.includes(v)
 	}
-	/** @implement SolidLanguageType */
-	isSubtypeOf_do(t: SolidLanguageType): boolean {
+	/** @overrides SolidLanguageType */
+	@SolidLanguageType.subtypeDeco
+	isSubtypeOf(t: SolidLanguageType): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) { return true }
 		/** 3-1 | `A  & B <: A  &&  A  & B <: B` */
 		if (t.equals(this.left) || t.equals(this.right)) { return true }
-		return super.isSubtypeOf_do(t)
+		return super.isSubtypeOf(t);
 	}
 }
 
@@ -225,8 +242,9 @@ class SolidTypeUnion extends SolidLanguageType {
 	includes(v: SolidObject): boolean {
 		return this.left.includes(v) || this.right.includes(v)
 	}
-	/** @implement SolidLanguageType */
-	isSubtypeOf_do(t: SolidLanguageType): boolean {
+	/** @overrides SolidLanguageType */
+	@SolidLanguageType.subtypeDeco
+	isSubtypeOf(t: SolidLanguageType): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
 	}
@@ -291,15 +309,20 @@ export class SolidTypeInterface extends SolidLanguageType {
 		};
 	}
 	/**
-	 * @implement SolidLanguageType
+	 * @overrides SolidLanguageType
 	 * In the general case, `S` is a subtype of `T` if every property of `T` exists in `S`,
 	 * and for each of those properties `#prop`, the type of `S#prop` is a subtype of `T#prop`.
 	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
 	 */
-	isSubtypeOf_do(t: SolidTypeInterface) {
-		return [...t.properties].every(([name, type_]) =>
-			this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
-		)
+	@SolidLanguageType.subtypeDeco
+	isSubtypeOf(t: SolidLanguageType): boolean {
+		if (t instanceof SolidTypeInterface) {
+			return [...t.properties].every(([name, type_]) =>
+				this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
+			)
+		} else {
+			return super.isSubtypeOf(t);
+		};
 	}
 }
 
@@ -324,10 +347,11 @@ class SolidTypeNever extends SolidLanguageType {
 		return false
 	}
 	/**
-	 * @implement SolidLanguageType
+	 * @overrides SolidLanguageType
 	 * 1-1 | `never <: T`
 	 */
-	isSubtypeOf_do(_t: SolidLanguageType): boolean {
+	@SolidLanguageType.subtypeDeco
+	isSubtypeOf(_t: SolidLanguageType): boolean {
 		return true
 	}
 	/** @override */
@@ -354,8 +378,9 @@ export class SolidTypeConstant extends SolidLanguageType {
 	includes(_v: SolidObject): boolean {
 		return this.value.equal(_v)
 	}
-	/** @implement SolidLanguageType */
-	isSubtypeOf_do(t: SolidTypeInterface): boolean {
+	/** @overrides SolidLanguageType */
+	@SolidLanguageType.subtypeDeco
+	isSubtypeOf(t: SolidLanguageType): boolean {
 		return t instanceof Function && this.value instanceof t || t.includes(this.value)
 	}
 }
@@ -381,10 +406,11 @@ class SolidTypeUnknown extends SolidLanguageType {
 		return true
 	}
 	/**
-	 * @implement SolidLanguageType
+	 * @overrides SolidLanguageType
 	 * 1-4 | `unknown <: T      <->  T == unknown`
 	 */
-	isSubtypeOf_do(t: SolidLanguageType): boolean {
+	@SolidLanguageType.subtypeDeco
+	isSubtypeOf(t: SolidLanguageType): boolean {
 		return t.isUniverse
 	}
 	/** @override */
