@@ -6,6 +6,9 @@ import {
 import * as xjs from 'extrajs'
 
 import {
+	memoizeMethod,
+} from '../decorators';
+import {
 	Operator,
 	ValidTypeOperator,
 	ValidOperatorUnary,
@@ -135,7 +138,6 @@ export abstract class ASTNodeSolid extends ASTNode {
  * - ASTNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
-	private assessed: SolidLanguageType | null = null
 	/** @implements ASTNodeSolid */
 	varCheck(_validator: Validator = new Validator()): void {
 		return; // for now, there are no type variables // TODO: dereferencing type variables
@@ -158,13 +160,8 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 * Assess the type-value of this node at compile-time.
 	 * @param validator a record of declared variable symbols
 	 * @returns the computed type-value of this node
-	 * @final
 	 */
-	assess(validator: Validator = new Validator()): SolidLanguageType {
-		this.assessed || (this.assessed = this.assess_do(validator)); // COMBAK `this.assessed ||= this.assess_do(validator)`
-		return this.assessed
-	}
-	protected abstract assess_do(validator: Validator): SolidLanguageType
+	abstract assess(validator?: Validator): SolidLanguageType;
 }
 export class ASTNodeTypeConstant extends ASTNodeType {
 	declare children:
@@ -195,7 +192,8 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		return; // no validation necessary for constants
 	}
 	/** @implements ASTNodeType */
-	protected assess_do(_validator: Validator): SolidLanguageType {
+	@memoizeMethod
+	assess(_validator: Validator = new Validator()): SolidLanguageType {
 		return this.value
 	}
 }
@@ -216,8 +214,9 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
 		};
 	}
-	/** @implements ASTNodeSolid */
-	protected assess_do(validator: Validator): SolidLanguageType {
+	/** @implements ASTNodeType */
+	@memoizeMethod
+	assess(validator: Validator = new Validator()): SolidLanguageType {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolInfo = validator.getSymbolInfo(this.id)!;
 			if (symbol.kind === SymbolKind.TYPE) {
@@ -254,7 +253,8 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		super(start_node, operator, children)
 	}
 	/** @implements ASTNodeType */
-	protected assess_do(validator: Validator): SolidLanguageType {
+	@memoizeMethod
+	assess(validator: Validator = new Validator()): SolidLanguageType {
 		return (this.operator === Operator.ORNULL)
 			? this.children[0].assess(validator).union(SolidNull)
 			: (() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
@@ -270,7 +270,8 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 		super(start_node, operator, children)
 	}
 	/** @implements ASTNodeType */
-	protected assess_do(validator: Validator): SolidLanguageType {
+	@memoizeMethod
+	assess(validator: Validator = new Validator()): SolidLanguageType {
 		return (
 			(this.operator === Operator.AND) ? this.children[0].assess(validator).intersect(this.children[1].assess(validator)) :
 			(this.operator === Operator.OR)  ? this.children[0].assess(validator).union    (this.children[1].assess(validator)) :
@@ -307,9 +308,9 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 		descriptor.value = function (validator = new Validator()) {
 			const typ: SolidLanguageType = method.call(this, validator); // type-check first, to re-throw any TypeErrors
 			if (validator.config.compilerOptions.constantFolding) {
-				this.assessed || (this.assessed = this.assess()); // COMBAK `this.assessed ||= this.assess()`
-				if (!this.assessed.isAbrupt) {
-					return new SolidTypeConstant(this.assessed.value!)
+				const assessed: CompletionStructureAssessment = this.assess();
+				if (!assessed.isAbrupt) {
+					return new SolidTypeConstant(assessed.value!);
 				}
 			}
 			return typ;
@@ -337,7 +338,6 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 		};
 		return descriptor;
 	}
-	private assessed: CompletionStructureAssessment | null = null
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
 	 * @return Should the built instruction be type-coerced into a floating-point number?
@@ -365,13 +365,8 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * Assess the value of this node at compile-time, if possible.
 	 * If {@link SolidConfig|constant folding} is off, this should not be called.
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
-	 * @final
 	 */
-	assess(): CompletionStructureAssessment {
-		this.assessed || (this.assessed = this.assess_do()) // COMBAK `this.assessed ||= this.assess_do()`
-		return this.assessed
-	}
-	protected abstract assess_do(): CompletionStructureAssessment
+	abstract assess(): CompletionStructureAssessment;
 }
 export class ASTNodeConstant extends ASTNodeExpression {
 	declare children:
@@ -402,7 +397,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	/** @implements ASTNodeExpression */
 	@ASTNodeExpression.buildDeco
 	build(_builder: Builder, to_float: boolean = false): InstructionConst {
-		return this.assess_do().build(to_float)
+		return this.assess().build(to_float)
 	}
 	/** @implements ASTNodeExpression */
 	@ASTNodeExpression.typeDeco
@@ -420,11 +415,12 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		SolidString
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	@memoizeMethod
+	assess(): CompletionStructureAssessment {
 		if (this.value instanceof SolidObject) {
 			return new CompletionStructureAssessment(this.value)
 		} else {
-			throw new Error('ASTNodeConstant[value:string]#assess_do not yet supported.')
+			throw new Error('ASTNodeConstant[value:string]#assess not yet supported.')
 		}
 	}
 }
@@ -467,7 +463,8 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		return SolidLanguageType.UNKNOWN;
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	@memoizeMethod
+	assess(): CompletionStructureAssessment {
 		return new CompletionStructureAssessment(CompletionType.THROW); // TODO #35 : constant propagation
 	}
 }
@@ -503,8 +500,9 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		return SolidString
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
-		throw new Error('ASTNodeTemplate#assess_do not yet supported.');
+	@memoizeMethod
+	assess(): CompletionStructureAssessment {
+		throw new Error('ASTNodeTemplate#assess not yet supported.');
 	}
 }
 export abstract class ASTNodeOperation extends ASTNodeExpression {
@@ -558,7 +556,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return (t0.isSubtypeOf(SolidNumber)) ? t0 : (() => { throw new TypeError01(this) })()
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	@memoizeMethod
+	assess(): CompletionStructureAssessment {
 		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		if (assess0.isAbrupt) {
 			return assess0
@@ -643,7 +642,8 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		throw new TypeError01(this)
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	@memoizeMethod
+	assess(): CompletionStructureAssessment {
 		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		if (assess0.isAbrupt) {
 			return assess0
@@ -715,7 +715,8 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		throw new TypeError01(this)
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	@memoizeMethod
+	assess(): CompletionStructureAssessment {
 		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		if (assess0.isAbrupt) {
 			return assess0
@@ -787,7 +788,8 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return SolidBoolean
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	@memoizeMethod
+	assess(): CompletionStructureAssessment {
 		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		if (assess0.isAbrupt) {
 			return assess0
@@ -853,7 +855,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 					: t0
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	@memoizeMethod
+	assess(): CompletionStructureAssessment {
 		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		if (assess0.isAbrupt) {
 			return assess0
@@ -906,7 +909,8 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 			: (() => { throw new TypeError01(this) })()
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	@memoizeMethod
+	assess(): CompletionStructureAssessment {
 		const assess0: CompletionStructureAssessment = this.children[0].assess()
 		if (assess0.isAbrupt) {
 			return assess0
