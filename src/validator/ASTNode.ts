@@ -131,6 +131,26 @@ export abstract class ASTNodeSolid extends ASTNode {
 
 
 
+export class ASTNodeKey extends ASTNodeSolid {
+	declare children: readonly [];
+	readonly id: bigint;
+	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenIdentifier) {
+		super(start_node, {id: start_node.cook()});
+		this.id = start_node.cook()!;
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeKey#varCheck not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	typeCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeKey#typeCheck not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	build(builder: Builder): Instruction {
+		throw builder && 'ASTNodeKey#build not yet supported.';
+	}
+}
 /**
  * A sematic node representing a type.
  * There are 2 known subclasses:
@@ -280,26 +300,6 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 			(this.operator === Operator.OR)  ? this.children[0].assess(validator).union    (this.children[1].assess(validator)) :
 			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
-	}
-}
-export class ASTNodeKey extends ASTNodeSolid {
-	declare children: readonly [];
-	readonly id: bigint;
-	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenIdentifier) {
-		super(start_node, {id: start_node.cook()});
-		this.id = start_node.cook()!;
-	}
-	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
-		throw validator && 'ASTNodeKey#varCheck not yet supported.';
-	}
-	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
-		throw validator && 'ASTNodeKey#typeCheck not yet supported.';
-	}
-	/** @implements ASTNodeSolid */
-	build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeKey#build not yet supported.';
 	}
 }
 export class ASTNodeProperty extends ASTNodeSolid {

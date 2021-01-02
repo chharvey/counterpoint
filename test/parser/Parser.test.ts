@@ -82,6 +82,20 @@ describe('Parser', () => {
 			});
 		});
 
+		Dev.supports('typingExplicit') && describe('TypeUnit ::= IDENTIFIER', () => {
+			it('parses type identifiers.', () => {
+				assert.deepStrictEqual([
+					`T`,
+					`U`,
+					`V`,
+				].map((src) => h.tokenIdentifierFromTypeString(src).source), [
+					`T`,
+					`U`,
+					`V`,
+				]);
+			});
+		});
+
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= PrimitiveLiteral', () => {
 			it('parses NULL, BOOLEAN, INTEGER, FLOAT, or STRING.', () => {
 				assert.deepStrictEqual(([
@@ -103,20 +117,6 @@ describe('Parser', () => {
 				]);
 			})
 		})
-
-		Dev.supports('typingExplicit') && describe('TypeUnit ::= IDENTIFIER', () => {
-			it('parses type identifiers.', () => {
-				assert.deepStrictEqual([
-					`T`,
-					`U`,
-					`V`,
-				].map((src) => h.tokenIdentifierFromTypeString(src).source), [
-					`T`,
-					`U`,
-					`V`,
-				]);
-			});
-		});
 
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= TypeKeyword', () => {
 			it('parses keywords `bool`, `int`, `float`, `obj`.', () => {
@@ -265,6 +265,23 @@ describe('Parser', () => {
 				assert.deepStrictEqual(
 					[kase.children[1].source, kase.children[2].source],
 					[Punctuator.MAPTO,        `null || false`],
+				);
+			});
+		});
+
+		Dev.supports('literalCollection') && describe('ExpressionUnit ::= "[" "]"', () => {
+			it('makes an ExpressionUnit node containing brackets.', () => {
+				/*
+					<ExpressionUnit>
+						<PUNCTUATOR>[</PUNCTUATOR>
+						<PUNCTUATOR>]</PUNCTUATOR>
+					</ExpressionUnit>
+				*/
+				const expression_unit: PARSER.ParseNodeExpressionUnit = h.unitExpressionFromSource(`[];`);
+				assert_arrayLength(expression_unit.children, 2);
+				assert.deepStrictEqual(
+					expression_unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, Punctuator.BRAK_CLS],
 				);
 			});
 		});
@@ -558,23 +575,6 @@ describe('Parser', () => {
 				`).parse(), ParseError01)
 			})
 		})
-
-		Dev.supports('literalCollection') && describe('ExpressionUnit ::= "[" "]"', () => {
-			it('makes an ExpressionUnit node containing brackets.', () => {
-				/*
-					<ExpressionUnit>
-						<PUNCTUATOR>[</PUNCTUATOR>
-						<PUNCTUATOR>]</PUNCTUATOR>
-					</ExpressionUnit>
-				*/
-				const expression_unit: PARSER.ParseNodeExpressionUnit = h.unitExpressionFromSource(`[];`);
-				assert_arrayLength(expression_unit.children, 2);
-				assert.deepStrictEqual(
-					expression_unit.children.map((c) => c.source),
-					[Punctuator.BRAK_OPN, Punctuator.BRAK_CLS],
-				);
-			});
-		});
 
 		Dev.supports('literalCollection') && describe('ExpressionUnit ::= ListLiteral', () => {
 			it('makes an ExpressionUnit node containing brackets and an expression list.', () => {

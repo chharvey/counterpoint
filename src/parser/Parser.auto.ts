@@ -216,7 +216,7 @@
 				/** @implements Production */
 				get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 					return [
-						[TERMINAL.TerminalIdentifier.instance],[ProductionPrimitiveLiteral.instance],[ProductionStringTemplate.instance],['[',']'],[ProductionListLiteral.instance],[ProductionRecordLiteral.instance],[ProductionMapLiteral.instance],['(',ProductionExpression.instance,')'],
+						['[',']'],[TERMINAL.TerminalIdentifier.instance],[ProductionPrimitiveLiteral.instance],[ProductionStringTemplate.instance],[ProductionListLiteral.instance],[ProductionRecordLiteral.instance],[ProductionMapLiteral.instance],['(',ProductionExpression.instance,')'],
 					];
 				}
 			}
@@ -508,7 +508,7 @@
 		
 			export class ParseNodeExpressionUnit extends ParseNode {
 				declare readonly children:
-					readonly [Token] | readonly [ParseNodePrimitiveLiteral] | readonly [ParseNodeStringTemplate] | readonly [Token,Token] | readonly [ParseNodeListLiteral] | readonly [ParseNodeRecordLiteral] | readonly [ParseNodeMapLiteral] | readonly [Token,ParseNodeExpression,Token]
+					readonly [Token,Token] | readonly [Token] | readonly [ParseNodePrimitiveLiteral] | readonly [ParseNodeStringTemplate] | readonly [ParseNodeListLiteral] | readonly [ParseNodeRecordLiteral] | readonly [ParseNodeMapLiteral] | readonly [Token,ParseNodeExpression,Token]
 				;
 			}
 		

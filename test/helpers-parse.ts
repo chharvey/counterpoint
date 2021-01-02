@@ -107,31 +107,29 @@ export function tokenIdentifierFromSource(src: string, config: SolidConfig = CON
 	return unit
 }
 export function primitiveLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodePrimitiveLiteral {
-	const expression_unit: PARSER.ParseNodeExpressionUnit = unitExpressionFromSource(src, config)
-	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child')
-	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = expression_unit.children[0];
+	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
 	assert.ok(unit instanceof PARSER.ParseNodePrimitiveLiteral, 'unit should be a ParseNodePrimitiveLiteral')
 	return unit
 }
 export function listLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeListLiteral {
-	const expression_unit: PARSER.ParseNodeExpressionUnit = unitExpressionFromSource(src, config);
-	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child');
-	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = expression_unit.children[0];
+	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
 	assert.ok(unit instanceof PARSER.ParseNodeListLiteral, 'unit should be a ParseNodeListLiteral');
 	return unit;
 }
 export function recordLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeRecordLiteral {
-	const expression_unit: PARSER.ParseNodeExpressionUnit = unitExpressionFromSource(src, config);
-	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child');
-	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = expression_unit.children[0];
+	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
 	assert.ok(unit instanceof PARSER.ParseNodeRecordLiteral, 'unit should be a ParseNodeRecordLiteral');
 	return unit;
 }
 export function mapLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeMapLiteral {
+	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
+	assert.ok(unit instanceof PARSER.ParseNodeMapLiteral, 'unit should be a ParseNodeMapLiteral');
+	return unit;
+}
+export function valueLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionUnit['children'][0] {
 	const expression_unit: PARSER.ParseNodeExpressionUnit = unitExpressionFromSource(src, config);
 	assert_arrayLength(expression_unit.children, 1, 'expression unit should have 1 child');
 	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = expression_unit.children[0];
-	assert.ok(unit instanceof PARSER.ParseNodeMapLiteral, 'unit should be a ParseNodeMapLiteral');
 	return unit;
 }
 export function unitExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionUnit {

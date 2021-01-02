@@ -186,14 +186,14 @@ Decorate(MapLiteral ::= "[" ","? MapLiteral__1__List ","? "]") -> SemanticMap
 
 
 
+Decorate(ExpressionUnit ::= "[" "]") -> SemanticEmptyCollection
+	:= (SemanticEmptyCollection);
 Decorate(ExpressionUnit ::= IDENTIFIER) -> SemanticVariable
 	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
 Decorate(ExpressionUnit ::= PrimitiveLiteral) -> SemanticConstant
 	:= Decorate(PrimitiveLiteral);
 Decorate(ExpressionUnit ::= StringTemplate) -> SemanticTemplate
 	:= Decorate(StringTemplate);
-Decorate(ExpressionUnit ::= "[" "]") -> SemanticEmptyCollection
-	:= (SemanticEmptyCollection);
 Decorate(ExpressionUnit ::= ListLiteral) -> SemanticList
 	:= Decorate(ListLiteral);
 Decorate(ExpressionUnit ::= RecordLiteral) -> SemanticRecord

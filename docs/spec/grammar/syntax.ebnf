@@ -72,10 +72,10 @@ RecordLiteral ::= "[" ","? Property#      ","? "]";
 MapLiteral    ::= "[" ","? Case#          ","? "]";
 
 ExpressionUnit ::=
+	| "[" "]"
 	| IDENTIFIER
 	| PrimitiveLiteral
 	| StringTemplate
-	| "[" "]"
 	| ListLiteral
 	| RecordLiteral
 	| MapLiteral

@@ -13,6 +13,11 @@ SemanticExpression =:=
 
 
 
+SemanticKey[id: RealNumber]
+	::= ();
+
+
+
 SemanticTypeConstant[value: Type]
 	::= ();
 
@@ -25,9 +30,6 @@ SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
 
 
-
-SemanticKey[id: RealNumber]
-	::= ();
 
 SemanticProperty
 	::= SemanticKey SemanticExpression;
@@ -51,14 +53,10 @@ SemanticTemplate[type: "substitution"]
 SemanticTemplatePartial
 	::= (SemanticConstant SemanticExpression?)+;
 
-SemanticEmptyCollection
-	::= ();
-
-SemanticList   ::= SemanticExpression+;
-SemanticRecord ::= SemanticProperty+;
-SemanticMap    ::= SemanticCase+;
-
-
+SemanticEmptyCollection ::= ();
+SemanticList            ::= SemanticExpression+;
+SemanticRecord          ::= SemanticProperty+;
+SemanticMap             ::= SemanticCase+;
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
