@@ -35,10 +35,19 @@ TypeKeyword ::=
 	| "obj"
 ;
 
+TypeProperty
+	::= Word ":" Type;
+
+TypeTupleLiteral  ::= "[" ","? Type#         ","? "]";
+TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]";
+
 TypeUnit ::=
+	| "[" "]"
 	| IDENTIFIER
 	| PrimitiveLiteral
 	| TypeKeyword
+	| TypeTupleLiteral
+	| TypeRecordLiteral
 	| "(" Type ")"
 ;
 

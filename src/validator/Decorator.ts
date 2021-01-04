@@ -128,13 +128,16 @@ export class Decorator {
 			return new AST.ASTNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnit) {
-			return (node.children.length === 1)
-				? (node.children[0] instanceof ParseNode)
+			return (
+				(node.children.length === 1) ? (node.children[0] instanceof ParseNode)
 					? (node.children[0] instanceof PARSER.ParseNodePrimitiveLiteral)
 						? new AST.ASTNodeTypeConstant(node.children[0].children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString)
 						: this.decorate(node.children[0])
 					: new AST.ASTNodeTypeAlias(node.children[0] as TOKEN.TokenIdentifier)
-				: this.decorate(node.children[1])
+				:
+				(node.children.length === 2) ? (() => { throw new Error('`Decorate(TypeUnit ::= "[" "]")` not yet supported.'); })() :
+				this.decorate(node.children[1])
+			);
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnarySymbol) {
 			return (node.children.length === 1)
