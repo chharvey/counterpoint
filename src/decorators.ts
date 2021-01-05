@@ -16,9 +16,7 @@ export function memoizeMethod<Ps extends unknown[], R>(
 	const method = descriptor.value!;
 	const memomap: WeakMap<object, R> = new WeakMap();
 	descriptor.value = function (...args) {
-		if (!memomap.has(this)) {
-			memomap.set(this, method.call(this, ...args));
-		}
+		memomap.has(this) || memomap.set(this, method.call(this, ...args));
 		return memomap.get(this)!;
 	};
 	return descriptor;
@@ -41,9 +39,7 @@ export function memoizeGetter<R>(
 	const method = descriptor.get!;
 	const memomap: WeakMap<object, R> = new WeakMap();
 	descriptor.get = function () {
-		if (!memomap.has(this)) {
-			memomap.set(this, method.call(this));
-		}
+		memomap.has(this) || memomap.set(this, method.call(this));
 		return memomap.get(this)!;
 	};
 	return descriptor;

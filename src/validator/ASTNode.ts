@@ -400,6 +400,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return this.assess().build(to_float)
 	}
 	/** @implements ASTNodeExpression */
+	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	type(validator: Validator = new Validator()): SolidLanguageType {
 		// No need to call `this.assess()` and then unwrap again; just use `this.value`.
@@ -452,6 +453,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		throw new Error('ASTNodeVariable#build not yet supported.');
 	}
 	/** @implements ASTNodeExpression */
+	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	type(validator: Validator = new Validator()): SolidLanguageType {
 		if (validator.hasSymbol(this.id)) {
@@ -495,6 +497,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		throw new Error('ASTNodeTemplate#build not yet supported.');
 	}
 	/** @implements ASTNodeExpression */
+	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	type(_validator: Validator = new Validator()): SolidLanguageType {
 		return SolidString
@@ -547,6 +550,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		)
 	}
 	/** @implements ASTNodeExpression */
+	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	type(validator: Validator = new Validator()): SolidLanguageType {
 		if ([Operator.NOT, Operator.EMP].includes(this.operator)) {
@@ -602,6 +606,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	 * @implements ASTNodeExpression
 	 * @final
 	 */
+	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	type(validator: Validator = new Validator()): SolidLanguageType {
 		return this.type_do(
@@ -895,6 +900,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		)
 	}
 	/** @implements ASTNodeExpression */
+	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	type(validator: Validator = new Validator()): SolidLanguageType {
 		// If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
