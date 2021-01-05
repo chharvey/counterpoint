@@ -269,6 +269,166 @@ describe('Parser', () => {
 			});
 		});
 
+		Dev.supports('literalCollection') && describe('ListLiteral ::= "[" ","? ExpressionHash ","? "]"', () => {
+			it('with no leading or trailing comma.', () => {
+				/*
+					<ListLiteral>
+						<PUNCTUATOR>[</PUNCTUATOR>
+						<ExpressionHash>
+							<ExpressionHash__0__List source="42, true, null || false">...</ExpressionHash__0__List>
+						</ExpressionHash>
+						<PUNCTUATOR>]</PUNCTUATOR>
+					</ListLiteral>
+				*/
+				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`[42, true, null || false];`);
+				assert_arrayLength(unit.children, 3);
+				assert.deepStrictEqual(
+					unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, `42 , true , null || false`, Punctuator.BRAK_CLS],
+				);
+			});
+			it('with leading comma.', () => {
+				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`
+					[
+						, 42
+						, true
+						, null || false
+					];
+				`);
+				assert_arrayLength(unit.children, 4);
+				assert.deepStrictEqual(
+					unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, Punctuator.COMMA, `42 , true , null || false`, Punctuator.BRAK_CLS],
+				);
+			});
+			it.skip('with trailing comma.', () => { // FIXME: `ExpressionHash` cannot be followed by a comma
+				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`
+					[
+						42,
+						true,
+						null || false,
+					];
+				`);
+				assert_arrayLength(unit.children, 4);
+				assert.deepStrictEqual(
+					unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, `42 , true , null || false`, Punctuator.COMMA, Punctuator.BRAK_CLS],
+				);
+			});
+			specify('ExpressionHash__0__List ::= ExpressionHash__0__List "," Expression', () => {
+				/*
+					<ExpressionHash__0__List>
+						<ExpressionHash__0__List>
+							<ExpressionHash__0__List>
+								<Expression source="42">...</Expression>
+							</ExpressionHash__0__List>
+							<PUNCTUATOR>,</PUNCTUATOR>
+							<Expression source="true">...</Expression>
+						</ExpressionHash__0__List>
+						<PUNCTUATOR>,</PUNCTUATOR>
+						<Expression source="null || false">...</Expression>
+					</ExpressionHash__0__List>
+				*/
+				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`[42, true, null || false];`);
+				assert_arrayLength(unit.children, 3);
+				h.hashListSources(unit.children[1].children[0], `42`, `true`, `null || false`);
+			});
+		});
+
+		Dev.supports('literalCollection') && describe('RecordLiteral ::= "[" ","? Property# ","? "]"', () => {
+			it('with leading comma.', () => {
+				/*
+					<RecordLiteral>
+						<PUNCTUATOR>[</PUNCTUATOR>
+						<PUNCTUATOR>,</PUNCTUATOR>
+						<RecordLiteral__1__List source="let = true, foobar = 42">...</RecordLiteral__1__List>
+						<PUNCTUATOR>]</PUNCTUATOR>
+					</RecordLiteral>
+				*/
+				const unit: PARSER.ParseNodeRecordLiteral = h.recordLiteralFromSource(`
+					[
+						, let = true
+						, foobar = 42
+					];
+				`);
+				assert_arrayLength(unit.children, 4);
+				assert.ok(unit.children[2] instanceof PARSER.ParseNodeRecordLiteral__1__List);
+				assert.deepStrictEqual(
+					unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, Punctuator.COMMA, `let = true , foobar = 42`, Punctuator.BRAK_CLS],
+				);
+			});
+			specify('RecordLiteral__1__List ::= RecordLiteral__1__List "," Property', () => {
+				/*
+					<RecordLiteral__1__List>
+						<RecordLiteral__1__List>
+							<Property source="let = true">...</Expression>
+						</RecordLiteral__1__List>
+						<PUNCTUATOR>,</PUNCTUATOR>
+						<Property source="foobar = 42">...</Expression>
+					</RecordLiteral__1__List>
+				*/
+				const unit: PARSER.ParseNodeRecordLiteral = h.recordLiteralFromSource(`[let = true, foobar = 42];`);
+				assert_arrayLength(unit.children, 3);
+				h.hashListSources(unit.children[1], `let = true`, `foobar = 42`);
+			});
+		});
+
+		Dev.supports('literalCollection') && describe('MapLiteral ::= "[" ","? Case# ","? "]"', () => {
+			it('with trailing comma.', () => {
+				/*
+					<MapLiteral>
+						<PUNCTUATOR>[</PUNCTUATOR>
+						<MapLiteral__1__List source="1, 2, 3 |-> null, 4, 5, 6 |-> false, 7, 8 |-> true, 9, 0 |-> 42.0">...</MapLiteral__1__List>
+						<PUNCTUATOR>,</PUNCTUATOR>
+						<PUNCTUATOR>]</PUNCTUATOR>
+					</MapLiteral>
+				*/
+				const unit: PARSER.ParseNodeMapLiteral = h.mapLiteralFromSource(`
+					[
+						1, 2, 3 |-> null,
+						4, 5, 6 |-> false,
+						7, 8    |-> true,
+						9, 0    |-> 42.0,
+					];
+				`);
+				assert_arrayLength(unit.children, 4);
+				assert.ok(unit.children[1] instanceof PARSER.ParseNodeMapLiteral__1__List);
+				assert.deepStrictEqual(
+					unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, `1 , 2 , 3 |-> null , 4 , 5 , 6 |-> false , 7 , 8 |-> true , 9 , 0 |-> 42.0`, Punctuator.COMMA, Punctuator.BRAK_CLS],
+				);
+			});
+			specify('MapLiteral__1__List ::= MapLiteral__1__List "," Case', () => {
+				/*
+					<MapLiteral__0__List>
+						<MapLiteral__0__List>
+							<MapLiteral__0__List>
+								<MapLiteral__0__List>
+									<Case source="1, 2, 3 |-> null">...</Expression>
+								</MapLiteral__0__List>
+								<PUNCTUATOR>,</PUNCTUATOR>
+								<Case source="4, 5, 6 |-> false">...</Expression>
+							</MapLiteral__0__List>
+							<PUNCTUATOR>,</PUNCTUATOR>
+							<Case source="7, 8 |-> true">...</Expression>
+						</MapLiteral__0__List>
+						<PUNCTUATOR>,</PUNCTUATOR>
+						<Case source="9, 0 |-> 42.0">...</Expression>
+					</MapLiteral__0__List>
+				*/
+				const unit: PARSER.ParseNodeMapLiteral = h.mapLiteralFromSource(`[1, 2, 3 |-> null, 4, 5, 6 |-> false, 7, 8 |-> true, 9, 0 |-> 42.0];`);
+				assert_arrayLength(unit.children, 3);
+				h.hashListSources(
+					unit.children[1],
+					`1 , 2 , 3 |-> null`,
+					`4 , 5 , 6 |-> false`,
+					`7 , 8 |-> true`,
+					`9 , 0 |-> 42.0`,
+				);
+			});
+		});
+
 		Dev.supports('literalCollection') && describe('ExpressionUnit ::= "[" "]"', () => {
 			it('makes an ExpressionUnit node containing brackets.', () => {
 				/*
@@ -576,114 +736,31 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('literalCollection') && describe('ExpressionUnit ::= ListLiteral', () => {
-			it('makes an ExpressionUnit node containing brackets and an expression list.', () => {
-				/*
-					<ExpressionUnit>
-						<PUNCTUATOR>[</PUNCTUATOR>
-						<ExpressionHash>
-							<ExpressionHash__0__List>
-								<ExpressionHash__0__List>
-									<ExpressionHash__0__List>
-										<Expression source="42">...</Expression>
-									</ExpressionHash__0__List>
-									<PUNCTUATOR>,</PUNCTUATOR>
-									<Expression source="true">...</Expression>
-								</ExpressionHash__0__List>
-								<PUNCTUATOR>,</PUNCTUATOR>
-								<Expression source="null || false">...</Expression>
-							</ExpressionHash__0__List>
-						</ExpressionHash>
-						<PUNCTUATOR>]</PUNCTUATOR>
-					</ExpressionUnit>
-				*/
-				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`[42, true, null || false];`);
-				assert_arrayLength(unit.children, 3);
-				assert.deepStrictEqual(
-					[unit.children[0].source, unit.children[2].source],
-					[Punctuator.BRAK_OPN,     Punctuator.BRAK_CLS],
-				);
-				h.hashListSources(unit.children[1].children[0], `42`, `true`, `null || false`);
-			});
+		Dev.supports('literalCollection') && specify('ExpressionUnit ::= ListLiteral', () => {
+			// h.listLiteralFromSource(`[, 42, true, null || false,];`); // FIXME: trailing comma
+			h.listLiteralFromSource(`[, 42, true, null || false];`); // assert does not throw
 		});
 
-		Dev.supports('literalCollection') && describe('ExpressionUnit ::= RecordLiteral', () => {
-			it('makes an ExpressionUnit node containing brackets and a property list.', () => {
-				/*
-					<ExpressionUnit>
-						<PUNCTUATOR>[</PUNCTUATOR>
-						<RecordLiteral__0__List>
-							<RecordLiteral__0__List>
-								<Property source="let = true">...</Expression>
-							</RecordLiteral__0__List>
-							<PUNCTUATOR>,</PUNCTUATOR>
-							<Property source="foobar = 42">...</Expression>
-						</RecordLiteral__0__List>
-						<PUNCTUATOR>]</PUNCTUATOR>
-					</ExpressionUnit>
-				*/
-				const unit: PARSER.ParseNodeRecordLiteral = h.recordLiteralFromSource(`
-					[
-						, let = true
-						, foobar = 42
-					];
-				`);
-				assert_arrayLength(unit.children, 4);
-				assert.deepStrictEqual(
-					[unit.children[0].source, unit.children[1].source, unit.children[3].source],
-					[Punctuator.BRAK_OPN,     Punctuator.COMMA,        Punctuator.BRAK_CLS],
-				);
-				assert.ok(unit.children[2] instanceof PARSER.ParseNodeRecordLiteral__1__List);
-				h.hashListSources(unit.children[2], `let = true`, `foobar = 42`);
-			});
+		Dev.supports('literalCollection') && specify('ExpressionUnit ::= RecordLiteral', () => {
+			h.recordLiteralFromSource(`
+				[
+					, let = true
+					, foobar = 42
+					,
+				];
+			`); // assert does not throw
 		});
 
-		Dev.supports('literalCollection') && describe('ExpressionUnit ::= MapLiteral', () => {
-			it('makes an ExpressionUnit node containing brackets and a case list.', () => {
-				/*
-					<ExpressionUnit>
-						<PUNCTUATOR>[</PUNCTUATOR>
-						<MapLiteral__0__List>
-							<MapLiteral__0__List>
-								<MapLiteral__0__List>
-									<MapLiteral__0__List>
-										<Case source="1, 2, 3 |-> null">...</Expression>
-									</MapLiteral__0__List>
-									<PUNCTUATOR>,</PUNCTUATOR>
-									<Case source="4, 5, 6 |-> false">...</Expression>
-								</MapLiteral__0__List>
-								<PUNCTUATOR>,</PUNCTUATOR>
-								<Case source="7, 8 |-> true">...</Expression>
-							</MapLiteral__0__List>
-							<PUNCTUATOR>,</PUNCTUATOR>
-							<Case source="9, 0 |-> 42.0">...</Expression>
-						</MapLiteral__0__List>
-						<PUNCTUATOR>,</PUNCTUATOR>
-						<PUNCTUATOR>]</PUNCTUATOR>
-					</ExpressionUnit>
-				*/
-				const unit: PARSER.ParseNodeMapLiteral = h.mapLiteralFromSource(`
-					[
-						1, 2, 3 |-> null,
-						4, 5, 6 |-> false,
-						7, 8    |-> true,
-						9, 0    |-> 42.0,
-					];
-				`);
-				assert_arrayLength(unit.children, 4);
-				assert.deepStrictEqual(
-					[unit.children[0].source, unit.children[2].source, unit.children[3].source],
-					[Punctuator.BRAK_OPN,     Punctuator.COMMA,        Punctuator.BRAK_CLS],
-				);
-				assert.ok(unit.children[1] instanceof PARSER.ParseNodeMapLiteral__1__List);
-				h.hashListSources(
-					unit.children[1],
-					`1 , 2 , 3 |-> null`,
-					`4 , 5 , 6 |-> false`,
-					`7 , 8 |-> true`,
-					`9 , 0 |-> 42.0`,
-				);
-			});
+		Dev.supports('literalCollection') && specify('ExpressionUnit ::= MapLiteral', () => {
+			h.mapLiteralFromSource(`
+				[
+					,
+					1, 2, 3 |-> null,
+					4, 5, 6 |-> false,
+					7, 8    |-> true,
+					9, 0    |-> 42.0,
+				];
+			`); // assert does not throw
 		});
 
 		context('ExpressionUnit ::= "(" Expression ")"', () => {
