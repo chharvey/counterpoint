@@ -361,6 +361,16 @@ describe('Decorator', () => {
 			});
 		});
 
+		Dev.supports('literalCollection') && context('ExpressionUnit ::= "[" "]"', () => {
+			it('makes an ASTNodeEmptyCollection.', () => {
+				/*
+					<EmptyCollection/>
+				*/
+				const expr: AST.ASTNodeExpression = Decorator.decorate(h.unitExpressionFromSource(`[];`));
+				assert.ok(expr instanceof AST.ASTNodeEmptyCollection);
+			});
+		});
+
 		Dev.supports('variables') && context('ExpressionUnit ::= IDENTIFIER', () => {
 			it('assigns a unique ID starting from 256.', () => {
 				/*
@@ -546,16 +556,6 @@ describe('Decorator', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 		})
-
-		Dev.supports('literalCollection') && context('ExpressionUnit ::= "[" "]"', () => {
-			it('makes an ASTNodeEmptyCollection.', () => {
-				/*
-					<EmptyCollection/>
-				*/
-				const expr: AST.ASTNodeExpression = Decorator.decorate(h.unitExpressionFromSource(`[];`));
-				assert.ok(expr instanceof AST.ASTNodeEmptyCollection);
-			});
-		});
 
 		context('ExpressionUnit ::= "(" Expression ")"', () => {
 			it('returns the inner Expression node.', () => {
