@@ -77,7 +77,7 @@ describe('Parser', () => {
 					`foobar`,
 				];
 				assert.deepStrictEqual(srcs.map((src) =>
-					h.propertyFromString(`${ src } = 42`).children[0].source
+					h.wordFromString(src).source
 				), srcs);
 			});
 		});

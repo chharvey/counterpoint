@@ -22,6 +22,10 @@ import {
 
 
 
+export function wordFromString(wordstring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeWord {
+	const property: PARSER.ParseNodeProperty = propertyFromString(`${ wordstring } = null`, config);
+	return property.children[0];
+}
 export function tokenLiteralFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString {
 	const token: Token = primitiveTypeFromString(typestring, config).children[0]
 	assert.ok(

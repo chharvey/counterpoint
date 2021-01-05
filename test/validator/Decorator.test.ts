@@ -31,6 +31,7 @@ import {
 	unionTypeFromString,
 	primitiveLiteralFromSource,
 } from '../helpers-parse'
+import * as h from '../helpers-parse';
 import {
 	constantFromSource,
 	variableFromSource,
@@ -60,6 +61,29 @@ describe('Decorator', () => {
 				assert.strictEqual(statement.source, `;`)
 			})
 		})
+
+		Dev.supports('literalCollection') && describe('Word ::= KEYWORD | IDENTIFIER', () => {
+			it('makes an ASTNodeKey.', () => {
+				/*
+					<Key source="let" id=\x8c/>
+					<Key source="foobar" id=\x100/>
+				*/
+				const srcs: string[] = [
+					`let`,
+					`foobar`,
+				];
+				assert.deepStrictEqual(
+					srcs.map((src) => {
+						const key: AST.ASTNodeKey = Decorator.decorate(h.wordFromString(src));
+						return [key.source, key.id];
+					}),
+					srcs.map((src, i) => [src, [
+						0x8cn,
+						0x100n,
+					][i]]),
+				);
+			});
+		});
 
 		describe('PrimitiveLiteral ::= "null" | "false" | "true" | INTEGER | FLOAT | STRING', () => {
 			it('makes an ASTNodeConstant.', () => {
@@ -233,6 +257,109 @@ describe('Decorator', () => {
 				)
 			})
 		})
+
+		Dev.supports('literalCollection') && context('Property ::= Word "=" Expression', () => {
+			it('makes an ASTNodeProperty.', () => {
+				/*
+					<Property>
+						<Key source="fontSize"/>
+						<Operation source="1. + 0.25">...</Operation>
+					</Property>
+				*/
+				const property = Decorator.decorate(h.propertyFromString(`fontSize = 1. + 0.25`));
+				assert.ok(property instanceof AST.ASTNodeProperty); // FIXME: `AST.ASTNodeProperty` is assignable to `TemplatePartialType`, so `Decorator.decorate` overlads get confused
+				assert.deepStrictEqual(
+					property.children.map((c) => c.source),
+					[`fontSize`, `1. + 0.25`],
+				);
+			});
+		});
+
+		Dev.supports('literalCollection') && context('Case ::= ExpressionHash "|->" Expression', () => {
+			it('makes an ASTNodeCase', () => {
+				/*
+					<Case>
+						<Operation source="1 + 0.25">...</Operation>
+						<Operation source="5 * 0.25">...</Operation>
+						<Constant source="1.25"/>
+					</Case>
+				*/
+				const kase: AST.ASTNodeCase = Decorator.decorate(h.caseFromString(`1 + 0.25, 5 * 0.25 |-> 1.25`));
+				assert.deepStrictEqual(
+					kase.children.map((c) => c.source),
+					[`1 + 0.25`, `5 * 0.25`, `1.25`],
+				);
+			});
+		});
+
+		Dev.supports('literalCollection') && context('ListLiteral ::= "[" ","? ExpressionHash ","? "]"', () => {
+			it('makes an ASTNodeList.', () => {
+				/*
+					<List>
+						<Constant source="42"/>
+						<Constant source="true"/>
+						<Operation source="null || false">...</Operation>
+					</List>
+				*/
+				assert.deepStrictEqual(Decorator.decorate(h.listLiteralFromSource(`
+					[
+						42,
+						true,
+						null || false % FIXME: trailing comma
+					];
+				`)).children.map((c) => c.source), [
+					`42`,
+					`true`,
+					`null || false`,
+				]);
+			});
+		});
+
+		Dev.supports('literalCollection') && context('RecordLiteral ::= "[" ","? Property# ","? "]"', () => {
+			it('makes an ASTNodeRecord.', () => {
+				/*
+					<Record>
+						<Property source="let = true">...</Property>
+						<Property source="foobar = 42">...</Property>
+					</Record>
+				*/
+				assert.deepStrictEqual(Decorator.decorate(h.recordLiteralFromSource(`
+					[
+						let = true,
+						foobar = 42,
+					];
+				`)).children.map((c) => c.source), [
+					`let = true`,
+					`foobar = 42`,
+				]);
+			});
+		});
+
+		Dev.supports('literalCollection') && context('MapLiteral ::= "[" ","? Case# ","? "]"', () => {
+			it('makes an ASTNodeMap.', () => {
+				/*
+					<Map>
+						<Case source="1, 2, 3 |-> null">...</Expression>
+						<Case source="4, 5, 6 |-> false">...</Expression>
+						<Case source="7, 8 |-> true">...</Expression>
+						<Case source="9, 0 |-> 42.0">...</Expression>
+					</Map>
+				*/
+				assert.deepStrictEqual(Decorator.decorate(h.mapLiteralFromSource(`
+					[
+						1, 2, 3 |-> null,
+						4, 5, 6 |-> false,
+						7, 8    |-> true,
+						9, 0    |-> 42.0,
+					];
+				`)).children.map((c) => c.source), [
+					`1 , 2 , 3 |-> null`,
+					`4 , 5 , 6 |-> false`,
+					`7 , 8 |-> true`,
+					`9 , 0 |-> 42.0`,
+				]);
+			});
+		});
 
 		Dev.supports('variables') && context('ExpressionUnit ::= IDENTIFIER', () => {
 			it('assigns a unique ID starting from 256.', () => {
@@ -419,6 +546,16 @@ describe('Decorator', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 		})
+
+		Dev.supports('literalCollection') && context('ExpressionUnit ::= "[" "]"', () => {
+			it('makes an ASTNodeEmptyCollection.', () => {
+				/*
+					<EmptyCollection/>
+				*/
+				const expr: AST.ASTNodeExpression = Decorator.decorate(h.unitExpressionFromSource(`[];`));
+				assert.ok(expr instanceof AST.ASTNodeEmptyCollection);
+			});
+		});
 
 		context('ExpressionUnit ::= "(" Expression ")"', () => {
 			it('returns the inner Expression node.', () => {
