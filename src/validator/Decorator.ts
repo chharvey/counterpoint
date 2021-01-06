@@ -6,6 +6,9 @@ import type {
 	NonemptyArray,
 } from '../types.d';
 import {
+	Dev,
+} from '../../src/core/';
+import {
 	Operator,
 	ValidTypeOperator,
 	ValidOperatorUnary,
@@ -123,7 +126,7 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeGoal):                  AST.ASTNodeGoal;
 	static decorate(node: ParseNode): AST.ASTNodeSolid | readonly AST.ASTNodeSolid[];
 	static decorate(node: ParseNode): AST.ASTNodeSolid | readonly AST.ASTNodeSolid[] {
-		if (node instanceof PARSER.ParseNodeWord) {
+		if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeWord) {
 			return new AST.ASTNodeKey(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenIdentifier);
 
 		} else if (node instanceof PARSER.ParseNodePrimitiveLiteral) {
@@ -132,18 +135,18 @@ export class Decorator {
 		} else if (node instanceof PARSER.ParseNodeTypeKeyword) {
 			return new AST.ASTNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
 
-		} else if (node instanceof PARSER.ParseNodeTypeProperty) {
+		} else if (Dev.supportsAll('typingExplicit', 'literalCollection') && node instanceof PARSER.ParseNodeTypeProperty) {
 			return new AST.ASTNodeTypeProperty(node, [
 				this.decorate(node.children[0]),
 				this.decorate(node.children[2]),
 			]);
 
-		} else if (node instanceof PARSER.ParseNodeTypeTupleLiteral) {
+		} else if (Dev.supportsAll('typingExplicit', 'literalCollection') && node instanceof PARSER.ParseNodeTypeTupleLiteral) {
 			return new AST.ASTNodeTypeList(node, this.decorate(
 				node.children.find((c): c is PARSER.ParseNodeTypeTupleLiteral__1__List => c instanceof PARSER.ParseNodeTypeTupleLiteral__1__List)!
 			));
 
-		} else if (node instanceof PARSER.ParseNodeTypeTupleLiteral__1__List) {
+		} else if (Dev.supportsAll('typingExplicit', 'literalCollection') && node instanceof PARSER.ParseNodeTypeTupleLiteral__1__List) {
 			return (node.children.length === 1)
 				? [this.decorate(node.children[0])]
 				: [
@@ -152,12 +155,12 @@ export class Decorator {
 				]
 			;
 
-		} else if (node instanceof PARSER.ParseNodeTypeRecordLiteral) {
+		} else if (Dev.supportsAll('typingExplicit', 'literalCollection') && node instanceof PARSER.ParseNodeTypeRecordLiteral) {
 			return new AST.ASTNodeTypeRecord(node, this.decorate(
 				node.children.find((c): c is PARSER.ParseNodeTypeRecordLiteral__1__List => c instanceof PARSER.ParseNodeTypeRecordLiteral__1__List)!
 			));
 
-		} else if (node instanceof PARSER.ParseNodeTypeRecordLiteral__1__List) {
+		} else if (Dev.supportsAll('typingExplicit', 'literalCollection') && node instanceof PARSER.ParseNodeTypeRecordLiteral__1__List) {
 			return (node.children.length === 1)
 				? [this.decorate(node.children[0])]
 				: [
@@ -213,10 +216,10 @@ export class Decorator {
 				this.decorate(c)
 			))
 
-		} else if (node instanceof PARSER.ParseNodeExpressionHash) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeExpressionHash) {
 			return this.decorate(node.children[0]);
 
-		} else if (node instanceof PARSER.ParseNodeExpressionHash__0__List) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeExpressionHash__0__List) {
 			return (node.children.length === 1)
 				? [this.decorate(node.children[0])]
 				: [
@@ -225,29 +228,29 @@ export class Decorator {
 				]
 			;
 
-		} else if (node instanceof PARSER.ParseNodeProperty) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeProperty) {
 			return new AST.ASTNodeProperty(node, [
 				this.decorate(node.children[0]),
 				this.decorate(node.children[2]),
 			]);
 
-		} else if (node instanceof PARSER.ParseNodeCase) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeCase) {
 			return new AST.ASTNodeCase(node, [
 				...this.decorate(node.children[0]),
 				this.decorate(node.children[2]),
 			]);
 
-		} else if (node instanceof PARSER.ParseNodeListLiteral) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeListLiteral) {
 			return new AST.ASTNodeList(node, this.decorate(
 				node.children.find((c): c is PARSER.ParseNodeExpressionHash => c instanceof PARSER.ParseNodeExpressionHash)!
 			));
 
-		} else if (node instanceof PARSER.ParseNodeRecordLiteral) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeRecordLiteral) {
 			return new AST.ASTNodeRecord(node, this.decorate(
 				node.children.find((c): c is PARSER.ParseNodeRecordLiteral__1__List => c instanceof PARSER.ParseNodeRecordLiteral__1__List)!
 			));
 
-		} else if (node instanceof PARSER.ParseNodeRecordLiteral__1__List) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeRecordLiteral__1__List) {
 			return (node.children.length === 1)
 				? [this.decorate(node.children[0]) as unknown as AST.ASTNodeProperty]
 				: [
@@ -256,12 +259,12 @@ export class Decorator {
 				]
 			;
 
-		} else if (node instanceof PARSER.ParseNodeMappingLiteral) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeMappingLiteral) {
 			return new AST.ASTNodeMapping(node, this.decorate(
 				node.children.find((c): c is PARSER.ParseNodeMappingLiteral__1__List => c instanceof PARSER.ParseNodeMappingLiteral__1__List)!
 			));
 
-		} else if (node instanceof PARSER.ParseNodeMappingLiteral__1__List) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeMappingLiteral__1__List) {
 			return (node.children.length === 1)
 				? [this.decorate(node.children[0])]
 				: [

@@ -63,7 +63,7 @@ export enum Punctuator {
 	// statement
 		ENDSTAT = ';',
 		ISTYPE  = ':', // Dev.supports('typingExplicit')
-		ASSIGN  = '=', // Dev.supportsAll('variables', 'typingExplicit')
+		ASSIGN  = '=', // Dev.supportsAll('variables', 'typingExplicit', 'literalCollection')
 }
 
 export enum Keyword {
