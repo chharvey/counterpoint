@@ -540,10 +540,10 @@ describe('Parser', () => {
 				/*
 					<RecordLiteral__1__List>
 						<RecordLiteral__1__List>
-							<Property source="let = true">...</Expression>
+							<Property source="let = true">...</Property>
 						</RecordLiteral__1__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
-						<Property source="foobar = 42">...</Expression>
+						<Property source="foobar = 42">...</Property>
 					</RecordLiteral__1__List>
 				*/
 				const unit: PARSER.ParseNodeRecordLiteral = h.recordLiteralFromSource(`[let = true, foobar = 42];`);
@@ -583,16 +583,16 @@ describe('Parser', () => {
 						<MappingLiteral__1__List>
 							<MappingLiteral__1__List>
 								<MappingLiteral__1__List>
-									<Case source="1, 2, 3 |-> null">...</Expression>
+									<Case source="1, 2, 3 |-> null">...</Case>
 								</MappingLiteral__1__List>
 								<PUNCTUATOR>,</PUNCTUATOR>
-								<Case source="4, 5, 6 |-> false">...</Expression>
+								<Case source="4, 5, 6 |-> false">...</Case>
 							</MappingLiteral__1__List>
 							<PUNCTUATOR>,</PUNCTUATOR>
-							<Case source="7, 8 |-> true">...</Expression>
+							<Case source="7, 8 |-> true">...</Case>
 						</MappingLiteral__1__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
-						<Case source="9, 0 |-> 42.0">...</Expression>
+						<Case source="9, 0 |-> 42.0">...</Case>
 					</MappingLiteral__1__List>
 				*/
 				const unit: PARSER.ParseNodeMappingLiteral = h.mappingLiteralFromSource(`[1, 2, 3 |-> null, 4, 5, 6 |-> false, 7, 8 |-> true, 9, 0 |-> 42.0];`);

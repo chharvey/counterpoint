@@ -1,6 +1,9 @@
 SemanticType =:=
 	| SemanticTypeConstant
 	| SemanticTypeAlias
+	| SemanticTypeEmptyCollection
+	| SemanticTypeList
+	| SemanticTypeRecord
 	| SemanticTypeOperation
 ;
 
@@ -8,6 +11,10 @@ SemanticExpression =:=
 	| SemanticConstant
 	| SemanticVariable
 	| SemanticTemplate
+	| SemanticEmptyCollection
+	| SemanticList
+	| SemanticRecord
+	| SemanticMapping
 	| SemanticOperation
 ;
 

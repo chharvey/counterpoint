@@ -408,10 +408,10 @@ describe('Decorator', () => {
 			it('makes an ASTNodeMapping.', () => {
 				/*
 					<Mapping>
-						<Case source="1, 2, 3 |-> null">...</Expression>
-						<Case source="4, 5, 6 |-> false">...</Expression>
-						<Case source="7, 8 |-> true">...</Expression>
-						<Case source="9, 0 |-> 42.0">...</Expression>
+						<Case source="1, 2, 3 |-> null">...</Case>
+						<Case source="4, 5, 6 |-> false">...</Case>
+						<Case source="7, 8 |-> true">...</Case>
+						<Case source="9, 0 |-> 42.0">...</Case>
 					</Mapping>
 				*/
 				assert.deepStrictEqual(Decorator.decorate(h.mappingLiteralFromSource(`
