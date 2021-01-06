@@ -65,6 +65,207 @@ describe('Parser', () => {
 			})
 		})
 
+		Dev.supports('literalCollection') && describe('Word ::= KEYWORD | IDENTIFIER', () => {
+			it('makes a Word node.', () => {
+				/*
+					<Word>
+						<KEYWORD>unfixed</KEYWORD> or <IDENTIFIER>foobar</IDENTIFIER>
+					</Word>
+				*/
+				const srcs: string[] = [
+					`unfixed`,
+					`foobar`,
+				];
+				assert.deepStrictEqual(srcs.map((src) =>
+					h.wordFromString(src).source
+				), srcs);
+			});
+		});
+
+		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeProperty ::= Word ":" Type;', () => {
+			it('makes a TypeProperty node.', () => {
+				/*
+					<TypeProperty>
+						<Word source="let">...</Word>
+						<PUNCTUATOR>:</PUNCTUATOR>
+						<Type source="T">...</Type>
+					</TypeProperty>
+				*/
+				const srcs: Map<string, string> = new Map([
+					[`let`,        `str`],
+					[`fontWeight`, `int`],
+					[`fontStyle`,  `Normal | Italic | Oblique`],
+					[`fontSize`,   `float`],
+					[`fontFamily`, `str`],
+				]);
+				assert.deepStrictEqual(
+					[...srcs].map(([prop, typ]) => h.typePropertyFromString(`${ prop }: ${ typ }`).children.map((c) => c.source)),
+					[...srcs].map(([prop, typ]) => [prop, Punctuator.ISTYPE, typ]),
+				);
+			});
+		});
+
+		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
+			/*
+				<TypeTupleLiteral>
+					<PUNCTUATOR>[</PUNCTUATOR>
+					<TypeTupleLiteral__1__List source="T, U | V, W & X!">...</TypeTupleLiteral__1__List>
+					<PUNCTUATOR>]</PUNCTUATOR>
+				</TypeTupleLiteral>
+			*/
+			it('with no leading or trailing comma.', () => {
+				const tuple: PARSER.ParseNodeTypeTupleLiteral = h.tupleTypeFromString(`[T, U | V, W & X!]`);
+				assert_arrayLength(tuple.children, 3);
+				assert.deepStrictEqual(
+					tuple.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, `T , U | V , W & X !`, Punctuator.BRAK_CLS],
+				);
+			});
+			it('with leading comma.', () => {
+				const tuple: PARSER.ParseNodeTypeTupleLiteral = h.tupleTypeFromString(`
+					[
+						, T
+						, U | V
+						, W & X!
+					]
+				`);
+				assert_arrayLength(tuple.children, 4);
+				assert.deepStrictEqual(
+					tuple.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, Punctuator.COMMA, `T , U | V , W & X !`, Punctuator.BRAK_CLS],
+				);
+			});
+			it('with trailing comma.', () => {
+				const tuple: PARSER.ParseNodeTypeTupleLiteral = h.tupleTypeFromString(`
+					[
+						T,
+						U | V,
+						W & X!,
+					]
+				`);
+				assert_arrayLength(tuple.children, 4);
+				assert.deepStrictEqual(
+					tuple.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, `T , U | V , W & X !`, Punctuator.COMMA, Punctuator.BRAK_CLS],
+				);
+			});
+			specify('TypeTupleLiteral__1__List ::= TypeTupleLiteral__1__List "," Type', () => {
+				/*
+					<TypeTupleLiteral__1__List>
+						<TypeTupleLiteral__1__List>
+							<TypeTupleLiteral__1__List>
+								<Type source="T">...</Type>
+							</TypeTupleLiteral__1__List>
+							<PUNCTUATOR>,</PUNCTUATOR>
+							<Type source="U | V">...</Type>
+						</TypeTupleLiteral__1__List>
+						<PUNCTUATOR>,</PUNCTUATOR>
+						<Type source="W & X!">...</Type>
+					</TypeTupleLiteral__1__List>
+				*/
+				const tuple: PARSER.ParseNodeTypeTupleLiteral = h.tupleTypeFromString(`[T, U | V, W & X!]`);
+				assert_arrayLength(tuple.children, 3);
+				const type_list: PARSER.ParseNodeTypeTupleLiteral__1__List = tuple.children[1];
+				h.hashListSources(type_list, `T`, `U | V`, `W & X !`);
+			});
+		});
+
+		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]"', () => {
+			/*
+				<TypeRecordLiteral>
+					<PUNCTUATOR>[</PUNCTUATOR>
+					<TypeRecordLiteral__1__List source="a: T, b: U | V, c: W & X!">...</TypeRecordLiteral__1__List>
+					<PUNCTUATOR>]</PUNCTUATOR>
+				</TypeRecordLiteral>
+			*/
+			it('with no leading or trailing comma.', () => {
+				const record: PARSER.ParseNodeTypeRecordLiteral = h.recordTypeFromString(`[a: T, b: U | V, c: W & X!]`);
+				assert_arrayLength(record.children, 3);
+				assert.deepStrictEqual(
+					record.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, `a : T , b : U | V , c : W & X !`, Punctuator.BRAK_CLS],
+				);
+			});
+			it('with leading comma.', () => {
+				const record: PARSER.ParseNodeTypeRecordLiteral = h.recordTypeFromString(`
+					[
+						, a: T
+						, b: U | V
+						, c: W & X!
+					]
+				`);
+				assert_arrayLength(record.children, 4);
+				assert.deepStrictEqual(
+					record.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, Punctuator.COMMA, `a : T , b : U | V , c : W & X !`, Punctuator.BRAK_CLS],
+				);
+			});
+			it('with trailing comma.', () => {
+				const record: PARSER.ParseNodeTypeRecordLiteral = h.recordTypeFromString(`
+					[
+						a: T,
+						b: U | V,
+						c: W & X!,
+					]
+				`);
+				assert_arrayLength(record.children, 4);
+				assert.deepStrictEqual(
+					record.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, `a : T , b : U | V , c : W & X !`, Punctuator.COMMA, Punctuator.BRAK_CLS],
+				);
+			});
+			specify('TypeRecordLiteral__1__List ::= TypeRecordLiteral__1__List "," TypeProperty', () => {
+				/*
+					<TypeRecordLiteral__1__List>
+						<TypeRecordLiteral__1__List>
+							<TypeRecordLiteral__1__List>
+								<TypeProperty source="a: T">...</TypeProperty>
+							</TypeRecordLiteral__1__List>
+							<PUNCTUATOR>,</PUNCTUATOR>
+							<TypeProperty source="b: U | V">...</TypeProperty>
+						</TypeRecordLiteral__1__List>
+						<PUNCTUATOR>,</PUNCTUATOR>
+						<TypeProperty source="c: W & X!">...</TypeProperty>
+					</TypeRecordLiteral__1__List>
+				*/
+				const record: PARSER.ParseNodeTypeRecordLiteral = h.recordTypeFromString(`[a: T, b: U | V, c: W & X!]`);
+				assert_arrayLength(record.children, 3);
+				const property_list: PARSER.ParseNodeTypeRecordLiteral__1__List = record.children[1];
+				h.hashListSources(property_list, `a : T`, `b : U | V`, `c : W & X !`);
+			});
+		});
+
+		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
+			it('makes a TypeUnit node containing brackets.', () => {
+				/*
+					<TypeUnit>
+						<PUNCTUATOR>[</PUNCTUATOR>
+						<PUNCTUATOR>]</PUNCTUATOR>
+					</TypeUnit>
+				*/
+				const type_unit: PARSER.ParseNodeTypeUnit = h.unitTypeFromString(`[]`);
+				assert_arrayLength(type_unit.children, 2);
+				assert.deepStrictEqual(
+					type_unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, Punctuator.BRAK_CLS],
+				);
+			});
+		});
+
+		Dev.supports('typingExplicit') && describe('TypeUnit ::= IDENTIFIER', () => {
+			it('parses type identifiers.', () => {
+				assert.deepStrictEqual([
+					`T`,
+					`U`,
+					`V`,
+				].map((src) => h.tokenIdentifierFromTypeString(src).source), [
+					`T`,
+					`U`,
+					`V`,
+				]);
+			});
+		});
+
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= PrimitiveLiteral', () => {
 			it('parses NULL, BOOLEAN, INTEGER, FLOAT, or STRING.', () => {
 				assert.deepStrictEqual(([
@@ -87,20 +288,6 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeUnit ::= IDENTIFIER', () => {
-			it('parses type identifiers.', () => {
-				assert.deepStrictEqual([
-					`T`,
-					`U`,
-					`V`,
-				].map((src) => h.tokenIdentifierFromTypeString(src).source), [
-					`T`,
-					`U`,
-					`V`,
-				]);
-			});
-		});
-
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= TypeKeyword', () => {
 			it('parses keywords `bool`, `int`, `float`, `obj`.', () => {
 				assert.deepStrictEqual(([
@@ -119,6 +306,14 @@ describe('Parser', () => {
 				assert.throws(() => h.tokenLiteralFromTypeString(`isnt`), ParseError01)
 			})
 		})
+
+		Dev.supportsAll('typingExplicit', 'literalCollection') && specify('TypeUnit ::= TypeTupleLiteral', () => {
+			h.tupleTypeFromString(`[T, U | V, W & X!]`); // assert does not throw
+		});
+
+		Dev.supportsAll('typingExplicit', 'literalCollection') && specify('TypeUnit ::= TypeRecordLiteral', () => {
+			h.recordTypeFromString(`[a: T, b: U | V, c: W & X!]`); // assert does not throw
+		});
 
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= "(" Type ")"', () => {
 			it('makes an TypeUnit node containing a Type node.', () => {
@@ -205,6 +400,225 @@ describe('Parser', () => {
 				)
 			})
 		})
+
+		Dev.supports('literalCollection') && describe('Property ::= Word "=" Expression', () => {
+			it('makes a Property node.', () => {
+				/*
+					<Property>
+						<Word source="unfixed">...</Word>
+						<PUNCTUATOR>=</PUNCTUATOR>
+						<Expression source="42">...</Expression>
+					</Property>
+				*/
+				const srcs: string[] = [
+					`unfixed`,
+					`foobar`,
+				];
+				assert.deepStrictEqual(
+					srcs.map((src) => h.propertyFromString(`${ src } = 42`).children.map((c) => c.source)),
+					srcs.map((src) => [src, Punctuator.ASSIGN, `42`]),
+				);
+			});
+		});
+
+		Dev.supports('literalCollection') && describe('Case ::= Expression# "|->" Expression', () => {
+			it('makes a Case node.', () => {
+				/*
+					<Case>
+						<Case__0__List>
+							<Case__0__List>
+								<Expression source="42">...</Expression>
+							</Case__0__List>
+							<PUNCTUATOR>,</PUNCTUATOR>
+							<Expression source="true">...</Expression>
+						</Case__0__List>
+						<PUNCTUATOR>|-></PUNCTUATOR>
+						<Expression source="null || false">...</Expression>
+					</Case>
+				*/
+				const kase: PARSER.ParseNodeCase = h.caseFromString(`42, true |-> null || false`);
+				h.hashListSources(kase.children[0], `42`, `true`);
+				assert.deepStrictEqual(
+					[kase.children[1].source, kase.children[2].source],
+					[Punctuator.MAPTO,        `null || false`],
+				);
+			});
+		});
+
+		Dev.supports('literalCollection') && describe('ListLiteral ::= "[" ","? Expression# ","? "]"', () => {
+			it('with no leading or trailing comma.', () => {
+				/*
+					<ListLiteral>
+						<PUNCTUATOR>[</PUNCTUATOR>
+						<Case__0__List source="42, true, null || false">...</Case__0__List>
+						<PUNCTUATOR>]</PUNCTUATOR>
+					</ListLiteral>
+				*/
+				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`[42, true, null || false];`);
+				assert_arrayLength(unit.children, 3);
+				assert.deepStrictEqual(
+					unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, `42 , true , null || false`, Punctuator.BRAK_CLS],
+				);
+			});
+			it('with leading comma.', () => {
+				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`
+					[
+						, 42
+						, true
+						, null || false
+					];
+				`);
+				assert_arrayLength(unit.children, 4);
+				assert.deepStrictEqual(
+					unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, Punctuator.COMMA, `42 , true , null || false`, Punctuator.BRAK_CLS],
+				);
+			});
+			it('with trailing comma.', () => {
+				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`
+					[
+						42,
+						true,
+						null || false,
+					];
+				`);
+				assert_arrayLength(unit.children, 4);
+				assert.deepStrictEqual(
+					unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, `42 , true , null || false`, Punctuator.COMMA, Punctuator.BRAK_CLS],
+				);
+			});
+			specify('Case__0__List ::= Case__0__List "," Expression', () => {
+				/*
+					<Case__0__List>
+						<Case__0__List>
+							<Case__0__List>
+								<Expression source="42">...</Expression>
+							</Case__0__List>
+							<PUNCTUATOR>,</PUNCTUATOR>
+							<Expression source="true">...</Expression>
+						</Case__0__List>
+						<PUNCTUATOR>,</PUNCTUATOR>
+						<Expression source="null || false">...</Expression>
+					</Case__0__List>
+				*/
+				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`[42, true, null || false];`);
+				assert_arrayLength(unit.children, 3);
+				h.hashListSources(unit.children[1], `42`, `true`, `null || false`);
+			});
+		});
+
+		Dev.supports('literalCollection') && describe('RecordLiteral ::= "[" ","? Property# ","? "]"', () => {
+			it('with leading comma.', () => {
+				/*
+					<RecordLiteral>
+						<PUNCTUATOR>[</PUNCTUATOR>
+						<PUNCTUATOR>,</PUNCTUATOR>
+						<RecordLiteral__1__List source="let = true, foobar = 42">...</RecordLiteral__1__List>
+						<PUNCTUATOR>]</PUNCTUATOR>
+					</RecordLiteral>
+				*/
+				const unit: PARSER.ParseNodeRecordLiteral = h.recordLiteralFromSource(`
+					[
+						, let = true
+						, foobar = 42
+					];
+				`);
+				assert_arrayLength(unit.children, 4);
+				assert.ok(unit.children[2] instanceof PARSER.ParseNodeRecordLiteral__1__List);
+				assert.deepStrictEqual(
+					unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, Punctuator.COMMA, `let = true , foobar = 42`, Punctuator.BRAK_CLS],
+				);
+			});
+			specify('RecordLiteral__1__List ::= RecordLiteral__1__List "," Property', () => {
+				/*
+					<RecordLiteral__1__List>
+						<RecordLiteral__1__List>
+							<Property source="let = true">...</Property>
+						</RecordLiteral__1__List>
+						<PUNCTUATOR>,</PUNCTUATOR>
+						<Property source="foobar = 42">...</Property>
+					</RecordLiteral__1__List>
+				*/
+				const unit: PARSER.ParseNodeRecordLiteral = h.recordLiteralFromSource(`[let = true, foobar = 42];`);
+				assert_arrayLength(unit.children, 3);
+				h.hashListSources(unit.children[1], `let = true`, `foobar = 42`);
+			});
+		});
+
+		Dev.supports('literalCollection') && describe('MappingLiteral ::= "[" ","? Case# ","? "]"', () => {
+			it('with trailing comma.', () => {
+				/*
+					<MappingLiteral>
+						<PUNCTUATOR>[</PUNCTUATOR>
+						<MappingLiteral__1__List source="1, 2, 3 |-> null, 4, 5, 6 |-> false, 7, 8 |-> true, 9, 0 |-> 42.0">...</MappingLiteral__1__List>
+						<PUNCTUATOR>,</PUNCTUATOR>
+						<PUNCTUATOR>]</PUNCTUATOR>
+					</MappingLiteral>
+				*/
+				const unit: PARSER.ParseNodeMappingLiteral = h.mappingLiteralFromSource(`
+					[
+						1, 2, 3 |-> null,
+						4, 5, 6 |-> false,
+						7, 8    |-> true,
+						9, 0    |-> 42.0,
+					];
+				`);
+				assert_arrayLength(unit.children, 4);
+				assert.ok(unit.children[1] instanceof PARSER.ParseNodeMappingLiteral__1__List);
+				assert.deepStrictEqual(
+					unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, `1 , 2 , 3 |-> null , 4 , 5 , 6 |-> false , 7 , 8 |-> true , 9 , 0 |-> 42.0`, Punctuator.COMMA, Punctuator.BRAK_CLS],
+				);
+			});
+			specify('MappingLiteral__1__List ::= MappingLiteral__1__List "," Case', () => {
+				/*
+					<MappingLiteral__1__List>
+						<MappingLiteral__1__List>
+							<MappingLiteral__1__List>
+								<MappingLiteral__1__List>
+									<Case source="1, 2, 3 |-> null">...</Case>
+								</MappingLiteral__1__List>
+								<PUNCTUATOR>,</PUNCTUATOR>
+								<Case source="4, 5, 6 |-> false">...</Case>
+							</MappingLiteral__1__List>
+							<PUNCTUATOR>,</PUNCTUATOR>
+							<Case source="7, 8 |-> true">...</Case>
+						</MappingLiteral__1__List>
+						<PUNCTUATOR>,</PUNCTUATOR>
+						<Case source="9, 0 |-> 42.0">...</Case>
+					</MappingLiteral__1__List>
+				*/
+				const unit: PARSER.ParseNodeMappingLiteral = h.mappingLiteralFromSource(`[1, 2, 3 |-> null, 4, 5, 6 |-> false, 7, 8 |-> true, 9, 0 |-> 42.0];`);
+				assert_arrayLength(unit.children, 3);
+				h.hashListSources(
+					unit.children[1],
+					`1 , 2 , 3 |-> null`,
+					`4 , 5 , 6 |-> false`,
+					`7 , 8 |-> true`,
+					`9 , 0 |-> 42.0`,
+				);
+			});
+		});
+
+		Dev.supports('literalCollection') && describe('ExpressionUnit ::= "[" "]"', () => {
+			it('makes an ExpressionUnit node containing brackets.', () => {
+				/*
+					<ExpressionUnit>
+						<PUNCTUATOR>[</PUNCTUATOR>
+						<PUNCTUATOR>]</PUNCTUATOR>
+					</ExpressionUnit>
+				*/
+				const expression_unit: PARSER.ParseNodeExpressionUnit = h.unitExpressionFromSource(`[];`);
+				assert_arrayLength(expression_unit.children, 2);
+				assert.deepStrictEqual(
+					expression_unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, Punctuator.BRAK_CLS],
+				);
+			});
+		});
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
 			Dev.supports('variables') && it('parses IDENTIFIER.', () => {
@@ -495,6 +909,32 @@ describe('Parser', () => {
 				`).parse(), ParseError01)
 			})
 		})
+
+		Dev.supports('literalCollection') && specify('ExpressionUnit ::= ListLiteral', () => {
+			h.listLiteralFromSource(`[, 42, true, null || false,];`); // assert does not throw
+		});
+
+		Dev.supports('literalCollection') && specify('ExpressionUnit ::= RecordLiteral', () => {
+			h.recordLiteralFromSource(`
+				[
+					, let = true
+					, foobar = 42
+					,
+				];
+			`); // assert does not throw
+		});
+
+		Dev.supports('literalCollection') && specify('ExpressionUnit ::= MappingLiteral', () => {
+			h.mappingLiteralFromSource(`
+				[
+					,
+					1, 2, 3 |-> null,
+					4, 5, 6 |-> false,
+					7, 8    |-> true,
+					9, 0    |-> 42.0,
+				];
+			`); // assert does not throw
+		});
 
 		context('ExpressionUnit ::= "(" Expression ")"', () => {
 			it('makes an ExpressionUnit node containing an Expression node.', () => {

@@ -1,6 +1,9 @@
 SemanticType =:=
 	| SemanticTypeConstant
 	| SemanticTypeAlias
+	| SemanticTypeEmptyCollection
+	| SemanticTypeList
+	| SemanticTypeRecord
 	| SemanticTypeOperation
 ;
 
@@ -8,8 +11,22 @@ SemanticExpression =:=
 	| SemanticConstant
 	| SemanticVariable
 	| SemanticTemplate
+	| SemanticEmptyCollection
+	| SemanticList
+	| SemanticRecord
+	| SemanticMapping
 	| SemanticOperation
 ;
+
+
+
+SemanticKey[id: RealNumber]
+	::= ();
+
+
+
+SemanticTypeProperty
+	::= SemanticKey SemanticType;
 
 
 
@@ -19,10 +36,22 @@ SemanticTypeConstant[value: Type]
 SemanticTypeAlias[id: RealNumber]
 	::= ();
 
+SemanticTypeEmptyCollection ::= ();
+SemanticTypeList            ::= SemanticType+;
+SemanticTypeRecord          ::= SemanticTypeProperty+;
+
 SemanticTypeOperation[operator: ORNULL]
 	::= SemanticType;
 SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
+
+
+
+SemanticProperty
+	::= SemanticKey SemanticExpression;
+
+SemanticCase
+	::= SemanticExpression+ SemanticExpression;
 
 
 
@@ -40,7 +69,10 @@ SemanticTemplate[type: "substitution"]
 SemanticTemplatePartial
 	::= (SemanticConstant SemanticExpression?)+;
 
-
+SemanticEmptyCollection ::= ();
+SemanticList            ::= SemanticExpression+;
+SemanticRecord          ::= SemanticProperty+;
+SemanticMapping         ::= SemanticCase+;
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;

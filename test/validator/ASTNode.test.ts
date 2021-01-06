@@ -207,7 +207,7 @@ describe('ASTNodeSolid', () => {
 					}),
 					'produces `CompletionStructureAssessment.new(ASTNodeOperation#assess#value)#build`',
 				)
-			}).timeout(5000)
+			}).timeout(10_000);
 			context('with constant folding off.', () => {
 				const folding_off: SolidConfig = {
 					...CONFIG_DEFAULT,
@@ -1023,7 +1023,7 @@ describe('ASTNodeSolid', () => {
 					[`-0.0 is 0.0;`, false],
 					[`-0.0 == 0.0;`, true],
 				]), (val) => SolidBoolean.fromBoolean(val)))
-			})
+			}).timeout(10_000);
 			it('computes the value of AND and OR operators.', () => {
 				assessOperations(new Map<string, SolidObject>([
 					[`null && 5;`,     SolidNull.NULL],
