@@ -70,15 +70,12 @@ StringTemplate ::=
 	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
 ;
 
-ExpressionHash
-	::= Expression#;
+Property ::= Word        "="   Expression;
+Case     ::= Expression# "|->" Expression;
 
-Property ::= Word           "="   Expression;
-Case     ::= ExpressionHash "|->" Expression;
-
-ListLiteral    ::= "[" ","? ExpressionHash ","? "]";
-RecordLiteral  ::= "[" ","? Property#      ","? "]";
-MappingLiteral ::= "[" ","? Case#          ","? "]";
+ListLiteral    ::= "[" ","? Expression# ","? "]";
+RecordLiteral  ::= "[" ","? Property#   ","? "]";
+MappingLiteral ::= "[" ","? Case#       ","? "]";
 
 ExpressionUnit ::=
 	| "[" "]"

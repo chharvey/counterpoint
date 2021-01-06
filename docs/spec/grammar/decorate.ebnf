@@ -170,32 +170,29 @@ Decorate(StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Exp
 
 
 
-Decorate(ExpressionHash ::= ExpressionHash__0__List) -> Sequence<SemanticExpression>
-	:= Decorate(ExpressionHash__0__List);
-
-	Decorate(ExpressionHash__0__List ::= Expression) -> Sequence<SemanticExpression>
-		:= [Decorate(Expression)];
-	Decorate(ExpressionHash__0__List ::= ExpressionHash__0__List "," Expression) -> Sequence<SemanticExpression>
-		:= [
-			...Decorate(ExpressionHash__0__List),
-			Decorate(Expression),
-		];
-
 Decorate(Property ::= Word "=" Expression) -> SemanticProperty
 	:= (SemanticProperty
 		Decorate(Word)
 		Decorate(Expression)
 	);
 
-Decorate(Case ::= ExpressionHash "|->" Expression) -> SemanticCase
+Decorate(Case ::= Case__0__List "|->" Expression) -> SemanticCase
 	:= (SemanticCase
-		...Decorate(ExpressionHash)
+		...Decorate(Case__0__List)
 		Decorate(Expression)
 	);
 
-Decorate(ListLiteral ::= "[" ","? ExpressionHash ","? "]") -> SemanticList
+	Decorate(Case__0__List ::= Expression) -> Sequence<SemanticExpression>
+		:= [Decorate(Expression)];
+	Decorate(Case__0__List ::= Case__0__List "," Expression) -> Sequence<SemanticExpression>
+		:= [
+			...Decorate(Case__0__List),
+			Decorate(Expression),
+		];
+
+Decorate(ListLiteral ::= "[" ","? Case__0__List ","? "]") -> SemanticList
 	:= (SemanticList
-		...Decorate(ExpressionHash)
+		...Decorate(Case__0__List)
 	);
 
 Decorate(RecordLiteral ::= "[" ","? RecordLiteral__1__List ","? "]") -> SemanticRecord
