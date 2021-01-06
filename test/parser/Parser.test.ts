@@ -475,7 +475,7 @@ describe('Parser', () => {
 					[Punctuator.BRAK_OPN, Punctuator.COMMA, `42 , true , null || false`, Punctuator.BRAK_CLS],
 				);
 			});
-			it.skip('with trailing comma.', () => { // FIXME: `ExpressionHash` cannot be followed by a comma
+			it('with trailing comma.', () => {
 				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`
 					[
 						42,
@@ -911,8 +911,7 @@ describe('Parser', () => {
 		})
 
 		Dev.supports('literalCollection') && specify('ExpressionUnit ::= ListLiteral', () => {
-			// h.listLiteralFromSource(`[, 42, true, null || false,];`); // FIXME: trailing comma
-			h.listLiteralFromSource(`[, 42, true, null || false];`); // assert does not throw
+			h.listLiteralFromSource(`[, 42, true, null || false,];`); // assert does not throw
 		});
 
 		Dev.supports('literalCollection') && specify('ExpressionUnit ::= RecordLiteral', () => {

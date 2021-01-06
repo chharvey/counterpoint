@@ -374,7 +374,7 @@ describe('Decorator', () => {
 					[
 						42,
 						true,
-						null || false % FIXME: trailing comma
+						null || false,
 					];
 				`)).children.map((c) => c.source), [
 					`42`,
