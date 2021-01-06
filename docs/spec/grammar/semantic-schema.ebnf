@@ -18,11 +18,20 @@ SemanticKey[id: RealNumber]
 
 
 
+SemanticTypeProperty
+	::= SemanticKey SemanticType;
+
+
+
 SemanticTypeConstant[value: Type]
 	::= ();
 
 SemanticTypeAlias[id: RealNumber]
 	::= ();
+
+SemanticTypeEmptyCollection ::= ();
+SemanticTypeList            ::= SemanticType+;
+SemanticTypeRecord          ::= SemanticTypeProperty+;
 
 SemanticTypeOperation[operator: ORNULL]
 	::= SemanticType;

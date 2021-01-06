@@ -125,6 +125,75 @@ describe('Decorator', () => {
 			})
 		})
 
+		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeProperty ::= Word ":" Type', () => {
+			it('makes an ASTNodeTypeProperty.', () => {
+				/*
+					<TypeProperty>
+						<Key source="fontSize"/>
+						<TypeConstant source="float"/>
+					</TypeProperty>
+				*/
+				const typeproperty: AST.ASTNodeTypeProperty = Decorator.decorate(h.typePropertyFromString(`fontSize: float`));
+				assert.deepStrictEqual(
+					typeproperty.children.map((c) => c.source),
+					[`fontSize`, `float`],
+				);
+			});
+		});
+
+		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
+			it('makes an ASTNodeTypeList.', () => {
+				/*
+					<TypeList>
+						<TypeAlias source="T"/>
+						<TypeConstant source="42"/>
+						<TypeOperation source="null | bool">...</TypeOperation>
+					</TypeList>
+				*/
+				assert.deepStrictEqual(Decorator.decorate(h.tupleTypeFromString(`
+					[
+						T,
+						42,
+						null | bool,
+					]
+				`)).children.map((c) => c.source), [
+					`T`,
+					`42`,
+					`null | bool`,
+				]);
+			});
+		});
+
+		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]"', () => {
+			it('makes an ASTNodeTypeRecord.', () => {
+				/*
+					<TypeRecord>
+						<TypeProperty source="let: bool">...</TypeProperty>
+						<TypeProperty source="foobar: int">...</TypeProperty>
+					</TypeRecord>
+				*/
+				assert.deepStrictEqual(Decorator.decorate(h.recordTypeFromString(`
+					[
+						let: bool,
+						foobar: int,
+					]
+				`)).children.map((c) => c.source), [
+					`let : bool`,
+					`foobar : int`,
+				]);
+			});
+		});
+
+		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
+			it('makes an ASTNodeTypeEmptyCollection.', () => {
+				/*
+					<TypeEmptyCollection/>
+				*/
+				const typeexpr: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`[]`));
+				assert.ok(typeexpr instanceof AST.ASTNodeTypeEmptyCollection);
+			});
+		});
+
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= IDENTIFIER', () => {
 			it('makes an ASTNodeTypeAlias.', () => {
 				/*
