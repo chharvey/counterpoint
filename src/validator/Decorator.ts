@@ -78,6 +78,11 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeWord):             AST.ASTNodeKey;
 	static decorate(node: PARSER.ParseNodePrimitiveLiteral): AST.ASTNodeConstant;
 	static decorate(node: PARSER.ParseNodeTypeKeyword):      AST.ASTNodeTypeConstant;
+	static decorate(node: PARSER.ParseNodeTypeProperty):               AST.ASTNodeTypeProperty;
+	static decorate(node: PARSER.ParseNodeTypeTupleLiteral):           AST.ASTNodeTypeList;
+	static decorate(node: PARSER.ParseNodeTypeTupleLiteral__1__List):  NonemptyArray<AST.ASTNodeType>;
+	static decorate(node: PARSER.ParseNodeTypeRecordLiteral):          AST.ASTNodeTypeRecord;
+	static decorate(node: PARSER.ParseNodeTypeRecordLiteral__1__List): NonemptyArray<AST.ASTNodeTypeProperty>;
 	static decorate(node:
 		| PARSER.ParseNodeTypeUnit
 		| PARSER.ParseNodeTypeUnarySymbol
@@ -127,6 +132,40 @@ export class Decorator {
 		} else if (node instanceof PARSER.ParseNodeTypeKeyword) {
 			return new AST.ASTNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
 
+		} else if (node instanceof PARSER.ParseNodeTypeProperty) {
+			return new AST.ASTNodeTypeProperty(node, [
+				this.decorate(node.children[0]),
+				this.decorate(node.children[2]),
+			]);
+
+		} else if (node instanceof PARSER.ParseNodeTypeTupleLiteral) {
+			return new AST.ASTNodeTypeList(node, this.decorate(
+				node.children.find((c): c is PARSER.ParseNodeTypeTupleLiteral__1__List => c instanceof PARSER.ParseNodeTypeTupleLiteral__1__List)!
+			));
+
+		} else if (node instanceof PARSER.ParseNodeTypeTupleLiteral__1__List) {
+			return (node.children.length === 1)
+				? [this.decorate(node.children[0])]
+				: [
+					...this.decorate(node.children[0]),
+					this.decorate(node.children[2]),
+				]
+			;
+
+		} else if (node instanceof PARSER.ParseNodeTypeRecordLiteral) {
+			return new AST.ASTNodeTypeRecord(node, this.decorate(
+				node.children.find((c): c is PARSER.ParseNodeTypeRecordLiteral__1__List => c instanceof PARSER.ParseNodeTypeRecordLiteral__1__List)!
+			));
+
+		} else if (node instanceof PARSER.ParseNodeTypeRecordLiteral__1__List) {
+			return (node.children.length === 1)
+				? [this.decorate(node.children[0])]
+				: [
+					...this.decorate(node.children[0]),
+					this.decorate(node.children[2]),
+				]
+			;
+
 		} else if (node instanceof PARSER.ParseNodeTypeUnit) {
 			return (
 				(node.children.length === 1) ? (node.children[0] instanceof ParseNode)
@@ -135,7 +174,7 @@ export class Decorator {
 						: this.decorate(node.children[0])
 					: new AST.ASTNodeTypeAlias(node.children[0] as TOKEN.TokenIdentifier)
 				:
-				(node.children.length === 2) ? (() => { throw new Error('`Decorate(TypeUnit ::= "[" "]")` not yet supported.'); })() :
+				(node.children.length === 2) ? new AST.ASTNodeTypeEmptyCollection(node) :
 				this.decorate(node.children[1])
 			);
 

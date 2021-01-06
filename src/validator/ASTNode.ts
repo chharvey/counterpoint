@@ -151,11 +151,34 @@ export class ASTNodeKey extends ASTNodeSolid {
 		throw builder && 'ASTNodeKey#build not yet supported.';
 	}
 }
+export class ASTNodeTypeProperty extends ASTNodeSolid {
+	constructor (
+		start_node: PARSER.ParseNodeTypeProperty,
+		readonly children: readonly [ASTNodeKey, ASTNodeType],
+	) {
+		super(start_node, {}, children);
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeTypeProperty#varCheck not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	typeCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeTypeProperty#typeCheck not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	build(builder: Builder): Instruction {
+		throw builder && 'ASTNodeTypeProperty#build not yet supported.';
+	}
+}
 /**
  * A sematic node representing a type.
- * There are 2 known subclasses:
+ * Known subclasses:
  * - ASTNodeTypeConstant
  * - ASTNodeTypeAlias
+ * - ASTNodeTypeEmptyCollection
+ * - ASTNodeTypeList
+ * - ASTNodeTypeRecord
  * - ASTNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
@@ -251,6 +274,42 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		return SolidLanguageType.UNKNOWN;
 	}
 }
+export class ASTNodeTypeEmptyCollection extends ASTNodeType {
+	declare children: readonly [];
+	constructor (
+		start_node: PARSER.ParseNodeTypeUnit,
+	) {
+		super(start_node);
+	}
+	/** @implements ASTNodeType */
+	protected assess_do(validator: Validator): SolidLanguageType {
+		throw validator && 'ASTNodeTypeEmptyCollection#assess_do not yet supported.';
+	}
+}
+export class ASTNodeTypeList extends ASTNodeType {
+	constructor (
+		start_node: PARSER.ParseNodeTypeTupleLiteral,
+		readonly children: readonly ASTNodeType[],
+	) {
+		super(start_node, {}, children);
+	}
+	/** @implements ASTNodeType */
+	protected assess_do(validator: Validator): SolidLanguageType {
+		throw validator && 'ASTNodeTypeList#assess_do not yet supported.';
+	}
+}
+export class ASTNodeTypeRecord extends ASTNodeType {
+	constructor (
+		start_node: PARSER.ParseNodeTypeRecordLiteral,
+		readonly children: readonly ASTNodeTypeProperty[],
+	) {
+		super(start_node, {}, children);
+	}
+	/** @implements ASTNodeType */
+	protected assess_do(validator: Validator): SolidLanguageType {
+		throw validator && 'ASTNodeTypeRecord#assess_do not yet supported.';
+	}
+}
 export abstract class ASTNodeTypeOperation extends ASTNodeType {
 	constructor (
 		start_node: ParseNode,
@@ -344,7 +403,7 @@ export class ASTNodeCase extends ASTNodeSolid {
 }
 /**
  * A sematic node representing an expression.
- * There are 4 known subclasses:
+ * Known subclasses:
  * - ASTNodeConstant
  * - ASTNodeVariable
  * - ASTNodeTemplate

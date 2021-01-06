@@ -33,12 +33,54 @@ Decorate(TypeKeyword ::= "obj") -> SemanticTypeConstant
 
 
 
+Decorate(TypeProperty ::= Word ":" Type) -> SemanticTypeProperty
+	:= (SemanticTypeProperty
+		Decorate(Word)
+		Decorate(Type)
+	);
+
+
+
+Decorate(TypeTupleLiteral ::= "[" ","? TypeTupleLiteral__0__List ","? "]") -> SemanticTypeList
+	:= (SemanticTypeList
+		...Decorate(TypeTupleLiteral__0__List)
+	);
+
+	Decorate(TypeTupleLiteral__0__List ::= Type) -> Sequence<SemanticType>
+		:= [Decorate(Type)];
+	Decorate(TypeTupleLiteral__0__List ::= TypeTupleLiteral__0__List "," Type) -> Sequence<SemanticType>
+		:= [
+			...Decorate(TypeTupleLiteral__0__List),
+			Decorate(Type),
+		];
+
+Decorate(TypeRecordLiteral ::= "[" ","? TypeRecordLiteral__0__List ","? "]") -> SemanticTypeRecord
+	:= (SemanticTypeRecord
+		...Decorate(TypeRecordLiteral__0__List)
+	);
+
+	Decorate(TypeRecordLiteral__0__List ::= TypeProperty) -> Sequence<SemanticTypeProperty>
+		:= [Decorate(TypeProperty)];
+	Decorate(TypeRecordLiteral__0__List ::= TypeRecordLiteral__0__List "," TypeProperty) -> Sequence<SemanticTypeProperty>
+		:= [
+			...Decorate(TypeRecordLiteral__0__List),
+			Decorate(TypeProperty),
+		];
+
+
+
+Decorate(TypeUnit ::= "[" "]") -> SemanticTypeEmptyCollection
+	:= (SemanticTypeEmptyCollection);
 Decorate(TypeUnit ::= IDENTIFIER) -> SemanticTypeAlias
 	:= (SemanticTypeAlias[id=TokenWorth(IDENTIFIER)]);
 Decorate(TypeUnit ::= PrimitiveLiteral) -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=ToType(Decorate(PrimitiveLiteral).value)]);
 Decorate(TypeUnit ::= TypeKeyword) -> SemanticTypeConstant
 	:= Decorate(TypeKeyword);
+Decorate(TypeUnit ::= TypeTupleLiteral) -> SemanticTypeList
+	:= Decorate(TypeTupleLiteral);
+Decorate(TypeUnit ::= TypeRecordLiteral) -> SemanticTypeRecord
+	:= Decorate(TypeRecordLiteral);
 Decorate(TypeUnit ::= "(" Type ")") -> SemanticType
 	:= Decorate(Type);
 
