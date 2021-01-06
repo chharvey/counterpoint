@@ -425,21 +425,19 @@ describe('Parser', () => {
 			it('makes a Case node.', () => {
 				/*
 					<Case>
-						<ExpressionHash>
-							<ExpressionHash__0__List>
-								<ExpressionHash__0__List>
-									<Expression source="42">...</Expression>
-								</ExpressionHash__0__List>
-								<PUNCTUATOR>,</PUNCTUATOR>
-								<Expression source="true">...</Expression>
-							</ExpressionHash__0__List>
-						</ExpressionHash>
+						<Case__0__List>
+							<Case__0__List>
+								<Expression source="42">...</Expression>
+							</Case__0__List>
+							<PUNCTUATOR>,</PUNCTUATOR>
+							<Expression source="true">...</Expression>
+						</Case__0__List>
 						<PUNCTUATOR>|-></PUNCTUATOR>
 						<Expression source="null || false">...</Expression>
 					</Case>
 				*/
 				const kase: PARSER.ParseNodeCase = h.caseFromString(`42, true |-> null || false`);
-				h.hashListSources(kase.children[0].children[0], `42`, `true`);
+				h.hashListSources(kase.children[0], `42`, `true`);
 				assert.deepStrictEqual(
 					[kase.children[1].source, kase.children[2].source],
 					[Punctuator.MAPTO,        `null || false`],
@@ -447,14 +445,12 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('ListLiteral ::= "[" ","? ExpressionHash ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('ListLiteral ::= "[" ","? Expression# ","? "]"', () => {
 			it('with no leading or trailing comma.', () => {
 				/*
 					<ListLiteral>
 						<PUNCTUATOR>[</PUNCTUATOR>
-						<ExpressionHash>
-							<ExpressionHash__0__List source="42, true, null || false">...</ExpressionHash__0__List>
-						</ExpressionHash>
+						<Case__0__List source="42, true, null || false">...</Case__0__List>
 						<PUNCTUATOR>]</PUNCTUATOR>
 					</ListLiteral>
 				*/
@@ -493,23 +489,23 @@ describe('Parser', () => {
 					[Punctuator.BRAK_OPN, `42 , true , null || false`, Punctuator.COMMA, Punctuator.BRAK_CLS],
 				);
 			});
-			specify('ExpressionHash__0__List ::= ExpressionHash__0__List "," Expression', () => {
+			specify('Case__0__List ::= Case__0__List "," Expression', () => {
 				/*
-					<ExpressionHash__0__List>
-						<ExpressionHash__0__List>
-							<ExpressionHash__0__List>
+					<Case__0__List>
+						<Case__0__List>
+							<Case__0__List>
 								<Expression source="42">...</Expression>
-							</ExpressionHash__0__List>
+							</Case__0__List>
 							<PUNCTUATOR>,</PUNCTUATOR>
 							<Expression source="true">...</Expression>
-						</ExpressionHash__0__List>
+						</Case__0__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
 						<Expression source="null || false">...</Expression>
-					</ExpressionHash__0__List>
+					</Case__0__List>
 				*/
 				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`[42, true, null || false];`);
 				assert_arrayLength(unit.children, 3);
-				h.hashListSources(unit.children[1].children[0], `42`, `true`, `null || false`);
+				h.hashListSources(unit.children[1], `42`, `true`, `null || false`);
 			});
 		});
 

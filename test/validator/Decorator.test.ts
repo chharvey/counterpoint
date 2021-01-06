@@ -344,7 +344,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('Case ::= ExpressionHash "|->" Expression', () => {
+		Dev.supports('literalCollection') && context('Case ::= Expression# "|->" Expression', () => {
 			it('makes an ASTNodeCase', () => {
 				/*
 					<Case>
@@ -361,7 +361,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('ListLiteral ::= "[" ","? ExpressionHash ","? "]"', () => {
+		Dev.supports('literalCollection') && context('ListLiteral ::= "[" ","? Expression# ","? "]"', () => {
 			it('makes an ASTNodeList.', () => {
 				/*
 					<List>
