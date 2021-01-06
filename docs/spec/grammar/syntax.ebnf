@@ -76,9 +76,9 @@ ExpressionHash
 Property ::= Word           "="   Expression;
 Case     ::= ExpressionHash "|->" Expression;
 
-ListLiteral   ::= "[" ","? ExpressionHash ","? "]";
-RecordLiteral ::= "[" ","? Property#      ","? "]";
-MapLiteral    ::= "[" ","? Case#          ","? "]";
+ListLiteral    ::= "[" ","? ExpressionHash ","? "]";
+RecordLiteral  ::= "[" ","? Property#      ","? "]";
+MappingLiteral ::= "[" ","? Case#          ","? "]";
 
 ExpressionUnit ::=
 	| "[" "]"
@@ -87,7 +87,7 @@ ExpressionUnit ::=
 	| StringTemplate
 	| ListLiteral
 	| RecordLiteral
-	| MapLiteral
+	| MappingLiteral
 	| "(" Expression ")"
 ;
 

@@ -65,7 +65,7 @@ SemanticTemplatePartial
 SemanticEmptyCollection ::= ();
 SemanticList            ::= SemanticExpression+;
 SemanticRecord          ::= SemanticProperty+;
-SemanticMap             ::= SemanticCase+;
+SemanticMapping         ::= SemanticCase+;
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;

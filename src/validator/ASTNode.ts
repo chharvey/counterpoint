@@ -410,7 +410,7 @@ export class ASTNodeCase extends ASTNodeSolid {
  * - ASTNodeEmptyCollection
  * - ASTNodeList
  * - ASTNodeRecord
- * - ASTNodeMap
+ * - ASTNodeMapping
  * - ASTNodeOperation
  */
 export abstract class ASTNodeExpression extends ASTNodeSolid {
@@ -676,32 +676,32 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		throw validator && 'ASTNodeRecord#type_do not yet supported.';
 	}
 }
-export class ASTNodeMap extends ASTNodeExpression {
+export class ASTNodeMapping extends ASTNodeExpression {
 	constructor (
-		start_node: PARSER.ParseNodeMapLiteral,
+		start_node: PARSER.ParseNodeMappingLiteral,
 		readonly children: readonly ASTNodeCase[],
 	) {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeExpression */
 	get shouldFloat(): boolean {
-		throw 'ASTNodeMap#shouldFloat not yet supported.';
+		throw 'ASTNodeMapping#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
-		throw validator && 'ASTNodeMap#varCheck not yet supported.';
+		throw validator && 'ASTNodeMapping#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
 	protected build_do(builder: Builder): InstructionExpression {
-		throw builder && 'ASTNodeMap#build_do not yet supported.';
+		throw builder && 'ASTNodeMapping#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
 	protected assess_do(): CompletionStructureAssessment {
-		throw 'ASTNodeMap#assess_do not yet supported.';
+		throw 'ASTNodeMapping#assess_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeMap#type_do not yet supported.';
+		throw validator && 'ASTNodeMapping#type_do not yet supported.';
 	}
 }
 export abstract class ASTNodeOperation extends ASTNodeExpression {

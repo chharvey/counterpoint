@@ -404,17 +404,17 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('MapLiteral ::= "[" ","? Case# ","? "]"', () => {
-			it('makes an ASTNodeMap.', () => {
+		Dev.supports('literalCollection') && context('MappingLiteral ::= "[" ","? Case# ","? "]"', () => {
+			it('makes an ASTNodeMapping.', () => {
 				/*
-					<Map>
+					<Mapping>
 						<Case source="1, 2, 3 |-> null">...</Expression>
 						<Case source="4, 5, 6 |-> false">...</Expression>
 						<Case source="7, 8 |-> true">...</Expression>
 						<Case source="9, 0 |-> 42.0">...</Expression>
-					</Map>
+					</Mapping>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.mapLiteralFromSource(`
+				assert.deepStrictEqual(Decorator.decorate(h.mappingLiteralFromSource(`
 					[
 						1, 2, 3 |-> null,
 						4, 5, 6 |-> false,

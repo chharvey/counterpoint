@@ -99,8 +99,8 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeListLiteral):             AST.ASTNodeList;
 	static decorate(node: PARSER.ParseNodeRecordLiteral):           AST.ASTNodeRecord;
 	static decorate(node: PARSER.ParseNodeRecordLiteral__1__List):  NonemptyArray<AST.ASTNodeProperty>;
-	static decorate(node: PARSER.ParseNodeMapLiteral):              AST.ASTNodeMap;
-	static decorate(node: PARSER.ParseNodeMapLiteral__1__List):     NonemptyArray<AST.ASTNodeCase>;
+	static decorate(node: PARSER.ParseNodeMappingLiteral):          AST.ASTNodeMapping;
+	static decorate(node: PARSER.ParseNodeMappingLiteral__1__List): NonemptyArray<AST.ASTNodeCase>;
 	static decorate(node:
 		| PARSER.ParseNodeExpressionUnit
 		| PARSER.ParseNodeExpressionUnarySymbol
@@ -256,12 +256,12 @@ export class Decorator {
 				]
 			;
 
-		} else if (node instanceof PARSER.ParseNodeMapLiteral) {
-			return new AST.ASTNodeMap(node, this.decorate(
-				node.children.find((c): c is PARSER.ParseNodeMapLiteral__1__List => c instanceof PARSER.ParseNodeMapLiteral__1__List)!
+		} else if (node instanceof PARSER.ParseNodeMappingLiteral) {
+			return new AST.ASTNodeMapping(node, this.decorate(
+				node.children.find((c): c is PARSER.ParseNodeMappingLiteral__1__List => c instanceof PARSER.ParseNodeMappingLiteral__1__List)!
 			));
 
-		} else if (node instanceof PARSER.ParseNodeMapLiteral__1__List) {
+		} else if (node instanceof PARSER.ParseNodeMappingLiteral__1__List) {
 			return (node.children.length === 1)
 				? [this.decorate(node.children[0])]
 				: [
