@@ -22,12 +22,6 @@ import {
 
 
 
-export function typePropertyFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeTypeProperty {
-	const recordtype: PARSER.ParseNodeTypeRecordLiteral = recordTypeFromString(`[${ propertystring }]`, config);
-	assert_arrayLength(recordtype.children, 3, 'record type should have 3 children');
-	assert_arrayLength(recordtype.children[1].children, 1, 'property list should have 1 child');
-	return recordtype.children[1].children[0];
-}
 export function tokenLiteralFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString {
 	const token: Token = primitiveTypeFromString(typestring, config).children[0]
 	assert.ok(
@@ -56,6 +50,12 @@ export function keywordTypeFromString(typestring: string, config: SolidConfig = 
 	const unit: PARSER.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
 	assert.ok(unit instanceof PARSER.ParseNodeTypeKeyword, 'unit should be a ParseNodeTypeKeyword')
 	return unit
+}
+export function typePropertyFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeTypeProperty {
+	const recordtype: PARSER.ParseNodeTypeRecordLiteral = recordTypeFromString(`[${ propertystring }]`, config);
+	assert_arrayLength(recordtype.children, 3, 'record type should have 3 children');
+	assert_arrayLength(recordtype.children[1].children, 1, 'property list should have 1 child');
+	return recordtype.children[1].children[0];
 }
 export function tupleTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeTypeTupleLiteral {
 	const unit: PARSER.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
