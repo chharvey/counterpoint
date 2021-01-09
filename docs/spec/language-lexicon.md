@@ -222,11 +222,6 @@ Strings are snippets of textual data.
 The Token Worth of a String token is a [sequence](./data-types.md#sequence)
 of UTF-16-encoded code units computed by the various parts of the token.
 
-A **code unit** is a [real integer number](./data-types.md#real-integer-numbers)
-representing one character or part of a character in a string.
-In the [UTF-16 encoding](./algorithms.md#utf16encoding),
-characters in the Unicode character set are represented by either one or two code units.
-
 There is a many-to-one relationship between tokens and Token Worth quantities.
 For example, both the tokens containing `'ABC'` and `'\u{41}\u{42}\u{43}'`
 have the same Token Worth: the sequence of code units *[65, 66, 67]*.

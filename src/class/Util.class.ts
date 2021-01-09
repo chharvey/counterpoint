@@ -66,7 +66,7 @@ export default class Util {
 	 * @returns             a code unit sequence representing the code point
 	 */
 	static utf16Encoding(codepoint: number): [number] | [number, number] {
-		if (codepoint < 0 || 0x10ffff < codepoint) throw new RangeError(`Code point \`0x${codepoint.toString(16)}\` must be within [0x0, 0x10ffff].`) // TODO this should be a ParseError
+		if (codepoint < 0 || 0x10ffff < codepoint) throw new RangeError(`Code point \`0x${codepoint.toString(16)}\` must be within [0x0, 0x10ffff].`) // TODO this should be a LexError
 		if (codepoint <= 0xffff) return [codepoint]
 		const cu1: number = (codepoint - 0x10000) / 0x400
 		const cu2: number = (codepoint - 0x10000) % 0x400
