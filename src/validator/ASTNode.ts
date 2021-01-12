@@ -303,7 +303,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @final
 	 */
 	build(builder: Builder, to_float?: boolean): InstructionExpression {
-		const assess: CompletionStructureAssessment | null = (builder.config.compilerOptions.constantFolding) ? this.assess() : null
+		const assess: CompletionStructureAssessment | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
 		return (assess && !assess.isAbrupt) ? assess.build(to_float) : this.build_do(builder, to_float)
 	}
 	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionExpression;
@@ -316,7 +316,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	type(validator: Validator = new Validator()): SolidLanguageType {
 		const type_: SolidLanguageType = this.type_do(validator); // type-check first, to re-throw any TypeErrors
 		if (validator.config.compilerOptions.constantFolding) {
-			this.assessed || (this.assessed = this.assess()); // COMBAK `this.assessed ||= this.assess()`
+			this.assessed || (this.assessed = this.assess(validator)); // COMBAK `this.assessed ||= this.assess(validator)`
 			if (!this.assessed.isAbrupt) {
 				return new SolidTypeConstant(this.assessed.value!)
 			}
@@ -327,14 +327,15 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	/**
 	 * Assess the value of this node at compile-time, if possible.
 	 * If {@link SolidConfig|constant folding} is off, this should not be called.
+	 * @param validator stores validation and configuration information
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 * @final
 	 */
-	assess(): CompletionStructureAssessment {
-		this.assessed || (this.assessed = this.assess_do()) // COMBAK `this.assessed ||= this.assess_do()`
+	assess(validator: Validator = new Validator()): CompletionStructureAssessment {
+		this.assessed || (this.assessed = this.assess_do(validator)); // COMBAK `this.assessed ||= this.assess_do(validator)`
 		return this.assessed
 	}
-	protected abstract assess_do(): CompletionStructureAssessment
+	protected abstract assess_do(validator: Validator): CompletionStructureAssessment;
 }
 export class ASTNodeConstant extends ASTNodeExpression {
 	declare children:
@@ -363,12 +364,12 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return; // no validation necessary for constants
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(_builder: Builder, to_float: boolean = false): InstructionConst {
-		return this.assess_do().build(to_float)
+	protected build_do(builder: Builder, to_float: boolean = false): InstructionConst {
+		return this.assess_do(builder.validator).build(to_float);
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
-		// No need to call `this.assess()` and then unwrap again; just use `this.value`.
+		// No need to call `this.assess(validator)` and then unwrap again; just use `this.value`.
 		return (validator.config.compilerOptions.constantFolding && (
 			this.value instanceof SolidNull ||
 			this.value instanceof SolidBoolean ||
@@ -381,7 +382,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		SolidString
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	protected assess_do(_validator: Validator): CompletionStructureAssessment {
 		if (this.value instanceof SolidObject) {
 			return new CompletionStructureAssessment(this.value)
 		} else {
@@ -426,7 +427,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		return SolidLanguageType.UNKNOWN;
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	protected assess_do(_validator: Validator): CompletionStructureAssessment {
 		return new CompletionStructureAssessment(CompletionType.THROW); // TODO #35 : constant propagation
 	}
 }
@@ -460,7 +461,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		return SolidString
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	protected assess_do(_validator: Validator): CompletionStructureAssessment {
 		throw new Error('ASTNodeTemplate#assess_do not yet supported.');
 	}
 }
@@ -513,8 +514,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return (t0.isSubtypeOf(SolidNumber)) ? t0 : (() => { throw new TypeError01(this) })()
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
-		const assess0: CompletionStructureAssessment = this.children[0].assess()
+	protected assess_do(validator: Validator): CompletionStructureAssessment {
+		const assess0: CompletionStructureAssessment = this.children[0].assess(validator);
 		if (assess0.isAbrupt) {
 			return assess0
 		}
@@ -596,12 +597,12 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		throw new TypeError01(this)
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
-		const assess0: CompletionStructureAssessment = this.children[0].assess()
+	protected assess_do(validator: Validator): CompletionStructureAssessment {
+		const assess0: CompletionStructureAssessment = this.children[0].assess(validator);
 		if (assess0.isAbrupt) {
 			return assess0
 		}
-		const assess1: CompletionStructureAssessment = this.children[1].assess()
+		const assess1: CompletionStructureAssessment = this.children[1].assess(validator);
 		if (assess1.isAbrupt) {
 			return assess1
 		}
@@ -667,12 +668,12 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		throw new TypeError01(this)
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
-		const assess0: CompletionStructureAssessment = this.children[0].assess()
+	protected assess_do(validator: Validator): CompletionStructureAssessment {
+		const assess0: CompletionStructureAssessment = this.children[0].assess(validator);
 		if (assess0.isAbrupt) {
 			return assess0
 		}
-		const assess1: CompletionStructureAssessment = this.children[1].assess()
+		const assess1: CompletionStructureAssessment = this.children[1].assess(validator);
 		if (assess1.isAbrupt) {
 			return assess1
 		}
@@ -738,12 +739,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return SolidBoolean
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
-		const assess0: CompletionStructureAssessment = this.children[0].assess()
+	protected assess_do(validator: Validator): CompletionStructureAssessment {
+		const assess0: CompletionStructureAssessment = this.children[0].assess(validator);
 		if (assess0.isAbrupt) {
 			return assess0
 		}
-		const assess1: CompletionStructureAssessment = this.children[1].assess()
+		const assess1: CompletionStructureAssessment = this.children[1].assess(validator);
 		if (assess1.isAbrupt) {
 			return assess1
 		}
@@ -803,8 +804,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 					: t0
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
-		const assess0: CompletionStructureAssessment = this.children[0].assess()
+	protected assess_do(validator: Validator): CompletionStructureAssessment {
+		const assess0: CompletionStructureAssessment = this.children[0].assess(validator);
 		if (assess0.isAbrupt) {
 			return assess0
 		}
@@ -815,7 +816,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		) {
 			return new CompletionStructureAssessment(v0)
 		}
-		return this.children[1].assess()
+		return this.children[1].assess(validator);
 	}
 }
 export class ASTNodeOperationTernary extends ASTNodeOperation {
@@ -854,14 +855,14 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 			: (() => { throw new TypeError01(this) })()
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
-		const assess0: CompletionStructureAssessment = this.children[0].assess()
+	protected assess_do(validator: Validator): CompletionStructureAssessment {
+		const assess0: CompletionStructureAssessment = this.children[0].assess(validator);
 		if (assess0.isAbrupt) {
 			return assess0
 		}
 		return (assess0.value! === SolidBoolean.TRUE)
-			? this.children[1].assess()
-			: this.children[2].assess()
+			? this.children[1].assess(validator)
+			: this.children[2].assess(validator)
 	}
 }
 /**
