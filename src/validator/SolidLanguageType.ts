@@ -159,10 +159,11 @@ class SolidTypeIntersection extends SolidLanguageType {
 	) {
 		super(xjs.Set.intersection(left.values, right.values))
 	}
+	/** @override */
 	includes(v: SolidObject): boolean {
 		return this.left.includes(v) && this.right.includes(v)
 	}
-	/** @implement SolidLanguageType */
+	/** @implements SolidLanguageType */
 	isSubtypeOf_do(t: SolidLanguageType): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) { return true }
@@ -190,10 +191,11 @@ class SolidTypeUnion extends SolidLanguageType {
 	) {
 		super(xjs.Set.union(left.values, right.values))
 	}
+	/** @override */
 	includes(v: SolidObject): boolean {
 		return this.left.includes(v) || this.right.includes(v)
 	}
-	/** @implement SolidLanguageType */
+	/** @implements SolidLanguageType */
 	isSubtypeOf_do(t: SolidLanguageType): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
@@ -219,6 +221,7 @@ export class SolidTypeInterface extends SolidLanguageType {
 		super()
 	}
 
+	/** @override */
 	includes(v: SolidObject): boolean {
 		return [...this.properties.keys()].every((key) => key in v)
 	}
@@ -249,7 +252,7 @@ export class SolidTypeInterface extends SolidLanguageType {
 		return new SolidTypeInterface(props)
 	}
 	/**
-	 * @implement SolidLanguageType
+	 * @implements SolidLanguageType
 	 * In the general case, `S` is a subtype of `T` if every property of `T` exists in `S`,
 	 * and for each of those properties `#prop`, the type of `S#prop` is a subtype of `T#prop`.
 	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
@@ -278,11 +281,12 @@ class SolidTypeNever extends SolidLanguageType {
 		super()
 	}
 
+	/** @override */
 	includes(_v: SolidObject): boolean {
 		return false
 	}
 	/**
-	 * @implement SolidLanguageType
+	 * @implements SolidLanguageType
 	 * 1-1 | `never <: T`
 	 */
 	isSubtypeOf_do(_t: SolidLanguageType): boolean {
@@ -309,11 +313,12 @@ export class SolidTypeConstant extends SolidLanguageType {
 		super(new Set([value]))
 	}
 
+	/** @override */
 	includes(_v: SolidObject): boolean {
 		return this.value.equal(_v)
 	}
-	/** @implement SolidLanguageType */
-	isSubtypeOf_do(t: SolidTypeInterface): boolean {
+	/** @implements SolidLanguageType */
+	isSubtypeOf_do(t: SolidLanguageType): boolean {
 		return t instanceof Function && this.value instanceof t || t.includes(this.value)
 	}
 }
@@ -335,11 +340,12 @@ class SolidTypeUnknown extends SolidLanguageType {
 		super()
 	}
 
+	/** @override */
 	includes(_v: SolidObject): boolean {
 		return true
 	}
 	/**
-	 * @implement SolidLanguageType
+	 * @implements SolidLanguageType
 	 * 1-4 | `unknown <: T      <->  T == unknown`
 	 */
 	isSubtypeOf_do(t: SolidLanguageType): boolean {

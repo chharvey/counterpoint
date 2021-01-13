@@ -122,14 +122,25 @@ the term “abrupt completion” refers to any completion with a \`type\` other 
 A **SymbolStructure** encapsulates the compile-time information of a declared symbol in Solid source code.
 Symbols are identifiers that refer to Solid Language Values or Solid Language Types.
 
-Each symbol structure must have the following properties:
+Symbol structures’ properties are described in the tables below.
+
+##### SymbolStructureType
+A **SymbolStructureType** represents a type alias referencing a Solid Language Type.
 
 Property    | Description
 ----------- | -----------
 \`id\`      | the unique identifier of the declared symbol
-\`kind\`    | one of the [enumerated](#enumerated-values) values *value* or *type*
-\`type\`    | if \`kind\` is *value*: the Solid Language Type of the variable; if \`kind\` is *type*: the Solid Language Type the variable refers to
+\`defn\`    | the type expression (an ASTNode) that defines this symbol
+
+##### SymbolStructureVar
+A **SymbolStructureVar** represents a variable referencing a Solid Language Value.
+
+Property    | Description
+----------- | -----------
+\`id\`      | the unique identifier of the declared symbol
+\`type\`    | the Solid Language Type of the variable
 \`unfixed\` | a Boolean, whether the variable may be reassigned
+\`defn\`    | if \`unfixed\` is `false`: the expression (an ASTNode) that defines this symbol; otherwise: \`void\`
 
 
 

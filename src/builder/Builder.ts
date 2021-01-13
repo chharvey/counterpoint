@@ -31,8 +31,10 @@ export class Builder {
 	]
 
 
-	/** A semantic goal produced by a Validator. */
-	private readonly semanticgoal: AST.ASTNodeGoal;
+	/** The Validator for conducting semantic analysis. */
+	readonly validator: Validator;
+	/** An AST goal produced by a Decorator. */
+	private readonly ast_goal: AST.ASTNodeGoal;
 	/** A counter for internal variables. Used for optimizing short-circuited expressions. */
 	private var_count: bigint = 0n
 	/** A counter for statements. */
@@ -47,10 +49,10 @@ export class Builder {
 		source: string,
 		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
-		this.semanticgoal = Decorator.decorate(new Parser(source, config).parse());
-		const validator: Validator = new Validator(this.config);
-		this.semanticgoal.varCheck (validator); // assert does not throw
-		this.semanticgoal.typeCheck(validator); // assert does not throw
+		this.validator = new Validator(this.config);
+		this.ast_goal  = Decorator.decorate(new Parser(source, config).parse());
+		this.ast_goal.varCheck (this.validator); // assert does not throw
+		this.ast_goal.typeCheck(this.validator); // assert does not throw
 	}
 
 	/**
@@ -76,7 +78,7 @@ export class Builder {
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
 	print(): string {
-		return this.semanticgoal.build(this).toString()
+		return this.ast_goal.build(this).toString()
 	}
 
 	/**

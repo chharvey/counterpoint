@@ -23,6 +23,7 @@ import {
 	Decorator,
 	Validator,
 	AST,
+	CompletionType,
 	CompletionStructureAssessment,
 	SolidLanguageType,
 	SolidTypeConstant,
@@ -609,7 +610,7 @@ describe('ASTNodeSolid', () => {
 					((goal
 						.children[1] as AST.ASTNodeDeclarationType)
 						.children[1] as AST.ASTNodeTypeAlias)
-						.assess(), // memoized
+						.assess(validator),
 					Int16,
 				);
 			});
@@ -902,6 +903,62 @@ describe('ASTNodeSolid', () => {
 					-0, -0, 6.8, 6.8, 0, -0,
 				].map((v) => new CompletionStructureAssessment(new Float64(v))))
 			})
+
+			Dev.supports('variables') && describe('ASTNodeVariable', () => {
+				it('assesses the value of a fixed variable.', () => {
+					const validator: Validator = new Validator();
+					const goal: AST.ASTNodeGoal = goalFromSource(`
+						let x: int = 21 * 2;
+						x;
+					`);
+					goal.varCheck(validator);
+					goal.typeCheck(validator);
+					assert.ok(!(goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
+					assert.deepStrictEqual(
+						((goal
+							.children[1] as AST.ASTNodeStatementExpression)
+							.children[0] as AST.ASTNodeExpression)
+							.assess(validator),
+						new CompletionStructureAssessment(new Int16(42n)),
+					);
+				});
+				it('returns an abrupt completion structure for an unfixed variable.', () => {
+					const validator: Validator = new Validator();
+					const goal: AST.ASTNodeGoal = goalFromSource(`
+						let unfixed x: int = 21 * 2;
+						x;
+					`);
+					goal.varCheck(validator);
+					goal.typeCheck(validator);
+					assert.ok((goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
+					assert.deepStrictEqual(
+						((goal
+							.children[1] as AST.ASTNodeStatementExpression)
+							.children[0] as AST.ASTNodeExpression)
+							.assess(validator),
+						new CompletionStructureAssessment(CompletionType.THROW),
+					);
+				});
+				it('returns an abrupt completion structure for an uncomputable fixed variable.', () => {
+					const validator: Validator = new Validator();
+					const goal: AST.ASTNodeGoal = goalFromSource(`
+						let unfixed x: int = 21 * 2;
+						let y: int = x / 2;
+						y;
+					`);
+					goal.varCheck(validator);
+					goal.typeCheck(validator);
+					assert.ok(!(goal.children[1] as AST.ASTNodeDeclarationVariable).unfixed);
+					assert.deepStrictEqual(
+						((goal
+							.children[2] as AST.ASTNodeStatementExpression)
+							.children[0] as AST.ASTNodeExpression)
+							.assess(validator),
+						new CompletionStructureAssessment(CompletionType.THROW),
+					);
+				});
+			});
+
 			it('computes the value of a logical negation of anything.', () => {
 				assessOperations(new Map([
 					[`!false;`,  SolidBoolean.TRUE],
