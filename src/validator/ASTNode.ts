@@ -674,16 +674,20 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 		throw validator && 'ASTNodeEmptyCollection#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
-		throw builder && 'ASTNodeEmptyCollection#build_do not yet supported.';
+	@ASTNodeExpression.buildDeco
+	build(builder: Builder): InstructionExpression {
+		throw builder && 'ASTNodeEmptyCollection#build not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
-		throw 'ASTNodeEmptyCollection#assess_do not yet supported.';
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	type(validator: Validator = new Validator()): SolidLanguageType {
+		throw validator && 'ASTNodeEmptyCollection#type not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected type_do(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeEmptyCollection#type_do not yet supported.';
+	@memoizeMethod
+	assess(validator: Validator = new Validator()): CompletionStructureAssessment {
+		throw validator && 'ASTNodeEmptyCollection#assess not yet supported.';
 	}
 }
 export class ASTNodeList extends ASTNodeExpression {
@@ -702,16 +706,20 @@ export class ASTNodeList extends ASTNodeExpression {
 		throw validator && 'ASTNodeList#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
-		throw builder && 'ASTNodeList#build_do not yet supported.';
+	@ASTNodeExpression.buildDeco
+	build(builder: Builder): InstructionExpression {
+		throw builder && 'ASTNodeList#build not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
-		throw 'ASTNodeList#assess_do not yet supported.';
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	type(validator: Validator = new Validator()): SolidLanguageType {
+		throw validator && 'ASTNodeList#type not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected type_do(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeList#type_do not yet supported.';
+	@memoizeMethod
+	assess(validator: Validator = new Validator()): CompletionStructureAssessment {
+		throw validator && 'ASTNodeList#assess not yet supported.';
 	}
 }
 export class ASTNodeRecord extends ASTNodeExpression {
@@ -730,16 +738,20 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		throw validator && 'ASTNodeRecord#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
-		throw builder && 'ASTNodeRecord#build_do not yet supported.';
+	@ASTNodeExpression.buildDeco
+	build(builder: Builder): InstructionExpression {
+		throw builder && 'ASTNodeRecord#build not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
-		throw 'ASTNodeRecord#assess_do not yet supported.';
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	type(validator: Validator = new Validator()): SolidLanguageType {
+		throw validator && 'ASTNodeRecord#type not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected type_do(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeRecord#type_do not yet supported.';
+	@memoizeMethod
+	assess(validator: Validator = new Validator()): CompletionStructureAssessment {
+		throw validator && 'ASTNodeRecord#assess not yet supported.';
 	}
 }
 export class ASTNodeMapping extends ASTNodeExpression {
@@ -758,16 +770,20 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		throw validator && 'ASTNodeMapping#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
-		throw builder && 'ASTNodeMapping#build_do not yet supported.';
+	@ASTNodeExpression.buildDeco
+	build(builder: Builder): InstructionExpression {
+		throw builder && 'ASTNodeMapping#build not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
-		throw 'ASTNodeMapping#assess_do not yet supported.';
+	@memoizeMethod
+	@ASTNodeExpression.typeDeco
+	type(validator: Validator = new Validator()): SolidLanguageType {
+		throw validator && 'ASTNodeMapping#type not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected type_do(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeMapping#type_do not yet supported.';
+	@memoizeMethod
+	assess(validator: Validator = new Validator()): CompletionStructureAssessment {
+		throw validator && 'ASTNodeMapping#assess not yet supported.';
 	}
 }
 export abstract class ASTNodeOperation extends ASTNodeExpression {
