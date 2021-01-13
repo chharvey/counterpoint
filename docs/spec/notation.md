@@ -38,9 +38,12 @@ The notation *[`1685`, `'Bach'`]* represents a sequence containing two items:
 the [Integer](./data-types.md#integer) representing the real number *1685*,
 and the [String value](./data-types.md#string) `'Bach'`.
 
-Entries of a sequence may be accessed using 0-origin dot notation (**U+002E**).
+Fixed entries of a sequence may be accessed using 0-origin dot notation (**U+002E**).
 If the example sequence above were assigned to the specification variable \`bach\`,
 then \`bach.0\` is shorthand for «the 0th entry of \`bach\`», which is the value `1685`.
+
+Variable entries of a sequence may be accessed using bracket notation.
+For example, using a variable index \`i\` we may access «the *i*th entry of \`bach\`» via \`bach\[i\]\`.
 
 #### Structures
 Structures are denoted with left and right square brackets,
@@ -512,7 +515,8 @@ Note that such a completion structure is “abrupt”.
 
 #### Unwrap
 An algorithm step that contains «*Unwrap:* ‹s›» (where ‹s› is a completion structure or algorithm call)
-is shorthand for the following steps:
+returns ‹s› if it is an abrupt completion, but otherwise replaces ‹s› with its value.
+The step is shorthand for the following steps:
 ```
 1. *If* ‹s› is an abrupt completion:
 	1. *Return:* ‹s›.
@@ -542,7 +546,8 @@ For example, setting a variable to an unwrap step …
 
 #### UnwrapAffirm
 An algorithm step that contains «*UnwrapAffirm:* ‹s›» (where ‹s› is a completion structure or algorithm call)
-is shorthand for the following steps:
+assumes ‹s› is a normal completion and replaces ‹s› with its value.
+The step is shorthand for the following steps:
 ```
 1. *Assert:* ‹s› is a normal completion.
 2. *If* ‹s› has a `value` property:
@@ -629,29 +634,36 @@ is shorthand for
 ```
 
 ##### For
-A step that reads «*For* ‹i› in ‹s›:» (where ‹i› is a variable and ‹s› is a sequence)
+A step that reads «*For index* ‹i› in ‹s›:» (where ‹i› is a variable and ‹s› is a sequence)
 is shorthand for the following steps:
 ```
 1. *Let* `‹i›` be 0.
 2. *While* `‹i›` is less than `‹s›.count`:
-	1. Perform the substeps listed under the *For* step.
+	1. Perform the substeps listed under the *For index* step.
 	2. Increment `‹i›`.
+```
+
+A step that reads «*For each* ‹it› in ‹s›:» (where ‹it› is a variable and ‹s› is a sequence)
+is shorthand for the following steps:
+```
+1. *For index* `i` in `‹s›`:
+	1. Perform the substeps listed under the *For each* step, replacing `‹it›` with `‹s›[i]`.
 ```
 
 ##### Spread
 An algorithm step that contains «...‹s›» (where ‹s› is a sequence)
 is shorthand for the following steps:
 ```
-1. *For* `i` in ‹s›:
-	1. Perform the step in which «...» appeared, replacing `...‹s›` with `‹s›[i]`.
+1. *For each* `it` in ‹s›:
+	1. Perform the step in which «...» appeared, replacing `...‹s›` with `it`.
 ```
 
 ##### Mappings
-A step that contains «a mapping of ‹x› indexed by ‹i› to ‹y›» is shorthand for a *While* loop
-that populates a new sequence, where ‹x› is a starting sequence, ‹i› is an index variable,
-and ‹y› is an expression possibly containing ‹x› and ‹i›.
+A step that contains «a mapping of ‹s› indexed by ‹i› to ‹e›» is shorthand for a *While* loop
+that populates a new sequence, where ‹s› is a starting sequence, ‹i› is an index variable,
+and ‹e› is an expression possibly containing ‹s› and ‹i›.
 The new sequence is the result of mapping each item in the starting sequence to
-a value prescribed by the expression ‹y›.
+a value prescribed by the expression ‹e›.
 
 (In the example below, assume `sequence` is a sequence of RealNumber values.)
 ```
@@ -660,14 +672,26 @@ a value prescribed by the expression ‹y›.
 is shorthand for
 ```
 1. *Let* `result` be an empty sequence.
-2. *For* `i` in `sequence`:
+2. *For index* `i` in `sequence`:
 	1. Push `sequence[i] + 1` to `result`.
 ```
 
+A step that contains «a mapping of ‹s› for each ‹it› to ‹e›» is shorthand for an indexed mapping,
+replacing the *For index* step with a *For each* step.
+```
+1. *Let* `result` be a mapping of `sequence` for each `it` to `it + 1`.
+```
+is shorthand for
+```
+1. *Let* `result` be an empty sequence.
+2. *For each* `it` in `sequence`:
+	1. Push `it + 1` to `result`.
+```
+
 ##### Flattened Mappings
-A step that contains «a flattened mapping of ‹x› indexed by ‹i› to ‹y›» is similar to a [Mapping](#mappings) step,
-except that the expression ‹y› must be a sequence, and the resulting sequence,
-rather than being a sequence of sequences, is instead a sequence of values perscribed by items of ‹y›.
+A step that contains «a flattened mapping of ‹s› indexed by ‹i› to ‹e›» is similar to a [Mapping](#mappings) step,
+except that the expression ‹e› must be a sequence, and the resulting sequence,
+rather than being a sequence of sequences, is instead a sequence of values perscribed by items of ‹e›.
 
 (In the example below, assume `sequence` is a sequence of RealNumber values.)
 ```
@@ -677,7 +701,20 @@ is shorthand for
 ```
 1. *Let* `map` be a mapping of `sequence` indexed by `i` to `[sequence[i], sequence[i] + 1]`.
 2. *Let* `result` be an empty sequence.
-3. *For* `i` in `map`:
+3. *For index* `i` in `map`:
+	1. Push `...map` to `result`.
+```
+
+A step that contains «a flattened mapping of ‹s› for each ‹it› to ‹e›» is like an indexed mapping
+except instead of indices the mapping iterates over sequence items.
+```
+1. *Let* `result` be a flattened mapping of `sequence` for each `it` to `[it, it + 1]`.
+```
+is shorthand for
+```
+1. *Let* `map` be a mapping of `sequence` for each `it` to `[it, it + 1]`.
+2. *Let* `result` be an empty sequence.
+3. *For index* `i` in `map`:
 	1. Push `...map` to `result`.
 ```
 

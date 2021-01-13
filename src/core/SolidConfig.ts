@@ -45,4 +45,4 @@ export type SolidConfig = {
 	},
 }
 
-export const CONFIG_DEFAULT: SolidConfig = require('../solid-config.default.json');
+export const CONFIG_DEFAULT: SolidConfig = require('../../src/core/solid-config.default.json');
