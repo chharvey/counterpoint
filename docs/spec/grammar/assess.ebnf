@@ -6,8 +6,9 @@ Type Assess(SemanticTypeConstant const) :=
 
 Type Assess(SemanticTypeAlias var) :=
 	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
-		1. *If* `symbol.kind` is *type*:
-			1. *Return:* `symbol.type`.
+		1. *Assert:* `symbol` is of type `SymbolStructureType`.
+		2. *Assert:* `symbol.defn` is of type `SemanticType`.
+		3. *Return:* `Assess(symbol.defn)`.
 	2. *Return:* `Unknown`.
 ;
 

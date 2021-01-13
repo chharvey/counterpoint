@@ -17,9 +17,13 @@ import {
 } from '../enum/Operator.enum'
 import {
 	Validator,
-	SymbolKind,
-	SymbolInfo,
 } from './Validator';
+import {
+	SymbolKind,
+	SymbolStructure,
+	SymbolStructureVar,
+	SymbolStructureType,
+} from './SymbolStructure';
 import {
 	CompletionType,
 	CompletionStructureAssessment,
@@ -208,16 +212,16 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		if (!validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
 		};
-		if (validator.getSymbolInfo(this.id)!.kind === SymbolKind.VALUE) {
+		if (validator.getSymbolInfo(this.id)! instanceof SymbolStructureVar) {
 			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
 		};
 	}
 	/** @implements ASTNodeType */
 	protected assess_do(validator: Validator): SolidLanguageType {
 		if (validator.hasSymbol(this.id)) {
-			const symbol: SymbolInfo = validator.getSymbolInfo(this.id)!;
-			if (symbol.kind === SymbolKind.TYPE) {
-				return symbol.type;
+			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
+			if (symbol instanceof SymbolStructureType) {
+				return symbol.defn.assess(validator);
 			};
 		};
 		return SolidLanguageType.UNKNOWN;
@@ -407,7 +411,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		if (!validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
 		};
-		if (validator.getSymbolInfo(this.id)!.kind === SymbolKind.TYPE) {
+		if (validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
 			throw new ReferenceError03(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		};
@@ -419,8 +423,8 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
 		if (validator.hasSymbol(this.id)) {
-			const symbol: SymbolInfo = validator.getSymbolInfo(this.id)!;
-			if (symbol.kind === SymbolKind.VALUE) {
+			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
+			if (symbol instanceof SymbolStructureVar) {
 				return symbol.type;
 			};
 		};
@@ -927,13 +931,14 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		};
 		this.children[1].varCheck(validator);
 		this.children[2].varCheck(validator);
-		validator.addVariableSymbol(
+		validator.addSymbol(new SymbolStructureVar(
 			variable.id,
-			this.children[1].assess(validator),
-			this.unfixed,
 			variable.line_index,
 			variable.col_index,
-		);
+			this.children[1].assess(validator),
+			this.unfixed,
+			(!this.unfixed) ? this.children[2] : null,
+		));
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
@@ -968,12 +973,12 @@ export class ASTNodeDeclarationType extends ASTNodeSolid {
 			throw new AssignmentError01(variable);
 		};
 		this.children[1].varCheck(validator);
-		validator.addTypeSymbol(
+		validator.addSymbol(new SymbolStructureType(
 			variable.id,
-			this.children[1].assess(validator),
 			variable.line_index,
 			variable.col_index,
-		);
+			this.children[1],
+		));
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
@@ -1025,7 +1030,7 @@ export class ASTNodeAssignee extends ASTNodeSolid {
 	varCheck(validator: Validator = new Validator()): void {
 		const variable: ASTNodeVariable = this.children[0];
 		variable.varCheck(validator);
-		if (!validator.getSymbolInfo(variable.id)!.unfixed) {
+		if (!(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
 			throw new AssignmentError10(variable);
 		};
 	}
@@ -1050,7 +1055,6 @@ export class ASTNodeGoal extends ASTNodeSolid {
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
 		this.children.forEach((c) => c.varCheck(validator));
-		validator.clearSymbols();
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {

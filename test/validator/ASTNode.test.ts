@@ -609,7 +609,7 @@ describe('ASTNodeSolid', () => {
 					((goal
 						.children[1] as AST.ASTNodeDeclarationType)
 						.children[1] as AST.ASTNodeTypeAlias)
-						.assess(), // memoized
+						.assess(validator),
 					Int16,
 				);
 			});
