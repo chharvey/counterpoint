@@ -31,6 +31,7 @@ import {
 	unionTypeFromString,
 	primitiveLiteralFromSource,
 } from '../helpers-parse'
+import * as h from '../helpers-parse';
 import {
 	constantFromSource,
 	variableFromSource,
@@ -61,6 +62,29 @@ describe('Decorator', () => {
 			})
 		})
 
+		Dev.supports('literalCollection') && describe('Word ::= KEYWORD | IDENTIFIER', () => {
+			it('makes an ASTNodeKey.', () => {
+				/*
+					<Key source="let" id=\x8c/>
+					<Key source="foobar" id=\x100/>
+				*/
+				const srcs: string[] = [
+					`let`,
+					`foobar`,
+				];
+				assert.deepStrictEqual(
+					srcs.map((src) => {
+						const key: AST.ASTNodeKey = Decorator.decorate(h.wordFromString(src));
+						return [key.source, key.id];
+					}),
+					srcs.map((src, i) => [src, [
+						0x8cn,
+						0x100n,
+					][i]]),
+				);
+			});
+		});
+
 		describe('PrimitiveLiteral ::= "null" | "false" | "true" | INTEGER | FLOAT | STRING', () => {
 			it('makes an ASTNodeConstant.', () => {
 				/*
@@ -72,7 +96,7 @@ describe('Decorator', () => {
 					`true;`,
 					`42;`,
 					`4.2;`,
-				].map((src) => Decorator.decorate(primitiveLiteralFromSource(src)).value), [
+				].map((src) => (Decorator.decorate(primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).value), [
 					SolidNull.NULL,
 					SolidBoolean.FALSE,
 					SolidBoolean.TRUE,
@@ -92,7 +116,7 @@ describe('Decorator', () => {
 					`int`,
 					`float`,
 					`obj`,
-				].map((src) => Decorator.decorate(keywordTypeFromString(src)).value), [
+				].map((src) => (Decorator.decorate(keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).value), [
 					SolidBoolean,
 					Int16,
 					Float64,
@@ -100,6 +124,75 @@ describe('Decorator', () => {
 				])
 			})
 		})
+
+		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeProperty ::= Word ":" Type', () => {
+			it('makes an ASTNodeTypeProperty.', () => {
+				/*
+					<TypeProperty>
+						<Key source="fontSize"/>
+						<TypeConstant source="float"/>
+					</TypeProperty>
+				*/
+				const typeproperty: AST.ASTNodeTypeProperty = Decorator.decorate(h.typePropertyFromString(`fontSize: float`));
+				assert.deepStrictEqual(
+					typeproperty.children.map((c) => c.source),
+					[`fontSize`, `float`],
+				);
+			});
+		});
+
+		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
+			it('makes an ASTNodeTypeList.', () => {
+				/*
+					<TypeList>
+						<TypeAlias source="T"/>
+						<TypeConstant source="42"/>
+						<TypeOperation source="null | bool">...</TypeOperation>
+					</TypeList>
+				*/
+				assert.deepStrictEqual(Decorator.decorate(h.tupleTypeFromString(`
+					[
+						T,
+						42,
+						null | bool,
+					]
+				`)).children.map((c) => c.source), [
+					`T`,
+					`42`,
+					`null | bool`,
+				]);
+			});
+		});
+
+		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]"', () => {
+			it('makes an ASTNodeTypeRecord.', () => {
+				/*
+					<TypeRecord>
+						<TypeProperty source="let: bool">...</TypeProperty>
+						<TypeProperty source="foobar: int">...</TypeProperty>
+					</TypeRecord>
+				*/
+				assert.deepStrictEqual(Decorator.decorate(h.recordTypeFromString(`
+					[
+						let: bool,
+						foobar: int,
+					]
+				`)).children.map((c) => c.source), [
+					`let : bool`,
+					`foobar : int`,
+				]);
+			});
+		});
+
+		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
+			it('makes an ASTNodeTypeEmptyCollection.', () => {
+				/*
+					<TypeEmptyCollection/>
+				*/
+				const typeexpr: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`[]`));
+				assert.ok(typeexpr instanceof AST.ASTNodeTypeEmptyCollection);
+			});
+		});
 
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= IDENTIFIER', () => {
 			it('makes an ASTNodeTypeAlias.', () => {
@@ -233,6 +326,119 @@ describe('Decorator', () => {
 				)
 			})
 		})
+
+		Dev.supports('literalCollection') && context('Property ::= Word "=" Expression', () => {
+			it('makes an ASTNodeProperty.', () => {
+				/*
+					<Property>
+						<Key source="fontSize"/>
+						<Operation source="1. + 0.25">...</Operation>
+					</Property>
+				*/
+				const property = Decorator.decorate(h.propertyFromString(`fontSize = 1. + 0.25`));
+				assert.ok(property instanceof AST.ASTNodeProperty); // FIXME: `AST.ASTNodeProperty` is assignable to `TemplatePartialType`, so `Decorator.decorate` overlads get confused
+				assert.deepStrictEqual(
+					property.children.map((c) => c.source),
+					[`fontSize`, `1. + 0.25`],
+				);
+			});
+		});
+
+		Dev.supports('literalCollection') && context('Case ::= Expression# "|->" Expression', () => {
+			it('makes an ASTNodeCase', () => {
+				/*
+					<Case>
+						<Operation source="1 + 0.25">...</Operation>
+						<Operation source="5 * 0.25">...</Operation>
+						<Constant source="1.25"/>
+					</Case>
+				*/
+				const kase: AST.ASTNodeCase = Decorator.decorate(h.caseFromString(`1 + 0.25, 5 * 0.25 |-> 1.25`));
+				assert.deepStrictEqual(
+					kase.children.map((c) => c.source),
+					[`1 + 0.25`, `5 * 0.25`, `1.25`],
+				);
+			});
+		});
+
+		Dev.supports('literalCollection') && context('ListLiteral ::= "[" ","? Expression# ","? "]"', () => {
+			it('makes an ASTNodeList.', () => {
+				/*
+					<List>
+						<Constant source="42"/>
+						<Constant source="true"/>
+						<Operation source="null || false">...</Operation>
+					</List>
+				*/
+				assert.deepStrictEqual(Decorator.decorate(h.listLiteralFromSource(`
+					[
+						42,
+						true,
+						null || false,
+					];
+				`)).children.map((c) => c.source), [
+					`42`,
+					`true`,
+					`null || false`,
+				]);
+			});
+		});
+
+		Dev.supports('literalCollection') && context('RecordLiteral ::= "[" ","? Property# ","? "]"', () => {
+			it('makes an ASTNodeRecord.', () => {
+				/*
+					<Record>
+						<Property source="let = true">...</Property>
+						<Property source="foobar = 42">...</Property>
+					</Record>
+				*/
+				assert.deepStrictEqual(Decorator.decorate(h.recordLiteralFromSource(`
+					[
+						let = true,
+						foobar = 42,
+					];
+				`)).children.map((c) => c.source), [
+					`let = true`,
+					`foobar = 42`,
+				]);
+			});
+		});
+
+		Dev.supports('literalCollection') && context('MappingLiteral ::= "[" ","? Case# ","? "]"', () => {
+			it('makes an ASTNodeMapping.', () => {
+				/*
+					<Mapping>
+						<Case source="1, 2, 3 |-> null">...</Case>
+						<Case source="4, 5, 6 |-> false">...</Case>
+						<Case source="7, 8 |-> true">...</Case>
+						<Case source="9, 0 |-> 42.0">...</Case>
+					</Mapping>
+				*/
+				assert.deepStrictEqual(Decorator.decorate(h.mappingLiteralFromSource(`
+					[
+						1, 2, 3 |-> null,
+						4, 5, 6 |-> false,
+						7, 8    |-> true,
+						9, 0    |-> 42.0,
+					];
+				`)).children.map((c) => c.source), [
+					`1 , 2 , 3 |-> null`,
+					`4 , 5 , 6 |-> false`,
+					`7 , 8 |-> true`,
+					`9 , 0 |-> 42.0`,
+				]);
+			});
+		});
+
+		Dev.supports('literalCollection') && context('ExpressionUnit ::= "[" "]"', () => {
+			it('makes an ASTNodeEmptyCollection.', () => {
+				/*
+					<EmptyCollection/>
+				*/
+				const expr: AST.ASTNodeExpression = Decorator.decorate(h.unitExpressionFromSource(`[];`));
+				assert.ok(expr instanceof AST.ASTNodeEmptyCollection);
+			});
+		});
 
 		Dev.supports('variables') && context('ExpressionUnit ::= IDENTIFIER', () => {
 			it('assigns a unique ID starting from 256.', () => {

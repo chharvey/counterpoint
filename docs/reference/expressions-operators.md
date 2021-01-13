@@ -1,9 +1,12 @@
 # Expressions and Operators
-This chapter describes operator syntax, semantics, and precedence in expressions.
+This chapter describes operator syntax, semantics, and precedence in expressions and types.
 
 
 
-## Summary Table
+## Value Operators
+
+
+### Summary Table
 In the table below, the horizontal ellipsis character `…` represents an allowed expression.
 
 <table>
@@ -168,8 +171,7 @@ or *right-to-left* `a + (b + c)`, the output remains the same.
 Operations that are associative are indicated as so in their respective sections below.
 
 
-
-## Logical Negation, Emptiness
+### Logical Negation, Emptiness
 ```
 `!` <unknown>
 `?` <unknown>
@@ -196,8 +198,7 @@ A value is “empty” if it’s “falsy”, if it’s a zero numeric value (`0
 In future versions its semantics will be expanded to collections (such as arrays and sets, etc.).
 
 
-
-## Mathematical Affirmation, Mathematical Negation
+### Mathematical Affirmation, Mathematical Negation
 ```
 `+` <int | float>
 `-` <int | float>
@@ -233,8 +234,7 @@ this is important to mention because it could affect how we write
 [additive expressions](#parsing-additive-expressions).
 
 
-
-## Exponentiation
+### Exponentiation
 ```
 <int | float> `^` <int | float>
 ```
@@ -257,8 +257,7 @@ For example, `a ^ b ^ c` is equivalent to `a ^ (b ^ c)` and not `(a ^ b) ^ c`.
 This is consistent with mathematical notation,
 where *a<sup>b<sup>c</sup></sup>* is interpreted as *a<sup>(b<sup>c</sup>)</sup>*.
 
-
-### Exponentiation: Order of Operations
+#### Exponentiation: Order of Operations
 In mathematics, exponents are applied before negation (which is multiplication).
 However, in Solid, [mathematical negation](#mathematical-affirmation-mathematical-negation)
 is a unary operator, which is stronger than any binary operator.
@@ -287,8 +286,7 @@ On the other hand, if the intention is actually to raise `3` to the power of `2`
 and then negate, the expression should be written `-(3 ^ 2)` or `-1 * 3 ^ 2`.
 
 
-
-## Multiplicative
+### Multiplicative
 ```
 <int | float> `*` <int | float>
 <int | float> `/` <int | float>
@@ -317,8 +315,7 @@ and division by `0` will result in an error.
 ```
 
 
-
-## Additive
+### Additive
 ```
 <int | float> `+` <int | float>
 <int | float> `-` <int | float>
@@ -341,8 +338,7 @@ Addition and subtraction perform the standard arithmetic operations,
 keeping in mind that integer overflow is possible
 when going beyond the maximum/minimum integer values.
 
-
-### Parsing Additive Expressions
+#### Parsing Additive Expressions
 [Previously in this chapter](#mathematical-affirmation-mathematical-negation)
 we saw that number tokens can begin with **U+002B PLUS SIGN** or **U+002D HYPHEN-MINUS**.
 Since those characters are the same as the additive operator symbols,
@@ -366,8 +362,7 @@ The parser receives these tokens and produces the correct expression.
 (Note that the code `3+ 1` would be sufficient, but perhaps not as readable.)
 
 
-
-## Comparative
+### Comparative
 ```
 <int | float> `<`  <int | float>
 <int | float> `>`  <int | float>
@@ -395,8 +390,7 @@ then `a !< b` (“`a` is not a strict subset of `b`”) does not necessarily mea
 that `a >= b` (“`a` is a superset of ”).
 
 
-
-## Equality
+### Equality
 ```
 <unknown> `is`   <unknown>
 <unknown> `isnt` <unknown>
@@ -438,7 +432,7 @@ All four of these operators are **commutative**, meaning the order of operands d
 Remember: Expressions are always evaluated from left to right, so side-effects could still be observed.
 
 
-## Conjunctive
+### Conjunctive
 ```
 <unknown> `&&` <unknown>
 <unknown> `!&` <unknown>
@@ -465,8 +459,7 @@ a !& b; % sugar for `!(a && b)`
 ```
 
 
-
-## Disjunctive
+### Disjunctive
 ```
 <unknown> `||` <unknown>
 <unknown> `!|` <unknown>
@@ -493,8 +486,7 @@ a !| b; % sugar for `!(a || b)`
 ```
 
 
-
-## Conditional
+### Conditional
 ```
 `if` <bool> `then` <unknown> `else` <unknown>
 ```
@@ -513,3 +505,88 @@ For example, if the condition evalutes to `false`, then only the alternative is 
 the consequent does not even get evaluated.
 This is meaningful when evaluation of an expression produces side-effects, such as a routine call.
 Because one of the branches is not evaluated, its side-effects (if any) will not occur.
+
+
+
+## Type Operators
+
+
+### Summary Table
+In the table below, the horizontal ellipsis character `…` represents an allowed expression.
+<table>
+	<thead>
+		<tr>
+			<th>Precedence<br/><small>(1 is highest)</small></th>
+			<th>Operator Name</th>
+			<th>Arity &amp; Position</th>
+			<th>Grouping</th>
+			<th>Symbols</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<th>1</th>
+			<td>Grouping</td>
+			<td>unary wrap</td>
+			<td>(n/a)</td>
+			<td><code>( … )</code></td>
+		</tr>
+		<tr>
+			<th>2</th>
+			<td>Nullish</td>
+			<td>unary postfix</td>
+			<td>left-to-right</td>
+			<td><code>… !</code></td>
+		</tr>
+		<tr>
+			<th>3</th>
+			<td>Intersection</td>
+			<td>binary infix</td>
+			<td>left-to-right</td>
+			<td><code>… & …</code></td>
+		</tr>
+		<tr>
+			<th>4</th>
+			<td>Union</td>
+			<td>binary infix</td>
+			<td>left-to-right</td>
+			<td><code>… | …</code></td>
+		</tr>
+	</tbody>
+</table>
+
+
+### Nullish
+```
+<Type> `!`
+```
+The **nullish** operator creates a [union](#union) of the operand and the `null` type.
+```
+type T = int!; % equivalent to `type T = int | null;`
+```
+
+
+### Intersection
+```
+<Type> `&` <Type>
+```
+The **intersection** operator creates a strict combination of the operands.
+```
+type T = [foo: bool] & [bar: int];
+let v: T = [
+	foo = false,
+	bar = 42,
+];
+```
+
+
+### Union
+```
+<Type> `|` <Type>
+```
+The **union** operator creates a type that is either one operand, or the other, or some combination of both.
+```
+type T = bool | int;
+let unfixed v: T = false;
+v = 42;
+```

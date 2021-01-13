@@ -6,8 +6,9 @@ Type Assess(SemanticTypeConstant const) :=
 
 Type Assess(SemanticTypeAlias var) :=
 	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
-		1. *If* `symbol.kind` is *type*:
-			1. *Return:* `symbol.type`.
+		1. *Assert:* `symbol` is of type `SymbolStructureType`.
+		2. *Assert:* `symbol.defn` is of type `SemanticType`.
+		3. *Return:* `Assess(symbol.defn)`.
 	2. *Return:* `Unknown`.
 ;
 
@@ -42,7 +43,12 @@ Or<Null, Boolean, Number, Sequence<RealNumber>> Assess(SemanticConstant const) :
 
 
 Void! Assess(SemanticVariable var) :=
-	1. *Throw:* `void`. // NOTE: Update when implementing constant propagation.
+	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
+		1. *Assert:* `symbol` is of type `SymbolStructureVar`.
+		2. *If* `symbol.unfixed` is `false`:
+			1. *Assert:* `symbol.defn` is of type `SemanticExpression`.
+			2. *Return:* `Assess(symbol.defn)`.
+	2. *Throw:* `void`.
 ;
 
 

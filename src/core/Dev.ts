@@ -37,7 +37,9 @@ export class Dev {
 		// v0.3.0
 		readonly variables       : string,
 		readonly typingExplicit  : string,
-		// v0.3.1 (temp)
+		// v0.4.0
+		readonly literalCollection: string,
+		// v0.4.1 (temp)
 		readonly literalString   : string,
 		readonly literalTemplate : string,
 	} = {
@@ -57,9 +59,11 @@ export class Dev {
 		// v0.3.0
 		variables:       '>=0.3.*',
 		typingExplicit:  '>=0.3.*',
-		// v0.3.1 (temp)
-		literalString:   '>=0.3.1',
-		literalTemplate: '>=0.3.1',
+		// v0.4.0
+		literalCollection: '>=0.4.0-a',
+		// v0.4.1 (temp)
+		literalString:   '>=0.4.1',
+		literalTemplate: '>=0.4.1',
 	}
 
 	/**

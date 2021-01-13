@@ -1,6 +1,6 @@
 {
   "name": "@chharvey/solid",
-  "version": "0.3.0-alpha.1",
+  "version": "0.3.0-alpha.2",
   "private": true,
   "description": "A robust programming language.",
   "main": "index.js",
@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/chharvey/solid#readme",
   "devDependencies": {
-    "@chharvey/parser": "^0.4.0",
+    "@chharvey/parser": "^0.5.0",
     "@types/minimist": "^1.2.0",
     "@types/mocha": "^8.0.0",
     "@types/node": "^14.0.1",
