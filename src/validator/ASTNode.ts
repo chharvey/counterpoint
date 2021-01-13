@@ -431,8 +431,14 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		return SolidLanguageType.UNKNOWN;
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(_validator: Validator): CompletionStructureAssessment {
-		return new CompletionStructureAssessment(CompletionType.THROW); // TODO #35 : constant propagation
+	protected assess_do(validator: Validator): CompletionStructureAssessment {
+		if (validator.hasSymbol(this.id)) {
+			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
+			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
+				return symbol.defn!.assess(validator);
+			};
+		};
+		return new CompletionStructureAssessment(CompletionType.THROW);
 	}
 }
 export class ASTNodeTemplate extends ASTNodeExpression {
