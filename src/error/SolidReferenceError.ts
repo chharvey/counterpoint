@@ -5,7 +5,7 @@ import {
 import type {AST} from '../validator/';
 import {
 	SymbolKind,
-} from '../validator/Validator'; // FIXME circular imports
+} from '../validator/SymbolStructure'; // FIXME circular imports
 
 
 
@@ -55,7 +55,7 @@ export class ReferenceError01 extends SolidReferenceError {
 /**
  * A ReferenceError02 is thrown when the validator encounters a not-yet-declared variable.
  * @example
- * my_var;               % ReferenceError02: `my_var` is used before it is declared.
+ * my_var; % ReferenceError02: `my_var` is used before it is declared.
  * % (This is called a Temporal Dead Zone.)
  * let my_var: int = 42;
  */

@@ -11,7 +11,7 @@ Type TypeOf(SemanticConstant const) :=
 
 Type TypeOf(SemanticVariable var) :=
 	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
-		1. *If* `symbol.kind` is *value*:
+		1. *If* `symbol` is of type `SymbolStructureVar`:
 			1. *Return:* `symbol.type`.
 	2. *Return:* `Unknown`.
 ;
