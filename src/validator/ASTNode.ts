@@ -281,6 +281,10 @@ export class ASTNodeTypeEmptyCollection extends ASTNodeType {
 	) {
 		super(start_node);
 	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeTypeEmptyCollection#varCheck not yet supported.';
+	}
 	/** @implements ASTNodeType */
 	protected assess_do(validator: Validator): SolidLanguageType {
 		throw validator && 'ASTNodeTypeEmptyCollection#assess_do not yet supported.';
@@ -293,6 +297,10 @@ export class ASTNodeTypeList extends ASTNodeType {
 	) {
 		super(start_node, {}, children);
 	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeTypeList#varCheck not yet supported.';
+	}
 	/** @implements ASTNodeType */
 	protected assess_do(validator: Validator): SolidLanguageType {
 		throw validator && 'ASTNodeTypeList#assess_do not yet supported.';
@@ -304,6 +312,10 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		readonly children: readonly ASTNodeTypeProperty[],
 	) {
 		super(start_node, {}, children);
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		throw validator && 'ASTNodeTypeRecord#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeType */
 	protected assess_do(validator: Validator): SolidLanguageType {
