@@ -5,7 +5,7 @@ import {
 import type {AST} from '../validator/';
 import {
 	SymbolKind,
-} from '../validator/Validator'; // FIXME circular imports
+} from '../validator/SymbolStructure'; // FIXME circular imports
 
 
 
