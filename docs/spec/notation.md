@@ -223,40 +223,40 @@ with exceptions described above.
 #### Formal Grammar (TNSG)
 The grammar below (which is a CFG) describes the formal Tree Node Schema Grammar that describes the Solid language.
 ```
-Grammar
-	::= #x02 Production* #x03;
-
-Production ::=
-	| Nonterminal "::=" "|"? Choice ";"
-	| IDENTIFIER  "=:=" "|"? Choice ";"
-;
-
-Choice   ::= (Choice   "|")? Sequence;
-Sequence ::= (Sequence "&")? Item+;
-
-Item
-	::= Unit ("+" | "*")? "?"?;
-
-Unit ::=
-	| Nonterminal
-	| "(" Choice ")"
-;
-
-Nonterminal
-	::= IDENTIFIER Attribute*;
-
-Attribute
-	::= "[" IDENTIFIER ":" Type "]";
-
-Type
-	::= (Type "|")? TypeUnit;
-
 TypeUnit ::=
 	| NUMBER
 	| STRING
 	| IDENTIFIER ("<" Type ">")?
 	| "(" Type ")"
 ;
+
+Type
+	::= (Type "|")? TypeUnit;
+
+Attribute
+	::= "[" IDENTIFIER ":" Type "]";
+
+Nonterminal
+	::= IDENTIFIER Attribute*;
+
+Unit ::=
+	| Nonterminal
+	| "(" Choice ")"
+;
+
+Item
+	::= Unit ("+" | "*")? "?"?;
+
+Sequence ::= (Sequence "&")? Item+;
+Choice   ::= (Choice   "|")? Sequence;
+
+Production ::=
+	| Nonterminal "::=" ("&" | "|")? Choice ("&" | "|")? ";"
+	| IDENTIFIER  "=:=" ("&" | "|")? Choice ("&" | "|")? ";"
+;
+
+Grammar
+	::= #x02 Production* #x03;
 ```
 
 
@@ -378,11 +378,15 @@ in the chapter [Data Types and Values](./data-types.md).
 #### Formal Grammar (AG)
 The grammar below (which is a CFG) describes the formal AGs that describe the Solid language.
 ```
-Grammar
-	::= #x02 Production* #x03;
+Item ::=
+	| STRING
+	| CHARCODE
+	| CHARCLASS
+	| IDENTIFIER
+;
 
-Production
-	::= IDENTIFIER "(" Parameter ")" "->" ReturnType ":=" RETURN_VALUE ";";
+Type
+	::= IDENTIFIER ("<" Type ">")?;
 
 Parameter
 	::= IDENTIFIER (":::=" | "::=") Item+;
@@ -390,15 +394,11 @@ Parameter
 ReturnType
 	::= (ReturnType "|")? Type;
 
-Type
-	::= IDENTIFIER ("<" Type ">")?;
+Production
+	::= IDENTIFIER "(" Parameter ")" "->" ReturnType ":=" RETURN_VALUE ";";
 
-Item ::=
-	| STRING
-	| CHARCODE
-	| CHARCLASS
-	| IDENTIFIER
-;
+Grammar
+	::= #x02 Production* #x03;
 ```
 where the non-literal terminal symbols of the syntax grammar above are
 taken from the lexical grammar defined in [CFGs: Formal Grammar](#formal-grammar-cfg).
