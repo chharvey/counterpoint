@@ -163,7 +163,13 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 
 ### Never
 The Botton Type represents the set of no values, called `never`.
-No value or expression is assignable to `never`.
+No value is assignable to `never`,
+and expressions of type `never` are accepted everywhere.
+
+`never` is a subtype of every type,
+and no type (except `never` itself) is a subtype of `never`.
+`never` is the the “absorption element” of the [intersection](#intersection) operation
+and the “identity element” of the [union](#union) operation.
 
 
 ### Null
@@ -211,7 +217,13 @@ Every Solid Language Value is an Object.
 
 ### Unknown
 The Top Type represents the set of all possible values, called `unknown`.
-Any value or expression is assignable to `unknown`.
+Any value or expression is assignable to `unknown`,
+and expressions of type `unknown` are accepted almost nowhere.
+
+`unknown` is a supertype of every type,
+and no type (except `unknown` itself) is a supertype of `unknown`.
+`unknown` is the the “identity element” of the [intersection](#intersection) operation
+and the “absorption element” of the [union](#union) operation.
 
 
 

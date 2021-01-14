@@ -198,7 +198,6 @@ Token Worth quantities for identifiers are integers strictly greater than *255*.
 
 ### Numbers
 Numbers are literal constants that represent numeric mathematical values.
-Currently, only positive and negative (and zero) integers are supported.
 
 #### TokenWorth (Numbers)
 The Token Worth of a number token is the [real number](./data-types.md#realnumber) that the token represents.

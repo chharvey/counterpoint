@@ -23,9 +23,6 @@ There are no values assignble to the Never type.
 Currently, there are no expressions assignable to it either, but
 future versions of Solid will support expressions of type Never.
 
-Since Never is a subtype of every other type, expressions of type Never
-will be accepted anywhere.
-
 
 
 ## Null
