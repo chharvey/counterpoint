@@ -23,7 +23,6 @@ import {
 	Decorator,
 	Validator,
 	AST,
-	CompletionStructureAssessment,
 	SolidLanguageType,
 	SolidTypeConstant,
 	SolidObject,
@@ -203,9 +202,9 @@ describe('ASTNodeSolid', () => {
 					nodes.map(([_src, node]) => {
 						const assess: SolidObject | null = node.assess();
 						assert.ok(assess);
-						return new CompletionStructureAssessment(assess).build();
+						return InstructionConst.fromAssessment(assess);
 					}),
-					'produces `CompletionStructureAssessment.new(ASTNodeOperation#assess)#build`',
+					'produces `InstructionConst.new(ASTNodeOperation#assess)`',
 				)
 			}).timeout(5000)
 			context('with constant folding off.', () => {

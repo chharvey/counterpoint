@@ -25,9 +25,6 @@ import {
 	SymbolStructureType,
 } from './SymbolStructure';
 import {
-	CompletionStructureAssessment,
-} from './CompletionStructure';
-import {
 	SolidLanguageType,
 	SolidTypeConstant,
 } from './SolidLanguageType';
@@ -307,7 +304,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 */
 	build(builder: Builder, to_float?: boolean): InstructionExpression {
 		const assessed: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
-		return (!!assessed) ? new CompletionStructureAssessment(assessed).build(to_float) : this.build_do(builder, to_float);
+		return (!!assessed) ? InstructionConst.fromAssessment(assessed, to_float) : this.build_do(builder, to_float);
 	}
 	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionExpression;
 	/**
@@ -370,7 +367,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeExpression */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionConst {
-		return new CompletionStructureAssessment(this.assess_do(builder.validator)).build(to_float);
+		return InstructionConst.fromAssessment(this.assess_do(builder.validator), to_float);
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
