@@ -94,13 +94,15 @@ Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | MUL | DI
 Sequence<Instruction> BuildExpression(SemanticOperation[operator: AND] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
 	2. *Return:* [
-		...builds.1,
 		...builds.0,
 		"TEE the local variable `operand0`.",
+		"NOT",
+		"NOT",
+		"IF",
+		...builds.1,
+		"ELSE",
 		"GET the local variable `operand0`.",
-		"NOT",
-		"NOT",
-		"SELECT",
+		"END",
 	].
 ;
 
@@ -109,11 +111,13 @@ Sequence<Instruction> BuildExpression(SemanticOperation[operator: OR] expr) :=
 	2. *Return:* [
 		...builds.0,
 		"TEE the local variable `operand0`.",
-		...builds.1,
+		"NOT",
+		"NOT",
+		"IF",
 		"GET the local variable `operand0`.",
-		"NOT",
-		"NOT",
-		"SELECT",
+		"ELSE",
+		...builds.1,
+		"END",
 	].
 ;
 
