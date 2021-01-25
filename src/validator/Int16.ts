@@ -1,5 +1,5 @@
 import type {SolidLanguageType} from './SolidLanguageType';
-import type {SolidObject}       from './SolidObject';
+import {SolidObject} from './SolidObject';
 import {SolidNumber} from './SolidNumber';
 import {Float64} from './Float64';
 
@@ -45,8 +45,9 @@ export class Int16 extends SolidNumber<Int16> {
 	toString(): string {
 		return `${ this.toNumeric() }`
 	}
-	/** @override @final */
-	protected identical_helper(value: SolidObject): boolean {
+	/** @override */
+	@SolidObject.identicalDeco
+	identical(value: SolidObject): boolean {
 		return value instanceof Int16 && this.is(value)
 	}
 	/** @override @final */

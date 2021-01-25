@@ -32,7 +32,8 @@ export class SolidNull extends SolidObject {
 		return 'null'
 	}
 	/** @override */
-	protected identical_helper(value: SolidObject): boolean {
+	@SolidObject.identicalDeco
+	identical(value: SolidObject): boolean {
 		return value instanceof SolidNull
 	}
 }

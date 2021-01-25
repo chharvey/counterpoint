@@ -37,6 +37,27 @@ export class SolidObject {
 	/** @implements SolidLanguageType */
 	static equals: SolidLanguageType['equals'] = SolidLanguageType.prototype.equals
 
+	/**
+	 * Decorator for {@link SolidObject#identical} method and any overrides.
+	 * Performs the Identical algorithm — returns whether two Objects (Solid Language Values)
+	 * are referentially identical.
+	 * @param   _prototype    the prototype that has the method to be decorated
+	 * @param   _property_key the name of the method to be decorated
+	 * @param   descriptor    the Property Descriptor of the prototype’s method
+	 * @returns               `descriptor`, with a new value that is the decorated method
+	 */
+	protected static identicalDeco(
+		_prototype: SolidObject,
+		_property_key: string,
+		descriptor: TypedPropertyDescriptor<(this: SolidObject, value: SolidObject) => boolean>,
+	): typeof descriptor {
+		const method = descriptor.value!;
+		descriptor.value = function (value) {
+			return this === value || method.call(this, value);
+		};
+		return descriptor;
+	}
+
 
 	/**
 	 * Return the “logical value” of this value.
@@ -55,17 +76,9 @@ export class SolidObject {
 	 * Is this value the same exact object as the argument?
 	 * @param value the object to compare
 	 * @returns are the objects identically the same?
-	 * @final
 	 */
-	identical(value: SolidObject): boolean {
-		return this === value || this.identical_helper(value)
-	}
-	/**
-	 * Helper method for {@link this.identical}. Override as needed.
-	 * @param _value the object to compare
-	 * @returns are the objects identically the same?
-	 */
-	protected identical_helper(_value: SolidObject): boolean {
+	@SolidObject.identicalDeco
+	identical(_value: SolidObject): boolean {
 		return false
 	}
 	/**

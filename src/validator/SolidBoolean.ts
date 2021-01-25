@@ -47,7 +47,8 @@ export class SolidBoolean extends SolidObject {
 		return `${ this.value }`
 	}
 	/** @override */
-	protected identical_helper(value: SolidObject): boolean {
+	@SolidObject.identicalDeco
+	identical(value: SolidObject): boolean {
 		return value instanceof SolidBoolean && this.value === value.value
 	}
 	/**

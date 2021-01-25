@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs'
 
 import type {SolidLanguageType} from './SolidLanguageType';
-import type {SolidObject}       from './SolidObject';
+import {SolidObject} from './SolidObject';
 import {SolidNumber} from './SolidNumber';
 
 
@@ -23,8 +23,9 @@ export class Float64 extends SolidNumber<Float64> {
 	toString(): string {
 		return `${ this.value }`
 	}
-	/** @override @final */
-	protected identical_helper(value: SolidObject): boolean {
+	/** @override */
+	@SolidObject.identicalDeco
+	identical(value: SolidObject): boolean {
 		return value instanceof Float64 && this.is(value)
 	}
 	/** @override @final */
