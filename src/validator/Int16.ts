@@ -48,14 +48,12 @@ export class Int16 extends SolidNumber<Int16> {
 	/** @override */
 	@SolidObject.identicalDeco
 	identical(value: SolidObject): boolean {
-		return value instanceof Int16 && this.is(value)
+		return value instanceof Int16 && this.internal.every((bit, i) => bit === value.internal[i]);
 	}
 	/** @override */
 	@SolidObject.equalsDeco
 	equal(value: SolidObject): boolean {
-		return (value instanceof Float64)
-			? this.toFloat().equal(value)
-			: value instanceof Int16 && this.eq(value)
+		return value instanceof Float64 && value.equal(this);
 	}
 	/** @override */
 	toFloat(): Float64 {
@@ -268,28 +266,20 @@ export class Int16 extends SolidNumber<Int16> {
 		return this.cpl().plus(Int16.UNIT)
 	}
 	/** @override */
-	protected is(int: Int16): boolean {
-		return this === int || this.internal.every((bit, i) => bit === int.internal[i])
-	}
-	/** @override */
-	protected eq(int: Int16): boolean {
-		return this.is(int)
-	}
-	/** @override */
 	eq0(): boolean {
-		return this.eq(Int16.ZERO)
+		return this.equal(Int16.ZERO);
 	}
 	/**
 	 * Is the 16-bit signed integer equal to `1`?
 	 */
 	private eq1(): boolean {
-		return this.eq(Int16.UNIT)
+		return this.equal(Int16.UNIT);
 	}
 	/**
 	 * Is the 16-bit signed integer equal to `2`?
 	 */
 	private eq2(): boolean {
-		return this.eq(Int16.RADIX)
+		return this.equal(Int16.RADIX);
 	}
 	/** @override */
 	lt(y: Int16): boolean {

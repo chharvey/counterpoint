@@ -26,12 +26,12 @@ export class Float64 extends SolidNumber<Float64> {
 	/** @override */
 	@SolidObject.identicalDeco
 	identical(value: SolidObject): boolean {
-		return value instanceof Float64 && this.is(value)
+		return value instanceof Float64 && Object.is(this.value, value.value);
 	}
 	/** @override */
 	@SolidObject.equalsDeco
 	equal(value: SolidObject): boolean {
-		return value instanceof SolidNumber && this.eq(value.toFloat())
+		return value instanceof SolidNumber && this.value === value.toFloat().value;
 	}
 	/** @override */
 	toFloat(): this {
@@ -62,14 +62,6 @@ export class Float64 extends SolidNumber<Float64> {
 	/** @override */
 	neg(): Float64 {
 		return new Float64(-this.value)
-	}
-	/** @override */
-	protected is(fl: Float64): boolean {
-		return this === fl || Object.is(this.value, fl.value)
-	}
-	/** @override */
-	protected eq(fl: Float64): boolean {
-		return this.is(fl) || this.value === fl.value
 	}
 	/**
 	 * @override
