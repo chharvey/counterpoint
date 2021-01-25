@@ -28,8 +28,9 @@ export class Float64 extends SolidNumber<Float64> {
 	identical(value: SolidObject): boolean {
 		return value instanceof Float64 && this.is(value)
 	}
-	/** @override @final */
-	protected equal_helper(value: SolidObject): boolean {
+	/** @override */
+	@SolidObject.equalsDeco
+	equal(value: SolidObject): boolean {
 		return value instanceof SolidNumber && this.eq(value.toFloat())
 	}
 	/** @override */

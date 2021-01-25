@@ -50,8 +50,9 @@ export class Int16 extends SolidNumber<Int16> {
 	identical(value: SolidObject): boolean {
 		return value instanceof Int16 && this.is(value)
 	}
-	/** @override @final */
-	protected equal_helper(value: SolidObject): boolean {
+	/** @override */
+	@SolidObject.equalsDeco
+	equal(value: SolidObject): boolean {
 		return (value instanceof Float64)
 			? this.toFloat().equal(value)
 			: value instanceof Int16 && this.eq(value)

@@ -57,6 +57,26 @@ export class SolidObject {
 		};
 		return descriptor;
 	}
+	/**
+	 * Decorator for {@link SolidObject#equal} method and any overrides.
+	 * Performs the Equality algorithm — returns whether two Objects (Solid Language Values)
+	 * are equal by some definition.
+	 * @param   _prototype    the prototype that has the method to be decorated
+	 * @param   _property_key the name of the method to be decorated
+	 * @param   descriptor    the Property Descriptor of the prototype’s method
+	 * @returns               `descriptor`, with a new value that is the decorated method
+	 */
+	protected static equalsDeco(
+		_prototype: SolidObject,
+		_property_key: string,
+		descriptor: TypedPropertyDescriptor<(this: SolidObject, value: SolidObject) => boolean>,
+	): typeof descriptor {
+		const method = descriptor.value!;
+		descriptor.value = function (value) {
+			return this.identical(value) || method.call(this, value);
+		};
+		return descriptor;
+	}
 
 
 	/**
@@ -86,17 +106,9 @@ export class SolidObject {
 	 * If {@link this.identical} returns `true`, this method will return `true`.
 	 * @param value the object to compare
 	 * @returns are the objects equal?
-	 * @final
 	 */
-	equal(value: SolidObject): boolean {
-		return this.identical(value) || this.equal_helper(value)
-	}
-	/**
-	 * Helper method for {@link this.equal}. Override as needed.
-	 * @param _value the object to compare
-	 * @returns are the objects equal?
-	 */
-	protected equal_helper(_value: SolidObject): boolean {
+	@SolidObject.equalsDeco
+	equal(_value: SolidObject): boolean {
 		return false
 	}
 }
