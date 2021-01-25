@@ -37,13 +37,13 @@ Boolean Identical(Object a, Object b) :=
 	3. *If* `a` is the value `true` *and* `b` is the value `true`:
 		1. *Return:* `true`.
 	4. *If* `a` is an instance of `Integer` *and* `b` is an instance of `Integer`:
-		1. If `a` and `b` have the same bitwise encoding:
+		1. *If* `a` and `b` have the same bitwise encoding:
 			1. *Return:* `true`.
 	5. *If* `a` is an instance of `Float` *and* `b` is an instance of `Float`:
-		1. If `a` and `b` have the same bitwise encoding:
+		1. *If* `a` and `b` have the same bitwise encoding:
 			1. *Return:* `true`.
 	// 6. *If* `a` is an instance of `String` *and* `b` is an instance of `String`:
-	// 	1. If `a` and `b` are exactly the same sequence of code units
+	// 	1. *If* `a` and `b` are exactly the same sequence of code units
 	// 		(same length and same code units at corresponding indices):
 	// 		1. *Return:* `true`.
 	// 7. *If* `a` and `b` are the same object:
@@ -59,13 +59,13 @@ Compares two objects and returns whether they are considered “equal” by some
 Boolean Equal(Object a, Object b) :=
 	1. *If* `Identical(a, b)` is `true`:
 		1. *Return:* `true`.
-	2. *If* `a` is an instance of `Number` *and* `b` is an instance of `Number`:
+	2. *If* `a` is an instance of `Integer` *or* `b` is an instance of `Integer`:
 		1. *If* `a` is an instance of `Float` *or* `b` is an instance of `Float`:
 			1. *Return:* `Equal(Float(a), Float(b))`.
 	3. *If* `a` is an instance of `Float` *and* `b` is an instance of `Float`:
-		1. If `a` is `0.0` *and* `b` is `-0.0`:
+		1. *If* `a` is `0.0` *and* `b` is `-0.0`:
 			1. *Return:* `true`.
-		2. If `a` is `-0.0` *and* `b` is `0.0`:
+		2. *If* `a` is `-0.0` *and* `b` is `0.0`:
 			1. *Return:* `true`.
 	// 3. TODO: custom equality operators
 	4. Return `false`.

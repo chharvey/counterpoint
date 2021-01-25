@@ -63,24 +63,22 @@ Boolean! Assess(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `Assess(expr.children.0)`.
 	3. *Assert*: `operand` is not `void`.
-	4. *Let* `is_truthy` be *UnwrapAffirm:* `ToBoolean(operand)`.
-	5. *If* `is_truthy` is `true`:
+	4. *If* *UnwrapAffirm:* `ToBoolean(operand)` is `true`:
 		1. *Return:* `false`.
-	6. *Return:* `true`.
+	5. *Return:* `true`.
 ;
 
 Boolean! Assess(SemanticOperation[operator: EMP] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `Assess(expr.children.0)`.
 	3. *Assert*: `operand` is not `void`.
-	4. *Let* `is_truthy` be *UnwrapAffirm:* `ToBoolean(operand)`.
-	5. *If* `is_truthy` is `false`:
+	4. *If* *UnwrapAffirm:* `ToBoolean(operand)` is `false`:
 		1. *Return:* `true`.
-	6. *If* `operand` is an instance of `Integer` *and* `operand` is `0`:
+	5. *If* `operand` is an instance of `Integer` *and* `operand` is `0`:
 		1. *Return:* `true`.
-	7. *If* `operand` is an instance of `Float` *and* `operand` is `0.0` or `-0.0`:
+	6. *If* `operand` is an instance of `Float` *and* `operand` is `0.0` or `-0.0`:
 		1. *Return:* `true`.
-	8. *Return:* `false`.
+	7. *Return:* `false`.
 ;
 
 Number! Assess(SemanticOperation[operator: NEG] expr) :=
