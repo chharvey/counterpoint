@@ -643,6 +643,17 @@ is shorthand for the following steps:
 	2. Increment `‹i›`.
 ```
 
+A step that reads «*For key* ‹k› in ‹s›:» (where ‹k› is a variable and ‹s› is a structure)
+is shorthand for the following steps:
+```
+1. *Let* `i` be 0.
+2. *While* `i` is less than `‹s›.count`:
+	1. *Let* `‹k›` be some key in `‹s›` that hasn’t yet been assigned over the course of this loop.
+	2. Perform the substeps listed under the *For key* step.
+	3. Increment `i`.
+```
+Note that this algorithm does not require the keys in ‹s› to be iterated over in any particular order.
+
 A step that reads «*For each* ‹it› in ‹s›:» (where ‹it› is a variable and ‹s› is a sequence)
 is shorthand for the following steps:
 ```
