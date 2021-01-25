@@ -1,9 +1,9 @@
 Type TypeOf(SemanticConstant const) :=
 	1. *Let* `assess` be *UnwrapAffirm:* `Assess(const)`.
 	2. *Note:* `assess` is `const.value`.
-	3. *If* `assess` is of type `Or<Null, Boolean, Number>`:
+	3. *If* `assess` is an instance of `Null` or `Boolean` or `Number`:
 		1. *Return:* `ToType(assess)`.
-	4. *Assert:* `assess` is of type `Sequence<RealNumber>`.
+	4. *Assert:* `assess` is an instance of `Sequence<RealNumber>`.
 	5. *Return:* `String`.
 ;
 
@@ -11,7 +11,7 @@ Type TypeOf(SemanticConstant const) :=
 
 Type TypeOf(SemanticVariable var) :=
 	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
-		1. *If* `symbol` is of type `SymbolStructureVar`:
+		1. *If* `symbol` is an instance of `SymbolStructureVar`:
 			1. *Return:* `symbol.type`.
 	2. *Return:* `Unknown`.
 ;
@@ -131,7 +131,8 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: COND] expr) :=
 
 
 TypeConstant ToType(Or<Null, Boolean, Number> v) :=
-	1. *Let* `t` be a new structure of type `Type`.
-	2. *Set* `t.value` to `v`.
-	3. *Return:* `t`.
+	1. *Return:* a new CompletionStructure [
+		type  = `Type`,
+		value = `v`,
+	].
 ;
