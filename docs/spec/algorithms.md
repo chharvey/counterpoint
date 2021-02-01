@@ -17,9 +17,9 @@ Performs the type-checking piece during semantic analysis.
 Returns an associated [boolean value](./data-types#boolean), `true` or `false`, with a Solid Language Value.
 ```
 Boolean ToBoolean(Object value) :=
-	1. *If* `TypeOf(value)` is `Null`:
+	1. *If* `value` is an instance of `Null`:
 		1. *Return:* `false`.
-	2. *If* `TypeOf(value)` is `Boolean`:
+	2. *If* `value` is an instance of `Boolean`:
 		1. *Return:* `value`.
 	3. *Return:* `true`.
 ```

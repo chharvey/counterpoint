@@ -130,7 +130,7 @@ Object! Assess(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *Unwrap:* `Assess(expr.children.0)`.
 	3. *Assert*: `operand0` is not `void`.
-	4. *If* `ToBoolean(operand0)` is `false`:
+	4. *If* *UnwrapAffirm:* `ToBoolean(operand0)` is `false`:
 		1. *Return:* `operand0`.
 	5. *Return:* `Assess(expr.children.1)`.
 ;
@@ -139,7 +139,7 @@ Object! Assess(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *Unwrap:* `Assess(expr.children.0)`.
 	3. *Assert*: `operand0` is not `void`.
-	4. *If* `ToBoolean(operand0)` is `true`:
+	4. *If* *UnwrapAffirm:* `ToBoolean(operand0)` is `true`:
 		1. *Return:* `operand0`.
 	5. *Return:* `Assess(expr.children.1)`.
 ;
