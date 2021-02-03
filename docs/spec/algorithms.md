@@ -73,6 +73,55 @@ Boolean Equal(Object a, Object b) :=
 
 
 
+## Subtype
+Determines whether one type is a subtype of another.
+```
+Boolean Subtype(Type a, Type b) :=
+	1. *If* *UnwrapAffirm:* `Identical(a, b)`:
+		// 2-7 | `A <: A`
+		1. *Return:* `true`.
+	2. *If* *UnwrapAffirm:* `IsEmpty(a)`:
+		// 1-1 | `never <: T`
+		1. *Return:* `true`.
+	3. *If* *UnwrapAffirm:* `IsEmpty(b)`:
+		// 1-3 | `T       <: never  <->  T == never`
+		1. *Return:* `IsEmpty(a)`.
+	4. *If* *UnwrapAffirm:* `IsUniverse(a)`:
+		// 1-4 | `unknown <: T      <->  T == unknown`
+		1. *Return:* `IsUniverse(b)`.
+	5. *If* *UnwrapAffirm:* `IsUniverse(b)`:
+		// 1-2 | `T     <: unknown`
+		1. *Return:* `true`.
+	6. *If* `a` is the intersection of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Identical(x, b)` *or* *UnwrapAffirm:* `Identical(y, b)`:
+			// 3-1 | `A  & B <: A  &&  A  & B <: B`
+			1. *Return:* `true`.
+		2. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
+			// 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`
+			1. *Return:* `true`.
+	7. *If* `b` is the intersection of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
+			// 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`
+			1. *Return:* `true`.
+	8. *If* `a` is the union of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
+			// 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`
+			1. *Return:* `true`.
+	9. *If* `b` is the union of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Identical(a, x)` *or* *UnwrapAffirm:* `Identical(a, y)`:
+			// 3-2 | `A <: A \| B  &&  B <: A \| B`
+			1. *Return:* `true`.
+		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
+			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
+			1. *Return:* `true`.
+	10. *If* every value that is assingable to `a` is also assignable to `b`:
+		1. *Return:* `true`.
+	11. *Return:* `false`.
+;
+```
+
+
+
 ## PerformBinaryArithmetic
 Performs a binary arithmetic operation.
 ```
