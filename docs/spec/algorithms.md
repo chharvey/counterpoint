@@ -3,6 +3,29 @@ This chapter lists and defines common abstract algorithms used throughout this s
 
 
 
+## DigitCount
+The **DigitCount** attribute grammar gives the [number](./data-types.md#real-integer-numbers) of
+numeric (non-separator) digits in a digit sequence.
+```
+DigitCount(DigitSequenceDec :::= [0-9]) -> RealNumber
+	:= 1;
+DigitCount(DigitSequenceDec :::= DigitSequenceDec "_"? [0-9]) -> RealNumber
+	:= DigitCount(DigitSequenceDec) + DigitCount([0-9]);
+```
+
+
+
+## CodePoint
+The **CodePoint** of a character is the integer index of its placement in the Unicode character set.
+A code point is *not* a code unit. A code point is simply Unicode’s index of a character,
+whereas a code unit is the [UTF-16-encoded](#utf16encoding) value of that code point.
+```
+CodePoint([#x00-#x10ffff]) -> RealNumber
+	:=; // TO BE DESCRIBED
+```
+
+
+
 ## UTF16Encoding
 Encodes a code point using the UTF-16 encoding algorithm.
 A code unit is a [real integer number](./data-types.md#real-integer-numbers)

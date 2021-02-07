@@ -292,6 +292,8 @@ The first line could be read aloud as,
 
 ### Token Worth
 The token worth grammar is an attribute grammar that determines the semantic value of the various token types.
+It assigns a [Solid Specification Value](./data-types.md#solid-specification-types)
+to a Token produced by the Tokenizer piece of the Solid compiler.
 This grammar is described further in detail in the chapter
 [Solid Language: Lexicon](./language-lexicon.md).
 

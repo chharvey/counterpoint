@@ -39,33 +39,6 @@ line break normalization is important to the compilation process,
 during which line and column numbers of any invalid source input might be reported.
 
 
-### Static Semantics: CodePoint
-The **CodePoint** of a character is the integer index of its placement in the Unicode character set.
-A code point is *not* a code unit. A code point is simply Unicode’s index of a character,
-whereas a code unit is the [UTF-16-encoded](./algorithms.md#utf16encoding) value of that code point.
-```
-CodePoint([#x00-#x10ffff]) -> RealNumber
-	:=; // TO BE DESCRIBED
-```
-
-
-### Static Semantics: TokenWorth
-The [**TokenWorth**](./grammar/tokenworth.ebnf) attribute grammar assigns a
-[Solid Specification Value](./data-types#solid-specification-types)
-to a Token produced by the Tokenizer piece of the Solid compiler.
-
-
-### Static Semantics: DigitCount
-The **DigitCount** attribute grammar gives the [number](./data-types.md#real-integer-numbers) of
-numeric (non-separator) digits in a digit sequence.
-```
-DigitCount(DigitSequenceDec :::= [0-9]) -> RealNumber
-	:= 1;
-DigitCount(DigitSequenceDec :::= DigitSequenceDec "_"? [0-9]) -> RealNumber
-	:= DigitCount(DigitSequenceDec) + DigitCount([0-9]);
-```
-
-
 
 ## Token Formation
 After line break normalization,
