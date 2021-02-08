@@ -499,7 +499,7 @@ is shorthand for «*Return:* [type= normal, value= ‹v›].», meaning
 the algorithm outputs a normal completion structure with a \`value\` of ‹v›.
 
 However, an algorithm step that reads «*Return:* [type= ‹type›, value= ‹v›].» is to be interpreted as-is,
-as returning the completion structure itself, not “wrapped” in a normal completion.
+as returning the completion structure itself, not “wrapped” in a new normal completion.
 Similarly, an algorithm step that reads «*Return:* ‹CS›.»,
 where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
 is also to be interpreted as-is, as returning the completion structure itself.
@@ -512,6 +512,13 @@ When an algorithm step reads «*Throw:* ‹v›.» (where ‹v› is a metavaria
 a throw completion structure whose \`value\` is ‹v› is returned.
 That is, the step is shorthand for «*Return:* [type= throw, value= ‹v›].».
 Note that such a completion structure is “abrupt”.
+
+An algorithm step that reads «*Throw:* [type= ‹type›, value= ‹v›].» is to be interpreted
+as «*Return:* [type= throw, value= ‹v›]», not the original completion “wrapped” in a new *throw* completion.
+Similarly, an algorithm step that reads «*Throw:* ‹CS›.»,
+where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
+is also to be interpreted in the same manner, as returning a *throw* completion structure
+whose value is the value of ‹CS›.
 
 #### Unwrap
 An algorithm step that contains «*Unwrap:* ‹s›» (where ‹s› is a completion structure or algorithm call)
