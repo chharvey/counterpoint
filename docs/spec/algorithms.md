@@ -26,6 +26,172 @@ CodePoint([#x00-#x10ffff]) -> RealNumber
 
 
 
+## UTF8Encoding
+Encodes a code point using the UTF-8 encoding algorithm.
+In the UTF-8 encoding, characters in the Unicode character set
+are represented by one to four code units
+(but UTF-8 supports up to six code units for higher code points).
+```
+Sequence<RealNumber> Divide(RealNumber n, RealNumber count) :=
+	1. *Assert:* `n` is greater than \x7f.
+	2. *If* `count` is less than or equal to 1:
+		1. *Return:* [`n`].
+	3. *Assert:* `count` is greater than 1.
+	4. *Let* `remainder` be the integer remainder of `n` / \x40.
+	5. *Let* `quotient`  be the integer quotient  of `n` / \x40.
+	6. *Else:*
+		1. *Return:* [
+			...*UnwrapAffirm:* `Divide(quotient, count - 1)`,
+			`remainder`,
+		].
+;
+Sequence<RealNumber> UTF8Encoding(RealNumber n) :=
+	1. *If* `n` is less than 0:
+		1. *Throw:* a new LexError.
+	2. *If* `n` is less than or equal to \x7f:
+		1. *Return:* [`n`].
+	3. *If* `n` is less than or equal to \x7ff:
+		1. *Let* `codeunits` be *UnwrapAffirm:* `Divide(n, 2)`.
+		2. *Assert:* `codeunits.count` is 2.
+		3. *Return:* [
+			\xc0 + `codeunits.0`,
+			\x80 + `codeunits.1`,
+		].
+	4. *If* `n` is less than or equal to \xffff:
+		1. *Let* `codeunits` be *UnwrapAffirm:* `Divide(n, 3)`.
+		2. *Assert:* `codeunits.count` is 3.
+		3. *Return:* [
+			\xe0 + `codeunits.0`,
+			\x80 + `codeunits.1`,
+			\x80 + `codeunits.2`,
+		].
+	5. *If* `n` is less than or equal to \x1f_ffff:
+		1. *Let* `codeunits` be *UnwrapAffirm:* `Divide(n, 4)`.
+		2. *Assert:* `codeunits.count` is 4.
+		3. *Return:* [
+			\xf0 + `codeunits.0`,
+			\x80 + `codeunits.1`,
+			\x80 + `codeunits.2`,
+			\x80 + `codeunits.3`,
+		].
+	6. *If* `n` is less than or equal to \x3ff_ffff:
+		1. *Let* `codeunits` be *UnwrapAffirm:* `Divide(n, 5)`.
+		2. *Assert:* `codeunits.count` is 5.
+		3. *Return:* [
+			\xf8 + `codeunits.0`,
+			\x80 + `codeunits.1`,
+			\x80 + `codeunits.2`,
+			\x80 + `codeunits.3`,
+			\x80 + `codeunits.4`,
+		].
+	7. *If* `n` is less than or equal to \x7fff_ffff:
+		1. *Let* `codeunits` be *UnwrapAffirm:* `Divide(n, 6)`.
+		2. *Assert:* `codeunits.count` is 6.
+		3. *Return:* [
+			\xfc + `codeunits.0`,
+			\x80 + `codeunits.1`,
+			\x80 + `codeunits.2`,
+			\x80 + `codeunits.3`,
+			\x80 + `codeunits.4`,
+			\x80 + `codeunits.5`,
+		].
+	8. *Throw:* a new LexError.
+;
+```
+
+
+
+## UTF8Decoding
+Decodes a sequence of code units into a sequence of code points using the UTF-8 decoding algorithm.
+```
+RealNumber Multiply(Sequence<RealNumber> ns) :=
+	1. *If* `ns.count` is 0:
+		1. *Return:* 0.
+	2. Return *UnwrapAffirm:* `Multiply(ns[0, -1])` * \x40 + `ns.lastItem`.
+;
+Void! Continue(Sequence<RealNumber> conts) :=
+	1. *For each* `unit` in `conts`:
+		1. *If* `unit` is less than \x80 or greater than or equal to \xc0:
+			1. *Note:* The bits of `unit` are either "0_______" or "11______".
+			2. *Throw:* \xfffd. // U+FFFD REPLACEMENT CHARACTER
+		2. *Note:* The bits of `unit` are "10______".
+	2. *Return.*
+;
+RealNumber UTF8Decoding(Sequence<RealNumber> codeunits) :=
+	1. *Assert:* `codeunits.count` is 1, 2, 3, 4, 5, or 6:
+	2. *If* `codeunits.0` is less than 0:
+		1. *Return:* \xfffd. // U+FFFD REPLACEMENT CHARACTER
+	3. *If* `codeunits.0` is less than \x80:
+		1. *Note:* The bits of `codeunits.0` are "0_______".
+		2. *Return:* `codeunits.0`.
+	4. *If* `codeunits.0` is less than \xc0:
+		1. *Note:* The bits of `codeunits.0` are "10______".
+		2. *Return:* \xfffd.
+	5. *If* `codeunits.0` is less than \xe0:
+		1. *Note:* The bits of `codeunits.0` are "110_____".
+		2. *Let* `cont` be `Continue(codeunits[1, 2])`.
+		3. *If* `cont` is an abrupt completion structure:
+			1. *Assert:* `cont.value` is a RealNumber.
+			2. *Return:* `cont.value`.
+		4. *Return:* `Multiply([
+			`codeunits.0` - \xc0,
+			`codeunits.1` - \x80,
+		])`.
+	6. *If* `codeunits.0` is less than \xf0:
+		1. *Note:* The bits of `codeunits.0` are "1110____".
+		2. *Let* `cont` be `Continue(codeunits[1, 3])`.
+		3. *If* `cont` is an abrupt completion structure:
+			1. *Assert:* `cont.value` is a RealNumber.
+			2. *Return:* `cont.value`.
+		4. *Return:* `Multiply([
+			`codeunits.0` - \xe0,
+			`codeunits.1` - \x80,
+			`codeunits.2` - \x80,
+		])`.
+	7. *If* `codeunits.0` is less than \xf8:
+		1. *Note:* The bits of `codeunits.0` are "11110___".
+		2. *Let* `cont` be `Continue(codeunits[1, 4])`.
+		3. *If* `cont` is an abrupt completion structure:
+			1. *Assert:* `cont.value` is a RealNumber.
+			2. *Return:* `cont.value`.
+		4. *Return:* `Multiply([
+			`codeunits.0` - \xf0,
+			`codeunits.1` - \x80,
+			`codeunits.2` - \x80,
+			`codeunits.3` - \x80,
+		])`.
+	8. *If* `codeunits.0` is less than \xfc:
+		1. *Note:* The bits of `codeunits.0` are "111110__".
+		2. *Let* `cont` be `Continue(codeunits[1, 5])`.
+		3. *If* `cont` is an abrupt completion structure:
+			1. *Assert:* `cont.value` is a RealNumber.
+			2. *Return:* `cont.value`.
+		4. *Return:* `Multiply([
+			`codeunits.0` - \xf8,
+			`codeunits.1` - \x80,
+			`codeunits.2` - \x80,
+			`codeunits.3` - \x80,
+			`codeunits.4` - \x80,
+		])`.
+	9. *If* `codeunits.0` is less than \xfe:
+		1. *Note:* The bits of `codeunits.0` are "1111110_".
+		2. *Let* `cont` be `Continue(codeunits[1, 6])`.
+		3. *If* `cont` is an abrupt completion structure:
+			1. *Assert:* `cont.value` is a RealNumber.
+			2. *Return:* `cont.value`.
+		4. *Return:* `Multiply([
+			`codeunits.0` - \xfc,
+			`codeunits.1` - \x80,
+			`codeunits.2` - \x80,
+			`codeunits.3` - \x80,
+			`codeunits.4` - \x80,
+			`codeunits.5` - \x80,
+		])`.
+	10. *Return:* \xfffd.
+;
+```
+
+
 ## UTF16Encoding
 Encodes a code point using the UTF-16 encoding algorithm.
 A code unit is a [real integer number](./data-types.md#real-integer-numbers)

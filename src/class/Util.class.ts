@@ -1,7 +1,17 @@
+export type EncodedChar =
+	| readonly [bigint]
+	| readonly [bigint, bigint]
+	| readonly [bigint, bigint, bigint]
+	| readonly [bigint, bigint, bigint, bigint]
+	| readonly [bigint, bigint, bigint, bigint, bigint]
+	| readonly [bigint, bigint, bigint, bigint, bigint, bigint]
+;
+
 /**
  * Utility fields and methods.
  */
 export default class Util {
+	static REPLACEMENT_CHARACTER: 0xfffdn = 0xfffdn;
 	/**
 	 * Return a random boolean value.
 	 * @returns a random boolean value
@@ -57,6 +67,74 @@ export default class Util {
 	 */
 	static arrayRandom<T>(array: readonly T[]): T {
 		return array[Math.floor(Math.random() * array.length)]
+	}
+
+	/**
+	 * The UTF-8 encoding of a numeric code point value.
+	 * @param   codepoint a positive integer within [0x0, 0x10_ffff]
+	 * @returns           a code unit sequence representing the code point
+	 */
+	static utf8Encode(codepoint: bigint): EncodedChar {
+		/**
+		 * Divides a code point into an integer quotient and integer remainder.
+		 * @param cp    the code point
+		 * @param count into how many code units?
+		 * @returns     the sequence of code unit bodies (excluding the headers such as "110")
+		 */
+		function divide(cp: bigint, count: bigint = 1n): bigint[] {
+			return (count <= 1n)
+				? [cp]
+				: [...divide(cp / 0x40n, count - 1n), cp % 0x40n]
+			;
+		}
+		if (codepoint < 0n) {
+			throw new RangeError(`Code point \`0x${ codepoint.toString(16) }\` must be greater than or equal to 0.`); // TODO this should be a LexError
+		};
+		return (
+			(codepoint < 0x80)        ? [codepoint] :
+			(codepoint < 0x800)       ? divide(codepoint, 2n).map((cu, i) => i === 0 ? 0xc0n + cu : 0x80n + cu) as [bigint, bigint] :
+			(codepoint < 0x1_0000)    ? divide(codepoint, 3n).map((cu, i) => i === 0 ? 0xe0n + cu : 0x80n + cu) as [bigint, bigint, bigint] :
+			(codepoint < 0x20_0000)   ? divide(codepoint, 4n).map((cu, i) => i === 0 ? 0xf0n + cu : 0x80n + cu) as [bigint, bigint, bigint, bigint] :
+			(codepoint < 0x400_0000)  ? divide(codepoint, 5n).map((cu, i) => i === 0 ? 0xf8n + cu : 0x80n + cu) as [bigint, bigint, bigint, bigint, bigint] :
+			(codepoint < 0x8000_0000) ? divide(codepoint, 6n).map((cu, i) => i === 0 ? 0xfcn + cu : 0x80n + cu) as [bigint, bigint, bigint, bigint, bigint, bigint] :
+			(() => { throw new RangeError(`Code point \`0x${ codepoint.toString(16) }\` must be less than 0x8000_0000.`); })() // TODO this should be a LexError
+		);
+	}
+
+	/**
+	 * The UTF-8 decoding of a sequence of code units.
+	 * @param   codeunits code units conforming to the UTF-8 specification
+	 * @returns           a sequence of numeric code point values within [0x0, 0x10_ffff]
+	 */
+	static utf8Decode(codeunits: EncodedChar): bigint {
+		/**
+		 * Multiplies a sequence of code units into a numeric code point.
+		 * @param ns the code units
+		 * @returns  the code point
+		 */
+		function multiply(ns: readonly bigint[]): bigint {
+			return (!ns.length)
+				? 0n
+				: multiply(ns.slice(0, -1)) * 0x40n + ns[ns.length - 1]
+			;
+		}
+		function kontinue(conts: readonly bigint[]): bigint | null {
+			return conts.reduce<bigint | null>((accum, codeunit) => accum ?? ((
+				   codeunit <  0x80n // "0bbb_bbbb"
+				|| codeunit >= 0xc0n // "11bb_bbbb"
+			) ? Util.REPLACEMENT_CHARACTER : null), null);
+		}
+		return (
+			(codeunits[0] < 0x00n)                   ? Util.REPLACEMENT_CHARACTER :
+			(codeunits[0] < 0x80n) /* "0bbb_bbbb" */ ? codeunits[0] :
+			(codeunits[0] < 0xc0n) /* "10bb_bbbb" */ ? Util.REPLACEMENT_CHARACTER :
+			(codeunits[0] < 0xe0n) /* "110b_bbbb" */ ? kontinue(codeunits.slice(1, 2)) ?? multiply(codeunits.slice(0, 2).map((cu, i) => i === 0 ? cu - 0xc0n : cu - 0x80n)) :
+			(codeunits[0] < 0xf0n) /* "1110_bbbb" */ ? kontinue(codeunits.slice(1, 3)) ?? multiply(codeunits.slice(0, 3).map((cu, i) => i === 0 ? cu - 0xe0n : cu - 0x80n)) :
+			(codeunits[0] < 0xf8n) /* "1111_0bbb" */ ? kontinue(codeunits.slice(1, 4)) ?? multiply(codeunits.slice(0, 4).map((cu, i) => i === 0 ? cu - 0xf0n : cu - 0x80n)) :
+			(codeunits[0] < 0xfcn) /* "1111_10bb" */ ? kontinue(codeunits.slice(1, 5)) ?? multiply(codeunits.slice(0, 5).map((cu, i) => i === 0 ? cu - 0xf8n : cu - 0x80n)) :
+			(codeunits[0] < 0xfen) /* "1111_110b" */ ? kontinue(codeunits.slice(1, 6)) ?? multiply(codeunits.slice(0, 6).map((cu, i) => i === 0 ? cu - 0xfcn : cu - 0x80n)) :
+			Util.REPLACEMENT_CHARACTER
+		);
 	}
 
 	/**
