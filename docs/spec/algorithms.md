@@ -109,15 +109,17 @@ RealNumber Multiply(Sequence<RealNumber> ns) :=
 		1. *Return:* 0.
 	2. Return *UnwrapAffirm:* `Multiply(ns[0, -1])` * \x40 + `ns.lastItem`.
 ;
-Void! Continue(Sequence<RealNumber> conts) :=
-	1. *For each* `unit` in `conts`:
-		1. *If* `unit` is less than \x80 or greater than or equal to \xc0:
-			1. *Note:* The bits of `unit` are either "0_______" or "11______".
-			2. *Throw:* \xfffd. // U+FFFD REPLACEMENT CHARACTER
-		2. *Note:* The bits of `unit` are "10______".
+Void! Continue(Sequence<RealNumber> units) :=
+	1. *For index* `i` in `units`:
+		1. *If* `i` is 0:
+			1. *Continue.*
+		2. *If* `units[i]` is less than \x80 or greater than or equal to \xc0:
+			1. *Note:* The bits of `units[i]` are either "0_______" or "11______".
+			2. *Throw:* `i`.
+		3. *Note:* The bits of `units[i]` are "10______".
 	2. *Return.*
 ;
-RealNumber UTF8Decoding(Sequence<RealNumber> codeunits) :=
+RealNumber! UTF8Decoding(Sequence<RealNumber> codeunits) :=
 	1. *Assert:* `codeunits.count` is 1, 2, 3, 4, 5, or 6:
 	2. *If* `codeunits.0` is less than 0:
 		1. *Return:* \xfffd. // U+FFFD REPLACEMENT CHARACTER
@@ -129,32 +131,23 @@ RealNumber UTF8Decoding(Sequence<RealNumber> codeunits) :=
 		2. *Return:* \xfffd.
 	5. *If* `codeunits.0` is less than \xe0:
 		1. *Note:* The bits of `codeunits.0` are "110_____".
-		2. *Let* `cont` be `Continue(codeunits[1, 2])`.
-		3. *If* `cont` is an abrupt completion structure:
-			1. *Assert:* `cont.value` is a RealNumber.
-			2. *Return:* `cont.value`.
-		4. *Return:* `Multiply([
+		2. *Unwrap:* `Continue(codeunits[1, 2])`.
+		3. *Return:* `Multiply([
 			`codeunits.0` - \xc0,
 			`codeunits.1` - \x80,
 		])`.
 	6. *If* `codeunits.0` is less than \xf0:
 		1. *Note:* The bits of `codeunits.0` are "1110____".
-		2. *Let* `cont` be `Continue(codeunits[1, 3])`.
-		3. *If* `cont` is an abrupt completion structure:
-			1. *Assert:* `cont.value` is a RealNumber.
-			2. *Return:* `cont.value`.
-		4. *Return:* `Multiply([
+		2. *Unwrap:* `Continue(codeunits[1, 3])`.
+		3. *Return:* `Multiply([
 			`codeunits.0` - \xe0,
 			`codeunits.1` - \x80,
 			`codeunits.2` - \x80,
 		])`.
 	7. *If* `codeunits.0` is less than \xf8:
 		1. *Note:* The bits of `codeunits.0` are "11110___".
-		2. *Let* `cont` be `Continue(codeunits[1, 4])`.
-		3. *If* `cont` is an abrupt completion structure:
-			1. *Assert:* `cont.value` is a RealNumber.
-			2. *Return:* `cont.value`.
-		4. *Return:* `Multiply([
+		2. *Unwrap:* `Continue(codeunits[1, 4])`.
+		3. *Return:* `Multiply([
 			`codeunits.0` - \xf0,
 			`codeunits.1` - \x80,
 			`codeunits.2` - \x80,
@@ -162,11 +155,8 @@ RealNumber UTF8Decoding(Sequence<RealNumber> codeunits) :=
 		])`.
 	8. *If* `codeunits.0` is less than \xfc:
 		1. *Note:* The bits of `codeunits.0` are "111110__".
-		2. *Let* `cont` be `Continue(codeunits[1, 5])`.
-		3. *If* `cont` is an abrupt completion structure:
-			1. *Assert:* `cont.value` is a RealNumber.
-			2. *Return:* `cont.value`.
-		4. *Return:* `Multiply([
+		2. *Unwrap:* `Continue(codeunits[1, 5])`.
+		3. *Return:* `Multiply([
 			`codeunits.0` - \xf8,
 			`codeunits.1` - \x80,
 			`codeunits.2` - \x80,
@@ -175,11 +165,8 @@ RealNumber UTF8Decoding(Sequence<RealNumber> codeunits) :=
 		])`.
 	9. *If* `codeunits.0` is less than \xfe:
 		1. *Note:* The bits of `codeunits.0` are "1111110_".
-		2. *Let* `cont` be `Continue(codeunits[1, 6])`.
-		3. *If* `cont` is an abrupt completion structure:
-			1. *Assert:* `cont.value` is a RealNumber.
-			2. *Return:* `cont.value`.
-		4. *Return:* `Multiply([
+		2. *Unwrap:* `Continue(codeunits[1, 6])`.
+		3. *Return:* `Multiply([
 			`codeunits.0` - \xfc,
 			`codeunits.1` - \x80,
 			`codeunits.2` - \x80,

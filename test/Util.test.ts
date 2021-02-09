@@ -1,6 +1,9 @@
 import * as assert from 'assert';
 
-import Util, {EncodedChar} from '../src/class/Util.class';
+import Util, {
+	EncodedChar,
+	UTF8DecodeError,
+} from '../src/class/Util.class';
 
 
 describe('Util', () => {
@@ -61,14 +64,24 @@ describe('Util', () => {
 	});
 
 	describe('.utf8Decode', () => {
+		/**
+		 * Return a random number from a string template matching /[0-1b_]{8}/,
+		 * where the random number is between the lowest possible value and the highest possible value.
+		 */
+		function fromTemplate(unit_template: string): bigint {
+			return randomInt(
+				parseInt(unit_template.replace(/_/g, '').replace(/b/g, '0'), 2),
+				parseInt(unit_template.replace(/_/g, '').replace(/b/g, '1'), 2) + 1,
+			);
+		}
 		function expected(a: bigint, b: bigint): bigint {
 			return a * 0x40n + b - 0x80n;
 		}
 		it('returns unknown character if first entry is less than 0.', () => {
 			assert.strictEqual(Util.utf8Decode([-1n]), Util.REPLACEMENT_CHARACTER);
 		});
-		it('returns unknown character if first entry is between 0b1000_0000 and 0b1100_0000.', () => {
-			assert.strictEqual(Util.utf8Decode([randomInt(0b1000_0000, 0b1100_0000)]), Util.REPLACEMENT_CHARACTER);
+		it('returns unknown character if first entry is between 0x80 and 0xc0.', () => {
+			assert.strictEqual(Util.utf8Decode([fromTemplate('10bb_bbbb')]), Util.REPLACEMENT_CHARACTER);
 		});
 		it('returns unknown character if first entry is greater than 0xfe.', () => {
 			assert.strictEqual(Util.utf8Decode([0xffn]), Util.REPLACEMENT_CHARACTER);
@@ -90,15 +103,63 @@ describe('Util', () => {
 				['1111_110b', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb'],
 			][continuations];
 			specify(code_unit_tpl.join(', '), () => {
-				const encodings: readonly EncodedChar[] = Array.from(new Array(100), () => code_unit_tpl.map((unit_tpl) => randomInt(
-					parseInt(unit_tpl.replace(/_/g, '').replace(/b/g, '0'), 2),
-					parseInt(unit_tpl.replace(/_/g, '').replace(/b/g, '1'), 2) + 1,
-				)) as readonly bigint[] as EncodedChar);
+				const encodings: readonly EncodedChar[] = Array.from(new Array(100), () =>
+					code_unit_tpl.map((unit_tpl) => fromTemplate(unit_tpl)) as readonly bigint[] as EncodedChar
+				);
 				assert.deepStrictEqual(
 					encodings.map((codeunits) => Util.utf8Decode(codeunits)),
 					encodings.map((codeunits) => expect(codeunits)),
 				);
 			});
+		});
+		it('throws if a sequence of code units does not conform to the UTF-8 specification.', () => {
+			for (let i = 0; i < 10; i++) {
+				([
+					// 2-byte characters
+					['110b_bbbb', '0bbb_bbbb'],
+					['110b_bbbb', '11bb_bbbb'],
+					// 3-byte characters
+					['1110_bbbb', '0bbb_bbbb'],
+					['1110_bbbb', '11bb_bbbb'],
+					['1110_bbbb', '10bb_bbbb', '0bbb_bbbb'],
+					['1110_bbbb', '10bb_bbbb', '11bb_bbbb'],
+					// 4-byte characters
+					['1111_0bbb', '0bbb_bbbb'],
+					['1111_0bbb', '11bb_bbbb'],
+					['1111_0bbb', '10bb_bbbb', '0bbb_bbbb'],
+					['1111_0bbb', '10bb_bbbb', '11bb_bbbb'],
+					['1111_0bbb', '10bb_bbbb', '10bb_bbbb', '0bbb_bbbb'],
+					['1111_0bbb', '10bb_bbbb', '10bb_bbbb', '11bb_bbbb'],
+					// 5-byte characters
+					['1111_10bb', '0bbb_bbbb'],
+					['1111_10bb', '11bb_bbbb'],
+					['1111_10bb', '10bb_bbbb', '0bbb_bbbb'],
+					['1111_10bb', '10bb_bbbb', '11bb_bbbb'],
+					['1111_10bb', '10bb_bbbb', '10bb_bbbb', '0bbb_bbbb'],
+					['1111_10bb', '10bb_bbbb', '10bb_bbbb', '11bb_bbbb'],
+					['1111_10bb', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '0bbb_bbbb'],
+					['1111_10bb', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '11bb_bbbb'],
+					// 6-byte characters
+					['1111_110b', '0bbb_bbbb'],
+					['1111_110b', '11bb_bbbb'],
+					['1111_110b', '10bb_bbbb', '0bbb_bbbb'],
+					['1111_110b', '10bb_bbbb', '11bb_bbbb'],
+					['1111_110b', '10bb_bbbb', '10bb_bbbb', '0bbb_bbbb'],
+					['1111_110b', '10bb_bbbb', '10bb_bbbb', '11bb_bbbb'],
+					['1111_110b', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '0bbb_bbbb'],
+					['1111_110b', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '11bb_bbbb'],
+					['1111_110b', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '0bbb_bbbb'],
+					['1111_110b', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '11bb_bbbb'],
+				]).map((sequence) => sequence.map((tpl) => fromTemplate(tpl))).forEach((sequence) => {
+					assert.throws(() => Util.utf8Decode(sequence as readonly bigint[] as EncodedChar), (err) => {
+						const invalid: string = sequence.map((n) => `0x${ n.toString(16) }`).join();
+						assert.ok(err instanceof UTF8DecodeError, 'thrown error was not an instance of UTF8DecodeError');
+						assert.strictEqual(err.message, `Invalid sequence of code points: ${ invalid }`);
+						assert.deepStrictEqual(err.index, sequence.length - 1, `testing code points: ${ invalid }`);
+						return true;
+					});
+				});
+			};
 		});
 	});
 });

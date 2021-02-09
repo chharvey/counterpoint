@@ -118,21 +118,25 @@ export default class Util {
 				: multiply(ns.slice(0, -1)) * 0x40n + ns[ns.length - 1]
 			;
 		}
-		function kontinue(conts: readonly bigint[]): bigint | null {
-			return conts.reduce<bigint | null>((accum, codeunit) => accum ?? ((
-				   codeunit <  0x80n // "0bbb_bbbb"
-				|| codeunit >= 0xc0n // "11bb_bbbb"
-			) ? Util.REPLACEMENT_CHARACTER : null), null);
+		function kontinue(units: readonly bigint[]): void {
+			return units.slice(1).forEach((unit, i) => { // `i == 0` starts at `units[1]`
+				if (
+					   unit <  0x80n // "0bbb_bbbb"
+					|| unit >= 0xc0n // "11bb_bbbb"
+				) {
+					throw new UTF8DecodeError(units.slice(0, i + 2), i + 1);
+				};
+			});
 		}
 		return (
 			(codeunits[0] < 0x00n)                   ? Util.REPLACEMENT_CHARACTER :
 			(codeunits[0] < 0x80n) /* "0bbb_bbbb" */ ? codeunits[0] :
 			(codeunits[0] < 0xc0n) /* "10bb_bbbb" */ ? Util.REPLACEMENT_CHARACTER :
-			(codeunits[0] < 0xe0n) /* "110b_bbbb" */ ? kontinue(codeunits.slice(1, 2)) ?? multiply(codeunits.slice(0, 2).map((cu, i) => i === 0 ? cu - 0xc0n : cu - 0x80n)) :
-			(codeunits[0] < 0xf0n) /* "1110_bbbb" */ ? kontinue(codeunits.slice(1, 3)) ?? multiply(codeunits.slice(0, 3).map((cu, i) => i === 0 ? cu - 0xe0n : cu - 0x80n)) :
-			(codeunits[0] < 0xf8n) /* "1111_0bbb" */ ? kontinue(codeunits.slice(1, 4)) ?? multiply(codeunits.slice(0, 4).map((cu, i) => i === 0 ? cu - 0xf0n : cu - 0x80n)) :
-			(codeunits[0] < 0xfcn) /* "1111_10bb" */ ? kontinue(codeunits.slice(1, 5)) ?? multiply(codeunits.slice(0, 5).map((cu, i) => i === 0 ? cu - 0xf8n : cu - 0x80n)) :
-			(codeunits[0] < 0xfen) /* "1111_110b" */ ? kontinue(codeunits.slice(1, 6)) ?? multiply(codeunits.slice(0, 6).map((cu, i) => i === 0 ? cu - 0xfcn : cu - 0x80n)) :
+			(codeunits[0] < 0xe0n) /* "110b_bbbb" */ ? (kontinue(codeunits.slice(0, 2)), multiply(codeunits.slice(0, 2).map((cu, i) => i === 0 ? cu - 0xc0n : cu - 0x80n))) :
+			(codeunits[0] < 0xf0n) /* "1110_bbbb" */ ? (kontinue(codeunits.slice(0, 3)), multiply(codeunits.slice(0, 3).map((cu, i) => i === 0 ? cu - 0xe0n : cu - 0x80n))) :
+			(codeunits[0] < 0xf8n) /* "1111_0bbb" */ ? (kontinue(codeunits.slice(0, 4)), multiply(codeunits.slice(0, 4).map((cu, i) => i === 0 ? cu - 0xf0n : cu - 0x80n))) :
+			(codeunits[0] < 0xfcn) /* "1111_10bb" */ ? (kontinue(codeunits.slice(0, 5)), multiply(codeunits.slice(0, 5).map((cu, i) => i === 0 ? cu - 0xf8n : cu - 0x80n))) :
+			(codeunits[0] < 0xfen) /* "1111_110b" */ ? (kontinue(codeunits.slice(0, 6)), multiply(codeunits.slice(0, 6).map((cu, i) => i === 0 ? cu - 0xfcn : cu - 0x80n))) :
 			Util.REPLACEMENT_CHARACTER
 		);
 	}
@@ -149,5 +153,26 @@ export default class Util {
 		const cu1: number = (codepoint - 0x10000) / 0x400
 		const cu2: number = (codepoint - 0x10000) % 0x400
 		return [Math.floor(cu1) + 0xd800, cu2 + 0xdc00]
+	}
+}
+
+
+
+/**
+ * An error when decoding a UTF-8-encoded sequence of code units.
+ * Typically, this error is thrown when the code units do not follow the UTF-8 specification,
+ * for example when a byte "110bbbbb" is not followed by a byte "10bbbbbb".
+ */
+export class UTF8DecodeError extends Error {
+	/**
+	 * Construct a new UTF8DecodeError object.
+	 * @param invalid the code units that were invalid
+	 * @param index   the index of the code unit that contained the error
+	 */
+	constructor (
+		invalid: readonly bigint[],
+		public readonly index: number,
+	) {
+		super(`Invalid sequence of code points: ${ invalid.map((n) => `0x${ n.toString(16) }`).join() }`);
 	}
 }
