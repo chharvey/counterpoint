@@ -142,6 +142,41 @@ export default class Util {
 	}
 
 	/**
+	 * Decode a stream of UTF-8 code units into a sequence of code points.
+	 * @param   codeunits a stream of code units, each conforming to the UTF-8 specification
+	 * @returns           a sequence of numeric code point values within [0x0, 0x10_ffff]
+	 */
+	static decodeUTF8Stream(codeunits: readonly bigint[]): bigint[] {
+		function group(n: number): bigint[] {
+			if (n < 0 || 6 < n) {
+				throw new RangeError('Argument must be within 0 <= n <= 6.');
+			};
+			let current: bigint;
+			try {
+				current = Util.utf8Decode(codeunits.slice(0, n) as readonly bigint[] as EncodedChar);
+			} catch (err) {
+				if (err instanceof UTF8DecodeError) {
+					current = Util.REPLACEMENT_CHARACTER;
+					n       = err.index;
+				} else {
+					throw err;
+				};
+			};
+			return [current, ...Util.decodeUTF8Stream(codeunits.slice(n))];
+		}
+		return (
+			(!codeunits.length) ? [] :
+			(codeunits[0] < 0xc0n) /* "bbbb_bbbb" */ ? group(1) :
+			(codeunits[0] < 0xe0n) /* "110b_bbbb" */ ? group(2) :
+			(codeunits[0] < 0xf0n) /* "1110_bbbb" */ ? group(3) :
+			(codeunits[0] < 0xf8n) /* "1111_0bbb" */ ? group(4) :
+			(codeunits[0] < 0xfcn) /* "1111_10bb" */ ? group(5) :
+			(codeunits[0] < 0xfen) /* "1111_110b" */ ? group(6) :
+			group(1)
+		);
+	}
+
+	/**
 	 * The UTF16Encoding of a numeric code point value.
 	 * @see http://ecma-international.org/ecma-262/10.0/#sec-utf16encoding
 	 * @param   codepoint - a positive integer within [0x0, 0x10ffff]
