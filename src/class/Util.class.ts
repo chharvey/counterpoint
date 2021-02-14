@@ -1,17 +1,36 @@
+import * as xjs from 'extrajs';
+
+
+
+/**
+ * A code point is a number within [0, 0x10_ffff] that represents
+ * the index of a character in the Unicode Universal Character Set.
+ */
+export type CodePoint = number;
+
+/**
+ * A code unit is a number within [0, 0xff] that represents
+ * an 8-bit part of a encoded Unicode code point.
+ */
+export type CodeUnit = number;
+
 export type EncodedChar =
-	| readonly [bigint]
-	| readonly [bigint, bigint]
-	| readonly [bigint, bigint, bigint]
-	| readonly [bigint, bigint, bigint, bigint]
-	| readonly [bigint, bigint, bigint, bigint, bigint]
-	| readonly [bigint, bigint, bigint, bigint, bigint, bigint]
+	| readonly [CodeUnit]
+	| readonly [CodeUnit, CodeUnit]
+	| readonly [CodeUnit, CodeUnit, CodeUnit]
+	| readonly [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
+	| readonly [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit]
+	| readonly [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit]
 ;
+
+
 
 /**
  * Utility fields and methods.
  */
 export default class Util {
-	static REPLACEMENT_CHARACTER: 0xfffdn = 0xfffdn;
+	static REPLACEMENT_CHARACTER: CodePoint & 0xfffd = 0xfffd;
+
 	/**
 	 * Return a random boolean value.
 	 * @returns a random boolean value
@@ -74,29 +93,27 @@ export default class Util {
 	 * @param   codepoint a positive integer within [0x0, 0x10_ffff]
 	 * @returns           a code unit sequence representing the code point
 	 */
-	static utf8Encode(codepoint: bigint): EncodedChar {
+	static utf8Encode(codepoint: CodePoint): EncodedChar {
 		/**
 		 * Divides a code point into an integer quotient and integer remainder.
 		 * @param cp    the code point
 		 * @param count into how many code units?
 		 * @returns     the sequence of code unit bodies (excluding the headers such as "110")
 		 */
-		function divide(cp: bigint, count: bigint = 1n): bigint[] {
+		function divide(cp: CodePoint, count: bigint = 1n): number[] {
 			return (count <= 1n)
 				? [cp]
-				: [...divide(cp / 0x40n, count - 1n), cp % 0x40n]
+				: [...divide(Math.floor(cp / 0x40), count - 1n), cp % 0x40]
 			;
 		}
-		if (codepoint < 0n) {
-			throw new RangeError(`Code point \`0x${ codepoint.toString(16) }\` must be greater than or equal to 0.`); // TODO this should be a LexError
-		};
+		xjs.Number.assertType(codepoint, xjs.NumericType.NATURAL);
 		return (
 			(codepoint < 0x80)        ? [codepoint] :
-			(codepoint < 0x800)       ? divide(codepoint, 2n).map((cu, i) => i === 0 ? 0xc0n + cu : 0x80n + cu) as [bigint, bigint] :
-			(codepoint < 0x1_0000)    ? divide(codepoint, 3n).map((cu, i) => i === 0 ? 0xe0n + cu : 0x80n + cu) as [bigint, bigint, bigint] :
-			(codepoint < 0x20_0000)   ? divide(codepoint, 4n).map((cu, i) => i === 0 ? 0xf0n + cu : 0x80n + cu) as [bigint, bigint, bigint, bigint] :
-			(codepoint < 0x400_0000)  ? divide(codepoint, 5n).map((cu, i) => i === 0 ? 0xf8n + cu : 0x80n + cu) as [bigint, bigint, bigint, bigint, bigint] :
-			(codepoint < 0x8000_0000) ? divide(codepoint, 6n).map((cu, i) => i === 0 ? 0xfcn + cu : 0x80n + cu) as [bigint, bigint, bigint, bigint, bigint, bigint] :
+			(codepoint < 0x800)       ? divide(codepoint, 2n).map((cu, i) => i === 0 ? 0xc0 + cu : 0x80 + cu) as [CodeUnit, CodeUnit] :
+			(codepoint < 0x1_0000)    ? divide(codepoint, 3n).map((cu, i) => i === 0 ? 0xe0 + cu : 0x80 + cu) as [CodeUnit, CodeUnit, CodeUnit] :
+			(codepoint < 0x20_0000)   ? divide(codepoint, 4n).map((cu, i) => i === 0 ? 0xf0 + cu : 0x80 + cu) as [CodeUnit, CodeUnit, CodeUnit, CodeUnit] :
+			(codepoint < 0x400_0000)  ? divide(codepoint, 5n).map((cu, i) => i === 0 ? 0xf8 + cu : 0x80 + cu) as [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit] :
+			(codepoint < 0x8000_0000) ? divide(codepoint, 6n).map((cu, i) => i === 0 ? 0xfc + cu : 0x80 + cu) as [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit] :
 			(() => { throw new RangeError(`Code point \`0x${ codepoint.toString(16) }\` must be less than 0x8000_0000.`); })() // TODO this should be a LexError
 		);
 	}
@@ -106,37 +123,37 @@ export default class Util {
 	 * @param   codeunits code units conforming to the UTF-8 specification
 	 * @returns           a sequence of numeric code point values within [0x0, 0x10_ffff]
 	 */
-	static utf8Decode(codeunits: EncodedChar): bigint {
+	static utf8Decode(codeunits: EncodedChar): CodePoint {
 		/**
 		 * Multiplies a sequence of code units into a numeric code point.
-		 * @param ns the code units
-		 * @returns  the code point
+		 * @param units the code units
+		 * @returns     the code point
 		 */
-		function multiply(ns: readonly bigint[]): bigint {
-			return (!ns.length)
-				? 0n
-				: multiply(ns.slice(0, -1)) * 0x40n + ns[ns.length - 1]
+		function multiply(units: readonly CodeUnit[]): CodePoint {
+			return (!units.length)
+				? 0
+				: multiply(units.slice(0, -1)) * 0x40 + units[units.length - 1]
 			;
 		}
-		function kontinue(units: readonly bigint[]): void {
+		function kontinue(units: readonly CodeUnit[]): void {
 			return units.slice(1).forEach((unit, i) => { // `i == 0` starts at `units[1]`
 				if (
-					   unit <  0x80n // "0bbb_bbbb"
-					|| unit >= 0xc0n // "11bb_bbbb"
+					   unit <  0x80 // "0bbb_bbbb"
+					|| unit >= 0xc0 // "11bb_bbbb"
 				) {
 					throw new UTF8DecodeError(units.slice(0, i + 2), i + 1);
 				};
 			});
 		}
 		return (
-			(codeunits[0] < 0x00n)                   ? Util.REPLACEMENT_CHARACTER :
-			(codeunits[0] < 0x80n) /* "0bbb_bbbb" */ ? codeunits[0] :
-			(codeunits[0] < 0xc0n) /* "10bb_bbbb" */ ? Util.REPLACEMENT_CHARACTER :
-			(codeunits[0] < 0xe0n) /* "110b_bbbb" */ ? (kontinue(codeunits.slice(0, 2)), multiply(codeunits.slice(0, 2).map((cu, i) => i === 0 ? cu - 0xc0n : cu - 0x80n))) :
-			(codeunits[0] < 0xf0n) /* "1110_bbbb" */ ? (kontinue(codeunits.slice(0, 3)), multiply(codeunits.slice(0, 3).map((cu, i) => i === 0 ? cu - 0xe0n : cu - 0x80n))) :
-			(codeunits[0] < 0xf8n) /* "1111_0bbb" */ ? (kontinue(codeunits.slice(0, 4)), multiply(codeunits.slice(0, 4).map((cu, i) => i === 0 ? cu - 0xf0n : cu - 0x80n))) :
-			(codeunits[0] < 0xfcn) /* "1111_10bb" */ ? (kontinue(codeunits.slice(0, 5)), multiply(codeunits.slice(0, 5).map((cu, i) => i === 0 ? cu - 0xf8n : cu - 0x80n))) :
-			(codeunits[0] < 0xfen) /* "1111_110b" */ ? (kontinue(codeunits.slice(0, 6)), multiply(codeunits.slice(0, 6).map((cu, i) => i === 0 ? cu - 0xfcn : cu - 0x80n))) :
+			(codeunits[0] < 0x00)                   ? Util.REPLACEMENT_CHARACTER :
+			(codeunits[0] < 0x80) /* "0bbb_bbbb" */ ? codeunits[0] :
+			(codeunits[0] < 0xc0) /* "10bb_bbbb" */ ? Util.REPLACEMENT_CHARACTER :
+			(codeunits[0] < 0xe0) /* "110b_bbbb" */ ? (kontinue(codeunits.slice(0, 2)), multiply(codeunits.slice(0, 2).map((cu, i) => i === 0 ? cu - 0xc0 : cu - 0x80))) :
+			(codeunits[0] < 0xf0) /* "1110_bbbb" */ ? (kontinue(codeunits.slice(0, 3)), multiply(codeunits.slice(0, 3).map((cu, i) => i === 0 ? cu - 0xe0 : cu - 0x80))) :
+			(codeunits[0] < 0xf8) /* "1111_0bbb" */ ? (kontinue(codeunits.slice(0, 4)), multiply(codeunits.slice(0, 4).map((cu, i) => i === 0 ? cu - 0xf0 : cu - 0x80))) :
+			(codeunits[0] < 0xfc) /* "1111_10bb" */ ? (kontinue(codeunits.slice(0, 5)), multiply(codeunits.slice(0, 5).map((cu, i) => i === 0 ? cu - 0xf8 : cu - 0x80))) :
+			(codeunits[0] < 0xfe) /* "1111_110b" */ ? (kontinue(codeunits.slice(0, 6)), multiply(codeunits.slice(0, 6).map((cu, i) => i === 0 ? cu - 0xfc : cu - 0x80))) :
 			Util.REPLACEMENT_CHARACTER
 		);
 	}
@@ -146,32 +163,32 @@ export default class Util {
 	 * @param   codeunits a stream of code units, each conforming to the UTF-8 specification
 	 * @returns           a sequence of numeric code point values within [0x0, 0x10_ffff]
 	 */
-	static decodeUTF8Stream(codeunits: readonly bigint[]): bigint[] {
-		function group(n: number): bigint[] {
-			if (n < 0 || 6 < n) {
+	static decodeUTF8Stream(codeunits: readonly CodeUnit[]): CodePoint[] {
+		function group(count: number): CodePoint[] {
+			if (count < 0 || 6 < count) {
 				throw new RangeError('Argument must be within 0 <= n <= 6.');
 			};
-			let current: bigint;
+			let current: CodePoint;
 			try {
-				current = Util.utf8Decode(codeunits.slice(0, n) as readonly bigint[] as EncodedChar);
+				current = Util.utf8Decode(codeunits.slice(0, count) as readonly CodeUnit[] as EncodedChar);
 			} catch (err) {
 				if (err instanceof UTF8DecodeError) {
 					current = Util.REPLACEMENT_CHARACTER;
-					n       = err.index;
+					count   = err.index;
 				} else {
 					throw err;
 				};
 			};
-			return [current, ...Util.decodeUTF8Stream(codeunits.slice(n))];
+			return [current, ...Util.decodeUTF8Stream(codeunits.slice(count))];
 		}
 		return (
 			(!codeunits.length) ? [] :
-			(codeunits[0] < 0xc0n) /* "bbbb_bbbb" */ ? group(1) :
-			(codeunits[0] < 0xe0n) /* "110b_bbbb" */ ? group(2) :
-			(codeunits[0] < 0xf0n) /* "1110_bbbb" */ ? group(3) :
-			(codeunits[0] < 0xf8n) /* "1111_0bbb" */ ? group(4) :
-			(codeunits[0] < 0xfcn) /* "1111_10bb" */ ? group(5) :
-			(codeunits[0] < 0xfen) /* "1111_110b" */ ? group(6) :
+			(codeunits[0] < 0xc0) /* "bbbb_bbbb" */ ? group(1) :
+			(codeunits[0] < 0xe0) /* "110b_bbbb" */ ? group(2) :
+			(codeunits[0] < 0xf0) /* "1110_bbbb" */ ? group(3) :
+			(codeunits[0] < 0xf8) /* "1111_0bbb" */ ? group(4) :
+			(codeunits[0] < 0xfc) /* "1111_10bb" */ ? group(5) :
+			(codeunits[0] < 0xfe) /* "1111_110b" */ ? group(6) :
 			group(1)
 		);
 	}
@@ -205,7 +222,7 @@ export class UTF8DecodeError extends Error {
 	 * @param index   the index of the code unit that contained the error
 	 */
 	constructor (
-		invalid: readonly bigint[],
+		invalid: readonly CodeUnit[],
 		public readonly index: number,
 	) {
 		super(`Invalid sequence of code points: ${ invalid.map((n) => `0x${ n.toString(16) }`).join() }`);
