@@ -9,7 +9,6 @@ import Dev      from '../../src/class/Dev.class'
 import {
 	CookValueType,
 	TOKEN,
-	TokenSolid,
 	LexerSolid as Lexer,
 } from '../../src/parser/';
 
@@ -191,7 +190,7 @@ describe('TokenSolid', () => {
 			})
 		})
 
-		Dev.supports('literalString') && context('TokenString', () => {
+		Dev.supports('literalString-cook') && context('TokenString', () => {
 			it('produces the cooked string value.', () => {
 				assert.deepStrictEqual([...new Lexer(Util.dedent(`
 					5 + 03 + '' * 'hello' *  -2;
@@ -200,27 +199,24 @@ describe('TokenSolid', () => {
 					'012\\
 					345\\%
 					678';
-					'\u{10001}' '\\\u{10001}';
+					'\u{10001}' '\\\u{10001}' '\\u{10001}';
 				`), CONFIG_DEFAULT).generate()]
-					.filter((token): token is TokenSolid => token instanceof TokenSolid)
+					.filter((token): token is TOKEN.TokenSolid => token instanceof TOKEN.TokenSolid)
 					.map((token) => token.cook())
 					.filter((_, i) => [
-						 4,
-						 6,
+						4, 6,
 						10,
 						12,
 						14,
-						16,
-						17,
+						16, 17, 18,
 					].includes(i))
 				, [
-					'',
-					'hello',
-					'0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6',
-					'0 $ 1 _ 2 \0 3',
-					'012 345%\n678',
-					'\u{10001}',
-					'\u{10001}',
+					``,
+					`hello`,
+					`0 ' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`,
+					`0 $ 1 _ 2 \0 3`,
+					`012 345%\n678`,
+					`\u{10001}`, `\u{10001}`, `\u{10001}`,
 				]);
 			})
 			describe('In-String Comments', () => {
@@ -238,7 +234,7 @@ describe('TokenSolid', () => {
 						.map((token) => token.cook())
 					;
 				}
-				context('with comments enabled.', () => {
+				it('with comments enabled.', () => {
 					const data: {testdesc: string, expected: string}[] = [
 						{testdesc: 'removes a line comment not ending in a LF.',   expected: 'The five boxing wizards '},
 						{testdesc: 'preserves a LF when line comment ends in LF.', expected: 'The five \njump quickly.'},
@@ -268,36 +264,52 @@ describe('TokenSolid', () => {
 			});
 		})
 
-		Dev.supports('literalTemplate') && context('TokenTemplate', () => {
+		Dev.supports('literalTemplate-cook') && context('TokenTemplate', () => {
 			it('produces the cooked template value.', () => {
-				const tokens: Token[] = [...new Lexer(Util.dedent(`
-					600  /  '''''' * 3 + '''hello''' *  2;
-					3 + '''head{{ * 2
-					3 + }}midl{{ * 2
-					3 + }}tail''' * 2
-					'''0 \\\` 1''';
-					'''0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7''';
-					'''0 \\u{24} 1 \\u{005f} 2 \\u{} 3''';
-					'''012\\
-					345
-					678''';
-				`), CONFIG_DEFAULT).generate()]
-				assert.strictEqual((tokens[ 3] as TOKEN.TokenSolid).cook(), ``)
-				assert.strictEqual((tokens[ 7] as TOKEN.TokenSolid).cook(), `hello`)
-				assert.strictEqual((tokens[13] as TOKEN.TokenSolid).cook(), `head`)
-				assert.strictEqual((tokens[18] as TOKEN.TokenSolid).cook(), `midl`)
-				assert.strictEqual((tokens[23] as TOKEN.TokenSolid).cook(), `tail`)
-				assert.strictEqual((tokens[26] as TOKEN.TokenSolid).cook(), `0 \\\` 1`)
-				assert.strictEqual((tokens[28] as TOKEN.TokenSolid).cook(), `0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`)
-				assert.strictEqual((tokens[30] as TOKEN.TokenSolid).cook(), `0 \\u{24} 1 \\u{005f} 2 \\u{} 3`)
-				assert.strictEqual((tokens[32] as TOKEN.TokenSolid).cook(), `012\\\n345\n678`)
+				assert.deepStrictEqual(
+					[...new Lexer(Util.dedent(`
+						600  /  '''''' * 3 + '''hello''' *  2;
+						3 + '''head{{ * 2
+						3 + }}midl{{ * 2
+						3 + }}tail''' * 2
+						'''0 \\\` 1''';
+						'''0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7''';
+						'''0 \\u{24} 1 \\u{005f} 2 \\u{} 3''';
+						'''012\\
+						345
+						678''';
+					`), CONFIG_DEFAULT).generate()]
+						.filter((token): token is TOKEN.TokenSolid => token instanceof TOKEN.TokenSolid)
+						.map((token) => token.cook())
+						.filter((_, i) => [
+							2, 6,
+							12,
+							17,
+							22,
+							25,
+							27,
+							29,
+							31,
+						].includes(i))
+					,
+					[
+						``, `hello`,
+						`head`,
+						`midl`,
+						`tail`,
+						`0 \\\` 1`,
+						`0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`,
+						`0 \\u{24} 1 \\u{005f} 2 \\u{} 3`,
+						`012\\\n345\n678`,
+					],
+				);
 			})
 		})
 
-		Dev.supports('literalString') && it('throws when UTF-16 encoding input is out of range.', () => {
+		Dev.supports('literalString-cook') && it('`String.fromCodePoint` throws when UTF-8 encoding input is out of range.', () => {
 			const stringtoken: TOKEN.TokenString = [...new Lexer(Util.dedent(`
 				'a string literal with a unicode \\u{a00061} escape sequence out of range';
-			`), CONFIG_DEFAULT).generate()][1] as TOKEN.TokenString
+			`), CONFIG_DEFAULT).generate()][2] as TOKEN.TokenString;
 			assert.throws(() => stringtoken.cook(), RangeError)
 		})
 	})

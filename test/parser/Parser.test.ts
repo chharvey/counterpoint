@@ -216,7 +216,7 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
+		Dev.supports('stringTemplate-parse') && context('ExpressionUnit ::= StringTemplate', () => {
 			function stringTemplateParseNode (src: string): string {
 				return (((((((((((((new Parser(src)
 					.parse()

@@ -288,7 +288,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
+		Dev.supports('stringTemplate-decorate') && context('ExpressionUnit ::= StringTemplate', () => {
 			function stringTemplateSemanticNode(src: string): string {
 				return ((Decorator
 					.decorate(new Parser(src).parse())

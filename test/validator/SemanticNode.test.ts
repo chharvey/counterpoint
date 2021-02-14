@@ -651,19 +651,15 @@ describe('SemanticNode', () => {
 					it('returns a constant Float type for SemanticNodeConstant with float value.', () => {
 						assert.deepStrictEqual(constantFromSource(`4.2e+1;`).type(), new SolidTypeConstant(new Float64(42.0)));
 					})
-					it('returns `String` for SemanticNodeConstant with string value.', () => {
+					Dev.supports('string-assess') && it('returns `String` for SemanticNodeConstant with string value.', () => {
 						;[
-							...(Dev.supports('literalString') ? [
-								constantFromSource(`'42';`),
-							] : []),
-							...(Dev.supports('literalTemplate') ? [
-								(goalFromSource(`'''42''';`)
-									.children[0] as SemanticNodeStatementExpression)
-									.children[0] as SemanticNodeTemplate,
-								(goalFromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`)
-									.children[0] as SemanticNodeStatementExpression)
-									.children[0] as SemanticNodeTemplate,
-							] : []),
+							constantFromSource(`'42';`),
+							(goalFromSource(`'''42''';`)
+								.children[0] as SemanticNodeStatementExpression)
+								.children[0] as SemanticNodeTemplate,
+							(goalFromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`)
+								.children[0] as SemanticNodeStatementExpression)
+								.children[0] as SemanticNodeTemplate,
 						].forEach((node) => {
 							assert.strictEqual(node.type(), SolidString)
 						})
@@ -784,7 +780,7 @@ describe('SemanticNode', () => {
 					`false - 2;`,
 					`2 / true;`,
 					`null ^ false;`,
-					...(Dev.supports('literalString') ? [`'hello' + 5;`] : []),
+					...(Dev.supports('string-assess') ? [`'hello' + 5;`] : []),
 				].forEach((src) => {
 					assert.throws(() => operationFromSource(src).type(), TypeError01);
 				})
