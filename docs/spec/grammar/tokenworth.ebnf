@@ -159,7 +159,7 @@ TokenWorth(String :::= "'" "'") -> Sequence<RealNumber>
 TokenWorth(String :::= "'" StringChars "'") -> Sequence<RealNumber>
 	:= TokenWorth(StringChars);
 TokenWorth(StringChars :::= [^'\#x03]) -> Sequence<RealNumber>
-	:= [...UTF8Encoding(CodePoint([^'\#x03]))];
+	:= UTF8Encoding(CodePoint([^'\#x03]));
 TokenWorth(StringChars :::= [^'\#x03] StringChars) -> Sequence<RealNumber>
 	:= [...UTF8Encoding(CodePoint([^'\#x03])), ...TokenWorth(StringChars)];
 TokenWorth(StringChars :::= "\" StringEscape) -> Sequence<RealNumber>
@@ -251,7 +251,7 @@ TokenWorth(TemplateChars__EndDelim__StartDelim :::= "''{" TemplateChars__EndDeli
 	:= [...Encode("''{"), ...TokenWorth(TemplateChars__EndDelim__StartDelim)];
 
 TokenWorth(TemplateChars__EndDelim__StartInterp :::= "{") -> Sequence<RealNumber>
-	:= Encode("{"); // U+007B LEFT CURLY BRACKET
+	:= Encode("{");
 TokenWorth(TemplateChars__EndDelim__StartInterp :::= "{" [^'{#x03]) -> Sequence<RealNumber>
 	:= [...Encode("{"), ...UTF8Encoding(CodePoint([^'{#x03]))];
 TokenWorth(TemplateChars__EndDelim__StartInterp :::= "{" [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
