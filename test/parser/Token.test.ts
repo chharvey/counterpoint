@@ -190,7 +190,7 @@ describe('TokenSolid', () => {
 			})
 		})
 
-		Dev.supports('literalString') && context('TokenString', () => {
+		Dev.supports('literalString-cook') && context('TokenString', () => {
 			it('produces the cooked string value.', () => {
 				assert.deepStrictEqual([...new Lexer(Util.dedent(`
 					5 + 03 + '' * 'hello' *  -2;
@@ -234,7 +234,7 @@ describe('TokenSolid', () => {
 						.map((token) => token.cook())
 					;
 				}
-				context('with comments enabled.', () => {
+				it('with comments enabled.', () => {
 					const data: {testdesc: string, expected: string}[] = [
 						{testdesc: 'removes a line comment not ending in a LF.',   expected: 'The five boxing wizards '},
 						{testdesc: 'preserves a LF when line comment ends in LF.', expected: 'The five \njump quickly.'},
@@ -264,7 +264,7 @@ describe('TokenSolid', () => {
 			});
 		})
 
-		Dev.supports('literalTemplate') && context('TokenTemplate', () => {
+		Dev.supports('literalTemplate-cook') && context('TokenTemplate', () => {
 			it('produces the cooked template value.', () => {
 				assert.deepStrictEqual(
 					[...new Lexer(Util.dedent(`
@@ -306,7 +306,7 @@ describe('TokenSolid', () => {
 			})
 		})
 
-		Dev.supports('literalString') && it('`String.fromCodePoint` throws when UTF-8 encoding input is out of range.', () => {
+		Dev.supports('literalString-cook') && it('`String.fromCodePoint` throws when UTF-8 encoding input is out of range.', () => {
 			const stringtoken: TOKEN.TokenString = [...new Lexer(Util.dedent(`
 				'a string literal with a unicode \\u{a00061} escape sequence out of range';
 			`), CONFIG_DEFAULT).generate()][2] as TOKEN.TokenString;

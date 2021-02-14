@@ -75,7 +75,7 @@ describe('LexerSolid', () => {
 						\`unicode identifier with end delimiter but contains \u0003 U+0003 END OF TEXT character\`
 					`]] as [string, string[]],
 				] : []),
-				...(Dev.supports('literalString') ? [
+				...(Dev.supports('literalString-lex') ? [
 					['string', [`
 						'string without end delimiter
 					`, `
@@ -83,7 +83,7 @@ describe('LexerSolid', () => {
 						8;
 					`]] as [string, string[]],
 				] : []),
-				...(Dev.supports('literalTemplate') ? [
+				...(Dev.supports('literalTemplate-lex') ? [
 					['template', [`
 						'''template without end delimiter
 					`, `
@@ -493,7 +493,7 @@ describe('LexerSolid', () => {
 			})
 		})
 
-		Dev.supports('literalString') && context('recognizes `TokenString` conditions.', () => {
+		Dev.supports('literalString-lex') && context('recognizes `TokenString` conditions.', () => {
 			specify('Basic strings.', () => {
 				const tokens: Token[] = [...new Lexer(`
 					3 - 50 + * 2
@@ -557,7 +557,7 @@ describe('LexerSolid', () => {
 			})
 		})
 
-		Dev.supports('literalTemplate') && context('recognizes `TokenTemplate` conditions.', () => {
+		Dev.supports('literalTemplate-lex') && context('recognizes `TokenTemplate` conditions.', () => {
 			specify('Basic templates.', () => {
 				const tokens: Token[] = [...new Lexer(`
 					600  /  '''''' * 3 + '''hello''' *  2
@@ -589,7 +589,7 @@ describe('LexerSolid', () => {
 				const tokens: Token[] = [...new Lexer(`
 					'''abc{{ }}def'''
 					'''ghi{{}}jkl'''
-					'''mno{{ {% pqr %} }}stu'''
+					'''mno{{ %% pqr %% }}stu'''
 				`, CONFIG_DEFAULT).generate()]
 				assert.ok(tokens[ 2] instanceof TOKEN.TokenTemplate)
 				assert.strictEqual((tokens[ 2] as TOKEN.TokenTemplate).position, TemplatePosition.HEAD)
