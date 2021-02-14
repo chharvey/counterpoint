@@ -359,9 +359,9 @@ AG productions may also invoke each other, and they may do so recursively.
 TokenWorth(TemplateFull :::= "'''" TemplateChars__EndDelim "'''") -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim)
 TokenWorth(TemplateChars__EndDelim :::= [^'{#x03]) -> Sequence<RealNumber>
-	:= [UTF16Encoding(CodePoint([^'{#x03]))]
+	:= [UTF8Encoding(CodePoint([^'{#x03]))]
 TokenWorth(TemplateChars__EndDelim :::= [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
-	:= [UTF16Encoding(CodePoint([^'{#x03])), ...TokenWorth(TemplateChars__EndDelim)]
+	:= [UTF8Encoding(CodePoint([^'{#x03])), ...TokenWorth(TemplateChars__EndDelim)]
 TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartDelim) -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim__StartDelim)
 TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartInterp) -> Sequence<RealNumber>

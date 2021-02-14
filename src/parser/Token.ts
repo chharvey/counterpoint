@@ -9,7 +9,11 @@ import {
 
 import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
 
-import Util from '../class/Util.class'
+import Util, {
+	CodePoint,
+	CodeUnit,
+	EncodedChar,
+} from '../class/Util.class'
 import Dev from '../class/Dev.class'
 import type {
 	LexerSolid,
@@ -400,21 +404,21 @@ export class TokenString extends TokenSolid {
 		text: string,
 		allow_comments:   SolidConfig['languageFeatures']['comments']          = CONFIG_DEFAULT.languageFeatures.comments,
 		allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
-	): number[] {
+	): CodeUnit[] {
 		if (text.length === 0) return []
 		if (TokenString.ESCAPER === text[0]) {
 			/* possible escape or line continuation */
 			if (TokenString.ESCAPES.includes(text[1])) {
 				/* an escaped character literal */
 				return [
-					new Map<string, number>([
-						[TokenString     .DELIM,       TokenString     .DELIM      .charCodeAt(0)!],
-						[TokenCommentLine.DELIM_START, TokenCommentLine.DELIM_START.charCodeAt(0)!],
-						[TokenString     .ESCAPER,     TokenString     .ESCAPER    .charCodeAt(0)!],
-						['s'                 , 0x20],
-						['t'                 , 0x09],
-						['n'                 , 0x0a],
-						['r'                 , 0x0d],
+					...new Map<string, EncodedChar>([
+						[TokenString      .DELIM,       Util.utf8Encode(TokenString      .DELIM       .codePointAt(0)!)],
+						[TokenCommentLine .DELIM_START, Util.utf8Encode(TokenCommentLine .DELIM_START .codePointAt(0)!)],
+						[TokenString      .ESCAPER,     Util.utf8Encode(TokenString      .ESCAPER     .codePointAt(0)!)],
+						['s',                           Util.utf8Encode(0x20)],
+						['t',                           Util.utf8Encode(0x09)],
+						['n',                           Util.utf8Encode(0x0a)],
+						['r',                           Util.utf8Encode(0x0d)],
 					]).get(text[1]) !,
 					...TokenString.tokenWorth(text.slice(2), allow_comments, allow_separators),
 				]
@@ -423,19 +427,23 @@ export class TokenString extends TokenSolid {
 				/* an escape sequence */
 				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
 				return [
-					...Util.utf16Encoding(TokenNumber.tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
+					...Util.utf8Encode(TokenNumber.tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
 					...TokenString.tokenWorth(text.slice(sequence[0].length), allow_comments, allow_separators),
 				]
 
 			} else if ('\n' === text[1]) {
 				/* a line continuation (LF) */
-				return [0x20, ...TokenString.tokenWorth(text.slice(2), allow_comments, allow_separators)]
+				return [
+					...Util.utf8Encode(0x20),
+					...TokenString.tokenWorth(text.slice(2), allow_comments, allow_separators),
+				];
 
 			} else {
 				/* a backslash escapes the following character */
+				const codepoint: CodePoint = text.codePointAt(1)!;
 				return [
-					text.charCodeAt(1),
-					...TokenString.tokenWorth(text.slice(2), allow_comments, allow_separators),
+					...Util.utf8Encode(codepoint),
+					...TokenString.tokenWorth(text.slice((codepoint <= 0xffff) ? 2 : 3 /* UTF-16 */), allow_comments, allow_separators),
 				]
 			}
 
@@ -447,16 +455,19 @@ export class TokenString extends TokenSolid {
 		} else if (allow_comments && TokenCommentLine.DELIM_START === text[0]) {
 			/* an in-string line comment */
 			const match: string = text.match(/\%[^\'\n]*\n?/)![0];
-			const rest: number[] = TokenString.tokenWorth(text.slice(match.length), allow_comments, allow_separators);
+			const rest: CodeUnit[] = TokenString.tokenWorth(text.slice(match.length), allow_comments, allow_separators);
 			return (match[match.length - 1] === '\n') // COMBAK `match.lastItem`
-				? [0x0a, ...rest]
+				? [...Util.utf8Encode(0x0a), ...rest]
 				: rest
 			;
 
-		} else return [
-			text.charCodeAt(0),
-			...TokenString.tokenWorth(text.slice(1), allow_comments, allow_separators),
-		]
+		} else {
+			const codepoint: CodePoint = text.codePointAt(0)!;
+			return [
+				...Util.utf8Encode(codepoint),
+				...TokenString.tokenWorth(text.slice((codepoint <= 0xffff)? 1 : 2 /* UTF-16 */), allow_comments, allow_separators),
+			];
+		};
 	}
 	declare protected readonly lexer: LexerSolid;
 	constructor (lexer: LexerSolid) {
@@ -556,11 +567,11 @@ export class TokenString extends TokenSolid {
 		this.advance()
 	}
 	cook(): string {
-		return String.fromCharCode(...TokenString.tokenWorth(
-			this.source.slice(1, -1), // cut off the string delimiters
+		return String.fromCodePoint(...Util.decodeUTF8Stream(TokenString.tokenWorth(
+			this.source.slice(TokenString.DELIM.length, -TokenString.DELIM.length),
 			this.lexer.config.languageFeatures.comments,
 			this.lexer.config.languageFeatures.numericSeparators,
-		))
+		)));
 	}
 }
 export class TokenTemplate extends TokenSolid {
@@ -572,18 +583,19 @@ export class TokenTemplate extends TokenSolid {
 	 * @param   text - the string to compute
 	 * @returns        the template value of the argument, a sequence of code units
 	 */
-	private static tokenWorth(text: string): number[] {
+	private static tokenWorth(text: string): CodeUnit[] {
 		if (text.length === 0) return []
+		const codepoint: CodePoint = text.codePointAt(0)!;
 		return [
-			text.charCodeAt(0),
-			...TokenTemplate.tokenWorth(text.slice(1)),
+			...Util.utf8Encode(codepoint),
+			...TokenTemplate.tokenWorth(text.slice((codepoint <= 0xffff)? 1 : 2 /* UTF-16 */)),
 		]
 	}
 	private readonly delim_end  : typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_START;
 	readonly position: TemplatePosition;
 	constructor (
 		lexer: Lexer,
-		private delim_start: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_END,
+		private readonly delim_start: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_END,
 	) {
 		super('TEMPLATE', lexer, ...lexer.advance())
 		let delim_end: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_START;
@@ -625,8 +637,8 @@ export class TokenTemplate extends TokenSolid {
 		this.position = [...positions][0]
 	}
 	cook(): string {
-		return String.fromCharCode(...TokenTemplate.tokenWorth(
-			this.source.slice(this.delim_start.length, -this.delim_end.length) // cut off the template delimiters
-		))
+		return String.fromCodePoint(...Util.decodeUTF8Stream(TokenTemplate.tokenWorth(
+			this.source.slice(this.delim_start.length, -this.delim_end.length),
+		)));
 	}
 }

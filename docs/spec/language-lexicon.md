@@ -193,7 +193,7 @@ Strings are snippets of textual data.
 
 #### TokenWorth (Strings)
 The Token Worth of a String token is a [sequence](./data-types.md#sequence)
-of UTF-16-encoded code units computed by the various parts of the token.
+of [UTF-8-encoded](./algorithms.md#utf8encoding) code units computed by the various parts of the token.
 
 There is a many-to-one relationship between tokens and Token Worth quantities.
 For example, both the tokens containing `'ABC'` and `'\u{41}\u{42}\u{43}'`
