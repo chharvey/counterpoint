@@ -793,13 +793,11 @@ describe('Decorator', () => {
 		});
 
 		Dev.supports('variables') && describe('Assignee ::= IDENTIFIER', () => {
-			it('makes an ASTNodeAssignee node.', () => {
+			it('makes an ASTNodeVariable node.', () => {
 				/*
-					<Assignee>
-						<Variable source="the_answer" id=256n/>
-					</Assignee>
+					<Variable source="the_answer" id=256n/>
 				*/
-				const id: AST.ASTNodeVariable = assignmentFromSource(`the_answer = the_answer - 40;`).children[0].children[0];
+				const id: AST.ASTNodeVariable = assignmentFromSource(`the_answer = the_answer - 40;`).children[0];
 				assert.strictEqual(id.id, 256n);
 				assert.strictEqual(id.source, `the_answer`);
 			});
@@ -809,7 +807,7 @@ describe('Decorator', () => {
 			it('makes an ASTNodeAssignment node.', () => {
 				/*
 					<Assignment>
-						<Assignee source="the_answer">...</Assignee>
+						<Variable source="the_answer">...</Variable>
 						<Operation operator=ADD source="the_answer - 40">
 							<Variable source="the_answer" id="256"/>
 							<Operation operator=NEG source="40">...</Operation>

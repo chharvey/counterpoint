@@ -84,10 +84,7 @@ SemanticDeclaration =:=
 
 
 SemanticAssignment
-	::= SemanticAssignee SemanticExpression;
-
-SemanticAssignee
-	::= SemanticVariable;
+	::= SemanticVariable SemanticExpression;
 
 
 

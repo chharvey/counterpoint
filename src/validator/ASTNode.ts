@@ -999,17 +999,21 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly children:
-			| readonly [ASTNodeAssignee, ASTNodeExpression]
+			| readonly [ASTNodeVariable, ASTNodeExpression]
 	) {
 		super(start_node, {}, children)
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
-		return this.children.forEach((c) => c.varCheck(validator));
+		this.children.forEach((c) => c.varCheck(validator));
+		const variable: ASTNodeVariable = this.children[0];
+		if (!(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
+			throw new AssignmentError10(variable);
+		};
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
-		const assignee_type: SolidLanguageType = this.children[0].children[0].type(validator);
+		const assignee_type: SolidLanguageType = this.children[0].type(validator);
 		const assigned_type: SolidLanguageType = this.children[1].type(validator);
 		if (
 			assigned_type.isSubtypeOf(assignee_type) ||
@@ -1022,31 +1026,6 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {
 		throw new Error('ASTNodeAssignment#build not yet supported.');
-	}
-}
-export class ASTNodeAssignee extends ASTNodeSolid {
-	constructor(
-		start_node: Token,
-		readonly children:
-			| readonly [ASTNodeVariable]
-	) {
-		super(start_node, {}, children)
-	}
-	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
-		const variable: ASTNodeVariable = this.children[0];
-		variable.varCheck(validator);
-		if (!(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
-			throw new AssignmentError10(variable);
-		};
-	}
-	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
-		return this.children[0].typeCheck(validator);
-	}
-	/** @implements ASTNodeSolid */
-	build(_builder: Builder): Instruction {
-		throw new Error('ASTNodeAssignee#build not yet supported.')
 	}
 }
 export class ASTNodeGoal extends ASTNodeSolid {

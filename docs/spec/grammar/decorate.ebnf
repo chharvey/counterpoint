@@ -341,10 +341,8 @@ Decorate(Declaration ::= DeclarationType) -> SemanticDeclarationType
 
 
 
-Decorate(Assignee ::= IDENTIFIER) -> SemanticAssignee
-	:= (SemanticAssignee
-		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
-	);
+Decorate(Assignee ::= IDENTIFIER) -> SemanticVariable
+	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
 
 Decorate(StatementAssignment ::= Assignee "=" Expression ";") -> SemanticAssignment
 	:= (SemanticAssignment

@@ -30,18 +30,10 @@ Void! TypeCheck(SemanticDeclarationVariable stmt) :=
 
 Void! TypeCheck(SemanticAssignment stmt) :=
 	1. *Assert:* `stmt.children.count` is 2.
-	2. *Let* `assignee` be `stmt.children.0`.
-	3. *Assert:* `assignee.children.count` is 1.
-	4. *Let* `assignee_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
-	5. *Let* `assigned_type` be *Unwrap:* `TypeOf(stmt.children.2)`.
-	6. *If* `assigned_type` is not a subtype of `assignee_type`:
+	2. *Let* `assignee_type` be *Unwrap:* `TypeOf(stmt.children.0)`.
+	3. *Let* `assigned_type` be *Unwrap:* `TypeOf(stmt.children.1)`.
+	4. *If* `assigned_type` is not a subtype of `assignee_type`:
 		1. *Throw:* a new TypeError03.
-;
-
-
-
-Void! TypeCheck(SemanticAssignee assignee) :=
-	1. *Return:* `TypeCheck(assignee.children.0)`.
 ;
 
 
