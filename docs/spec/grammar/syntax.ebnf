@@ -93,8 +93,12 @@ Declaration ::=
 	| DeclarationType
 ;
 
+Assignee ::=
+	| IDENTIFIER
+;
+
 StatementAssignment
-	::= IDENTIFIER "=" Expression ";";
+	::= Assignee "=" Expression ";";
 
 Statement ::=
 	| Expression? ";"

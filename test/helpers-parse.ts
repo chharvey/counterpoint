@@ -181,6 +181,18 @@ function declarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT
 	assert.ok(declaration instanceof PARSER.ParseNodeDeclaration);
 	return declaration;
 }
+export function assigneeFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeAssignee {
+	const assignment: PARSER.ParseNodeStatementAssignment = assignmentFromSource(src, config);
+	const assignee: PARSER.ParseNodeAssignee = assignment.children[0];
+	return assignee;
+}
+export function assignmentFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeStatementAssignment {
+	const statement: PARSER.ParseNodeStatement = statementFromSource(src, config);
+	assert_arrayLength(statement.children, 1, 'statement should have 1 child');
+	const assignment: Token | PARSER.ParseNodeDeclaration | PARSER.ParseNodeStatementAssignment = statement.children[0];
+	assert.ok(assignment instanceof PARSER.ParseNodeStatementAssignment);
+	return assignment;
+}
 export function statementFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeStatement {
 	const goal: PARSER.ParseNodeGoal = new Parser(src, config).parse()
 	assert_arrayLength(goal.children, 3, 'goal should have 3 children')
