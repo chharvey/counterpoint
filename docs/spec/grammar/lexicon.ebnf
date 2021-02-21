@@ -105,22 +105,25 @@ DigitSequenceHTD<Separator> :::= ( DigitSequenceHTD <Separator+>"_"? )? [0-9a-z]
 
 
 
-String
-	:::= "'" StringChars? "'";
+String<Comment>
+	:::= "'" StringChars<?Comment>? "'";
 
-StringChars :::=
-	| [^'\#x03]                StringChars?
-	| "\"         StringEscape StringChars?
-	| "\u"      ( [^'{#x03]    StringChars? )?
-	| "%" ([^'%#x0a#x03] [^'#x0a#x03]*)? #x0a?
-	| "%%" ("%"? [^'%#x03])* "%%"?
+StringChars<Comment> :::=
+	| <Comment->([^'\#x03]        StringChars<?Comment>?)
+	| <Comment+>([^'\%#x03]       StringChars<?Comment>?)
+	| "\"  StringEscape<?Comment> StringChars<?Comment>?
+	| "\u" ( [^'{#x03]            StringChars<?Comment>? )?
+	| <Comment+>("%"  ([^'%#x0a#x03] [^'#x0a#x03]*)? ( #x0a StringChars<?Comment>? )?)
+	| <Comment+>("%%" ("%"? [^'%#x03])*              ( "%%" StringChars<?Comment>? )?)
 ;
 
-StringEscape :::=
-	| "'" | "%" | "\" | "s" | "t" | "n" | "r"
+StringEscape<Comment> :::=
+	| "'" | "\" | <Comment+>"%"
+	| "s" | "t" | "n" | "r"
 	| "u{" DigitSequenceHex? "}"
 	| #x0a
-	| [^'%\stnru#x0a#x03]
+	| <Comment->[^'\stnru#x0a#x03]
+	| <Comment+>[^'\%stnru#x0a#x03]
 ;
 
 
@@ -178,7 +181,7 @@ Goal<Comment, Radix, Separator> :::=
 	| Keyword
 	| Identifier
 	| Number<?Radix, ?Separator>
-	| String
+	| String<?Comment>
 	| TemplateFull
 	| TemplateHead
 	| TemplateMiddle

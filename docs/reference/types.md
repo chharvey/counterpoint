@@ -166,13 +166,13 @@ The following special characters may be escaped:
 
 Raw Input | Output Character     | Output Code
 --------- | -------------------- | ------------
+`\'`      | APOSTROPHE           | U+0027
+`\\`      | REVERSE SOLIDUS      | U+005C
+`\%`      | PERCENT SIGN         | U+0025
 `\s`      | SPACE                | U+0020
 `\t`      | CHARACTER TABULATION | U+0009
 `\n`      | LINE FEED (LF)       | U+000A
 `\r`      | CARRIAGE RETURN (CR) | U+000D
-`\'`      | APOSTROPHE           | U+0027
-`\%`      | PERCENT SIGN         | U+0025
-`\\`      | REVERSE SOLIDUS      | U+005C
 `\u{24}`  | DOLLAR SIGN          | U+0024
 
 The code `\'` prints a literal apostrophe character without closing the string,

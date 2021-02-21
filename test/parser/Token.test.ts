@@ -223,12 +223,27 @@ describe('TokenSolid', () => {
 				function cook(config: SolidConfig): CookValueType[] {
 					return [...new Lexer(Util.dedent(`
 						'The five boxing wizards % jump quickly.'
+
 						'The five % boxing wizards
 						jump quickly.'
+
+						'The five boxing wizards %
+						jump quickly.'
+
+						'The five boxing wizards jump quickly.%
+						'
+
 						'The five %% boxing wizards %% jump quickly.'
+
+						'The five boxing wizards %%%% jump quickly.'
+
 						'The five %% boxing
 						wizards %% jump
 						quickly.'
+
+						'The five boxing
+						wizards %% jump
+						quickly.%%'
 					`), config).generate()]
 						.filter((token): token is TOKEN.TokenString => token instanceof TOKEN.TokenString)
 						.map((token) => token.cook())
@@ -238,8 +253,12 @@ describe('TokenSolid', () => {
 					const data: {testdesc: string, expected: string}[] = [
 						{testdesc: 'removes a line comment not ending in a LF.',   expected: 'The five boxing wizards '},
 						{testdesc: 'preserves a LF when line comment ends in LF.', expected: 'The five \njump quickly.'},
+						{testdesc: 'preserves a LF with empty line comment.',      expected: 'The five boxing wizards \njump quickly.'},
+						{testdesc: 'preserves a LF with last empty line comment.', expected: 'The five boxing wizards jump quickly.\n'},
 						{testdesc: 'ignores multiline comments.',                  expected: 'The five  jump quickly.'},
+						{testdesc: 'ignores empty multiline comments.',            expected: 'The five boxing wizards  jump quickly.'},
 						{testdesc: 'ignores multiline comments containing LFs.',   expected: 'The five  jump\nquickly.'},
+						{testdesc: 'ignores last multiline comments.',             expected: 'The five boxing\nwizards '},
 					];
 					cook(CONFIG_DEFAULT).forEach((actual, i) => {
 						it(data[i].testdesc, () => {
@@ -257,8 +276,12 @@ describe('TokenSolid', () => {
 					}), [
 						'The five boxing wizards % jump quickly.',
 						'The five % boxing wizards\njump quickly.',
+						'The five boxing wizards %\njump quickly.',
+						'The five boxing wizards jump quickly.%\n',
 						'The five %% boxing wizards %% jump quickly.',
+						'The five boxing wizards %%%% jump quickly.',
 						'The five %% boxing\nwizards %% jump\nquickly.',
+						'The five boxing\nwizards %% jump\nquickly.%%',
 					]);
 				});
 			});
