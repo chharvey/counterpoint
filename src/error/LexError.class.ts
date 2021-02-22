@@ -37,7 +37,7 @@ export class LexError04 extends LexError {
 	/** The number series of this class of errors. */
 	static readonly CODE = 4
 	/**
-	 * Construct a new LexError03 object.
+	 * Construct a new LexError04 object.
 	 * @param char - the numeric separator character
 	 */
 	constructor (char: Char) {

@@ -229,7 +229,44 @@ export class TokenIdentifierUnicode extends TokenIdentifier {
 		this.advance()
 	}
 }
-export class TokenNumber extends TokenSolid {
+abstract class NumberOrStringToken extends TokenSolid {
+	constructor (tagname: string,
+		protected readonly lexer: LexerSolid,
+		...chars: [Char, ...Char[]]
+	) {
+		super(tagname, lexer, ...chars);
+	}
+	/**
+	 * Lex a numeric digit sequence, advancing this token as necessary.
+	 * @param digits the digit sequence to lex
+	 * @return       a cargo of source text for any error-reporting
+	 * @final
+	 */
+	protected lexDigitSequence(digits: readonly string[]): string {
+		let cargo: string = '';
+		const allowedchars: string[] = [
+			...digits,
+			...(this.lexer.config.languageFeatures.numericSeparators ? [TokenNumber.SEPARATOR] : [])
+		];
+		while (!this.lexer.isDone && Char.inc(allowedchars, this.lexer.c0)) {
+			if (Char.inc(digits, this.lexer.c0)) {
+				cargo += this.lexer.c0.source;
+				this.advance();
+			} else if (this.lexer.config.languageFeatures.numericSeparators && Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
+				if (Char.inc(digits, this.lexer.c1)) {
+					cargo += `${ this.lexer.c0.source }${ this.lexer.c1!.source }`;
+					this.advance(2n);
+				} else {
+					throw new LexError04(Char.eq(TokenNumber.SEPARATOR, this.lexer.c1) ? this.lexer.c1! : this.lexer.c0);
+				};
+			} else {
+				break;
+			};
+		};
+		return cargo;
+	}
+}
+export class TokenNumber extends NumberOrStringToken {
 	static readonly RADIX_DEFAULT: 10n = 10n
 	static readonly ESCAPER:   '\\' = '\\'
 	static readonly SEPARATOR: '_' = '_'
@@ -304,7 +341,6 @@ export class TokenNumber extends TokenSolid {
 		// const expvalue: number = base ** TokenNumber.tokenWorthInt(exppart, TokenNumber.RADIX_DEFAULT, allow_separators)
 		return (wholevalue + fracvalue) * expvalue
 	}
-	declare protected readonly lexer: LexerSolid;
 	private readonly has_unary: boolean;
 	private readonly has_radix: boolean;
 	private readonly radix: RadixType;
@@ -349,23 +385,6 @@ export class TokenNumber extends TokenSolid {
 			}
 		}
 	}
-	private lexDigitSequence(digits: readonly string[]): void {
-		const allowedchars: string[] = [
-			...digits,
-			...(this.lexer.config.languageFeatures.numericSeparators ? [TokenNumber.SEPARATOR] : [])
-		]
-		while (!this.lexer.isDone && Char.inc(allowedchars, this.lexer.c0)) {
-			if (Char.inc(digits, this.lexer.c0)) {
-				this.advance()
-			} else if (this.lexer.config.languageFeatures.numericSeparators && Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
-				if (Char.inc(digits, this.lexer.c1)) {
-					this.advance(2n)
-				} else {
-					throw new LexError04(Char.eq(TokenNumber.SEPARATOR, this.lexer.c1) ? this.lexer.c1 ! : this.lexer.c0)
-				}
-			}
-		}
-	}
 	cook(): number {
 		let text: string = this.source
 		const multiplier: number = (text[0] === Punctuator.NEG) ? -1 : 1
@@ -384,7 +403,7 @@ export class TokenNumber extends TokenSolid {
 		return this.source.indexOf(TokenNumber.POINT) > 0
 	}
 }
-export class TokenString extends TokenSolid {
+export class TokenString extends NumberOrStringToken {
 	static readonly DELIM:   '\'' = '\''
 	static readonly ESCAPER: '\\' = '\\'
 	static readonly ESCAPES: readonly string[] = [
@@ -469,7 +488,6 @@ export class TokenString extends TokenSolid {
 			];
 		};
 	}
-	declare protected readonly lexer: LexerSolid;
 	constructor (lexer: LexerSolid) {
 		super('STRING', lexer, ...lexer.advance())
 		while (!this.lexer.isDone && !Char.eq(TokenString.DELIM, this.lexer.c0)) {
@@ -490,19 +508,7 @@ export class TokenString extends TokenSolid {
 					if (Char.inc(digits, this.lexer.c0)) {
 						cargo += this.lexer.c0.source
 						this.advance()
-						while(!this.lexer.isDone && Char.inc([...digits, TokenNumber.SEPARATOR], this.lexer.c0)) {
-							if (Char.inc(digits, this.lexer.c0)) {
-								cargo += this.lexer.c0.source
-								this.advance()
-							} else if (Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
-								if (Char.inc(digits, this.lexer.c1)) {
-									cargo += `${this.lexer.c0.source}${this.lexer.c1 !.source}`
-									this.advance(2n)
-								} else {
-									throw new LexError04(Char.eq(TokenNumber.SEPARATOR, this.lexer.c1) ? this.lexer.c1 ! : this.lexer.c0)
-								}
-							}
-						}
+						cargo += this.lexDigitSequence(digits);
 					}
 					// add ending escape delim
 					if (Char.eq('}', this.lexer.c0)) {
