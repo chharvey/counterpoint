@@ -135,7 +135,12 @@ export default class Util {
 				: multiply(units.slice(0, -1)) * 0x40 + units[units.length - 1]
 			;
 		}
-		function kontinue(units: readonly CodeUnit[]): void {
+		/**
+		 * Parse a sequence of code units.
+		 * @param units the code units to validate
+		 * @throws {UTF8DecodeError} if the sequence of bits is not well-formed
+		 */
+		function parse(units: readonly CodeUnit[]): void {
 			return units.slice(1).forEach((unit, i) => { // `i == 0` starts at `units[1]`
 				if (
 					   unit <  0x80 // "0bbb_bbbb"
@@ -149,11 +154,11 @@ export default class Util {
 			(codeunits[0] < 0x00)                   ? Util.REPLACEMENT_CHARACTER :
 			(codeunits[0] < 0x80) /* "0bbb_bbbb" */ ? codeunits[0] :
 			(codeunits[0] < 0xc0) /* "10bb_bbbb" */ ? Util.REPLACEMENT_CHARACTER :
-			(codeunits[0] < 0xe0) /* "110b_bbbb" */ ? (kontinue(codeunits.slice(0, 2)), multiply(codeunits.slice(0, 2).map((cu, i) => i === 0 ? cu - 0xc0 : cu - 0x80))) :
-			(codeunits[0] < 0xf0) /* "1110_bbbb" */ ? (kontinue(codeunits.slice(0, 3)), multiply(codeunits.slice(0, 3).map((cu, i) => i === 0 ? cu - 0xe0 : cu - 0x80))) :
-			(codeunits[0] < 0xf8) /* "1111_0bbb" */ ? (kontinue(codeunits.slice(0, 4)), multiply(codeunits.slice(0, 4).map((cu, i) => i === 0 ? cu - 0xf0 : cu - 0x80))) :
-			(codeunits[0] < 0xfc) /* "1111_10bb" */ ? (kontinue(codeunits.slice(0, 5)), multiply(codeunits.slice(0, 5).map((cu, i) => i === 0 ? cu - 0xf8 : cu - 0x80))) :
-			(codeunits[0] < 0xfe) /* "1111_110b" */ ? (kontinue(codeunits.slice(0, 6)), multiply(codeunits.slice(0, 6).map((cu, i) => i === 0 ? cu - 0xfc : cu - 0x80))) :
+			(codeunits[0] < 0xe0) /* "110b_bbbb" */ ? (parse(codeunits.slice(0, 2)), multiply(codeunits.slice(0, 2).map((cu, i) => i === 0 ? cu - 0xc0 : cu - 0x80))) :
+			(codeunits[0] < 0xf0) /* "1110_bbbb" */ ? (parse(codeunits.slice(0, 3)), multiply(codeunits.slice(0, 3).map((cu, i) => i === 0 ? cu - 0xe0 : cu - 0x80))) :
+			(codeunits[0] < 0xf8) /* "1111_0bbb" */ ? (parse(codeunits.slice(0, 4)), multiply(codeunits.slice(0, 4).map((cu, i) => i === 0 ? cu - 0xf0 : cu - 0x80))) :
+			(codeunits[0] < 0xfc) /* "1111_10bb" */ ? (parse(codeunits.slice(0, 5)), multiply(codeunits.slice(0, 5).map((cu, i) => i === 0 ? cu - 0xf8 : cu - 0x80))) :
+			(codeunits[0] < 0xfe) /* "1111_110b" */ ? (parse(codeunits.slice(0, 6)), multiply(codeunits.slice(0, 6).map((cu, i) => i === 0 ? cu - 0xfc : cu - 0x80))) :
 			Util.REPLACEMENT_CHARACTER
 		);
 	}

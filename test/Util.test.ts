@@ -122,7 +122,7 @@ describe('Util', () => {
 				);
 			});
 		});
-		it('throws if a sequence of code units does not conform to the UTF-8 specification.', () => {
+		it('throws if a sequence of code units is not well-formed.', () => {
 			for (let i = 0; i < 10; i++) {
 				([
 					// 2-byte characters
