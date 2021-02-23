@@ -509,14 +509,15 @@ describe('LexerSolid', () => {
 			})
 			specify('Escaped characters.', () => {
 				const tokenstring: Token = [...new Lexer(`
-					'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
+					'0 \\' 1 \\\\ 2 \\% 7 \\s 3 \\t 4 \\n 5 \\r 6';
 				`, CONFIG_DEFAULT).generate()][2]
 				assert.strictEqual(tokenstring.source.slice( 3,  5), `\\'`)
 				assert.strictEqual(tokenstring.source.slice( 8, 10), `\\\\`)
-				assert.strictEqual(tokenstring.source.slice(13, 15), `\\s`)
-				assert.strictEqual(tokenstring.source.slice(18, 20), `\\t`)
-				assert.strictEqual(tokenstring.source.slice(23, 25), `\\n`)
-				assert.strictEqual(tokenstring.source.slice(28, 30), `\\r`)
+				assert.strictEqual(tokenstring.source.slice(13, 15), `\\%`);
+				assert.strictEqual(tokenstring.source.slice(18, 20), `\\s`);
+				assert.strictEqual(tokenstring.source.slice(23, 25), `\\t`);
+				assert.strictEqual(tokenstring.source.slice(28, 30), `\\n`);
+				assert.strictEqual(tokenstring.source.slice(33, 35), `\\r`);
 			})
 			specify('Escaped character sequences.', () => {
 				const tokenstring: Token = [...new Lexer(`
@@ -539,9 +540,9 @@ describe('LexerSolid', () => {
 				;[`
 					'Here is a string % that contains a line comment start marker.'
 				`, `
-					'Here is a string {% that contains %} a multiline comment.'
+					'Here is a string %% that contains %% a multiline comment.'
 				`, `
-					'Here is a string {% that contains a comment start marker but no end.'
+					'Here is a string %% that contains a comment start marker but no end.'
 				`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
 					assert.doesNotThrow(() => [...lexer.generate()])
 				})
@@ -551,10 +552,25 @@ describe('LexerSolid', () => {
 					'a string literal with \\u{6g} an invalid escape sequence'
 				`, `
 					'a string literal with \\u{61 an invalid escape sequence'
+				`, `
+					'escaped percent: \\% invalid unicode: \\u{24u done.'
 				`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
 					assert.throws(() => [...lexer.generate()], LexError03)
 				})
 			})
+			it('invalid escape sequences within in-string comments.', () => {
+				const src: string = Util.dedent(`
+					'in-string comment: % invalid unicode: \\u{24u done.'
+				`);
+				assert.doesNotThrow(() => [...new Lexer(src, CONFIG_DEFAULT).generate()], 'with comments enabled');
+				assert.throws(() => [...new Lexer(src, {
+						...CONFIG_DEFAULT,
+						languageFeatures: {
+							...CONFIG_DEFAULT.languageFeatures,
+							comments: false,
+						},
+					}).generate()], LexError03, 'with comments disabled');
+			});
 		})
 
 		Dev.supports('literalTemplate-lex') && context('recognizes `TokenTemplate` conditions.', () => {

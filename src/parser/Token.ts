@@ -240,6 +240,7 @@ abstract class NumberOrStringToken extends TokenSolid {
 	 * Lex a numeric digit sequence, advancing this token as necessary.
 	 * @param digits the digit sequence to lex
 	 * @return       a cargo of source text for any error-reporting
+	 * @throws {LexError04} if an unexpected numeric separator was found
 	 * @final
 	 */
 	protected lexDigitSequence(digits: readonly string[]): string {
@@ -408,8 +409,8 @@ export class TokenString extends NumberOrStringToken {
 	static readonly ESCAPER: '\\' = '\\'
 	static readonly ESCAPES: readonly string[] = [
 		TokenString.DELIM,
-		TokenCommentLine.DELIM_START,
 		TokenString.ESCAPER,
+		TokenCommentLine.DELIM_START,
 		's', 't', 'n', 'r',
 	];
 	/**
@@ -432,8 +433,8 @@ export class TokenString extends NumberOrStringToken {
 				return [
 					...new Map<string, EncodedChar>([
 						[TokenString      .DELIM,       Util.utf8Encode(TokenString      .DELIM       .codePointAt(0)!)],
-						[TokenCommentLine .DELIM_START, Util.utf8Encode(TokenCommentLine .DELIM_START .codePointAt(0)!)],
 						[TokenString      .ESCAPER,     Util.utf8Encode(TokenString      .ESCAPER     .codePointAt(0)!)],
+						[TokenCommentLine .DELIM_START, Util.utf8Encode(TokenCommentLine .DELIM_START .codePointAt(0)!)],
 						['s',                           Util.utf8Encode(0x20)],
 						['t',                           Util.utf8Encode(0x09)],
 						['n',                           Util.utf8Encode(0x0a)],
@@ -523,7 +524,7 @@ export class TokenString extends NumberOrStringToken {
 
 				} else {
 					/* a backslash escapes the following character */
-					this.advance()
+					this.advance(2n);
 				}
 
 			} else if (this.lexer.config.languageFeatures.comments && Char.eq(TokenCommentMulti.DELIM_START, this.lexer.c0, this.lexer.c1)) {
