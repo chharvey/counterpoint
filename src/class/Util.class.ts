@@ -10,17 +10,17 @@ export type CodePoint = number;
 
 /**
  * A code unit is a number within [0, 0xff] that represents
- * an 8-bit part of a encoded Unicode code point.
+ * a byte of an encoded Unicode code point.
  */
 export type CodeUnit = number;
 
 export type EncodedChar =
-	| readonly [CodeUnit]
-	| readonly [CodeUnit, CodeUnit]
-	| readonly [CodeUnit, CodeUnit, CodeUnit]
-	| readonly [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
-	| readonly [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit]
-	| readonly [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit]
+	| [CodeUnit]
+	| [CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit]
 ;
 
 
@@ -123,7 +123,7 @@ export default class Util {
 	 * @param   codeunits code units conforming to the UTF-8 specification
 	 * @returns           a sequence of numeric code point values within [0x0, 0x10_ffff]
 	 */
-	static utf8Decode(codeunits: EncodedChar): CodePoint {
+	static utf8Decode(codeunits: Readonly<EncodedChar>): CodePoint {
 		/**
 		 * Multiplies a sequence of code units into a numeric code point.
 		 * @param units the code units
@@ -197,7 +197,7 @@ export default class Util {
 			};
 			let current: CodePoint;
 			try {
-				current = Util.utf8Decode(codeunits.slice(0, count) as readonly CodeUnit[] as EncodedChar);
+				current = Util.utf8Decode(codeunits.slice(0, count) as EncodedChar);
 			} catch (err) {
 				if (err instanceof UTF8DecodeError) {
 					current = Util.REPLACEMENT_CHARACTER;

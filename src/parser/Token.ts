@@ -430,7 +430,7 @@ export class TokenString extends NumberOrStringToken {
 			if (TokenString.ESCAPES.includes(text[1])) {
 				/* an escaped character literal */
 				return [
-					...new Map<string, EncodedChar>([
+					...new Map<string, Readonly<EncodedChar>>([
 						[TokenString      .DELIM,       Util.utf8Encode(TokenString      .DELIM       .codePointAt(0)!)],
 						[TokenCommentLine .DELIM_START, Util.utf8Encode(TokenCommentLine .DELIM_START .codePointAt(0)!)],
 						[TokenString      .ESCAPER,     Util.utf8Encode(TokenString      .ESCAPER     .codePointAt(0)!)],

@@ -113,7 +113,7 @@ describe('Util', () => {
 		].forEach((expect, continuations) => {
 			const code_unit_tpl: readonly string[] = code_unit_templates[continuations];
 			specify(code_unit_tpl.join(', '), () => {
-				const encodings: readonly EncodedChar[] = Array.from(new Array(100), () => Util.utf8Encode(
+				const encodings: readonly Readonly<EncodedChar>[] = Array.from(new Array(100), () => Util.utf8Encode(
 					(code_unit_tpl.length === 1) ? randomInt(         0,        0x80) :
 					(code_unit_tpl.length === 2) ? randomInt(      0x80,       0x800) :
 					(code_unit_tpl.length === 3) ? randomInt(     0x800,    0x1_0000) :
@@ -166,7 +166,7 @@ describe('Util', () => {
 					['1111_110b', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '0bbb_bbbb'],
 					['1111_110b', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '11bb_bbbb'],
 				]).map((sequence) => sequence.map((tpl) => fromTemplate(tpl))).forEach((sequence) => {
-					assert.throws(() => Util.utf8Decode(sequence as readonly number[] as EncodedChar), (err) => {
+					assert.throws(() => Util.utf8Decode(sequence as EncodedChar), (err) => {
 						const invalid: string = sequence.map((n) => `0x${ n.toString(16) }`).join();
 						assert.ok(err instanceof UTF8DecodeError, 'thrown error was not an instance of UTF8DecodeError');
 						assert.strictEqual(err.message, `Invalid sequence of code points: ${ invalid }`);
@@ -185,7 +185,7 @@ describe('Util', () => {
 					['1111_1000', '1000_0bbb', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb'],
 					['1111_1100', '1000_000b', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb', '10bb_bbbb'],
 				]).map((sequence) => sequence.map((tpl) => fromTemplate(tpl))).forEach((sequence, i) => {
-					assert.throws(() => Util.utf8Decode(sequence as readonly number[] as EncodedChar), (err) => {
+					assert.throws(() => Util.utf8Decode(sequence as EncodedChar), (err) => {
 						const invalid: string = sequence.map((n) => `0x${ n.toString(16) }`).join();
 						assert.ok(err instanceof UTF8DecodeError, 'thrown error was not an instance of UTF8DecodeError');
 						assert.strictEqual(err.message, `Invalid sequence of code points: ${ invalid }`);
