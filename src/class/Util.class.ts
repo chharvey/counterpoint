@@ -10,17 +10,17 @@ export type CodePoint = number;
 
 /**
  * A code unit is a number within [0, 0xff] that represents
- * an 8-bit part of a encoded Unicode code point.
+ * a byte of an encoded Unicode code point.
  */
 export type CodeUnit = number;
 
 export type EncodedChar =
-	| readonly [CodeUnit]
-	| readonly [CodeUnit, CodeUnit]
-	| readonly [CodeUnit, CodeUnit, CodeUnit]
-	| readonly [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
-	| readonly [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit]
-	| readonly [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit]
+	| [CodeUnit]
+	| [CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit]
 ;
 
 
@@ -108,11 +108,11 @@ export default class Util {
 		}
 		xjs.Number.assertType(codepoint, xjs.NumericType.NATURAL);
 		return (
-			(codepoint < 0x80)        ? [codepoint] :
-			(codepoint < 0x800)       ? divide(codepoint, 2n).map((cu, i) => i === 0 ? 0xc0 + cu : 0x80 + cu) as [CodeUnit, CodeUnit] :
-			(codepoint < 0x1_0000)    ? divide(codepoint, 3n).map((cu, i) => i === 0 ? 0xe0 + cu : 0x80 + cu) as [CodeUnit, CodeUnit, CodeUnit] :
-			(codepoint < 0x20_0000)   ? divide(codepoint, 4n).map((cu, i) => i === 0 ? 0xf0 + cu : 0x80 + cu) as [CodeUnit, CodeUnit, CodeUnit, CodeUnit] :
-			(codepoint < 0x400_0000)  ? divide(codepoint, 5n).map((cu, i) => i === 0 ? 0xf8 + cu : 0x80 + cu) as [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit] :
+			(codepoint <        0x80) ? [codepoint] :
+			(codepoint <       0x800) ? divide(codepoint, 2n).map((cu, i) => i === 0 ? 0xc0 + cu : 0x80 + cu) as [CodeUnit, CodeUnit] :
+			(codepoint <    0x1_0000) ? divide(codepoint, 3n).map((cu, i) => i === 0 ? 0xe0 + cu : 0x80 + cu) as [CodeUnit, CodeUnit, CodeUnit] :
+			(codepoint <   0x20_0000) ? divide(codepoint, 4n).map((cu, i) => i === 0 ? 0xf0 + cu : 0x80 + cu) as [CodeUnit, CodeUnit, CodeUnit, CodeUnit] :
+			(codepoint <  0x400_0000) ? divide(codepoint, 5n).map((cu, i) => i === 0 ? 0xf8 + cu : 0x80 + cu) as [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit] :
 			(codepoint < 0x8000_0000) ? divide(codepoint, 6n).map((cu, i) => i === 0 ? 0xfc + cu : 0x80 + cu) as [CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit, CodeUnit] :
 			(() => { throw new RangeError(`Code point \`0x${ codepoint.toString(16) }\` must be less than 0x8000_0000.`); })() // TODO this should be a LexError
 		);
@@ -123,7 +123,7 @@ export default class Util {
 	 * @param   codeunits code units conforming to the UTF-8 specification
 	 * @returns           a sequence of numeric code point values within [0x0, 0x10_ffff]
 	 */
-	static utf8Decode(codeunits: EncodedChar): CodePoint {
+	static utf8Decode(codeunits: Readonly<EncodedChar>): CodePoint {
 		/**
 		 * Multiplies a sequence of code units into a numeric code point.
 		 * @param units the code units
@@ -135,7 +135,12 @@ export default class Util {
 				: multiply(units.slice(0, -1)) * 0x40 + units[units.length - 1]
 			;
 		}
-		function kontinue(units: readonly CodeUnit[]): void {
+		/**
+		 * Parse a sequence of code units.
+		 * @param units the code units to validate
+		 * @throws {UTF8DecodeError} if the sequence of bits is not well-formed
+		 */
+		function parse(units: readonly CodeUnit[]): void {
 			return units.slice(1).forEach((unit, i) => { // `i == 0` starts at `units[1]`
 				if (
 					   unit <  0x80 // "0bbb_bbbb"
@@ -145,15 +150,37 @@ export default class Util {
 				};
 			});
 		}
+		/**
+		 * Validate a sequence of code units.
+		 *
+		 * UTF-8 defines certain encodings that are invalid, even if they are well-formed (parse correctly).
+		 * For example, the encoding `C1 9C` is well-formed, and if decoded naïvely, would decode to
+		 * U+005C REVERSE SOLIDUS (which should have been encoded as `5C`).
+		 *
+		 * UTF-8 defines a one-to-one correspondance between Unicode code points and their encodings,
+		 * and every code point must be encoded with the least number of bytes possible.
+		 * Furthermore, certain code points are reserved for UTF-16 and are forbidden in UTF-8.
+		 * These code points, if naïvely or maliciously encoded, would lead to invalid byte sequences.
+		 *
+		 * @param units the code units to validate
+		 * @throws {UTF8DecodeError} if the sequence of bits is not valid
+		 */
+		function validate(units: readonly CodeUnit[]): void {
+			if (units.length === 2 &&                      units[0] < 0xc2) { throw new UTF8DecodeError(units, 0); };
+			if (units.length === 3 && units[0] === 0xe0 && units[1] < 0xa0) { throw new UTF8DecodeError(units, 1); };
+			if (units.length === 4 && units[0] === 0xf0 && units[1] < 0x90) { throw new UTF8DecodeError(units, 1); };
+			if (units.length === 5 && units[0] === 0xf8 && units[1] < 0x88) { throw new UTF8DecodeError(units, 1); };
+			if (units.length === 6 && units[0] === 0xfc && units[1] < 0x84) { throw new UTF8DecodeError(units, 1); };
+		}
 		return (
 			(codeunits[0] < 0x00)                   ? Util.REPLACEMENT_CHARACTER :
 			(codeunits[0] < 0x80) /* "0bbb_bbbb" */ ? codeunits[0] :
 			(codeunits[0] < 0xc0) /* "10bb_bbbb" */ ? Util.REPLACEMENT_CHARACTER :
-			(codeunits[0] < 0xe0) /* "110b_bbbb" */ ? (kontinue(codeunits.slice(0, 2)), multiply(codeunits.slice(0, 2).map((cu, i) => i === 0 ? cu - 0xc0 : cu - 0x80))) :
-			(codeunits[0] < 0xf0) /* "1110_bbbb" */ ? (kontinue(codeunits.slice(0, 3)), multiply(codeunits.slice(0, 3).map((cu, i) => i === 0 ? cu - 0xe0 : cu - 0x80))) :
-			(codeunits[0] < 0xf8) /* "1111_0bbb" */ ? (kontinue(codeunits.slice(0, 4)), multiply(codeunits.slice(0, 4).map((cu, i) => i === 0 ? cu - 0xf0 : cu - 0x80))) :
-			(codeunits[0] < 0xfc) /* "1111_10bb" */ ? (kontinue(codeunits.slice(0, 5)), multiply(codeunits.slice(0, 5).map((cu, i) => i === 0 ? cu - 0xf8 : cu - 0x80))) :
-			(codeunits[0] < 0xfe) /* "1111_110b" */ ? (kontinue(codeunits.slice(0, 6)), multiply(codeunits.slice(0, 6).map((cu, i) => i === 0 ? cu - 0xfc : cu - 0x80))) :
+			(codeunits[0] < 0xe0) /* "110b_bbbb" */ ? (parse(codeunits.slice(0, 2)), validate(codeunits.slice(0, 2)), multiply(codeunits.slice(0, 2).map((cu, i) => i === 0 ? cu - 0xc0 : cu - 0x80))) :
+			(codeunits[0] < 0xf0) /* "1110_bbbb" */ ? (parse(codeunits.slice(0, 3)), validate(codeunits.slice(0, 3)), multiply(codeunits.slice(0, 3).map((cu, i) => i === 0 ? cu - 0xe0 : cu - 0x80))) :
+			(codeunits[0] < 0xf8) /* "1111_0bbb" */ ? (parse(codeunits.slice(0, 4)), validate(codeunits.slice(0, 4)), multiply(codeunits.slice(0, 4).map((cu, i) => i === 0 ? cu - 0xf0 : cu - 0x80))) :
+			(codeunits[0] < 0xfc) /* "1111_10bb" */ ? (parse(codeunits.slice(0, 5)), validate(codeunits.slice(0, 5)), multiply(codeunits.slice(0, 5).map((cu, i) => i === 0 ? cu - 0xf8 : cu - 0x80))) :
+			(codeunits[0] < 0xfe) /* "1111_110b" */ ? (parse(codeunits.slice(0, 6)), validate(codeunits.slice(0, 6)), multiply(codeunits.slice(0, 6).map((cu, i) => i === 0 ? cu - 0xfc : cu - 0x80))) :
 			Util.REPLACEMENT_CHARACTER
 		);
 	}
@@ -170,7 +197,7 @@ export default class Util {
 			};
 			let current: CodePoint;
 			try {
-				current = Util.utf8Decode(codeunits.slice(0, count) as readonly CodeUnit[] as EncodedChar);
+				current = Util.utf8Decode(codeunits.slice(0, count) as EncodedChar);
 			} catch (err) {
 				if (err instanceof UTF8DecodeError) {
 					current = Util.REPLACEMENT_CHARACTER;
