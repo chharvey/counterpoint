@@ -126,14 +126,14 @@ String<Comment>
 			| <Comment+>("%%" ("%"? [^'%#x03])*              "%%")
 		;
 
-StringEscape<Comment> :::=
-	| "'" | "\" | <Comment+>"%"
-	| "s" | "t" | "n" | "r"
-	| "u{" DigitSequenceHex? "}"
-	| #x0a
-	| <Comment->[^'\stnru#x0a#x03]
-	| <Comment+>[^'\%stnru#x0a#x03]
-;
+			StringEscape<Comment> :::=
+				| "'" | "\" | <Comment+>"%"
+				| "s" | "t" | "n" | "r"
+				| "u{" DigitSequenceHex? "}"
+				| #x0a
+				| <Comment->[^'\stnru#x0a#x03]
+				| <Comment+>[^'\%stnru#x0a#x03]
+			;
 
 
 
@@ -142,37 +142,37 @@ TemplateHead   :::= "'''" TemplateChars__EndInterp? "{{" ;
 TemplateMiddle :::= "}}"  TemplateChars__EndInterp? "{{" ;
 TemplateTail   :::= "}}"  TemplateChars__EndDelim?  "'''";
 
-TemplateChars__EndDelim :::=
-	| [^'{#x03] TemplateChars__EndDelim?
-	| TemplateChars__EndDelim__StartDelim
-	| TemplateChars__EndDelim__StartInterp
-;
+	TemplateChars__EndDelim :::=
+		| [^'{#x03] TemplateChars__EndDelim?
+		| TemplateChars__EndDelim__StartDelim
+		| TemplateChars__EndDelim__StartInterp
+	;
 
-TemplateChars__EndDelim__StartDelim :::=
-	| ("'"  | "''")   [^'{#x03] TemplateChars__EndDelim?
-	| ("'{" | "''{") ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)?
-;
+		TemplateChars__EndDelim__StartDelim :::=
+			| ("'"  | "''")   [^'{#x03] TemplateChars__EndDelim?
+			| ("'{" | "''{") ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)?
+		;
 
-TemplateChars__EndDelim__StartInterp :::=
-	| "{"            ([^'{#x03] TemplateChars__EndDelim?                                       )?
-	| ("{'" | "{''") ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)
-;
+		TemplateChars__EndDelim__StartInterp :::=
+			| "{"            ([^'{#x03] TemplateChars__EndDelim?                                       )?
+			| ("{'" | "{''") ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)
+		;
 
-TemplateChars__EndInterp :::=
-	| [^'{#x03] TemplateChars__EndInterp?
-	| TemplateChars__EndInterp__StartDelim
-	| TemplateChars__EndInterp__StartInterp
-;
+	TemplateChars__EndInterp :::=
+		| [^'{#x03] TemplateChars__EndInterp?
+		| TemplateChars__EndInterp__StartDelim
+		| TemplateChars__EndInterp__StartInterp
+	;
 
-TemplateChars__EndInterp__StartDelim :::=
-	| ("'"  | "''")  ([^'{#x03] TemplateChars__EndInterp?                                       )?
-	| ("'{" | "''{") ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)
-;
+		TemplateChars__EndInterp__StartDelim :::=
+			| ("'"  | "''")  ([^'{#x03] TemplateChars__EndInterp?                                       )?
+			| ("'{" | "''{") ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)
+		;
 
-TemplateChars__EndInterp__StartInterp :::=
-	| "{"             [^'{#x03] TemplateChars__EndInterp?
-	| ("{'" | "{''") ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)?
-;
+		TemplateChars__EndInterp__StartInterp :::=
+			| "{"             [^'{#x03] TemplateChars__EndInterp?
+			| ("{'" | "{''") ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)?
+		;
 
 
 
