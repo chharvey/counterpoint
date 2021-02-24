@@ -106,16 +106,25 @@ DigitSequenceHTD<Separator> :::= ( DigitSequenceHTD <Separator+>"_"? )? [0-9a-z]
 
 
 String<Comment>
-	:::= "'" StringChars<?Comment>? "'";
+	:::= "'" (StringUnfinished<?Comment> | StringChars<?Comment>)? "'";
 
-StringChars<Comment> :::=
-	| <Comment->([^'\#x03]        StringChars<?Comment>?)
-	| <Comment+>([^'\%#x03]       StringChars<?Comment>?)
-	| "\"  StringEscape<?Comment> StringChars<?Comment>?
-	| "\u" ( [^'{#x03]            StringChars<?Comment>? )?
-	| <Comment+>("%"  ([^'%#x0a#x03] [^'#x0a#x03]*)? ( #x0a StringChars<?Comment>? )?)
-	| <Comment+>("%%" ("%"? [^'%#x03])*              ( "%%" StringChars<?Comment>? )?)
-;
+	StringUnfinished<Comment> :::=
+		| "\u"
+		| <Comment+>("%"  ([^'%#x0a#x03] [^'#x0a#x03]*)?)
+		| <Comment+>("%%" ("%"? [^'%#x03])*)
+	;
+
+	StringChars<Comment>
+		:::= StringChar<?Comment> StringChars<?Comment>?;
+
+		StringChar<Comment> :::=
+			| <Comment->[^'\#x03]
+			| <Comment+>[^'\%#x03]
+			| "\"  StringEscape<?Comment>
+			| "\u" [^'{#x03]
+			| <Comment+>("%"  ([^'%#x0a#x03] [^'#x0a#x03]*)? #x0a)
+			| <Comment+>("%%" ("%"? [^'%#x03])*              "%%")
+		;
 
 StringEscape<Comment> :::=
 	| "'" | "\" | <Comment+>"%"
