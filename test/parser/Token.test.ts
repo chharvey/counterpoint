@@ -178,7 +178,7 @@ describe('TokenSolid', () => {
 					'012\\
 					345\\%
 					678';
-					'\u{10001}' '\\\u{10001}' '\\u{10001}';
+					'😀' '\u{10001}' '\\\u{10001}' '\\u{10001}';
 				`), CONFIG_DEFAULT).generate()]
 					.filter((token): token is TOKEN.TokenSolid => token instanceof TOKEN.TokenSolid)
 					.map((token) => token.cook())
@@ -187,7 +187,7 @@ describe('TokenSolid', () => {
 						10,
 						12,
 						14,
-						16, 17, 18,
+						16, 17, 18, 19,
 					].includes(i))
 				, [
 					``,
@@ -195,7 +195,7 @@ describe('TokenSolid', () => {
 					`0 ' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`,
 					`0 $ 1 _ 2 \0 3`,
 					`012 345%\n678`,
-					`\u{10001}`, `\u{10001}`, `\u{10001}`,
+					`\u{1f600}`, `\u{10001}`, `\u{10001}`, `\u{10001}`,
 				]);
 			})
 			describe('In-String Comments', () => {
@@ -286,6 +286,7 @@ describe('TokenSolid', () => {
 						'''012\\
 						345
 						678''';
+						'''😀 \\😀 \\u{1f600}''';
 					`), CONFIG_DEFAULT).generate()]
 						.filter((token): token is TOKEN.TokenSolid => token instanceof TOKEN.TokenSolid)
 						.map((token) => token.cook())
@@ -298,6 +299,7 @@ describe('TokenSolid', () => {
 							27,
 							29,
 							31,
+							33,
 						].includes(i))
 					,
 					[
@@ -309,6 +311,7 @@ describe('TokenSolid', () => {
 						`0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`,
 						`0 \\u{24} 1 \\u{005f} 2 \\u{} 3`,
 						`012\\\n345\n678`,
+						`\u{1f600} \\\u{1f600} \\u{1f600}`,
 					],
 				);
 			})

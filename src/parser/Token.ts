@@ -15,7 +15,6 @@ import {
 } from '../core/';
 
 import type {
-	CodePoint,
 	CodeUnit,
 	EncodedChar,
 } from '../core/Util';
@@ -474,10 +473,9 @@ export class TokenString extends NumberOrStringToken {
 
 			} else {
 				/* a backslash escapes the following character */
-				const codepoint: CodePoint = text.codePointAt(1)!;
 				return [
-					...Util.utf8Encode(codepoint),
-					...TokenString.tokenWorth(text.slice((codepoint <= 0xffff) ? 2 : 3 /* UTF-16 */), allow_comments, allow_separators),
+					...Util.utf8Encode(text.codePointAt(1)!),
+					...TokenString.tokenWorth([...text].slice(2).join('')/* UTF-16 */, allow_comments, allow_separators),
 				]
 			}
 
@@ -496,10 +494,9 @@ export class TokenString extends NumberOrStringToken {
 			;
 
 		} else {
-			const codepoint: CodePoint = text.codePointAt(0)!;
 			return [
-				...Util.utf8Encode(codepoint),
-				...TokenString.tokenWorth(text.slice((codepoint <= 0xffff)? 1 : 2 /* UTF-16 */), allow_comments, allow_separators),
+				...Util.utf8Encode(text.codePointAt(0)!),
+				...TokenString.tokenWorth([...text].slice(1).join('')/* UTF-16 */, allow_comments, allow_separators),
 			];
 		};
 	}
@@ -606,10 +603,9 @@ export class TokenTemplate extends TokenSolid {
 	 */
 	private static tokenWorth(text: string): CodeUnit[] {
 		if (text.length === 0) return []
-		const codepoint: CodePoint = text.codePointAt(0)!;
 		return [
-			...Util.utf8Encode(codepoint),
-			...TokenTemplate.tokenWorth(text.slice((codepoint <= 0xffff)? 1 : 2 /* UTF-16 */)),
+			...Util.utf8Encode(text.codePointAt(0)!),
+			...TokenTemplate.tokenWorth([...text].slice(1).join('')/* UTF-16 */),
 		]
 	}
 	private readonly delim_end  : typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_START;
