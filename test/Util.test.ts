@@ -1,11 +1,14 @@
 import * as assert from 'assert';
 
-import Util, {
+import {
+	Util,
+} from '../src/core/';
+import {
 	CodePoint,
 	CodeUnit,
 	EncodedChar,
 	UTF8DecodeError,
-} from '../src/class/Util.class';
+} from '../src/core/Util';
 
 
 describe('Util', () => {

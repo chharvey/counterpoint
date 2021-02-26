@@ -1,6 +1,3 @@
-import type {
-	Token,
-} from '@chharvey/parser';
 import * as assert from 'assert'
 
 import {
