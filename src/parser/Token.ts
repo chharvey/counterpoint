@@ -103,7 +103,11 @@ export enum TemplatePosition {
 	TAIL,
 }
 
-export type CookValueType = string|number|bigint|boolean|null
+export type CookValueType =
+	| null       // TokenIdentifier
+	| bigint     // TokenPuncuator | TokenKeyword | TokenIdentifier
+	| number     // TokenNumber
+	| CodeUnit[] // TokenString | TokenTemplate
 
 
 
@@ -584,12 +588,12 @@ export class TokenString extends NumberOrStringToken {
 		// add ending delim to token
 		this.advance()
 	}
-	cook(): string {
-		return String.fromCodePoint(...Util.decodeUTF8Stream(TokenString.tokenWorth(
+	cook(): CodeUnit[] {
+		return TokenString.tokenWorth(
 			this.source.slice(TokenString.DELIM.length, -TokenString.DELIM.length),
 			this.lexer.config.languageFeatures.comments,
 			this.lexer.config.languageFeatures.numericSeparators,
-		)));
+		);
 	}
 }
 export class TokenTemplate extends TokenSolid {
@@ -653,9 +657,9 @@ export class TokenTemplate extends TokenSolid {
 		this.delim_end   = delim_end !
 		this.position = [...positions][0]
 	}
-	cook(): string {
-		return String.fromCodePoint(...Util.decodeUTF8Stream(TokenTemplate.tokenWorth(
+	cook(): CodeUnit[] {
+		return TokenTemplate.tokenWorth(
 			this.source.slice(this.delim_start.length, -this.delim_end.length),
-		)));
+		);
 	}
 }

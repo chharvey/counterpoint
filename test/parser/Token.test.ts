@@ -7,7 +7,6 @@ import {
 	Util,
 } from '../../src/core/';
 import {
-	CookValueType,
 	TOKEN,
 	LexerSolid as Lexer,
 } from '../../src/parser/';
@@ -180,15 +179,8 @@ describe('TokenSolid', () => {
 					678';
 					'😀' '\u{10001}' '\\\u{10001}' '\\u{10001}';
 				`), CONFIG_DEFAULT).generate()]
-					.filter((token): token is TOKEN.TokenSolid => token instanceof TOKEN.TokenSolid)
-					.map((token) => token.cook())
-					.filter((_, i) => [
-						4, 6,
-						10,
-						12,
-						14,
-						16, 17, 18, 19,
-					].includes(i))
+					.filter((token): token is TOKEN.TokenString => token instanceof TOKEN.TokenString)
+					.map((token) => String.fromCodePoint(...Util.decodeUTF8Stream(token.cook())))
 				, [
 					``,
 					`hello`,
@@ -199,7 +191,7 @@ describe('TokenSolid', () => {
 				]);
 			})
 			describe('In-String Comments', () => {
-				function cook(config: SolidConfig): CookValueType[] {
+				function cook(config: SolidConfig): string[] {
 					return [...new Lexer(Util.dedent(`
 						'The five boxing wizards % jump quickly.'
 
@@ -229,10 +221,10 @@ describe('TokenSolid', () => {
 						quickly.'
 					`), config).generate()]
 						.filter((token): token is TOKEN.TokenString => token instanceof TOKEN.TokenString)
-						.map((token) => token.cook())
+						.map((token) => String.fromCodePoint(...Util.decodeUTF8Stream(token.cook())))
 					;
 				}
-				it('with comments enabled.', () => {
+				context('with comments enabled.', () => {
 					const data: {testdesc: string, expected: string}[] = [
 						{testdesc: 'removes a line comment not ending in a LF.',   expected: 'The five boxing wizards '},
 						{testdesc: 'preserves a LF when line comment ends in LF.', expected: 'The five \njump quickly.'},
@@ -288,19 +280,8 @@ describe('TokenSolid', () => {
 						678''';
 						'''😀 \\😀 \\u{1f600}''';
 					`), CONFIG_DEFAULT).generate()]
-						.filter((token): token is TOKEN.TokenSolid => token instanceof TOKEN.TokenSolid)
-						.map((token) => token.cook())
-						.filter((_, i) => [
-							2, 6,
-							12,
-							17,
-							22,
-							25,
-							27,
-							29,
-							31,
-							33,
-						].includes(i))
+						.filter((token): token is TOKEN.TokenTemplate => token instanceof TOKEN.TokenTemplate)
+						.map((token) => String.fromCodePoint(...Util.decodeUTF8Stream(token.cook())))
 					,
 					[
 						``, `hello`,

@@ -42,6 +42,7 @@ import {SolidNumber}  from './SolidNumber';
 import {Int16}        from './Int16';
 import {Float64}      from './Float64';
 import {SolidString}  from './SolidString';
+import type {CodeUnit} from '../core/Util';
 import {
 	Builder,
 	Instruction,
@@ -69,7 +70,6 @@ import {
 } from '../error/';
 import {
 	Keyword,
-	CookValueType,
 	TOKEN,
 	PARSER,
 } from '../parser/';
@@ -104,7 +104,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 */
 	constructor(
 		start_node: Token|ParseNode,
-		attributes: {[key: string]: CookValueType | SolidObject} = {},
+		attributes: {[key: string]: unknown} = {},
 		children: readonly ASTNodeSolid[] = [],
 	) {
 		super(start_node, attributes, children)
@@ -234,7 +234,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 						: new Int16(BigInt(start_node.cook()))
 				)
 			: SolidString
-		super(start_node, {value: value.toString()})
+		super(start_node, {value});
 		this.value = value
 	}
 	/** @implements ASTNodeSolid */
@@ -482,9 +482,9 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 export class ASTNodeConstant extends ASTNodeExpression {
 	declare children:
 		| readonly []
-	readonly value: string | SolidObject;
+	readonly value: CodeUnit[] | SolidObject;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString | TOKEN.TokenTemplate) {
-		const value: string | SolidObject =
+		const value: CodeUnit[] | SolidObject =
 			(start_node instanceof TOKEN.TokenKeyword) ?
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUE  :
