@@ -415,7 +415,7 @@ describe('Parser', () => {
 					`foobar`,
 				];
 				assert.deepStrictEqual(
-					srcs.map((src) => h.propertyFromString(`${ src } = 42`).children.map((c) => c.source)),
+					srcs.map((src) => h.propertyFromString(`${ src }= 42`).children.map((c) => c.source)),
 					srcs.map((src) => [src, Punctuator.ASSIGN, `42`]),
 				);
 			});
@@ -515,14 +515,14 @@ describe('Parser', () => {
 					<RecordLiteral>
 						<PUNCTUATOR>[</PUNCTUATOR>
 						<PUNCTUATOR>,</PUNCTUATOR>
-						<RecordLiteral__1__List source="let = true, foobar = 42">...</RecordLiteral__1__List>
+						<RecordLiteral__1__List source="let= true, foobar= 42">...</RecordLiteral__1__List>
 						<PUNCTUATOR>]</PUNCTUATOR>
 					</RecordLiteral>
 				*/
 				const unit: PARSER.ParseNodeRecordLiteral = h.recordLiteralFromSource(`
 					[
-						, let = true
-						, foobar = 42
+						, let= true
+						, foobar= 42
 					];
 				`);
 				assert_arrayLength(unit.children, 4);
@@ -536,13 +536,13 @@ describe('Parser', () => {
 				/*
 					<RecordLiteral__1__List>
 						<RecordLiteral__1__List>
-							<Property source="let = true">...</Property>
+							<Property source="let= true">...</Property>
 						</RecordLiteral__1__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
-						<Property source="foobar = 42">...</Property>
+						<Property source="foobar= 42">...</Property>
 					</RecordLiteral__1__List>
 				*/
-				const unit: PARSER.ParseNodeRecordLiteral = h.recordLiteralFromSource(`[let = true, foobar = 42];`);
+				const unit: PARSER.ParseNodeRecordLiteral = h.recordLiteralFromSource(`[let= true, foobar= 42];`);
 				assert_arrayLength(unit.children, 3);
 				h.hashListSources(unit.children[1], `let = true`, `foobar = 42`);
 			});
@@ -917,8 +917,8 @@ describe('Parser', () => {
 		Dev.supports('literalCollection') && specify('ExpressionUnit ::= RecordLiteral', () => {
 			h.recordLiteralFromSource(`
 				[
-					, let = true
-					, foobar = 42
+					, let= true
+					, foobar= 42
 					,
 				];
 			`); // assert does not throw

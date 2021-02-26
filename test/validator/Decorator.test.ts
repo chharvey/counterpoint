@@ -335,7 +335,7 @@ describe('Decorator', () => {
 						<Operation source="1. + 0.25">...</Operation>
 					</Property>
 				*/
-				const property = Decorator.decorate(h.propertyFromString(`fontSize = 1. + 0.25`));
+				const property = Decorator.decorate(h.propertyFromString(`fontSize= 1. + 0.25`));
 				assert.ok(property instanceof AST.ASTNodeProperty); // FIXME: `AST.ASTNodeProperty` is assignable to `TemplatePartialType`, so `Decorator.decorate` overlads get confused
 				assert.deepStrictEqual(
 					property.children.map((c) => c.source),
@@ -394,8 +394,8 @@ describe('Decorator', () => {
 				*/
 				assert.deepStrictEqual(Decorator.decorate(h.recordLiteralFromSource(`
 					[
-						let = true,
-						foobar = 42,
+						let= true,
+						foobar= 42,
 					];
 				`)).children.map((c) => c.source), [
 					`let = true`,
