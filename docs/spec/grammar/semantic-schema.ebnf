@@ -1,19 +1,44 @@
 SemanticType =:=
 	| SemanticTypeConstant
+	| SemanticTypeAlias
+	| SemanticTypeEmptyCollection
+	| SemanticTypeList
+	| SemanticTypeRecord
 	| SemanticTypeOperation
 ;
 
 SemanticExpression =:=
 	| SemanticConstant
-	| SemanticIdentifier
+	| SemanticVariable
 	| SemanticTemplate
+	| SemanticEmptyCollection
+	| SemanticList
+	| SemanticRecord
+	| SemanticMapping
 	| SemanticOperation
 ;
 
 
 
+SemanticKey[id: RealNumber]
+	::= ();
+
+
+
+SemanticTypeProperty
+	::= SemanticKey SemanticType;
+
+
+
 SemanticTypeConstant[value: Type]
 	::= ();
+
+SemanticTypeAlias[id: RealNumber]
+	::= ();
+
+SemanticTypeEmptyCollection ::= ();
+SemanticTypeList            ::= SemanticType+;
+SemanticTypeRecord          ::= SemanticTypeProperty+;
 
 SemanticTypeOperation[operator: ORNULL]
 	::= SemanticType;
@@ -22,10 +47,18 @@ SemanticTypeOperation[operator: AND | OR]
 
 
 
+SemanticProperty
+	::= SemanticKey SemanticExpression;
+
+SemanticCase
+	::= SemanticExpression+ SemanticExpression;
+
+
+
 SemanticConstant[value: Null | Boolean | Number | Sequence<RealNumber>]
 	::= ();
 
-SemanticIdentifier[id: RealNumber]
+SemanticVariable[id: RealNumber]
 	::= ();
 
 SemanticTemplate[type: "full"]
@@ -36,7 +69,10 @@ SemanticTemplate[type: "substitution"]
 SemanticTemplatePartial
 	::= (SemanticConstant SemanticExpression?)+;
 
-
+SemanticEmptyCollection ::= ();
+SemanticList            ::= SemanticExpression+;
+SemanticRecord          ::= SemanticProperty+;
+SemanticMapping         ::= SemanticCase+;
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
@@ -67,13 +103,23 @@ SemanticStatementExpression
 
 
 SemanticDeclarationVariable[unfixed: Boolean]
-	::= SemanticAssignee SemanticType SemanticExpression;
+	::= SemanticVariable SemanticType SemanticExpression;
+
+SemanticDeclarationType
+	::= SemanticTypeAlias SemanticType;
+
+SemanticDeclaration =:=
+	| SemanticDeclarationVariable
+	| SemanticDeclarationType
+;
+
+
 
 SemanticAssignment
 	::= SemanticAssignee SemanticExpression;
 
 SemanticAssignee
-	::= SemanticIdentifier;
+	::= SemanticVariable;
 
 
 

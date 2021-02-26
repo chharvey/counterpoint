@@ -1,4 +1,5 @@
-import Operator, {
+import {
+	Operator,
 	ValidOperatorUnary,
 	ValidOperatorBinary,
 	ValidOperatorArithmetic,
@@ -13,7 +14,7 @@ import {
 
 
 
-export default abstract class Instruction {
+export abstract class Instruction {
 }
 
 
@@ -43,6 +44,7 @@ class InstructionUnreachable extends Instruction {
 /**
  * Do nothing at runtime.
  */
+// @ts-expect-error noUnusedLocals
 class InstructionNop extends Instruction {
 	/**
 	 * @return `'(nop)'`

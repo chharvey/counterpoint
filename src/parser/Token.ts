@@ -7,14 +7,18 @@ import {
 	LexError02,
 } from '@chharvey/parser';
 
-import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig'
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Dev,
+	Util,
+} from '../core/';
 
-import Util, {
+import type {
 	CodePoint,
 	CodeUnit,
 	EncodedChar,
-} from '../class/Util.class'
-import Dev from '../class/Dev.class'
+} from '../core/Util';
 import type {
 	LexerSolid,
 } from './Lexer';
@@ -23,7 +27,7 @@ import {
 	LexError03,
 	LexError04,
 	LexError05,
-} from '../error/LexError.class'
+} from '../error/';
 
 
 
@@ -31,6 +35,10 @@ export enum Punctuator {
 	// grouping
 		GRP_OPN = '(',
 		GRP_CLS = ')',
+		BRAK_OPN = '[',   // Dev.supports('literalCollection')
+		BRAK_CLS = ']',   // Dev.supports('literalCollection')
+		COMMA    = ',',   // Dev.supports('literalCollection')
+		MAPTO    = '|->', // Dev.supports('literalCollection')
 	// unary
 		NOT = '!',
 		EMP = '?',
@@ -60,7 +68,7 @@ export enum Punctuator {
 	// statement
 		ENDSTAT = ';',
 		ISTYPE  = ':', // Dev.supports('typingExplicit')
-		ASSIGN  = '=', // Dev.supportsAll('variables', 'typingExplicit')
+		ASSIGN  = '=', // Dev.supportsAll('variables', 'typingExplicit', 'literalCollection')
 }
 
 export enum Keyword {
@@ -79,7 +87,8 @@ export enum Keyword {
 		THEN = 'then',
 		ELSE = 'else',
 	// storage
-		LET = 'let', // Dev.supports('variables')
+		LET  = 'let',  // Dev.supports('variables')
+		TYPE = 'type', // Dev.supportsAll('variables', 'typingExplicit')
 	// modifier
 		UNFIXED = 'unfixed', // Dev.supports('variables')
 }
@@ -139,6 +148,11 @@ export class TokenPunctuator extends TokenSolid {
 	static readonly PUNCTUATORS: readonly Punctuator[] = [...new Set( // remove duplicates
 		Object.values(Punctuator).filter((p) => Dev.supports('variables') ? true : ![
 			Punctuator.ASSIGN,
+		].includes(p)).filter((p) => Dev.supports('literalCollection') ? true : ![
+			Punctuator.BRAK_OPN,
+			Punctuator.BRAK_CLS,
+			Punctuator.COMMA,
+			Punctuator.MAPTO,
 		].includes(p))
 	)]
 	// declare readonly source: Punctuator; // NB: https://github.com/microsoft/TypeScript/issues/40220

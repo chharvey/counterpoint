@@ -4,7 +4,9 @@ import {
 	Terminal,
 } from '@chharvey/parser';
 
-import Util from '../class/Util.class'
+import {
+	Util,
+} from '../core/';
 import {
 	RadixType,
 	TemplatePosition,
@@ -22,6 +24,15 @@ function maybeA(fun: () => string[]): string[] {
 
 
 
+export class TerminalKeyword extends Terminal {
+	static readonly instance: TerminalKeyword = new TerminalKeyword();
+	random(): TOKEN.Keyword {
+		return Util.arrayRandom(Object.values(TOKEN.Keyword));
+	}
+	match(candidate: Token): boolean {
+		return candidate instanceof TOKEN.TokenKeyword;
+	}
+}
 export class TerminalIdentifier extends Terminal {
 	static readonly instance: TerminalIdentifier = new TerminalIdentifier()
 	private static charsBasic(start: boolean = false): string {

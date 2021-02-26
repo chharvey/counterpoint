@@ -28,7 +28,7 @@ export type EncodedChar =
 /**
  * Utility fields and methods.
  */
-export default class Util {
+export class Util {
 	static REPLACEMENT_CHARACTER: CodePoint & 0xfffd = 0xfffd;
 
 	/**

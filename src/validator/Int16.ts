@@ -1,7 +1,7 @@
-import type SolidLanguageType from './SolidLanguageType.class'
-import type SolidObject from './SolidObject.class'
-import SolidNumber from './SolidNumber.class'
-import Float64 from './Float64.class'
+import type {SolidLanguageType} from './SolidLanguageType';
+import type {SolidObject}       from './SolidObject';
+import {SolidNumber} from './SolidNumber';
+import {Float64} from './Float64';
 
 
 
@@ -14,7 +14,7 @@ type Int16DatatypeMutable =   [boolean, boolean, boolean, boolean, boolean, bool
  * A 16-bit signed integer in two’s complement.
  * @final
  */
-export default class Int16 extends SolidNumber<Int16> {
+export class Int16 extends SolidNumber<Int16> {
 	private static readonly BITCOUNT: number = 16
 
 	        static readonly ZERO  : Int16 = new Int16(0n)

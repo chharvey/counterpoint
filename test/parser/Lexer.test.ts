@@ -6,9 +6,12 @@ import {
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
-import SolidConfig, {CONFIG_DEFAULT} from '../../src/SolidConfig'
-import Util  from '../../src/class/Util.class'
-import Dev from '../../src/class/Dev.class'
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Dev,
+	Util,
+} from '../../src/core/';
 import {
 	TemplatePosition,
 	TOKEN,
@@ -18,35 +21,14 @@ import {
 	LexError03,
 	LexError04,
 	LexError05,
-} from '../../src/error/LexError.class'
-
-const lastItem  = (iter: any): any     => iter[lastIndex(iter)]
-const lastIndex = (iter: any): number  => iter.length-1
-
-const mock: string = `
-5  +  30 \u000d
-
-6 ^ 2 - 37 *
-
-( 4 * \u000d9 ^ 3
-
-3 - 50 + * 2
-
-5 + 03 +  *  -2
-
-600  /  3  *  2
-
-600  /  (3  *  2
-
-4 * 2 ^ 3
-`
+} from '../../src/error/';
 
 
 
 describe('LexerSolid', () => {
 	describe('#generate', () => {
 		it('rejects unrecognized characters.', () => {
-			`. ~ , [ ] { } # $ @ "`.split(' ').map((c) => new Lexer(`
+			`. ~ { } # $ @ "`.split(' ').map((c) => new Lexer(`
 				5  +  30
 				+ 6 ^ - (${c} - 37 *
 			`, CONFIG_DEFAULT)).forEach((lexer) => {

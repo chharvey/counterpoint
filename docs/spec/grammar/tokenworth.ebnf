@@ -1,29 +1,33 @@
-TokenWorth(Punctuator :::= "(")  -> RealNumber := \x00;
-TokenWorth(Punctuator :::= ")")  -> RealNumber := \x01;
-TokenWorth(Punctuator :::= "!")  -> RealNumber := \x02;
-TokenWorth(Punctuator :::= "?")  -> RealNumber := \x03;
-TokenWorth(Punctuator :::= "+")  -> RealNumber := \x04;
-TokenWorth(Punctuator :::= "-")  -> RealNumber := \x05;
-TokenWorth(Punctuator :::= "^")  -> RealNumber := \x06;
-TokenWorth(Punctuator :::= "*")  -> RealNumber := \x07;
-TokenWorth(Punctuator :::= "/")  -> RealNumber := \x08;
-TokenWorth(Punctuator :::= "<")  -> RealNumber := \x09;
-TokenWorth(Punctuator :::= ">")  -> RealNumber := \x0a;
-TokenWorth(Punctuator :::= "<=") -> RealNumber := \x0b;
-TokenWorth(Punctuator :::= ">=") -> RealNumber := \x0c;
-TokenWorth(Punctuator :::= "!<") -> RealNumber := \x0d;
-TokenWorth(Punctuator :::= "!>") -> RealNumber := \x0e;
-TokenWorth(Punctuator :::= "==") -> RealNumber := \x0f;
-TokenWorth(Punctuator :::= "!=") -> RealNumber := \x10;
-TokenWorth(Punctuator :::= "&&") -> RealNumber := \x11;
-TokenWorth(Punctuator :::= "!&") -> RealNumber := \x12;
-TokenWorth(Punctuator :::= "||") -> RealNumber := \x13;
-TokenWorth(Punctuator :::= "!|") -> RealNumber := \x14;
-TokenWorth(Punctuator :::= "&")  -> RealNumber := \x15;
-TokenWorth(Punctuator :::= "|")  -> RealNumber := \x16;
-TokenWorth(Punctuator :::= ";")  -> RealNumber := \x17;
-TokenWorth(Punctuator :::= ":")  -> RealNumber := \x18;
-TokenWorth(Punctuator :::= "=")  -> RealNumber := \x19;
+TokenWorth(Punctuator :::= "(")   -> RealNumber := \x00;
+TokenWorth(Punctuator :::= ")")   -> RealNumber := \x01;
+TokenWorth(Punctuator :::= "[")   -> RealNumber := \x02;
+TokenWorth(Punctuator :::= "]")   -> RealNumber := \x03;
+TokenWorth(Punctuator :::= ",")   -> RealNumber := \x04;
+TokenWorth(Punctuator :::= "|->") -> RealNumber := \x05;
+TokenWorth(Punctuator :::= "!")   -> RealNumber := \x06;
+TokenWorth(Punctuator :::= "?")   -> RealNumber := \x07;
+TokenWorth(Punctuator :::= "+")   -> RealNumber := \x08;
+TokenWorth(Punctuator :::= "-")   -> RealNumber := \x09;
+TokenWorth(Punctuator :::= "^")   -> RealNumber := \x0a;
+TokenWorth(Punctuator :::= "*")   -> RealNumber := \x0b;
+TokenWorth(Punctuator :::= "/")   -> RealNumber := \x0c;
+TokenWorth(Punctuator :::= "<")   -> RealNumber := \x0d;
+TokenWorth(Punctuator :::= ">")   -> RealNumber := \x0e;
+TokenWorth(Punctuator :::= "<=")  -> RealNumber := \x0f;
+TokenWorth(Punctuator :::= ">=")  -> RealNumber := \x10;
+TokenWorth(Punctuator :::= "!<")  -> RealNumber := \x11;
+TokenWorth(Punctuator :::= "!>")  -> RealNumber := \x12;
+TokenWorth(Punctuator :::= "==")  -> RealNumber := \x13;
+TokenWorth(Punctuator :::= "!=")  -> RealNumber := \x14;
+TokenWorth(Punctuator :::= "&&")  -> RealNumber := \x15;
+TokenWorth(Punctuator :::= "!&")  -> RealNumber := \x16;
+TokenWorth(Punctuator :::= "||")  -> RealNumber := \x17;
+TokenWorth(Punctuator :::= "!|")  -> RealNumber := \x18;
+TokenWorth(Punctuator :::= "&")   -> RealNumber := \x19;
+TokenWorth(Punctuator :::= "|")   -> RealNumber := \x1a;
+TokenWorth(Punctuator :::= ";")   -> RealNumber := \x1b;
+TokenWorth(Punctuator :::= ":")   -> RealNumber := \x1c;
+TokenWorth(Punctuator :::= "=")   -> RealNumber := \x1d;
 
 
 
@@ -40,7 +44,8 @@ TokenWorth(Keyword :::= "if")      -> RealNumber := \x89;
 TokenWorth(Keyword :::= "then")    -> RealNumber := \x8a;
 TokenWorth(Keyword :::= "else")    -> RealNumber := \x8b;
 TokenWorth(Keyword :::= "let")     -> RealNumber := \x8c;
-TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x8d;
+TokenWorth(Keyword :::= "type")    -> RealNumber := \x8d;
+TokenWorth(Keyword :::= "unfixed") -> RealNumber := \x8e;
 
 
 

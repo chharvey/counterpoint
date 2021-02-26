@@ -3,14 +3,17 @@ import * as path from 'path'
 
 import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
 
-import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+} from '../core/';
 import {
 	ParserSolid as Parser,
 } from '../parser/';
 import {
 	Decorator,
 	Validator,
-	SemanticNodeGoal,
+	AST,
 } from '../validator/'
 
 
@@ -18,7 +21,7 @@ import {
 /**
  * The Builder generates assembly code.
  */
-export default class Builder {
+export class Builder {
 	static readonly IMPORTS: readonly string[] = [
 		fs.readFileSync(path.join(__dirname, '../../src/builder/not.wat'), 'utf8'),
 		fs.readFileSync(path.join(__dirname, '../../src/builder/emp.wat'), 'utf8'),
@@ -28,8 +31,10 @@ export default class Builder {
 	]
 
 
-	/** A semantic goal produced by a Validator. */
-	private readonly semanticgoal: SemanticNodeGoal;
+	/** The Validator for conducting semantic analysis. */
+	readonly validator: Validator;
+	/** An AST goal produced by a Decorator. */
+	private readonly ast_goal: AST.ASTNodeGoal;
 	/** A counter for internal variables. Used for optimizing short-circuited expressions. */
 	private var_count: bigint = 0n
 	/** A counter for statements. */
@@ -44,10 +49,10 @@ export default class Builder {
 		source: string,
 		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
-		this.semanticgoal = Decorator.decorate(new Parser(source, config).parse());
-		const validator: Validator = new Validator(this.config);
-		this.semanticgoal.varCheck (validator); // assert does not throw
-		this.semanticgoal.typeCheck(validator); // assert does not throw
+		this.validator = new Validator(this.config);
+		this.ast_goal  = Decorator.decorate(new Parser(source, config).parse());
+		this.ast_goal.varCheck (this.validator); // assert does not throw
+		this.ast_goal.typeCheck(this.validator); // assert does not throw
 	}
 
 	/**
@@ -73,7 +78,7 @@ export default class Builder {
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
 	print(): string {
-		return this.semanticgoal.build(this).toString()
+		return this.ast_goal.build(this).toString()
 	}
 
 	/**

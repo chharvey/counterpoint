@@ -24,6 +24,8 @@ CommentMulti
 Punctuator :::=
 	// grouping
 		| "(" | ")"
+		| "[" | "]"
+		| "," | "|->"
 	// unary
 		| "!" | "?" | "+" | "-"
 	// binary
@@ -55,6 +57,7 @@ Keyword :::=
 		| "else"
 	// storage
 		| "let"
+		| "type"
 	// modifier
 		| "unfixed"
 ;

@@ -1,24 +1,10 @@
-import SolidConfig, {CONFIG_DEFAULT} from '../SolidConfig';
-import type SolidLanguageType from './SolidLanguageType.class'
-
-
-
-/**
- * An object containing symbol information.
- * A “symbol” is a variable or other declaration in source code.
- * - id: the unique identifier of the variable, the cooked value of the token
- * - type: the type of the variable
- * - unfixed: may the variable be reassigned?
- * - line: the 0-based line   index of where the varible was declared
- * - col:  the 0-based column index of where the varible was declared
- */
-export type SymbolInfo = {
-	id:      bigint;
-	type:    SolidLanguageType;
-	unfixed: boolean;
-	line:    number;
-	col:     number;
-}
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+} from '../core/';
+import type {
+	SymbolStructure,
+} from './SymbolStructure';
 
 
 
@@ -32,9 +18,9 @@ export type SymbolInfo = {
  * 	from `(additive (additive (... 2)) (token '+') (multiplicative (... 3)))`
  * 	to `(sum (const 2) (const 3))`
  */
-export default class Validator {
+export class Validator {
 	/** A symbol table, which keeps tracks of variables. */
-	private readonly symbol_table: Map<bigint, SymbolInfo> = new Map();
+	private readonly symbol_table: Map<bigint, SymbolStructure> = new Map();
 
 	/**
 	 * Construct a new Validator object.
@@ -46,22 +32,12 @@ export default class Validator {
 	}
 
 	/**
-	 * Add a symbol to this Validator’s symbol table.
-	 * @param id      the id of the symbol to add
-	 * @param type    the symbol type
-	 * @param unfixed may the symbol be reassigned?
-	 * @param line    the line   number of the symbol’s declaration
-	 * @param col     the column number of the symbol’s declaration
+	 * Add a symbol representing a value variable or type variable to this Validator’s symbol table.
+	 * @param symbol the object encoding data of the symbol
 	 * @returns this
 	 */
-	addSymbol(
-		id:      SymbolInfo['id'],
-		type:    SymbolInfo['type'],
-		unfixed: SymbolInfo['unfixed'],
-		line:    SymbolInfo['line'],
-		col:     SymbolInfo['col'],
-	): this {
-		this.symbol_table.set(id, {id, type, unfixed, line, col});
+	addSymbol(symbol: SymbolStructure): this {
+		this.symbol_table.set(symbol.id, symbol);
 		return this
 	}
 	/**
@@ -86,7 +62,7 @@ export default class Validator {
 	 * @param id the symbol id to check
 	 * @returns the symbol information of `id`, or `null` if there is no corresponding entry
 	 */
-	getSymbolInfo(id: bigint): SymbolInfo | null {
+	getSymbolInfo(id: bigint): SymbolStructure | null {
 		return this.symbol_table.get(id) || null;
 	}
 	/**

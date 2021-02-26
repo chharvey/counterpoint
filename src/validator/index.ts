@@ -1,49 +1,23 @@
-export {default as Validator}    from './Validator.class'
+export {Validator} from './Validator';
 export {Decorator} from './Decorator';
 
-export {
-	SemanticNodeSolid,
-	SemanticNodeType,
-	SemanticNodeTypeConstant,
-	SemanticNodeTypeOperation,
-	SemanticNodeTypeOperationUnary,
-	SemanticNodeTypeOperationBinary,
-	SemanticNodeExpression,
-	SemanticNodeConstant,
-	SemanticNodeIdentifier,
-	SemanticNodeTemplate,
-	SemanticNodeOperation,
-	SemanticNodeOperationUnary,
-	SemanticNodeOperationBinary,
-	SemanticNodeOperationBinaryArithmetic,
-	SemanticNodeOperationBinaryComparative,
-	SemanticNodeOperationBinaryEquality,
-	SemanticNodeOperationBinaryLogical,
-	SemanticNodeOperationTernary,
-	SemanticNodeDeclarationVariable,
-	SemanticNodeAssignment,
-	SemanticNodeAssignee,
-	SemanticStatementType,
-	SemanticNodeStatementExpression,
-	SemanticNodeGoal,
-} from './SemanticNode.class'
-export * as AST from './SemanticNode.class';
+export * as AST from './ASTNode';
 
 export {
+	CompletionType,
 	CompletionStructureAssessment,
-} from './CompletionStructure.class'
-
-export {default as SolidLanguageType} from './SolidLanguageType.class'
+} from './CompletionStructure';
 
 export {
+	SolidLanguageType,
 	SolidTypeConstant,
 	SolidTypeInterface,
-} from './SolidLanguageType.class'
+} from './SolidLanguageType';
 
-export {default as SolidObject}  from './SolidObject.class'
-export {default as SolidNull}    from './SolidNull.class'
-export {default as SolidBoolean} from './SolidBoolean.class'
-export {default as SolidNumber}  from './SolidNumber.class'
-export {default as Int16}        from './Int16.class'
-export {default as Float64}      from './Float64.class'
-export {default as SolidString}  from './SolidString.class'
+export {SolidObject}  from './SolidObject';
+export {SolidNull}    from './SolidNull';
+export {SolidBoolean} from './SolidBoolean';
+export {SolidNumber}  from './SolidNumber';
+export {Int16}        from './Int16';
+export {Float64}      from './Float64';
+export {SolidString}  from './SolidString';

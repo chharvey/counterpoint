@@ -3,7 +3,7 @@ import * as semver from 'semver'
 /**
  * Development utilities. Not for production.
  */
-export default class Dev {
+export class Dev {
 	/** The current version of this project (as defined in `package.json`). */
 	static readonly VERSION: string = require('../../package.json').version
 
@@ -38,6 +38,7 @@ export default class Dev {
 		readonly variables       : string,
 		readonly typingExplicit  : string,
 		// v0.4.0
+		readonly literalCollection: string,
 		readonly 'literalString-lex':       string,
 		readonly 'literalTemplate-lex':     string,
 		readonly 'literalString-cook':      string,
@@ -63,13 +64,14 @@ export default class Dev {
 		variables:       '>=0.3.*',
 		typingExplicit:  '>=0.3.*',
 		// v0.4.0
-		'literalString-lex':       '>=0.4.0-alpha.0.0',
-		'literalTemplate-lex':     '>=0.4.0-alpha.0.0',
-		'literalString-cook':      '>=0.4.0-alpha.0.1',
-		'literalTemplate-cook':    '>=0.4.0-alpha.0.1',
-		'stringTemplate-parse':    '>=0.4.0-alpha.0.2',
-		'stringTemplate-decorate': '>=0.4.0-alpha.0.3',
-		'string-assess':           '>=0.4.0-alpha.0.4',
+		literalCollection: '>=0.4.0-alpha.0',
+		'literalString-lex':       '>=0.4.0-alpha.1.0',
+		'literalTemplate-lex':     '>=0.4.0-alpha.1.0',
+		'literalString-cook':      '>=0.4.0-alpha.1.1',
+		'literalTemplate-cook':    '>=0.4.0-alpha.1.1',
+		'stringTemplate-parse':    '>=0.4.0-alpha.1.2',
+		'stringTemplate-decorate': '>=0.4.0-alpha.1.3',
+		'string-assess':           '>=0.4.0-alpha.1.4',
 	}
 
 	/**
