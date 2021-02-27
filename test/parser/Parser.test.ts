@@ -109,7 +109,7 @@ describe('Parser', () => {
 			/*
 				<TypeTupleLiteral>
 					<PUNCTUATOR>[</PUNCTUATOR>
-					<TypeTupleLiteral__1__List source="T, U | V, W & X!">...</TypeTupleLiteral__1__List>
+					<TypeTupleLiteral__0__List source="T, U | V, W & X!">...</TypeTupleLiteral__0__List>
 					<PUNCTUATOR>]</PUNCTUATOR>
 				</TypeTupleLiteral>
 			*/
@@ -149,23 +149,23 @@ describe('Parser', () => {
 					[Punctuator.BRAK_OPN, `T , U | V , W & X !`, Punctuator.COMMA, Punctuator.BRAK_CLS],
 				);
 			});
-			specify('TypeTupleLiteral__1__List ::= TypeTupleLiteral__1__List "," Type', () => {
+			specify('TypeTupleLiteral__0__List ::= TypeTupleLiteral__0__List "," Type', () => {
 				/*
-					<TypeTupleLiteral__1__List>
-						<TypeTupleLiteral__1__List>
-							<TypeTupleLiteral__1__List>
+					<TypeTupleLiteral__0__List>
+						<TypeTupleLiteral__0__List>
+							<TypeTupleLiteral__0__List>
 								<Type source="T">...</Type>
-							</TypeTupleLiteral__1__List>
+							</TypeTupleLiteral__0__List>
 							<PUNCTUATOR>,</PUNCTUATOR>
 							<Type source="U | V">...</Type>
-						</TypeTupleLiteral__1__List>
+						</TypeTupleLiteral__0__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
 						<Type source="W & X!">...</Type>
-					</TypeTupleLiteral__1__List>
+					</TypeTupleLiteral__0__List>
 				*/
 				const tuple: PARSER.ParseNodeTypeTupleLiteral = h.tupleTypeFromString(`[T, U | V, W & X!]`);
 				assert_arrayLength(tuple.children, 3);
-				const type_list: PARSER.ParseNodeTypeTupleLiteral__1__List = tuple.children[1];
+				const type_list: PARSER.ParseNodeTypeTupleLiteral__0__List = tuple.children[1];
 				h.hashListSources(type_list, `T`, `U | V`, `W & X !`);
 			});
 		});
@@ -174,7 +174,7 @@ describe('Parser', () => {
 			/*
 				<TypeRecordLiteral>
 					<PUNCTUATOR>[</PUNCTUATOR>
-					<TypeRecordLiteral__1__List source="a: T, b: U | V, c: W & X!">...</TypeRecordLiteral__1__List>
+					<TypeRecordLiteral__0__List source="a: T, b: U | V, c: W & X!">...</TypeRecordLiteral__0__List>
 					<PUNCTUATOR>]</PUNCTUATOR>
 				</TypeRecordLiteral>
 			*/
@@ -214,23 +214,23 @@ describe('Parser', () => {
 					[Punctuator.BRAK_OPN, `a : T , b : U | V , c : W & X !`, Punctuator.COMMA, Punctuator.BRAK_CLS],
 				);
 			});
-			specify('TypeRecordLiteral__1__List ::= TypeRecordLiteral__1__List "," TypeProperty', () => {
+			specify('TypeRecordLiteral__0__List ::= TypeRecordLiteral__0__List "," TypeProperty', () => {
 				/*
-					<TypeRecordLiteral__1__List>
-						<TypeRecordLiteral__1__List>
-							<TypeRecordLiteral__1__List>
+					<TypeRecordLiteral__0__List>
+						<TypeRecordLiteral__0__List>
+							<TypeRecordLiteral__0__List>
 								<TypeProperty source="a: T">...</TypeProperty>
-							</TypeRecordLiteral__1__List>
+							</TypeRecordLiteral__0__List>
 							<PUNCTUATOR>,</PUNCTUATOR>
 							<TypeProperty source="b: U | V">...</TypeProperty>
-						</TypeRecordLiteral__1__List>
+						</TypeRecordLiteral__0__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
 						<TypeProperty source="c: W & X!">...</TypeProperty>
-					</TypeRecordLiteral__1__List>
+					</TypeRecordLiteral__0__List>
 				*/
 				const record: PARSER.ParseNodeTypeRecordLiteral = h.recordTypeFromString(`[a: T, b: U | V, c: W & X!]`);
 				assert_arrayLength(record.children, 3);
-				const property_list: PARSER.ParseNodeTypeRecordLiteral__1__List = record.children[1];
+				const property_list: PARSER.ParseNodeTypeRecordLiteral__0__List = record.children[1];
 				h.hashListSources(property_list, `a : T`, `b : U | V`, `c : W & X !`);
 			});
 		});
@@ -515,7 +515,7 @@ describe('Parser', () => {
 					<RecordLiteral>
 						<PUNCTUATOR>[</PUNCTUATOR>
 						<PUNCTUATOR>,</PUNCTUATOR>
-						<RecordLiteral__1__List source="let = true, foobar = 42">...</RecordLiteral__1__List>
+						<RecordLiteral__0__List source="let = true, foobar = 42">...</RecordLiteral__0__List>
 						<PUNCTUATOR>]</PUNCTUATOR>
 					</RecordLiteral>
 				*/
@@ -526,21 +526,21 @@ describe('Parser', () => {
 					];
 				`);
 				assert_arrayLength(unit.children, 4);
-				assert.ok(unit.children[2] instanceof PARSER.ParseNodeRecordLiteral__1__List);
+				assert.ok(unit.children[2] instanceof PARSER.ParseNodeRecordLiteral__0__List);
 				assert.deepStrictEqual(
 					unit.children.map((c) => c.source),
 					[Punctuator.BRAK_OPN, Punctuator.COMMA, `let = true , foobar = 42`, Punctuator.BRAK_CLS],
 				);
 			});
-			specify('RecordLiteral__1__List ::= RecordLiteral__1__List "," Property', () => {
+			specify('RecordLiteral__0__List ::= RecordLiteral__0__List "," Property', () => {
 				/*
-					<RecordLiteral__1__List>
-						<RecordLiteral__1__List>
+					<RecordLiteral__0__List>
+						<RecordLiteral__0__List>
 							<Property source="let = true">...</Property>
-						</RecordLiteral__1__List>
+						</RecordLiteral__0__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
 						<Property source="foobar = 42">...</Property>
-					</RecordLiteral__1__List>
+					</RecordLiteral__0__List>
 				*/
 				const unit: PARSER.ParseNodeRecordLiteral = h.recordLiteralFromSource(`[let = true, foobar = 42];`);
 				assert_arrayLength(unit.children, 3);
@@ -553,7 +553,7 @@ describe('Parser', () => {
 				/*
 					<MappingLiteral>
 						<PUNCTUATOR>[</PUNCTUATOR>
-						<MappingLiteral__1__List source="1, 2, 3 |-> null, 4, 5, 6 |-> false, 7, 8 |-> true, 9, 0 |-> 42.0">...</MappingLiteral__1__List>
+						<MappingLiteral__0__List source="1, 2, 3 |-> null, 4, 5, 6 |-> false, 7, 8 |-> true, 9, 0 |-> 42.0">...</MappingLiteral__0__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
 						<PUNCTUATOR>]</PUNCTUATOR>
 					</MappingLiteral>
@@ -567,29 +567,29 @@ describe('Parser', () => {
 					];
 				`);
 				assert_arrayLength(unit.children, 4);
-				assert.ok(unit.children[1] instanceof PARSER.ParseNodeMappingLiteral__1__List);
+				assert.ok(unit.children[1] instanceof PARSER.ParseNodeMappingLiteral__0__List);
 				assert.deepStrictEqual(
 					unit.children.map((c) => c.source),
 					[Punctuator.BRAK_OPN, `1 , 2 , 3 |-> null , 4 , 5 , 6 |-> false , 7 , 8 |-> true , 9 , 0 |-> 42.0`, Punctuator.COMMA, Punctuator.BRAK_CLS],
 				);
 			});
-			specify('MappingLiteral__1__List ::= MappingLiteral__1__List "," Case', () => {
+			specify('MappingLiteral__0__List ::= MappingLiteral__0__List "," Case', () => {
 				/*
-					<MappingLiteral__1__List>
-						<MappingLiteral__1__List>
-							<MappingLiteral__1__List>
-								<MappingLiteral__1__List>
+					<MappingLiteral__0__List>
+						<MappingLiteral__0__List>
+							<MappingLiteral__0__List>
+								<MappingLiteral__0__List>
 									<Case source="1, 2, 3 |-> null">...</Case>
-								</MappingLiteral__1__List>
+								</MappingLiteral__0__List>
 								<PUNCTUATOR>,</PUNCTUATOR>
 								<Case source="4, 5, 6 |-> false">...</Case>
-							</MappingLiteral__1__List>
+							</MappingLiteral__0__List>
 							<PUNCTUATOR>,</PUNCTUATOR>
 							<Case source="7, 8 |-> true">...</Case>
-						</MappingLiteral__1__List>
+						</MappingLiteral__0__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
 						<Case source="9, 0 |-> 42.0">...</Case>
-					</MappingLiteral__1__List>
+					</MappingLiteral__0__List>
 				*/
 				const unit: PARSER.ParseNodeMappingLiteral = h.mappingLiteralFromSource(`[1, 2, 3 |-> null, 4, 5, 6 |-> false, 7, 8 |-> true, 9, 0 |-> 42.0];`);
 				assert_arrayLength(unit.children, 3);

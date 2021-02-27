@@ -1,4 +1,5 @@
 import * as assert from 'assert'
+import * as utf8 from 'utf8';
 
 import {
 	SolidConfig,
@@ -6,8 +7,10 @@ import {
 	Dev,
 	Util,
 } from '../../src/core/';
+import type {
+	CodeUnit,
+} from '../../src/types';
 import {
-	CookValueType,
 	TOKEN,
 	LexerSolid as Lexer,
 } from '../../src/parser/';
@@ -16,6 +19,15 @@ import {
 
 describe('TokenSolid', () => {
 	describe('#cook', () => {
+		/**
+		 * Decode a stream of numeric UTF-8 code units into a string.
+		 * @param   codeunits a stream of numeric code units, each conforming to the UTF-8 specification
+		 * @returns           a decoded string
+		 */
+		function utf8Decode(codeunits: readonly CodeUnit[]): string {
+			return utf8.decode(String.fromCodePoint(...codeunits));
+		}
+
 		context('TokenPunctuator', () => {
 			it('assigns values 0n–127n to punctuator tokens.', () => {
 				const cooked: bigint[] = [...new Lexer(TOKEN.TokenPunctuator.PUNCTUATORS.join(' '), CONFIG_DEFAULT).generate()]
@@ -178,28 +190,21 @@ describe('TokenSolid', () => {
 					'012\\
 					345\\%
 					678';
-					'\u{10001}' '\\\u{10001}' '\\u{10001}';
+					'😀' '\u{10001}' '\\\u{10001}' '\\u{10001}';
 				`), CONFIG_DEFAULT).generate()]
-					.filter((token): token is TOKEN.TokenSolid => token instanceof TOKEN.TokenSolid)
-					.map((token) => token.cook())
-					.filter((_, i) => [
-						4, 6,
-						10,
-						12,
-						14,
-						16, 17, 18,
-					].includes(i))
+					.filter((token): token is TOKEN.TokenString => token instanceof TOKEN.TokenString)
+					.map((token) => utf8Decode(token.cook()))
 				, [
 					``,
 					`hello`,
 					`0 ' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`,
 					`0 $ 1 _ 2 \0 3`,
 					`012 345%\n678`,
-					`\u{10001}`, `\u{10001}`, `\u{10001}`,
+					`\u{1f600}`, `\u{10001}`, `\u{10001}`, `\u{10001}`,
 				]);
 			})
 			describe('In-String Comments', () => {
-				function cook(config: SolidConfig): CookValueType[] {
+				function cook(config: SolidConfig): string[] {
 					return [...new Lexer(Util.dedent(`
 						'The five boxing wizards % jump quickly.'
 
@@ -229,10 +234,10 @@ describe('TokenSolid', () => {
 						quickly.'
 					`), config).generate()]
 						.filter((token): token is TOKEN.TokenString => token instanceof TOKEN.TokenString)
-						.map((token) => token.cook())
+						.map((token) => utf8Decode(token.cook()))
 					;
 				}
-				it('with comments enabled.', () => {
+				context('with comments enabled.', () => {
 					const data: {testdesc: string, expected: string}[] = [
 						{testdesc: 'removes a line comment not ending in a LF.',   expected: 'The five boxing wizards '},
 						{testdesc: 'preserves a LF when line comment ends in LF.', expected: 'The five \njump quickly.'},
@@ -286,19 +291,10 @@ describe('TokenSolid', () => {
 						'''012\\
 						345
 						678''';
+						'''😀 \\😀 \\u{1f600}''';
 					`), CONFIG_DEFAULT).generate()]
-						.filter((token): token is TOKEN.TokenSolid => token instanceof TOKEN.TokenSolid)
-						.map((token) => token.cook())
-						.filter((_, i) => [
-							2, 6,
-							12,
-							17,
-							22,
-							25,
-							27,
-							29,
-							31,
-						].includes(i))
+						.filter((token): token is TOKEN.TokenTemplate => token instanceof TOKEN.TokenTemplate)
+						.map((token) => utf8Decode(token.cook()))
 					,
 					[
 						``, `hello`,
@@ -309,6 +305,7 @@ describe('TokenSolid', () => {
 						`0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`,
 						`0 \\u{24} 1 \\u{005f} 2 \\u{} 3`,
 						`012\\\n345\n678`,
+						`\u{1f600} \\\u{1f600} \\u{1f600}`,
 					],
 				);
 			})
