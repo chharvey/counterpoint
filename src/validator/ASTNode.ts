@@ -42,7 +42,7 @@ import {SolidNumber}  from './SolidNumber';
 import {Int16}        from './Int16';
 import {Float64}      from './Float64';
 import {SolidString}  from './SolidString';
-import type {CodeUnit} from '../core/Util';
+import type {CodeUnit} from '../types';
 import {
 	Builder,
 	Instruction,

@@ -1,4 +1,5 @@
 import * as assert from 'assert'
+import * as utf8 from 'utf8';
 
 import {
 	SolidConfig,
@@ -6,6 +7,9 @@ import {
 	Dev,
 	Util,
 } from '../../src/core/';
+import type {
+	CodeUnit,
+} from '../../src/types';
 import {
 	TOKEN,
 	LexerSolid as Lexer,
@@ -15,6 +19,15 @@ import {
 
 describe('TokenSolid', () => {
 	describe('#cook', () => {
+		/**
+		 * Decode a stream of numeric UTF-8 code units into a string.
+		 * @param   codeunits a stream of numeric code units, each conforming to the UTF-8 specification
+		 * @returns           a decoded string
+		 */
+		function utf8Decode(codeunits: readonly CodeUnit[]): string {
+			return utf8.decode(String.fromCodePoint(...codeunits));
+		}
+
 		context('TokenPunctuator', () => {
 			it('assigns values 0n–127n to punctuator tokens.', () => {
 				const cooked: bigint[] = [...new Lexer(TOKEN.TokenPunctuator.PUNCTUATORS.join(' '), CONFIG_DEFAULT).generate()]
@@ -180,7 +193,7 @@ describe('TokenSolid', () => {
 					'😀' '\u{10001}' '\\\u{10001}' '\\u{10001}';
 				`), CONFIG_DEFAULT).generate()]
 					.filter((token): token is TOKEN.TokenString => token instanceof TOKEN.TokenString)
-					.map((token) => String.fromCodePoint(...Util.decodeUTF8Stream(token.cook())))
+					.map((token) => utf8Decode(token.cook()))
 				, [
 					``,
 					`hello`,
@@ -221,7 +234,7 @@ describe('TokenSolid', () => {
 						quickly.'
 					`), config).generate()]
 						.filter((token): token is TOKEN.TokenString => token instanceof TOKEN.TokenString)
-						.map((token) => String.fromCodePoint(...Util.decodeUTF8Stream(token.cook())))
+						.map((token) => utf8Decode(token.cook()))
 					;
 				}
 				context('with comments enabled.', () => {
@@ -281,7 +294,7 @@ describe('TokenSolid', () => {
 						'''😀 \\😀 \\u{1f600}''';
 					`), CONFIG_DEFAULT).generate()]
 						.filter((token): token is TOKEN.TokenTemplate => token instanceof TOKEN.TokenTemplate)
-						.map((token) => String.fromCodePoint(...Util.decodeUTF8Stream(token.cook())))
+						.map((token) => utf8Decode(token.cook()))
 					,
 					[
 						``, `hello`,
