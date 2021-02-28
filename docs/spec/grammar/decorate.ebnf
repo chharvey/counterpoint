@@ -16,7 +16,7 @@ Decorate(PrimitiveLiteral ::= INTEGER) -> SemanticConstant
 Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticConstant
 	:= (SemanticConstant[value=Float(TokenWorth(FLOAT))]);
 Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
-	:= (SemanticConstant[value=TokenWorth(STRING)]);
+	:= (SemanticConstant[value=String(TokenWorth(STRING))]);
 
 
 

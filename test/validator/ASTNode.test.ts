@@ -714,7 +714,7 @@ describe('ASTNodeSolid', () => {
 					it('returns a constant Float type for ASTNodeConstant with float value.', () => {
 						assert.deepStrictEqual(constantFromSource(`4.2e+1;`).type(), new SolidTypeConstant(new Float64(42.0)));
 					})
-					Dev.supports('string-assess') && it('returns `String` for ASTNodeConstant with string value.', () => {
+					Dev.supports('string-assess') && it.skip('returns `String` for ASTNodeConstant with string value.', () => {
 						;[
 							constantFromSource(`'42';`),
 							(goalFromSource(`'''42''';`)

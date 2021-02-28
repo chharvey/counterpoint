@@ -39,7 +39,7 @@ export class SolidBoolean extends SolidObject {
 	 * Construct a new SolidBoolean object.
 	 * @param value The native boolean value of this object.
 	 */
-	protected constructor (readonly value: boolean = false) {
+	private constructor (readonly value: boolean = false) {
 		super()
 	}
 	/** @override */

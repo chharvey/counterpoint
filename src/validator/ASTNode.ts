@@ -38,7 +38,6 @@ import {SolidNumber}  from './SolidNumber';
 import {Int16}        from './Int16';
 import {Float64}      from './Float64';
 import {SolidString}  from './SolidString';
-import type {CodeUnit} from '../types';
 import {
 	Builder,
 	Instruction,
@@ -480,9 +479,9 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 export class ASTNodeConstant extends ASTNodeExpression {
 	declare children:
 		| readonly []
-	readonly value: CodeUnit[] | SolidObject;
+	readonly value: SolidObject;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString | TOKEN.TokenTemplate) {
-		const value: CodeUnit[] | SolidObject =
+		const value: SolidObject =
 			(start_node instanceof TOKEN.TokenKeyword) ?
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUE  :
@@ -491,7 +490,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 			(start_node instanceof TOKEN.TokenNumber) ?
 				start_node.isFloat ? new Float64(start_node.cook()) : new Int16(BigInt(start_node.cook()))
 			:
-			start_node.cook()
+			new SolidString(start_node.cook());
 		super(start_node, {value})
 		this.value = value
 	}
@@ -510,24 +509,17 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
 		// No need to call `this.assess(validator)` and then unwrap again; just use `this.value`.
-		return (validator.config.compilerOptions.constantFolding && (
-			this.value instanceof SolidNull ||
-			this.value instanceof SolidBoolean ||
-			this.value instanceof SolidNumber
-		)) ? new SolidTypeConstant(this.value) :
+		return (validator.config.compilerOptions.constantFolding) ? new SolidTypeConstant(this.value) :
 		(this.value instanceof SolidNull)    ? SolidNull :
 		(this.value instanceof SolidBoolean) ? SolidBoolean :
 		(this.value instanceof Int16)        ? Int16 :
 		(this.value instanceof Float64)      ? Float64 :
-		SolidString
+		(this.value instanceof SolidString)  ? SolidString :
+		SolidObject
 	}
 	/** @implements ASTNodeExpression */
 	protected assess_do(_validator: Validator): SolidObject {
-		if (this.value instanceof SolidObject) {
-			return this.value;
-		} else {
-			throw new Error('ASTNodeConstant[value:string]#assess_do not yet supported.')
-		}
+		return this.value;
 	}
 }
 export class ASTNodeVariable extends ASTNodeExpression {

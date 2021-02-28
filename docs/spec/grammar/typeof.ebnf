@@ -1,10 +1,7 @@
 Type TypeOf(SemanticConstant const) :=
 	1. *Let* `assess` be *UnwrapAffirm:* `Assess(const)`.
 	2. *Note:* `assess` is `const.value`.
-	3. *If* `assess` is of type `Or<Null, Boolean, Number>`:
-		1. *Return:* `ToType(assess)`.
-	4. *Assert:* `assess` is of type `Sequence<RealNumber>`.
-	5. *Return:* `String`.
+	3. *Return:* `ToType(assess)`.
 ;
 
 
