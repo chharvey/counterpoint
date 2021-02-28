@@ -28,10 +28,6 @@ import {
 	SymbolStructureType,
 } from './SymbolStructure';
 import {
-	CompletionType,
-	CompletionStructureAssessment,
-} from './CompletionStructure';
-import {
 	SolidLanguageType,
 	SolidTypeConstant,
 } from './SolidLanguageType';
@@ -426,7 +422,7 @@ export class ASTNodeCase extends ASTNodeSolid {
  * - ASTNodeOperation
  */
 export abstract class ASTNodeExpression extends ASTNodeSolid {
-	private assessed: CompletionStructureAssessment | null = null
+	private assessed?: SolidObject | null;
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
 	 * @return Should the built instruction be type-coerced into a floating-point number?
@@ -445,8 +441,8 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @final
 	 */
 	build(builder: Builder, to_float?: boolean): InstructionExpression {
-		const assess: CompletionStructureAssessment | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
-		return (assess && !assess.isAbrupt) ? assess.build(to_float) : this.build_do(builder, to_float)
+		const assessed: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
+		return (!!assessed) ? InstructionConst.fromAssessment(assessed, to_float) : this.build_do(builder, to_float);
 	}
 	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionExpression;
 	/**
@@ -458,9 +454,9 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	type(validator: Validator = new Validator()): SolidLanguageType {
 		const type_: SolidLanguageType = this.type_do(validator); // type-check first, to re-throw any TypeErrors
 		if (validator.config.compilerOptions.constantFolding) {
-			this.assessed || (this.assessed = this.assess(validator)); // COMBAK `this.assessed ||= this.assess(validator)`
-			if (!this.assessed.isAbrupt) {
-				return new SolidTypeConstant(this.assessed.value!)
+			const assessed: SolidObject | null = this.assess(validator);
+			if (!!assessed) {
+				return new SolidTypeConstant(assessed);
 			}
 		}
 		return type_
@@ -473,11 +469,13 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 * @final
 	 */
-	assess(validator: Validator = new Validator()): CompletionStructureAssessment {
-		this.assessed || (this.assessed = this.assess_do(validator)); // COMBAK `this.assessed ||= this.assess_do(validator)`
+	assess(validator: Validator = new Validator()): SolidObject | null {
+		if (this.assessed === void 0) {
+			this.assessed = this.assess_do(validator);
+		}
 		return this.assessed
 	}
-	protected abstract assess_do(validator: Validator): CompletionStructureAssessment;
+	protected abstract assess_do(validator: Validator): SolidObject | null;
 }
 export class ASTNodeConstant extends ASTNodeExpression {
 	declare children:
@@ -507,7 +505,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeExpression */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionConst {
-		return this.assess_do(builder.validator).build(to_float);
+		return InstructionConst.fromAssessment(this.assess_do(builder.validator), to_float);
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
@@ -524,9 +522,9 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		SolidString
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(_validator: Validator): CompletionStructureAssessment {
+	protected assess_do(_validator: Validator): SolidObject {
 		if (this.value instanceof SolidObject) {
-			return new CompletionStructureAssessment(this.value)
+			return this.value;
 		} else {
 			throw new Error('ASTNodeConstant[value:string]#assess_do not yet supported.')
 		}
@@ -569,14 +567,14 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		return SolidLanguageType.UNKNOWN;
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): CompletionStructureAssessment {
+	protected assess_do(validator: Validator): SolidObject | null {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
 				return symbol.defn!.assess(validator);
 			};
 		};
-		return new CompletionStructureAssessment(CompletionType.THROW);
+		return null;
 	}
 }
 export class ASTNodeTemplate extends ASTNodeExpression {
@@ -609,7 +607,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		return SolidString
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(_validator: Validator): CompletionStructureAssessment {
+	protected assess_do(_validator: Validator): SolidObject | null {
 		throw new Error('ASTNodeTemplate#assess_do not yet supported.');
 	}
 }
@@ -631,7 +629,7 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 		throw builder && 'ASTNodeEmptyCollection#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	protected assess_do(): SolidObject | null {
 		throw 'ASTNodeEmptyCollection#assess_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -659,7 +657,7 @@ export class ASTNodeList extends ASTNodeExpression {
 		throw builder && 'ASTNodeList#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	protected assess_do(): SolidObject | null {
 		throw 'ASTNodeList#assess_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -687,7 +685,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	protected assess_do(): SolidObject | null {
 		throw 'ASTNodeRecord#assess_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -715,7 +713,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		throw builder && 'ASTNodeMapping#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): CompletionStructureAssessment {
+	protected assess_do(): SolidObject | null {
 		throw 'ASTNodeMapping#assess_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -772,13 +770,13 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return (t0.isSubtypeOf(SolidNumber)) ? t0 : (() => { throw new TypeError01(this) })()
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): CompletionStructureAssessment {
-		const assess0: CompletionStructureAssessment = this.children[0].assess(validator);
-		if (assess0.isAbrupt) {
+	protected assess_do(validator: Validator): SolidObject | null {
+		const assess0: SolidObject | null = this.children[0].assess(validator);
+		if (!assess0) {
 			return assess0
 		}
-		const v0: SolidObject = assess0.value!
-		return new CompletionStructureAssessment(
+		const v0: SolidObject = assess0;
+		return (
 			(this.operator === Operator.NOT) ? v0.isTruthy.not :
 			(this.operator === Operator.EMP) ? v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0())) :
 			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as SolidNumber<any>) :
@@ -855,16 +853,16 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		throw new TypeError01(this)
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): CompletionStructureAssessment {
-		const assess0: CompletionStructureAssessment = this.children[0].assess(validator);
-		if (assess0.isAbrupt) {
+	protected assess_do(validator: Validator): SolidObject | null {
+		const assess0: SolidObject | null = this.children[0].assess(validator);
+		if (!assess0) {
 			return assess0
 		}
-		const assess1: CompletionStructureAssessment = this.children[1].assess(validator);
-		if (assess1.isAbrupt) {
+		const assess1: SolidObject | null = this.children[1].assess(validator);
+		if (!assess1) {
 			return assess1
 		}
-		const [v0, v1]: [SolidObject, SolidObject] = [assess0.value!, assess1.value!]
+		const [v0, v1]: [SolidObject, SolidObject] = [assess0, assess1];
 		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
 			throw new NanError02(this.children[1])
 		}
@@ -872,7 +870,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			// using an internal TypeError, not a SolidTypeError, as it should already be valid per `this#type`
 			throw new TypeError('Both operands must be of type `SolidNumber`.')
 		}
-		return new CompletionStructureAssessment(
+		return (
 			(v0 instanceof Int16 && v1 instanceof Int16)
 				? this.foldNumeric(v0, v1)
 				: this.foldNumeric(
@@ -926,21 +924,21 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		throw new TypeError01(this)
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): CompletionStructureAssessment {
-		const assess0: CompletionStructureAssessment = this.children[0].assess(validator);
-		if (assess0.isAbrupt) {
+	protected assess_do(validator: Validator): SolidObject | null {
+		const assess0: SolidObject | null = this.children[0].assess(validator);
+		if (!assess0) {
 			return assess0
 		}
-		const assess1: CompletionStructureAssessment = this.children[1].assess(validator);
-		if (assess1.isAbrupt) {
+		const assess1: SolidObject | null = this.children[1].assess(validator);
+		if (!assess1) {
 			return assess1
 		}
-		const [v0, v1]: [SolidObject, SolidObject] = [assess0.value!, assess1.value!]
+		const [v0, v1]: [SolidObject, SolidObject] = [assess0, assess1];
 		if (!(v0 instanceof SolidNumber) || !(v1 instanceof SolidNumber)) {
 			// using an internal TypeError, not a SolidTypeError, as it should already be valid per `this#type`
 			throw new TypeError('Both operands must be of type `SolidNumber`.')
 		}
-		return new CompletionStructureAssessment(
+		return (
 			(v0 instanceof Int16 && v1 instanceof Int16)
 				? this.foldComparative(v0, v1)
 				: this.foldComparative(
@@ -997,17 +995,17 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return SolidBoolean
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): CompletionStructureAssessment {
-		const assess0: CompletionStructureAssessment = this.children[0].assess(validator);
-		if (assess0.isAbrupt) {
+	protected assess_do(validator: Validator): SolidObject | null {
+		const assess0: SolidObject | null = this.children[0].assess(validator);
+		if (!assess0) {
 			return assess0
 		}
-		const assess1: CompletionStructureAssessment = this.children[1].assess(validator);
-		if (assess1.isAbrupt) {
+		const assess1: SolidObject | null = this.children[1].assess(validator);
+		if (!assess1) {
 			return assess1
 		}
-		const [v0, v1]: [SolidObject, SolidObject] = [assess0.value!, assess1.value!]
-		return new CompletionStructureAssessment(this.foldEquality(v0, v1))
+		const [v0, v1]: [SolidObject, SolidObject] = [assess0, assess1];
+		return this.foldEquality(v0, v1);
 	}
 	private foldEquality(x: SolidObject, y: SolidObject): SolidBoolean {
 		return SolidBoolean.fromBoolean(new Map<Operator, (x: SolidObject, y: SolidObject) => boolean>([
@@ -1062,17 +1060,17 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 					: t0
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): CompletionStructureAssessment {
-		const assess0: CompletionStructureAssessment = this.children[0].assess(validator);
-		if (assess0.isAbrupt) {
+	protected assess_do(validator: Validator): SolidObject | null {
+		const assess0: SolidObject | null = this.children[0].assess(validator);
+		if (!assess0) {
 			return assess0
 		}
-		const v0: SolidObject = assess0.value!
+		const v0: SolidObject = assess0;
 		if (
 			this.operator === Operator.AND && !v0.isTruthy.value ||
 			this.operator === Operator.OR  &&  v0.isTruthy.value
 		) {
-			return new CompletionStructureAssessment(v0)
+			return v0;
 		}
 		return this.children[1].assess(validator);
 	}
@@ -1113,12 +1111,12 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 			: (() => { throw new TypeError01(this) })()
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): CompletionStructureAssessment {
-		const assess0: CompletionStructureAssessment = this.children[0].assess(validator);
-		if (assess0.isAbrupt) {
+	protected assess_do(validator: Validator): SolidObject | null {
+		const assess0: SolidObject | null = this.children[0].assess(validator);
+		if (!assess0) {
 			return assess0
 		}
-		return (assess0.value! === SolidBoolean.TRUE)
+		return (assess0 === SolidBoolean.TRUE)
 			? this.children[1].assess(validator)
 			: this.children[2].assess(validator)
 	}
@@ -1247,17 +1245,21 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly children:
-			| readonly [ASTNodeAssignee, ASTNodeExpression]
+			| readonly [ASTNodeVariable, ASTNodeExpression]
 	) {
 		super(start_node, {}, children)
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator = new Validator()): void {
-		return this.children.forEach((c) => c.varCheck(validator));
+		this.children.forEach((c) => c.varCheck(validator));
+		const variable: ASTNodeVariable = this.children[0];
+		if (!(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
+			throw new AssignmentError10(variable);
+		};
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
-		const assignee_type: SolidLanguageType = this.children[0].children[0].type(validator);
+		const assignee_type: SolidLanguageType = this.children[0].type(validator);
 		const assigned_type: SolidLanguageType = this.children[1].type(validator);
 		if (
 			assigned_type.isSubtypeOf(assignee_type) ||
@@ -1270,31 +1272,6 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {
 		throw new Error('ASTNodeAssignment#build not yet supported.');
-	}
-}
-export class ASTNodeAssignee extends ASTNodeSolid {
-	constructor(
-		start_node: Token,
-		readonly children:
-			| readonly [ASTNodeVariable]
-	) {
-		super(start_node, {}, children)
-	}
-	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
-		const variable: ASTNodeVariable = this.children[0];
-		variable.varCheck(validator);
-		if (!(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
-			throw new AssignmentError10(variable);
-		};
-	}
-	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
-		return this.children[0].typeCheck(validator);
-	}
-	/** @implements ASTNodeSolid */
-	build(_builder: Builder): Instruction {
-		throw new Error('ASTNodeAssignee#build not yet supported.')
 	}
 }
 export class ASTNodeGoal extends ASTNodeSolid {

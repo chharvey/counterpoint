@@ -31,7 +31,6 @@ Void! VarCheck(Or<
 	SemanticTemplate,
 	SemanticOperation,
 	SemanticStatementExpression,
-	SemanticAssignment,
 > list) :=
 	1. *For each* `it` in `list`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
@@ -76,10 +75,11 @@ Void! VarCheck(SemanticDeclarationType decl) :=
 
 
 
-Void! VarCheck(SemanticAssignee assignee) :=
-	1. *Assert:* `assignee.children.count` is 1.
-	2. *Let* `id` be `assignee.children.0`.
-	3. *Perform:* *Unwrap:* `VarCheck(id)`.
+Void! VarCheck(SemanticAssignment assignment) :=
+	1. *For each* `it` in `assignment`:
+		1. *Perform:* *Unwrap:* `VarCheck(it)`.
+	2. *Assert:* `assignment.children.count` is 2.
+	3. *Let* `id` be `assignment.children.0.id`.
 	4. *Assert:* The validator contains a record for `id`.
 	5. *Let* `info` be the record for `id` in the validator.
 	6. *If* `info.unfixed` is `false`:

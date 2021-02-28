@@ -8,7 +8,11 @@ import {
 	ValidOperatorLogical,
 } from '../enum/Operator.enum'
 import {
+	SolidObject,
+	SolidNull,
+	SolidBoolean,
 	SolidNumber,
+	Int16,
 	Float64,
 } from '../validator/'
 
@@ -66,6 +70,23 @@ export abstract class InstructionExpression extends Instruction {
  * Push a constant onto the stack.
  */
 export class InstructionConst extends InstructionExpression {
+	/**
+	 * Construct a new InstructionConst given an assessed value.
+	 * @param assessed the assessed value
+	 * @param to_float Should the value be type-coerced into a floating-point number?
+	 * @return the directions to print
+	 */
+	static fromAssessment(assessed: SolidObject | null, to_float: boolean = false): InstructionConst {
+		if (!assessed) {
+			throw new Error('Cannot build an abrupt completion structure.')
+		}
+		const value: SolidNumber =
+			(assessed instanceof SolidNull)    ? Int16.ZERO :
+			(assessed instanceof SolidBoolean) ? (assessed.value) ? Int16.UNIT : Int16.ZERO :
+			(assessed instanceof SolidNumber)  ? assessed :
+			(() => { throw new Error('not yet supported.') })()
+		return new InstructionConst((to_float) ? value.toFloat() : value)
+	}
 	/**
 	 * @param value the constant to push
 	 */

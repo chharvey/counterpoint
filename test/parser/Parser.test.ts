@@ -1226,23 +1226,33 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('variables') && describe('StatementAssignment', () => {
+		Dev.supports('variables') && describe('Assignee ::= IDENTIFIER', () => {
 			/*
-				<Statement>
-					<StatementAssignment>
-						<IDENTIFIER>this_answer</IDENTIFIER>
-						<PUNCTUATOR>=</PUNCTUATOR>
-						<Expression source="that_answer - 40">...</Expression>
-						<PUNCTUATOR>;</PUNCTUATOR>
-					</StatementAssignment>
+				<Assignee>
+					<IDENTIFIER>this_answer</IDENTIFIER>
 				</Statement>
 			*/
+			it('makes a ParseNodeAssignee node.', () => {
+				const assignee: PARSER.ParseNodeAssignee = h.assigneeFromSource(`this_answer  =  that_answer  -  40;`);
+				assert_arrayLength(assignee.children, 1);
+				const id: Token = assignee.children[0];
+				assert.ok(id instanceof TOKEN.TokenIdentifier);
+				assert.strictEqual(id.source, `this_answer`);
+			});
+		});
+
+		Dev.supports('variables') && describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
+			/*
+				<StatementAssignment>
+					<Assignee source="this_answer">...</Assignee>
+					<PUNCTUATOR>=</PUNCTUATOR>
+					<Expression source="that_answer - 40">...</Expression>
+					<PUNCTUATOR>;</PUNCTUATOR>
+				</StatementAssignment>
+			*/
 			it('makes a ParseNodeStatementAssignment node.', () => {
-				const stmt: PARSER.ParseNodeStatement = h.statementFromSource(`this_answer  =  that_answer  -  40;`)
-				assert_arrayLength(stmt.children, 1)
-				const decl: Token | PARSER.ParseNodeDeclaration | PARSER.ParseNodeStatementAssignment = stmt.children[0];
-				assert.ok(decl instanceof PARSER.ParseNodeStatementAssignment)
-				assert.deepStrictEqual(decl.children.map((child) => child.source), [
+				const assn: PARSER.ParseNodeStatementAssignment = h.assignmentFromSource(`this_answer  =  that_answer  -  40;`);
+				assert.deepStrictEqual(assn.children.map((child) => child.source), [
 					'this_answer', '=', 'that_answer - 40', ';',
 				])
 			})
