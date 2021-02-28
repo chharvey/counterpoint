@@ -23,8 +23,6 @@ import {
 	Decorator,
 	Validator,
 	AST,
-	CompletionType,
-	CompletionStructureAssessment,
 	SolidLanguageType,
 	SolidTypeConstant,
 	SolidObject,
@@ -202,11 +200,11 @@ describe('ASTNodeSolid', () => {
 				assert.deepStrictEqual(
 					nodes.map(([src,  node]) => node.build(new Builder(src))),
 					nodes.map(([_src, node]) => {
-						const assess: CompletionStructureAssessment = node.assess()
-						assert.ok(!assess.isAbrupt)
-						return assess.build()
+						const assess: SolidObject | null = node.assess();
+						assert.ok(assess);
+						return InstructionConst.fromAssessment(assess);
 					}),
-					'produces `CompletionStructureAssessment.new(ASTNodeOperation#assess#value)#build`',
+					'produces `InstructionConst.new(ASTNodeOperation#assess)`',
 				)
 			}).timeout(5000)
 			context('with constant folding off.', () => {
@@ -878,7 +876,7 @@ describe('ASTNodeSolid', () => {
 			function assessOperations(tests: Map<string, SolidObject>): void {
 				return assert.deepStrictEqual(
 					[...tests.keys()].map((src) => operationFromSource(src).assess()),
-					[...tests.values()].map((result) => new CompletionStructureAssessment(result)),
+					[...tests.values()],
 				);
 			}
 			it('computes the value of constant null or boolean expression.', () => {
@@ -890,7 +888,7 @@ describe('ASTNodeSolid', () => {
 					SolidNull.NULL,
 					SolidBoolean.FALSE,
 					SolidBoolean.TRUE,
-				].map((v) => new CompletionStructureAssessment(v)))
+				]);
 			})
 			it('computes the value of a constant float expression.', () => {
 				assert.deepStrictEqual(`
@@ -901,7 +899,7 @@ describe('ASTNodeSolid', () => {
 					55, -55, 33, -33, 2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					-0, -0, 6.8, 6.8, 0, -0,
-				].map((v) => new CompletionStructureAssessment(new Float64(v))))
+				].map((v) => new Float64(v)));
 			})
 
 			Dev.supports('variables') && describe('ASTNodeVariable', () => {
@@ -919,10 +917,10 @@ describe('ASTNodeSolid', () => {
 							.children[1] as AST.ASTNodeStatementExpression)
 							.children[0] as AST.ASTNodeExpression)
 							.assess(validator),
-						new CompletionStructureAssessment(new Int16(42n)),
+						new Int16(42n),
 					);
 				});
-				it('returns an abrupt completion structure for an unfixed variable.', () => {
+				it('returns null for an unfixed variable.', () => {
 					const validator: Validator = new Validator();
 					const goal: AST.ASTNodeGoal = goalFromSource(`
 						let unfixed x: int = 21 * 2;
@@ -936,10 +934,10 @@ describe('ASTNodeSolid', () => {
 							.children[1] as AST.ASTNodeStatementExpression)
 							.children[0] as AST.ASTNodeExpression)
 							.assess(validator),
-						new CompletionStructureAssessment(CompletionType.THROW),
+						null,
 					);
 				});
-				it('returns an abrupt completion structure for an uncomputable fixed variable.', () => {
+				it('returns null for an uncomputable fixed variable.', () => {
 					const validator: Validator = new Validator();
 					const goal: AST.ASTNodeGoal = goalFromSource(`
 						let unfixed x: int = 21 * 2;
@@ -954,7 +952,7 @@ describe('ASTNodeSolid', () => {
 							.children[2] as AST.ASTNodeStatementExpression)
 							.children[0] as AST.ASTNodeExpression)
 							.assess(validator),
-						new CompletionStructureAssessment(CompletionType.THROW),
+						null,
 					);
 				});
 			});
@@ -1006,8 +1004,8 @@ describe('ASTNodeSolid', () => {
 					`2 ^ 15 + 2 ^ 14;`,
 					`-(2 ^ 14) - 2 ^ 15;`,
 				].map((src) => operationFromSource(src).assess()), [
-					new CompletionStructureAssessment(new Int16(-(2n ** 14n))),
-					new CompletionStructureAssessment(new Int16(2n ** 14n)),
+					new Int16(-(2n ** 14n)),
+					new Int16(2n ** 14n),
 				])
 			})
 			it('computes the value of a float operation of constants.', () => {
