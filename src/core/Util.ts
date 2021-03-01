@@ -58,18 +58,4 @@ export class Util {
 	static arrayRandom<T>(array: readonly T[]): T {
 		return array[Math.floor(Math.random() * array.length)]
 	}
-
-	/**
-	 * The UTF16Encoding of a numeric code point value.
-	 * @see http://ecma-international.org/ecma-262/10.0/#sec-utf16encoding
-	 * @param   codepoint - a positive integer within [0x0, 0x10ffff]
-	 * @returns             a code unit sequence representing the code point
-	 */
-	static utf16Encoding(codepoint: number): [number] | [number, number] {
-		if (codepoint < 0 || 0x10ffff < codepoint) throw new RangeError(`Code point \`0x${codepoint.toString(16)}\` must be within [0x0, 0x10ffff].`) // TODO this should be a ParseError
-		if (codepoint <= 0xffff) return [codepoint]
-		const cu1: number = (codepoint - 0x10000) / 0x400
-		const cu2: number = (codepoint - 0x10000) % 0x400
-		return [Math.floor(cu1) + 0xd800, cu2 + 0xdc00]
-	}
 }

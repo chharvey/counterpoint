@@ -6,14 +6,21 @@ import {
 	Lexer,
 	LexError02,
 } from '@chharvey/parser';
+import * as xjs from 'extrajs';
+import * as utf8 from 'utf8';
+
 
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-	Util,
 } from '../core/';
 
+import type {
+	CodePoint,
+	CodeUnit,
+	EncodedChar,
+} from '../types';
 import type {
 	LexerSolid,
 } from './Lexer';
@@ -99,7 +106,34 @@ export enum TemplatePosition {
 	TAIL,
 }
 
-export type CookValueType = string|number|bigint|boolean|null
+export type CookValueType =
+	| null       // TokenIdentifier
+	| bigint     // TokenPuncuator | TokenKeyword | TokenIdentifier
+	| number     // TokenNumber
+	| CodeUnit[] // TokenString | TokenTemplate
+
+
+
+export class TokenCommentLine extends TokenComment {
+	static readonly DELIM_START: '%'  = '%'
+	static readonly DELIM_END:   '\n' = '\n'
+	constructor (lexer: Lexer) {
+		super(lexer, TokenCommentLine.DELIM_START, TokenCommentLine.DELIM_END)
+	}
+	protected stopAdvancing() {
+		return Char.eq(TokenCommentLine.DELIM_END, this.lexer.c0)
+	}
+}
+export class TokenCommentMulti extends TokenComment {
+	static readonly DELIM_START: '%%' = '%%'
+	static readonly DELIM_END:   '%%' = '%%'
+	constructor (lexer: Lexer) {
+		super(lexer, TokenCommentMulti.DELIM_START, TokenCommentMulti.DELIM_END)
+	}
+	protected stopAdvancing() {
+		return Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)
+	}
+}
 
 
 
@@ -215,7 +249,45 @@ export class TokenIdentifierUnicode extends TokenIdentifier {
 		this.advance()
 	}
 }
-export class TokenNumber extends TokenSolid {
+abstract class NumberOrStringToken extends TokenSolid {
+	constructor (tagname: string,
+		protected readonly lexer: LexerSolid,
+		...chars: [Char, ...Char[]]
+	) {
+		super(tagname, lexer, ...chars);
+	}
+	/**
+	 * Lex a numeric digit sequence, advancing this token as necessary.
+	 * @param digits the digit sequence to lex
+	 * @return       a cargo of source text for any error-reporting
+	 * @throws {LexError04} if an unexpected numeric separator was found
+	 * @final
+	 */
+	protected lexDigitSequence(digits: readonly string[]): string {
+		let cargo: string = '';
+		const allowedchars: string[] = [
+			...digits,
+			...(this.lexer.config.languageFeatures.numericSeparators ? [TokenNumber.SEPARATOR] : [])
+		];
+		while (!this.lexer.isDone && Char.inc(allowedchars, this.lexer.c0)) {
+			if (Char.inc(digits, this.lexer.c0)) {
+				cargo += this.lexer.c0.source;
+				this.advance();
+			} else if (this.lexer.config.languageFeatures.numericSeparators && Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
+				if (Char.inc(digits, this.lexer.c1)) {
+					cargo += `${ this.lexer.c0.source }${ this.lexer.c1!.source }`;
+					this.advance(2n);
+				} else {
+					throw new LexError04(Char.eq(TokenNumber.SEPARATOR, this.lexer.c1) ? this.lexer.c1! : this.lexer.c0);
+				};
+			} else {
+				break;
+			};
+		};
+		return cargo;
+	}
+}
+export class TokenNumber extends NumberOrStringToken {
 	static readonly RADIX_DEFAULT: 10n = 10n
 	static readonly ESCAPER:   '\\' = '\\'
 	static readonly SEPARATOR: '_' = '_'
@@ -274,7 +346,7 @@ export class TokenNumber extends TokenSolid {
 	 * @param   allow_separators - Should numeric separators be allowed?
 	 * @returns the mathematical value of the string in the given base
 	 */
-	static tokenWorthFloat(
+	private static tokenWorthFloat(
 		text: string,
 		allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
 	): number {
@@ -290,7 +362,6 @@ export class TokenNumber extends TokenSolid {
 		// const expvalue: number = base ** TokenNumber.tokenWorthInt(exppart, TokenNumber.RADIX_DEFAULT, allow_separators)
 		return (wholevalue + fracvalue) * expvalue
 	}
-	declare protected readonly lexer: LexerSolid;
 	private readonly has_unary: boolean;
 	private readonly has_radix: boolean;
 	private readonly radix: RadixType;
@@ -335,23 +406,6 @@ export class TokenNumber extends TokenSolid {
 			}
 		}
 	}
-	private lexDigitSequence(digits: readonly string[]): void {
-		const allowedchars: string[] = [
-			...digits,
-			...(this.lexer.config.languageFeatures.numericSeparators ? [TokenNumber.SEPARATOR] : [])
-		]
-		while (!this.lexer.isDone && Char.inc(allowedchars, this.lexer.c0)) {
-			if (Char.inc(digits, this.lexer.c0)) {
-				this.advance()
-			} else if (this.lexer.config.languageFeatures.numericSeparators && Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
-				if (Char.inc(digits, this.lexer.c1)) {
-					this.advance(2n)
-				} else {
-					throw new LexError04(Char.eq(TokenNumber.SEPARATOR, this.lexer.c1) ? this.lexer.c1 ! : this.lexer.c0)
-				}
-			}
-		}
-	}
 	cook(): number {
 		let text: string = this.source
 		const multiplier: number = (text[0] === Punctuator.NEG) ? -1 : 1
@@ -370,62 +424,98 @@ export class TokenNumber extends TokenSolid {
 		return this.source.indexOf(TokenNumber.POINT) > 0
 	}
 }
-export class TokenString extends TokenSolid {
+export class TokenString extends NumberOrStringToken {
 	static readonly DELIM:   '\'' = '\''
 	static readonly ESCAPER: '\\' = '\\'
-	static readonly ESCAPES: readonly string[] = [TokenString.DELIM, TokenString.ESCAPER, 's','t','n','r']
+	static readonly ESCAPES: readonly string[] = [
+		TokenString.DELIM,
+		TokenString.ESCAPER,
+		TokenCommentLine.DELIM_START,
+		's', 't', 'n', 'r',
+	];
+	/**
+	 * The UTF-8 encoding of a numeric code point value.
+	 * @param   codepoint a positive integer within [0x0, 0x10_ffff]
+	 * @returns           a code unit sequence representing the code point
+	 */
+	private static utf8Encode(codepoint: CodePoint): EncodedChar {
+		xjs.Number.assertType(codepoint, xjs.NumericType.NATURAL);
+		return [...utf8.encode(String.fromCodePoint(codepoint))].map((ch) => ch.codePointAt(0)!) as EncodedChar;
+	}
 	/**
 	 * Compute the token worth of a `TokenString` token or any segment of such token.
 	 * @param   text - the string to compute
+	 * @param   allow_comments - Should in-string comments be allowed?
 	 * @param   allow_separators - Should numeric separators be allowed?
 	 * @returns        the string value of the argument, a sequence of code units
 	 */
 	private static tokenWorth(
 		text: string,
+		allow_comments:   SolidConfig['languageFeatures']['comments']          = CONFIG_DEFAULT.languageFeatures.comments,
 		allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
-	): number[] {
+	): CodeUnit[] {
 		if (text.length === 0) return []
 		if (TokenString.ESCAPER === text[0]) {
 			/* possible escape or line continuation */
 			if (TokenString.ESCAPES.includes(text[1])) {
 				/* an escaped character literal */
 				return [
-					new Map<string, number>([
-						[TokenString.DELIM, TokenString.DELIM.charCodeAt(0)!],
-						[TokenString.ESCAPER , 0x5c],
-						['s'                 , 0x20],
-						['t'                 , 0x09],
-						['n'                 , 0x0a],
-						['r'                 , 0x0d],
+					...new Map<string, Readonly<EncodedChar>>([
+						[TokenString      .DELIM,       TokenString.utf8Encode(TokenString      .DELIM       .codePointAt(0)!)],
+						[TokenString      .ESCAPER,     TokenString.utf8Encode(TokenString      .ESCAPER     .codePointAt(0)!)],
+						[TokenCommentLine .DELIM_START, TokenString.utf8Encode(TokenCommentLine .DELIM_START .codePointAt(0)!)],
+						['s',                           TokenString.utf8Encode(0x20)],
+						['t',                           TokenString.utf8Encode(0x09)],
+						['n',                           TokenString.utf8Encode(0x0a)],
+						['r',                           TokenString.utf8Encode(0x0d)],
 					]).get(text[1]) !,
-					...TokenString.tokenWorth(text.slice(2), allow_separators),
+					...TokenString.tokenWorth(text.slice(2), allow_comments, allow_separators),
 				]
 
 			} else if ('u{' === `${text[1]}${text[2]}`) {
 				/* an escape sequence */
 				const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !
 				return [
-					...Util.utf16Encoding(TokenNumber.tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
-					...TokenString.tokenWorth(text.slice(sequence[0].length), allow_separators),
+					...TokenString.utf8Encode(TokenNumber.tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
+					...TokenString.tokenWorth(text.slice(sequence[0].length), allow_comments, allow_separators),
 				]
 
 			} else if ('\n' === text[1]) {
 				/* a line continuation (LF) */
-				return [0x20, ...TokenString.tokenWorth(text.slice(2), allow_separators)]
+				return [
+					...TokenString.utf8Encode(0x20),
+					...TokenString.tokenWorth(text.slice(2), allow_comments, allow_separators),
+				];
 
 			} else {
 				/* a backslash escapes the following character */
 				return [
-					text.charCodeAt(1),
-					...TokenString.tokenWorth(text.slice(2), allow_separators),
+					...TokenString.utf8Encode(text.codePointAt(1)!),
+					...TokenString.tokenWorth([...text].slice(2).join('')/* UTF-16 */, allow_comments, allow_separators),
 				]
 			}
-		} else return [
-			text.charCodeAt(0),
-			...TokenString.tokenWorth(text.slice(1), allow_separators),
-		]
+
+		} else if (allow_comments && TokenCommentMulti.DELIM_START === `${ text[0] }${ text[1] }`) {
+			/* an in-string multiline comment */
+			const match: string = text.match(/\%\%(?:\%?[^\'\%])*(?:\%\%)?/)![0];
+			return TokenString.tokenWorth(text.slice(match.length), allow_comments, allow_separators);
+
+		} else if (allow_comments && TokenCommentLine.DELIM_START === text[0]) {
+			/* an in-string line comment */
+			const match: string = text.match(/\%[^\'\n]*\n?/)![0];
+			const rest: CodeUnit[] = TokenString.tokenWorth(text.slice(match.length), allow_comments, allow_separators);
+			return (match[match.length - 1] === '\n') // COMBAK `match.lastItem`
+				? [...TokenString.utf8Encode(0x0a), ...rest]
+				: rest
+			;
+
+		} else {
+			return [
+				...TokenString.utf8Encode(text.codePointAt(0)!),
+				...TokenString.tokenWorth([...text].slice(1).join('')/* UTF-16 */, allow_comments, allow_separators),
+			];
+		};
 	}
-	declare protected readonly lexer: LexerSolid;
 	constructor (lexer: LexerSolid) {
 		super('STRING', lexer, ...lexer.advance())
 		while (!this.lexer.isDone && !Char.eq(TokenString.DELIM, this.lexer.c0)) {
@@ -446,19 +536,7 @@ export class TokenString extends TokenSolid {
 					if (Char.inc(digits, this.lexer.c0)) {
 						cargo += this.lexer.c0.source
 						this.advance()
-						while(!this.lexer.isDone && Char.inc([...digits, TokenNumber.SEPARATOR], this.lexer.c0)) {
-							if (Char.inc(digits, this.lexer.c0)) {
-								cargo += this.lexer.c0.source
-								this.advance()
-							} else if (Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
-								if (Char.inc(digits, this.lexer.c1)) {
-									cargo += `${this.lexer.c0.source}${this.lexer.c1 !.source}`
-									this.advance(2n)
-								} else {
-									throw new LexError04(Char.eq(TokenNumber.SEPARATOR, this.lexer.c1) ? this.lexer.c1 ! : this.lexer.c0)
-								}
-							}
-						}
+						cargo += this.lexDigitSequence(digits);
 					}
 					// add ending escape delim
 					if (Char.eq('}', this.lexer.c0)) {
@@ -473,8 +551,48 @@ export class TokenString extends TokenSolid {
 
 				} else {
 					/* a backslash escapes the following character */
-					this.advance()
+					this.advance(2n);
 				}
+
+			} else if (this.lexer.config.languageFeatures.comments && Char.eq(TokenCommentMulti.DELIM_START, this.lexer.c0, this.lexer.c1)) {
+				/* an in-string multiline comment */
+				this.advance(BigInt(TokenCommentMulti.DELIM_START.length));
+				while (
+					   !this.lexer.isDone
+					&& !Char.eq(TokenString.DELIM, this.lexer.c0)
+					&& !Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)
+				) {
+					if (Char.eq(Filebound.EOT, this.lexer.c0)) {
+						throw new LexError02(this);
+					};
+					this.advance();
+				};
+				if (Char.eq(TokenString.DELIM, this.lexer.c0)) {
+					// do nothing, as the ending string delim is not included in the in-string comment
+				} else if (Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)) {
+					// add ending comment delim to in-string comment
+					this.advance(BigInt(TokenCommentMulti.DELIM_END.length));
+				};
+
+			} else if (this.lexer.config.languageFeatures.comments && Char.eq(TokenCommentLine.DELIM_START, this.lexer.c0)) {
+				/* an in-string line comment */
+				this.advance(BigInt(TokenCommentLine.DELIM_START.length));
+				while (!this.lexer.isDone && !Char.inc([
+					TokenString.DELIM,
+					TokenCommentLine.DELIM_END,
+				], this.lexer.c0)) {
+					if (Char.eq(Filebound.EOT, this.lexer.c0)) {
+						throw new LexError02(this);
+					};
+					this.advance();
+				};
+				if (Char.eq(TokenString.DELIM, this.lexer.c0)) {
+					// do nothing, as the ending string delim is not included in the in-string comment
+				} else if (Char.eq(TokenCommentLine.DELIM_END, this.lexer.c0)) {
+					// add ending comment delim to in-string comment
+					this.advance(BigInt(TokenCommentLine.DELIM_END.length));
+				};
+
 			} else {
 				this.advance()
 			}
@@ -482,34 +600,23 @@ export class TokenString extends TokenSolid {
 		// add ending delim to token
 		this.advance()
 	}
-	cook(): string {
-		return String.fromCharCode(...TokenString.tokenWorth(
-			this.source.slice(1, -1), // cut off the string delimiters
+	cook(): CodeUnit[] {
+		return TokenString.tokenWorth(
+			this.source.slice(TokenString.DELIM.length, -TokenString.DELIM.length),
+			this.lexer.config.languageFeatures.comments,
 			this.lexer.config.languageFeatures.numericSeparators,
-		))
+		);
 	}
 }
 export class TokenTemplate extends TokenSolid {
 	static readonly DELIM              : '\'\'\'' = '\'\'\''
 	static readonly DELIM_INTERP_START : '{{' = '{{'
 	static readonly DELIM_INTERP_END   : '}}' = '}}'
-	/**
-	 * Compute the token worth of a `TokenTemplate` token or any segment of such token.
-	 * @param   text - the string to compute
-	 * @returns        the template value of the argument, a sequence of code units
-	 */
-	private static tokenWorth(text: string): number[] {
-		if (text.length === 0) return []
-		return [
-			text.charCodeAt(0),
-			...TokenTemplate.tokenWorth(text.slice(1)),
-		]
-	}
 	private readonly delim_end  : typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_START;
 	readonly position: TemplatePosition;
 	constructor (
 		lexer: Lexer,
-		private delim_start: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_END,
+		private readonly delim_start: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_END,
 	) {
 		super('TEMPLATE', lexer, ...lexer.advance())
 		let delim_end: typeof TokenTemplate.DELIM | typeof TokenTemplate.DELIM_INTERP_START;
@@ -550,29 +657,9 @@ export class TokenTemplate extends TokenSolid {
 		this.delim_end   = delim_end !
 		this.position = [...positions][0]
 	}
-	cook(): string {
-		return String.fromCharCode(...TokenTemplate.tokenWorth(
-			this.source.slice(this.delim_start.length, -this.delim_end.length) // cut off the template delimiters
-		))
-	}
-}
-export class TokenCommentLine extends TokenComment {
-	static readonly DELIM_START: '%'  = '%'
-	static readonly DELIM_END:   '\n' = '\n'
-	constructor (lexer: Lexer) {
-		super(lexer, TokenCommentLine.DELIM_START, TokenCommentLine.DELIM_END)
-	}
-	protected stopAdvancing() {
-		return Char.eq(TokenCommentLine.DELIM_END, this.lexer.c0)
-	}
-}
-export class TokenCommentMulti extends TokenComment {
-	static readonly DELIM_START: '%%' = '%%'
-	static readonly DELIM_END:   '%%' = '%%'
-	constructor (lexer: Lexer) {
-		super(lexer, TokenCommentMulti.DELIM_START, TokenCommentMulti.DELIM_END)
-	}
-	protected stopAdvancing() {
-		return Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)
+	cook(): CodeUnit[] {
+		return [...utf8.encode(
+			this.source.slice(this.delim_start.length, -this.delim_end.length),
+		)].map((ch) => ch.codePointAt(0)!);
 	}
 }

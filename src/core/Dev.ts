@@ -39,9 +39,14 @@ export class Dev {
 		readonly typingExplicit  : string,
 		// v0.4.0
 		readonly literalCollection: string,
-		// v0.4.1 (temp)
-		readonly literalString   : string,
-		readonly literalTemplate : string,
+		readonly 'literalString-lex':       string,
+		readonly 'literalTemplate-lex':     string,
+		readonly 'literalString-cook':      string,
+		readonly 'literalTemplate-cook':    string,
+		readonly 'string-assess':           string,
+		readonly 'stringTemplate-parse':    string,
+		readonly 'stringTemplate-decorate': string,
+		readonly 'stringTemplate-assess':   string,
 	} = {
 		// v0.1.0
 		literalNumber:   '>=0.1.*',
@@ -60,10 +65,15 @@ export class Dev {
 		variables:       '>=0.3.*',
 		typingExplicit:  '>=0.3.*',
 		// v0.4.0
-		literalCollection: '>=0.4.0-a',
-		// v0.4.1 (temp)
-		literalString:   '>=0.4.1',
-		literalTemplate: '>=0.4.1',
+		literalCollection: '>=0.4.0-alpha.0',
+		'literalString-lex':       '>=0.4.0-alpha.1.0',
+		'literalTemplate-lex':     '>=0.4.0-alpha.1.0',
+		'literalString-cook':      '>=0.4.0-alpha.1.1',
+		'literalTemplate-cook':    '>=0.4.0-alpha.1.1',
+		'string-assess':           '>=0.4.0-alpha.1.2',
+		'stringTemplate-parse':    '>=0.4.0-alpha.1.3',
+		'stringTemplate-decorate': '>=0.4.0-alpha.1.4',
+		'stringTemplate-assess':   '>=0.4.0-alpha.1.5',
 	}
 
 	/**

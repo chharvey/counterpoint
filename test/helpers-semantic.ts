@@ -31,6 +31,13 @@ export function variableFromSource(src: string, config: SolidConfig = CONFIG_DEF
 	assert.ok(expression instanceof AST.ASTNodeVariable);
 	return expression;
 }
+export function templateFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeTemplate {
+	const statement: AST.ASTNodeStatementExpression = statementExpressionFromSource(src, config);
+	assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child');
+	const expression: AST.ASTNodeExpression = statement.children[0];
+	assert.ok(expression instanceof AST.ASTNodeTemplate);
+	return expression;
+}
 export function operationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeOperation {
 	const statement: AST.ASTNodeStatementExpression = statementExpressionFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child')

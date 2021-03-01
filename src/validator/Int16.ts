@@ -48,7 +48,7 @@ export class Int16 extends SolidNumber<Int16> {
 	toString(): string {
 		return `${ this.toNumeric() }`
 	}
-	/** @overrides SolidObject */
+	/** @override SolidObject */
 	@strictEqual
 	identical(value: SolidObject): boolean {
 		return value instanceof Int16 && this.internal.every((bit, i) => bit === value.internal[i]);

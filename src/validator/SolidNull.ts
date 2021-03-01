@@ -3,6 +3,7 @@ import {
 } from '../decorators';
 import type {SolidLanguageType} from './SolidLanguageType';
 import {SolidObject} from './SolidObject';
+import {SolidBoolean} from './SolidBoolean';
 
 
 
@@ -34,7 +35,11 @@ export class SolidNull extends SolidObject {
 	toString(): string {
 		return 'null'
 	}
-	/** @overrides SolidObject */
+	/** @override SolidObject */
+	get isTruthy(): SolidBoolean {
+		return SolidBoolean.FALSE;
+	}
+	/** @override SolidObject */
 	@strictEqual
 	identical(value: SolidObject): boolean {
 		return value instanceof SolidNull

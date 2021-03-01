@@ -26,7 +26,7 @@ export class Float64 extends SolidNumber<Float64> {
 	toString(): string {
 		return `${ this.value }`
 	}
-	/** @overrides SolidObject */
+	/** @override SolidObject */
 	@strictEqual
 	identical(value: SolidObject): boolean {
 		return value instanceof Float64 && Object.is(this.value, value.value);

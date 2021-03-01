@@ -108,13 +108,13 @@ export class LexerSolid extends Lexer {
 					throw new LexError03(`${this.c0.source}${this.c1 && this.c1.source || ''}`, this.c0.line_index, this.c0.col_index)
 				}
 
-			} else if (Dev.supports('literalTemplate') && Char.eq(TOKEN.TokenTemplate.DELIM, this.c0, this.c1, this.c2)) {
+			} else if (Dev.supports('literalTemplate-lex') && Char.eq(TOKEN.TokenTemplate.DELIM, this.c0, this.c1, this.c2)) {
 				/* we found a template literal full or head */
 				token = new TOKEN.TokenTemplate(this, TOKEN.TokenTemplate.DELIM)
-			} else if (Dev.supports('literalTemplate') && Char.eq(TOKEN.TokenTemplate.DELIM_INTERP_END, this.c0, this.c1)) {
+			} else if (Dev.supports('literalTemplate-lex') && Char.eq(TOKEN.TokenTemplate.DELIM_INTERP_END, this.c0, this.c1)) {
 				/* we found a template literal middle or tail */
 				token = new TOKEN.TokenTemplate(this, TOKEN.TokenTemplate.DELIM_INTERP_END)
-			} else if (Dev.supports('literalString') && Char.eq(TOKEN.TokenString.DELIM, this.c0)) {
+			} else if (Dev.supports('literalString-lex') && Char.eq(TOKEN.TokenString.DELIM, this.c0)) {
 				/* we found a string literal */
 				token = new TOKEN.TokenString(this)
 

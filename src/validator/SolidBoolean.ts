@@ -42,14 +42,18 @@ export class SolidBoolean extends SolidObject {
 	 * Construct a new SolidBoolean object.
 	 * @param value The native boolean value of this object.
 	 */
-	protected constructor (readonly value: boolean = false) {
+	private constructor (readonly value: boolean = false) {
 		super()
 	}
 	/** @override */
 	toString(): string {
 		return `${ this.value }`
 	}
-	/** @overrides SolidObject */
+	/** @override SolidObject */
+	get isTruthy(): SolidBoolean {
+		return this;
+	}
+	/** @override SolidObject */
 	@strictEqual
 	identical(value: SolidObject): boolean {
 		return value instanceof SolidBoolean && this.value === value.value
