@@ -219,10 +219,10 @@ Boolean Identical(Object a, Object b) :=
 	5. *If* `a` is of type `Float` *and* `b` is of type `Float`:
 		1. If `a` and `b` have the same bitwise encoding:
 			1. *Return:* `true`.
-	// 6. *If* `a` is of type `String` *and* `b` is of type `String`:
-	// 	1. If `a` and `b` are exactly the same sequence of code units
-	// 		(same length and same code units at corresponding indices):
-	// 		1. *Return:* `true`.
+	6. *If* `a` is of type `String` *and* `b` is of type `String`:
+		1. If `a` and `b` are exactly the same sequence of code units
+			(same length and same code units at corresponding indices):
+			1. *Return:* `true`.
 	// 7. *If* `a` and `b` are the same object:
 	// 	1. *Return:* `true`.
 	8. Return `false`.

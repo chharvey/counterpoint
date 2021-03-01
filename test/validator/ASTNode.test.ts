@@ -1135,6 +1135,15 @@ describe('ASTNodeSolid', () => {
 					[`-0.0 == 0;`,   true],
 					[`-0.0 is 0.0;`, false],
 					[`-0.0 == 0.0;`, true],
+					[`'' == '';`,    true],
+					[`'a' is 'a';`, true],
+					[`'a' == 'a';`, true],
+					[`'hello\\u{20}world' is 'hello world';`, true],
+					[`'hello\\u{20}world' == 'hello world';`, true],
+					[`'a' isnt 'b';`, true],
+					[`'a' !=   'b';`, true],
+					[`'hello\\u{20}world' isnt 'hello20world';`, true],
+					[`'hello\\u{20}world' !=   'hello20world';`, true],
 				]), (val) => SolidBoolean.fromBoolean(val)))
 			}).timeout(10_000);
 			it('computes the value of AND and OR operators.', () => {
