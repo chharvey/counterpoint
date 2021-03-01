@@ -4,11 +4,6 @@ export {Decorator} from './Decorator';
 export * as AST from './ASTNode';
 
 export {
-	CompletionType,
-	CompletionStructureAssessment,
-} from './CompletionStructure';
-
-export {
 	SolidLanguageType,
 	SolidTypeConstant,
 	SolidTypeInterface,

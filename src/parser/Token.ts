@@ -81,6 +81,7 @@ export enum Keyword {
 		TRUE  = 'true',
 		INT   = 'int',    // Dev.supports('typingExplicit')
 		FLOAT = 'float',  // Dev.supports('typingExplicit')
+		STR   = 'str',    // Dev.supports('typingExplicit')
 		OBJ   = 'obj',    // Dev.supports('typingExplicit')
 	// operator
 		IS   = 'is',

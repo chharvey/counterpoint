@@ -55,7 +55,7 @@ SemanticCase
 
 
 
-SemanticConstant[value: Null | Boolean | Number | Sequence<RealNumber>]
+SemanticConstant[value: Null | Boolean | Number | String]
 	::= ();
 
 SemanticVariable[id: RealNumber]
@@ -116,10 +116,7 @@ SemanticDeclaration =:=
 
 
 SemanticAssignment
-	::= SemanticAssignee SemanticExpression;
-
-SemanticAssignee
-	::= SemanticVariable;
+	::= SemanticVariable SemanticExpression;
 
 
 

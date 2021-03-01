@@ -80,7 +80,9 @@ Boolean! Assess(SemanticOperation[operator: EMP] expr) :=
 		1. *Return:* `true`.
 	7. *If* `operand` is of type `Float` *and* `operand` is `0.0` or `-0.0`:
 		1. *Return:* `true`.
-	8. *Return:* `false`.
+	8. *If* `operand` is of type `String` *and* `operand` contains 0 codepoints:
+		1. *Return:* `true`.
+	9. *Return:* `false`.
 ;
 
 Number! Assess(SemanticOperation[operator: NEG] expr) :=

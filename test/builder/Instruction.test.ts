@@ -11,6 +11,8 @@ import {
 } from '../../src/parser/';
 import {
 	Decorator,
+	Int16,
+	Float64,
 } from '../../src/validator/';
 import {
 	Builder,
@@ -258,4 +260,49 @@ describe('Instruction', () => {
 			})
 		})
 	})
+
+	describe('InstructionConst', () => {
+	describe('.fromAssessment', () => {
+		specify('@assessed instanceof Int16', () => {
+			const values: bigint[] = [
+				42n + -420n,
+				...[
+					 126 /  3,
+					-126 /  3,
+					 126 / -3,
+					-126 / -3,
+					 200 /  3,
+					 200 / -3,
+					-200 /  3,
+					-200 / -3,
+				].map((x) => BigInt(Math.trunc(x))),
+				(42n ** 2n * 420n) % (2n ** 16n),
+				(-5n) ** (2n * 3n),
+			]
+			assert.deepStrictEqual(
+				values.map((x) => InstructionConst.fromAssessment(new Int16(x))),
+				values.map((x) => new InstructionConst(new Int16(x))),
+			)
+		})
+		specify('@assessed instanceof Float64', () => {
+			const values: number[] = [
+				55, -55, 33, -33, 2.007, -2.007,
+				91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
+				-0, -0, 6.8, 6.8, 0, -0,
+				3.0 - 2.7,
+			]
+			assert.deepStrictEqual(
+				values.map((x) => InstructionConst.fromAssessment(new Float64(x))),
+				values.map((x) => new InstructionConst(new Float64(x))),
+			)
+		})
+		describe('@to_float === true', () => {
+			specify('@assessed instanceof Int16', () => {
+				const build: InstructionConst = InstructionConst.fromAssessment(new Int16(42n), true);
+				assert.deepStrictEqual   (build, new InstructionConst(new Float64(42)))
+				assert.notDeepStrictEqual(build, new InstructionConst(new Int16(42n)))
+			})
+		})
+		});
+	});
 })

@@ -45,7 +45,7 @@ export class Int16 extends SolidNumber<Int16> {
 	toString(): string {
 		return `${ this.toNumeric() }`
 	}
-	/** @override @final */
+	/** @override SolidObject */
 	protected identical_helper(value: SolidObject): boolean {
 		return value instanceof Int16 && this.is(value)
 	}

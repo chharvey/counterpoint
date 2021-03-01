@@ -78,7 +78,7 @@ describe('Decorator', () => {
 						return [key.source, key.id];
 					}),
 					srcs.map((src, i) => [src, [
-						0x8cn,
+						0x8dn,
 						0x100n,
 					][i]]),
 				);
@@ -998,13 +998,22 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('variables') && describe('StatementAssignment', () => {
+		Dev.supports('variables') && describe('Assignee ::= IDENTIFIER', () => {
+			it('makes an ASTNodeVariable node.', () => {
+				/*
+					<Variable source="the_answer" id=256n/>
+				*/
+				const id: AST.ASTNodeVariable = assignmentFromSource(`the_answer = the_answer - 40;`).children[0];
+				assert.strictEqual(id.id, 256n);
+				assert.strictEqual(id.source, `the_answer`);
+			});
+		});
+
+		Dev.supports('variables') && describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
 			it('makes an ASTNodeAssignment node.', () => {
 				/*
 					<Assignment>
-						<Assignee>
-							<Variable source="the_answer" id=256n/>
-						</Assignee>
+						<Variable source="the_answer">...</Variable>
 						<Operation operator=ADD source="the_answer - 40">
 							<Variable source="the_answer" id="256"/>
 							<Operation operator=NEG source="40">...</Operation>
@@ -1013,8 +1022,6 @@ describe('Decorator', () => {
 				*/
 				const src: string = `the_answer = the_answer - 40;`;
 				const assn: AST.ASTNodeAssignment = assignmentFromSource(src);
-				const assignee: AST.ASTNodeAssignee = assn.children[0];
-				assert.strictEqual(assignee.children[0].id, 256n);
 				const assigned_expr: AST.ASTNodeExpression = assn.children[1];
 				assert.ok(assigned_expr instanceof AST.ASTNodeOperationBinary);
 				assert.strictEqual(assigned_expr.operator, Operator.ADD);

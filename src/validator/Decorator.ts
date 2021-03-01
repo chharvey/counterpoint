@@ -119,6 +119,7 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeDeclarationVariable):   AST.ASTNodeDeclarationVariable;
 	static decorate(node: PARSER.ParseNodeDeclarationType):       AST.ASTNodeDeclarationType;
 	static decorate(node: PARSER.ParseNodeDeclaration):           AST.ASTNodeDeclaration;
+	static decorate(node: PARSER.ParseNodeAssignee):              AST.ASTNodeVariable;
 	static decorate(node: PARSER.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
 	static decorate(node: PARSER.ParseNodeStatement):             AST.ASTNodeStatement;
 	static decorate(node: PARSER.ParseNodeGoal__0__List):         AST.ASTNodeStatement[];
@@ -383,13 +384,14 @@ export class Decorator {
 		} else if (node instanceof PARSER.ParseNodeDeclaration) {
 			return this.decorate(node.children[0]);
 
+		} else if (node instanceof PARSER.ParseNodeAssignee) {
+			return new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier);
+
 		} else if (node instanceof PARSER.ParseNodeStatementAssignment) {
-			const identifier: TOKEN.TokenIdentifier      = node.children[0] as TOKEN.TokenIdentifier
+			const assignee:   PARSER.ParseNodeAssignee   = node.children[0];
 			const expression: PARSER.ParseNodeExpression = node.children[2]
 			return new AST.ASTNodeAssignment(node, [
-				new AST.ASTNodeAssignee(identifier, [
-					new AST.ASTNodeVariable(identifier),
-				]),
+				this.decorate(assignee) as unknown as AST.ASTNodeVariable,
 				this.decorate(expression),
 			])
 

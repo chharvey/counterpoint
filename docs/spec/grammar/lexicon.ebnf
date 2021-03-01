@@ -48,6 +48,7 @@ Keyword :::=
 		| "true"
 		| "int"
 		| "float"
+		| "str"
 		| "obj"
 	// operator
 		| "is"
