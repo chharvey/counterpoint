@@ -1,10 +1,6 @@
 import * as assert from 'assert'
-import * as utf8 from 'utf8';
 import * as xjs from 'extrajs'
 
-import type {
-	CodeUnit,
-} from '../../src/types';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -652,9 +648,6 @@ describe('ASTNodeSolid', () => {
 
 	context('ASTNodeExpression', () => {
 		describe('#type', () => {
-			function utf8Encode(input: string): CodeUnit[] {
-				return [...utf8.encode(input)].map((ch) => ch.codePointAt(0)!);
-			}
 			function typeOperations(tests: ReadonlyMap<string, SolidObject>): void {
 				return assert.deepStrictEqual(
 					[...tests.keys()].map((src) => operationFromSource(src).type()),
@@ -780,7 +773,7 @@ describe('ASTNodeSolid', () => {
 					it('returns a constant String with string value.', () => {
 						assert.deepStrictEqual(
 							constantFromSource(`'42😀';`).type(),
-							new SolidTypeConstant(new SolidString(utf8Encode('42😀'))),
+							new SolidTypeConstant(new SolidString('42😀')),
 						);
 					});
 				});
@@ -802,13 +795,13 @@ describe('ASTNodeSolid', () => {
 					it('returns a constant String for ASTNodeTemplate with no interpolations.', () => {
 						assert.deepStrictEqual(
 							templateFromSource(`'''42😀''';`).type(),
-							new SolidTypeConstant(new SolidString(utf8Encode('42😀'))),
+							new SolidTypeConstant(new SolidString('42😀')),
 						);
 					});
 					it('returns a constant String for ASTNodeTemplate with foldable interpolations.', () => {
 						assert.deepStrictEqual(
 							templateFromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`).type(),
-							new SolidTypeConstant(new SolidString(utf8Encode('the answer is 42 but what is the question?'))),
+							new SolidTypeConstant(new SolidString('the answer is 42 but what is the question?')),
 						);
 					});
 					it('returns `String` for ASTNodeTemplate with dynamic interpolations.', () => {
