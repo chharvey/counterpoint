@@ -295,6 +295,8 @@ The first line could be read aloud as,
 
 ### Token Worth
 The token worth grammar is an attribute grammar that determines the semantic value of the various token types.
+It assigns a [Solid Specification Value](./data-types.md#solid-specification-types)
+to a Token produced by the Tokenizer piece of the Solid compiler.
 This grammar is described further in detail in the chapter
 [Solid Language: Lexicon](./language-lexicon.md).
 
@@ -360,9 +362,9 @@ AG productions may also invoke each other, and they may do so recursively.
 TokenWorth(TemplateFull :::= "'''" TemplateChars__EndDelim "'''") -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim)
 TokenWorth(TemplateChars__EndDelim :::= [^'{#x03]) -> Sequence<RealNumber>
-	:= [UTF16Encoding(CodePoint([^'{#x03]))]
+	:= [UTF8Encoding(CodePoint([^'{#x03]))]
 TokenWorth(TemplateChars__EndDelim :::= [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
-	:= [UTF16Encoding(CodePoint([^'{#x03])), ...TokenWorth(TemplateChars__EndDelim)]
+	:= [UTF8Encoding(CodePoint([^'{#x03])), ...TokenWorth(TemplateChars__EndDelim)]
 TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartDelim) -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim__StartDelim)
 TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartInterp) -> Sequence<RealNumber>

@@ -60,6 +60,7 @@ import {
 } from '../helpers-parse'
 import {
 	variableFromSource,
+	templateFromSource,
 	operationFromSource,
 	statementExpressionFromSource,
 	constantFromSource,
@@ -653,6 +654,13 @@ describe('ASTNodeSolid', () => {
 					[...tests.values()].map((result) => new SolidTypeConstant(result)),
 				);
 			}
+			const folding_off: SolidConfig = {
+				...CONFIG_DEFAULT,
+				compilerOptions: {
+					...CONFIG_DEFAULT.compilerOptions,
+					constantFolding: false,
+				},
+			};
 			context('with constant folding off, int coercion off.', () => {
 				const folding_coercion_off: SolidConfig = {
 					...CONFIG_DEFAULT,
@@ -714,23 +722,6 @@ describe('ASTNodeSolid', () => {
 					it('returns a constant Float type for ASTNodeConstant with float value.', () => {
 						assert.deepStrictEqual(constantFromSource(`4.2e+1;`).type(), new SolidTypeConstant(new Float64(42.0)));
 					})
-					it('returns `String` for ASTNodeConstant with string value.', () => {
-						;[
-							...(Dev.supports('literalString') ? [
-								constantFromSource(`'42';`),
-							] : []),
-							...(Dev.supports('literalTemplate') ? [
-								(goalFromSource(`'''42''';`)
-									.children[0] as AST.ASTNodeStatementExpression)
-									.children[0] as AST.ASTNodeTemplate,
-								(goalFromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`)
-									.children[0] as AST.ASTNodeStatementExpression)
-									.children[0] as AST.ASTNodeTemplate,
-							] : []),
-						].forEach((node) => {
-							assert.strictEqual(node.type(), SolidString)
-						})
-					})
 				})
 				context('ASTNodeOperationBinaryArithmetic', () => {
 					it('returns a constant Integer type for any operation of integers.', () => {
@@ -743,13 +734,6 @@ describe('ASTNodeSolid', () => {
 				})
 			})
 			context('with constant folding off, with int coersion on.', () => {
-				const folding_off: SolidConfig = {
-					...CONFIG_DEFAULT,
-					compilerOptions: {
-						...CONFIG_DEFAULT.compilerOptions,
-						constantFolding: false,
-					},
-				}
 				context('ASTNodeOperationBinaryArithmetic', () => {
 					it('returns Integer for integer arithmetic.', () => {
 						const node: AST.ASTNodeOperation = operationFromSource(`(7 + 3) * 2;`, folding_off);
@@ -784,9 +768,72 @@ describe('ASTNodeSolid', () => {
 					})
 				})
 			})
+			Dev.supports('string-assess') && describe('ASTNodeString', () => {
+				context('with constant folding on.', () => {
+					it('returns a constant String with string value.', () => {
+						assert.deepStrictEqual(
+							constantFromSource(`'42😀';`).type(),
+							new SolidTypeConstant(new SolidString('42😀')),
+						);
+					});
+				});
+				context('with constant folding off.', () => {
+					it('always returns `String`.', () => {
+						assert.deepStrictEqual(
+							constantFromSource(`'42😀';`, folding_off).type(new Validator(folding_off)),
+							SolidString,
+						);
+					});
+				});
+			});
 			Dev.supports('variables') && it('returns Unknown for undeclared variables.', () => {
 				// NOTE: a reference error will be thrown at the variable-checking stage
 				assert.strictEqual(variableFromSource(`x;`).type(), SolidLanguageType.UNKNOWN);
+			});
+			Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
+				context('with constant folding on.', () => {
+					it('returns a constant String for ASTNodeTemplate with no interpolations.', () => {
+						assert.deepStrictEqual(
+							templateFromSource(`'''42😀''';`).type(),
+							new SolidTypeConstant(new SolidString('42😀')),
+						);
+					});
+					it('returns a constant String for ASTNodeTemplate with foldable interpolations.', () => {
+						assert.deepStrictEqual(
+							templateFromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`).type(),
+							new SolidTypeConstant(new SolidString('the answer is 42 but what is the question?')),
+						);
+					});
+					it('returns `String` for ASTNodeTemplate with dynamic interpolations.', () => {
+						assert.deepStrictEqual(
+							((goalFromSource(`
+								let unfixed x: int = 21;
+								'''the answer is {{ x * 2 }} but what is the question?''';
+							`)
+								.children[1] as AST.ASTNodeStatementExpression)
+								.children[0] as AST.ASTNodeTemplate)
+								.type(),
+							SolidString,
+						);
+					});
+				});
+				context('with constant folding off.', () => {
+					it('returns `String` for any ASTNodeTemplate.', () => {
+						[
+							templateFromSource(`'''42😀''';`).type(),
+							templateFromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`).type(),
+							((goalFromSource(`
+								let unfixed x: int = 21;
+								'''the answer is {{ x * 2 }} but what is the question?''';
+							`)
+								.children[1] as AST.ASTNodeStatementExpression)
+								.children[0] as AST.ASTNodeTemplate)
+								.type(new Validator(folding_off)),
+						].forEach((type) => {
+							assert.deepStrictEqual(type, SolidString);
+						});
+					});
+				});
 			});
 			it('returns a constant Boolean type for boolean unary operation of anything.', () => {
 				typeOperations(xjs.Map.mapValues(new Map([
@@ -847,7 +894,7 @@ describe('ASTNodeSolid', () => {
 					`false - 2;`,
 					`2 / true;`,
 					`null ^ false;`,
-					...(Dev.supports('literalString') ? [`'hello' + 5;`] : []),
+					...(Dev.supports('string-assess') ? [`'hello' + 5;`] : []),
 				].forEach((src) => {
 					assert.throws(() => operationFromSource(src).type(), TypeError01);
 				})
@@ -967,6 +1014,8 @@ describe('ASTNodeSolid', () => {
 					[`!0.0;`,    SolidBoolean.FALSE],
 					[`!-0.0;`,   SolidBoolean.FALSE],
 					[`!4.2e+1;`, SolidBoolean.FALSE],
+					[`!'';`,      SolidBoolean.FALSE],
+					[`!'hello';`, SolidBoolean.FALSE],
 				]))
 			})
 			it('computes the value of emptiness of anything.', () => {
@@ -979,6 +1028,8 @@ describe('ASTNodeSolid', () => {
 					[`?0.0;`,    SolidBoolean.TRUE],
 					[`?-0.0;`,   SolidBoolean.TRUE],
 					[`?4.2e+1;`, SolidBoolean.FALSE],
+					[`?'';`,      SolidBoolean.TRUE],
+					[`?'hello';`, SolidBoolean.FALSE],
 				]))
 			})
 			it('computes the value of an integer operation of constants.', () => {
@@ -1077,6 +1128,15 @@ describe('ASTNodeSolid', () => {
 					[`-0.0 == 0;`,   true],
 					[`-0.0 is 0.0;`, false],
 					[`-0.0 == 0.0;`, true],
+					[`'' == '';`,    true],
+					[`'a' is 'a';`, true],
+					[`'a' == 'a';`, true],
+					[`'hello\\u{20}world' is 'hello world';`, true],
+					[`'hello\\u{20}world' == 'hello world';`, true],
+					[`'a' isnt 'b';`, true],
+					[`'a' !=   'b';`, true],
+					[`'hello\\u{20}world' isnt 'hello20world';`, true],
+					[`'hello\\u{20}world' !=   'hello20world';`, true],
 				]), (val) => SolidBoolean.fromBoolean(val)))
 			}).timeout(10_000);
 			it('computes the value of AND and OR operators.', () => {

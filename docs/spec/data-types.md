@@ -156,7 +156,7 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 - [Boolean](#boolean)
 - [Integer](#integer)
 - [Float](#float)
-- String
+- [String](#string)
 - [Object](#object)
 - [Unknown](#unknown)
 
@@ -202,6 +202,11 @@ whose decimals terminate in base 10.
 (That is, numbers that can be expressed as a finite sum of multiples of powers of 10.)
 The Float type contains “floating-point numbers”, which are 64-bit format values as specified in the
 *IEEE Standard for Binary Floating-Point Arithmetic ([IEEE 754-2019](https://standards.ieee.org/standard/754-2019.html))*.
+
+
+### String
+The String type represents textual data and is stored as an immutable tuple of [integers](#integer).
+Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algorithm.
 
 
 ### Object

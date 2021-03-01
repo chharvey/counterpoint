@@ -65,7 +65,6 @@ import {
 } from '../error/';
 import {
 	Keyword,
-	CookValueType,
 	TOKEN,
 	PARSER,
 } from '../parser/';
@@ -100,7 +99,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 */
 	constructor(
 		start_node: Token|ParseNode,
-		attributes: {[key: string]: CookValueType | SolidObject} = {},
+		attributes: {[key: string]: unknown} = {},
 		children: readonly ASTNodeSolid[] = [],
 	) {
 		super(start_node, attributes, children)
@@ -221,6 +220,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
 				(start_node.source === Keyword.INT)   ? Int16 :
 				(start_node.source === Keyword.FLOAT) ? Float64 :
+				(start_node.source === Keyword.STR)   ? SolidString :
 				(start_node.source === Keyword.OBJ)   ? SolidObject :
 				SolidNull
 			: (start_node instanceof TOKEN.TokenNumber) ?
@@ -229,8 +229,8 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 						? new Float64(start_node.cook())
 						: new Int16(BigInt(start_node.cook()))
 				)
-			: SolidString
-		super(start_node, {value: value.toString()})
+			: SolidNull;
+		super(start_node, {value});
 		this.value = value
 	}
 	/** @implements ASTNodeSolid */
@@ -480,9 +480,9 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 export class ASTNodeConstant extends ASTNodeExpression {
 	declare children:
 		| readonly []
-	readonly value: string | SolidObject;
+	readonly value: SolidObject;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString | TOKEN.TokenTemplate) {
-		const value: string | SolidObject =
+		const value: SolidObject =
 			(start_node instanceof TOKEN.TokenKeyword) ?
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUE  :
@@ -491,7 +491,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 			(start_node instanceof TOKEN.TokenNumber) ?
 				start_node.isFloat ? new Float64(start_node.cook()) : new Int16(BigInt(start_node.cook()))
 			:
-			start_node.cook()
+			new SolidString(start_node.cook());
 		super(start_node, {value})
 		this.value = value
 	}
@@ -510,24 +510,17 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
 		// No need to call `this.assess(validator)` and then unwrap again; just use `this.value`.
-		return (validator.config.compilerOptions.constantFolding && (
-			this.value instanceof SolidNull ||
-			this.value instanceof SolidBoolean ||
-			this.value instanceof SolidNumber
-		)) ? new SolidTypeConstant(this.value) :
+		return (validator.config.compilerOptions.constantFolding) ? new SolidTypeConstant(this.value) :
 		(this.value instanceof SolidNull)    ? SolidNull :
 		(this.value instanceof SolidBoolean) ? SolidBoolean :
 		(this.value instanceof Int16)        ? Int16 :
 		(this.value instanceof Float64)      ? Float64 :
-		SolidString
+		(this.value instanceof SolidString)  ? SolidString :
+		SolidObject
 	}
 	/** @implements ASTNodeExpression */
 	protected assess_do(_validator: Validator): SolidObject {
-		if (this.value instanceof SolidObject) {
-			return this.value;
-		} else {
-			throw new Error('ASTNodeConstant[value:string]#assess_do not yet supported.')
-		}
+		return this.value;
 	}
 }
 export class ASTNodeVariable extends ASTNodeExpression {
@@ -778,7 +771,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		const v0: SolidObject = assess0;
 		return (
 			(this.operator === Operator.NOT) ? v0.isTruthy.not :
-			(this.operator === Operator.EMP) ? v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0())) :
+			(this.operator === Operator.EMP) ? v0.isTruthy.not.or(v0.isEmpty) :
 			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as SolidNumber<any>) :
 			(() => { throw new ReferenceError(`Operator ${ Operator[this.operator] } not found.`) })()
 		)

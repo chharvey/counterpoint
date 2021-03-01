@@ -57,7 +57,7 @@ describe('LexerSolid', () => {
 						\`unicode identifier with end delimiter but contains \u0003 U+0003 END OF TEXT character\`
 					`]] as [string, string[]],
 				] : []),
-				...(Dev.supports('literalString') ? [
+				...(Dev.supports('literalString-lex') ? [
 					['string', [`
 						'string without end delimiter
 					`, `
@@ -65,7 +65,7 @@ describe('LexerSolid', () => {
 						8;
 					`]] as [string, string[]],
 				] : []),
-				...(Dev.supports('literalTemplate') ? [
+				...(Dev.supports('literalTemplate-lex') ? [
 					['template', [`
 						'''template without end delimiter
 					`, `
@@ -78,6 +78,97 @@ describe('LexerSolid', () => {
 					sources.map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
 						assert.throws(() => [...lexer.generate()], LexError02)
 					})
+				})
+			})
+		})
+
+		context('recgnizes `TokenComment` conditions.', () => {
+			const comments_off: SolidConfig = {
+				...CONFIG_DEFAULT,
+				languageFeatures: {
+					...CONFIG_DEFAULT.languageFeatures,
+					comments: false,
+				},
+			}
+			context('TokenCommentLine', () => {
+				specify('Empty line comment.', () => {
+					const comment: Token = [...new Lexer(`
+						%
+						8;
+					`, CONFIG_DEFAULT).generate()][2]
+					assert.ok(comment instanceof TOKEN.TokenCommentLine)
+					assert.strictEqual(comment.source, '%\n')
+				})
+				specify('Basic line comment.', () => {
+					assert.ok([...new Lexer(`
+						500  +  30; ;  % line comment  *  2
+						8;
+					`, CONFIG_DEFAULT).generate()][11] instanceof TOKEN.TokenCommentLine)
+				})
+				specify('Line comment at end of file not followed by LF.', () => {
+					assert.doesNotThrow(() => [...new Lexer(`
+						% line comment not followed by LF
+					`.trimEnd(), CONFIG_DEFAULT).generate()])
+				})
+				it('throws when `config.languageFeatures.comments` is turned off.', () => {
+					assert.throws(() => [...new Lexer(`
+						%
+						8;
+					`, comments_off).generate()], LexError01)
+				})
+			})
+			context('TokenCommentMulti', () => {
+				specify('Empty multiline comment.', () => {
+					const tokens: Token[] = [...new Lexer(`
+						%%%%
+						%% %%
+					`, CONFIG_DEFAULT).generate()]
+					assert.ok(tokens[2] instanceof TOKEN.TokenCommentMulti)
+					assert.ok(tokens[4] instanceof TOKEN.TokenCommentMulti)
+					assert.strictEqual(tokens[2].source, '%%%%')
+					assert.strictEqual(tokens[4].source, '%% %%')
+				})
+				specify('Nonempty multiline comment.', () => {
+					const comment: Token = [...new Lexer(`
+						%% multiline
+						that has contents
+						comment %%
+					`, CONFIG_DEFAULT).generate()][2]
+					assert.ok(comment instanceof TOKEN.TokenCommentMulti)
+				})
+				specify('Simulate inline documentation comment.', () => {
+					const tokens: Token[] = [...new Lexer(Util.dedent(`
+						%%% The third power of 2. %%
+						8;
+					`), CONFIG_DEFAULT).generate()]
+					assert.ok(tokens[2] instanceof TOKEN.TokenCommentMulti)
+					assert.strictEqual(tokens[2].source, `
+						%%% The third power of 2. %%
+					`.trim())
+					assert.strictEqual(tokens[4].source, '8')
+				})
+				specify('Simulate block documentation comment.', () => {
+					const tokens: Token[] = [...new Lexer(Util.dedent(`
+						%%%
+						The third power of 2.
+						%%%
+						8;
+					`), CONFIG_DEFAULT).generate()]
+					assert.ok(tokens[2] instanceof TOKEN.TokenCommentMulti)
+					assert.ok(tokens[3] instanceof TOKEN.TokenCommentLine)
+					assert.strictEqual(tokens[2].source, Util.dedent(`
+						%%%
+						The third power of 2.
+						%%
+					`).trim())
+					assert.strictEqual(tokens[3].source, `%\n`)
+					assert.strictEqual(tokens[4].source, '8')
+				})
+				it('throws when `config.languageFeatures.comments` is turned off.', () => {
+					assert.throws(() => [...new Lexer(`
+						%% multiline
+						comment %%
+					`, comments_off).generate()], LexError01)
 				})
 			})
 		})
@@ -384,7 +475,7 @@ describe('LexerSolid', () => {
 			})
 		})
 
-		Dev.supports('literalString') && context('recognizes `TokenString` conditions.', () => {
+		Dev.supports('literalString-lex') && context('recognizes `TokenString` conditions.', () => {
 			specify('Basic strings.', () => {
 				const tokens: Token[] = [...new Lexer(`
 					3 - 50 + * 2
@@ -400,14 +491,15 @@ describe('LexerSolid', () => {
 			})
 			specify('Escaped characters.', () => {
 				const tokenstring: Token = [...new Lexer(`
-					'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
+					'0 \\' 1 \\\\ 2 \\% 7 \\s 3 \\t 4 \\n 5 \\r 6';
 				`, CONFIG_DEFAULT).generate()][2]
 				assert.strictEqual(tokenstring.source.slice( 3,  5), `\\'`)
 				assert.strictEqual(tokenstring.source.slice( 8, 10), `\\\\`)
-				assert.strictEqual(tokenstring.source.slice(13, 15), `\\s`)
-				assert.strictEqual(tokenstring.source.slice(18, 20), `\\t`)
-				assert.strictEqual(tokenstring.source.slice(23, 25), `\\n`)
-				assert.strictEqual(tokenstring.source.slice(28, 30), `\\r`)
+				assert.strictEqual(tokenstring.source.slice(13, 15), `\\%`);
+				assert.strictEqual(tokenstring.source.slice(18, 20), `\\s`);
+				assert.strictEqual(tokenstring.source.slice(23, 25), `\\t`);
+				assert.strictEqual(tokenstring.source.slice(28, 30), `\\n`);
+				assert.strictEqual(tokenstring.source.slice(33, 35), `\\r`);
 			})
 			specify('Escaped character sequences.', () => {
 				const tokenstring: Token = [...new Lexer(`
@@ -430,9 +522,9 @@ describe('LexerSolid', () => {
 				;[`
 					'Here is a string % that contains a line comment start marker.'
 				`, `
-					'Here is a string {% that contains %} a multiline comment.'
+					'Here is a string %% that contains %% a multiline comment.'
 				`, `
-					'Here is a string {% that contains a comment start marker but no end.'
+					'Here is a string %% that contains a comment start marker but no end.'
 				`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
 					assert.doesNotThrow(() => [...lexer.generate()])
 				})
@@ -442,13 +534,28 @@ describe('LexerSolid', () => {
 					'a string literal with \\u{6g} an invalid escape sequence'
 				`, `
 					'a string literal with \\u{61 an invalid escape sequence'
+				`, `
+					'escaped percent: \\% invalid unicode: \\u{24u done.'
 				`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
 					assert.throws(() => [...lexer.generate()], LexError03)
 				})
 			})
+			it('invalid escape sequences within in-string comments.', () => {
+				const src: string = Util.dedent(`
+					'in-string comment: % invalid unicode: \\u{24u done.'
+				`);
+				assert.doesNotThrow(() => [...new Lexer(src, CONFIG_DEFAULT).generate()], 'with comments enabled');
+				assert.throws(() => [...new Lexer(src, {
+						...CONFIG_DEFAULT,
+						languageFeatures: {
+							...CONFIG_DEFAULT.languageFeatures,
+							comments: false,
+						},
+					}).generate()], LexError03, 'with comments disabled');
+			});
 		})
 
-		Dev.supports('literalTemplate') && context('recognizes `TokenTemplate` conditions.', () => {
+		Dev.supports('literalTemplate-lex') && context('recognizes `TokenTemplate` conditions.', () => {
 			specify('Basic templates.', () => {
 				const tokens: Token[] = [...new Lexer(`
 					600  /  '''''' * 3 + '''hello''' *  2
@@ -480,7 +587,7 @@ describe('LexerSolid', () => {
 				const tokens: Token[] = [...new Lexer(`
 					'''abc{{ }}def'''
 					'''ghi{{}}jkl'''
-					'''mno{{ {% pqr %} }}stu'''
+					'''mno{{ %% pqr %% }}stu'''
 				`, CONFIG_DEFAULT).generate()]
 				assert.ok(tokens[ 2] instanceof TOKEN.TokenTemplate)
 				assert.strictEqual((tokens[ 2] as TOKEN.TokenTemplate).position, TemplatePosition.HEAD)
@@ -565,97 +672,6 @@ describe('LexerSolid', () => {
 					`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
 						assert.throws(() => [...lexer.generate()], LexError02)
 					})
-				})
-			})
-		})
-
-		context('recgnizes `TokenComment` conditions.', () => {
-			const comments_off: SolidConfig = {
-				...CONFIG_DEFAULT,
-				languageFeatures: {
-					...CONFIG_DEFAULT.languageFeatures,
-					comments: false,
-				},
-			}
-			context('TokenCommentLine', () => {
-				specify('Empty line comment.', () => {
-					const comment: Token = [...new Lexer(`
-						%
-						8;
-					`, CONFIG_DEFAULT).generate()][2]
-					assert.ok(comment instanceof TOKEN.TokenCommentLine)
-					assert.strictEqual(comment.source, '%\n')
-				})
-				specify('Basic line comment.', () => {
-					assert.ok([...new Lexer(`
-						500  +  30; ;  % line comment  *  2
-						8;
-					`, CONFIG_DEFAULT).generate()][11] instanceof TOKEN.TokenCommentLine)
-				})
-				specify('Line comment at end of file not followed by LF.', () => {
-					assert.doesNotThrow(() => [...new Lexer(`
-						% line comment not followed by LF
-					`.trimEnd(), CONFIG_DEFAULT).generate()])
-				})
-				it('throws when `config.languageFeatures.comments` is turned off.', () => {
-					assert.throws(() => [...new Lexer(`
-						%
-						8;
-					`, comments_off).generate()], LexError01)
-				})
-			})
-			context('TokenCommentMulti', () => {
-				specify('Empty multiline comment.', () => {
-					const tokens: Token[] = [...new Lexer(`
-						%%%%
-						%% %%
-					`, CONFIG_DEFAULT).generate()]
-					assert.ok(tokens[2] instanceof TOKEN.TokenCommentMulti)
-					assert.ok(tokens[4] instanceof TOKEN.TokenCommentMulti)
-					assert.strictEqual(tokens[2].source, '%%%%')
-					assert.strictEqual(tokens[4].source, '%% %%')
-				})
-				specify('Nonempty multiline comment.', () => {
-					const comment: Token = [...new Lexer(`
-						%% multiline
-						that has contents
-						comment %%
-					`, CONFIG_DEFAULT).generate()][2]
-					assert.ok(comment instanceof TOKEN.TokenCommentMulti)
-				})
-				specify('Simulate inline documentation comment.', () => {
-					const tokens: Token[] = [...new Lexer(Util.dedent(`
-						%%% The third power of 2. %%
-						8;
-					`), CONFIG_DEFAULT).generate()]
-					assert.ok(tokens[2] instanceof TOKEN.TokenCommentMulti)
-					assert.strictEqual(tokens[2].source, `
-						%%% The third power of 2. %%
-					`.trim())
-					assert.strictEqual(tokens[4].source, '8')
-				})
-				specify('Simulate block documentation comment.', () => {
-					const tokens: Token[] = [...new Lexer(Util.dedent(`
-						%%%
-						The third power of 2.
-						%%%
-						8;
-					`), CONFIG_DEFAULT).generate()]
-					assert.ok(tokens[2] instanceof TOKEN.TokenCommentMulti)
-					assert.ok(tokens[3] instanceof TOKEN.TokenCommentLine)
-					assert.strictEqual(tokens[2].source, Util.dedent(`
-						%%%
-						The third power of 2.
-						%%
-					`).trim())
-					assert.strictEqual(tokens[3].source, `%\n`)
-					assert.strictEqual(tokens[4].source, '8')
-				})
-				it('throws when `config.languageFeatures.comments` is turned off.', () => {
-					assert.throws(() => [...new Lexer(`
-						%% multiline
-						comment %%
-					`, comments_off).generate()], LexError01)
 				})
 			})
 		})

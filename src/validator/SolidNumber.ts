@@ -1,4 +1,5 @@
 import {SolidObject} from './SolidObject';
+import {SolidBoolean} from './SolidBoolean';
 import type {Float64} from './Float64';
 
 
@@ -7,6 +8,14 @@ import type {Float64} from './Float64';
  * A numeric Solid Language Value.
  */
 export abstract class SolidNumber<T = unknown> extends SolidObject {
+	/**
+	 * @override SolidObject
+	 * @final
+	 */
+	get isEmpty(): SolidBoolean {
+		return SolidBoolean.fromBoolean(this.eq0());
+	}
+
 	/**
 	 * Type-coerce this number into a float.
 	 * @returns the equivalent floating-point value

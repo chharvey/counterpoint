@@ -8,6 +8,19 @@ Whitespace
 
 
 
+Comment :::=
+	| CommentLine
+	| CommentMulti
+;
+
+CommentLine
+	:::= "%" ([^%#x0a#x03] [^#x0a#x03]*)? #x0a;
+
+CommentMulti
+	:::= "%%" ("%"? [^%#x03])* "%%";
+
+
+
 Punctuator :::=
 	// grouping
 		| "(" | ")"
@@ -35,6 +48,7 @@ Keyword :::=
 		| "true"
 		| "int"
 		| "float"
+		| "str"
 		| "obj"
 	// operator
 		| "is"
@@ -95,93 +109,88 @@ DigitSequenceHTD<Separator> :::= ( DigitSequenceHTD <Separator+>"_"? )? [0-9a-z]
 
 
 
-String
-	:::= "'" StringChars? "'";
+String<Comment>
+	:::= "'" (StringUnfinished<?Comment> | StringChars<?Comment>)? "'";
 
-StringChars :::=
-	| [^'\#x03]                StringChars?
-	| "\"         StringEscape StringChars?
-	| "\u"      ( [^'{#x03]    StringChars? )?
-;
+	StringUnfinished<Comment> :::=
+		| "\u"
+		| <Comment+>("%"  ([^'%#x0a#x03] [^'#x0a#x03]*)?)
+		| <Comment+>("%%" ("%"? [^'%#x03])*)
+	;
 
-StringEscape :::=
-	| "'" | "\" | "s" | "t" | "n" | "r"
-	| "u{" DigitSequenceHex? "}"
-	| #x0a
-	| [^'\stnru#x0a#x03]
-;
+	StringChars<Comment>
+		:::= StringChar<?Comment> StringChars<?Comment>?;
+
+		StringChar<Comment> :::=
+			| <Comment->[^'\#x03]
+			| <Comment+>[^'\%#x03]
+			| "\"  StringEscape<?Comment>
+			| "\u" [^'{#x03]
+			| <Comment+>("%"  ([^'%#x0a#x03] [^'#x0a#x03]*)? #x0a)
+			| <Comment+>("%%" ("%"? [^'%#x03])*              "%%")
+		;
+
+			StringEscape<Comment> :::=
+				| "'" | "\" | <Comment+>"%"
+				| "s" | "t" | "n" | "r"
+				| "u{" DigitSequenceHex? "}"
+				| #x0a
+				| <Comment->[^'\stnru#x0a#x03]
+				| <Comment+>[^'\%stnru#x0a#x03]
+			;
 
 
 
-TemplateFull   :::= "'''" TemplateChars__EndDelim ? "'''";
+TemplateFull   :::= "'''" TemplateChars__EndDelim?  "'''";
 TemplateHead   :::= "'''" TemplateChars__EndInterp? "{{" ;
-TempalteMiddle :::= "}}"  TemplateChars__EndInterp? "{{" ;
-TempalteTail   :::= "}}"  TemplateChars__EndDelim ? "'''";
+TemplateMiddle :::= "}}"  TemplateChars__EndInterp? "{{" ;
+TemplateTail   :::= "}}"  TemplateChars__EndDelim?  "'''";
 
-TemplateChars__EndDelim :::=
-	| [^'{#x03] TemplateChars__EndDelim?
-	| TemplateChars__EndDelim__StartDelim
-	| TemplateChars__EndDelim__StartInterp
-;
+	TemplateChars__EndDelim :::=
+		| [^'{#x03] TemplateChars__EndDelim?
+		| TemplateChars__EndDelim__StartDelim
+		| TemplateChars__EndDelim__StartInterp
+	;
 
-TemplateChars__EndDelim__StartDelim :::=
-	| "'"    [^'{#x03] TemplateChars__EndDelim?
-	| "''"   [^'{#x03] TemplateChars__EndDelim?
-	| "'{"  ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)?
-	| "''{" ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)?
-;
+		TemplateChars__EndDelim__StartDelim :::=
+			| ("'"  | "''")   [^'{#x03] TemplateChars__EndDelim?
+			| ("'{" | "''{") ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)?
+		;
 
-TemplateChars__EndDelim__StartInterp :::=
-	| "{"   ([^'{#x03] TemplateChars__EndDelim?                                       )?
-	| "{'"  ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)
-	| "{''" ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)
-;
+		TemplateChars__EndDelim__StartInterp :::=
+			| "{"            ([^'{#x03] TemplateChars__EndDelim?                                       )?
+			| ("{'" | "{''") ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)
+		;
 
-TemplateChars__EndInterp :::=
-	| [^'{#x03] TemplateChars__EndInterp?
-	| TemplateChars__EndInterp__StartDelim
-	| TemplateChars__EndInterp__StartInterp
-;
+	TemplateChars__EndInterp :::=
+		| [^'{#x03] TemplateChars__EndInterp?
+		| TemplateChars__EndInterp__StartDelim
+		| TemplateChars__EndInterp__StartInterp
+	;
 
-TemplateChars__EndInterp__StartDelim :::=
-	| "'"   ([^'{#x03] TemplateChars__EndInterp?                                       )?
-	| "''"  ([^'{#x03] TemplateChars__EndInterp?                                       )?
-	| "'{"  ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)
-	| "''{" ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)
-;
+		TemplateChars__EndInterp__StartDelim :::=
+			| ("'"  | "''")  ([^'{#x03] TemplateChars__EndInterp?                                       )?
+			| ("'{" | "''{") ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)
+		;
 
-TemplateChars__EndInterp__StartInterp :::=
-	| "{"    [^'{#x03] TemplateChars__EndInterp?
-	| "{'"  ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)?
-	| "{''" ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)?
-;
-
-
-
-Comment :::=
-	| CommentLine
-	| CommentMulti
-;
-
-CommentLine
-	:::= "%" ([^%#x0a#x03] [^#x0a#x03]*)? #x0a;
-
-CommentMulti
-	:::= "%%" ("%"? [^%#x03])* "%%";
+		TemplateChars__EndInterp__StartInterp :::=
+			| "{"             [^'{#x03] TemplateChars__EndInterp?
+			| ("{'" | "{''") ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)?
+		;
 
 
 
 Goal<Comment, Radix, Separator> :::=
 	| Filebound
 	| Whitespace
+	| <Comment+>Comment
 	| Punctuator
 	| Keyword
 	| Identifier
 	| Number<?Radix, ?Separator>
-	| String
+	| String<?Comment>
 	| TemplateFull
 	| TemplateHead
 	| TemplateMiddle
 	| TemplateTail
-	| <Comment+>Comment
 ;

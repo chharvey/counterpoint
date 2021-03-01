@@ -78,7 +78,7 @@ describe('Decorator', () => {
 						return [key.source, key.id];
 					}),
 					srcs.map((src, i) => [src, [
-						0x8cn,
+						0x8dn,
 						0x100n,
 					][i]]),
 				);
@@ -519,7 +519,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('literalTemplate') && context('ExpressionUnit ::= StringTemplate', () => {
+		Dev.supports('stringTemplate-decorate') && context('ExpressionUnit ::= StringTemplate', () => {
 			function stringTemplateSemanticNode(src: string): string {
 				return ((Decorator
 					.decorate(new Parser(src).parse())

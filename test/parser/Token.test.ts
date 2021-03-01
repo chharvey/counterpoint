@@ -1,13 +1,15 @@
-import type {
-	Token,
-} from '@chharvey/parser';
 import * as assert from 'assert'
+import * as utf8 from 'utf8';
 
 import {
+	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
 	Util,
 } from '../../src/core/';
+import type {
+	CodeUnit,
+} from '../../src/types';
 import {
 	TOKEN,
 	LexerSolid as Lexer,
@@ -17,6 +19,15 @@ import {
 
 describe('TokenSolid', () => {
 	describe('#cook', () => {
+		/**
+		 * Decode a stream of numeric UTF-8 code units into a string.
+		 * @param   codeunits a stream of numeric code units, each conforming to the UTF-8 specification
+		 * @returns           a decoded string
+		 */
+		function utf8Decode(codeunits: readonly CodeUnit[]): string {
+			return utf8.decode(String.fromCodePoint(...codeunits));
+		}
+
 		context('TokenPunctuator', () => {
 			it('assigns values 0n–127n to punctuator tokens.', () => {
 				const cooked: bigint[] = [...new Lexer(TOKEN.TokenPunctuator.PUNCTUATORS.join(' '), CONFIG_DEFAULT).generate()]
@@ -170,57 +181,140 @@ describe('TokenSolid', () => {
 			})
 		})
 
-		Dev.supports('literalString') && context('TokenString', () => {
+		Dev.supports('literalString-cook') && context('TokenString', () => {
 			it('produces the cooked string value.', () => {
-				const tokens: Token[] = [...new Lexer(Util.dedent(`
+				assert.deepStrictEqual([...new Lexer(Util.dedent(`
 					5 + 03 + '' * 'hello' *  -2;
 					'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
 					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3';
 					'012\\
-					345
+					345\\%
 					678';
-					'\u{10001}' '\\\u{10001}';
+					'😀' '\u{10001}' '\\\u{10001}' '\\u{10001}';
 				`), CONFIG_DEFAULT).generate()]
-				assert.strictEqual((tokens[ 5] as TOKEN.TokenSolid).cook(), ``)
-				assert.strictEqual((tokens[ 7] as TOKEN.TokenSolid).cook(), `hello`)
-				assert.strictEqual((tokens[11] as TOKEN.TokenSolid).cook(), `0 \' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`)
-				assert.strictEqual((tokens[13] as TOKEN.TokenSolid).cook(), `0 $ 1 _ 2 \0 3`)
-				assert.strictEqual((tokens[15] as TOKEN.TokenSolid).cook(), `012 345\n678`)
-				assert.strictEqual((tokens[17] as TOKEN.TokenSolid).cook(), `\u{10001}`)
-				assert.strictEqual((tokens[18] as TOKEN.TokenSolid).cook(), `\u{10001}`)
+					.filter((token): token is TOKEN.TokenString => token instanceof TOKEN.TokenString)
+					.map((token) => utf8Decode(token.cook()))
+				, [
+					``,
+					`hello`,
+					`0 ' 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6`,
+					`0 $ 1 _ 2 \0 3`,
+					`012 345%\n678`,
+					`\u{1f600}`, `\u{10001}`, `\u{10001}`, `\u{10001}`,
+				]);
 			})
+			describe('In-String Comments', () => {
+				function cook(config: SolidConfig): string[] {
+					return [...new Lexer(Util.dedent(`
+						'The five boxing wizards % jump quickly.'
+
+						'The five % boxing wizards
+						jump quickly.'
+
+						'The five boxing wizards %
+						jump quickly.'
+
+						'The five boxing wizards jump quickly.%
+						'
+
+						'The five %% boxing wizards %% jump quickly.'
+
+						'The five boxing wizards %%%% jump quickly.'
+
+						'The five %% boxing
+						wizards %% jump
+						quickly.'
+
+						'The five boxing
+						wizards %% jump
+						quickly.%%'
+
+						'The five boxing
+						wizards %% jump
+						quickly.'
+					`), config).generate()]
+						.filter((token): token is TOKEN.TokenString => token instanceof TOKEN.TokenString)
+						.map((token) => utf8Decode(token.cook()))
+					;
+				}
+				context('with comments enabled.', () => {
+					const data: {testdesc: string, expected: string}[] = [
+						{testdesc: 'removes a line comment not ending in a LF.',   expected: 'The five boxing wizards '},
+						{testdesc: 'preserves a LF when line comment ends in LF.', expected: 'The five \njump quickly.'},
+						{testdesc: 'preserves a LF with empty line comment.',      expected: 'The five boxing wizards \njump quickly.'},
+						{testdesc: 'preserves a LF with last empty line comment.', expected: 'The five boxing wizards jump quickly.\n'},
+						{testdesc: 'removes multiline comments.',                  expected: 'The five  jump quickly.'},
+						{testdesc: 'removes empty multiline comments.',            expected: 'The five boxing wizards  jump quickly.'},
+						{testdesc: 'removes multiline comments containing LFs.',   expected: 'The five  jump\nquickly.'},
+						{testdesc: 'removes last multiline comment.',              expected: 'The five boxing\nwizards '},
+						{testdesc: 'removes multiline comment without end delim.', expected: 'The five boxing\nwizards '},
+					];
+					cook(CONFIG_DEFAULT).forEach((actual, i) => {
+						it(data[i].testdesc, () => {
+							assert.strictEqual(actual, data[i].expected);
+						});
+					})
+				});
+				it('with comments disabled.', () => {
+					assert.deepStrictEqual(cook({
+						...CONFIG_DEFAULT,
+						languageFeatures: {
+							...CONFIG_DEFAULT.languageFeatures,
+							comments: false,
+						},
+					}), [
+						'The five boxing wizards % jump quickly.',
+						'The five % boxing wizards\njump quickly.',
+						'The five boxing wizards %\njump quickly.',
+						'The five boxing wizards jump quickly.%\n',
+						'The five %% boxing wizards %% jump quickly.',
+						'The five boxing wizards %%%% jump quickly.',
+						'The five %% boxing\nwizards %% jump\nquickly.',
+						'The five boxing\nwizards %% jump\nquickly.%%',
+						'The five boxing\nwizards %% jump\nquickly.',
+					]);
+				});
+			});
 		})
 
-		Dev.supports('literalTemplate') && context('TokenTemplate', () => {
+		Dev.supports('literalTemplate-cook') && context('TokenTemplate', () => {
 			it('produces the cooked template value.', () => {
-				const tokens: Token[] = [...new Lexer(Util.dedent(`
-					600  /  '''''' * 3 + '''hello''' *  2;
-					3 + '''head{{ * 2
-					3 + }}midl{{ * 2
-					3 + }}tail''' * 2
-					'''0 \\\` 1''';
-					'''0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7''';
-					'''0 \\u{24} 1 \\u{005f} 2 \\u{} 3''';
-					'''012\\
-					345
-					678''';
-				`), CONFIG_DEFAULT).generate()]
-				assert.strictEqual((tokens[ 3] as TOKEN.TokenSolid).cook(), ``)
-				assert.strictEqual((tokens[ 7] as TOKEN.TokenSolid).cook(), `hello`)
-				assert.strictEqual((tokens[13] as TOKEN.TokenSolid).cook(), `head`)
-				assert.strictEqual((tokens[18] as TOKEN.TokenSolid).cook(), `midl`)
-				assert.strictEqual((tokens[23] as TOKEN.TokenSolid).cook(), `tail`)
-				assert.strictEqual((tokens[26] as TOKEN.TokenSolid).cook(), `0 \\\` 1`)
-				assert.strictEqual((tokens[28] as TOKEN.TokenSolid).cook(), `0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`)
-				assert.strictEqual((tokens[30] as TOKEN.TokenSolid).cook(), `0 \\u{24} 1 \\u{005f} 2 \\u{} 3`)
-				assert.strictEqual((tokens[32] as TOKEN.TokenSolid).cook(), `012\\\n345\n678`)
+				assert.deepStrictEqual(
+					[...new Lexer(Util.dedent(`
+						600  /  '''''' * 3 + '''hello''' *  2;
+						3 + '''head{{ * 2
+						3 + }}midl{{ * 2
+						3 + }}tail''' * 2
+						'''0 \\\` 1''';
+						'''0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7''';
+						'''0 \\u{24} 1 \\u{005f} 2 \\u{} 3''';
+						'''012\\
+						345
+						678''';
+						'''😀 \\😀 \\u{1f600}''';
+					`), CONFIG_DEFAULT).generate()]
+						.filter((token): token is TOKEN.TokenTemplate => token instanceof TOKEN.TokenTemplate)
+						.map((token) => utf8Decode(token.cook()))
+					,
+					[
+						``, `hello`,
+						`head`,
+						`midl`,
+						`tail`,
+						`0 \\\` 1`,
+						`0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7`,
+						`0 \\u{24} 1 \\u{005f} 2 \\u{} 3`,
+						`012\\\n345\n678`,
+						`\u{1f600} \\\u{1f600} \\u{1f600}`,
+					],
+				);
 			})
 		})
 
-		Dev.supports('literalString') && it('throws when UTF-16 encoding input is out of range.', () => {
+		Dev.supports('literalString-cook') && it('`String.fromCodePoint` throws when UTF-8 encoding input is out of range.', () => {
 			const stringtoken: TOKEN.TokenString = [...new Lexer(Util.dedent(`
 				'a string literal with a unicode \\u{a00061} escape sequence out of range';
-			`), CONFIG_DEFAULT).generate()][1] as TOKEN.TokenString
+			`), CONFIG_DEFAULT).generate()][2] as TOKEN.TokenString;
 			assert.throws(() => stringtoken.cook(), RangeError)
 		})
 	})
