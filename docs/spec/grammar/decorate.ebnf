@@ -26,6 +26,8 @@ Decorate(TypeKeyword ::= "int") -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=Integer]);
 Decorate(TypeKeyword ::= "float") -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=Float]);
+Decorate(TypeKeyword ::= "str") -> SemanticTypeConstant
+	:= (SemanticTypeConstant[value=String]);
 Decorate(TypeKeyword ::= "obj") -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=Object]);
 

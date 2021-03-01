@@ -220,6 +220,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
 				(start_node.source === Keyword.INT)   ? Int16 :
 				(start_node.source === Keyword.FLOAT) ? Float64 :
+				(start_node.source === Keyword.STR)   ? SolidString :
 				(start_node.source === Keyword.OBJ)   ? SolidObject :
 				SolidNull
 			: (start_node instanceof TOKEN.TokenNumber) ?
@@ -228,7 +229,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 						? new Float64(start_node.cook())
 						: new Int16(BigInt(start_node.cook()))
 				)
-			: SolidString
+			: SolidNull;
 		super(start_node, {value});
 		this.value = value
 	}

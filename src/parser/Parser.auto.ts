@@ -46,7 +46,7 @@
 				/** @implements Production */
 				get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 					return [
-						['bool'],['int'],['float'],['obj'],
+						['bool'],['int'],['float'],['str'],['obj'],
 					];
 				}
 			}
@@ -456,7 +456,7 @@
 		
 			export class ParseNodeTypeKeyword extends ParseNode {
 				declare readonly children:
-					readonly [Token] | readonly [Token] | readonly [Token] | readonly [Token]
+					readonly [Token] | readonly [Token] | readonly [Token] | readonly [Token] | readonly [Token]
 				;
 			}
 		

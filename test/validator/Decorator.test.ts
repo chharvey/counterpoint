@@ -78,7 +78,7 @@ describe('Decorator', () => {
 						return [key.source, key.id];
 					}),
 					srcs.map((src, i) => [src, [
-						0x8cn,
+						0x8dn,
 						0x100n,
 					][i]]),
 				);

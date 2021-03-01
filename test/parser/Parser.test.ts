@@ -289,16 +289,18 @@ describe('Parser', () => {
 		})
 
 		Dev.supports('typingExplicit') && describe('TypeUnit ::= TypeKeyword', () => {
-			it('parses keywords `bool`, `int`, `float`, `obj`.', () => {
+			it('parses keywords `bool`, `int`, `float`, `str`, `obj`.', () => {
 				assert.deepStrictEqual(([
 					`bool`,
 					`int`,
 					`float`,
+					`str`,
 					`obj`,
 				]).map((src) => h.tokenKeywordFromTypeString(src).source), [
 					Keyword.BOOL,
 					Keyword.INT,
 					Keyword.FLOAT,
+					Keyword.STR,
 					Keyword.OBJ,
 				]);
 			})
