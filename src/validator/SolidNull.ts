@@ -1,5 +1,6 @@
 import type {SolidLanguageType} from './SolidLanguageType';
 import {SolidObject} from './SolidObject';
+import {SolidBoolean} from './SolidBoolean';
 
 
 
@@ -30,6 +31,10 @@ export class SolidNull extends SolidObject {
 	/** @override */
 	toString(): string {
 		return 'null'
+	}
+	/** @override SolidObject */
+	get isTruthy(): SolidBoolean {
+		return SolidBoolean.FALSE;
 	}
 	/** @override */
 	protected identical_helper(value: SolidObject): boolean {

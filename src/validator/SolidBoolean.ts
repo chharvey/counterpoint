@@ -46,6 +46,10 @@ export class SolidBoolean extends SolidObject {
 	toString(): string {
 		return `${ this.value }`
 	}
+	/** @override SolidObject */
+	get isTruthy(): SolidBoolean {
+		return this;
+	}
 	/** @override */
 	protected identical_helper(value: SolidObject): boolean {
 		return value instanceof SolidBoolean && this.value === value.value

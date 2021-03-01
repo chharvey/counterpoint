@@ -770,7 +770,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		const v0: SolidObject = assess0;
 		return (
 			(this.operator === Operator.NOT) ? v0.isTruthy.not :
-			(this.operator === Operator.EMP) ? v0.isTruthy.not.or(SolidBoolean.fromBoolean(v0 instanceof SolidNumber && v0.eq0())) :
+			(this.operator === Operator.EMP) ? v0.isTruthy.not.or(v0.isEmpty) :
 			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as SolidNumber<any>) :
 			(() => { throw new ReferenceError(`Operator ${ Operator[this.operator] } not found.`) })()
 		)

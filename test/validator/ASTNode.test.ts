@@ -1021,6 +1021,8 @@ describe('ASTNodeSolid', () => {
 					[`!0.0;`,    SolidBoolean.FALSE],
 					[`!-0.0;`,   SolidBoolean.FALSE],
 					[`!4.2e+1;`, SolidBoolean.FALSE],
+					[`!'';`,      SolidBoolean.FALSE],
+					[`!'hello';`, SolidBoolean.FALSE],
 				]))
 			})
 			it('computes the value of emptiness of anything.', () => {
@@ -1033,6 +1035,8 @@ describe('ASTNodeSolid', () => {
 					[`?0.0;`,    SolidBoolean.TRUE],
 					[`?-0.0;`,   SolidBoolean.TRUE],
 					[`?4.2e+1;`, SolidBoolean.FALSE],
+					[`?'';`,      SolidBoolean.TRUE],
+					[`?'hello';`, SolidBoolean.FALSE],
 				]))
 			})
 			it('computes the value of an integer operation of constants.', () => {

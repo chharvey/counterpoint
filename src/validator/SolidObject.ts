@@ -1,5 +1,4 @@
 import {SolidLanguageType} from './SolidLanguageType';
-import type {SolidNull}    from './SolidNull';
 import type {SolidBoolean} from './SolidBoolean';
 
 
@@ -11,8 +10,9 @@ import type {SolidBoolean} from './SolidBoolean';
  * - Boolean
  * - Int16
  * - Float64
+ * - String
  */
-export class SolidObject {
+export abstract class SolidObject {
 	/** @implements SolidLanguageType */
 	static isEmpty: SolidLanguageType['isEmpty'] = false
 	/** @implements SolidLanguageType */
@@ -48,13 +48,15 @@ export class SolidObject {
 	 * @returns the associated Boolean value of this value
 	 */
 	get isTruthy(): SolidBoolean {
-		const SolidNull_Class:    typeof SolidNull    = require('./SolidNull')   .SolidNull;
 		const SolidBoolean_Class: typeof SolidBoolean = require('./SolidBoolean').SolidBoolean;
-		return (
-			(this instanceof SolidNull_Class)    ? SolidBoolean_Class.FALSE :
-			(this instanceof SolidBoolean_Class) ? this :
-			SolidBoolean_Class.TRUE
-		)
+		return SolidBoolean_Class.TRUE;
+	}
+	/**
+	 * Return whether this value is “empty”, that is,
+	 * it is either falsy, a zero number, an empty string, or an empty collection.
+	 */
+	get isEmpty(): SolidBoolean {
+		return this.isTruthy.not;
 	}
 	/**
 	 * Is this value the same exact object as the argument?
