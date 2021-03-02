@@ -23,7 +23,6 @@ export class Dev {
 	private static readonly FEATURES: {
 		// v0.3.0
 		readonly variables       : string,
-		readonly typingExplicit  : string,
 		// v0.4.0
 		readonly literalCollection: string,
 		readonly 'literalString-lex':       string,
@@ -37,7 +36,6 @@ export class Dev {
 	} = {
 		// v0.3.0
 		variables:       '>=0.3.*',
-		typingExplicit:  '>=0.3.*',
 		// v0.4.0
 		literalCollection: '>=0.4.0-alpha.0',
 		'literalString-lex':       '>=0.4.0-alpha.1.0',

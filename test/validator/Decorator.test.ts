@@ -106,7 +106,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeKeyword ::= "bool" | "int" | "float" | "obj"', () => {
+		describe('TypeKeyword ::= "bool" | "int" | "float" | "obj"', () => {
 			it('makes an ASTNodeTypeConstant.', () => {
 				/*
 					<TypeConstant source="bool" value="Boolean"/>
@@ -125,7 +125,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeProperty ::= Word ":" Type', () => {
+		Dev.supports('literalCollection') && describe('TypeProperty ::= Word ":" Type', () => {
 			it('makes an ASTNodeTypeProperty.', () => {
 				/*
 					<TypeProperty>
@@ -141,7 +141,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
 			it('makes an ASTNodeTypeList.', () => {
 				/*
 					<TypeList>
@@ -164,7 +164,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]"', () => {
 			it('makes an ASTNodeTypeRecord.', () => {
 				/*
 					<TypeRecord>
@@ -184,7 +184,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
 			it('makes an ASTNodeTypeEmptyCollection.', () => {
 				/*
 					<TypeEmptyCollection/>
@@ -194,7 +194,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('typingExplicit') && describe('TypeUnit ::= IDENTIFIER', () => {
+		describe('TypeUnit ::= IDENTIFIER', () => {
 			it('makes an ASTNodeTypeAlias.', () => {
 				/*
 					<TypeAlias source="Foo" id=257/>
@@ -228,7 +228,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('typingExplicit') && describe('TypeUnit ::= PrimitiveLiteral', () => {
+		describe('TypeUnit ::= PrimitiveLiteral', () => {
 			it('makes an ASTNodeTypeConstant.', () => {
 				/*
 					<TypeConstant source="null" value="SolidNull"/>
@@ -253,7 +253,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
+		describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="!">
@@ -270,7 +270,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
+		describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="&">
@@ -289,7 +289,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
+		describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="|">
@@ -308,7 +308,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('Type ::= TypeUnion', () => {
+		describe('Type ::= TypeUnion', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="&">
@@ -926,7 +926,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationVariable', () => {
+		Dev.supports('variables') && describe('DeclarationVariable', () => {
 			it('makes an unfixed ASTNodeDeclarationVariable node.', () => {
 				/*
 					<DeclarationVariable unfixed=true>
@@ -977,7 +977,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationType', () => {
+		Dev.supports('variables') && describe('DeclarationType', () => {
 			it('makes an ASTNodeDeclarationType node.', () => {
 				/*
 					<DeclarationType>

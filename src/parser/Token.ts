@@ -46,7 +46,7 @@ export enum Punctuator {
 		EMP = '?',
 		AFF = '+',
 		NEG = '-',
-		ORNULL = '!', // Dev.supports('typingExplicit')
+		ORNULL = '!',
 	// binary
 		EXP  = '^',
 		MUL  = '*',
@@ -65,24 +65,24 @@ export enum Punctuator {
 		NAND = '!&',
 		OR   = '||',
 		NOR  = '!|',
-		INTER = '&', // Dev.supports('typingExplicit')
-		UNION = '|', // Dev.supports('typingExplicit')
+		INTER = '&',
+		UNION = '|',
 	// statement
 		ENDSTAT = ';',
-		ISTYPE  = ':', // Dev.supports('typingExplicit')
-		ASSIGN  = '=', // Dev.supportsAll('variables', 'typingExplicit', 'literalCollection')
+		ISTYPE  = ':',
+		ASSIGN  = '=', // Dev.supportsAll('variables', 'literalCollection')
 }
 
 export enum Keyword {
 	// literal
 		NULL  = 'null',
-		BOOL  = 'bool',   // Dev.supports('typingExplicit')
+		BOOL  = 'bool',
 		FALSE = 'false',
 		TRUE  = 'true',
-		INT   = 'int',    // Dev.supports('typingExplicit')
-		FLOAT = 'float',  // Dev.supports('typingExplicit')
-		STR   = 'str',    // Dev.supports('typingExplicit')
-		OBJ   = 'obj',    // Dev.supports('typingExplicit')
+		INT   = 'int',
+		FLOAT = 'float',
+		STR   = 'str',
+		OBJ   = 'obj',
 	// operator
 		IS   = 'is',
 		ISNT = 'isnt',
@@ -91,7 +91,7 @@ export enum Keyword {
 		ELSE = 'else',
 	// storage
 		LET  = 'let',  // Dev.supports('variables')
-		TYPE = 'type', // Dev.supportsAll('variables', 'typingExplicit')
+		TYPE = 'type', // Dev.supports('variables')
 	// modifier
 		UNFIXED = 'unfixed', // Dev.supports('variables')
 }
