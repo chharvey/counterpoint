@@ -623,7 +623,7 @@ describe('Parser', () => {
 		});
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
-			Dev.supports('variables') && it('parses IDENTIFIER.', () => {
+			it('parses IDENTIFIER.', () => {
 				assert.strictEqual(h.tokenIdentifierFromSource(`ident;`).source, 'ident')
 			})
 			it('parses NULL, BOOLEAN, INTEGER, FLOAT, or STRING.', () => {
@@ -1171,7 +1171,7 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('variables') && describe('DeclarationVariable', () => {
+		describe('DeclarationVariable ::= "let" "unfixed"? IDENTIFIER ":" Type "=" Expression ";"', () => {
 			/*
 				<Statement>
 					<DeclarationVariable>
@@ -1206,7 +1206,7 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('variables') && describe('DeclarationType', () => {
+		describe('DeclarationType ::= "type" IDENTIFIER "=" Type ";"', () => {
 			/*
 				<Statement>
 					<DeclarationType>
@@ -1228,7 +1228,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('variables') && describe('Assignee ::= IDENTIFIER', () => {
+		describe('Assignee ::= IDENTIFIER', () => {
 			/*
 				<Assignee>
 					<IDENTIFIER>this_answer</IDENTIFIER>
@@ -1243,7 +1243,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('variables') && describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
+		describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
 			/*
 				<StatementAssignment>
 					<Assignee source="this_answer">...</Assignee>

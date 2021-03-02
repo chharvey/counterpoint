@@ -22,7 +22,7 @@ export class Dev {
 	 */
 	private static readonly FEATURES: {
 		// v0.3.0
-		readonly variables       : string,
+		readonly 'variables-build': string,
 		// v0.4.0
 		readonly literalCollection: string,
 		readonly 'literalString-lex':       string,
@@ -35,7 +35,7 @@ export class Dev {
 		readonly 'stringTemplate-assess':   string,
 	} = {
 		// v0.3.0
-		variables:       '>=0.3.*',
+		'variables-build': '>=0.3.0-alpha.3',
 		// v0.4.0
 		literalCollection: '>=0.4.0-alpha.0',
 		'literalString-lex':       '>=0.4.0-alpha.1.0',

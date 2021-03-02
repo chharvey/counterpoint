@@ -440,7 +440,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('variables') && context('ExpressionUnit ::= IDENTIFIER', () => {
+		context('ExpressionUnit ::= IDENTIFIER', () => {
 			it('assigns a unique ID starting from 256.', () => {
 				/*
 					<Goal source="␂ variable ; ␃">
@@ -926,7 +926,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('variables') && describe('DeclarationVariable', () => {
+		describe('DeclarationVariable ::= "let" "unfixed"? IDENTIFIER ":" Type "=" Expression ";"', () => {
 			it('makes an unfixed ASTNodeDeclarationVariable node.', () => {
 				/*
 					<DeclarationVariable unfixed=true>
@@ -977,7 +977,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('variables') && describe('DeclarationType', () => {
+		describe('DeclarationType ::= "type" IDENTIFIER "=" Type ";"', () => {
 			it('makes an ASTNodeDeclarationType node.', () => {
 				/*
 					<DeclarationType>
@@ -998,7 +998,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('variables') && describe('Assignee ::= IDENTIFIER', () => {
+		describe('Assignee ::= IDENTIFIER', () => {
 			it('makes an ASTNodeVariable node.', () => {
 				/*
 					<Variable source="the_answer" id=256n/>
@@ -1009,7 +1009,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('variables') && describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
+		describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
 			it('makes an ASTNodeAssignment node.', () => {
 				/*
 					<Assignment>

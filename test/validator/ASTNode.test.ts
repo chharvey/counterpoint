@@ -70,7 +70,7 @@ import {
 
 
 describe('ASTNodeSolid', () => {
-	Dev.supports('variables') && describe('#varCheck', () => {
+	describe('#varCheck', () => {
 		describe('ASTNodeTypeAlias', () => {
 			it('throws if the validator does not contain a record for the identifier.', () => {
 				goalFromSource(`
@@ -616,7 +616,7 @@ describe('ASTNodeSolid', () => {
 					});
 				});
 			});
-			Dev.supports('variables') && it('returns Unknown for undeclared variables.', () => {
+			it('returns Unknown for undeclared variables.', () => {
 				// NOTE: a reference error will be thrown at the variable-checking stage
 				assert.strictEqual(variableFromSource(`x;`).type(), SolidLanguageType.UNKNOWN);
 			});
@@ -884,7 +884,7 @@ describe('ASTNodeSolid', () => {
 				].map((v) => new Float64(v)));
 			})
 
-			Dev.supports('variables') && describe('ASTNodeVariable', () => {
+			describe('ASTNodeVariable', () => {
 				it('assesses the value of a fixed variable.', () => {
 					const validator: Validator = new Validator();
 					const goal: AST.ASTNodeGoal = goalFromSource(`
