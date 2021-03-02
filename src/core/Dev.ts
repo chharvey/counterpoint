@@ -21,19 +21,6 @@ export class Dev {
 	 * Released features may have an optional language feature toggle defined in {@link SolidConfig}.
 	 */
 	private static readonly FEATURES: {
-		// v0.1.0
-		readonly literalNumber   : string,
-		readonly operatorsMath   : string,
-		readonly expressions     : string,
-		readonly constantFolding : string,
-		// v0.2.0
-		readonly comments          : string,
-		readonly integerRadices    : string,
-		readonly numericSeparators : string,
-		readonly keywordPrimitives : string,
-		readonly operatorsLogic    : string,
-		readonly typingImplicit    : string,
-		readonly statements        : string,
 		// v0.3.0
 		readonly variables       : string,
 		readonly typingExplicit  : string,
@@ -48,19 +35,6 @@ export class Dev {
 		readonly 'stringTemplate-decorate': string,
 		readonly 'stringTemplate-assess':   string,
 	} = {
-		// v0.1.0
-		literalNumber:   '>=0.1.*',
-		operatorsMath:   '>=0.1.*',
-		expressions:     '>=0.1.*',
-		constantFolding: '>=0.1.*',
-		// v0.2.0
-		comments:          '>=0.2.*',
-		integerRadices:    '>=0.2.*',
-		numericSeparators: '>=0.2.*',
-		keywordPrimitives: '>=0.2.*',
-		operatorsLogic:    '>=0.2.*',
-		typingImplicit:    '>=0.2.*',
-		statements:        '>=0.2.*',
 		// v0.3.0
 		variables:       '>=0.3.*',
 		typingExplicit:  '>=0.3.*',
