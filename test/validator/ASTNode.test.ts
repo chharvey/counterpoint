@@ -600,7 +600,7 @@ describe('ASTNodeSolid', () => {
 					it('returns a constant Float type for ASTNodeConstant with float value.', () => {
 						assert.deepStrictEqual(constantFromSource(`4.2e+1;`).type(), new SolidTypeConstant(new Float64(42.0)));
 					});
-					Dev.supports('string-assess') && it('returns a constant String with string value.', () => {
+					Dev.supports('stringConstant-assess') && it('returns a constant String with string value.', () => {
 						assert.deepStrictEqual(
 							constantFromSource(`'42😀';`).type(),
 							new SolidTypeConstant(new SolidString('42😀')),
@@ -608,7 +608,7 @@ describe('ASTNodeSolid', () => {
 					});
 				});
 				context('with constant folding off.', () => {
-					Dev.supports('string-assess') && it('always returns `String`.', () => {
+					Dev.supports('stringConstant-assess') && it('always returns `String`.', () => {
 						assert.deepStrictEqual(
 							constantFromSource(`'42😀';`, folding_off).type(new Validator(folding_off)),
 							SolidString,
@@ -751,7 +751,7 @@ describe('ASTNodeSolid', () => {
 							`false - 2;`,
 							`2 / true;`,
 							`null ^ false;`,
-							...(Dev.supports('string-assess') ? [`'hello' + 5;`] : []),
+							...(Dev.supports('stringConstant-assess') ? [`'hello' + 5;`] : []),
 						].forEach((src) => {
 							assert.throws(() => operationFromSource(src).type(), TypeError01);
 						});
@@ -949,6 +949,8 @@ describe('ASTNodeSolid', () => {
 					[`!0.0;`,    SolidBoolean.FALSE],
 					[`!-0.0;`,   SolidBoolean.FALSE],
 					[`!4.2e+1;`, SolidBoolean.FALSE],
+				]))
+				Dev.supportsAll('literalString-lex', 'literalString-cook', 'stringConstant-assess') && assessOperations(new Map([
 					[`!'';`,      SolidBoolean.FALSE],
 					[`!'hello';`, SolidBoolean.FALSE],
 				]))
@@ -963,6 +965,8 @@ describe('ASTNodeSolid', () => {
 					[`?0.0;`,    SolidBoolean.TRUE],
 					[`?-0.0;`,   SolidBoolean.TRUE],
 					[`?4.2e+1;`, SolidBoolean.FALSE],
+				]))
+				Dev.supportsAll('literalString-lex', 'literalString-cook', 'stringConstant-assess') && assessOperations(new Map([
 					[`?'';`,      SolidBoolean.TRUE],
 					[`?'hello';`, SolidBoolean.FALSE],
 				]))
@@ -1063,6 +1067,8 @@ describe('ASTNodeSolid', () => {
 					[`-0.0 == 0;`,   true],
 					[`-0.0 is 0.0;`, false],
 					[`-0.0 == 0.0;`, true],
+				]), (val) => SolidBoolean.fromBoolean(val)))
+				Dev.supportsAll('literalString-lex', 'literalString-cook', 'stringConstant-assess') && assessOperations(xjs.Map.mapValues(new Map([
 					[`'' == '';`,    true],
 					[`'a' is 'a';`, true],
 					[`'a' == 'a';`, true],
