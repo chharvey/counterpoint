@@ -7,7 +7,7 @@ import type {
 } from '../types.d';
 import {
 	Dev,
-} from '../../src/core/';
+} from '../core/';
 import {
 	Operator,
 	ValidTypeOperator,
