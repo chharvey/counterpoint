@@ -950,7 +950,7 @@ describe('ASTNodeSolid', () => {
 					[`!-0.0;`,   SolidBoolean.FALSE],
 					[`!4.2e+1;`, SolidBoolean.FALSE],
 				]))
-				Dev.supportsAll('literalString-lex', 'literalString-cook', 'stringConstant-assess') && assessOperations(new Map([
+				Dev.supports('stringConstant-assess') && assessOperations(new Map([
 					[`!'';`,      SolidBoolean.FALSE],
 					[`!'hello';`, SolidBoolean.FALSE],
 				]))
@@ -966,7 +966,7 @@ describe('ASTNodeSolid', () => {
 					[`?-0.0;`,   SolidBoolean.TRUE],
 					[`?4.2e+1;`, SolidBoolean.FALSE],
 				]))
-				Dev.supportsAll('literalString-lex', 'literalString-cook', 'stringConstant-assess') && assessOperations(new Map([
+				Dev.supports('stringConstant-assess') && assessOperations(new Map([
 					[`?'';`,      SolidBoolean.TRUE],
 					[`?'hello';`, SolidBoolean.FALSE],
 				]))
@@ -1068,7 +1068,7 @@ describe('ASTNodeSolid', () => {
 					[`-0.0 is 0.0;`, false],
 					[`-0.0 == 0.0;`, true],
 				]), (val) => SolidBoolean.fromBoolean(val)))
-				Dev.supportsAll('literalString-lex', 'literalString-cook', 'stringConstant-assess') && assessOperations(xjs.Map.mapValues(new Map([
+				Dev.supports('stringConstant-assess') && assessOperations(xjs.Map.mapValues(new Map([
 					[`'' == '';`,    true],
 					[`'a' is 'a';`, true],
 					[`'a' == 'a';`, true],

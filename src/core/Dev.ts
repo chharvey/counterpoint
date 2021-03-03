@@ -1,12 +1,11 @@
-import * as semver from 'semver'
+type FeatureFlag = boolean | [boolean, (keyof typeof Dev['FEATURES'])[]];
+
+
 
 /**
  * Development utilities. Not for production.
  */
 export class Dev {
-	/** The current version of this project (as defined in `package.json`). */
-	static readonly VERSION: string = require('../../package.json').version
-
 	/**
 	 * A map of development features to their version numbers.
 	 *
@@ -22,30 +21,30 @@ export class Dev {
 	 */
 	private static readonly FEATURES: {
 		// v0.3.0
-		readonly 'variables-build': string,
+		readonly 'variables-build': FeatureFlag,
 		// v0.4.0
-		readonly literalCollection: string,
-		readonly 'literalString-lex':       string,
-		readonly 'literalTemplate-lex':     string,
-		readonly 'literalString-cook':      string,
-		readonly 'literalTemplate-cook':    string,
-		readonly 'stringConstant-assess':   string,
-		readonly 'stringTemplate-parse':    string,
-		readonly 'stringTemplate-decorate': string,
-		readonly 'stringTemplate-assess':   string,
+		readonly literalCollection:         FeatureFlag,
+		readonly 'literalString-lex':       FeatureFlag,
+		readonly 'literalTemplate-lex':     FeatureFlag,
+		readonly 'literalString-cook':      FeatureFlag,
+		readonly 'literalTemplate-cook':    FeatureFlag,
+		readonly 'stringConstant-assess':   FeatureFlag,
+		readonly 'stringTemplate-parse':    FeatureFlag,
+		readonly 'stringTemplate-decorate': FeatureFlag,
+		readonly 'stringTemplate-assess':   FeatureFlag,
 	} = {
 		// v0.3.0
-		'variables-build': '>=0.3.0-alpha.3',
+		'variables-build': false,
 		// v0.4.0
-		literalCollection: '>=0.4.0-alpha.0',
-		'literalString-lex':       '>=0.4.0-alpha.1.0',
-		'literalTemplate-lex':     '>=0.4.0-alpha.1.0',
-		'literalString-cook':      '>=0.4.0-alpha.1.1',
-		'literalTemplate-cook':    '>=0.4.0-alpha.1.1',
-		'stringConstant-assess':   '>=0.4.0-alpha.1.2',
-		'stringTemplate-parse':    '>=0.4.0-alpha.1.3',
-		'stringTemplate-decorate': '>=0.4.0-alpha.1.4',
-		'stringTemplate-assess':   '>=0.4.0-alpha.1.5',
+		literalCollection:         false,
+		'literalString-lex':       false,
+		'literalString-cook':      [false, ['literalString-lex']],
+		'stringConstant-assess':   [false, ['literalString-cook']],
+		'literalTemplate-lex':     false,
+		'literalTemplate-cook':    [false, ['literalTemplate-lex']],
+		'stringTemplate-parse':    [false, ['literalTemplate-cook']],
+		'stringTemplate-decorate': [false, ['stringTemplate-parse']],
+		'stringTemplate-assess':   [false, ['stringTemplate-decorate']],
 	}
 
 	/**
@@ -54,7 +53,11 @@ export class Dev {
 	 * @return is this project’s version number in the range of the feature?
 	 */
 	static supports(feature: keyof typeof Dev.FEATURES): boolean {
-		return semver.satisfies(Dev.VERSION, Dev.FEATURES[feature], {includePrerelease: true})
+		const flag: FeatureFlag = Dev.FEATURES[feature];
+		return (typeof flag === 'boolean')
+			? flag
+			: flag[0] && Dev.supportsAll(...flag[1])
+		;
 	}
 	/**
 	 * Returns `true` if this project supports at least one of the given features.
