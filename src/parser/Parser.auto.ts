@@ -181,22 +181,22 @@
 				}
 			}
 		
-			export class ProductionCase__0__List extends Production {
-				static readonly instance: ProductionCase__0__List = new ProductionCase__0__List();
-				/** @implements Production */
-				get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
-					return [
-						[ProductionExpression.instance],[ProductionCase__0__List.instance,',',ProductionExpression.instance],
-					];
-				}
-			}
-		
 			export class ProductionCase extends Production {
 				static readonly instance: ProductionCase = new ProductionCase();
 				/** @implements Production */
 				get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 					return [
-						[ProductionCase__0__List.instance,'|->',ProductionExpression.instance],
+						[ProductionExpression.instance,'|->',ProductionExpression.instance],
+					];
+				}
+			}
+		
+			export class ProductionListLiteral__1__List extends Production {
+				static readonly instance: ProductionListLiteral__1__List = new ProductionListLiteral__1__List();
+				/** @implements Production */
+				get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+					return [
+						[ProductionExpression.instance],[ProductionListLiteral__1__List.instance,',',ProductionExpression.instance],
 					];
 				}
 			}
@@ -206,7 +206,7 @@
 				/** @implements Production */
 				get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 					return [
-						['[',ProductionCase__0__List.instance,']'],['[',ProductionCase__0__List.instance,',',']'],['[',',',ProductionCase__0__List.instance,']'],['[',',',ProductionCase__0__List.instance,',',']'],
+						['[',ProductionListLiteral__1__List.instance,']'],['[',ProductionListLiteral__1__List.instance,',',']'],['[',',',ProductionListLiteral__1__List.instance,']'],['[',',',ProductionListLiteral__1__List.instance,',',']'],
 					];
 				}
 			}
@@ -528,21 +528,21 @@
 				;
 			}
 		
-			export class ParseNodeCase__0__List extends ParseNode {
+			export class ParseNodeCase extends ParseNode {
 				declare readonly children:
-					readonly [ParseNodeExpression] | readonly [ParseNodeCase__0__List,Token,ParseNodeExpression]
+					readonly [ParseNodeExpression,Token,ParseNodeExpression]
 				;
 			}
 		
-			export class ParseNodeCase extends ParseNode {
+			export class ParseNodeListLiteral__1__List extends ParseNode {
 				declare readonly children:
-					readonly [ParseNodeCase__0__List,Token,ParseNodeExpression]
+					readonly [ParseNodeExpression] | readonly [ParseNodeListLiteral__1__List,Token,ParseNodeExpression]
 				;
 			}
 		
 			export class ParseNodeListLiteral extends ParseNode {
 				declare readonly children:
-					readonly [Token,ParseNodeCase__0__List,Token] | readonly [Token,ParseNodeCase__0__List,Token,Token] | readonly [Token,Token,ParseNodeCase__0__List,Token] | readonly [Token,Token,ParseNodeCase__0__List,Token,Token]
+					readonly [Token,ParseNodeListLiteral__1__List,Token] | readonly [Token,ParseNodeListLiteral__1__List,Token,Token] | readonly [Token,Token,ParseNodeListLiteral__1__List,Token] | readonly [Token,Token,ParseNodeListLiteral__1__List,Token,Token]
 				;
 			}
 		
@@ -685,9 +685,9 @@
 			 */
 			constructor (source: string, config: SolidConfig = CONFIG_DEFAULT) {
 				super(new LexerSolid(source, config), new Grammar([
-					ProductionWord.instance,ProductionPrimitiveLiteral.instance,ProductionTypeKeyword.instance,ProductionTypeProperty.instance,ProductionTypeTupleLiteral__1__List.instance,ProductionTypeTupleLiteral.instance,ProductionTypeRecordLiteral__1__List.instance,ProductionTypeRecordLiteral.instance,ProductionTypeUnit.instance,ProductionTypeUnarySymbol.instance,ProductionTypeIntersection.instance,ProductionTypeUnion.instance,ProductionType.instance,ProductionStringTemplate__1__List.instance,ProductionStringTemplate.instance,ProductionProperty.instance,ProductionCase__0__List.instance,ProductionCase.instance,ProductionListLiteral.instance,ProductionRecordLiteral__1__List.instance,ProductionRecordLiteral.instance,ProductionMappingLiteral__1__List.instance,ProductionMappingLiteral.instance,ProductionExpressionUnit.instance,ProductionExpressionUnarySymbol.instance,ProductionExpressionExponential.instance,ProductionExpressionMultiplicative.instance,ProductionExpressionAdditive.instance,ProductionExpressionComparative.instance,ProductionExpressionEquality.instance,ProductionExpressionConjunctive.instance,ProductionExpressionDisjunctive.instance,ProductionExpressionConditional.instance,ProductionExpression.instance,ProductionDeclarationVariable.instance,ProductionDeclarationType.instance,ProductionDeclaration.instance,ProductionStatementAssignment.instance,ProductionStatement.instance,ProductionGoal__0__List.instance,ProductionGoal.instance,
+					ProductionWord.instance,ProductionPrimitiveLiteral.instance,ProductionTypeKeyword.instance,ProductionTypeProperty.instance,ProductionTypeTupleLiteral__1__List.instance,ProductionTypeTupleLiteral.instance,ProductionTypeRecordLiteral__1__List.instance,ProductionTypeRecordLiteral.instance,ProductionTypeUnit.instance,ProductionTypeUnarySymbol.instance,ProductionTypeIntersection.instance,ProductionTypeUnion.instance,ProductionType.instance,ProductionStringTemplate__1__List.instance,ProductionStringTemplate.instance,ProductionProperty.instance,ProductionCase.instance,ProductionListLiteral__1__List.instance,ProductionListLiteral.instance,ProductionRecordLiteral__1__List.instance,ProductionRecordLiteral.instance,ProductionMappingLiteral__1__List.instance,ProductionMappingLiteral.instance,ProductionExpressionUnit.instance,ProductionExpressionUnarySymbol.instance,ProductionExpressionExponential.instance,ProductionExpressionMultiplicative.instance,ProductionExpressionAdditive.instance,ProductionExpressionComparative.instance,ProductionExpressionEquality.instance,ProductionExpressionConjunctive.instance,ProductionExpressionDisjunctive.instance,ProductionExpressionConditional.instance,ProductionExpression.instance,ProductionDeclarationVariable.instance,ProductionDeclarationType.instance,ProductionDeclaration.instance,ProductionStatementAssignment.instance,ProductionStatement.instance,ProductionGoal__0__List.instance,ProductionGoal.instance,
 				], ProductionGoal.instance), new Map<Production, typeof ParseNode>([
-					[ProductionWord.instance, ParseNodeWord],[ProductionPrimitiveLiteral.instance, ParseNodePrimitiveLiteral],[ProductionTypeKeyword.instance, ParseNodeTypeKeyword],[ProductionTypeProperty.instance, ParseNodeTypeProperty],[ProductionTypeTupleLiteral__1__List.instance, ParseNodeTypeTupleLiteral__1__List],[ProductionTypeTupleLiteral.instance, ParseNodeTypeTupleLiteral],[ProductionTypeRecordLiteral__1__List.instance, ParseNodeTypeRecordLiteral__1__List],[ProductionTypeRecordLiteral.instance, ParseNodeTypeRecordLiteral],[ProductionTypeUnit.instance, ParseNodeTypeUnit],[ProductionTypeUnarySymbol.instance, ParseNodeTypeUnarySymbol],[ProductionTypeIntersection.instance, ParseNodeTypeIntersection],[ProductionTypeUnion.instance, ParseNodeTypeUnion],[ProductionType.instance, ParseNodeType],[ProductionStringTemplate__1__List.instance, ParseNodeStringTemplate__1__List],[ProductionStringTemplate.instance, ParseNodeStringTemplate],[ProductionProperty.instance, ParseNodeProperty],[ProductionCase__0__List.instance, ParseNodeCase__0__List],[ProductionCase.instance, ParseNodeCase],[ProductionListLiteral.instance, ParseNodeListLiteral],[ProductionRecordLiteral__1__List.instance, ParseNodeRecordLiteral__1__List],[ProductionRecordLiteral.instance, ParseNodeRecordLiteral],[ProductionMappingLiteral__1__List.instance, ParseNodeMappingLiteral__1__List],[ProductionMappingLiteral.instance, ParseNodeMappingLiteral],[ProductionExpressionUnit.instance, ParseNodeExpressionUnit],[ProductionExpressionUnarySymbol.instance, ParseNodeExpressionUnarySymbol],[ProductionExpressionExponential.instance, ParseNodeExpressionExponential],[ProductionExpressionMultiplicative.instance, ParseNodeExpressionMultiplicative],[ProductionExpressionAdditive.instance, ParseNodeExpressionAdditive],[ProductionExpressionComparative.instance, ParseNodeExpressionComparative],[ProductionExpressionEquality.instance, ParseNodeExpressionEquality],[ProductionExpressionConjunctive.instance, ParseNodeExpressionConjunctive],[ProductionExpressionDisjunctive.instance, ParseNodeExpressionDisjunctive],[ProductionExpressionConditional.instance, ParseNodeExpressionConditional],[ProductionExpression.instance, ParseNodeExpression],[ProductionDeclarationVariable.instance, ParseNodeDeclarationVariable],[ProductionDeclarationType.instance, ParseNodeDeclarationType],[ProductionDeclaration.instance, ParseNodeDeclaration],[ProductionStatementAssignment.instance, ParseNodeStatementAssignment],[ProductionStatement.instance, ParseNodeStatement],[ProductionGoal__0__List.instance, ParseNodeGoal__0__List],[ProductionGoal.instance, ParseNodeGoal],
+					[ProductionWord.instance, ParseNodeWord],[ProductionPrimitiveLiteral.instance, ParseNodePrimitiveLiteral],[ProductionTypeKeyword.instance, ParseNodeTypeKeyword],[ProductionTypeProperty.instance, ParseNodeTypeProperty],[ProductionTypeTupleLiteral__1__List.instance, ParseNodeTypeTupleLiteral__1__List],[ProductionTypeTupleLiteral.instance, ParseNodeTypeTupleLiteral],[ProductionTypeRecordLiteral__1__List.instance, ParseNodeTypeRecordLiteral__1__List],[ProductionTypeRecordLiteral.instance, ParseNodeTypeRecordLiteral],[ProductionTypeUnit.instance, ParseNodeTypeUnit],[ProductionTypeUnarySymbol.instance, ParseNodeTypeUnarySymbol],[ProductionTypeIntersection.instance, ParseNodeTypeIntersection],[ProductionTypeUnion.instance, ParseNodeTypeUnion],[ProductionType.instance, ParseNodeType],[ProductionStringTemplate__1__List.instance, ParseNodeStringTemplate__1__List],[ProductionStringTemplate.instance, ParseNodeStringTemplate],[ProductionProperty.instance, ParseNodeProperty],[ProductionCase.instance, ParseNodeCase],[ProductionListLiteral__1__List.instance, ParseNodeListLiteral__1__List],[ProductionListLiteral.instance, ParseNodeListLiteral],[ProductionRecordLiteral__1__List.instance, ParseNodeRecordLiteral__1__List],[ProductionRecordLiteral.instance, ParseNodeRecordLiteral],[ProductionMappingLiteral__1__List.instance, ParseNodeMappingLiteral__1__List],[ProductionMappingLiteral.instance, ParseNodeMappingLiteral],[ProductionExpressionUnit.instance, ParseNodeExpressionUnit],[ProductionExpressionUnarySymbol.instance, ParseNodeExpressionUnarySymbol],[ProductionExpressionExponential.instance, ParseNodeExpressionExponential],[ProductionExpressionMultiplicative.instance, ParseNodeExpressionMultiplicative],[ProductionExpressionAdditive.instance, ParseNodeExpressionAdditive],[ProductionExpressionComparative.instance, ParseNodeExpressionComparative],[ProductionExpressionEquality.instance, ParseNodeExpressionEquality],[ProductionExpressionConjunctive.instance, ParseNodeExpressionConjunctive],[ProductionExpressionDisjunctive.instance, ParseNodeExpressionDisjunctive],[ProductionExpressionConditional.instance, ParseNodeExpressionConditional],[ProductionExpression.instance, ParseNodeExpression],[ProductionDeclarationVariable.instance, ParseNodeDeclarationVariable],[ProductionDeclarationType.instance, ParseNodeDeclarationType],[ProductionDeclaration.instance, ParseNodeDeclaration],[ProductionStatementAssignment.instance, ParseNodeStatementAssignment],[ProductionStatement.instance, ParseNodeStatement],[ProductionGoal__0__List.instance, ParseNodeGoal__0__List],[ProductionGoal.instance, ParseNodeGoal],
 				]));
 			}
 			// @ts-expect-error

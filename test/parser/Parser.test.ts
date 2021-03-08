@@ -421,26 +421,18 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('Case ::= Expression# "|->" Expression', () => {
+		Dev.supports('literalCollection') && describe('Case ::= Expression "|->" Expression', () => {
 			it('makes a Case node.', () => {
 				/*
 					<Case>
-						<Case__0__List>
-							<Case__0__List>
-								<Expression source="42">...</Expression>
-							</Case__0__List>
-							<PUNCTUATOR>,</PUNCTUATOR>
-							<Expression source="true">...</Expression>
-						</Case__0__List>
+						<Expression source="42">...</Expression>
 						<PUNCTUATOR>|-></PUNCTUATOR>
 						<Expression source="null || false">...</Expression>
 					</Case>
 				*/
-				const kase: PARSER.ParseNodeCase = h.caseFromString(`42, true |-> null || false`);
-				h.hashListSources(kase.children[0], `42`, `true`);
 				assert.deepStrictEqual(
-					[kase.children[1].source, kase.children[2].source],
-					[Punctuator.MAPTO,        `null || false`],
+					h.caseFromString(`42 |-> null || false`).children.map((c) => c.source),
+					[`42`, Punctuator.MAPTO, `null || false`],
 				);
 			});
 		});
@@ -450,7 +442,7 @@ describe('Parser', () => {
 				/*
 					<ListLiteral>
 						<PUNCTUATOR>[</PUNCTUATOR>
-						<Case__0__List source="42, true, null || false">...</Case__0__List>
+						<ListLiteral__1__List source="42, true, null || false">...</ListLiteral__1__List>
 						<PUNCTUATOR>]</PUNCTUATOR>
 					</ListLiteral>
 				*/
@@ -489,19 +481,19 @@ describe('Parser', () => {
 					[Punctuator.BRAK_OPN, `42 , true , null || false`, Punctuator.COMMA, Punctuator.BRAK_CLS],
 				);
 			});
-			specify('Case__0__List ::= Case__0__List "," Expression', () => {
+			specify('ListLiteral__1__List ::= ListLiteral__1__List "," Expression', () => {
 				/*
-					<Case__0__List>
-						<Case__0__List>
-							<Case__0__List>
+					<ListLiteral__1__List>
+						<ListLiteral__1__List>
+							<ListLiteral__1__List>
 								<Expression source="42">...</Expression>
-							</Case__0__List>
+							</ListLiteral__1__List>
 							<PUNCTUATOR>,</PUNCTUATOR>
 							<Expression source="true">...</Expression>
-						</Case__0__List>
+						</ListLiteral__1__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
 						<Expression source="null || false">...</Expression>
-					</Case__0__List>
+					</ListLiteral__1__List>
 				*/
 				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`[42, true, null || false];`);
 				assert_arrayLength(unit.children, 3);
@@ -553,24 +545,24 @@ describe('Parser', () => {
 				/*
 					<MappingLiteral>
 						<PUNCTUATOR>[</PUNCTUATOR>
-						<MappingLiteral__1__List source="1, 2, 3 |-> null, 4, 5, 6 |-> false, 7, 8 |-> true, 9, 0 |-> 42.0">...</MappingLiteral__1__List>
+						<MappingLiteral__1__List source="1 |-> null, 4 |-> false, 7 |-> true, 9 |-> 42.0">...</MappingLiteral__1__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
 						<PUNCTUATOR>]</PUNCTUATOR>
 					</MappingLiteral>
 				*/
 				const unit: PARSER.ParseNodeMappingLiteral = h.mappingLiteralFromSource(`
 					[
-						1, 2, 3 |-> null,
-						4, 5, 6 |-> false,
-						7, 8    |-> true,
-						9, 0    |-> 42.0,
+						1 |-> null,
+						4 |-> false,
+						7 |-> true,
+						9 |-> 42.0,
 					];
 				`);
 				assert_arrayLength(unit.children, 4);
 				assert.ok(unit.children[1] instanceof PARSER.ParseNodeMappingLiteral__1__List);
 				assert.deepStrictEqual(
 					unit.children.map((c) => c.source),
-					[Punctuator.BRAK_OPN, `1 , 2 , 3 |-> null , 4 , 5 , 6 |-> false , 7 , 8 |-> true , 9 , 0 |-> 42.0`, Punctuator.COMMA, Punctuator.BRAK_CLS],
+					[Punctuator.BRAK_OPN, `1 |-> null , 4 |-> false , 7 |-> true , 9 |-> 42.0`, Punctuator.COMMA, Punctuator.BRAK_CLS],
 				);
 			});
 			specify('MappingLiteral__1__List ::= MappingLiteral__1__List "," Case', () => {
@@ -579,26 +571,26 @@ describe('Parser', () => {
 						<MappingLiteral__1__List>
 							<MappingLiteral__1__List>
 								<MappingLiteral__1__List>
-									<Case source="1, 2, 3 |-> null">...</Case>
+									<Case source="1 |-> null">...</Case>
 								</MappingLiteral__1__List>
 								<PUNCTUATOR>,</PUNCTUATOR>
-								<Case source="4, 5, 6 |-> false">...</Case>
+								<Case source="4 |-> false">...</Case>
 							</MappingLiteral__1__List>
 							<PUNCTUATOR>,</PUNCTUATOR>
-							<Case source="7, 8 |-> true">...</Case>
+							<Case source="7 |-> true">...</Case>
 						</MappingLiteral__1__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
-						<Case source="9, 0 |-> 42.0">...</Case>
+						<Case source="9 |-> 42.0">...</Case>
 					</MappingLiteral__1__List>
 				*/
-				const unit: PARSER.ParseNodeMappingLiteral = h.mappingLiteralFromSource(`[1, 2, 3 |-> null, 4, 5, 6 |-> false, 7, 8 |-> true, 9, 0 |-> 42.0];`);
+				const unit: PARSER.ParseNodeMappingLiteral = h.mappingLiteralFromSource(`[1 |-> null, 4 |-> false, 7 |-> true, 9 |-> 42.0];`);
 				assert_arrayLength(unit.children, 3);
 				h.hashListSources(
 					unit.children[1],
-					`1 , 2 , 3 |-> null`,
-					`4 , 5 , 6 |-> false`,
-					`7 , 8 |-> true`,
-					`9 , 0 |-> 42.0`,
+					`1 |-> null`,
+					`4 |-> false`,
+					`7 |-> true`,
+					`9 |-> 42.0`,
 				);
 			});
 		});
@@ -928,10 +920,10 @@ describe('Parser', () => {
 			h.mappingLiteralFromSource(`
 				[
 					,
-					1, 2, 3 |-> null,
-					4, 5, 6 |-> false,
-					7, 8    |-> true,
-					9, 0    |-> 42.0,
+					1 |-> null,
+					4 |-> false,
+					7 |-> true,
+					9 |-> 42.0,
 				];
 			`); // assert does not throw
 		});

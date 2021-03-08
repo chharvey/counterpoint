@@ -176,24 +176,24 @@ Decorate(Property ::= Word "=" Expression) -> SemanticProperty
 		Decorate(Expression)
 	);
 
-Decorate(Case ::= Case__0__List "|->" Expression) -> SemanticCase
+Decorate(Case ::= Expression "|->" Expression) -> SemanticCase
 	:= (SemanticCase
-		...Decorate(Case__0__List)
+		Decorate(Expression)
 		Decorate(Expression)
 	);
 
-	Decorate(Case__0__List ::= Expression) -> Sequence<SemanticExpression>
+Decorate(ListLiteral ::= "[" ","? ListLiteral__1__List ","? "]") -> SemanticList
+	:= (SemanticList
+		...Decorate(ListLiteral__1__List)
+	);
+
+	Decorate(ListLiteral__1__List ::= Expression) -> Sequence<SemanticExpression>
 		:= [Decorate(Expression)];
-	Decorate(Case__0__List ::= Case__0__List "," Expression) -> Sequence<SemanticExpression>
+	Decorate(ListLiteral__1__List ::= Case__0__List "," Expression) -> Sequence<SemanticExpression>
 		:= [
-			...Decorate(Case__0__List),
+			...Decorate(ListLiteral__1__List),
 			Decorate(Expression),
 		];
-
-Decorate(ListLiteral ::= "[" ","? Case__0__List ","? "]") -> SemanticList
-	:= (SemanticList
-		...Decorate(Case__0__List)
-	);
 
 Decorate(RecordLiteral ::= "[" ","? RecordLiteral__1__List ","? "]") -> SemanticRecord
 	:= (SemanticRecord
