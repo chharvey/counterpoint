@@ -223,40 +223,40 @@ with exceptions described above.
 #### Formal Grammar (TNSG)
 The grammar below (which is a CFG) describes the formal Tree Node Schema Grammar that describes the Solid language.
 ```
-Grammar
-	::= #x02 Production* #x03;
-
-Production ::=
-	| Nonterminal "::=" "|"? Choice ";"
-	| IDENTIFIER  "=:=" "|"? Choice ";"
-;
-
-Choice   ::= (Choice   "|")? Sequence;
-Sequence ::= (Sequence "&")? Item+;
-
-Item
-	::= Unit ("+" | "*")? "?"?;
-
-Unit ::=
-	| Nonterminal
-	| "(" Choice ")"
-;
-
-Nonterminal
-	::= IDENTIFIER Attribute*;
-
-Attribute
-	::= "[" IDENTIFIER ":" Type "]";
-
-Type
-	::= (Type "|")? TypeUnit;
-
 TypeUnit ::=
 	| NUMBER
 	| STRING
 	| IDENTIFIER ("<" Type ">")?
 	| "(" Type ")"
 ;
+
+Type
+	::= (Type "|")? TypeUnit;
+
+Attribute
+	::= "[" IDENTIFIER ":" Type "]";
+
+Nonterminal
+	::= IDENTIFIER Attribute*;
+
+Unit ::=
+	| Nonterminal
+	| "(" Choice ")"
+;
+
+Item
+	::= Unit ("+" | "*")? "?"?;
+
+Sequence ::= (Sequence "&")? Item+;
+Choice   ::= (Choice   "|")? Sequence;
+
+Production ::=
+	| Nonterminal "::=" ("&" | "|")? Choice ("&" | "|")? ";"
+	| IDENTIFIER  "=:=" ("&" | "|")? Choice ("&" | "|")? ";"
+;
+
+Grammar
+	::= #x02 Production* #x03;
 ```
 
 
@@ -380,11 +380,15 @@ in the chapter [Data Types and Values](./data-types.md).
 #### Formal Grammar (AG)
 The grammar below (which is a CFG) describes the formal AGs that describe the Solid language.
 ```
-Grammar
-	::= #x02 Production* #x03;
+Item ::=
+	| STRING
+	| CHARCODE
+	| CHARCLASS
+	| IDENTIFIER
+;
 
-Production
-	::= IDENTIFIER "(" Parameter ")" "->" ReturnType ":=" RETURN_VALUE ";";
+Type
+	::= IDENTIFIER ("<" Type ">")?;
 
 Parameter
 	::= IDENTIFIER (":::=" | "::=") Item+;
@@ -392,15 +396,11 @@ Parameter
 ReturnType
 	::= (ReturnType "|")? Type;
 
-Type
-	::= IDENTIFIER ("<" Type ">")?;
+Production
+	::= IDENTIFIER "(" Parameter ")" "->" ReturnType ":=" RETURN_VALUE ";";
 
-Item ::=
-	| STRING
-	| CHARCODE
-	| CHARCLASS
-	| IDENTIFIER
-;
+Grammar
+	::= #x02 Production* #x03;
 ```
 where the non-literal terminal symbols of the syntax grammar above are
 taken from the lexical grammar defined in [CFGs: Formal Grammar](#formal-grammar-cfg).
@@ -501,7 +501,7 @@ is shorthand for «*Return:* [type= normal, value= ‹v›].», meaning
 the algorithm outputs a normal completion structure with a \`value\` of ‹v›.
 
 However, an algorithm step that reads «*Return:* [type= ‹type›, value= ‹v›].» is to be interpreted as-is,
-as returning the completion structure itself, not “wrapped” in a normal completion.
+as returning the completion structure itself, not “wrapped” in a new normal completion.
 Similarly, an algorithm step that reads «*Return:* ‹CS›.»,
 where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
 is also to be interpreted as-is, as returning the completion structure itself.
@@ -514,6 +514,13 @@ When an algorithm step reads «*Throw:* ‹v›.» (where ‹v› is a metavaria
 a throw completion structure whose \`value\` is ‹v› is returned.
 That is, the step is shorthand for «*Return:* [type= throw, value= ‹v›].».
 Note that such a completion structure is “abrupt”.
+
+An algorithm step that reads «*Throw:* [type= ‹type›, value= ‹v›].» is to be interpreted
+as «*Return:* [type= throw, value= ‹v›]», not the original completion “wrapped” in a new *throw* completion.
+Similarly, an algorithm step that reads «*Throw:* ‹CS›.»,
+where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
+is also to be interpreted in the same manner, as returning a *throw* completion structure
+whose value is the value of ‹CS›.
 
 #### Unwrap
 An algorithm step that contains «*Unwrap:* ‹s›» (where ‹s› is a completion structure or algorithm call)
@@ -644,6 +651,17 @@ is shorthand for the following steps:
 	1. Perform the substeps listed under the *For index* step.
 	2. Increment `‹i›`.
 ```
+
+A step that reads «*For key* ‹k› in ‹s›:» (where ‹k› is a variable and ‹s› is a structure)
+is shorthand for the following steps:
+```
+1. *Let* `i` be 0.
+2. *While* `i` is less than `‹s›.count`:
+	1. *Let* `‹k›` be some key in `‹s›` that hasn’t yet been assigned over the course of this loop.
+	2. Perform the substeps listed under the *For key* step.
+	3. Increment `i`.
+```
+Note that this algorithm does not require the keys in ‹s› to be iterated over in any particular order.
 
 A step that reads «*For each* ‹it› in ‹s›:» (where ‹it› is a variable and ‹s› is a sequence)
 is shorthand for the following steps:

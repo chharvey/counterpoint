@@ -194,9 +194,9 @@ Performs the type-checking piece during semantic analysis.
 Returns an associated [boolean value](./data-types#boolean), `true` or `false`, with a Solid Language Value.
 ```
 Boolean ToBoolean(Object value) :=
-	1. *If* `TypeOf(value)` is `Null`:
+	1. *If* `value` is an instance of `Null`:
 		1. *Return:* `false`.
-	2. *If* `TypeOf(value)` is `Boolean`:
+	2. *If* `value` is an instance of `Boolean`:
 		1. *Return:* `value`.
 	3. *Return:* `true`.
 ```
@@ -213,14 +213,14 @@ Boolean Identical(Object a, Object b) :=
 		1. *Return:* `true`.
 	3. *If* `a` is the value `true` *and* `b` is the value `true`:
 		1. *Return:* `true`.
-	4. *If* `a` is of type `Integer` *and* `b` is of type `Integer`:
-		1. If `a` and `b` have the same bitwise encoding:
+	4. *If* `a` is an instance of `Integer` *and* `b` is an instance of `Integer`:
+		1. *If* `a` and `b` have the same bitwise encoding:
 			1. *Return:* `true`.
-	5. *If* `a` is of type `Float` *and* `b` is of type `Float`:
-		1. If `a` and `b` have the same bitwise encoding:
+	5. *If* `a` is an instance of `Float` *and* `b` is an instance of `Float`:
+		1. *If* `a` and `b` have the same bitwise encoding:
 			1. *Return:* `true`.
-	6. *If* `a` is of type `String` *and* `b` is of type `String`:
-		1. If `a` and `b` are exactly the same sequence of code units
+	6. *If* `a` is an instance of `String` *and* `b` is an instance of `String`:
+		1. *If* `a` and `b` are exactly the same sequence of code units
 			(same length and same code units at corresponding indices):
 			1. *Return:* `true`.
 	// 7. *If* `a` and `b` are the same object:
@@ -236,16 +236,65 @@ Compares two objects and returns whether they are considered “equal” by some
 Boolean Equal(Object a, Object b) :=
 	1. *If* `Identical(a, b)` is `true`:
 		1. *Return:* `true`.
-	2. *If* `a` is of type `Number` *and* `b` is of type `Number`:
-		1. *If* `a` is of type `Float` *or* `b` is of type `Float`:
+	2. *If* `a` is an instance of `Integer` *or* `b` is an instance of `Integer`:
+		1. *If* `a` is an instance of `Float` *or* `b` is an instance of `Float`:
 			1. *Return:* `Equal(Float(a), Float(b))`.
-	3. *If* `a` is of type `Float` *and* `b` is of type `Float`:
-		1. If `a` is `0.0` *and* `b` is `-0.0`:
+	3. *If* `a` is an instance of `Float` *and* `b` is an instance of `Float`:
+		1. *If* `a` is `0.0` *and* `b` is `-0.0`:
 			1. *Return:* `true`.
-		2. If `a` is `-0.0` *and* `b` is `0.0`:
+		2. *If* `a` is `-0.0` *and* `b` is `0.0`:
 			1. *Return:* `true`.
 	// 3. TODO: custom equality operators
 	4. Return `false`.
+```
+
+
+
+## Subtype
+Determines whether one type is a subtype of another.
+```
+Boolean Subtype(Type a, Type b) :=
+	1. *If* *UnwrapAffirm:* `Identical(a, b)`:
+		// 2-7 | `A <: A`
+		1. *Return:* `true`.
+	2. *If* *UnwrapAffirm:* `IsEmpty(a)`:
+		// 1-1 | `never <: T`
+		1. *Return:* `true`.
+	3. *If* *UnwrapAffirm:* `IsEmpty(b)`:
+		// 1-3 | `T       <: never  <->  T == never`
+		1. *Return:* `IsEmpty(a)`.
+	4. *If* *UnwrapAffirm:* `IsUniverse(a)`:
+		// 1-4 | `unknown <: T      <->  T == unknown`
+		1. *Return:* `IsUniverse(b)`.
+	5. *If* *UnwrapAffirm:* `IsUniverse(b)`:
+		// 1-2 | `T     <: unknown`
+		1. *Return:* `true`.
+	6. *If* `a` is the intersection of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Identical(x, b)` *or* *UnwrapAffirm:* `Identical(y, b)`:
+			// 3-1 | `A  & B <: A  &&  A  & B <: B`
+			1. *Return:* `true`.
+		2. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
+			// 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`
+			1. *Return:* `true`.
+	7. *If* `b` is the intersection of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
+			// 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`
+			1. *Return:* `true`.
+	8. *If* `a` is the union of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
+			// 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`
+			1. *Return:* `true`.
+	9. *If* `b` is the union of some types `x` and `y`:
+		1. *If* *UnwrapAffirm:* `Identical(a, x)` *or* *UnwrapAffirm:* `Identical(a, y)`:
+			// 3-2 | `A <: A \| B  &&  B <: A \| B`
+			1. *Return:* `true`.
+		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
+			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
+			1. *Return:* `true`.
+	10. *If* every value that is assingable to `a` is also assignable to `b`:
+		1. *Return:* `true`.
+	11. *Return:* `false`.
+;
 ```
 
 

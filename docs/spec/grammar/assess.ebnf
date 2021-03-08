@@ -6,8 +6,8 @@ Type Assess(SemanticTypeConstant const) :=
 
 Type Assess(SemanticTypeAlias var) :=
 	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
-		1. *Assert:* `symbol` is of type `SymbolStructureType`.
-		2. *Assert:* `symbol.defn` is of type `SemanticType`.
+		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
+		2. *Assert:* `symbol.defn` is an instance of `SemanticType`.
 		3. *Return:* `Assess(symbol.defn)`.
 	2. *Return:* `Unknown`.
 ;
@@ -44,9 +44,9 @@ Or<Null, Boolean, Number, Sequence<RealNumber>> Assess(SemanticConstant const) :
 
 Void! Assess(SemanticVariable var) :=
 	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
-		1. *Assert:* `symbol` is of type `SymbolStructureVar`.
+		1. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
 		2. *If* `symbol.unfixed` is `false`:
-			1. *Assert:* `symbol.defn` is of type `SemanticExpression`.
+			1. *Assert:* `symbol.defn` is an instance of `SemanticExpression`.
 			2. *Return:* `Assess(symbol.defn)`.
 	2. *Throw:* `void`.
 ;
@@ -63,24 +63,22 @@ Boolean! Assess(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `Assess(expr.children.0)`.
 	3. *Assert*: `operand` is not `void`.
-	4. *Let* `is_truthy` be *UnwrapAffirm:* `ToBoolean(operand)`.
-	5. *If* `is_truthy` is `true`:
+	4. *If* *UnwrapAffirm:* `ToBoolean(operand)` is `true`:
 		1. *Return:* `false`.
-	6. *Return:* `true`.
+	5. *Return:* `true`.
 ;
 
 Boolean! Assess(SemanticOperation[operator: EMP] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `Assess(expr.children.0)`.
 	3. *Assert*: `operand` is not `void`.
-	4. *Let* `is_truthy` be *UnwrapAffirm:* `ToBoolean(operand)`.
-	5. *If* `is_truthy` is `false`:
+	4. *If* *UnwrapAffirm:* `ToBoolean(operand)` is `false`:
 		1. *Return:* `true`.
-	6. *If* `operand` is of type `Integer` *and* `operand` is `0`:
+	5. *If* `operand` is an instance of `Integer` *and* `operand` is `0`:
 		1. *Return:* `true`.
-	7. *If* `operand` is of type `Float` *and* `operand` is `0.0` or `-0.0`:
+	6. *If* `operand` is an instance of `Float` *and* `operand` is `0.0` or `-0.0`:
 		1. *Return:* `true`.
-	8. *If* `operand` is of type `String` *and* `operand` contains 0 codepoints:
+	8. *If* `operand` is an instance of `String` *and* `operand` contains 0 codepoints:
 		1. *Return:* `true`.
 	9. *Return:* `false`.
 ;
@@ -88,7 +86,7 @@ Boolean! Assess(SemanticOperation[operator: EMP] expr) :=
 Number! Assess(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `Assess(expr.children.0)`.
-	3. *Assert:* `operand` is of type `Number`.
+	3. *Assert:* `operand` is an instance of `Number`.
 	4. *Let* `negation` be the additive inverse, `-operand`,
 		obtained by negating `operand`.
 	5. *Return:* `negation`.
@@ -98,8 +96,8 @@ Number! Assess(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *Unwrap:* `Assess(expr.children.0)`.
 	3. *Let* `operand1` be *Unwrap:* `Assess(expr.children.1)`.
-	4. *Assert*: Both `operand0` and `operand1` are of type `Number`.
-	5. *If* both `operand0` and `operand1` are of type `Integer`:
+	4. *Assert*: `operand0` is an instance of `Number` *and* `operand1` is an instance of `Number`.
+	5. *If* `operand0` is an instance of `Integer` *and* `operand1` is an instance of `Integer`:
 		1. *Return:* `Integer(*UnwrapAffirm:* PerformBinaryArithmetic(expr.operator, operand0, operand1))`.
 	6. *Return:* `Float(*UnwrapAffirm:* PerformBinaryArithmetic(expr.operator, Float(operand0), Float(operand1)))`.
 ;
@@ -108,8 +106,8 @@ Boolean! Assess(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *Unwrap:* `Assess(expr.children.0)`.
 	3. *Let* `operand1` be *Unwrap:* `Assess(expr.children.1)`.
-	4. *Assert*: Both `operand0` and `operand1` are of type `Number`.
-	5. *If* both `operand0` and `operand1` are of type `Integer`:
+	4. *Assert*: `operand0` is an instance of `Number` *and* `operand1` is an instance of `Number`.
+	5. *If* `operand0` is an instance of `Integer` *and* `operand1` is an instance of `Integer`:
 		1. *Return:* `PerformBinaryCompare(expr.operator, operand0, operand1)`.
 	6. *Return:* `PerformBinaryCompare(expr.operator, Float(float0), Float(float1))`.
 ;
@@ -134,7 +132,7 @@ Object! Assess(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *Unwrap:* `Assess(expr.children.0)`.
 	3. *Assert*: `operand0` is not `void`.
-	4. *If* `ToBoolean(operand0)` is `false`:
+	4. *If* *UnwrapAffirm:* `ToBoolean(operand0)` is `false`:
 		1. *Return:* `operand0`.
 	5. *Return:* `Assess(expr.children.1)`.
 ;
@@ -143,7 +141,7 @@ Object! Assess(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *Unwrap:* `Assess(expr.children.0)`.
 	3. *Assert*: `operand0` is not `void`.
-	4. *If* `ToBoolean(operand0)` is `true`:
+	4. *If* *UnwrapAffirm:* `ToBoolean(operand0)` is `true`:
 		1. *Return:* `operand0`.
 	5. *Return:* `Assess(expr.children.1)`.
 ;
@@ -151,7 +149,7 @@ Object! Assess(SemanticOperation[operator: OR] expr) :=
 Object! Assess(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
 	2. *Let* `condition` be *Unwrap:* `Assess(expr.children.0)`.
-	3. *Assert:* `condition` is of type `Boolean`.
+	3. *Assert:* `condition` is an instance of `Boolean`.
 	4. *If* `condition` is `true`:
 		1. *Return:* `Assess(expr.children.1)`.
 	5. *Else:*
