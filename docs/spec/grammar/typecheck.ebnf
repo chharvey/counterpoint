@@ -18,7 +18,7 @@ Void! TypeCheck(SemanticStatementExpression stmt) :=
 
 
 
-Void! TypeCheck(SemanticDeclarationType stmt) :=
+Void TypeCheck(SemanticDeclarationType stmt) :=
 	1. *Assert:* `stmt.children.count` is 2.
 	2. *Return:* `TypeCheck(stmt.children.1)`.
 ;
@@ -46,6 +46,6 @@ Void! TypeCheck(SemanticAssignment stmt) :=
 
 
 Void! TypeCheck(SemanticGoal goal) :=
-	1. For each `SemanticStatment stmt` in `goal.children`:
-		1. *Perform:* `TypeCheck(stmt)`.
+	1. For each `stmt` in `goal.children`:
+		1. *Perform:* *Unwrap:* `TypeCheck(stmt)`.
 ;
