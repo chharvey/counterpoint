@@ -5,9 +5,6 @@ import {
 } from '@chharvey/parser';
 import * as xjs from 'extrajs'
 
-import type {
-	NonemptyArray,
-} from '../types.d';
 import {Dev} from '../core/';
 import {
 	Operator,
@@ -393,7 +390,7 @@ export class ASTNodeProperty extends ASTNodeSolid {
 export class ASTNodeCase extends ASTNodeSolid {
 	constructor (
 		start_node: PARSER.ParseNodeCase,
-		readonly children: NonemptyArray<ASTNodeExpression>,
+		readonly children: [ASTNodeExpression, ASTNodeExpression],
 	) {
 		super(start_node, {}, children);
 	}

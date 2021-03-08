@@ -335,7 +335,7 @@ describe('Decorator', () => {
 						<Operation source="1. + 0.25">...</Operation>
 					</Property>
 				*/
-				const property = Decorator.decorate(h.propertyFromString(`fontSize = 1. + 0.25`));
+				const property = Decorator.decorate(h.propertyFromString(`fontSize= 1. + 0.25`));
 				assert.ok(property instanceof AST.ASTNodeProperty); // FIXME: `AST.ASTNodeProperty` is assignable to `TemplatePartialType`, so `Decorator.decorate` overlads get confused
 				assert.deepStrictEqual(
 					property.children.map((c) => c.source),
@@ -344,19 +344,18 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('Case ::= Expression# "|->" Expression', () => {
+		Dev.supports('literalCollection') && context('Case ::= Expression "|->" Expression', () => {
 			it('makes an ASTNodeCase', () => {
 				/*
 					<Case>
 						<Operation source="1 + 0.25">...</Operation>
-						<Operation source="5 * 0.25">...</Operation>
 						<Constant source="1.25"/>
 					</Case>
 				*/
-				const kase: AST.ASTNodeCase = Decorator.decorate(h.caseFromString(`1 + 0.25, 5 * 0.25 |-> 1.25`));
+				const kase: AST.ASTNodeCase = Decorator.decorate(h.caseFromString(`1 + 0.25 |-> 1.25`));
 				assert.deepStrictEqual(
 					kase.children.map((c) => c.source),
-					[`1 + 0.25`, `5 * 0.25`, `1.25`],
+					[`1 + 0.25`, `1.25`],
 				);
 			});
 		});
@@ -394,8 +393,8 @@ describe('Decorator', () => {
 				*/
 				assert.deepStrictEqual(Decorator.decorate(h.recordLiteralFromSource(`
 					[
-						let = true,
-						foobar = 42,
+						let= true,
+						foobar= 42,
 					];
 				`)).children.map((c) => c.source), [
 					`let = true`,
@@ -408,24 +407,24 @@ describe('Decorator', () => {
 			it('makes an ASTNodeMapping.', () => {
 				/*
 					<Mapping>
-						<Case source="1, 2, 3 |-> null">...</Case>
-						<Case source="4, 5, 6 |-> false">...</Case>
-						<Case source="7, 8 |-> true">...</Case>
-						<Case source="9, 0 |-> 42.0">...</Case>
+						<Case source="1 |-> null">...</Case>
+						<Case source="4 |-> false">...</Case>
+						<Case source="7 |-> true">...</Case>
+						<Case source="9 |-> 42.0">...</Case>
 					</Mapping>
 				*/
 				assert.deepStrictEqual(Decorator.decorate(h.mappingLiteralFromSource(`
 					[
-						1, 2, 3 |-> null,
-						4, 5, 6 |-> false,
-						7, 8    |-> true,
-						9, 0    |-> 42.0,
+						1 |-> null,
+						4 |-> false,
+						7 |-> true,
+						9 |-> 42.0,
 					];
 				`)).children.map((c) => c.source), [
-					`1 , 2 , 3 |-> null`,
-					`4 , 5 , 6 |-> false`,
-					`7 , 8 |-> true`,
-					`9 , 0 |-> 42.0`,
+					`1 |-> null`,
+					`4 |-> false`,
+					`7 |-> true`,
+					`9 |-> 42.0`,
 				]);
 			});
 		});

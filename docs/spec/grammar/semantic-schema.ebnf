@@ -53,7 +53,7 @@ SemanticProperty
 	::= SemanticKey SemanticExpression;
 
 SemanticCase
-	::= SemanticExpression+ SemanticExpression;
+	::= SemanticExpression SemanticExpression;
 
 
 
