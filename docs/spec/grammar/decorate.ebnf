@@ -182,42 +182,42 @@ Decorate(Case ::= Expression "|->" Expression) -> SemanticCase
 		Decorate(Expression)
 	);
 
-Decorate(ListLiteral ::= "[" ","? ListLiteral__1__List ","? "]") -> SemanticList
+Decorate(ListLiteral ::= "[" ","? ListLiteral__0__List ","? "]") -> SemanticList
 	:= (SemanticList
-		...Decorate(ListLiteral__1__List)
+		...Decorate(ListLiteral__0__List)
 	);
 
-	Decorate(ListLiteral__1__List ::= Expression) -> Sequence<SemanticExpression>
+	Decorate(ListLiteral__0__List ::= Expression) -> Sequence<SemanticExpression>
 		:= [Decorate(Expression)];
-	Decorate(ListLiteral__1__List ::= Case__0__List "," Expression) -> Sequence<SemanticExpression>
+	Decorate(ListLiteral__0__List ::= Case__0__List "," Expression) -> Sequence<SemanticExpression>
 		:= [
-			...Decorate(ListLiteral__1__List),
+			...Decorate(ListLiteral__0__List),
 			Decorate(Expression),
 		];
 
-Decorate(RecordLiteral ::= "[" ","? RecordLiteral__1__List ","? "]") -> SemanticRecord
+Decorate(RecordLiteral ::= "[" ","? RecordLiteral__0__List ","? "]") -> SemanticRecord
 	:= (SemanticRecord
-		...Decorate(RecordLiteral__1__List)
+		...Decorate(RecordLiteral__0__List)
 	);
 
-	Decorate(RecordLiteral__1__List ::= Property) -> Sequence<SemanticProperty>
+	Decorate(RecordLiteral__0__List ::= Property) -> Sequence<SemanticProperty>
 		:= [Decorate(Property)];
-	Decorate(RecordLiteral__1__List ::= RecordLiteral__1__List "," Property) -> Sequence<SemanticProperty>
+	Decorate(RecordLiteral__0__List ::= RecordLiteral__0__List "," Property) -> Sequence<SemanticProperty>
 		:= [
-			...Decorate(RecordLiteral__1__List),
+			...Decorate(RecordLiteral__0__List),
 			Decorate(Property),
 		];
 
-Decorate(MappingLiteral ::= "[" ","? MappingLiteral__1__List ","? "]") -> SemanticMapping
+Decorate(MappingLiteral ::= "[" ","? MappingLiteral__0__List ","? "]") -> SemanticMapping
 	:=(SemanticMapping
-		...Decorate(MappingLiteral__1__List)
+		...Decorate(MappingLiteral__0__List)
 	);
 
-	Decorate(MappingLiteral__1__List ::= Case) -> Sequence<SemanticCase>
+	Decorate(MappingLiteral__0__List ::= Case) -> Sequence<SemanticCase>
 		:= [Decorate(Case)];
-	Decorate(MappingLiteral__1__List ::= MappingLiteral__1__List "," Case) -> Sequence<SemanticCase>
+	Decorate(MappingLiteral__0__List ::= MappingLiteral__0__List "," Case) -> Sequence<SemanticCase>
 		:= [
-			...Decorate(MappingLiteral__1__List),
+			...Decorate(MappingLiteral__0__List),
 			Decorate(Case),
 		];
 
