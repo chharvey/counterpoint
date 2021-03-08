@@ -120,18 +120,6 @@ describe('ASTNodeSolid', () => {
 				`).varCheck(), ReferenceError03);
 			});
 		});
-		describe('ASTNodeDeclarationVariable', () => {
-			it('throws if the validator already contains a record for the variable.', () => {
-				assert.throws(() => goalFromSource(`
-					let i: int = 42;
-					let i: int = 43;
-				`).varCheck(), AssignmentError01);
-				assert.throws(() => goalFromSource(`
-					type FOO = float;
-					let FOO: int = 42;
-				`).varCheck(), AssignmentError01);
-			});
-		});
 		describe('ASTNodeDeclarationType', () => {
 			it('throws if the validator already contains a record for the symbol.', () => {
 				assert.throws(() => goalFromSource(`
@@ -141,6 +129,18 @@ describe('ASTNodeSolid', () => {
 				assert.throws(() => goalFromSource(`
 					let FOO: int = 42;
 					type FOO = float;
+				`).varCheck(), AssignmentError01);
+			});
+		});
+		describe('ASTNodeDeclarationVariable', () => {
+			it('throws if the validator already contains a record for the variable.', () => {
+				assert.throws(() => goalFromSource(`
+					let i: int = 42;
+					let i: int = 43;
+				`).varCheck(), AssignmentError01);
+				assert.throws(() => goalFromSource(`
+					type FOO = float;
+					let FOO: int = 42;
 				`).varCheck(), AssignmentError01);
 			});
 		});

@@ -1152,13 +1152,45 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
 /**
  * A sematic node representing a declaration.
  * There are 2 known subclasses:
- * - ASTNodeDeclarationVariable
  * - ASTNodeDeclarationType
+ * - ASTNodeDeclarationVariable
  */
 export type ASTNodeDeclaration =
-	| ASTNodeDeclarationVariable
 	| ASTNodeDeclarationType
+	| ASTNodeDeclarationVariable
 ;
+export class ASTNodeDeclarationType extends ASTNodeSolid {
+	constructor (
+		start_node: ParseNode,
+		readonly children:
+			| readonly [ASTNodeTypeAlias, ASTNodeType]
+		,
+	) {
+		super(start_node, {}, children);
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator = new Validator()): void {
+		const variable: ASTNodeTypeAlias = this.children[0];
+		if (validator.hasSymbol(variable.id)) {
+			throw new AssignmentError01(variable);
+		};
+		this.children[1].varCheck(validator);
+		validator.addSymbol(new SymbolStructureType(
+			variable.id,
+			variable.line_index,
+			variable.col_index,
+			this.children[1],
+		));
+	}
+	/** @implements ASTNodeSolid */
+	typeCheck(validator: Validator = new Validator()): void {
+		return this.children[1].typeCheck(validator);
+	}
+	/** @implements ASTNodeSolid */
+	build(_builder: Builder): Instruction {
+		throw new Error('ASTNodeDeclarationType#build not yet supported.');
+	}
+}
 export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
@@ -1200,38 +1232,6 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {
 		throw new Error('ASTNodeDeclarationVariable#build not yet supported.');
-	}
-}
-export class ASTNodeDeclarationType extends ASTNodeSolid {
-	constructor (
-		start_node: ParseNode,
-		readonly children:
-			| readonly [ASTNodeTypeAlias, ASTNodeType]
-		,
-	) {
-		super(start_node, {}, children);
-	}
-	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
-		const variable: ASTNodeTypeAlias = this.children[0];
-		if (validator.hasSymbol(variable.id)) {
-			throw new AssignmentError01(variable);
-		};
-		this.children[1].varCheck(validator);
-		validator.addSymbol(new SymbolStructureType(
-			variable.id,
-			variable.line_index,
-			variable.col_index,
-			this.children[1],
-		));
-	}
-	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
-		return this.children[1].typeCheck(validator);
-	}
-	/** @implements ASTNodeSolid */
-	build(_builder: Builder): Instruction {
-		throw new Error('ASTNodeDeclarationType#build not yet supported.');
 	}
 }
 export class ASTNodeAssignment extends ASTNodeSolid {

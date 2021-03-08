@@ -18,6 +18,13 @@ Void! TypeCheck(SemanticStatementExpression stmt) :=
 
 
 
+Void! TypeCheck(SemanticDeclarationType stmt) :=
+	1. *Assert:* `stmt.children.count` is 2.
+	2. *Return:* `TypeCheck(stmt.children.1)`.
+;
+
+
+
 Void! TypeCheck(SemanticDeclarationVariable stmt) :=
 	1. *Assert:* `stmt.children.count` is 3.
 	2. *Let* `assignee_type` be *UnwrapAffirm:* `Assess(stmt.children.1)`.
