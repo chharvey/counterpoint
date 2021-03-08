@@ -114,12 +114,12 @@ Expression ::=
 
 
 
-DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
 DeclarationType     ::= "type"            IDENTIFIER "=" Type                ";";
+DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
 
 Declaration ::=
-	| DeclarationVariable
 	| DeclarationType
+	| DeclarationVariable
 ;
 
 Assignee ::=

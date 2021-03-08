@@ -7,17 +7,6 @@ SemanticType =:=
 	| SemanticTypeOperation
 ;
 
-SemanticExpression =:=
-	| SemanticConstant
-	| SemanticVariable
-	| SemanticTemplate
-	| SemanticEmptyCollection
-	| SemanticList
-	| SemanticRecord
-	| SemanticMapping
-	| SemanticOperation
-;
-
 
 
 SemanticKey[id: RealNumber]
@@ -44,6 +33,19 @@ SemanticTypeOperation[operator: ORNULL]
 	::= SemanticType;
 SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
+
+
+
+SemanticExpression =:=
+	| SemanticConstant
+	| SemanticVariable
+	| SemanticTemplate
+	| SemanticEmptyCollection
+	| SemanticList
+	| SemanticRecord
+	| SemanticMapping
+	| SemanticOperation
+;
 
 
 
@@ -102,16 +104,16 @@ SemanticStatementExpression
 
 
 
-SemanticDeclarationVariable[unfixed: Boolean]
-	::= SemanticVariable SemanticType SemanticExpression;
+SemanticDeclaration =:=
+	| SemanticDeclarationType
+	| SemanticDeclarationVariable
+;
 
 SemanticDeclarationType
 	::= SemanticTypeAlias SemanticType;
 
-SemanticDeclaration =:=
-	| SemanticDeclarationVariable
-	| SemanticDeclarationType
-;
+SemanticDeclarationVariable[unfixed: Boolean]
+	::= SemanticVariable SemanticType SemanticExpression;
 
 
 

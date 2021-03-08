@@ -82,7 +82,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeProperty ::= Word ":" Type;', () => {
+		Dev.supports('literalCollection') && describe('TypeProperty ::= Word ":" Type;', () => {
 			it('makes a TypeProperty node.', () => {
 				/*
 					<TypeProperty>
@@ -105,7 +105,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
 			/*
 				<TypeTupleLiteral>
 					<PUNCTUATOR>[</PUNCTUATOR>
@@ -170,7 +170,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]"', () => {
 			/*
 				<TypeRecordLiteral>
 					<PUNCTUATOR>[</PUNCTUATOR>
@@ -235,7 +235,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
 			it('makes a TypeUnit node containing brackets.', () => {
 				/*
 					<TypeUnit>
@@ -252,7 +252,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('typingExplicit') && describe('TypeUnit ::= IDENTIFIER', () => {
+		describe('TypeUnit ::= IDENTIFIER', () => {
 			it('parses type identifiers.', () => {
 				assert.deepStrictEqual([
 					`T`,
@@ -266,7 +266,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('typingExplicit') && describe('TypeUnit ::= PrimitiveLiteral', () => {
+		describe('TypeUnit ::= PrimitiveLiteral', () => {
 			it('parses NULL, BOOLEAN, INTEGER, FLOAT, or STRING.', () => {
 				assert.deepStrictEqual(([
 					[`null`,   TOKEN.TokenKeyword],
@@ -288,7 +288,7 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeUnit ::= TypeKeyword', () => {
+		describe('TypeUnit ::= TypeKeyword', () => {
 			it('parses keywords `bool`, `int`, `float`, `str`, `obj`.', () => {
 				assert.deepStrictEqual(([
 					`bool`,
@@ -309,15 +309,15 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && specify('TypeUnit ::= TypeTupleLiteral', () => {
+		Dev.supports('literalCollection') && specify('TypeUnit ::= TypeTupleLiteral', () => {
 			h.tupleTypeFromString(`[T, U | V, W & X!]`); // assert does not throw
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && specify('TypeUnit ::= TypeRecordLiteral', () => {
+		Dev.supports('literalCollection') && specify('TypeUnit ::= TypeRecordLiteral', () => {
 			h.recordTypeFromString(`[a: T, b: U | V, c: W & X!]`); // assert does not throw
 		});
 
-		Dev.supports('typingExplicit') && describe('TypeUnit ::= "(" Type ")"', () => {
+		describe('TypeUnit ::= "(" Type ")"', () => {
 			it('makes an TypeUnit node containing a Type node.', () => {
 				/*
 					<TypeUnit>
@@ -344,7 +344,7 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
+		describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
 			it('makes a ParseNodeTypeUnarySymbol node.', () => {
 				/*
 					<TypeUnarySymbol>
@@ -363,7 +363,7 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
+		describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
 			it('makes a ParseNodeTypeIntersection node.', () => {
 				/*
 					<TypeIntersection>
@@ -383,7 +383,7 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
+		describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
 			it('makes a ParseNodeTypeUnion node.', () => {
 				/*
 					<TypeUnion>
@@ -623,7 +623,7 @@ describe('Parser', () => {
 		});
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
-			Dev.supports('variables') && it('parses IDENTIFIER.', () => {
+			it('parses IDENTIFIER.', () => {
 				assert.strictEqual(h.tokenIdentifierFromSource(`ident;`).source, 'ident')
 			})
 			it('parses NULL, BOOLEAN, INTEGER, FLOAT, or STRING.', () => {
@@ -1171,7 +1171,7 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationVariable', () => {
+		describe('DeclarationVariable ::= "let" "unfixed"? IDENTIFIER ":" Type "=" Expression ";"', () => {
 			/*
 				<Statement>
 					<DeclarationVariable>
@@ -1206,7 +1206,7 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationType', () => {
+		describe('DeclarationType ::= "type" IDENTIFIER "=" Type ";"', () => {
 			/*
 				<Statement>
 					<DeclarationType>
@@ -1228,7 +1228,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('variables') && describe('Assignee ::= IDENTIFIER', () => {
+		describe('Assignee ::= IDENTIFIER', () => {
 			/*
 				<Assignee>
 					<IDENTIFIER>this_answer</IDENTIFIER>
@@ -1243,7 +1243,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('variables') && describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
+		describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
 			/*
 				<StatementAssignment>
 					<Assignee source="this_answer">...</Assignee>

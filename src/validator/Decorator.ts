@@ -7,7 +7,7 @@ import type {
 } from '../types.d';
 import {
 	Dev,
-} from '../../src/core/';
+} from '../core/';
 import {
 	Operator,
 	ValidTypeOperator,
@@ -135,18 +135,18 @@ export class Decorator {
 		} else if (node instanceof PARSER.ParseNodeTypeKeyword) {
 			return new AST.ASTNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
 
-		} else if (Dev.supportsAll('typingExplicit', 'literalCollection') && node instanceof PARSER.ParseNodeTypeProperty) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTypeProperty) {
 			return new AST.ASTNodeTypeProperty(node, [
 				this.decorate(node.children[0]),
 				this.decorate(node.children[2]),
 			]);
 
-		} else if (Dev.supportsAll('typingExplicit', 'literalCollection') && node instanceof PARSER.ParseNodeTypeTupleLiteral) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTypeTupleLiteral) {
 			return new AST.ASTNodeTypeList(node, this.decorate(
 				node.children.find((c): c is PARSER.ParseNodeTypeTupleLiteral__0__List => c instanceof PARSER.ParseNodeTypeTupleLiteral__0__List)!
 			));
 
-		} else if (Dev.supportsAll('typingExplicit', 'literalCollection') && node instanceof PARSER.ParseNodeTypeTupleLiteral__0__List) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTypeTupleLiteral__0__List) {
 			return (node.children.length === 1)
 				? [this.decorate(node.children[0])]
 				: [
@@ -155,12 +155,12 @@ export class Decorator {
 				]
 			;
 
-		} else if (Dev.supportsAll('typingExplicit', 'literalCollection') && node instanceof PARSER.ParseNodeTypeRecordLiteral) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTypeRecordLiteral) {
 			return new AST.ASTNodeTypeRecord(node, this.decorate(
 				node.children.find((c): c is PARSER.ParseNodeTypeRecordLiteral__0__List => c instanceof PARSER.ParseNodeTypeRecordLiteral__0__List)!
 			));
 
-		} else if (Dev.supportsAll('typingExplicit', 'literalCollection') && node instanceof PARSER.ParseNodeTypeRecordLiteral__0__List) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTypeRecordLiteral__0__List) {
 			return (node.children.length === 1)
 				? [this.decorate(node.children[0])]
 				: [
