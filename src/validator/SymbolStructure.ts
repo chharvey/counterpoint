@@ -1,5 +1,5 @@
-import type * as AST from './ASTNode';
 import type {SolidLanguageType} from './SolidLanguageType';
+import type {SolidObject} from './SolidObject';
 
 
 
@@ -32,8 +32,8 @@ export class SymbolStructureType extends SymbolStructure {
 		id: bigint,
 		line: number,
 		col: number,
-		/** The static definition of the symbol. */
-		readonly defn: AST.ASTNodeType,
+		/** The assessed value of the symbol. */
+		public value: SolidLanguageType,
 	) {
 		super(id, line, col);
 	}
@@ -50,8 +50,8 @@ export class SymbolStructureVar extends SymbolStructure {
 		readonly type: SolidLanguageType,
 		/** May the symbol be reassigned? */
 		readonly unfixed: boolean,
-		/** The static definition of the symbol, or `null` if the symbol is unfixed. */
-		readonly defn: AST.ASTNodeExpression | null,
+		/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
+		public value: SolidObject | null,
 	) {
 		super(id, line, col);
 	}

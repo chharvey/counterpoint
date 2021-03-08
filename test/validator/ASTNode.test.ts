@@ -604,6 +604,7 @@ describe('ASTNodeSolid', () => {
 					type U = T;
 				`);
 				goal.varCheck(validator);
+				goal.typeCheck(validator);
 				assert.deepStrictEqual(
 					((goal
 						.children[1] as AST.ASTNodeDeclarationType)

@@ -43,8 +43,8 @@ Void! VarCheck(SemanticDeclarationType decl) :=
 		1. *Throw:* a new AssignmentError01.
 	4. *Perform:* *Unwrap:* `VarCheck(decl.children.1)`.
 	5. *Let* `symbol` be a new SymbolStructureType [
-		id=   `id`,
-		defn= `decl.children.1`,
+		id=    `id`,
+		value= `Unknown`,
 	].
 	6. Add `symbol` as a record for `id` to the validator.
 ;
@@ -58,17 +58,13 @@ Void! VarCheck(SemanticDeclarationVariable decl) :=
 		1. *Throw:* a new AssignmentError01.
 	4. *Perform:* *Unwrap:* `VarCheck(decl.children.1)`.
 	5. *Perform:* *Unwrap:* `VarCheck(decl.children.2)`.
-	6. *If* `decl.unfixed` is `false`:
-		1. *Let* `defn` be `decl.children.2`.
-	7. *Else*:
-		1. *Let* `defn` be `void`.
-	8. *Let* `symbol` be a new SymbolStructureVar [
+	6. *Let* `symbol` be a new SymbolStructureVar [
 		id=      `id`,
 		type=    *UnwrapAffirm:* `Assess(decl.children.1)`,
 		unfixed= `decl.unfixed`,
-		defn=    `defn`,
+		value=   [type= throw],
 	].
-	9. Add `symbol` as a record for `id` to the validator.
+	7. Add `symbol` as a record for `id` to the validator.
 ;
 
 
