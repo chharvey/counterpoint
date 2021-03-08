@@ -50,13 +50,11 @@ describe('LexerSolid', () => {
 					\u0003
 					comment
 				`]],
-				...(Dev.supports('variables') ? [
 					['unicode identifier', [`
 						\`unicode identifier without end delimiter
 					`, `
 						\`unicode identifier with end delimiter but contains \u0003 U+0003 END OF TEXT character\`
-					`]] as [string, string[]],
-				] : []),
+					`]],
 				...(Dev.supports('literalString-lex') ? [
 					['string', [`
 						'string without end delimiter
@@ -185,17 +183,7 @@ describe('LexerSolid', () => {
 			})
 		})
 
-		!Dev.supports('variables') && context('throws when variables are turned off and a non-keywords is given.', () => {
-			it('throws when non-keyword /^[a-z]+$/ is given', () => {
-				assert.throws(() => [...new Lexer(`abc`, CONFIG_DEFAULT).generate()], /Identifier `abc` not yet allowed./)
-			})
-			it('throws when /^[a-z]+[A-Za-z0-9_]+$/ is given', () => {
-				assert.throws(() => [...new Lexer(`falseTrue`,  CONFIG_DEFAULT).generate()], LexError01)
-				assert.throws(() => [...new Lexer(`false_true`, CONFIG_DEFAULT).generate()], LexError01)
-			})
-		})
-
-		Dev.supports('variables') && context('recognizes `TokenIdentifier` conditions.', () => {
+		context('recognizes `TokenIdentifier` conditions.', () => {
 			context('recognizes `TokenIdentifierBasic` conditions.', () => {
 				specify('Basic identifier beginners.', () => {
 					;[...new Lexer(`
@@ -325,13 +313,9 @@ describe('LexerSolid', () => {
 					})
 				})
 				specify('invalid sequence.', () => {
-					Dev.supports('variables')
-						? assert.deepStrictEqual([...new Lexer(`
+						assert.deepStrictEqual([...new Lexer(`
 							\\d39c
 						`, radices_on).generate()].slice(2, -2).map((token) => token.source), ['\\d39', 'c'])
-						: assert.throws(() => [...new Lexer(`
-							\\d39c
-						`, radices_on).generate()], /Identifier `c` not yet allowed./)
 				})
 				specify('invalid escape characters.', () => {
 					`
@@ -378,20 +362,15 @@ describe('LexerSolid', () => {
 					assert.strictEqual(tokens[35].source, `-78`)
 				})
 				it('recognizes exponent part not following fraction part as identifier.', () => {
-					if (Dev.supports('variables')) {
 						const tokens: Token[] = [...new Lexer(`91.e27`, CONFIG_DEFAULT).generate()]
 						assert.ok(tokens[2] instanceof TOKEN.TokenNumber)
 						assert.strictEqual(tokens[2].source, `91.`)
 						assert.ok(tokens[3] instanceof TOKEN.TokenIdentifier)
 						assert.strictEqual(tokens[3].source, `e27`)
-					} else {
-						assert.throws(() => [...new Lexer(`91.e27`, CONFIG_DEFAULT).generate()], /Identifier `e` not yet allowed./)
-					}
 				})
 			})
 			context('numbers with separators.', () => {
 				it('tokenizes numeric separators as identifiers when `config.languageFeatures.numericSeparators` is turned off.', () => {
-					if (Dev.supports('variables')) {
 						const tokens: Token[] = [...new Lexer(`
 							12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
 							\\b1_00  \\q0_32  +\\o1_037  -\\d9_037  +\\x0_6  -\\z0_6
@@ -410,15 +389,6 @@ describe('LexerSolid', () => {
 						;`5_5.  -5_5.`.split('  ').forEach((src) => {
 							assert.throws(() => [...new Lexer(src, radices_on).generate()], LexError01)
 						})
-					} else {
-						;`
-							12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
-							\\b1_00  \\q0_32  +\\o1_037  -\\d9_037  +\\x0_6  -\\z0_6
-							91.2e4_7  81.2e+4_7  71.2e-4_7  2.00_7  -1.00_7
-						`.trim().replace(/\n\t*/g, '  ').split('  ').forEach((src) => {
-							assert.throws(() => [...new Lexer(src, radices_on).generate()], LexError01)
-						})
-					}
 				})
 				it('`config.languageFeatures.numericSeparators` allows numbers with separators.', () => {
 					const source: string = `
@@ -446,7 +416,6 @@ describe('LexerSolid', () => {
 				specify('numeric separator at beginning of token is an identifier.', () => {
 					assert.throws(() => [...new Lexer(`6.7e_12345`,  separators_on).generate()], LexError05)
 					assert.throws(() => [...new Lexer(`6.7e-_12345`, separators_on).generate()], LexError05)
-					if (Dev.supports('variables')) {
 						function tokenTypeAndSource(index: number, type: NewableFunction, source: string) {
 							assert.ok(tokens[index] instanceof type, `Token \`${ tokens[index].source }\` (${ index }) is not instance of ${ type.name }.`)
 							assert.strictEqual(tokens[index].source, source)
@@ -465,12 +434,6 @@ describe('LexerSolid', () => {
 						tokenTypeAndSource(10, TOKEN.TokenNumber, `6.`)
 						tokenTypeAndSource(11, TOKEN.TokenPunctuator, `-`)
 						tokenTypeAndSource(12, TOKEN.TokenIdentifier, `_12345`)
-					} else {
-						assert.throws(() => [...new Lexer(`_12345`,    separators_on).generate()], LexError01)
-						assert.throws(() => [...new Lexer(`-_12345`,   separators_on).generate()], LexError01)
-						assert.throws(() => [...new Lexer(`6._12345`,  separators_on).generate()], LexError01)
-						assert.throws(() => [...new Lexer(`6.-_12345`, separators_on).generate()], LexError01)
-					}
 				})
 			})
 		})

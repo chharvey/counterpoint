@@ -56,7 +56,7 @@ describe('TokenSolid', () => {
 			})
 		})
 
-		Dev.supports('variables') && context('TokenIdentifier', () => {
+		context('TokenIdentifier', () => {
 			context('TokenIdentifierBasic', () => {
 				const cooked: (bigint|null)[] = [...new Lexer(`
 					this be a word

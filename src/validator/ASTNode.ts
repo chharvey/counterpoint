@@ -8,6 +8,7 @@ import * as xjs from 'extrajs'
 import type {
 	NonemptyArray,
 } from '../types.d';
+import {Dev} from '../core/';
 import {
 	Operator,
 	ValidTypeOperator,
@@ -491,7 +492,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 			(start_node instanceof TOKEN.TokenNumber) ?
 				start_node.isFloat ? new Float64(start_node.cook()) : new Int16(BigInt(start_node.cook()))
 			:
-			new SolidString(start_node.cook());
+			(Dev.supports('literalString-cook')) ? new SolidString(start_node.cook()) : (() => { throw new Error('`literalString-cook` not yet supported.'); })();
 		super(start_node, {value})
 		this.value = value
 	}
@@ -515,11 +516,14 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		(this.value instanceof SolidBoolean) ? SolidBoolean :
 		(this.value instanceof Int16)        ? Int16 :
 		(this.value instanceof Float64)      ? Float64 :
-		(this.value instanceof SolidString)  ? SolidString :
+		(Dev.supports('stringConstant-assess') && this.value instanceof SolidString)  ? SolidString :
 		SolidObject
 	}
 	/** @implements ASTNodeExpression */
 	protected assess_do(_validator: Validator): SolidObject {
+		if (this.value instanceof SolidString && !Dev.supports('stringConstant-assess')) {
+			throw new Error('`stringConstant-assess` not yet supported.');
+		};
 		return this.value;
 	}
 }

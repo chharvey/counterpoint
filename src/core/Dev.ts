@@ -1,12 +1,11 @@
-import * as semver from 'semver'
+type FeatureFlag = [boolean, (keyof typeof Dev['FEATURES'])[]?];
+
+
 
 /**
  * Development utilities. Not for production.
  */
 export class Dev {
-	/** The current version of this project (as defined in `package.json`). */
-	static readonly VERSION: string = require('../../package.json').version
-
 	/**
 	 * A map of development features to their version numbers.
 	 *
@@ -21,59 +20,31 @@ export class Dev {
 	 * Released features may have an optional language feature toggle defined in {@link SolidConfig}.
 	 */
 	private static readonly FEATURES: {
-		// v0.1.0
-		readonly literalNumber   : string,
-		readonly operatorsMath   : string,
-		readonly expressions     : string,
-		readonly constantFolding : string,
-		// v0.2.0
-		readonly comments          : string,
-		readonly integerRadices    : string,
-		readonly numericSeparators : string,
-		readonly keywordPrimitives : string,
-		readonly operatorsLogic    : string,
-		readonly typingImplicit    : string,
-		readonly statements        : string,
 		// v0.3.0
-		readonly variables       : string,
-		readonly typingExplicit  : string,
+		readonly 'variables-build': FeatureFlag,
 		// v0.4.0
-		readonly literalCollection: string,
-		readonly 'literalString-lex':       string,
-		readonly 'literalTemplate-lex':     string,
-		readonly 'literalString-cook':      string,
-		readonly 'literalTemplate-cook':    string,
-		readonly 'string-assess':           string,
-		readonly 'stringTemplate-parse':    string,
-		readonly 'stringTemplate-decorate': string,
-		readonly 'stringTemplate-assess':   string,
+		readonly literalCollection:         FeatureFlag,
+		readonly 'literalString-lex':       FeatureFlag,
+		readonly 'literalTemplate-lex':     FeatureFlag,
+		readonly 'literalString-cook':      FeatureFlag,
+		readonly 'literalTemplate-cook':    FeatureFlag,
+		readonly 'stringConstant-assess':   FeatureFlag,
+		readonly 'stringTemplate-parse':    FeatureFlag,
+		readonly 'stringTemplate-decorate': FeatureFlag,
+		readonly 'stringTemplate-assess':   FeatureFlag,
 	} = {
-		// v0.1.0
-		literalNumber:   '>=0.1.*',
-		operatorsMath:   '>=0.1.*',
-		expressions:     '>=0.1.*',
-		constantFolding: '>=0.1.*',
-		// v0.2.0
-		comments:          '>=0.2.*',
-		integerRadices:    '>=0.2.*',
-		numericSeparators: '>=0.2.*',
-		keywordPrimitives: '>=0.2.*',
-		operatorsLogic:    '>=0.2.*',
-		typingImplicit:    '>=0.2.*',
-		statements:        '>=0.2.*',
 		// v0.3.0
-		variables:       '>=0.3.*',
-		typingExplicit:  '>=0.3.*',
+		'variables-build': [false],
 		// v0.4.0
-		literalCollection: '>=0.4.0-alpha.0',
-		'literalString-lex':       '>=0.4.0-alpha.1.0',
-		'literalTemplate-lex':     '>=0.4.0-alpha.1.0',
-		'literalString-cook':      '>=0.4.0-alpha.1.1',
-		'literalTemplate-cook':    '>=0.4.0-alpha.1.1',
-		'string-assess':           '>=0.4.0-alpha.1.2',
-		'stringTemplate-parse':    '>=0.4.0-alpha.1.3',
-		'stringTemplate-decorate': '>=0.4.0-alpha.1.4',
-		'stringTemplate-assess':   '>=0.4.0-alpha.1.5',
+		literalCollection:         [false],
+		'literalString-lex':       [false],
+		'literalString-cook':      [false, ['literalString-lex']],
+		'stringConstant-assess':   [false, ['literalString-cook']],
+		'literalTemplate-lex':     [false],
+		'literalTemplate-cook':    [false, ['literalTemplate-lex']],
+		'stringTemplate-parse':    [false, ['literalTemplate-cook']],
+		'stringTemplate-decorate': [false, ['stringTemplate-parse']],
+		'stringTemplate-assess':   [false, ['stringTemplate-decorate']],
 	}
 
 	/**
@@ -82,7 +53,8 @@ export class Dev {
 	 * @return is this project’s version number in the range of the feature?
 	 */
 	static supports(feature: keyof typeof Dev.FEATURES): boolean {
-		return semver.satisfies(Dev.VERSION, Dev.FEATURES[feature], {includePrerelease: true})
+		const flag: FeatureFlag = Dev.FEATURES[feature];
+		return flag[0] && Dev.supportsAll(...flag[1] || []);
 	}
 	/**
 	 * Returns `true` if this project supports at least one of the given features.
