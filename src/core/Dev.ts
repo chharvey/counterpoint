@@ -1,4 +1,4 @@
-type FeatureFlag = boolean | [boolean, (keyof typeof Dev['FEATURES'])[]];
+type FeatureFlag = [boolean, (keyof typeof Dev['FEATURES'])[]?];
 
 
 
@@ -34,13 +34,13 @@ export class Dev {
 		readonly 'stringTemplate-assess':   FeatureFlag,
 	} = {
 		// v0.3.0
-		'variables-build': false,
+		'variables-build': [false],
 		// v0.4.0
-		literalCollection:         false,
-		'literalString-lex':       false,
+		literalCollection:         [false],
+		'literalString-lex':       [false],
 		'literalString-cook':      [false, ['literalString-lex']],
 		'stringConstant-assess':   [false, ['literalString-cook']],
-		'literalTemplate-lex':     false,
+		'literalTemplate-lex':     [false],
 		'literalTemplate-cook':    [false, ['literalTemplate-lex']],
 		'stringTemplate-parse':    [false, ['literalTemplate-cook']],
 		'stringTemplate-decorate': [false, ['stringTemplate-parse']],
@@ -54,10 +54,7 @@ export class Dev {
 	 */
 	static supports(feature: keyof typeof Dev.FEATURES): boolean {
 		const flag: FeatureFlag = Dev.FEATURES[feature];
-		return (typeof flag === 'boolean')
-			? flag
-			: flag[0] && Dev.supportsAll(...flag[1])
-		;
+		return flag[0] && Dev.supportsAll(...flag[1] || []);
 	}
 	/**
 	 * Returns `true` if this project supports at least one of the given features.

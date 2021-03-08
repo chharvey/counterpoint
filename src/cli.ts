@@ -4,6 +4,7 @@ import {
 } from './CLI.class';
 
 
+/** The current version of this project (as defined in `package.json`). */
 const VERSION: string = require('../package.json').version;
 
 
