@@ -648,19 +648,18 @@ describe('ASTNodeSolid', () => {
 					});
 				});
 				context('with constant folding off.', () => {
-					it('returns `String` for any ASTNodeTemplate.', () => {
+					it('always returns `String`.', () => {
 						[
-							templateFromSource(`'''42😀''';`).type(),
-							templateFromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`).type(),
-							((goalFromSource(`
+							templateFromSource(`'''42😀''';`),
+							templateFromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
+							(goalFromSource(`
 								let unfixed x: int = 21;
 								'''the answer is {{ x * 2 }} but what is the question?''';
 							`)
 								.children[1] as AST.ASTNodeStatementExpression)
-								.children[0] as AST.ASTNodeTemplate)
-								.type(new Validator(folding_off)),
-						].forEach((type) => {
-							assert.deepStrictEqual(type, SolidString);
+								.children[0] as AST.ASTNodeTemplate,
+						].forEach((tpl) => {
+							assert.deepStrictEqual(tpl.type(new Validator(folding_off)), SolidString);
 						});
 					});
 				});
