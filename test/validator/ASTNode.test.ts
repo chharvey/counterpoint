@@ -581,38 +581,33 @@ describe('ASTNodeSolid', () => {
 				},
 			};
 			describe('ASTNodeConstant', () => {
-				context('with constant folding and int coersion on.', () => {
-					it('returns a constant Null type for ASTNodeConstant with null value.', () => {
-						assert.ok(constantFromSource(`null;`).type().equals(SolidNull));
-					});
-					it('returns a constant Boolean type for ASTNodeConstant with bool value.', () => {
-						assert.deepStrictEqual([
-							`false;`,
-							`true;`,
-						].map((src) => constantFromSource(src).type()), [
-							SolidBoolean.FALSETYPE,
-							SolidBoolean.TRUETYPE,
-						])
-					});
-					it('returns a constant Integer type for ASTNodeConstant with integer value.', () => {
-						assert.deepStrictEqual(constantFromSource(`42;`).type(), new SolidTypeConstant(new Int16(42n)));
-					});
-					it('returns a constant Float type for ASTNodeConstant with float value.', () => {
-						assert.deepStrictEqual(constantFromSource(`4.2e+1;`).type(), new SolidTypeConstant(new Float64(42.0)));
-					});
-					Dev.supports('stringConstant-assess') && it('returns a constant String with string value.', () => {
+				context('with constant folding on.', () => {
+					it('returns the result of `this#type`, wrapped in a `new SolidTypeConstant`.', () => {
+						const constants: AST.ASTNodeConstant[] = `
+							null  false  true
+							55  -55  033  -033  0  -0
+							55.  -55.  033.  -033.  2.007  -2.007
+							91.27e4  -91.27e4  91.27e-4  -91.27e-4
+							0.  -0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
+							${ (Dev.supports('stringConstant-assess')) ? `'42😀'  '42\\u{1f600}'` : `` }
+						`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`));
 						assert.deepStrictEqual(
-							constantFromSource(`'42😀';`).type(),
-							new SolidTypeConstant(new SolidString('42😀')),
+							constants.map((c) => c.type()),
+							constants.map((c) => new SolidTypeConstant(c.assess()!)),
 						);
 					});
 				});
 				context('with constant folding off.', () => {
-					Dev.supports('stringConstant-assess') && it('always returns `String`.', () => {
-						assert.deepStrictEqual(
-							constantFromSource(`'42😀';`, folding_off).type(new Validator(folding_off)),
-							SolidString,
-						);
+					[
+						['Null',    `null`, SolidNull],
+						['Boolean', `true`, SolidBoolean],
+						['Integer', `42`,   Int16],
+						['Float',   `4.2`,  Float64],
+						...(Dev.supports('stringConstant-assess') ? [['String', `'42😀'`, SolidString]] : []),
+					].forEach(([testname, src, typ]) => {
+						it(`returns \`${ testname }\` for those constants.`, () => {
+							assert.deepStrictEqual(constantFromSource(`${ src };`, folding_off).type(new Validator(folding_off)), typ);
+						});
 					});
 				});
 			});
@@ -856,7 +851,7 @@ describe('ASTNodeSolid', () => {
 
 		describe('#assess', () => {
 			describe('ASTNodeConstant', () => {
-				it('computes the value of constant null or boolean expression.', () => {
+				it('computes null and boolean values.', () => {
 					assert.deepStrictEqual([
 						'null;',
 						'false;',
@@ -867,17 +862,39 @@ describe('ASTNodeSolid', () => {
 						SolidBoolean.TRUE,
 					]);
 				})
-				it('computes the value of a constant float expression.', () => {
+				it('computes int values.', () => {
+					const integer_radices_on: SolidConfig = {
+						...CONFIG_DEFAULT,
+						languageFeatures: {
+							...CONFIG_DEFAULT.languageFeatures,
+							integerRadices: true,
+						},
+					};
+					assert.deepStrictEqual(`
+						55  -55  033  -033  0  -0
+						\\o55  -\\o55  \\q033  -\\q033
+					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`, integer_radices_on).assess()), [
+						55, -55, 33, -33, 0, 0,
+						parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
+					].map((v) => new Int16(BigInt(v))));
+				});
+				it('computes float values.', () => {
 					assert.deepStrictEqual(`
 						55.  -55.  033.  -033.  2.007  -2.007
 						91.27e4  -91.27e4  91.27e-4  -91.27e-4
-						-0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
+						0.  -0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
 					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`).assess()), [
 						55, -55, 33, -33, 2.007, -2.007,
 						91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
-						-0, -0, 6.8, 6.8, 0, -0,
+						0, -0, -0, 6.8, 6.8, 0, -0,
 					].map((v) => new Float64(v)));
 				})
+				Dev.supports('stringConstant-assess') && it('computes string values.', () => {
+					assert.deepStrictEqual(
+						constantFromSource(`'42😀\\u{1f600}';`).type(),
+						new SolidTypeConstant(new SolidString('42😀\u{1f600}')),
+					);
+				});
 			});
 
 			describe('ASTNodeVariable', () => {
