@@ -2,12 +2,12 @@ import {
 	Token,
 	TokenFilebound,
 	ParseError01,
+	utils,
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
 import {
 	Dev,
-	Util,
 } from '../../src/core/';
 import {
 	Punctuator,
@@ -659,9 +659,9 @@ describe('Parser', () => {
 					.serialize()
 			}
 			specify('head, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
+				assert.strictEqual(stringTemplateParseNode(utils.dedent`
 					'''head1{{}}tail1''';
-				`)), `
+				`), `
 					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ }}tail1&apos;&apos;&apos;">
 						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
 						<TEMPLATE line="1" col="11" value="tail1">}}tail1'''</TEMPLATE>
@@ -669,9 +669,9 @@ describe('Parser', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
+				assert.strictEqual(stringTemplateParseNode(utils.dedent`
 					'''head1{{ '''full1''' }}tail1''';
-				`)), `
+				`), `
 					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
 						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -694,9 +694,9 @@ describe('Parser', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
+				assert.strictEqual(stringTemplateParseNode(utils.dedent`
 					'''head1{{ '''full1''' }}midd1{{}}tail1''';
-				`)), `
+				`), `
 					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ }}tail1&apos;&apos;&apos;">
 						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
 						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -722,9 +722,9 @@ describe('Parser', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, expr, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
+				assert.strictEqual(stringTemplateParseNode(utils.dedent`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1''';
-				`)), `
+				`), `
 					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
 						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -765,9 +765,9 @@ describe('Parser', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, expr, middle, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
+				assert.strictEqual(stringTemplateParseNode(utils.dedent`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1''';
-				`)), `
+				`), `
 					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ }}tail1&apos;&apos;&apos;">
 						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
 						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -811,9 +811,9 @@ describe('Parser', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, expr, middle, expr, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
+				assert.strictEqual(stringTemplateParseNode(utils.dedent`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1''';
-				`)), `
+				`), `
 					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ &apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
 						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">

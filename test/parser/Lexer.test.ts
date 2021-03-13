@@ -3,6 +3,7 @@ import {
 	TokenWhitespace,
 	LexError01,
 	LexError02,
+	utils,
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
@@ -10,7 +11,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-	Util,
 } from '../../src/core/';
 import {
 	TemplatePosition,
@@ -135,30 +135,28 @@ describe('LexerSolid', () => {
 					assert.ok(comment instanceof TOKEN.TokenCommentMulti)
 				})
 				specify('Simulate inline documentation comment.', () => {
-					const tokens: Token[] = [...new Lexer(Util.dedent(`
+					const tokens: Token[] = [...new Lexer(`
 						%%% The third power of 2. %%
 						8;
-					`), CONFIG_DEFAULT).generate()]
+					`, CONFIG_DEFAULT).generate()];
 					assert.ok(tokens[2] instanceof TOKEN.TokenCommentMulti)
-					assert.strictEqual(tokens[2].source, `
-						%%% The third power of 2. %%
-					`.trim())
+					assert.strictEqual(tokens[2].source, `%%% The third power of 2. %%`)
 					assert.strictEqual(tokens[4].source, '8')
 				})
 				specify('Simulate block documentation comment.', () => {
-					const tokens: Token[] = [...new Lexer(Util.dedent(`
+					const tokens: Token[] = [...new Lexer(utils.dedent`
 						%%%
 						The third power of 2.
 						%%%
 						8;
-					`), CONFIG_DEFAULT).generate()]
+					`, CONFIG_DEFAULT).generate()];
 					assert.ok(tokens[2] instanceof TOKEN.TokenCommentMulti)
 					assert.ok(tokens[3] instanceof TOKEN.TokenCommentLine)
-					assert.strictEqual(tokens[2].source, Util.dedent(`
+					assert.strictEqual(tokens[2].source, utils.dedent`
 						%%%
 						The third power of 2.
 						%%
-					`).trim())
+					`.trim());
 					assert.strictEqual(tokens[3].source, `%\n`)
 					assert.strictEqual(tokens[4].source, '8')
 				})
@@ -306,7 +304,7 @@ describe('LexerSolid', () => {
 						\\d370  \\d037  +\\d9037  -\\d9037  +\\d06  -\\d06
 						\\xe70  \\x0e7  +\\x90e7  -\\x90e7  +\\x06  -\\x06
 						\\ze70  \\z0e7  +\\z90e7  -\\z90e7  +\\z06  -\\z06
-					`.trim().replace(/\n\t+/g, '  ')
+					`.replace(/\n\t+/g, '  ').trim();
 					;[...new Lexer(source, radices_on).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
 						assert.ok(token instanceof TOKEN.TokenNumber)
 						assert.strictEqual(token.source, source.split('  ')[i])
@@ -380,7 +378,7 @@ describe('LexerSolid', () => {
 							12 +12 -12 0123 +0123 -0123 012 +012 -012
 							\\b1 \\q0 +\\o1 -\\d9 +\\x0 -\\z0
 							91.2e4 81.2e+4 71.2e-4 2.00 -1.00
-						`.trim().replace(/\n\t+/g, ' ').split(' ')
+						`.replace(/\n\t+/g, ' ').trim().split(' ');
 						tokens.filter((_, i) => i % 2 === 0).forEach((token, j) => {
 							assert.ok(token instanceof TOKEN.TokenNumber, 'this token instanceof TokenNumber')
 							assert.ok(tokens[j * 2 + 1] instanceof TOKEN.TokenIdentifier, 'next token instanceof TokenIdentifierBasic')
@@ -401,7 +399,7 @@ describe('LexerSolid', () => {
 						\\ze_70  \\z0_e7  +\\z9_0e7  -\\z9_0e7  +\\z0_6  -\\z0_6
 						5_5.  -5_5.  2.00_7  -2.00_7
 						91.2e4_7  91.2e+4_7  91.2e-4_7
-					`.trim().replace(/\n\t+/g, '  ')
+					`.replace(/\n\t+/g, '  ').trim();
 					;[...new Lexer(source, both_on).generate()].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
 						assert.ok(token instanceof TOKEN.TokenNumber)
 						assert.strictEqual(token.source, source.split('  ')[i])
@@ -504,9 +502,9 @@ describe('LexerSolid', () => {
 				})
 			})
 			it('invalid escape sequences within in-string comments.', () => {
-				const src: string = Util.dedent(`
+				const src: string = `
 					'in-string comment: % invalid unicode: \\u{24u done.'
-				`);
+				`;
 				assert.doesNotThrow(() => [...new Lexer(src, CONFIG_DEFAULT).generate()], 'with comments enabled');
 				assert.throws(() => [...new Lexer(src, {
 						...CONFIG_DEFAULT,
