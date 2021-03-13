@@ -1,10 +1,8 @@
 import {
+	NonemptyArray,
 	ParseNode,
 } from '@chharvey/parser';
 
-import type {
-	NonemptyArray,
-} from '../types.d';
 import {
 	Dev,
 } from '../core/';

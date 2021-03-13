@@ -19,9 +19,9 @@ function dist() {
 }
 
 async function postdist() {
-	const {generate} = require('@chharvey/parser');
+	const {generate, utils} = require('@chharvey/parser');
 	const grammar_solid = fs.promises.readFile(path.join(__dirname, './docs/spec/grammar/syntax.ebnf'), 'utf8');
-	return fs.promises.writeFile(path.join(__dirname, './src/parser/Parser.auto.ts'), `
+	return fs.promises.writeFile(path.join(__dirname, './src/parser/Parser.auto.ts'), utils.dedent`
 		/*----------------------------------------------------------------/
 		| WARNING: Do not manually update this file!
 		| It is auto-generated via <@chharvey/parser>.
