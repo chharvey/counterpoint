@@ -2,7 +2,6 @@ import {
 	Token,
 	TokenFilebound,
 	ParseError01,
-	utils,
 } from '@chharvey/parser';
 import * as assert from 'assert'
 
@@ -403,6 +402,66 @@ describe('Parser', () => {
 			})
 		})
 
+		Dev.supports('stringTemplate-parse') && describe('StringTemplate', () => {
+			specify('StringTemplate ::= TEMPLATE_FULL', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''full1''';
+				`), `'''full1'''`);
+			});
+			specify('StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''head1{{}}tail1''';
+				`), `'''head1{{`, `}}tail1'''`);
+			});
+			specify('StringTemplate ::= TEMPLATE_HEAD Expression TEMPLATE_TAIL', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}tail1'''`);
+			});
+			specify('StringTemplate ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''head1{{}}midd1{{}}tail1''';
+				`), `'''head1{{`, `}}midd1{{`, `}}tail1'''`);
+			});
+			specify('StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}midd1{{}}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `}}tail1'''`);
+			});
+
+			specify('StringTemplate__0__List ::= TEMPLATE_MIDDLE Expression', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}tail1'''`);
+			});
+			specify('StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}midd2{{`, `}}tail1'''`);
+			});
+			specify('StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}midd2{{`, `'''head2{{ '''full3''' }}tail2'''`, `}}tail1'''`);
+			});
+
+			it('throws when reaching an orphaned head.', () => {
+				assert.throws(() => new Parser(`
+					'''A string template head token not followed by a middle or tail {{ 1;
+				`).parse(), ParseError01)
+			})
+			it('throws when reaching an orphaned middle.', () => {
+				assert.throws(() => new Parser(`
+					2 }} a string template middle token not preceded by a head/middle and not followed by a middle/tail {{ 3;
+				`).parse(), ParseError01)
+			})
+			it('throws when reaching an orphaned tail.', () => {
+				assert.throws(() => new Parser(`
+					4 }} a string template tail token not preceded by a head or middle''';
+				`).parse(), ParseError01)
+			})
+		});
+
 		Dev.supports('literalCollection') && describe('Property ::= Word "=" Expression', () => {
 			it('makes a Property node.', () => {
 				/*
@@ -636,271 +695,6 @@ describe('Parser', () => {
 					'42',
 					'4.2e+1',
 				]);
-			})
-		})
-
-		Dev.supports('stringTemplate-parse') && context('ExpressionUnit ::= StringTemplate', () => {
-			function stringTemplateParseNode (src: string): string {
-				return (((((((((((((new Parser(src)
-					.parse()
-					.children[1] as PARSER.ParseNodeGoal__0__List)
-					.children[0] as PARSER.ParseNodeStatement)
-					.children[0] as PARSER.ParseNodeExpression)
-					.children[0] as PARSER.ParseNodeExpressionDisjunctive)
-					.children[0] as PARSER.ParseNodeExpressionConjunctive)
-					.children[0] as PARSER.ParseNodeExpressionEquality)
-					.children[0] as PARSER.ParseNodeExpressionComparative)
-					.children[0] as PARSER.ParseNodeExpressionAdditive)
-					.children[0] as PARSER.ParseNodeExpressionMultiplicative)
-					.children[0] as PARSER.ParseNodeExpressionExponential)
-					.children[0] as PARSER.ParseNodeExpressionUnarySymbol)
-					.children[0] as PARSER.ParseNodeExpressionUnit)
-					.children[0] as PARSER.ParseNodeStringTemplate)
-					.serialize()
-			}
-			specify('head, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(utils.dedent`
-					'''head1{{}}tail1''';
-				`), `
-					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ }}tail1&apos;&apos;&apos;">
-						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
-						<TEMPLATE line="1" col="11" value="tail1">}}tail1'''</TEMPLATE>
-					</StringTemplate>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(utils.dedent`
-					'''head1{{ '''full1''' }}tail1''';
-				`), `
-					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
-						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
-						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<ExpressionAdditive line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-								<ExpressionMultiplicative line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-									<ExpressionExponential line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-										<ExpressionUnarySymbol line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-											<ExpressionUnit line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-												<StringTemplate line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-													<TEMPLATE line="1" col="12" value="full1">'''full1'''</TEMPLATE>
-												</StringTemplate>
-											</ExpressionUnit>
-										</ExpressionUnarySymbol>
-									</ExpressionExponential>
-								</ExpressionMultiplicative>
-							</ExpressionAdditive>
-						</Expression>
-						<TEMPLATE line="1" col="24" value="tail1">}}tail1'''</TEMPLATE>
-					</StringTemplate>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, middle, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(utils.dedent`
-					'''head1{{ '''full1''' }}midd1{{}}tail1''';
-				`), `
-					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ }}tail1&apos;&apos;&apos;">
-						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
-						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<ExpressionAdditive line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-								<ExpressionMultiplicative line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-									<ExpressionExponential line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-										<ExpressionUnarySymbol line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-											<ExpressionUnit line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-												<StringTemplate line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-													<TEMPLATE line="1" col="12" value="full1">'''full1'''</TEMPLATE>
-												</StringTemplate>
-											</ExpressionUnit>
-										</ExpressionUnarySymbol>
-									</ExpressionExponential>
-								</ExpressionMultiplicative>
-							</ExpressionAdditive>
-						</Expression>
-						<StringTemplate__0__List line="1" col="24" source="}}midd1{{">
-							<TEMPLATE line="1" col="24" value="midd1">}}midd1{{</TEMPLATE>
-						</StringTemplate__0__List>
-						<TEMPLATE line="1" col="33" value="tail1">}}tail1'''</TEMPLATE>
-					</StringTemplate>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, middle, expr, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(utils.dedent`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1''';
-				`), `
-					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
-						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
-						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<ExpressionAdditive line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-								<ExpressionMultiplicative line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-									<ExpressionExponential line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-										<ExpressionUnarySymbol line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-											<ExpressionUnit line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-												<StringTemplate line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-													<TEMPLATE line="1" col="12" value="full1">'''full1'''</TEMPLATE>
-												</StringTemplate>
-											</ExpressionUnit>
-										</ExpressionUnarySymbol>
-									</ExpressionExponential>
-								</ExpressionMultiplicative>
-							</ExpressionAdditive>
-						</Expression>
-						<StringTemplate__0__List line="1" col="24" source="}}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos;">
-							<TEMPLATE line="1" col="24" value="midd1">}}midd1{{</TEMPLATE>
-							<Expression line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-								<ExpressionAdditive line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-									<ExpressionMultiplicative line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-										<ExpressionExponential line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-											<ExpressionUnarySymbol line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-												<ExpressionUnit line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-													<StringTemplate line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-														<TEMPLATE line="1" col="34" value="full2">'''full2'''</TEMPLATE>
-													</StringTemplate>
-												</ExpressionUnit>
-											</ExpressionUnarySymbol>
-										</ExpressionExponential>
-									</ExpressionMultiplicative>
-								</ExpressionAdditive>
-							</Expression>
-						</StringTemplate__0__List>
-						<TEMPLATE line="1" col="46" value="tail1">}}tail1'''</TEMPLATE>
-					</StringTemplate>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, middle, expr, middle, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(utils.dedent`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1''';
-				`), `
-					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ }}tail1&apos;&apos;&apos;">
-						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
-						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<ExpressionAdditive line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-								<ExpressionMultiplicative line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-									<ExpressionExponential line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-										<ExpressionUnarySymbol line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-											<ExpressionUnit line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-												<StringTemplate line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-													<TEMPLATE line="1" col="12" value="full1">'''full1'''</TEMPLATE>
-												</StringTemplate>
-											</ExpressionUnit>
-										</ExpressionUnarySymbol>
-									</ExpressionExponential>
-								</ExpressionMultiplicative>
-							</ExpressionAdditive>
-						</Expression>
-						<StringTemplate__0__List line="1" col="24" source="}}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{">
-							<StringTemplate__0__List line="1" col="24" source="}}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos;">
-								<TEMPLATE line="1" col="24" value="midd1">}}midd1{{</TEMPLATE>
-								<Expression line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-									<ExpressionAdditive line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-										<ExpressionMultiplicative line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-											<ExpressionExponential line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-												<ExpressionUnarySymbol line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-													<ExpressionUnit line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-														<StringTemplate line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-															<TEMPLATE line="1" col="34" value="full2">'''full2'''</TEMPLATE>
-														</StringTemplate>
-													</ExpressionUnit>
-												</ExpressionUnarySymbol>
-											</ExpressionExponential>
-										</ExpressionMultiplicative>
-									</ExpressionAdditive>
-								</Expression>
-							</StringTemplate__0__List>
-							<TEMPLATE line="1" col="46" value="midd2">}}midd2{{</TEMPLATE>
-						</StringTemplate__0__List>
-						<TEMPLATE line="1" col="55" value="tail1">}}tail1'''</TEMPLATE>
-					</StringTemplate>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, middle, expr, middle, expr, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(utils.dedent`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1''';
-				`), `
-					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ &apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
-						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
-						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<ExpressionAdditive line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-								<ExpressionMultiplicative line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-									<ExpressionExponential line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-										<ExpressionUnarySymbol line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-											<ExpressionUnit line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-												<StringTemplate line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-													<TEMPLATE line="1" col="12" value="full1">'''full1'''</TEMPLATE>
-												</StringTemplate>
-											</ExpressionUnit>
-										</ExpressionUnarySymbol>
-									</ExpressionExponential>
-								</ExpressionMultiplicative>
-							</ExpressionAdditive>
-						</Expression>
-						<StringTemplate__0__List line="1" col="24" source="}}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ &apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-							<StringTemplate__0__List line="1" col="24" source="}}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos;">
-								<TEMPLATE line="1" col="24" value="midd1">}}midd1{{</TEMPLATE>
-								<Expression line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-									<ExpressionAdditive line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-										<ExpressionMultiplicative line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-											<ExpressionExponential line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-												<ExpressionUnarySymbol line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-													<ExpressionUnit line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-														<StringTemplate line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-															<TEMPLATE line="1" col="34" value="full2">'''full2'''</TEMPLATE>
-														</StringTemplate>
-													</ExpressionUnit>
-												</ExpressionUnarySymbol>
-											</ExpressionExponential>
-										</ExpressionMultiplicative>
-									</ExpressionAdditive>
-								</Expression>
-							</StringTemplate__0__List>
-							<TEMPLATE line="1" col="46" value="midd2">}}midd2{{</TEMPLATE>
-							<Expression line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-								<ExpressionAdditive line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-									<ExpressionMultiplicative line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-										<ExpressionExponential line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-											<ExpressionUnarySymbol line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-												<ExpressionUnit line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-													<StringTemplate line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-														<TEMPLATE line="1" col="56" value="head2">'''head2{{</TEMPLATE>
-														<Expression line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-															<ExpressionAdditive line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-																<ExpressionMultiplicative line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-																	<ExpressionExponential line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-																		<ExpressionUnarySymbol line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-																			<ExpressionUnit line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-																				<StringTemplate line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-																					<TEMPLATE line="1" col="67" value="full3">'''full3'''</TEMPLATE>
-																				</StringTemplate>
-																			</ExpressionUnit>
-																		</ExpressionUnarySymbol>
-																	</ExpressionExponential>
-																</ExpressionMultiplicative>
-															</ExpressionAdditive>
-														</Expression>
-														<TEMPLATE line="1" col="79" value="tail2">}}tail2'''</TEMPLATE>
-													</StringTemplate>
-												</ExpressionUnit>
-											</ExpressionUnarySymbol>
-										</ExpressionExponential>
-									</ExpressionMultiplicative>
-								</ExpressionAdditive>
-							</Expression>
-						</StringTemplate__0__List>
-						<TEMPLATE line="1" col="90" value="tail1">}}tail1'''</TEMPLATE>
-					</StringTemplate>
-				`.replace(/\n\t*/g, ''))
-			})
-			it('throws when reaching an orphaned head.', () => {
-				assert.throws(() => new Parser(`
-					'''A string template head token not followed by a middle or tail {{ 1;
-				`).parse(), ParseError01)
-			})
-			it('throws when reaching an orphaned middle.', () => {
-				assert.throws(() => new Parser(`
-					2 }} a string template middle token not preceded by a head/middle and not followed by a middle/tail {{ 3;
-				`).parse(), ParseError01)
-			})
-			it('throws when reaching an orphaned tail.', () => {
-				assert.throws(() => new Parser(`
-					4 }} a string template tail token not preceded by a head or middle''';
-				`).parse(), ParseError01)
 			})
 		})
 
