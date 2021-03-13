@@ -856,28 +856,28 @@ describe('ASTNodeSolid', () => {
 
 		describe('#assess', () => {
 			describe('ASTNodeConstant', () => {
-			it('computes the value of constant null or boolean expression.', () => {
-				assert.deepStrictEqual([
-					'null;',
-					'false;',
-					'true;',
-				].map((src) => constantFromSource(src).assess()), [
-					SolidNull.NULL,
-					SolidBoolean.FALSE,
-					SolidBoolean.TRUE,
-				]);
-			})
-			it('computes the value of a constant float expression.', () => {
-				assert.deepStrictEqual(`
-					55.  -55.  033.  -033.  2.007  -2.007
-					91.27e4  -91.27e4  91.27e-4  -91.27e-4
-					-0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`).assess()), [
-					55, -55, 33, -33, 2.007, -2.007,
-					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
-					-0, -0, 6.8, 6.8, 0, -0,
-				].map((v) => new Float64(v)));
-			})
+				it('computes the value of constant null or boolean expression.', () => {
+					assert.deepStrictEqual([
+						'null;',
+						'false;',
+						'true;',
+					].map((src) => constantFromSource(src).assess()), [
+						SolidNull.NULL,
+						SolidBoolean.FALSE,
+						SolidBoolean.TRUE,
+					]);
+				})
+				it('computes the value of a constant float expression.', () => {
+					assert.deepStrictEqual(`
+						55.  -55.  033.  -033.  2.007  -2.007
+						91.27e4  -91.27e4  91.27e-4  -91.27e-4
+						-0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
+					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`).assess()), [
+						55, -55, 33, -33, 2.007, -2.007,
+						91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
+						-0, -0, 6.8, 6.8, 0, -0,
+					].map((v) => new Float64(v)));
+				})
 			});
 
 			describe('ASTNodeVariable', () => {
@@ -936,179 +936,179 @@ describe('ASTNodeSolid', () => {
 			});
 
 			describe('ASTNodeOperation', () => {
-			function assessOperations(tests: Map<string, SolidObject>): void {
-				return assert.deepStrictEqual(
-					[...tests.keys()].map((src) => operationFromSource(src).assess()),
-					[...tests.values()],
-				);
-			}
-			describe('ASTNodeOperationUnary', () => {
-			it('computes the value of a logical negation of anything.', () => {
-				assessOperations(new Map([
-					[`!false;`,  SolidBoolean.TRUE],
-					[`!true;`,   SolidBoolean.FALSE],
-					[`!null;`,   SolidBoolean.TRUE],
-					[`!0;`,      SolidBoolean.FALSE],
-					[`!42;`,     SolidBoolean.FALSE],
-					[`!0.0;`,    SolidBoolean.FALSE],
-					[`!-0.0;`,   SolidBoolean.FALSE],
-					[`!4.2e+1;`, SolidBoolean.FALSE],
-				]))
-				Dev.supports('stringConstant-assess') && assessOperations(new Map([
-					[`!'';`,      SolidBoolean.FALSE],
-					[`!'hello';`, SolidBoolean.FALSE],
-				]))
-			})
-			it('computes the value of emptiness of anything.', () => {
-				assessOperations(new Map([
-					[`?false;`,  SolidBoolean.TRUE],
-					[`?true;`,   SolidBoolean.FALSE],
-					[`?null;`,   SolidBoolean.TRUE],
-					[`?0;`,      SolidBoolean.TRUE],
-					[`?42;`,     SolidBoolean.FALSE],
-					[`?0.0;`,    SolidBoolean.TRUE],
-					[`?-0.0;`,   SolidBoolean.TRUE],
-					[`?4.2e+1;`, SolidBoolean.FALSE],
-				]))
-				Dev.supports('stringConstant-assess') && assessOperations(new Map([
-					[`?'';`,      SolidBoolean.TRUE],
-					[`?'hello';`, SolidBoolean.FALSE],
-				]))
-			})
-			});
-			describe('ASTNodeOperationBinaryArithmetic', () => {
-			it('computes the value of an integer operation of constants.', () => {
-				assessOperations(xjs.Map.mapValues(new Map([
-					[`42 + 420;`,           42 + 420],
-					[`42 - 420;`,           42 + -420],
-					[` 126 /  3;`,          Math.trunc( 126 /  3)],
-					[`-126 /  3;`,          Math.trunc(-126 /  3)],
-					[` 126 / -3;`,          Math.trunc( 126 / -3)],
-					[`-126 / -3;`,          Math.trunc(-126 / -3)],
-					[` 200 /  3;`,          Math.trunc( 200 /  3)],
-					[` 200 / -3;`,          Math.trunc( 200 / -3)],
-					[`-200 /  3;`,          Math.trunc(-200 /  3)],
-					[`-200 / -3;`,          Math.trunc(-200 / -3)],
-					[`42 ^ 2 * 420;`,       (42 ** 2 * 420) % (2 ** 16)],
-					[`2 ^ 15 + 2 ^ 14;`,    -(2 ** 14)],
-					[`-(2 ^ 14) - 2 ^ 15;`, 2 ** 14],
-					[`-(5) ^ +(2 * 3);`,    (-(5)) ** +(2 * 3)],
-				]), (val) => new Int16(BigInt(val))))
-			})
-			it('overflows integers properly.', () => {
-				assert.deepStrictEqual([
-					`2 ^ 15 + 2 ^ 14;`,
-					`-(2 ^ 14) - 2 ^ 15;`,
-				].map((src) => operationFromSource(src).assess()), [
-					new Int16(-(2n ** 14n)),
-					new Int16(2n ** 14n),
-				])
-			})
-			it('computes the value of a float operation of constants.', () => {
-				assessOperations(new Map<string, SolidObject>([
-					[`3.0e1 - 201.0e-1;`,     new Float64(30 - 20.1)],
-					[`3 * 2.1;`,     new Float64(3 * 2.1)],
-				]))
-			})
-			it('should throw when performing an operation that does not yield a valid number.', () => {
-				assert.throws(() => operationFromSource(`-4 ^ -0.5;`).assess(), NanError01)
-			})
-			});
-			it('computes the value of comparison operators.', () => {
-				assessOperations(xjs.Map.mapValues(new Map([
-					[`3 <  3;`,     false],
-					[`3 >  3;`,     false],
-					[`3 <= 3;`,     true],
-					[`3 >= 3;`,     true],
-					[`5.2 <  7.0;`, true],
-					[`5.2 >  7.0;`, false],
-					[`5.2 <= 7.0;`, true],
-					[`5.2 >= 7.0;`, false],
-					[`5.2 <  9;`, true],
-					[`5.2 >  9;`, false],
-					[`5.2 <= 9;`, true],
-					[`5.2 >= 9;`, false],
-					[`5 <  9.2;`, true],
-					[`5 >  9.2;`, false],
-					[`5 <= 9.2;`, true],
-					[`5 >= 9.2;`, false],
-					[`3.0 <  3;`, false],
-					[`3.0 >  3;`, false],
-					[`3.0 <= 3;`, true],
-					[`3.0 >= 3;`, true],
-					[`3 <  3.0;`, false],
-					[`3 >  3.0;`, false],
-					[`3 <= 3.0;`, true],
-					[`3 >= 3.0;`, true],
-				]), (val) => SolidBoolean.fromBoolean(val)))
-			})
-			it('computes the value of IS and EQ operators.', () => {
-				assessOperations(xjs.Map.mapValues(new Map([
-					[`null is null;`, true],
-					[`null == null;`, true],
-					[`null is 5;`,    false],
-					[`null == 5;`,    false],
-					[`true is 1;`,    false],
-					[`true == 1;`,    false],
-					[`true is 1.0;`,  false],
-					[`true == 1.0;`,  false],
-					[`true is 5.1;`,  false],
-					[`true == 5.1;`,  false],
-					[`true is true;`, true],
-					[`true == true;`, true],
-					[`3.0 is 3;`,     false],
-					[`3.0 == 3;`,     true],
-					[`3 is 3.0;`,     false],
-					[`3 == 3.0;`,     true],
-					[`0.0 is 0.0;`,   true],
-					[`0.0 == 0.0;`,   true],
-					[`0.0 is -0.0;`,  false],
-					[`0.0 == -0.0;`,  true],
-					[`0 is -0;`,     true],
-					[`0 == -0;`,     true],
-					[`0.0 is 0;`,    false],
-					[`0.0 == 0;`,    true],
-					[`0.0 is -0;`,   false],
-					[`0.0 == -0;`,   true],
-					[`-0.0 is 0;`,   false],
-					[`-0.0 == 0;`,   true],
-					[`-0.0 is 0.0;`, false],
-					[`-0.0 == 0.0;`, true],
-				]), (val) => SolidBoolean.fromBoolean(val)))
-				Dev.supports('stringConstant-assess') && assessOperations(xjs.Map.mapValues(new Map([
-					[`'' == '';`,    true],
-					[`'a' is 'a';`, true],
-					[`'a' == 'a';`, true],
-					[`'hello\\u{20}world' is 'hello world';`, true],
-					[`'hello\\u{20}world' == 'hello world';`, true],
-					[`'a' isnt 'b';`, true],
-					[`'a' !=   'b';`, true],
-					[`'hello\\u{20}world' isnt 'hello20world';`, true],
-					[`'hello\\u{20}world' !=   'hello20world';`, true],
-				]), (val) => SolidBoolean.fromBoolean(val)))
-			}).timeout(10_000);
-			it('computes the value of AND and OR operators.', () => {
-				assessOperations(new Map<string, SolidObject>([
-					[`null && 5;`,     SolidNull.NULL],
-					[`null || 5;`,     new Int16(5n)],
-					[`5 && null;`,     SolidNull.NULL],
-					[`5 || null;`,     new Int16(5n)],
-					[`5.1 && true;`,   SolidBoolean.TRUE],
-					[`5.1 || true;`,   new Float64(5.1)],
-					[`3.1 && 5;`,      new Int16(5n)],
-					[`3.1 || 5;`,      new Float64(3.1)],
-					[`false && null;`, SolidBoolean.FALSE],
-					[`false || null;`, SolidNull.NULL],
-				]))
-			})
-			it('computes the value of a conditional expression.', () => {
-				assessOperations(new Map<string, SolidObject>([
-					[`if true then false else 2;`,          SolidBoolean.FALSE],
-					[`if false then 3.0 else null;`,        SolidNull.NULL],
-					[`if true then 2 else 3.0;`,            new Int16(2n)],
-					[`if false then 2 + 3.0 else 1.0 * 2;`, new Float64(2.0)],
-				]))
-			})
+				function assessOperations(tests: Map<string, SolidObject>): void {
+					return assert.deepStrictEqual(
+						[...tests.keys()].map((src) => operationFromSource(src).assess()),
+						[...tests.values()],
+					);
+				}
+				describe('ASTNodeOperationUnary', () => {
+					specify('[operator=NOT]', () => {
+						assessOperations(new Map([
+							[`!false;`,  SolidBoolean.TRUE],
+							[`!true;`,   SolidBoolean.FALSE],
+							[`!null;`,   SolidBoolean.TRUE],
+							[`!0;`,      SolidBoolean.FALSE],
+							[`!42;`,     SolidBoolean.FALSE],
+							[`!0.0;`,    SolidBoolean.FALSE],
+							[`!-0.0;`,   SolidBoolean.FALSE],
+							[`!4.2e+1;`, SolidBoolean.FALSE],
+						]))
+						Dev.supports('stringConstant-assess') && assessOperations(new Map([
+							[`!'';`,      SolidBoolean.FALSE],
+							[`!'hello';`, SolidBoolean.FALSE],
+						]))
+					})
+					specify('[operator=EMP]', () => {
+						assessOperations(new Map([
+							[`?false;`,  SolidBoolean.TRUE],
+							[`?true;`,   SolidBoolean.FALSE],
+							[`?null;`,   SolidBoolean.TRUE],
+							[`?0;`,      SolidBoolean.TRUE],
+							[`?42;`,     SolidBoolean.FALSE],
+							[`?0.0;`,    SolidBoolean.TRUE],
+							[`?-0.0;`,   SolidBoolean.TRUE],
+							[`?4.2e+1;`, SolidBoolean.FALSE],
+						]))
+						Dev.supports('stringConstant-assess') && assessOperations(new Map([
+							[`?'';`,      SolidBoolean.TRUE],
+							[`?'hello';`, SolidBoolean.FALSE],
+						]))
+					})
+				});
+				describe('ASTNodeOperationBinaryArithmetic', () => {
+					it('computes the value of an integer operation of constants.', () => {
+						assessOperations(xjs.Map.mapValues(new Map([
+							[`42 + 420;`,           42 + 420],
+							[`42 - 420;`,           42 + -420],
+							[` 126 /  3;`,          Math.trunc( 126 /  3)],
+							[`-126 /  3;`,          Math.trunc(-126 /  3)],
+							[` 126 / -3;`,          Math.trunc( 126 / -3)],
+							[`-126 / -3;`,          Math.trunc(-126 / -3)],
+							[` 200 /  3;`,          Math.trunc( 200 /  3)],
+							[` 200 / -3;`,          Math.trunc( 200 / -3)],
+							[`-200 /  3;`,          Math.trunc(-200 /  3)],
+							[`-200 / -3;`,          Math.trunc(-200 / -3)],
+							[`42 ^ 2 * 420;`,       (42 ** 2 * 420) % (2 ** 16)],
+							[`2 ^ 15 + 2 ^ 14;`,    -(2 ** 14)],
+							[`-(2 ^ 14) - 2 ^ 15;`, 2 ** 14],
+							[`-(5) ^ +(2 * 3);`,    (-(5)) ** +(2 * 3)],
+						]), (val) => new Int16(BigInt(val))))
+					})
+					it('overflows integers properly.', () => {
+						assert.deepStrictEqual([
+							`2 ^ 15 + 2 ^ 14;`,
+							`-(2 ^ 14) - 2 ^ 15;`,
+						].map((src) => operationFromSource(src).assess()), [
+							new Int16(-(2n ** 14n)),
+							new Int16(2n ** 14n),
+						])
+					})
+					it('computes the value of a float operation of constants.', () => {
+						assessOperations(new Map<string, SolidObject>([
+							[`3.0e1 - 201.0e-1;`,     new Float64(30 - 20.1)],
+							[`3 * 2.1;`,     new Float64(3 * 2.1)],
+						]))
+					})
+					it('throws when performing an operation that does not yield a valid number.', () => {
+						assert.throws(() => operationFromSource(`-4 ^ -0.5;`).assess(), NanError01)
+					})
+				});
+				specify('ASTNodeOperationBinaryComparative', () => {
+					assessOperations(xjs.Map.mapValues(new Map([
+						[`3 <  3;`,     false],
+						[`3 >  3;`,     false],
+						[`3 <= 3;`,     true],
+						[`3 >= 3;`,     true],
+						[`5.2 <  7.0;`, true],
+						[`5.2 >  7.0;`, false],
+						[`5.2 <= 7.0;`, true],
+						[`5.2 >= 7.0;`, false],
+						[`5.2 <  9;`, true],
+						[`5.2 >  9;`, false],
+						[`5.2 <= 9;`, true],
+						[`5.2 >= 9;`, false],
+						[`5 <  9.2;`, true],
+						[`5 >  9.2;`, false],
+						[`5 <= 9.2;`, true],
+						[`5 >= 9.2;`, false],
+						[`3.0 <  3;`, false],
+						[`3.0 >  3;`, false],
+						[`3.0 <= 3;`, true],
+						[`3.0 >= 3;`, true],
+						[`3 <  3.0;`, false],
+						[`3 >  3.0;`, false],
+						[`3 <= 3.0;`, true],
+						[`3 >= 3.0;`, true],
+					]), (val) => SolidBoolean.fromBoolean(val)))
+				})
+				specify('ASTNodeOperationBinaryEquality', () => {
+					assessOperations(xjs.Map.mapValues(new Map([
+						[`null is null;`, true],
+						[`null == null;`, true],
+						[`null is 5;`,    false],
+						[`null == 5;`,    false],
+						[`true is 1;`,    false],
+						[`true == 1;`,    false],
+						[`true is 1.0;`,  false],
+						[`true == 1.0;`,  false],
+						[`true is 5.1;`,  false],
+						[`true == 5.1;`,  false],
+						[`true is true;`, true],
+						[`true == true;`, true],
+						[`3.0 is 3;`,     false],
+						[`3.0 == 3;`,     true],
+						[`3 is 3.0;`,     false],
+						[`3 == 3.0;`,     true],
+						[`0.0 is 0.0;`,   true],
+						[`0.0 == 0.0;`,   true],
+						[`0.0 is -0.0;`,  false],
+						[`0.0 == -0.0;`,  true],
+						[`0 is -0;`,     true],
+						[`0 == -0;`,     true],
+						[`0.0 is 0;`,    false],
+						[`0.0 == 0;`,    true],
+						[`0.0 is -0;`,   false],
+						[`0.0 == -0;`,   true],
+						[`-0.0 is 0;`,   false],
+						[`-0.0 == 0;`,   true],
+						[`-0.0 is 0.0;`, false],
+						[`-0.0 == 0.0;`, true],
+					]), (val) => SolidBoolean.fromBoolean(val)))
+					Dev.supports('stringConstant-assess') && assessOperations(xjs.Map.mapValues(new Map([
+						[`'' == '';`,    true],
+						[`'a' is 'a';`, true],
+						[`'a' == 'a';`, true],
+						[`'hello\\u{20}world' is 'hello world';`, true],
+						[`'hello\\u{20}world' == 'hello world';`, true],
+						[`'a' isnt 'b';`, true],
+						[`'a' !=   'b';`, true],
+						[`'hello\\u{20}world' isnt 'hello20world';`, true],
+						[`'hello\\u{20}world' !=   'hello20world';`, true],
+					]), (val) => SolidBoolean.fromBoolean(val)))
+				}).timeout(10_000);
+				specify('ASTNodeOperationBinaryLogical', () => {
+					assessOperations(new Map<string, SolidObject>([
+						[`null && 5;`,     SolidNull.NULL],
+						[`null || 5;`,     new Int16(5n)],
+						[`5 && null;`,     SolidNull.NULL],
+						[`5 || null;`,     new Int16(5n)],
+						[`5.1 && true;`,   SolidBoolean.TRUE],
+						[`5.1 || true;`,   new Float64(5.1)],
+						[`3.1 && 5;`,      new Int16(5n)],
+						[`3.1 || 5;`,      new Float64(3.1)],
+						[`false && null;`, SolidBoolean.FALSE],
+						[`false || null;`, SolidNull.NULL],
+					]))
+				})
+				specify('ASTNodeOperationTernary', () => {
+					assessOperations(new Map<string, SolidObject>([
+						[`if true then false else 2;`,          SolidBoolean.FALSE],
+						[`if false then 3.0 else null;`,        SolidNull.NULL],
+						[`if true then 2 else 3.0;`,            new Int16(2n)],
+						[`if false then 2 + 3.0 else 1.0 * 2;`, new Float64(2.0)],
+					]))
+				})
 			});
 		})
 	})
