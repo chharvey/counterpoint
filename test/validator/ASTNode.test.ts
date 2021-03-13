@@ -855,12 +855,7 @@ describe('ASTNodeSolid', () => {
 		});
 
 		describe('#assess', () => {
-			function assessOperations(tests: Map<string, SolidObject>): void {
-				return assert.deepStrictEqual(
-					[...tests.keys()].map((src) => operationFromSource(src).assess()),
-					[...tests.values()],
-				);
-			}
+			describe('ASTNodeConstant', () => {
 			it('computes the value of constant null or boolean expression.', () => {
 				assert.deepStrictEqual([
 					'null;',
@@ -883,6 +878,7 @@ describe('ASTNodeSolid', () => {
 					-0, -0, 6.8, 6.8, 0, -0,
 				].map((v) => new Float64(v)));
 			})
+			});
 
 			describe('ASTNodeVariable', () => {
 				it('assesses the value of a fixed variable.', () => {
@@ -939,6 +935,14 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 
+			describe('ASTNodeOperation', () => {
+			function assessOperations(tests: Map<string, SolidObject>): void {
+				return assert.deepStrictEqual(
+					[...tests.keys()].map((src) => operationFromSource(src).assess()),
+					[...tests.values()],
+				);
+			}
+			describe('ASTNodeOperationUnary', () => {
 			it('computes the value of a logical negation of anything.', () => {
 				assessOperations(new Map([
 					[`!false;`,  SolidBoolean.TRUE],
@@ -971,6 +975,8 @@ describe('ASTNodeSolid', () => {
 					[`?'hello';`, SolidBoolean.FALSE],
 				]))
 			})
+			});
+			describe('ASTNodeOperationBinaryArithmetic', () => {
 			it('computes the value of an integer operation of constants.', () => {
 				assessOperations(xjs.Map.mapValues(new Map([
 					[`42 + 420;`,           42 + 420],
@@ -1007,6 +1013,7 @@ describe('ASTNodeSolid', () => {
 			it('should throw when performing an operation that does not yield a valid number.', () => {
 				assert.throws(() => operationFromSource(`-4 ^ -0.5;`).assess(), NanError01)
 			})
+			});
 			it('computes the value of comparison operators.', () => {
 				assessOperations(xjs.Map.mapValues(new Map([
 					[`3 <  3;`,     false],
@@ -1102,6 +1109,7 @@ describe('ASTNodeSolid', () => {
 					[`if false then 2 + 3.0 else 1.0 * 2;`, new Float64(2.0)],
 				]))
 			})
+			});
 		})
 	})
 })
