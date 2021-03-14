@@ -1,11 +1,9 @@
+import {utils} from '@chharvey/parser';
 import * as assert from 'assert'
 
 import {
 	Operator,
 } from '../../src/enum/Operator.enum';
-import {
-	Util,
-} from '../../src/core/';
 import {
 	ParserSolid as Parser,
 } from '../../src/parser/';
@@ -231,12 +229,12 @@ describe('Instruction', () => {
 					instructionConstInt(2n),
 				)
 				assert.strictEqual(
-					Util.dedent(new InstructionStatement(0n, expr).toString()),
-					Util.dedent(`
+					new InstructionStatement(0n, expr).toString(),
+					utils.dedent`
 						(func (export "f0") (result i32)
 							${ expr }
 						)
-					`),
+					`,
 				)
 			})
 		})

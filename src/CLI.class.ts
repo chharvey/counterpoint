@@ -1,3 +1,4 @@
+import {utils} from '@chharvey/parser';
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -61,7 +62,7 @@ type CustomArgsType = {
  */
 export class CLI {
 	/** Text to print on --help. */
-	static readonly HELPTEXT: string = `
+	static readonly HELPTEXT: string = utils.dedent`
 		Usage: solid <command> <filepath> [<options>]
 
 		Parse, analyze, and compile a Solid source code file.
@@ -98,10 +99,10 @@ export class CLI {
 		                               with the extension changed to \`.wasm\` (compile) or \`.wat\` (dev).
 		-p, --project=file             Specify a configuration file.
 		--config                       Print all possible configuration options.
-	`.trim().replace(/\n\t\t/g, '\n')
+	`.trimStart();
 
 	/** Text to print on --config. */
-	static readonly CONFIGTEXT: string = `
+	static readonly CONFIGTEXT: string = utils.dedent`
 		The following options set individual language feature toggles and compiler options.
 		These options will override those in the configuration file provided by \`--project\`.
 
@@ -113,7 +114,7 @@ export class CLI {
 		Compiler Options:
 		--[no-]constantFolding         (on by default)
 		--[no-]intCoercion             (on by default)
-	`.trim().replace(/\n\t\t/g, '\n')
+	`.trimStart();
 
 	/** Options argument to `minimist` function. */
 	private static readonly MINIMIST_OPTS: minimist.Opts = {
@@ -156,10 +157,10 @@ export class CLI {
 		},
 		unknown(arg) {
 			if (arg[0] === '-') { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
-				throw new Error(`
+				throw new Error(utils.dedent`
 					Unknown CLI option: ${ arg }
 					${ CLI.HELPTEXT }
-				`)
+				`.trimStart());
 			}
 			return true
 		},
@@ -261,14 +262,14 @@ export class CLI {
 			this.computeConfig(cwd),
 		]))
 		return Promise.all([
-			`
+			utils.dedent`
 				Compiling………
 				Source file: ${ inputfilepath }
 				${this.command === Command.DEV
 					? `Intermediate text file (for debugging):`
 					: `Destination binary file:`
 				} ${ outputfilepath }
-			`.trim().replace(/\n\t\t\t\t/g, '\n'),
+			`.trimStart(),
 			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? cg.print() : await cg.compile()),
 		])
 	}
@@ -281,10 +282,10 @@ export class CLI {
 		const inputfilepath: string = this.inputPath(cwd)
 		const bytes: Promise<Buffer> = fs.promises.readFile(inputfilepath)
 		return [
-			`
+			utils.dedent`
 				Executing………
 				Binary path: ${ inputfilepath }
-			`.trim().replace(/\n\t\t\t\t/g, '\n'),
+			`.trimStart(),
 			...(Object.values((await WebAssembly.instantiate(await bytes)).instance.exports) as Function[]).map((func) => func()),
 		]
 	}

@@ -4,12 +4,24 @@ Void VarCheck(Or<SemanticTypeConstant, SemanticConstant> node) :=
 
 
 
+Void! VarCheck(Or<
+	SemanticTypeOperation,
+	SemanticTemplate,
+	SemanticOperation,
+	SemanticStatementExpression,
+> list) :=
+	1. *For each* `it` in `list`:
+		1. *Perform:* *Unwrap:* `VarCheck(it)`.
+;
+
+
+
 Void! VarCheck(SemanticTypeAlias var) :=
 	1. *If* the validator’s symbol table does not contain a SymbolStructure whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceError01.
 	// TODO: Throw a ReferenceError02 if the variable is declared further down in source.
 	2. *Assert:* The the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`.
-	3. *If* `symbol` is of type `SymbolStructureVar`:
+	3. *If* `symbol` is an instance of `SymbolStructureVar`:
 		1. *Throw:* a new ReferenceError03.
 ;
 
@@ -20,20 +32,23 @@ Void! VarCheck(SemanticVariable var) :=
 		1. *Throw:* a new ReferenceError01.
 	// TODO: Throw a ReferenceError02 if the variable is declared further down in source.
 	2. *Assert:* The the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`.
-	3. *If* `symbol` is of type `SymbolStructureType`:
+	3. *If* `symbol` is an instance of `SymbolStructureType`:
 		1. *Throw:* a new ReferenceError03.
 ;
 
 
 
-Void! VarCheck(Or<
-	SemanticTypeOperation,
-	SemanticTemplate,
-	SemanticOperation,
-	SemanticStatementExpression,
-> list) :=
-	1. *For each* `it` in `list`:
-		1. *Perform:* *Unwrap:* `VarCheck(it)`.
+Void! VarCheck(SemanticDeclarationType decl) :=
+	1. *Assert:* `decl.children.count` is 2.
+	2. *Let* `id` be `decl.children.0.id`.
+	3. *If* the validator contains a type record for `id`:
+		1. *Throw:* a new AssignmentError01.
+	4. *Perform:* *Unwrap:* `VarCheck(decl.children.1)`.
+	5. *Let* `symbol` be a new SymbolStructureType [
+		id=   `id`,
+		defn= `decl.children.1`,
+	].
+	6. Add `symbol` as a record for `id` to the validator.
 ;
 
 
@@ -56,21 +71,6 @@ Void! VarCheck(SemanticDeclarationVariable decl) :=
 		defn=    `defn`,
 	].
 	9. Add `symbol` as a record for `id` to the validator.
-;
-
-
-
-Void! VarCheck(SemanticDeclarationType decl) :=
-	1. *Assert:* `decl.children.count` is 2.
-	2. *Let* `id` be `decl.children.0.id`.
-	3. *If* the validator contains a type record for `id`:
-		1. *Throw:* a new AssignmentError01.
-	4. *Perform:* *Unwrap:* `VarCheck(decl.children.1)`.
-	5. *Let* `symbol` be a new SymbolStructureType [
-		id=   `id`,
-		defn= `decl.children.1`,
-	].
-	6. Add `symbol` as a record for `id` to the validator.
 ;
 
 

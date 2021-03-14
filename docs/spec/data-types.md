@@ -130,7 +130,7 @@ A **SymbolStructureType** represents a type alias referencing a Solid Language T
 Property    | Description
 ----------- | -----------
 \`id\`      | the unique identifier of the declared symbol
-\`defn\`    | the type expression (an ASTNode) that defines this symbol
+\`defn\`    | the type expression (an [ASTNode](#astnode)) that defines this symbol
 
 ##### SymbolStructureVar
 A **SymbolStructureVar** represents a variable referencing a Solid Language Value.
@@ -140,7 +140,26 @@ Property    | Description
 \`id\`      | the unique identifier of the declared symbol
 \`type\`    | the Solid Language Type of the variable
 \`unfixed\` | a Boolean, whether the variable may be reassigned
-\`defn\`    | if \`unfixed\` is `false`: the expression (an ASTNode) that defines this symbol; otherwise: \`void\`
+\`defn\`    | if \`unfixed\` is `false`: the expression (an [ASTNode](#astnode)) that defines this symbol; otherwise: \`void\`
+
+
+### Nodes
+
+#### Token
+A **Token** is the resulting output of a **tokenization** step in lexical analysis.
+Tokens are represented by [lexical grammar](./notation.md#the-lexical-grammar) productions
+such as `Identifier :::= [A-Za-z_] [A-Za-z0-9_]*`;
+
+#### ParseNode
+A ParseNode is the resulting output of a **reduction** step in syntactic analysis.
+ParseNodes are repesented by [syntactic grammar](./notation.md#the-syntactic-grammar) productions
+such as `ExpressionUnit ::= IDENTIFIER | "(" Expression ")";`.
+
+#### ASTNode
+An ASTNode is the resulting output of a **decoration** step in semantic analysis,
+which is described by the [Decoration attribute grammar](./notation.md#decoration).
+ASTNodes are represented by [tree node schema grammar](./notation.md#tree-node-schema-grammar) productions
+such as `SemanticOperation ::= SemanticExpression+;`.
 
 
 
@@ -163,7 +182,13 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 
 ### Never
 The Botton Type represents the set of no values, called `never`.
-No value or expression is assignable to `never`.
+No value is assignable to `never`,
+and expressions of type `never` are accepted everywhere.
+
+`never` is a subtype of every type,
+and no type (except `never` itself) is a subtype of `never`.
+`never` is the the “absorption element” of the [intersection](#intersection) operation
+and the “identity element” of the [union](#union) operation.
 
 
 ### Null
@@ -216,7 +241,13 @@ Every Solid Language Value is an Object.
 
 ### Unknown
 The Top Type represents the set of all possible values, called `unknown`.
-Any value or expression is assignable to `unknown`.
+Any value or expression is assignable to `unknown`,
+and expressions of type `unknown` are accepted almost nowhere.
+
+`unknown` is a supertype of every type,
+and no type (except `unknown` itself) is a supertype of `unknown`.
+`unknown` is the the “identity element” of the [intersection](#intersection) operation
+and the “absorption element” of the [union](#union) operation.
 
 
 

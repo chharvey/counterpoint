@@ -22,7 +22,8 @@ export class Float64 extends SolidNumber<Float64> {
 		super()
 		xjs.Number.assertType(this.value, xjs.NumericType.FINITE)
 	}
-	/** @override */
+
+	/** @override Object */
 	toString(): string {
 		return `${ this.value }`
 	}

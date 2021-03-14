@@ -281,6 +281,11 @@ describe('SolidLanguageType', () => {
 					assert.ok(ftype.isSubtypeOf(Float64), `${ ftype }`)
 				})
 			})
+			it('constant String types should be subtypes of `str`.', () => {
+				['a4.2', 'b-4.2e-2', 'c0.0', 'd-0.0'].map((v) => new SolidTypeConstant(new SolidString(v))).forEach((stype) => {
+					assert.ok(stype.isSubtypeOf(SolidString), `${ stype }`);
+				});
+			});
 		})
 		describe('SolidTypeInterface', () => {
 			it('returns `true` if the subtype contains at least the properties of the supertype.', () => {

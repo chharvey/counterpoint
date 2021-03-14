@@ -46,7 +46,7 @@ export enum Punctuator {
 		EMP = '?',
 		AFF = '+',
 		NEG = '-',
-		ORNULL = '!', // Dev.supports('typingExplicit')
+		ORNULL = '!',
 	// binary
 		EXP  = '^',
 		MUL  = '*',
@@ -65,23 +65,24 @@ export enum Punctuator {
 		NAND = '!&',
 		OR   = '||',
 		NOR  = '!|',
-		INTER = '&', // Dev.supports('typingExplicit')
-		UNION = '|', // Dev.supports('typingExplicit')
+		INTER = '&',
+		UNION = '|',
 	// statement
 		ENDSTAT = ';',
-		ISTYPE  = ':', // Dev.supports('typingExplicit')
-		ASSIGN  = '=', // Dev.supportsAll('variables', 'typingExplicit', 'literalCollection')
+		ISTYPE  = ':',
+		ASSIGN  = '=', // Dev.supports('literalCollection')
 }
 
 export enum Keyword {
 	// literal
 		NULL  = 'null',
-		BOOL  = 'bool',   // Dev.supports('typingExplicit')
+		BOOL  = 'bool',
 		FALSE = 'false',
 		TRUE  = 'true',
-		INT   = 'int',    // Dev.supports('typingExplicit')
-		FLOAT = 'float',  // Dev.supports('typingExplicit')
-		OBJ   = 'obj',    // Dev.supports('typingExplicit')
+		INT   = 'int',
+		FLOAT = 'float',
+		STR   = 'str',
+		OBJ   = 'obj',
 	// operator
 		IS   = 'is',
 		ISNT = 'isnt',
@@ -89,10 +90,10 @@ export enum Keyword {
 		THEN = 'then',
 		ELSE = 'else',
 	// storage
-		LET  = 'let',  // Dev.supports('variables')
-		TYPE = 'type', // Dev.supportsAll('variables', 'typingExplicit')
+		LET  = 'let',
+		TYPE = 'type',
 	// modifier
-		UNFIXED = 'unfixed', // Dev.supports('variables')
+		UNFIXED = 'unfixed',
 }
 
 
@@ -152,9 +153,7 @@ export abstract class TokenSolid extends Token {
 
 export class TokenPunctuator extends TokenSolid {
 	static readonly PUNCTUATORS: readonly Punctuator[] = [...new Set( // remove duplicates
-		Object.values(Punctuator).filter((p) => Dev.supports('variables') ? true : ![
-			Punctuator.ASSIGN,
-		].includes(p)).filter((p) => Dev.supports('literalCollection') ? true : ![
+		Object.values(Punctuator).filter((p) => Dev.supports('literalCollection') ? true : ![
 			Punctuator.BRAK_OPN,
 			Punctuator.BRAK_CLS,
 			Punctuator.COMMA,
@@ -180,10 +179,7 @@ export class TokenKeyword extends TokenSolid {
 	private static readonly MINIMUM_VALUE: 0x80n = 0x80n
 	static readonly CHAR: RegExp = /^[a-z]$/
 	static readonly KEYWORDS: readonly Keyword[] = [...new Set<Keyword>( // remove duplicates
-		Object.values(Keyword).filter((kw) => Dev.supports('variables') ? true : ![
-			Keyword.LET,
-			Keyword.UNFIXED,
-		].includes(kw))
+		Object.values(Keyword),
 	)]
 	// declare readonly source: Keyword; // NB: https://github.com/microsoft/TypeScript/issues/40220
 	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {

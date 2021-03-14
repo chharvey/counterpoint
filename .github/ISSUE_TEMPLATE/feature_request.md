@@ -8,8 +8,8 @@ assignees: ''
 ---
 
 ## Before Submitting
-- Do you need to ask a question or get help/support? Try [Discussions](../../discussions/) or 3rd-party sites such as StackOverflow.
-- Did you already search [Issues](../) for an existing request? Doing a thorough search will help reduce duplicate issues.
+- Do you need to ask a question or get help/support? Try [Discussions](../discussions/) or 3rd-party sites such as StackOverflow.
+- Did you already search [Issues](./) for an existing request? Doing a thorough search will help reduce duplicate issues.
 
 ## Problem Statement
 Describe the problem that your proposed feature would help to solve.
@@ -28,7 +28,7 @@ Is this feature a “breaking” change? In other words, if this feature is intr
 - ( ) not sure
 
 ### Benefits
-List additional benefits of your solution, such as any other problems it would help address, or how it would otherwise add value to the language and/or community.
+List additional benefits of your solution, such as any other problems it would help address, or how it would otherwise add value to the project and/or community.
 
 ### Drawbacks
 List potential drawbacks or risks that your solution could introduce.

@@ -1,14 +1,17 @@
+import type {
+	NonemptyArray,
+} from '@chharvey/parser';
 import * as assert from 'assert'
 
 import {
 	Dev,
-	Util,
 } from '../../src/core/';
 import {
 	Operator,
 } from '../../src/enum/Operator.enum';
 import {
 	ParserSolid as Parser,
+	PARSER,
 } from '../../src/parser/';
 import {
 	Decorator,
@@ -78,7 +81,7 @@ describe('Decorator', () => {
 						return [key.source, key.id];
 					}),
 					srcs.map((src, i) => [src, [
-						0x8cn,
+						0x8dn,
 						0x100n,
 					][i]]),
 				);
@@ -106,7 +109,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeKeyword ::= "bool" | "int" | "float" | "obj"', () => {
+		describe('TypeKeyword ::= "bool" | "int" | "float" | "obj"', () => {
 			it('makes an ASTNodeTypeConstant.', () => {
 				/*
 					<TypeConstant source="bool" value="Boolean"/>
@@ -125,7 +128,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeProperty ::= Word ":" Type', () => {
+		Dev.supports('literalCollection') && describe('TypeProperty ::= Word ":" Type', () => {
 			it('makes an ASTNodeTypeProperty.', () => {
 				/*
 					<TypeProperty>
@@ -141,7 +144,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
 			it('makes an ASTNodeTypeList.', () => {
 				/*
 					<TypeList>
@@ -164,7 +167,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]"', () => {
 			it('makes an ASTNodeTypeRecord.', () => {
 				/*
 					<TypeRecord>
@@ -184,7 +187,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
 			it('makes an ASTNodeTypeEmptyCollection.', () => {
 				/*
 					<TypeEmptyCollection/>
@@ -194,7 +197,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('typingExplicit') && describe('TypeUnit ::= IDENTIFIER', () => {
+		describe('TypeUnit ::= IDENTIFIER', () => {
 			it('makes an ASTNodeTypeAlias.', () => {
 				/*
 					<TypeAlias source="Foo" id=257/>
@@ -228,7 +231,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('typingExplicit') && describe('TypeUnit ::= PrimitiveLiteral', () => {
+		describe('TypeUnit ::= PrimitiveLiteral', () => {
 			it('makes an ASTNodeTypeConstant.', () => {
 				/*
 					<TypeConstant source="null" value="SolidNull"/>
@@ -253,7 +256,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
+		describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="!">
@@ -270,7 +273,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
+		describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="&">
@@ -289,7 +292,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
+		describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="|">
@@ -308,7 +311,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('Type ::= TypeUnion', () => {
+		describe('Type ::= TypeUnion', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="&">
@@ -327,6 +330,53 @@ describe('Decorator', () => {
 			})
 		})
 
+		Dev.supports('stringTemplate-decorate') && describe('StringTemplate', () => {
+			function templateSources(tpl: PARSER.ParseNodeStringTemplate, ...srcs: Readonly<NonemptyArray<string>>): void {
+				return assert.deepStrictEqual([...Decorator.decorate(tpl).children].map((c) => c.source), srcs);
+			}
+			specify('StringTemplate ::= TEMPLATE_FULL', () => {
+				templateSources(h.stringTemplateFromSource(`
+					'''full1''';
+				`), `'''full1'''`);
+			});
+			specify('StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL', () => {
+				templateSources(h.stringTemplateFromSource(`
+					'''head1{{}}tail1''';
+				`), `'''head1{{`, `}}tail1'''`);
+			});
+			specify('StringTemplate ::= TEMPLATE_HEAD Expression TEMPLATE_TAIL', () => {
+				templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}tail1'''`);
+			});
+			specify('StringTemplate ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL', () => {
+				templateSources(h.stringTemplateFromSource(`
+					'''head1{{}}midd1{{}}tail1''';
+				`), `'''head1{{`, `}}midd1{{`, `}}tail1'''`);
+			});
+			specify('StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL', () => {
+				templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}midd1{{}}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `}}tail1'''`);
+			});
+
+			specify('StringTemplate__0__List ::= TEMPLATE_MIDDLE Expression', () => {
+				templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}tail1'''`);
+			});
+			specify('StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE', () => {
+				templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}midd2{{`, `}}tail1'''`);
+			});
+			specify('StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression', () => {
+				templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}midd2{{`, `'''head2{{ '''full3''' }}tail2'''`, `}}tail1'''`);
+			});
+		});
+
 		Dev.supports('literalCollection') && context('Property ::= Word "=" Expression', () => {
 			it('makes an ASTNodeProperty.', () => {
 				/*
@@ -335,7 +385,7 @@ describe('Decorator', () => {
 						<Operation source="1. + 0.25">...</Operation>
 					</Property>
 				*/
-				const property = Decorator.decorate(h.propertyFromString(`fontSize = 1. + 0.25`));
+				const property = Decorator.decorate(h.propertyFromString(`fontSize= 1. + 0.25`));
 				assert.ok(property instanceof AST.ASTNodeProperty); // FIXME: `AST.ASTNodeProperty` is assignable to `TemplatePartialType`, so `Decorator.decorate` overlads get confused
 				assert.deepStrictEqual(
 					property.children.map((c) => c.source),
@@ -344,19 +394,18 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('Case ::= Expression# "|->" Expression', () => {
+		Dev.supports('literalCollection') && context('Case ::= Expression "|->" Expression', () => {
 			it('makes an ASTNodeCase', () => {
 				/*
 					<Case>
 						<Operation source="1 + 0.25">...</Operation>
-						<Operation source="5 * 0.25">...</Operation>
 						<Constant source="1.25"/>
 					</Case>
 				*/
-				const kase: AST.ASTNodeCase = Decorator.decorate(h.caseFromString(`1 + 0.25, 5 * 0.25 |-> 1.25`));
+				const kase: AST.ASTNodeCase = Decorator.decorate(h.caseFromString(`1 + 0.25 |-> 1.25`));
 				assert.deepStrictEqual(
 					kase.children.map((c) => c.source),
-					[`1 + 0.25`, `5 * 0.25`, `1.25`],
+					[`1 + 0.25`, `1.25`],
 				);
 			});
 		});
@@ -394,8 +443,8 @@ describe('Decorator', () => {
 				*/
 				assert.deepStrictEqual(Decorator.decorate(h.recordLiteralFromSource(`
 					[
-						let = true,
-						foobar = 42,
+						let= true,
+						foobar= 42,
 					];
 				`)).children.map((c) => c.source), [
 					`let = true`,
@@ -408,24 +457,24 @@ describe('Decorator', () => {
 			it('makes an ASTNodeMapping.', () => {
 				/*
 					<Mapping>
-						<Case source="1, 2, 3 |-> null">...</Case>
-						<Case source="4, 5, 6 |-> false">...</Case>
-						<Case source="7, 8 |-> true">...</Case>
-						<Case source="9, 0 |-> 42.0">...</Case>
+						<Case source="1 |-> null">...</Case>
+						<Case source="4 |-> false">...</Case>
+						<Case source="7 |-> true">...</Case>
+						<Case source="9 |-> 42.0">...</Case>
 					</Mapping>
 				*/
 				assert.deepStrictEqual(Decorator.decorate(h.mappingLiteralFromSource(`
 					[
-						1, 2, 3 |-> null,
-						4, 5, 6 |-> false,
-						7, 8    |-> true,
-						9, 0    |-> 42.0,
+						1 |-> null,
+						4 |-> false,
+						7 |-> true,
+						9 |-> 42.0,
 					];
 				`)).children.map((c) => c.source), [
-					`1 , 2 , 3 |-> null`,
-					`4 , 5 , 6 |-> false`,
-					`7 , 8 |-> true`,
-					`9 , 0 |-> 42.0`,
+					`1 |-> null`,
+					`4 |-> false`,
+					`7 |-> true`,
+					`9 |-> 42.0`,
 				]);
 			});
 		});
@@ -440,7 +489,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('variables') && context('ExpressionUnit ::= IDENTIFIER', () => {
+		context('ExpressionUnit ::= IDENTIFIER', () => {
 			it('assigns a unique ID starting from 256.', () => {
 				/*
 					<Goal source="␂ variable ; ␃">
@@ -516,113 +565,6 @@ describe('Decorator', () => {
 					SolidBoolean.TRUE,
 					new Int16(42n),
 				])
-			})
-		})
-
-		Dev.supports('stringTemplate-decorate') && context('ExpressionUnit ::= StringTemplate', () => {
-			function stringTemplateSemanticNode(src: string): string {
-				return ((Decorator
-					.decorate(new Parser(src).parse())
-					.children[0] as AST.ASTNodeStatementExpression)
-					.children[0] as AST.ASTNodeTemplate)
-					.serialize()
-			}
-			specify('head, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
-					'''head1{{}}tail1''';
-				`)), `
-					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ }}tail1&apos;&apos;&apos;">
-						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
-						<Constant line="1" col="11" source="}}tail1&apos;&apos;&apos;" value="tail1"/>
-					</Template>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
-					'''head1{{ '''full1''' }}tail1''';
-				`)), `
-					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
-						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
-						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<Constant line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;" value="full1"/>
-						</Template>
-						<Constant line="1" col="24" source="}}tail1&apos;&apos;&apos;" value="tail1"/>
-					</Template>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, middle, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
-					'''head1{{ '''full1''' }}midd1{{}}tail1''';
-				`)), `
-					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ }}tail1&apos;&apos;&apos;">
-						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
-						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<Constant line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;" value="full1"/>
-						</Template>
-						<Constant line="1" col="24" source="}}midd1{{" value="midd1"/>
-						<Constant line="1" col="33" source="}}tail1&apos;&apos;&apos;" value="tail1"/>
-					</Template>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, middle, expr, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1''';
-				`)), `
-					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
-						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
-						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<Constant line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;" value="full1"/>
-						</Template>
-						<Constant line="1" col="24" source="}}midd1{{" value="midd1"/>
-						<Template line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-							<Constant line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;" value="full2"/>
-						</Template>
-						<Constant line="1" col="46" source="}}tail1&apos;&apos;&apos;" value="tail1"/>
-					</Template>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, middle, expr, middle, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1''';
-				`)), `
-					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ }}tail1&apos;&apos;&apos;">
-						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
-						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<Constant line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;" value="full1"/>
-						</Template>
-						<Constant line="1" col="24" source="}}midd1{{" value="midd1"/>
-						<Template line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-							<Constant line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;" value="full2"/>
-						</Template>
-						<Constant line="1" col="46" source="}}midd2{{" value="midd2"/>
-						<Constant line="1" col="55" source="}}tail1&apos;&apos;&apos;" value="tail1"/>
-					</Template>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, middle, expr, middle, expr, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1''';
-				`)), `
-					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ &apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
-						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
-						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<Constant line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;" value="full1"/>
-						</Template>
-						<Constant line="1" col="24" source="}}midd1{{" value="midd1"/>
-						<Template line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-							<Constant line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;" value="full2"/>
-						</Template>
-						<Constant line="1" col="46" source="}}midd2{{" value="midd2"/>
-						<Template line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-							<Constant line="1" col="56" source="&apos;&apos;&apos;head2{{" value="head2"/>
-							<Template line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-								<Constant line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;" value="full3"/>
-							</Template>
-							<Constant line="1" col="79" source="}}tail2&apos;&apos;&apos;" value="tail2"/>
-						</Template>
-						<Constant line="1" col="90" source="}}tail1&apos;&apos;&apos;" value="tail1"/>
-					</Template>
-				`.replace(/\n\t*/g, ''))
 			})
 		})
 
@@ -926,7 +868,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationVariable', () => {
+		describe('DeclarationVariable ::= "let" "unfixed"? IDENTIFIER ":" Type "=" Expression ";"', () => {
 			it('makes an unfixed ASTNodeDeclarationVariable node.', () => {
 				/*
 					<DeclarationVariable unfixed=true>
@@ -977,7 +919,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationType', () => {
+		describe('DeclarationType ::= "type" IDENTIFIER "=" Type ";"', () => {
 			it('makes an ASTNodeDeclarationType node.', () => {
 				/*
 					<DeclarationType>
@@ -998,7 +940,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('variables') && describe('Assignee ::= IDENTIFIER', () => {
+		describe('Assignee ::= IDENTIFIER', () => {
 			it('makes an ASTNodeVariable node.', () => {
 				/*
 					<Variable source="the_answer" id=256n/>
@@ -1009,7 +951,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('variables') && describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
+		describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
 			it('makes an ASTNodeAssignment node.', () => {
 				/*
 					<Assignment>

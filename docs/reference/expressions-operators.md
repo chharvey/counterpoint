@@ -7,7 +7,7 @@ This chapter describes operator syntax, semantics, and precedence in expressions
 
 
 ### Summary Table
-In the table below, the horizontal ellipsis character `…` represents an allowed expression.
+In the table below, the horizontal ellipsis character `…` represents an allowed syntax.
 
 <table>
 	<thead>
@@ -21,11 +21,14 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 	</thead>
 	<tbody>
 		<tr>
-			<th>1</th>
-			<td>Grouping</td>
-			<td>unary wrap</td>
-			<td>(n/a)</td>
+			<th rowspan="2">1</th>
+			<td rowspan="2">Grouping</td>
+			<td rowspan="2">unary wrap</td>
+			<td rowspan="2">inner-to-outer</td>
 			<td><code>( … )</code></td>
+		</tr>
+		<tr>
+			<td><code>[ … ]</code></td>
 		</tr>
 		<tr>
 			<th rowspan="4">2</th>
@@ -512,7 +515,7 @@ Because one of the branches is not evaluated, its side-effects (if any) will not
 
 
 ### Summary Table
-In the table below, the horizontal ellipsis character `…` represents an allowed expression.
+In the table below, the horizontal ellipsis character `…` represents an allowed syntax.
 <table>
 	<thead>
 		<tr>
@@ -525,11 +528,14 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 	</thead>
 	<tbody>
 		<tr>
-			<th>1</th>
-			<td>Grouping</td>
-			<td>unary wrap</td>
-			<td>(n/a)</td>
+			<th rowspan="2">1</th>
+			<td rowspan="2">Grouping</td>
+			<td rowspan="2">unary wrap</td>
+			<td rowspan="2">inner-to-outer</td>
 			<td><code>( … )</code></td>
+		</tr>
+		<tr>
+			<td><code>[ … ]</code></td>
 		</tr>
 		<tr>
 			<th>2</th>

@@ -1,11 +1,11 @@
 import {
-	Dev,
-} from './core/';
-import {
 	CLI,
 	Command,
 } from './CLI.class';
 
+
+/** The current version of this project (as defined in `package.json`). */
+const VERSION: string = require('../package.json').version;
 
 
 ;(async () => {
@@ -16,7 +16,7 @@ import {
 			console.log('\n' + CLI.CONFIGTEXT)
 		}
 	} else if (cli.command === Command.VERSION) {
-		console.log(`solid version ${ Dev.VERSION }`)
+		console.log(`solid version ${ VERSION }`)
 	} else if (cli.command === Command.COMPILE || cli.command === Command.DEV) {
 		const result: [string, void] = await cli.compileOrDev(process.cwd())
 		console.log(result[0])

@@ -7,7 +7,6 @@ import * as assert from 'assert'
 
 import {
 	Dev,
-	Util,
 } from '../../src/core/';
 import {
 	Punctuator,
@@ -82,7 +81,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeProperty ::= Word ":" Type;', () => {
+		Dev.supports('literalCollection') && describe('TypeProperty ::= Word ":" Type;', () => {
 			it('makes a TypeProperty node.', () => {
 				/*
 					<TypeProperty>
@@ -105,7 +104,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
 			/*
 				<TypeTupleLiteral>
 					<PUNCTUATOR>[</PUNCTUATOR>
@@ -170,7 +169,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]"', () => {
 			/*
 				<TypeRecordLiteral>
 					<PUNCTUATOR>[</PUNCTUATOR>
@@ -235,7 +234,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
 			it('makes a TypeUnit node containing brackets.', () => {
 				/*
 					<TypeUnit>
@@ -252,7 +251,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('typingExplicit') && describe('TypeUnit ::= IDENTIFIER', () => {
+		describe('TypeUnit ::= IDENTIFIER', () => {
 			it('parses type identifiers.', () => {
 				assert.deepStrictEqual([
 					`T`,
@@ -266,7 +265,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('typingExplicit') && describe('TypeUnit ::= PrimitiveLiteral', () => {
+		describe('TypeUnit ::= PrimitiveLiteral', () => {
 			it('parses NULL, BOOLEAN, INTEGER, FLOAT, or STRING.', () => {
 				assert.deepStrictEqual(([
 					[`null`,   TOKEN.TokenKeyword],
@@ -288,17 +287,19 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeUnit ::= TypeKeyword', () => {
-			it('parses keywords `bool`, `int`, `float`, `obj`.', () => {
+		describe('TypeUnit ::= TypeKeyword', () => {
+			it('parses keywords `bool`, `int`, `float`, `str`, `obj`.', () => {
 				assert.deepStrictEqual(([
 					`bool`,
 					`int`,
 					`float`,
+					`str`,
 					`obj`,
 				]).map((src) => h.tokenKeywordFromTypeString(src).source), [
 					Keyword.BOOL,
 					Keyword.INT,
 					Keyword.FLOAT,
+					Keyword.STR,
 					Keyword.OBJ,
 				]);
 			})
@@ -307,15 +308,15 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && specify('TypeUnit ::= TypeTupleLiteral', () => {
+		Dev.supports('literalCollection') && specify('TypeUnit ::= TypeTupleLiteral', () => {
 			h.tupleTypeFromString(`[T, U | V, W & X!]`); // assert does not throw
 		});
 
-		Dev.supportsAll('typingExplicit', 'literalCollection') && specify('TypeUnit ::= TypeRecordLiteral', () => {
+		Dev.supports('literalCollection') && specify('TypeUnit ::= TypeRecordLiteral', () => {
 			h.recordTypeFromString(`[a: T, b: U | V, c: W & X!]`); // assert does not throw
 		});
 
-		Dev.supports('typingExplicit') && describe('TypeUnit ::= "(" Type ")"', () => {
+		describe('TypeUnit ::= "(" Type ")"', () => {
 			it('makes an TypeUnit node containing a Type node.', () => {
 				/*
 					<TypeUnit>
@@ -342,7 +343,7 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
+		describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
 			it('makes a ParseNodeTypeUnarySymbol node.', () => {
 				/*
 					<TypeUnarySymbol>
@@ -361,7 +362,7 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
+		describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
 			it('makes a ParseNodeTypeIntersection node.', () => {
 				/*
 					<TypeIntersection>
@@ -381,7 +382,7 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('typingExplicit') && describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
+		describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
 			it('makes a ParseNodeTypeUnion node.', () => {
 				/*
 					<TypeUnion>
@@ -401,6 +402,66 @@ describe('Parser', () => {
 			})
 		})
 
+		Dev.supports('stringTemplate-parse') && describe('StringTemplate', () => {
+			specify('StringTemplate ::= TEMPLATE_FULL', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''full1''';
+				`), `'''full1'''`);
+			});
+			specify('StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''head1{{}}tail1''';
+				`), `'''head1{{`, `}}tail1'''`);
+			});
+			specify('StringTemplate ::= TEMPLATE_HEAD Expression TEMPLATE_TAIL', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}tail1'''`);
+			});
+			specify('StringTemplate ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''head1{{}}midd1{{}}tail1''';
+				`), `'''head1{{`, `}}midd1{{`, `}}tail1'''`);
+			});
+			specify('StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}midd1{{}}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `}}tail1'''`);
+			});
+
+			specify('StringTemplate__0__List ::= TEMPLATE_MIDDLE Expression', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}tail1'''`);
+			});
+			specify('StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}midd2{{`, `}}tail1'''`);
+			});
+			specify('StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression', () => {
+				h.templateSources(h.stringTemplateFromSource(`
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1''';
+				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}midd2{{`, `'''head2{{ '''full3''' }}tail2'''`, `}}tail1'''`);
+			});
+
+			it('throws when reaching an orphaned head.', () => {
+				assert.throws(() => new Parser(`
+					'''A string template head token not followed by a middle or tail {{ 1;
+				`).parse(), ParseError01)
+			})
+			it('throws when reaching an orphaned middle.', () => {
+				assert.throws(() => new Parser(`
+					2 }} a string template middle token not preceded by a head/middle and not followed by a middle/tail {{ 3;
+				`).parse(), ParseError01)
+			})
+			it('throws when reaching an orphaned tail.', () => {
+				assert.throws(() => new Parser(`
+					4 }} a string template tail token not preceded by a head or middle''';
+				`).parse(), ParseError01)
+			})
+		});
+
 		Dev.supports('literalCollection') && describe('Property ::= Word "=" Expression', () => {
 			it('makes a Property node.', () => {
 				/*
@@ -415,32 +476,24 @@ describe('Parser', () => {
 					`foobar`,
 				];
 				assert.deepStrictEqual(
-					srcs.map((src) => h.propertyFromString(`${ src } = 42`).children.map((c) => c.source)),
+					srcs.map((src) => h.propertyFromString(`${ src }= 42`).children.map((c) => c.source)),
 					srcs.map((src) => [src, Punctuator.ASSIGN, `42`]),
 				);
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('Case ::= Expression# "|->" Expression', () => {
+		Dev.supports('literalCollection') && describe('Case ::= Expression "|->" Expression', () => {
 			it('makes a Case node.', () => {
 				/*
 					<Case>
-						<Case__0__List>
-							<Case__0__List>
-								<Expression source="42">...</Expression>
-							</Case__0__List>
-							<PUNCTUATOR>,</PUNCTUATOR>
-							<Expression source="true">...</Expression>
-						</Case__0__List>
+						<Expression source="42">...</Expression>
 						<PUNCTUATOR>|-></PUNCTUATOR>
 						<Expression source="null || false">...</Expression>
 					</Case>
 				*/
-				const kase: PARSER.ParseNodeCase = h.caseFromString(`42, true |-> null || false`);
-				h.hashListSources(kase.children[0], `42`, `true`);
 				assert.deepStrictEqual(
-					[kase.children[1].source, kase.children[2].source],
-					[Punctuator.MAPTO,        `null || false`],
+					h.caseFromString(`42 |-> null || false`).children.map((c) => c.source),
+					[`42`, Punctuator.MAPTO, `null || false`],
 				);
 			});
 		});
@@ -450,7 +503,7 @@ describe('Parser', () => {
 				/*
 					<ListLiteral>
 						<PUNCTUATOR>[</PUNCTUATOR>
-						<Case__0__List source="42, true, null || false">...</Case__0__List>
+						<ListLiteral__0__List source="42, true, null || false">...</ListLiteral__0__List>
 						<PUNCTUATOR>]</PUNCTUATOR>
 					</ListLiteral>
 				*/
@@ -489,19 +542,19 @@ describe('Parser', () => {
 					[Punctuator.BRAK_OPN, `42 , true , null || false`, Punctuator.COMMA, Punctuator.BRAK_CLS],
 				);
 			});
-			specify('Case__0__List ::= Case__0__List "," Expression', () => {
+			specify('ListLiteral__0__List ::= ListLiteral__0__List "," Expression', () => {
 				/*
-					<Case__0__List>
-						<Case__0__List>
-							<Case__0__List>
+					<ListLiteral__0__List>
+						<ListLiteral__0__List>
+							<ListLiteral__0__List>
 								<Expression source="42">...</Expression>
-							</Case__0__List>
+							</ListLiteral__0__List>
 							<PUNCTUATOR>,</PUNCTUATOR>
 							<Expression source="true">...</Expression>
-						</Case__0__List>
+						</ListLiteral__0__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
 						<Expression source="null || false">...</Expression>
-					</Case__0__List>
+					</ListLiteral__0__List>
 				*/
 				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`[42, true, null || false];`);
 				assert_arrayLength(unit.children, 3);
@@ -515,14 +568,14 @@ describe('Parser', () => {
 					<RecordLiteral>
 						<PUNCTUATOR>[</PUNCTUATOR>
 						<PUNCTUATOR>,</PUNCTUATOR>
-						<RecordLiteral__0__List source="let = true, foobar = 42">...</RecordLiteral__0__List>
+						<RecordLiteral__0__List source="let= true, foobar= 42">...</RecordLiteral__0__List>
 						<PUNCTUATOR>]</PUNCTUATOR>
 					</RecordLiteral>
 				*/
 				const unit: PARSER.ParseNodeRecordLiteral = h.recordLiteralFromSource(`
 					[
-						, let = true
-						, foobar = 42
+						, let= true
+						, foobar= 42
 					];
 				`);
 				assert_arrayLength(unit.children, 4);
@@ -536,13 +589,13 @@ describe('Parser', () => {
 				/*
 					<RecordLiteral__0__List>
 						<RecordLiteral__0__List>
-							<Property source="let = true">...</Property>
+							<Property source="let= true">...</Property>
 						</RecordLiteral__0__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
-						<Property source="foobar = 42">...</Property>
+						<Property source="foobar= 42">...</Property>
 					</RecordLiteral__0__List>
 				*/
-				const unit: PARSER.ParseNodeRecordLiteral = h.recordLiteralFromSource(`[let = true, foobar = 42];`);
+				const unit: PARSER.ParseNodeRecordLiteral = h.recordLiteralFromSource(`[let= true, foobar= 42];`);
 				assert_arrayLength(unit.children, 3);
 				h.hashListSources(unit.children[1], `let = true`, `foobar = 42`);
 			});
@@ -553,24 +606,24 @@ describe('Parser', () => {
 				/*
 					<MappingLiteral>
 						<PUNCTUATOR>[</PUNCTUATOR>
-						<MappingLiteral__0__List source="1, 2, 3 |-> null, 4, 5, 6 |-> false, 7, 8 |-> true, 9, 0 |-> 42.0">...</MappingLiteral__0__List>
+						<MappingLiteral__0__List source="1 |-> null, 4 |-> false, 7 |-> true, 9 |-> 42.0">...</MappingLiteral__0__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
 						<PUNCTUATOR>]</PUNCTUATOR>
 					</MappingLiteral>
 				*/
 				const unit: PARSER.ParseNodeMappingLiteral = h.mappingLiteralFromSource(`
 					[
-						1, 2, 3 |-> null,
-						4, 5, 6 |-> false,
-						7, 8    |-> true,
-						9, 0    |-> 42.0,
+						1 |-> null,
+						4 |-> false,
+						7 |-> true,
+						9 |-> 42.0,
 					];
 				`);
 				assert_arrayLength(unit.children, 4);
 				assert.ok(unit.children[1] instanceof PARSER.ParseNodeMappingLiteral__0__List);
 				assert.deepStrictEqual(
 					unit.children.map((c) => c.source),
-					[Punctuator.BRAK_OPN, `1 , 2 , 3 |-> null , 4 , 5 , 6 |-> false , 7 , 8 |-> true , 9 , 0 |-> 42.0`, Punctuator.COMMA, Punctuator.BRAK_CLS],
+					[Punctuator.BRAK_OPN, `1 |-> null , 4 |-> false , 7 |-> true , 9 |-> 42.0`, Punctuator.COMMA, Punctuator.BRAK_CLS],
 				);
 			});
 			specify('MappingLiteral__0__List ::= MappingLiteral__0__List "," Case', () => {
@@ -579,26 +632,26 @@ describe('Parser', () => {
 						<MappingLiteral__0__List>
 							<MappingLiteral__0__List>
 								<MappingLiteral__0__List>
-									<Case source="1, 2, 3 |-> null">...</Case>
+									<Case source="1 |-> null">...</Case>
 								</MappingLiteral__0__List>
 								<PUNCTUATOR>,</PUNCTUATOR>
-								<Case source="4, 5, 6 |-> false">...</Case>
+								<Case source="4 |-> false">...</Case>
 							</MappingLiteral__0__List>
 							<PUNCTUATOR>,</PUNCTUATOR>
-							<Case source="7, 8 |-> true">...</Case>
+							<Case source="7 |-> true">...</Case>
 						</MappingLiteral__0__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
-						<Case source="9, 0 |-> 42.0">...</Case>
+						<Case source="9 |-> 42.0">...</Case>
 					</MappingLiteral__0__List>
 				*/
-				const unit: PARSER.ParseNodeMappingLiteral = h.mappingLiteralFromSource(`[1, 2, 3 |-> null, 4, 5, 6 |-> false, 7, 8 |-> true, 9, 0 |-> 42.0];`);
+				const unit: PARSER.ParseNodeMappingLiteral = h.mappingLiteralFromSource(`[1 |-> null, 4 |-> false, 7 |-> true, 9 |-> 42.0];`);
 				assert_arrayLength(unit.children, 3);
 				h.hashListSources(
 					unit.children[1],
-					`1 , 2 , 3 |-> null`,
-					`4 , 5 , 6 |-> false`,
-					`7 , 8 |-> true`,
-					`9 , 0 |-> 42.0`,
+					`1 |-> null`,
+					`4 |-> false`,
+					`7 |-> true`,
+					`9 |-> 42.0`,
 				);
 			});
 		});
@@ -621,7 +674,7 @@ describe('Parser', () => {
 		});
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
-			Dev.supports('variables') && it('parses IDENTIFIER.', () => {
+			it('parses IDENTIFIER.', () => {
 				assert.strictEqual(h.tokenIdentifierFromSource(`ident;`).source, 'ident')
 			})
 			it('parses NULL, BOOLEAN, INTEGER, FLOAT, or STRING.', () => {
@@ -645,271 +698,6 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('stringTemplate-parse') && context('ExpressionUnit ::= StringTemplate', () => {
-			function stringTemplateParseNode (src: string): string {
-				return (((((((((((((new Parser(src)
-					.parse()
-					.children[1] as PARSER.ParseNodeGoal__0__List)
-					.children[0] as PARSER.ParseNodeStatement)
-					.children[0] as PARSER.ParseNodeExpression)
-					.children[0] as PARSER.ParseNodeExpressionDisjunctive)
-					.children[0] as PARSER.ParseNodeExpressionConjunctive)
-					.children[0] as PARSER.ParseNodeExpressionEquality)
-					.children[0] as PARSER.ParseNodeExpressionComparative)
-					.children[0] as PARSER.ParseNodeExpressionAdditive)
-					.children[0] as PARSER.ParseNodeExpressionMultiplicative)
-					.children[0] as PARSER.ParseNodeExpressionExponential)
-					.children[0] as PARSER.ParseNodeExpressionUnarySymbol)
-					.children[0] as PARSER.ParseNodeExpressionUnit)
-					.children[0] as PARSER.ParseNodeStringTemplate)
-					.serialize()
-			}
-			specify('head, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
-					'''head1{{}}tail1''';
-				`)), `
-					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ }}tail1&apos;&apos;&apos;">
-						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
-						<TEMPLATE line="1" col="11" value="tail1">}}tail1'''</TEMPLATE>
-					</StringTemplate>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
-					'''head1{{ '''full1''' }}tail1''';
-				`)), `
-					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
-						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
-						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<ExpressionAdditive line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-								<ExpressionMultiplicative line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-									<ExpressionExponential line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-										<ExpressionUnarySymbol line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-											<ExpressionUnit line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-												<StringTemplate line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-													<TEMPLATE line="1" col="12" value="full1">'''full1'''</TEMPLATE>
-												</StringTemplate>
-											</ExpressionUnit>
-										</ExpressionUnarySymbol>
-									</ExpressionExponential>
-								</ExpressionMultiplicative>
-							</ExpressionAdditive>
-						</Expression>
-						<TEMPLATE line="1" col="24" value="tail1">}}tail1'''</TEMPLATE>
-					</StringTemplate>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, middle, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
-					'''head1{{ '''full1''' }}midd1{{}}tail1''';
-				`)), `
-					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ }}tail1&apos;&apos;&apos;">
-						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
-						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<ExpressionAdditive line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-								<ExpressionMultiplicative line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-									<ExpressionExponential line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-										<ExpressionUnarySymbol line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-											<ExpressionUnit line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-												<StringTemplate line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-													<TEMPLATE line="1" col="12" value="full1">'''full1'''</TEMPLATE>
-												</StringTemplate>
-											</ExpressionUnit>
-										</ExpressionUnarySymbol>
-									</ExpressionExponential>
-								</ExpressionMultiplicative>
-							</ExpressionAdditive>
-						</Expression>
-						<StringTemplate__0__List line="1" col="24" source="}}midd1{{">
-							<TEMPLATE line="1" col="24" value="midd1">}}midd1{{</TEMPLATE>
-						</StringTemplate__0__List>
-						<TEMPLATE line="1" col="33" value="tail1">}}tail1'''</TEMPLATE>
-					</StringTemplate>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, middle, expr, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1''';
-				`)), `
-					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
-						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
-						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<ExpressionAdditive line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-								<ExpressionMultiplicative line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-									<ExpressionExponential line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-										<ExpressionUnarySymbol line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-											<ExpressionUnit line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-												<StringTemplate line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-													<TEMPLATE line="1" col="12" value="full1">'''full1'''</TEMPLATE>
-												</StringTemplate>
-											</ExpressionUnit>
-										</ExpressionUnarySymbol>
-									</ExpressionExponential>
-								</ExpressionMultiplicative>
-							</ExpressionAdditive>
-						</Expression>
-						<StringTemplate__0__List line="1" col="24" source="}}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos;">
-							<TEMPLATE line="1" col="24" value="midd1">}}midd1{{</TEMPLATE>
-							<Expression line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-								<ExpressionAdditive line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-									<ExpressionMultiplicative line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-										<ExpressionExponential line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-											<ExpressionUnarySymbol line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-												<ExpressionUnit line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-													<StringTemplate line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-														<TEMPLATE line="1" col="34" value="full2">'''full2'''</TEMPLATE>
-													</StringTemplate>
-												</ExpressionUnit>
-											</ExpressionUnarySymbol>
-										</ExpressionExponential>
-									</ExpressionMultiplicative>
-								</ExpressionAdditive>
-							</Expression>
-						</StringTemplate__0__List>
-						<TEMPLATE line="1" col="46" value="tail1">}}tail1'''</TEMPLATE>
-					</StringTemplate>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, middle, expr, middle, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1''';
-				`)), `
-					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ }}tail1&apos;&apos;&apos;">
-						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
-						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<ExpressionAdditive line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-								<ExpressionMultiplicative line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-									<ExpressionExponential line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-										<ExpressionUnarySymbol line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-											<ExpressionUnit line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-												<StringTemplate line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-													<TEMPLATE line="1" col="12" value="full1">'''full1'''</TEMPLATE>
-												</StringTemplate>
-											</ExpressionUnit>
-										</ExpressionUnarySymbol>
-									</ExpressionExponential>
-								</ExpressionMultiplicative>
-							</ExpressionAdditive>
-						</Expression>
-						<StringTemplate__0__List line="1" col="24" source="}}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{">
-							<StringTemplate__0__List line="1" col="24" source="}}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos;">
-								<TEMPLATE line="1" col="24" value="midd1">}}midd1{{</TEMPLATE>
-								<Expression line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-									<ExpressionAdditive line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-										<ExpressionMultiplicative line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-											<ExpressionExponential line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-												<ExpressionUnarySymbol line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-													<ExpressionUnit line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-														<StringTemplate line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-															<TEMPLATE line="1" col="34" value="full2">'''full2'''</TEMPLATE>
-														</StringTemplate>
-													</ExpressionUnit>
-												</ExpressionUnarySymbol>
-											</ExpressionExponential>
-										</ExpressionMultiplicative>
-									</ExpressionAdditive>
-								</Expression>
-							</StringTemplate__0__List>
-							<TEMPLATE line="1" col="46" value="midd2">}}midd2{{</TEMPLATE>
-						</StringTemplate__0__List>
-						<TEMPLATE line="1" col="55" value="tail1">}}tail1'''</TEMPLATE>
-					</StringTemplate>
-				`.replace(/\n\t*/g, ''))
-			})
-			specify('head, expr, middle, expr, middle, expr, tail.', () => {
-				assert.strictEqual(stringTemplateParseNode(Util.dedent(`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1''';
-				`)), `
-					<StringTemplate line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ &apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
-						<TEMPLATE line="1" col="1" value="head1">'''head1{{</TEMPLATE>
-						<Expression line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-							<ExpressionAdditive line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-								<ExpressionMultiplicative line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-									<ExpressionExponential line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-										<ExpressionUnarySymbol line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-											<ExpressionUnit line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-												<StringTemplate line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
-													<TEMPLATE line="1" col="12" value="full1">'''full1'''</TEMPLATE>
-												</StringTemplate>
-											</ExpressionUnit>
-										</ExpressionUnarySymbol>
-									</ExpressionExponential>
-								</ExpressionMultiplicative>
-							</ExpressionAdditive>
-						</Expression>
-						<StringTemplate__0__List line="1" col="24" source="}}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ &apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-							<StringTemplate__0__List line="1" col="24" source="}}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos;">
-								<TEMPLATE line="1" col="24" value="midd1">}}midd1{{</TEMPLATE>
-								<Expression line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-									<ExpressionAdditive line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-										<ExpressionMultiplicative line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-											<ExpressionExponential line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-												<ExpressionUnarySymbol line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-													<ExpressionUnit line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-														<StringTemplate line="1" col="34" source="&apos;&apos;&apos;full2&apos;&apos;&apos;">
-															<TEMPLATE line="1" col="34" value="full2">'''full2'''</TEMPLATE>
-														</StringTemplate>
-													</ExpressionUnit>
-												</ExpressionUnarySymbol>
-											</ExpressionExponential>
-										</ExpressionMultiplicative>
-									</ExpressionAdditive>
-								</Expression>
-							</StringTemplate__0__List>
-							<TEMPLATE line="1" col="46" value="midd2">}}midd2{{</TEMPLATE>
-							<Expression line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-								<ExpressionAdditive line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-									<ExpressionMultiplicative line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-										<ExpressionExponential line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-											<ExpressionUnarySymbol line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-												<ExpressionUnit line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-													<StringTemplate line="1" col="56" source="&apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos;">
-														<TEMPLATE line="1" col="56" value="head2">'''head2{{</TEMPLATE>
-														<Expression line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-															<ExpressionAdditive line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-																<ExpressionMultiplicative line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-																	<ExpressionExponential line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-																		<ExpressionUnarySymbol line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-																			<ExpressionUnit line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-																				<StringTemplate line="1" col="67" source="&apos;&apos;&apos;full3&apos;&apos;&apos;">
-																					<TEMPLATE line="1" col="67" value="full3">'''full3'''</TEMPLATE>
-																				</StringTemplate>
-																			</ExpressionUnit>
-																		</ExpressionUnarySymbol>
-																	</ExpressionExponential>
-																</ExpressionMultiplicative>
-															</ExpressionAdditive>
-														</Expression>
-														<TEMPLATE line="1" col="79" value="tail2">}}tail2'''</TEMPLATE>
-													</StringTemplate>
-												</ExpressionUnit>
-											</ExpressionUnarySymbol>
-										</ExpressionExponential>
-									</ExpressionMultiplicative>
-								</ExpressionAdditive>
-							</Expression>
-						</StringTemplate__0__List>
-						<TEMPLATE line="1" col="90" value="tail1">}}tail1'''</TEMPLATE>
-					</StringTemplate>
-				`.replace(/\n\t*/g, ''))
-			})
-			it('throws when reaching an orphaned head.', () => {
-				assert.throws(() => new Parser(`
-					'''A string template head token not followed by a middle or tail {{ 1;
-				`).parse(), ParseError01)
-			})
-			it('throws when reaching an orphaned middle.', () => {
-				assert.throws(() => new Parser(`
-					2 }} a string template middle token not preceded by a head/middle and not followed by a middle/tail {{ 3;
-				`).parse(), ParseError01)
-			})
-			it('throws when reaching an orphaned tail.', () => {
-				assert.throws(() => new Parser(`
-					4 }} a string template tail token not preceded by a head or middle''';
-				`).parse(), ParseError01)
-			})
-		})
-
 		Dev.supports('literalCollection') && specify('ExpressionUnit ::= ListLiteral', () => {
 			h.listLiteralFromSource(`[, 42, true, null || false,];`); // assert does not throw
 		});
@@ -917,8 +705,8 @@ describe('Parser', () => {
 		Dev.supports('literalCollection') && specify('ExpressionUnit ::= RecordLiteral', () => {
 			h.recordLiteralFromSource(`
 				[
-					, let = true
-					, foobar = 42
+					, let= true
+					, foobar= 42
 					,
 				];
 			`); // assert does not throw
@@ -928,10 +716,10 @@ describe('Parser', () => {
 			h.mappingLiteralFromSource(`
 				[
 					,
-					1, 2, 3 |-> null,
-					4, 5, 6 |-> false,
-					7, 8    |-> true,
-					9, 0    |-> 42.0,
+					1 |-> null,
+					4 |-> false,
+					7 |-> true,
+					9 |-> 42.0,
 				];
 			`); // assert does not throw
 		});
@@ -1169,7 +957,7 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationVariable', () => {
+		describe('DeclarationVariable ::= "let" "unfixed"? IDENTIFIER ":" Type "=" Expression ";"', () => {
 			/*
 				<Statement>
 					<DeclarationVariable>
@@ -1204,7 +992,7 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supportsAll('variables', 'typingExplicit') && describe('DeclarationType', () => {
+		describe('DeclarationType ::= "type" IDENTIFIER "=" Type ";"', () => {
 			/*
 				<Statement>
 					<DeclarationType>
@@ -1226,7 +1014,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('variables') && describe('Assignee ::= IDENTIFIER', () => {
+		describe('Assignee ::= IDENTIFIER', () => {
 			/*
 				<Assignee>
 					<IDENTIFIER>this_answer</IDENTIFIER>
@@ -1241,7 +1029,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('variables') && describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
+		describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
 			/*
 				<StatementAssignment>
 					<Assignee source="this_answer">...</Assignee>

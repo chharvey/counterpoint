@@ -1,4 +1,5 @@
 import * as xjs from 'extrajs';
+import * as utf8 from 'utf8';
 
 import type {CodeUnit} from '../types';
 import {
@@ -10,15 +11,21 @@ import {SolidBoolean} from './SolidBoolean';
 
 
 export class SolidString extends SolidObject {
-	constructor (
-		private readonly codeunits: readonly CodeUnit[],
-	) {
+	private readonly codeunits: readonly CodeUnit[];
+	constructor (data: string | readonly CodeUnit[]) {
 		super();
+		this.codeunits = (typeof data === 'string')
+			? [...utf8.encode(data)].map((ch) => ch.codePointAt(0)!)
+			: data
 	}
 
 	/** @override SolidObject */
 	get isEmpty(): SolidBoolean {
 		return SolidBoolean.fromBoolean(this.codeunits.length === 0);
+	}
+	/** @override Object */
+	toString(): string {
+		return utf8.decode(String.fromCodePoint(...this.codeunits));
 	}
 	/** @override SolidObject */
 	@strictEqual

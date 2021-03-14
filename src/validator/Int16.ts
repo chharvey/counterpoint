@@ -44,7 +44,7 @@ export class Int16 extends SolidNumber<Int16> {
 			: data
 	}
 
-	/** @override */
+	/** @override Object */
 	toString(): string {
 		return `${ this.toNumeric() }`
 	}

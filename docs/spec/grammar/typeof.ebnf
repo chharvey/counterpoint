@@ -8,7 +8,7 @@ Type TypeOf(SemanticConstant const) :=
 
 Type TypeOf(SemanticVariable var) :=
 	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
-		1. *If* `symbol` is of type `SymbolStructureVar`:
+		1. *If* `symbol` is an instance of `SymbolStructureVar`:
 			1. *Return:* `symbol.type`.
 	2. *Return:* `Unknown`.
 ;
@@ -39,7 +39,7 @@ Type TypeOfUnassessedOperation(SemanticOperation[operator: NOT | EMP] expr) :=
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
-	3. *If* `t0` is a subtype of `Union(Integer, Float)`:
+	3. *If* `t0` is a subtype of `Number`:
 		1. *Return:* `t0`.
 	4. *Throw:* a new TypeError01.
 ;
@@ -48,7 +48,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: EXP | MUL | DIV | AD
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `t0` is a subtype of `Union(Integer, Float)` *and* `t1` is a subtype of `Union(Integer, Float)`:
+	4. *If* `t0` is a subtype of `Number` *and* `t1` is a subtype of `Number`:
 		1. *If* `t0` is a subtype of `Float` *or* `t1` is a subtype of `Float`:
 			1. *Return:* `Float`.
 		2. *Else*:
@@ -60,7 +60,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: LT | GT | LE | GE] e
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `t0` is a subtype of `Union(Integer, Float)` *and* `t1` is a subtype of `Union(Integer, Float)`:
+	4. *If* `t0` is a subtype of `Number` *and* `t1` is a subtype of `Number`:
 		1. *Return:* `Boolean`.
 	5. *Throw:* a new TypeError01.
 ;
@@ -69,7 +69,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: IS | EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `t0` is a subtype of `Union(Integer, Float)` *and* `t1` is a subtype of `Union(Integer, Float)`:
+	4. *If* `t0` is a subtype of `Number` *and* `t1` is a subtype of `Number`:
 		1. *If* `t0` is a subtype of `Integer` *or* `t1` is a subtype of `Integer`:
 			1. *If* `t0` is a subtype of `Float` *or* `t1` is a subtype of `Float`:
 				1. *If* `operator` is `IS`:
@@ -128,7 +128,8 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: COND] expr) :=
 
 
 TypeConstant ToType(Or<Null, Boolean, Number> v) :=
-	1. *Let* `t` be a new structure of type `Type`.
-	2. *Set* `t.value` to `v`.
-	3. *Return:* `t`.
+	1. *Return:* a new CompletionStructure [
+		type  = `Type`,
+		value = `v`,
+	].
 ;
