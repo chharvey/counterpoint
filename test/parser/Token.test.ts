@@ -1,3 +1,4 @@
+import {utils} from '@chharvey/parser';
 import * as assert from 'assert'
 import * as utf8 from 'utf8';
 
@@ -5,7 +6,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-	Util,
 } from '../../src/core/';
 import type {
 	CodeUnit,
@@ -183,7 +183,7 @@ describe('TokenSolid', () => {
 
 		Dev.supports('literalString-cook') && context('TokenString', () => {
 			it('produces the cooked string value.', () => {
-				assert.deepStrictEqual([...new Lexer(Util.dedent(`
+				assert.deepStrictEqual([...new Lexer(utils.dedent`
 					5 + 03 + '' * 'hello' *  -2;
 					'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
 					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3';
@@ -191,7 +191,7 @@ describe('TokenSolid', () => {
 					345\\%
 					678';
 					'😀' '\u{10001}' '\\\u{10001}' '\\u{10001}';
-				`), CONFIG_DEFAULT).generate()]
+				`, CONFIG_DEFAULT).generate()]
 					.filter((token): token is TOKEN.TokenString => token instanceof TOKEN.TokenString)
 					.map((token) => utf8Decode(token.cook()))
 				, [
@@ -205,7 +205,7 @@ describe('TokenSolid', () => {
 			})
 			describe('In-String Comments', () => {
 				function cook(config: SolidConfig): string[] {
-					return [...new Lexer(Util.dedent(`
+					return [...new Lexer(utils.dedent`
 						'The five boxing wizards % jump quickly.'
 
 						'The five % boxing wizards
@@ -232,7 +232,7 @@ describe('TokenSolid', () => {
 						'The five boxing
 						wizards %% jump
 						quickly.'
-					`), config).generate()]
+					`, config).generate()]
 						.filter((token): token is TOKEN.TokenString => token instanceof TOKEN.TokenString)
 						.map((token) => utf8Decode(token.cook()))
 					;
@@ -280,7 +280,7 @@ describe('TokenSolid', () => {
 		Dev.supports('literalTemplate-cook') && context('TokenTemplate', () => {
 			it('produces the cooked template value.', () => {
 				assert.deepStrictEqual(
-					[...new Lexer(Util.dedent(`
+					[...new Lexer(utils.dedent`
 						600  /  '''''' * 3 + '''hello''' *  2;
 						3 + '''head{{ * 2
 						3 + }}midl{{ * 2
@@ -292,7 +292,7 @@ describe('TokenSolid', () => {
 						345
 						678''';
 						'''😀 \\😀 \\u{1f600}''';
-					`), CONFIG_DEFAULT).generate()]
+					`, CONFIG_DEFAULT).generate()]
 						.filter((token): token is TOKEN.TokenTemplate => token instanceof TOKEN.TokenTemplate)
 						.map((token) => utf8Decode(token.cook()))
 					,
@@ -312,32 +312,32 @@ describe('TokenSolid', () => {
 		})
 
 		Dev.supports('literalString-cook') && it('`String.fromCodePoint` throws when UTF-8 encoding input is out of range.', () => {
-			const stringtoken: TOKEN.TokenString = [...new Lexer(Util.dedent(`
+			const stringtoken: TOKEN.TokenString = [...new Lexer(`
 				'a string literal with a unicode \\u{a00061} escape sequence out of range';
-			`), CONFIG_DEFAULT).generate()][2] as TOKEN.TokenString;
+			`, CONFIG_DEFAULT).generate()][2] as TOKEN.TokenString;
 			assert.throws(() => stringtoken.cook(), RangeError)
 		})
 	})
 
 	describe('#serialize', () => {
 		specify('TokenCommentLine', () => {
-			assert.strictEqual([...new Lexer(Util.dedent(`
+			assert.strictEqual([...new Lexer(utils.dedent`
 				500  +  30; ;  % line comment  *  2
 				8;
-			`), CONFIG_DEFAULT).generate()][11].serialize(), Util.dedent(`
-				<COMMENT line="1" col="16">% line comment  *  2\n</COMMENT>
-			`).trim())
+			`, CONFIG_DEFAULT).generate()][11].serialize(), `
+				<COMMENT line="2" col="16">% line comment  *  2\n</COMMENT>
+			`.trim());
 		})
 		specify('TokenCommentMulti', () => {
-			assert.strictEqual([...new Lexer(Util.dedent(`
+			assert.strictEqual([...new Lexer(utils.dedent`
 				%% multiline
 				that has a
 				comment %%
-			`), CONFIG_DEFAULT).generate()][2].serialize(), Util.dedent(`
-				<COMMENT line="1" col="1">%% multiline
+			`, CONFIG_DEFAULT).generate()][2].serialize(), utils.dedent`
+				<COMMENT line="2" col="1">%% multiline
 				that has a
 				comment %%</COMMENT>
-			`).trim())
+			`.trim());
 		})
 	})
 })

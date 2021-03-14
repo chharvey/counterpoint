@@ -1,8 +1,8 @@
+import {utils} from '@chharvey/parser';
 import * as assert from 'assert'
 
 import {
 	Dev,
-	Util,
 } from '../../src/core/';
 import {
 	Operator,
@@ -527,9 +527,9 @@ describe('Decorator', () => {
 					.serialize()
 			}
 			specify('head, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
+				assert.strictEqual(stringTemplateSemanticNode(utils.dedent`
 					'''head1{{}}tail1''';
-				`)), `
+				`), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Constant line="1" col="11" source="}}tail1&apos;&apos;&apos;" value="tail1"/>
@@ -537,9 +537,9 @@ describe('Decorator', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
+				assert.strictEqual(stringTemplateSemanticNode(utils.dedent`
 					'''head1{{ '''full1''' }}tail1''';
-				`)), `
+				`), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -550,9 +550,9 @@ describe('Decorator', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
+				assert.strictEqual(stringTemplateSemanticNode(utils.dedent`
 					'''head1{{ '''full1''' }}midd1{{}}tail1''';
-				`)), `
+				`), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -564,9 +564,9 @@ describe('Decorator', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, expr, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
+				assert.strictEqual(stringTemplateSemanticNode(utils.dedent`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1''';
-				`)), `
+				`), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -581,9 +581,9 @@ describe('Decorator', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, expr, middle, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
+				assert.strictEqual(stringTemplateSemanticNode(utils.dedent`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1''';
-				`)), `
+				`), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">
@@ -599,9 +599,9 @@ describe('Decorator', () => {
 				`.replace(/\n\t*/g, ''))
 			})
 			specify('head, expr, middle, expr, middle, expr, tail.', () => {
-				assert.strictEqual(stringTemplateSemanticNode(Util.dedent(`
+				assert.strictEqual(stringTemplateSemanticNode(utils.dedent`
 					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1''';
-				`)), `
+				`), `
 					<Template line="1" col="1" source="&apos;&apos;&apos;head1{{ &apos;&apos;&apos;full1&apos;&apos;&apos; }}midd1{{ &apos;&apos;&apos;full2&apos;&apos;&apos; }}midd2{{ &apos;&apos;&apos;head2{{ &apos;&apos;&apos;full3&apos;&apos;&apos; }}tail2&apos;&apos;&apos; }}tail1&apos;&apos;&apos;">
 						<Constant line="1" col="1" source="&apos;&apos;&apos;head1{{" value="head1"/>
 						<Template line="1" col="12" source="&apos;&apos;&apos;full1&apos;&apos;&apos;">

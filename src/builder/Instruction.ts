@@ -1,3 +1,5 @@
+import {utils} from '@chharvey/parser'
+
 import {
 	Operator,
 	ValidOperatorUnary,
@@ -390,7 +392,7 @@ export class InstructionStatement extends Instruction {
 	 * @return a new function evaluating the argument
 	 */
 	toString(): string {
-		return `
+		return utils.dedent`
 			(func (export "f${ this.count }") (result ${ (!this.expr.isFloat) ? `i32` : `f64` })
 				${ this.expr }
 			)
@@ -411,7 +413,7 @@ export class InstructionModule extends Instruction {
 	 * @return a new module containing the components
 	 */
 	toString(): string {
-		return `
+		return utils.dedent`
 			(module
 				${ this.comps.join('\n') }
 			)

@@ -1,21 +1,3 @@
-export type NonemptyArray<T> = readonly [T, ...readonly T[]]
-
-
-export type EBNFObject = {
-	readonly name: string,
-	readonly defn: EBNFChoice,
-}
-
-export type EBNFChoice = NonemptyArray<EBNFSequence>
-
-export type EBNFSequence = NonemptyArray<EBNFItem>
-
-export type EBNFItem =
-	| string
-	| { readonly term: string }
-	| { readonly prod: string }
-
-
 /**
  * A code point is a number within [0, 0x10_ffff] that represents
  * the index of a character in the Unicode Universal Character Set.
