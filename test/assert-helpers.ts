@@ -22,3 +22,33 @@ export function assert_arrayLength(array: readonly unknown[], length: number , m
 export function assert_arrayLength(array: readonly unknown[], length: number , message?: string | Error): void {
 	return assert.strictEqual(array.length, length, message)
 }
+
+
+
+/**
+ * @param orig the original function; useful for setting & unsetting
+ * @param spy  the wrapper function that is actually called during tests
+ * @return     any return value
+ */
+type ExpectCallback<Func extends (...args: any[]) => any, Return> = (orig: Func, spy: Func) => Return;
+/**
+ * Assert that, while a callback is performed, the given function is called a specified number of times.
+ * @param orig     the function, a copy of which is expected to actually be called
+ * @param times    the number of times the function is expected to be called
+ * @param callback the routine to perform while testing; {@see ExpectCallback}
+ * @return         the return value of `callback`
+ * @throw          if `orig` was not called the exact specified number of times
+ * @throw          if `callback` itself throws
+ */
+export function expectToBeCalled<Func extends (...args: any[]) => any, Return>(orig: Func, times: number, callback: ExpectCallback<Func, Return>): Return {
+	const tracker: assert.CallTracker = new assert.CallTracker();
+	try {
+		return callback(orig, tracker.calls(orig, times));
+	} finally {
+		try {
+			tracker.verify();
+		} catch {
+			throw tracker.report().map((info) => new assert.AssertionError(info)); // TODO: use ES2021 `AggregateError`
+		};
+	};
+}
