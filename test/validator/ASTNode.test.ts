@@ -46,6 +46,9 @@ import {
 	InstructionModule,
 } from '../../src/builder/'
 import {
+	expectToBeCalled,
+} from '../assert-helpers';
+import {
 	typeConstInt,
 	typeConstFloat,
 	instructionConstInt,
@@ -582,7 +585,7 @@ describe('ASTNodeSolid', () => {
 			};
 			describe('ASTNodeConstant', () => {
 				context('with constant folding on.', () => {
-					it('returns the result of `this#type`, wrapped in a `new SolidTypeConstant`.', () => {
+					it('returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
 						const constants: AST.ASTNodeConstant[] = `
 							null  false  true
 							55  -55  033  -033  0  -0
@@ -592,7 +595,14 @@ describe('ASTNodeSolid', () => {
 							${ (Dev.supports('stringConstant-assess')) ? `'42😀'  '42\\u{1f600}'` : `` }
 						`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`));
 						assert.deepStrictEqual(
-							constants.map((c) => c.type()),
+							constants.map((c) => expectToBeCalled(c.assess, 1, (orig, spy) => {
+								c.assess = spy;
+								try {
+									return c.type();
+								} finally {
+									c.assess = orig;
+								};
+							})),
 							constants.map((c) => new SolidTypeConstant(c.assess()!)),
 						);
 					});
@@ -627,9 +637,16 @@ describe('ASTNodeSolid', () => {
 						.children[0] as AST.ASTNodeTemplate,
 				];
 				context('with constant folding on.', () => {
-					it('returns the result of `this#type`, wrapped in a `new SolidTypeConstant`.', () => {
+					it('returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
 						assert.deepStrictEqual(
-							templates.map((t) => t.type()),
+							templates.map((t) => expectToBeCalled(t.assess, 1, (orig, spy) => {
+								t.assess = spy;
+								try {
+									return t.type();
+								} finally {
+									t.assess = orig;
+								};
+							})),
 							templates.map((t) => new SolidTypeConstant(t.assess()!)),
 						);
 					});
