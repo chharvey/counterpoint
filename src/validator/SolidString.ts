@@ -20,6 +20,10 @@ export class SolidString extends SolidObject {
 	get isEmpty(): SolidBoolean {
 		return SolidBoolean.fromBoolean(this.codeunits.length === 0);
 	}
+	/** @override Object */
+	toString(): string {
+		return utf8.decode(String.fromCodePoint(...this.codeunits));
+	}
 	/** @override SolidObject */
 	protected identical_helper(value: SolidObject): boolean {
 		return value instanceof SolidString && xjs.Array.is(this.codeunits, value.codeunits);

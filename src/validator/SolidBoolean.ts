@@ -42,7 +42,8 @@ export class SolidBoolean extends SolidObject {
 	private constructor (readonly value: boolean = false) {
 		super()
 	}
-	/** @override */
+
+	/** @override Object */
 	toString(): string {
 		return `${ this.value }`
 	}
