@@ -469,7 +469,7 @@ describe('ASTNodeSolid', () => {
 					);
 				});
 			});
-			describe('ASTNodeOperationTernary', () => {
+			specify('ASTNodeOperationTernary', () => {
 				buildOperations(xjs.Map.mapValues(new Map([
 					[`if true  then false   else 2;`, [new Int16(1n), new Int16(0n), new Int16(2n)]],
 					[`if false then 3.0     else null;`, [new Int16(0n), new Float64(3.0), new Float64(0.0)]],
@@ -799,7 +799,7 @@ describe('ASTNodeSolid', () => {
 						});
 					});
 				});
-				describe('ASTNodeOperationBinaryLogical', () => {
+				specify('ASTNodeOperationBinaryLogical', () => {
 					typeOperations(new Map<string, SolidObject>([
 						[`null  && false;`, SolidNull.NULL],
 						[`false && null;`,  SolidBoolean.FALSE],
