@@ -121,28 +121,28 @@ Decorate(Type ::= TypeUnion) -> SemanticType
 
 
 Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticTemplate
-	:= (SemanticTemplate[type="full"]
+	:= (SemanticTemplate
 		(SemanticConstant[value=String(TokenWorth(TEMPLATE_FULL))])
 	);
 Decorate(StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate[type="substitution"]
+	:= (SemanticTemplate
 		(SemanticConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
 		(SemanticConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
 	);
 Decorate(StringTemplate ::= TEMPLATE_HEAD Expression TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate[type="substitution"]
+	:= (SemanticTemplate
 		(SemanticConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
 		Decorate(Expression)
 		(SemanticConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
 	);
 Decorate(StringTemplate ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate[type="substitution"]
+	:= (SemanticTemplate
 		(SemanticConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
 		...Decorate(StringTemplate__0__List)
 		(SemanticConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
 	);
 Decorate(StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate[type="substitution"]
+	:= (SemanticTemplate
 		(SemanticConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
 		Decorate(Expression)
 		...Decorate(StringTemplate__0__List)

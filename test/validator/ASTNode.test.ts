@@ -637,18 +637,25 @@ describe('ASTNodeSolid', () => {
 						.children[0] as AST.ASTNodeTemplate,
 				];
 				context('with constant folding on.', () => {
-					it('returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
-						assert.deepStrictEqual(
-							templates.map((t) => expectToBeCalled(t.assess, 1, (orig, spy) => {
+					let types: SolidLanguageType[];
+					before(() => {
+						types = templates.map((t) => expectToBeCalled(t.assess, 1, (orig, spy) => {
 								t.assess = spy;
 								try {
 									return t.type();
 								} finally {
 									t.assess = orig;
 								};
-							})),
-							templates.map((t) => new SolidTypeConstant(t.assess()!)),
+						}));
+					});
+					it('for foldable interpolations, returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
+						assert.deepStrictEqual(
+							types.slice(0, 2),
+							templates.slice(0, 2).map((t) => new SolidTypeConstant(t.assess()!)),
 						);
+					});
+					it('for non-foldable interpolations, returns `String`.', () => {
+						assert.deepStrictEqual(types[2], SolidString);
 					});
 				});
 				context('with constant folding off.', () => {
@@ -963,20 +970,20 @@ describe('ASTNodeSolid', () => {
 				];
 				it('returns a constant String for ASTNodeTemplate with no interpolations.', () => {
 					assert.deepStrictEqual(
-						templates[0].type(),
-						new SolidTypeConstant(new SolidString('42😀')),
+						templates[0].assess(),
+						new SolidString('42😀'),
 					);
 				});
 				it('returns a constant String for ASTNodeTemplate with foldable interpolations.', () => {
 					assert.deepStrictEqual(
-						templates[1].type(),
-						new SolidTypeConstant(new SolidString('the answer is 42 but what is the question?')),
+						templates[1].assess(),
+						new SolidString('the answer is 42 but what is the question?'),
 					);
 				});
-				it('returns `String` for ASTNodeTemplate with dynamic interpolations.', () => {
+				it('returns null for ASTNodeTemplate with dynamic interpolations.', () => {
 					assert.deepStrictEqual(
-						templates[2].type(),
-						SolidString,
+						templates[2].assess(),
+						null,
 					);
 				});
 			});

@@ -28,7 +28,8 @@ export class SolidNull extends SolidObject {
 	private constructor () {
 		super()
 	}
-	/** @override */
+
+	/** @override Object */
 	toString(): string {
 		return 'null'
 	}
