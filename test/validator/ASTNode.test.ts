@@ -46,7 +46,7 @@ import {
 	InstructionModule,
 } from '../../src/builder/'
 import {
-	expectToBeCalled,
+	assert_wasCalled,
 } from '../assert-helpers';
 import {
 	typeConstInt,
@@ -595,7 +595,7 @@ describe('ASTNodeSolid', () => {
 							${ (Dev.supports('stringConstant-assess')) ? `'42😀'  '42\\u{1f600}'` : `` }
 						`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`));
 						assert.deepStrictEqual(
-							constants.map((c) => expectToBeCalled(c.assess, 1, (orig, spy) => {
+							constants.map((c) => assert_wasCalled(c.assess, 1, (orig, spy) => {
 								c.assess = spy;
 								try {
 									return c.type();
@@ -639,7 +639,7 @@ describe('ASTNodeSolid', () => {
 				context('with constant folding on.', () => {
 					it('returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
 						assert.deepStrictEqual(
-							templates.map((t) => expectToBeCalled(t.assess, 1, (orig, spy) => {
+							templates.map((t) => assert_wasCalled(t.assess, 1, (orig, spy) => {
 								t.assess = spy;
 								try {
 									return t.type();

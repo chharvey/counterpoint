@@ -40,7 +40,7 @@ type ExpectCallback<Func extends (...args: any[]) => any, Return> = (orig: Func,
  * @throw          if `orig` was not called the exact specified number of times
  * @throw          if `callback` itself throws
  */
-export function expectToBeCalled<Func extends (...args: any[]) => any, Return>(orig: Func, times: number, callback: ExpectCallback<Func, Return>): Return {
+export function assert_wasCalled<Func extends (...args: any[]) => any, Return>(orig: Func, times: number, callback: ExpectCallback<Func, Return>): Return {
 	const tracker: assert.CallTracker = new assert.CallTracker();
 	try {
 		return callback(orig, tracker.calls(orig, times));
