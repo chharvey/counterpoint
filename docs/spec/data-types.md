@@ -138,8 +138,8 @@ A **SymbolStructureVar** represents a variable referencing a Solid Language Valu
 Property    | Description
 ----------- | -----------
 \`id\`      | the unique identifier of the declared symbol
-\`type\`    | the Solid Language Type of the variable
 \`unfixed\` | a Boolean, whether the variable may be reassigned
+\`type\`    | the Solid Language Type of the variable
 \`value\`   | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Solid Language Value) of this symbol; otherwise: \`void\`
 
 

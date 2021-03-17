@@ -60,8 +60,8 @@ Void! VarCheck(SemanticDeclarationVariable decl) :=
 	5. *Perform:* *Unwrap:* `VarCheck(decl.children.2)`.
 	6. *Let* `symbol` be a new SymbolStructureVar [
 		id=      `id`,
-		type=    *UnwrapAffirm:* `Assess(decl.children.1)`,
 		unfixed= `decl.unfixed`,
+		type=    `Unknown`,
 		value=   [type= throw],
 	].
 	7. Add `symbol` as a record for `id` to the validator.

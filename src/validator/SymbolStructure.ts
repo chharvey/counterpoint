@@ -52,19 +52,29 @@ export class SymbolStructureType extends SymbolStructure {
 
 
 export class SymbolStructureVar extends SymbolStructure {
+	private was_type_set:  boolean = false;
 	private was_value_set: boolean = false;
 	constructor (
 		id: bigint,
 		line: number,
 		col: number,
-		/** The variable’s Type. */
-		readonly type: SolidLanguageType,
 		/** May the symbol be reassigned? */
 		readonly unfixed: boolean,
+		/** The variable’s Type. */
+		private _type: SolidLanguageType,
 		/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
 		private _value: SolidObject | null,
 	) {
 		super(id, line, col);
+	}
+	get type(): SolidLanguageType {
+		return this._type;
+	}
+	set type(t: SolidLanguageType) {
+		if (!this.was_type_set) {
+			this.was_type_set = true;
+			this._type = t;
+		};
 	}
 	get value(): SolidObject | null {
 		return this._value;
