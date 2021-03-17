@@ -23,6 +23,9 @@ import {
 	Decorator,
 	Validator,
 	AST,
+	SymbolStructure,
+	SymbolStructureType,
+	SymbolStructureVar,
 	SolidLanguageType,
 	SolidTypeConstant,
 	SolidObject,
@@ -67,6 +70,8 @@ import {
 	operationFromSource,
 	statementExpressionFromSource,
 	constantFromSource,
+	typeDeclarationFromSource,
+	variableDeclarationFromSource as varDeclarationFromSource,
 	goalFromSource,
 } from '../helpers-semantic'
 
@@ -124,6 +129,18 @@ describe('ASTNodeSolid', () => {
 			});
 		});
 		describe('ASTNodeDeclarationType', () => {
+			it('adds an entry to the symbol table with a preset value of `unknown`.', () => {
+				const validator: Validator = new Validator();
+				const goal: AST.ASTNodeGoal = goalFromSource(`
+					type T = int;
+				`);
+				assert.ok(!validator.hasSymbol(256n))
+				goal.varCheck(validator);
+				assert.ok(validator.hasSymbol(256n));
+				const info: SymbolStructure | null = validator.getSymbolInfo(256n);
+				assert.ok(info instanceof SymbolStructureType);
+				assert.strictEqual(info.value, SolidLanguageType.UNKNOWN);
+			});
 			it('throws if the validator already contains a record for the symbol.', () => {
 				assert.throws(() => goalFromSource(`
 					type T = int;
@@ -136,6 +153,18 @@ describe('ASTNodeSolid', () => {
 			});
 		});
 		describe('ASTNodeDeclarationVariable', () => {
+			it('adds an entry to the symbol table with a preset null value.', () => {
+				const validator: Validator = new Validator();
+				const goal: AST.ASTNodeGoal = goalFromSource(`
+					let x: int = 42;
+				`);
+				assert.ok(!validator.hasSymbol(256n))
+				goal.varCheck(validator);
+				assert.ok(validator.hasSymbol(256n));
+				const info: SymbolStructure | null = validator.getSymbolInfo(256n);
+				assert.ok(info instanceof SymbolStructureVar);
+				assert.strictEqual(info.value, null);
+			});
 			it('throws if the validator already contains a record for the variable.', () => {
 				assert.throws(() => goalFromSource(`
 					let i: int = 42;
@@ -169,7 +198,35 @@ describe('ASTNodeSolid', () => {
 
 
 	describe('#typeCheck', () => {
+		describe('ASTNodeDeclarationType', () => {
+			it('calls #assess', () => {
+				const decl: AST.ASTNodeDeclarationType = typeDeclarationFromSource(`
+					type T = int;
+				`);
+				assert_wasCalled(decl.assess, 1, (orig, spy) => {
+					decl.assess = spy;
+					try {
+						decl.typeCheck();
+					} finally {
+						decl.assess = orig;
+					};
+				});
+			});
+		});
 		describe('ASTNodeDeclarationVariable', () => {
+			it('calls #assess', () => {
+				const decl: AST.ASTNodeDeclarationVariable = varDeclarationFromSource(`
+					let x: int = 42;
+				`);
+				assert_wasCalled(decl.assess, 1, (orig, spy) => {
+					decl.assess = spy;
+					try {
+						decl.typeCheck();
+					} finally {
+						decl.assess = orig;
+					};
+				});
+			});
 			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  int | float =  21  *  2;`
 				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
@@ -288,33 +345,33 @@ describe('ASTNodeSolid', () => {
 			}
 			specify('ASTNodeOperationUnary', () => {
 				buildOperations(new Map<string, InstructionUnop>([
-					[`!null;`, new InstructionUnop(Operator.NOT, instructionConstInt(0n))],
+					[`!null;`,  new InstructionUnop(Operator.NOT, instructionConstInt(0n))],
 					[`!false;`, new InstructionUnop(Operator.NOT, instructionConstInt(0n))],
-					[`!true;`, new InstructionUnop(Operator.NOT, instructionConstInt(1n))],
-					[`!42;`, new InstructionUnop(Operator.NOT, instructionConstInt(42n))],
-					[`!4.2;`, new InstructionUnop(Operator.NOT, instructionConstFloat(4.2))],
-					[`?null;`, new InstructionUnop(Operator.EMP, instructionConstInt(0n))],
+					[`!true;`,  new InstructionUnop(Operator.NOT, instructionConstInt(1n))],
+					[`!42;`,    new InstructionUnop(Operator.NOT, instructionConstInt(42n))],
+					[`!4.2;`,   new InstructionUnop(Operator.NOT, instructionConstFloat(4.2))],
+					[`?null;`,  new InstructionUnop(Operator.EMP, instructionConstInt(0n))],
 					[`?false;`, new InstructionUnop(Operator.EMP, instructionConstInt(0n))],
-					[`?true;`, new InstructionUnop(Operator.EMP, instructionConstInt(1n))],
-					[`?42;`, new InstructionUnop(Operator.EMP, instructionConstInt(42n))],
-					[`?4.2;`, new InstructionUnop(Operator.EMP, instructionConstFloat(4.2))],
-					[`-(4);`, new InstructionUnop(Operator.NEG, instructionConstInt(4n))],
+					[`?true;`,  new InstructionUnop(Operator.EMP, instructionConstInt(1n))],
+					[`?42;`,    new InstructionUnop(Operator.EMP, instructionConstInt(42n))],
+					[`?4.2;`,   new InstructionUnop(Operator.EMP, instructionConstFloat(4.2))],
+					[`-(4);`,   new InstructionUnop(Operator.NEG, instructionConstInt(4n))],
 					[`-(4.2);`, new InstructionUnop(Operator.NEG, instructionConstFloat(4.2))],
 				]));
 			});
 			specify('ASTNodeOperationBinaryArithmetic', () => {
 				buildOperations(new Map([
-					[`42 + 420;`, new InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n), instructionConstInt(420n))],
-					[`3 * 2.1;`, new InstructionBinopArithmetic(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
+					[`42 + 420;`, new InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
+					[`3 * 2.1;`,  new InstructionBinopArithmetic(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
 				]));
 				buildOperations(xjs.Map.mapValues(new Map([
-					[' 126 /  3;', [126n, 3n]],
-					['-126 /  3;', [-126n, 3n]],
-					[' 126 / -3;', [126n, -3n]],
+					[' 126 /  3;', [ 126n,  3n]],
+					['-126 /  3;', [-126n,  3n]],
+					[' 126 / -3;', [ 126n, -3n]],
 					['-126 / -3;', [-126n, -3n]],
-					[' 200 /  3;', [200n, 3n]],
-					[' 200 / -3;', [200n, -3n]],
-					['-200 /  3;', [-200n, 3n]],
+					[' 200 /  3;', [ 200n,  3n]],
+					[' 200 / -3;', [ 200n, -3n]],
+					['-200 /  3;', [-200n,  3n]],
 					['-200 / -3;', [-200n, -3n]],
 				]), ([a, b]) => new InstructionBinopArithmetic(
 					Operator.DIV,
@@ -399,12 +456,12 @@ describe('ASTNodeSolid', () => {
 						`false == 0.0;`,
 						`true == 1.0;`,
 					].map((src) => operationFromSource(src, folding_coercion_off).build(new Builder(src, folding_coercion_off))), [
-						[instructionConstInt(42n), instructionConstInt(420n)],
+						[instructionConstInt(42n),   instructionConstInt(420n)],
 						[instructionConstFloat(4.2), instructionConstInt(42n)],
-						[instructionConstInt(42n), instructionConstFloat(4.2)],
-						[instructionConstInt(0n), instructionConstFloat(0.0)],
-						[instructionConstInt(0n), instructionConstFloat(0.0)],
-						[instructionConstInt(1n), instructionConstFloat(1.0)],
+						[instructionConstInt(42n),   instructionConstFloat(4.2)],
+						[instructionConstInt(0n),    instructionConstFloat(0.0)],
+						[instructionConstInt(0n),    instructionConstFloat(0.0)],
+						[instructionConstInt(1n),    instructionConstFloat(1.0)],
 					].map(([left, right]) => new InstructionBinopEquality(Operator.EQ, left, right)))
 				});
 			});
@@ -533,6 +590,7 @@ describe('ASTNodeSolid', () => {
 					type U = T;
 				`);
 				goal.varCheck(validator);
+				goal.typeCheck(validator);
 				assert.deepStrictEqual(
 					((goal
 						.children[1] as AST.ASTNodeDeclarationType)
@@ -1165,4 +1223,57 @@ describe('ASTNodeSolid', () => {
 			});
 		})
 	})
+
+
+	describe('ASTNodeDeclaration', () => {
+		describe('#assess', () => {
+			describe('ASTNodeDeclarationType', () => {
+				it('sets the value of the SymbolStructure.', () => {
+					const validator: Validator = new Validator();
+					const goal: AST.ASTNodeGoal = goalFromSource(`
+						type T = int;
+					`);
+					goal.varCheck(validator);
+					goal.typeCheck(validator);
+					assert.strictEqual(
+						(validator.getSymbolInfo(256n) as SymbolStructureType).value,
+						Int16,
+					);
+				});
+			});
+			describe('ASTNodeDeclarationVariable', () => {
+				it('with constant folding on, sets the value of the SymbolStructure.', () => {
+					const validator: Validator = new Validator();
+					const goal: AST.ASTNodeGoal = goalFromSource(`
+						let x: int = 42;
+					`);
+					goal.varCheck(validator);
+					goal.typeCheck(validator);
+					assert.deepStrictEqual(
+						(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
+						new Int16(42n),
+					);
+				});
+				it('with constant folding off, does nothing.', () => {
+					const folding_off: SolidConfig = {
+						...CONFIG_DEFAULT,
+						compilerOptions: {
+							...CONFIG_DEFAULT.compilerOptions,
+							constantFolding: false,
+						},
+					};
+					const validator: Validator = new Validator(folding_off);
+					const goal: AST.ASTNodeGoal = goalFromSource(`
+						let x: int = 42;
+					`);
+					goal.varCheck(validator);
+					goal.typeCheck(validator);
+					assert.strictEqual(
+						(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
+						null,
+					);
+				});
+			});
+		});
+	});
 })

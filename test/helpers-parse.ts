@@ -218,19 +218,19 @@ function expressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT)
 	assert.strictEqual(endstat.source, Punctuator.ENDSTAT)
 	return expression
 }
-export function variableDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeDeclarationVariable {
-	const declaration: PARSER.ParseNodeDeclaration = declarationFromSource(src, config);
-	assert_arrayLength(declaration.children, 1, 'declaration should have 1 child');
-	const var_decl: PARSER.ParseNodeDeclarationVariable | PARSER.ParseNodeDeclarationType = declaration.children[0];
-	assert.ok(var_decl instanceof PARSER.ParseNodeDeclarationVariable)
-	return var_decl
-}
 export function typeDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeDeclarationType {
 	const declaration: PARSER.ParseNodeDeclaration = declarationFromSource(src, config);
 	assert_arrayLength(declaration.children, 1, 'declaration should have 1 child');
 	const typ_decl: PARSER.ParseNodeDeclarationVariable | PARSER.ParseNodeDeclarationType = declaration.children[0];
 	assert.ok(typ_decl instanceof PARSER.ParseNodeDeclarationType);
 	return typ_decl;
+}
+export function variableDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeDeclarationVariable {
+	const declaration: PARSER.ParseNodeDeclaration = declarationFromSource(src, config);
+	assert_arrayLength(declaration.children, 1, 'declaration should have 1 child');
+	const var_decl: PARSER.ParseNodeDeclarationVariable | PARSER.ParseNodeDeclarationType = declaration.children[0];
+	assert.ok(var_decl instanceof PARSER.ParseNodeDeclarationVariable)
+	return var_decl
 }
 function declarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeDeclaration {
 	const statement: PARSER.ParseNodeStatement = statementFromSource(src, config);

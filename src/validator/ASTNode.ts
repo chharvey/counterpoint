@@ -265,7 +265,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureType) {
-				return symbol.defn.assess(validator);
+				return symbol.value;
 			};
 		};
 		return SolidLanguageType.UNKNOWN;
@@ -606,7 +606,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
-				return symbol.defn!.assess(validator);
+				return symbol.value;
 			};
 		};
 		return null;
@@ -1239,11 +1239,23 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
  * - ASTNodeDeclarationType
  * - ASTNodeDeclarationVariable
  */
-export type ASTNodeDeclaration =
-	| ASTNodeDeclarationType
-	| ASTNodeDeclarationVariable
-;
-export class ASTNodeDeclarationType extends ASTNodeSolid {
+export abstract class ASTNodeDeclaration extends ASTNodeSolid {
+	private was_assessed: boolean = false;
+	/**
+	 * Assign the value to the variable at compile-time, if possible.
+	 * If {@link SolidConfig|constant folding} is off, this should not be called and assignment should happen at run-time.
+	 * @param validator stores validation and configuration information
+	 * @final
+	 */
+	assess(validator: Validator): void {
+		if (!this.was_assessed) {
+			this.was_assessed = true;
+			return this.assess_do(validator);
+		};
+	}
+	protected abstract assess_do(validator: Validator): void;
+}
+export class ASTNodeDeclarationType extends ASTNodeDeclaration {
 	constructor (
 		start_node: ParseNode,
 		readonly children:
@@ -1263,19 +1275,30 @@ export class ASTNodeDeclarationType extends ASTNodeSolid {
 			variable.id,
 			variable.line_index,
 			variable.col_index,
-			this.children[1],
+			SolidLanguageType.UNKNOWN,
 		));
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
-		return this.children[1].typeCheck(validator);
+		this.children[1].typeCheck(validator);
+		return this.assess(validator);
+	}
+	/** @implements ASTNodeDeclaration */
+	protected assess_do(validator: Validator): void {
+		const id: bigint = this.children[0].id;
+		if (validator.hasSymbol(id)) {
+			const symbol: SymbolStructure = validator.getSymbolInfo(id)!;
+			if (symbol instanceof SymbolStructureType) {
+				symbol.value = this.children[1].assess(validator);
+			};
+		};
 	}
 	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {
 		throw new Error('ASTNodeDeclarationType#build not yet supported.');
 	}
 }
-export class ASTNodeDeclarationVariable extends ASTNodeSolid {
+export class ASTNodeDeclarationVariable extends ASTNodeDeclaration {
 	constructor (
 		start_node: ParseNode,
 		readonly unfixed: boolean,
@@ -1298,11 +1321,13 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 			variable.col_index,
 			this.children[1].assess(validator),
 			this.unfixed,
-			(!this.unfixed) ? this.children[2] : null,
+			null,
 		));
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
+		this.children[1].typeCheck(validator);
+		this.children[2].typeCheck(validator);
 		const assignee_type: SolidLanguageType = this.children[1].assess(validator);
 		const assigned_type: SolidLanguageType = this.children[2].type(validator);
 		if (
@@ -1312,6 +1337,19 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		} else {
 			throw new TypeError03(this, assignee_type, assigned_type)
 		}
+		return this.assess(validator);
+	}
+	/** @implements ASTNodeDeclaration */
+	protected assess_do(validator: Validator): void {
+		if (validator.config.compilerOptions.constantFolding) {
+			const id: bigint = this.children[0].id;
+			if (validator.hasSymbol(id)) {
+				const symbol: SymbolStructure = validator.getSymbolInfo(id)!;
+				if (symbol instanceof SymbolStructureVar && !this.unfixed) {
+					symbol.value = this.children[2].assess(validator);
+				};
+			};
+		};
 	}
 	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {

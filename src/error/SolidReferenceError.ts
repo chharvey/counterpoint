@@ -80,7 +80,7 @@ export class ReferenceError02 extends SolidReferenceError {
  * 42 || FOO;      % ReferenceError03: `FOO` refers to a type, but is used as a value.
  */
 export class ReferenceError03 extends SolidReferenceError {
-	private static SYMBOL_KINDS: ReadonlyMap<SymbolKind, string> = new Map([
+	private static readonly SYMBOL_KINDS: ReadonlyMap<SymbolKind, string> = new Map([
 		[SymbolKind.VALUE, 'value'],
 		[SymbolKind.TYPE,  'type'],
 	]);
