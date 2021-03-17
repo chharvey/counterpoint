@@ -48,6 +48,58 @@ export function memoizeGetter<R>(
 
 
 /**
+ * Decorator for run-once methods.
+ * The first time the method is called, it should execute; any time after that, it should not.
+ * Should only be used on methods that return `void`; for non-void methods, use {@link memoizeMethod}.
+ * @param   _prototype    the prototype that has the method to be decorated
+ * @param   _property_key the name of the method to be decorated
+ * @param   descriptor    the Property Descriptor of the prototype’s method
+ * @returns               `descriptor`, with a new value that is the decorated method
+ */
+export function runOnceMethod<Ps extends unknown[]>(
+	_prototype: object,
+	_property_key: string,
+	descriptor: TypedPropertyDescriptor<(this: object, ...args: Ps) => void>,
+): typeof descriptor {
+	const method = descriptor.value!;
+	let was_run: boolean = false;
+	descriptor.value = function (...args) {
+		if (!was_run) {
+			was_run = true;
+			return method.call(this, ...args);
+		};
+	};
+	return descriptor;
+}
+
+
+
+/**
+ * Like {@link runOnceMethod} but for setters.
+ * @param   _prototype    the prototype that has the getter to be decorated
+ * @param   _property_key the name of the getter to be decorated
+ * @param   descriptor    the Property Descriptor of the prototype’s getter
+ * @returns               `descriptor`, with a new `get` that is the decorated getter
+ */
+export function runOnceSetter<P>(
+	_prototype: object,
+	_property_key: string,
+	descriptor: TypedPropertyDescriptor<P>,
+): typeof descriptor {
+	const method = descriptor.set!;
+	let was_run: boolean = false;
+	descriptor.set = function (arg) {
+		if (!was_run) {
+			was_run = true;
+			return method.call(this, arg);
+		};
+	};
+	return descriptor;
+}
+
+
+
+/**
  * Decorator for performing strict equality (`===`), and then disjuncting (`||`) that result
  * with the results of performing the method.
  * @param   _prototype    the prototype that has the method to be decorated

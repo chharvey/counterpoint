@@ -1,3 +1,6 @@
+import {
+	runOnceSetter,
+} from '../decorators';
 import type {SolidLanguageType} from './SolidLanguageType';
 import type {SolidObject} from './SolidObject';
 
@@ -28,7 +31,6 @@ export class SymbolStructure {
 
 
 export class SymbolStructureType extends SymbolStructure {
-	private was_value_set: boolean = false;
 	constructor (
 		id: bigint,
 		line: number,
@@ -41,18 +43,15 @@ export class SymbolStructureType extends SymbolStructure {
 	get value(): SolidLanguageType {
 		return this._value;
 	}
+	@runOnceSetter
 	set value(v: SolidLanguageType) {
-		if (!this.was_value_set) {
-			this.was_value_set = true;
-			this._value = v;
-		};
+		this._value = v;
 	}
 }
 
 
 
 export class SymbolStructureVar extends SymbolStructure {
-	private was_value_set: boolean = false;
 	constructor (
 		id: bigint,
 		line: number,
@@ -69,9 +68,9 @@ export class SymbolStructureVar extends SymbolStructure {
 	get value(): SolidObject | null {
 		return this._value;
 	}
+	@runOnceSetter
 	set value(v: SolidObject | null) {
-		if (!this.unfixed && !this.was_value_set) {
-			this.was_value_set = true;
+		if (!this.unfixed) {
 			this._value = v;
 		};
 	}
