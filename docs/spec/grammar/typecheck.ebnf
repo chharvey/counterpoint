@@ -21,9 +21,7 @@ Void! TypeCheck(SemanticStatementExpression stmt) :=
 Void TypeCheck(SemanticDeclarationType stmt) :=
 	1. *Assert:* `stmt.children.count` is 2.
 	2. *Perform:* *UnwrapAffirm:* `TypeCheck(stmt.children.1)`.
-	3. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `decl.children.0.id`:
-		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
-		2. *Set* `symbol.value` to *UnwrapAffirm:* `Assess(stmt.children.1)`.
+	3. *Return:* `Assess(stmt)`.
 ;
 
 
@@ -36,11 +34,7 @@ Void! TypeCheck(SemanticDeclarationVariable stmt) :=
 	5. *Let* `assigned_type` be *Unwrap:* `TypeOf(stmt.children.2)`.
 	6. *If* `assigned_type` is not a subtype of `assignee_type`:
 		1. *Throw:* a new TypeError03.
-	7. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `decl.children.0.id`:
-		1. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
-		2. *If* `stmt.unfixed` is `false`:
-			1. *Assert:* `symbol.unfixed` is `false`.
-			2. *Set* `symbol.value` to `Assess(stmt.children.2)`.
+	7. *Return:* `Assess(stmt)`.
 ;
 
 

@@ -23,6 +23,9 @@ import {
 	Decorator,
 	Validator,
 	AST,
+	SymbolStructure,
+	SymbolStructureType,
+	SymbolStructureVar,
 	SolidLanguageType,
 	SolidTypeConstant,
 	SolidObject,
@@ -206,7 +209,7 @@ describe('ASTNodeSolid', () => {
 					}),
 					'produces `InstructionConst.new(ASTNodeOperation#assess)`',
 				)
-			}).timeout(5000)
+			}).timeout(10000);
 			context('with constant folding off.', () => {
 				const folding_off: SolidConfig = {
 					...CONFIG_DEFAULT,
@@ -504,6 +507,18 @@ describe('ASTNodeSolid', () => {
 			});
 		});
 		describe('ASTNodeDeclarationType', () => {
+			it('adds an entry to the symbol table with a preset value of `unknown`.', () => {
+				const validator: Validator = new Validator();
+				const goal: AST.ASTNodeGoal = goalFromSource(`
+					type T = int;
+				`);
+				assert.ok(!validator.hasSymbol(256n))
+				goal.varCheck(validator);
+				assert.ok(validator.hasSymbol(256n));
+				const info: SymbolStructure | null = validator.getSymbolInfo(256n);
+				assert.ok(info instanceof SymbolStructureType);
+				assert.strictEqual(info.value, SolidLanguageType.UNKNOWN);
+			});
 			it('throws if the validator already contains a record for the symbol.', () => {
 				assert.throws(() => goalFromSource(`
 					type T = int;
@@ -516,6 +531,18 @@ describe('ASTNodeSolid', () => {
 			});
 		});
 		describe('ASTNodeDeclarationVariable', () => {
+			it('adds an entry to the symbol table with a preset null value.', () => {
+				const validator: Validator = new Validator();
+				const goal: AST.ASTNodeGoal = goalFromSource(`
+					let x: int = 42;
+				`);
+				assert.ok(!validator.hasSymbol(256n))
+				goal.varCheck(validator);
+				assert.ok(validator.hasSymbol(256n));
+				const info: SymbolStructure | null = validator.getSymbolInfo(256n);
+				assert.ok(info instanceof SymbolStructureVar);
+				assert.strictEqual(info.value, null);
+			});
 			it('throws if the validator already contains a record for the variable.', () => {
 				assert.throws(() => goalFromSource(`
 					let i: int = 42;
@@ -549,7 +576,11 @@ describe('ASTNodeSolid', () => {
 
 
 	describe('#typeCheck', () => {
+		describe('ASTNodeDeclarationType', () => {
+			it.skip('calls #assess'); // TODO
+		});
 		describe('ASTNodeDeclarationVariable', () => {
+			it.skip('calls #assess'); // TODO
 			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  int | float =  21  *  2;`
 				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
@@ -1104,4 +1135,57 @@ describe('ASTNodeSolid', () => {
 			})
 		})
 	})
+
+
+	describe('ASTNodeDeclaration', () => {
+		describe('#assess', () => {
+			describe('ASTNodeDeclarationType', () => {
+				it('sets the value of the SymbolStructure.', () => {
+					const validator: Validator = new Validator();
+					const goal: AST.ASTNodeGoal = goalFromSource(`
+						type T = int;
+					`);
+					goal.varCheck(validator);
+					goal.typeCheck(validator);
+					assert.strictEqual(
+						(validator.getSymbolInfo(256n) as SymbolStructureType).value,
+						Int16,
+					);
+				});
+			});
+			describe('ASTNodeDeclarationVariable', () => {
+				it('with constant folding on, sets the value of the SymbolStructure.', () => {
+					const validator: Validator = new Validator();
+					const goal: AST.ASTNodeGoal = goalFromSource(`
+						let x: int = 42;
+					`);
+					goal.varCheck(validator);
+					goal.typeCheck(validator);
+					assert.deepStrictEqual(
+						(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
+						new Int16(42n),
+					);
+				});
+				it('with constant folding off, does nothing.', () => {
+					const folding_off: SolidConfig = {
+						...CONFIG_DEFAULT,
+						compilerOptions: {
+							...CONFIG_DEFAULT.compilerOptions,
+							constantFolding: false,
+						},
+					};
+					const validator: Validator = new Validator(folding_off);
+					const goal: AST.ASTNodeGoal = goalFromSource(`
+						let x: int = 42;
+					`);
+					goal.varCheck(validator);
+					goal.typeCheck(validator);
+					assert.strictEqual(
+						(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
+						null,
+					);
+				});
+			});
+		});
+	});
 })
