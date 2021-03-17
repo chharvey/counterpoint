@@ -7,8 +7,8 @@ Type Assess(SemanticTypeConstant const) :=
 Type Assess(SemanticTypeAlias var) :=
 	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
 		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
-		2. *Assert:* `symbol.defn` is an instance of `SemanticType`.
-		3. *Return:* `Assess(symbol.defn)`.
+		2. *Assert:* `symbol.value` is a Solid Language Type.
+		3. *Return:* `symbol.value`.
 	2. *Return:* `Unknown`.
 ;
 
@@ -42,12 +42,12 @@ Or<Null, Boolean, Number, Sequence<RealNumber>> Assess(SemanticConstant const) :
 
 
 
-Void! Assess(SemanticVariable var) :=
+Object! Assess(SemanticVariable var) :=
 	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
 		1. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
 		2. *If* `symbol.unfixed` is `false`:
-			1. *Assert:* `symbol.defn` is an instance of `SemanticExpression`.
-			2. *Return:* `Assess(symbol.defn)`.
+			1. *Assert:* `symbol.value` is a Completion Structure.
+			2. *Return:* `symbol.value`.
 	2. *Throw:* `void`.
 ;
 
@@ -154,4 +154,22 @@ Object! Assess(SemanticOperation[operator: COND] expr) :=
 		1. *Return:* `Assess(expr.children.1)`.
 	5. *Else:*
 		1. *Return:* `Assess(expr.children.2)`.
+;
+
+
+
+Void Assess(SemanticDeclarationType decl) :=
+	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `decl.children.0.id`:
+		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
+		2. *Set* `symbol.value` to *UnwrapAffirm:* `Assess(stmt.children.1)`.
+;
+
+
+
+Void Assess(SemanticDeclarationType decl) :=
+	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `decl.children.0.id`:
+		1. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
+		2. *If* `decl.unfixed` is `false`:
+			1. *Assert:* `symbol.unfixed` is `false`.
+			2. *Set* `symbol.value` to `Assess(stmt.children.2)`.
 ;

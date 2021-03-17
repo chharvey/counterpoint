@@ -4,6 +4,12 @@ export {Decorator} from './Decorator';
 export * as AST from './ASTNode';
 
 export {
+	SymbolStructure,
+	SymbolStructureType,
+	SymbolStructureVar,
+} from './SymbolStructure';
+
+export {
 	SolidLanguageType,
 	SolidTypeConstant,
 	SolidTypeInterface,

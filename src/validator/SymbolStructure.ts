@@ -1,5 +1,5 @@
-import type * as AST from './ASTNode';
 import type {SolidLanguageType} from './SolidLanguageType';
+import type {SolidObject} from './SolidObject';
 
 
 
@@ -28,20 +28,31 @@ export class SymbolStructure {
 
 
 export class SymbolStructureType extends SymbolStructure {
+	private was_value_set: boolean = false;
 	constructor (
 		id: bigint,
 		line: number,
 		col: number,
-		/** The static definition of the symbol. */
-		readonly defn: AST.ASTNodeType,
+		/** The assessed value of the symbol. */
+		private _value: SolidLanguageType,
 	) {
 		super(id, line, col);
+	}
+	get value(): SolidLanguageType {
+		return this._value;
+	}
+	set value(v: SolidLanguageType) {
+		if (!this.was_value_set) {
+			this.was_value_set = true;
+			this._value = v;
+		};
 	}
 }
 
 
 
 export class SymbolStructureVar extends SymbolStructure {
+	private was_value_set: boolean = false;
 	constructor (
 		id: bigint,
 		line: number,
@@ -50,9 +61,18 @@ export class SymbolStructureVar extends SymbolStructure {
 		readonly type: SolidLanguageType,
 		/** May the symbol be reassigned? */
 		readonly unfixed: boolean,
-		/** The static definition of the symbol, or `null` if the symbol is unfixed. */
-		readonly defn: AST.ASTNodeExpression | null,
+		/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
+		private _value: SolidObject | null,
 	) {
 		super(id, line, col);
+	}
+	get value(): SolidObject | null {
+		return this._value;
+	}
+	set value(v: SolidObject | null) {
+		if (!this.unfixed && !this.was_value_set) {
+			this.was_value_set = true;
+			this._value = v;
+		};
 	}
 }

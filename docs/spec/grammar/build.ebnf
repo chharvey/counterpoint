@@ -45,11 +45,7 @@ Sequence<Instruction> Build(SemanticAssignment assign) :=
 
 
 Sequence<Instruction> Build(SemanticGoal goal) :=
-	1. *Let* `sequence` be an empty sequence of `Instruction`s.
-	2. For each `SemanticStatment stmt` in `goal.children`:
-		1. *Let* `instrs` be *UnwrapAffirm:* `Build(stmt)`.
-		2. Push `...instrs` to `sequence`.
-	3. *Return:* `sequence`.
+	1. *Return:* a flattened mapping of `goal.children` for each `stmt` to *UnwrapAffirm:* `Build(stmt)`.
 ;
 
 
