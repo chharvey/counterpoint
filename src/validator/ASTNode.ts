@@ -950,6 +950,7 @@ export class ASTNodeDeclarationType extends ASTNodeDeclaration {
 			variable.id,
 			variable.line_index,
 			variable.col_index,
+			variable.source,
 			SolidLanguageType.UNKNOWN,
 		));
 	}
@@ -994,6 +995,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeDeclaration {
 			variable.id,
 			variable.line_index,
 			variable.col_index,
+			variable.source,
 			this.unfixed,
 			SolidLanguageType.UNKNOWN,
 			null,
