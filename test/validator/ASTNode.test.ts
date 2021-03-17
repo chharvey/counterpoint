@@ -49,6 +49,9 @@ import {
 	InstructionModule,
 } from '../../src/builder/'
 import {
+	expectToBeCalled,
+} from '../assert-helpers';
+import {
 	typeConstInt,
 	typeConstFloat,
 	instructionConstInt,
@@ -66,6 +69,8 @@ import {
 	operationFromSource,
 	statementExpressionFromSource,
 	constantFromSource,
+	typeDeclarationFromSource,
+	variableDeclarationFromSource as varDeclarationFromSource,
 	goalFromSource,
 } from '../helpers-semantic'
 
@@ -577,10 +582,34 @@ describe('ASTNodeSolid', () => {
 
 	describe('#typeCheck', () => {
 		describe('ASTNodeDeclarationType', () => {
-			it.skip('calls #assess'); // TODO
+			it('calls #assess', () => {
+				const decl: AST.ASTNodeDeclarationType = typeDeclarationFromSource(`
+					type T = int;
+				`);
+				expectToBeCalled(decl.assess, 1, (orig, spy) => {
+					decl.assess = spy;
+					try {
+						decl.typeCheck();
+					} finally {
+						decl.assess = orig;
+					};
+				});
+			});
 		});
 		describe('ASTNodeDeclarationVariable', () => {
-			it.skip('calls #assess'); // TODO
+			it('calls #assess', () => {
+				const decl: AST.ASTNodeDeclarationVariable = varDeclarationFromSource(`
+					let x: int = 42;
+				`);
+				expectToBeCalled(decl.assess, 1, (orig, spy) => {
+					decl.assess = spy;
+					try {
+						decl.typeCheck();
+					} finally {
+						decl.assess = orig;
+					};
+				});
+			});
 			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  int | float =  21  *  2;`
 				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
