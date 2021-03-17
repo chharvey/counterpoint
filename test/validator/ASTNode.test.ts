@@ -163,6 +163,7 @@ describe('ASTNodeSolid', () => {
 				assert.ok(validator.hasSymbol(256n));
 				const info: SymbolStructure | null = validator.getSymbolInfo(256n);
 				assert.ok(info instanceof SymbolStructureVar);
+				assert.strictEqual(info.type, SolidLanguageType.UNKNOWN);
 				assert.strictEqual(info.value, null);
 			});
 			it('throws if the validator already contains a record for the variable.', () => {
@@ -1249,6 +1250,10 @@ describe('ASTNodeSolid', () => {
 					`);
 					goal.varCheck(validator);
 					goal.typeCheck(validator);
+					assert.strictEqual(
+						(validator.getSymbolInfo(256n) as SymbolStructureVar).type,
+						Int16,
+					);
 					assert.deepStrictEqual(
 						(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
 						new Int16(42n),

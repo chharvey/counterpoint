@@ -1268,6 +1268,7 @@ export class ASTNodeDeclarationType extends ASTNodeDeclaration {
 			variable.id,
 			variable.line_index,
 			variable.col_index,
+			variable.source,
 			SolidLanguageType.UNKNOWN,
 		));
 	}
@@ -1313,8 +1314,9 @@ export class ASTNodeDeclarationVariable extends ASTNodeDeclaration {
 			variable.id,
 			variable.line_index,
 			variable.col_index,
-			this.children[1].assess(validator),
+			variable.source,
 			this.unfixed,
+			SolidLanguageType.UNKNOWN,
 			null,
 		));
 	}
@@ -1336,11 +1338,12 @@ export class ASTNodeDeclarationVariable extends ASTNodeDeclaration {
 	/** @implements ASTNodeDeclaration */
 	@runOnceMethod
 	assess(validator: Validator): void {
-		if (validator.config.compilerOptions.constantFolding) {
-			const id: bigint = this.children[0].id;
-			if (validator.hasSymbol(id)) {
-				const symbol: SymbolStructure = validator.getSymbolInfo(id)!;
-				if (symbol instanceof SymbolStructureVar && !this.unfixed) {
+		const id: bigint = this.children[0].id;
+		if (validator.hasSymbol(id)) {
+			const symbol: SymbolStructure = validator.getSymbolInfo(id)!;
+			if (symbol instanceof SymbolStructureVar) {
+				symbol.type = this.children[1].assess(validator);
+				if (validator.config.compilerOptions.constantFolding && !this.unfixed) {
 					symbol.value = this.children[2].assess(validator);
 				};
 			};
