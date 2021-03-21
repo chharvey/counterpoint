@@ -18,23 +18,23 @@ Void! TypeCheck(SemanticStatementExpression stmt) :=
 
 
 
-Void TypeCheck(SemanticDeclarationType stmt) :=
-	1. *Assert:* `stmt.children.count` is 2.
-	2. *Perform:* *UnwrapAffirm:* `TypeCheck(stmt.children.1)`.
-	3. *Return:* `Assess(stmt)`.
+Void TypeCheck(SemanticDeclarationType decl) :=
+	1. *Assert:* `decl.children.count` is 2.
+	2. *Perform:* *UnwrapAffirm:* `TypeCheck(decl.children.1)`.
+	3. *Return:* `Assess(decl)`.
 ;
 
 
 
-Void! TypeCheck(SemanticDeclarationVariable stmt) :=
-	1. *Assert:* `stmt.children.count` is 3.
-	2. *Perform:* *UnwrapAffirm:* `TypeCheck(stmt.children.1)`.
-	3. *Perform:* *UnwrapAffirm:* `TypeCheck(stmt.children.2)`.
-	4. *Let* `assignee_type` be *UnwrapAffirm:* `Assess(stmt.children.1)`.
-	5. *Let* `assigned_type` be *Unwrap:* `TypeOf(stmt.children.2)`.
+Void! TypeCheck(SemanticDeclarationVariable decl) :=
+	1. *Assert:* `decl.children.count` is 3.
+	2. *Perform:* *UnwrapAffirm:* `TypeCheck(decl.children.1)`.
+	3. *Perform:* *UnwrapAffirm:* `TypeCheck(decl.children.2)`.
+	4. *Let* `assignee_type` be *UnwrapAffirm:* `Assess(decl.children.1)`.
+	5. *Let* `assigned_type` be *Unwrap:* `TypeOf(decl.children.2)`.
 	6. *If* `assigned_type` is not a subtype of `assignee_type`:
 		1. *Throw:* a new TypeError03.
-	7. *Return:* `Assess(stmt)`.
+	7. *Return:* `Assess(decl)`.
 ;
 
 

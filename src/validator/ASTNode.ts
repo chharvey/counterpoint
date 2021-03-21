@@ -951,7 +951,7 @@ export class ASTNodeDeclarationType extends ASTNodeDeclaration {
 			variable.line_index,
 			variable.col_index,
 			variable.source,
-			SolidLanguageType.UNKNOWN,
+			() => this.children[1].assess(validator),
 		));
 	}
 	/** @implements ASTNodeSolid */
@@ -961,13 +961,7 @@ export class ASTNodeDeclarationType extends ASTNodeDeclaration {
 	}
 	/** @implements ASTNodeDeclaration */
 	protected assess_do(validator: Validator): void {
-		const id: bigint = this.children[0].id;
-		if (validator.hasSymbol(id)) {
-			const symbol: SymbolStructure = validator.getSymbolInfo(id)!;
-			if (symbol instanceof SymbolStructureType) {
-				symbol.value = this.children[1].assess(validator);
-			};
-		};
+		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
 	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {
@@ -997,8 +991,10 @@ export class ASTNodeDeclarationVariable extends ASTNodeDeclaration {
 			variable.col_index,
 			variable.source,
 			this.unfixed,
-			SolidLanguageType.UNKNOWN,
-			null,
+			() => this.children[1].assess(validator),
+			(validator.config.compilerOptions.constantFolding && !this.unfixed)
+				? () => this.children[2].assess(validator)
+				: null,
 		));
 	}
 	/** @implements ASTNodeSolid */
@@ -1018,16 +1014,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeDeclaration {
 	}
 	/** @implements ASTNodeDeclaration */
 	protected assess_do(validator: Validator): void {
-		const id: bigint = this.children[0].id;
-		if (validator.hasSymbol(id)) {
-			const symbol: SymbolStructure = validator.getSymbolInfo(id)!;
-			if (symbol instanceof SymbolStructureVar) {
-				symbol.type = this.children[1].assess(validator);
-				if (validator.config.compilerOptions.constantFolding && !this.unfixed) {
-					symbol.value = this.children[2].assess(validator);
-				};
-			};
-		};
+		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
 	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {

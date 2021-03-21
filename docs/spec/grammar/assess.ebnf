@@ -161,7 +161,7 @@ Object! Assess(SemanticOperation[operator: COND] expr) :=
 Void Assess(SemanticDeclarationType decl) :=
 	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `decl.children.0.id`:
 		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
-		2. *Set* `symbol.value` to *UnwrapAffirm:* `Assess(stmt.children.1)`.
+		2. *Set* `symbol.value` to *UnwrapAffirm:* `Assess(decl.children.1)`.
 ;
 
 
@@ -172,5 +172,5 @@ Void Assess(SemanticDeclarationType decl) :=
 		2. *Set* `symbol.type` to *UnwrapAffirm:* `Assess(decl.children.1)`.
 		2. *If* `decl.unfixed` is `false`:
 			1. *Assert:* `symbol.unfixed` is `false`.
-			2. *Set* `symbol.value` to `Assess(stmt.children.2)`.
+			2. *Set* `symbol.value` to `Assess(decl.children.2)`.
 ;
