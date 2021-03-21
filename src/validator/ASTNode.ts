@@ -915,20 +915,6 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
  * - ASTNodeDeclarationVariable
  */
 export abstract class ASTNodeDeclaration extends ASTNodeSolid {
-	private was_assessed: boolean = false;
-	/**
-	 * Assign the value to the variable at compile-time, if possible.
-	 * If {@link SolidConfig|constant folding} is off, this should not be called and assignment should happen at run-time.
-	 * @param validator stores validation and configuration information
-	 * @final
-	 */
-	assess(validator: Validator): void {
-		if (!this.was_assessed) {
-			this.was_assessed = true;
-			return this.assess_do(validator);
-		};
-	}
-	protected abstract assess_do(validator: Validator): void;
 }
 export class ASTNodeDeclarationType extends ASTNodeDeclaration {
 	constructor (
@@ -957,10 +943,6 @@ export class ASTNodeDeclarationType extends ASTNodeDeclaration {
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
 		this.children[1].typeCheck(validator);
-		return this.assess(validator);
-	}
-	/** @implements ASTNodeDeclaration */
-	protected assess_do(validator: Validator): void {
 		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
 	/** @implements ASTNodeSolid */
@@ -1010,10 +992,6 @@ export class ASTNodeDeclarationVariable extends ASTNodeDeclaration {
 		} else {
 			throw new TypeError03(this, assignee_type, assigned_type)
 		}
-		return this.assess(validator);
-	}
-	/** @implements ASTNodeDeclaration */
-	protected assess_do(validator: Validator): void {
 		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
 	/** @implements ASTNodeSolid */
