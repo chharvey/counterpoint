@@ -914,9 +914,10 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
  * - ASTNodeDeclarationType
  * - ASTNodeDeclarationVariable
  */
-export abstract class ASTNodeDeclaration extends ASTNodeSolid {
-}
-export class ASTNodeDeclarationType extends ASTNodeDeclaration {
+export type ASTNodeDeclaration =
+	| ASTNodeDeclarationType
+	| ASTNodeDeclarationVariable
+export class ASTNodeDeclarationType extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly children:
@@ -950,7 +951,7 @@ export class ASTNodeDeclarationType extends ASTNodeDeclaration {
 		throw new Error('ASTNodeDeclarationType#build not yet supported.');
 	}
 }
-export class ASTNodeDeclarationVariable extends ASTNodeDeclaration {
+export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly unfixed: boolean,
