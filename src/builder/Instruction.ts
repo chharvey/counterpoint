@@ -328,10 +328,10 @@ export class InstructionBinopLogical extends InstructionBinop {
 			Operator.NOT,
 			new InstructionUnop(
 				Operator.NOT,
-				new InstructionGet(varname, this.arg0.isFloat),
+				new InstructionTee(varname, this.arg0),
 			),
 		)
-		const left:  InstructionExpression = new InstructionTee(varname, this.arg0)
+		const left:  InstructionExpression = new InstructionGet(varname, this.arg0.isFloat)
 		const right: InstructionExpression = this.arg1
 		return `(local ${ varname } ${ (!this.arg0.isFloat) ? `i32` : `f64` }) ${
 			(this.op === Operator.AND)

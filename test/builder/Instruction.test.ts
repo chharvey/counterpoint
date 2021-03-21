@@ -183,17 +183,15 @@ describe('Instruction', () => {
 					instructionConstInt(30n),
 					instructionConstFloat(18.1),
 				).toString(), `(call $i_f_is ${ instructionConstInt(30n) } ${ instructionConstFloat(18.1) })`)
-			})
-			it('prints (select) for AND and OR', () => {
 				assert.strictEqual(new InstructionBinopLogical(
 					0n,
 					Operator.AND,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
 				).toString(), ((varname) => `(local ${ varname } i32) ${ new InstructionCond(
-					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionGet(varname, false))),
+					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, instructionConstInt(30n)))),
 					instructionConstInt(18n),
-					new InstructionTee(varname, instructionConstInt(30n)),
+					new InstructionGet(varname, false),
 				) }`)('$o0'))
 				assert.strictEqual(new InstructionBinopLogical(
 					3n,
@@ -201,8 +199,8 @@ describe('Instruction', () => {
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
 				).toString(), ((varname) => `(local ${ varname } f64) ${ new InstructionCond(
-					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionGet(varname, true))),
-					new InstructionTee(varname, instructionConstFloat(30.1)),
+					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, instructionConstFloat(30.1)))),
+					new InstructionGet(varname, true),
 					instructionConstFloat(18.1),
 				) }`)('$o3'))
 			})
