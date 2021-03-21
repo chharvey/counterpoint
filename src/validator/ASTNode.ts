@@ -8,7 +8,6 @@ import * as xjs from 'extrajs'
 import {Dev} from '../core/';
 import {
 	memoizeMethod,
-	runOnceMethod,
 } from '../decorators';
 import {
 	Operator,
@@ -1240,15 +1239,10 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
  * - ASTNodeDeclarationType
  * - ASTNodeDeclarationVariable
  */
-export abstract class ASTNodeDeclaration extends ASTNodeSolid {
-	/**
-	 * Assign the value to the variable at compile-time, if possible.
-	 * If {@link SolidConfig|constant folding} is off, this should not be called and assignment should happen at run-time.
-	 * @param validator stores validation and configuration information
-	 */
-	abstract assess(validator: Validator): void;
-}
-export class ASTNodeDeclarationType extends ASTNodeDeclaration {
+export type ASTNodeDeclaration =
+	| ASTNodeDeclarationType
+	| ASTNodeDeclarationVariable
+export class ASTNodeDeclarationType extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly children:
@@ -1269,31 +1263,20 @@ export class ASTNodeDeclarationType extends ASTNodeDeclaration {
 			variable.line_index,
 			variable.col_index,
 			variable.source,
-			SolidLanguageType.UNKNOWN,
+			() => this.children[1].assess(validator),
 		));
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator = new Validator()): void {
 		this.children[1].typeCheck(validator);
-		return this.assess(validator);
-	}
-	/** @implements ASTNodeDeclaration */
-	@runOnceMethod
-	assess(validator: Validator): void {
-		const id: bigint = this.children[0].id;
-		if (validator.hasSymbol(id)) {
-			const symbol: SymbolStructure = validator.getSymbolInfo(id)!;
-			if (symbol instanceof SymbolStructureType) {
-				symbol.value = this.children[1].assess(validator);
-			};
-		};
+		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
 	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {
 		throw new Error('ASTNodeDeclarationType#build not yet supported.');
 	}
 }
-export class ASTNodeDeclarationVariable extends ASTNodeDeclaration {
+export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly unfixed: boolean,
@@ -1316,8 +1299,10 @@ export class ASTNodeDeclarationVariable extends ASTNodeDeclaration {
 			variable.col_index,
 			variable.source,
 			this.unfixed,
-			SolidLanguageType.UNKNOWN,
-			null,
+			() => this.children[1].assess(validator),
+			(validator.config.compilerOptions.constantFolding && !this.unfixed)
+				? () => this.children[2].assess(validator)
+				: null,
 		));
 	}
 	/** @implements ASTNodeSolid */
@@ -1333,21 +1318,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeDeclaration {
 		} else {
 			throw new TypeError03(this, assignee_type, assigned_type)
 		}
-		return this.assess(validator);
-	}
-	/** @implements ASTNodeDeclaration */
-	@runOnceMethod
-	assess(validator: Validator): void {
-		const id: bigint = this.children[0].id;
-		if (validator.hasSymbol(id)) {
-			const symbol: SymbolStructure = validator.getSymbolInfo(id)!;
-			if (symbol instanceof SymbolStructureVar) {
-				symbol.type = this.children[1].assess(validator);
-				if (validator.config.compilerOptions.constantFolding && !this.unfixed) {
-					symbol.value = this.children[2].assess(validator);
-				};
-			};
-		};
+		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
 	/** @implements ASTNodeSolid */
 	build(_builder: Builder): Instruction {

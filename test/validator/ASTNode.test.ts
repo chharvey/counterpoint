@@ -70,8 +70,6 @@ import {
 	operationFromSource,
 	statementExpressionFromSource,
 	constantFromSource,
-	typeDeclarationFromSource,
-	variableDeclarationFromSource as varDeclarationFromSource,
 	goalFromSource,
 } from '../helpers-semantic'
 
@@ -129,7 +127,7 @@ describe('ASTNodeSolid', () => {
 			});
 		});
 		describe('ASTNodeDeclarationType', () => {
-			it('adds an entry to the symbol table with a preset value of `unknown`.', () => {
+			it('adds a SymbolStructure to the symbol table with a preset `type` value of `unknown`.', () => {
 				const validator: Validator = new Validator();
 				const goal: AST.ASTNodeGoal = goalFromSource(`
 					type T = int;
@@ -153,7 +151,7 @@ describe('ASTNodeSolid', () => {
 			});
 		});
 		describe('ASTNodeDeclarationVariable', () => {
-			it('adds an entry to the symbol table with a preset null value.', () => {
+			it('adds a SymbolStructure to the symbol table with a preset `type` value of `unknown` and a preset null `value` value.', () => {
 				const validator: Validator = new Validator();
 				const goal: AST.ASTNodeGoal = goalFromSource(`
 					let x: int = 42;
@@ -200,34 +198,20 @@ describe('ASTNodeSolid', () => {
 
 	describe('#typeCheck', () => {
 		describe('ASTNodeDeclarationType', () => {
-			it('calls #assess', () => {
-				const decl: AST.ASTNodeDeclarationType = typeDeclarationFromSource(`
+			it('sets `SymbolStructure#value`.', () => {
+				const validator: Validator = new Validator();
+				const goal: AST.ASTNodeGoal = goalFromSource(`
 					type T = int;
 				`);
-				assert_wasCalled(decl.assess, 1, (orig, spy) => {
-					decl.assess = spy;
-					try {
-						decl.typeCheck();
-					} finally {
-						decl.assess = orig;
-					};
-				});
+				goal.varCheck(validator);
+				goal.typeCheck(validator);
+				assert.strictEqual(
+					(validator.getSymbolInfo(256n) as SymbolStructureType).value,
+					Int16,
+				);
 			});
 		});
 		describe('ASTNodeDeclarationVariable', () => {
-			it('calls #assess', () => {
-				const decl: AST.ASTNodeDeclarationVariable = varDeclarationFromSource(`
-					let x: int = 42;
-				`);
-				assert_wasCalled(decl.assess, 1, (orig, spy) => {
-					decl.assess = spy;
-					try {
-						decl.typeCheck();
-					} finally {
-						decl.assess = orig;
-					};
-				});
-			});
 			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  int | float =  21  *  2;`
 				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
@@ -254,6 +238,41 @@ describe('ASTNodeSolid', () => {
 					},
 				})), TypeError03);
 			})
+			it('with constant folding on, sets `SymbolStructure#{type, value}`.', () => {
+				const validator: Validator = new Validator();
+				const goal: AST.ASTNodeGoal = goalFromSource(`
+					let x: int = 42;
+				`);
+				goal.varCheck(validator);
+				goal.typeCheck(validator);
+				assert.strictEqual(
+					(validator.getSymbolInfo(256n) as SymbolStructureVar).type,
+					Int16,
+				);
+				assert.deepStrictEqual(
+					(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
+					new Int16(42n),
+				);
+			});
+			it('with constant folding off, does nothing to the SymbolStructure.', () => {
+				const folding_off: SolidConfig = {
+					...CONFIG_DEFAULT,
+					compilerOptions: {
+						...CONFIG_DEFAULT.compilerOptions,
+						constantFolding: false,
+					},
+				};
+				const validator: Validator = new Validator(folding_off);
+				const goal: AST.ASTNodeGoal = goalFromSource(`
+					let x: int = 42;
+				`);
+				goal.varCheck(validator);
+				goal.typeCheck(validator);
+				assert.strictEqual(
+					(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
+					null,
+				);
+			});
 		})
 	})
 
@@ -1224,61 +1243,4 @@ describe('ASTNodeSolid', () => {
 			});
 		})
 	})
-
-
-	describe('ASTNodeDeclaration', () => {
-		describe('#assess', () => {
-			describe('ASTNodeDeclarationType', () => {
-				it('sets the value of the SymbolStructure.', () => {
-					const validator: Validator = new Validator();
-					const goal: AST.ASTNodeGoal = goalFromSource(`
-						type T = int;
-					`);
-					goal.varCheck(validator);
-					goal.typeCheck(validator);
-					assert.strictEqual(
-						(validator.getSymbolInfo(256n) as SymbolStructureType).value,
-						Int16,
-					);
-				});
-			});
-			describe('ASTNodeDeclarationVariable', () => {
-				it('with constant folding on, sets the value of the SymbolStructure.', () => {
-					const validator: Validator = new Validator();
-					const goal: AST.ASTNodeGoal = goalFromSource(`
-						let x: int = 42;
-					`);
-					goal.varCheck(validator);
-					goal.typeCheck(validator);
-					assert.strictEqual(
-						(validator.getSymbolInfo(256n) as SymbolStructureVar).type,
-						Int16,
-					);
-					assert.deepStrictEqual(
-						(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
-						new Int16(42n),
-					);
-				});
-				it('with constant folding off, does nothing.', () => {
-					const folding_off: SolidConfig = {
-						...CONFIG_DEFAULT,
-						compilerOptions: {
-							...CONFIG_DEFAULT.compilerOptions,
-							constantFolding: false,
-						},
-					};
-					const validator: Validator = new Validator(folding_off);
-					const goal: AST.ASTNodeGoal = goalFromSource(`
-						let x: int = 42;
-					`);
-					goal.varCheck(validator);
-					goal.typeCheck(validator);
-					assert.strictEqual(
-						(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
-						null,
-					);
-				});
-			});
-		});
-	});
 })
