@@ -66,10 +66,10 @@ export function runOnceMethod<Params extends unknown[]>(
 	descriptor:    TypedPropertyDescriptor<(this: object, ...args: Params) => void>,
 ): typeof descriptor {
 	const method = descriptor.value!;
-	let was_run: boolean = false;
+	const memoset: WeakSet<object> = new WeakSet();
 	descriptor.value = function (...args) {
-		if (!was_run) {
-			was_run = true;
+		if (!memoset.has(this)) {
+			memoset.add(this);
 			return method.call(this, ...args);
 		};
 	};
@@ -92,10 +92,10 @@ export function runOnceSetter<Param>(
 	descriptor:    TypedPropertyDescriptor<Param>,
 ): typeof descriptor {
 	const method = descriptor.set!;
-	let was_run: boolean = false;
+	const memoset: WeakSet<object> = new WeakSet();
 	descriptor.set = function (arg) {
-		if (!was_run) {
-			was_run = true;
+		if (!memoset.has(this)) {
+			memoset.add(this);
 			return method.call(this, arg);
 		};
 	};
