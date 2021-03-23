@@ -49,6 +49,7 @@ import {
 	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
+	INST,
 } from '../builder/'
 import {
 	ReferenceError01,
@@ -415,8 +416,8 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		};
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(_builder: Builder): InstructionExpression {
-		throw new Error('ASTNodeVariable#build_do not yet supported.');
+	protected build_do(_builder: Builder, to_float: boolean = false): InstructionExpression {
+		return new INST.InstructionGet(`$var${ this.id.toString(16) }`, to_float || this.shouldFloat);
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
@@ -947,8 +948,8 @@ export class ASTNodeDeclarationType extends ASTNodeSolid {
 		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
 	/** @implements ASTNodeSolid */
-	build(_builder: Builder): Instruction {
-		throw new Error('ASTNodeDeclarationType#build not yet supported.');
+	build(_builder: Builder): INST.InstructionNone {
+		return new INST.InstructionNone();
 	}
 }
 export class ASTNodeDeclarationVariable extends ASTNodeSolid {
@@ -996,8 +997,13 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
 	/** @implements ASTNodeSolid */
-	build(_builder: Builder): Instruction {
-		throw new Error('ASTNodeDeclarationVariable#build not yet supported.');
+	build(builder: Builder): INST.InstructionNone | INST.InstructionSet {
+		const tofloat: boolean = this.children[2].type(builder.validator).isSubtypeOf(Float64) || this.children[2].shouldFloat;
+		const assess: SolidObject | null = this.children[0].assess(builder.validator);
+		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && assess)
+			? new INST.InstructionNone()
+			: new INST.InstructionSet(`$var${ this.children[0].id.toString(16) }`, this.children[2].build(builder, tofloat))
+		;
 	}
 }
 export class ASTNodeAssignment extends ASTNodeSolid {
