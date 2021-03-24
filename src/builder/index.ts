@@ -17,3 +17,4 @@ export {
 	InstructionStatement,
 	InstructionModule,
 } from './Instruction';
+export * as INST from './Instruction';
