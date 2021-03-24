@@ -47,6 +47,7 @@ import {
 	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
+	INST,
 } from '../../src/builder/'
 import {
 	typeConstInt,
@@ -143,6 +144,73 @@ describe('ASTNodeSolid', () => {
 				])
 			})
 		})
+
+		describe('ASTNodeVariable', () => {
+			it('with constant folding on, returns InstructionConst for fixed & foldable variables.', () => {
+				const src: string = `
+					let x: int = 42;
+					let y: float = 4.2 * 10;
+					x;
+					y;
+				`;
+				const builder: Builder = new Builder(src)
+				assert.deepStrictEqual(
+					[
+						goalFromSource(src).children[2].build(builder),
+						goalFromSource(src).children[3].build(builder),
+					],
+					[
+						new INST.InstructionStatement(0n, instructionConstInt(42n)),
+						new INST.InstructionStatement(1n, instructionConstFloat(42.0)),
+					],
+				);
+			});
+			it('with constant folding on, returns InstructionGet for unfixed / non-foldable variables.', () => {
+				const src: string = `
+					let unfixed x: int = 42;
+					let y: int = x + 10;
+					x;
+					y;
+				`;
+				const builder: Builder = new Builder(src)
+				assert.deepStrictEqual(
+					[
+						goalFromSource(src).children[2].build(builder),
+						goalFromSource(src).children[3].build(builder),
+					],
+					[
+						new INST.InstructionStatement(0n, new INST.InstructionGet(0x100n)),
+						new INST.InstructionStatement(1n, new INST.InstructionGet(0x101n)),
+					],
+				);
+			});
+			it('with constant folding off, always returns InstructionGet.', () => {
+				const folding_off: SolidConfig = {
+					...CONFIG_DEFAULT,
+					compilerOptions: {
+						...CONFIG_DEFAULT.compilerOptions,
+						constantFolding: false,
+					},
+				};
+				const src: string = `
+					let x: int = 42;
+					let unfixed y: float = 4.2;
+					x;
+					y;
+				`;
+				const builder: Builder = new Builder(src, folding_off);
+				assert.deepStrictEqual(
+					[
+						goalFromSource(src, folding_off).children[2].build(builder),
+						goalFromSource(src, folding_off).children[3].build(builder),
+					],
+					[
+						new INST.InstructionStatement(0n, new INST.InstructionGet(0x100n)),
+						new INST.InstructionStatement(1n, new INST.InstructionGet(0x101n)),
+					],
+				);
+			});
+		});
 
 		context('ASTNodeOperation', () => {
 			specify('with constant folding on.', () => {
@@ -453,6 +521,114 @@ describe('ASTNodeSolid', () => {
 				})
 			})
 		})
+
+		describe('ASTNodeDeclarationType', () => {
+			it('always returns InstructionNone.', () => {
+				const src: string = `
+					type T = int;
+					type U = T | float;
+				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src);
+				const builder: Builder = new Builder(src)
+				assert.deepStrictEqual(
+					[
+						goal.children[0].build(builder),
+						goal.children[1].build(builder),
+					],
+					[
+						new INST.InstructionNone(),
+						new INST.InstructionNone(),
+					],
+				);
+			});
+		});
+
+		describe('ASTNodeDeclarationVariable', () => {
+			it('with constant folding on, returns InstructionNone for fixed & foldable variables.', () => {
+				const src: string = `
+					let x: int = 42;
+					let y: float = 4.2 * 10;
+				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src);
+				const builder: Builder = new Builder(src)
+				assert.deepStrictEqual(
+					[
+						goal.children[0].build(builder),
+						goal.children[1].build(builder),
+					],
+					[
+						new INST.InstructionNone(),
+						new INST.InstructionNone(),
+					],
+				);
+			});
+			it('with constant folding on, returns InstructionSet for unfixed / non-foldable variables.', () => {
+				const src: string = `
+					let unfixed x: int = 42;
+					let y: int = x + 10;
+				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src);
+				const builder: Builder = new Builder(src)
+				assert.deepStrictEqual(
+					[
+						goal.children[0].build(builder),
+						goal.children[1].build(builder),
+					],
+					[
+						new INST.InstructionSet(0x100n, instructionConstInt(42n)),
+						new INST.InstructionSet(0x101n, new INST.InstructionBinopArithmetic(
+							Operator.ADD,
+							new INST.InstructionGet(0x100n),
+							instructionConstInt(10n),
+						)),
+					],
+				);
+			});
+			it('with constant folding off, always returns InstructionSet.', () => {
+				const folding_off: SolidConfig = {
+					...CONFIG_DEFAULT,
+					compilerOptions: {
+						...CONFIG_DEFAULT.compilerOptions,
+						constantFolding: false,
+					},
+				};
+				const src: string = `
+					let x: int = 42;
+					let unfixed y: float = 4.2;
+				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src, folding_off);
+				const builder: Builder = new Builder(src, folding_off);
+				assert.deepStrictEqual(
+					[
+						goal.children[0].build(builder),
+						goal.children[1].build(builder),
+					],
+					[
+						new INST.InstructionSet(0x100n, instructionConstInt(42n)),
+						new INST.InstructionSet(0x101n, instructionConstFloat(4.2)),
+					],
+				);
+			});
+		});
+
+		describe('ASTNodeAssignment', () => {
+			it('always returns InstructionSet.', () => {
+				const src: string = `
+					let unfixed y: float = 4.2;
+					y = y * 10;
+				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src);
+				const builder: Builder = new Builder(src);
+				assert.deepStrictEqual(
+					goal.children[1].build(builder),
+					new INST.InstructionSet(0x100n, new INST.InstructionBinopArithmetic(
+						Operator.MUL,
+						new INST.InstructionGet(0x100n, true),
+						instructionConstFloat(10.0),
+					)),
+				);
+			});
+		});
 	})
 
 
