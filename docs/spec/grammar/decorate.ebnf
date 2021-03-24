@@ -311,6 +311,14 @@ Decorate(Expression ::= ExpressionConditional) -> SemanticExpression
 
 
 
+Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType
+	:= (SemanticDeclarationType
+		(SemanticTypeAlias[id=TokenWorth(IDENTIFIER)])
+		Decorate(Type)
+	);
+
+
+
 Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=false]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
@@ -326,18 +334,10 @@ Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Express
 
 
 
-Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType
-	:= (SemanticDeclarationType
-		(SemanticTypeAlias[id=TokenWorth(IDENTIFIER)])
-		Decorate(Type)
-	);
-
-
-
-Decorate(Declaration ::= DeclarationVariable) -> SemanticDeclarationVariable
-	:= Decorate(DeclarationVariable);
 Decorate(Declaration ::= DeclarationType) -> SemanticDeclarationType
 	:= Decorate(DeclarationType);
+Decorate(Declaration ::= DeclarationVariable) -> SemanticDeclarationVariable
+	:= Decorate(DeclarationVariable);
 
 
 

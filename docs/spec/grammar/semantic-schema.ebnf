@@ -4,13 +4,6 @@ SemanticType =:=
 	| SemanticTypeOperation
 ;
 
-SemanticExpression =:=
-	| SemanticConstant
-	| SemanticVariable
-	| SemanticTemplate
-	| SemanticOperation
-;
-
 
 
 SemanticTypeConstant[value: Type]
@@ -23,6 +16,15 @@ SemanticTypeOperation[operator: ORNULL]
 	::= SemanticType;
 SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
+
+
+
+SemanticExpression =:=
+	| SemanticConstant
+	| SemanticVariable
+	| SemanticTemplate
+	| SemanticOperation
+;
 
 
 
@@ -70,16 +72,16 @@ SemanticStatementExpression
 
 
 
-SemanticDeclarationVariable[unfixed: Boolean]
-	::= SemanticVariable SemanticType SemanticExpression;
+SemanticDeclaration =:=
+	| SemanticDeclarationType
+	| SemanticDeclarationVariable
+;
 
 SemanticDeclarationType
 	::= SemanticTypeAlias SemanticType;
 
-SemanticDeclaration =:=
-	| SemanticDeclarationVariable
-	| SemanticDeclarationType
-;
+SemanticDeclarationVariable[unfixed: Boolean]
+	::= SemanticVariable SemanticType SemanticExpression;
 
 
 

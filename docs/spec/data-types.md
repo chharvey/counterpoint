@@ -130,7 +130,7 @@ A **SymbolStructureType** represents a type alias referencing a Solid Language T
 Property    | Description
 ----------- | -----------
 \`id\`      | the unique identifier of the declared symbol
-\`defn\`    | the type expression (an ASTNode) that defines this symbol
+\`value\`   | the assessed value (a Solid Language Type) of this symbol
 
 ##### SymbolStructureVar
 A **SymbolStructureVar** represents a variable referencing a Solid Language Value.
@@ -138,9 +138,9 @@ A **SymbolStructureVar** represents a variable referencing a Solid Language Valu
 Property    | Description
 ----------- | -----------
 \`id\`      | the unique identifier of the declared symbol
-\`type\`    | the Solid Language Type of the variable
 \`unfixed\` | a Boolean, whether the variable may be reassigned
-\`defn\`    | if \`unfixed\` is `false`: the expression (an ASTNode) that defines this symbol; otherwise: \`void\`
+\`type\`    | the Solid Language Type of the variable
+\`value\`   | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Solid Language Value) of this symbol; otherwise: \`void\`
 
 
 

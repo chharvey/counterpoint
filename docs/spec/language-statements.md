@@ -3,6 +3,10 @@ This chapter defines the syntax, semantics, and behavior of statements in the So
 
 
 
+## Type Declaration
+
+
+
 ## Variable Declaration
 
 
