@@ -179,8 +179,8 @@ describe('ASTNodeSolid', () => {
 						goalFromSource(src).children[3].build(builder),
 					],
 					[
-						new INST.InstructionStatement(0n, new INST.InstructionGet('$var100')),
-						new INST.InstructionStatement(1n, new INST.InstructionGet('$var101')),
+						new INST.InstructionStatement(0n, new INST.InstructionGet(0x100n)),
+						new INST.InstructionStatement(1n, new INST.InstructionGet(0x101n)),
 					],
 				);
 			});
@@ -205,8 +205,8 @@ describe('ASTNodeSolid', () => {
 						goalFromSource(src, folding_off).children[3].build(builder),
 					],
 					[
-						new INST.InstructionStatement(0n, new INST.InstructionGet('$var100')),
-						new INST.InstructionStatement(1n, new INST.InstructionGet('$var101')),
+						new INST.InstructionStatement(0n, new INST.InstructionGet(0x100n)),
+						new INST.InstructionStatement(1n, new INST.InstructionGet(0x101n)),
 					],
 				);
 			});
@@ -572,10 +572,10 @@ describe('ASTNodeSolid', () => {
 						goalFromSource(src).children[1].build(builder),
 					],
 					[
-						new INST.InstructionSet('$var100', instructionConstInt(42n)),
-						new INST.InstructionSet('$var101', new INST.InstructionBinopArithmetic(
+						new INST.InstructionSet(0x100n, instructionConstInt(42n)),
+						new INST.InstructionSet(0x101n, new INST.InstructionBinopArithmetic(
 							Operator.ADD,
-							new INST.InstructionGet('$var100'),
+							new INST.InstructionGet(0x100n),
 							instructionConstInt(10n),
 						)),
 					],
@@ -600,8 +600,8 @@ describe('ASTNodeSolid', () => {
 						goalFromSource(src, folding_off).children[1].build(builder),
 					],
 					[
-						new INST.InstructionSet('$var100', instructionConstInt(42n)),
-						new INST.InstructionSet('$var101', instructionConstFloat(4.2)),
+						new INST.InstructionSet(0x100n, instructionConstInt(42n)),
+						new INST.InstructionSet(0x101n, instructionConstFloat(4.2)),
 					],
 				);
 			});

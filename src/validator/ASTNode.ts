@@ -417,7 +417,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeExpression */
 	protected build_do(_builder: Builder, to_float: boolean = false): InstructionExpression {
-		return new INST.InstructionGet(`$var${ this.id.toString(16) }`, to_float || this.shouldFloat);
+		return new INST.InstructionGet(this.id, to_float || this.shouldFloat);
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
@@ -1002,7 +1002,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		const assess: SolidObject | null = this.children[0].assess(builder.validator);
 		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && assess)
 			? new INST.InstructionNone()
-			: new INST.InstructionSet(`$var${ this.children[0].id.toString(16) }`, this.children[2].build(builder, tofloat))
+			: new INST.InstructionSet(this.children[0].id, this.children[2].build(builder, tofloat))
 		;
 	}
 }

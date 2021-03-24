@@ -125,7 +125,10 @@ abstract class InstructionLocal extends InstructionExpression {
  * Set a local variable.
  */
 export class InstructionSet extends InstructionLocal {
-	constructor (name: string, op: InstructionExpression) {
+	constructor (name: bigint | string, op: InstructionExpression) {
+		if (typeof name === 'bigint') {
+			name = `$var${ name.toString(16) }`;
+		};
 		super(name, op)
 	}
 	/** @return `'(local.set ‹name› ‹op›)'` */
@@ -137,7 +140,10 @@ export class InstructionSet extends InstructionLocal {
  * Get a local variable.
  */
 export class InstructionGet extends InstructionLocal {
-	constructor (name: string, to_float: boolean = false) {
+	constructor (name: bigint | string, to_float: boolean = false) {
+		if (typeof name === 'bigint') {
+			name = `$var${ name.toString(16) }`;
+		};
 		super(name, to_float)
 	}
 	/** @return `'(local.get ‹name›)'` */
@@ -149,7 +155,10 @@ export class InstructionGet extends InstructionLocal {
  * Tee a local variable.
  */
 export class InstructionTee extends InstructionLocal {
-	constructor (name: string, op: InstructionExpression) {
+	constructor (name: bigint | string, op: InstructionExpression) {
+		if (typeof name === 'bigint') {
+			name = `$var${ name.toString(16) }`;
+		};
 		super(name, op)
 	}
 	/** @return `'(local.tee ‹name› ‹op›)'` */
@@ -323,7 +332,7 @@ export class InstructionBinopLogical extends InstructionBinop {
 	 * @return a `(select)` instruction determining which operand to produce
 	 */
 	toString(): string {
-		const varname: string = `$o${ this.count }`
+		const varname: string = `$o${ this.count.toString(16) }`;
 		const condition: InstructionExpression = new InstructionUnop(
 			Operator.NOT,
 			new InstructionUnop(
