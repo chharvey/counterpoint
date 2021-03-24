@@ -1035,8 +1035,9 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 		};
 	}
 	/** @implements ASTNodeSolid */
-	build(_builder: Builder): Instruction {
-		throw new Error('ASTNodeAssignment#build not yet supported.');
+	build(builder: Builder): Instruction {
+		const tofloat: boolean = this.children[1].type(builder.validator).isSubtypeOf(Float64) || this.children[1].shouldFloat;
+		return new INST.InstructionSet(this.children[0].id, this.children[1].build(builder, tofloat));
 	}
 }
 export class ASTNodeGoal extends ASTNodeSolid {

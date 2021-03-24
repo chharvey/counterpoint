@@ -528,11 +528,12 @@ describe('ASTNodeSolid', () => {
 					type T = int;
 					type U = T | float;
 				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src);
 				const builder: Builder = new Builder(src)
 				assert.deepStrictEqual(
 					[
-						goalFromSource(src).children[0].build(builder),
-						goalFromSource(src).children[1].build(builder),
+						goal.children[0].build(builder),
+						goal.children[1].build(builder),
 					],
 					[
 						new INST.InstructionNone(),
@@ -548,11 +549,12 @@ describe('ASTNodeSolid', () => {
 					let x: int = 42;
 					let y: float = 4.2 * 10;
 				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src);
 				const builder: Builder = new Builder(src)
 				assert.deepStrictEqual(
 					[
-						goalFromSource(src).children[0].build(builder),
-						goalFromSource(src).children[1].build(builder),
+						goal.children[0].build(builder),
+						goal.children[1].build(builder),
 					],
 					[
 						new INST.InstructionNone(),
@@ -565,11 +567,12 @@ describe('ASTNodeSolid', () => {
 					let unfixed x: int = 42;
 					let y: int = x + 10;
 				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src);
 				const builder: Builder = new Builder(src)
 				assert.deepStrictEqual(
 					[
-						goalFromSource(src).children[0].build(builder),
-						goalFromSource(src).children[1].build(builder),
+						goal.children[0].build(builder),
+						goal.children[1].build(builder),
 					],
 					[
 						new INST.InstructionSet(0x100n, instructionConstInt(42n)),
@@ -593,16 +596,36 @@ describe('ASTNodeSolid', () => {
 					let x: int = 42;
 					let unfixed y: float = 4.2;
 				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src, folding_off);
 				const builder: Builder = new Builder(src, folding_off);
 				assert.deepStrictEqual(
 					[
-						goalFromSource(src, folding_off).children[0].build(builder),
-						goalFromSource(src, folding_off).children[1].build(builder),
+						goal.children[0].build(builder),
+						goal.children[1].build(builder),
 					],
 					[
 						new INST.InstructionSet(0x100n, instructionConstInt(42n)),
 						new INST.InstructionSet(0x101n, instructionConstFloat(4.2)),
 					],
+				);
+			});
+		});
+
+		describe('ASTNodeAssignment', () => {
+			it('always returns InstructionSet.', () => {
+				const src: string = `
+					let unfixed y: float = 4.2;
+					y = y * 10;
+				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src);
+				const builder: Builder = new Builder(src);
+				assert.deepStrictEqual(
+					goal.children[1].build(builder),
+					new INST.InstructionSet(0x100n, new INST.InstructionBinopArithmetic(
+						Operator.MUL,
+						new INST.InstructionGet(0x100n, true),
+						instructionConstFloat(10.0),
+					)),
 				);
 			});
 		});

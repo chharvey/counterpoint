@@ -53,7 +53,13 @@ Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
 ;
 
 Sequence<Instruction> Build(SemanticAssignment assign) :=
-	// TO BE DETERMINED
+	1. *Assert:* `assign.children.count` is 2.
+	2. *Let* `name` be the string-concatenation of "var" and `assign.children.0.id`.
+	3. *Let* `instrs` be *UnwrapAffirm:* `Build(assign.childen.1)`.
+	4. *Return:* [
+		...instrs,
+		"SET the local variable `name`.",
+	].
 ;
 
 
