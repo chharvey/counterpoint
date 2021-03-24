@@ -462,27 +462,27 @@ describe('ASTNodeSolid', () => {
 				goalFromSource(`
 					type T = int;
 					type U = float | T;
-				`).varCheck(); // assert does not throw
+				`).varCheck(new Validator()); // assert does not throw
 				assert.throws(() => goalFromSource(`
 					type U = float | T;
-				`).varCheck(), ReferenceError01);
+				`).varCheck(new Validator()), ReferenceError01);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => goalFromSource(`
 					T;
 					type T = int;
-				`).varCheck(), ReferenceError02);
+				`).varCheck(new Validator()), ReferenceError02);
 			});
 			it('throws if was declared as a value variable.', () => {
 				assert.throws(() => goalFromSource(`
 					let FOO: int = 42;
 					type T = FOO | float;
-				`).varCheck(), ReferenceError03);
+				`).varCheck(new Validator()), ReferenceError03);
 			});
 		});
 		describe('ASTNodeConstant', () => {
 			it('never throws.', () => {
-				constantFromSource(`42;`).varCheck();
+				constantFromSource(`42;`).varCheck(new Validator());
 			});
 		});
 		describe('ASTNodeVariable', () => {
@@ -490,20 +490,20 @@ describe('ASTNodeSolid', () => {
 				goalFromSource(`
 					let unfixed i: int = 42;
 					i;
-				`).varCheck(); // assert does not throw
-				assert.throws(() => variableFromSource(`i;`).varCheck(), ReferenceError01);
+				`).varCheck(new Validator()); // assert does not throw
+				assert.throws(() => variableFromSource(`i;`).varCheck(new Validator()), ReferenceError01);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => goalFromSource(`
 					i;
 					let unfixed i: int = 42;
-				`).varCheck(), ReferenceError02);
+				`).varCheck(new Validator()), ReferenceError02);
 			});
 			it('throws if it was declared as a type alias.', () => {
 				assert.throws(() => goalFromSource(`
 					type FOO = int;
 					42 || FOO;
-				`).varCheck(), ReferenceError03);
+				`).varCheck(new Validator()), ReferenceError03);
 			});
 		});
 		describe('ASTNodeDeclarationType', () => {
@@ -523,11 +523,11 @@ describe('ASTNodeSolid', () => {
 				assert.throws(() => goalFromSource(`
 					type T = int;
 					type T = float;
-				`).varCheck(), AssignmentError01);
+				`).varCheck(new Validator()), AssignmentError01);
 				assert.throws(() => goalFromSource(`
 					let FOO: int = 42;
 					type FOO = float;
-				`).varCheck(), AssignmentError01);
+				`).varCheck(new Validator()), AssignmentError01);
 			});
 		});
 		describe('ASTNodeDeclarationVariable', () => {
@@ -548,11 +548,11 @@ describe('ASTNodeSolid', () => {
 				assert.throws(() => goalFromSource(`
 					let i: int = 42;
 					let i: int = 43;
-				`).varCheck(), AssignmentError01);
+				`).varCheck(new Validator()), AssignmentError01);
 				assert.throws(() => goalFromSource(`
 					type FOO = float;
 					let FOO: int = 42;
-				`).varCheck(), AssignmentError01);
+				`).varCheck(new Validator()), AssignmentError01);
 			});
 		});
 		describe('ASTNodeAssignment', () => {
@@ -560,17 +560,17 @@ describe('ASTNodeSolid', () => {
 				goalFromSource(`
 					let unfixed i: int = 42;
 					i = 43;
-				`).varCheck(); // assert does not throw
+				`).varCheck(new Validator()); // assert does not throw
 				assert.throws(() => goalFromSource(`
 					let i: int = 42;
 					i = 43;
-				`).varCheck(), AssignmentError10);
+				`).varCheck(new Validator()), AssignmentError10);
 			});
 			it('always throws for type alias reassignment.', () => {
 				assert.throws(() => goalFromSource(`
 					type T = 42;
 					T = 43;
-				`).varCheck(), ReferenceError03);
+				`).varCheck(new Validator()), ReferenceError03);
 			});
 		});
 	});

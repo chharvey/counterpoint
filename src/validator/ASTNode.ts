@@ -109,7 +109,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * - Check that fixed variables are not reassigned.
 	 * @param validator a record of declared variable symbols
 	 */
-	abstract varCheck(validator?: Validator): void;
+	abstract varCheck(validator: Validator): void;
 
 	/**
 	 * Type-check the node as part of semantic analysis.
@@ -187,7 +187,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		this.value = value
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(_validator: Validator = new Validator()): void {
+	varCheck(_validator: Validator): void {
 		return; // no validation necessary for constants
 	}
 	/** @implements ASTNodeType */
@@ -204,7 +204,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		this.id = start_node.cook()!;
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		if (!validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
 		};
@@ -236,7 +236,7 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 	 * @implements ASTNodeSolid
 	 * @final
 	 */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
 }
@@ -362,7 +362,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return this.value instanceof Float64
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(_validator: Validator = new Validator()): void {
+	varCheck(_validator: Validator): void {
 		return; // no validation necessary for constants
 	}
 	/** @implements ASTNodeExpression */
@@ -405,7 +405,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		return this.type().isSubtypeOf(Float64);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		if (!validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
 		};
@@ -457,7 +457,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
 	/** @implements ASTNodeExpression */
@@ -488,7 +488,7 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 	 * @implements ASTNodeSolid
 	 * @final
 	 */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
 }
@@ -894,7 +894,7 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
 	/** @implements ASTNodeSolid */
@@ -927,7 +927,7 @@ export class ASTNodeDeclarationType extends ASTNodeSolid {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		const variable: ASTNodeTypeAlias = this.children[0];
 		if (validator.hasSymbol(variable.id)) {
 			throw new AssignmentError01(variable);
@@ -961,7 +961,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		super(start_node, {unfixed}, children)
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		const variable: ASTNodeVariable = this.children[0];
 		if (validator.hasSymbol(variable.id)) {
 			throw new AssignmentError01(variable);
@@ -1009,7 +1009,7 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		this.children.forEach((c) => c.varCheck(validator));
 		const variable: ASTNodeVariable = this.children[0];
 		if (!(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
@@ -1043,7 +1043,7 @@ export class ASTNodeGoal extends ASTNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		this.children.forEach((c) => c.varCheck(validator));
 	}
 	/** @implements ASTNodeSolid */
