@@ -115,7 +115,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * Type-check the node as part of semantic analysis.
 	 * @param validator stores validation information
 	 */
-	abstract typeCheck(validator?: Validator): void;
+	abstract typeCheck(validator: Validator): void;
 
 	/**
 	 * Give directions to the runtime code builder.
@@ -140,7 +140,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 * @implements ASTNodeSolid
 	 * @final
 	 */
-	typeCheck(_validator: Validator = new Validator()): void {
+	typeCheck(_validator: Validator): void {
 		return; // no type-checking necessary for types
 	}
 	/**
@@ -294,7 +294,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @implements ASTNodeSolid
 	 * @final
 	 */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		this.type(validator); // assert does not throw
 	}
 	/**
@@ -898,7 +898,7 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		return this.children[0]?.typeCheck(validator);
 	}
 	/** @implements ASTNodeSolid */
@@ -942,7 +942,7 @@ export class ASTNodeDeclarationType extends ASTNodeSolid {
 		));
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		this.children[1].typeCheck(validator);
 		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
@@ -981,7 +981,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		));
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		this.children[1].typeCheck(validator);
 		this.children[2].typeCheck(validator);
 		const assignee_type: SolidLanguageType = this.children[1].assess(validator);
@@ -1017,7 +1017,7 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 		};
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		const assignee_type: SolidLanguageType = this.children[0].type(validator);
 		const assigned_type: SolidLanguageType = this.children[1].type(validator);
 		if (
@@ -1047,7 +1047,7 @@ export class ASTNodeGoal extends ASTNodeSolid {
 		this.children.forEach((c) => c.varCheck(validator));
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		return this.children.forEach((child) => child.typeCheck(validator));
 	}
 	/** @implements ASTNodeSolid */

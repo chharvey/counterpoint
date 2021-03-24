@@ -595,17 +595,17 @@ describe('ASTNodeSolid', () => {
 			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  int | float =  21  *  2;`
 				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
-				decl.typeCheck();
+				decl.typeCheck(new Validator());
 			})
 			it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  null =  21  *  2;`
 				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
-				assert.throws(() => decl.typeCheck(), TypeError03);
+				assert.throws(() => decl.typeCheck(new Validator()), TypeError03);
 			})
 			it('with int coersion on, allows assigning ints to floats.', () => {
 				const src: string = `let x: float = 42;`
 				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
-				decl.typeCheck();
+				decl.typeCheck(new Validator());
 			})
 			it('with int coersion off, throws when assigning int to float.', () => {
 				const src: string = `let x: float = 42;`
