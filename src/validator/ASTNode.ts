@@ -137,11 +137,11 @@ export class ASTNodeKey extends ASTNodeSolid {
 		this.id = start_node.cook()!;
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeKey#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		throw validator && 'ASTNodeKey#typeCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
@@ -157,11 +157,11 @@ export class ASTNodeTypeProperty extends ASTNodeSolid {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeTypeProperty#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		throw validator && 'ASTNodeTypeProperty#typeCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
@@ -277,7 +277,7 @@ export class ASTNodeTypeEmptyCollection extends ASTNodeType {
 		super(start_node);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeTypeEmptyCollection#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeType */
@@ -293,7 +293,7 @@ export class ASTNodeTypeList extends ASTNodeType {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeTypeList#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeType */
@@ -309,7 +309,7 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeTypeRecord#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeType */
@@ -376,11 +376,11 @@ export class ASTNodeProperty extends ASTNodeSolid {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeProperty#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		throw validator && 'ASTNodeProperty#typeCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
@@ -396,11 +396,11 @@ export class ASTNodeCase extends ASTNodeSolid {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeCase#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		throw validator && 'ASTNodeCase#typeCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
@@ -616,7 +616,7 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 		throw 'ASTNodeEmptyCollection#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeEmptyCollection#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -644,7 +644,7 @@ export class ASTNodeList extends ASTNodeExpression {
 		throw 'ASTNodeList#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeList#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -672,7 +672,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		throw 'ASTNodeRecord#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeRecord#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -700,7 +700,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		throw 'ASTNodeMapping#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeMapping#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
