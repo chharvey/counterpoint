@@ -186,7 +186,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 * @final
 	 */
 	typeCheck(_validator: Validator): void {
-		return; // no type-checking necessary for types
+		return; // no type-checking necessary
 	}
 	/**
 	 * @implements ASTNodeSolid
@@ -234,7 +234,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(_validator: Validator): void {
-		return; // no validation necessary for constants
+		return; // no variables to check
 	}
 	/** @implements ASTNodeType */
 	protected assess_do(_validator: Validator): SolidLanguageType {
@@ -500,7 +500,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(_validator: Validator): void {
-		return; // no validation necessary for constants
+		return; // no variables to check
 	}
 	/** @implements ASTNodeExpression */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionConst {
@@ -1138,7 +1138,7 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator): void {
-		return this.children.forEach((c) => c.varCheck(validator));
+		return this.children[0]?.varCheck(validator);
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator): void {
