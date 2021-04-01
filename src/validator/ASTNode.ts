@@ -149,9 +149,9 @@ export class ASTNodeKey extends ASTNodeSolid {
 		throw builder && 'ASTNodeKey#build not yet supported.';
 	}
 }
-export class ASTNodeTypeProperty extends ASTNodeSolid {
+export class ASTNodePropertyType extends ASTNodeSolid {
 	constructor (
-		start_node: PARSER.ParseNodeTypeProperty,
+		start_node: PARSER.ParseNodePropertyType,
 		readonly children: readonly [ASTNodeKey, ASTNodeType],
 	) {
 		super(start_node, {}, children);
@@ -304,7 +304,7 @@ export class ASTNodeTypeList extends ASTNodeType {
 export class ASTNodeTypeRecord extends ASTNodeType {
 	constructor (
 		start_node: PARSER.ParseNodeTypeRecordLiteral,
-		readonly children: readonly ASTNodeTypeProperty[],
+		readonly children: readonly ASTNodePropertyType[],
 	) {
 		super(start_node, {}, children);
 	}

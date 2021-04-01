@@ -36,11 +36,11 @@ TypeKeyword ::=
 	| "obj"
 ;
 
-TypeProperty
+PropertyType
 	::= Word ":" Type;
 
 TypeTupleLiteral  ::= "[" ","? Type#         ","? "]";
-TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]";
+TypeRecordLiteral ::= "[" ","? PropertyType# ","? "]";
 
 TypeUnit ::=
 	| "[" "]"

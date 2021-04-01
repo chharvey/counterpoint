@@ -133,9 +133,9 @@ describe('Decorator', () => {
 						<TypeConstant source="float"/>
 					</TypeProperty>
 				*/
-				const typeproperty: AST.ASTNodeTypeProperty = Decorator.decorate(h.typePropertyFromString(`fontSize: float`));
+				const propertytype: AST.ASTNodePropertyType = Decorator.decorate(h.typePropertyFromString(`fontSize: float`));
 				assert.deepStrictEqual(
-					typeproperty.children.map((c) => c.source),
+					propertytype.children.map((c) => c.source),
 					[`fontSize`, `float`],
 				);
 			});
