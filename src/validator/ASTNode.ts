@@ -331,7 +331,7 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 	 * @final
 	 */
 	varCheck(validator: Validator): void {
-		return this.children.forEach((c) => c.varCheck(validator));
+		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck(validator));
 	}
 }
 export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
@@ -591,7 +591,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator): void {
-		return this.children.forEach((c) => c.varCheck(validator));
+		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck(validator));
 	}
 	/** @implements ASTNodeExpression */
 	protected build_do(_builder: Builder): InstructionExpression {
@@ -732,7 +732,7 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 	 * @final
 	 */
 	varCheck(validator: Validator): void {
-		return this.children.forEach((c) => c.varCheck(validator));
+		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck(validator));
 	}
 }
 export class ASTNodeOperationUnary extends ASTNodeOperation {
@@ -1209,8 +1209,10 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		if (validator.hasSymbol(variable.id)) {
 			throw new AssignmentError01(variable);
 		};
-		this.children[1].varCheck(validator);
-		this.children[2].varCheck(validator);
+		xjs.Array.forEachAggregated([
+			this.children[1],
+			this.children[2],
+		], (c) => c.varCheck(validator));
 		validator.addSymbol(new SymbolStructureVar(
 			variable.id,
 			variable.line_index,
@@ -1258,7 +1260,7 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator): void {
-		this.children.forEach((c) => c.varCheck(validator));
+		xjs.Array.forEachAggregated(this.children, (c) => c.varCheck(validator));
 		const variable: ASTNodeVariable = this.children[0];
 		if (!(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
 			throw new AssignmentError10(variable);
@@ -1293,7 +1295,7 @@ export class ASTNodeGoal extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator): void {
-		this.children.forEach((c) => c.varCheck(validator));
+		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck(validator));
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator): void {

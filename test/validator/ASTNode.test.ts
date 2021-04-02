@@ -1,3 +1,6 @@
+import type {
+	ErrorCode,
+} from '@chharvey/parser';
 import * as assert from 'assert'
 import * as xjs from 'extrajs'
 
@@ -192,6 +195,44 @@ describe('ASTNodeSolid', () => {
 					type T = 42;
 					T = 43;
 				`).varCheck(new Validator()), ReferenceError03);
+			});
+		});
+		describe('ASTNodeGoal', () => {
+			it('aggregates multiple errors.', () => {
+				assert.throws(() => goalFromSource(`
+					a + b || c * d;
+					let y: V & W | X & Y = null;
+					let x: int = 42;
+					let x: int = 420;
+					x = 4200;
+					type T = int;
+					type T = float;
+					let z: x = null;
+					let z: int = T;
+				`).varCheck(new Validator()), (err) => {
+					assert.ok(err instanceof AggregateError);
+					assert.strictEqual(err.errors.length, 13);
+					([
+						[ReferenceError01,  '`a` is never declared.'],
+						[ReferenceError01,  '`b` is never declared.'],
+						[ReferenceError01,  '`c` is never declared.'],
+						[ReferenceError01,  '`d` is never declared.'],
+						[ReferenceError01,  '`V` is never declared.'],
+						[ReferenceError01,  '`W` is never declared.'],
+						[ReferenceError01,  '`X` is never declared.'],
+						[ReferenceError01,  '`Y` is never declared.'],
+						[AssignmentError01, 'Duplicate declaration: `x` is already declared.'],
+						[AssignmentError10, 'Reassignment of a fixed variable: `x`.'],
+						[AssignmentError01, 'Duplicate declaration: `T` is already declared.'],
+						[ReferenceError03,  '`x` refers to a value, but is used as a type.'],
+						[ReferenceError03,  '`T` refers to a type, but is used as a value.'],
+					] as const).forEach(([errortype, message], i) => {
+						const er: ErrorCode = err.errors[i];
+						assert.ok(er instanceof errortype);
+						assert.strictEqual(er.message, message);
+					});
+					return true;
+				});
 			});
 		});
 	});
