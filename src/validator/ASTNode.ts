@@ -811,6 +811,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	 * @final
 	 */
 	protected type_do(validator: Validator): SolidLanguageType {
+		xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		return this.type_do_do(
 			this.children[0].type(validator),
 			this.children[1].type(validator),
@@ -1096,6 +1097,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	protected type_do(validator: Validator): SolidLanguageType {
 		// If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
 		// If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
+		xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		const t0: SolidLanguageType = this.children[0].type(validator);
 		const t1: SolidLanguageType = this.children[1].type(validator);
 		const t2: SolidLanguageType = this.children[2].type(validator);
@@ -1227,8 +1229,10 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator): void {
-		this.children[1].typeCheck(validator);
-		this.children[2].typeCheck(validator);
+		xjs.Array.forEachAggregated([
+			this.children[1],
+			this.children[2],
+		], (c) => c.typeCheck(validator));
 		const assignee_type: SolidLanguageType = this.children[1].assess(validator);
 		const assigned_type: SolidLanguageType = this.children[2].type(validator);
 		if (
@@ -1268,6 +1272,7 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator): void {
+		xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		const assignee_type: SolidLanguageType = this.children[0].type(validator);
 		const assigned_type: SolidLanguageType = this.children[1].type(validator);
 		if (
@@ -1299,7 +1304,7 @@ export class ASTNodeGoal extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator): void {
-		return this.children.forEach((child) => child.typeCheck(validator));
+		return xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck(validator));
 	}
 	/** @implements ASTNodeSolid */
 	build(builder: Builder): InstructionNone | InstructionModule {

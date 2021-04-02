@@ -316,6 +316,40 @@ describe('ASTNodeSolid', () => {
 				);
 			});
 		})
+		describe('ASTNodeGoal', () => {
+			it('aggregates multiple errors.', () => {
+				assert.throws(() => goalFromSource(`
+					let a: null = null;
+					let b: null = null;
+					let c: null = null;
+					let d: null = null;
+					a * b + c * d;
+					let e: null = null;
+					let f: null = null;
+					let g: null = null;
+					let h: null = null;
+					e * f + g * h;
+					if null then 42 else 4.2;
+					let x: int = 4.2;
+				`).typeCheck(new Validator()), (err) => {
+					assert.ok(err instanceof AggregateError);
+					assert.strictEqual(err.errors.length, 6);
+					([
+						[TypeError01, 'Invalid operation: `a * b` at line 6 col 6.'], // TODO remove line&col numbers from message
+						[TypeError01, 'Invalid operation: `c * d` at line 6 col 14.'],
+						[TypeError01, 'Invalid operation: `e * f` at line 11 col 6.'],
+						[TypeError01, 'Invalid operation: `g * h` at line 11 col 14.'],
+						[TypeError01, 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'],
+						[TypeError03, `Expression of type ${ typeConstFloat(4.2) } is not assignable to type ${ Int16 }.`], // TODO: improve `SolidLanguageType#toString`
+					] as const).forEach(([errortype, message], i) => {
+						const er: ErrorCode = err.errors[i];
+						assert.ok(er instanceof errortype);
+						assert.strictEqual(er.message, message);
+					});
+					return true;
+				});
+			});
+		});
 	})
 
 
