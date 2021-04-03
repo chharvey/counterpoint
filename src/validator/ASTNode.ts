@@ -416,8 +416,8 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		};
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(_builder: Builder, to_float: boolean = false): InstructionExpression {
-		return new INST.InstructionGet(this.id, to_float || this.shouldFloat);
+	protected build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
+		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat);
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
@@ -997,12 +997,12 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
 	/** @implements ASTNodeSolid */
-	build(builder: Builder): INST.InstructionNone | INST.InstructionSet {
+	build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
 		const tofloat: boolean = this.children[2].type(builder.validator).isSubtypeOf(Float64) || this.children[2].shouldFloat;
 		const assess: SolidObject | null = this.children[0].assess(builder.validator);
 		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && assess)
 			? new INST.InstructionNone()
-			: new INST.InstructionSet(this.children[0].id, this.children[2].build(builder, tofloat))
+			: new INST.InstructionDeclareGlobal(this.children[0].id, this.unfixed, this.children[2].build(builder, tofloat))
 		;
 	}
 }
@@ -1035,9 +1035,12 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 		};
 	}
 	/** @implements ASTNodeSolid */
-	build(builder: Builder): Instruction {
+	build(builder: Builder): INST.InstructionStatement {
 		const tofloat: boolean = this.children[1].type(builder.validator).isSubtypeOf(Float64) || this.children[1].shouldFloat;
-		return new INST.InstructionSet(this.children[0].id, this.children[1].build(builder, tofloat));
+		return new INST.InstructionStatement(
+			builder.stmtCount,
+			new INST.InstructionGlobalSet(this.children[0].id, this.children[1].build(builder, tofloat)),
+		);
 	}
 }
 export class ASTNodeGoal extends ASTNodeSolid {
