@@ -193,7 +193,7 @@ describe('Instruction', () => {
 					Operator.AND,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
-				).toString(), ((varname) => `(local ${ varname } i32) ${ new InstructionCond(
+				).toString(), ((varname) => `${ new INST.InstructionDeclareLocal(varname, false) } ${ new InstructionCond(
 					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(varname, instructionConstInt(30n)))),
 					instructionConstInt(18n),
 					new INST.InstructionLocalGet(varname, false),
@@ -203,7 +203,7 @@ describe('Instruction', () => {
 					Operator.OR,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
-				).toString(), ((varname) => `(local ${ varname } f64) ${ new InstructionCond(
+				).toString(), ((varname) => `${ new INST.InstructionDeclareLocal(varname, true) } ${ new InstructionCond(
 					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(varname, instructionConstFloat(30.1)))),
 					new INST.InstructionLocalGet(varname, true),
 					instructionConstFloat(18.1),

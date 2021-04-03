@@ -385,7 +385,7 @@ export class InstructionBinopLogical extends InstructionBinop {
 		)
 		const left:  InstructionExpression = new InstructionLocalGet(varname, this.arg0.isFloat)
 		const right: InstructionExpression = this.arg1
-		return `(local ${ varname } ${ (!this.arg0.isFloat) ? `i32` : `f64` }) ${
+		return `${ new InstructionDeclareLocal(varname, this.arg0.isFloat) } ${
 			(this.op === Operator.AND)
 				? new InstructionCond(condition, right, left)
 				: new InstructionCond(condition, left, right)
@@ -425,29 +425,6 @@ export class InstructionCond extends InstructionExpression {
 	}
 }
 /**
- * Declare a global variable.
- */
-export class InstructionDeclareGlobal extends Instruction {
-	private readonly type: string = (this.init.isFloat) ? 'f64' : 'i32';
-	/**
-	 * @param name the variable name (must begin with `'$'`)
-	 * @param mut  is the variable mutable? (may it be reassigned?)
-	 * @param init the initial value of the variable
-	 */
-	constructor (
-		private readonly name: bigint | string,
-		private readonly mut: boolean,
-		private readonly init: InstructionExpression,
-	) {
-		super();
-		this.name = (typeof name === 'bigint') ? `$glb${ name.toString(16) }` : name;
-	}
-	/** @return `'(global ‹name› ‹type› ‹init›)'` */
-	toString(): string {
-		return `(global ${ this.name } ${ (this.mut) ? `(mut ${ this.type })` : this.type } ${ this.init })`;
-	}
-}
-/**
  * Create a new operand stack.
  */
 export class InstructionStatement extends Instruction {
@@ -474,6 +451,48 @@ export class InstructionStatement extends Instruction {
 				${ this.expr }
 			)
 		`
+	}
+}
+/**
+ * Declare a global variable.
+ */
+export class InstructionDeclareGlobal extends Instruction {
+	private readonly type: string = (this.init.isFloat) ? 'f64' : 'i32';
+	/**
+	 * @param name the variable name (must begin with `'$'`)
+	 * @param mut  is the variable mutable? (may it be reassigned?)
+	 * @param init the initial value of the variable
+	 */
+	constructor (
+		private readonly name: bigint | string,
+		private readonly mut: boolean,
+		private readonly init: InstructionExpression,
+	) {
+		super();
+		this.name = (typeof name === 'bigint') ? `$glb${ name.toString(16) }` : name;
+	}
+	/** @return `'(global ‹name› ‹type› ‹init›)'` */
+	toString(): string {
+		return `(global ${ this.name } ${ (this.mut) ? `(mut ${ this.type })` : this.type } ${ this.init })`;
+	}
+}
+/**
+ * Declare a local variable.
+ */
+export class InstructionDeclareLocal extends Instruction {
+	/**
+	 * @param name the variable name (must begin with `'$'`)
+	 * @param to_float `true` if declaring a float
+	 */
+	constructor (
+		private readonly name: string,
+		private readonly to_float: boolean,
+	) {
+		super();
+	}
+	/** @return `'(local ‹name› ‹type›)'` */
+	toString(): string {
+		return `(local ${ this.name } ${ (this.to_float) ? 'f64' : 'i32' })`;
 	}
 }
 /**
