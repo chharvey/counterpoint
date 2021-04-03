@@ -153,11 +153,12 @@ describe('ASTNodeSolid', () => {
 					x;
 					y;
 				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src);
 				const builder: Builder = new Builder(src)
 				assert.deepStrictEqual(
 					[
-						goalFromSource(src).children[2].build(builder),
-						goalFromSource(src).children[3].build(builder),
+						goal.children[2].build(builder),
+						goal.children[3].build(builder),
 					],
 					[
 						new INST.InstructionStatement(0n, instructionConstInt(42n)),
@@ -172,11 +173,12 @@ describe('ASTNodeSolid', () => {
 					x;
 					y;
 				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src);
 				const builder: Builder = new Builder(src)
 				assert.deepStrictEqual(
 					[
-						goalFromSource(src).children[2].build(builder),
-						goalFromSource(src).children[3].build(builder),
+						goal.children[2].build(builder),
+						goal.children[3].build(builder),
 					],
 					[
 						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
@@ -198,11 +200,12 @@ describe('ASTNodeSolid', () => {
 					x;
 					y;
 				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src, folding_off);
 				const builder: Builder = new Builder(src, folding_off);
 				assert.deepStrictEqual(
 					[
-						goalFromSource(src, folding_off).children[2].build(builder),
-						goalFromSource(src, folding_off).children[3].build(builder),
+						goal.children[2].build(builder),
+						goal.children[3].build(builder),
 					],
 					[
 						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
