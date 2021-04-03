@@ -46,32 +46,29 @@ export function operationFromSource(src: string, config: SolidConfig = CONFIG_DE
 	return expression
 }
 export function statementExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeStatementExpression {
-	const goal: AST.ASTNodeGoal = goalFromSource(src, config);
-	assert_arrayLength(goal.children, 1, 'semantic goal should have 1 child')
-	const statement: AST.ASTNodeStatement = goal.children[0] as AST.ASTNodeStatement;
+	const statement: AST.ASTNodeStatement = statementFromSource(src, config);
 	assert.ok(statement instanceof AST.ASTNodeStatementExpression);
 	return statement
 }
-export function variableDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeDeclarationVariable {
-	const goal: AST.ASTNodeGoal = goalFromSource(src, config);
-	assert_arrayLength(goal.children, 1, 'semantic goal should have 1 child');
-	const statement: AST.ASTNodeStatement = goal.children[0] as AST.ASTNodeStatement;
-	assert.ok(statement instanceof AST.ASTNodeDeclarationVariable);
-	return statement;
-}
 export function typeDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeDeclarationType {
-	const goal: AST.ASTNodeGoal = goalFromSource(src, config);
-	assert_arrayLength(goal.children, 1, 'semantic goal should have 1 child');
-	const statement: AST.ASTNodeStatement = goal.children[0] as AST.ASTNodeStatement;
+	const statement: AST.ASTNodeStatement = statementFromSource(src, config);
 	assert.ok(statement instanceof AST.ASTNodeDeclarationType);
 	return statement;
 }
+export function variableDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeDeclarationVariable {
+	const statement: AST.ASTNodeStatement = statementFromSource(src, config);
+	assert.ok(statement instanceof AST.ASTNodeDeclarationVariable);
+	return statement;
+}
 export function assignmentFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeAssignment {
-	const goal: AST.ASTNodeGoal = goalFromSource(src, config);
-	assert_arrayLength(goal.children, 1, 'semantic goal should have 1 child');
-	const statement: AST.ASTNodeStatement = goal.children[0] as AST.ASTNodeStatement;
+	const statement: AST.ASTNodeStatement = statementFromSource(src, config);
 	assert.ok(statement instanceof AST.ASTNodeAssignment);
 	return statement;
+}
+function statementFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeStatement {
+	const goal: AST.ASTNodeGoal = goalFromSource(src, config);
+	assert.strictEqual(goal.children.length, 1, 'semantic goal should have 1 child');
+	return goal.children[0];
 }
 export function goalFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeGoal {
 	return Decorator.decorate(new Parser(src, config).parse());

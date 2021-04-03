@@ -50,6 +50,7 @@ import {
 	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
+	INST,
 } from '../builder/'
 import {
 	ReferenceError01,
@@ -110,13 +111,13 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * - Check that fixed variables are not reassigned.
 	 * @param validator a record of declared variable symbols
 	 */
-	abstract varCheck(validator?: Validator): void;
+	abstract varCheck(validator: Validator): void;
 
 	/**
 	 * Type-check the node as part of semantic analysis.
 	 * @param validator stores validation information
 	 */
-	abstract typeCheck(validator?: Validator): void;
+	abstract typeCheck(validator: Validator): void;
 
 	/**
 	 * Give directions to the runtime code builder.
@@ -136,11 +137,11 @@ export class ASTNodeKey extends ASTNodeSolid {
 		this.id = start_node.cook()!;
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeKey#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		throw validator && 'ASTNodeKey#typeCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
@@ -148,19 +149,19 @@ export class ASTNodeKey extends ASTNodeSolid {
 		throw builder && 'ASTNodeKey#build not yet supported.';
 	}
 }
-export class ASTNodeTypeProperty extends ASTNodeSolid {
+export class ASTNodePropertyType extends ASTNodeSolid {
 	constructor (
-		start_node: PARSER.ParseNodeTypeProperty,
+		start_node: PARSER.ParseNodePropertyType,
 		readonly children: readonly [ASTNodeKey, ASTNodeType],
 	) {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeTypeProperty#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		throw validator && 'ASTNodeTypeProperty#typeCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
@@ -184,8 +185,8 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 * @implements ASTNodeSolid
 	 * @final
 	 */
-	typeCheck(_validator: Validator = new Validator()): void {
-		return; // no type-checking necessary for types
+	typeCheck(_validator: Validator): void {
+		return; // no type-checking necessary
 	}
 	/**
 	 * @implements ASTNodeSolid
@@ -200,7 +201,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 * @returns the computed type-value of this node
 	 * @final
 	 */
-	assess(validator: Validator = new Validator()): SolidLanguageType {
+	assess(validator: Validator): SolidLanguageType {
 		this.assessed || (this.assessed = this.assess_do(validator)); // COMBAK `this.assessed ||= this.assess_do(validator)`
 		return this.assessed
 	}
@@ -232,8 +233,8 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		this.value = value
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(_validator: Validator = new Validator()): void {
-		return; // no validation necessary for constants
+	varCheck(_validator: Validator): void {
+		return; // no variables to check
 	}
 	/** @implements ASTNodeType */
 	protected assess_do(_validator: Validator): SolidLanguageType {
@@ -249,7 +250,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		this.id = start_node.cook()!;
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		if (!validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
 		};
@@ -262,7 +263,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureType) {
-				return symbol.defn.assess(validator);
+				return symbol.value;
 			};
 		};
 		return SolidLanguageType.UNKNOWN;
@@ -276,7 +277,7 @@ export class ASTNodeTypeEmptyCollection extends ASTNodeType {
 		super(start_node);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeTypeEmptyCollection#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeType */
@@ -292,7 +293,7 @@ export class ASTNodeTypeList extends ASTNodeType {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeTypeList#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeType */
@@ -303,12 +304,12 @@ export class ASTNodeTypeList extends ASTNodeType {
 export class ASTNodeTypeRecord extends ASTNodeType {
 	constructor (
 		start_node: PARSER.ParseNodeTypeRecordLiteral,
-		readonly children: readonly ASTNodeTypeProperty[],
+		readonly children: readonly ASTNodePropertyType[],
 	) {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeTypeRecord#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeType */
@@ -329,7 +330,7 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 	 * @implements ASTNodeSolid
 	 * @final
 	 */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
 }
@@ -375,11 +376,11 @@ export class ASTNodeProperty extends ASTNodeSolid {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeProperty#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		throw validator && 'ASTNodeProperty#typeCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
@@ -395,11 +396,11 @@ export class ASTNodeCase extends ASTNodeSolid {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeCase#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		throw validator && 'ASTNodeCase#typeCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
@@ -430,7 +431,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @implements ASTNodeSolid
 	 * @final
 	 */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		this.type(validator); // assert does not throw
 	}
 	/**
@@ -449,7 +450,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @return the compile-time type of this node
 	 * @final
 	 */
-	type(validator: Validator = new Validator()): SolidLanguageType {
+	type(validator: Validator): SolidLanguageType {
 		const type_: SolidLanguageType = this.type_do(validator); // type-check first, to re-throw any TypeErrors
 		if (validator.config.compilerOptions.constantFolding) {
 			const assessed: SolidObject | null = this.assess(validator);
@@ -467,7 +468,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 * @final
 	 */
-	assess(validator: Validator = new Validator()): SolidObject | null {
+	assess(validator: Validator): SolidObject | null {
 		if (this.assessed === void 0) {
 			this.assessed = this.assess_do(validator);
 		}
@@ -498,8 +499,8 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return this.value instanceof Float64
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(_validator: Validator = new Validator()): void {
-		return; // no validation necessary for constants
+	varCheck(_validator: Validator): void {
+		return; // no variables to check
 	}
 	/** @implements ASTNodeExpression */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionConst {
@@ -534,10 +535,10 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeExpression */
 	get shouldFloat(): boolean {
-		return this.type().isSubtypeOf(Float64);
+		return this.type(new Validator()).isSubtypeOf(Float64);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		if (!validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
 		};
@@ -547,8 +548,8 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		};
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(_builder: Builder): InstructionExpression {
-		throw new Error('ASTNodeVariable#build_do not yet supported.');
+	protected build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
+		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat);
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
@@ -565,7 +566,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
-				return symbol.defn!.assess(validator);
+				return symbol.value;
 			};
 		};
 		return null;
@@ -589,7 +590,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
 	/** @implements ASTNodeExpression */
@@ -615,7 +616,7 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 		throw 'ASTNodeEmptyCollection#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeEmptyCollection#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -643,7 +644,7 @@ export class ASTNodeList extends ASTNodeExpression {
 		throw 'ASTNodeList#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeList#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -671,7 +672,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		throw 'ASTNodeRecord#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeRecord#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -699,7 +700,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		throw 'ASTNodeMapping#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		throw validator && 'ASTNodeMapping#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -730,7 +731,7 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 	 * @implements ASTNodeSolid
 	 * @final
 	 */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		return this.children.forEach((c) => c.varCheck(validator));
 	}
 }
@@ -1136,11 +1137,11 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
-		return this.children.forEach((c) => c.varCheck(validator));
+	varCheck(validator: Validator): void {
+		return this.children[0]?.varCheck(validator);
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		return this.children[0]?.typeCheck(validator);
 	}
 	/** @implements ASTNodeSolid */
@@ -1159,7 +1160,6 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
 export type ASTNodeDeclaration =
 	| ASTNodeDeclarationType
 	| ASTNodeDeclarationVariable
-;
 export class ASTNodeDeclarationType extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
@@ -1170,7 +1170,7 @@ export class ASTNodeDeclarationType extends ASTNodeSolid {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		const variable: ASTNodeTypeAlias = this.children[0];
 		if (validator.hasSymbol(variable.id)) {
 			throw new AssignmentError01(variable);
@@ -1180,16 +1180,18 @@ export class ASTNodeDeclarationType extends ASTNodeSolid {
 			variable.id,
 			variable.line_index,
 			variable.col_index,
-			this.children[1],
+			variable.source,
+			() => this.children[1].assess(validator),
 		));
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
-		return this.children[1].typeCheck(validator);
+	typeCheck(validator: Validator): void {
+		this.children[1].typeCheck(validator);
+		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
 	/** @implements ASTNodeSolid */
-	build(_builder: Builder): Instruction {
-		throw new Error('ASTNodeDeclarationType#build not yet supported.');
+	build(_builder: Builder): INST.InstructionNone {
+		return new INST.InstructionNone();
 	}
 }
 export class ASTNodeDeclarationVariable extends ASTNodeSolid {
@@ -1202,7 +1204,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		super(start_node, {unfixed}, children)
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		const variable: ASTNodeVariable = this.children[0];
 		if (validator.hasSymbol(variable.id)) {
 			throw new AssignmentError01(variable);
@@ -1213,13 +1215,18 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 			variable.id,
 			variable.line_index,
 			variable.col_index,
-			this.children[1].assess(validator),
+			variable.source,
 			this.unfixed,
-			(!this.unfixed) ? this.children[2] : null,
+			() => this.children[1].assess(validator),
+			(validator.config.compilerOptions.constantFolding && !this.unfixed)
+				? () => this.children[2].assess(validator)
+				: null,
 		));
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
+		this.children[1].typeCheck(validator);
+		this.children[2].typeCheck(validator);
 		const assignee_type: SolidLanguageType = this.children[1].assess(validator);
 		const assigned_type: SolidLanguageType = this.children[2].type(validator);
 		if (
@@ -1229,10 +1236,16 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		} else {
 			throw new TypeError03(this, assignee_type, assigned_type)
 		}
+		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
 	/** @implements ASTNodeSolid */
-	build(_builder: Builder): Instruction {
-		throw new Error('ASTNodeDeclarationVariable#build not yet supported.');
+	build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
+		const tofloat: boolean = this.children[2].type(builder.validator).isSubtypeOf(Float64) || this.children[2].shouldFloat;
+		const assess: SolidObject | null = this.children[0].assess(builder.validator);
+		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && assess)
+			? new INST.InstructionNone()
+			: new INST.InstructionDeclareGlobal(this.children[0].id, this.unfixed, this.children[2].build(builder, tofloat))
+		;
 	}
 }
 export class ASTNodeAssignment extends ASTNodeSolid {
@@ -1244,7 +1257,7 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		this.children.forEach((c) => c.varCheck(validator));
 		const variable: ASTNodeVariable = this.children[0];
 		if (!(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
@@ -1252,7 +1265,7 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 		};
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		const assignee_type: SolidLanguageType = this.children[0].type(validator);
 		const assigned_type: SolidLanguageType = this.children[1].type(validator);
 		if (
@@ -1264,8 +1277,12 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 		};
 	}
 	/** @implements ASTNodeSolid */
-	build(_builder: Builder): Instruction {
-		throw new Error('ASTNodeAssignment#build not yet supported.');
+	build(builder: Builder): INST.InstructionStatement {
+		const tofloat: boolean = this.children[1].type(builder.validator).isSubtypeOf(Float64) || this.children[1].shouldFloat;
+		return new INST.InstructionStatement(
+			builder.stmtCount,
+			new INST.InstructionGlobalSet(this.children[0].id, this.children[1].build(builder, tofloat)),
+		);
 	}
 }
 export class ASTNodeGoal extends ASTNodeSolid {
@@ -1278,11 +1295,11 @@ export class ASTNodeGoal extends ASTNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator = new Validator()): void {
+	varCheck(validator: Validator): void {
 		this.children.forEach((c) => c.varCheck(validator));
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator = new Validator()): void {
+	typeCheck(validator: Validator): void {
 		return this.children.forEach((child) => child.typeCheck(validator));
 	}
 	/** @implements ASTNodeSolid */

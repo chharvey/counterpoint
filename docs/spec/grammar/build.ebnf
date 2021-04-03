@@ -34,22 +34,38 @@ Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 
 
 
-Sequence<Instruction> Build(SemanticDeclaration decl) :=
-	// TO BE DETERMINED
+Sequence<Instruction> Build(SemanticDeclarationType decl) :=
+	1. *Return:* [].
+;
+
+Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
+	1. *Assert:* `decl.children.count` is 3.
+	2. *Let* `assess` be `Assess(decl)`.
+	3. *If* `assess` is a normal completion *and* `decl.unfixed` is `false`:
+		1. *Note:* references to the variable will be constant-propegated by its fixed value.
+		2. *Return:* [].
+	4. *Let* `name` be the string-concatenation of "glb" and `decl.children.0.id`.
+	5. *Let* `instrs` be *UnwrapAffirm:* `Build(decl.childen.2)`.
+	6. *Return:* [
+		...instrs,
+		"DECL the global variable `name`.",
+	].
 ;
 
 Sequence<Instruction> Build(SemanticAssignment assign) :=
-	// TO BE DETERMINED
+	1. *Assert:* `assign.children.count` is 2.
+	2. *Let* `name` be the string-concatenation of "glb" and `assign.children.0.id`.
+	3. *Let* `instrs` be *UnwrapAffirm:* `Build(assign.childen.1)`.
+	4. *Return:* [
+		...instrs,
+		"SET the global variable `name`.",
+	].
 ;
 
 
 
 Sequence<Instruction> Build(SemanticGoal goal) :=
-	1. *Let* `sequence` be an empty sequence of `Instruction`s.
-	2. For each `SemanticStatment stmt` in `goal.children`:
-		1. *Let* `instrs` be *UnwrapAffirm:* `Build(stmt)`.
-		2. Push `...instrs` to `sequence`.
-	3. *Return:* `sequence`.
+	1. *Return:* a flattened mapping of `goal.children` for each `stmt` to *UnwrapAffirm:* `Build(stmt)`.
 ;
 
 
@@ -62,7 +78,10 @@ Sequence<Instruction> BuildExpression(SemanticConstant const) :=
 
 
 Sequence<Instruction> BuildExpression(SemanticVariable var) :=
-	// TO BE DETERMINED
+	1. *Let* `name` be the string-concatenation of "glb" and `var.id`.
+	2. *Return:* [
+		"GET the global variable `name`.",
+	].
 ;
 
 
@@ -94,13 +113,15 @@ Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | MUL | DI
 Sequence<Instruction> BuildExpression(SemanticOperation[operator: AND] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
 	2. *Return:* [
-		...builds.1,
 		...builds.0,
 		"TEE the local variable `operand0`.",
+		"NOT",
+		"NOT",
+		"IF",
+		...builds.1,
+		"ELSE",
 		"GET the local variable `operand0`.",
-		"NOT",
-		"NOT",
-		"SELECT",
+		"END",
 	].
 ;
 
@@ -109,11 +130,13 @@ Sequence<Instruction> BuildExpression(SemanticOperation[operator: OR] expr) :=
 	2. *Return:* [
 		...builds.0,
 		"TEE the local variable `operand0`.",
-		...builds.1,
+		"NOT",
+		"NOT",
+		"IF",
 		"GET the local variable `operand0`.",
-		"NOT",
-		"NOT",
-		"SELECT",
+		"ELSE",
+		...builds.1,
+		"END",
 	].
 ;
 

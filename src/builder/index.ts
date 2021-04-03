@@ -4,9 +4,6 @@ export {
 	InstructionNone,
 	InstructionExpression,
 	InstructionConst,
-	InstructionSet,
-	InstructionGet,
-	InstructionTee,
 	InstructionUnop,
 	InstructionBinop,
 	InstructionBinopArithmetic,
@@ -17,3 +14,4 @@ export {
 	InstructionStatement,
 	InstructionModule,
 } from './Instruction';
+export * as INST from './Instruction';

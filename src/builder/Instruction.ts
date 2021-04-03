@@ -62,8 +62,10 @@ class InstructionNop extends Instruction {
 /**
  * A superclass abstracting:
  * - InstructionConst
+ * - InstructionLocal
  * - InstructionUnop
  * - InstructionBinop
+ * - InstructionCond
  */
 export abstract class InstructionExpression extends Instruction {
 	abstract get isFloat(): boolean;
@@ -106,9 +108,10 @@ export class InstructionConst extends InstructionExpression {
 	}
 }
 /**
- * Local variable operations.
+ * Variable operations.
+ * - InstructionLocal
  */
-abstract class InstructionLocal extends InstructionExpression {
+abstract class InstructionVariable extends InstructionExpression {
 	/**
 	 * @param name the variable name (must begin with `'$'`)
 	 * @param op an optional expression to manipulate, or a type to declare
@@ -124,22 +127,55 @@ abstract class InstructionLocal extends InstructionExpression {
 	}
 }
 /**
- * Set a local variable.
+ * Global variable operations.
+ * - InstructionGlobalGet
+ * - InstructionGlobalSet
  */
-export class InstructionSet extends InstructionLocal {
-	constructor (name: string, op: InstructionExpression) {
-		super(name, op)
+abstract class InstructionGlobal extends InstructionVariable {
+	constructor (name_or_id: bigint | string, op: InstructionExpression | boolean = false) {
+		super((typeof name_or_id === 'bigint') ? `$glb${ name_or_id.toString(16) }` : name_or_id, op);
 	}
-	/** @return `'(local.set ‹name› ‹op›)'` */
+}
+/**
+ * Get a global variable.
+ */
+export class InstructionGlobalGet extends InstructionGlobal {
+	constructor (name: bigint | string, to_float: boolean = false) {
+		super(name, to_float);
+	}
+	/** @return `'(global.get ‹name›)'` */
 	toString(): string {
-		return `(local.set ${ this.name } ${ this.op })`
+		return `(global.get ${ this.name })`;
+	}
+}
+/**
+ * Set a global variable.
+ */
+export class InstructionGlobalSet extends InstructionGlobal {
+	constructor (name: bigint | string, op: InstructionExpression) {
+		super(name, op);
+	}
+	/** @return `'(global.set ‹name› ‹op›)'` */
+	toString(): string {
+		return `(global.set ${ this.name } ${ this.op })`;
+	}
+}
+/**
+ * Local variable operations.
+ * - InstructionLocalGet
+ * - InstructionLocalSet
+ * - InstructionLocalTee
+ */
+abstract class InstructionLocal extends InstructionVariable {
+	constructor (name_or_id: bigint | string, op: InstructionExpression | boolean = false) {
+		super((typeof name_or_id === 'bigint') ? `$var${ name_or_id.toString(16) }` : name_or_id, op);
 	}
 }
 /**
  * Get a local variable.
  */
-export class InstructionGet extends InstructionLocal {
-	constructor (name: string, to_float: boolean = false) {
+export class InstructionLocalGet extends InstructionLocal {
+	constructor (name: bigint | string, to_float: boolean = false) {
 		super(name, to_float)
 	}
 	/** @return `'(local.get ‹name›)'` */
@@ -148,10 +184,22 @@ export class InstructionGet extends InstructionLocal {
 	}
 }
 /**
+ * Set a local variable.
+ */
+export class InstructionLocalSet extends InstructionLocal {
+	constructor (name: bigint | string, op: InstructionExpression) {
+		super(name, op)
+	}
+	/** @return `'(local.set ‹name› ‹op›)'` */
+	toString(): string {
+		return `(local.set ${ this.name } ${ this.op })`
+	}
+}
+/**
  * Tee a local variable.
  */
-export class InstructionTee extends InstructionLocal {
-	constructor (name: string, op: InstructionExpression) {
+export class InstructionLocalTee extends InstructionLocal {
+	constructor (name: bigint | string, op: InstructionExpression) {
 		super(name, op)
 	}
 	/** @return `'(local.tee ‹name› ‹op›)'` */
@@ -190,6 +238,10 @@ export class InstructionUnop extends InstructionExpression {
 }
 /**
  * Perform a binary operation on the stack.
+ * - InstructionBinopArithmetic
+ * - InstructionBinopComparative
+ * - InstructionBinopEquality
+ * - InstructionBinopLogical
  */
 export abstract class InstructionBinop extends InstructionExpression {
 	/** Is either one of the arguments of type `i32`? */
@@ -325,17 +377,17 @@ export class InstructionBinopLogical extends InstructionBinop {
 	 * @return a `(select)` instruction determining which operand to produce
 	 */
 	toString(): string {
-		const varname: string = `$o${ this.count }`
+		const varname: string = `$o${ this.count.toString(16) }`;
 		const condition: InstructionExpression = new InstructionUnop(
 			Operator.NOT,
 			new InstructionUnop(
 				Operator.NOT,
-				new InstructionGet(varname, this.arg0.isFloat),
+				new InstructionLocalTee(varname, this.arg0),
 			),
 		)
-		const left:  InstructionExpression = new InstructionTee(varname, this.arg0)
+		const left:  InstructionExpression = new InstructionLocalGet(varname, this.arg0.isFloat)
 		const right: InstructionExpression = this.arg1
-		return `(local ${ varname } ${ (!this.arg0.isFloat) ? `i32` : `f64` }) ${
+		return `${ new InstructionDeclareLocal(varname, this.arg0.isFloat) } ${
 			(this.op === Operator.AND)
 				? new InstructionCond(condition, right, left)
 				: new InstructionCond(condition, left, right)
@@ -392,11 +444,57 @@ export class InstructionStatement extends Instruction {
 	 * @return a new function evaluating the argument
 	 */
 	toString(): string {
+		const result: string = (this.expr instanceof InstructionGlobalSet)
+			? ''
+			: `(result ${ (this.expr.isFloat) ? 'f64' : 'i32' })`
+		;
 		return utils.dedent`
-			(func (export "f${ this.count }") (result ${ (!this.expr.isFloat) ? `i32` : `f64` })
+			(func (export "f${ this.count }") ${ result }
 				${ this.expr }
 			)
 		`
+	}
+}
+/**
+ * Declare a global variable.
+ */
+export class InstructionDeclareGlobal extends Instruction {
+	private readonly type: string = (this.init.isFloat) ? 'f64' : 'i32';
+	/**
+	 * @param name the variable name (must begin with `'$'`)
+	 * @param mut  is the variable mutable? (may it be reassigned?)
+	 * @param init the initial value of the variable
+	 */
+	constructor (
+		private readonly name: bigint | string,
+		private readonly mut: boolean,
+		private readonly init: InstructionExpression,
+	) {
+		super();
+		this.name = (typeof name === 'bigint') ? `$glb${ name.toString(16) }` : name;
+	}
+	/** @return `'(global ‹name› ‹type› ‹init›)'` */
+	toString(): string {
+		return `(global ${ this.name } ${ (this.mut) ? `(mut ${ this.type })` : this.type } ${ this.init })`;
+	}
+}
+/**
+ * Declare a local variable.
+ */
+export class InstructionDeclareLocal extends Instruction {
+	/**
+	 * @param name the variable name (must begin with `'$'`)
+	 * @param to_float `true` if declaring a float
+	 */
+	constructor (
+		private readonly name: string,
+		private readonly to_float: boolean,
+	) {
+		super();
+	}
+	/** @return `'(local ‹name› ‹type›)'` */
+	toString(): string {
+		return `(local ${ this.name } ${ (this.to_float) ? 'f64' : 'i32' })`;
 	}
 }
 /**
