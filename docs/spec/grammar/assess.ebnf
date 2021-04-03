@@ -36,7 +36,7 @@ Type Assess(SemanticTypeOperation[operator: OR] oper) :=
 
 
 
-Or<Null, Boolean, Number, Sequence<RealNumber>> Assess(SemanticConstant const) :=
+Or<Null, Boolean, Number, String> Assess(SemanticConstant const) :=
 	1. *Return:* `const.value`.
 ;
 
@@ -53,8 +53,10 @@ Object! Assess(SemanticVariable var) :=
 
 
 
-Void Assess(SemanticTemplate tpl) :=
-	// TO BE DETERMINED
+String! Assess(SemanticTemplate tpl) :=
+	1. *Let* `values` be a mapping for each `node` in `tpl.children` to *Unwrap:* `Assess(node)`.
+	2. *Let* `strings` be a mapping for each `value` in `values` to `ToString(value)`.
+	3. *Return:* the string-concatenation of each item in `strings`, preserving order.
 ;
 
 

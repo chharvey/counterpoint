@@ -602,8 +602,12 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		return SolidString
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(_validator: Validator): SolidObject | null {
-		throw new Error('ASTNodeTemplate#assess_do not yet supported.');
+	protected assess_do(validator: Validator): SolidString | null {
+		const concat: string | null = [...this.children].map((expr) => {
+			const assessed: SolidObject | null = expr.assess(validator);
+			return assessed && assessed.toString();
+		}).reduce((accum, value) => ([accum, value].includes(null)) ? null : accum!.concat(value!), '');
+		return (concat === null) ? null : new SolidString(concat);
 	}
 }
 export class ASTNodeEmptyCollection extends ASTNodeExpression {

@@ -63,10 +63,8 @@ SemanticConstant[value: Null | Boolean | Number | String]
 SemanticVariable[id: RealNumber]
 	::= ();
 
-SemanticTemplate[type: "full"]
-	::= SemanticConstant;
-SemanticTemplate[type: "substitution"]
-	::= (SemanticConstant SemanticExpression?)+ SemanticConstant;
+SemanticTemplate
+	::= (SemanticConstant SemanticExpression?)* SemanticConstant;
 
 SemanticTemplatePartial
 	::= (SemanticConstant SemanticExpression?)+;
