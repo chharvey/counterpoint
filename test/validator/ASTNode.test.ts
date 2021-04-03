@@ -165,7 +165,7 @@ describe('ASTNodeSolid', () => {
 					],
 				);
 			});
-			it('with constant folding on, returns InstructionGet for unfixed / non-foldable variables.', () => {
+			it('with constant folding on, returns InstructionGlobalGet for unfixed / non-foldable variables.', () => {
 				const src: string = `
 					let unfixed x: int = 42;
 					let y: int = x + 10;
@@ -179,12 +179,12 @@ describe('ASTNodeSolid', () => {
 						goalFromSource(src).children[3].build(builder),
 					],
 					[
-						new INST.InstructionStatement(0n, new INST.InstructionLocalGet(0x100n)),
-						new INST.InstructionStatement(1n, new INST.InstructionLocalGet(0x101n)),
+						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
+						new INST.InstructionStatement(1n, new INST.InstructionGlobalGet(0x101n)),
 					],
 				);
 			});
-			it('with constant folding off, always returns InstructionGet.', () => {
+			it('with constant folding off, always returns InstructionGlobalGet.', () => {
 				const folding_off: SolidConfig = {
 					...CONFIG_DEFAULT,
 					compilerOptions: {
@@ -205,8 +205,8 @@ describe('ASTNodeSolid', () => {
 						goalFromSource(src, folding_off).children[3].build(builder),
 					],
 					[
-						new INST.InstructionStatement(0n, new INST.InstructionLocalGet(0x100n)),
-						new INST.InstructionStatement(1n, new INST.InstructionLocalGet(0x101n)),
+						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
+						new INST.InstructionStatement(1n, new INST.InstructionGlobalGet(0x101n)),
 					],
 				);
 			});
@@ -562,7 +562,7 @@ describe('ASTNodeSolid', () => {
 					],
 				);
 			});
-			it('with constant folding on, returns InstructionSet for unfixed / non-foldable variables.', () => {
+			it('with constant folding on, returns InstructionDeclareGlobal for unfixed / non-foldable variables.', () => {
 				const src: string = `
 					let unfixed x: int = 42;
 					let y: int = x + 10;
@@ -575,16 +575,16 @@ describe('ASTNodeSolid', () => {
 						goal.children[1].build(builder),
 					],
 					[
-						new INST.InstructionLocalSet(0x100n, instructionConstInt(42n)),
-						new INST.InstructionLocalSet(0x101n, new INST.InstructionBinopArithmetic(
+						new INST.InstructionDeclareGlobal(0x100n, true,  instructionConstInt(42n)),
+						new INST.InstructionDeclareGlobal(0x101n, false, new INST.InstructionBinopArithmetic(
 							Operator.ADD,
-							new INST.InstructionLocalGet(0x100n),
+							new INST.InstructionGlobalGet(0x100n),
 							instructionConstInt(10n),
 						)),
 					],
 				);
 			});
-			it('with constant folding off, always returns InstructionSet.', () => {
+			it('with constant folding off, always returns InstructionDeclareGlobal.', () => {
 				const folding_off: SolidConfig = {
 					...CONFIG_DEFAULT,
 					compilerOptions: {
@@ -604,15 +604,15 @@ describe('ASTNodeSolid', () => {
 						goal.children[1].build(builder),
 					],
 					[
-						new INST.InstructionLocalSet(0x100n, instructionConstInt(42n)),
-						new INST.InstructionLocalSet(0x101n, instructionConstFloat(4.2)),
+						new INST.InstructionDeclareGlobal(0x100n, false, instructionConstInt(42n)),
+						new INST.InstructionDeclareGlobal(0x101n, true,  instructionConstFloat(4.2)),
 					],
 				);
 			});
 		});
 
 		describe('ASTNodeAssignment', () => {
-			it('always returns InstructionSet.', () => {
+			it('always returns InstructionStatement containing InstructionGlobalSet.', () => {
 				const src: string = `
 					let unfixed y: float = 4.2;
 					y = y * 10;
@@ -621,11 +621,14 @@ describe('ASTNodeSolid', () => {
 				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
 					goal.children[1].build(builder),
-					new INST.InstructionLocalSet(0x100n, new INST.InstructionBinopArithmetic(
-						Operator.MUL,
-						new INST.InstructionLocalGet(0x100n, true),
-						instructionConstFloat(10.0),
-					)),
+					new INST.InstructionStatement(
+						0n,
+						new INST.InstructionGlobalSet(0x100n, new INST.InstructionBinopArithmetic(
+							Operator.MUL,
+							new INST.InstructionGlobalGet(0x100n, true),
+							instructionConstFloat(10.0),
+						)),
+					),
 				);
 			});
 		});

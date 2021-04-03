@@ -465,8 +465,12 @@ export class InstructionStatement extends Instruction {
 	 * @return a new function evaluating the argument
 	 */
 	toString(): string {
+		const result: string = (this.expr instanceof InstructionGlobalSet)
+			? ''
+			: `(result ${ (this.expr.isFloat) ? 'f64' : 'i32' })`
+		;
 		return `
-			(func (export "f${ this.count }") (result ${ (!this.expr.isFloat) ? `i32` : `f64` })
+			(func (export "f${ this.count }") ${ result }
 				${ this.expr }
 			)
 		`
