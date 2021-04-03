@@ -14,7 +14,7 @@ SemanticKey[id: RealNumber]
 
 
 
-SemanticTypeProperty
+SemanticPropertyType
 	::= SemanticKey SemanticType;
 
 
@@ -27,7 +27,7 @@ SemanticTypeAlias[id: RealNumber]
 
 SemanticTypeEmptyCollection ::= ();
 SemanticTypeList            ::= SemanticType+;
-SemanticTypeRecord          ::= SemanticTypeProperty+;
+SemanticTypeRecord          ::= SemanticPropertyType+;
 
 SemanticTypeOperation[operator: ORNULL]
 	::= SemanticType;

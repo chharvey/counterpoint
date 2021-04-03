@@ -51,8 +51,8 @@ export class ProductionTypeKeyword extends Production {
 	}
 }
 
-export class ProductionTypeProperty extends Production {
-	static readonly instance: ProductionTypeProperty = new ProductionTypeProperty();
+export class ProductionPropertyType extends Production {
+	static readonly instance: ProductionPropertyType = new ProductionPropertyType();
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
@@ -86,7 +86,7 @@ export class ProductionTypeRecordLiteral__0__List extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionTypeProperty.instance],[ProductionTypeRecordLiteral__0__List.instance,',',ProductionTypeProperty.instance],
+			[ProductionPropertyType.instance],[ProductionTypeRecordLiteral__0__List.instance,',',ProductionPropertyType.instance],
 		];
 	}
 }
@@ -460,7 +460,7 @@ export class ParseNodeTypeKeyword extends ParseNode {
 	;
 }
 
-export class ParseNodeTypeProperty extends ParseNode {
+export class ParseNodePropertyType extends ParseNode {
 	declare readonly children:
 		readonly [ParseNodeWord,Token,ParseNodeType]
 	;
@@ -480,7 +480,7 @@ export class ParseNodeTypeTupleLiteral extends ParseNode {
 
 export class ParseNodeTypeRecordLiteral__0__List extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeTypeProperty] | readonly [ParseNodeTypeRecordLiteral__0__List,Token,ParseNodeTypeProperty]
+		readonly [ParseNodePropertyType] | readonly [ParseNodeTypeRecordLiteral__0__List,Token,ParseNodePropertyType]
 	;
 }
 
@@ -699,7 +699,7 @@ export const grammar_Solid: Grammar = new Grammar([
 	ProductionWord.instance,
 	ProductionPrimitiveLiteral.instance,
 	ProductionTypeKeyword.instance,
-	ProductionTypeProperty.instance,
+	ProductionPropertyType.instance,
 	ProductionTypeTupleLiteral__0__List.instance,
 	ProductionTypeTupleLiteral.instance,
 	ProductionTypeRecordLiteral__0__List.instance,
@@ -751,7 +751,7 @@ export class ParserSolid extends Parser {
 			[ProductionWord.instance, ParseNodeWord],
 			[ProductionPrimitiveLiteral.instance, ParseNodePrimitiveLiteral],
 			[ProductionTypeKeyword.instance, ParseNodeTypeKeyword],
-			[ProductionTypeProperty.instance, ParseNodeTypeProperty],
+			[ProductionPropertyType.instance, ParseNodePropertyType],
 			[ProductionTypeTupleLiteral__0__List.instance, ParseNodeTypeTupleLiteral__0__List],
 			[ProductionTypeTupleLiteral.instance, ParseNodeTypeTupleLiteral],
 			[ProductionTypeRecordLiteral__0__List.instance, ParseNodeTypeRecordLiteral__0__List],
