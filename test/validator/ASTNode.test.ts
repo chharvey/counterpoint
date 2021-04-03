@@ -179,8 +179,8 @@ describe('ASTNodeSolid', () => {
 						goalFromSource(src).children[3].build(builder),
 					],
 					[
-						new INST.InstructionStatement(0n, new INST.InstructionGet(0x100n)),
-						new INST.InstructionStatement(1n, new INST.InstructionGet(0x101n)),
+						new INST.InstructionStatement(0n, new INST.InstructionLocalGet(0x100n)),
+						new INST.InstructionStatement(1n, new INST.InstructionLocalGet(0x101n)),
 					],
 				);
 			});
@@ -205,8 +205,8 @@ describe('ASTNodeSolid', () => {
 						goalFromSource(src, folding_off).children[3].build(builder),
 					],
 					[
-						new INST.InstructionStatement(0n, new INST.InstructionGet(0x100n)),
-						new INST.InstructionStatement(1n, new INST.InstructionGet(0x101n)),
+						new INST.InstructionStatement(0n, new INST.InstructionLocalGet(0x100n)),
+						new INST.InstructionStatement(1n, new INST.InstructionLocalGet(0x101n)),
 					],
 				);
 			});
@@ -575,10 +575,10 @@ describe('ASTNodeSolid', () => {
 						goal.children[1].build(builder),
 					],
 					[
-						new INST.InstructionSet(0x100n, instructionConstInt(42n)),
-						new INST.InstructionSet(0x101n, new INST.InstructionBinopArithmetic(
+						new INST.InstructionLocalSet(0x100n, instructionConstInt(42n)),
+						new INST.InstructionLocalSet(0x101n, new INST.InstructionBinopArithmetic(
 							Operator.ADD,
-							new INST.InstructionGet(0x100n),
+							new INST.InstructionLocalGet(0x100n),
 							instructionConstInt(10n),
 						)),
 					],
@@ -604,8 +604,8 @@ describe('ASTNodeSolid', () => {
 						goal.children[1].build(builder),
 					],
 					[
-						new INST.InstructionSet(0x100n, instructionConstInt(42n)),
-						new INST.InstructionSet(0x101n, instructionConstFloat(4.2)),
+						new INST.InstructionLocalSet(0x100n, instructionConstInt(42n)),
+						new INST.InstructionLocalSet(0x101n, instructionConstFloat(4.2)),
 					],
 				);
 			});
@@ -621,9 +621,9 @@ describe('ASTNodeSolid', () => {
 				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
 					goal.children[1].build(builder),
-					new INST.InstructionSet(0x100n, new INST.InstructionBinopArithmetic(
+					new INST.InstructionLocalSet(0x100n, new INST.InstructionBinopArithmetic(
 						Operator.MUL,
-						new INST.InstructionGet(0x100n, true),
+						new INST.InstructionLocalGet(0x100n, true),
 						instructionConstFloat(10.0),
 					)),
 				);

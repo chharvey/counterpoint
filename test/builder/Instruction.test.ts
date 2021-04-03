@@ -18,9 +18,6 @@ import {
 	Builder,
 	InstructionNone,
 	InstructionConst,
-	InstructionSet,
-	InstructionGet,
-	InstructionTee,
 	InstructionUnop,
 	InstructionBinopArithmetic,
 	InstructionBinopComparative,
@@ -29,6 +26,7 @@ import {
 	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
+	INST,
 } from '../../src/builder/'
 import {
 	instructionConstInt,
@@ -62,9 +60,9 @@ describe('Instruction', () => {
 	describe('#toString', () => {
 		specify('InstructionLocal', () => {
 			const expr: InstructionConst = instructionConstInt(42n)
-			assert.strictEqual(new InstructionSet('$x', expr).toString(),  `(local.set $x ${ instructionConstInt(42n) })`)
-			assert.strictEqual(new InstructionGet('$x', false).toString(), `(local.get $x)`)
-			assert.strictEqual(new InstructionTee('$x', expr).toString(),  `(local.tee $x ${ instructionConstInt(42n) })`)
+			assert.strictEqual(new INST.InstructionLocalSet('$x', expr)  .toString(), `(local.set $x ${ instructionConstInt(42n) })`);
+			assert.strictEqual(new INST.InstructionLocalGet('$x', false) .toString(), `(local.get $x)`);
+			assert.strictEqual(new INST.InstructionLocalTee('$x', expr)  .toString(), `(local.tee $x ${ instructionConstInt(42n) })`);
 		})
 		context('InstructionConst', () => {
 			it('pushes the constant integer onto the stack.', () => {
@@ -189,9 +187,9 @@ describe('Instruction', () => {
 					instructionConstInt(30n),
 					instructionConstInt(18n),
 				).toString(), ((varname) => `(local ${ varname } i32) ${ new InstructionCond(
-					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, instructionConstInt(30n)))),
+					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(varname, instructionConstInt(30n)))),
 					instructionConstInt(18n),
-					new InstructionGet(varname, false),
+					new INST.InstructionLocalGet(varname, false),
 				) }`)('$o0'))
 				assert.strictEqual(new InstructionBinopLogical(
 					3n,
@@ -199,8 +197,8 @@ describe('Instruction', () => {
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
 				).toString(), ((varname) => `(local ${ varname } f64) ${ new InstructionCond(
-					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, instructionConstFloat(30.1)))),
-					new InstructionGet(varname, true),
+					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(varname, instructionConstFloat(30.1)))),
+					new INST.InstructionLocalGet(varname, true),
 					instructionConstFloat(18.1),
 				) }`)('$o3'))
 			})

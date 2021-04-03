@@ -106,12 +106,10 @@ export class InstructionConst extends InstructionExpression {
 	}
 }
 /**
- * Local variable operations.
- * - InstructionGet
- * - InstructionSet
- * - InstructionTee
+ * Variable operations.
+ * - InstructionLocal
  */
-abstract class InstructionLocal extends InstructionExpression {
+abstract class InstructionVariable extends InstructionExpression {
 	/**
 	 * @param name the variable name (must begin with `'$'`)
 	 * @param op an optional expression to manipulate, or a type to declare
@@ -127,13 +125,21 @@ abstract class InstructionLocal extends InstructionExpression {
 	}
 }
 /**
+ * Local variable operations.
+ * - InstructionLocalGet
+ * - InstructionLocalSet
+ * - InstructionLocalTee
+ */
+abstract class InstructionLocal extends InstructionVariable {
+	constructor (name_or_id: bigint | string, op: InstructionExpression | boolean = false) {
+		super((typeof name_or_id === 'bigint') ? `$var${ name_or_id.toString(16) }` : name_or_id, op);
+	}
+}
+/**
  * Get a local variable.
  */
-export class InstructionGet extends InstructionLocal {
+export class InstructionLocalGet extends InstructionLocal {
 	constructor (name: bigint | string, to_float: boolean = false) {
-		if (typeof name === 'bigint') {
-			name = `$var${ name.toString(16) }`;
-		};
 		super(name, to_float)
 	}
 	/** @return `'(local.get ‹name›)'` */
@@ -144,11 +150,8 @@ export class InstructionGet extends InstructionLocal {
 /**
  * Set a local variable.
  */
-export class InstructionSet extends InstructionLocal {
+export class InstructionLocalSet extends InstructionLocal {
 	constructor (name: bigint | string, op: InstructionExpression) {
-		if (typeof name === 'bigint') {
-			name = `$var${ name.toString(16) }`;
-		};
 		super(name, op)
 	}
 	/** @return `'(local.set ‹name› ‹op›)'` */
@@ -159,11 +162,8 @@ export class InstructionSet extends InstructionLocal {
 /**
  * Tee a local variable.
  */
-export class InstructionTee extends InstructionLocal {
+export class InstructionLocalTee extends InstructionLocal {
 	constructor (name: bigint | string, op: InstructionExpression) {
-		if (typeof name === 'bigint') {
-			name = `$var${ name.toString(16) }`;
-		};
 		super(name, op)
 	}
 	/** @return `'(local.tee ‹name› ‹op›)'` */
@@ -346,10 +346,10 @@ export class InstructionBinopLogical extends InstructionBinop {
 			Operator.NOT,
 			new InstructionUnop(
 				Operator.NOT,
-				new InstructionTee(varname, this.arg0),
+				new InstructionLocalTee(varname, this.arg0),
 			),
 		)
-		const left:  InstructionExpression = new InstructionGet(varname, this.arg0.isFloat)
+		const left:  InstructionExpression = new InstructionLocalGet(varname, this.arg0.isFloat)
 		const right: InstructionExpression = this.arg1
 		return `(local ${ varname } ${ (!this.arg0.isFloat) ? `i32` : `f64` }) ${
 			(this.op === Operator.AND)
