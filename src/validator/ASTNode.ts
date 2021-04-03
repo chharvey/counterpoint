@@ -201,7 +201,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 * @returns the computed type-value of this node
 	 * @final
 	 */
-	assess(validator: Validator = new Validator()): SolidLanguageType {
+	assess(validator: Validator): SolidLanguageType {
 		this.assessed || (this.assessed = this.assess_do(validator)); // COMBAK `this.assessed ||= this.assess_do(validator)`
 		return this.assessed
 	}
@@ -468,7 +468,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 * @final
 	 */
-	assess(validator: Validator = new Validator()): SolidObject | null {
+	assess(validator: Validator): SolidObject | null {
 		if (this.assessed === void 0) {
 			this.assessed = this.assess_do(validator);
 		}

@@ -771,7 +771,7 @@ describe('ASTNodeSolid', () => {
 					`true`,
 					`42`,
 					`4.2e+3`,
-				].map((src) => Decorator.decorate(unitTypeFromString(src)).assess()), [
+				].map((src) => Decorator.decorate(unitTypeFromString(src)).assess(new Validator())), [
 					SolidNull,
 					SolidBoolean.FALSETYPE,
 					SolidBoolean.TRUETYPE,
@@ -801,7 +801,7 @@ describe('ASTNodeSolid', () => {
 					'int',
 					'float',
 					'obj',
-				].map((src) => Decorator.decorate(unitTypeFromString(src)).assess()), [
+				].map((src) => Decorator.decorate(unitTypeFromString(src)).assess(new Validator())), [
 					SolidBoolean,
 					Int16,
 					Float64,
@@ -810,17 +810,17 @@ describe('ASTNodeSolid', () => {
 			})
 			it('computes the value of a nullified (ORNULL) type.', () => {
 				assert.deepStrictEqual(
-					Decorator.decorate(unaryTypeFromString(`int!`)).assess(),
+					Decorator.decorate(unaryTypeFromString(`int!`)).assess(new Validator()),
 					Int16.union(SolidNull),
 				)
 			})
 			it('computes the value of AND and OR operators', () => {
 				assert.deepStrictEqual(
-					Decorator.decorate(intersectionTypeFromString(`obj & 3`)).assess(),
+					Decorator.decorate(intersectionTypeFromString(`obj & 3`)).assess(new Validator()),
 					SolidObject.intersect(typeConstInt(3n)),
 				)
 				assert.deepStrictEqual(
-					Decorator.decorate(unionTypeFromString(`4.2 | int`)).assess(),
+					Decorator.decorate(unionTypeFromString(`4.2 | int`)).assess(new Validator()),
 					typeConstFloat(4.2).union(Int16),
 				)
 			})
@@ -857,7 +857,7 @@ describe('ASTNodeSolid', () => {
 									c.assess = orig;
 								};
 							})),
-							constants.map((c) => new SolidTypeConstant(c.assess()!)),
+							constants.map((c) => new SolidTypeConstant(c.assess(new Validator())!)),
 						);
 					});
 				});
@@ -901,7 +901,7 @@ describe('ASTNodeSolid', () => {
 									t.assess = orig;
 								};
 							})),
-							templates.map((t) => new SolidTypeConstant(t.assess()!)),
+							templates.map((t) => new SolidTypeConstant(t.assess(new Validator())!)),
 						);
 					});
 				});
@@ -1109,7 +1109,7 @@ describe('ASTNodeSolid', () => {
 						'null;',
 						'false;',
 						'true;',
-					].map((src) => constantFromSource(src).assess()), [
+					].map((src) => constantFromSource(src).assess(new Validator())), [
 						SolidNull.NULL,
 						SolidBoolean.FALSE,
 						SolidBoolean.TRUE,
@@ -1126,7 +1126,7 @@ describe('ASTNodeSolid', () => {
 					assert.deepStrictEqual(`
 						55  -55  033  -033  0  -0
 						\\o55  -\\o55  \\q033  -\\q033
-					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`, integer_radices_on).assess()), [
+					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`, integer_radices_on).assess(new Validator())), [
 						55, -55, 33, -33, 0, 0,
 						parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
 					].map((v) => new Int16(BigInt(v))));
@@ -1136,7 +1136,7 @@ describe('ASTNodeSolid', () => {
 						55.  -55.  033.  -033.  2.007  -2.007
 						91.27e4  -91.27e4  91.27e-4  -91.27e-4
 						0.  -0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`).assess()), [
+					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`).assess(new Validator())), [
 						55, -55, 33, -33, 2.007, -2.007,
 						91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 						0, -0, -0, 6.8, 6.8, 0, -0,
@@ -1238,7 +1238,7 @@ describe('ASTNodeSolid', () => {
 			describe('ASTNodeOperation', () => {
 				function assessOperations(tests: Map<string, SolidObject>): void {
 					return assert.deepStrictEqual(
-						[...tests.keys()].map((src) => operationFromSource(src).assess()),
+						[...tests.keys()].map((src) => operationFromSource(src).assess(new Validator())),
 						[...tests.values()],
 					);
 				}
@@ -1299,7 +1299,7 @@ describe('ASTNodeSolid', () => {
 						assert.deepStrictEqual([
 							`2 ^ 15 + 2 ^ 14;`,
 							`-(2 ^ 14) - 2 ^ 15;`,
-						].map((src) => operationFromSource(src).assess()), [
+						].map((src) => operationFromSource(src).assess(new Validator())), [
 							new Int16(-(2n ** 14n)),
 							new Int16(2n ** 14n),
 						])
@@ -1311,7 +1311,7 @@ describe('ASTNodeSolid', () => {
 						]))
 					})
 					it('throws when performing an operation that does not yield a valid number.', () => {
-						assert.throws(() => operationFromSource(`-4 ^ -0.5;`).assess(), NanError01)
+						assert.throws(() => operationFromSource(`-4 ^ -0.5;`).assess(new Validator()), NanError01);
 					})
 				});
 				specify('ASTNodeOperationBinaryComparative', () => {
