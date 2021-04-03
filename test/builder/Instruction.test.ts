@@ -58,12 +58,19 @@ describe('Instruction', () => {
 	})
 
 	describe('#toString', () => {
+		specify('InstructionGlobal', () => {
+			const expr: InstructionConst = instructionConstInt(42n);
+			assert.strictEqual(new INST.InstructionGlobalSet('$x', expr)  .toString(), `(global.set $x ${ instructionConstInt(42n) })`);
+			assert.strictEqual(new INST.InstructionGlobalGet('$x', false) .toString(), `(global.get $x)`);
+		});
+
 		specify('InstructionLocal', () => {
 			const expr: InstructionConst = instructionConstInt(42n)
 			assert.strictEqual(new INST.InstructionLocalSet('$x', expr)  .toString(), `(local.set $x ${ instructionConstInt(42n) })`);
 			assert.strictEqual(new INST.InstructionLocalGet('$x', false) .toString(), `(local.get $x)`);
 			assert.strictEqual(new INST.InstructionLocalTee('$x', expr)  .toString(), `(local.tee $x ${ instructionConstInt(42n) })`);
 		})
+
 		context('InstructionConst', () => {
 			it('pushes the constant integer onto the stack.', () => {
 				const values: number[] = [
@@ -218,6 +225,14 @@ describe('Instruction', () => {
 				).toString(), `(if (result f64) ${ instructionConstInt(0n) } (then ${ instructionConstFloat(2.2) }) (else ${ instructionConstFloat(3.3) }))`)
 			})
 		})
+
+		specify('InstructionDeclareGlobal', () => {
+			const expr: InstructionConst = instructionConstInt(42n);
+			assert.strictEqual(
+				new INST.InstructionDeclareGlobal('$x', true, expr).toString(),
+				`(global $x (mut i32) ${ expr })`,
+			);
+		});
 
 		describe('InstructionStatement', () => {
 			it('returns a wasm function.', () => {

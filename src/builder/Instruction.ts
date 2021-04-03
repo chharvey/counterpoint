@@ -125,6 +125,40 @@ abstract class InstructionVariable extends InstructionExpression {
 	}
 }
 /**
+ * Global variable operations.
+ * - InstructionGlobalGet
+ * - InstructionGlobalSet
+ */
+abstract class InstructionGlobal extends InstructionVariable {
+	constructor (name_or_id: bigint | string, op: InstructionExpression | boolean = false) {
+		super((typeof name_or_id === 'bigint') ? `$glb${ name_or_id.toString(16) }` : name_or_id, op);
+	}
+}
+/**
+ * Get a global variable.
+ */
+export class InstructionGlobalGet extends InstructionGlobal {
+	constructor (name: bigint | string, to_float: boolean = false) {
+		super(name, to_float);
+	}
+	/** @return `'(global.get ‹name›)'` */
+	toString(): string {
+		return `(global.get ${ this.name })`;
+	}
+}
+/**
+ * Set a global variable.
+ */
+export class InstructionGlobalSet extends InstructionGlobal {
+	constructor (name: bigint | string, op: InstructionExpression) {
+		super(name, op);
+	}
+	/** @return `'(global.set ‹name› ‹op›)'` */
+	toString(): string {
+		return `(global.set ${ this.name } ${ this.op })`;
+	}
+}
+/**
  * Local variable operations.
  * - InstructionLocalGet
  * - InstructionLocalSet
@@ -388,6 +422,29 @@ export class InstructionCond extends InstructionExpression {
 	}
 	get isFloat(): boolean {
 		return this.arg1.isFloat || this.arg2.isFloat
+	}
+}
+/**
+ * Declare a global variable.
+ */
+export class InstructionDeclareGlobal extends Instruction {
+	private readonly type: string = (this.init.isFloat) ? 'f64' : 'i32';
+	/**
+	 * @param name the variable name (must begin with `'$'`)
+	 * @param mut  is the variable mutable? (may it be reassigned?)
+	 * @param init the initial value of the variable
+	 */
+	constructor (
+		private readonly name: bigint | string,
+		private readonly mut: boolean,
+		private readonly init: InstructionExpression,
+	) {
+		super();
+		this.name = (typeof name === 'bigint') ? `$glb${ name.toString(16) }` : name;
+	}
+	/** @return `'(global ‹name› ‹type› ‹init›)'` */
+	toString(): string {
+		return `(global ${ this.name } ${ (this.mut) ? `(mut ${ this.type })` : this.type } ${ this.init })`;
 	}
 }
 /**
