@@ -450,7 +450,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @return the compile-time type of this node
 	 * @final
 	 */
-	type(validator: Validator = new Validator()): SolidLanguageType {
+	type(validator: Validator): SolidLanguageType {
 		const type_: SolidLanguageType = this.type_do(validator); // type-check first, to re-throw any TypeErrors
 		if (validator.config.compilerOptions.constantFolding) {
 			const assessed: SolidObject | null = this.assess(validator);
@@ -535,7 +535,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeExpression */
 	get shouldFloat(): boolean {
-		return this.type().isSubtypeOf(Float64);
+		return this.type(new Validator()).isSubtypeOf(Float64);
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator): void {
