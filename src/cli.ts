@@ -9,24 +9,35 @@ const VERSION: string = require('../package.json').version;
 
 
 ;(async () => {
+	async function handleCompileOrDev() {
+		const result: [string, void] = await cli.compileOrDev(process.cwd())
+		console.log(result[0])
+		console.log('Success!')
+	}
 	const cli: CLI = new CLI(process.argv)
-	if (cli.command === Command.HELP) {
+	await new Map<Command, () => void | Promise<void>>([
+		[Command.HELP, () => {
 		console.log(CLI.HELPTEXT)
 		if (cli.argv.config) {
 			console.log('\n' + CLI.CONFIGTEXT)
 		}
-	} else if (cli.command === Command.VERSION) {
+		}],
+		[Command.VERSION, () => {
 		console.log(`solid version ${ VERSION }`)
-	} else if (cli.command === Command.COMPILE || cli.command === Command.DEV) {
-		const result: [string, void] = await cli.compileOrDev(process.cwd())
-		console.log(result[0])
-		console.log('Success!')
-	} else if (cli.command === Command.RUN) {
+		}],
+		[Command.COMPILE, handleCompileOrDev],
+		[Command.DEV,     handleCompileOrDev],
+		[Command.RUN, async () => {
 		const result: [string, ...unknown[]] = await cli.run(process.cwd())
 		console.log(result[0])
 		console.log('Result:', result.slice(1))
-	}
+		}],
+	]).get(cli.command)!();
 })().catch((err) => {
+	if (err instanceof AggregateError) {
+		err.errors.forEach((er) => console.error(er));
+	} else {
 	console.error(err)
+	};
 	process.exit(1)
 })
