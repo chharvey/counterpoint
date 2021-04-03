@@ -1,11 +1,54 @@
+Type Assess(SemanticTypeConstant const) :=
+	1. *Return:* `const.value`.
+;
+
+
+
+Type Assess(SemanticTypeAlias var) :=
+	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
+		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
+		2. *Assert:* `symbol.value` is a Solid Language Type.
+		3. *Return:* `symbol.value`.
+	2. *Return:* `Unknown`.
+;
+
+
+
+Type Assess(SemanticTypeOperation[operator: ORNULL] oper) :=
+	1. *Assert:* `oper.children.count` is 1.
+	2. *Let* `child` be *UnwrapAffirm:* `Assess(oper.children.0)`.
+	3. *Return:* `Union(child, Null)`.
+;
+
+Type Assess(SemanticTypeOperation[operator: AND] oper) :=
+	1. *Assert:* `oper.children.count` is 2.
+	2. *Let* `child0` be *UnwrapAffirm:* `Assess(oper.children.0)`.
+	3. *Let* `child1` be *UnwrapAffirm:* `Assess(oper.children.1)`.
+	4. *Return:* `Intersection(child0, child1)`.
+;
+
+Type Assess(SemanticTypeOperation[operator: OR] oper) :=
+	1. *Assert:* `oper.children.count` is 2.
+	2. *Let* `child0` be *UnwrapAffirm:* `Assess(oper.children.0)`.
+	3. *Let* `child1` be *UnwrapAffirm:* `Assess(oper.children.1)`.
+	4. *Return:* `Union(child0, child1)`.
+;
+
+
+
 Or<Null, Boolean, Number, Sequence<RealNumber>> Assess(SemanticConstant const) :=
 	1. *Return:* `const.value`.
 ;
 
 
 
-Unknown Assess(SemanticIdentifier iden) :=
-	// TO BE DETERMINED
+Object! Assess(SemanticVariable var) :=
+	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
+		1. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
+		2. *If* `symbol.unfixed` is `false`:
+			1. *Assert:* `symbol.value` is a Completion Structure.
+			2. *Return:* `symbol.value`.
+	2. *Throw:* `void`.
 ;
 
 

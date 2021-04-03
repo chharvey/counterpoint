@@ -1,11 +1,11 @@
-IDENTIFIER      ::= [../docs/spec/language-lexicon.md#identifiers];
-INTEGER         ::= [../docs/spec/language-lexicon.md#numbers];
-FLOAT           ::= [../docs/spec/language-lexicon.md#numbers];
-STRING          ::= [../docs/spec/language-lexicon.md#string-literals];
-TEMPLATE_FULL   ::= [../docs/spec/language-lexicon.md#template-literals];
-TEMPLATE_HEAD   ::= [../docs/spec/language-lexicon.md#template-literals];
-TEMPLATE_MIDDLE ::= [../docs/spec/language-lexicon.md#template-literals];
-TEMPLATE_TAIL   ::= [../docs/spec/language-lexicon.md#template-literals];
+// IDENTIFIER      ::= [./lexicon.ebnf#Identifier];
+// INTEGER         ::= [./lexicon.ebnf#Integer];
+// FLOAT           ::= [./lexicon.ebnf#Float];
+// STRING          ::= [./lexicon.ebnf#String];
+// TEMPLATE_FULL   ::= [./lexicon.ebnf#TemplateFull];
+// TEMPLATE_HEAD   ::= [./lexicon.ebnf#TemplateHead];
+// TEMPLATE_MIDDLE ::= [./lexicon.ebnf#TempalteMiddle];
+// TEMPLATE_TAIL   ::= [./lexicon.ebnf#TempalteTail];
 
 
 
@@ -17,6 +17,36 @@ PrimitiveLiteral ::=
 	| FLOAT
 	| STRING
 ;
+
+
+
+TypeKeyword ::=
+	| "bool"
+	| "int"
+	| "float"
+	| "obj"
+;
+
+TypeUnit ::=
+	| IDENTIFIER
+	| PrimitiveLiteral
+	| TypeKeyword
+	| "(" Type ")"
+;
+
+TypeUnarySymbol ::=
+	| TypeUnit
+	| TypeUnarySymbol "!"
+;
+
+TypeIntersection ::= (TypeIntersection "&")? TypeUnarySymbol;
+TypeUnion        ::= (TypeUnion        "|")? TypeIntersection;
+
+Type ::=
+	| TypeUnion
+;
+
+
 
 StringTemplate ::=
 	| TEMPLATE_FULL
@@ -30,10 +60,14 @@ ExpressionUnit ::=
 	| "(" Expression ")"
 ;
 
-ExpressionUnarySymbol
-	::= ExpressionUnit | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
+ExpressionUnarySymbol ::=
+	| ExpressionUnit
+	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol
+;
 
-ExpressionExponential    ::=  ExpressionUnarySymbol    ("^"                                      ExpressionExponential)?;
+ExpressionExponential
+	::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
+
 ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/" ))?                            ExpressionExponential;
 ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-" ))?                            ExpressionMultiplicative;
 ExpressionComparative    ::= (ExpressionComparative    ("<" | ">" | "<=" | ">=" | "!<" | "!>"))? ExpressionAdditive;
@@ -51,15 +85,24 @@ Expression ::=
 
 
 
-DeclarationVariable
-	::= "let" "unfixed"? IDENTIFIER "=" Expression ";";
+DeclarationType     ::= "type"            IDENTIFIER "=" Type                ";";
+DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
+
+Declaration ::=
+	| DeclarationType
+	| DeclarationVariable
+;
+
+Assignee ::=
+	| IDENTIFIER
+;
 
 StatementAssignment
-	::= IDENTIFIER "=" Expression ";";
+	::= Assignee "=" Expression ";";
 
 Statement ::=
 	| Expression? ";"
-	| DeclarationVariable
+	| Declaration
 	| StatementAssignment
 ;
 

@@ -1,6 +1,27 @@
+SemanticType =:=
+	| SemanticTypeConstant
+	| SemanticTypeAlias
+	| SemanticTypeOperation
+;
+
+
+
+SemanticTypeConstant[value: Type]
+	::= ();
+
+SemanticTypeAlias[id: RealNumber]
+	::= ();
+
+SemanticTypeOperation[operator: ORNULL]
+	::= SemanticType;
+SemanticTypeOperation[operator: AND | OR]
+	::= SemanticType SemanticType;
+
+
+
 SemanticExpression =:=
 	| SemanticConstant
-	| SemanticIdentifier
+	| SemanticVariable
 	| SemanticTemplate
 	| SemanticOperation
 ;
@@ -10,7 +31,7 @@ SemanticExpression =:=
 SemanticConstant[value: Null | Boolean | Number | Sequence<RealNumber>]
 	::= ();
 
-SemanticIdentifier[id: Unknown]
+SemanticVariable[id: RealNumber]
 	::= ();
 
 SemanticTemplate[type: "full"]
@@ -27,16 +48,12 @@ SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
 SemanticOperation[operator: NEG]
 	::= SemanticExpression[type: Number];
-
 SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | LE | GT | GE]
 	::= SemanticExpression[type: Number] SemanticExpression[type: Number];
-
 SemanticOperation[operator: IS | EQ]
 	::= SemanticExpression[type: Object] SemanticExpression[type: Object];
-
 SemanticOperation[operator: AND | OR]
 	::= SemanticExpression SemanticExpression;
-
 SemanticOperation[operator: COND]
 	::= SemanticExpression[type: Boolean] SemanticExpression SemanticExpression;
 
@@ -55,17 +72,21 @@ SemanticStatementExpression
 
 
 
-SemanticDeclaration[type: "variable"][unfixed: Boolean]
-	::= SemanticAssignee SemanticAssigned;
+SemanticDeclaration =:=
+	| SemanticDeclarationType
+	| SemanticDeclarationVariable
+;
+
+SemanticDeclarationType
+	::= SemanticTypeAlias SemanticType;
+
+SemanticDeclarationVariable[unfixed: Boolean]
+	::= SemanticVariable SemanticType SemanticExpression;
+
+
 
 SemanticAssignment
-	::= SemanticAssignee SemanticAssigned;
-
-SemanticAssignee
-	::= SemanticIdentifier;
-
-SemanticAssigned
-	::= SemanticExpression;
+	::= SemanticVariable SemanticExpression;
 
 
 

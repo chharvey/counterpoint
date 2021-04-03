@@ -9,8 +9,11 @@ Type TypeOf(SemanticConstant const) :=
 
 
 
-Type TypeOf(SemanticIdentifier id) :=
-	// TO BE DETERMINED
+Type TypeOf(SemanticVariable var) :=
+	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
+		1. *If* `symbol` is of type `SymbolStructureVar`:
+			1. *Return:* `symbol.type`.
+	2. *Return:* `Unknown`.
 ;
 
 
@@ -39,44 +42,44 @@ Type TypeOfUnassessedOperation(SemanticOperation[operator: NOT | EMP] expr) :=
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
-	3. *If* `IsNumericType(t0)`:
+	3. *If* `t0` is a subtype of `Union(Integer, Float)`:
 		1. *Return:* `t0`.
-	4. *Throw:* TypeError "Invalid operation.".
+	4. *Throw:* a new TypeError01.
 ;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
-		1. *If* `IsFloatType(t0)` *or* `IsFloatType(t1)`:
+	4. *If* `t0` is a subtype of `Union(Integer, Float)` *and* `t1` is a subtype of `Union(Integer, Float)`:
+		1. *If* `t0` is a subtype of `Float` *or* `t1` is a subtype of `Float`:
 			1. *Return:* `Float`.
 		2. *Else*:
 			1. *Return:* `Integer`.
-	5. *Throw:* TypeError "Invalid operation.".
+	5. *Throw:* a new TypeError01.
 ;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
+	4. *If* `t0` is a subtype of `Union(Integer, Float)` *and* `t1` is a subtype of `Union(Integer, Float)`:
 		1. *Return:* `Boolean`.
-	5. *Throw:* TypeError "Invalid operation.".
+	5. *Throw:* a new TypeError01.
 ;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: IS | EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `IsNumericType(t0)` *and* `IsNumericType(t1)`:
-		1. *If* `t0` is `Integer` *or* `t1` is `Integer`:
-			1. *If* `t0` is `Float` *or* `t1` is `Float`:
+	4. *If* `t0` is a subtype of `Union(Integer, Float)` *and* `t1` is a subtype of `Union(Integer, Float)`:
+		1. *If* `t0` is a subtype of `Integer` *or* `t1` is a subtype of `Integer`:
+			1. *If* `t0` is a subtype of `Float` *or* `t1` is a subtype of `Float`:
 				1. *If* `operator` is `IS`:
 					1. *Return:* `ToType(false)`.
 		2. *Return:* `Boolean`.
-	// 5. *If* `t0` and `t1` do not overlap:
-	// 	1. *Return:* `ToType(false)`.
+	5. *If* `t0` and `t1` are disjoint:
+		1. *Return:* `ToType(false)`.
 	6. *Return:* `Boolean`.
 ;
 
@@ -84,34 +87,31 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `t0` is a subtype of `TypeUnion<Null, ToType(false)>`:
+	4. *Let `null_union_false` be `Union(Null, ToType(false))`.
+	5. *If* `t0` is a subtype of `null_union_false`:
 		1. *Return:* `t0`.
-	// 5. *If* `t0` is a supertype of any of `Null`, `ToType(false)`, or `Boolean`:
-	// 	1. *Note:* The left-hand operand is either “falsy” or “truthy”;
-	// 		if “falsy”, then it will be produced;
-	// 		if “truthy”, then the right-hand operand will be produced.
-	// 	2. *Return:* `TypeUnion(FalsifyType(t0), t1)`.
-	// 6. *Note:* The left-hand operand is definitely “truthy”, thus
-	// 	the right-hand operand will definitely be produced.
-	// 7. *Return:* `t1`.
-	8. *Return:* `TypeUnion(t0, t1)`.
+	6. *If* `null` is assignable to `t0`:
+		1. *If* `false` is assignable to `t0`:
+			1. *Return:* `Union(null_union_false, t1)`.
+		2. *Return:* `Union(Null, t1)`.
+	7. *If* `false` is assignable to `t0`:
+		1. *Return:* `Union(ToType(false), t1)`.
+	8. *Return:* `t1`.
 ;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *If* `t0` is a subtype of `TypeUnion<Null, ToType(false)>`:
+	4. *Let `null_union_false` be `Union(Null, ToType(false))`.
+	5. *If* `t0` is a subtype of `null_union_false`:
 		1. *Return:* `t1`.
-	// 5. *If* `t0` is a supertype of any of `Null`, `ToType(false)`, or `Boolean`:
-	// 	1. *Note:* The left-hand operand is either “falsy” or “truthy”;
-	// 		if “falsy”, then the right-hand operand will be produced;
-	// 		if “truthy”, then it will be produced.
-	// 	2. *Return:* `TypeUnion(TruthifyType(t0), t1)`.
-	// 6. *Note:* The left-hand operand is definitely “truthy”, thus
-	// 	the left-hand operand will definitely be produced.
-	// 7. *Return:* `t0`.
-	8. *Return:* `TypeUnion(t0, t1)`.
+	6. *If* `null` is assignable to `t0` *or* `false` is assignable to `t0`:
+		1. *Let* `left` be a new type, containing the values in `t0`.
+		1. Remove `null` from the set of values in `left`.
+		2. Remove `false` from the set of values in `left`.
+		3. *Return:* `Union(left, t1)`.
+	7. *Return:* `t0`.
 ;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: COND] expr) :=
@@ -119,13 +119,13 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: COND] expr) :=
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *Let* `t2` be *Unwrap:* `TypeOf(expr.children.2)`.
-	5. *If* `IsBooleanType(t0)`:
+	5. *If* `t0` is a subtype of `Boolean`:
 		1. *If* `t0` is `ToType(false)`:
 			1. *Return:* `t2`.
 		2. *If* `t0` is `ToType(true)`:
 			1. *Return:* `t1`.
-		3. *Return:* `TypeUnion(t1, t2)`.
-	6. *Throw:* TypeError "Invalid operation.".
+		3. *Return:* `Union(t1, t2)`.
+	6. *Throw:* a new TypeError01.
 ;
 
 
@@ -134,56 +134,4 @@ TypeConstant ToType(Or<Null, Boolean, Number> v) :=
 	1. *Let* `t` be a new structure of type `Type`.
 	2. *Set* `t.value` to `v`.
 	3. *Return:* `t`.
-;
-
-
-
-Type FalsifyType(Type t) :=
-	1. *If* `t` is `Null`:
-		1. *Return:* `Null`.
-	2. *If* `t` is `Boolean`:
-		1. *Return:* `ToType(false)`.
-	3. *If* `t` is a type union of `Null` and another type `s`:
-		1. *Return:* `TypeUnion(Null, FalsifyType(s))`.
-	4. *If* `t` is a type union of `Boolean` and another type `s`:
-		1. *Return:* `TypeUnion(ToType(false), FalsifyType(s))`.
-	5. *Return:* `None`.
-;
-
-
-
-Type TruthifyType(Type t) :=
-	1. *If* `t` is `Null`:
-		1. *Return:* `Never`.
-	2. *If* `t` is `Boolean`:
-		1. *Return:* `ToType(true)`.
-	3. *If* `t` is a type union of `Null` and another type `s`:
-		1. *Return:* `TruthifyType(s)`.
-	4. *If* `t` is a type union of `Boolean` and another type `s`:
-		1. *Return:* `TypeUnion(ToType(true), TruthifyType(s))`.
-	5. *Return:* `t`.
-;
-
-
-
-Boolean IsBooleanType(Type t) :=
-	1. *If* `t` is `Boolean` *or* `t` is `ToType(false)` *or* `t` is `ToType(true)`:
-		1. *Return:* `true`.
-	2. *Return*: `false`.
-;
-
-
-
-Boolean IsNumericType(Type t) :=
-	1. *If* `t` is `Integer` *or* `IsFloatType(t)`:
-		1. *Return*: `true`.
-	2. *Return*: `false`.
-;
-
-
-
-Boolean IsFloatType(Type t) :=
-	1. *If* `t` is `Float` *or* if `t` is `ToType(f)` for some `f` that is of type `Float`:
-		1. *Return*: `true`.
-	2. *Return*: `false`.
 ;

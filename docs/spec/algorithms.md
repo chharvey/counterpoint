@@ -3,21 +3,13 @@ This chapter lists and defines common abstract algorithms used throughout this s
 
 
 
+## VarCheck
+Performs the definite assignment piece during semantic analysis.
+
+
+
 ## TypeCheck
 Performs the type-checking piece during semantic analysis.
-```
-Void! TypeCheck(SemanticExpression expr) :=
-	1. *Perform:* *Unwrap:* `TypeOf(expr)`.
-		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
-
-Void! TypeCheck(SemanticStatementExpression stmt) :=
-	1. *If* `stmt.children.count` is greater than 0:
-		1. *Return:* `TypeCheck(stmt.children.0)`.
-
-Void! TypeCheck(SemanticGoal goal) :=
-	1. For each `SemanticStatment stmt` in `goal.children`:
-		1. *Perform:* `TypeCheck(stmt)`.
-```
 
 
 
@@ -29,7 +21,7 @@ Boolean ToBoolean(Object value) :=
 		1. *Return:* `false`.
 	2. *If* `TypeOf(value)` is `Boolean`:
 		1. *Return:* `value`.
-	3. *Return*: `true`.
+	3. *Return:* `true`.
 ```
 
 
@@ -101,7 +93,7 @@ Number! PerformBinaryArithmetic(Text op, Number operand0, Number operand1) :=
 		1. *Let* `result` be the sum, `operand0 + operand1`,
 			obtained by adding `operand0` (the augend) to `operand1` (the addend).
 		2. *Return:* `result`.
-	5. *Throw:* TypeError "Invalid operation.".
+	5. *Throw:* a new TypeError01.
 ```
 
 
@@ -130,5 +122,5 @@ Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 		2. *If* `operand1` is strictly less than `operand0`:
 			1. *Return:* `true`.
 		3. *Return:* `false`.
-	5. *Throw:* TypeError "Invalid operation.".
+	5. *Throw:* a new TypeError01.
 ```

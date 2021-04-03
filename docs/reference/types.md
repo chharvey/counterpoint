@@ -10,7 +10,7 @@ This reference takes a more informative approach.
 
 
 ## Never
-The Never type is the Bottom type in the type hierarchy —
+The Never type, `never`, is the Bottom type in the type hierarchy —
 it contains no values and is a subtype of every other type.
 
 The Never type is used to describe the return type of functions that never return,
@@ -29,7 +29,7 @@ will be accepted anywhere.
 
 
 ## Null
-The Null type has exactly one value, called `null`.
+The Null type, `null`, has exactly one value, also called `null`.
 The meaning of the `null` value is not specified, but it’s most commonly used as a placeholder
 when no other value is appropriate.
 
@@ -38,13 +38,13 @@ The Null type has no supertypes other than [Object](#object) and [Unknown](#unkn
 
 
 ## Boolean
-The Boolean type has two logical values, called `true` and `false`.
+The Boolean type, `bool`, has two logical values, called `true` and `false`.
 These values are used for binary states.
 
 
 
 ## Integer
-Integers are whole numbers, their negatives, and zero.
+Integers, type `int`, are whole numbers, their negatives, and zero.
 
 Integers are written as a series of digits, such as `0123`,
 optionally preceded by a negative sign (`-0123`).
@@ -88,7 +88,7 @@ In all operations on integers, bases can be mixed.
 
 
 ## Float
-Floating-point numbers are decimals, which offer finer precision for numerical data than integers do.
+Floating-point numbers, type `float`, are decimals, which offer finer precision for numerical data than integers do.
 (In computers, there are no irrational (non-fractional) numbers, but we approximate them well.)
 
 Floating numbers cannot be declared in any base other than decimal (10).
@@ -110,7 +110,7 @@ This notation consts of the following parts:
 - the exponent part (an integer)
 
 We say “scientific-like notation” because it’s technically not scientific notation:
-The coefficient need not be between 1 and 10. `-42e-1` is a valid floating-point value.
+The coefficient need not be between 1 and 10. `-42.0e-1` is a valid floating-point value.
 
 Floating-point values can be operated on just as integers can.
 There is no truncation for division, but dividing by zero still raises an error.
@@ -124,17 +124,17 @@ If an expression contains *any* float value anywhere, then
 
 
 ## String
+The String type is denoted `str`.
 
 
 
 ## Object
-The Object type is the type of all values, that is, every value is assignable to the Object type.
-The Object type is written `obj` in type declarations.
+The Object type, `obj`, is the type of all values, that is, every value is assignable to the Object type.
 
 
 
 ## Unknown
-The Unknown type is the Top type in the type hierarchy —
+The Unknown type, `unknown`, is the Top type in the type hierarchy —
 it contains every value and expression, and is a supertype of every other type.
 
 The Unknown type is used to describe a value or expression about which nothing is known.
