@@ -60,8 +60,10 @@ class InstructionNop extends Instruction {
 /**
  * A superclass abstracting:
  * - InstructionConst
+ * - InstructionLocal
  * - InstructionUnop
  * - InstructionBinop
+ * - InstructionCond
  */
 export abstract class InstructionExpression extends Instruction {
 	abstract get isFloat(): boolean;
@@ -105,6 +107,9 @@ export class InstructionConst extends InstructionExpression {
 }
 /**
  * Local variable operations.
+ * - InstructionGet
+ * - InstructionSet
+ * - InstructionTee
  */
 abstract class InstructionLocal extends InstructionExpression {
 	/**
@@ -122,21 +127,6 @@ abstract class InstructionLocal extends InstructionExpression {
 	}
 }
 /**
- * Set a local variable.
- */
-export class InstructionSet extends InstructionLocal {
-	constructor (name: bigint | string, op: InstructionExpression) {
-		if (typeof name === 'bigint') {
-			name = `$var${ name.toString(16) }`;
-		};
-		super(name, op)
-	}
-	/** @return `'(local.set ‹name› ‹op›)'` */
-	toString(): string {
-		return `(local.set ${ this.name } ${ this.op })`
-	}
-}
-/**
  * Get a local variable.
  */
 export class InstructionGet extends InstructionLocal {
@@ -149,6 +139,21 @@ export class InstructionGet extends InstructionLocal {
 	/** @return `'(local.get ‹name›)'` */
 	toString(): string {
 		return `(local.get ${ this.name })`
+	}
+}
+/**
+ * Set a local variable.
+ */
+export class InstructionSet extends InstructionLocal {
+	constructor (name: bigint | string, op: InstructionExpression) {
+		if (typeof name === 'bigint') {
+			name = `$var${ name.toString(16) }`;
+		};
+		super(name, op)
+	}
+	/** @return `'(local.set ‹name› ‹op›)'` */
+	toString(): string {
+		return `(local.set ${ this.name } ${ this.op })`
 	}
 }
 /**
@@ -197,6 +202,10 @@ export class InstructionUnop extends InstructionExpression {
 }
 /**
  * Perform a binary operation on the stack.
+ * - InstructionBinopArithmetic
+ * - InstructionBinopComparative
+ * - InstructionBinopEquality
+ * - InstructionBinopLogical
  */
 export abstract class InstructionBinop extends InstructionExpression {
 	/** Is either one of the arguments of type `i32`? */
