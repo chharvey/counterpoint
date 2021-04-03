@@ -1095,15 +1095,15 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
-		// If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
-		// If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
 		xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		const t0: SolidLanguageType = this.children[0].type(validator);
 		const t1: SolidLanguageType = this.children[1].type(validator);
 		const t2: SolidLanguageType = this.children[2].type(validator);
 		return (t0.isSubtypeOf(SolidBoolean))
 			? (t0 instanceof SolidTypeConstant)
-				? (t0.value === SolidBoolean.FALSE) ? t2 : t1
+				? (t0.value === SolidBoolean.FALSE)
+					? t2 // If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
+					: t1 // If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
 				: t1.union(t2)
 			: (() => { throw new TypeError01(this) })()
 	}
