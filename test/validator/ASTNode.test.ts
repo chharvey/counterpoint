@@ -1,3 +1,6 @@
+import type {
+	ErrorCode,
+} from '@chharvey/parser';
 import * as assert from 'assert'
 import * as xjs from 'extrajs'
 
@@ -194,6 +197,44 @@ describe('ASTNodeSolid', () => {
 				`).varCheck(new Validator()), ReferenceError03);
 			});
 		});
+		describe('ASTNodeGoal', () => {
+			it('aggregates multiple errors.', () => {
+				assert.throws(() => goalFromSource(`
+					a + b || c * d;
+					let y: V & W | X & Y = null;
+					let x: int = 42;
+					let x: int = 420;
+					x = 4200;
+					type T = int;
+					type T = float;
+					let z: x = null;
+					let z: int = T;
+				`).varCheck(new Validator()), (err) => {
+					assert.ok(err instanceof AggregateError);
+					assert.strictEqual(err.errors.length, 13);
+					([
+						[ReferenceError01,  '`a` is never declared.'],
+						[ReferenceError01,  '`b` is never declared.'],
+						[ReferenceError01,  '`c` is never declared.'],
+						[ReferenceError01,  '`d` is never declared.'],
+						[ReferenceError01,  '`V` is never declared.'],
+						[ReferenceError01,  '`W` is never declared.'],
+						[ReferenceError01,  '`X` is never declared.'],
+						[ReferenceError01,  '`Y` is never declared.'],
+						[AssignmentError01, 'Duplicate declaration: `x` is already declared.'],
+						[AssignmentError10, 'Reassignment of a fixed variable: `x`.'],
+						[AssignmentError01, 'Duplicate declaration: `T` is already declared.'],
+						[ReferenceError03,  '`x` refers to a value, but is used as a type.'],
+						[ReferenceError03,  '`T` refers to a type, but is used as a value.'],
+					] as const).forEach(([errortype, message], i) => {
+						const er: ErrorCode = err.errors[i];
+						assert.ok(er instanceof errortype);
+						assert.strictEqual(er.message, message);
+					});
+					return true;
+				});
+			});
+		});
 	});
 
 
@@ -275,6 +316,40 @@ describe('ASTNodeSolid', () => {
 				);
 			});
 		})
+		describe('ASTNodeGoal', () => {
+			it('aggregates multiple errors.', () => {
+				assert.throws(() => goalFromSource(`
+					let a: null = null;
+					let b: null = null;
+					let c: null = null;
+					let d: null = null;
+					a * b + c * d;
+					let e: null = null;
+					let f: null = null;
+					let g: null = null;
+					let h: null = null;
+					e * f + g * h;
+					if null then 42 else 4.2;
+					let x: int = 4.2;
+				`).typeCheck(new Validator()), (err) => {
+					assert.ok(err instanceof AggregateError);
+					assert.strictEqual(err.errors.length, 6);
+					([
+						[TypeError01, 'Invalid operation: `a * b` at line 6 col 6.'], // TODO remove line&col numbers from message
+						[TypeError01, 'Invalid operation: `c * d` at line 6 col 14.'],
+						[TypeError01, 'Invalid operation: `e * f` at line 11 col 6.'],
+						[TypeError01, 'Invalid operation: `g * h` at line 11 col 14.'],
+						[TypeError01, 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'],
+						[TypeError03, `Expression of type ${ typeConstFloat(4.2) } is not assignable to type ${ Int16 }.`], // TODO: improve `SolidLanguageType#toString`
+					] as const).forEach(([errortype, message], i) => {
+						const er: ErrorCode = err.errors[i];
+						assert.ok(er instanceof errortype);
+						assert.strictEqual(er.message, message);
+					});
+					return true;
+				});
+			});
+		});
 	})
 
 

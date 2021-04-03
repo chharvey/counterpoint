@@ -333,7 +333,7 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 	 * @final
 	 */
 	varCheck(validator: Validator): void {
-		return this.children.forEach((c) => c.varCheck(validator));
+		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck(validator));
 	}
 }
 export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
@@ -628,7 +628,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator): void {
-		return this.children.forEach((c) => c.varCheck(validator));
+		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck(validator));
 	}
 	/** @implements ASTNodeExpression */
 	@ASTNodeExpression.buildDeco
@@ -793,7 +793,7 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 	 * @final
 	 */
 	varCheck(validator: Validator): void {
-		return this.children.forEach((c) => c.varCheck(validator));
+		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck(validator));
 	}
 }
 export class ASTNodeOperationUnary extends ASTNodeOperation {
@@ -878,6 +878,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	type(validator: Validator): SolidLanguageType {
+		xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		return this.type_do(
 			this.children[0].type(validator),
 			this.children[1].type(validator),
@@ -1172,14 +1173,15 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	type(validator: Validator): SolidLanguageType {
-		// If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
-		// If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
+		xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		const t0: SolidLanguageType = this.children[0].type(validator);
 		const t1: SolidLanguageType = this.children[1].type(validator);
 		const t2: SolidLanguageType = this.children[2].type(validator);
 		return (t0.isSubtypeOf(SolidBoolean))
 			? (t0 instanceof SolidTypeConstant)
-				? (t0.value === SolidBoolean.FALSE) ? t2 : t1
+				? (t0.value === SolidBoolean.FALSE)
+					? t2 // If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
+					: t1 // If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
 				: t1.union(t2)
 			: (() => { throw new TypeError01(this) })()
 	}
@@ -1288,8 +1290,10 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		if (validator.hasSymbol(variable.id)) {
 			throw new AssignmentError01(variable);
 		};
-		this.children[1].varCheck(validator);
-		this.children[2].varCheck(validator);
+		xjs.Array.forEachAggregated([
+			this.children[1],
+			this.children[2],
+		], (c) => c.varCheck(validator));
 		validator.addSymbol(new SymbolStructureVar(
 			variable.id,
 			variable.line_index,
@@ -1304,8 +1308,10 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator): void {
-		this.children[1].typeCheck(validator);
-		this.children[2].typeCheck(validator);
+		xjs.Array.forEachAggregated([
+			this.children[1],
+			this.children[2],
+		], (c) => c.typeCheck(validator));
 		const assignee_type: SolidLanguageType = this.children[1].assess(validator);
 		const assigned_type: SolidLanguageType = this.children[2].type(validator);
 		if (
@@ -1337,7 +1343,7 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator): void {
-		this.children.forEach((c) => c.varCheck(validator));
+		xjs.Array.forEachAggregated(this.children, (c) => c.varCheck(validator));
 		const variable: ASTNodeVariable = this.children[0];
 		if (!(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
 			throw new AssignmentError10(variable);
@@ -1345,6 +1351,7 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator): void {
+		xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		const assignee_type: SolidLanguageType = this.children[0].type(validator);
 		const assigned_type: SolidLanguageType = this.children[1].type(validator);
 		if (
@@ -1372,11 +1379,11 @@ export class ASTNodeGoal extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator): void {
-		this.children.forEach((c) => c.varCheck(validator));
+		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck(validator));
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator): void {
-		return this.children.forEach((child) => child.typeCheck(validator));
+		return xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck(validator));
 	}
 	/** @implements ASTNodeSolid */
 	build(builder: Builder): InstructionNone | InstructionModule {
