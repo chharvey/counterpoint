@@ -20,6 +20,7 @@ import {
 	InstructionBinopLogical,
 	InstructionCond,
 	InstructionStatement,
+	InstructionDeclareLocal,
 	InstructionModule,
 } from '../src/vm/Instruction.class'
 import {
@@ -180,7 +181,7 @@ describe('Instruction', () => {
 					Operator.AND,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
-				).toString(), ((varname) => `(local ${ varname } i32) ${ new InstructionCond(
+				).toString(), ((varname) => `${ new InstructionDeclareLocal(varname, false) } ${ new InstructionCond(
 					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, instructionConstInt(30n)))),
 					instructionConstInt(18n),
 					new InstructionGet(varname, false),
@@ -190,7 +191,7 @@ describe('Instruction', () => {
 					Operator.OR,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
-				).toString(), ((varname) => `(local ${ varname } f64) ${ new InstructionCond(
+				).toString(), ((varname) => `${ new InstructionDeclareLocal(varname, true) } ${ new InstructionCond(
 					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new InstructionTee(varname, instructionConstFloat(30.1)))),
 					new InstructionGet(varname, true),
 					instructionConstFloat(18.1),
