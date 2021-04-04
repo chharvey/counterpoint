@@ -1,5 +1,19 @@
+Void! TypeCheck(Or<
+	SemanticKey,
+	SemanticPropertyType
+	SemanticProperty,
+	SemanticCase,
+	SemanticStatementExpression,
+	SemanticGoal,
+> list) :=
+	1. *For each* `it` in `list`:
+		1. *Perform:* *Unwrap:* `VarCheck(it)`.
+;
+
+
+
 Void TypeCheck(SemanticType type) :=
-	1. *Return*. // NOTE: all SemanticType nodes are valid for now
+	1. *Return*.
 ;
 
 
@@ -11,17 +25,9 @@ Void! TypeCheck(SemanticExpression expr) :=
 
 
 
-Void! TypeCheck(SemanticStatementExpression stmt) :=
-	1. *If* `stmt.children.count` is greater than 0:
-		1. *Return:* `TypeCheck(stmt.children.0)`.
-;
-
-
-
 Void TypeCheck(SemanticDeclarationType decl) :=
 	1. *Assert:* `decl.children.count` is 2.
-	2. *Perform:* *UnwrapAffirm:* `TypeCheck(decl.children.1)`.
-	3. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `decl.children.0.id`:
+	2. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `decl.children.0.id`:
 		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
 		2. *Set* `symbol.value` to *UnwrapAffirm:* `Assess(decl.children.1)`.
 ;
@@ -30,13 +36,12 @@ Void TypeCheck(SemanticDeclarationType decl) :=
 
 Void! TypeCheck(SemanticDeclarationVariable decl) :=
 	1. *Assert:* `decl.children.count` is 3.
-	2. *Perform:* *UnwrapAffirm:* `TypeCheck(decl.children.1)`.
-	3. *Perform:* *UnwrapAffirm:* `TypeCheck(decl.children.2)`.
-	4. *Let* `assignee_type` be *UnwrapAffirm:* `Assess(decl.children.1)`.
-	5. *Let* `assigned_type` be *Unwrap:* `TypeOf(decl.children.2)`.
-	6. *If* `assigned_type` is not a subtype of `assignee_type`:
+	2. *Perform:* *UnwrapAffirm:* `TypeCheck(decl.children.2)`.
+	3. *Let* `assignee_type` be *UnwrapAffirm:* `Assess(decl.children.1)`.
+	4. *Let* `assigned_type` be *Unwrap:* `TypeOf(decl.children.2)`.
+	5. *If* `assigned_type` is not a subtype of `assignee_type`:
 		1. *Throw:* a new TypeError03.
-	7. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `decl.children.0.id`:
+	6. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `decl.children.0.id`:
 		1. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
 		2. *Set* `symbol.type` to *UnwrapAffirm:* `Assess(decl.children.1)`.
 		3. *If* `decl.unfixed` is `false`:
@@ -48,15 +53,9 @@ Void! TypeCheck(SemanticDeclarationVariable decl) :=
 
 Void! TypeCheck(SemanticAssignment stmt) :=
 	1. *Assert:* `stmt.children.count` is 2.
-	2. *Let* `assignee_type` be *Unwrap:* `TypeOf(stmt.children.0)`.
-	3. *Let* `assigned_type` be *Unwrap:* `TypeOf(stmt.children.1)`.
-	4. *If* `assigned_type` is not a subtype of `assignee_type`:
+	2. *Perform:* *UnwrapAffirm:* `TypeCheck(decl.children.1)`.
+	3. *Let* `assignee_type` be *Unwrap:* `TypeOf(stmt.children.0)`.
+	4. *Let* `assigned_type` be *Unwrap:* `TypeOf(stmt.children.1)`.
+	5. *If* `assigned_type` is not a subtype of `assignee_type`:
 		1. *Throw:* a new TypeError03.
-;
-
-
-
-Void! TypeCheck(SemanticGoal goal) :=
-	1. For each `stmt` in `goal.children`:
-		1. *Perform:* *Unwrap:* `TypeCheck(stmt)`.
 ;
