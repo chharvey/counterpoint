@@ -2,6 +2,7 @@ import {
 	Token,
 	ParseNode,
 	ASTNode,
+	NonemptyArray,
 } from '@chharvey/parser';
 import * as xjs from 'extrajs'
 
@@ -130,7 +131,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 
 
 export class ASTNodeKey extends ASTNodeSolid {
-	declare children: readonly [];
+	declare readonly children: readonly [];
 	readonly id: bigint;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenIdentifier) {
 		super(start_node, {id: start_node.cook()});
@@ -208,8 +209,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	protected abstract assess_do(validator: Validator): SolidLanguageType
 }
 export class ASTNodeTypeConstant extends ASTNodeType {
-	declare children:
-		| readonly []
+	declare readonly children: readonly [];
 	readonly value: SolidLanguageType;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) {
 		const value: SolidLanguageType =
@@ -242,8 +242,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	}
 }
 export class ASTNodeTypeAlias extends ASTNodeType {
-	declare children:
-		| readonly []
+	declare readonly children: readonly [];
 	readonly id: bigint;
 	constructor (start_node: TOKEN.TokenIdentifier) {
 		super(start_node, {id: start_node.cook()})
@@ -270,7 +269,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 	}
 }
 export class ASTNodeTypeEmptyCollection extends ASTNodeType {
-	declare children: readonly [];
+	declare readonly children: readonly [];
 	constructor (
 		start_node: PARSER.ParseNodeTypeUnit,
 	) {
@@ -288,7 +287,7 @@ export class ASTNodeTypeEmptyCollection extends ASTNodeType {
 export class ASTNodeTypeList extends ASTNodeType {
 	constructor (
 		start_node: PARSER.ParseNodeTypeTupleLiteral,
-		readonly children: readonly ASTNodeType[],
+		readonly children: Readonly<NonemptyArray<ASTNodeType>>,
 	) {
 		super(start_node, {}, children);
 	}
@@ -304,7 +303,7 @@ export class ASTNodeTypeList extends ASTNodeType {
 export class ASTNodeTypeRecord extends ASTNodeType {
 	constructor (
 		start_node: PARSER.ParseNodeTypeRecordLiteral,
-		readonly children: readonly ASTNodePropertyType[],
+		readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
 	) {
 		super(start_node, {}, children);
 	}
@@ -321,8 +320,7 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidTypeOperator,
-		readonly children:
-			| readonly ASTNodeType[]
+		readonly children: Readonly<NonemptyArray<ASTNodeType>>,
 	) {
 		super(start_node, {operator}, children)
 	}
@@ -338,8 +336,7 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	constructor (
 		start_node: ParseNode,
 		operator: ValidTypeOperator,
-		readonly children:
-			| readonly [ASTNodeType]
+		readonly children: readonly [ASTNodeType],
 	) {
 		super(start_node, operator, children)
 	}
@@ -354,8 +351,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 	constructor (
 		start_node: ParseNode,
 		operator: ValidTypeOperator,
-		readonly children:
-			| readonly [ASTNodeType, ASTNodeType]
+		readonly children: readonly [ASTNodeType, ASTNodeType],
 	) {
 		super(start_node, operator, children)
 	}
@@ -477,8 +473,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	protected abstract assess_do(validator: Validator): SolidObject | null;
 }
 export class ASTNodeConstant extends ASTNodeExpression {
-	declare children:
-		| readonly []
+	declare readonly children: readonly [];
 	readonly value: SolidObject;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString | TOKEN.TokenTemplate) {
 		const value: SolidObject =
@@ -526,8 +521,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 }
 export class ASTNodeVariable extends ASTNodeExpression {
-	declare children:
-		| readonly []
+	declare readonly children: readonly [];
 	readonly id: bigint;
 	constructor (start_node: TOKEN.TokenIdentifier) {
 		super(start_node, {id: start_node.cook()})
@@ -582,6 +576,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 			// | readonly [ASTNodeConstant,                    ...ASTNodeTemplatePartialChildrenType, ASTNodeConstant]
 			// | readonly [ASTNodeConstant, ASTNodeExpression, ...ASTNodeTemplatePartialChildrenType, ASTNodeConstant]
 			| readonly ASTNodeExpression[]
+		,
 	) {
 		super(start_node, {}, children)
 	}
@@ -611,7 +606,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 }
 export class ASTNodeEmptyCollection extends ASTNodeExpression {
-	declare children: readonly [];
+	declare readonly children: readonly [];
 	constructor (start_node: PARSER.ParseNodeExpressionUnit) {
 		super(start_node);
 	}
@@ -639,7 +634,7 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 export class ASTNodeList extends ASTNodeExpression {
 	constructor (
 		start_node: PARSER.ParseNodeListLiteral,
-		readonly children: readonly ASTNodeExpression[],
+		readonly children: Readonly<NonemptyArray<ASTNodeExpression>>,
 	) {
 		super(start_node, {}, children);
 	}
@@ -667,7 +662,7 @@ export class ASTNodeList extends ASTNodeExpression {
 export class ASTNodeRecord extends ASTNodeExpression {
 	constructor (
 		start_node: PARSER.ParseNodeRecordLiteral,
-		readonly children: readonly ASTNodeProperty[],
+		readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {
 		super(start_node, {}, children);
 	}
@@ -695,7 +690,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 export class ASTNodeMapping extends ASTNodeExpression {
 	constructor (
 		start_node: PARSER.ParseNodeMappingLiteral,
-		readonly children: readonly ASTNodeCase[],
+		readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, {}, children);
 	}
@@ -726,8 +721,7 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 	constructor(
 		start_node: ParseNode,
 		operator: Operator,
-		readonly children:
-			| readonly ASTNodeExpression[]
+		readonly children: Readonly<NonemptyArray<ASTNodeExpression>>,
 	) {
 		super(start_node, {operator}, children)
 	}
@@ -743,8 +737,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorUnary,
-		readonly children:
-			| readonly [ASTNodeExpression]
+		readonly children: readonly [ASTNodeExpression],
 	) {
 		super(start_node, operator, children)
 	}
@@ -801,8 +794,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorBinary,
-		readonly children:
-			| readonly [ASTNodeExpression, ASTNodeExpression]
+		readonly children: readonly [ASTNodeExpression, ASTNodeExpression],
 	) {
 		super(start_node, operator, children)
 	}
@@ -827,7 +819,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorArithmetic,
-		children: readonly [ASTNodeExpression, ASTNodeExpression]
+		children: readonly [ASTNodeExpression, ASTNodeExpression],
 	) {
 		super(start_node, operator, children)
 	}
@@ -900,7 +892,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorComparative,
-		children: readonly [ASTNodeExpression, ASTNodeExpression]
+		children: readonly [ASTNodeExpression, ASTNodeExpression],
 	) {
 		super(start_node, operator, children)
 	}
@@ -961,7 +953,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorEquality,
-		children: readonly [ASTNodeExpression, ASTNodeExpression]
+		children: readonly [ASTNodeExpression, ASTNodeExpression],
 	) {
 		super(start_node, operator, children)
 	}
@@ -1019,7 +1011,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorLogical,
-		children: readonly [ASTNodeExpression, ASTNodeExpression]
+		children: readonly [ASTNodeExpression, ASTNodeExpression],
 	) {
 		super(start_node, operator, children)
 	}
@@ -1078,8 +1070,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	constructor(
 		start_node: ParseNode,
 		readonly operator: Operator.COND,
-		readonly children:
-			| readonly [ASTNodeExpression, ASTNodeExpression, ASTNodeExpression]
+		readonly children: readonly [ASTNodeExpression, ASTNodeExpression, ASTNodeExpression],
 	) {
 		super(start_node, operator, children)
 	}
@@ -1137,6 +1128,7 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
 		readonly children:
 			| readonly []
 			| readonly [ASTNodeExpression]
+		,
 	) {
 		super(start_node, {}, children)
 	}
@@ -1167,9 +1159,7 @@ export type ASTNodeDeclaration =
 export class ASTNodeDeclarationType extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
-		readonly children:
-			| readonly [ASTNodeTypeAlias, ASTNodeType]
-		,
+		readonly children: readonly [ASTNodeTypeAlias, ASTNodeType],
 	) {
 		super(start_node, {}, children);
 	}
@@ -1202,8 +1192,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
 		readonly unfixed: boolean,
-		readonly children:
-			| readonly [ASTNodeVariable, ASTNodeType, ASTNodeExpression]
+		readonly children: readonly [ASTNodeVariable, ASTNodeType, ASTNodeExpression],
 	) {
 		super(start_node, {unfixed}, children)
 	}
@@ -1255,8 +1244,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 export class ASTNodeAssignment extends ASTNodeSolid {
 	constructor (
 		start_node: ParseNode,
-		readonly children:
-			| readonly [ASTNodeVariable, ASTNodeExpression]
+		readonly children: readonly [ASTNodeVariable, ASTNodeExpression],
 	) {
 		super(start_node, {}, children)
 	}
@@ -1292,9 +1280,7 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 export class ASTNodeGoal extends ASTNodeSolid {
 	constructor(
 		start_node: ParseNode,
-		readonly children:
-			| readonly []
-			| readonly ASTNodeStatement[]
+		readonly children: readonly ASTNodeStatement[],
 	) {
 		super(start_node, {}, children)
 	}
