@@ -1,9 +1,9 @@
 Void! VarCheck(Or<
 	SemanticKey,
 	SemanticPropertyType,
-	SemanticType,
 	SemanticProperty,
 	SemanticCase,
+	SemanticType,
 	SemanticExpression,
 	SemanticStatementExpression,
 	SemanticGoal,
