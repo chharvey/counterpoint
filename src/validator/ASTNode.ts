@@ -1092,7 +1092,6 @@ export class ASTNodeDeclarationType extends ASTNodeSolid {
 	}
 	/** @overrides ASTNodeSolid */
 	typeCheck(validator: Validator): void {
-		this.children[1].typeCheck(validator);
 		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
 	/** @implements ASTNodeSolid */
@@ -1132,10 +1131,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 	}
 	/** @overrides ASTNodeSolid */
 	typeCheck(validator: Validator): void {
-		xjs.Array.forEachAggregated([
-			this.children[1],
-			this.children[2],
-		], (c) => c.typeCheck(validator));
+		this.children[2].typeCheck(validator);
 		const assignee_type: SolidLanguageType = this.children[1].assess(validator);
 		const assigned_type: SolidLanguageType = this.children[2].type(validator);
 		if (
