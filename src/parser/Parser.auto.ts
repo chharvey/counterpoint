@@ -26,7 +26,8 @@ export class ProductionWord extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[TERMINAL.TerminalKeyword.instance],[TERMINAL.TerminalIdentifier.instance],
+			[TERMINAL.TerminalKeyword.instance],
+			[TERMINAL.TerminalIdentifier.instance],
 		];
 	}
 }
@@ -36,7 +37,12 @@ export class ProductionPrimitiveLiteral extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['null'],['false'],['true'],[TERMINAL.TerminalInteger.instance],[TERMINAL.TerminalFloat.instance],[TERMINAL.TerminalString.instance],
+			['null'],
+			['false'],
+			['true'],
+			[TERMINAL.TerminalInteger.instance],
+			[TERMINAL.TerminalFloat.instance],
+			[TERMINAL.TerminalString.instance],
 		];
 	}
 }
@@ -46,7 +52,11 @@ export class ProductionTypeKeyword extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['bool'],['int'],['float'],['str'],['obj'],
+			['bool'],
+			['int'],
+			['float'],
+			['str'],
+			['obj'],
 		];
 	}
 }
@@ -56,7 +66,7 @@ export class ProductionPropertyType extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionWord.instance,':',ProductionType.instance],
+			[ProductionWord.instance, ':', ProductionType.instance],
 		];
 	}
 }
@@ -66,7 +76,8 @@ export class ProductionTypeTupleLiteral__0__List extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionType.instance],[ProductionTypeTupleLiteral__0__List.instance,',',ProductionType.instance],
+			[ProductionType.instance],
+			[ProductionTypeTupleLiteral__0__List.instance, ',', ProductionType.instance],
 		];
 	}
 }
@@ -76,7 +87,10 @@ export class ProductionTypeTupleLiteral extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[',ProductionTypeTupleLiteral__0__List.instance,']'],['[',ProductionTypeTupleLiteral__0__List.instance,',',']'],['[',',',ProductionTypeTupleLiteral__0__List.instance,']'],['[',',',ProductionTypeTupleLiteral__0__List.instance,',',']'],
+			['[', ProductionTypeTupleLiteral__0__List.instance, ']'],
+			['[', ProductionTypeTupleLiteral__0__List.instance, ',', ']'],
+			['[', ',', ProductionTypeTupleLiteral__0__List.instance, ']'],
+			['[', ',', ProductionTypeTupleLiteral__0__List.instance, ',', ']'],
 		];
 	}
 }
@@ -86,7 +100,8 @@ export class ProductionTypeRecordLiteral__0__List extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionPropertyType.instance],[ProductionTypeRecordLiteral__0__List.instance,',',ProductionPropertyType.instance],
+			[ProductionPropertyType.instance],
+			[ProductionTypeRecordLiteral__0__List.instance, ',', ProductionPropertyType.instance],
 		];
 	}
 }
@@ -96,7 +111,10 @@ export class ProductionTypeRecordLiteral extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[',ProductionTypeRecordLiteral__0__List.instance,']'],['[',ProductionTypeRecordLiteral__0__List.instance,',',']'],['[',',',ProductionTypeRecordLiteral__0__List.instance,']'],['[',',',ProductionTypeRecordLiteral__0__List.instance,',',']'],
+			['[', ProductionTypeRecordLiteral__0__List.instance, ']'],
+			['[', ProductionTypeRecordLiteral__0__List.instance, ',', ']'],
+			['[', ',', ProductionTypeRecordLiteral__0__List.instance, ']'],
+			['[', ',', ProductionTypeRecordLiteral__0__List.instance, ',', ']'],
 		];
 	}
 }
@@ -106,7 +124,13 @@ export class ProductionTypeUnit extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[',']'],[TERMINAL.TerminalIdentifier.instance],[ProductionPrimitiveLiteral.instance],[ProductionTypeKeyword.instance],[ProductionTypeTupleLiteral.instance],[ProductionTypeRecordLiteral.instance],['(',ProductionType.instance,')'],
+			['[', ']'],
+			[TERMINAL.TerminalIdentifier.instance],
+			[ProductionPrimitiveLiteral.instance],
+			[ProductionTypeKeyword.instance],
+			[ProductionTypeTupleLiteral.instance],
+			[ProductionTypeRecordLiteral.instance],
+			['(', ProductionType.instance, ')'],
 		];
 	}
 }
@@ -116,7 +140,8 @@ export class ProductionTypeUnarySymbol extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionTypeUnit.instance],[ProductionTypeUnarySymbol.instance,'!'],
+			[ProductionTypeUnit.instance],
+			[ProductionTypeUnarySymbol.instance, '!'],
 		];
 	}
 }
@@ -126,7 +151,8 @@ export class ProductionTypeIntersection extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionTypeUnarySymbol.instance],[ProductionTypeIntersection.instance,'&',ProductionTypeUnarySymbol.instance],
+			[ProductionTypeUnarySymbol.instance],
+			[ProductionTypeIntersection.instance, '&', ProductionTypeUnarySymbol.instance],
 		];
 	}
 }
@@ -136,7 +162,8 @@ export class ProductionTypeUnion extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionTypeIntersection.instance],[ProductionTypeUnion.instance,'|',ProductionTypeIntersection.instance],
+			[ProductionTypeIntersection.instance],
+			[ProductionTypeUnion.instance, '|', ProductionTypeIntersection.instance],
 		];
 	}
 }
@@ -156,7 +183,10 @@ export class ProductionStringTemplate__0__List extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[TERMINAL.TerminalTemplateMiddle.instance],[ProductionStringTemplate__0__List.instance,TERMINAL.TerminalTemplateMiddle.instance],[TERMINAL.TerminalTemplateMiddle.instance,ProductionExpression.instance],[ProductionStringTemplate__0__List.instance,TERMINAL.TerminalTemplateMiddle.instance,ProductionExpression.instance],
+			[TERMINAL.TerminalTemplateMiddle.instance],
+			[ProductionStringTemplate__0__List.instance, TERMINAL.TerminalTemplateMiddle.instance],
+			[TERMINAL.TerminalTemplateMiddle.instance, ProductionExpression.instance],
+			[ProductionStringTemplate__0__List.instance, TERMINAL.TerminalTemplateMiddle.instance, ProductionExpression.instance],
 		];
 	}
 }
@@ -166,7 +196,11 @@ export class ProductionStringTemplate extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[TERMINAL.TerminalTemplateFull.instance],[TERMINAL.TerminalTemplateHead.instance,TERMINAL.TerminalTemplateTail.instance],[TERMINAL.TerminalTemplateHead.instance,ProductionStringTemplate__0__List.instance,TERMINAL.TerminalTemplateTail.instance],[TERMINAL.TerminalTemplateHead.instance,ProductionExpression.instance,TERMINAL.TerminalTemplateTail.instance],[TERMINAL.TerminalTemplateHead.instance,ProductionExpression.instance,ProductionStringTemplate__0__List.instance,TERMINAL.TerminalTemplateTail.instance],
+			[TERMINAL.TerminalTemplateFull.instance],
+			[TERMINAL.TerminalTemplateHead.instance, TERMINAL.TerminalTemplateTail.instance],
+			[TERMINAL.TerminalTemplateHead.instance, ProductionStringTemplate__0__List.instance, TERMINAL.TerminalTemplateTail.instance],
+			[TERMINAL.TerminalTemplateHead.instance, ProductionExpression.instance, TERMINAL.TerminalTemplateTail.instance],
+			[TERMINAL.TerminalTemplateHead.instance, ProductionExpression.instance, ProductionStringTemplate__0__List.instance, TERMINAL.TerminalTemplateTail.instance],
 		];
 	}
 }
@@ -176,7 +210,7 @@ export class ProductionProperty extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionWord.instance,'=',ProductionExpression.instance],
+			[ProductionWord.instance, '=', ProductionExpression.instance],
 		];
 	}
 }
@@ -186,7 +220,7 @@ export class ProductionCase extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpression.instance,'|->',ProductionExpression.instance],
+			[ProductionExpression.instance, '|->', ProductionExpression.instance],
 		];
 	}
 }
@@ -196,7 +230,8 @@ export class ProductionListLiteral__0__List extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpression.instance],[ProductionListLiteral__0__List.instance,',',ProductionExpression.instance],
+			[ProductionExpression.instance],
+			[ProductionListLiteral__0__List.instance, ',', ProductionExpression.instance],
 		];
 	}
 }
@@ -206,7 +241,10 @@ export class ProductionListLiteral extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[',ProductionListLiteral__0__List.instance,']'],['[',ProductionListLiteral__0__List.instance,',',']'],['[',',',ProductionListLiteral__0__List.instance,']'],['[',',',ProductionListLiteral__0__List.instance,',',']'],
+			['[', ProductionListLiteral__0__List.instance, ']'],
+			['[', ProductionListLiteral__0__List.instance, ',', ']'],
+			['[', ',', ProductionListLiteral__0__List.instance, ']'],
+			['[', ',', ProductionListLiteral__0__List.instance, ',', ']'],
 		];
 	}
 }
@@ -216,7 +254,8 @@ export class ProductionRecordLiteral__0__List extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionProperty.instance],[ProductionRecordLiteral__0__List.instance,',',ProductionProperty.instance],
+			[ProductionProperty.instance],
+			[ProductionRecordLiteral__0__List.instance, ',', ProductionProperty.instance],
 		];
 	}
 }
@@ -226,7 +265,10 @@ export class ProductionRecordLiteral extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[',ProductionRecordLiteral__0__List.instance,']'],['[',ProductionRecordLiteral__0__List.instance,',',']'],['[',',',ProductionRecordLiteral__0__List.instance,']'],['[',',',ProductionRecordLiteral__0__List.instance,',',']'],
+			['[', ProductionRecordLiteral__0__List.instance, ']'],
+			['[', ProductionRecordLiteral__0__List.instance, ',', ']'],
+			['[', ',', ProductionRecordLiteral__0__List.instance, ']'],
+			['[', ',', ProductionRecordLiteral__0__List.instance, ',', ']'],
 		];
 	}
 }
@@ -236,7 +278,8 @@ export class ProductionMappingLiteral__0__List extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionCase.instance],[ProductionMappingLiteral__0__List.instance,',',ProductionCase.instance],
+			[ProductionCase.instance],
+			[ProductionMappingLiteral__0__List.instance, ',', ProductionCase.instance],
 		];
 	}
 }
@@ -246,7 +289,10 @@ export class ProductionMappingLiteral extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[',ProductionMappingLiteral__0__List.instance,']'],['[',ProductionMappingLiteral__0__List.instance,',',']'],['[',',',ProductionMappingLiteral__0__List.instance,']'],['[',',',ProductionMappingLiteral__0__List.instance,',',']'],
+			['[', ProductionMappingLiteral__0__List.instance, ']'],
+			['[', ProductionMappingLiteral__0__List.instance, ',', ']'],
+			['[', ',', ProductionMappingLiteral__0__List.instance, ']'],
+			['[', ',', ProductionMappingLiteral__0__List.instance, ',', ']'],
 		];
 	}
 }
@@ -256,7 +302,14 @@ export class ProductionExpressionUnit extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[',']'],[TERMINAL.TerminalIdentifier.instance],[ProductionPrimitiveLiteral.instance],[ProductionStringTemplate.instance],[ProductionListLiteral.instance],[ProductionRecordLiteral.instance],[ProductionMappingLiteral.instance],['(',ProductionExpression.instance,')'],
+			['[', ']'],
+			[TERMINAL.TerminalIdentifier.instance],
+			[ProductionPrimitiveLiteral.instance],
+			[ProductionStringTemplate.instance],
+			[ProductionListLiteral.instance],
+			[ProductionRecordLiteral.instance],
+			[ProductionMappingLiteral.instance],
+			['(', ProductionExpression.instance, ')'],
 		];
 	}
 }
@@ -266,7 +319,11 @@ export class ProductionExpressionUnarySymbol extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionUnit.instance],['!',ProductionExpressionUnarySymbol.instance],['?',ProductionExpressionUnarySymbol.instance],['+',ProductionExpressionUnarySymbol.instance],['-',ProductionExpressionUnarySymbol.instance],
+			[ProductionExpressionUnit.instance],
+			['!', ProductionExpressionUnarySymbol.instance],
+			['?', ProductionExpressionUnarySymbol.instance],
+			['+', ProductionExpressionUnarySymbol.instance],
+			['-', ProductionExpressionUnarySymbol.instance],
 		];
 	}
 }
@@ -276,7 +333,8 @@ export class ProductionExpressionExponential extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionUnarySymbol.instance],[ProductionExpressionUnarySymbol.instance,'^',ProductionExpressionExponential.instance],
+			[ProductionExpressionUnarySymbol.instance],
+			[ProductionExpressionUnarySymbol.instance, '^', ProductionExpressionExponential.instance],
 		];
 	}
 }
@@ -286,7 +344,9 @@ export class ProductionExpressionMultiplicative extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionExponential.instance],[ProductionExpressionMultiplicative.instance,'*',ProductionExpressionExponential.instance],[ProductionExpressionMultiplicative.instance,'/',ProductionExpressionExponential.instance],
+			[ProductionExpressionExponential.instance],
+			[ProductionExpressionMultiplicative.instance, '*', ProductionExpressionExponential.instance],
+			[ProductionExpressionMultiplicative.instance, '/', ProductionExpressionExponential.instance],
 		];
 	}
 }
@@ -296,7 +356,9 @@ export class ProductionExpressionAdditive extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionMultiplicative.instance],[ProductionExpressionAdditive.instance,'+',ProductionExpressionMultiplicative.instance],[ProductionExpressionAdditive.instance,'-',ProductionExpressionMultiplicative.instance],
+			[ProductionExpressionMultiplicative.instance],
+			[ProductionExpressionAdditive.instance, '+', ProductionExpressionMultiplicative.instance],
+			[ProductionExpressionAdditive.instance, '-', ProductionExpressionMultiplicative.instance],
 		];
 	}
 }
@@ -306,7 +368,13 @@ export class ProductionExpressionComparative extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionAdditive.instance],[ProductionExpressionComparative.instance,'<',ProductionExpressionAdditive.instance],[ProductionExpressionComparative.instance,'>',ProductionExpressionAdditive.instance],[ProductionExpressionComparative.instance,'<=',ProductionExpressionAdditive.instance],[ProductionExpressionComparative.instance,'>=',ProductionExpressionAdditive.instance],[ProductionExpressionComparative.instance,'!<',ProductionExpressionAdditive.instance],[ProductionExpressionComparative.instance,'!>',ProductionExpressionAdditive.instance],
+			[ProductionExpressionAdditive.instance],
+			[ProductionExpressionComparative.instance, '<', ProductionExpressionAdditive.instance],
+			[ProductionExpressionComparative.instance, '>', ProductionExpressionAdditive.instance],
+			[ProductionExpressionComparative.instance, '<=', ProductionExpressionAdditive.instance],
+			[ProductionExpressionComparative.instance, '>=', ProductionExpressionAdditive.instance],
+			[ProductionExpressionComparative.instance, '!<', ProductionExpressionAdditive.instance],
+			[ProductionExpressionComparative.instance, '!>', ProductionExpressionAdditive.instance],
 		];
 	}
 }
@@ -316,7 +384,11 @@ export class ProductionExpressionEquality extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionComparative.instance],[ProductionExpressionEquality.instance,'is',ProductionExpressionComparative.instance],[ProductionExpressionEquality.instance,'isnt',ProductionExpressionComparative.instance],[ProductionExpressionEquality.instance,'==',ProductionExpressionComparative.instance],[ProductionExpressionEquality.instance,'!=',ProductionExpressionComparative.instance],
+			[ProductionExpressionComparative.instance],
+			[ProductionExpressionEquality.instance, 'is', ProductionExpressionComparative.instance],
+			[ProductionExpressionEquality.instance, 'isnt', ProductionExpressionComparative.instance],
+			[ProductionExpressionEquality.instance, '==', ProductionExpressionComparative.instance],
+			[ProductionExpressionEquality.instance, '!=', ProductionExpressionComparative.instance],
 		];
 	}
 }
@@ -326,7 +398,9 @@ export class ProductionExpressionConjunctive extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionEquality.instance],[ProductionExpressionConjunctive.instance,'&&',ProductionExpressionEquality.instance],[ProductionExpressionConjunctive.instance,'!&',ProductionExpressionEquality.instance],
+			[ProductionExpressionEquality.instance],
+			[ProductionExpressionConjunctive.instance, '&&', ProductionExpressionEquality.instance],
+			[ProductionExpressionConjunctive.instance, '!&', ProductionExpressionEquality.instance],
 		];
 	}
 }
@@ -336,7 +410,9 @@ export class ProductionExpressionDisjunctive extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionConjunctive.instance],[ProductionExpressionDisjunctive.instance,'||',ProductionExpressionConjunctive.instance],[ProductionExpressionDisjunctive.instance,'!|',ProductionExpressionConjunctive.instance],
+			[ProductionExpressionConjunctive.instance],
+			[ProductionExpressionDisjunctive.instance, '||', ProductionExpressionConjunctive.instance],
+			[ProductionExpressionDisjunctive.instance, '!|', ProductionExpressionConjunctive.instance],
 		];
 	}
 }
@@ -346,7 +422,7 @@ export class ProductionExpressionConditional extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['if',ProductionExpression.instance,'then',ProductionExpression.instance,'else',ProductionExpression.instance],
+			['if', ProductionExpression.instance, 'then', ProductionExpression.instance, 'else', ProductionExpression.instance],
 		];
 	}
 }
@@ -356,7 +432,8 @@ export class ProductionExpression extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionDisjunctive.instance],[ProductionExpressionConditional.instance],
+			[ProductionExpressionDisjunctive.instance],
+			[ProductionExpressionConditional.instance],
 		];
 	}
 }
@@ -366,7 +443,7 @@ export class ProductionDeclarationType extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['type',TERMINAL.TerminalIdentifier.instance,'=',ProductionType.instance,';'],
+			['type', TERMINAL.TerminalIdentifier.instance, '=', ProductionType.instance, ';'],
 		];
 	}
 }
@@ -376,7 +453,8 @@ export class ProductionDeclarationVariable extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['let',TERMINAL.TerminalIdentifier.instance,':',ProductionType.instance,'=',ProductionExpression.instance,';'],['let','unfixed',TERMINAL.TerminalIdentifier.instance,':',ProductionType.instance,'=',ProductionExpression.instance,';'],
+			['let', TERMINAL.TerminalIdentifier.instance, ':', ProductionType.instance, '=', ProductionExpression.instance, ';'],
+			['let', 'unfixed', TERMINAL.TerminalIdentifier.instance, ':', ProductionType.instance, '=', ProductionExpression.instance, ';'],
 		];
 	}
 }
@@ -386,7 +464,8 @@ export class ProductionDeclaration extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionDeclarationType.instance],[ProductionDeclarationVariable.instance],
+			[ProductionDeclarationType.instance],
+			[ProductionDeclarationVariable.instance],
 		];
 	}
 }
@@ -406,7 +485,7 @@ export class ProductionStatementAssignment extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionAssignee.instance,'=',ProductionExpression.instance,';'],
+			[ProductionAssignee.instance, '=', ProductionExpression.instance, ';'],
 		];
 	}
 }
@@ -416,7 +495,10 @@ export class ProductionStatement extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[';'],[ProductionExpression.instance,';'],[ProductionDeclaration.instance],[ProductionStatementAssignment.instance],
+			[';'],
+			[ProductionExpression.instance, ';'],
+			[ProductionDeclaration.instance],
+			[ProductionStatementAssignment.instance],
 		];
 	}
 }
@@ -426,7 +508,8 @@ export class ProductionGoal__0__List extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionStatement.instance],[ProductionGoal__0__List.instance,ProductionStatement.instance],
+			[ProductionStatement.instance],
+			[ProductionGoal__0__List.instance, ProductionStatement.instance],
 		];
 	}
 }
@@ -436,7 +519,8 @@ export class ProductionGoal extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['\u0002','\u0003'],['\u0002',ProductionGoal__0__List.instance,'\u0003'],
+			['\u0002', '\u0003'],
+			['\u0002', ProductionGoal__0__List.instance, '\u0003'],
 		];
 	}
 }
@@ -444,253 +528,337 @@ export class ProductionGoal extends Production {
 
 export class ParseNodeWord extends ParseNode {
 	declare readonly children:
-		readonly [Token] | readonly [Token]
+		| readonly [Token]
+		| readonly [Token]
 	;
 }
 
 export class ParseNodePrimitiveLiteral extends ParseNode {
 	declare readonly children:
-		readonly [Token] | readonly [Token] | readonly [Token] | readonly [Token] | readonly [Token] | readonly [Token]
+		| readonly [Token]
+		| readonly [Token]
+		| readonly [Token]
+		| readonly [Token]
+		| readonly [Token]
+		| readonly [Token]
 	;
 }
 
 export class ParseNodeTypeKeyword extends ParseNode {
 	declare readonly children:
-		readonly [Token] | readonly [Token] | readonly [Token] | readonly [Token] | readonly [Token]
+		| readonly [Token]
+		| readonly [Token]
+		| readonly [Token]
+		| readonly [Token]
+		| readonly [Token]
 	;
 }
 
 export class ParseNodePropertyType extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeWord,Token,ParseNodeType]
+		| readonly [ParseNodeWord, Token, ParseNodeType]
 	;
 }
 
 export class ParseNodeTypeTupleLiteral__0__List extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeType] | readonly [ParseNodeTypeTupleLiteral__0__List,Token,ParseNodeType]
+		| readonly [ParseNodeType]
+		| readonly [ParseNodeTypeTupleLiteral__0__List, Token, ParseNodeType]
 	;
 }
 
 export class ParseNodeTypeTupleLiteral extends ParseNode {
 	declare readonly children:
-		readonly [Token,ParseNodeTypeTupleLiteral__0__List,Token] | readonly [Token,ParseNodeTypeTupleLiteral__0__List,Token,Token] | readonly [Token,Token,ParseNodeTypeTupleLiteral__0__List,Token] | readonly [Token,Token,ParseNodeTypeTupleLiteral__0__List,Token,Token]
+		| readonly [Token, ParseNodeTypeTupleLiteral__0__List, Token]
+		| readonly [Token, ParseNodeTypeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTypeTupleLiteral__0__List, Token]
+		| readonly [Token, Token, ParseNodeTypeTupleLiteral__0__List, Token, Token]
 	;
 }
 
 export class ParseNodeTypeRecordLiteral__0__List extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodePropertyType] | readonly [ParseNodeTypeRecordLiteral__0__List,Token,ParseNodePropertyType]
+		| readonly [ParseNodePropertyType]
+		| readonly [ParseNodeTypeRecordLiteral__0__List, Token, ParseNodePropertyType]
 	;
 }
 
 export class ParseNodeTypeRecordLiteral extends ParseNode {
 	declare readonly children:
-		readonly [Token,ParseNodeTypeRecordLiteral__0__List,Token] | readonly [Token,ParseNodeTypeRecordLiteral__0__List,Token,Token] | readonly [Token,Token,ParseNodeTypeRecordLiteral__0__List,Token] | readonly [Token,Token,ParseNodeTypeRecordLiteral__0__List,Token,Token]
+		| readonly [Token, ParseNodeTypeRecordLiteral__0__List, Token]
+		| readonly [Token, ParseNodeTypeRecordLiteral__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTypeRecordLiteral__0__List, Token]
+		| readonly [Token, Token, ParseNodeTypeRecordLiteral__0__List, Token, Token]
 	;
 }
 
 export class ParseNodeTypeUnit extends ParseNode {
 	declare readonly children:
-		readonly [Token,Token] | readonly [Token] | readonly [ParseNodePrimitiveLiteral] | readonly [ParseNodeTypeKeyword] | readonly [ParseNodeTypeTupleLiteral] | readonly [ParseNodeTypeRecordLiteral] | readonly [Token,ParseNodeType,Token]
+		| readonly [Token, Token]
+		| readonly [Token]
+		| readonly [ParseNodePrimitiveLiteral]
+		| readonly [ParseNodeTypeKeyword]
+		| readonly [ParseNodeTypeTupleLiteral]
+		| readonly [ParseNodeTypeRecordLiteral]
+		| readonly [Token, ParseNodeType, Token]
 	;
 }
 
 export class ParseNodeTypeUnarySymbol extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeTypeUnit] | readonly [ParseNodeTypeUnarySymbol,Token]
+		| readonly [ParseNodeTypeUnit]
+		| readonly [ParseNodeTypeUnarySymbol, Token]
 	;
 }
 
 export class ParseNodeTypeIntersection extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeTypeUnarySymbol] | readonly [ParseNodeTypeIntersection,Token,ParseNodeTypeUnarySymbol]
+		| readonly [ParseNodeTypeUnarySymbol]
+		| readonly [ParseNodeTypeIntersection, Token, ParseNodeTypeUnarySymbol]
 	;
 }
 
 export class ParseNodeTypeUnion extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeTypeIntersection] | readonly [ParseNodeTypeUnion,Token,ParseNodeTypeIntersection]
+		| readonly [ParseNodeTypeIntersection]
+		| readonly [ParseNodeTypeUnion, Token, ParseNodeTypeIntersection]
 	;
 }
 
 export class ParseNodeType extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeTypeUnion]
+		| readonly [ParseNodeTypeUnion]
 	;
 }
 
 export class ParseNodeStringTemplate__0__List extends ParseNode {
 	declare readonly children:
-		readonly [Token] | readonly [ParseNodeStringTemplate__0__List,Token] | readonly [Token,ParseNodeExpression] | readonly [ParseNodeStringTemplate__0__List,Token,ParseNodeExpression]
+		| readonly [Token]
+		| readonly [ParseNodeStringTemplate__0__List, Token]
+		| readonly [Token, ParseNodeExpression]
+		| readonly [ParseNodeStringTemplate__0__List, Token, ParseNodeExpression]
 	;
 }
 
 export class ParseNodeStringTemplate extends ParseNode {
 	declare readonly children:
-		readonly [Token] | readonly [Token,Token] | readonly [Token,ParseNodeStringTemplate__0__List,Token] | readonly [Token,ParseNodeExpression,Token] | readonly [Token,ParseNodeExpression,ParseNodeStringTemplate__0__List,Token]
+		| readonly [Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeStringTemplate__0__List, Token]
+		| readonly [Token, ParseNodeExpression, Token]
+		| readonly [Token, ParseNodeExpression, ParseNodeStringTemplate__0__List, Token]
 	;
 }
 
 export class ParseNodeProperty extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeWord,Token,ParseNodeExpression]
+		| readonly [ParseNodeWord, Token, ParseNodeExpression]
 	;
 }
 
 export class ParseNodeCase extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeExpression,Token,ParseNodeExpression]
+		| readonly [ParseNodeExpression, Token, ParseNodeExpression]
 	;
 }
 
 export class ParseNodeListLiteral__0__List extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeExpression] | readonly [ParseNodeListLiteral__0__List,Token,ParseNodeExpression]
+		| readonly [ParseNodeExpression]
+		| readonly [ParseNodeListLiteral__0__List, Token, ParseNodeExpression]
 	;
 }
 
 export class ParseNodeListLiteral extends ParseNode {
 	declare readonly children:
-		readonly [Token,ParseNodeListLiteral__0__List,Token] | readonly [Token,ParseNodeListLiteral__0__List,Token,Token] | readonly [Token,Token,ParseNodeListLiteral__0__List,Token] | readonly [Token,Token,ParseNodeListLiteral__0__List,Token,Token]
+		| readonly [Token, ParseNodeListLiteral__0__List, Token]
+		| readonly [Token, ParseNodeListLiteral__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeListLiteral__0__List, Token]
+		| readonly [Token, Token, ParseNodeListLiteral__0__List, Token, Token]
 	;
 }
 
 export class ParseNodeRecordLiteral__0__List extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeProperty] | readonly [ParseNodeRecordLiteral__0__List,Token,ParseNodeProperty]
+		| readonly [ParseNodeProperty]
+		| readonly [ParseNodeRecordLiteral__0__List, Token, ParseNodeProperty]
 	;
 }
 
 export class ParseNodeRecordLiteral extends ParseNode {
 	declare readonly children:
-		readonly [Token,ParseNodeRecordLiteral__0__List,Token] | readonly [Token,ParseNodeRecordLiteral__0__List,Token,Token] | readonly [Token,Token,ParseNodeRecordLiteral__0__List,Token] | readonly [Token,Token,ParseNodeRecordLiteral__0__List,Token,Token]
+		| readonly [Token, ParseNodeRecordLiteral__0__List, Token]
+		| readonly [Token, ParseNodeRecordLiteral__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral__0__List, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral__0__List, Token, Token]
 	;
 }
 
 export class ParseNodeMappingLiteral__0__List extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeCase] | readonly [ParseNodeMappingLiteral__0__List,Token,ParseNodeCase]
+		| readonly [ParseNodeCase]
+		| readonly [ParseNodeMappingLiteral__0__List, Token, ParseNodeCase]
 	;
 }
 
 export class ParseNodeMappingLiteral extends ParseNode {
 	declare readonly children:
-		readonly [Token,ParseNodeMappingLiteral__0__List,Token] | readonly [Token,ParseNodeMappingLiteral__0__List,Token,Token] | readonly [Token,Token,ParseNodeMappingLiteral__0__List,Token] | readonly [Token,Token,ParseNodeMappingLiteral__0__List,Token,Token]
+		| readonly [Token, ParseNodeMappingLiteral__0__List, Token]
+		| readonly [Token, ParseNodeMappingLiteral__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeMappingLiteral__0__List, Token]
+		| readonly [Token, Token, ParseNodeMappingLiteral__0__List, Token, Token]
 	;
 }
 
 export class ParseNodeExpressionUnit extends ParseNode {
 	declare readonly children:
-		readonly [Token,Token] | readonly [Token] | readonly [ParseNodePrimitiveLiteral] | readonly [ParseNodeStringTemplate] | readonly [ParseNodeListLiteral] | readonly [ParseNodeRecordLiteral] | readonly [ParseNodeMappingLiteral] | readonly [Token,ParseNodeExpression,Token]
+		| readonly [Token, Token]
+		| readonly [Token]
+		| readonly [ParseNodePrimitiveLiteral]
+		| readonly [ParseNodeStringTemplate]
+		| readonly [ParseNodeListLiteral]
+		| readonly [ParseNodeRecordLiteral]
+		| readonly [ParseNodeMappingLiteral]
+		| readonly [Token, ParseNodeExpression, Token]
 	;
 }
 
 export class ParseNodeExpressionUnarySymbol extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeExpressionUnit] | readonly [Token,ParseNodeExpressionUnarySymbol] | readonly [Token,ParseNodeExpressionUnarySymbol] | readonly [Token,ParseNodeExpressionUnarySymbol] | readonly [Token,ParseNodeExpressionUnarySymbol]
+		| readonly [ParseNodeExpressionUnit]
+		| readonly [Token, ParseNodeExpressionUnarySymbol]
+		| readonly [Token, ParseNodeExpressionUnarySymbol]
+		| readonly [Token, ParseNodeExpressionUnarySymbol]
+		| readonly [Token, ParseNodeExpressionUnarySymbol]
 	;
 }
 
 export class ParseNodeExpressionExponential extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeExpressionUnarySymbol] | readonly [ParseNodeExpressionUnarySymbol,Token,ParseNodeExpressionExponential]
+		| readonly [ParseNodeExpressionUnarySymbol]
+		| readonly [ParseNodeExpressionUnarySymbol, Token, ParseNodeExpressionExponential]
 	;
 }
 
 export class ParseNodeExpressionMultiplicative extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeExpressionExponential] | readonly [ParseNodeExpressionMultiplicative,Token,ParseNodeExpressionExponential] | readonly [ParseNodeExpressionMultiplicative,Token,ParseNodeExpressionExponential]
+		| readonly [ParseNodeExpressionExponential]
+		| readonly [ParseNodeExpressionMultiplicative, Token, ParseNodeExpressionExponential]
+		| readonly [ParseNodeExpressionMultiplicative, Token, ParseNodeExpressionExponential]
 	;
 }
 
 export class ParseNodeExpressionAdditive extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeExpressionMultiplicative] | readonly [ParseNodeExpressionAdditive,Token,ParseNodeExpressionMultiplicative] | readonly [ParseNodeExpressionAdditive,Token,ParseNodeExpressionMultiplicative]
+		| readonly [ParseNodeExpressionMultiplicative]
+		| readonly [ParseNodeExpressionAdditive, Token, ParseNodeExpressionMultiplicative]
+		| readonly [ParseNodeExpressionAdditive, Token, ParseNodeExpressionMultiplicative]
 	;
 }
 
 export class ParseNodeExpressionComparative extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive] | readonly [ParseNodeExpressionComparative,Token,ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
 	;
 }
 
 export class ParseNodeExpressionEquality extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeExpressionComparative] | readonly [ParseNodeExpressionEquality,Token,ParseNodeExpressionComparative] | readonly [ParseNodeExpressionEquality,Token,ParseNodeExpressionComparative] | readonly [ParseNodeExpressionEquality,Token,ParseNodeExpressionComparative] | readonly [ParseNodeExpressionEquality,Token,ParseNodeExpressionComparative]
+		| readonly [ParseNodeExpressionComparative]
+		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
+		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
+		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
+		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
 	;
 }
 
 export class ParseNodeExpressionConjunctive extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeExpressionEquality] | readonly [ParseNodeExpressionConjunctive,Token,ParseNodeExpressionEquality] | readonly [ParseNodeExpressionConjunctive,Token,ParseNodeExpressionEquality]
+		| readonly [ParseNodeExpressionEquality]
+		| readonly [ParseNodeExpressionConjunctive, Token, ParseNodeExpressionEquality]
+		| readonly [ParseNodeExpressionConjunctive, Token, ParseNodeExpressionEquality]
 	;
 }
 
 export class ParseNodeExpressionDisjunctive extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeExpressionConjunctive] | readonly [ParseNodeExpressionDisjunctive,Token,ParseNodeExpressionConjunctive] | readonly [ParseNodeExpressionDisjunctive,Token,ParseNodeExpressionConjunctive]
+		| readonly [ParseNodeExpressionConjunctive]
+		| readonly [ParseNodeExpressionDisjunctive, Token, ParseNodeExpressionConjunctive]
+		| readonly [ParseNodeExpressionDisjunctive, Token, ParseNodeExpressionConjunctive]
 	;
 }
 
 export class ParseNodeExpressionConditional extends ParseNode {
 	declare readonly children:
-		readonly [Token,ParseNodeExpression,Token,ParseNodeExpression,Token,ParseNodeExpression]
+		| readonly [Token, ParseNodeExpression, Token, ParseNodeExpression, Token, ParseNodeExpression]
 	;
 }
 
 export class ParseNodeExpression extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeExpressionDisjunctive] | readonly [ParseNodeExpressionConditional]
+		| readonly [ParseNodeExpressionDisjunctive]
+		| readonly [ParseNodeExpressionConditional]
 	;
 }
 
 export class ParseNodeDeclarationType extends ParseNode {
 	declare readonly children:
-		readonly [Token,Token,Token,ParseNodeType,Token]
+		| readonly [Token, Token, Token, ParseNodeType, Token]
 	;
 }
 
 export class ParseNodeDeclarationVariable extends ParseNode {
 	declare readonly children:
-		readonly [Token,Token,Token,ParseNodeType,Token,ParseNodeExpression,Token] | readonly [Token,Token,Token,Token,ParseNodeType,Token,ParseNodeExpression,Token]
+		| readonly [Token, Token, Token, ParseNodeType, Token, ParseNodeExpression, Token]
+		| readonly [Token, Token, Token, Token, ParseNodeType, Token, ParseNodeExpression, Token]
 	;
 }
 
 export class ParseNodeDeclaration extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeDeclarationType] | readonly [ParseNodeDeclarationVariable]
+		| readonly [ParseNodeDeclarationType]
+		| readonly [ParseNodeDeclarationVariable]
 	;
 }
 
 export class ParseNodeAssignee extends ParseNode {
 	declare readonly children:
-		readonly [Token]
+		| readonly [Token]
 	;
 }
 
 export class ParseNodeStatementAssignment extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeAssignee,Token,ParseNodeExpression,Token]
+		| readonly [ParseNodeAssignee, Token, ParseNodeExpression, Token]
 	;
 }
 
 export class ParseNodeStatement extends ParseNode {
 	declare readonly children:
-		readonly [Token] | readonly [ParseNodeExpression,Token] | readonly [ParseNodeDeclaration] | readonly [ParseNodeStatementAssignment]
+		| readonly [Token]
+		| readonly [ParseNodeExpression, Token]
+		| readonly [ParseNodeDeclaration]
+		| readonly [ParseNodeStatementAssignment]
 	;
 }
 
 export class ParseNodeGoal__0__List extends ParseNode {
 	declare readonly children:
-		readonly [ParseNodeStatement] | readonly [ParseNodeGoal__0__List,ParseNodeStatement]
+		| readonly [ParseNodeStatement]
+		| readonly [ParseNodeGoal__0__List, ParseNodeStatement]
 	;
 }
 
 export class ParseNodeGoal extends ParseNode {
 	declare readonly children:
-		readonly [Token,Token] | readonly [Token,ParseNodeGoal__0__List,Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeGoal__0__List, Token]
 	;
 }
 

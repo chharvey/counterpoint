@@ -1,5 +1,19 @@
+Void! TypeCheck(Or<
+	SemanticKey,
+	SemanticPropertyType
+	SemanticProperty,
+	SemanticCase,
+	SemanticStatementExpression,
+	SemanticGoal,
+> list) :=
+	1. *For each* `it` in `list`:
+		1. *Perform:* *Unwrap:* `VarCheck(it)`.
+;
+
+
+
 Void TypeCheck(SemanticType type) :=
-	1. *Return*. // NOTE: all SemanticType nodes are valid for now
+	1. *Return*.
 ;
 
 
@@ -7,13 +21,6 @@ Void TypeCheck(SemanticType type) :=
 Void! TypeCheck(SemanticExpression expr) :=
 	1. *Perform:* *Unwrap:* `TypeOf(expr)`.
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
-;
-
-
-
-Void! TypeCheck(SemanticStatementExpression stmt) :=
-	1. *If* `stmt.children.count` is greater than 0:
-		1. *Return:* `TypeCheck(stmt.children.0)`.
 ;
 
 
@@ -48,15 +55,9 @@ Void! TypeCheck(SemanticDeclarationVariable decl) :=
 
 Void! TypeCheck(SemanticAssignment stmt) :=
 	1. *Assert:* `stmt.children.count` is 2.
-	2. *Let* `assignee_type` be *Unwrap:* `TypeOf(stmt.children.0)`.
-	3. *Let* `assigned_type` be *Unwrap:* `TypeOf(stmt.children.1)`.
-	4. *If* `assigned_type` is not a subtype of `assignee_type`:
+	2. *Perform:* *UnwrapAffirm:* `TypeCheck(decl.children.1)`.
+	3. *Let* `assignee_type` be *Unwrap:* `TypeOf(stmt.children.0)`.
+	4. *Let* `assigned_type` be *Unwrap:* `TypeOf(stmt.children.1)`.
+	5. *If* `assigned_type` is not a subtype of `assignee_type`:
 		1. *Throw:* a new TypeError03.
-;
-
-
-
-Void! TypeCheck(SemanticGoal goal) :=
-	1. For each `stmt` in `goal.children`:
-		1. *Perform:* *Unwrap:* `TypeCheck(stmt)`.
 ;

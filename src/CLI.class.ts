@@ -44,7 +44,7 @@ type CustomArgsType = {
 	/** Display configuration options. */
 	config: boolean;
 
-	// Language Feature Toggles
+	// Language Features
 	comments          : null | boolean,
 	integerRadices    : null | boolean,
 	numericSeparators : null | boolean,
@@ -103,10 +103,10 @@ export class CLI {
 
 	/** Text to print on --config. */
 	static readonly CONFIGTEXT: string = utils.dedent`
-		The following options set individual language feature toggles and compiler options.
+		The following options set individual language features and compiler options.
 		These options will override those in the configuration file provided by \`--project\`.
 
-		Language Feature Toggles:
+		Language Features:
 		--[no-]comments                (on by default)
 		--[no-]integerRadices
 		--[no-]numericSeparators
@@ -123,7 +123,7 @@ export class CLI {
 			'help',
 			'version',
 			'config',
-			// Language Feature Toggles
+			// Language Features
 			'comments',
 			'integerRadices',
 			'numericSeparators',
@@ -147,7 +147,7 @@ export class CLI {
 			help    : false,
 			version : false,
 			config  : false,
-			// Language Feature Toggles
+			// Language Features
 			comments          : null,
 			integerRadices    : null,
 			numericSeparators : null,

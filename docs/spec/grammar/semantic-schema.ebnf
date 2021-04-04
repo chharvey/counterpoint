@@ -1,3 +1,21 @@
+SemanticKey[id: RealNumber]
+	::= ();
+
+
+
+SemanticPropertyType
+	::= SemanticKey SemanticType;
+
+
+
+SemanticProperty
+	::= SemanticKey SemanticExpression;
+
+SemanticCase
+	::= SemanticExpression SemanticExpression;
+
+
+
 SemanticType =:=
 	| SemanticTypeConstant
 	| SemanticTypeAlias
@@ -6,16 +24,6 @@ SemanticType =:=
 	| SemanticTypeRecord
 	| SemanticTypeOperation
 ;
-
-
-
-SemanticKey[id: RealNumber]
-	::= ();
-
-
-
-SemanticPropertyType
-	::= SemanticKey SemanticType;
 
 
 
@@ -49,24 +57,14 @@ SemanticExpression =:=
 
 
 
-SemanticProperty
-	::= SemanticKey SemanticExpression;
-
-SemanticCase
-	::= SemanticExpression SemanticExpression;
-
-
-
 SemanticConstant[value: Null | Boolean | Number | String]
 	::= ();
 
 SemanticVariable[id: RealNumber]
 	::= ();
 
-SemanticTemplate[type: "full"]
-	::= SemanticConstant;
-SemanticTemplate[type: "substitution"]
-	::= (SemanticConstant SemanticExpression?)+ SemanticConstant;
+SemanticTemplate
+	::= (SemanticConstant SemanticExpression?)* SemanticConstant;
 
 SemanticTemplatePartial
 	::= (SemanticConstant SemanticExpression?)+;

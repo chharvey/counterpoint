@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 import {
+	NonemptyArray,
 	Filebound,
 	Token,
 	TokenFilebound,
@@ -130,6 +131,11 @@ export function primitiveLiteralFromSource(src: string, config: SolidConfig = CO
 	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
 	assert.ok(unit instanceof PARSER.ParseNodePrimitiveLiteral, 'unit should be a ParseNodePrimitiveLiteral')
 	return unit
+}
+export function stringTemplateFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeStringTemplate {
+	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
+	assert.ok(unit instanceof PARSER.ParseNodeStringTemplate, 'unit should be a ParseNodeStringTemplate');
+	return unit;
 }
 export function listLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeListLiteral {
 	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
@@ -282,7 +288,7 @@ export function statementFromSource(src: string, config: SolidConfig = CONFIG_DE
  * @param pnode the parse node to test
  * @param srcs  the source code strings
  */
-export function hashListSources(pnode: ParseNode, ...srcs: [string, ...string[]]): void {
+export function hashListSources(pnode: ParseNode, ...srcs: Readonly<NonemptyArray<string>>): void {
 	if (srcs.length === 1) {
 		assert_arrayLength(pnode.children, 1);
 		assert.strictEqual((pnode.children[0] as Token | ParseNode).source, srcs[0]);
@@ -290,6 +296,86 @@ export function hashListSources(pnode: ParseNode, ...srcs: [string, ...string[]]
 		assert_arrayLength(pnode.children, 3);
 		assert.strictEqual((pnode.children[1] as Token | ParseNode).source, Punctuator.COMMA);
 		assert.strictEqual((pnode.children[2] as Token | ParseNode).source, srcs[srcs.length - 1]); // COMBAK srcs.lastItem
-		return hashListSources(pnode.children[0] as ParseNode, ...srcs.slice(0, -1) as [string, ...string[]]);
+		return hashListSources(pnode.children[0] as ParseNode, ...srcs.slice(0, -1) as NonemptyArray<string>);
+	};
+}
+
+
+
+export function templateSources(tpl: PARSER.ParseNodeStringTemplate, ...srcs: Readonly<NonemptyArray<string>>): void {
+	assert.strictEqual(tpl.children[0].source, srcs[0]);
+	if (srcs.length === 1) {
+		/* StringTemplate ::= TEMPLATE_FULL; */
+		assert_arrayLength(tpl.children, 1);
+	} else if (srcs.length === 2) {
+		/* StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL; */
+		assert_arrayLength(tpl.children, 2);
+		assert.strictEqual(tpl.children[1].source, srcs[1]);
+	} else if (srcs.length === 3) {
+		/* StringTemplate ::=
+			| TEMPLATE_HEAD Expression              TEMPLATE_TAIL
+			| TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL
+		; */
+		assert_arrayLength(tpl.children, 3);
+		assert.strictEqual(tpl.children[2].source, srcs[2]);
+		return (tpl.children[1] instanceof PARSER.ParseNodeExpression)
+			? assert.strictEqual(tpl.children[1].source, srcs[1])
+			: templateMiddleSources(tpl.children[1], ...srcs.slice(1, -1) as NonemptyArray<string>)
+		;
+	} else {
+		/* StringTemplate ::=
+			| TEMPLATE_HEAD            StringTemplate__0__List TEMPLATE_TAIL
+			| TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL
+		; */
+		assert.strictEqual(
+			tpl.children[tpl.children.length - 1].source, // COMBAK tpl.children.lastItem
+			srcs        [srcs        .length - 1],        // COMBAK srcs        .lastItem
+		);
+		if (tpl.children.length === 3) {
+			assert.ok(tpl.children[1] instanceof PARSER.ParseNodeStringTemplate__0__List);
+			return templateMiddleSources(tpl.children[1], ...srcs.slice(1, -1) as NonemptyArray<string>);
+		} else {
+			assert_arrayLength(tpl.children, 4);
+			assert.strictEqual(tpl.children[1].source, srcs[1]);
+			return templateMiddleSources(tpl.children[2], ...srcs.slice(2, -1) as NonemptyArray<string>);
+		};
+	};
+}
+function templateMiddleSources(tpl: PARSER.ParseNodeStringTemplate__0__List, ...srcs: Readonly<NonemptyArray<string>>): void {
+	if (srcs.length === 1) {
+		/* StringTemplate__0__List ::= TEMPLATE_MIDDLE; */
+		assert_arrayLength(tpl.children, 1);
+		assert.strictEqual(tpl.children[0].source, srcs[0]);
+	} else if (srcs.length === 2) {
+		/* StringTemplate__0__List ::=
+			| TEMPLATE_MIDDLE Expression
+			| StringTemplate__0__List TEMPLATE_MIDDLE
+		; */
+		assert_arrayLength(tpl.children, 2);
+		assert.strictEqual(tpl.children[1].source, srcs[1]);
+		return (tpl.children[0] instanceof Token)
+			? assert.strictEqual(tpl.children[0].source, srcs[0])
+			: templateMiddleSources(tpl.children[0], srcs[0])
+		;
+	} else {
+		/* StringTemplate__0__List ::=
+			| StringTemplate__0__List TEMPLATE_MIDDLE
+			| StringTemplate__0__List TEMPLATE_MIDDLE Expression
+		; */
+		assert.strictEqual(
+			tpl.children[tpl.children.length - 1].source, // COMBAK tpl.children.lastItem
+			srcs        [srcs        .length - 1],        // COMBAK srcs        .lastItem
+		);
+		if (tpl.children.length === 2) {
+			assert.ok(tpl.children[0] instanceof PARSER.ParseNodeStringTemplate__0__List);
+			return templateMiddleSources(tpl.children[0], ...srcs.slice(0, -1) as NonemptyArray<string>);
+		} else {
+			assert_arrayLength(tpl.children, 3);
+			assert.strictEqual(
+				tpl.children[tpl.children.length - 2].source,
+				srcs        [srcs        .length - 2],
+			);
+			return templateMiddleSources(tpl.children[0], ...srcs.slice(0, -2) as NonemptyArray<string>);
+		};
 	};
 }

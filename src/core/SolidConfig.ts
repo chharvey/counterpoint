@@ -3,7 +3,7 @@
  */
 export type SolidConfig = {
 	/**
-	 * Toggles for which language features to enable/disable.
+	 * Options for which language features to enable/disable.
 	 * Disabling features can improve compiler speed.
 	 */
 	readonly languageFeatures: {

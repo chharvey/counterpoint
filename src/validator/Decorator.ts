@@ -91,8 +91,8 @@ export class Decorator {
 		| PARSER.ParseNodeTypeUnion
 		| PARSER.ParseNodeType
 	): AST.ASTNodeType;
-	static decorate(node: PARSER.ParseNodeStringTemplate__0__List):  TemplatePartialType;
-	static decorate(node: PARSER.ParseNodeStringTemplate):           AST.ASTNodeTemplate;
+	static decorate(node: PARSER.ParseNodeStringTemplate):          AST.ASTNodeTemplate;
+	static decorate(node: PARSER.ParseNodeStringTemplate__0__List): TemplatePartialType;
 	static decorate(node: PARSER.ParseNodeProperty):                AST.ASTNodeProperty;
 	static decorate(node: PARSER.ParseNodeCase):                    AST.ASTNodeCase;
 	static decorate(node: PARSER.ParseNodeListLiteral):             AST.ASTNodeList;
@@ -200,19 +200,19 @@ export class Decorator {
 		} else if (node instanceof PARSER.ParseNodeType) {
 			return this.decorate(node.children[0])
 
-		} else if (node instanceof PARSER.ParseNodeStringTemplate__0__List) {
-			return (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeStringTemplate__0__List)[]).flatMap((c) =>
-				c instanceof TOKEN.TokenTemplate ? [new AST.ASTNodeConstant(c)] :
-				c instanceof PARSER.ParseNodeExpression ? [this.decorate(c)] :
-				this.decorate(c)
-			)
-
 		} else if (node instanceof PARSER.ParseNodeStringTemplate) {
-			return new AST.ASTNodeTemplate(node, (node.children as readonly (TOKEN.TokenTemplate | PARSER.ParseNodeExpression | PARSER.ParseNodeStringTemplate__0__List)[]).flatMap((c) =>
-				c instanceof TOKEN.TokenTemplate ? [new AST.ASTNodeConstant(c)] :
-				c instanceof PARSER.ParseNodeExpression ? [this.decorate(c)] :
-				this.decorate(c)
-			))
+			return new AST.ASTNodeTemplate(node, [...node.children].flatMap((c) =>
+				(c instanceof TOKEN.TokenTemplate) ? [new AST.ASTNodeConstant(c)] :
+				(c instanceof PARSER.ParseNodeExpression) ? [this.decorate(c)] :
+				this.decorate(c as PARSER.ParseNodeStringTemplate__0__List)
+			));
+
+		} else if (node instanceof PARSER.ParseNodeStringTemplate__0__List) {
+			return [...node.children].flatMap((c) =>
+				(c instanceof TOKEN.TokenTemplate) ? [new AST.ASTNodeConstant(c)] :
+				(c instanceof PARSER.ParseNodeExpression) ? [this.decorate(c)] :
+				this.decorate(c as PARSER.ParseNodeStringTemplate__0__List)
+			);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeProperty) {
 			return new AST.ASTNodeProperty(node, [

@@ -433,11 +433,12 @@ describe('ASTNodeSolid', () => {
 					x;
 					y;
 				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src);
 				const builder: Builder = new Builder(src)
 				assert.deepStrictEqual(
 					[
-						goalFromSource(src).children[2].build(builder),
-						goalFromSource(src).children[3].build(builder),
+						goal.children[2].build(builder),
+						goal.children[3].build(builder),
 					],
 					[
 						new INST.InstructionStatement(0n, instructionConstInt(42n)),
@@ -445,26 +446,27 @@ describe('ASTNodeSolid', () => {
 					],
 				);
 			});
-			it('with constant folding on, returns InstructionGet for unfixed / non-foldable variables.', () => {
+			it('with constant folding on, returns InstructionGlobalGet for unfixed / non-foldable variables.', () => {
 				const src: string = `
 					let unfixed x: int = 42;
 					let y: int = x + 10;
 					x;
 					y;
 				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src);
 				const builder: Builder = new Builder(src)
 				assert.deepStrictEqual(
 					[
-						goalFromSource(src).children[2].build(builder),
-						goalFromSource(src).children[3].build(builder),
+						goal.children[2].build(builder),
+						goal.children[3].build(builder),
 					],
 					[
-						new INST.InstructionStatement(0n, new INST.InstructionGet(0x100n)),
-						new INST.InstructionStatement(1n, new INST.InstructionGet(0x101n)),
+						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
+						new INST.InstructionStatement(1n, new INST.InstructionGlobalGet(0x101n)),
 					],
 				);
 			});
-			it('with constant folding off, always returns InstructionGet.', () => {
+			it('with constant folding off, always returns InstructionGlobalGet.', () => {
 				const folding_off: SolidConfig = {
 					...CONFIG_DEFAULT,
 					compilerOptions: {
@@ -478,15 +480,16 @@ describe('ASTNodeSolid', () => {
 					x;
 					y;
 				`;
+				const goal: AST.ASTNodeGoal = goalFromSource(src, folding_off);
 				const builder: Builder = new Builder(src, folding_off);
 				assert.deepStrictEqual(
 					[
-						goalFromSource(src, folding_off).children[2].build(builder),
-						goalFromSource(src, folding_off).children[3].build(builder),
+						goal.children[2].build(builder),
+						goal.children[3].build(builder),
 					],
 					[
-						new INST.InstructionStatement(0n, new INST.InstructionGet(0x100n)),
-						new INST.InstructionStatement(1n, new INST.InstructionGet(0x101n)),
+						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
+						new INST.InstructionStatement(1n, new INST.InstructionGlobalGet(0x101n)),
 					],
 				);
 			});
@@ -767,7 +770,7 @@ describe('ASTNodeSolid', () => {
 					],
 				);
 			});
-			it('with constant folding on, returns InstructionSet for unfixed / non-foldable variables.', () => {
+			it('with constant folding on, returns InstructionDeclareGlobal for unfixed / non-foldable variables.', () => {
 				const src: string = `
 					let unfixed x: int = 42;
 					let y: int = x + 10;
@@ -780,16 +783,16 @@ describe('ASTNodeSolid', () => {
 						goal.children[1].build(builder),
 					],
 					[
-						new INST.InstructionSet(0x100n, instructionConstInt(42n)),
-						new INST.InstructionSet(0x101n, new INST.InstructionBinopArithmetic(
+						new INST.InstructionDeclareGlobal(0x100n, true,  instructionConstInt(42n)),
+						new INST.InstructionDeclareGlobal(0x101n, false, new INST.InstructionBinopArithmetic(
 							Operator.ADD,
-							new INST.InstructionGet(0x100n),
+							new INST.InstructionGlobalGet(0x100n),
 							instructionConstInt(10n),
 						)),
 					],
 				);
 			});
-			it('with constant folding off, always returns InstructionSet.', () => {
+			it('with constant folding off, always returns InstructionDeclareGlobal.', () => {
 				const folding_off: SolidConfig = {
 					...CONFIG_DEFAULT,
 					compilerOptions: {
@@ -809,15 +812,15 @@ describe('ASTNodeSolid', () => {
 						goal.children[1].build(builder),
 					],
 					[
-						new INST.InstructionSet(0x100n, instructionConstInt(42n)),
-						new INST.InstructionSet(0x101n, instructionConstFloat(4.2)),
+						new INST.InstructionDeclareGlobal(0x100n, false, instructionConstInt(42n)),
+						new INST.InstructionDeclareGlobal(0x101n, true,  instructionConstFloat(4.2)),
 					],
 				);
 			});
 		});
 
 		describe('ASTNodeAssignment', () => {
-			it('always returns InstructionSet.', () => {
+			it('always returns InstructionStatement containing InstructionGlobalSet.', () => {
 				const src: string = `
 					let unfixed y: float = 4.2;
 					y = y * 10;
@@ -826,11 +829,14 @@ describe('ASTNodeSolid', () => {
 				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
 					goal.children[1].build(builder),
-					new INST.InstructionSet(0x100n, new INST.InstructionBinopArithmetic(
-						Operator.MUL,
-						new INST.InstructionGet(0x100n, true),
-						instructionConstFloat(10.0),
-					)),
+					new INST.InstructionStatement(
+						0n,
+						new INST.InstructionGlobalSet(0x100n, new INST.InstructionBinopArithmetic(
+							Operator.MUL,
+							new INST.InstructionGlobalGet(0x100n, true),
+							instructionConstFloat(10.0),
+						)),
+					),
 				);
 			});
 		});
@@ -846,7 +852,7 @@ describe('ASTNodeSolid', () => {
 					`true`,
 					`42`,
 					`4.2e+3`,
-				].map((src) => Decorator.decorate(unitTypeFromString(src)).assess()), [
+				].map((src) => Decorator.decorate(unitTypeFromString(src)).assess(new Validator())), [
 					SolidNull,
 					SolidBoolean.FALSETYPE,
 					SolidBoolean.TRUETYPE,
@@ -876,7 +882,7 @@ describe('ASTNodeSolid', () => {
 					'int',
 					'float',
 					'obj',
-				].map((src) => Decorator.decorate(unitTypeFromString(src)).assess()), [
+				].map((src) => Decorator.decorate(unitTypeFromString(src)).assess(new Validator())), [
 					SolidBoolean,
 					Int16,
 					Float64,
@@ -885,17 +891,17 @@ describe('ASTNodeSolid', () => {
 			})
 			it('computes the value of a nullified (ORNULL) type.', () => {
 				assert.deepStrictEqual(
-					Decorator.decorate(unaryTypeFromString(`int!`)).assess(),
+					Decorator.decorate(unaryTypeFromString(`int!`)).assess(new Validator()),
 					Int16.union(SolidNull),
 				)
 			})
 			it('computes the value of AND and OR operators', () => {
 				assert.deepStrictEqual(
-					Decorator.decorate(intersectionTypeFromString(`obj & 3`)).assess(),
+					Decorator.decorate(intersectionTypeFromString(`obj & 3`)).assess(new Validator()),
 					SolidObject.intersect(typeConstInt(3n)),
 				)
 				assert.deepStrictEqual(
-					Decorator.decorate(unionTypeFromString(`4.2 | int`)).assess(),
+					Decorator.decorate(unionTypeFromString(`4.2 | int`)).assess(new Validator()),
 					typeConstFloat(4.2).union(Int16),
 				)
 			})
@@ -927,12 +933,12 @@ describe('ASTNodeSolid', () => {
 							constants.map((c) => assert_wasCalled(c.assess, 1, (orig, spy) => {
 								c.assess = spy;
 								try {
-									return c.type();
+									return c.type(new Validator());
 								} finally {
 									c.assess = orig;
 								};
 							})),
-							constants.map((c) => new SolidTypeConstant(c.assess()!)),
+							constants.map((c) => new SolidTypeConstant(c.assess(new Validator())!)),
 						);
 					});
 				});
@@ -952,7 +958,7 @@ describe('ASTNodeSolid', () => {
 			});
 			it('returns Unknown for undeclared variables.', () => {
 				// NOTE: a reference error will be thrown at the variable-checking stage
-				assert.strictEqual(variableFromSource(`x;`).type(), SolidLanguageType.UNKNOWN);
+				assert.strictEqual(variableFromSource(`x;`).type(new Validator()), SolidLanguageType.UNKNOWN);
 			});
 			Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
 				const templates: AST.ASTNodeTemplate[] = [
@@ -966,18 +972,25 @@ describe('ASTNodeSolid', () => {
 						.children[0] as AST.ASTNodeTemplate,
 				];
 				context('with constant folding on.', () => {
-					it('returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
-						assert.deepStrictEqual(
-							templates.map((t) => assert_wasCalled(t.assess, 1, (orig, spy) => {
+					let types: SolidLanguageType[];
+					before(() => {
+						types = templates.map((t) => assert_wasCalled(t.assess, 1, (orig, spy) => {
 								t.assess = spy;
 								try {
-									return t.type();
+									return t.type(new Validator());
 								} finally {
 									t.assess = orig;
 								};
-							})),
-							templates.map((t) => new SolidTypeConstant(t.assess()!)),
+						}));
+					});
+					it('for foldable interpolations, returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
+						assert.deepStrictEqual(
+							types.slice(0, 2),
+							templates.slice(0, 2).map((t) => new SolidTypeConstant(t.assess(new Validator())!)),
 						);
+					});
+					it('for non-foldable interpolations, returns `String`.', () => {
+						assert.deepStrictEqual(types[2], SolidString);
 					});
 				});
 				context('with constant folding off.', () => {
@@ -991,7 +1004,7 @@ describe('ASTNodeSolid', () => {
 			describe('ASTNodeOperation', () => {
 				function typeOperations(tests: ReadonlyMap<string, SolidObject>): void {
 					return assert.deepStrictEqual(
-						[...tests.keys()].map((src) => operationFromSource(src).type()),
+						[...tests.keys()].map((src) => operationFromSource(src).type(new Validator())),
 						[...tests.values()].map((result) => new SolidTypeConstant(result)),
 					);
 				}
@@ -1025,11 +1038,11 @@ describe('ASTNodeSolid', () => {
 				describe('ASTNodeOperationBinaryArithmetic', () => {
 					context('with constant folding and int coersion on.', () => {
 						it('returns a constant Integer type for any operation of integers.', () => {
-							assert.deepStrictEqual(operationFromSource(`7 * 3 * 2;`).type(), new SolidTypeConstant(new Int16(7n * 3n * 2n)));
+							assert.deepStrictEqual(operationFromSource(`7 * 3 * 2;`).type(new Validator()), typeConstInt(7n * 3n * 2n));
 						});
 						it('returns a constant Float type for any operation of mix of integers and floats.', () => {
-							assert.deepStrictEqual(operationFromSource(`3.0 * 2.7;`).type(), new SolidTypeConstant(new Float64(3.0 * 2.7)));
-							assert.deepStrictEqual(operationFromSource(`7 * 3.0 * 2;`).type(), new SolidTypeConstant(new Float64(7 * 3.0 * 2)));
+							assert.deepStrictEqual(operationFromSource(`3.0 * 2.7;`)   .type(new Validator()), typeConstFloat(3.0 * 2.7));
+							assert.deepStrictEqual(operationFromSource(`7 * 3.0 * 2;`) .type(new Validator()), typeConstFloat(7 * 3.0 * 2));
 						});
 					});
 					context('with folding off but int coersion on.', () => {
@@ -1076,7 +1089,7 @@ describe('ASTNodeSolid', () => {
 							`null ^ false;`,
 							...(Dev.supports('stringConstant-assess') ? [`'hello' + 5;`] : []),
 						].forEach((src) => {
-							assert.throws(() => operationFromSource(src).type(), TypeError01);
+							assert.throws(() => operationFromSource(src).type(new Validator()), TypeError01);
 						});
 					});
 				});
@@ -1106,7 +1119,7 @@ describe('ASTNodeSolid', () => {
 						});
 					});
 					it('throws for comparative operation of non-numbers.', () => {
-						assert.throws(() => operationFromSource(`7.0 <= null;`).type(), TypeError01);
+						assert.throws(() => operationFromSource(`7.0 <= null;`).type(new Validator()), TypeError01);
 					});
 				});
 				describe('ASTNodeOperationBinaryEquality', () => {
@@ -1171,7 +1184,7 @@ describe('ASTNodeSolid', () => {
 						});
 					});
 					it('throws when condition is not boolean.', () => {
-						assert.throws(() => operationFromSource(`if 2 then true else false;`).type(), TypeError01);
+						assert.throws(() => operationFromSource(`if 2 then true else false;`).type(new Validator()), TypeError01);
 					});
 				});
 			});
@@ -1184,7 +1197,7 @@ describe('ASTNodeSolid', () => {
 						'null;',
 						'false;',
 						'true;',
-					].map((src) => constantFromSource(src).assess()), [
+					].map((src) => constantFromSource(src).assess(new Validator())), [
 						SolidNull.NULL,
 						SolidBoolean.FALSE,
 						SolidBoolean.TRUE,
@@ -1201,7 +1214,7 @@ describe('ASTNodeSolid', () => {
 					assert.deepStrictEqual(`
 						55  -55  033  -033  0  -0
 						\\o55  -\\o55  \\q033  -\\q033
-					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`, integer_radices_on).assess()), [
+					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`, integer_radices_on).assess(new Validator())), [
 						55, -55, 33, -33, 0, 0,
 						parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
 					].map((v) => new Int16(BigInt(v))));
@@ -1211,7 +1224,7 @@ describe('ASTNodeSolid', () => {
 						55.  -55.  033.  -033.  2.007  -2.007
 						91.27e4  -91.27e4  91.27e-4  -91.27e-4
 						0.  -0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`).assess()), [
+					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => constantFromSource(`${ src };`).assess(new Validator())), [
 						55, -55, 33, -33, 2.007, -2.007,
 						91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 						0, -0, -0, 6.8, 6.8, 0, -0,
@@ -1219,7 +1232,7 @@ describe('ASTNodeSolid', () => {
 				})
 				Dev.supports('stringConstant-assess') && it('computes string values.', () => {
 					assert.deepStrictEqual(
-						constantFromSource(`'42😀\\u{1f600}';`).type(),
+						constantFromSource(`'42😀\\u{1f600}';`).type(new Validator()),
 						new SolidTypeConstant(new SolidString('42😀\u{1f600}')),
 					);
 				});
@@ -1292,20 +1305,20 @@ describe('ASTNodeSolid', () => {
 				];
 				it('returns a constant String for ASTNodeTemplate with no interpolations.', () => {
 					assert.deepStrictEqual(
-						templates[0].type(),
-						new SolidTypeConstant(new SolidString('42😀')),
+						templates[0].assess(new Validator()),
+						new SolidString('42😀'),
 					);
 				});
 				it('returns a constant String for ASTNodeTemplate with foldable interpolations.', () => {
 					assert.deepStrictEqual(
-						templates[1].type(),
-						new SolidTypeConstant(new SolidString('the answer is 42 but what is the question?')),
+						templates[1].assess(new Validator()),
+						new SolidString('the answer is 42 but what is the question?'),
 					);
 				});
-				it('returns `String` for ASTNodeTemplate with dynamic interpolations.', () => {
+				it('returns null for ASTNodeTemplate with dynamic interpolations.', () => {
 					assert.deepStrictEqual(
-						templates[2].type(),
-						SolidString,
+						templates[2].assess(new Validator()),
+						null,
 					);
 				});
 			});
@@ -1313,7 +1326,7 @@ describe('ASTNodeSolid', () => {
 			describe('ASTNodeOperation', () => {
 				function assessOperations(tests: Map<string, SolidObject>): void {
 					return assert.deepStrictEqual(
-						[...tests.keys()].map((src) => operationFromSource(src).assess()),
+						[...tests.keys()].map((src) => operationFromSource(src).assess(new Validator())),
 						[...tests.values()],
 					);
 				}
@@ -1374,7 +1387,7 @@ describe('ASTNodeSolid', () => {
 						assert.deepStrictEqual([
 							`2 ^ 15 + 2 ^ 14;`,
 							`-(2 ^ 14) - 2 ^ 15;`,
-						].map((src) => operationFromSource(src).assess()), [
+						].map((src) => operationFromSource(src).assess(new Validator())), [
 							new Int16(-(2n ** 14n)),
 							new Int16(2n ** 14n),
 						])
@@ -1386,7 +1399,7 @@ describe('ASTNodeSolid', () => {
 						]))
 					})
 					it('throws when performing an operation that does not yield a valid number.', () => {
-						assert.throws(() => operationFromSource(`-4 ^ -0.5;`).assess(), NanError01)
+						assert.throws(() => operationFromSource(`-4 ^ -0.5;`).assess(new Validator()), NanError01);
 					})
 				});
 				specify('ASTNodeOperationBinaryComparative', () => {
