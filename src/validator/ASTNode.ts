@@ -120,7 +120,9 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * Type-check the node as part of semantic analysis.
 	 * @param validator stores validation information
 	 */
-	abstract typeCheck(validator: Validator): void;
+	typeCheck(validator: Validator): void {
+		return this.children.forEach((c) => c.typeCheck(validator));
+	}
 
 	/**
 	 * Give directions to the runtime code builder.
@@ -140,10 +142,6 @@ export class ASTNodeKey extends ASTNodeSolid {
 		this.id = start_node.cook()!;
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator): void {
-		throw validator && 'ASTNodeKey#typeCheck not yet supported.';
-	}
-	/** @implements ASTNodeSolid */
 	build(builder: Builder): Instruction {
 		throw builder && 'ASTNodeKey#build not yet supported.';
 	}
@@ -154,10 +152,6 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 		readonly children: readonly [ASTNodeKey, ASTNodeType],
 	) {
 		super(start_node, {}, children);
-	}
-	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator): void {
-		throw validator && 'ASTNodeTypeProperty#typeCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
 	build(builder: Builder): Instruction {
@@ -177,7 +171,7 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 export abstract class ASTNodeType extends ASTNodeSolid {
 	private assessed: SolidLanguageType | null = null
 	/**
-	 * @implements ASTNodeSolid
+	 * @overrides ASTNodeSolid
 	 * @final
 	 */
 	typeCheck(_validator: Validator): void {
@@ -343,10 +337,6 @@ export class ASTNodeProperty extends ASTNodeSolid {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator): void {
-		throw validator && 'ASTNodeProperty#typeCheck not yet supported.';
-	}
-	/** @implements ASTNodeSolid */
 	build(builder: Builder): Instruction {
 		throw builder && 'ASTNodeProperty#build not yet supported.';
 	}
@@ -357,10 +347,6 @@ export class ASTNodeCase extends ASTNodeSolid {
 		readonly children: [ASTNodeExpression, ASTNodeExpression],
 	) {
 		super(start_node, {}, children);
-	}
-	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator): void {
-		throw validator && 'ASTNodeCase#typeCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
 	build(builder: Builder): Instruction {
@@ -387,7 +373,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 */
 	abstract get shouldFloat(): boolean;
 	/**
-	 * @implements ASTNodeSolid
+	 * @overrides ASTNodeSolid
 	 * @final
 	 */
 	typeCheck(validator: Validator): void {
@@ -1065,10 +1051,6 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator): void {
-		return this.children[0]?.typeCheck(validator);
-	}
-	/** @implements ASTNodeSolid */
 	build(builder: Builder): InstructionNone | InstructionStatement {
 		return (!this.children.length)
 			? new InstructionNone()
@@ -1106,7 +1088,7 @@ export class ASTNodeDeclarationType extends ASTNodeSolid {
 			() => this.children[1].assess(validator),
 		));
 	}
-	/** @implements ASTNodeSolid */
+	/** @overrides ASTNodeSolid */
 	typeCheck(validator: Validator): void {
 		this.children[1].typeCheck(validator);
 		return validator.getSymbolInfo(this.children[0].id)?.assess();
@@ -1144,7 +1126,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 				: null,
 		));
 	}
-	/** @implements ASTNodeSolid */
+	/** @overrides ASTNodeSolid */
 	typeCheck(validator: Validator): void {
 		this.children[1].typeCheck(validator);
 		this.children[2].typeCheck(validator);
@@ -1184,8 +1166,9 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 			throw new AssignmentError10(variable);
 		};
 	}
-	/** @implements ASTNodeSolid */
+	/** @overrides ASTNodeSolid */
 	typeCheck(validator: Validator): void {
+		this.children[1].typeCheck(validator);
 		const assignee_type: SolidLanguageType = this.children[0].type(validator);
 		const assigned_type: SolidLanguageType = this.children[1].type(validator);
 		if (
@@ -1211,10 +1194,6 @@ export class ASTNodeGoal extends ASTNodeSolid {
 		readonly children: readonly ASTNodeStatement[],
 	) {
 		super(start_node, {}, children)
-	}
-	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator): void {
-		return this.children.forEach((child) => child.typeCheck(validator));
 	}
 	/** @implements ASTNodeSolid */
 	build(builder: Builder): InstructionNone | InstructionModule {
