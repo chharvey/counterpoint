@@ -55,6 +55,7 @@ import {
 import {
 	typeConstInt,
 	typeConstFloat,
+	typeConstStr,
 	instructionConstInt,
 	instructionConstFloat,
 } from '../helpers'
@@ -781,8 +782,8 @@ describe('ASTNodeSolid', () => {
 					SolidNull,
 					SolidBoolean.FALSETYPE,
 					SolidBoolean.TRUETYPE,
-					new SolidTypeConstant(new Int16(42n)),
-					new SolidTypeConstant(new Float64(4.2e+3)),
+					typeConstInt(42n),
+					typeConstFloat(4.2e+3),
 				])
 			})
 			it('computes the value of a type alias.', () => {
@@ -1158,7 +1159,7 @@ describe('ASTNodeSolid', () => {
 				Dev.supports('stringConstant-assess') && it('computes string values.', () => {
 					assert.deepStrictEqual(
 						constantFromSource(`'42😀\\u{1f600}';`).type(new Validator()),
-						new SolidTypeConstant(new SolidString('42😀\u{1f600}')),
+						typeConstStr('42😀\u{1f600}'),
 					);
 				});
 			});
