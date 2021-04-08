@@ -73,6 +73,7 @@ import {
 	typeFromString,
 	variableFromSource,
 	templateFromSource,
+	emptycollectionFromSource,
 	tupleFromSource,
 	recordFromSource,
 	mappingFromSource,
@@ -961,8 +962,21 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 
+			Dev.supports('literalCollection') && describe('ASTNodeEmptyCollection', () => {
+				it('returns the intersection `SolidTypeTuple | SolidTypeRecord`.', () => {
+					const validator: Validator = new Validator();
+					const node: AST.ASTNodeEmptyCollection = emptycollectionFromSource(`
+						[];
+					`);
+					assert.deepStrictEqual(
+						node.type(validator),
+						new SolidTypeTuple().intersect(new SolidTypeRecord()),
+					);
+				});
+			});
+
 			Dev.supports('literalCollection') && describe('ASTNodeList', () => {
-				it('returns a SolidTupleType object.', () => {
+				it('returns a SolidTypeTuple object.', () => {
 					const validator: Validator = new Validator();
 					const node: AST.ASTNodeList = tupleFromSource(`
 						[1, 2.0, 'three'];
@@ -975,7 +989,7 @@ describe('ASTNodeSolid', () => {
 			});
 
 			Dev.supports('literalCollection') && describe('ASTNodeRecord', () => {
-				it('returns a SolidRecordType object.', () => {
+				it('returns a SolidTypeRecord object.', () => {
 					const validator: Validator = new Validator();
 					const node: AST.ASTNodeRecord = recordFromSource(`
 						[a= 1, b= 2.0, c= 'three'];

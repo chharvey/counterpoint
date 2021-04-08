@@ -41,6 +41,13 @@ export function templateFromSource(src: string, config: SolidConfig = CONFIG_DEF
 	assert.ok(expression instanceof AST.ASTNodeTemplate);
 	return expression;
 }
+export function emptycollectionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeEmptyCollection {
+	const statement: AST.ASTNodeStatementExpression = statementExpressionFromSource(src, config);
+	assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child');
+	const expression: AST.ASTNodeExpression = statement.children[0];
+	assert.ok(expression instanceof AST.ASTNodeEmptyCollection);
+	return expression;
+}
 export function tupleFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeList {
 	const statement: AST.ASTNodeStatementExpression = statementExpressionFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child');
