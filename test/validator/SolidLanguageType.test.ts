@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 
+import {Dev} from '../../src/core/';
 import {
 	SolidLanguageType,
 	SolidTypeConstant,
@@ -12,6 +13,10 @@ import {
 	Float64,
 	SolidString,
 } from '../../src/validator/'
+import {
+	SolidTypeTuple,
+	SolidTypeRecord,
+} from '../../src/typer/';
 
 
 
@@ -287,6 +292,104 @@ describe('SolidLanguageType', () => {
 				});
 			});
 		})
+
+		Dev.supports('literalCollection') && describe('SolidTypeTuple', () => {
+			it('matches per index.', () => {
+				assert.ok(new SolidTypeTuple([
+					Int16,
+					SolidBoolean,
+					SolidString,
+				]).isSubtypeOf(new SolidTypeTuple([
+					Int16.union(Float64),
+					SolidBoolean.union(SolidNull),
+					SolidObject,
+				])), `[int, bool, str] <: [int | float, bool!, obj];`);
+				assert.ok(!new SolidTypeTuple([
+					Int16,
+					SolidBoolean,
+					SolidString,
+				]).isSubtypeOf(new SolidTypeTuple([
+					SolidBoolean.union(SolidNull),
+					SolidObject,
+					Int16.union(Float64),
+				])), `[int, bool, str] !<: [bool!, obj, int | float];`);
+			});
+			it('returns false if assigned is smaller than assignee.', () => {
+				assert.ok(!new SolidTypeTuple([
+					Int16,
+					SolidBoolean,
+				]).isSubtypeOf(new SolidTypeTuple([
+					Int16.union(Float64),
+					SolidBoolean.union(SolidNull),
+					SolidObject,
+				])), `[int, bool] !<: [int | float, bool!, obj];`);
+			});
+			it('skips rest if assigned is larger than assignee.', () => {
+				assert.ok(new SolidTypeTuple([
+					Int16,
+					SolidBoolean,
+					SolidString,
+				]).isSubtypeOf(new SolidTypeTuple([
+					Int16.union(Float64),
+					SolidBoolean.union(SolidNull),
+				])), `[int, bool, str] <: [int | float, bool!];`);
+			});
+		});
+
+		Dev.supports('literalCollection') && describe('SolidTypeRecord', () => {
+			it('matches per key.', () => {
+				assert.ok(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+					[0x100n, Int16],
+					[0x101n, SolidBoolean],
+					[0x102n, SolidString],
+				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+					[0x101n, SolidBoolean.union(SolidNull)],
+					[0x102n, SolidObject],
+					[0x100n, Int16.union(Float64)],
+				]))), `[x: int, y: bool, z: str] <: [y: bool!, z: obj, x: int | float];`);
+				assert.ok(!new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+					[0x100n, Int16],
+					[0x101n, SolidBoolean],
+					[0x102n, SolidString],
+				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+					[0x100n, SolidBoolean.union(SolidNull)],
+					[0x101n, SolidObject],
+					[0x102n, Int16.union(Float64)],
+				]))), `[x: int, y: bool, z: str] !<: [x: bool!, y: obj, z: int | float];`);
+			});
+			it('returns false if assigned is smaller than assignee.', () => {
+				assert.ok(!new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+					[0x100n, Int16],
+					[0x101n, SolidBoolean],
+				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+					[0x101n, SolidBoolean.union(SolidNull)],
+					[0x102n, SolidObject],
+					[0x100n, Int16.union(Float64)],
+				]))), `[x: int, y: bool] !<: [y: bool!, z: obj, x: int | float];`);
+			});
+			it('skips rest if assigned is larger than assignee.', () => {
+				assert.ok(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+					[0x100n, Int16],
+					[0x101n, SolidBoolean],
+					[0x102n, SolidString],
+				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+					[0x101n, SolidBoolean.union(SolidNull)],
+					[0x100n, Int16.union(Float64)],
+				]))), `[x: int, y: bool, z: str] <: [y: bool!, x: int | float];`);
+			});
+			it('returns false if assignee contains keys that assigned does not.', () => {
+				assert.ok(!new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+					[0x100n, Int16],
+					[0x101n, SolidBoolean],
+					[0x102n, SolidString],
+				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+					[0x101n, SolidBoolean.union(SolidNull)],
+					[0x102n, SolidObject],
+					[0x103n, Int16.union(Float64)],
+				]))), `[x: int, y: bool, z: str] !<: [y: bool!, z: obj, w: int | float]`);
+			});
+		});
+
 		describe('SolidTypeInterface', () => {
 			it('returns `true` if the subtype contains at least the properties of the supertype.', () => {
 				assert.ok(!t0.isSubtypeOf(t1))

@@ -291,9 +291,33 @@ Boolean Subtype(Type a, Type b) :=
 		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
 			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
 			1. *Return:* `true`.
-	10. *If* every value that is assingable to `a` is also assignable to `b`:
+	10. *If* `a` is a subtype of `Tuple`:
+		1. *If* `b` is a subtype of `Tuple`:
+			1. *Let* `seq_a` be the Sequence whose items are exactly the items in `a`.
+			2. *Let* `seq_b` be the Sequence whose items are exactly the items in `b`.
+			3. *If* `seq_a.count` is less than `seq_b.count`:
+				1. *Return:* `false`.
+			4. *For index* `i` in `seq_b`:
+				1. *If* *UnwrapAffirm:* `Subtype(seq_a[i], seq_b[i])` is `false`:
+					1. *Return:* `false`.
+			5. *Return:* `true`.
+		2. *Return:* `false`.
+	11. *If* `a` is a subtype of `Record`:
+		1. *If* `b` is a subtype of `Record`:
+			1. *Let* `struct_a` be the Structure whose properties are exactly the properties in `a`.
+			2. *Let* `struct_b` be the Structure whose properties are exactly the properties in `b`.
+			3. *If* `struct_a.count` is less than `struct_b.count`:
+				1. *Return:* `false`.
+			4. *For key* `k` in `struct_b`:
+				1. *If* `struct_a[k]` is not set:
+					1. *Return:* `false`.
+				2. *If* *UnwrapAffirm:* `Subtype(struct_a[k], struct_b[k])` is `false`:
+					1. *Return:* `false`.
+			5. *Return:* `true`.
+		2. *Return:* `false`.
+	12. *If* every value that is assignable to `a` is also assignable to `b`:
 		1. *Return:* `true`.
-	11. *Return:* `false`.
+	13. *Return:* `false`.
 ;
 ```
 
