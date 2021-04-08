@@ -571,8 +571,8 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 		throw 'ASTNodeEmptyCollection#assess_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected type_do(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeEmptyCollection#type_do not yet supported.';
+	protected type_do(_validator: Validator): SolidLanguageType {
+		return new SolidTypeTuple().intersect(new SolidTypeRecord());
 	}
 }
 export class ASTNodeList extends ASTNodeExpression {
@@ -596,7 +596,7 @@ export class ASTNodeList extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeList#type_do not yet supported.';
+		return new SolidTypeTuple(this.children.map((c) => c.type(validator)));
 	}
 }
 export class ASTNodeRecord extends ASTNodeExpression {
@@ -620,7 +620,10 @@ export class ASTNodeRecord extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeRecord#type_do not yet supported.';
+		return new SolidTypeRecord(new Map(this.children.map((c) => [
+			c.children[0].id,
+			c.children[1].type(validator),
+		])));
 	}
 }
 export class ASTNodeMapping extends ASTNodeExpression {
@@ -643,8 +646,8 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		throw 'ASTNodeMapping#assess_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected type_do(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeMapping#type_do not yet supported.';
+	protected type_do(_validator: Validator): SolidLanguageType {
+		return SolidObject;
 	}
 }
 export abstract class ASTNodeOperation extends ASTNodeExpression {
