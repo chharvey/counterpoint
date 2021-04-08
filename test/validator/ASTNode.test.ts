@@ -36,6 +36,10 @@ import {
 	SolidString,
 } from '../../src/validator/'
 import {
+	SolidTypeTuple,
+	SolidTypeRecord,
+} from '../../src/typer/';
+import {
 	Builder,
 	InstructionNone,
 	InstructionExpression,
@@ -67,8 +71,12 @@ import {
 	variableDeclarationFromSource,
 } from '../helpers-parse'
 import {
+	typeFromString,
 	variableFromSource,
 	templateFromSource,
+	tupleFromSource,
+	recordFromSource,
+	mappingFromSource,
 	operationFromSource,
 	statementExpressionFromSource,
 	constantFromSource,
@@ -815,6 +823,32 @@ describe('ASTNodeSolid', () => {
 					SolidObject,
 				])
 			})
+			Dev.supports('literalCollection') && specify('ASTNodeTypeEmptyCollection', () => {
+				const node: AST.ASTNodeType = typeFromString(`[]`);
+				assert.deepStrictEqual(
+					node.assess(new Validator()),
+					new SolidTypeTuple().intersect(new SolidTypeRecord()),
+				);
+			});
+			Dev.supports('literalCollection') && specify('ASTNodeTypeList', () => {
+				const validator: Validator = new Validator();
+				const node: AST.ASTNodeTypeList = typeFromString(`[int, bool, str]`) as AST.ASTNodeTypeList;
+				assert.deepStrictEqual(
+					node.assess(validator),
+					new SolidTypeTuple(node.children.map((c) => c.assess(validator))),
+				);
+			});
+			Dev.supports('literalCollection') && specify('ASTNodeTypeRecord', () => {
+				const validator: Validator = new Validator();
+				const node: AST.ASTNodeTypeRecord = typeFromString(`[x: int, y: bool, z: str]`) as AST.ASTNodeTypeRecord;
+				assert.deepStrictEqual(
+					node.assess(validator),
+					new SolidTypeRecord(new Map<bigint, SolidLanguageType>(node.children.map((c) => [
+						c.children[0].id,
+						c.children[1].assess(validator),
+					]))),
+				);
+			});
 			it('computes the value of a nullified (ORNULL) type.', () => {
 				assert.deepStrictEqual(
 					Decorator.decorate(unaryTypeFromString(`int!`)).assess(new Validator()),
@@ -927,6 +961,53 @@ describe('ASTNodeSolid', () => {
 					});
 				});
 			});
+
+			Dev.supports('literalCollection') && describe('ASTNodeList', () => {
+				it('returns a SolidTupleType object.', () => {
+					const validator: Validator = new Validator();
+					const node: AST.ASTNodeList = tupleFromSource(`
+						[1, 2.0, 'three'];
+					`);
+					assert.deepStrictEqual(
+						node.type(validator),
+						new SolidTypeTuple(node.children.map((c) => c.type(validator))),
+					);
+				});
+			});
+
+			Dev.supports('literalCollection') && describe('ASTNodeRecord', () => {
+				it('returns a SolidRecordType object.', () => {
+					const validator: Validator = new Validator();
+					const node: AST.ASTNodeRecord = recordFromSource(`
+						[a= 1, b= 2.0, c= 'three'];
+					`);
+					assert.deepStrictEqual(
+						node.type(validator),
+						new SolidTypeRecord(new Map(node.children.map((c) => [
+							c.children[0].id,
+							c.children[1].type(validator),
+						]))),
+					);
+				});
+			});
+
+			Dev.supports('literalCollection') && describe('ASTNodeMapping', () => {
+				it('returns `SolidObject`.', () => {
+					const validator: Validator = new Validator();
+					const node: AST.ASTNodeMapping = mappingFromSource(`
+						[
+							'a' || '' |-> 1,
+							21 + 21   |-> 2.0,
+							3 * 1.0   |-> 'three',
+						];
+					`);
+					assert.deepStrictEqual(
+						node.type(validator),
+						SolidObject,
+					);
+				});
+			});
+
 			describe('ASTNodeOperation', () => {
 				function typeOperations(tests: ReadonlyMap<string, SolidObject>): void {
 					return assert.deepStrictEqual(
