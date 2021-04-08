@@ -81,14 +81,14 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeProperty ::= Word ":" Type;', () => {
-			it('makes a TypeProperty node.', () => {
+		Dev.supports('literalCollection') && describe('PropertyType ::= Word ":" Type;', () => {
+			it('makes a PropertyType node.', () => {
 				/*
-					<TypeProperty>
+					<PropertyType>
 						<Word source="let">...</Word>
 						<PUNCTUATOR>:</PUNCTUATOR>
 						<Type source="T">...</Type>
-					</TypeProperty>
+					</PropertyType>
 				*/
 				const srcs: Map<string, string> = new Map([
 					[`let`,        `str`],
@@ -98,7 +98,7 @@ describe('Parser', () => {
 					[`fontFamily`, `str`],
 				]);
 				assert.deepStrictEqual(
-					[...srcs].map(([prop, typ]) => h.typePropertyFromString(`${ prop }: ${ typ }`).children.map((c) => c.source)),
+					[...srcs].map(([prop, typ]) => h.propertyTypeFromString(`${ prop }: ${ typ }`).children.map((c) => c.source)),
 					[...srcs].map(([prop, typ]) => [prop, Punctuator.ISTYPE, typ]),
 				);
 			});
@@ -169,7 +169,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeRecordLiteral ::= "[" ","? PropertyType# ","? "]"', () => {
 			/*
 				<TypeRecordLiteral>
 					<PUNCTUATOR>[</PUNCTUATOR>
@@ -213,18 +213,18 @@ describe('Parser', () => {
 					[Punctuator.BRAK_OPN, `a : T , b : U | V , c : W & X !`, Punctuator.COMMA, Punctuator.BRAK_CLS],
 				);
 			});
-			specify('TypeRecordLiteral__0__List ::= TypeRecordLiteral__0__List "," TypeProperty', () => {
+			specify('TypeRecordLiteral__0__List ::= TypeRecordLiteral__0__List "," PropertyType', () => {
 				/*
 					<TypeRecordLiteral__0__List>
 						<TypeRecordLiteral__0__List>
 							<TypeRecordLiteral__0__List>
-								<TypeProperty source="a: T">...</TypeProperty>
+								<PropertyType source="a: T">...</PropertyType>
 							</TypeRecordLiteral__0__List>
 							<PUNCTUATOR>,</PUNCTUATOR>
-							<TypeProperty source="b: U | V">...</TypeProperty>
+							<PropertyType source="b: U | V">...</PropertyType>
 						</TypeRecordLiteral__0__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
-						<TypeProperty source="c: W & X!">...</TypeProperty>
+						<PropertyType source="c: W & X!">...</PropertyType>
 					</TypeRecordLiteral__0__List>
 				*/
 				const record: PARSER.ParseNodeTypeRecordLiteral = h.recordTypeFromString(`[a: T, b: U | V, c: W & X!]`);

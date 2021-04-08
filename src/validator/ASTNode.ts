@@ -158,15 +158,15 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	varCheck(validator: Validator): void {
-		throw validator && 'ASTNodeTypeProperty#varCheck not yet supported.';
+		throw validator && 'ASTNodePropertyType#varCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
 	typeCheck(validator: Validator): void {
-		throw validator && 'ASTNodeTypeProperty#typeCheck not yet supported.';
+		throw validator && 'ASTNodePropertyType#typeCheck not yet supported.';
 	}
 	/** @implements ASTNodeSolid */
 	build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeTypeProperty#build not yet supported.';
+		throw builder && 'ASTNodePropertyType#build not yet supported.';
 	}
 }
 /**

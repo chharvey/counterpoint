@@ -56,7 +56,7 @@ export function keywordTypeFromString(typestring: string, config: SolidConfig = 
 	assert.ok(unit instanceof PARSER.ParseNodeTypeKeyword, 'unit should be a ParseNodeTypeKeyword')
 	return unit
 }
-export function typePropertyFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodePropertyType {
+export function propertyTypeFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodePropertyType {
 	const recordtype: PARSER.ParseNodeTypeRecordLiteral = recordTypeFromString(`[${ propertystring }]`, config);
 	assert_arrayLength(recordtype.children, 3, 'record type should have 3 children');
 	assert_arrayLength(recordtype.children[1].children, 1, 'property list should have 1 child');
