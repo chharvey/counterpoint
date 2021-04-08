@@ -17,6 +17,9 @@ import {
 
 
 
+export function typeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeType {
+	return typeDeclarationFromSource(`type T = ${ typestring };`, config).children[1];
+}
 export function constantFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeConstant {
 	const statement: AST.ASTNodeStatementExpression = statementExpressionFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child')

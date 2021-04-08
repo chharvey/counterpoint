@@ -18,6 +18,10 @@ import {
 	ValidOperatorLogical,
 } from '../enum/Operator.enum'
 import {
+	SolidTypeTuple,
+	SolidTypeRecord,
+} from '../typer/';
+import {
 	Validator,
 } from './Validator';
 import {
@@ -284,8 +288,8 @@ export class ASTNodeTypeEmptyCollection extends ASTNodeType {
 		super(start_node);
 	}
 	/** @implements ASTNodeType */
-	protected assess_do(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeTypeEmptyCollection#assess_do not yet supported.';
+	protected assess_do(_validator: Validator): SolidLanguageType {
+		return new SolidTypeTuple().intersect(new SolidTypeRecord());
 	}
 }
 export class ASTNodeTypeList extends ASTNodeType {
@@ -297,7 +301,7 @@ export class ASTNodeTypeList extends ASTNodeType {
 	}
 	/** @implements ASTNodeType */
 	protected assess_do(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeTypeList#assess_do not yet supported.';
+		return new SolidTypeTuple(this.children.map((c) => c.assess(validator)));
 	}
 }
 export class ASTNodeTypeRecord extends ASTNodeType {
@@ -309,7 +313,10 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 	}
 	/** @implements ASTNodeType */
 	protected assess_do(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeTypeRecord#assess_do not yet supported.';
+		return new SolidTypeRecord(new Map(this.children.map((c) => [
+			c.children[0].id,
+			c.children[1].assess(validator),
+		])));
 	}
 }
 export abstract class ASTNodeTypeOperation extends ASTNodeType {
