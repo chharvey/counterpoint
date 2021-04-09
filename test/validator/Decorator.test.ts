@@ -9,8 +9,7 @@ import {
 import {
 	Operator,
 } from '../../src/enum/Operator.enum';
-import {
-	ParserSolid as Parser,
+import type {
 	PARSER,
 } from '../../src/parser/';
 import {
@@ -40,21 +39,6 @@ import * as h from '../helpers-parse';
 
 describe('Decorator', () => {
 	describe('.decorate', () => {
-		context('Goal ::= #x02 #x03', () => {
-			it('makes an ASTNodeGoal node containing no children.', () => {
-				const goal: AST.ASTNodeGoal = Decorator.decorate(new Parser(``).parse());
-				assert_arrayLength(goal.children, 0, 'semantic goal should have 0 children')
-			})
-		})
-
-		context('Statement ::= ";"', () => {
-			it('makes an ASTNodeStatementExpression node containing no children.', () => {
-				const statement: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(`;`);
-				assert_arrayLength(statement.children, 0, 'semantic statement should have 0 children')
-				assert.strictEqual(statement.source, `;`)
-			})
-		})
-
 		Dev.supports('literalCollection') && describe('Word ::= KEYWORD | IDENTIFIER', () => {
 			it('makes an ASTNodeKey.', () => {
 				/*
@@ -965,7 +949,19 @@ describe('Decorator', () => {
 			})
 		})
 
-		context('Goal__0__List ::= Goal__0__List Statement', () => {
+		context('Statement ::= ";"', () => {
+			it('makes an ASTNodeStatementExpression node containing no children.', () => {
+				const statement: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(`;`);
+				assert_arrayLength(statement.children, 0, 'semantic statement should have 0 children')
+				assert.strictEqual(statement.source, `;`)
+			})
+		})
+
+		context('Goal ::= #x02 Statement* #x03', () => {
+			it('makes an ASTNodeGoal node containing no children.', () => {
+				const goal: AST.ASTNodeGoal = Decorator.decorate(h.goalFromSource(``));
+				assert_arrayLength(goal.children, 0, 'semantic goal should have 0 children')
+			})
 			it('decorates multiple statements.', () => {
 				/*
 					<Goal>
@@ -973,7 +969,7 @@ describe('Decorator', () => {
 						<StatementExpression source="420 ;">...</StatementExpression>
 					</Goal>
 				*/
-				const goal: AST.ASTNodeGoal = Decorator.decorate(new Parser(`42; 420;`).parse());
+				const goal: AST.ASTNodeGoal = Decorator.decorate(h.goalFromSource(`42; 420;`));
 				assert_arrayLength(goal.children, 2, 'goal should have 2 children')
 				assert.deepStrictEqual(goal.children.map((stat) => {
 					assert.ok(stat instanceof AST.ASTNodeStatementExpression);

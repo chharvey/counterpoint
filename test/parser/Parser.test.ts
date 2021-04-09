@@ -1,6 +1,5 @@
 import {
 	Token,
-	TokenFilebound,
 	ParseError01,
 } from '@chharvey/parser';
 import * as assert from 'assert'
@@ -25,45 +24,6 @@ import * as h from '../helpers-parse'
 
 describe('Parser', () => {
 	describe('#parse', () => {
-		it('throws a ParseError01 when reaching an unexpected token.', () => {
-			;[
-				`false + /34.56;`,
-				`(true)) || null;`,
-				`234 null;`,
-			].forEach((src) => {
-				assert.throws(() => new Parser(src).parse(), ParseError01)
-			})
-		})
-
-		context('Goal ::= #x02 #x03', () => {
-			it('returns only file bounds.', () => {
-				const tree: PARSER.ParseNodeGoal = new Parser('').parse()
-				assert.strictEqual(tree.children.length, 2)
-				tree.children.forEach((child) => assert.ok(child instanceof TokenFilebound))
-			})
-		})
-
-		context('Statement ::= ";"', () => {
-			it('returns a statement with only a punctuator.', () => {
-				/*
-					<Goal source="␂ ; ␃">
-						<FILEBOUND value="true">␂</FILEBOUND>
-						<Goal__0__List line="1" col="1" source=";">
-							<Statement line="1" col="1" source=";">
-								<PUNCTUATOR line="1" col="1" value="7">;</PUNCTUATOR>
-							</Statement>
-						</Goal__0__List>
-						<FILEBOUND value="false">␃</FILEBOUND>
-					</Goal>
-				*/
-				const statement: PARSER.ParseNodeStatement = h.statementFromSource(`;`)
-				assert_arrayLength(statement.children, 1)
-				const token: PARSER.ParseNodeDeclaration | PARSER.ParseNodeStatementAssignment | Token = statement.children[0];
-				assert.ok(token instanceof TOKEN.TokenPunctuator)
-				assert.strictEqual(token.source, Punctuator.ENDSTAT)
-			})
-		})
-
 		Dev.supports('literalCollection') && describe('Word ::= KEYWORD | IDENTIFIER', () => {
 			it('makes a Word node.', () => {
 				/*
@@ -1046,7 +1006,22 @@ describe('Parser', () => {
 			})
 		})
 
-		context('Goal__0__List ::= Goal__0__List Statement', () => {
+		context('Statement ::= ";"', () => {
+			it('returns a statement with only a punctuator.', () => {
+				/*
+					<Statement line="1" col="1" source=";">
+						<PUNCTUATOR line="1" col="1" value="7">;</PUNCTUATOR>
+					</Statement>
+				*/
+				const statement: PARSER.ParseNodeStatement = h.statementFromSource(`;`)
+				assert_arrayLength(statement.children, 1)
+				const token: PARSER.ParseNodeDeclaration | PARSER.ParseNodeStatementAssignment | Token = statement.children[0];
+				assert.ok(token instanceof TOKEN.TokenPunctuator)
+				assert.strictEqual(token.source, Punctuator.ENDSTAT)
+			})
+		})
+
+		context('Goal ::= #x02 Statement* #x03', () => {
 			it('parses multiple statements.', () => {
 				/*
 					<Goal>
@@ -1060,7 +1035,7 @@ describe('Parser', () => {
 						<FILEBOUND.../>...</FILEBOUND>
 					</Goal>
 				*/
-				const goal: PARSER.ParseNodeGoal = new Parser(`42; 420;`).parse()
+				const goal: PARSER.ParseNodeGoal = h.goalFromSource(`42; 420;`);
 				assert_arrayLength(goal.children, 3, 'goal should have 3 children')
 				const stat_list: PARSER.ParseNodeGoal__0__List = goal.children[1]
 				assert_arrayLength(stat_list.children, 2, 'stat_list should have 2 children')

@@ -252,7 +252,7 @@ export function assignmentFromSource(src: string, config: SolidConfig = CONFIG_D
 	return assignment;
 }
 export function statementFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeStatement {
-	const goal: PARSER.ParseNodeGoal = new Parser(src, config).parse()
+	const goal: PARSER.ParseNodeGoal = goalFromSource(src, config);
 	assert_arrayLength(goal.children, 3, 'goal should have 3 children')
 	const [sot, stat_list, eot]: readonly [Token, PARSER.ParseNodeGoal__0__List, Token] = goal.children
 	assert.ok(sot instanceof TokenFilebound)
@@ -261,6 +261,9 @@ export function statementFromSource(src: string, config: SolidConfig = CONFIG_DE
 	assert.strictEqual(eot.source, Filebound.EOT)
 	assert_arrayLength(stat_list.children, 1, 'statement list should have 1 child')
 	return stat_list.children[0]
+}
+export function goalFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeGoal {
+	return new Parser(src, config).parse();
 }
 
 
