@@ -10,7 +10,6 @@ import * as xjs from 'extrajs'
 import {
 	assert_arrayLength,
 } from '../../test/assert-helpers';
-import * as helper from '../../test/helpers-semantic'; // TEMP until we can move them all into this file
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -107,21 +106,6 @@ function oneFloats(t0: SolidLanguageType, t1: SolidLanguageType): boolean {
 
 
 export abstract class ASTNodeSolid extends ASTNode {
-	/**
-	 * Construct a new ASTNode from a source text and optionally a configuration.
-	 * The source text must parse successfully.
-	 *
-	 * *Should be overridden by subclasses.*
-	 *
-	 * @param src    the source text
-	 * @param config the configuration
-	 * @returns      a new ASTNode representing the given source
-	 */
-	static fromSource(_src: string, _config: SolidConfig = CONFIG_DEFAULT): ASTNodeSolid {
-		throw (new Error('Not yet implemented.'));
-	}
-
-
 	/**
 	 * Construct a new ASTNodeSolid object.
 	 *
@@ -401,6 +385,19 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeOperation
  */
 export abstract class ASTNodeExpression extends ASTNodeSolid {
+	/**
+	 * Construct a new ASTNodeExpression from a source text and optionally a configuration.
+	 * The source text must parse successfully.
+	 * @param src    the source text
+	 * @param config the configuration
+	 * @returns      a new ASTNodeExpression representing the given source
+	 */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeExpression {
+		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
+		assert.ok(statement instanceof ASTNodeStatementExpression);
+		assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child');
+		return statement.children[0];
+	}
 	private assessed?: SolidObject | null;
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
@@ -457,11 +454,9 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	protected abstract assess_do(validator: Validator): SolidObject | null;
 }
 export class ASTNodeConstant extends ASTNodeExpression {
-	/** @overrides ASTNodeSolid */
+	/** @overrides ASTNodeExpression */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeConstant {
-		const statement: ASTNodeStatementExpression = ASTNodeStatementExpression.fromSource(src, config);
-		assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child');
-		const expression: ASTNodeExpression = statement.children[0];
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeConstant);
 		return expression;
 	}
@@ -509,11 +504,9 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 }
 export class ASTNodeVariable extends ASTNodeExpression {
-	/** @overrides ASTNodeSolid */
+	/** @overrides ASTNodeExpression */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeVariable {
-		const statement: ASTNodeStatementExpression = ASTNodeStatementExpression.fromSource(src, config);
-		assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child');
-		const expression: ASTNodeExpression = statement.children[0];
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeVariable);
 		return expression;
 	}
@@ -563,11 +556,9 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	}
 }
 export class ASTNodeTemplate extends ASTNodeExpression {
-	/** @overrides ASTNodeSolid */
+	/** @overrides ASTNodeExpression */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTemplate {
-		const statement: ASTNodeStatementExpression = ASTNodeStatementExpression.fromSource(src, config);
-		assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child');
-		const expression: ASTNodeExpression = statement.children[0];
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeTemplate);
 		return expression;
 	}
@@ -628,11 +619,9 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 	}
 }
 export class ASTNodeList extends ASTNodeExpression {
-	/** @overrides ASTNodeSolid */
+	/** @overrides ASTNodeExpression */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeList {
-		const statement: ASTNodeStatementExpression = ASTNodeStatementExpression.fromSource(src, config);
-		assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child');
-		const expression: ASTNodeExpression = statement.children[0];
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeList);
 		return expression;
 	}
@@ -660,11 +649,9 @@ export class ASTNodeList extends ASTNodeExpression {
 	}
 }
 export class ASTNodeRecord extends ASTNodeExpression {
-	/** @overrides ASTNodeSolid */
+	/** @overrides ASTNodeExpression */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeRecord {
-		const statement: ASTNodeStatementExpression = ASTNodeStatementExpression.fromSource(src, config);
-		assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child');
-		const expression: ASTNodeExpression = statement.children[0];
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeRecord);
 		return expression;
 	}
@@ -695,11 +682,9 @@ export class ASTNodeRecord extends ASTNodeExpression {
 	}
 }
 export class ASTNodeMapping extends ASTNodeExpression {
-	/** @overrides ASTNodeSolid */
+	/** @overrides ASTNodeExpression */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeMapping {
-		const statement: ASTNodeStatementExpression = ASTNodeStatementExpression.fromSource(src, config);
-		assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child');
-		const expression: ASTNodeExpression = statement.children[0];
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeMapping);
 		return expression;
 	}
@@ -727,11 +712,9 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	}
 }
 export abstract class ASTNodeOperation extends ASTNodeExpression {
-	/** @overrides ASTNodeSolid */
+	/** @overrides ASTNodeExpression */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperation {
-		const statement: ASTNodeStatementExpression = ASTNodeStatementExpression.fromSource(src, config);
-		assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child');
-		const expression: ASTNodeExpression = statement.children[0];
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeOperation);
 		return expression;
 	}
@@ -1130,14 +1113,24 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
  * - ASTNodeDeclaration
  * - ASTNodeAssignment
  */
-export type ASTNodeStatement =
-	| ASTNodeStatementExpression
-	| ASTNodeDeclaration
-	| ASTNodeAssignment
-export class ASTNodeStatementExpression extends ASTNodeSolid {
-	/** @overrides ASTNodeSolid */
+export abstract class ASTNodeStatement extends ASTNodeSolid {
+	/**
+	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
+	 * The source text must parse successfully.
+	 * @param src    the source text
+	 * @param config the configuration
+	 * @returns      a new ASTNodeStatement representing the given source
+	 */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeStatement {
+		const goal: ASTNodeGoal = ASTNodeGoal.fromSource(src, config);
+		assert.strictEqual(goal.children.length, 1, 'semantic goal should have 1 child');
+		return goal.children[0];
+	}
+}
+export class ASTNodeStatementExpression extends ASTNodeStatement {
+	/** @overrides ASTNodeStatement */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
-		const statement: ASTNodeStatement = helper.statementFromSource(src, config);
+		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert.ok(statement instanceof ASTNodeStatementExpression);
 		return statement;
 	}
@@ -1166,10 +1159,10 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
 export type ASTNodeDeclaration =
 	| ASTNodeDeclarationType
 	| ASTNodeDeclarationVariable
-export class ASTNodeDeclarationType extends ASTNodeSolid {
-	/** @overrides ASTNodeSolid */
+export class ASTNodeDeclarationType extends ASTNodeStatement {
+	/** @overrides ASTNodeStatement */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeDeclarationType {
-		const statement: ASTNodeStatement = helper.statementFromSource(src, config);
+		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert.ok(statement instanceof ASTNodeDeclarationType);
 		return statement;
 	}
@@ -1204,10 +1197,10 @@ export class ASTNodeDeclarationType extends ASTNodeSolid {
 		return new INST.InstructionNone();
 	}
 }
-export class ASTNodeDeclarationVariable extends ASTNodeSolid {
-	/** @overrides ASTNodeSolid */
+export class ASTNodeDeclarationVariable extends ASTNodeStatement {
+	/** @overrides ASTNodeStatement */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
-		const statement: ASTNodeStatement = helper.statementFromSource(src, config);
+		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert.ok(statement instanceof ASTNodeDeclarationVariable);
 		return statement;
 	}
@@ -1263,10 +1256,10 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		;
 	}
 }
-export class ASTNodeAssignment extends ASTNodeSolid {
-	/** @overrides ASTNodeSolid */
+export class ASTNodeAssignment extends ASTNodeStatement {
+	/** @overrides ASTNodeStatement */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeAssignment {
-		const statement: ASTNodeStatement = helper.statementFromSource(src, config);
+		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert.ok(statement instanceof ASTNodeAssignment);
 		return statement;
 	}
@@ -1307,7 +1300,13 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 	}
 }
 export class ASTNodeGoal extends ASTNodeSolid {
-	/** @overrides ASTNodeSolid */
+	/**
+	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
+	 * The source text must parse successfully.
+	 * @param src    the source text
+	 * @param config the configuration
+	 * @returns      a new ASTNodeGoal representing the given source
+	 */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeGoal {
 		return Decorator.decorate(new Parser(src, config).parse());
 	}
