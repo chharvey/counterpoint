@@ -210,7 +210,7 @@ export function conditionalExpressionFromSource(src: string, config: SolidConfig
 	assert.ok(expression_cond instanceof PARSER.ParseNodeExpressionConditional, 'expression_cond should be a ParseNodeExpressionConditional')
 	return expression_cond
 }
-function expressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpression {
+export function expressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpression {
 	const statement: PARSER.ParseNodeStatement = statementFromSource(src, config)
 	assert_arrayLength(statement.children, 2, 'statment should have 2 children')
 	const [expression, endstat]: readonly [PARSER.ParseNodeExpression, Token] = statement.children
