@@ -957,6 +957,28 @@ describe('Parser', () => {
 			})
 		})
 
+		describe('DeclarationType ::= "type" IDENTIFIER "=" Type ";"', () => {
+			/*
+				<Statement>
+					<DeclarationType>
+						<KEYWORD>type</KEYWORD>
+						<IDENTIFIER>T</IDENTIFIER>
+						<PUNCTUATOR>=</PUNCTUATOR>
+						<Type source="int | float">...</Type>
+						<PUNCTUATOR>;</PUNCTUATOR>
+					</DeclarationType>
+				</Statement>
+			*/
+			it('makes a ParseNodeDeclarationType node.', () => {
+				const decl: PARSER.ParseNodeDeclarationType = h.typeDeclarationFromSource(`
+					type  T  =  int | float;
+				`);
+				assert.deepStrictEqual(decl.children.map((child) => child.source), [
+					'type', 'T', '=', 'int | float', ';',
+				]);
+			});
+		});
+
 		describe('DeclarationVariable ::= "let" "unfixed"? IDENTIFIER ":" Type "=" Expression ";"', () => {
 			/*
 				<Statement>
@@ -991,28 +1013,6 @@ describe('Parser', () => {
 				])
 			})
 		})
-
-		describe('DeclarationType ::= "type" IDENTIFIER "=" Type ";"', () => {
-			/*
-				<Statement>
-					<DeclarationType>
-						<KEYWORD>type</KEYWORD>
-						<IDENTIFIER>T</IDENTIFIER>
-						<PUNCTUATOR>=</PUNCTUATOR>
-						<Type source="int | float">...</Type>
-						<PUNCTUATOR>;</PUNCTUATOR>
-					</DeclarationType>
-				</Statement>
-			*/
-			it('makes a ParseNodeDeclarationType node.', () => {
-				const decl: PARSER.ParseNodeDeclarationType = h.typeDeclarationFromSource(`
-					type  T  =  int | float;
-				`);
-				assert.deepStrictEqual(decl.children.map((child) => child.source), [
-					'type', 'T', '=', 'int | float', ';',
-				]);
-			});
-		});
 
 		describe('Assignee ::= IDENTIFIER', () => {
 			/*
