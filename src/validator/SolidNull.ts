@@ -19,6 +19,10 @@ import {SolidBoolean} from './SolidBoolean';
  * @final
  */
 export class SolidNull extends SolidObject {
+	/** @implements Object */
+	static toString(): string {
+		return 'null';
+	}
 	/** The Solid Language Value `null`. */
 	static readonly NULL: SolidNull = new SolidNull()
 	/** @override */

@@ -8,6 +8,10 @@ import {SolidBoolean} from './SolidBoolean';
 
 
 export class SolidString extends SolidObject {
+	/** @implements Object */
+	static toString(): string {
+		return 'str';
+	}
 	private readonly codeunits: readonly CodeUnit[];
 	constructor (data: string | readonly CodeUnit[]) {
 		super();

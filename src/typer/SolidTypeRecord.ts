@@ -16,6 +16,11 @@ export class SolidTypeRecord extends SolidLanguageType {
 		super();
 	}
 
+	/** @overrides Object */
+	toString(): string {
+		return `[${ [...this.propertytypes].map(([key, value]) => `${ key }: ${ value }`).join(', ') }]`;
+	}
+
 	/** @overrides SolidLanguageType */
 	isSubtypeOf_do(t: SolidTypeRecord): boolean {
 		if (t instanceof SolidTypeRecord) {

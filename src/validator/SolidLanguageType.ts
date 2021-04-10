@@ -161,6 +161,11 @@ class SolidTypeIntersection extends SolidLanguageType {
 	) {
 		super(xjs.Set.intersection(left.values, right.values))
 	}
+
+	/** @overrides Object */
+	toString(): string {
+		return `${ this.left } & ${ this.right }`;
+	}
 	/** @override */
 	includes(v: SolidObject): boolean {
 		return this.left.includes(v) && this.right.includes(v)
@@ -192,6 +197,11 @@ class SolidTypeUnion extends SolidLanguageType {
 		readonly right: SolidLanguageType,
 	) {
 		super(xjs.Set.union(left.values, right.values))
+	}
+
+	/** @overrides Object */
+	toString(): string {
+		return `${ this.left } | ${ this.right }`;
 	}
 	/** @override */
 	includes(v: SolidObject): boolean {
@@ -283,6 +293,10 @@ class SolidTypeNever extends SolidLanguageType {
 		super()
 	}
 
+	/** @overrides Object */
+	toString(): string {
+		return 'never';
+	}
 	/** @override */
 	includes(_v: SolidObject): boolean {
 		return false
@@ -315,6 +329,10 @@ export class SolidTypeConstant extends SolidLanguageType {
 		super(new Set([value]))
 	}
 
+	/** @overrides Object */
+	toString(): string {
+		return this.value.toString();
+	}
 	/** @override */
 	includes(_v: SolidObject): boolean {
 		return this.value.equal(_v)
@@ -342,6 +360,10 @@ class SolidTypeUnknown extends SolidLanguageType {
 		super()
 	}
 
+	/** @overrides Object */
+	toString(): string {
+		return 'unknown';
+	}
 	/** @override */
 	includes(_v: SolidObject): boolean {
 		return true

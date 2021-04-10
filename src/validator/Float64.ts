@@ -11,6 +11,10 @@ import {SolidNumber} from './SolidNumber';
  * @final
  */
 export class Float64 extends SolidNumber<Float64> {
+	/** @implements Object */
+	static toString(): string {
+		return 'float';
+	}
 	/** @override */
 	static values: SolidLanguageType['values'] = new Set([new Float64(0.0)])
 
