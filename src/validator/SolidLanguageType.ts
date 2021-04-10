@@ -109,8 +109,12 @@ export abstract class SolidLanguageType {
 	isSubtypeOf(t: SolidLanguageType): boolean {
 		/** 2-7 | `A <: A` */
 		if (this === t) { return true }
+		/** 1-1 | `never <: T` */
+		if (this.isEmpty) { return true; };
 		/** 1-3 | `T       <: never  <->  T == never` */
 		if (t.isEmpty) { return this.isEmpty }
+		/** 1-4 | `unknown <: T      <->  T == unknown` */
+		if (this.isUniverse) { return t.isUniverse; };
 		/** 1-2 | `T     <: unknown` */
 		if (t.isUniverse) { return true }
 
@@ -128,7 +132,7 @@ export abstract class SolidLanguageType {
 		return this.isSubtypeOf_do(t)
 	}
 	isSubtypeOf_do(t: SolidLanguageType): boolean { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
-		return [...this.values].every((v) => t.includes(v))
+		return !this.isEmpty && !!this.values.size && [...this.values].every((v) => t.includes(v));
 	}
 	/**
 	 * Return whether this type is structurally equal to the given type.
@@ -287,13 +291,6 @@ class SolidTypeNever extends SolidLanguageType {
 	includes(_v: SolidObject): boolean {
 		return false
 	}
-	/**
-	 * @implements SolidLanguageType
-	 * 1-1 | `never <: T`
-	 */
-	isSubtypeOf_do(_t: SolidLanguageType): boolean {
-		return true
-	}
 	/** @override */
 	equals(t: SolidLanguageType): boolean {
 		return t.isEmpty
@@ -345,13 +342,6 @@ class SolidTypeUnknown extends SolidLanguageType {
 	/** @override */
 	includes(_v: SolidObject): boolean {
 		return true
-	}
-	/**
-	 * @implements SolidLanguageType
-	 * 1-4 | `unknown <: T      <->  T == unknown`
-	 */
-	isSubtypeOf_do(t: SolidLanguageType): boolean {
-		return t.isUniverse
 	}
 	/** @override */
 	equals(t: SolidLanguageType): boolean {

@@ -16,6 +16,8 @@ import {
 import {
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidTuple,
+	SolidRecord,
 } from '../../src/typer/';
 
 
@@ -45,6 +47,9 @@ describe('SolidLanguageType', () => {
 		SolidBoolean,
 		Int16,
 		Float64,
+		SolidString,
+		SolidTuple,
+		SolidRecord,
 	]
 	const t0: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidLanguageType>([
 		['foo', SolidObject],
@@ -264,6 +269,8 @@ describe('SolidLanguageType', () => {
 				Int16,
 				Float64,
 				SolidString,
+				SolidTuple,
+				SolidRecord,
 			].forEach((t, _, arr) => {
 				arr.filter((u) => u !== t).forEach((u) => {
 					assert.ok(!u.isSubtypeOf(t), `${ u }, ${ t }`)
@@ -294,12 +301,17 @@ describe('SolidLanguageType', () => {
 		})
 
 		Dev.supports('literalCollection') && describe('SolidTypeTuple', () => {
-			it('is a subtype of `SolidObject`.', () => {
+			it('is a subtype but not a supertype of `SolidObject`.', () => {
 				assert.ok(new SolidTypeTuple([
 					Int16,
 					SolidBoolean,
 					SolidString,
 				]).isSubtypeOf(SolidObject), `[int, bool, str] <: obj;`);
+				assert.ok(!SolidObject.isSubtypeOf(new SolidTypeTuple([
+					Int16,
+					SolidBoolean,
+					SolidString,
+				])), `obj !<: [int, bool, str]`);
 			});
 			it('matches per index.', () => {
 				assert.ok(new SolidTypeTuple([
@@ -344,12 +356,17 @@ describe('SolidLanguageType', () => {
 		});
 
 		Dev.supports('literalCollection') && describe('SolidTypeRecord', () => {
-			it('is a subtype of `SolidObject`.', () => {
+			it('is a subtype but not a supertype of `SolidObject`.', () => {
 				assert.ok(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
 					[0x100n, Int16],
 					[0x101n, SolidBoolean],
 					[0x102n, SolidString],
 				])).isSubtypeOf(SolidObject), `[x: int, y: bool, z: str] <: obj;`);
+				assert.ok(!SolidObject.isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+					[0x100n, Int16],
+					[0x101n, SolidBoolean],
+					[0x102n, SolidString],
+				]))), `obj !<: [x: int, y: bool, z: str]`);
 			});
 			it('matches per key.', () => {
 				assert.ok(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([

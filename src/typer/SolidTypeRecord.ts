@@ -21,7 +21,7 @@ export class SolidTypeRecord extends SolidLanguageType {
 	/** @overrides SolidLanguageType */
 	isSubtypeOf_do(t: SolidLanguageType): boolean {
 		return (
-			(t === SolidObject) ? true : // TODO use `.equals` and add dummy values to constructor
+			(t.equals(SolidObject)) ? true :
 			(t instanceof SolidTypeRecord) ? ((this.propertytypes.size < t.propertytypes.size)
 				? false
 				: [...t.propertytypes].every(([id, thattype]) => {
