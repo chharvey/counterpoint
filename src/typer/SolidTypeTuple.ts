@@ -1,4 +1,5 @@
 import {SolidLanguageType} from '../validator/SolidLanguageType'; // TODO circular imports
+import {SolidObject} from '../validator/SolidObject';
 
 
 
@@ -18,13 +19,13 @@ export class SolidTypeTuple extends SolidLanguageType {
 
 	/** @overrides SolidLanguageType */
 	isSubtypeOf_do(t: SolidLanguageType): boolean {
-		if (t instanceof SolidTypeTuple) {
-			if (this.types.length < t.types.length) {
-				return false;
-			};
-			return t.types.every((thattype, i) => this.types[i].isSubtypeOf(thattype));
-		} else {
-			return false;
-		};
+		return (
+			(t === SolidObject) ? true : // TODO use `.equals` and add dummy values to constructor
+			(t instanceof SolidTypeTuple) ? ((this.types.length < t.types.length)
+				? false
+				: t.types.every((thattype, i) => this.types[i].isSubtypeOf(thattype))
+			) :
+			false
+		);
 	}
 }

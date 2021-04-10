@@ -294,6 +294,13 @@ describe('SolidLanguageType', () => {
 		})
 
 		Dev.supports('literalCollection') && describe('SolidTypeTuple', () => {
+			it('is a subtype of `SolidObject`.', () => {
+				assert.ok(new SolidTypeTuple([
+					Int16,
+					SolidBoolean,
+					SolidString,
+				]).isSubtypeOf(SolidObject), `[int, bool, str] <: obj;`);
+			});
 			it('matches per index.', () => {
 				assert.ok(new SolidTypeTuple([
 					Int16,
@@ -337,6 +344,13 @@ describe('SolidLanguageType', () => {
 		});
 
 		Dev.supports('literalCollection') && describe('SolidTypeRecord', () => {
+			it('is a subtype of `SolidObject`.', () => {
+				assert.ok(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+					[0x100n, Int16],
+					[0x101n, SolidBoolean],
+					[0x102n, SolidString],
+				])).isSubtypeOf(SolidObject), `[x: int, y: bool, z: str] <: obj;`);
+			});
 			it('matches per key.', () => {
 				assert.ok(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
 					[0x100n, Int16],
