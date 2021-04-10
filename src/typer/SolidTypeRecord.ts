@@ -1,5 +1,6 @@
 import {SolidLanguageType} from '../validator/SolidLanguageType'; // TODO circular imports
 import {SolidObject} from '../validator/SolidObject';
+import {SolidRecord} from './SolidRecord';
 
 
 
@@ -14,7 +15,7 @@ export class SolidTypeRecord extends SolidLanguageType {
 	constructor (
 		private readonly propertytypes: ReadonlyMap<bigint, SolidLanguageType> = new Map(),
 	) {
-		super();
+		super(new Set([new SolidRecord()]));
 	}
 
 	/** @overrides SolidLanguageType */

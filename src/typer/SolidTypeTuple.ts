@@ -1,5 +1,6 @@
 import {SolidLanguageType} from '../validator/SolidLanguageType'; // TODO circular imports
 import {SolidObject} from '../validator/SolidObject';
+import {SolidTuple} from './SolidTuple';
 
 
 
@@ -14,7 +15,7 @@ export class SolidTypeTuple extends SolidLanguageType {
 	constructor (
 		private readonly types: readonly SolidLanguageType[] = [],
 	) {
-		super();
+		super(new Set([new SolidTuple()]));
 	}
 
 	/** @overrides SolidLanguageType */
