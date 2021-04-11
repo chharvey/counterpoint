@@ -470,6 +470,11 @@ describe('LexerSolid', () => {
 				assert.strictEqual(tokenstring.source.slice(12, 20), `\\u{005f}`)
 				assert.strictEqual(tokenstring.source.slice(23, 27), `\\u{}`)
 			})
+			it('may contain an escaped `u` anywhere.', () => {
+				assert.strictEqual([...new Lexer(`
+					'abc\\udef\\u';
+				`, CONFIG_DEFAULT).generate()][2].source, `'abc\\udef\\u'`);
+			});
 			specify('Line continuation.', () => {
 				const tokenstring: Token = [...new Lexer(`
 					'012\\

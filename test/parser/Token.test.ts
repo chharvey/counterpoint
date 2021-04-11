@@ -203,6 +203,11 @@ describe('TokenSolid', () => {
 					`\u{1f600}`, `\u{10001}`, `\u{10001}`, `\u{10001}`,
 				]);
 			})
+			it('may contain an escaped `u` anywhere.', () => {
+				assert.strictEqual(utf8Decode(([...new Lexer(`
+					'abc\\udef\\u';
+				`, CONFIG_DEFAULT).generate()][2] as TOKEN.TokenString).cook()), `abcudefu`);
+			});
 			describe('In-String Comments', () => {
 				function cook(config: SolidConfig): string[] {
 					return [...new Lexer(utils.dedent`
