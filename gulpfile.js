@@ -46,12 +46,12 @@ function test() {
 
 async function test_dev() {
 	const {Scanner} = require('@chharvey/parser');
-	const {CONFIG_DEFAULT}         = require('./build/SolidConfig.js')
-	const {Lexer, Screener} = require('./build/lexer/')
-	const {ParserSolid: Parser} = require('./build/class/Parser.class.js');
-	const {default: CodeGenerator} = require('./build/vm/Builder.class.js')
+	const {CONFIG_DEFAULT} = require('./build/core/');
+	const {LexerSolid: Lexer, ParserSolid: Parser} = require('./build/parser/');
+	const {Decorator} = require('./build/validator/');
+	const {Builder} = require('./build/builder/');
 
-	const input = fsPromise.readFile('./sample/test-v0.2.solid', 'utf8')
+	const input = fsPromise.readFile('./sample/test-v0.3.solid', 'utf8');
 
 	console.log("\n\nHere are the characters returned by the scanner:")
 	console.log("  line col  character")
@@ -70,23 +70,15 @@ async function test_dev() {
 		iterator_result_token = lexer.next()
 	}
 
-	console.log("\n\nHere are the tokens returned by the screener:")
-	const screener = new Screener(await input, CONFIG_DEFAULT).generate()
-	let iterator_result_screen = screener.next()
-	while (!iterator_result_screen.done) {
-		if (iterator_result_screen.value !== null) console.log(iterator_result_screen.value.serialize())
-		iterator_result_screen = screener.next()
-	}
-
-	const tree = new Parser(await input, CONFIG_DEFAULT).parse()
-	const code = new CodeGenerator(await input, CONFIG_DEFAULT).print()
+	const tree = new Parser  (await input, CONFIG_DEFAULT).parse();
+	const code = new Builder (await input, CONFIG_DEFAULT).print();
 	console.log("\n\nThe parse tree returned by the parser is written to file: `./sample/output.xml`")
 	console.log("\n\nThe semantic tree returned by the decorator is written to file: `./sample/output-1.xml`")
 	console.log("\n\nThe compiled output returned by the compiler is written to file: `./sample/output-2.wat`")
 
 	return Promise.all([
 		fsPromise.writeFile('./sample/output.xml', tree.serialize()),
-		fsPromise.writeFile('./sample/output-1.xml', tree.decorate().serialize()),
+		fsPromise.writeFile('./sample/output-1.xml', Decorator.decorate(tree).serialize()),
 		fsPromise.writeFile('./sample/output-2.wat', code),
 	])
 }
