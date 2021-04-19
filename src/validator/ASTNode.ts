@@ -8,9 +8,6 @@ import * as assert from 'assert';
 import * as xjs from 'extrajs'
 
 import {
-	assert_arrayLength,
-} from '../../test/assert-helpers';
-import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
@@ -395,8 +392,8 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeExpression {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert.ok(statement instanceof ASTNodeStatementExpression);
-		assert_arrayLength(statement.children, 1, 'semantic statement should have 1 child');
-		return statement.children[0];
+		assert.strictEqual(statement.children.length, 1, 'semantic statement should have 1 child');
+		return statement.children[0]!;
 	}
 	private assessed?: SolidObject | null;
 	/**
