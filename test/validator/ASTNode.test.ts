@@ -880,17 +880,15 @@ describe('ASTNodeSolid', () => {
 							0.  -0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
 							${ (Dev.supports('stringConstant-assess')) ? `'42😀'  '42\\u{1f600}'` : `` }
 						`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`));
-						assert.deepStrictEqual(
-							constants.map((c) => assert_wasCalled(c.assess, 1, (orig, spy) => {
-								c.assess = spy;
-								try {
-									return c.type(new Validator());
-								} finally {
-									c.assess = orig;
-								};
-							})),
-							constants.map((c) => new SolidTypeConstant(c.assess(new Validator())!)),
-						);
+						const validator: Validator = new Validator();
+						assert.deepStrictEqual(constants.map((c) => assert_wasCalled(c.assess, 1, (orig, spy) => {
+							c.assess = spy;
+							try {
+								return c.type(validator);
+							} finally {
+								c.assess = orig;
+							};
+						})), constants.map((c) => new SolidTypeConstant(c.assess(validator)!)));
 					});
 				});
 				context('with constant folding off.', () => {
@@ -923,21 +921,22 @@ describe('ASTNodeSolid', () => {
 						.children[0] as AST.ASTNodeTemplate,
 				];
 				context('with constant folding on.', () => {
+					const validator: Validator = new Validator();
 					let types: SolidLanguageType[];
 					before(() => {
 						types = templates.map((t) => assert_wasCalled(t.assess, 1, (orig, spy) => {
-								t.assess = spy;
-								try {
-									return t.type(new Validator());
-								} finally {
-									t.assess = orig;
-								};
+							t.assess = spy;
+							try {
+								return t.type(validator);
+							} finally {
+								t.assess = orig;
+							};
 						}));
 					});
 					it('for foldable interpolations, returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
 						assert.deepStrictEqual(
 							types.slice(0, 2),
-							templates.slice(0, 2).map((t) => new SolidTypeConstant(t.assess(new Validator())!)),
+							templates.slice(0, 2).map((t) => new SolidTypeConstant(t.assess(validator)!)),
 						);
 					});
 					it('for non-foldable interpolations, returns `String`.', () => {
