@@ -18,6 +18,7 @@ import {
 	SolidTypeRecord,
 	SolidTuple,
 	SolidRecord,
+	SolidMapping,
 } from '../../src/typer/';
 
 
@@ -50,6 +51,7 @@ describe('SolidLanguageType', () => {
 		SolidString,
 		SolidTuple,
 		SolidRecord,
+		SolidMapping,
 	]
 	const t0: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidLanguageType>([
 		['foo', SolidObject],
@@ -271,6 +273,7 @@ describe('SolidLanguageType', () => {
 				SolidString,
 				SolidTuple,
 				SolidRecord,
+				SolidMapping,
 			].forEach((t, _, arr) => {
 				arr.filter((u) => u !== t).forEach((u) => {
 					assert.ok(!u.isSubtypeOf(t), `${ u }, ${ t }`)
