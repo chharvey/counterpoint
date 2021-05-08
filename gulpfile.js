@@ -1,12 +1,15 @@
-const fs = require('fs')
-const path = require('path')
-const fsPromise = require('fs').promises
-
-const gulp       = require('gulp')
-const mocha = require('gulp-mocha')
-// require('ts-node') // DO NOT REMOVE … peerDependency of `gulp-mocha`
-const typescript = require('gulp-typescript')
-// require('typescript') // DO NOT REMOVE … peerDependency of `gulp-typescript`
+const {
+	Scanner,
+	generate,
+} = require('@chharvey/parser');
+const xjs = require('extrajs');
+const fs = require('fs');
+const gulp = require('gulp');
+const mocha = require('gulp-mocha');
+const typescript = require('gulp-typescript');
+const path = require('path');
+// require('ts-node'); // DO NOT REMOVE … peerDependency of `gulp-mocha`
+// require('typescript'); // DO NOT REMOVE … peerDependency of `gulp-typescript`
 
 const tsconfig      = require('./tsconfig.json')
 const typedocconfig = tsconfig.typedocOptions
@@ -19,9 +22,8 @@ function dist() {
 }
 
 async function postdist() {
-	const {generate, utils} = require('@chharvey/parser');
 	const grammar_solid = fs.promises.readFile(path.join(__dirname, './docs/spec/grammar/syntax.ebnf'), 'utf8');
-	return fs.promises.writeFile(path.join(__dirname, './src/parser/Parser.auto.ts'), utils.dedent`
+	return fs.promises.writeFile(path.join(__dirname, './src/parser/Parser.auto.ts'), xjs.String.dedent`
 		/*----------------------------------------------------------------/
 		| WARNING: Do not manually update this file!
 		| It is auto-generated via <@chharvey/parser>.
@@ -45,13 +47,12 @@ function test() {
 }
 
 async function test_dev() {
-	const {Scanner} = require('@chharvey/parser');
 	const {CONFIG_DEFAULT}         = require('./build/SolidConfig.js')
 	const {Lexer, Screener} = require('./build/lexer/')
 	const {ParserSolid: Parser} = require('./build/class/Parser.class.js');
 	const {default: CodeGenerator} = require('./build/vm/Builder.class.js')
 
-	const input = fsPromise.readFile('./sample/test-v0.2.solid', 'utf8')
+	const input = fs.promises.readFile('./sample/test-v0.2.solid', 'utf8')
 
 	console.log("\n\nHere are the characters returned by the scanner:")
 	console.log("  line col  character")
@@ -85,9 +86,9 @@ async function test_dev() {
 	console.log("\n\nThe compiled output returned by the compiler is written to file: `./sample/output-2.wat`")
 
 	return Promise.all([
-		fsPromise.writeFile('./sample/output.xml', tree.serialize()),
-		fsPromise.writeFile('./sample/output-1.xml', tree.decorate().serialize()),
-		fsPromise.writeFile('./sample/output-2.wat', code),
+		fs.promises.writeFile('./sample/output.xml', tree.serialize()),
+		fs.promises.writeFile('./sample/output-1.xml', tree.decorate().serialize()),
+		fs.promises.writeFile('./sample/output-2.wat', code),
 	])
 }
 
@@ -108,8 +109,8 @@ async function random() {
 		throw err
 	}
 	return Promise.all([
-		fsPromise.writeFile('./sample/output.xml', tree.serialize()),
-		fsPromise.writeFile('./sample/output-1.xml', tree.decorate().serialize()),
+		fs.promises.writeFile('./sample/output.xml', tree.serialize()),
+		fs.promises.writeFile('./sample/output-1.xml', tree.decorate().serialize()),
 	])
 }
 
