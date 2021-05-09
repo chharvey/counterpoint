@@ -1,4 +1,4 @@
-import {utils} from '@chharvey/parser'
+import * as xjs from 'extrajs';
 
 import {
 	Operator,
@@ -448,7 +448,7 @@ export class InstructionStatement extends Instruction {
 			? ''
 			: `(result ${ (this.expr.isFloat) ? 'f64' : 'i32' })`
 		;
-		return utils.dedent`
+		return xjs.String.dedent`
 			(func (export "f${ this.count }") ${ result }
 				${ this.expr }
 			)
@@ -511,7 +511,7 @@ export class InstructionModule extends Instruction {
 	 * @return a new module containing the components
 	 */
 	toString(): string {
-		return utils.dedent`
+		return xjs.String.dedent`
 			(module
 				${ this.comps.join('\n') }
 			)

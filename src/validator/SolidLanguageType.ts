@@ -16,6 +16,8 @@ import type {SolidObject} from './SolidObject';
  * - TypeNever
  * - TypeConstant
  * - TypeUnknown
+ * - Tuple
+ * - Record
  */
 export abstract class SolidLanguageType {
 	/** The Bottom Type, containing no values. */
@@ -98,11 +100,15 @@ export abstract class SolidLanguageType {
 		const method = descriptor.value!;
 		descriptor.value = function (t) {
 			/** 2-7 | `A <: A` */
-			if (this === t) { return true }
+			if (this === t) { return true };
+			/** 1-1 | `never <: T` */
+			if (this.isEmpty) { return true; };
 			/** 1-3 | `T       <: never  <->  T == never` */
 			if (t.isEmpty) { return this.isEmpty }
+			/** 1-4 | `unknown <: T      <->  T == unknown` */
+			if (this.isUniverse) { return t.isUniverse; };
 			/** 1-2 | `T     <: unknown` */
-			if (t.isUniverse) { return true }
+			if (t.isUniverse) { return true };
 
 			if (t instanceof SolidTypeIntersection) {
 				/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
@@ -178,7 +184,7 @@ export abstract class SolidLanguageType {
 	@strictEqual
 	@SolidLanguageType.subtypeDeco
 	isSubtypeOf(t: SolidLanguageType): boolean {
-		return [...this.values].every((v) => t.includes(v))
+		return !this.isEmpty && !!this.values.size && [...this.values].every((v) => t.includes(v));
 	}
 	/**
 	 * Return whether this type is structurally equal to the given type.
@@ -271,10 +277,10 @@ export class SolidTypeInterface extends SolidLanguageType {
 	readonly isUniverse: boolean = this.properties.size === 0
 
 	/**
-	 * Construct a new SolidLanguageType object.
+	 * Construct a new SolidInterface object.
 	 * @param properties a map of this type’s members’ names along with their associated types
 	 */
-	constructor (readonly properties: ReadonlyMap<string, SolidLanguageType>) {
+	constructor (private readonly properties: ReadonlyMap<string, SolidLanguageType>) {
 		super()
 	}
 
@@ -358,15 +364,6 @@ class SolidTypeNever extends SolidLanguageType {
 	includes(_v: SolidObject): boolean {
 		return false
 	}
-	/**
-	 * @overrides SolidLanguageType
-	 * 1-1 | `never <: T`
-	 */
-	@strictEqual
-	@SolidLanguageType.subtypeDeco
-	isSubtypeOf(_t: SolidLanguageType): boolean {
-		return true
-	}
 	/** @overrides SolidLanguageType */
 	@strictEqual
 	equals(t: SolidLanguageType): boolean {
@@ -421,15 +418,6 @@ class SolidTypeUnknown extends SolidLanguageType {
 	/** @override */
 	includes(_v: SolidObject): boolean {
 		return true
-	}
-	/**
-	 * @overrides SolidLanguageType
-	 * 1-4 | `unknown <: T      <->  T == unknown`
-	 */
-	@strictEqual
-	@SolidLanguageType.subtypeDeco
-	isSubtypeOf(t: SolidLanguageType): boolean {
-		return t.isUniverse
 	}
 	/** @overrides SolidLanguageType */
 	@strictEqual

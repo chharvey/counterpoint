@@ -21,6 +21,13 @@ import {
 	ValidOperatorLogical,
 } from '../enum/Operator.enum'
 import {
+	SolidTypeTuple,
+	SolidTypeRecord,
+	SolidTuple,
+	SolidRecord,
+	SolidMapping,
+} from '../typer/';
+import {
 	Validator,
 } from './Validator';
 import {
@@ -158,7 +165,7 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeTypeProperty#build not yet supported.';
+		throw builder && 'ASTNodePropertyType#build not yet supported.';
 	}
 }
 export class ASTNodeProperty extends ASTNodeSolid {
@@ -284,8 +291,8 @@ export class ASTNodeTypeEmptyCollection extends ASTNodeType {
 	}
 	/** @implements ASTNodeType */
 	@memoizeMethod
-	assess(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeTypeEmptyCollection#assess not yet supported.';
+	assess(_validator: Validator): SolidLanguageType {
+		return new SolidTypeTuple().intersect(new SolidTypeRecord());
 	}
 }
 export class ASTNodeTypeList extends ASTNodeType {
@@ -298,7 +305,7 @@ export class ASTNodeTypeList extends ASTNodeType {
 	/** @implements ASTNodeType */
 	@memoizeMethod
 	assess(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeTypeList#assess not yet supported.';
+		return new SolidTypeTuple(this.children.map((c) => c.assess(validator)));
 	}
 }
 export class ASTNodeTypeRecord extends ASTNodeType {
@@ -311,7 +318,10 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 	/** @implements ASTNodeType */
 	@memoizeMethod
 	assess(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeTypeRecord#assess not yet supported.';
+		return new SolidTypeRecord(new Map(this.children.map((c) => [
+			c.children[0].id,
+			c.children[1].assess(validator),
+		])));
 	}
 }
 export abstract class ASTNodeTypeOperation extends ASTNodeType {
@@ -604,13 +614,13 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	type(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeEmptyCollection#type not yet supported.';
+	type(_validator: Validator): SolidLanguageType {
+		return new SolidTypeTuple().intersect(new SolidTypeRecord());
 	}
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
-	assess(validator: Validator): SolidObject | null {
-		throw validator && 'ASTNodeEmptyCollection#assess not yet supported.';
+	assess(_validator: Validator): SolidObject | null {
+		return null;
 	}
 }
 export class ASTNodeList extends ASTNodeExpression {
@@ -633,12 +643,15 @@ export class ASTNodeList extends ASTNodeExpression {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	type(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeList#type not yet supported.';
+		return new SolidTypeTuple(this.children.map((c) => c.type(validator)));
 	}
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
 	assess(validator: Validator): SolidObject | null {
-		throw validator && 'ASTNodeList#assess not yet supported.';
+		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.assess(validator));
+		return (items.includes(null))
+			? null
+			: new SolidTuple<SolidObject>(items as SolidObject[]);
 	}
 }
 export class ASTNodeRecord extends ASTNodeExpression {
@@ -661,12 +674,21 @@ export class ASTNodeRecord extends ASTNodeExpression {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	type(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeRecord#type not yet supported.';
+		return new SolidTypeRecord(new Map(this.children.map((c) => [
+			c.children[0].id,
+			c.children[1].type(validator),
+		])));
 	}
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
 	assess(validator: Validator): SolidObject | null {
-		throw validator && 'ASTNodeRecord#assess not yet supported.';
+		const properties: ReadonlyMap<bigint, SolidObject | null> = new Map(this.children.map((c) => [
+			c.children[0].id,
+			c.children[1].assess(validator),
+		]));
+		return ([...properties].map((p) => p[1]).includes(null))
+			? null
+			: new SolidRecord<SolidObject>(properties as ReadonlyMap<bigint, SolidObject>);
 	}
 }
 export class ASTNodeMapping extends ASTNodeExpression {
@@ -688,13 +710,19 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	type(validator: Validator): SolidLanguageType {
-		throw validator && 'ASTNodeMapping#type not yet supported.';
+	type(_validator: Validator): SolidLanguageType {
+		return SolidObject;
 	}
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
 	assess(validator: Validator): SolidObject | null {
-		throw validator && 'ASTNodeMapping#assess not yet supported.';
+		const cases: ReadonlyMap<SolidObject | null, SolidObject | null> = new Map(this.children.map((c) => [
+			c.children[0].assess(validator),
+			c.children[1].assess(validator),
+		]));
+		return ([...cases].some((c) => c[0] === null || c[1] === null))
+			? null
+			: new SolidMapping<SolidObject, SolidObject>(cases as ReadonlyMap<SolidObject, SolidObject>);
 	}
 }
 export abstract class ASTNodeOperation extends ASTNodeExpression {

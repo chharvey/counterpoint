@@ -1,4 +1,4 @@
-import {utils} from '@chharvey/parser';
+import * as xjs from 'extrajs';
 import * as assert from 'assert'
 
 import {
@@ -241,7 +241,7 @@ describe('Instruction', () => {
 				)
 				assert.strictEqual(
 					new InstructionStatement(0n, expr).toString(),
-					utils.dedent`
+					xjs.String.dedent`
 						(func (export "f0") (result i32)
 							${ expr }
 						)

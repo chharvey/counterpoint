@@ -110,13 +110,7 @@ DigitSequenceHTD<Separator> :::= ( DigitSequenceHTD <Separator+>"_"? )? [0-9a-z]
 
 
 String<Comment>
-	:::= "'" (StringUnfinished<?Comment> | StringChars<?Comment>)? "'";
-
-	StringUnfinished<Comment> :::=
-		| "\u"
-		| <Comment+>("%"  ([^'%#x0a#x03] [^'#x0a#x03]*)?)
-		| <Comment+>("%%" ("%"? [^'%#x03])*)
-	;
+	:::= "'" StringChars<?Comment>? StringUnfinished<?Comment>? "'";
 
 	StringChars<Comment>
 		:::= StringChar<?Comment> StringChars<?Comment>?;
@@ -138,6 +132,12 @@ String<Comment>
 				| <Comment->[^'\stnru#x0a#x03]
 				| <Comment+>[^'\%stnru#x0a#x03]
 			;
+
+	StringUnfinished<Comment> :::=
+		| "\u"
+		| <Comment+>("%"  ([^'%#x0a#x03] [^'#x0a#x03]*)?)
+		| <Comment+>("%%" ("%"? [^'%#x03])*)
+	;
 
 
 
