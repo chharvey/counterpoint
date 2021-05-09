@@ -180,7 +180,7 @@ export class ASTNodePropertyType extends ASTNodeSolid {
  * - ASTNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
-	private assessed: SolidLanguageType | null = null
+	private assessed?: SolidLanguageType;
 	/**
 	 * @implements ASTNodeSolid
 	 * @final
@@ -202,8 +202,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 * @final
 	 */
 	assess(validator: Validator): SolidLanguageType {
-		this.assessed || (this.assessed = this.assess_do(validator)); // COMBAK `this.assessed ||= this.assess_do(validator)`
-		return this.assessed
+		return this.assessed ||= this.assess_do(validator);
 	}
 	protected abstract assess_do(validator: Validator): SolidLanguageType
 }
@@ -472,10 +471,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @final
 	 */
 	assess(validator: Validator): SolidObject | null {
-		if (this.assessed === void 0) {
-			this.assessed = this.assess_do(validator);
-		}
-		return this.assessed
+		return this.assessed ||= this.assess_do(validator);
 	}
 	protected abstract assess_do(validator: Validator): SolidObject | null;
 }
