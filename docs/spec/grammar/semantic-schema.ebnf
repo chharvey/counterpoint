@@ -1,3 +1,21 @@
+SemanticKey[id: RealNumber]
+	::= ();
+
+
+
+SemanticPropertyType
+	::= SemanticKey SemanticType;
+
+
+
+SemanticProperty
+	::= SemanticKey SemanticExpression;
+
+SemanticCase
+	::= SemanticExpression SemanticExpression;
+
+
+
 SemanticType =:=
 	| SemanticTypeConstant
 	| SemanticTypeAlias
@@ -6,16 +24,6 @@ SemanticType =:=
 	| SemanticTypeRecord
 	| SemanticTypeOperation
 ;
-
-
-
-SemanticKey[id: RealNumber]
-	::= ();
-
-
-
-SemanticPropertyType
-	::= SemanticKey SemanticType;
 
 
 
@@ -46,14 +54,6 @@ SemanticExpression =:=
 	| SemanticMapping
 	| SemanticOperation
 ;
-
-
-
-SemanticProperty
-	::= SemanticKey SemanticExpression;
-
-SemanticCase
-	::= SemanticExpression SemanticExpression;
 
 
 

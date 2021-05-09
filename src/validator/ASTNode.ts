@@ -169,6 +169,46 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 		throw builder && 'ASTNodePropertyType#build not yet supported.';
 	}
 }
+export class ASTNodeProperty extends ASTNodeSolid {
+	constructor (
+		start_node: PARSER.ParseNodeProperty,
+		readonly children: readonly [ASTNodeKey, ASTNodeExpression],
+	) {
+		super(start_node, {}, children);
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator): void {
+		throw validator && 'ASTNodeProperty#varCheck not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	typeCheck(validator: Validator): void {
+		throw validator && 'ASTNodeProperty#typeCheck not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	build(builder: Builder): Instruction {
+		throw builder && 'ASTNodeProperty#build not yet supported.';
+	}
+}
+export class ASTNodeCase extends ASTNodeSolid {
+	constructor (
+		start_node: PARSER.ParseNodeCase,
+		readonly children: [ASTNodeExpression, ASTNodeExpression],
+	) {
+		super(start_node, {}, children);
+	}
+	/** @implements ASTNodeSolid */
+	varCheck(validator: Validator): void {
+		throw validator && 'ASTNodeCase#varCheck not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	typeCheck(validator: Validator): void {
+		throw validator && 'ASTNodeCase#typeCheck not yet supported.';
+	}
+	/** @implements ASTNodeSolid */
+	build(builder: Builder): Instruction {
+		throw builder && 'ASTNodeCase#build not yet supported.';
+	}
+}
 /**
  * A sematic node representing a type.
  * Known subclasses:
@@ -366,46 +406,6 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 			(this.operator === Operator.OR)  ? this.children[0].assess(validator).union    (this.children[1].assess(validator)) :
 			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
-	}
-}
-export class ASTNodeProperty extends ASTNodeSolid {
-	constructor (
-		start_node: PARSER.ParseNodeProperty,
-		readonly children: readonly [ASTNodeKey, ASTNodeExpression],
-	) {
-		super(start_node, {}, children);
-	}
-	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator): void {
-		throw validator && 'ASTNodeProperty#varCheck not yet supported.';
-	}
-	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator): void {
-		throw validator && 'ASTNodeProperty#typeCheck not yet supported.';
-	}
-	/** @implements ASTNodeSolid */
-	build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeProperty#build not yet supported.';
-	}
-}
-export class ASTNodeCase extends ASTNodeSolid {
-	constructor (
-		start_node: PARSER.ParseNodeCase,
-		readonly children: [ASTNodeExpression, ASTNodeExpression],
-	) {
-		super(start_node, {}, children);
-	}
-	/** @implements ASTNodeSolid */
-	varCheck(validator: Validator): void {
-		throw validator && 'ASTNodeCase#varCheck not yet supported.';
-	}
-	/** @implements ASTNodeSolid */
-	typeCheck(validator: Validator): void {
-		throw validator && 'ASTNodeCase#typeCheck not yet supported.';
-	}
-	/** @implements ASTNodeSolid */
-	build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeCase#build not yet supported.';
 	}
 }
 /**
