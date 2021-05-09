@@ -421,6 +421,7 @@ export class ASTNodeCase extends ASTNodeSolid {
  * - ASTNodeOperation
  */
 export abstract class ASTNodeExpression extends ASTNodeSolid {
+	private typed?: SolidLanguageType;
 	private assessed?: SolidObject | null;
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
@@ -451,14 +452,16 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @final
 	 */
 	type(validator: Validator): SolidLanguageType {
-		const type_: SolidLanguageType = this.type_do(validator); // type-check first, to re-throw any TypeErrors
-		if (validator.config.compilerOptions.constantFolding) {
-			const assessed: SolidObject | null = this.assess(validator);
-			if (!!assessed) {
-				return new SolidTypeConstant(assessed);
-			}
-		}
-		return type_
+		if (this.typed === void 0) {
+			this.typed = this.type_do(validator); // type-check first, to re-throw any TypeErrors
+			if (validator.config.compilerOptions.constantFolding) {
+				const assessed: SolidObject | null = this.assess(validator);
+				if (!!assessed) {
+					this.typed = new SolidTypeConstant(assessed);
+				};
+			};
+		};
+		return this.typed;
 	}
 	protected abstract type_do(validator: Validator): SolidLanguageType;
 	/**
