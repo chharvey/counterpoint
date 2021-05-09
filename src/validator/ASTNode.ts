@@ -162,7 +162,7 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 	}
 	/** @implements ASTNodeSolid */
 	build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeTypeProperty#build not yet supported.';
+		throw builder && 'ASTNodePropertyType#build not yet supported.';
 	}
 }
 export class ASTNodeProperty extends ASTNodeSolid {

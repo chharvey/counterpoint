@@ -128,15 +128,15 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('literalCollection') && describe('TypeProperty ::= Word ":" Type', () => {
-			it('makes an ASTNodeTypeProperty.', () => {
+		Dev.supports('literalCollection') && describe('PropertyType ::= Word ":" Type', () => {
+			it('makes an ASTNodePropertyType.', () => {
 				/*
-					<TypeProperty>
+					<PropertyType>
 						<Key source="fontSize"/>
 						<TypeConstant source="float"/>
-					</TypeProperty>
+					</PropertyType>
 				*/
-				const propertytype: AST.ASTNodePropertyType = Decorator.decorate(h.typePropertyFromString(`fontSize: float`));
+				const propertytype: AST.ASTNodePropertyType = Decorator.decorate(h.propertyTypeFromString(`fontSize: float`));
 				assert.deepStrictEqual(
 					propertytype.children.map((c) => c.source),
 					[`fontSize`, `float`],
@@ -167,12 +167,12 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeRecordLiteral ::= "[" ","? PropertyType# ","? "]"', () => {
 			it('makes an ASTNodeTypeRecord.', () => {
 				/*
 					<TypeRecord>
-						<TypeProperty source="let: bool">...</TypeProperty>
-						<TypeProperty source="foobar: int">...</TypeProperty>
+						<PropertyType source="let: bool">...</PropertyType>
+						<PropertyType source="foobar: int">...</PropertyType>
 					</TypeRecord>
 				*/
 				assert.deepStrictEqual(Decorator.decorate(h.recordTypeFromString(`
@@ -868,6 +868,27 @@ describe('Decorator', () => {
 			})
 		})
 
+		describe('DeclarationType ::= "type" IDENTIFIER "=" Type ";"', () => {
+			it('makes an ASTNodeDeclarationType node.', () => {
+				/*
+					<DeclarationType>
+						<Variable source="T" id=256n/>
+						<TypeOperation operator=OR source="int | float">...</TypeOperation>
+					</DeclarationType>
+				*/
+				const decl: AST.ASTNodeDeclarationType = typeDeclarationFromSource(`
+					type T  =  int | float;
+				`);
+				assert.strictEqual(decl.children[0].id, 256n);
+				const typ: AST.ASTNodeType = decl.children[1];
+				assert.ok(typ instanceof AST.ASTNodeTypeOperationBinary);
+				assert.strictEqual(typ.operator, Operator.OR);
+				assert.deepStrictEqual(decl.children.map((child) => child.source), [
+					`T`, `int | float`,
+				]);
+			});
+		});
+
 		describe('DeclarationVariable ::= "let" "unfixed"? IDENTIFIER ":" Type "=" Expression ";"', () => {
 			it('makes an unfixed ASTNodeDeclarationVariable node.', () => {
 				/*
@@ -918,27 +939,6 @@ describe('Decorator', () => {
 				])
 			})
 		})
-
-		describe('DeclarationType ::= "type" IDENTIFIER "=" Type ";"', () => {
-			it('makes an ASTNodeDeclarationType node.', () => {
-				/*
-					<DeclarationType>
-						<Variable source="T" id=256n/>
-						<TypeOperation operator=OR source="int | float">...</TypeOperation>
-					</DeclarationType>
-				*/
-				const decl: AST.ASTNodeDeclarationType = typeDeclarationFromSource(`
-					type T  =  int | float;
-				`);
-				assert.strictEqual(decl.children[0].id, 256n);
-				const typ: AST.ASTNodeType = decl.children[1];
-				assert.ok(typ instanceof AST.ASTNodeTypeOperationBinary);
-				assert.strictEqual(typ.operator, Operator.OR);
-				assert.deepStrictEqual(decl.children.map((child) => child.source), [
-					`T`, `int | float`,
-				]);
-			});
-		});
 
 		describe('Assignee ::= IDENTIFIER', () => {
 			it('makes an ASTNodeVariable node.', () => {
