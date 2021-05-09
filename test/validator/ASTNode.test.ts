@@ -999,19 +999,23 @@ describe('ASTNodeSolid', () => {
 				assert.strictEqual(variableFromSource(`x;`).type(new Validator()), SolidLanguageType.UNKNOWN);
 			});
 			Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
-				const templates: AST.ASTNodeTemplate[] = [
-					templateFromSource(`'''42😀''';`),
-					templateFromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
-					(goalFromSource(`
-						let unfixed x: int = 21;
-						'''the answer is {{ x * 2 }} but what is the question?''';
-					`)
-						.children[1] as AST.ASTNodeStatementExpression)
-						.children[0] as AST.ASTNodeTemplate,
-				];
+				let templates: AST.ASTNodeTemplate[];
+				function initTemplates() {
+					templates = [
+						templateFromSource(`'''42😀''';`),
+						templateFromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
+						(goalFromSource(`
+							let unfixed x: int = 21;
+							'''the answer is {{ x * 2 }} but what is the question?''';
+						`)
+							.children[1] as AST.ASTNodeStatementExpression)
+							.children[0] as AST.ASTNodeTemplate,
+					];
+				}
 				context('with constant folding on.', () => {
 					let types: SolidLanguageType[];
 					before(() => {
+						initTemplates();
 						types = templates.map((t) => assert_wasCalled(t.assess, 1, (orig, spy) => {
 								t.assess = spy;
 								try {
@@ -1031,8 +1035,9 @@ describe('ASTNodeSolid', () => {
 						assert.deepStrictEqual(types[2], SolidString);
 					});
 				});
-				context.skip('with constant folding off.', () => {
+				context('with constant folding off.', () => {
 					it('always returns `String`.', () => {
+						initTemplates();
 						templates.forEach((t) => {
 							assert.deepStrictEqual(t.type(new Validator(folding_off)), SolidString);
 						});

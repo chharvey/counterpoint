@@ -397,14 +397,14 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	): typeof descriptor {
 		const method = descriptor.value!;
 		descriptor.value = function (validator) {
-			const typ: SolidLanguageType = method.call(this, validator); // type-check first, to re-throw any TypeErrors
+			const typed: SolidLanguageType = method.call(this, validator); // type-check first, to re-throw any TypeErrors
 			if (validator.config.compilerOptions.constantFolding) {
 				const assessed: SolidObject | null = this.assess(validator);
 				if (!!assessed) {
 					return new SolidTypeConstant(assessed);
-				}
-			}
-			return typ;
+				};
+			};
+			return typed;
 		};
 		return descriptor;
 	}
