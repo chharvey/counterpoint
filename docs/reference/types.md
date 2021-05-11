@@ -30,8 +30,6 @@ The Null type, `null`, has exactly one value, also called `null`.
 The meaning of the `null` value is not specified, but it’s most commonly used as a placeholder
 when no other value is appropriate.
 
-The Null type has no supertypes other than [Object](#object) and [Unknown](#unknown).
-
 
 
 ## Boolean
@@ -60,7 +58,7 @@ Raw Input  | Base | Mathematical Value (in decimal)
 `\x2a`     | 16   | 42
 `\z16`     | 36   | 42
 
-We may also include the underscore as a numeric separator symbol, to visually group digits.
+The underscore may be used as a numeric separator symbol, to visually group digits.
 ```
 \b1_0011_1000_1000;
 \q103_2020;
@@ -97,7 +95,7 @@ Exactly one decimal point must be present in a float literal.
 0 . 5;   %> Error
 ```
 
-We can write floats in “scientific-like notation”, such as `6.022e23`.
+Floats can be written in “scientific-like notation”, such as `6.022e23`.
 This represents *6.022 &times; 10<sup>23</sup>*.
 This notation consts of the following parts:
 - the whole part (an integer)
@@ -106,11 +104,12 @@ This notation consts of the following parts:
 - the symbol `e`
 - the exponent part (an integer)
 
-We say “scientific-like notation” because it’s technically not scientific notation:
+It’s called “scientific-like notation” because it’s technically not scientific notation:
 The coefficient need not be between 1 and 10. `-42.0e-1` is a valid floating-point value.
 
 Floating-point values can be operated on just as integers can.
 There is no truncation for division, but dividing by zero still raises an error.
+The floating-point value `0.0` is *not identical* to the value `-0.0`.
 
 Float values are considered “contageous” in that they “infect” any integers they are operated with.
 For example, in the expression `1 + 2.3`, the integer `1` is *coerced* into the float `1.0`,
@@ -398,7 +397,7 @@ The Unknown type, `unknown`, is the Top type in the type hierarchy —
 it contains every value and expression, and is a supertype of every other type.
 
 The Unknown type is used to describe a value or expression about which nothing is known.
-Therefore, the compiler will not assume it has any properties or valid in some operations.
+Therefore, the compiler will not assume it has any properties or is valid in some operations.
 
 Every value and expression is assignble to the Unknown type.
 Currently, since there are no valueless expressions,
