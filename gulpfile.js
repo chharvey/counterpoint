@@ -9,9 +9,6 @@ const mocha = require('gulp-mocha');
 const path = require('path');
 // require('ts-node'); // DO NOT REMOVE … peerDependency of `gulp-mocha`
 
-const tsconfig      = require('./tsconfig.json')
-const typedocconfig = tsconfig.typedocOptions
-
 
 
 async function postdist() {
