@@ -34,7 +34,7 @@
   "devDependencies": {
     "@types/minimist": "^1.2.0",
     "@types/mocha": "^8.0.0",
-    "@types/node": "^14.0.1",
+    "@types/node": "^15.0.0",
     "@types/utf8": "^2.1.6",
     "gulp": "^4.0.2",
     "gulp-mocha": "^8.0.0",
