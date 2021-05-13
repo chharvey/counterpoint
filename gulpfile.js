@@ -6,10 +6,8 @@ const xjs = require('extrajs');
 const fs = require('fs');
 const gulp = require('gulp');
 const mocha = require('gulp-mocha');
-const typescript = require('gulp-typescript');
 const path = require('path');
 // require('ts-node'); // DO NOT REMOVE … peerDependency of `gulp-mocha`
-// require('typescript'); // DO NOT REMOVE … peerDependency of `gulp-typescript`
 
 const tsconfig      = require('./tsconfig.json')
 const typedocconfig = tsconfig.typedocOptions
