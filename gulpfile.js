@@ -29,13 +29,6 @@ async function postdist() {
 	`);
 }
 
-function test() {
-	return gulp.src('./test/**/*.ts')
-		.pipe(mocha({
-			require: 'ts-node/register',
-		}))
-}
-
 async function test_dev() {
 	const {CONFIG_DEFAULT}         = require('./build/SolidConfig.js')
 	const {Lexer, Screener} = require('./build/lexer/')
@@ -82,7 +75,7 @@ async function test_dev() {
 	])
 }
 
-const build = gulp.parallel(postdist, test)
+const build = postdist
 
 const dev = test_dev
 
@@ -108,7 +101,6 @@ async function random() {
 module.exports = {
 	build,
 		postdist,
-		test,
 	dev,
 		test_dev,
 	random,

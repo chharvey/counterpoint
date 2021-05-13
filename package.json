@@ -28,8 +28,8 @@
     "solid:d-p": "solid d ./sample/test-v0.3.solid -p ./sample/solid-config.json",
     "solid:r": "solid r ./sample/test-v0.3.wasm",
     "dist": "tsc",
-    "build": "rm -rf ./build/ && npm run dist && gulp build",
-    "test": "gulp test"
+    "test": "mocha -r ts-node/register './test/**/*.test.ts'",
+    "build": "rm -rf ./build/ && npm run dist && npm run test && gulp build"
   },
   "dependencies": {
     "@chharvey/parser": "^0.7.0",
@@ -45,6 +45,7 @@
     "@types/utf8": "^2.1.6",
     "gulp": "^4.0.2",
     "gulp-mocha": "^8.0.0",
+    "mocha": "^8.4.0",
     "ts-node": "^9.0.0",
     "typescript": "~4.2.0"
   },
