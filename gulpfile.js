@@ -15,11 +15,6 @@ const tsconfig      = require('./tsconfig.json')
 const typedocconfig = tsconfig.typedocOptions
 
 
-function dist() {
-	return gulp.src('./src/**/*.ts')
-		.pipe(typescript(tsconfig.compilerOptions))
-		.pipe(gulp.dest('./build/'))
-}
 
 async function postdist() {
 	const grammar_solid = fs.promises.readFile(path.join(__dirname, './docs/spec/grammar/syntax.ebnf'), 'utf8');
@@ -92,9 +87,9 @@ async function test_dev() {
 	])
 }
 
-const build = gulp.parallel(gulp.series(dist, postdist), test)
+const build = gulp.parallel(postdist, test)
 
-const dev = gulp.series(dist, test_dev)
+const dev = test_dev
 
 async function random() {
 	const {ParserSolid, Grammar} = require('./build/parser/')
@@ -117,7 +112,6 @@ async function random() {
 
 module.exports = {
 	build,
-		dist,
 		postdist,
 		test,
 	dev,

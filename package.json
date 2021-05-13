@@ -27,7 +27,8 @@
     "solid:d-o": "solid d ./sample/test-v0.3.solid -o ./sample/testout.wat",
     "solid:d-p": "solid d ./sample/test-v0.3.solid -p ./sample/solid-config.json",
     "solid:r": "solid r ./sample/test-v0.3.wasm",
-    "build": "rm -rf ./build/ && gulp build",
+    "dist": "tsc",
+    "build": "rm -rf ./build/ && npm run dist && gulp build",
     "test": "gulp test"
   },
   "dependencies": {
