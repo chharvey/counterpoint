@@ -5,9 +5,7 @@ const {
 const xjs = require('extrajs');
 const fs = require('fs');
 const gulp = require('gulp');
-const mocha = require('gulp-mocha');
 const path = require('path');
-// require('ts-node'); // DO NOT REMOVE … peerDependency of `gulp-mocha`
 
 
 
