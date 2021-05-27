@@ -16,6 +16,10 @@ import {SolidObject} from './SolidObject';
  * @final
  */
 export class SolidBoolean extends SolidObject {
+	/** @implements Object */
+	static toString(): string {
+		return 'bool';
+	}
 	/** The Solid Language Value `false`. */
 	static readonly FALSE: SolidBoolean = new SolidBoolean()
 	/** The Solid Language Value `true`. */
