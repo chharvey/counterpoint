@@ -206,6 +206,17 @@ export class ASTNodeCase extends ASTNodeSolid {
  * - ASTNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
+	/**
+	 * Construct a new ASTNodeType from a source text and optionally a configuration.
+	 * The source text must parse successfully.
+	 * @param src    the source text
+	 * @param config the configuration
+	 * @returns      a new ASTNodeType representing the given source
+	 */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeType {
+		const statement: ASTNodeDeclarationType = ASTNodeDeclarationType.fromSource(`type T = ${ src };`, config);
+		return statement.children[1];
+	}
 	private assessed: SolidLanguageType | null = null
 	/**
 	 * @overrides ASTNodeSolid
@@ -234,6 +245,12 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	protected abstract assess_do(validator: Validator): SolidLanguageType
 }
 export class ASTNodeTypeConstant extends ASTNodeType {
+	/** @overrides ASTNodeType */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeConstant {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeConstant);
+		return typ;
+	}
 	declare readonly children: readonly [];
 	readonly value: SolidLanguageType;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) {
@@ -263,6 +280,12 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	}
 }
 export class ASTNodeTypeAlias extends ASTNodeType {
+	/** @overrides ASTNodeType */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeAlias {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeAlias);
+		return typ;
+	}
 	declare readonly children: readonly [];
 	readonly id: bigint;
 	constructor (start_node: TOKEN.TokenIdentifier) {
@@ -302,6 +325,12 @@ export class ASTNodeTypeEmptyCollection extends ASTNodeType {
 	}
 }
 export class ASTNodeTypeList extends ASTNodeType {
+	/** @overrides ASTNodeType */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeList {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeList);
+		return typ;
+	}
 	constructor (
 		start_node: PARSER.ParseNodeTypeTupleLiteral,
 		readonly children: Readonly<NonemptyArray<ASTNodeType>>,
@@ -314,6 +343,12 @@ export class ASTNodeTypeList extends ASTNodeType {
 	}
 }
 export class ASTNodeTypeRecord extends ASTNodeType {
+	/** @overrides ASTNodeType */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeRecord {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeRecord);
+		return typ;
+	}
 	constructor (
 		start_node: PARSER.ParseNodeTypeRecordLiteral,
 		readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
@@ -329,6 +364,12 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 	}
 }
 export abstract class ASTNodeTypeOperation extends ASTNodeType {
+	/** @overrides ASTNodeType */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeOperation {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeOperation);
+		return typ;
+	}
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidTypeOperator,
@@ -338,6 +379,12 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 	}
 }
 export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
+	/** @overrides ASTNodeTypeOperation */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeOperationUnary {
+		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeOperationUnary);
+		return typ;
+	}
 	constructor (
 		start_node: ParseNode,
 		operator: ValidTypeOperator,
@@ -353,6 +400,12 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	}
 }
 export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
+	/** @overrides ASTNodeTypeOperation */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeOperationBinary {
+		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeOperationBinary);
+		return typ;
+	}
 	constructor (
 		start_node: ParseNode,
 		operator: ValidTypeOperator,

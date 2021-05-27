@@ -20,7 +20,6 @@ import {
 	NanError01,
 } from '../../src/error/';
 import {
-	Decorator,
 	Validator,
 	AST,
 	SymbolStructure,
@@ -63,13 +62,6 @@ import {
 	instructionConstInt,
 	instructionConstFloat,
 } from '../helpers'
-import {
-	unitTypeFromString,
-	unaryTypeFromString,
-	intersectionTypeFromString,
-	unionTypeFromString,
-	variableDeclarationFromSource,
-} from '../helpers-parse'
 
 
 
@@ -212,22 +204,22 @@ describe('ASTNodeSolid', () => {
 		describe('ASTNodeDeclarationVariable', () => {
 			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  int | float =  21  *  2;`
-				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
+				const decl: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(src);
 				decl.typeCheck(new Validator());
 			})
 			it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  null =  21  *  2;`
-				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
+				const decl: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(src);
 				assert.throws(() => decl.typeCheck(new Validator()), TypeError03);
 			})
 			it('with int coersion on, allows assigning ints to floats.', () => {
 				const src: string = `let x: float = 42;`
-				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
+				const decl: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(src);
 				decl.typeCheck(new Validator());
 			})
 			it('with int coersion off, throws when assigning int to float.', () => {
 				const src: string = `let x: float = 42;`
-				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(variableDeclarationFromSource(src));
+				const decl: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(src);
 				assert.throws(() => decl.typeCheck(new Validator({
 					...CONFIG_DEFAULT,
 					compilerOptions: {
@@ -777,7 +769,7 @@ describe('ASTNodeSolid', () => {
 					`true`,
 					`42`,
 					`4.2e+3`,
-				].map((src) => Decorator.decorate(unitTypeFromString(src)).assess(new Validator())), [
+				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).assess(new Validator())), [
 					SolidNull,
 					SolidBoolean.FALSETYPE,
 					SolidBoolean.TRUETYPE,
@@ -807,7 +799,7 @@ describe('ASTNodeSolid', () => {
 					'int',
 					'float',
 					'obj',
-				].map((src) => Decorator.decorate(unitTypeFromString(src)).assess(new Validator())), [
+				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).assess(new Validator())), [
 					SolidBoolean,
 					Int16,
 					Float64,
@@ -842,17 +834,17 @@ describe('ASTNodeSolid', () => {
 			});
 			it('computes the value of a nullified (ORNULL) type.', () => {
 				assert.deepStrictEqual(
-					Decorator.decorate(unaryTypeFromString(`int!`)).assess(new Validator()),
+					AST.ASTNodeTypeOperationUnary.fromSource(`int!`).assess(new Validator()),
 					Int16.union(SolidNull),
 				)
 			})
 			it('computes the value of AND and OR operators', () => {
 				assert.deepStrictEqual(
-					Decorator.decorate(intersectionTypeFromString(`obj & 3`)).assess(new Validator()),
+					AST.ASTNodeTypeOperationBinary.fromSource(`obj & 3`).assess(new Validator()),
 					SolidObject.intersect(typeConstInt(3n)),
 				)
 				assert.deepStrictEqual(
-					Decorator.decorate(unionTypeFromString(`4.2 | int`)).assess(new Validator()),
+					AST.ASTNodeTypeOperationBinary.fromSource(`4.2 | int`).assess(new Validator()),
 					typeConstFloat(4.2).union(Int16),
 				)
 			})
