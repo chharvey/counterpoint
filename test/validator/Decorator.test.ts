@@ -25,14 +25,6 @@ import {
 import {
 	assert_arrayLength,
 } from '../assert-helpers'
-import {
-	keywordTypeFromString,
-	unitTypeFromString,
-	unaryTypeFromString,
-	intersectionTypeFromString,
-	unionTypeFromString,
-	primitiveLiteralFromSource,
-} from '../helpers-parse'
 import * as h from '../helpers-parse';
 
 
@@ -73,7 +65,7 @@ describe('Decorator', () => {
 					`true;`,
 					`42;`,
 					`4.2;`,
-				].map((src) => (Decorator.decorate(primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).value), [
+				].map((src) => (Decorator.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).value), [
 					SolidNull.NULL,
 					SolidBoolean.FALSE,
 					SolidBoolean.TRUE,
@@ -93,7 +85,7 @@ describe('Decorator', () => {
 					`int`,
 					`float`,
 					`obj`,
-				].map((src) => (Decorator.decorate(keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).value), [
+				].map((src) => (Decorator.decorate(h.keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).value), [
 					SolidBoolean,
 					Int16,
 					Float64,
@@ -181,7 +173,7 @@ describe('Decorator', () => {
 					`Bar`,
 					`Qux`,
 				].map((src) => {
-					const constant: AST.ASTNodeType = Decorator.decorate(unitTypeFromString(src));
+					const constant: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(src));
 					assert.ok(constant instanceof AST.ASTNodeTypeAlias);
 					return constant.id;
 				}), [
@@ -198,7 +190,7 @@ describe('Decorator', () => {
 						<TypeAlias source="Bar" id=257/>
 					</TypeOperation>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(unionTypeFromString(`Foo | Bar`)).children.map((op) => {
+				assert.deepStrictEqual(Decorator.decorate(h.unionTypeFromString(`Foo | Bar`)).children.map((op) => {
 					assert.ok(op instanceof AST.ASTNodeTypeAlias);
 					return op.id;
 				}), [257n, 258n]);
@@ -217,7 +209,7 @@ describe('Decorator', () => {
 					`42`,
 					`4.2`,
 				].map((src) => {
-					const constant: AST.ASTNodeType = Decorator.decorate(unitTypeFromString(src));
+					const constant: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(src));
 					assert.ok(constant instanceof AST.ASTNodeTypeConstant);
 					return constant.value
 				}), [
@@ -237,7 +229,7 @@ describe('Decorator', () => {
 						<TypeConstant source="int" value="Int16"/>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(unaryTypeFromString(`int!`));
+				const operation: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int!`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationUnary);
 				const operand: AST.ASTNodeType = operation.children[0];
 				assert.deepStrictEqual(
@@ -255,7 +247,7 @@ describe('Decorator', () => {
 						<TypeConstant source="3"/>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(intersectionTypeFromString(`int & 3`));
+				const operation: AST.ASTNodeType = Decorator.decorate(h.intersectionTypeFromString(`int & 3`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
 				const left:  AST.ASTNodeType = operation.children[0];
 				const right: AST.ASTNodeType = operation.children[1];
@@ -274,7 +266,7 @@ describe('Decorator', () => {
 						<TypeOperation source="int & int">...</TypeOperation>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(unionTypeFromString(`4.2! | int & int`));
+				const operation: AST.ASTNodeType = Decorator.decorate(h.unionTypeFromString(`4.2! | int & int`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
 				const left: AST.ASTNodeType = operation.children[0];
 				const right: AST.ASTNodeType = operation.children[1];
@@ -293,7 +285,7 @@ describe('Decorator', () => {
 						<TypeOperation source="int | int">...</TypeOperation>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(unionTypeFromString(`4.2! & (int | int)`));
+				const operation: AST.ASTNodeType = Decorator.decorate(h.unionTypeFromString(`4.2! & (int | int)`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
 				const left:  AST.ASTNodeType = operation.children[0];
 				const right: AST.ASTNodeType = operation.children[1];
