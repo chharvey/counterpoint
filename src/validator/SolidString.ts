@@ -12,6 +12,10 @@ import {SolidBoolean} from './SolidBoolean';
 
 
 export class SolidString extends SolidObject {
+	/** @implements Object */
+	static toString(): string {
+		return 'str';
+	}
 	/** @overrides SolidObject */
 	static values: SolidLanguageType['values'] = new Set([new SolidString('')]);
 

@@ -18,6 +18,11 @@ export class SolidTypeTuple extends SolidLanguageType {
 		super(new Set([new SolidTuple()]));
 	}
 
+	/** @overrides Object */
+	toString(): string {
+		return `[${ this.types.map((t) => t.toString()).join(', ') }]`;
+	}
+
 	/** @overrides SolidLanguageType */
 	isSubtypeOf_do(t: SolidLanguageType): boolean {
 		return (

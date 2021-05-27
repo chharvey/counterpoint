@@ -18,6 +18,10 @@ type Int16DatatypeMutable =   [boolean, boolean, boolean, boolean, boolean, bool
  * @final
  */
 export class Int16 extends SolidNumber<Int16> {
+	/** @implements Object */
+	static toString(): string {
+		return 'int';
+	}
 	private static readonly BITCOUNT: number = 16
 
 	        static readonly ZERO  : Int16 = new Int16(0n)

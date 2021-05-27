@@ -4,9 +4,14 @@ import {
 	ASTNode,
 	NonemptyArray,
 } from '@chharvey/parser';
+import * as assert from 'assert';
 import * as xjs from 'extrajs'
 
-import {Dev} from '../core/';
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Dev,
+} from '../core/';
 import {
 	memoizeMethod,
 } from '../decorators';
@@ -27,6 +32,9 @@ import {
 	SolidRecord,
 	SolidMapping,
 } from '../typer/';
+import {
+	Decorator,
+} from './Decorator';
 import {
 	Validator,
 } from './Validator';
@@ -77,6 +85,7 @@ import {
 	Keyword,
 	TOKEN,
 	PARSER,
+	ParserSolid as Parser,
 } from '../parser/';
 
 
@@ -204,6 +213,17 @@ export class ASTNodeCase extends ASTNodeSolid {
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
 	/**
+	 * Construct a new ASTNodeType from a source text and optionally a configuration.
+	 * The source text must parse successfully.
+	 * @param src    the source text
+	 * @param config the configuration
+	 * @returns      a new ASTNodeType representing the given source
+	 */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeType {
+		const statement: ASTNodeDeclarationType = ASTNodeDeclarationType.fromSource(`type T = ${ src };`, config);
+		return statement.children[1];
+	}
+	/**
 	 * @overrides ASTNodeSolid
 	 * @final
 	 */
@@ -225,6 +245,12 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	abstract assess(validator: Validator): SolidLanguageType;
 }
 export class ASTNodeTypeConstant extends ASTNodeType {
+	/** @overrides ASTNodeType */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeConstant {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeConstant);
+		return typ;
+	}
 	declare readonly children: readonly [];
 	readonly value: SolidLanguageType;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) {
@@ -255,6 +281,12 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	}
 }
 export class ASTNodeTypeAlias extends ASTNodeType {
+	/** @overrides ASTNodeType */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeAlias {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeAlias);
+		return typ;
+	}
 	declare readonly children: readonly [];
 	readonly id: bigint;
 	constructor (start_node: TOKEN.TokenIdentifier) {
@@ -283,6 +315,12 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 	}
 }
 export class ASTNodeTypeEmptyCollection extends ASTNodeType {
+	/** @overrides ASTNodeType */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeEmptyCollection {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeEmptyCollection);
+		return typ;
+	}
 	declare readonly children: readonly [];
 	constructor (
 		start_node: PARSER.ParseNodeTypeUnit,
@@ -296,6 +334,12 @@ export class ASTNodeTypeEmptyCollection extends ASTNodeType {
 	}
 }
 export class ASTNodeTypeList extends ASTNodeType {
+	/** @overrides ASTNodeType */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeList {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeList);
+		return typ;
+	}
 	constructor (
 		start_node: PARSER.ParseNodeTypeTupleLiteral,
 		readonly children: Readonly<NonemptyArray<ASTNodeType>>,
@@ -309,6 +353,12 @@ export class ASTNodeTypeList extends ASTNodeType {
 	}
 }
 export class ASTNodeTypeRecord extends ASTNodeType {
+	/** @overrides ASTNodeType */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeRecord {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeRecord);
+		return typ;
+	}
 	constructor (
 		start_node: PARSER.ParseNodeTypeRecordLiteral,
 		readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
@@ -325,6 +375,12 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 	}
 }
 export abstract class ASTNodeTypeOperation extends ASTNodeType {
+	/** @overrides ASTNodeType */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeOperation {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeOperation);
+		return typ;
+	}
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidTypeOperator,
@@ -334,6 +390,12 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 	}
 }
 export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
+	/** @overrides ASTNodeTypeOperation */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeOperationUnary {
+		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeOperationUnary);
+		return typ;
+	}
 	constructor (
 		start_node: ParseNode,
 		operator: ValidTypeOperator,
@@ -350,6 +412,12 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	}
 }
 export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
+	/** @overrides ASTNodeTypeOperation */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeOperationBinary {
+		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeOperationBinary);
+		return typ;
+	}
 	constructor (
 		start_node: ParseNode,
 		operator: ValidTypeOperator,
@@ -430,6 +498,19 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 		return descriptor;
 	}
 	/**
+	 * Construct a new ASTNodeExpression from a source text and optionally a configuration.
+	 * The source text must parse successfully.
+	 * @param src    the source text
+	 * @param config the configuration
+	 * @returns      a new ASTNodeExpression representing the given source
+	 */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeExpression {
+		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
+		assert.ok(statement instanceof ASTNodeStatementExpression);
+		assert.strictEqual(statement.children.length, 1, 'semantic statement should have 1 child');
+		return statement.children[0]!;
+	}
+	/**
 	 * Determine whether this expression should build to a float-type instruction.
 	 * @return Should the built instruction be type-coerced into a floating-point number?
 	 */
@@ -461,6 +542,12 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	abstract assess(validator: Validator): SolidObject | null;
 }
 export class ASTNodeConstant extends ASTNodeExpression {
+	/** @overrides ASTNodeExpression */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeConstant {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeConstant);
+		return expression;
+	}
 	declare readonly children: readonly [];
 	readonly value: SolidObject;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString | TOKEN.TokenTemplate) {
@@ -509,6 +596,12 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 }
 export class ASTNodeVariable extends ASTNodeExpression {
+	/** @overrides ASTNodeExpression */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeVariable {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeVariable);
+		return expression;
+	}
 	declare readonly children: readonly [];
 	readonly id: bigint;
 	constructor (start_node: TOKEN.TokenIdentifier) {
@@ -559,6 +652,12 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	}
 }
 export class ASTNodeTemplate extends ASTNodeExpression {
+	/** @overrides ASTNodeExpression */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTemplate {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeTemplate);
+		return expression;
+	}
 	constructor(
 		start_node: ParseNode,
 		readonly children: // FIXME spread types
@@ -598,6 +697,12 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 }
 export class ASTNodeEmptyCollection extends ASTNodeExpression {
+	/** @overrides ASTNodeExpression */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeEmptyCollection {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeEmptyCollection);
+		return expression;
+	}
 	declare readonly children: readonly [];
 	constructor (start_node: PARSER.ParseNodeExpressionUnit) {
 		super(start_node);
@@ -624,6 +729,12 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 	}
 }
 export class ASTNodeList extends ASTNodeExpression {
+	/** @overrides ASTNodeExpression */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeList {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeList);
+		return expression;
+	}
 	constructor (
 		start_node: PARSER.ParseNodeListLiteral,
 		readonly children: Readonly<NonemptyArray<ASTNodeExpression>>,
@@ -655,6 +766,12 @@ export class ASTNodeList extends ASTNodeExpression {
 	}
 }
 export class ASTNodeRecord extends ASTNodeExpression {
+	/** @overrides ASTNodeExpression */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeRecord {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeRecord);
+		return expression;
+	}
 	constructor (
 		start_node: PARSER.ParseNodeRecordLiteral,
 		readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
@@ -692,6 +809,12 @@ export class ASTNodeRecord extends ASTNodeExpression {
 	}
 }
 export class ASTNodeMapping extends ASTNodeExpression {
+	/** @overrides ASTNodeExpression */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeMapping {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeMapping);
+		return expression;
+	}
 	constructor (
 		start_node: PARSER.ParseNodeMappingLiteral,
 		readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
@@ -726,6 +849,12 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	}
 }
 export abstract class ASTNodeOperation extends ASTNodeExpression {
+	/** @overrides ASTNodeExpression */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperation {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperation);
+		return expression;
+	}
 	/** @override */
 	readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
 	constructor(
@@ -737,6 +866,12 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 	}
 }
 export class ASTNodeOperationUnary extends ASTNodeOperation {
+	/** @overrides ASTNodeOperation */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationUnary {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperationUnary);
+		return expression;
+	}
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorUnary,
@@ -798,6 +933,12 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 }
 export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
+	/** @overrides ASTNodeOperation */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinary {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperationBinary);
+		return expression;
+	}
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorBinary,
@@ -826,6 +967,12 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	protected abstract type_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType;
 }
 export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
+	/** @overrides ASTNodeOperationBinary */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryArithmetic {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperationBinaryArithmetic);
+		return expression;
+	}
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorArithmetic,
@@ -901,6 +1048,12 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	}
 }
 export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
+	/** @overrides ASTNodeOperationBinary */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryComparative {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperationBinaryComparative);
+		return expression;
+	}
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorComparative,
@@ -964,6 +1117,12 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	}
 }
 export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
+	/** @overrides ASTNodeOperationBinary */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryEquality {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperationBinaryEquality);
+		return expression;
+	}
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorEquality,
@@ -1024,6 +1183,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 }
 export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
+	/** @overrides ASTNodeOperationBinary */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryLogical {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperationBinaryLogical);
+		return expression;
+	}
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorLogical,
@@ -1085,6 +1250,12 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 }
 export class ASTNodeOperationTernary extends ASTNodeOperation {
+	/** @overrides ASTNodeOperation */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationTernary {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperationTernary);
+		return expression;
+	}
 	constructor(
 		start_node: ParseNode,
 		readonly operator: Operator.COND,
@@ -1141,11 +1312,27 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
  * - ASTNodeDeclaration
  * - ASTNodeAssignment
  */
-export type ASTNodeStatement =
-	| ASTNodeStatementExpression
-	| ASTNodeDeclaration
-	| ASTNodeAssignment
-export class ASTNodeStatementExpression extends ASTNodeSolid {
+export abstract class ASTNodeStatement extends ASTNodeSolid {
+	/**
+	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
+	 * The source text must parse successfully.
+	 * @param src    the source text
+	 * @param config the configuration
+	 * @returns      a new ASTNodeStatement representing the given source
+	 */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeStatement {
+		const goal: ASTNodeGoal = ASTNodeGoal.fromSource(src, config);
+		assert.strictEqual(goal.children.length, 1, 'semantic goal should have 1 child');
+		return goal.children[0];
+	}
+}
+export class ASTNodeStatementExpression extends ASTNodeStatement {
+	/** @overrides ASTNodeStatement */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
+		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
+		assert.ok(statement instanceof ASTNodeStatementExpression);
+		return statement;
+	}
 	constructor(
 		start_node: ParseNode,
 		readonly children:
@@ -1171,7 +1358,13 @@ export class ASTNodeStatementExpression extends ASTNodeSolid {
 export type ASTNodeDeclaration =
 	| ASTNodeDeclarationType
 	| ASTNodeDeclarationVariable
-export class ASTNodeDeclarationType extends ASTNodeSolid {
+export class ASTNodeDeclarationType extends ASTNodeStatement {
+	/** @overrides ASTNodeStatement */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeDeclarationType {
+		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
+		assert.ok(statement instanceof ASTNodeDeclarationType);
+		return statement;
+	}
 	constructor (
 		start_node: ParseNode,
 		readonly children: readonly [ASTNodeTypeAlias, ASTNodeType],
@@ -1202,7 +1395,13 @@ export class ASTNodeDeclarationType extends ASTNodeSolid {
 		return new INST.InstructionNone();
 	}
 }
-export class ASTNodeDeclarationVariable extends ASTNodeSolid {
+export class ASTNodeDeclarationVariable extends ASTNodeStatement {
+	/** @overrides ASTNodeStatement */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
+		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
+		assert.ok(statement instanceof ASTNodeDeclarationVariable);
+		return statement;
+	}
 	constructor (
 		start_node: ParseNode,
 		readonly unfixed: boolean,
@@ -1256,7 +1455,13 @@ export class ASTNodeDeclarationVariable extends ASTNodeSolid {
 		;
 	}
 }
-export class ASTNodeAssignment extends ASTNodeSolid {
+export class ASTNodeAssignment extends ASTNodeStatement {
+	/** @overrides ASTNodeStatement */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeAssignment {
+		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
+		assert.ok(statement instanceof ASTNodeAssignment);
+		return statement;
+	}
 	constructor (
 		start_node: ParseNode,
 		readonly children: readonly [ASTNodeVariable, ASTNodeExpression],
@@ -1294,6 +1499,16 @@ export class ASTNodeAssignment extends ASTNodeSolid {
 	}
 }
 export class ASTNodeGoal extends ASTNodeSolid {
+	/**
+	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
+	 * The source text must parse successfully.
+	 * @param src    the source text
+	 * @param config the configuration
+	 * @returns      a new ASTNodeGoal representing the given source
+	 */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeGoal {
+		return Decorator.decorate(new Parser(src, config).parse());
+	}
 	constructor(
 		start_node: ParseNode,
 		readonly children: readonly ASTNodeStatement[],
