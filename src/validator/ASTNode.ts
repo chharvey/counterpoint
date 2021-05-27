@@ -779,6 +779,12 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 	}
 }
 export class ASTNodeOperationUnary extends ASTNodeOperation {
+	/** @overrides ASTNodeOperation */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationUnary {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperationUnary);
+		return expression;
+	}
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorUnary,
@@ -836,6 +842,12 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 }
 export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
+	/** @overrides ASTNodeOperation */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinary {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperationBinary);
+		return expression;
+	}
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorBinary,
@@ -861,6 +873,12 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	protected abstract type_do_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType;
 }
 export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
+	/** @overrides ASTNodeOperationBinary */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryArithmetic {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperationBinaryArithmetic);
+		return expression;
+	}
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorArithmetic,
@@ -934,6 +952,12 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	}
 }
 export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
+	/** @overrides ASTNodeOperationBinary */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryComparative {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperationBinaryComparative);
+		return expression;
+	}
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorComparative,
@@ -995,6 +1019,12 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	}
 }
 export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
+	/** @overrides ASTNodeOperationBinary */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryEquality {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperationBinaryEquality);
+		return expression;
+	}
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorEquality,
@@ -1053,6 +1083,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 }
 export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
+	/** @overrides ASTNodeOperationBinary */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryLogical {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperationBinaryLogical);
+		return expression;
+	}
 	constructor (
 		start_node: ParseNode,
 		readonly operator: ValidOperatorLogical,
@@ -1112,6 +1148,12 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 }
 export class ASTNodeOperationTernary extends ASTNodeOperation {
+	/** @overrides ASTNodeOperation */
+	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationTernary {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeOperationTernary);
+		return expression;
+	}
 	constructor(
 		start_node: ParseNode,
 		readonly operator: Operator.COND,

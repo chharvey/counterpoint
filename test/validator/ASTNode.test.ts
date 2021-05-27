@@ -289,7 +289,7 @@ describe('ASTNodeSolid', () => {
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
 				assert.deepStrictEqual(
 					stmt.build(builder),
-					new InstructionStatement(0n, AST.ASTNodeOperation.fromSource(src).build(builder)),
+					new InstructionStatement(0n, AST.ASTNodeOperationBinaryArithmetic.fromSource(src).build(builder)),
 				)
 			})
 			specify('multiple statements.', () => {
@@ -471,7 +471,7 @@ describe('ASTNodeSolid', () => {
 						`null is false;`,
 						`null == false;`,
 						`false == 0.0;`,
-					].map((src) => AST.ASTNodeOperation.fromSource(src, folding_off).build(new Builder(src, folding_off))), [
+					].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, folding_off).build(new Builder(src, folding_off))), [
 						new InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstInt(42n),
@@ -535,7 +535,7 @@ describe('ASTNodeSolid', () => {
 						`null == 0.0;`,
 						`false == 0.0;`,
 						`true == 1.0;`,
-					].map((src) => AST.ASTNodeOperation.fromSource(src, folding_coercion_off).build(new Builder(src, folding_coercion_off))), [
+					].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, folding_coercion_off).build(new Builder(src, folding_coercion_off))), [
 						[instructionConstInt(42n),   instructionConstInt(420n)],
 						[instructionConstFloat(4.2), instructionConstInt(42n)],
 						[instructionConstInt(42n),   instructionConstFloat(4.2)],
@@ -553,7 +553,7 @@ describe('ASTNodeSolid', () => {
 						`null && 201.0e-1;`,
 						`true && 201.0e-1;`,
 						`false || null;`,
-					].map((src) => AST.ASTNodeOperation.fromSource(src, folding_off).build(new Builder(src, folding_off))), [
+					].map((src) => AST.ASTNodeOperationBinaryLogical.fromSource(src, folding_off).build(new Builder(src, folding_off))), [
 						new InstructionBinopLogical(
 							0n,
 							Operator.AND,
@@ -589,7 +589,7 @@ describe('ASTNodeSolid', () => {
 				it('counts internal variables correctly.', () => {
 					const src: string = `1 && 2 || 3 && 4;`
 					assert.deepStrictEqual(
-						AST.ASTNodeOperation.fromSource(src, folding_off).build(new Builder(src, folding_off)),
+						AST.ASTNodeOperationBinaryLogical.fromSource(src, folding_off).build(new Builder(src, folding_off)),
 						new InstructionBinopLogical(
 							0n,
 							Operator.OR,
@@ -1027,16 +1027,16 @@ describe('ASTNodeSolid', () => {
 				describe('ASTNodeOperationBinaryArithmetic', () => {
 					context('with constant folding and int coersion on.', () => {
 						it('returns a constant Integer type for any operation of integers.', () => {
-							assert.deepStrictEqual(AST.ASTNodeOperation.fromSource(`7 * 3 * 2;`).type(new Validator()), typeConstInt(7n * 3n * 2n));
+							assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3 * 2;`).type(new Validator()), typeConstInt(7n * 3n * 2n));
 						});
 						it('returns a constant Float type for any operation of mix of integers and floats.', () => {
-							assert.deepStrictEqual(AST.ASTNodeOperation.fromSource(`3.0 * 2.7;`)   .type(new Validator()), typeConstFloat(3.0 * 2.7));
-							assert.deepStrictEqual(AST.ASTNodeOperation.fromSource(`7 * 3.0 * 2;`) .type(new Validator()), typeConstFloat(7 * 3.0 * 2));
+							assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource(`3.0 * 2.7;`)   .type(new Validator()), typeConstFloat(3.0 * 2.7));
+							assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3.0 * 2;`) .type(new Validator()), typeConstFloat(7 * 3.0 * 2));
 						});
 					});
 					context('with folding off but int coersion on.', () => {
 						it('returns Integer for integer arithmetic.', () => {
-							const node: AST.ASTNodeOperation = AST.ASTNodeOperation.fromSource(`(7 + 3) * 2;`, folding_off);
+							const node: AST.ASTNodeOperation = AST.ASTNodeOperationBinaryArithmetic.fromSource(`(7 + 3) * 2;`, folding_off);
 							assert.deepStrictEqual(
 								[node.type(new Validator(folding_off)), node.children.length],
 								[Int16,                                 2],
@@ -1047,7 +1047,7 @@ describe('ASTNodeSolid', () => {
 							);
 						});
 						it('returns Float for float arithmetic.', () => {
-							const node: AST.ASTNodeOperation = AST.ASTNodeOperation.fromSource(`7 * 3.0 ^ 2;`, folding_off);
+							const node: AST.ASTNodeOperation = AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3.0 ^ 2;`, folding_off);
 							assert.deepStrictEqual(
 								[node.type(new Validator(folding_off)), node.children.length],
 								[Float64,                               2],
@@ -1078,7 +1078,7 @@ describe('ASTNodeSolid', () => {
 							`null ^ false;`,
 							...(Dev.supports('stringConstant-assess') ? [`'hello' + 5;`] : []),
 						].forEach((src) => {
-							assert.throws(() => AST.ASTNodeOperation.fromSource(src).type(new Validator()), TypeError01);
+							assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource(src).type(new Validator()), TypeError01);
 						});
 					});
 				});
@@ -1095,7 +1095,7 @@ describe('ASTNodeSolid', () => {
 					});
 					context('with folding off but int coersion on.', () => {
 						it('allows coercing of ints to floats if there are any floats.', () => {
-							assert.deepStrictEqual(AST.ASTNodeOperation.fromSource(`7.0 > 3;`).type(new Validator(folding_off)), SolidBoolean);
+							assert.deepStrictEqual(AST.ASTNodeOperationBinaryComparative.fromSource(`7.0 > 3;`).type(new Validator(folding_off)), SolidBoolean);
 						});
 					});
 					context('with folding and int coersion off.', () => {
@@ -1108,7 +1108,7 @@ describe('ASTNodeSolid', () => {
 						});
 					});
 					it('throws for comparative operation of non-numbers.', () => {
-						assert.throws(() => AST.ASTNodeOperation.fromSource(`7.0 <= null;`).type(new Validator()), TypeError01);
+						assert.throws(() => AST.ASTNodeOperationBinaryComparative.fromSource(`7.0 <= null;`).type(new Validator()), TypeError01);
 					});
 				});
 				describe('ASTNodeOperationBinaryEquality', () => {
@@ -1132,10 +1132,10 @@ describe('ASTNodeSolid', () => {
 					});
 					context('with folding off but int coersion on.', () => {
 						it('allows coercing of ints to floats if there are any floats.', () => {
-							assert.deepStrictEqual(AST.ASTNodeOperation.fromSource(`7 == 7.0;`).type(new Validator(folding_off)), SolidBoolean);
+							assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 == 7.0;`).type(new Validator(folding_off)), SolidBoolean);
 						});
 						it('returns `false` if operands are of different numeric types.', () => {
-							assert.deepStrictEqual(AST.ASTNodeOperation.fromSource(`7 is 7.0;`, folding_off).type(new Validator(folding_off)), SolidBoolean.FALSETYPE);
+							assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 is 7.0;`, folding_off).type(new Validator(folding_off)), SolidBoolean.FALSETYPE);
 						});
 					});
 					context('with folding and int coersion off.', () => {
@@ -1173,7 +1173,7 @@ describe('ASTNodeSolid', () => {
 						});
 					});
 					it('throws when condition is not boolean.', () => {
-						assert.throws(() => AST.ASTNodeOperation.fromSource(`if 2 then true else false;`).type(new Validator()), TypeError01);
+						assert.throws(() => AST.ASTNodeOperationTernary.fromSource(`if 2 then true else false;`).type(new Validator()), TypeError01);
 					});
 				});
 			});
@@ -1376,7 +1376,7 @@ describe('ASTNodeSolid', () => {
 						assert.deepStrictEqual([
 							`2 ^ 15 + 2 ^ 14;`,
 							`-(2 ^ 14) - 2 ^ 15;`,
-						].map((src) => AST.ASTNodeOperation.fromSource(src).assess(new Validator())), [
+						].map((src) => AST.ASTNodeOperationBinaryArithmetic.fromSource(src).assess(new Validator())), [
 							new Int16(-(2n ** 14n)),
 							new Int16(2n ** 14n),
 						])
@@ -1388,7 +1388,7 @@ describe('ASTNodeSolid', () => {
 						]))
 					})
 					it('throws when performing an operation that does not yield a valid number.', () => {
-						assert.throws(() => AST.ASTNodeOperation.fromSource(`-4 ^ -0.5;`).assess(new Validator()), NanError01);
+						assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource(`-4 ^ -0.5;`).assess(new Validator()), NanError01);
 					})
 				});
 				specify('ASTNodeOperationBinaryComparative', () => {
