@@ -13,6 +13,8 @@ import type {SolidObject} from './SolidObject';
  * - TypeNever
  * - TypeConstant
  * - TypeUnknown
+ * - Tuple
+ * - Record
  */
 export abstract class SolidLanguageType {
 	/** The Bottom Type, containing no values. */
@@ -105,12 +107,12 @@ export abstract class SolidLanguageType {
 	 * @final
 	 */
 	isSubtypeOf(t: SolidLanguageType): boolean {
+		/** 2-7 | `A <: A` */
+		if (this === t) { return true }
 		/** 1-3 | `T       <: never  <->  T == never` */
 		if (t.isEmpty) { return this.isEmpty }
 		/** 1-2 | `T     <: unknown` */
 		if (t.isUniverse) { return true }
-		/** 2-7 | `A <: A` */
-		if (this === t) { return true }
 
 		if (t instanceof SolidTypeIntersection) {
 			/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
@@ -159,6 +161,11 @@ class SolidTypeIntersection extends SolidLanguageType {
 	) {
 		super(xjs.Set.intersection(left.values, right.values))
 	}
+
+	/** @overrides Object */
+	toString(): string {
+		return `${ this.left } & ${ this.right }`;
+	}
 	/** @override */
 	includes(v: SolidObject): boolean {
 		return this.left.includes(v) && this.right.includes(v)
@@ -191,6 +198,11 @@ class SolidTypeUnion extends SolidLanguageType {
 	) {
 		super(xjs.Set.union(left.values, right.values))
 	}
+
+	/** @overrides Object */
+	toString(): string {
+		return `${ this.left } | ${ this.right }`;
+	}
 	/** @override */
 	includes(v: SolidObject): boolean {
 		return this.left.includes(v) || this.right.includes(v)
@@ -214,10 +226,10 @@ export class SolidTypeInterface extends SolidLanguageType {
 	readonly isUniverse: boolean = this.properties.size === 0
 
 	/**
-	 * Construct a new SolidLanguageType object.
+	 * Construct a new SolidInterface object.
 	 * @param properties a map of this type’s members’ names along with their associated types
 	 */
-	constructor (readonly properties: ReadonlyMap<string, SolidLanguageType>) {
+	constructor (private readonly properties: ReadonlyMap<string, SolidLanguageType>) {
 		super()
 	}
 
@@ -281,6 +293,10 @@ class SolidTypeNever extends SolidLanguageType {
 		super()
 	}
 
+	/** @overrides Object */
+	toString(): string {
+		return 'never';
+	}
 	/** @override */
 	includes(_v: SolidObject): boolean {
 		return false
@@ -313,6 +329,10 @@ export class SolidTypeConstant extends SolidLanguageType {
 		super(new Set([value]))
 	}
 
+	/** @overrides Object */
+	toString(): string {
+		return this.value.toString();
+	}
 	/** @override */
 	includes(_v: SolidObject): boolean {
 		return this.value.equal(_v)
@@ -340,6 +360,10 @@ class SolidTypeUnknown extends SolidLanguageType {
 		super()
 	}
 
+	/** @overrides Object */
+	toString(): string {
+		return 'unknown';
+	}
 	/** @override */
 	includes(_v: SolidObject): boolean {
 		return true

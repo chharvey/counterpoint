@@ -56,7 +56,7 @@ export function keywordTypeFromString(typestring: string, config: SolidConfig = 
 	assert.ok(unit instanceof PARSER.ParseNodeTypeKeyword, 'unit should be a ParseNodeTypeKeyword')
 	return unit
 }
-export function typePropertyFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodePropertyType {
+export function propertyTypeFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodePropertyType {
 	const recordtype: PARSER.ParseNodeTypeRecordLiteral = recordTypeFromString(`[${ propertystring }]`, config);
 	assert_arrayLength(recordtype.children, 3, 'record type should have 3 children');
 	assert_arrayLength(recordtype.children[1].children, 1, 'property list should have 1 child');
@@ -210,7 +210,7 @@ export function conditionalExpressionFromSource(src: string, config: SolidConfig
 	assert.ok(expression_cond instanceof PARSER.ParseNodeExpressionConditional, 'expression_cond should be a ParseNodeExpressionConditional')
 	return expression_cond
 }
-function expressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpression {
+export function expressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpression {
 	const statement: PARSER.ParseNodeStatement = statementFromSource(src, config)
 	assert_arrayLength(statement.children, 2, 'statment should have 2 children')
 	const [expression, endstat]: readonly [PARSER.ParseNodeExpression, Token] = statement.children
@@ -252,7 +252,7 @@ export function assignmentFromSource(src: string, config: SolidConfig = CONFIG_D
 	return assignment;
 }
 export function statementFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeStatement {
-	const goal: PARSER.ParseNodeGoal = new Parser(src, config).parse()
+	const goal: PARSER.ParseNodeGoal = goalFromSource(src, config);
 	assert_arrayLength(goal.children, 3, 'goal should have 3 children')
 	const [sot, stat_list, eot]: readonly [Token, PARSER.ParseNodeGoal__0__List, Token] = goal.children
 	assert.ok(sot instanceof TokenFilebound)
@@ -261,6 +261,9 @@ export function statementFromSource(src: string, config: SolidConfig = CONFIG_DE
 	assert.strictEqual(eot.source, Filebound.EOT)
 	assert_arrayLength(stat_list.children, 1, 'statement list should have 1 child')
 	return stat_list.children[0]
+}
+export function goalFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeGoal {
+	return new Parser(src, config).parse();
 }
 
 

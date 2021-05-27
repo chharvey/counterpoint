@@ -3,9 +3,9 @@ import {
 	TokenWhitespace,
 	LexError01,
 	LexError02,
-	utils,
 } from '@chharvey/parser';
 import * as assert from 'assert'
+import * as xjs from 'extrajs';
 
 import {
 	SolidConfig,
@@ -144,7 +144,7 @@ describe('LexerSolid', () => {
 					assert.strictEqual(tokens[4].source, '8')
 				})
 				specify('Simulate block documentation comment.', () => {
-					const tokens: Token[] = [...new Lexer(utils.dedent`
+					const tokens: Token[] = [...new Lexer(xjs.String.dedent`
 						%%%
 						The third power of 2.
 						%%%
@@ -152,7 +152,7 @@ describe('LexerSolid', () => {
 					`, CONFIG_DEFAULT).generate()];
 					assert.ok(tokens[2] instanceof TOKEN.TokenCommentMulti)
 					assert.ok(tokens[3] instanceof TOKEN.TokenCommentLine)
-					assert.strictEqual(tokens[2].source, utils.dedent`
+					assert.strictEqual(tokens[2].source, xjs.String.dedent`
 						%%%
 						The third power of 2.
 						%%
@@ -470,6 +470,11 @@ describe('LexerSolid', () => {
 				assert.strictEqual(tokenstring.source.slice(12, 20), `\\u{005f}`)
 				assert.strictEqual(tokenstring.source.slice(23, 27), `\\u{}`)
 			})
+			it('may contain an escaped `u` anywhere.', () => {
+				assert.strictEqual([...new Lexer(`
+					'abc\\udef\\u';
+				`, CONFIG_DEFAULT).generate()][2].source, `'abc\\udef\\u'`);
+			});
 			specify('Line continuation.', () => {
 				const tokenstring: Token = [...new Lexer(`
 					'012\\

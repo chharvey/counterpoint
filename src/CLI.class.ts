@@ -1,4 +1,4 @@
-import {utils} from '@chharvey/parser';
+import * as xjs from 'extrajs';
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -62,7 +62,7 @@ type CustomArgsType = {
  */
 export class CLI {
 	/** Text to print on --help. */
-	static readonly HELPTEXT: string = utils.dedent`
+	static readonly HELPTEXT: string = xjs.String.dedent`
 		Usage: solid <command> <filepath> [<options>]
 
 		Parse, analyze, and compile a Solid source code file.
@@ -102,7 +102,7 @@ export class CLI {
 	`.trimStart();
 
 	/** Text to print on --config. */
-	static readonly CONFIGTEXT: string = utils.dedent`
+	static readonly CONFIGTEXT: string = xjs.String.dedent`
 		The following options set individual language features and compiler options.
 		These options will override those in the configuration file provided by \`--project\`.
 
@@ -157,7 +157,7 @@ export class CLI {
 		},
 		unknown(arg) {
 			if (arg[0] === '-') { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
-				throw new Error(utils.dedent`
+				throw new Error(xjs.String.dedent`
 					Unknown CLI option: ${ arg }
 					${ CLI.HELPTEXT }
 				`.trimStart());
@@ -262,7 +262,7 @@ export class CLI {
 			this.computeConfig(cwd),
 		]))
 		return Promise.all([
-			utils.dedent`
+			xjs.String.dedent`
 				Compiling………
 				Source file: ${ inputfilepath }
 				${this.command === Command.DEV
@@ -282,7 +282,7 @@ export class CLI {
 		const inputfilepath: string = this.inputPath(cwd)
 		const bytes: Promise<Buffer> = fs.promises.readFile(inputfilepath)
 		return [
-			utils.dedent`
+			xjs.String.dedent`
 				Executing………
 				Binary path: ${ inputfilepath }
 			`.trimStart(),

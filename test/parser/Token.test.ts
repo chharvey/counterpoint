@@ -1,5 +1,5 @@
-import {utils} from '@chharvey/parser';
 import * as assert from 'assert'
+import * as xjs from 'extrajs';
 import * as utf8 from 'utf8';
 
 import {
@@ -183,7 +183,7 @@ describe('TokenSolid', () => {
 
 		Dev.supports('literalString-cook') && context('TokenString', () => {
 			it('produces the cooked string value.', () => {
-				assert.deepStrictEqual([...new Lexer(utils.dedent`
+				assert.deepStrictEqual([...new Lexer(xjs.String.dedent`
 					5 + 03 + '' * 'hello' *  -2;
 					'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
 					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3';
@@ -203,9 +203,14 @@ describe('TokenSolid', () => {
 					`\u{1f600}`, `\u{10001}`, `\u{10001}`, `\u{10001}`,
 				]);
 			})
+			it('may contain an escaped `u` anywhere.', () => {
+				assert.strictEqual(utf8Decode(([...new Lexer(`
+					'abc\\udef\\u';
+				`, CONFIG_DEFAULT).generate()][2] as TOKEN.TokenString).cook()), `abcudefu`);
+			});
 			describe('In-String Comments', () => {
 				function cook(config: SolidConfig): string[] {
-					return [...new Lexer(utils.dedent`
+					return [...new Lexer(xjs.String.dedent`
 						'The five boxing wizards % jump quickly.'
 
 						'The five % boxing wizards
@@ -280,7 +285,7 @@ describe('TokenSolid', () => {
 		Dev.supports('literalTemplate-cook') && context('TokenTemplate', () => {
 			it('produces the cooked template value.', () => {
 				assert.deepStrictEqual(
-					[...new Lexer(utils.dedent`
+					[...new Lexer(xjs.String.dedent`
 						600  /  '''''' * 3 + '''hello''' *  2;
 						3 + '''head{{ * 2
 						3 + }}midl{{ * 2
@@ -321,7 +326,7 @@ describe('TokenSolid', () => {
 
 	describe('#serialize', () => {
 		specify('TokenCommentLine', () => {
-			assert.strictEqual([...new Lexer(utils.dedent`
+			assert.strictEqual([...new Lexer(xjs.String.dedent`
 				500  +  30; ;  % line comment  *  2
 				8;
 			`, CONFIG_DEFAULT).generate()][11].serialize(), `
@@ -329,11 +334,11 @@ describe('TokenSolid', () => {
 			`.trim());
 		})
 		specify('TokenCommentMulti', () => {
-			assert.strictEqual([...new Lexer(utils.dedent`
+			assert.strictEqual([...new Lexer(xjs.String.dedent`
 				%% multiline
 				that has a
 				comment %%
-			`, CONFIG_DEFAULT).generate()][2].serialize(), utils.dedent`
+			`, CONFIG_DEFAULT).generate()][2].serialize(), xjs.String.dedent`
 				<COMMENT line="2" col="1">%% multiline
 				that has a
 				comment %%</COMMENT>

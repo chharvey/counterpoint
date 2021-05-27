@@ -13,6 +13,10 @@ import type {SolidBoolean} from './SolidBoolean';
  * - String
  */
 export abstract class SolidObject {
+	/** @implements Object */
+	static toString(): string {
+		return 'obj';
+	}
 	/** @implements SolidLanguageType */
 	static isEmpty: SolidLanguageType['isEmpty'] = false
 	/** @implements SolidLanguageType */

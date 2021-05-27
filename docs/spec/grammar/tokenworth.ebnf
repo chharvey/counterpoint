@@ -162,17 +162,12 @@ TokenWorth([0-9a-z] :::= "z") -> RealNumber  :=  \x023;
 
 TokenWorth(String :::= "'" "'") -> Sequence<RealNumber>
 	:= [];
-TokenWorth(String :::= "'" StringUnfinished "'") -> Sequence<RealNumber>
-	:= TokenWorth(StringUnfinished);
 TokenWorth(String :::= "'" StringChars "'") -> Sequence<RealNumber>
 	:= TokenWorth(StringChars);
-
-	TokenWorth(StringUnfinished :::= "\u") -> Sequence<RealNumber>
-		:= UTF8Encoding(\x75); // U+0075 LATIN SMALL LETTER U
-	TokenWorth(StringUnfinished :::= "%" ([^'%#x0a#x03] [^'#x0a#x03]*)?) -> Sequence<RealNumber>
-		:= [];
-	TokenWorth(StringUnfinished :::= "%%" ("%"? [^'%#x03])*) -> Sequence<RealNumber>
-		:= [];
+TokenWorth(String :::= "'" StringUnfinished "'") -> Sequence<RealNumber>
+	:= TokenWorth(StringUnfinished);
+TokenWorth(String :::= "'" StringChars StringUnfinished "'") -> Sequence<RealNumber>
+	:= [...TokenWorth(StringChars), ...TokenWorth(StringUnfinished)];
 
 	TokenWorth(StringChars :::= StringChar) -> Sequence<RealNumber>
 		:= TokenWorth(StringChar);
@@ -209,6 +204,13 @@ TokenWorth(String :::= "'" StringChars "'") -> Sequence<RealNumber>
 				:= UTF8Encoding(CodePoint([^'\stnru#x0a#x03]));
 			TokenWorth(StringEscape :::= [^'\%stnru#x0a#x03]) -> Sequence<RealNumber>
 				:= UTF8Encoding(CodePoint([^'\%stnru#x0a#x03]));
+
+	TokenWorth(StringUnfinished :::= "\u") -> Sequence<RealNumber>
+		:= UTF8Encoding(\x75); // U+0075 LATIN SMALL LETTER U
+	TokenWorth(StringUnfinished :::= "%" ([^'%#x0a#x03] [^'#x0a#x03]*)?) -> Sequence<RealNumber>
+		:= [];
+	TokenWorth(StringUnfinished :::= "%%" ("%"? [^'%#x03])*) -> Sequence<RealNumber>
+		:= [];
 
 
 

@@ -1,6 +1,5 @@
 import {
 	Token,
-	TokenFilebound,
 	ParseError01,
 } from '@chharvey/parser';
 import * as assert from 'assert'
@@ -25,45 +24,6 @@ import * as h from '../helpers-parse'
 
 describe('Parser', () => {
 	describe('#parse', () => {
-		it('throws a ParseError01 when reaching an unexpected token.', () => {
-			;[
-				`false + /34.56;`,
-				`(true)) || null;`,
-				`234 null;`,
-			].forEach((src) => {
-				assert.throws(() => new Parser(src).parse(), ParseError01)
-			})
-		})
-
-		context('Goal ::= #x02 #x03', () => {
-			it('returns only file bounds.', () => {
-				const tree: PARSER.ParseNodeGoal = new Parser('').parse()
-				assert.strictEqual(tree.children.length, 2)
-				tree.children.forEach((child) => assert.ok(child instanceof TokenFilebound))
-			})
-		})
-
-		context('Statement ::= ";"', () => {
-			it('returns a statement with only a punctuator.', () => {
-				/*
-					<Goal source="␂ ; ␃">
-						<FILEBOUND value="true">␂</FILEBOUND>
-						<Goal__0__List line="1" col="1" source=";">
-							<Statement line="1" col="1" source=";">
-								<PUNCTUATOR line="1" col="1" value="7">;</PUNCTUATOR>
-							</Statement>
-						</Goal__0__List>
-						<FILEBOUND value="false">␃</FILEBOUND>
-					</Goal>
-				*/
-				const statement: PARSER.ParseNodeStatement = h.statementFromSource(`;`)
-				assert_arrayLength(statement.children, 1)
-				const token: PARSER.ParseNodeDeclaration | PARSER.ParseNodeStatementAssignment | Token = statement.children[0];
-				assert.ok(token instanceof TOKEN.TokenPunctuator)
-				assert.strictEqual(token.source, Punctuator.ENDSTAT)
-			})
-		})
-
 		Dev.supports('literalCollection') && describe('Word ::= KEYWORD | IDENTIFIER', () => {
 			it('makes a Word node.', () => {
 				/*
@@ -81,14 +41,14 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeProperty ::= Word ":" Type;', () => {
-			it('makes a TypeProperty node.', () => {
+		Dev.supports('literalCollection') && describe('PropertyType ::= Word ":" Type;', () => {
+			it('makes a PropertyType node.', () => {
 				/*
-					<TypeProperty>
+					<PropertyType>
 						<Word source="let">...</Word>
 						<PUNCTUATOR>:</PUNCTUATOR>
 						<Type source="T">...</Type>
-					</TypeProperty>
+					</PropertyType>
 				*/
 				const srcs: Map<string, string> = new Map([
 					[`let`,        `str`],
@@ -98,7 +58,7 @@ describe('Parser', () => {
 					[`fontFamily`, `str`],
 				]);
 				assert.deepStrictEqual(
-					[...srcs].map(([prop, typ]) => h.typePropertyFromString(`${ prop }: ${ typ }`).children.map((c) => c.source)),
+					[...srcs].map(([prop, typ]) => h.propertyTypeFromString(`${ prop }: ${ typ }`).children.map((c) => c.source)),
 					[...srcs].map(([prop, typ]) => [prop, Punctuator.ISTYPE, typ]),
 				);
 			});
@@ -169,7 +129,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeRecordLiteral ::= "[" ","? TypeProperty# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeRecordLiteral ::= "[" ","? PropertyType# ","? "]"', () => {
 			/*
 				<TypeRecordLiteral>
 					<PUNCTUATOR>[</PUNCTUATOR>
@@ -213,18 +173,18 @@ describe('Parser', () => {
 					[Punctuator.BRAK_OPN, `a : T , b : U | V , c : W & X !`, Punctuator.COMMA, Punctuator.BRAK_CLS],
 				);
 			});
-			specify('TypeRecordLiteral__0__List ::= TypeRecordLiteral__0__List "," TypeProperty', () => {
+			specify('TypeRecordLiteral__0__List ::= TypeRecordLiteral__0__List "," PropertyType', () => {
 				/*
 					<TypeRecordLiteral__0__List>
 						<TypeRecordLiteral__0__List>
 							<TypeRecordLiteral__0__List>
-								<TypeProperty source="a: T">...</TypeProperty>
+								<PropertyType source="a: T">...</PropertyType>
 							</TypeRecordLiteral__0__List>
 							<PUNCTUATOR>,</PUNCTUATOR>
-							<TypeProperty source="b: U | V">...</TypeProperty>
+							<PropertyType source="b: U | V">...</PropertyType>
 						</TypeRecordLiteral__0__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
-						<TypeProperty source="c: W & X!">...</TypeProperty>
+						<PropertyType source="c: W & X!">...</PropertyType>
 					</TypeRecordLiteral__0__List>
 				*/
 				const record: PARSER.ParseNodeTypeRecordLiteral = h.recordTypeFromString(`[a: T, b: U | V, c: W & X!]`);
@@ -957,6 +917,28 @@ describe('Parser', () => {
 			})
 		})
 
+		describe('DeclarationType ::= "type" IDENTIFIER "=" Type ";"', () => {
+			/*
+				<Statement>
+					<DeclarationType>
+						<KEYWORD>type</KEYWORD>
+						<IDENTIFIER>T</IDENTIFIER>
+						<PUNCTUATOR>=</PUNCTUATOR>
+						<Type source="int | float">...</Type>
+						<PUNCTUATOR>;</PUNCTUATOR>
+					</DeclarationType>
+				</Statement>
+			*/
+			it('makes a ParseNodeDeclarationType node.', () => {
+				const decl: PARSER.ParseNodeDeclarationType = h.typeDeclarationFromSource(`
+					type  T  =  int | float;
+				`);
+				assert.deepStrictEqual(decl.children.map((child) => child.source), [
+					'type', 'T', '=', 'int | float', ';',
+				]);
+			});
+		});
+
 		describe('DeclarationVariable ::= "let" "unfixed"? IDENTIFIER ":" Type "=" Expression ";"', () => {
 			/*
 				<Statement>
@@ -992,28 +974,6 @@ describe('Parser', () => {
 			})
 		})
 
-		describe('DeclarationType ::= "type" IDENTIFIER "=" Type ";"', () => {
-			/*
-				<Statement>
-					<DeclarationType>
-						<KEYWORD>type</KEYWORD>
-						<IDENTIFIER>T</IDENTIFIER>
-						<PUNCTUATOR>=</PUNCTUATOR>
-						<Type source="int | float">...</Type>
-						<PUNCTUATOR>;</PUNCTUATOR>
-					</DeclarationType>
-				</Statement>
-			*/
-			it('makes a ParseNodeDeclarationType node.', () => {
-				const decl: PARSER.ParseNodeDeclarationType = h.typeDeclarationFromSource(`
-					type  T  =  int | float;
-				`);
-				assert.deepStrictEqual(decl.children.map((child) => child.source), [
-					'type', 'T', '=', 'int | float', ';',
-				]);
-			});
-		});
-
 		describe('Assignee ::= IDENTIFIER', () => {
 			/*
 				<Assignee>
@@ -1046,7 +1006,22 @@ describe('Parser', () => {
 			})
 		})
 
-		context('Goal__0__List ::= Goal__0__List Statement', () => {
+		context('Statement ::= ";"', () => {
+			it('returns a statement with only a punctuator.', () => {
+				/*
+					<Statement line="1" col="1" source=";">
+						<PUNCTUATOR line="1" col="1" value="7">;</PUNCTUATOR>
+					</Statement>
+				*/
+				const statement: PARSER.ParseNodeStatement = h.statementFromSource(`;`)
+				assert_arrayLength(statement.children, 1)
+				const token: PARSER.ParseNodeDeclaration | PARSER.ParseNodeStatementAssignment | Token = statement.children[0];
+				assert.ok(token instanceof TOKEN.TokenPunctuator)
+				assert.strictEqual(token.source, Punctuator.ENDSTAT)
+			})
+		})
+
+		context('Goal ::= #x02 Statement* #x03', () => {
 			it('parses multiple statements.', () => {
 				/*
 					<Goal>
@@ -1060,7 +1035,7 @@ describe('Parser', () => {
 						<FILEBOUND.../>...</FILEBOUND>
 					</Goal>
 				*/
-				const goal: PARSER.ParseNodeGoal = new Parser(`42; 420;`).parse()
+				const goal: PARSER.ParseNodeGoal = h.goalFromSource(`42; 420;`);
 				assert_arrayLength(goal.children, 3, 'goal should have 3 children')
 				const stat_list: PARSER.ParseNodeGoal__0__List = goal.children[1]
 				assert_arrayLength(stat_list.children, 2, 'stat_list should have 2 children')
