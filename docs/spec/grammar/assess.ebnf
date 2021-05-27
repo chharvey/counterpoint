@@ -13,6 +13,30 @@ Type Assess(SemanticTypeAlias var) :=
 ;
 
 
+Type Assess(SemanticTypeEmptyCollection listtype) :=
+	1. *Return:* `Intersection(Tuple, Record)`.
+;
+
+
+
+Type Assess(SemanticTypeList listtype) :=
+	1. *Let* `data` be a mapping of `listtype` for each `type` to *UnwrapAffirm:* `Assess(type)`.
+	2. *Return:* a subtype of `Tuple` whose items are `data`.
+;
+
+
+
+Type Assess(SemanticTypeRecord recordtype) :=
+	1. *Let* `data` be a new Structure.
+	2. *For each* `propertytype` in `recordtype`:
+		1. Set `data` to [
+			...data,
+			`propertytype.children.0.id`= *UnwrapAffirm:* `Assess(propertytype.children.1)`,
+		].
+	3. *Return:* a subtype of `Record` whose properties are `data`.
+;
+
+
 
 Type Assess(SemanticTypeOperation[operator: ORNULL] oper) :=
 	1. *Assert:* `oper.children.count` is 1.

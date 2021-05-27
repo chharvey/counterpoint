@@ -1,14 +1,12 @@
-Void VarCheck(Or<SemanticTypeConstant, SemanticConstant> node) :=
-	1. *Return*.
-;
-
-
-
 Void! VarCheck(Or<
-	SemanticTypeOperation,
-	SemanticTemplate,
-	SemanticOperation,
+	SemanticKey,
+	SemanticPropertyType,
+	SemanticProperty,
+	SemanticCase,
+	SemanticType,
+	SemanticExpression,
 	SemanticStatementExpression,
+	SemanticGoal,
 > list) :=
 	1. *For each* `it` in `list`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
@@ -78,11 +76,4 @@ Void! VarCheck(SemanticAssignment assignment) :=
 	5. *Let* `info` be the record for `id` in the validator.
 	6. *If* `info.unfixed` is `false`:
 		1. *Throw:* a new AssignmentError10.
-;
-
-
-
-Void! VarCheck(SemanticGoal goal) :=
-	1. *For each* `stmt` in `goal.children`:
-		1. *Perform:* *Unwrap:* `VarCheck(stmt)`.
 ;
