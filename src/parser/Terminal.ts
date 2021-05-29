@@ -194,37 +194,37 @@ abstract class TerminalTemplate extends Terminal {
 }
 export class TerminalTemplateFull extends TerminalTemplate {
 	static readonly instance: TerminalTemplateFull = new TerminalTemplateFull()
-	random(): string {
+	override random(): string {
 		return super.random(TOKEN.TokenTemplate.DELIM, TOKEN.TokenTemplate.DELIM)
 	}
-	match(candidate: Token): boolean {
+	override match(candidate: Token): boolean {
 		return super.match(candidate, TemplatePosition.FULL)
 	}
 }
 export class TerminalTemplateHead extends TerminalTemplate {
 	static readonly instance: TerminalTemplateHead = new TerminalTemplateHead()
-	random(): string {
+	override random(): string {
 		return super.random(TOKEN.TokenTemplate.DELIM, TOKEN.TokenTemplate.DELIM_INTERP_START)
 	}
-	match(candidate: Token): boolean {
+	override match(candidate: Token): boolean {
 		return super.match(candidate, TemplatePosition.HEAD)
 	}
 }
 export class TerminalTemplateMiddle extends TerminalTemplate {
 	static readonly instance: TerminalTemplateMiddle = new TerminalTemplateMiddle()
-	random(): string {
+	override random(): string {
 		return super.random(TOKEN.TokenTemplate.DELIM_INTERP_END, TOKEN.TokenTemplate.DELIM_INTERP_START)
 	}
-	match(candidate: Token): boolean {
+	override match(candidate: Token): boolean {
 		return super.match(candidate, TemplatePosition.MIDDLE)
 	}
 }
 export class TerminalTemplateTail extends TerminalTemplate {
 	static readonly instance: TerminalTemplateTail = new TerminalTemplateTail()
-	random(): string {
+	override random(): string {
 		return super.random(TOKEN.TokenTemplate.DELIM_INTERP_END, TOKEN.TokenTemplate.DELIM)
 	}
-	match(candidate: Token): boolean {
+	override match(candidate: Token): boolean {
 		return super.match(candidate, TemplatePosition.TAIL)
 	}
 }

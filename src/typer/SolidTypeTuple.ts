@@ -3,8 +3,7 @@ import {SolidLanguageType} from '../validator/SolidLanguageType'; // TODO circul
 
 
 export class SolidTypeTuple extends SolidLanguageType {
-	/** @overrides SolidLanguageType */
-	readonly isEmpty: boolean = false;
+	override readonly isEmpty: boolean = false;
 
 	/**
 	 * Construct a new SolidTypeTuple object.
@@ -16,13 +15,11 @@ export class SolidTypeTuple extends SolidLanguageType {
 		super();
 	}
 
-	/** @overrides Object */
-	toString(): string {
+	override toString(): string {
 		return `[${ this.types.map((t) => t.toString()).join(', ') }]`;
 	}
 
-	/** @overrides SolidLanguageType */
-	isSubtypeOf_do(t: SolidLanguageType): boolean {
+	override isSubtypeOf_do(t: SolidLanguageType): boolean {
 		if (t instanceof SolidTypeTuple) {
 			if (this.types.length < t.types.length) {
 				return false;

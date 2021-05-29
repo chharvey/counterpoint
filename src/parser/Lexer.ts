@@ -43,7 +43,7 @@ export class LexerSolid extends Lexer {
 		super(source)
 	}
 
-	protected generate_do(): Token | null {
+	protected override generate_do(): Token | null {
 			let token: Token;
 			if (Char.inc(LexerSolid.PUNCTUATORS_3, this.c0, this.c1, this.c2)) {
 				token = new TOKEN.TokenPunctuator(this, 3n)

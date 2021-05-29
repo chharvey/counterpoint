@@ -5,10 +5,12 @@
 		"esModuleInterop"   : true,
 		"strict"            : true,
 		"importsNotUsedAsValues": "error",
+		"noImplicitOverride":     true,
 		"noImplicitReturns" : true,
 		"noUnusedLocals":         true,
 		"noUnusedParameters":     true,
 		"removeComments"    : true,
+		"skipLibCheck":           true,
 		"noEmitOnError"     : true
 	},
 	"typedocOptions": {

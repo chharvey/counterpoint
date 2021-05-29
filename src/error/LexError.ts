@@ -12,7 +12,7 @@ import {
  */
 export class LexError03 extends LexError {
 	/** The number series of this class of errors. */
-	static readonly CODE = 3
+	static override readonly CODE = 3;
 	/**
 	 * Construct a new LexError03 object.
 	 * @param span - the invalid escape sequence
@@ -35,7 +35,7 @@ export class LexError03 extends LexError {
  */
 export class LexError04 extends LexError {
 	/** The number series of this class of errors. */
-	static readonly CODE = 4
+	static override readonly CODE = 4;
 	/**
 	 * Construct a new LexError04 object.
 	 * @param char - the numeric separator character
@@ -53,7 +53,7 @@ export class LexError04 extends LexError {
  */
 export class LexError05 extends LexError {
 	/** The number series of this class of errors. */
-	static readonly CODE = 5
+	static override readonly CODE = 5;
 	/**
 	 * Construct a new LexError05 object.
 	 * @param token - the float literal token
