@@ -8,8 +8,7 @@ import {SolidBoolean} from './SolidBoolean';
 
 
 export class SolidString extends SolidObject {
-	/** @implements Object */
-	static toString(): string {
+	static override toString(): string {
 		return 'str';
 	}
 	private readonly codeunits: readonly CodeUnit[];
@@ -20,16 +19,13 @@ export class SolidString extends SolidObject {
 			: data
 	}
 
-	/** @override SolidObject */
-	get isEmpty(): SolidBoolean {
+	override get isEmpty(): SolidBoolean {
 		return SolidBoolean.fromBoolean(this.codeunits.length === 0);
 	}
-	/** @override Object */
-	toString(): string {
+	override toString(): string {
 		return utf8.decode(String.fromCodePoint(...this.codeunits));
 	}
-	/** @override SolidObject */
-	protected identical_helper(value: SolidObject): boolean {
+	protected override identical_helper(value: SolidObject): boolean {
 		return value instanceof SolidString && xjs.Array.is(this.codeunits, value.codeunits);
 	}
 }

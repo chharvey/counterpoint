@@ -16,8 +16,7 @@ import {SolidObject} from './SolidObject';
  * @final
  */
 export class SolidBoolean extends SolidObject {
-	/** @implements Object */
-	static toString(): string {
+	static override toString(): string {
 		return 'bool';
 	}
 	/** The Solid Language Value `false`. */
@@ -28,8 +27,7 @@ export class SolidBoolean extends SolidObject {
 	static readonly FALSETYPE: SolidTypeConstant = new SolidTypeConstant(SolidBoolean.FALSE)
 	/** A Unit Type containing only the Solid Language Value `true`. */
 	static readonly TRUETYPE: SolidTypeConstant = new SolidTypeConstant(SolidBoolean.TRUE)
-	/** @override */
-	static values: SolidLanguageType['values'] = new Set([SolidBoolean.FALSE, SolidBoolean.TRUE])
+	static override values: SolidLanguageType['values'] = new Set([SolidBoolean.FALSE, SolidBoolean.TRUE])
 
 	/**
 	 * Return the Solid Language Value `true` or `false` based on the argument.
@@ -47,16 +45,13 @@ export class SolidBoolean extends SolidObject {
 		super()
 	}
 
-	/** @override Object */
-	toString(): string {
+	override toString(): string {
 		return `${ this.value }`
 	}
-	/** @override SolidObject */
-	get isTruthy(): SolidBoolean {
+	override get isTruthy(): SolidBoolean {
 		return this;
 	}
-	/** @override */
-	protected identical_helper(value: SolidObject): boolean {
+	protected override identical_helper(value: SolidObject): boolean {
 		return value instanceof SolidBoolean && this.value === value.value
 	}
 	/**

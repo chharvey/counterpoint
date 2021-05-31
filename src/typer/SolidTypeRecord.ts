@@ -3,8 +3,7 @@ import {SolidLanguageType} from '../validator/SolidLanguageType'; // TODO circul
 
 
 export class SolidTypeRecord extends SolidLanguageType {
-	/** @overrides SolidLanguageType */
-	readonly isEmpty: boolean = false;
+	override readonly isEmpty: boolean = false;
 
 	/**
 	 * Construct a new SolidTypeRecord object.
@@ -16,13 +15,11 @@ export class SolidTypeRecord extends SolidLanguageType {
 		super();
 	}
 
-	/** @overrides Object */
-	toString(): string {
+	override toString(): string {
 		return `[${ [...this.propertytypes].map(([key, value]) => `${ key }: ${ value }`).join(', ') }]`;
 	}
 
-	/** @overrides SolidLanguageType */
-	isSubtypeOf_do(t: SolidTypeRecord): boolean {
+	override isSubtypeOf_do(t: SolidTypeRecord): boolean {
 		if (t instanceof SolidTypeRecord) {
 			if (this.propertytypes.size < t.propertytypes.size) {
 				return false;

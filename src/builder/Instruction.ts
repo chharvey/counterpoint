@@ -32,7 +32,7 @@ export class InstructionNone extends Instruction {
 	/**
 	 * @return `''`
 	 */
-	toString(): string {
+	override toString(): string {
 		return ''
 	}
 }
@@ -43,7 +43,7 @@ class InstructionUnreachable extends Instruction {
 	/**
 	 * @return `'(unreachable)'`
 	 */
-	toString(): string {
+	override toString(): string {
 		return `(unreachable)`
 	}
 }
@@ -55,7 +55,7 @@ class InstructionNop extends Instruction {
 	/**
 	 * @return `'(nop)'`
 	 */
-	toString(): string {
+	override toString(): string {
 		return `(nop)`
 	}
 }
@@ -100,7 +100,7 @@ export class InstructionConst extends InstructionExpression {
 	/**
 	 * @return `'({i32|f64}.const ‹value›)'`
 	 */
-	toString(): string {
+	override toString(): string {
 		return `(${ (!this.isFloat) ? 'i32' : 'f64' }.const ${ (this.value.identical(new Float64(-0.0))) ? '-0.0' : this.value })`
 	}
 	get isFloat(): boolean {
@@ -144,7 +144,7 @@ export class InstructionGlobalGet extends InstructionGlobal {
 		super(name, to_float);
 	}
 	/** @return `'(global.get ‹name›)'` */
-	toString(): string {
+	override toString(): string {
 		return `(global.get ${ this.name })`;
 	}
 }
@@ -156,7 +156,7 @@ export class InstructionGlobalSet extends InstructionGlobal {
 		super(name, op);
 	}
 	/** @return `'(global.set ‹name› ‹op›)'` */
-	toString(): string {
+	override toString(): string {
 		return `(global.set ${ this.name } ${ this.op })`;
 	}
 }
@@ -179,7 +179,7 @@ export class InstructionLocalGet extends InstructionLocal {
 		super(name, to_float)
 	}
 	/** @return `'(local.get ‹name›)'` */
-	toString(): string {
+	override toString(): string {
 		return `(local.get ${ this.name })`
 	}
 }
@@ -191,7 +191,7 @@ export class InstructionLocalSet extends InstructionLocal {
 		super(name, op)
 	}
 	/** @return `'(local.set ‹name› ‹op›)'` */
-	toString(): string {
+	override toString(): string {
 		return `(local.set ${ this.name } ${ this.op })`
 	}
 }
@@ -203,7 +203,7 @@ export class InstructionLocalTee extends InstructionLocal {
 		super(name, op)
 	}
 	/** @return `'(local.tee ‹name› ‹op›)'` */
-	toString(): string {
+	override toString(): string {
 		return `(local.tee ${ this.name } ${ this.op })`
 	}
 }
@@ -224,7 +224,7 @@ export class InstructionUnop extends InstructionExpression {
 	/**
 	 * @return `'(‹op› ‹arg›)'`
 	 */
-	toString(): string {
+	override toString(): string {
 		return `(${ new Map<Operator, string>([
 			// [Operator.AFF, `nop`],
 			[Operator.NEG, (!this.arg.isFloat) ? `call $neg`  : `f64.neg`],
@@ -280,7 +280,7 @@ export class InstructionBinopArithmetic extends InstructionBinop {
 	/**
 	 * @return `'(‹op› ‹arg0› ‹arg1›)'`
 	 */
-	toString(): string {
+	override toString(): string {
 		return `(${ new Map<Operator, string>([
 			[Operator.EXP, (!this.floatarg) ? `call $exp` : new InstructionUnreachable().toString()], // TODO Runtime exponentiation not yet supported.
 			[Operator.MUL, (!this.floatarg) ? `i32.mul`   : `f64.mul`],
@@ -312,7 +312,7 @@ export class InstructionBinopComparative extends InstructionBinop {
 	/**
 	 * @return `'(‹op› ‹arg0› ‹arg1›)'`
 	 */
-	toString(): string {
+	override toString(): string {
 		return `(${ new Map<Operator, string>([
 			[Operator.LT, (!this.floatarg) ? `i32.lt_s` : `f64.lt`],
 			[Operator.GT, (!this.floatarg) ? `i32.gt_s` : `f64.gt`],
@@ -340,7 +340,7 @@ export class InstructionBinopEquality extends InstructionBinop {
 	/**
 	 * @return `'(‹op› ‹arg0› ‹arg1›)'`
 	 */
-	toString(): string {
+	override toString(): string {
 		return `(${
 			(!this.arg0.isFloat && !this.arg1.isFloat) ? `i32.eq` :
 			(!this.arg0.isFloat &&  this.arg1.isFloat) ? `call $i_f_is` :
@@ -376,7 +376,7 @@ export class InstructionBinopLogical extends InstructionBinop {
 	/**
 	 * @return a `(select)` instruction determining which operand to produce
 	 */
-	toString(): string {
+	override toString(): string {
 		const varname: string = `$o${ this.count.toString(16) }`;
 		const condition: InstructionExpression = new InstructionUnop(
 			Operator.NOT,
@@ -419,7 +419,7 @@ export class InstructionCond extends InstructionExpression {
 	/**
 	 * @return `'(if (result {i32|f64}) ‹arg0› (then ‹arg1›) (else ‹arg2›))'`
 	 */
-	toString(): string {
+	override toString(): string {
 		return `(if (result ${ (!this.isFloat) ? `i32` : `f64` }) ${ this.arg0 } (then ${ this.arg1 }) (else ${ this.arg2 }))`
 	}
 	get isFloat(): boolean {
@@ -443,7 +443,7 @@ export class InstructionStatement extends Instruction {
 	/**
 	 * @return a new function evaluating the argument
 	 */
-	toString(): string {
+	override toString(): string {
 		const result: string = (this.expr instanceof InstructionGlobalSet)
 			? ''
 			: `(result ${ (this.expr.isFloat) ? 'f64' : 'i32' })`
@@ -474,7 +474,7 @@ export class InstructionDeclareGlobal extends Instruction {
 		this.name = (typeof name === 'bigint') ? `$glb${ name.toString(16) }` : name;
 	}
 	/** @return `'(global ‹name› ‹type› ‹init›)'` */
-	toString(): string {
+	override toString(): string {
 		return `(global ${ this.name } ${ (this.mut) ? `(mut ${ this.type })` : this.type } ${ this.init })`;
 	}
 }
@@ -493,7 +493,7 @@ export class InstructionDeclareLocal extends Instruction {
 		super();
 	}
 	/** @return `'(local ‹name› ‹type›)'` */
-	toString(): string {
+	override toString(): string {
 		return `(local ${ this.name } ${ (this.to_float) ? 'f64' : 'i32' })`;
 	}
 }
@@ -510,7 +510,7 @@ export class InstructionModule extends Instruction {
 	/**
 	 * @return a new module containing the components
 	 */
-	toString(): string {
+	override toString(): string {
 		return xjs.String.dedent`
 			(module
 				${ this.comps.join('\n') }
