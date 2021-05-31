@@ -188,7 +188,7 @@ describe('ASTNodeSolid', () => {
 		});
 		describe('ASTNodeGoal', () => {
 			it('aggregates multiple errors.', () => {
-				assert.throws(() => goalFromSource(`
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					a + b || c * d;
 					let y: V & W | X & Y = null;
 					let x: int = 42;
@@ -307,7 +307,7 @@ describe('ASTNodeSolid', () => {
 		})
 		describe('ASTNodeGoal', () => {
 			it('aggregates multiple errors.', () => {
-				assert.throws(() => goalFromSource(`
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					let a: null = null;
 					let b: null = null;
 					let c: null = null;
