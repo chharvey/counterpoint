@@ -761,11 +761,16 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
-		if ([Operator.NOT, Operator.EMP].includes(this.operator)) {
-			return SolidBoolean
-		}
 		const t0: SolidLanguageType = this.children[0].type(validator);
-		return (t0.isSubtypeOf(SolidNumber)) ? t0 : (() => { throw new TypeError01(this) })()
+		return (
+			(this.operator === Operator.NOT) ? (
+				(t0.isSubtypeOf(SolidNull.union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
+				(SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? SolidBoolean :
+				SolidBoolean.FALSETYPE
+			) :
+			(this.operator === Operator.EMP) ? SolidBoolean :
+			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(SolidNumber)) ? t0 : (() => { throw new TypeError01(this); })()
+		);
 	}
 	/** @implements ASTNodeExpression */
 	protected assess_do(validator: Validator): SolidObject | null {

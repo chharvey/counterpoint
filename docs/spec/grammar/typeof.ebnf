@@ -32,8 +32,21 @@ Type! TypeOf(SemanticOperation expr) :=
 
 
 
-Type TypeOfUnassessedOperation(SemanticOperation[operator: NOT | EMP] expr) :=
-	1. *Return:* `Boolean`.
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: NOT] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `operand` be *Unwrap:* `TypeOf(expr.children.0)`.
+	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
+	4. *If* *UnwrapAffirm:* `Subtype(operand, Union(Null, false_type))`:
+		1. *Return:* `ToType(true)`.
+	5. *If* *UnwrapAffirm:* `Subtype(Null, operand)` *or* *UnwrapAffirm:* `Subtype(false_type, operand)`:
+		1. *Return:* `Boolean`.
+	6. *Return:* `false_type`.
+;
+
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: EMP] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Perform:* *Unwrap:* `TypeOf(expr.children.0)`.
+	3. *Return:* `Boolean`.
 ;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: NEG] expr) :=
