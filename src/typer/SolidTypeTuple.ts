@@ -20,13 +20,10 @@ export class SolidTypeTuple extends SolidLanguageType {
 
 	/** @overrides SolidLanguageType */
 	isSubtypeOf_do(t: SolidLanguageType): boolean {
-		return (
-			(t.equals(SolidObject)) ? true :
-			(t instanceof SolidTypeTuple) ? ((this.types.length < t.types.length)
-				? false
-				: t.types.every((thattype, i) => this.types[i].isSubtypeOf(thattype))
-			) :
-			false
+		return t.equals(SolidObject) || (
+			t instanceof SolidTypeTuple
+			&& this.types.length >= t.types.length
+			&& t.types.every((thattype, i) => this.types[i].isSubtypeOf(thattype))
 		);
 	}
 }
