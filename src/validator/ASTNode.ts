@@ -1049,16 +1049,16 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		return (this.operator === Operator.AND)
 			? (t0.isSubtypeOf(null_union_false))
 				? t0
-				: (t0.includes(SolidNull.NULL))
-					? (t0.includes(SolidBoolean.FALSE))
+				: (SolidNull.isSubtypeOf(t0))
+					? (SolidBoolean.FALSETYPE.isSubtypeOf(t0))
 						? null_union_false.union(t1)
 						: SolidNull.union(t1)
-					: (t0.includes(SolidBoolean.FALSE))
+					: (SolidBoolean.FALSETYPE.isSubtypeOf(t0))
 						? SolidBoolean.FALSETYPE.union(t1)
 						: t1
 			: (t0.isSubtypeOf(null_union_false))
 				? t1
-				: (t0.includes(SolidNull.NULL) || t0.includes(SolidBoolean.FALSE))
+				: (SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
 					? truthifyType(t0).union(t1)
 					: t0
 	}
