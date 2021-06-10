@@ -1,3 +1,6 @@
+import {
+	strictEqual,
+} from '../decorators';
 import {SolidLanguageType} from '../validator/SolidLanguageType'; // TODO circular imports
 import {SolidObject} from '../validator/SolidObject';
 import {SolidRecord} from './SolidRecord';
@@ -24,7 +27,9 @@ export class SolidTypeRecord extends SolidLanguageType {
 	}
 
 	/** @overrides SolidLanguageType */
-	isSubtypeOf_do(t: SolidLanguageType): boolean {
+	@strictEqual
+	@SolidLanguageType.subtypeDeco
+	isSubtypeOf(t: SolidLanguageType): boolean {
 		return (
 			(t.equals(SolidObject)) ? true :
 			(t instanceof SolidTypeRecord) ? ((this.propertytypes.size < t.propertytypes.size)
