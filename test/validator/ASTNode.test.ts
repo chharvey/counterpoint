@@ -905,9 +905,9 @@ describe('ASTNodeSolid', () => {
 				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidLanguageType.UNKNOWN);
 			});
 			Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
-				let templates: AST.ASTNodeTemplate[];
+				let templates: readonly AST.ASTNodeTemplate[];
 				function initTemplates() {
-					templates = [
+					return [
 						AST.ASTNodeTemplate.fromSource(`'''42😀''';`),
 						AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
 						(AST.ASTNodeGoal.fromSource(`
@@ -916,13 +916,13 @@ describe('ASTNodeSolid', () => {
 						`)
 							.children[1] as AST.ASTNodeStatementExpression)
 							.children[0] as AST.ASTNodeTemplate,
-					];
+					] as const;
 				}
 				context('with constant folding on.', () => {
 					const validator: Validator = new Validator();
 					let types: SolidLanguageType[];
 					before(() => {
-						initTemplates();
+						templates = initTemplates();
 						types = templates.map((t) => assert_wasCalled(t.assess, 1, (orig, spy) => {
 							t.assess = spy;
 							try {
@@ -944,7 +944,7 @@ describe('ASTNodeSolid', () => {
 				});
 				context('with constant folding off.', () => {
 					it('always returns `String`.', () => {
-						initTemplates();
+						templates = initTemplates();
 						templates.forEach((t) => {
 							assert.deepStrictEqual(t.type(new Validator(folding_off)), SolidString);
 						});
@@ -962,35 +962,47 @@ describe('ASTNodeSolid', () => {
 			});
 
 			Dev.supports('literalCollection') && describe('ASTNode{List,Record,Mapping}', () => {
-				const collections: [
+				let collections: readonly [
 					AST.ASTNodeList,
 					AST.ASTNodeRecord,
 					AST.ASTNodeMapping,
-				] = [
-					AST.ASTNodeList.fromSource(`[1, 2.0, 'three'];`),
-					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
-					AST.ASTNodeMapping.fromSource(`
-						[
-							'a' || '' |-> 1,
-							21 + 21   |-> 2.0,
-							3 * 1.0   |-> 'three',
-						];
-					`),
 				];
+				function initCollections() {
+					return [
+						AST.ASTNodeList.fromSource(`[1, 2.0, 'three'];`),
+						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
+						AST.ASTNodeMapping.fromSource(`
+							[
+								'a' || '' |-> 1,
+								21 + 21   |-> 2.0,
+								3 * 1.0   |-> 'three',
+							];
+						`),
+					] as const;
+				}
 				context('with constant folding on.', () => {
 					const validator: Validator = new Validator();
-					it('returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
-						assert.deepStrictEqual(collections.map((c) => assert_wasCalled(c.assess, 1, (orig, spy) => {
+					let types: SolidLanguageType[];
+					before(() => {
+						collections = initCollections();
+						types = collections.map((c) => assert_wasCalled(c.assess, 1, (orig, spy) => {
 							c.assess = spy;
 							try {
 								return c.type(validator);
 							} finally {
 								c.assess = orig;
 							};
-						})), collections.map((c) => new SolidTypeConstant(c.assess(validator)!)));
+						}));
+					});
+					it('returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
+						assert.deepStrictEqual(
+							types,
+							collections.map((c) => new SolidTypeConstant(c.assess(validator)!)),
+						);
 					});
 				});
 				it('with constant folding off.', () => {
+					collections = initCollections();
 					const validator: Validator = new Validator(folding_off);
 					assert.deepStrictEqual(
 						collections.map((node) => node.type(validator)),
