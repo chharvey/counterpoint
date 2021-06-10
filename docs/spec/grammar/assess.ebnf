@@ -85,8 +85,8 @@ String! Assess(SemanticTemplate tpl) :=
 
 
 
-Object Assess(SemanticEmptyCollection coll) :=
-	1. Return an empty collection.
+Object! Assess(SemanticEmptyCollection coll) :=
+	1. *Throw.* // TODO
 ;
 
 
@@ -97,7 +97,8 @@ Tuple! Assess(SemanticList list) :=
 		1. *If* `data[i]` is a normal completion:
 			1. *Set* `data[i]` to `data[i].value`.
 	3. *If* `data` contains a CompletionStructure `err`:
-		1. *Return:* `err`.
+		1. *Assert:* `err` is an abrupt completion.
+		2. *Return:* `err`.
 	4. *Return:* a new Tuple containing the items in the sequence `data`.
 ;
 
@@ -114,7 +115,8 @@ Record! Assess(SemanticRecord record) :=
 		1. *If* `data[k]` is a normal completion:
 			1. *Set* `data[k]` to `data[k].value`.
 	4. *If* `data` contains a property whose value is a CompletionStructure `err`:
-		1. *Return:* `err`.
+		1. *Assert:* `err` is an abrupt completion.
+		2. *Return:* `err`.
 	5. *Return:* a new Record containing the properties in the structure `data`.
 ;
 
@@ -132,7 +134,8 @@ Mapping! Assess(SemanticMapping mapping) :=
 		3. *If* `it.1` is a normal completion:
 			1. *Set* `it.1` to `it.1.value`.
 	3. *If* `data` contains a 2-tuple that contains a CompletionStructure `err`:
-		1. *Return:* `err`.
+		1. *Assert:* `err` is an abrupt completion.
+		2. *Return:* `err`.
 	4. *Return:* a new Mapping containing the pairs in the sequence `data`.
 ;
 
