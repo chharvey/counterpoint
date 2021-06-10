@@ -961,7 +961,7 @@ export class ParserSolid extends Parser {
 		]));
 	}
 	// @ts-expect-error
-	declare parse(): ParseNodeGoal;
+	declare override parse(): ParseNodeGoal;
 }
 
 

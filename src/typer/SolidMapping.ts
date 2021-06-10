@@ -4,8 +4,7 @@ import {SolidObject} from '../validator/SolidObject';
 
 
 export class SolidMapping<K extends SolidObject, V extends SolidObject> extends SolidObject {
-	/** @overrides SolidObject */
-	static values: SolidLanguageType['values'] = new Set([new SolidMapping()]);
+	static override values: SolidLanguageType['values'] = new Set([new SolidMapping()]);
 
 
 	constructor (

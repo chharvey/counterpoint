@@ -165,12 +165,15 @@ class SolidTypeIntersection extends SolidLanguageType {
 	) {
 		super(xjs.Set.intersection(left.values, right.values))
 	}
-	/** @override */
-	includes(v: SolidObject): boolean {
+
+	override toString(): string {
+		return `${ this.left } & ${ this.right }`;
+	}
+	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) && this.right.includes(v)
 	}
 	/** @implements SolidLanguageType */
-	isSubtypeOf_do(t: SolidLanguageType): boolean {
+	override isSubtypeOf_do(t: SolidLanguageType): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) { return true }
 		/** 3-1 | `A  & B <: A  &&  A  & B <: B` */
@@ -197,12 +200,15 @@ class SolidTypeUnion extends SolidLanguageType {
 	) {
 		super(xjs.Set.union(left.values, right.values))
 	}
-	/** @override */
-	includes(v: SolidObject): boolean {
+
+	override toString(): string {
+		return `${ this.left } | ${ this.right }`;
+	}
+	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) || this.right.includes(v)
 	}
 	/** @implements SolidLanguageType */
-	isSubtypeOf_do(t: SolidLanguageType): boolean {
+	override isSubtypeOf_do(t: SolidLanguageType): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
 	}
@@ -214,10 +220,8 @@ class SolidTypeUnion extends SolidLanguageType {
  * An Interface Type is a set of properties that a value must have.
  */
 export class SolidTypeInterface extends SolidLanguageType {
-	/** @override */
-	readonly isEmpty: boolean = [...this.properties.values()].some((value) => value.isEmpty)
-	/** @override */
-	readonly isUniverse: boolean = this.properties.size === 0
+	override readonly isEmpty: boolean = [...this.properties.values()].some((value) => value.isEmpty)
+	override readonly isUniverse: boolean = this.properties.size === 0
 
 	/**
 	 * Construct a new SolidInterface object.
@@ -227,16 +231,14 @@ export class SolidTypeInterface extends SolidLanguageType {
 		super()
 	}
 
-	/** @override */
-	includes(v: SolidObject): boolean {
+	override includes(v: SolidObject): boolean {
 		return [...this.properties.keys()].every((key) => key in v)
 	}
 	/**
-	 * @override
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type intersection is taken.
 	 */
-	intersect_do(t: SolidTypeInterface): SolidTypeInterface {
+	override intersect_do(t: SolidTypeInterface): SolidTypeInterface {
 		const props: Map<string, SolidLanguageType> = new Map([...this.properties])
 		;[...t.properties].forEach(([name, type_]) => {
 			props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_)
@@ -244,11 +246,10 @@ export class SolidTypeInterface extends SolidLanguageType {
 		return new SolidTypeInterface(props)
 	}
 	/**
-	 * @override
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type union is taken.
 	 */
-	union_do(t: SolidTypeInterface): SolidTypeInterface {
+	override union_do(t: SolidTypeInterface): SolidTypeInterface {
 		const props: Map<string, SolidLanguageType> = new Map()
 		;[...this.properties].forEach(([name, type_]) => {
 			if (t.properties.has(name)) {
@@ -263,7 +264,7 @@ export class SolidTypeInterface extends SolidLanguageType {
 	 * and for each of those properties `#prop`, the type of `S#prop` is a subtype of `T#prop`.
 	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
 	 */
-	isSubtypeOf_do(t: SolidTypeInterface) {
+	override isSubtypeOf_do(t: SolidTypeInterface) {
 		return [...t.properties].every(([name, type_]) =>
 			this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
 		)
@@ -278,21 +279,20 @@ export class SolidTypeInterface extends SolidLanguageType {
 class SolidTypeNever extends SolidLanguageType {
 	static readonly INSTANCE: SolidTypeNever = new SolidTypeNever()
 
-	/** @override */
-	readonly isEmpty: boolean = true
-	/** @override */
-	readonly isUniverse: boolean = false
+	override readonly isEmpty: boolean = true
+	override readonly isUniverse: boolean = false
 
 	private constructor () {
 		super()
 	}
 
-	/** @override */
-	includes(_v: SolidObject): boolean {
+	override toString(): string {
+		return 'never';
+	}
+	override includes(_v: SolidObject): boolean {
 		return false
 	}
-	/** @override */
-	equals(t: SolidLanguageType): boolean {
+	override equals(t: SolidLanguageType): boolean {
 		return t.isEmpty
 	}
 }
@@ -303,21 +303,21 @@ class SolidTypeNever extends SolidLanguageType {
  * Class for constructing constant types / unit types, types that contain one value.
  */
 export class SolidTypeConstant extends SolidLanguageType {
-	/** @override */
-	readonly isEmpty: boolean = false
-	/** @override */
-	readonly isUniverse: boolean = false
+	override readonly isEmpty: boolean = false
+	override readonly isUniverse: boolean = false
 
 	constructor (readonly value: SolidObject) {
 		super(new Set([value]))
 	}
 
-	/** @override */
-	includes(_v: SolidObject): boolean {
+	override toString(): string {
+		return this.value.toString();
+	}
+	override includes(_v: SolidObject): boolean {
 		return this.value.equal(_v)
 	}
 	/** @implements SolidLanguageType */
-	isSubtypeOf_do(t: SolidLanguageType): boolean {
+	override isSubtypeOf_do(t: SolidLanguageType): boolean {
 		return t instanceof Function && this.value instanceof t || t.includes(this.value)
 	}
 }
@@ -330,21 +330,20 @@ export class SolidTypeConstant extends SolidLanguageType {
 class SolidTypeUnknown extends SolidLanguageType {
 	static readonly INSTANCE: SolidTypeUnknown = new SolidTypeUnknown()
 
-	/** @override */
-	readonly isEmpty: boolean = false
-	/** @override */
-	readonly isUniverse: boolean = true
+	override readonly isEmpty: boolean = false
+	override readonly isUniverse: boolean = true
 
 	private constructor () {
 		super()
 	}
 
-	/** @override */
-	includes(_v: SolidObject): boolean {
+	override toString(): string {
+		return 'unknown';
+	}
+	override includes(_v: SolidObject): boolean {
 		return true
 	}
-	/** @override */
-	equals(t: SolidLanguageType): boolean {
+	override equals(t: SolidLanguageType): boolean {
 		return t.isUniverse
 	}
 }

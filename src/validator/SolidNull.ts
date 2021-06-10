@@ -19,26 +19,25 @@ import {SolidBoolean} from './SolidBoolean';
  * @final
  */
 export class SolidNull extends SolidObject {
+	static override toString(): string {
+		return 'null';
+	}
 	/** The Solid Language Value `null`. */
 	static readonly NULL: SolidNull = new SolidNull()
-	/** @override */
-	static values: SolidLanguageType['values'] = new Set([SolidNull.NULL])
+	static override values: SolidLanguageType['values'] = new Set([SolidNull.NULL])
 
 
 	private constructor () {
 		super()
 	}
 
-	/** @override Object */
-	toString(): string {
+	override toString(): string {
 		return 'null'
 	}
-	/** @override SolidObject */
-	get isTruthy(): SolidBoolean {
+	override get isTruthy(): SolidBoolean {
 		return SolidBoolean.FALSE;
 	}
-	/** @override */
-	protected identical_helper(value: SolidObject): boolean {
+	protected override identical_helper(value: SolidObject): boolean {
 		return value instanceof SolidNull
 	}
 }

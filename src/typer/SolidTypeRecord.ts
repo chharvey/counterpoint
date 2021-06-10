@@ -5,8 +5,7 @@ import {SolidRecord} from './SolidRecord';
 
 
 export class SolidTypeRecord extends SolidLanguageType {
-	/** @overrides SolidLanguageType */
-	readonly isEmpty: boolean = false;
+	override readonly isEmpty: boolean = false;
 
 	/**
 	 * Construct a new SolidTypeRecord object.
@@ -18,8 +17,11 @@ export class SolidTypeRecord extends SolidLanguageType {
 		super(new Set([new SolidRecord()]));
 	}
 
-	/** @overrides SolidLanguageType */
-	isSubtypeOf_do(t: SolidLanguageType): boolean {
+	override toString(): string {
+		return `[${ [...this.propertytypes].map(([key, value]) => `${ key }: ${ value }`).join(', ') }]`;
+	}
+
+	override isSubtypeOf_do(t: SolidLanguageType): boolean {
 		return t.equals(SolidObject) || (
 			t instanceof SolidTypeRecord
 			&& this.propertytypes.size >= t.propertytypes.size
