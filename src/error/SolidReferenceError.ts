@@ -14,7 +14,7 @@ import {
  */
 class SolidReferenceError extends ErrorCode {
 	/** The name of this class of errors. */
-	static readonly NAME: string = 'ReferenceError';
+	static override readonly NAME: string = 'ReferenceError';
 	/** The number series of this class of errors. */
 	static readonly CODE: number = 2100;
 	/**
@@ -43,7 +43,7 @@ class SolidReferenceError extends ErrorCode {
  */
 export class ReferenceError01 extends SolidReferenceError {
 	/** The number series of this class of errors. */
-	static readonly CODE = 1;
+	static override readonly CODE = 1;
 	/**
 	 * Construct a new ReferenceError01 object.
 	 * @param variable the undeclared variable
@@ -61,7 +61,7 @@ export class ReferenceError01 extends SolidReferenceError {
  */
 export class ReferenceError02 extends SolidReferenceError {
 	/** The number series of this class of errors. */
-	static readonly CODE = 2;
+	static override readonly CODE = 2;
 	/**
 	 * Construct a new ReferenceError02 object.
 	 * @param variable the not-yet-declared variable
@@ -85,7 +85,7 @@ export class ReferenceError03 extends SolidReferenceError {
 		[SymbolKind.TYPE,  'type'],
 	]);
 	/** The number series of this class of errors. */
-	static readonly CODE = 3;
+	static override readonly CODE = 3;
 	/**
 	 * Construct a new ReferenceError03 object.
 	 * @param symbol    the referenced symbol

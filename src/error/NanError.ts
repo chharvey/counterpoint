@@ -5,7 +5,7 @@ import {
 
 
 class NanError extends ErrorCode {
-	static readonly NAME: string = 'NanError'
+	static override readonly NAME: string = 'NanError';
 	static readonly CODE: number = 3200
 	constructor (message: string, code: number = 0, line?: number, col?: number) {
 		super({
@@ -18,13 +18,13 @@ class NanError extends ErrorCode {
 	}
 }
 export class NanError01 extends NanError {
-	static readonly CODE = 1
+	static override readonly CODE = 1;
 	constructor (node: ASTNode) {
 		super(`Not a valid number.`, NanError01.CODE, node.line_index, node.col_index)
 	}
 }
 export class NanError02 extends NanError {
-	static readonly CODE = 2
+	static override readonly CODE = 2;
 	constructor (node: ASTNode) {
 		super(`Division by zero.`, NanError02.CODE, node.line_index, node.col_index)
 	}

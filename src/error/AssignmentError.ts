@@ -11,7 +11,7 @@ import type {AST} from '../validator/';
  */
 class AssignmentError extends ErrorCode {
 	/** The name of this class of errors. */
-	static readonly NAME: string = 'AssignmentError';
+	static override readonly NAME: string = 'AssignmentError';
 	/** The number series of this class of errors. */
 	static readonly CODE: number = 2200;
 	/**
@@ -44,7 +44,7 @@ class AssignmentError extends ErrorCode {
  */
 export class AssignmentError01 extends AssignmentError {
 	/** The number series of this class of errors. */
-	static readonly CODE = 1;
+	static override readonly CODE = 1;
 	/**
 	 * Construct a new AssignmentError01 object.
 	 * @param symbol the duplicate symbol
@@ -61,7 +61,7 @@ export class AssignmentError01 extends AssignmentError {
  */
 export class AssignmentError10 extends AssignmentError {
 	/** The number series of this class of errors. */
-	static readonly CODE = 10;
+	static override readonly CODE = 10;
 	/**
 	 * Construct a new AssignmentError10 object.
 	 * @param variable the undeclared variable
