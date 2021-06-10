@@ -902,20 +902,24 @@ describe('ASTNodeSolid', () => {
 				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidLanguageType.UNKNOWN);
 			});
 			Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
-				const templates: AST.ASTNodeTemplate[] = [
-					AST.ASTNodeTemplate.fromSource(`'''42😀''';`),
-					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
-					(AST.ASTNodeGoal.fromSource(`
-						let unfixed x: int = 21;
-						'''the answer is {{ x * 2 }} but what is the question?''';
-					`)
-						.children[1] as AST.ASTNodeStatementExpression)
-						.children[0] as AST.ASTNodeTemplate,
-				];
+				let templates: AST.ASTNodeTemplate[];
+				function initTemplates() {
+					templates = [
+						AST.ASTNodeTemplate.fromSource(`'''42😀''';`),
+						AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
+						(AST.ASTNodeGoal.fromSource(`
+							let unfixed x: int = 21;
+							'''the answer is {{ x * 2 }} but what is the question?''';
+						`)
+							.children[1] as AST.ASTNodeStatementExpression)
+							.children[0] as AST.ASTNodeTemplate,
+					];
+				}
 				context('with constant folding on.', () => {
 					const validator: Validator = new Validator();
 					let types: SolidLanguageType[];
 					before(() => {
+						initTemplates();
 						types = templates.map((t) => assert_wasCalled(t.assess, 1, (orig, spy) => {
 							t.assess = spy;
 							try {
@@ -937,6 +941,7 @@ describe('ASTNodeSolid', () => {
 				});
 				context('with constant folding off.', () => {
 					it('always returns `String`.', () => {
+						initTemplates();
 						templates.forEach((t) => {
 							assert.deepStrictEqual(t.type(new Validator(folding_off)), SolidString);
 						});
@@ -991,9 +996,9 @@ describe('ASTNodeSolid', () => {
 			});
 
 			describe('ASTNodeOperation', () => {
-				function typeOperations(tests: ReadonlyMap<string, SolidObject>): void {
+				function typeOperations(tests: ReadonlyMap<string, SolidObject>, config: SolidConfig = CONFIG_DEFAULT): void {
 					return assert.deepStrictEqual(
-						[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src).type(new Validator())),
+						[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type(new Validator(config))),
 						[...tests.values()].map((result) => new SolidTypeConstant(result)),
 					);
 				}
@@ -1009,19 +1014,85 @@ describe('ASTNodeSolid', () => {
 					},
 				};
 				describe('ASTNodeOperationUnary', () => {
-					it('returns a constant Boolean type for boolean unary operation of anything.', () => {
-						typeOperations(xjs.Map.mapValues(new Map([
-							[`!false;`,  true],
-							[`!true;`,   false],
-							[`!null;`,   true],
-							[`!42;`,     false],
-							[`!4.2e+1;`, false],
-							[`?false;`,  true],
-							[`?true;`,   false],
-							[`?null;`,   true],
-							[`?42;`,     false],
-							[`?4.2e+1;`, false],
-						]), (v) => SolidBoolean.fromBoolean(v)))
+					context('with constant folding on.', () => {
+						it('returns a constant Boolean type for boolean unary operation of anything.', () => {
+							typeOperations(xjs.Map.mapValues(new Map([
+								[`!false;`,  true],
+								[`!true;`,   false],
+								[`!null;`,   true],
+								[`!42;`,     false],
+								[`!4.2e+1;`, false],
+								[`?false;`,  true],
+								[`?true;`,   false],
+								[`?null;`,   true],
+								[`?42;`,     false],
+								[`?4.2e+1;`, false],
+							]), (v) => SolidBoolean.fromBoolean(v)))
+						});
+					});
+					context('with constant folding off.', () => {
+						describe('[operator=NOT]', () => {
+							it('returns type `true` for a subtype of `null | false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: null = null;
+									let unfixed b: null | false = null;
+									!a;
+									!b;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								goal.children.slice(2).forEach((stmt) => {
+									assert.deepStrictEqual((stmt.children[0] as AST.ASTNodeExpression).type(validator), SolidBoolean.TRUETYPE);
+								});
+							});
+							it('returns type `bool` for a supertype of `null` or a supertype of `false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: null | int = null;
+									let unfixed b: null | int = 42;
+									let unfixed c: bool = false;
+									let unfixed d: bool | float = 4.2;
+									!a;
+									!b;
+									!c;
+									!d;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								goal.children.slice(4).forEach((stmt) => {
+									assert.deepStrictEqual((stmt.children[0] as AST.ASTNodeExpression).type(validator), SolidBoolean);
+								});
+							});
+							it('returns type `true` for any type not a supertype of `null` or `false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: int = 42;
+									let unfixed b: float = 4.2;
+									!a;
+									!b;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								goal.children.slice(4).forEach((stmt) => {
+									assert.deepStrictEqual((stmt.children[0] as AST.ASTNodeExpression).type(validator), SolidBoolean.TRUETYPE);
+								});
+							});
+						});
+						describe('[operator=EMP]', () => {
+							it('always returns type `bool`.', () => {
+								const validator: Validator = new Validator(folding_off);
+								[
+									`?false;`,
+									`?true;`,
+									`?null;`,
+									`?42;`,
+									`?4.2e+1;`,
+								].map((src) => AST.ASTNodeOperation.fromSource(src, folding_off).type(validator)).forEach((typ) => {
+									assert.deepStrictEqual(typ, SolidBoolean);
+								});
+							});
+						});
 					});
 				});
 				describe('ASTNodeOperationBinaryArithmetic', () => {
