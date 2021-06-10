@@ -64,25 +64,23 @@ String! Assess(SemanticTemplate tpl) :=
 Boolean! Assess(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `Assess(expr.children.0)`.
-	3. *Assert*: `operand` is not `void`.
-	4. *If* *UnwrapAffirm:* `ToBoolean(operand)` is `true`:
+	3. *If* *UnwrapAffirm:* `ToBoolean(operand)` is `true`:
 		1. *Return:* `false`.
-	5. *Return:* `true`.
+	4. *Return:* `true`.
 ;
 
 Boolean! Assess(SemanticOperation[operator: EMP] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `Assess(expr.children.0)`.
-	3. *Assert*: `operand` is not `void`.
-	4. *If* *UnwrapAffirm:* `ToBoolean(operand)` is `false`:
+	3. *If* *UnwrapAffirm:* `ToBoolean(operand)` is `false`:
 		1. *Return:* `true`.
-	5. *If* `operand` is an instance of `Integer` *and* `operand` is `0`:
+	4. *If* `operand` is an instance of `Integer` *and* `operand` is `0`:
 		1. *Return:* `true`.
-	6. *If* `operand` is an instance of `Float` *and* `operand` is `0.0` or `-0.0`:
+	5. *If* `operand` is an instance of `Float` *and* `operand` is `0.0` or `-0.0`:
 		1. *Return:* `true`.
-	8. *If* `operand` is an instance of `String` *and* `operand` contains 0 codepoints:
+	6. *If* `operand` is an instance of `String` *and* `operand` contains 0 codepoints:
 		1. *Return:* `true`.
-	9. *Return:* `false`.
+	7. *Return:* `false`.
 ;
 
 Number! Assess(SemanticOperation[operator: NEG] expr) :=
@@ -133,19 +131,17 @@ Boolean! Assess(SemanticOperation[operator: EQ] expr) :=
 Object! Assess(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *Unwrap:* `Assess(expr.children.0)`.
-	3. *Assert*: `operand0` is not `void`.
-	4. *If* *UnwrapAffirm:* `ToBoolean(operand0)` is `false`:
+	3. *If* *UnwrapAffirm:* `ToBoolean(operand0)` is `false`:
 		1. *Return:* `operand0`.
-	5. *Return:* `Assess(expr.children.1)`.
+	4. *Return:* `Assess(expr.children.1)`.
 ;
 
 Object! Assess(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *Unwrap:* `Assess(expr.children.0)`.
-	3. *Assert*: `operand0` is not `void`.
-	4. *If* *UnwrapAffirm:* `ToBoolean(operand0)` is `true`:
+	3. *If* *UnwrapAffirm:* `ToBoolean(operand0)` is `true`:
 		1. *Return:* `operand0`.
-	5. *Return:* `Assess(expr.children.1)`.
+	4. *Return:* `Assess(expr.children.1)`.
 ;
 
 Object! Assess(SemanticOperation[operator: COND] expr) :=
