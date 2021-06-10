@@ -1,12 +1,8 @@
-/*
- * Note: this file exists only for typescript declaration.
- * It is not meant to be compiled.
- * See `./index.js` for the manual output.
- */
-
-
-
-import type {SolidConfig} from './src/core/';
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+} from './core/';
+import {Builder} from './builder/';
 
 
 /**
@@ -15,7 +11,9 @@ import type {SolidConfig} from './src/core/';
  * @param sourcecode - the Solid source text
  * @return the output text
  */
-export declare function print(sourcecode: string, config?: SolidConfig): string;
+export function print(sourcecode: string, config: SolidConfig = CONFIG_DEFAULT): string {
+	return new Builder(sourcecode, config).print();
+}
 
 /**
  * Compile Solid source code into an executable binary format.
@@ -23,4 +21,6 @@ export declare function print(sourcecode: string, config?: SolidConfig): string;
  * @param sourcecode - the Solid source text
  * @return the output as a binary format
  */
-export declare function compile(sourcecode: string, config?: SolidConfig): Promise<Uint8Array>;
+export function compile(sourcecode: string, config: SolidConfig = CONFIG_DEFAULT): Promise<Uint8Array> {
+	return new Builder(sourcecode, config).compile();
+}
