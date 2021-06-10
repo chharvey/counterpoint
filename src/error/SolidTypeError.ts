@@ -14,7 +14,7 @@ import type {
  */
 class SolidTypeError extends ErrorCode {
 	/** The name of this class of errors. */
-	static readonly NAME: string = 'TypeError'
+	static override readonly NAME: string = 'TypeError';
 	/** The number series of this class of errors. */
 	static readonly CODE: number = 2300
 	/**
@@ -43,7 +43,7 @@ class SolidTypeError extends ErrorCode {
  */
 export class TypeError01 extends SolidTypeError {
 	/** The number series of this class of errors. */
-	static readonly CODE = 1
+	static override readonly CODE = 1;
 	/**
 	 * Construct a new TypeError01 object.
 	 * @param expression - the invalid operation expression
@@ -59,7 +59,7 @@ export class TypeError01 extends SolidTypeError {
 // @ts-expect-error noUnusedLocals
 class TypeError02 extends SolidTypeError {
 	/** The number series of this class of errors. */
-	static readonly CODE = 2
+	static override readonly CODE = 2;
 	/**
 	 * Construct a new TypeError02 object.
 	 * @param subtype   - the expected subtype
@@ -76,7 +76,7 @@ class TypeError02 extends SolidTypeError {
  */
 export class TypeError03 extends SolidTypeError {
 	/** The number series of this class of errors. */
-	static readonly CODE = 3
+	static override readonly CODE = 3;
 	/**
 	 * Construct a new TypeError03 object.
 	 * @param assignment    - the node where the assignment took place

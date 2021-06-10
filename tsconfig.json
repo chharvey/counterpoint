@@ -1,24 +1,25 @@
 {
 	"compilerOptions": {
-		"experimentalDecorators":  true,
-		"target"            : "ESnext",
-		"module"            : "commonjs",
-		"esModuleInterop"   : true,
-		"strict"            : true,
+		// Project Options
+		"declaration": true,
+		"module":      "commonjs",
+		"outDir":      "./build/",
+		"target":      "ESnext",
+		// Strict Checks
+		"strict": true,
+		// Module Resolution
+		"esModuleInterop": true,
+		// Linter Checks
+		"noImplicitOverride": true,
+		"noImplicitReturns":  true,
+		"noUnusedLocals":     true,
+		"noUnusedParameters": true,
+		// Experimental
+		"experimentalDecorators": true,
+		// Advanced
 		"importsNotUsedAsValues": "error",
-		"noImplicitReturns" : true,
-		"noUnusedLocals":         true,
-		"noUnusedParameters":     true,
-		"removeComments"    : true,
-		"noEmitOnError"     : true
+		"noEmitOnError":          true,
+		"skipLibCheck":           true,
 	},
-	"typedocOptions": {
-		"tsconfig": "./",
-		"mode"   : "file",
-		"name"   : "solid",
-		"out"    : "./docs/api/",
-		"includeDeclarations" : true,
-		"excludeExternals"    : true,
-		"ignoreCompilerErrors": true
-	}
+	"include": ["./src/"],
 }

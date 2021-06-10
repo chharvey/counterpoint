@@ -9,10 +9,9 @@ import type {Float64} from './Float64';
  */
 export abstract class SolidNumber<T = unknown> extends SolidObject {
 	/**
-	 * @override SolidObject
 	 * @final
 	 */
-	get isEmpty(): SolidBoolean {
+	override get isEmpty(): SolidBoolean {
 		return SolidBoolean.fromBoolean(this.eq0());
 	}
 

@@ -247,7 +247,7 @@ export class TokenIdentifierUnicode extends TokenIdentifier {
 }
 abstract class NumberOrStringToken extends TokenSolid {
 	constructor (tagname: string,
-		protected readonly lexer: LexerSolid,
+		protected override readonly lexer: LexerSolid,
 		...chars: [Char, ...Char[]]
 	) {
 		super(tagname, lexer, ...chars);

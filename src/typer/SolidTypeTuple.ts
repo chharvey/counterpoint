@@ -8,8 +8,7 @@ import {SolidTuple} from './SolidTuple';
 
 
 export class SolidTypeTuple extends SolidLanguageType {
-	/** @overrides SolidLanguageType */
-	readonly isEmpty: boolean = false;
+	override readonly isEmpty: boolean = false;
 
 	/**
 	 * Construct a new SolidTypeTuple object.
@@ -21,15 +20,13 @@ export class SolidTypeTuple extends SolidLanguageType {
 		super(new Set([new SolidTuple()]));
 	}
 
-	/** @overrides Object */
-	toString(): string {
+	override toString(): string {
 		return `[${ this.types.map((t) => t.toString()).join(', ') }]`;
 	}
 
-	/** @overrides SolidLanguageType */
 	@strictEqual
 	@SolidLanguageType.subtypeDeco
-	isSubtypeOf(t: SolidLanguageType): boolean {
+	override isSubtypeOf(t: SolidLanguageType): boolean {
 		return (
 			(t.equals(SolidObject)) ? true :
 			(t instanceof SolidTypeTuple) ? ((this.types.length < t.types.length)

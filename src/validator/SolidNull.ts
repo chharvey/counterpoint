@@ -22,31 +22,26 @@ import {SolidBoolean} from './SolidBoolean';
  * @final
  */
 export class SolidNull extends SolidObject {
-	/** @implements Object */
-	static toString(): string {
+	static override toString(): string {
 		return 'null';
 	}
 	/** The Solid Language Value `null`. */
 	static readonly NULL: SolidNull = new SolidNull()
-	/** @override */
-	static values: SolidLanguageType['values'] = new Set([SolidNull.NULL])
+	static override values: SolidLanguageType['values'] = new Set([SolidNull.NULL])
 
 
 	private constructor () {
 		super()
 	}
 
-	/** @override Object */
-	toString(): string {
+	override toString(): string {
 		return 'null'
 	}
-	/** @override SolidObject */
-	get isTruthy(): SolidBoolean {
+	override get isTruthy(): SolidBoolean {
 		return SolidBoolean.FALSE;
 	}
-	/** @override SolidObject */
 	@strictEqual
-	identical(value: SolidObject): boolean {
+	override identical(value: SolidObject): boolean {
 		return value instanceof SolidNull
 	}
 }

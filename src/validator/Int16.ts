@@ -18,8 +18,7 @@ type Int16DatatypeMutable =   [boolean, boolean, boolean, boolean, boolean, bool
  * @final
  */
 export class Int16 extends SolidNumber<Int16> {
-	/** @implements Object */
-	static toString(): string {
+	static override toString(): string {
 		return 'int';
 	}
 	private static readonly BITCOUNT: number = 16
@@ -28,8 +27,7 @@ export class Int16 extends SolidNumber<Int16> {
 	        static readonly UNIT  : Int16 = new Int16(1n)
 	private static readonly RADIX : Int16 = new Int16(2n)
 
-	/** @override */
-	static values: SolidLanguageType['values'] = new Set([Int16.ZERO])
+	static override values: SolidLanguageType['values'] = new Set([Int16.ZERO])
 	private static mod(n: bigint, modulus: bigint): bigint {
 		return (n % modulus + modulus) % modulus
 	}
@@ -48,18 +46,15 @@ export class Int16 extends SolidNumber<Int16> {
 			: data
 	}
 
-	/** @override Object */
-	toString(): string {
+	override toString(): string {
 		return `${ this.toNumeric() }`
 	}
-	/** @override SolidObject */
 	@strictEqual
-	identical(value: SolidObject): boolean {
+	override identical(value: SolidObject): boolean {
 		return value instanceof Int16 && this.internal.every((bit, i) => bit === value.internal[i]);
 	}
-	/** @override */
 	@SolidObject.equalsDeco
-	equal(value: SolidObject): boolean {
+	override equal(value: SolidObject): boolean {
 		return value instanceof Float64 && value.equal(this);
 	}
 	/** @override */
