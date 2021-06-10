@@ -220,7 +220,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 		const statement: ASTNodeDeclarationType = ASTNodeDeclarationType.fromSource(`type T = ${ src };`, config);
 		return statement.children[1];
 	}
-	private assessed: SolidLanguageType | null = null
+	private assessed?: SolidLanguageType;
 	/**
 	 * @final
 	 */
@@ -241,8 +241,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 * @final
 	 */
 	assess(validator: Validator): SolidLanguageType {
-		this.assessed || (this.assessed = this.assess_do(validator)); // COMBAK `this.assessed ||= this.assess_do(validator)`
-		return this.assessed
+		return this.assessed ||= this.assess_do(validator);
 	}
 	protected abstract assess_do(validator: Validator): SolidLanguageType
 }
@@ -442,6 +441,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 		assert.strictEqual(statement.children.length, 1, 'semantic statement should have 1 child');
 		return statement.children[0]!;
 	}
+	private typed?: SolidLanguageType;
 	private assessed?: SolidObject | null;
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
@@ -471,14 +471,16 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @final
 	 */
 	type(validator: Validator): SolidLanguageType {
-		const type_: SolidLanguageType = this.type_do(validator); // type-check first, to re-throw any TypeErrors
-		if (validator.config.compilerOptions.constantFolding) {
-			const assessed: SolidObject | null = this.assess(validator);
-			if (!!assessed) {
-				return new SolidTypeConstant(assessed);
-			}
-		}
-		return type_
+		if (!this.typed) {
+			this.typed = this.type_do(validator); // type-check first, to re-throw any TypeErrors
+			if (validator.config.compilerOptions.constantFolding) {
+				const assessed: SolidObject | null = this.assess(validator);
+				if (!!assessed) {
+					this.typed = new SolidTypeConstant(assessed);
+				};
+			};
+		};
+		return this.typed;
 	}
 	protected abstract type_do(validator: Validator): SolidLanguageType;
 	/**
@@ -489,10 +491,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @final
 	 */
 	assess(validator: Validator): SolidObject | null {
-		if (this.assessed === void 0) {
-			this.assessed = this.assess_do(validator);
-		}
-		return this.assessed
+		return this.assessed ||= this.assess_do(validator);
 	}
 	protected abstract assess_do(validator: Validator): SolidObject | null;
 }
@@ -809,11 +808,16 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidLanguageType {
-		if ([Operator.NOT, Operator.EMP].includes(this.operator)) {
-			return SolidBoolean
-		}
 		const t0: SolidLanguageType = this.children[0].type(validator);
-		return (t0.isSubtypeOf(SolidNumber)) ? t0 : (() => { throw new TypeError01(this) })()
+		return (
+			(this.operator === Operator.NOT) ? (
+				(t0.isSubtypeOf(SolidNull.union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
+				(SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? SolidBoolean :
+				SolidBoolean.FALSETYPE
+			) :
+			(this.operator === Operator.EMP) ? SolidBoolean :
+			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(SolidNumber)) ? t0 : (() => { throw new TypeError01(this); })()
+		);
 	}
 	/** @implements ASTNodeExpression */
 	protected assess_do(validator: Validator): SolidObject | null {
@@ -1115,16 +1119,16 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		return (this.operator === Operator.AND)
 			? (t0.isSubtypeOf(null_union_false))
 				? t0
-				: (t0.includes(SolidNull.NULL))
-					? (t0.includes(SolidBoolean.FALSE))
+				: (SolidNull.isSubtypeOf(t0))
+					? (SolidBoolean.FALSETYPE.isSubtypeOf(t0))
 						? null_union_false.union(t1)
 						: SolidNull.union(t1)
-					: (t0.includes(SolidBoolean.FALSE))
+					: (SolidBoolean.FALSETYPE.isSubtypeOf(t0))
 						? SolidBoolean.FALSETYPE.union(t1)
 						: t1
 			: (t0.isSubtypeOf(null_union_false))
 				? t1
-				: (t0.includes(SolidNull.NULL) || t0.includes(SolidBoolean.FALSE))
+				: (SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
 					? truthifyType(t0).union(t1)
 					: t0
 	}
