@@ -9,9 +9,11 @@ import {
 } from '../../src/parser/';
 import {
 	Decorator,
-	Int16,
 	Float64,
 } from '../../src/validator/';
+import {
+	Int16,
+} from '../../src/typer/';
 import {
 	Builder,
 	InstructionNone,

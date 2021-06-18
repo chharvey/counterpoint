@@ -15,7 +15,6 @@ import type {
 import {
 	Decorator,
 	AST,
-	Int16,
 	Float64,
 } from '../../src/validator/';
 import {
@@ -23,6 +22,7 @@ import {
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
+	Int16,
 } from '../../src/typer/';
 import {
 	assert_arrayLength,

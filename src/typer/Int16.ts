@@ -1,7 +1,7 @@
-import type {SolidType} from '../typer/SolidType';
-import type {SolidObject} from '../typer/SolidObject';
-import {SolidNumber} from '../typer/SolidNumber';
-import {Float64} from './Float64';
+import type {SolidType} from './SolidType';
+import type {SolidObject} from './SolidObject';
+import {SolidNumber} from './SolidNumber';
+import {Float64} from '../validator/Float64';
 
 
 
