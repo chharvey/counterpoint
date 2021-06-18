@@ -25,18 +25,18 @@ import {
 	SymbolStructure,
 	SymbolStructureType,
 	SymbolStructureVar,
-	SolidLanguageType,
+} from '../../src/validator/'
+import {
+	SolidType,
 	SolidTypeConstant,
+	SolidTypeTuple,
+	SolidTypeRecord,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
 	Int16,
 	Float64,
 	SolidString,
-} from '../../src/validator/'
-import {
-	SolidTypeTuple,
-	SolidTypeRecord,
 } from '../../src/typer/';
 import {
 	Builder,
@@ -127,7 +127,7 @@ describe('ASTNodeSolid', () => {
 				assert.ok(validator.hasSymbol(256n));
 				const info: SymbolStructure | null = validator.getSymbolInfo(256n);
 				assert.ok(info instanceof SymbolStructureType);
-				assert.strictEqual(info.value, SolidLanguageType.UNKNOWN);
+				assert.strictEqual(info.value, SolidType.UNKNOWN);
 			});
 			it('throws if the validator already contains a record for the symbol.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
@@ -151,7 +151,7 @@ describe('ASTNodeSolid', () => {
 				assert.ok(validator.hasSymbol(256n));
 				const info: SymbolStructure | null = validator.getSymbolInfo(256n);
 				assert.ok(info instanceof SymbolStructureVar);
-				assert.strictEqual(info.type, SolidLanguageType.UNKNOWN);
+				assert.strictEqual(info.type, SolidType.UNKNOWN);
 				assert.strictEqual(info.value, null);
 			});
 			it('throws if the validator already contains a record for the variable.', () => {
@@ -826,7 +826,7 @@ describe('ASTNodeSolid', () => {
 				const node: AST.ASTNodeTypeRecord = typeFromString(`[x: int, y: bool, z: str]`) as AST.ASTNodeTypeRecord;
 				assert.deepStrictEqual(
 					node.assess(validator),
-					new SolidTypeRecord(new Map<bigint, SolidLanguageType>(node.children.map((c) => [
+					new SolidTypeRecord(new Map<bigint, SolidType>(node.children.map((c) => [
 						c.children[0].id,
 						c.children[1].assess(validator),
 					]))),
@@ -899,7 +899,7 @@ describe('ASTNodeSolid', () => {
 			});
 			it('returns Unknown for undeclared variables.', () => {
 				// NOTE: a reference error will be thrown at the variable-checking stage
-				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidLanguageType.UNKNOWN);
+				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidType.UNKNOWN);
 			});
 			Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
 				let templates: AST.ASTNodeTemplate[];
@@ -917,7 +917,7 @@ describe('ASTNodeSolid', () => {
 				}
 				context('with constant folding on.', () => {
 					const validator: Validator = new Validator();
-					let types: SolidLanguageType[];
+					let types: SolidType[];
 					before(() => {
 						initTemplates();
 						types = templates.map((t) => assert_wasCalled(t.assess, 1, (orig, spy) => {
@@ -1002,7 +1002,7 @@ describe('ASTNodeSolid', () => {
 						[...tests.values()].map((result) => new SolidTypeConstant(result)),
 					);
 				}
-				function typeOfOperationFromSource(src: string): SolidLanguageType {
+				function typeOfOperationFromSource(src: string): SolidType {
 					return AST.ASTNodeOperation.fromSource(src, folding_coercion_off).type(new Validator(folding_coercion_off));
 				}
 				const folding_coercion_off: SolidConfig = {

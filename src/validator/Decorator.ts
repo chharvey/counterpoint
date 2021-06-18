@@ -21,6 +21,7 @@ import {
 	TOKEN,
 	PARSER,
 } from '../parser/'
+import type {ASTNodeSolid} from './ASTNode';
 import * as AST from './ASTNode';
 
 
@@ -122,8 +123,8 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeStatement):             AST.ASTNodeStatement;
 	static decorate(node: PARSER.ParseNodeGoal__0__List):         AST.ASTNodeStatement[];
 	static decorate(node: PARSER.ParseNodeGoal):                  AST.ASTNodeGoal;
-	static decorate(node: ParseNode): AST.ASTNodeSolid | readonly AST.ASTNodeSolid[];
-	static decorate(node: ParseNode): AST.ASTNodeSolid | readonly AST.ASTNodeSolid[] {
+	static decorate(node: ParseNode): ASTNodeSolid | readonly ASTNodeSolid[];
+	static decorate(node: ParseNode): ASTNodeSolid | readonly ASTNodeSolid[] {
 		if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeWord) {
 			return new AST.ASTNodeKey(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenIdentifier);
 

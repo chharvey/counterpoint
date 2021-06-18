@@ -16,7 +16,7 @@ import {
 	SolidNumber,
 	Int16,
 	Float64,
-} from '../validator/'
+} from '../typer/';
 
 
 
