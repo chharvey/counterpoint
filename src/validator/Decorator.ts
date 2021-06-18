@@ -63,6 +63,8 @@ export class Decorator {
 		[Punctuator.NGT,  Operator.NGT],
 		[Keyword   .IS,   Operator.IS],
 		[Keyword   .ISNT, Operator.ISNT],
+		[Punctuator.ID,   Operator.IS],
+		[Punctuator.NID,  Operator.ISNT],
 		[Punctuator.EQ,   Operator.EQ],
 		[Punctuator.NEQ,  Operator.NEQ],
 		[Punctuator.AND,  Operator.AND],

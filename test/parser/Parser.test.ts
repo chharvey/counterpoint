@@ -824,7 +824,7 @@ describe('Parser', () => {
 			})
 		})
 
-		context('ExpressionEquality ::= ExpressionEquality ("is" | "isnt" | "==" | "!=") ExpressionComparative', () => {
+		context('ExpressionEquality ::= ExpressionEquality ("is" | "isnt" | "===" | "!==" | "==" | "!=") ExpressionComparative', () => {
 			it('makes a ParseNodeExpressionEquality node.', () => {
 				/*
 					<ExpressionEquality>
@@ -835,15 +835,17 @@ describe('Parser', () => {
 				*/
 				assert.deepStrictEqual([
 					`2 is -3;`,
+					`2 === -3;`,
 					`2 == -3;`,
 				].map((src, i) => {
 					const expression_eq: PARSER.ParseNodeExpressionEquality = h.equalityExpressionFromSource(src)
 					assert_arrayLength(expression_eq.children, 3, 'equality expression should have 3 children')
 					const [left, op, right]: readonly [PARSER.ParseNodeExpressionEquality, Token, PARSER.ParseNodeExpressionComparative] = expression_eq.children
-					assert.ok(op instanceof [TOKEN.TokenKeyword, TOKEN.TokenPunctuator][i])
+					assert.ok(op instanceof [TOKEN.TokenKeyword, TOKEN.TokenPunctuator, TOKEN.TokenPunctuator][i])
 					return [left.source, op.source, right.source]
 				}), [
 					['2', Keyword.IS,    '-3'],
+					['2', Punctuator.ID, '-3'],
 					['2', Punctuator.EQ, '-3'],
 				])
 			})

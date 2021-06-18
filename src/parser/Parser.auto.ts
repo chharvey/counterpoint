@@ -387,6 +387,8 @@ export class ProductionExpressionEquality extends Production {
 			[ProductionExpressionComparative.instance],
 			[ProductionExpressionEquality.instance, 'is', ProductionExpressionComparative.instance],
 			[ProductionExpressionEquality.instance, 'isnt', ProductionExpressionComparative.instance],
+			[ProductionExpressionEquality.instance, '===', ProductionExpressionComparative.instance],
+			[ProductionExpressionEquality.instance, '!==', ProductionExpressionComparative.instance],
 			[ProductionExpressionEquality.instance, '==', ProductionExpressionComparative.instance],
 			[ProductionExpressionEquality.instance, '!=', ProductionExpressionComparative.instance],
 		];
@@ -771,6 +773,8 @@ export class ParseNodeExpressionComparative extends ParseNode {
 export class ParseNodeExpressionEquality extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeExpressionComparative]
+		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
+		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
 		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
 		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
 		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
