@@ -478,12 +478,12 @@ describe('ASTNodeSolid', () => {
 							instructionConstInt(420n),
 						),
 						new InstructionBinopEquality(
-							Operator.IS,
+							Operator.ID,
 							instructionConstFloat(4.2),
 							instructionConstInt(42n),
 						),
 						new InstructionBinopEquality(
-							Operator.IS,
+							Operator.ID,
 							instructionConstInt(42n),
 							instructionConstFloat(4.2),
 						),
@@ -493,7 +493,7 @@ describe('ASTNodeSolid', () => {
 							instructionConstFloat(42.0),
 						),
 						new InstructionBinopEquality(
-							Operator.IS,
+							Operator.ID,
 							instructionConstInt(1n),
 							instructionConstInt(1n),
 						),
@@ -503,7 +503,7 @@ describe('ASTNodeSolid', () => {
 							instructionConstInt(1n),
 						),
 						new InstructionBinopEquality(
-							Operator.IS,
+							Operator.ID,
 							instructionConstInt(0n),
 							instructionConstInt(0n),
 						),

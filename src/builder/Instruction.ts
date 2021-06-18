@@ -346,7 +346,7 @@ export class InstructionBinopEquality extends InstructionBinop {
 			(!this.arg0.isFloat &&  this.arg1.isFloat) ? `call $i_f_is` :
 			( this.arg0.isFloat && !this.arg1.isFloat) ? `call $f_i_is` :
 			new Map<Operator, string>([
-				[Operator.IS, `call $fis`],
+				[Operator.ID, `call $fis`],
 				[Operator.EQ, `f64.eq`],
 			]).get(this.op)!
 		} ${ this.arg0 } ${ this.arg1 })`

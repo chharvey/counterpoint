@@ -735,7 +735,7 @@ describe('Decorator', () => {
 			it('makes an ASTNodeOperation with the `===` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
-						<Operation operator=IS>
+						<Operation operator=ID>
 							<Constant source="2"/>
 							<Constant source="3"/>
 						</Operation>
@@ -752,7 +752,7 @@ describe('Decorator', () => {
 				assert.ok(right instanceof AST.ASTNodeConstant);
 				assert.deepStrictEqual(
 					[left.source, child.operator, right.source],
-					[`2`,         Operator.IS,    `3`],
+					[`2`,         Operator.ID,    `3`],
 				);
 			});
 			it('makes an ASTNodeOperation with the `==` operator and logically negates the result.', () => {

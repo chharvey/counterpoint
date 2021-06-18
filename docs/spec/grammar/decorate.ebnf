@@ -355,13 +355,13 @@ Decorate(ExpressionComparative ::= ExpressionComparative "isnt" ExpressionAdditi
 Decorate(ExpressionEquality ::= ExpressionComparative) -> SemanticOperation
 	:= Decorate(ExpressionComparative);
 Decorate(ExpressionEquality ::= ExpressionEquality "===" ExpressionComparative) -> SemanticOperation
-	:= (SemanticOperation[operator=IS]
+	:= (SemanticOperation[operator=ID]
 		Decorate(ExpressionEquality)
 		Decorate(ExpressionComparative)
 	);
 Decorate(ExpressionEquality ::= ExpressionEquality "!==" ExpressionComparative) -> SemanticOperation
 	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=IS]
+		(SemanticOperation[operator=ID]
 			Decorate(ExpressionEquality)
 			Decorate(ExpressionComparative)
 		)

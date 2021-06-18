@@ -63,8 +63,8 @@ export class Decorator {
 		[Punctuator.NGT,  Operator.NGT],
 		[Keyword   .IS,   Operator.IS],
 		[Keyword   .ISNT, Operator.ISNT],
-		[Punctuator.ID,   Operator.IS],
-		[Punctuator.NID,  Operator.ISNT],
+		[Punctuator.ID,   Operator.ID],
+		[Punctuator.NID,  Operator.NID],
 		[Punctuator.EQ,   Operator.EQ],
 		[Punctuator.NEQ,  Operator.NEQ],
 		[Punctuator.AND,  Operator.AND],
@@ -337,8 +337,8 @@ export class Decorator {
 
 				) : (node instanceof PARSER.ParseNodeExpressionEquality) ? (
 					// `a !== b` is syntax sugar for `!(a === b)`
-					(operator === Operator.ISNT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
-						new AST.ASTNodeOperationBinaryEquality(node.children[0], Operator.IS, operands),
+					(operator === Operator.NID) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+						new AST.ASTNodeOperationBinaryEquality(node.children[0], Operator.ID, operands),
 					]) :
 					// `a != b` is syntax sugar for `!(a == b)`
 					(operator === Operator.NEQ) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
