@@ -706,7 +706,7 @@ describe('Decorator', () => {
 					[`2`,         Operator.GT,    `3`],
 				)
 			})
-			it('makes an ASTNodeOperation with the `is` operator and logically negates the result.', () => {
+			it.skip('makes an ASTNodeOperation with the `is` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
 						<Operation operator=IS>
@@ -729,6 +729,10 @@ describe('Decorator', () => {
 					[`2`,         Operator.IS,    `3`],
 				)
 			})
+			it('operator `is`/`isnt` is not yet supported.', () => {
+				assert.throws(() => Decorator.decorate(h.expressionFromSource(`2 is   2;`)), /not yet supported/);
+				assert.throws(() => Decorator.decorate(h.expressionFromSource(`2 isnt 3;`)), /not yet supported/);
+			});
 		})
 
 		context('ExpressionEquality ::= ExpressionEquality ("!==" | "!=") ExpressionComparative', () => {

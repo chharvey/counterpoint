@@ -945,6 +945,9 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		children: readonly [ASTNodeExpression, ASTNodeExpression],
 	) {
 		super(start_node, operator, children)
+		if ([Operator.IS, Operator.ISNT].includes(this.operator)) {
+			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
+		}
 	}
 	/** @implements ASTNodeExpression */
 	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopComparative {
