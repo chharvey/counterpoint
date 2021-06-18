@@ -1,5 +1,5 @@
 import {SolidType} from './SolidType';
-import type {SolidBoolean} from '../validator/SolidBoolean'; // TODO circular imports
+import type {SolidBoolean} from './SolidBoolean'; // TODO circular imports
 
 
 
@@ -52,7 +52,7 @@ export abstract class SolidObject {
 	 * @returns the associated Boolean value of this value
 	 */
 	get isTruthy(): SolidBoolean {
-		const SolidBoolean_Class: typeof SolidBoolean = require('../validator/SolidBoolean').SolidBoolean;
+		const SolidBoolean_Class: typeof SolidBoolean = require('./SolidBoolean').SolidBoolean;
 		return SolidBoolean_Class.TRUE;
 	}
 	/**

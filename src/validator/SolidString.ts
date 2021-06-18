@@ -3,7 +3,7 @@ import * as utf8 from 'utf8';
 
 import type {CodeUnit} from '../types';
 import {SolidObject} from '../typer/SolidObject';
-import {SolidBoolean} from './SolidBoolean';
+import {SolidBoolean} from '../typer/SolidBoolean';
 
 
 

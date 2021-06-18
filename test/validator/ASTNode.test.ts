@@ -25,7 +25,6 @@ import {
 	SymbolStructure,
 	SymbolStructureType,
 	SymbolStructureVar,
-	SolidBoolean,
 	Int16,
 	Float64,
 	SolidString,
@@ -37,6 +36,7 @@ import {
 	SolidTypeRecord,
 	SolidObject,
 	SolidNull,
+	SolidBoolean,
 } from '../../src/typer/';
 import {
 	Builder,

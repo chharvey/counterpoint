@@ -1,5 +1,5 @@
 import {SolidObject} from '../typer/SolidObject';
-import {SolidBoolean} from './SolidBoolean';
+import {SolidBoolean} from '../typer/SolidBoolean';
 import type {Float64} from './Float64';
 
 
