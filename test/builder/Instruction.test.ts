@@ -159,35 +159,35 @@ describe('Instruction', () => {
 					instructionConstFloat(18.1),
 				).toString(), `(f64.ge ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
 				assert.strictEqual(new InstructionBinopEquality(
-					Operator.IS,
+					Operator.ID,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
 				).toString(), `(i32.eq ${ instructionConstInt(30n) } ${ instructionConstInt(18n) })`)
 				assert.strictEqual(new InstructionBinopEquality(
-					Operator.IS,
+					Operator.ID,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
-				).toString(), `(call $fis ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
+				).toString(), `(call $fid ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
 				assert.strictEqual(new InstructionBinopEquality(
-					Operator.IS,
+					Operator.ID,
 					instructionConstInt(30n),
 					instructionConstFloat(18.1),
-				).toString(), `(call $i_f_is ${ instructionConstInt(30n) } ${ instructionConstFloat(18.1) })`)
+				).toString(), `(call $i_f_id ${ instructionConstInt(30n) } ${ instructionConstFloat(18.1) })`)
 				assert.strictEqual(new InstructionBinopEquality(
-					Operator.IS,
+					Operator.ID,
 					instructionConstFloat(18.1),
 					instructionConstInt(30n),
-				).toString(), `(call $f_i_is ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`)
-				assert.strictEqual(new InstructionBinopEquality(
-					Operator.EQ,
-					instructionConstFloat(18.1),
-					instructionConstInt(30n),
-				).toString(), `(call $f_i_is ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`)
+				).toString(), `(call $f_i_id ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`)
 				assert.strictEqual(new InstructionBinopEquality(
 					Operator.EQ,
 					instructionConstInt(30n),
 					instructionConstFloat(18.1),
-				).toString(), `(call $i_f_is ${ instructionConstInt(30n) } ${ instructionConstFloat(18.1) })`)
+				).toString(), `(call $i_f_id ${ instructionConstInt(30n) } ${ instructionConstFloat(18.1) })`)
+				assert.strictEqual(new InstructionBinopEquality(
+					Operator.EQ,
+					instructionConstFloat(18.1),
+					instructionConstInt(30n),
+				).toString(), `(call $f_i_id ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`)
 				assert.strictEqual(new InstructionBinopLogical(
 					0n,
 					Operator.AND,
