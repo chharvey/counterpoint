@@ -1,6 +1,7 @@
 // HACK: this is defined here, instead of in `../validator/ASTNode.ts`, to avoid circular imports.
 export enum Operator {
 	ORNULL,
+	OREXCP,
 	NOT,
 	EMP,
 	AFF,
@@ -29,6 +30,7 @@ export enum Operator {
 
 export type ValidTypeOperator =
 	| Operator.ORNULL
+	| Operator.OREXCP
 	| Operator.AND
 	| Operator.OR
 

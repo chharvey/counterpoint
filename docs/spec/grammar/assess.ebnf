@@ -44,6 +44,10 @@ Type Assess(SemanticTypeOperation[operator: ORNULL] oper) :=
 	3. *Return:* `Union(child, Null)`.
 ;
 
+Type Assess(SemanticTypeOperation[operator: OREXCP] oper) :=
+	1. *Throw:* new TypeError "Operator not yet supported.".
+;
+
 Type Assess(SemanticTypeOperation[operator: AND] oper) :=
 	1. *Assert:* `oper.children.count` is 2.
 	2. *Let* `child0` be *UnwrapAffirm:* `Assess(oper.children.0)`.

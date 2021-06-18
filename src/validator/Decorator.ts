@@ -38,6 +38,7 @@ type TemplatePartialType = // FIXME spread types
 export class Decorator {
 	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
 		[Punctuator.ORNULL, Operator.ORNULL],
+		[Punctuator.OREXCP, Operator.OREXCP],
 	])
 	private static readonly TYPEOPERATORS_BINARY: ReadonlyMap<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
 		[Punctuator.INTER, Operator.AND],

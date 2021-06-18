@@ -382,6 +382,9 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		override readonly children: readonly [ASTNodeType],
 	) {
 		super(start_node, operator, children)
+		if ([Operator.OREXCP].includes(this.operator)) {
+			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
+		}
 	}
 	/** @implements ASTNodeType */
 	protected assess_do(validator: Validator): SolidLanguageType {
