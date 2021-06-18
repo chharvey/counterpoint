@@ -89,6 +89,62 @@ String! Assess(SemanticTemplate tpl) :=
 
 
 
+Object! Assess(SemanticEmptyCollection coll) :=
+	1. *Throw.* // TODO
+;
+
+
+
+Tuple! Assess(SemanticList list) :=
+	1. *Let* `data` be a mapping of `list` for each `it` to `Assess(it)`.
+	2. *For index* `i` in `data`:
+		1. *If* `data[i]` is a normal completion:
+			1. *Set* `data[i]` to `data[i].value`.
+	3. *If* `data` contains a CompletionStructure `err`:
+		1. *Assert:* `err` is an abrupt completion.
+		2. *Return:* `err`.
+	4. *Return:* a new Tuple containing the items in the sequence `data`.
+;
+
+
+
+Record! Assess(SemanticRecord record) :=
+	1. *Let* `data` be a new Structure.
+	2. *For each* `property` in `record`:
+		1. Set `data` to [
+			...data,
+			`property.children.0.id`= `Assess(property.children.1)`,
+		].
+	3. *For key* `k` in `data`:
+		1. *If* `data[k]` is a normal completion:
+			1. *Set* `data[k]` to `data[k].value`.
+	4. *If* `data` contains a property whose value is a CompletionStructure `err`:
+		1. *Assert:* `err` is an abrupt completion.
+		2. *Return:* `err`.
+	5. *Return:* a new Record containing the properties in the structure `data`.
+;
+
+
+
+Mapping! Assess(SemanticMapping mapping) :=
+	1. *Let* `data` be a mapping of `mapping` for each `case` to a new Sequence [
+		`Assess(case.children.0)`,
+		`Assess(case.children.1)`,
+	].
+	2. *For each* `it` in `data`:
+		1. *Assert:* `it.count` is 2.
+		2. *If* `it.0` is a normal completion:
+			1. *Set* `it.0` to `it.0.value`.
+		3. *If* `it.1` is a normal completion:
+			1. *Set* `it.1` to `it.1.value`.
+	3. *If* `data` contains a 2-tuple that contains a CompletionStructure `err`:
+		1. *Assert:* `err` is an abrupt completion.
+		2. *Return:* `err`.
+	4. *Return:* a new Mapping containing the pairs in the sequence `data`.
+;
+
+
+
 Boolean! Assess(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `Assess(expr.children.0)`.

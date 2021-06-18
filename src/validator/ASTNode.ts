@@ -34,6 +34,9 @@ import {
 	Int16,
 	Float64,
 	SolidString,
+	SolidTuple,
+	SolidRecord,
+	SolidMapping,
 } from '../typer/';
 import {
 	Decorator,
@@ -633,6 +636,11 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 }
 export class ASTNodeEmptyCollection extends ASTNodeExpression {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeEmptyCollection {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeEmptyCollection);
+		return expression;
+	}
 	declare readonly children: readonly [];
 	constructor (start_node: PARSER.ParseNodeExpressionUnit) {
 		super(start_node);
@@ -646,12 +654,12 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 		throw builder && 'ASTNodeEmptyCollection#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): SolidObject | null {
-		throw 'ASTNodeEmptyCollection#assess_do not yet supported.';
-	}
-	/** @implements ASTNodeExpression */
 	protected type_do(_validator: Validator): SolidType {
 		return new SolidTypeTuple().intersect(new SolidTypeRecord());
+	}
+	/** @implements ASTNodeExpression */
+	protected assess_do(_validator: Validator): SolidObject | null {
+		return null;
 	}
 }
 export class ASTNodeList extends ASTNodeExpression {
@@ -675,12 +683,15 @@ export class ASTNodeList extends ASTNodeExpression {
 		throw builder && 'ASTNodeList#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): SolidObject | null {
-		throw 'ASTNodeList#assess_do not yet supported.';
-	}
-	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidType {
 		return new SolidTypeTuple(this.children.map((c) => c.type(validator)));
+	}
+	/** @implements ASTNodeExpression */
+	protected assess_do(validator: Validator): SolidObject | null {
+		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.assess(validator));
+		return (items.includes(null))
+			? null
+			: new SolidTuple<SolidObject>(items as SolidObject[]);
 	}
 }
 export class ASTNodeRecord extends ASTNodeExpression {
@@ -704,15 +715,21 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): SolidObject | null {
-		throw 'ASTNodeRecord#assess_do not yet supported.';
-	}
-	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidType {
 		return new SolidTypeRecord(new Map(this.children.map((c) => [
 			c.children[0].id,
 			c.children[1].type(validator),
 		])));
+	}
+	/** @implements ASTNodeExpression */
+	protected assess_do(validator: Validator): SolidObject | null {
+		const properties: ReadonlyMap<bigint, SolidObject | null> = new Map(this.children.map((c) => [
+			c.children[0].id,
+			c.children[1].assess(validator),
+		]));
+		return ([...properties].map((p) => p[1]).includes(null))
+			? null
+			: new SolidRecord<SolidObject>(properties as ReadonlyMap<bigint, SolidObject>);
 	}
 }
 export class ASTNodeMapping extends ASTNodeExpression {
@@ -736,12 +753,18 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		throw builder && 'ASTNodeMapping#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected assess_do(): SolidObject | null {
-		throw 'ASTNodeMapping#assess_do not yet supported.';
-	}
-	/** @implements ASTNodeExpression */
 	protected type_do(_validator: Validator): SolidType {
 		return SolidObject;
+	}
+	/** @implements ASTNodeExpression */
+	protected assess_do(validator: Validator): SolidObject | null {
+		const cases: ReadonlyMap<SolidObject | null, SolidObject | null> = new Map(this.children.map((c) => [
+			c.children[0].assess(validator),
+			c.children[1].assess(validator),
+		]));
+		return ([...cases].some((c) => c[0] === null || c[1] === null))
+			? null
+			: new SolidMapping<SolidObject, SolidObject>(cases as ReadonlyMap<SolidObject, SolidObject>);
 	}
 }
 export abstract class ASTNodeOperation extends ASTNodeExpression {

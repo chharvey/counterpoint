@@ -14,3 +14,6 @@ export {SolidNumber}  from './SolidNumber';
 export {Int16}        from './Int16';
 export {Float64}      from './Float64';
 export {SolidString}  from './SolidString';
+export {SolidTuple}   from './SolidTuple';
+export {SolidRecord}  from './SolidRecord';
+export {SolidMapping} from './SolidMapping';
