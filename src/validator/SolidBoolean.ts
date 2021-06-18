@@ -1,7 +1,7 @@
 import {
 	SolidType,
 	SolidTypeConstant,
-} from './SolidLanguageType';
+} from '../typer/SolidType';
 import {SolidObject} from './SolidObject';
 
 

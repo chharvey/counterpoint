@@ -1,4 +1,4 @@
-import {SolidType} from './SolidLanguageType';
+import {SolidType} from '../typer/SolidType';
 import type {SolidBoolean} from './SolidBoolean';
 
 

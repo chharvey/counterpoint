@@ -9,12 +9,6 @@ export {
 	SymbolStructureVar,
 } from './SymbolStructure';
 
-export {
-	SolidType,
-	SolidTypeConstant,
-	SolidTypeInterface,
-} from './SolidLanguageType';
-
 export {SolidObject}  from './SolidObject';
 export {SolidNull}    from './SolidNull';
 export {SolidBoolean} from './SolidBoolean';

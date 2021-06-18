@@ -25,8 +25,6 @@ import {
 	SymbolStructure,
 	SymbolStructureType,
 	SymbolStructureVar,
-	SolidType,
-	SolidTypeConstant,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -35,6 +33,8 @@ import {
 	SolidString,
 } from '../../src/validator/'
 import {
+	SolidType,
+	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
 } from '../../src/typer/';

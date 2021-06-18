@@ -1,9 +1,11 @@
 import {
-	SolidTypeConstant,
 	Int16,
 	Float64,
 	SolidString,
 } from '../src/validator/'
+import {
+	SolidTypeConstant,
+} from '../src/typer/';
 import {
 	InstructionConst,
 } from '../src/builder/'

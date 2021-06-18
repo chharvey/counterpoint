@@ -1,4 +1,4 @@
-import {SolidType} from '../validator/SolidLanguageType'; // TODO circular imports
+import {SolidType} from './SolidType';
 
 
 

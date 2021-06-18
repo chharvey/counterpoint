@@ -1,4 +1,4 @@
-import type {SolidType} from './SolidLanguageType';
+import type {SolidType} from '../typer/SolidType';
 import type {SolidObject}       from './SolidObject';
 import {SolidNumber} from './SolidNumber';
 import {Float64} from './Float64';

@@ -2,10 +2,8 @@ import {
 	ErrorCode,
 } from '@chharvey/parser';
 
-import type {
-	AST,
-	SolidType,
-} from '../validator/'
+import type {AST} from '../validator/'
+import type {SolidType} from '../typer/';
 
 
 

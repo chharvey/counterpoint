@@ -23,6 +23,8 @@ import {
 	ValidOperatorLogical,
 } from '../enum/Operator.enum'
 import {
+	SolidType,
+	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
 } from '../typer/';
@@ -38,10 +40,6 @@ import {
 	SymbolStructureVar,
 	SymbolStructureType,
 } from './SymbolStructure';
-import {
-	SolidType,
-	SolidTypeConstant,
-} from './SolidLanguageType';
 import {SolidObject}  from './SolidObject';
 import {SolidNull}    from './SolidNull';
 import {SolidBoolean} from './SolidBoolean';
