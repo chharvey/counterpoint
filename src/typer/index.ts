@@ -8,3 +8,4 @@ export {SolidTypeTuple}  from './SolidTypeTuple';
 export {SolidTypeRecord} from './SolidTypeRecord';
 
 export {SolidObject}  from './SolidObject';
+export {SolidNull}    from './SolidNull';

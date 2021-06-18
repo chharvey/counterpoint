@@ -1,6 +1,6 @@
-import type {SolidType} from '../typer/SolidType';
-import {SolidObject} from '../typer/SolidObject';
-import {SolidBoolean} from './SolidBoolean';
+import type {SolidType} from './SolidType';
+import {SolidObject} from './SolidObject';
+import {SolidBoolean} from '../validator/SolidBoolean';
 
 
 
