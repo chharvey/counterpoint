@@ -54,6 +54,7 @@ TypeUnit ::=
 
 TypeUnarySymbol ::=
 	| TypeUnit
+	| TypeUnarySymbol "?"
 	| TypeUnarySymbol "!"
 ;
 

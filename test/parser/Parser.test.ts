@@ -303,22 +303,27 @@ describe('Parser', () => {
 			})
 		})
 
-		describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
+		describe('TypeUnarySymbol ::= TypeUnarySymbol ("?" | "!")', () => {
 			it('makes a ParseNodeTypeUnarySymbol node.', () => {
 				/*
 					<TypeUnarySymbol>
 						<TypeUnarySymbol source="int">...</TypeUnarySymbol>
-						<PUNCTUATOR>!</PUNCTUATOR>
+						<PUNCTUATOR>?</PUNCTUATOR>
 					</TypeUnarySymbol>
 				*/
-				const type_unary: PARSER.ParseNodeTypeUnarySymbol = h.unaryTypeFromString(`int!`)
-				assert_arrayLength(type_unary.children, 2)
-				const [unary, op]: readonly [PARSER.ParseNodeTypeUnarySymbol, Token] = type_unary.children
-				assert.ok(op instanceof TOKEN.TokenPunctuator)
-				assert.deepStrictEqual(
-					[unary.source, op.source],
-					[Keyword.INT,  Punctuator.ORNULL],
-				)
+				assert.deepStrictEqual([
+					`int?`,
+					`float!`,
+				].map((src) => {
+					const type_unary: PARSER.ParseNodeTypeUnarySymbol = h.unaryTypeFromString(src);
+					assert_arrayLength(type_unary.children, 2);
+					const [unary, op]: readonly [PARSER.ParseNodeTypeUnarySymbol, Token] = type_unary.children;
+					assert.ok(op instanceof TOKEN.TokenPunctuator);
+					return [unary.source, op.source];
+				}), [
+					[Keyword.INT,   Punctuator.ORNULL],
+					[Keyword.FLOAT, Punctuator.OREXCP],
+				]);
 			})
 		})
 

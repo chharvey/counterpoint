@@ -141,6 +141,7 @@ export class ProductionTypeUnarySymbol extends Production {
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionTypeUnit.instance],
+			[ProductionTypeUnarySymbol.instance, '?'],
 			[ProductionTypeUnarySymbol.instance, '!'],
 		];
 	}
@@ -607,6 +608,7 @@ export class ParseNodeTypeUnit extends ParseNode {
 export class ParseNodeTypeUnarySymbol extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeTypeUnit]
+		| readonly [ParseNodeTypeUnarySymbol, Token]
 		| readonly [ParseNodeTypeUnarySymbol, Token]
 	;
 }
