@@ -1,8 +1,8 @@
-import {SolidLanguageType} from '../validator/SolidLanguageType'; // TODO circular imports
+import {SolidType} from '../validator/SolidLanguageType'; // TODO circular imports
 
 
 
-export class SolidTypeTuple extends SolidLanguageType {
+export class SolidTypeTuple extends SolidType {
 	override readonly isEmpty: boolean = false;
 
 	/**
@@ -10,7 +10,7 @@ export class SolidTypeTuple extends SolidLanguageType {
 	 * @param types this type’s item types
 	 */
 	constructor (
-		private readonly types: readonly SolidLanguageType[] = [],
+		private readonly types: readonly SolidType[] = [],
 	) {
 		super();
 	}
@@ -19,7 +19,7 @@ export class SolidTypeTuple extends SolidLanguageType {
 		return `[${ this.types.map((t) => t.toString()).join(', ') }]`;
 	}
 
-	override isSubtypeOf_do(t: SolidLanguageType): boolean {
+	override isSubtypeOf_do(t: SolidType): boolean {
 		if (t instanceof SolidTypeTuple) {
 			if (this.types.length < t.types.length) {
 				return false;

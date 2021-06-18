@@ -10,7 +10,7 @@ export {
 } from './SymbolStructure';
 
 export {
-	SolidLanguageType,
+	SolidType,
 	SolidTypeConstant,
 	SolidTypeInterface,
 } from './SolidLanguageType';

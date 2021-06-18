@@ -1,4 +1,4 @@
-import type {SolidLanguageType} from './SolidLanguageType';
+import type {SolidType} from './SolidLanguageType';
 import type {SolidObject}       from './SolidObject';
 import {SolidNumber} from './SolidNumber';
 import {Float64} from './Float64';
@@ -24,7 +24,7 @@ export class Int16 extends SolidNumber<Int16> {
 	        static readonly UNIT  : Int16 = new Int16(1n)
 	private static readonly RADIX : Int16 = new Int16(2n)
 
-	static override values: SolidLanguageType['values'] = new Set([Int16.ZERO])
+	static override values: SolidType['values'] = new Set([Int16.ZERO])
 	private static mod(n: bigint, modulus: bigint): bigint {
 		return (n % modulus + modulus) % modulus
 	}

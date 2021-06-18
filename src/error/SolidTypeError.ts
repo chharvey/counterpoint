@@ -4,7 +4,7 @@ import {
 
 import type {
 	AST,
-	SolidLanguageType,
+	SolidType,
 } from '../validator/'
 
 
@@ -65,7 +65,7 @@ class TypeError02 extends SolidTypeError {
 	 * @param subtype   - the expected subtype
 	 * @param supertype - the supertype
 	 */
-	constructor (subtype: SolidLanguageType, supertype: SolidLanguageType, line_index: number, col_index: number) {
+	constructor (subtype: SolidType, supertype: SolidType, line_index: number, col_index: number) {
 		super(`Type ${ subtype } is not a subtype of type ${ supertype }.`, TypeError02.CODE, line_index, col_index)
 	}
 }
@@ -83,7 +83,7 @@ export class TypeError03 extends SolidTypeError {
 	 * @param assignee_type - the type to which the expression is assigned
 	 * @param assigned_type - the type of the expression
 	 */
-	constructor (assignment: AST.ASTNodeDeclarationVariable | AST.ASTNodeAssignment, assignee_type: SolidLanguageType, assigned_type: SolidLanguageType) {
+	constructor (assignment: AST.ASTNodeDeclarationVariable | AST.ASTNodeAssignment, assignee_type: SolidType, assigned_type: SolidType) {
 		super(`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }.`, TypeError03.CODE, assignment.line_index, assignment.col_index)
 	}
 }
