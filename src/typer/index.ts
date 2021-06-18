@@ -10,3 +10,4 @@ export {SolidTypeRecord} from './SolidTypeRecord';
 export {SolidObject}  from './SolidObject';
 export {SolidNull}    from './SolidNull';
 export {SolidBoolean} from './SolidBoolean';
+export {SolidNumber}  from './SolidNumber';

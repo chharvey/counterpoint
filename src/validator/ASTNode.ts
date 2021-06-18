@@ -30,6 +30,7 @@ import {
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
+	SolidNumber,
 } from '../typer/';
 import {
 	Decorator,
@@ -43,7 +44,6 @@ import {
 	SymbolStructureVar,
 	SymbolStructureType,
 } from './SymbolStructure';
-import {SolidNumber}  from './SolidNumber';
 import {Int16}        from './Int16';
 import {Float64}      from './Float64';
 import {SolidString}  from './SolidString';

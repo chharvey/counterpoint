@@ -1,6 +1,6 @@
-import {SolidObject} from '../typer/SolidObject';
-import {SolidBoolean} from '../typer/SolidBoolean';
-import type {Float64} from './Float64';
+import {SolidObject} from './SolidObject';
+import {SolidBoolean} from './SolidBoolean';
+import type {Float64} from '../validator/Float64';
 
 
 

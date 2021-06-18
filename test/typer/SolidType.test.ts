@@ -2,7 +2,6 @@ import * as assert from 'assert'
 
 import {Dev} from '../../src/core';
 import {
-	SolidNumber,
 	Int16,
 	Float64,
 	SolidString,
@@ -16,6 +15,7 @@ import {
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
+	SolidNumber,
 } from '../../src/typer';
 
 
