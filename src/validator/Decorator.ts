@@ -329,10 +329,14 @@ export class Decorator {
 					(operator === Operator.NGT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
 						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.GT, operands),
 					]) :
+					// `a isnt b` is syntax sugar for `!(a is b)`
+					(operator === Operator.ISNT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.IS, operands),
+					]) :
 					new AST.ASTNodeOperationBinaryComparative(node, operator as ValidOperatorComparative, operands)
 
 				) : (node instanceof PARSER.ParseNodeExpressionEquality) ? (
-					// `a isnt b` is syntax sugar for `!(a is b)`
+					// `a !== b` is syntax sugar for `!(a === b)`
 					(operator === Operator.ISNT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
 						new AST.ASTNodeOperationBinaryEquality(node.children[0], Operator.IS, operands),
 					]) :

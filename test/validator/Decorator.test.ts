@@ -659,7 +659,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		context('ExpressionComparative ::= ExpressionComparative ("!<" | "!>") ExpressionAdditive', () => {
+		context('ExpressionComparative ::= ExpressionComparative ("!<" | "!>" | "isnt") ExpressionAdditive', () => {
 			it('makes an ASTNodeOperation with the `<` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
@@ -706,9 +706,6 @@ describe('Decorator', () => {
 					[`2`,         Operator.GT,    `3`],
 				)
 			})
-		})
-
-		context('ExpressionEquality ::= ExpressionEquality ("isnt" | "!==" | "!=") ExpressionComparative', () => {
 			it('makes an ASTNodeOperation with the `is` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
@@ -732,6 +729,9 @@ describe('Decorator', () => {
 					[`2`,         Operator.IS,    `3`],
 				)
 			})
+		})
+
+		context('ExpressionEquality ::= ExpressionEquality ("!==" | "!=") ExpressionComparative', () => {
 			it('makes an ASTNodeOperation with the `===` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
