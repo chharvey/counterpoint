@@ -1,16 +1,16 @@
-import {SolidType} from '../typer/SolidType';
-import type {SolidBoolean} from './SolidBoolean';
+import {SolidType} from './SolidType';
+import type {SolidBoolean} from '../validator/SolidBoolean'; // TODO circular imports
 
 
 
 /**
  * Parent class for all Solid Language Values.
  * Known subclasses:
- * - Null
- * - Boolean
+ * - SolidNull
+ * - SolidBoolean
  * - Int16
  * - Float64
- * - String
+ * - SolidString
  */
 export abstract class SolidObject {
 	/** @implements Object */
@@ -52,7 +52,7 @@ export abstract class SolidObject {
 	 * @returns the associated Boolean value of this value
 	 */
 	get isTruthy(): SolidBoolean {
-		const SolidBoolean_Class: typeof SolidBoolean = require('./SolidBoolean').SolidBoolean;
+		const SolidBoolean_Class: typeof SolidBoolean = require('../validator/SolidBoolean').SolidBoolean;
 		return SolidBoolean_Class.TRUE;
 	}
 	/**

@@ -2,7 +2,7 @@ import {
 	SolidType,
 	SolidTypeConstant,
 } from '../typer/SolidType';
-import {SolidObject} from './SolidObject';
+import {SolidObject} from '../typer/SolidObject';
 
 
 

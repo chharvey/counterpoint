@@ -27,6 +27,7 @@ import {
 	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidObject,
 } from '../typer/';
 import {
 	Decorator,
@@ -40,7 +41,6 @@ import {
 	SymbolStructureVar,
 	SymbolStructureType,
 } from './SymbolStructure';
-import {SolidObject}  from './SolidObject';
 import {SolidNull}    from './SolidNull';
 import {SolidBoolean} from './SolidBoolean';
 import {SolidNumber}  from './SolidNumber';

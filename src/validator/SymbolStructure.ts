@@ -1,5 +1,7 @@
-import {SolidType} from '../typer/';
-import type {SolidObject} from './SolidObject';
+import {
+	SolidType,
+	SolidObject,
+} from '../typer/';
 
 
 
