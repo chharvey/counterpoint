@@ -19,6 +19,8 @@ export enum Operator {
 	NGT,
 	IS,
 	ISNT,
+	ID,
+	NID,
 	EQ,
 	NEQ,
 	AND,
@@ -56,9 +58,10 @@ export type ValidOperatorComparative =
 	| Operator.LE
 	| Operator.GT
 	| Operator.GE
+	| Operator.IS
 
 export type ValidOperatorEquality =
-	| Operator.IS
+	| Operator.ID
 	| Operator.EQ
 
 export type ValidOperatorLogical =

@@ -341,19 +341,31 @@ Decorate(ExpressionComparative ::= ExpressionComparative "!>" ExpressionAdditive
 			Decorate(ExpressionAdditive)
 		)
 	);
+Decorate(ExpressionComparative ::= ExpressionComparative "is" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=IS]
+		Decorate(ExpressionComparative)
+		Decorate(ExpressionAdditive)
+	);
+Decorate(ExpressionComparative ::= ExpressionComparative "isnt" ExpressionAdditive) -> SemanticOperation
+	:= (SemanticOperation[operator=NOT]
+		(SemanticOperation[operator=IS]
+			Decorate(ExpressionComparative)
+			Decorate(ExpressionAdditive)
+		)
+	);
 
 
 
 Decorate(ExpressionEquality ::= ExpressionComparative) -> SemanticOperation
 	:= Decorate(ExpressionComparative);
-Decorate(ExpressionEquality ::= ExpressionEquality "is" ExpressionComparative) -> SemanticOperation
-	:= (SemanticOperation[operator=IS]
+Decorate(ExpressionEquality ::= ExpressionEquality "===" ExpressionComparative) -> SemanticOperation
+	:= (SemanticOperation[operator=ID]
 		Decorate(ExpressionEquality)
 		Decorate(ExpressionComparative)
 	);
-Decorate(ExpressionEquality ::= ExpressionEquality "isnt" ExpressionComparative) -> SemanticOperation
+Decorate(ExpressionEquality ::= ExpressionEquality "!==" ExpressionComparative) -> SemanticOperation
 	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=IS]
+		(SemanticOperation[operator=ID]
 			Decorate(ExpressionEquality)
 			Decorate(ExpressionComparative)
 		)

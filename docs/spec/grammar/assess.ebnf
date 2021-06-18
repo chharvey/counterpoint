@@ -140,6 +140,10 @@ Boolean! Assess(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	6. *Return:* `PerformBinaryCompare(expr.operator, Float(float0), Float(float1))`.
 ;
 
+Boolean! Assess(SemanticOperation[operator: IS] expr) :=
+	1. *Throw:* new TypeError "Operator not yet supported.".
+;
+
 Boolean! Assess(SemanticOperation[operator: ID] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *Unwrap:* `Assess(expr.children.0)`.

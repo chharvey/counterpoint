@@ -15,13 +15,15 @@ import type {
 import {
 	Decorator,
 	AST,
+} from '../../src/validator/';
+import {
 	SolidTypeConstant,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
 	Int16,
 	Float64,
-} from '../../src/validator/';
+} from '../../src/typer/';
 import {
 	assert_arrayLength,
 } from '../assert-helpers'
@@ -662,7 +664,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		context('ExpressionComparative ::= ExpressionComparative ("!<" | "!>") ExpressionAdditive', () => {
+		context('ExpressionComparative ::= ExpressionComparative ("!<" | "!>" | "isnt") ExpressionAdditive', () => {
 			it('makes an ASTNodeOperation with the `<` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
@@ -709,10 +711,7 @@ describe('Decorator', () => {
 					[`2`,         Operator.GT,    `3`],
 				)
 			})
-		})
-
-		context('ExpressionEquality ::= ExpressionEquality ("isnt" | "!=") ExpressionComparative', () => {
-			it('makes an ASTNodeOperation with the `is` operator and logically negates the result.', () => {
+			it.skip('makes an ASTNodeOperation with the `is` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>
 						<Operation operator=IS>
@@ -735,6 +734,36 @@ describe('Decorator', () => {
 					[`2`,         Operator.IS,    `3`],
 				)
 			})
+			it('operator `is`/`isnt` is not yet supported.', () => {
+				assert.throws(() => Decorator.decorate(h.expressionFromSource(`2 is   2;`)), /not yet supported/);
+				assert.throws(() => Decorator.decorate(h.expressionFromSource(`2 isnt 3;`)), /not yet supported/);
+			});
+		})
+
+		context('ExpressionEquality ::= ExpressionEquality ("!==" | "!=") ExpressionComparative', () => {
+			it('makes an ASTNodeOperation with the `===` operator and logically negates the result.', () => {
+				/*
+					<Operation operator=NOT>
+						<Operation operator=ID>
+							<Constant source="2"/>
+							<Constant source="3"/>
+						</Operation>
+					</Operation>
+				*/
+				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`2 !== 3;`));
+				assert.ok(operation instanceof AST.ASTNodeOperationUnary);
+				assert.strictEqual(operation.operator, Operator.NOT);
+				const child: AST.ASTNodeExpression = operation.children[0];
+				assert.ok(child instanceof AST.ASTNodeOperationBinary);
+				const left:  AST.ASTNodeExpression = child.children[0];
+				const right: AST.ASTNodeExpression = child.children[1];
+				assert.ok(left  instanceof AST.ASTNodeConstant);
+				assert.ok(right instanceof AST.ASTNodeConstant);
+				assert.deepStrictEqual(
+					[left.source, child.operator, right.source],
+					[`2`,         Operator.ID,    `3`],
+				);
+			});
 			it('makes an ASTNodeOperation with the `==` operator and logically negates the result.', () => {
 				/*
 					<Operation operator=NOT>

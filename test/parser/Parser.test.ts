@@ -799,7 +799,7 @@ describe('Parser', () => {
 			})
 		})
 
-		context('ExpressionComparative ::= ExpressionComparative ("<" | ">" | "<=" | ">=" | "!<" | "!>") ExpressionAdditive', () => {
+		context('ExpressionComparative ::= ExpressionComparative ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "isnt") ExpressionAdditive', () => {
 			it('makes a ParseNodeExpressionComparative node.', () => {
 				/*
 					<ExpressionComparative>
@@ -808,14 +808,19 @@ describe('Parser', () => {
 						<ExpressionAdditive source="-3">...</ExpressionAdditive>
 					</ExpressionComparative>
 				*/
-				const expression_compare: PARSER.ParseNodeExpressionComparative = h.comparativeExpressionFromSource(`2 < -3;`)
-				assert_arrayLength(expression_compare.children, 3, 'comparative expression should have 3 children')
-				const [left, op, right]: readonly [PARSER.ParseNodeExpressionComparative, Token, PARSER.ParseNodeExpressionAdditive] = expression_compare.children
-				assert.ok(op instanceof TOKEN.TokenPunctuator)
-				assert.deepStrictEqual(
-					[left.source, op.source,     right.source],
-					['2',         Punctuator.LT, '-3'],
-				)
+				assert.deepStrictEqual([
+					`2 < -3;`,
+					`2 is -3;`,
+				].map((src, i) => {
+					const expression_compare: PARSER.ParseNodeExpressionComparative = h.comparativeExpressionFromSource(src);
+					assert_arrayLength(expression_compare.children, 3, 'comparative expression should have 3 children');
+					const [left, op, right]: readonly [PARSER.ParseNodeExpressionComparative, Token, PARSER.ParseNodeExpressionAdditive] = expression_compare.children;
+					assert.ok(op instanceof [TOKEN.TokenPunctuator, TOKEN.TokenKeyword][i]);
+					return [left.source, op.source, right.source];
+				}), [
+					['2', Punctuator.LT, '-3'],
+					['2', Keyword.IS,    '-3'],
+				]);
 			})
 			it('allows chaining of `<` and `>`.', () => {
 				const expression_compare: PARSER.ParseNodeExpressionComparative = h.comparativeExpressionFromSource(`2 < 3 > 4;`)
@@ -829,26 +834,26 @@ describe('Parser', () => {
 			})
 		})
 
-		context('ExpressionEquality ::= ExpressionEquality ("is" | "isnt" | "==" | "!=") ExpressionComparative', () => {
+		context('ExpressionEquality ::= ExpressionEquality ("===" | "!==" | "==" | "!=") ExpressionComparative', () => {
 			it('makes a ParseNodeExpressionEquality node.', () => {
 				/*
 					<ExpressionEquality>
 						<ExpressionEquality source="2">...</ExpressionEquality>
-						<PUNCTUATOR>is</PUNCTUATOR>
+						<PUNCTUATOR>===</PUNCTUATOR>
 						<ExpressionComparative source="-3">...</ExpressionComparative>
 					</ExpressionEquality>
 				*/
 				assert.deepStrictEqual([
-					`2 is -3;`,
+					`2 === -3;`,
 					`2 == -3;`,
-				].map((src, i) => {
+				].map((src) => {
 					const expression_eq: PARSER.ParseNodeExpressionEquality = h.equalityExpressionFromSource(src)
 					assert_arrayLength(expression_eq.children, 3, 'equality expression should have 3 children')
 					const [left, op, right]: readonly [PARSER.ParseNodeExpressionEquality, Token, PARSER.ParseNodeExpressionComparative] = expression_eq.children
-					assert.ok(op instanceof [TOKEN.TokenKeyword, TOKEN.TokenPunctuator][i])
+					assert.ok(op instanceof TOKEN.TokenPunctuator);
 					return [left.source, op.source, right.source]
 				}), [
-					['2', Keyword.IS,    '-3'],
+					['2', Punctuator.ID, '-3'],
 					['2', Punctuator.EQ, '-3'],
 				])
 			})

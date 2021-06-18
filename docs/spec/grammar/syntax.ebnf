@@ -98,12 +98,12 @@ ExpressionUnarySymbol ::=
 ExpressionExponential
 	::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
 
-ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/" ))?                            ExpressionExponential;
-ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-" ))?                            ExpressionMultiplicative;
-ExpressionComparative    ::= (ExpressionComparative    ("<" | ">" | "<=" | ">=" | "!<" | "!>"))? ExpressionAdditive;
-ExpressionEquality       ::= (ExpressionEquality       ("is" | "isnt" | "==" | "!="))?           ExpressionComparative;
-ExpressionConjunctive    ::= (ExpressionConjunctive    ("&&" | "!&"))?                           ExpressionEquality;
-ExpressionDisjunctive    ::= (ExpressionDisjunctive    ("||" | "!|"))?                           ExpressionConjunctive;
+ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/" ))?                                            ExpressionExponential;
+ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-" ))?                                            ExpressionMultiplicative;
+ExpressionComparative    ::= (ExpressionComparative    ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "isnt"))? ExpressionAdditive;
+ExpressionEquality       ::= (ExpressionEquality       ("===" | "!==" | "==" | "!="))?                           ExpressionComparative;
+ExpressionConjunctive    ::= (ExpressionConjunctive    ("&&" | "!&"))?                                           ExpressionEquality;
+ExpressionDisjunctive    ::= (ExpressionDisjunctive    ("||" | "!|"))?                                           ExpressionConjunctive;
 
 ExpressionConditional
 	::= "if" Expression "then" Expression "else" Expression;

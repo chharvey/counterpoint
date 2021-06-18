@@ -3,7 +3,7 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-} from '../src/validator/'
+} from '../src/typer/';
 import {
 	InstructionConst,
 } from '../src/builder/'
