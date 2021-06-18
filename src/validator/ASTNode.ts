@@ -33,6 +33,7 @@ import {
 	SolidNumber,
 	Int16,
 	Float64,
+	SolidString,
 } from '../typer/';
 import {
 	Decorator,
@@ -46,7 +47,6 @@ import {
 	SymbolStructureVar,
 	SymbolStructureType,
 } from './SymbolStructure';
-import {SolidString}  from './SolidString';
 import {
 	Builder,
 	Instruction,

@@ -25,7 +25,6 @@ import {
 	SymbolStructure,
 	SymbolStructureType,
 	SymbolStructureVar,
-	SolidString,
 } from '../../src/validator/'
 import {
 	SolidType,
@@ -37,6 +36,7 @@ import {
 	SolidBoolean,
 	Int16,
 	Float64,
+	SolidString,
 } from '../../src/typer/';
 import {
 	Builder,

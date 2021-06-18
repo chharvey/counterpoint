@@ -2,9 +2,6 @@ import * as assert from 'assert'
 
 import {Dev} from '../../src/core';
 import {
-	SolidString,
-} from '../../src/validator'
-import {
 	SolidType,
 	SolidTypeConstant,
 	SolidTypeInterface,
@@ -16,6 +13,7 @@ import {
 	SolidNumber,
 	Int16,
 	Float64,
+	SolidString,
 } from '../../src/typer';
 
 

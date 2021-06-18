@@ -8,5 +8,3 @@ export {
 	SymbolStructureType,
 	SymbolStructureVar,
 } from './SymbolStructure';
-
-export {SolidString}  from './SolidString';
