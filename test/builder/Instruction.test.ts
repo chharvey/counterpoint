@@ -165,27 +165,27 @@ describe('Instruction', () => {
 					Operator.ID,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
-				).toString(), `(call $fis ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
+				).toString(), `(call $fid ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
 				assert.strictEqual(new InstructionBinopEquality(
 					Operator.ID,
 					instructionConstInt(30n),
 					instructionConstFloat(18.1),
-				).toString(), `(call $i_f_is ${ instructionConstInt(30n) } ${ instructionConstFloat(18.1) })`)
+				).toString(), `(call $i_f_id ${ instructionConstInt(30n) } ${ instructionConstFloat(18.1) })`)
 				assert.strictEqual(new InstructionBinopEquality(
 					Operator.ID,
 					instructionConstFloat(18.1),
 					instructionConstInt(30n),
-				).toString(), `(call $f_i_is ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`)
-				assert.strictEqual(new InstructionBinopEquality(
-					Operator.EQ,
-					instructionConstFloat(18.1),
-					instructionConstInt(30n),
-				).toString(), `(call $f_i_is ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`)
+				).toString(), `(call $f_i_id ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`)
 				assert.strictEqual(new InstructionBinopEquality(
 					Operator.EQ,
 					instructionConstInt(30n),
 					instructionConstFloat(18.1),
-				).toString(), `(call $i_f_is ${ instructionConstInt(30n) } ${ instructionConstFloat(18.1) })`)
+				).toString(), `(call $i_f_id ${ instructionConstInt(30n) } ${ instructionConstFloat(18.1) })`)
+				assert.strictEqual(new InstructionBinopEquality(
+					Operator.EQ,
+					instructionConstFloat(18.1),
+					instructionConstInt(30n),
+				).toString(), `(call $f_i_id ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`)
 				assert.strictEqual(new InstructionBinopLogical(
 					0n,
 					Operator.AND,
