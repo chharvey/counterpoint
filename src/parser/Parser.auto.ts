@@ -375,6 +375,8 @@ export class ProductionExpressionComparative extends Production {
 			[ProductionExpressionComparative.instance, '>=', ProductionExpressionAdditive.instance],
 			[ProductionExpressionComparative.instance, '!<', ProductionExpressionAdditive.instance],
 			[ProductionExpressionComparative.instance, '!>', ProductionExpressionAdditive.instance],
+			[ProductionExpressionComparative.instance, 'is', ProductionExpressionAdditive.instance],
+			[ProductionExpressionComparative.instance, 'isnt', ProductionExpressionAdditive.instance],
 		];
 	}
 }
@@ -385,8 +387,8 @@ export class ProductionExpressionEquality extends Production {
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionComparative.instance],
-			[ProductionExpressionEquality.instance, 'is', ProductionExpressionComparative.instance],
-			[ProductionExpressionEquality.instance, 'isnt', ProductionExpressionComparative.instance],
+			[ProductionExpressionEquality.instance, '===', ProductionExpressionComparative.instance],
+			[ProductionExpressionEquality.instance, '!==', ProductionExpressionComparative.instance],
 			[ProductionExpressionEquality.instance, '==', ProductionExpressionComparative.instance],
 			[ProductionExpressionEquality.instance, '!=', ProductionExpressionComparative.instance],
 		];
@@ -759,6 +761,8 @@ export class ParseNodeExpressionAdditive extends ParseNode {
 export class ParseNodeExpressionComparative extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
 		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
 		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
 		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]

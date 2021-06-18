@@ -114,7 +114,11 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: LT | GT | LE | GE] e
 	5. *Throw:* a new TypeError01.
 ;
 
-Type! TypeOfUnassessedOperation(SemanticOperation[operator: IS | EQ] expr) :=
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: IS] expr) :=
+	1. *Throw:* new TypeError "Operator not yet supported.".
+;
+
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: ID | EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.

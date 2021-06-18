@@ -1,50 +1,50 @@
-import {SolidLanguageType} from './SolidLanguageType';
-import type {SolidBoolean} from './SolidBoolean';
+import {SolidType} from './SolidType';
+import type {SolidBoolean} from './SolidBoolean'; // TODO circular imports
 
 
 
 /**
  * Parent class for all Solid Language Values.
  * Known subclasses:
- * - Null
- * - Boolean
+ * - SolidNull
+ * - SolidBoolean
  * - Int16
  * - Float64
- * - String
+ * - SolidString
  */
 export abstract class SolidObject {
 	/** @implements Object */
 	static toString(): string {
 		return 'obj';
 	}
-	/** @implements SolidLanguageType */
-	static isEmpty: SolidLanguageType['isEmpty'] = false
-	/** @implements SolidLanguageType */
-	static isUniverse: SolidLanguageType['isUniverse'] = false
-	/** @implements SolidLanguageType */
-	static values: SolidLanguageType['values'] = new Set()
-	/** @implements SolidLanguageType */
+	/** @implements SolidType */
+	static isEmpty: SolidType['isEmpty'] = false;
+	/** @implements SolidType */
+	static isUniverse: SolidType['isUniverse'] = false;
+	/** @implements SolidType */
+	static values: SolidType['values'] = new Set();
+	/** @implements SolidType */
 	static includes(v: SolidObject): boolean {
 		return v instanceof this/*static*/
 	}
-	/** @implements SolidLanguageType */
-	static intersect: SolidLanguageType['intersect'] = SolidLanguageType.prototype.intersect
-	/** @implements SolidLanguageType */
-	static intersect_do: SolidLanguageType['intersect_do'] = SolidLanguageType.prototype.intersect_do
-	/** @implements SolidLanguageType */
-	static union: SolidLanguageType['union'] = SolidLanguageType.prototype.union
-	/** @implements SolidLanguageType */
-	static union_do: SolidLanguageType['union_do'] = SolidLanguageType.prototype.union_do
-	/** @implements SolidLanguageType */
-	static isSubtypeOf: SolidLanguageType['isSubtypeOf'] = SolidLanguageType.prototype.isSubtypeOf
-	/** @implements SolidLanguageType */
-	static isSubtypeOf_do(t: SolidLanguageType): boolean {
+	/** @implements SolidType */
+	static intersect: SolidType['intersect'] = SolidType.prototype.intersect;
+	/** @implements SolidType */
+	static intersect_do: SolidType['intersect_do'] = SolidType.prototype.intersect_do;
+	/** @implements SolidType */
+	static union: SolidType['union'] = SolidType.prototype.union;
+	/** @implements SolidType */
+	static union_do: SolidType['union_do'] = SolidType.prototype.union_do;
+	/** @implements SolidType */
+	static isSubtypeOf: SolidType['isSubtypeOf'] = SolidType.prototype.isSubtypeOf;
+	/** @implements SolidType */
+	static isSubtypeOf_do(t: SolidType): boolean {
 		return (t instanceof Function)
 			? this/*static*/.prototype instanceof t
-			: SolidLanguageType.prototype.isSubtypeOf_do.call(this, t)
+			: SolidType.prototype.isSubtypeOf_do.call(this, t);
 	}
-	/** @implements SolidLanguageType */
-	static equals: SolidLanguageType['equals'] = SolidLanguageType.prototype.equals
+	/** @implements SolidType */
+	static equals: SolidType['equals'] = SolidType.prototype.equals;
 
 
 	/**

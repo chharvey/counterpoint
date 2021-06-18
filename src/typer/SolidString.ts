@@ -1,15 +1,15 @@
 import * as xjs from 'extrajs';
 import * as utf8 from 'utf8';
 
-import type {SolidLanguageType} from './SolidLanguageType';
 import type {CodeUnit} from '../types';
+import type {SolidType} from './SolidType';
 import {SolidObject} from './SolidObject';
 import {SolidBoolean} from './SolidBoolean';
 
 
 
 export class SolidString extends SolidObject {
-	static override values: SolidLanguageType['values'] = new Set([new SolidString('')]);
+	static override values: SolidType['values'] = new Set([new SolidString('')]);
 	static override toString(): string {
 		return 'str';
 	}

@@ -1,10 +1,10 @@
-import type {SolidLanguageType} from '../validator/SolidLanguageType'; // TODO circular imports
-import {SolidObject} from '../validator/SolidObject';
+import type {SolidType} from './SolidType';
+import {SolidObject} from './SolidObject';
 
 
 
 export class SolidTuple<T extends SolidObject> extends SolidObject {
-	static override values: SolidLanguageType['values'] = new Set([new SolidTuple()]);
+	static override values: SolidType['values'] = new Set([new SolidTuple()]);
 
 
 	constructor (
