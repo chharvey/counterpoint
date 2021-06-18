@@ -1,6 +1,6 @@
 import {SolidObject} from './SolidObject';
 import {SolidBoolean} from './SolidBoolean';
-import type {Float64} from '../validator/Float64';
+import type {Float64} from './Float64';
 
 
 

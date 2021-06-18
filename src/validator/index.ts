@@ -9,5 +9,4 @@ export {
 	SymbolStructureVar,
 } from './SymbolStructure';
 
-export {Float64}      from './Float64';
 export {SolidString}  from './SolidString';

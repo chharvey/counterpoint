@@ -10,14 +10,12 @@ import {
 	ValidOperatorLogical,
 } from '../enum/Operator.enum'
 import {
-	Float64,
-} from '../validator/'
-import {
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
 	SolidNumber,
 	Int16,
+	Float64,
 } from '../typer/';
 
 
