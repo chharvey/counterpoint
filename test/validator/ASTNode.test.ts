@@ -463,12 +463,12 @@ describe('ASTNodeSolid', () => {
 				it('with int coersion on, coerse ints into floats when needed.', () => {
 					assert.deepStrictEqual([
 						`42 == 420;`,
-						`4.2 is 42;`,
-						`42 is 4.2;`,
+						`4.2 === 42;`,
+						`42 === 4.2;`,
 						`4.2 == 42;`,
-						`true is 1;`,
+						`true === 1;`,
 						`true == 1;`,
-						`null is false;`,
+						`null === false;`,
 						`null == false;`,
 						`false == 0.0;`,
 					].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, folding_off).build(new Builder(src, folding_off))), [
@@ -1185,20 +1185,20 @@ describe('ASTNodeSolid', () => {
 				describe('ASTNodeOperationBinaryEquality', () => {
 					it('with folding and int coersion on.', () => {
 						typeOperations(xjs.Map.mapValues(new Map([
-							[`2 is 3;`,      false],
-							[`2 isnt 3;`,    true],
-							[`2 == 3;`,      false],
-							[`2 != 3;`,      true],
-							[`0 is -0;`,     true],
-							[`0 == -0;`,     true],
-							[`0.0 is 0;`,    false],
-							[`0.0 == 0;`,    true],
-							[`0.0 is -0;`,   false],
-							[`0.0 == -0;`,   true],
-							[`-0.0 is 0;`,   false],
-							[`-0.0 == 0;`,   true],
-							[`-0.0 is 0.0;`, false],
-							[`-0.0 == 0.0;`, true],
+							[`2 === 3;`,      false],
+							[`2 !== 3;`,      true],
+							[`2 == 3;`,       false],
+							[`2 != 3;`,       true],
+							[`0 === -0;`,     true],
+							[`0 == -0;`,      true],
+							[`0.0 === 0;`,    false],
+							[`0.0 == 0;`,     true],
+							[`0.0 === -0;`,   false],
+							[`0.0 == -0;`,    true],
+							[`-0.0 === 0;`,   false],
+							[`-0.0 == 0;`,    true],
+							[`-0.0 === 0.0;`, false],
+							[`-0.0 == 0.0;`,  true],
 						]), (v) => SolidBoolean.fromBoolean(v)));
 					});
 					context('with folding off but int coersion on.', () => {
@@ -1206,7 +1206,7 @@ describe('ASTNodeSolid', () => {
 							assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 == 7.0;`).type(new Validator(folding_off)), SolidBoolean);
 						});
 						it('returns `false` if operands are of different numeric types.', () => {
-							assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 is 7.0;`, folding_off).type(new Validator(folding_off)), SolidBoolean.FALSETYPE);
+							assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 === 7.0;`, folding_off).type(new Validator(folding_off)), SolidBoolean.FALSETYPE);
 						});
 					});
 					context('with folding and int coersion off.', () => {
@@ -1492,47 +1492,47 @@ describe('ASTNodeSolid', () => {
 				})
 				specify('ASTNodeOperationBinaryEquality', () => {
 					assessOperations(xjs.Map.mapValues(new Map([
-						[`null is null;`, true],
-						[`null == null;`, true],
-						[`null is 5;`,    false],
-						[`null == 5;`,    false],
-						[`true is 1;`,    false],
-						[`true == 1;`,    false],
-						[`true is 1.0;`,  false],
-						[`true == 1.0;`,  false],
-						[`true is 5.1;`,  false],
-						[`true == 5.1;`,  false],
-						[`true is true;`, true],
-						[`true == true;`, true],
-						[`3.0 is 3;`,     false],
-						[`3.0 == 3;`,     true],
-						[`3 is 3.0;`,     false],
-						[`3 == 3.0;`,     true],
-						[`0.0 is 0.0;`,   true],
-						[`0.0 == 0.0;`,   true],
-						[`0.0 is -0.0;`,  false],
-						[`0.0 == -0.0;`,  true],
-						[`0 is -0;`,     true],
-						[`0 == -0;`,     true],
-						[`0.0 is 0;`,    false],
-						[`0.0 == 0;`,    true],
-						[`0.0 is -0;`,   false],
-						[`0.0 == -0;`,   true],
-						[`-0.0 is 0;`,   false],
-						[`-0.0 == 0;`,   true],
-						[`-0.0 is 0.0;`, false],
-						[`-0.0 == 0.0;`, true],
+						[`null === null;`, true],
+						[`null ==  null;`, true],
+						[`null === 5;`,    false],
+						[`null ==  5;`,    false],
+						[`true === 1;`,    false],
+						[`true ==  1;`,    false],
+						[`true === 1.0;`,  false],
+						[`true ==  1.0;`,  false],
+						[`true === 5.1;`,  false],
+						[`true ==  5.1;`,  false],
+						[`true === true;`, true],
+						[`true ==  true;`, true],
+						[`3.0 === 3;`,     false],
+						[`3.0 ==  3;`,     true],
+						[`3 === 3.0;`,     false],
+						[`3 ==  3.0;`,     true],
+						[`0.0 === 0.0;`,   true],
+						[`0.0 ==  0.0;`,   true],
+						[`0.0 === -0.0;`,  false],
+						[`0.0 ==  -0.0;`,  true],
+						[`0 === -0;`,      true],
+						[`0 ==  -0;`,      true],
+						[`0.0 === 0;`,     false],
+						[`0.0 ==  0;`,     true],
+						[`0.0 === -0;`,    false],
+						[`0.0 ==  -0;`,    true],
+						[`-0.0 === 0;`,    false],
+						[`-0.0 ==  0;`,    true],
+						[`-0.0 === 0.0;`,  false],
+						[`-0.0 ==  0.0;`,  true],
 					]), (val) => SolidBoolean.fromBoolean(val)))
 					Dev.supports('stringConstant-assess') && assessOperations(xjs.Map.mapValues(new Map([
 						[`'' == '';`,    true],
-						[`'a' is 'a';`, true],
-						[`'a' == 'a';`, true],
-						[`'hello\\u{20}world' is 'hello world';`, true],
-						[`'hello\\u{20}world' == 'hello world';`, true],
-						[`'a' isnt 'b';`, true],
-						[`'a' !=   'b';`, true],
-						[`'hello\\u{20}world' isnt 'hello20world';`, true],
-						[`'hello\\u{20}world' !=   'hello20world';`, true],
+						[`'a' === 'a';`, true],
+						[`'a' ==  'a';`, true],
+						[`'hello\\u{20}world' === 'hello world';`, true],
+						[`'hello\\u{20}world' ==  'hello world';`, true],
+						[`'a' !== 'b';`, true],
+						[`'a' !=  'b';`, true],
+						[`'hello\\u{20}world' !== 'hello20world';`, true],
+						[`'hello\\u{20}world' !=  'hello20world';`, true],
 					]), (val) => SolidBoolean.fromBoolean(val)))
 				}).timeout(10_000);
 				specify('ASTNodeOperationBinaryLogical', () => {
