@@ -14,7 +14,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-} from '../core/';
+} from '../core/index.js';
 
 import type {
 	CodePoint,
@@ -23,13 +23,13 @@ import type {
 } from '../types';
 import type {
 	LexerSolid,
-} from './Lexer';
+} from './Lexer.js';
 
 import {
 	LexError03,
 	LexError04,
 	LexError05,
-} from '../error/';
+} from '../error/index.js';
 
 
 

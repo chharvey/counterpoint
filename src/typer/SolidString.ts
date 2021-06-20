@@ -2,8 +2,8 @@ import * as xjs from 'extrajs';
 import * as utf8 from 'utf8';
 
 import type {CodeUnit} from '../types';
-import {SolidObject} from './SolidObject';
-import {SolidBoolean} from './SolidBoolean';
+import {SolidObject} from './SolidObject.js';
+import {SolidBoolean} from './SolidBoolean.js';
 
 
 

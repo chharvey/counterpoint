@@ -1,7 +1,7 @@
-import type {SolidType} from './SolidType';
-import type {SolidObject} from './SolidObject';
-import {SolidNumber} from './SolidNumber';
-import {Float64} from './Float64';
+import type {SolidType} from './SolidType.js';
+import type {SolidObject} from './SolidObject.js';
+import {SolidNumber} from './SolidNumber.js';
+import {Float64} from './Float64.js';
 
 
 

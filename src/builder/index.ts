@@ -1,5 +1,5 @@
-export {Builder}     from './Builder';
-export {Instruction} from './Instruction';
+export {Builder}     from './Builder.js';
+export {Instruction} from './Instruction.js';
 export {
 	InstructionNone,
 	InstructionExpression,
@@ -13,5 +13,5 @@ export {
 	InstructionCond,
 	InstructionStatement,
 	InstructionModule,
-} from './Instruction';
-export * as INST from './Instruction';
+} from './Instruction.js';
+export * as INST from './Instruction.js';

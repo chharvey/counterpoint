@@ -5,7 +5,7 @@ import {
 
 import {
 	Dev,
-} from '../core/';
+} from '../core/index.js';
 import {
 	Operator,
 	ValidTypeOperator,
@@ -14,15 +14,15 @@ import {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-} from '../enum/Operator.enum'
+} from '../enum/Operator.enum.js';
 import {
 	Punctuator,
 	Keyword,
 	TOKEN,
 	PARSER,
-} from '../parser/'
-import type {ASTNodeSolid} from './ASTNode';
-import * as AST from './ASTNode';
+} from '../parser/index.js';
+import type {ASTNodeSolid} from './ASTNode.js';
+import * as AST from './ASTNode.js';
 
 
 

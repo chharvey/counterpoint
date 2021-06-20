@@ -1,8 +1,8 @@
 import * as xjs from 'extrajs'
 
-import type {SolidType} from './SolidType';
-import type {SolidObject} from './SolidObject';
-import {SolidNumber} from './SolidNumber';
+import type {SolidType} from './SolidType.js';
+import type {SolidObject} from './SolidObject.js';
+import {SolidNumber} from './SolidNumber.js';
 
 
 

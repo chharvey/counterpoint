@@ -7,10 +7,10 @@ import minimist from 'minimist'; // need `tsconfig.json#compilerOptions.allowSyn
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from './core/';
+} from './core/index.js';
 import {
 	Builder,
-} from './builder/';
+} from './builder/index.js';
 
 
 

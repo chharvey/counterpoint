@@ -5,12 +5,12 @@ export {
 	TemplatePosition,
 	CookValueType,
 	TokenSolid,
-} from './Token';
-export * as TOKEN from './Token';
+} from './Token.js';
+export * as TOKEN from './Token.js';
 
 export {
 	LexerSolid,
-} from './Lexer';
+} from './Lexer.js';
 
-export * as PARSER from './Parser.auto';
-export {ParserSolid} from './Parser.auto';
+export * as PARSER from './Parser.auto.js';
+export {ParserSolid} from './Parser.auto.js';

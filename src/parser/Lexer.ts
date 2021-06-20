@@ -8,15 +8,15 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-} from '../core/';
+} from '../core/index.js';
 import type {
 	Punctuator,
-} from './Token';
-import * as TOKEN from './Token';
+} from './Token.js';
+import * as TOKEN from './Token.js';
 
 import {
 	LexError03,
-} from '../error/';
+} from '../error/index.js';
 
 
 

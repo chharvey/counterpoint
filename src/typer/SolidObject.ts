@@ -1,5 +1,5 @@
-import {SolidType} from './SolidType';
-import type {SolidBoolean} from './SolidBoolean'; // TODO circular imports
+import {SolidType} from './SolidType.js';
+import type {SolidBoolean} from './SolidBoolean.js'; // TODO circular imports
 
 
 

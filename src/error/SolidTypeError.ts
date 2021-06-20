@@ -2,8 +2,8 @@ import {
 	ErrorCode,
 } from '@chharvey/parser';
 
-import type {AST} from '../validator/'
-import type {SolidType} from '../typer/';
+import type {AST} from '../validator/index.js';
+import type {SolidType} from '../typer/index.js';
 
 
 

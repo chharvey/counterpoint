@@ -8,7 +8,7 @@ import {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-} from '../enum/Operator.enum'
+} from '../enum/Operator.enum.js';
 import {
 	SolidObject,
 	SolidNull,
@@ -16,7 +16,7 @@ import {
 	SolidNumber,
 	Int16,
 	Float64,
-} from '../typer/';
+} from '../typer/index.js';
 
 
 

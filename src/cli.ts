@@ -1,7 +1,7 @@
 import {
 	CLI,
 	Command,
-} from './CLI.class';
+} from './CLI.class.js';
 
 
 /** The current version of this project (as defined in `package.json`). */

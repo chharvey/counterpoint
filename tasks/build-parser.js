@@ -17,10 +17,13 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 		import {
 			SolidConfig,
 			CONFIG_DEFAULT,
-		} from '../core/';
+		} from '../core/index.js';
 		${ generate(await grammar_solid, 'Solid')
+			.replace(`from './Lexer';`, `from './Lexer.js';`)
+			.replace(`from './Terminal';`, `from './Terminal.js';`)
 			.replace(`constructor (source: string)`, `constructor (source: string, config: SolidConfig = CONFIG_DEFAULT)`)
-			.replace(`new LexerSolid(source)`, `new LexerSolid(source, config)`) }
+			.replace(`new LexerSolid(source)`, `new LexerSolid(source, config)`)
+		}
 	`);
 })().catch((err) => {
 	console.error(err);

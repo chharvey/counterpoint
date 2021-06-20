@@ -6,12 +6,12 @@ import {
 
 import {
 	Util,
-} from '../core/';
+} from '../core/index.js';
 import {
 	RadixType,
 	TemplatePosition,
-} from './Token';
-import * as TOKEN from './Token';
+} from './Token.js';
+import * as TOKEN from './Token.js';
 
 
 

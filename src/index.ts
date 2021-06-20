@@ -1,8 +1,8 @@
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from './core/';
-import {Builder} from './builder/';
+} from './core/index.js';
+import {Builder} from './builder/index.js';
 
 
 /**

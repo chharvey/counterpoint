@@ -11,7 +11,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-} from '../core/';
+} from '../core/index.js';
 import {
 	Operator,
 	ValidTypeOperator,
@@ -21,7 +21,7 @@ import {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-} from '../enum/Operator.enum'
+} from '../enum/Operator.enum.js';
 import {
 	SolidType,
 	SolidTypeConstant,
@@ -34,19 +34,19 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-} from '../typer/';
+} from '../typer/index.js';
 import {
 	Decorator,
-} from './Decorator';
+} from './Decorator.js';
 import {
 	Validator,
-} from './Validator';
+} from './Validator.js';
 import {
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
 	SymbolStructureType,
-} from './SymbolStructure';
+} from './SymbolStructure.js';
 import {
 	Builder,
 	Instruction,
@@ -62,7 +62,7 @@ import {
 	InstructionStatement,
 	InstructionModule,
 	INST,
-} from '../builder/'
+} from '../builder/index.js';
 import {
 	ReferenceError01,
 	ReferenceError03,
@@ -72,13 +72,13 @@ import {
 	TypeError03,
 	NanError01,
 	NanError02,
-} from '../error/';
+} from '../error/index.js';
 import {
 	Keyword,
 	TOKEN,
 	PARSER,
 	ParserSolid as Parser,
-} from '../parser/';
+} from '../parser/index.js';
 
 
 

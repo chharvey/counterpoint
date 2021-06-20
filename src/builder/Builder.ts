@@ -6,15 +6,15 @@ import wabt from 'wabt'; // need `tsconfig.json#compilerOptions.allowSyntheticDe
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/';
+} from '../core/index.js';
 import {
 	ParserSolid as Parser,
-} from '../parser/';
+} from '../parser/index.js';
 import {
 	Decorator,
 	Validator,
 	AST,
-} from '../validator/'
+} from '../validator/index.js';
 
 
 
