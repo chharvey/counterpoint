@@ -30,7 +30,7 @@
     "solid:r": "solid r ./sample/test-v0.3.wasm",
     "predist": "node ./tasks/build-parser.js",
     "dist": "tsc",
-    "test": "mocha -r ts-node/register './test/**/*.test.ts'",
+    "test": "mocha -r ts-node/esm --loader='ts-node/esm' './test/**/*.test.ts'",
     "build": "rm -rf ./build/ && npm run dist && npm run test"
   },
   "dependencies": {

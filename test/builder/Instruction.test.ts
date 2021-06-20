@@ -3,17 +3,17 @@ import * as assert from 'assert'
 
 import {
 	Operator,
-} from '../../src/enum/Operator.enum';
+} from '../../src/enum/Operator.enum.js';
 import {
 	ParserSolid as Parser,
-} from '../../src/parser/';
+} from '../../src/parser/index.js';
 import {
 	Decorator,
-} from '../../src/validator/';
+} from '../../src/validator/index.js';
 import {
 	Int16,
 	Float64,
-} from '../../src/typer/';
+} from '../../src/typer/index.js';
 import {
 	Builder,
 	InstructionNone,
@@ -27,11 +27,11 @@ import {
 	InstructionStatement,
 	InstructionModule,
 	INST,
-} from '../../src/builder/'
+} from '../../src/builder/index.js';
 import {
 	instructionConstInt,
 	instructionConstFloat,
-} from '../helpers'
+} from '../helpers.js';
 
 
 

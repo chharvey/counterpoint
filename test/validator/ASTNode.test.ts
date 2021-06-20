@@ -5,10 +5,10 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-} from '../../src/core/';
+} from '../../src/core/index.js';
 import {
 	Operator,
-} from '../../src/enum/Operator.enum';
+} from '../../src/enum/Operator.enum.js';
 import {
 	ReferenceError01,
 	ReferenceError02,
@@ -18,14 +18,14 @@ import {
 	TypeError01,
 	TypeError03,
 	NanError01,
-} from '../../src/error/';
+} from '../../src/error/index.js';
 import {
 	Validator,
 	AST,
 	SymbolStructure,
 	SymbolStructureType,
 	SymbolStructureVar,
-} from '../../src/validator/'
+} from '../../src/validator/index.js';
 import {
 	SolidType,
 	SolidTypeConstant,
@@ -37,7 +37,7 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-} from '../../src/typer/';
+} from '../../src/typer/index.js';
 import {
 	Builder,
 	InstructionNone,
@@ -51,17 +51,17 @@ import {
 	InstructionStatement,
 	InstructionModule,
 	INST,
-} from '../../src/builder/'
+} from '../../src/builder/index.js';
 import {
 	assert_wasCalled,
-} from '../assert-helpers';
+} from '../assert-helpers.js';
 import {
 	typeConstInt,
 	typeConstFloat,
 	typeConstStr,
 	instructionConstInt,
 	instructionConstFloat,
-} from '../helpers'
+} from '../helpers.js';
 
 
 

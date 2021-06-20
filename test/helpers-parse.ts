@@ -10,16 +10,16 @@ import {
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../src/core/';
+} from '../src/core/index.js';
 import {
 	Punctuator,
 	TOKEN,
 	PARSER,
 	ParserSolid as Parser,
-} from '../src/parser/';
+} from '../src/parser/index.js';
 import {
 	assert_arrayLength,
-} from './assert-helpers'
+} from './assert-helpers.js';
 
 
 

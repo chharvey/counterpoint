@@ -6,14 +6,14 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-} from '../../src/core/';
+} from '../../src/core/index.js';
 import type {
 	CodeUnit,
 } from '../../src/types';
 import {
 	TOKEN,
 	LexerSolid as Lexer,
-} from '../../src/parser/';
+} from '../../src/parser/index.js';
 
 
 

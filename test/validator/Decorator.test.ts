@@ -5,17 +5,17 @@ import * as assert from 'assert'
 
 import {
 	Dev,
-} from '../../src/core/';
+} from '../../src/core/index.js';
 import {
 	Operator,
-} from '../../src/enum/Operator.enum';
+} from '../../src/enum/Operator.enum.js';
 import type {
 	PARSER,
-} from '../../src/parser/';
+} from '../../src/parser/index.js';
 import {
 	Decorator,
 	AST,
-} from '../../src/validator/';
+} from '../../src/validator/index.js';
 import {
 	SolidTypeConstant,
 	SolidObject,
@@ -23,11 +23,11 @@ import {
 	SolidBoolean,
 	Int16,
 	Float64,
-} from '../../src/typer/';
+} from '../../src/typer/index.js';
 import {
 	assert_arrayLength,
-} from '../assert-helpers'
-import * as h from '../helpers-parse';
+} from '../assert-helpers.js';
+import * as h from '../helpers-parse.js';
 
 
 

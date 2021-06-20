@@ -3,10 +3,10 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-} from '../src/typer/';
+} from '../src/typer/index.js';
 import {
 	InstructionConst,
-} from '../src/builder/'
+} from '../src/builder/index.js';
 
 
 
