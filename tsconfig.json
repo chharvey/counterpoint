@@ -2,13 +2,14 @@
 	"compilerOptions": {
 		// Project Options
 		"declaration": true,
-		"module":      "commonjs",
+		"module":      "ES2020",
 		"outDir":      "./build/",
 		"target":      "ES2021",
 		// Strict Checks
 		"strict": true,
 		// Module Resolution
-		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"moduleResolution":             "Node",
 		// Linter Checks
 		"noImplicitOverride": true,
 		"noImplicitReturns":  true,
