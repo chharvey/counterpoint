@@ -1,3 +1,10 @@
+import {requireJSONSync} from '@chharvey/requirejson';
+import * as path from 'path';
+
+
+
+const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
+
 /**
  * Interface for Solid configurations.
  */
@@ -45,4 +52,4 @@ export type SolidConfig = {
 	},
 }
 
-export const CONFIG_DEFAULT: SolidConfig = require('../../src/core/solid-config.default.json');
+export const CONFIG_DEFAULT: SolidConfig = requireJSONSync(path.join(DIRNAME, '../../src/core/solid-config.default.json')) as SolidConfig;

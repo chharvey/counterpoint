@@ -18,16 +18,18 @@ import {
 
 
 
+const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
+
 /**
  * The Builder generates assembly code.
  */
 export class Builder {
 	static readonly IMPORTS: readonly string[] = [
-		fs.readFileSync(path.join(__dirname, '../../src/builder/not.wat'), 'utf8'),
-		fs.readFileSync(path.join(__dirname, '../../src/builder/emp.wat'), 'utf8'),
-		fs.readFileSync(path.join(__dirname, '../../src/builder/neg.wat'), 'utf8'),
-		fs.readFileSync(path.join(__dirname, '../../src/builder/exp.wat'), 'utf8'),
-		fs.readFileSync(path.join(__dirname, '../../src/builder/fid.wat'), 'utf8'),
+		fs.readFileSync(path.join(DIRNAME, '../../src/builder/not.wat'), 'utf8'),
+		fs.readFileSync(path.join(DIRNAME, '../../src/builder/emp.wat'), 'utf8'),
+		fs.readFileSync(path.join(DIRNAME, '../../src/builder/neg.wat'), 'utf8'),
+		fs.readFileSync(path.join(DIRNAME, '../../src/builder/exp.wat'), 'utf8'),
+		fs.readFileSync(path.join(DIRNAME, '../../src/builder/fid.wat'), 'utf8'),
 	]
 
 
