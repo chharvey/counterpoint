@@ -5,6 +5,7 @@ export {ASTNodeSolid} from './ASTNode.js';
 export * as AST from './ASTNode.js';
 
 export {
+	SymbolKind,
 	SymbolStructure,
 	SymbolStructureType,
 	SymbolStructureVar,

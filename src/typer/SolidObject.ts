@@ -1,5 +1,5 @@
+import {SolidBoolean} from './index.js'; // avoids circular imports
 import {SolidType} from './SolidType.js';
-import type {SolidBoolean} from './SolidBoolean.js'; // TODO circular imports
 
 
 
@@ -52,9 +52,7 @@ export abstract class SolidObject {
 	 * @returns the associated Boolean value of this value
 	 */
 	get isTruthy(): SolidBoolean {
-		const SolidBoolean_Class: Promise<typeof SolidBoolean> = import('./SolidBoolean.js').then((mod) => mod.SolidBoolean);
-		// @ts-expect-error
-		return SolidBoolean_Class.TRUE;
+		return SolidBoolean.TRUE;
 	}
 	/**
 	 * Return whether this value is “empty”, that is,

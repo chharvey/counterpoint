@@ -9,27 +9,24 @@ import {
 import * as xjs from 'extrajs';
 import * as utf8 from 'utf8';
 
-
 import {
-	SolidConfig,
-	CONFIG_DEFAULT,
-	Dev,
-} from '../core/index.js';
-
+	LexError03,
+	LexError04,
+	LexError05,
+} from '../index.js'; // avoids circular imports
 import type {
 	CodePoint,
 	CodeUnit,
 	EncodedChar,
 } from '../types';
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Dev,
+} from '../core/index.js';
 import type {
 	LexerSolid,
 } from './Lexer.js';
-
-import {
-	LexError03,
-	LexError04,
-	LexError05,
-} from '../error/index.js';
 
 
 

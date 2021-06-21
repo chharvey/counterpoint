@@ -2,10 +2,10 @@ import {
 	ErrorCode,
 } from '@chharvey/parser';
 
-import type {AST} from '../validator/index.js';
 import {
+	AST,
 	SymbolKind,
-} from '../validator/SymbolStructure.js'; // FIXME circular imports
+} from '../validator/index.js';
 
 
 

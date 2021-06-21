@@ -8,7 +8,7 @@
   },
   "license": "AGPL-3.0-or-later",
   "author": "Chris Harvey <chrisharvey2pi@gmail.com> (https://chharvey.github.io/)",
-  "main": "dist/index.js",
+  "main": "dist/main.js",
   "type": "module",
   "bin": {
     "solid": "bin/solid.js"
