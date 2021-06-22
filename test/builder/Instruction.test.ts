@@ -14,16 +14,6 @@ import {
 } from '../../src/typer/index.js';
 import {
 	Builder,
-	InstructionNone,
-	InstructionConst,
-	InstructionUnop,
-	InstructionBinopArithmetic,
-	InstructionBinopComparative,
-	InstructionBinopEquality,
-	InstructionBinopLogical,
-	InstructionCond,
-	InstructionStatement,
-	InstructionModule,
 	INST,
 } from '../../src/builder/index.js';
 import {
@@ -37,7 +27,7 @@ describe('Instruction', () => {
 	describe('.constructor', () => {
 		context('InstructionBinop', () => {
 			it('throws when operands are a mix of ints and floats.', () => {
-				assert.throws(() => new InstructionBinopArithmetic(
+				assert.throws(() => new INST.InstructionBinopArithmetic(
 					Operator.MUL,
 					instructionConstInt(5n),
 					instructionConstFloat(2.5),
@@ -46,7 +36,7 @@ describe('Instruction', () => {
 		})
 		context('InstructionCond', () => {
 			it('throws when branches are a mix of ints and floats.', () => {
-				assert.throws(() => new InstructionCond(
+				assert.throws(() => new INST.InstructionCond(
 					instructionConstInt(0n),
 					instructionConstInt(2n),
 					instructionConstFloat(3.3),
@@ -57,13 +47,13 @@ describe('Instruction', () => {
 
 	describe('#toString', () => {
 		specify('InstructionGlobal', () => {
-			const expr: InstructionConst = instructionConstInt(42n);
+			const expr: INST.InstructionConst = instructionConstInt(42n);
 			assert.strictEqual(new INST.InstructionGlobalSet('$x', expr)  .toString(), `(global.set $x ${ instructionConstInt(42n) })`);
 			assert.strictEqual(new INST.InstructionGlobalGet('$x', false) .toString(), `(global.get $x)`);
 		});
 
 		specify('InstructionLocal', () => {
-			const expr: InstructionConst = instructionConstInt(42n)
+			const expr: INST.InstructionConst = instructionConstInt(42n);
 			assert.strictEqual(new INST.InstructionLocalSet('$x', expr)  .toString(), `(local.set $x ${ instructionConstInt(42n) })`);
 			assert.strictEqual(new INST.InstructionLocalGet('$x', false) .toString(), `(local.get $x)`);
 			assert.strictEqual(new INST.InstructionLocalTee('$x', expr)  .toString(), `(local.tee $x ${ instructionConstInt(42n) })`);
@@ -111,15 +101,15 @@ describe('Instruction', () => {
 		context('InstructionUnop', () => {
 			it('performs a unary operation.', () => {
 				assert.deepStrictEqual([
-					new InstructionUnop(Operator.NOT, instructionConstInt(0n)),
-					new InstructionUnop(Operator.NOT, instructionConstInt(42n)),
-					new InstructionUnop(Operator.NOT, instructionConstFloat(0.0)),
-					new InstructionUnop(Operator.NOT, instructionConstFloat(4.2)),
-					new InstructionUnop(Operator.EMP, instructionConstInt(0n)),
-					new InstructionUnop(Operator.EMP, instructionConstInt(42n)),
-					new InstructionUnop(Operator.EMP, instructionConstFloat(0.0)),
-					new InstructionUnop(Operator.EMP, instructionConstFloat(4.2)),
-					new InstructionUnop(Operator.NEG, instructionConstInt(42n)),
+					new INST.InstructionUnop(Operator.NOT, instructionConstInt(0n)),
+					new INST.InstructionUnop(Operator.NOT, instructionConstInt(42n)),
+					new INST.InstructionUnop(Operator.NOT, instructionConstFloat(0.0)),
+					new INST.InstructionUnop(Operator.NOT, instructionConstFloat(4.2)),
+					new INST.InstructionUnop(Operator.EMP, instructionConstInt(0n)),
+					new INST.InstructionUnop(Operator.EMP, instructionConstInt(42n)),
+					new INST.InstructionUnop(Operator.EMP, instructionConstFloat(0.0)),
+					new INST.InstructionUnop(Operator.EMP, instructionConstFloat(4.2)),
+					new INST.InstructionUnop(Operator.NEG, instructionConstInt(42n)),
 				].map((inst) => inst.toString()), [
 					`(call $inot ${ instructionConstInt(0n) })`,
 					`(call $inot ${ instructionConstInt(42n) })`,
@@ -136,73 +126,73 @@ describe('Instruction', () => {
 
 		context('InstructionBinop', () => {
 			it('performs a binary operation.', () => {
-				assert.strictEqual(new InstructionBinopArithmetic(
+				assert.strictEqual(new INST.InstructionBinopArithmetic(
 					Operator.MUL,
 					instructionConstInt(21n),
 					instructionConstInt(2n),
 				).toString(), `(i32.mul ${ instructionConstInt(21n) } ${ instructionConstInt(2n) })`)
-				assert.strictEqual(new InstructionBinopArithmetic(
+				assert.strictEqual(new INST.InstructionBinopArithmetic(
 					Operator.ADD,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
 				).toString(), `(f64.add ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
-				assert.strictEqual(new InstructionBinopComparative(
+				assert.strictEqual(new INST.InstructionBinopComparative(
 					Operator.LT,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
 				).toString(), `(i32.lt_s ${ instructionConstInt(30n) } ${ instructionConstInt(18n) })`)
-				assert.strictEqual(new InstructionBinopComparative(
+				assert.strictEqual(new INST.InstructionBinopComparative(
 					Operator.GE,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
 				).toString(), `(f64.ge ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
-				assert.strictEqual(new InstructionBinopEquality(
+				assert.strictEqual(new INST.InstructionBinopEquality(
 					Operator.ID,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
 				).toString(), `(i32.eq ${ instructionConstInt(30n) } ${ instructionConstInt(18n) })`)
-				assert.strictEqual(new InstructionBinopEquality(
+				assert.strictEqual(new INST.InstructionBinopEquality(
 					Operator.ID,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
 				).toString(), `(call $fid ${ instructionConstFloat(30.1) } ${ instructionConstFloat(18.1) })`)
-				assert.strictEqual(new InstructionBinopEquality(
+				assert.strictEqual(new INST.InstructionBinopEquality(
 					Operator.ID,
 					instructionConstInt(30n),
 					instructionConstFloat(18.1),
 				).toString(), `(call $i_f_id ${ instructionConstInt(30n) } ${ instructionConstFloat(18.1) })`)
-				assert.strictEqual(new InstructionBinopEquality(
+				assert.strictEqual(new INST.InstructionBinopEquality(
 					Operator.ID,
 					instructionConstFloat(18.1),
 					instructionConstInt(30n),
 				).toString(), `(call $f_i_id ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`)
-				assert.strictEqual(new InstructionBinopEquality(
+				assert.strictEqual(new INST.InstructionBinopEquality(
 					Operator.EQ,
 					instructionConstInt(30n),
 					instructionConstFloat(18.1),
 				).toString(), `(call $i_f_id ${ instructionConstInt(30n) } ${ instructionConstFloat(18.1) })`)
-				assert.strictEqual(new InstructionBinopEquality(
+				assert.strictEqual(new INST.InstructionBinopEquality(
 					Operator.EQ,
 					instructionConstFloat(18.1),
 					instructionConstInt(30n),
 				).toString(), `(call $f_i_id ${ instructionConstFloat(18.1) } ${ instructionConstInt(30n) })`)
-				assert.strictEqual(new InstructionBinopLogical(
+				assert.strictEqual(new INST.InstructionBinopLogical(
 					0n,
 					Operator.AND,
 					instructionConstInt(30n),
 					instructionConstInt(18n),
-				).toString(), ((varname) => `${ new INST.InstructionDeclareLocal(varname, false) } ${ new InstructionCond(
-					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(varname, instructionConstInt(30n)))),
+				).toString(), ((varname) => `${ new INST.InstructionDeclareLocal(varname, false) } ${ new INST.InstructionCond(
+					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(varname, instructionConstInt(30n)))),
 					instructionConstInt(18n),
 					new INST.InstructionLocalGet(varname, false),
 				) }`)('$o0'))
-				assert.strictEqual(new InstructionBinopLogical(
+				assert.strictEqual(new INST.InstructionBinopLogical(
 					3n,
 					Operator.OR,
 					instructionConstFloat(30.1),
 					instructionConstFloat(18.1),
-				).toString(), ((varname) => `${ new INST.InstructionDeclareLocal(varname, true) } ${ new InstructionCond(
-					new InstructionUnop(Operator.NOT, new InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(varname, instructionConstFloat(30.1)))),
+				).toString(), ((varname) => `${ new INST.InstructionDeclareLocal(varname, true) } ${ new INST.InstructionCond(
+					new INST.InstructionUnop(Operator.NOT, new INST.InstructionUnop(Operator.NOT, new INST.InstructionLocalTee(varname, instructionConstFloat(30.1)))),
 					new INST.InstructionLocalGet(varname, true),
 					instructionConstFloat(18.1),
 				) }`)('$o3'))
@@ -211,12 +201,12 @@ describe('Instruction', () => {
 
 		context('InstructionCond', () => {
 			it('performs a conditional operation.', () => {
-				assert.strictEqual(new InstructionCond(
+				assert.strictEqual(new INST.InstructionCond(
 					instructionConstInt(1n),
 					instructionConstInt(2n),
 					instructionConstInt(3n),
 				).toString(), `(if (result i32) ${ instructionConstInt(1n) } (then ${ instructionConstInt(2n) }) (else ${ instructionConstInt(3n) }))`)
-				assert.strictEqual(new InstructionCond(
+				assert.strictEqual(new INST.InstructionCond(
 					instructionConstInt(0n),
 					instructionConstFloat(2.2),
 					instructionConstFloat(3.3),
@@ -225,7 +215,7 @@ describe('Instruction', () => {
 		})
 
 		specify('InstructionDeclareGlobal', () => {
-			const expr: InstructionConst = instructionConstInt(42n);
+			const expr: INST.InstructionConst = instructionConstInt(42n);
 			assert.strictEqual(
 				new INST.InstructionDeclareGlobal('$x', true, expr).toString(),
 				`(global $x (mut i32) ${ expr })`,
@@ -234,13 +224,13 @@ describe('Instruction', () => {
 
 		describe('InstructionStatement', () => {
 			it('returns a wasm function.', () => {
-				const expr: InstructionBinopArithmetic = new InstructionBinopArithmetic(
+				const expr: INST.InstructionBinopArithmetic = new INST.InstructionBinopArithmetic(
 					Operator.MUL,
 					instructionConstInt(21n),
 					instructionConstInt(2n),
 				)
 				assert.strictEqual(
-					new InstructionStatement(0n, expr).toString(),
+					new INST.InstructionStatement(0n, expr).toString(),
 					xjs.String.dedent`
 						(func (export "f0") (result i32)
 							${ expr }
@@ -252,19 +242,19 @@ describe('Instruction', () => {
 
 		context('InstructionModule', () => {
 			it('creates a program.', () => {
-				const mods: (InstructionNone | InstructionModule)[] = [
+				const mods: (INST.InstructionNone | INST.InstructionModule)[] = [
 					``,
 					`;`,
 				].map((src) => Decorator
 					.decorate(new Parser(src).parse())
 					.build(new Builder(src))
 				);
-				assert.ok(mods[0] instanceof InstructionNone)
+				assert.ok(mods[0] instanceof INST.InstructionNone);
 				assert.strictEqual(mods[0].toString(), ``)
-				assert.ok(mods[1] instanceof InstructionModule)
-				assert.deepStrictEqual(mods[1], new InstructionModule([
+				assert.ok(mods[1] instanceof INST.InstructionModule);
+				assert.deepStrictEqual(mods[1], new INST.InstructionModule([
 					...Builder.IMPORTS,
-					new InstructionNone(),
+					new INST.InstructionNone(),
 				]))
 			})
 		})
@@ -289,8 +279,8 @@ describe('Instruction', () => {
 				(-5n) ** (2n * 3n),
 			]
 			assert.deepStrictEqual(
-				values.map((x) => InstructionConst.fromAssessment(new Int16(x))),
-				values.map((x) => new InstructionConst(new Int16(x))),
+				values.map((x) => INST.InstructionConst.fromAssessment(new Int16(x))),
+				values.map((x) => instructionConstInt(x)),
 			)
 		})
 		specify('@assessed instanceof Float64', () => {
@@ -301,15 +291,15 @@ describe('Instruction', () => {
 				3.0 - 2.7,
 			]
 			assert.deepStrictEqual(
-				values.map((x) => InstructionConst.fromAssessment(new Float64(x))),
-				values.map((x) => new InstructionConst(new Float64(x))),
+				values.map((x) => INST.InstructionConst.fromAssessment(new Float64(x))),
+				values.map((x) => instructionConstFloat(x)),
 			)
 		})
 		describe('@to_float === true', () => {
 			specify('@assessed instanceof Int16', () => {
-				const build: InstructionConst = InstructionConst.fromAssessment(new Int16(42n), true);
-				assert.deepStrictEqual   (build, new InstructionConst(new Float64(42)))
-				assert.notDeepStrictEqual(build, new InstructionConst(new Int16(42n)))
+				const build: INST.InstructionConst = INST.InstructionConst.fromAssessment(new Int16(42n), true);
+				assert.deepStrictEqual   (build, instructionConstFloat(42));
+				assert.notDeepStrictEqual(build, instructionConstInt(42n));
 			})
 		})
 		});

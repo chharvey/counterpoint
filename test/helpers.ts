@@ -5,7 +5,7 @@ import {
 	SolidString,
 } from '../src/typer/index.js';
 import {
-	InstructionConst,
+	INST,
 } from '../src/builder/index.js';
 
 
@@ -20,9 +20,9 @@ export function typeConstStr(x: string): SolidTypeConstant {
 	return new SolidTypeConstant(new SolidString(x));
 }
 
-export function instructionConstInt(x: bigint): InstructionConst {
-	return new InstructionConst(new Int16(x))
+export function instructionConstInt(x: bigint): INST.InstructionConst {
+	return new INST.InstructionConst(new Int16(x));
 }
-export function instructionConstFloat(x: number): InstructionConst {
-	return new InstructionConst(new Float64(x))
+export function instructionConstFloat(x: number): INST.InstructionConst {
+	return new INST.InstructionConst(new Float64(x));
 }

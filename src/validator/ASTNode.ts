@@ -50,17 +50,6 @@ import {
 import {
 	Builder,
 	Instruction,
-	InstructionNone,
-	InstructionExpression,
-	InstructionConst,
-	InstructionUnop,
-	InstructionBinopArithmetic,
-	InstructionBinopComparative,
-	InstructionBinopEquality,
-	InstructionBinopLogical,
-	InstructionCond,
-	InstructionStatement,
-	InstructionModule,
 	INST,
 } from '../builder/index.js';
 import {
@@ -226,8 +215,8 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 * @implements ASTNodeSolid
 	 * @final
 	 */
-	build(_builder: Builder): InstructionNone {
-		return new InstructionNone()
+	build(_builder: Builder): INST.InstructionNone {
+		return new INST.InstructionNone();
 	}
 	/**
 	 * Assess the type-value of this node at compile-time.
@@ -454,11 +443,11 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
 	 * @final
 	 */
-	build(builder: Builder, to_float?: boolean): InstructionExpression {
+	build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
 		const assessed: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
-		return (!!assessed) ? InstructionConst.fromAssessment(assessed, to_float) : this.build_do(builder, to_float);
+		return (!!assessed) ? INST.InstructionConst.fromAssessment(assessed, to_float) : this.build_do(builder, to_float);
 	}
-	protected abstract build_do(builder: Builder, to_float?: boolean): InstructionExpression;
+	protected abstract build_do(builder: Builder, to_float?: boolean): INST.InstructionExpression;
 	/**
 	 * The Type of this expression.
 	 * @param validator stores validation and configuration information
@@ -517,8 +506,8 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return this.value instanceof Float64
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionConst {
-		return InstructionConst.fromAssessment(this.assess_do(builder.validator), to_float);
+	protected build_do(builder: Builder, to_float: boolean = false): INST.InstructionConst {
+		return INST.InstructionConst.fromAssessment(this.assess_do(builder.validator), to_float);
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidType {
@@ -613,7 +602,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(_builder: Builder): InstructionExpression {
+	protected build_do(_builder: Builder): INST.InstructionExpression {
 		throw new Error('ASTNodeTemplate#build_do not yet supported.');
 	}
 	/** @implements ASTNodeExpression */
@@ -639,7 +628,7 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 		throw 'ASTNodeEmptyCollection#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
+	protected build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeEmptyCollection#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -668,7 +657,7 @@ export class ASTNodeList extends ASTNodeExpression {
 		throw 'ASTNodeList#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
+	protected build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeList#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -697,7 +686,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		throw 'ASTNodeRecord#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
+	protected build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -729,7 +718,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		throw 'ASTNodeMapping#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
+	protected build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeMapping#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -774,9 +763,9 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return this.children[0].shouldFloat
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop {
+	protected build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
 		const tofloat: boolean = to_float || this.shouldFloat
-		return new InstructionUnop(
+		return new INST.InstructionUnop(
 			this.operator,
 			this.children[0].build(builder, tofloat),
 		)
@@ -867,9 +856,9 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		super(start_node, operator, children)
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopArithmetic {
+	protected build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopArithmetic {
 		const tofloat: boolean = to_float || this.shouldFloat
-		return new InstructionBinopArithmetic(
+		return new INST.InstructionBinopArithmetic(
 			this.operator,
 			this.children[0].build(builder, tofloat),
 			this.children[1].build(builder, tofloat),
@@ -948,9 +937,9 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		}
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopComparative {
+	protected build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopComparative {
 		const tofloat: boolean = to_float || this.shouldFloat
-		return new InstructionBinopComparative(
+		return new INST.InstructionBinopComparative(
 			this.operator,
 			this.children[0].build(builder, tofloat),
 			this.children[1].build(builder, tofloat),
@@ -1017,9 +1006,9 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return this.operator === Operator.EQ && super.shouldFloat
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, _to_float: boolean = false): InstructionBinopEquality {
+	protected build_do(builder: Builder, _to_float: boolean = false): INST.InstructionBinopEquality {
 		const tofloat: boolean = builder.config.compilerOptions.intCoercion && this.shouldFloat
-		return new InstructionBinopEquality(
+		return new INST.InstructionBinopEquality(
 			this.operator,
 			this.children[0].build(builder, tofloat),
 			this.children[1].build(builder, tofloat),
@@ -1076,9 +1065,9 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		super(start_node, operator, children)
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopLogical {
+	protected build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopLogical {
 		const tofloat: boolean = to_float || this.shouldFloat
-		return new InstructionBinopLogical(
+		return new INST.InstructionBinopLogical(
 			builder.varCount,
 			this.operator,
 			this.children[0].build(builder, tofloat),
@@ -1144,9 +1133,9 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		return this.children[1].shouldFloat || this.children[2].shouldFloat
 	}
 	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionCond {
+	protected build_do(builder: Builder, to_float: boolean = false): INST.InstructionCond {
 		const tofloat: boolean = to_float || this.shouldFloat
-		return new InstructionCond(
+		return new INST.InstructionCond(
 			this.children[0].build(builder, false),
 			this.children[1].build(builder, tofloat),
 			this.children[2].build(builder, tofloat),
@@ -1213,10 +1202,10 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		super(start_node, {}, children)
 	}
 	/** @implements ASTNodeSolid */
-	build(builder: Builder): InstructionNone | InstructionStatement {
+	build(builder: Builder): INST.InstructionNone | INST.InstructionStatement {
 		return (!this.children.length)
-			? new InstructionNone()
-			: new InstructionStatement(builder.stmtCount, this.children[0].build(builder))
+			? new INST.InstructionNone()
+			: new INST.InstructionStatement(builder.stmtCount, this.children[0].build(builder));
 	}
 }
 /**
@@ -1377,10 +1366,10 @@ export class ASTNodeGoal extends ASTNodeSolid {
 		super(start_node, {}, children)
 	}
 	/** @implements ASTNodeSolid */
-	build(builder: Builder): InstructionNone | InstructionModule {
+	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
 		return (!this.children.length)
-			? new InstructionNone()
-			: new InstructionModule([
+			? new INST.InstructionNone()
+			: new INST.InstructionModule([
 				...Builder.IMPORTS,
 				...(this.children as readonly ASTNodeStatement[]).map((child) => child.build(builder)),
 			])
