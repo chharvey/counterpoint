@@ -1,7 +1,6 @@
 {
 	"compilerOptions": {
 		// Project Options
-		"declaration": true,
 		"module":      "ES2020",
 		"outDir":      "./build/",
 		"target":      "ES2021",
