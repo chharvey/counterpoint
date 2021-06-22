@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 import * as xjs from 'extrajs';
-import * as utf8 from 'utf8';
+import utf8 from 'utf8';
 import type {
 	CodeUnit,
 } from '../../src/types';

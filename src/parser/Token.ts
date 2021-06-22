@@ -7,7 +7,7 @@ import {
 	LexError02,
 } from '@chharvey/parser';
 import * as xjs from 'extrajs';
-import * as utf8 from 'utf8';
+import utf8 from 'utf8';
 import {
 	LexError03,
 	LexError04,
