@@ -1,8 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-
 import wabt from 'wabt'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
-
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,

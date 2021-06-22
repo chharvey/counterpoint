@@ -1,5 +1,4 @@
 import * as xjs from 'extrajs';
-
 import {
 	Operator,
 	ValidOperatorUnary,

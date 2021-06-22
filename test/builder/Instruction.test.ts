@@ -1,6 +1,5 @@
 import * as xjs from 'extrajs';
 import * as assert from 'assert'
-
 import {
 	ParserSolid as Parser,
 } from '../../src/parser/index.js';

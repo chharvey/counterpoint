@@ -6,7 +6,6 @@ import {
 	TokenFilebound,
 	ParseNode,
 } from '@chharvey/parser';
-
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,

@@ -6,22 +6,17 @@ import {
 } from '@chharvey/parser';
 import * as assert from 'assert';
 import * as xjs from 'extrajs'
-
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
 } from '../core/index.js';
 import {
-	Operator,
-	ValidTypeOperator,
-	ValidOperatorUnary,
-	ValidOperatorBinary,
-	ValidOperatorArithmetic,
-	ValidOperatorComparative,
-	ValidOperatorEquality,
-	ValidOperatorLogical,
-} from './Operator.js';
+	Keyword,
+	TOKEN,
+	PARSER,
+	ParserSolid as Parser,
+} from '../parser/index.js';
 import {
 	SolidType,
 	SolidTypeConstant,
@@ -35,18 +30,6 @@ import {
 	Float64,
 	SolidString,
 } from '../typer/index.js';
-import {
-	Decorator,
-} from './Decorator.js';
-import {
-	Validator,
-} from './Validator.js';
-import {
-	SymbolKind,
-	SymbolStructure,
-	SymbolStructureVar,
-	SymbolStructureType,
-} from './SymbolStructure.js';
 import {
 	Builder,
 	Instruction,
@@ -63,11 +46,23 @@ import {
 	NanError02,
 } from '../error/index.js';
 import {
-	Keyword,
-	TOKEN,
-	PARSER,
-	ParserSolid as Parser,
-} from '../parser/index.js';
+	Operator,
+	ValidTypeOperator,
+	ValidOperatorUnary,
+	ValidOperatorBinary,
+	ValidOperatorArithmetic,
+	ValidOperatorComparative,
+	ValidOperatorEquality,
+	ValidOperatorLogical,
+} from './Operator.js';
+import {Decorator} from './Decorator.js';
+import {Validator} from './Validator.js';
+import {
+	SymbolKind,
+	SymbolStructure,
+	SymbolStructureVar,
+	SymbolStructureType,
+} from './SymbolStructure.js';
 
 
 

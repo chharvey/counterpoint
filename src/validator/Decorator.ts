@@ -7,6 +7,12 @@ import {
 	Dev,
 } from '../core/index.js';
 import {
+	Punctuator,
+	Keyword,
+	TOKEN,
+	PARSER,
+} from '../parser/index.js';
+import {
 	Operator,
 	ValidTypeOperator,
 	ValidOperatorUnary,
@@ -15,12 +21,6 @@ import {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from './Operator.js';
-import {
-	Punctuator,
-	Keyword,
-	TOKEN,
-	PARSER,
-} from '../parser/index.js';
 import type {ASTNodeSolid} from './ASTNode.js';
 import * as AST from './ASTNode.js';
 

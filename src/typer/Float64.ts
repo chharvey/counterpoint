@@ -1,5 +1,4 @@
 import * as xjs from 'extrajs'
-
 import type {SolidType} from './SolidType.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNumber} from './SolidNumber.js';

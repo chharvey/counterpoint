@@ -1,21 +1,10 @@
 import * as assert from 'assert'
 import * as xjs from 'extrajs'
-
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
 } from '../../src/core/index.js';
-import {
-	ReferenceError01,
-	ReferenceError02,
-	ReferenceError03,
-	AssignmentError01,
-	AssignmentError10,
-	TypeError01,
-	TypeError03,
-	NanError01,
-} from '../../src/error/index.js';
 import {
 	Operator,
 	AST,
@@ -40,6 +29,16 @@ import {
 	Builder,
 	INST,
 } from '../../src/builder/index.js';
+import {
+	ReferenceError01,
+	ReferenceError02,
+	ReferenceError03,
+	AssignmentError01,
+	AssignmentError10,
+	TypeError01,
+	TypeError03,
+	NanError01,
+} from '../../src/error/index.js';
 import {
 	assert_wasCalled,
 } from '../assert-helpers.js';

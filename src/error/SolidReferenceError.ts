@@ -1,7 +1,6 @@
 import {
 	ErrorCode,
 } from '@chharvey/parser';
-
 import {
 	AST,
 	SymbolKind,

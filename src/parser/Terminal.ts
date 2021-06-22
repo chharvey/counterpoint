@@ -3,7 +3,6 @@ import {
 	Token,
 	Terminal,
 } from '@chharvey/parser';
-
 import {
 	Util,
 } from '../core/index.js';

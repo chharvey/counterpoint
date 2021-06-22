@@ -3,20 +3,18 @@ import {
 	Token,
 	Lexer,
 } from '@chharvey/parser';
-
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
 } from '../core/index.js';
+import {
+	LexError03,
+} from '../error/index.js';
 import type {
 	Punctuator,
 } from './Punctuator.js';
 import * as TOKEN from './Token.js';
-
-import {
-	LexError03,
-} from '../error/index.js';
 
 
 

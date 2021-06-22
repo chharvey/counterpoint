@@ -1,5 +1,4 @@
 import * as assert from 'assert'
-
 import {Dev} from '../../src/core/index.js';
 import {
 	SolidType,

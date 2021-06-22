@@ -2,7 +2,6 @@ import type {
 	NonemptyArray,
 } from '@chharvey/parser';
 import * as assert from 'assert'
-
 import {
 	Dev,
 } from '../../src/core/index.js';

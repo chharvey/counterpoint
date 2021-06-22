@@ -6,7 +6,6 @@ import {
 } from '@chharvey/parser';
 import * as assert from 'assert'
 import * as xjs from 'extrajs';
-
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,

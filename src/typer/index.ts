@@ -3,7 +3,6 @@ export {
 	SolidTypeConstant,
 	SolidTypeInterface,
 } from './SolidType.js';
-
 export {SolidTypeTuple}  from './SolidTypeTuple.js';
 export {SolidTypeRecord} from './SolidTypeRecord.js';
 

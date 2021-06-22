@@ -9,11 +9,11 @@ export {
 	ValidOperatorLogical,
 } from './Operator.js';
 
-export {Validator} from './Validator.js';
-export {Decorator} from './Decorator.js';
-
 export {ASTNodeSolid} from './ASTNode.js';
 export * as AST from './ASTNode.js';
+
+export {Decorator} from './Decorator.js';
+export {Validator} from './Validator.js';
 
 export {
 	SymbolKind,

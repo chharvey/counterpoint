@@ -3,7 +3,6 @@ import {
 	ParseError01,
 } from '@chharvey/parser';
 import * as assert from 'assert'
-
 import {
 	Dev,
 } from '../../src/core/index.js';
@@ -14,7 +13,6 @@ import {
 	PARSER,
 	ParserSolid as Parser,
 } from '../../src/parser/index.js';
-
 import {
 	assert_arrayLength,
 } from '../assert-helpers.js';
