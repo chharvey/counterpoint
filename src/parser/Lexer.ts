@@ -11,7 +11,7 @@ import {
 } from '../core/index.js';
 import type {
 	Punctuator,
-} from './Token.js';
+} from './Punctuator.js';
 import * as TOKEN from './Token.js';
 
 import {

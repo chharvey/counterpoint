@@ -1,6 +1,7 @@
+export {Punctuator} from './Punctuator.js';
+export {Keyword} from './Keyword.js';
+
 export {
-	Punctuator,
-	Keyword,
 	RadixType,
 	TemplatePosition,
 	CookValueType,

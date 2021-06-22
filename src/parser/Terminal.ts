@@ -7,6 +7,7 @@ import {
 import {
 	Util,
 } from '../core/index.js';
+import {Keyword} from './Keyword.js';
 import {
 	RadixType,
 	TemplatePosition,
@@ -26,8 +27,8 @@ function maybeA(fun: () => string[]): string[] {
 
 export class TerminalKeyword extends Terminal {
 	static readonly instance: TerminalKeyword = new TerminalKeyword();
-	random(): TOKEN.Keyword {
-		return Util.arrayRandom(Object.values(TOKEN.Keyword));
+	random(): Keyword {
+		return Util.arrayRandom(Object.values(Keyword));
 	}
 	match(candidate: Token): boolean {
 		return candidate instanceof TOKEN.TokenKeyword;

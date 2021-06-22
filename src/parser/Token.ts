@@ -24,76 +24,11 @@ import {
 	CONFIG_DEFAULT,
 	Dev,
 } from '../core/index.js';
+import {Punctuator} from './Punctuator.js';
+import {Keyword} from './Keyword.js';
 import type {
 	LexerSolid,
 } from './Lexer.js';
-
-
-
-export enum Punctuator {
-	// grouping
-		GRP_OPN = '(',
-		GRP_CLS = ')',
-		BRAK_OPN = '[',   // Dev.supports('literalCollection')
-		BRAK_CLS = ']',   // Dev.supports('literalCollection')
-		COMMA    = ',',   // Dev.supports('literalCollection')
-		MAPTO    = '|->', // Dev.supports('literalCollection')
-	// unary
-		NOT = '!',
-		EMP = '?',
-		AFF = '+',
-		NEG = '-',
-		ORNULL = '!',
-	// binary
-		EXP  = '^',
-		MUL  = '*',
-		DIV  = '/',
-		ADD  = '+',
-		SUB  = '-',
-		LT   = '<',
-		GT   = '>',
-		LE   = '<=',
-		GE   = '>=',
-		NLT  = '!<',
-		NGT  = '!>',
-		ID   = '===',
-		NID  = '!==',
-		EQ   = '==',
-		NEQ  = '!=',
-		AND  = '&&',
-		NAND = '!&',
-		OR   = '||',
-		NOR  = '!|',
-		INTER = '&',
-		UNION = '|',
-	// statement
-		ENDSTAT = ';',
-		ISTYPE  = ':',
-		ASSIGN  = '=', // Dev.supports('literalCollection')
-}
-
-export enum Keyword {
-	// literal
-		NULL  = 'null',
-		BOOL  = 'bool',
-		FALSE = 'false',
-		TRUE  = 'true',
-		INT   = 'int',
-		FLOAT = 'float',
-		STR   = 'str',
-		OBJ   = 'obj',
-	// operator
-		IS   = 'is',
-		ISNT = 'isnt',
-		IF   = 'if',
-		THEN = 'then',
-		ELSE = 'else',
-	// storage
-		LET  = 'let',
-		TYPE = 'type',
-	// modifier
-		UNFIXED = 'unfixed',
-}
 
 
 
