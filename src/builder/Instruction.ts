@@ -8,7 +8,7 @@ import {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-} from '../enum/Operator.enum.js';
+} from '../validator/index.js';
 import {
 	SolidObject,
 	SolidNull,

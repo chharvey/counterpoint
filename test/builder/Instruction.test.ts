@@ -2,13 +2,11 @@ import * as xjs from 'extrajs';
 import * as assert from 'assert'
 
 import {
-	Operator,
-} from '../../src/enum/Operator.enum.js';
-import {
 	ParserSolid as Parser,
 } from '../../src/parser/index.js';
 import {
 	Decorator,
+	Operator,
 } from '../../src/validator/index.js';
 import {
 	Int16,

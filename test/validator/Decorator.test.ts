@@ -6,15 +6,13 @@ import * as assert from 'assert'
 import {
 	Dev,
 } from '../../src/core/index.js';
-import {
-	Operator,
-} from '../../src/enum/Operator.enum.js';
 import type {
 	PARSER,
 } from '../../src/parser/index.js';
 import {
-	Decorator,
 	AST,
+	Decorator,
+	Operator,
 } from '../../src/validator/index.js';
 import {
 	SolidTypeConstant,

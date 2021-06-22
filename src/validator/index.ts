@@ -1,3 +1,14 @@
+export {
+	Operator,
+	ValidTypeOperator,
+	ValidOperatorUnary,
+	ValidOperatorBinary,
+	ValidOperatorArithmetic,
+	ValidOperatorComparative,
+	ValidOperatorEquality,
+	ValidOperatorLogical,
+} from './Operator.js';
+
 export {Validator} from './Validator.js';
 export {Decorator} from './Decorator.js';
 

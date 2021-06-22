@@ -14,7 +14,7 @@ import {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-} from '../enum/Operator.enum.js';
+} from './Operator.js';
 import {
 	Punctuator,
 	Keyword,

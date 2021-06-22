@@ -7,9 +7,6 @@ import {
 	Dev,
 } from '../../src/core/index.js';
 import {
-	Operator,
-} from '../../src/enum/Operator.enum.js';
-import {
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
@@ -20,11 +17,12 @@ import {
 	NanError01,
 } from '../../src/error/index.js';
 import {
-	Validator,
+	Operator,
 	AST,
 	SymbolStructure,
 	SymbolStructureType,
 	SymbolStructureVar,
+	Validator,
 } from '../../src/validator/index.js';
 import {
 	SolidType,
