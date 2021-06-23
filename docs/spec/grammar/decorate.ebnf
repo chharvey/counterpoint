@@ -33,7 +33,10 @@ Decorate(TypeKeyword ::= "obj") -> SemanticTypeConstant
 
 
 
-Decorate(PropertyType ::= Word ":" Type) -> SemanticPropertyType
+Decorate(EntryType ::= Type) -> SemanticItemType
+	:= (SemanticItemType Decorate(Type));
+
+Decorate(EntryType_Named ::= Word ":" Type) -> SemanticPropertyType
 	:= (SemanticPropertyType
 		Decorate(Word)
 		Decorate(Type)
@@ -41,31 +44,23 @@ Decorate(PropertyType ::= Word ":" Type) -> SemanticPropertyType
 
 
 
-Decorate(TypeTupleLiteral ::= "[" ","? TypeTupleLiteral__0__List ","? "]") -> SemanticTypeList
+Decorate(ItemsType ::= EntryType# ","?) -> Sequence<SemanticItemType>
+	:= Decorate(EntryType#);
+
+Decorate(PropertiesType ::= EntryType_Named# ","?) -> Sequence<SemanticPropertyType>
+	:= Decorate(EntryType_Named#);
+
+
+
+Decorate(TypeTupleLiteral ::= "[" ","? ItemsType "]") -> SemanticTypeList
 	:= (SemanticTypeList
-		...Decorate(TypeTupleLiteral__0__List)
+		...Decorate(ItemsType)
 	);
 
-	Decorate(TypeTupleLiteral__0__List ::= Type) -> Sequence<SemanticType>
-		:= [Decorate(Type)];
-	Decorate(TypeTupleLiteral__0__List ::= TypeTupleLiteral__0__List "," Type) -> Sequence<SemanticType>
-		:= [
-			...Decorate(TypeTupleLiteral__0__List),
-			Decorate(Type),
-		];
-
-Decorate(TypeRecordLiteral ::= "[" ","? TypeRecordLiteral__0__List ","? "]") -> SemanticTypeRecord
+Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType "]") -> SemanticTypeRecord
 	:= (SemanticTypeRecord
-		...Decorate(TypeRecordLiteral__0__List)
+		...Decorate(PropertiesType)
 	);
-
-	Decorate(TypeRecordLiteral__0__List ::= PropertyType) -> Sequence<SemanticPropertyType>
-		:= [Decorate(PropertyType)];
-	Decorate(TypeRecordLiteral__0__List ::= TypeRecordLiteral__0__List "," PropertyType) -> Sequence<SemanticPropertyType>
-		:= [
-			...Decorate(TypeRecordLiteral__0__List),
-			Decorate(PropertyType),
-		];
 
 
 

@@ -96,15 +96,27 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('literalCollection') && describe('PropertyType ::= Word ":" Type', () => {
-			it('makes an ASTNodePropertyType.', () => {
+		Dev.supports('literalCollection') && describe('EntryType<Named> ::= <Named+>(Word ":") Type', () => {
+			specify('EntryType ::= Type', () => {
+				/*
+					<PropertyType>
+						<TypeConstant source="float"/>
+					</PropertyType>
+				*/
+				const itemtype: AST.ASTNodeItemType = Decorator.decorate(h.entryTypeFromString(`float`));
+				assert.deepStrictEqual(
+					itemtype.children.map((c) => c.source),
+					[`float`],
+				);
+			});
+			specify('EntryType_Named ::= Word ":" Type', () => {
 				/*
 					<PropertyType>
 						<Key source="fontSize"/>
 						<TypeConstant source="float"/>
 					</PropertyType>
 				*/
-				const propertytype: AST.ASTNodePropertyType = Decorator.decorate(h.propertyTypeFromString(`fontSize: float`));
+				const propertytype: AST.ASTNodePropertyType = Decorator.decorate(h.entryTypeNamedFromString(`fontSize: float`));
 				assert.deepStrictEqual(
 					propertytype.children.map((c) => c.source),
 					[`fontSize`, `float`],
@@ -112,7 +124,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" ","? ItemsType "]"', () => {
 			it('makes an ASTNodeTypeList.', () => {
 				/*
 					<TypeList>
@@ -121,13 +133,13 @@ describe('Decorator', () => {
 						<TypeOperation source="null | bool">...</TypeOperation>
 					</TypeList>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.tupleTypeFromString(`
+				assert.deepStrictEqual(AST.ASTNodeTypeList.fromSource(`
 					[
 						T,
 						42,
 						null | bool,
 					]
-				`)).children.map((c) => c.source), [
+				`).children.map((c) => c.source), [
 					`T`,
 					`42`,
 					`null | bool`,
@@ -135,7 +147,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeRecordLiteral ::= "[" ","? PropertyType# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeRecordLiteral ::= "[" ","? PropertiesType "]"', () => {
 			it('makes an ASTNodeTypeRecord.', () => {
 				/*
 					<TypeRecord>
@@ -143,12 +155,12 @@ describe('Decorator', () => {
 						<PropertyType source="foobar: int">...</PropertyType>
 					</TypeRecord>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.recordTypeFromString(`
+				assert.deepStrictEqual(AST.ASTNodeTypeRecord.fromSource(`
 					[
 						let: bool,
 						foobar: int,
 					]
-				`)).children.map((c) => c.source), [
+				`).children.map((c) => c.source), [
 					`let : bool`,
 					`foobar : int`,
 				]);

@@ -160,9 +160,21 @@ export class ASTNodeKey extends ASTNodeSolid {
 		throw builder && 'ASTNodeKey#build not yet supported.';
 	}
 }
+export class ASTNodeItemType extends ASTNodeSolid {
+	constructor (
+		start_node: PARSER.ParseNodeEntryType,
+		override readonly children: readonly [ASTNodeType],
+	) {
+		super(start_node, {}, children);
+	}
+	/** @implements ASTNodeSolid */
+	build(builder: Builder): Instruction {
+		throw builder && 'ASTNodeItemType#build not yet supported.';
+	}
+}
 export class ASTNodePropertyType extends ASTNodeSolid {
 	constructor (
-		start_node: PARSER.ParseNodePropertyType,
+		start_node: PARSER.ParseNodeEntryType_Named,
 		override readonly children: readonly [ASTNodeKey, ASTNodeType],
 	) {
 		super(start_node, {}, children);
@@ -328,13 +340,13 @@ export class ASTNodeTypeList extends ASTNodeType {
 	}
 	constructor (
 		start_node: PARSER.ParseNodeTypeTupleLiteral,
-		override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
+		override readonly children: Readonly<NonemptyArray<ASTNodeItemType>>,
 	) {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeType */
 	protected assess_do(validator: Validator): SolidType {
-		return new SolidTypeTuple(this.children.map((c) => c.assess(validator)));
+		return new SolidTypeTuple(this.children.map((c) => c.children[0].assess(validator)));
 	}
 }
 export class ASTNodeTypeRecord extends ASTNodeType {

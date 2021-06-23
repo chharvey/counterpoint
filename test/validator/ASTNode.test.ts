@@ -821,7 +821,7 @@ describe('ASTNodeSolid', () => {
 				const node: AST.ASTNodeTypeList = typeFromString(`[int, bool, str]`) as AST.ASTNodeTypeList;
 				assert.deepStrictEqual(
 					node.assess(validator),
-					new SolidTypeTuple(node.children.map((c) => c.assess(validator))),
+					new SolidTypeTuple(node.children.map((c) => c.children[0].assess(validator))),
 				);
 			});
 			Dev.supports('literalCollection') && specify('ASTNodeTypeRecord', () => {
