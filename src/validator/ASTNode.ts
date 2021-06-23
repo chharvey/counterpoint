@@ -506,8 +506,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		super(start_node, {value})
 		this.value = value
 	}
-	/** @implements ASTNodeExpression */
-	get shouldFloat(): boolean {
+	override get shouldFloat(): boolean {
 		return this.value instanceof Float64
 	}
 	/** @implements ASTNodeExpression */
@@ -545,8 +544,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		super(start_node, {id: start_node.cook()})
 		this.id = start_node.cook()!;
 	}
-	/** @implements ASTNodeExpression */
-	get shouldFloat(): boolean {
+	override get shouldFloat(): boolean {
 		return this.type(new Validator()).isSubtypeOf(Float64);
 	}
 	override varCheck(validator: Validator): void {
@@ -602,8 +600,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	) {
 		super(start_node, {}, children)
 	}
-	/** @implements ASTNodeExpression */
-	get shouldFloat(): boolean {
+	override get shouldFloat(): boolean {
 		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
 	}
 	/** @implements ASTNodeExpression */
@@ -628,8 +625,7 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 	constructor (start_node: PARSER.ParseNodeExpressionUnit) {
 		super(start_node);
 	}
-	/** @implements ASTNodeExpression */
-	get shouldFloat(): boolean {
+	override get shouldFloat(): boolean {
 		throw 'ASTNodeEmptyCollection#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -657,8 +653,7 @@ export class ASTNodeList extends ASTNodeExpression {
 	) {
 		super(start_node, {}, children);
 	}
-	/** @implements ASTNodeExpression */
-	get shouldFloat(): boolean {
+	override get shouldFloat(): boolean {
 		throw 'ASTNodeList#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -686,8 +681,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 	) {
 		super(start_node, {}, children);
 	}
-	/** @implements ASTNodeExpression */
-	get shouldFloat(): boolean {
+	override get shouldFloat(): boolean {
 		throw 'ASTNodeRecord#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -718,8 +712,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	) {
 		super(start_node, {}, children);
 	}
-	/** @implements ASTNodeExpression */
-	get shouldFloat(): boolean {
+	override get shouldFloat(): boolean {
 		throw 'ASTNodeMapping#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -763,8 +756,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements ASTNodeExpression */
-	get shouldFloat(): boolean {
+	override get shouldFloat(): boolean {
 		return this.children[0].shouldFloat
 	}
 	/** @implements ASTNodeExpression */
@@ -830,8 +822,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements ASTNodeExpression */
-	get shouldFloat(): boolean {
+	override get shouldFloat(): boolean {
 		return this.children[0].shouldFloat || this.children[1].shouldFloat
 	}
 	/**
@@ -1133,8 +1124,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements ASTNodeExpression */
-	get shouldFloat(): boolean {
+	override get shouldFloat(): boolean {
 		return this.children[1].shouldFloat || this.children[2].shouldFloat
 	}
 	/** @implements ASTNodeExpression */
