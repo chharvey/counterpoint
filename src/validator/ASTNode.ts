@@ -152,8 +152,7 @@ export class ASTNodeKey extends ASTNodeSolid {
 		super(start_node, {id: start_node.cook()});
 		this.id = start_node.cook()!;
 	}
-	/** @implements ASTNodeSolid */
-	build(builder: Builder): Instruction {
+	override build(builder: Builder): Instruction {
 		throw builder && 'ASTNodeKey#build not yet supported.';
 	}
 }
@@ -164,8 +163,7 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 	) {
 		super(start_node, {}, children);
 	}
-	/** @implements ASTNodeSolid */
-	build(builder: Builder): Instruction {
+	override build(builder: Builder): Instruction {
 		throw builder && 'ASTNodePropertyType#build not yet supported.';
 	}
 }
@@ -176,8 +174,7 @@ export class ASTNodeProperty extends ASTNodeSolid {
 	) {
 		super(start_node, {}, children);
 	}
-	/** @implements ASTNodeSolid */
-	build(builder: Builder): Instruction {
+	override build(builder: Builder): Instruction {
 		throw builder && 'ASTNodeProperty#build not yet supported.';
 	}
 }
@@ -188,8 +185,7 @@ export class ASTNodeCase extends ASTNodeSolid {
 	) {
 		super(start_node, {}, children);
 	}
-	/** @implements ASTNodeSolid */
-	build(builder: Builder): Instruction {
+	override build(builder: Builder): Instruction {
 		throw builder && 'ASTNodeCase#build not yet supported.';
 	}
 }
@@ -223,10 +219,9 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 		return; // no type-checking necessary
 	}
 	/**
-	 * @implements ASTNodeSolid
 	 * @final
 	 */
-	build(_builder: Builder): InstructionNone {
+	override build(_builder: Builder): InstructionNone {
 		return new InstructionNone()
 	}
 	/**
@@ -450,11 +445,10 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 		this.type(validator); // assert does not throw
 	}
 	/**
-	 * @implements ASTNodeSolid
 	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
 	 * @final
 	 */
-	build(builder: Builder, to_float?: boolean): InstructionExpression {
+	override build(builder: Builder, to_float?: boolean): InstructionExpression {
 		const assessed: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
 		return (!!assessed) ? InstructionConst.fromAssessment(assessed, to_float) : this.build_do(builder, to_float);
 	}
@@ -1212,8 +1206,7 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 	) {
 		super(start_node, {}, children)
 	}
-	/** @implements ASTNodeSolid */
-	build(builder: Builder): InstructionNone | InstructionStatement {
+	override build(builder: Builder): InstructionNone | InstructionStatement {
 		return (!this.children.length)
 			? new InstructionNone()
 			: new InstructionStatement(builder.stmtCount, this.children[0].build(builder))
@@ -1258,8 +1251,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		this.children[1].typeCheck(validator);
 		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
-	/** @implements ASTNodeSolid */
-	build(_builder: Builder): INST.InstructionNone {
+	override build(_builder: Builder): INST.InstructionNone {
 		return new INST.InstructionNone();
 	}
 }
@@ -1309,8 +1301,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 		return validator.getSymbolInfo(this.children[0].id)?.assess();
 	}
-	/** @implements ASTNodeSolid */
-	build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
+	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
 		const tofloat: boolean = this.children[2].type(builder.validator).isSubtypeOf(Float64) || this.children[2].shouldFloat;
 		const assess: SolidObject | null = this.children[0].assess(builder.validator);
 		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && assess)
@@ -1350,8 +1341,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			throw new TypeError03(this, assignee_type, assigned_type);
 		};
 	}
-	/** @implements ASTNodeSolid */
-	build(builder: Builder): INST.InstructionStatement {
+	override build(builder: Builder): INST.InstructionStatement {
 		const tofloat: boolean = this.children[1].type(builder.validator).isSubtypeOf(Float64) || this.children[1].shouldFloat;
 		return new INST.InstructionStatement(
 			builder.stmtCount,
@@ -1376,8 +1366,7 @@ export class ASTNodeGoal extends ASTNodeSolid {
 	) {
 		super(start_node, {}, children)
 	}
-	/** @implements ASTNodeSolid */
-	build(builder: Builder): InstructionNone | InstructionModule {
+	override build(builder: Builder): InstructionNone | InstructionModule {
 		return (!this.children.length)
 			? new InstructionNone()
 			: new InstructionModule([
