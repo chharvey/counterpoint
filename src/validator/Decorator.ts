@@ -104,8 +104,10 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeRecordLiteral__0__List):  NonemptyArray<AST.ASTNodeProperty>;
 	static decorate(node: PARSER.ParseNodeMappingLiteral):          AST.ASTNodeMapping;
 	static decorate(node: PARSER.ParseNodeMappingLiteral__0__List): NonemptyArray<AST.ASTNodeCase>;
+	static decorate(node: PARSER.ParseNodePropertyAccess):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
 	static decorate(node:
 		| PARSER.ParseNodeExpressionUnit
+		| PARSER.ParseNodeExpressionCompound
 		| PARSER.ParseNodeExpressionUnarySymbol
 		| PARSER.ParseNodeExpressionExponential
 		| PARSER.ParseNodeExpressionMultiplicative
@@ -281,9 +283,24 @@ export class Decorator {
 				this.decorate(node.children[1])
 			);
 
+		} else if (node instanceof PARSER.ParseNodePropertyAccess) {
+			return (
+				(node.children[1] instanceof TOKEN.TokenNumber) ? new AST.ASTNodeIndex(node, [new AST.ASTNodeConstant(node.children[1])]) :
+				(node.children[1] instanceof PARSER.ParseNodeWord) ? this.decorate(node.children[1]) :
+				this.decorate(node.children[2]!)
+			);
+
+		} else if (node instanceof PARSER.ParseNodeExpressionCompound) {
+			return (node.children.length === 1)
+				? this.decorate(node.children[0])
+				: new AST.ASTNodeAccess(node, [
+					this.decorate(node.children[0]),
+					this.decorate(node.children[1]),
+				]);
+
 		} else if (node instanceof PARSER.ParseNodeExpressionUnarySymbol) {
 			return (node.children.length === 1)
-				? this.decorate(node.children[0].children[0]) // TODO `Decorate(ParseNodeExpressionCompound)`
+				? this.decorate(node.children[0])
 				: (node.children[0].source === Punctuator.AFF) // `+a` is a no-op
 					? this.decorate(node.children[1])
 					: new AST.ASTNodeOperationUnary(node, this.OPERATORS_UNARY.get(node.children[0].source as Punctuator) as ValidOperatorUnary, [

@@ -583,6 +583,65 @@ describe('Decorator', () => {
 			})
 		})
 
+		Dev.supports('literalCollection') && describe('ExpressionCompound ::= ExpressionCompound PropertyAccess', () => {
+			it('access by integer.', () => {
+				/*
+					<Access>
+						<List source="[42, 420, 4200]">...</List>
+						<Index>
+							<Constant source="1"/>
+						</Index>
+					</Access>
+				*/
+				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
+					[42, 420, 4200].1;
+				`);
+				const operand: AST.ASTNodeExpression = access.children[0];
+				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
+				assert.ok(accessor instanceof AST.ASTNodeIndex);
+				assert.deepStrictEqual(
+					[operand.source,        accessor.source],
+					[`[ 42 , 420 , 4200 ]`, `. 1`],
+				);
+			});
+			it('access by key.', () => {
+				/*
+					<Access>
+						<Record source="[c= 42, b= 420, a= 4200]">...</Record>
+						<Key source="b"/>
+					</Access>
+				*/
+				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
+					[c= 42, b= 420, a= 4200].b;
+				`);
+				const operand: AST.ASTNodeExpression = access.children[0];
+				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
+				assert.ok(accessor instanceof AST.ASTNodeKey);
+				assert.deepStrictEqual(
+					[operand.source,                    accessor.source],
+					[`[ c = 42 , b = 420 , a = 4200 ]`, `b`],
+				);
+			});
+			it('access by computed expression.', () => {
+				/*
+					<Access>
+						<Mapping source="[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']">...</Mapping>
+						<Expression source="0.7 + 0.3">...</Expression>
+					</Access>
+				*/
+				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
+					[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'].[0.7 + 0.3];
+				`);
+				const operand: AST.ASTNodeExpression = access.children[0];
+				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
+				assert.ok(accessor instanceof AST.ASTNodeExpression);
+				assert.deepStrictEqual(
+					[operand.source,                                accessor.source],
+					[`[ 0.5 * 2 |-> 'one' , 1.4 + 0.6 |-> 'two' ]`, `0.7 + 0.3`],
+				);
+			});
+		});
+
 		context('ExpressionUnarySymbol ::= ("!" | "?" | "-") ExpressionUnarySymbol', () => {
 			it('makes an ASTNodeOperationUnary.', () => {
 				/*
