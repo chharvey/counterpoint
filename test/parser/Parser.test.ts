@@ -705,35 +705,6 @@ describe('Parser', () => {
 			})
 		})
 
-		context('ExpressionUnarySymbol ::= ("!" | "?" | "+" | "-") ExpressionUnarySymbol', () => {
-			it('makes a ParseNodeExpressionUnarySymbol node.', () => {
-				/*
-					<ExpressionUnarySymbol>
-						<PUNCTUATOR>-</PUNCTUATOR>
-						<ExpressionUnarySymbol source="42">...</ExpressionUnarySymbol>
-					</ExpressionUnarySymbol>
-				*/
-				assert.deepStrictEqual([
-					`!false;`,
-					`?true;`,
-					`- 42;`,
-					`--2;`,
-				].map((src) => {
-					const expression_unary: PARSER.ParseNodeExpressionUnarySymbol = h.unaryExpressionFromSource(src)
-					assert_arrayLength(expression_unary.children, 2, 'outer unary expression should have 2 children')
-					const [op, operand]: readonly [Token, PARSER.ParseNodeExpressionUnarySymbol] = expression_unary.children
-					assert.ok(op instanceof TOKEN.TokenPunctuator)
-					assert_arrayLength(operand.children, 1, 'inner unary expression should have 1 child')
-					return [operand.source, op.source]
-				}), [
-					[`false`, Punctuator.NOT],
-					[`true`,  Punctuator.EMP],
-					[`42`,    Punctuator.NEG],
-					[`-2`,    Punctuator.NEG],
-				])
-			})
-		})
-
 		context('ExpressionExponential ::=  ExpressionUnarySymbol "^" ExpressionExponential', () => {
 			it('makes a ParseNodeExpressionExponential node.', () => {
 				/*

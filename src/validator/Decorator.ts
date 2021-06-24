@@ -283,7 +283,7 @@ export class Decorator {
 
 		} else if (node instanceof PARSER.ParseNodeExpressionUnarySymbol) {
 			return (node.children.length === 1)
-				? this.decorate(node.children[0])
+				? this.decorate(node.children[0].children[0]) // TODO `Decorate(ParseNodeExpressionCompound)`
 				: (node.children[0].source === Punctuator.AFF) // `+a` is a no-op
 					? this.decorate(node.children[1])
 					: new AST.ASTNodeOperationUnary(node, this.OPERATORS_UNARY.get(node.children[0].source as Punctuator) as ValidOperatorUnary, [
@@ -417,9 +417,7 @@ export class Decorator {
 
 		} else if (node instanceof PARSER.ParseNodeGoal) {
 			return new AST.ASTNodeGoal(node, (node.children.length === 2) ? [] : this.decorate(node.children[1]));
-
-		} else {
-			throw new ReferenceError(`Could not find type of parse node ${ node }.`)
 		}
+		throw new TypeError(`Could not find type of parse node \`${ node.constructor.name }\`.`);
 	}
 }
