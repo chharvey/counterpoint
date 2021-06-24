@@ -11,6 +11,9 @@ SemanticPropertyType[optional: Boolean]
 
 
 
+SemanticIndex
+	::= SemanticConstant;
+
 SemanticProperty
 	::= SemanticKey SemanticExpression;
 
@@ -57,6 +60,7 @@ SemanticExpression =:=
 	| SemanticList
 	| SemanticRecord
 	| SemanticMapping
+	| SemanticAccess
 	| SemanticOperation
 ;
 
@@ -78,6 +82,9 @@ SemanticEmptyCollection ::= ();
 SemanticList            ::= SemanticExpression+;
 SemanticRecord          ::= SemanticProperty+;
 SemanticMapping         ::= SemanticCase+;
+
+SemanticAccess
+	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;

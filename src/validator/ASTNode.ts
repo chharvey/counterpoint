@@ -192,6 +192,17 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 		throw builder && 'ASTNodePropertyType#build not yet supported.';
 	}
 }
+export class ASTNodeIndex extends ASTNodeSolid {
+	constructor (
+		start_node: PARSER.ParseNodePropertyAccess,
+		override readonly children: readonly [ASTNodeConstant],
+	) {
+		super(start_node, {}, children);
+	}
+	override build(builder: Builder): Instruction {
+		throw builder && 'ASTNodeIndex#build not yet supported.';
+	}
+}
 export class ASTNodeProperty extends ASTNodeSolid {
 	constructor (
 		start_node: PARSER.ParseNodeProperty,
@@ -446,6 +457,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeList
  * - ASTNodeRecord
  * - ASTNodeMapping
+ * - ASTNodeAccess
  * - ASTNodeOperation
  */
 export abstract class ASTNodeExpression extends ASTNodeSolid {
@@ -785,6 +797,34 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null
 			: new SolidMapping<SolidObject, SolidObject>(cases as ReadonlyMap<SolidObject, SolidObject>);
+	}
+}
+export class ASTNodeAccess extends ASTNodeExpression {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeAccess {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeAccess);
+		return expression;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeExpressionCompound,
+		override readonly children: readonly [ASTNodeExpression, ASTNodeIndex | ASTNodeKey | ASTNodeExpression],
+	) {
+		super(start_node, {}, children);
+	}
+	override get shouldFloat(): boolean {
+		throw 'ASTNodeAccess#shouldFloat not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected build_do(builder: Builder): InstructionExpression {
+		throw builder && 'ASTNodeAccess#build_do not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected type_do(validator: Validator): SolidType {
+		throw validator && 'ASTNodeAccess#type_do not yet supported.';
+	}
+	/** @implements ASTNodeExpression */
+	protected assess_do(validator: Validator): SolidObject | null {
+		throw validator && 'ASTNodeAccess#assess_do not yet supported.';
 	}
 }
 export abstract class ASTNodeOperation extends ASTNodeExpression {
