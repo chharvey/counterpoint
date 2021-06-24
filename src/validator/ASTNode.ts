@@ -162,10 +162,14 @@ export class ASTNodeKey extends ASTNodeSolid {
 }
 export class ASTNodeItemType extends ASTNodeSolid {
 	constructor (
-		start_node: PARSER.ParseNodeEntryType,
+		start_node:
+			| PARSER.ParseNodeEntryType
+			| PARSER.ParseNodeEntryType_Optional
+		,
+		readonly optional: boolean,
 		override readonly children: readonly [ASTNodeType],
 	) {
-		super(start_node, {}, children);
+		super(start_node, {optional}, children);
 	}
 	/** @implements ASTNodeSolid */
 	build(builder: Builder): Instruction {
@@ -174,10 +178,14 @@ export class ASTNodeItemType extends ASTNodeSolid {
 }
 export class ASTNodePropertyType extends ASTNodeSolid {
 	constructor (
-		start_node: PARSER.ParseNodeEntryType_Named,
+		start_node:
+			| PARSER.ParseNodeEntryType_Named
+			| PARSER.ParseNodeEntryType_Named_Optional
+		,
+		readonly optional: boolean,
 		override readonly children: readonly [ASTNodeKey, ASTNodeType],
 	) {
-		super(start_node, {}, children);
+		super(start_node, {optional}, children);
 	}
 	/** @implements ASTNodeSolid */
 	build(builder: Builder): Instruction {

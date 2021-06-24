@@ -109,17 +109,28 @@ export class Decorator {
 	 * @param node the parse node to decorate
 	 * @returns an ASTNode
 	 */
-	static decorate(node: PARSER.ParseNodeWord):                    AST.ASTNodeKey;
-	static decorate(node: PARSER.ParseNodePrimitiveLiteral):        AST.ASTNodeConstant;
-	static decorate(node: PARSER.ParseNodeTypeKeyword):             AST.ASTNodeTypeConstant;
-	static decorate(node: PARSER.ParseNodeEntryType):               AST.ASTNodeItemType;
-	static decorate(node: PARSER.ParseNodeEntryType_Named):         AST.ASTNodePropertyType;
-	static decorate(node: PARSER.ParseNodeItemsType):               NonemptyArray<AST.ASTNodeItemType>;
-	static decorate(node: PARSER.ParseNodeItemsType__0__List):      NonemptyArray<AST.ASTNodeItemType>;
-	static decorate(node: PARSER.ParseNodePropertiesType):          NonemptyArray<AST.ASTNodePropertyType>;
-	static decorate(node: PARSER.ParseNodePropertiesType__0__List): NonemptyArray<AST.ASTNodePropertyType>;
-	static decorate(node: PARSER.ParseNodeTypeTupleLiteral):        AST.ASTNodeTypeList;
-	static decorate(node: PARSER.ParseNodeTypeRecordLiteral):       AST.ASTNodeTypeRecord;
+	static decorate(node: PARSER.ParseNodeWord):             AST.ASTNodeKey;
+	static decorate(node: PARSER.ParseNodePrimitiveLiteral): AST.ASTNodeConstant;
+	static decorate(node: PARSER.ParseNodeTypeKeyword):      AST.ASTNodeTypeConstant;
+	static decorate(node:
+		| PARSER.ParseNodeEntryType
+		| PARSER.ParseNodeEntryType_Optional
+	): AST.ASTNodeItemType;
+	static decorate(node:
+		| PARSER.ParseNodeEntryType_Named
+		| PARSER.ParseNodeEntryType_Named_Optional
+	): AST.ASTNodePropertyType;
+	static decorate(node:
+		| PARSER.ParseNodeItemsType
+		| PARSER.ParseNodeItemsType__0__List
+		| PARSER.ParseNodeItemsType__1__List
+	): NonemptyArray<AST.ASTNodeItemType>;
+	static decorate(node:
+		| PARSER.ParseNodePropertiesType
+		| PARSER.ParseNodePropertiesType__0__List
+	): NonemptyArray<AST.ASTNodePropertyType>;
+	static decorate(node: PARSER.ParseNodeTypeTupleLiteral):  AST.ASTNodeTypeList;
+	static decorate(node: PARSER.ParseNodeTypeRecordLiteral): AST.ASTNodeTypeRecord;
 	static decorate(node:
 		| PARSER.ParseNodeTypeUnit
 		| PARSER.ParseNodeTypeUnarySymbol
@@ -170,21 +181,40 @@ export class Decorator {
 			return new AST.ASTNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeEntryType) {
-			return new AST.ASTNodeItemType(node, [
+			return new AST.ASTNodeItemType(node, false, [
 				this.decorate(node.children[0]),
 			]);
 
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeEntryType_Optional) {
+			return new AST.ASTNodeItemType(node, true, [
+				this.decorate(node.children[1]),
+			]);
+
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeEntryType_Named) {
-			return new AST.ASTNodePropertyType(node, [
+			return new AST.ASTNodePropertyType(node, false, [
+				this.decorate(node.children[0]),
+				this.decorate(node.children[2]),
+			]);
+
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeEntryType_Named_Optional) {
+			return new AST.ASTNodePropertyType(node, true, [
 				this.decorate(node.children[0]),
 				this.decorate(node.children[2]),
 			]);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeItemsType) {
-			return this.decorate(node.children[0]);
+			return (node.children.length <= 2)
+				? this.decorate(node.children[0])
+				: [
+					...this.decorate(node.children[0]),
+					...this.decorate(node.children[2]!),
+				];
 
-		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeItemsType__0__List) {
-			return this.parseList<PARSER.ParseNodeEntryType, AST.ASTNodeItemType>(node);
+		} else if (Dev.supports('literalCollection') && (
+			   node instanceof PARSER.ParseNodeItemsType__0__List
+			|| node instanceof PARSER.ParseNodeItemsType__1__List
+		)) {
+			return this.parseList<PARSER.ParseNodeEntryType | PARSER.ParseNodeEntryType_Optional, AST.ASTNodeItemType>(node);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodePropertiesType) {
 			return this.decorate(node.children[0]);

@@ -96,14 +96,28 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('literalCollection') && describe('EntryType<Named> ::= <Named+>(Word ":") Type', () => {
+		Dev.supports('literalCollection') && describe('EntryType<Named, Optional> ::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type', () => {
 			specify('EntryType ::= Type', () => {
 				/*
-					<PropertyType>
+					<ItemType optional=false>
 						<TypeConstant source="float"/>
-					</PropertyType>
+					</ItemType>
 				*/
 				const itemtype: AST.ASTNodeItemType = Decorator.decorate(h.entryTypeFromString(`float`));
+				assert.ok(!itemtype.optional);
+				assert.deepStrictEqual(
+					itemtype.children.map((c) => c.source),
+					[`float`],
+				);
+			});
+			Dev.supports('optionalAccess') && specify('EntryType_Optional ::= "?:" Type', () => {
+				/*
+					<ItemType optional=true>
+						<TypeConstant source="float"/>
+					</ItemType>
+				*/
+				const itemtype: AST.ASTNodeItemType = Decorator.decorate(h.entryTypeFromString(`?:float`));
+				assert.ok(itemtype.optional);
 				assert.deepStrictEqual(
 					itemtype.children.map((c) => c.source),
 					[`float`],
@@ -111,12 +125,27 @@ describe('Decorator', () => {
 			});
 			specify('EntryType_Named ::= Word ":" Type', () => {
 				/*
-					<PropertyType>
+					<PropertyType optional=false>
 						<Key source="fontSize"/>
 						<TypeConstant source="float"/>
 					</PropertyType>
 				*/
 				const propertytype: AST.ASTNodePropertyType = Decorator.decorate(h.entryTypeNamedFromString(`fontSize: float`));
+				assert.ok(!propertytype.optional);
+				assert.deepStrictEqual(
+					propertytype.children.map((c) => c.source),
+					[`fontSize`, `float`],
+				);
+			});
+			Dev.supports('optionalAccess') && specify('EntryType_Named_Optional ::= Word "?:" Type', () => {
+				/*
+					<PropertyType optional=true>
+						<Key source="fontSize"/>
+						<TypeConstant source="float"/>
+					</PropertyType>
+				*/
+				const propertytype: AST.ASTNodePropertyType = Decorator.decorate(h.entryTypeNamedFromString(`fontSize?: float`));
+				assert.ok(propertytype.optional);
 				assert.deepStrictEqual(
 					propertytype.children.map((c) => c.source),
 					[`fontSize`, `float`],
@@ -124,13 +153,14 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" ","? ItemsType "]"', () => {
+		Dev.supportsAll('literalCollection', 'optionalAccess') && describe('TypeTupleLiteral ::= "[" ","? ItemsType "]"', () => {
 			it('makes an ASTNodeTypeList.', () => {
 				/*
 					<TypeList>
 						<TypeAlias source="T"/>
 						<TypeConstant source="42"/>
 						<TypeOperation source="null | bool">...</TypeOperation>
+						<TypeOperation source="?:str">...</TypeOperation>
 					</TypeList>
 				*/
 				assert.deepStrictEqual(AST.ASTNodeTypeList.fromSource(`
@@ -138,31 +168,39 @@ describe('Decorator', () => {
 						T,
 						42,
 						null | bool,
+						?:str,
 					]
 				`).children.map((c) => c.source), [
 					`T`,
 					`42`,
 					`null | bool`,
+					`?: str`,
 				]);
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeRecordLiteral ::= "[" ","? PropertiesType "]"', () => {
+		Dev.supportsAll('literalCollection', 'optionalAccess') && describe('TypeRecordLiteral ::= "[" ","? PropertiesType "]"', () => {
 			it('makes an ASTNodeTypeRecord.', () => {
 				/*
 					<TypeRecord>
 						<PropertyType source="let: bool">...</PropertyType>
 						<PropertyType source="foobar: int">...</PropertyType>
+						<PropertyType source="diz?: str">...</PropertyType>
+						<PropertyType source="qux: null">...</PropertyType>
 					</TypeRecord>
 				*/
 				assert.deepStrictEqual(AST.ASTNodeTypeRecord.fromSource(`
 					[
 						let: bool,
 						foobar: int,
+						diz?: str,
+						qux: null,
 					]
 				`).children.map((c) => c.source), [
 					`let : bool`,
 					`foobar : int`,
+					`diz ?: str`,
+					`qux : null`,
 				]);
 			});
 		});

@@ -34,10 +34,16 @@ Decorate(TypeKeyword ::= "obj") -> SemanticTypeConstant
 
 
 Decorate(EntryType ::= Type) -> SemanticItemType
-	:= (SemanticItemType Decorate(Type));
-
+	:= (SemanticItemType[optional=false] Decorate(Type));
+Decorate(EntryType_Optional ::= Type) -> SemanticItemType
+	:= (SemanticItemType[optional=true] Decorate(Type));
 Decorate(EntryType_Named ::= Word ":" Type) -> SemanticPropertyType
-	:= (SemanticPropertyType
+	:= (SemanticPropertyType[optional=false]
+		Decorate(Word)
+		Decorate(Type)
+	);
+Decorate(EntryType_Named_Optional ::= Word "?:" Type) -> SemanticPropertyType
+	:= (SemanticPropertyType[optional=true]
 		Decorate(Word)
 		Decorate(Type)
 	);
@@ -46,9 +52,18 @@ Decorate(EntryType_Named ::= Word ":" Type) -> SemanticPropertyType
 
 Decorate(ItemsType ::= EntryType# ","?) -> Sequence<SemanticItemType>
 	:= ParseList(EntryType, SemanticItemType);
+Decorate(ItemsType ::= EntryType_Optional# ","?) -> Sequence<SemanticItemType>
+	:= ParseList(EntryType_Optional, SemanticItemType);
+Decorate(ItemsType ::= EntryType# "," EntryType_Optional# ","?) -> Sequence<SemanticItemType>
+	:= [
+		...ParseList(EntryType,          SemanticItemType),
+		...ParseList(EntryType_Optional, SemanticItemType),
+	];
 
 Decorate(PropertiesType ::= EntryType_Named# ","?) -> Sequence<SemanticPropertyType>
 	:= ParseList(EntryType_Named, SemanticPropertyType);
+Decorate(PropertiesType ::= EntryType_Named_Optional# ","?) -> Sequence<SemanticPropertyType>
+	:= ParseList(EntryType_Named_Optional, SemanticPropertyType);
 
 
 

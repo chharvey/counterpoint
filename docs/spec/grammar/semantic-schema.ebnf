@@ -3,10 +3,10 @@ SemanticKey[id: RealNumber]
 
 
 
-SemanticItemType
+SemanticItemType[optional: Boolean]
 	::= SemanticType;
 
-SemanticPropertyType
+SemanticPropertyType[optional: Boolean]
 	::= SemanticKey SemanticType;
 
 
