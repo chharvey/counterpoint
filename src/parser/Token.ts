@@ -73,6 +73,7 @@ export enum Punctuator {
 	// statement
 		ENDSTAT = ';',
 		ISTYPE  = ':',
+		OPT     = '?:',
 		ASSIGN  = '=', // Dev.supports('literalCollection')
 }
 

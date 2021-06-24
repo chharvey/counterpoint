@@ -71,12 +71,32 @@ export class ProductionEntryType extends Production {
 	}
 }
 
+export class ProductionEntryType_Optional extends Production {
+	static readonly instance: ProductionEntryType_Optional = new ProductionEntryType_Optional();
+	/** @implements Production */
+	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['?:', ProductionType.instance],
+		];
+	}
+}
+
 export class ProductionEntryType_Named extends Production {
 	static readonly instance: ProductionEntryType_Named = new ProductionEntryType_Named();
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionWord.instance, ':', ProductionType.instance],
+		];
+	}
+}
+
+export class ProductionEntryType_Named_Optional extends Production {
+	static readonly instance: ProductionEntryType_Named_Optional = new ProductionEntryType_Named_Optional();
+	/** @implements Production */
+	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionWord.instance, '?:', ProductionType.instance],
 		];
 	}
 }
@@ -92,6 +112,17 @@ export class ProductionItemsType__0__List extends Production {
 	}
 }
 
+export class ProductionItemsType__1__List extends Production {
+	static readonly instance: ProductionItemsType__1__List = new ProductionItemsType__1__List();
+	/** @implements Production */
+	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionEntryType_Optional.instance],
+			[ProductionItemsType__1__List.instance, ',', ProductionEntryType_Optional.instance],
+		];
+	}
+}
+
 export class ProductionItemsType extends Production {
 	static readonly instance: ProductionItemsType = new ProductionItemsType();
 	/** @implements Production */
@@ -99,6 +130,10 @@ export class ProductionItemsType extends Production {
 		return [
 			[ProductionItemsType__0__List.instance],
 			[ProductionItemsType__0__List.instance, ','],
+			[ProductionItemsType__1__List.instance],
+			[ProductionItemsType__1__List.instance, ','],
+			[ProductionItemsType__0__List.instance, ',', ProductionItemsType__1__List.instance],
+			[ProductionItemsType__0__List.instance, ',', ProductionItemsType__1__List.instance, ','],
 		];
 	}
 }
@@ -108,8 +143,12 @@ export class ProductionPropertiesType__0__List extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
+			[ProductionEntryType_Named_Optional.instance],
+			[ProductionPropertiesType__0__List.instance, ',', ProductionEntryType_Named_Optional.instance],
 			[ProductionEntryType_Named.instance],
 			[ProductionPropertiesType__0__List.instance, ',', ProductionEntryType_Named.instance],
+			[ProductionEntryType_Named_Optional.instance],
+			[ProductionPropertiesType__0__List.instance, ',', ProductionEntryType_Named_Optional.instance],
 		];
 	}
 }
@@ -588,6 +627,8 @@ export class ParseNodeTypeKeyword extends ParseNode {
 export abstract class ParseNodeEntryType$ extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeType]
+		| readonly [Token, ParseNodeType]
+		| readonly [ParseNodeWord, Token, ParseNodeType]
 		| readonly [ParseNodeWord, Token, ParseNodeType]
 	;
 }
@@ -598,7 +639,19 @@ export class ParseNodeEntryType extends ParseNodeEntryType$ {
 	;
 }
 
+export class ParseNodeEntryType_Optional extends ParseNodeEntryType$ {
+	declare readonly children:
+		| readonly [Token, ParseNodeType]
+	;
+}
+
 export class ParseNodeEntryType_Named extends ParseNodeEntryType$ {
+	declare readonly children:
+		| readonly [ParseNodeWord, Token, ParseNodeType]
+	;
+}
+
+export class ParseNodeEntryType_Named_Optional extends ParseNodeEntryType$ {
 	declare readonly children:
 		| readonly [ParseNodeWord, Token, ParseNodeType]
 	;
@@ -611,17 +664,32 @@ export class ParseNodeItemsType__0__List extends ParseNode {
 	;
 }
 
+export class ParseNodeItemsType__1__List extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeEntryType_Optional]
+		| readonly [ParseNodeItemsType__1__List, Token, ParseNodeEntryType_Optional]
+	;
+}
+
 export class ParseNodeItemsType extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeItemsType__0__List]
 		| readonly [ParseNodeItemsType__0__List, Token]
+		| readonly [ParseNodeItemsType__1__List]
+		| readonly [ParseNodeItemsType__1__List, Token]
+		| readonly [ParseNodeItemsType__0__List, Token, ParseNodeItemsType__1__List]
+		| readonly [ParseNodeItemsType__0__List, Token, ParseNodeItemsType__1__List, Token]
 	;
 }
 
 export class ParseNodePropertiesType__0__List extends ParseNode {
 	declare readonly children:
+		| readonly [ParseNodeEntryType_Named_Optional]
+		| readonly [ParseNodePropertiesType__0__List, Token, ParseNodeEntryType_Named_Optional]
 		| readonly [ParseNodeEntryType_Named]
 		| readonly [ParseNodePropertiesType__0__List, Token, ParseNodeEntryType_Named]
+		| readonly [ParseNodeEntryType_Named_Optional]
+		| readonly [ParseNodePropertiesType__0__List, Token, ParseNodeEntryType_Named_Optional]
 	;
 }
 
@@ -925,8 +993,11 @@ export const grammar_Solid: Grammar = new Grammar([
 	ProductionPrimitiveLiteral.instance,
 	ProductionTypeKeyword.instance,
 	ProductionEntryType.instance,
+	ProductionEntryType_Optional.instance,
 	ProductionEntryType_Named.instance,
+	ProductionEntryType_Named_Optional.instance,
 	ProductionItemsType__0__List.instance,
+	ProductionItemsType__1__List.instance,
 	ProductionItemsType.instance,
 	ProductionPropertiesType__0__List.instance,
 	ProductionPropertiesType.instance,
@@ -980,8 +1051,11 @@ export class ParserSolid extends Parser {
 			[ProductionPrimitiveLiteral.instance, ParseNodePrimitiveLiteral],
 			[ProductionTypeKeyword.instance, ParseNodeTypeKeyword],
 			[ProductionEntryType.instance, ParseNodeEntryType],
+			[ProductionEntryType_Optional.instance, ParseNodeEntryType_Optional],
 			[ProductionEntryType_Named.instance, ParseNodeEntryType_Named],
+			[ProductionEntryType_Named_Optional.instance, ParseNodeEntryType_Named_Optional],
 			[ProductionItemsType__0__List.instance, ParseNodeItemsType__0__List],
+			[ProductionItemsType__1__List.instance, ParseNodeItemsType__1__List],
 			[ProductionItemsType.instance, ParseNodeItemsType],
 			[ProductionPropertiesType__0__List.instance, ParseNodePropertiesType__0__List],
 			[ProductionPropertiesType.instance, ParseNodePropertiesType],

@@ -36,14 +36,16 @@ TypeKeyword ::=
 	| "obj"
 ;
 
-EntryType<Named>
-	::= <Named+>(Word ":") Type;
+EntryType<Named, Optional>
+	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type;
 
-ItemsType
-	::= EntryType<-Named># ","?;
+ItemsType ::=
+	|  EntryType<-Named><-Optional># ","?
+	| (EntryType<-Named><-Optional># ",")? EntryType<-Named><+Optional># ","?
+;
 
 PropertiesType
-	::= EntryType<+Named># ","?;
+	::= EntryType<+Named><-Optional, +Optional># ","?;
 
 TypeTupleLiteral  ::= "[" ","? ItemsType      "]";
 TypeRecordLiteral ::= "[" ","? PropertiesType "]";
