@@ -790,9 +790,8 @@ There are two main types of syntax errors: lexical errors and parse errors.
 
 
 ### Lexical Errors (11xx)
-When the Solid source text fails to produce a token per
-the [lexical grammar](#the-lexical-grammar) rules,
-a lexical error is raised.
+A lexical error is raised when the Solid source text fails to produce a token per
+the [lexical grammar](#the-lexical-grammar) rules.
 
 1103. The lexer found an escape sequence of an invalid format.
 1104. The lexer found a numeric separator where it is not allowed.
@@ -800,9 +799,8 @@ a lexical error is raised.
 
 
 ### Parse Errors (12xx)
-When the Solid source text fails to parse correctly per
-the [syntactic grammar](#the-syntactic-grammar) rules,
-a parse error is raised.
+A parse error is raised when the Solid source text fails to parse correctly per
+the [syntactic grammar](#the-syntactic-grammar) rules.
 
 1200. A general parse error not covered by one of the following cases.
 1201. The parser reached a token that the syntax does not allow.
@@ -816,7 +814,7 @@ If this is the case, the code is said to be “invalid” (“not valid”).
 
 
 ### Reference Errors (21xx)
-When the compiler fails to dereference an identifier, a reference error is raised.
+A reference error is raised when the compiler fails to dereference an identifier.
 
 2100. A general reference error not covered by one of the following cases.
 2101. The validator encountered a variable that was never declared.
@@ -825,7 +823,7 @@ When the compiler fails to dereference an identifier, a reference error is raise
 
 
 ### Assignment Errors (22xx)
-When the compiler detects an illegal declaration or assignment, an assignment error is raised.
+An assignment error is raised when the compiler detects an illegal declaration or assignment.
 
 2200. A general assignment error not covered by one of the following cases.
 2201. The validator encountered a duplicate declaration.
@@ -833,9 +831,16 @@ When the compiler detects an illegal declaration or assignment, an assignment er
 
 
 ### Type Errors (23xx)
-When the compiler recognizes a type mismatch, a type error is raised.
+A type error is raised when the compiler recognizes a type mismatch.
 
 2300. A general type error not covered by one of the following cases.
 2301. The validator encountered an operation with an invalid operand.
 2302. One type is expected to be a subtype of another, but is not.
 2303. An expression was assigned to a type to which it is not assignable.
+
+
+### Mutability Errors (24xx)
+A mutability error is raised when the compiler recognizes an attempt to mutate an immutable object.
+
+2400. A general mutability error not covered by one of the following cases.
+2401. An item or property of an immutable object was reassigned.
