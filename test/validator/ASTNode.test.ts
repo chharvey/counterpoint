@@ -809,13 +809,6 @@ describe('ASTNodeSolid', () => {
 					SolidObject,
 				])
 			})
-			Dev.supports('literalCollection') && specify('ASTNodeTypeEmptyCollection', () => {
-				const node: AST.ASTNodeType = typeFromString(`[]`);
-				assert.deepStrictEqual(
-					node.assess(new Validator()),
-					new SolidTypeTuple().intersect(new SolidTypeRecord()),
-				);
-			});
 			Dev.supports('literalCollection') && specify('ASTNodeTypeTuple', () => {
 				const validator: Validator = new Validator();
 				const node: AST.ASTNodeTypeTuple = AST.ASTNodeTypeTuple.fromSource(`[int, bool, str]`);

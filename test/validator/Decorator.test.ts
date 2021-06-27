@@ -113,14 +113,14 @@ describe('Decorator', () => {
 		});
 
 		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" (","? Type# ","?)? "]"', () => {
-			it('makes an ASTNodeTypeEmptyCollection.', () => {
+			it('makes an empty ASTNodeTypeTuple.', () => {
 				/*
-					<TypeEmptyCollection/>
+					<TypeTuple/>
 				*/
-				const tupletype: AST.ASTNodeTypeEmptyCollection | AST.ASTNodeTypeTuple = Decorator.decorate(h.tupleTypeFromString(`[]`));
-				assert.ok(tupletype instanceof AST.ASTNodeTypeEmptyCollection);
+				const tupletype: AST.ASTNodeTypeTuple = Decorator.decorate(h.tupleTypeFromString(`[]`));
+				assert_arrayLength(tupletype.children, 0);
 			});
-			it('makes an ASTNodeTypeTuple.', () => {
+			it('makes a nonempty ASTNodeTypeTuple.', () => {
 				/*
 					<TypeTuple>
 						<TypeAlias source="T"/>
@@ -128,14 +128,13 @@ describe('Decorator', () => {
 						<TypeOperation source="null | bool">...</TypeOperation>
 					</TypeTuple>
 				*/
-				const tupletype: AST.ASTNodeTypeEmptyCollection | AST.ASTNodeTypeTuple = Decorator.decorate(h.tupleTypeFromString(`
+				const tupletype: AST.ASTNodeTypeTuple = Decorator.decorate(h.tupleTypeFromString(`
 					[
 						T,
 						42,
 						null | bool,
 					]
 				`));
-				assert.ok(tupletype instanceof AST.ASTNodeTypeTuple);
 				assert.deepStrictEqual(tupletype.children.map((c) => c.source), [
 					`T`,
 					`42`,

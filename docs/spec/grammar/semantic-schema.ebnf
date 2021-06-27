@@ -19,7 +19,6 @@ SemanticCase
 SemanticType =:=
 	| SemanticTypeConstant
 	| SemanticTypeAlias
-	| SemanticTypeEmptyCollection
 	| SemanticTypeTuple
 	| SemanticTypeRecord
 	| SemanticTypeOperation
@@ -33,9 +32,8 @@ SemanticTypeConstant[value: Type]
 SemanticTypeAlias[id: RealNumber]
 	::= ();
 
-SemanticTypeEmptyCollection ::= ();
-SemanticTypeTuple           ::= SemanticType+;
-SemanticTypeRecord          ::= SemanticPropertyType+;
+SemanticTypeTuple  ::= SemanticType*;
+SemanticTypeRecord ::= SemanticPropertyType+;
 
 SemanticTypeOperation[operator: ORNULL]
 	::= SemanticType;

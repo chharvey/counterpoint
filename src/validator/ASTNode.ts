@@ -201,7 +201,6 @@ export class ASTNodeCase extends ASTNodeSolid {
  * Known subclasses:
  * - ASTNodeTypeConstant
  * - ASTNodeTypeAlias
- * - ASTNodeTypeEmptyCollection
  * - ASTNodeTypeTuple
  * - ASTNodeTypeRecord
  * - ASTNodeTypeOperation
@@ -308,18 +307,6 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		return SolidType.UNKNOWN;
 	}
 }
-export class ASTNodeTypeEmptyCollection extends ASTNodeType {
-	declare readonly children: readonly [];
-	constructor (
-		start_node: PARSER.ParseNodeTypeUnit,
-	) {
-		super(start_node);
-	}
-	/** @implements ASTNodeType */
-	protected assess_do(_validator: Validator): SolidType {
-		return new SolidTypeTuple().intersect(new SolidTypeRecord());
-	}
-}
 export class ASTNodeTypeTuple extends ASTNodeType {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeTuple {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
@@ -328,7 +315,7 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 	}
 	constructor (
 		start_node: PARSER.ParseNodeTypeTupleLiteral,
-		override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
+		override readonly children: readonly ASTNodeType[],
 	) {
 		super(start_node, {}, children);
 	}

@@ -13,12 +13,6 @@ Type Assess(SemanticTypeAlias var) :=
 ;
 
 
-Type Assess(SemanticTypeEmptyCollection listtype) :=
-	1. *Return:* `Intersection(Tuple, Record)`.
-;
-
-
-
 Type Assess(SemanticTypeTuple listtype) :=
 	1. *Let* `data` be a mapping of `listtype` for each `type` to *UnwrapAffirm:* `Assess(type)`.
 	2. *Return:* a subtype of `Tuple` whose items are `data`.

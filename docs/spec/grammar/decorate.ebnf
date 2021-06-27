@@ -41,8 +41,8 @@ Decorate(PropertyType ::= Word ":" Type) -> SemanticPropertyType
 
 
 
-Decorate(TypeTupleLiteral ::= "[" "]") -> SemanticTypeEmptyCollection
-	:= (SemanticTypeEmptyCollection);
+Decorate(TypeTupleLiteral ::= "[" "]") -> SemanticTypeTuple
+	:= (SemanticTypeTuple);
 Decorate(TypeTupleLiteral ::= "[" ","? TypeTupleLiteral__0__List ","? "]") -> SemanticTypeTuple
 	:= (SemanticTypeTuple
 		...Decorate(TypeTupleLiteral__0__List)
