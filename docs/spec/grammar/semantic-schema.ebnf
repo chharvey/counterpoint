@@ -20,7 +20,7 @@ SemanticType =:=
 	| SemanticTypeConstant
 	| SemanticTypeAlias
 	| SemanticTypeEmptyCollection
-	| SemanticTypeList
+	| SemanticTypeTuple
 	| SemanticTypeRecord
 	| SemanticTypeOperation
 ;
@@ -34,7 +34,7 @@ SemanticTypeAlias[id: RealNumber]
 	::= ();
 
 SemanticTypeEmptyCollection ::= ();
-SemanticTypeList            ::= SemanticType+;
+SemanticTypeTuple           ::= SemanticType+;
 SemanticTypeRecord          ::= SemanticPropertyType+;
 
 SemanticTypeOperation[operator: ORNULL]

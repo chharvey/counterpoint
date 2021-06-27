@@ -19,7 +19,7 @@ Type Assess(SemanticTypeEmptyCollection listtype) :=
 
 
 
-Type Assess(SemanticTypeList listtype) :=
+Type Assess(SemanticTypeTuple listtype) :=
 	1. *Let* `data` be a mapping of `listtype` for each `type` to *UnwrapAffirm:* `Assess(type)`.
 	2. *Return:* a subtype of `Tuple` whose items are `data`.
 ;
