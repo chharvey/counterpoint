@@ -91,7 +91,7 @@ Object! Assess(SemanticEmptyCollection coll) :=
 
 
 
-Tuple! Assess(SemanticList list) :=
+Tuple! Assess(SemanticTuple list) :=
 	1. *Let* `data` be a mapping of `list` for each `it` to `Assess(it)`.
 	2. *For index* `i` in `data`:
 		1. *If* `data[i]` is a normal completion:

@@ -27,8 +27,8 @@ Type TypeOf(SemanticEmptyCollection coll) :=
 
 
 
-Type! TypeOf(SemanticList list) :=
-	1. *Let* `types` be a mapping of `list` for each `it` to *Unwrap:* `TypeOf(it)`.
+Type! TypeOf(SemanticTuple tuple) :=
+	1. *Let* `types` be a mapping of `tuple` for each `it` to *Unwrap:* `TypeOf(it)`.
 	2. *Return:* a new Tuple type containing the items in the sequence `types`.
 ;
 
