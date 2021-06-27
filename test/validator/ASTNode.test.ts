@@ -963,13 +963,13 @@ describe('ASTNodeSolid', () => {
 
 			Dev.supports('literalCollection') && describe('ASTNode{List,Record,Mapping}', () => {
 				let collections: readonly [
-					AST.ASTNodeList,
+					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,
 					AST.ASTNodeMapping,
 				];
 				function initCollections() {
 					return [
-						AST.ASTNodeList.fromSource(`[1, 2.0, 'three'];`),
+						AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
 						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
 						AST.ASTNodeMapping.fromSource(`
 							[
@@ -1419,7 +1419,7 @@ describe('ASTNodeSolid', () => {
 				it('returns a constant Tuple/Record/Mapping for foldable entries.', () => {
 					assert.deepStrictEqual(
 						[
-							AST.ASTNodeList.fromSource(`[1, 2.0, 'three'];`),
+							AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
 							AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
 							AST.ASTNodeMapping.fromSource(`
 								[
@@ -1461,8 +1461,8 @@ describe('ASTNodeSolid', () => {
 							3 * 1.0   |-> 'three',
 						];
 					`);
-					const tuple:   AST.ASTNodeList =    goal.children[3].children[0] as AST.ASTNodeList;
-					const record:  AST.ASTNodeRecord =  goal.children[4].children[0] as AST.ASTNodeRecord;
+					const tuple:   AST.ASTNodeTuple   = goal.children[3].children[0] as AST.ASTNodeTuple;
+					const record:  AST.ASTNodeRecord  = goal.children[4].children[0] as AST.ASTNodeRecord;
 					const mapping: AST.ASTNodeMapping = goal.children[5].children[0] as AST.ASTNodeMapping;
 					assert.deepStrictEqual(
 						[

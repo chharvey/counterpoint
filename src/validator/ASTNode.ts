@@ -420,7 +420,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeVariable
  * - ASTNodeTemplate
  * - ASTNodeEmptyCollection
- * - ASTNodeList
+ * - ASTNodeTuple
  * - ASTNodeRecord
  * - ASTNodeMapping
  * - ASTNodeOperation
@@ -659,10 +659,10 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 		return null;
 	}
 }
-export class ASTNodeList extends ASTNodeExpression {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeList {
+export class ASTNodeTuple extends ASTNodeExpression {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTuple {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeList);
+		assert.ok(expression instanceof ASTNodeTuple);
 		return expression;
 	}
 	constructor (
@@ -673,11 +673,11 @@ export class ASTNodeList extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeExpression */
 	get shouldFloat(): boolean {
-		throw 'ASTNodeList#shouldFloat not yet supported.';
+		throw 'ASTNodeTuple#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
 	protected build_do(builder: Builder): InstructionExpression {
-		throw builder && 'ASTNodeList#build_do not yet supported.';
+		throw builder && 'ASTNodeTuple#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidType {

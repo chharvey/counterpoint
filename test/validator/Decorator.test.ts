@@ -379,13 +379,13 @@ describe('Decorator', () => {
 		});
 
 		Dev.supports('literalCollection') && context('TupleLiteral ::= "[" ","? Expression# ","? "]"', () => {
-			it('makes an ASTNodeList.', () => {
+			it('makes an ASTNodeTuple.', () => {
 				/*
-					<List>
+					<Tuple>
 						<Constant source="42"/>
 						<Constant source="true"/>
 						<Operation source="null || false">...</Operation>
-					</List>
+					</Tuple>
 				*/
 				assert.deepStrictEqual(Decorator.decorate(h.tupleLiteralFromSource(`
 					[
