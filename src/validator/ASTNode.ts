@@ -666,7 +666,7 @@ export class ASTNodeList extends ASTNodeExpression {
 		return expression;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeListLiteral,
+		start_node: PARSER.ParseNodeTupleLiteral,
 		override readonly children: Readonly<NonemptyArray<ASTNodeExpression>>,
 	) {
 		super(start_node, {}, children);

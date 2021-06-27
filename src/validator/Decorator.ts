@@ -98,8 +98,8 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeStringTemplate__0__List): TemplatePartialType;
 	static decorate(node: PARSER.ParseNodeProperty):                AST.ASTNodeProperty;
 	static decorate(node: PARSER.ParseNodeCase):                    AST.ASTNodeCase;
-	static decorate(node: PARSER.ParseNodeListLiteral):             AST.ASTNodeList;
-	static decorate(node: PARSER.ParseNodeListLiteral__0__List):    NonemptyArray<AST.ASTNodeExpression>;
+	static decorate(node: PARSER.ParseNodeTupleLiteral):            AST.ASTNodeList;
+	static decorate(node: PARSER.ParseNodeTupleLiteral__0__List):   NonemptyArray<AST.ASTNodeExpression>;
 	static decorate(node: PARSER.ParseNodeRecordLiteral):           AST.ASTNodeRecord;
 	static decorate(node: PARSER.ParseNodeRecordLiteral__0__List):  NonemptyArray<AST.ASTNodeProperty>;
 	static decorate(node: PARSER.ParseNodeMappingLiteral):          AST.ASTNodeMapping;
@@ -229,12 +229,12 @@ export class Decorator {
 				this.decorate(node.children[2]),
 			]);
 
-		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeListLiteral) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTupleLiteral) {
 			return new AST.ASTNodeList(node, this.decorate(
-				node.children.find((c): c is PARSER.ParseNodeListLiteral__0__List => c instanceof PARSER.ParseNodeListLiteral__0__List)!
+				node.children.find((c): c is PARSER.ParseNodeTupleLiteral__0__List => c instanceof PARSER.ParseNodeTupleLiteral__0__List)!
 			));
 
-		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeListLiteral__0__List) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTupleLiteral__0__List) {
 			return (node.children.length === 1)
 				? [this.decorate(node.children[0])]
 				: [

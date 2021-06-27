@@ -378,7 +378,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('ListLiteral ::= "[" ","? Expression# ","? "]"', () => {
+		Dev.supports('literalCollection') && context('TupleLiteral ::= "[" ","? Expression# ","? "]"', () => {
 			it('makes an ASTNodeList.', () => {
 				/*
 					<List>
@@ -387,7 +387,7 @@ describe('Decorator', () => {
 						<Operation source="null || false">...</Operation>
 					</List>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.listLiteralFromSource(`
+				assert.deepStrictEqual(Decorator.decorate(h.tupleLiteralFromSource(`
 					[
 						42,
 						true,
