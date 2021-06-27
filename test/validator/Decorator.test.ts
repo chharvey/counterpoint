@@ -377,14 +377,14 @@ describe('Decorator', () => {
 		});
 
 		Dev.supports('literalCollection') && context('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
-			it('makes an ASTNodeEmptyCollection.', () => {
+			it('makes an empty ASTNodeTuple.', () => {
 				/*
-					<EmptyCollection/>
+					<Tuple/>
 				*/
-				const tuple: AST.ASTNodeEmptyCollection | AST.ASTNodeTuple = Decorator.decorate(h.tupleLiteralFromSource(`[];`));
-				assert.ok(tuple instanceof AST.ASTNodeEmptyCollection);
+				const tuple: AST.ASTNodeTuple = Decorator.decorate(h.tupleLiteralFromSource(`[];`));
+				assert_arrayLength(tuple.children, 0);
 			});
-			it('makes an ASTNodeTuple.', () => {
+			it('makes a nonempty ASTNodeTuple.', () => {
 				/*
 					<Tuple>
 						<Constant source="42"/>
@@ -392,14 +392,13 @@ describe('Decorator', () => {
 						<Operation source="null || false">...</Operation>
 					</Tuple>
 				*/
-				const tuple: AST.ASTNodeEmptyCollection | AST.ASTNodeTuple = Decorator.decorate(h.tupleLiteralFromSource(`
+				const tuple: AST.ASTNodeTuple = Decorator.decorate(h.tupleLiteralFromSource(`
 					[
 						42,
 						true,
 						null || false,
 					];
 				`));
-				assert.ok(tuple instanceof AST.ASTNodeTuple);
 				assert.deepStrictEqual(tuple.children.map((c) => c.source), [
 					`42`,
 					`true`,

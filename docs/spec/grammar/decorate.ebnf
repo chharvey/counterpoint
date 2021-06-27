@@ -182,8 +182,8 @@ Decorate(Case ::= Expression "|->" Expression) -> SemanticCase
 		Decorate(Expression)
 	);
 
-Decorate(TupleLiteral ::= "[" "]") -> SemanticEmptyCollection
-	:= (SemanticEmptyCollection);
+Decorate(TupleLiteral ::= "[" "]") -> SemanticTuple
+	:= (SemanticTuple);
 Decorate(TupleLiteral ::= "[" ","? TupleLiteral__0__List ","? "]") -> SemanticTuple
 	:= (SemanticTuple
 		...Decorate(TupleLiteral__0__List)

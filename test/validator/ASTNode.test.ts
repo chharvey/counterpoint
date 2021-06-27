@@ -945,15 +945,6 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 
-			Dev.supports('literalCollection') && describe('ASTNodeEmptyCollection', () => {
-				it('returns the intersection `SolidTypeTuple | SolidTypeRecord`.', () => {
-					assert.deepStrictEqual(
-						AST.ASTNodeEmptyCollection.fromSource(`[];`).type(new Validator()),
-						new SolidTypeTuple().intersect(new SolidTypeRecord()),
-					);
-				});
-			});
-
 			Dev.supports('literalCollection') && describe('ASTNode{List,Record,Mapping}', () => {
 				let collections: readonly [
 					AST.ASTNodeTuple,
@@ -1394,15 +1385,6 @@ describe('ASTNodeSolid', () => {
 				it('returns null for ASTNodeTemplate with dynamic interpolations.', () => {
 					assert.deepStrictEqual(
 						templates[2].assess(new Validator()),
-						null,
-					);
-				});
-			});
-
-			Dev.supports('literalCollection') && describe('ASTNodeEmptyCollection', () => {
-				it('always returns null.', () => {
-					assert.deepStrictEqual(
-						AST.ASTNodeEmptyCollection.fromSource(`[];`).assess(new Validator()),
 						null,
 					);
 				});

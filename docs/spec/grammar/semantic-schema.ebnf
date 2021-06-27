@@ -46,7 +46,6 @@ SemanticExpression =:=
 	| SemanticConstant
 	| SemanticVariable
 	| SemanticTemplate
-	| SemanticEmptyCollection
 	| SemanticTuple
 	| SemanticRecord
 	| SemanticMapping
@@ -67,10 +66,9 @@ SemanticTemplate
 SemanticTemplatePartial
 	::= (SemanticConstant SemanticExpression?)+;
 
-SemanticEmptyCollection ::= ();
-SemanticTuple           ::= SemanticExpression+;
-SemanticRecord          ::= SemanticProperty+;
-SemanticMapping         ::= SemanticCase+;
+SemanticTuple   ::= SemanticExpression*;
+SemanticRecord  ::= SemanticProperty+;
+SemanticMapping ::= SemanticCase+;
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;

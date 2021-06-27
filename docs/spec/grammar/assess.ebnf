@@ -79,12 +79,6 @@ String! Assess(SemanticTemplate tpl) :=
 
 
 
-Object! Assess(SemanticEmptyCollection coll) :=
-	1. *Throw.* // TODO
-;
-
-
-
 Tuple! Assess(SemanticTuple list) :=
 	1. *Let* `data` be a mapping of `list` for each `it` to `Assess(it)`.
 	2. *For index* `i` in `data`:

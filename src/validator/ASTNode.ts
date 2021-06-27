@@ -406,7 +406,6 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeConstant
  * - ASTNodeVariable
  * - ASTNodeTemplate
- * - ASTNodeEmptyCollection
  * - ASTNodeTuple
  * - ASTNodeRecord
  * - ASTNodeMapping
@@ -619,33 +618,6 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		return (concat === null) ? null : new SolidString(concat);
 	}
 }
-export class ASTNodeEmptyCollection extends ASTNodeExpression {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeEmptyCollection {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeEmptyCollection);
-		return expression;
-	}
-	declare readonly children: readonly [];
-	constructor (start_node: PARSER.ParseNodeExpressionUnit) {
-		super(start_node);
-	}
-	/** @implements ASTNodeExpression */
-	get shouldFloat(): boolean {
-		throw 'ASTNodeEmptyCollection#shouldFloat not yet supported.';
-	}
-	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
-		throw builder && 'ASTNodeEmptyCollection#build_do not yet supported.';
-	}
-	/** @implements ASTNodeExpression */
-	protected type_do(_validator: Validator): SolidType {
-		return new SolidTypeTuple().intersect(new SolidTypeRecord());
-	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(_validator: Validator): SolidObject | null {
-		return null;
-	}
-}
 export class ASTNodeTuple extends ASTNodeExpression {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTuple {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
@@ -654,7 +626,7 @@ export class ASTNodeTuple extends ASTNodeExpression {
 	}
 	constructor (
 		start_node: PARSER.ParseNodeTupleLiteral,
-		override readonly children: Readonly<NonemptyArray<ASTNodeExpression>>,
+		override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, children);
 	}
