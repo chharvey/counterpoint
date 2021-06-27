@@ -64,7 +64,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" (","? Type# ","?)? "]"', () => {
 			/*
 				<TypeTupleLiteral>
 					<PUNCTUATOR>[</PUNCTUATOR>
@@ -191,23 +191,6 @@ describe('Parser', () => {
 				assert_arrayLength(record.children, 3);
 				const property_list: PARSER.ParseNodeTypeRecordLiteral__0__List = record.children[1];
 				h.hashListSources(property_list, `a : T`, `b : U | V`, `c : W & X !`);
-			});
-		});
-
-		Dev.supports('literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
-			it('makes a TypeUnit node containing brackets.', () => {
-				/*
-					<TypeUnit>
-						<PUNCTUATOR>[</PUNCTUATOR>
-						<PUNCTUATOR>]</PUNCTUATOR>
-					</TypeUnit>
-				*/
-				const type_unit: PARSER.ParseNodeTypeUnit = h.unitTypeFromString(`[]`);
-				assert_arrayLength(type_unit.children, 2);
-				assert.deepStrictEqual(
-					type_unit.children.map((c) => c.source),
-					[Punctuator.BRAK_OPN, Punctuator.BRAK_CLS],
-				);
 			});
 		});
 
@@ -458,7 +441,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TupleLiteral ::= "[" ","? Expression# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
 			it('with no leading or trailing comma.', () => {
 				/*
 					<TupleLiteral>
@@ -612,23 +595,6 @@ describe('Parser', () => {
 					`4 |-> false`,
 					`7 |-> true`,
 					`9 |-> 42.0`,
-				);
-			});
-		});
-
-		Dev.supports('literalCollection') && describe('ExpressionUnit ::= "[" "]"', () => {
-			it('makes an ExpressionUnit node containing brackets.', () => {
-				/*
-					<ExpressionUnit>
-						<PUNCTUATOR>[</PUNCTUATOR>
-						<PUNCTUATOR>]</PUNCTUATOR>
-					</ExpressionUnit>
-				*/
-				const expression_unit: PARSER.ParseNodeExpressionUnit = h.unitExpressionFromSource(`[];`);
-				assert_arrayLength(expression_unit.children, 2);
-				assert.deepStrictEqual(
-					expression_unit.children.map((c) => c.source),
-					[Punctuator.BRAK_OPN, Punctuator.BRAK_CLS],
 				);
 			});
 		});

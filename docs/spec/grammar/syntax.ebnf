@@ -39,11 +39,10 @@ TypeKeyword ::=
 PropertyType
 	::= Word ":" Type;
 
-TypeTupleLiteral  ::= "[" ","? Type#         ","? "]";
-TypeRecordLiteral ::= "[" ","? PropertyType# ","? "]";
+TypeTupleLiteral  ::= "[" ( ","? Type#         ","? )? "]";
+TypeRecordLiteral ::= "["   ","? PropertyType# ","?    "]";
 
 TypeUnit ::=
-	| "[" "]"
 	| IDENTIFIER
 	| PrimitiveLiteral
 	| TypeKeyword
@@ -74,12 +73,11 @@ StringTemplate ::=
 Property ::= Word       "="   Expression;
 Case     ::= Expression "|->" Expression;
 
-TupleLiteral   ::= "[" ","? Expression# ","? "]";
-RecordLiteral  ::= "[" ","? Property#   ","? "]";
-MappingLiteral ::= "[" ","? Case#       ","? "]";
+TupleLiteral   ::= "[" ( ","? Expression# ","? )? "]";
+RecordLiteral  ::= "["   ","? Property#   ","?    "]";
+MappingLiteral ::= "["   ","? Case#       ","?    "]";
 
 ExpressionUnit ::=
-	| "[" "]"
 	| IDENTIFIER
 	| PrimitiveLiteral
 	| StringTemplate

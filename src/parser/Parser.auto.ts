@@ -87,6 +87,7 @@ export class ProductionTypeTupleLiteral extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
+			['[', ']'],
 			['[', ProductionTypeTupleLiteral__0__List.instance, ']'],
 			['[', ProductionTypeTupleLiteral__0__List.instance, ',', ']'],
 			['[', ',', ProductionTypeTupleLiteral__0__List.instance, ']'],
@@ -124,7 +125,6 @@ export class ProductionTypeUnit extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[', ']'],
 			[TERMINAL.TerminalIdentifier.instance],
 			[ProductionPrimitiveLiteral.instance],
 			[ProductionTypeKeyword.instance],
@@ -241,6 +241,7 @@ export class ProductionTupleLiteral extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
+			['[', ']'],
 			['[', ProductionTupleLiteral__0__List.instance, ']'],
 			['[', ProductionTupleLiteral__0__List.instance, ',', ']'],
 			['[', ',', ProductionTupleLiteral__0__List.instance, ']'],
@@ -302,7 +303,6 @@ export class ProductionExpressionUnit extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[', ']'],
 			[TERMINAL.TerminalIdentifier.instance],
 			[ProductionPrimitiveLiteral.instance],
 			[ProductionStringTemplate.instance],
@@ -571,6 +571,7 @@ export class ParseNodeTypeTupleLiteral__0__List extends ParseNode {
 
 export class ParseNodeTypeTupleLiteral extends ParseNode {
 	declare readonly children:
+		| readonly [Token, Token]
 		| readonly [Token, ParseNodeTypeTupleLiteral__0__List, Token]
 		| readonly [Token, ParseNodeTypeTupleLiteral__0__List, Token, Token]
 		| readonly [Token, Token, ParseNodeTypeTupleLiteral__0__List, Token]
@@ -596,7 +597,6 @@ export class ParseNodeTypeRecordLiteral extends ParseNode {
 
 export class ParseNodeTypeUnit extends ParseNode {
 	declare readonly children:
-		| readonly [Token, Token]
 		| readonly [Token]
 		| readonly [ParseNodePrimitiveLiteral]
 		| readonly [ParseNodeTypeKeyword]
@@ -673,6 +673,7 @@ export class ParseNodeTupleLiteral__0__List extends ParseNode {
 
 export class ParseNodeTupleLiteral extends ParseNode {
 	declare readonly children:
+		| readonly [Token, Token]
 		| readonly [Token, ParseNodeTupleLiteral__0__List, Token]
 		| readonly [Token, ParseNodeTupleLiteral__0__List, Token, Token]
 		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token]
@@ -714,7 +715,6 @@ export class ParseNodeMappingLiteral extends ParseNode {
 
 export class ParseNodeExpressionUnit extends ParseNode {
 	declare readonly children:
-		| readonly [Token, Token]
 		| readonly [Token]
 		| readonly [ParseNodePrimitiveLiteral]
 		| readonly [ParseNodeStringTemplate]

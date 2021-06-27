@@ -112,7 +112,14 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" (","? Type# ","?)? "]"', () => {
+			it('makes an ASTNodeTypeEmptyCollection.', () => {
+				/*
+					<TypeEmptyCollection/>
+				*/
+				const tupletype: AST.ASTNodeTypeEmptyCollection | AST.ASTNodeTypeTuple = Decorator.decorate(h.tupleTypeFromString(`[]`));
+				assert.ok(tupletype instanceof AST.ASTNodeTypeEmptyCollection);
+			});
 			it('makes an ASTNodeTypeTuple.', () => {
 				/*
 					<TypeTuple>
@@ -121,13 +128,15 @@ describe('Decorator', () => {
 						<TypeOperation source="null | bool">...</TypeOperation>
 					</TypeTuple>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.tupleTypeFromString(`
+				const tupletype: AST.ASTNodeTypeEmptyCollection | AST.ASTNodeTypeTuple = Decorator.decorate(h.tupleTypeFromString(`
 					[
 						T,
 						42,
 						null | bool,
 					]
-				`)).children.map((c) => c.source), [
+				`));
+				assert.ok(tupletype instanceof AST.ASTNodeTypeTuple);
+				assert.deepStrictEqual(tupletype.children.map((c) => c.source), [
 					`T`,
 					`42`,
 					`null | bool`,
@@ -152,16 +161,6 @@ describe('Decorator', () => {
 					`let : bool`,
 					`foobar : int`,
 				]);
-			});
-		});
-
-		Dev.supports('literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
-			it('makes an ASTNodeTypeEmptyCollection.', () => {
-				/*
-					<TypeEmptyCollection/>
-				*/
-				const typeexpr: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`[]`));
-				assert.ok(typeexpr instanceof AST.ASTNodeTypeEmptyCollection);
 			});
 		});
 
@@ -378,7 +377,14 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('TupleLiteral ::= "[" ","? Expression# ","? "]"', () => {
+		Dev.supports('literalCollection') && context('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
+			it('makes an ASTNodeEmptyCollection.', () => {
+				/*
+					<EmptyCollection/>
+				*/
+				const tuple: AST.ASTNodeEmptyCollection | AST.ASTNodeTuple = Decorator.decorate(h.tupleLiteralFromSource(`[];`));
+				assert.ok(tuple instanceof AST.ASTNodeEmptyCollection);
+			});
 			it('makes an ASTNodeTuple.', () => {
 				/*
 					<Tuple>
@@ -387,13 +393,15 @@ describe('Decorator', () => {
 						<Operation source="null || false">...</Operation>
 					</Tuple>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.tupleLiteralFromSource(`
+				const tuple: AST.ASTNodeEmptyCollection | AST.ASTNodeTuple = Decorator.decorate(h.tupleLiteralFromSource(`
 					[
 						42,
 						true,
 						null || false,
 					];
-				`)).children.map((c) => c.source), [
+				`));
+				assert.ok(tuple instanceof AST.ASTNodeTuple);
+				assert.deepStrictEqual(tuple.children.map((c) => c.source), [
 					`42`,
 					`true`,
 					`null || false`,
@@ -444,16 +452,6 @@ describe('Decorator', () => {
 					`7 |-> true`,
 					`9 |-> 42.0`,
 				]);
-			});
-		});
-
-		Dev.supports('literalCollection') && context('ExpressionUnit ::= "[" "]"', () => {
-			it('makes an ASTNodeEmptyCollection.', () => {
-				/*
-					<EmptyCollection/>
-				*/
-				const expr: AST.ASTNodeExpression = Decorator.decorate(h.unitExpressionFromSource(`[];`));
-				assert.ok(expr instanceof AST.ASTNodeEmptyCollection);
 			});
 		});
 

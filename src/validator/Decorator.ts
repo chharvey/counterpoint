@@ -83,7 +83,7 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodePrimitiveLiteral): AST.ASTNodeConstant;
 	static decorate(node: PARSER.ParseNodeTypeKeyword):      AST.ASTNodeTypeConstant;
 	static decorate(node: PARSER.ParseNodePropertyType):               AST.ASTNodePropertyType;
-	static decorate(node: PARSER.ParseNodeTypeTupleLiteral):           AST.ASTNodeTypeTuple;
+	static decorate(node: PARSER.ParseNodeTypeTupleLiteral):           AST.ASTNodeTypeEmptyCollection | AST.ASTNodeTypeTuple;
 	static decorate(node: PARSER.ParseNodeTypeTupleLiteral__0__List):  NonemptyArray<AST.ASTNodeType>;
 	static decorate(node: PARSER.ParseNodeTypeRecordLiteral):          AST.ASTNodeTypeRecord;
 	static decorate(node: PARSER.ParseNodeTypeRecordLiteral__0__List): NonemptyArray<AST.ASTNodePropertyType>;
@@ -98,7 +98,7 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeStringTemplate__0__List): TemplatePartialType;
 	static decorate(node: PARSER.ParseNodeProperty):                AST.ASTNodeProperty;
 	static decorate(node: PARSER.ParseNodeCase):                    AST.ASTNodeCase;
-	static decorate(node: PARSER.ParseNodeTupleLiteral):            AST.ASTNodeTuple;
+	static decorate(node: PARSER.ParseNodeTupleLiteral):            AST.ASTNodeEmptyCollection | AST.ASTNodeTuple;
 	static decorate(node: PARSER.ParseNodeTupleLiteral__0__List):   NonemptyArray<AST.ASTNodeExpression>;
 	static decorate(node: PARSER.ParseNodeRecordLiteral):           AST.ASTNodeRecord;
 	static decorate(node: PARSER.ParseNodeRecordLiteral__0__List):  NonemptyArray<AST.ASTNodeProperty>;
@@ -143,9 +143,12 @@ export class Decorator {
 			]);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTypeTupleLiteral) {
-			return new AST.ASTNodeTypeTuple(node, this.decorate(
-				node.children.find((c): c is PARSER.ParseNodeTypeTupleLiteral__0__List => c instanceof PARSER.ParseNodeTypeTupleLiteral__0__List)!
-			));
+			return (node.children.length === 2)
+				// @ts-expect-error
+				? new AST.ASTNodeTypeEmptyCollection(node)
+				: new AST.ASTNodeTypeTuple(node, this.decorate(
+					node.children.find((c): c is PARSER.ParseNodeTypeTupleLiteral__0__List => c instanceof PARSER.ParseNodeTypeTupleLiteral__0__List)!
+				));
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTypeTupleLiteral__0__List) {
 			return (node.children.length === 1)
@@ -171,16 +174,13 @@ export class Decorator {
 			;
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnit) {
-			return (
-				(node.children.length === 1) ? (node.children[0] instanceof ParseNode)
+			return (node.children.length === 1)
+				? (node.children[0] instanceof ParseNode)
 					? (node.children[0] instanceof PARSER.ParseNodePrimitiveLiteral)
 						? new AST.ASTNodeTypeConstant(node.children[0].children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString)
 						: this.decorate(node.children[0])
 					: new AST.ASTNodeTypeAlias(node.children[0] as TOKEN.TokenIdentifier)
-				:
-				(node.children.length === 2) ? new AST.ASTNodeTypeEmptyCollection(node) :
-				this.decorate(node.children[1])
-			);
+				: this.decorate(node.children[1]);
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnarySymbol) {
 			return (node.children.length === 1)
@@ -230,9 +230,12 @@ export class Decorator {
 			]);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTupleLiteral) {
-			return new AST.ASTNodeTuple(node, this.decorate(
-				node.children.find((c): c is PARSER.ParseNodeTupleLiteral__0__List => c instanceof PARSER.ParseNodeTupleLiteral__0__List)!
-			));
+			return (node.children.length === 2)
+				// @ts-expect-error
+				? new AST.ASTNodeEmptyCollection(node)
+				: new AST.ASTNodeTuple(node, this.decorate(
+					node.children.find((c): c is PARSER.ParseNodeTupleLiteral__0__List => c instanceof PARSER.ParseNodeTupleLiteral__0__List)!
+				));
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTupleLiteral__0__List) {
 			return (node.children.length === 1)
@@ -272,14 +275,11 @@ export class Decorator {
 			;
 
 		} else if (node instanceof PARSER.ParseNodeExpressionUnit) {
-			return (
-				(node.children.length === 1) ? (node.children[0] instanceof ParseNode)
+			return (node.children.length === 1)
+				? (node.children[0] instanceof ParseNode)
 					? this.decorate(node.children[0])
 					: new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier)
-				:
-				(node.children.length === 2) ? new AST.ASTNodeEmptyCollection(node) :
-				this.decorate(node.children[1])
-			);
+				: this.decorate(node.children[1]);
 
 		} else if (node instanceof PARSER.ParseNodeExpressionUnarySymbol) {
 			return (node.children.length === 1)
