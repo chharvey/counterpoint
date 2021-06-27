@@ -202,7 +202,7 @@ export class ASTNodeCase extends ASTNodeSolid {
  * - ASTNodeTypeConstant
  * - ASTNodeTypeAlias
  * - ASTNodeTypeEmptyCollection
- * - ASTNodeTypeList
+ * - ASTNodeTypeTuple
  * - ASTNodeTypeRecord
  * - ASTNodeTypeOperation
  */
@@ -320,10 +320,10 @@ export class ASTNodeTypeEmptyCollection extends ASTNodeType {
 		return new SolidTypeTuple().intersect(new SolidTypeRecord());
 	}
 }
-export class ASTNodeTypeList extends ASTNodeType {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeList {
+export class ASTNodeTypeTuple extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeTuple {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeList);
+		assert.ok(typ instanceof ASTNodeTypeTuple);
 		return typ;
 	}
 	constructor (

@@ -83,7 +83,7 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodePrimitiveLiteral): AST.ASTNodeConstant;
 	static decorate(node: PARSER.ParseNodeTypeKeyword):      AST.ASTNodeTypeConstant;
 	static decorate(node: PARSER.ParseNodePropertyType):               AST.ASTNodePropertyType;
-	static decorate(node: PARSER.ParseNodeTypeTupleLiteral):           AST.ASTNodeTypeList;
+	static decorate(node: PARSER.ParseNodeTypeTupleLiteral):           AST.ASTNodeTypeTuple;
 	static decorate(node: PARSER.ParseNodeTypeTupleLiteral__0__List):  NonemptyArray<AST.ASTNodeType>;
 	static decorate(node: PARSER.ParseNodeTypeRecordLiteral):          AST.ASTNodeTypeRecord;
 	static decorate(node: PARSER.ParseNodeTypeRecordLiteral__0__List): NonemptyArray<AST.ASTNodePropertyType>;
@@ -143,7 +143,7 @@ export class Decorator {
 			]);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTypeTupleLiteral) {
-			return new AST.ASTNodeTypeList(node, this.decorate(
+			return new AST.ASTNodeTypeTuple(node, this.decorate(
 				node.children.find((c): c is PARSER.ParseNodeTypeTupleLiteral__0__List => c instanceof PARSER.ParseNodeTypeTupleLiteral__0__List)!
 			));
 

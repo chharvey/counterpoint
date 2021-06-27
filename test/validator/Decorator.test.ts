@@ -113,13 +113,13 @@ describe('Decorator', () => {
 		});
 
 		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
-			it('makes an ASTNodeTypeList.', () => {
+			it('makes an ASTNodeTypeTuple.', () => {
 				/*
-					<TypeList>
+					<TypeTuple>
 						<TypeAlias source="T"/>
 						<TypeConstant source="42"/>
 						<TypeOperation source="null | bool">...</TypeOperation>
-					</TypeList>
+					</TypeTuple>
 				*/
 				assert.deepStrictEqual(Decorator.decorate(h.tupleTypeFromString(`
 					[
