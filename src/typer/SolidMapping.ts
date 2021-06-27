@@ -4,6 +4,9 @@ import {SolidObject} from './SolidObject';
 
 
 export class SolidMapping<K extends SolidObject, V extends SolidObject> extends SolidObject {
+	static override toString(): string {
+		return 'Mapping';
+	}
 	static override values: SolidType['values'] = new Set([new SolidMapping()]);
 
 

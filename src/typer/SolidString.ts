@@ -9,10 +9,10 @@ import {SolidBoolean} from './SolidBoolean';
 
 
 export class SolidString extends SolidObject {
-	static override values: SolidType['values'] = new Set([new SolidString('')]);
 	static override toString(): string {
 		return 'str';
 	}
+	static override values: SolidType['values'] = new Set([new SolidString('')]);
 
 
 	private readonly codeunits: readonly CodeUnit[];
