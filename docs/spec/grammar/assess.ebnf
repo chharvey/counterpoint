@@ -13,14 +13,8 @@ Type Assess(SemanticTypeAlias var) :=
 ;
 
 
-Type Assess(SemanticTypeEmptyCollection listtype) :=
-	1. *Return:* `Intersection(Tuple, Record)`.
-;
-
-
-
-Type Assess(SemanticTypeList listtype) :=
-	1. *Let* `data` be a mapping of `listtype` for each `type` to *UnwrapAffirm:* `Assess(type)`.
+Type Assess(SemanticTypeTuple tupletype) :=
+	1. *Let* `data` be a mapping of `tupletype` for each `type` to *UnwrapAffirm:* `Assess(type)`.
 	2. *Return:* a subtype of `Tuple` whose items are `data`.
 ;
 
@@ -85,14 +79,8 @@ String! Assess(SemanticTemplate tpl) :=
 
 
 
-Object! Assess(SemanticEmptyCollection coll) :=
-	1. *Throw.* // TODO
-;
-
-
-
-Tuple! Assess(SemanticList list) :=
-	1. *Let* `data` be a mapping of `list` for each `it` to `Assess(it)`.
+Tuple! Assess(SemanticTuple tuple) :=
+	1. *Let* `data` be a mapping of `tuple` for each `it` to `Assess(it)`.
 	2. *For index* `i` in `data`:
 		1. *If* `data[i]` is a normal completion:
 			1. *Set* `data[i]` to `data[i].value`.

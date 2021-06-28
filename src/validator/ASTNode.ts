@@ -201,8 +201,7 @@ export class ASTNodeCase extends ASTNodeSolid {
  * Known subclasses:
  * - ASTNodeTypeConstant
  * - ASTNodeTypeAlias
- * - ASTNodeTypeEmptyCollection
- * - ASTNodeTypeList
+ * - ASTNodeTypeTuple
  * - ASTNodeTypeRecord
  * - ASTNodeTypeOperation
  */
@@ -308,27 +307,15 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		return SolidType.UNKNOWN;
 	}
 }
-export class ASTNodeTypeEmptyCollection extends ASTNodeType {
-	declare readonly children: readonly [];
-	constructor (
-		start_node: PARSER.ParseNodeTypeUnit,
-	) {
-		super(start_node);
-	}
-	/** @implements ASTNodeType */
-	protected assess_do(_validator: Validator): SolidType {
-		return new SolidTypeTuple().intersect(new SolidTypeRecord());
-	}
-}
-export class ASTNodeTypeList extends ASTNodeType {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeList {
+export class ASTNodeTypeTuple extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeTuple {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeList);
+		assert.ok(typ instanceof ASTNodeTypeTuple);
 		return typ;
 	}
 	constructor (
 		start_node: PARSER.ParseNodeTypeTupleLiteral,
-		override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
+		override readonly children: readonly ASTNodeType[],
 	) {
 		super(start_node, {}, children);
 	}
@@ -419,8 +406,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeConstant
  * - ASTNodeVariable
  * - ASTNodeTemplate
- * - ASTNodeEmptyCollection
- * - ASTNodeList
+ * - ASTNodeTuple
  * - ASTNodeRecord
  * - ASTNodeMapping
  * - ASTNodeOperation
@@ -632,52 +618,25 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		return (concat === null) ? null : new SolidString(concat);
 	}
 }
-export class ASTNodeEmptyCollection extends ASTNodeExpression {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeEmptyCollection {
+export class ASTNodeTuple extends ASTNodeExpression {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTuple {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeEmptyCollection);
-		return expression;
-	}
-	declare readonly children: readonly [];
-	constructor (start_node: PARSER.ParseNodeExpressionUnit) {
-		super(start_node);
-	}
-	/** @implements ASTNodeExpression */
-	get shouldFloat(): boolean {
-		throw 'ASTNodeEmptyCollection#shouldFloat not yet supported.';
-	}
-	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
-		throw builder && 'ASTNodeEmptyCollection#build_do not yet supported.';
-	}
-	/** @implements ASTNodeExpression */
-	protected type_do(_validator: Validator): SolidType {
-		return new SolidTypeTuple().intersect(new SolidTypeRecord());
-	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(_validator: Validator): SolidObject | null {
-		return null;
-	}
-}
-export class ASTNodeList extends ASTNodeExpression {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeList {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeList);
+		assert.ok(expression instanceof ASTNodeTuple);
 		return expression;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeListLiteral,
-		override readonly children: Readonly<NonemptyArray<ASTNodeExpression>>,
+		start_node: PARSER.ParseNodeTupleLiteral,
+		override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, children);
 	}
 	/** @implements ASTNodeExpression */
 	get shouldFloat(): boolean {
-		throw 'ASTNodeList#shouldFloat not yet supported.';
+		throw 'ASTNodeTuple#shouldFloat not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
 	protected build_do(builder: Builder): InstructionExpression {
-		throw builder && 'ASTNodeList#build_do not yet supported.';
+		throw builder && 'ASTNodeTuple#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(validator: Validator): SolidType {
