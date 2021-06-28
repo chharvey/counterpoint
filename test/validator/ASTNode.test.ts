@@ -1040,6 +1040,10 @@ describe('ASTNodeSolid', () => {
 								[`![42];`,        SolidBoolean.FALSE],
 								[`![a= 42];`,     SolidBoolean.FALSE],
 								[`![41 |-> 42];`, SolidBoolean.FALSE],
+								[`?[];`,          SolidBoolean.TRUE],
+								[`?[42];`,        SolidBoolean.FALSE],
+								[`?[a= 42];`,     SolidBoolean.FALSE],
+								[`?[41 |-> 42];`, SolidBoolean.FALSE],
 							]));
 						});
 					});
@@ -1115,6 +1119,14 @@ describe('ASTNodeSolid', () => {
 									`?null;`,
 									`?42;`,
 									`?4.2e+1;`,
+								].map((src) => AST.ASTNodeOperation.fromSource(src, folding_off).type(validator)).forEach((typ) => {
+									assert.deepStrictEqual(typ, SolidBoolean);
+								});
+								Dev.supports('literalCollection') && [
+									`?[];`,
+									`?[42];`,
+									`?[a= 42];`,
+									`?[41 |-> 42];`,
 								].map((src) => AST.ASTNodeOperation.fromSource(src, folding_off).type(validator)).forEach((typ) => {
 									assert.deepStrictEqual(typ, SolidBoolean);
 								});
@@ -1515,6 +1527,12 @@ describe('ASTNodeSolid', () => {
 							[`?'';`,      SolidBoolean.TRUE],
 							[`?'hello';`, SolidBoolean.FALSE],
 						]))
+						Dev.supports('literalCollection') && assessOperations(new Map([
+							[`?[];`,          SolidBoolean.TRUE],
+							[`?[42];`,        SolidBoolean.FALSE],
+							[`?[a= 42];`,     SolidBoolean.FALSE],
+							[`?[41 |-> 42];`, SolidBoolean.FALSE],
+						]));
 					})
 				});
 				describe('ASTNodeOperationBinaryArithmetic', () => {

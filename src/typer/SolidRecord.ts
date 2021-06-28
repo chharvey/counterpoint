@@ -1,5 +1,6 @@
 import type {SolidType} from './SolidType';
 import {SolidObject} from './SolidObject';
+import {SolidBoolean} from './SolidBoolean';
 
 
 
@@ -14,5 +15,11 @@ export class SolidRecord<T extends SolidObject> extends SolidObject {
 		readonly properties: ReadonlyMap<bigint, T> = new Map(),
 	) {
 		super();
+	}
+	override toString(): string {
+		return `[${ [...this.properties].map(([key, value]) => `${ key.toString() }n= ${ value.toString() }`).join(', ') }]`;
+	}
+	override get isEmpty(): SolidBoolean {
+		return SolidBoolean.fromBoolean(this.properties.size === 0);
 	}
 }
