@@ -996,7 +996,7 @@ describe('ASTNodeSolid', () => {
 								c.children[0].id,
 								c.children[1].type(validator),
 							]))),
-							SolidObject,
+							SolidMapping,
 						],
 					);
 				});

@@ -710,7 +710,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	}
 	/** @implements ASTNodeExpression */
 	protected type_do(_validator: Validator): SolidType {
-		return SolidObject;
+		return SolidMapping;
 	}
 	/** @implements ASTNodeExpression */
 	protected assess_do(validator: Validator): SolidObject | null {
