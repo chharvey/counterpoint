@@ -1035,6 +1035,12 @@ describe('ASTNodeSolid', () => {
 								[`?42;`,     false],
 								[`?4.2e+1;`, false],
 							]), (v) => SolidBoolean.fromBoolean(v)))
+							Dev.supports('literalCollection') && typeOperations(new Map([
+								[`![];`,          SolidBoolean.FALSE],
+								[`![42];`,        SolidBoolean.FALSE],
+								[`![a= 42];`,     SolidBoolean.FALSE],
+								[`![41 |-> 42];`, SolidBoolean.FALSE],
+							]));
 						});
 					});
 					context('with constant folding off.', () => {
@@ -1071,7 +1077,7 @@ describe('ASTNodeSolid', () => {
 									assert.deepStrictEqual((stmt.children[0] as AST.ASTNodeExpression).type(validator), SolidBoolean);
 								});
 							});
-							it('returns type `true` for any type not a supertype of `null` or `false`.', () => {
+							it('returns type `false` for any type not a supertype of `null` or `false`.', () => {
 								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 									let unfixed a: int = 42;
 									let unfixed b: float = 4.2;
@@ -1081,8 +1087,22 @@ describe('ASTNodeSolid', () => {
 								const validator: Validator = new Validator(folding_off);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
-								goal.children.slice(4).forEach((stmt) => {
-									assert.deepStrictEqual((stmt.children[0] as AST.ASTNodeExpression).type(validator), SolidBoolean.TRUETYPE);
+								goal.children.slice(2).forEach((stmt) => {
+									assert.deepStrictEqual((stmt.children[0] as AST.ASTNodeExpression).type(validator), SolidBoolean.FALSETYPE);
+								});
+							});
+							Dev.supports('literalCollection') && it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									![];
+									![42];
+									![a= 42];
+									![41 |-> 42];
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								goal.children.forEach((stmt) => {
+									assert.deepStrictEqual((stmt.children[0] as AST.ASTNodeExpression).type(validator), SolidBoolean.FALSETYPE);
 								});
 							});
 						});
@@ -1473,6 +1493,12 @@ describe('ASTNodeSolid', () => {
 							[`!'';`,      SolidBoolean.FALSE],
 							[`!'hello';`, SolidBoolean.FALSE],
 						]))
+						Dev.supports('literalCollection') && assessOperations(new Map([
+							[`![];`,          SolidBoolean.FALSE],
+							[`![42];`,        SolidBoolean.FALSE],
+							[`![a= 42];`,     SolidBoolean.FALSE],
+							[`![41 |-> 42];`, SolidBoolean.FALSE],
+						]));
 					})
 					specify('[operator=EMP]', () => {
 						assessOperations(new Map([
