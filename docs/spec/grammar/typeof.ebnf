@@ -31,7 +31,7 @@ Type! TypeOf(SemanticTuple tuple) :=
 Type! TypeOf(SemanticRecord record) :=
 	1. *Let* `types` be a new Structure.
 	2. *For each* `property` in `record`:
-		1. *Set* `types` to the structure [
+		1. *Set* `types` to a new Structure [
 			...types,
 			`property.children.0` = *Unwrap:* `TypeOf(property.children.1)`,
 		].
