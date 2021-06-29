@@ -1222,23 +1222,51 @@ describe('ASTNodeSolid', () => {
 					});
 				});
 				describe('ASTNodeOperationBinaryEquality', () => {
-					it('with folding and int coersion on.', () => {
-						typeOperations(xjs.Map.mapValues(new Map([
-							[`2 === 3;`,      false],
-							[`2 !== 3;`,      true],
-							[`2 == 3;`,       false],
-							[`2 != 3;`,       true],
-							[`0 === -0;`,     true],
-							[`0 == -0;`,      true],
-							[`0.0 === 0;`,    false],
-							[`0.0 == 0;`,     true],
-							[`0.0 === -0;`,   false],
-							[`0.0 == -0;`,    true],
-							[`-0.0 === 0;`,   false],
-							[`-0.0 == 0;`,    true],
-							[`-0.0 === 0.0;`, false],
-							[`-0.0 == 0.0;`,  true],
-						]), (v) => SolidBoolean.fromBoolean(v)));
+					context('with folding and int coersion on.', () => {
+						it('for numeric literals.', () => {
+							typeOperations(xjs.Map.mapValues(new Map([
+								[`2 === 3;`,      false],
+								[`2 !== 3;`,      true],
+								[`2 == 3;`,       false],
+								[`2 != 3;`,       true],
+								[`0 === -0;`,     true],
+								[`0 == -0;`,      true],
+								[`0.0 === 0;`,    false],
+								[`0.0 == 0;`,     true],
+								[`0.0 === -0;`,   false],
+								[`0.0 == -0;`,    true],
+								[`-0.0 === 0;`,   false],
+								[`-0.0 == 0;`,    true],
+								[`-0.0 === 0.0;`, false],
+								[`-0.0 == 0.0;`,  true],
+							]), (v) => SolidBoolean.fromBoolean(v)));
+						});
+						Dev.supports('literalCollection') && it('returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
+							const validator: Validator = new Validator();
+							const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+								let a: obj = [];
+								let b: obj = [42];
+								let c: obj = [x= 42];
+								let d: obj = [41 |-> 42];
+								a !== [];
+								b !== [42];
+								c !== [x= 42];
+								d !== [41 |-> 42];
+								a === a;
+								b === b;
+								c === c;
+								d === d;
+							`);
+							goal.varCheck(validator);
+							goal.typeCheck(validator);
+							goal.children.slice(4).forEach((stmt) => {
+								const expr: AST.ASTNodeOperationBinaryEquality = stmt.children[0] as AST.ASTNodeOperationBinaryEquality;
+								assert.deepStrictEqual(
+									expr.type(validator),
+									new SolidTypeConstant(expr.assess(validator)!),
+								);
+							});
+						});
 					});
 					context('with folding off but int coersion on.', () => {
 						it('allows coercing of ints to floats if there are any floats.', () => {
@@ -1645,6 +1673,28 @@ describe('ASTNodeSolid', () => {
 						[`'hello\\u{20}world' !== 'hello20world';`, true],
 						[`'hello\\u{20}world' !=  'hello20world';`, true],
 					]), (val) => SolidBoolean.fromBoolean(val)))
+					Dev.supports('literalCollection') && (() => {
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+							let a: obj = [];
+							let b: obj = [42];
+							let c: obj = [x= 42];
+							let d: obj = [41 |-> 42];
+							a !== [];
+							b !== [42];
+							c !== [x= 42];
+							d !== [41 |-> 42];
+							a === a;
+							b === b;
+							c === c;
+							d === d;
+						`);
+						const validator: Validator = new Validator();
+						goal.varCheck(validator);
+						goal.typeCheck(validator);
+						goal.children.slice(4).forEach((stmt) => {
+							assert.deepStrictEqual((stmt.children[0] as AST.ASTNodeExpression).assess(validator), SolidBoolean.TRUE);
+						});
+					})();
 				}).timeout(10_000);
 				specify('ASTNodeOperationBinaryLogical', () => {
 					assessOperations(new Map<string, SolidObject>([

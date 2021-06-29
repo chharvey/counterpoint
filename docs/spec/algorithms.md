@@ -223,8 +223,8 @@ Boolean Identical(Object a, Object b) :=
 		1. *If* `a` and `b` are exactly the same sequence of code units
 			(same length and same code units at corresponding indices):
 			1. *Return:* `true`.
-	// 7. *If* `a` and `b` are the same object:
-	// 	1. *Return:* `true`.
+	7. *If* `a` and `b` are the same object:
+		1. *Return:* `true`.
 	8. Return `false`.
 ```
 
