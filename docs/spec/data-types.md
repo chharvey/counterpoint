@@ -237,6 +237,7 @@ Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algori
 ### Object
 The Object type is the parent type of all Solid Language Types.
 Every Solid Language Value is an Object.
+Some specific built-in subtypes of Object are described in the [Built-Ins](./built-ins.md) chapter.
 
 
 ### Unknown
