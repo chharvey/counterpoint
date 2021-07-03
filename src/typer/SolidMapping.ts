@@ -14,12 +14,21 @@ export class SolidMapping<K extends SolidObject, V extends SolidObject> extends 
 	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidMapping<SolidObject, SolidObject>, SolidMapping<SolidObject, SolidObject>], boolean> = new xjs.MapEq(
 		(a, b) => a[0].identical(b[0]) && a[1].identical(b[1]),
 	);
+	/**
+	 * Comparator for all internal mappings.
+	 * @param key1 a key
+	 * @param key2 a key
+	 * @returns are the keys ‘identical’ per Solid specification?
+	 */
+	private static comparator(key1: SolidObject, key2: SolidObject): boolean {
+		return key1.identical(key2);
+	}
 
 
-	constructor (
-		readonly cases: ReadonlyMap<K, V> = new Map(),
-	) {
+	private readonly cases: ReadonlyMap<K, V>;
+	constructor (cases: ReadonlyMap<K, V> = new Map()) {
 		super();
+		this.cases = new xjs.MapEq(SolidMapping.comparator, [...cases]);
 	}
 	override toString(): string {
 		return `[${ [...this.cases].map(([ant, con]) => `${ ant.toString() } |-> ${ con.toString() }`).join(', ') }]`;

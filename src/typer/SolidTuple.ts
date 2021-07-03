@@ -17,7 +17,7 @@ export class SolidTuple<T extends SolidObject> extends SolidObject {
 
 
 	constructor (
-		readonly items: readonly T[] = [],
+		private readonly items: readonly T[] = [],
 	) {
 		super();
 	}

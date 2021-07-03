@@ -945,7 +945,7 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 
-			Dev.supports('literalCollection') && describe('ASTNode{List,Record,Mapping}', () => {
+			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Mapping}', () => {
 				let collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,
@@ -1459,7 +1459,7 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 
-			Dev.supports('literalCollection') && describe('ASTNode{List,Record,Mapping}', () => {
+			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Mapping}', () => {
 				it('returns a constant Tuple/Record/Mapping for foldable entries.', () => {
 					assert.deepStrictEqual(
 						[
@@ -1515,6 +1515,46 @@ describe('ASTNodeSolid', () => {
 							mapping,
 						].map((c) => c.assess(new Validator())),
 						[null, null, null],
+					);
+				});
+				it('ASTNodeRecord overwrites duplicate keys.', () => {
+					assert.deepStrictEqual(
+						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, a= 'three'];`).assess(new Validator()),
+						new SolidRecord<SolidObject>(new Map<bigint, SolidObject>([
+							[0x101n, new Float64(2.0)],
+							[0x100n, new SolidString('three')],
+						])),
+					);
+				});
+				it('ASTNodeMapping overwrites identical antecedents.', () => {
+					assert.deepStrictEqual(
+						AST.ASTNodeMapping.fromSource(`
+							[
+								'a' |-> 1,
+								0   |-> 2.0,
+								-0  |-> 'three',
+							];
+						`).assess(new Validator()),
+						new SolidMapping<SolidObject, SolidObject>(new Map<SolidObject, SolidObject>([
+							[new SolidString('a'), new Int16(1n)],
+							[new Int16(0n),        new SolidString('three')],
+						])),
+					);
+				});
+				it('ASTNodeMapping does not overwrite non-identical (even if equal) antecedents.', () => {
+					assert.deepStrictEqual(
+						AST.ASTNodeMapping.fromSource(`
+							[
+								'a'  |-> 1,
+								0.0  |-> 2.0,
+								-0.0 |-> 'three',
+							];
+						`).assess(new Validator()),
+						new SolidMapping<SolidObject, SolidObject>(new Map<SolidObject, SolidObject>([
+							[new SolidString('a'), new Int16(1n)],
+							[new Float64(0.0),     new Float64(2.0)],
+							[new Float64(-0.0),    new SolidString('three')],
+						])),
 					);
 				});
 			});

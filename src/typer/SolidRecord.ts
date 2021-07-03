@@ -17,7 +17,7 @@ export class SolidRecord<T extends SolidObject> extends SolidObject {
 
 
 	constructor (
-		readonly properties: ReadonlyMap<bigint, T> = new Map(),
+		private readonly properties: ReadonlyMap<bigint, T> = new Map(),
 	) {
 		super();
 	}
