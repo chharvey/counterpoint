@@ -1,3 +1,5 @@
+import * as xjs from 'extrajs';
+import type {Keys} from '../types';
 import type {SolidType} from './SolidType';
 import {SolidObject} from './SolidObject';
 import {SolidBoolean} from './SolidBoolean';
@@ -9,6 +11,9 @@ export class SolidRecord<T extends SolidObject> extends SolidObject {
 		return 'Record';
 	}
 	static override values: SolidType['values'] = new Set([new SolidRecord()]);
+	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidRecord<SolidObject>, SolidRecord<SolidObject>], boolean> = new xjs.MapEq(
+		(a, b) => a[0].identical(b[0]) && a[1].identical(b[1]),
+	);
 
 
 	constructor (
@@ -21,5 +26,20 @@ export class SolidRecord<T extends SolidObject> extends SolidObject {
 	}
 	override get isEmpty(): SolidBoolean {
 		return SolidBoolean.fromBoolean(this.properties.size === 0);
+	}
+	/** @final */
+	protected override equal_helper(value: SolidObject): boolean {
+		if (value instanceof SolidRecord && this.properties.size === value.properties.size) {
+			const memokey: Keys<typeof SolidRecord.EQ_MEMO> = [this, value];
+			if (!SolidRecord.EQ_MEMO.has(memokey)) {
+				SolidRecord.EQ_MEMO.set(memokey, false); // use this assumption in the next step
+				SolidRecord.EQ_MEMO.set(memokey, [...(value as this).properties].every(
+					([thatkey, thatvalue]) => this.properties.has(thatkey) && this.properties.get(thatkey)!.equal(thatvalue)),
+				);
+			}
+			return SolidRecord.EQ_MEMO.get(memokey)!;
+		} else {
+			return false;
+		}
 	}
 }

@@ -1,3 +1,5 @@
+import * as xjs from 'extrajs';
+import type {Keys} from '../types';
 import type {SolidType} from './SolidType';
 import {SolidObject} from './SolidObject';
 import {SolidBoolean} from './SolidBoolean';
@@ -9,6 +11,9 @@ export class SolidMapping<K extends SolidObject, V extends SolidObject> extends 
 		return 'Mapping';
 	}
 	static override values: SolidType['values'] = new Set([new SolidMapping()]);
+	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidMapping<SolidObject, SolidObject>, SolidMapping<SolidObject, SolidObject>], boolean> = new xjs.MapEq(
+		(a, b) => a[0].identical(b[0]) && a[1].identical(b[1]),
+	);
 
 
 	constructor (
@@ -21,5 +26,20 @@ export class SolidMapping<K extends SolidObject, V extends SolidObject> extends 
 	}
 	override get isEmpty(): SolidBoolean {
 		return SolidBoolean.fromBoolean(this.cases.size === 0);
+	}
+	/** @final */
+	protected override equal_helper(value: SolidObject): boolean {
+		if (value instanceof SolidMapping && this.cases.size === value.cases.size) {
+			const memokey: Keys<typeof SolidMapping.EQ_MEMO> = [this, value];
+			if (!SolidMapping.EQ_MEMO.has(memokey)) {
+				SolidMapping.EQ_MEMO.set(memokey, false); // use this assumption in the next step
+				SolidMapping.EQ_MEMO.set(memokey, [...(value as this).cases].every(
+					([thatant, thatcon]) => this.cases.has(thatant) && this.cases.get(thatant)!.equal(thatcon)),
+				);
+			}
+			return SolidMapping.EQ_MEMO.get(memokey)!;
+		} else {
+			return false;
+		}
 	}
 }

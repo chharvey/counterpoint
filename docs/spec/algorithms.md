@@ -244,8 +244,50 @@ Boolean Equal(Object a, Object b) :=
 			1. *Return:* `true`.
 		2. *If* `a` is `-0.0` *and* `b` is `0.0`:
 			1. *Return:* `true`.
-	// 3. TODO: custom equality operators
-	4. Return `false`.
+	4. *If* `a` is an instance of `Tuple` *and* `b` is an instance of `Tuple`:
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *If* `seq_a.count` is not `seq_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For index* `i` in `seq_a`:
+			1. *If* *UnwrapAffirm*: `Equal(seq_a[i], seq_b[i])` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	5. *If* `a` is an instance of `Record` *and* `b` is an instance of `Record`:
+		1. *Let* `struct_a` be a new Structure whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
+		3. *If* `struct_a.count` is not `struct_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For key* `k` in `struct_b`:
+			1. *If* `struct_a[k]` is not set:
+				1. *Return:* `false`.
+			2. *If* *UnwrapAffirm*: `Equal(struct_a[k], struct_b[k])` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	6. *If* `a` is an instance of `Mapping` *and* `b` is an instance of `Mapping`:
+		1. *Let* `data_a` be a new Sequence of 2-tuples,
+			whose items are exactly the antecedents and consequents in `a`.
+		2. *Let* `data_b` be a new Sequence of 2-tuples,
+			whose items are exactly the antecedents and consequents in `b`.
+		3. *If* `data_a.count` is not `data_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For each* `it_a` in `data_a`:
+			1. Find an item `it_b` in `data_b` such that *UnwrapAffirm:* `Equal(it_a.0, it_b.0)` is `true`.
+			2. *If* no such item `it_b` is found:
+				1. *Return:* `false`.
+			3. *If* *UnwrapAffirm:* `Equal(it_a.1, it_b.1)` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	7. Return `false`.
 ```
 
 
