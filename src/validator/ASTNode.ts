@@ -835,8 +835,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			this.children[1].build(builder, tofloat),
 		)
 	}
-	/** @implements ASTNodeOperationBinary */
-	protected type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
+	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
 		if (bothNumeric(t0, t1)) {
 			if (int_coercion) {
 				return (eitherFloats(t0, t1)) ? Float64 : Int16
@@ -915,8 +914,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			this.children[1].build(builder, tofloat),
 		)
 	}
-	/** @implements ASTNodeOperationBinary */
-	protected type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
+	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
 		if (bothNumeric(t0, t1) && (int_coercion || (
 			bothFloats(t0, t1) || neitherFloats(t0, t1)
 		))) {
@@ -983,8 +981,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			this.children[1].build(builder, tofloat),
 		)
 	}
-	/** @implements ASTNodeOperationBinary */
-	protected type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
+	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
 		// If `a` and `b` are of disjoint numeric types, then `a is b` will always return `false`.
 		// If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
 		if (bothNumeric(t0, t1)) {
@@ -1042,8 +1039,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 			this.children[1].build(builder, tofloat),
 		)
 	}
-	/** @implements ASTNodeOperationBinary */
-	protected type_do_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {
+	protected override type_do_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {
 		const null_union_false: SolidType = SolidNull.union(SolidBoolean.FALSETYPE);
 		function truthifyType(t: SolidType): SolidType {
 			const values: Set<SolidObject> = new Set(t.values);
