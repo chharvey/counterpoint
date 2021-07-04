@@ -625,7 +625,7 @@ export class ASTNodeList extends ASTNodeExpression {
 		throw builder && 'ASTNodeList#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return new SolidTypeTuple(this.children.map((c) => c.type(validator)));
+		return new SolidTypeTuple(xjs.Array.mapAggregated(this.children, (c) => c.type(validator)));
 	}
 	protected override assess_do(): SolidObject | null {
 		throw 'ASTNodeList#assess_do not yet supported.';
@@ -650,7 +650,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return new SolidTypeRecord(new Map(this.children.map((c) => [
+		return new SolidTypeRecord(new Map(xjs.Array.mapAggregated(this.children, (c) => [
 			c.children[0].id,
 			c.children[1].type(validator),
 		])));
