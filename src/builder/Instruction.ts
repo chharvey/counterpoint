@@ -1,5 +1,4 @@
 import * as xjs from 'extrajs';
-
 import {
 	Operator,
 	ValidOperatorUnary,
@@ -8,7 +7,7 @@ import {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-} from '../enum/Operator.enum'
+} from '../validator/index.js';
 import {
 	SolidObject,
 	SolidNull,
@@ -16,7 +15,7 @@ import {
 	SolidNumber,
 	Int16,
 	Float64,
-} from '../validator/'
+} from '../typer/index.js';
 
 
 
@@ -343,10 +342,10 @@ export class InstructionBinopEquality extends InstructionBinop {
 	override toString(): string {
 		return `(${
 			(!this.arg0.isFloat && !this.arg1.isFloat) ? `i32.eq` :
-			(!this.arg0.isFloat &&  this.arg1.isFloat) ? `call $i_f_is` :
-			( this.arg0.isFloat && !this.arg1.isFloat) ? `call $f_i_is` :
+			(!this.arg0.isFloat &&  this.arg1.isFloat) ? `call $i_f_id` :
+			( this.arg0.isFloat && !this.arg1.isFloat) ? `call $f_i_id` :
 			new Map<Operator, string>([
-				[Operator.IS, `call $fis`],
+				[Operator.ID, `call $fid`],
 				[Operator.EQ, `f64.eq`],
 			]).get(this.op)!
 		} ${ this.arg0 } ${ this.arg1 })`

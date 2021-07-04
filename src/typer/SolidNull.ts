@@ -1,6 +1,6 @@
-import type {SolidLanguageType} from './SolidLanguageType';
-import {SolidObject} from './SolidObject';
-import {SolidBoolean} from './SolidBoolean';
+import type {SolidType} from './SolidType.js';
+import {SolidObject} from './SolidObject.js';
+import {SolidBoolean} from './SolidBoolean.js';
 
 
 
@@ -24,7 +24,7 @@ export class SolidNull extends SolidObject {
 	}
 	/** The Solid Language Value `null`. */
 	static readonly NULL: SolidNull = new SolidNull()
-	static override values: SolidLanguageType['values'] = new Set([SolidNull.NULL])
+	static override values: SolidType['values'] = new Set([SolidNull.NULL]);
 
 
 	private constructor () {

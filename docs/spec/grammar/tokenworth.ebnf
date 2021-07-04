@@ -17,17 +17,19 @@ TokenWorth(Punctuator :::= "<=")  -> RealNumber := \x0f;
 TokenWorth(Punctuator :::= ">=")  -> RealNumber := \x10;
 TokenWorth(Punctuator :::= "!<")  -> RealNumber := \x11;
 TokenWorth(Punctuator :::= "!>")  -> RealNumber := \x12;
-TokenWorth(Punctuator :::= "==")  -> RealNumber := \x13;
-TokenWorth(Punctuator :::= "!=")  -> RealNumber := \x14;
-TokenWorth(Punctuator :::= "&&")  -> RealNumber := \x15;
-TokenWorth(Punctuator :::= "!&")  -> RealNumber := \x16;
-TokenWorth(Punctuator :::= "||")  -> RealNumber := \x17;
-TokenWorth(Punctuator :::= "!|")  -> RealNumber := \x18;
-TokenWorth(Punctuator :::= "&")   -> RealNumber := \x19;
-TokenWorth(Punctuator :::= "|")   -> RealNumber := \x1a;
-TokenWorth(Punctuator :::= ";")   -> RealNumber := \x1b;
-TokenWorth(Punctuator :::= ":")   -> RealNumber := \x1c;
-TokenWorth(Punctuator :::= "=")   -> RealNumber := \x1d;
+TokenWorth(Punctuator :::= "===") -> RealNumber := \x13;
+TokenWorth(Punctuator :::= "!==") -> RealNumber := \x14;
+TokenWorth(Punctuator :::= "==")  -> RealNumber := \x15;
+TokenWorth(Punctuator :::= "!=")  -> RealNumber := \x16;
+TokenWorth(Punctuator :::= "&&")  -> RealNumber := \x17;
+TokenWorth(Punctuator :::= "!&")  -> RealNumber := \x18;
+TokenWorth(Punctuator :::= "||")  -> RealNumber := \x19;
+TokenWorth(Punctuator :::= "!|")  -> RealNumber := \x1a;
+TokenWorth(Punctuator :::= "&")   -> RealNumber := \x1b;
+TokenWorth(Punctuator :::= "|")   -> RealNumber := \x1c;
+TokenWorth(Punctuator :::= ";")   -> RealNumber := \x1d;
+TokenWorth(Punctuator :::= ":")   -> RealNumber := \x1e;
+TokenWorth(Punctuator :::= "=")   -> RealNumber := \x1f;
 
 
 

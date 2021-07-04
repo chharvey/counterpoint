@@ -67,8 +67,22 @@ Type! TypeOf(SemanticOperation expr) :=
 
 
 
-Type TypeOfUnassessedOperation(SemanticOperation[operator: NOT | EMP] expr) :=
-	1. *Return:* `Boolean`.
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: NOT] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `operand` be *Unwrap:* `TypeOf(expr.children.0)`.
+	3. *Let* `falsetype` be *UnwrapAffirm:* `ToType(false)`.
+	4. *Let `nulltype_or_falsetype` be *UnwrapAffirm:* `Union(Null, falsetype)`.
+	5. *If* *UnwrapAffirm:* `Subtype(operand, nulltype_or_falsetype)`:
+		1. *Return:* `ToType(true)`.
+	6. *If* *UnwrapAffirm:* `Subtype(Null, operand)` *or* *UnwrapAffirm:* `Subtype(falsetype, operand)`:
+		1. *Return:* `Boolean`.
+	7. *Return:* `falsetype`.
+;
+
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: EMP] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Perform:* *Unwrap:* `TypeOf(expr.children.0)`.
+	3. *Return:* `Boolean`.
 ;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: NEG] expr) :=
@@ -100,7 +114,11 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: LT | GT | LE | GE] e
 	5. *Throw:* a new TypeError01.
 ;
 
-Type! TypeOfUnassessedOperation(SemanticOperation[operator: IS | EQ] expr) :=
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: IS] expr) :=
+	1. *Throw:* new TypeError "Operator not yet supported.".
+;
+
+Type! TypeOfUnassessedOperation(SemanticOperation[operator: ID | EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -119,31 +137,33 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *Let `null_union_false` be `Union(Null, ToType(false))`.
-	5. *If* `t0` is a subtype of `null_union_false`:
+	4. *Let* `falsetype` be *UnwrapAffirm:* `ToType(false)`.
+	5. *Let `nulltype_or_falsetype` be *UnwrapAffirm:* `Union(Null, falsetype)`.
+	6. *If* *UnwrapAffirm:* `Subtype(t0, nulltype_or_falsetype)`:
 		1. *Return:* `t0`.
-	6. *If* `null` is assignable to `t0`:
-		1. *If* `false` is assignable to `t0`:
-			1. *Return:* `Union(null_union_false, t1)`.
+	7. *If* *UnwrapAffirm:* `Subtype(Null, t0)`:
+		1. *If* *UnwrapAffirm:* `Subtype(falsetype, t0)`:
+			1. *Return:* `Union(nulltype_or_falsetype, t1)`.
 		2. *Return:* `Union(Null, t1)`.
-	7. *If* `false` is assignable to `t0`:
-		1. *Return:* `Union(ToType(false), t1)`.
-	8. *Return:* `t1`.
+	8. *If* *UnwrapAffirm:* `Subtype(falsetype, t0)`:
+		1. *Return:* `Union(falsetype, t1)`.
+	9. *Return:* `t1`.
 ;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
-	4. *Let `null_union_false` be `Union(Null, ToType(false))`.
-	5. *If* `t0` is a subtype of `null_union_false`:
+	4. *Let* `falsetype` be *UnwrapAffirm:* `ToType(false)`.
+	5. *Let `nulltype_or_falsetype` be *UnwrapAffirm:* `Union(Null, falsetype)`.
+	6. *If* *UnwrapAffirm:* `Subtype(t0, nulltype_or_falsetype)`:
 		1. *Return:* `t1`.
-	6. *If* `null` is assignable to `t0` *or* `false` is assignable to `t0`:
+	7. *If* *UnwrapAffirm:* `Subtype(Null, t0)` *or* *UnwrapAffirm:* `Subtype(falsetype, t0)`:
 		1. *Let* `left` be a new type, containing the values in `t0`.
-		1. Remove `null` from the set of values in `left`.
-		2. Remove `false` from the set of values in `left`.
-		3. *Return:* `Union(left, t1)`.
-	7. *Return:* `t0`.
+		2. Remove `null` from the set of values in `left`.
+		3. Remove `false` from the set of values in `left`.
+		4. *Return:* `Union(left, t1)`.
+	8. *Return:* `t0`.
 ;
 
 Type! TypeOfUnassessedOperation(SemanticOperation[operator: COND] expr) :=

@@ -7,7 +7,7 @@
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/';
+} from '../core/index.js';
 
 import {
 	NonemptyArray,
@@ -18,8 +18,8 @@ import {
 	Grammar,
 	GrammarSymbol,
 } from '@chharvey/parser';
-import {LexerSolid} from './Lexer';
-import * as TERMINAL from './Terminal';
+import {LexerSolid} from './Lexer.js';
+import * as TERMINAL from './Terminal.js';
 
 export class ProductionWord extends Production {
 	static readonly instance: ProductionWord = new ProductionWord();
@@ -375,6 +375,8 @@ export class ProductionExpressionComparative extends Production {
 			[ProductionExpressionComparative.instance, '>=', ProductionExpressionAdditive.instance],
 			[ProductionExpressionComparative.instance, '!<', ProductionExpressionAdditive.instance],
 			[ProductionExpressionComparative.instance, '!>', ProductionExpressionAdditive.instance],
+			[ProductionExpressionComparative.instance, 'is', ProductionExpressionAdditive.instance],
+			[ProductionExpressionComparative.instance, 'isnt', ProductionExpressionAdditive.instance],
 		];
 	}
 }
@@ -385,8 +387,8 @@ export class ProductionExpressionEquality extends Production {
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionComparative.instance],
-			[ProductionExpressionEquality.instance, 'is', ProductionExpressionComparative.instance],
-			[ProductionExpressionEquality.instance, 'isnt', ProductionExpressionComparative.instance],
+			[ProductionExpressionEquality.instance, '===', ProductionExpressionComparative.instance],
+			[ProductionExpressionEquality.instance, '!==', ProductionExpressionComparative.instance],
 			[ProductionExpressionEquality.instance, '==', ProductionExpressionComparative.instance],
 			[ProductionExpressionEquality.instance, '!=', ProductionExpressionComparative.instance],
 		];
@@ -759,6 +761,8 @@ export class ParseNodeExpressionAdditive extends ParseNode {
 export class ParseNodeExpressionComparative extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
+		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
 		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
 		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
 		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]

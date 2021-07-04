@@ -1,4 +1,3 @@
-// HACK: this is defined here, instead of in `../validator/ASTNode.ts`, to avoid circular imports.
 export enum Operator {
 	ORNULL,
 	NOT,
@@ -18,6 +17,8 @@ export enum Operator {
 	NGT,
 	IS,
 	ISNT,
+	ID,
+	NID,
 	EQ,
 	NEQ,
 	AND,
@@ -54,9 +55,10 @@ export type ValidOperatorComparative =
 	| Operator.LE
 	| Operator.GT
 	| Operator.GE
+	| Operator.IS
 
 export type ValidOperatorEquality =
-	| Operator.IS
+	| Operator.ID
 	| Operator.EQ
 
 export type ValidOperatorLogical =

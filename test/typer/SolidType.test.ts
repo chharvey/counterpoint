@@ -1,10 +1,11 @@
 import * as assert from 'assert'
-
-import {Dev} from '../../src/core/';
+import {Dev} from '../../src/core/index.js';
 import {
-	SolidLanguageType,
+	SolidType,
 	SolidTypeConstant,
 	SolidTypeInterface,
+	SolidTypeTuple,
+	SolidTypeRecord,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -12,15 +13,11 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-} from '../../src/validator/'
-import {
-	SolidTypeTuple,
-	SolidTypeRecord,
-} from '../../src/typer/';
+} from '../../src/typer/index.js';
 
 
 
-describe('SolidLanguageType', () => {
+describe('SolidType', () => {
 	function predicate2<T>(array: T[], p: (a: T, b: T) => void): void {
 		array.forEach((a) => {
 			array.forEach((b) => {
@@ -37,21 +34,21 @@ describe('SolidLanguageType', () => {
 			})
 		})
 	}
-	const builtin_types: SolidLanguageType[] = [
-		SolidLanguageType.NEVER,
-		SolidLanguageType.UNKNOWN,
+	const builtin_types: SolidType[] = [
+		SolidType.NEVER,
+		SolidType.UNKNOWN,
 		SolidObject,
 		SolidNull,
 		SolidBoolean,
 		Int16,
 		Float64,
 	]
-	const t0: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidLanguageType>([
+	const t0: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidType>([
 		['foo', SolidObject],
 		['bar', SolidNull],
 		['diz', SolidBoolean],
 	]))
-	const t1: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidLanguageType>([
+	const t1: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidType>([
 		['foo', SolidObject],
 		['qux', SolidNumber],
 		['diz', SolidString],
@@ -61,12 +58,12 @@ describe('SolidLanguageType', () => {
 	describe('#intersect', () => {
 		it('1-5 | `T  & never   == never`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.intersect(SolidLanguageType.NEVER).equals(SolidLanguageType.NEVER), `${ t }`)
+				assert.ok(t.intersect(SolidType.NEVER).equals(SolidType.NEVER), `${ t }`);
 			})
 		})
 		it('1-6 | `T  & unknown == T`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.intersect(SolidLanguageType.UNKNOWN).equals(t), `${ t }`)
+				assert.ok(t.intersect(SolidType.UNKNOWN).equals(t), `${ t }`);
 			})
 		})
 		it('2-1 | `A  & B == B  & A`', () => {
@@ -86,7 +83,7 @@ describe('SolidLanguageType', () => {
 		})
 		describe('SolidInterfaceType', () => {
 			it('takes the union of properties of constituent types.', () => {
-				assert.ok(t0.intersect(t1).equals(new SolidTypeInterface(new Map<string, SolidLanguageType>([
+				assert.ok(t0.intersect(t1).equals(new SolidTypeInterface(new Map<string, SolidType>([
 					['foo', SolidObject],
 					['bar', SolidNull],
 					['qux', SolidNumber],
@@ -100,12 +97,12 @@ describe('SolidLanguageType', () => {
 	describe('#union', () => {
 		it('1-7 | `T \| never   == T`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.union(SolidLanguageType.NEVER).equals(t), `${ t }`)
+				assert.ok(t.union(SolidType.NEVER).equals(t), `${ t }`);
 			})
 		})
 		it('1-8 | `T \| unknown == unknown`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.union(SolidLanguageType.UNKNOWN).equals(SolidLanguageType.UNKNOWN), `${ t }`)
+				assert.ok(t.union(SolidType.UNKNOWN).equals(SolidType.UNKNOWN), `${ t }`);
 			})
 		})
 		it('2-2 | `A \| B == B \| A`', () => {
@@ -125,7 +122,7 @@ describe('SolidLanguageType', () => {
 		})
 		describe('SolidInterfaceType', () => {
 			it('takes the intersection of properties of constituent types.', () => {
-				assert.ok(t0.union(t1).equals(new SolidTypeInterface(new Map<string, SolidLanguageType>([
+				assert.ok(t0.union(t1).equals(new SolidTypeInterface(new Map<string, SolidType>([
 					['foo', SolidObject],
 					['diz', SolidBoolean.union(SolidString)],
 				]))))
@@ -137,25 +134,25 @@ describe('SolidLanguageType', () => {
 	describe('#isSubtypeOf', () => {
 		it('1-1 | `never <: T`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(SolidLanguageType.NEVER.isSubtypeOf(t), `${ t }`)
+				assert.ok(SolidType.NEVER.isSubtypeOf(t), `${ t }`);
 			})
 		})
 		it('1-2 | `T     <: unknown`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.isSubtypeOf(SolidLanguageType.UNKNOWN), `${ t }`)
+				assert.ok(t.isSubtypeOf(SolidType.UNKNOWN), `${ t }`);
 			})
 		})
 		it('1-3 | `T       <: never  <->  T == never`', () => {
 			builtin_types.forEach((t) => {
-				if (t.isSubtypeOf(SolidLanguageType.NEVER)) {
-					assert.ok(t.equals(SolidLanguageType.NEVER), `${ t }`)
+				if (t.isSubtypeOf(SolidType.NEVER)) {
+					assert.ok(t.equals(SolidType.NEVER), `${ t }`);
 				}
 			})
 		})
 		it('1-4 | `unknown <: T      <->  T == unknown`', () => {
 			builtin_types.forEach((t) => {
-				if (SolidLanguageType.UNKNOWN.isSubtypeOf(t)) {
-					assert.ok(t.equals(SolidLanguageType.UNKNOWN), `${ t }`)
+				if (SolidType.UNKNOWN.isSubtypeOf(t)) {
+					assert.ok(t.equals(SolidType.UNKNOWN), `${ t }`);
 				}
 			})
 		})
@@ -338,51 +335,51 @@ describe('SolidLanguageType', () => {
 
 		Dev.supports('literalCollection') && describe('SolidTypeRecord', () => {
 			it('matches per key.', () => {
-				assert.ok(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+				assert.ok(new SolidTypeRecord(new Map<bigint, SolidType>([
 					[0x100n, Int16],
 					[0x101n, SolidBoolean],
 					[0x102n, SolidString],
-				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidType>([
 					[0x101n, SolidBoolean.union(SolidNull)],
 					[0x102n, SolidObject],
 					[0x100n, Int16.union(Float64)],
 				]))), `[x: int, y: bool, z: str] <: [y: bool!, z: obj, x: int | float];`);
-				assert.ok(!new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+				assert.ok(!new SolidTypeRecord(new Map<bigint, SolidType>([
 					[0x100n, Int16],
 					[0x101n, SolidBoolean],
 					[0x102n, SolidString],
-				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidType>([
 					[0x100n, SolidBoolean.union(SolidNull)],
 					[0x101n, SolidObject],
 					[0x102n, Int16.union(Float64)],
 				]))), `[x: int, y: bool, z: str] !<: [x: bool!, y: obj, z: int | float];`);
 			});
 			it('returns false if assigned is smaller than assignee.', () => {
-				assert.ok(!new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+				assert.ok(!new SolidTypeRecord(new Map<bigint, SolidType>([
 					[0x100n, Int16],
 					[0x101n, SolidBoolean],
-				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidType>([
 					[0x101n, SolidBoolean.union(SolidNull)],
 					[0x102n, SolidObject],
 					[0x100n, Int16.union(Float64)],
 				]))), `[x: int, y: bool] !<: [y: bool!, z: obj, x: int | float];`);
 			});
 			it('skips rest if assigned is larger than assignee.', () => {
-				assert.ok(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+				assert.ok(new SolidTypeRecord(new Map<bigint, SolidType>([
 					[0x100n, Int16],
 					[0x101n, SolidBoolean],
 					[0x102n, SolidString],
-				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidType>([
 					[0x101n, SolidBoolean.union(SolidNull)],
 					[0x100n, Int16.union(Float64)],
 				]))), `[x: int, y: bool, z: str] <: [y: bool!, x: int | float];`);
 			});
 			it('returns false if assignee contains keys that assigned does not.', () => {
-				assert.ok(!new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+				assert.ok(!new SolidTypeRecord(new Map<bigint, SolidType>([
 					[0x100n, Int16],
 					[0x101n, SolidBoolean],
 					[0x102n, SolidString],
-				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidLanguageType>([
+				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidType>([
 					[0x101n, SolidBoolean.union(SolidNull)],
 					[0x102n, SolidObject],
 					[0x103n, Int16.union(Float64)],
@@ -394,7 +391,7 @@ describe('SolidLanguageType', () => {
 			it('returns `true` if the subtype contains at least the properties of the supertype.', () => {
 				assert.ok(!t0.isSubtypeOf(t1))
 				assert.ok(!t1.isSubtypeOf(t0))
-				assert.ok(new SolidTypeInterface(new Map<string, SolidLanguageType>([
+				assert.ok(new SolidTypeInterface(new Map<string, SolidType>([
 					['foo', SolidString],
 					['bar', SolidNull],
 					['diz', SolidBoolean],

@@ -1,24 +1,23 @@
-export {Validator} from './Validator';
-export {Decorator} from './Decorator';
+export {
+	Operator,
+	ValidTypeOperator,
+	ValidOperatorUnary,
+	ValidOperatorBinary,
+	ValidOperatorArithmetic,
+	ValidOperatorComparative,
+	ValidOperatorEquality,
+	ValidOperatorLogical,
+} from './Operator.js';
 
-export * as AST from './ASTNode';
+export {ASTNodeSolid} from './ASTNode.js';
+export * as AST from './ASTNode.js';
+
+export {Decorator} from './Decorator.js';
+export {Validator} from './Validator.js';
 
 export {
+	SymbolKind,
 	SymbolStructure,
 	SymbolStructureType,
 	SymbolStructureVar,
-} from './SymbolStructure';
-
-export {
-	SolidLanguageType,
-	SolidTypeConstant,
-	SolidTypeInterface,
-} from './SolidLanguageType';
-
-export {SolidObject}  from './SolidObject';
-export {SolidNull}    from './SolidNull';
-export {SolidBoolean} from './SolidBoolean';
-export {SolidNumber}  from './SolidNumber';
-export {Int16}        from './Int16';
-export {Float64}      from './Float64';
-export {SolidString}  from './SolidString';
+} from './SymbolStructure.js';

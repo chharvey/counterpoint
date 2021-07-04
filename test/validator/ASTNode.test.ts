@@ -3,15 +3,35 @@ import type {
 } from '@chharvey/parser';
 import * as assert from 'assert'
 import * as xjs from 'extrajs'
-
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-} from '../../src/core/';
+} from '../../src/core/index.js';
 import {
 	Operator,
-} from '../../src/enum/Operator.enum';
+	AST,
+	SymbolStructure,
+	SymbolStructureType,
+	SymbolStructureVar,
+	Validator,
+} from '../../src/validator/index.js';
+import {
+	SolidType,
+	SolidTypeConstant,
+	SolidTypeTuple,
+	SolidTypeRecord,
+	SolidObject,
+	SolidNull,
+	SolidBoolean,
+	Int16,
+	Float64,
+	SolidString,
+} from '../../src/typer/index.js';
+import {
+	Builder,
+	INST,
+} from '../../src/builder/index.js';
 import {
 	ReferenceError01,
 	ReferenceError02,
@@ -21,50 +41,17 @@ import {
 	TypeError01,
 	TypeError03,
 	NanError01,
-} from '../../src/error/';
-import {
-	Validator,
-	AST,
-	SymbolStructure,
-	SymbolStructureType,
-	SymbolStructureVar,
-	SolidLanguageType,
-	SolidTypeConstant,
-	SolidObject,
-	SolidNull,
-	SolidBoolean,
-	Int16,
-	Float64,
-	SolidString,
-} from '../../src/validator/'
-import {
-	SolidTypeTuple,
-	SolidTypeRecord,
-} from '../../src/typer/';
-import {
-	Builder,
-	InstructionNone,
-	InstructionExpression,
-	InstructionConst,
-	InstructionUnop,
-	InstructionBinopArithmetic,
-	InstructionBinopEquality,
-	InstructionBinopLogical,
-	InstructionCond,
-	InstructionStatement,
-	InstructionModule,
-	INST,
-} from '../../src/builder/'
+} from '../../src/error/index.js';
 import {
 	assert_wasCalled,
-} from '../assert-helpers';
+} from '../assert-helpers.js';
 import {
 	typeConstInt,
 	typeConstFloat,
 	typeConstStr,
 	instructionConstInt,
 	instructionConstFloat,
-} from '../helpers'
+} from '../helpers.js';
 
 
 
@@ -130,7 +117,7 @@ describe('ASTNodeSolid', () => {
 				assert.ok(validator.hasSymbol(256n));
 				const info: SymbolStructure | null = validator.getSymbolInfo(256n);
 				assert.ok(info instanceof SymbolStructureType);
-				assert.strictEqual(info.value, SolidLanguageType.UNKNOWN);
+				assert.strictEqual(info.value, SolidType.UNKNOWN);
 			});
 			it('throws if the validator already contains a record for the symbol.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
@@ -154,7 +141,7 @@ describe('ASTNodeSolid', () => {
 				assert.ok(validator.hasSymbol(256n));
 				const info: SymbolStructure | null = validator.getSymbolInfo(256n);
 				assert.ok(info instanceof SymbolStructureVar);
-				assert.strictEqual(info.type, SolidLanguageType.UNKNOWN);
+				assert.strictEqual(info.type, SolidType.UNKNOWN);
 				assert.strictEqual(info.value, null);
 			});
 			it('throws if the validator already contains a record for the variable.', () => {
@@ -346,17 +333,17 @@ describe('ASTNodeSolid', () => {
 		context('SemanticGoal ::= ()', () => {
 			it('returns InstructionNone.', () => {
 				const src: string = ``;
-				const instr: InstructionNone | InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
-				assert.ok(instr instanceof InstructionNone)
+				const instr: INST.InstructionNone | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
+				assert.ok(instr instanceof INST.InstructionNone);
 			})
 		})
 
 		describe('ASTNodeStatementExpression', () => {
 			it('returns InstructionNone for empty statement expression.', () => {
 				const src: string = `;`;
-				const instr: InstructionNone | InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src)
+				const instr: INST.InstructionNone | INST.InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src)
 					.build(new Builder(src))
-				assert.ok(instr instanceof InstructionNone)
+				assert.ok(instr instanceof INST.InstructionNone);
 			})
 			it('returns InstructionStatement for nonempty statement expression.', () => {
 				const src: string = `42 + 420;`;
@@ -364,7 +351,7 @@ describe('ASTNodeSolid', () => {
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
 				assert.deepStrictEqual(
 					stmt.build(builder),
-					new InstructionStatement(0n, AST.ASTNodeOperationBinaryArithmetic.fromSource(src).build(builder)),
+					new INST.InstructionStatement(0n, AST.ASTNodeOperationBinaryArithmetic.fromSource(src).build(builder)),
 				)
 			})
 			specify('multiple statements.', () => {
@@ -374,7 +361,7 @@ describe('ASTNodeSolid', () => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 					assert.deepStrictEqual(
 						stmt.build(generator),
-						new InstructionStatement(BigInt(i), AST.ASTNodeConstant.fromSource(stmt.source).build(generator)),
+						new INST.InstructionStatement(BigInt(i), AST.ASTNodeConstant.fromSource(stmt.source).build(generator)),
 					)
 				})
 			})
@@ -492,32 +479,32 @@ describe('ASTNodeSolid', () => {
 					constantFolding: false,
 				},
 			};
-			function buildOperations(tests: ReadonlyMap<string, InstructionExpression>): void {
+			function buildOperations(tests: ReadonlyMap<string, INST.InstructionExpression>): void {
 				assert.deepStrictEqual(
 					[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, folding_off).build(new Builder(src, folding_off))),
 					[...tests.values()],
 				);
 			}
 			specify('ASTNodeOperationUnary', () => {
-				buildOperations(new Map<string, InstructionUnop>([
-					[`!null;`,  new InstructionUnop(Operator.NOT, instructionConstInt(0n))],
-					[`!false;`, new InstructionUnop(Operator.NOT, instructionConstInt(0n))],
-					[`!true;`,  new InstructionUnop(Operator.NOT, instructionConstInt(1n))],
-					[`!42;`,    new InstructionUnop(Operator.NOT, instructionConstInt(42n))],
-					[`!4.2;`,   new InstructionUnop(Operator.NOT, instructionConstFloat(4.2))],
-					[`?null;`,  new InstructionUnop(Operator.EMP, instructionConstInt(0n))],
-					[`?false;`, new InstructionUnop(Operator.EMP, instructionConstInt(0n))],
-					[`?true;`,  new InstructionUnop(Operator.EMP, instructionConstInt(1n))],
-					[`?42;`,    new InstructionUnop(Operator.EMP, instructionConstInt(42n))],
-					[`?4.2;`,   new InstructionUnop(Operator.EMP, instructionConstFloat(4.2))],
-					[`-(4);`,   new InstructionUnop(Operator.NEG, instructionConstInt(4n))],
-					[`-(4.2);`, new InstructionUnop(Operator.NEG, instructionConstFloat(4.2))],
+				buildOperations(new Map<string, INST.InstructionUnop>([
+					[`!null;`,  new INST.InstructionUnop(Operator.NOT, instructionConstInt(0n))],
+					[`!false;`, new INST.InstructionUnop(Operator.NOT, instructionConstInt(0n))],
+					[`!true;`,  new INST.InstructionUnop(Operator.NOT, instructionConstInt(1n))],
+					[`!42;`,    new INST.InstructionUnop(Operator.NOT, instructionConstInt(42n))],
+					[`!4.2;`,   new INST.InstructionUnop(Operator.NOT, instructionConstFloat(4.2))],
+					[`?null;`,  new INST.InstructionUnop(Operator.EMP, instructionConstInt(0n))],
+					[`?false;`, new INST.InstructionUnop(Operator.EMP, instructionConstInt(0n))],
+					[`?true;`,  new INST.InstructionUnop(Operator.EMP, instructionConstInt(1n))],
+					[`?42;`,    new INST.InstructionUnop(Operator.EMP, instructionConstInt(42n))],
+					[`?4.2;`,   new INST.InstructionUnop(Operator.EMP, instructionConstFloat(4.2))],
+					[`-(4);`,   new INST.InstructionUnop(Operator.NEG, instructionConstInt(4n))],
+					[`-(4.2);`, new INST.InstructionUnop(Operator.NEG, instructionConstFloat(4.2))],
 				]));
 			});
 			specify('ASTNodeOperationBinaryArithmetic', () => {
 				buildOperations(new Map([
-					[`42 + 420;`, new InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
-					[`3 * 2.1;`,  new InstructionBinopArithmetic(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
+					[`42 + 420;`, new INST.InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
+					[`3 * 2.1;`,  new INST.InstructionBinopArithmetic(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
 				]));
 				buildOperations(xjs.Map.mapValues(new Map([
 					[' 126 /  3;', [ 126n,  3n]],
@@ -528,7 +515,7 @@ describe('ASTNodeSolid', () => {
 					[' 200 / -3;', [ 200n, -3n]],
 					['-200 /  3;', [-200n,  3n]],
 					['-200 / -3;', [-200n, -3n]],
-				]), ([a, b]) => new InstructionBinopArithmetic(
+				]), ([a, b]) => new INST.InstructionBinopArithmetic(
 					Operator.DIV,
 					instructionConstInt(a),
 					instructionConstInt(b),
@@ -538,56 +525,56 @@ describe('ASTNodeSolid', () => {
 				it('with int coersion on, coerse ints into floats when needed.', () => {
 					assert.deepStrictEqual([
 						`42 == 420;`,
-						`4.2 is 42;`,
-						`42 is 4.2;`,
+						`4.2 === 42;`,
+						`42 === 4.2;`,
 						`4.2 == 42;`,
-						`true is 1;`,
+						`true === 1;`,
 						`true == 1;`,
-						`null is false;`,
+						`null === false;`,
 						`null == false;`,
 						`false == 0.0;`,
 					].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, folding_off).build(new Builder(src, folding_off))), [
-						new InstructionBinopEquality(
+						new INST.InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstInt(42n),
 							instructionConstInt(420n),
 						),
-						new InstructionBinopEquality(
-							Operator.IS,
+						new INST.InstructionBinopEquality(
+							Operator.ID,
 							instructionConstFloat(4.2),
 							instructionConstInt(42n),
 						),
-						new InstructionBinopEquality(
-							Operator.IS,
+						new INST.InstructionBinopEquality(
+							Operator.ID,
 							instructionConstInt(42n),
 							instructionConstFloat(4.2),
 						),
-						new InstructionBinopEquality(
+						new INST.InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstFloat(4.2),
 							instructionConstFloat(42.0),
 						),
-						new InstructionBinopEquality(
-							Operator.IS,
+						new INST.InstructionBinopEquality(
+							Operator.ID,
 							instructionConstInt(1n),
 							instructionConstInt(1n),
 						),
-						new InstructionBinopEquality(
+						new INST.InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstInt(1n),
 							instructionConstInt(1n),
 						),
-						new InstructionBinopEquality(
-							Operator.IS,
+						new INST.InstructionBinopEquality(
+							Operator.ID,
 							instructionConstInt(0n),
 							instructionConstInt(0n),
 						),
-						new InstructionBinopEquality(
+						new INST.InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstInt(0n),
 							instructionConstInt(0n),
 						),
-						new InstructionBinopEquality(
+						new INST.InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstFloat(0.0),
 							instructionConstFloat(0.0),
@@ -617,7 +604,7 @@ describe('ASTNodeSolid', () => {
 						[instructionConstInt(0n),    instructionConstFloat(0.0)],
 						[instructionConstInt(0n),    instructionConstFloat(0.0)],
 						[instructionConstInt(1n),    instructionConstFloat(1.0)],
-					].map(([left, right]) => new InstructionBinopEquality(Operator.EQ, left, right)))
+					].map(([left, right]) => new INST.InstructionBinopEquality(Operator.EQ, left, right)));
 				});
 			});
 			describe('ASTNodeOperationBinaryLogical', () => {
@@ -629,31 +616,31 @@ describe('ASTNodeSolid', () => {
 						`true && 201.0e-1;`,
 						`false || null;`,
 					].map((src) => AST.ASTNodeOperationBinaryLogical.fromSource(src, folding_off).build(new Builder(src, folding_off))), [
-						new InstructionBinopLogical(
+						new INST.InstructionBinopLogical(
 							0n,
 							Operator.AND,
 							instructionConstInt(42n),
 							instructionConstInt(420n),
 						),
-						new InstructionBinopLogical(
+						new INST.InstructionBinopLogical(
 							0n,
 							Operator.OR,
 							instructionConstFloat(4.2),
 							instructionConstFloat(-420.0),
 						),
-						new InstructionBinopLogical(
+						new INST.InstructionBinopLogical(
 							0n,
 							Operator.AND,
 							instructionConstFloat(0.0),
 							instructionConstFloat(20.1),
 						),
-						new InstructionBinopLogical(
+						new INST.InstructionBinopLogical(
 							0n,
 							Operator.AND,
 							instructionConstFloat(1.0),
 							instructionConstFloat(20.1),
 						),
-						new InstructionBinopLogical(
+						new INST.InstructionBinopLogical(
 							0n,
 							Operator.OR,
 							instructionConstInt(0n),
@@ -665,16 +652,16 @@ describe('ASTNodeSolid', () => {
 					const src: string = `1 && 2 || 3 && 4;`
 					assert.deepStrictEqual(
 						AST.ASTNodeOperationBinaryLogical.fromSource(src, folding_off).build(new Builder(src, folding_off)),
-						new InstructionBinopLogical(
+						new INST.InstructionBinopLogical(
 							0n,
 							Operator.OR,
-							new InstructionBinopLogical(
+							new INST.InstructionBinopLogical(
 								1n,
 								Operator.AND,
 								instructionConstInt(1n),
 								instructionConstInt(2n),
 							),
-							new InstructionBinopLogical(
+							new INST.InstructionBinopLogical(
 								2n,
 								Operator.AND,
 								instructionConstInt(3n),
@@ -689,26 +676,26 @@ describe('ASTNodeSolid', () => {
 					[`if true  then false else 2;`,    [new Int16(1n), new Int16(0n),    new Int16(2n)]],
 					[`if false then 3.0   else null;`, [new Int16(0n), new Float64(3.0), new Float64(0.0)]],
 					[`if true  then 2     else 3.0;`,  [new Int16(1n), new Float64(2.0), new Float64(3.0)]],
-				]), ([cond, cons, alt]) => new InstructionCond(
-					new InstructionConst(cond),
-					new InstructionConst(cons),
-					new InstructionConst(alt),
+				]), ([cond, cons, alt]) => new INST.InstructionCond(
+					new INST.InstructionConst(cond),
+					new INST.InstructionConst(cons),
+					new INST.InstructionConst(alt),
 				)));
 			});
 			it('compound expression.', () => {
 				buildOperations(new Map([
-					[`42 ^ 2 * 420;`, new InstructionBinopArithmetic(
+					[`42 ^ 2 * 420;`, new INST.InstructionBinopArithmetic(
 						Operator.MUL,
-						new InstructionBinopArithmetic(
+						new INST.InstructionBinopArithmetic(
 							Operator.EXP,
 							instructionConstInt(42n),
 							instructionConstInt(2n),
 						),
 						instructionConstInt(420n),
 					)],
-					[`2 * 3.0 + 5;`, new InstructionBinopArithmetic(
+					[`2 * 3.0 + 5;`, new INST.InstructionBinopArithmetic(
 						Operator.ADD,
-						new InstructionBinopArithmetic(
+						new INST.InstructionBinopArithmetic(
 							Operator.MUL,
 							instructionConstFloat(2.0),
 							instructionConstFloat(3.0),
@@ -901,7 +888,7 @@ describe('ASTNodeSolid', () => {
 				const node: AST.ASTNodeTypeRecord = typeFromString(`[x: int, y: bool, z: str]`) as AST.ASTNodeTypeRecord;
 				assert.deepStrictEqual(
 					node.assess(validator),
-					new SolidTypeRecord(new Map<bigint, SolidLanguageType>(node.children.map((c) => [
+					new SolidTypeRecord(new Map<bigint, SolidType>(node.children.map((c) => [
 						c.children[0].id,
 						c.children[1].assess(validator),
 					]))),
@@ -974,23 +961,27 @@ describe('ASTNodeSolid', () => {
 			});
 			it('returns Unknown for undeclared variables.', () => {
 				// NOTE: a reference error will be thrown at the variable-checking stage
-				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidLanguageType.UNKNOWN);
+				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidType.UNKNOWN);
 			});
 			Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
-				const templates: AST.ASTNodeTemplate[] = [
-					AST.ASTNodeTemplate.fromSource(`'''42😀''';`),
-					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
-					(AST.ASTNodeGoal.fromSource(`
-						let unfixed x: int = 21;
-						'''the answer is {{ x * 2 }} but what is the question?''';
-					`)
-						.children[1] as AST.ASTNodeStatementExpression)
-						.children[0] as AST.ASTNodeTemplate,
-				];
+				let templates: AST.ASTNodeTemplate[];
+				function initTemplates() {
+					templates = [
+						AST.ASTNodeTemplate.fromSource(`'''42😀''';`),
+						AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
+						(AST.ASTNodeGoal.fromSource(`
+							let unfixed x: int = 21;
+							'''the answer is {{ x * 2 }} but what is the question?''';
+						`)
+							.children[1] as AST.ASTNodeStatementExpression)
+							.children[0] as AST.ASTNodeTemplate,
+					];
+				}
 				context('with constant folding on.', () => {
 					const validator: Validator = new Validator();
-					let types: SolidLanguageType[];
+					let types: SolidType[];
 					before(() => {
+						initTemplates();
 						types = templates.map((t) => assert_wasCalled(t.assess, 1, (orig, spy) => {
 							t.assess = spy;
 							try {
@@ -1012,6 +1003,7 @@ describe('ASTNodeSolid', () => {
 				});
 				context('with constant folding off.', () => {
 					it('always returns `String`.', () => {
+						initTemplates();
 						templates.forEach((t) => {
 							assert.deepStrictEqual(t.type(new Validator(folding_off)), SolidString);
 						});
@@ -1066,13 +1058,13 @@ describe('ASTNodeSolid', () => {
 			});
 
 			describe('ASTNodeOperation', () => {
-				function typeOperations(tests: ReadonlyMap<string, SolidObject>): void {
+				function typeOperations(tests: ReadonlyMap<string, SolidObject>, config: SolidConfig = CONFIG_DEFAULT): void {
 					return assert.deepStrictEqual(
-						[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src).type(new Validator())),
+						[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type(new Validator(config))),
 						[...tests.values()].map((result) => new SolidTypeConstant(result)),
 					);
 				}
-				function typeOfOperationFromSource(src: string): SolidLanguageType {
+				function typeOfOperationFromSource(src: string): SolidType {
 					return AST.ASTNodeOperation.fromSource(src, folding_coercion_off).type(new Validator(folding_coercion_off));
 				}
 				const folding_coercion_off: SolidConfig = {
@@ -1084,19 +1076,85 @@ describe('ASTNodeSolid', () => {
 					},
 				};
 				describe('ASTNodeOperationUnary', () => {
-					it('returns a constant Boolean type for boolean unary operation of anything.', () => {
-						typeOperations(xjs.Map.mapValues(new Map([
-							[`!false;`,  true],
-							[`!true;`,   false],
-							[`!null;`,   true],
-							[`!42;`,     false],
-							[`!4.2e+1;`, false],
-							[`?false;`,  true],
-							[`?true;`,   false],
-							[`?null;`,   true],
-							[`?42;`,     false],
-							[`?4.2e+1;`, false],
-						]), (v) => SolidBoolean.fromBoolean(v)))
+					context('with constant folding on.', () => {
+						it('returns a constant Boolean type for boolean unary operation of anything.', () => {
+							typeOperations(xjs.Map.mapValues(new Map([
+								[`!false;`,  true],
+								[`!true;`,   false],
+								[`!null;`,   true],
+								[`!42;`,     false],
+								[`!4.2e+1;`, false],
+								[`?false;`,  true],
+								[`?true;`,   false],
+								[`?null;`,   true],
+								[`?42;`,     false],
+								[`?4.2e+1;`, false],
+							]), (v) => SolidBoolean.fromBoolean(v)))
+						});
+					});
+					context('with constant folding off.', () => {
+						describe('[operator=NOT]', () => {
+							it('returns type `true` for a subtype of `null | false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: null = null;
+									let unfixed b: null | false = null;
+									!a;
+									!b;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								goal.children.slice(2).forEach((stmt) => {
+									assert.deepStrictEqual((stmt.children[0] as AST.ASTNodeExpression).type(validator), SolidBoolean.TRUETYPE);
+								});
+							});
+							it('returns type `bool` for a supertype of `null` or a supertype of `false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: null | int = null;
+									let unfixed b: null | int = 42;
+									let unfixed c: bool = false;
+									let unfixed d: bool | float = 4.2;
+									!a;
+									!b;
+									!c;
+									!d;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								goal.children.slice(4).forEach((stmt) => {
+									assert.deepStrictEqual((stmt.children[0] as AST.ASTNodeExpression).type(validator), SolidBoolean);
+								});
+							});
+							it('returns type `true` for any type not a supertype of `null` or `false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: int = 42;
+									let unfixed b: float = 4.2;
+									!a;
+									!b;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								goal.children.slice(4).forEach((stmt) => {
+									assert.deepStrictEqual((stmt.children[0] as AST.ASTNodeExpression).type(validator), SolidBoolean.TRUETYPE);
+								});
+							});
+						});
+						describe('[operator=EMP]', () => {
+							it('always returns type `bool`.', () => {
+								const validator: Validator = new Validator(folding_off);
+								[
+									`?false;`,
+									`?true;`,
+									`?null;`,
+									`?42;`,
+									`?4.2e+1;`,
+								].map((src) => AST.ASTNodeOperation.fromSource(src, folding_off).type(validator)).forEach((typ) => {
+									assert.deepStrictEqual(typ, SolidBoolean);
+								});
+							});
+						});
 					});
 				});
 				describe('ASTNodeOperationBinaryArithmetic', () => {
@@ -1189,20 +1247,20 @@ describe('ASTNodeSolid', () => {
 				describe('ASTNodeOperationBinaryEquality', () => {
 					it('with folding and int coersion on.', () => {
 						typeOperations(xjs.Map.mapValues(new Map([
-							[`2 is 3;`,      false],
-							[`2 isnt 3;`,    true],
-							[`2 == 3;`,      false],
-							[`2 != 3;`,      true],
-							[`0 is -0;`,     true],
-							[`0 == -0;`,     true],
-							[`0.0 is 0;`,    false],
-							[`0.0 == 0;`,    true],
-							[`0.0 is -0;`,   false],
-							[`0.0 == -0;`,   true],
-							[`-0.0 is 0;`,   false],
-							[`-0.0 == 0;`,   true],
-							[`-0.0 is 0.0;`, false],
-							[`-0.0 == 0.0;`, true],
+							[`2 === 3;`,      false],
+							[`2 !== 3;`,      true],
+							[`2 == 3;`,       false],
+							[`2 != 3;`,       true],
+							[`0 === -0;`,     true],
+							[`0 == -0;`,      true],
+							[`0.0 === 0;`,    false],
+							[`0.0 == 0;`,     true],
+							[`0.0 === -0;`,   false],
+							[`0.0 == -0;`,    true],
+							[`-0.0 === 0;`,   false],
+							[`-0.0 == 0;`,    true],
+							[`-0.0 === 0.0;`, false],
+							[`-0.0 == 0.0;`,  true],
 						]), (v) => SolidBoolean.fromBoolean(v)));
 					});
 					context('with folding off but int coersion on.', () => {
@@ -1210,7 +1268,7 @@ describe('ASTNodeSolid', () => {
 							assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 == 7.0;`).type(new Validator(folding_off)), SolidBoolean);
 						});
 						it('returns `false` if operands are of different numeric types.', () => {
-							assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 is 7.0;`, folding_off).type(new Validator(folding_off)), SolidBoolean.FALSETYPE);
+							assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 === 7.0;`, folding_off).type(new Validator(folding_off)), SolidBoolean.FALSETYPE);
 						});
 					});
 					context('with folding and int coersion off.', () => {
@@ -1496,47 +1554,47 @@ describe('ASTNodeSolid', () => {
 				})
 				specify('ASTNodeOperationBinaryEquality', () => {
 					assessOperations(xjs.Map.mapValues(new Map([
-						[`null is null;`, true],
-						[`null == null;`, true],
-						[`null is 5;`,    false],
-						[`null == 5;`,    false],
-						[`true is 1;`,    false],
-						[`true == 1;`,    false],
-						[`true is 1.0;`,  false],
-						[`true == 1.0;`,  false],
-						[`true is 5.1;`,  false],
-						[`true == 5.1;`,  false],
-						[`true is true;`, true],
-						[`true == true;`, true],
-						[`3.0 is 3;`,     false],
-						[`3.0 == 3;`,     true],
-						[`3 is 3.0;`,     false],
-						[`3 == 3.0;`,     true],
-						[`0.0 is 0.0;`,   true],
-						[`0.0 == 0.0;`,   true],
-						[`0.0 is -0.0;`,  false],
-						[`0.0 == -0.0;`,  true],
-						[`0 is -0;`,     true],
-						[`0 == -0;`,     true],
-						[`0.0 is 0;`,    false],
-						[`0.0 == 0;`,    true],
-						[`0.0 is -0;`,   false],
-						[`0.0 == -0;`,   true],
-						[`-0.0 is 0;`,   false],
-						[`-0.0 == 0;`,   true],
-						[`-0.0 is 0.0;`, false],
-						[`-0.0 == 0.0;`, true],
+						[`null === null;`, true],
+						[`null ==  null;`, true],
+						[`null === 5;`,    false],
+						[`null ==  5;`,    false],
+						[`true === 1;`,    false],
+						[`true ==  1;`,    false],
+						[`true === 1.0;`,  false],
+						[`true ==  1.0;`,  false],
+						[`true === 5.1;`,  false],
+						[`true ==  5.1;`,  false],
+						[`true === true;`, true],
+						[`true ==  true;`, true],
+						[`3.0 === 3;`,     false],
+						[`3.0 ==  3;`,     true],
+						[`3 === 3.0;`,     false],
+						[`3 ==  3.0;`,     true],
+						[`0.0 === 0.0;`,   true],
+						[`0.0 ==  0.0;`,   true],
+						[`0.0 === -0.0;`,  false],
+						[`0.0 ==  -0.0;`,  true],
+						[`0 === -0;`,      true],
+						[`0 ==  -0;`,      true],
+						[`0.0 === 0;`,     false],
+						[`0.0 ==  0;`,     true],
+						[`0.0 === -0;`,    false],
+						[`0.0 ==  -0;`,    true],
+						[`-0.0 === 0;`,    false],
+						[`-0.0 ==  0;`,    true],
+						[`-0.0 === 0.0;`,  false],
+						[`-0.0 ==  0.0;`,  true],
 					]), (val) => SolidBoolean.fromBoolean(val)))
 					Dev.supports('stringConstant-assess') && assessOperations(xjs.Map.mapValues(new Map([
 						[`'' == '';`,    true],
-						[`'a' is 'a';`, true],
-						[`'a' == 'a';`, true],
-						[`'hello\\u{20}world' is 'hello world';`, true],
-						[`'hello\\u{20}world' == 'hello world';`, true],
-						[`'a' isnt 'b';`, true],
-						[`'a' !=   'b';`, true],
-						[`'hello\\u{20}world' isnt 'hello20world';`, true],
-						[`'hello\\u{20}world' !=   'hello20world';`, true],
+						[`'a' === 'a';`, true],
+						[`'a' ==  'a';`, true],
+						[`'hello\\u{20}world' === 'hello world';`, true],
+						[`'hello\\u{20}world' ==  'hello world';`, true],
+						[`'a' !== 'b';`, true],
+						[`'a' !=  'b';`, true],
+						[`'hello\\u{20}world' !== 'hello20world';`, true],
+						[`'hello\\u{20}world' !=  'hello20world';`, true],
 					]), (val) => SolidBoolean.fromBoolean(val)))
 				}).timeout(10_000);
 				specify('ASTNodeOperationBinaryLogical', () => {

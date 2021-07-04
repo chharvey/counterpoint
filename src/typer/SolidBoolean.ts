@@ -1,8 +1,8 @@
 import {
-	SolidLanguageType,
+	SolidType,
 	SolidTypeConstant,
-} from './SolidLanguageType';
-import {SolidObject} from './SolidObject';
+} from './SolidType.js';
+import {SolidObject} from './SolidObject.js';
 
 
 
@@ -27,7 +27,7 @@ export class SolidBoolean extends SolidObject {
 	static readonly FALSETYPE: SolidTypeConstant = new SolidTypeConstant(SolidBoolean.FALSE)
 	/** A Unit Type containing only the Solid Language Value `true`. */
 	static readonly TRUETYPE: SolidTypeConstant = new SolidTypeConstant(SolidBoolean.TRUE)
-	static override values: SolidLanguageType['values'] = new Set([SolidBoolean.FALSE, SolidBoolean.TRUE])
+	static override values: SolidType['values'] = new Set([SolidBoolean.FALSE, SolidBoolean.TRUE])
 
 	/**
 	 * Return the Solid Language Value `true` or `false` based on the argument.

@@ -1,5 +1,7 @@
-import {SolidLanguageType} from './SolidLanguageType';
-import type {SolidObject} from './SolidObject';
+import {
+	SolidType,
+	SolidObject,
+} from '../typer/index.js';
 
 
 
@@ -36,22 +38,21 @@ export abstract class SymbolStructure {
 export class SymbolStructureType extends SymbolStructure {
 	private was_evaluated: boolean = false;
 	/** The assessed value of the symbol. */
-	private _value: SolidLanguageType = SolidLanguageType.UNKNOWN;
+	private _value: SolidType = SolidType.UNKNOWN;
 	constructor (
 		id:     bigint,
 		line:   number,
 		col:    number,
 		source: string,
 		/** A lambda returning the assessed value of the symbol. */
-		private readonly value_setter: () => SolidLanguageType,
+		private readonly value_setter: () => SolidType,
 	) {
 		super(id, line, col, source);
 	}
-	get value(): SolidLanguageType {
+	get value(): SolidType {
 		return this._value;
 	}
-	/** @implements SymbolStructure */
-	assess(): void {
+	override assess(): void {
 		if (!this.was_evaluated) {
 			this.was_evaluated = true;
 			this._value = this.value_setter();
@@ -64,7 +65,7 @@ export class SymbolStructureType extends SymbolStructure {
 export class SymbolStructureVar extends SymbolStructure {
 	private was_evaluated:  boolean = false;
 	/** The variable’s Type. */
-	private _type: SolidLanguageType = SolidLanguageType.UNKNOWN;
+	private _type: SolidType = SolidType.UNKNOWN;
 	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
 	private _value: SolidObject | null = null;
 	constructor (
@@ -75,20 +76,19 @@ export class SymbolStructureVar extends SymbolStructure {
 		/** May the symbol be reassigned? */
 		readonly unfixed: boolean,
 		/** A lambda returning the variable’s Type. */
-		private type_setter: () => SolidLanguageType,
+		private type_setter: () => SolidType,
 		/** A lambda returning the assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
 		private value_setter: (() => SolidObject | null) | null,
 	) {
 		super(id, line, col, source);
 	}
-	get type(): SolidLanguageType {
+	get type(): SolidType {
 		return this._type;
 	}
 	get value(): SolidObject | null {
 		return this._value;
 	}
-	/** @implements SymbolStructure */
-	assess(): void {
+	override assess(): void {
 		if (!this.was_evaluated) {
 			this.was_evaluated = true;
 			this._type = this.type_setter();

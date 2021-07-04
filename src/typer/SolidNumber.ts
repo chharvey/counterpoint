@@ -1,6 +1,6 @@
-import {SolidObject} from './SolidObject';
-import {SolidBoolean} from './SolidBoolean';
-import type {Float64} from './Float64';
+import {SolidObject} from './SolidObject.js';
+import {SolidBoolean} from './SolidBoolean.js';
+import type {Float64} from './Float64.js';
 
 
 

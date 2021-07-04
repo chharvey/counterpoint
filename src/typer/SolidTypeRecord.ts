@@ -1,8 +1,8 @@
-import {SolidLanguageType} from '../validator/SolidLanguageType'; // TODO circular imports
+import {SolidType} from './SolidType.js';
 
 
 
-export class SolidTypeRecord extends SolidLanguageType {
+export class SolidTypeRecord extends SolidType {
 	override readonly isEmpty: boolean = false;
 
 	/**
@@ -10,7 +10,7 @@ export class SolidTypeRecord extends SolidLanguageType {
 	 * @param propertytypes a map of this type’s property ids along with their associated types
 	 */
 	constructor (
-		private readonly propertytypes: ReadonlyMap<bigint, SolidLanguageType> = new Map(),
+		private readonly propertytypes: ReadonlyMap<bigint, SolidType> = new Map(),
 	) {
 		super();
 	}
@@ -25,7 +25,7 @@ export class SolidTypeRecord extends SolidLanguageType {
 				return false;
 			};
 			return [...t.propertytypes].every(([id, thattype]) => {
-				const thistype: SolidLanguageType | null = this.propertytypes.get(id) || null;
+				const thistype: SolidType | null = this.propertytypes.get(id) || null;
 				if (!thistype) {
 					return false;
 				};
