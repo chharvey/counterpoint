@@ -1,13 +1,13 @@
 import {
 	strictEqual,
 } from '../decorators';
-import {SolidLanguageType} from '../validator/SolidLanguageType'; // TODO circular imports
-import {SolidObject} from '../validator/SolidObject';
+import {SolidType} from './SolidType';
+import {SolidObject} from './SolidObject';
 import {SolidRecord} from './SolidRecord';
 
 
 
-export class SolidTypeRecord extends SolidLanguageType {
+export class SolidTypeRecord extends SolidType {
 	override readonly isEmpty: boolean = false;
 
 	/**
@@ -15,7 +15,7 @@ export class SolidTypeRecord extends SolidLanguageType {
 	 * @param propertytypes a map of this type’s property ids along with their associated types
 	 */
 	constructor (
-		private readonly propertytypes: ReadonlyMap<bigint, SolidLanguageType> = new Map(),
+		private readonly propertytypes: ReadonlyMap<bigint, SolidType> = new Map(),
 	) {
 		super(new Set([new SolidRecord()]));
 	}
@@ -25,14 +25,14 @@ export class SolidTypeRecord extends SolidLanguageType {
 	}
 
 	@strictEqual
-	@SolidLanguageType.subtypeDeco
-	override isSubtypeOf(t: SolidLanguageType): boolean {
+	@SolidType.subtypeDeco
+	override isSubtypeOf(t: SolidType): boolean {
 		return (
 			(t.equals(SolidObject)) ? true :
 			(t instanceof SolidTypeRecord) ? ((this.propertytypes.size < t.propertytypes.size)
 				? false
 				: [...t.propertytypes].every(([id, thattype]) => {
-					const thistype: SolidLanguageType | null = this.propertytypes.get(id) || null;
+					const thistype: SolidType | null = this.propertytypes.get(id) || null;
 					return (thistype)
 						? thistype.isSubtypeOf(thattype)
 						: false;

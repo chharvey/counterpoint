@@ -59,6 +59,8 @@ export enum Punctuator {
 		GE   = '>=',
 		NLT  = '!<',
 		NGT  = '!>',
+		ID   = '===',
+		NID  = '!==',
 		EQ   = '==',
 		NEQ  = '!=',
 		AND  = '&&',
@@ -164,7 +166,7 @@ export class TokenPunctuator extends TokenSolid {
 	constructor (lexer: Lexer, count: 1n | 2n | 3n | 4n = 1n) {
 		super('PUNCTUATOR', lexer, ...lexer.advance())
 		if (count >= 4n) {
-			this.advance(2n)
+			this.advance(3n)
 		} else if (count >= 3n) {
 			this.advance(2n)
 		} else if (count >= 2n) {

@@ -101,7 +101,11 @@ Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NE
 	].
 ;
 
-Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | GT | LE | GE | IS | EQ] expr) :=
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: IS] expr) :=
+	1. *Throw:* new TypeError "Operator not yet supported.".
+;
+
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | GT | LE | GE | ID | EQ] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
 	2. *Return:* [
 		...builds.0,

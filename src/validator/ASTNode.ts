@@ -26,8 +26,17 @@ import {
 	ValidOperatorLogical,
 } from '../enum/Operator.enum'
 import {
+	SolidType,
+	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidObject,
+	SolidNull,
+	SolidBoolean,
+	SolidNumber,
+	Int16,
+	Float64,
+	SolidString,
 	SolidTuple,
 	SolidRecord,
 	SolidMapping,
@@ -44,17 +53,6 @@ import {
 	SymbolStructureVar,
 	SymbolStructureType,
 } from './SymbolStructure';
-import {
-	SolidLanguageType,
-	SolidTypeConstant,
-} from './SolidLanguageType';
-import {SolidObject}  from './SolidObject';
-import {SolidNull}    from './SolidNull';
-import {SolidBoolean} from './SolidBoolean';
-import {SolidNumber}  from './SolidNumber';
-import {Int16}        from './Int16';
-import {Float64}      from './Float64';
-import {SolidString}  from './SolidString';
 import {
 	Builder,
 	Instruction,
@@ -90,19 +88,19 @@ import {
 
 
 
-function bothNumeric(t0: SolidLanguageType, t1: SolidLanguageType): boolean {
+function bothNumeric(t0: SolidType, t1: SolidType): boolean {
 	return t0.isSubtypeOf(SolidNumber) && t1.isSubtypeOf(SolidNumber)
 }
-function eitherFloats(t0: SolidLanguageType, t1: SolidLanguageType): boolean {
+function eitherFloats(t0: SolidType, t1: SolidType): boolean {
 	return t0.isSubtypeOf(Float64) || t1.isSubtypeOf(Float64)
 }
-function bothFloats(t0: SolidLanguageType, t1: SolidLanguageType): boolean {
+function bothFloats(t0: SolidType, t1: SolidType): boolean {
 	return t0.isSubtypeOf(Float64) && t1.isSubtypeOf(Float64)
 }
-function neitherFloats(t0: SolidLanguageType, t1: SolidLanguageType): boolean {
+function neitherFloats(t0: SolidType, t1: SolidType): boolean {
 	return !eitherFloats(t0, t1)
 }
-function oneFloats(t0: SolidLanguageType, t1: SolidLanguageType): boolean {
+function oneFloats(t0: SolidType, t1: SolidType): boolean {
 	return !neitherFloats(t0, t1) && !bothFloats(t0, t1)
 }
 
@@ -241,7 +239,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 * @param validator a record of declared variable symbols
 	 * @returns the computed type-value of this node
 	 */
-	abstract assess(validator: Validator): SolidLanguageType;
+	abstract assess(validator: Validator): SolidType;
 }
 export class ASTNodeTypeConstant extends ASTNodeType {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeConstant {
@@ -250,9 +248,9 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		return typ;
 	}
 	declare readonly children: readonly [];
-	readonly value: SolidLanguageType;
+	readonly value: SolidType;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) {
-		const value: SolidLanguageType =
+		const value: SolidType =
 			(start_node instanceof TOKEN.TokenKeyword) ?
 				(start_node.source === Keyword.BOOL)  ? SolidBoolean :
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSETYPE :
@@ -274,7 +272,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	}
 	/** @implements ASTNodeType */
 	@memoizeMethod
-	assess(_validator: Validator): SolidLanguageType {
+	assess(_validator: Validator): SolidType {
 		return this.value
 	}
 }
@@ -300,14 +298,14 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 	}
 	/** @implements ASTNodeType */
 	@memoizeMethod
-	assess(validator: Validator): SolidLanguageType {
+	assess(validator: Validator): SolidType {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureType) {
 				return symbol.value;
 			};
 		};
-		return SolidLanguageType.UNKNOWN;
+		return SolidType.UNKNOWN;
 	}
 }
 export class ASTNodeTypeEmptyCollection extends ASTNodeType {
@@ -325,7 +323,7 @@ export class ASTNodeTypeEmptyCollection extends ASTNodeType {
 	}
 	/** @implements ASTNodeType */
 	@memoizeMethod
-	assess(_validator: Validator): SolidLanguageType {
+	assess(_validator: Validator): SolidType {
 		return new SolidTypeTuple().intersect(new SolidTypeRecord());
 	}
 }
@@ -343,7 +341,7 @@ export class ASTNodeTypeList extends ASTNodeType {
 	}
 	/** @implements ASTNodeType */
 	@memoizeMethod
-	assess(validator: Validator): SolidLanguageType {
+	assess(validator: Validator): SolidType {
 		return new SolidTypeTuple(this.children.map((c) => c.assess(validator)));
 	}
 }
@@ -361,7 +359,7 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 	}
 	/** @implements ASTNodeType */
 	@memoizeMethod
-	assess(validator: Validator): SolidLanguageType {
+	assess(validator: Validator): SolidType {
 		return new SolidTypeRecord(new Map(this.children.map((c) => [
 			c.children[0].id,
 			c.children[1].assess(validator),
@@ -397,7 +395,7 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	}
 	/** @implements ASTNodeType */
 	@memoizeMethod
-	assess(validator: Validator): SolidLanguageType {
+	assess(validator: Validator): SolidType {
 		return (this.operator === Operator.ORNULL)
 			? this.children[0].assess(validator).union(SolidNull)
 			: (() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
@@ -418,7 +416,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 	}
 	/** @implements ASTNodeType */
 	@memoizeMethod
-	assess(validator: Validator): SolidLanguageType {
+	assess(validator: Validator): SolidType {
 		return (
 			(this.operator === Operator.AND) ? this.children[0].assess(validator).intersect(this.children[1].assess(validator)) :
 			(this.operator === Operator.OR)  ? this.children[0].assess(validator).union    (this.children[1].assess(validator)) :
@@ -456,7 +454,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	): typeof descriptor {
 		const method = descriptor.value!;
 		descriptor.value = function (validator) {
-			const typed: SolidLanguageType = method.call(this, validator); // type-check first, to re-throw any TypeErrors
+			const typed: SolidType = method.call(this, validator); // type-check first, to re-throw any TypeErrors
 			if (validator.config.compilerOptions.constantFolding) {
 				const assessed: SolidObject | null = this.assess(validator);
 				if (!!assessed) {
@@ -522,7 +520,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @param validator stores validation and configuration information
 	 * @return the compile-time type of this node
 	 */
-	abstract type(validator: Validator): SolidLanguageType;
+	abstract type(validator: Validator): SolidType;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
 	 * If {@link SolidConfig|constant folding} is off, this should not be called.
@@ -565,7 +563,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	type(validator: Validator): SolidLanguageType {
+	type(validator: Validator): SolidType {
 		// No need to call `this.assess(validator)` and then unwrap again; just use `this.value`.
 		return (validator.config.compilerOptions.constantFolding) ? new SolidTypeConstant(this.value) :
 		(this.value instanceof SolidNull)    ? SolidNull :
@@ -617,14 +615,14 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	type(validator: Validator): SolidLanguageType {
+	type(validator: Validator): SolidType {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar) {
 				return symbol.type;
 			};
 		};
-		return SolidLanguageType.UNKNOWN;
+		return SolidType.UNKNOWN;
 	}
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
@@ -669,7 +667,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	type(_validator: Validator): SolidLanguageType {
+	type(_validator: Validator): SolidType {
 		return SolidString
 	}
 	/** @implements ASTNodeExpression */
@@ -705,7 +703,7 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	type(_validator: Validator): SolidLanguageType {
+	type(_validator: Validator): SolidType {
 		return new SolidTypeTuple().intersect(new SolidTypeRecord());
 	}
 	/** @implements ASTNodeExpression */
@@ -738,7 +736,7 @@ export class ASTNodeList extends ASTNodeExpression {
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	type(validator: Validator): SolidLanguageType {
+	type(validator: Validator): SolidType {
 		return new SolidTypeTuple(this.children.map((c) => c.type(validator)));
 	}
 	/** @implements ASTNodeExpression */
@@ -774,7 +772,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	type(validator: Validator): SolidLanguageType {
+	type(validator: Validator): SolidType {
 		return new SolidTypeRecord(new Map(this.children.map((c) => [
 			c.children[0].id,
 			c.children[1].type(validator),
@@ -816,7 +814,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	type(_validator: Validator): SolidLanguageType {
+	type(_validator: Validator): SolidType {
 		return SolidObject;
 	}
 	/** @implements ASTNodeExpression */
@@ -875,12 +873,17 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	type(validator: Validator): SolidLanguageType {
-		if ([Operator.NOT, Operator.EMP].includes(this.operator)) {
-			return SolidBoolean
-		}
-		const t0: SolidLanguageType = this.children[0].type(validator);
-		return (t0.isSubtypeOf(SolidNumber)) ? t0 : (() => { throw new TypeError01(this) })()
+	type(validator: Validator): SolidType {
+		const t0: SolidType = this.children[0].type(validator);
+		return (
+			(this.operator === Operator.NOT) ? (
+				(t0.isSubtypeOf(SolidNull.union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
+				(SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? SolidBoolean :
+				SolidBoolean.FALSETYPE
+			) :
+			(this.operator === Operator.EMP) ? SolidBoolean :
+			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(SolidNumber)) ? t0 : (() => { throw new TypeError01(this); })()
+		);
 	}
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
@@ -935,7 +938,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	 */
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	type(validator: Validator): SolidLanguageType {
+	type(validator: Validator): SolidType {
 		xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		return this.type_do(
 			this.children[0].type(validator),
@@ -943,7 +946,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 			validator.config.compilerOptions.intCoercion,
 		)
 	}
-	protected abstract type_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType;
+	protected abstract type_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType;
 }
 export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryArithmetic {
@@ -969,7 +972,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		)
 	}
 	/** @implements ASTNodeOperationBinary */
-	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
+	protected type_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
 		if (bothNumeric(t0, t1)) {
 			if (int_coercion) {
 				return (eitherFloats(t0, t1)) ? Float64 : Int16
@@ -1037,6 +1040,9 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		children: readonly [ASTNodeExpression, ASTNodeExpression],
 	) {
 		super(start_node, operator, children)
+		if ([Operator.IS, Operator.ISNT].includes(this.operator)) {
+			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
+		}
 	}
 	/** @implements ASTNodeExpression */
 	@ASTNodeExpression.buildDeco
@@ -1049,7 +1055,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		)
 	}
 	/** @implements ASTNodeOperationBinary */
-	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
+	protected type_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
 		if (bothNumeric(t0, t1) && (int_coercion || (
 			bothFloats(t0, t1) || neitherFloats(t0, t1)
 		))) {
@@ -1120,11 +1126,11 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		)
 	}
 	/** @implements ASTNodeOperationBinary */
-	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType, int_coercion: boolean): SolidLanguageType {
+	protected type_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
 		// If `a` and `b` are of disjoint numeric types, then `a is b` will always return `false`.
 		// If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
 		if (bothNumeric(t0, t1)) {
-			if (oneFloats(t0, t1) && (this.operator === Operator.IS || !int_coercion)) {
+			if (oneFloats(t0, t1) && (this.operator === Operator.ID || !int_coercion)) {
 				return SolidBoolean.FALSETYPE
 			}
 			return SolidBoolean
@@ -1150,7 +1156,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 	private foldEquality(x: SolidObject, y: SolidObject): SolidBoolean {
 		return SolidBoolean.fromBoolean(new Map<Operator, (x: SolidObject, y: SolidObject) => boolean>([
-			[Operator.IS, (x, y) => x.identical(y)],
+			[Operator.ID, (x, y) => x.identical(y)],
 			[Operator.EQ, (x, y) => x.equal(y)],
 			// [Operator.ISNT, (x, y) => !x.identical(y)],
 			// [Operator.NEQ,  (x, y) => !x.equal(y)],
@@ -1182,27 +1188,27 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		)
 	}
 	/** @implements ASTNodeOperationBinary */
-	protected type_do(t0: SolidLanguageType, t1: SolidLanguageType, _int_coercion: boolean): SolidLanguageType {
-		const null_union_false: SolidLanguageType = SolidNull.union(SolidBoolean.FALSETYPE);
-		function truthifyType(t: SolidLanguageType): SolidLanguageType {
+	protected type_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {
+		const null_union_false: SolidType = SolidNull.union(SolidBoolean.FALSETYPE);
+		function truthifyType(t: SolidType): SolidType {
 			const values: Set<SolidObject> = new Set(t.values);
 			values.delete(SolidNull.NULL);
 			values.delete(SolidBoolean.FALSE);
-			return [...values].map<SolidLanguageType>((v) => new SolidTypeConstant(v)).reduce((a, b) => a.union(b));
+			return [...values].map<SolidType>((v) => new SolidTypeConstant(v)).reduce((a, b) => a.union(b));
 		}
 		return (this.operator === Operator.AND)
 			? (t0.isSubtypeOf(null_union_false))
 				? t0
-				: (t0.includes(SolidNull.NULL))
-					? (t0.includes(SolidBoolean.FALSE))
+				: (SolidNull.isSubtypeOf(t0))
+					? (SolidBoolean.FALSETYPE.isSubtypeOf(t0))
 						? null_union_false.union(t1)
 						: SolidNull.union(t1)
-					: (t0.includes(SolidBoolean.FALSE))
+					: (SolidBoolean.FALSETYPE.isSubtypeOf(t0))
 						? SolidBoolean.FALSETYPE.union(t1)
 						: t1
 			: (t0.isSubtypeOf(null_union_false))
 				? t1
-				: (t0.includes(SolidNull.NULL) || t0.includes(SolidBoolean.FALSE))
+				: (SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
 					? truthifyType(t0).union(t1)
 					: t0
 	}
@@ -1253,11 +1259,11 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	/** @implements ASTNodeExpression */
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
-	type(validator: Validator): SolidLanguageType {
+	type(validator: Validator): SolidType {
 		xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck(validator));
-		const t0: SolidLanguageType = this.children[0].type(validator);
-		const t1: SolidLanguageType = this.children[1].type(validator);
-		const t2: SolidLanguageType = this.children[2].type(validator);
+		const t0: SolidType = this.children[0].type(validator);
+		const t1: SolidType = this.children[1].type(validator);
+		const t2: SolidType = this.children[2].type(validator);
 		return (t0.isSubtypeOf(SolidBoolean))
 			? (t0 instanceof SolidTypeConstant)
 				? (t0.value === SolidBoolean.FALSE)
@@ -1400,8 +1406,8 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 	override typeCheck(validator: Validator): void {
 		this.children[2].typeCheck(validator);
-		const assignee_type: SolidLanguageType = this.children[1].assess(validator);
-		const assigned_type: SolidLanguageType = this.children[2].type(validator);
+		const assignee_type: SolidType = this.children[1].assess(validator);
+		const assigned_type: SolidType = this.children[2].type(validator);
 		if (
 			assigned_type.isSubtypeOf(assignee_type) ||
 			validator.config.compilerOptions.intCoercion && assigned_type.isSubtypeOf(Int16) && Float64.isSubtypeOf(assignee_type)
@@ -1442,8 +1448,8 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	}
 	override typeCheck(validator: Validator): void {
 		this.children[1].typeCheck(validator);
-		const assignee_type: SolidLanguageType = this.children[0].type(validator);
-		const assigned_type: SolidLanguageType = this.children[1].type(validator);
+		const assignee_type: SolidType = this.children[0].type(validator);
+		const assigned_type: SolidType = this.children[1].type(validator);
 		if (
 			assigned_type.isSubtypeOf(assignee_type) ||
 			validator.config.compilerOptions.intCoercion && assigned_type.isSubtypeOf(Int16) && Float64.isSubtypeOf(assignee_type)

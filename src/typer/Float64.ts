@@ -3,8 +3,8 @@ import * as xjs from 'extrajs'
 import {
 	strictEqual,
 } from '../decorators';
-import type {SolidLanguageType} from './SolidLanguageType';
-import {SolidObject} from './SolidObject';
+import type {SolidType} from './SolidType';
+import type {SolidObject} from './SolidObject';
 import {SolidNumber} from './SolidNumber';
 
 
@@ -17,7 +17,7 @@ export class Float64 extends SolidNumber<Float64> {
 	static override toString(): string {
 		return 'float';
 	}
-	static override values: SolidLanguageType['values'] = new Set([new Float64(0.0)])
+	static override values: SolidType['values'] = new Set([new Float64(0.0)])
 
 
 	constructor (private readonly value: number = 0) {

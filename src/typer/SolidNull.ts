@@ -1,7 +1,7 @@
 import {
 	strictEqual,
 } from '../decorators';
-import type {SolidLanguageType} from './SolidLanguageType';
+import type {SolidType} from './SolidType';
 import {SolidObject} from './SolidObject';
 import {SolidBoolean} from './SolidBoolean';
 
@@ -27,7 +27,7 @@ export class SolidNull extends SolidObject {
 	}
 	/** The Solid Language Value `null`. */
 	static readonly NULL: SolidNull = new SolidNull()
-	static override values: SolidLanguageType['values'] = new Set([SolidNull.NULL])
+	static override values: SolidType['values'] = new Set([SolidNull.NULL]);
 
 
 	private constructor () {

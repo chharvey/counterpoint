@@ -1,48 +1,48 @@
 import {
 	strictEqual,
 } from '../decorators';
-import {SolidLanguageType} from './SolidLanguageType';
-import type {SolidBoolean} from './SolidBoolean';
+import {SolidType} from './SolidType';
+import type {SolidBoolean} from './SolidBoolean'; // TODO circular imports
 
 
 
 /**
  * Parent class for all Solid Language Values.
  * Known subclasses:
- * - Null
- * - Boolean
+ * - SolidNull
+ * - SolidBoolean
  * - Int16
  * - Float64
- * - String
+ * - SolidString
  */
 export abstract class SolidObject {
 	/** @implements Object */
 	static toString(): string {
 		return 'obj';
 	}
-	/** @implements SolidLanguageType */
-	static isEmpty: SolidLanguageType['isEmpty'] = false
-	/** @implements SolidLanguageType */
-	static isUniverse: SolidLanguageType['isUniverse'] = false
-	/** @implements SolidLanguageType */
-	static values: SolidLanguageType['values'] = new Set()
-	/** @implements SolidLanguageType */
+	/** @implements SolidType */
+	static isEmpty: SolidType['isEmpty'] = false;
+	/** @implements SolidType */
+	static isUniverse: SolidType['isUniverse'] = false;
+	/** @implements SolidType */
+	static values: SolidType['values'] = new Set();
+	/** @implements SolidType */
 	static includes(v: SolidObject): boolean {
 		return v instanceof this/*static*/
 	}
-	/** @implements SolidLanguageType */
-	static intersect: SolidLanguageType['intersect'] = SolidLanguageType.prototype.intersect
-	/** @implements SolidLanguageType */
-	static union: SolidLanguageType['union'] = SolidLanguageType.prototype.union
-	/** @implements SolidLanguageType */
-	@SolidLanguageType.subtypeDeco
-	static isSubtypeOf(t: SolidLanguageType): boolean {
+	/** @implements SolidType */
+	static intersect: SolidType['intersect'] = SolidType.prototype.intersect;
+	/** @implements SolidType */
+	static union: SolidType['union'] = SolidType.prototype.union;
+	/** @implements SolidType */
+	@SolidType.subtypeDeco
+	static isSubtypeOf(t: SolidType): boolean {
 		return (t instanceof Function)
 			? this/*static*/.prototype instanceof t
-			: SolidLanguageType.prototype.isSubtypeOf.call(this, t)
+			: SolidType.prototype.isSubtypeOf.call(this, t)
 	}
-	/** @implements SolidLanguageType */
-	static equals: SolidLanguageType['equals'] = SolidLanguageType.prototype.equals
+	/** @implements SolidType */
+	static equals: SolidType['equals'] = SolidType.prototype.equals;
 
 	/**
 	 * Decorator for {@link SolidObject#equal} method and any overrides.

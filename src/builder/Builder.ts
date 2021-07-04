@@ -27,7 +27,7 @@ export class Builder {
 		fs.readFileSync(path.join(__dirname, '../../src/builder/emp.wat'), 'utf8'),
 		fs.readFileSync(path.join(__dirname, '../../src/builder/neg.wat'), 'utf8'),
 		fs.readFileSync(path.join(__dirname, '../../src/builder/exp.wat'), 'utf8'),
-		fs.readFileSync(path.join(__dirname, '../../src/builder/fis.wat'), 'utf8'),
+		fs.readFileSync(path.join(__dirname, '../../src/builder/fid.wat'), 'utf8'),
 	]
 
 

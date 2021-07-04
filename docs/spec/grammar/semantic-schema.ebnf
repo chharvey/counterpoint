@@ -78,9 +78,9 @@ SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
 SemanticOperation[operator: NEG]
 	::= SemanticExpression[type: Number];
-SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | LE | GT | GE]
+SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | LE | GT | GE | IS]
 	::= SemanticExpression[type: Number] SemanticExpression[type: Number];
-SemanticOperation[operator: IS | EQ]
+SemanticOperation[operator: ID | EQ]
 	::= SemanticExpression[type: Object] SemanticExpression[type: Object];
 SemanticOperation[operator: AND | OR]
 	::= SemanticExpression SemanticExpression;

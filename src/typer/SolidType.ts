@@ -10,16 +10,16 @@ import type {SolidObject} from './SolidObject';
 /**
  * Parent class for all Solid Language Types.
  * Known subclasses:
- * - Intersection
- * - Union
- * - TypeInterface
- * - TypeNever
- * - TypeConstant
- * - TypeUnknown
- * - Tuple
- * - Record
+ * - SolidTypeIntersection
+ * - SolidTypeUnion
+ * - SolidTypeInterface
+ * - SolidTypeNever
+ * - SolidTypeConstant
+ * - SolidTypeUnknown
+ * - SolidTypeTuple
+ * - SolidTypeRecord
  */
-export abstract class SolidLanguageType {
+export abstract class SolidType {
 	/** The Bottom Type, containing no values. */
 	static get NEVER(): SolidTypeNever { return SolidTypeNever.INSTANCE }
 	/** The Top Type, containing all values. */
@@ -33,14 +33,14 @@ export abstract class SolidLanguageType {
 	 * @returns               `descriptor`, with a new value that is the decorated method
 	 */
 	protected static intersectDeco(
-		_prototype: SolidLanguageType,
+		_prototype: SolidType,
 		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: SolidLanguageType, t: SolidLanguageType) => SolidLanguageType>,
+		descriptor: TypedPropertyDescriptor<(this: SolidType, t: SolidType) => SolidType>,
 	): typeof descriptor {
 		const method = descriptor.value!;
 		descriptor.value = function (t) {
 			/** 1-5 | `T  & never   == never` */
-			if (t.isEmpty) { return SolidLanguageType.NEVER }
+			if (t.isEmpty) { return SolidType.NEVER }
 			if (this.isEmpty) { return this }
 			/** 1-6 | `T  & unknown == T` */
 			if (t.isUniverse) { return this }
@@ -63,9 +63,9 @@ export abstract class SolidLanguageType {
 	 * @returns               `descriptor`, with a new value that is the decorated method
 	 */
 	protected static unionDeco(
-		_prototype: SolidLanguageType,
+		_prototype: SolidType,
 		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: SolidLanguageType, t: SolidLanguageType) => SolidLanguageType>,
+		descriptor: TypedPropertyDescriptor<(this: SolidType, t: SolidType) => SolidType>,
 	): typeof descriptor {
 		const method = descriptor.value!;
 		descriptor.value = function (t) {
@@ -93,9 +93,9 @@ export abstract class SolidLanguageType {
 	 * @returns               `descriptor`, with a new value that is the decorated method
 	 */
 	static subtypeDeco( // must be public because accessed in SolidObject.ts
-		_prototype: SolidLanguageType,
+		_prototype: SolidType,
 		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: SolidLanguageType, t: SolidLanguageType) => boolean>,
+		descriptor: TypedPropertyDescriptor<(this: SolidType, t: SolidType) => boolean>,
 	): typeof descriptor {
 		const method = descriptor.value!;
 		descriptor.value = function (t) {
@@ -138,10 +138,10 @@ export abstract class SolidLanguageType {
 	 * i.e., it is equal to the Top Type (`unknown`).
 	 * Used internally for special cases of computations.
 	 */
-	readonly isUniverse: boolean = false // this.equals(SolidLanguageType.UNKNOWN)
+	readonly isUniverse: boolean = false // this.equals(SolidType.UNKNOWN)
 
 	/**
-	 * Construct a new SolidLanguageType object.
+	 * Construct a new SolidType object.
 	 * @param values an enumerated set of values that are assignable to this type
 	 */
 	constructor (
@@ -163,8 +163,8 @@ export abstract class SolidLanguageType {
 	 * @param t the other type
 	 * @returns the type intersection
 	 */
-	@SolidLanguageType.intersectDeco
-	intersect(t: SolidLanguageType): SolidLanguageType {
+	@SolidType.intersectDeco
+	intersect(t: SolidType): SolidType {
 		return new SolidTypeIntersection(this, t)
 	}
 	/**
@@ -172,8 +172,8 @@ export abstract class SolidLanguageType {
 	 * @param t the other type
 	 * @returns the type union
 	 */
-	@SolidLanguageType.unionDeco
-	union(t: SolidLanguageType): SolidLanguageType {
+	@SolidType.unionDeco
+	union(t: SolidType): SolidType {
 		return new SolidTypeUnion(this, t)
 	}
 	/**
@@ -182,8 +182,8 @@ export abstract class SolidLanguageType {
 	 * @returns Is this type a subtype of the argument?
 	 */
 	@strictEqual
-	@SolidLanguageType.subtypeDeco
-	isSubtypeOf(t: SolidLanguageType): boolean {
+	@SolidType.subtypeDeco
+	isSubtypeOf(t: SolidType): boolean {
 		return !this.isEmpty && !!this.values.size && [...this.values].every((v) => t.includes(v));
 	}
 	/**
@@ -195,7 +195,7 @@ export abstract class SolidLanguageType {
 	 * @returns Is this type equal to the argument?
 	 */
 	@strictEqual
-	equals(t: SolidLanguageType): boolean {
+	equals(t: SolidType): boolean {
 		return this.isSubtypeOf(t) && t.isSubtypeOf(this)
 	}
 }
@@ -206,15 +206,15 @@ export abstract class SolidLanguageType {
  * A type intersection of two types `T` and `U` is the type
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
-class SolidTypeIntersection extends SolidLanguageType {
+class SolidTypeIntersection extends SolidType {
 	/**
 	 * Construct a new SolidTypeIntersection object.
 	 * @param left the first type
 	 * @param right the second type
 	 */
 	constructor (
-		readonly left:  SolidLanguageType,
-		readonly right: SolidLanguageType,
+		readonly left:  SolidType,
+		readonly right: SolidType,
 	) {
 		super(xjs.Set.intersection(left.values, right.values))
 	}
@@ -226,8 +226,8 @@ class SolidTypeIntersection extends SolidLanguageType {
 		return this.left.includes(v) && this.right.includes(v)
 	}
 	@strictEqual
-	@SolidLanguageType.subtypeDeco
-	override isSubtypeOf(t: SolidLanguageType): boolean {
+	@SolidType.subtypeDeco
+	override isSubtypeOf(t: SolidType): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) { return true }
 		/** 3-1 | `A  & B <: A  &&  A  & B <: B` */
@@ -242,15 +242,15 @@ class SolidTypeIntersection extends SolidLanguageType {
  * A type union of two types `T` and `U` is the type
  * that contains values both assignable to `T` *and* assignable to `U`.
  */
-class SolidTypeUnion extends SolidLanguageType {
+class SolidTypeUnion extends SolidType {
 	/**
 	 * Construct a new SolidTypeUnion object.
 	 * @param left the first type
 	 * @param right the second type
 	 */
 	constructor (
-		readonly left:  SolidLanguageType,
-		readonly right: SolidLanguageType,
+		readonly left:  SolidType,
+		readonly right: SolidType,
 	) {
 		super(xjs.Set.union(left.values, right.values))
 	}
@@ -262,8 +262,8 @@ class SolidTypeUnion extends SolidLanguageType {
 		return this.left.includes(v) || this.right.includes(v)
 	}
 	@strictEqual
-	@SolidLanguageType.subtypeDeco
-	override isSubtypeOf(t: SolidLanguageType): boolean {
+	@SolidType.subtypeDeco
+	override isSubtypeOf(t: SolidType): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
 	}
@@ -274,7 +274,7 @@ class SolidTypeUnion extends SolidLanguageType {
 /**
  * An Interface Type is a set of properties that a value must have.
  */
-export class SolidTypeInterface extends SolidLanguageType {
+export class SolidTypeInterface extends SolidType {
 	override readonly isEmpty: boolean = [...this.properties.values()].some((value) => value.isEmpty)
 	override readonly isUniverse: boolean = this.properties.size === 0
 
@@ -282,7 +282,7 @@ export class SolidTypeInterface extends SolidLanguageType {
 	 * Construct a new SolidInterface object.
 	 * @param properties a map of this type’s members’ names along with their associated types
 	 */
-	constructor (private readonly properties: ReadonlyMap<string, SolidLanguageType>) {
+	constructor (private readonly properties: ReadonlyMap<string, SolidType>) {
 		super()
 	}
 
@@ -293,10 +293,10 @@ export class SolidTypeInterface extends SolidLanguageType {
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type intersection is taken.
 	 */
-	@SolidLanguageType.intersectDeco
-	override intersect(t: SolidLanguageType): SolidLanguageType {
+	@SolidType.intersectDeco
+	override intersect(t: SolidType): SolidType {
 		if (t instanceof SolidTypeInterface) {
-			const props: Map<string, SolidLanguageType> = new Map([...this.properties])
+			const props: Map<string, SolidType> = new Map([...this.properties]);
 			;[...t.properties].forEach(([name, type_]) => {
 				props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_)
 			})
@@ -309,10 +309,10 @@ export class SolidTypeInterface extends SolidLanguageType {
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type union is taken.
 	 */
-	@SolidLanguageType.unionDeco
-	override union(t: SolidLanguageType): SolidLanguageType {
+	@SolidType.unionDeco
+	override union(t: SolidType): SolidType {
 		if (t instanceof SolidTypeInterface) {
-			const props: Map<string, SolidLanguageType> = new Map()
+			const props: Map<string, SolidType> = new Map();
 			;[...this.properties].forEach(([name, type_]) => {
 				if (t.properties.has(name)) {
 					props.set(name, type_.union(t.properties.get(name)!))
@@ -324,14 +324,13 @@ export class SolidTypeInterface extends SolidLanguageType {
 		};
 	}
 	/**
-	 * @overrides SolidLanguageType
 	 * In the general case, `S` is a subtype of `T` if every property of `T` exists in `S`,
 	 * and for each of those properties `#prop`, the type of `S#prop` is a subtype of `T#prop`.
 	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
 	 */
 	@strictEqual
-	@SolidLanguageType.subtypeDeco
-	override isSubtypeOf(t: SolidLanguageType): boolean {
+	@SolidType.subtypeDeco
+	override isSubtypeOf(t: SolidType): boolean {
 		if (t instanceof SolidTypeInterface) {
 			return [...t.properties].every(([name, type_]) =>
 				this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
@@ -347,7 +346,7 @@ export class SolidTypeInterface extends SolidLanguageType {
 /**
  * Class for constructing the Bottom Type, the type containing no values.
  */
-class SolidTypeNever extends SolidLanguageType {
+class SolidTypeNever extends SolidType {
 	static readonly INSTANCE: SolidTypeNever = new SolidTypeNever()
 
 	override readonly isEmpty: boolean = true
@@ -364,7 +363,7 @@ class SolidTypeNever extends SolidLanguageType {
 		return false
 	}
 	@strictEqual
-	override equals(t: SolidLanguageType): boolean {
+	override equals(t: SolidType): boolean {
 		return t.isEmpty
 	}
 }
@@ -374,7 +373,7 @@ class SolidTypeNever extends SolidLanguageType {
 /**
  * Class for constructing constant types / unit types, types that contain one value.
  */
-export class SolidTypeConstant extends SolidLanguageType {
+export class SolidTypeConstant extends SolidType {
 	override readonly isEmpty: boolean = false
 	override readonly isUniverse: boolean = false
 
@@ -389,8 +388,8 @@ export class SolidTypeConstant extends SolidLanguageType {
 		return this.value.equal(_v)
 	}
 	@strictEqual
-	@SolidLanguageType.subtypeDeco
-	override isSubtypeOf(t: SolidLanguageType): boolean {
+	@SolidType.subtypeDeco
+	override isSubtypeOf(t: SolidType): boolean {
 		return t instanceof Function && this.value instanceof t || t.includes(this.value)
 	}
 }
@@ -400,7 +399,7 @@ export class SolidTypeConstant extends SolidLanguageType {
 /**
  * Class for constructing the Top Type, the type containing all values.
  */
-class SolidTypeUnknown extends SolidLanguageType {
+class SolidTypeUnknown extends SolidType {
 	static readonly INSTANCE: SolidTypeUnknown = new SolidTypeUnknown()
 
 	override readonly isEmpty: boolean = false
@@ -417,7 +416,7 @@ class SolidTypeUnknown extends SolidLanguageType {
 		return true
 	}
 	@strictEqual
-	override equals(t: SolidLanguageType): boolean {
+	override equals(t: SolidType): boolean {
 		return t.isUniverse
 	}
 }
