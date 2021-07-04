@@ -168,7 +168,6 @@ class SolidTypeIntersection extends SolidType {
 	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) && this.right.includes(v)
 	}
-	/** @implements SolidType */
 	override isSubtypeOf_do(t: SolidType): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) { return true }
@@ -203,7 +202,6 @@ class SolidTypeUnion extends SolidType {
 	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) || this.right.includes(v)
 	}
-	/** @implements SolidType */
 	override isSubtypeOf_do(t: SolidType): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
@@ -255,7 +253,6 @@ export class SolidTypeInterface extends SolidType {
 		return new SolidTypeInterface(props)
 	}
 	/**
-	 * @implements SolidType
 	 * In the general case, `S` is a subtype of `T` if every property of `T` exists in `S`,
 	 * and for each of those properties `#prop`, the type of `S#prop` is a subtype of `T#prop`.
 	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
@@ -289,7 +286,6 @@ class SolidTypeNever extends SolidType {
 		return false
 	}
 	/**
-	 * @implements SolidType
 	 * 1-1 | `never <: T`
 	 */
 	override  isSubtypeOf_do(_t: SolidType): boolean {
@@ -319,7 +315,6 @@ export class SolidTypeConstant extends SolidType {
 	override includes(_v: SolidObject): boolean {
 		return this.value.equal(_v)
 	}
-	/** @implements SolidType */
 	override isSubtypeOf_do(t: SolidType): boolean {
 		return t instanceof Function && this.value instanceof t || t.includes(this.value)
 	}
@@ -347,7 +342,6 @@ class SolidTypeUnknown extends SolidType {
 		return true
 	}
 	/**
-	 * @implements SolidType
 	 * 1-4 | `unknown <: T      <->  T == unknown`
 	 */
 	override isSubtypeOf_do(t: SolidType): boolean {
