@@ -502,8 +502,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	override get shouldFloat(): boolean {
 		return this.value instanceof Float64
 	}
-	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionConst {
+	protected override build_do(builder: Builder, to_float: boolean = false): InstructionConst {
 		return InstructionConst.fromAssessment(this.assess_do(builder.validator), to_float);
 	}
 	/** @implements ASTNodeExpression */
@@ -549,8 +548,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		};
 	}
-	/** @implements ASTNodeExpression */
-	protected build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
+	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
 		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat);
 	}
 	/** @implements ASTNodeExpression */
@@ -596,8 +594,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	override get shouldFloat(): boolean {
 		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
 	}
-	/** @implements ASTNodeExpression */
-	protected build_do(_builder: Builder): InstructionExpression {
+	protected override build_do(_builder: Builder): InstructionExpression {
 		throw new Error('ASTNodeTemplate#build_do not yet supported.');
 	}
 	/** @implements ASTNodeExpression */
@@ -621,8 +618,7 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 	override get shouldFloat(): boolean {
 		throw 'ASTNodeEmptyCollection#shouldFloat not yet supported.';
 	}
-	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
+	protected override build_do(builder: Builder): InstructionExpression {
 		throw builder && 'ASTNodeEmptyCollection#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -649,8 +645,7 @@ export class ASTNodeList extends ASTNodeExpression {
 	override get shouldFloat(): boolean {
 		throw 'ASTNodeList#shouldFloat not yet supported.';
 	}
-	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
+	protected override build_do(builder: Builder): InstructionExpression {
 		throw builder && 'ASTNodeList#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -677,8 +672,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 	override get shouldFloat(): boolean {
 		throw 'ASTNodeRecord#shouldFloat not yet supported.';
 	}
-	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
+	protected override build_do(builder: Builder): InstructionExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -708,8 +702,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	override get shouldFloat(): boolean {
 		throw 'ASTNodeMapping#shouldFloat not yet supported.';
 	}
-	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder): InstructionExpression {
+	protected override build_do(builder: Builder): InstructionExpression {
 		throw builder && 'ASTNodeMapping#build_do not yet supported.';
 	}
 	/** @implements ASTNodeExpression */
@@ -752,8 +745,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	override get shouldFloat(): boolean {
 		return this.children[0].shouldFloat
 	}
-	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionUnop {
+	protected override build_do(builder: Builder, to_float: boolean = false): InstructionUnop {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionUnop(
 			this.operator,
@@ -844,8 +836,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopArithmetic {
+	protected override build_do(builder: Builder, to_float: boolean = false): InstructionBinopArithmetic {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionBinopArithmetic(
 			this.operator,
@@ -925,8 +916,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
 		}
 	}
-	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopComparative {
+	protected override build_do(builder: Builder, to_float: boolean = false): InstructionBinopComparative {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionBinopComparative(
 			this.operator,
@@ -994,8 +984,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	override get shouldFloat(): boolean {
 		return this.operator === Operator.EQ && super.shouldFloat
 	}
-	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, _to_float: boolean = false): InstructionBinopEquality {
+	protected override build_do(builder: Builder, _to_float: boolean = false): InstructionBinopEquality {
 		const tofloat: boolean = builder.config.compilerOptions.intCoercion && this.shouldFloat
 		return new InstructionBinopEquality(
 			this.operator,
@@ -1053,8 +1042,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionBinopLogical {
+	protected override build_do(builder: Builder, to_float: boolean = false): InstructionBinopLogical {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionBinopLogical(
 			builder.varCount,
@@ -1120,8 +1108,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	override get shouldFloat(): boolean {
 		return this.children[1].shouldFloat || this.children[2].shouldFloat
 	}
-	/** @implements ASTNodeExpression */
-	protected build_do(builder: Builder, to_float: boolean = false): InstructionCond {
+	protected override build_do(builder: Builder, to_float: boolean = false): InstructionCond {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new InstructionCond(
 			this.children[0].build(builder, false),
