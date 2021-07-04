@@ -515,8 +515,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		(Dev.supports('stringConstant-assess') && this.value instanceof SolidString)  ? SolidString :
 		SolidObject
 	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(_validator: Validator): SolidObject {
+	protected override assess_do(_validator: Validator): SolidObject {
 		if (this.value instanceof SolidString && !Dev.supports('stringConstant-assess')) {
 			throw new Error('`stringConstant-assess` not yet supported.');
 		};
@@ -559,8 +558,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		};
 		return SolidType.UNKNOWN;
 	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): SolidObject | null {
+	protected override assess_do(validator: Validator): SolidObject | null {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
@@ -598,8 +596,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	protected override type_do(_validator: Validator): SolidType {
 		return SolidString
 	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): SolidString | null {
+	protected override assess_do(validator: Validator): SolidString | null {
 		const concat: string | null = [...this.children].map((expr) => {
 			const assessed: SolidObject | null = expr.assess(validator);
 			return assessed && assessed.toString();
@@ -621,8 +618,7 @@ export class ASTNodeEmptyCollection extends ASTNodeExpression {
 	protected override type_do(_validator: Validator): SolidType {
 		return new SolidTypeTuple().intersect(new SolidTypeRecord());
 	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(): SolidObject | null {
+	protected override assess_do(): SolidObject | null {
 		throw 'ASTNodeEmptyCollection#assess_do not yet supported.';
 	}
 }
@@ -647,8 +643,7 @@ export class ASTNodeList extends ASTNodeExpression {
 	protected override type_do(validator: Validator): SolidType {
 		return new SolidTypeTuple(this.children.map((c) => c.type(validator)));
 	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(): SolidObject | null {
+	protected override assess_do(): SolidObject | null {
 		throw 'ASTNodeList#assess_do not yet supported.';
 	}
 }
@@ -676,8 +671,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 			c.children[1].type(validator),
 		])));
 	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(): SolidObject | null {
+	protected override assess_do(): SolidObject | null {
 		throw 'ASTNodeRecord#assess_do not yet supported.';
 	}
 }
@@ -702,8 +696,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	protected override type_do(_validator: Validator): SolidType {
 		return SolidObject;
 	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(): SolidObject | null {
+	protected override assess_do(): SolidObject | null {
 		throw 'ASTNodeMapping#assess_do not yet supported.';
 	}
 }
@@ -757,8 +750,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(SolidNumber)) ? t0 : (() => { throw new TypeError01(this); })()
 		);
 	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): SolidObject | null {
+	protected override assess_do(validator: Validator): SolidObject | null {
 		const assess0: SolidObject | null = this.children[0].assess(validator);
 		if (!assess0) {
 			return assess0
@@ -845,8 +837,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		}
 		throw new TypeError01(this)
 	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): SolidObject | null {
+	protected override assess_do(validator: Validator): SolidObject | null {
 		const assess0: SolidObject | null = this.children[0].assess(validator);
 		if (!assess0) {
 			return assess0
@@ -922,8 +913,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		}
 		throw new TypeError01(this)
 	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): SolidObject | null {
+	protected override assess_do(validator: Validator): SolidObject | null {
 		const assess0: SolidObject | null = this.children[0].assess(validator);
 		if (!assess0) {
 			return assess0
@@ -995,8 +985,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		}
 		return SolidBoolean
 	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): SolidObject | null {
+	protected override assess_do(validator: Validator): SolidObject | null {
 		const assess0: SolidObject | null = this.children[0].assess(validator);
 		if (!assess0) {
 			return assess0
@@ -1063,8 +1052,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 					? truthifyType(t0).union(t1)
 					: t0
 	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): SolidObject | null {
+	protected override assess_do(validator: Validator): SolidObject | null {
 		const assess0: SolidObject | null = this.children[0].assess(validator);
 		if (!assess0) {
 			return assess0
@@ -1115,8 +1103,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 				: t1.union(t2)
 			: (() => { throw new TypeError01(this) })()
 	}
-	/** @implements ASTNodeExpression */
-	protected assess_do(validator: Validator): SolidObject | null {
+	protected override assess_do(validator: Validator): SolidObject | null {
 		const assess0: SolidObject | null = this.children[0].assess(validator);
 		if (!assess0) {
 			return assess0
