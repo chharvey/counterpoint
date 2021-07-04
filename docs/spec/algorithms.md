@@ -252,7 +252,7 @@ Boolean Equal(Object a, Object b) :=
 		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
 			1. *Note:* This assumption prevents an infinite loop,
 				if `a` and `b` ever recursively contain themselves or each other.
-		5. *For index* `i` in `seq_a`:
+		5. *For index* `i` in `seq_b`:
 			1. *If* *UnwrapAffirm*: `Equal(seq_a[i], seq_b[i])` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
@@ -280,9 +280,9 @@ Boolean Equal(Object a, Object b) :=
 		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
 			1. *Note:* This assumption prevents an infinite loop,
 				if `a` and `b` ever recursively contain themselves or each other.
-		5. *For each* `it_a` in `data_a`:
-			1. Find an item `it_b` in `data_b` such that *UnwrapAffirm:* `Equal(it_a.0, it_b.0)` is `true`.
-			2. *If* no such item `it_b` is found:
+		5. *For each* `it_b` in `data_b`:
+			1. Find an item `it_a` in `data_a` such that *UnwrapAffirm:* `Equal(it_a.0, it_b.0)` is `true`.
+			2. *If* no such item `it_a` is found:
 				1. *Return:* `false`.
 			3. *If* *UnwrapAffirm:* `Equal(it_a.1, it_b.1)` is `false`:
 				1. *Return:* `false`.
