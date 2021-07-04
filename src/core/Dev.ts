@@ -32,7 +32,7 @@ export class Dev {
 		readonly 'stringTemplate-assess':   DevToggle,
 	} = {
 		// v0.4.0
-		literalCollection:         [false],
+		literalCollection:         [true],
 		'literalString-lex':       [true],
 		'literalString-cook':      [true, ['literalString-lex']],
 		'stringConstant-assess':   [true, ['literalString-cook']],
