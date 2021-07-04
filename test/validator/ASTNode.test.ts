@@ -18,6 +18,7 @@ import {
 	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidTypeMapping,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -983,7 +984,10 @@ describe('ASTNodeSolid', () => {
 								c.children[0].id,
 								c.children[1].type(validator),
 							]))),
-							SolidMapping,
+							new SolidTypeMapping(
+								SolidString.union(Int16).union(Float64),
+								Int16.union(Float64).union(SolidString),
+							),
 						],
 					);
 				});
