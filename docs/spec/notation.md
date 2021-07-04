@@ -839,3 +839,4 @@ When the compiler recognizes a type mismatch, a type error is raised.
 2301. The validator encountered an operation with an invalid operand.
 2302. One type is expected to be a subtype of another, but is not.
 2303. An expression was assigned to a type to which it is not assignable.
+2304. The validator encountered a non-existent index/property/argument access.
