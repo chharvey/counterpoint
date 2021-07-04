@@ -81,6 +81,52 @@ function neitherFloats(t0: SolidType, t1: SolidType): boolean {
 function oneFloats(t0: SolidType, t1: SolidType): boolean {
 	return !neitherFloats(t0, t1) && !bothFloats(t0, t1)
 }
+/** Implementation of `xjs.Array.forEachAggregated` until it is released. */
+function forEachAggregated<T>(array: readonly T[], callback: (item: T) => void): void {
+	const errors: readonly Error[] = array.flatMap((it) => {
+		try {
+			callback(it);
+			return [];
+		} catch (err) {
+			return (
+				(err instanceof AggregateError) ? err.errors :
+				(err instanceof Error) ? [err] :
+				[new Error(`${ err }`)]
+			);
+		}
+	});
+	if (errors.length) {
+		throw (errors.length === 1)
+			? errors[0]
+			: new AggregateError(errors, errors.map((err) => err.message).join('\n'));
+	}
+}
+/** Implementation of `xjs.Array.mapAggregated` until it is released. */
+function mapAggregated<T, U>(array: readonly T[], callback: (item: T) => U): U[] {
+	const successes: U[]     = [];
+	const errors:    Error[] = [];
+	array.forEach((it) => {
+		let success: U;
+		try {
+			success = callback(it);
+		} catch (err) {
+			errors.push(...(
+				(err instanceof AggregateError) ? err.errors :
+				(err instanceof Error) ? [err] :
+				[new Error(`${ err }`)]
+			));
+			return;
+		}
+		successes.push(success);
+	});
+	if (errors.length) {
+		throw (errors.length === 1)
+			? errors[0]
+			: new AggregateError(errors, errors.map((err) => err.message).join('\n'));
+	} else {
+		return successes;
+	}
+}
 
 
 
@@ -108,7 +154,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * @param validator a record of declared variable symbols
 	 */
 	varCheck(validator: Validator): void {
-		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck(validator));
+		return forEachAggregated(this.children, (c) => c.varCheck(validator));
 	}
 
 	/**
@@ -116,7 +162,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * @param validator stores validation information
 	 */
 	typeCheck(validator: Validator): void {
-		return xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck(validator));
+		return forEachAggregated(this.children, (c) => c.typeCheck(validator));
 	}
 
 	/**
@@ -625,7 +671,7 @@ export class ASTNodeList extends ASTNodeExpression {
 		throw builder && 'ASTNodeList#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return new SolidTypeTuple(xjs.Array.mapAggregated(this.children, (c) => c.type(validator)));
+		return new SolidTypeTuple(mapAggregated(this.children, (c) => c.type(validator)));
 	}
 	protected override assess_do(): SolidObject | null {
 		throw 'ASTNodeList#assess_do not yet supported.';
@@ -650,7 +696,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return new SolidTypeRecord(new Map(xjs.Array.mapAggregated(this.children, (c) => [
+		return new SolidTypeRecord(new Map(mapAggregated(this.children, (c) => [
 			c.children[0].id,
 			c.children[1].type(validator),
 		])));
@@ -782,7 +828,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	 * @final
 	 */
 	protected override type_do(validator: Validator): SolidType {
-		xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck(validator));
+		forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		return this.type_do_do(
 			this.children[0].type(validator),
 			this.children[1].type(validator),
@@ -1077,7 +1123,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		)
 	}
 	protected override type_do(validator: Validator): SolidType {
-		xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck(validator));
+		forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		const t0: SolidType = this.children[0].type(validator);
 		const t1: SolidType = this.children[1].type(validator);
 		const t2: SolidType = this.children[2].type(validator);
@@ -1201,7 +1247,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		if (validator.hasSymbol(variable.id)) {
 			throw new AssignmentError01(variable);
 		};
-		xjs.Array.forEachAggregated([
+		forEachAggregated([
 			this.children[1],
 			this.children[2],
 		], (c) => c.varCheck(validator));
@@ -1252,7 +1298,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		super(start_node, {}, children)
 	}
 	override varCheck(validator: Validator): void {
-		xjs.Array.forEachAggregated(this.children, (c) => c.varCheck(validator));
+		forEachAggregated(this.children, (c) => c.varCheck(validator));
 		const variable: ASTNodeVariable = this.children[0];
 		if (!(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
 			throw new AssignmentError10(variable);
