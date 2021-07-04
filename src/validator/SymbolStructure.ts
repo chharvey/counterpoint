@@ -54,9 +54,8 @@ export class SymbolStructureType extends SymbolStructure {
 	get value(): SolidType {
 		return this._value;
 	}
-	/** @implements SymbolStructure */
 	@runOnceMethod
-	assess(): void {
+	override assess(): void {
 		this._value = this.value_setter();
 	}
 }
@@ -88,9 +87,8 @@ export class SymbolStructureVar extends SymbolStructure {
 	get value(): SolidObject | null {
 		return this._value;
 	}
-	/** @implements SymbolStructure */
 	@runOnceMethod
-	assess(): void {
+	override assess(): void {
 		this._type = this.type_setter();
 		if (!this.unfixed && !!this.value_setter) {
 			this._value = this.value_setter();
