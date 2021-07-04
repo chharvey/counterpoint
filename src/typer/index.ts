@@ -13,3 +13,6 @@ export {SolidNumber}  from './SolidNumber.js';
 export {Int16}        from './Int16.js';
 export {Float64}      from './Float64.js';
 export {SolidString}  from './SolidString.js';
+export {SolidTuple}   from './SolidTuple.js';
+export {SolidRecord}  from './SolidRecord.js';
+export {SolidMapping} from './SolidMapping.js';

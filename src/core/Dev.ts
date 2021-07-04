@@ -32,7 +32,7 @@ export class Dev {
 	 * Released features may have an optional language feature option defined in {@link SolidConfig}.
 	 */
 	private static readonly TOGGLES: {[K in DevToggleKey]: DevToggleVal} = {
-		literalCollection:         [false],
+		literalCollection:         [true],
 		'literalString-lex':       [true],
 		'literalString-cook':      [true, ['literalString-lex']],
 		'stringConstant-assess':   [true, ['literalString-cook']],

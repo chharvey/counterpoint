@@ -1,4 +1,6 @@
 import {SolidType} from './SolidType.js';
+import {SolidObject} from './SolidObject.js';
+import {SolidTuple} from './SolidTuple.js';
 
 
 
@@ -12,7 +14,7 @@ export class SolidTypeTuple extends SolidType {
 	constructor (
 		private readonly types: readonly SolidType[] = [],
 	) {
-		super();
+		super(new Set([new SolidTuple()]));
 	}
 
 	override toString(): string {
@@ -20,13 +22,10 @@ export class SolidTypeTuple extends SolidType {
 	}
 
 	override isSubtypeOf_do(t: SolidType): boolean {
-		if (t instanceof SolidTypeTuple) {
-			if (this.types.length < t.types.length) {
-				return false;
-			};
-			return t.types.every((thattype, i) => this.types[i].isSubtypeOf(thattype));
-		} else {
-			return false;
-		};
+		return t.equals(SolidObject) || (
+			t instanceof SolidTypeTuple
+			&& this.types.length >= t.types.length
+			&& t.types.every((thattype, i) => this.types[i].isSubtypeOf(thattype))
+		);
 	}
 }

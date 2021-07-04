@@ -1,6 +1,7 @@
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import type {CodeUnit} from '../types';
+import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidBoolean} from './SolidBoolean.js';
 
@@ -10,6 +11,9 @@ export class SolidString extends SolidObject {
 	static override toString(): string {
 		return 'str';
 	}
+	static override values: SolidType['values'] = new Set([new SolidString('')]);
+
+
 	private readonly codeunits: readonly CodeUnit[];
 	constructor (data: string | readonly CodeUnit[]) {
 		super();

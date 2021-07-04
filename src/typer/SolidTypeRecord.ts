@@ -1,4 +1,6 @@
 import {SolidType} from './SolidType.js';
+import {SolidObject} from './SolidObject.js';
+import {SolidRecord} from './SolidRecord.js';
 
 
 
@@ -12,27 +14,21 @@ export class SolidTypeRecord extends SolidType {
 	constructor (
 		private readonly propertytypes: ReadonlyMap<bigint, SolidType> = new Map(),
 	) {
-		super();
+		super(new Set([new SolidRecord()]));
 	}
 
 	override toString(): string {
 		return `[${ [...this.propertytypes].map(([key, value]) => `${ key }: ${ value }`).join(', ') }]`;
 	}
 
-	override isSubtypeOf_do(t: SolidTypeRecord): boolean {
-		if (t instanceof SolidTypeRecord) {
-			if (this.propertytypes.size < t.propertytypes.size) {
-				return false;
-			};
-			return [...t.propertytypes].every(([id, thattype]) => {
+	override isSubtypeOf_do(t: SolidType): boolean {
+		return t.equals(SolidObject) || (
+			t instanceof SolidTypeRecord
+			&& this.propertytypes.size >= t.propertytypes.size
+			&& [...t.propertytypes].every(([id, thattype]) => {
 				const thistype: SolidType | null = this.propertytypes.get(id) || null;
-				if (!thistype) {
-					return false;
-				};
-				return thistype.isSubtypeOf(thattype);
-			});
-		} else {
-			return false;
-		};
+				return !!thistype && thistype.isSubtypeOf(thattype);
+			})
+		);
 	}
 }

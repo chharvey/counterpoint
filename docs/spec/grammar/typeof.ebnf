@@ -21,14 +21,8 @@ Type TypeOf(StringTemplate template) :=
 
 
 
-Type TypeOf(SemanticEmptyCollection coll) :=
-	1. *Return:* `Intersection(Tuple, Record)`.
-;
-
-
-
-Type! TypeOf(SemanticList list) :=
-	1. *Let* `types` be a mapping of `list` for each `it` to *Unwrap:* `TypeOf(it)`.
+Type! TypeOf(SemanticTuple tuple) :=
+	1. *Let* `types` be a mapping of `tuple` for each `it` to *Unwrap:* `TypeOf(it)`.
 	2. *Return:* a new Tuple type containing the items in the sequence `types`.
 ;
 
@@ -37,7 +31,7 @@ Type! TypeOf(SemanticList list) :=
 Type! TypeOf(SemanticRecord record) :=
 	1. *Let* `types` be a new Structure.
 	2. *For each* `property` in `record`:
-		1. *Set* `types` to the structure [
+		1. *Set* `types` to a new Structure [
 			...types,
 			`property.children.0` = *Unwrap:* `TypeOf(property.children.1)`,
 		].
@@ -51,7 +45,7 @@ Type! TypeOf(SemanticMapping mapping) :=
 	2. *Let* `con_types` be a mapping of `mapping` for each `case` to *Unwrap:* `TypeOf(case.children.1)`.
 	3. *Let* `k` be `Union(...ant_types)`.
 	4. *Let* `v` be `Union(...con_types)`.
-	5. *Return:* `Object`. // NOTE: with type generics, return `Mapping<k, v>`
+	5. *Return:* `Mapping`. // NOTE: with type generics, return generic `Mapping<k, v>`
 ;
 
 

@@ -136,9 +136,9 @@ export function stringTemplateFromSource(src: string, config: SolidConfig = CONF
 	assert.ok(unit instanceof PARSER.ParseNodeStringTemplate, 'unit should be a ParseNodeStringTemplate');
 	return unit;
 }
-export function listLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeListLiteral {
+export function tupleLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeTupleLiteral {
 	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
-	assert.ok(unit instanceof PARSER.ParseNodeListLiteral, 'unit should be a ParseNodeListLiteral');
+	assert.ok(unit instanceof PARSER.ParseNodeTupleLiteral, 'unit should be a ParseNodeTupleLiteral');
 	return unit;
 }
 export function recordLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeRecordLiteral {
