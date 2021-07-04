@@ -22,6 +22,7 @@ import {
 	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidTypeMapping,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -670,8 +671,12 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeMapping#build_do not yet supported.';
 	}
-	protected override type_do(_validator: Validator): SolidType {
-		return SolidMapping;
+	protected override type_do(validator: Validator): SolidType {
+		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
+		return new SolidTypeMapping(
+			this.children.map((c) => c.children[0].type(validator)).reduce((a, b) => a.union(b)),
+			this.children.map((c) => c.children[1].type(validator)).reduce((a, b) => a.union(b)),
+		);
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
 		const cases: ReadonlyMap<SolidObject | null, SolidObject | null> = new Map(this.children.map((c) => [

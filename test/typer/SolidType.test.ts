@@ -6,6 +6,7 @@ import {
 	SolidTypeInterface,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidTypeMapping,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -418,6 +419,21 @@ describe('SolidType', () => {
 					[0x102n, SolidObject],
 					[0x103n, Int16.union(Float64)],
 				]))), `[x: int, y: bool, z: str] !<: [y: bool!, z: obj, w: int | float]`);
+			});
+		});
+
+		Dev.supports('literalCollection') && describe('SolidTypeMapping', () => {
+			it('is a subtype but not a supertype of `SolidObject`.', () => {
+				assert.ok(new SolidTypeMapping(Int16, SolidBoolean).isSubtypeOf(SolidObject), `Mapping.<int, bool> <: obj`);
+				assert.ok(!SolidObject.isSubtypeOf(new SolidTypeMapping(Int16, SolidBoolean)), `obj !<: Mapping.<int, bool>`);
+			});
+			it('Covariance: `A <: C && B <: D --> Mapping.<A, B> <: Mapping.<C, D>`.', () => {
+				assert.ok(new SolidTypeMapping(Int16, SolidBoolean).isSubtypeOf(
+					new SolidTypeMapping(Int16.union(Float64), SolidBoolean.union(SolidNull))
+				), `Mapping.<int, bool> <: Mapping.<int | float, bool | null>`);
+				assert.ok(!new SolidTypeMapping(Int16, SolidBoolean).isSubtypeOf(
+					new SolidTypeMapping(SolidBoolean.union(SolidNull), SolidObject)
+				), `Mapping.<int, bool> !<: Mapping.<bool | null, obj>`);
 			});
 		});
 
