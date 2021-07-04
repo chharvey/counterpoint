@@ -264,8 +264,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		super(start_node, {value});
 		this.value = value
 	}
-	/** @implements ASTNodeType */
-	protected assess_do(_validator: Validator): SolidType {
+	protected override assess_do(_validator: Validator): SolidType {
 		return this.value
 	}
 }
@@ -289,8 +288,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
 		};
 	}
-	/** @implements ASTNodeType */
-	protected assess_do(validator: Validator): SolidType {
+	protected override assess_do(validator: Validator): SolidType {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureType) {
@@ -307,8 +305,7 @@ export class ASTNodeTypeEmptyCollection extends ASTNodeType {
 	) {
 		super(start_node);
 	}
-	/** @implements ASTNodeType */
-	protected assess_do(_validator: Validator): SolidType {
+	protected override assess_do(_validator: Validator): SolidType {
 		return new SolidTypeTuple().intersect(new SolidTypeRecord());
 	}
 }
@@ -324,8 +321,7 @@ export class ASTNodeTypeList extends ASTNodeType {
 	) {
 		super(start_node, {}, children);
 	}
-	/** @implements ASTNodeType */
-	protected assess_do(validator: Validator): SolidType {
+	protected override assess_do(validator: Validator): SolidType {
 		return new SolidTypeTuple(this.children.map((c) => c.assess(validator)));
 	}
 }
@@ -341,8 +337,7 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 	) {
 		super(start_node, {}, children);
 	}
-	/** @implements ASTNodeType */
-	protected assess_do(validator: Validator): SolidType {
+	protected override assess_do(validator: Validator): SolidType {
 		return new SolidTypeRecord(new Map(this.children.map((c) => [
 			c.children[0].id,
 			c.children[1].assess(validator),
@@ -376,8 +371,7 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements ASTNodeType */
-	protected assess_do(validator: Validator): SolidType {
+	protected override assess_do(validator: Validator): SolidType {
 		return (this.operator === Operator.ORNULL)
 			? this.children[0].assess(validator).union(SolidNull)
 			: (() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
@@ -396,8 +390,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 	) {
 		super(start_node, operator, children)
 	}
-	/** @implements ASTNodeType */
-	protected assess_do(validator: Validator): SolidType {
+	protected override assess_do(validator: Validator): SolidType {
 		return (
 			(this.operator === Operator.AND) ? this.children[0].assess(validator).intersect(this.children[1].assess(validator)) :
 			(this.operator === Operator.OR)  ? this.children[0].assess(validator).union    (this.children[1].assess(validator)) :
