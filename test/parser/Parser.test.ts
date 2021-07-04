@@ -3,22 +3,20 @@ import {
 	ParseError01,
 } from '@chharvey/parser';
 import * as assert from 'assert'
-
 import {
 	Dev,
-} from '../../src/core/';
+} from '../../src/core/index.js';
 import {
 	Punctuator,
 	Keyword,
 	TOKEN,
 	PARSER,
 	ParserSolid as Parser,
-} from '../../src/parser/';
-
+} from '../../src/parser/index.js';
 import {
 	assert_arrayLength,
-} from '../assert-helpers'
-import * as h from '../helpers-parse'
+} from '../assert-helpers.js';
+import * as h from '../helpers-parse.js';
 
 
 

@@ -3,32 +3,19 @@ import type {
 } from '@chharvey/parser';
 import * as assert from 'assert'
 import * as xjs from 'extrajs'
-
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-} from '../../src/core/';
+} from '../../src/core/index.js';
 import {
 	Operator,
-} from '../../src/enum/Operator.enum';
-import {
-	ReferenceError01,
-	ReferenceError02,
-	ReferenceError03,
-	AssignmentError01,
-	AssignmentError10,
-	TypeError01,
-	TypeError03,
-	NanError01,
-} from '../../src/error/';
-import {
-	Validator,
 	AST,
 	SymbolStructure,
 	SymbolStructureType,
 	SymbolStructureVar,
-} from '../../src/validator/'
+	Validator,
+} from '../../src/validator/index.js';
 import {
 	SolidType,
 	SolidTypeConstant,
@@ -43,31 +30,31 @@ import {
 	SolidTuple,
 	SolidRecord,
 	SolidMapping,
-} from '../../src/typer/';
+} from '../../src/typer/index.js';
 import {
 	Builder,
-	InstructionNone,
-	InstructionExpression,
-	InstructionConst,
-	InstructionUnop,
-	InstructionBinopArithmetic,
-	InstructionBinopEquality,
-	InstructionBinopLogical,
-	InstructionCond,
-	InstructionStatement,
-	InstructionModule,
 	INST,
-} from '../../src/builder/'
+} from '../../src/builder/index.js';
+import {
+	ReferenceError01,
+	ReferenceError02,
+	ReferenceError03,
+	AssignmentError01,
+	AssignmentError10,
+	TypeError01,
+	TypeError03,
+	NanError01,
+} from '../../src/error/index.js';
 import {
 	assert_wasCalled,
-} from '../assert-helpers';
+} from '../assert-helpers.js';
 import {
 	typeConstInt,
 	typeConstFloat,
 	typeConstStr,
 	instructionConstInt,
 	instructionConstFloat,
-} from '../helpers'
+} from '../helpers.js';
 
 
 
@@ -349,17 +336,17 @@ describe('ASTNodeSolid', () => {
 		context('SemanticGoal ::= ()', () => {
 			it('returns InstructionNone.', () => {
 				const src: string = ``;
-				const instr: InstructionNone | InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
-				assert.ok(instr instanceof InstructionNone)
+				const instr: INST.InstructionNone | INST.InstructionModule = AST.ASTNodeGoal.fromSource(src).build(new Builder(src));
+				assert.ok(instr instanceof INST.InstructionNone);
 			})
 		})
 
 		describe('ASTNodeStatementExpression', () => {
 			it('returns InstructionNone for empty statement expression.', () => {
 				const src: string = `;`;
-				const instr: InstructionNone | InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src)
+				const instr: INST.InstructionNone | INST.InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src)
 					.build(new Builder(src))
-				assert.ok(instr instanceof InstructionNone)
+				assert.ok(instr instanceof INST.InstructionNone);
 			})
 			it('returns InstructionStatement for nonempty statement expression.', () => {
 				const src: string = `42 + 420;`;
@@ -367,7 +354,7 @@ describe('ASTNodeSolid', () => {
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
 				assert.deepStrictEqual(
 					stmt.build(builder),
-					new InstructionStatement(0n, AST.ASTNodeOperationBinaryArithmetic.fromSource(src).build(builder)),
+					new INST.InstructionStatement(0n, AST.ASTNodeOperationBinaryArithmetic.fromSource(src).build(builder)),
 				)
 			})
 			specify('multiple statements.', () => {
@@ -377,7 +364,7 @@ describe('ASTNodeSolid', () => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 					assert.deepStrictEqual(
 						stmt.build(generator),
-						new InstructionStatement(BigInt(i), AST.ASTNodeConstant.fromSource(stmt.source).build(generator)),
+						new INST.InstructionStatement(BigInt(i), AST.ASTNodeConstant.fromSource(stmt.source).build(generator)),
 					)
 				})
 			})
@@ -495,32 +482,32 @@ describe('ASTNodeSolid', () => {
 					constantFolding: false,
 				},
 			};
-			function buildOperations(tests: ReadonlyMap<string, InstructionExpression>): void {
+			function buildOperations(tests: ReadonlyMap<string, INST.InstructionExpression>): void {
 				assert.deepStrictEqual(
 					[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, folding_off).build(new Builder(src, folding_off))),
 					[...tests.values()],
 				);
 			}
 			specify('ASTNodeOperationUnary', () => {
-				buildOperations(new Map<string, InstructionUnop>([
-					[`!null;`,  new InstructionUnop(Operator.NOT, instructionConstInt(0n))],
-					[`!false;`, new InstructionUnop(Operator.NOT, instructionConstInt(0n))],
-					[`!true;`,  new InstructionUnop(Operator.NOT, instructionConstInt(1n))],
-					[`!42;`,    new InstructionUnop(Operator.NOT, instructionConstInt(42n))],
-					[`!4.2;`,   new InstructionUnop(Operator.NOT, instructionConstFloat(4.2))],
-					[`?null;`,  new InstructionUnop(Operator.EMP, instructionConstInt(0n))],
-					[`?false;`, new InstructionUnop(Operator.EMP, instructionConstInt(0n))],
-					[`?true;`,  new InstructionUnop(Operator.EMP, instructionConstInt(1n))],
-					[`?42;`,    new InstructionUnop(Operator.EMP, instructionConstInt(42n))],
-					[`?4.2;`,   new InstructionUnop(Operator.EMP, instructionConstFloat(4.2))],
-					[`-(4);`,   new InstructionUnop(Operator.NEG, instructionConstInt(4n))],
-					[`-(4.2);`, new InstructionUnop(Operator.NEG, instructionConstFloat(4.2))],
+				buildOperations(new Map<string, INST.InstructionUnop>([
+					[`!null;`,  new INST.InstructionUnop(Operator.NOT, instructionConstInt(0n))],
+					[`!false;`, new INST.InstructionUnop(Operator.NOT, instructionConstInt(0n))],
+					[`!true;`,  new INST.InstructionUnop(Operator.NOT, instructionConstInt(1n))],
+					[`!42;`,    new INST.InstructionUnop(Operator.NOT, instructionConstInt(42n))],
+					[`!4.2;`,   new INST.InstructionUnop(Operator.NOT, instructionConstFloat(4.2))],
+					[`?null;`,  new INST.InstructionUnop(Operator.EMP, instructionConstInt(0n))],
+					[`?false;`, new INST.InstructionUnop(Operator.EMP, instructionConstInt(0n))],
+					[`?true;`,  new INST.InstructionUnop(Operator.EMP, instructionConstInt(1n))],
+					[`?42;`,    new INST.InstructionUnop(Operator.EMP, instructionConstInt(42n))],
+					[`?4.2;`,   new INST.InstructionUnop(Operator.EMP, instructionConstFloat(4.2))],
+					[`-(4);`,   new INST.InstructionUnop(Operator.NEG, instructionConstInt(4n))],
+					[`-(4.2);`, new INST.InstructionUnop(Operator.NEG, instructionConstFloat(4.2))],
 				]));
 			});
 			specify('ASTNodeOperationBinaryArithmetic', () => {
 				buildOperations(new Map([
-					[`42 + 420;`, new InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
-					[`3 * 2.1;`,  new InstructionBinopArithmetic(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
+					[`42 + 420;`, new INST.InstructionBinopArithmetic(Operator.ADD, instructionConstInt(42n),   instructionConstInt(420n))],
+					[`3 * 2.1;`,  new INST.InstructionBinopArithmetic(Operator.MUL, instructionConstFloat(3.0), instructionConstFloat(2.1))],
 				]));
 				buildOperations(xjs.Map.mapValues(new Map([
 					[' 126 /  3;', [ 126n,  3n]],
@@ -531,7 +518,7 @@ describe('ASTNodeSolid', () => {
 					[' 200 / -3;', [ 200n, -3n]],
 					['-200 /  3;', [-200n,  3n]],
 					['-200 / -3;', [-200n, -3n]],
-				]), ([a, b]) => new InstructionBinopArithmetic(
+				]), ([a, b]) => new INST.InstructionBinopArithmetic(
 					Operator.DIV,
 					instructionConstInt(a),
 					instructionConstInt(b),
@@ -550,47 +537,47 @@ describe('ASTNodeSolid', () => {
 						`null == false;`,
 						`false == 0.0;`,
 					].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, folding_off).build(new Builder(src, folding_off))), [
-						new InstructionBinopEquality(
+						new INST.InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstInt(42n),
 							instructionConstInt(420n),
 						),
-						new InstructionBinopEquality(
+						new INST.InstructionBinopEquality(
 							Operator.ID,
 							instructionConstFloat(4.2),
 							instructionConstInt(42n),
 						),
-						new InstructionBinopEquality(
+						new INST.InstructionBinopEquality(
 							Operator.ID,
 							instructionConstInt(42n),
 							instructionConstFloat(4.2),
 						),
-						new InstructionBinopEquality(
+						new INST.InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstFloat(4.2),
 							instructionConstFloat(42.0),
 						),
-						new InstructionBinopEquality(
+						new INST.InstructionBinopEquality(
 							Operator.ID,
 							instructionConstInt(1n),
 							instructionConstInt(1n),
 						),
-						new InstructionBinopEquality(
+						new INST.InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstInt(1n),
 							instructionConstInt(1n),
 						),
-						new InstructionBinopEquality(
+						new INST.InstructionBinopEquality(
 							Operator.ID,
 							instructionConstInt(0n),
 							instructionConstInt(0n),
 						),
-						new InstructionBinopEquality(
+						new INST.InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstInt(0n),
 							instructionConstInt(0n),
 						),
-						new InstructionBinopEquality(
+						new INST.InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstFloat(0.0),
 							instructionConstFloat(0.0),
@@ -620,7 +607,7 @@ describe('ASTNodeSolid', () => {
 						[instructionConstInt(0n),    instructionConstFloat(0.0)],
 						[instructionConstInt(0n),    instructionConstFloat(0.0)],
 						[instructionConstInt(1n),    instructionConstFloat(1.0)],
-					].map(([left, right]) => new InstructionBinopEquality(Operator.EQ, left, right)))
+					].map(([left, right]) => new INST.InstructionBinopEquality(Operator.EQ, left, right)));
 				});
 			});
 			describe('ASTNodeOperationBinaryLogical', () => {
@@ -632,31 +619,31 @@ describe('ASTNodeSolid', () => {
 						`true && 201.0e-1;`,
 						`false || null;`,
 					].map((src) => AST.ASTNodeOperationBinaryLogical.fromSource(src, folding_off).build(new Builder(src, folding_off))), [
-						new InstructionBinopLogical(
+						new INST.InstructionBinopLogical(
 							0n,
 							Operator.AND,
 							instructionConstInt(42n),
 							instructionConstInt(420n),
 						),
-						new InstructionBinopLogical(
+						new INST.InstructionBinopLogical(
 							0n,
 							Operator.OR,
 							instructionConstFloat(4.2),
 							instructionConstFloat(-420.0),
 						),
-						new InstructionBinopLogical(
+						new INST.InstructionBinopLogical(
 							0n,
 							Operator.AND,
 							instructionConstFloat(0.0),
 							instructionConstFloat(20.1),
 						),
-						new InstructionBinopLogical(
+						new INST.InstructionBinopLogical(
 							0n,
 							Operator.AND,
 							instructionConstFloat(1.0),
 							instructionConstFloat(20.1),
 						),
-						new InstructionBinopLogical(
+						new INST.InstructionBinopLogical(
 							0n,
 							Operator.OR,
 							instructionConstInt(0n),
@@ -668,16 +655,16 @@ describe('ASTNodeSolid', () => {
 					const src: string = `1 && 2 || 3 && 4;`
 					assert.deepStrictEqual(
 						AST.ASTNodeOperationBinaryLogical.fromSource(src, folding_off).build(new Builder(src, folding_off)),
-						new InstructionBinopLogical(
+						new INST.InstructionBinopLogical(
 							0n,
 							Operator.OR,
-							new InstructionBinopLogical(
+							new INST.InstructionBinopLogical(
 								1n,
 								Operator.AND,
 								instructionConstInt(1n),
 								instructionConstInt(2n),
 							),
-							new InstructionBinopLogical(
+							new INST.InstructionBinopLogical(
 								2n,
 								Operator.AND,
 								instructionConstInt(3n),
@@ -692,26 +679,26 @@ describe('ASTNodeSolid', () => {
 					[`if true  then false else 2;`,    [new Int16(1n), new Int16(0n),    new Int16(2n)]],
 					[`if false then 3.0   else null;`, [new Int16(0n), new Float64(3.0), new Float64(0.0)]],
 					[`if true  then 2     else 3.0;`,  [new Int16(1n), new Float64(2.0), new Float64(3.0)]],
-				]), ([cond, cons, alt]) => new InstructionCond(
-					new InstructionConst(cond),
-					new InstructionConst(cons),
-					new InstructionConst(alt),
+				]), ([cond, cons, alt]) => new INST.InstructionCond(
+					new INST.InstructionConst(cond),
+					new INST.InstructionConst(cons),
+					new INST.InstructionConst(alt),
 				)));
 			});
 			it('compound expression.', () => {
 				buildOperations(new Map([
-					[`42 ^ 2 * 420;`, new InstructionBinopArithmetic(
+					[`42 ^ 2 * 420;`, new INST.InstructionBinopArithmetic(
 						Operator.MUL,
-						new InstructionBinopArithmetic(
+						new INST.InstructionBinopArithmetic(
 							Operator.EXP,
 							instructionConstInt(42n),
 							instructionConstInt(2n),
 						),
 						instructionConstInt(420n),
 					)],
-					[`2 * 3.0 + 5;`, new InstructionBinopArithmetic(
+					[`2 * 3.0 + 5;`, new INST.InstructionBinopArithmetic(
 						Operator.ADD,
-						new InstructionBinopArithmetic(
+						new INST.InstructionBinopArithmetic(
 							Operator.MUL,
 							instructionConstFloat(2.0),
 							instructionConstFloat(3.0),

@@ -6,22 +6,21 @@ import {
 } from '@chharvey/parser';
 import * as assert from 'assert'
 import * as xjs from 'extrajs';
-
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-} from '../../src/core/';
+} from '../../src/core/index.js';
 import {
 	TemplatePosition,
 	TOKEN,
 	LexerSolid as Lexer,
-} from '../../src/parser/'
+} from '../../src/parser/index.js'
 import {
 	LexError03,
 	LexError04,
 	LexError05,
-} from '../../src/error/';
+} from '../../src/error/index.js';
 
 
 

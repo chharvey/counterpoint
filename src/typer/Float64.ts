@@ -1,11 +1,10 @@
 import * as xjs from 'extrajs'
-
 import {
 	strictEqual,
-} from '../decorators';
-import type {SolidType} from './SolidType';
-import type {SolidObject} from './SolidObject';
-import {SolidNumber} from './SolidNumber';
+} from '../decorators.js';
+import type {SolidType} from './SolidType.js';
+import type {SolidObject} from './SolidObject.js';
+import {SolidNumber} from './SolidNumber.js';
 
 
 

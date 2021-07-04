@@ -1,13 +1,12 @@
 import * as xjs from 'extrajs';
 import * as utf8 from 'utf8';
-
-import type {SolidLanguageType} from './SolidLanguageType';
 import type {CodeUnit} from '../types';
 import {
 	strictEqual,
-} from '../decorators';
-import {SolidObject} from './SolidObject';
-import {SolidBoolean} from './SolidBoolean';
+} from '../decorators.js';
+import type {SolidType} from './SolidType.js';
+import {SolidObject} from './SolidObject.js';
+import {SolidBoolean} from './SolidBoolean.js';
 
 
 
@@ -16,7 +15,7 @@ export class SolidString extends SolidObject {
 		return 'str';
 	}
 	/** @overrides SolidObject */
-	static values: SolidLanguageType['values'] = new Set([new SolidString('')]);
+	static values: SolidType['values'] = new Set([new SolidString('')]);
 
 
 	private readonly codeunits: readonly CodeUnit[];

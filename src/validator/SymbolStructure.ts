@@ -4,7 +4,7 @@ import {
 import {
 	SolidType,
 	SolidObject,
-} from '../typer/';
+} from '../typer/index.js';
 
 
 

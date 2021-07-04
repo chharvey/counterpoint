@@ -1,8 +1,8 @@
 import {
 	strictEqual,
-} from '../decorators';
-import {SolidType} from './SolidType';
-import type {SolidBoolean} from './SolidBoolean'; // TODO circular imports
+} from '../decorators.js';
+import {SolidBoolean} from './index.js'; // avoids circular imports
+import {SolidType} from './SolidType.js';
 
 
 
@@ -71,8 +71,7 @@ export abstract class SolidObject {
 	 * @returns the associated Boolean value of this value
 	 */
 	get isTruthy(): SolidBoolean {
-		const SolidBoolean_Class: typeof SolidBoolean = require('./SolidBoolean').SolidBoolean;
-		return SolidBoolean_Class.TRUE;
+		return SolidBoolean.TRUE;
 	}
 	/**
 	 * Return whether this value is “empty”, that is,

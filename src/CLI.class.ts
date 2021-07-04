@@ -1,16 +1,14 @@
 import * as xjs from 'extrajs';
 import * as fs from 'fs'
 import * as path from 'path'
-
-import minimist from 'minimist' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
-
+import minimist from 'minimist'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from './core/';
+} from './core/index.js';
 import {
 	Builder,
-} from './builder/';
+} from './builder/index.js';
 
 
 

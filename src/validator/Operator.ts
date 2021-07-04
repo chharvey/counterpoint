@@ -1,4 +1,3 @@
-// HACK: this is defined here, instead of in `../validator/ASTNode.ts`, to avoid circular imports.
 export enum Operator {
 	ORNULL,
 	NOT,

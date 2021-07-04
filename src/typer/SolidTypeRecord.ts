@@ -1,9 +1,9 @@
 import {
 	strictEqual,
-} from '../decorators';
-import {SolidType} from './SolidType';
-import {SolidObject} from './SolidObject';
-import {SolidRecord} from './SolidRecord';
+} from '../decorators.js';
+import {SolidType} from './SolidType.js';
+import {SolidObject} from './SolidObject.js';
+import {SolidRecord} from './SolidRecord.js';
 
 
 

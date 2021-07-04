@@ -43,12 +43,12 @@ type ExpectCallback<Func extends (...args: any[]) => any, Return> = (orig: Func,
 export function assert_wasCalled<Func extends (...args: any[]) => any, Return>(orig: Func, times: number, callback: ExpectCallback<Func, Return>): Return {
 	const tracker: assert.CallTracker = new assert.CallTracker();
 	try {
-		return callback(orig, tracker.calls(orig, times));
+		return callback.call(null, orig, tracker.calls(orig, times));
 	} finally {
 		try {
 			tracker.verify();
 		} catch {
-			throw tracker.report().map((info) => new assert.AssertionError(info)); // TODO: use ES2021 `AggregateError`
+			throw new AggregateError(tracker.report().map((info) => new assert.AssertionError(info)));
 		};
 	};
 }
