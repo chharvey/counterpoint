@@ -2,18 +2,17 @@ export {
 	SolidType,
 	SolidTypeConstant,
 	SolidTypeInterface,
-} from './SolidType';
+} from './SolidType.js';
+export {SolidTypeTuple}  from './SolidTypeTuple.js';
+export {SolidTypeRecord} from './SolidTypeRecord.js';
 
-export {SolidTypeTuple}  from './SolidTypeTuple';
-export {SolidTypeRecord} from './SolidTypeRecord';
-
-export {SolidObject}  from './SolidObject';
-export {SolidNull}    from './SolidNull';
-export {SolidBoolean} from './SolidBoolean';
-export {SolidNumber}  from './SolidNumber';
-export {Int16}        from './Int16';
-export {Float64}      from './Float64';
-export {SolidString}  from './SolidString';
-export {SolidTuple}   from './SolidTuple';
-export {SolidRecord}  from './SolidRecord';
-export {SolidMapping} from './SolidMapping';
+export {SolidObject}  from './SolidObject.js';
+export {SolidNull}    from './SolidNull.js';
+export {SolidBoolean} from './SolidBoolean.js';
+export {SolidNumber}  from './SolidNumber.js';
+export {Int16}        from './Int16.js';
+export {Float64}      from './Float64.js';
+export {SolidString}  from './SolidString.js';
+export {SolidTuple}   from './SolidTuple.js';
+export {SolidRecord}  from './SolidRecord.js';
+export {SolidMapping} from './SolidMapping.js';

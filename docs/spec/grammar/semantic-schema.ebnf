@@ -22,8 +22,7 @@ SemanticCase
 SemanticType =:=
 	| SemanticTypeConstant
 	| SemanticTypeAlias
-	| SemanticTypeEmptyCollection
-	| SemanticTypeList
+	| SemanticTypeTuple
 	| SemanticTypeRecord
 	| SemanticTypeOperation
 ;
@@ -36,9 +35,8 @@ SemanticTypeConstant[value: Type]
 SemanticTypeAlias[id: RealNumber]
 	::= ();
 
-SemanticTypeEmptyCollection ::= ();
-SemanticTypeList            ::= SemanticType+;
-SemanticTypeRecord          ::= SemanticPropertyType+;
+SemanticTypeTuple  ::= SemanticType*;
+SemanticTypeRecord ::= SemanticPropertyType+;
 
 SemanticTypeOperation[operator: ORNULL]
 	::= SemanticType;
@@ -51,8 +49,7 @@ SemanticExpression =:=
 	| SemanticConstant
 	| SemanticVariable
 	| SemanticTemplate
-	| SemanticEmptyCollection
-	| SemanticList
+	| SemanticTuple
 	| SemanticRecord
 	| SemanticMapping
 	| SemanticAccess
@@ -73,10 +70,9 @@ SemanticTemplate
 SemanticTemplatePartial
 	::= (SemanticConstant SemanticExpression?)+;
 
-SemanticEmptyCollection ::= ();
-SemanticList            ::= SemanticExpression+;
-SemanticRecord          ::= SemanticProperty+;
-SemanticMapping         ::= SemanticCase+;
+SemanticTuple   ::= SemanticExpression*;
+SemanticRecord  ::= SemanticProperty+;
+SemanticMapping ::= SemanticCase+;
 
 SemanticAccess
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);

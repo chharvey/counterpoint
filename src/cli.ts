@@ -1,11 +1,15 @@
+import {requireJSON} from '@chharvey/requirejson';
+import * as path from 'path';
 import {
 	CLI,
 	Command,
-} from './CLI.class';
+} from './CLI.class.js';
+
+const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 
 
 /** The current version of this project (as defined in `package.json`). */
-const VERSION: string = require('../package.json').version;
+const VERSION: Promise<string> = requireJSON(path.join(DIRNAME, '../package.json')).then((pkg: any) => pkg.version);
 
 
 ;(async () => {
@@ -16,7 +20,7 @@ const VERSION: string = require('../package.json').version;
 			console.log('\n' + CLI.CONFIGTEXT)
 		}
 	} else if (cli.command === Command.VERSION) {
-		console.log(`solid version ${ VERSION }`)
+		console.log(`solid version ${ await VERSION }`);
 	} else if (cli.command === Command.COMPILE || cli.command === Command.DEV) {
 		const result: [string, void] = await cli.compileOrDev(process.cwd())
 		console.log(result[0])

@@ -184,21 +184,22 @@ The **logical negation** operator, `!`, returns the opposite boolean value of th
 A value’s “logical value” is the boolean value that most closely corresponds to that value.
 A value is said to be “falsy” if its “logical value” is `false`. Otherwise the value is said to be “truthy”.
 
-| “Falsy” Values | “Truthy” Values |
-| -------------- | --------------- |
-| `null`         |                 |
-| `false`        | `true`          |
-|                | all integers (including `0`)
-|                | all floats   (including `0.0` and `-0.0`)
-|                | all strings  (including `''`)
-|                | any other value
-
 The operator `!` logically negates the “logical value” of the operand.
 If the value is “falsy”, `true` is produced; otherwise `false` is produced.
 
 The **emptiness operator**, `?`, determines whether a value is considered “empty”.
-A value is “empty” if it’s “falsy”, if it’s a zero numeric value (`0`, `0.0`, or `-0.0`), or if it’s an empty string.
-In future versions its semantics will be expanded to collections (such as arrays and sets, etc.).
+A value is “empty” if it’s “falsy”, if it’s a zero numeric value (`0`, `0.0`, or `-0.0`),
+or if it’s an empty string or empty collection (such as an array or set).
+
+| “Falsy” Values | “Empty” Values | “Truthy” Values |
+| -------------- | -------------- | --------------- |
+| `null`         | `null`         |                 |
+| `false`        | `false`        | `true`          |
+|                | `0`            | all integers    |
+|                | `0.0`, `-0.0`  | all floats      |
+|                | `''`           | all strings     |
+|                | `[]`           | all collections |
+|                |                | any other value |
 
 
 ### Mathematical Affirmation, Mathematical Negation
@@ -405,8 +406,7 @@ Any type of operands are valid. The result is a boolean value.
 Integer bases as well as integers and floats can be mixed.
 
 The **identity** operator `is` determines whether two operands are the exactly same object.
-It produces whether the bitwise representations of both operands are the same,
-and whether they exist at the same location in memory.
+It produces `true` if and only if both operands are references to (point to) the same object in memory.
 Primitive values such as `null`, boolean values, number values, and string values
 only exist once, so any two of “the same” values will be identical.
 For other types, identity and equality might not necessarily be the same:
@@ -418,7 +418,7 @@ Floatint-point values and integer values are never identical, so the expression 
 
 The **equality** operator `==` determines whether two operands are considered “equal” by some definition,
 based on the type of the operands.
-For `null` and boolean values, equality is one in the same with identity.
+For `null`, boolean, and string values, equality is one in the same with identity.
 For number values, equality is determined by mathematical quantity, thus `0.0 == -0.0` is `true`.
 Mixed number types of the same quantity are equal, so `42 == 42.0` is also `true`.
 

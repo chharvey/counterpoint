@@ -1,7 +1,7 @@
-import type {SolidType} from './SolidType';
-import type {SolidObject} from './SolidObject';
-import {SolidNumber} from './SolidNumber';
-import {Float64} from './Float64';
+import type {SolidType} from './SolidType.js';
+import type {SolidObject} from './SolidObject.js';
+import {SolidNumber} from './SolidNumber.js';
+import {Float64} from './Float64.js';
 
 
 
@@ -55,8 +55,8 @@ export class Int16 extends SolidNumber<Int16> {
 			? this.toFloat().equal(value)
 			: value instanceof Int16 && this.eq(value)
 	}
-	/** @override */
-	toFloat(): Float64 {
+
+	override toFloat(): Float64 {
 		return new Float64(Number(this.toNumeric()))
 	}
 	/**
@@ -68,8 +68,7 @@ export class Int16 extends SolidNumber<Int16> {
 		return BigInt(unsigned < 2 ** (Int16.BITCOUNT - 1) ? unsigned : unsigned - 2 ** Int16.BITCOUNT)
 	}
 
-	/** @override */
-	plus(addend: Int16): Int16 {
+	override plus(addend: Int16): Int16 {
 		type Carry = [bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint,bigint]
 		const sum   : Carry = [...new Array(Int16.BITCOUNT).fill(0n)] as Carry
 		const carry : Carry = [...new Array(Int16.BITCOUNT).fill(0n)] as Carry
@@ -86,12 +85,10 @@ export class Int16 extends SolidNumber<Int16> {
 		}
 		return new Int16(sum.map((bit) => !!bit) as Int16DatatypeMutable)
 	}
-	/** @override */
-	minus(subtrahend: Int16): Int16 {
+	override minus(subtrahend: Int16): Int16 {
 		return this.plus(subtrahend.neg())
 	}
 	/**
-	 * @override
 	 * ```ts
 	 * function mulSlow(multiplier: number, multiplicand: number): number {
 	 * 	return (
@@ -121,7 +118,7 @@ export class Int16 extends SolidNumber<Int16> {
 	 * }
 	 * ```
 	 */
-	times(multiplicand: Int16): Int16 {
+	override times(multiplicand: Int16): Int16 {
 		return (
 			(this.eq0()) ? Int16.ZERO         :
 			(this.eq1()) ? multiplicand       :
@@ -136,7 +133,6 @@ export class Int16 extends SolidNumber<Int16> {
 		)
 	}
 	/**
-	 * @override
 	 * ```ts
 	 * function divSlow(dividend: number, divisor: number): number {
 	 * 	return (
@@ -181,7 +177,7 @@ export class Int16 extends SolidNumber<Int16> {
 	 * }
 	 * ```
 	 */
-	divide(divisor: Int16): Int16 {
+	override divide(divisor: Int16): Int16 {
 		return (
 			(divisor.eq0()) ? (() => { throw new RangeError('Division by zero.') })() :
 			(this   .eq0()) ? Int16.ZERO                       :
@@ -208,7 +204,6 @@ export class Int16 extends SolidNumber<Int16> {
 		)
 	}
 	/**
-	 * @override
 	 * ```ts
 	 * function expSlow(base: number, exponent: number): number {
 	 * 	return (
@@ -235,7 +230,7 @@ export class Int16 extends SolidNumber<Int16> {
 	 * ```
 	 * @see https://stackoverflow.com/a/101613/877703
 	 */
-	exp(exponent: Int16): Int16 {
+	override exp(exponent: Int16): Int16 {
 		return (
 			(exponent.lt0()) ? Int16.ZERO       :
 			(exponent.eq0()) ? Int16.UNIT       :
@@ -259,22 +254,18 @@ export class Int16 extends SolidNumber<Int16> {
 		// return returned
 	}
 	/**
-	 * @override
 	 * Equivalently, this is the “two’s complement” of the integer.
 	 */
-	neg(): Int16 {
+	override neg(): Int16 {
 		return this.cpl().plus(Int16.UNIT)
 	}
-	/** @override */
-	protected is(int: Int16): boolean {
+	protected override is(int: Int16): boolean {
 		return this === int || this.internal.every((bit, i) => bit === int.internal[i])
 	}
-	/** @override */
-	protected eq(int: Int16): boolean {
+	protected override eq(int: Int16): boolean {
 		return this.is(int)
 	}
-	/** @override */
-	eq0(): boolean {
+	override eq0(): boolean {
 		return this.eq(Int16.ZERO)
 	}
 	/**
@@ -289,8 +280,7 @@ export class Int16 extends SolidNumber<Int16> {
 	private eq2(): boolean {
 		return this.eq(Int16.RADIX)
 	}
-	/** @override */
-	lt(y: Int16): boolean {
+	override lt(y: Int16): boolean {
 		return this.minus(y).lt0()
 	}
 	/**
