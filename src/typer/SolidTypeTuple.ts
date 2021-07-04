@@ -1,4 +1,4 @@
-import {SolidType} from './SolidType';
+import {SolidType} from './SolidType.js';
 
 
 
