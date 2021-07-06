@@ -1,4 +1,15 @@
-Type TypeOf(SemanticConstant const) :=
+Type! TypeOf(SemanticExpression expr) :=
+	1. *Let* `t` be *Unrwap:* `TypeOfUnassessed(expr)`.
+	2. *Let* `assess` be `Assess(expr)`.
+	3. *If* `assess` is an abrupt completion:
+		1. *Return:* `t`.
+	4. *Assert:* `assess.value` exists.
+	5. *Return:* `ToType(assess.value)`.
+;
+
+
+
+Type TypeOfUnassessed(SemanticConstant const) :=
 	1. *Let* `assess` be *UnwrapAffirm:* `Assess(const)`.
 	2. *Note:* `assess` is `const.value`.
 	3. *Return:* `ToType(assess)`.
@@ -6,7 +17,7 @@ Type TypeOf(SemanticConstant const) :=
 
 
 
-Type TypeOf(SemanticVariable var) :=
+Type TypeOfUnassessed(SemanticVariable var) :=
 	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
 		1. *If* `symbol` is an instance of `SymbolStructureVar`:
 			1. *Return:* `symbol.type`.
@@ -15,20 +26,20 @@ Type TypeOf(SemanticVariable var) :=
 
 
 
-Type TypeOf(StringTemplate template) :=
+Type TypeOfUnassessed(StringTemplate template) :=
 	1. *Return:* `String`.
 ;
 
 
 
-Type! TypeOf(SemanticTuple tuple) :=
+Type! TypeOfUnassessed(SemanticTuple tuple) :=
 	1. *Let* `types` be a mapping of `tuple` for each `it` to *Unwrap:* `TypeOf(it)`.
 	2. *Return:* a new Tuple type containing the items in the sequence `types`.
 ;
 
 
 
-Type! TypeOf(SemanticRecord record) :=
+Type! TypeOfUnassessed(SemanticRecord record) :=
 	1. *Let* `types` be a new Structure.
 	2. *For each* `property` in `record`:
 		1. *Set* `types` to a new Structure [
@@ -40,7 +51,7 @@ Type! TypeOf(SemanticRecord record) :=
 
 
 
-Type! TypeOf(SemanticMapping mapping) :=
+Type! TypeOfUnassessed(SemanticMapping mapping) :=
 	1. *Let* `ant_types` be a mapping of `mapping` for each `case` to *Unwrap:* `TypeOf(case.children.0)`.
 	2. *Let* `con_types` be a mapping of `mapping` for each `case` to *Unwrap:* `TypeOf(case.children.1)`.
 	3. *Let* `k` be `Union(...ant_types)`.
@@ -50,18 +61,7 @@ Type! TypeOf(SemanticMapping mapping) :=
 
 
 
-Type! TypeOf(SemanticOperation expr) :=
-	1. *Let* `t` be *Unrwap:* `TypeOfUnassessedOperation(expr)`.
-	2. *Let* `assess` be `Assess(expr)`.
-	3. *If* `assess` is an abrupt completion:
-		1. *Return:* `t`.
-	4. *Assert:* `assess.value` exists.
-	5. *Return:* `ToType(assess.value)`.
-;
-
-
-
-Type! TypeOfUnassessedOperation(SemanticOperation[operator: NOT] expr) :=
+Type! TypeOfUnassessed(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `falsetype` be *UnwrapAffirm:* `ToType(false)`.
@@ -73,13 +73,13 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: NOT] expr) :=
 	7. *Return:* `falsetype`.
 ;
 
-Type! TypeOfUnassessedOperation(SemanticOperation[operator: EMP] expr) :=
+Type! TypeOfUnassessed(SemanticOperation[operator: EMP] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Perform:* *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Return:* `Boolean`.
 ;
 
-Type! TypeOfUnassessedOperation(SemanticOperation[operator: NEG] expr) :=
+Type! TypeOfUnassessed(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* `t0` is a subtype of `Number`:
@@ -87,7 +87,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: NEG] expr) :=
 	4. *Throw:* a new TypeError01.
 ;
 
-Type! TypeOfUnassessedOperation(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
+Type! TypeOfUnassessed(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -99,7 +99,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: EXP | MUL | DIV | AD
 	5. *Throw:* a new TypeError01.
 ;
 
-Type! TypeOfUnassessedOperation(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
+Type! TypeOfUnassessed(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -108,11 +108,11 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: LT | GT | LE | GE] e
 	5. *Throw:* a new TypeError01.
 ;
 
-Type! TypeOfUnassessedOperation(SemanticOperation[operator: IS] expr) :=
+Type! TypeOfUnassessed(SemanticOperation[operator: IS] expr) :=
 	1. *Throw:* new TypeError "Operator not yet supported.".
 ;
 
-Type! TypeOfUnassessedOperation(SemanticOperation[operator: ID | EQ] expr) :=
+Type! TypeOfUnassessed(SemanticOperation[operator: ID | EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -127,7 +127,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: ID | EQ] expr) :=
 	6. *Return:* `Boolean`.
 ;
 
-Type! TypeOfUnassessedOperation(SemanticOperation[operator: AND] expr) :=
+Type! TypeOfUnassessed(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -144,7 +144,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: AND] expr) :=
 	9. *Return:* `t1`.
 ;
 
-Type! TypeOfUnassessedOperation(SemanticOperation[operator: OR] expr) :=
+Type! TypeOfUnassessed(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -160,7 +160,7 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: OR] expr) :=
 	8. *Return:* `t0`.
 ;
 
-Type! TypeOfUnassessedOperation(SemanticOperation[operator: COND] expr) :=
+Type! TypeOfUnassessed(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
