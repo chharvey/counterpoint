@@ -53,8 +53,7 @@ export class TypeError01 extends SolidTypeError {
  * A TypeError02 is thrown when one type is expected to narrow another type, but does not.
  * A general error used for different cases, such as compound types’s components, generic constraints, or throwing non-Exceptions.
  */
-// @ts-expect-error noUnusedLocals
-class TypeError02 extends SolidTypeError {
+export class TypeError02 extends SolidTypeError {
 	/** The number series of this class of errors. */
 	static override readonly CODE = 2;
 	/**
