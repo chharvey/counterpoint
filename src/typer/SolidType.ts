@@ -14,6 +14,7 @@ import type {SolidObject} from './SolidObject.js';
  * - SolidTypeUnknown
  * - SolidTypeTuple
  * - SolidTypeRecord
+ * - SolidTypeMapping
  */
 export abstract class SolidType {
 	/** The Bottom Type, containing no values. */
@@ -309,8 +310,8 @@ export class SolidTypeConstant extends SolidType {
 	override toString(): string {
 		return this.value.toString();
 	}
-	override includes(_v: SolidObject): boolean {
-		return this.value.equal(_v)
+	override includes(v: SolidObject): boolean {
+		return this.value.equal(v);
 	}
 	override isSubtypeOf_do(t: SolidType): boolean {
 		return t instanceof Function && this.value instanceof t || t.includes(this.value)

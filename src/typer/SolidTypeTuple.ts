@@ -21,6 +21,10 @@ export class SolidTypeTuple extends SolidType {
 		return `[${ this.types.map((t) => t.toString()).join(', ') }]`;
 	}
 
+	override includes(v: SolidObject): boolean {
+		return v instanceof SolidTuple && v.toType().isSubtypeOf(this);
+	}
+
 	override isSubtypeOf_do(t: SolidType): boolean {
 		return t.equals(SolidObject) || (
 			t instanceof SolidTypeTuple
