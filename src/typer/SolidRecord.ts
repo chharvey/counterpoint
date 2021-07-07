@@ -1,6 +1,10 @@
 import * as xjs from 'extrajs';
 import type {Keys} from '../types';
-import type {SolidType} from './SolidType.js';
+import {
+	SolidType,
+	SolidTypeConstant,
+} from './SolidType.js';
+import {SolidTypeRecord} from './SolidTypeRecord.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidBoolean} from './SolidBoolean.js';
 
@@ -41,5 +45,9 @@ export class SolidRecord<T extends SolidObject> extends SolidObject {
 		} else {
 			return false;
 		}
+	}
+
+	toType(): SolidTypeRecord {
+		return new SolidTypeRecord(new Map([...this.properties].map(([key, value]) => [key, new SolidTypeConstant(value)])));
 	}
 }

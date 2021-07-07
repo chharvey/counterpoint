@@ -21,6 +21,10 @@ export class SolidTypeRecord extends SolidType {
 		return `[${ [...this.propertytypes].map(([key, value]) => `${ key }: ${ value }`).join(', ') }]`;
 	}
 
+	override includes(v: SolidObject): boolean {
+		return v instanceof SolidRecord && v.toType().isSubtypeOf(this);
+	}
+
 	override isSubtypeOf_do(t: SolidType): boolean {
 		return t.equals(SolidObject) || (
 			t instanceof SolidTypeRecord

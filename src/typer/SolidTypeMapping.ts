@@ -23,6 +23,10 @@ export class SolidTypeMapping extends SolidType {
 		return `Mapping.<${ this.antecedenttypes }, ${ this.consequenttypes }>`;
 	}
 
+	override includes(v: SolidObject): boolean {
+		return v instanceof SolidMapping && v.toType().isSubtypeOf(this);
+	}
+
 	override isSubtypeOf_do(t: SolidType): boolean {
 		return t.equals(SolidObject) || (
 			t instanceof SolidTypeMapping
