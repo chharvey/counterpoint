@@ -240,7 +240,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		return typ;
 	}
 	declare readonly children: readonly [];
-	readonly value: SolidType;
+	private readonly value: SolidType;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) {
 		const value: SolidType =
 			(start_node instanceof TOKEN.TokenKeyword) ?
@@ -471,7 +471,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return expression;
 	}
 	declare readonly children: readonly [];
-	readonly value: SolidObject;
+	private readonly value: SolidObject;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString | TOKEN.TokenTemplate) {
 		const value: SolidObject =
 			(start_node instanceof TOKEN.TokenKeyword) ?
