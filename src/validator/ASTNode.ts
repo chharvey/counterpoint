@@ -45,7 +45,9 @@ import {
 	AssignmentError01,
 	AssignmentError10,
 	TypeError01,
+	TypeError02,
 	TypeError03,
+	TypeError04,
 	NanError01,
 	NanError02,
 } from '../error/index.js';
@@ -707,7 +709,60 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		throw builder && 'ASTNodeAccess#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		throw validator && 'ASTNodeAccess#type_do not yet supported.';
+		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
+		const base: ASTNodeExpression = this.children[0];
+		const accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression = this.children[1];
+		const base_type: SolidType = base.type(validator);
+		if (accessor instanceof ASTNodeIndex) {
+			const accessor_type: SolidType = accessor.children[0].type(validator);
+			return (
+				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
+					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16)
+						? base_type.value.toType().get(accessor_type.value, accessor)
+						: base_type.value.toType().itemTypes()
+				) :
+				(base_type instanceof SolidTypeTuple) ? (
+					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16)
+						? base_type.get(accessor_type.value, accessor)
+						: base_type.itemTypes()
+				) :
+				(() => { throw new TypeError04('index', base_type, accessor); })()
+			);
+		} else if (accessor instanceof ASTNodeKey) {
+			return (
+				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(accessor.id, accessor) :
+				(base_type instanceof SolidTypeRecord) ? base_type.get(accessor.id, accessor) :
+				(() => { throw new TypeError04('property', base_type, accessor); })()
+			);
+		} else /* (accessor instanceof ASTNodeExpression) */ {
+			const accessor_type: SolidType = accessor.type(validator);
+			function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: SolidType): never {
+				throw new TypeError02(accessor_type, supertype, accessor.line_index, accessor.col_index);
+			}
+			return (
+				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
+					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16) ? base_type.value.toType().get(accessor_type.value, accessor) :
+					(accessor_type.isSubtypeOf(Int16))                                                   ? base_type.value.toType().itemTypes() :
+					throwWrongSubtypeError(accessor, Int16)
+				) :
+				(base_type instanceof SolidTypeTuple) ? (
+					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16) ? base_type.get(accessor_type.value, accessor) :
+					(accessor_type.isSubtypeOf(Int16))                                                   ? base_type.itemTypes() :
+					throwWrongSubtypeError(accessor, Int16)
+				) :
+				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping) ? (
+					(accessor_type.isSubtypeOf(base_type.value.toType().antecedenttypes))
+						? base_type.value.toType().consequenttypes
+						: throwWrongSubtypeError(accessor, base_type.value.toType().antecedenttypes)
+				) :
+				(base_type instanceof SolidTypeMapping) ? (
+					(accessor_type.isSubtypeOf(base_type.antecedenttypes))
+						? base_type.consequenttypes
+						: throwWrongSubtypeError(accessor, base_type.antecedenttypes)
+				) :
+				(() => { throw new TypeError01(this); })()
+			);
+		}
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
 		throw validator && 'ASTNodeAccess#assess_do not yet supported.';

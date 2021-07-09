@@ -40,7 +40,9 @@ import {
 	AssignmentError01,
 	AssignmentError10,
 	TypeError01,
+	TypeError02,
 	TypeError03,
+	TypeError04,
 	NanError01,
 } from '../../src/error/index.js';
 import {
@@ -990,6 +992,193 @@ describe('ASTNodeSolid', () => {
 							),
 						],
 					);
+				});
+			});
+
+			Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
+				context('index access.', () => {
+					function newProgram(validator: Validator): AST.ASTNodeGoal {
+						return AST.ASTNodeGoal.fromSource(`
+							let unfixed four: int = 4;
+
+							[1, 2.0, 'three'].0;
+							[1, 2.0, 'three'].1;
+							[1, 2.0, 'three'].2;
+							[1, 2.0, 'three', four].3;
+
+							% [1, 2.0, 'three'].-3;
+							% [1, 2.0, 'three'].-2;
+							% [1, 2.0, 'three'].-1;
+							% [1, 2.0, 'three', four].-1;
+						`, validator.config);
+					}
+					context('with constant folding on, folds index accessor.', () => {
+						let validator: Validator;
+						let program: AST.ASTNodeGoal;
+						before(() => {
+							validator = new Validator();
+							program = newProgram(validator);
+							program.varCheck(validator);
+							program.typeCheck(validator);
+						});
+						it('returns individual entry types.', () => {
+							assert.deepStrictEqual(
+								program.children.slice(1, 5).map((c) => (c as AST.ASTNodeStatementExpression).children[0]!.type(validator)),
+								[
+									new SolidTypeConstant(new Int16(1n)),
+									new SolidTypeConstant(new Float64(2.0)),
+									new SolidTypeConstant(new SolidString('three')),
+									Int16,
+								],
+							);
+						});
+						it.skip('negative indices count backwards from end.', () => {
+							assert.deepStrictEqual(
+								program.children.slice(5, 9).map((c) => (c as AST.ASTNodeStatementExpression).children[0]!.type(validator)),
+								[
+									new SolidTypeConstant(new Int16(1n)),
+									new SolidTypeConstant(new Float64(2.0)),
+									new SolidTypeConstant(new SolidString('three')),
+									Int16,
+								],
+							);
+						});
+						it('throws when index is out of bounds.', () => {
+							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`).type(validator), TypeError04);
+						});
+					});
+					context('with constant folding off.', () => {
+						let validator: Validator;
+						let program: AST.ASTNodeGoal;
+						before(() => {
+							validator = new Validator(folding_off);
+							program = newProgram(validator);
+							program.varCheck(validator);
+							program.typeCheck(validator);
+						});
+						it('returns the union of all entry types.', () => {
+							program.children.slice(1, 5).forEach((c) => {
+								assert.deepStrictEqual(
+									(c as AST.ASTNodeStatementExpression).children[0]!.type(validator),
+									Int16.union(Float64).union(SolidString),
+								);
+							});
+						});
+					});
+				});
+				context('key access.', () => {
+					function newProgram(validator: Validator): AST.ASTNodeGoal {
+						return AST.ASTNodeGoal.fromSource(`
+							let unfixed four: int = 4;
+
+							[a= 1, b= 2.0, c= 'three'].a;
+							[a= 1, b= 2.0, c= 'three'].b;
+							[a= 1, b= 2.0, c= 'three'].c;
+							[a= 1, b= 2.0, c= 'three', d= four].d;
+						`, validator.config);
+					}
+					let validator: Validator;
+					let program: AST.ASTNodeGoal;
+					before(() => {
+						validator = new Validator();
+						program = newProgram(validator);
+						program.varCheck(validator);
+						program.typeCheck(validator);
+					});
+					it('returns individual entry types.', () => {
+						assert.deepStrictEqual(
+							program.children.slice(1).map((c) => (c as AST.ASTNodeStatementExpression).children[0]!.type(validator)),
+							[
+								new SolidTypeConstant(new Int16(1n)),
+								new SolidTypeConstant(new Float64(2.0)),
+								new SolidTypeConstant(new SolidString('three')),
+								Int16,
+							],
+						);
+					});
+					it('throws when key is out of bounds.', () => {
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`).type(validator), TypeError04);
+					});
+				});
+				context('expression access.', () => {
+					function newProgram(validator: Validator): AST.ASTNodeGoal {
+						return AST.ASTNodeGoal.fromSource(`
+							let unfixed four: int = 4;
+
+							[1, 2.0, 'three'].[0];
+							[1, 2.0, 'three'].[1];
+							[1, 2.0, 'three'].[2];
+							[1, 2.0, 'three', four].[3];
+
+							[['a'] |-> 1, ['b'] |-> 2.0, ['c'] |-> 'three'].[['a']];
+							[['a'] |-> 1, ['b'] |-> 2.0, ['c'] |-> 'three', ['d'] |-> four].[['d']];
+						`, validator.config);
+					}
+					context('with constant folding on, folds expression accessor.', () => {
+						let validator: Validator;
+						let program: AST.ASTNodeGoal;
+						before(() => {
+							validator = new Validator();
+							program = newProgram(validator);
+							program.varCheck(validator);
+							program.typeCheck(validator);
+						});
+						it('returns individual entry types for tuples.', () => {
+							assert.deepStrictEqual(
+								program.children.slice(1, 5).map((c) => (c as AST.ASTNodeStatementExpression).children[0]!.type(validator)),
+								[
+									new SolidTypeConstant(new Int16(1n)),
+									new SolidTypeConstant(new Float64(2.0)),
+									new SolidTypeConstant(new SolidString('three')),
+									Int16,
+								],
+							);
+						});
+						it('returns a constant union of all consequent types for mappings.', () => {
+							const abc: SolidType = ([
+								new SolidTypeConstant(new Int16(1n)),
+								new SolidTypeConstant(new Float64(2.0)),
+								new SolidTypeConstant(new SolidString('three')),
+							] as SolidType[]).reduce((a, b) => a.union(b));
+							assert.deepStrictEqual(
+								program.children.slice(5, 7).map((c) => (c as AST.ASTNodeStatementExpression).children[0]!.type(validator)),
+								[
+									abc,
+									abc.union(Int16),
+								],
+							);
+						});
+						it('throws when accessor expression is of incorrect type.', () => {
+							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].['3'];`).type(validator), TypeError02);
+							assert.throws(() => AST.ASTNodeAccess.fromSource(`[['a'] |-> 1, ['b'] |-> 2.0, ['c'] |-> 'three'].['a'];`).type(validator), TypeError02);
+						});
+					});
+					context('with constant folding off.', () => {
+						let validator: Validator;
+						let program: AST.ASTNodeGoal;
+						before(() => {
+							validator = new Validator(folding_off);
+							program = newProgram(validator);
+							program.varCheck(validator);
+							program.typeCheck(validator);
+						});
+						it('returns the union of all entry types for tuples.', () => {
+							program.children.slice(1, 5).forEach((c) => {
+								assert.deepStrictEqual(
+									(c as AST.ASTNodeStatementExpression).children[0]!.type(validator),
+									Int16.union(Float64).union(SolidString),
+								);
+							});
+						});
+						it('returns the union of all consequent types for mappings.', () => {
+							program.children.slice(5, 7).forEach((c) => {
+								assert.deepStrictEqual(
+									(c as AST.ASTNodeStatementExpression).children[0]!.type(validator),
+									Int16.union(Float64).union(SolidString),
+								);
+							});
+						});
+					});
 				});
 			});
 

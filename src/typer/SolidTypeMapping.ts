@@ -13,8 +13,8 @@ export class SolidTypeMapping extends SolidType {
 	 * @param consequenttypes a union of consequent types in this mapping type
 	 */
 	constructor (
-		private readonly antecedenttypes: SolidType,
-		private readonly consequenttypes: SolidType,
+		readonly antecedenttypes: SolidType,
+		readonly consequenttypes: SolidType,
 	) {
 		super(new Set([new SolidMapping()]));
 	}

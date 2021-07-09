@@ -1,3 +1,5 @@
+import type {AST} from '../validator/index.js';
+import {TypeError04} from '../error/index.js';
 import {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidRecord} from './SolidRecord.js';
@@ -34,5 +36,15 @@ export class SolidTypeRecord extends SolidType {
 				return !!thistype && thistype.isSubtypeOf(thattype);
 			})
 		);
+	}
+
+	get(key: bigint, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): SolidType {
+		return (this.propertytypes.has(key))
+			? this.propertytypes.get(key)!
+			: (() => { throw new TypeError04('property', this, accessor); })();
+	}
+
+	valueTypes(): SolidType {
+		return [...this.propertytypes.values()].reduce((a, b) => a.union(b));
 	}
 }
