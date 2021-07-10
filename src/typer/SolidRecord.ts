@@ -12,12 +12,12 @@ import {SolidBoolean} from './SolidBoolean.js';
 
 
 
-export class SolidRecord<T extends SolidObject> extends SolidObject {
+export class SolidRecord<T extends SolidObject = SolidObject> extends SolidObject {
 	static override toString(): string {
 		return 'Record';
 	}
 	static override values: SolidType['values'] = new Set([new SolidRecord()]);
-	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidRecord<SolidObject>, SolidRecord<SolidObject>], boolean> = new xjs.MapEq(
+	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidRecord, SolidRecord], boolean> = new xjs.MapEq(
 		(a, b) => a[0].identical(b[0]) && a[1].identical(b[1]),
 	);
 

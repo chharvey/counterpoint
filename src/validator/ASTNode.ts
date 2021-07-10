@@ -623,7 +623,7 @@ export class ASTNodeTuple extends ASTNodeExpression {
 		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.assess(validator));
 		return (items.includes(null))
 			? null
-			: new SolidTuple<SolidObject>(items as SolidObject[]);
+			: new SolidTuple(items as SolidObject[]);
 	}
 }
 export class ASTNodeRecord extends ASTNodeExpression {
@@ -657,7 +657,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null
-			: new SolidRecord<SolidObject>(properties as ReadonlyMap<bigint, SolidObject>);
+			: new SolidRecord(properties as ReadonlyMap<bigint, SolidObject>);
 	}
 }
 export class ASTNodeMapping extends ASTNodeExpression {
@@ -692,7 +692,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		]));
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null
-			: new SolidMapping<SolidObject, SolidObject>(cases as ReadonlyMap<SolidObject, SolidObject>);
+			: new SolidMapping(cases as ReadonlyMap<SolidObject, SolidObject>);
 	}
 }
 export class ASTNodeAccess extends ASTNodeExpression {
@@ -777,9 +777,9 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return null;
 		}
 		if (accessor instanceof ASTNodeIndex) {
-			return (base_value as SolidTuple<SolidObject>).get(accessor.children[0].assess(validator) as Int16, accessor);
+			return (base_value as SolidTuple).get(accessor.children[0].assess(validator) as Int16, accessor);
 		} else if (accessor instanceof ASTNodeKey) {
-			return (base_value as SolidRecord<SolidObject>).get(accessor.id, accessor);
+			return (base_value as SolidRecord).get(accessor.id, accessor);
 		} else /* (accessor instanceof ASTNodeExpression) */ {
 			const accessor_value: SolidObject | null = accessor.assess(validator);
 			if (accessor_value === null) {
@@ -788,7 +788,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			if (base_value instanceof SolidTuple) {
 				return base_value.get(accessor_value as Int16, accessor);
 			} else /* (base_value instanceof SolidMapping) */ {
-				return (base_value as SolidMapping<SolidObject, SolidObject>).get(accessor_value, accessor);
+				return (base_value as SolidMapping).get(accessor_value, accessor);
 			}
 		}
 	}

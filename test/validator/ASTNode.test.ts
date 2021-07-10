@@ -1655,17 +1655,17 @@ describe('ASTNodeSolid', () => {
 							`),
 						].map((c) => c.assess(new Validator())),
 						[
-							new SolidTuple<SolidObject>([
+							new SolidTuple([
 								new Int16(1n),
 								new Float64(2.0),
 								new SolidString('three'),
 							]),
-							new SolidRecord<SolidObject>(new Map<bigint, SolidObject>([
+							new SolidRecord(new Map<bigint, SolidObject>([
 								[0x100n, new Int16(1n)],
 								[0x101n, new Float64(2.0)],
 								[0x102n, new SolidString('three')],
 							])),
-							new SolidMapping<SolidObject, SolidObject>(new Map<SolidObject, SolidObject>([
+							new SolidMapping(new Map<SolidObject, SolidObject>([
 								[new SolidString('a'), new Int16(1n)],
 								[new Int16(42n),       new Float64(2.0)],
 								[new Float64(3.0),     new SolidString('three')],
@@ -1701,7 +1701,7 @@ describe('ASTNodeSolid', () => {
 				it('ASTNodeRecord overwrites duplicate keys.', () => {
 					assert.deepStrictEqual(
 						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, a= 'three'];`).assess(new Validator()),
-						new SolidRecord<SolidObject>(new Map<bigint, SolidObject>([
+						new SolidRecord(new Map<bigint, SolidObject>([
 							[0x101n, new Float64(2.0)],
 							[0x100n, new SolidString('three')],
 						])),
@@ -1716,7 +1716,7 @@ describe('ASTNodeSolid', () => {
 								-0  |-> 'three',
 							];
 						`).assess(new Validator()),
-						new SolidMapping<SolidObject, SolidObject>(new Map<SolidObject, SolidObject>([
+						new SolidMapping(new Map<SolidObject, SolidObject>([
 							[new SolidString('a'), new Int16(1n)],
 							[new Int16(0n),        new SolidString('three')],
 						])),
@@ -1731,7 +1731,7 @@ describe('ASTNodeSolid', () => {
 								-0.0 |-> 'three',
 							];
 						`).assess(new Validator()),
-						new SolidMapping<SolidObject, SolidObject>(new Map<SolidObject, SolidObject>([
+						new SolidMapping(new Map<SolidObject, SolidObject>([
 							[new SolidString('a'), new Int16(1n)],
 							[new Float64(0.0),     new Float64(2.0)],
 							[new Float64(-0.0),    new SolidString('three')],

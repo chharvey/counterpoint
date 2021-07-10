@@ -13,12 +13,12 @@ import {Int16} from './Int16.js';
 
 
 
-export class SolidTuple<T extends SolidObject> extends SolidObject {
+export class SolidTuple<T extends SolidObject = SolidObject> extends SolidObject {
 	static override toString(): string {
 		return 'Tuple';
 	}
 	static override values: SolidType['values'] = new Set([new SolidTuple()]);
-	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidTuple<SolidObject>, SolidTuple<SolidObject>], boolean> = new xjs.MapEq(
+	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidTuple, SolidTuple], boolean> = new xjs.MapEq(
 		(a, b) => a[0].identical(b[0]) && a[1].identical(b[1]),
 	);
 
