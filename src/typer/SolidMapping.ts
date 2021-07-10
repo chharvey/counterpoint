@@ -1,5 +1,7 @@
 import * as xjs from 'extrajs';
 import type {Keys} from '../types';
+import type {AST} from '../validator/index.js';
+import {VoidError01} from '../error/index.js';
 import {
 	SolidType,
 	SolidTypeConstant,
@@ -61,5 +63,11 @@ export class SolidMapping<K extends SolidObject, V extends SolidObject> extends 
 			[...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeConstant(ant)).reduce((a, b) => a.union(b)),
 			[...this.cases.values()].map<SolidType>((con) => new SolidTypeConstant(con)).reduce((a, b) => a.union(b)),
 		);
+	}
+
+	get(ant: K, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): V {
+		return (this.cases.has(ant))
+			? this.cases.get(ant)!
+			: (() => { throw new VoidError01(accessor); })();
 	}
 }

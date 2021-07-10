@@ -1,5 +1,7 @@
 import * as xjs from 'extrajs';
 import type {Keys} from '../types';
+import type {AST} from '../validator/index.js';
+import {VoidError01} from '../error/index.js';
 import {
 	SolidType,
 	SolidTypeConstant,
@@ -49,5 +51,11 @@ export class SolidRecord<T extends SolidObject> extends SolidObject {
 
 	toType(): SolidTypeRecord {
 		return new SolidTypeRecord(new Map([...this.properties].map(([key, value]) => [key, new SolidTypeConstant(value)])));
+	}
+
+	get(key: bigint, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): T {
+		return (this.properties.has(key))
+			? this.properties.get(key)!
+			: (() => { throw new VoidError01(accessor); })();
 	}
 }

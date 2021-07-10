@@ -445,7 +445,12 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 		if (!this.typed) {
 			this.typed = this.type_do(validator); // type-check first, to re-throw any TypeErrors
 			if (validator.config.compilerOptions.constantFolding) {
-				const assessed: SolidObject | null = this.assess(validator);
+				let assessed: SolidObject | null = null;
+				try {
+					assessed = this.assess(validator);
+				} catch {
+					// ignore evaluation errors such as VoidError, NanError, etc.
+				}
 				if (!!assessed) {
 					this.typed = new SolidTypeConstant(assessed);
 				};
@@ -765,7 +770,27 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		throw validator && 'ASTNodeAccess#assess_do not yet supported.';
+		const base: ASTNodeExpression = this.children[0];
+		const accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression = this.children[1];
+		const base_value: SolidObject | null = base.assess(validator);
+		if (base_value === null) {
+			return null;
+		}
+		if (accessor instanceof ASTNodeIndex) {
+			return (base_value as SolidTuple<SolidObject>).get(accessor.children[0].assess(validator) as Int16, accessor);
+		} else if (accessor instanceof ASTNodeKey) {
+			return (base_value as SolidRecord<SolidObject>).get(accessor.id, accessor);
+		} else /* (accessor instanceof ASTNodeExpression) */ {
+			const accessor_value: SolidObject | null = accessor.assess(validator);
+			if (accessor_value === null) {
+				return null;
+			}
+			if (base_value instanceof SolidTuple) {
+				return base_value.get(accessor_value as Int16, accessor);
+			} else /* (base_value instanceof SolidMapping) */ {
+				return (base_value as SolidMapping<SolidObject, SolidObject>).get(accessor_value, accessor);
+			}
+		}
 	}
 }
 export abstract class ASTNodeOperation extends ASTNodeExpression {

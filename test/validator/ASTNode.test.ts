@@ -43,6 +43,7 @@ import {
 	TypeError02,
 	TypeError03,
 	TypeError04,
+	VoidError01,
 	NanError01,
 } from '../../src/error/index.js';
 import {
@@ -1736,6 +1737,142 @@ describe('ASTNodeSolid', () => {
 							[new Float64(-0.0),    new SolidString('three')],
 						])),
 					);
+				});
+			});
+
+			Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
+				context('index access.', () => {
+					function newProgram(validator: Validator): AST.ASTNodeGoal {
+						return AST.ASTNodeGoal.fromSource(`
+							let unfixed four: int = 4;
+
+							[1, 2.0, 'three'].0;
+							[1, 2.0, 'three'].1;
+							[1, 2.0, 'three'].2;
+							[1, 2.0, 'three', four].3;
+
+							% [1, 2.0, 'three'].-3;
+							% [1, 2.0, 'three'].-2;
+							% [1, 2.0, 'three'].-1;
+							% [1, 2.0, 'three', four].-1;
+						`, validator.config);
+					}
+					let validator: Validator;
+					let program: AST.ASTNodeGoal;
+					before(() => {
+						validator = new Validator();
+						program = newProgram(validator);
+						program.varCheck(validator);
+						program.typeCheck(validator);
+					});
+					it('returns individual entries.', () => {
+						assert.deepStrictEqual(
+							program.children.slice(1, 5).map((c) => (c as AST.ASTNodeStatementExpression).children[0]!.assess(validator)),
+							[
+								new Int16(1n),
+								new Float64(2.0),
+								new SolidString('three'),
+								null,
+							],
+						);
+					});
+					it.skip('negative indices count backwards from end.', () => {
+						assert.deepStrictEqual(
+							program.children.slice(5, 9).map((c) => (c as AST.ASTNodeStatementExpression).children[0]!.assess(validator)),
+							[
+								new Int16(1n),
+								new Float64(2.0),
+								new SolidString('three'),
+								null,
+							],
+						);
+					});
+				});
+				context('key access.', () => {
+					function newProgram(validator: Validator): AST.ASTNodeGoal {
+						return AST.ASTNodeGoal.fromSource(`
+							let unfixed four: int = 4;
+
+							[a= 1, b= 2.0, c= 'three'].a;
+							[a= 1, b= 2.0, c= 'three'].b;
+							[a= 1, b= 2.0, c= 'three'].c;
+							[a= 1, b= 2.0, c= 'three', d= four].d;
+						`, validator.config);
+					}
+					let validator: Validator;
+					let program: AST.ASTNodeGoal;
+					before(() => {
+						validator = new Validator();
+						program = newProgram(validator);
+						program.varCheck(validator);
+						program.typeCheck(validator);
+					});
+					it('returns individual entries.', () => {
+						assert.deepStrictEqual(
+							program.children.slice(1).map((c) => (c as AST.ASTNodeStatementExpression).children[0]!.assess(validator)),
+							[
+								new Int16(1n),
+								new Float64(2.0),
+								new SolidString('three'),
+								null,
+							],
+						);
+					});
+				});
+				context('expression access.', () => {
+					function newProgram(validator: Validator): AST.ASTNodeGoal {
+						return AST.ASTNodeGoal.fromSource(`
+							let unfixed four: int = 4;
+
+							[1, 2.0, 'three'].[0];
+							[1, 2.0, 'three'].[1];
+							[1, 2.0, 'three'].[2];
+							[1, 2.0, 'three', four].[3];
+
+							let a: [str] = ['a'];
+							let b: [str] = ['b'];
+							let c: [str] = ['c'];
+							let d: [str] = ['d'];
+							[a |-> 1, b |-> 2.0, c |-> 'three'].[a];
+							[a |-> 1, b |-> 2.0, c |-> 'three'].[b];
+							[a |-> 1, b |-> 2.0, c |-> 'three'].[c];
+							[a |-> 1, b |-> 2.0, c |-> 'three', d |-> four].[d];
+						`, validator.config);
+					}
+					let validator: Validator;
+					let program: AST.ASTNodeGoal;
+					before(() => {
+						validator = new Validator();
+						program = newProgram(validator);
+						program.varCheck(validator);
+						program.typeCheck(validator);
+					});
+					it('returns individual entries for tuples.', () => {
+						assert.deepStrictEqual(
+							program.children.slice(1, 5).map((c) => (c as AST.ASTNodeStatementExpression).children[0]!.assess(validator)),
+							[
+								new Int16(1n),
+								new Float64(2.0),
+								new SolidString('three'),
+								null,
+							],
+						);
+					});
+					it('returns individual entries for mappings.', () => {
+						assert.deepStrictEqual(
+							program.children.slice(9, 13).map((c) => (c as AST.ASTNodeStatementExpression).children[0]!.assess(validator)),
+							[
+								new Int16(1n),
+								new Float64(2.0),
+								new SolidString('three'),
+								null,
+							],
+						);
+					});
+					it('throws when index/antecedent is out of bounds.', () => {
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`).assess(validator), VoidError01);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`[['a'] |-> 1, ['b'] |-> 2.0, ['c'] |-> 'three'].[['a']];`).assess(validator), VoidError01);
+					});
 				});
 			});
 
