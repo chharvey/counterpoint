@@ -1,4 +1,7 @@
-import {SolidBoolean} from './index.js'; // avoids circular imports
+import {
+	SolidBoolean,
+	SolidString,
+} from './index.js'; // avoids circular imports
 import {SolidType} from './SolidType.js';
 
 
@@ -95,5 +98,14 @@ export abstract class SolidObject {
 	 */
 	protected equal_helper(_value: SolidObject): boolean {
 		return false
+	}
+
+	/**
+	 * Return a Solid string representation of this Object.
+	 * (Not a native String — see {@link #toString}.)
+	 * @returns a string representation of this Object
+	 */
+	toSolidString(): SolidString {
+		return new SolidString(this.toString());
 	}
 }
