@@ -9,7 +9,7 @@ import {
 import {SolidTypeTuple} from './SolidTypeTuple.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidBoolean} from './SolidBoolean.js';
-import {Int16} from './Int16.js';
+import type {Int16} from './Int16.js';
 
 
 
@@ -55,8 +55,12 @@ export class SolidTuple<T extends SolidObject = SolidObject> extends SolidObject
 	}
 
 	get(index: Int16, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): T {
-		return (index.eq0() || Int16.ZERO.lt(index)) && index.lt(new Int16(BigInt(this.items.length)))
-			? this.items[Number(index.toNumeric())]
-			: (() => { throw new VoidError01(accessor); })();
+		const n: number = this.items.length;
+		const i: number = Number(index.toNumeric());
+		return (
+			(-n <= i && i < 0) ? this.items[i + n] :
+			(0  <= i && i < n) ? this.items[i] :
+			(() => { throw new VoidError01(accessor); })()
+		);
 	}
 }

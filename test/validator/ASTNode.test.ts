@@ -1007,10 +1007,10 @@ describe('ASTNodeSolid', () => {
 							[1, 2.0, 'three'].2;
 							[1, 2.0, 'three', four].3;
 
-							% [1, 2.0, 'three'].-3;
-							% [1, 2.0, 'three'].-2;
-							% [1, 2.0, 'three'].-1;
-							% [1, 2.0, 'three', four].-1;
+							[1, 2.0, 'three'].-3;
+							[1, 2.0, 'three'].-2;
+							[1, 2.0, 'three'].-1;
+							[1, 2.0, 'three', four].-1;
 						`, validator.config);
 					}
 					context('with constant folding on, folds index accessor.', () => {
@@ -1033,7 +1033,7 @@ describe('ASTNodeSolid', () => {
 								],
 							);
 						});
-						it.skip('negative indices count backwards from end.', () => {
+						it('negative indices count backwards from end.', () => {
 							assert.deepStrictEqual(
 								program.children.slice(5, 9).map((c) => (c as AST.ASTNodeStatementExpression).children[0]!.type(validator)),
 								[
@@ -1046,6 +1046,7 @@ describe('ASTNodeSolid', () => {
 						});
 						it('throws when index is out of bounds.', () => {
 							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`).type(validator), TypeError04);
+							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`).type(validator), TypeError04);
 						});
 					});
 					context('with constant folding off.', () => {
@@ -1108,7 +1109,7 @@ describe('ASTNodeSolid', () => {
 
 							[1, 2.0, 'three'].[0];
 							[1, 2.0, 'three'].[1];
-							[1, 2.0, 'three'].[2];
+							[1, 2.0, 'three'].[-1];
 							[1, 2.0, 'three', four].[3];
 
 							[['a'] |-> 1, ['b'] |-> 2.0, ['c'] |-> 'three'].[['a']];
@@ -1751,10 +1752,10 @@ describe('ASTNodeSolid', () => {
 							[1, 2.0, 'three'].2;
 							[1, 2.0, 'three', four].3;
 
-							% [1, 2.0, 'three'].-3;
-							% [1, 2.0, 'three'].-2;
-							% [1, 2.0, 'three'].-1;
-							% [1, 2.0, 'three', four].-1;
+							[1, 2.0, 'three'].-3;
+							[1, 2.0, 'three'].-2;
+							[1, 2.0, 'three'].-1;
+							[1, 2.0, 'three', four].-1;
 						`, validator.config);
 					}
 					let validator: Validator;
@@ -1776,7 +1777,7 @@ describe('ASTNodeSolid', () => {
 							],
 						);
 					});
-					it.skip('negative indices count backwards from end.', () => {
+					it('negative indices count backwards from end.', () => {
 						assert.deepStrictEqual(
 							program.children.slice(5, 9).map((c) => (c as AST.ASTNodeStatementExpression).children[0]!.assess(validator)),
 							[
@@ -1826,7 +1827,7 @@ describe('ASTNodeSolid', () => {
 
 							[1, 2.0, 'three'].[0];
 							[1, 2.0, 'three'].[1];
-							[1, 2.0, 'three'].[2];
+							[1, 2.0, 'three'].[-1];
 							[1, 2.0, 'three', four].[3];
 
 							let a: [str] = ['a'];
