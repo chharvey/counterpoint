@@ -574,20 +574,27 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 		</tr>
 		<tr>
 			<th>2</th>
+			<td>Type Property Access</td>
+			<td>unary postfix</td>
+			<td>left-to-right</td>
+			<td><code>… . …</code></td>
+		</tr>
+		<tr>
+			<th>3</th>
 			<td>Nullish</td>
 			<td>unary postfix</td>
 			<td>left-to-right</td>
 			<td><code>… !</code></td>
 		</tr>
 		<tr>
-			<th>3</th>
+			<th>4</th>
 			<td>Intersection</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
 			<td><code>… & …</code></td>
 		</tr>
 		<tr>
-			<th>4</th>
+			<th>5</th>
 			<td>Union</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
@@ -595,6 +602,23 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 		</tr>
 	</tbody>
 </table>
+
+
+### Type Property Access
+```
+<Type> `.` int-literal
+<Type> `.` word
+```
+The **type property accesss** syntax for types is analogous to the property access syntax of values.
+It accesses the index or key of a tuple or record type respectively.
+```
+type T = [bool, int, str];
+type T1 = T.1;             %== int
+type T1 = T.-1;            %== str
+
+type R = [a= bool, b= int, c= str];
+type Rc = R.c;                      %== str
+```
 
 
 ### Nullish
