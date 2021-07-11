@@ -146,6 +146,17 @@ export class ASTNodeKey extends ASTNodeSolid {
 		throw builder && 'ASTNodeKey#build not yet supported.';
 	}
 }
+export class ASTNodeIndexType extends ASTNodeSolid {
+	constructor (
+		start_node: PARSER.ParseNodePropertyAccessType,
+		override readonly children: readonly [ASTNodeTypeConstant],
+	) {
+		super(start_node, {}, children);
+	}
+	override build(builder: Builder): Instruction {
+		throw builder && 'ASTNodeIndexType#build not yet supported.';
+	}
+}
 export class ASTNodePropertyType extends ASTNodeSolid {
 	constructor (
 		start_node: PARSER.ParseNodePropertyType,
@@ -197,6 +208,7 @@ export class ASTNodeCase extends ASTNodeSolid {
  * - ASTNodeTypeAlias
  * - ASTNodeTypeTuple
  * - ASTNodeTypeRecord
+ * - ASTNodeTypeAccess
  * - ASTNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
@@ -331,6 +343,22 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 			c.children[0].id,
 			c.children[1].assess(validator),
 		])));
+	}
+}
+export class ASTNodeTypeAccess extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeAccess {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeAccess);
+		return typ;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTypeCompound,
+		override readonly children: readonly [ASTNodeType, ASTNodeIndexType | ASTNodeKey],
+	) {
+		super(start_node, {}, children);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		throw validator && 'ASTNodeTypeAccess#assess_do not yet supported.';
 	}
 }
 export abstract class ASTNodeTypeOperation extends ASTNodeType {
