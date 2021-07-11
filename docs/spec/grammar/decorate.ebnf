@@ -86,8 +86,27 @@ Decorate(TypeUnit ::= "(" Type ")") -> SemanticType
 
 
 
-Decorate(TypeUnarySymbol ::= TypeUnit) -> SemanticType
+Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndexType
+	:= (SemanticIndexType
+		(SemanticTypeConstant[value=ToType(Integer(TokenWorth(INTEGER)))])
+	);
+Decorate(PropertyAccessType ::= "." Word) -> SemanticKey
+	:= Decorate(Word);
+
+
+
+Decorate(TypeCompound ::= TypeUnit) -> SemanticType
 	:= Decorate(TypeUnit);
+Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess
+	:= (SemanticTypeAccess
+		Decorate(TypeCompound)
+		Decorate(PropertyAccessType)
+	);
+
+
+
+Decorate(TypeUnarySymbol ::= TypeCompound) -> SemanticType
+	:= Decorate(TypeCompound);
 Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation
 	:= (SemanticTypeOperation[operator=ORNULL]
 		Decorate(TypeUnarySymbol)
