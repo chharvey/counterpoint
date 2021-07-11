@@ -128,10 +128,8 @@ Object! Assess(SemanticAccess access) :=
 	7. *Assert:* `accessor` is a SemanticExpression.
 	8. *Let* `accessor_value` be *Unwrap:* `Assess(accessor)`.
 	9. *If* `base_value` is an instance of `Tuple`:
-		1. *Assert:* `accessor_value` is an instance of `Integer`.
-		2. *If* `accessor_value` is an index in `base_value`:
-			1. *Return:* the item accessed at index `accessor_value` in `base_value`.
-		3. *Throw:* a new VoidError.
+		1. *Assert:* `accessor_value` is an instance of `Integer` *and* `accessor_value` is an index in `base_value`.
+		2. *Return:* the item accessed at index `accessor_value` in `base_value`.
 	10. *Assert*: `base_value` is an instance of `Mapping`.
 	11. *If* `accessor_value` is an antecedent in `base_value`:
 		1. Find an antecedent `k` in `base_value` such that `Identical(k, accessor_value)`.

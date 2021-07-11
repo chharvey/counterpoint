@@ -85,8 +85,10 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 	9. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)`:
 		1. *If* `accessor_type` is a TypeConstant:
 			1. *Let* `i` be `accessor_type.value`.
-			2. *If* `i` is a instance of `Integer` *and* `i` is an index in `base_type`:
-				1. *Return:* the type accessed at index `i` in `base_type`.
+			2. *If* `i` is a instance of `Integer`:
+				1. *If* `i` is an index in `base_type`:
+					1. *Return:* the type accessed at index `i` in `base_type`.
+				2. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
 		2. *Else If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)`:
 			1. *Return:* the union of all item types in `base_type`.
 		3. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".

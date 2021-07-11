@@ -1150,6 +1150,10 @@ describe('ASTNodeSolid', () => {
 								],
 							);
 						});
+						it('throws when accessor expression is correct type but out of bounds for tuples.', () => {
+							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`).type(validator), TypeError04);
+							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[-4];`).type(validator), TypeError04);
+						});
 						it('throws when accessor expression is of incorrect type.', () => {
 							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].['3'];`).type(validator), TypeError02);
 							assert.throws(() => AST.ASTNodeAccess.fromSource(`[['a'] |-> 1, ['b'] |-> 2.0, ['c'] |-> 'three'].['a'];`).type(validator), TypeError02);
