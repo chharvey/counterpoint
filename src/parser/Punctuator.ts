@@ -6,6 +6,8 @@ export enum Punctuator {
 		BRAK_CLS = ']',   // Dev.supports('literalCollection')
 		COMMA    = ',',   // Dev.supports('literalCollection')
 		MAPTO    = '|->', // Dev.supports('literalCollection')
+	// compound
+		DOT = '.', // Dev.supports('literalCollection')
 	// unary
 		NOT = '!',
 		EMP = '?',

@@ -31,7 +31,18 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>[ … ]</code></td>
 		</tr>
 		<tr>
-			<th rowspan="4">2</th>
+			<th rowspan="2">2</th>
+			<td>Property Access</td>
+			<td rowspan="2">unary postfix</td>
+			<td rowspan="2">left-to-right</td>
+			<td><code>… . …</code></td>
+		</tr>
+		<tr>
+			<td>Computed Property Access</td>
+			<td><code>… .[ … ]</code></td>
+		</tr>
+		<tr>
+			<th rowspan="4">3</th>
 			<td>Logical Negation</td>
 			<td rowspan="4">unary prefix</td>
 			<td rowspan="4">right-to-left</td>
@@ -50,14 +61,14 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>- …</code></td>
 		</tr>
 		<tr>
-			<th>3</th>
+			<th>4</th>
 			<td>Exponentiation</td>
 			<td>binary infix</td>
 			<td>right-to-left</td>
 			<td><code>… ^ …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">4</th>
+			<th rowspan="2">5</th>
 			<td>Multiplication</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -68,7 +79,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… / …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">5</th>
+			<th rowspan="2">6</th>
 			<td>Addition</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -79,7 +90,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… - …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="8">6</th>
+			<th rowspan="8">7</th>
 			<td>Less Than</td>
 			<td rowspan="8">binary infix</td>
 			<td rowspan="8">left-to-right</td>
@@ -114,7 +125,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… isnt …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="4">7</th>
+			<th rowspan="4">8</th>
 			<td>Identity</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
@@ -133,7 +144,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… != …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">8</th>
+			<th rowspan="2">9</th>
 			<td>Conjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -144,7 +155,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !& …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">9</th>
+			<th rowspan="2">10</th>
 			<td>Disjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -155,7 +166,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !| …</code></td>
 		</tr>
 		<tr>
-			<th>10</th>
+			<th>11</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
@@ -180,6 +191,30 @@ whether left-to-right or right-to-left, would yield the same mathematical result
 Addition is an example of this. Whether we group *left-to-right* `(a + b) + c`
 or *right-to-left* `a + (b + c)`, the output remains the same.
 Operations that are associative are indicated as so in their respective sections below.
+
+
+### Property Access
+```
+<obj> `.` int-literal
+<obj> `.` word
+<obj> `.` `[` <obj> `]`
+```
+The **property accesss** syntax is a unary operator on an object.
+The object it operates on is called the **binding object** and
+the property it accesses is called the **bound property** (or index, field, member, etc.).
+There are two flavors of the operator: static access and dynamic access.
+
+Static access can be used on static data types such as tuples and records.
+Tuples take integer literal properties and records take word (key) properties.
+For example: `tuple.3` and `record.prop`.
+
+Dynamic access can be used on tuples as well as on dynamic data types
+such as mappings, e.g., `mapping.[expr]`.
+The expression in the brackets evaluates to an item index or case antecedent
+of the binding object and must be of the correct type.
+
+More information about property access when used on tuples, records, and mappings
+can be found in the [Types](./types) chapter.
 
 
 ### Logical Negation, Emptiness

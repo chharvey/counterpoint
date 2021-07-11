@@ -6,6 +6,7 @@ import {
 	SolidTypeInterface,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidTypeMapping,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -298,6 +299,36 @@ describe('SolidType', () => {
 					assert.ok(stype.isSubtypeOf(SolidString), `${ stype }`);
 				});
 			});
+			it('constant tuple types should be subtype of a tuple type instance.', () => {
+				new Map<SolidObject, SolidTypeTuple>([
+					[new SolidTuple(),                                             new SolidTypeTuple()],
+					[new SolidTuple([new Int16(42n)]),                             new SolidTypeTuple([Int16])],
+					[new SolidTuple([new Float64(4.2), new SolidString('hello')]), new SolidTypeTuple([Float64, SolidString])],
+				]).forEach((tupletype, value) => {
+					assert.ok(new SolidTypeConstant(value).isSubtypeOf(SolidTuple), `let x: Tuple = ${ value };`);
+					assert.ok(new SolidTypeConstant(value).isSubtypeOf(tupletype),  `let x: ${ tupletype } = ${ value };`);
+				});
+			});
+			it('constant record types should be subtype of a record type instance.', () => {
+				new Map<SolidObject, SolidTypeRecord>([
+					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new Int16(42n)]])),                                       new SolidTypeRecord(new Map<bigint, SolidType>([[0x100n, Int16]]))],
+					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new Float64(4.2)], [0x101n, new SolidString('hello')]])), new SolidTypeRecord(new Map<bigint, SolidType>([[0x100n, Float64], [0x101n, SolidString]]))],
+					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new SolidString('hello')], [0x101n, new Float64(4.2)]])), new SolidTypeRecord(new Map<bigint, SolidType>([[0x100n, SolidString], [0x101n, Float64]]))],
+				]).forEach((recordtype, value) => {
+					assert.ok(new SolidTypeConstant(value).isSubtypeOf(SolidRecord), `let x: Record = ${ value };`);
+					assert.ok(new SolidTypeConstant(value).isSubtypeOf(recordtype),  `let x: ${ recordtype } = ${ value };`);
+				});
+			});
+			it('constant mapping types should be subtype of a mapping type instance.', () => {
+				new Map<SolidObject, SolidTypeMapping>([
+					[new SolidMapping(new Map<SolidObject, SolidObject>([[new Int16(0x100n), new Int16(42n)]])),                                                  new SolidTypeMapping(Int16, Int16)],
+					[new SolidMapping(new Map<SolidObject, SolidObject>([[new Int16(0x100n), new Float64(4.2)], [new Int16(0x101n), new SolidString('hello')]])), new SolidTypeMapping(Int16, Float64.union(SolidString))],
+					[new SolidMapping(new Map<SolidObject, SolidObject>([[new SolidString('hello'), new Int16(0x100n)], [new Float64(4.2), new Int16(0x101n)]])), new SolidTypeMapping(Float64.union(SolidString), Int16)],
+				]).forEach((mappingtype, value) => {
+					assert.ok(new SolidTypeConstant(value).isSubtypeOf(SolidMapping), `let x: Record = ${ value };`);
+					assert.ok(new SolidTypeConstant(value).isSubtypeOf(mappingtype),  `let x: ${ mappingtype } = ${ value };`);
+				});
+			});
 		})
 
 		Dev.supports('literalCollection') && describe('SolidTypeTuple', () => {
@@ -418,6 +449,21 @@ describe('SolidType', () => {
 					[0x102n, SolidObject],
 					[0x103n, Int16.union(Float64)],
 				]))), `[x: int, y: bool, z: str] !<: [y: bool!, z: obj, w: int | float]`);
+			});
+		});
+
+		Dev.supports('literalCollection') && describe('SolidTypeMapping', () => {
+			it('is a subtype but not a supertype of `SolidObject`.', () => {
+				assert.ok(new SolidTypeMapping(Int16, SolidBoolean).isSubtypeOf(SolidObject), `Mapping.<int, bool> <: obj`);
+				assert.ok(!SolidObject.isSubtypeOf(new SolidTypeMapping(Int16, SolidBoolean)), `obj !<: Mapping.<int, bool>`);
+			});
+			it('Covariance: `A <: C && B <: D --> Mapping.<A, B> <: Mapping.<C, D>`.', () => {
+				assert.ok(new SolidTypeMapping(Int16, SolidBoolean).isSubtypeOf(
+					new SolidTypeMapping(Int16.union(Float64), SolidBoolean.union(SolidNull))
+				), `Mapping.<int, bool> <: Mapping.<int | float, bool | null>`);
+				assert.ok(!new SolidTypeMapping(Int16, SolidBoolean).isSubtypeOf(
+					new SolidTypeMapping(SolidBoolean.union(SolidNull), SolidObject)
+				), `Mapping.<int, bool> !<: Mapping.<bool | null, obj>`);
 			});
 		});
 

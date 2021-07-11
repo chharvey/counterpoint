@@ -1,17 +1,23 @@
 import * as xjs from 'extrajs';
 import type {Keys} from '../types';
-import type {SolidType} from './SolidType.js';
+import type {AST} from '../validator/index.js';
+import {VoidError01} from '../error/index.js';
+import {
+	SolidType,
+	SolidTypeConstant,
+} from './SolidType.js';
+import {SolidTypeMapping} from './SolidTypeMapping.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidBoolean} from './SolidBoolean.js';
 
 
 
-export class SolidMapping<K extends SolidObject, V extends SolidObject> extends SolidObject {
+export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidObject = SolidObject> extends SolidObject {
 	static override toString(): string {
 		return 'Mapping';
 	}
 	static override values: SolidType['values'] = new Set([new SolidMapping()]);
-	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidMapping<SolidObject, SolidObject>, SolidMapping<SolidObject, SolidObject>], boolean> = new xjs.MapEq(
+	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidMapping, SolidMapping], boolean> = new xjs.MapEq(
 		(a, b) => a[0].identical(b[0]) && a[1].identical(b[1]),
 	);
 	/**
@@ -50,5 +56,18 @@ export class SolidMapping<K extends SolidObject, V extends SolidObject> extends 
 		} else {
 			return false;
 		}
+	}
+
+	toType(): SolidTypeMapping {
+		return new SolidTypeMapping(
+			[...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeConstant(ant)).reduce((a, b) => a.union(b)),
+			[...this.cases.values()].map<SolidType>((con) => new SolidTypeConstant(con)).reduce((a, b) => a.union(b)),
+		);
+	}
+
+	get(ant: K, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): V {
+		return (this.cases.has(ant))
+			? this.cases.get(ant)!
+			: (() => { throw new VoidError01(accessor); })();
 	}
 }
