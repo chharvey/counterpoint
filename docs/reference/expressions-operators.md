@@ -538,10 +538,14 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>[ … ]</code></td>
 		</tr>
 		<tr>
-			<th>2</th>
+			<th rowspan="2">2</th>
 			<td>Nullish</td>
-			<td>unary postfix</td>
-			<td>left-to-right</td>
+			<td rowspan="2">unary postfix</td>
+			<td rowspan="2">left-to-right</td>
+			<td><code>… ?</code></td>
+		</tr>
+		<tr>
+			<td>TBA</td>
 			<td><code>… !</code></td>
 		</tr>
 		<tr>
@@ -564,12 +568,19 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 
 ### Nullish
 ```
-<Type> `!`
+<Type> `?`
 ```
 The **nullish** operator creates a [union](#union) of the operand and the `null` type.
 ```
-type T = int!; % equivalent to `type T = int | null;`
+type T = int?; % equivalent to `type T = int | null;`
 ```
+
+
+### TBA
+```
+<Type> `!`
+```
+To be announced.
 
 
 ### Intersection
