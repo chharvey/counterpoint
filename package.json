@@ -8,9 +8,10 @@
   },
   "license": "AGPL-3.0-or-later",
   "author": "Chris Harvey <chrisharvey2pi@gmail.com> (https://chharvey.github.io/)",
-  "main": "dist/index.js",
+  "main": "dist/main.js",
+  "type": "module",
   "bin": {
-    "solid": "bin/solid"
+    "solid": "bin/solid.js"
   },
   "repository": {
     "type": "git",
@@ -29,12 +30,13 @@
     "solid:r": "solid r ./sample/test-v0.3.wasm",
     "predist": "node ./tasks/build-parser.js",
     "dist": "tsc",
-    "test": "mocha -r ts-node/register './test/**/*.test.ts'",
+    "test": "mocha -r ts-node/esm src/index.ts --loader='ts-node/esm' './test/**/*.test.ts'",
     "build": "rm -rf ./build/ && npm run dist && npm run test"
   },
   "dependencies": {
     "@chharvey/parser": "^0.8.0",
-    "extrajs": "^0.23.1",
+    "@chharvey/requirejson": "^2.0.0",
+    "extrajs": "^0.24.0",
     "minimist": "^1.2.5",
     "utf8": "^3.0.0",
     "wabt": "^1.0.16"
@@ -42,7 +44,7 @@
   "devDependencies": {
     "@types/minimist": "^1.2.0",
     "@types/mocha": "^8.0.0",
-    "@types/node": "^15.0.0",
+    "@types/node": "^16.0.0",
     "@types/utf8": "^3.0.0",
     "mocha": "^9.0.0",
     "ts-node": "^10.0.0",

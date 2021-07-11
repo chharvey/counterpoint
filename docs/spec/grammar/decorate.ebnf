@@ -67,6 +67,8 @@ Decorate(PropertiesType ::= EntryType_Named_Optional# ","?) -> Sequence<Semantic
 
 
 
+Decorate(TypeTupleLiteral ::= "[" "]") -> SemanticTypeTuple
+	:= (SemanticTypeTuple);
 Decorate(TypeTupleLiteral ::= "[" ","? ItemsType "]") -> SemanticTypeList
 	:= (SemanticTypeList
 		...Decorate(ItemsType)
@@ -79,15 +81,13 @@ Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType "]") -> SemanticTypeRecor
 
 
 
-Decorate(TypeUnit ::= "[" "]") -> SemanticTypeEmptyCollection
-	:= (SemanticTypeEmptyCollection);
 Decorate(TypeUnit ::= IDENTIFIER) -> SemanticTypeAlias
 	:= (SemanticTypeAlias[id=TokenWorth(IDENTIFIER)]);
 Decorate(TypeUnit ::= PrimitiveLiteral) -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=ToType(Decorate(PrimitiveLiteral).value)]);
 Decorate(TypeUnit ::= TypeKeyword) -> SemanticTypeConstant
 	:= Decorate(TypeKeyword);
-Decorate(TypeUnit ::= TypeTupleLiteral) -> SemanticTypeList
+Decorate(TypeUnit ::= TypeTupleLiteral) -> SemanticTypeTuple
 	:= Decorate(TypeTupleLiteral);
 Decorate(TypeUnit ::= TypeRecordLiteral) -> SemanticTypeRecord
 	:= Decorate(TypeRecordLiteral);
@@ -196,8 +196,10 @@ Decorate(Case ::= Expression "|->" Expression) -> SemanticCase
 		Decorate(Expression)
 	);
 
-Decorate(ListLiteral ::= "[" ","? Expression# ","? "]") -> SemanticList
-	:= (SemanticList
+Decorate(TupleLiteral ::= "[" "]") -> SemanticTuple
+	:= (SemanticTuple);
+Decorate(TupleLiteral ::= "[" ","? Expression# ","? "]") -> SemanticTuple
+	:= (SemanticTuple
 		...ParseList(Expression, SemanticExpression)
 	);
 
@@ -213,16 +215,14 @@ Decorate(MappingLiteral ::= "[" ","? Case# ","? "]") -> SemanticMapping
 
 
 
-Decorate(ExpressionUnit ::= "[" "]") -> SemanticEmptyCollection
-	:= (SemanticEmptyCollection);
 Decorate(ExpressionUnit ::= IDENTIFIER) -> SemanticVariable
 	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
 Decorate(ExpressionUnit ::= PrimitiveLiteral) -> SemanticConstant
 	:= Decorate(PrimitiveLiteral);
 Decorate(ExpressionUnit ::= StringTemplate) -> SemanticTemplate
 	:= Decorate(StringTemplate);
-Decorate(ExpressionUnit ::= ListLiteral) -> SemanticList
-	:= Decorate(ListLiteral);
+Decorate(ExpressionUnit ::= TupleLiteral) -> SemanticTuple
+	:= Decorate(TupleLiteral);
 Decorate(ExpressionUnit ::= RecordLiteral) -> SemanticRecord
 	:= Decorate(RecordLiteral);
 Decorate(ExpressionUnit ::= MappingLiteral) -> SemanticMapping

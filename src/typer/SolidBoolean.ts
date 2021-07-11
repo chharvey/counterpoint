@@ -1,8 +1,8 @@
 import {
 	SolidType,
 	SolidTypeConstant,
-} from './SolidType';
-import {SolidObject} from './SolidObject';
+} from './SolidType.js';
+import {SolidObject} from './SolidObject.js';
 
 
 

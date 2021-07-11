@@ -1,6 +1,5 @@
 import * as assert from 'assert'
-
-import {Dev} from '../../src/core';
+import {Dev} from '../../src/core/index.js';
 import {
 	SolidType,
 	SolidTypeConstant,
@@ -17,7 +16,7 @@ import {
 	SolidTuple,
 	SolidRecord,
 	SolidMapping,
-} from '../../src/typer';
+} from '../../src/typer/index.js';
 
 
 

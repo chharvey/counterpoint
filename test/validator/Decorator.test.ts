@@ -2,20 +2,17 @@ import type {
 	NonemptyArray,
 } from '@chharvey/parser';
 import * as assert from 'assert'
-
 import {
 	Dev,
-} from '../../src/core/';
-import {
-	Operator,
-} from '../../src/enum/Operator.enum';
+} from '../../src/core/index.js';
 import type {
 	PARSER,
-} from '../../src/parser/';
+} from '../../src/parser/index.js';
 import {
-	Decorator,
 	AST,
-} from '../../src/validator/';
+	Decorator,
+	Operator,
+} from '../../src/validator/index.js';
 import {
 	SolidTypeConstant,
 	SolidObject,
@@ -23,11 +20,11 @@ import {
 	SolidBoolean,
 	Int16,
 	Float64,
-} from '../../src/typer/';
+} from '../../src/typer/index.js';
 import {
 	assert_arrayLength,
-} from '../assert-helpers'
-import * as h from '../helpers-parse';
+} from '../assert-helpers.js';
+import * as h from '../helpers-parse.js';
 
 
 
@@ -153,24 +150,30 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supportsAll('literalCollection', 'optionalAccess') && describe('TypeTupleLiteral ::= "[" ","? ItemsType "]"', () => {
-			it('makes an ASTNodeTypeList.', () => {
+		Dev.supportsAll('literalCollection', 'optionalAccess') && describe('TypeTupleLiteral ::= "[" (","? ItemsType)? "]"', () => {
+			it('makes an empty ASTNodeTypeTuple.', () => {
 				/*
-					<TypeList>
+					<TypeTuple/>
+				*/
+				assert_arrayLength(Decorator.decorate(h.tupleTypeFromString(`[]`)).children, 0);
+			});
+			it('makes a nonempty ASTNodeTypeTuple.', () => {
+				/*
+					<TypeTuple>
 						<TypeAlias source="T"/>
 						<TypeConstant source="42"/>
 						<TypeOperation source="null | bool">...</TypeOperation>
 						<TypeOperation source="?:str">...</TypeOperation>
-					</TypeList>
+					</TypeTuple>
 				*/
-				assert.deepStrictEqual(AST.ASTNodeTypeList.fromSource(`
+				assert.deepStrictEqual(Decorator.decorate(h.tupleTypeFromString(`
 					[
 						T,
 						42,
 						null | bool,
 						?:str,
 					]
-				`).children.map((c) => c.source), [
+				`)).children.map((c) => c.source), [
 					`T`,
 					`42`,
 					`null | bool`,
@@ -202,16 +205,6 @@ describe('Decorator', () => {
 					`diz ?: str`,
 					`qux : null`,
 				]);
-			});
-		});
-
-		Dev.supports('literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
-			it('makes an ASTNodeTypeEmptyCollection.', () => {
-				/*
-					<TypeEmptyCollection/>
-				*/
-				const typeexpr: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`[]`));
-				assert.ok(typeexpr instanceof AST.ASTNodeTypeEmptyCollection);
 			});
 		});
 
@@ -431,16 +424,22 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('ListLiteral ::= "[" ","? Expression# ","? "]"', () => {
-			it('makes an ASTNodeList.', () => {
+		Dev.supports('literalCollection') && context('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
+			it('makes an empty ASTNodeTuple.', () => {
 				/*
-					<List>
+					<Tuple/>
+				*/
+				assert_arrayLength(Decorator.decorate(h.tupleLiteralFromSource(`[];`)).children, 0);
+			});
+			it('makes a nonempty ASTNodeTuple.', () => {
+				/*
+					<Tuple>
 						<Constant source="42"/>
 						<Constant source="true"/>
 						<Operation source="null || false">...</Operation>
-					</List>
+					</Tuple>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.listLiteralFromSource(`
+				assert.deepStrictEqual(Decorator.decorate(h.tupleLiteralFromSource(`
 					[
 						42,
 						true,
@@ -497,16 +496,6 @@ describe('Decorator', () => {
 					`7 |-> true`,
 					`9 |-> 42.0`,
 				]);
-			});
-		});
-
-		Dev.supports('literalCollection') && context('ExpressionUnit ::= "[" "]"', () => {
-			it('makes an ASTNodeEmptyCollection.', () => {
-				/*
-					<EmptyCollection/>
-				*/
-				const expr: AST.ASTNodeExpression = Decorator.decorate(h.unitExpressionFromSource(`[];`));
-				assert.ok(expr instanceof AST.ASTNodeEmptyCollection);
 			});
 		});
 

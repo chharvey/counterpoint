@@ -7,100 +7,27 @@ import {
 	LexError02,
 } from '@chharvey/parser';
 import * as xjs from 'extrajs';
-import * as utf8 from 'utf8';
-
-
+import utf8 from 'utf8';
 import {
-	SolidConfig,
-	CONFIG_DEFAULT,
-	Dev,
-} from '../core/';
-
+	LexError03,
+	LexError04,
+	LexError05,
+} from '../index.js'; // avoids circular imports
 import type {
 	CodePoint,
 	CodeUnit,
 	EncodedChar,
 } from '../types';
+import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Dev,
+} from '../core/index.js';
+import {Punctuator} from './Punctuator.js';
+import {Keyword} from './Keyword.js';
 import type {
 	LexerSolid,
-} from './Lexer';
-
-import {
-	LexError03,
-	LexError04,
-	LexError05,
-} from '../error/';
-
-
-
-export enum Punctuator {
-	// grouping
-		GRP_OPN = '(',
-		GRP_CLS = ')',
-		BRAK_OPN = '[',   // Dev.supports('literalCollection')
-		BRAK_CLS = ']',   // Dev.supports('literalCollection')
-		COMMA    = ',',   // Dev.supports('literalCollection')
-		MAPTO    = '|->', // Dev.supports('literalCollection')
-	// compound
-		DOT = '.', // Dev.supports('literalCollection')
-	// unary
-		NOT = '!',
-		EMP = '?',
-		AFF = '+',
-		NEG = '-',
-		ORNULL = '?',
-		OREXCP = '!',
-	// binary
-		EXP  = '^',
-		MUL  = '*',
-		DIV  = '/',
-		ADD  = '+',
-		SUB  = '-',
-		LT   = '<',
-		GT   = '>',
-		LE   = '<=',
-		GE   = '>=',
-		NLT  = '!<',
-		NGT  = '!>',
-		ID   = '===',
-		NID  = '!==',
-		EQ   = '==',
-		NEQ  = '!=',
-		AND  = '&&',
-		NAND = '!&',
-		OR   = '||',
-		NOR  = '!|',
-		INTER = '&',
-		UNION = '|',
-	// statement
-		ENDSTAT = ';',
-		ISTYPE  = ':',
-		OPT     = '?:',
-		ASSIGN  = '=', // Dev.supports('literalCollection')
-}
-
-export enum Keyword {
-	// literal
-		NULL  = 'null',
-		BOOL  = 'bool',
-		FALSE = 'false',
-		TRUE  = 'true',
-		INT   = 'int',
-		FLOAT = 'float',
-		STR   = 'str',
-		OBJ   = 'obj',
-	// operator
-		IS   = 'is',
-		ISNT = 'isnt',
-		IF   = 'if',
-		THEN = 'then',
-		ELSE = 'else',
-	// storage
-		LET  = 'let',
-		TYPE = 'type',
-	// modifier
-		UNFIXED = 'unfixed',
-}
+} from './Lexer.js';
 
 
 
