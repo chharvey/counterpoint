@@ -1,5 +1,4 @@
 import * as xjs from 'extrajs';
-
 import {
 	Operator,
 	ValidOperatorUnary,
@@ -8,7 +7,7 @@ import {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-} from '../enum/Operator.enum'
+} from '../validator/index.js';
 import {
 	SolidObject,
 	SolidNull,
@@ -16,7 +15,7 @@ import {
 	SolidNumber,
 	Int16,
 	Float64,
-} from '../typer/';
+} from '../typer/index.js';
 
 
 

@@ -1,19 +1,18 @@
 import * as assert from 'assert'
 import * as xjs from 'extrajs';
-import * as utf8 from 'utf8';
-
-import {
-	SolidConfig,
-	CONFIG_DEFAULT,
-	Dev,
-} from '../../src/core/';
+import utf8 from 'utf8';
 import type {
 	CodeUnit,
 } from '../../src/types';
 import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Dev,
+} from '../../src/core/index.js';
+import {
 	TOKEN,
 	LexerSolid as Lexer,
-} from '../../src/parser/';
+} from '../../src/parser/index.js';
 
 
 
