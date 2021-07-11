@@ -51,8 +51,16 @@ TypeUnit ::=
 	| "(" Type ")"
 ;
 
-TypeUnarySymbol ::=
+PropertyAccessType
+	::= "." (INTEGER | Word);
+
+TypeCompound ::=
 	| TypeUnit
+	| TypeCompound PropertyAccessType
+;
+
+TypeUnarySymbol ::=
+	| TypeCompound
 	| TypeUnarySymbol "!"
 ;
 
