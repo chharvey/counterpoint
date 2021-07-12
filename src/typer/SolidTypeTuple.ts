@@ -14,7 +14,7 @@ export class SolidTypeTuple extends SolidType {
 	constructor (
 		private readonly types: readonly SolidType[] = [],
 	) {
-		super(new Set([new SolidTuple()]));
+		super(SolidTuple.values);
 	}
 
 	override toString(): string {

@@ -14,7 +14,7 @@ export class SolidTypeRecord extends SolidType {
 	constructor (
 		private readonly propertytypes: ReadonlyMap<bigint, SolidType> = new Map(),
 	) {
-		super(new Set([new SolidRecord()]));
+		super(SolidRecord.values);
 	}
 
 	override toString(): string {
