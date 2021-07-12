@@ -178,6 +178,7 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 - [String](#string)
 - [Object](#object)
 - [Unknown](#unknown)
+- [Compound Types](#compound-types)
 
 
 ### Never
@@ -249,6 +250,25 @@ and expressions of type `unknown` are accepted almost nowhere.
 and no type (except `unknown` itself) is a supertype of `unknown`.
 `unknown` is the the “identity element” of the [intersection](#intersection) operation
 and the “absorption element” of the [union](#union) operation.
+
+
+### Compound Types
+
+#### Tuple Type
+A **Tuple Type** represents [`Tuple` objects](./built-ins.md#tuple) and is an ordered list of types.
+The objects that any given Tuple Type represents are `Tuple` objects whose items’ types
+match up with the types in the list in order.
+
+#### Record Type
+A **Record Type** represents [`Record` objects](./built-ins.md#record) and is an unordered list of name–value pairs.
+The objects that any given Record Type represents are `Record` objects whose properties’ types
+match up with the types in the list by name.
+
+#### Mapping Type
+A **Mapping Type** represents [`Mapping` objects](./built-ins.md#mapping) and is a pair of two types,
+the first of which represents antecedents and the second of which represents consequents.
+The objects that any given Mapping Type represents are `Mapping` objects whose
+antcedents and consequents are respectively assignable to the types in the Mapping Type.
 
 
 
