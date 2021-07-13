@@ -14,6 +14,7 @@ import {
 	Operator,
 } from '../../src/validator/index.js';
 import {
+	SolidType,
 	SolidTypeConstant,
 	SolidObject,
 	SolidNull,
@@ -47,7 +48,7 @@ describe('Decorator', () => {
 						return [key.source, key.id];
 					}),
 					srcs.map((src, i) => [src, [
-						0x8dn,
+						0x8en,
 						0x100n,
 					][i]]),
 				);
@@ -77,18 +78,20 @@ describe('Decorator', () => {
 			})
 		})
 
-		describe('TypeKeyword ::= "bool" | "int" | "float" | "str" | "obj"', () => {
+		describe('TypeKeyword ::= "void" | "bool" | "int" | "float" | "str" | "obj"', () => {
 			it('makes an ASTNodeTypeConstant.', () => {
 				/*
-					<TypeConstant source="bool" value="Boolean"/>
+					<TypeConstant source="void" value="Void"/>
 				*/
 				assert.deepStrictEqual([
+					`void`,
 					`bool`,
 					`int`,
 					`float`,
 					`str`,
 					`obj`,
 				].map((src) => (Decorator.decorate(h.keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).value), [
+					SolidType.VOID,
 					SolidBoolean,
 					Int16,
 					Float64,
@@ -224,14 +227,14 @@ describe('Decorator', () => {
 			})
 		})
 
-		describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
+		describe('TypeUnarySymbol ::= TypeUnarySymbol ("?" | "!")', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
-					<TypeOperation operator="!">
+					<TypeOperation operator="?">
 						<TypeConstant source="int" value="Int16"/>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int!`));
+				const operation: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int?`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationUnary);
 				const operand: AST.ASTNodeType = operation.children[0];
 				assert.deepStrictEqual(
@@ -239,6 +242,9 @@ describe('Decorator', () => {
 					[`int`,          Operator.ORNULL],
 				)
 			})
+			it('operator `!` is not yet supported.', () => {
+				assert.throws(() => Decorator.decorate(h.unaryTypeFromString(`float!`)), /not yet supported/);
+			});
 		})
 
 		describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
@@ -264,17 +270,17 @@ describe('Decorator', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="|">
-						<TypeOperation source="4.2 !">...</TypeOperation>
+						<TypeOperation source="4.2 ?">...</TypeOperation>
 						<TypeOperation source="int & int">...</TypeOperation>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(h.unionTypeFromString(`4.2! | int & int`));
+				const operation: AST.ASTNodeType = Decorator.decorate(h.unionTypeFromString(`4.2? | int & int`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
 				const left: AST.ASTNodeType = operation.children[0];
 				const right: AST.ASTNodeType = operation.children[1];
 				assert.deepStrictEqual(
 					[left.source, operation.operator, right.source],
-					[`4.2 !`,     Operator.OR,        `int & int`],
+					[`4.2 ?`,     Operator.OR,        `int & int`],
 				)
 			})
 		})
@@ -283,17 +289,17 @@ describe('Decorator', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="&">
-						<TypeOperation source="4.2 !">...</TypeOperation>
+						<TypeOperation source="4.2 ?">...</TypeOperation>
 						<TypeOperation source="int | int">...</TypeOperation>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(h.unionTypeFromString(`4.2! & (int | int)`));
+				const operation: AST.ASTNodeType = Decorator.decorate(h.unionTypeFromString(`4.2? & (int | int)`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
 				const left:  AST.ASTNodeType = operation.children[0];
 				const right: AST.ASTNodeType = operation.children[1];
 				assert.deepStrictEqual(
 					[left.source, operation.operator, right.source],
-					[`4.2 !`,     Operator.AND,       `int | int`],
+					[`4.2 ?`,     Operator.AND,       `int | int`],
 				)
 			})
 		})

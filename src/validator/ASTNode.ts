@@ -232,6 +232,8 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) {
 		const value: SolidType = (
 			(start_node instanceof TOKEN.TokenKeyword) ?
+				(start_node.source === Keyword.VOID)  ? SolidType.VOID :
+				(start_node.source === Keyword.NULL)  ? SolidNull :
 				(start_node.source === Keyword.BOOL)  ? SolidBoolean :
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSETYPE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
@@ -239,7 +241,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				(start_node.source === Keyword.FLOAT) ? Float64 :
 				(start_node.source === Keyword.STR)   ? SolidString :
 				(start_node.source === Keyword.OBJ)   ? SolidObject :
-				SolidNull
+				(() => { throw new Error(`ASTNodeTypeConstant.constructor did not expect the keyword \`${ start_node.source }\`.`); })()
 			: (start_node instanceof TOKEN.TokenNumber) ?
 				new SolidTypeConstant(
 					start_node.isFloat
@@ -346,6 +348,9 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		override readonly children: readonly [ASTNodeType],
 	) {
 		super(start_node, operator, children)
+		if ([Operator.OREXCP].includes(this.operator)) {
+			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
+		}
 	}
 	protected override assess_do(validator: Validator): SolidType {
 		return (this.operator === Operator.ORNULL)

@@ -817,7 +817,7 @@ describe('ASTNodeSolid', () => {
 			});
 			it('computes the value of a nullified (ORNULL) type.', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeTypeOperationUnary.fromSource(`int!`).assess(new Validator()),
+					AST.ASTNodeTypeOperationUnary.fromSource(`int?`).assess(new Validator()),
 					Int16.union(SolidNull),
 				)
 			})
