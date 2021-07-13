@@ -44,6 +44,7 @@ Punctuator :::=
 
 Keyword :::=
 	// literal
+		| "void"
 		| "null"
 		| "bool"
 		| "false"

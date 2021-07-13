@@ -52,6 +52,7 @@ export class ProductionTypeKeyword extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
+			['void'],
 			['bool'],
 			['int'],
 			['float'],
@@ -639,6 +640,7 @@ export class ParseNodePrimitiveLiteral extends ParseNode {
 
 export class ParseNodeTypeKeyword extends ParseNode {
 	declare readonly children:
+		| readonly [Token]
 		| readonly [Token]
 		| readonly [Token]
 		| readonly [Token]

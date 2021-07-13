@@ -20,6 +20,8 @@ Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 
 
 
+Decorate(TypeKeyword ::= "void") -> SemanticTypeConstant
+	:= (SemanticTypeConstant[value=Void]);
 Decorate(TypeKeyword ::= "bool") -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=Boolean]);
 Decorate(TypeKeyword ::= "int") -> SemanticTypeConstant
@@ -69,8 +71,8 @@ Decorate(PropertiesType ::= EntryType_Named_Optional# ","?) -> Sequence<Semantic
 
 Decorate(TypeTupleLiteral ::= "[" "]") -> SemanticTypeTuple
 	:= (SemanticTypeTuple);
-Decorate(TypeTupleLiteral ::= "[" ","? ItemsType "]") -> SemanticTypeList
-	:= (SemanticTypeList
+Decorate(TypeTupleLiteral ::= "[" ","? ItemsType "]") -> SemanticTypeTuple
+	:= (SemanticTypeTuple
 		...Decorate(ItemsType)
 	);
 

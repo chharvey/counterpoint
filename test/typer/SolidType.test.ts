@@ -18,6 +18,10 @@ import {
 	SolidRecord,
 	SolidMapping,
 } from '../../src/typer/index.js';
+import {
+	typeConstInt,
+	typeConstFloat,
+} from '../helpers.js';
 
 
 
@@ -41,6 +45,7 @@ describe('SolidType', () => {
 	const builtin_types: SolidType[] = [
 		SolidType.NEVER,
 		SolidType.UNKNOWN,
+		SolidType.VOID,
 		SolidObject,
 		SolidNull,
 		SolidBoolean,
@@ -61,6 +66,40 @@ describe('SolidType', () => {
 		['qux', SolidNumber],
 		['diz', SolidString],
 	]))
+
+
+	describe('#includes', () => {
+		it('uses `SolidObject#identical` to compare values.', () => {
+			function unionOfInts(fs: bigint[]): SolidType {
+				return fs.map<SolidType>(typeConstInt).reduce((a, b) => a.union(b));
+			}
+			function unionOfFloats(fs: number[]): SolidType {
+				return fs.map<SolidType>(typeConstFloat).reduce((a, b) => a.union(b));
+			}
+			const t1: SolidType = unionOfFloats([4.2, 4.3, 4.4]);
+			const t2: SolidType = unionOfFloats([4.3, 4.4, 4.5]);
+			const t3: SolidType = unionOfInts([42n, 43n, 44n]);
+			const t4: SolidType = unionOfInts([43n, 44n, 45n]);
+			assert.deepStrictEqual([
+				t1,
+				t2,
+				t1.intersect(t2),
+			].map((typ) => [...typ.values]), [
+				[4.2, 4.3, 4.4],
+				[4.3, 4.4, 4.5],
+				[4.3, 4.4],
+			].map((set) => set.map((n) => new Float64(n))), '(4.2 | 4.3 | 4.4) & (4.3 | 4.4 | 4.5) == (4.3 | 4.4)');
+			assert.deepStrictEqual([
+				t3,
+				t4,
+				t3.union(t4),
+			].map((t) => [...t.values]), [
+				[42n, 43n, 44n],
+				[43n, 44n, 45n],
+				[42n, 43n, 44n, 45n],
+			].map((set) => set.map((n) => new Int16(n))), '(42 | 43 | 44) | (43 | 44 | 45) == (42 | 43 | 44 | 45)');
+		});
+	});
 
 
 	describe('#intersect', () => {
@@ -264,6 +303,7 @@ describe('SolidType', () => {
 
 		it('discrete types.', () => {
 			;[
+				SolidType.VOID,
 				SolidNull,
 				SolidBoolean,
 				Int16,

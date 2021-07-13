@@ -29,6 +29,7 @@ PrimitiveLiteral ::=
 
 
 TypeKeyword ::=
+	| "void"
 	| "bool"
 	| "int"
 	| "float"

@@ -264,8 +264,10 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	declare readonly children: readonly [];
 	private readonly value: SolidType;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) {
-		const value: SolidType =
+		const value: SolidType = (
 			(start_node instanceof TOKEN.TokenKeyword) ?
+				(start_node.source === Keyword.VOID)  ? SolidType.VOID :
+				(start_node.source === Keyword.NULL)  ? SolidNull :
 				(start_node.source === Keyword.BOOL)  ? SolidBoolean :
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSETYPE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
@@ -273,14 +275,15 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				(start_node.source === Keyword.FLOAT) ? Float64 :
 				(start_node.source === Keyword.STR)   ? SolidString :
 				(start_node.source === Keyword.OBJ)   ? SolidObject :
-				SolidNull
+				(() => { throw new Error(`ASTNodeTypeConstant.constructor did not expect the keyword \`${ start_node.source }\`.`); })()
 			: (start_node instanceof TOKEN.TokenNumber) ?
 				new SolidTypeConstant(
 					start_node.isFloat
 						? new Float64(start_node.cook())
 						: new Int16(BigInt(start_node.cook()))
 				)
-			: SolidNull;
+			: /* (start_node instanceof TOKEN.TokenString) */ new SolidTypeConstant(new SolidString(start_node.cook()))
+		);
 		super(start_node, {value});
 		this.value = value
 	}
