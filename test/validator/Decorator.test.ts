@@ -20,6 +20,7 @@ import {
 	SolidBoolean,
 	Int16,
 	Float64,
+	SolidString,
 } from '../../src/typer/index.js';
 import {
 	assert_arrayLength,
@@ -64,17 +65,19 @@ describe('Decorator', () => {
 					`true;`,
 					`42;`,
 					`4.2;`,
+					`'hello';`,
 				].map((src) => (Decorator.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).value), [
 					SolidNull.NULL,
 					SolidBoolean.FALSE,
 					SolidBoolean.TRUE,
 					new Int16(42n),
 					new Float64(4.2),
+					new SolidString('hello'),
 				])
 			})
 		})
 
-		describe('TypeKeyword ::= "bool" | "int" | "float" | "obj"', () => {
+		describe('TypeKeyword ::= "bool" | "int" | "float" | "str" | "obj"', () => {
 			it('makes an ASTNodeTypeConstant.', () => {
 				/*
 					<TypeConstant source="bool" value="Boolean"/>
@@ -83,11 +86,13 @@ describe('Decorator', () => {
 					`bool`,
 					`int`,
 					`float`,
+					`str`,
 					`obj`,
 				].map((src) => (Decorator.decorate(h.keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).value), [
 					SolidBoolean,
 					Int16,
 					Float64,
+					SolidString,
 					SolidObject,
 				])
 			})
