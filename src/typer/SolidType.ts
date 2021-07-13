@@ -10,6 +10,7 @@ import type {SolidObject} from './SolidObject.js';
  * - SolidTypeUnion
  * - SolidTypeInterface
  * - SolidTypeNever
+ * - SolidTypeVoid
  * - SolidTypeConstant
  * - SolidTypeUnknown
  * - SolidTypeTuple
@@ -20,6 +21,8 @@ export abstract class SolidType {
 	static get NEVER(): SolidTypeNever { return SolidTypeNever.INSTANCE }
 	/** The Top Type, containing all values. */
 	static get UNKNOWN(): SolidTypeUnknown { return SolidTypeUnknown.INSTANCE }
+	/** The Void Type, representing a completion but not a value. */
+	static get VOID(): SolidTypeVoid { return SolidTypeVoid.INSTANCE; }
 
 
 	/**
@@ -74,6 +77,9 @@ export abstract class SolidType {
 		return this.intersect_do(t)
 	}
 	intersect_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
+		/** 2-2 | `A \| B == B \| A` */
+		if (t instanceof SolidTypeUnion) { return t.intersect(this); }
+
 		return new SolidTypeIntersection(this, t)
 	}
 	/**
@@ -97,6 +103,9 @@ export abstract class SolidType {
 		return this.union_do(t)
 	}
 	union_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
+		/** 2-1 | `A  & B == B  & A` */
+		if (t instanceof SolidTypeIntersection) { return t.union(this); }
+
 		return new SolidTypeUnion(this, t)
 	}
 	/**
@@ -174,6 +183,15 @@ class SolidTypeIntersection extends SolidType {
 	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) && this.right.includes(v)
 	}
+	/**
+	 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
+	 *     |  (B  & C) \| A == (B \| A)  & (C \| A)
+	 */
+	override union_do(t: SolidType): SolidType {
+		return (this.left.equals(SolidType.VOID) || this.right.equals(SolidType.VOID))
+			? this.left.union(t).intersect(this.right.union(t))
+			: new SolidTypeUnion(this, t);
+	}
 	override isSubtypeOf_do(t: SolidType): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) { return true }
@@ -210,6 +228,15 @@ class SolidTypeUnion extends SolidType {
 	}
 	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) || this.right.includes(v)
+	}
+	/**
+	 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
+	 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
+	 */
+	override intersect_do(t: SolidType): SolidType {
+		return (this.left.equals(SolidType.VOID) || this.right.equals(SolidType.VOID))
+			? this.left.intersect(t).union(this.right.intersect(t))
+			: new SolidTypeIntersection(this, t);
 	}
 	override isSubtypeOf_do(t: SolidType): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
@@ -296,6 +323,39 @@ class SolidTypeNever extends SolidType {
 	}
 	override equals(t: SolidType): boolean {
 		return t.isEmpty
+	}
+}
+
+
+
+/**
+ * Class for constructing the `void` type.
+ * @final
+ */
+class SolidTypeVoid extends SolidType {
+	static readonly INSTANCE: SolidTypeVoid = new SolidTypeVoid();
+
+	override readonly isEmpty: boolean = false;
+	override readonly isUniverse: boolean = false;
+
+	private constructor () {
+		super();
+	}
+
+	override toString(): string {
+		return 'void';
+	}
+	override includes(_v: SolidObject): boolean {
+		return false;
+	}
+	override intersect_do(_t: SolidType): SolidType {
+		return SolidType.NEVER;
+	}
+	override isSubtypeOf_do(_t: SolidType): boolean {
+		return false;
+	}
+	override equals(t: SolidType): boolean {
+		return t === SolidTypeVoid.INSTANCE || super.equals(t);
 	}
 }
 
