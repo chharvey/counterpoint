@@ -14,6 +14,7 @@ import {
 	Operator,
 } from '../../src/validator/index.js';
 import {
+	SolidType,
 	SolidTypeConstant,
 	SolidObject,
 	SolidNull,
@@ -46,7 +47,7 @@ describe('Decorator', () => {
 						return [key.source, key.id];
 					}),
 					srcs.map((src, i) => [src, [
-						0x8dn,
+						0x8en,
 						0x100n,
 					][i]]),
 				);
@@ -74,17 +75,19 @@ describe('Decorator', () => {
 			})
 		})
 
-		describe('TypeKeyword ::= "bool" | "int" | "float" | "obj"', () => {
+		describe('TypeKeyword ::= "void" | "bool" | "int" | "float" | "obj"', () => {
 			it('makes an ASTNodeTypeConstant.', () => {
 				/*
-					<TypeConstant source="bool" value="Boolean"/>
+					<TypeConstant source="void" value="Void"/>
 				*/
 				assert.deepStrictEqual([
+					`void`,
 					`bool`,
 					`int`,
 					`float`,
 					`obj`,
 				].map((src) => (Decorator.decorate(h.keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).value), [
+					SolidType.VOID,
 					SolidBoolean,
 					Int16,
 					Float64,

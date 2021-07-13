@@ -20,6 +20,8 @@ Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 
 
 
+Decorate(TypeKeyword ::= "void") -> SemanticTypeConstant
+	:= (SemanticTypeConstant[value=Void]);
 Decorate(TypeKeyword ::= "bool") -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=Boolean]);
 Decorate(TypeKeyword ::= "int") -> SemanticTypeConstant
