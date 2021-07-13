@@ -25,6 +25,40 @@ export class SolidTypeRecord extends SolidType {
 		return v instanceof SolidRecord && v.toType().isSubtypeOf(this);
 	}
 
+	/**
+	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `S` with the set of properties on `T`.
+	 * For any overlapping properties, their type intersection is taken.
+	 */
+	override intersect_do(t: SolidType): SolidType {
+		if (t instanceof SolidTypeRecord) {
+			const props: Map<bigint, SolidType> = new Map([...this.propertytypes]);
+			[...t.propertytypes].forEach(([id, typ]) => {
+				props.set(id, (props.has(id)) ? props.get(id)!.intersect(typ) : typ)
+			});
+			return new SolidTypeRecord(props);
+		} else {
+			return super.intersect_do(t);
+		}
+	}
+
+	/**
+	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `S` with the set of properties on `T`.
+	 * For any overlapping properties, their type union is taken.
+	 */
+	override union_do(t: SolidType): SolidType {
+		if (t instanceof SolidTypeRecord) {
+			const props: Map<bigint, SolidType> = new Map();
+			[...t.propertytypes].forEach(([id, typ]) => {
+				if (this.propertytypes.has(id)) {
+					props.set(id, this.propertytypes.get(id)!.union(typ));
+				}
+			})
+			return new SolidTypeRecord(props);
+		} else {
+			return super.union_do(t);
+		}
+	}
+
 	override isSubtypeOf_do(t: SolidType): boolean {
 		return t.equals(SolidObject) || (
 			t instanceof SolidTypeRecord
