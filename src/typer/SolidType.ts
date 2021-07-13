@@ -127,14 +127,10 @@ export abstract class SolidType {
 		if (t.isUniverse) { return true }
 
 		if (t instanceof SolidTypeIntersection) {
-			/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
-			return this.isSubtypeOf(t.left) && this.isSubtypeOf(t.right)
+			return t.isSupertypeOf(this);
 		}
 		if (t instanceof SolidTypeUnion) {
-			/** 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
-			if (this.isSubtypeOf(t.left) || this.isSubtypeOf(t.right)) { return true }
-			/** 3-2 | `A <: A \| B  &&  B <: A \| B` */
-			if (this.equals(t.left) || this.equals(t.right)) { return true }
+			if (t.isNecessarilySupertypeOf(this)) { return true; }
 		}
 
 		return this.isSubtypeOf_do(t)
@@ -170,8 +166,8 @@ class SolidTypeIntersection extends SolidType {
 	 * @param right the second type
 	 */
 	constructor (
-		readonly left:  SolidType,
-		readonly right: SolidType,
+		private readonly left:  SolidType,
+		private readonly right: SolidType,
 	) {
 		super(xjs.Set.intersection(left.values, right.values))
 		this.isEmpty = this.left.isEmpty || this.right.isEmpty || this.isEmpty;
@@ -199,6 +195,10 @@ class SolidTypeIntersection extends SolidType {
 		if (t.equals(this.left) || t.equals(this.right)) { return true }
 		return super.isSubtypeOf_do(t)
 	}
+	isSupertypeOf(t: SolidType): boolean {
+		/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
+		return t.isSubtypeOf(this.left) && t.isSubtypeOf(this.right);
+	}
 }
 
 
@@ -216,8 +216,8 @@ class SolidTypeUnion extends SolidType {
 	 * @param right the second type
 	 */
 	constructor (
-		readonly left:  SolidType,
-		readonly right: SolidType,
+		private readonly left:  SolidType,
+		private readonly right: SolidType,
 	) {
 		super(xjs.Set.union(left.values, right.values))
 		this.isEmpty = this.left.isEmpty && this.right.isEmpty;
@@ -241,6 +241,13 @@ class SolidTypeUnion extends SolidType {
 	override isSubtypeOf_do(t: SolidType): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
+	}
+	isNecessarilySupertypeOf(t: SolidType): boolean {
+		/** 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
+		if (t.isSubtypeOf(this.left) || t.isSubtypeOf(this.right)) { return true; }
+		/** 3-2 | `A <: A \| B  &&  B <: A \| B` */
+		if (t.equals(this.left) || t.equals(this.right)) { return true; }
+		return false;
 	}
 }
 
