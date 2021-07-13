@@ -153,6 +153,8 @@ export abstract class SolidType {
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
 class SolidTypeIntersection extends SolidType {
+	declare readonly isEmpty: boolean;
+
 	/**
 	 * Construct a new SolidTypeIntersection object.
 	 * @param left the first type
@@ -163,6 +165,7 @@ class SolidTypeIntersection extends SolidType {
 		readonly right: SolidType,
 	) {
 		super(xjs.Set.intersection(left.values, right.values))
+		this.isEmpty = this.left.isEmpty || this.right.isEmpty || this.isEmpty;
 	}
 
 	override toString(): string {
@@ -187,6 +190,8 @@ class SolidTypeIntersection extends SolidType {
  * that contains values both assignable to `T` *and* assignable to `U`.
  */
 class SolidTypeUnion extends SolidType {
+	declare readonly isEmpty: boolean;
+
 	/**
 	 * Construct a new SolidTypeUnion object.
 	 * @param left the first type
@@ -197,6 +202,7 @@ class SolidTypeUnion extends SolidType {
 		readonly right: SolidType,
 	) {
 		super(xjs.Set.union(left.values, right.values))
+		this.isEmpty = this.left.isEmpty && this.right.isEmpty;
 	}
 
 	override toString(): string {
