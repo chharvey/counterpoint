@@ -391,6 +391,9 @@ export class ProductionPropertyAccess extends Production {
 			['.', TERMINAL.TerminalInteger.instance],
 			['.', ProductionWord.instance],
 			['.', '[', ProductionExpression.instance, ']'],
+			['?.', TERMINAL.TerminalInteger.instance],
+			['?.', ProductionWord.instance],
+			['?.', '[', ProductionExpression.instance, ']'],
 		];
 	}
 }
@@ -873,6 +876,9 @@ export class ParseNodeExpressionUnit extends ParseNode {
 
 export class ParseNodePropertyAccess extends ParseNode {
 	declare readonly children:
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression, Token]
 		| readonly [Token, Token]
 		| readonly [Token, ParseNodeWord]
 		| readonly [Token, Token, ParseNodeExpression, Token]

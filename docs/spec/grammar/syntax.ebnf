@@ -98,7 +98,7 @@ ExpressionUnit ::=
 ;
 
 PropertyAccess
-	::= "." (INTEGER | Word | "[" Expression "]");
+	::= ("." | "?.") (INTEGER | Word | "[" Expression "]");
 
 ExpressionCompound ::=
 	| ExpressionUnit

@@ -28,6 +28,7 @@ Punctuator :::=
 		| "," | "|->"
 	// compound
 		| "."
+		| "?."
 	// unary
 		| "!" | "?" | "+" | "-"
 	// binary
