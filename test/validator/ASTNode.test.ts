@@ -999,7 +999,7 @@ describe('ASTNodeSolid', () => {
 			});
 
 			Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
-				context('index access.', () => {
+				context('access by index.', () => {
 					function newProgram(validator: Validator): AST.ASTNodeGoal {
 						return AST.ASTNodeGoal.fromSource(`
 							let unfixed four: int = 4;
@@ -1070,7 +1070,7 @@ describe('ASTNodeSolid', () => {
 						});
 					});
 				});
-				context('key access.', () => {
+				context('access by key.', () => {
 					function newProgram(validator: Validator): AST.ASTNodeGoal {
 						return AST.ASTNodeGoal.fromSource(`
 							let unfixed four: int = 4;
@@ -1104,7 +1104,7 @@ describe('ASTNodeSolid', () => {
 						assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`).type(validator), TypeError04);
 					});
 				});
-				context('expression access.', () => {
+				context('access by computed expression.', () => {
 					function newProgram(validator: Validator): AST.ASTNodeGoal {
 						return AST.ASTNodeGoal.fromSource(`
 							let unfixed four: int = 4;
@@ -1748,7 +1748,7 @@ describe('ASTNodeSolid', () => {
 			});
 
 			Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
-				context('index access.', () => {
+				context('access by index.', () => {
 					function newProgram(validator: Validator): AST.ASTNodeGoal {
 						return AST.ASTNodeGoal.fromSource(`
 							let unfixed four: int = 4;
@@ -1795,7 +1795,7 @@ describe('ASTNodeSolid', () => {
 						);
 					});
 				});
-				context('key access.', () => {
+				context('access by key.', () => {
 					function newProgram(validator: Validator): AST.ASTNodeGoal {
 						return AST.ASTNodeGoal.fromSource(`
 							let unfixed four: int = 4;
@@ -1826,7 +1826,7 @@ describe('ASTNodeSolid', () => {
 						);
 					});
 				});
-				context('expression access.', () => {
+				context('access by computed expression.', () => {
 					function newProgram(validator: Validator): AST.ASTNodeGoal {
 						return AST.ASTNodeGoal.fromSource(`
 							let unfixed four: int = 4;

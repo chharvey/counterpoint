@@ -3,6 +3,8 @@ import type {
 } from '@chharvey/parser';
 import * as assert from 'assert'
 import {
+	SolidConfig,
+	CONFIG_DEFAULT,
 	Dev,
 } from '../../src/core/index.js';
 import type {
@@ -624,69 +626,72 @@ describe('Decorator', () => {
 		})
 
 		Dev.supports('literalCollection') && describe('ExpressionCompound ::= ExpressionCompound PropertyAccess', () => {
+			function makeAccess(src: string, test_optional: boolean = false, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeAccess {
+				const access: AST.ASTNodeExpression = Decorator.decorate(h.compoundExpressionFromSource(src, config));
+				assert.ok(access instanceof AST.ASTNodeAccess);
+				assert.strictEqual(access.optional, test_optional);
+				return access;
+			}
 			context('normal access.', () => {
-			it('access by integer.', () => {
-				/*
-					<Access optional=false>
-						<List source="[42, 420, 4200]">...</List>
-						<Index>
-							<Constant source="1"/>
-						</Index>
-					</Access>
-				*/
-				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
-					[42, 420, 4200].1;
-				`);
-				assert.ok(!access.optional);
-				const operand: AST.ASTNodeExpression = access.children[0];
-				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
-				assert.ok(accessor instanceof AST.ASTNodeIndex);
-				assert.deepStrictEqual(
-					[operand.source,        accessor.source],
-					[`[ 42 , 420 , 4200 ]`, `. 1`],
-				);
-			});
-			it('access by key.', () => {
-				/*
-					<Access optional=false>
-						<Record source="[c= 42, b= 420, a= 4200]">...</Record>
-						<Key source="b"/>
-					</Access>
-				*/
-				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
-					[c= 42, b= 420, a= 4200].b;
-				`);
-				assert.ok(!access.optional);
-				const operand: AST.ASTNodeExpression = access.children[0];
-				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
-				assert.ok(accessor instanceof AST.ASTNodeKey);
-				assert.deepStrictEqual(
-					[operand.source,                    accessor.source],
-					[`[ c = 42 , b = 420 , a = 4200 ]`, `b`],
-				);
-			});
-			it('access by computed expression.', () => {
-				/*
-					<Access optional=false>
-						<Mapping source="[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']">...</Mapping>
-						<Expression source="0.7 + 0.3">...</Expression>
-					</Access>
-				*/
-				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
-					[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'].[0.7 + 0.3];
-				`);
-				assert.ok(!access.optional);
-				const operand: AST.ASTNodeExpression = access.children[0];
-				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
-				assert.ok(accessor instanceof AST.ASTNodeExpression);
-				assert.deepStrictEqual(
-					[operand.source,                                accessor.source],
-					[`[ 0.5 * 2 |-> 'one' , 1.4 + 0.6 |-> 'two' ]`, `0.7 + 0.3`],
-				);
-			});
+				it('access by index.', () => {
+					/*
+						<Access optional=false>
+							<List source="[42, 420, 4200]">...</List>
+							<Index>
+								<Constant source="1"/>
+							</Index>
+						</Access>
+					*/
+					const access: AST.ASTNodeAccess = makeAccess(`
+						[42, 420, 4200].1;
+					`, false);
+					const operand: AST.ASTNodeExpression = access.children[0];
+					const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
+					assert.ok(accessor instanceof AST.ASTNodeIndex);
+					assert.deepStrictEqual(
+						[operand.source,        accessor.source],
+						[`[ 42 , 420 , 4200 ]`, `. 1`],
+					);
+				});
+				it('access by key.', () => {
+					/*
+						<Access optional=false>
+							<Record source="[c= 42, b= 420, a= 4200]">...</Record>
+							<Key source="b"/>
+						</Access>
+					*/
+					const access: AST.ASTNodeAccess = makeAccess(`
+						[c= 42, b= 420, a= 4200].b;
+					`, false);
+					const operand: AST.ASTNodeExpression = access.children[0];
+					const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
+					assert.ok(accessor instanceof AST.ASTNodeKey);
+					assert.deepStrictEqual(
+						[operand.source,                    accessor.source],
+						[`[ c = 42 , b = 420 , a = 4200 ]`, `b`],
+					);
+				});
+				it('access by computed expression.', () => {
+					/*
+						<Access optional=false>
+							<Mapping source="[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']">...</Mapping>
+							<Expression source="0.7 + 0.3">...</Expression>
+						</Access>
+					*/
+					const access: AST.ASTNodeAccess = makeAccess(`
+						[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'].[0.7 + 0.3];
+					`, false);
+					const operand: AST.ASTNodeExpression = access.children[0];
+					const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
+					assert.ok(accessor instanceof AST.ASTNodeExpression);
+					assert.deepStrictEqual(
+						[operand.source,                                accessor.source],
+						[`[ 0.5 * 2 |-> 'one' , 1.4 + 0.6 |-> 'two' ]`, `0.7 + 0.3`],
+					);
+				});
 			});
 			Dev.supports('optionalAccess') && context('optional access.', () => {
-				it('access by integer.', () => {
+				it('access by index.', () => {
 					/*
 						<Access optional=true>
 							<Tuple source="[42, 420, 4200]">...</Tuple>
@@ -695,11 +700,9 @@ describe('Decorator', () => {
 							</Index>
 						</Access>
 					*/
-					const access: AST.ASTNodeExpression = Decorator.decorate(h.compoundExpressionFromSource(`
+					makeAccess(`
 						[42, 420, 4200]?.1;
-					`));
-					assert.ok(access instanceof AST.ASTNodeAccess);
-					assert.ok(access.optional);
+					`, true);
 				});
 				it('access by key.', () => {
 					/*
@@ -708,11 +711,9 @@ describe('Decorator', () => {
 							<Key source="b"/>
 						</Access>
 					*/
-					const access: AST.ASTNodeExpression = Decorator.decorate(h.compoundExpressionFromSource(`
+					makeAccess(`
 						[c= 42, b= 420, a= 4200]?.b;
-					`));
-					assert.ok(access instanceof AST.ASTNodeAccess);
-					assert.ok(access.optional);
+					`, true);
 				});
 				it('access by computed expression.', () => {
 					/*
@@ -721,11 +722,9 @@ describe('Decorator', () => {
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/
-					const access: AST.ASTNodeExpression = Decorator.decorate(h.compoundExpressionFromSource(`
+					makeAccess(`
 						[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']?.[0.7 + 0.3];
-					`));
-					assert.ok(access instanceof AST.ASTNodeAccess);
-					assert.ok(access.optional);
+					`, true);
 				});
 			});
 		});
