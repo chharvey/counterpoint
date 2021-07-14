@@ -62,7 +62,7 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" (","? Type# ","?)? "]"', () => {
 			/*
 				<TypeTupleLiteral>
 					<PUNCTUATOR>[</PUNCTUATOR>
@@ -192,23 +192,6 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
-			it('makes a TypeUnit node containing brackets.', () => {
-				/*
-					<TypeUnit>
-						<PUNCTUATOR>[</PUNCTUATOR>
-						<PUNCTUATOR>]</PUNCTUATOR>
-					</TypeUnit>
-				*/
-				const type_unit: PARSER.ParseNodeTypeUnit = h.unitTypeFromString(`[]`);
-				assert_arrayLength(type_unit.children, 2);
-				assert.deepStrictEqual(
-					type_unit.children.map((c) => c.source),
-					[Punctuator.BRAK_OPN, Punctuator.BRAK_CLS],
-				);
-			});
-		});
-
 		describe('TypeUnit ::= IDENTIFIER', () => {
 			it('parses type identifiers.', () => {
 				assert.deepStrictEqual([
@@ -301,22 +284,27 @@ describe('Parser', () => {
 			})
 		})
 
-		describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
+		describe('TypeUnarySymbol ::= TypeUnarySymbol ("?" | "!")', () => {
 			it('makes a ParseNodeTypeUnarySymbol node.', () => {
 				/*
 					<TypeUnarySymbol>
 						<TypeUnarySymbol source="int">...</TypeUnarySymbol>
-						<PUNCTUATOR>!</PUNCTUATOR>
+						<PUNCTUATOR>?</PUNCTUATOR>
 					</TypeUnarySymbol>
 				*/
-				const type_unary: PARSER.ParseNodeTypeUnarySymbol = h.unaryTypeFromString(`int!`)
-				assert_arrayLength(type_unary.children, 2)
-				const [unary, op]: readonly [PARSER.ParseNodeTypeUnarySymbol, Token] = type_unary.children
-				assert.ok(op instanceof TOKEN.TokenPunctuator)
-				assert.deepStrictEqual(
-					[unary.source, op.source],
-					[Keyword.INT,  Punctuator.ORNULL],
-				)
+				assert.deepStrictEqual([
+					`int?`,
+					`float!`,
+				].map((src) => {
+					const type_unary: PARSER.ParseNodeTypeUnarySymbol = h.unaryTypeFromString(src);
+					assert_arrayLength(type_unary.children, 2);
+					const [unary, op]: readonly [PARSER.ParseNodeTypeUnarySymbol, Token] = type_unary.children;
+					assert.ok(op instanceof TOKEN.TokenPunctuator);
+					return [unary.source, op.source];
+				}), [
+					[Keyword.INT,   Punctuator.ORNULL],
+					[Keyword.FLOAT, Punctuator.OREXCP],
+				]);
 			})
 		})
 
@@ -456,16 +444,16 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('ListLiteral ::= "[" ","? Expression# ","? "]"', () => {
+		Dev.supports('literalCollection') && describe('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
 			it('with no leading or trailing comma.', () => {
 				/*
-					<ListLiteral>
+					<TupleLiteral>
 						<PUNCTUATOR>[</PUNCTUATOR>
-						<ListLiteral__0__List source="42, true, null || false">...</ListLiteral__0__List>
+						<TupleLiteral__0__List source="42, true, null || false">...</TupleLiteral__0__List>
 						<PUNCTUATOR>]</PUNCTUATOR>
-					</ListLiteral>
+					</TupleLiteral>
 				*/
-				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`[42, true, null || false];`);
+				const unit: PARSER.ParseNodeTupleLiteral = h.tupleLiteralFromSource(`[42, true, null || false];`);
 				assert_arrayLength(unit.children, 3);
 				assert.deepStrictEqual(
 					unit.children.map((c) => c.source),
@@ -473,7 +461,7 @@ describe('Parser', () => {
 				);
 			});
 			it('with leading comma.', () => {
-				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`
+				const unit: PARSER.ParseNodeTupleLiteral = h.tupleLiteralFromSource(`
 					[
 						, 42
 						, true
@@ -487,7 +475,7 @@ describe('Parser', () => {
 				);
 			});
 			it('with trailing comma.', () => {
-				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`
+				const unit: PARSER.ParseNodeTupleLiteral = h.tupleLiteralFromSource(`
 					[
 						42,
 						true,
@@ -500,21 +488,21 @@ describe('Parser', () => {
 					[Punctuator.BRAK_OPN, `42 , true , null || false`, Punctuator.COMMA, Punctuator.BRAK_CLS],
 				);
 			});
-			specify('ListLiteral__0__List ::= ListLiteral__0__List "," Expression', () => {
+			specify('TupleLiteral__0__List ::= TupleLiteral__0__List "," Expression', () => {
 				/*
-					<ListLiteral__0__List>
-						<ListLiteral__0__List>
-							<ListLiteral__0__List>
+					<TupleLiteral__0__List>
+						<TupleLiteral__0__List>
+							<TupleLiteral__0__List>
 								<Expression source="42">...</Expression>
-							</ListLiteral__0__List>
+							</TupleLiteral__0__List>
 							<PUNCTUATOR>,</PUNCTUATOR>
 							<Expression source="true">...</Expression>
-						</ListLiteral__0__List>
+						</TupleLiteral__0__List>
 						<PUNCTUATOR>,</PUNCTUATOR>
 						<Expression source="null || false">...</Expression>
-					</ListLiteral__0__List>
+					</TupleLiteral__0__List>
 				*/
-				const unit: PARSER.ParseNodeListLiteral = h.listLiteralFromSource(`[42, true, null || false];`);
+				const unit: PARSER.ParseNodeTupleLiteral = h.tupleLiteralFromSource(`[42, true, null || false];`);
 				assert_arrayLength(unit.children, 3);
 				h.hashListSources(unit.children[1], `42`, `true`, `null || false`);
 			});
@@ -614,23 +602,6 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('ExpressionUnit ::= "[" "]"', () => {
-			it('makes an ExpressionUnit node containing brackets.', () => {
-				/*
-					<ExpressionUnit>
-						<PUNCTUATOR>[</PUNCTUATOR>
-						<PUNCTUATOR>]</PUNCTUATOR>
-					</ExpressionUnit>
-				*/
-				const expression_unit: PARSER.ParseNodeExpressionUnit = h.unitExpressionFromSource(`[];`);
-				assert_arrayLength(expression_unit.children, 2);
-				assert.deepStrictEqual(
-					expression_unit.children.map((c) => c.source),
-					[Punctuator.BRAK_OPN, Punctuator.BRAK_CLS],
-				);
-			});
-		});
-
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
 			it('parses IDENTIFIER.', () => {
 				assert.strictEqual(h.tokenIdentifierFromSource(`ident;`).source, 'ident')
@@ -656,8 +627,8 @@ describe('Parser', () => {
 			})
 		})
 
-		Dev.supports('literalCollection') && specify('ExpressionUnit ::= ListLiteral', () => {
-			h.listLiteralFromSource(`[, 42, true, null || false,];`); // assert does not throw
+		Dev.supports('literalCollection') && specify('ExpressionUnit ::= TupleLiteral', () => {
+			h.tupleLiteralFromSource(`[, 42, true, null || false,];`); // assert does not throw
 		});
 
 		Dev.supports('literalCollection') && specify('ExpressionUnit ::= RecordLiteral', () => {

@@ -171,6 +171,7 @@ Solid has the following built-in types.
 This list is not exhaustive, as Solid Types may be created in any Solid program.
 
 - [Never](#never)
+- [Void](#void)
 - [Null](#null)
 - [Boolean](#boolean)
 - [Integer](#integer)
@@ -189,6 +190,22 @@ and expressions of type `never` are accepted everywhere.
 and no type (except `never` itself) is a subtype of `never`.
 `never` is the the “absorption element” of the [intersection](#intersection) operation
 and the “identity element” of the [union](#union) operation.
+
+
+### Void
+The Void type represents the completion of an evaluation but the absence of a value.
+It is the return type of a function that may have side-effects but that does not return a value.
+It is also partly the type of an optional entry in a collection.
+
+There are no values assignable to Void, but it is different from Never in that
+it does not behave like the Bottom Type.
+Void is not a subtype of every other type; in fact, the only types of which Void is a subtype
+are type unions that include it in their construction.
+In general, given a type \`‹T›\`,
+the [intersection](#intersection) \`And<‹T›, Void>\` is not necessarily the same as Void, and
+the [union](#union) \`Or<‹T›, Void>\` is not necessarily the same as \`‹T›\`.
+
+The Void type is also unlike Null in that no Solid Language Value has type Void.
 
 
 ### Null
@@ -237,6 +254,7 @@ Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algori
 ### Object
 The Object type is the parent type of all Solid Language Types.
 Every Solid Language Value is an Object.
+Some specific built-in subtypes of Object are described in the [Built-Ins](./built-ins.md) chapter.
 
 
 ### Unknown

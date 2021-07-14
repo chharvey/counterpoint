@@ -1,5 +1,6 @@
 export enum Operator {
 	ORNULL,
+	OREXCP,
 	NOT,
 	EMP,
 	AFF,
@@ -30,6 +31,7 @@ export enum Operator {
 
 export type ValidTypeOperator =
 	| Operator.ORNULL
+	| Operator.OREXCP
 	| Operator.AND
 	| Operator.OR
 

@@ -230,8 +230,7 @@ export class ASTNodeCase extends ASTNodeSolid {
  * Known subclasses:
  * - ASTNodeTypeConstant
  * - ASTNodeTypeAlias
- * - ASTNodeTypeEmptyCollection
- * - ASTNodeTypeList
+ * - ASTNodeTypeTuple
  * - ASTNodeTypeRecord
  * - ASTNodeTypeOperation
  */
@@ -275,8 +274,10 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	declare readonly children: readonly [];
 	readonly value: SolidType;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) {
-		const value: SolidType =
+		const value: SolidType = (
 			(start_node instanceof TOKEN.TokenKeyword) ?
+				(start_node.source === Keyword.VOID)  ? SolidType.VOID :
+				(start_node.source === Keyword.NULL)  ? SolidNull :
 				(start_node.source === Keyword.BOOL)  ? SolidBoolean :
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSETYPE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
@@ -284,14 +285,15 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				(start_node.source === Keyword.FLOAT) ? Float64 :
 				(start_node.source === Keyword.STR)   ? SolidString :
 				(start_node.source === Keyword.OBJ)   ? SolidObject :
-				SolidNull
+				(() => { throw new Error(`ASTNodeTypeConstant.constructor did not expect the keyword \`${ start_node.source }\`.`); })()
 			: (start_node instanceof TOKEN.TokenNumber) ?
 				new SolidTypeConstant(
 					start_node.isFloat
 						? new Float64(start_node.cook())
 						: new Int16(BigInt(start_node.cook()))
 				)
-			: SolidNull;
+			: /* (start_node instanceof TOKEN.TokenString) */ new SolidTypeConstant(new SolidString(start_node.cook()))
+		);
 		super(start_node, {value});
 		this.value = value
 	}
@@ -331,33 +333,15 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		return SolidType.UNKNOWN;
 	}
 }
-export class ASTNodeTypeEmptyCollection extends ASTNodeType {
-	/** @overrides ASTNodeType */
-	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeEmptyCollection {
+export class ASTNodeTypeTuple extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeTuple {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeEmptyCollection);
-		return typ;
-	}
-	declare readonly children: readonly [];
-	constructor (
-		start_node: PARSER.ParseNodeTypeUnit,
-	) {
-		super(start_node);
-	}
-	@memoizeMethod
-	override assess(_validator: Validator): SolidType {
-		return new SolidTypeTuple().intersect(new SolidTypeRecord());
-	}
-}
-export class ASTNodeTypeList extends ASTNodeType {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeList {
-		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeList);
+		assert.ok(typ instanceof ASTNodeTypeTuple);
 		return typ;
 	}
 	constructor (
 		start_node: PARSER.ParseNodeTypeTupleLiteral,
-		override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
+		override readonly children: readonly ASTNodeType[],
 	) {
 		super(start_node, {}, children);
 	}
@@ -412,6 +396,9 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		override readonly children: readonly [ASTNodeType],
 	) {
 		super(start_node, operator, children)
+		if ([Operator.OREXCP].includes(this.operator)) {
+			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
+		}
 	}
 	@memoizeMethod
 	override assess(validator: Validator): SolidType {
@@ -448,8 +435,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeConstant
  * - ASTNodeVariable
  * - ASTNodeTemplate
- * - ASTNodeEmptyCollection
- * - ASTNodeList
+ * - ASTNodeTuple
  * - ASTNodeRecord
  * - ASTNodeMapping
  * - ASTNodeOperation
@@ -468,7 +454,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	protected static typeDeco(
 		_prototype: ASTNodeExpression,
 		_property_key: string,
-		descriptor: TypedPropertyDescriptor<(this: ASTNodeExpression, validator: Validator) => SolidLanguageType>,
+		descriptor: TypedPropertyDescriptor<(this: ASTNodeExpression, validator: Validator) => SolidType>,
 	): typeof descriptor {
 		const method = descriptor.value!;
 		descriptor.value = function (validator) {
@@ -678,59 +664,32 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 	@memoizeMethod
 	override assess(validator: Validator): SolidString | null {
-		const concat: string | null = [...this.children].map((expr) => {
-			const assessed: SolidObject | null = expr.assess(validator);
-			return assessed && assessed.toString();
-		}).reduce((accum, value) => ([accum, value].includes(null)) ? null : accum!.concat(value!), '');
-		return (concat === null) ? null : new SolidString(concat);
+		const assesses: (SolidObject | null)[] = [...this.children].map((expr) => expr.assess(validator));
+		return (assesses.includes(null))
+			? null
+			: (assesses as SolidObject[])
+				.map((value) => value.toSolidString())
+				.reduce((a, b) => a.concatenate(b));
 	}
 }
-export class ASTNodeEmptyCollection extends ASTNodeExpression {
-	/** @overrides ASTNodeExpression */
-	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeEmptyCollection {
+export class ASTNodeTuple extends ASTNodeExpression {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTuple {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeEmptyCollection);
-		return expression;
-	}
-	declare readonly children: readonly [];
-	constructor (start_node: PARSER.ParseNodeExpressionUnit) {
-		super(start_node);
-	}
-	override get shouldFloat(): boolean {
-		throw 'ASTNodeEmptyCollection#shouldFloat not yet supported.';
-	}
-	@ASTNodeExpression.buildDeco
-	override build(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeEmptyCollection#build not yet supported.';
-	}
-	@memoizeMethod
-	@ASTNodeExpression.typeDeco
-	override type(_validator: Validator): SolidType {
-		return new SolidTypeTuple().intersect(new SolidTypeRecord());
-	}
-	@memoizeMethod
-	override assess(_validator: Validator): SolidObject | null {
-		return null;
-	}
-}
-export class ASTNodeList extends ASTNodeExpression {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeList {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeList);
+		assert.ok(expression instanceof ASTNodeTuple);
 		return expression;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeListLiteral,
-		override readonly children: Readonly<NonemptyArray<ASTNodeExpression>>,
+		start_node: PARSER.ParseNodeTupleLiteral,
+		override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, children);
 	}
 	override get shouldFloat(): boolean {
-		throw 'ASTNodeList#shouldFloat not yet supported.';
+		throw 'ASTNodeTuple#shouldFloat not yet supported.';
 	}
 	@ASTNodeExpression.buildDeco
 	override build(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeList#build not yet supported.';
+		throw builder && 'ASTNodeTuple#build not yet supported.';
 	}
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
@@ -805,7 +764,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	override type(_validator: Validator): SolidType {
-		return SolidObject;
+		return SolidMapping;
 	}
 	@memoizeMethod
 	override assess(validator: Validator): SolidObject | null {

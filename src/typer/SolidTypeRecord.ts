@@ -27,18 +27,13 @@ export class SolidTypeRecord extends SolidType {
 	@strictEqual
 	@SolidType.subtypeDeco
 	override isSubtypeOf(t: SolidType): boolean {
-		return (
-			(t.equals(SolidObject)) ? true :
-			(t instanceof SolidTypeRecord) ? ((this.propertytypes.size < t.propertytypes.size)
-				? false
-				: [...t.propertytypes].every(([id, thattype]) => {
-					const thistype: SolidType | null = this.propertytypes.get(id) || null;
-					return (thistype)
-						? thistype.isSubtypeOf(thattype)
-						: false;
-				})
-			) :
-			false
+		return t.equals(SolidObject) || (
+			t instanceof SolidTypeRecord
+			&& this.propertytypes.size >= t.propertytypes.size
+			&& [...t.propertytypes].every(([id, thattype]) => {
+				const thistype: SolidType | null = this.propertytypes.get(id) || null;
+				return !!thistype && thistype.isSubtypeOf(thattype);
+			})
 		);
 	}
 }

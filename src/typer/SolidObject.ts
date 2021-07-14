@@ -1,7 +1,10 @@
 import {
 	strictEqual,
 } from '../decorators.js';
-import {SolidBoolean} from './index.js'; // avoids circular imports
+import {
+	SolidBoolean,
+	SolidString,
+} from './index.js'; // avoids circular imports
 import {SolidType} from './SolidType.js';
 
 
@@ -35,6 +38,7 @@ export abstract class SolidObject {
 	/** @implements SolidType */
 	static union: SolidType['union'] = SolidType.prototype.union;
 	/** @implements SolidType */
+	@strictEqual
 	@SolidType.subtypeDeco
 	static isSubtypeOf(t: SolidType): boolean {
 		return (t instanceof Function)
@@ -99,5 +103,14 @@ export abstract class SolidObject {
 	@SolidObject.equalsDeco
 	equal(_value: SolidObject): boolean {
 		return false
+	}
+
+	/**
+	 * Return a Solid string representation of this Object.
+	 * (Not a native String — see {@link #toString}.)
+	 * @returns a string representation of this Object
+	 */
+	toSolidString(): SolidString {
+		return new SolidString(this.toString());
 	}
 }

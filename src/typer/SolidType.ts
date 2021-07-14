@@ -2,6 +2,7 @@ import * as xjs from 'extrajs'
 import {
 	strictEqual,
 } from '../decorators.js';
+import {SetEq} from '../core/index.js'
 import type {SolidObject} from './SolidObject.js';
 
 
@@ -13,6 +14,7 @@ import type {SolidObject} from './SolidObject.js';
  * - SolidTypeUnion
  * - SolidTypeInterface
  * - SolidTypeNever
+ * - SolidTypeVoid
  * - SolidTypeConstant
  * - SolidTypeUnknown
  * - SolidTypeTuple
@@ -23,6 +25,12 @@ export abstract class SolidType {
 	static get NEVER(): SolidTypeNever { return SolidTypeNever.INSTANCE }
 	/** The Top Type, containing all values. */
 	static get UNKNOWN(): SolidTypeUnknown { return SolidTypeUnknown.INSTANCE }
+	/** The Void Type, representing a completion but not a value. */
+	static get VOID(): SolidTypeVoid { return SolidTypeVoid.INSTANCE; }
+	/** Comparator function for `SolidType#values` set. */
+	private static VALUE_COMPARATOR(a: SolidObject, b: SolidObject): boolean {
+		return a.identical(b);
+	}
 	/**
 	 * Decorator for {@link SolidLanguageType#intersect} method and any overrides.
 	 * Contains shortcuts for constructing type intersections.
@@ -110,14 +118,10 @@ export abstract class SolidType {
 			if (t.isUniverse) { return true };
 
 			if (t instanceof SolidTypeIntersection) {
-				/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
-				return this.isSubtypeOf(t.left) && this.isSubtypeOf(t.right)
+				return t.isSupertypeOf(this);
 			}
 			if (t instanceof SolidTypeUnion) {
-				/** 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
-				if (this.isSubtypeOf(t.left) || this.isSubtypeOf(t.right)) { return true }
-				/** 3-2 | `A <: A \| B  &&  B <: A \| B` */
-				if (this.equals(t.left) || this.equals(t.right)) { return true }
+				if (t.isNecessarilySupertypeOf(this)) { return true; }
 			}
 
 			return method.call(this, t);
@@ -131,21 +135,24 @@ export abstract class SolidType {
 	 * i.e., it is equal to the Bottom Type (`never`).
 	 * Used internally for special cases of computations.
 	 */
-	readonly isEmpty: boolean = this.values.size === 0
+	readonly isEmpty: boolean;
 	/**
 	 * Whether this type has all values assignable to it,
 	 * i.e., it is equal to the Top Type (`unknown`).
 	 * Used internally for special cases of computations.
 	 */
-	readonly isUniverse: boolean = false // this.equals(SolidType.UNKNOWN)
+	readonly isUniverse: boolean;
+	/** An enumerated set of values that are assignable to this type. */
+	readonly values: ReadonlySet<SolidObject>;
 
 	/**
 	 * Construct a new SolidType object.
 	 * @param values an enumerated set of values that are assignable to this type
 	 */
-	constructor (
-		readonly values: ReadonlySet<SolidObject> = new Set(),
-	) {
+	constructor (values: ReadonlySet<SolidObject> = new Set()) {
+		this.values = new SetEq(SolidType.VALUE_COMPARATOR, values);
+		this.isEmpty = this.values.size === 0;
+		this.isUniverse = false;
 	}
 
 	/**
@@ -164,6 +171,9 @@ export abstract class SolidType {
 	 */
 	@SolidType.intersectDeco
 	intersect(t: SolidType): SolidType {
+		/** 2-2 | `A \| B == B \| A` */
+		if (t instanceof SolidTypeUnion) { return t.intersect(this); }
+
 		return new SolidTypeIntersection(this, t)
 	}
 	/**
@@ -173,6 +183,9 @@ export abstract class SolidType {
 	 */
 	@SolidType.unionDeco
 	union(t: SolidType): SolidType {
+		/** 2-1 | `A  & B == B  & A` */
+		if (t instanceof SolidTypeIntersection) { return t.union(this); }
+
 		return new SolidTypeUnion(this, t)
 	}
 	/**
@@ -183,7 +196,8 @@ export abstract class SolidType {
 	@strictEqual
 	@SolidType.subtypeDeco
 	isSubtypeOf(t: SolidType): boolean {
-		return !this.isEmpty && !!this.values.size && [...this.values].every((v) => t.includes(v));
+		return !this.isEmpty && !!this.values.size // these checks are needed because this is called by `SolidObject.isSubtypeOf`
+			&& [...this.values].every((v) => t.includes(v));
 	}
 	/**
 	 * Return whether this type is structurally equal to the given type.
@@ -206,16 +220,19 @@ export abstract class SolidType {
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
 class SolidTypeIntersection extends SolidType {
+	declare readonly isEmpty: boolean;
+
 	/**
 	 * Construct a new SolidTypeIntersection object.
 	 * @param left the first type
 	 * @param right the second type
 	 */
 	constructor (
-		readonly left:  SolidType,
-		readonly right: SolidType,
+		private readonly left:  SolidType,
+		private readonly right: SolidType,
 	) {
 		super(xjs.Set.intersection(left.values, right.values))
+		this.isEmpty = this.left.isEmpty || this.right.isEmpty || this.isEmpty;
 	}
 
 	override toString(): string {
@@ -223,6 +240,16 @@ class SolidTypeIntersection extends SolidType {
 	}
 	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) && this.right.includes(v)
+	}
+	/**
+	 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
+	 *     |  (B  & C) \| A == (B \| A)  & (C \| A)
+	 */
+	@SolidType.unionDeco
+	override union(t: SolidType): SolidType {
+		return (this.left.equals(SolidType.VOID) || this.right.equals(SolidType.VOID))
+			? this.left.union(t).intersect(this.right.union(t))
+			: new SolidTypeUnion(this, t);
 	}
 	@strictEqual
 	@SolidType.subtypeDeco
@@ -233,6 +260,10 @@ class SolidTypeIntersection extends SolidType {
 		if (t.equals(this.left) || t.equals(this.right)) { return true }
 		return super.isSubtypeOf(t);
 	}
+	isSupertypeOf(t: SolidType): boolean {
+		/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
+		return t.isSubtypeOf(this.left) && t.isSubtypeOf(this.right);
+	}
 }
 
 
@@ -242,16 +273,19 @@ class SolidTypeIntersection extends SolidType {
  * that contains values both assignable to `T` *and* assignable to `U`.
  */
 class SolidTypeUnion extends SolidType {
+	declare readonly isEmpty: boolean;
+
 	/**
 	 * Construct a new SolidTypeUnion object.
 	 * @param left the first type
 	 * @param right the second type
 	 */
 	constructor (
-		readonly left:  SolidType,
-		readonly right: SolidType,
+		private readonly left:  SolidType,
+		private readonly right: SolidType,
 	) {
 		super(xjs.Set.union(left.values, right.values))
+		this.isEmpty = this.left.isEmpty && this.right.isEmpty;
 	}
 
 	override toString(): string {
@@ -260,11 +294,28 @@ class SolidTypeUnion extends SolidType {
 	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) || this.right.includes(v)
 	}
+	/**
+	 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
+	 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
+	 */
+	@SolidType.intersectDeco
+	override intersect(t: SolidType): SolidType {
+		return (this.left.equals(SolidType.VOID) || this.right.equals(SolidType.VOID))
+			? this.left.intersect(t).union(this.right.intersect(t))
+			: new SolidTypeIntersection(this, t);
+	}
 	@strictEqual
 	@SolidType.subtypeDeco
 	override isSubtypeOf(t: SolidType): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
+	}
+	isNecessarilySupertypeOf(t: SolidType): boolean {
+		/** 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
+		if (t.isSubtypeOf(this.left) || t.isSubtypeOf(this.right)) { return true; }
+		/** 3-2 | `A <: A \| B  &&  B <: A \| B` */
+		if (t.equals(this.left) || t.equals(this.right)) { return true; }
+		return false;
 	}
 }
 
@@ -364,6 +415,43 @@ class SolidTypeNever extends SolidType {
 	@strictEqual
 	override equals(t: SolidType): boolean {
 		return t.isEmpty
+	}
+}
+
+
+
+/**
+ * Class for constructing the `void` type.
+ * @final
+ */
+class SolidTypeVoid extends SolidType {
+	static readonly INSTANCE: SolidTypeVoid = new SolidTypeVoid();
+
+	override readonly isEmpty: boolean = false;
+	override readonly isUniverse: boolean = false;
+
+	private constructor () {
+		super();
+	}
+
+	override toString(): string {
+		return 'void';
+	}
+	override includes(_v: SolidObject): boolean {
+		return false;
+	}
+	@SolidType.intersectDeco
+	override intersect(_t: SolidType): SolidType {
+		return SolidType.NEVER;
+	}
+	@strictEqual
+	@SolidType.subtypeDeco
+	override isSubtypeOf(_t: SolidType): boolean {
+		return false;
+	}
+	@strictEqual
+	override equals(t: SolidType): boolean {
+		return t === SolidTypeVoid.INSTANCE || super.equals(t);
 	}
 }
 

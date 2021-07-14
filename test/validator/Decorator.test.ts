@@ -14,12 +14,14 @@ import {
 	Operator,
 } from '../../src/validator/index.js';
 import {
+	SolidType,
 	SolidTypeConstant,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
 	Int16,
 	Float64,
+	SolidString,
 } from '../../src/typer/index.js';
 import {
 	assert_arrayLength,
@@ -46,7 +48,7 @@ describe('Decorator', () => {
 						return [key.source, key.id];
 					}),
 					srcs.map((src, i) => [src, [
-						0x8dn,
+						0x8en,
 						0x100n,
 					][i]]),
 				);
@@ -64,30 +66,36 @@ describe('Decorator', () => {
 					`true;`,
 					`42;`,
 					`4.2;`,
+					`'hello';`,
 				].map((src) => (Decorator.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).value), [
 					SolidNull.NULL,
 					SolidBoolean.FALSE,
 					SolidBoolean.TRUE,
 					new Int16(42n),
 					new Float64(4.2),
+					new SolidString('hello'),
 				])
 			})
 		})
 
-		describe('TypeKeyword ::= "bool" | "int" | "float" | "obj"', () => {
+		describe('TypeKeyword ::= "void" | "bool" | "int" | "float" | "str" | "obj"', () => {
 			it('makes an ASTNodeTypeConstant.', () => {
 				/*
-					<TypeConstant source="bool" value="Boolean"/>
+					<TypeConstant source="void" value="Void"/>
 				*/
 				assert.deepStrictEqual([
+					`void`,
 					`bool`,
 					`int`,
 					`float`,
+					`str`,
 					`obj`,
 				].map((src) => (Decorator.decorate(h.keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).value), [
+					SolidType.VOID,
 					SolidBoolean,
 					Int16,
 					Float64,
+					SolidString,
 					SolidObject,
 				])
 			})
@@ -109,22 +117,30 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" ","? Type# ","? "]"', () => {
-			it('makes an ASTNodeTypeList.', () => {
+		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" (","? Type# ","?)? "]"', () => {
+			it('makes an empty ASTNodeTypeTuple.', () => {
 				/*
-					<TypeList>
+					<TypeTuple/>
+				*/
+				const tupletype: AST.ASTNodeTypeTuple = Decorator.decorate(h.tupleTypeFromString(`[]`));
+				assert_arrayLength(tupletype.children, 0);
+			});
+			it('makes a nonempty ASTNodeTypeTuple.', () => {
+				/*
+					<TypeTuple>
 						<TypeAlias source="T"/>
 						<TypeConstant source="42"/>
 						<TypeOperation source="null | bool">...</TypeOperation>
-					</TypeList>
+					</TypeTuple>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.tupleTypeFromString(`
+				const tupletype: AST.ASTNodeTypeTuple = Decorator.decorate(h.tupleTypeFromString(`
 					[
 						T,
 						42,
 						null | bool,
 					]
-				`)).children.map((c) => c.source), [
+				`));
+				assert.deepStrictEqual(tupletype.children.map((c) => c.source), [
 					`T`,
 					`42`,
 					`null | bool`,
@@ -149,16 +165,6 @@ describe('Decorator', () => {
 					`let : bool`,
 					`foobar : int`,
 				]);
-			});
-		});
-
-		Dev.supports('literalCollection') && describe('TypeUnit ::= "[" "]"', () => {
-			it('makes an ASTNodeTypeEmptyCollection.', () => {
-				/*
-					<TypeEmptyCollection/>
-				*/
-				const typeexpr: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`[]`));
-				assert.ok(typeexpr instanceof AST.ASTNodeTypeEmptyCollection);
 			});
 		});
 
@@ -221,14 +227,14 @@ describe('Decorator', () => {
 			})
 		})
 
-		describe('TypeUnarySymbol ::= TypeUnarySymbol "!"', () => {
+		describe('TypeUnarySymbol ::= TypeUnarySymbol ("?" | "!")', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
-					<TypeOperation operator="!">
+					<TypeOperation operator="?">
 						<TypeConstant source="int" value="Int16"/>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int!`));
+				const operation: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int?`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationUnary);
 				const operand: AST.ASTNodeType = operation.children[0];
 				assert.deepStrictEqual(
@@ -236,6 +242,9 @@ describe('Decorator', () => {
 					[`int`,          Operator.ORNULL],
 				)
 			})
+			it('operator `!` is not yet supported.', () => {
+				assert.throws(() => Decorator.decorate(h.unaryTypeFromString(`float!`)), /not yet supported/);
+			});
 		})
 
 		describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
@@ -261,17 +270,17 @@ describe('Decorator', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="|">
-						<TypeOperation source="4.2 !">...</TypeOperation>
+						<TypeOperation source="4.2 ?">...</TypeOperation>
 						<TypeOperation source="int & int">...</TypeOperation>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(h.unionTypeFromString(`4.2! | int & int`));
+				const operation: AST.ASTNodeType = Decorator.decorate(h.unionTypeFromString(`4.2? | int & int`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
 				const left: AST.ASTNodeType = operation.children[0];
 				const right: AST.ASTNodeType = operation.children[1];
 				assert.deepStrictEqual(
 					[left.source, operation.operator, right.source],
-					[`4.2 !`,     Operator.OR,        `int & int`],
+					[`4.2 ?`,     Operator.OR,        `int & int`],
 				)
 			})
 		})
@@ -280,17 +289,17 @@ describe('Decorator', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="&">
-						<TypeOperation source="4.2 !">...</TypeOperation>
+						<TypeOperation source="4.2 ?">...</TypeOperation>
 						<TypeOperation source="int | int">...</TypeOperation>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(h.unionTypeFromString(`4.2! & (int | int)`));
+				const operation: AST.ASTNodeType = Decorator.decorate(h.unionTypeFromString(`4.2? & (int | int)`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
 				const left:  AST.ASTNodeType = operation.children[0];
 				const right: AST.ASTNodeType = operation.children[1];
 				assert.deepStrictEqual(
 					[left.source, operation.operator, right.source],
-					[`4.2 !`,     Operator.AND,       `int | int`],
+					[`4.2 ?`,     Operator.AND,       `int | int`],
 				)
 			})
 		})
@@ -375,22 +384,30 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('ListLiteral ::= "[" ","? Expression# ","? "]"', () => {
-			it('makes an ASTNodeList.', () => {
+		Dev.supports('literalCollection') && context('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
+			it('makes an empty ASTNodeTuple.', () => {
 				/*
-					<List>
+					<Tuple/>
+				*/
+				const tuple: AST.ASTNodeTuple = Decorator.decorate(h.tupleLiteralFromSource(`[];`));
+				assert_arrayLength(tuple.children, 0);
+			});
+			it('makes a nonempty ASTNodeTuple.', () => {
+				/*
+					<Tuple>
 						<Constant source="42"/>
 						<Constant source="true"/>
 						<Operation source="null || false">...</Operation>
-					</List>
+					</Tuple>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.listLiteralFromSource(`
+				const tuple: AST.ASTNodeTuple = Decorator.decorate(h.tupleLiteralFromSource(`
 					[
 						42,
 						true,
 						null || false,
 					];
-				`)).children.map((c) => c.source), [
+				`));
+				assert.deepStrictEqual(tuple.children.map((c) => c.source), [
 					`42`,
 					`true`,
 					`null || false`,
@@ -441,16 +458,6 @@ describe('Decorator', () => {
 					`7 |-> true`,
 					`9 |-> 42.0`,
 				]);
-			});
-		});
-
-		Dev.supports('literalCollection') && context('ExpressionUnit ::= "[" "]"', () => {
-			it('makes an ASTNodeEmptyCollection.', () => {
-				/*
-					<EmptyCollection/>
-				*/
-				const expr: AST.ASTNodeExpression = Decorator.decorate(h.unitExpressionFromSource(`[];`));
-				assert.ok(expr instanceof AST.ASTNodeEmptyCollection);
 			});
 		});
 
