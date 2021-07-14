@@ -234,13 +234,13 @@ Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticExpression
 
 
 
-Decorate(PropertyAccess ::= "." INTEGER) -> SemanticIndex
+Decorate(PropertyAccess ::= ("." | "?.") INTEGER) -> SemanticIndex
 	:= (SemanticIndex
 		(SemanticConstant[value=Integer(TokenWorth(INTEGER))])
 	);
-Decorate(PropertyAccess ::= "." Word) -> SemanticKey
+Decorate(PropertyAccess ::= ("." | "?.") Word) -> SemanticKey
 	:= Decorate(Word);
-Decorate(PropertyAccess ::= "." "[" Expression "]") -> SemanticExpression
+Decorate(PropertyAccess ::= ("." | "?.") "[" Expression "]") -> SemanticExpression
 	:= Decorate(Expression);
 
 
@@ -248,7 +248,7 @@ Decorate(PropertyAccess ::= "." "[" Expression "]") -> SemanticExpression
 Decorate(ExpressionCompound ::= ExpressionUnit) -> SemanticExpression
 	:= Decorate(ExpressionUnit);
 Decorate(ExpressionCompound ::= ExpressionCompound PropertyAccess) -> SemanticAccess
-	:= (SemanticAccess
+	:= (SemanticAccess[optional=IsOptionalAccess(PropertyAccess)]
 		Decorate(ExpressionCompound)
 		Decorate(PropertyAccess)
 	);
@@ -512,3 +512,10 @@ ParseList(ParseNode, ASTNode)(ParseNode__List ::= ParseNode__List ","? ParseNode
 		...Decorate(ParseNode__List),
 		Decorate(ParseNode),
 	];
+
+
+
+IsOptionalAccess(PropertyAccess ::= "." (INTEGER | Word | "[" Expression "]")) -> Boolean
+	::= false;
+IsOptionalAccess(PropertyAccess ::= "?." (INTEGER | Word | "[" Expression "]")) -> Boolean
+	::= true;

@@ -105,6 +105,16 @@ export class Decorator {
 	}
 
 	/**
+	 * Return whether a PropertyAccess parse node is an optional access or not.
+	 * Optional access uses the operator `?.` whereas normal access uses `.`.
+	 * @param node the parse node
+	 * @return `true` if the access is optional
+	 */
+	private static isOptionalAccess(node: PARSER.ParseNodePropertyAccess): boolean {
+		return node.children[0].source === Punctuator.OPTDOT;
+	}
+
+	/**
 	 * Return an ASTNode corresponding to a ParseNode’s contents.
 	 * @param node the parse node to decorate
 	 * @returns an ASTNode
@@ -321,17 +331,17 @@ export class Decorator {
 					: new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier)
 				: this.decorate(node.children[1]);
 
-		} else if (node instanceof PARSER.ParseNodePropertyAccess) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodePropertyAccess) {
 			return (
 				(node.children[1] instanceof TOKEN.TokenNumber) ? new AST.ASTNodeIndex(node, [new AST.ASTNodeConstant(node.children[1])]) :
 				(node.children[1] instanceof PARSER.ParseNodeWord) ? this.decorate(node.children[1]) :
 				this.decorate(node.children[2]!)
 			);
 
-		} else if (node instanceof PARSER.ParseNodeExpressionCompound) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeExpressionCompound) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: new AST.ASTNodeAccess(node, [
+				: new AST.ASTNodeAccess(node, Dev.supports('optionalAccess') && this.isOptionalAccess(node.children[1]), [
 					this.decorate(node.children[0]),
 					this.decorate(node.children[1]),
 				]);

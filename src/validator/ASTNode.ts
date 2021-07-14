@@ -730,6 +730,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 	constructor (
 		start_node: PARSER.ParseNodeExpressionCompound,
+		readonly optional: boolean,
 		override readonly children: readonly [ASTNodeExpression, ASTNodeIndex | ASTNodeKey | ASTNodeExpression],
 	) {
 		super(start_node, {}, children);

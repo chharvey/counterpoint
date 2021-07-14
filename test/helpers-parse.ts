@@ -170,7 +170,7 @@ export function unitExpressionFromSource(src: string, config: SolidConfig = CONF
 	assert_arrayLength(expression_compound.children, 1, 'compound expression should have 1 child');
 	return expression_compound.children[0];
 }
-function compoundExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionCompound {
+export function compoundExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionCompound {
 	const expression_unary: PARSER.ParseNodeExpressionUnarySymbol = unaryExpressionFromSource(src, config);
 	assert_arrayLength(expression_unary.children, 1, 'unary expression should have 1 child');
 	return expression_unary.children[0];
