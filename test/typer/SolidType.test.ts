@@ -170,6 +170,16 @@ describe('SolidType', () => {
 				`);
 			})
 		})
+		it('extracts constituents of discriminated unions.', () => {
+			assert.ok(SolidNull.union(SolidBoolean).union(Int16)
+				.intersect(SolidBoolean.union(Int16).union(Float64))
+				.equals(SolidBoolean.union(Int16))
+			, `
+				(null | bool | int) & (bool | int | float)
+				==
+				(bool | int)
+			`);
+		});
 	})
 
 
@@ -239,6 +249,16 @@ describe('SolidType', () => {
 				`);
 			})
 		})
+		it('extracts constituents of discriminated unions.', () => {
+			assert.ok(SolidNull.union(SolidBoolean).union(Int16)
+				.union(SolidBoolean.union(Int16).union(Float64))
+				.equals(SolidNull.union(SolidBoolean).union(Int16).union(Float64))
+			, `
+				(null | bool | int) | (bool | int | float)
+				==
+				(null | bool | int | float)
+			`);
+		});
 	})
 
 
