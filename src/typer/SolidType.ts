@@ -17,6 +17,17 @@ export type TypeEntry = {
 
 
 /**
+ * A half-closed range of integers from min (inclusive) to max (exclusive).
+ * @example
+ * type T = [3, 7]; % a range of integers including 3, 4, 5, and 6.
+ * @index 0 the minimum, inclusive
+ * @index 1 the maximum, exclusive
+ */
+export type IntRange = [number, number];
+
+
+
+/**
  * Parent class for all Solid Language Types.
  * Known subclasses:
  * - SolidTypeIntersection

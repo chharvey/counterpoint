@@ -7,6 +7,7 @@ import {
 } from '../index.js'; // avoids circular imports
 import {
 	TypeEntry,
+	IntRange,
 	SolidType,
 } from './SolidType.js';
 
@@ -36,6 +37,14 @@ export class SolidTypeTuple extends SolidType {
 		private readonly types: readonly TypeEntry[] = [],
 	) {
 		super(new Set([new SolidTuple()]));
+	}
+
+	/** The possible number of items in this tuple type. */
+	private get count(): IntRange {
+		return [
+			this.types.filter((it) => !it.optional).length,
+			this.types.length + 1,
+		];
 	}
 
 	override toString(): string {

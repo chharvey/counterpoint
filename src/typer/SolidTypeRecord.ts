@@ -6,6 +6,7 @@ import {
 } from '../index.js'; // avoids circular imports
 import {
 	TypeEntry,
+	IntRange,
 	SolidType,
 } from './SolidType.js';
 
@@ -35,6 +36,14 @@ export class SolidTypeRecord extends SolidType {
 		private readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
 	) {
 		super(new Set([new SolidRecord()]));
+	}
+
+	/** The possible number of values in this record type. */
+	private get count(): IntRange {
+		return [
+			[...this.propertytypes].filter(([_, entry]) => !entry.optional).length,
+			this.propertytypes.size + 1,
+		];
 	}
 
 	override toString(): string {
