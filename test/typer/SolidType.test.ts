@@ -127,6 +127,26 @@ describe('SolidType', () => {
 				assert.ok(a.intersect(b.union(c)).equals(a.intersect(b).union(a.intersect(c))), `${ a }, ${ b }, ${ c }`)
 			})
 		})
+		Dev.supports('literalCollection') && describe('SolidTypeTuple', () => {
+			it('takes the union of indices of constituent types.', () => {
+				assert.ok(new SolidTypeTuple([
+					SolidObject,
+					SolidNull,
+					SolidBoolean,
+				]).intersect(new SolidTypeTuple([
+					SolidObject,
+					Int16,
+				])).equals(new SolidTypeTuple([
+					SolidObject,
+					SolidNull.intersect(Int16),
+					SolidBoolean,
+				])), `
+					[obj, null, bool] & [obj, int]
+					==
+					[obj, null & int, bool]
+				`);
+			});
+		});
 		describe('SolidTypeRecord', () => {
 			it('takes the union of properties of constituent types.', () => {
 				const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
@@ -179,6 +199,25 @@ describe('SolidType', () => {
 				assert.ok(a.union(b.intersect(c)).equals(a.union(b).intersect(a.union(c))), `${ a }, ${ b }, ${ c }`)
 			})
 		})
+		Dev.supports('literalCollection') && describe('SolidTypeTuple', () => {
+			it('takes the intersection of indices of constituent types.', () => {
+				assert.ok(new SolidTypeTuple([
+					SolidObject,
+					SolidNull,
+					SolidBoolean,
+				]).union(new SolidTypeTuple([
+					SolidObject,
+					Int16,
+				])).equals(new SolidTypeTuple([
+					SolidObject,
+					SolidNull.union(Int16),
+				])), `
+					[obj, null, bool] | [obj, int]
+					==
+					[obj, null | int]
+				`);
+			});
+		});
 		describe('SolidTypeRecord', () => {
 			it('takes the intersection of properties of constituent types.', () => {
 				const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];

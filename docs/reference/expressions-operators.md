@@ -640,6 +640,8 @@ let data: A & B = [
 ];
 ```
 
+This holds for tuple types as well, accounting for indices rather than keys.
+
 
 ### Union
 ```
@@ -687,3 +689,5 @@ let data: A | B = [
 	key= 4, %: 1 | 2 | 3 | 4 % `(1 | 2 | 3) | (2 | 3 | 4)`
 ];
 ```
+
+This holds for tuple types as well, accounting for indices rather than keys.

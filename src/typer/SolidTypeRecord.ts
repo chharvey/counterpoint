@@ -33,7 +33,7 @@ export class SolidTypeRecord extends SolidType {
 		if (t instanceof SolidTypeRecord) {
 			const props: Map<bigint, SolidType> = new Map([...this.propertytypes]);
 			[...t.propertytypes].forEach(([id, typ]) => {
-				props.set(id, (props.has(id)) ? props.get(id)!.intersect(typ) : typ)
+				props.set(id, typ.intersect(this.propertytypes.get(id) || SolidType.UNKNOWN));
 			});
 			return new SolidTypeRecord(props);
 		} else {
@@ -50,7 +50,7 @@ export class SolidTypeRecord extends SolidType {
 			const props: Map<bigint, SolidType> = new Map();
 			[...t.propertytypes].forEach(([id, typ]) => {
 				if (this.propertytypes.has(id)) {
-					props.set(id, this.propertytypes.get(id)!.union(typ));
+					props.set(id, typ.union(this.propertytypes.get(id)!));
 				}
 			})
 			return new SolidTypeRecord(props);
