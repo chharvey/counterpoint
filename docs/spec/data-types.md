@@ -118,6 +118,16 @@ The term “normal completion” refers to any completion with a \`type\` of *no
 the term “abrupt completion” refers to any completion with a \`type\` other than *normal*.
 
 
+#### EntryTypeStructure
+An **EntryTypeStructure** represents an entry in a static collection type.
+It contains the type value and whether the entry is optional.
+
+Property     | Description
+------------ | -----------
+\`type\`     | the Solid Language Type
+\`optional\` | a Boolean, whether the entry is optional
+
+
 #### SymbolStructure
 A **SymbolStructure** encapsulates the compile-time information of a declared symbol in Solid source code.
 Symbols are identifiers that refer to Solid Language Values or Solid Language Types.
@@ -127,10 +137,10 @@ Symbol structures’ properties are described in the tables below.
 ##### SymbolStructureType
 A **SymbolStructureType** represents a type alias referencing a Solid Language Type.
 
-Property    | Description
------------ | -----------
-\`id\`      | the unique identifier of the declared symbol
-\`value\`   | the assessed value (a Solid Language Type) of this symbol
+Property  | Description
+--------- | -----------
+\`id\`    | the unique identifier of the declared symbol
+\`value\` | the assessed value (a Solid Language Type) of this symbol
 
 ##### SymbolStructureVar
 A **SymbolStructureVar** represents a variable referencing a Solid Language Value.

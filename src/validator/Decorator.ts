@@ -187,7 +187,7 @@ export class Decorator {
 				this.decorate(node.children[0]),
 			]);
 
-		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeEntryType_Optional) {
+		} else if (Dev.supports('optionalAccess') && node instanceof PARSER.ParseNodeEntryType_Optional) {
 			return new AST.ASTNodeItemType(node, true, [
 				this.decorate(node.children[1]),
 			]);
@@ -198,7 +198,7 @@ export class Decorator {
 				this.decorate(node.children[2]),
 			]);
 
-		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeEntryType_Named_Optional) {
+		} else if (Dev.supports('optionalAccess') && node instanceof PARSER.ParseNodeEntryType_Named_Optional) {
 			return new AST.ASTNodePropertyType(node, true, [
 				this.decorate(node.children[0]),
 				this.decorate(node.children[2]),

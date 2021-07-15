@@ -5,7 +5,7 @@ import {
 	SolidRecord,
 } from '../index.js'; // avoids circular imports
 import {
-	TypeDatum,
+	TypeEntry,
 	SolidType,
 } from './SolidType.js';
 
@@ -20,7 +20,7 @@ export class SolidTypeRecord extends SolidType {
 	 * @return a new record type with the provided properties
 	 */
 	static fromTypes(propertytypes: ReadonlyMap<bigint, SolidType> = new Map()): SolidTypeRecord {
-		return new SolidTypeRecord(new Map<bigint, TypeDatum>([...propertytypes].map(([id, t]) => [id, {
+		return new SolidTypeRecord(new Map<bigint, TypeEntry>([...propertytypes].map(([id, t]) => [id, {
 			type:     t,
 			optional: false,
 		}])));
@@ -32,7 +32,7 @@ export class SolidTypeRecord extends SolidType {
 	 * @param propertytypes a map of this type’s property ids along with their associated types
 	 */
 	constructor (
-		private readonly propertytypes: ReadonlyMap<bigint, TypeDatum> = new Map(),
+		private readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
 	) {
 		super(new Set([new SolidRecord()]));
 	}

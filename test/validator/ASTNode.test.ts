@@ -14,7 +14,7 @@ import {
 	Validator,
 } from '../../src/validator/index.js';
 import {
-	TypeDatum,
+	TypeEntry,
 	SolidType,
 	SolidTypeConstant,
 	SolidTypeTuple,
@@ -812,7 +812,7 @@ describe('ASTNodeSolid', () => {
 				const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource(`[x: int, y?: bool, z: str]`) as AST.ASTNodeTypeRecord;
 				assert.deepStrictEqual(
 					node.assess(new Validator()),
-					new SolidTypeRecord(new Map<bigint, TypeDatum>(node.children.map((c, i) => [
+					new SolidTypeRecord(new Map<bigint, TypeEntry>(node.children.map((c, i) => [
 						c.children[0].id,
 						[
 							{type: Int16,        optional: false},

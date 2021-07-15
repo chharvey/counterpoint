@@ -6,7 +6,7 @@ import {
 	SolidTuple,
 } from '../index.js'; // avoids circular imports
 import {
-	TypeDatum,
+	TypeEntry,
 	SolidType,
 } from './SolidType.js';
 
@@ -33,7 +33,7 @@ export class SolidTypeTuple extends SolidType {
 	 * @param types this type’s item types
 	 */
 	constructor (
-		private readonly types: readonly TypeDatum[] = [],
+		private readonly types: readonly TypeEntry[] = [],
 	) {
 		super(new Set([new SolidTuple()]));
 	}

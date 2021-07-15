@@ -1,5 +1,5 @@
 export {
-	TypeDatum,
+	TypeEntry,
 	SolidType,
 	SolidTypeConstant,
 	SolidTypeInterface,

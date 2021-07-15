@@ -9,7 +9,7 @@ import type {SolidObject} from './SolidObject.js';
  * @property type     - the type value, a Solid Language Type
  * @property optional - is the entry optional on the collection?
  */
-export type TypeDatum = {
+export type TypeEntry = {
 	type:     SolidType,
 	optional: boolean,
 };
