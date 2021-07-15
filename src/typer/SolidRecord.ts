@@ -50,7 +50,7 @@ export class SolidRecord<T extends SolidObject = SolidObject> extends SolidObjec
 	}
 
 	toType(): SolidTypeRecord {
-		return new SolidTypeRecord(new Map([...this.properties].map(([key, value]) => [key, new SolidTypeConstant(value)])));
+		return SolidTypeRecord.fromTypes(new Map([...this.properties].map(([key, value]) => [key, new SolidTypeConstant(value)])));
 	}
 
 	get(key: bigint, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): T {

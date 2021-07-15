@@ -1,8 +1,13 @@
 import type {AST} from '../validator/index.js';
 import {TypeError04} from '../error/index.js';
-import {SolidType} from './SolidType.js';
-import {SolidObject} from './SolidObject.js';
-import {SolidRecord} from './SolidRecord.js';
+import {
+	SolidObject,
+	SolidRecord,
+} from '../index.js'; // avoids circular imports
+import {
+	SolidType,
+	TypeDatum,
+} from './SolidType.js';
 
 
 
@@ -10,11 +15,24 @@ export class SolidTypeRecord extends SolidType {
 	override readonly isEmpty: boolean = false;
 
 	/**
+	 * Construct a new SolidTypeRecord from type properties, assuming each properties is required.
+	 * @param propertytypes the types of the record
+	 * @return a new record type with the provided properties
+	 */
+	static fromTypes(propertytypes: ReadonlyMap<bigint, SolidType> = new Map()): SolidTypeRecord {
+		return new SolidTypeRecord(new Map<bigint, TypeDatum>([...propertytypes].map(([id, t]) => [id, {
+			type:     t,
+			optional: false,
+		}])));
+	}
+
+
+	/**
 	 * Construct a new SolidTypeRecord object.
 	 * @param propertytypes a map of this type’s property ids along with their associated types
 	 */
 	constructor (
-		private readonly propertytypes: ReadonlyMap<bigint, SolidType> = new Map(),
+		private readonly propertytypes: ReadonlyMap<bigint, TypeDatum> = new Map(),
 	) {
 		super(new Set([new SolidRecord()]));
 	}
@@ -32,19 +50,19 @@ export class SolidTypeRecord extends SolidType {
 			t instanceof SolidTypeRecord
 			&& this.propertytypes.size >= t.propertytypes.size
 			&& [...t.propertytypes].every(([id, thattype]) => {
-				const thistype: SolidType | null = this.propertytypes.get(id) || null;
-				return !!thistype && thistype.isSubtypeOf(thattype);
+				const thistype: SolidType | null = this.propertytypes.get(id)?.type || null;
+				return !!thistype && thistype.isSubtypeOf(thattype.type);
 			})
 		);
 	}
 
 	get(key: bigint, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): SolidType {
 		return (this.propertytypes.has(key))
-			? this.propertytypes.get(key)!
+			? this.propertytypes.get(key)!.type
 			: (() => { throw new TypeError04('property', this, accessor); })();
 	}
 
 	valueTypes(): SolidType {
-		return [...this.propertytypes.values()].reduce((a, b) => a.union(b));
+		return [...this.propertytypes.values()].map((t) => t.type).reduce((a, b) => a.union(b));
 	}
 }

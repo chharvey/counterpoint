@@ -811,7 +811,7 @@ describe('ASTNodeSolid', () => {
 				const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource(`[x: int, y?: bool, z: str]`) as AST.ASTNodeTypeRecord;
 				assert.deepStrictEqual(
 					node.assess(new Validator()),
-					new SolidTypeRecord(new Map<bigint, SolidType>(node.children.map((c, i) => [
+					SolidTypeRecord.fromTypes(new Map<bigint, SolidType>(node.children.map((c, i) => [
 						c.children[0].id,
 						[
 							Int16,
@@ -985,7 +985,7 @@ describe('ASTNodeSolid', () => {
 						collections.map((node) => node.type(validator)),
 						[
 							SolidTypeTuple.fromTypes(collections[0].children.map((c) => c.type(validator))),
-							new SolidTypeRecord(new Map(collections[1].children.map((c) => [
+							SolidTypeRecord.fromTypes(new Map(collections[1].children.map((c) => [
 								c.children[0].id,
 								c.children[1].type(validator),
 							]))),

@@ -351,9 +351,9 @@ describe('SolidType', () => {
 			});
 			it('constant record types should be subtype of a record type instance.', () => {
 				new Map<SolidObject, SolidTypeRecord>([
-					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new Int16(42n)]])),                                       new SolidTypeRecord(new Map<bigint, SolidType>([[0x100n, Int16]]))],
-					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new Float64(4.2)], [0x101n, new SolidString('hello')]])), new SolidTypeRecord(new Map<bigint, SolidType>([[0x100n, Float64], [0x101n, SolidString]]))],
-					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new SolidString('hello')], [0x101n, new Float64(4.2)]])), new SolidTypeRecord(new Map<bigint, SolidType>([[0x100n, SolidString], [0x101n, Float64]]))],
+					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new Int16(42n)]])),                                       SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([[0x100n, Int16]]))],
+					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new Float64(4.2)], [0x101n, new SolidString('hello')]])), SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([[0x100n, Float64], [0x101n, SolidString]]))],
+					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new SolidString('hello')], [0x101n, new Float64(4.2)]])), SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([[0x100n, SolidString], [0x101n, Float64]]))],
 				]).forEach((recordtype, value) => {
 					assert.ok(new SolidTypeConstant(value).isSubtypeOf(SolidRecord), `let x: Record = ${ value };`);
 					assert.ok(new SolidTypeConstant(value).isSubtypeOf(recordtype),  `let x: ${ recordtype } = ${ value };`);
@@ -428,63 +428,63 @@ describe('SolidType', () => {
 
 		Dev.supports('literalCollection') && describe('SolidTypeRecord', () => {
 			it('is a subtype but not a supertype of `SolidObject`.', () => {
-				assert.ok(new SolidTypeRecord(new Map<bigint, SolidType>([
+				assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, Int16],
 					[0x101n, SolidBoolean],
 					[0x102n, SolidString],
 				])).isSubtypeOf(SolidObject), `[x: int, y: bool, z: str] <: obj;`);
-				assert.ok(!SolidObject.isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidType>([
+				assert.ok(!SolidObject.isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, Int16],
 					[0x101n, SolidBoolean],
 					[0x102n, SolidString],
 				]))), `obj !<: [x: int, y: bool, z: str]`);
 			});
 			it('matches per key.', () => {
-				assert.ok(new SolidTypeRecord(new Map<bigint, SolidType>([
+				assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, Int16],
 					[0x101n, SolidBoolean],
 					[0x102n, SolidString],
-				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidType>([
+				])).isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x101n, SolidBoolean.union(SolidNull)],
 					[0x102n, SolidObject],
 					[0x100n, Int16.union(Float64)],
 				]))), `[x: int, y: bool, z: str] <: [y: bool!, z: obj, x: int | float];`);
-				assert.ok(!new SolidTypeRecord(new Map<bigint, SolidType>([
+				assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, Int16],
 					[0x101n, SolidBoolean],
 					[0x102n, SolidString],
-				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidType>([
+				])).isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, SolidBoolean.union(SolidNull)],
 					[0x101n, SolidObject],
 					[0x102n, Int16.union(Float64)],
 				]))), `[x: int, y: bool, z: str] !<: [x: bool!, y: obj, z: int | float];`);
 			});
 			it('returns false if assigned is smaller than assignee.', () => {
-				assert.ok(!new SolidTypeRecord(new Map<bigint, SolidType>([
+				assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, Int16],
 					[0x101n, SolidBoolean],
-				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidType>([
+				])).isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x101n, SolidBoolean.union(SolidNull)],
 					[0x102n, SolidObject],
 					[0x100n, Int16.union(Float64)],
 				]))), `[x: int, y: bool] !<: [y: bool!, z: obj, x: int | float];`);
 			});
 			it('skips rest if assigned is larger than assignee.', () => {
-				assert.ok(new SolidTypeRecord(new Map<bigint, SolidType>([
+				assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, Int16],
 					[0x101n, SolidBoolean],
 					[0x102n, SolidString],
-				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidType>([
+				])).isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x101n, SolidBoolean.union(SolidNull)],
 					[0x100n, Int16.union(Float64)],
 				]))), `[x: int, y: bool, z: str] <: [y: bool!, x: int | float];`);
 			});
 			it('returns false if assignee contains keys that assigned does not.', () => {
-				assert.ok(!new SolidTypeRecord(new Map<bigint, SolidType>([
+				assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, Int16],
 					[0x101n, SolidBoolean],
 					[0x102n, SolidString],
-				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, SolidType>([
+				])).isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x101n, SolidBoolean.union(SolidNull)],
 					[0x102n, SolidObject],
 					[0x103n, Int16.union(Float64)],
