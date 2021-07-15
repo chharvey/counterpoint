@@ -334,7 +334,10 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 		super(start_node, {}, children);
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		return SolidTypeTuple.fromTypes(this.children.map((c) => c.children[0].assess(validator).union((c.optional) ? SolidType.VOID : SolidType.NEVER)));
+		return new SolidTypeTuple(this.children.map((c) => ({
+			type:     c.children[0].assess(validator),
+			optional: c.optional,
+		})));
 	}
 }
 export class ASTNodeTypeRecord extends ASTNodeType {
@@ -350,9 +353,12 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		super(start_node, {}, children);
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
+		return new SolidTypeRecord(new Map(this.children.map((c) => [
 			c.children[0].id,
-			c.children[1].assess(validator).union((c.optional) ? SolidType.VOID : SolidType.NEVER),
+			{
+				type:     c.children[1].assess(validator),
+				optional: c.optional,
+			},
 		])));
 	}
 }

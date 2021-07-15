@@ -14,6 +14,7 @@ import {
 	Validator,
 } from '../../src/validator/index.js';
 import {
+	TypeDatum,
 	SolidType,
 	SolidTypeConstant,
 	SolidTypeTuple,
@@ -800,10 +801,10 @@ describe('ASTNodeSolid', () => {
 			Dev.supports('literalCollection') && specify('ASTNodeTypeTuple', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).assess(new Validator()),
-					SolidTypeTuple.fromTypes([
-						Int16,
-						SolidBoolean,
-						SolidString.union(SolidType.VOID),
+					new SolidTypeTuple([
+						{type: Int16,        optional: false},
+						{type: SolidBoolean, optional: false},
+						{type: SolidString,  optional: true},
 					]),
 				);
 			});
@@ -811,12 +812,12 @@ describe('ASTNodeSolid', () => {
 				const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource(`[x: int, y?: bool, z: str]`) as AST.ASTNodeTypeRecord;
 				assert.deepStrictEqual(
 					node.assess(new Validator()),
-					SolidTypeRecord.fromTypes(new Map<bigint, SolidType>(node.children.map((c, i) => [
+					new SolidTypeRecord(new Map<bigint, TypeDatum>(node.children.map((c, i) => [
 						c.children[0].id,
 						[
-							Int16,
-							SolidBoolean.union(SolidType.VOID),
-							SolidString,
+							{type: Int16,        optional: false},
+							{type: SolidBoolean, optional: true},
+							{type: SolidString,  optional: false},
 						][i],
 					]))),
 				);

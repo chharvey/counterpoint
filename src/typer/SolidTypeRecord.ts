@@ -5,8 +5,8 @@ import {
 	SolidRecord,
 } from '../index.js'; // avoids circular imports
 import {
-	SolidType,
 	TypeDatum,
+	SolidType,
 } from './SolidType.js';
 
 
