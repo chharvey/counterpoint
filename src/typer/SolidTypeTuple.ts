@@ -1,9 +1,14 @@
 import type {AST} from '../validator/index.js';
 import {TypeError04} from '../error/index.js';
-import {SolidType} from './SolidType.js';
-import {SolidObject} from './SolidObject.js';
-import type {Int16} from './Int16.js';
-import {SolidTuple} from './SolidTuple.js';
+import {
+	SolidObject,
+	Int16,
+	SolidTuple,
+} from '../index.js'; // avoids circular imports
+import {
+	SolidType,
+	TypeDatum,
+} from './SolidType.js';
 
 
 
@@ -11,11 +16,24 @@ export class SolidTypeTuple extends SolidType {
 	override readonly isEmpty: boolean = false;
 
 	/**
+	 * Construct a new SolidTypeTuple from type items, assuming each item is required.
+	 * @param types the types of the tuple
+	 * @return a new tuple type with the provided items
+	 */
+	static fromTypes(types: readonly SolidType[] = []): SolidTypeTuple {
+		return new SolidTypeTuple(types.map((t) => ({
+			type:     t,
+			optional: false,
+		})));
+	}
+
+
+	/**
 	 * Construct a new SolidTypeTuple object.
 	 * @param types this type’s item types
 	 */
 	constructor (
-		private readonly types: readonly SolidType[] = [],
+		private readonly types: readonly TypeDatum[] = [],
 	) {
 		super(new Set([new SolidTuple()]));
 	}
@@ -32,7 +50,7 @@ export class SolidTypeTuple extends SolidType {
 		return t.equals(SolidObject) || (
 			t instanceof SolidTypeTuple
 			&& this.types.length >= t.types.length
-			&& t.types.every((thattype, i) => this.types[i].isSubtypeOf(thattype))
+			&& t.types.every((thattype, i) => this.types[i].type.isSubtypeOf(thattype.type))
 		);
 	}
 
@@ -40,13 +58,13 @@ export class SolidTypeTuple extends SolidType {
 		const n: number = this.types.length;
 		const i: number = Number(index.toNumeric());
 		return (
-			(-n <= i && i < 0) ? this.types[i + n] :
-			(0  <= i && i < n) ? this.types[i] :
+			(-n <= i && i < 0) ? this.types[i + n].type :
+			(0  <= i && i < n) ? this.types[i].type :
 			(() => { throw new TypeError04('index', this, accessor); })()
 		);
 	}
 
 	itemTypes(): SolidType {
-		return this.types.reduce((a, b) => a.union(b));
+		return this.types.map((t) => t.type).reduce((a, b) => a.union(b));
 	}
 }

@@ -341,9 +341,9 @@ describe('SolidType', () => {
 			});
 			it('constant tuple types should be subtype of a tuple type instance.', () => {
 				new Map<SolidObject, SolidTypeTuple>([
-					[new SolidTuple(),                                             new SolidTypeTuple()],
-					[new SolidTuple([new Int16(42n)]),                             new SolidTypeTuple([Int16])],
-					[new SolidTuple([new Float64(4.2), new SolidString('hello')]), new SolidTypeTuple([Float64, SolidString])],
+					[new SolidTuple(),                                             SolidTypeTuple.fromTypes()],
+					[new SolidTuple([new Int16(42n)]),                             SolidTypeTuple.fromTypes([Int16])],
+					[new SolidTuple([new Float64(4.2), new SolidString('hello')]), SolidTypeTuple.fromTypes([Float64, SolidString])],
 				]).forEach((tupletype, value) => {
 					assert.ok(new SolidTypeConstant(value).isSubtypeOf(SolidTuple), `let x: Tuple = ${ value };`);
 					assert.ok(new SolidTypeConstant(value).isSubtypeOf(tupletype),  `let x: ${ tupletype } = ${ value };`);
@@ -373,53 +373,53 @@ describe('SolidType', () => {
 
 		Dev.supports('literalCollection') && describe('SolidTypeTuple', () => {
 			it('is a subtype but not a supertype of `SolidObject`.', () => {
-				assert.ok(new SolidTypeTuple([
+				assert.ok(SolidTypeTuple.fromTypes([
 					Int16,
 					SolidBoolean,
 					SolidString,
 				]).isSubtypeOf(SolidObject), `[int, bool, str] <: obj;`);
-				assert.ok(!SolidObject.isSubtypeOf(new SolidTypeTuple([
+				assert.ok(!SolidObject.isSubtypeOf(SolidTypeTuple.fromTypes([
 					Int16,
 					SolidBoolean,
 					SolidString,
 				])), `obj !<: [int, bool, str]`);
 			});
 			it('matches per index.', () => {
-				assert.ok(new SolidTypeTuple([
+				assert.ok(SolidTypeTuple.fromTypes([
 					Int16,
 					SolidBoolean,
 					SolidString,
-				]).isSubtypeOf(new SolidTypeTuple([
+				]).isSubtypeOf(SolidTypeTuple.fromTypes([
 					Int16.union(Float64),
 					SolidBoolean.union(SolidNull),
 					SolidObject,
 				])), `[int, bool, str] <: [int | float, bool!, obj];`);
-				assert.ok(!new SolidTypeTuple([
+				assert.ok(!SolidTypeTuple.fromTypes([
 					Int16,
 					SolidBoolean,
 					SolidString,
-				]).isSubtypeOf(new SolidTypeTuple([
+				]).isSubtypeOf(SolidTypeTuple.fromTypes([
 					SolidBoolean.union(SolidNull),
 					SolidObject,
 					Int16.union(Float64),
 				])), `[int, bool, str] !<: [bool!, obj, int | float];`);
 			});
 			it('returns false if assigned is smaller than assignee.', () => {
-				assert.ok(!new SolidTypeTuple([
+				assert.ok(!SolidTypeTuple.fromTypes([
 					Int16,
 					SolidBoolean,
-				]).isSubtypeOf(new SolidTypeTuple([
+				]).isSubtypeOf(SolidTypeTuple.fromTypes([
 					Int16.union(Float64),
 					SolidBoolean.union(SolidNull),
 					SolidObject,
 				])), `[int, bool] !<: [int | float, bool!, obj];`);
 			});
 			it('skips rest if assigned is larger than assignee.', () => {
-				assert.ok(new SolidTypeTuple([
+				assert.ok(SolidTypeTuple.fromTypes([
 					Int16,
 					SolidBoolean,
 					SolidString,
-				]).isSubtypeOf(new SolidTypeTuple([
+				]).isSubtypeOf(SolidTypeTuple.fromTypes([
 					Int16.union(Float64),
 					SolidBoolean.union(SolidNull),
 				])), `[int, bool, str] <: [int | float, bool!];`);

@@ -800,7 +800,7 @@ describe('ASTNodeSolid', () => {
 			Dev.supports('literalCollection') && specify('ASTNodeTypeTuple', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).assess(new Validator()),
-					new SolidTypeTuple([
+					SolidTypeTuple.fromTypes([
 						Int16,
 						SolidBoolean,
 						SolidString.union(SolidType.VOID),
@@ -984,7 +984,7 @@ describe('ASTNodeSolid', () => {
 					assert.deepStrictEqual(
 						collections.map((node) => node.type(validator)),
 						[
-							new SolidTypeTuple(collections[0].children.map((c) => c.type(validator))),
+							SolidTypeTuple.fromTypes(collections[0].children.map((c) => c.type(validator))),
 							new SolidTypeRecord(new Map(collections[1].children.map((c) => [
 								c.children[0].id,
 								c.children[1].type(validator),
