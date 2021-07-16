@@ -336,23 +336,30 @@ Boolean Subtype(Type a, Type b) :=
 	10. *If* `Equal(a, Tuple)` *and* `Equal(b, Tuple)`:
 		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
 		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
-		3. *If* `seq_a.count` is less than `seq_b.count`:
+		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
+		4. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
+		5. *If* `seq_a_req.count` is less than `seq_b_req.count`:
 			1. *Return:* `false`.
-		4. *For index* `i` in `seq_b`:
-			1. *If* *UnwrapAffirm:* `Subtype(seq_a[i], seq_b[i])` is `false`:
+		6. *For index* `i` in `seq_b`:
+			1. *If* `seq_b[i].optional` is `false`:
+				1. *Assert:* `seq_a[i]` is set *and* `seq_a[i].optional` is `false`.
+			2. *If* `seq_a[i]` is set *and* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
 				1. *Return:* `false`.
-		5. *Return:* `true`.
+		7. *Return:* `true`.
 	11. *If* `Equal(a, Record)` *and* `Equal(b, Record)`:
 		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
 		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
-		3. *If* `struct_a.count` is less than `struct_b.count`:
+		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
+		4. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
+		5. *If* `struct_a_req.count` is less than `struct_b_req.count`:
 			1. *Return:* `false`.
-		4. *For key* `k` in `struct_b`:
-			1. *If* `struct_a[k]` is not set:
+		6. *For key* `k` in `struct_b`:
+			1. *If* `struct_b[k].optional` is `false`:
+				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
+					1. *Return:* `false`.
+			2. *If* `struct_a[k]` is set *and* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
 				1. *Return:* `false`.
-			2. *If* *UnwrapAffirm:* `Subtype(struct_a[k], struct_b[k])` is `false`:
-				1. *Return:* `false`.
-		5. *Return:* `true`.
+		7. *Return:* `true`.
 	12. *If* `Equal(a, Mapping)` *and* `Equal(b, Mapping)`:
 		1. *Let* `ak` be the union of antecedent types in `a`.
 		2. *Let* `av` be the union of consequent types in `a`.

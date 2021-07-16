@@ -58,8 +58,8 @@ export class SolidTypeTuple extends SolidType {
 	override isSubtypeOf_do(t: SolidType): boolean {
 		return t.equals(SolidObject) || (
 			t instanceof SolidTypeTuple
-			&& this.types.length >= t.types.length
-			&& t.types.every((thattype, i) => this.types[i].type.isSubtypeOf(thattype.type))
+			&& this.count[0] >= t.count[0]
+			&& t.types.every((thattype, i) => !this.types[i] || this.types[i].type.isSubtypeOf(thattype.type))
 		);
 	}
 

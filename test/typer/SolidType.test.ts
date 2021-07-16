@@ -1,6 +1,7 @@
 import * as assert from 'assert'
 import {Dev} from '../../src/core/index.js';
 import {
+	TypeEntry,
 	SolidType,
 	SolidTypeConstant,
 	SolidTypeInterface,
@@ -424,6 +425,32 @@ describe('SolidType', () => {
 					SolidBoolean.union(SolidNull),
 				])), `[int, bool, str] <: [int | float, bool!];`);
 			});
+			Dev.supports('optionalAccess') && it('with optional entries, checks minimum count only.', () => {
+				assert.ok(new SolidTypeTuple([
+					{type: Int16, optional: false},
+					{type: Int16, optional: false},
+					{type: Int16, optional: true},
+					{type: Int16, optional: true},
+				]).isSubtypeOf(new SolidTypeTuple([
+					{type: Int16, optional: false},
+					{type: Int16, optional: true},
+					{type: Int16, optional: true},
+					{type: Int16, optional: true},
+					{type: Int16, optional: true},
+				])), `[int, int, ?:int, ?:int] <: [int, ?:int, ?:int, ?:int, ?:int]`);
+				assert.ok(!new SolidTypeTuple([
+					{type: Int16, optional: false},
+					{type: Int16, optional: true},
+					{type: Int16, optional: true},
+					{type: Int16, optional: true},
+					{type: Int16, optional: true},
+				]).isSubtypeOf(new SolidTypeTuple([
+					{type: Int16, optional: false},
+					{type: Int16, optional: false},
+					{type: Int16, optional: true},
+					{type: Int16, optional: true},
+				])), `[int, ?:int, ?:int, ?:int, ?:int] !<: [int, int, ?:int, ?:int]`);
+			});
 		});
 
 		Dev.supports('literalCollection') && describe('SolidTypeRecord', () => {
@@ -489,6 +516,26 @@ describe('SolidType', () => {
 					[0x102n, SolidObject],
 					[0x103n, Int16.union(Float64)],
 				]))), `[x: int, y: bool, z: str] !<: [y: bool!, z: obj, w: int | float]`);
+			});
+			Dev.supports('optionalAccess') && it('optional entries are not assignable to required entries.', () => {
+				assert.ok(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+					[0x100n, {type: SolidString,  optional: false}],
+					[0x101n, {type: Int16,        optional: true}],
+					[0x102n, {type: SolidBoolean, optional: false}],
+				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+					[0x100n, {type: SolidString,  optional: true}],
+					[0x101n, {type: Int16,        optional: true}],
+					[0x102n, {type: SolidBoolean, optional: false}],
+				]))), `[a: str, b?: int, c: bool] <: [a?: str, b?: int, c: bool]`);
+				assert.ok(!new SolidTypeRecord(new Map<bigint, TypeEntry>([
+					[0x100n, {type: SolidString,  optional: false}],
+					[0x101n, {type: Int16,        optional: true}],
+					[0x102n, {type: SolidBoolean, optional: false}],
+				])).isSubtypeOf(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+					[0x100n, {type: SolidString,  optional: true}],
+					[0x101n, {type: Int16,        optional: false}],
+					[0x102n, {type: SolidBoolean, optional: false}],
+				]))), `[a: str, b?: int, c: bool] !<: [a?: str, b: int, c: bool]`);
 			});
 		});
 
