@@ -48,7 +48,7 @@ export class SolidTypeTuple extends SolidType {
 	}
 
 	override toString(): string {
-		return `[${ this.types.map((t) => t.toString()).join(', ') }]`;
+		return `[${ this.types.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
 
 	override includes(v: SolidObject): boolean {
