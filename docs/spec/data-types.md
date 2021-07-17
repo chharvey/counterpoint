@@ -281,6 +281,47 @@ where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
 is a data type that contains values assignable to *both* type \`‹T›\` and type \`‹U›\`.
 Such a data type is called the **intersection** of \`‹T›\` and \`‹U›\`.
 
+```
+Type Intersect(Type a, Type b) :=
+	// 1-5 | `T  & never   == never`
+	1. *If* *UnwrapAffirm:* `Identical(b, Never)`:
+		1. *Return:* `Never`.
+	2. *If* *UnwrapAffirm:* `Identical(a, Never)`:
+		1. *Return:* `a`.
+	// 1-6 | `T  & unknown == T`
+	3. *If* *UnwrapAffirm:* `Identical(b, Unknown)`:
+		1. *Return:* `a`.
+	4. *If* *UnwrapAffirm:* `Identical(a, Unknown)`:
+		1. *Return:* `b`.
+	// 3-3 | `A <: B  <->  A  & B == A`
+	5. *If* *UnwrapAffirm:* `Subtype(a, b)`:
+		1. *Return:* `a`.
+	6. *If* *UnwrapAffirm:* `Subtype(b, a)`:
+		1. *Return:* `b`.
+	7. *If* `Equal(a, Tuple)` *and* `Equal(b, Tuple)`:
+		1. *Let* `data` be a new Sequence.
+		2. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
+		3. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
+		4. *For index* `i` in `seq_b`:
+			1. *If* `seq_a[i]` is not set:
+				1. Push `seq_b[i]` to `data`.
+			2. *Else:*
+				1. Push *UnwrapAffirm:* `Intersect(seq_a[i], seq_b[i])` to `data`.
+		5. *Return:* a subtype of `Tuple` whose items are `data`.
+	11. *If* `Equal(a, Record)` *and* `Equal(b, Record)`:
+		1. *Let* `data` be a new Structure.
+		2. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
+		3. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
+		4. *For key* `k` in `struct_b`:
+			1. *If* `struct_a[k]` is not set:
+				1. Set the key `k` in `data` to the value `struct_b[k]`.
+			2. *Else:*
+				1. Set the key `k` in `data` to the value *UnwrapAffirm:* `Intersect(struct_a[k], struct_b[k])`.
+		5. *Return:* a subtype of `Record` whose properties are `data`.
+	12. *Return:* a new type with values given by the the intersection of values in `a` and `b`.
+;
+```
+
 
 ### Union
 A data type specified as \`Or<‹T›, ‹U›>\`,
@@ -290,6 +331,43 @@ Such a data type is called the **union** of \`‹T›\` and \`‹U›\`.
 
 For example, the type \`Or<Integer, Null>\` contains values of either \`Integer\` or \`Null\`.
 (Since there is no overlap, there are no values of both \`Integer\` *and* \`Null\`.)
+
+```
+Type Union(Type a, Type b) :=
+	// 1-7 | `T \| never   == T`
+	1. *If* *UnwrapAffirm:* `Identical(b, Never)`:
+		1. *Return:* `a`.
+	2. *If* *UnwrapAffirm:* `Identical(a, Never)`:
+		1. *Return:* `b`.
+	// 1-8 | `T \| unknown == unknown`
+	3. *If* *UnwrapAffirm:* `Identical(b, Unknown)`:
+		1. *Return:* `b`.
+	4. *If* *UnwrapAffirm:* `Identical(a, Unknown)`:
+		1. *Return:* `Unknown`.
+	// 3-4 | `A <: B  <->  A \| B == B`
+	5. *If* *UnwrapAffirm:* `Subtype(a, b)`:
+		1. *Return:* `b`.
+	6. *If* *UnwrapAffirm:* `Subtype(b, a)`:
+		1. *Return:* `a`.
+	7. *If* `Equal(a, Tuple)` *and* `Equal(b, Tuple)`:
+		1. *Let* `data` be a new Sequence.
+		2. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
+		3. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
+		4. *For index* `i` in `seq_b`:
+			1. *If* `seq_a[i]` is set:
+				1. Push *UnwrapAffirm:* `Union(seq_a[i], seq_b[i])` to `data`.
+		5. *Return:* a subtype of `Tuple` whose items are `data`.
+	11. *If* `Equal(a, Record)` *and* `Equal(b, Record)`:
+		1. *Let* `data` be a new Structure.
+		2. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
+		3. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
+		4. *For key* `k` in `struct_b`:
+			1. *If* `struct_a[k]` is set:
+				1. Set the key `k` in `data` to the value *UnwrapAffirm:* `Union(struct_a[k], struct_b[k])`.
+		5. *Return:* a subtype of `Record` whose properties are `data`.
+	12. *Return:* a new type with values given by the the union of values in `a` and `b`.
+;
+```
 
 
 ### Subtype
