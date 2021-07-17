@@ -148,6 +148,25 @@ describe('SolidType', () => {
 					[obj, null & int, bool]
 				`);
 			});
+			Dev.supports('optionalAccess') && it('takes the conjunction of optionality.', () => {
+				assert.ok(new SolidTypeTuple([
+					{type: SolidObject,  optional: false},
+					{type: SolidNull,    optional: true},
+					{type: SolidBoolean, optional: true},
+				]).intersect(new SolidTypeTuple([
+					{type: SolidObject, optional: false},
+					{type: Int16,       optional: false},
+					{type: Float64,     optional: true},
+				])).equals(new SolidTypeTuple([
+					{type: SolidObject,                     optional: false},
+					{type: SolidNull.intersect(Int16),      optional: false},
+					{type: SolidBoolean.intersect(Float64), optional: true},
+				])), `
+					[obj, ?: null, ?: bool] & [obj, int, ?: float]
+					==
+					[obj, null & int, ?: bool & float]
+				`);
+			});
 		});
 		describe('SolidTypeRecord', () => {
 			it('takes the union of properties of constituent types.', () => {
@@ -171,6 +190,27 @@ describe('SolidType', () => {
 					[foo: obj, bar: null, qux: bool & str, diz: int]
 				`);
 			})
+			Dev.supports('optionalAccess') && it('takes the conjunction of optionality.', () => {
+				const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
+				assert.ok(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+					[foo, {type: SolidObject,  optional: false}],
+					[bar, {type: SolidNull,    optional: true}],
+					[qux, {type: SolidBoolean, optional: true}],
+				])).intersect(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+					[foo, {type: SolidObject, optional: false}],
+					[diz, {type: Int16,       optional: true}],
+					[qux, {type: SolidString, optional: false}],
+				]))).equals(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+					[foo, {type: SolidObject,                         optional: false}],
+					[bar, {type: SolidNull,                           optional: true}],
+					[qux, {type: SolidBoolean.intersect(SolidString), optional: false}],
+					[diz, {type: Int16,                               optional: true}],
+				]))), `
+					[foo: obj, bar?: null, qux?: bool] & [foo: obj, diz?: int, qux: str]
+					==
+					[foo: obj, bar?: null, qux: bool & str, diz?: int]
+				`);
+			});
 		})
 	})
 
@@ -219,6 +259,25 @@ describe('SolidType', () => {
 					[obj, null | int]
 				`);
 			});
+			Dev.supports('optionalAccess') && it('takes the disjunction of optionality.', () => {
+				assert.ok(new SolidTypeTuple([
+					{type: SolidObject,  optional: false},
+					{type: SolidNull,    optional: true},
+					{type: SolidBoolean, optional: true},
+				]).union(new SolidTypeTuple([
+					{type: SolidObject, optional: false},
+					{type: Int16,       optional: false},
+					{type: Float64,     optional: true},
+				])).equals(new SolidTypeTuple([
+					{type: SolidObject,                 optional: false},
+					{type: SolidNull.union(Int16),      optional: true},
+					{type: SolidBoolean.union(Float64), optional: true},
+				])), `
+					[obj, ?: null, ?: bool] | [obj, int, ?: float]
+					==
+					[obj, ?: null | int, ?: bool | float]
+				`);
+			});
 		});
 		describe('SolidTypeRecord', () => {
 			it('takes the intersection of properties of constituent types.', () => {
@@ -240,6 +299,25 @@ describe('SolidType', () => {
 					[foo: obj, qux: bool | str]
 				`);
 			})
+			Dev.supports('optionalAccess') && it('takes the disjunction of optionality.', () => {
+				const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
+				assert.ok(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+					[foo, {type: SolidObject,  optional: false}],
+					[bar, {type: SolidNull,    optional: true}],
+					[qux, {type: SolidBoolean, optional: true}],
+				])).union(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+					[foo, {type: SolidObject, optional: false}],
+					[diz, {type: Int16,       optional: true}],
+					[qux, {type: SolidString, optional: false}],
+				]))).equals(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+					[foo, {type: SolidObject,                     optional: false}],
+					[qux, {type: SolidBoolean.union(SolidString), optional: true}],
+				]))), `
+					[foo: obj, bar?: null, qux?: bool] | [foo: obj, diz?: int, qux: str]
+					==
+					[foo: obj, qux?: bool | str]
+				`);
+			});
 		})
 	})
 

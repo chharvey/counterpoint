@@ -61,13 +61,14 @@ export class SolidTypeTuple extends SolidType {
 	 */
 	override intersect_do(t: SolidType): SolidType {
 		if (t instanceof SolidTypeTuple) {
-			const thistypes = [...this.types].map((t) => t.type);
-			const thattypes = [...t.types].map((t) => t.type);
-			const items: SolidType[] = thistypes;
-			thattypes.forEach((typ, i) => {
-				items[i] = typ.intersect(thistypes[i] || SolidType.UNKNOWN);
+			const items: TypeEntry[] = [...this.types];
+			[...t.types].forEach((typ, i) => {
+				items[i] = this.types[i] ? {
+					type:     this.types[i].type.intersect(typ.type),
+					optional: this.types[i].optional && typ.optional,
+				} : typ;
 			});
-			return SolidTypeTuple.fromTypes(items);
+			return new SolidTypeTuple(items);
 		} else {
 			return super.intersect_do(t);
 		}
@@ -79,15 +80,16 @@ export class SolidTypeTuple extends SolidType {
 	 */
 	override union_do(t: SolidType): SolidType {
 		if (t instanceof SolidTypeTuple) {
-			const thistypes = [...this.types].map((t) => t.type);
-			const thattypes = [...t.types].map((t) => t.type);
-			const items: SolidType[] = [];
-			thattypes.forEach((typ, i) => {
+			const items: TypeEntry[] = [];
+			t.types.forEach((typ, i) => {
 				if (this.types[i]) {
-					items[i] = typ.union(thistypes[i]);
+					items[i] = {
+						type:     this.types[i].type.union(typ.type),
+						optional: this.types[i].optional || typ.optional,
+					};
 				}
 			})
-			return SolidTypeTuple.fromTypes(items);
+			return new SolidTypeTuple(items);
 		} else {
 			return super.union_do(t);
 		}

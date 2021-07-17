@@ -60,13 +60,14 @@ export class SolidTypeRecord extends SolidType {
 	 */
 	override intersect_do(t: SolidType): SolidType {
 		if (t instanceof SolidTypeRecord) {
-			const thisproptypes = new Map([...this.propertytypes].map(([id, t]) => [id, t.type]));
-			const thatproptypes = new Map([...t.propertytypes].map(([id, t]) => [id, t.type]));
-			const props: Map<bigint, SolidType> = thisproptypes;
-			[...thatproptypes].forEach(([id, typ]) => {
-				props.set(id, typ.intersect(thisproptypes.get(id) || SolidType.UNKNOWN));
+			const props: Map<bigint, TypeEntry> = new Map([...this.propertytypes]);
+			[...t.propertytypes].forEach(([id, typ]) => {
+				props.set(id, this.propertytypes.has(id) ? {
+					type:     this.propertytypes.get(id)!.type.intersect(typ.type),
+					optional: this.propertytypes.get(id)!.optional && typ.optional,
+				} : typ);
 			});
-			return SolidTypeRecord.fromTypes(props);
+			return new SolidTypeRecord(props);
 		} else {
 			return super.intersect_do(t);
 		}
@@ -78,15 +79,16 @@ export class SolidTypeRecord extends SolidType {
 	 */
 	override union_do(t: SolidType): SolidType {
 		if (t instanceof SolidTypeRecord) {
-			const thisproptypes = new Map([...this.propertytypes].map(([id, t]) => [id, t.type]));
-			const thatproptypes = new Map([...t.propertytypes].map(([id, t]) => [id, t.type]));
-			const props: Map<bigint, SolidType> = new Map();
-			[...thatproptypes].forEach(([id, typ]) => {
+			const props: Map<bigint, TypeEntry> = new Map();
+			[...t.propertytypes].forEach(([id, typ]) => {
 				if (this.propertytypes.has(id)) {
-					props.set(id, typ.union(thisproptypes.get(id)!));
+					props.set(id, {
+						type:     this.propertytypes.get(id)!.type.union(typ.type),
+						optional: this.propertytypes.get(id)!.optional || typ.optional,
+					});
 				}
 			})
-			return SolidTypeRecord.fromTypes(props);
+			return new SolidTypeRecord(props);
 		} else {
 			return super.union_do(t);
 		}
