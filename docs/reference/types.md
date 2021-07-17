@@ -410,6 +410,68 @@ However, future versions of Solid will support expressions assignable to Unknown
 that are not assignable to Object.
 
 
+### Unit Types
+Unit types are types that contain only one value.
+In fact, the `null` type is already an example of a unit type! — it only holds the `null` value.
+Because unit types can only hold a single constant value, they are sometimes called “constant types”,
+although that term can be ambiguous in the context of generics, where types may be variable.
+
+A unit type must be a single primitive literal, i.e., an Integer, Float, or String (and of course `null`),
+and any value assignable to it must compute to that value. Variables with a unit type may still be reassignable,
+but they can only be reassigned to the same value, so having an `unfixed` variable with a unit type is kind of pointless.
+Variables with unit types are conventionally written in MACRO_CASE.
+```
+let unfixed TAU: true = true;
+TAU = true;
+TAU = false; %> TypeError
+
+let unfixed CAR_WHEELS: 4 = 4;
+let CAT_FEET: \b100 = \o4;
+CAR_WHEELS = CAT_FEET;
+```
+
+The assigned value doesn’t need to be a literal; it may be a expression,
+as long as it’s computable by the compiler’s [constant folding](./configuration.md#constantFolding) mechanism.
+```
+let TAU: true = !false;
+let CAR_WHEELS: \b100 = \o10 / 2;
+```
+
+#### String Unit Types
+Unit types may also be [strings](#String), but there are few details that should be noted.
+
+String unit types are compared by **string value**.
+This means both the type and the value are computed before the assignment takes place.
+String unit types can also contain escape sequences and special characters.
+```
+let GREETING: 'H\u{e9}llo\sW\u{f6}rld!' = 'Héllo Wörld!';
+let COUNT: '1
+2\
+3	4' = '1\n2 3\t4';
+```
+
+If the compiler can compute the value of a string template, then it may also be assigned to a string unit type.
+```
+let hello: str = 'Hello';
+let world: str = 'World';
+let GREETING: 'Hello World!' = '''{{ hello }} {{ world }}!''';
+```
+Notice that even though the variables `hello` and `world` are *not* declared with unit types (`str` is not a unit type),
+the compiler is still able to compute their values, thus the assignment to `GREETING` is valid.
+However, if they were unfixed, that wouldn’t be possible.
+```
+let unfixed hello: str = 'Hello';
+let unfixed world: str = 'World';
+let GREETING: 'Hello World!' = '''{{ hello }} {{ world }}!'''; %> TypeError
+```
+This is because the type of the template can only be inferred as `str`,
+which is wider than the unit type it’s being assigned to.
+
+String templates *cannot* be used as unit types (even if they’re templates without interpolation).
+```
+let GREETING: '''Hello World!''' = 'Hello World!'; %> ParseError
+```
+
 
 ## Compound Types
 
@@ -433,7 +495,9 @@ Programmers should take care to avoid them whenever possible.
 The **count** of a tuple refers to the number of its *entries*, not *items*.
 Thus a sparse tuple’s count will be larger than the number of items it contains.
 
-Tuple literals use the list literal syntax: comma-separated expressions within square brackets.
+Tuple literals are comma-separated expressions within square brackets.
+Tuple types use the same syntax, but instead of value expressions
+they contain type expressions (a.k.a. types).
 ```
 let elements: [str, str, str] = ['earth', 'wind', 'fire'];
 ```
