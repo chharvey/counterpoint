@@ -35,7 +35,7 @@ export class SolidTypeRecord extends SolidType {
 	constructor (
 		private readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
 	) {
-		super(new Set([new SolidRecord()]));
+		super(SolidRecord.values);
 	}
 
 	/** The possible number of values in this record type. */
@@ -52,6 +52,44 @@ export class SolidTypeRecord extends SolidType {
 
 	override includes(v: SolidObject): boolean {
 		return v instanceof SolidRecord && v.toType().isSubtypeOf(this);
+	}
+
+	/**
+	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `S` with the set of properties on `T`.
+	 * For any overlapping properties, their type intersection is taken.
+	 */
+	override intersect_do(t: SolidType): SolidType {
+		if (t instanceof SolidTypeRecord) {
+			const thisproptypes = new Map([...this.propertytypes].map(([id, t]) => [id, t.type]));
+			const thatproptypes = new Map([...t.propertytypes].map(([id, t]) => [id, t.type]));
+			const props: Map<bigint, SolidType> = thisproptypes;
+			[...thatproptypes].forEach(([id, typ]) => {
+				props.set(id, typ.intersect(thisproptypes.get(id) || SolidType.UNKNOWN));
+			});
+			return SolidTypeRecord.fromTypes(props);
+		} else {
+			return super.intersect_do(t);
+		}
+	}
+
+	/**
+	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `S` with the set of properties on `T`.
+	 * For any overlapping properties, their type union is taken.
+	 */
+	override union_do(t: SolidType): SolidType {
+		if (t instanceof SolidTypeRecord) {
+			const thisproptypes = new Map([...this.propertytypes].map(([id, t]) => [id, t.type]));
+			const thatproptypes = new Map([...t.propertytypes].map(([id, t]) => [id, t.type]));
+			const props: Map<bigint, SolidType> = new Map();
+			[...thatproptypes].forEach(([id, typ]) => {
+				if (this.propertytypes.has(id)) {
+					props.set(id, typ.union(thisproptypes.get(id)!));
+				}
+			})
+			return SolidTypeRecord.fromTypes(props);
+		} else {
+			return super.union_do(t);
+		}
 	}
 
 	override isSubtypeOf_do(t: SolidType): boolean {

@@ -36,7 +36,7 @@ export class SolidTypeTuple extends SolidType {
 	constructor (
 		private readonly types: readonly TypeEntry[] = [],
 	) {
-		super(new Set([new SolidTuple()]));
+		super(SolidTuple.values);
 	}
 
 	/** The possible number of items in this tuple type. */
@@ -53,6 +53,44 @@ export class SolidTypeTuple extends SolidType {
 
 	override includes(v: SolidObject): boolean {
 		return v instanceof SolidTuple && v.toType().isSubtypeOf(this);
+	}
+
+	/**
+	 * The *intersection* of types `S` and `T` is the *union* of the set of items on `S` with the set of items on `T`.
+	 * For any overlapping items, their type intersection is taken.
+	 */
+	override intersect_do(t: SolidType): SolidType {
+		if (t instanceof SolidTypeTuple) {
+			const thistypes = [...this.types].map((t) => t.type);
+			const thattypes = [...t.types].map((t) => t.type);
+			const items: SolidType[] = thistypes;
+			thattypes.forEach((typ, i) => {
+				items[i] = typ.intersect(thistypes[i] || SolidType.UNKNOWN);
+			});
+			return SolidTypeTuple.fromTypes(items);
+		} else {
+			return super.intersect_do(t);
+		}
+	}
+
+	/**
+	 * The *union* of types `S` and `T` is the *intersection* of the set of items on `S` with the set of items on `T`.
+	 * For any overlapping items, their type union is taken.
+	 */
+	override union_do(t: SolidType): SolidType {
+		if (t instanceof SolidTypeTuple) {
+			const thistypes = [...this.types].map((t) => t.type);
+			const thattypes = [...t.types].map((t) => t.type);
+			const items: SolidType[] = [];
+			thattypes.forEach((typ, i) => {
+				if (this.types[i]) {
+					items[i] = typ.union(thistypes[i]);
+				}
+			})
+			return SolidTypeTuple.fromTypes(items);
+		} else {
+			return super.union_do(t);
+		}
 	}
 
 	override isSubtypeOf_do(t: SolidType): boolean {
