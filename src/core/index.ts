@@ -5,3 +5,4 @@ export {
 
 export {Dev} from './Dev.js';
 export {Util} from './Util.js';
+export {SetEq} from './SetEq.js';

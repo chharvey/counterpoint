@@ -591,11 +591,12 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		return SolidString
 	}
 	protected override assess_do(validator: Validator): SolidString | null {
-		const concat: string | null = [...this.children].map((expr) => {
-			const assessed: SolidObject | null = expr.assess(validator);
-			return assessed && assessed.toString();
-		}).reduce((accum, value) => ([accum, value].includes(null)) ? null : accum!.concat(value!), '');
-		return (concat === null) ? null : new SolidString(concat);
+		const assesses: (SolidObject | null)[] = [...this.children].map((expr) => expr.assess(validator));
+		return (assesses.includes(null))
+			? null
+			: (assesses as SolidObject[])
+				.map((value) => value.toSolidString())
+				.reduce((a, b) => a.concatenate(b));
 	}
 }
 export class ASTNodeTuple extends ASTNodeExpression {

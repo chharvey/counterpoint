@@ -1,4 +1,5 @@
 import * as xjs from 'extrajs'
+import {SetEq} from '../core/index.js'
 import type {SolidObject} from './SolidObject.js';
 
 
@@ -21,6 +22,10 @@ export abstract class SolidType {
 	static get NEVER(): SolidTypeNever { return SolidTypeNever.INSTANCE }
 	/** The Top Type, containing all values. */
 	static get UNKNOWN(): SolidTypeUnknown { return SolidTypeUnknown.INSTANCE }
+	/** Comparator function for `SolidType#values` set. */
+	private static VALUE_COMPARATOR(a: SolidObject, b: SolidObject): boolean {
+		return a.identical(b);
+	}
 
 
 	/**
@@ -28,21 +33,24 @@ export abstract class SolidType {
 	 * i.e., it is equal to the Bottom Type (`never`).
 	 * Used internally for special cases of computations.
 	 */
-	readonly isEmpty: boolean = this.values.size === 0
+	readonly isEmpty: boolean;
 	/**
 	 * Whether this type has all values assignable to it,
 	 * i.e., it is equal to the Top Type (`unknown`).
 	 * Used internally for special cases of computations.
 	 */
-	readonly isUniverse: boolean = false // this.equals(SolidType.UNKNOWN)
+	readonly isUniverse: boolean;
+	/** An enumerated set of values that are assignable to this type. */
+	readonly values: ReadonlySet<SolidObject>;
 
 	/**
 	 * Construct a new SolidType object.
 	 * @param values an enumerated set of values that are assignable to this type
 	 */
-	constructor (
-		readonly values: ReadonlySet<SolidObject> = new Set(),
-	) {
+	constructor (values: ReadonlySet<SolidObject> = new Set()) {
+		this.values = new SetEq(SolidType.VALUE_COMPARATOR, values);
+		this.isEmpty = this.values.size === 0;
+		this.isUniverse = false;
 	}
 
 	/**
@@ -67,7 +75,6 @@ export abstract class SolidType {
 		/** 1-6 | `T  & unknown == T` */
 		if (t.isUniverse) { return this }
 		if (this.isUniverse) { return t }
-
 		/** 3-3 | `A <: B  <->  A  & B == A` */
 		if (this.isSubtypeOf(t)) { return this }
 		if (t.isSubtypeOf(this)) { return t }
@@ -89,8 +96,7 @@ export abstract class SolidType {
 		if (this.isEmpty) { return t }
 		/** 1-8 | `T \| unknown == unknown` */
 		if (t.isUniverse) { return t }
-		if (this.isUniverse) { return this }
-
+		if (this.isUniverse) { return SolidType.UNKNOWN; }
 		/** 3-4 | `A <: B  <->  A \| B == B` */
 		if (this.isSubtypeOf(t)) { return t }
 		if (t.isSubtypeOf(this)) { return this }
@@ -132,7 +138,8 @@ export abstract class SolidType {
 		return this.isSubtypeOf_do(t)
 	}
 	isSubtypeOf_do(t: SolidType): boolean { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
-		return !this.isEmpty && !!this.values.size && [...this.values].every((v) => t.includes(v));
+		return !this.isEmpty && !!this.values.size // these checks are needed because this is called by `SolidObject.isSubtypeOf_do`
+			&& [...this.values].every((v) => t.includes(v));
 	}
 	/**
 	 * Return whether this type is structurally equal to the given type.

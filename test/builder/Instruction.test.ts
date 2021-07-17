@@ -89,7 +89,7 @@ describe('Instruction', () => {
 				]
 				assert.deepStrictEqual(
 					values.map((x) => instructionConstFloat(x).toString()),
-					values.map((x) => `(f64.const ${ x })`),
+					values.map((x) => `(f64.const ${ x }${ (x % 1 === 0) ? '.0' : '' })`),
 				)
 			})
 			it('prints Float64 negative zero correctly.', () => {
@@ -112,8 +112,8 @@ describe('Instruction', () => {
 				].map((inst) => inst.toString()), [
 					`(call $inot ${ instructionConstInt(0n) })`,
 					`(call $inot ${ instructionConstInt(42n) })`,
-					`(call $fnot (f64.const 0))`,
-					`(call $fnot (f64.const 4.2))`,
+					`(call $fnot ${ instructionConstFloat(0.0) })`,
+					`(call $fnot ${ instructionConstFloat(4.2) })`,
 					`(call $iemp ${ instructionConstInt(0n) })`,
 					`(call $iemp ${ instructionConstInt(42n) })`,
 					`(call $femp ${ instructionConstFloat(0.0) })`,
