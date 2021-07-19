@@ -75,7 +75,6 @@ export abstract class SolidType {
 		/** 1-6 | `T  & unknown == T` */
 		if (t.isUniverse) { return this }
 		if (this.isUniverse) { return t }
-
 		/** 3-3 | `A <: B  <->  A  & B == A` */
 		if (this.isSubtypeOf(t)) { return this }
 		if (t.isSubtypeOf(this)) { return t }
@@ -97,8 +96,7 @@ export abstract class SolidType {
 		if (this.isEmpty) { return t }
 		/** 1-8 | `T \| unknown == unknown` */
 		if (t.isUniverse) { return t }
-		if (this.isUniverse) { return this }
-
+		if (this.isUniverse) { return SolidType.UNKNOWN; }
 		/** 3-4 | `A <: B  <->  A \| B == B` */
 		if (this.isSubtypeOf(t)) { return t }
 		if (t.isSubtypeOf(this)) { return this }
