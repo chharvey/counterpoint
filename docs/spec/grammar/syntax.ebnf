@@ -87,8 +87,16 @@ ExpressionUnit ::=
 	| "(" Expression ")"
 ;
 
-ExpressionUnarySymbol ::=
+PropertyAccess
+	::= "." (INTEGER | Word | "[" Expression "]");
+
+ExpressionCompound ::=
 	| ExpressionUnit
+	| ExpressionCompound PropertyAccess
+;
+
+ExpressionUnarySymbol ::=
+	| ExpressionCompound
 	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol
 ;
 

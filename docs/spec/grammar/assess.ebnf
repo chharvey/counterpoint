@@ -110,6 +110,36 @@ Mapping! Assess(SemanticMapping mapping) :=
 
 
 
+Object! Assess(SemanticAccess access) :=
+	1. *Assert:* `access.children.count` is 2.
+	2. *Let* `base` be `access.children.0`.
+	3. *Let* `accessor` be `access.children.1`.
+	4. *Let* `base_value` be *Unwrap:* `Assess(base)`.
+	5. *If* `accessor` is a SemanticIndex:
+		1. *Assert:* `accessor.children.count` is 1.
+		2. *Let* `accessor_value` be *Unwrap:* `Assess(accessor.children.0)`.
+		3. *Assert:* `accessor_value` is an instance of `Integer`.
+		4. *Assert:* `base_value` is an instance of `Tuple` *and* `accessor_value` is an index in `base_value`.
+		5. *Return:* the item accessed at index `accessor_value` in `base_value`.
+	6. *If* `accessor` is a SemanticKey:
+		1. *Let* `id` be `accessor.id`.
+		2. *Assert:* `base_value` is an instance of `Record` *and* `id` is a key in `base_value`.
+		3. *Return:* the value accessed at key `id` in `base_value`.
+	7. *Assert:* `accessor` is a SemanticExpression.
+	8. *Let* `accessor_value` be *Unwrap:* `Assess(accessor)`.
+	9. *If* `base_value` is an instance of `Tuple`:
+		1. *Assert:* `accessor_value` is an instance of `Integer` *and* `accessor_value` is an index in `base_value`.
+		2. *Return:* the item accessed at index `accessor_value` in `base_value`.
+	10. *Assert*: `base_value` is an instance of `Mapping`.
+	11. *If* `accessor_value` is an antecedent in `base_value`:
+		1. Find an antecedent `k` in `base_value` such that `Identical(k, accessor_value)`.
+		2. *If* `k` exists:
+			1. *Return:* the consequent accessed at antecedent `k` in `base_value`.
+	12. *Throw:* a new VoidError.
+;
+
+
+
 Boolean! Assess(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `Assess(expr.children.0)`.

@@ -809,7 +809,7 @@ a parse error is raised.
 
 
 
-## Semantic Errors(2xxx)
+## Semantic Errors (2xxx)
 Semantic Errors arise when a Solid source text does not adhere to the language’s
 formal validation rules.
 If this is the case, the code is said to be “invalid” (“not valid”).
@@ -839,3 +839,14 @@ When the compiler recognizes a type mismatch, a type error is raised.
 2301. The validator encountered an operation with an invalid operand.
 2302. One type is expected to be a subtype of another, but is not.
 2303. An expression was assigned to a type to which it is not assignable.
+2304. The validator encountered a non-existent index/property/argument access.
+
+
+
+## Runtime Errors (3xxx)
+Runtime Errors arise when the program compiles successfully but fails to complete execution
+as a result of some internal process.
+
+
+### Void Errors (31xx)
+A void error is raised when an expression that has no value is used in some way.

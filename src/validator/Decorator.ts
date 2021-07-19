@@ -104,8 +104,10 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeRecordLiteral__0__List):  NonemptyArray<AST.ASTNodeProperty>;
 	static decorate(node: PARSER.ParseNodeMappingLiteral):          AST.ASTNodeMapping;
 	static decorate(node: PARSER.ParseNodeMappingLiteral__0__List): NonemptyArray<AST.ASTNodeCase>;
+	static decorate(node: PARSER.ParseNodePropertyAccess):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
 	static decorate(node:
 		| PARSER.ParseNodeExpressionUnit
+		| PARSER.ParseNodeExpressionCompound
 		| PARSER.ParseNodeExpressionUnarySymbol
 		| PARSER.ParseNodeExpressionExponential
 		| PARSER.ParseNodeExpressionMultiplicative
@@ -275,6 +277,21 @@ export class Decorator {
 					: new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier)
 				: this.decorate(node.children[1]);
 
+		} else if (node instanceof PARSER.ParseNodePropertyAccess) {
+			return (
+				(node.children[1] instanceof TOKEN.TokenNumber) ? new AST.ASTNodeIndex(node, [new AST.ASTNodeConstant(node.children[1])]) :
+				(node.children[1] instanceof PARSER.ParseNodeWord) ? this.decorate(node.children[1]) :
+				this.decorate(node.children[2]!)
+			);
+
+		} else if (node instanceof PARSER.ParseNodeExpressionCompound) {
+			return (node.children.length === 1)
+				? this.decorate(node.children[0])
+				: new AST.ASTNodeAccess(node, [
+					this.decorate(node.children[0]),
+					this.decorate(node.children[1]),
+				]);
+
 		} else if (node instanceof PARSER.ParseNodeExpressionUnarySymbol) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
@@ -411,9 +428,7 @@ export class Decorator {
 
 		} else if (node instanceof PARSER.ParseNodeGoal) {
 			return new AST.ASTNodeGoal(node, (node.children.length === 2) ? [] : this.decorate(node.children[1]));
-
-		} else {
-			throw new ReferenceError(`Could not find type of parse node ${ node }.`)
 		}
+		throw new TypeError(`Could not find type of parse node \`${ node.constructor.name }\`.`);
 	}
 }

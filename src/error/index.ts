@@ -14,8 +14,13 @@ export {
 } from './AssignmentError.js';
 export {
 	TypeError01,
+	TypeError02,
 	TypeError03,
+	TypeError04,
 } from './SolidTypeError.js';
+export {
+	VoidError01,
+} from './VoidError.js';
 export {
 	NanError01,
 	NanError02,

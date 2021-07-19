@@ -1,5 +1,7 @@
 import * as xjs from 'extrajs';
 import type {Keys} from '../types';
+import type {AST} from '../validator/index.js';
+import {VoidError01} from '../error/index.js';
 import {
 	SolidType,
 	SolidTypeConstant,
@@ -10,12 +12,12 @@ import {SolidBoolean} from './SolidBoolean.js';
 
 
 
-export class SolidRecord<T extends SolidObject> extends SolidObject {
+export class SolidRecord<T extends SolidObject = SolidObject> extends SolidObject {
 	static override toString(): string {
 		return 'Record';
 	}
 	static override values: SolidType['values'] = new Set([new SolidRecord()]);
-	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidRecord<SolidObject>, SolidRecord<SolidObject>], boolean> = new xjs.MapEq(
+	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidRecord, SolidRecord], boolean> = new xjs.MapEq(
 		(a, b) => a[0].identical(b[0]) && a[1].identical(b[1]),
 	);
 
@@ -49,5 +51,11 @@ export class SolidRecord<T extends SolidObject> extends SolidObject {
 
 	toType(): SolidTypeRecord {
 		return new SolidTypeRecord(new Map([...this.properties].map(([key, value]) => [key, new SolidTypeConstant(value)])));
+	}
+
+	get(key: bigint, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): T {
+		return (this.properties.has(key))
+			? this.properties.get(key)!
+			: (() => { throw new VoidError01(accessor); })();
 	}
 }

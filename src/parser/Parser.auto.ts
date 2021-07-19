@@ -314,12 +314,35 @@ export class ProductionExpressionUnit extends Production {
 	}
 }
 
+export class ProductionPropertyAccess extends Production {
+	static readonly instance: ProductionPropertyAccess = new ProductionPropertyAccess();
+	/** @implements Production */
+	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['.', TERMINAL.TerminalInteger.instance],
+			['.', ProductionWord.instance],
+			['.', '[', ProductionExpression.instance, ']'],
+		];
+	}
+}
+
+export class ProductionExpressionCompound extends Production {
+	static readonly instance: ProductionExpressionCompound = new ProductionExpressionCompound();
+	/** @implements Production */
+	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionExpressionUnit.instance],
+			[ProductionExpressionCompound.instance, ProductionPropertyAccess.instance],
+		];
+	}
+}
+
 export class ProductionExpressionUnarySymbol extends Production {
 	static readonly instance: ProductionExpressionUnarySymbol = new ProductionExpressionUnarySymbol();
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionUnit.instance],
+			[ProductionExpressionCompound.instance],
 			['!', ProductionExpressionUnarySymbol.instance],
 			['?', ProductionExpressionUnarySymbol.instance],
 			['+', ProductionExpressionUnarySymbol.instance],
@@ -725,9 +748,24 @@ export class ParseNodeExpressionUnit extends ParseNode {
 	;
 }
 
-export class ParseNodeExpressionUnarySymbol extends ParseNode {
+export class ParseNodePropertyAccess extends ParseNode {
+	declare readonly children:
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression, Token]
+	;
+}
+
+export class ParseNodeExpressionCompound extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeExpressionUnit]
+		| readonly [ParseNodeExpressionCompound, ParseNodePropertyAccess]
+	;
+}
+
+export class ParseNodeExpressionUnarySymbol extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeExpressionCompound]
 		| readonly [Token, ParseNodeExpressionUnarySymbol]
 		| readonly [Token, ParseNodeExpressionUnarySymbol]
 		| readonly [Token, ParseNodeExpressionUnarySymbol]
@@ -892,6 +930,8 @@ export const grammar_Solid: Grammar = new Grammar([
 	ProductionMappingLiteral__0__List.instance,
 	ProductionMappingLiteral.instance,
 	ProductionExpressionUnit.instance,
+	ProductionPropertyAccess.instance,
+	ProductionExpressionCompound.instance,
 	ProductionExpressionUnarySymbol.instance,
 	ProductionExpressionExponential.instance,
 	ProductionExpressionMultiplicative.instance,
@@ -944,6 +984,8 @@ export class ParserSolid extends Parser {
 			[ProductionMappingLiteral__0__List.instance, ParseNodeMappingLiteral__0__List],
 			[ProductionMappingLiteral.instance, ParseNodeMappingLiteral],
 			[ProductionExpressionUnit.instance, ParseNodeExpressionUnit],
+			[ProductionPropertyAccess.instance, ParseNodePropertyAccess],
+			[ProductionExpressionCompound.instance, ParseNodeExpressionCompound],
 			[ProductionExpressionUnarySymbol.instance, ParseNodeExpressionUnarySymbol],
 			[ProductionExpressionExponential.instance, ParseNodeExpressionExponential],
 			[ProductionExpressionMultiplicative.instance, ParseNodeExpressionMultiplicative],

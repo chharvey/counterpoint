@@ -14,14 +14,6 @@ import {
 	Operator,
 } from '../../src/validator/index.js';
 import {
-	SolidTypeConstant,
-	SolidObject,
-	SolidNull,
-	SolidBoolean,
-	Int16,
-	Float64,
-} from '../../src/typer/index.js';
-import {
 	assert_arrayLength,
 } from '../assert-helpers.js';
 import * as h from '../helpers-parse.js';
@@ -56,7 +48,7 @@ describe('Decorator', () => {
 		describe('PrimitiveLiteral ::= "null" | "false" | "true" | INTEGER | FLOAT | STRING', () => {
 			it('makes an ASTNodeConstant.', () => {
 				/*
-					<Constant source="null" value="null"/>
+					<Constant source="null"/>
 				*/
 				assert.deepStrictEqual([
 					`null;`,
@@ -64,12 +56,12 @@ describe('Decorator', () => {
 					`true;`,
 					`42;`,
 					`4.2;`,
-				].map((src) => (Decorator.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).value), [
-					SolidNull.NULL,
-					SolidBoolean.FALSE,
-					SolidBoolean.TRUE,
-					new Int16(42n),
-					new Float64(4.2),
+				].map((src) => (Decorator.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).source), [
+					`null`,
+					`false`,
+					`true`,
+					`42`,
+					`4.2`,
 				])
 			})
 		})
@@ -77,18 +69,18 @@ describe('Decorator', () => {
 		describe('TypeKeyword ::= "bool" | "int" | "float" | "obj"', () => {
 			it('makes an ASTNodeTypeConstant.', () => {
 				/*
-					<TypeConstant source="bool" value="Boolean"/>
+					<TypeConstant source="bool"/>
 				*/
 				assert.deepStrictEqual([
 					`bool`,
 					`int`,
 					`float`,
 					`obj`,
-				].map((src) => (Decorator.decorate(h.keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).value), [
-					SolidBoolean,
-					Int16,
-					Float64,
-					SolidObject,
+				].map((src) => (Decorator.decorate(h.keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).source), [
+					`bool`,
+					`int`,
+					`float`,
+					`obj`,
 				])
 			})
 		})
@@ -197,7 +189,7 @@ describe('Decorator', () => {
 		describe('TypeUnit ::= PrimitiveLiteral', () => {
 			it('makes an ASTNodeTypeConstant.', () => {
 				/*
-					<TypeConstant source="null" value="SolidNull"/>
+					<TypeConstant source="null"/>
 				*/
 				assert.deepStrictEqual([
 					`null`,
@@ -208,13 +200,13 @@ describe('Decorator', () => {
 				].map((src) => {
 					const constant: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(src));
 					assert.ok(constant instanceof AST.ASTNodeTypeConstant);
-					return constant.value
+					return constant.source;
 				}), [
-					SolidNull,
-					SolidBoolean.FALSETYPE,
-					SolidBoolean.TRUETYPE,
-					new SolidTypeConstant(new Int16(42n)),
-					new SolidTypeConstant(new Float64(4.2)),
+					`null`,
+					`false`,
+					`true`,
+					`42`,
+					`4.2`,
 				])
 			})
 		})
@@ -223,7 +215,7 @@ describe('Decorator', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="!">
-						<TypeConstant source="int" value="Int16"/>
+						<TypeConstant source="int"/>
 					</TypeOperation>
 				*/
 				const operation: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int!`));
@@ -510,18 +502,18 @@ describe('Decorator', () => {
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
 			it('makes an ASTNodeConstant.', () => {
 				/*
-					<Constant line="1" col="1" source="null" value="null"/>
+					<Constant line="1" col="1" source="null"/>
 				*/
 				assert.deepStrictEqual([
 					`null;`,
 					`false;`,
 					`true;`,
 					`42;`,
-				].map((src) => (Decorator.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).value), [
-					SolidNull.NULL,
-					SolidBoolean.FALSE,
-					SolidBoolean.TRUE,
-					new Int16(42n),
+				].map((src) => (Decorator.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).source), [
+					`null`,
+					`false`,
+					`true`,
+					`42`,
 				])
 			})
 		})
@@ -575,6 +567,65 @@ describe('Decorator', () => {
 				}), [`2`, `420`])
 			})
 		})
+
+		Dev.supports('literalCollection') && describe('ExpressionCompound ::= ExpressionCompound PropertyAccess', () => {
+			it('access by integer.', () => {
+				/*
+					<Access>
+						<List source="[42, 420, 4200]">...</List>
+						<Index>
+							<Constant source="1"/>
+						</Index>
+					</Access>
+				*/
+				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
+					[42, 420, 4200].1;
+				`);
+				const operand: AST.ASTNodeExpression = access.children[0];
+				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
+				assert.ok(accessor instanceof AST.ASTNodeIndex);
+				assert.deepStrictEqual(
+					[operand.source,        accessor.source],
+					[`[ 42 , 420 , 4200 ]`, `. 1`],
+				);
+			});
+			it('access by key.', () => {
+				/*
+					<Access>
+						<Record source="[c= 42, b= 420, a= 4200]">...</Record>
+						<Key source="b"/>
+					</Access>
+				*/
+				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
+					[c= 42, b= 420, a= 4200].b;
+				`);
+				const operand: AST.ASTNodeExpression = access.children[0];
+				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
+				assert.ok(accessor instanceof AST.ASTNodeKey);
+				assert.deepStrictEqual(
+					[operand.source,                    accessor.source],
+					[`[ c = 42 , b = 420 , a = 4200 ]`, `b`],
+				);
+			});
+			it('access by computed expression.', () => {
+				/*
+					<Access>
+						<Mapping source="[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']">...</Mapping>
+						<Expression source="0.7 + 0.3">...</Expression>
+					</Access>
+				*/
+				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
+					[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'].[0.7 + 0.3];
+				`);
+				const operand: AST.ASTNodeExpression = access.children[0];
+				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
+				assert.ok(accessor instanceof AST.ASTNodeExpression);
+				assert.deepStrictEqual(
+					[operand.source,                                accessor.source],
+					[`[ 0.5 * 2 |-> 'one' , 1.4 + 0.6 |-> 'two' ]`, `0.7 + 0.3`],
+				);
+			});
+		});
 
 		context('ExpressionUnarySymbol ::= ("!" | "?" | "-") ExpressionUnarySymbol', () => {
 			it('makes an ASTNodeOperationUnary.', () => {
@@ -835,20 +886,20 @@ describe('Decorator', () => {
 			it('makes an ASTNodeOperation with the COND operator and 3 children.', () => {
 				/*
 					<Operation operator=COND>
-						<Constant value=true/>
-						<Constant value=2n/>
-						<Constant value=3n/>
+						<Constant source="true"/>
+						<Constant source="2"/>
+						<Constant source="3"/>
 					</Operation>
 				*/
 				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`if true then 2 else 3;`));
 				assert.ok(operation instanceof AST.ASTNodeOperationTernary);
 				assert.deepStrictEqual(operation.children.map((child) => {
 					assert.ok(child instanceof AST.ASTNodeConstant);
-					return child.value
+					return child.source
 				}), [
-					SolidBoolean.TRUE,
-					new Int16(2n),
-					new Int16(3n),
+					`true`,
+					`2`,
+					`3`,
 				])
 			})
 		})
@@ -905,7 +956,7 @@ describe('Decorator', () => {
 						<TypeConstant source="int | float">...</TypeOperation>
 						<Operation operator=MUL source="the_answer * 10">
 							<Variable source="the_answer" id=257n/>
-							<Constant source="10" value=10/>
+							<Constant source="10"/>
 						</Operation>
 					</DeclarationVariable>
 				*/
