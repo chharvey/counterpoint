@@ -29,6 +29,7 @@ PrimitiveLiteral ::=
 
 
 TypeKeyword ::=
+	| "void"
 	| "bool"
 	| "int"
 	| "float"
@@ -36,11 +37,19 @@ TypeKeyword ::=
 	| "obj"
 ;
 
-PropertyType
-	::= Word ":" Type;
+EntryType<Named, Optional>
+	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type;
 
-TypeTupleLiteral  ::= "[" ( ","? Type#         ","? )? "]";
-TypeRecordLiteral ::= "["   ","? PropertyType# ","?    "]";
+ItemsType ::=
+	|  EntryType<-Named><-Optional># ","?
+	| (EntryType<-Named><-Optional># ",")? EntryType<-Named><+Optional># ","?
+;
+
+PropertiesType
+	::= EntryType<+Named><-Optional, +Optional># ","?;
+
+TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
+TypeRecordLiteral ::= "["  ","? PropertiesType "]";
 
 TypeUnit ::=
 	| IDENTIFIER
@@ -53,6 +62,7 @@ TypeUnit ::=
 
 TypeUnarySymbol ::=
 	| TypeUnit
+	| TypeUnarySymbol "?"
 	| TypeUnarySymbol "!"
 ;
 

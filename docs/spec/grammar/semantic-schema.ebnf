@@ -3,7 +3,10 @@ SemanticKey[id: RealNumber]
 
 
 
-SemanticPropertyType
+SemanticItemType[optional: Boolean]
+	::= SemanticType;
+
+SemanticPropertyType[optional: Boolean]
 	::= SemanticKey SemanticType;
 
 
@@ -35,10 +38,12 @@ SemanticTypeConstant[value: Type]
 SemanticTypeAlias[id: RealNumber]
 	::= ();
 
-SemanticTypeTuple  ::= SemanticType*;
+SemanticTypeTuple  ::= SemanticItemType*;
 SemanticTypeRecord ::= SemanticPropertyType+;
 
 SemanticTypeOperation[operator: ORNULL]
+	::= SemanticType;
+SemanticTypeOperation[operator: OREXCP]
 	::= SemanticType;
 SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;

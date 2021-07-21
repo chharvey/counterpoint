@@ -148,12 +148,32 @@ export class ASTNodeKey extends ASTNodeSolid {
 		throw builder && 'ASTNodeKey#build not yet supported.';
 	}
 }
+export class ASTNodeItemType extends ASTNodeSolid {
+	constructor (
+		start_node:
+			| PARSER.ParseNodeEntryType
+			| PARSER.ParseNodeEntryType_Optional
+		,
+		readonly optional: boolean,
+		override readonly children: readonly [ASTNodeType],
+	) {
+		super(start_node, {optional}, children);
+	}
+	/** @implements ASTNodeSolid */
+	build(builder: Builder): Instruction {
+		throw builder && 'ASTNodeItemType#build not yet supported.';
+	}
+}
 export class ASTNodePropertyType extends ASTNodeSolid {
 	constructor (
-		start_node: PARSER.ParseNodePropertyType,
+		start_node:
+			| PARSER.ParseNodeEntryType_Named
+			| PARSER.ParseNodeEntryType_Named_Optional
+		,
+		readonly optional: boolean,
 		override readonly children: readonly [ASTNodeKey, ASTNodeType],
 	) {
-		super(start_node, {}, children);
+		super(start_node, {optional}, children);
 	}
 	override build(builder: Builder): Instruction {
 		throw builder && 'ASTNodePropertyType#build not yet supported.';
@@ -246,8 +266,10 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	declare readonly children: readonly [];
 	private readonly value: SolidType;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) {
-		const value: SolidType =
+		const value: SolidType = (
 			(start_node instanceof TOKEN.TokenKeyword) ?
+				(start_node.source === Keyword.VOID)  ? SolidType.VOID :
+				(start_node.source === Keyword.NULL)  ? SolidNull :
 				(start_node.source === Keyword.BOOL)  ? SolidBoolean :
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSETYPE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
@@ -255,14 +277,15 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				(start_node.source === Keyword.FLOAT) ? Float64 :
 				(start_node.source === Keyword.STR)   ? SolidString :
 				(start_node.source === Keyword.OBJ)   ? SolidObject :
-				SolidNull
+				(() => { throw new Error(`ASTNodeTypeConstant.constructor did not expect the keyword \`${ start_node.source }\`.`); })()
 			: (start_node instanceof TOKEN.TokenNumber) ?
 				new SolidTypeConstant(
 					start_node.isFloat
 						? new Float64(start_node.cook())
 						: new Int16(BigInt(start_node.cook()))
 				)
-			: SolidNull;
+			: /* (start_node instanceof TOKEN.TokenString) */ new SolidTypeConstant(new SolidString(start_node.cook()))
+		);
 		super(start_node, {value});
 		this.value = value
 	}
@@ -308,12 +331,15 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 	}
 	constructor (
 		start_node: PARSER.ParseNodeTypeTupleLiteral,
-		override readonly children: readonly ASTNodeType[],
+		override readonly children: readonly ASTNodeItemType[],
 	) {
 		super(start_node, {}, children);
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		return new SolidTypeTuple(this.children.map((c) => c.assess(validator)));
+		return new SolidTypeTuple(this.children.map((c) => ({
+			type:     c.children[0].assess(validator),
+			optional: c.optional,
+		})));
 	}
 }
 export class ASTNodeTypeRecord extends ASTNodeType {
@@ -331,7 +357,10 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 	protected override assess_do(validator: Validator): SolidType {
 		return new SolidTypeRecord(new Map(this.children.map((c) => [
 			c.children[0].id,
-			c.children[1].assess(validator),
+			{
+				type:     c.children[1].assess(validator),
+				optional: c.optional,
+			},
 		])));
 	}
 }
@@ -361,6 +390,9 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		override readonly children: readonly [ASTNodeType],
 	) {
 		super(start_node, operator, children)
+		if ([Operator.OREXCP].includes(this.operator)) {
+			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
+		}
 	}
 	protected override assess_do(validator: Validator): SolidType {
 		return (this.operator === Operator.ORNULL)
@@ -620,7 +652,7 @@ export class ASTNodeTuple extends ASTNodeExpression {
 		throw builder && 'ASTNodeTuple#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return new SolidTypeTuple(this.children.map((c) => c.type(validator)));
+		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type(validator)));
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
 		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.assess(validator));
@@ -648,7 +680,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return new SolidTypeRecord(new Map(this.children.map((c) => [
+		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.children[0].id,
 			c.children[1].type(validator),
 		])));

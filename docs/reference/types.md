@@ -27,6 +27,16 @@ Currently, there are no expressions assignable to it either, but
 future versions of Solid will support expressions of type Never.
 
 
+### Void
+The Void type, `void`, represents the completion of an evaluation but the absence of a value.
+It is used to describe functions that complete execution (and may have side-effects), but return no value.
+(Unlike `never`, `void` indicates that the function has returned.)
+The Void type is also used to represent part of the types of optional entries in collections,
+such as a record’s optional property.
+There are no values assignble to the Void type, but some expressions may have type `void`,
+for example, property access and function calls.
+
+
 ### Null
 The Null type, `null`, has exactly one value, also called `null`.
 The meaning of the `null` value is not specified, but it’s most commonly used as a placeholder

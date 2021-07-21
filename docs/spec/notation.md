@@ -679,7 +679,7 @@ is shorthand for the following steps:
 ```
 
 ##### Mappings
-A step that contains «a mapping of ‹s› indexed by ‹i› to ‹e›» is shorthand for a *While* loop
+A step that contains «a mapping of ‹s› indexed by ‹i› to ‹e›» is shorthand for a *For* loop
 that populates a new sequence, where ‹s› is a starting sequence, ‹i› is an index variable,
 and ‹e› is an expression possibly containing ‹s› and ‹i›.
 The new sequence is the result of mapping each item in the starting sequence to
@@ -737,6 +737,49 @@ is shorthand for
 3. *For index* `i` in `map`:
 	1. Push `...map` to `result`.
 ```
+
+##### Filterings
+A step that contains «a filtering of ‹s› indexed by ‹i› such that ‹e›» is shorthand for a *For* loop
+that populates a new sequence, where ‹s› is a starting sequence, ‹i› is an index variable,
+and ‹e› is a predicate, possibly containing ‹s› and ‹i›, to be satisfied.
+The new sequence is the result of finding only the items in the starting sequence
+that satisfy the predicate ‹e›.
+
+(In the example below, assume `sequence` is a sequence of RealNumber values.)
+```
+1. *Let* `result1` be a filtering of `sequence` indexed by `i` such that `sequence[i] > 0`.
+1. *Let* `result2` be a filtering of `sequence` indexed by `i` such that `sequence[i]` is even.
+```
+is shorthand for
+```
+1. *Let* `result1` be an empty sequence.
+2. *For index* `i` in `sequence`:
+	1. *If* `sequence[i] > 0`:
+		1. Push `sequence[i]` to `result1`.
+3. *Let* `result2` be an empty sequence.
+4. *For index* `i` in `sequence`:
+	1. *If* `sequence[i]` is even:
+		1. Push `sequence[i]` to `result2`.
+```
+
+A step that contains «a filtering of ‹s› for each ‹it› such that ‹e›» is shorthand for an indexed filtering,
+replacing the *For index* step with a *For each* step.
+```
+1. *Let* `result1` be a filering of `sequence` for each `it` such that `it > 0`.
+2. *Let* `result2` be a filering of `sequence` for each `it` such that `it` is an integer.
+```
+is shorthand for
+```
+1. *Let* `result1` be an empty sequence.
+2. *For each* `it` in `sequence`:
+	1. *If* `it > 0` is `true`:
+		1. Push `it` to `result1`.
+3. *Let* `result2` be an empty sequence.
+4. *For each* `it` in `sequence`:
+	1. *If* `it` is an integer:
+		1. Push `it` to `result2`.
+```
+
 
 ### Runtime Instructions
 Algorithms that specify behavior to be performed at runtime are called **runtime instructions**.

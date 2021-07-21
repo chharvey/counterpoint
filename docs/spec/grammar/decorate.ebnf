@@ -20,6 +20,8 @@ Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 
 
 
+Decorate(TypeKeyword ::= "void") -> SemanticTypeConstant
+	:= (SemanticTypeConstant[value=Void]);
 Decorate(TypeKeyword ::= "bool") -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=Boolean]);
 Decorate(TypeKeyword ::= "int") -> SemanticTypeConstant
@@ -33,41 +35,51 @@ Decorate(TypeKeyword ::= "obj") -> SemanticTypeConstant
 
 
 
-Decorate(PropertyType ::= Word ":" Type) -> SemanticPropertyType
-	:= (SemanticPropertyType
+Decorate(EntryType ::= Type) -> SemanticItemType
+	:= (SemanticItemType[optional=false] Decorate(Type));
+Decorate(EntryType_Optional ::= Type) -> SemanticItemType
+	:= (SemanticItemType[optional=true] Decorate(Type));
+Decorate(EntryType_Named ::= Word ":" Type) -> SemanticPropertyType
+	:= (SemanticPropertyType[optional=false]
+		Decorate(Word)
+		Decorate(Type)
+	);
+Decorate(EntryType_Named_Optional ::= Word "?:" Type) -> SemanticPropertyType
+	:= (SemanticPropertyType[optional=true]
 		Decorate(Word)
 		Decorate(Type)
 	);
 
 
 
+Decorate(ItemsType ::= EntryType# ","?) -> Sequence<SemanticItemType>
+	:= ParseList(EntryType, SemanticItemType);
+Decorate(ItemsType ::= EntryType_Optional# ","?) -> Sequence<SemanticItemType>
+	:= ParseList(EntryType_Optional, SemanticItemType);
+Decorate(ItemsType ::= EntryType# "," EntryType_Optional# ","?) -> Sequence<SemanticItemType>
+	:= [
+		...ParseList(EntryType,          SemanticItemType),
+		...ParseList(EntryType_Optional, SemanticItemType),
+	];
+
+Decorate(PropertiesType ::= EntryType_Named# ","?) -> Sequence<SemanticPropertyType>
+	:= ParseList(EntryType_Named, SemanticPropertyType);
+Decorate(PropertiesType ::= EntryType_Named_Optional# ","?) -> Sequence<SemanticPropertyType>
+	:= ParseList(EntryType_Named_Optional, SemanticPropertyType);
+
+
+
 Decorate(TypeTupleLiteral ::= "[" "]") -> SemanticTypeTuple
 	:= (SemanticTypeTuple);
-Decorate(TypeTupleLiteral ::= "[" ","? TypeTupleLiteral__0__List ","? "]") -> SemanticTypeTuple
+Decorate(TypeTupleLiteral ::= "[" ","? ItemsType "]") -> SemanticTypeTuple
 	:= (SemanticTypeTuple
-		...Decorate(TypeTupleLiteral__0__List)
+		...Decorate(ItemsType)
 	);
 
-	Decorate(TypeTupleLiteral__0__List ::= Type) -> Sequence<SemanticType>
-		:= [Decorate(Type)];
-	Decorate(TypeTupleLiteral__0__List ::= TypeTupleLiteral__0__List "," Type) -> Sequence<SemanticType>
-		:= [
-			...Decorate(TypeTupleLiteral__0__List),
-			Decorate(Type),
-		];
-
-Decorate(TypeRecordLiteral ::= "[" ","? TypeRecordLiteral__0__List ","? "]") -> SemanticTypeRecord
+Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType "]") -> SemanticTypeRecord
 	:= (SemanticTypeRecord
-		...Decorate(TypeRecordLiteral__0__List)
+		...Decorate(PropertiesType)
 	);
-
-	Decorate(TypeRecordLiteral__0__List ::= PropertyType) -> Sequence<SemanticPropertyType>
-		:= [Decorate(PropertyType)];
-	Decorate(TypeRecordLiteral__0__List ::= TypeRecordLiteral__0__List "," PropertyType) -> Sequence<SemanticPropertyType>
-		:= [
-			...Decorate(TypeRecordLiteral__0__List),
-			Decorate(PropertyType),
-		];
 
 
 
@@ -88,8 +100,12 @@ Decorate(TypeUnit ::= "(" Type ")") -> SemanticType
 
 Decorate(TypeUnarySymbol ::= TypeUnit) -> SemanticType
 	:= Decorate(TypeUnit);
-Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation
+Decorate(TypeUnarySymbol ::= TypeUnarySymbol "?") -> SemanticTypeOperation
 	:= (SemanticTypeOperation[operator=ORNULL]
+		Decorate(TypeUnarySymbol)
+	);
+Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation
+	:= (SemanticTypeOperation[operator=OREXCP]
 		Decorate(TypeUnarySymbol)
 	);
 
@@ -184,44 +200,20 @@ Decorate(Case ::= Expression "|->" Expression) -> SemanticCase
 
 Decorate(TupleLiteral ::= "[" "]") -> SemanticTuple
 	:= (SemanticTuple);
-Decorate(TupleLiteral ::= "[" ","? TupleLiteral__0__List ","? "]") -> SemanticTuple
+Decorate(TupleLiteral ::= "[" ","? Expression# ","? "]") -> SemanticTuple
 	:= (SemanticTuple
-		...Decorate(TupleLiteral__0__List)
+		...ParseList(Expression, SemanticExpression)
 	);
 
-	Decorate(TupleLiteral__0__List ::= Expression) -> Sequence<SemanticExpression>
-		:= [Decorate(Expression)];
-	Decorate(TupleLiteral__0__List ::= TupleLiteral__0__List "," Expression) -> Sequence<SemanticExpression>
-		:= [
-			...Decorate(TupleLiteral__0__List),
-			Decorate(Expression),
-		];
-
-Decorate(RecordLiteral ::= "[" ","? RecordLiteral__0__List ","? "]") -> SemanticRecord
+Decorate(RecordLiteral ::= "[" ","? Property# ","? "]") -> SemanticRecord
 	:= (SemanticRecord
-		...Decorate(RecordLiteral__0__List)
+		...ParseList(Property, SemanticProperty)
 	);
 
-	Decorate(RecordLiteral__0__List ::= Property) -> Sequence<SemanticProperty>
-		:= [Decorate(Property)];
-	Decorate(RecordLiteral__0__List ::= RecordLiteral__0__List "," Property) -> Sequence<SemanticProperty>
-		:= [
-			...Decorate(RecordLiteral__0__List),
-			Decorate(Property),
-		];
-
-Decorate(MappingLiteral ::= "[" ","? MappingLiteral__0__List ","? "]") -> SemanticMapping
+Decorate(MappingLiteral ::= "[" ","? Case# ","? "]") -> SemanticMapping
 	:=(SemanticMapping
-		...Decorate(MappingLiteral__0__List)
+		...ParseList(Case, SemanticCase)
 	);
-
-	Decorate(MappingLiteral__0__List ::= Case) -> Sequence<SemanticCase>
-		:= [Decorate(Case)];
-	Decorate(MappingLiteral__0__List ::= MappingLiteral__0__List "," Case) -> Sequence<SemanticCase>
-		:= [
-			...Decorate(MappingLiteral__0__List),
-			Decorate(Case),
-		];
 
 
 
@@ -504,17 +496,19 @@ Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
 
 
 
-Decorate(Statement__List ::= Statement) -> Sequence<SemanticStatement>
-	:= [Decorate(Statement)];
-Decorate(Statement__List ::= Statement__List Statement) -> Sequence<SemanticStatement>
-	:= [
-		...Decorate(Statement__List),
-		Decorate(Statement),
-	];
-
-
-
 Decorate(Goal ::= #x02 #x03) -> SemanticGoal
 	:= (SemanticGoal);
-Decorate(Goal ::= #x02 Statement__List #x03) -> SemanticGoal
-	:= (SemanticGoal Decorate(Statement__List));
+Decorate(Goal ::= #x02 Statement+ #x03) -> SemanticGoal
+	:= (SemanticGoal
+		...ParseList(Statement, SemanticStatement)
+	);
+
+
+
+ParseList(ParseNode, ASTNode)(ParseNode__List ::= ParseNode) -> Sequence<ASTNode>
+	:= [Decorate(ParseNode)];
+ParseList(ParseNode, ASTNode)(ParseNode__List ::= ParseNode__List ","? ParseNode) -> Sequence<ASTNode>
+	:= [
+		...Decorate(ParseNode__List),
+		Decorate(ParseNode),
+	];

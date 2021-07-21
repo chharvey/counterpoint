@@ -13,7 +13,8 @@ export enum Punctuator {
 		EMP = '?',
 		AFF = '+',
 		NEG = '-',
-		ORNULL = '!',
+		ORNULL = '?',
+		OREXCP = '!',
 	// binary
 		EXP  = '^',
 		MUL  = '*',
@@ -39,5 +40,6 @@ export enum Punctuator {
 	// statement
 		ENDSTAT = ';',
 		ISTYPE  = ':',
+		OPT     = '?:', // Dev.supportsAll('literalCollection', 'optionalAccess')
 		ASSIGN  = '=', // Dev.supports('literalCollection')
 }

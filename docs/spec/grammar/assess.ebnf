@@ -14,8 +14,15 @@ Type Assess(SemanticTypeAlias var) :=
 
 
 Type Assess(SemanticTypeTuple tupletype) :=
-	1. *Let* `data` be a mapping of `tupletype` for each `type` to *UnwrapAffirm:* `Assess(type)`.
-	2. *Return:* a subtype of `Tuple` whose items are `data`.
+	1. *Let* `data` be a new Sequence.
+	2. *For each* `itemtype` in `tupletype`:
+		1. *Assert:* `itemtype.children.count` is 1.
+		2. *Let* `typedatum` be a new Structure [
+			type:     *UnwrapAffirm:* `Assess(itemtype.children.0)`,
+			optional: `itemtype.optional`,
+		].
+		3. Push `typedatum` to `data`.
+	3. *Return:* a subtype of `Tuple` whose items are `data`.
 ;
 
 
@@ -23,10 +30,12 @@ Type Assess(SemanticTypeTuple tupletype) :=
 Type Assess(SemanticTypeRecord recordtype) :=
 	1. *Let* `data` be a new Structure.
 	2. *For each* `propertytype` in `recordtype`:
-		1. Set `data` to [
-			...data,
-			`propertytype.children.0.id`= *UnwrapAffirm:* `Assess(propertytype.children.1)`,
+		1. *Assert:* `propertytype.children.count` is 2.
+		2. *Let* `typedatum` be a new Structure [
+			type:     *UnwrapAffirm:* `Assess(propertytype.children.1)`,
+			optional: `propertytype.optional`,
 		].
+		3. Set the property `propertytype.children.0.id` on `data` to the value `typedatum`.
 	3. *Return:* a subtype of `Record` whose properties are `data`.
 ;
 
@@ -36,6 +45,10 @@ Type Assess(SemanticTypeOperation[operator: ORNULL] oper) :=
 	1. *Assert:* `oper.children.count` is 1.
 	2. *Let* `child` be *UnwrapAffirm:* `Assess(oper.children.0)`.
 	3. *Return:* `Union(child, Null)`.
+;
+
+Type Assess(SemanticTypeOperation[operator: OREXCP] oper) :=
+	1. *Throw:* new TypeError "Operator not yet supported.".
 ;
 
 Type Assess(SemanticTypeOperation[operator: AND] oper) :=

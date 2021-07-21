@@ -1,5 +1,6 @@
 export enum Keyword {
 	// literal
+		VOID  = 'void',
 		NULL  = 'null',
 		BOOL  = 'bool',
 		FALSE = 'false',

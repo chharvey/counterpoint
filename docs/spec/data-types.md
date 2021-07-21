@@ -118,6 +118,16 @@ The term “normal completion” refers to any completion with a \`type\` of *no
 the term “abrupt completion” refers to any completion with a \`type\` other than *normal*.
 
 
+#### EntryTypeStructure
+An **EntryTypeStructure** represents an entry in a static collection type.
+It contains the type value and whether the entry is optional.
+
+Property     | Description
+------------ | -----------
+\`type\`     | the Solid Language Type
+\`optional\` | a Boolean, whether the entry is optional
+
+
 #### SymbolStructure
 A **SymbolStructure** encapsulates the compile-time information of a declared symbol in Solid source code.
 Symbols are identifiers that refer to Solid Language Values or Solid Language Types.
@@ -127,10 +137,10 @@ Symbol structures’ properties are described in the tables below.
 ##### SymbolStructureType
 A **SymbolStructureType** represents a type alias referencing a Solid Language Type.
 
-Property    | Description
------------ | -----------
-\`id\`      | the unique identifier of the declared symbol
-\`value\`   | the assessed value (a Solid Language Type) of this symbol
+Property  | Description
+--------- | -----------
+\`id\`    | the unique identifier of the declared symbol
+\`value\` | the assessed value (a Solid Language Type) of this symbol
 
 ##### SymbolStructureVar
 A **SymbolStructureVar** represents a variable referencing a Solid Language Value.
@@ -171,6 +181,7 @@ Solid has the following built-in types.
 This list is not exhaustive, as Solid Types may be created in any Solid program.
 
 - [Never](#never)
+- [Void](#void)
 - [Null](#null)
 - [Boolean](#boolean)
 - [Integer](#integer)
@@ -190,6 +201,22 @@ and expressions of type `never` are accepted everywhere.
 and no type (except `never` itself) is a subtype of `never`.
 `never` is the the “absorption element” of the [intersection](#intersection) operation
 and the “identity element” of the [union](#union) operation.
+
+
+### Void
+The Void type represents the completion of an evaluation but the absence of a value.
+It is the return type of a function that may have side-effects but that does not return a value.
+It is also partly the type of an optional entry in a collection.
+
+There are no values assignable to Void, but it is different from Never in that
+it does not behave like the Bottom Type.
+Void is not a subtype of every other type; in fact, the only types of which Void is a subtype
+are type unions that include it in their construction.
+In general, given a type \`‹T›\`,
+the [intersection](#intersection) \`And<‹T›, Void>\` is not necessarily the same as Void, and
+the [union](#union) \`Or<‹T›, Void>\` is not necessarily the same as \`‹T›\`.
+
+The Void type is also unlike Null in that no Solid Language Value has type Void.
 
 
 ### Null

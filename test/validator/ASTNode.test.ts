@@ -14,6 +14,7 @@ import {
 	Validator,
 } from '../../src/validator/index.js';
 import {
+	TypeEntry,
 	SolidType,
 	SolidTypeConstant,
 	SolidTypeTuple,
@@ -753,9 +754,6 @@ describe('ASTNodeSolid', () => {
 
 	describe('ASTNodeType', () => {
 		describe('#assess', () => {
-			function typeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeType {
-				return AST.ASTNodeDeclarationType.fromSource(`type T = ${ typestring };`, config).children[1];
-			}
 			it('computes the value of constant null, boolean, or number types.', () => {
 				assert.deepStrictEqual([
 					`null`,
@@ -801,27 +799,32 @@ describe('ASTNodeSolid', () => {
 				])
 			})
 			Dev.supports('literalCollection') && specify('ASTNodeTypeTuple', () => {
-				const validator: Validator = new Validator();
-				const node: AST.ASTNodeTypeTuple = AST.ASTNodeTypeTuple.fromSource(`[int, bool, str]`);
 				assert.deepStrictEqual(
-					node.assess(validator),
-					new SolidTypeTuple(node.children.map((c) => c.assess(validator))),
+					AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).assess(new Validator()),
+					new SolidTypeTuple([
+						{type: Int16,        optional: false},
+						{type: SolidBoolean, optional: false},
+						{type: SolidString,  optional: true},
+					]),
 				);
 			});
 			Dev.supports('literalCollection') && specify('ASTNodeTypeRecord', () => {
-				const validator: Validator = new Validator();
-				const node: AST.ASTNodeTypeRecord = typeFromString(`[x: int, y: bool, z: str]`) as AST.ASTNodeTypeRecord;
+				const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource(`[x: int, y?: bool, z: str]`) as AST.ASTNodeTypeRecord;
 				assert.deepStrictEqual(
-					node.assess(validator),
-					new SolidTypeRecord(new Map<bigint, SolidType>(node.children.map((c) => [
+					node.assess(new Validator()),
+					new SolidTypeRecord(new Map<bigint, TypeEntry>(node.children.map((c, i) => [
 						c.children[0].id,
-						c.children[1].assess(validator),
+						[
+							{type: Int16,        optional: false},
+							{type: SolidBoolean, optional: true},
+							{type: SolidString,  optional: false},
+						][i],
 					]))),
 				);
 			});
 			it('computes the value of a nullified (ORNULL) type.', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeTypeOperationUnary.fromSource(`int!`).assess(new Validator()),
+					AST.ASTNodeTypeOperationUnary.fromSource(`int?`).assess(new Validator()),
 					Int16.union(SolidNull),
 				)
 			})
@@ -982,8 +985,8 @@ describe('ASTNodeSolid', () => {
 					assert.deepStrictEqual(
 						collections.map((node) => node.type(validator)),
 						[
-							new SolidTypeTuple(collections[0].children.map((c) => c.type(validator))),
-							new SolidTypeRecord(new Map(collections[1].children.map((c) => [
+							SolidTypeTuple.fromTypes(collections[0].children.map((c) => c.type(validator))),
+							SolidTypeRecord.fromTypes(new Map(collections[1].children.map((c) => [
 								c.children[0].id,
 								c.children[1].type(validator),
 							]))),

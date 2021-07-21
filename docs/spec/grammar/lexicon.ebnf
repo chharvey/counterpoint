@@ -37,13 +37,14 @@ Punctuator :::=
 		| "&&" | "!&" | "||" | "!|"
 		| "&" | "|"
 	// statement
-		| ";" | ":" | "="
+		| ";" | ":" | "?:" | "="
 ;
 
 
 
 Keyword :::=
 	// literal
+		| "void"
 		| "null"
 		| "bool"
 		| "false"
