@@ -1,5 +1,9 @@
 import * as xjs from 'extrajs'
 import {SetEq} from '../core/index.js'
+import {
+	SolidTypeTuple,
+	SolidTypeRecord,
+} from './index.js'; // avoids circular imports
 import type {SolidObject} from './SolidObject.js';
 
 
@@ -160,7 +164,7 @@ export abstract class SolidType {
  * A type intersection of two types `T` and `U` is the type
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
-class SolidTypeIntersection extends SolidType {
+export class SolidTypeIntersection extends SolidType {
 	/**
 	 * Construct a new SolidTypeIntersection object.
 	 * @param left the first type
@@ -186,6 +190,13 @@ class SolidTypeIntersection extends SolidType {
 		if (t.equals(this.left) || t.equals(this.right)) { return true }
 		return super.isSubtypeOf_do(t)
 	}
+	combineTuplesOrRecords(): SolidType {
+		return (
+			(this.left instanceof SolidTypeTuple  && this.right instanceof SolidTypeTuple)  ? this.left.intersectWithTuple(this.right)  :
+			(this.left instanceof SolidTypeRecord && this.right instanceof SolidTypeRecord) ? this.left.intersectWithRecord(this.right) :
+			this
+		);
+	}
 }
 
 
@@ -194,7 +205,7 @@ class SolidTypeIntersection extends SolidType {
  * A type union of two types `T` and `U` is the type
  * that contains values both assignable to `T` *and* assignable to `U`.
  */
-class SolidTypeUnion extends SolidType {
+export class SolidTypeUnion extends SolidType {
 	/**
 	 * Construct a new SolidTypeUnion object.
 	 * @param left the first type
@@ -216,6 +227,13 @@ class SolidTypeUnion extends SolidType {
 	override isSubtypeOf_do(t: SolidType): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
+	}
+	combineTuplesOrRecords(): SolidType {
+		return (
+			(this.left instanceof SolidTypeTuple  && this.right instanceof SolidTypeTuple)  ? this.left.unionWithTuple(this.right)  :
+			(this.left instanceof SolidTypeRecord && this.right instanceof SolidTypeRecord) ? this.left.unionWithRecord(this.right) :
+			this
+		);
 	}
 }
 

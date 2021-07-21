@@ -298,27 +298,7 @@ Type Intersect(Type a, Type b) :=
 		1. *Return:* `a`.
 	6. *If* *UnwrapAffirm:* `Subtype(b, a)`:
 		1. *Return:* `b`.
-	7. *If* `Equal(a, Tuple)` *and* `Equal(b, Tuple)`:
-		1. *Let* `data` be a new Sequence.
-		2. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
-		3. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
-		4. *For index* `i` in `seq_b`:
-			1. *If* `seq_a[i]` is not set:
-				1. Push `seq_b[i]` to `data`.
-			2. *Else:*
-				1. Push *UnwrapAffirm:* `Intersect(seq_a[i], seq_b[i])` to `data`.
-		5. *Return:* a subtype of `Tuple` whose items are `data`.
-	11. *If* `Equal(a, Record)` *and* `Equal(b, Record)`:
-		1. *Let* `data` be a new Structure.
-		2. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
-		3. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
-		4. *For key* `k` in `struct_b`:
-			1. *If* `struct_a[k]` is not set:
-				1. Set the key `k` in `data` to the value `struct_b[k]`.
-			2. *Else:*
-				1. Set the key `k` in `data` to the value *UnwrapAffirm:* `Intersect(struct_a[k], struct_b[k])`.
-		5. *Return:* a subtype of `Record` whose properties are `data`.
-	12. *Return:* a new type with values given by the the intersection of values in `a` and `b`.
+	7. *Return:* a new type with values given by the the intersection of values in `a` and `b`.
 ;
 ```
 
@@ -349,23 +329,7 @@ Type Union(Type a, Type b) :=
 		1. *Return:* `b`.
 	6. *If* *UnwrapAffirm:* `Subtype(b, a)`:
 		1. *Return:* `a`.
-	7. *If* `Equal(a, Tuple)` *and* `Equal(b, Tuple)`:
-		1. *Let* `data` be a new Sequence.
-		2. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
-		3. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
-		4. *For index* `i` in `seq_b`:
-			1. *If* `seq_a[i]` is set:
-				1. Push *UnwrapAffirm:* `Union(seq_a[i], seq_b[i])` to `data`.
-		5. *Return:* a subtype of `Tuple` whose items are `data`.
-	11. *If* `Equal(a, Record)` *and* `Equal(b, Record)`:
-		1. *Let* `data` be a new Structure.
-		2. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
-		3. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
-		4. *For key* `k` in `struct_b`:
-			1. *If* `struct_a[k]` is set:
-				1. Set the key `k` in `data` to the value *UnwrapAffirm:* `Union(struct_a[k], struct_b[k])`.
-		5. *Return:* a subtype of `Record` whose properties are `data`.
-	12. *Return:* a new type with values given by the the union of values in `a` and `b`.
+	7. *Return:* a new type with values given by the the union of values in `a` and `b`.
 ;
 ```
 
