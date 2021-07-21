@@ -3,6 +3,7 @@ import {Dev} from '../../src/core/index.js';
 import {
 	TypeEntry,
 	SolidType,
+	SolidTypeUnion,
 	SolidTypeConstant,
 	SolidTypeInterface,
 	SolidTypeTuple,
@@ -129,89 +130,16 @@ describe('SolidType', () => {
 				assert.ok(a.intersect(b.union(c)).equals(a.intersect(b).union(a.intersect(c))), `${ a }, ${ b }, ${ c }`)
 			})
 		})
-		Dev.supports('literalCollection') && describe('SolidTypeTuple', () => {
-			it('takes the union of indices of constituent types.', () => {
-				assert.ok(SolidTypeTuple.fromTypes([
-					SolidObject,
-					SolidNull,
-					SolidBoolean,
-				]).intersect(SolidTypeTuple.fromTypes([
-					SolidObject,
-					Int16,
-				])).equals(SolidTypeTuple.fromTypes([
-					SolidObject,
-					SolidNull.intersect(Int16),
-					SolidBoolean,
-				])), `
-					[obj, null, bool] & [obj, int]
-					==
-					[obj, null & int, bool]
-				`);
-			});
-			Dev.supports('optionalAccess') && it('takes the conjunction of optionality.', () => {
-				assert.ok(new SolidTypeTuple([
-					{type: SolidObject,  optional: false},
-					{type: SolidNull,    optional: true},
-					{type: SolidBoolean, optional: true},
-				]).intersect(new SolidTypeTuple([
-					{type: SolidObject, optional: false},
-					{type: Int16,       optional: false},
-					{type: Float64,     optional: true},
-				])).equals(new SolidTypeTuple([
-					{type: SolidObject,                     optional: false},
-					{type: SolidNull.intersect(Int16),      optional: false},
-					{type: SolidBoolean.intersect(Float64), optional: true},
-				])), `
-					[obj, ?: null, ?: bool] & [obj, int, ?: float]
-					==
-					[obj, null & int, ?: bool & float]
-				`);
-			});
+		it('extracts constituents of discriminated unions.', () => {
+			assert.ok(SolidNull.union(SolidBoolean).union(Int16)
+				.intersect(SolidBoolean.union(Int16).union(Float64))
+				.equals(SolidBoolean.union(Int16))
+			, `
+				(null | bool | int) & (bool | int | float)
+				==
+				(bool | int)
+			`);
 		});
-		describe('SolidTypeRecord', () => {
-			it('takes the union of properties of constituent types.', () => {
-				const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-				assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[foo, SolidObject],
-					[bar, SolidNull],
-					[qux, SolidBoolean],
-				])).intersect(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[foo, SolidObject],
-					[diz, Int16],
-					[qux, SolidString],
-				]))).equals(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[foo, SolidObject],
-					[bar, SolidNull],
-					[qux, SolidBoolean.intersect(SolidString)],
-					[diz, Int16],
-				]))), `
-					[foo: obj, bar: null, qux: bool] & [foo: obj, diz: int, qux: str]
-					==
-					[foo: obj, bar: null, qux: bool & str, diz: int]
-				`);
-			})
-			Dev.supports('optionalAccess') && it('takes the conjunction of optionality.', () => {
-				const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-				assert.ok(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-					[foo, {type: SolidObject,  optional: false}],
-					[bar, {type: SolidNull,    optional: true}],
-					[qux, {type: SolidBoolean, optional: true}],
-				])).intersect(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-					[foo, {type: SolidObject, optional: false}],
-					[diz, {type: Int16,       optional: true}],
-					[qux, {type: SolidString, optional: false}],
-				]))).equals(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-					[foo, {type: SolidObject,                         optional: false}],
-					[bar, {type: SolidNull,                           optional: true}],
-					[qux, {type: SolidBoolean.intersect(SolidString), optional: false}],
-					[diz, {type: Int16,                               optional: true}],
-				]))), `
-					[foo: obj, bar?: null, qux?: bool] & [foo: obj, diz?: int, qux: str]
-					==
-					[foo: obj, bar?: null, qux: bool & str, diz?: int]
-				`);
-			});
-		})
 	})
 
 
@@ -241,84 +169,16 @@ describe('SolidType', () => {
 				assert.ok(a.union(b.intersect(c)).equals(a.union(b).intersect(a.union(c))), `${ a }, ${ b }, ${ c }`)
 			})
 		})
-		Dev.supports('literalCollection') && describe('SolidTypeTuple', () => {
-			it('takes the intersection of indices of constituent types.', () => {
-				assert.ok(SolidTypeTuple.fromTypes([
-					SolidObject,
-					SolidNull,
-					SolidBoolean,
-				]).union(SolidTypeTuple.fromTypes([
-					SolidObject,
-					Int16,
-				])).equals(SolidTypeTuple.fromTypes([
-					SolidObject,
-					SolidNull.union(Int16),
-				])), `
-					[obj, null, bool] | [obj, int]
-					==
-					[obj, null | int]
-				`);
-			});
-			Dev.supports('optionalAccess') && it('takes the disjunction of optionality.', () => {
-				assert.ok(new SolidTypeTuple([
-					{type: SolidObject,  optional: false},
-					{type: SolidNull,    optional: true},
-					{type: SolidBoolean, optional: true},
-				]).union(new SolidTypeTuple([
-					{type: SolidObject, optional: false},
-					{type: Int16,       optional: false},
-					{type: Float64,     optional: true},
-				])).equals(new SolidTypeTuple([
-					{type: SolidObject,                 optional: false},
-					{type: SolidNull.union(Int16),      optional: true},
-					{type: SolidBoolean.union(Float64), optional: true},
-				])), `
-					[obj, ?: null, ?: bool] | [obj, int, ?: float]
-					==
-					[obj, ?: null | int, ?: bool | float]
-				`);
-			});
+		it('extracts constituents of discriminated unions.', () => {
+			assert.ok(SolidNull.union(SolidBoolean).union(Int16)
+				.union(SolidBoolean.union(Int16).union(Float64))
+				.equals(SolidNull.union(SolidBoolean).union(Int16).union(Float64))
+			, `
+				(null | bool | int) | (bool | int | float)
+				==
+				(null | bool | int | float)
+			`);
 		});
-		describe('SolidTypeRecord', () => {
-			it('takes the intersection of properties of constituent types.', () => {
-				const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-				assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[foo, SolidObject],
-					[bar, SolidNull],
-					[qux, SolidBoolean],
-				])).union(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[foo, SolidObject],
-					[diz, Int16],
-					[qux, SolidString],
-				]))).equals(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
-					[foo, SolidObject],
-					[qux, SolidBoolean.union(SolidString)],
-				]))), `
-					[foo: obj, bar: null, qux: bool] | [foo: obj, diz: int, qux: str]
-					==
-					[foo: obj, qux: bool | str]
-				`);
-			})
-			Dev.supports('optionalAccess') && it('takes the disjunction of optionality.', () => {
-				const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-				assert.ok(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-					[foo, {type: SolidObject,  optional: false}],
-					[bar, {type: SolidNull,    optional: true}],
-					[qux, {type: SolidBoolean, optional: true}],
-				])).union(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-					[foo, {type: SolidObject, optional: false}],
-					[diz, {type: Int16,       optional: true}],
-					[qux, {type: SolidString, optional: false}],
-				]))).equals(new SolidTypeRecord(new Map<bigint, TypeEntry>([
-					[foo, {type: SolidObject,                     optional: false}],
-					[qux, {type: SolidBoolean.union(SolidString), optional: true}],
-				]))), `
-					[foo: obj, bar?: null, qux?: bool] | [foo: obj, diz?: int, qux: str]
-					==
-					[foo: obj, qux?: bool | str]
-				`);
-			});
-		})
 	})
 
 
@@ -710,4 +570,220 @@ describe('SolidType', () => {
 			})
 		})
 	})
+
+
+	describe('SolidTypeIntersection', () => {
+		Dev.supports('literalCollection') && describe('#combineTuplesOrRecords', () => {
+			context('with tuple operands.', () => {
+				it('takes the union of indices of constituent types.', () => {
+					assert.ok(SolidTypeTuple.fromTypes([
+						SolidObject,
+						SolidNull,
+						SolidBoolean,
+					]).intersectWithTuple(SolidTypeTuple.fromTypes([
+						SolidObject,
+						Int16,
+					])).equals(SolidTypeTuple.fromTypes([
+						SolidObject,
+						SolidNull.intersect(Int16),
+						SolidBoolean,
+					])), `
+						[obj, null, bool] & [obj, int]
+						==
+						[obj, null & int, bool]
+					`);
+				});
+				Dev.supports('optionalAccess') && it('takes the conjunction of optionality.', () => {
+					assert.ok(new SolidTypeTuple([
+						{type: SolidObject,  optional: false},
+						{type: SolidNull,    optional: true},
+						{type: SolidBoolean, optional: true},
+					]).intersectWithTuple(new SolidTypeTuple([
+						{type: SolidObject, optional: false},
+						{type: Int16,       optional: false},
+						{type: Float64,     optional: true},
+					])).equals(new SolidTypeTuple([
+						{type: SolidObject,                     optional: false},
+						{type: SolidNull.intersect(Int16),      optional: false},
+						{type: SolidBoolean.intersect(Float64), optional: true},
+					])), `
+						[obj, ?: null, ?: bool] & [obj, int, ?: float]
+						==
+						[obj, null & int, ?: bool & float]
+					`);
+				});
+			});
+			context('with record operands.', () => {
+				it('takes the union of properties of constituent types.', () => {
+					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
+					assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+						[foo, SolidObject],
+						[bar, SolidNull],
+						[qux, SolidBoolean],
+					])).intersectWithRecord(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+						[foo, SolidObject],
+						[diz, Int16],
+						[qux, SolidString],
+					]))).equals(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+						[foo, SolidObject],
+						[bar, SolidNull],
+						[qux, SolidBoolean.intersect(SolidString)],
+						[diz, Int16],
+					]))), `
+						[foo: obj, bar: null, qux: bool] & [foo: obj, diz: int, qux: str]
+						==
+						[foo: obj, bar: null, qux: bool & str, diz: int]
+					`);
+				})
+				Dev.supports('optionalAccess') && it('takes the conjunction of optionality.', () => {
+					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
+					assert.ok(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+						[foo, {type: SolidObject,  optional: false}],
+						[bar, {type: SolidNull,    optional: true}],
+						[qux, {type: SolidBoolean, optional: true}],
+					])).intersectWithRecord(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+						[foo, {type: SolidObject, optional: false}],
+						[diz, {type: Int16,       optional: true}],
+						[qux, {type: SolidString, optional: false}],
+					]))).equals(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+						[foo, {type: SolidObject,                         optional: false}],
+						[bar, {type: SolidNull,                           optional: true}],
+						[qux, {type: SolidBoolean.intersect(SolidString), optional: false}],
+						[diz, {type: Int16,                               optional: true}],
+					]))), `
+						[foo: obj, bar?: null, qux?: bool] & [foo: obj, diz?: int, qux: str]
+						==
+						[foo: obj, bar?: null, qux: bool & str, diz?: int]
+					`);
+				});
+			});
+		});
+	});
+
+
+	describe('SolidTypeUnion', () => {
+		Dev.supports('literalCollection') && describe('#combineTuplesOrRecords', () => {
+			context('with tuple operands.', () => {
+				it('takes the intersection of indices of constituent types.', () => {
+					assert.ok(SolidTypeTuple.fromTypes([
+						SolidObject,
+						SolidNull,
+						SolidBoolean,
+					]).unionWithTuple(SolidTypeTuple.fromTypes([
+						SolidObject,
+						Int16,
+					])).equals(SolidTypeTuple.fromTypes([
+						SolidObject,
+						SolidNull.union(Int16),
+					])), `
+						[obj, null, bool] | [obj, int]
+						==
+						[obj, null | int]
+					`);
+				});
+				Dev.supports('optionalAccess') && it('takes the disjunction of optionality.', () => {
+					assert.ok(new SolidTypeTuple([
+						{type: SolidObject,  optional: false},
+						{type: SolidNull,    optional: true},
+						{type: SolidBoolean, optional: true},
+					]).unionWithTuple(new SolidTypeTuple([
+						{type: SolidObject, optional: false},
+						{type: Int16,       optional: false},
+						{type: Float64,     optional: true},
+					])).equals(new SolidTypeTuple([
+						{type: SolidObject,                 optional: false},
+						{type: SolidNull.union(Int16),      optional: true},
+						{type: SolidBoolean.union(Float64), optional: true},
+					])), `
+						[obj, ?: null, ?: bool] | [obj, int, ?: float]
+						==
+						[obj, ?: null | int, ?: bool | float]
+					`);
+				});
+				it('some value assignable to combo type might not be assignable to union.', () => {
+					const left: SolidTypeTuple = SolidTypeTuple.fromTypes([
+						SolidBoolean,
+						Int16,
+					]);
+					const right: SolidTypeTuple = SolidTypeTuple.fromTypes([
+						Int16,
+						SolidBoolean,
+					]);
+					const union: SolidType = left.union(right);
+					assert.ok(union instanceof SolidTypeUnion);
+					const v: SolidTuple<SolidBoolean> = new SolidTuple<SolidBoolean>([SolidBoolean.TRUE, SolidBoolean.TRUE]);
+					assert.ok(union.combineTuplesOrRecords().includes(v), `
+						let x: [bool | int, int | bool] = [true, true]; % ok
+					`);
+					assert.ok(!left.union(right).includes(v), `
+						let x: [bool, int] | [int, bool] = [true, true]; %> TypeError
+					`);
+				});
+			});
+			context('with record operands.', () => {
+				it('takes the intersection of properties of constituent types.', () => {
+					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
+					assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+						[foo, SolidObject],
+						[bar, SolidNull],
+						[qux, SolidBoolean],
+					])).unionWithRecord(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+						[foo, SolidObject],
+						[diz, Int16],
+						[qux, SolidString],
+					]))).equals(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+						[foo, SolidObject],
+						[qux, SolidBoolean.union(SolidString)],
+					]))), `
+						[foo: obj, bar: null, qux: bool] | [foo: obj, diz: int, qux: str]
+						==
+						[foo: obj, qux: bool | str]
+					`);
+				});
+				Dev.supports('optionalAccess') && it('takes the disjunction of optionality.', () => {
+					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
+					assert.ok(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+						[foo, {type: SolidObject,  optional: false}],
+						[bar, {type: SolidNull,    optional: true}],
+						[qux, {type: SolidBoolean, optional: true}],
+					])).unionWithRecord(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+						[foo, {type: SolidObject, optional: false}],
+						[diz, {type: Int16,       optional: true}],
+						[qux, {type: SolidString, optional: false}],
+					]))).equals(new SolidTypeRecord(new Map<bigint, TypeEntry>([
+						[foo, {type: SolidObject,                     optional: false}],
+						[qux, {type: SolidBoolean.union(SolidString), optional: true}],
+					]))), `
+						[foo: obj, bar?: null, qux?: bool] | [foo: obj, diz?: int, qux: str]
+						==
+						[foo: obj, qux?: bool | str]
+					`);
+				});
+				it('some value assignable to combo type might not be assignable to union.', () => {
+					const left: SolidTypeRecord = SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+						[0x100n, SolidBoolean],
+						[0x101n, Int16],
+						[0x102n, SolidString],
+					]));
+					const right: SolidTypeRecord = SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+						[0x103n, SolidString],
+						[0x100n, Int16],
+						[0x101n, SolidBoolean],
+					]));
+					const union: SolidType = left.union(right);
+					assert.ok(union instanceof SolidTypeUnion);
+					const v: SolidRecord<SolidBoolean> = new SolidRecord<SolidBoolean>(new Map<bigint, SolidBoolean>([
+						[0x100n, SolidBoolean.TRUE],
+						[0x101n, SolidBoolean.TRUE],
+					]));
+					assert.ok(union.combineTuplesOrRecords().includes(v), `
+						let x: [a: bool | int, b: int | bool] = [a= true, b= true]; % ok
+					`);
+					assert.ok(!union.includes(v), `
+						let x: [a: bool, b: int, c: str] | [d: str, a: int, b: bool] = [a= true, b= true]; %> TypeError
+					`);
+				});
+			});
+		});
+	});
 })

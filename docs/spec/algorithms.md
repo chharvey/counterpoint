@@ -428,3 +428,80 @@ Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 		3. *Return:* `false`.
 	5. *Throw:* a new TypeError01.
 ```
+
+
+## CombineTuplesOrRecords
+Combines an intersection or union of tuples or records for the purposes of type-checking index/property access.
+```
+Type CombineTuplesOrRecords(Type t) :=
+	1. *If* `t` is the intersection of some types `a` and `b`:
+		1. *If* `Subtype(a, Tuple)` *and* `Subtype(b, Tuple)`:
+			1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
+			2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
+			3. *Let* `data` be a copy of `seq_a`.
+			4. *For index* `i` in `seq_b`:
+				1. *If* `data[i]` is set:
+					1. *If* `data[i].optional` is `true` *and* `seq_b[i].optional` is `true`:
+						1. *Let* `optional` be `true`.
+					2. *Else:*
+						1. *Let* `optional` be `false`.
+					3. *Set* `data[i]` to a new Structure [
+						type=     *UnwrapAffirm:* `Intersect(data[i].type, seq_b[i].type)`,
+						optional= optional,
+					].
+				2. *Else:*
+					1. *Set* `data[i]` to `seq_b[i]`.
+			5. *Assert:* In `data`, all optional items follow all required items.
+			6. *Return:* a subtype of `Tuple` whose items are `data`.
+		2. *If* `Subtype(a, Record)` *and* `Subtype(b, Record)`:
+			1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
+			2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
+			3. *Let* `data` be a copy of `struct_a`.
+			4. *For key* `k` in `struct_b`:
+				1. *If* `data[k]` is set:
+					1. *If* `data[k].optional` is `true` *and* `struct_b[k].optional` is `true`:
+						1. *Let* `optional` be `true`.
+					2. *Else:*
+						1. *Let* `optional` be `false`.
+					3. *Set* `data[k]` to a new Structure [
+						type=     *UnwrapAffirm:* `Intersect(data[k].type, struct_b[k].type)`,
+						optional= optional,
+					].
+				2. *Else:*
+					1. *Set* `data[k]` to `struct_b[k]`.
+			5. *Return:* a subtype of `Record` whose properties are `data`.
+	2. *If* `t` is the union of some types `a` and `b`:
+		1. *If* `Subtype(a, Tuple)` *and* `Subtype(b, Tuple)`:
+			1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
+			2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
+			3. *Let* `data` be a new Sequence.
+			4. *For index* `i` in `seq_b`:
+				1. *If* `seq_a[i]` is set:
+					1. *If* `seq_a[i].optional` is `true` *or* `seq_b[i].optional` is `true`:
+						1. *Let* `optional` be `true`.
+					2. *Else:*
+						1. *Let* `optional` be `false`.
+					3. *Set* `data[i]` to a new Structure [
+						type=     *UnwrapAffirm:* `Union(seq_a[i].type, seq_b[i].type)`,
+						optional= optional,
+					].
+			5. *Assert:* In `data`, all optional items follow all required items.
+			6. *Return:* a subtype of `Tuple` whose items are `data`.
+		2. *If* `Subtype(a, Record)` *and* `Subtype(b, Record)`:
+			1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
+			2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
+			3. *Let* `data` be a new Structure.
+			4. *For key* `k` in `struct_b`:
+				1. *If* `struct_a[k]` is set:
+					1. *If* `struct_a[k].optional` is `true` *or* `struct_b[k].optional` is `true`:
+						1. *Let* `optional` be `true`.
+					2. *Else:*
+						1. *Let* `optional` be `false`.
+					3. *Set* `data[k]` to a new Structure [
+						type=     *UnwrapAffirm:* `Union(struct_a[k].type, struct_b[k].type)`,
+						optional= optional,
+					].
+			5. *Return:* a subtype of `Record` whose properties are `data`.
+	3. *Return:* `t`.
+;
+```

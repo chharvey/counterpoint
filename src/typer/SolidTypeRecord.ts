@@ -54,46 +54,6 @@ export class SolidTypeRecord extends SolidType {
 		return v instanceof SolidRecord && v.toType().isSubtypeOf(this);
 	}
 
-	/**
-	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `S` with the set of properties on `T`.
-	 * For any overlapping properties, their type intersection is taken.
-	 */
-	override intersect_do(t: SolidType): SolidType {
-		if (t instanceof SolidTypeRecord) {
-			const props: Map<bigint, TypeEntry> = new Map([...this.propertytypes]);
-			[...t.propertytypes].forEach(([id, typ]) => {
-				props.set(id, this.propertytypes.has(id) ? {
-					type:     this.propertytypes.get(id)!.type.intersect(typ.type),
-					optional: this.propertytypes.get(id)!.optional && typ.optional,
-				} : typ);
-			});
-			return new SolidTypeRecord(props);
-		} else {
-			return super.intersect_do(t);
-		}
-	}
-
-	/**
-	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `S` with the set of properties on `T`.
-	 * For any overlapping properties, their type union is taken.
-	 */
-	override union_do(t: SolidType): SolidType {
-		if (t instanceof SolidTypeRecord) {
-			const props: Map<bigint, TypeEntry> = new Map();
-			[...t.propertytypes].forEach(([id, typ]) => {
-				if (this.propertytypes.has(id)) {
-					props.set(id, {
-						type:     this.propertytypes.get(id)!.type.union(typ.type),
-						optional: this.propertytypes.get(id)!.optional || typ.optional,
-					});
-				}
-			})
-			return new SolidTypeRecord(props);
-		} else {
-			return super.union_do(t);
-		}
-	}
-
 	override isSubtypeOf_do(t: SolidType): boolean {
 		return t.equals(SolidObject) || (
 			t instanceof SolidTypeRecord
@@ -116,5 +76,37 @@ export class SolidTypeRecord extends SolidType {
 
 	valueTypes(): SolidType {
 		return [...this.propertytypes.values()].map((t) => t.type).reduce((a, b) => a.union(b));
+	}
+
+	/**
+	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `S` with the set of properties on `T`.
+	 * For any overlapping properties, their type intersection is taken.
+	 */
+	intersectWithRecord(t: SolidTypeRecord): SolidTypeRecord {
+		const props: Map<bigint, TypeEntry> = new Map([...this.propertytypes]);
+		[...t.propertytypes].forEach(([id, typ]) => {
+			props.set(id, this.propertytypes.has(id) ? {
+				type:     this.propertytypes.get(id)!.type.intersect(typ.type),
+				optional: this.propertytypes.get(id)!.optional && typ.optional,
+			} : typ);
+		});
+		return new SolidTypeRecord(props);
+	}
+
+	/**
+	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `S` with the set of properties on `T`.
+	 * For any overlapping properties, their type union is taken.
+	 */
+	unionWithRecord(t: SolidTypeRecord): SolidTypeRecord {
+		const props: Map<bigint, TypeEntry> = new Map();
+		[...t.propertytypes].forEach(([id, typ]) => {
+			if (this.propertytypes.has(id)) {
+				props.set(id, {
+					type:     this.propertytypes.get(id)!.type.union(typ.type),
+					optional: this.propertytypes.get(id)!.optional || typ.optional,
+				});
+			}
+		})
+		return new SolidTypeRecord(props);
 	}
 }
