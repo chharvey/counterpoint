@@ -1,5 +1,7 @@
 export {
 	SolidType,
+	SolidTypeIntersection,
+	SolidTypeUnion,
 	SolidTypeConstant,
 	SolidTypeInterface,
 } from './SolidType.js';

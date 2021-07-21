@@ -19,6 +19,8 @@ import {
 } from '../parser/index.js';
 import {
 	SolidType,
+	SolidTypeIntersection,
+	SolidTypeUnion,
 	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
@@ -718,7 +720,10 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
 		const base: ASTNodeExpression = this.children[0];
 		const accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression = this.children[1];
-		const base_type: SolidType = base.type(validator);
+		let base_type: SolidType = base.type(validator);
+		if (base_type instanceof SolidTypeIntersection || base_type instanceof SolidTypeUnion) {
+			base_type = base_type.combineTuplesOrRecords();
+		}
 		if (accessor instanceof ASTNodeIndex) {
 			const accessor_type: SolidType = accessor.children[0].type(validator);
 			return (
