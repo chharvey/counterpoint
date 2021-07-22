@@ -810,8 +810,8 @@ describe('ASTNodeSolid', () => {
 				assert.deepStrictEqual(
 					node.assess(validator),
 					new SolidTypeRecord(new Map<bigint, SolidType>(node.children.map((c) => [
-						c.children[0].id,
-						c.children[1].assess(validator),
+						c.key.id,
+						c.value.assess(validator),
 					]))),
 				);
 			});

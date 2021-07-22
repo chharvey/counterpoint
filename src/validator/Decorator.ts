@@ -138,10 +138,11 @@ export class Decorator {
 			return new AST.ASTNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodePropertyType) {
-			return new AST.ASTNodePropertyType(node, [
+			return new AST.ASTNodePropertyType(
+				node,
 				this.decorate(node.children[0]),
 				this.decorate(node.children[2]),
-			]);
+			);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTypeTupleLiteral) {
 			return new AST.ASTNodeTypeTuple(node, (node.children.length === 2) ? [] : this.decorate(
