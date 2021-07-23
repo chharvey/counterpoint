@@ -286,9 +286,11 @@ export class Decorator {
 				? this.decorate(node.children[0])
 				: (node.children[0].source === Punctuator.AFF) // `+a` is a no-op
 					? this.decorate(node.children[1])
-					: new AST.ASTNodeOperationUnary(node, this.OPERATORS_UNARY.get(node.children[0].source as Punctuator) as ValidOperatorUnary, [
+					: new AST.ASTNodeOperationUnary(
+						node,
+						this.OPERATORS_UNARY.get(node.children[0].source as Punctuator) as ValidOperatorUnary,
 						this.decorate(node.children[1]),
-					])
+					);
 
 		} else if (
 			node instanceof PARSER.ParseNodeExpressionExponential    ||
@@ -315,36 +317,48 @@ export class Decorator {
 					// `a - b` is syntax sugar for `a + -(b)`
 					(operator === Operator.SUB) ? new AST.ASTNodeOperationBinaryArithmetic(node, Operator.ADD, [
 						operands[0],
-						new AST.ASTNodeOperationUnary(node.children[2], Operator.NEG, [
+						new AST.ASTNodeOperationUnary(
+							node.children[2],
+							Operator.NEG,
 							operands[1],
-						]),
+						),
 					]) :
 					new AST.ASTNodeOperationBinaryArithmetic(node, operator as ValidOperatorArithmetic, operands)
 
 				) : (node instanceof PARSER.ParseNodeExpressionComparative) ? (
 					// `a !< b` is syntax sugar for `!(a < b)`
-					(operator === Operator.NLT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+					(operator === Operator.NLT) ? new AST.ASTNodeOperationUnary(
+						node,
+						Operator.NOT,
 						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.LT, operands),
-					]) :
+					) :
 					// `a !> b` is syntax sugar for `!(a > b)`
-					(operator === Operator.NGT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+					(operator === Operator.NGT) ? new AST.ASTNodeOperationUnary(
+						node,
+						Operator.NOT,
 						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.GT, operands),
-					]) :
+					) :
 					// `a isnt b` is syntax sugar for `!(a is b)`
-					(operator === Operator.ISNT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+					(operator === Operator.ISNT) ? new AST.ASTNodeOperationUnary(
+						node,
+						Operator.NOT,
 						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.IS, operands),
-					]) :
+					) :
 					new AST.ASTNodeOperationBinaryComparative(node, operator as ValidOperatorComparative, operands)
 
 				) : (node instanceof PARSER.ParseNodeExpressionEquality) ? (
 					// `a !== b` is syntax sugar for `!(a === b)`
-					(operator === Operator.NID) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+					(operator === Operator.NID) ? new AST.ASTNodeOperationUnary(
+						node,
+						Operator.NOT,
 						new AST.ASTNodeOperationBinaryEquality(node.children[0], Operator.ID, operands),
-					]) :
+					) :
 					// `a != b` is syntax sugar for `!(a == b)`
-					(operator === Operator.NEQ) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+					(operator === Operator.NEQ) ? new AST.ASTNodeOperationUnary(
+						node,
+						Operator.NOT,
 						new AST.ASTNodeOperationBinaryEquality(node.children[0], Operator.EQ, operands),
-					]) :
+					) :
 					new AST.ASTNodeOperationBinaryEquality(node, operator as ValidOperatorEquality, operands)
 
 				) : /* (
@@ -352,13 +366,17 @@ export class Decorator {
 					node instanceof PARSER.ParseNodeExpressionDisjunctive
 				) ? */ (
 					// `a !& b` is syntax sugar for `!(a && b)`
-					(operator === Operator.NAND) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+					(operator === Operator.NAND) ? new AST.ASTNodeOperationUnary(
+						node,
+						Operator.NOT,
 						new AST.ASTNodeOperationBinaryLogical(node.children[0], Operator.AND, operands),
-					]) :
+					) :
 					// `a !| b` is syntax sugar for `!(a || b)`
-					(operator === Operator.NOR) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
+					(operator === Operator.NOR) ? new AST.ASTNodeOperationUnary(
+						node,
+						Operator.NOT,
 						new AST.ASTNodeOperationBinaryLogical(node.children[0], Operator.OR, operands),
-					]) :
+					) :
 					new AST.ASTNodeOperationBinaryLogical(node, operator as ValidOperatorLogical, operands)
 				)
 			}

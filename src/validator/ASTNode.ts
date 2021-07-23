@@ -705,22 +705,22 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorUnary,
-		override readonly children: readonly [ASTNodeExpression],
+		readonly operand: ASTNodeExpression,
 	) {
-		super(start_node, operator, children)
+		super(start_node, operator, [operand]);
 	}
 	override get shouldFloat(): boolean {
-		return this.children[0].shouldFloat
+		return this.operand.shouldFloat;
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new INST.InstructionUnop(
 			this.operator,
-			this.children[0].build(builder, tofloat),
+			this.operand.build(builder, tofloat),
 		)
 	}
 	protected override type_do(validator: Validator): SolidType {
-		const t0: SolidType = this.children[0].type(validator);
+		const t0: SolidType = this.operand.type(validator);
 		return (
 			(this.operator === Operator.NOT) ? (
 				(t0.isSubtypeOf(SolidNull.union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
@@ -732,7 +732,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		);
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.children[0].assess(validator);
+		const assess0: SolidObject | null = this.operand.assess(validator);
 		if (!assess0) {
 			return assess0
 		}
