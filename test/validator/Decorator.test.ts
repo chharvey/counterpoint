@@ -781,20 +781,24 @@ describe('Decorator', () => {
 			it('makes an ASTNodeOperation with the COND operator and 3 children.', () => {
 				/*
 					<Operation operator=COND>
-						<Constant value=true/>
-						<Constant value=2n/>
-						<Constant value=3n/>
+						<Constant source="true"/>
+						<Constant source="2"/>
+						<Constant source="3"/>
 					</Operation>
 				*/
 				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`if true then 2 else 3;`));
 				assert.ok(operation instanceof AST.ASTNodeOperationTernary);
-				assert.deepStrictEqual(operation.children.map((child) => {
+				assert.deepStrictEqual([
+					operation.operand0,
+					operation.operand1,
+					operation.operand2,
+				].map((child) => {
 					assert.ok(child instanceof AST.ASTNodeConstant);
-					return child.value
+					return child.source;
 				}), [
-					SolidBoolean.TRUE,
-					new Int16(2n),
-					new Int16(3n),
+					`true`,
+					`2`,
+					`3`,
 				])
 			})
 		})

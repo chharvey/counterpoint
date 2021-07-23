@@ -386,11 +386,13 @@ export class Decorator {
 			}
 
 		} else if (node instanceof PARSER.ParseNodeExpressionConditional) {
-			return new AST.ASTNodeOperationTernary(node, Operator.COND, [
+			return new AST.ASTNodeOperationTernary(
+				node,
+				Operator.COND,
 				this.decorate(node.children[1]),
 				this.decorate(node.children[3]),
 				this.decorate(node.children[5]),
-			])
+			);
 
 		} else if (node instanceof PARSER.ParseNodeExpression) {
 			return this.decorate(node.children[0])

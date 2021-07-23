@@ -1063,27 +1063,29 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	constructor(
 		start_node: ParseNode,
 		readonly operator: Operator.COND,
-		override readonly children: readonly [ASTNodeExpression, ASTNodeExpression, ASTNodeExpression],
+		readonly operand0: ASTNodeExpression,
+		readonly operand1: ASTNodeExpression,
+		readonly operand2: ASTNodeExpression,
 	) {
-		super(start_node, operator, children)
+		super(start_node, operator, [operand0, operand1, operand2]);
 	}
 	override get shouldFloat(): boolean {
-		return this.children[1].shouldFloat || this.children[2].shouldFloat
+		return this.operand1.shouldFloat || this.operand2.shouldFloat;
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionCond {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new INST.InstructionCond(
-			this.children[0].build(builder, false),
-			this.children[1].build(builder, tofloat),
-			this.children[2].build(builder, tofloat),
+			this.operand0.build(builder, false),
+			this.operand1.build(builder, tofloat),
+			this.operand2.build(builder, tofloat),
 		)
 	}
 	protected override type_do(validator: Validator): SolidType {
 		// If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
 		// If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
-		const t0: SolidType = this.children[0].type(validator);
-		const t1: SolidType = this.children[1].type(validator);
-		const t2: SolidType = this.children[2].type(validator);
+		const t0: SolidType = this.operand0.type(validator);
+		const t1: SolidType = this.operand1.type(validator);
+		const t2: SolidType = this.operand2.type(validator);
 		return (t0.isSubtypeOf(SolidBoolean))
 			? (t0 instanceof SolidTypeConstant)
 				? (t0.value === SolidBoolean.FALSE) ? t2 : t1
@@ -1091,13 +1093,13 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 			: (() => { throw new TypeError01(this) })()
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.children[0].assess(validator);
+		const assess0: SolidObject | null = this.operand0.assess(validator);
 		if (!assess0) {
 			return assess0
 		}
 		return (assess0 === SolidBoolean.TRUE)
-			? this.children[1].assess(validator)
-			: this.children[2].assess(validator)
+			? this.operand1.assess(validator)
+			: this.operand2.assess(validator);
 	}
 }
 /**
