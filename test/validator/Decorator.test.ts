@@ -378,8 +378,8 @@ describe('Decorator', () => {
 				*/
 				const kase: AST.ASTNodeCase = Decorator.decorate(h.caseFromString(`1 + 0.25 |-> 1.25`));
 				assert.deepStrictEqual(
-					kase.children.map((c) => c.source),
-					[`1 + 0.25`, `1.25`],
+					[kase.antecedent.source, kase.consequent.source],
+					[`1 + 0.25`,             `1.25`],
 				);
 			});
 		});

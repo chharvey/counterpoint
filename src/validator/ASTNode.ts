@@ -170,9 +170,10 @@ export class ASTNodeProperty extends ASTNodeSolid {
 export class ASTNodeCase extends ASTNodeSolid {
 	constructor (
 		start_node: PARSER.ParseNodeCase,
-		override readonly children: [ASTNodeExpression, ASTNodeExpression],
+		readonly antecedent: ASTNodeExpression,
+		readonly consequent: ASTNodeExpression,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {}, [antecedent, consequent]);
 	}
 	override build(builder: Builder): Instruction {
 		throw builder && 'ASTNodeCase#build not yet supported.';
@@ -672,8 +673,8 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
 		const cases: ReadonlyMap<SolidObject | null, SolidObject | null> = new Map(this.children.map((c) => [
-			c.children[0].assess(validator),
-			c.children[1].assess(validator),
+			c.antecedent.assess(validator),
+			c.consequent.assess(validator),
 		]));
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null
