@@ -540,12 +540,11 @@ describe('Decorator', () => {
 				*/
 				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`(2 + -3);`));
 				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
-				const [left, right]: readonly AST.ASTNodeExpression[] = operation.children;
-				assert.ok(left  instanceof AST.ASTNodeConstant);
-				assert.ok(right instanceof AST.ASTNodeConstant);
+				assert.ok(operation.operand0 instanceof AST.ASTNodeConstant);
+				assert.ok(operation.operand1 instanceof AST.ASTNodeConstant);
 				assert.deepStrictEqual(
-					[left.source, operation.operator, right.source],
-					[`2`,         Operator.ADD,       `-3`],
+					[operation.operand0.source, operation.operator, operation.operand1.source],
+					[`2`,                       Operator.ADD,       `-3`],
 				)
 			})
 			it('recursively applies to several sub-expressions.', () => {
@@ -563,19 +562,17 @@ describe('Decorator', () => {
 				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`(-(42) ^ +(2 * 420));`));
 				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
 				assert.strictEqual(operation.operator, Operator.EXP)
-				const [left, right]: readonly AST.ASTNodeExpression[] = operation.children;
-				assert.ok(left instanceof AST.ASTNodeOperationUnary);
-				assert.strictEqual(left.operator, Operator.NEG)
-				assert.ok(left.operand instanceof AST.ASTNodeConstant);
-				assert.strictEqual(left.operand.source, `42`);
+				assert.ok(operation.operand0 instanceof AST.ASTNodeOperationUnary);
+				assert.strictEqual(operation.operand0.operator, Operator.NEG);
+				assert.ok(operation.operand0.operand instanceof AST.ASTNodeConstant);
+				assert.strictEqual(operation.operand0.operand.source, `42`);
 
-				assert.ok(right instanceof AST.ASTNodeOperationBinary);
-				assert.strictEqual(right.operator, Operator.MUL)
-				assert_arrayLength(right.children, 2)
-				assert.deepStrictEqual(right.children.map((child) => {
-					assert.ok(child instanceof AST.ASTNodeConstant);
-					return child.source
-				}), [`2`, `420`])
+				assert.ok(operation.operand1 instanceof AST.ASTNodeOperationBinary);
+				assert.strictEqual(operation.operand1.operator, Operator.MUL);
+				assert.ok(operation.operand1.operand0 instanceof AST.ASTNodeConstant);
+				assert.ok(operation.operand1.operand1 instanceof AST.ASTNodeConstant);
+				assert.strictEqual(operation.operand1.operand0.source, `2`);
+				assert.strictEqual(operation.operand1.operand1.source, `420`);
 			})
 		})
 
@@ -603,7 +600,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		context('SemanticOperation ::= SemanticExpression SemanticExpression', () => {
+		context('ExpressionExponential ::= ExpressionUnarySymbol ("^" ExpressionExponential)?', () => {
 			it('makes an ASTNodeOperationBinary.', () => {
 				/*
 					<Operation operator=EXP>
@@ -618,10 +615,10 @@ describe('Decorator', () => {
 				].map((src) => {
 					const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(src));
 					assert.ok(operation instanceof AST.ASTNodeOperationBinary);
-					assert.deepStrictEqual(operation.children.map((operand) => {
-						assert.ok(operand instanceof AST.ASTNodeConstant);
-						return operand.source
-					}), [`2`, `-3`])
+					assert.ok(operation.operand0 instanceof AST.ASTNodeConstant);
+					assert.ok(operation.operand1 instanceof AST.ASTNodeConstant);
+					assert.strictEqual(operation.operand0.source, `2`);
+					assert.strictEqual(operation.operand1.source, `-3`);
 					return operation.operator
 				}), [
 					Operator.EXP,
@@ -644,17 +641,27 @@ describe('Decorator', () => {
 				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`2 - 3;`));
 				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
 				assert.strictEqual(operation.operator, Operator.ADD)
-				const left:  AST.ASTNodeExpression = operation.children[0];
-				const right: AST.ASTNodeExpression = operation.children[1];
-				assert.ok(left  instanceof AST.ASTNodeConstant);
-				assert.ok(right instanceof AST.ASTNodeOperationUnary);
-				assert.ok(right.operand instanceof AST.ASTNodeConstant);
+				assert.ok(operation.operand0 instanceof AST.ASTNodeConstant);
+				assert.ok(operation.operand1 instanceof AST.ASTNodeOperationUnary);
+				assert.ok(operation.operand1.operand instanceof AST.ASTNodeConstant);
 				assert.deepStrictEqual(
-					[left.source, right.operator, right.operand.source],
-					[`2`,         Operator.NEG,   `3`],
+					[operation.operand0.source, operation.operand1.operator, operation.operand1.operand.source],
+					[`2`,                       Operator.NEG,                `3`],
 				)
 			})
 		})
+
+		function testNegatedBinaryOperation(operation: AST.ASTNodeExpression, expected: [string, Operator, string]): void {
+			assert.ok(operation instanceof AST.ASTNodeOperationUnary);
+			assert.strictEqual(operation.operator, Operator.NOT);
+			assert.ok(operation.operand instanceof AST.ASTNodeOperationBinary);
+			assert.ok(operation.operand.operand0 instanceof AST.ASTNodeConstant);
+			assert.ok(operation.operand.operand1 instanceof AST.ASTNodeConstant);
+			return assert.deepStrictEqual(
+				[operation.operand.operand0.source, operation.operand.operator, operation.operand.operand1.source],
+				expected,
+			);
+		}
 
 		context('ExpressionComparative ::= ExpressionComparative ("!<" | "!>" | "isnt") ExpressionAdditive', () => {
 			it('makes an ASTNodeOperation with the `<` operator and logically negates the result.', () => {
@@ -666,18 +673,10 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`2 !< 3;`));
-				assert.ok(operation instanceof AST.ASTNodeOperationUnary);
-				assert.strictEqual(operation.operator, Operator.NOT)
-				assert.ok(operation.operand instanceof AST.ASTNodeOperationBinary);
-				const left:  AST.ASTNodeExpression = operation.operand.children[0];
-				const right: AST.ASTNodeExpression = operation.operand.children[1];
-				assert.ok(left  instanceof AST.ASTNodeConstant);
-				assert.ok(right instanceof AST.ASTNodeConstant);
-				assert.deepStrictEqual(
-					[left.source, operation.operand.operator, right.source],
-					[`2`,         Operator.LT,                `3`],
-				)
+				return testNegatedBinaryOperation(
+					Decorator.decorate(h.expressionFromSource(`2 !< 3;`)),
+					[`2`, Operator.LT, `3`],
+				);
 			})
 			it('makes an ASTNodeOperation with the `>` operator and logically negates the result.', () => {
 				/*
@@ -688,18 +687,10 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`2 !> 3;`));
-				assert.ok(operation instanceof AST.ASTNodeOperationUnary);
-				assert.strictEqual(operation.operator, Operator.NOT)
-				assert.ok(operation.operand instanceof AST.ASTNodeOperationBinary);
-				const left:  AST.ASTNodeExpression = operation.operand.children[0];
-				const right: AST.ASTNodeExpression = operation.operand.children[1];
-				assert.ok(left  instanceof AST.ASTNodeConstant);
-				assert.ok(right instanceof AST.ASTNodeConstant);
-				assert.deepStrictEqual(
-					[left.source, operation.operand.operator, right.source],
-					[`2`,         Operator.GT,                `3`],
-				)
+				return testNegatedBinaryOperation(
+					Decorator.decorate(h.expressionFromSource(`2 !> 3;`)),
+					[`2`, Operator.GT, `3`],
+				);
 			})
 			it.skip('makes an ASTNodeOperation with the `is` operator and logically negates the result.', () => {
 				/*
@@ -710,18 +701,10 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`2 isnt 3;`));
-				assert.ok(operation instanceof AST.ASTNodeOperationUnary);
-				assert.strictEqual(operation.operator, Operator.NOT)
-				assert.ok(operation.operand instanceof AST.ASTNodeOperationBinary);
-				const left:  AST.ASTNodeExpression = operation.operand.children[0];
-				const right: AST.ASTNodeExpression = operation.operand.children[1];
-				assert.ok(left  instanceof AST.ASTNodeConstant);
-				assert.ok(right instanceof AST.ASTNodeConstant);
-				assert.deepStrictEqual(
-					[left.source, operation.operand.operator, right.source],
-					[`2`,         Operator.IS,                `3`],
-				)
+				return testNegatedBinaryOperation(
+					Decorator.decorate(h.expressionFromSource(`2 isnt 3;`)),
+					[`2`, Operator.IS, `3`],
+				);
 			})
 			it('operator `is`/`isnt` is not yet supported.', () => {
 				assert.throws(() => Decorator.decorate(h.expressionFromSource(`2 is   2;`)), /not yet supported/);
@@ -739,17 +722,9 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`2 !== 3;`));
-				assert.ok(operation instanceof AST.ASTNodeOperationUnary);
-				assert.strictEqual(operation.operator, Operator.NOT);
-				assert.ok(operation.operand instanceof AST.ASTNodeOperationBinary);
-				const left:  AST.ASTNodeExpression = operation.operand.children[0];
-				const right: AST.ASTNodeExpression = operation.operand.children[1];
-				assert.ok(left  instanceof AST.ASTNodeConstant);
-				assert.ok(right instanceof AST.ASTNodeConstant);
-				assert.deepStrictEqual(
-					[left.source, operation.operand.operator, right.source],
-					[`2`,         Operator.ID,                `3`],
+				return testNegatedBinaryOperation(
+					Decorator.decorate(h.expressionFromSource(`2 !== 3;`)),
+					[`2`, Operator.ID, `3`],
 				);
 			});
 			it('makes an ASTNodeOperation with the `==` operator and logically negates the result.', () => {
@@ -761,18 +736,10 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`2 != 3;`));
-				assert.ok(operation instanceof AST.ASTNodeOperationUnary);
-				assert.strictEqual(operation.operator, Operator.NOT)
-				assert.ok(operation.operand instanceof AST.ASTNodeOperationBinary);
-				const left:  AST.ASTNodeExpression = operation.operand.children[0];
-				const right: AST.ASTNodeExpression = operation.operand.children[1];
-				assert.ok(left  instanceof AST.ASTNodeConstant);
-				assert.ok(right instanceof AST.ASTNodeConstant);
-				assert.deepStrictEqual(
-					[left.source, operation.operand.operator, right.source],
-					[`2`,         Operator.EQ,                `3`],
-				)
+				return testNegatedBinaryOperation(
+					Decorator.decorate(h.expressionFromSource(`2 != 3;`)),
+					[`2`, Operator.EQ, `3`],
+				);
 			})
 		})
 
@@ -786,18 +753,10 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`2 !& 3;`));
-				assert.ok(operation instanceof AST.ASTNodeOperationUnary);
-				assert.strictEqual(operation.operator, Operator.NOT)
-				assert.ok(operation.operand instanceof AST.ASTNodeOperationBinary);
-				const left:  AST.ASTNodeExpression = operation.operand.children[0];
-				const right: AST.ASTNodeExpression = operation.operand.children[1];
-				assert.ok(left  instanceof AST.ASTNodeConstant);
-				assert.ok(right instanceof AST.ASTNodeConstant);
-				assert.deepStrictEqual(
-					[left.source, operation.operand.operator, right.source],
-					[`2`,         Operator.AND,               `3`],
-				)
+				return testNegatedBinaryOperation(
+					Decorator.decorate(h.expressionFromSource(`2 !& 3;`)),
+					[`2`, Operator.AND, `3`],
+				);
 			})
 		})
 
@@ -811,18 +770,10 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`2 !| 3;`));
-				assert.ok(operation instanceof AST.ASTNodeOperationUnary);
-				assert.strictEqual(operation.operator, Operator.NOT)
-				assert.ok(operation.operand instanceof AST.ASTNodeOperationBinary);
-				const left:  AST.ASTNodeExpression = operation.operand.children[0];
-				const right: AST.ASTNodeExpression = operation.operand.children[1];
-				assert.ok(left  instanceof AST.ASTNodeConstant);
-				assert.ok(right instanceof AST.ASTNodeConstant);
-				assert.deepStrictEqual(
-					[left.source, operation.operand.operator, right.source],
-					[`2`,         Operator.OR,                `3`],
-				)
+				return testNegatedBinaryOperation(
+					Decorator.decorate(h.expressionFromSource(`2 !| 3;`)),
+					[`2`, Operator.OR, `3`],
+				);
 			})
 		})
 
@@ -914,8 +865,8 @@ describe('Decorator', () => {
 				const assigned_expr: AST.ASTNodeExpression = decl.children[2]
 				assert.ok(assigned_expr instanceof AST.ASTNodeOperationBinary)
 				assert.strictEqual(assigned_expr.operator, Operator.MUL)
-				assert.ok(assigned_expr.children[0] instanceof AST.ASTNodeVariable);
-				assert.strictEqual(assigned_expr.children[0].id, 257n);
+				assert.ok(assigned_expr.operand0 instanceof AST.ASTNodeVariable);
+				assert.strictEqual(assigned_expr.operand0.id, 257n);
 				assert.deepStrictEqual(decl.children.map((child) => child.source), [
 					`\`the £ answer\``, `int`, `the_answer * 10`,
 				])
@@ -952,8 +903,8 @@ describe('Decorator', () => {
 				const assigned_expr: AST.ASTNodeExpression = assn.children[1];
 				assert.ok(assigned_expr instanceof AST.ASTNodeOperationBinary);
 				assert.strictEqual(assigned_expr.operator, Operator.ADD);
-				assert.ok(assigned_expr.children[0] instanceof AST.ASTNodeVariable);
-				assert.strictEqual(assigned_expr.children[0].id, 256n);
+				assert.ok(assigned_expr.operand0 instanceof AST.ASTNodeVariable);
+				assert.strictEqual(assigned_expr.operand0.id, 256n);
 				assert.deepStrictEqual(assn.children.map((child) => child.source), [
 					`the_answer`, `the_answer - 40`
 				]);

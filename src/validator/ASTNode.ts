@@ -769,20 +769,21 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	constructor(
 		start_node: ParseNode,
 		readonly operator: ValidOperatorBinary,
-		override readonly children: readonly [ASTNodeExpression, ASTNodeExpression],
+		readonly operand0: ASTNodeExpression,
+		readonly operand1: ASTNodeExpression,
 	) {
-		super(start_node, operator, children)
+		super(start_node, operator, [operand0, operand1]);
 	}
 	override get shouldFloat(): boolean {
-		return this.children[0].shouldFloat || this.children[1].shouldFloat
+		return this.operand0.shouldFloat || this.operand1.shouldFloat;
 	}
 	/**
 	 * @final
 	 */
 	protected override type_do(validator: Validator): SolidType {
 		return this.type_do_do(
-			this.children[0].type(validator),
-			this.children[1].type(validator),
+			this.operand0.type(validator),
+			this.operand1.type(validator),
 			validator.config.compilerOptions.intCoercion,
 		)
 	}
@@ -797,16 +798,17 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		override readonly operator: ValidOperatorArithmetic,
-		children: readonly [ASTNodeExpression, ASTNodeExpression],
+		operand0: ASTNodeExpression,
+		operand1: ASTNodeExpression,
 	) {
-		super(start_node, operator, children)
+		super(start_node, operator, operand0, operand1);
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopArithmetic {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new INST.InstructionBinopArithmetic(
 			this.operator,
-			this.children[0].build(builder, tofloat),
-			this.children[1].build(builder, tofloat),
+			this.operand0.build(builder, tofloat),
+			this.operand1.build(builder, tofloat),
 		)
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
@@ -820,17 +822,17 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		throw new TypeError01(this)
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.children[0].assess(validator);
+		const assess0: SolidObject | null = this.operand0.assess(validator);
 		if (!assess0) {
 			return assess0
 		}
-		const assess1: SolidObject | null = this.children[1].assess(validator);
+		const assess1: SolidObject | null = this.operand1.assess(validator);
 		if (!assess1) {
 			return assess1
 		}
 		const [v0, v1]: [SolidObject, SolidObject] = [assess0, assess1];
 		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
-			throw new NanError02(this.children[1])
+			throw new NanError02(this.operand1);
 		}
 		if (!(v0 instanceof SolidNumber) || !(v1 instanceof SolidNumber)) {
 			// using an internal TypeError, not a SolidTypeError, as it should already be valid per `this#type`
@@ -872,9 +874,10 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		override readonly operator: ValidOperatorComparative,
-		children: readonly [ASTNodeExpression, ASTNodeExpression],
+		operand0: ASTNodeExpression,
+		operand1: ASTNodeExpression,
 	) {
-		super(start_node, operator, children)
+		super(start_node, operator, operand0, operand1);
 		if ([Operator.IS, Operator.ISNT].includes(this.operator)) {
 			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
 		}
@@ -883,8 +886,8 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new INST.InstructionBinopComparative(
 			this.operator,
-			this.children[0].build(builder, tofloat),
-			this.children[1].build(builder, tofloat),
+			this.operand0.build(builder, tofloat),
+			this.operand1.build(builder, tofloat),
 		)
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
@@ -896,11 +899,11 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		throw new TypeError01(this)
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.children[0].assess(validator);
+		const assess0: SolidObject | null = this.operand0.assess(validator);
 		if (!assess0) {
 			return assess0
 		}
-		const assess1: SolidObject | null = this.children[1].assess(validator);
+		const assess1: SolidObject | null = this.operand1.assess(validator);
 		if (!assess1) {
 			return assess1
 		}
@@ -938,9 +941,10 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		override readonly operator: ValidOperatorEquality,
-		children: readonly [ASTNodeExpression, ASTNodeExpression],
+		operand0: ASTNodeExpression,
+		operand1: ASTNodeExpression,
 	) {
-		super(start_node, operator, children)
+		super(start_node, operator, operand0, operand1);
 	}
 	override get shouldFloat(): boolean {
 		return this.operator === Operator.EQ && super.shouldFloat
@@ -949,8 +953,8 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		const tofloat: boolean = builder.config.compilerOptions.intCoercion && this.shouldFloat
 		return new INST.InstructionBinopEquality(
 			this.operator,
-			this.children[0].build(builder, tofloat),
-			this.children[1].build(builder, tofloat),
+			this.operand0.build(builder, tofloat),
+			this.operand1.build(builder, tofloat),
 		)
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
@@ -968,11 +972,11 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return SolidBoolean
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.children[0].assess(validator);
+		const assess0: SolidObject | null = this.operand0.assess(validator);
 		if (!assess0) {
 			return assess0
 		}
-		const assess1: SolidObject | null = this.children[1].assess(validator);
+		const assess1: SolidObject | null = this.operand1.assess(validator);
 		if (!assess1) {
 			return assess1
 		}
@@ -997,17 +1001,18 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	constructor (
 		start_node: ParseNode,
 		override readonly operator: ValidOperatorLogical,
-		children: readonly [ASTNodeExpression, ASTNodeExpression],
+		operand0: ASTNodeExpression,
+		operand1: ASTNodeExpression,
 	) {
-		super(start_node, operator, children)
+		super(start_node, operator, operand0, operand1);
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopLogical {
 		const tofloat: boolean = to_float || this.shouldFloat
 		return new INST.InstructionBinopLogical(
 			builder.varCount,
 			this.operator,
-			this.children[0].build(builder, tofloat),
-			this.children[1].build(builder, tofloat),
+			this.operand0.build(builder, tofloat),
+			this.operand1.build(builder, tofloat),
 		)
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {
@@ -1035,7 +1040,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 					: t0
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.children[0].assess(validator);
+		const assess0: SolidObject | null = this.operand0.assess(validator);
 		if (!assess0) {
 			return assess0
 		}
@@ -1046,7 +1051,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		) {
 			return v0;
 		}
-		return this.children[1].assess(validator);
+		return this.operand1.assess(validator);
 	}
 }
 export class ASTNodeOperationTernary extends ASTNodeOperation {

@@ -1132,26 +1132,21 @@ describe('ASTNodeSolid', () => {
 						});
 					});
 					context('with folding off but int coersion on.', () => {
+						const validator: Validator = new Validator(folding_off);
 						it('returns Integer for integer arithmetic.', () => {
-							const node: AST.ASTNodeOperation = AST.ASTNodeOperationBinaryArithmetic.fromSource(`(7 + 3) * 2;`, folding_off);
+							const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource(`(7 + 3) * 2;`, folding_off);
+							assert.deepStrictEqual(node.type(validator), Int16);
 							assert.deepStrictEqual(
-								[node.type(new Validator(folding_off)), node.children.length],
-								[Int16,                                 2],
-							);
-							assert.deepStrictEqual(
-								[node.children[0].type(new Validator(folding_off)), node.children[1].type(new Validator(folding_off))],
-								[Int16,                                             Int16],
+								[node.operand0.type(validator), node.operand1.type(validator)],
+								[Int16,                         Int16],
 							);
 						});
 						it('returns Float for float arithmetic.', () => {
-							const node: AST.ASTNodeOperation = AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3.0 ^ 2;`, folding_off);
+							const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3.0 ^ 2;`, folding_off);
+							assert.deepStrictEqual(node.type(validator), Float64);
 							assert.deepStrictEqual(
-								[node.type(new Validator(folding_off)), node.children.length],
-								[Float64,                               2],
-							);
-							assert.deepStrictEqual(
-								[node.children[0].type(new Validator(folding_off)), node.children[1].type(new Validator(folding_off))],
-								[Int16,                                             Float64],
+								[node.operand0.type(validator), node.operand1.type(validator)],
+								[Int16,                         Float64],
 							);
 						});
 					});
