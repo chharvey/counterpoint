@@ -236,10 +236,9 @@ describe('Decorator', () => {
 				*/
 				const operation: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int?`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationUnary);
-				const operand: AST.ASTNodeType = operation.children[0];
 				assert.deepStrictEqual(
-					[operand.source, operation.operator],
-					[`int`,          Operator.ORNULL],
+					[operation.operand.source, operation.operator],
+					[`int`,                    Operator.ORNULL],
 				)
 			})
 			it('operator `!` is not yet supported.', () => {
