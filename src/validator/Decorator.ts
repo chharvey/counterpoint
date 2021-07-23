@@ -196,10 +196,12 @@ export class Decorator {
 		) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: new AST.ASTNodeTypeOperationBinary(node, this.TYPEOPERATORS_BINARY.get(node.children[1].source as Punctuator)!, [
+				: new AST.ASTNodeTypeOperationBinary(
+					node,
+					this.TYPEOPERATORS_BINARY.get(node.children[1].source as Punctuator)!,
 					this.decorate(node.children[0]),
 					this.decorate(node.children[2]),
-				])
+				);
 
 		} else if (node instanceof PARSER.ParseNodeType) {
 			return this.decorate(node.children[0])

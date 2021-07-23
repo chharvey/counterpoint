@@ -370,14 +370,15 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 	constructor (
 		start_node: ParseNode,
 		operator: ValidTypeOperator,
-		override readonly children: readonly [ASTNodeType, ASTNodeType],
+		readonly operand0: ASTNodeType,
+		readonly operand1: ASTNodeType,
 	) {
-		super(start_node, operator, children)
+		super(start_node, operator, [operand0, operand1]);
 	}
 	protected override assess_do(validator: Validator): SolidType {
 		return (
-			(this.operator === Operator.AND) ? this.children[0].assess(validator).intersect(this.children[1].assess(validator)) :
-			(this.operator === Operator.OR)  ? this.children[0].assess(validator).union    (this.children[1].assess(validator)) :
+			(this.operator === Operator.AND) ? this.operand0.assess(validator).intersect(this.operand1.assess(validator)) :
+			(this.operator === Operator.OR)  ? this.operand0.assess(validator).union    (this.operand1.assess(validator)) :
 			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
 	}

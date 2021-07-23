@@ -256,11 +256,9 @@ describe('Decorator', () => {
 				*/
 				const operation: AST.ASTNodeType = Decorator.decorate(h.intersectionTypeFromString(`int & 3`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
-				const left:  AST.ASTNodeType = operation.children[0];
-				const right: AST.ASTNodeType = operation.children[1];
 				assert.deepStrictEqual(
-					[left.source, operation.operator, right.source],
-					[`int`,       Operator.AND,       `3`],
+					[operation.operand0.source, operation.operator, operation.operand1.source],
+					[`int`,                     Operator.AND,       `3`],
 				)
 			})
 		})
@@ -275,11 +273,9 @@ describe('Decorator', () => {
 				*/
 				const operation: AST.ASTNodeType = Decorator.decorate(h.unionTypeFromString(`4.2? | int & int`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
-				const left: AST.ASTNodeType = operation.children[0];
-				const right: AST.ASTNodeType = operation.children[1];
 				assert.deepStrictEqual(
-					[left.source, operation.operator, right.source],
-					[`4.2 ?`,     Operator.OR,        `int & int`],
+					[operation.operand0.source, operation.operator, operation.operand1.source],
+					[`4.2 ?`,                   Operator.OR,        `int & int`],
 				)
 			})
 		})
@@ -294,11 +290,9 @@ describe('Decorator', () => {
 				*/
 				const operation: AST.ASTNodeType = Decorator.decorate(h.unionTypeFromString(`4.2? & (int | int)`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
-				const left:  AST.ASTNodeType = operation.children[0];
-				const right: AST.ASTNodeType = operation.children[1];
 				assert.deepStrictEqual(
-					[left.source, operation.operator, right.source],
-					[`4.2 ?`,     Operator.AND,       `int | int`],
+					[operation.operand0.source, operation.operator, operation.operand1.source],
+					[`4.2 ?`,                   Operator.AND,       `int | int`],
 				)
 			})
 		})
