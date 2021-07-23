@@ -198,7 +198,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeType {
 		const statement: ASTNodeDeclarationType = ASTNodeDeclarationType.fromSource(`type T = ${ src };`, config);
-		return statement.children[1];
+		return statement.value;
 	}
 	private assessed?: SolidType;
 	/**
@@ -1158,27 +1158,27 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 	}
 	constructor (
 		start_node: ParseNode,
-		override readonly children: readonly [ASTNodeTypeAlias, ASTNodeType],
+		readonly variable: ASTNodeTypeAlias,
+		readonly value:    ASTNodeType,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {}, [variable, value]);
 	}
 	override varCheck(validator: Validator): void {
-		const variable: ASTNodeTypeAlias = this.children[0];
-		if (validator.hasSymbol(variable.id)) {
-			throw new AssignmentError01(variable);
+		if (validator.hasSymbol(this.variable.id)) {
+			throw new AssignmentError01(this.variable);
 		};
-		this.children[1].varCheck(validator);
+		this.value.varCheck(validator);
 		validator.addSymbol(new SymbolStructureType(
-			variable.id,
-			variable.line_index,
-			variable.col_index,
-			variable.source,
-			() => this.children[1].assess(validator),
+			this.variable.id,
+			this.variable.line_index,
+			this.variable.col_index,
+			this.variable.source,
+			() => this.value.assess(validator),
 		));
 	}
 	override typeCheck(validator: Validator): void {
-		this.children[1].typeCheck(validator);
-		return validator.getSymbolInfo(this.children[0].id)?.assess();
+		this.value.typeCheck(validator);
+		return validator.getSymbolInfo(this.variable.id)?.assess();
 	}
 	override build(_builder: Builder): INST.InstructionNone {
 		return new INST.InstructionNone();

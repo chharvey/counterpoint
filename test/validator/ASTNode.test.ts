@@ -749,9 +749,6 @@ describe('ASTNodeSolid', () => {
 
 	describe('ASTNodeType', () => {
 		describe('#assess', () => {
-			function typeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeType {
-				return AST.ASTNodeDeclarationType.fromSource(`type T = ${ typestring };`, config).children[1];
-			}
 			it('computes the value of constant null, boolean, or number types.', () => {
 				assert.deepStrictEqual([
 					`null`,
@@ -778,7 +775,7 @@ describe('ASTNodeSolid', () => {
 				assert.deepStrictEqual(
 					((goal
 						.children[1] as AST.ASTNodeDeclarationType)
-						.children[1] as AST.ASTNodeTypeAlias)
+						.value as AST.ASTNodeTypeAlias)
 						.assess(validator),
 					Int16,
 				);
@@ -806,7 +803,7 @@ describe('ASTNodeSolid', () => {
 			});
 			Dev.supports('literalCollection') && specify('ASTNodeTypeRecord', () => {
 				const validator: Validator = new Validator();
-				const node: AST.ASTNodeTypeRecord = typeFromString(`[x: int, y: bool, z: str]`) as AST.ASTNodeTypeRecord;
+				const node: AST.ASTNodeTypeRecord = AST.ASTNodeType.fromSource(`[x: int, y: bool, z: str]`) as AST.ASTNodeTypeRecord;
 				assert.deepStrictEqual(
 					node.assess(validator),
 					new SolidTypeRecord(new Map<bigint, SolidType>(node.children.map((c) => [

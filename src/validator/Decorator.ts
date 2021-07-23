@@ -398,10 +398,11 @@ export class Decorator {
 			return this.decorate(node.children[0])
 
 		} else if (node instanceof PARSER.ParseNodeDeclarationType) {
-			return new AST.ASTNodeDeclarationType(node, [
+			return new AST.ASTNodeDeclarationType(
+				node,
 				new AST.ASTNodeTypeAlias(node.children[1] as TOKEN.TokenIdentifier),
 				this.decorate(node.children[3]),
-			]);
+			);
 
 		} else if (node instanceof PARSER.ParseNodeDeclarationVariable) {
 			return new AST.ASTNodeDeclarationVariable(node, node.children.length === 8, [

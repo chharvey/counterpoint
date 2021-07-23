@@ -813,13 +813,13 @@ describe('Decorator', () => {
 				const decl: AST.ASTNodeDeclarationType = Decorator.decorate(h.typeDeclarationFromSource(`
 					type T  =  int | float;
 				`));
-				assert.strictEqual(decl.children[0].id, 256n);
-				const typ: AST.ASTNodeType = decl.children[1];
-				assert.ok(typ instanceof AST.ASTNodeTypeOperationBinary);
-				assert.strictEqual(typ.operator, Operator.OR);
-				assert.deepStrictEqual(decl.children.map((child) => child.source), [
-					`T`, `int | float`,
-				]);
+				assert.strictEqual(decl.variable.id, 256n);
+				assert.ok(decl.value instanceof AST.ASTNodeTypeOperationBinary);
+				assert.strictEqual(decl.value.operator, Operator.OR);
+				assert.deepStrictEqual(
+					[decl.variable.source, decl.value.source],
+					[`T`,                  `int | float`],
+				);
 			});
 		});
 
