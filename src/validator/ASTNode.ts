@@ -158,9 +158,10 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 export class ASTNodeProperty extends ASTNodeSolid {
 	constructor (
 		start_node: PARSER.ParseNodeProperty,
-		override readonly children: readonly [ASTNodeKey, ASTNodeExpression],
+		readonly key:   ASTNodeKey,
+		readonly value: ASTNodeExpression,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {}, [key, value]);
 	}
 	override build(builder: Builder): Instruction {
 		throw builder && 'ASTNodeProperty#build not yet supported.';
@@ -634,14 +635,14 @@ export class ASTNodeRecord extends ASTNodeExpression {
 	}
 	protected override type_do(validator: Validator): SolidType {
 		return new SolidTypeRecord(new Map(this.children.map((c) => [
-			c.children[0].id,
-			c.children[1].type(validator),
+			c.key.id,
+			c.value.type(validator),
 		])));
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
 		const properties: ReadonlyMap<bigint, SolidObject | null> = new Map(this.children.map((c) => [
-			c.children[0].id,
-			c.children[1].assess(validator),
+			c.key.id,
+			c.value.assess(validator),
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null

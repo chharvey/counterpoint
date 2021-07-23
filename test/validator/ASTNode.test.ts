@@ -980,8 +980,8 @@ describe('ASTNodeSolid', () => {
 						[
 							new SolidTypeTuple(collections[0].children.map((c) => c.type(validator))),
 							new SolidTypeRecord(new Map(collections[1].children.map((c) => [
-								c.children[0].id,
-								c.children[1].type(validator),
+								c.key.id,
+								c.value.type(validator),
 							]))),
 							SolidMapping,
 						],

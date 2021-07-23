@@ -217,10 +217,11 @@ export class Decorator {
 			);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeProperty) {
-			return new AST.ASTNodeProperty(node, [
+			return new AST.ASTNodeProperty(
+				node,
 				this.decorate(node.children[0]),
 				this.decorate(node.children[2]),
-			]);
+			);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeCase) {
 			return new AST.ASTNodeCase(node, [
