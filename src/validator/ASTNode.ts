@@ -405,8 +405,8 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeExpression {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert.ok(statement instanceof ASTNodeStatementExpression);
-		assert.strictEqual(statement.children.length, 1, 'semantic statement should have 1 child');
-		return statement.children[0]!;
+		assert.ok(statement.expr, 'semantic statement should have 1 child');
+		return statement.expr;
 	}
 	private typed?: SolidType;
 	private assessed?: SolidObject | null;
@@ -1131,17 +1131,14 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 	}
 	constructor(
 		start_node: ParseNode,
-		override readonly children:
-			| readonly []
-			| readonly [ASTNodeExpression]
-		,
+		readonly expr?: ASTNodeExpression,
 	) {
-		super(start_node, {}, children)
+		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionStatement {
-		return (!this.children.length)
-			? new INST.InstructionNone()
-			: new INST.InstructionStatement(builder.stmtCount, this.children[0].build(builder));
+		return (this.expr)
+			? new INST.InstructionStatement(builder.stmtCount, this.expr.build(builder))
+			: new INST.InstructionNone();
 	}
 }
 /**

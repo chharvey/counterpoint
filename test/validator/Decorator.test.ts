@@ -503,8 +503,7 @@ describe('Decorator', () => {
 				assert_arrayLength(goal.children, 2);
 				assert.deepStrictEqual(goal.children.map((stmt) => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
-					assert_arrayLength(stmt.children, 1);
-					const ident: AST.ASTNodeExpression = stmt.children[0];
+					const ident: AST.ASTNodeExpression | null = stmt.expr || null;
 					assert.ok(ident instanceof AST.ASTNodeVariable);
 					return ident.id;
 				}), [256n, 257n]);
@@ -919,7 +918,7 @@ describe('Decorator', () => {
 			it('makes an ASTNodeStatementExpression node containing no children.', () => {
 				const statement: AST.ASTNodeStatement = Decorator.decorate(h.statementFromSource(`;`));
 				assert.ok(statement instanceof AST.ASTNodeStatementExpression);
-				assert_arrayLength(statement.children, 0, 'semantic statement should have 0 children')
+				assert.ok(!statement.expr, 'semantic statement should have 0 children');
 				assert.strictEqual(statement.source, `;`)
 			})
 		})

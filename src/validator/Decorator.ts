@@ -427,9 +427,7 @@ export class Decorator {
 		} else if (node instanceof PARSER.ParseNodeStatement) {
 			return (node.children.length === 1 && node.children[0] instanceof ParseNode)
 				? this.decorate(node.children[0])
-				: new AST.ASTNodeStatementExpression(node, (node.children.length === 1) ? [] : [
-					this.decorate(node.children[0]),
-				])
+				: new AST.ASTNodeStatementExpression(node, (node.children.length === 2) ? this.decorate(node.children[0]) : void 0);
 
 		} else if (node instanceof PARSER.ParseNodeGoal__0__List) {
 			return (node.children.length === 1) ?
