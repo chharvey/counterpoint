@@ -1249,21 +1249,22 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	}
 	constructor (
 		start_node: ParseNode,
-		override readonly children: readonly [ASTNodeVariable, ASTNodeExpression],
+		readonly assignee: ASTNodeVariable,
+		readonly assigned: ASTNodeExpression,
 	) {
-		super(start_node, {}, children)
+		super(start_node, {}, [assignee, assigned]);
 	}
 	override varCheck(validator: Validator): void {
 		this.children.forEach((c) => c.varCheck(validator));
-		const variable: ASTNodeVariable = this.children[0];
+		const variable: ASTNodeVariable = this.assignee;
 		if (!(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
 			throw new AssignmentError10(variable);
 		};
 	}
 	override typeCheck(validator: Validator): void {
-		this.children[1].typeCheck(validator);
-		const assignee_type: SolidType = this.children[0].type(validator);
-		const assigned_type: SolidType = this.children[1].type(validator);
+		this.assigned.typeCheck(validator);
+		const assignee_type: SolidType = this.assignee.type(validator);
+		const assigned_type: SolidType = this.assigned.type(validator);
 		if (
 			assigned_type.isSubtypeOf(assignee_type) ||
 			validator.config.compilerOptions.intCoercion && assigned_type.isSubtypeOf(Int16) && Float64.isSubtypeOf(assignee_type)
@@ -1273,10 +1274,10 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		};
 	}
 	override build(builder: Builder): INST.InstructionStatement {
-		const tofloat: boolean = this.children[1].type(builder.validator).isSubtypeOf(Float64) || this.children[1].shouldFloat;
+		const tofloat: boolean = this.assigned.type(builder.validator).isSubtypeOf(Float64) || this.assigned.shouldFloat;
 		return new INST.InstructionStatement(
 			builder.stmtCount,
-			new INST.InstructionGlobalSet(this.children[0].id, this.children[1].build(builder, tofloat)),
+			new INST.InstructionGlobalSet(this.assignee.id, this.assigned.build(builder, tofloat)),
 		);
 	}
 }

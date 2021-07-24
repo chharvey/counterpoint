@@ -420,12 +420,11 @@ export class Decorator {
 			return new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier);
 
 		} else if (node instanceof PARSER.ParseNodeStatementAssignment) {
-			const assignee:   PARSER.ParseNodeAssignee   = node.children[0];
-			const expression: PARSER.ParseNodeExpression = node.children[2]
-			return new AST.ASTNodeAssignment(node, [
-				this.decorate(assignee) as unknown as AST.ASTNodeVariable,
-				this.decorate(expression),
-			])
+			return new AST.ASTNodeAssignment(
+				node,
+				this.decorate(node.children[0]) as AST.ASTNodeVariable,
+				this.decorate(node.children[2]),
+			);
 
 		} else if (node instanceof PARSER.ParseNodeStatement) {
 			return (node.children.length === 1 && node.children[0] instanceof ParseNode)

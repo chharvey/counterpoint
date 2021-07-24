@@ -894,15 +894,13 @@ describe('Decorator', () => {
 				*/
 				const assn: AST.ASTNodeAssignment = Decorator.decorate(h.assignmentFromSource(`
 					the_answer = the_answer - 40;
-				`)) as unknown as AST.ASTNodeAssignment;
-				const assigned_expr: AST.ASTNodeExpression = assn.children[1];
-				assert.ok(assigned_expr instanceof AST.ASTNodeOperationBinary);
-				assert.strictEqual(assigned_expr.operator, Operator.ADD);
-				assert.ok(assigned_expr.operand0 instanceof AST.ASTNodeVariable);
-				assert.strictEqual(assigned_expr.operand0.id, 256n);
-				assert.deepStrictEqual(assn.children.map((child) => child.source), [
-					`the_answer`, `the_answer - 40`
-				]);
+				`)) as AST.ASTNodeAssignment;
+				assert.ok(assn.assigned instanceof AST.ASTNodeOperationBinary);
+				assert.ok(assn.assigned.operand0 instanceof AST.ASTNodeVariable);
+				assert.deepStrictEqual(
+					[assn.assignee.source, assn.assigned.source, assn.assigned.operator, assn.assigned.operand0.id],
+					[`the_answer`,         `the_answer - 40`,    Operator.ADD,           256n],
+				);
 			})
 		})
 
