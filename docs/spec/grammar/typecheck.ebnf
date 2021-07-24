@@ -6,8 +6,8 @@ Void! TypeCheck(Or<
 	SemanticStatementExpression,
 	SemanticGoal,
 > list) :=
-	1. *For each* `it` in `list`:
-		1. *Perform:* *Unwrap:* `VarCheck(it)`.
+	1. *For each* `it` in `list.children`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
 ;
 
 

@@ -11,7 +11,8 @@ export enum Punctuator {
 		EMP = '?',
 		AFF = '+',
 		NEG = '-',
-		ORNULL = '!',
+		ORNULL = '?',
+		OREXCP = '!',
 	// binary
 		EXP  = '^',
 		MUL  = '*',

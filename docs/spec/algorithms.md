@@ -223,8 +223,8 @@ Boolean Identical(Object a, Object b) :=
 		1. *If* `a` and `b` are exactly the same sequence of code units
 			(same length and same code units at corresponding indices):
 			1. *Return:* `true`.
-	// 7. *If* `a` and `b` are the same object:
-	// 	1. *Return:* `true`.
+	7. *If* `a` and `b` are the same object:
+		1. *Return:* `true`.
 	8. Return `false`.
 ```
 
@@ -244,8 +244,50 @@ Boolean Equal(Object a, Object b) :=
 			1. *Return:* `true`.
 		2. *If* `a` is `-0.0` *and* `b` is `0.0`:
 			1. *Return:* `true`.
-	// 3. TODO: custom equality operators
-	4. Return `false`.
+	4. *If* `a` is an instance of `Tuple` *and* `b` is an instance of `Tuple`:
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *If* `seq_a.count` is not `seq_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For index* `i` in `seq_a`:
+			1. *If* *UnwrapAffirm*: `Equal(seq_a[i], seq_b[i])` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	5. *If* `a` is an instance of `Record` *and* `b` is an instance of `Record`:
+		1. *Let* `struct_a` be a new Structure whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
+		3. *If* `struct_a.count` is not `struct_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For key* `k` in `struct_b`:
+			1. *If* `struct_a[k]` is not set:
+				1. *Return:* `false`.
+			2. *If* *UnwrapAffirm*: `Equal(struct_a[k], struct_b[k])` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	6. *If* `a` is an instance of `Mapping` *and* `b` is an instance of `Mapping`:
+		1. *Let* `data_a` be a new Sequence of 2-tuples,
+			whose items are exactly the antecedents and consequents in `a`.
+		2. *Let* `data_b` be a new Sequence of 2-tuples,
+			whose items are exactly the antecedents and consequents in `b`.
+		3. *If* `data_a.count` is not `data_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For each* `it_a` in `data_a`:
+			1. Find an item `it_b` in `data_b` such that *UnwrapAffirm:* `Equal(it_a.0, it_b.0)` is `true`.
+			2. *If* no such item `it_b` is found:
+				1. *Return:* `false`.
+			3. *If* *UnwrapAffirm:* `Equal(it_a.1, it_b.1)` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	7. Return `false`.
 ```
 
 
@@ -270,7 +312,7 @@ Boolean Subtype(Type a, Type b) :=
 		// 1-2 | `T     <: unknown`
 		1. *Return:* `true`.
 	6. *If* `a` is the intersection of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Identical(x, b)` *or* *UnwrapAffirm:* `Identical(y, b)`:
+		1. *If* *UnwrapAffirm:* `Equal(x, b)` *or* *UnwrapAffirm:* `Equal(y, b)`:
 			// 3-1 | `A  & B <: A  &&  A  & B <: B`
 			1. *Return:* `true`.
 		2. *If* *UnwrapAffirm:* `Subtype(x, b)` *or* *UnwrapAffirm:* `Subtype(y, b)`:
@@ -285,14 +327,14 @@ Boolean Subtype(Type a, Type b) :=
 			// 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`
 			1. *Return:* `true`.
 	9. *If* `b` is the union of some types `x` and `y`:
-		1. *If* *UnwrapAffirm:* `Identical(a, x)` *or* *UnwrapAffirm:* `Identical(a, y)`:
+		1. *If* *UnwrapAffirm:* `Equal(a, x)` *or* *UnwrapAffirm:* `Equal(a, y)`:
 			// 3-2 | `A <: A \| B  &&  B <: A \| B`
 			1. *Return:* `true`.
 		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
 			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
 			1. *Return:* `true`.
-	10. *If* `a` is a subtype of `Tuple`:
-		1. *If* `b` is a subtype of `Tuple`:
+	10. *If* `Equal(a, Tuple)`:
+		1. *If* `Equal(b, Tuple)`:
 			1. *Let* `seq_a` be the Sequence whose items are exactly the items in `a`.
 			2. *Let* `seq_b` be the Sequence whose items are exactly the items in `b`.
 			3. *If* `seq_a.count` is less than `seq_b.count`:
@@ -301,9 +343,8 @@ Boolean Subtype(Type a, Type b) :=
 				1. *If* *UnwrapAffirm:* `Subtype(seq_a[i], seq_b[i])` is `false`:
 					1. *Return:* `false`.
 			5. *Return:* `true`.
-		2. *Return:* `false`.
-	11. *If* `a` is a subtype of `Record`:
-		1. *If* `b` is a subtype of `Record`:
+	11. *If* `Equal(a, Record)`:
+		1. *If* `Equal(b, Record)`:
 			1. *Let* `struct_a` be the Structure whose properties are exactly the properties in `a`.
 			2. *Let* `struct_b` be the Structure whose properties are exactly the properties in `b`.
 			3. *If* `struct_a.count` is less than `struct_b.count`:
@@ -314,9 +355,10 @@ Boolean Subtype(Type a, Type b) :=
 				2. *If* *UnwrapAffirm:* `Subtype(struct_a[k], struct_b[k])` is `false`:
 					1. *Return:* `false`.
 			5. *Return:* `true`.
-		2. *Return:* `false`.
 	12. *If* every value that is assignable to `a` is also assignable to `b`:
-		1. *Return:* `true`.
+		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
+			because an instance of `Integer` is an instance of `Object`.
+		2. *Return:* `true`.
 	13. *Return:* `false`.
 ;
 ```

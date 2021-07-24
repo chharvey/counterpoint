@@ -9,7 +9,10 @@ This reference takes a more informative approach.
 
 
 
-## Never
+## Simple Types
+
+
+### Never
 The Never type, `never`, is the Bottom type in the type hierarchy —
 it contains no values and is a subtype of every other type.
 
@@ -24,23 +27,28 @@ Currently, there are no expressions assignable to it either, but
 future versions of Solid will support expressions of type Never.
 
 
+### Void
+The Void type, `void`, represents the completion of an evaluation but the absence of a value.
+It is used to describe functions that complete execution (and may have side-effects), but return no value.
+(Unlike `never`, `void` indicates that the function has returned.)
+The Void type is also used to represent part of the types of optional entries in collections,
+such as a record’s optional property.
+There are no values assignble to the Void type, but some expressions may have type `void`,
+for example, property access and function calls.
 
-## Null
+
+### Null
 The Null type, `null`, has exactly one value, also called `null`.
 The meaning of the `null` value is not specified, but it’s most commonly used as a placeholder
 when no other value is appropriate.
 
-The Null type has no supertypes other than [Object](#object) and [Unknown](#unknown).
 
-
-
-## Boolean
+### Boolean
 The Boolean type, `bool`, has two logical values, called `true` and `false`.
 These values are used for binary states.
 
 
-
-## Integer
+### Integer
 Integers, type `int`, are whole numbers, their negatives, and zero.
 
 Integers are written as a series of digits, such as `0123`,
@@ -60,7 +68,7 @@ Raw Input  | Base | Mathematical Value (in decimal)
 `\x2a`     | 16   | 42
 `\z16`     | 36   | 42
 
-We may also include the underscore as a numeric separator symbol, to visually group digits.
+The underscore may be used as a numeric separator symbol, to visually group digits.
 ```
 \b1_0011_1000_1000;
 \q103_2020;
@@ -83,8 +91,7 @@ In all operations on integers, bases can be mixed.
 ```
 
 
-
-## Float
+### Float
 Floating-point numbers, type `float`, are decimals, which offer finer precision for numerical data than integers do.
 (In computers, there are no irrational (non-fractional) numbers, but we approximate them well.)
 
@@ -97,7 +104,7 @@ Exactly one decimal point must be present in a float literal.
 0 . 5;   %> Error
 ```
 
-We can write floats in “scientific-like notation”, such as `6.022e23`.
+Floats can be written in “scientific-like notation”, such as `6.022e23`.
 This represents *6.022 &times; 10<sup>23</sup>*.
 This notation consts of the following parts:
 - the whole part (an integer)
@@ -106,11 +113,12 @@ This notation consts of the following parts:
 - the symbol `e`
 - the exponent part (an integer)
 
-We say “scientific-like notation” because it’s technically not scientific notation:
+It’s called “scientific-like notation” because it’s technically not scientific notation:
 The coefficient need not be between 1 and 10. `-42.0e-1` is a valid floating-point value.
 
 Floating-point values can be operated on just as integers can.
 There is no truncation for division, but dividing by zero still raises an error.
+The floating-point value `0.0` is *not identical* to the value `-0.0`.
 
 Float values are considered “contageous” in that they “infect” any integers they are operated with.
 For example, in the expression `1 + 2.3`, the integer `1` is *coerced* into the float `1.0`,
@@ -119,8 +127,7 @@ If an expression contains *any* float value anywhere, then
 *all* the integers in the expression are coerced into floats.
 
 
-
-## String
+### String
 The String type, type `str`, represents textual data.
 
 A “raw string” is the code written to construct the string, whereas
@@ -130,8 +137,7 @@ which follows certain rules based on the kind of string.
 
 There are two kinds of strings: string literals and string templates.
 
-
-### String Literals
+#### String Literals
 String literals are static and known at compile-time.
 They’re delimited with single-quotes (`'` **U+0027 APOSTROPHE**).
 ```
@@ -146,7 +152,7 @@ jumps over the lazy dog.';
 > 'The quick brown fox\
 jumps over the lazy dog.'
 
-#### Line Continuations
+##### Line Continuations
 **Line continuations** let us hard-wrap long strings into several lines
 in source code, without rendering the line breaks in the strings’ cooked values.
 When we escape the line break with a backslash (`\` **U+005C REVERSE SOLIDUS**),
@@ -157,7 +163,7 @@ jumps over the lazy dog.';
 ```
 > 'The quick brown fox jumps over the lazy dog.'
 
-#### Escaping Characters
+##### Escaping Characters
 Some characters are not allowed in string literals, and others are not easily typed.
 The following special characters may be escaped:
 
@@ -220,7 +226,7 @@ Other than for the special cases listed above, a backslash has no effect.
 >
 > 'Any non-special character may be escaped.'
 
-#### In-String Comments
+##### In-String Comments
 String literals may contain Solid comments.
 Line comments begin with `%` (**U+0025 PERCENT SIGN**) and continue until (but not including) the next line break, and
 multiline comments begin with `%%` and continue until (and including) the next `%%`.
@@ -259,8 +265,7 @@ Multiline comments cannot be nested.
 ```
 > 'The  boxing  jump quickly.'
 
-
-### String Templates
+#### String Templates
 String templates are dynamic and may contain interpolated expressions.
 They’re delimited with three single-quotes (`'''`).
 ```
@@ -269,7 +274,7 @@ let greeting: str = '''I’ve been coding for {{ years }} years.
 That’s about {{ 365 * years }} days.''';
 ```
 
-#### Interpolation
+##### Interpolation
 String templates may contain interpolated expressions, which are enclosed within double-braces `{{ … }}`.
 An interpolated expression is an expression that computes to a string.
 ```
@@ -318,7 +323,7 @@ judge        \%\% and this isn’t either \%\%    my vow.
 ''';
 ```
 
-#### No Escapes
+##### No Escapes
 String templates may contain line breaks, but line continuations are not possible.
 ```
 let pangram: str = '''Watch “Jeopardy!”,\
@@ -387,21 +392,273 @@ I {{ '\u{2764}' }} Unicode!
 > '
 
 
-
-## Object
+### Object
 The Object type, `obj`, is the type of all values, that is, every value is assignable to the Object type.
 
 
-
-## Unknown
+### Unknown
 The Unknown type, `unknown`, is the Top type in the type hierarchy —
 it contains every value and expression, and is a supertype of every other type.
 
 The Unknown type is used to describe a value or expression about which nothing is known.
-Therefore, the compiler will not assume it has any properties or valid in some operations.
+Therefore, the compiler will not assume it has any properties or is valid in some operations.
 
 Every value and expression is assignble to the Unknown type.
 Currently, since there are no valueless expressions,
 the Unknown type is equivalent to the [Object](#object) type.
 However, future versions of Solid will support expressions assignable to Unknown
 that are not assignable to Object.
+
+
+### Unit Types
+Unit types are types that contain only one value.
+In fact, the `null` type is already an example of a unit type! — it only holds the `null` value.
+Because unit types can only hold a single constant value, they are sometimes called “constant types”,
+although that term can be ambiguous in the context of generics, where types may be variable.
+
+A unit type must be a single primitive literal, i.e., an Integer, Float, or String (and of course `null`),
+and any value assignable to it must compute to that value. Variables with a unit type may still be reassignable,
+but they can only be reassigned to the same value, so having an `unfixed` variable with a unit type is kind of pointless.
+Variables with unit types are conventionally written in MACRO_CASE.
+```
+let unfixed TAU: true = true;
+TAU = true;
+TAU = false; %> TypeError
+
+let unfixed CAR_WHEELS: 4 = 4;
+let CAT_FEET: \b100 = \o4;
+CAR_WHEELS = CAT_FEET;
+```
+
+The assigned value doesn’t need to be a literal; it may be a expression,
+as long as it’s computable by the compiler’s [constant folding](./configuration.md#constantFolding) mechanism.
+```
+let TAU: true = !false;
+let CAR_WHEELS: \b100 = \o10 / 2;
+```
+
+#### String Unit Types
+Unit types may also be [strings](#String), but there are few details that should be noted.
+
+String unit types are compared by **string value**.
+This means both the type and the value are computed before the assignment takes place.
+String unit types can also contain escape sequences and special characters.
+```
+let GREETING: 'H\u{e9}llo\sW\u{f6}rld!' = 'Héllo Wörld!';
+let COUNT: '1
+2\
+3	4' = '1\n2 3\t4';
+```
+
+If the compiler can compute the value of a string template, then it may also be assigned to a string unit type.
+```
+let hello: str = 'Hello';
+let world: str = 'World';
+let GREETING: 'Hello World!' = '''{{ hello }} {{ world }}!''';
+```
+Notice that even though the variables `hello` and `world` are *not* declared with unit types (`str` is not a unit type),
+the compiler is still able to compute their values, thus the assignment to `GREETING` is valid.
+However, if they were unfixed, that wouldn’t be possible.
+```
+let unfixed hello: str = 'Hello';
+let unfixed world: str = 'World';
+let GREETING: 'Hello World!' = '''{{ hello }} {{ world }}!'''; %> TypeError
+```
+This is because the type of the template can only be inferred as `str`,
+which is wider than the unit type it’s being assigned to.
+
+String templates *cannot* be used as unit types (even if they’re templates without interpolation).
+```
+let GREETING: '''Hello World!''' = 'Hello World!'; %> ParseError
+```
+
+
+## Compound Types
+
+
+### Tuple
+Tuples are fixed-size ordered lists of indexed values, with indices starting at `0`.
+The values in a tuple are called **items** (the actual values) or **entries** (the slots the values are stored in).
+The number of entries in a tuple is called its **count**.
+The count of a tuple is fixed and known at compile-time, as is the type of each entry in the tuple.
+If the tuple is mutable, the entries of the tuple may be reassigned, but only to values of the correct type.
+
+For example, the tuple `[3, 4.0, 'seven']` has an integer in the first position at index `0`,
+followed by a float at index `1`, followed by a string at index `2`. Its count is 3.
+Entries cannot be added or removed — the count of the tuple cannot change — but entries can be reassigned:
+We could set the last entry to the string `'twelve'`.
+
+“Sparse tuples” have “empty slots” where items should be. Such a tuple can arise from setting values
+at entries ahead of unset entries. Sparse tuples are typically hard to work with because
+they can cause errors during iteration.
+Programmers should take care to avoid them whenever possible.
+The **count** of a tuple refers to the number of its *entries*, not *items*.
+Thus a sparse tuple’s count will be larger than the number of items it contains.
+
+Tuple literals are comma-separated expressions within square brackets.
+Tuple types use the same syntax, but instead of value expressions
+they contain type expressions (a.k.a. types).
+```
+let elements: [str, str, str] = ['earth', 'wind', 'fire'];
+```
+Larger tuples are always assignable to smaller tuples, as long as the types match.
+```
+let elements: [str, str, str] = ['earth', 'wind', 'fire', true, 42];
+```
+The above declaration is allowed because the last two items are simply dropped off.
+
+However, assigning a smaller tuple to a larger tuple results in a TypeError.
+```
+let elements_and_more: [str, str, str, bool, int] = ['earth', 'wind', 'fire']; %> TypeError
+```
+
+
+### Record
+Records are fixed-size unordered lists of keyed values. Key–value pairs are called **properties**,
+where **keys** are keywords or identifiers, and **values** are expressions.
+The number of properties in a record is called its **count**.
+The count and types of record **entries** (the “slots” where values are stored) are fixed and known at compile-time.
+Record entries cannot be added or deleted, but if the record is mutable, they can be reassigned.
+
+For example, given the record
+```
+[
+	fontFamily= 'sans-serif',
+	fontSize=   1.25,
+	fontStyle=  'oblique',
+	fontWeight= 400,
+];
+```
+we could reassign the `fontWeight` property a value of `700`. Its count is 4.
+
+Keys may be reserved keywords, not just restricted to identifiers.
+This is because the record key will always be lexically bound to the record —
+it will never stand alone, so there’s no risk of syntax error.
+```
+[
+	let=   'to initialize a variable',
+	is=    'referential identity',
+	int=   'the Integer type',
+	false= 'the negative boolean value',
+];
+```
+Conventionally, whitespace is omitted between the key name and the equals sign delimiter `=`.
+This practice helps programmers differentiate between record properties and variable declarations/assignments.
+
+Record literal types are similar to record values, except that the colon `:` is used as the key–value delimiter,
+and the property values are replaced with types.
+```
+type StyleMap = [
+	fontWeight: int,
+	fontStyle:  'normal' | 'italic' | 'oblique',
+	fontSize:   float,
+	fontFamily: str,
+];
+let my_styles: StyleMap = [
+	fontFamily= 'sans-serif',
+	fontSize=   1.25;
+	fontStyle=  'oblique',
+	fontWeight= 400,
+];
+```
+Notice how the properties may be written out of order. Records are famous for being order-independent,
+and we should not assume that any looping or iteration over a record is performed in any particular order.
+However, *code evaluation* is always left-to-right and top-to-bottom, which means that if any entries
+cause any side-effects, those side-effects will be observed in the order the entries are written.
+(This is significant if any values are function calls for example.)
+
+Record keys point to unique values. Latter properties take precedence.
+```
+let elements: [
+	socrates:  str,
+	plato:     str,
+	aristotle: str,
+] = [
+	socrates=  'earth',
+	plato=     'wind',
+	aristotle= 'fire',
+	plato=     'water',
+];
+```
+The value of the `plato` key will be `'water'`.
+
+Larger records are always assignable to smaller records, as long as the types match.
+```
+let elements: [
+	socrates:  str,
+	plato:     str,
+	aristotle: str,
+] = [
+	socrates=   'earth',
+	euclid=     true,
+	plato=      'wind',
+	pythagoras= 42,
+	aristotle=  'fire',
+];
+```
+The above declaration is allowed because the unused properties are simply dropped off.
+
+However, assigning a smaller record to a larger record results in a TypeError.
+```
+let elements_and_more: [
+	socrates:   str,
+	plato:      str,
+	aristotle:  str,
+	euclid:     bool,
+	pythagoras: int,
+] = [
+	socrates=  'earth',
+	plato=     'wind',
+	aristotle= 'fire',
+]; %> TypeError
+```
+
+
+### Mapping
+Mappings form associations (**cases**) of values (**antecedents**) to other values (**consequents**).
+The antecedents are unique (by identity) in that each antecedent can be associated with only one consequent.
+The number of cases in a mapping is called its **count**.
+
+```
+let bases: obj = [
+	1     |-> 'who',
+	'2nd' |-> ['what'],
+	1 + 2 |-> ['i' |-> ['don’t' |-> 'know']],
+];
+```
+The mapping above has antecedents and consequents of various types.
+Typically, all the antecedents will be of one type and all the consequents will be of one type,
+but this isn’t a requirement.
+
+The size of mappings is not known at compile-time, and could change during run-time, if the mapping is mutable.
+For example, a program could add a case to the above mapping after it’s been declared, changing its count.
+Like records, the order of entries in a mapping is not necessarily significant.
+
+Also like records, antecedents have unique consequents in that latter declarations take precedence.
+In the case of mappings, antecedents that are identical are considered “the same object”.
+```
+let bases: obj = [
+	1     |-> 'who',
+	'2nd' |-> ['what'],
+	1 + 2 |-> ['i' |-> ['don’t' |-> 'know']],
+	4 - 1 |-> [i= [`don’t`= 'know']],
+];
+```
+The consequent corresponding to the antecedent `3` will be `` [i= [`don’t`= 'know']] ``.
+
+Mappings may have several antecedents that are un-identical but “equal”.
+```
+let x: [int] = [3];
+let y: [int] = [3];
+let bases: obj = [
+	0.0  |-> 'who',
+	-0.0 |-> ['what'],
+	x |-> ['i' |-> ['don’t' |-> 'know']],
+	y |-> [i= [`don’t`= 'know']],
+];
+```
+In this example, the antecedents `0.0` and `-0.0` are not identical
+(even if they are equal by the floating-point definition of equality).
+Thus we are able to retrieve the different consequents at each of those antecedents.
+Similarly, `x` and `y` are not identical, but they are equal by tuple composition.
+Even though `0.0 == -0.0` and `x == y`, this mapping has four entries.

@@ -22,7 +22,7 @@ export class Float64 extends SolidNumber<Float64> {
 	}
 
 	override toString(): string {
-		return `${ this.value }`
+		return `${ this.value }${ (this.value % 1 === 0) ? '.0' : '' }`
 	}
 	protected override identical_helper(value: SolidObject): boolean {
 		return value instanceof Float64 && this.is(value)

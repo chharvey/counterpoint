@@ -27,6 +27,9 @@ import {
 	Int16,
 	Float64,
 	SolidString,
+	SolidTuple,
+	SolidRecord,
+	SolidMapping,
 } from '../../src/typer/index.js';
 import {
 	Builder,
@@ -821,9 +824,6 @@ describe('ASTNodeSolid', () => {
 
 	describe('ASTNodeType', () => {
 		describe('#assess', () => {
-			function typeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeType {
-				return AST.ASTNodeDeclarationType.fromSource(`type T = ${ typestring };`, config).children[1];
-			}
 			it('computes the value of constant null, boolean, or number types.', () => {
 				assert.deepStrictEqual([
 					`null`,
@@ -850,7 +850,7 @@ describe('ASTNodeSolid', () => {
 				assert.deepStrictEqual(
 					((goal
 						.children[1] as AST.ASTNodeDeclarationType)
-						.children[1] as AST.ASTNodeTypeAlias)
+						.value as AST.ASTNodeTypeAlias)
 						.assess(validator),
 					Int16,
 				);
@@ -868,16 +868,9 @@ describe('ASTNodeSolid', () => {
 					SolidObject,
 				])
 			})
-			Dev.supports('literalCollection') && specify('ASTNodeTypeEmptyCollection', () => {
-				const node: AST.ASTNodeType = typeFromString(`[]`);
-				assert.deepStrictEqual(
-					node.assess(new Validator()),
-					new SolidTypeTuple().intersect(new SolidTypeRecord()),
-				);
-			});
-			Dev.supports('literalCollection') && specify('ASTNodeTypeList', () => {
+			Dev.supports('literalCollection') && specify('ASTNodeTypeTuple', () => {
 				const validator: Validator = new Validator();
-				const node: AST.ASTNodeTypeList = typeFromString(`[int, bool, str]`) as AST.ASTNodeTypeList;
+				const node: AST.ASTNodeTypeTuple = AST.ASTNodeTypeTuple.fromSource(`[int, bool, str]`);
 				assert.deepStrictEqual(
 					node.assess(validator),
 					new SolidTypeTuple(node.children.map((c) => c.assess(validator))),
@@ -885,18 +878,18 @@ describe('ASTNodeSolid', () => {
 			});
 			Dev.supports('literalCollection') && specify('ASTNodeTypeRecord', () => {
 				const validator: Validator = new Validator();
-				const node: AST.ASTNodeTypeRecord = typeFromString(`[x: int, y: bool, z: str]`) as AST.ASTNodeTypeRecord;
+				const node: AST.ASTNodeTypeRecord = AST.ASTNodeType.fromSource(`[x: int, y: bool, z: str]`) as AST.ASTNodeTypeRecord;
 				assert.deepStrictEqual(
 					node.assess(validator),
 					new SolidTypeRecord(new Map<bigint, SolidType>(node.children.map((c) => [
-						c.children[0].id,
-						c.children[1].assess(validator),
+						c.key.id,
+						c.value.assess(validator),
 					]))),
 				);
 			});
 			it('computes the value of a nullified (ORNULL) type.', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeTypeOperationUnary.fromSource(`int!`).assess(new Validator()),
+					AST.ASTNodeTypeOperationUnary.fromSource(`int?`).assess(new Validator()),
 					Int16.union(SolidNull),
 				)
 			})
@@ -964,9 +957,9 @@ describe('ASTNodeSolid', () => {
 				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidType.UNKNOWN);
 			});
 			Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
-				let templates: AST.ASTNodeTemplate[];
+				let templates: readonly AST.ASTNodeTemplate[];
 				function initTemplates() {
-					templates = [
+					return [
 						AST.ASTNodeTemplate.fromSource(`'''42😀''';`),
 						AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
 						(AST.ASTNodeGoal.fromSource(`
@@ -974,14 +967,14 @@ describe('ASTNodeSolid', () => {
 							'''the answer is {{ x * 2 }} but what is the question?''';
 						`)
 							.children[1] as AST.ASTNodeStatementExpression)
-							.children[0] as AST.ASTNodeTemplate,
-					];
+							.expr as AST.ASTNodeTemplate,
+					] as const;
 				}
 				context('with constant folding on.', () => {
 					const validator: Validator = new Validator();
 					let types: SolidType[];
 					before(() => {
-						initTemplates();
+						templates = initTemplates();
 						types = templates.map((t) => assert_wasCalled(t.assess, 1, (orig, spy) => {
 							t.assess = spy;
 							try {
@@ -1003,7 +996,7 @@ describe('ASTNodeSolid', () => {
 				});
 				context('with constant folding off.', () => {
 					it('always returns `String`.', () => {
-						initTemplates();
+						templates = initTemplates();
 						templates.forEach((t) => {
 							assert.deepStrictEqual(t.type(new Validator(folding_off)), SolidString);
 						});
@@ -1011,48 +1004,59 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 
-			Dev.supports('literalCollection') && describe('ASTNodeList', () => {
-				it('returns a SolidTupleType object.', () => {
+			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Mapping}', () => {
+				let collections: readonly [
+					AST.ASTNodeTuple,
+					AST.ASTNodeRecord,
+					AST.ASTNodeMapping,
+				];
+				function initCollections() {
+					return [
+						AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
+						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
+						AST.ASTNodeMapping.fromSource(`
+							[
+								'a' || '' |-> 1,
+								21 + 21   |-> 2.0,
+								3 * 1.0   |-> 'three',
+							];
+						`),
+					] as const;
+				}
+				context('with constant folding on.', () => {
 					const validator: Validator = new Validator();
-					const node: AST.ASTNodeList = AST.ASTNodeList.fromSource(`
-						[1, 2.0, 'three'];
-					`);
-					assert.deepStrictEqual(
-						node.type(validator),
-						new SolidTypeTuple(node.children.map((c) => c.type(validator))),
-					);
+					let types: SolidType[];
+					before(() => {
+						collections = initCollections();
+						types = collections.map((c) => assert_wasCalled(c.assess, 1, (orig, spy) => {
+							c.assess = spy;
+							try {
+								return c.type(validator);
+							} finally {
+								c.assess = orig;
+							};
+						}));
+					});
+					it('returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
+						assert.deepStrictEqual(
+							types,
+							collections.map((c) => new SolidTypeConstant(c.assess(validator)!)),
+						);
+					});
 				});
-			});
-
-			Dev.supports('literalCollection') && describe('ASTNodeRecord', () => {
-				it('returns a SolidRecordType object.', () => {
-					const validator: Validator = new Validator();
-					const node: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(`
-						[a= 1, b= 2.0, c= 'three'];
-					`);
+				it('with constant folding off.', () => {
+					collections = initCollections();
+					const validator: Validator = new Validator(folding_off);
 					assert.deepStrictEqual(
-						node.type(validator),
-						new SolidTypeRecord(new Map(node.children.map((c) => [
-							c.children[0].id,
-							c.children[1].type(validator),
-						]))),
-					);
-				});
-			});
-
-			Dev.supports('literalCollection') && describe('ASTNodeMapping', () => {
-				it('returns `SolidObject`.', () => {
-					const validator: Validator = new Validator();
-					const node: AST.ASTNodeMapping = AST.ASTNodeMapping.fromSource(`
+						collections.map((node) => node.type(validator)),
 						[
-							'a' || '' |-> 1,
-							21 + 21   |-> 2.0,
-							3 * 1.0   |-> 'three',
-						];
-					`);
-					assert.deepStrictEqual(
-						node.type(validator),
-						SolidObject,
+							new SolidTypeTuple(collections[0].children.map((c) => c.type(validator))),
+							new SolidTypeRecord(new Map(collections[1].children.map((c) => [
+								c.key.id,
+								c.value.type(validator),
+							]))),
+							SolidMapping,
+						],
 					);
 				});
 			});
@@ -1090,6 +1094,16 @@ describe('ASTNodeSolid', () => {
 								[`?42;`,     false],
 								[`?4.2e+1;`, false],
 							]), (v) => SolidBoolean.fromBoolean(v)))
+							Dev.supports('literalCollection') && typeOperations(new Map([
+								[`![];`,          SolidBoolean.FALSE],
+								[`![42];`,        SolidBoolean.FALSE],
+								[`![a= 42];`,     SolidBoolean.FALSE],
+								[`![41 |-> 42];`, SolidBoolean.FALSE],
+								[`?[];`,          SolidBoolean.TRUE],
+								[`?[42];`,        SolidBoolean.FALSE],
+								[`?[a= 42];`,     SolidBoolean.FALSE],
+								[`?[41 |-> 42];`, SolidBoolean.FALSE],
+							]));
 						});
 					});
 					context('with constant folding off.', () => {
@@ -1105,7 +1119,7 @@ describe('ASTNodeSolid', () => {
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
 								goal.children.slice(2).forEach((stmt) => {
-									assert.deepStrictEqual((stmt.children[0] as AST.ASTNodeExpression).type(validator), SolidBoolean.TRUETYPE);
+									assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidBoolean.TRUETYPE);
 								});
 							});
 							it('returns type `bool` for a supertype of `null` or a supertype of `false`.', () => {
@@ -1123,10 +1137,10 @@ describe('ASTNodeSolid', () => {
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
 								goal.children.slice(4).forEach((stmt) => {
-									assert.deepStrictEqual((stmt.children[0] as AST.ASTNodeExpression).type(validator), SolidBoolean);
+									assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidBoolean);
 								});
 							});
-							it('returns type `true` for any type not a supertype of `null` or `false`.', () => {
+							it('returns type `false` for any type not a supertype of `null` or `false`.', () => {
 								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 									let unfixed a: int = 42;
 									let unfixed b: float = 4.2;
@@ -1136,8 +1150,22 @@ describe('ASTNodeSolid', () => {
 								const validator: Validator = new Validator(folding_off);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
-								goal.children.slice(4).forEach((stmt) => {
-									assert.deepStrictEqual((stmt.children[0] as AST.ASTNodeExpression).type(validator), SolidBoolean.TRUETYPE);
+								goal.children.slice(2).forEach((stmt) => {
+									assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidBoolean.FALSETYPE);
+								});
+							});
+							Dev.supports('literalCollection') && it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									![];
+									![42];
+									![a= 42];
+									![41 |-> 42];
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								goal.children.forEach((stmt) => {
+									assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidBoolean.FALSETYPE);
 								});
 							});
 						});
@@ -1150,6 +1178,14 @@ describe('ASTNodeSolid', () => {
 									`?null;`,
 									`?42;`,
 									`?4.2e+1;`,
+								].map((src) => AST.ASTNodeOperation.fromSource(src, folding_off).type(validator)).forEach((typ) => {
+									assert.deepStrictEqual(typ, SolidBoolean);
+								});
+								Dev.supports('literalCollection') && [
+									`?[];`,
+									`?[42];`,
+									`?[a= 42];`,
+									`?[41 |-> 42];`,
 								].map((src) => AST.ASTNodeOperation.fromSource(src, folding_off).type(validator)).forEach((typ) => {
 									assert.deepStrictEqual(typ, SolidBoolean);
 								});
@@ -1168,26 +1204,21 @@ describe('ASTNodeSolid', () => {
 						});
 					});
 					context('with folding off but int coersion on.', () => {
+						const validator: Validator = new Validator(folding_off);
 						it('returns Integer for integer arithmetic.', () => {
-							const node: AST.ASTNodeOperation = AST.ASTNodeOperationBinaryArithmetic.fromSource(`(7 + 3) * 2;`, folding_off);
+							const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource(`(7 + 3) * 2;`, folding_off);
+							assert.deepStrictEqual(node.type(validator), Int16);
 							assert.deepStrictEqual(
-								[node.type(new Validator(folding_off)), node.children.length],
-								[Int16,                                 2],
-							);
-							assert.deepStrictEqual(
-								[node.children[0].type(new Validator(folding_off)), node.children[1].type(new Validator(folding_off))],
-								[Int16,                                             Int16],
+								[node.operand0.type(validator), node.operand1.type(validator)],
+								[Int16,                         Int16],
 							);
 						});
 						it('returns Float for float arithmetic.', () => {
-							const node: AST.ASTNodeOperation = AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3.0 ^ 2;`, folding_off);
+							const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3.0 ^ 2;`, folding_off);
+							assert.deepStrictEqual(node.type(validator), Float64);
 							assert.deepStrictEqual(
-								[node.type(new Validator(folding_off)), node.children.length],
-								[Float64,                               2],
-							);
-							assert.deepStrictEqual(
-								[node.children[0].type(new Validator(folding_off)), node.children[1].type(new Validator(folding_off))],
-								[Int16,                                             Float64],
+								[node.operand0.type(validator), node.operand1.type(validator)],
+								[Int16,                         Float64],
 							);
 						});
 					});
@@ -1245,23 +1276,60 @@ describe('ASTNodeSolid', () => {
 					});
 				});
 				describe('ASTNodeOperationBinaryEquality', () => {
-					it('with folding and int coersion on.', () => {
-						typeOperations(xjs.Map.mapValues(new Map([
-							[`2 === 3;`,      false],
-							[`2 !== 3;`,      true],
-							[`2 == 3;`,       false],
-							[`2 != 3;`,       true],
-							[`0 === -0;`,     true],
-							[`0 == -0;`,      true],
-							[`0.0 === 0;`,    false],
-							[`0.0 == 0;`,     true],
-							[`0.0 === -0;`,   false],
-							[`0.0 == -0;`,    true],
-							[`-0.0 === 0;`,   false],
-							[`-0.0 == 0;`,    true],
-							[`-0.0 === 0.0;`, false],
-							[`-0.0 == 0.0;`,  true],
-						]), (v) => SolidBoolean.fromBoolean(v)));
+					context('with folding and int coersion on.', () => {
+						it('for numeric literals.', () => {
+							typeOperations(xjs.Map.mapValues(new Map([
+								[`2 === 3;`,      false],
+								[`2 !== 3;`,      true],
+								[`2 == 3;`,       false],
+								[`2 != 3;`,       true],
+								[`0 === -0;`,     true],
+								[`0 == -0;`,      true],
+								[`0.0 === 0;`,    false],
+								[`0.0 == 0;`,     true],
+								[`0.0 === -0;`,   false],
+								[`0.0 == -0;`,    true],
+								[`-0.0 === 0;`,   false],
+								[`-0.0 == 0;`,    true],
+								[`-0.0 === 0.0;`, false],
+								[`-0.0 == 0.0;`,  true],
+							]), (v) => SolidBoolean.fromBoolean(v)));
+						});
+						Dev.supports('literalCollection') && it('returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
+							const validator: Validator = new Validator();
+							const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+								let a: obj = [];
+								let b: obj = [42];
+								let c: obj = [x= 42];
+								let d: obj = [41 |-> 42];
+								a !== [];
+								b !== [42];
+								c !== [x= 42];
+								d !== [41 |-> 42];
+								a === a;
+								b === b;
+								c === c;
+								d === d;
+								a == [];
+								b == [42];
+								c == [x= 42];
+								d == [41 |-> 42];
+								b != [42, 43];
+								c != [x= 43];
+								c != [y= 42];
+								d != [41 |-> 43];
+								d != [43 |-> 42];
+							`);
+							goal.varCheck(validator);
+							goal.typeCheck(validator);
+							goal.children.slice(4).forEach((stmt) => {
+								const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
+								assert.deepStrictEqual(
+									expr.type(validator),
+									new SolidTypeConstant(expr.assess(validator)!),
+								);
+							});
+						});
 					});
 					context('with folding off but int coersion on.', () => {
 						it('allows coercing of ints to floats if there are any floats.', () => {
@@ -1371,10 +1439,7 @@ describe('ASTNodeSolid', () => {
 					goal.typeCheck(validator);
 					assert.ok(!(goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
 					assert.deepStrictEqual(
-						((goal
-							.children[1] as AST.ASTNodeStatementExpression)
-							.children[0] as AST.ASTNodeExpression)
-							.assess(validator),
+						(goal.children[1] as AST.ASTNodeStatementExpression).expr!.assess(validator),
 						new Int16(42n),
 					);
 				});
@@ -1388,10 +1453,7 @@ describe('ASTNodeSolid', () => {
 					goal.typeCheck(validator);
 					assert.ok((goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
 					assert.deepStrictEqual(
-						((goal
-							.children[1] as AST.ASTNodeStatementExpression)
-							.children[0] as AST.ASTNodeExpression)
-							.assess(validator),
+						(goal.children[1] as AST.ASTNodeStatementExpression).expr!.assess(validator),
 						null,
 					);
 				});
@@ -1406,10 +1468,7 @@ describe('ASTNodeSolid', () => {
 					goal.typeCheck(validator);
 					assert.ok(!(goal.children[1] as AST.ASTNodeDeclarationVariable).unfixed);
 					assert.deepStrictEqual(
-						((goal
-							.children[2] as AST.ASTNodeStatementExpression)
-							.children[0] as AST.ASTNodeExpression)
-							.assess(validator),
+						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.assess(validator),
 						null,
 					);
 				});
@@ -1423,7 +1482,7 @@ describe('ASTNodeSolid', () => {
 						'''the answer is {{ x * 2 }} but what is the question?''';
 					`)
 						.children[1] as AST.ASTNodeStatementExpression)
-						.children[0] as AST.ASTNodeTemplate,
+						.expr as AST.ASTNodeTemplate,
 				];
 				it('returns a constant String for ASTNodeTemplate with no interpolations.', () => {
 					assert.deepStrictEqual(
@@ -1441,6 +1500,106 @@ describe('ASTNodeSolid', () => {
 					assert.deepStrictEqual(
 						templates[2].assess(new Validator()),
 						null,
+					);
+				});
+			});
+
+			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Mapping}', () => {
+				it('returns a constant Tuple/Record/Mapping for foldable entries.', () => {
+					assert.deepStrictEqual(
+						[
+							AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
+							AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
+							AST.ASTNodeMapping.fromSource(`
+								[
+									'a' || '' |-> 1,
+									21 + 21   |-> 2.0,
+									3 * 1.0   |-> 'three',
+								];
+							`),
+						].map((c) => c.assess(new Validator())),
+						[
+							new SolidTuple<SolidObject>([
+								new Int16(1n),
+								new Float64(2.0),
+								new SolidString('three'),
+							]),
+							new SolidRecord<SolidObject>(new Map<bigint, SolidObject>([
+								[0x100n, new Int16(1n)],
+								[0x101n, new Float64(2.0)],
+								[0x102n, new SolidString('three')],
+							])),
+							new SolidMapping<SolidObject, SolidObject>(new Map<SolidObject, SolidObject>([
+								[new SolidString('a'), new Int16(1n)],
+								[new Int16(42n),       new Float64(2.0)],
+								[new Float64(3.0),     new SolidString('three')],
+							])),
+						],
+					);
+				});
+				it('returns null for non-foldable entries.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let unfixed x: int = 1;
+						let unfixed y: float = 2.0;
+						let unfixed z: str = 'three';
+						[x, 2.0, 'three'];
+						[a= 1, b= y, c= 'three'];
+						[
+							'a' || '' |-> 1,
+							21 + 21   |-> y,
+							3 * 1.0   |-> 'three',
+						];
+					`);
+					const tuple:   AST.ASTNodeTuple   = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple;
+					const record:  AST.ASTNodeRecord  = (goal.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord;
+					const mapping: AST.ASTNodeMapping = (goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMapping;
+					assert.deepStrictEqual(
+						[
+							tuple,
+							record,
+							mapping,
+						].map((c) => c.assess(new Validator())),
+						[null, null, null],
+					);
+				});
+				it('ASTNodeRecord overwrites duplicate keys.', () => {
+					assert.deepStrictEqual(
+						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, a= 'three'];`).assess(new Validator()),
+						new SolidRecord<SolidObject>(new Map<bigint, SolidObject>([
+							[0x101n, new Float64(2.0)],
+							[0x100n, new SolidString('three')],
+						])),
+					);
+				});
+				it('ASTNodeMapping overwrites identical antecedents.', () => {
+					assert.deepStrictEqual(
+						AST.ASTNodeMapping.fromSource(`
+							[
+								'a' |-> 1,
+								0   |-> 2.0,
+								-0  |-> 'three',
+							];
+						`).assess(new Validator()),
+						new SolidMapping<SolidObject, SolidObject>(new Map<SolidObject, SolidObject>([
+							[new SolidString('a'), new Int16(1n)],
+							[new Int16(0n),        new SolidString('three')],
+						])),
+					);
+				});
+				it('ASTNodeMapping does not overwrite non-identical (even if equal) antecedents.', () => {
+					assert.deepStrictEqual(
+						AST.ASTNodeMapping.fromSource(`
+							[
+								'a'  |-> 1,
+								0.0  |-> 2.0,
+								-0.0 |-> 'three',
+							];
+						`).assess(new Validator()),
+						new SolidMapping<SolidObject, SolidObject>(new Map<SolidObject, SolidObject>([
+							[new SolidString('a'), new Int16(1n)],
+							[new Float64(0.0),     new Float64(2.0)],
+							[new Float64(-0.0),    new SolidString('three')],
+						])),
 					);
 				});
 			});
@@ -1468,6 +1627,12 @@ describe('ASTNodeSolid', () => {
 							[`!'';`,      SolidBoolean.FALSE],
 							[`!'hello';`, SolidBoolean.FALSE],
 						]))
+						Dev.supports('literalCollection') && assessOperations(new Map([
+							[`![];`,          SolidBoolean.FALSE],
+							[`![42];`,        SolidBoolean.FALSE],
+							[`![a= 42];`,     SolidBoolean.FALSE],
+							[`![41 |-> 42];`, SolidBoolean.FALSE],
+						]));
 					})
 					specify('[operator=EMP]', () => {
 						assessOperations(new Map([
@@ -1484,6 +1649,12 @@ describe('ASTNodeSolid', () => {
 							[`?'';`,      SolidBoolean.TRUE],
 							[`?'hello';`, SolidBoolean.FALSE],
 						]))
+						Dev.supports('literalCollection') && assessOperations(new Map([
+							[`?[];`,          SolidBoolean.TRUE],
+							[`?[42];`,        SolidBoolean.FALSE],
+							[`?[a= 42];`,     SolidBoolean.FALSE],
+							[`?[41 |-> 42];`, SolidBoolean.FALSE],
+						]));
 					})
 				});
 				describe('ASTNodeOperationBinaryArithmetic', () => {
@@ -1596,6 +1767,37 @@ describe('ASTNodeSolid', () => {
 						[`'hello\\u{20}world' !== 'hello20world';`, true],
 						[`'hello\\u{20}world' !=  'hello20world';`, true],
 					]), (val) => SolidBoolean.fromBoolean(val)))
+					Dev.supports('literalCollection') && (() => {
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+							let a: obj = [];
+							let b: obj = [42];
+							let c: obj = [x= 42];
+							let d: obj = [41 |-> 42];
+							a !== [];
+							b !== [42];
+							c !== [x= 42];
+							d !== [41 |-> 42];
+							a === a;
+							b === b;
+							c === c;
+							d === d;
+							a == [];
+							b == [42];
+							c == [x= 42];
+							d == [41 |-> 42];
+							b != [42, 43];
+							c != [x= 43];
+							c != [y= 42];
+							d != [41 |-> 43];
+							d != [43 |-> 42];
+						`);
+						const validator: Validator = new Validator();
+						goal.varCheck(validator);
+						goal.typeCheck(validator);
+						goal.children.slice(4).forEach((stmt) => {
+							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.assess(validator), SolidBoolean.TRUE);
+						});
+					})();
 				}).timeout(10_000);
 				specify('ASTNodeOperationBinaryLogical', () => {
 					assessOperations(new Map<string, SolidObject>([

@@ -13,7 +13,7 @@ let my_var: str = 'Hello, world!';
 ```
 When we declare a variable, we must assign it a value, using the **assignment operator** `=`.
 In some languages, declaring a variable and at the same time assigning it a value is called **initialization**.
-In Solid, this is mandatory — it’s not possible to declare a value without initializing it.
+In Solid, this is mandatory — It’s not possible to declare a value without initializing it.
 The assignment operator is an equals sign, but it does not represent equality in the mathematical sense.
 It means we’re setting the value on the right-hand side to the variable on the left.
 In programming terms, we say, “the variable `my_var` is **assigned the value** `'Hello, world!'`”,
@@ -231,10 +231,25 @@ Also like variables, type aliases can create temporal dead zones.
 Solid does not hoist type aliases.
 *(NOTE: This may change in future versions.)*
 ```
-let my_var: MyType = 'Hello, programmer!'; %> ReferenceError
+let my_first_var: MyFirstType = 'Hello, world!';      %> ReferenceError [1]
+let my_next_var:  MyNextType  = 'Hello, programmer!'; %> ReferenceError [2]
 %%------------------------
 --- TEMPORAL DEAD ZONE ---
 ------------------------%%
 type MyType = str;
 ```
-> ReferenceError: `MyType` is used before it is declared.
+> 1. ReferenceError: `MyFirstType` is never declared.
+> 2. ReferenceError: `MyNextType` is used before it is declared.
+
+We get an error if an identifier is declared as a type but accessed as a regular variable (a “value variable”).
+The same is true conversely.
+*(NOTE: This may change in future versions.)*
+```
+type MyFirstType = float;
+let my_first_var: unknown = MyFirstType; %> ReferenceError [1]
+
+let my_next_var: float = 4.2;
+type MyNextType = my_next_var | int;  %> ReferenceError [2]
+```
+> 1. ReferenceError: `MyFirstType` refers to a type, but is used as a value.
+> 2. ReferenceError: `my_next_var` refers to a value, but is used as a type.

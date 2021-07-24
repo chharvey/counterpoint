@@ -29,6 +29,7 @@ PrimitiveLiteral ::=
 
 
 TypeKeyword ::=
+	| "void"
 	| "bool"
 	| "int"
 	| "float"
@@ -39,11 +40,10 @@ TypeKeyword ::=
 PropertyType
 	::= Word ":" Type;
 
-TypeTupleLiteral  ::= "[" ","? Type#         ","? "]";
-TypeRecordLiteral ::= "[" ","? PropertyType# ","? "]";
+TypeTupleLiteral  ::= "[" ( ","? Type#         ","? )? "]";
+TypeRecordLiteral ::= "["   ","? PropertyType# ","?    "]";
 
 TypeUnit ::=
-	| "[" "]"
 	| IDENTIFIER
 	| PrimitiveLiteral
 	| TypeKeyword
@@ -54,6 +54,7 @@ TypeUnit ::=
 
 TypeUnarySymbol ::=
 	| TypeUnit
+	| TypeUnarySymbol "?"
 	| TypeUnarySymbol "!"
 ;
 
@@ -74,16 +75,15 @@ StringTemplate ::=
 Property ::= Word       "="   Expression;
 Case     ::= Expression "|->" Expression;
 
-ListLiteral    ::= "[" ","? Expression# ","? "]";
-RecordLiteral  ::= "[" ","? Property#   ","? "]";
-MappingLiteral ::= "[" ","? Case#       ","? "]";
+TupleLiteral   ::= "[" ( ","? Expression# ","? )? "]";
+RecordLiteral  ::= "["   ","? Property#   ","?    "]";
+MappingLiteral ::= "["   ","? Case#       ","?    "]";
 
 ExpressionUnit ::=
-	| "[" "]"
 	| IDENTIFIER
 	| PrimitiveLiteral
 	| StringTemplate
-	| ListLiteral
+	| TupleLiteral
 	| RecordLiteral
 	| MappingLiteral
 	| "(" Expression ")"
