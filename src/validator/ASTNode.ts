@@ -83,18 +83,14 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 }
 /** Implementation of `xjs.Array.forEachAggregated` until it is released. */
 function forEachAggregated<T>(array: readonly T[], callback: (item: T) => void): void {
-	const errors: readonly Error[] = array.flatMap((it) => {
+	const errors: readonly Error[] = array.map((it) => {
 		try {
 			callback(it);
-			return [];
+			return null;
 		} catch (err) {
-			return (
-				(err instanceof AggregateError) ? err.errors :
-				(err instanceof Error) ? [err] :
-				[new Error(`${ err }`)]
-			);
+			return (err instanceof Error) ? err : new Error(`${ err }`);
 		}
-	});
+	}).filter((e): e is Error => e instanceof Error);
 	if (errors.length) {
 		throw (errors.length === 1)
 			? errors[0]
@@ -110,11 +106,7 @@ function mapAggregated<T, U>(array: readonly T[], callback: (item: T) => U): U[]
 		try {
 			success = callback(it);
 		} catch (err) {
-			errors.push(...(
-				(err instanceof AggregateError) ? err.errors :
-				(err instanceof Error) ? [err] :
-				[new Error(`${ err }`)]
-			));
+			errors.push((err instanceof Error) ? err : new Error(`${ err }`));
 			return;
 		}
 		successes.push(success);
