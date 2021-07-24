@@ -16,7 +16,7 @@ export class SolidTypeMapping extends SolidType {
 		readonly antecedenttypes: SolidType,
 		readonly consequenttypes: SolidType,
 	) {
-		super(new Set([new SolidMapping()]));
+		super(SolidMapping.values);
 	}
 
 	override toString(): string {

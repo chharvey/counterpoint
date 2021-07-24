@@ -118,6 +118,16 @@ The term “normal completion” refers to any completion with a \`type\` of *no
 the term “abrupt completion” refers to any completion with a \`type\` other than *normal*.
 
 
+#### EntryTypeStructure
+An **EntryTypeStructure** represents an entry in a static collection type.
+It contains the type value and whether the entry is optional.
+
+Property     | Description
+------------ | -----------
+\`type\`     | the Solid Language Type
+\`optional\` | a Boolean, whether the entry is optional
+
+
 #### SymbolStructure
 A **SymbolStructure** encapsulates the compile-time information of a declared symbol in Solid source code.
 Symbols are identifiers that refer to Solid Language Values or Solid Language Types.
@@ -127,10 +137,10 @@ Symbol structures’ properties are described in the tables below.
 ##### SymbolStructureType
 A **SymbolStructureType** represents a type alias referencing a Solid Language Type.
 
-Property    | Description
------------ | -----------
-\`id\`      | the unique identifier of the declared symbol
-\`value\`   | the assessed value (a Solid Language Type) of this symbol
+Property  | Description
+--------- | -----------
+\`id\`    | the unique identifier of the declared symbol
+\`value\` | the assessed value (a Solid Language Type) of this symbol
 
 ##### SymbolStructureVar
 A **SymbolStructureVar** represents a variable referencing a Solid Language Value.
@@ -179,6 +189,7 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 - [String](#string)
 - [Object](#object)
 - [Unknown](#unknown)
+- [Compound Types](#compound-types)
 
 
 ### Never
@@ -268,6 +279,25 @@ and no type (except `unknown` itself) is a supertype of `unknown`.
 and the “absorption element” of the [union](#union) operation.
 
 
+### Compound Types
+
+#### Tuple Type
+A **Tuple Type** represents [`Tuple` objects](./built-ins.md#tuple) and is an ordered list of types.
+The objects that any given Tuple Type represents are `Tuple` objects whose items’ types
+match up with the types in the list in order.
+
+#### Record Type
+A **Record Type** represents [`Record` objects](./built-ins.md#record) and is an unordered list of name–value pairs.
+The objects that any given Record Type represents are `Record` objects whose properties’ types
+match up with the types in the list by name.
+
+#### Mapping Type
+A **Mapping Type** represents [`Mapping` objects](./built-ins.md#mapping) and is a pair of two types,
+the first of which represents antecedents and the second of which represents consequents.
+The objects that any given Mapping Type represents are `Mapping` objects whose
+antcedents and consequents are respectively assignable to the types in the Mapping Type.
+
+
 
 ## Type Operations
 
@@ -278,6 +308,27 @@ where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
 is a data type that contains values assignable to *both* type \`‹T›\` and type \`‹U›\`.
 Such a data type is called the **intersection** of \`‹T›\` and \`‹U›\`.
 
+```
+Type Intersect(Type a, Type b) :=
+	// 1-5 | `T  & never   == never`
+	1. *If* *UnwrapAffirm:* `Identical(b, Never)`:
+		1. *Return:* `Never`.
+	2. *If* *UnwrapAffirm:* `Identical(a, Never)`:
+		1. *Return:* `a`.
+	// 1-6 | `T  & unknown == T`
+	3. *If* *UnwrapAffirm:* `Identical(b, Unknown)`:
+		1. *Return:* `a`.
+	4. *If* *UnwrapAffirm:* `Identical(a, Unknown)`:
+		1. *Return:* `b`.
+	// 3-3 | `A <: B  <->  A  & B == A`
+	5. *If* *UnwrapAffirm:* `Subtype(a, b)`:
+		1. *Return:* `a`.
+	6. *If* *UnwrapAffirm:* `Subtype(b, a)`:
+		1. *Return:* `b`.
+	7. *Return:* a new type with values given by the the intersection of values in `a` and `b`.
+;
+```
+
 
 ### Union
 A data type specified as \`Or<‹T›, ‹U›>\`,
@@ -287,6 +338,27 @@ Such a data type is called the **union** of \`‹T›\` and \`‹U›\`.
 
 For example, the type \`Or<Integer, Null>\` contains values of either \`Integer\` or \`Null\`.
 (Since there is no overlap, there are no values of both \`Integer\` *and* \`Null\`.)
+
+```
+Type Union(Type a, Type b) :=
+	// 1-7 | `T \| never   == T`
+	1. *If* *UnwrapAffirm:* `Identical(b, Never)`:
+		1. *Return:* `a`.
+	2. *If* *UnwrapAffirm:* `Identical(a, Never)`:
+		1. *Return:* `b`.
+	// 1-8 | `T \| unknown == unknown`
+	3. *If* *UnwrapAffirm:* `Identical(b, Unknown)`:
+		1. *Return:* `b`.
+	4. *If* *UnwrapAffirm:* `Identical(a, Unknown)`:
+		1. *Return:* `Unknown`.
+	// 3-4 | `A <: B  <->  A \| B == B`
+	5. *If* *UnwrapAffirm:* `Subtype(a, b)`:
+		1. *Return:* `b`.
+	6. *If* *UnwrapAffirm:* `Subtype(b, a)`:
+		1. *Return:* `a`.
+	7. *Return:* a new type with values given by the the union of values in `a` and `b`.
+;
+```
 
 
 ### Subtype

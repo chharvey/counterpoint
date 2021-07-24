@@ -193,26 +193,34 @@ export class Decorator {
 			return new AST.ASTNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeEntryType) {
-			return new AST.ASTNodeItemType(node, false, [
+			return new AST.ASTNodeItemType(
+				node,
+				false,
 				this.decorate(node.children[0]),
-			]);
+			);
 
-		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeEntryType_Optional) {
-			return new AST.ASTNodeItemType(node, true, [
+		} else if (Dev.supports('optionalAccess') && node instanceof PARSER.ParseNodeEntryType_Optional) {
+			return new AST.ASTNodeItemType(
+				node,
+				true,
 				this.decorate(node.children[1]),
-			]);
+			);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeEntryType_Named) {
-			return new AST.ASTNodePropertyType(node, false, [
+			return new AST.ASTNodePropertyType(
+				node,
+				false,
 				this.decorate(node.children[0]),
 				this.decorate(node.children[2]),
-			]);
+			);
 
-		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeEntryType_Named_Optional) {
-			return new AST.ASTNodePropertyType(node, true, [
+		} else if (Dev.supports('optionalAccess') && node instanceof PARSER.ParseNodeEntryType_Named_Optional) {
+			return new AST.ASTNodePropertyType(
+				node,
+				true,
 				this.decorate(node.children[0]),
 				this.decorate(node.children[2]),
-			]);
+			);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeItemsType) {
 			return (node.children.length <= 2)
@@ -256,9 +264,11 @@ export class Decorator {
 		} else if (node instanceof PARSER.ParseNodeTypeUnarySymbol) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: new AST.ASTNodeTypeOperationUnary(node, this.TYPEOPERATORS_UNARY.get(node.children[1].source as Punctuator)!, [
+				: new AST.ASTNodeTypeOperationUnary(
+					node,
+					this.TYPEOPERATORS_UNARY.get(node.children[1].source as Punctuator)!,
 					this.decorate(node.children[0]),
-				])
+				);
 
 		} else if (
 			node instanceof PARSER.ParseNodeTypeIntersection ||
@@ -266,10 +276,12 @@ export class Decorator {
 		) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: new AST.ASTNodeTypeOperationBinary(node, this.TYPEOPERATORS_BINARY.get(node.children[1].source as Punctuator)!, [
+				: new AST.ASTNodeTypeOperationBinary(
+					node,
+					this.TYPEOPERATORS_BINARY.get(node.children[1].source as Punctuator)!,
 					this.decorate(node.children[0]),
 					this.decorate(node.children[2]),
-				])
+				);
 
 		} else if (node instanceof PARSER.ParseNodeType) {
 			return this.decorate(node.children[0])
@@ -289,16 +301,18 @@ export class Decorator {
 			);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeProperty) {
-			return new AST.ASTNodeProperty(node, [
+			return new AST.ASTNodeProperty(
+				node,
 				this.decorate(node.children[0]),
 				this.decorate(node.children[2]),
-			]);
+			);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeCase) {
-			return new AST.ASTNodeCase(node, [
+			return new AST.ASTNodeCase(
+				node,
 				this.decorate(node.children[0]),
 				this.decorate(node.children[2]),
-			]);
+			);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTupleLiteral) {
 			return new AST.ASTNodeTuple(node, (node.children.length === 2) ? [] : this.decorate(
@@ -333,7 +347,7 @@ export class Decorator {
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodePropertyAccess) {
 			return (
-				(node.children[1] instanceof TOKEN.TokenNumber) ? new AST.ASTNodeIndex(node, [new AST.ASTNodeConstant(node.children[1])]) :
+				(node.children[1] instanceof TOKEN.TokenNumber) ? new AST.ASTNodeIndex(node, new AST.ASTNodeConstant(node.children[1])) :
 				(node.children[1] instanceof PARSER.ParseNodeWord) ? this.decorate(node.children[1]) :
 				this.decorate(node.children[2]!)
 			);
@@ -341,19 +355,23 @@ export class Decorator {
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeExpressionCompound) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: new AST.ASTNodeAccess(node, Dev.supports('optionalAccess') && this.isOptionalAccess(node.children[1]), [
+				: new AST.ASTNodeAccess(
+					node,
+					Dev.supports('optionalAccess') && this.isOptionalAccess(node.children[1]),
 					this.decorate(node.children[0]),
 					this.decorate(node.children[1]),
-				]);
+				);
 
 		} else if (node instanceof PARSER.ParseNodeExpressionUnarySymbol) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
 				: (node.children[0].source === Punctuator.AFF) // `+a` is a no-op
 					? this.decorate(node.children[1])
-					: new AST.ASTNodeOperationUnary(node, this.OPERATORS_UNARY.get(node.children[0].source as Punctuator) as ValidOperatorUnary, [
+					: new AST.ASTNodeOperationUnary(
+						node,
+						this.OPERATORS_UNARY.get(node.children[0].source as Punctuator) as ValidOperatorUnary,
 						this.decorate(node.children[1]),
-					])
+					);
 
 		} else if (
 			node instanceof PARSER.ParseNodeExpressionExponential    ||
@@ -378,78 +396,101 @@ export class Decorator {
 					node instanceof PARSER.ParseNodeExpressionAdditive
 				) ? (
 					// `a - b` is syntax sugar for `a + -(b)`
-					(operator === Operator.SUB) ? new AST.ASTNodeOperationBinaryArithmetic(node, Operator.ADD, [
+					(operator === Operator.SUB) ? new AST.ASTNodeOperationBinaryArithmetic(
+						node,
+						Operator.ADD,
 						operands[0],
-						new AST.ASTNodeOperationUnary(node.children[2], Operator.NEG, [
+						new AST.ASTNodeOperationUnary(
+							node.children[2],
+							Operator.NEG,
 							operands[1],
-						]),
-					]) :
-					new AST.ASTNodeOperationBinaryArithmetic(node, operator as ValidOperatorArithmetic, operands)
+						),
+					) :
+					new AST.ASTNodeOperationBinaryArithmetic(node, operator as ValidOperatorArithmetic, ...operands)
 
 				) : (node instanceof PARSER.ParseNodeExpressionComparative) ? (
 					// `a !< b` is syntax sugar for `!(a < b)`
-					(operator === Operator.NLT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
-						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.LT, operands),
-					]) :
+					(operator === Operator.NLT) ? new AST.ASTNodeOperationUnary(
+						node,
+						Operator.NOT,
+						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.LT, ...operands),
+					) :
 					// `a !> b` is syntax sugar for `!(a > b)`
-					(operator === Operator.NGT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
-						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.GT, operands),
-					]) :
+					(operator === Operator.NGT) ? new AST.ASTNodeOperationUnary(
+						node,
+						Operator.NOT,
+						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.GT, ...operands),
+					) :
 					// `a isnt b` is syntax sugar for `!(a is b)`
-					(operator === Operator.ISNT) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
-						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.IS, operands),
-					]) :
-					new AST.ASTNodeOperationBinaryComparative(node, operator as ValidOperatorComparative, operands)
+					(operator === Operator.ISNT) ? new AST.ASTNodeOperationUnary(
+						node,
+						Operator.NOT,
+						new AST.ASTNodeOperationBinaryComparative(node.children[0], Operator.IS, ...operands),
+					) :
+					new AST.ASTNodeOperationBinaryComparative(node, operator as ValidOperatorComparative, ...operands)
 
 				) : (node instanceof PARSER.ParseNodeExpressionEquality) ? (
 					// `a !== b` is syntax sugar for `!(a === b)`
-					(operator === Operator.NID) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
-						new AST.ASTNodeOperationBinaryEquality(node.children[0], Operator.ID, operands),
-					]) :
+					(operator === Operator.NID) ? new AST.ASTNodeOperationUnary(
+						node,
+						Operator.NOT,
+						new AST.ASTNodeOperationBinaryEquality(node.children[0], Operator.ID, ...operands),
+					) :
 					// `a != b` is syntax sugar for `!(a == b)`
-					(operator === Operator.NEQ) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
-						new AST.ASTNodeOperationBinaryEquality(node.children[0], Operator.EQ, operands),
-					]) :
-					new AST.ASTNodeOperationBinaryEquality(node, operator as ValidOperatorEquality, operands)
+					(operator === Operator.NEQ) ? new AST.ASTNodeOperationUnary(
+						node,
+						Operator.NOT,
+						new AST.ASTNodeOperationBinaryEquality(node.children[0], Operator.EQ, ...operands),
+					) :
+					new AST.ASTNodeOperationBinaryEquality(node, operator as ValidOperatorEquality, ...operands)
 
 				) : /* (
 					node instanceof PARSER.ParseNodeExpressionConjunctive ||
 					node instanceof PARSER.ParseNodeExpressionDisjunctive
 				) ? */ (
 					// `a !& b` is syntax sugar for `!(a && b)`
-					(operator === Operator.NAND) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
-						new AST.ASTNodeOperationBinaryLogical(node.children[0], Operator.AND, operands),
-					]) :
+					(operator === Operator.NAND) ? new AST.ASTNodeOperationUnary(
+						node,
+						Operator.NOT,
+						new AST.ASTNodeOperationBinaryLogical(node.children[0], Operator.AND, ...operands),
+					) :
 					// `a !| b` is syntax sugar for `!(a || b)`
-					(operator === Operator.NOR) ? new AST.ASTNodeOperationUnary(node, Operator.NOT, [
-						new AST.ASTNodeOperationBinaryLogical(node.children[0], Operator.OR, operands),
-					]) :
-					new AST.ASTNodeOperationBinaryLogical(node, operator as ValidOperatorLogical, operands)
+					(operator === Operator.NOR) ? new AST.ASTNodeOperationUnary(
+						node,
+						Operator.NOT,
+						new AST.ASTNodeOperationBinaryLogical(node.children[0], Operator.OR, ...operands),
+					) :
+					new AST.ASTNodeOperationBinaryLogical(node, operator as ValidOperatorLogical, ...operands)
 				)
 			}
 
 		} else if (node instanceof PARSER.ParseNodeExpressionConditional) {
-			return new AST.ASTNodeOperationTernary(node, Operator.COND, [
+			return new AST.ASTNodeOperationTernary(
+				node,
+				Operator.COND,
 				this.decorate(node.children[1]),
 				this.decorate(node.children[3]),
 				this.decorate(node.children[5]),
-			])
+			);
 
 		} else if (node instanceof PARSER.ParseNodeExpression) {
 			return this.decorate(node.children[0])
 
 		} else if (node instanceof PARSER.ParseNodeDeclarationType) {
-			return new AST.ASTNodeDeclarationType(node, [
+			return new AST.ASTNodeDeclarationType(
+				node,
 				new AST.ASTNodeTypeAlias(node.children[1] as TOKEN.TokenIdentifier),
 				this.decorate(node.children[3]),
-			]);
+			);
 
 		} else if (node instanceof PARSER.ParseNodeDeclarationVariable) {
-			return new AST.ASTNodeDeclarationVariable(node, node.children.length === 8, [
+			return new AST.ASTNodeDeclarationVariable(
+				node,
+				node.children.length === 8,
 				new AST.ASTNodeVariable(((node.children.length === 7) ? node.children[1] : node.children[2]) as TOKEN.TokenIdentifier),
 				this.decorate((node.children.length === 7) ? node.children[3] : node.children[4]),
 				this.decorate((node.children.length === 7) ? node.children[5] : node.children[6]),
-			])
+			);
 
 		} else if (node instanceof PARSER.ParseNodeDeclaration) {
 			return this.decorate(node.children[0]);
@@ -458,19 +499,16 @@ export class Decorator {
 			return new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier);
 
 		} else if (node instanceof PARSER.ParseNodeStatementAssignment) {
-			const assignee:   PARSER.ParseNodeAssignee   = node.children[0];
-			const expression: PARSER.ParseNodeExpression = node.children[2]
-			return new AST.ASTNodeAssignment(node, [
-				this.decorate(assignee) as unknown as AST.ASTNodeVariable,
-				this.decorate(expression),
-			])
+			return new AST.ASTNodeAssignment(
+				node,
+				this.decorate(node.children[0]) as AST.ASTNodeVariable,
+				this.decorate(node.children[2]),
+			);
 
 		} else if (node instanceof PARSER.ParseNodeStatement) {
 			return (node.children.length === 1 && node.children[0] instanceof ParseNode)
 				? this.decorate(node.children[0])
-				: new AST.ASTNodeStatementExpression(node, (node.children.length === 1) ? [] : [
-					this.decorate(node.children[0]),
-				])
+				: new AST.ASTNodeStatementExpression(node, (node.children.length === 2) ? this.decorate(node.children[0]) : void 0);
 
 		} else if (node instanceof PARSER.ParseNodeGoal__0__List) {
 			return this.parseList<PARSER.ParseNodeStatement, AST.ASTNodeStatement>(node);

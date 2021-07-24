@@ -1,6 +1,33 @@
 import * as xjs from 'extrajs'
 import {SetEq} from '../core/index.js'
+import {
+	SolidTypeTuple,
+	SolidTypeRecord,
+} from './index.js'; // avoids circular imports
 import type {SolidObject} from './SolidObject.js';
+
+
+
+/**
+ * Internal representation of an entry of a tuple or mapping type.
+ * @property type     - the type value, a Solid Language Type
+ * @property optional - is the entry optional on the collection?
+ */
+export type TypeEntry = {
+	type:     SolidType,
+	optional: boolean,
+};
+
+
+
+/**
+ * A half-closed range of integers from min (inclusive) to max (exclusive).
+ * @example
+ * type T = [3, 7]; % a range of integers including 3, 4, 5, and 6.
+ * @index 0 the minimum, inclusive
+ * @index 1 the maximum, exclusive
+ */
+export type IntRange = [number, number];
 
 
 
@@ -78,7 +105,6 @@ export abstract class SolidType {
 		/** 1-6 | `T  & unknown == T` */
 		if (t.isUniverse) { return this }
 		if (this.isUniverse) { return t }
-
 		/** 3-3 | `A <: B  <->  A  & B == A` */
 		if (this.isSubtypeOf(t)) { return this }
 		if (t.isSubtypeOf(this)) { return t }
@@ -103,8 +129,7 @@ export abstract class SolidType {
 		if (this.isEmpty) { return t }
 		/** 1-8 | `T \| unknown == unknown` */
 		if (t.isUniverse) { return t }
-		if (this.isUniverse) { return this }
-
+		if (this.isUniverse) { return SolidType.UNKNOWN; }
 		/** 3-4 | `A <: B  <->  A \| B == B` */
 		if (this.isSubtypeOf(t)) { return t }
 		if (t.isSubtypeOf(this)) { return this }
@@ -167,7 +192,7 @@ export abstract class SolidType {
  * A type intersection of two types `T` and `U` is the type
  * that contains values either assignable to `T` *or* assignable to `U`.
  */
-class SolidTypeIntersection extends SolidType {
+export class SolidTypeIntersection extends SolidType {
 	declare readonly isEmpty: boolean;
 
 	/**
@@ -209,6 +234,13 @@ class SolidTypeIntersection extends SolidType {
 		/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 		return t.isSubtypeOf(this.left) && t.isSubtypeOf(this.right);
 	}
+	combineTuplesOrRecords(): SolidType {
+		return (
+			(this.left instanceof SolidTypeTuple  && this.right instanceof SolidTypeTuple)  ? this.left.intersectWithTuple(this.right)  :
+			(this.left instanceof SolidTypeRecord && this.right instanceof SolidTypeRecord) ? this.left.intersectWithRecord(this.right) :
+			this
+		);
+	}
 }
 
 
@@ -217,7 +249,7 @@ class SolidTypeIntersection extends SolidType {
  * A type union of two types `T` and `U` is the type
  * that contains values both assignable to `T` *and* assignable to `U`.
  */
-class SolidTypeUnion extends SolidType {
+export class SolidTypeUnion extends SolidType {
 	declare readonly isEmpty: boolean;
 
 	/**
@@ -258,6 +290,13 @@ class SolidTypeUnion extends SolidType {
 		/** 3-2 | `A <: A \| B  &&  B <: A \| B` */
 		if (t.equals(this.left) || t.equals(this.right)) { return true; }
 		return false;
+	}
+	combineTuplesOrRecords(): SolidType {
+		return (
+			(this.left instanceof SolidTypeTuple  && this.right instanceof SolidTypeTuple)  ? this.left.unionWithTuple(this.right)  :
+			(this.left instanceof SolidTypeRecord && this.right instanceof SolidTypeRecord) ? this.left.unionWithRecord(this.right) :
+			this
+		);
 	}
 }
 
