@@ -37,6 +37,8 @@ SemanticTypeRecord ::= SemanticPropertyType+;
 
 SemanticTypeOperation[operator: ORNULL]
 	::= SemanticType;
+SemanticTypeOperation[operator: OREXCP]
+	::= SemanticType;
 SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
 
