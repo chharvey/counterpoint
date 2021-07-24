@@ -122,6 +122,29 @@ function mapAggregated<T, U>(array: readonly T[], callback: (item: T) => U): U[]
 		return successes;
 	}
 }
+/**
+ * Type-check an assignment.
+ * @param assignment    either a variable declaration or a reassignment
+ * @param assignee_type the type of the assignee (the variable or bound property being reassigned)
+ * @param assigned_type the type of the expression assigned
+ * @param validator     a validator
+ * @throws {TypeError03} if the assigned expression is not assignable to the assignee
+ */
+function typeCheckAssignment(
+	assignment:    ASTNodeDeclarationVariable | ASTNodeAssignment,
+	assignee_type: SolidType,
+	assigned_type: SolidType,
+	validator:     Validator,
+): void {
+	const treatIntAsSubtypeOfFloat: boolean = (
+		   validator.config.compilerOptions.intCoercion
+		&& assigned_type.isSubtypeOf(Int16)
+		&& Float64.isSubtypeOf(assignee_type)
+	);
+	if (!assigned_type.isSubtypeOf(assignee_type) && !treatIntAsSubtypeOfFloat) {
+		throw new TypeError03(assignment, assignee_type, assigned_type);
+	}
+}
 
 
 
@@ -1256,15 +1279,12 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 	override typeCheck(validator: Validator): void {
 		this.value.typeCheck(validator);
-		const assignee_type: SolidType = this.type.assess(validator);
-		const assigned_type: SolidType = this.value.type(validator);
-		if (
-			assigned_type.isSubtypeOf(assignee_type) ||
-			validator.config.compilerOptions.intCoercion && assigned_type.isSubtypeOf(Int16) && Float64.isSubtypeOf(assignee_type)
-		) {
-		} else {
-			throw new TypeError03(this, assignee_type, assigned_type)
-		}
+		typeCheckAssignment(
+			this,
+			this.type.assess(validator),
+			this.value.type(validator),
+			validator,
+		);
 		return validator.getSymbolInfo(this.variable.id)?.assess();
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
@@ -1298,15 +1318,12 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	}
 	override typeCheck(validator: Validator): void {
 		this.assigned.typeCheck(validator);
-		const assignee_type: SolidType = this.assignee.type(validator);
-		const assigned_type: SolidType = this.assigned.type(validator);
-		if (
-			assigned_type.isSubtypeOf(assignee_type) ||
-			validator.config.compilerOptions.intCoercion && assigned_type.isSubtypeOf(Int16) && Float64.isSubtypeOf(assignee_type)
-		) {
-		} else {
-			throw new TypeError03(this, assignee_type, assigned_type);
-		};
+		return typeCheckAssignment(
+			this,
+			this.assignee.type(validator),
+			this.assigned.type(validator),
+			validator,
+		);
 	}
 	override build(builder: Builder): INST.InstructionStatement {
 		const tofloat: boolean = this.assigned.type(builder.validator).isSubtypeOf(Float64) || this.assigned.shouldFloat;
