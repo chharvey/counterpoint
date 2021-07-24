@@ -133,7 +133,6 @@ export abstract class ASTNodeSolid extends ASTNode {
 
 
 export class ASTNodeKey extends ASTNodeSolid {
-	declare readonly children: readonly [];
 	readonly id: bigint;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenIdentifier) {
 		super(start_node, {id: start_node.cook()});
@@ -230,7 +229,6 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeConstant);
 		return typ;
 	}
-	declare readonly children: readonly [];
 	readonly value: SolidType;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) {
 		const value: SolidType = (
@@ -266,7 +264,6 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeAlias);
 		return typ;
 	}
-	declare readonly children: readonly [];
 	readonly id: bigint;
 	constructor (start_node: TOKEN.TokenIdentifier) {
 		super(start_node, {id: start_node.cook()})
@@ -467,7 +464,6 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		assert.ok(expression instanceof ASTNodeConstant);
 		return expression;
 	}
-	declare readonly children: readonly [];
 	readonly value: SolidObject;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString | TOKEN.TokenTemplate) {
 		const value: SolidObject =
@@ -512,7 +508,6 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		assert.ok(expression instanceof ASTNodeVariable);
 		return expression;
 	}
-	declare readonly children: readonly [];
 	readonly id: bigint;
 	constructor (start_node: TOKEN.TokenIdentifier) {
 		super(start_node, {id: start_node.cook()})
