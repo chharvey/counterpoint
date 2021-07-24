@@ -1193,34 +1193,36 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	constructor (
 		start_node: ParseNode,
 		readonly unfixed: boolean,
-		override readonly children: readonly [ASTNodeVariable, ASTNodeType, ASTNodeExpression],
+		readonly variable: ASTNodeVariable,
+		readonly type:     ASTNodeType,
+		readonly value:    ASTNodeExpression,
 	) {
-		super(start_node, {unfixed}, children)
+		super(start_node, {unfixed}, [variable, type, value]);
 	}
 	override varCheck(validator: Validator): void {
-		const variable: ASTNodeVariable = this.children[0];
+		const variable: ASTNodeVariable = this.variable;
 		if (validator.hasSymbol(variable.id)) {
 			throw new AssignmentError01(variable);
 		};
-		this.children[1].varCheck(validator);
-		this.children[2].varCheck(validator);
+		this.type.varCheck(validator);
+		this.value.varCheck(validator);
 		validator.addSymbol(new SymbolStructureVar(
 			variable.id,
 			variable.line_index,
 			variable.col_index,
 			variable.source,
 			this.unfixed,
-			() => this.children[1].assess(validator),
+			() => this.type.assess(validator),
 			(validator.config.compilerOptions.constantFolding && !this.unfixed)
-				? () => this.children[2].assess(validator)
+				? () => this.value.assess(validator)
 				: null,
 		));
 	}
 	override typeCheck(validator: Validator): void {
-		this.children[1].typeCheck(validator);
-		this.children[2].typeCheck(validator);
-		const assignee_type: SolidType = this.children[1].assess(validator);
-		const assigned_type: SolidType = this.children[2].type(validator);
+		this.type.typeCheck(validator);
+		this.value.typeCheck(validator);
+		const assignee_type: SolidType = this.type.assess(validator);
+		const assigned_type: SolidType = this.value.type(validator);
 		if (
 			assigned_type.isSubtypeOf(assignee_type) ||
 			validator.config.compilerOptions.intCoercion && assigned_type.isSubtypeOf(Int16) && Float64.isSubtypeOf(assignee_type)
@@ -1228,14 +1230,14 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		} else {
 			throw new TypeError03(this, assignee_type, assigned_type)
 		}
-		return validator.getSymbolInfo(this.children[0].id)?.assess();
+		return validator.getSymbolInfo(this.variable.id)?.assess();
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		const tofloat: boolean = this.children[2].type(builder.validator).isSubtypeOf(Float64) || this.children[2].shouldFloat;
-		const assess: SolidObject | null = this.children[0].assess(builder.validator);
+		const tofloat: boolean = this.value.type(builder.validator).isSubtypeOf(Float64) || this.value.shouldFloat;
+		const assess: SolidObject | null = this.variable.assess(builder.validator);
 		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && assess)
 			? new INST.InstructionNone()
-			: new INST.InstructionDeclareGlobal(this.children[0].id, this.unfixed, this.children[2].build(builder, tofloat))
+			: new INST.InstructionDeclareGlobal(this.variable.id, this.unfixed, this.value.build(builder, tofloat))
 		;
 	}
 }

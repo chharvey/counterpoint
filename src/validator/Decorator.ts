@@ -405,11 +405,13 @@ export class Decorator {
 			);
 
 		} else if (node instanceof PARSER.ParseNodeDeclarationVariable) {
-			return new AST.ASTNodeDeclarationVariable(node, node.children.length === 8, [
+			return new AST.ASTNodeDeclarationVariable(
+				node,
+				node.children.length === 8,
 				new AST.ASTNodeVariable(((node.children.length === 7) ? node.children[1] : node.children[2]) as TOKEN.TokenIdentifier),
 				this.decorate((node.children.length === 7) ? node.children[3] : node.children[4]),
 				this.decorate((node.children.length === 7) ? node.children[5] : node.children[6]),
-			])
+			);
 
 		} else if (node instanceof PARSER.ParseNodeDeclaration) {
 			return this.decorate(node.children[0]);
