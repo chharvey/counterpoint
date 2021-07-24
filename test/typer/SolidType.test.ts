@@ -45,6 +45,7 @@ describe('SolidType', () => {
 	const builtin_types: SolidType[] = [
 		SolidType.NEVER,
 		SolidType.UNKNOWN,
+		SolidType.VOID,
 		SolidObject,
 		SolidNull,
 		SolidBoolean,
@@ -304,6 +305,7 @@ describe('SolidType', () => {
 
 		it('discrete types.', () => {
 			;[
+				SolidType.VOID,
 				SolidNull,
 				SolidBoolean,
 				Int16,

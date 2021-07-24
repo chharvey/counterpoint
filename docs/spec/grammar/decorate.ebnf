@@ -20,6 +20,8 @@ Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 
 
 
+Decorate(TypeKeyword ::= "void") -> SemanticTypeConstant
+	:= (SemanticTypeConstant[value=Void]);
 Decorate(TypeKeyword ::= "bool") -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=Boolean]);
 Decorate(TypeKeyword ::= "int") -> SemanticTypeConstant
@@ -88,8 +90,12 @@ Decorate(TypeUnit ::= "(" Type ")") -> SemanticType
 
 Decorate(TypeUnarySymbol ::= TypeUnit) -> SemanticType
 	:= Decorate(TypeUnit);
-Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation
+Decorate(TypeUnarySymbol ::= TypeUnarySymbol "?") -> SemanticTypeOperation
 	:= (SemanticTypeOperation[operator=ORNULL]
+		Decorate(TypeUnarySymbol)
+	);
+Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation
+	:= (SemanticTypeOperation[operator=OREXCP]
 		Decorate(TypeUnarySymbol)
 	);
 
