@@ -154,9 +154,9 @@ export class ASTNodeItemType extends ASTNodeSolid {
 			| PARSER.ParseNodeEntryType_Optional
 		,
 		readonly optional: boolean,
-		override readonly children: readonly [ASTNodeType],
+		readonly value: ASTNodeType,
 	) {
-		super(start_node, {optional}, children);
+		super(start_node, {optional}, [value]);
 	}
 	/** @implements ASTNodeSolid */
 	build(builder: Builder): Instruction {
@@ -337,7 +337,7 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 	}
 	protected override assess_do(validator: Validator): SolidType {
 		return new SolidTypeTuple(this.children.map((c) => ({
-			type:     c.children[0].assess(validator),
+			type:     c.value.assess(validator),
 			optional: c.optional,
 		})));
 	}

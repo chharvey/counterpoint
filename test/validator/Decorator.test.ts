@@ -101,8 +101,8 @@ describe('Decorator', () => {
 				const itemtype: AST.ASTNodeItemType = Decorator.decorate(h.entryTypeFromString(`float`));
 				assert.ok(!itemtype.optional);
 				assert.deepStrictEqual(
-					itemtype.children.map((c) => c.source),
-					[`float`],
+					itemtype.value.source,
+					`float`,
 				);
 			});
 			Dev.supports('optionalAccess') && specify('EntryType_Optional ::= "?:" Type', () => {
@@ -114,8 +114,8 @@ describe('Decorator', () => {
 				const itemtype: AST.ASTNodeItemType = Decorator.decorate(h.entryTypeFromString(`?:float`));
 				assert.ok(itemtype.optional);
 				assert.deepStrictEqual(
-					itemtype.children.map((c) => c.source),
-					[`float`],
+					itemtype.value.source,
+					`float`,
 				);
 			});
 			specify('EntryType_Named ::= Word ":" Type', () => {
