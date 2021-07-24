@@ -162,9 +162,9 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 export class ASTNodeIndex extends ASTNodeSolid {
 	constructor (
 		start_node: PARSER.ParseNodePropertyAccess,
-		override readonly children: readonly [ASTNodeConstant],
+		readonly value: ASTNodeConstant,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {}, [value]);
 	}
 	override build(builder: Builder): Instruction {
 		throw builder && 'ASTNodeIndex#build not yet supported.';
@@ -711,9 +711,10 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 	constructor (
 		start_node: PARSER.ParseNodeExpressionCompound,
-		override readonly children: readonly [ASTNodeExpression, ASTNodeIndex | ASTNodeKey | ASTNodeExpression],
+		readonly base:     ASTNodeExpression,
+		readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {}, [base, accessor]);
 	}
 	override get shouldFloat(): boolean {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';
@@ -723,83 +724,79 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 	protected override type_do(validator: Validator): SolidType {
 		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
-		const base: ASTNodeExpression = this.children[0];
-		const accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression = this.children[1];
-		let base_type: SolidType = base.type(validator);
+		let base_type: SolidType = this.base.type(validator);
 		if (base_type instanceof SolidTypeIntersection || base_type instanceof SolidTypeUnion) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
-		if (accessor instanceof ASTNodeIndex) {
-			const accessor_type: SolidType = accessor.children[0].type(validator);
+		if (this.accessor instanceof ASTNodeIndex) {
+			const accessor_type: SolidType = this.accessor.value.type(validator);
 			return (
 				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
 					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16)
-						? base_type.value.toType().get(accessor_type.value, accessor)
+						? base_type.value.toType().get(accessor_type.value, this.accessor)
 						: base_type.value.toType().itemTypes()
 				) :
 				(base_type instanceof SolidTypeTuple) ? (
 					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16)
-						? base_type.get(accessor_type.value, accessor)
+						? base_type.get(accessor_type.value, this.accessor)
 						: base_type.itemTypes()
 				) :
-				(() => { throw new TypeError04('index', base_type, accessor); })()
+				(() => { throw new TypeError04('index', base_type, this.accessor); })()
 			);
-		} else if (accessor instanceof ASTNodeKey) {
+		} else if (this.accessor instanceof ASTNodeKey) {
 			return (
-				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(accessor.id, accessor) :
-				(base_type instanceof SolidTypeRecord) ? base_type.get(accessor.id, accessor) :
-				(() => { throw new TypeError04('property', base_type, accessor); })()
+				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, this.accessor) :
+				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, this.accessor) :
+				(() => { throw new TypeError04('property', base_type, this.accessor); })()
 			);
-		} else /* (accessor instanceof ASTNodeExpression) */ {
-			const accessor_type: SolidType = accessor.type(validator);
+		} else /* (this.accessor instanceof ASTNodeExpression) */ {
+			const accessor_type: SolidType = this.accessor.type(validator);
 			function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: SolidType): never {
 				throw new TypeError02(accessor_type, supertype, accessor.line_index, accessor.col_index);
 			}
 			return (
 				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
-					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16) ? base_type.value.toType().get(accessor_type.value, accessor) :
+					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16) ? base_type.value.toType().get(accessor_type.value, this.accessor) :
 					(accessor_type.isSubtypeOf(Int16))                                                   ? base_type.value.toType().itemTypes() :
-					throwWrongSubtypeError(accessor, Int16)
+					throwWrongSubtypeError(this.accessor, Int16)
 				) :
 				(base_type instanceof SolidTypeTuple) ? (
-					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16) ? base_type.get(accessor_type.value, accessor) :
+					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16) ? base_type.get(accessor_type.value, this.accessor) :
 					(accessor_type.isSubtypeOf(Int16))                                                   ? base_type.itemTypes() :
-					throwWrongSubtypeError(accessor, Int16)
+					throwWrongSubtypeError(this.accessor, Int16)
 				) :
 				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping) ? (
 					(accessor_type.isSubtypeOf(base_type.value.toType().antecedenttypes))
 						? base_type.value.toType().consequenttypes
-						: throwWrongSubtypeError(accessor, base_type.value.toType().antecedenttypes)
+						: throwWrongSubtypeError(this.accessor, base_type.value.toType().antecedenttypes)
 				) :
 				(base_type instanceof SolidTypeMapping) ? (
 					(accessor_type.isSubtypeOf(base_type.antecedenttypes))
 						? base_type.consequenttypes
-						: throwWrongSubtypeError(accessor, base_type.antecedenttypes)
+						: throwWrongSubtypeError(this.accessor, base_type.antecedenttypes)
 				) :
 				(() => { throw new TypeError01(this); })()
 			);
 		}
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		const base: ASTNodeExpression = this.children[0];
-		const accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression = this.children[1];
-		const base_value: SolidObject | null = base.assess(validator);
+		const base_value: SolidObject | null = this.base.assess(validator);
 		if (base_value === null) {
 			return null;
 		}
-		if (accessor instanceof ASTNodeIndex) {
-			return (base_value as SolidTuple).get(accessor.children[0].assess(validator) as Int16, accessor);
-		} else if (accessor instanceof ASTNodeKey) {
-			return (base_value as SolidRecord).get(accessor.id, accessor);
-		} else /* (accessor instanceof ASTNodeExpression) */ {
-			const accessor_value: SolidObject | null = accessor.assess(validator);
+		if (this.accessor instanceof ASTNodeIndex) {
+			return (base_value as SolidTuple).get(this.accessor.value.assess(validator) as Int16, this.accessor);
+		} else if (this.accessor instanceof ASTNodeKey) {
+			return (base_value as SolidRecord).get(this.accessor.id, this.accessor);
+		} else /* (this.accessor instanceof ASTNodeExpression) */ {
+			const accessor_value: SolidObject | null = this.accessor.assess(validator);
 			if (accessor_value === null) {
 				return null;
 			}
 			if (base_value instanceof SolidTuple) {
-				return base_value.get(accessor_value as Int16, accessor);
+				return base_value.get(accessor_value as Int16, this.accessor);
 			} else /* (base_value instanceof SolidMapping) */ {
-				return (base_value as SolidMapping).get(accessor_value, accessor);
+				return (base_value as SolidMapping).get(accessor_value, this.accessor);
 			}
 		}
 	}

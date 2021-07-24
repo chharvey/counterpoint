@@ -578,11 +578,9 @@ describe('Decorator', () => {
 				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
 					[42, 420, 4200].1;
 				`);
-				const operand: AST.ASTNodeExpression = access.children[0];
-				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
-				assert.ok(accessor instanceof AST.ASTNodeIndex);
+				assert.ok(access.accessor instanceof AST.ASTNodeIndex);
 				assert.deepStrictEqual(
-					[operand.source,        accessor.source],
+					[access.base.source,    access.accessor.source],
 					[`[ 42 , 420 , 4200 ]`, `. 1`],
 				);
 			});
@@ -596,11 +594,9 @@ describe('Decorator', () => {
 				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
 					[c= 42, b= 420, a= 4200].b;
 				`);
-				const operand: AST.ASTNodeExpression = access.children[0];
-				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
-				assert.ok(accessor instanceof AST.ASTNodeKey);
+				assert.ok(access.accessor instanceof AST.ASTNodeKey);
 				assert.deepStrictEqual(
-					[operand.source,                    accessor.source],
+					[access.base.source,                access.accessor.source],
 					[`[ c = 42 , b = 420 , a = 4200 ]`, `b`],
 				);
 			});
@@ -614,11 +610,9 @@ describe('Decorator', () => {
 				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
 					[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'].[0.7 + 0.3];
 				`);
-				const operand: AST.ASTNodeExpression = access.children[0];
-				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.children[1];
-				assert.ok(accessor instanceof AST.ASTNodeExpression);
+				assert.ok(access.accessor instanceof AST.ASTNodeExpression);
 				assert.deepStrictEqual(
-					[operand.source,                                accessor.source],
+					[access.base.source,                            access.accessor.source],
 					[`[ 0.5 * 2 |-> 'one' , 1.4 + 0.6 |-> 'two' ]`, `0.7 + 0.3`],
 				);
 			});

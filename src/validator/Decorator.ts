@@ -287,7 +287,7 @@ export class Decorator {
 
 		} else if (node instanceof PARSER.ParseNodePropertyAccess) {
 			return (
-				(node.children[1] instanceof TOKEN.TokenNumber) ? new AST.ASTNodeIndex(node, [new AST.ASTNodeConstant(node.children[1])]) :
+				(node.children[1] instanceof TOKEN.TokenNumber) ? new AST.ASTNodeIndex(node, new AST.ASTNodeConstant(node.children[1])) :
 				(node.children[1] instanceof PARSER.ParseNodeWord) ? this.decorate(node.children[1]) :
 				this.decorate(node.children[2]!)
 			);
@@ -295,10 +295,11 @@ export class Decorator {
 		} else if (node instanceof PARSER.ParseNodeExpressionCompound) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: new AST.ASTNodeAccess(node, [
+				: new AST.ASTNodeAccess(
+					node,
 					this.decorate(node.children[0]),
 					this.decorate(node.children[1]),
-				]);
+				);
 
 		} else if (node instanceof PARSER.ParseNodeExpressionUnarySymbol) {
 			return (node.children.length === 1)
