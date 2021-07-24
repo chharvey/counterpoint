@@ -183,14 +183,18 @@ export class Decorator {
 			return new AST.ASTNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeEntryType) {
-			return new AST.ASTNodeItemType(node, false, [
+			return new AST.ASTNodeItemType(
+				node,
+				false,
 				this.decorate(node.children[0]),
-			]);
+			);
 
 		} else if (Dev.supports('optionalAccess') && node instanceof PARSER.ParseNodeEntryType_Optional) {
-			return new AST.ASTNodeItemType(node, true, [
+			return new AST.ASTNodeItemType(
+				node,
+				true,
 				this.decorate(node.children[1]),
-			]);
+			);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeEntryType_Named) {
 			return new AST.ASTNodePropertyType(
