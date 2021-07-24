@@ -287,7 +287,7 @@ export class Decorator {
 
 		} else if (node instanceof PARSER.ParseNodePropertyAccess) {
 			return (
-				(node.children[1] instanceof TOKEN.TokenNumber) ? new AST.ASTNodeIndex(node, [new AST.ASTNodeConstant(node.children[1])]) :
+				(node.children[1] instanceof TOKEN.TokenNumber) ? new AST.ASTNodeIndex(node, new AST.ASTNodeConstant(node.children[1])) :
 				(node.children[1] instanceof PARSER.ParseNodeWord) ? this.decorate(node.children[1]) :
 				this.decorate(node.children[2]!)
 			);

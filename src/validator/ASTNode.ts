@@ -162,9 +162,9 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 export class ASTNodeIndex extends ASTNodeSolid {
 	constructor (
 		start_node: PARSER.ParseNodePropertyAccess,
-		override readonly children: readonly [ASTNodeConstant],
+		readonly value: ASTNodeConstant,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {}, [value]);
 	}
 	override build(builder: Builder): Instruction {
 		throw builder && 'ASTNodeIndex#build not yet supported.';
@@ -730,7 +730,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		if (accessor instanceof ASTNodeIndex) {
-			const accessor_type: SolidType = accessor.children[0].type(validator);
+			const accessor_type: SolidType = accessor.value.type(validator);
 			return (
 				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
 					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16)
@@ -788,7 +788,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return null;
 		}
 		if (accessor instanceof ASTNodeIndex) {
-			return (base_value as SolidTuple).get(accessor.children[0].assess(validator) as Int16, accessor);
+			return (base_value as SolidTuple).get(accessor.value.assess(validator) as Int16, accessor);
 		} else if (accessor instanceof ASTNodeKey) {
 			return (base_value as SolidRecord).get(accessor.id, accessor);
 		} else /* (accessor instanceof ASTNodeExpression) */ {
