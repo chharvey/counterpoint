@@ -1797,6 +1797,19 @@ describe('ASTNodeSolid', () => {
 				tup_unfixed.-3; % type \`int\`     % non-computable value
 				tup_unfixed.-2; % type \`float\`   % non-computable value
 				tup_unfixed.-1; % type \`str\`     % non-computable value
+				${ Dev.supports('optionalAccess') ? `
+					let         tupo1_f: [int, float, ?: str] = [1, 2.0, 'three'];
+					let         tupo2_f: [int, float, ?: str] = [1, 2.0];
+					let         tupo3_f: [int, float]         = [1, 2.0, true];
+					let         tupo4_f: [int, float]         = [1, 2.0];
+					let unfixed tupo1_u: [int, float, ?: str] = [1, 2.0, 'three'];
+					let unfixed tupo2_u: [int, float, ?: str] = [1, 2.0];
+					let unfixed tupo3_u: [int, float]         = [1, 2.0, true];
+					let unfixed tupo4_u: [int, float]         = [1, 2.0];
+
+					tupo1_u.2; % type \`str | void\` % non-computable value
+					tupo2_u.2; % type \`str | void\` % non-computable value
+				` : '' }
 			`);
 			const KEY_ACCESS_PROGRAM = programFactory(`
 				let         rec_fixed:   [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
@@ -1808,6 +1821,19 @@ describe('ASTNodeSolid', () => {
 				rec_unfixed.a; % type \`int\`     % non-computable value
 				rec_unfixed.b; % type \`float\`   % non-computable value
 				rec_unfixed.c; % type \`str\`     % non-computable value
+				${ Dev.supports('optionalAccess') ? `
+					let         reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= 'three'];
+					let         reco2_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
+					let         reco3_f: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
+					let         reco4_f: [a: int, c: float]          = [a= 1, c= 2.0];
+					let unfixed reco1_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= 'three'];
+					let unfixed reco2_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
+					let unfixed reco3_u: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
+					let unfixed reco4_u: [a: int, c: float]          = [a= 1, c= 2.0];
+
+					reco1_u.b; % type \`str | void\` % non-computable value
+					reco2_u.b; % type \`str | void\` % non-computable value
+				` : '' }
 			`);
 			const EXPR_ACCESS_PROGRAM = programFactory(`
 				let         tup_fixed:   [int, float, str] = [1, 2.0, 'three'];
@@ -1834,6 +1860,19 @@ describe('ASTNodeSolid', () => {
 				%% map_unfixed %% [a |-> 1, b |-> 2.0, c |-> three].[a];   % type \`1 | 2.0 | str\` % non-computable value
 				%% map_unfixed %% [a |-> 1, b |-> 2.0, c |-> three].[b];   % type \`1 | 2.0 | str\` % non-computable value
 				%% map_unfixed %% [a |-> 1, b |-> 2.0, c |-> three].[c];   % type \`1 | 2.0 | str\` % non-computable value
+				${ Dev.supports('optionalAccess') ? `
+					let         tupo1_f: [int, float, ?: str] = [1, 2.0, 'three'];
+					let         tupo2_f: [int, float, ?: str] = [1, 2.0];
+					let         tupo3_f: [int, float]         = [1, 2.0, true];
+					let         tupo4_f: [int, float]         = [1, 2.0];
+					let unfixed tupo1_u: [int, float, ?: str] = [1, 2.0, 'three'];
+					let unfixed tupo2_u: [int, float, ?: str] = [1, 2.0];
+					let unfixed tupo3_u: [int, float]         = [1, 2.0, true];
+					let unfixed tupo4_u: [int, float]         = [1, 2.0];
+
+					tupo1_u.[2]; % type \`str | void\` % non-computable value
+					tupo2_u.[2]; % type \`str | void\` % non-computable value
+				` : '' }
 			`);
 			describe('#type', () => {
 				function unionAllTypes(types: SolidType[]): SolidType {
@@ -1884,6 +1923,15 @@ describe('ASTNodeSolid', () => {
 								expected,
 							);
 						});
+						Dev.supports('optionalAccess') && it('unions with void if entry is optional.', () => {
+							assert.deepStrictEqual(
+								program.children.slice(22, 24).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								[
+									SolidString.union(SolidType.VOID),
+									SolidString.union(SolidType.VOID),
+								],
+							);
+						});
 						it('throws when index is out of bounds.', () => {
 							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`).type(validator), TypeError04);
 							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`).type(validator), TypeError04);
@@ -1906,6 +1954,14 @@ describe('ASTNodeSolid', () => {
 								);
 							});
 						});
+						Dev.supports('optionalAccess') && it('does not union with void, even with optional entries.', () => {
+							program.children.slice(22, 24).forEach((c) => {
+								assert.deepStrictEqual(
+									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
+									int_float_str,
+								);
+							});
+						});
 					});
 				});
 				context('key access.', () => {
@@ -1919,8 +1975,17 @@ describe('ASTNodeSolid', () => {
 					});
 					it('returns individual entry types.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(2).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(2, 8).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
+						);
+					});
+					Dev.supports('optionalAccess') && it('unions with void if entry is optional.', () => {
+						assert.deepStrictEqual(
+							program.children.slice(16, 18).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							[
+								SolidString.union(SolidType.VOID),
+								SolidString.union(SolidType.VOID),
+							],
 						);
 					});
 					it('throws when key is out of bounds.', () => {
@@ -1958,6 +2023,15 @@ describe('ASTNodeSolid', () => {
 									]),
 								);
 							});
+						});
+						Dev.supports('optionalAccess') && it('unions with void if tuple entry is optional.', () => {
+							assert.deepStrictEqual(
+								program.children.slice(26, 28).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								[
+									SolidString.union(SolidType.VOID),
+									SolidString.union(SolidType.VOID),
+								],
+							);
 						});
 						it('throws when accessor expression is correct type but out of bounds for tuples.', () => {
 							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`).type(validator), TypeError04);
@@ -2001,6 +2075,14 @@ describe('ASTNodeSolid', () => {
 						});
 						it('returns the union of all consequent types for mappings.', () => {
 							program.children.slice(12, 18).forEach((c) => {
+								assert.deepStrictEqual(
+									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
+									int_float_str,
+								);
+							});
+						});
+						Dev.supports('optionalAccess') && it('does not union with void, even with optional tuple entries.', () => {
+							program.children.slice(26, 28).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
 									int_float_str,
@@ -2058,7 +2140,7 @@ describe('ASTNodeSolid', () => {
 					});
 					it('returns individual entries.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(2).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(2, 8).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
 					});

@@ -69,9 +69,10 @@ export class SolidTypeRecord extends SolidType {
 	}
 
 	get(key: bigint, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): SolidType {
-		return (this.propertytypes.has(key))
-			? this.propertytypes.get(key)!.type
+		const entry: TypeEntry = (this.propertytypes.has(key))
+			? this.propertytypes.get(key)!
 			: (() => { throw new TypeError04('property', this, accessor); })();
+		return entry.type.union((entry.optional) ? SolidType.VOID : SolidType.NEVER);
 	}
 
 	valueTypes(): SolidType {

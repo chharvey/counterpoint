@@ -73,12 +73,14 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 		4. *Let* `i` be `accessor_type.value`.
 		5. *Assert:* `i` is a instance of `Integer`.
 		6. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)` *and* `i` is an index in `base_type`:
-			1. *Return:* the type accessed at index `i` in `base_type`.
+			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
+			2. *Return:* *UnwrapAffirm:* `MaybeOptional(entry)`.
 		7. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
 	6. *If* `accessor` is a SemanticKey:
 		1. *Let* `id` be `accessor.id`.
 		2. *If* *UnwrapAffirm:* `Subtype(base_type, Record)` *and* `id` is a key in `base_type`:
-			1. *Return:* the type accessed at key `id` in `base_type`.
+			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
+			2. *Return:* *UnwrapAffirm:* `MaybeOptional(entry)`.
 		3. *Throw:* a new TypeError04 "Property {{ id }} does not exist on type {{ base_type }}.".
 	7. *Assert:* `accessor` is a SemanticExpression.
 	8. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
@@ -87,7 +89,8 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 			1. *Let* `i` be `accessor_type.value`.
 			2. *If* `i` is a instance of `Integer`:
 				1. *If* `i` is an index in `base_type`:
-					1. *Return:* the type accessed at index `i` in `base_type`.
+					1. *Let* `entry` be the item accessed at index `i` in `base_type`.
+					2. *Return:* *UnwrapAffirm:* `MaybeOptional(entry)`.
 				2. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
 		2. *Else If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)`:
 			1. *Return:* the union of all item types in `base_type`.
@@ -223,4 +226,13 @@ TypeConstant ToType(Or<Null, Boolean, Number> v) :=
 		type  = `Type`,
 		value = `v`,
 	].
+;
+
+
+
+Type MaybeOptional(EntryTypeStructure entry) :=
+	1. *Let* `type` be `entry.type`.
+	2. *If*: `entry.optional` is `true`:
+		1. *Return:* `Union(type, Void)`.
+	3. *Return:* `type`.
 ;
