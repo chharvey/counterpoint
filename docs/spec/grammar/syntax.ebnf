@@ -29,6 +29,7 @@ PrimitiveLiteral ::=
 
 
 TypeKeyword ::=
+	| "void"
 	| "bool"
 	| "int"
 	| "float"
@@ -61,6 +62,7 @@ TypeCompound ::=
 
 TypeUnarySymbol ::=
 	| TypeCompound
+	| TypeUnarySymbol "?"
 	| TypeUnarySymbol "!"
 ;
 

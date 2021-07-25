@@ -16,7 +16,7 @@ export class SolidTypeRecord extends SolidType {
 	constructor (
 		private readonly propertytypes: ReadonlyMap<bigint, SolidType> = new Map(),
 	) {
-		super(new Set([new SolidRecord()]));
+		super(SolidRecord.values);
 	}
 
 	override toString(): string {
@@ -46,5 +46,31 @@ export class SolidTypeRecord extends SolidType {
 
 	valueTypes(): SolidType {
 		return [...this.propertytypes.values()].reduce((a, b) => a.union(b));
+	}
+
+	/**
+	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `S` with the set of properties on `T`.
+	 * For any overlapping properties, their type intersection is taken.
+	 */
+	intersectWithRecord(t: SolidTypeRecord): SolidTypeRecord {
+		const props: Map<bigint, SolidType> = new Map([...this.propertytypes]);
+		[...t.propertytypes].forEach(([id, typ]) => {
+			props.set(id, typ.intersect(this.propertytypes.get(id) || SolidType.UNKNOWN));
+		});
+		return new SolidTypeRecord(props);
+	}
+
+	/**
+	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `S` with the set of properties on `T`.
+	 * For any overlapping properties, their type union is taken.
+	 */
+	unionWithRecord(t: SolidTypeRecord): SolidTypeRecord {
+		const props: Map<bigint, SolidType> = new Map();
+		[...t.propertytypes].forEach(([id, typ]) => {
+			if (this.propertytypes.has(id)) {
+				props.set(id, typ.union(this.propertytypes.get(id)!));
+			}
+		})
+		return new SolidTypeRecord(props);
 	}
 }

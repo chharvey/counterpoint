@@ -52,6 +52,7 @@ export class ProductionTypeKeyword extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
+			['void'],
 			['bool'],
 			['int'],
 			['float'],
@@ -163,6 +164,7 @@ export class ProductionTypeUnarySymbol extends Production {
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionTypeCompound.instance],
+			[ProductionTypeUnarySymbol.instance, '?'],
 			[ProductionTypeUnarySymbol.instance, '!'],
 		];
 	}
@@ -598,6 +600,7 @@ export class ParseNodeTypeKeyword extends ParseNode {
 		| readonly [Token]
 		| readonly [Token]
 		| readonly [Token]
+		| readonly [Token]
 	;
 }
 
@@ -668,6 +671,7 @@ export class ParseNodeTypeCompound extends ParseNode {
 export class ParseNodeTypeUnarySymbol extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeTypeCompound]
+		| readonly [ParseNodeTypeUnarySymbol, Token]
 		| readonly [ParseNodeTypeUnarySymbol, Token]
 	;
 }
@@ -1049,5 +1053,3 @@ export class ParserSolid extends Parser {
 	// @ts-expect-error
 	declare override parse(): ParseNodeGoal;
 }
-
-

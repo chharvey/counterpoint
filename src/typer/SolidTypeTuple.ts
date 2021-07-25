@@ -17,7 +17,7 @@ export class SolidTypeTuple extends SolidType {
 	constructor (
 		private readonly types: readonly SolidType[] = [],
 	) {
-		super(new Set([new SolidTuple()]));
+		super(SolidTuple.values);
 	}
 
 	override toString(): string {
@@ -48,5 +48,31 @@ export class SolidTypeTuple extends SolidType {
 
 	itemTypes(): SolidType {
 		return this.types.reduce((a, b) => a.union(b));
+	}
+
+	/**
+	 * The *intersection* of types `S` and `T` is the *union* of the set of items on `S` with the set of items on `T`.
+	 * For any overlapping items, their type intersection is taken.
+	 */
+	intersectWithTuple(t: SolidTypeTuple): SolidTypeTuple {
+		const items: SolidType[] = [...this.types];
+		[...t.types].forEach((typ, i) => {
+			items[i] = typ.intersect(this.types[i] || SolidType.UNKNOWN);
+		});
+		return new SolidTypeTuple(items);
+	}
+
+	/**
+	 * The *union* of types `S` and `T` is the *intersection* of the set of items on `S` with the set of items on `T`.
+	 * For any overlapping items, their type union is taken.
+	 */
+	unionWithTuple(t: SolidTypeTuple): SolidTypeTuple {
+		const items: SolidType[] = [];
+		[...t.types].forEach((typ, i) => {
+			if (this.types[i]) {
+				items[i] = typ.union(this.types[i]);
+			}
+		})
+		return new SolidTypeTuple(items);
 	}
 }
