@@ -148,6 +148,8 @@ Object! Assess(SemanticAccess access) :=
 		1. Find an antecedent `k` in `base_value` such that `Identical(k, accessor_value)`.
 		2. *If* `k` exists:
 			1. *Return:* the consequent accessed at antecedent `k` in `base_value`.
+		3. *If*: `access.optional` is `true`:
+			1. *Return:* `null`.
 	12. *Throw:* a new VoidError.
 ;
 

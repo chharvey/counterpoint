@@ -812,18 +812,18 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return null;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as SolidTuple).get(this.accessor.value.assess(validator) as Int16, this.accessor);
+			return (base_value as SolidTuple).get(this.accessor.value.assess(validator) as Int16, this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
-			return (base_value as SolidRecord).get(this.accessor.id, this.accessor);
+			return (base_value as SolidRecord).get(this.accessor.id, this.optional, this.accessor);
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
 			const accessor_value: SolidObject | null = this.accessor.assess(validator);
 			if (accessor_value === null) {
 				return null;
 			}
 			if (base_value instanceof SolidTuple) {
-				return base_value.get(accessor_value as Int16, this.accessor);
+				return base_value.get(accessor_value as Int16, this.optional, this.accessor);
 			} else /* (base_value instanceof SolidMapping) */ {
-				return (base_value as SolidMapping).get(accessor_value, this.accessor);
+				return (base_value as SolidMapping).get(accessor_value, this.optional, this.accessor);
 			}
 		}
 	}

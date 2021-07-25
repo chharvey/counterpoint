@@ -8,6 +8,7 @@ import {
 } from './SolidType.js';
 import {SolidTypeRecord} from './SolidTypeRecord.js';
 import {SolidObject} from './SolidObject.js';
+import {SolidNull} from './SolidNull.js';
 import {SolidBoolean} from './SolidBoolean.js';
 
 
@@ -53,9 +54,11 @@ export class SolidRecord<T extends SolidObject = SolidObject> extends SolidObjec
 		return SolidTypeRecord.fromTypes(new Map([...this.properties].map(([key, value]) => [key, new SolidTypeConstant(value)])));
 	}
 
-	get(key: bigint, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): T {
+	get(key: bigint, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): T | SolidNull {
 		return (this.properties.has(key))
 			? this.properties.get(key)!
-			: (() => { throw new VoidError01(accessor); })();
+			: (access_optional)
+				? SolidNull.NULL
+				: (() => {throw new VoidError01(accessor);})();
 	}
 }

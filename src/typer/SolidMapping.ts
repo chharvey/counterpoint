@@ -8,6 +8,7 @@ import {
 } from './SolidType.js';
 import {SolidTypeMapping} from './SolidTypeMapping.js';
 import {SolidObject} from './SolidObject.js';
+import {SolidNull} from './SolidNull.js';
 import {SolidBoolean} from './SolidBoolean.js';
 
 
@@ -65,9 +66,11 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 		);
 	}
 
-	get(ant: K, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): V {
+	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): V | SolidNull {
 		return (this.cases.has(ant))
 			? this.cases.get(ant)!
-			: (() => { throw new VoidError01(accessor); })();
+			: (access_optional)
+				? SolidNull.NULL
+				: (() => {throw new VoidError01(accessor);})();
 	}
 }
