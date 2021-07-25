@@ -11,6 +11,7 @@ type DevToggleKey =
 		| 'stringTemplate-assess'
 		| 'voidType'
 		| 'optionalEntries'
+		| 'optionalAccess'
 ;
 type DevToggleVal = [boolean, DevToggleKey[]?];
 
@@ -45,6 +46,7 @@ export class Dev {
 		'stringTemplate-assess':   [true, ['stringTemplate-decorate']],
 		voidType:                  [true],
 		optionalEntries:           [true, ['literalCollection', 'voidType']],
+		optionalAccess:            [false, ['literalCollection', 'optionalEntries']],
 	}
 
 	/**

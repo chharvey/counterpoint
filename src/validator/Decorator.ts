@@ -357,7 +357,7 @@ export class Decorator {
 				? this.decorate(node.children[0])
 				: new AST.ASTNodeAccess(
 					node,
-					Dev.supports('optionalEntries') && this.isOptionalAccess(node.children[1]),
+					Dev.supports('optionalAccess') && this.isOptionalAccess(node.children[1]),
 					this.decorate(node.children[0]),
 					this.decorate(node.children[1]),
 				);

@@ -672,7 +672,7 @@ describe('Decorator', () => {
 					);
 				});
 			});
-			Dev.supports('optionalEntries') && context('optional access.', () => {
+			Dev.supports('optionalAccess') && context('optional access.', () => {
 				it('access by index.', () => {
 					/*
 						<Access optional=true>
