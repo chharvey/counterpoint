@@ -2,6 +2,7 @@ import type {AST} from '../validator/index.js';
 import {TypeError04} from '../error/index.js';
 import {
 	SolidObject,
+	SolidNull,
 	Int16,
 	SolidTuple,
 } from '../index.js'; // avoids circular imports
@@ -63,7 +64,7 @@ export class SolidTypeTuple extends SolidType {
 		);
 	}
 
-	get(index: Int16, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): SolidType {
+	get(index: Int16, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): SolidType {
 		const n: number = this.types.length;
 		const i: number = Number(index.toNumeric());
 		const entry: TypeEntry = (
@@ -71,7 +72,7 @@ export class SolidTypeTuple extends SolidType {
 			(0  <= i && i < n) ? this.types[i] :
 			(() => { throw new TypeError04('index', this, accessor); })()
 		);
-		return entry.type.union((entry.optional) ? SolidType.VOID : SolidType.NEVER);
+		return entry.type.union((entry.optional) ? (access_optional) ? SolidNull : SolidType.VOID : SolidType.NEVER);
 	}
 
 	itemTypes(): SolidType {

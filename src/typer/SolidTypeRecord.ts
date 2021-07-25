@@ -2,6 +2,7 @@ import type {AST} from '../validator/index.js';
 import {TypeError04} from '../error/index.js';
 import {
 	SolidObject,
+	SolidNull,
 	SolidRecord,
 } from '../index.js'; // avoids circular imports
 import {
@@ -68,11 +69,11 @@ export class SolidTypeRecord extends SolidType {
 		);
 	}
 
-	get(key: bigint, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): SolidType {
+	get(key: bigint, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): SolidType {
 		const entry: TypeEntry = (this.propertytypes.has(key))
 			? this.propertytypes.get(key)!
 			: (() => { throw new TypeError04('property', this, accessor); })();
-		return entry.type.union((entry.optional) ? SolidType.VOID : SolidType.NEVER);
+		return entry.type.union((entry.optional) ? (access_optional) ? SolidNull : SolidType.VOID : SolidType.NEVER);
 	}
 
 	valueTypes(): SolidType {

@@ -759,21 +759,21 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			const accessor_type: SolidType = this.accessor.value.type(validator);
 			return (
 				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
-					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16)
-						? base_type.value.toType().get(accessor_type.value, this.accessor)
-						: base_type.value.toType().itemTypes()
+					(accessor_type instanceof SolidTypeConstant)
+						? base_type.value.toType().get(accessor_type.value as Int16, this.optional, this.accessor)
+						: base_type.value.toType().itemTypes().union((this.optional) ? SolidNull : SolidType.NEVER)
 				) :
 				(base_type instanceof SolidTypeTuple) ? (
-					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16)
-						? base_type.get(accessor_type.value, this.accessor)
-						: base_type.itemTypes()
+					(accessor_type instanceof SolidTypeConstant)
+						? base_type.get(accessor_type.value as Int16, this.optional, this.accessor)
+						: base_type.itemTypes().union((this.optional) ? SolidNull : SolidType.NEVER)
 				) :
 				(() => { throw new TypeError04('index', base_type, this.accessor); })()
 			);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (
-				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, this.accessor) :
-				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, this.accessor) :
+				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, this.optional, this.accessor) :
+				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, this.optional, this.accessor) :
 				(() => { throw new TypeError04('property', base_type, this.accessor); })()
 			);
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
@@ -783,23 +783,23 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 			return (
 				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
-					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16) ? base_type.value.toType().get(accessor_type.value, this.accessor) :
-					(accessor_type.isSubtypeOf(Int16))                                                   ? base_type.value.toType().itemTypes() :
+					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16) ? base_type.value.toType().get(accessor_type.value, this.optional, this.accessor) :
+					(accessor_type.isSubtypeOf(Int16))                                                   ? base_type.value.toType().itemTypes().union((this.optional) ? SolidNull : SolidType.NEVER) :
 					throwWrongSubtypeError(this.accessor, Int16)
 				) :
 				(base_type instanceof SolidTypeTuple) ? (
-					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16) ? base_type.get(accessor_type.value, this.accessor) :
-					(accessor_type.isSubtypeOf(Int16))                                                   ? base_type.itemTypes() :
+					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16) ? base_type.get(accessor_type.value, this.optional, this.accessor) :
+					(accessor_type.isSubtypeOf(Int16))                                                   ? base_type.itemTypes().union((this.optional) ? SolidNull : SolidType.NEVER) :
 					throwWrongSubtypeError(this.accessor, Int16)
 				) :
 				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping) ? (
 					(accessor_type.isSubtypeOf(base_type.value.toType().antecedenttypes))
-						? base_type.value.toType().consequenttypes
+						? base_type.value.toType().consequenttypes.union((this.optional) ? SolidNull : SolidType.NEVER)
 						: throwWrongSubtypeError(this.accessor, base_type.value.toType().antecedenttypes)
 				) :
 				(base_type instanceof SolidTypeMapping) ? (
 					(accessor_type.isSubtypeOf(base_type.antecedenttypes))
-						? base_type.consequenttypes
+						? base_type.consequenttypes.union((this.optional) ? SolidNull : SolidType.NEVER)
 						: throwWrongSubtypeError(this.accessor, base_type.antecedenttypes)
 				) :
 				(() => { throw new TypeError01(this); })()
