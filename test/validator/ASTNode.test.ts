@@ -1908,6 +1908,19 @@ describe('ASTNodeSolid', () => {
 					Float64,
 					SolidString,
 				]);
+				Dev.supports('optionalAccess') && it('optional access returns type of base when it is a subtype of null.', () => {
+					const validator: Validator = new Validator();
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .type(validator), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .type(validator), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).type(validator), TypeError01);
+					[
+						AST.ASTNodeAccess.fromSource(`null?.3;`)         .type(validator),
+						AST.ASTNodeAccess.fromSource(`null?.four;`)      .type(validator),
+						AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).type(validator),
+					].forEach((t) => {
+						assert.ok(t.isSubtypeOf(SolidNull));
+					});
+				});
 				context('access by index.', () => {
 					context('with constant folding on, folds index accessor.', () => {
 						let validator: Validator;
@@ -2200,6 +2213,19 @@ describe('ASTNodeSolid', () => {
 					null,
 					null,
 				];
+				Dev.supports('optionalAccess') && it('optional access returns base when it is null.', () => {
+					const validator: Validator = new Validator();
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .assess(validator), /TypeError: \w+\.get is not a function/);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .assess(validator), /TypeError: \w+\.get is not a function/);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).assess(validator), /TypeError: \w+\.get is not a function/);
+					[
+						AST.ASTNodeAccess.fromSource(`null?.3;`)         .assess(validator),
+						AST.ASTNodeAccess.fromSource(`null?.four;`)      .assess(validator),
+						AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).assess(validator),
+					].forEach((t) => {
+						assert.strictEqual(t, SolidNull.NULL);
+					});
+				});
 				context('access by index.', () => {
 					let validator: Validator;
 					let program: AST.ASTNodeGoal;
