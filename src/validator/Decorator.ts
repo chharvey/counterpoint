@@ -199,7 +199,7 @@ export class Decorator {
 				this.decorate(node.children[0]),
 			);
 
-		} else if (Dev.supports('optionalAccess') && node instanceof PARSER.ParseNodeEntryType_Optional) {
+		} else if (Dev.supports('optionalEntries') && node instanceof PARSER.ParseNodeEntryType_Optional) {
 			return new AST.ASTNodeItemType(
 				node,
 				true,
@@ -214,7 +214,7 @@ export class Decorator {
 				this.decorate(node.children[2]),
 			);
 
-		} else if (Dev.supports('optionalAccess') && node instanceof PARSER.ParseNodeEntryType_Named_Optional) {
+		} else if (Dev.supports('optionalEntries') && node instanceof PARSER.ParseNodeEntryType_Named_Optional) {
 			return new AST.ASTNodePropertyType(
 				node,
 				true,
@@ -357,7 +357,7 @@ export class Decorator {
 				? this.decorate(node.children[0])
 				: new AST.ASTNodeAccess(
 					node,
-					Dev.supports('optionalAccess') && this.isOptionalAccess(node.children[1]),
+					Dev.supports('optionalEntries') && this.isOptionalAccess(node.children[1]),
 					this.decorate(node.children[0]),
 					this.decorate(node.children[1]),
 				);

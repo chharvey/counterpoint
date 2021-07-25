@@ -107,7 +107,7 @@ describe('Decorator', () => {
 					`float`,
 				);
 			});
-			Dev.supports('optionalAccess') && specify('EntryType_Optional ::= "?:" Type', () => {
+			Dev.supports('optionalEntries') && specify('EntryType_Optional ::= "?:" Type', () => {
 				/*
 					<ItemType optional=true>
 						<TypeConstant source="float"/>
@@ -134,7 +134,7 @@ describe('Decorator', () => {
 					[`fontSize`,              `float`],
 				);
 			});
-			Dev.supports('optionalAccess') && specify('EntryType_Named_Optional ::= Word "?:" Type', () => {
+			Dev.supports('optionalEntries') && specify('EntryType_Named_Optional ::= Word "?:" Type', () => {
 				/*
 					<PropertyType optional=true>
 						<Key source="fontSize"/>
@@ -150,14 +150,14 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supportsAll('literalCollection', 'optionalAccess') && describe('TypeTupleLiteral ::= "[" (","? ItemsType)? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" (","? ItemsType)? "]"', () => {
 			it('makes an empty ASTNodeTypeTuple.', () => {
 				/*
 					<TypeTuple/>
 				*/
 				assert_arrayLength(Decorator.decorate(h.tupleTypeFromString(`[]`)).children, 0);
 			});
-			it('makes a nonempty ASTNodeTypeTuple.', () => {
+			Dev.supports('optionalEntries') && it('makes a nonempty ASTNodeTypeTuple.', () => {
 				/*
 					<TypeTuple>
 						<TypeAlias source="T"/>
@@ -182,7 +182,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supportsAll('literalCollection', 'optionalAccess') && describe('TypeRecordLiteral ::= "[" ","? PropertiesType "]"', () => {
+		Dev.supports('optionalEntries') && describe('TypeRecordLiteral ::= "[" ","? PropertiesType "]"', () => {
 			it('makes an ASTNodeTypeRecord.', () => {
 				/*
 					<TypeRecord>
@@ -672,7 +672,7 @@ describe('Decorator', () => {
 					);
 				});
 			});
-			Dev.supports('optionalAccess') && context('optional access.', () => {
+			Dev.supports('optionalEntries') && context('optional access.', () => {
 				it('access by index.', () => {
 					/*
 						<Access optional=true>

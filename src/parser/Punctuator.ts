@@ -8,7 +8,7 @@ export enum Punctuator {
 		MAPTO    = '|->', // Dev.supports('literalCollection')
 	// compound
 		DOT    = '.',  // Dev.supports('literalCollection')
-		OPTDOT = '?.', // Dev.supports('optionalAccess')
+		OPTDOT = '?.', // Dev.supports('optionalEntries')
 	// unary
 		NOT = '!',
 		EMP = '?',
@@ -41,6 +41,6 @@ export enum Punctuator {
 	// statement
 		ENDSTAT = ';',
 		ISTYPE  = ':',
-		OPT     = '?:', // Dev.supports('optionalAccess')
+		OPT     = '?:', // Dev.supports('optionalEntries')
 		ASSIGN  = '=', // Dev.supports('literalCollection')
 }
