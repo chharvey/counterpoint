@@ -187,7 +187,7 @@ export class Decorator {
 
 		} else if (node instanceof PARSER.ParseNodePropertyAccessType) {
 			return (
-				(node.children[1] instanceof TOKEN.TokenNumber) ? new AST.ASTNodeIndexType(node, [new AST.ASTNodeTypeConstant(node.children[1])]) :
+				(node.children[1] instanceof TOKEN.TokenNumber) ? new AST.ASTNodeIndexType(node, new AST.ASTNodeTypeConstant(node.children[1])) :
 				this.decorate(node.children[1] as PARSER.ParseNodeWord)
 			);
 

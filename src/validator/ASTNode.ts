@@ -150,9 +150,9 @@ export class ASTNodeKey extends ASTNodeSolid {
 export class ASTNodeIndexType extends ASTNodeSolid {
 	constructor (
 		start_node: PARSER.ParseNodePropertyAccessType,
-		override readonly children: readonly [ASTNodeTypeConstant],
+		readonly value: ASTNodeTypeConstant,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {}, [value]);
 	}
 	override build(builder: Builder): Instruction {
 		throw builder && 'ASTNodeIndexType#build not yet supported.';
