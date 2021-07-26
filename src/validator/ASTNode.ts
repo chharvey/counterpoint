@@ -364,7 +364,32 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		super(start_node, {}, [base, accessor]);
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		throw validator && 'ASTNodeTypeAccess#assess_do not yet supported.';
+		let base_type: SolidType = this.base.assess(validator);
+		if (base_type instanceof SolidTypeIntersection || base_type instanceof SolidTypeUnion) {
+			base_type = base_type.combineTuplesOrRecords();
+		}
+		if (this.accessor instanceof ASTNodeIndexType) {
+			const accessor_type: SolidType = this.accessor.value.assess(validator);
+			return (
+				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
+					(accessor_type instanceof SolidTypeConstant)
+						? base_type.value.toType().get(accessor_type.value as Int16, this.accessor)
+						: base_type.value.toType().itemTypes()
+				) :
+				(base_type instanceof SolidTypeTuple) ? (
+					(accessor_type instanceof SolidTypeConstant)
+						? base_type.get(accessor_type.value as Int16, this.accessor)
+						: base_type.itemTypes()
+				) :
+				(() => { throw new TypeError04('index', base_type, this.accessor); })()
+			);
+		} else /* (this.accessor instanceof ASTNodeKey) */ {
+			return (
+				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, this.accessor) :
+				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, this.accessor) :
+				(() => { throw new TypeError04('property', base_type, this.accessor); })()
+			);
+		}
 	}
 }
 export abstract class ASTNodeTypeOperation extends ASTNodeType {

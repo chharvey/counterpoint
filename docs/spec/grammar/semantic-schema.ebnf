@@ -42,7 +42,7 @@ SemanticTypeAlias[id: RealNumber]
 SemanticTypeTuple  ::= SemanticType*;
 SemanticTypeRecord ::= SemanticPropertyType+;
 
-SemanticAccess
+SemanticTypeAccess
 	::= SemanticType (SemanticIndexType | SemanticKey);
 
 SemanticTypeOperation[operator: ORNULL]

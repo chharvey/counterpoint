@@ -1756,6 +1756,85 @@ describe('ASTNodeSolid', () => {
 			});
 		})
 
+		Dev.supports('literalCollection') && describe('ASTNodeTypeAccess', () => {
+			describe('#assess', () => {
+				function evalOfTypeDecl(decl: AST.ASTNodeDeclarationType, validator: Validator): SolidType {
+					return decl.value.assess(validator);
+				}
+				const expected: SolidType[] = [
+					typeConstInt(1n),
+					typeConstFloat(2.0),
+					typeConstStr('three'),
+					Int16,
+					Float64,
+					SolidString,
+				];
+				let validator: Validator;
+				let program: AST.ASTNodeGoal;
+				before(() => {
+					validator = new Validator();
+					program = AST.ASTNodeGoal.fromSource(`
+						type TupC = [1,   2.0,   'three'];
+						type TupV = [int, float, str];
+
+						type A1 = TupC.0;  % type \`1\`
+						type A2 = TupC.1;  % type \`2.0\`
+						type A3 = TupC.2;  % type \`'three'\`
+						type A4 = TupV.0;  % type \`int\`
+						type A5 = TupV.1;  % type \`float\`
+						type A6 = TupV.2;  % type \`str\`
+						type B1 = TupC.-3; % type \`1\`
+						type B2 = TupC.-2; % type \`2.0\`
+						type B3 = TupC.-1; % type \`'three'\`
+						type B4 = TupV.-3; % type \`int\`
+						type B5 = TupV.-2; % type \`float\`
+						type B6 = TupV.-1; % type \`str\`
+
+						type RecC = [a: 1,   b: 2.0,   c: 'three'];
+						type RecV = [a: int, b: float, c: str];
+
+						type C1 = RecC.a; % type \`1\`
+						type C2 = RecC.b; % type \`2.0\`
+						type C3 = RecC.c; % type \`'three'\`
+						type C4 = RecV.a; % type \`int\`
+						type C5 = RecV.b; % type \`float\`
+						type C6 = RecV.c; % type \`str\`
+					`, validator.config);
+					program.varCheck(validator);
+					program.typeCheck(validator);
+				});
+				context('index access.', () => {
+					it('returns individual entry types.', () => {
+						assert.deepStrictEqual(
+							program.children.slice(2, 8).map((c) => evalOfTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+							expected,
+						);
+					});
+					it('negative indices count backwards from end.', () => {
+						assert.deepStrictEqual(
+							program.children.slice(8, 14).map((c) => evalOfTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+							expected,
+						);
+					});
+					it('throws when index is out of bounds.', () => {
+						assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].3`).assess(validator), TypeError04);
+						assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].-4`).assess(validator), TypeError04);
+					});
+				});
+				context('key access.', () => {
+					it('returns individual entry types.', () => {
+						assert.deepStrictEqual(
+							program.children.slice(16, 22).map((c) => evalOfTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+							expected,
+						);
+					});
+					it('throws when key is out of bounds.', () => {
+						assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[a: 1, b: 2.0, c: 'three'].d`).assess(validator), TypeError04);
+					});
+				});
+			});
+		});
+
 		Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 			function programFactory(src: string): (validator: Validator) => AST.ASTNodeGoal {
 				return (validator: Validator) => AST.ASTNodeGoal.fromSource(src, validator.config);
