@@ -786,13 +786,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			const accessor_type: SolidType = this.accessor.value.type(validator);
 			return (
 				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
-					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16)
-						? base_type.value.toType().get(accessor_type.value, this.accessor)
+					(accessor_type instanceof SolidTypeConstant)
+						? base_type.value.toType().get(accessor_type.value as Int16, this.accessor)
 						: base_type.value.toType().itemTypes()
 				) :
 				(base_type instanceof SolidTypeTuple) ? (
-					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16)
-						? base_type.get(accessor_type.value, this.accessor)
+					(accessor_type instanceof SolidTypeConstant)
+						? base_type.get(accessor_type.value as Int16, this.accessor)
 						: base_type.itemTypes()
 				) :
 				(() => { throw new TypeError04('index', base_type, this.accessor); })()

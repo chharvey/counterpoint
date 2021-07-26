@@ -632,10 +632,10 @@ It accesses the index or key of a tuple or record type respectively.
 ```
 type T = [bool, int, str];
 type T1 = T.1;             %== int
-type T1 = T.-1;            %== str
+type T_1 = T.-1;           %== str
 
-type R = [a= bool, b= int, c= str];
-type Rc = R.c;                      %== str
+type R = [a: bool, b: int, c: str];
+type Ra = R.a;                      %== bool
 ```
 
 

@@ -1909,9 +1909,9 @@ describe('ASTNodeSolid', () => {
 					},
 				};
 				const expected: SolidType[] = [
-					new SolidTypeConstant(new Int16(1n)),
-					new SolidTypeConstant(new Float64(2.0)),
-					new SolidTypeConstant(new SolidString('three')),
+					typeConstInt(1n),
+					typeConstFloat(2.0),
+					typeConstStr('three'),
 					Int16,
 					Float64,
 					SolidString,
@@ -2011,8 +2011,8 @@ describe('ASTNodeSolid', () => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
 									unionAllTypes([
-										new SolidTypeConstant(new Int16(1n)),
-										new SolidTypeConstant(new Float64(2.0)),
+										typeConstInt(1n),
+										typeConstFloat(2.0),
 										SolidString,
 									]),
 								);
@@ -2030,9 +2030,9 @@ describe('ASTNodeSolid', () => {
 							assert.deepStrictEqual(
 								AST.ASTNodeAccess.fromSource(`[['a'] |-> 1, ['b'] |-> 2.0, ['c'] |-> 'three'].[['a']];`).type(validator),
 								unionAllTypes([
-									new SolidTypeConstant(new Int16(1n)),
-									new SolidTypeConstant(new Float64(2.0)),
-									new SolidTypeConstant(new SolidString('three')),
+									typeConstInt(1n),
+									typeConstFloat(2.0),
+									typeConstStr('three'),
 								]),
 							);
 						});
