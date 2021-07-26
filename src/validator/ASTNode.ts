@@ -150,9 +150,9 @@ export class ASTNodeKey extends ASTNodeSolid {
 export class ASTNodeIndexType extends ASTNodeSolid {
 	constructor (
 		start_node: PARSER.ParseNodePropertyAccessType,
-		override readonly children: readonly [ASTNodeTypeConstant],
+		readonly value: ASTNodeTypeConstant,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {}, [value]);
 	}
 	override build(builder: Builder): Instruction {
 		throw builder && 'ASTNodeIndexType#build not yet supported.';
@@ -358,9 +358,10 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 	}
 	constructor (
 		start_node: PARSER.ParseNodeTypeCompound,
-		override readonly children: readonly [ASTNodeType, ASTNodeIndexType | ASTNodeKey],
+		readonly base:     ASTNodeType,
+		readonly accessor: ASTNodeIndexType | ASTNodeKey,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {}, [base, accessor]);
 	}
 	protected override assess_do(validator: Validator): SolidType {
 		throw validator && 'ASTNodeTypeAccess#assess_do not yet supported.';

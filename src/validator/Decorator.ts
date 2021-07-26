@@ -187,17 +187,18 @@ export class Decorator {
 
 		} else if (node instanceof PARSER.ParseNodePropertyAccessType) {
 			return (
-				(node.children[1] instanceof TOKEN.TokenNumber) ? new AST.ASTNodeIndexType(node, [new AST.ASTNodeTypeConstant(node.children[1])]) :
+				(node.children[1] instanceof TOKEN.TokenNumber) ? new AST.ASTNodeIndexType(node, new AST.ASTNodeTypeConstant(node.children[1])) :
 				this.decorate(node.children[1] as PARSER.ParseNodeWord)
 			);
 
 		} else if (node instanceof PARSER.ParseNodeTypeCompound) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: new AST.ASTNodeTypeAccess(node, [
+				: new AST.ASTNodeTypeAccess(
+					node,
 					this.decorate(node.children[0]),
 					this.decorate(node.children[1]),
-				]);
+				);
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnarySymbol) {
 			return (node.children.length === 1)
