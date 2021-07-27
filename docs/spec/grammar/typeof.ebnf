@@ -65,10 +65,10 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `falsetype` be *UnwrapAffirm:* `ToType(false)`.
-	4. *Let `nulltype_or_falsetype` be *UnwrapAffirm:* `Union(Null, falsetype)`.
-	5. *If* *UnwrapAffirm:* `Subtype(operand, nulltype_or_falsetype)`:
+	4. *Let `falsytypes` be *UnwrapAffirm:* `Union(Void, Null, falsetype)`.
+	5. *If* *UnwrapAffirm:* `Subtype(operand, falsytypes)`:
 		1. *Return:* `ToType(true)`.
-	6. *If* *UnwrapAffirm:* `Subtype(Null, operand)` *or* *UnwrapAffirm:* `Subtype(falsetype, operand)`:
+	6. *If* *UnwrapAffirm:* `Subtype(Void, operand)` *or* *UnwrapAffirm:* `Subtype(Null, operand)` *or* *UnwrapAffirm:* `Subtype(falsetype, operand)`:
 		1. *Return:* `Boolean`.
 	7. *Return:* `falsetype`.
 ;
@@ -176,9 +176,6 @@ Type! TypeOfUnassessedOperation(SemanticOperation[operator: COND] expr) :=
 
 
 
-TypeConstant ToType(Or<Null, Boolean, Number> v) :=
-	1. *Return:* a new CompletionStructure [
-		type  = `Type`,
-		value = `v`,
-	].
+Type ToType(Or<Null, Boolean, Number> v) :=
+	1. *Return:* a new Type containing only the value `v`.
 ;
