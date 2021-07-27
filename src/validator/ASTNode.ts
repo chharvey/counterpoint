@@ -741,7 +741,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		readonly base:     ASTNodeExpression,
 		readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
-		super(start_node, {}, [base, accessor]);
+		super(start_node, {optional}, [base, accessor]);
 	}
 	override get shouldFloat(): boolean {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';
