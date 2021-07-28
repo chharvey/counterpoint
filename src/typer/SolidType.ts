@@ -188,15 +188,6 @@ class SolidTypeIntersection extends SolidType {
 	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) && this.right.includes(v)
 	}
-	/**
-	 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
-	 *     |  (B  & C) \| A == (B \| A)  & (C \| A)
-	 */
-	override union_do(t: SolidType): SolidType {
-		return (this.left.equals(SolidType.VOID) || this.right.equals(SolidType.VOID))
-			? this.left.union(t).intersect(this.right.union(t))
-			: new SolidTypeUnion(this, t);
-	}
 	override isSubtypeOf_do(t: SolidType): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) { return true }
@@ -243,9 +234,7 @@ class SolidTypeUnion extends SolidType {
 	 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
 	 */
 	override intersect_do(t: SolidType): SolidType {
-		return (this.left.equals(SolidType.VOID) || this.right.equals(SolidType.VOID))
-			? this.left.intersect(t).union(this.right.intersect(t))
-			: new SolidTypeIntersection(this, t);
+		return this.left.intersect(t).union(this.right.intersect(t));
 	}
 	override isSubtypeOf_do(t: SolidType): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */

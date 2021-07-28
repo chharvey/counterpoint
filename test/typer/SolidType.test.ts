@@ -127,6 +127,13 @@ describe('SolidType', () => {
 				assert.ok(a.intersect(b.union(c)).equals(a.intersect(b).union(a.intersect(c))), `${ a }, ${ b }, ${ c }`)
 			})
 		})
+		describe('SolidTypeUnion', () => {
+			it('distributes union operands over intersection: `(B \| C)  & A == (B  & A) \| (C  & A)`.', () => {
+				const expr = SolidNull.union(Int16).intersect(SolidType.VOID.union(SolidNull).union(SolidBoolean.FALSETYPE));
+				assert.ok(expr.equals(SolidNull), `(null | int) & (void | null | false) == null`);
+				assert.deepStrictEqual(expr, SolidNull);
+			});
+		});
 		describe('SolidInterfaceType', () => {
 			it('takes the union of properties of constituent types.', () => {
 				assert.ok(t0.intersect(t1).equals(new SolidTypeInterface(new Map<string, SolidType>([

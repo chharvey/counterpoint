@@ -1012,14 +1012,6 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {
 		const falsytypes: SolidType = SolidType.VOID.union(SolidNull).union(SolidBoolean.FALSETYPE);
-		function falsifyType(t: SolidType): SolidType {
-			// TODO: return t.intersect(falsytypes);
-			return [
-				SolidType.VOID,
-				SolidNull,
-				SolidBoolean.FALSETYPE,
-			].reduce((acc, falsy_type) => acc.union((falsy_type.isSubtypeOf(t)) ? falsy_type : SolidType.NEVER), SolidType.NEVER);
-		}
 		function truthifyType(t: SolidType): SolidType {
 			const values: Set<SolidObject> = new Set(t.values);
 			values.delete(SolidNull.NULL);
@@ -1029,7 +1021,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		return (this.operator === Operator.AND)
 			? (t0.isSubtypeOf(falsytypes))
 				? t0
-				: falsifyType(t0).union(t1)
+				: t0.intersect(falsytypes).union(t1)
 			: (t0.isSubtypeOf(falsytypes))
 				? t1
 				: (SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
