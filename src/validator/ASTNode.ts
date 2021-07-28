@@ -1012,20 +1012,14 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {
 		const falsytypes: SolidType = SolidType.VOID.union(SolidNull).union(SolidBoolean.FALSETYPE);
-		function truthifyType(t: SolidType): SolidType {
-			const values: Set<SolidObject> = new Set(t.values);
-			values.delete(SolidNull.NULL);
-			values.delete(SolidBoolean.FALSE);
-			return [...values].map<SolidType>((v) => new SolidTypeConstant(v)).reduce((a, b) => a.union(b));
-		}
 		return (this.operator === Operator.AND)
 			? (t0.isSubtypeOf(falsytypes))
 				? t0
 				: t0.intersect(falsytypes).union(t1)
 			: (t0.isSubtypeOf(falsytypes))
 				? t1
-				: (SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
-					? truthifyType(t0).union(t1)
+				: (SolidType.VOID.isSubtypeOf(t0) || SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
+					? t0.subtract(falsytypes).union(t1)
 					: t0
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {

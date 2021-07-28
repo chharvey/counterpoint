@@ -44,6 +44,7 @@ import {
 } from '../../src/error/index.js';
 import {
 	assert_wasCalled,
+	assertEqualTypes,
 } from '../assert-helpers.js';
 import {
 	typeConstInt,
@@ -1371,7 +1372,7 @@ describe('ASTNodeSolid', () => {
 									Float64,
 								]);
 							});
-							it.skip('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
+							it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
 								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 									let unfixed a: null | int = null;
 									let unfixed b: null | int = 42;
@@ -1387,7 +1388,7 @@ describe('ASTNodeSolid', () => {
 								const validator: Validator = new Validator(folding_off);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
-								assert.deepStrictEqual(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+								assertEqualTypes(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
 									Int16.union(SolidString),
 									Int16.union(SolidString),
 									SolidBoolean.TRUETYPE.union(SolidString),
