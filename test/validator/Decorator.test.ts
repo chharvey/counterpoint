@@ -614,16 +614,17 @@ describe('Decorator', () => {
 		})
 
 		Dev.supports('literalCollection') && describe('ExpressionCompound ::= ExpressionCompound PropertyAccess', () => {
-			function makeAccess(src: string, test_optional: boolean = false, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeAccess {
+			function makeAccess(src: string, test_optional: boolean, test_claim: boolean, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeAccess {
 				const access: AST.ASTNodeExpression = Decorator.decorate(h.compoundExpressionFromSource(src, config));
 				assert.ok(access instanceof AST.ASTNodeAccess);
 				assert.strictEqual(access.optional, test_optional);
+				assert.strictEqual(access.claim,    test_claim);
 				return access;
 			}
 			context('normal access.', () => {
 				it('access by index.', () => {
 					/*
-						<Access optional=false>
+						<Access optional=false claim=false>
 							<Tuple source="[42, 420, 4200]">...</Tuple>
 							<Index>
 								<Constant source="1"/>
@@ -632,7 +633,7 @@ describe('Decorator', () => {
 					*/
 					const access: AST.ASTNodeAccess = makeAccess(`
 						[42, 420, 4200].1;
-					`, false);
+					`, false, false);
 					assert.ok(access.accessor instanceof AST.ASTNodeIndex);
 					assert.deepStrictEqual(
 						[access.base.source,    access.accessor.source],
@@ -641,14 +642,14 @@ describe('Decorator', () => {
 				});
 				it('access by key.', () => {
 					/*
-						<Access optional=false>
+						<Access optional=false claim=false>
 							<Record source="[c= 42, b= 420, a= 4200]">...</Record>
 							<Key source="b"/>
 						</Access>
 					*/
 					const access: AST.ASTNodeAccess = makeAccess(`
 						[c= 42, b= 420, a= 4200].b;
-					`, false);
+					`, false, false);
 					assert.ok(access.accessor instanceof AST.ASTNodeKey);
 					assert.deepStrictEqual(
 						[access.base.source,                access.accessor.source],
@@ -657,14 +658,14 @@ describe('Decorator', () => {
 				});
 				it('access by computed expression.', () => {
 					/*
-						<Access optional=false>
+						<Access optional=false claim=false>
 							<Mapping source="[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']">...</Mapping>
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/
 					const access: AST.ASTNodeAccess = makeAccess(`
 						[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'].[0.7 + 0.3];
-					`, false);
+					`, false, false);
 					assert.ok(access.accessor instanceof AST.ASTNodeExpression);
 					assert.deepStrictEqual(
 						[access.base.source,                            access.accessor.source],
@@ -675,7 +676,7 @@ describe('Decorator', () => {
 			Dev.supports('optionalAccess') && context('optional access.', () => {
 				it('access by index.', () => {
 					/*
-						<Access optional=true>
+						<Access optional=true claim=false>
 							<Tuple source="[42, 420, 4200]">...</Tuple>
 							<Index>
 								<Constant source="1"/>
@@ -684,29 +685,66 @@ describe('Decorator', () => {
 					*/
 					makeAccess(`
 						[42, 420, 4200]?.1;
-					`, true);
+					`, true, false);
 				});
 				it('access by key.', () => {
 					/*
-						<Access optional=true>
+						<Access optional=true claim=false>
 							<Record source="[c= 42, b= 420, a= 4200]">...</Record>
 							<Key source="b"/>
 						</Access>
 					*/
 					makeAccess(`
 						[c= 42, b= 420, a= 4200]?.b;
-					`, true);
+					`, true, false);
 				});
 				it('access by computed expression.', () => {
 					/*
-						<Access optional=true>
+						<Access optional=true claim=false>
 							<Mapping source="[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']">...</Mapping>
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/
 					makeAccess(`
 						[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']?.[0.7 + 0.3];
-					`, true);
+					`, true, false);
+				});
+			});
+			Dev.supports('claimAccess') && context('claim access.', () => {
+				it('access by index.', () => {
+					/*
+						<Access optional=false claim=true>
+							<Tuple source="[42, 420, 4200]">...</Tuple>
+							<Index>
+								<Constant source="1"/>
+							</Index>
+						</Access>
+					*/
+					makeAccess(`
+						[42, 420, 4200]!.1;
+					`, false, true);
+				});
+				it('access by key.', () => {
+					/*
+						<Access optional=false claim=true>
+							<Record source="[c= 42, b= 420, a= 4200]">...</Record>
+							<Key source="b"/>
+						</Access>
+					*/
+					makeAccess(`
+						[c= 42, b= 420, a= 4200]!.b;
+					`, false, true);
+				});
+				it('access by computed expression.', () => {
+					/*
+						<Access optional=false claim=true>
+							<Mapping source="[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']">...</Mapping>
+							<Expression source="0.7 + 0.3">...</Expression>
+						</Access>
+					*/
+					makeAccess(`
+						[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']!.[0.7 + 0.3];
+					`, false, true);
 				});
 			});
 		});

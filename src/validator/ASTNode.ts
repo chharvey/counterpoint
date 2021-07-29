@@ -738,10 +738,11 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	constructor (
 		start_node: PARSER.ParseNodeExpressionCompound,
 		readonly optional: boolean,
+		readonly claim:    boolean,
 		readonly base:     ASTNodeExpression,
 		readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
-		super(start_node, {optional}, [base, accessor]);
+		super(start_node, {optional, claim}, [base, accessor]);
 	}
 	override get shouldFloat(): boolean {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';

@@ -113,6 +113,15 @@ export class Decorator {
 	private static isOptionalAccess(node: PARSER.ParseNodePropertyAccess): boolean {
 		return node.children[0].source === Punctuator.OPTDOT;
 	}
+	/**
+	 * Return whether a PropertyAccess parse node is a claim access or not.
+	 * Claim access uses the operator `!.` whereas normal access uses `.`.
+	 * @param node the parse node
+	 * @return `true` if the access is claim
+	 */
+	private static isClaimAccess(node: PARSER.ParseNodePropertyAccess): boolean {
+		return node.children[0].source === Punctuator.CLAIMDOT;
+	}
 
 	/**
 	 * Return an ASTNode corresponding to a ParseNode’s contents.
@@ -358,6 +367,7 @@ export class Decorator {
 				: new AST.ASTNodeAccess(
 					node,
 					Dev.supports('optionalAccess') && this.isOptionalAccess(node.children[1]),
+					Dev.supports('claimAccess')    && this.isClaimAccess   (node.children[1]),
 					this.decorate(node.children[0]),
 					this.decorate(node.children[1]),
 				);

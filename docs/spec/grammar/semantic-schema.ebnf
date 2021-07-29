@@ -79,7 +79,7 @@ SemanticTuple   ::= SemanticExpression*;
 SemanticRecord  ::= SemanticProperty+;
 SemanticMapping ::= SemanticCase+;
 
-SemanticAccess[optional: Boolean]
+SemanticAccess[optional: Boolean][claim: Boolean]
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
 
 SemanticOperation[operator: NOT | EMP]
