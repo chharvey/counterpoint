@@ -719,8 +719,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		const t0: SolidType = this.operand.type(validator);
 		return (
 			(this.operator === Operator.NOT) ? (
-				(t0.isSubtypeOf(SolidNull.union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
-				(SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? SolidBoolean :
+				(t0.isSubtypeOf(SolidType.VOID.union(SolidNull).union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
+				(SolidType.VOID.isSubtypeOf(t0) || SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? SolidBoolean :
 				SolidBoolean.FALSETYPE
 			) :
 			(this.operator === Operator.EMP) ? SolidBoolean :
@@ -1011,27 +1011,15 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		)
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {
-		const null_union_false: SolidType = SolidNull.union(SolidBoolean.FALSETYPE);
-		function truthifyType(t: SolidType): SolidType {
-			const values: Set<SolidObject> = new Set(t.values);
-			values.delete(SolidNull.NULL);
-			values.delete(SolidBoolean.FALSE);
-			return [...values].map<SolidType>((v) => new SolidTypeConstant(v)).reduce((a, b) => a.union(b));
-		}
+		const falsytypes: SolidType = SolidType.VOID.union(SolidNull).union(SolidBoolean.FALSETYPE);
 		return (this.operator === Operator.AND)
-			? (t0.isSubtypeOf(null_union_false))
+			? (t0.isSubtypeOf(falsytypes))
 				? t0
-				: (SolidNull.isSubtypeOf(t0))
-					? (SolidBoolean.FALSETYPE.isSubtypeOf(t0))
-						? null_union_false.union(t1)
-						: SolidNull.union(t1)
-					: (SolidBoolean.FALSETYPE.isSubtypeOf(t0))
-						? SolidBoolean.FALSETYPE.union(t1)
-						: t1
-			: (t0.isSubtypeOf(null_union_false))
+				: t0.intersect(falsytypes).union(t1)
+			: (t0.isSubtypeOf(falsytypes))
 				? t1
-				: (SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
-					? truthifyType(t0).union(t1)
+				: (SolidType.VOID.isSubtypeOf(t0) || SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
+					? t0.subtract(falsytypes).union(t1)
 					: t0
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
