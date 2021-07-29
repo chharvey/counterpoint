@@ -798,7 +798,7 @@ describe('ASTNodeSolid', () => {
 					SolidObject,
 				])
 			})
-			Dev.supports('literalCollection') && specify('ASTNodeTypeTuple', () => {
+			Dev.supports('optionalEntries') && specify('ASTNodeTypeTuple', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).assess(new Validator()),
 					new SolidTypeTuple([
@@ -808,7 +808,7 @@ describe('ASTNodeSolid', () => {
 					]),
 				);
 			});
-			Dev.supports('literalCollection') && specify('ASTNodeTypeRecord', () => {
+			Dev.supports('optionalEntries') && specify('ASTNodeTypeRecord', () => {
 				const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource(`[x: int, y?: bool, z: str]`);
 				assert.deepStrictEqual(
 					node.assess(new Validator()),
@@ -2172,7 +2172,7 @@ describe('ASTNodeSolid', () => {
 								);
 							});
 						});
-						Dev.supports('optionalEntries') && it('unions with null if access is optional.', () => {
+						Dev.supports('optionalAccess') && it('unions with null if access is optional.', () => {
 							assert.deepStrictEqual(
 								program.children.slice(28, 32).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[

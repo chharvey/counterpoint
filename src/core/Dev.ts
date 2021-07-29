@@ -45,7 +45,7 @@ export class Dev {
 		'stringTemplate-decorate': [true, ['stringTemplate-parse']],
 		'stringTemplate-assess':   [true, ['stringTemplate-decorate']],
 		voidType:                  [true],
-		optionalEntries:           [true, ['literalCollection', 'voidType']],
+		optionalEntries:           [false, ['literalCollection', 'voidType']],
 		optionalAccess:            [false, ['literalCollection', 'optionalEntries']],
 	}
 
