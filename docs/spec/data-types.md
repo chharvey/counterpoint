@@ -361,6 +361,13 @@ Type Union(Type a, Type b) :=
 ```
 
 
+### Difference
+A data type specified as \`Diff<‹T›, ‹U›>\`,
+where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
+is a data type that contains values assignable *only* to type \`‹T›\` and *not* to type \`‹U›\`.
+Such a data type is called the **difference** of \`‹T›\` and \`‹U›\`.
+
+
 ### Subtype
 A type \`‹T›\` is a **subtype** of type \`‹U›\` iff every value assignable to \`‹T›\` is also assignable to \`‹U›\`.
 
@@ -382,10 +389,11 @@ For brevity, this section uses the following notational conventions:
 - Metavariables such as \`‹A›\`, \`‹B›\`, \`‹C›\` denote placeholders for Solid Language Types
 	and do not refer to real variables or real types.
 - Angle quotes and back-ticks will be omitted. Instead, a `monospace font face` is used.
-- The [intersection](#intersection) of `A` and `B`, `And<A, B>`, is written `A & B`.
-- The [union](#union)               of `A` and `B`, `Or<A, B>`,  is written `A | B`. The symbol `|`  is weaker than `&`.
-- If `A` is a [subtype](#subtype) of `B`, we write `A <: B`.                         The symbol `<:` is weaker than `|`.
-- If `A` is [equal](#equality)    to `B`, we write `A == B`.                         The symbol `==` is weaker than `<:`.
+- The [intersection](#intersection) of `A` and `B`, `And<A, B>`,  is written `A & B`.
+- The [union](#union)               of `A` and `B`, `Or<A, B>`,   is written `A | B`. The symbol `|`  is weaker than `&`.
+- The [difference](#difference)     of `A` and `B`, `Diff<A, B>`, is written `A - B`. The symbol `-`  has the same precedence as `|`.
+- If `A` is a [subtype](#subtype) of `B`, we write `A <: B`.                          The symbol `<:` is weaker than `|` and `-`.
+- If `A` is [equal](#equality)    to `B`, we write `A == B`.                          The symbol `==` is weaker than `<:`.
 - Where ‹X› and ‹Y› represent statements in prose:
 	- `‹X› &&  ‹Y›` denotes “‹X› and            ‹Y›”. The symbol `&&`  is weaker than `<:`.
 	- `‹X› ||  ‹Y›` denotes “‹X› or             ‹Y›”. The symbol `||`  is weaker than `&&`.
@@ -431,3 +439,13 @@ For brevity, this section uses the following notational conventions:
 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` | Subtype is Left-Factorable      under Disjunction (but *not* Left-Distributive      over Union)
 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` | Subtype is Right-Antifactorable under Conjunction, and       Right-Antidistributive over Union
 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` | Subtype is Right-Antifactorable under Disjunction (but *not* Right-Antidistributive over Intersection)
+
+
+### Difference Properties
+\# | Law | Description
+-- | --- | -----------
+4-1 | `A - B == A  <->  A & B == never`             | The difference of two types is the first type iff they are disjoint.
+4-2 | `A - B == never  <->  A <: B`                 | The difference of two types is empty iff the first type is a subtype of the second type.
+4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` | Any subtype of a difference is a subtype of its first part and disjoint with its second part.
+4-4 | `(A \| B) - C == (A - C) \| (B - C)` | Difference is Right-Distributive    over Union
+4-5 | `A - (B \| C) == (A - B)  & (A - C)` | Difference is Left-Antidistributive over Union

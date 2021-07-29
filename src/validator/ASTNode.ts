@@ -741,7 +741,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		readonly base:     ASTNodeExpression,
 		readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
-		super(start_node, {}, [base, accessor]);
+		super(start_node, {optional}, [base, accessor]);
 	}
 	override get shouldFloat(): boolean {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';
@@ -755,9 +755,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (base_type instanceof SolidTypeIntersection || base_type instanceof SolidTypeUnion) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
-		if (this.optional && base_type.isSubtypeOf(SolidNull)) {
-			return base_type;
-		}
+		return (
+			(this.optional && base_type.isSubtypeOf(SolidNull)) ? base_type :
+			(this.optional && SolidNull.isSubtypeOf(base_type)) ? this.type_do_do(base_type.subtract(SolidNull), validator).union(SolidNull) :
+			this.type_do_do(base_type, validator)
+		);
+	}
+	private type_do_do(base_type: SolidType, validator: Validator): SolidType {
 		if (this.accessor instanceof ASTNodeIndex) {
 			const accessor_type: SolidType = this.accessor.value.type(validator);
 			return (
@@ -876,8 +880,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		const t0: SolidType = this.operand.type(validator);
 		return (
 			(this.operator === Operator.NOT) ? (
-				(t0.isSubtypeOf(SolidNull.union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
-				(SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? SolidBoolean :
+				(t0.isSubtypeOf(SolidType.VOID.union(SolidNull).union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
+				(SolidType.VOID.isSubtypeOf(t0) || SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? SolidBoolean :
 				SolidBoolean.FALSETYPE
 			) :
 			(this.operator === Operator.EMP) ? SolidBoolean :
@@ -1168,27 +1172,15 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		)
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {
-		const null_union_false: SolidType = SolidNull.union(SolidBoolean.FALSETYPE);
-		function truthifyType(t: SolidType): SolidType {
-			const values: Set<SolidObject> = new Set(t.values);
-			values.delete(SolidNull.NULL);
-			values.delete(SolidBoolean.FALSE);
-			return [...values].map<SolidType>((v) => new SolidTypeConstant(v)).reduce((a, b) => a.union(b));
-		}
+		const falsytypes: SolidType = SolidType.VOID.union(SolidNull).union(SolidBoolean.FALSETYPE);
 		return (this.operator === Operator.AND)
-			? (t0.isSubtypeOf(null_union_false))
+			? (t0.isSubtypeOf(falsytypes))
 				? t0
-				: (SolidNull.isSubtypeOf(t0))
-					? (SolidBoolean.FALSETYPE.isSubtypeOf(t0))
-						? null_union_false.union(t1)
-						: SolidNull.union(t1)
-					: (SolidBoolean.FALSETYPE.isSubtypeOf(t0))
-						? SolidBoolean.FALSETYPE.union(t1)
-						: t1
-			: (t0.isSubtypeOf(null_union_false))
+				: t0.intersect(falsytypes).union(t1)
+			: (t0.isSubtypeOf(falsytypes))
 				? t1
-				: (SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
-					? truthifyType(t0).union(t1)
+				: (SolidType.VOID.isSubtypeOf(t0) || SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
+					? t0.subtract(falsytypes).union(t1)
 					: t0
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {

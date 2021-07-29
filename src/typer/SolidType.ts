@@ -3,8 +3,8 @@ import {SetEq} from '../core/index.js'
 import {
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidObject,
 } from './index.js'; // avoids circular imports
-import type {SolidObject} from './SolidObject.js';
 
 
 
@@ -143,6 +143,28 @@ export abstract class SolidType {
 		return new SolidTypeUnion(this, t)
 	}
 	/**
+	 * Return a new type that includes the values in this type that are not included in the argument type.
+	 * @param t the other type
+	 * @returns the type difference
+	 * @final
+	 */
+	subtract(t: SolidType): SolidType {
+		/** 4-1 | `A - B == A  <->  A & B == never` */
+		if (this.intersect(t).isEmpty) { return this; }
+
+		/** 4-2 | `A - B == never  <->  A <: B` */
+		if (this.isSubtypeOf(t)) { return SolidType.NEVER; }
+
+		if (t instanceof SolidTypeUnion) {
+			return t.subtractedFrom(this);
+		}
+
+		return this.subtract_do(t);
+	}
+	subtract_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
+		return new SolidTypeDifference(this, t);
+	}
+	/**
 	 * Return whether this type is a structural subtype of the given type.
 	 * @param t the type to compare
 	 * @returns Is this type a subtype of the argument?
@@ -165,6 +187,9 @@ export abstract class SolidType {
 		}
 		if (t instanceof SolidTypeUnion) {
 			if (t.isNecessarilySupertypeOf(this)) { return true; }
+		}
+		if (t instanceof SolidTypeDifference) {
+			return t.isSupertypeOf(this);
 		}
 
 		return this.isSubtypeOf_do(t)
@@ -213,15 +238,6 @@ export class SolidTypeIntersection extends SolidType {
 	}
 	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) && this.right.includes(v)
-	}
-	/**
-	 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
-	 *     |  (B  & C) \| A == (B \| A)  & (C \| A)
-	 */
-	override union_do(t: SolidType): SolidType {
-		return (this.left.equals(SolidType.VOID) || this.right.equals(SolidType.VOID))
-			? this.left.union(t).intersect(this.right.union(t))
-			: new SolidTypeUnion(this, t);
 	}
 	override isSubtypeOf_do(t: SolidType): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
@@ -276,13 +292,19 @@ export class SolidTypeUnion extends SolidType {
 	 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
 	 */
 	override intersect_do(t: SolidType): SolidType {
-		return (this.left.equals(SolidType.VOID) || this.right.equals(SolidType.VOID))
-			? this.left.intersect(t).union(this.right.intersect(t))
-			: new SolidTypeIntersection(this, t);
+		return this.left.intersect(t).union(this.right.intersect(t));
+	}
+	override subtract_do(t: SolidType): SolidType {
+		/** 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
+		return this.left.subtract(t).union(this.right.subtract(t));
 	}
 	override isSubtypeOf_do(t: SolidType): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
+	}
+	subtractedFrom(t: SolidType): SolidType {
+		/** 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
+		return t.subtract(this.left).intersect(t.subtract(this.right));
 	}
 	isNecessarilySupertypeOf(t: SolidType): boolean {
 		/** 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
@@ -297,6 +319,47 @@ export class SolidTypeUnion extends SolidType {
 			(this.left instanceof SolidTypeRecord && this.right instanceof SolidTypeRecord) ? this.left.unionWithRecord(this.right) :
 			this
 		);
+	}
+}
+
+
+
+/**
+ * A type difference of two types `T` and `U` is the type
+ * that contains values assignable to `T` but *not* assignable to `U`.
+ */
+class SolidTypeDifference extends SolidType {
+	declare readonly isEmpty: boolean;
+
+	/**
+	 * Construct a new SolidTypeDifference object.
+	 * @param left the first type
+	 * @param right the second type
+	 */
+	constructor (
+		private readonly left:  SolidType,
+		private readonly right: SolidType,
+	) {
+		super(xjs.Set.difference(left.values, right.values));
+		/*
+		We can assert that this is always non-empty because
+		the only cases in which it could be empty are
+		1. if left is empty
+		2. if left is a subtype of right
+		each of which is impossible because the algorithm would have already produced the `never` type.
+		*/
+		this.isEmpty = false;
+	}
+
+	override includes(v: SolidObject): boolean {
+		return this.left.includes(v) && !this.right.includes(v);
+	}
+	override isSubtypeOf_do(t: SolidType): boolean {
+		return this.left.isSubtypeOf(t) || super.isSubtypeOf_do(t);
+	}
+	isSupertypeOf(t: SolidType): boolean {
+		/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
+		return t.isSubtypeOf(this.left) && t.intersect(this.right).isEmpty;
 	}
 }
 
