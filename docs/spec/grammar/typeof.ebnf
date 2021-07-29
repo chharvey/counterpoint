@@ -66,7 +66,12 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `accessor` be `access.children.1`.
 	4. *Let* `base_type` be *Unwrap:* `CombineTuplesOrRecords(TypeOf(base))`.
-	5. *If* `accessor` is a SemanticIndex:
+	5. *If* `access.optional` is `true` *and* *UnwrapAffirm:* `Subtype(base_type, Null)`:
+		1. *Return:* `base_type`.
+	6. *If* `access.optional` is `true` *and* *UnwrapAffirm:* `Subtype(Null, base_type)`:
+		1. *Set* `is_nullish` to `true`.
+		2. *Set* `base_type` to `Difference(base_type, Null)`.
+	7. *If* `accessor` is a SemanticIndex:
 		1. *Assert:* `accessor.children.count` is 1.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor.children.0)`.
 		3. *Assert:* `accessor_type` is a TypeConstant.
@@ -74,39 +79,43 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 		5. *Assert:* `i` is a instance of `Integer`.
 		6. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)` *and* `i` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
-			2. *Return:* *UnwrapAffirm:* `MaybeOptional(access, entry)`.
+			2. *Set* `returned` to *UnwrapAffirm:* `MaybeOptional(access, entry)`.
 		7. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
-	6. *If* `accessor` is a SemanticKey:
+	8. *If* `accessor` is a SemanticKey:
 		1. *Let* `id` be `accessor.id`.
 		2. *If* *UnwrapAffirm:* `Subtype(base_type, Record)` *and* `id` is a key in `base_type`:
 			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
-			2. *Return:* *UnwrapAffirm:* `MaybeOptional(access, entry)`.
+			2. *Set* `returned` to *UnwrapAffirm:* `MaybeOptional(access, entry)`.
 		3. *Throw:* a new TypeError04 "Property {{ id }} does not exist on type {{ base_type }}.".
-	7. *Assert:* `accessor` is a SemanticExpression.
-	8. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
-	9. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)`:
+	9. *Assert:* `accessor` is a SemanticExpression.
+	10. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
+	11. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)`:
 		1. *If* `accessor_type` is a TypeConstant:
 			1. *Let* `i` be `accessor_type.value`.
 			2. *If* `i` is a instance of `Integer`:
 				1. *If* `i` is an index in `base_type`:
 					1. *Let* `entry` be the item accessed at index `i` in `base_type`.
-					2. *Return:* *UnwrapAffirm:* `MaybeOptional(access, entry)`.
+					2. *Set* `returned` to *UnwrapAffirm:* `MaybeOptional(access, entry)`.
 				2. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
 		2. *Else If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)`:
 			1. *Let* `type` be the union of all item types in `base_type`.
 			2. *If*: `access.optional` is `true`:
-				1. *Return* `Union(type, Null)`.
-			3. *Return:* `type`.
+				1. *Set* `returned` to `Union(type, Null)`.
+			3. *Set* `returned` to `type`.
 		3. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
-	10. *If* *UnwrapAffirm:* `Subtype(base_type, Mapping)`:
+	12. *If* *UnwrapAffirm:* `Subtype(base_type, Mapping)`:
 		1. *Let* `k` be the type of the antecedents in `base_type`.
 		2. *Let* `v` be the type of the consequents in `base_type`.
 		3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)`:
 			1. *If*: `access.optional` is `true`:
-				1. *Return* `Union(v, Null)`.
-			2. *Return:* `v`.
+				1. *Set* `returned` to `Union(v, Null)`.
+			2. *Set* `returned` to `v`.
 		4. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ k }}.".
-	11. *Throw:* a new TypeError01.
+	13. *If* `returned` is set:
+		1. *If* `is_nullish` is `true`:
+			1. *Return:* `Union(returned, Null)`.
+		2. *Return*: `returned`.
+	14. *Throw:* a new TypeError01.
 ;
 
 
@@ -115,10 +124,10 @@ Type! TypeOfUnassessed(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `falsetype` be *UnwrapAffirm:* `ToType(false)`.
-	4. *Let `nulltype_or_falsetype` be *UnwrapAffirm:* `Union(Null, falsetype)`.
-	5. *If* *UnwrapAffirm:* `Subtype(operand, nulltype_or_falsetype)`:
+	4. *Let `falsytypes` be *UnwrapAffirm:* `Union(Void, Null, falsetype)`.
+	5. *If* *UnwrapAffirm:* `Subtype(operand, falsytypes)`:
 		1. *Return:* `ToType(true)`.
-	6. *If* *UnwrapAffirm:* `Subtype(Null, operand)` *or* *UnwrapAffirm:* `Subtype(falsetype, operand)`:
+	6. *If* *UnwrapAffirm:* `Subtype(Void, operand)` *or* *UnwrapAffirm:* `Subtype(Null, operand)` *or* *UnwrapAffirm:* `Subtype(falsetype, operand)`:
 		1. *Return:* `Boolean`.
 	7. *Return:* `falsetype`.
 ;
@@ -182,16 +191,10 @@ Type! TypeOfUnassessed(SemanticOperation[operator: AND] expr) :=
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *Let* `falsetype` be *UnwrapAffirm:* `ToType(false)`.
-	5. *Let `nulltype_or_falsetype` be *UnwrapAffirm:* `Union(Null, falsetype)`.
-	6. *If* *UnwrapAffirm:* `Subtype(t0, nulltype_or_falsetype)`:
+	5. *Let `falsytypes` be *UnwrapAffirm:* `Union(Void, Null, falsetype)`.
+	6. *If* *UnwrapAffirm:* `Subtype(t0, falsytypes)`:
 		1. *Return:* `t0`.
-	7. *If* *UnwrapAffirm:* `Subtype(Null, t0)`:
-		1. *If* *UnwrapAffirm:* `Subtype(falsetype, t0)`:
-			1. *Return:* `Union(nulltype_or_falsetype, t1)`.
-		2. *Return:* `Union(Null, t1)`.
-	8. *If* *UnwrapAffirm:* `Subtype(falsetype, t0)`:
-		1. *Return:* `Union(falsetype, t1)`.
-	9. *Return:* `t1`.
+	7. *Return:* `Union(Intersection(t0, falsytypes), t1)`.
 ;
 
 Type! TypeOfUnassessed(SemanticOperation[operator: OR] expr) :=
@@ -199,14 +202,11 @@ Type! TypeOfUnassessed(SemanticOperation[operator: OR] expr) :=
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *Let* `falsetype` be *UnwrapAffirm:* `ToType(false)`.
-	5. *Let `nulltype_or_falsetype` be *UnwrapAffirm:* `Union(Null, falsetype)`.
-	6. *If* *UnwrapAffirm:* `Subtype(t0, nulltype_or_falsetype)`:
+	5. *Let `falsytypes` be *UnwrapAffirm:* `Union(Void, Null, falsetype)`.
+	6. *If* *UnwrapAffirm:* `Subtype(t0, falsytypes)`:
 		1. *Return:* `t1`.
-	7. *If* *UnwrapAffirm:* `Subtype(Null, t0)` *or* *UnwrapAffirm:* `Subtype(falsetype, t0)`:
-		1. *Let* `left` be a new type, containing the values in `t0`.
-		2. Remove `null` from the set of values in `left`.
-		3. Remove `false` from the set of values in `left`.
-		4. *Return:* `Union(left, t1)`.
+	7. *If* *UnwrapAffirm:* `Subtype(Void, t0)` *or* *UnwrapAffirm:* `Subtype(Null, t0)` *or* *UnwrapAffirm:* `Subtype(falsetype, t0)`:
+		1. *Return:* `Union(Difference(t0, falsytypes), t1)`.
 	8. *Return:* `t0`.
 ;
 
@@ -226,11 +226,8 @@ Type! TypeOfUnassessed(SemanticOperation[operator: COND] expr) :=
 
 
 
-TypeConstant ToType(Or<Null, Boolean, Number> v) :=
-	1. *Return:* a new CompletionStructure [
-		type  = `Type`,
-		value = `v`,
-	].
+Type ToType(Or<Null, Boolean, Number> v) :=
+	1. *Return:* a new Type containing only the value `v`.
 ;
 
 

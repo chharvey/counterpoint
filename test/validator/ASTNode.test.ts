@@ -49,6 +49,7 @@ import {
 } from '../../src/error/index.js';
 import {
 	assert_wasCalled,
+	assertEqualTypes,
 } from '../assert-helpers.js';
 import {
 	typeConstInt,
@@ -798,7 +799,7 @@ describe('ASTNodeSolid', () => {
 					SolidObject,
 				])
 			})
-			Dev.supports('literalCollection') && specify('ASTNodeTypeTuple', () => {
+			Dev.supports('optionalEntries') && specify('ASTNodeTypeTuple', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).assess(new Validator()),
 					new SolidTypeTuple([
@@ -808,7 +809,7 @@ describe('ASTNodeSolid', () => {
 					]),
 				);
 			});
-			Dev.supports('literalCollection') && specify('ASTNodeTypeRecord', () => {
+			Dev.supports('optionalEntries') && specify('ASTNodeTypeRecord', () => {
 				const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource(`[x: int, y?: bool, z: str]`);
 				assert.deepStrictEqual(
 					node.assess(new Validator()),
@@ -1046,35 +1047,39 @@ describe('ASTNodeSolid', () => {
 					});
 					context('with constant folding off.', () => {
 						describe('[operator=NOT]', () => {
-							it('returns type `true` for a subtype of `null | false`.', () => {
+							it('returns type `true` for a subtype of `void | null | false`.', () => {
 								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 									let unfixed a: null = null;
 									let unfixed b: null | false = null;
+									let unfixed c: null | void = null;
 									!a;
 									!b;
+									!c;
 								`, folding_off);
 								const validator: Validator = new Validator(folding_off);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
-								goal.children.slice(2).forEach((stmt) => {
+								goal.children.slice(3).forEach((stmt) => {
 									assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidBoolean.TRUETYPE);
 								});
 							});
-							it('returns type `bool` for a supertype of `null` or a supertype of `false`.', () => {
+							it('returns type `bool` for a supertype of `void` or a supertype of `null` or a supertype of `false`.', () => {
 								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 									let unfixed a: null | int = null;
 									let unfixed b: null | int = 42;
 									let unfixed c: bool = false;
 									let unfixed d: bool | float = 4.2;
+									let unfixed e: str | void = 'hello';
 									!a;
 									!b;
 									!c;
 									!d;
+									!e;
 								`, folding_off);
 								const validator: Validator = new Validator(folding_off);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
-								goal.children.slice(4).forEach((stmt) => {
+								goal.children.slice(5).forEach((stmt) => {
 									assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidBoolean);
 								});
 							});
@@ -1286,19 +1291,141 @@ describe('ASTNodeSolid', () => {
 						});
 					});
 				});
-				specify('ASTNodeOperationBinaryLogical', () => {
-					typeOperations(new Map<string, SolidObject>([
-						[`null  && false;`, SolidNull.NULL],
-						[`false && null;`,  SolidBoolean.FALSE],
-						[`true  && null;`,  SolidNull.NULL],
-						[`false && 42;`,    SolidBoolean.FALSE],
-						[`4.2   && true;`,  SolidBoolean.TRUE],
-						[`null  || false;`, SolidBoolean.FALSE],
-						[`false || null;`,  SolidNull.NULL],
-						[`true  || null;`,  SolidBoolean.TRUE],
-						[`false || 42;`,    new Int16(42n)],
-						[`4.2   || true;`,  new Float64(4.2)],
-					]));
+				describe('ASTNodeOperationBinaryLogical', () => {
+					it('with constant folding on.', () => {
+						typeOperations(new Map<string, SolidObject>([
+							[`null  && false;`, SolidNull.NULL],
+							[`false && null;`,  SolidBoolean.FALSE],
+							[`true  && null;`,  SolidNull.NULL],
+							[`false && 42;`,    SolidBoolean.FALSE],
+							[`4.2   && true;`,  SolidBoolean.TRUE],
+							[`null  || false;`, SolidBoolean.FALSE],
+							[`false || null;`,  SolidNull.NULL],
+							[`true  || null;`,  SolidBoolean.TRUE],
+							[`false || 42;`,    new Int16(42n)],
+							[`4.2   || true;`,  new Float64(4.2)],
+						]));
+					});
+					context('with constant folding off.', () => {
+						describe('[operator=AND]', () => {
+							it('returns `left` if it’s a subtype of `void | null | false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: null = null;
+									let unfixed b: null | false = null;
+									let unfixed c: null | void = null;
+									a && 42;
+									b && 42;
+									c && 42;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								assert.deepStrictEqual(goal.children.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+									SolidNull,
+									SolidNull.union(SolidBoolean.FALSETYPE),
+									SolidNull.union(SolidType.VOID),
+								]);
+							});
+							it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: null | int = null;
+									let unfixed b: null | int = 42;
+									let unfixed c: bool = false;
+									let unfixed d: bool | float = 4.2;
+									let unfixed e: str | void = 'hello';
+									a && 'hello';
+									b && 'hello';
+									c && 'hello';
+									d && 'hello';
+									e && 42;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								assert.deepStrictEqual(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+									SolidNull.union(SolidString),
+									SolidNull.union(SolidString),
+									SolidBoolean.FALSETYPE.union(SolidString),
+									SolidBoolean.FALSETYPE.union(SolidString),
+									SolidType.VOID.union(Int16),
+								]);
+							});
+							it('returns `right` if left does not contain `void` nor `null` nor `false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: int = 42;
+									let unfixed b: float = 4.2;
+									a && true;
+									b && null;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+									SolidBoolean,
+									SolidNull,
+								]);
+							});
+						});
+						describe('[operator=OR]', () => {
+							it('returns `right` if it’s a subtype of `void | null | false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: null = null;
+									let unfixed b: null | false = null;
+									let unfixed c: null | void = null;
+									a || false;
+									b || 42;
+									c || 4.2;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								assert.deepStrictEqual(goal.children.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+									SolidBoolean,
+									Int16,
+									Float64,
+								]);
+							});
+							it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: null | int = null;
+									let unfixed b: null | int = 42;
+									let unfixed c: bool = false;
+									let unfixed d: bool | float = 4.2;
+									let unfixed e: str | void = 'hello';
+									a || 'hello';
+									b || 'hello';
+									c || 'hello';
+									d || 'hello';
+									e || 42;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								assertEqualTypes(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+									Int16.union(SolidString),
+									Int16.union(SolidString),
+									SolidBoolean.TRUETYPE.union(SolidString),
+									SolidBoolean.TRUETYPE.union(Float64).union(SolidString),
+									SolidString.union(Int16),
+								]);
+							});
+							it('returns `left` if it does not contain `void` nor `null` nor `false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: int = 42;
+									let unfixed b: float = 4.2;
+									a || true;
+									b || null;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+									Int16,
+									Float64,
+								]);
+							});
+						});
+					});
 				});
 				describe('ASTNodeOperationTernary', () => {
 					context('with constant folding on', () => {
@@ -1908,6 +2035,51 @@ describe('ASTNodeSolid', () => {
 					Float64,
 					SolidString,
 				]);
+				Dev.supports('optionalAccess') && context('when base is nullish.', () => {
+					it('optional access returns type of base when it is a subtype of null.', () => {
+						const validator: Validator = new Validator();
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .type(validator), TypeError04);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .type(validator), TypeError04);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).type(validator), TypeError01);
+						[
+							AST.ASTNodeAccess.fromSource(`null?.3;`)         .type(validator),
+							AST.ASTNodeAccess.fromSource(`null?.four;`)      .type(validator),
+							AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).type(validator),
+						].forEach((t) => {
+							assert.ok(t.isSubtypeOf(SolidNull));
+						});
+					});
+					it('chained optional access.', () => {
+						const validator: Validator = new Validator();
+						const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+							let unfixed bound1: [prop?: [bool]] = [prop= [true]];
+							let unfixed bound2: [prop?: [?: bool]] = [prop= []];
+
+							bound1;          % type \`[prop?: [bool]]\`
+							bound1?.prop;    % type \`[bool] | null\`
+							bound1?.prop?.0; % type \`bool | null\`
+
+							bound2;          % type \`[prop?: [?: bool]]\`
+							bound2?.prop;    % type \`[?: bool] | null\`
+							bound2?.prop?.0; % type \`bool | null\`
+						`);
+						program.varCheck(validator);
+						program.typeCheck(validator);
+						const prop1: SolidTypeTuple = SolidTypeTuple.fromTypes([SolidBoolean]);
+						const prop2: SolidTypeTuple = new SolidTypeTuple([{type: SolidBoolean, optional: true}]);
+						assert.deepStrictEqual(
+							program.children.slice(2, 8).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							[
+								new SolidTypeRecord(new Map([[0x101n, {type: prop1, optional: true}]])),
+								prop1.union(SolidNull),
+								SolidBoolean.union(SolidNull),
+								new SolidTypeRecord(new Map([[0x101n, {type: prop2, optional: true}]])),
+								prop2.union(SolidNull),
+								SolidBoolean.union(SolidNull),
+							],
+						);
+					});
+				});
 				context('access by index.', () => {
 					context('with constant folding on, folds index accessor.', () => {
 						let validator: Validator;
@@ -2159,7 +2331,7 @@ describe('ASTNodeSolid', () => {
 								);
 							});
 						});
-						Dev.supports('optionalEntries') && it('unions with null if access is optional.', () => {
+						Dev.supports('optionalAccess') && it('unions with null if access is optional.', () => {
 							assert.deepStrictEqual(
 								program.children.slice(28, 32).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
@@ -2200,6 +2372,54 @@ describe('ASTNodeSolid', () => {
 					null,
 					null,
 				];
+				Dev.supports('optionalAccess') && context('when base is nullish.', () => {
+					it('optional access returns base when it is null.', () => {
+						const validator: Validator = new Validator();
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .assess(validator), /TypeError: \w+\.get is not a function/);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .assess(validator), /TypeError: \w+\.get is not a function/);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).assess(validator), /TypeError: \w+\.get is not a function/);
+						[
+							AST.ASTNodeAccess.fromSource(`null?.3;`)         .assess(validator),
+							AST.ASTNodeAccess.fromSource(`null?.four;`)      .assess(validator),
+							AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).assess(validator),
+						].forEach((t) => {
+							assert.strictEqual(t, SolidNull.NULL);
+						});
+					});
+					it('chained optional access.', () => {
+						const validator: Validator = new Validator();
+						const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+							let bound1: [prop?: [bool]] = [prop= [true]];
+							let bound2: [prop?: [?: bool]] = [prop= []];
+
+							bound1;          % value \`[prop= [true]]\`
+							bound1?.prop;    % value \`[true]\`
+							bound1?.prop?.0; % value \`true\`
+
+							bound2;          % value \`[prop= []]\`
+							bound2?.prop;    % value \`[]\`
+						`);
+						program.varCheck(validator);
+						program.typeCheck(validator);
+						const prop1: SolidTuple = new SolidTuple([SolidBoolean.TRUE]);
+						const prop2: SolidTuple = new SolidTuple();
+						assert.deepStrictEqual(
+							program.children.slice(2, 7).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							[
+								new SolidRecord(new Map([[0x101n, prop1],])),
+								prop1,
+								SolidBoolean.TRUE,
+								new SolidRecord(new Map([[0x101n, prop2]])),
+								prop2,
+							],
+						);
+						// must bypass type-checker:
+						assert.deepStrictEqual(
+							AST.ASTNodeAccess.fromSource(`[prop= []]?.prop?.0;`).assess(validator),
+							SolidNull.NULL,
+						);
+					});
+				});
 				context('access by index.', () => {
 					let validator: Validator;
 					let program: AST.ASTNodeGoal;

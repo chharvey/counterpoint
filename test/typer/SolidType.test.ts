@@ -140,6 +140,13 @@ describe('SolidType', () => {
 				(bool | int)
 			`);
 		});
+		describe('SolidTypeUnion', () => {
+			it('distributes union operands over intersection: `(B \| C)  & A == (B  & A) \| (C  & A)`.', () => {
+				const expr = SolidNull.union(Int16).intersect(SolidType.VOID.union(SolidNull).union(SolidBoolean.FALSETYPE));
+				assert.ok(expr.equals(SolidNull), `(null | int) & (void | null | false) == null`);
+				assert.deepStrictEqual(expr, SolidNull);
+			});
+		});
 	})
 
 
@@ -180,6 +187,50 @@ describe('SolidType', () => {
 			`);
 		});
 	})
+
+
+	describe('#subtract', () => {
+		it('4-1 | `A - B == A  <->  A & B == never`', () => {
+			predicate2(builtin_types, (a, b) => {
+				if (a.intersect(b).isEmpty) {
+					assert.ok(a.subtract(b).equals(a), `forward: ${ a }, ${ b }`);
+				}
+				if (a.subtract(b).equals(a)) {
+					assert.ok(a.intersect(b).isEmpty, `backward: ${ a }, ${ b }`);
+				}
+			});
+		});
+		it('4-2 | `A - B == never  <->  A <: B`', () => {
+			predicate2(builtin_types, (a, b) => {
+				if (a.isSubtypeOf(b)) {
+					assert.ok(a.subtract(b).isEmpty, `forward: ${ a }, ${ b }`);
+				}
+				if (a.subtract(b).isEmpty) {
+					assert.ok(a.isSubtypeOf(b), `forward: ${ a }, ${ b }`);
+				}
+			});
+		});
+		it('4-3 | `A <: B - C  <->  A <: B  &&  A & C == never`', () => {
+			predicate3(builtin_types, (a, b, c) => {
+				if (a.isSubtypeOf(b.subtract(c))) {
+					assert.ok(a.isSubtypeOf(b) && a.intersect(c).isEmpty, `forward: ${ a }, ${ b }, ${ c }`);
+				}
+				if (a.isSubtypeOf(b) && a.intersect(c).isEmpty) {
+					assert.ok(a.isSubtypeOf(b.subtract(c)), `forward: ${ a }, ${ b }, ${ c }`);
+				}
+			});
+		});
+		it('4-4 | `(A \| B) - C == (A - C) \| (B - C)`', () => {
+			predicate3(builtin_types, (a, b, c) => {
+				assert.ok(a.union(b).subtract(c).equals(a.subtract(c).union(b.subtract(c))), `${ a }, ${ b }, ${ c }`);
+			});
+		});
+		it('4-5 | `A - (B \| C) == (A - B)  & (A - C)`', () => {
+			predicate3(builtin_types, (a, b, c) => {
+				assert.ok(a.subtract(b.union(c)).equals(a.subtract(b).intersect(a.subtract(c))), `${ a }, ${ b }, ${ c }`);
+			});
+		});
+	});
 
 
 	describe('#isSubtypeOf', () => {
