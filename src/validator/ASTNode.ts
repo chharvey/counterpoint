@@ -755,9 +755,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (base_type instanceof SolidTypeIntersection || base_type instanceof SolidTypeUnion) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
-		if (this.optional && base_type.isSubtypeOf(SolidNull)) {
-			return base_type;
-		}
+		return (
+			(this.optional && base_type.isSubtypeOf(SolidNull)) ? base_type :
+			(this.optional && SolidNull.isSubtypeOf(base_type)) ? this.type_do_do(base_type.subtract(SolidNull), validator).union(SolidNull) :
+			this.type_do_do(base_type, validator)
+		);
+	}
+	private type_do_do(base_type: SolidType, validator: Validator): SolidType {
 		if (this.accessor instanceof ASTNodeIndex) {
 			const accessor_type: SolidType = this.accessor.value.type(validator);
 			return (

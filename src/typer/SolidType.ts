@@ -3,8 +3,8 @@ import {SetEq} from '../core/index.js'
 import {
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidObject,
 } from './index.js'; // avoids circular imports
-import type {SolidObject} from './SolidObject.js';
 
 
 

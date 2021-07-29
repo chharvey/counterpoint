@@ -2035,17 +2035,49 @@ describe('ASTNodeSolid', () => {
 					Float64,
 					SolidString,
 				]);
-				Dev.supports('optionalAccess') && it('optional access returns type of base when it is a subtype of null.', () => {
-					const validator: Validator = new Validator();
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .type(validator), TypeError04);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .type(validator), TypeError04);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).type(validator), TypeError01);
-					[
-						AST.ASTNodeAccess.fromSource(`null?.3;`)         .type(validator),
-						AST.ASTNodeAccess.fromSource(`null?.four;`)      .type(validator),
-						AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).type(validator),
-					].forEach((t) => {
-						assert.ok(t.isSubtypeOf(SolidNull));
+				Dev.supports('optionalAccess') && context('when base is nullish.', () => {
+					it('optional access returns type of base when it is a subtype of null.', () => {
+						const validator: Validator = new Validator();
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .type(validator), TypeError04);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .type(validator), TypeError04);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).type(validator), TypeError01);
+						[
+							AST.ASTNodeAccess.fromSource(`null?.3;`)         .type(validator),
+							AST.ASTNodeAccess.fromSource(`null?.four;`)      .type(validator),
+							AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).type(validator),
+						].forEach((t) => {
+							assert.ok(t.isSubtypeOf(SolidNull));
+						});
+					});
+					it('chained optional access.', () => {
+						const validator: Validator = new Validator();
+						const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+							let unfixed bound1: [prop?: [bool]] = [prop= [true]];
+							let unfixed bound2: [prop?: [?: bool]] = [prop= []];
+
+							bound1;          % type \`[prop?: [bool]]\`
+							bound1?.prop;    % type \`[bool] | null\`
+							bound1?.prop?.0; % type \`bool | null\`
+
+							bound2;          % type \`[prop?: [?: bool]]\`
+							bound2?.prop;    % type \`[?: bool] | null\`
+							bound2?.prop?.0; % type \`bool | null\`
+						`);
+						program.varCheck(validator);
+						program.typeCheck(validator);
+						const prop1: SolidTypeTuple = SolidTypeTuple.fromTypes([SolidBoolean]);
+						const prop2: SolidTypeTuple = new SolidTypeTuple([{type: SolidBoolean, optional: true}]);
+						assert.deepStrictEqual(
+							program.children.slice(2, 8).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							[
+								new SolidTypeRecord(new Map([[0x101n, {type: prop1, optional: true}],])),
+								prop1.union(SolidNull),
+								SolidBoolean.union(SolidNull),
+								new SolidTypeRecord(new Map([[0x101n, {type: prop2, optional: true}],])),
+								prop2.union(SolidNull),
+								SolidBoolean.union(SolidNull),
+							],
+						);
 					});
 				});
 				context('access by index.', () => {
