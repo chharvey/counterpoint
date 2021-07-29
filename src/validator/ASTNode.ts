@@ -55,6 +55,7 @@ import {
 } from '../error/index.js';
 import {
 	Operator,
+	ValidAccessOperator,
 	ValidTypeOperator,
 	ValidOperatorUnary,
 	ValidOperatorBinary,
@@ -735,14 +736,15 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		assert.ok(expression instanceof ASTNodeAccess);
 		return expression;
 	}
+	private readonly optional: boolean = this.kind === Operator.OPTDOT;
+	// private readonly claim:    boolean = this.kind === Operator.CLAIMDOT;
 	constructor (
 		start_node: PARSER.ParseNodeExpressionCompound,
-		readonly optional: boolean,
-		readonly claim:    boolean,
+		readonly kind:     ValidAccessOperator,
 		readonly base:     ASTNodeExpression,
 		readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
-		super(start_node, {optional, claim}, [base, accessor]);
+		super(start_node, {kind}, [base, accessor]);
 	}
 	override get shouldFloat(): boolean {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';

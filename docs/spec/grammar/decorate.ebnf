@@ -248,7 +248,7 @@ Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticE
 Decorate(ExpressionCompound ::= ExpressionUnit) -> SemanticExpression
 	:= Decorate(ExpressionUnit);
 Decorate(ExpressionCompound ::= ExpressionCompound PropertyAccess) -> SemanticAccess
-	:= (SemanticAccess[optional=IsOptionalAccess(PropertyAccess)][claim=IsClaimAccess(PropertyAccess)]
+	:= (SemanticAccess[kind=AccessKind(PropertyAccess)]
 		Decorate(ExpressionCompound)
 		Decorate(PropertyAccess)
 	);
@@ -515,14 +515,9 @@ ParseList(ParseNode, ASTNode)(ParseNode__List ::= ParseNode__List ","? ParseNode
 
 
 
-IsOptionalAccess(PropertyAccess ::= ("." | "!.") (INTEGER | Word | "[" Expression "]")) -> Boolean
-	::= false;
-IsOptionalAccess(PropertyAccess ::= "?." (INTEGER | Word | "[" Expression "]")) -> Boolean
-	::= true;
-
-
-
-IsClaimAccess(PropertyAccess ::= ("." | "?.") (INTEGER | Word | "[" Expression "]")) -> Boolean
-	::= false;
-IsClaimAccess(PropertyAccess ::= "!." (INTEGER | Word | "[" Expression "]")) -> Boolean
-	::= true;
+AccessKind(PropertyAccess ::= "." (INTEGER | Word | "[" Expression "]")) -> NORMAL
+	::= NORMAL;
+AccessKind(PropertyAccess ::= "?." (INTEGER | Word | "[" Expression "]")) -> OPTIONAL
+	::= OPTIONAL;
+AccessKind(PropertyAccess ::= "!." (INTEGER | Word | "[" Expression "]")) -> CLAIM
+	::= CLAIM;

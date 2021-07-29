@@ -66,9 +66,9 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `accessor` be `access.children.1`.
 	4. *Let* `base_type` be *Unwrap:* `CombineTuplesOrRecords(TypeOf(base))`.
-	5. *If* `access.optional` is `true` *and* *UnwrapAffirm:* `Subtype(base_type, Null)`:
+	5. *If* `access.kind` is `OPTIONAL` *and* *UnwrapAffirm:* `Subtype(base_type, Null)`:
 		1. *Return:* `base_type`.
-	6. *If* `access.optional` is `true` *and* *UnwrapAffirm:* `Subtype(Null, base_type)`:
+	6. *If* `access.kind` is `OPTIONAL` *and* *UnwrapAffirm:* `Subtype(Null, base_type)`:
 		1. *Set* `is_nullish` to `true`.
 		2. *Set* `base_type` to `Difference(base_type, Null)`.
 	7. *If* `accessor` is a SemanticIndex:
@@ -99,7 +99,7 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 				2. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
 		2. *Else If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)`:
 			1. *Let* `type` be the union of all item types in `base_type`.
-			2. *If*: `access.optional` is `true`:
+			2. *If*: `access.kind` is `OPTIONAL`:
 				1. *Set* `returned` to `Union(type, Null)`.
 			3. *Set* `returned` to `type`.
 		3. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
@@ -107,7 +107,7 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 		1. *Let* `k` be the type of the antecedents in `base_type`.
 		2. *Let* `v` be the type of the consequents in `base_type`.
 		3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)`:
-			1. *If*: `access.optional` is `true`:
+			1. *If*: `access.kind` is `OPTIONAL`:
 				1. *Set* `returned` to `Union(v, Null)`.
 			2. *Set* `returned` to `v`.
 		4. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ k }}.".
@@ -235,7 +235,7 @@ Type ToType(Or<Null, Boolean, Number> v) :=
 Type MaybeOptional(SemanticAccess access, EntryTypeStructure entry) :=
 	1. *Let* `type` be `entry.type`.
 	2. *If*: `entry.optional` is `true`:
-		1. *If*: `access.optional` is `true`:
+		1. *If*: `access.kind` is `OPTIONAL`:
 			1. *Return:* `Union(type, Null)`.
 		2. *Return:* `Union(type, Void)`.
 	3. *Return:* `type`.
