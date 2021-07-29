@@ -244,6 +244,17 @@ Note that if `foo?.bar` produces `null`, it either means that `foo.bar` does exi
 or that there’s no value for the `bar` property bound to `foo`,
 and the optional access operator is doing its job.
 
+If the *binding object is `null`*, then the optional access operator also produces `null`.
+For example, `null.property` is a type error (and if the compiler were bypassed,
+it would cause a runtime error), but `null?.property` will simply produce `null`.
+This facet makes optional access safe to use when chained.
+
+When the optional access operator is chained, it should be chained down the line, e.g., `x?.y?.z`.
+This is equivalent to `(x?.y)?.z`, and if `x?.y` (or `x.y` for that matter) is `null`,
+then the whole expression also results in `null`.
+However, `x?.y.z` (which can be thought of as `(x?.y).z`) is not the same,
+and will result in a runtime error if `x?.y` is `null`.
+
 
 ### Logical Negation, Emptiness
 ```
