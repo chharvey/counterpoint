@@ -2070,10 +2070,10 @@ describe('ASTNodeSolid', () => {
 						assert.deepStrictEqual(
 							program.children.slice(2, 8).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
-								new SolidTypeRecord(new Map([[0x101n, {type: prop1, optional: true}],])),
+								new SolidTypeRecord(new Map([[0x101n, {type: prop1, optional: true}]])),
 								prop1.union(SolidNull),
 								SolidBoolean.union(SolidNull),
-								new SolidTypeRecord(new Map([[0x101n, {type: prop2, optional: true}],])),
+								new SolidTypeRecord(new Map([[0x101n, {type: prop2, optional: true}]])),
 								prop2.union(SolidNull),
 								SolidBoolean.union(SolidNull),
 							],
@@ -2372,17 +2372,52 @@ describe('ASTNodeSolid', () => {
 					null,
 					null,
 				];
-				Dev.supports('optionalAccess') && it('optional access returns base when it is null.', () => {
-					const validator: Validator = new Validator();
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .assess(validator), /TypeError: \w+\.get is not a function/);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .assess(validator), /TypeError: \w+\.get is not a function/);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).assess(validator), /TypeError: \w+\.get is not a function/);
-					[
-						AST.ASTNodeAccess.fromSource(`null?.3;`)         .assess(validator),
-						AST.ASTNodeAccess.fromSource(`null?.four;`)      .assess(validator),
-						AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).assess(validator),
-					].forEach((t) => {
-						assert.strictEqual(t, SolidNull.NULL);
+				Dev.supports('optionalAccess') && context('when base is nullish.', () => {
+					it('optional access returns base when it is null.', () => {
+						const validator: Validator = new Validator();
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .assess(validator), /TypeError: \w+\.get is not a function/);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .assess(validator), /TypeError: \w+\.get is not a function/);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).assess(validator), /TypeError: \w+\.get is not a function/);
+						[
+							AST.ASTNodeAccess.fromSource(`null?.3;`)         .assess(validator),
+							AST.ASTNodeAccess.fromSource(`null?.four;`)      .assess(validator),
+							AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).assess(validator),
+						].forEach((t) => {
+							assert.strictEqual(t, SolidNull.NULL);
+						});
+					});
+					it('chained optional access.', () => {
+						const validator: Validator = new Validator();
+						const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+							let bound1: [prop?: [bool]] = [prop= [true]];
+							let bound2: [prop?: [?: bool]] = [prop= []];
+
+							bound1;          % value \`[prop= [true]]\`
+							bound1?.prop;    % value \`[true]\`
+							bound1?.prop?.0; % value \`true\`
+
+							bound2;          % value \`[prop= []]\`
+							bound2?.prop;    % value \`[]\`
+						`);
+						program.varCheck(validator);
+						program.typeCheck(validator);
+						const prop1: SolidTuple = new SolidTuple([SolidBoolean.TRUE]);
+						const prop2: SolidTuple = new SolidTuple();
+						assert.deepStrictEqual(
+							program.children.slice(2, 7).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							[
+								new SolidRecord(new Map([[0x101n, prop1],])),
+								prop1,
+								SolidBoolean.TRUE,
+								new SolidRecord(new Map([[0x101n, prop2]])),
+								prop2,
+							],
+						);
+						// must bypass type-checker:
+						assert.deepStrictEqual(
+							AST.ASTNodeAccess.fromSource(`[prop= []]?.prop?.0;`).assess(validator),
+							SolidNull.NULL,
+						);
 					});
 				});
 				context('access by index.', () => {
