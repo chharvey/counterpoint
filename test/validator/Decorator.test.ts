@@ -501,6 +501,35 @@ describe('Decorator', () => {
 			});
 		});
 
+		Dev.supports('literalCollection') && context('SetLiteral ::= "{" (","? Expression# ","?)? "}"', () => {
+			it('makes an empty ASTNodeSet.', () => {
+				/*
+					<Set/>
+				*/
+				assert_arrayLength(Decorator.decorate(h.setLiteralFromSource(`{};`)).children, 0);
+			});
+			it('makes a nonempty ASTNodeSet.', () => {
+				/*
+					<Set>
+						<Constant source="42"/>
+						<Constant source="true"/>
+						<Operation source="null || false">...</Operation>
+					</Set>
+				*/
+				assert.deepStrictEqual(Decorator.decorate(h.setLiteralFromSource(`
+					{
+						42,
+						true,
+						null || false,
+					};
+				`)).children.map((c) => c.source), [
+					`42`,
+					`true`,
+					`null || false`,
+				]);
+			});
+		});
+
 		Dev.supports('literalCollection') && context('MappingLiteral ::= "{" ","? Case# ","? "}"', () => {
 			it('makes an ASTNodeMapping.', () => {
 				/*

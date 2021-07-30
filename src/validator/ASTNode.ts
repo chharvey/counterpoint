@@ -453,6 +453,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeTemplate
  * - ASTNodeTuple
  * - ASTNodeRecord
+ * - ASTNodeSet
  * - ASTNodeMapping
  * - ASTNodeAccess
  * - ASTNodeOperation
@@ -715,6 +716,31 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null
 			: new SolidRecord(properties as ReadonlyMap<bigint, SolidObject>);
+	}
+}
+export class ASTNodeSet extends ASTNodeExpression {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeSet {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeSet);
+		return expression;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTupleLiteral,
+		override readonly children: readonly ASTNodeExpression[],
+	) {
+		super(start_node, {}, children);
+	}
+	override get shouldFloat(): boolean {
+		throw 'ASTNodeSet#shouldFloat not yet supported.';
+	}
+	protected override build_do(builder: Builder): INST.InstructionExpression {
+		throw builder && 'ASTNodeSet#build_do not yet supported.';
+	}
+	protected override type_do(validator: Validator): SolidType {
+		throw validator && 'ASTNodeSet#type_do not yet supported.';
+	}
+	protected override assess_do(validator: Validator): SolidObject | null {
+		throw validator && 'ASTNodeSet#assess_do not yet supported.';
 	}
 }
 export class ASTNodeMapping extends ASTNodeExpression {
