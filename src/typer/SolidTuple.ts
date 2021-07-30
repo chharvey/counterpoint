@@ -1,5 +1,7 @@
 import * as xjs from 'extrajs';
 import type {Keys} from '../types';
+import type {AST} from '../validator/index.js';
+import {VoidError01} from '../error/index.js';
 import {
 	SolidType,
 	SolidTypeConstant,
@@ -7,15 +9,16 @@ import {
 import {SolidTypeTuple} from './SolidTypeTuple.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidBoolean} from './SolidBoolean.js';
+import type {Int16} from './Int16.js';
 
 
 
-export class SolidTuple<T extends SolidObject> extends SolidObject {
+export class SolidTuple<T extends SolidObject = SolidObject> extends SolidObject {
 	static override toString(): string {
 		return 'Tuple';
 	}
 	static override values: SolidType['values'] = new Set([new SolidTuple()]);
-	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidTuple<SolidObject>, SolidTuple<SolidObject>], boolean> = new xjs.MapEq(
+	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidTuple, SolidTuple], boolean> = new xjs.MapEq(
 		(a, b) => a[0].identical(b[0]) && a[1].identical(b[1]),
 	);
 
@@ -49,5 +52,15 @@ export class SolidTuple<T extends SolidObject> extends SolidObject {
 
 	toType(): SolidTypeTuple {
 		return new SolidTypeTuple(this.items.map((it) => new SolidTypeConstant(it)));
+	}
+
+	get(index: Int16, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): T {
+		const n: number = this.items.length;
+		const i: number = Number(index.toNumeric());
+		return (
+			(-n <= i && i < 0) ? this.items[i + n] :
+			(0  <= i && i < n) ? this.items[i] :
+			(() => { throw new VoidError01(accessor); })()
+		);
 	}
 }

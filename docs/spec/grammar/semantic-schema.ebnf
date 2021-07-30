@@ -8,6 +8,9 @@ SemanticPropertyType
 
 
 
+SemanticIndex
+	::= SemanticConstant;
+
 SemanticProperty
 	::= SemanticKey SemanticExpression;
 
@@ -51,6 +54,7 @@ SemanticExpression =:=
 	| SemanticTuple
 	| SemanticRecord
 	| SemanticMapping
+	| SemanticAccess
 	| SemanticOperation
 ;
 
@@ -71,6 +75,9 @@ SemanticTemplatePartial
 SemanticTuple   ::= SemanticExpression*;
 SemanticRecord  ::= SemanticProperty+;
 SemanticMapping ::= SemanticCase+;
+
+SemanticAccess
+	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;

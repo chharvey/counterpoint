@@ -14,16 +14,6 @@ import {
 	Operator,
 } from '../../src/validator/index.js';
 import {
-	SolidType,
-	SolidTypeConstant,
-	SolidObject,
-	SolidNull,
-	SolidBoolean,
-	Int16,
-	Float64,
-	SolidString,
-} from '../../src/typer/index.js';
-import {
 	assert_arrayLength,
 } from '../assert-helpers.js';
 import * as h from '../helpers-parse.js';
@@ -58,7 +48,7 @@ describe('Decorator', () => {
 		describe('PrimitiveLiteral ::= "null" | "false" | "true" | INTEGER | FLOAT | STRING', () => {
 			it('makes an ASTNodeConstant.', () => {
 				/*
-					<Constant source="null" value="null"/>
+					<Constant source="null"/>
 				*/
 				assert.deepStrictEqual([
 					`null;`,
@@ -67,13 +57,13 @@ describe('Decorator', () => {
 					`42;`,
 					`4.2;`,
 					`'hello';`,
-				].map((src) => (Decorator.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).value), [
-					SolidNull.NULL,
-					SolidBoolean.FALSE,
-					SolidBoolean.TRUE,
-					new Int16(42n),
-					new Float64(4.2),
-					new SolidString('hello'),
+				].map((src) => (Decorator.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).source), [
+					`null`,
+					`false`,
+					`true`,
+					`42`,
+					`4.2`,
+					`'hello'`,
 				])
 			})
 		})
@@ -81,7 +71,7 @@ describe('Decorator', () => {
 		describe('TypeKeyword ::= "void" | "bool" | "int" | "float" | "str" | "obj"', () => {
 			it('makes an ASTNodeTypeConstant.', () => {
 				/*
-					<TypeConstant source="void" value="Void"/>
+					<TypeConstant source="void"/>
 				*/
 				assert.deepStrictEqual([
 					`void`,
@@ -90,13 +80,13 @@ describe('Decorator', () => {
 					`float`,
 					`str`,
 					`obj`,
-				].map((src) => (Decorator.decorate(h.keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).value), [
-					SolidType.VOID,
-					SolidBoolean,
-					Int16,
-					Float64,
-					SolidString,
-					SolidObject,
+				].map((src) => (Decorator.decorate(h.keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).source), [
+					`void`,
+					`bool`,
+					`int`,
+					`float`,
+					`str`,
+					`obj`,
 				])
 			})
 		})
@@ -205,7 +195,7 @@ describe('Decorator', () => {
 		describe('TypeUnit ::= PrimitiveLiteral', () => {
 			it('makes an ASTNodeTypeConstant.', () => {
 				/*
-					<TypeConstant source="null" value="SolidNull"/>
+					<TypeConstant source="null"/>
 				*/
 				assert.deepStrictEqual([
 					`null`,
@@ -216,13 +206,13 @@ describe('Decorator', () => {
 				].map((src) => {
 					const constant: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(src));
 					assert.ok(constant instanceof AST.ASTNodeTypeConstant);
-					return constant.value
+					return constant.source;
 				}), [
-					SolidNull,
-					SolidBoolean.FALSETYPE,
-					SolidBoolean.TRUETYPE,
-					new SolidTypeConstant(new Int16(42n)),
-					new SolidTypeConstant(new Float64(4.2)),
+					`null`,
+					`false`,
+					`true`,
+					`42`,
+					`4.2`,
 				])
 			})
 		})
@@ -231,7 +221,7 @@ describe('Decorator', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="?">
-						<TypeConstant source="int" value="Int16"/>
+						<TypeConstant source="int"/>
 					</TypeOperation>
 				*/
 				const operation: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int?`));
@@ -513,18 +503,18 @@ describe('Decorator', () => {
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
 			it('makes an ASTNodeConstant.', () => {
 				/*
-					<Constant line="1" col="1" source="null" value="null"/>
+					<Constant line="1" col="1" source="null"/>
 				*/
 				assert.deepStrictEqual([
 					`null;`,
 					`false;`,
 					`true;`,
 					`42;`,
-				].map((src) => (Decorator.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).value), [
-					SolidNull.NULL,
-					SolidBoolean.FALSE,
-					SolidBoolean.TRUE,
-					new Int16(42n),
+				].map((src) => (Decorator.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).source), [
+					`null`,
+					`false`,
+					`true`,
+					`42`,
 				])
 			})
 		})
@@ -574,6 +564,59 @@ describe('Decorator', () => {
 				assert.strictEqual(operation.operand1.operand1.source, `420`);
 			})
 		})
+
+		Dev.supports('literalCollection') && describe('ExpressionCompound ::= ExpressionCompound PropertyAccess', () => {
+			it('access by integer.', () => {
+				/*
+					<Access>
+						<List source="[42, 420, 4200]">...</List>
+						<Index>
+							<Constant source="1"/>
+						</Index>
+					</Access>
+				*/
+				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
+					[42, 420, 4200].1;
+				`);
+				assert.ok(access.accessor instanceof AST.ASTNodeIndex);
+				assert.deepStrictEqual(
+					[access.base.source,    access.accessor.source],
+					[`[ 42 , 420 , 4200 ]`, `. 1`],
+				);
+			});
+			it('access by key.', () => {
+				/*
+					<Access>
+						<Record source="[c= 42, b= 420, a= 4200]">...</Record>
+						<Key source="b"/>
+					</Access>
+				*/
+				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
+					[c= 42, b= 420, a= 4200].b;
+				`);
+				assert.ok(access.accessor instanceof AST.ASTNodeKey);
+				assert.deepStrictEqual(
+					[access.base.source,                access.accessor.source],
+					[`[ c = 42 , b = 420 , a = 4200 ]`, `b`],
+				);
+			});
+			it('access by computed expression.', () => {
+				/*
+					<Access>
+						<Mapping source="{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}">...</Mapping>
+						<Expression source="0.7 + 0.3">...</Expression>
+					</Access>
+				*/
+				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
+					{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}.[0.7 + 0.3];
+				`);
+				assert.ok(access.accessor instanceof AST.ASTNodeExpression);
+				assert.deepStrictEqual(
+					[access.base.source,                            access.accessor.source],
+					[`{ 0.5 * 2 |-> 'one' , 1.4 + 0.6 |-> 'two' }`, `0.7 + 0.3`],
+				);
+			});
+		});
 
 		context('ExpressionUnarySymbol ::= ("!" | "?" | "-") ExpressionUnarySymbol', () => {
 			it('makes an ASTNodeOperationUnary.', () => {
@@ -850,7 +893,7 @@ describe('Decorator', () => {
 						<TypeConstant source="int | float">...</TypeOperation>
 						<Operation operator=MUL source="the_answer * 10">
 							<Variable source="the_answer" id=257n/>
-							<Constant source="10" value=10/>
+							<Constant source="10"/>
 						</Operation>
 					</DeclarationVariable>
 				*/

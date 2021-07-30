@@ -8,9 +8,9 @@ import {
 /** Kinds of symbols. */
 export enum SymbolKind {
 	/** A value variable (a variable holding a Solid Language Value). */
-	VALUE,
+	VALUE = 'value',
 	/** A type variable / type alias. */
-	TYPE,
+	TYPE  = 'type',
 }
 
 

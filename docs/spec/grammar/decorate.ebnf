@@ -248,8 +248,29 @@ Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticExpression
 
 
 
-Decorate(ExpressionUnarySymbol ::= ExpressionUnit) -> SemanticExpression
+Decorate(PropertyAccess ::= "." INTEGER) -> SemanticIndex
+	:= (SemanticIndex
+		(SemanticConstant[value=Integer(TokenWorth(INTEGER))])
+	);
+Decorate(PropertyAccess ::= "." Word) -> SemanticKey
+	:= Decorate(Word);
+Decorate(PropertyAccess ::= "." "[" Expression "]") -> SemanticExpression
+	:= Decorate(Expression);
+
+
+
+Decorate(ExpressionCompound ::= ExpressionUnit) -> SemanticExpression
 	:= Decorate(ExpressionUnit);
+Decorate(ExpressionCompound ::= ExpressionCompound PropertyAccess) -> SemanticAccess
+	:= (SemanticAccess
+		Decorate(ExpressionCompound)
+		Decorate(PropertyAccess)
+	);
+
+
+
+Decorate(ExpressionUnarySymbol ::= ExpressionCompound) -> SemanticExpression
+	:= Decorate(ExpressionCompound);
 Decorate(ExpressionUnarySymbol ::= "!" ExpressionUnarySymbol) -> SemanticOperation
 	:= (SemanticOperation[operator=NOT]
 		Decorate(ExpressionUnarySymbol)

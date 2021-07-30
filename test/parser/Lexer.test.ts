@@ -27,7 +27,7 @@ import {
 describe('LexerSolid', () => {
 	describe('#generate', () => {
 		it('rejects unrecognized characters.', () => {
-			`. ~ # $ @ "`.split(' ').map((c) => new Lexer(`
+			`~ # $ @ "`.split(' ').map((c) => new Lexer(`
 				5  +  30
 				+ 6 ^ - (${c} - 37 *
 			`, CONFIG_DEFAULT)).forEach((lexer) => {
@@ -382,9 +382,6 @@ describe('LexerSolid', () => {
 							assert.ok(token instanceof TOKEN.TokenNumber, 'this token instanceof TokenNumber')
 							assert.ok(tokens[j * 2 + 1] instanceof TOKEN.TokenIdentifier, 'next token instanceof TokenIdentifierBasic')
 							assert.strictEqual(token.source, expected[j])
-						})
-						;`5_5.  -5_5.`.split('  ').forEach((src) => {
-							assert.throws(() => [...new Lexer(src, radices_on).generate()], LexError01)
 						})
 				})
 				it('`config.languageFeatures.numericSeparators` allows numbers with separators.', () => {
