@@ -941,11 +941,11 @@ describe('ASTNodeSolid', () => {
 						AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
 						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
 						AST.ASTNodeMapping.fromSource(`
-							[
+							{
 								'a' || '' |-> 1,
 								21 + 21   |-> 2.0,
 								3 * 1.0   |-> 'three',
-							];
+							};
 						`),
 					] as const;
 				}
@@ -1024,11 +1024,11 @@ describe('ASTNodeSolid', () => {
 								[`![];`,          SolidBoolean.FALSE],
 								[`![42];`,        SolidBoolean.FALSE],
 								[`![a= 42];`,     SolidBoolean.FALSE],
-								[`![41 |-> 42];`, SolidBoolean.FALSE],
+								[`!{41 |-> 42};`, SolidBoolean.FALSE],
 								[`?[];`,          SolidBoolean.TRUE],
 								[`?[42];`,        SolidBoolean.FALSE],
 								[`?[a= 42];`,     SolidBoolean.FALSE],
-								[`?[41 |-> 42];`, SolidBoolean.FALSE],
+								[`?{41 |-> 42};`, SolidBoolean.FALSE],
 							]));
 						});
 					});
@@ -1089,7 +1089,7 @@ describe('ASTNodeSolid', () => {
 									![];
 									![42];
 									![a= 42];
-									![41 |-> 42];
+									!{41 |-> 42};
 								`, folding_off);
 								const validator: Validator = new Validator(folding_off);
 								goal.varCheck(validator);
@@ -1115,7 +1115,7 @@ describe('ASTNodeSolid', () => {
 									`?[];`,
 									`?[42];`,
 									`?[a= 42];`,
-									`?[41 |-> 42];`,
+									`?{41 |-> 42};`,
 								].map((src) => AST.ASTNodeOperation.fromSource(src, folding_off).type(validator)).forEach((typ) => {
 									assert.deepStrictEqual(typ, SolidBoolean);
 								});
@@ -1231,11 +1231,11 @@ describe('ASTNodeSolid', () => {
 								let a: obj = [];
 								let b: obj = [42];
 								let c: obj = [x= 42];
-								let d: obj = [41 |-> 42];
+								let d: obj = {41 |-> 42};
 								a !== [];
 								b !== [42];
 								c !== [x= 42];
-								d !== [41 |-> 42];
+								d !== {41 |-> 42};
 								a === a;
 								b === b;
 								c === c;
@@ -1243,12 +1243,12 @@ describe('ASTNodeSolid', () => {
 								a == [];
 								b == [42];
 								c == [x= 42];
-								d == [41 |-> 42];
+								d == {41 |-> 42};
 								b != [42, 43];
 								c != [x= 43];
 								c != [y= 42];
-								d != [41 |-> 43];
-								d != [43 |-> 42];
+								d != {41 |-> 43};
+								d != {43 |-> 42};
 							`);
 							goal.varCheck(validator);
 							goal.typeCheck(validator);
@@ -1526,16 +1526,19 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 			Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
-				const templates: AST.ASTNodeTemplate[] = [
-					AST.ASTNodeTemplate.fromSource(`'''42😀''';`),
-					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
-					(AST.ASTNodeGoal.fromSource(`
-						let unfixed x: int = 21;
-						'''the answer is {{ x * 2 }} but what is the question?''';
-					`)
-						.children[1] as AST.ASTNodeStatementExpression)
-						.expr as AST.ASTNodeTemplate,
-				];
+				let templates: AST.ASTNodeTemplate[];
+				before(() => {
+					templates = [
+						AST.ASTNodeTemplate.fromSource(`'''42😀''';`),
+						AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
+						(AST.ASTNodeGoal.fromSource(`
+							let unfixed x: int = 21;
+							'''the answer is {{ x * 2 }} but what is the question?''';
+						`)
+							.children[1] as AST.ASTNodeStatementExpression)
+							.expr as AST.ASTNodeTemplate,
+					];
+				});
 				it('returns a constant String for ASTNodeTemplate with no interpolations.', () => {
 					assert.deepStrictEqual(
 						templates[0].assess(new Validator()),
@@ -1563,11 +1566,11 @@ describe('ASTNodeSolid', () => {
 							AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
 							AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
 							AST.ASTNodeMapping.fromSource(`
-								[
+								{
 									'a' || '' |-> 1,
 									21 + 21   |-> 2.0,
 									3 * 1.0   |-> 'three',
-								];
+								};
 							`),
 						].map((c) => c.assess(new Validator())),
 						[
@@ -1596,11 +1599,11 @@ describe('ASTNodeSolid', () => {
 						let unfixed z: str = 'three';
 						[x, 2.0, 'three'];
 						[a= 1, b= y, c= 'three'];
-						[
+						{
 							'a' || '' |-> 1,
 							21 + 21   |-> y,
 							3 * 1.0   |-> 'three',
-						];
+						};
 					`);
 					const tuple:   AST.ASTNodeTuple   = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple;
 					const record:  AST.ASTNodeRecord  = (goal.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord;
@@ -1626,11 +1629,11 @@ describe('ASTNodeSolid', () => {
 				it('ASTNodeMapping overwrites identical antecedents.', () => {
 					assert.deepStrictEqual(
 						AST.ASTNodeMapping.fromSource(`
-							[
+							{
 								'a' |-> 1,
 								0   |-> 2.0,
 								-0  |-> 'three',
-							];
+							};
 						`).assess(new Validator()),
 						new SolidMapping<SolidObject, SolidObject>(new Map<SolidObject, SolidObject>([
 							[new SolidString('a'), new Int16(1n)],
@@ -1641,11 +1644,11 @@ describe('ASTNodeSolid', () => {
 				it('ASTNodeMapping does not overwrite non-identical (even if equal) antecedents.', () => {
 					assert.deepStrictEqual(
 						AST.ASTNodeMapping.fromSource(`
-							[
+							{
 								'a'  |-> 1,
 								0.0  |-> 2.0,
 								-0.0 |-> 'three',
-							];
+							};
 						`).assess(new Validator()),
 						new SolidMapping<SolidObject, SolidObject>(new Map<SolidObject, SolidObject>([
 							[new SolidString('a'), new Int16(1n)],
@@ -1683,7 +1686,7 @@ describe('ASTNodeSolid', () => {
 							[`![];`,          SolidBoolean.FALSE],
 							[`![42];`,        SolidBoolean.FALSE],
 							[`![a= 42];`,     SolidBoolean.FALSE],
-							[`![41 |-> 42];`, SolidBoolean.FALSE],
+							[`!{41 |-> 42};`, SolidBoolean.FALSE],
 						]));
 					})
 					specify('[operator=EMP]', () => {
@@ -1705,7 +1708,7 @@ describe('ASTNodeSolid', () => {
 							[`?[];`,          SolidBoolean.TRUE],
 							[`?[42];`,        SolidBoolean.FALSE],
 							[`?[a= 42];`,     SolidBoolean.FALSE],
-							[`?[41 |-> 42];`, SolidBoolean.FALSE],
+							[`?{41 |-> 42};`, SolidBoolean.FALSE],
 						]));
 					})
 				});
@@ -1824,11 +1827,11 @@ describe('ASTNodeSolid', () => {
 							let a: obj = [];
 							let b: obj = [42];
 							let c: obj = [x= 42];
-							let d: obj = [41 |-> 42];
+							let d: obj = {41 |-> 42};
 							a !== [];
 							b !== [42];
 							c !== [x= 42];
-							d !== [41 |-> 42];
+							d !== {41 |-> 42};
 							a === a;
 							b === b;
 							c === c;
@@ -1836,12 +1839,12 @@ describe('ASTNodeSolid', () => {
 							a == [];
 							b == [42];
 							c == [x= 42];
-							d == [41 |-> 42];
+							d == {41 |-> 42};
 							b != [42, 43];
 							c != [x= 43];
 							c != [y= 42];
-							d != [41 |-> 43];
-							d != [43 |-> 42];
+							d != {41 |-> 43};
+							d != {43 |-> 42};
 						`);
 						const validator: Validator = new Validator();
 						goal.varCheck(validator);

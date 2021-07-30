@@ -292,10 +292,10 @@ export class ProductionMappingLiteral extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[', ProductionMappingLiteral__0__List.instance, ']'],
-			['[', ProductionMappingLiteral__0__List.instance, ',', ']'],
-			['[', ',', ProductionMappingLiteral__0__List.instance, ']'],
-			['[', ',', ProductionMappingLiteral__0__List.instance, ',', ']'],
+			['{', ProductionMappingLiteral__0__List.instance, '}'],
+			['{', ProductionMappingLiteral__0__List.instance, ',', '}'],
+			['{', ',', ProductionMappingLiteral__0__List.instance, '}'],
+			['{', ',', ProductionMappingLiteral__0__List.instance, ',', '}'],
 		];
 	}
 }
