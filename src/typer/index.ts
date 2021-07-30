@@ -1,4 +1,5 @@
 export {
+	TypeEntry,
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,

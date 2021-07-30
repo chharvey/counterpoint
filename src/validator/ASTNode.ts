@@ -137,13 +137,33 @@ export class ASTNodeKey extends ASTNodeSolid {
 		this.id = start_node.cook()!;
 	}
 }
-export class ASTNodePropertyType extends ASTNodeSolid {
+export class ASTNodeItemType extends ASTNodeSolid {
 	constructor (
-		start_node: PARSER.ParseNodePropertyType,
-		readonly key:   ASTNodeKey,
+		start_node:
+			| PARSER.ParseNodeEntryType
+			| PARSER.ParseNodeEntryType_Optional
+		,
+		readonly optional: boolean,
 		readonly value: ASTNodeType,
 	) {
-		super(start_node, {}, [key, value]);
+		super(start_node, {optional}, [value]);
+	}
+	/** @implements ASTNodeSolid */
+	build(builder: Builder): Instruction {
+		throw builder && 'ASTNodeItemType#build not yet supported.';
+	}
+}
+export class ASTNodePropertyType extends ASTNodeSolid {
+	constructor (
+		start_node:
+			| PARSER.ParseNodeEntryType_Named
+			| PARSER.ParseNodeEntryType_Named_Optional
+		,
+		readonly optional: boolean,
+		readonly key:      ASTNodeKey,
+		readonly value:    ASTNodeType,
+	) {
+		super(start_node, {optional}, [key, value]);
 	}
 }
 export class ASTNodeIndex extends ASTNodeSolid {
@@ -283,12 +303,15 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 	}
 	constructor (
 		start_node: PARSER.ParseNodeTypeTupleLiteral,
-		override readonly children: readonly ASTNodeType[],
+		override readonly children: readonly ASTNodeItemType[],
 	) {
 		super(start_node, {}, children);
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		return new SolidTypeTuple(this.children.map((c) => c.assess(validator)));
+		return new SolidTypeTuple(this.children.map((c) => ({
+			type:     c.value.assess(validator),
+			optional: c.optional,
+		})));
 	}
 }
 export class ASTNodeTypeRecord extends ASTNodeType {
@@ -306,7 +329,10 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 	protected override assess_do(validator: Validator): SolidType {
 		return new SolidTypeRecord(new Map(this.children.map((c) => [
 			c.key.id,
-			c.value.assess(validator),
+			{
+				type:     c.value.assess(validator),
+				optional: c.optional,
+			},
 		])));
 	}
 }
@@ -597,7 +623,7 @@ export class ASTNodeTuple extends ASTNodeExpression {
 		throw builder && 'ASTNodeTuple#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return new SolidTypeTuple(this.children.map((c) => c.type(validator)));
+		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type(validator)));
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
 		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.assess(validator));
@@ -625,7 +651,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return new SolidTypeRecord(new Map(this.children.map((c) => [
+		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
 			c.value.type(validator),
 		])));

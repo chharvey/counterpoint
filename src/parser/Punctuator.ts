@@ -42,5 +42,6 @@ export enum Punctuator {
 	// statement
 		ENDSTAT = ';',
 		ISTYPE  = ':',
+		OPT     = '?:', // Dev.supportsAll('literalCollection', 'optionalAccess')
 		ASSIGN  = '=', // Dev.supports('literalCollection')
 }

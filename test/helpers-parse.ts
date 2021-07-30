@@ -55,11 +55,19 @@ export function keywordTypeFromString(typestring: string, config: SolidConfig = 
 	assert.ok(unit instanceof PARSER.ParseNodeTypeKeyword, 'unit should be a ParseNodeTypeKeyword')
 	return unit
 }
-export function propertyTypeFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodePropertyType {
+export function entryTypeFromString(itemstring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeEntryType | PARSER.ParseNodeEntryType_Optional {
+	const tupletype: PARSER.ParseNodeTypeTupleLiteral = tupleTypeFromString(`[${ itemstring }]`, config);
+	assert_arrayLength(tupletype.children, 3, 'tuple type should have 3 children');
+	assert_arrayLength(tupletype.children[1].children, 1, 'items production should have 1 child');
+	assert_arrayLength(tupletype.children[1].children[0].children, 1, 'item list should have 1 child');
+	return tupletype.children[1].children[0].children[0];
+}
+export function entryTypeNamedFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeEntryType_Named | PARSER.ParseNodeEntryType_Named_Optional {
 	const recordtype: PARSER.ParseNodeTypeRecordLiteral = recordTypeFromString(`[${ propertystring }]`, config);
 	assert_arrayLength(recordtype.children, 3, 'record type should have 3 children');
-	assert_arrayLength(recordtype.children[1].children, 1, 'property list should have 1 child');
-	return recordtype.children[1].children[0];
+	assert_arrayLength(recordtype.children[1].children, 1, 'properties production should have 1 child');
+	assert_arrayLength(recordtype.children[1].children[0].children, 1, 'property list should have 1 child');
+	return recordtype.children[1].children[0].children[0];
 }
 export function tupleTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeTypeTupleLiteral {
 	const unit: PARSER.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);

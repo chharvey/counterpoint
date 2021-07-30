@@ -32,7 +32,8 @@ TokenWorth(Punctuator :::= "&")   -> RealNumber := \x1e;
 TokenWorth(Punctuator :::= "|")   -> RealNumber := \x1f;
 TokenWorth(Punctuator :::= ";")   -> RealNumber := \x20;
 TokenWorth(Punctuator :::= ":")   -> RealNumber := \x21;
-TokenWorth(Punctuator :::= "=")   -> RealNumber := \x22;
+TokenWorth(Punctuator :::= "?:")  -> RealNumber := \x22;
+TokenWorth(Punctuator :::= "=")   -> RealNumber := \x23;
 
 
 
