@@ -121,13 +121,6 @@ export abstract class ASTNodeSolid extends ASTNode {
 	typeCheck(validator: Validator): void {
 		return this.children.forEach((c) => c.typeCheck(validator));
 	}
-
-	/**
-	 * Give directions to the runtime code builder.
-	 * @param builder the builder to direct
-	 * @return the directions to print
-	 */
-	abstract build(builder: Builder): Instruction;
 }
 
 
@@ -138,9 +131,6 @@ export class ASTNodeKey extends ASTNodeSolid {
 		super(start_node, {id: start_node.cook()});
 		this.id = start_node.cook()!;
 	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeKey#build not yet supported.';
-	}
 }
 export class ASTNodePropertyType extends ASTNodeSolid {
 	constructor (
@@ -149,9 +139,6 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 		readonly value: ASTNodeType,
 	) {
 		super(start_node, {}, [key, value]);
-	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodePropertyType#build not yet supported.';
 	}
 }
 export class ASTNodeProperty extends ASTNodeSolid {
@@ -162,9 +149,6 @@ export class ASTNodeProperty extends ASTNodeSolid {
 	) {
 		super(start_node, {}, [key, value]);
 	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeProperty#build not yet supported.';
-	}
 }
 export class ASTNodeCase extends ASTNodeSolid {
 	constructor (
@@ -173,9 +157,6 @@ export class ASTNodeCase extends ASTNodeSolid {
 		readonly consequent: ASTNodeExpression,
 	) {
 		super(start_node, {}, [antecedent, consequent]);
-	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeCase#build not yet supported.';
 	}
 }
 /**
@@ -205,12 +186,6 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 */
 	override typeCheck(_validator: Validator): void {
 		return; // no type-checking necessary
-	}
-	/**
-	 * @final
-	 */
-	override build(_builder: Builder): INST.InstructionNone {
-		return new INST.InstructionNone();
 	}
 	/**
 	 * Assess the type-value of this node at compile-time.
@@ -391,7 +366,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeMapping
  * - ASTNodeOperation
  */
-export abstract class ASTNodeExpression extends ASTNodeSolid {
+export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildable {
 	/**
 	 * Construct a new ASTNodeExpression from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -422,7 +397,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
 	 * @final
 	 */
-	override build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
+	build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
 		const assessed: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
 		return (!!assessed) ? INST.InstructionConst.fromAssessment(assessed, to_float) : this.build_do(builder, to_float);
 	}
@@ -1092,7 +1067,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
  * - ASTNodeDeclaration
  * - ASTNodeAssignment
  */
-export abstract class ASTNodeStatement extends ASTNodeSolid {
+export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable {
 	/**
 	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -1105,6 +1080,7 @@ export abstract class ASTNodeStatement extends ASTNodeSolid {
 		assert.strictEqual(goal.children.length, 1, 'semantic goal should have 1 child');
 		return goal.children[0];
 	}
+	abstract build(builder: Builder): Instruction;
 }
 export class ASTNodeStatementExpression extends ASTNodeStatement {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
@@ -1264,7 +1240,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		);
 	}
 }
-export class ASTNodeGoal extends ASTNodeSolid {
+export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	/**
 	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -1281,7 +1257,7 @@ export class ASTNodeGoal extends ASTNodeSolid {
 	) {
 		super(start_node, {}, children)
 	}
-	override build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
+	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
 		return (!this.children.length)
 			? new INST.InstructionNone()
 			: new INST.InstructionModule([
@@ -1289,4 +1265,15 @@ export class ASTNodeGoal extends ASTNodeSolid {
 				...(this.children as readonly ASTNodeStatement[]).map((child) => child.build(builder)),
 			])
 	}
+}
+
+
+
+interface Buildable extends ASTNodeSolid {
+	/**
+	 * Give directions to the runtime code builder.
+	 * @param builder the builder to direct
+	 * @return the directions to print
+	 */
+	build(builder: Builder): Instruction;
 }
