@@ -47,6 +47,7 @@ import {
 } from '../../src/error/index.js';
 import {
 	assert_wasCalled,
+	assertEqualTypes,
 } from '../assert-helpers.js';
 import {
 	typeConstInt,
@@ -1108,35 +1109,39 @@ describe('ASTNodeSolid', () => {
 					});
 					context('with constant folding off.', () => {
 						describe('[operator=NOT]', () => {
-							it('returns type `true` for a subtype of `null | false`.', () => {
+							it('returns type `true` for a subtype of `void | null | false`.', () => {
 								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 									let unfixed a: null = null;
 									let unfixed b: null | false = null;
+									let unfixed c: null | void = null;
 									!a;
 									!b;
+									!c;
 								`, folding_off);
 								const validator: Validator = new Validator(folding_off);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
-								goal.children.slice(2).forEach((stmt) => {
+								goal.children.slice(3).forEach((stmt) => {
 									assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidBoolean.TRUETYPE);
 								});
 							});
-							it('returns type `bool` for a supertype of `null` or a supertype of `false`.', () => {
+							it('returns type `bool` for a supertype of `void` or a supertype of `null` or a supertype of `false`.', () => {
 								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 									let unfixed a: null | int = null;
 									let unfixed b: null | int = 42;
 									let unfixed c: bool = false;
 									let unfixed d: bool | float = 4.2;
+									let unfixed e: str | void = 'hello';
 									!a;
 									!b;
 									!c;
 									!d;
+									!e;
 								`, folding_off);
 								const validator: Validator = new Validator(folding_off);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
-								goal.children.slice(4).forEach((stmt) => {
+								goal.children.slice(5).forEach((stmt) => {
 									assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidBoolean);
 								});
 							});
@@ -1348,19 +1353,141 @@ describe('ASTNodeSolid', () => {
 						});
 					});
 				});
-				specify('ASTNodeOperationBinaryLogical', () => {
-					typeOperations(new Map<string, SolidObject>([
-						[`null  && false;`, SolidNull.NULL],
-						[`false && null;`,  SolidBoolean.FALSE],
-						[`true  && null;`,  SolidNull.NULL],
-						[`false && 42;`,    SolidBoolean.FALSE],
-						[`4.2   && true;`,  SolidBoolean.TRUE],
-						[`null  || false;`, SolidBoolean.FALSE],
-						[`false || null;`,  SolidNull.NULL],
-						[`true  || null;`,  SolidBoolean.TRUE],
-						[`false || 42;`,    new Int16(42n)],
-						[`4.2   || true;`,  new Float64(4.2)],
-					]));
+				describe('ASTNodeOperationBinaryLogical', () => {
+					it('with constant folding on.', () => {
+						typeOperations(new Map<string, SolidObject>([
+							[`null  && false;`, SolidNull.NULL],
+							[`false && null;`,  SolidBoolean.FALSE],
+							[`true  && null;`,  SolidNull.NULL],
+							[`false && 42;`,    SolidBoolean.FALSE],
+							[`4.2   && true;`,  SolidBoolean.TRUE],
+							[`null  || false;`, SolidBoolean.FALSE],
+							[`false || null;`,  SolidNull.NULL],
+							[`true  || null;`,  SolidBoolean.TRUE],
+							[`false || 42;`,    new Int16(42n)],
+							[`4.2   || true;`,  new Float64(4.2)],
+						]));
+					});
+					context('with constant folding off.', () => {
+						describe('[operator=AND]', () => {
+							it('returns `left` if it’s a subtype of `void | null | false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: null = null;
+									let unfixed b: null | false = null;
+									let unfixed c: null | void = null;
+									a && 42;
+									b && 42;
+									c && 42;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								assert.deepStrictEqual(goal.children.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+									SolidNull,
+									SolidNull.union(SolidBoolean.FALSETYPE),
+									SolidNull.union(SolidType.VOID),
+								]);
+							});
+							it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: null | int = null;
+									let unfixed b: null | int = 42;
+									let unfixed c: bool = false;
+									let unfixed d: bool | float = 4.2;
+									let unfixed e: str | void = 'hello';
+									a && 'hello';
+									b && 'hello';
+									c && 'hello';
+									d && 'hello';
+									e && 42;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								assert.deepStrictEqual(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+									SolidNull.union(SolidString),
+									SolidNull.union(SolidString),
+									SolidBoolean.FALSETYPE.union(SolidString),
+									SolidBoolean.FALSETYPE.union(SolidString),
+									SolidType.VOID.union(Int16),
+								]);
+							});
+							it('returns `right` if left does not contain `void` nor `null` nor `false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: int = 42;
+									let unfixed b: float = 4.2;
+									a && true;
+									b && null;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+									SolidBoolean,
+									SolidNull,
+								]);
+							});
+						});
+						describe('[operator=OR]', () => {
+							it('returns `right` if it’s a subtype of `void | null | false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: null = null;
+									let unfixed b: null | false = null;
+									let unfixed c: null | void = null;
+									a || false;
+									b || 42;
+									c || 4.2;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								assert.deepStrictEqual(goal.children.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+									SolidBoolean,
+									Int16,
+									Float64,
+								]);
+							});
+							it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: null | int = null;
+									let unfixed b: null | int = 42;
+									let unfixed c: bool = false;
+									let unfixed d: bool | float = 4.2;
+									let unfixed e: str | void = 'hello';
+									a || 'hello';
+									b || 'hello';
+									c || 'hello';
+									d || 'hello';
+									e || 42;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								assertEqualTypes(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+									Int16.union(SolidString),
+									Int16.union(SolidString),
+									SolidBoolean.TRUETYPE.union(SolidString),
+									SolidBoolean.TRUETYPE.union(Float64).union(SolidString),
+									SolidString.union(Int16),
+								]);
+							});
+							it('returns `left` if it does not contain `void` nor `null` nor `false`.', () => {
+								const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+									let unfixed a: int = 42;
+									let unfixed b: float = 4.2;
+									a || true;
+									b || null;
+								`, folding_off);
+								const validator: Validator = new Validator(folding_off);
+								goal.varCheck(validator);
+								goal.typeCheck(validator);
+								assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+									Int16,
+									Float64,
+								]);
+							});
+						});
+					});
 				});
 				describe('ASTNodeOperationTernary', () => {
 					context('with constant folding on', () => {
