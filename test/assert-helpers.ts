@@ -1,4 +1,7 @@
 import * as assert from 'assert'
+import type {
+	SolidType,
+} from '../src/typer/index.js'
 
 
 
@@ -51,4 +54,38 @@ export function assert_wasCalled<Func extends (...args: any[]) => any, Return>(o
 			throw new AggregateError(tracker.report().map((info) => new assert.AssertionError(info)));
 		};
 	};
+}
+
+
+/**
+ * Assert equal types. First compares by `assert.deepStrictEqual`,
+ * but if that fails, compares by `SolidType#equals`.
+ * @param types a map of keys and values to compare
+ * @throws {AssertionError} if one of the pairs fails equality
+ */
+export function assertEqualTypes(types: ReadonlyMap<SolidType, SolidType>): void;
+/**
+ * Assert equal types. First compares by `assert.deepStrictEqual`,
+ * but if that fails, compares by `SolidType#equals`.
+ * @param actual   an array of actual types
+ * @param expected an array of what `actual` is expected to equal
+ * @throws {AssertionError} if a corresponding type fails equality
+ */
+export function assertEqualTypes(actual: SolidType[], expected: SolidType[]): void;
+export function assertEqualTypes(actual: SolidType[] | ReadonlyMap<SolidType, SolidType>, expected?: SolidType[]): void {
+	return (actual instanceof Map)
+		? (actual as ReadonlyMap<SolidType, SolidType>).forEach((exp, act) => {
+			try {
+				return assert.deepStrictEqual(act, exp);
+			} catch {
+				return assert.ok(act.equals(exp), `${ act } == ${ exp }`);
+			}
+		})
+		: (actual as SolidType[]).forEach((act, i) => {
+			try {
+				return assert.deepStrictEqual(act, expected![i]);
+			} catch {
+				return assert.ok(act.equals(expected![i]), `${ act } == ${ expected![i] }`);
+			}
+		});
 }

@@ -38,6 +38,10 @@ export abstract class SolidObject {
 	/** @implements SolidType */
 	static union: SolidType['union'] = SolidType.prototype.union;
 	/** @implements SolidType */
+	static subtract: SolidType['subtract'] = SolidType.prototype.subtract;
+	/** @implements SolidType */
+	static subtract_do: SolidType['subtract_do'] = SolidType.prototype.subtract_do;
+	/** @implements SolidType */
 	@strictEqual
 	@SolidType.subtypeDeco
 	static isSubtypeOf(t: SolidType): boolean {
