@@ -27,7 +27,7 @@ import {
 describe('LexerSolid', () => {
 	describe('#generate', () => {
 		it('rejects unrecognized characters.', () => {
-			`~ { } # $ @ "`.split(' ').map((c) => new Lexer(`
+			`~ # $ @ "`.split(' ').map((c) => new Lexer(`
 				5  +  30
 				+ 6 ^ - (${c} - 37 *
 			`, CONFIG_DEFAULT)).forEach((lexer) => {
@@ -617,15 +617,6 @@ describe('LexerSolid', () => {
 				assert.strictEqual(tokentemplate.source.slice(16, 17), `\n`)
 			})
 			describe('Invalid characters at end of template.', () => {
-				it('should not recognize `{{{` at end of head/middle.', () => {
-					;[`
-						'''template-head that ends with a single open brace {{{
-					`, `
-						}}template-middle that ends with a single open brace {{{
-					`].map((source) => new Lexer(source, CONFIG_DEFAULT)).forEach((lexer) => {
-						assert.throws(() => [...lexer.generate()], LexError01) // TODO change to parse error when `{` becomes punctuator
-					})
-				})
 				it('should not recognize `\'\'\'\'` at end of full/tail.', () => {
 					;[`
 						'''template-full that ends with a single apostrophe ''''

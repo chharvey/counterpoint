@@ -6,7 +6,10 @@ SemanticKey[id: RealNumber]
 SemanticIndexType
 	::= SemanticTypeConstant;
 
-SemanticPropertyType
+SemanticItemType[optional: Boolean]
+	::= SemanticType;
+
+SemanticPropertyType[optional: Boolean]
 	::= SemanticKey SemanticType;
 
 
@@ -39,7 +42,7 @@ SemanticTypeConstant[value: Type]
 SemanticTypeAlias[id: RealNumber]
 	::= ();
 
-SemanticTypeTuple  ::= SemanticType*;
+SemanticTypeTuple  ::= SemanticItemType*;
 SemanticTypeRecord ::= SemanticPropertyType+;
 
 SemanticTypeAccess

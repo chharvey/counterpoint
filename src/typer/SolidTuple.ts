@@ -51,7 +51,7 @@ export class SolidTuple<T extends SolidObject = SolidObject> extends SolidObject
 	}
 
 	toType(): SolidTypeTuple {
-		return new SolidTypeTuple(this.items.map((it) => new SolidTypeConstant(it)));
+		return SolidTypeTuple.fromTypes(this.items.map((it) => new SolidTypeConstant(it)));
 	}
 
 	get(index: Int16, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): T {

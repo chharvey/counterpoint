@@ -126,13 +126,6 @@ export abstract class ASTNodeSolid extends ASTNode {
 	typeCheck(validator: Validator): void {
 		return this.children.forEach((c) => c.typeCheck(validator));
 	}
-
-	/**
-	 * Give directions to the runtime code builder.
-	 * @param builder the builder to direct
-	 * @return the directions to print
-	 */
-	abstract build(builder: Builder): Instruction;
 }
 
 
@@ -143,9 +136,6 @@ export class ASTNodeKey extends ASTNodeSolid {
 		super(start_node, {id: start_node.cook()});
 		this.id = start_node.cook()!;
 	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeKey#build not yet supported.';
-	}
 }
 export class ASTNodeIndexType extends ASTNodeSolid {
 	constructor (
@@ -154,20 +144,34 @@ export class ASTNodeIndexType extends ASTNodeSolid {
 	) {
 		super(start_node, {}, [value]);
 	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeIndexType#build not yet supported.';
+}
+export class ASTNodeItemType extends ASTNodeSolid {
+	constructor (
+		start_node:
+			| PARSER.ParseNodeEntryType
+			| PARSER.ParseNodeEntryType_Optional
+		,
+		readonly optional: boolean,
+		readonly value: ASTNodeType,
+	) {
+		super(start_node, {optional}, [value]);
+	}
+	/** @implements ASTNodeSolid */
+	build(builder: Builder): Instruction {
+		throw builder && 'ASTNodeItemType#build not yet supported.';
 	}
 }
 export class ASTNodePropertyType extends ASTNodeSolid {
 	constructor (
-		start_node: PARSER.ParseNodePropertyType,
-		readonly key:   ASTNodeKey,
-		readonly value: ASTNodeType,
+		start_node:
+			| PARSER.ParseNodeEntryType_Named
+			| PARSER.ParseNodeEntryType_Named_Optional
+		,
+		readonly optional: boolean,
+		readonly key:      ASTNodeKey,
+		readonly value:    ASTNodeType,
 	) {
-		super(start_node, {}, [key, value]);
-	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodePropertyType#build not yet supported.';
+		super(start_node, {optional}, [key, value]);
 	}
 }
 export class ASTNodeIndex extends ASTNodeSolid {
@@ -176,9 +180,6 @@ export class ASTNodeIndex extends ASTNodeSolid {
 		readonly value: ASTNodeConstant,
 	) {
 		super(start_node, {}, [value]);
-	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeIndex#build not yet supported.';
 	}
 }
 export class ASTNodeProperty extends ASTNodeSolid {
@@ -189,9 +190,6 @@ export class ASTNodeProperty extends ASTNodeSolid {
 	) {
 		super(start_node, {}, [key, value]);
 	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeProperty#build not yet supported.';
-	}
 }
 export class ASTNodeCase extends ASTNodeSolid {
 	constructor (
@@ -200,9 +198,6 @@ export class ASTNodeCase extends ASTNodeSolid {
 		readonly consequent: ASTNodeExpression,
 	) {
 		super(start_node, {}, [antecedent, consequent]);
-	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeCase#build not yet supported.';
 	}
 }
 /**
@@ -233,12 +228,6 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 */
 	override typeCheck(_validator: Validator): void {
 		return; // no type-checking necessary
-	}
-	/**
-	 * @final
-	 */
-	override build(_builder: Builder): INST.InstructionNone {
-		return new INST.InstructionNone();
 	}
 	/**
 	 * Assess the type-value of this node at compile-time.
@@ -323,12 +312,15 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 	}
 	constructor (
 		start_node: PARSER.ParseNodeTypeTupleLiteral,
-		override readonly children: readonly ASTNodeType[],
+		override readonly children: readonly ASTNodeItemType[],
 	) {
 		super(start_node, {}, children);
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		return new SolidTypeTuple(this.children.map((c) => c.assess(validator)));
+		return new SolidTypeTuple(this.children.map((c) => ({
+			type:     c.value.assess(validator),
+			optional: c.optional,
+		})));
 	}
 }
 export class ASTNodeTypeRecord extends ASTNodeType {
@@ -346,7 +338,10 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 	protected override assess_do(validator: Validator): SolidType {
 		return new SolidTypeRecord(new Map(this.children.map((c) => [
 			c.key.id,
-			c.value.assess(validator),
+			{
+				type:     c.value.assess(validator),
+				optional: c.optional,
+			},
 		])));
 	}
 }
@@ -462,7 +457,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeAccess
  * - ASTNodeOperation
  */
-export abstract class ASTNodeExpression extends ASTNodeSolid {
+export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildable {
 	/**
 	 * Construct a new ASTNodeExpression from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -493,7 +488,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
 	 * @final
 	 */
-	override build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
+	build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
 		const assessed: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
 		return (!!assessed) ? INST.InstructionConst.fromAssessment(assessed, to_float) : this.build_do(builder, to_float);
 	}
@@ -679,7 +674,7 @@ export class ASTNodeTuple extends ASTNodeExpression {
 		throw builder && 'ASTNodeTuple#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return new SolidTypeTuple(this.children.map((c) => c.type(validator)));
+		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type(validator)));
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
 		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.assess(validator));
@@ -707,7 +702,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return new SolidTypeRecord(new Map(this.children.map((c) => [
+		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
 			c.value.type(validator),
 		])));
@@ -897,8 +892,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		const t0: SolidType = this.operand.type(validator);
 		return (
 			(this.operator === Operator.NOT) ? (
-				(t0.isSubtypeOf(SolidNull.union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
-				(SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? SolidBoolean :
+				(t0.isSubtypeOf(SolidType.VOID.union(SolidNull).union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
+				(SolidType.VOID.isSubtypeOf(t0) || SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? SolidBoolean :
 				SolidBoolean.FALSETYPE
 			) :
 			(this.operator === Operator.EMP) ? SolidBoolean :
@@ -1189,27 +1184,15 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		)
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {
-		const null_union_false: SolidType = SolidNull.union(SolidBoolean.FALSETYPE);
-		function truthifyType(t: SolidType): SolidType {
-			const values: Set<SolidObject> = new Set(t.values);
-			values.delete(SolidNull.NULL);
-			values.delete(SolidBoolean.FALSE);
-			return [...values].map<SolidType>((v) => new SolidTypeConstant(v)).reduce((a, b) => a.union(b));
-		}
+		const falsytypes: SolidType = SolidType.VOID.union(SolidNull).union(SolidBoolean.FALSETYPE);
 		return (this.operator === Operator.AND)
-			? (t0.isSubtypeOf(null_union_false))
+			? (t0.isSubtypeOf(falsytypes))
 				? t0
-				: (SolidNull.isSubtypeOf(t0))
-					? (SolidBoolean.FALSETYPE.isSubtypeOf(t0))
-						? null_union_false.union(t1)
-						: SolidNull.union(t1)
-					: (SolidBoolean.FALSETYPE.isSubtypeOf(t0))
-						? SolidBoolean.FALSETYPE.union(t1)
-						: t1
-			: (t0.isSubtypeOf(null_union_false))
+				: t0.intersect(falsytypes).union(t1)
+			: (t0.isSubtypeOf(falsytypes))
 				? t1
-				: (SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
-					? truthifyType(t0).union(t1)
+				: (SolidType.VOID.isSubtypeOf(t0) || SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
+					? t0.subtract(falsytypes).union(t1)
 					: t0
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
@@ -1282,7 +1265,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
  * - ASTNodeDeclaration
  * - ASTNodeAssignment
  */
-export abstract class ASTNodeStatement extends ASTNodeSolid {
+export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable {
 	/**
 	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -1295,6 +1278,7 @@ export abstract class ASTNodeStatement extends ASTNodeSolid {
 		assert.strictEqual(goal.children.length, 1, 'semantic goal should have 1 child');
 		return goal.children[0];
 	}
+	abstract build(builder: Builder): Instruction;
 }
 export class ASTNodeStatementExpression extends ASTNodeStatement {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
@@ -1454,7 +1438,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		);
 	}
 }
-export class ASTNodeGoal extends ASTNodeSolid {
+export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	/**
 	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -1471,7 +1455,7 @@ export class ASTNodeGoal extends ASTNodeSolid {
 	) {
 		super(start_node, {}, children)
 	}
-	override build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
+	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
 		return (!this.children.length)
 			? new INST.InstructionNone()
 			: new INST.InstructionModule([
@@ -1479,4 +1463,15 @@ export class ASTNodeGoal extends ASTNodeSolid {
 				...(this.children as readonly ASTNodeStatement[]).map((child) => child.build(builder)),
 			])
 	}
+}
+
+
+
+interface Buildable extends ASTNodeSolid {
+	/**
+	 * Give directions to the runtime code builder.
+	 * @param builder the builder to direct
+	 * @return the directions to print
+	 */
+	build(builder: Builder): Instruction;
 }

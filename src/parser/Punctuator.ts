@@ -4,6 +4,8 @@ export enum Punctuator {
 		GRP_CLS = ')',
 		BRAK_OPN = '[',   // Dev.supports('literalCollection')
 		BRAK_CLS = ']',   // Dev.supports('literalCollection')
+		BRAC_OPN = '{',   // Dev.supports('literalCollection')
+		BRAC_CLS = '}',   // Dev.supports('literalCollection')
 		COMMA    = ',',   // Dev.supports('literalCollection')
 		MAPTO    = '|->', // Dev.supports('literalCollection')
 	// compound
@@ -40,5 +42,6 @@ export enum Punctuator {
 	// statement
 		ENDSTAT = ';',
 		ISTYPE  = ':',
+		OPT     = '?:', // Dev.supportsAll('literalCollection', 'optionalAccess')
 		ASSIGN  = '=', // Dev.supports('literalCollection')
 }

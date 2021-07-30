@@ -1,14 +1,16 @@
 type DevToggleKey =
 	// v0.4.0
-		|	'literalCollection'
-		|	'literalString-lex'
-		|	'literalString-cook'
-		|	'stringConstant-assess'
-		|	'literalTemplate-lex'
-		|	'literalTemplate-cook'
-		|	'stringTemplate-parse'
-		|	'stringTemplate-decorate'
-		|	'stringTemplate-assess'
+		| 'literalCollection'
+		| 'literalString-lex'
+		| 'literalString-cook'
+		| 'stringConstant-assess'
+		| 'literalTemplate-lex'
+		| 'literalTemplate-cook'
+		| 'stringTemplate-parse'
+		| 'stringTemplate-decorate'
+		| 'stringTemplate-assess'
+		| 'voidType'
+		| 'optionalAccess'
 ;
 type DevToggleVal = [boolean, DevToggleKey[]?];
 
@@ -41,6 +43,8 @@ export class Dev {
 		'stringTemplate-parse':    [true, ['literalTemplate-cook']],
 		'stringTemplate-decorate': [true, ['stringTemplate-parse']],
 		'stringTemplate-assess':   [true, ['stringTemplate-decorate']],
+		voidType:                  [true],
+		optionalAccess:            [true, ['literalCollection', 'voidType']],
 	}
 
 	/**

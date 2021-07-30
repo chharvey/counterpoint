@@ -696,11 +696,11 @@ The antecedents are unique (by identity) in that each antecedent can be associat
 The number of cases in a mapping is called its **count**.
 
 ```
-let bases: obj = [
+let bases: obj = {
 	1     |-> 'who',
 	'2nd' |-> ['what'],
-	1 + 2 |-> ['i' |-> ['don’t' |-> 'know']],
-];
+	1 + 2 |-> { 'i' |-> {'don’t' |-> 'know'} },
+};
 ```
 The mapping above has antecedents and consequents of various types.
 Typically, all the antecedents will be of one type and all the consequents will be of one type,
@@ -713,12 +713,12 @@ Like records, the order of entries in a mapping is not necessarily significant.
 Also like records, antecedents have unique consequents in that latter declarations take precedence.
 In the case of mappings, antecedents that are identical are considered “the same object”.
 ```
-let bases: obj = [
+let bases: obj = {
 	1     |-> 'who',
 	'2nd' |-> ['what'],
-	1 + 2 |-> ['i' |-> ['don’t' |-> 'know']],
+	1 + 2 |-> { 'i' |-> {'don’t' |-> 'know'} },
 	4 - 1 |-> [i= [`don’t`= 'know']],
-];
+};
 ```
 The consequent corresponding to the antecedent `3` will be `` [i= [`don’t`= 'know']] ``.
 
@@ -726,12 +726,12 @@ Mappings may have several antecedents that are un-identical but “equal”.
 ```
 let x: [int] = [3];
 let y: [int] = [3];
-let bases: obj = [
+let bases: obj = {
 	0.0  |-> 'who',
 	-0.0 |-> ['what'],
-	x |-> ['i' |-> ['don’t' |-> 'know']],
+	x |-> { 'i' |-> {'don’t' |-> 'know'} },
 	y |-> [i= [`don’t`= 'know']],
-];
+};
 ```
 In this example, the antecedents `0.0` and `-0.0` are not identical
 (even if they are equal by the floating-point definition of equality).
@@ -742,14 +742,14 @@ Even though `0.0 == -0.0` and `x == y`, this mapping has four entries.
 #### Mapping Access
 Consequents of a mapping can be accessed via **bracket-accessor notation**.
 ```
-let bases: obj = [
+let bases: obj = {
 	1     |-> 'who',
 	'2nd' |-> ['what'],
-	1 + 2 |-> ['i' |-> ['don’t' |-> 'know']],
-];
+	1 + 2 |-> { 'i' |-> {'don’t' |-> 'know'} },
+};
 bases.[-1 * -1];         %== 'who'
 bases.['''{{ 2 }}nd''']; %== ['what']
-bases.[3].['i'];         %== ['don’t' |-> 'know']
+bases.[3].['i'];         %== {'don’t' |-> 'know'}
 ```
 
 A VoidError is produced when the compiler can determine if the antecedent does not exist.
