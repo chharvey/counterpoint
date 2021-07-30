@@ -505,3 +505,15 @@ Type CombineTuplesOrRecords(Type t) :=
 	3. *Return:* `t`.
 ;
 ```
+
+
+## MaybeOptional
+Returns an entry’s type if it is required; unions with Void if it is optional.
+```
+Type MaybeOptional(EntryTypeStructure entry) :=
+	1. *Let* `type` be `entry.type`.
+	2. *If*: `entry.optional` is `true`:
+		1. *Return:* `Union(type, Void)`.
+	3. *Return:* `type`.
+;
+```

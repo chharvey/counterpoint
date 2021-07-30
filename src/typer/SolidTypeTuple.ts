@@ -63,7 +63,7 @@ export class SolidTypeTuple extends SolidType {
 		);
 	}
 
-	get(index: Int16, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): SolidType {
+	get(index: Int16, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): SolidType {
 		const n: number = this.types.length;
 		const i: number = Number(index.toNumeric());
 		const entry: TypeEntry = (

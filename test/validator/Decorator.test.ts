@@ -265,6 +265,43 @@ describe('Decorator', () => {
 			})
 		})
 
+		Dev.supports('literalCollection') && describe('TypeCompound ::= TypeCompound PropertyAccessType', () => {
+			it('access by integer.', () => {
+				/*
+					<AccessType>
+						<TypeTuple source="[42, 420, 4200]">...</TypeTuple>
+						<IndexType>
+							<TypeConstant source="1"/>
+						</IndexType>
+					</AccessType>
+				*/
+				const access: AST.ASTNodeTypeAccess = AST.ASTNodeTypeAccess.fromSource(`
+					[42, 420, 4200].1
+				`);
+				assert.ok(access.accessor instanceof AST.ASTNodeIndexType);
+				assert.deepStrictEqual(
+					[access.base.source,    access.accessor.source],
+					[`[ 42 , 420 , 4200 ]`, `. 1`],
+				);
+			});
+			it('access by key.', () => {
+				/*
+					<AccessType>
+						<TypeRecord source="[c: 42, b: 420, a: 4200]">...</TypeRecord>
+						<Key source="b"/>
+					</AccessType>
+				*/
+				const access: AST.ASTNodeTypeAccess = AST.ASTNodeTypeAccess.fromSource(`
+					[c: 42, b: 420, a: 4200].b
+				`);
+				assert.ok(access.accessor instanceof AST.ASTNodeKey);
+				assert.deepStrictEqual(
+					[access.base.source,                access.accessor.source],
+					[`[ c : 42 , b : 420 , a : 4200 ]`, `b`],
+				);
+			});
+		});
+
 		describe('TypeUnarySymbol ::= TypeUnarySymbol ("?" | "!")', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*

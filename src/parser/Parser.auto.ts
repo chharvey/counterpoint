@@ -203,12 +203,34 @@ export class ProductionTypeUnit extends Production {
 	}
 }
 
+export class ProductionPropertyAccessType extends Production {
+	static readonly instance: ProductionPropertyAccessType = new ProductionPropertyAccessType();
+	/** @implements Production */
+	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['.', TERMINAL.TerminalInteger.instance],
+			['.', ProductionWord.instance],
+		];
+	}
+}
+
+export class ProductionTypeCompound extends Production {
+	static readonly instance: ProductionTypeCompound = new ProductionTypeCompound();
+	/** @implements Production */
+	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionTypeUnit.instance],
+			[ProductionTypeCompound.instance, ProductionPropertyAccessType.instance],
+		];
+	}
+}
+
 export class ProductionTypeUnarySymbol extends Production {
 	static readonly instance: ProductionTypeUnarySymbol = new ProductionTypeUnarySymbol();
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionTypeUnit.instance],
+			[ProductionTypeCompound.instance],
 			[ProductionTypeUnarySymbol.instance, '?'],
 			[ProductionTypeUnarySymbol.instance, '!'],
 		];
@@ -751,9 +773,23 @@ export class ParseNodeTypeUnit extends ParseNode {
 	;
 }
 
-export class ParseNodeTypeUnarySymbol extends ParseNode {
+export class ParseNodePropertyAccessType extends ParseNode {
+	declare readonly children:
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+	;
+}
+
+export class ParseNodeTypeCompound extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeTypeUnit]
+		| readonly [ParseNodeTypeCompound, ParseNodePropertyAccessType]
+	;
+}
+
+export class ParseNodeTypeUnarySymbol extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeTypeCompound]
 		| readonly [ParseNodeTypeUnarySymbol, Token]
 		| readonly [ParseNodeTypeUnarySymbol, Token]
 	;
@@ -1044,6 +1080,8 @@ export const grammar_Solid: Grammar = new Grammar([
 	ProductionTypeTupleLiteral.instance,
 	ProductionTypeRecordLiteral.instance,
 	ProductionTypeUnit.instance,
+	ProductionPropertyAccessType.instance,
+	ProductionTypeCompound.instance,
 	ProductionTypeUnarySymbol.instance,
 	ProductionTypeIntersection.instance,
 	ProductionTypeUnion.instance,
@@ -1104,6 +1142,8 @@ export class ParserSolid extends Parser {
 			[ProductionTypeTupleLiteral.instance, ParseNodeTypeTupleLiteral],
 			[ProductionTypeRecordLiteral.instance, ParseNodeTypeRecordLiteral],
 			[ProductionTypeUnit.instance, ParseNodeTypeUnit],
+			[ProductionPropertyAccessType.instance, ParseNodePropertyAccessType],
+			[ProductionTypeCompound.instance, ParseNodeTypeCompound],
 			[ProductionTypeUnarySymbol.instance, ParseNodeTypeUnarySymbol],
 			[ProductionTypeIntersection.instance, ParseNodeTypeIntersection],
 			[ProductionTypeUnion.instance, ParseNodeTypeUnion],
@@ -1144,5 +1184,3 @@ export class ParserSolid extends Parser {
 	// @ts-expect-error
 	declare override parse(): ParseNodeGoal;
 }
-
-

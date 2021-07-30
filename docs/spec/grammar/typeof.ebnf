@@ -215,12 +215,3 @@ Type! TypeOfUnassessed(SemanticOperation[operator: COND] expr) :=
 Type ToType(Or<Null, Boolean, Number> v) :=
 	1. *Return:* a new Type containing only the value `v`.
 ;
-
-
-
-Type MaybeOptional(EntryTypeStructure entry) :=
-	1. *Let* `type` be `entry.type`.
-	2. *If*: `entry.optional` is `true`:
-		1. *Return:* `Union(type, Void)`.
-	3. *Return:* `type`.
-;

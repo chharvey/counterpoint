@@ -41,6 +41,31 @@ Type Assess(SemanticTypeRecord recordtype) :=
 
 
 
+Type Assess(SemanticTypeAccess access) :=
+	1. *Assert:* `access.children.count` is 2.
+	2. *Let* `base` be `access.children.0`.
+	3. *Let* `accessor` be `access.children.1`.
+	4. *Let* `base_type` be *Unwrap:* `CombineTuplesOrRecords(Assess(base))`.
+	5. *If* `accessor` is a SemanticIndexType:
+		1. *Assert:* `accessor.children.count` is 1.
+		2. *Let* `accessor_type` be *Unwrap:* `Assess(accessor.children.0)`.
+		3. *Assert:* `accessor_type` is a TypeConstant.
+		4. *Let* `i` be `accessor_type.value`.
+		5. *Assert:* `i` is a instance of `Integer`.
+		6. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)` *and* `i` is an index in `base_type`:
+			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
+			2. *Return:* *UnwrapAffirm:* `MaybeOptional(entry)`.
+		7. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
+	6. *Assert:* `accessor` is a SemanticKey.
+	7. *Let* `id` be `accessor.id`.
+	8. *If* *UnwrapAffirm:* `Subtype(base_type, Record)` *and* `id` is a key in `base_type`:
+		1. *Let* `entry` be the item accessed at key `id` in `base_type`.
+		2. *Return:* *UnwrapAffirm:* `MaybeOptional(entry)`.
+	9. *Throw:* a new TypeError04 "Property {{ id }} does not exist on type {{ base_type }}.".
+;
+
+
+
 Type Assess(SemanticTypeOperation[operator: ORNULL] oper) :=
 	1. *Assert:* `oper.children.count` is 1.
 	2. *Let* `child` be *UnwrapAffirm:* `Assess(oper.children.0)`.

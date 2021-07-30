@@ -3,6 +3,9 @@ SemanticKey[id: RealNumber]
 
 
 
+SemanticIndexType
+	::= SemanticTypeConstant;
+
 SemanticItemType[optional: Boolean]
 	::= SemanticType;
 
@@ -27,6 +30,7 @@ SemanticType =:=
 	| SemanticTypeAlias
 	| SemanticTypeTuple
 	| SemanticTypeRecord
+	| SemanticTypeAccess
 	| SemanticTypeOperation
 ;
 
@@ -40,6 +44,9 @@ SemanticTypeAlias[id: RealNumber]
 
 SemanticTypeTuple  ::= SemanticItemType*;
 SemanticTypeRecord ::= SemanticPropertyType+;
+
+SemanticTypeAccess
+	::= SemanticType (SemanticIndexType | SemanticKey);
 
 SemanticTypeOperation[operator: ORNULL]
 	::= SemanticType;
