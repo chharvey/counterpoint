@@ -92,6 +92,35 @@ export abstract class SolidType {
 		return descriptor;
 	}
 	/**
+	 * Decorator for {@link SolidLanguageType#subtract} method and any overrides.
+	 * Contains shortcuts for constructing type differences.
+	 * @param   _prototype    the prototype that has the method to be decorated
+	 * @param   _property_key the name of the method to be decorated
+	 * @param   descriptor    the Property Descriptor of the prototype’s method
+	 * @returns               `descriptor`, with a new value that is the decorated method
+	 */
+	protected static subtractDeco(
+		_prototype: SolidType,
+		_property_key: string,
+		descriptor: TypedPropertyDescriptor<(this: SolidType, t: SolidType) => SolidType>,
+	): typeof descriptor {
+		const method = descriptor.value!;
+		descriptor.value = function (t) {
+			/** 4-1 | `A - B == A  <->  A & B == never` */
+			if (this.intersect(t).isEmpty) { return this; }
+
+			/** 4-2 | `A - B == never  <->  A <: B` */
+			if (this.isSubtypeOf(t)) { return SolidType.NEVER; }
+
+			if (t instanceof SolidTypeUnion) {
+				return t.subtractedFrom(this);
+			}
+
+			return method.call(this, t);
+		};
+		return descriptor;
+	}
+	/**
 	 * Decorator for {@link SolidLanguageType#isSubtypeOf} method and any overrides.
 	 * Contains shortcuts for determining subtypes.
 	 * @param   _prototype    the prototype that has the method to be decorated
@@ -195,22 +224,9 @@ export abstract class SolidType {
 	 * Return a new type that includes the values in this type that are not included in the argument type.
 	 * @param t the other type
 	 * @returns the type difference
-	 * @final
 	 */
+	@SolidType.subtractDeco
 	subtract(t: SolidType): SolidType {
-		/** 4-1 | `A - B == A  <->  A & B == never` */
-		if (this.intersect(t).isEmpty) { return this; }
-
-		/** 4-2 | `A - B == never  <->  A <: B` */
-		if (this.isSubtypeOf(t)) { return SolidType.NEVER; }
-
-		if (t instanceof SolidTypeUnion) {
-			return t.subtractedFrom(this);
-		}
-
-		return this.subtract_do(t);
-	}
-	subtract_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
 		return new SolidTypeDifference(this, t);
 	}
 	/**
@@ -317,7 +333,8 @@ class SolidTypeUnion extends SolidType {
 	override intersect(t: SolidType): SolidType {
 		return this.left.intersect(t).union(this.right.intersect(t));
 	}
-	override subtract_do(t: SolidType): SolidType {
+	@SolidType.subtractDeco
+	override subtract(t: SolidType): SolidType {
 		/** 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
 		return this.left.subtract(t).union(this.right.subtract(t));
 	}
