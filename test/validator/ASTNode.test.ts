@@ -1935,6 +1935,20 @@ describe('ASTNodeSolid', () => {
 						type C4 = RecV.a; % type \`int\`
 						type C5 = RecV.b; % type \`float\`
 						type C6 = RecV.c; % type \`str\`
+
+						${ Dev.supports('optionalAccess') ? `
+							type TupoC = [1,   2.0,   ?: 'three'];
+							type TupoV = [int, float, ?: str];
+
+							type D1 = TupoC.2; % type \`'three' | void\`
+							type D2 = TupoV.2; % type \`str | void\`
+
+							type RecoC = [a: 1,   b?: 2.0,   c: 'three'];
+							type RecoV = [a: int, b?: float, c: str];
+
+							type E1 = RecoC.b; % type \`2.0 | void\`
+							type E2 = RecoV.b; % type \`float | void\`
+						` : '' }
 					`, validator.config);
 					program.varCheck(validator);
 					program.typeCheck(validator);
@@ -1952,6 +1966,15 @@ describe('ASTNodeSolid', () => {
 							expected,
 						);
 					});
+					Dev.supports('optionalAccess') && it('unions with void if entry is optional.', () => {
+						assert.deepStrictEqual(
+							program.children.slice(24, 26).map((c) => evalOfTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+							[
+								typeConstStr('three').union(SolidType.VOID),
+								SolidString.union(SolidType.VOID),
+							],
+						);
+					});
 					it('throws when index is out of bounds.', () => {
 						assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].3`).assess(validator), TypeError04);
 						assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].-4`).assess(validator), TypeError04);
@@ -1962,6 +1985,15 @@ describe('ASTNodeSolid', () => {
 						assert.deepStrictEqual(
 							program.children.slice(16, 22).map((c) => evalOfTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
 							expected,
+						);
+					});
+					Dev.supports('optionalAccess') && it('unions with void if entry is optional.', () => {
+						assert.deepStrictEqual(
+							program.children.slice(28, 30).map((c) => evalOfTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+							[
+								typeConstFloat(2.0).union(SolidType.VOID),
+								Float64.union(SolidType.VOID),
+							],
 						);
 					});
 					it('throws when key is out of bounds.', () => {

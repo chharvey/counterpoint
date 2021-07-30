@@ -633,9 +633,12 @@ It accesses the index or key of a tuple or record type respectively.
 type T = [bool, int, str];
 type T1 = T.1;             %== int
 type T_1 = T.-1;           %== str
+type T3 = T.3;             %> TypeError
 
-type R = [a: bool, b: int, c: str];
-type Ra = R.a;                      %== bool
+type R = [a: bool, b?: int, c: str];
+type Ra = R.a;                       %== bool
+type Rc = R.b;                       %== int | void
+type Rd = R.d;                       %> TypeError
 ```
 
 
