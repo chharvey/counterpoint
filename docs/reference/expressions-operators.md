@@ -610,6 +610,49 @@ let v: T = [
 ];
 ```
 
+The *intersection* of types forms the *union* of the properties of each type.
+```
+type Employee = [
+	name:         str,
+	id:           int,
+	job_title:    str,
+	hours_worked: float,
+];
+type Volunteer = [
+	name:         str,
+	agency:       str,
+	hours_worked: float,
+];
+let alice: Employee & Volunteer = [
+	name=         'Alice',     %: str
+	id=           42444648,    %: int
+	jobTitle=     'Volunteer', %: str
+	agency=       'Agency',    %: str
+	hours_worked= 80,          %: float
+]
+```
+Type `Employee & Volunteer` is *both* an employee *and* a volunteer,
+so we’re guaranteed it will have the properties that are present in *either* type.
+
+Overlapping properties in an intersection are themselves intersected.
+```
+type A = [
+	key: 1 | 2 | 3,
+	value_a: int,
+];
+type B = [
+	key: 2 | 3 | 4,
+	value_b: float,
+];
+let data: A & B = [
+	key=      2,   %: 2 | 3 % `(1 | 2 | 3) & (2 | 3 | 4)`
+	value_a= 42,   %: int
+	value_b=  4.2, %: float
+];
+```
+
+This holds for tuple types as well, accounting for indices rather than keys.
+
 
 ### Union
 ```
@@ -621,3 +664,41 @@ type T = bool | int;
 let unfixed v: T = false;
 v = 42;
 ```
+
+The *union* of types forms the *intersection* of the properties of each type.
+```
+type Employee = [
+	name:         str,
+	id:           int,
+	job_title:    str,
+	hours_worked: float,
+];
+type Volunteer = [
+	name:         str,
+	agency:       str,
+	hours_worked: float,
+];
+let bob: Employee | Volunteer = [
+	name=         'Bob', %: str
+	hours_worked= 80,    %: float
+]
+```
+Type `Employee | Volunteer` is *either* an employee *or* a volunteer,
+so we’re only guaranteed it will have the properties that are present in *both* types.
+
+Overlapping properties in a union are themselves unioned.
+```
+type A = [
+	key: 1 | 2 | 3,
+	value_a: int,
+];
+type B = [
+	key: 2 | 3 | 4,
+	value_b: float,
+];
+let data: A | B = [
+	key= 4, %: 1 | 2 | 3 | 4 % `(1 | 2 | 3) | (2 | 3 | 4)`
+];
+```
+
+This holds for tuple types as well, accounting for indices rather than keys.

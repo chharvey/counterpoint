@@ -252,7 +252,7 @@ Boolean Equal(Object a, Object b) :=
 		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
 			1. *Note:* This assumption prevents an infinite loop,
 				if `a` and `b` ever recursively contain themselves or each other.
-		5. *For index* `i` in `seq_a`:
+		5. *For index* `i` in `seq_b`:
 			1. *If* *UnwrapAffirm*: `Equal(seq_a[i], seq_b[i])` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
@@ -280,9 +280,9 @@ Boolean Equal(Object a, Object b) :=
 		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
 			1. *Note:* This assumption prevents an infinite loop,
 				if `a` and `b` ever recursively contain themselves or each other.
-		5. *For each* `it_a` in `data_a`:
-			1. Find an item `it_b` in `data_b` such that *UnwrapAffirm:* `Equal(it_a.0, it_b.0)` is `true`.
-			2. *If* no such item `it_b` is found:
+		5. *For each* `it_b` in `data_b`:
+			1. Find an item `it_a` in `data_a` such that *UnwrapAffirm:* `Equal(it_a.0, it_b.0)` is `true`.
+			2. *If* no such item `it_a` is found:
 				1. *Return:* `false`.
 			3. *If* *UnwrapAffirm:* `Equal(it_a.1, it_b.1)` is `false`:
 				1. *Return:* `false`.
@@ -333,33 +333,38 @@ Boolean Subtype(Type a, Type b) :=
 		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
 			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
 			1. *Return:* `true`.
-	10. *If* `Equal(a, Tuple)`:
-		1. *If* `Equal(b, Tuple)`:
-			1. *Let* `seq_a` be the Sequence whose items are exactly the items in `a`.
-			2. *Let* `seq_b` be the Sequence whose items are exactly the items in `b`.
-			3. *If* `seq_a.count` is less than `seq_b.count`:
+	10. *If* `Equal(a, Tuple)` *and* `Equal(b, Tuple)`:
+		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
+		3. *If* `seq_a.count` is less than `seq_b.count`:
+			1. *Return:* `false`.
+		4. *For index* `i` in `seq_b`:
+			1. *If* *UnwrapAffirm:* `Subtype(seq_a[i], seq_b[i])` is `false`:
 				1. *Return:* `false`.
-			4. *For index* `i` in `seq_b`:
-				1. *If* *UnwrapAffirm:* `Subtype(seq_a[i], seq_b[i])` is `false`:
-					1. *Return:* `false`.
-			5. *Return:* `true`.
-	11. *If* `Equal(a, Record)`:
-		1. *If* `Equal(b, Record)`:
-			1. *Let* `struct_a` be the Structure whose properties are exactly the properties in `a`.
-			2. *Let* `struct_b` be the Structure whose properties are exactly the properties in `b`.
-			3. *If* `struct_a.count` is less than `struct_b.count`:
+		5. *Return:* `true`.
+	11. *If* `Equal(a, Record)` *and* `Equal(b, Record)`:
+		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
+		3. *If* `struct_a.count` is less than `struct_b.count`:
+			1. *Return:* `false`.
+		4. *For key* `k` in `struct_b`:
+			1. *If* `struct_a[k]` is not set:
 				1. *Return:* `false`.
-			4. *For key* `k` in `struct_b`:
-				1. *If* `struct_a[k]` is not set:
-					1. *Return:* `false`.
-				2. *If* *UnwrapAffirm:* `Subtype(struct_a[k], struct_b[k])` is `false`:
-					1. *Return:* `false`.
-			5. *Return:* `true`.
-	12. *If* every value that is assignable to `a` is also assignable to `b`:
+			2. *If* *UnwrapAffirm:* `Subtype(struct_a[k], struct_b[k])` is `false`:
+				1. *Return:* `false`.
+		5. *Return:* `true`.
+	12. *If* `Equal(a, Mapping)` *and* `Equal(b, Mapping)`:
+		1. *Let* `ak` be the union of antecedent types in `a`.
+		2. *Let* `av` be the union of consequent types in `a`.
+		3. *Let* `bk` be the union of antecedent types in `b`.
+		4. *Let* `bv` be the union of consequent types in `b`.
+		5. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
+			1. *Return:* `true`.
+	13. *If* every value that is assignable to `a` is also assignable to `b`:
 		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
 			because an instance of `Integer` is an instance of `Object`.
 		2. *Return:* `true`.
-	13. *Return:* `false`.
+	14. *Return:* `false`.
 ;
 ```
 

@@ -1,6 +1,10 @@
 import * as xjs from 'extrajs';
 import type {Keys} from '../types';
-import type {SolidType} from './SolidType.js';
+import {
+	SolidType,
+	SolidTypeConstant,
+} from './SolidType.js';
+import {SolidTypeMapping} from './SolidTypeMapping.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidBoolean} from './SolidBoolean.js';
 
@@ -50,5 +54,12 @@ export class SolidMapping<K extends SolidObject, V extends SolidObject> extends 
 		} else {
 			return false;
 		}
+	}
+
+	toType(): SolidTypeMapping {
+		return new SolidTypeMapping(
+			[...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeConstant(ant)).reduce((a, b) => a.union(b)),
+			[...this.cases.values()].map<SolidType>((con) => new SolidTypeConstant(con)).reduce((a, b) => a.union(b)),
+		);
 	}
 }

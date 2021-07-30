@@ -1,6 +1,10 @@
 import * as xjs from 'extrajs';
 import type {Keys} from '../types';
-import type {SolidType} from './SolidType.js';
+import {
+	SolidType,
+	SolidTypeConstant,
+} from './SolidType.js';
+import {SolidTypeTuple} from './SolidTypeTuple.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidBoolean} from './SolidBoolean.js';
 
@@ -41,5 +45,9 @@ export class SolidTuple<T extends SolidObject> extends SolidObject {
 		} else {
 			return false;
 		}
+	}
+
+	toType(): SolidTypeTuple {
+		return new SolidTypeTuple(this.items.map((it) => new SolidTypeConstant(it)));
 	}
 }
