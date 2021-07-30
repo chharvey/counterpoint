@@ -159,6 +159,11 @@ export function recordLiteralFromSource(src: string, config: SolidConfig = CONFI
 	assert.ok(unit instanceof PARSER.ParseNodeRecordLiteral, 'unit should be a ParseNodeRecordLiteral');
 	return unit;
 }
+export function setLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeSetLiteral {
+	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
+	assert.ok(unit instanceof PARSER.ParseNodeSetLiteral, 'unit should be a ParseNodeSetLiteral');
+	return unit;
+}
 export function mappingLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeMappingLiteral {
 	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
 	assert.ok(unit instanceof PARSER.ParseNodeMappingLiteral, 'unit should be a ParseNodeMappingLiteral');

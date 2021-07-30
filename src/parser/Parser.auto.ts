@@ -365,6 +365,20 @@ export class ProductionRecordLiteral extends Production {
 	}
 }
 
+export class ProductionSetLiteral extends Production {
+	static readonly instance: ProductionSetLiteral = new ProductionSetLiteral();
+	/** @implements Production */
+	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['{', '}'],
+			['{', ProductionTupleLiteral__0__List.instance, '}'],
+			['{', ProductionTupleLiteral__0__List.instance, ',', '}'],
+			['{', ',', ProductionTupleLiteral__0__List.instance, '}'],
+			['{', ',', ProductionTupleLiteral__0__List.instance, ',', '}'],
+		];
+	}
+}
+
 export class ProductionMappingLiteral__0__List extends Production {
 	static readonly instance: ProductionMappingLiteral__0__List = new ProductionMappingLiteral__0__List();
 	/** @implements Production */
@@ -399,6 +413,7 @@ export class ProductionExpressionUnit extends Production {
 			[ProductionStringTemplate.instance],
 			[ProductionTupleLiteral.instance],
 			[ProductionRecordLiteral.instance],
+			[ProductionSetLiteral.instance],
 			[ProductionMappingLiteral.instance],
 			['(', ProductionExpression.instance, ')'],
 		];
@@ -879,6 +894,16 @@ export class ParseNodeRecordLiteral extends ParseNode {
 	;
 }
 
+export class ParseNodeSetLiteral extends ParseNode {
+	declare readonly children:
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
+	;
+}
+
 export class ParseNodeMappingLiteral__0__List extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeCase]
@@ -902,6 +927,7 @@ export class ParseNodeExpressionUnit extends ParseNode {
 		| readonly [ParseNodeStringTemplate]
 		| readonly [ParseNodeTupleLiteral]
 		| readonly [ParseNodeRecordLiteral]
+		| readonly [ParseNodeSetLiteral]
 		| readonly [ParseNodeMappingLiteral]
 		| readonly [Token, ParseNodeExpression, Token]
 	;
@@ -1094,6 +1120,7 @@ export const grammar_Solid: Grammar = new Grammar([
 	ProductionTupleLiteral.instance,
 	ProductionRecordLiteral__0__List.instance,
 	ProductionRecordLiteral.instance,
+	ProductionSetLiteral.instance,
 	ProductionMappingLiteral__0__List.instance,
 	ProductionMappingLiteral.instance,
 	ProductionExpressionUnit.instance,
@@ -1156,6 +1183,7 @@ export class ParserSolid extends Parser {
 			[ProductionTupleLiteral.instance, ParseNodeTupleLiteral],
 			[ProductionRecordLiteral__0__List.instance, ParseNodeRecordLiteral__0__List],
 			[ProductionRecordLiteral.instance, ParseNodeRecordLiteral],
+			[ProductionSetLiteral.instance, ParseNodeSetLiteral],
 			[ProductionMappingLiteral__0__List.instance, ParseNodeMappingLiteral__0__List],
 			[ProductionMappingLiteral.instance, ParseNodeMappingLiteral],
 			[ProductionExpressionUnit.instance, ParseNodeExpressionUnit],
@@ -1184,3 +1212,5 @@ export class ParserSolid extends Parser {
 	// @ts-expect-error
 	declare override parse(): ParseNodeGoal;
 }
+
+
