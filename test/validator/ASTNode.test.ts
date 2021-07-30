@@ -1526,16 +1526,19 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 			Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
-				const templates: AST.ASTNodeTemplate[] = [
-					AST.ASTNodeTemplate.fromSource(`'''42😀''';`),
-					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
-					(AST.ASTNodeGoal.fromSource(`
-						let unfixed x: int = 21;
-						'''the answer is {{ x * 2 }} but what is the question?''';
-					`)
-						.children[1] as AST.ASTNodeStatementExpression)
-						.expr as AST.ASTNodeTemplate,
-				];
+				let templates: AST.ASTNodeTemplate[];
+				before(() => {
+					templates = [
+						AST.ASTNodeTemplate.fromSource(`'''42😀''';`),
+						AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
+						(AST.ASTNodeGoal.fromSource(`
+							let unfixed x: int = 21;
+							'''the answer is {{ x * 2 }} but what is the question?''';
+						`)
+							.children[1] as AST.ASTNodeStatementExpression)
+							.expr as AST.ASTNodeTemplate,
+					];
+				});
 				it('returns a constant String for ASTNodeTemplate with no interpolations.', () => {
 					assert.deepStrictEqual(
 						templates[0].assess(new Validator()),
