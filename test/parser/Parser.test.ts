@@ -458,60 +458,6 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('MappingLiteral ::= "[" ","? Case# ","? "]"', () => {
-			it('with trailing comma.', () => {
-				/*
-					<MappingLiteral>
-						<PUNCTUATOR>[</PUNCTUATOR>
-						<MappingLiteral__0__List source="1 |-> null, 4 |-> false, 7 |-> true, 9 |-> 42.0">...</MappingLiteral__0__List>
-						<PUNCTUATOR>,</PUNCTUATOR>
-						<PUNCTUATOR>]</PUNCTUATOR>
-					</MappingLiteral>
-				*/
-				const unit: PARSER.ParseNodeMappingLiteral = h.mappingLiteralFromSource(`
-					[
-						1 |-> null,
-						4 |-> false,
-						7 |-> true,
-						9 |-> 42.0,
-					];
-				`);
-				assert_arrayLength(unit.children, 4);
-				assert.ok(unit.children[1] instanceof PARSER.ParseNodeMappingLiteral__0__List);
-				assert.deepStrictEqual(
-					unit.children.map((c) => c.source),
-					[Punctuator.BRAK_OPN, `1 |-> null , 4 |-> false , 7 |-> true , 9 |-> 42.0`, Punctuator.COMMA, Punctuator.BRAK_CLS],
-				);
-			});
-			specify('MappingLiteral__0__List ::= MappingLiteral__0__List "," Case', () => {
-				/*
-					<MappingLiteral__0__List>
-						<MappingLiteral__0__List>
-							<MappingLiteral__0__List>
-								<MappingLiteral__0__List>
-									<Case source="1 |-> null">...</Case>
-								</MappingLiteral__0__List>
-								<PUNCTUATOR>,</PUNCTUATOR>
-								<Case source="4 |-> false">...</Case>
-							</MappingLiteral__0__List>
-							<PUNCTUATOR>,</PUNCTUATOR>
-							<Case source="7 |-> true">...</Case>
-						</MappingLiteral__0__List>
-						<PUNCTUATOR>,</PUNCTUATOR>
-						<Case source="9 |-> 42.0">...</Case>
-					</MappingLiteral__0__List>
-				*/
-				const unit: PARSER.ParseNodeMappingLiteral = h.mappingLiteralFromSource(`[1 |-> null, 4 |-> false, 7 |-> true, 9 |-> 42.0];`);
-				assert_arrayLength(unit.children, 3);
-				h.hashListSources(
-					unit.children[1],
-					`1 |-> null`,
-					`4 |-> false`,
-					`7 |-> true`,
-					`9 |-> 42.0`,
-				);
-			});
-		});
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
 			it('parses IDENTIFIER.', () => {
@@ -548,18 +494,6 @@ describe('Parser', () => {
 					, let= true
 					, foobar= 42
 					,
-				];
-			`); // assert does not throw
-		});
-
-		Dev.supports('literalCollection') && specify('ExpressionUnit ::= MappingLiteral', () => {
-			h.mappingLiteralFromSource(`
-				[
-					,
-					1 |-> null,
-					4 |-> false,
-					7 |-> true,
-					9 |-> 42.0,
 				];
 			`); // assert does not throw
 		});
