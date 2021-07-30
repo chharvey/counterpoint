@@ -77,7 +77,7 @@ Case     ::= Expression "|->" Expression;
 
 TupleLiteral   ::= "[" ( ","? Expression# ","? )? "]";
 RecordLiteral  ::= "["   ","? Property#   ","?    "]";
-MappingLiteral ::= "["   ","? Case#       ","?    "]";
+MappingLiteral ::= "{"   ","? Case#       ","?    "}";
 
 ExpressionUnit ::=
 	| IDENTIFIER

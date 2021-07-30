@@ -105,7 +105,7 @@ export function propertyFromString(propertystring: string, config: SolidConfig =
 	return record.children[1].children[0];
 }
 export function caseFromString(casestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeCase {
-	const mapping: PARSER.ParseNodeMappingLiteral = mappingLiteralFromSource(`[${ casestring }];`, config);
+	const mapping: PARSER.ParseNodeMappingLiteral = mappingLiteralFromSource(`{${ casestring }};`, config);
 	assert_arrayLength(mapping.children, 3, 'map should have 3 children');
 	assert_arrayLength(mapping.children[1].children, 1, 'case list should have 1 child');
 	return mapping.children[1].children[0];

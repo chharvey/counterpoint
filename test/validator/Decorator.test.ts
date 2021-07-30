@@ -428,7 +428,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('MappingLiteral ::= "[" ","? Case# ","? "]"', () => {
+		Dev.supports('literalCollection') && context('MappingLiteral ::= "{" ","? Case# ","? "}"', () => {
 			it('makes an ASTNodeMapping.', () => {
 				/*
 					<Mapping>
@@ -439,12 +439,12 @@ describe('Decorator', () => {
 					</Mapping>
 				*/
 				assert.deepStrictEqual(Decorator.decorate(h.mappingLiteralFromSource(`
-					[
+					{
 						1 |-> null,
 						4 |-> false,
 						7 |-> true,
 						9 |-> 42.0,
-					];
+					};
 				`)).children.map((c) => c.source), [
 					`1 |-> null`,
 					`4 |-> false`,

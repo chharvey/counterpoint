@@ -216,7 +216,7 @@ Decorate(RecordLiteral ::= "[" ","? RecordLiteral__0__List ","? "]") -> Semantic
 			Decorate(Property),
 		];
 
-Decorate(MappingLiteral ::= "[" ","? MappingLiteral__0__List ","? "]") -> SemanticMapping
+Decorate(MappingLiteral ::= "{" ","? MappingLiteral__0__List ","? "}") -> SemanticMapping
 	:=(SemanticMapping
 		...Decorate(MappingLiteral__0__List)
 	);
