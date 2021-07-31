@@ -40,9 +40,9 @@ export class SolidTuple<T extends SolidObject = SolidObject> extends SolidObject
 			const memokey: Keys<typeof SolidTuple.EQ_MEMO> = [this, value];
 			if (!SolidTuple.EQ_MEMO.has(memokey)) {
 				SolidTuple.EQ_MEMO.set(memokey, false); // use this assumption in the next step
-				SolidTuple.EQ_MEMO.set(memokey, (value as this).items.every(
-					(thatitem, i) => this.items[i].equal(thatitem)),
-				);
+				SolidTuple.EQ_MEMO.set(memokey, (value as SolidTuple).items.every(
+					(thatitem, i) => this.items[i].equal(thatitem),
+				));
 			}
 			return SolidTuple.EQ_MEMO.get(memokey)!;
 		} else {

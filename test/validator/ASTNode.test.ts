@@ -1841,6 +1841,11 @@ describe('ASTNodeSolid', () => {
 							let b: obj = [42];
 							let c: obj = [x= 42];
 							let d: obj = {41 |-> 42};
+
+							let bb: obj = [[42]];
+							let cc: obj = [x= [42]];
+							let dd: obj = {[41] |-> [42]};
+
 							a !== [];
 							b !== [42];
 							c !== [x= 42];
@@ -1853,6 +1858,17 @@ describe('ASTNodeSolid', () => {
 							b == [42];
 							c == [x= 42];
 							d == {41 |-> 42};
+
+							bb !== [[42]];
+							cc !== [x= [42]];
+							dd !== {[41] |-> [42]};
+							bb === bb;
+							cc === cc;
+							dd === dd;
+							bb == [[42]];
+							cc == [x= [42]];
+							dd == {[41] |-> [42]};
+
 							b != [42, 43];
 							c != [x= 43];
 							c != [y= 42];
@@ -1862,8 +1878,8 @@ describe('ASTNodeSolid', () => {
 						const validator: Validator = new Validator();
 						goal.varCheck(validator);
 						goal.typeCheck(validator);
-						goal.children.slice(4).forEach((stmt) => {
-							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.assess(validator), SolidBoolean.TRUE);
+						goal.children.slice(7).forEach((stmt) => {
+							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.assess(validator), SolidBoolean.TRUE, stmt.source);
 						});
 					})();
 				});

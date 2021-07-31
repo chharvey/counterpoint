@@ -48,9 +48,10 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 			const memokey: Keys<typeof SolidMapping.EQ_MEMO> = [this, value];
 			if (!SolidMapping.EQ_MEMO.has(memokey)) {
 				SolidMapping.EQ_MEMO.set(memokey, false); // use this assumption in the next step
-				SolidMapping.EQ_MEMO.set(memokey, [...(value as this).cases].every(
-					([thatant, thatcon]) => this.cases.has(thatant) && this.cases.get(thatant)!.equal(thatcon)),
-				);
+				SolidMapping.EQ_MEMO.set(memokey, [...(value as SolidMapping).cases].every(([thatant, thatcon]) => {
+					const found: K | null = [...this.cases.keys()].find((ant) => ant.equal(thatant)) || null;
+					return !!found && this.cases.get(found)!.equal(thatcon);
+				}));
 			}
 			return SolidMapping.EQ_MEMO.get(memokey)!;
 		} else {
