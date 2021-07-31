@@ -35,6 +35,7 @@ import {
 	SolidString,
 	SolidTuple,
 	SolidRecord,
+	SolidSet,
 	SolidMapping,
 } from '../typer/index.js';
 import {
@@ -744,8 +745,10 @@ export class ASTNodeSet extends ASTNodeExpression {
 		);
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		return null; // TODO
-		throw validator && 'ASTNodeSet#assess_do not yet supported.';
+		const elements: readonly (SolidObject | null)[] = this.children.map((c) => c.assess(validator));
+		return (elements.includes(null))
+			? null
+			: new SolidSet(new Set(elements as SolidObject[]));
 	}
 }
 export class ASTNodeMapping extends ASTNodeExpression {

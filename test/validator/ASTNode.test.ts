@@ -29,6 +29,7 @@ import {
 	SolidString,
 	SolidTuple,
 	SolidRecord,
+	SolidSet,
 	SolidMapping,
 } from '../../src/typer/index.js';
 import {
@@ -967,8 +968,6 @@ describe('ASTNodeSolid', () => {
 					let types: SolidType[];
 					before(() => {
 						collections = initCollections();
-						// @ts-expect-error
-						collections = [...collections.slice(0, 2), collections[3]]; // FIXME: once ASTNodeSet#assess is done
 						types = collections.map((c) => assert_wasCalled(c.assess, 1, (orig, spy) => {
 							c.assess = spy;
 							try {
@@ -1578,12 +1577,13 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 
-			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Mapping}', () => {
+			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Set,Mapping}', () => {
 				it('returns a constant Tuple/Record/Mapping for foldable entries.', () => {
 					assert.deepStrictEqual(
 						[
 							AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
 							AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
+							AST.ASTNodeSet.fromSource(`{1, 2.0, 'three'};`),
 							AST.ASTNodeMapping.fromSource(`
 								{
 									'a' || '' |-> 1,
@@ -1602,6 +1602,11 @@ describe('ASTNodeSolid', () => {
 								[0x100n, new Int16(1n)],
 								[0x101n, new Float64(2.0)],
 								[0x102n, new SolidString('three')],
+							])),
+							new SolidSet(new Set([
+								new Int16(1n),
+								new Float64(2.0),
+								new SolidString('three'),
 							])),
 							new SolidMapping(new Map<SolidObject, SolidObject>([
 								[new SolidString('a'), new Int16(1n)],
