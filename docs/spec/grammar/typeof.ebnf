@@ -51,6 +51,14 @@ Type! TypeOfUnassessed(SemanticRecord record) :=
 
 
 
+Type! TypeOfUnassessed(SemanticSet set) :=
+	1. *Let* `types` be a mapping of `set` for each `el` to *Unwrap:* `TypeOf(el)`.
+	2. *Let* `t` be `Union(...types)`.
+	3. *Return:* a new Set type whose types are `t`.
+;
+
+
+
 Type! TypeOfUnassessed(SemanticMapping mapping) :=
 	1. *Let* `ant_types` be a mapping of `mapping` for each `case` to *Unwrap:* `TypeOf(case.children.0)`.
 	2. *Let* `con_types` be a mapping of `mapping` for each `case` to *Unwrap:* `TypeOf(case.children.1)`.

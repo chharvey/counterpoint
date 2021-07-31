@@ -19,6 +19,7 @@ import {
 	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidTypeSet,
 	SolidTypeMapping,
 	SolidObject,
 	SolidNull,
@@ -940,16 +941,18 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 
-			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Mapping}', () => {
+			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Set,Mapping}', () => {
 				let collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,
+					AST.ASTNodeSet,
 					AST.ASTNodeMapping,
 				];
 				function initCollections() {
 					return [
 						AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
 						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
+						AST.ASTNodeSet.fromSource(`{1, 2.0, 'three'};`),
 						AST.ASTNodeMapping.fromSource(`
 							{
 								'a' || '' |-> 1,
@@ -964,6 +967,8 @@ describe('ASTNodeSolid', () => {
 					let types: SolidType[];
 					before(() => {
 						collections = initCollections();
+						// @ts-expect-error
+						collections = [...collections.slice(0, 2), collections[3]]; // FIXME: once ASTNodeSet#assess is done
 						types = collections.map((c) => assert_wasCalled(c.assess, 1, (orig, spy) => {
 							c.assess = spy;
 							try {
@@ -991,6 +996,7 @@ describe('ASTNodeSolid', () => {
 								c.key.id,
 								c.value.type(validator),
 							]))),
+							new SolidTypeSet(Int16.union(Float64).union(SolidString)),
 							new SolidTypeMapping(
 								SolidString.union(Int16).union(Float64),
 								Int16.union(Float64).union(SolidString),

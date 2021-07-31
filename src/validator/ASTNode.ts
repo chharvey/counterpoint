@@ -24,6 +24,7 @@ import {
 	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidTypeSet,
 	SolidTypeMapping,
 	SolidObject,
 	SolidNull,
@@ -737,9 +738,13 @@ export class ASTNodeSet extends ASTNodeExpression {
 		throw builder && 'ASTNodeSet#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		throw validator && 'ASTNodeSet#type_do not yet supported.';
+		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
+		return new SolidTypeSet(
+			this.children.map((c) => c.type(validator)).reduce((a, b) => a.union(b)),
+		);
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
+		return null; // TODO
 		throw validator && 'ASTNodeSet#assess_do not yet supported.';
 	}
 }
