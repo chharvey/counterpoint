@@ -37,7 +37,7 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 		this.cases = new xjs.MapEq(SolidMapping.comparator, [...cases]);
 	}
 	override toString(): string {
-		return `[${ [...this.cases].map(([ant, con]) => `${ ant.toString() } |-> ${ con.toString() }`).join(', ') }]`;
+		return `{${ [...this.cases].map(([ant, con]) => `${ ant.toString() } |-> ${ con.toString() }`).join(', ') }}`;
 	}
 	override get isEmpty(): SolidBoolean {
 		return SolidBoolean.fromBoolean(this.cases.size === 0);

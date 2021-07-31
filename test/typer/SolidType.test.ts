@@ -18,6 +18,7 @@ import {
 	SolidString,
 	SolidTuple,
 	SolidRecord,
+	SolidSet,
 	SolidMapping,
 } from '../../src/typer/index.js';
 import {
@@ -56,6 +57,7 @@ describe('SolidType', () => {
 		SolidString,
 		SolidTuple,
 		SolidRecord,
+		SolidSet,
 		SolidMapping,
 	]
 	const t0: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidType>([
@@ -366,6 +368,7 @@ describe('SolidType', () => {
 				SolidString,
 				SolidTuple,
 				SolidRecord,
+				SolidSet,
 				SolidMapping,
 			].forEach((t, _, arr) => {
 				arr.filter((u) => u !== t).forEach((u) => {

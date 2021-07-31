@@ -690,7 +690,38 @@ elements.pythagoras; %> TypeError
 ```
 
 
+### Set
+Sets are dynamic-sized unordered lists of values.
+The values in a set are called **elements**. The number of elements in a set is called its **count**.
+
+Set literals are comma-separated expressions within curly braces.
+```
+let elements: obj = {'earth', 'wind', 'fire'};
+```
+The set above has elements of one type.
+Typically this will be the case, but it’s possible for a set to contain a mix of different element types.
+
+The size of sets is not known at compile-time, and could change during run-time, if the set is mutable.
+For example, a program could add an element to the above set after it’s been declared, changing its count.
+The order of elements in a set is not necessarily significant.
+
+Sets cannot contain identical elements (elements that are “the same object”).
+If a set is declared with duplicates, they are collapsed:
+The set `{'water', 'water'}` only conains 1 element.
+Sets may have several elements that are un-identical but “equal”.
+```
+let x: [str] = ['water'];
+let y: [str] = ['water'];
+let elements: obj = {0.0, -0.0, x, y};
+```
+In this example, the elements `0.0` and `-0.0` are not identical
+(even if they are equal by the floating-point definition of equality).
+Similarly, `x` and `y` are not identical, but they are equal by tuple composition.
+Even though `0.0 == -0.0` and `x == y`, this set has four elements.
+
+
 ### Mapping
+Mappings are dynamic-sized unordered lists of antecedent-consequent pairs.
 Mappings form associations (**cases**) of values (**antecedents**) to other values (**consequents**).
 The antecedents are unique (by identity) in that each antecedent can be associated with only one consequent.
 The number of cases in a mapping is called its **count**.

@@ -281,21 +281,32 @@ and the “absorption element” of the [union](#union) operation.
 
 ### Compound Types
 
+- [Tuple](#tuple-type)
+- [Record](#record-type)
+- [Set](#set-type)
+- [Mapping](#mapping-type)
+
 #### Tuple Type
-A **Tuple Type** represents [`Tuple` objects](./built-ins.md#tuple) and is an ordered list of types.
-The objects that any given Tuple Type represents are `Tuple` objects whose items’ types
+A **Tuple Type** contains [`Tuple` objects](./built-ins.md#tuple) and is described by an ordered list of types.
+The objects that any given Tuple Type contains are `Tuple` objects whose items’ types
 match up with the types in the list in order.
 
 #### Record Type
-A **Record Type** represents [`Record` objects](./built-ins.md#record) and is an unordered list of name–value pairs.
-The objects that any given Record Type represents are `Record` objects whose properties’ types
+A **Record Type** contains [`Record` objects](./built-ins.md#record) and is described by an unordered list of name–type pairs.
+The objects that any given Record Type contains are `Record` objects whose properties’ types
 match up with the types in the list by name.
 
+#### Set Type
+A **Set Type** contains [`Set` objects](./built-ins.md#set) and is described by a single type,
+representing elements.
+The objects that any given Set Type contains are `Set` objects whose
+elements are assignable to the type describing the Set Type.
+
 #### Mapping Type
-A **Mapping Type** represents [`Mapping` objects](./built-ins.md#mapping) and is a pair of two types,
+A **Mapping Type** contains [`Mapping` objects](./built-ins.md#mapping) and is described by a pair of two types,
 the first of which represents antecedents and the second of which represents consequents.
-The objects that any given Mapping Type represents are `Mapping` objects whose
-antcedents and consequents are respectively assignable to the types in the Mapping Type.
+The objects that any given Mapping Type contains are `Mapping` objects whose
+antcedents and consequents are respectively assignable to the types describing the Mapping Type.
 
 
 
