@@ -360,18 +360,23 @@ Boolean Subtype(Type a, Type b) :=
 			2. *If* `struct_a[k]` is set *and* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
 				1. *Return:* `false`.
 		7. *Return:* `true`.
-	12. *If* `Equal(a, Mapping)` *and* `Equal(b, Mapping)`:
+	12. *If* `Equal(a, Set)` *and* `Equal(b, Set)`:
+		1. *Let* `ae` be the union of types in `a`.
+		2. *Let* `be` be the union of types in `b`.
+		3. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
+			1. *Return:* `true`.
+	13. *If* `Equal(a, Mapping)` *and* `Equal(b, Mapping)`:
 		1. *Let* `ak` be the union of antecedent types in `a`.
 		2. *Let* `av` be the union of consequent types in `a`.
 		3. *Let* `bk` be the union of antecedent types in `b`.
 		4. *Let* `bv` be the union of consequent types in `b`.
 		5. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 			1. *Return:* `true`.
-	13. *If* every value that is assignable to `a` is also assignable to `b`:
+	14. *If* every value that is assignable to `a` is also assignable to `b`:
 		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
 			because an instance of `Integer` is an instance of `Object`.
 		2. *Return:* `true`.
-	14. *Return:* `false`.
+	15. *Return:* `false`.
 ;
 ```
 
