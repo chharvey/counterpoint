@@ -2643,6 +2643,16 @@ describe('ASTNodeSolid', () => {
 							program.children.slice(24, 28).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected_o,
 						);
+						Dev.supports('claimAccess') && assert.deepStrictEqual(
+							[
+								...program.children.slice(28, 32),
+								program.children[33]
+							].map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							[
+								...expected_o,
+								null,
+							],
+						);
 					});
 					it('negative indices count backwards from end.', () => {
 						assert.deepStrictEqual(
@@ -2681,6 +2691,16 @@ describe('ASTNodeSolid', () => {
 							program.children.slice(18, 22).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected_o,
 						);
+						Dev.supports('claimAccess') && assert.deepStrictEqual(
+							[
+								...program.children.slice(22, 26),
+								program.children[27]
+							].map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							[
+								...expected_o,
+								null,
+							],
+						);
 					});
 					it('throws when key is out of bounds.', () => {
 						assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`).assess(validator), VoidError01);
@@ -2709,6 +2729,10 @@ describe('ASTNodeSolid', () => {
 						);
 						Dev.supports('optionalAccess') && assert.deepStrictEqual(
 							program.children.slice(28, 32).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							expected_o,
+						);
+						Dev.supports('claimAccess') && assert.deepStrictEqual(
+							program.children.slice(34, 38).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected_o,
 						);
 					});

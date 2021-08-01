@@ -66,7 +66,7 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 		);
 	}
 
-	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): V | SolidNull {
+	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | SolidNull {
 		return (this.cases.has(ant))
 			? this.cases.get(ant)!
 			: (access_optional)
