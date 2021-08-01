@@ -11,7 +11,7 @@ import {
 import {
 	LexError03,
 } from '../error/index.js';
-import type {
+import {
 	Punctuator,
 } from './Punctuator.js';
 import * as TOKEN from './Token.js';
@@ -47,8 +47,8 @@ export class LexerSolid extends Lexer {
 				token = new TOKEN.TokenPunctuator(this, 3n)
 			} else if (Char.inc(LexerSolid.PUNCTUATORS_2, this.c0, this.c1)) {
 				token = new TOKEN.TokenPunctuator(this, 2n)
-			} else if (Char.inc(LexerSolid.PUNCTUATORS_1, this.c0)) {
-				/* we found a punctuator or a number literal prefixed with a unary operator */
+			} else if (Char.inc(LexerSolid.PUNCTUATORS_1, this.c0) && (!Dev.supports('literalTemplate-lex') || !Char.eq(Punctuator.BRAC_CLS, this.c0))) {
+				/* we found a punctuator or a number literal prefixed with a unary operator; the punctuator is not a closing brace `}` */
 				if (Char.inc(TOKEN.TokenNumber.UNARY, this.c0)) {
 					if (Char.inc(LexerSolid.DIGITS_DEFAULT, this.c1)) {
 						/* a number literal with a unary operator and without an explicit radix */
@@ -113,6 +113,9 @@ export class LexerSolid extends Lexer {
 			} else if (Dev.supports('literalString-lex') && Char.eq(TOKEN.TokenString.DELIM, this.c0)) {
 				/* we found a string literal */
 				token = new TOKEN.TokenString(this)
+			} else if (Dev.supports('literalString-lex') && Char.eq(Punctuator.BRAC_CLS, this.c0)) {
+				/* we found a closing brace `}` */
+				token = new TOKEN.TokenPunctuator(this);
 
 			} else if (this.config.languageFeatures.comments && Char.eq(TOKEN.TokenCommentMulti.DELIM_START, this.c0, this.c1)) {
 				/* we found a multiline comment */

@@ -127,13 +127,6 @@ export abstract class ASTNodeSolid extends ASTNode {
 	typeCheck(validator: Validator): void {
 		return this.children.forEach((c) => c.typeCheck(validator));
 	}
-
-	/**
-	 * Give directions to the runtime code builder.
-	 * @param builder the builder to direct
-	 * @return the directions to print
-	 */
-	abstract build(builder: Builder): Instruction;
 }
 
 
@@ -144,8 +137,13 @@ export class ASTNodeKey extends ASTNodeSolid {
 		super(start_node, {id: start_node.cook()});
 		this.id = start_node.cook()!;
 	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeKey#build not yet supported.';
+}
+export class ASTNodeIndexType extends ASTNodeSolid {
+	constructor (
+		start_node: PARSER.ParseNodePropertyAccessType,
+		readonly value: ASTNodeTypeConstant,
+	) {
+		super(start_node, {}, [value]);
 	}
 }
 export class ASTNodeItemType extends ASTNodeSolid {
@@ -176,9 +174,6 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 	) {
 		super(start_node, {optional}, [key, value]);
 	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodePropertyType#build not yet supported.';
-	}
 }
 export class ASTNodeIndex extends ASTNodeSolid {
 	constructor (
@@ -186,9 +181,6 @@ export class ASTNodeIndex extends ASTNodeSolid {
 		readonly value: ASTNodeConstant,
 	) {
 		super(start_node, {}, [value]);
-	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeIndex#build not yet supported.';
 	}
 }
 export class ASTNodeProperty extends ASTNodeSolid {
@@ -199,9 +191,6 @@ export class ASTNodeProperty extends ASTNodeSolid {
 	) {
 		super(start_node, {}, [key, value]);
 	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeProperty#build not yet supported.';
-	}
 }
 export class ASTNodeCase extends ASTNodeSolid {
 	constructor (
@@ -211,9 +200,6 @@ export class ASTNodeCase extends ASTNodeSolid {
 	) {
 		super(start_node, {}, [antecedent, consequent]);
 	}
-	override build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeCase#build not yet supported.';
-	}
 }
 /**
  * A sematic node representing a type.
@@ -222,6 +208,7 @@ export class ASTNodeCase extends ASTNodeSolid {
  * - ASTNodeTypeAlias
  * - ASTNodeTypeTuple
  * - ASTNodeTypeRecord
+ * - ASTNodeTypeAccess
  * - ASTNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
@@ -242,12 +229,6 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 */
 	override typeCheck(_validator: Validator): void {
 		return; // no type-checking necessary
-	}
-	/**
-	 * @final
-	 */
-	override build(_builder: Builder): INST.InstructionNone {
-		return new INST.InstructionNone();
 	}
 	/**
 	 * Assess the type-value of this node at compile-time.
@@ -365,6 +346,48 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		])));
 	}
 }
+export class ASTNodeTypeAccess extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeAccess {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeAccess);
+		return typ;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTypeCompound,
+		readonly base:     ASTNodeType,
+		readonly accessor: ASTNodeIndexType | ASTNodeKey,
+	) {
+		super(start_node, {}, [base, accessor]);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		let base_type: SolidType = this.base.assess(validator);
+		if (base_type instanceof SolidTypeIntersection || base_type instanceof SolidTypeUnion) {
+			base_type = base_type.combineTuplesOrRecords();
+		}
+		if (this.accessor instanceof ASTNodeIndexType) {
+			const accessor_type: SolidType = this.accessor.value.assess(validator);
+			return (
+				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
+					(accessor_type instanceof SolidTypeConstant)
+						? base_type.value.toType().get(accessor_type.value as Int16, false, this.accessor)
+						: base_type.value.toType().itemTypes()
+				) :
+				(base_type instanceof SolidTypeTuple) ? (
+					(accessor_type instanceof SolidTypeConstant)
+						? base_type.get(accessor_type.value as Int16, false, this.accessor)
+						: base_type.itemTypes()
+				) :
+				(() => { throw new TypeError04('index', base_type, this.accessor); })()
+			);
+		} else /* (this.accessor instanceof ASTNodeKey) */ {
+			return (
+				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, false, this.accessor) :
+				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, false, this.accessor) :
+				(() => { throw new TypeError04('property', base_type, this.accessor); })()
+			);
+		}
+	}
+}
 export abstract class ASTNodeTypeOperation extends ASTNodeType {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeOperation {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
@@ -435,7 +458,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeAccess
  * - ASTNodeOperation
  */
-export abstract class ASTNodeExpression extends ASTNodeSolid {
+export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildable {
 	/**
 	 * Construct a new ASTNodeExpression from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -466,7 +489,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid {
 	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
 	 * @final
 	 */
-	override build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
+	build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
 		const assessed: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
 		return (!!assessed) ? INST.InstructionConst.fromAssessment(assessed, to_float) : this.build_do(builder, to_float);
 	}
@@ -1256,7 +1279,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
  * - ASTNodeDeclaration
  * - ASTNodeAssignment
  */
-export abstract class ASTNodeStatement extends ASTNodeSolid {
+export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable {
 	/**
 	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -1269,6 +1292,7 @@ export abstract class ASTNodeStatement extends ASTNodeSolid {
 		assert.strictEqual(goal.children.length, 1, 'semantic goal should have 1 child');
 		return goal.children[0];
 	}
+	abstract build(builder: Builder): Instruction;
 }
 export class ASTNodeStatementExpression extends ASTNodeStatement {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
@@ -1428,7 +1452,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		);
 	}
 }
-export class ASTNodeGoal extends ASTNodeSolid {
+export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	/**
 	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -1445,7 +1469,7 @@ export class ASTNodeGoal extends ASTNodeSolid {
 	) {
 		super(start_node, {}, children)
 	}
-	override build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
+	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
 		return (!this.children.length)
 			? new INST.InstructionNone()
 			: new INST.InstructionModule([
@@ -1453,4 +1477,15 @@ export class ASTNodeGoal extends ASTNodeSolid {
 				...(this.children as readonly ASTNodeStatement[]).map((child) => child.build(builder)),
 			])
 	}
+}
+
+
+
+interface Buildable extends ASTNodeSolid {
+	/**
+	 * Give directions to the runtime code builder.
+	 * @param builder the builder to direct
+	 * @return the directions to print
+	 */
+	build(builder: Builder): Instruction;
 }

@@ -268,6 +268,43 @@ describe('Decorator', () => {
 			})
 		})
 
+		Dev.supports('literalCollection') && describe('TypeCompound ::= TypeCompound PropertyAccessType', () => {
+			it('access by integer.', () => {
+				/*
+					<AccessType>
+						<TypeTuple source="[42, 420, 4200]">...</TypeTuple>
+						<IndexType>
+							<TypeConstant source="1"/>
+						</IndexType>
+					</AccessType>
+				*/
+				const access: AST.ASTNodeTypeAccess = AST.ASTNodeTypeAccess.fromSource(`
+					[42, 420, 4200].1
+				`);
+				assert.ok(access.accessor instanceof AST.ASTNodeIndexType);
+				assert.deepStrictEqual(
+					[access.base.source,    access.accessor.source],
+					[`[ 42 , 420 , 4200 ]`, `. 1`],
+				);
+			});
+			it('access by key.', () => {
+				/*
+					<AccessType>
+						<TypeRecord source="[c: 42, b: 420, a: 4200]">...</TypeRecord>
+						<Key source="b"/>
+					</AccessType>
+				*/
+				const access: AST.ASTNodeTypeAccess = AST.ASTNodeTypeAccess.fromSource(`
+					[c: 42, b: 420, a: 4200].b
+				`);
+				assert.ok(access.accessor instanceof AST.ASTNodeKey);
+				assert.deepStrictEqual(
+					[access.base.source,                access.accessor.source],
+					[`[ c : 42 , b : 420 , a : 4200 ]`, `b`],
+				);
+			});
+		});
+
 		describe('TypeUnarySymbol ::= TypeUnarySymbol ("?" | "!")', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
@@ -467,7 +504,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('MappingLiteral ::= "[" ","? Case# ","? "]"', () => {
+		Dev.supports('literalCollection') && context('MappingLiteral ::= "{" ","? Case# ","? "}"', () => {
 			it('makes an ASTNodeMapping.', () => {
 				/*
 					<Mapping>
@@ -478,12 +515,12 @@ describe('Decorator', () => {
 					</Mapping>
 				*/
 				assert.deepStrictEqual(Decorator.decorate(h.mappingLiteralFromSource(`
-					[
+					{
 						1 |-> null,
 						4 |-> false,
 						7 |-> true,
 						9 |-> 42.0,
-					];
+					};
 				`)).children.map((c) => c.source), [
 					`1 |-> null`,
 					`4 |-> false`,
@@ -659,17 +696,17 @@ describe('Decorator', () => {
 				it('access by computed expression.', () => {
 					/*
 						<Access kind=NORMAL>
-							<Mapping source="[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']">...</Mapping>
+							<Mapping source="{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}">...</Mapping>
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/
 					const access: AST.ASTNodeAccess = makeAccess(`
-						[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'].[0.7 + 0.3];
+						{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}.[0.7 + 0.3];
 					`);
 					assert.ok(access.accessor instanceof AST.ASTNodeExpression);
 					assert.deepStrictEqual(
 						[access.base.source,                            access.accessor.source],
-						[`[ 0.5 * 2 |-> 'one' , 1.4 + 0.6 |-> 'two' ]`, `0.7 + 0.3`],
+						[`{ 0.5 * 2 |-> 'one' , 1.4 + 0.6 |-> 'two' }`, `0.7 + 0.3`],
 					);
 				});
 			});
@@ -701,12 +738,12 @@ describe('Decorator', () => {
 				it('access by computed expression.', () => {
 					/*
 						<Access kind=OPTIONAL>
-							<Mapping source="[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']">...</Mapping>
+							<Mapping source="{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}">...</Mapping>
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/
 					makeAccess(`
-						[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']?.[0.7 + 0.3];
+						{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}?.[0.7 + 0.3];
 					`, Operator.OPTDOT);
 				});
 			});
@@ -738,12 +775,12 @@ describe('Decorator', () => {
 				it('access by computed expression.', () => {
 					/*
 						<Access kind=CLAIM>
-							<Mapping source="[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']">...</Mapping>
+							<Mapping source="{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}">...</Mapping>
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/
 					makeAccess(`
-						[0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two']!.[0.7 + 0.3];
+						{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}!.[0.7 + 0.3];
 					`, Operator.CLAIMDOT);
 				});
 			});

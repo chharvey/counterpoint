@@ -86,6 +86,11 @@ function typeLiteralFromString(typestring: string, config: SolidConfig = CONFIG_
 	return unit
 }
 export function unitTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeTypeUnit {
+	const type_compound: PARSER.ParseNodeTypeCompound = compoundTypeFromString(typestring, config);
+	assert_arrayLength(type_compound.children, 1, 'compound type should have 1 child');
+	return type_compound.children[0];
+}
+function compoundTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeTypeCompound {
 	const type_unary: PARSER.ParseNodeTypeUnarySymbol = unaryTypeFromString(typestring, config)
 	assert_arrayLength(type_unary.children, 1, 'unary type should have 1 child')
 	return type_unary.children[0]
@@ -113,7 +118,7 @@ export function propertyFromString(propertystring: string, config: SolidConfig =
 	return record.children[1].children[0];
 }
 export function caseFromString(casestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeCase {
-	const mapping: PARSER.ParseNodeMappingLiteral = mappingLiteralFromSource(`[${ casestring }];`, config);
+	const mapping: PARSER.ParseNodeMappingLiteral = mappingLiteralFromSource(`{${ casestring }};`, config);
 	assert_arrayLength(mapping.children, 3, 'map should have 3 children');
 	assert_arrayLength(mapping.children[1].children, 1, 'case list should have 1 child');
 	return mapping.children[1].children[0];
