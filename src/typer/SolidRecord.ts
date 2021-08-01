@@ -39,9 +39,9 @@ export class SolidRecord<T extends SolidObject = SolidObject> extends SolidObjec
 			const memokey: Keys<typeof SolidRecord.EQ_MEMO> = [this, value];
 			if (!SolidRecord.EQ_MEMO.has(memokey)) {
 				SolidRecord.EQ_MEMO.set(memokey, false); // use this assumption in the next step
-				SolidRecord.EQ_MEMO.set(memokey, [...(value as this).properties].every(
-					([thatkey, thatvalue]) => this.properties.has(thatkey) && this.properties.get(thatkey)!.equal(thatvalue)),
-				);
+				SolidRecord.EQ_MEMO.set(memokey, [...(value as SolidRecord).properties].every(
+					([thatkey, thatvalue]) => this.properties.has(thatkey) && this.properties.get(thatkey)!.equal(thatvalue),
+				));
 			}
 			return SolidRecord.EQ_MEMO.get(memokey)!;
 		} else {
