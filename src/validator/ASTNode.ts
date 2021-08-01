@@ -788,18 +788,24 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		);
 	}
 	private type_do_do(base_type: SolidType, validator: Validator): SolidType {
+		function updateDynamicType(type: SolidType, access_kind: ValidAccessOperator): SolidType {
+			return new Map([
+				[Operator.OPTDOT,   () => type.union(SolidNull)],
+				[Operator.CLAIMDOT, () => type.subtract(SolidType.VOID)],
+			]).get(access_kind)?.() || type;
+		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			const accessor_type: SolidType = this.accessor.value.type(validator);
 			return (
 				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
 					(accessor_type instanceof SolidTypeConstant)
 						? base_type.value.toType().get(accessor_type.value as Int16, this.kind, this.accessor)
-						: base_type.value.toType().itemTypes().union((this.optional) ? SolidNull : SolidType.NEVER)
+						: updateDynamicType(base_type.value.toType().itemTypes(), this.kind)
 				) :
 				(base_type instanceof SolidTypeTuple) ? (
 					(accessor_type instanceof SolidTypeConstant)
 						? base_type.get(accessor_type.value as Int16, this.kind, this.accessor)
-						: base_type.itemTypes().union((this.optional) ? SolidNull : SolidType.NEVER)
+						: updateDynamicType(base_type.itemTypes(), this.kind)
 				) :
 				(() => { throw new TypeError04('index', base_type, this.accessor); })()
 			);
@@ -821,14 +827,14 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				return (accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16)
 					? base_type_tuple.get(accessor_type.value, this.kind, this.accessor)
 					: (accessor_type.isSubtypeOf(Int16))
-						? base_type_tuple.itemTypes().union((this.optional) ? SolidNull : SolidType.NEVER)
+						? updateDynamicType(base_type_tuple.itemTypes(), this.kind)
 						: throwWrongSubtypeError(this.accessor, Int16);
 			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping || base_type instanceof SolidTypeMapping) {
 				const base_type_mapping: SolidTypeMapping = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping)
 					? base_type.value.toType()
 					: (base_type as SolidTypeMapping);
 				return (accessor_type.isSubtypeOf(base_type_mapping.antecedenttypes))
-					? base_type_mapping.consequenttypes.union((this.optional) ? SolidNull : SolidType.NEVER)
+					? updateDynamicType(base_type_mapping.consequenttypes, this.kind)
 					: throwWrongSubtypeError(this.accessor, base_type_mapping.antecedenttypes);
 			} else {
 				throw new TypeError01(this);

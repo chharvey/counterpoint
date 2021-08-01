@@ -2043,6 +2043,15 @@ describe('ASTNodeSolid', () => {
 					tupo1_u?.2; % type \`str?\`    % non-computable value
 					tupo2_u?.2; % type \`str?\`    % non-computable value
 				` : '' }
+				${ Dev.supports('claimAccess') ? `
+					tupo1_f!.2; % type \`'three'\` % value \`'three'\`
+					tupo3_f!.2; % type \`true\`    % value \`true\`
+					tupo1_u!.2; % type \`str\`     % non-computable value
+					tupo2_u!.2; % type \`str\`     % non-computable value
+
+					let unfixed tupvoid: [int | void] = [42];
+					tupvoid!.0; % type \`int\` % non-computable value
+				` : '' }
 			`);
 			const KEY_ACCESS_PROGRAM = programFactory(`
 				let         rec_fixed:   [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
@@ -2072,6 +2081,15 @@ describe('ASTNodeSolid', () => {
 					reco3_f?.b; % type \`true\`    % value \`true\`
 					reco1_u?.b; % type \`str?\`    % non-computable value
 					reco2_u?.b; % type \`str?\`    % non-computable value
+				` : '' }
+				${ Dev.supports('claimAccess') ? `
+					reco1_f!.b; % type \`'three'\` % value \`'three'\`
+					reco3_f!.b; % type \`true\`    % value \`true\`
+					reco1_u!.b; % type \`str\`     % non-computable value
+					reco2_u!.b; % type \`str\`     % non-computable value
+
+					let unfixed recvoid: [c: int | void] = [c= 42];
+					recvoid!.c; % type \`int\` % non-computable value
 				` : '' }
 			`);
 			const EXPR_ACCESS_PROGRAM = programFactory(`
@@ -2120,6 +2138,12 @@ describe('ASTNodeSolid', () => {
 
 					%% map_fixed   %% {a |-> 1, b |-> 2.0, c |-> 'three'}?.[c]; % type \`'three'\`       % value \`'three'\`
 					%% map_unfixed %% {a |-> 1, b |-> 2.0, c |-> three}?.[c];   % type \`1 | 2.0 | str\` % non-computable value
+				` : '' }
+				${ Dev.supports('claimAccess') ? `
+					tupo1_f!.[2]; % type \`'three'\` % value \`'three'\`
+					tupo3_f!.[2]; % type \`true\`    % value \`true\`
+					tupo1_u!.[2]; % type \`str\`     % non-computable value
+					tupo2_u!.[2]; % type \`str\`     % non-computable value
 				` : '' }
 			`);
 			describe('#type', () => {
@@ -2236,6 +2260,21 @@ describe('ASTNodeSolid', () => {
 								],
 							);
 						});
+						Dev.supports('claimAccess') && it('always subtracts void.', () => {
+							assert.deepStrictEqual(
+								[
+									...program.children.slice(28, 32),
+									program.children[33],
+								].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								[
+									new SolidTypeConstant(new SolidString('three')),
+									SolidBoolean.TRUETYPE,
+									SolidString,
+									SolidString,
+									Int16,
+								],
+							);
+						});
 						it('throws when index is out of bounds.', () => {
 							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`).type(validator), TypeError04);
 							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`).type(validator), TypeError04);
@@ -2279,6 +2318,21 @@ describe('ASTNodeSolid', () => {
 								],
 							);
 						});
+						Dev.supports('claimAccess') && it('always subtracts void.', () => {
+							assert.deepStrictEqual(
+								[
+									...program.children.slice(28, 32),
+									program.children[33],
+								].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								[
+									int_float_str,
+									Int16.union(Float64),
+									int_float_str,
+									int_float_str,
+									Int16,
+								],
+							);
+						});
 					});
 				});
 				context('access by key.', () => {
@@ -2313,6 +2367,21 @@ describe('ASTNodeSolid', () => {
 								SolidBoolean.TRUETYPE,
 								SolidString.union(SolidNull),
 								SolidString.union(SolidNull),
+							],
+						);
+					});
+					Dev.supports('claimAccess') && it('always subtracts void.', () => {
+						assert.deepStrictEqual(
+							[
+								...program.children.slice(22, 26),
+								program.children[27],
+							].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							[
+								new SolidTypeConstant(new SolidString('three')),
+								SolidBoolean.TRUETYPE,
+								SolidString,
+								SolidString,
+								Int16,
 							],
 						);
 					});
@@ -2384,6 +2453,17 @@ describe('ASTNodeSolid', () => {
 										SolidString,
 										SolidNull,
 									]),
+								],
+							);
+						});
+						Dev.supports('claimAccess') && it('always subtracts void.', () => {
+							assert.deepStrictEqual(
+								program.children.slice(34, 38).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								[
+									new SolidTypeConstant(new SolidString('three')),
+									SolidBoolean.TRUETYPE,
+									SolidString,
+									SolidString,
 								],
 							);
 						});
@@ -2461,6 +2541,17 @@ describe('ASTNodeSolid', () => {
 									int_float_str.union(SolidNull),
 								);
 							});
+						});
+						Dev.supports('claimAccess') && it('always subtracts void.', () => {
+							assert.deepStrictEqual(
+								program.children.slice(34, 38).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								[
+									int_float_str,
+									Int16.union(Float64),
+									int_float_str,
+									int_float_str,
+								],
+							);
 						});
 					});
 					it('throws when base object is of incorrect type.', () => {

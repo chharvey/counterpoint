@@ -102,6 +102,8 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 			1. *Let* `type` be the union of all item types in `base_type`.
 			2. *If*: `access.kind` is `OPTIONAL`:
 				1. *Set* `returned` to `Union(type, Null)`.
+			2. *If*: `access.kind` is `CLAIM`:
+				1. *Set* `returned` to `Difference(type, Void)`.
 			3. *Set* `returned` to `type`.
 		3. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
 	11. *If* *UnwrapAffirm:* `Subtype(base_type, Mapping)`:
@@ -110,6 +112,8 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 		3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)`:
 			1. *If*: `access.kind` is `OPTIONAL`:
 				1. *Set* `returned` to `Union(v, Null)`.
+			2. *If*: `access.kind` is `CLAIM`:
+				1. *Set* `returned` to `Difference(t, Void)`.
 			2. *Set* `returned` to `v`.
 		4. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ k }}.".
 	12. *If* `returned` is set:
