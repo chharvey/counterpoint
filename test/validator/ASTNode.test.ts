@@ -1859,45 +1859,57 @@ describe('ASTNodeSolid', () => {
 							let a: obj = [];
 							let b: obj = [42];
 							let c: obj = [x= 42];
-							let d: obj = {41 |-> 42};
+							let d: obj = {};
+							let e: obj = {42};
+							let f: obj = {41 |-> 42};
 
 							let bb: obj = [[42]];
 							let cc: obj = [x= [42]];
-							let dd: obj = {[41] |-> [42]};
+							let ee: obj = {[42]};
+							let ff: obj = {[41] |-> [42]};
 
 							a !== [];
 							b !== [42];
 							c !== [x= 42];
-							d !== {41 |-> 42};
+							d !== {};
+							e !== {42};
+							f !== {41 |-> 42};
 							a === a;
 							b === b;
 							c === c;
 							d === d;
+							e === e;
+							f === f;
 							a == [];
 							b == [42];
 							c == [x= 42];
-							d == {41 |-> 42};
+							d == {};
+							e == {42};
+							f == {41 |-> 42};
 
 							bb !== [[42]];
 							cc !== [x= [42]];
-							dd !== {[41] |-> [42]};
+							ee !== {[42]};
+							ff !== {[41] |-> [42]};
 							bb === bb;
 							cc === cc;
-							dd === dd;
+							ee === ee;
+							ff === ff;
 							bb == [[42]];
 							cc == [x= [42]];
-							dd == {[41] |-> [42]};
+							ee == {[42]};
+							ff == {[41] |-> [42]};
 
 							b != [42, 43];
 							c != [x= 43];
 							c != [y= 42];
-							d != {41 |-> 43};
-							d != {43 |-> 42};
+							f != {41 |-> 43};
+							f != {43 |-> 42};
 						`);
 						const validator: Validator = new Validator();
 						goal.varCheck(validator);
 						goal.typeCheck(validator);
-						goal.children.slice(7).forEach((stmt) => {
+						goal.children.slice(10).forEach((stmt) => {
 							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.assess(validator), SolidBoolean.TRUE, stmt.source);
 						});
 					})();

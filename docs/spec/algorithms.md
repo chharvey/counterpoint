@@ -270,7 +270,20 @@ Boolean Equal(Object a, Object b) :=
 			2. *If* *UnwrapAffirm*: `Equal(struct_a[k], struct_b[k])` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
-	6. *If* `a` is an instance of `Mapping` *and* `b` is an instance of `Mapping`:
+	6. *If* `a` is an instance of `Set` *and* `b` is an instance of `Set`:
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *If* `seq_a.count` is not `seq_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For each* `it_b` in `seq_b`:
+			1. Find an item `it_a` in `seq_a` such that *UnwrapAffirm:* `Equal(it_a, it_b)` is `true`.
+			2. *If* no such item `it_a` is found:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	7. *If* `a` is an instance of `Mapping` *and* `b` is an instance of `Mapping`:
 		1. *Let* `data_a` be a new Sequence of 2-tuples,
 			whose items are exactly the antecedents and consequents in `a`.
 		2. *Let* `data_b` be a new Sequence of 2-tuples,
@@ -287,7 +300,7 @@ Boolean Equal(Object a, Object b) :=
 			3. *If* *UnwrapAffirm:* `Equal(it_a.1, it_b.1)` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
-	7. Return `false`.
+	8. Return `false`.
 ```
 
 

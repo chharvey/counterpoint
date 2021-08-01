@@ -1,4 +1,6 @@
+import * as xjs from 'extrajs';
 import {SetEq} from '../core/index.js';
+import type {Keys} from '../types';
 import {
 	SolidType,
 	SolidTypeConstant,
@@ -14,6 +16,9 @@ export class SolidSet<T extends SolidObject = SolidObject> extends SolidObject {
 		return 'Set';
 	}
 	static override values: SolidType['values'] = new Set([new SolidSet()]);
+	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidSet, SolidSet], boolean> = new xjs.MapEq(
+		(a, b) => a[0].identical(b[0]) && a[1].identical(b[1]),
+	);
 
 
 	/**
@@ -37,6 +42,21 @@ export class SolidSet<T extends SolidObject = SolidObject> extends SolidObject {
 	}
 	override get isEmpty(): SolidBoolean {
 		return SolidBoolean.fromBoolean(this.elements.size === 0);
+	}
+	/** @final */
+	protected override equal_helper(value: SolidObject): boolean {
+		if (value instanceof SolidSet && this.elements.size === value.elements.size) {
+			const memokey: Keys<typeof SolidSet.EQ_MEMO> = [this, value];
+			if (!SolidSet.EQ_MEMO.has(memokey)) {
+				SolidSet.EQ_MEMO.set(memokey, false); // use this assumption in the next step
+				SolidSet.EQ_MEMO.set(memokey, [...(value as SolidSet).elements].every(
+					(thatelement) => !![...this.elements].find((el) => el.equal(thatelement)),
+				));
+			}
+			return SolidSet.EQ_MEMO.get(memokey)!;
+		} else {
+			return false;
+		}
 	}
 
 	toType(): SolidTypeSet {
