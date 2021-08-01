@@ -41,7 +41,9 @@ export class SolidSet<T extends SolidObject = SolidObject> extends SolidObject {
 
 	toType(): SolidTypeSet {
 		return new SolidTypeSet(
-			[...this.elements].map<SolidType>((el) => new SolidTypeConstant(el)).reduce((a, b) => a.union(b)),
+			(this.elements.size)
+				? [...this.elements].map<SolidType>((el) => new SolidTypeConstant(el)).reduce((a, b) => a.union(b))
+				: SolidType.NEVER,
 		);
 	}
 }

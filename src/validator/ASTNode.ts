@@ -741,7 +741,9 @@ export class ASTNodeSet extends ASTNodeExpression {
 	protected override type_do(validator: Validator): SolidType {
 		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
 		return new SolidTypeSet(
-			this.children.map((c) => c.type(validator)).reduce((a, b) => a.union(b)),
+			(this.children.length)
+				? this.children.map((c) => c.type(validator)).reduce((a, b) => a.union(b))
+				: SolidType.NEVER,
 		);
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {

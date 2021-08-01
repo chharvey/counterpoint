@@ -1042,10 +1042,14 @@ describe('ASTNodeSolid', () => {
 								[`![];`,          SolidBoolean.FALSE],
 								[`![42];`,        SolidBoolean.FALSE],
 								[`![a= 42];`,     SolidBoolean.FALSE],
+								[`!{};`,          SolidBoolean.FALSE],
+								[`!{42};`,        SolidBoolean.FALSE],
 								[`!{41 |-> 42};`, SolidBoolean.FALSE],
 								[`?[];`,          SolidBoolean.TRUE],
 								[`?[42];`,        SolidBoolean.FALSE],
 								[`?[a= 42];`,     SolidBoolean.FALSE],
+								[`?{};`,          SolidBoolean.TRUE],
+								[`?{42};`,        SolidBoolean.FALSE],
 								[`?{41 |-> 42};`, SolidBoolean.FALSE],
 							]));
 						});
@@ -1710,6 +1714,8 @@ describe('ASTNodeSolid', () => {
 							[`![];`,          SolidBoolean.FALSE],
 							[`![42];`,        SolidBoolean.FALSE],
 							[`![a= 42];`,     SolidBoolean.FALSE],
+							[`!{};`,          SolidBoolean.FALSE],
+							[`!{42};`,        SolidBoolean.FALSE],
 							[`!{41 |-> 42};`, SolidBoolean.FALSE],
 						]));
 					})
@@ -1732,6 +1738,8 @@ describe('ASTNodeSolid', () => {
 							[`?[];`,          SolidBoolean.TRUE],
 							[`?[42];`,        SolidBoolean.FALSE],
 							[`?[a= 42];`,     SolidBoolean.FALSE],
+							[`?{};`,          SolidBoolean.TRUE],
+							[`?{42};`,        SolidBoolean.FALSE],
 							[`?{41 |-> 42};`, SolidBoolean.FALSE],
 						]));
 					})
