@@ -66,12 +66,13 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `accessor` be `access.children.1`.
 	4. *Let* `base_type` be *Unwrap:* `CombineTuplesOrRecords(TypeOf(base))`.
-	5. *If* `access.kind` is `OPTIONAL` *and* *UnwrapAffirm:* `Subtype(base_type, Null)`:
-		1. *Return:* `base_type`.
-	6. *If* `access.kind` is `OPTIONAL` *and* *UnwrapAffirm:* `Subtype(Null, base_type)`:
-		1. *Set* `is_nullish` to `true`.
-		2. *Set* `base_type` to `Difference(base_type, Null)`.
-	7. *If* `accessor` is a SemanticIndex:
+	5. *If* `access.kind` is `OPTIONAL`:
+		1. *If* *UnwrapAffirm:* `Subtype(base_type, Null)`:
+			1. *Return:* `base_type`.
+		2. *If* *UnwrapAffirm:* `Subtype(Null, base_type)`:
+			1. *Set* `is_nullish` to `true`.
+			2. *Set* `base_type` to `Difference(base_type, Null)`.
+	6. *If* `accessor` is a SemanticIndex:
 		1. *Assert:* `accessor.children.count` is 1.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor.children.0)`.
 		3. *Assert:* `accessor_type` is a TypeConstant.
@@ -81,15 +82,15 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `MaybeOptional(access, entry)`.
 		7. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
-	8. *If* `accessor` is a SemanticKey:
+	7. *If* `accessor` is a SemanticKey:
 		1. *Let* `id` be `accessor.id`.
 		2. *If* *UnwrapAffirm:* `Subtype(base_type, Record)` *and* `id` is a key in `base_type`:
 			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `MaybeOptional(access, entry)`.
 		3. *Throw:* a new TypeError04 "Property {{ id }} does not exist on type {{ base_type }}.".
-	9. *Assert:* `accessor` is a SemanticExpression.
-	10. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
-	11. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)`:
+	8. *Assert:* `accessor` is a SemanticExpression.
+	9. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
+	10. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)`:
 		1. *If* `accessor_type` is a TypeConstant:
 			1. *Let* `i` be `accessor_type.value`.
 			2. *If* `i` is a instance of `Integer`:
@@ -103,7 +104,7 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 				1. *Set* `returned` to `Union(type, Null)`.
 			3. *Set* `returned` to `type`.
 		3. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
-	12. *If* *UnwrapAffirm:* `Subtype(base_type, Mapping)`:
+	11. *If* *UnwrapAffirm:* `Subtype(base_type, Mapping)`:
 		1. *Let* `k` be the type of the antecedents in `base_type`.
 		2. *Let* `v` be the type of the consequents in `base_type`.
 		3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)`:
@@ -111,11 +112,11 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 				1. *Set* `returned` to `Union(v, Null)`.
 			2. *Set* `returned` to `v`.
 		4. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ k }}.".
-	13. *If* `returned` is set:
+	12. *If* `returned` is set:
 		1. *If* `is_nullish` is `true`:
 			1. *Return:* `Union(returned, Null)`.
 		2. *Return*: `returned`.
-	14. *Throw:* a new TypeError01.
+	13. *Throw:* a new TypeError01.
 ;
 
 

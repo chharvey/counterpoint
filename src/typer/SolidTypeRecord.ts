@@ -1,4 +1,8 @@
-import type {AST} from '../validator/index.js';
+import {
+	AST,
+	Operator,
+	ValidAccessOperator,
+} from '../validator/index.js';
 import {TypeError04} from '../error/index.js';
 import {
 	SolidObject,
@@ -69,11 +73,11 @@ export class SolidTypeRecord extends SolidType {
 		);
 	}
 
-	get(key: bigint, access_optional: boolean, accessor: AST.ASTNodeKey): SolidType {
+	get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): SolidType {
 		const entry: TypeEntry = (this.propertytypes.has(key))
 			? this.propertytypes.get(key)!
 			: (() => { throw new TypeError04('property', this, accessor); })();
-		return entry.type.union((entry.optional) ? (access_optional) ? SolidNull : SolidType.VOID : SolidType.NEVER);
+		return entry.type.union((entry.optional) ? (access_kind === Operator.OPTDOT) ? SolidNull : SolidType.VOID : SolidType.NEVER);
 	}
 
 	valueTypes(): SolidType {
