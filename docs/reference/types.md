@@ -580,13 +580,22 @@ Evaluating such an expression could result in a runtime error, since void expres
 ```
 let x2: bool | void = x.2; % potential runtime error
 ```
-However, the **optional access operator** `?.` can anticipate this error and return `null`
-whenever the value doesn’t exist.
+However, the [optional access operator](./expressions-operators.md#optional-access) `?.`
+can anticipate this error and return `null` whenever the value doesn’t exist.
 ```
 let x2: bool? = x?.2;
 ```
 If `x.2` exists, the expression `x?.2` produces that value; otherwise it produces `null`,
 avoiding the runtime error.
+
+We can use the [claim access operator](./expressions-operators.md#claim-access) `!.`
+to tell the type-checker that the property definitely exists and is not type `void`.
+It should only be used if we are certain the property exists.
+```
+let x2: bool = x!.2;
+```
+The expression `x!.2` behaves just like `x.2`, except that it bypasses the compiler’s TypeError.
+
 
 ### Record
 Records are fixed-size unordered lists of keyed values. Key–value pairs are called **properties**,
@@ -733,13 +742,21 @@ Evaluating such an expression could result in a runtime error, since void expres
 ```
 let ym: str | void = y.middlename; % potential runtime error
 ```
-However, the **optional access operator** `?.` can anticipate this error and return `null`
-whenever the value doesn’t exist.
+However, the [optional access operator](./expressions-operators.md#optional-access) `?.`
+can anticipate this error and return `null` whenever the value doesn’t exist.
 ```
 let ym: str? = y?.middlename;
 ```
 If `y.middlename` exists, the expression `y?.middlename` produces that value; otherwise it produces `null`,
 avoiding the runtime error.
+
+We can use the [claim access operator](./expressions-operators.md#claim-access) `!.`
+to tell the type-checker that the property definitely exists and is not type `void`.
+It should only be used if we are certain the property exists.
+```
+let ym: str = y!.middlename;
+```
+The expression `y!.middlename` behaves just like `y.middlename`, except that it bypasses the compiler’s TypeError.
 
 
 ### Mapping
