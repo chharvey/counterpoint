@@ -15,6 +15,7 @@ import {
 } from '../parser/index.js';
 import {
 	Operator,
+	ValidAccessOperator,
 	ValidTypeOperator,
 	ValidOperatorUnary,
 	ValidOperatorArithmetic,
@@ -51,6 +52,11 @@ type TemplatePartialType = // FIXME spread types
 
 
 export class Decorator {
+	private static readonly ACCESSORS: ReadonlyMap<Punctuator, ValidAccessOperator> = new Map<Punctuator, ValidAccessOperator>([
+		[Punctuator.DOT,      Operator.DOT],
+		[Punctuator.OPTDOT,   Operator.OPTDOT],
+		[Punctuator.CLAIMDOT, Operator.CLAIMDOT],
+	]);
 	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
 		[Punctuator.ORNULL, Operator.ORNULL],
 		[Punctuator.OREXCP, Operator.OREXCP],
@@ -191,7 +197,7 @@ export class Decorator {
 				this.decorate(node.children[0]),
 			);
 
-		} else if (Dev.supports('optionalAccess') && node instanceof PARSER.ParseNodeEntryType_Optional) {
+		} else if (Dev.supports('optionalEntries') && node instanceof PARSER.ParseNodeEntryType_Optional) {
 			return new AST.ASTNodeItemType(
 				node,
 				true,
@@ -206,7 +212,7 @@ export class Decorator {
 				this.decorate(node.children[2]),
 			);
 
-		} else if (Dev.supports('optionalAccess') && node instanceof PARSER.ParseNodeEntryType_Named_Optional) {
+		} else if (Dev.supports('optionalEntries') && node instanceof PARSER.ParseNodeEntryType_Named_Optional) {
 			return new AST.ASTNodePropertyType(
 				node,
 				true,
@@ -352,18 +358,19 @@ export class Decorator {
 					: new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier)
 				: this.decorate(node.children[1]);
 
-		} else if (node instanceof PARSER.ParseNodePropertyAccess) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodePropertyAccess) {
 			return (
 				(node.children[1] instanceof TOKEN.TokenNumber) ? new AST.ASTNodeIndex(node, new AST.ASTNodeConstant(node.children[1])) :
 				(node.children[1] instanceof PARSER.ParseNodeWord) ? this.decorate(node.children[1]) :
 				this.decorate(node.children[2]!)
 			);
 
-		} else if (node instanceof PARSER.ParseNodeExpressionCompound) {
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeExpressionCompound) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
 				: new AST.ASTNodeAccess(
 					node,
+					this.ACCESSORS.get(node.children[1].children[0].source as Punctuator)!,
 					this.decorate(node.children[0]),
 					this.decorate(node.children[1]),
 				);

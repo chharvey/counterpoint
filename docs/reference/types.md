@@ -565,6 +565,37 @@ let unfixed i: int = 4;
 elements.[i];           % no compile-time error, but value at runtime will be undefined
 ```
 
+#### Optional Items
+Tuple types may have optional items, indicating that a tuple of that type might or might not have that item.
+```
+let unfixed x: [str, int, ?: bool] = ['hello', 42];
+x = ['hello', 42, true];
+```
+The symbol `?:` in the type signature indicates that the item is optional.
+In a tuple type, all optional items *must* come after all required items.
+
+When we access an optional item, its type is unioned with `void`,
+because the compiler doesn’t know if there’s an actual value there.
+Evaluating such an expression could result in a runtime error, since void expressions have no actual value.
+```
+let x2: bool | void = x.2; % potential runtime error
+```
+However, the [optional access operator](./expressions-operators.md#optional-access) `?.`
+can anticipate this error and return `null` whenever the value doesn’t exist.
+```
+let x2: bool? = x?.2;
+```
+If `x.2` exists, the expression `x?.2` produces that value; otherwise it produces `null`,
+avoiding the runtime error.
+
+We can use the [claim access operator](./expressions-operators.md#claim-access) `!.`
+to tell the type-checker that the property definitely exists and is not type `void`.
+It should only be used if we are certain the property exists.
+```
+let x2: bool = x!.2;
+```
+The expression `x!.2` behaves just like `x.2`, except that it bypasses the compiler’s TypeError.
+
 
 ### Record
 Records are fixed-size unordered lists of keyed values. Key–value pairs are called **properties**,
@@ -688,6 +719,44 @@ so attempting to retrieve an non-existent key results in a compile-time error.
 ```
 elements.pythagoras; %> TypeError
 ```
+
+#### Optional Properties
+Record types may have optional properties, indicating that a record of that type might or might not have that property.
+```
+let unfixed y: [firstname: str, middlename?: str, lastname: str] = [
+	firstname= 'Martha',
+	lastname=  'Dandridge',
+];
+y = [
+	firstname=  'Martha',
+	lastname=   'Washington',
+	middlename= 'Dandridge',
+];
+```
+The symbol `?:` in the type signature indicates that the property is optional.
+In a record type, required and optional properties may be intermixed (order isn’t enforced).
+
+When we access an optional property, its type is unioned with `void`,
+because the compiler doesn’t know if there’s an actual value there.
+Evaluating such an expression could result in a runtime error, since void expressions have no actual value.
+```
+let ym: str | void = y.middlename; % potential runtime error
+```
+However, the [optional access operator](./expressions-operators.md#optional-access) `?.`
+can anticipate this error and return `null` whenever the value doesn’t exist.
+```
+let ym: str? = y?.middlename;
+```
+If `y.middlename` exists, the expression `y?.middlename` produces that value; otherwise it produces `null`,
+avoiding the runtime error.
+
+We can use the [claim access operator](./expressions-operators.md#claim-access) `!.`
+to tell the type-checker that the property definitely exists and is not type `void`.
+It should only be used if we are certain the property exists.
+```
+let ym: str = y!.middlename;
+```
+The expression `y!.middlename` behaves just like `y.middlename`, except that it bypasses the compiler’s TypeError.
 
 
 ### Mapping

@@ -479,7 +479,7 @@ describe('SolidType', () => {
 					SolidBoolean.union(SolidNull),
 				])), `[int, bool, str] <: [int | float, bool!];`);
 			});
-			Dev.supports('optionalAccess') && it('with optional entries, checks minimum count only.', () => {
+			Dev.supports('optionalEntries') && it('with optional entries, checks minimum count only.', () => {
 				assert.ok(new SolidTypeTuple([
 					{type: Int16, optional: false},
 					{type: Int16, optional: false},
@@ -571,7 +571,7 @@ describe('SolidType', () => {
 					[0x103n, Int16.union(Float64)],
 				]))), `[x: int, y: bool, z: str] !<: [y: bool!, z: obj, w: int | float]`);
 			});
-			Dev.supports('optionalAccess') && it('optional entries are not assignable to required entries.', () => {
+			Dev.supports('optionalEntries') && it('optional entries are not assignable to required entries.', () => {
 				assert.ok(new SolidTypeRecord(new Map<bigint, TypeEntry>([
 					[0x100n, {type: SolidString,  optional: false}],
 					[0x101n, {type: Int16,        optional: true}],
@@ -644,7 +644,7 @@ describe('SolidType', () => {
 						[obj, null & int, bool]
 					`);
 				});
-				Dev.supports('optionalAccess') && it('takes the conjunction of optionality.', () => {
+				Dev.supports('optionalEntries') && it('takes the conjunction of optionality.', () => {
 					assert.ok(new SolidTypeTuple([
 						{type: SolidObject,  optional: false},
 						{type: SolidNull,    optional: true},
@@ -686,7 +686,7 @@ describe('SolidType', () => {
 						[foo: obj, bar: null, qux: bool & str, diz: int]
 					`);
 				})
-				Dev.supports('optionalAccess') && it('takes the conjunction of optionality.', () => {
+				Dev.supports('optionalEntries') && it('takes the conjunction of optionality.', () => {
 					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
 					assert.ok(new SolidTypeRecord(new Map<bigint, TypeEntry>([
 						[foo, {type: SolidObject,  optional: false}],
@@ -732,7 +732,7 @@ describe('SolidType', () => {
 						[obj, null | int]
 					`);
 				});
-				Dev.supports('optionalAccess') && it('takes the disjunction of optionality.', () => {
+				Dev.supports('optionalEntries') && it('takes the disjunction of optionality.', () => {
 					assert.ok(new SolidTypeTuple([
 						{type: SolidObject,  optional: false},
 						{type: SolidNull,    optional: true},
@@ -791,7 +791,7 @@ describe('SolidType', () => {
 						[foo: obj, qux: bool | str]
 					`);
 				});
-				Dev.supports('optionalAccess') && it('takes the disjunction of optionality.', () => {
+				Dev.supports('optionalEntries') && it('takes the disjunction of optionality.', () => {
 					const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
 					assert.ok(new SolidTypeRecord(new Map<bigint, TypeEntry>([
 						[foo, {type: SolidObject,  optional: false}],
