@@ -54,7 +54,7 @@ export class SolidRecord<T extends SolidObject = SolidObject> extends SolidObjec
 		return SolidTypeRecord.fromTypes(new Map([...this.properties].map(([key, value]) => [key, new SolidTypeConstant(value)])));
 	}
 
-	get(key: bigint, access_optional: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression): T | SolidNull {
+	get(key: bigint, access_optional: boolean, accessor: AST.ASTNodeKey): T | SolidNull {
 		return (this.properties.has(key))
 			? this.properties.get(key)!
 			: (access_optional)

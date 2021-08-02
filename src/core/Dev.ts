@@ -12,6 +12,7 @@ type DevToggleKey =
 		| 'voidType'
 		| 'optionalEntries'
 		| 'optionalAccess'
+		| 'claimAccess'
 ;
 type DevToggleVal = [boolean, DevToggleKey[]?];
 
@@ -47,6 +48,7 @@ export class Dev {
 		voidType:                  [true],
 		optionalEntries:           [false, ['literalCollection', 'voidType']],
 		optionalAccess:            [false, ['literalCollection', 'optionalEntries']],
+		claimAccess:               [false, ['literalCollection', 'optionalEntries']],
 	}
 
 	/**

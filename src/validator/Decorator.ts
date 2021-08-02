@@ -15,6 +15,7 @@ import {
 } from '../parser/index.js';
 import {
 	Operator,
+	ValidAccessOperator,
 	ValidTypeOperator,
 	ValidOperatorUnary,
 	ValidOperatorArithmetic,
@@ -51,6 +52,11 @@ type TemplatePartialType = // FIXME spread types
 
 
 export class Decorator {
+	private static readonly ACCESSORS: ReadonlyMap<Punctuator, ValidAccessOperator> = new Map<Punctuator, ValidAccessOperator>([
+		[Punctuator.DOT,      Operator.DOT],
+		[Punctuator.OPTDOT,   Operator.OPTDOT],
+		[Punctuator.CLAIMDOT, Operator.CLAIMDOT],
+	]);
 	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
 		[Punctuator.ORNULL, Operator.ORNULL],
 		[Punctuator.OREXCP, Operator.OREXCP],
@@ -102,16 +108,6 @@ export class Decorator {
 				...this.decorate(node.children[0]) as NonemptyArray<A>,
 				this.decorate((node.children.length === 2) ? node.children[1] : node.children[2]) as A,
 			];
-	}
-
-	/**
-	 * Return whether a PropertyAccess parse node is an optional access or not.
-	 * Optional access uses the operator `?.` whereas normal access uses `.`.
-	 * @param node the parse node
-	 * @return `true` if the access is optional
-	 */
-	private static isOptionalAccess(node: PARSER.ParseNodePropertyAccess): boolean {
-		return node.children[0].source === Punctuator.OPTDOT;
 	}
 
 	/**
@@ -374,7 +370,7 @@ export class Decorator {
 				? this.decorate(node.children[0])
 				: new AST.ASTNodeAccess(
 					node,
-					Dev.supports('optionalAccess') && this.isOptionalAccess(node.children[1]),
+					this.ACCESSORS.get(node.children[1].children[0].source as Punctuator)!,
 					this.decorate(node.children[0]),
 					this.decorate(node.children[1]),
 				);

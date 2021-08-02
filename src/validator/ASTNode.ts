@@ -55,6 +55,7 @@ import {
 } from '../error/index.js';
 import {
 	Operator,
+	ValidAccessOperator,
 	ValidTypeOperator,
 	ValidOperatorUnary,
 	ValidOperatorBinary,
@@ -368,20 +369,20 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 			return (
 				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
 					(accessor_type instanceof SolidTypeConstant)
-						? base_type.value.toType().get(accessor_type.value as Int16, false, this.accessor)
+						? base_type.value.toType().get(accessor_type.value as Int16, Operator.DOT, this.accessor)
 						: base_type.value.toType().itemTypes()
 				) :
 				(base_type instanceof SolidTypeTuple) ? (
 					(accessor_type instanceof SolidTypeConstant)
-						? base_type.get(accessor_type.value as Int16, false, this.accessor)
+						? base_type.get(accessor_type.value as Int16, Operator.DOT, this.accessor)
 						: base_type.itemTypes()
 				) :
 				(() => { throw new TypeError04('index', base_type, this.accessor); })()
 			);
 		} else /* (this.accessor instanceof ASTNodeKey) */ {
 			return (
-				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, false, this.accessor) :
-				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, false, this.accessor) :
+				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, Operator.DOT, this.accessor) :
+				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, Operator.DOT, this.accessor) :
 				(() => { throw new TypeError04('property', base_type, this.accessor); })()
 			);
 		}
@@ -758,13 +759,15 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		assert.ok(expression instanceof ASTNodeAccess);
 		return expression;
 	}
+	private readonly optional: boolean = this.kind === Operator.OPTDOT;
+	// private readonly claim:    boolean = this.kind === Operator.CLAIMDOT;
 	constructor (
 		start_node: PARSER.ParseNodeExpressionCompound,
-		readonly optional: boolean,
+		readonly kind:     ValidAccessOperator,
 		readonly base:     ASTNodeExpression,
 		readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
-		super(start_node, {optional}, [base, accessor]);
+		super(start_node, {kind}, [base, accessor]);
 	}
 	override get shouldFloat(): boolean {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';
@@ -785,25 +788,31 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		);
 	}
 	private type_do_do(base_type: SolidType, validator: Validator): SolidType {
+		function updateDynamicType(type: SolidType, access_kind: ValidAccessOperator): SolidType {
+			return new Map([
+				[Operator.OPTDOT,   () => type.union(SolidNull)],
+				[Operator.CLAIMDOT, () => type.subtract(SolidType.VOID)],
+			]).get(access_kind)?.() || type;
+		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			const accessor_type: SolidType = this.accessor.value.type(validator);
 			return (
 				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
 					(accessor_type instanceof SolidTypeConstant)
-						? base_type.value.toType().get(accessor_type.value as Int16, this.optional, this.accessor)
-						: base_type.value.toType().itemTypes().union((this.optional) ? SolidNull : SolidType.NEVER)
+						? base_type.value.toType().get(accessor_type.value as Int16, this.kind, this.accessor)
+						: updateDynamicType(base_type.value.toType().itemTypes(), this.kind)
 				) :
 				(base_type instanceof SolidTypeTuple) ? (
 					(accessor_type instanceof SolidTypeConstant)
-						? base_type.get(accessor_type.value as Int16, this.optional, this.accessor)
-						: base_type.itemTypes().union((this.optional) ? SolidNull : SolidType.NEVER)
+						? base_type.get(accessor_type.value as Int16, this.kind, this.accessor)
+						: updateDynamicType(base_type.itemTypes(), this.kind)
 				) :
 				(() => { throw new TypeError04('index', base_type, this.accessor); })()
 			);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (
-				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, this.optional, this.accessor) :
-				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, this.optional, this.accessor) :
+				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, this.kind, this.accessor) :
+				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
 				(() => { throw new TypeError04('property', base_type, this.accessor); })()
 			);
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
@@ -811,29 +820,25 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: SolidType): never {
 				throw new TypeError02(accessor_type, supertype, accessor.line_index, accessor.col_index);
 			}
-			return (
-				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
-					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16) ? base_type.value.toType().get(accessor_type.value, this.optional, this.accessor) :
-					(accessor_type.isSubtypeOf(Int16))                                                   ? base_type.value.toType().itemTypes().union((this.optional) ? SolidNull : SolidType.NEVER) :
-					throwWrongSubtypeError(this.accessor, Int16)
-				) :
-				(base_type instanceof SolidTypeTuple) ? (
-					(accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16) ? base_type.get(accessor_type.value, this.optional, this.accessor) :
-					(accessor_type.isSubtypeOf(Int16))                                                   ? base_type.itemTypes().union((this.optional) ? SolidNull : SolidType.NEVER) :
-					throwWrongSubtypeError(this.accessor, Int16)
-				) :
-				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping) ? (
-					(accessor_type.isSubtypeOf(base_type.value.toType().antecedenttypes))
-						? base_type.value.toType().consequenttypes.union((this.optional) ? SolidNull : SolidType.NEVER)
-						: throwWrongSubtypeError(this.accessor, base_type.value.toType().antecedenttypes)
-				) :
-				(base_type instanceof SolidTypeMapping) ? (
-					(accessor_type.isSubtypeOf(base_type.antecedenttypes))
-						? base_type.consequenttypes.union((this.optional) ? SolidNull : SolidType.NEVER)
-						: throwWrongSubtypeError(this.accessor, base_type.antecedenttypes)
-				) :
-				(() => { throw new TypeError01(this); })()
-			);
+			if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
+				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple)
+					? base_type.value.toType()
+					: (base_type as SolidTypeTuple);
+				return (accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16)
+					? base_type_tuple.get(accessor_type.value, this.kind, this.accessor)
+					: (accessor_type.isSubtypeOf(Int16))
+						? updateDynamicType(base_type_tuple.itemTypes(), this.kind)
+						: throwWrongSubtypeError(this.accessor, Int16);
+			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping || base_type instanceof SolidTypeMapping) {
+				const base_type_mapping: SolidTypeMapping = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping)
+					? base_type.value.toType()
+					: (base_type as SolidTypeMapping);
+				return (accessor_type.isSubtypeOf(base_type_mapping.antecedenttypes))
+					? updateDynamicType(base_type_mapping.consequenttypes, this.kind)
+					: throwWrongSubtypeError(this.accessor, base_type_mapping.antecedenttypes);
+			} else {
+				throw new TypeError01(this);
+			}
 		}
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
