@@ -1,4 +1,7 @@
 export enum Operator {
+	DOT,      // Dev.supports('literalCollection')
+	OPTDOT,   // Dev.supports('optionalAccess')
+	CLAIMDOT, // Dev.supports('claimAccess')
 	ORNULL,
 	OREXCP,
 	NOT,
@@ -28,6 +31,11 @@ export enum Operator {
 	NOR,
 	COND,
 }
+
+export type ValidAccessOperator =
+	| Operator.DOT
+	| Operator.OPTDOT
+	| Operator.CLAIMDOT
 
 export type ValidTypeOperator =
 	| Operator.ORNULL

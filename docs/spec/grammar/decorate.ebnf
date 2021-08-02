@@ -260,13 +260,13 @@ Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticExpression
 
 
 
-Decorate(PropertyAccess ::= "." INTEGER) -> SemanticIndex
+Decorate(PropertyAccess ::= ("." | "?." | "!.") INTEGER) -> SemanticIndex
 	:= (SemanticIndex
 		(SemanticConstant[value=Integer(TokenWorth(INTEGER))])
 	);
-Decorate(PropertyAccess ::= "." Word) -> SemanticKey
+Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey
 	:= Decorate(Word);
-Decorate(PropertyAccess ::= "." "[" Expression "]") -> SemanticExpression
+Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticExpression
 	:= Decorate(Expression);
 
 
@@ -274,7 +274,7 @@ Decorate(PropertyAccess ::= "." "[" Expression "]") -> SemanticExpression
 Decorate(ExpressionCompound ::= ExpressionUnit) -> SemanticExpression
 	:= Decorate(ExpressionUnit);
 Decorate(ExpressionCompound ::= ExpressionCompound PropertyAccess) -> SemanticAccess
-	:= (SemanticAccess
+	:= (SemanticAccess[kind=AccessKind(PropertyAccess)]
 		Decorate(ExpressionCompound)
 		Decorate(PropertyAccess)
 	);
@@ -538,3 +538,12 @@ ParseList(ParseNode, ASTNode)(ParseNode__List ::= ParseNode__List ","? ParseNode
 		...Decorate(ParseNode__List),
 		Decorate(ParseNode),
 	];
+
+
+
+AccessKind(PropertyAccess ::= "." (INTEGER | Word | "[" Expression "]")) -> NORMAL
+	::= NORMAL;
+AccessKind(PropertyAccess ::= "?." (INTEGER | Word | "[" Expression "]")) -> OPTIONAL
+	::= OPTIONAL;
+AccessKind(PropertyAccess ::= "!." (INTEGER | Word | "[" Expression "]")) -> CLAIM
+	::= CLAIM;

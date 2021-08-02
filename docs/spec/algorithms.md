@@ -530,8 +530,12 @@ Returns an entry’s type if it is required; unions with Void if it is optional.
 ```
 Type MaybeOptional(EntryTypeStructure entry) :=
 	1. *Let* `type` be `entry.type`.
-	2. *If*: `entry.optional` is `true`:
-		1. *Return:* `Union(type, Void)`.
-	3. *Return:* `type`.
+	2. *If*: `access.kind` is `CLAIM`:
+		1. *Return:* `Difference(type, Void)`.
+	3. *If*: `entry.optional` is `true`:
+		1. *If*: `access.kind` is `OPTIONAL`:
+			1. *Return:* `Union(type, Null)`.
+		2. *Return:* `Union(type, Void)`.
+	4. *Return:* `type`.
 ;
 ```

@@ -31,15 +31,31 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>[ … ]</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">2</th>
+			<th rowspan="6">2</th>
 			<td>Property Access</td>
-			<td rowspan="2">unary postfix</td>
-			<td rowspan="2">left-to-right</td>
+			<td rowspan="6">unary postfix</td>
+			<td rowspan="6">left-to-right</td>
 			<td><code>… . …</code></td>
 		</tr>
 		<tr>
 			<td>Computed Property Access</td>
 			<td><code>… .[ … ]</code></td>
+		</tr>
+		<tr>
+			<td>Optional Access</td>
+			<td><code>… ?. …</code></td>
+		</tr>
+		<tr>
+			<td>Computed Optional Access</td>
+			<td><code>… ?.[ … ]</code></td>
+		</tr>
+		<tr>
+			<td>Claim Access</td>
+			<td><code>… !. …</code></td>
+		</tr>
+		<tr>
+			<td>Computed Claim Access</td>
+			<td><code>… !.[ … ]</code></td>
 		</tr>
 		<tr>
 			<th rowspan="4">3</th>
@@ -198,6 +214,14 @@ Operations that are associative are indicated as so in their respective sections
 <obj> `.` int-literal
 <obj> `.` word
 <obj> `.` `[` <obj> `]`
+
+<obj> `?.` int-literal
+<obj> `?.` word
+<obj> `?.` `[` <obj> `]`
+
+<obj> `!.` int-literal
+<obj> `!.` word
+<obj> `!.` `[` <obj> `]`
 ```
 The **property accesss** syntax is a unary operator on an object.
 The object it operates on is called the **binding object** and
@@ -215,6 +239,56 @@ of the binding object and must be of the correct type.
 
 More information about property access when used on tuples, records, and mappings
 can be found in the [Types](./types) chapter.
+
+#### Optional Access
+The **optional access** syntax is almost the same as property access, except that
+the operator produces the `null` value if and when there is no such bound property
+on the binding object at runtime. This operator is designed to work with
+optional entries on types, such as optional properties on a record type.
+
+Given a record `record` of type `[a: bool, b?: int]`,
+the expression `record.b` will produce that value if it exists,
+but will result in a runtime error if there’s no actual value at that location.
+Using the optional access operator though, `record?.b` will produce `record.b`
+if it exists, but otherwise will produce `null` and avoid the error.
+An equivalent syntax exists for dynamic access: `mapping?.[expr]`, etc.
+
+Note that if `foo?.bar` produces `null`, it either means that `foo.bar` does exist and is equal to `null`,
+or that there’s no value for the `bar` property bound to `foo`,
+and the optional access operator is doing its job.
+
+If the *binding object is `null`*, then the optional access operator also produces `null`.
+For example, `null.property` is a type error (and if the compiler were bypassed,
+it would cause a runtime error), but `null?.property` will simply produce `null`.
+This facet makes optional access safe to use when chained.
+
+When the optional access operator is chained, it should be chained down the line, e.g., `x?.y?.z`.
+This is equivalent to `(x?.y)?.z`, and if `x?.y` (or `x.y` for that matter) is `null`,
+then the whole expression also results in `null`.
+However, `x?.y.z` (which can be thought of as `(x?.y).z`) is not the same,
+and will result in a runtime error if `x?.y` is `null`.
+
+#### Claim Access
+The **claim access** syntax is just like regular property access, except that
+it makes a **claim** (a compile-time type assertion) that the accessed property
+is not of type `void`. This is useful when accessing optional entries of compound types.
+
+Claim access has the same runtime behavior of regular property access.
+Its purpose is to tell the type-checker,
+“I know what I’m doing; This property exists and its type is not type `void`.”
+```
+let unfixed item: [str, ?: int] = ['apples', 42];
+let quantity: int = item!.1;
+```
+The expression `item!.1` has type `int`, despite being an optional entry.
+It will produce the value `42` at runtime.
+Note that bypassing the compiler’s type-checking process should be done carefully.
+If not used correctly, it could lead to runtime errors.
+```
+let unfixed item: [str, ?: int] = ['apples'];
+let quantity: int = item!.1; % runtime error!
+```
+An equivalent syntax exists for dynamic access: `item!.[expr]`, etc.
 
 
 ### Logical Negation, Emptiness
@@ -690,8 +764,8 @@ let alice: Employee & Volunteer = [
 	id=           42444648,    %: int
 	jobTitle=     'Volunteer', %: str
 	agency=       'Agency',    %: str
-	hours_worked= 80,          %: float
-]
+	hours_worked= 80.0,        %: float
+];
 ```
 Type `Employee & Volunteer` is *both* an employee *and* a volunteer,
 so we’re guaranteed it will have the properties that are present in *either* type.
@@ -742,8 +816,8 @@ type Volunteer = [
 ];
 let bob: Employee | Volunteer = [
 	name=         'Bob', %: str
-	hours_worked= 80,    %: float
-]
+	hours_worked= 80.0,  %: float
+];
 ```
 Type `Employee | Volunteer` is *either* an employee *or* a volunteer,
 so we’re only guaranteed it will have the properties that are present in *both* types.

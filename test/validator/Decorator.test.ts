@@ -3,6 +3,8 @@ import type {
 } from '@chharvey/parser';
 import * as assert from 'assert'
 import {
+	SolidConfig,
+	CONFIG_DEFAULT,
 	Dev,
 } from '../../src/core/index.js';
 import type {
@@ -12,6 +14,7 @@ import {
 	AST,
 	Decorator,
 	Operator,
+	ValidAccessOperator,
 } from '../../src/validator/index.js';
 import {
 	assert_arrayLength,
@@ -105,7 +108,7 @@ describe('Decorator', () => {
 					`float`,
 				);
 			});
-			Dev.supports('optionalAccess') && specify('EntryType_Optional ::= "?:" Type', () => {
+			Dev.supports('optionalEntries') && specify('EntryType_Optional ::= "?:" Type', () => {
 				/*
 					<ItemType optional=true>
 						<TypeConstant source="float"/>
@@ -132,7 +135,7 @@ describe('Decorator', () => {
 					[`fontSize`,              `float`],
 				);
 			});
-			Dev.supports('optionalAccess') && specify('EntryType_Named_Optional ::= Word "?:" Type', () => {
+			Dev.supports('optionalEntries') && specify('EntryType_Named_Optional ::= Word "?:" Type', () => {
 				/*
 					<PropertyType optional=true>
 						<Key source="fontSize"/>
@@ -148,14 +151,14 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supportsAll('literalCollection', 'optionalAccess') && describe('TypeTupleLiteral ::= "[" (","? ItemsType)? "]"', () => {
+		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" (","? ItemsType)? "]"', () => {
 			it('makes an empty ASTNodeTypeTuple.', () => {
 				/*
 					<TypeTuple/>
 				*/
 				assert_arrayLength(Decorator.decorate(h.tupleTypeFromString(`[]`)).children, 0);
 			});
-			it('makes a nonempty ASTNodeTypeTuple.', () => {
+			Dev.supports('optionalEntries') && it('makes a nonempty ASTNodeTypeTuple.', () => {
 				/*
 					<TypeTuple>
 						<TypeAlias source="T"/>
@@ -180,7 +183,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supportsAll('literalCollection', 'optionalAccess') && describe('TypeRecordLiteral ::= "[" ","? PropertiesType "]"', () => {
+		Dev.supports('optionalEntries') && describe('TypeRecordLiteral ::= "[" ","? PropertiesType "]"', () => {
 			it('makes an ASTNodeTypeRecord.', () => {
 				/*
 					<TypeRecord>
@@ -678,55 +681,137 @@ describe('Decorator', () => {
 		})
 
 		Dev.supports('literalCollection') && describe('ExpressionCompound ::= ExpressionCompound PropertyAccess', () => {
-			it('access by integer.', () => {
-				/*
-					<Access>
-						<List source="[42, 420, 4200]">...</List>
-						<Index>
-							<Constant source="1"/>
-						</Index>
-					</Access>
-				*/
-				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
-					[42, 420, 4200].1;
-				`);
-				assert.ok(access.accessor instanceof AST.ASTNodeIndex);
-				assert.deepStrictEqual(
-					[access.base.source,    access.accessor.source],
-					[`[ 42 , 420 , 4200 ]`, `. 1`],
-				);
+			function makeAccess(src: string, kind: ValidAccessOperator = Operator.DOT, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeAccess {
+				const access: AST.ASTNodeExpression = Decorator.decorate(h.compoundExpressionFromSource(src, config));
+				assert.ok(access instanceof AST.ASTNodeAccess);
+				assert.strictEqual(access.kind, kind);
+				return access;
+			}
+			context('normal access.', () => {
+				it('access by index.', () => {
+					/*
+						<Access kind=NORMAL>
+							<Tuple source="[42, 420, 4200]">...</Tuple>
+							<Index>
+								<Constant source="1"/>
+							</Index>
+						</Access>
+					*/
+					const access: AST.ASTNodeAccess = makeAccess(`
+						[42, 420, 4200].1;
+					`);
+					assert.ok(access.accessor instanceof AST.ASTNodeIndex);
+					assert.deepStrictEqual(
+						[access.base.source,    access.accessor.source],
+						[`[ 42 , 420 , 4200 ]`, `. 1`],
+					);
+				});
+				it('access by key.', () => {
+					/*
+						<Access kind=NORMAL>
+							<Record source="[c= 42, b= 420, a= 4200]">...</Record>
+							<Key source="b"/>
+						</Access>
+					*/
+					const access: AST.ASTNodeAccess = makeAccess(`
+						[c= 42, b= 420, a= 4200].b;
+					`);
+					assert.ok(access.accessor instanceof AST.ASTNodeKey);
+					assert.deepStrictEqual(
+						[access.base.source,                access.accessor.source],
+						[`[ c = 42 , b = 420 , a = 4200 ]`, `b`],
+					);
+				});
+				it('access by computed expression.', () => {
+					/*
+						<Access kind=NORMAL>
+							<Mapping source="{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}">...</Mapping>
+							<Expression source="0.7 + 0.3">...</Expression>
+						</Access>
+					*/
+					const access: AST.ASTNodeAccess = makeAccess(`
+						{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}.[0.7 + 0.3];
+					`);
+					assert.ok(access.accessor instanceof AST.ASTNodeExpression);
+					assert.deepStrictEqual(
+						[access.base.source,                            access.accessor.source],
+						[`{ 0.5 * 2 |-> 'one' , 1.4 + 0.6 |-> 'two' }`, `0.7 + 0.3`],
+					);
+				});
 			});
-			it('access by key.', () => {
-				/*
-					<Access>
-						<Record source="[c= 42, b= 420, a= 4200]">...</Record>
-						<Key source="b"/>
-					</Access>
-				*/
-				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
-					[c= 42, b= 420, a= 4200].b;
-				`);
-				assert.ok(access.accessor instanceof AST.ASTNodeKey);
-				assert.deepStrictEqual(
-					[access.base.source,                access.accessor.source],
-					[`[ c = 42 , b = 420 , a = 4200 ]`, `b`],
-				);
+			Dev.supports('optionalAccess') && context('optional access.', () => {
+				it('access by index.', () => {
+					/*
+						<Access kind=OPTIONAL>
+							<Tuple source="[42, 420, 4200]">...</Tuple>
+							<Index>
+								<Constant source="1"/>
+							</Index>
+						</Access>
+					*/
+					makeAccess(`
+						[42, 420, 4200]?.1;
+					`, Operator.OPTDOT);
+				});
+				it('access by key.', () => {
+					/*
+						<Access kind=OPTIONAL>
+							<Record source="[c= 42, b= 420, a= 4200]">...</Record>
+							<Key source="b"/>
+						</Access>
+					*/
+					makeAccess(`
+						[c= 42, b= 420, a= 4200]?.b;
+					`, Operator.OPTDOT);
+				});
+				it('access by computed expression.', () => {
+					/*
+						<Access kind=OPTIONAL>
+							<Mapping source="{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}">...</Mapping>
+							<Expression source="0.7 + 0.3">...</Expression>
+						</Access>
+					*/
+					makeAccess(`
+						{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}?.[0.7 + 0.3];
+					`, Operator.OPTDOT);
+				});
 			});
-			it('access by computed expression.', () => {
-				/*
-					<Access>
-						<Mapping source="{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}">...</Mapping>
-						<Expression source="0.7 + 0.3">...</Expression>
-					</Access>
-				*/
-				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`
-					{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}.[0.7 + 0.3];
-				`);
-				assert.ok(access.accessor instanceof AST.ASTNodeExpression);
-				assert.deepStrictEqual(
-					[access.base.source,                            access.accessor.source],
-					[`{ 0.5 * 2 |-> 'one' , 1.4 + 0.6 |-> 'two' }`, `0.7 + 0.3`],
-				);
+			Dev.supports('claimAccess') && context('claim access.', () => {
+				it('access by index.', () => {
+					/*
+						<Access kind=CLAIM>
+							<Tuple source="[42, 420, 4200]">...</Tuple>
+							<Index>
+								<Constant source="1"/>
+							</Index>
+						</Access>
+					*/
+					makeAccess(`
+						[42, 420, 4200]!.1;
+					`, Operator.CLAIMDOT);
+				});
+				it('access by key.', () => {
+					/*
+						<Access kind=CLAIM>
+							<Record source="[c= 42, b= 420, a= 4200]">...</Record>
+							<Key source="b"/>
+						</Access>
+					*/
+					makeAccess(`
+						[c= 42, b= 420, a= 4200]!.b;
+					`, Operator.CLAIMDOT);
+				});
+				it('access by computed expression.', () => {
+					/*
+						<Access kind=CLAIM>
+							<Mapping source="{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}">...</Mapping>
+							<Expression source="0.7 + 0.3">...</Expression>
+						</Access>
+					*/
+					makeAccess(`
+						{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}!.[0.7 + 0.3];
+					`, Operator.CLAIMDOT);
+				});
 			});
 		});
 

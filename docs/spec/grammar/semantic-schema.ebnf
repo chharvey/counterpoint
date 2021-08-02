@@ -88,7 +88,7 @@ SemanticRecord  ::= SemanticProperty+;
 SemanticSet     ::= SemanticExpression*;
 SemanticMapping ::= SemanticCase+;
 
-SemanticAccess
+SemanticAccess[kind: NORMAL | OPTIONAL | CLAIM]
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
 
 SemanticOperation[operator: NOT | EMP]
