@@ -902,7 +902,9 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				return null;
 			}
 			if (base_value instanceof SolidTuple) {
-				return base_value.get(accessor_value as Int16, this.optional, this.accessor);
+				return (base_value as SolidTuple).get(accessor_value as Int16, this.optional, this.accessor);
+			} else if (base_value instanceof SolidSet) {
+				return (base_value as SolidSet).get(accessor_value, this.optional, this.accessor);
 			} else /* (base_value instanceof SolidMapping) */ {
 				return (base_value as SolidMapping).get(accessor_value, this.optional, this.accessor);
 			}

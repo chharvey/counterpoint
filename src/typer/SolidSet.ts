@@ -1,12 +1,15 @@
 import * as xjs from 'extrajs';
 import {SetEq} from '../core/index.js';
 import type {Keys} from '../types';
+import type {AST} from '../validator/index.js';
+import {VoidError01} from '../error/index.js';
 import {
 	SolidType,
 	SolidTypeConstant,
 } from './SolidType.js';
 import {SolidTypeSet} from './SolidTypeSet.js';
 import {SolidObject} from './SolidObject.js';
+import {SolidNull} from './SolidNull.js';
 import {SolidBoolean} from './SolidBoolean.js';
 
 
@@ -65,5 +68,13 @@ export class SolidSet<T extends SolidObject = SolidObject> extends SolidObject {
 				? [...this.elements].map<SolidType>((el) => new SolidTypeConstant(el)).reduce((a, b) => a.union(b))
 				: SolidType.NEVER,
 		);
+	}
+
+	get(el: T, access_optional: boolean, accessor: AST.ASTNodeExpression): T | SolidNull {
+		return (this.elements.has(el))
+			? el
+			: (access_optional)
+				? SolidNull.NULL
+				: (() => { throw new VoidError01(accessor); })();
 	}
 }
