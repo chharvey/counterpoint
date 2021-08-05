@@ -1,5 +1,4 @@
 import * as xjs from 'extrajs';
-import {SetEq} from '../core/index.js';
 import type {Keys} from '../types';
 import {
 	SolidType,
@@ -21,21 +20,8 @@ export class SolidSet<T extends SolidObject = SolidObject> extends SolidObject {
 	);
 
 
-	/**
-	 * Comparator for all internal sets.
-	 * @param el1 an element
-	 * @param el2 an element
-	 * @returns are the elements ‘identical’ per Solid specification?
-	 */
-	private static comparator(el1: SolidObject, el2: SolidObject): boolean {
-		return el1.identical(el2);
-	}
-
-
-	private readonly elements: ReadonlySet<T>;
-	constructor (elements: ReadonlySet<T> = new Set()) {
+	constructor (private readonly elements: ReadonlySet<T> = new Set()) {
 		super();
-		this.elements = new SetEq(SolidSet.comparator, elements);
 	}
 	override toString(): string {
 		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
