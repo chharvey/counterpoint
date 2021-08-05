@@ -23,7 +23,7 @@ export abstract class SolidObject {
 	/** @implements SolidType */
 	static isBottomType: SolidType['isBottomType'] = false;
 	/** @implements SolidType */
-	static isUniverse: SolidType['isUniverse'] = false;
+	static isTopType: SolidType['isTopType'] = false;
 	/** @implements SolidType */
 	static values: SolidType['values'] = new Set();
 	/** @implements SolidType */

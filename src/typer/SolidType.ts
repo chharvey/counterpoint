@@ -66,10 +66,10 @@ export abstract class SolidType {
 	readonly isBottomType: boolean;
 	/**
 	 * Whether this type has all values assignable to it,
-	 * i.e., it is equal to the Top Type (`unknown`).
+	 * i.e., it is equal to the type `unknown`.
 	 * Used internally for special cases of computations.
 	 */
-	readonly isUniverse: boolean;
+	readonly isTopType: boolean;
 	/** An enumerated set of values that are assignable to this type. */
 	readonly values: ReadonlySet<SolidObject>;
 
@@ -80,7 +80,7 @@ export abstract class SolidType {
 	constructor (values: ReadonlySet<SolidObject> = new Set()) {
 		this.values = new SetEq(SolidType.VALUE_COMPARATOR, values);
 		this.isBottomType = this.values.size === 0;
-		this.isUniverse = false;
+		this.isTopType = false;
 	}
 
 	/**
@@ -103,8 +103,8 @@ export abstract class SolidType {
 		if (t.isBottomType) { return SolidType.NEVER; }
 		if (this.isBottomType) { return this }
 		/** 1-6 | `T  & unknown == T` */
-		if (t.isUniverse) { return this }
-		if (this.isUniverse) { return t }
+		if (t.isTopType) { return this; }
+		if (this.isTopType) { return t; }
 		/** 3-3 | `A <: B  <->  A  & B == A` */
 		if (this.isSubtypeOf(t)) { return this }
 		if (t.isSubtypeOf(this)) { return t }
@@ -128,8 +128,8 @@ export abstract class SolidType {
 		if (t.isBottomType) { return this; }
 		if (this.isBottomType) { return t; }
 		/** 1-8 | `T \| unknown == unknown` */
-		if (t.isUniverse) { return t }
-		if (this.isUniverse) { return SolidType.UNKNOWN; }
+		if (t.isTopType) { return t; }
+		if (this.isTopType) { return SolidType.UNKNOWN; }
 		/** 3-4 | `A <: B  <->  A \| B == B` */
 		if (this.isSubtypeOf(t)) { return t }
 		if (t.isSubtypeOf(this)) { return this }
@@ -178,9 +178,9 @@ export abstract class SolidType {
 		/** 1-3 | `T       <: never  <->  T == never` */
 		if (t.isBottomType) { return this.isBottomType; }
 		/** 1-4 | `unknown <: T      <->  T == unknown` */
-		if (this.isUniverse) { return t.isUniverse; };
+		if (this.isTopType) { return t.isTopType; };
 		/** 1-2 | `T     <: unknown` */
-		if (t.isUniverse) { return true }
+		if (t.isTopType) { return true; }
 
 		if (t instanceof SolidTypeIntersection) {
 			return t.isSupertypeOf(this);
@@ -370,7 +370,7 @@ class SolidTypeDifference extends SolidType {
  */
 export class SolidTypeInterface extends SolidType {
 	override readonly isBottomType: boolean = [...this.properties.values()].some((value) => value.isBottomType);
-	override readonly isUniverse: boolean = this.properties.size === 0
+	override readonly isTopType: boolean = this.properties.size === 0;
 
 	/**
 	 * Construct a new SolidInterface object.
@@ -428,7 +428,7 @@ class SolidTypeNever extends SolidType {
 	static readonly INSTANCE: SolidTypeNever = new SolidTypeNever()
 
 	override readonly isBottomType: boolean = true;
-	override readonly isUniverse: boolean = false
+	override readonly isTopType: boolean = false;
 
 	private constructor () {
 		super()
@@ -455,7 +455,7 @@ class SolidTypeVoid extends SolidType {
 	static readonly INSTANCE: SolidTypeVoid = new SolidTypeVoid();
 
 	override readonly isBottomType: boolean = false;
-	override readonly isUniverse: boolean = false;
+	override readonly isTopType: boolean = false;
 
 	private constructor () {
 		super();
@@ -485,7 +485,7 @@ class SolidTypeVoid extends SolidType {
  */
 export class SolidTypeConstant extends SolidType {
 	override readonly isBottomType: boolean = false;
-	override readonly isUniverse: boolean = false
+	override readonly isTopType: boolean = false;
 
 	constructor (readonly value: SolidObject) {
 		super(new Set([value]))
@@ -511,7 +511,7 @@ class SolidTypeUnknown extends SolidType {
 	static readonly INSTANCE: SolidTypeUnknown = new SolidTypeUnknown()
 
 	override readonly isBottomType: boolean = false;
-	override readonly isUniverse: boolean = true
+	override readonly isTopType: boolean = true;
 
 	private constructor () {
 		super()
@@ -524,6 +524,6 @@ class SolidTypeUnknown extends SolidType {
 		return true
 	}
 	override equals(t: SolidType): boolean {
-		return t.isUniverse
+		return t.isTopType;
 	}
 }
