@@ -41,7 +41,7 @@ export class SolidRecord<T extends SolidObject = SolidObject> extends SolidObjec
 			if (!SolidRecord.EQ_MEMO.has(memokey)) {
 				SolidRecord.EQ_MEMO.set(memokey, false); // use this assumption in the next step
 				SolidRecord.EQ_MEMO.set(memokey, [...(value as SolidRecord).properties].every(
-					([thatkey, thatvalue]) => this.properties.has(thatkey) && this.properties.get(thatkey)!.equal(thatvalue),
+					([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue),
 				));
 			}
 			return SolidRecord.EQ_MEMO.get(memokey)!;
@@ -59,6 +59,6 @@ export class SolidRecord<T extends SolidObject = SolidObject> extends SolidObjec
 			? this.properties.get(key)!
 			: (access_optional)
 				? SolidNull.NULL
-				: (() => {throw new VoidError01(accessor);})();
+				: (() => { throw new VoidError01(accessor); })();
 	}
 }

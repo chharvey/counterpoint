@@ -1,10 +1,15 @@
 import * as xjs from 'extrajs';
 import type {Keys} from '../types';
+import {
+	Map_getEq,
+	Map_hasEq,
+} from '../lib/index.js';
 import type {AST} from '../validator/index.js';
 import {VoidError01} from '../error/index.js';
 import {
 	SolidType,
 	SolidTypeConstant,
+	solidObjectsIdentical,
 } from './SolidType.js';
 import {SolidTypeMapping} from './SolidTypeMapping.js';
 import {SolidObject} from './SolidObject.js';
@@ -21,21 +26,10 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidMapping, SolidMapping], boolean> = new xjs.MapEq(
 		(a, b) => a[0].identical(b[0]) && a[1].identical(b[1]),
 	);
-	/**
-	 * Comparator for all internal mappings.
-	 * @param key1 a key
-	 * @param key2 a key
-	 * @returns are the keys ‘identical’ per Solid specification?
-	 */
-	private static comparator(key1: SolidObject, key2: SolidObject): boolean {
-		return key1.identical(key2);
-	}
 
 
-	private readonly cases: ReadonlyMap<K, V>;
-	constructor (cases: ReadonlyMap<K, V> = new Map()) {
+	constructor (private readonly cases: ReadonlyMap<K, V> = new Map()) {
 		super();
-		this.cases = new xjs.MapEq(SolidMapping.comparator, [...cases]);
 	}
 	override toString(): string {
 		return `{${ [...this.cases].map(([ant, con]) => `${ ant.toString() } |-> ${ con.toString() }`).join(', ') }}`;
@@ -49,10 +43,9 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 			const memokey: Keys<typeof SolidMapping.EQ_MEMO> = [this, value];
 			if (!SolidMapping.EQ_MEMO.has(memokey)) {
 				SolidMapping.EQ_MEMO.set(memokey, false); // use this assumption in the next step
-				SolidMapping.EQ_MEMO.set(memokey, [...(value as SolidMapping).cases].every(([thatant, thatcon]) => {
-					const found: K | null = [...this.cases.keys()].find((ant) => ant.equal(thatant)) || null;
-					return !!found && this.cases.get(found)!.equal(thatcon);
-				}));
+				SolidMapping.EQ_MEMO.set(memokey, [...(value as SolidMapping).cases].every(
+					([thatant, thatcon]) => !![...this.cases].find(([thisant, _]) => thisant.equal(thatant))?.[1].equal(thatcon),
+				));
 			}
 			return SolidMapping.EQ_MEMO.get(memokey)!;
 		} else {
@@ -68,10 +61,10 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 	}
 
 	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | SolidNull {
-		return (this.cases.has(ant))
-			? this.cases.get(ant)!
+		return (Map_hasEq(this.cases, ant, solidObjectsIdentical))
+			? Map_getEq(this.cases, ant, solidObjectsIdentical)!
 			: (access_optional)
 				? SolidNull.NULL
-				: (() => {throw new VoidError01(accessor);})();
+				: (() => { throw new VoidError01(accessor); })();
 	}
 }

@@ -1654,7 +1654,7 @@ describe('ASTNodeSolid', () => {
 						])),
 					);
 				});
-				it('ASTNodeMapping overwrites identical antecedents.', () => {
+				it.skip('ASTNodeMapping overwrites identical antecedents.', () => {
 					assert.deepStrictEqual(
 						AST.ASTNodeMapping.fromSource(`
 							{
@@ -1669,7 +1669,7 @@ describe('ASTNodeSolid', () => {
 						])),
 					);
 				});
-				it('ASTNodeMapping does not overwrite non-identical (even if equal) antecedents.', () => {
+				it.skip('ASTNodeMapping does not overwrite non-identical (even if equal) antecedents.', () => {
 					assert.deepStrictEqual(
 						AST.ASTNodeMapping.fromSource(`
 							{
