@@ -1195,7 +1195,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			}
 			return SolidBoolean
 		}
-		if (t0.intersect(t1).isEmpty) {
+		if (t0.intersect(t1).isBottomType) {
 			return SolidBoolean.FALSETYPE
 		}
 		return SolidBoolean

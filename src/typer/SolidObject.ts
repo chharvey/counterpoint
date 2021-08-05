@@ -21,7 +21,7 @@ export abstract class SolidObject {
 		return 'obj';
 	}
 	/** @implements SolidType */
-	static isEmpty: SolidType['isEmpty'] = false;
+	static isBottomType: SolidType['isBottomType'] = false;
 	/** @implements SolidType */
 	static isUniverse: SolidType['isUniverse'] = false;
 	/** @implements SolidType */

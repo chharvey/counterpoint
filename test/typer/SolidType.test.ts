@@ -195,20 +195,20 @@ describe('SolidType', () => {
 	describe('#subtract', () => {
 		it('4-1 | `A - B == A  <->  A & B == never`', () => {
 			predicate2(builtin_types, (a, b) => {
-				if (a.intersect(b).isEmpty) {
+				if (a.intersect(b).isBottomType) {
 					assert.ok(a.subtract(b).equals(a), `forward: ${ a }, ${ b }`);
 				}
 				if (a.subtract(b).equals(a)) {
-					assert.ok(a.intersect(b).isEmpty, `backward: ${ a }, ${ b }`);
+					assert.ok(a.intersect(b).isBottomType, `backward: ${ a }, ${ b }`);
 				}
 			});
 		});
 		it('4-2 | `A - B == never  <->  A <: B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.isSubtypeOf(b)) {
-					assert.ok(a.subtract(b).isEmpty, `forward: ${ a }, ${ b }`);
+					assert.ok(a.subtract(b).isBottomType, `forward: ${ a }, ${ b }`);
 				}
-				if (a.subtract(b).isEmpty) {
+				if (a.subtract(b).isBottomType) {
 					assert.ok(a.isSubtypeOf(b), `forward: ${ a }, ${ b }`);
 				}
 			});
@@ -216,9 +216,9 @@ describe('SolidType', () => {
 		it('4-3 | `A <: B - C  <->  A <: B  &&  A & C == never`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(b.subtract(c))) {
-					assert.ok(a.isSubtypeOf(b) && a.intersect(c).isEmpty, `forward: ${ a }, ${ b }, ${ c }`);
+					assert.ok(a.isSubtypeOf(b) && a.intersect(c).isBottomType, `forward: ${ a }, ${ b }, ${ c }`);
 				}
-				if (a.isSubtypeOf(b) && a.intersect(c).isEmpty) {
+				if (a.isSubtypeOf(b) && a.intersect(c).isBottomType) {
 					assert.ok(a.isSubtypeOf(b.subtract(c)), `forward: ${ a }, ${ b }, ${ c }`);
 				}
 			});

@@ -18,7 +18,7 @@ import {
 
 
 export class SolidTypeRecord extends SolidType {
-	override readonly isEmpty: boolean = false;
+	override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new SolidTypeRecord from type properties, assuming each properties is required.

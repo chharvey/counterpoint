@@ -19,7 +19,7 @@ import {
 
 
 export class SolidTypeTuple extends SolidType {
-	override readonly isEmpty: boolean = false;
+	override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new SolidTypeTuple from type items, assuming each item is required.
