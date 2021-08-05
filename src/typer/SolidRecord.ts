@@ -1,5 +1,3 @@
-import * as xjs from 'extrajs';
-import type {Keys} from '../types';
 import type {AST} from '../validator/index.js';
 import {VoidError01} from '../error/index.js';
 import {
@@ -7,20 +5,18 @@ import {
 	SolidTypeConstant,
 } from './SolidType.js';
 import {SolidTypeRecord} from './SolidTypeRecord.js';
-import {SolidObject} from './SolidObject.js';
+import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
 import {SolidBoolean} from './SolidBoolean.js';
+import {Collection} from './Collection.js';
 
 
 
-export class SolidRecord<T extends SolidObject = SolidObject> extends SolidObject {
+export class SolidRecord<T extends SolidObject = SolidObject> extends Collection {
 	static override toString(): string {
 		return 'Record';
 	}
 	static override values: SolidType['values'] = new Set([new SolidRecord()]);
-	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidRecord, SolidRecord], boolean> = new xjs.MapEq(
-		(a, b) => a[0].identical(b[0]) && a[1].identical(b[1]),
-	);
 
 
 	constructor (
@@ -36,21 +32,16 @@ export class SolidRecord<T extends SolidObject = SolidObject> extends SolidObjec
 	}
 	/** @final */
 	protected override equal_helper(value: SolidObject): boolean {
-		if (value instanceof SolidRecord && this.properties.size === value.properties.size) {
-			const memokey: Keys<typeof SolidRecord.EQ_MEMO> = [this, value];
-			if (!SolidRecord.EQ_MEMO.has(memokey)) {
-				SolidRecord.EQ_MEMO.set(memokey, false); // use this assumption in the next step
-				SolidRecord.EQ_MEMO.set(memokey, [...(value as SolidRecord).properties].every(
-					([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue),
-				));
-			}
-			return SolidRecord.EQ_MEMO.get(memokey)!;
-		} else {
-			return false;
-		}
+		return (
+			value instanceof SolidRecord
+			&& this.properties.size === value.properties.size
+			&& Collection.do_Equal<SolidRecord>(this, value, () => [...(value as SolidRecord).properties].every(
+				([thatkey, thatvalue]) => !!this.properties.get(thatkey)?.equal(thatvalue),
+			))
+		);
 	}
 
-	toType(): SolidTypeRecord {
+	override toType(): SolidTypeRecord {
 		return SolidTypeRecord.fromTypes(new Map([...this.properties].map(([key, value]) => [key, new SolidTypeConstant(value)])));
 	}
 
