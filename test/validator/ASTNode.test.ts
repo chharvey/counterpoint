@@ -1654,37 +1654,6 @@ describe('ASTNodeSolid', () => {
 						])),
 					);
 				});
-				it.skip('ASTNodeMapping overwrites identical antecedents.', () => {
-					assert.deepStrictEqual(
-						AST.ASTNodeMapping.fromSource(`
-							{
-								'a' |-> 1,
-								0   |-> 2.0,
-								-0  |-> 'three',
-							};
-						`).assess(new Validator()),
-						new SolidMapping(new Map<SolidObject, SolidObject>([
-							[new SolidString('a'), new Int16(1n)],
-							[new Int16(0n),        new SolidString('three')],
-						])),
-					);
-				});
-				it.skip('ASTNodeMapping does not overwrite non-identical (even if equal) antecedents.', () => {
-					assert.deepStrictEqual(
-						AST.ASTNodeMapping.fromSource(`
-							{
-								'a'  |-> 1,
-								0.0  |-> 2.0,
-								-0.0 |-> 'three',
-							};
-						`).assess(new Validator()),
-						new SolidMapping(new Map<SolidObject, SolidObject>([
-							[new SolidString('a'), new Int16(1n)],
-							[new Float64(0.0),     new Float64(2.0)],
-							[new Float64(-0.0),    new SolidString('three')],
-						])),
-					);
-				});
 			});
 
 			describe('ASTNodeOperation', () => {

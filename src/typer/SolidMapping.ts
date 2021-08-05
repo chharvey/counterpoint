@@ -3,6 +3,7 @@ import type {Keys} from '../types';
 import {
 	Map_getEq,
 	Map_hasEq,
+	Map_setEq,
 } from '../lib/index.js';
 import type {AST} from '../validator/index.js';
 import {VoidError01} from '../error/index.js';
@@ -30,6 +31,11 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 
 	constructor (private readonly cases: ReadonlyMap<K, V> = new Map()) {
 		super();
+		const uniques: Map<K, V> = new Map();
+		[...cases].forEach(([ant, con]) => {
+			Map_setEq(uniques, ant, con, solidObjectsIdentical);
+		});
+		this.cases = uniques;
 	}
 	override toString(): string {
 		return `{${ [...this.cases].map(([ant, con]) => `${ ant.toString() } |-> ${ con.toString() }`).join(', ') }}`;
