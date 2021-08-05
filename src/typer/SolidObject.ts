@@ -65,8 +65,8 @@ export abstract class SolidObject {
 	 * Return whether this value is “empty”, that is,
 	 * it is either falsy, a zero number, an empty string, or an empty collection.
 	 */
-	get isEmpty(): SolidBoolean {
-		return this.isTruthy.not;
+	get isEmpty(): boolean {
+		return !this.isTruthy.value;
 	}
 	/**
 	 * Is this value the same exact object as the argument?

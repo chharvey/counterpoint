@@ -9,7 +9,6 @@ import {
 import {SolidTypeTuple} from './SolidTypeTuple.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
-import {SolidBoolean} from './SolidBoolean.js';
 import type {Int16} from './Int16.js';
 
 
@@ -32,8 +31,8 @@ export class SolidTuple<T extends SolidObject = SolidObject> extends SolidObject
 	override toString(): string {
 		return `[${ this.items.map((it) => it.toString()).join(', ') }]`;
 	}
-	override get isEmpty(): SolidBoolean {
-		return SolidBoolean.fromBoolean(this.items.length === 0);
+	override get isEmpty(): boolean {
+		return this.items.length === 0;
 	}
 	/** @final */
 	protected override equal_helper(value: SolidObject): boolean {
