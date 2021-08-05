@@ -15,7 +15,7 @@ They are not directly observable from Solid code.
 
 
 ### Void
-The **Void** type has one value called \`void\`.
+The **Void** type has one value called *void*.
 It signifies a variable with no meaningful value.
 An algorithm with output type Void returns a [completion structure](#completionstructure)
 with no \`value\` property.
@@ -150,7 +150,7 @@ Property    | Description
 \`id\`      | the unique identifier of the declared symbol
 \`unfixed\` | a Boolean, whether the variable may be reassigned
 \`type\`    | the Solid Language Type of the variable
-\`value\`   | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Solid Language Value) of this symbol; otherwise: \`void\`
+\`value\`   | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Solid Language Value) of this symbol; otherwise: *void*
 
 
 ### Nodes
