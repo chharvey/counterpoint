@@ -1,5 +1,4 @@
 import {
-	SolidBoolean,
 	SolidString,
 } from './index.js'; // avoids circular imports
 import {SolidType} from './SolidType.js';
@@ -58,15 +57,15 @@ export abstract class SolidObject {
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value
 	 */
-	get isTruthy(): SolidBoolean {
-		return SolidBoolean.TRUE;
+	get isTruthy(): boolean {
+		return true;
 	}
 	/**
 	 * Return whether this value is “empty”, that is,
 	 * it is either falsy, a zero number, an empty string, or an empty collection.
 	 */
 	get isEmpty(): boolean {
-		return !this.isTruthy.value;
+		return !this.isTruthy;
 	}
 	/**
 	 * Is this value the same exact object as the argument?

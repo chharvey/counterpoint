@@ -1,6 +1,5 @@
 import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
-import {SolidBoolean} from './SolidBoolean.js';
 
 
 
@@ -34,8 +33,8 @@ export class SolidNull extends SolidObject {
 	override toString(): string {
 		return 'null'
 	}
-	override get isTruthy(): SolidBoolean {
-		return SolidBoolean.FALSE;
+	override get isTruthy(): boolean {
+		return false;
 	}
 	protected override identical_helper(value: SolidObject): boolean {
 		return value instanceof SolidNull

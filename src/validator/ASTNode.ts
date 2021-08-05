@@ -968,8 +968,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		}
 		const v0: SolidObject = assess0;
 		return (
-			(this.operator === Operator.NOT) ? v0.isTruthy.not :
-			(this.operator === Operator.EMP) ? SolidBoolean.fromBoolean(v0.isTruthy.not.value || v0.isEmpty) :
+			(this.operator === Operator.NOT) ? SolidBoolean.fromBoolean(!v0.isTruthy) :
+			(this.operator === Operator.EMP) ? SolidBoolean.fromBoolean(!v0.isTruthy || v0.isEmpty) :
 			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as SolidNumber<any>) :
 			(() => { throw new ReferenceError(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
@@ -1263,8 +1263,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		}
 		const v0: SolidObject = assess0;
 		if (
-			this.operator === Operator.AND && !v0.isTruthy.value ||
-			this.operator === Operator.OR  &&  v0.isTruthy.value
+			this.operator === Operator.AND && !v0.isTruthy
+			|| this.operator === Operator.OR && v0.isTruthy
 		) {
 			return v0;
 		}
