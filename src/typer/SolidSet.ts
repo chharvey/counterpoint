@@ -1,8 +1,12 @@
 import * as xjs from 'extrajs';
 import type {Keys} from '../types';
 import {
+	Set_addEq,
+} from '../lib/index.js';
+import {
 	SolidType,
 	SolidTypeConstant,
+	solidObjectsIdentical,
 } from './SolidType.js';
 import {SolidTypeSet} from './SolidTypeSet.js';
 import {SolidObject} from './SolidObject.js';
@@ -22,6 +26,11 @@ export class SolidSet<T extends SolidObject = SolidObject> extends SolidObject {
 
 	constructor (private readonly elements: ReadonlySet<T> = new Set()) {
 		super();
+		const uniques: Set<T> = new Set();
+		[...elements].forEach((el) => {
+			Set_addEq(uniques, el, solidObjectsIdentical);
+		});
+		this.elements = uniques;
 	}
 	override toString(): string {
 		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
