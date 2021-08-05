@@ -2161,9 +2161,9 @@ describe('ASTNodeSolid', () => {
 				null; % %% set_fixed   %% {1, 2.0, 'three'}.[1];       % type \`1\`             % value \`1\`
 				null; % %% set_fixed   %% {1, 2.0, 'three'}.[2.0];     % type \`2.0\`           % value \`2.0\`
 				null; % %% set_fixed   %% {1, 2.0, 'three'}.['three']; % type \`'three'\`       % value \`'three'\`
-				null; % %% set_unfixed %% {1, 2.0, three}.[1];         % type \`1 | 2.0 | str\` % non-computable value
-				null; % %% set_unfixed %% {1, 2.0, three}.[2.0];       % type \`1 | 2.0 | str\` % non-computable value
-				null; % %% set_unfixed %% {1, 2.0, three}.['three'];   % type \`1 | 2.0 | str\` % non-computable value
+				%% set_unfixed %% {1, 2.0, three}.[1];         % type \`1 | 2.0 | str\` % non-computable value
+				%% set_unfixed %% {1, 2.0, three}.[2.0];       % type \`1 | 2.0 | str\` % non-computable value
+				%% set_unfixed %% {1, 2.0, three}.['three'];   % type \`1 | 2.0 | str\` % non-computable value
 
 				% Cannot assign mapping to variable yet, because its type must be \`obj\`.
 				% TODO: Assign mapping to variable once generic type \`Mapping<K, V>\` is available.
@@ -2193,7 +2193,7 @@ describe('ASTNodeSolid', () => {
 					tupo2_u?.[2]; % type \`str?\`    % non-computable value
 
 					null; % %% set_fixed   %% {1, 2.0, 'three'}?.['three'];             % type \`'three'\`       % value \`'three'\`
-					null; % %% set_unfixed %% {1, 2.0, three}?.[three];                 % type \`1 | 2.0 | str\` % non-computable value
+					%% set_unfixed %% {1, 2.0, three}?.[three];                 % type \`1 | 2.0 | str\` % non-computable value
 					%% map_fixed   %% {a |-> 1, b |-> 2.0, c |-> 'three'}?.[c]; % type \`'three'\`       % value \`'three'\`
 					%% map_unfixed %% {a |-> 1, b |-> 2.0, c |-> three}?.[c];   % type \`1 | 2.0 | str\` % non-computable value
 				` : '' }
@@ -2464,6 +2464,25 @@ describe('ASTNodeSolid', () => {
 								expected,
 							);
 						});
+						it('returns the union of all element types, constants, for sets.', () => {
+							// TODO: #assess
+							/*
+							assert.deepStrictEqual(
+								program.children.slice(12, 15).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								expected.slice(0, 3),
+							);
+							*/
+							program.children.slice(15, 18).forEach((c) => {
+								assert.deepStrictEqual(
+									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
+									unionAllTypes([
+										typeConstInt(1n),
+										typeConstFloat(2.0),
+										SolidString,
+									]),
+								);
+							});
+						});
 						it('returns the union of all consequent types, constants, for mappings.', () => {
 							assert.deepStrictEqual(
 								program.children.slice(18, 21).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
@@ -2500,17 +2519,22 @@ describe('ASTNodeSolid', () => {
 								],
 							);
 						});
-						Dev.supports('optionalAccess') && it('unions with null if mappping access is optional.', () => {
+						Dev.supports('optionalAccess') && it('unions with null if set/mappping access is optional.', () => {
+							const union: SolidType = unionAllTypes([
+								typeConstInt(1n),
+								typeConstFloat(2.0),
+								SolidString,
+								SolidNull,
+							]);
 							assert.deepStrictEqual(
-								program.children.slice(40, 42).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								program.children.slice(39, 42).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)), // TODO: #assess
 								[
-									new SolidTypeConstant(new SolidString('three')), // fixed constants are foldable
-									unionAllTypes([
-										new SolidTypeConstant(new Int16(1n)),
-										new SolidTypeConstant(new Float64(2.0)),
-										SolidString,
-										SolidNull,
-									]),
+									/*
+									typeConstStr('three'),
+									*/
+									union,
+									typeConstStr('three'),
+									union,
 								],
 							);
 						});
@@ -2531,22 +2555,28 @@ describe('ASTNodeSolid', () => {
 							Dev.supports('optionalAccess') && assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`).type(validator), TypeError04);
 							Dev.supports('optionalAccess') && assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4];`).type(validator), TypeError04);
 						});
-						it('does not throw when accessor expression is corect type but out of bounds for mappings.', () => {
+						it('does not throw when accessor expression is corect type but out of bounds for sets/mappings.', () => {
 							/*
 							TODO: since the compiler knows the value doesn’t exist (the assessor throws a VoidError),
 							getting the type of this should return type `never`.
 							*/
+							const expected_oob: SolidType = unionAllTypes([
+								new SolidTypeConstant(new SolidTuple([new Int16(1n)])),
+								new SolidTypeConstant(new SolidTuple([new Float64(2.0)])),
+								new SolidTypeConstant(new SolidTuple([new SolidString('three')])),
+							]);
 							assert.deepStrictEqual(
-								AST.ASTNodeAccess.fromSource(`{['a'] |-> 1, ['b'] |-> 2.0, ['c'] |-> 'three'}.[['a']];`).type(validator),
-								unionAllTypes([
-									typeConstInt(1n),
-									typeConstFloat(2.0),
-									typeConstStr('three'),
-								]),
+								AST.ASTNodeAccess.fromSource(`{[1], [2.0], ['three']}.[[1]];`).type(validator),
+								expected_oob,
+							);
+							assert.deepStrictEqual(
+								AST.ASTNodeAccess.fromSource(`{['a'] |-> [1], ['b'] |-> [2.0], ['c'] |-> ['three']}.[['a']];`).type(validator),
+								expected_oob,
 							);
 						});
 						it('throws when accessor expression is of incorrect type.', () => {
 							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].['3'];`).type(validator), TypeError02);
+							assert.throws(() => AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}.[true];`).type(validator), TypeError02);
 							assert.throws(() => AST.ASTNodeAccess.fromSource(`{['a'] |-> 1, ['b'] |-> 2.0, ['c'] |-> 'three'}.['a'];`).type(validator), TypeError02);
 						});
 					});
@@ -2561,6 +2591,14 @@ describe('ASTNodeSolid', () => {
 						});
 						it('returns the union of all entry types for tuples.', () => {
 							program.children.slice(2, 8).forEach((c) => {
+								assert.deepStrictEqual(
+									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
+									int_float_str,
+								);
+							});
+						});
+						it('returns the union of all element types for sets.', () => {
+							program.children.slice(15, 18).forEach((c) => { // TODO: #assess
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
 									int_float_str,
@@ -2593,7 +2631,7 @@ describe('ASTNodeSolid', () => {
 									int_float_str.union(SolidNull),
 								],
 							);
-							program.children.slice(40, 42).forEach((c) => {
+							program.children.slice(39, 42).forEach((c) => { // TODO: #assess
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
 									int_float_str.union(SolidNull),

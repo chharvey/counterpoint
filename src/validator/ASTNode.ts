@@ -865,6 +865,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					: (accessor_type.isSubtypeOf(Int16))
 						? updateDynamicType(base_type_tuple.itemTypes(), this.kind)
 						: throwWrongSubtypeError(this.accessor, Int16);
+			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidSet || base_type instanceof SolidTypeSet) {
+				const base_type_set: SolidTypeSet = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidSet)
+					? base_type.value.toType()
+					: (base_type as SolidTypeSet);
+				return (accessor_type.isSubtypeOf(base_type_set.types))
+					? updateDynamicType(base_type_set.types, this.kind)
+					: throwWrongSubtypeError(this.accessor, base_type_set.types);
 			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping || base_type instanceof SolidTypeMapping) {
 				const base_type_mapping: SolidTypeMapping = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping)
 					? base_type.value.toType()
