@@ -2156,6 +2156,15 @@ describe('ASTNodeSolid', () => {
 
 				let unfixed three: str = 'three';
 
+				% Cannot assign set to variable yet, because its type must be \`obj\`.
+				% TODO: Assign set to variable once generic type \`Set<T>\` is available.
+				null; % %% set_fixed   %% {1, 2.0, 'three'}.[1];       % type \`1\`             % value \`1\`
+				null; % %% set_fixed   %% {1, 2.0, 'three'}.[2.0];     % type \`2.0\`           % value \`2.0\`
+				null; % %% set_fixed   %% {1, 2.0, 'three'}.['three']; % type \`'three'\`       % value \`'three'\`
+				null; % %% set_unfixed %% {1, 2.0, three}.[1];         % type \`1 | 2.0 | str\` % non-computable value
+				null; % %% set_unfixed %% {1, 2.0, three}.[2.0];       % type \`1 | 2.0 | str\` % non-computable value
+				null; % %% set_unfixed %% {1, 2.0, three}.['three'];   % type \`1 | 2.0 | str\` % non-computable value
+
 				% Cannot assign mapping to variable yet, because its type must be \`obj\`.
 				% TODO: Assign mapping to variable once generic type \`Mapping<K, V>\` is available.
 				%% map_fixed   %% {a |-> 1, b |-> 2.0, c |-> 'three'}.[a]; % type \`1\`             % value \`1\`
@@ -2183,6 +2192,8 @@ describe('ASTNodeSolid', () => {
 					tupo1_u?.[2]; % type \`str?\`    % non-computable value
 					tupo2_u?.[2]; % type \`str?\`    % non-computable value
 
+					null; % %% set_fixed   %% {1, 2.0, 'three'}?.['three'];             % type \`'three'\`       % value \`'three'\`
+					null; % %% set_unfixed %% {1, 2.0, three}?.[three];                 % type \`1 | 2.0 | str\` % non-computable value
 					%% map_fixed   %% {a |-> 1, b |-> 2.0, c |-> 'three'}?.[c]; % type \`'three'\`       % value \`'three'\`
 					%% map_unfixed %% {a |-> 1, b |-> 2.0, c |-> three}?.[c];   % type \`1 | 2.0 | str\` % non-computable value
 				` : '' }
@@ -2455,10 +2466,10 @@ describe('ASTNodeSolid', () => {
 						});
 						it('returns the union of all consequent types, constants, for mappings.', () => {
 							assert.deepStrictEqual(
-								program.children.slice(12, 15).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								program.children.slice(18, 21).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								expected.slice(0, 3),
 							);
-							program.children.slice(15, 18).forEach((c) => {
+							program.children.slice(21, 24).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
 									unionAllTypes([
@@ -2471,7 +2482,7 @@ describe('ASTNodeSolid', () => {
 						});
 						Dev.supports('optionalEntries') && it('unions with void if tuple entry is optional.', () => {
 							assert.deepStrictEqual(
-								program.children.slice(26, 28).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								program.children.slice(32, 34).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
 									SolidString.union(SolidType.VOID),
 									SolidString.union(SolidType.VOID),
@@ -2480,7 +2491,7 @@ describe('ASTNodeSolid', () => {
 						});
 						Dev.supports('optionalAccess') && it('unions with null if tuple entry and access are optional.', () => {
 							assert.deepStrictEqual(
-								program.children.slice(28, 32).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								program.children.slice(34, 38).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
 									new SolidTypeConstant(new SolidString('three')),
 									SolidBoolean.TRUETYPE,
@@ -2491,7 +2502,7 @@ describe('ASTNodeSolid', () => {
 						});
 						Dev.supports('optionalAccess') && it('unions with null if mappping access is optional.', () => {
 							assert.deepStrictEqual(
-								program.children.slice(32, 34).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								program.children.slice(40, 42).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
 									new SolidTypeConstant(new SolidString('three')), // fixed constants are foldable
 									unionAllTypes([
@@ -2505,7 +2516,7 @@ describe('ASTNodeSolid', () => {
 						});
 						Dev.supports('claimAccess') && it('always subtracts void.', () => {
 							assert.deepStrictEqual(
-								program.children.slice(34, 38).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								program.children.slice(42, 46).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
 									new SolidTypeConstant(new SolidString('three')),
 									SolidBoolean.TRUETYPE,
@@ -2557,7 +2568,7 @@ describe('ASTNodeSolid', () => {
 							});
 						});
 						it('returns the union of all consequent types for mappings.', () => {
-							program.children.slice(12, 18).forEach((c) => {
+							program.children.slice(18, 24).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
 									int_float_str,
@@ -2565,7 +2576,7 @@ describe('ASTNodeSolid', () => {
 							});
 						});
 						Dev.supports('optionalEntries') && it('does not union with void, even with optional tuple entries.', () => {
-							program.children.slice(26, 28).forEach((c) => {
+							program.children.slice(32, 34).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
 									int_float_str,
@@ -2574,7 +2585,7 @@ describe('ASTNodeSolid', () => {
 						});
 						Dev.supports('optionalAccess') && it('unions with null if access is optional.', () => {
 							assert.deepStrictEqual(
-								program.children.slice(28, 32).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								program.children.slice(34, 38).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
 									int_float_str.union(SolidNull),
 									Int16.union(Float64).union(SolidNull),
@@ -2582,7 +2593,7 @@ describe('ASTNodeSolid', () => {
 									int_float_str.union(SolidNull),
 								],
 							);
-							program.children.slice(32, 34).forEach((c) => {
+							program.children.slice(40, 42).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
 									int_float_str.union(SolidNull),
@@ -2591,7 +2602,7 @@ describe('ASTNodeSolid', () => {
 						});
 						Dev.supports('claimAccess') && it('always subtracts void.', () => {
 							assert.deepStrictEqual(
-								program.children.slice(34, 38).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+								program.children.slice(42, 46).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
 									int_float_str,
 									Int16.union(Float64),
@@ -2775,21 +2786,21 @@ describe('ASTNodeSolid', () => {
 							expected,
 						);
 						Dev.supports('optionalAccess') && assert.deepStrictEqual(
-							program.children.slice(28, 32).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(34, 38).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected_o,
 						);
 						Dev.supports('claimAccess') && assert.deepStrictEqual(
-							program.children.slice(34, 38).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(42, 46).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected_o,
 						);
 					});
 					it('returns individual entries for mappings.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(12, 18).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(18, 24).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
 						Dev.supports('optionalAccess') && assert.deepStrictEqual(
-							program.children.slice(32, 34).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(40, 42).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
 								new SolidString('three'),
 								null,
