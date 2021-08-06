@@ -25,6 +25,7 @@ import {
 import {
 	typeConstInt,
 	typeConstFloat,
+	typeConstStr,
 } from '../helpers.js';
 
 
@@ -384,17 +385,17 @@ describe('SolidType', () => {
 				assert.ok(SolidBoolean.TRUETYPE .isSubtypeOf(SolidBoolean), 'SolidBoolean.TRUETYPE')
 			})
 			it('constant Integer types should be subtypes of `int`.', () => {
-				;[42n, -42n, 0n, -0n].map((v) => new SolidTypeConstant(new Int16(v))).forEach((itype) => {
+				;[42n, -42n, 0n, -0n].map((v) => typeConstInt(v)).forEach((itype) => {
 					assert.ok(itype.isSubtypeOf(Int16), `${ itype }`)
 				})
 			})
 			it('constant Float types should be subtypes of `float`.', () => {
-				;[4.2, -4.2e-2, 0.0, -0.0].map((v) => new SolidTypeConstant(new Float64(v))).forEach((ftype) => {
+				;[4.2, -4.2e-2, 0.0, -0.0].map((v) => typeConstFloat(v)).forEach((ftype) => {
 					assert.ok(ftype.isSubtypeOf(Float64), `${ ftype }`)
 				})
 			})
 			it('constant String types should be subtypes of `str`.', () => {
-				['a4.2', 'b-4.2e-2', 'c0.0', 'd-0.0'].map((v) => new SolidTypeConstant(new SolidString(v))).forEach((stype) => {
+				['a4.2', 'b-4.2e-2', 'c0.0', 'd-0.0'].map((v) => typeConstStr(v)).forEach((stype) => {
 					assert.ok(stype.isSubtypeOf(SolidString), `${ stype }`);
 				});
 			});

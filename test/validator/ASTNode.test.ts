@@ -2314,7 +2314,7 @@ describe('ASTNodeSolid', () => {
 							assert.deepStrictEqual(
 								program.children.slice(24, 28).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
-									new SolidTypeConstant(new SolidString('three')),
+									typeConstStr('three'),
 									SolidBoolean.TRUETYPE,
 									SolidString.union(SolidNull),
 									SolidString.union(SolidNull),
@@ -2328,7 +2328,7 @@ describe('ASTNodeSolid', () => {
 									program.children[33],
 								].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
-									new SolidTypeConstant(new SolidString('three')),
+									typeConstStr('three'),
 									SolidBoolean.TRUETYPE,
 									SolidString,
 									SolidString,
@@ -2424,7 +2424,7 @@ describe('ASTNodeSolid', () => {
 						assert.deepStrictEqual(
 							program.children.slice(18, 22).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
-								new SolidTypeConstant(new SolidString('three')),
+								typeConstStr('three'),
 								SolidBoolean.TRUETYPE,
 								SolidString.union(SolidNull),
 								SolidString.union(SolidNull),
@@ -2438,7 +2438,7 @@ describe('ASTNodeSolid', () => {
 								program.children[27],
 							].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
-								new SolidTypeConstant(new SolidString('three')),
+								typeConstStr('three'),
 								SolidBoolean.TRUETYPE,
 								SolidString,
 								SolidString,
@@ -2509,7 +2509,7 @@ describe('ASTNodeSolid', () => {
 							assert.deepStrictEqual(
 								program.children.slice(34, 38).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
-									new SolidTypeConstant(new SolidString('three')),
+									typeConstStr('three'),
 									SolidBoolean.TRUETYPE,
 									SolidString.union(SolidNull),
 									SolidString.union(SolidNull),
@@ -2531,7 +2531,7 @@ describe('ASTNodeSolid', () => {
 							assert.deepStrictEqual(
 								program.children.slice(42, 46).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
-									new SolidTypeConstant(new SolidString('three')),
+									typeConstStr('three'),
 									SolidBoolean.TRUETYPE,
 									SolidString,
 									SolidString,
