@@ -82,7 +82,7 @@ export class SolidTypeTuple extends SolidType {
 	}
 
 	itemTypes(): SolidType {
-		return this.types.map((t) => t.type).reduce((a, b) => a.union(b));
+		return SolidType.unionAll(this.types.map((t) => t.type));
 	}
 
 	/**

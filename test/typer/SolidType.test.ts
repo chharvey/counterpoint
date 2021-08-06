@@ -75,11 +75,11 @@ describe('SolidType', () => {
 
 	describe('#includes', () => {
 		it('uses `SolidObject#identical` to compare values.', () => {
-			function unionOfInts(fs: bigint[]): SolidType {
-				return fs.map<SolidType>(typeConstInt).reduce((a, b) => a.union(b));
+			function unionOfInts(ns: bigint[]): SolidType {
+				return SolidType.unionAll(ns.map<SolidType>(typeConstInt));
 			}
-			function unionOfFloats(fs: number[]): SolidType {
-				return fs.map<SolidType>(typeConstFloat).reduce((a, b) => a.union(b));
+			function unionOfFloats(ns: number[]): SolidType {
+				return SolidType.unionAll(ns.map<SolidType>(typeConstFloat));
 			}
 			const t1: SolidType = unionOfFloats([4.2, 4.3, 4.4]);
 			const t2: SolidType = unionOfFloats([4.3, 4.4, 4.5]);

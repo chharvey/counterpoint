@@ -56,6 +56,22 @@ export abstract class SolidType {
 	private static VALUE_COMPARATOR(a: SolidObject, b: SolidObject): boolean {
 		return a.identical(b);
 	}
+	/**
+	 * Intersect all the given types.
+	 * @param types the types to intersect
+	 * @returns the intersection
+	 */
+	static intersectAll(types: SolidType[]): SolidType {
+		return types.reduce((a, b) => a.intersect(b));
+	}
+	/**
+	 * Unions all the given types.
+	 * @param types the types to union
+	 * @returns the union
+	 */
+	static unionAll(types: SolidType[]): SolidType {
+		return types.reduce((a, b) => a.union(b));
+	};
 
 
 	/**

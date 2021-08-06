@@ -61,8 +61,8 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 
 	toType(): SolidTypeMapping {
 		return new SolidTypeMapping(
-			[...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeConstant(ant)).reduce((a, b) => a.union(b)),
-			[...this.cases.values()].map<SolidType>((con) => new SolidTypeConstant(con)).reduce((a, b) => a.union(b)),
+			SolidType.unionAll([...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeConstant(ant))),
+			SolidType.unionAll([...this.cases.values()].map<SolidType>((con) => new SolidTypeConstant(con))),
 		);
 	}
 
