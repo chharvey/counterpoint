@@ -24,7 +24,9 @@ export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
 	static override values: SolidType['values'] = new Set([new SolidSet()]);
 
 
-	constructor (private readonly elements: ReadonlySet<T> = new Set()) {
+	constructor (
+		private readonly elements: ReadonlySet<T> = new Set(),
+	) {
 		super();
 		const uniques: Set<T> = new Set();
 		[...elements].forEach((el) => {

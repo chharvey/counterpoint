@@ -25,7 +25,9 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 	static override values: SolidType['values'] = new Set([new SolidMapping()]);
 
 
-	constructor (private readonly cases: ReadonlyMap<K, V> = new Map()) {
+	constructor (
+		private readonly cases: ReadonlyMap<K, V> = new Map(),
+	) {
 		super();
 		const uniques: Map<K, V> = new Map();
 		[...cases].forEach(([ant, con]) => {
@@ -34,7 +36,7 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 		this.cases = uniques;
 	}
 	override toString(): string {
-		return `{${ [...this.cases].map(([ant, con]) => `${ ant.toString() } |-> ${ con.toString() }`).join(', ') }}`;
+		return `{${ [...this.cases].map(([ant, con]) => `${ ant } |-> ${ con }`).join(', ') }}`;
 	}
 	override get isEmpty(): SolidBoolean {
 		return SolidBoolean.fromBoolean(this.cases.size === 0);
