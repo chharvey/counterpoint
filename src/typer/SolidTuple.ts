@@ -1,5 +1,3 @@
-import * as xjs from 'extrajs';
-import type {Keys} from '../types';
 import type {AST} from '../validator/index.js';
 import {VoidError01} from '../error/index.js';
 import {
@@ -7,21 +5,19 @@ import {
 	SolidTypeConstant,
 } from './SolidType.js';
 import {SolidTypeTuple} from './SolidTypeTuple.js';
-import {SolidObject} from './SolidObject.js';
+import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
 import {SolidBoolean} from './SolidBoolean.js';
 import type {Int16} from './Int16.js';
+import {Collection} from './Collection.js';
 
 
 
-export class SolidTuple<T extends SolidObject = SolidObject> extends SolidObject {
+export class SolidTuple<T extends SolidObject = SolidObject> extends Collection {
 	static override toString(): string {
 		return 'Tuple';
 	}
 	static override values: SolidType['values'] = new Set([new SolidTuple()]);
-	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidTuple, SolidTuple], boolean> = new xjs.MapEq(
-		(a, b) => a[0].identical(b[0]) && a[1].identical(b[1]),
-	);
 
 
 	constructor (
@@ -37,21 +33,16 @@ export class SolidTuple<T extends SolidObject = SolidObject> extends SolidObject
 	}
 	/** @final */
 	protected override equal_helper(value: SolidObject): boolean {
-		if (value instanceof SolidTuple && this.items.length === value.items.length) {
-			const memokey: Keys<typeof SolidTuple.EQ_MEMO> = [this, value];
-			if (!SolidTuple.EQ_MEMO.has(memokey)) {
-				SolidTuple.EQ_MEMO.set(memokey, false); // use this assumption in the next step
-				SolidTuple.EQ_MEMO.set(memokey, (value as SolidTuple).items.every(
-					(thatitem, i) => this.items[i].equal(thatitem),
-				));
-			}
-			return SolidTuple.EQ_MEMO.get(memokey)!;
-		} else {
-			return false;
-		}
+		return (
+			value instanceof SolidTuple
+			&& this.items.length === value.items.length
+			&& Collection.do_Equal<SolidTuple>(this, value, () => (value as SolidTuple).items.every(
+				(thatitem, i) => this.items[i].equal(thatitem),
+			))
+		);
 	}
 
-	toType(): SolidTypeTuple {
+	override toType(): SolidTypeTuple {
 		return SolidTypeTuple.fromTypes(this.items.map((it) => new SolidTypeConstant(it)));
 	}
 

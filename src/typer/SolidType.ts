@@ -1,5 +1,9 @@
-import * as xjs from 'extrajs'
-import {SetEq} from '../core/index.js'
+import {
+	Set_differenceEq,
+	Set_hasEq,
+	Set_intersectionEq,
+	Set_unionEq,
+} from '../lib/index.js';
 import {
 	SolidTypeTuple,
 	SolidTypeRecord,
@@ -32,6 +36,14 @@ export type IntRange = [number, number];
 
 
 /**
+ * Comparator function for checking “sameness” of `SolidType#values` set elements.
+ * Values should be “the same” iff they are identical per the Solid specification.
+ */
+export const solidObjectsIdentical = (a: SolidObject, b: SolidObject): boolean => a.identical(b);
+
+
+
+/**
  * Parent class for all Solid Language Types.
  * Known subclasses:
  * - SolidTypeIntersection
@@ -53,10 +65,6 @@ export abstract class SolidType {
 	static get UNKNOWN(): SolidTypeUnknown { return SolidTypeUnknown.INSTANCE }
 	/** The Void Type, representing a completion but not a value. */
 	static get VOID(): SolidTypeVoid { return SolidTypeVoid.INSTANCE; }
-	/** Comparator function for `SolidType#values` set. */
-	private static VALUE_COMPARATOR(a: SolidObject, b: SolidObject): boolean {
-		return a.identical(b);
-	}
 
 
 	/**
@@ -64,24 +72,19 @@ export abstract class SolidType {
 	 * i.e., it is equal to the Bottom Type (`never`).
 	 * Used internally for special cases of computations.
 	 */
-	readonly isEmpty: boolean;
+	readonly isEmpty: boolean = this.values.size === 0;
 	/**
 	 * Whether this type has all values assignable to it,
 	 * i.e., it is equal to the Top Type (`unknown`).
 	 * Used internally for special cases of computations.
 	 */
-	readonly isUniverse: boolean;
-	/** An enumerated set of values that are assignable to this type. */
-	readonly values: ReadonlySet<SolidObject>;
+	readonly isUniverse: boolean = false;
 
 	/**
 	 * Construct a new SolidType object.
 	 * @param values an enumerated set of values that are assignable to this type
 	 */
-	constructor (values: ReadonlySet<SolidObject> = new Set()) {
-		this.values = new SetEq(SolidType.VALUE_COMPARATOR, values);
-		this.isEmpty = this.values.size === 0;
-		this.isUniverse = false;
+	constructor (readonly values: ReadonlySet<SolidObject> = new Set()) {
 	}
 
 	/**
@@ -91,7 +94,7 @@ export abstract class SolidType {
 	 * @returns Is `v` assignable to this type?
 	 */
 	includes(v: SolidObject): boolean {
-		return this.values.has(v)
+		return Set_hasEq(this.values, v, solidObjectsIdentical);
 	}
 	/**
 	 * Return the type intersection of this type with another.
@@ -230,7 +233,7 @@ export class SolidTypeIntersection extends SolidType {
 		private readonly left:  SolidType,
 		private readonly right: SolidType,
 	) {
-		super(xjs.Set.intersection(left.values, right.values))
+		super(Set_intersectionEq(left.values, right.values, solidObjectsIdentical));
 		this.isEmpty = this.left.isEmpty || this.right.isEmpty || this.isEmpty;
 	}
 
@@ -278,7 +281,7 @@ export class SolidTypeUnion extends SolidType {
 		private readonly left:  SolidType,
 		private readonly right: SolidType,
 	) {
-		super(xjs.Set.union(left.values, right.values))
+		super(Set_unionEq(left.values, right.values, solidObjectsIdentical));
 		this.isEmpty = this.left.isEmpty && this.right.isEmpty;
 	}
 
@@ -341,7 +344,7 @@ class SolidTypeDifference extends SolidType {
 		private readonly left:  SolidType,
 		private readonly right: SolidType,
 	) {
-		super(xjs.Set.difference(left.values, right.values));
+		super(Set_differenceEq(left.values, right.values, solidObjectsIdentical));
 		/*
 		We can assert that this is always non-empty because
 		the only cases in which it could be empty are

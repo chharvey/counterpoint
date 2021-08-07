@@ -25,11 +25,10 @@ export class Float64 extends SolidNumber<Float64> {
 		return `${ this.value }${ (this.value % 1 === 0) ? '.0' : '' }`
 	}
 	protected override identical_helper(value: SolidObject): boolean {
-		return value instanceof Float64 && this.is(value)
+		return value instanceof Float64 && Object.is(this.value, value.value);
 	}
-	/** @final */
 	protected override equal_helper(value: SolidObject): boolean {
-		return value instanceof SolidNumber && this.eq(value.toFloat())
+		return value instanceof SolidNumber && this.value === value.toFloat().value;
 	}
 
 	override toFloat(): this {
@@ -54,12 +53,6 @@ export class Float64 extends SolidNumber<Float64> {
 	}
 	override neg(): Float64 {
 		return new Float64(-this.value)
-	}
-	protected override is(fl: Float64): boolean {
-		return this === fl || Object.is(this.value, fl.value)
-	}
-	protected override eq(fl: Float64): boolean {
-		return this.is(fl) || this.value === fl.value
 	}
 	/**
 	 * The floating-point numbers `0.0` and `-0.0`, while not identical, are mathematically equal.
