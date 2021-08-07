@@ -134,7 +134,7 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 				1. *Set* `returned` to `Difference(v, Void)`.
 			3. *Set* `returned` to `v`.
 		4. *Else:*
-			`. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ k }}.".
+			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ k }}.".
 	13. *If* `returned` is set:
 		1. *If* `is_nullish` is `true`:
 			1. *Return:* `Union(returned, Null)`.
