@@ -8,6 +8,7 @@ import {
 	SolidTypeInterface,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidTypeSet,
 	SolidTypeMapping,
 	SolidObject,
 	SolidNull,
@@ -18,6 +19,7 @@ import {
 	SolidString,
 	SolidTuple,
 	SolidRecord,
+	SolidSet,
 	SolidMapping,
 } from '../../src/typer/index.js';
 import {
@@ -56,6 +58,7 @@ describe('SolidType', () => {
 		SolidString,
 		SolidTuple,
 		SolidRecord,
+		SolidSet,
 		SolidMapping,
 	]
 	const t0: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidType>([
@@ -366,6 +369,7 @@ describe('SolidType', () => {
 				SolidString,
 				SolidTuple,
 				SolidRecord,
+				SolidSet,
 				SolidMapping,
 			].forEach((t, _, arr) => {
 				arr.filter((u) => u !== t).forEach((u) => {
@@ -590,6 +594,21 @@ describe('SolidType', () => {
 					[0x101n, {type: Int16,        optional: false}],
 					[0x102n, {type: SolidBoolean, optional: false}],
 				]))), `[a: str, b?: int, c: bool] !<: [a?: str, b: int, c: bool]`);
+			});
+		});
+
+		Dev.supports('literalCollection') && describe('SolidTypeSet', () => {
+			it('is a subtype but not a supertype of `SolidObject`.', () => {
+				assert.ok(new SolidTypeSet(Int16).isSubtypeOf(SolidObject), `Set.<int> <: obj`);
+				assert.ok(!SolidObject.isSubtypeOf(new SolidTypeSet(Int16)), `obj !<: Set.<int>`);
+			});
+			it('Covariance: `A <: B --> Set.<A> <: Set.<B>`.', () => {
+				assert.ok(new SolidTypeSet(Int16).isSubtypeOf(
+					new SolidTypeSet(Int16.union(SolidBoolean))
+				), `Set.<int> <: Set.<int | bool>`);
+				assert.ok(!new SolidTypeSet(Int16).isSubtypeOf(
+					new SolidTypeSet(SolidBoolean)
+				), `Set.<int> !<: Set.<bool>`);
 			});
 		});
 

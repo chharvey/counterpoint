@@ -24,6 +24,7 @@ import {
 	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidTypeSet,
 	SolidTypeMapping,
 	SolidObject,
 	SolidNull,
@@ -34,6 +35,7 @@ import {
 	SolidString,
 	SolidTuple,
 	SolidRecord,
+	SolidSet,
 	SolidMapping,
 } from '../typer/index.js';
 import {
@@ -454,6 +456,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeTemplate
  * - ASTNodeTuple
  * - ASTNodeRecord
+ * - ASTNodeSet
  * - ASTNodeMapping
  * - ASTNodeAccess
  * - ASTNodeOperation
@@ -718,6 +721,39 @@ export class ASTNodeRecord extends ASTNodeExpression {
 			: new SolidRecord(properties as ReadonlyMap<bigint, SolidObject>);
 	}
 }
+export class ASTNodeSet extends ASTNodeExpression {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeSet {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeSet);
+		return expression;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTupleLiteral,
+		override readonly children: readonly ASTNodeExpression[],
+	) {
+		super(start_node, {}, children);
+	}
+	override get shouldFloat(): boolean {
+		throw 'ASTNodeSet#shouldFloat not yet supported.';
+	}
+	protected override build_do(builder: Builder): INST.InstructionExpression {
+		throw builder && 'ASTNodeSet#build_do not yet supported.';
+	}
+	protected override type_do(validator: Validator): SolidType {
+		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
+		return new SolidTypeSet(
+			(this.children.length)
+				? this.children.map((c) => c.type(validator)).reduce((a, b) => a.union(b))
+				: SolidType.NEVER,
+		);
+	}
+	protected override assess_do(validator: Validator): SolidObject | null {
+		const elements: readonly (SolidObject | null)[] = this.children.map((c) => c.assess(validator));
+		return (elements.includes(null))
+			? null
+			: new SolidSet(new Set(elements as SolidObject[]));
+	}
+}
 export class ASTNodeMapping extends ASTNodeExpression {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeMapping {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
@@ -829,6 +865,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 					: (accessor_type.isSubtypeOf(Int16))
 						? updateDynamicType(base_type_tuple.itemTypes(), this.kind)
 						: throwWrongSubtypeError(this.accessor, Int16);
+			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidSet || base_type instanceof SolidTypeSet) {
+				const base_type_set: SolidTypeSet = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidSet)
+					? base_type.value.toType()
+					: (base_type as SolidTypeSet);
+				return (accessor_type.isSubtypeOf(base_type_set.types))
+					? updateDynamicType(base_type_set.types, this.kind)
+					: throwWrongSubtypeError(this.accessor, base_type_set.types);
 			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping || base_type instanceof SolidTypeMapping) {
 				const base_type_mapping: SolidTypeMapping = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping)
 					? base_type.value.toType()
@@ -859,7 +902,9 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				return null;
 			}
 			if (base_value instanceof SolidTuple) {
-				return base_value.get(accessor_value as Int16, this.optional, this.accessor);
+				return (base_value as SolidTuple).get(accessor_value as Int16, this.optional, this.accessor);
+			} else if (base_value instanceof SolidSet) {
+				return (base_value as SolidSet).get(accessor_value, this.optional, this.accessor);
 			} else /* (base_value instanceof SolidMapping) */ {
 				return (base_value as SolidMapping).get(accessor_value, this.optional, this.accessor);
 			}

@@ -93,6 +93,7 @@ Case     ::= Expression "|->" Expression;
 
 TupleLiteral   ::= "[" ( ","? Expression# ","? )? "]";
 RecordLiteral  ::= "["   ","? Property#   ","?    "]";
+SetLiteral     ::= "{" ( ","? Expression# ","? )? "}";
 MappingLiteral ::= "{"   ","? Case#       ","?    "}";
 
 ExpressionUnit ::=
@@ -101,6 +102,7 @@ ExpressionUnit ::=
 	| StringTemplate
 	| TupleLiteral
 	| RecordLiteral
+	| SetLiteral
 	| MappingLiteral
 	| "(" Expression ")"
 ;

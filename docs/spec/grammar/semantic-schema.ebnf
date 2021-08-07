@@ -63,6 +63,7 @@ SemanticExpression =:=
 	| SemanticTemplate
 	| SemanticTuple
 	| SemanticRecord
+	| SemanticSet
 	| SemanticMapping
 	| SemanticAccess
 	| SemanticOperation
@@ -84,6 +85,7 @@ SemanticTemplatePartial
 
 SemanticTuple   ::= SemanticExpression*;
 SemanticRecord  ::= SemanticProperty+;
+SemanticSet     ::= SemanticExpression*;
 SemanticMapping ::= SemanticCase+;
 
 SemanticAccess[kind: NORMAL | OPTIONAL | CLAIM]

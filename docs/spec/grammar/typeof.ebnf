@@ -51,6 +51,14 @@ Type! TypeOfUnassessed(SemanticRecord record) :=
 
 
 
+Type! TypeOfUnassessed(SemanticSet set) :=
+	1. *Let* `types` be a mapping of `set` for each `el` to *Unwrap:* `TypeOf(el)`.
+	2. *Let* `t` be `Union(...types)`.
+	3. *Return:* a new Set type whose types are `t`.
+;
+
+
+
 Type! TypeOfUnassessed(SemanticMapping mapping) :=
 	1. *Let* `ant_types` be a mapping of `mapping` for each `case` to *Unwrap:* `TypeOf(case.children.0)`.
 	2. *Let* `con_types` be a mapping of `mapping` for each `case` to *Unwrap:* `TypeOf(case.children.1)`.
@@ -107,21 +115,32 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 				1. *Set* `returned` to `Difference(type, Void)`.
 			3. *Set* `returned` to `type`.
 		3. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
-	12. *If* *UnwrapAffirm:* `Subtype(base_type, Mapping)`:
+	12. *If* *UnwrapAffirm:* `Subtype(base_type, Set)`:
+		1. *Let* `t` be the type of the elements in `base_type`.
+		2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)`:
+			1. *If*: `access.kind` is `OPTIONAL`:
+				1. *Set* `returned` to `Union(t, Null)`.
+			2. *If*: `access.kind` is `CLAIM`:
+				1. *Set* `returned` to `Difference(t, Void)`.
+			3. *Set* `returned` to `t`.
+		3. *Else:*
+			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ t }}.".
+	13. *If* *UnwrapAffirm:* `Subtype(base_type, Mapping)`:
 		1. *Let* `k` be the type of the antecedents in `base_type`.
 		2. *Let* `v` be the type of the consequents in `base_type`.
 		3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)`:
 			1. *If*: `access.kind` is `OPTIONAL`:
 				1. *Set* `returned` to `Union(v, Null)`.
 			2. *If*: `access.kind` is `CLAIM`:
-				1. *Set* `returned` to `Difference(t, Void)`.
-			2. *Set* `returned` to `v`.
-		4. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ k }}.".
-	13. *If* `returned` is not `void`:
+				1. *Set* `returned` to `Difference(v, Void)`.
+			3. *Set* `returned` to `v`.
+		4. *Else:*
+			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ k }}.".
+	14. *If* `returned` is not `void`:
 		1. *If* `is_nullish` is `true`:
 			1. *Return:* `Union(returned, Null)`.
 		2. *Return*: `returned`.
-	14. *Throw:* a new TypeError01.
+	15. *Throw:* a new TypeError01.
 ;
 
 

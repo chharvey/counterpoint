@@ -136,6 +136,13 @@ Record! Assess(SemanticRecord record) :=
 
 
 
+Set! Assess(SemanticSet set) :=
+	1. *Let* `data` be a mapping of `set` for each `el` to *Unwrap:* `Assess(el)`.
+	2. *Return:* a new Set containing the items in the sequence `data`.
+;
+
+
+
 Mapping! Assess(SemanticMapping mapping) :=
 	1. *Let* `data` be a mapping of `mapping` for each `case` to a new Sequence [
 		*Unwrap:* `Assess(case.children.0)`,
@@ -170,12 +177,18 @@ Object! Assess(SemanticAccess access) :=
 	10. *If* `base_value` is an instance of `Tuple`:
 		1. *Assert:* `accessor_value` is an instance of `Integer` *and* `accessor_value` is an index in `base_value`.
 		2. *Return:* the item accessed at index `accessor_value` in `base_value`.
-	11. *Assert*: `base_value` is an instance of `Mapping`.
-	12. *If* `accessor_value` is an antecedent in `base_value`:
-		1. Find an antecedent `k` in `base_value` such that `Identical(k, accessor_value)`.
-		2. *If* `k` exists:
-			1. *Return:* the consequent accessed at antecedent `k` in `base_value`.
+	11. *If* `base_value` is an instance of `Set`:
+		1. Find an element `e` in `base_value` such that `Identical(e, accessor_value)`.
+		2. *If* `e` exists:
+			1. *Return:* `e`.
 		3. *If*: `access.kind` is `OPTIONAL`:
+			1. *Return:* `null`.
+	12. *Else:*
+		1. *Assert*: `base_value` is an instance of `Mapping`.
+		2. Find an antecedent `k` in `base_value` such that `Identical(k, accessor_value)`.
+		3. *If* `k` exists:
+			1. *Return:* the consequent accessed at antecedent `k` in `base_value`.
+		4. *If*: `access.kind` is `OPTIONAL`:
 			1. *Return:* `null`.
 	13. *Throw:* a new VoidError.
 ;
