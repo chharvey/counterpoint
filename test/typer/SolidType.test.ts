@@ -418,6 +418,16 @@ describe('SolidType', () => {
 					assert.ok(new SolidTypeConstant(value).isSubtypeOf(recordtype),  `let x: ${ recordtype } = ${ value };`);
 				});
 			});
+			it('constant set types should be subtype of a set type instance.', () => {
+				new Map<SolidObject, SolidTypeSet>([
+					[new SolidSet(),                                                      new SolidTypeSet(SolidType.NEVER)],
+					[new SolidSet(new Set([new Int16(42n)])),                             new SolidTypeSet(Int16)],
+					[new SolidSet(new Set([new Float64(4.2), new SolidString('hello')])), new SolidTypeSet(Float64.union(SolidString))],
+				]).forEach((settype, value) => {
+					assert.ok(new SolidTypeConstant(value).isSubtypeOf(SolidSet), `let x: Set = ${ value };`);
+					assert.ok(new SolidTypeConstant(value).isSubtypeOf(settype),  `let x: ${ settype } = ${ value };`);
+				});
+			});
 			it('constant mapping types should be subtype of a mapping type instance.', () => {
 				new Map<SolidObject, SolidTypeMapping>([
 					[new SolidMapping(new Map<SolidObject, SolidObject>([[new Int16(0x100n), new Int16(42n)]])),                                                  new SolidTypeMapping(Int16, Int16)],
