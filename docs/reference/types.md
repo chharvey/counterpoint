@@ -474,6 +474,16 @@ let GREETING: '''Hello World!''' = 'Hello World!'; %> ParseError
 
 
 ## Compound Types
+The following table summarizes the built-in compound types.
+
+Type                | Size           | Indices/Keys  | Generic Type Syntax  | Explicit Type Syntax         | Constructor Syntax                               | Literal Syntax                               | Empty Literal Syntax
+------------------- | -------------- | ------------  | -------------------- | ---------------------------- | ------------------------------------------------ | -------------------------------------------- | --------------------
+[Tuple](#tuple)     | Fixed          | integers      | *(none)*             | `[str, str, str]` / `str[3]` | *(none)*                                         | `['x', 'y', 'z']`                            | `[]`
+[Record](#record)   | Fixed          | words         | *(none)*             | `[a: str, b: str, c: str]`   | *(none)*                                         | `[a= 'x', b= 'y', c= 'z']`                   | *(none)*
+[List](#list)       | Variable       | integers      | `List.<str>`         | `str[]`                      | `List.(['x', 'y', 'z'])`                         | *(none)*                                     | *(none)*
+[Hash](#hash)       | Variable       | atoms/strings | `Hash.<str>`         | `[:str]`                     | `Hash.([a= 'x', b= 'y', c= 'z'])`                | *(none)*                                     | *(none)*
+[Set](#set)         | Variable       | *(none)*      | `Set.<str>`          | `str{}`                      | `Set.(['x', 'y', 'z'])`                          | `{'x', 'y', 'z'}`                            | `{}`
+[Mapping](#mapping) | Variable       | objects       | `Mapping.<str, str>` | `{str \|-> str}`             | `Mapping.([['u', 'x'], ['v', 'y'], ['w', 'z']])` | `{'u' \|-> 'x', 'v' \|-> 'y', 'w' \|-> 'z'}` | *(none)*
 
 
 ### Tuple
@@ -760,7 +770,7 @@ The expression `y!.middlename` behaves just like `y.middlename`, except that it 
 
 
 ### Set
-Sets are dynamic-sized unordered lists of values.
+Sets are variable-sized unordered lists of values.
 The values in a set are called **elements**. The number of elements in a set is called its **count**.
 
 Set literals are comma-separated expressions within curly braces.
@@ -790,7 +800,7 @@ Even though `0.0 == -0.0` and `x == y`, this set has four elements.
 
 
 ### Mapping
-Mappings are dynamic-sized unordered lists of antecedent-consequent pairs.
+Mappings are variable-sized unordered lists of antecedent-consequent pairs.
 Mappings form associations (**cases**) of values (**antecedents**) to other values (**consequents**).
 The antecedents are unique (by identity) in that each antecedent can be associated with only one consequent.
 The number of cases in a mapping is called its **count**.
