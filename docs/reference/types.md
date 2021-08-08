@@ -613,6 +613,7 @@ Records are fixed-size unordered lists of keyed values. Key–value pairs are ca
 where **keys** are keywords or identifiers, and **values** are expressions.
 The number of properties in a record is called its **count**.
 The count and types of record **entries** (the “slots” where values are stored) are fixed and known at compile-time.
+Records are heterogeneous, meaning they can be declared with different entry types.
 Record entries cannot be added or deleted, but if the record is mutable, they can be reassigned.
 
 For example, given the record
@@ -802,6 +803,42 @@ and if the list were mutable, we could reassign that entry to an integer or bool
 Lists can only be accessed by **bracket-accessor notation**,
 where the expression in brackets computes the index.
 See [Tuple Access](#tuple-access) for details.
+
+
+### Hash
+Hashes are variable-size unordered lists of keyed values. Key–value pairs are called **properties**,
+where **keys** are keywords or identifiers, and **values** are expressions.
+The number of properties in a record is called its **count**; the count of a hash is variable and unknown at compile-time.
+Hashes are homogeneous, meaning all entries in the hash have the same type (or parent type).
+If a hash is mutable, the entries of the hash may be reassigned, and properties may be added and removed from the hash as well.
+
+Hash types are declared via the **generic hash type syntax**: `Hash.<T>`
+where `T` indicates the type of values in the hash.
+Hashes are constructed via the constructor syntax `Hash.<T>(arg)`,
+where `arg` is a [Record](#record) object.
+```
+let my_styles: Hash.<int | float | str> = Hash.<int | float | str>([
+	fontFamily= 'sans-serif',
+	fontSize=   1.25,
+	fontStyle=  'oblique',
+	fontWeight= 400,
+]);
+```
+A shorthand for the generic syntax `Hash.<T>` is `[:T]`.
+We can also *initialize* a hash with a record literal,
+because records are generally assignable to hashes.
+```
+let my_styles: [: int | float | str] = [
+	fontFamily= 'sans-serif',
+	fontSize=   1.25,
+	fontStyle=  'oblique',
+	fontWeight= 400,
+];
+```
+As shown above, we can mix value types, but the hash type must be homogeneous.
+
+#### Hash Access
+*TBD*
 
 
 ### Set

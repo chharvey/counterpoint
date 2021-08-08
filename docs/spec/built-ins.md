@@ -28,6 +28,12 @@ The values of lists are Solid Language Values.
 
 
 
+## Hash
+`Hash` objects are variable-size unordered lists of keyed values, with identifier keys.
+The values of hashes are Solid Language Values.
+
+
+
 ## Set
 `Set` objects are variable-size unordered lists of values.
 The values of sets are Solid Language Values.

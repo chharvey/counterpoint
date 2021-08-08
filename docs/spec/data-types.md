@@ -284,6 +284,7 @@ and the “absorption element” of the [union](#union) operation.
 - [Tuple](#tuple-type)
 - [Record](#record-type)
 - [List](#list-type)
+- [Hash](#hash-type)
 - [Set](#set-type)
 - [Mapping](#mapping-type)
 
@@ -302,6 +303,12 @@ A **List Type** contains [`List` objects](./built-ins.md#list) and is described 
 representing items.
 The objects that any given List Type contains are `List` objects whose
 items are assignable to the type describing the List Type.
+
+#### Hash Type
+A **Hash Type** contains [`Hash` objects](./built-ins.md#hash) and is described by a single type,
+representing values.
+The objects that any given Hash Type contains are `Hash` objects whose
+values are assignable to the type describing the Hash Type.
 
 #### Set Type
 A **Set Type** contains [`Set` objects](./built-ins.md#set) and is described by a single type,
