@@ -788,6 +788,36 @@ In this example, the elements `0.0` and `-0.0` are not identical
 Similarly, `x` and `y` are not identical, but they are equal by tuple composition.
 Even though `0.0 == -0.0` and `x == y`, this set has four elements.
 
+#### Set Access
+Elements of a set can be accessed via **bracket-accessor notation**,
+where the expression in the brackets is the element to get.
+```
+let bases: obj = {
+	'who',
+	['what'],
+	{ 'i' |-> {'don’t' |-> 'know'} },
+};
+bases.['''{{ 'w' }}{{ 'h' }}{{ 'o' }}''']; %== 'who'
+bases.[['what']];                          %== ['what']
+```
+
+A VoidError is produced when the compiler can determine if the element does not exist.
+```
+let a: str = '3rd';
+bases.[a];          %> VoidError
+```
+If the compiler can’t compute the antecedent, it won’t error at all,
+but this means the program could crash at runtime.
+```
+let unfixed a: str = '3rd';
+bases.[a];                  % no compile-time error, but value at runtime will be undefined
+```
+We can avoid the potential crash using the
+[optional access operator](./expressions-operators.md#optional-access).
+```
+bases?.[a]; % produces the element if it exists, else `null`
+```
+
 
 ### Mapping
 Mappings are dynamic-sized unordered lists of antecedent-consequent pairs.
@@ -840,7 +870,8 @@ Similarly, `x` and `y` are not identical, but they are equal by tuple compositio
 Even though `0.0 == -0.0` and `x == y`, this mapping has four entries.
 
 #### Mapping Access
-Consequents of a mapping can be accessed via **bracket-accessor notation**.
+Consequents of a mapping can be accessed via **bracket-accessor notation**,
+where the expression in the brackets is the antecedent to get.
 ```
 let bases: obj = {
 	1     |-> 'who',
@@ -862,4 +893,9 @@ but this means the program could crash at runtime.
 ```
 let unfixed a: str = '3rd';
 bases.[a];                  % no compile-time error, but value at runtime will be undefined
+```
+We can avoid the potential crash using the
+[optional access operator](./expressions-operators.md#optional-access).
+```
+bases?.[a]; % produces the consequent if it exists, else `null`
 ```
