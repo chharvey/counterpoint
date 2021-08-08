@@ -19,6 +19,7 @@ import {
 	SolidString,
 	SolidTuple,
 	SolidRecord,
+	SolidList,
 	SolidSet,
 	SolidMapping,
 } from '../../src/typer/index.js';
@@ -58,6 +59,7 @@ describe('SolidType', () => {
 		SolidString,
 		SolidTuple,
 		SolidRecord,
+		SolidList,
 		SolidSet,
 		SolidMapping,
 	]
@@ -369,6 +371,7 @@ describe('SolidType', () => {
 				SolidString,
 				SolidTuple,
 				SolidRecord,
+				SolidList,
 				SolidSet,
 				SolidMapping,
 			].forEach((t, _, arr) => {

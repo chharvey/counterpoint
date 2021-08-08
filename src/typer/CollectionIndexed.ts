@@ -11,6 +11,7 @@ import {Collection} from './Collection.js';
 /**
  * Known subclasses:
  * - SolidTuple
+ * - SolidList
  */
 export abstract class CollectionIndexed<T extends SolidObject = SolidObject> extends Collection {
 	constructor (

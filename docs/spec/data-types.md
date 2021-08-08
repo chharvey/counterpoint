@@ -283,6 +283,7 @@ and the “absorption element” of the [union](#union) operation.
 
 - [Tuple](#tuple-type)
 - [Record](#record-type)
+- [List](#list-type)
 - [Set](#set-type)
 - [Mapping](#mapping-type)
 
@@ -295,6 +296,12 @@ match up with the types in the list in order.
 A **Record Type** contains [`Record` objects](./built-ins.md#record) and is described by an unordered list of name–type pairs.
 The objects that any given Record Type contains are `Record` objects whose properties’ types
 match up with the types in the list by name.
+
+#### List Type
+A **List Type** contains [`List` objects](./built-ins.md#list) and is described by a single type,
+representing items.
+The objects that any given List Type contains are `List` objects whose
+items are assignable to the type describing the List Type.
 
 #### Set Type
 A **Set Type** contains [`Set` objects](./built-ins.md#set) and is described by a single type,

@@ -244,7 +244,7 @@ Boolean Equal(Object a, Object b) :=
 			1. *Return:* `true`.
 		2. *If* `a` is `-0.0` *and* `b` is `0.0`:
 			1. *Return:* `true`.
-	4. *If* `a` is an instance of `Tuple` *and* `b` is an instance of `Tuple`:
+	4. *If* `a` is an instance of `Tuple` or `List` *and* `b` is an instance of `Tuple` or `List`:
 		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
 		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
 		3. *If* `seq_a.count` is not `seq_b.count`:

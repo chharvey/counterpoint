@@ -55,6 +55,7 @@ export const solidObjectsIdentical = (a: SolidObject, b: SolidObject): boolean =
  * - SolidTypeUnknown
  * - SolidTypeTuple
  * - SolidTypeRecord
+ * - SolidTypeList
  * - SolidTypeSet
  * - SolidTypeMapping
  */

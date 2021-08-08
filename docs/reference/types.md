@@ -491,7 +491,8 @@ Tuples are fixed-size ordered lists of indexed values, with indices starting at 
 The values in a tuple are called **items** (the actual values) or **entries** (the slots the values are stored in).
 The number of entries in a tuple is called its **count**.
 The count of a tuple is fixed and known at compile-time, as is the type of each entry in the tuple.
-If the tuple is mutable, the entries of the tuple may be reassigned, but only to values of the correct type.
+Tuples are heterogeneous, meaning they can be declared with different entry types.
+If a tuple is mutable, the entries of the tuple may be reassigned, but only to values of the correct type.
 
 For example, the tuple `[3, 4.0, 'seven']` has an integer in the first position at index `0`,
 followed by a float at index `1`, followed by a string at index `2`. Its count is 3.
@@ -767,6 +768,40 @@ It should only be used if we are certain the property exists.
 let ym: str = y!.middlename;
 ```
 The expression `y!.middlename` behaves just like `y.middlename`, except that it bypasses the compiler’s TypeError.
+
+
+### List
+Lists are variable-size ordered lists of indexed values, with indices starting at `0`.
+The values in a list are called **items** (the actual values) or **entries** (the slots the values are stored in).
+The number of entries in a list is called its **count**; the count of a list is variable and unknown at compile-time.
+Lists are homogeneous, meaning all entries in the list have the same type (or parent type).
+If a list is mutable, the entries of the list may be reassigned, and items may be added and removed from the list as well.
+
+List types are declared via the **generic list type syntax**: `List.<T>`
+where `T` indicates the type of items in the list.
+Lists are constructed via the constructor syntax `List.<T>(arg)`,
+where `arg` is a [Tuple](#tuple) object.
+```
+let elements: List.<str> = List.<str>(['earth', 'wind', 'fire']);
+```
+A shorthand for the generic syntax `List.<T>` is `T[]`.
+We can also *initialize* a list with a tuple literal,
+because tuples are generally assignable to lists.
+```
+let elements: str[] = ['earth', 'wind', 'fire'];
+```
+We can mix item types, but the list type must be homogeneous.
+```
+let elements: (str | bool | int)[] = ['earth', 'wind', 'fire', true, 42];
+```
+The compiler considers all items in the list as having the same type.
+For example, the expression `elements.[0]` is of type `str | bool | int`,
+and if the list were mutable, we could reassign that entry to an integer or boolean.
+
+#### List Access
+Lists can only be accessed by **bracket-accessor notation**,
+where the expression in brackets computes the index.
+See [Tuple Access](#tuple-access) for details.
 
 
 ### Set
