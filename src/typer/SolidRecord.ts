@@ -9,7 +9,6 @@ import {
 import {SolidTypeRecord} from './SolidTypeRecord.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
-import {SolidBoolean} from './SolidBoolean.js';
 
 
 
@@ -31,8 +30,8 @@ export class SolidRecord<T extends SolidObject = SolidObject> extends SolidObjec
 	override toString(): string {
 		return `[${ [...this.properties].map(([key, value]) => `${ key.toString() }n= ${ value.toString() }`).join(', ') }]`;
 	}
-	override get isEmpty(): SolidBoolean {
-		return SolidBoolean.fromBoolean(this.properties.size === 0);
+	override get isEmpty(): boolean {
+		return this.properties.size === 0;
 	}
 	/** @final */
 	protected override equal_helper(value: SolidObject): boolean {

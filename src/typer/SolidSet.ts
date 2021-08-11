@@ -10,7 +10,6 @@ import {
 import {SolidTypeSet} from './SolidTypeSet.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
-import {SolidBoolean} from './SolidBoolean.js';
 
 
 
@@ -43,8 +42,8 @@ export class SolidSet<T extends SolidObject = SolidObject> extends SolidObject {
 	override toString(): string {
 		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
 	}
-	override get isEmpty(): SolidBoolean {
-		return SolidBoolean.fromBoolean(this.elements.size === 0);
+	override get isEmpty(): boolean {
+		return this.elements.size === 0;
 	}
 	/** @final */
 	protected override equal_helper(value: SolidObject): boolean {
@@ -65,7 +64,7 @@ export class SolidSet<T extends SolidObject = SolidObject> extends SolidObject {
 	toType(): SolidTypeSet {
 		return new SolidTypeSet(
 			(this.elements.size)
-				? [...this.elements].map<SolidType>((el) => new SolidTypeConstant(el)).reduce((a, b) => a.union(b))
+				? SolidType.unionAll([...this.elements].map<SolidType>((el) => new SolidTypeConstant(el)))
 				: SolidType.NEVER,
 		);
 	}

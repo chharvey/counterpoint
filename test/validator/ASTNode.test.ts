@@ -401,7 +401,7 @@ describe('ASTNodeSolid', () => {
 					],
 					[
 						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
-						new INST.InstructionStatement(1n, new INST.InstructionGlobalGet(0x101n)),
+						new INST.InstructionStatement(1n, new INST.InstructionGlobalGet(0x101n, true)),
 					],
 				);
 			});
@@ -891,8 +891,7 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 			it('returns Unknown for undeclared variables.', () => {
-				// NOTE: a reference error will be thrown at the variable-checking stage
-				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidType.UNKNOWN);
+				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidType.NEVER);
 			});
 			Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
 				let templates: readonly AST.ASTNodeTemplate[];
@@ -2205,9 +2204,6 @@ describe('ASTNodeSolid', () => {
 				` : '' }
 			`);
 			describe('#type', () => {
-				function unionAllTypes(types: SolidType[]): SolidType {
-					return types.reduce((a, b) => a.union(b));
-				};
 				function typeOfStmtExpr(stmt: AST.ASTNodeStatementExpression, validator: Validator): SolidType {
 					return stmt.expr!.type(validator);
 				}
@@ -2218,6 +2214,17 @@ describe('ASTNodeSolid', () => {
 						constantFolding: false,
 					},
 				};
+				const COMMON_TYPES = {
+					int_float: SolidType.unionAll([
+						Int16,
+						Float64,
+					]),
+					int_float_str: SolidType.unionAll([
+						Int16,
+						Float64,
+						SolidString,
+					]),
+				};
 				const expected: SolidType[] = [
 					typeConstInt(1n),
 					typeConstFloat(2.0),
@@ -2226,11 +2233,6 @@ describe('ASTNodeSolid', () => {
 					Float64,
 					SolidString,
 				];
-				const int_float_str: SolidType = unionAllTypes([
-					Int16,
-					Float64,
-					SolidString,
-				]);
 				Dev.supports('optionalAccess') && context('when base is nullish.', () => {
 					it('optional access returns type of base when it is a subtype of null.', () => {
 						const validator: Validator = new Validator();
@@ -2311,7 +2313,7 @@ describe('ASTNodeSolid', () => {
 							assert.deepStrictEqual(
 								program.children.slice(24, 28).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
-									new SolidTypeConstant(new SolidString('three')),
+									typeConstStr('three'),
 									SolidBoolean.TRUETYPE,
 									SolidString.union(SolidNull),
 									SolidString.union(SolidNull),
@@ -2325,7 +2327,7 @@ describe('ASTNodeSolid', () => {
 									program.children[33],
 								].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
-									new SolidTypeConstant(new SolidString('three')),
+									typeConstStr('three'),
 									SolidBoolean.TRUETYPE,
 									SolidString,
 									SolidString,
@@ -2353,7 +2355,7 @@ describe('ASTNodeSolid', () => {
 							program.children.slice(2, 8).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
-									int_float_str,
+									COMMON_TYPES.int_float_str,
 								);
 							});
 						});
@@ -2361,7 +2363,7 @@ describe('ASTNodeSolid', () => {
 							program.children.slice(22, 24).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
-									int_float_str,
+									COMMON_TYPES.int_float_str,
 								);
 							});
 						});
@@ -2369,11 +2371,11 @@ describe('ASTNodeSolid', () => {
 							assert.deepStrictEqual(
 								program.children.slice(24, 28).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
-									int_float_str.union(SolidNull),
-									Int16.union(Float64).union(SolidNull),
-									int_float_str.union(SolidNull),
-									int_float_str.union(SolidNull),
-								],
+									COMMON_TYPES.int_float_str,
+									COMMON_TYPES.int_float,
+									COMMON_TYPES.int_float_str,
+									COMMON_TYPES.int_float_str,
+								].map((t) => t.union(SolidNull)),
 							);
 						});
 						Dev.supports('claimAccess') && it('always subtracts void.', () => {
@@ -2383,10 +2385,10 @@ describe('ASTNodeSolid', () => {
 									program.children[33],
 								].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
-									int_float_str,
-									Int16.union(Float64),
-									int_float_str,
-									int_float_str,
+									COMMON_TYPES.int_float_str,
+									COMMON_TYPES.int_float,
+									COMMON_TYPES.int_float_str,
+									COMMON_TYPES.int_float_str,
 									Int16,
 								],
 							);
@@ -2421,7 +2423,7 @@ describe('ASTNodeSolid', () => {
 						assert.deepStrictEqual(
 							program.children.slice(18, 22).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
-								new SolidTypeConstant(new SolidString('three')),
+								typeConstStr('three'),
 								SolidBoolean.TRUETYPE,
 								SolidString.union(SolidNull),
 								SolidString.union(SolidNull),
@@ -2435,7 +2437,7 @@ describe('ASTNodeSolid', () => {
 								program.children[27],
 							].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
-								new SolidTypeConstant(new SolidString('three')),
+								typeConstStr('three'),
 								SolidBoolean.TRUETYPE,
 								SolidString,
 								SolidString,
@@ -2452,6 +2454,11 @@ describe('ASTNodeSolid', () => {
 					context('with constant folding on, folds expression accessor.', () => {
 						let validator: Validator;
 						let program: AST.ASTNodeGoal;
+						const expected_union: SolidType = SolidType.unionAll([
+							typeConstInt(1n),
+							typeConstFloat(2.0),
+							SolidString,
+						]);
 						before(() => {
 							validator = new Validator();
 							program = EXPR_ACCESS_PROGRAM(validator);
@@ -2472,11 +2479,7 @@ describe('ASTNodeSolid', () => {
 							program.children.slice(15, 18).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
-									unionAllTypes([
-										typeConstInt(1n),
-										typeConstFloat(2.0),
-										SolidString,
-									]),
+									expected_union,
 								);
 							});
 						});
@@ -2488,11 +2491,7 @@ describe('ASTNodeSolid', () => {
 							program.children.slice(21, 24).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
-									unionAllTypes([
-										typeConstInt(1n),
-										typeConstFloat(2.0),
-										SolidString,
-									]),
+									expected_union,
 								);
 							});
 						});
@@ -2509,7 +2508,7 @@ describe('ASTNodeSolid', () => {
 							assert.deepStrictEqual(
 								program.children.slice(34, 38).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
-									new SolidTypeConstant(new SolidString('three')),
+									typeConstStr('three'),
 									SolidBoolean.TRUETYPE,
 									SolidString.union(SolidNull),
 									SolidString.union(SolidNull),
@@ -2517,19 +2516,13 @@ describe('ASTNodeSolid', () => {
 							);
 						});
 						Dev.supports('optionalAccess') && it('unions with null if set/mappping access is optional.', () => {
-							const union: SolidType = unionAllTypes([
-								typeConstInt(1n),
-								typeConstFloat(2.0),
-								SolidString,
-								SolidNull,
-							]);
 							assert.deepStrictEqual(
 								program.children.slice(38, 42).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
 									typeConstStr('three'),
-									union,
+									expected_union.union(SolidNull),
 									typeConstStr('three'),
-									union,
+									expected_union.union(SolidNull),
 								],
 							);
 						});
@@ -2537,7 +2530,7 @@ describe('ASTNodeSolid', () => {
 							assert.deepStrictEqual(
 								program.children.slice(42, 46).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
-									new SolidTypeConstant(new SolidString('three')),
+									typeConstStr('three'),
 									SolidBoolean.TRUETYPE,
 									SolidString,
 									SolidString,
@@ -2550,23 +2543,14 @@ describe('ASTNodeSolid', () => {
 							Dev.supports('optionalAccess') && assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`).type(validator), TypeError04);
 							Dev.supports('optionalAccess') && assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4];`).type(validator), TypeError04);
 						});
-						it('does not throw when accessor expression is corect type but out of bounds for sets/mappings.', () => {
-							/*
-							TODO: since the compiler knows the value doesn’t exist (the assessor throws a VoidError),
-							getting the type of this should return type `never`.
-							*/
-							const expected_oob: SolidType = unionAllTypes([
-								new SolidTypeConstant(new SolidTuple([new Int16(1n)])),
-								new SolidTypeConstant(new SolidTuple([new Float64(2.0)])),
-								new SolidTypeConstant(new SolidTuple([new SolidString('three')])),
-							]);
+						it('returns Never when accessor expression is corect type but out of bounds for sets/mappings.', () => {
 							assert.deepStrictEqual(
 								AST.ASTNodeAccess.fromSource(`{[1], [2.0], ['three']}.[[1]];`).type(validator),
-								expected_oob,
+								SolidType.NEVER,
 							);
 							assert.deepStrictEqual(
 								AST.ASTNodeAccess.fromSource(`{['a'] |-> [1], ['b'] |-> [2.0], ['c'] |-> ['three']}.[['a']];`).type(validator),
-								expected_oob,
+								SolidType.NEVER,
 							);
 						});
 						it('throws when accessor expression is of incorrect type.', () => {
@@ -2588,7 +2572,7 @@ describe('ASTNodeSolid', () => {
 							program.children.slice(2, 8).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
-									int_float_str,
+									COMMON_TYPES.int_float_str,
 								);
 							});
 						});
@@ -2596,7 +2580,7 @@ describe('ASTNodeSolid', () => {
 							program.children.slice(12, 18).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
-									int_float_str,
+									COMMON_TYPES.int_float_str,
 								);
 							});
 						});
@@ -2604,7 +2588,7 @@ describe('ASTNodeSolid', () => {
 							program.children.slice(18, 24).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
-									int_float_str,
+									COMMON_TYPES.int_float_str,
 								);
 							});
 						});
@@ -2612,7 +2596,7 @@ describe('ASTNodeSolid', () => {
 							program.children.slice(32, 34).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
-									int_float_str,
+									COMMON_TYPES.int_float_str,
 								);
 							});
 						});
@@ -2620,16 +2604,16 @@ describe('ASTNodeSolid', () => {
 							assert.deepStrictEqual(
 								program.children.slice(34, 38).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
-									int_float_str.union(SolidNull),
-									Int16.union(Float64).union(SolidNull),
-									int_float_str.union(SolidNull),
-									int_float_str.union(SolidNull),
-								],
+									COMMON_TYPES.int_float_str,
+									COMMON_TYPES.int_float,
+									COMMON_TYPES.int_float_str,
+									COMMON_TYPES.int_float_str,
+								].map((t) => t.union(SolidNull)),
 							);
 							program.children.slice(38, 42).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
-									int_float_str.union(SolidNull),
+									COMMON_TYPES.int_float_str.union(SolidNull),
 								);
 							});
 						});
@@ -2637,10 +2621,10 @@ describe('ASTNodeSolid', () => {
 							assert.deepStrictEqual(
 								program.children.slice(42, 46).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								[
-									int_float_str,
-									Int16.union(Float64),
-									int_float_str,
-									int_float_str,
+									COMMON_TYPES.int_float_str,
+									COMMON_TYPES.int_float,
+									COMMON_TYPES.int_float_str,
+									COMMON_TYPES.int_float_str,
 								],
 							);
 						});

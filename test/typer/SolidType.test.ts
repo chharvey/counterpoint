@@ -25,6 +25,7 @@ import {
 import {
 	typeConstInt,
 	typeConstFloat,
+	typeConstStr,
 } from '../helpers.js';
 
 
@@ -75,11 +76,11 @@ describe('SolidType', () => {
 
 	describe('#includes', () => {
 		it('uses `SolidObject#identical` to compare values.', () => {
-			function unionOfInts(fs: bigint[]): SolidType {
-				return fs.map<SolidType>(typeConstInt).reduce((a, b) => a.union(b));
+			function unionOfInts(ns: bigint[]): SolidType {
+				return SolidType.unionAll(ns.map<SolidType>(typeConstInt));
 			}
-			function unionOfFloats(fs: number[]): SolidType {
-				return fs.map<SolidType>(typeConstFloat).reduce((a, b) => a.union(b));
+			function unionOfFloats(ns: number[]): SolidType {
+				return SolidType.unionAll(ns.map<SolidType>(typeConstFloat));
 			}
 			const t1: SolidType = unionOfFloats([4.2, 4.3, 4.4]);
 			const t2: SolidType = unionOfFloats([4.3, 4.4, 4.5]);
@@ -195,20 +196,20 @@ describe('SolidType', () => {
 	describe('#subtract', () => {
 		it('4-1 | `A - B == A  <->  A & B == never`', () => {
 			predicate2(builtin_types, (a, b) => {
-				if (a.intersect(b).isEmpty) {
+				if (a.intersect(b).isBottomType) {
 					assert.ok(a.subtract(b).equals(a), `forward: ${ a }, ${ b }`);
 				}
 				if (a.subtract(b).equals(a)) {
-					assert.ok(a.intersect(b).isEmpty, `backward: ${ a }, ${ b }`);
+					assert.ok(a.intersect(b).isBottomType, `backward: ${ a }, ${ b }`);
 				}
 			});
 		});
 		it('4-2 | `A - B == never  <->  A <: B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.isSubtypeOf(b)) {
-					assert.ok(a.subtract(b).isEmpty, `forward: ${ a }, ${ b }`);
+					assert.ok(a.subtract(b).isBottomType, `forward: ${ a }, ${ b }`);
 				}
-				if (a.subtract(b).isEmpty) {
+				if (a.subtract(b).isBottomType) {
 					assert.ok(a.isSubtypeOf(b), `forward: ${ a }, ${ b }`);
 				}
 			});
@@ -216,9 +217,9 @@ describe('SolidType', () => {
 		it('4-3 | `A <: B - C  <->  A <: B  &&  A & C == never`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(b.subtract(c))) {
-					assert.ok(a.isSubtypeOf(b) && a.intersect(c).isEmpty, `forward: ${ a }, ${ b }, ${ c }`);
+					assert.ok(a.isSubtypeOf(b) && a.intersect(c).isBottomType, `forward: ${ a }, ${ b }, ${ c }`);
 				}
-				if (a.isSubtypeOf(b) && a.intersect(c).isEmpty) {
+				if (a.isSubtypeOf(b) && a.intersect(c).isBottomType) {
 					assert.ok(a.isSubtypeOf(b.subtract(c)), `forward: ${ a }, ${ b }, ${ c }`);
 				}
 			});
@@ -384,17 +385,17 @@ describe('SolidType', () => {
 				assert.ok(SolidBoolean.TRUETYPE .isSubtypeOf(SolidBoolean), 'SolidBoolean.TRUETYPE')
 			})
 			it('constant Integer types should be subtypes of `int`.', () => {
-				;[42n, -42n, 0n, -0n].map((v) => new SolidTypeConstant(new Int16(v))).forEach((itype) => {
+				;[42n, -42n, 0n, -0n].map((v) => typeConstInt(v)).forEach((itype) => {
 					assert.ok(itype.isSubtypeOf(Int16), `${ itype }`)
 				})
 			})
 			it('constant Float types should be subtypes of `float`.', () => {
-				;[4.2, -4.2e-2, 0.0, -0.0].map((v) => new SolidTypeConstant(new Float64(v))).forEach((ftype) => {
+				;[4.2, -4.2e-2, 0.0, -0.0].map((v) => typeConstFloat(v)).forEach((ftype) => {
 					assert.ok(ftype.isSubtypeOf(Float64), `${ ftype }`)
 				})
 			})
 			it('constant String types should be subtypes of `str`.', () => {
-				['a4.2', 'b-4.2e-2', 'c0.0', 'd-0.0'].map((v) => new SolidTypeConstant(new SolidString(v))).forEach((stype) => {
+				['a4.2', 'b-4.2e-2', 'c0.0', 'd-0.0'].map((v) => typeConstStr(v)).forEach((stype) => {
 					assert.ok(stype.isSubtypeOf(SolidString), `${ stype }`);
 				});
 			});
@@ -416,6 +417,16 @@ describe('SolidType', () => {
 				]).forEach((recordtype, value) => {
 					assert.ok(new SolidTypeConstant(value).isSubtypeOf(SolidRecord), `let x: Record = ${ value };`);
 					assert.ok(new SolidTypeConstant(value).isSubtypeOf(recordtype),  `let x: ${ recordtype } = ${ value };`);
+				});
+			});
+			it('constant set types should be subtype of a set type instance.', () => {
+				new Map<SolidObject, SolidTypeSet>([
+					[new SolidSet(),                                                      new SolidTypeSet(SolidType.NEVER)],
+					[new SolidSet(new Set([new Int16(42n)])),                             new SolidTypeSet(Int16)],
+					[new SolidSet(new Set([new Float64(4.2), new SolidString('hello')])), new SolidTypeSet(Float64.union(SolidString))],
+				]).forEach((settype, value) => {
+					assert.ok(new SolidTypeConstant(value).isSubtypeOf(SolidSet), `let x: Set = ${ value };`);
+					assert.ok(new SolidTypeConstant(value).isSubtypeOf(settype),  `let x: ${ settype } = ${ value };`);
 				});
 			});
 			it('constant mapping types should be subtype of a mapping type instance.', () => {

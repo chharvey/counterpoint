@@ -18,7 +18,7 @@ import {
 
 
 export class SolidTypeRecord extends SolidType {
-	override readonly isEmpty: boolean = false;
+	override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new SolidTypeRecord from type properties, assuming each properties is required.
@@ -83,7 +83,9 @@ export class SolidTypeRecord extends SolidType {
 	}
 
 	valueTypes(): SolidType {
-		return [...this.propertytypes.values()].map((t) => t.type).reduce((a, b) => a.union(b));
+		return (this.propertytypes.size)
+			? SolidType.unionAll([...this.propertytypes.values()].map((t) => t.type))
+			: SolidType.NEVER;
 	}
 
 	/**

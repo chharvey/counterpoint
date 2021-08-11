@@ -5,7 +5,7 @@ import {SolidMapping} from './SolidMapping.js';
 
 
 export class SolidTypeMapping extends SolidType {
-	override readonly isEmpty: boolean = false;
+	override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new SolidTypeMapping object.

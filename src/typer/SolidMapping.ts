@@ -9,7 +9,6 @@ import {
 import {SolidTypeMapping} from './SolidTypeMapping.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
-import {SolidBoolean} from './SolidBoolean.js';
 
 
 
@@ -40,8 +39,8 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 	override toString(): string {
 		return `{${ [...this.cases].map(([ant, con]) => `${ ant.toString() } |-> ${ con.toString() }`).join(', ') }}`;
 	}
-	override get isEmpty(): SolidBoolean {
-		return SolidBoolean.fromBoolean(this.cases.size === 0);
+	override get isEmpty(): boolean {
+		return this.cases.size === 0;
 	}
 	/** @final */
 	protected override equal_helper(value: SolidObject): boolean {
@@ -62,8 +61,8 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 
 	toType(): SolidTypeMapping {
 		return new SolidTypeMapping(
-			[...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeConstant(ant)).reduce((a, b) => a.union(b)),
-			[...this.cases.values()].map<SolidType>((con) => new SolidTypeConstant(con)).reduce((a, b) => a.union(b)),
+			SolidType.unionAll([...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeConstant(ant))),
+			SolidType.unionAll([...this.cases.values()].map<SolidType>((con) => new SolidTypeConstant(con))),
 		);
 	}
 

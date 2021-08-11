@@ -19,7 +19,7 @@ import {
 
 
 export class SolidTypeTuple extends SolidType {
-	override readonly isEmpty: boolean = false;
+	override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new SolidTypeTuple from type items, assuming each item is required.
@@ -82,7 +82,9 @@ export class SolidTypeTuple extends SolidType {
 	}
 
 	itemTypes(): SolidType {
-		return this.types.map((t) => t.type).reduce((a, b) => a.union(b));
+		return (this.types.length)
+			? SolidType.unionAll(this.types.map((t) => t.type))
+			: SolidType.NEVER;
 	}
 
 	/**
