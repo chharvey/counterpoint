@@ -159,10 +159,6 @@ export class ASTNodeItemType extends ASTNodeSolid {
 	) {
 		super(start_node, {optional}, [value]);
 	}
-	/** @implements ASTNodeSolid */
-	build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeItemType#build not yet supported.';
-	}
 }
 export class ASTNodePropertyType extends ASTNodeSolid {
 	constructor (
@@ -477,6 +473,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	}
 	private typed?: SolidType;
 	private assessed?: SolidObject | null;
+	private built?: INST.InstructionExpression;
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
 	 * @return Should the built instruction be type-coerced into a floating-point number?
@@ -493,8 +490,11 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 * @final
 	 */
 	build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
-		const assessed: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
-		return (!!assessed) ? INST.InstructionConst.fromAssessment(assessed, to_float) : this.build_do(builder, to_float);
+		if (!this.built) {
+			const assessed: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
+			this.built = (!!assessed) ? INST.InstructionConst.fromAssessment(assessed, to_float) : this.build_do(builder, to_float);
+		}
+		return this.built;
 	}
 	protected abstract build_do(builder: Builder, to_float?: boolean): INST.InstructionExpression;
 	/**
