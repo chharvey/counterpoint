@@ -207,6 +207,10 @@ export class ASTNodeCase extends ASTNodeSolid {
  * - ASTNodeTypeAlias
  * - ASTNodeTypeTuple
  * - ASTNodeTypeRecord
+ * - ASTNodeTypeList
+ * - ASTNodeTypeHash
+ * - ASTNodeTypeSet
+ * - ASTNodeTypeMapping
  * - ASTNodeTypeAccess
  * - ASTNodeTypeOperation
  */
@@ -343,6 +347,73 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 				optional: c.optional,
 			},
 		])));
+	}
+}
+export class ASTNodeTypeList extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeList {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeList);
+		return typ;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTypeUnarySymbol,
+		readonly type:  ASTNodeType,
+		readonly count: bigint | null,
+	) {
+		super(start_node, {count}, [type]);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		throw validator && 'ASTNodeTypeList#assess_do not yet supported.';
+		// NOTE: will return either a SolidTypeTuple or a SolidTypeList depending on `this.count`
+	}
+}
+export class ASTNodeTypeHash extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeHash {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeHash);
+		return typ;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTypeHashLiteral,
+		readonly type: ASTNodeType,
+	) {
+		super(start_node, {}, [type]);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		throw validator && 'ASTNodeTypeHash#assess_do not yet supported.';
+	}
+}
+export class ASTNodeTypeSet extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeSet {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeSet);
+		return typ;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTypeUnarySymbol,
+		readonly type: ASTNodeType,
+	) {
+		super(start_node, {}, [type]);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		throw validator && 'ASTNodeTypeSet#assess_do not yet supported.';
+	}
+}
+export class ASTNodeTypeMapping extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeMapping {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeMapping);
+		return typ;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTypeMappingLiteral,
+		readonly antecedenttype: ASTNodeType,
+		readonly consequenttype: ASTNodeType,
+	) {
+		super(start_node, {}, [antecedenttype, consequenttype]);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		throw validator && 'ASTNodeTypeMapping#assess_do not yet supported.';
 	}
 }
 export class ASTNodeTypeAccess extends ASTNodeType {

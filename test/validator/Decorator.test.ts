@@ -209,6 +209,34 @@ describe('Decorator', () => {
 			});
 		});
 
+		describe('TypeHashLiteral ::= "[" ":" Type "]"', () => {
+			it('makes an ASTNodeTypeHash.', () => {
+				/*
+					<TypeHash>
+						<TypeConstant source="bool"/>
+					</TypeHash>
+				*/
+				const hash: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`[:bool]`));
+				assert.ok(hash instanceof AST.ASTNodeTypeHash);
+				assert.deepStrictEqual(hash.type.source, `bool`);
+			});
+		});
+
+		describe('TypeMappingLiteral ::= "{" Type "|->" Type "}"', () => {
+			it('makes an ASTNodeTypeMapping.', () => {
+				/*
+					<TypeMapping>
+						<TypeConstant source="int"/>
+						<TypeConstant source="float"/>
+					</TypeMapping>
+				*/
+				const mapping: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`{int |-> float}`));
+				assert.ok(mapping instanceof AST.ASTNodeTypeMapping);
+				assert.deepStrictEqual(mapping.antecedenttype.source, `int`);
+				assert.deepStrictEqual(mapping.consequenttype.source, `float`);
+			});
+		});
+
 		describe('TypeUnit ::= IDENTIFIER', () => {
 			it('makes an ASTNodeTypeAlias.', () => {
 				/*
@@ -323,6 +351,48 @@ describe('Decorator', () => {
 				assert.throws(() => Decorator.decorate(h.unaryTypeFromString(`float!`)), /not yet supported/);
 			});
 		})
+
+		describe('TypeUnarySymbol ::= TypeUnarySymbol "[" INTEGER? "]"', () => {
+			it('makes an ASTNodeTypeList with null count.', () => {
+				/*
+					<ASTNodeTypeList count=null>
+						<TypeConstant source="int"/>
+					</ASTNodeTypeList>
+				*/
+				const list: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int[]`));
+				assert.ok(list instanceof AST.ASTNodeTypeList);
+				assert.deepStrictEqual(
+					[list.type.source, list.count],
+					[`int`,            null],
+				);
+			});
+			it('makes an ASTNodeTypeList with non-null count.', () => {
+				/*
+					<ASTNodeTypeList count=3n>
+						<TypeConstant source="float"/>
+					</ASTNodeTypeList>
+				*/
+				const list: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`float[3]`));
+				assert.ok(list instanceof AST.ASTNodeTypeList);
+				assert.deepStrictEqual(
+					[list.type.source, list.count],
+					[`float`,          3n],
+				);
+			});
+		});
+
+		describe('TypeUnarySymbol ::= TypeUnarySymbol "{" "}"', () => {
+			it('makes an ASTNodeTypeSet.', () => {
+				/*
+					<ASTNodeTypeSet>
+						<TypeConstant source="bool"/>
+					</ASTNodeTypeSet>
+				*/
+				const set: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`bool{}`));
+				assert.ok(set instanceof AST.ASTNodeTypeSet);
+				assert.deepStrictEqual(set.type.source, `bool`);
+			});
+		});
 
 		describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
 			it('makes an ASTNodeTypeOperation.', () => {

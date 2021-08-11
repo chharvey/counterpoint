@@ -137,6 +137,8 @@ export class Decorator {
 	): NonemptyArray<AST.ASTNodePropertyType>;
 	static decorate(node: PARSER.ParseNodeTypeTupleLiteral):   AST.ASTNodeTypeTuple;
 	static decorate(node: PARSER.ParseNodeTypeRecordLiteral):  AST.ASTNodeTypeRecord;
+	static decorate(node: PARSER.ParseNodeTypeHashLiteral):    AST.ASTNodeTypeHash;
+	static decorate(node: PARSER.ParseNodeTypeMappingLiteral): AST.ASTNodeTypeMapping;
 	static decorate(node: PARSER.ParseNodePropertyAccessType): AST.ASTNodeIndexType | AST.ASTNodeKey;
 	static decorate(node:
 		| PARSER.ParseNodeTypeUnit
@@ -251,6 +253,12 @@ export class Decorator {
 				node.children.find((c): c is PARSER.ParseNodePropertiesType => c instanceof PARSER.ParseNodePropertiesType)!
 			));
 
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTypeHashLiteral) {
+			return new AST.ASTNodeTypeHash(node, this.decorate(node.children[2]));
+
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTypeMappingLiteral) {
+			return new AST.ASTNodeTypeMapping(node, this.decorate(node.children[1]), this.decorate(node.children[3]));
+
 		} else if (node instanceof PARSER.ParseNodeTypeUnit) {
 			return (node.children.length === 1)
 				? (node.children[0] instanceof ParseNode)
@@ -276,13 +284,21 @@ export class Decorator {
 				);
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnarySymbol) {
-			return (node.children.length === 1)
-				? this.decorate(node.children[0])
-				: new AST.ASTNodeTypeOperationUnary(
+			return (
+				(node.children.length === 1) ? this.decorate(node.children[0]) :
+				(node.children.length === 2) ? new AST.ASTNodeTypeOperationUnary(
 					node,
 					this.TYPEOPERATORS_UNARY.get(node.children[1].source as Punctuator)!,
 					this.decorate(node.children[0]),
-				);
+				) :
+				(node.children[1].source === Punctuator.BRAK_OPN)
+					? new AST.ASTNodeTypeList(
+						node,
+						this.decorate(node.children[0]),
+						(node.children[2].source === Punctuator.BRAK_CLS) ? null : BigInt((node.children[2] as TOKEN.TokenNumber).cook())
+					)
+					: new AST.ASTNodeTypeSet(node, this.decorate(node.children[0]))
+			);
 
 		} else if (
 			node instanceof PARSER.ParseNodeTypeIntersection ||
