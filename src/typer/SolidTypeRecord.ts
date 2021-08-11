@@ -83,7 +83,9 @@ export class SolidTypeRecord extends SolidType {
 	}
 
 	valueTypes(): SolidType {
-		return [...this.propertytypes.values()].map((t) => t.type).reduce((a, b) => a.union(b));
+		return (this.propertytypes.size)
+			? [...this.propertytypes.values()].map((t) => t.type).reduce((a, b) => a.union(b))
+			: SolidType.NEVER;
 	}
 
 	/**
