@@ -5,6 +5,7 @@ import {
 } from '../validator/index.js';
 import {TypeError04} from '../error/index.js';
 import {
+	SolidTypeList,
 	SolidObject,
 	SolidNull,
 	Int16,
@@ -65,6 +66,9 @@ export class SolidTypeTuple extends SolidType {
 			t instanceof SolidTypeTuple
 			&& this.count[0] >= t.count[0]
 			&& t.types.every((thattype, i) => !this.types[i] || this.types[i].type.isSubtypeOf(thattype.type))
+		) || (
+			t instanceof SolidTypeList
+			&& this.itemTypes().isSubtypeOf(t.types)
 		);
 	}
 

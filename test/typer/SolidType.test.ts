@@ -8,6 +8,7 @@ import {
 	SolidTypeInterface,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidTypeList,
 	SolidTypeSet,
 	SolidTypeMapping,
 	SolidObject,
@@ -424,6 +425,29 @@ describe('SolidType', () => {
 					assert.ok(new SolidTypeConstant(value).isSubtypeOf(recordtype),  `let x: ${ recordtype } = ${ value };`);
 				});
 			});
+			it('constant list/tuple types should be subtype of a list type instance.', () => {
+				const input = [
+					null,
+					[new Int16(42n)],
+					[new Float64(4.2), new SolidString('hello')],
+				] as const;
+				const output: SolidTypeList[] = [
+					SolidType.NEVER,
+					Int16,
+					Float64.union(SolidString),
+				].map((t) => new SolidTypeList(t));
+				new Map<SolidObject, SolidTypeList>([
+					[new SolidList (),         output[0]],
+					[new SolidList (input[1]), output[1]],
+					[new SolidList (input[2]), output[2]],
+					[new SolidTuple(),         output[0]],
+					[new SolidTuple(input[1]), output[1]],
+					[new SolidTuple(input[2]), output[2]],
+				]).forEach((listtype, value) => {
+					value instanceof SolidList && assert.ok(new SolidTypeConstant(value).isSubtypeOf(SolidList), `let x: List = ${ value };`);
+					assert.ok(new SolidTypeConstant(value).isSubtypeOf(listtype),  `let x: ${ listtype } = ${ value };`);
+				});
+			});
 			it('constant mapping types should be subtype of a mapping type instance.', () => {
 				new Map<SolidObject, SolidTypeMapping>([
 					[new SolidMapping(new Map<SolidObject, SolidObject>([[new Int16(0x100n), new Int16(42n)]])),                                                  new SolidTypeMapping(Int16, Int16)],
@@ -600,6 +624,20 @@ describe('SolidType', () => {
 					[0x101n, {type: Int16,        optional: false}],
 					[0x102n, {type: SolidBoolean, optional: false}],
 				]))), `[a: str, b?: int, c: bool] !<: [a?: str, b: int, c: bool]`);
+			});
+		});
+
+		describe('SolidTypeList', () => {
+			it('is a subtype but not a supertype of `SolidObject`.', () => {
+				assert.ok(new SolidTypeList(Int16.union(SolidBoolean)).isSubtypeOf(SolidObject), `List.<int | bool> <: obj;`);
+				assert.ok(!SolidObject.isSubtypeOf(new SolidTypeList(Int16.union(SolidBoolean))), `obj !<: List.<int | bool>`);
+			});
+			it('Covariance: `A <: B --> List.<A> <: List.<B>`.', () => {
+				assert.ok(new SolidTypeList(Int16).isSubtypeOf(new SolidTypeList(Int16.union(Float64))), `List.<int> <: List.<int | float>`);
+				assert.ok(!new SolidTypeList(Int16.union(Float64)).isSubtypeOf(new SolidTypeList(Int16)), `List.<int | float> !<: List.<int>`);
+			});
+			it('Generalization: `A <: B --> Tuple.<A> <: List.<B>`.', () => {
+				assert.ok(SolidTypeTuple.fromTypes([Float64, Int16]).isSubtypeOf(new SolidTypeList(Int16.union(Float64))), `[float, int] <: List.<int | float>`);
 			});
 		});
 

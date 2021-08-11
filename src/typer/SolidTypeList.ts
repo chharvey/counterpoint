@@ -30,4 +30,11 @@ export class SolidTypeList extends SolidType {
 			|| v instanceof SolidTuple && v.toType().isSubtypeOf(this)
 		);
 	}
+
+	override isSubtypeOf_do(t: SolidType): boolean {
+		return t.equals(SolidObject) || (
+			t instanceof SolidTypeList
+			&& this.types.isSubtypeOf(t.types)
+		);
+	}
 }
