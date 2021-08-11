@@ -401,7 +401,7 @@ describe('ASTNodeSolid', () => {
 					],
 					[
 						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
-						new INST.InstructionStatement(1n, new INST.InstructionGlobalGet(0x101n)),
+						new INST.InstructionStatement(1n, new INST.InstructionGlobalGet(0x101n, true)),
 					],
 				);
 			});
