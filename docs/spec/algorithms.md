@@ -280,7 +280,7 @@ Boolean Equal(Object a, Object b) :=
 				if `a` and `b` ever recursively contain themselves or each other.
 		5. *For each* `it_b` in `seq_b`:
 			1. Find an item `it_a` in `seq_a` such that *UnwrapAffirm:* `Equal(it_a, it_b)` is `true`.
-			2. *If* no such item `it_a` is found:
+			2. *If* `it_a` does not exist:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
 	7. *If* `a` is an instance of `Mapping` *and* `b` is an instance of `Mapping`:
@@ -295,7 +295,7 @@ Boolean Equal(Object a, Object b) :=
 				if `a` and `b` ever recursively contain themselves or each other.
 		5. *For each* `it_b` in `data_b`:
 			1. Find an item `it_a` in `data_a` such that *UnwrapAffirm:* `Equal(it_a.0, it_b.0)` is `true`.
-			2. *If* no such item `it_a` is found:
+			2. *If* `it_a` does not exist:
 				1. *Return:* `false`.
 			3. *If* *UnwrapAffirm:* `Equal(it_a.1, it_b.1)` is `false`:
 				1. *Return:* `false`.

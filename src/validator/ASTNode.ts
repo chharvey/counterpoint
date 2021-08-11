@@ -972,11 +972,10 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		if (!assess0) {
 			return assess0
 		}
-		const v0: SolidObject = assess0;
 		return (
-			(this.operator === Operator.NOT) ? SolidBoolean.fromBoolean(!v0.isTruthy) :
-			(this.operator === Operator.EMP) ? SolidBoolean.fromBoolean(!v0.isTruthy || v0.isEmpty) :
-			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as SolidNumber<any>) :
+			(this.operator === Operator.NOT) ? SolidBoolean.fromBoolean(!assess0.isTruthy) :
+			(this.operator === Operator.EMP) ? SolidBoolean.fromBoolean(!assess0.isTruthy || assess0.isEmpty) :
+			(this.operator === Operator.NEG) ? this.foldNumeric(assess0 as SolidNumber<any>) :
 			(() => { throw new ReferenceError(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
 	}
@@ -987,11 +986,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				[Operator.NEG, (z) => z.neg()],
 			]).get(this.operator)!(z)
 		} catch (err) {
-			if (err instanceof xjs.NaNError) {
-				throw new NanError01(this)
-			} else {
-				throw err
-			}
+			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
 		}
 	}
 }
@@ -1065,22 +1060,15 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		if (!assess1) {
 			return assess1
 		}
-		const [v0, v1]: [SolidObject, SolidObject] = [assess0, assess1];
-		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
+		if (this.operator === Operator.DIV && assess1 instanceof SolidNumber && assess1.eq0()) {
 			throw new NanError02(this.operand1);
 		}
-		if (!(v0 instanceof SolidNumber) || !(v1 instanceof SolidNumber)) {
-			// using an internal TypeError, not a SolidTypeError, as it should already be valid per `this#type`
-			throw new TypeError('Both operands must be of type `SolidNumber`.')
-		}
-		return (
-			(v0 instanceof Int16 && v1 instanceof Int16)
-				? this.foldNumeric(v0, v1)
-				: this.foldNumeric(
-					(v0 as SolidNumber).toFloat(),
-					(v1 as SolidNumber).toFloat(),
-				)
-		)
+		return (assess0 instanceof Int16 && assess1 instanceof Int16)
+			? this.foldNumeric(assess0, assess1)
+			: this.foldNumeric(
+				(assess0 as SolidNumber).toFloat(),
+				(assess1 as SolidNumber).toFloat(),
+			);
 	}
 	private foldNumeric<T extends SolidNumber<T>>(x: T, y: T): T {
 		try {
@@ -1092,11 +1080,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				// [Operator.SUB, (x, y) => x.minus(y)],
 			]).get(this.operator)!(x, y)
 		} catch (err) {
-			if (err instanceof xjs.NaNError) {
-				throw new NanError01(this)
-			} else {
-				throw err
-			}
+			throw (err instanceof xjs.NaNError) ? new NanError01(this) : err;
 		}
 	}
 }
@@ -1142,19 +1126,12 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		if (!assess1) {
 			return assess1
 		}
-		const [v0, v1]: [SolidObject, SolidObject] = [assess0, assess1];
-		if (!(v0 instanceof SolidNumber) || !(v1 instanceof SolidNumber)) {
-			// using an internal TypeError, not a SolidTypeError, as it should already be valid per `this#type`
-			throw new TypeError('Both operands must be of type `SolidNumber`.')
-		}
-		return (
-			(v0 instanceof Int16 && v1 instanceof Int16)
-				? this.foldComparative(v0, v1)
-				: this.foldComparative(
-					(v0 as SolidNumber).toFloat(),
-					(v1 as SolidNumber).toFloat(),
-				)
-		)
+		return (assess0 instanceof Int16 && assess1 instanceof Int16)
+			? this.foldComparative(assess0, assess1)
+			: this.foldComparative(
+				(assess0 as SolidNumber).toFloat(),
+				(assess1 as SolidNumber).toFloat(),
+			);
 	}
 	private foldComparative<T extends SolidNumber<T>>(x: T, y: T): SolidBoolean {
 		return SolidBoolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
@@ -1215,8 +1192,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		if (!assess1) {
 			return assess1
 		}
-		const [v0, v1]: [SolidObject, SolidObject] = [assess0, assess1];
-		return this.foldEquality(v0, v1);
+		return this.foldEquality(assess0, assess1);
 	}
 	private foldEquality(x: SolidObject, y: SolidObject): SolidBoolean {
 		return SolidBoolean.fromBoolean(new Map<Operator, (x: SolidObject, y: SolidObject) => boolean>([
@@ -1267,12 +1243,11 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		if (!assess0) {
 			return assess0
 		}
-		const v0: SolidObject = assess0;
 		if (
-			this.operator === Operator.AND && !v0.isTruthy
-			|| this.operator === Operator.OR && v0.isTruthy
+			this.operator === Operator.AND && !assess0.isTruthy
+			|| this.operator === Operator.OR && assess0.isTruthy
 		) {
-			return v0;
+			return assess0;
 		}
 		return this.operand1.assess(validator);
 	}

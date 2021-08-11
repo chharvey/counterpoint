@@ -43,6 +43,7 @@ export type IntRange = [number, number];
  * - SolidTypeUnknown
  * - SolidTypeTuple
  * - SolidTypeRecord
+ * - SolidTypeSet
  * - SolidTypeMapping
  */
 export abstract class SolidType {
