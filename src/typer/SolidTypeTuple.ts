@@ -10,7 +10,7 @@ import {
 	SolidNull,
 	Int16,
 	SolidTuple,
-} from '../index.js'; // avoids circular imports
+} from './index.js'; // avoids circular imports
 import {
 	TypeEntry,
 	IntRange,

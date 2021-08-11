@@ -1,6 +1,8 @@
+import {
+	SolidObject,
+	SolidMapping,
+} from './index.js'; // avoids circular imports
 import {SolidType} from './SolidType.js';
-import {SolidObject} from './SolidObject.js';
-import {SolidMapping} from './SolidMapping.js';
 
 
 
