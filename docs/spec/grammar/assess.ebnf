@@ -9,7 +9,7 @@ Type Assess(SemanticTypeAlias var) :=
 		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
 		2. *Assert:* `symbol.value` is a Solid Language Type.
 		3. *Return:* `symbol.value`.
-	2. *Return:* `Unknown`.
+	2. *Return:* `Never`.
 ;
 
 

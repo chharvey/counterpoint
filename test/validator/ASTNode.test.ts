@@ -891,8 +891,7 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 			it('returns Unknown for undeclared variables.', () => {
-				// NOTE: a reference error will be thrown at the variable-checking stage
-				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidType.UNKNOWN);
+				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidType.NEVER);
 			});
 			Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
 				let templates: readonly AST.ASTNodeTemplate[];
@@ -2544,23 +2543,14 @@ describe('ASTNodeSolid', () => {
 							Dev.supports('optionalAccess') && assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`).type(validator), TypeError04);
 							Dev.supports('optionalAccess') && assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4];`).type(validator), TypeError04);
 						});
-						it('does not throw when accessor expression is corect type but out of bounds for sets/mappings.', () => {
-							/*
-							TODO: since the compiler knows the value doesn’t exist (the assessor throws a VoidError),
-							getting the type of this should return type `never`.
-							*/
-							const expected_oob: SolidType = SolidType.unionAll([
-								new SolidTypeConstant(new SolidTuple([new Int16(1n)])),
-								new SolidTypeConstant(new SolidTuple([new Float64(2.0)])),
-								new SolidTypeConstant(new SolidTuple([new SolidString('three')])),
-							]);
+						it('returns Never when accessor expression is corect type but out of bounds for sets/mappings.', () => {
 							assert.deepStrictEqual(
 								AST.ASTNodeAccess.fromSource(`{[1], [2.0], ['three']}.[[1]];`).type(validator),
-								expected_oob,
+								SolidType.NEVER,
 							);
 							assert.deepStrictEqual(
 								AST.ASTNodeAccess.fromSource(`{['a'] |-> [1], ['b'] |-> [2.0], ['c'] |-> ['three']}.[['a']];`).type(validator),
-								expected_oob,
+								SolidType.NEVER,
 							);
 						});
 						it('throws when accessor expression is of incorrect type.', () => {

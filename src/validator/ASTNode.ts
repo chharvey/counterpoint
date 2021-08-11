@@ -3,6 +3,7 @@ import {
 	ParseNode,
 	ASTNode,
 	NonemptyArray,
+	ErrorCode,
 } from '@chharvey/parser';
 import * as assert from 'assert';
 import * as xjs from 'extrajs'
@@ -300,7 +301,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 				return symbol.value;
 			};
 		};
-		return SolidType.UNKNOWN;
+		return SolidType.NEVER;
 	}
 }
 export class ASTNodeTypeTuple extends ASTNodeType {
@@ -510,8 +511,13 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 				let assessed: SolidObject | null = null;
 				try {
 					assessed = this.assess(validator);
-				} catch {
-					// ignore evaluation errors such as VoidError, NanError, etc.
+				} catch (err) {
+					if (err instanceof ErrorCode) {
+						// ignore evaluation errors such as VoidError, NanError, etc.
+						return SolidType.NEVER;
+					} else {
+						throw err;
+					}
 				}
 				if (!!assessed) {
 					this.typed = new SolidTypeConstant(assessed);
@@ -610,7 +616,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 				return symbol.type;
 			};
 		};
-		return SolidType.UNKNOWN;
+		return SolidType.NEVER;
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
 		if (validator.hasSymbol(this.id)) {
