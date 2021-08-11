@@ -7,7 +7,7 @@ import {SolidType} from './SolidType.js';
 
 
 export class SolidTypeSet extends SolidType {
-	override readonly isEmpty: boolean = false;
+	override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new SolidTypeSet object.

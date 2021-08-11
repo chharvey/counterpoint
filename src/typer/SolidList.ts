@@ -20,7 +20,7 @@ export class SolidList<T extends SolidObject = SolidObject> extends CollectionIn
 	override toType(): SolidTypeList {
 		return new SolidTypeList(
 			(this.items.length)
-				? this.items.map<SolidType>((el) => new SolidTypeConstant(el)).reduce((a, b) => a.union(b))
+				? SolidType.unionAll(this.items.map<SolidType>((el) => new SolidTypeConstant(el)))
 				: SolidType.NEVER,
 		);
 	}

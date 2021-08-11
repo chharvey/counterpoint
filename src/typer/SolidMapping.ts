@@ -13,7 +13,6 @@ import {
 import {SolidTypeMapping} from './SolidTypeMapping.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
-import {SolidBoolean} from './SolidBoolean.js';
 import {Collection} from './Collection.js';
 
 
@@ -38,8 +37,8 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 	override toString(): string {
 		return `{${ [...this.cases].map(([ant, con]) => `${ ant } |-> ${ con }`).join(', ') }}`;
 	}
-	override get isEmpty(): SolidBoolean {
-		return SolidBoolean.fromBoolean(this.cases.size === 0);
+	override get isEmpty(): boolean {
+		return this.cases.size === 0;
 	}
 	/** @final */
 	protected override equal_helper(value: SolidObject): boolean {
@@ -53,10 +52,10 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 	}
 
 	override toType(): SolidTypeMapping {
-		return new SolidTypeMapping(
-			[...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeConstant(ant)).reduce((a, b) => a.union(b)),
-			[...this.cases.values()].map<SolidType>((con) => new SolidTypeConstant(con)).reduce((a, b) => a.union(b)),
-		);
+		return (this.cases.size) ? new SolidTypeMapping(
+			SolidType.unionAll([...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeConstant(ant))),
+			SolidType.unionAll([...this.cases.values()].map<SolidType>((con) => new SolidTypeConstant(con))),
+		) : new SolidTypeMapping(SolidType.NEVER, SolidType.NEVER);
 	}
 
 	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | SolidNull {

@@ -2,7 +2,6 @@ import {VoidError01} from '../error/index.js';
 import type {AST} from '../validator/index.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
-import {SolidBoolean} from './SolidBoolean.js';
 import type {Int16} from './Int16.js';
 import {Collection} from './Collection.js';
 
@@ -21,8 +20,8 @@ export abstract class CollectionIndexed<T extends SolidObject = SolidObject> ext
 	}
 
 	/** @final */
-	override get isEmpty(): SolidBoolean {
-		return SolidBoolean.fromBoolean(this.items.length === 0);
+	override get isEmpty(): boolean {
+		return this.items.length === 0;
 	}
 
 	override toString(): string {

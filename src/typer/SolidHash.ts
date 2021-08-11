@@ -20,7 +20,7 @@ export class SolidHash<T extends SolidObject = SolidObject> extends CollectionKe
 	override toType(): SolidTypeHash {
 		return new SolidTypeHash(
 			(this.properties.size)
-				? [...this.properties.values()].map<SolidType>((value) => new SolidTypeConstant(value)).reduce((a, b) => a.union(b))
+				? SolidType.unionAll([...this.properties.values()].map<SolidType>((value) => new SolidTypeConstant(value)))
 				: SolidType.NEVER,
 		);
 	}

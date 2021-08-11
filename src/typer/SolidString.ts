@@ -3,7 +3,6 @@ import utf8 from 'utf8';
 import type {CodeUnit} from '../types';
 import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
-import {SolidBoolean} from './SolidBoolean.js';
 
 
 
@@ -22,8 +21,8 @@ export class SolidString extends SolidObject {
 			: data
 	}
 
-	override get isEmpty(): SolidBoolean {
-		return SolidBoolean.fromBoolean(this.codeunits.length === 0);
+	override get isEmpty(): boolean {
+		return this.codeunits.length === 0;
 	}
 	override toString(): string {
 		return `'${ utf8.decode(String.fromCodePoint(...this.codeunits)) }'`;
