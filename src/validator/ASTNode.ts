@@ -25,6 +25,8 @@ import {
 	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidTypeList,
+	SolidTypeHash,
 	SolidTypeSet,
 	SolidTypeMapping,
 	SolidObject,
@@ -363,8 +365,10 @@ export class ASTNodeTypeList extends ASTNodeType {
 		super(start_node, {count}, [type]);
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		throw validator && 'ASTNodeTypeList#assess_do not yet supported.';
-		// NOTE: will return either a SolidTypeTuple or a SolidTypeList depending on `this.count`
+		const itemstype: SolidType = this.type.assess(validator);
+		return (this.count === null)
+			? new SolidTypeList(itemstype)
+			: SolidTypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype));
 	}
 }
 export class ASTNodeTypeHash extends ASTNodeType {
@@ -380,7 +384,7 @@ export class ASTNodeTypeHash extends ASTNodeType {
 		super(start_node, {}, [type]);
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		throw validator && 'ASTNodeTypeHash#assess_do not yet supported.';
+		return new SolidTypeHash(this.type.assess(validator));
 	}
 }
 export class ASTNodeTypeSet extends ASTNodeType {
@@ -396,7 +400,7 @@ export class ASTNodeTypeSet extends ASTNodeType {
 		super(start_node, {}, [type]);
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		throw validator && 'ASTNodeTypeSet#assess_do not yet supported.';
+		return new SolidTypeSet(this.type.assess(validator));
 	}
 }
 export class ASTNodeTypeMapping extends ASTNodeType {
@@ -413,7 +417,7 @@ export class ASTNodeTypeMapping extends ASTNodeType {
 		super(start_node, {}, [antecedenttype, consequenttype]);
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		throw validator && 'ASTNodeTypeMapping#assess_do not yet supported.';
+		return new SolidTypeMapping(this.antecedenttype.assess(validator), this.consequenttype.assess(validator));
 	}
 }
 export class ASTNodeTypeAccess extends ASTNodeType {

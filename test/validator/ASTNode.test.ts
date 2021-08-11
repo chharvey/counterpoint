@@ -19,6 +19,8 @@ import {
 	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidTypeList,
+	SolidTypeHash,
 	SolidTypeSet,
 	SolidTypeMapping,
 	SolidObject,
@@ -823,6 +825,42 @@ describe('ASTNodeSolid', () => {
 							{type: SolidString,  optional: false},
 						][i],
 					]))),
+				);
+			});
+			describe('ASTNodeTypeList', () => {
+				it('returns a SolidTypeList if there is no count.', () => {
+					assert.deepStrictEqual(
+						AST.ASTNodeTypeList.fromSource(`(int | bool)[]`).assess(new Validator()),
+						new SolidTypeList(Int16.union(SolidBoolean)),
+					);
+				});
+				it('returns a SolidTypeTuple if there is a count.', () => {
+					assert.deepStrictEqual(
+						AST.ASTNodeTypeList.fromSource(`(int | bool)[3]`).assess(new Validator()),
+						SolidTypeTuple.fromTypes([
+							Int16.union(SolidBoolean),
+							Int16.union(SolidBoolean),
+							Int16.union(SolidBoolean),
+						]),
+					);
+				});
+			});
+			specify('ASTNodeTypeHash', () => {
+				assert.deepStrictEqual(
+					AST.ASTNodeTypeHash.fromSource(`[:int | bool]`).assess(new Validator()),
+					new SolidTypeHash(Int16.union(SolidBoolean)),
+				);
+			});
+			specify('ASTNodeTypeSet', () => {
+				assert.deepStrictEqual(
+					AST.ASTNodeTypeSet.fromSource(`(int | bool){}`).assess(new Validator()),
+					new SolidTypeSet(Int16.union(SolidBoolean)),
+				);
+			});
+			specify('ASTNodeTypeMapping', () => {
+				assert.deepStrictEqual(
+					AST.ASTNodeTypeMapping.fromSource(`{int |-> bool}`).assess(new Validator()),
+					new SolidTypeMapping(Int16, SolidBoolean),
 				);
 			});
 			it('computes the value of a nullified (ORNULL) type.', () => {

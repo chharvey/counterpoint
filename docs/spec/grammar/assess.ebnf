@@ -41,6 +41,47 @@ Type Assess(SemanticTypeRecord recordtype) :=
 
 
 
+Type Assess(SemanticTypeList listtype) :=
+	1. *Assert:* `listtype.children.count` is 1.
+	2. *Let* `itemtype` be *UnwrapAffirm:* `Assess(listtype.children.0)`.
+	3. *If* `listtype.count` is a RealNumber:
+		1. *Let* `data` be a new Sequence.
+		2. *Let* `i` be 0.
+		3. *While* `i` is less than `listtype.count`:
+			1. Push `itemtype` to `data`.
+			2. Increment `i`.
+		4. *Return:* a subtype of `Tuple` whose items are `data`.
+	4. *Return:* a subtype of `List` whose items’ type is `itemtype`.
+;
+
+
+
+Type Assess(SemanticTypeHash hashtype) :=
+	1. *Assert:* `hashtype.children.count` is 1.
+	2. *Let* `valuetype` be *UnwrapAffirm:* `Assess(hashtype.children.0)`.
+	3. *Return:* a subtype of `Hash` whose values’ type is `valuetype`.
+;
+
+
+
+Type Assess(SemanticTypeSet settype) :=
+	1. *Assert:* `settype.children.count` is 1.
+	2. *Let* `elementtype` be *UnwrapAffirm:* `Assess(settype.children.0)`.
+	3. *Return:* a subtype of `Set` whose elements’ type is `elementtype`.
+;
+
+
+
+Type Assess(SemanticTypeMapping mappingtype) :=
+	1. *Assert:* `mappingtype.children.count` is 1.
+	2. *Let* `antecedenttype` be *UnwrapAffirm:* `Assess(mappingtype.children.0)`.
+	2. *Let* `consequenttype` be *UnwrapAffirm:* `Assess(mappingtype.children.1)`.
+	3. *Return:* a subtype of `Mapping` whose antecedents’ type is `antecedenttype`
+		nd whose consequents’ type is `consequenttype`.
+;
+
+
+
 Type Assess(SemanticTypeAccess access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `base` be `access.children.0`.
