@@ -30,4 +30,11 @@ export class SolidTypeHash extends SolidType {
 			|| v instanceof SolidRecord && v.toType().isSubtypeOf(this)
 		);
 	}
+
+	override isSubtypeOf_do(t: SolidType): boolean {
+		return t.equals(SolidObject) || (
+			t instanceof SolidTypeHash
+			&& this.types.isSubtypeOf(t.types)
+		);
+	}
 }

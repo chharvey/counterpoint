@@ -5,6 +5,7 @@ import {
 } from '../validator/index.js';
 import {TypeError04} from '../error/index.js';
 import {
+	SolidTypeHash,
 	SolidObject,
 	SolidNull,
 	SolidRecord,
@@ -70,6 +71,9 @@ export class SolidTypeRecord extends SolidType {
 					&& (!thistype || thistype.type.isSubtypeOf(thattype.type))
 				);
 			})
+		) || (
+			t instanceof SolidTypeHash
+			&& this.valueTypes().isSubtypeOf(t.types)
 		);
 	}
 
