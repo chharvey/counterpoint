@@ -266,7 +266,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 						? new Float64(start_node.cook())
 						: new Int16(BigInt(start_node.cook()))
 				)
-			: /* (start_node instanceof TOKEN.TokenString) */ new SolidTypeConstant(new SolidString(start_node.cook()))
+			: /* (start_node instanceof TOKEN.TokenString) */ (Dev.supports('literalString-cook')) ? new SolidTypeConstant(new SolidString(start_node.cook())) : (() => { throw new Error('`literalString-cook` not yet supported.'); })()
 		);
 		super(start_node, {value});
 		this.value = value
@@ -547,16 +547,18 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 	private readonly value: SolidObject;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString | TOKEN.TokenTemplate) {
-		const value: SolidObject =
+		const value: SolidObject = (
 			(start_node instanceof TOKEN.TokenKeyword) ?
+				(start_node.source === Keyword.NULL)  ? SolidNull.NULL :
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
-				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUE  :
-				SolidNull.NULL
-			:
-			(start_node instanceof TOKEN.TokenNumber) ?
-				start_node.isFloat ? new Float64(start_node.cook()) : new Int16(BigInt(start_node.cook()))
-			:
-			(Dev.supports('literalString-cook')) ? new SolidString(start_node.cook()) : (() => { throw new Error('`literalString-cook` not yet supported.'); })();
+				(start_node.source === Keyword.TRUE)  ? SolidBoolean.TRUE :
+				(() => { throw new Error(`ASTNodeConstant.constructor did not expect the keyword \`${ start_node.source }\`.`); })()
+			: (start_node instanceof TOKEN.TokenNumber) ?
+				start_node.isFloat
+					? new Float64(start_node.cook())
+					: new Int16(BigInt(start_node.cook()))
+			: /* (start_node instanceof TOKEN.TokenString) */ (Dev.supports('literalString-cook')) ? new SolidString(start_node.cook()) : (() => { throw new Error('`literalString-cook` not yet supported.'); })()
+		);
 		super(start_node, {value})
 		this.value = value
 	}
@@ -564,17 +566,10 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return this.value instanceof Float64
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionConst {
-		return INST.InstructionConst.fromAssessment(this.assess_do(builder.validator), to_float);
+		return INST.InstructionConst.fromAssessment(this.assess(builder.validator), to_float);
 	}
-	protected override type_do(validator: Validator): SolidType {
-		// No need to call `this.assess(validator)` and then unwrap again; just use `this.value`.
-		return (validator.config.compilerOptions.constantFolding) ? new SolidTypeConstant(this.value) :
-		(this.value instanceof SolidNull)    ? SolidNull :
-		(this.value instanceof SolidBoolean) ? SolidBoolean :
-		(this.value instanceof Int16)        ? Int16 :
-		(this.value instanceof Float64)      ? Float64 :
-		(Dev.supports('stringConstant-assess') && this.value instanceof SolidString)  ? SolidString :
-		SolidObject
+	protected override type_do(_validator: Validator): SolidType {
+		return new SolidTypeConstant(this.value);
 	}
 	protected override assess_do(_validator: Validator): SolidObject {
 		if (this.value instanceof SolidString && !Dev.supports('stringConstant-assess')) {
@@ -837,24 +832,17 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			]).get(access_kind)?.() || type;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			const accessor_type: SolidType = this.accessor.value.type(validator);
+			const accessor_type:  SolidTypeConstant = this.accessor.value.type(validator) as SolidTypeConstant;
+			const accessor_value: Int16             = accessor_type.value as Int16;
 			return (
-				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
-					(accessor_type instanceof SolidTypeConstant)
-						? base_type.value.toType().get(accessor_type.value as Int16, this.kind, this.accessor)
-						: updateDynamicType(base_type.value.toType().itemTypes(), this.kind)
-				) :
-				(base_type instanceof SolidTypeTuple) ? (
-					(accessor_type instanceof SolidTypeConstant)
-						? base_type.get(accessor_type.value as Int16, this.kind, this.accessor)
-						: updateDynamicType(base_type.itemTypes(), this.kind)
-				) :
+				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? base_type.value.toType().get(accessor_value, this.kind, this.accessor) :
+				(base_type instanceof SolidTypeTuple)                                             ? base_type               .get(accessor_value, this.kind, this.accessor) :
 				(() => { throw new TypeError04('index', base_type, this.accessor); })()
 			);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (
 				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, this.kind, this.accessor) :
-				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
+				(base_type instanceof SolidTypeRecord)                                             ? base_type               .get(this.accessor.id, this.kind, this.accessor) :
 				(() => { throw new TypeError04('property', base_type, this.accessor); })()
 			);
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
