@@ -855,6 +855,17 @@ describe('ASTNodeSolid', () => {
 					constantFolding: false,
 				},
 			};
+			it('returns Never for undeclared variables.', () => {
+				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidType.NEVER);
+			});
+			it('returns Never for NanErrors.', () => {
+				[
+					AST.ASTNodeOperationBinaryArithmetic.fromSource(`-4 ^ -0.5;`).type(new Validator()),
+					AST.ASTNodeOperationBinaryArithmetic.fromSource(`1.5 / 0.0;`).type(new Validator()),
+				].forEach((typ) => {
+					assert.strictEqual(typ, SolidType.NEVER);
+				})
+			});
 			describe('ASTNodeConstant', () => {
 				it('returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
 					const constants: AST.ASTNodeConstant[] = `
@@ -875,9 +886,6 @@ describe('ASTNodeSolid', () => {
 						};
 					})), constants.map((c) => new SolidTypeConstant(c.assess(validator)!)));
 				});
-			});
-			it('returns Never for undeclared variables.', () => {
-				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidType.NEVER);
 			});
 			Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
 				let templates: readonly AST.ASTNodeTemplate[];
@@ -2477,16 +2485,6 @@ describe('ASTNodeSolid', () => {
 							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[-4];`).type(validator), TypeError04);
 							Dev.supports('optionalAccess') && assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`).type(validator), TypeError04);
 							Dev.supports('optionalAccess') && assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4];`).type(validator), TypeError04);
-						});
-						it('returns Never when accessor expression is corect type but out of bounds for sets/mappings.', () => {
-							assert.deepStrictEqual(
-								AST.ASTNodeAccess.fromSource(`{[1], [2.0], ['three']}.[[1]];`).type(validator),
-								SolidType.NEVER,
-							);
-							assert.deepStrictEqual(
-								AST.ASTNodeAccess.fromSource(`{['a'] |-> [1], ['b'] |-> [2.0], ['c'] |-> ['three']}.[['a']];`).type(validator),
-								SolidType.NEVER,
-							);
 						});
 						it('throws when accessor expression is of incorrect type.', () => {
 							assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].['3'];`).type(validator), TypeError02);
