@@ -259,11 +259,11 @@ export class Decorator {
 		} else if (node instanceof PARSER.ParseNodeTypeCompound) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: new AST.ASTNodeTypeAccess(
+				: (node.children[1] instanceof PARSER.ParseNodePropertyAccessType) ? new AST.ASTNodeTypeAccess(
 					node,
 					this.decorate(node.children[0]),
 					this.decorate(node.children[1]),
-				);
+				) : (() => { throw '`Decorate(TypeCompound ::= TypeCompound GenericCall)` not yet supported.'; })();
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnarySymbol) {
 			return (

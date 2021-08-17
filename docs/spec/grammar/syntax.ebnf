@@ -52,6 +52,7 @@ TypeTupleLiteral   ::= "[" (","? ItemsType)?    "]";
 TypeRecordLiteral  ::= "["  ","? PropertiesType "]";
 TypeHashLiteral    ::= "[" ":" Type             "]";
 TypeMappingLiteral ::= "{" Type "|->" Type      "}";
+GenericArguments   ::= "<"  ","? Type# ","?     ">";
 
 TypeUnit ::=
 	| IDENTIFIER
@@ -67,9 +68,12 @@ TypeUnit ::=
 PropertyAccessType
 	::= "." (INTEGER | Word);
 
+GenericCall
+	::= "." GenericArguments;
+
 TypeCompound ::=
 	| TypeUnit
-	| TypeCompound PropertyAccessType
+	| TypeCompound (PropertyAccessType | GenericCall)
 ;
 
 TypeUnarySymbol ::=
