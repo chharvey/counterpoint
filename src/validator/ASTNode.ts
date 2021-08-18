@@ -61,7 +61,6 @@ import type {Buildable} from './Buildable.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
-import type {ASTNodeCase} from './ASTNodeCase.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -98,6 +97,7 @@ export * from './ASTNodeTemplate.js';
 export * from './ASTNodeTuple.js';
 export * from './ASTNodeRecord.js';
 export * from './ASTNodeSet.js';
+export * from './ASTNodeMapping.js';
 
 
 
@@ -119,41 +119,6 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-export class ASTNodeMapping extends ASTNodeExpression {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeMapping {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeMapping);
-		return expression;
-	}
-	constructor (
-		start_node: PARSER.ParseNodeMappingLiteral,
-		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
-	) {
-		super(start_node, {}, children);
-	}
-	override shouldFloat(_validator: Validator): boolean {
-		throw 'ASTNodeMapping#shouldFloat not yet supported.';
-	}
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeMapping#build_do not yet supported.';
-	}
-	protected override type_do(validator: Validator): SolidType {
-		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
-		return new SolidTypeMapping(
-			SolidType.unionAll(this.children.map((c) => c.antecedent.type(validator))),
-			SolidType.unionAll(this.children.map((c) => c.consequent.type(validator))),
-		);
-	}
-	protected override assess_do(validator: Validator): SolidObject | null {
-		const cases: ReadonlyMap<SolidObject | null, SolidObject | null> = new Map(this.children.map((c) => [
-			c.antecedent.assess(validator),
-			c.consequent.assess(validator),
-		]));
-		return ([...cases].some((c) => c[0] === null || c[1] === null))
-			? null
-			: new SolidMapping(cases as ReadonlyMap<SolidObject, SolidObject>);
-	}
-}
 export class ASTNodeAccess extends ASTNodeExpression {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeAccess {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
