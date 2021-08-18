@@ -11,8 +11,8 @@ import {SolidObject} from './SolidObject.js';
 
 /**
  * Known subclasses:
- * - SolidTuple
- * - SolidRecord
+ * - CollectionIndexed
+ * - CollectionKeyed
  * - SolidSet
  * - SolidMapping
  */

@@ -30,7 +30,12 @@ SemanticType =:=
 	| SemanticTypeAlias
 	| SemanticTypeTuple
 	| SemanticTypeRecord
+	| SemanticTypeList
+	| SemanticTypeHash
+	| SemanticTypeSet
+	| SemanticTypeMapping
 	| SemanticTypeAccess
+	| SemanticTypeCall
 	| SemanticTypeOperation
 ;
 
@@ -42,11 +47,19 @@ SemanticTypeConstant[value: Type]
 SemanticTypeAlias[id: RealNumber]
 	::= ();
 
-SemanticTypeTuple  ::= SemanticItemType*;
-SemanticTypeRecord ::= SemanticPropertyType+;
+SemanticTypeTuple   ::= SemanticItemType*;
+SemanticTypeRecord  ::= SemanticPropertyType+;
+SemanticTypeHash    ::= SemanticType;
+SemanticTypeSet     ::= SemanticType;
+SemanticTypeMapping ::= SemanticType SemanticType;
+SemanticTypeList[count: RealNumber | Void]
+	::= SemanticType; // Note: a SemanticTypeList with a non-void `count` represents a Tuple Type
 
 SemanticTypeAccess
 	::= SemanticType (SemanticIndexType | SemanticKey);
+
+SemanticTypeCall
+	::= SemanticType SemanticType+;
 
 SemanticTypeOperation[operator: ORNULL]
 	::= SemanticType;

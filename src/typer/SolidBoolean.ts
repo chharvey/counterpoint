@@ -48,33 +48,10 @@ export class SolidBoolean extends SolidObject {
 	override toString(): string {
 		return `${ this.value }`
 	}
-	override get isTruthy(): SolidBoolean {
-		return this;
+	override get isTruthy(): boolean {
+		return this.value;
 	}
 	protected override identical_helper(value: SolidObject): boolean {
 		return value instanceof SolidBoolean && this.value === value.value
-	}
-	/**
-	 * Return the negation of this Boolean.
-	 * @returns `true <-|-> false`
-	 */
-	get not(): SolidBoolean {
-		return SolidBoolean.fromBoolean(!this.value)
-	}
-	/**
-	 * Compute the logical conjunction of this value with the argument.
-	 * @param sb the right-hand operator
-	 * @returns `this && sb`
-	 */
-	and(sb: SolidBoolean): SolidBoolean {
-		return SolidBoolean.fromBoolean(this.value && sb.value)
-	}
-	/**
-	 * Compute the logical disjunction of this value with the argument.
-	 * @param sb the right-hand operator
-	 * @returns `this || sb`
-	 */
-	or(sb: SolidBoolean): SolidBoolean {
-		return SolidBoolean.fromBoolean(this.value || sb.value)
 	}
 }

@@ -1,5 +1,4 @@
 import {SolidObject} from './SolidObject.js';
-import {SolidBoolean} from './SolidBoolean.js';
 import type {Float64} from './Float64.js';
 
 
@@ -11,8 +10,8 @@ export abstract class SolidNumber<T = unknown> extends SolidObject {
 	/**
 	 * @final
 	 */
-	override get isEmpty(): SolidBoolean {
-		return SolidBoolean.fromBoolean(this.eq0());
+	override get isEmpty(): boolean {
+		return this.eq0();
 	}
 
 	/**

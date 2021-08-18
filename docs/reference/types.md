@@ -474,6 +474,16 @@ let GREETING: '''Hello World!''' = 'Hello World!'; %> ParseError
 
 
 ## Compound Types
+The following table summarizes the built-in compound types.
+
+Type                | Size           | Indices/Keys  | Generic Type Syntax  | Explicit Type Syntax         | Constructor Syntax                               | Literal Syntax                               | Empty Literal Syntax
+------------------- | -------------- | ------------  | -------------------- | ---------------------------- | ------------------------------------------------ | -------------------------------------------- | --------------------
+[Tuple](#tuple)     | Fixed          | integers      | *(none)*             | `[str, str, str]` / `str[3]` | *(none)*                                         | `['x', 'y', 'z']`                            | `[]`
+[Record](#record)   | Fixed          | words         | *(none)*             | `[a: str, b: str, c: str]`   | *(none)*                                         | `[a= 'x', b= 'y', c= 'z']`                   | *(none)*
+[List](#list)       | Variable       | integers      | `List.<str>`         | `str[]`                      | `List.(['x', 'y', 'z'])`                         | *(none)*                                     | *(none)*
+[Hash](#hash)       | Variable       | atoms/strings | `Hash.<str>`         | `[:str]`                     | `Hash.([a= 'x', b= 'y', c= 'z'])`                | *(none)*                                     | *(none)*
+[Set](#set)         | Variable       | *(none)*      | `Set.<str>`          | `str{}`                      | `Set.(['x', 'y', 'z'])`                          | `{'x', 'y', 'z'}`                            | `{}`
+[Mapping](#mapping) | Variable       | objects       | `Mapping.<str, str>` | `{str \|-> str}`             | `Mapping.([['u', 'x'], ['v', 'y'], ['w', 'z']])` | `{'u' \|-> 'x', 'v' \|-> 'y', 'w' \|-> 'z'}` | *(none)*
 
 
 ### Tuple
@@ -481,7 +491,8 @@ Tuples are fixed-size ordered lists of indexed values, with indices starting at 
 The values in a tuple are called **items** (the actual values) or **entries** (the slots the values are stored in).
 The number of entries in a tuple is called its **count**.
 The count of a tuple is fixed and known at compile-time, as is the type of each entry in the tuple.
-If the tuple is mutable, the entries of the tuple may be reassigned, but only to values of the correct type.
+Tuples are heterogeneous, meaning they can be declared with different entry types.
+If a tuple is mutable, the entries of the tuple may be reassigned, but only to values of the correct type.
 
 For example, the tuple `[3, 4.0, 'seven']` has an integer in the first position at index `0`,
 followed by a float at index `1`, followed by a string at index `2`. Its count is 3.
@@ -602,6 +613,7 @@ Records are fixed-size unordered lists of keyed values. Key–value pairs are ca
 where **keys** are keywords or identifiers, and **values** are expressions.
 The number of properties in a record is called its **count**.
 The count and types of record **entries** (the “slots” where values are stored) are fixed and known at compile-time.
+Records are heterogeneous, meaning they can be declared with different entry types.
 Record entries cannot be added or deleted, but if the record is mutable, they can be reassigned.
 
 For example, given the record
@@ -759,8 +771,78 @@ let ym: str = y!.middlename;
 The expression `y!.middlename` behaves just like `y.middlename`, except that it bypasses the compiler’s TypeError.
 
 
+### List
+Lists are variable-size ordered lists of indexed values, with indices starting at `0`.
+The values in a list are called **items** (the actual values) or **entries** (the slots the values are stored in).
+The number of entries in a list is called its **count**; the count of a list is variable and unknown at compile-time.
+Lists are homogeneous, meaning all entries in the list have the same type (or parent type).
+If a list is mutable, the entries of the list may be reassigned, and items may be added and removed from the list as well.
+
+List types are declared via the **generic list type syntax**: `List.<T>`
+where `T` indicates the type of items in the list.
+Lists are constructed via the constructor syntax `List.<T>(arg)`,
+where `arg` is a [Tuple](#tuple) object.
+```
+let elements: List.<str> = List.<str>(['earth', 'wind', 'fire']);
+```
+A shorthand for the generic syntax `List.<T>` is `T[]`.
+We can also *initialize* a list with a tuple literal,
+because tuples are generally assignable to lists.
+```
+let elements: str[] = ['earth', 'wind', 'fire'];
+```
+We can mix item types, but the list type must be homogeneous.
+```
+let elements: (str | bool | int)[] = ['earth', 'wind', 'fire', true, 42];
+```
+The compiler considers all items in the list as having the same type.
+For example, the expression `elements.[0]` is of type `str | bool | int`,
+and if the list were mutable, we could reassign that entry to an integer or boolean.
+
+#### List Access
+Lists can only be accessed by **bracket-accessor notation**,
+where the expression in brackets computes the index.
+See [Tuple Access](#tuple-access) for details.
+
+
+### Hash
+Hashes are variable-size unordered lists of keyed values. Key–value pairs are called **properties**,
+where **keys** are keywords or identifiers, and **values** are expressions.
+The number of properties in a record is called its **count**; the count of a hash is variable and unknown at compile-time.
+Hashes are homogeneous, meaning all entries in the hash have the same type (or parent type).
+If a hash is mutable, the entries of the hash may be reassigned, and properties may be added and removed from the hash as well.
+
+Hash types are declared via the **generic hash type syntax**: `Hash.<T>`
+where `T` indicates the type of values in the hash.
+Hashes are constructed via the constructor syntax `Hash.<T>(arg)`,
+where `arg` is a [Record](#record) object.
+```
+let my_styles: Hash.<int | float | str> = Hash.<int | float | str>([
+	fontFamily= 'sans-serif',
+	fontSize=   1.25,
+	fontStyle=  'oblique',
+	fontWeight= 400,
+]);
+```
+A shorthand for the generic syntax `Hash.<T>` is `[:T]`.
+We can also *initialize* a hash with a record literal,
+because records are generally assignable to hashes.
+```
+let my_styles: [: int | float | str] = [
+	fontFamily= 'sans-serif',
+	fontSize=   1.25,
+	fontStyle=  'oblique',
+	fontWeight= 400,
+];
+```
+As shown above, we can mix value types, but the hash type must be homogeneous.
+
+#### Hash Access
+*TBD*
+
+
 ### Set
-Sets are dynamic-sized unordered lists of values.
+Sets are variable-sized unordered lists of values.
 The values in a set are called **elements**. The number of elements in a set is called its **count**.
 
 Set literals are comma-separated expressions within curly braces.
@@ -788,9 +870,39 @@ In this example, the elements `0.0` and `-0.0` are not identical
 Similarly, `x` and `y` are not identical, but they are equal by tuple composition.
 Even though `0.0 == -0.0` and `x == y`, this set has four elements.
 
+#### Set Access
+Elements of a set can be accessed via **bracket-accessor notation**,
+where the expression in the brackets is the element to get.
+```
+let bases: obj = {
+	'who',
+	['what'],
+	{ 'i' |-> {'don’t' |-> 'know'} },
+};
+bases.['''{{ 'w' }}{{ 'h' }}{{ 'o' }}''']; %== 'who'
+bases.[['what']];                          %== ['what']
+```
+
+A VoidError is produced when the compiler can determine if the element does not exist.
+```
+let a: str = '3rd';
+bases.[a];          %> VoidError
+```
+If the compiler can’t compute the antecedent, it won’t error at all,
+but this means the program could crash at runtime.
+```
+let unfixed a: str = '3rd';
+bases.[a];                  % no compile-time error, but value at runtime will be undefined
+```
+We can avoid the potential crash using the
+[optional access operator](./expressions-operators.md#optional-access).
+```
+bases?.[a]; % produces the element if it exists, else `null`
+```
+
 
 ### Mapping
-Mappings are dynamic-sized unordered lists of antecedent-consequent pairs.
+Mappings are variable-sized unordered lists of antecedent-consequent pairs.
 Mappings form associations (**cases**) of values (**antecedents**) to other values (**consequents**).
 The antecedents are unique (by identity) in that each antecedent can be associated with only one consequent.
 The number of cases in a mapping is called its **count**.
@@ -840,7 +952,8 @@ Similarly, `x` and `y` are not identical, but they are equal by tuple compositio
 Even though `0.0 == -0.0` and `x == y`, this mapping has four entries.
 
 #### Mapping Access
-Consequents of a mapping can be accessed via **bracket-accessor notation**.
+Consequents of a mapping can be accessed via **bracket-accessor notation**,
+where the expression in the brackets is the antecedent to get.
 ```
 let bases: obj = {
 	1     |-> 'who',
@@ -862,4 +975,9 @@ but this means the program could crash at runtime.
 ```
 let unfixed a: str = '3rd';
 bases.[a];                  % no compile-time error, but value at runtime will be undefined
+```
+We can avoid the potential crash using the
+[optional access operator](./expressions-operators.md#optional-access).
+```
+bases?.[a]; % produces the consequent if it exists, else `null`
 ```

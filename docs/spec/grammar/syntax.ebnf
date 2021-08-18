@@ -48,8 +48,11 @@ ItemsType ::=
 PropertiesType
 	::= EntryType<+Named><-Optional, +Optional># ","?;
 
-TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
-TypeRecordLiteral ::= "["  ","? PropertiesType "]";
+TypeTupleLiteral   ::= "[" (","? ItemsType)?    "]";
+TypeRecordLiteral  ::= "["  ","? PropertiesType "]";
+TypeHashLiteral    ::= "[" ":" Type             "]";
+TypeMappingLiteral ::= "{" Type "|->" Type      "}";
+GenericArguments   ::= "<"  ","? Type# ","?     ">";
 
 TypeUnit ::=
 	| IDENTIFIER
@@ -57,21 +60,25 @@ TypeUnit ::=
 	| TypeKeyword
 	| TypeTupleLiteral
 	| TypeRecordLiteral
+	| TypeHashLiteral
+	| TypeMappingLiteral
 	| "(" Type ")"
 ;
 
 PropertyAccessType
 	::= "." (INTEGER | Word);
 
+GenericCall
+	::= "." GenericArguments;
+
 TypeCompound ::=
 	| TypeUnit
-	| TypeCompound PropertyAccessType
+	| TypeCompound (PropertyAccessType | GenericCall)
 ;
 
 TypeUnarySymbol ::=
 	| TypeCompound
-	| TypeUnarySymbol "?"
-	| TypeUnarySymbol "!"
+	| TypeUnarySymbol ("?" | "!" | "[" INTEGER? "]" | "{" "}")
 ;
 
 TypeIntersection ::= (TypeIntersection "&")? TypeUnarySymbol;

@@ -1,11 +1,13 @@
+import {
+	SolidObject,
+	SolidMapping,
+} from './index.js'; // avoids circular imports
 import {SolidType} from './SolidType.js';
-import {SolidObject} from './SolidObject.js';
-import {SolidMapping} from './SolidMapping.js';
 
 
 
 export class SolidTypeMapping extends SolidType {
-	override readonly isEmpty: boolean = false;
+	override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new SolidTypeMapping object.

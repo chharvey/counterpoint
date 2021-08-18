@@ -7,7 +7,7 @@ import {
 	CONFIG_DEFAULT,
 	Dev,
 } from '../../src/core/index.js';
-import type {
+import {
 	PARSER,
 } from '../../src/parser/index.js';
 import {
@@ -209,6 +209,51 @@ describe('Decorator', () => {
 			});
 		});
 
+		describe('TypeHashLiteral ::= "[" ":" Type "]"', () => {
+			it('makes an ASTNodeTypeHash.', () => {
+				/*
+					<TypeHash>
+						<TypeConstant source="bool"/>
+					</TypeHash>
+				*/
+				const hash: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`[:bool]`));
+				assert.ok(hash instanceof AST.ASTNodeTypeHash);
+				assert.deepStrictEqual(hash.type.source, `bool`);
+			});
+		});
+
+		describe('TypeMappingLiteral ::= "{" Type "|->" Type "}"', () => {
+			it('makes an ASTNodeTypeMapping.', () => {
+				/*
+					<TypeMapping>
+						<TypeConstant source="int"/>
+						<TypeConstant source="float"/>
+					</TypeMapping>
+				*/
+				const mapping: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`{int |-> float}`));
+				assert.ok(mapping instanceof AST.ASTNodeTypeMapping);
+				assert.deepStrictEqual(mapping.antecedenttype.source, `int`);
+				assert.deepStrictEqual(mapping.consequenttype.source, `float`);
+			});
+		});
+
+		describe('GenericArguments ::= "<" ","? Type# ","? ">"', () => {
+			it('makes a Sequence<SemanticType>.', () => {
+				/*
+					<TypeOperation source="Bar | Qux">...</TypeOperation>
+					<TypeAlias source="Diz"/>
+				*/
+				const args: PARSER.ParseNodeTypeCompound = h.compoundTypeFromString(`Foo.<Bar | Qux, Diz>`);
+				assert_arrayLength(args.children, 2);
+				assert.ok(args.children[1] instanceof PARSER.ParseNodeGenericCall);
+				const sequence: NonemptyArray<AST.ASTNodeType> = Decorator.decorate(args.children[1]);
+				assert.deepStrictEqual(
+				sequence.map((c) => c.source),
+					[`Bar | Qux`, `Diz`],
+				);
+			});
+		});
+
 		describe('TypeUnit ::= IDENTIFIER', () => {
 			it('makes an ASTNodeTypeAlias.', () => {
 				/*
@@ -268,8 +313,8 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('literalCollection') && describe('TypeCompound ::= TypeCompound PropertyAccessType', () => {
-			it('access by integer.', () => {
+		describe('TypeCompound ::= TypeCompound (PropertyAccessType | GenericCall)', () => {
+			Dev.supports('literalCollection') && it('access by integer.', () => {
 				/*
 					<AccessType>
 						<TypeTuple source="[42, 420, 4200]">...</TypeTuple>
@@ -287,7 +332,7 @@ describe('Decorator', () => {
 					[`[ 42 , 420 , 4200 ]`, `. 1`],
 				);
 			});
-			it('access by key.', () => {
+			Dev.supports('literalCollection') && it('access by key.', () => {
 				/*
 					<AccessType>
 						<TypeRecord source="[c: 42, b: 420, a: 4200]">...</TypeRecord>
@@ -301,6 +346,21 @@ describe('Decorator', () => {
 				assert.deepStrictEqual(
 					[access.base.source,                access.accessor.source],
 					[`[ c : 42 , b : 420 , a : 4200 ]`, `b`],
+				);
+			});
+			it('makes an ASTNodeTypeCall.', () => {
+				/*
+					<TypeCall>
+						<TypeAlias source="Foo"/>
+						<TypeOperation source="Bar | Qux">...</TypeOperation>
+						<TypeAlias source="Diz"/>
+					</TypeCall>
+				*/
+				const call: AST.ASTNodeType = Decorator.decorate(h.compoundTypeFromString(`Foo.<Bar | Qux, Diz>`));
+				assert.ok(call instanceof AST.ASTNodeTypeCall, 'should be instance of ASTNodeTypeCall.');
+				assert.deepStrictEqual(
+					[call.base, ...call.args].map((c) => c.source),
+					[`Foo`, `Bar | Qux`, `Diz`],
 				);
 			});
 		});
@@ -323,6 +383,48 @@ describe('Decorator', () => {
 				assert.throws(() => Decorator.decorate(h.unaryTypeFromString(`float!`)), /not yet supported/);
 			});
 		})
+
+		describe('TypeUnarySymbol ::= TypeUnarySymbol "[" INTEGER? "]"', () => {
+			it('makes an ASTNodeTypeList with null count.', () => {
+				/*
+					<ASTNodeTypeList count=null>
+						<TypeConstant source="int"/>
+					</ASTNodeTypeList>
+				*/
+				const list: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int[]`));
+				assert.ok(list instanceof AST.ASTNodeTypeList);
+				assert.deepStrictEqual(
+					[list.type.source, list.count],
+					[`int`,            null],
+				);
+			});
+			it('makes an ASTNodeTypeList with non-null count.', () => {
+				/*
+					<ASTNodeTypeList count=3n>
+						<TypeConstant source="float"/>
+					</ASTNodeTypeList>
+				*/
+				const list: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`float[3]`));
+				assert.ok(list instanceof AST.ASTNodeTypeList);
+				assert.deepStrictEqual(
+					[list.type.source, list.count],
+					[`float`,          3n],
+				);
+			});
+		});
+
+		describe('TypeUnarySymbol ::= TypeUnarySymbol "{" "}"', () => {
+			it('makes an ASTNodeTypeSet.', () => {
+				/*
+					<ASTNodeTypeSet>
+						<TypeConstant source="bool"/>
+					</ASTNodeTypeSet>
+				*/
+				const set: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`bool{}`));
+				assert.ok(set instanceof AST.ASTNodeTypeSet);
+				assert.deepStrictEqual(set.type.source, `bool`);
+			});
+		});
 
 		describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
 			it('makes an ASTNodeTypeOperation.', () => {

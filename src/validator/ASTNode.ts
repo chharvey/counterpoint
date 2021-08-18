@@ -3,6 +3,7 @@ import {
 	ParseNode,
 	ASTNode,
 	NonemptyArray,
+	ErrorCode,
 } from '@chharvey/parser';
 import * as assert from 'assert';
 import * as xjs from 'extrajs'
@@ -24,6 +25,8 @@ import {
 	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidTypeList,
+	SolidTypeHash,
 	SolidTypeSet,
 	SolidTypeMapping,
 	SolidObject,
@@ -52,6 +55,8 @@ import {
 	TypeError02,
 	TypeError03,
 	TypeError04,
+	TypeError05,
+	TypeError06,
 	NanError01,
 	NanError02,
 } from '../error/index.js';
@@ -67,7 +72,7 @@ import {
 	ValidOperatorLogical,
 } from './Operator.js';
 import {Decorator} from './Decorator.js';
-import {Validator} from './Validator.js';
+import type {Validator} from './Validator.js';
 import {
 	SymbolKind,
 	SymbolStructure,
@@ -159,10 +164,6 @@ export class ASTNodeItemType extends ASTNodeSolid {
 	) {
 		super(start_node, {optional}, [value]);
 	}
-	/** @implements ASTNodeSolid */
-	build(builder: Builder): Instruction {
-		throw builder && 'ASTNodeItemType#build not yet supported.';
-	}
 }
 export class ASTNodePropertyType extends ASTNodeSolid {
 	constructor (
@@ -210,7 +211,12 @@ export class ASTNodeCase extends ASTNodeSolid {
  * - ASTNodeTypeAlias
  * - ASTNodeTypeTuple
  * - ASTNodeTypeRecord
+ * - ASTNodeTypeList
+ * - ASTNodeTypeHash
+ * - ASTNodeTypeSet
+ * - ASTNodeTypeMapping
  * - ASTNodeTypeAccess
+ * - ASTNodeTypeCall
  * - ASTNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
@@ -269,7 +275,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 						? new Float64(start_node.cook())
 						: new Int16(BigInt(start_node.cook()))
 				)
-			: /* (start_node instanceof TOKEN.TokenString) */ new SolidTypeConstant(new SolidString(start_node.cook()))
+			: /* (start_node instanceof TOKEN.TokenString) */ (Dev.supports('literalString-cook')) ? new SolidTypeConstant(new SolidString(start_node.cook())) : (() => { throw new Error('`literalString-cook` not yet supported.'); })()
 		);
 		super(start_node, {value});
 		this.value = value
@@ -304,7 +310,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 				return symbol.value;
 			};
 		};
-		return SolidType.UNKNOWN;
+		return SolidType.NEVER;
 	}
 }
 export class ASTNodeTypeTuple extends ASTNodeType {
@@ -348,6 +354,75 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		])));
 	}
 }
+export class ASTNodeTypeList extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeList {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeList);
+		return typ;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTypeUnarySymbol,
+		readonly type:  ASTNodeType,
+		readonly count: bigint | null,
+	) {
+		super(start_node, {count}, [type]);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		const itemstype: SolidType = this.type.assess(validator);
+		return (this.count === null)
+			? new SolidTypeList(itemstype)
+			: SolidTypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype));
+	}
+}
+export class ASTNodeTypeHash extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeHash {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeHash);
+		return typ;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTypeHashLiteral,
+		readonly type: ASTNodeType,
+	) {
+		super(start_node, {}, [type]);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		return new SolidTypeHash(this.type.assess(validator));
+	}
+}
+export class ASTNodeTypeSet extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeSet {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeSet);
+		return typ;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTypeUnarySymbol,
+		readonly type: ASTNodeType,
+	) {
+		super(start_node, {}, [type]);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		return new SolidTypeSet(this.type.assess(validator));
+	}
+}
+export class ASTNodeTypeMapping extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeMapping {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeMapping);
+		return typ;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTypeMappingLiteral,
+		readonly antecedenttype: ASTNodeType,
+		readonly consequenttype: ASTNodeType,
+	) {
+		super(start_node, {}, [antecedenttype, consequenttype]);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		return new SolidTypeMapping(this.antecedenttype.assess(validator), this.consequenttype.assess(validator));
+	}
+}
 export class ASTNodeTypeAccess extends ASTNodeType {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeAccess {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
@@ -387,6 +462,65 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, Operator.DOT, this.accessor) :
 				(() => { throw new TypeError04('property', base_type, this.accessor); })()
 			);
+		}
+	}
+}
+export class ASTNodeTypeCall extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeCall {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeCall);
+		return typ;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTypeCompound,
+		readonly base: ASTNodeType,
+		readonly args: Readonly<NonemptyArray<ASTNodeType>>,
+	) {
+		super(start_node, {}, [base, ...args]);
+	}
+	override varCheck(validator: Validator): void {
+		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
+		// (`this.base.source` must be `List | Hash | Set | Mapping`)
+		return this.args.forEach((arg) => arg.varCheck(validator)); // TODO: AggregateForEach
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		if (!(this.base instanceof ASTNodeTypeAlias)) {
+			throw new TypeError05(this.base.assess(validator), this.base);
+		}
+		return (new Map<string, () => SolidType>([
+			['List',    () => (this.countArgs(1n), new SolidTypeList(this.args[0].assess(validator)))],
+			['Hash',    () => (this.countArgs(1n), new SolidTypeHash(this.args[0].assess(validator)))],
+			['Set',     () => (this.countArgs(1n), new SolidTypeSet (this.args[0].assess(validator)))],
+			['Mapping', () => {
+				this.countArgs([1n, 3n]);
+				const anttype: SolidType = this.args[0].assess(validator);
+				const contype: SolidType = this.args[1]?.assess(validator) || anttype;
+				return new SolidTypeMapping(anttype, contype);
+			}],
+		]).get(this.base.source) || (() => {
+			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Mapping\`.`)
+		}))();
+	}
+	/**
+	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,
+	 * and throw if the number is incorrect.
+	 * The given argument may be a single value or a 2-tuple of values representing a range.
+	 * If a 2-tuple, the first item represents the minimum (inclusive),
+	 * and the second item represents the maximum (exclusive).
+	 * E.g., `countArgs([2n, 5n])` expects 2, 3, or 4 arguments, but not 5.
+	 * @param expected - the number of expected arguments, or a half-open range
+	 * @throws if this call’s number of actual arguments does not satisfy the expected number
+	 */
+	private countArgs(expected: bigint | [bigint, bigint]): void {
+		const actual: bigint = BigInt(this.args.length);
+		if (typeof expected === 'bigint') {
+			expected = [expected, expected + 1n];
+		}
+		if (actual < expected[0]) {
+			throw new TypeError06(actual, expected[0], this);
+		}
+		if (expected[1] <= actual) {
+			throw new TypeError06(actual, expected[1] - 1n, this);
 		}
 	}
 }
@@ -477,11 +611,12 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	}
 	private typed?: SolidType;
 	private assessed?: SolidObject | null;
+	private built?: INST.InstructionExpression;
 	/**
 	 * Determine whether this expression should build to a float-type instruction.
 	 * @return Should the built instruction be type-coerced into a floating-point number?
 	 */
-	abstract get shouldFloat(): boolean;
+	abstract shouldFloat(validator: Validator): boolean;
 	/**
 	 * @final
 	 */
@@ -493,8 +628,11 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 * @final
 	 */
 	build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
-		const assessed: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
-		return (!!assessed) ? INST.InstructionConst.fromAssessment(assessed, to_float) : this.build_do(builder, to_float);
+		if (!this.built) {
+			const assessed: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
+			this.built = (!!assessed) ? INST.InstructionConst.fromAssessment(assessed, to_float) : this.build_do(builder, to_float);
+		}
+		return this.built;
 	}
 	protected abstract build_do(builder: Builder, to_float?: boolean): INST.InstructionExpression;
 	/**
@@ -510,8 +648,13 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 				let assessed: SolidObject | null = null;
 				try {
 					assessed = this.assess(validator);
-				} catch {
-					// ignore evaluation errors such as VoidError, NanError, etc.
+				} catch (err) {
+					if (err instanceof ErrorCode) {
+						// ignore evaluation errors such as VoidError, NanError, etc.
+						return SolidType.NEVER;
+					} else {
+						throw err;
+					}
 				}
 				if (!!assessed) {
 					this.typed = new SolidTypeConstant(assessed);
@@ -541,34 +684,29 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 	private readonly value: SolidObject;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString | TOKEN.TokenTemplate) {
-		const value: SolidObject =
+		const value: SolidObject = (
 			(start_node instanceof TOKEN.TokenKeyword) ?
+				(start_node.source === Keyword.NULL)  ? SolidNull.NULL :
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
-				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUE  :
-				SolidNull.NULL
-			:
-			(start_node instanceof TOKEN.TokenNumber) ?
-				start_node.isFloat ? new Float64(start_node.cook()) : new Int16(BigInt(start_node.cook()))
-			:
-			(Dev.supports('literalString-cook')) ? new SolidString(start_node.cook()) : (() => { throw new Error('`literalString-cook` not yet supported.'); })();
+				(start_node.source === Keyword.TRUE)  ? SolidBoolean.TRUE :
+				(() => { throw new Error(`ASTNodeConstant.constructor did not expect the keyword \`${ start_node.source }\`.`); })()
+			: (start_node instanceof TOKEN.TokenNumber) ?
+				start_node.isFloat
+					? new Float64(start_node.cook())
+					: new Int16(BigInt(start_node.cook()))
+			: /* (start_node instanceof TOKEN.TokenString) */ (Dev.supports('literalString-cook')) ? new SolidString(start_node.cook()) : (() => { throw new Error('`literalString-cook` not yet supported.'); })()
+		);
 		super(start_node, {value})
 		this.value = value
 	}
-	override get shouldFloat(): boolean {
+	override shouldFloat(_validator: Validator): boolean {
 		return this.value instanceof Float64
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionConst {
-		return INST.InstructionConst.fromAssessment(this.assess_do(builder.validator), to_float);
+		return INST.InstructionConst.fromAssessment(this.assess(builder.validator), to_float);
 	}
-	protected override type_do(validator: Validator): SolidType {
-		// No need to call `this.assess(validator)` and then unwrap again; just use `this.value`.
-		return (validator.config.compilerOptions.constantFolding) ? new SolidTypeConstant(this.value) :
-		(this.value instanceof SolidNull)    ? SolidNull :
-		(this.value instanceof SolidBoolean) ? SolidBoolean :
-		(this.value instanceof Int16)        ? Int16 :
-		(this.value instanceof Float64)      ? Float64 :
-		(Dev.supports('stringConstant-assess') && this.value instanceof SolidString)  ? SolidString :
-		SolidObject
+	protected override type_do(_validator: Validator): SolidType {
+		return new SolidTypeConstant(this.value);
 	}
 	protected override assess_do(_validator: Validator): SolidObject {
 		if (this.value instanceof SolidString && !Dev.supports('stringConstant-assess')) {
@@ -588,8 +726,8 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		super(start_node, {id: start_node.cook()})
 		this.id = start_node.cook()!;
 	}
-	override get shouldFloat(): boolean {
-		return this.type(new Validator()).isSubtypeOf(Float64);
+	override shouldFloat(validator: Validator): boolean {
+		return this.type(validator).isSubtypeOf(Float64);
 	}
 	override varCheck(validator: Validator): void {
 		if (!validator.hasSymbol(this.id)) {
@@ -600,8 +738,8 @@ export class ASTNodeVariable extends ASTNodeExpression {
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		};
 	}
-	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
-		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat);
+	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
+		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat(builder.validator));
 	}
 	protected override type_do(validator: Validator): SolidType {
 		if (validator.hasSymbol(this.id)) {
@@ -610,7 +748,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 				return symbol.type;
 			};
 		};
-		return SolidType.UNKNOWN;
+		return SolidType.NEVER;
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
 		if (validator.hasSymbol(this.id)) {
@@ -641,7 +779,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	) {
 		super(start_node, {}, children)
 	}
-	override get shouldFloat(): boolean {
+	override shouldFloat(_validator: Validator): boolean {
 		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
 	}
 	protected override build_do(_builder: Builder): INST.InstructionExpression {
@@ -671,7 +809,7 @@ export class ASTNodeTuple extends ASTNodeExpression {
 	) {
 		super(start_node, {}, children);
 	}
-	override get shouldFloat(): boolean {
+	override shouldFloat(_validator: Validator): boolean {
 		throw 'ASTNodeTuple#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
@@ -699,7 +837,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 	) {
 		super(start_node, {}, children);
 	}
-	override get shouldFloat(): boolean {
+	override shouldFloat(_validator: Validator): boolean {
 		throw 'ASTNodeRecord#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
@@ -733,7 +871,7 @@ export class ASTNodeSet extends ASTNodeExpression {
 	) {
 		super(start_node, {}, children);
 	}
-	override get shouldFloat(): boolean {
+	override shouldFloat(_validator: Validator): boolean {
 		throw 'ASTNodeSet#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
@@ -743,7 +881,7 @@ export class ASTNodeSet extends ASTNodeExpression {
 		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
 		return new SolidTypeSet(
 			(this.children.length)
-				? this.children.map((c) => c.type(validator)).reduce((a, b) => a.union(b))
+				? SolidType.unionAll(this.children.map((c) => c.type(validator)))
 				: SolidType.NEVER,
 		);
 	}
@@ -766,7 +904,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	) {
 		super(start_node, {}, children);
 	}
-	override get shouldFloat(): boolean {
+	override shouldFloat(_validator: Validator): boolean {
 		throw 'ASTNodeMapping#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
@@ -775,8 +913,8 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	protected override type_do(validator: Validator): SolidType {
 		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
 		return new SolidTypeMapping(
-			this.children.map((c) => c.antecedent.type(validator)).reduce((a, b) => a.union(b)),
-			this.children.map((c) => c.consequent.type(validator)).reduce((a, b) => a.union(b)),
+			SolidType.unionAll(this.children.map((c) => c.antecedent.type(validator))),
+			SolidType.unionAll(this.children.map((c) => c.consequent.type(validator))),
 		);
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
@@ -805,7 +943,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	) {
 		super(start_node, {kind}, [base, accessor]);
 	}
-	override get shouldFloat(): boolean {
+	override shouldFloat(_validator: Validator): boolean {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
@@ -831,24 +969,17 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			]).get(access_kind)?.() || type;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			const accessor_type: SolidType = this.accessor.value.type(validator);
+			const accessor_type:  SolidTypeConstant = this.accessor.value.type(validator) as SolidTypeConstant;
+			const accessor_value: Int16             = accessor_type.value as Int16;
 			return (
-				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
-					(accessor_type instanceof SolidTypeConstant)
-						? base_type.value.toType().get(accessor_type.value as Int16, this.kind, this.accessor)
-						: updateDynamicType(base_type.value.toType().itemTypes(), this.kind)
-				) :
-				(base_type instanceof SolidTypeTuple) ? (
-					(accessor_type instanceof SolidTypeConstant)
-						? base_type.get(accessor_type.value as Int16, this.kind, this.accessor)
-						: updateDynamicType(base_type.itemTypes(), this.kind)
-				) :
+				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? base_type.value.toType().get(accessor_value, this.kind, this.accessor) :
+				(base_type instanceof SolidTypeTuple)                                             ? base_type               .get(accessor_value, this.kind, this.accessor) :
 				(() => { throw new TypeError04('index', base_type, this.accessor); })()
 			);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (
 				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, this.kind, this.accessor) :
-				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
+				(base_type instanceof SolidTypeRecord)                                             ? base_type               .get(this.accessor.id, this.kind, this.accessor) :
 				(() => { throw new TypeError04('property', base_type, this.accessor); })()
 			);
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
@@ -939,11 +1070,11 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand]);
 	}
-	override get shouldFloat(): boolean {
-		return this.operand.shouldFloat;
+	override shouldFloat(validator: Validator): boolean {
+		return this.operand.shouldFloat(validator);
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
-		const tofloat: boolean = to_float || this.shouldFloat
+		const tofloat: boolean = to_float || this.shouldFloat(builder.validator);
 		return new INST.InstructionUnop(
 			this.operator,
 			this.operand.build(builder, tofloat),
@@ -967,8 +1098,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			return assess0
 		}
 		return (
-			(this.operator === Operator.NOT) ? assess0.isTruthy.not :
-			(this.operator === Operator.EMP) ? assess0.isTruthy.not.or(assess0.isEmpty) :
+			(this.operator === Operator.NOT) ? SolidBoolean.fromBoolean(!assess0.isTruthy) :
+			(this.operator === Operator.EMP) ? SolidBoolean.fromBoolean(!assess0.isTruthy || assess0.isEmpty) :
 			(this.operator === Operator.NEG) ? this.foldNumeric(assess0 as SolidNumber<any>) :
 			(() => { throw new ReferenceError(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
@@ -998,8 +1129,8 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand0, operand1]);
 	}
-	override get shouldFloat(): boolean {
-		return this.operand0.shouldFloat || this.operand1.shouldFloat;
+	override shouldFloat(validator: Validator): boolean {
+		return this.operand0.shouldFloat(validator) || this.operand1.shouldFloat(validator);
 	}
 	/**
 	 * @final
@@ -1028,7 +1159,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopArithmetic {
-		const tofloat: boolean = to_float || this.shouldFloat
+		const tofloat: boolean = to_float || this.shouldFloat(builder.validator);
 		return new INST.InstructionBinopArithmetic(
 			this.operator,
 			this.operand0.build(builder, tofloat),
@@ -1096,7 +1227,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		}
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopComparative {
-		const tofloat: boolean = to_float || this.shouldFloat
+		const tofloat: boolean = to_float || this.shouldFloat(builder.validator);
 		return new INST.InstructionBinopComparative(
 			this.operator,
 			this.operand0.build(builder, tofloat),
@@ -1152,11 +1283,11 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	) {
 		super(start_node, operator, operand0, operand1);
 	}
-	override get shouldFloat(): boolean {
-		return this.operator === Operator.EQ && super.shouldFloat
+	override shouldFloat(validator: Validator): boolean {
+		return this.operator === Operator.EQ && super.shouldFloat(validator);
 	}
 	protected override build_do(builder: Builder, _to_float: boolean = false): INST.InstructionBinopEquality {
-		const tofloat: boolean = builder.config.compilerOptions.intCoercion && this.shouldFloat
+		const tofloat: boolean = builder.config.compilerOptions.intCoercion && this.shouldFloat(builder.validator);
 		return new INST.InstructionBinopEquality(
 			this.operator,
 			this.operand0.build(builder, tofloat),
@@ -1172,7 +1303,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			}
 			return SolidBoolean
 		}
-		if (t0.intersect(t1).isEmpty) {
+		if (t0.intersect(t1).isBottomType) {
 			return SolidBoolean.FALSETYPE
 		}
 		return SolidBoolean
@@ -1212,7 +1343,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopLogical {
-		const tofloat: boolean = to_float || this.shouldFloat
+		const tofloat: boolean = to_float || this.shouldFloat(builder.validator);
 		return new INST.InstructionBinopLogical(
 			builder.varCount,
 			this.operator,
@@ -1237,12 +1368,13 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		if (!assess0) {
 			return assess0
 		}
-		return (
-			   this.operator === Operator.AND && !assess0.isTruthy.value
-			|| this.operator === Operator.OR  &&  assess0.isTruthy.value
-		)
-			? assess0
-			: this.operand1.assess(validator);
+		if (
+			this.operator === Operator.AND && !assess0.isTruthy
+			|| this.operator === Operator.OR && assess0.isTruthy
+		) {
+			return assess0;
+		}
+		return this.operand1.assess(validator);
 	}
 }
 export class ASTNodeOperationTernary extends ASTNodeOperation {
@@ -1260,11 +1392,11 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}
-	override get shouldFloat(): boolean {
-		return this.operand1.shouldFloat || this.operand2.shouldFloat;
+	override shouldFloat(validator: Validator): boolean {
+		return this.operand1.shouldFloat(validator) || this.operand2.shouldFloat(validator);
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionCond {
-		const tofloat: boolean = to_float || this.shouldFloat
+		const tofloat: boolean = to_float || this.shouldFloat(builder.validator);
 		return new INST.InstructionCond(
 			this.operand0.build(builder, false),
 			this.operand1.build(builder, tofloat),
@@ -1425,7 +1557,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		return validator.getSymbolInfo(this.variable.id)?.assess();
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		const tofloat: boolean = this.value.type(builder.validator).isSubtypeOf(Float64) || this.value.shouldFloat;
+		const tofloat: boolean = this.type.assess(builder.validator).isSubtypeOf(Float64) || this.value.shouldFloat(builder.validator);
 		const assess: SolidObject | null = this.variable.assess(builder.validator);
 		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && assess)
 			? new INST.InstructionNone()
@@ -1466,7 +1598,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		};
 	}
 	override build(builder: Builder): INST.InstructionStatement {
-		const tofloat: boolean = this.assigned.type(builder.validator).isSubtypeOf(Float64) || this.assigned.shouldFloat;
+		const tofloat: boolean = this.assignee.type(builder.validator).isSubtypeOf(Float64) || this.assigned.shouldFloat(builder.validator);
 		return new INST.InstructionStatement(
 			builder.stmtCount,
 			new INST.InstructionGlobalSet(this.assignee.id, this.assigned.build(builder, tofloat)),

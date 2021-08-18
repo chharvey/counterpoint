@@ -5,11 +5,12 @@ import {
 } from '../validator/index.js';
 import {TypeError04} from '../error/index.js';
 import {
+	SolidTypeList,
 	SolidObject,
 	SolidNull,
 	Int16,
 	SolidTuple,
-} from '../index.js'; // avoids circular imports
+} from './index.js'; // avoids circular imports
 import {
 	TypeEntry,
 	IntRange,
@@ -19,7 +20,7 @@ import {
 
 
 export class SolidTypeTuple extends SolidType {
-	override readonly isEmpty: boolean = false;
+	override readonly isBottomType: boolean = false;
 
 	/**
 	 * Construct a new SolidTypeTuple from type items, assuming each item is required.
@@ -65,6 +66,9 @@ export class SolidTypeTuple extends SolidType {
 			t instanceof SolidTypeTuple
 			&& this.count[0] >= t.count[0]
 			&& t.types.every((thattype, i) => !this.types[i] || this.types[i].type.isSubtypeOf(thattype.type))
+		) || (
+			t instanceof SolidTypeList
+			&& this.itemTypes().isSubtypeOf(t.types)
 		);
 	}
 
@@ -82,7 +86,9 @@ export class SolidTypeTuple extends SolidType {
 	}
 
 	itemTypes(): SolidType {
-		return this.types.map((t) => t.type).reduce((a, b) => a.union(b));
+		return (this.types.length)
+			? SolidType.unionAll(this.types.map((t) => t.type))
+			: SolidType.NEVER;
 	}
 
 	/**

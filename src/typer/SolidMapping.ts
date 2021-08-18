@@ -13,7 +13,6 @@ import {
 import {SolidTypeMapping} from './SolidTypeMapping.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
-import {SolidBoolean} from './SolidBoolean.js';
 import {Collection} from './Collection.js';
 
 
@@ -25,7 +24,9 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 	static override values: SolidType['values'] = new Set([new SolidMapping()]);
 
 
-	constructor (private readonly cases: ReadonlyMap<K, V> = new Map()) {
+	constructor (
+		private readonly cases: ReadonlyMap<K, V> = new Map(),
+	) {
 		super();
 		const uniques: Map<K, V> = new Map();
 		[...cases].forEach(([ant, con]) => {
@@ -34,10 +35,10 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 		this.cases = uniques;
 	}
 	override toString(): string {
-		return `{${ [...this.cases].map(([ant, con]) => `${ ant.toString() } |-> ${ con.toString() }`).join(', ') }}`;
+		return `{${ [...this.cases].map(([ant, con]) => `${ ant } |-> ${ con }`).join(', ') }}`;
 	}
-	override get isEmpty(): SolidBoolean {
-		return SolidBoolean.fromBoolean(this.cases.size === 0);
+	override get isEmpty(): boolean {
+		return this.cases.size === 0;
 	}
 	/** @final */
 	protected override equal_helper(value: SolidObject): boolean {
@@ -51,10 +52,10 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 	}
 
 	override toType(): SolidTypeMapping {
-		return new SolidTypeMapping(
-			[...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeConstant(ant)).reduce((a, b) => a.union(b)),
-			[...this.cases.values()].map<SolidType>((con) => new SolidTypeConstant(con)).reduce((a, b) => a.union(b)),
-		);
+		return (this.cases.size) ? new SolidTypeMapping(
+			SolidType.unionAll([...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeConstant(ant))),
+			SolidType.unionAll([...this.cases.values()].map<SolidType>((con) => new SolidTypeConstant(con))),
+		) : new SolidTypeMapping(SolidType.NEVER, SolidType.NEVER);
 	}
 
 	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | SolidNull {

@@ -22,6 +22,18 @@ The values of records are Solid Language Values.
 
 
 
+## List
+`List` objects are variable-size ordered lists of indexed values, with indices starting at `0`.
+The values of lists are Solid Language Values.
+
+
+
+## Hash
+`Hash` objects are variable-size unordered lists of keyed values, with identifier keys.
+The values of hashes are Solid Language Values.
+
+
+
 ## Set
 `Set` objects are variable-size unordered lists of values.
 The values of sets are Solid Language Values.
