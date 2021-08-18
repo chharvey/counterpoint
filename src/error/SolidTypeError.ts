@@ -1,7 +1,7 @@
 import {
 	ErrorCode,
 } from '@chharvey/parser';
-import type {AST} from '../validator/index.js';
+import {AST} from '../validator/index.js';
 import type {SolidType} from '../typer/index.js';
 
 
@@ -104,5 +104,47 @@ export class TypeError04 extends SolidTypeError {
 	 */
 	constructor (kind: 'index' | 'property' | 'parameter', accessee: SolidType, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression) {
 		super(`${ kind[0].toUpperCase() }${ kind.slice(1) } \`${ accessor.source }\` does not exist on type \`${ accessee }\`.`, TypeError04.CODE, accessor.line_index, accessor.col_index);
+	}
+}
+/**
+ * A TypeError05 is thrown when an attempt is made to call an object that is not callable.
+ * @example
+ * type U = int;
+ * type T = U.<V>;  % TypeError05: Type `U` is not callable.
+ * let x: int = 42;
+ * x.(24);          % TypeError05: Type `int` is not callable.
+ */
+export class TypeError05 extends SolidTypeError {
+	/** The number series of this class of errors. */
+	static override readonly CODE = 5;
+	/**
+	 * Construct a new TypeError05 object.
+	 * @param typ  - the type trying to be called
+	 * @param base - the object expression being called
+	 */
+	constructor (typ: SolidType, base: AST.ASTNodeType) {
+		super(`Type \`${ typ }\` is not callable.`, TypeError05.CODE, base.line_index, base.col_index);
+	}
+}
+/**
+ * A TypeError06 is thrown when an attempt is made to call a callable object with an incorrect number of arguments.
+ * @example
+ * type U<V, W> = V | W;
+ * type T = U.<V>;                % TypeError06: Got 1 type arguments, but expected 2.
+ * func x(y: int): int => y + 42;
+ * x.(2, 4);                      % TypeError06: Got 2 arguments, but expected 1.
+ */
+export class TypeError06 extends SolidTypeError {
+	/** The number series of this class of errors. */
+	static override readonly CODE = 6;
+	/**
+	 * Construct a new TypeError06 object.
+	 * @param actual   - the number of arguments received
+	 * @param expected - the number of arguments expected
+	 * @param call     - the function call
+	 */
+	constructor (actual: bigint, expected: bigint, call: AST.ASTNodeTypeCall) { // TODO: `AST.ASTNodeExpressionCall`
+		const typ: string = (call instanceof AST.ASTNodeTypeCall) ? 'type ' : '';
+		super(`Got \`${ actual }\` ${ typ }arguments, but expected \`${ expected }\`.`, TypeError06.CODE, call.line_index, call.col_index);
 	}
 }

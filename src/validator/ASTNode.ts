@@ -55,6 +55,8 @@ import {
 	TypeError02,
 	TypeError03,
 	TypeError04,
+	TypeError05,
+	TypeError06,
 	NanError01,
 	NanError02,
 } from '../error/index.js';
@@ -472,12 +474,33 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	constructor (
 		start_node: PARSER.ParseNodeTypeCompound,
 		readonly base: ASTNodeType,
-		override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
+		readonly args: Readonly<NonemptyArray<ASTNodeType>>,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {}, [base, ...args]);
+	}
+	override varCheck(validator: Validator): void {
+		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
+		// (`this.base.source` must be `List | Hash | Set | Mapping`)
+		return this.args.forEach((arg) => arg.varCheck(validator)); // TODO: AggregateForEach
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		throw validator && 'ASTNodeTypeCall#assess_do not yet supported.';
+		if (!(this.base instanceof ASTNodeTypeAlias)) {
+			throw new TypeError05(this.base.assess(validator), this.base);
+		}
+		return (new Map<string, () => SolidType>([
+			['List',    () => (this.countArgs(1n), new SolidTypeList   (this.args[0].assess(validator)))],
+			['Hash',    () => (this.countArgs(1n), new SolidTypeHash   (this.args[0].assess(validator)))],
+			['Set',     () => (this.countArgs(1n), new SolidTypeSet    (this.args[0].assess(validator)))],
+			['Mapping', () => (this.countArgs(2n), new SolidTypeMapping(this.args[0].assess(validator), this.args[1].assess(validator)))],
+		]).get(this.base.source) || (() => {
+			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Mapping\`.`)
+		}))();
+	}
+	private countArgs(expected: bigint): void {
+		const actual: bigint = BigInt(this.args.length);
+		if (actual !== expected) {
+			throw new TypeError06(actual, expected, this);
+		}
 	}
 }
 export abstract class ASTNodeTypeOperation extends ASTNodeType {

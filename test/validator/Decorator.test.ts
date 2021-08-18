@@ -359,7 +359,7 @@ describe('Decorator', () => {
 				const call: AST.ASTNodeType = Decorator.decorate(h.compoundTypeFromString(`Foo.<Bar | Qux, Diz>`));
 				assert.ok(call instanceof AST.ASTNodeTypeCall, 'should be instance of ASTNodeTypeCall.');
 				assert.deepStrictEqual(
-					[call.base, ...call.children].map((c) => c.source),
+					[call.base, ...call.args].map((c) => c.source),
 					[`Foo`, `Bar | Qux`, `Diz`],
 				);
 			});
