@@ -74,18 +74,10 @@ export * from './ASTNodeOperationBinaryEquality.js';
 export * from './ASTNodeOperationBinaryLogical.js';
 export * from './ASTNodeOperationTernary.js';
 export * from './ASTNodeStatement.js';
+export * from './ASTNodeDeclaration.js';
 
 
 
-/**
- * A sematic node representing a declaration.
- * There are 2 known subclasses:
- * - ASTNodeDeclarationType
- * - ASTNodeDeclarationVariable
- */
-export type ASTNodeDeclaration =
-	| ASTNodeDeclarationType
-	| ASTNodeDeclarationVariable
 export class ASTNodeDeclarationType extends ASTNodeStatement {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeDeclarationType {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
