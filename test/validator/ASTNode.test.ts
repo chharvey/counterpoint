@@ -824,6 +824,12 @@ describe('ASTNodeSolid', () => {
 						],
 					);
 				});
+				it('Mapping has a default type parameter.', () => {
+					assert.deepStrictEqual(
+						AST.ASTNodeTypeCall.fromSource(`Mapping.<int>`).assess(validator),
+						new SolidTypeMapping(Int16, Int16),
+					);
+				});
 				it('throws if base is not an ASTNodeTypeAlias.', () => {
 					[
 						`int.<str>`,
@@ -845,7 +851,7 @@ describe('ASTNodeSolid', () => {
 						`List.<null, null>`,
 						`Hash.<bool, bool, bool>`,
 						`Set.<str, str, str, str>`,
-						`Mapping.<int>`,
+						`Mapping.<int, int, int, int, int>`,
 					].forEach((src) => {
 						assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).assess(validator), TypeError06);
 					});

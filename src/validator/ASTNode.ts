@@ -488,18 +488,39 @@ export class ASTNodeTypeCall extends ASTNodeType {
 			throw new TypeError05(this.base.assess(validator), this.base);
 		}
 		return (new Map<string, () => SolidType>([
-			['List',    () => (this.countArgs(1n), new SolidTypeList   (this.args[0].assess(validator)))],
-			['Hash',    () => (this.countArgs(1n), new SolidTypeHash   (this.args[0].assess(validator)))],
-			['Set',     () => (this.countArgs(1n), new SolidTypeSet    (this.args[0].assess(validator)))],
-			['Mapping', () => (this.countArgs(2n), new SolidTypeMapping(this.args[0].assess(validator), this.args[1].assess(validator)))],
+			['List',    () => (this.countArgs(1n), new SolidTypeList(this.args[0].assess(validator)))],
+			['Hash',    () => (this.countArgs(1n), new SolidTypeHash(this.args[0].assess(validator)))],
+			['Set',     () => (this.countArgs(1n), new SolidTypeSet (this.args[0].assess(validator)))],
+			['Mapping', () => {
+				this.countArgs([1n, 3n]);
+				const anttype: SolidType = this.args[0].assess(validator);
+				const contype: SolidType = this.args[1]?.assess(validator) || anttype;
+				return new SolidTypeMapping(anttype, contype);
+			}],
 		]).get(this.base.source) || (() => {
 			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Mapping\`.`)
 		}))();
 	}
-	private countArgs(expected: bigint): void {
+	/**
+	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,
+	 * and throw if the number is incorrect.
+	 * The given argument may be a single value or a 2-tuple of values representing a range.
+	 * If a 2-tuple, the first item represents the minimum (inclusive),
+	 * and the second item represents the maximum (exclusive).
+	 * E.g., `countArgs([2n, 5n])` expects 2, 3, or 4 arguments, but not 5.
+	 * @param expected - the number of expected arguments, or a half-open range
+	 * @throws if this call’s number of actual arguments does not satisfy the expected number
+	 */
+	private countArgs(expected: bigint | [bigint, bigint]): void {
 		const actual: bigint = BigInt(this.args.length);
-		if (actual !== expected) {
-			throw new TypeError06(actual, expected, this);
+		if (typeof expected === 'bigint') {
+			expected = [expected, expected + 1n];
+		}
+		if (actual < expected[0]) {
+			throw new TypeError06(actual, expected[0], this);
+		}
+		if (expected[1] <= actual) {
+			throw new TypeError06(actual, expected[1] - 1n, this);
 		}
 	}
 }

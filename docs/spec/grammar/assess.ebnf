@@ -123,10 +123,15 @@ Type Assess(SemanticTypeCall call) :=
 				1. *Return:* a subtype of `List` whose elements’ type is *UnwrapAffirm:* `Assess(call.children.1)`.
 		2. *Throw:* a new TypeError.
 	5. *Else If* `base.source` is "Mapping":
-		1. *If* `call.children.count` is 3:
-			1. *Return:* a subtype of `Mapping` whose antecedents’ type is *UnwrapAffirm:* `Assess(call.children.1)`
-				and whose consequents’ type is *UnwrapAffirm:* `Assess(call.children.2)`.
-		2. *Throw:* a new TypeError.
+		1. *Let* `antecedenttype` be *UnwrapAffirm:* `Assess(call.children.1)`.
+		2. *If* `call.children.count` is 2:
+			1. *Let* `consequenttype` be `antecedenttype`.
+		3. *Else If* `call.children.count` is 3:
+			1. *Let* `consequenttype` be *UnwrapAffirm:* `Assess(call.children.2)`.
+		4. *Else*:
+			1. *Throw:* a new TypeError.
+		5. *Return:* a subtype of `Mapping` whose antecedents’ type is `antecedenttype`
+			and whose consequents’ type is `consequenttype`.
 	6. *Throw* a new SyntaxError.
 ;
 
