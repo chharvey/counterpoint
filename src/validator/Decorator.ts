@@ -134,7 +134,9 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeTypeRecordLiteral):  AST.ASTNodeTypeRecord;
 	static decorate(node: PARSER.ParseNodeTypeHashLiteral):    AST.ASTNodeTypeHash;
 	static decorate(node: PARSER.ParseNodeTypeMappingLiteral): AST.ASTNodeTypeMapping;
+	static decorate(node: PARSER.ParseNodeGenericArguments):   NonemptyArray<AST.ASTNodeType>;
 	static decorate(node: PARSER.ParseNodePropertyAccessType): AST.ASTNodeIndexType | AST.ASTNodeKey;
+	static decorate(node: PARSER.ParseNodeGenericCall):        NonemptyArray<AST.ASTNodeType>;
 	static decorate(node:
 		| PARSER.ParseNodeTypeUnit
 		| PARSER.ParseNodeTypeCompound
@@ -241,6 +243,11 @@ export class Decorator {
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTypeMappingLiteral) {
 			return new AST.ASTNodeTypeMapping(node, this.decorate(node.children[1]), this.decorate(node.children[3]));
 
+		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeGenericArguments) {
+			return this.parseList<PARSER.ParseNodeType, AST.ASTNodeType>(
+				node.children.find((c): c is PARSER.ParseNodeGenericArguments__0__List => c instanceof PARSER.ParseNodeGenericArguments__0__List)!
+			);
+
 		} else if (node instanceof PARSER.ParseNodeTypeUnit) {
 			return (node.children.length === 1)
 				? (node.children[0] instanceof ParseNode)
@@ -256,14 +263,15 @@ export class Decorator {
 				this.decorate(node.children[1] as PARSER.ParseNodeWord)
 			);
 
+		} else if (node instanceof PARSER.ParseNodeGenericCall) {
+			return this.decorate(node.children[1]);
+
 		} else if (node instanceof PARSER.ParseNodeTypeCompound) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: (node.children[1] instanceof PARSER.ParseNodePropertyAccessType) ? new AST.ASTNodeTypeAccess(
-					node,
-					this.decorate(node.children[0]),
-					this.decorate(node.children[1]),
-				) : (() => { throw '`Decorate(TypeCompound ::= TypeCompound GenericCall)` not yet supported.'; })();
+				: (node.children[1] instanceof PARSER.ParseNodePropertyAccessType)
+					? new AST.ASTNodeTypeAccess(node, this.decorate(node.children[0]), this.decorate(node.children[1]))
+					: new AST.ASTNodeTypeCall  (node, this.decorate(node.children[0]), this.decorate(node.children[1]));
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnarySymbol) {
 			return (

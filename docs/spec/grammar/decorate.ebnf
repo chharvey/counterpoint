@@ -92,6 +92,10 @@ Decorate(TypeMappingLiteral ::= "{" Type__0 "|->" Type__1 "}") -> SemanticTypeMa
 		Decorate(Type__1)
 	);
 
+Decorate(GenericArguments ::= "<" ","? Type# ","? ">") -> Sequence<SemanticType>
+	:= ParseList(Type, SemanticType);
+
+
 
 
 Decorate(TypeUnit ::= IDENTIFIER) -> SemanticTypeAlias
@@ -116,6 +120,9 @@ Decorate(PropertyAccessType ::= "." INTEGER) -> SemanticIndexType
 Decorate(PropertyAccessType ::= "." Word) -> SemanticKey
 	:= Decorate(Word);
 
+Decorate(GenericCall ::= "." GenericArguments) -> Sequence<SemanticType>
+	:= Decorate(GenericArguments);
+
 
 
 Decorate(TypeCompound ::= TypeUnit) -> SemanticType
@@ -124,6 +131,11 @@ Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess
 	:= (SemanticTypeAccess
 		Decorate(TypeCompound)
 		Decorate(PropertyAccessType)
+	);
+Decorate(TypeCompound ::= TypeCompound GenericCall) -> SemanticTypeCall
+	:= (SemanticTypeCall
+		Decorate(TypeCompound)
+		Decorate(GenericCall)
 	);
 
 

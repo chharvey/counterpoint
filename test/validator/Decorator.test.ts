@@ -7,7 +7,7 @@ import {
 	CONFIG_DEFAULT,
 	Dev,
 } from '../../src/core/index.js';
-import type {
+import {
 	PARSER,
 } from '../../src/parser/index.js';
 import {
@@ -237,6 +237,23 @@ describe('Decorator', () => {
 			});
 		});
 
+		describe('GenericArguments ::= "<" ","? Type# ","? ">"', () => {
+			it('makes a Sequence<SemanticType>.', () => {
+				/*
+					<TypeOperation source="Bar | Qux">...</TypeOperation>
+					<TypeAlias source="Diz"/>
+				*/
+				const args: PARSER.ParseNodeTypeCompound = h.compoundTypeFromString(`Foo.<Bar | Qux, Diz>`);
+				assert_arrayLength(args.children, 2);
+				assert.ok(args.children[1] instanceof PARSER.ParseNodeGenericCall);
+				const sequence: NonemptyArray<AST.ASTNodeType> = Decorator.decorate(args.children[1]);
+				assert.deepStrictEqual(
+				sequence.map((c) => c.source),
+					[`Bar | Qux`, `Diz`],
+				);
+			});
+		});
+
 		describe('TypeUnit ::= IDENTIFIER', () => {
 			it('makes an ASTNodeTypeAlias.', () => {
 				/*
@@ -296,8 +313,8 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('literalCollection') && describe('TypeCompound ::= TypeCompound PropertyAccessType', () => {
-			it('access by integer.', () => {
+		describe('TypeCompound ::= TypeCompound (PropertyAccessType | GenericCall)', () => {
+			Dev.supports('literalCollection') && it('access by integer.', () => {
 				/*
 					<AccessType>
 						<TypeTuple source="[42, 420, 4200]">...</TypeTuple>
@@ -315,7 +332,7 @@ describe('Decorator', () => {
 					[`[ 42 , 420 , 4200 ]`, `. 1`],
 				);
 			});
-			it('access by key.', () => {
+			Dev.supports('literalCollection') && it('access by key.', () => {
 				/*
 					<AccessType>
 						<TypeRecord source="[c: 42, b: 420, a: 4200]">...</TypeRecord>
@@ -329,6 +346,21 @@ describe('Decorator', () => {
 				assert.deepStrictEqual(
 					[access.base.source,                access.accessor.source],
 					[`[ c : 42 , b : 420 , a : 4200 ]`, `b`],
+				);
+			});
+			it('makes an ASTNodeTypeCall.', () => {
+				/*
+					<TypeCall>
+						<TypeAlias source="Foo"/>
+						<TypeOperation source="Bar | Qux">...</TypeOperation>
+						<TypeAlias source="Diz"/>
+					</TypeCall>
+				*/
+				const call: AST.ASTNodeType = Decorator.decorate(h.compoundTypeFromString(`Foo.<Bar | Qux, Diz>`));
+				assert.ok(call instanceof AST.ASTNodeTypeCall, 'should be instance of ASTNodeTypeCall.');
+				assert.deepStrictEqual(
+					[call.base, ...call.children].map((c) => c.source),
+					[`Foo`, `Bar | Qux`, `Diz`],
 				);
 			});
 		});

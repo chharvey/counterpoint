@@ -214,6 +214,7 @@ export class ASTNodeCase extends ASTNodeSolid {
  * - ASTNodeTypeSet
  * - ASTNodeTypeMapping
  * - ASTNodeTypeAccess
+ * - ASTNodeTypeCall
  * - ASTNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
@@ -460,6 +461,23 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 				(() => { throw new TypeError04('property', base_type, this.accessor); })()
 			);
 		}
+	}
+}
+export class ASTNodeTypeCall extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeCall {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeCall);
+		return typ;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTypeCompound,
+		readonly base: ASTNodeType,
+		override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
+	) {
+		super(start_node, {}, children);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		throw validator && 'ASTNodeTypeCall#assess_do not yet supported.';
 	}
 }
 export abstract class ASTNodeTypeOperation extends ASTNodeType {
