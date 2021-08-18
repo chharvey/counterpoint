@@ -13,6 +13,7 @@ export {
 export * from './ASTNodeSolid.js';
 export * from './ASTNodeKey.js';
 export * from './ASTNodeIndexType.js';
+export * from './ASTNodeItemType.js';
 export * from './ASTNode.js';
 export * as AST from './ASTNode.js';
 
