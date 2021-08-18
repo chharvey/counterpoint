@@ -1,6 +1,3 @@
-import type {
-	ErrorCode,
-} from '@chharvey/parser';
 import * as assert from 'assert'
 import * as xjs from 'extrajs'
 import {
@@ -55,6 +52,7 @@ import {
 import {
 	assert_wasCalled,
 	assertEqualTypes,
+	assertAssignable,
 } from '../assert-helpers.js';
 import {
 	TYPE_CONST_NULL,
@@ -199,25 +197,53 @@ describe('ASTNodeSolid', () => {
 					let z: int = T;
 				`).varCheck(new Validator()), (err) => {
 					assert.ok(err instanceof AggregateError);
-					assert.strictEqual(err.errors.length, 13);
-					([
-						[ReferenceError01,  '`a` is never declared.'],
-						[ReferenceError01,  '`b` is never declared.'],
-						[ReferenceError01,  '`c` is never declared.'],
-						[ReferenceError01,  '`d` is never declared.'],
-						[ReferenceError01,  '`V` is never declared.'],
-						[ReferenceError01,  '`W` is never declared.'],
-						[ReferenceError01,  '`X` is never declared.'],
-						[ReferenceError01,  '`Y` is never declared.'],
-						[AssignmentError01, 'Duplicate declaration: `x` is already declared.'],
-						[AssignmentError10, 'Reassignment of a fixed variable: `x`.'],
-						[AssignmentError01, 'Duplicate declaration: `T` is already declared.'],
-						[ReferenceError03,  '`x` refers to a value, but is used as a type.'],
-						[ReferenceError03,  '`T` refers to a type, but is used as a value.'],
-					] as const).forEach(([errortype, message], i) => {
-						const er: ErrorCode = err.errors[i];
-						assert.ok(er instanceof errortype);
-						assert.strictEqual(er.message, message);
+					assertAssignable(err, {
+						cons: AggregateError,
+						errors: [
+							{
+								cons: AggregateError,
+								errors: [
+									{
+										cons: AggregateError,
+										errors: [
+											{cons: ReferenceError01, message: '`a` is never declared.'},
+											{cons: ReferenceError01, message: '`b` is never declared.'},
+										],
+									},
+									{
+										cons: AggregateError,
+										errors: [
+											{cons: ReferenceError01, message: '`c` is never declared.'},
+											{cons: ReferenceError01, message: '`d` is never declared.'},
+										],
+									},
+								],
+							},
+							{
+								cons: AggregateError,
+								errors: [
+									{
+										cons: AggregateError,
+										errors: [
+											{cons: ReferenceError01, message: '`V` is never declared.'},
+											{cons: ReferenceError01, message: '`W` is never declared.'},
+										],
+									},
+									{
+										cons: AggregateError,
+										errors: [
+											{cons: ReferenceError01, message: '`X` is never declared.'},
+											{cons: ReferenceError01, message: '`Y` is never declared.'},
+										],
+									},
+								],
+							},
+							{cons: AssignmentError01, message: 'Duplicate declaration: `x` is already declared.'},
+							{cons: AssignmentError10, message: 'Reassignment of a fixed variable: `x`.'},
+							{cons: AssignmentError01, message: 'Duplicate declaration: `T` is already declared.'},
+							{cons: ReferenceError03,  message: '`x` refers to a value, but is used as a type.'},
+							{cons: ReferenceError03,  message: '`T` refers to a type, but is used as a value.'},
+						],
 					});
 					return true;
 				});
@@ -306,7 +332,7 @@ describe('ASTNodeSolid', () => {
 		})
 		describe('ASTNodeGoal', () => {
 			it('aggregates multiple errors.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let a: null = null;
 					let b: null = null;
 					let c: null = null;
@@ -319,20 +345,31 @@ describe('ASTNodeSolid', () => {
 					e * f + g * h;
 					if null then 42 else 4.2;
 					let x: int = 4.2;
-				`).typeCheck(new Validator()), (err) => {
+				`);
+				const validator: Validator = new Validator();
+				goal.varCheck(validator);
+				assert.throws(() => goal.typeCheck(validator), (err) => {
 					assert.ok(err instanceof AggregateError);
-					assert.strictEqual(err.errors.length, 6);
-					([
-						[TypeError01, 'Invalid operation: `a * b` at line 6 col 6.'], // TODO remove line&col numbers from message
-						[TypeError01, 'Invalid operation: `c * d` at line 6 col 14.'],
-						[TypeError01, 'Invalid operation: `e * f` at line 11 col 6.'],
-						[TypeError01, 'Invalid operation: `g * h` at line 11 col 14.'],
-						[TypeError01, 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'],
-						[TypeError03, `Expression of type ${ typeConstFloat(4.2) } is not assignable to type ${ Int16 }.`], // TODO: improve `SolidLanguageType#toString`
-					] as const).forEach(([errortype, message], i) => {
-						const er: ErrorCode = err.errors[i];
-						assert.ok(er instanceof errortype);
-						assert.strictEqual(er.message, message);
+					assertAssignable(err, {
+						cons: AggregateError,
+						errors: [
+							{
+								cons: AggregateError,
+								errors: [
+									{cons: TypeError01, message: 'Invalid operation: `a * b` at line 6 col 6.'}, // TODO remove line&col numbers from message
+									{cons: TypeError01, message: 'Invalid operation: `c * d` at line 6 col 14.'},
+								],
+							},
+							{
+								cons: AggregateError,
+								errors: [
+									{cons: TypeError01, message: 'Invalid operation: `e * f` at line 11 col 6.'},
+									{cons: TypeError01, message: 'Invalid operation: `g * h` at line 11 col 14.'},
+								],
+							},
+							{cons: TypeError01, message: 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'},
+							{cons: TypeError03, message: `Expression of type ${ typeConstFloat(4.2) } is not assignable to type ${ Int16 }.`},
+						],
 					});
 					return true;
 				});
