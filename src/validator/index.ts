@@ -37,6 +37,7 @@ export * from './ASTNodeSet.js';
 export * from './ASTNodeMapping.js';
 export * from './ASTNodeAccess.js';
 export * from './ASTNodeOperation.js';
+export * from './ASTNodeOperationUnary.js';
 export * from './ASTNode.js';
 export * as AST from './ASTNode.js';
 
