@@ -97,6 +97,7 @@ export * from './ASTNodeVariable.js';
 export * from './ASTNodeTemplate.js';
 export * from './ASTNodeTuple.js';
 export * from './ASTNodeRecord.js';
+export * from './ASTNodeSet.js';
 
 
 
@@ -118,39 +119,6 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-export class ASTNodeSet extends ASTNodeExpression {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeSet {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeSet);
-		return expression;
-	}
-	constructor (
-		start_node: PARSER.ParseNodeTupleLiteral,
-		override readonly children: readonly ASTNodeExpression[],
-	) {
-		super(start_node, {}, children);
-	}
-	override shouldFloat(_validator: Validator): boolean {
-		throw 'ASTNodeSet#shouldFloat not yet supported.';
-	}
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeSet#build_do not yet supported.';
-	}
-	protected override type_do(validator: Validator): SolidType {
-		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
-		return new SolidTypeSet(
-			(this.children.length)
-				? SolidType.unionAll(this.children.map((c) => c.type(validator)))
-				: SolidType.NEVER,
-		);
-	}
-	protected override assess_do(validator: Validator): SolidObject | null {
-		const elements: readonly (SolidObject | null)[] = this.children.map((c) => c.assess(validator));
-		return (elements.includes(null))
-			? null
-			: new SolidSet(new Set(elements as SolidObject[]));
-	}
-}
 export class ASTNodeMapping extends ASTNodeExpression {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeMapping {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
