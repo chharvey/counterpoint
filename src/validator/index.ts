@@ -43,6 +43,7 @@ export * from './ASTNodeOperationBinaryArithmetic.js';
 export * from './ASTNodeOperationBinaryComparative.js';
 export * from './ASTNodeOperationBinaryEquality.js';
 export * from './ASTNodeOperationBinaryLogical.js';
+export * from './ASTNodeOperationTernary.js';
 export * from './ASTNode.js';
 export * as AST from './ASTNode.js';
 
