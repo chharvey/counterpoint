@@ -7,10 +7,8 @@ import * as xjs from 'extrajs'
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Dev,
 } from '../core/index.js';
 import {
-	Keyword,
 	TOKEN,
 	PARSER,
 	ParserSolid as Parser,
@@ -72,6 +70,7 @@ import type {ASTNodeCase} from './ASTNodeCase.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import type {ASTNodeConstant} from './ASTNodeConstant.js';
 import {Decorator} from './Decorator.js';
 import type {Validator} from './Validator.js';
 import {
@@ -100,6 +99,7 @@ export * from './ASTNodeTypeOperation.js';
 export * from './ASTNodeTypeOperationUnary.js';
 export * from './ASTNodeTypeOperationBinary.js';
 export * from './ASTNodeExpression.js';
+export * from './ASTNodeConstant.js';
 
 
 
@@ -121,45 +121,6 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-export class ASTNodeConstant extends ASTNodeExpression {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeConstant {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeConstant);
-		return expression;
-	}
-	private readonly value: SolidObject;
-	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString | TOKEN.TokenTemplate) {
-		const value: SolidObject = (
-			(start_node instanceof TOKEN.TokenKeyword) ?
-				(start_node.source === Keyword.NULL)  ? SolidNull.NULL :
-				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSE :
-				(start_node.source === Keyword.TRUE)  ? SolidBoolean.TRUE :
-				(() => { throw new Error(`ASTNodeConstant.constructor did not expect the keyword \`${ start_node.source }\`.`); })()
-			: (start_node instanceof TOKEN.TokenNumber) ?
-				start_node.isFloat
-					? new Float64(start_node.cook())
-					: new Int16(BigInt(start_node.cook()))
-			: /* (start_node instanceof TOKEN.TokenString) */ (Dev.supports('literalString-cook')) ? new SolidString(start_node.cook()) : (() => { throw new Error('`literalString-cook` not yet supported.'); })()
-		);
-		super(start_node, {value})
-		this.value = value
-	}
-	override shouldFloat(_validator: Validator): boolean {
-		return this.value instanceof Float64
-	}
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionConst {
-		return INST.InstructionConst.fromAssessment(this.assess(builder.validator), to_float);
-	}
-	protected override type_do(_validator: Validator): SolidType {
-		return new SolidTypeConstant(this.value);
-	}
-	protected override assess_do(_validator: Validator): SolidObject {
-		if (this.value instanceof SolidString && !Dev.supports('stringConstant-assess')) {
-			throw new Error('`stringConstant-assess` not yet supported.');
-		};
-		return this.value;
-	}
-}
 export class ASTNodeVariable extends ASTNodeExpression {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeVariable {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
