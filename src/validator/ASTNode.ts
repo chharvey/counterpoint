@@ -1,6 +1,5 @@
 import type {
 	ParseNode,
-	NonemptyArray,
 } from '@chharvey/parser';
 import * as assert from 'assert';
 import * as xjs from 'extrajs'
@@ -49,6 +48,7 @@ import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeVariable} from './ASTNodeVariable.js';
+import {ASTNodeOperation} from './ASTNodeOperation.js';
 import {Decorator} from './Decorator.js';
 import type {Validator} from './Validator.js';
 import {
@@ -83,6 +83,7 @@ export * from './ASTNodeRecord.js';
 export * from './ASTNodeSet.js';
 export * from './ASTNodeMapping.js';
 export * from './ASTNodeAccess.js';
+export * from './ASTNodeOperation.js';
 
 
 
@@ -104,21 +105,6 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-export abstract class ASTNodeOperation extends ASTNodeExpression {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperation {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperation);
-		return expression;
-	}
-	override readonly tagname: string = 'Operation' // TODO remove after refactoring tests using `#serialize`
-	constructor(
-		start_node: ParseNode,
-		operator: Operator,
-		override readonly children: Readonly<NonemptyArray<ASTNodeExpression>>,
-	) {
-		super(start_node, {operator}, children)
-	}
-}
 export class ASTNodeOperationUnary extends ASTNodeOperation {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationUnary {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
