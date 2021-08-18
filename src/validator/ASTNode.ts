@@ -55,6 +55,8 @@ import {
 	TypeError02,
 	TypeError03,
 	TypeError04,
+	TypeError05,
+	TypeError06,
 	NanError01,
 	NanError02,
 } from '../error/index.js';
@@ -214,6 +216,7 @@ export class ASTNodeCase extends ASTNodeSolid {
  * - ASTNodeTypeSet
  * - ASTNodeTypeMapping
  * - ASTNodeTypeAccess
+ * - ASTNodeTypeCall
  * - ASTNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
@@ -459,6 +462,65 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, Operator.DOT, this.accessor) :
 				(() => { throw new TypeError04('property', base_type, this.accessor); })()
 			);
+		}
+	}
+}
+export class ASTNodeTypeCall extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeCall {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeCall);
+		return typ;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeTypeCompound,
+		readonly base: ASTNodeType,
+		readonly args: Readonly<NonemptyArray<ASTNodeType>>,
+	) {
+		super(start_node, {}, [base, ...args]);
+	}
+	override varCheck(validator: Validator): void {
+		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
+		// (`this.base.source` must be `List | Hash | Set | Mapping`)
+		return this.args.forEach((arg) => arg.varCheck(validator)); // TODO: AggregateForEach
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		if (!(this.base instanceof ASTNodeTypeAlias)) {
+			throw new TypeError05(this.base.assess(validator), this.base);
+		}
+		return (new Map<string, () => SolidType>([
+			['List',    () => (this.countArgs(1n), new SolidTypeList(this.args[0].assess(validator)))],
+			['Hash',    () => (this.countArgs(1n), new SolidTypeHash(this.args[0].assess(validator)))],
+			['Set',     () => (this.countArgs(1n), new SolidTypeSet (this.args[0].assess(validator)))],
+			['Mapping', () => {
+				this.countArgs([1n, 3n]);
+				const anttype: SolidType = this.args[0].assess(validator);
+				const contype: SolidType = this.args[1]?.assess(validator) || anttype;
+				return new SolidTypeMapping(anttype, contype);
+			}],
+		]).get(this.base.source) || (() => {
+			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Mapping\`.`)
+		}))();
+	}
+	/**
+	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,
+	 * and throw if the number is incorrect.
+	 * The given argument may be a single value or a 2-tuple of values representing a range.
+	 * If a 2-tuple, the first item represents the minimum (inclusive),
+	 * and the second item represents the maximum (exclusive).
+	 * E.g., `countArgs([2n, 5n])` expects 2, 3, or 4 arguments, but not 5.
+	 * @param expected - the number of expected arguments, or a half-open range
+	 * @throws if this call’s number of actual arguments does not satisfy the expected number
+	 */
+	private countArgs(expected: bigint | [bigint, bigint]): void {
+		const actual: bigint = BigInt(this.args.length);
+		if (typeof expected === 'bigint') {
+			expected = [expected, expected + 1n];
+		}
+		if (actual < expected[0]) {
+			throw new TypeError06(actual, expected[0], this);
+		}
+		if (expected[1] <= actual) {
+			throw new TypeError06(actual, expected[1] - 1n, this);
 		}
 	}
 }

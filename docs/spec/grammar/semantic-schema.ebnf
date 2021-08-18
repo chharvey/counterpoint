@@ -35,6 +35,7 @@ SemanticType =:=
 	| SemanticTypeSet
 	| SemanticTypeMapping
 	| SemanticTypeAccess
+	| SemanticTypeCall
 	| SemanticTypeOperation
 ;
 
@@ -56,6 +57,9 @@ SemanticTypeList[count: RealNumber | Void]
 
 SemanticTypeAccess
 	::= SemanticType (SemanticIndexType | SemanticKey);
+
+SemanticTypeCall
+	::= SemanticType SemanticType+;
 
 SemanticTypeOperation[operator: ORNULL]
 	::= SemanticType;

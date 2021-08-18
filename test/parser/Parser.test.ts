@@ -195,6 +195,29 @@ describe('Parser', () => {
 			})
 		})
 
+		specify('TypeCompound ::= TypeCompound (PropertyAccessType | GenericCall)', () => {
+			[
+				`A`,
+				`[A, B]`,
+				`[a: A, b: B]`,
+				`[:A]`,
+				`{A |-> B}`,
+				`(A?)`,
+				`(A!)`,
+				`(A[])`,
+				`(A[3])`,
+				`(A{})`,
+				`(A & B)`,
+				`(A | B)`,
+			].flatMap((base) => [
+				`.1`,
+				`.b`,
+				`.<X, Y>`,
+			].map((dot) => `${ base }${ dot }`)).forEach((src) => {
+				assert.doesNotThrow(() => h.compoundTypeFromString(src));
+			})
+		});
+
 		describe('TypeUnarySymbol ::= TypeUnarySymbol ("?" | "!")', () => {
 			it('makes a ParseNodeTypeUnarySymbol node.', () => {
 				/*

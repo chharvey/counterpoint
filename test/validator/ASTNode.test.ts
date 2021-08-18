@@ -48,6 +48,8 @@ import {
 	TypeError02,
 	TypeError03,
 	TypeError04,
+	TypeError05,
+	TypeError06,
 	VoidError01,
 	NanError01,
 } from '../../src/error/index.js';
@@ -804,6 +806,57 @@ describe('ASTNodeSolid', () => {
 					SolidObject,
 				])
 			})
+			context('ASTNodeTypeCall', () => {
+				const validator: Validator = new Validator();
+				it('evaluates List, Hash, Set, and Mapping.', () => {
+					assert.deepStrictEqual(
+						[
+							`List.<null>`,
+							`Hash.<bool>`,
+							`Set.<str>`,
+							`Mapping.<int, float>`,
+						].map((src) => AST.ASTNodeTypeCall.fromSource(src).assess(validator)),
+						[
+							new SolidTypeList(SolidNull),
+							new SolidTypeHash(SolidBoolean),
+							new SolidTypeSet(SolidString),
+							new SolidTypeMapping(Int16, Float64),
+						],
+					);
+				});
+				it('Mapping has a default type parameter.', () => {
+					assert.deepStrictEqual(
+						AST.ASTNodeTypeCall.fromSource(`Mapping.<int>`).assess(validator),
+						new SolidTypeMapping(Int16, Int16),
+					);
+				});
+				it('throws if base is not an ASTNodeTypeAlias.', () => {
+					[
+						`int.<str>`,
+						`(List | Hash).<bool>`,
+					].forEach((src) => {
+						assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).assess(validator), TypeError05);
+					});
+				});
+				it('throws if base is not one of the allowed strings.', () => {
+					[
+						`SET.<str>`,
+						`Map.<bool>`,
+					].forEach((src) => {
+						assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).assess(validator), SyntaxError);
+					});
+				});
+				it('throws when providing incorrect number of arguments.', () => {
+					[
+						`List.<null, null>`,
+						`Hash.<bool, bool, bool>`,
+						`Set.<str, str, str, str>`,
+						`Mapping.<int, int, int, int, int>`,
+					].forEach((src) => {
+						assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).assess(validator), TypeError06);
+					});
+				});
+			});
 			Dev.supports('optionalEntries') && specify('ASTNodeTypeTuple', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).assess(new Validator()),
@@ -2159,10 +2212,10 @@ describe('ASTNodeSolid', () => {
 
 				let unfixed three: str = 'three';
 
-				let         set_fixed:   (int | float | str){}         = {1, 2.0, 'three'};
-				let unfixed set_unfixed: (int | float | str){}         = {1, 2.0, three};
-				let         map_fixed:   {[str] |-> int | float | str} = {a |-> 1, b |-> 2.0, c |-> 'three'};
-				let unfixed map_unfixed: {[str] |-> int | float | str} = {a |-> 1, b |-> 2.0, c |-> three};
+				let         set_fixed:   (int | float | str){}              = {1, 2.0, 'three'};
+				let unfixed set_unfixed: Set.<int | float | str>            = {1, 2.0, three};
+				let         map_fixed:   {[str] |-> int | float | str}      = {a |-> 1, b |-> 2.0, c |-> 'three'};
+				let unfixed map_unfixed: Mapping.<[str], int | float | str> = {a |-> 1, b |-> 2.0, c |-> three};
 
 				set_fixed  .[1];       % type \`1\`                 % value \`1\`
 				set_fixed  .[2.0];     % type \`2.0\`               % value \`2.0\`
