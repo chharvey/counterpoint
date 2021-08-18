@@ -61,7 +61,6 @@ import type {Buildable} from './Buildable.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
-import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
@@ -97,6 +96,7 @@ export * from './ASTNodeConstant.js';
 export * from './ASTNodeVariable.js';
 export * from './ASTNodeTemplate.js';
 export * from './ASTNodeTuple.js';
+export * from './ASTNodeRecord.js';
 
 
 
@@ -118,40 +118,6 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-export class ASTNodeRecord extends ASTNodeExpression {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeRecord {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeRecord);
-		return expression;
-	}
-	constructor (
-		start_node: PARSER.ParseNodeRecordLiteral,
-		override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
-	) {
-		super(start_node, {}, children);
-	}
-	override shouldFloat(_validator: Validator): boolean {
-		throw 'ASTNodeRecord#shouldFloat not yet supported.';
-	}
-	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeRecord#build_do not yet supported.';
-	}
-	protected override type_do(validator: Validator): SolidType {
-		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
-			c.key.id,
-			c.value.type(validator),
-		])));
-	}
-	protected override assess_do(validator: Validator): SolidObject | null {
-		const properties: ReadonlyMap<bigint, SolidObject | null> = new Map(this.children.map((c) => [
-			c.key.id,
-			c.value.assess(validator),
-		]));
-		return ([...properties].map((p) => p[1]).includes(null))
-			? null
-			: new SolidRecord(properties as ReadonlyMap<bigint, SolidObject>);
-	}
-}
 export class ASTNodeSet extends ASTNodeExpression {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeSet {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
