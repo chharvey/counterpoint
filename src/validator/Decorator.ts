@@ -13,6 +13,7 @@ import {
 	TOKEN,
 	PARSER,
 } from '../parser/index.js';
+import * as AST from './index.js';
 import {
 	Operator,
 	ValidAccessOperator,
@@ -24,7 +25,6 @@ import {
 	ValidOperatorLogical,
 } from './Operator.js';
 import type {ASTNodeSolid} from './ASTNodeSolid.js';
-import * as AST from './ASTNode.js';
 
 
 
