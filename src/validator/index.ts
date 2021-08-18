@@ -11,6 +11,7 @@ export {
 } from './Operator.js';
 
 export * from './ASTNodeSolid.js';
+export * from './ASTNodeKey.js';
 export * as AST from './ASTNode.js';
 
 export {Decorator} from './Decorator.js';

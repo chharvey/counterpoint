@@ -66,6 +66,7 @@ import {
 	ValidOperatorLogical,
 } from './Operator.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
+import {ASTNodeKey} from './ASTNodeKey.js';
 import {Decorator} from './Decorator.js';
 import type {Validator} from './Validator.js';
 import {
@@ -74,6 +75,10 @@ import {
 	SymbolStructureVar,
 	SymbolStructureType,
 } from './SymbolStructure.js';
+
+
+
+export * from './ASTNodeKey.js';
 
 
 
@@ -95,16 +100,6 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-
-
-
-export class ASTNodeKey extends ASTNodeSolid {
-	readonly id: bigint;
-	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenIdentifier) {
-		super(start_node, {id: start_node.cook()});
-		this.id = start_node.cook()!;
-	}
-}
 export class ASTNodeIndexType extends ASTNodeSolid {
 	constructor (
 		start_node: PARSER.ParseNodePropertyAccessType,
