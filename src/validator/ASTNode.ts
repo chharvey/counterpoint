@@ -69,6 +69,7 @@ import {ASTNodeSolid} from './ASTNodeSolid.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndexType} from './ASTNodeIndexType.js';
 import type {ASTNodeItemType} from './ASTNodeItemType.js';
+import type {ASTNodePropertyType} from './ASTNodePropertyType.js';
 import {Decorator} from './Decorator.js';
 import type {Validator} from './Validator.js';
 import {
@@ -83,6 +84,7 @@ import {
 export * from './ASTNodeKey.js';
 export * from './ASTNodeIndexType.js';
 export * from './ASTNodeItemType.js';
+export * from './ASTNodePropertyType.js';
 
 
 
@@ -104,19 +106,6 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-export class ASTNodePropertyType extends ASTNodeSolid {
-	constructor (
-		start_node:
-			| PARSER.ParseNodeEntryType_Named
-			| PARSER.ParseNodeEntryType_Named_Optional
-		,
-		readonly optional: boolean,
-		readonly key:      ASTNodeKey,
-		readonly value:    ASTNodeType,
-	) {
-		super(start_node, {optional}, [key, value]);
-	}
-}
 export class ASTNodeIndex extends ASTNodeSolid {
 	constructor (
 		start_node: PARSER.ParseNodePropertyAccess,
