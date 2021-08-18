@@ -73,6 +73,7 @@ import type {ASTNodePropertyType} from './ASTNodePropertyType.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
+import {ASTNodeType} from './ASTNodeType.js';
 import {Decorator} from './Decorator.js';
 import type {Validator} from './Validator.js';
 import {
@@ -91,6 +92,7 @@ export * from './ASTNodePropertyType.js';
 export * from './ASTNodeIndex.js';
 export * from './ASTNodeProperty.js';
 export * from './ASTNodeCase.js';
+export * from './ASTNodeType.js';
 
 
 
@@ -112,46 +114,6 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-/**
- * A sematic node representing a type.
- * Known subclasses:
- * - ASTNodeTypeConstant
- * - ASTNodeTypeAlias
- * - ASTNodeTypeTuple
- * - ASTNodeTypeRecord
- * - ASTNodeTypeAccess
- * - ASTNodeTypeOperation
- */
-export abstract class ASTNodeType extends ASTNodeSolid {
-	/**
-	 * Construct a new ASTNodeType from a source text and optionally a configuration.
-	 * The source text must parse successfully.
-	 * @param src    the source text
-	 * @param config the configuration
-	 * @returns      a new ASTNodeType representing the given source
-	 */
-	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeType {
-		const statement: ASTNodeDeclarationType = ASTNodeDeclarationType.fromSource(`type T = ${ src };`, config);
-		return statement.value;
-	}
-	private assessed?: SolidType;
-	/**
-	 * @final
-	 */
-	override typeCheck(_validator: Validator): void {
-		return; // no type-checking necessary
-	}
-	/**
-	 * Assess the type-value of this node at compile-time.
-	 * @param validator a record of declared variable symbols
-	 * @returns the computed type-value of this node
-	 * @final
-	 */
-	assess(validator: Validator): SolidType {
-		return this.assessed ||= this.assess_do(validator);
-	}
-	protected abstract assess_do(validator: Validator): SolidType;
-}
 export class ASTNodeTypeConstant extends ASTNodeType {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeConstant {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
