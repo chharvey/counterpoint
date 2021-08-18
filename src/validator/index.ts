@@ -29,6 +29,7 @@ export * from './ASTNodeTypeOperationUnary.js';
 export * from './ASTNodeTypeOperationBinary.js';
 export * from './ASTNodeExpression.js';
 export * from './ASTNodeConstant.js';
+export * from './ASTNodeVariable.js';
 export * from './ASTNode.js';
 export * as AST from './ASTNode.js';
 
