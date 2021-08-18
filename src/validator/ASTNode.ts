@@ -72,6 +72,7 @@ import type {ASTNodeItemType} from './ASTNodeItemType.js';
 import type {ASTNodePropertyType} from './ASTNodePropertyType.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
+import type {ASTNodeCase} from './ASTNodeCase.js';
 import {Decorator} from './Decorator.js';
 import type {Validator} from './Validator.js';
 import {
@@ -89,6 +90,7 @@ export * from './ASTNodeItemType.js';
 export * from './ASTNodePropertyType.js';
 export * from './ASTNodeIndex.js';
 export * from './ASTNodeProperty.js';
+export * from './ASTNodeCase.js';
 
 
 
@@ -110,15 +112,6 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-export class ASTNodeCase extends ASTNodeSolid {
-	constructor (
-		start_node: PARSER.ParseNodeCase,
-		readonly antecedent: ASTNodeExpression,
-		readonly consequent: ASTNodeExpression,
-	) {
-		super(start_node, {}, [antecedent, consequent]);
-	}
-}
 /**
  * A sematic node representing a type.
  * Known subclasses:
