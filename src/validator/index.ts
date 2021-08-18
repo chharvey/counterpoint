@@ -24,6 +24,7 @@ export * from './ASTNodeTypeAlias.js';
 export * from './ASTNodeTypeTuple.js';
 export * from './ASTNodeTypeRecord.js';
 export * from './ASTNodeTypeAccess.js';
+export * from './ASTNodeTypeOperation.js';
 export * from './ASTNode.js';
 export * as AST from './ASTNode.js';
 

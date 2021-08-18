@@ -70,8 +70,9 @@ import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
-import {ASTNodeType} from './ASTNodeType.js';
+import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
+import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.js';
 import {Decorator} from './Decorator.js';
 import type {Validator} from './Validator.js';
 import {
@@ -96,6 +97,7 @@ export * from './ASTNodeTypeAlias.js';
 export * from './ASTNodeTypeTuple.js';
 export * from './ASTNodeTypeRecord.js';
 export * from './ASTNodeTypeAccess.js';
+export * from './ASTNodeTypeOperation.js';
 
 
 
@@ -117,20 +119,6 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-export abstract class ASTNodeTypeOperation extends ASTNodeType {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeOperation {
-		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeOperation);
-		return typ;
-	}
-	constructor (
-		start_node: ParseNode,
-		readonly operator: ValidTypeOperator,
-		override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
-	) {
-		super(start_node, {operator}, children)
-	}
-}
 export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeOperationUnary {
 		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
