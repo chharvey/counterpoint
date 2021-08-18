@@ -64,6 +64,7 @@ import {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from './Operator.js';
+import type {Buildable} from './Buildable.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
@@ -1167,15 +1168,4 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 				...(this.children as readonly ASTNodeStatement[]).map((child) => child.build(builder)),
 			])
 	}
-}
-
-
-
-interface Buildable extends ASTNodeSolid {
-	/**
-	 * Give directions to the runtime code builder.
-	 * @param builder the builder to direct
-	 * @return the directions to print
-	 */
-	build(builder: Builder): Instruction;
 }
