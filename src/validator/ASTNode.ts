@@ -68,7 +68,6 @@ import {
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndexType} from './ASTNodeIndexType.js';
-import type {ASTNodeItemType} from './ASTNodeItemType.js';
 import type {ASTNodePropertyType} from './ASTNodePropertyType.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
@@ -96,6 +95,7 @@ export * from './ASTNodeCase.js';
 export * from './ASTNodeType.js';
 export * from './ASTNodeTypeConstant.js';
 export * from './ASTNodeTypeAlias.js';
+export * from './ASTNodeTypeTuple.js';
 
 
 
@@ -117,25 +117,6 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-export class ASTNodeTypeTuple extends ASTNodeType {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeTuple {
-		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeTuple);
-		return typ;
-	}
-	constructor (
-		start_node: PARSER.ParseNodeTypeTupleLiteral,
-		override readonly children: readonly ASTNodeItemType[],
-	) {
-		super(start_node, {}, children);
-	}
-	protected override assess_do(validator: Validator): SolidType {
-		return new SolidTypeTuple(this.children.map((c) => ({
-			type:     c.value.assess(validator),
-			optional: c.optional,
-		})));
-	}
-}
 export class ASTNodeTypeRecord extends ASTNodeType {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeRecord {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
