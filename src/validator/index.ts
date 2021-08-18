@@ -16,6 +16,7 @@ export * from './ASTNodeIndexType.js';
 export * from './ASTNodeItemType.js';
 export * from './ASTNodePropertyType.js';
 export * from './ASTNodeIndex.js';
+export * from './ASTNodeProperty.js';
 export * from './ASTNode.js';
 export * as AST from './ASTNode.js';
 
