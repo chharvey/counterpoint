@@ -9,13 +9,20 @@ Type Assess(SemanticTypeAlias var) :=
 		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
 		2. *Assert:* `symbol.value` is a Solid Language Type.
 		3. *Return:* `symbol.value`.
-	2. *Return:* `Unknown`.
+	2. *Return:* `Never`.
 ;
 
 
 Type Assess(SemanticTypeTuple tupletype) :=
-	1. *Let* `data` be a mapping of `tupletype` for each `type` to *UnwrapAffirm:* `Assess(type)`.
-	2. *Return:* a subtype of `Tuple` whose items are `data`.
+	1. *Let* `data` be a new Sequence.
+	2. *For each* `itemtype` in `tupletype`:
+		1. *Assert:* `itemtype.children.count` is 1.
+		2. *Let* `typedatum` be a new Structure [
+			type:     *UnwrapAffirm:* `Assess(itemtype.children.0)`,
+			optional: `itemtype.optional`,
+		].
+		3. Push `typedatum` to `data`.
+	3. *Return:* a subtype of `Tuple` whose items are `data`.
 ;
 
 
@@ -23,11 +30,38 @@ Type Assess(SemanticTypeTuple tupletype) :=
 Type Assess(SemanticTypeRecord recordtype) :=
 	1. *Let* `data` be a new Structure.
 	2. *For each* `propertytype` in `recordtype`:
-		1. Set `data` to [
-			...data,
-			`propertytype.children.0.id`= *UnwrapAffirm:* `Assess(propertytype.children.1)`,
+		1. *Assert:* `propertytype.children.count` is 2.
+		2. *Let* `typedatum` be a new Structure [
+			type:     *UnwrapAffirm:* `Assess(propertytype.children.1)`,
+			optional: `propertytype.optional`,
 		].
+		3. Set the property `propertytype.children.0.id` on `data` to the value `typedatum`.
 	3. *Return:* a subtype of `Record` whose properties are `data`.
+;
+
+
+
+Type Assess(SemanticTypeAccess access) :=
+	1. *Assert:* `access.children.count` is 2.
+	2. *Let* `base` be `access.children.0`.
+	3. *Let* `accessor` be `access.children.1`.
+	4. *Let* `base_type` be *Unwrap:* `CombineTuplesOrRecords(Assess(base))`.
+	5. *If* `accessor` is a SemanticIndexType:
+		1. *Assert:* `accessor.children.count` is 1.
+		2. *Let* `accessor_type` be *Unwrap:* `Assess(accessor.children.0)`.
+		3. *Assert:* `accessor_type` is a TypeConstant.
+		4. *Let* `i` be `accessor_type.value`.
+		5. *Assert:* `i` is a instance of `Integer`.
+		6. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)` *and* `i` is an index in `base_type`:
+			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
+			2. *Return:* *UnwrapAffirm:* `MaybeOptional(entry)`.
+		7. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
+	6. *Assert:* `accessor` is a SemanticKey.
+	7. *Let* `id` be `accessor.id`.
+	8. *If* *UnwrapAffirm:* `Subtype(base_type, Record)` *and* `id` is a key in `base_type`:
+		1. *Let* `entry` be the item accessed at key `id` in `base_type`.
+		2. *Return:* *UnwrapAffirm:* `MaybeOptional(entry)`.
+	9. *Throw:* a new TypeError04 "Property {{ id }} does not exist on type {{ base_type }}.".
 ;
 
 
@@ -102,6 +136,13 @@ Record! Assess(SemanticRecord record) :=
 
 
 
+Set! Assess(SemanticSet set) :=
+	1. *Let* `data` be a mapping of `set` for each `el` to *Unwrap:* `Assess(el)`.
+	2. *Return:* a new Set containing the items in the sequence `data`.
+;
+
+
+
 Mapping! Assess(SemanticMapping mapping) :=
 	1. *Let* `data` be a mapping of `mapping` for each `case` to a new Sequence [
 		*Unwrap:* `Assess(case.children.0)`,
@@ -110,6 +151,46 @@ Mapping! Assess(SemanticMapping mapping) :=
 	2. *For each* `it` in `data`:
 		1. *Assert:* `it.count` is 2.
 	3. *Return:* a new Mapping containing the pairs in the sequence `data`.
+;
+
+
+
+Object! Assess(SemanticAccess access) :=
+	1. *Assert:* `access.children.count` is 2.
+	2. *Let* `base` be `access.children.0`.
+	3. *Let* `accessor` be `access.children.1`.
+	4. *Let* `base_value` be *Unwrap:* `Assess(base)`.
+	5. *If* `access.kind` is `OPTIONAL` *and* *UnwrapAffirm:* `Equal(base_value, null)`:
+		1. *Return:* `base_value`.
+	6. *If* `accessor` is a SemanticIndex:
+		1. *Assert:* `accessor.children.count` is 1.
+		2. *Let* `accessor_value` be *Unwrap:* `Assess(accessor.children.0)`.
+		3. *Assert:* `accessor_value` is an instance of `Integer`.
+		4. *Assert:* `base_value` is an instance of `Tuple` *and* `accessor_value` is an index in `base_value`.
+		5. *Return:* the item accessed at index `accessor_value` in `base_value`.
+	7. *If* `accessor` is a SemanticKey:
+		1. *Let* `id` be `accessor.id`.
+		2. *Assert:* `base_value` is an instance of `Record` *and* `id` is a key in `base_value`.
+		3. *Return:* the value accessed at key `id` in `base_value`.
+	8. *Assert:* `accessor` is a SemanticExpression.
+	9. *Let* `accessor_value` be *Unwrap:* `Assess(accessor)`.
+	10. *If* `base_value` is an instance of `Tuple`:
+		1. *Assert:* `accessor_value` is an instance of `Integer` *and* `accessor_value` is an index in `base_value`.
+		2. *Return:* the item accessed at index `accessor_value` in `base_value`.
+	11. *If* `base_value` is an instance of `Set`:
+		1. Find an element `e` in `base_value` such that `Identical(e, accessor_value)`.
+		2. *If* `e` exists:
+			1. *Return:* `e`.
+		3. *If*: `access.kind` is `OPTIONAL`:
+			1. *Return:* `null`.
+	12. *Else:*
+		1. *Assert*: `base_value` is an instance of `Mapping`.
+		2. Find an antecedent `k` in `base_value` such that `Identical(k, accessor_value)`.
+		3. *If* `k` exists:
+			1. *Return:* the consequent accessed at antecedent `k` in `base_value`.
+		4. *If*: `access.kind` is `OPTIONAL`:
+			1. *Return:* `null`.
+	13. *Throw:* a new VoidError.
 ;
 
 

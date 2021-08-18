@@ -37,11 +37,19 @@ TypeKeyword ::=
 	| "obj"
 ;
 
-PropertyType
-	::= Word ":" Type;
+EntryType<Named, Optional>
+	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type;
 
-TypeTupleLiteral  ::= "[" ( ","? Type#         ","? )? "]";
-TypeRecordLiteral ::= "["   ","? PropertyType# ","?    "]";
+ItemsType ::=
+	|  EntryType<-Named><-Optional># ","?
+	| (EntryType<-Named><-Optional># ",")? EntryType<-Named><+Optional># ","?
+;
+
+PropertiesType
+	::= EntryType<+Named><-Optional, +Optional># ","?;
+
+TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
+TypeRecordLiteral ::= "["  ","? PropertiesType "]";
 
 TypeUnit ::=
 	| IDENTIFIER
@@ -52,8 +60,16 @@ TypeUnit ::=
 	| "(" Type ")"
 ;
 
-TypeUnarySymbol ::=
+PropertyAccessType
+	::= "." (INTEGER | Word);
+
+TypeCompound ::=
 	| TypeUnit
+	| TypeCompound PropertyAccessType
+;
+
+TypeUnarySymbol ::=
+	| TypeCompound
 	| TypeUnarySymbol "?"
 	| TypeUnarySymbol "!"
 ;
@@ -77,7 +93,8 @@ Case     ::= Expression "|->" Expression;
 
 TupleLiteral   ::= "[" ( ","? Expression# ","? )? "]";
 RecordLiteral  ::= "["   ","? Property#   ","?    "]";
-MappingLiteral ::= "["   ","? Case#       ","?    "]";
+SetLiteral     ::= "{" ( ","? Expression# ","? )? "}";
+MappingLiteral ::= "{"   ","? Case#       ","?    "}";
 
 ExpressionUnit ::=
 	| IDENTIFIER
@@ -85,12 +102,21 @@ ExpressionUnit ::=
 	| StringTemplate
 	| TupleLiteral
 	| RecordLiteral
+	| SetLiteral
 	| MappingLiteral
 	| "(" Expression ")"
 ;
 
-ExpressionUnarySymbol ::=
+PropertyAccess
+	::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression "]");
+
+ExpressionCompound ::=
 	| ExpressionUnit
+	| ExpressionCompound PropertyAccess
+;
+
+ExpressionUnarySymbol ::=
+	| ExpressionCompound
 	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol
 ;
 

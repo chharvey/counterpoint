@@ -1,7 +1,7 @@
 import {
 	ErrorCode,
 } from '@chharvey/parser';
-import {
+import type {
 	AST,
 	SymbolKind,
 } from '../validator/index.js';
@@ -79,10 +79,6 @@ export class ReferenceError02 extends SolidReferenceError {
  * 42 || FOO;      % ReferenceError03: `FOO` refers to a type, but is used as a value.
  */
 export class ReferenceError03 extends SolidReferenceError {
-	private static readonly SYMBOL_KINDS: ReadonlyMap<SymbolKind, string> = new Map([
-		[SymbolKind.VALUE, 'value'],
-		[SymbolKind.TYPE,  'type'],
-	]);
 	/** The number series of this class of errors. */
 	static override readonly CODE = 3;
 	/**
@@ -92,8 +88,6 @@ export class ReferenceError03 extends SolidReferenceError {
 	 * @param used_as   what the symbol is used as
 	 */
 	constructor (symbol: AST.ASTNodeTypeAlias | AST.ASTNodeVariable, refers_to: SymbolKind, used_as: SymbolKind) {
-		const kind_refer: string = ReferenceError03.SYMBOL_KINDS.get(refers_to)!;
-		const kind_used:  string = ReferenceError03.SYMBOL_KINDS.get(used_as)!;
-		super(`\`${ symbol.source }\` refers to a ${ kind_refer }, but is used as a ${ kind_used }.`, ReferenceError03.CODE, symbol.line_index, symbol.col_index);
+		super(`\`${ symbol.source }\` refers to a ${ refers_to }, but is used as a ${ used_as }.`, ReferenceError03.CODE, symbol.line_index, symbol.col_index);
 	}
 }

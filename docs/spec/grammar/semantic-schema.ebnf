@@ -3,10 +3,19 @@ SemanticKey[id: RealNumber]
 
 
 
-SemanticPropertyType
+SemanticIndexType
+	::= SemanticTypeConstant;
+
+SemanticItemType[optional: Boolean]
+	::= SemanticType;
+
+SemanticPropertyType[optional: Boolean]
 	::= SemanticKey SemanticType;
 
 
+
+SemanticIndex
+	::= SemanticConstant;
 
 SemanticProperty
 	::= SemanticKey SemanticExpression;
@@ -21,6 +30,7 @@ SemanticType =:=
 	| SemanticTypeAlias
 	| SemanticTypeTuple
 	| SemanticTypeRecord
+	| SemanticTypeAccess
 	| SemanticTypeOperation
 ;
 
@@ -32,8 +42,11 @@ SemanticTypeConstant[value: Type]
 SemanticTypeAlias[id: RealNumber]
 	::= ();
 
-SemanticTypeTuple  ::= SemanticType*;
+SemanticTypeTuple  ::= SemanticItemType*;
 SemanticTypeRecord ::= SemanticPropertyType+;
+
+SemanticTypeAccess
+	::= SemanticType (SemanticIndexType | SemanticKey);
 
 SemanticTypeOperation[operator: ORNULL]
 	::= SemanticType;
@@ -50,7 +63,9 @@ SemanticExpression =:=
 	| SemanticTemplate
 	| SemanticTuple
 	| SemanticRecord
+	| SemanticSet
 	| SemanticMapping
+	| SemanticAccess
 	| SemanticOperation
 ;
 
@@ -70,7 +85,11 @@ SemanticTemplatePartial
 
 SemanticTuple   ::= SemanticExpression*;
 SemanticRecord  ::= SemanticProperty+;
+SemanticSet     ::= SemanticExpression*;
 SemanticMapping ::= SemanticCase+;
+
+SemanticAccess[kind: NORMAL | OPTIONAL | CLAIM]
+	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;

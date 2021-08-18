@@ -55,11 +55,19 @@ export function keywordTypeFromString(typestring: string, config: SolidConfig = 
 	assert.ok(unit instanceof PARSER.ParseNodeTypeKeyword, 'unit should be a ParseNodeTypeKeyword')
 	return unit
 }
-export function propertyTypeFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodePropertyType {
+export function entryTypeFromString(itemstring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeEntryType | PARSER.ParseNodeEntryType_Optional {
+	const tupletype: PARSER.ParseNodeTypeTupleLiteral = tupleTypeFromString(`[${ itemstring }]`, config);
+	assert_arrayLength(tupletype.children, 3, 'tuple type should have 3 children');
+	assert_arrayLength(tupletype.children[1].children, 1, 'items production should have 1 child');
+	assert_arrayLength(tupletype.children[1].children[0].children, 1, 'item list should have 1 child');
+	return tupletype.children[1].children[0].children[0];
+}
+export function entryTypeNamedFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeEntryType_Named | PARSER.ParseNodeEntryType_Named_Optional {
 	const recordtype: PARSER.ParseNodeTypeRecordLiteral = recordTypeFromString(`[${ propertystring }]`, config);
 	assert_arrayLength(recordtype.children, 3, 'record type should have 3 children');
-	assert_arrayLength(recordtype.children[1].children, 1, 'property list should have 1 child');
-	return recordtype.children[1].children[0];
+	assert_arrayLength(recordtype.children[1].children, 1, 'properties production should have 1 child');
+	assert_arrayLength(recordtype.children[1].children[0].children, 1, 'property list should have 1 child');
+	return recordtype.children[1].children[0].children[0];
 }
 export function tupleTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeTypeTupleLiteral {
 	const unit: PARSER.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
@@ -78,6 +86,11 @@ function typeLiteralFromString(typestring: string, config: SolidConfig = CONFIG_
 	return unit
 }
 export function unitTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeTypeUnit {
+	const type_compound: PARSER.ParseNodeTypeCompound = compoundTypeFromString(typestring, config);
+	assert_arrayLength(type_compound.children, 1, 'compound type should have 1 child');
+	return type_compound.children[0];
+}
+function compoundTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeTypeCompound {
 	const type_unary: PARSER.ParseNodeTypeUnarySymbol = unaryTypeFromString(typestring, config)
 	assert_arrayLength(type_unary.children, 1, 'unary type should have 1 child')
 	return type_unary.children[0]
@@ -105,7 +118,7 @@ export function propertyFromString(propertystring: string, config: SolidConfig =
 	return record.children[1].children[0];
 }
 export function caseFromString(casestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeCase {
-	const mapping: PARSER.ParseNodeMappingLiteral = mappingLiteralFromSource(`[${ casestring }];`, config);
+	const mapping: PARSER.ParseNodeMappingLiteral = mappingLiteralFromSource(`{${ casestring }};`, config);
 	assert_arrayLength(mapping.children, 3, 'map should have 3 children');
 	assert_arrayLength(mapping.children[1].children, 1, 'case list should have 1 child');
 	return mapping.children[1].children[0];
@@ -146,6 +159,11 @@ export function recordLiteralFromSource(src: string, config: SolidConfig = CONFI
 	assert.ok(unit instanceof PARSER.ParseNodeRecordLiteral, 'unit should be a ParseNodeRecordLiteral');
 	return unit;
 }
+export function setLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeSetLiteral {
+	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
+	assert.ok(unit instanceof PARSER.ParseNodeSetLiteral, 'unit should be a ParseNodeSetLiteral');
+	return unit;
+}
 export function mappingLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeMappingLiteral {
 	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
 	assert.ok(unit instanceof PARSER.ParseNodeMappingLiteral, 'unit should be a ParseNodeMappingLiteral');
@@ -158,9 +176,14 @@ function valueLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAUL
 	return unit;
 }
 export function unitExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionUnit {
-	const expression_unary: PARSER.ParseNodeExpressionUnarySymbol = unaryExpressionFromSource(src, config)
-	assert_arrayLength(expression_unary.children, 1, 'unary expression should have 1 child')
-	return expression_unary.children[0]
+	const expression_compound: PARSER.ParseNodeExpressionCompound = compoundExpressionFromSource(src, config)
+	assert_arrayLength(expression_compound.children, 1, 'compound expression should have 1 child');
+	return expression_compound.children[0];
+}
+export function compoundExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionCompound {
+	const expression_unary: PARSER.ParseNodeExpressionUnarySymbol = unaryExpressionFromSource(src, config);
+	assert_arrayLength(expression_unary.children, 1, 'unary expression should have 1 child');
+	return expression_unary.children[0];
 }
 export function unaryExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionUnarySymbol {
 	const expression_exp: PARSER.ParseNodeExpressionExponential = exponentialExpressionFromSource(src, config)

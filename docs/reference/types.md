@@ -512,6 +512,90 @@ However, assigning a smaller tuple to a larger tuple results in a TypeError.
 let elements_and_more: [str, str, str, bool, int] = ['earth', 'wind', 'fire']; %> TypeError
 ```
 
+#### Tuple Access
+Items of a tuple can be accessed via 0-based **dot-accessor notation**
+(index `0` represents the first item).
+```
+let elements: [str, str, str] = ['earth', 'wind', 'fire'];
+elements.0; %== 'earth'
+elements.1; %== 'wind'
+elements.2; %== 'fire'
+```
+
+Since tuples have integer indices, we can use other bases:
+```
+elements.\b01; %== 'wind'
+elements.\b10; %== 'fire'
+```
+
+Negative indices count backwards from the end of the list.
+Index `-1` represents the last item, index `-2` represents the penultimate item, etc.
+```
+elements.-1;    %== 'fire'
+elements.-\b10; %== 'wind'
+```
+
+Tuple size is known at compile-time,
+so attempting to retrieve an out-of-bounds index results in a compile-time error.
+Positive indices beyond the end of the list, and negative indices beyond the beginning,
+result in a TypeError. In other words, the indices *do not* loop around.
+```
+elements.3;  %> TypeError
+elements.-4; %> TypeError
+```
+
+Tuple items can also be accessed by **bracket-accessor notation**,
+where the expression in brackets computes the index.
+```
+elements.[0];       %== 'earth'
+elements.[3 - 2];   %== 'wind'
+elements.[-3 + 2];  %== 'fire'
+elements.[0.5 * 2]; %> TypeError
+```
+
+A VoidError is produced when the compiler can determine if the index is out-of-bounds.
+```
+let i: int = 4;
+elements.[i];   %> VoidError
+```
+If the compiler can’t compute the index, it won’t error at all,
+but this means the program could crash at runtime.
+```
+let unfixed i: int = 4;
+elements.[i];           % no compile-time error, but value at runtime will be undefined
+```
+
+#### Optional Items
+Tuple types may have optional items, indicating that a tuple of that type might or might not have that item.
+```
+let unfixed x: [str, int, ?: bool] = ['hello', 42];
+x = ['hello', 42, true];
+```
+The symbol `?:` in the type signature indicates that the item is optional.
+In a tuple type, all optional items *must* come after all required items.
+
+When we access an optional item, its type is unioned with `void`,
+because the compiler doesn’t know if there’s an actual value there.
+Evaluating such an expression could result in a runtime error, since void expressions have no actual value.
+```
+let x2: bool | void = x.2; % potential runtime error
+```
+However, the [optional access operator](./expressions-operators.md#optional-access) `?.`
+can anticipate this error and return `null` whenever the value doesn’t exist.
+```
+let x2: bool? = x?.2;
+```
+If `x.2` exists, the expression `x?.2` produces that value; otherwise it produces `null`,
+avoiding the runtime error.
+
+We can use the [claim access operator](./expressions-operators.md#claim-access) `!.`
+to tell the type-checker that the property definitely exists and is not type `void`.
+It should only be used if we are certain the property exists.
+```
+let x2: bool = x!.2;
+```
+The expression `x!.2` behaves just like `x.2`, except that it bypasses the compiler’s TypeError.
+
 
 ### Record
 Records are fixed-size unordered lists of keyed values. Key–value pairs are called **properties**,
@@ -613,18 +697,140 @@ let elements_and_more: [
 ]; %> TypeError
 ```
 
+#### Record Access
+Values of a record can be accessed via **dot-accessor notation**.
+```
+let elements: [
+	socrates:  str,
+	plato:     str,
+	aristotle: str,
+] = [
+	socrates=  'earth',
+	plato=     'wind',
+	aristotle= 'fire',
+];
+elements.socrates;  %== 'earth'
+elements.plato;     %== 'wind'
+elements.aristotle; %== 'fire'
+```
+
+Record keys are known at compile-time,
+so attempting to retrieve an non-existent key results in a compile-time error.
+```
+elements.pythagoras; %> TypeError
+```
+
+#### Optional Properties
+Record types may have optional properties, indicating that a record of that type might or might not have that property.
+```
+let unfixed y: [firstname: str, middlename?: str, lastname: str] = [
+	firstname= 'Martha',
+	lastname=  'Dandridge',
+];
+y = [
+	firstname=  'Martha',
+	lastname=   'Washington',
+	middlename= 'Dandridge',
+];
+```
+The symbol `?:` in the type signature indicates that the property is optional.
+In a record type, required and optional properties may be intermixed (order isn’t enforced).
+
+When we access an optional property, its type is unioned with `void`,
+because the compiler doesn’t know if there’s an actual value there.
+Evaluating such an expression could result in a runtime error, since void expressions have no actual value.
+```
+let ym: str | void = y.middlename; % potential runtime error
+```
+However, the [optional access operator](./expressions-operators.md#optional-access) `?.`
+can anticipate this error and return `null` whenever the value doesn’t exist.
+```
+let ym: str? = y?.middlename;
+```
+If `y.middlename` exists, the expression `y?.middlename` produces that value; otherwise it produces `null`,
+avoiding the runtime error.
+
+We can use the [claim access operator](./expressions-operators.md#claim-access) `!.`
+to tell the type-checker that the property definitely exists and is not type `void`.
+It should only be used if we are certain the property exists.
+```
+let ym: str = y!.middlename;
+```
+The expression `y!.middlename` behaves just like `y.middlename`, except that it bypasses the compiler’s TypeError.
+
+
+### Set
+Sets are dynamic-sized unordered lists of values.
+The values in a set are called **elements**. The number of elements in a set is called its **count**.
+
+Set literals are comma-separated expressions within curly braces.
+```
+let elements: obj = {'earth', 'wind', 'fire'};
+```
+The set above has elements of one type.
+Typically this will be the case, but it’s possible for a set to contain a mix of different element types.
+
+The size of sets is not known at compile-time, and could change during run-time, if the set is mutable.
+For example, a program could add an element to the above set after it’s been declared, changing its count.
+The order of elements in a set is not necessarily significant.
+
+Sets cannot contain identical elements (elements that are “the same object”).
+If a set is declared with duplicates, they are collapsed:
+The set `{'water', 'water'}` only conains 1 element.
+Sets may have several elements that are un-identical but “equal”.
+```
+let x: [str] = ['water'];
+let y: [str] = ['water'];
+let elements: obj = {0.0, -0.0, x, y};
+```
+In this example, the elements `0.0` and `-0.0` are not identical
+(even if they are equal by the floating-point definition of equality).
+Similarly, `x` and `y` are not identical, but they are equal by tuple composition.
+Even though `0.0 == -0.0` and `x == y`, this set has four elements.
+
+#### Set Access
+Elements of a set can be accessed via **bracket-accessor notation**,
+where the expression in the brackets is the element to get.
+```
+let bases: obj = {
+	'who',
+	['what'],
+	{ 'i' |-> {'don’t' |-> 'know'} },
+};
+bases.['''{{ 'w' }}{{ 'h' }}{{ 'o' }}''']; %== 'who'
+bases.[['what']];                          %== ['what']
+```
+
+A VoidError is produced when the compiler can determine if the element does not exist.
+```
+let a: str = '3rd';
+bases.[a];          %> VoidError
+```
+If the compiler can’t compute the antecedent, it won’t error at all,
+but this means the program could crash at runtime.
+```
+let unfixed a: str = '3rd';
+bases.[a];                  % no compile-time error, but value at runtime will be undefined
+```
+We can avoid the potential crash using the
+[optional access operator](./expressions-operators.md#optional-access).
+```
+bases?.[a]; % produces the element if it exists, else `null`
+```
+
 
 ### Mapping
+Mappings are dynamic-sized unordered lists of antecedent-consequent pairs.
 Mappings form associations (**cases**) of values (**antecedents**) to other values (**consequents**).
 The antecedents are unique (by identity) in that each antecedent can be associated with only one consequent.
 The number of cases in a mapping is called its **count**.
 
 ```
-let bases: obj = [
+let bases: obj = {
 	1     |-> 'who',
 	'2nd' |-> ['what'],
-	1 + 2 |-> ['i' |-> ['don’t' |-> 'know']],
-];
+	1 + 2 |-> { 'i' |-> {'don’t' |-> 'know'} },
+};
 ```
 The mapping above has antecedents and consequents of various types.
 Typically, all the antecedents will be of one type and all the consequents will be of one type,
@@ -637,12 +843,12 @@ Like records, the order of entries in a mapping is not necessarily significant.
 Also like records, antecedents have unique consequents in that latter declarations take precedence.
 In the case of mappings, antecedents that are identical are considered “the same object”.
 ```
-let bases: obj = [
+let bases: obj = {
 	1     |-> 'who',
 	'2nd' |-> ['what'],
-	1 + 2 |-> ['i' |-> ['don’t' |-> 'know']],
+	1 + 2 |-> { 'i' |-> {'don’t' |-> 'know'} },
 	4 - 1 |-> [i= [`don’t`= 'know']],
-];
+};
 ```
 The consequent corresponding to the antecedent `3` will be `` [i= [`don’t`= 'know']] ``.
 
@@ -650,15 +856,46 @@ Mappings may have several antecedents that are un-identical but “equal”.
 ```
 let x: [int] = [3];
 let y: [int] = [3];
-let bases: obj = [
+let bases: obj = {
 	0.0  |-> 'who',
 	-0.0 |-> ['what'],
-	x |-> ['i' |-> ['don’t' |-> 'know']],
+	x |-> { 'i' |-> {'don’t' |-> 'know'} },
 	y |-> [i= [`don’t`= 'know']],
-];
+};
 ```
 In this example, the antecedents `0.0` and `-0.0` are not identical
 (even if they are equal by the floating-point definition of equality).
 Thus we are able to retrieve the different consequents at each of those antecedents.
 Similarly, `x` and `y` are not identical, but they are equal by tuple composition.
 Even though `0.0 == -0.0` and `x == y`, this mapping has four entries.
+
+#### Mapping Access
+Consequents of a mapping can be accessed via **bracket-accessor notation**,
+where the expression in the brackets is the antecedent to get.
+```
+let bases: obj = {
+	1     |-> 'who',
+	'2nd' |-> ['what'],
+	1 + 2 |-> { 'i' |-> {'don’t' |-> 'know'} },
+};
+bases.[-1 * -1];         %== 'who'
+bases.['''{{ 2 }}nd''']; %== ['what']
+bases.[3].['i'];         %== {'don’t' |-> 'know'}
+```
+
+A VoidError is produced when the compiler can determine if the antecedent does not exist.
+```
+let a: str = '3rd';
+bases.[a];          %> VoidError
+```
+If the compiler can’t compute the antecedent, it won’t error at all,
+but this means the program could crash at runtime.
+```
+let unfixed a: str = '3rd';
+bases.[a];                  % no compile-time error, but value at runtime will be undefined
+```
+We can avoid the potential crash using the
+[optional access operator](./expressions-operators.md#optional-access).
+```
+bases?.[a]; % produces the consequent if it exists, else `null`
+```

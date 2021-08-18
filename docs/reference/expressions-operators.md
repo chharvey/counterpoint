@@ -31,7 +31,34 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>[ … ]</code></td>
 		</tr>
 		<tr>
-			<th rowspan="4">2</th>
+			<th rowspan="6">2</th>
+			<td>Property Access</td>
+			<td rowspan="6">unary postfix</td>
+			<td rowspan="6">left-to-right</td>
+			<td><code>… . …</code></td>
+		</tr>
+		<tr>
+			<td>Computed Property Access</td>
+			<td><code>… .[ … ]</code></td>
+		</tr>
+		<tr>
+			<td>Optional Access</td>
+			<td><code>… ?. …</code></td>
+		</tr>
+		<tr>
+			<td>Computed Optional Access</td>
+			<td><code>… ?.[ … ]</code></td>
+		</tr>
+		<tr>
+			<td>Claim Access</td>
+			<td><code>… !. …</code></td>
+		</tr>
+		<tr>
+			<td>Computed Claim Access</td>
+			<td><code>… !.[ … ]</code></td>
+		</tr>
+		<tr>
+			<th rowspan="4">3</th>
 			<td>Logical Negation</td>
 			<td rowspan="4">unary prefix</td>
 			<td rowspan="4">right-to-left</td>
@@ -50,14 +77,14 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>- …</code></td>
 		</tr>
 		<tr>
-			<th>3</th>
+			<th>4</th>
 			<td>Exponentiation</td>
 			<td>binary infix</td>
 			<td>right-to-left</td>
 			<td><code>… ^ …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">4</th>
+			<th rowspan="2">5</th>
 			<td>Multiplication</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -68,7 +95,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… / …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">5</th>
+			<th rowspan="2">6</th>
 			<td>Addition</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -79,7 +106,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… - …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="8">6</th>
+			<th rowspan="8">7</th>
 			<td>Less Than</td>
 			<td rowspan="8">binary infix</td>
 			<td rowspan="8">left-to-right</td>
@@ -114,7 +141,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… isnt …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="4">7</th>
+			<th rowspan="4">8</th>
 			<td>Identity</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
@@ -133,7 +160,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… != …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">8</th>
+			<th rowspan="2">9</th>
 			<td>Conjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -144,7 +171,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !& …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">9</th>
+			<th rowspan="2">10</th>
 			<td>Disjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -155,7 +182,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !| …</code></td>
 		</tr>
 		<tr>
-			<th>10</th>
+			<th>11</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
@@ -180,6 +207,88 @@ whether left-to-right or right-to-left, would yield the same mathematical result
 Addition is an example of this. Whether we group *left-to-right* `(a + b) + c`
 or *right-to-left* `a + (b + c)`, the output remains the same.
 Operations that are associative are indicated as so in their respective sections below.
+
+
+### Property Access
+```
+<obj> `.` int-literal
+<obj> `.` word
+<obj> `.` `[` <obj> `]`
+
+<obj> `?.` int-literal
+<obj> `?.` word
+<obj> `?.` `[` <obj> `]`
+
+<obj> `!.` int-literal
+<obj> `!.` word
+<obj> `!.` `[` <obj> `]`
+```
+The **property accesss** syntax is a unary operator on an object.
+The object it operates on is called the **binding object** and
+the property it accesses is called the **bound property** (or index, field, member, etc.).
+There are two flavors of the operator: static access and dynamic access.
+
+Static access can be used on static data types such as tuples and records.
+Tuples take integer literal properties and records take word (key) properties.
+For example: `tuple.3` and `record.prop`.
+
+Dynamic access can be used on tuples as well as on dynamic data types
+such as mappings, e.g., `mapping.[expr]`.
+The expression in the brackets evaluates to an item index or case antecedent
+of the binding object and must be of the correct type.
+
+More information about property access when used on tuples, records, and mappings
+can be found in the [Types](./types) chapter.
+
+#### Optional Access
+The **optional access** syntax is almost the same as property access, except that
+the operator produces the `null` value if and when there is no such bound property
+on the binding object at runtime. This operator is designed to work with
+optional entries on types, such as optional properties on a record type.
+
+Given a record `record` of type `[a: bool, b?: int]`,
+the expression `record.b` will produce that value if it exists,
+but will result in a runtime error if there’s no actual value at that location.
+Using the optional access operator though, `record?.b` will produce `record.b`
+if it exists, but otherwise will produce `null` and avoid the error.
+An equivalent syntax exists for dynamic access: `mapping?.[expr]`, etc.
+
+Note that if `foo?.bar` produces `null`, it either means that `foo.bar` does exist and is equal to `null`,
+or that there’s no value for the `bar` property bound to `foo`,
+and the optional access operator is doing its job.
+
+If the *binding object is `null`*, then the optional access operator also produces `null`.
+For example, `null.property` is a type error (and if the compiler were bypassed,
+it would cause a runtime error), but `null?.property` will simply produce `null`.
+This facet makes optional access safe to use when chained.
+
+When the optional access operator is chained, it should be chained down the line, e.g., `x?.y?.z`.
+This is equivalent to `(x?.y)?.z`, and if `x?.y` (or `x.y` for that matter) is `null`,
+then the whole expression also results in `null`.
+However, `x?.y.z` (which can be thought of as `(x?.y).z`) is not the same,
+and will result in a runtime error if `x?.y` is `null`.
+
+#### Claim Access
+The **claim access** syntax is just like regular property access, except that
+it makes a **claim** (a compile-time type assertion) that the accessed property
+is not of type `void`. This is useful when accessing optional entries of compound types.
+
+Claim access has the same runtime behavior of regular property access.
+Its purpose is to tell the type-checker,
+“I know what I’m doing; This property exists and its type is not type `void`.”
+```
+let unfixed item: [str, ?: int] = ['apples', 42];
+let quantity: int = item!.1;
+```
+The expression `item!.1` has type `int`, despite being an optional entry.
+It will produce the value `42` at runtime.
+Note that bypassing the compiler’s type-checking process should be done carefully.
+If not used correctly, it could lead to runtime errors.
+```
+let unfixed item: [str, ?: int] = ['apples'];
+let quantity: int = item!.1; % runtime error!
+```
+An equivalent syntax exists for dynamic access: `item!.[expr]`, etc.
 
 
 ### Logical Negation, Emptiness
@@ -552,7 +661,14 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>[ … ]</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">2</th>
+			<th>2</th>
+			<td>Type Property Access</td>
+			<td>unary postfix</td>
+			<td>left-to-right</td>
+			<td><code>… . …</code></td>
+		</tr>
+		<tr>
+			<th rowspan="2">3</th>
 			<td>Nullish</td>
 			<td rowspan="2">unary postfix</td>
 			<td rowspan="2">left-to-right</td>
@@ -563,14 +679,14 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !</code></td>
 		</tr>
 		<tr>
-			<th>3</th>
+			<th>4</th>
 			<td>Intersection</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
 			<td><code>… & …</code></td>
 		</tr>
 		<tr>
-			<th>4</th>
+			<th>5</th>
 			<td>Union</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
@@ -578,6 +694,26 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 		</tr>
 	</tbody>
 </table>
+
+
+### Type Property Access
+```
+<Type> `.` int-literal
+<Type> `.` word
+```
+The **type property accesss** syntax for types is analogous to the property access syntax of values.
+It accesses the index or key of a tuple or record type respectively.
+```
+type T = [bool, int, str];
+type T1 = T.1;             %== int
+type T_1 = T.-1;           %== str
+type T3 = T.3;             %> TypeError
+
+type R = [a: bool, b?: int, c: str];
+type Ra = R.a;                       %== bool
+type Rc = R.b;                       %== int | void
+type Rd = R.d;                       %> TypeError
+```
 
 
 ### Nullish
@@ -610,6 +746,49 @@ let v: T = [
 ];
 ```
 
+The *intersection* of types forms the *union* of the properties of each type.
+```
+type Employee = [
+	name:         str,
+	id:           int,
+	job_title:    str,
+	hours_worked: float,
+];
+type Volunteer = [
+	name:         str,
+	agency:       str,
+	hours_worked: float,
+];
+let alice: Employee & Volunteer = [
+	name=         'Alice',     %: str
+	id=           42444648,    %: int
+	jobTitle=     'Volunteer', %: str
+	agency=       'Agency',    %: str
+	hours_worked= 80.0,        %: float
+];
+```
+Type `Employee & Volunteer` is *both* an employee *and* a volunteer,
+so we’re guaranteed it will have the properties that are present in *either* type.
+
+Overlapping properties in an intersection are themselves intersected.
+```
+type A = [
+	key: 1 | 2 | 3,
+	value_a: int,
+];
+type B = [
+	key: 2 | 3 | 4,
+	value_b: float,
+];
+let data: A & B = [
+	key=      2,   %: 2 | 3 % `(1 | 2 | 3) & (2 | 3 | 4)`
+	value_a= 42,   %: int
+	value_b=  4.2, %: float
+];
+```
+
+This holds for tuple types as well, accounting for indices rather than keys.
+
 
 ### Union
 ```
@@ -621,3 +800,41 @@ type T = bool | int;
 let unfixed v: T = false;
 v = 42;
 ```
+
+The *union* of types forms the *intersection* of the properties of each type.
+```
+type Employee = [
+	name:         str,
+	id:           int,
+	job_title:    str,
+	hours_worked: float,
+];
+type Volunteer = [
+	name:         str,
+	agency:       str,
+	hours_worked: float,
+];
+let bob: Employee | Volunteer = [
+	name=         'Bob', %: str
+	hours_worked= 80.0,  %: float
+];
+```
+Type `Employee | Volunteer` is *either* an employee *or* a volunteer,
+so we’re only guaranteed it will have the properties that are present in *both* types.
+
+Overlapping properties in a union are themselves unioned.
+```
+type A = [
+	key: 1 | 2 | 3,
+	value_a: int,
+];
+type B = [
+	key: 2 | 3 | 4,
+	value_b: float,
+];
+let data: A | B = [
+	key= 4, %: 1 | 2 | 3 | 4 % `(1 | 2 | 3) | (2 | 3 | 4)`
+];
+```
+
+This holds for tuple types as well, accounting for indices rather than keys.
