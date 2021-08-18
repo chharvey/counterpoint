@@ -98,6 +98,7 @@ export * from './ASTNodeTypeTuple.js';
 export * from './ASTNodeTypeRecord.js';
 export * from './ASTNodeTypeAccess.js';
 export * from './ASTNodeTypeOperation.js';
+export * from './ASTNodeTypeOperationUnary.js';
 
 
 
@@ -119,28 +120,6 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeOperationUnary {
-		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeOperationUnary);
-		return typ;
-	}
-	constructor (
-		start_node: ParseNode,
-		operator: ValidTypeOperator,
-		readonly operand: ASTNodeType,
-	) {
-		super(start_node, operator, [operand]);
-		if ([Operator.OREXCP].includes(this.operator)) {
-			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
-		}
-	}
-	protected override assess_do(validator: Validator): SolidType {
-		return (this.operator === Operator.ORNULL)
-			? this.operand.assess(validator).union(SolidNull)
-			: (() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
-	}
-}
 export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeOperationBinary {
 		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
