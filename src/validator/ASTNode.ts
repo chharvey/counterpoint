@@ -68,7 +68,6 @@ import {
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndexType} from './ASTNodeIndexType.js';
-import type {ASTNodePropertyType} from './ASTNodePropertyType.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
@@ -96,6 +95,7 @@ export * from './ASTNodeType.js';
 export * from './ASTNodeTypeConstant.js';
 export * from './ASTNodeTypeAlias.js';
 export * from './ASTNodeTypeTuple.js';
+export * from './ASTNodeTypeRecord.js';
 
 
 
@@ -117,28 +117,6 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-export class ASTNodeTypeRecord extends ASTNodeType {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeRecord {
-		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeRecord);
-		return typ;
-	}
-	constructor (
-		start_node: PARSER.ParseNodeTypeRecordLiteral,
-		override readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
-	) {
-		super(start_node, {}, children);
-	}
-	protected override assess_do(validator: Validator): SolidType {
-		return new SolidTypeRecord(new Map(this.children.map((c) => [
-			c.key.id,
-			{
-				type:     c.value.assess(validator),
-				optional: c.optional,
-			},
-		])));
-	}
-}
 export class ASTNodeTypeAccess extends ASTNodeType {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeAccess {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);

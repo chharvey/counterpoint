@@ -22,6 +22,7 @@ export * from './ASTNodeType.js';
 export * from './ASTNodeTypeConstant.js';
 export * from './ASTNodeTypeAlias.js';
 export * from './ASTNodeTypeTuple.js';
+export * from './ASTNodeTypeRecord.js';
 export * from './ASTNode.js';
 export * as AST from './ASTNode.js';
 
