@@ -10,7 +10,7 @@ export {
 	ValidOperatorLogical,
 } from './Operator.js';
 
-export {ASTNodeSolid} from './ASTNode.js';
+export * from './ASTNodeSolid.js';
 export * as AST from './ASTNode.js';
 
 export {Decorator} from './Decorator.js';

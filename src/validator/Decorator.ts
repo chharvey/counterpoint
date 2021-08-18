@@ -23,7 +23,7 @@ import {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from './Operator.js';
-import type {ASTNodeSolid} from './ASTNode.js';
+import type {ASTNodeSolid} from './ASTNodeSolid.js';
 import * as AST from './ASTNode.js';
 
 
