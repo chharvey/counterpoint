@@ -34,6 +34,13 @@ import {
 	NanError02,
 } from '../error/index.js';
 import {
+	bothNumeric,
+	eitherFloats,
+	bothFloats,
+	neitherFloats,
+	oneFloats,
+} from './utilities.js';
+import {
 	Operator,
 	ValidOperatorArithmetic,
 	ValidOperatorComparative,
@@ -85,24 +92,6 @@ export * from './ASTNodeAccess.js';
 export * from './ASTNodeOperation.js';
 export * from './ASTNodeOperationUnary.js';
 export * from './ASTNodeOperationBinary.js';
-
-
-
-function bothNumeric(t0: SolidType, t1: SolidType): boolean {
-	return t0.isSubtypeOf(SolidNumber) && t1.isSubtypeOf(SolidNumber)
-}
-function eitherFloats(t0: SolidType, t1: SolidType): boolean {
-	return t0.isSubtypeOf(Float64) || t1.isSubtypeOf(Float64)
-}
-function bothFloats(t0: SolidType, t1: SolidType): boolean {
-	return t0.isSubtypeOf(Float64) && t1.isSubtypeOf(Float64)
-}
-function neitherFloats(t0: SolidType, t1: SolidType): boolean {
-	return !eitherFloats(t0, t1)
-}
-function oneFloats(t0: SolidType, t1: SolidType): boolean {
-	return !neitherFloats(t0, t1) && !bothFloats(t0, t1)
-}
 
 
 
