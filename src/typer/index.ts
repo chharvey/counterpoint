@@ -1,11 +1,11 @@
 export {
 	TypeEntry,
 	SolidType,
-	SolidTypeConstant,
 	SolidTypeInterface,
 } from './SolidType.js';
 export * from './SolidTypeIntersection.js';
 export * from './SolidTypeUnion.js';
+export * from './SolidTypeConstant.js';
 export {SolidTypeTuple}   from './SolidTypeTuple.js';
 export {SolidTypeRecord}  from './SolidTypeRecord.js';
 export {SolidTypeSet}     from './SolidTypeSet.js';

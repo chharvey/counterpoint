@@ -3,10 +3,8 @@ import {SetEq} from '../core/index.js';
 import type {Keys} from '../types';
 import type * as AST from '../validator/index.js';
 import {VoidError01} from '../error/index.js';
-import {
-	SolidType,
-	SolidTypeConstant,
-} from './SolidType.js';
+import {SolidTypeConstant} from './index.js';
+import {SolidType} from './SolidType.js';
 import {SolidTypeSet} from './SolidTypeSet.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
