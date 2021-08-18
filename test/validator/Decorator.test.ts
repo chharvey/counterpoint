@@ -11,11 +11,11 @@ import type {
 	PARSER,
 } from '../../src/parser/index.js';
 import {
-	AST,
 	Decorator,
 	Operator,
 	ValidAccessOperator,
 } from '../../src/validator/index.js';
+import * as AST from '../../src/validator/index.js';
 import {
 	assert_arrayLength,
 } from '../assert-helpers.js';

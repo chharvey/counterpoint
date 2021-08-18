@@ -1,10 +1,8 @@
 import {
 	ErrorCode,
 } from '@chharvey/parser';
-import type {
-	AST,
-	SymbolKind,
-} from '../validator/index.js';
+import type {SymbolKind} from '../validator/index.js';
+import type * as AST from '../validator/index.js';
 
 
 

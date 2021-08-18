@@ -1,8 +1,8 @@
 import {
-	AST,
 	Operator,
 	ValidAccessOperator,
 } from '../validator/index.js';
+import type * as AST from '../validator/index.js';
 import {TypeError04} from '../error/index.js';
 import {
 	SolidObject,

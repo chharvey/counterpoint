@@ -7,12 +7,12 @@ import {
 } from '../../src/core/index.js';
 import {
 	Operator,
-	AST,
 	SymbolStructure,
 	SymbolStructureType,
 	SymbolStructureVar,
 	Validator,
 } from '../../src/validator/index.js';
+import * as AST from '../../src/validator/index.js';
 import {
 	TypeEntry,
 	SolidType,

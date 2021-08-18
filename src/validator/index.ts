@@ -50,8 +50,6 @@ export * from './ASTNodeDeclarationType.js';
 export * from './ASTNodeDeclarationVariable.js';
 export * from './ASTNodeAssignment.js';
 export * from './ASTNodeGoal.js';
-export * from './ASTNode.js';
-export * as AST from './ASTNode.js';
 
 export {Decorator} from './Decorator.js';
 export {Validator} from './Validator.js';

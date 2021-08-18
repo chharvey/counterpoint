@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import type {Keys} from '../types';
-import type {AST} from '../validator/index.js';
+import type * as AST from '../validator/index.js';
 import {VoidError01} from '../error/index.js';
 import {
 	SolidType,

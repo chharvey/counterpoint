@@ -11,8 +11,8 @@ import {
 import {
 	Decorator,
 	Validator,
-	AST,
 } from '../validator/index.js';
+import type * as AST from '../validator/index.js';
 
 
 
