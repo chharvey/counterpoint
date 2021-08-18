@@ -35,7 +35,6 @@ import {
 } from '../error/index.js';
 import {
 	Operator,
-	ValidOperatorBinary,
 	ValidOperatorArithmetic,
 	ValidOperatorComparative,
 	ValidOperatorEquality,
@@ -48,6 +47,7 @@ import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeVariable} from './ASTNodeVariable.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
+import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 import {Decorator} from './Decorator.js';
 import type {Validator} from './Validator.js';
 import {
@@ -84,6 +84,7 @@ export * from './ASTNodeMapping.js';
 export * from './ASTNodeAccess.js';
 export * from './ASTNodeOperation.js';
 export * from './ASTNodeOperationUnary.js';
+export * from './ASTNodeOperationBinary.js';
 
 
 
@@ -105,35 +106,6 @@ function oneFloats(t0: SolidType, t1: SolidType): boolean {
 
 
 
-export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinary {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeOperationBinary);
-		return expression;
-	}
-	constructor(
-		start_node: ParseNode,
-		readonly operator: ValidOperatorBinary,
-		readonly operand0: ASTNodeExpression,
-		readonly operand1: ASTNodeExpression,
-	) {
-		super(start_node, operator, [operand0, operand1]);
-	}
-	override shouldFloat(validator: Validator): boolean {
-		return this.operand0.shouldFloat(validator) || this.operand1.shouldFloat(validator);
-	}
-	/**
-	 * @final
-	 */
-	protected override type_do(validator: Validator): SolidType {
-		return this.type_do_do(
-			this.operand0.type(validator),
-			this.operand1.type(validator),
-			validator.config.compilerOptions.intCoercion,
-		)
-	}
-	protected abstract type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType;
-}
 export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryArithmetic {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
