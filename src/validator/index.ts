@@ -46,6 +46,7 @@ export * from './ASTNodeOperationBinaryLogical.js';
 export * from './ASTNodeOperationTernary.js';
 export * from './ASTNodeStatement.js';
 export * from './ASTNodeDeclaration.js';
+export * from './ASTNodeDeclarationType.js';
 export * from './ASTNode.js';
 export * as AST from './ASTNode.js';
 

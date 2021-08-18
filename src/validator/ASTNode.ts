@@ -27,7 +27,6 @@ import {
 import type {Buildable} from './Buildable.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeType} from './ASTNodeType.js';
-import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeVariable} from './ASTNodeVariable.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';
@@ -35,7 +34,6 @@ import {Decorator} from './Decorator.js';
 import type {Validator} from './Validator.js';
 import {
 	SymbolStructureVar,
-	SymbolStructureType,
 } from './SymbolStructure.js';
 
 
@@ -75,43 +73,10 @@ export * from './ASTNodeOperationBinaryLogical.js';
 export * from './ASTNodeOperationTernary.js';
 export * from './ASTNodeStatement.js';
 export * from './ASTNodeDeclaration.js';
+export * from './ASTNodeDeclarationType.js';
 
 
 
-export class ASTNodeDeclarationType extends ASTNodeStatement {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeDeclarationType {
-		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeDeclarationType);
-		return statement;
-	}
-	constructor (
-		start_node: ParseNode,
-		readonly variable: ASTNodeTypeAlias,
-		readonly value:    ASTNodeType,
-	) {
-		super(start_node, {}, [variable, value]);
-	}
-	override varCheck(validator: Validator): void {
-		if (validator.hasSymbol(this.variable.id)) {
-			throw new AssignmentError01(this.variable);
-		};
-		this.value.varCheck(validator);
-		validator.addSymbol(new SymbolStructureType(
-			this.variable.id,
-			this.variable.line_index,
-			this.variable.col_index,
-			this.variable.source,
-			() => this.value.assess(validator),
-		));
-	}
-	override typeCheck(validator: Validator): void {
-		this.value.typeCheck(validator);
-		return validator.getSymbolInfo(this.variable.id)?.assess();
-	}
-	override build(_builder: Builder): INST.InstructionNone {
-		return new INST.InstructionNone();
-	}
-}
 export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
