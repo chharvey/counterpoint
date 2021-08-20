@@ -1,5 +1,4 @@
 export {
-	TypeEntry,
 	SolidType,
 	SolidTypeInterface,
 } from './SolidType.js';

@@ -1,7 +1,6 @@
 import * as assert from 'assert'
 import {Dev} from '../../src/core/index.js';
 import {
-	TypeEntry,
 	SolidType,
 	SolidTypeUnion,
 	SolidTypeConstant,
@@ -22,6 +21,9 @@ import {
 	SolidSet,
 	SolidMapping,
 } from '../../src/typer/index.js';
+import type {
+	TypeEntry,
+} from '../../src/typer/types.js';
 import {
 	typeConstInt,
 	typeConstFloat,

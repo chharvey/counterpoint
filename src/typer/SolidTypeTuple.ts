@@ -11,10 +11,8 @@ import {
 	Int16,
 	SolidTuple,
 } from '../index.js'; // avoids circular imports
-import {
-	TypeEntry,
-	SolidType,
-} from './SolidType.js';
+import type {TypeEntry} from './types.js';
+import {SolidType} from './SolidType.js';
 
 
 
