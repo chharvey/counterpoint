@@ -1,3 +1,4 @@
+import type {IntRange} from '../types.js';
 import {
 	Operator,
 	ValidAccessOperator,
@@ -12,7 +13,6 @@ import {
 } from '../index.js'; // avoids circular imports
 import {
 	TypeEntry,
-	IntRange,
 	SolidType,
 } from './SolidType.js';
 
@@ -47,8 +47,8 @@ export class SolidTypeTuple extends SolidType {
 	/** The possible number of items in this tuple type. */
 	private get count(): IntRange {
 		return [
-			this.types.filter((it) => !it.optional).length,
-			this.types.length + 1,
+			BigInt(this.types.filter((it) => !it.optional).length),
+			BigInt(this.types.length) + 1n,
 		];
 	}
 

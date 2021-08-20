@@ -1,3 +1,4 @@
+import type {IntRange} from '../types.js';
 import {
 	Operator,
 	ValidAccessOperator,
@@ -11,7 +12,6 @@ import {
 } from '../index.js'; // avoids circular imports
 import {
 	TypeEntry,
-	IntRange,
 	SolidType,
 } from './SolidType.js';
 
@@ -46,8 +46,8 @@ export class SolidTypeRecord extends SolidType {
 	/** The possible number of values in this record type. */
 	private get count(): IntRange {
 		return [
-			[...this.propertytypes].filter(([_, entry]) => !entry.optional).length,
-			this.propertytypes.size + 1,
+			BigInt([...this.propertytypes].filter(([_, entry]) => !entry.optional).length),
+			BigInt(this.propertytypes.size) + 1n,
 		];
 	}
 
