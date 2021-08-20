@@ -9,7 +9,7 @@ import {
 	SolidObject,
 	SolidNull,
 	SolidRecord,
-} from '../index.js'; // avoids circular imports
+} from './index.js';
 import type {TypeEntry} from './types.js';
 import {SolidType} from './SolidType.js';
 
