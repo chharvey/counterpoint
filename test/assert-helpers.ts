@@ -6,6 +6,19 @@ import type {
 
 
 /**
+ * Assert an object is an instance of a class,
+ * using the `instanceof` operator.
+ * @param obj  - the object
+ * @param cons - the class or constructor function
+ * @throws {AssertionError} if false
+ */
+export function assert_instanceof(obj: object, cons: Function): void {
+	assert.ok(obj instanceof cons, `${ obj } should be an instance of ${ cons }.`);
+}
+
+
+
+/**
  * Assert the length of an array or tuple.
  * Useful helper for determining types of items in heterogeneous tuples.
  * @param array the array or tuple to test
@@ -88,4 +101,22 @@ export function assertEqualTypes(actual: SolidType[] | ReadonlyMap<SolidType, So
 				return assert.ok(act.equals(expected![i]), `${ act } == ${ expected![i] }`);
 			}
 		});
+}
+
+
+
+type ValidationObject = {cons: Function} & (
+	| {message: string}
+	| {errors: ValidationObject[]}
+);
+export function assertAssignable(actual: Error, validation: ValidationObject): void {
+	assert_instanceof(actual, validation.cons);
+	if ('message' in validation) {
+		return assert.strictEqual(actual.message, validation.message);
+	} else if ('errors' in validation) {
+		assert.ok(actual instanceof AggregateError);
+		return validation.errors.forEach((subvalidation, i) => {
+			assertAssignable(actual.errors[i], subvalidation);
+		});
+	}
 }

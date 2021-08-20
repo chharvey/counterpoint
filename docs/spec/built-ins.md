@@ -22,6 +22,12 @@ The values of records are Solid Language Values.
 
 
 
+## Set
+`Set` objects are variable-size unordered lists of values.
+The values of sets are Solid Language Values.
+
+
+
 ## Mapping
 `Mapping` objects are variable-size unordered associations of values.
 The antecedents and consequents of mappings are Solid Language Values.

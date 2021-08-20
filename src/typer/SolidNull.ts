@@ -3,7 +3,6 @@ import {
 } from '../decorators.js';
 import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
-import {SolidBoolean} from './SolidBoolean.js';
 
 
 
@@ -37,8 +36,8 @@ export class SolidNull extends SolidObject {
 	override toString(): string {
 		return 'null'
 	}
-	override get isTruthy(): SolidBoolean {
-		return SolidBoolean.FALSE;
+	override get isTruthy(): boolean {
+		return false;
 	}
 	@strictEqual
 	override identical(value: SolidObject): boolean {

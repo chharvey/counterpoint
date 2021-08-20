@@ -2,7 +2,7 @@ import {
 	strictEqual,
 } from '../decorators.js';
 import type {SolidType} from './SolidType.js';
-import type {SolidObject} from './SolidObject.js';
+import {SolidObject} from './SolidObject.js';
 import {SolidNumber} from './SolidNumber.js';
 import {Float64} from './Float64.js';
 

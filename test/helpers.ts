@@ -1,5 +1,6 @@
 import {
 	SolidTypeConstant,
+	SolidNull,
 	Int16,
 	Float64,
 	SolidString,
@@ -10,6 +11,7 @@ import {
 
 
 
+export const TYPE_CONST_NULL: SolidTypeConstant = new SolidTypeConstant(SolidNull.NULL);
 export function typeConstInt(x: bigint): SolidTypeConstant {
 	return new SolidTypeConstant(new Int16(x))
 }
