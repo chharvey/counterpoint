@@ -22,7 +22,7 @@ export class SolidTypeMap extends SolidType {
 	}
 
 	override toString(): string {
-		return `Mapping.<${ this.antecedenttypes }, ${ this.consequenttypes }>`;
+		return `Map.<${ this.antecedenttypes }, ${ this.consequenttypes }>`;
 	}
 
 	override includes(v: SolidObject): boolean {

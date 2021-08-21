@@ -111,7 +111,7 @@ Type Assess(SemanticTypeCall call) :=
 	1. *Assert:* `call.children.count` is greater than or equal to 2.
 	2. *Let* `base` be `call.children.0`.
 	3. *If* `base` is not a SemanticTypeAlias:
-		1. *Note:* Currently, the only allowed generics are `List.<T>`, `Hash.<T>`, `Set.<T>`, `Mapping.<K, V>`.
+		1. *Note:* Currently, the only allowed generics are `List.<T>`, `Hash.<T>`, `Set.<T>`, `Map.<K, V>`.
 		2. *Throw:* a new TypeError.
 	4. *If* `base.source` is one of "List", "Hash", or "Set":
 		1. *If* `call.children.count` is 2:
@@ -122,7 +122,7 @@ Type Assess(SemanticTypeCall call) :=
 			3. *If* `base.source` is "Set":
 				1. *Return:* a subtype of `List` whose elements’ type is *UnwrapAffirm:* `Assess(call.children.1)`.
 		2. *Throw:* a new TypeError.
-	5. *Else If* `base.source` is "Mapping":
+	5. *Else If* `base.source` is "Map":
 		1. *Let* `antecedenttype` be *UnwrapAffirm:* `Assess(call.children.1)`.
 		2. *If* `call.children.count` is 2:
 			1. *Let* `consequenttype` be `antecedenttype`.

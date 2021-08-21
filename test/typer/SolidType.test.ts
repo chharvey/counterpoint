@@ -718,16 +718,16 @@ describe('SolidType', () => {
 
 		Dev.supports('literalCollection') && describe('SolidTypeMap', () => {
 			it('is a subtype but not a supertype of `SolidObject`.', () => {
-				assert.ok(new SolidTypeMap(Int16, SolidBoolean).isSubtypeOf(SolidObject), `Mapping.<int, bool> <: obj`);
-				assert.ok(!SolidObject.isSubtypeOf(new SolidTypeMap(Int16, SolidBoolean)), `obj !<: Mapping.<int, bool>`);
+				assert.ok(new SolidTypeMap(Int16, SolidBoolean).isSubtypeOf(SolidObject), `Map.<int, bool> <: obj`);
+				assert.ok(!SolidObject.isSubtypeOf(new SolidTypeMap(Int16, SolidBoolean)), `obj !<: Map.<int, bool>`);
 			});
-			it('Covariance: `A <: C && B <: D --> Mapping.<A, B> <: Mapping.<C, D>`.', () => {
+			it('Covariance: `A <: C && B <: D --> Map.<A, B> <: Map.<C, D>`.', () => {
 				assert.ok(new SolidTypeMap(Int16, SolidBoolean).isSubtypeOf(
 					new SolidTypeMap(Int16.union(Float64), SolidBoolean.union(SolidNull))
-				), `Mapping.<int, bool> <: Mapping.<int | float, bool | null>`);
+				), `Map.<int, bool> <: Map.<int | float, bool | null>`);
 				assert.ok(!new SolidTypeMap(Int16, SolidBoolean).isSubtypeOf(
 					new SolidTypeMap(SolidBoolean.union(SolidNull), SolidObject)
-				), `Mapping.<int, bool> !<: Mapping.<bool | null, obj>`);
+				), `Map.<int, bool> !<: Map.<bool | null, obj>`);
 			});
 		});
 

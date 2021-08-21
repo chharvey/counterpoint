@@ -480,7 +480,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	}
 	override varCheck(validator: Validator): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
-		// (`this.base.source` must be `List | Hash | Set | Mapping`)
+		// (`this.base.source` must be `List | Hash | Set | Map`)
 		return this.args.forEach((arg) => arg.varCheck(validator)); // TODO: AggregateForEach
 	}
 	protected override assess_do(validator: Validator): SolidType {
@@ -488,17 +488,17 @@ export class ASTNodeTypeCall extends ASTNodeType {
 			throw new TypeError05(this.base.assess(validator), this.base);
 		}
 		return (new Map<string, () => SolidType>([
-			['List',    () => (this.countArgs(1n), new SolidTypeList(this.args[0].assess(validator)))],
-			['Hash',    () => (this.countArgs(1n), new SolidTypeHash(this.args[0].assess(validator)))],
-			['Set',     () => (this.countArgs(1n), new SolidTypeSet (this.args[0].assess(validator)))],
-			['Mapping', () => {
+			['List', () => (this.countArgs(1n), new SolidTypeList(this.args[0].assess(validator)))],
+			['Hash', () => (this.countArgs(1n), new SolidTypeHash(this.args[0].assess(validator)))],
+			['Set',  () => (this.countArgs(1n), new SolidTypeSet (this.args[0].assess(validator)))],
+			['Map',  () => {
 				this.countArgs([1n, 3n]);
 				const anttype: SolidType = this.args[0].assess(validator);
 				const contype: SolidType = this.args[1]?.assess(validator) || anttype;
 				return new SolidTypeMap(anttype, contype);
 			}],
 		]).get(this.base.source) || (() => {
-			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Mapping\`.`)
+			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Map\`.`);
 		}))();
 	}
 	/**

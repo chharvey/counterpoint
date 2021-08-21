@@ -814,7 +814,7 @@ describe('ASTNodeSolid', () => {
 							`List.<null>`,
 							`Hash.<bool>`,
 							`Set.<str>`,
-							`Mapping.<int, float>`,
+							`Map.<int, float>`,
 						].map((src) => AST.ASTNodeTypeCall.fromSource(src).assess(validator)),
 						[
 							new SolidTypeList(SolidNull),
@@ -826,7 +826,7 @@ describe('ASTNodeSolid', () => {
 				});
 				it('Map has a default type parameter.', () => {
 					assert.deepStrictEqual(
-						AST.ASTNodeTypeCall.fromSource(`Mapping.<int>`).assess(validator),
+						AST.ASTNodeTypeCall.fromSource(`Map.<int>`).assess(validator),
 						new SolidTypeMap(Int16, Int16),
 					);
 				});
@@ -841,7 +841,7 @@ describe('ASTNodeSolid', () => {
 				it('throws if base is not one of the allowed strings.', () => {
 					[
 						`SET.<str>`,
-						`Map.<bool>`,
+						`Mapping.<bool>`,
 					].forEach((src) => {
 						assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).assess(validator), SyntaxError);
 					});
@@ -851,7 +851,7 @@ describe('ASTNodeSolid', () => {
 						`List.<null, null>`,
 						`Hash.<bool, bool, bool>`,
 						`Set.<str, str, str, str>`,
-						`Mapping.<int, int, int, int, int>`,
+						`Map.<int, int, int, int, int>`,
 					].forEach((src) => {
 						assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).assess(validator), TypeError06);
 					});
@@ -2212,10 +2212,10 @@ describe('ASTNodeSolid', () => {
 
 				let unfixed three: str = 'three';
 
-				let         set_fixed:   (int | float | str){}              = {1, 2.0, 'three'};
-				let unfixed set_unfixed: Set.<int | float | str>            = {1, 2.0, three};
-				let         map_fixed:   {[str] -> int | float | str}       = {a -> 1, b -> 2.0, c -> 'three'};
-				let unfixed map_unfixed: Mapping.<[str], int | float | str> = {a -> 1, b -> 2.0, c -> three};
+				let         set_fixed:   (int | float | str){}          = {1, 2.0, 'three'};
+				let unfixed set_unfixed: Set.<int | float | str>        = {1, 2.0, three};
+				let         map_fixed:   {[str] -> int | float | str}   = {a -> 1, b -> 2.0, c -> 'three'};
+				let unfixed map_unfixed: Map.<[str], int | float | str> = {a -> 1, b -> 2.0, c -> three};
 
 				set_fixed  .[1];       % type \`1\`                 % value \`1\`
 				set_fixed  .[2.0];     % type \`2.0\`               % value \`2.0\`

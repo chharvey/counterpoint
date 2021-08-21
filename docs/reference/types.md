@@ -476,14 +476,14 @@ let GREETING: '''Hello World!''' = 'Hello World!'; %> ParseError
 ## Compound Types
 The following table summarizes the built-in compound types.
 
-Type              | Size           | Indices/Keys  | Generic Type Syntax  | Explicit Type Syntax         | Constructor Syntax                               | Literal Syntax                         | Empty Literal Syntax
------------------ | -------------- | ------------  | -------------------- | ---------------------------- | ------------------------------------------------ | -------------------------------------- | --------------------
-[Tuple](#tuple)   | Fixed          | integers      | *(none)*             | `[str, str, str]` / `str[3]` | *(none)*                                         | `['x', 'y', 'z']`                      | `[]`
-[Record](#record) | Fixed          | words         | *(none)*             | `[a: str, b: str, c: str]`   | *(none)*                                         | `[a= 'x', b= 'y', c= 'z']`             | *(none)*
-[List](#list)     | Variable       | integers      | `List.<str>`         | `str[]`                      | `List.(['x', 'y', 'z'])`                         | *(none)*                               | *(none)*
-[Hash](#hash)     | Variable       | atoms/strings | `Hash.<str>`         | `[:str]`                     | `Hash.([a= 'x', b= 'y', c= 'z'])`                | *(none)*                               | *(none)*
-[Set](#set)       | Variable       | *(none)*      | `Set.<str>`          | `str{}`                      | `Set.(['x', 'y', 'z'])`                          | `{'x', 'y', 'z'}`                      | `{}`
-[Map](#map)       | Variable       | objects       | `Mapping.<str, str>` | `{str -> str}`               | `Mapping.([['u', 'x'], ['v', 'y'], ['w', 'z']])` | `{'u' -> 'x', 'v' -> 'y', 'w' -> 'z'}` | *(none)*
+Type              | Size           | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax         | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
+----------------- | -------------- | ------------  | ------------------- | ---------------------------- | -------------------------------------------- | -------------------------------------- | --------------------
+[Tuple](#tuple)   | Fixed          | integers      | *(none)*            | `[str, str, str]` / `str[3]` | *(none)*                                     | `['x', 'y', 'z']`                      | `[]`
+[Record](#record) | Fixed          | words         | *(none)*            | `[a: str, b: str, c: str]`   | *(none)*                                     | `[a= 'x', b= 'y', c= 'z']`             | *(none)*
+[List](#list)     | Variable       | integers      | `List.<str>`        | `str[]`                      | `List.(['x', 'y', 'z'])`                     | *(none)*                               | *(none)*
+[Hash](#hash)     | Variable       | atoms/strings | `Hash.<str>`        | `[:str]`                     | `Hash.([a= 'x', b= 'y', c= 'z'])`            | *(none)*                               | *(none)*
+[Set](#set)       | Variable       | *(none)*      | `Set.<str>`         | `str{}`                      | `Set.(['x', 'y', 'z'])`                      | `{'x', 'y', 'z'}`                      | `{}`
+[Map](#map)       | Variable       | objects       | `Map.<str, str>`    | `{str -> str}`               | `Map.([['u', 'x'], ['v', 'y'], ['w', 'z']])` | `{'u' -> 'x', 'v' -> 'y', 'w' -> 'z'}` | *(none)*
 
 
 ### Tuple
