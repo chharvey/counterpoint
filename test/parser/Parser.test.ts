@@ -214,8 +214,8 @@ describe('Parser', () => {
 				`.b`,
 				`.<X, Y>`,
 			].map((dot) => `${ base }${ dot }`)).forEach((src) => {
-				assert.doesNotThrow(() => h.compoundTypeFromString(src));
-			})
+				assert.doesNotThrow(() => h.compoundTypeFromString(src), src);
+			});
 		});
 
 		describe('TypeUnarySymbol ::= TypeUnarySymbol ("?" | "!")', () => {

@@ -243,9 +243,9 @@ export class Decorator {
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTypeMapLiteral) {
 			return new AST.ASTNodeTypeMap(node, this.decorate(node.children[1]), this.decorate(node.children[3]));
 
-		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeGenericArguments) {
+		} else if (node instanceof PARSER.ParseNodeGenericArguments) {
 			return this.parseList<PARSER.ParseNodeType, AST.ASTNodeType>(
-				node.children.find((c): c is PARSER.ParseNodeGenericArguments__0__List => c instanceof PARSER.ParseNodeGenericArguments__0__List)!
+				node.children.find((c): c is PARSER.ParseNodeGenericArguments__0__List => c instanceof PARSER.ParseNodeGenericArguments__0__List)!,
 			);
 
 		} else if (node instanceof PARSER.ParseNodeTypeUnit) {

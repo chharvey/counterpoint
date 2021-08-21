@@ -248,7 +248,7 @@ describe('Decorator', () => {
 				assert.ok(args.children[1] instanceof PARSER.ParseNodeGenericCall);
 				const sequence: NonemptyArray<AST.ASTNodeType> = Decorator.decorate(args.children[1]);
 				assert.deepStrictEqual(
-				sequence.map((c) => c.source),
+					sequence.map((c) => c.source),
 					[`Bar | Qux`, `Diz`],
 				);
 			});

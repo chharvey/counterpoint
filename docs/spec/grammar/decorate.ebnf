@@ -97,7 +97,6 @@ Decorate(GenericArguments ::= "<" ","? Type# ","? ">") -> Sequence<SemanticType>
 
 
 
-
 Decorate(TypeUnit ::= IDENTIFIER) -> SemanticTypeAlias
 	:= (SemanticTypeAlias[id=TokenWorth(IDENTIFIER)]);
 Decorate(TypeUnit ::= PrimitiveLiteral) -> SemanticTypeConstant
@@ -135,7 +134,7 @@ Decorate(TypeCompound ::= TypeCompound PropertyAccessType) -> SemanticTypeAccess
 Decorate(TypeCompound ::= TypeCompound GenericCall) -> SemanticTypeCall
 	:= (SemanticTypeCall
 		Decorate(TypeCompound)
-		Decorate(GenericCall)
+		...Decorate(GenericCall)
 	);
 
 
