@@ -636,14 +636,14 @@ describe('Decorator', () => {
 		});
 
 		Dev.supports('literalCollection') && context('MapLiteral ::= "{" ","? Case# ","? "}"', () => {
-			it('makes an ASTNodeMapping.', () => {
+			it('makes an ASTNodeMap.', () => {
 				/*
-					<Mapping>
+					<Map>
 						<Case source="1 -> null">...</Case>
 						<Case source="4 -> false">...</Case>
 						<Case source="7 -> true">...</Case>
 						<Case source="9 -> 42.0">...</Case>
-					</Mapping>
+					</Map>
 				*/
 				assert.deepStrictEqual(Decorator.decorate(h.mapLiteralFromSource(`
 					{
@@ -827,7 +827,7 @@ describe('Decorator', () => {
 				it('access by computed expression.', () => {
 					/*
 						<Access kind=NORMAL>
-							<Mapping source="{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}">...</Mapping>
+							<Map source="{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}">...</Map>
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/
@@ -869,7 +869,7 @@ describe('Decorator', () => {
 				it('access by computed expression.', () => {
 					/*
 						<Access kind=OPTIONAL>
-							<Mapping source="{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}">...</Mapping>
+							<Map source="{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}">...</Map>
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/
@@ -906,7 +906,7 @@ describe('Decorator', () => {
 				it('access by computed expression.', () => {
 					/*
 						<Access kind=CLAIM>
-							<Mapping source="{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}">...</Mapping>
+							<Map source="{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}">...</Map>
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/

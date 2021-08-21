@@ -591,7 +591,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeTuple
  * - ASTNodeRecord
  * - ASTNodeSet
- * - ASTNodeMapping
+ * - ASTNodeMap
  * - ASTNodeAccess
  * - ASTNodeOperation
  */
@@ -892,10 +892,10 @@ export class ASTNodeSet extends ASTNodeExpression {
 			: new SolidSet(new Set(elements as SolidObject[]));
 	}
 }
-export class ASTNodeMapping extends ASTNodeExpression {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeMapping {
+export class ASTNodeMap extends ASTNodeExpression {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeMap {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeMapping);
+		assert.ok(expression instanceof ASTNodeMap);
 		return expression;
 	}
 	constructor (
@@ -905,10 +905,10 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		super(start_node, {}, children);
 	}
 	override shouldFloat(_validator: Validator): boolean {
-		throw 'ASTNodeMapping#shouldFloat not yet supported.';
+		throw 'ASTNodeMap#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeMapping#build_do not yet supported.';
+		throw builder && 'ASTNodeMap#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
 		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated

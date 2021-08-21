@@ -214,8 +214,8 @@ Set! Assess(SemanticSet set) :=
 
 
 
-Mapping! Assess(SemanticMapping mapping) :=
-	1. *Let* `data` be a mapping of `mapping` for each `case` to a new Sequence [
+Mapping! Assess(SemanticMap map) :=
+	1. *Let* `data` be a mapping of `map` for each `case` to a new Sequence [
 		*Unwrap:* `Assess(case.children.0)`,
 		*Unwrap:* `Assess(case.children.1)`,
 	].

@@ -1026,19 +1026,19 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 
-			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Set,Mapping}', () => {
+			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Set,Map}', () => {
 				let collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,
 					AST.ASTNodeSet,
-					AST.ASTNodeMapping,
+					AST.ASTNodeMap,
 				];
 				function initCollections() {
 					return [
 						AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
 						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
 						AST.ASTNodeSet.fromSource(`{1, 2.0, 'three'};`),
-						AST.ASTNodeMapping.fromSource(`
+						AST.ASTNodeMap.fromSource(`
 							{
 								'a' || '' -> 1,
 								21 + 21   -> 2.0,
@@ -1668,14 +1668,14 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 
-			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Set,Mapping}', () => {
-				it('returns a constant Tuple/Record/Mapping for foldable entries.', () => {
+			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Set,Map}', () => {
+				it('returns a constant Tuple/Record/Set/Map for foldable entries.', () => {
 					assert.deepStrictEqual(
 						[
 							AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
 							AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
 							AST.ASTNodeSet.fromSource(`{1, 2.0, 'three'};`),
-							AST.ASTNodeMapping.fromSource(`
+							AST.ASTNodeMap.fromSource(`
 								{
 									'a' || '' -> 1,
 									21 + 21   -> 2.0,
@@ -1722,12 +1722,12 @@ describe('ASTNodeSolid', () => {
 					`);
 					const tuple:   AST.ASTNodeTuple   = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple;
 					const record:  AST.ASTNodeRecord  = (goal.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord;
-					const mapping: AST.ASTNodeMapping = (goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMapping;
+					const map:     AST.ASTNodeMap     = (goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap;
 					assert.deepStrictEqual(
 						[
 							tuple,
 							record,
-							mapping,
+							map,
 						].map((c) => c.assess(new Validator())),
 						[null, null, null],
 					);
