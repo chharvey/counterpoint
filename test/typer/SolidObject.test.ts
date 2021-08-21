@@ -6,7 +6,7 @@ import {
 	Float64,
 	SolidString,
 	SolidSet,
-	SolidMapping,
+	SolidMap,
 } from '../../src/typer/index.js';
 
 
@@ -74,16 +74,16 @@ describe('SolidObject', () => {
 	});
 
 
-	describe('SolidMapping', () => {
+	describe('SolidMap', () => {
 		describe('.constructor', () => {
 			it('overwrites identical antecedents.', () => {
 				assert.deepStrictEqual(
-					new SolidMapping(new Map<SolidObject, SolidObject>([
+					new SolidMap(new Map<SolidObject, SolidObject>([
 						[new SolidString('a'), Int16.UNIT],
 						[Int16.ZERO,           new Float64(2.0)],
 						[new Int16(-0n),       new SolidString('three')],
 					])),
-					new SolidMapping(new Map<SolidObject, SolidObject>([
+					new SolidMap(new Map<SolidObject, SolidObject>([
 						[new SolidString('a'), Int16.UNIT],
 						[Int16.ZERO,           new SolidString('three')],
 					])),
@@ -91,12 +91,12 @@ describe('SolidObject', () => {
 			});
 			it('does not overwrite non-identical (even if equal) antecedents.', () => {
 				assert.deepStrictEqual(
-					new SolidMapping(new Map<SolidObject, SolidObject>([
+					new SolidMap(new Map<SolidObject, SolidObject>([
 						[new SolidString('a'), Int16.UNIT],
 						[new Float64(0.0),     new Float64(2.0)],
 						[new Float64(-0.0),    new SolidString('three')],
 					])),
-					new SolidMapping(new Map<SolidObject, SolidObject>([
+					new SolidMap(new Map<SolidObject, SolidObject>([
 						[new SolidString('a'), new Int16(1n)],
 						[new Float64(0.0),     new Float64(2.0)],
 						[new Float64(-0.0),    new SolidString('three')],

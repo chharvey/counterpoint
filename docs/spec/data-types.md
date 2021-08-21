@@ -286,7 +286,7 @@ and the “absorption element” of the [union](#union) operation.
 - [List](#list-type)
 - [Hash](#hash-type)
 - [Set](#set-type)
-- [Mapping](#mapping-type)
+- [Map](#map-type)
 
 #### Tuple Type
 A **Tuple Type** contains [`Tuple` objects](./built-ins.md#tuple) and is described by an ordered list of types.
@@ -316,11 +316,11 @@ representing elements.
 The objects that any given Set Type contains are `Set` objects whose
 elements are assignable to the type describing the Set Type.
 
-#### Mapping Type
-A **Mapping Type** contains [`Mapping` objects](./built-ins.md#mapping) and is described by a pair of two types,
+#### Map Type
+A **Map Type** contains [`Map` objects](./built-ins.md#map) and is described by a pair of two types,
 the first of which represents antecedents and the second of which represents consequents.
-The objects that any given Mapping Type contains are `Mapping` objects whose
-antcedents and consequents are respectively assignable to the types describing the Mapping Type.
+The objects that any given Map Type contains are `Map` objects whose
+antcedents and consequents are respectively assignable to the types describing the Map Type.
 
 
 

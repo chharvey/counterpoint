@@ -198,12 +198,12 @@ export class ProductionTypeHashLiteral extends Production {
 	}
 }
 
-export class ProductionTypeMappingLiteral extends Production {
-	static readonly instance: ProductionTypeMappingLiteral = new ProductionTypeMappingLiteral();
+export class ProductionTypeMapLiteral extends Production {
+	static readonly instance: ProductionTypeMapLiteral = new ProductionTypeMapLiteral();
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['{', ProductionType.instance, '|->', ProductionType.instance, '}'],
+			['{', ProductionType.instance, '->', ProductionType.instance, '}'],
 		];
 	}
 }
@@ -243,7 +243,7 @@ export class ProductionTypeUnit extends Production {
 			[ProductionTypeTupleLiteral.instance],
 			[ProductionTypeRecordLiteral.instance],
 			[ProductionTypeHashLiteral.instance],
-			[ProductionTypeMappingLiteral.instance],
+			[ProductionTypeMapLiteral.instance],
 			['(', ProductionType.instance, ')'],
 		];
 	}
@@ -371,7 +371,7 @@ export class ProductionCase extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpression.instance, '|->', ProductionExpression.instance],
+			[ProductionExpression.instance, '->', ProductionExpression.instance],
 		];
 	}
 }
@@ -439,26 +439,26 @@ export class ProductionSetLiteral extends Production {
 	}
 }
 
-export class ProductionMappingLiteral__0__List extends Production {
-	static readonly instance: ProductionMappingLiteral__0__List = new ProductionMappingLiteral__0__List();
+export class ProductionMapLiteral__0__List extends Production {
+	static readonly instance: ProductionMapLiteral__0__List = new ProductionMapLiteral__0__List();
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionCase.instance],
-			[ProductionMappingLiteral__0__List.instance, ',', ProductionCase.instance],
+			[ProductionMapLiteral__0__List.instance, ',', ProductionCase.instance],
 		];
 	}
 }
 
-export class ProductionMappingLiteral extends Production {
-	static readonly instance: ProductionMappingLiteral = new ProductionMappingLiteral();
+export class ProductionMapLiteral extends Production {
+	static readonly instance: ProductionMapLiteral = new ProductionMapLiteral();
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['{', ProductionMappingLiteral__0__List.instance, '}'],
-			['{', ProductionMappingLiteral__0__List.instance, ',', '}'],
-			['{', ',', ProductionMappingLiteral__0__List.instance, '}'],
-			['{', ',', ProductionMappingLiteral__0__List.instance, ',', '}'],
+			['{', ProductionMapLiteral__0__List.instance, '}'],
+			['{', ProductionMapLiteral__0__List.instance, ',', '}'],
+			['{', ',', ProductionMapLiteral__0__List.instance, '}'],
+			['{', ',', ProductionMapLiteral__0__List.instance, ',', '}'],
 		];
 	}
 }
@@ -474,7 +474,7 @@ export class ProductionExpressionUnit extends Production {
 			[ProductionTupleLiteral.instance],
 			[ProductionRecordLiteral.instance],
 			[ProductionSetLiteral.instance],
-			[ProductionMappingLiteral.instance],
+			[ProductionMapLiteral.instance],
 			['(', ProductionExpression.instance, ')'],
 		];
 	}
@@ -849,7 +849,7 @@ export class ParseNodeTypeHashLiteral extends ParseNode {
 	;
 }
 
-export class ParseNodeTypeMappingLiteral extends ParseNode {
+export class ParseNodeTypeMapLiteral extends ParseNode {
 	declare readonly children:
 		| readonly [Token, ParseNodeType, Token, ParseNodeType, Token]
 	;
@@ -879,7 +879,7 @@ export class ParseNodeTypeUnit extends ParseNode {
 		| readonly [ParseNodeTypeTupleLiteral]
 		| readonly [ParseNodeTypeRecordLiteral]
 		| readonly [ParseNodeTypeHashLiteral]
-		| readonly [ParseNodeTypeMappingLiteral]
+		| readonly [ParseNodeTypeMapLiteral]
 		| readonly [Token, ParseNodeType, Token]
 	;
 }
@@ -1010,19 +1010,19 @@ export class ParseNodeSetLiteral extends ParseNode {
 	;
 }
 
-export class ParseNodeMappingLiteral__0__List extends ParseNode {
+export class ParseNodeMapLiteral__0__List extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeCase]
-		| readonly [ParseNodeMappingLiteral__0__List, Token, ParseNodeCase]
+		| readonly [ParseNodeMapLiteral__0__List, Token, ParseNodeCase]
 	;
 }
 
-export class ParseNodeMappingLiteral extends ParseNode {
+export class ParseNodeMapLiteral extends ParseNode {
 	declare readonly children:
-		| readonly [Token, ParseNodeMappingLiteral__0__List, Token]
-		| readonly [Token, ParseNodeMappingLiteral__0__List, Token, Token]
-		| readonly [Token, Token, ParseNodeMappingLiteral__0__List, Token]
-		| readonly [Token, Token, ParseNodeMappingLiteral__0__List, Token, Token]
+		| readonly [Token, ParseNodeMapLiteral__0__List, Token]
+		| readonly [Token, ParseNodeMapLiteral__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeMapLiteral__0__List, Token]
+		| readonly [Token, Token, ParseNodeMapLiteral__0__List, Token, Token]
 	;
 }
 
@@ -1034,7 +1034,7 @@ export class ParseNodeExpressionUnit extends ParseNode {
 		| readonly [ParseNodeTupleLiteral]
 		| readonly [ParseNodeRecordLiteral]
 		| readonly [ParseNodeSetLiteral]
-		| readonly [ParseNodeMappingLiteral]
+		| readonly [ParseNodeMapLiteral]
 		| readonly [Token, ParseNodeExpression, Token]
 	;
 }
@@ -1218,7 +1218,7 @@ export const grammar_Solid: Grammar = new Grammar([
 	ProductionTypeTupleLiteral.instance,
 	ProductionTypeRecordLiteral.instance,
 	ProductionTypeHashLiteral.instance,
-	ProductionTypeMappingLiteral.instance,
+	ProductionTypeMapLiteral.instance,
 	ProductionGenericArguments__0__List.instance,
 	ProductionGenericArguments.instance,
 	ProductionTypeUnit.instance,
@@ -1238,8 +1238,8 @@ export const grammar_Solid: Grammar = new Grammar([
 	ProductionRecordLiteral__0__List.instance,
 	ProductionRecordLiteral.instance,
 	ProductionSetLiteral.instance,
-	ProductionMappingLiteral__0__List.instance,
-	ProductionMappingLiteral.instance,
+	ProductionMapLiteral__0__List.instance,
+	ProductionMapLiteral.instance,
 	ProductionExpressionUnit.instance,
 	ProductionPropertyAccess.instance,
 	ProductionExpressionCompound.instance,
@@ -1286,7 +1286,7 @@ export class ParserSolid extends Parser {
 			[ProductionTypeTupleLiteral.instance, ParseNodeTypeTupleLiteral],
 			[ProductionTypeRecordLiteral.instance, ParseNodeTypeRecordLiteral],
 			[ProductionTypeHashLiteral.instance, ParseNodeTypeHashLiteral],
-			[ProductionTypeMappingLiteral.instance, ParseNodeTypeMappingLiteral],
+			[ProductionTypeMapLiteral.instance, ParseNodeTypeMapLiteral],
 			[ProductionGenericArguments__0__List.instance, ParseNodeGenericArguments__0__List],
 			[ProductionGenericArguments.instance, ParseNodeGenericArguments],
 			[ProductionTypeUnit.instance, ParseNodeTypeUnit],
@@ -1306,8 +1306,8 @@ export class ParserSolid extends Parser {
 			[ProductionRecordLiteral__0__List.instance, ParseNodeRecordLiteral__0__List],
 			[ProductionRecordLiteral.instance, ParseNodeRecordLiteral],
 			[ProductionSetLiteral.instance, ParseNodeSetLiteral],
-			[ProductionMappingLiteral__0__List.instance, ParseNodeMappingLiteral__0__List],
-			[ProductionMappingLiteral.instance, ParseNodeMappingLiteral],
+			[ProductionMapLiteral__0__List.instance, ParseNodeMapLiteral__0__List],
+			[ProductionMapLiteral.instance, ParseNodeMapLiteral],
 			[ProductionExpressionUnit.instance, ParseNodeExpressionUnit],
 			[ProductionPropertyAccess.instance, ParseNodePropertyAccess],
 			[ProductionExpressionCompound.instance, ParseNodeExpressionCompound],

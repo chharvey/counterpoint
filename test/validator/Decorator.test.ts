@@ -222,18 +222,18 @@ describe('Decorator', () => {
 			});
 		});
 
-		describe('TypeMappingLiteral ::= "{" Type "|->" Type "}"', () => {
-			it('makes an ASTNodeTypeMapping.', () => {
+		describe('TypeMapLiteral ::= "{" Type "->" Type "}"', () => {
+			it('makes an ASTNodeTypeMap.', () => {
 				/*
-					<TypeMapping>
+					<TypeMap>
 						<TypeConstant source="int"/>
 						<TypeConstant source="float"/>
-					</TypeMapping>
+					</TypeMap>
 				*/
-				const mapping: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`{int |-> float}`));
-				assert.ok(mapping instanceof AST.ASTNodeTypeMapping);
-				assert.deepStrictEqual(mapping.antecedenttype.source, `int`);
-				assert.deepStrictEqual(mapping.consequenttype.source, `float`);
+				const map: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`{int -> float}`));
+				assert.ok(map instanceof AST.ASTNodeTypeMap);
+				assert.deepStrictEqual(map.antecedenttype.source, `int`);
+				assert.deepStrictEqual(map.consequenttype.source, `float`);
 			});
 		});
 
@@ -541,7 +541,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('Case ::= Expression "|->" Expression', () => {
+		Dev.supports('literalCollection') && context('Case ::= Expression "->" Expression', () => {
 			it('makes an ASTNodeCase', () => {
 				/*
 					<Case>
@@ -549,7 +549,7 @@ describe('Decorator', () => {
 						<Constant source="1.25"/>
 					</Case>
 				*/
-				const kase: AST.ASTNodeCase = Decorator.decorate(h.caseFromString(`1 + 0.25 |-> 1.25`));
+				const kase: AST.ASTNodeCase = Decorator.decorate(h.caseFromString(`1 + 0.25 -> 1.25`));
 				assert.deepStrictEqual(
 					[kase.antecedent.source, kase.consequent.source],
 					[`1 + 0.25`,             `1.25`],
@@ -635,28 +635,28 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('MappingLiteral ::= "{" ","? Case# ","? "}"', () => {
-			it('makes an ASTNodeMapping.', () => {
+		Dev.supports('literalCollection') && context('MapLiteral ::= "{" ","? Case# ","? "}"', () => {
+			it('makes an ASTNodeMap.', () => {
 				/*
-					<Mapping>
-						<Case source="1 |-> null">...</Case>
-						<Case source="4 |-> false">...</Case>
-						<Case source="7 |-> true">...</Case>
-						<Case source="9 |-> 42.0">...</Case>
-					</Mapping>
+					<Map>
+						<Case source="1 -> null">...</Case>
+						<Case source="4 -> false">...</Case>
+						<Case source="7 -> true">...</Case>
+						<Case source="9 -> 42.0">...</Case>
+					</Map>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.mappingLiteralFromSource(`
+				assert.deepStrictEqual(Decorator.decorate(h.mapLiteralFromSource(`
 					{
-						1 |-> null,
-						4 |-> false,
-						7 |-> true,
-						9 |-> 42.0,
+						1 -> null,
+						4 -> false,
+						7 -> true,
+						9 -> 42.0,
 					};
 				`)).children.map((c) => c.source), [
-					`1 |-> null`,
-					`4 |-> false`,
-					`7 |-> true`,
-					`9 |-> 42.0`,
+					`1 -> null`,
+					`4 -> false`,
+					`7 -> true`,
+					`9 -> 42.0`,
 				]);
 			});
 		});
@@ -827,17 +827,17 @@ describe('Decorator', () => {
 				it('access by computed expression.', () => {
 					/*
 						<Access kind=NORMAL>
-							<Mapping source="{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}">...</Mapping>
+							<Map source="{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}">...</Map>
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/
 					const access: AST.ASTNodeAccess = makeAccess(`
-						{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}.[0.7 + 0.3];
+						{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}.[0.7 + 0.3];
 					`);
 					assert.ok(access.accessor instanceof AST.ASTNodeExpression);
 					assert.deepStrictEqual(
 						[access.base.source,                            access.accessor.source],
-						[`{ 0.5 * 2 |-> 'one' , 1.4 + 0.6 |-> 'two' }`, `0.7 + 0.3`],
+						[`{ 0.5 * 2 -> 'one' , 1.4 + 0.6 -> 'two' }`, `0.7 + 0.3`],
 					);
 				});
 			});
@@ -869,12 +869,12 @@ describe('Decorator', () => {
 				it('access by computed expression.', () => {
 					/*
 						<Access kind=OPTIONAL>
-							<Mapping source="{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}">...</Mapping>
+							<Map source="{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}">...</Map>
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/
 					makeAccess(`
-						{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}?.[0.7 + 0.3];
+						{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}?.[0.7 + 0.3];
 					`, Operator.OPTDOT);
 				});
 			});
@@ -906,12 +906,12 @@ describe('Decorator', () => {
 				it('access by computed expression.', () => {
 					/*
 						<Access kind=CLAIM>
-							<Mapping source="{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}">...</Mapping>
+							<Map source="{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}">...</Map>
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/
 					makeAccess(`
-						{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}!.[0.7 + 0.3];
+						{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}!.[0.7 + 0.3];
 					`, Operator.CLAIMDOT);
 				});
 			});

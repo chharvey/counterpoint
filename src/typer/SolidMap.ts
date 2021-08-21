@@ -10,18 +10,18 @@ import {
 	SolidTypeConstant,
 	solidObjectsIdentical,
 } from './SolidType.js';
-import {SolidTypeMapping} from './SolidTypeMapping.js';
+import {SolidTypeMap} from './SolidTypeMap.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
 import {Collection} from './Collection.js';
 
 
 
-export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidObject = SolidObject> extends Collection {
+export class SolidMap<K extends SolidObject = SolidObject, V extends SolidObject = SolidObject> extends Collection {
 	static override toString(): string {
-		return 'Mapping';
+		return 'Map';
 	}
-	static override values: SolidType['values'] = new Set([new SolidMapping()]);
+	static override values: SolidType['values'] = new Set([new SolidMap()]);
 
 
 	constructor (
@@ -35,7 +35,7 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 		this.cases = uniques;
 	}
 	override toString(): string {
-		return `{${ [...this.cases].map(([ant, con]) => `${ ant } |-> ${ con }`).join(', ') }}`;
+		return `{${ [...this.cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
 	}
 	override get isEmpty(): boolean {
 		return this.cases.size === 0;
@@ -43,19 +43,19 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 	/** @final */
 	protected override equal_helper(value: SolidObject): boolean {
 		return (
-			value instanceof SolidMapping
+			value instanceof SolidMap
 			&& this.cases.size === value.cases.size
-			&& Collection.do_Equal<SolidMapping>(this, value, () => [...(value as SolidMapping).cases].every(
+			&& Collection.do_Equal<SolidMap>(this, value, () => [...(value as SolidMap).cases].every(
 				([thatant, thatcon]) => !![...this.cases].find(([thisant, _]) => thisant.equal(thatant))?.[1].equal(thatcon),
 			))
 		);
 	}
 
-	override toType(): SolidTypeMapping {
-		return (this.cases.size) ? new SolidTypeMapping(
+	override toType(): SolidTypeMap {
+		return (this.cases.size) ? new SolidTypeMap(
 			SolidType.unionAll([...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeConstant(ant))),
 			SolidType.unionAll([...this.cases.values()].map<SolidType>((con) => new SolidTypeConstant(con))),
-		) : new SolidTypeMapping(SolidType.NEVER, SolidType.NEVER);
+		) : new SolidTypeMap(SolidType.NEVER, SolidType.NEVER);
 	}
 
 	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | SolidNull {

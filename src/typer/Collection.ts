@@ -14,7 +14,7 @@ import {SolidObject} from './SolidObject.js';
  * - CollectionIndexed
  * - CollectionKeyed
  * - SolidSet
- * - SolidMapping
+ * - SolidMap
  */
 export abstract class Collection extends SolidObject {
 	private static readonly EQ_MEMO_COMPARATOR: (

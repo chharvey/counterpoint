@@ -48,11 +48,11 @@ ItemsType ::=
 PropertiesType
 	::= EntryType<+Named><-Optional, +Optional># ","?;
 
-TypeTupleLiteral   ::= "[" (","? ItemsType)?    "]";
-TypeRecordLiteral  ::= "["  ","? PropertiesType "]";
-TypeHashLiteral    ::= "[" ":" Type             "]";
-TypeMappingLiteral ::= "{" Type "|->" Type      "}";
-GenericArguments   ::= "<"  ","? Type# ","?     ">";
+TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
+TypeRecordLiteral ::= "["  ","? PropertiesType "]";
+TypeHashLiteral   ::= "[" ":" Type             "]";
+TypeMapLiteral    ::= "{" Type "->" Type       "}";
+GenericArguments  ::= "<"  ","? Type# ","?     ">";
 
 TypeUnit ::=
 	| IDENTIFIER
@@ -61,7 +61,7 @@ TypeUnit ::=
 	| TypeTupleLiteral
 	| TypeRecordLiteral
 	| TypeHashLiteral
-	| TypeMappingLiteral
+	| TypeMapLiteral
 	| "(" Type ")"
 ;
 
@@ -95,13 +95,13 @@ StringTemplate ::=
 	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
 ;
 
-Property ::= Word       "="   Expression;
-Case     ::= Expression "|->" Expression;
+Property ::= Word       "="  Expression;
+Case     ::= Expression "->" Expression;
 
-TupleLiteral   ::= "[" ( ","? Expression# ","? )? "]";
-RecordLiteral  ::= "["   ","? Property#   ","?    "]";
-SetLiteral     ::= "{" ( ","? Expression# ","? )? "}";
-MappingLiteral ::= "{"   ","? Case#       ","?    "}";
+TupleLiteral  ::= "[" ( ","? Expression# ","? )? "]";
+RecordLiteral ::= "["   ","? Property#   ","?    "]";
+SetLiteral    ::= "{" ( ","? Expression# ","? )? "}";
+MapLiteral    ::= "{"   ","? Case#       ","?    "}";
 
 ExpressionUnit ::=
 	| IDENTIFIER
@@ -110,7 +110,7 @@ ExpressionUnit ::=
 	| TupleLiteral
 	| RecordLiteral
 	| SetLiteral
-	| MappingLiteral
+	| MapLiteral
 	| "(" Expression ")"
 ;
 

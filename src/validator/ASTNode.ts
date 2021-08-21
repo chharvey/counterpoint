@@ -28,7 +28,7 @@ import {
 	SolidTypeList,
 	SolidTypeHash,
 	SolidTypeSet,
-	SolidTypeMapping,
+	SolidTypeMap,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -39,7 +39,7 @@ import {
 	SolidTuple,
 	SolidRecord,
 	SolidSet,
-	SolidMapping,
+	SolidMap,
 } from '../typer/index.js';
 import {
 	Builder,
@@ -214,7 +214,7 @@ export class ASTNodeCase extends ASTNodeSolid {
  * - ASTNodeTypeList
  * - ASTNodeTypeHash
  * - ASTNodeTypeSet
- * - ASTNodeTypeMapping
+ * - ASTNodeTypeMap
  * - ASTNodeTypeAccess
  * - ASTNodeTypeCall
  * - ASTNodeTypeOperation
@@ -406,21 +406,21 @@ export class ASTNodeTypeSet extends ASTNodeType {
 		return new SolidTypeSet(this.type.assess(validator));
 	}
 }
-export class ASTNodeTypeMapping extends ASTNodeType {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeMapping {
+export class ASTNodeTypeMap extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeMap {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeMapping);
+		assert.ok(typ instanceof ASTNodeTypeMap);
 		return typ;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeTypeMappingLiteral,
+		start_node: PARSER.ParseNodeTypeMapLiteral,
 		readonly antecedenttype: ASTNodeType,
 		readonly consequenttype: ASTNodeType,
 	) {
 		super(start_node, {}, [antecedenttype, consequenttype]);
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		return new SolidTypeMapping(this.antecedenttype.assess(validator), this.consequenttype.assess(validator));
+		return new SolidTypeMap(this.antecedenttype.assess(validator), this.consequenttype.assess(validator));
 	}
 }
 export class ASTNodeTypeAccess extends ASTNodeType {
@@ -480,7 +480,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	}
 	override varCheck(validator: Validator): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
-		// (`this.base.source` must be `List | Hash | Set | Mapping`)
+		// (`this.base.source` must be `List | Hash | Set | Map`)
 		return this.args.forEach((arg) => arg.varCheck(validator)); // TODO: AggregateForEach
 	}
 	protected override assess_do(validator: Validator): SolidType {
@@ -488,17 +488,17 @@ export class ASTNodeTypeCall extends ASTNodeType {
 			throw new TypeError05(this.base.assess(validator), this.base);
 		}
 		return (new Map<string, () => SolidType>([
-			['List',    () => (this.countArgs(1n), new SolidTypeList(this.args[0].assess(validator)))],
-			['Hash',    () => (this.countArgs(1n), new SolidTypeHash(this.args[0].assess(validator)))],
-			['Set',     () => (this.countArgs(1n), new SolidTypeSet (this.args[0].assess(validator)))],
-			['Mapping', () => {
+			['List', () => (this.countArgs(1n), new SolidTypeList(this.args[0].assess(validator)))],
+			['Hash', () => (this.countArgs(1n), new SolidTypeHash(this.args[0].assess(validator)))],
+			['Set',  () => (this.countArgs(1n), new SolidTypeSet (this.args[0].assess(validator)))],
+			['Map',  () => {
 				this.countArgs([1n, 3n]);
 				const anttype: SolidType = this.args[0].assess(validator);
 				const contype: SolidType = this.args[1]?.assess(validator) || anttype;
-				return new SolidTypeMapping(anttype, contype);
+				return new SolidTypeMap(anttype, contype);
 			}],
 		]).get(this.base.source) || (() => {
-			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Mapping\`.`)
+			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Map\`.`);
 		}))();
 	}
 	/**
@@ -591,7 +591,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeTuple
  * - ASTNodeRecord
  * - ASTNodeSet
- * - ASTNodeMapping
+ * - ASTNodeMap
  * - ASTNodeAccess
  * - ASTNodeOperation
  */
@@ -892,27 +892,27 @@ export class ASTNodeSet extends ASTNodeExpression {
 			: new SolidSet(new Set(elements as SolidObject[]));
 	}
 }
-export class ASTNodeMapping extends ASTNodeExpression {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeMapping {
+export class ASTNodeMap extends ASTNodeExpression {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeMap {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeMapping);
+		assert.ok(expression instanceof ASTNodeMap);
 		return expression;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeMappingLiteral,
+		start_node: PARSER.ParseNodeMapLiteral,
 		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, {}, children);
 	}
 	override shouldFloat(_validator: Validator): boolean {
-		throw 'ASTNodeMapping#shouldFloat not yet supported.';
+		throw 'ASTNodeMap#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeMapping#build_do not yet supported.';
+		throw builder && 'ASTNodeMap#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
 		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
-		return new SolidTypeMapping(
+		return new SolidTypeMap(
 			SolidType.unionAll(this.children.map((c) => c.antecedent.type(validator))),
 			SolidType.unionAll(this.children.map((c) => c.consequent.type(validator))),
 		);
@@ -924,7 +924,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		]));
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null
-			: new SolidMapping(cases as ReadonlyMap<SolidObject, SolidObject>);
+			: new SolidMap(cases as ReadonlyMap<SolidObject, SolidObject>);
 	}
 }
 export class ASTNodeAccess extends ASTNodeExpression {
@@ -1002,13 +1002,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				return (accessor_type.isSubtypeOf(base_type_set.types))
 					? updateDynamicType(base_type_set.types, this.kind)
 					: throwWrongSubtypeError(this.accessor, base_type_set.types);
-			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping || base_type instanceof SolidTypeMapping) {
-				const base_type_mapping: SolidTypeMapping = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping)
+			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMap || base_type instanceof SolidTypeMap) {
+				const base_type_map: SolidTypeMap = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMap)
 					? base_type.value.toType()
-					: (base_type as SolidTypeMapping);
-				return (accessor_type.isSubtypeOf(base_type_mapping.antecedenttypes))
-					? updateDynamicType(base_type_mapping.consequenttypes, this.kind)
-					: throwWrongSubtypeError(this.accessor, base_type_mapping.antecedenttypes);
+					: (base_type as SolidTypeMap);
+				return (accessor_type.isSubtypeOf(base_type_map.antecedenttypes))
+					? updateDynamicType(base_type_map.consequenttypes, this.kind)
+					: throwWrongSubtypeError(this.accessor, base_type_map.antecedenttypes);
 			} else {
 				throw new TypeError01(this);
 			}
@@ -1035,8 +1035,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				return (base_value as SolidTuple).get(accessor_value as Int16, this.optional, this.accessor);
 			} else if (base_value instanceof SolidSet) {
 				return (base_value as SolidSet).get(accessor_value, this.optional, this.accessor);
-			} else /* (base_value instanceof SolidMapping) */ {
-				return (base_value as SolidMapping).get(accessor_value, this.optional, this.accessor);
+			} else /* (base_value instanceof SolidMap) */ {
+				return (base_value as SolidMap).get(accessor_value, this.optional, this.accessor);
 			}
 		}
 	}

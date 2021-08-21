@@ -58,7 +58,7 @@ export const solidObjectsIdentical = (a: SolidObject, b: SolidObject): boolean =
  * - SolidTypeList
  * - SolidTypeHash
  * - SolidTypeSet
- * - SolidTypeMapping
+ * - SolidTypeMap
  */
 export abstract class SolidType {
 	/** The Bottom Type, containing no values. */

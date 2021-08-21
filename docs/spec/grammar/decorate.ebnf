@@ -86,8 +86,8 @@ Decorate(TypeHashLiteral ::= "[" ":" Type "]") -> SemanticTypeHash
 		Decorate(Type)
 	);
 
-Decorate(TypeMappingLiteral ::= "{" Type__0 "|->" Type__1 "}") -> SemanticTypeMapping
-	:= (SemanticTypeMapping
+Decorate(TypeMapLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMap
+	:= (SemanticTypeMap
 		Decorate(Type__0)
 		Decorate(Type__1)
 	);
@@ -246,7 +246,7 @@ Decorate(Property ::= Word "=" Expression) -> SemanticProperty
 		Decorate(Expression)
 	);
 
-Decorate(Case ::= Expression "|->" Expression) -> SemanticCase
+Decorate(Case ::= Expression "->" Expression) -> SemanticCase
 	:= (SemanticCase
 		Decorate(Expression)
 		Decorate(Expression)
@@ -269,8 +269,8 @@ Decorate(SetLiteral ::= "{" ","? Expression# ","? "}") -> SemanticSet
 		...ParseList(Expression, SemanticExpression)
 	);
 
-Decorate(MappingLiteral ::= "{" ","? Case# ","? "}") -> SemanticMapping
-	:= (SemanticMapping
+Decorate(MapLiteral ::= "{" ","? Case# ","? "}") -> SemanticMap
+	:= (SemanticMap
 		...ParseList(Case, SemanticCase)
 	);
 
@@ -288,8 +288,8 @@ Decorate(ExpressionUnit ::= RecordLiteral) -> SemanticRecord
 	:= Decorate(RecordLiteral);
 Decorate(ExpressionUnit ::= SetLiteral) -> SemanticSet
 	:= Decorate(SetLiteral);
-Decorate(ExpressionUnit ::= MappingLiteral) -> SemanticMapping
-	:= Decorate(MappingLiteral);
+Decorate(ExpressionUnit ::= MapLiteral) -> SemanticMap
+	:= Decorate(MapLiteral);
 Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticExpression
 	:= Decorate(Expression);
 

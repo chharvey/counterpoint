@@ -59,12 +59,12 @@ Type! TypeOfUnassessed(SemanticSet set) :=
 
 
 
-Type! TypeOfUnassessed(SemanticMapping mapping) :=
-	1. *Let* `ant_types` be a mapping of `mapping` for each `case` to *Unwrap:* `TypeOf(case.children.0)`.
-	2. *Let* `con_types` be a mapping of `mapping` for each `case` to *Unwrap:* `TypeOf(case.children.1)`.
+Type! TypeOfUnassessed(SemanticMap map) :=
+	1. *Let* `ant_types` be a mapping of `map` for each `case` to *Unwrap:* `TypeOf(case.children.0)`.
+	2. *Let* `con_types` be a mapping of `map` for each `case` to *Unwrap:* `TypeOf(case.children.1)`.
 	3. *Let* `k` be `Union(...ant_types)`.
 	4. *Let* `v` be `Union(...con_types)`.
-	5. *Return:* a new Mapping type whose antecedent types are `k` and whose consequent types are `v`.
+	5. *Return:* a new Map type whose antecedent types are `k` and whose consequent types are `v`.
 ;
 
 
@@ -129,7 +129,7 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 			3. *Set* `returned` to `t`.
 		3. *Else:*
 			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ t }}.".
-	13. *If* *UnwrapAffirm:* `Subtype(base_type, Mapping)`:
+	13. *If* *UnwrapAffirm:* `Subtype(base_type, Map)`:
 		1. *Let* `k` be the type of the antecedents in `base_type`.
 		2. *Let* `v` be the type of the consequents in `base_type`.
 		3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)`:
