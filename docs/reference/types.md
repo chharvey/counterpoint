@@ -476,14 +476,14 @@ let GREETING: '''Hello World!''' = 'Hello World!'; %> ParseError
 ## Compound Types
 The following table summarizes the built-in compound types.
 
-Type                | Size           | Indices/Keys  | Generic Type Syntax  | Explicit Type Syntax         | Constructor Syntax                               | Literal Syntax                               | Empty Literal Syntax
-------------------- | -------------- | ------------  | -------------------- | ---------------------------- | ------------------------------------------------ | -------------------------------------------- | --------------------
-[Tuple](#tuple)     | Fixed          | integers      | *(none)*             | `[str, str, str]` / `str[3]` | *(none)*                                         | `['x', 'y', 'z']`                            | `[]`
-[Record](#record)   | Fixed          | words         | *(none)*             | `[a: str, b: str, c: str]`   | *(none)*                                         | `[a= 'x', b= 'y', c= 'z']`                   | *(none)*
-[List](#list)       | Variable       | integers      | `List.<str>`         | `str[]`                      | `List.(['x', 'y', 'z'])`                         | *(none)*                                     | *(none)*
-[Hash](#hash)       | Variable       | atoms/strings | `Hash.<str>`         | `[:str]`                     | `Hash.([a= 'x', b= 'y', c= 'z'])`                | *(none)*                                     | *(none)*
-[Set](#set)         | Variable       | *(none)*      | `Set.<str>`          | `str{}`                      | `Set.(['x', 'y', 'z'])`                          | `{'x', 'y', 'z'}`                            | `{}`
-[Mapping](#mapping) | Variable       | objects       | `Mapping.<str, str>` | `{str \|-> str}`             | `Mapping.([['u', 'x'], ['v', 'y'], ['w', 'z']])` | `{'u' \|-> 'x', 'v' \|-> 'y', 'w' \|-> 'z'}` | *(none)*
+Type                | Size           | Indices/Keys  | Generic Type Syntax  | Explicit Type Syntax         | Constructor Syntax                               | Literal Syntax                         | Empty Literal Syntax
+------------------- | -------------- | ------------  | -------------------- | ---------------------------- | ------------------------------------------------ | -------------------------------------- | --------------------
+[Tuple](#tuple)     | Fixed          | integers      | *(none)*             | `[str, str, str]` / `str[3]` | *(none)*                                         | `['x', 'y', 'z']`                      | `[]`
+[Record](#record)   | Fixed          | words         | *(none)*             | `[a: str, b: str, c: str]`   | *(none)*                                         | `[a= 'x', b= 'y', c= 'z']`             | *(none)*
+[List](#list)       | Variable       | integers      | `List.<str>`         | `str[]`                      | `List.(['x', 'y', 'z'])`                         | *(none)*                               | *(none)*
+[Hash](#hash)       | Variable       | atoms/strings | `Hash.<str>`         | `[:str]`                     | `Hash.([a= 'x', b= 'y', c= 'z'])`                | *(none)*                               | *(none)*
+[Set](#set)         | Variable       | *(none)*      | `Set.<str>`          | `str{}`                      | `Set.(['x', 'y', 'z'])`                          | `{'x', 'y', 'z'}`                      | `{}`
+[Mapping](#mapping) | Variable       | objects       | `Mapping.<str, str>` | `{str -> str}`               | `Mapping.([['u', 'x'], ['v', 'y'], ['w', 'z']])` | `{'u' -> 'x', 'v' -> 'y', 'w' -> 'z'}` | *(none)*
 
 
 ### Tuple
@@ -877,7 +877,7 @@ where the expression in the brackets is the element to get.
 let bases: obj = {
 	'who',
 	['what'],
-	{ 'i' |-> {'don’t' |-> 'know'} },
+	{ 'i' -> {'don’t' -> 'know'} },
 };
 bases.['''{{ 'w' }}{{ 'h' }}{{ 'o' }}''']; %== 'who'
 bases.[['what']];                          %== ['what']
@@ -909,9 +909,9 @@ The number of cases in a mapping is called its **count**.
 
 ```
 let bases: obj = {
-	1     |-> 'who',
-	'2nd' |-> ['what'],
-	1 + 2 |-> { 'i' |-> {'don’t' |-> 'know'} },
+	1     -> 'who',
+	'2nd' -> ['what'],
+	1 + 2 -> { 'i' -> {'don’t' -> 'know'} },
 };
 ```
 The mapping above has antecedents and consequents of various types.
@@ -926,10 +926,10 @@ Also like records, antecedents have unique consequents in that latter declaratio
 In the case of mappings, antecedents that are identical are considered “the same object”.
 ```
 let bases: obj = {
-	1     |-> 'who',
-	'2nd' |-> ['what'],
-	1 + 2 |-> { 'i' |-> {'don’t' |-> 'know'} },
-	4 - 1 |-> [i= [`don’t`= 'know']],
+	1     -> 'who',
+	'2nd' -> ['what'],
+	1 + 2 -> { 'i' -> {'don’t' -> 'know'} },
+	4 - 1 -> [i= [`don’t`= 'know']],
 };
 ```
 The consequent corresponding to the antecedent `3` will be `` [i= [`don’t`= 'know']] ``.
@@ -939,10 +939,10 @@ Mappings may have several antecedents that are un-identical but “equal”.
 let x: [int] = [3];
 let y: [int] = [3];
 let bases: obj = {
-	0.0  |-> 'who',
-	-0.0 |-> ['what'],
-	x |-> { 'i' |-> {'don’t' |-> 'know'} },
-	y |-> [i= [`don’t`= 'know']],
+	0.0  -> 'who',
+	-0.0 -> ['what'],
+	x -> { 'i' -> {'don’t' -> 'know'} },
+	y -> [i= [`don’t`= 'know']],
 };
 ```
 In this example, the antecedents `0.0` and `-0.0` are not identical
@@ -956,13 +956,13 @@ Consequents of a mapping can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the antecedent to get.
 ```
 let bases: obj = {
-	1     |-> 'who',
-	'2nd' |-> ['what'],
-	1 + 2 |-> { 'i' |-> {'don’t' |-> 'know'} },
+	1     -> 'who',
+	'2nd' -> ['what'],
+	1 + 2 -> { 'i' -> {'don’t' -> 'know'} },
 };
 bases.[-1 * -1];         %== 'who'
 bases.['''{{ 2 }}nd''']; %== ['what']
-bases.[3].['i'];         %== {'don’t' |-> 'know'}
+bases.[3].['i'];         %== {'don’t' -> 'know'}
 ```
 
 A VoidError is produced when the compiler can determine if the antecedent does not exist.

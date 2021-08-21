@@ -51,7 +51,7 @@ PropertiesType
 TypeTupleLiteral   ::= "[" (","? ItemsType)?    "]";
 TypeRecordLiteral  ::= "["  ","? PropertiesType "]";
 TypeHashLiteral    ::= "[" ":" Type             "]";
-TypeMappingLiteral ::= "{" Type "|->" Type      "}";
+TypeMappingLiteral ::= "{" Type "->" Type       "}";
 GenericArguments   ::= "<"  ","? Type# ","?     ">";
 
 TypeUnit ::=
@@ -95,8 +95,8 @@ StringTemplate ::=
 	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
 ;
 
-Property ::= Word       "="   Expression;
-Case     ::= Expression "|->" Expression;
+Property ::= Word       "="  Expression;
+Case     ::= Expression "->" Expression;
 
 TupleLiteral   ::= "[" ( ","? Expression# ","? )? "]";
 RecordLiteral  ::= "["   ","? Property#   ","?    "]";

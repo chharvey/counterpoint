@@ -203,7 +203,7 @@ export class ProductionTypeMappingLiteral extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['{', ProductionType.instance, '|->', ProductionType.instance, '}'],
+			['{', ProductionType.instance, '->', ProductionType.instance, '}'],
 		];
 	}
 }
@@ -371,7 +371,7 @@ export class ProductionCase extends Production {
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpression.instance, '|->', ProductionExpression.instance],
+			[ProductionExpression.instance, '->', ProductionExpression.instance],
 		];
 	}
 }

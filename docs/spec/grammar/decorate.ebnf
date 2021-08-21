@@ -86,7 +86,7 @@ Decorate(TypeHashLiteral ::= "[" ":" Type "]") -> SemanticTypeHash
 		Decorate(Type)
 	);
 
-Decorate(TypeMappingLiteral ::= "{" Type__0 "|->" Type__1 "}") -> SemanticTypeMapping
+Decorate(TypeMappingLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMapping
 	:= (SemanticTypeMapping
 		Decorate(Type__0)
 		Decorate(Type__1)
@@ -246,7 +246,7 @@ Decorate(Property ::= Word "=" Expression) -> SemanticProperty
 		Decorate(Expression)
 	);
 
-Decorate(Case ::= Expression "|->" Expression) -> SemanticCase
+Decorate(Case ::= Expression "->" Expression) -> SemanticCase
 	:= (SemanticCase
 		Decorate(Expression)
 		Decorate(Expression)

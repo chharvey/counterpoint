@@ -201,7 +201,7 @@ describe('Parser', () => {
 				`[A, B]`,
 				`[a: A, b: B]`,
 				`[:A]`,
-				`{A |-> B}`,
+				`{A -> B}`,
 				`(A?)`,
 				`(A!)`,
 				`(A[])`,
@@ -362,17 +362,17 @@ describe('Parser', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('Case ::= Expression "|->" Expression', () => {
+		Dev.supports('literalCollection') && describe('Case ::= Expression "->" Expression', () => {
 			it('makes a Case node.', () => {
 				/*
 					<Case>
 						<Expression source="42">...</Expression>
-						<PUNCTUATOR>|-></PUNCTUATOR>
+						<PUNCTUATOR>-></PUNCTUATOR>
 						<Expression source="null || false">...</Expression>
 					</Case>
 				*/
 				assert.deepStrictEqual(
-					h.caseFromString(`42 |-> null || false`).children.map((c) => c.source),
+					h.caseFromString(`42 -> null || false`).children.map((c) => c.source),
 					[`42`, Punctuator.MAPTO, `null || false`],
 				);
 			});

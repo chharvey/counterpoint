@@ -35,7 +35,7 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 		this.cases = uniques;
 	}
 	override toString(): string {
-		return `{${ [...this.cases].map(([ant, con]) => `${ ant } |-> ${ con }`).join(', ') }}`;
+		return `{${ [...this.cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
 	}
 	override get isEmpty(): boolean {
 		return this.cases.size === 0;
