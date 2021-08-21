@@ -1,6 +1,6 @@
 import {
 	SolidObject,
-	SolidMapping,
+	SolidMap,
 } from './index.js'; // avoids circular imports
 import {SolidType} from './SolidType.js';
 
@@ -18,7 +18,7 @@ export class SolidTypeMap extends SolidType {
 		readonly antecedenttypes: SolidType,
 		readonly consequenttypes: SolidType,
 	) {
-		super(SolidMapping.values);
+		super(SolidMap.values);
 	}
 
 	override toString(): string {
@@ -26,7 +26,7 @@ export class SolidTypeMap extends SolidType {
 	}
 
 	override includes(v: SolidObject): boolean {
-		return v instanceof SolidMapping && v.toType().isSubtypeOf(this);
+		return v instanceof SolidMap && v.toType().isSubtypeOf(this);
 	}
 
 	override isSubtypeOf_do(t: SolidType): boolean {

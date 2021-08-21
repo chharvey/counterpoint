@@ -39,7 +39,7 @@ import {
 	SolidTuple,
 	SolidRecord,
 	SolidSet,
-	SolidMapping,
+	SolidMap,
 } from '../typer/index.js';
 import {
 	Builder,
@@ -924,7 +924,7 @@ export class ASTNodeMap extends ASTNodeExpression {
 		]));
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null
-			: new SolidMapping(cases as ReadonlyMap<SolidObject, SolidObject>);
+			: new SolidMap(cases as ReadonlyMap<SolidObject, SolidObject>);
 	}
 }
 export class ASTNodeAccess extends ASTNodeExpression {
@@ -1003,13 +1003,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				return (accessor_type.isSubtypeOf(base_type_set.types))
 					? updateDynamicType(base_type_set.types, this.kind)
 					: throwWrongSubtypeError(this.accessor, base_type_set.types);
-			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping || base_type instanceof SolidTypeMap) {
-				const base_type_mapping: SolidTypeMap = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping)
+			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMap || base_type instanceof SolidTypeMap) {
+				const base_type_map: SolidTypeMap = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMap)
 					? base_type.value.toType()
 					: (base_type as SolidTypeMap);
-				return (accessor_type.isSubtypeOf(base_type_mapping.antecedenttypes))
-					? updateDynamicType(base_type_mapping.consequenttypes, this.kind)
-					: throwWrongSubtypeError(this.accessor, base_type_mapping.antecedenttypes);
+				return (accessor_type.isSubtypeOf(base_type_map.antecedenttypes))
+					? updateDynamicType(base_type_map.consequenttypes, this.kind)
+					: throwWrongSubtypeError(this.accessor, base_type_map.antecedenttypes);
 			} else {
 				throw new TypeError01(this);
 			}
@@ -1036,8 +1036,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				return (base_value as SolidTuple).get(accessor_value as Int16, this.optional, this.accessor);
 			} else if (base_value instanceof SolidSet) {
 				return (base_value as SolidSet).get(accessor_value, this.optional, this.accessor);
-			} else /* (base_value instanceof SolidMapping) */ {
-				return (base_value as SolidMapping).get(accessor_value, this.optional, this.accessor);
+			} else /* (base_value instanceof SolidMap) */ {
+				return (base_value as SolidMap).get(accessor_value, this.optional, this.accessor);
 			}
 		}
 	}

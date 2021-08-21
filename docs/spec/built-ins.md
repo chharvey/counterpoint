@@ -40,6 +40,6 @@ The values of sets are Solid Language Values.
 
 
 
-## Mapping
-`Mapping` objects are variable-size unordered associations of values.
-The antecedents and consequents of mappings are Solid Language Values.
+## Map
+`Map` objects are variable-size unordered associations of values.
+The antecedents and consequents of maps are Solid Language Values.

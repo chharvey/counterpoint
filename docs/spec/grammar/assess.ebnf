@@ -214,14 +214,14 @@ Set! Assess(SemanticSet set) :=
 
 
 
-Mapping! Assess(SemanticMap map) :=
+Map! Assess(SemanticMap map) :=
 	1. *Let* `data` be a mapping of `map` for each `case` to a new Sequence [
 		*Unwrap:* `Assess(case.children.0)`,
 		*Unwrap:* `Assess(case.children.1)`,
 	].
 	2. *For each* `it` in `data`:
 		1. *Assert:* `it.count` is 2.
-	3. *Return:* a new Mapping containing the pairs in the sequence `data`.
+	3. *Return:* a new Map containing the pairs in the sequence `data`.
 ;
 
 
@@ -255,7 +255,7 @@ Object! Assess(SemanticAccess access) :=
 		3. *If*: `access.kind` is `OPTIONAL`:
 			1. *Return:* `null`.
 	12. *Else:*
-		1. *Assert*: `base_value` is an instance of `Mapping`.
+		1. *Assert*: `base_value` is an instance of `Map`.
 		2. Find an antecedent `k` in `base_value` such that `Identical(k, accessor_value)`.
 		3. *If* `k` exists:
 			1. *Return:* the consequent accessed at antecedent `k` in `base_value`.
@@ -285,7 +285,7 @@ Boolean! Assess(SemanticOperation[operator: EMP] expr) :=
 		1. *Return:* `true`.
 	6. *If* `operand` is an instance of `String` *and* `operand` contains 0 codepoints:
 		1. *Return:* `true`.
-	7. *If* `operand` is an instance of `Tuple` or `Record` or `Mapping` *and* `operand.count` is 0:
+	7. *If* `operand` is an instance of `Tuple` or `Record` or `Map` *and* `operand.count` is 0:
 		1. *Return:* `true`.
 	8. *Return:* `false`.
 ;

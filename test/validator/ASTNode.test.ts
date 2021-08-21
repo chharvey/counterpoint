@@ -32,7 +32,7 @@ import {
 	SolidTuple,
 	SolidRecord,
 	SolidSet,
-	SolidMapping,
+	SolidMap,
 } from '../../src/typer/index.js';
 import {
 	Builder,
@@ -1699,7 +1699,7 @@ describe('ASTNodeSolid', () => {
 								new Float64(2.0),
 								new SolidString('three'),
 							])),
-							new SolidMapping(new Map<SolidObject, SolidObject>([
+							new SolidMap(new Map<SolidObject, SolidObject>([
 								[new SolidString('a'), new Int16(1n)],
 								[new Int16(42n),       new Float64(2.0)],
 								[new Float64(3.0),     new SolidString('three')],
@@ -2482,7 +2482,7 @@ describe('ASTNodeSolid', () => {
 								);
 							});
 						});
-						it('returns the union of all consequent types, constants, for mappings.', () => {
+						it('returns the union of all consequent types, constants, for maps.', () => {
 							assert.deepStrictEqual(
 								program.children.slice(22, 25).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 								expected.slice(0, 3),
@@ -2573,7 +2573,7 @@ describe('ASTNodeSolid', () => {
 								);
 							});
 						});
-						it('returns the union of all consequent types for mappings.', () => {
+						it('returns the union of all consequent types for maps.', () => {
 							program.children.slice(22, 28).forEach((c) => {
 								assert.deepStrictEqual(
 									typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
@@ -2813,7 +2813,7 @@ describe('ASTNodeSolid', () => {
 							],
 						);
 					});
-					it('returns individual entries for mappings.', () => {
+					it('returns individual entries for maps.', () => {
 						assert.deepStrictEqual(
 							program.children.slice(22, 28).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,

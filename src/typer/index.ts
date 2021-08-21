@@ -25,4 +25,4 @@ export {SolidRecord}  from './SolidRecord.js';
 export {SolidList}    from './SolidList.js';
 export {SolidHash}    from './SolidHash.js';
 export {SolidSet}     from './SolidSet.js';
-export {SolidMapping} from './SolidMapping.js';
+export {SolidMap}     from './SolidMapping.js';

@@ -17,11 +17,11 @@ import {Collection} from './Collection.js';
 
 
 
-export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidObject = SolidObject> extends Collection {
+export class SolidMap<K extends SolidObject = SolidObject, V extends SolidObject = SolidObject> extends Collection {
 	static override toString(): string {
-		return 'Mapping';
+		return 'Map';
 	}
-	static override values: SolidType['values'] = new Set([new SolidMapping()]);
+	static override values: SolidType['values'] = new Set([new SolidMap()]);
 
 
 	constructor (
@@ -43,9 +43,9 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 	/** @final */
 	protected override equal_helper(value: SolidObject): boolean {
 		return (
-			value instanceof SolidMapping
+			value instanceof SolidMap
 			&& this.cases.size === value.cases.size
-			&& Collection.do_Equal<SolidMapping>(this, value, () => [...(value as SolidMapping).cases].every(
+			&& Collection.do_Equal<SolidMap>(this, value, () => [...(value as SolidMap).cases].every(
 				([thatant, thatcon]) => !![...this.cases].find(([thisant, _]) => thisant.equal(thatant))?.[1].equal(thatcon),
 			))
 		);

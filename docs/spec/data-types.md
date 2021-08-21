@@ -317,9 +317,9 @@ The objects that any given Set Type contains are `Set` objects whose
 elements are assignable to the type describing the Set Type.
 
 #### Map Type
-A **Map Type** contains [`Mapping` objects](./built-ins.md#mapping) and is described by a pair of two types,
+A **Map Type** contains [`Map` objects](./built-ins.md#map) and is described by a pair of two types,
 the first of which represents antecedents and the second of which represents consequents.
-The objects that any given Map Type contains are `Mapping` objects whose
+The objects that any given Map Type contains are `Map` objects whose
 antcedents and consequents are respectively assignable to the types describing the Map Type.
 
 
