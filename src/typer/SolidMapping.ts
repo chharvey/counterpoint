@@ -10,7 +10,7 @@ import {
 	SolidTypeConstant,
 	solidObjectsIdentical,
 } from './SolidType.js';
-import {SolidTypeMap} from './SolidTypeMapping.js';
+import {SolidTypeMap} from './SolidTypeMap.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
 import {Collection} from './Collection.js';
