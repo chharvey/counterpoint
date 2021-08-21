@@ -133,7 +133,7 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeTypeTupleLiteral):   AST.ASTNodeTypeTuple;
 	static decorate(node: PARSER.ParseNodeTypeRecordLiteral):  AST.ASTNodeTypeRecord;
 	static decorate(node: PARSER.ParseNodeTypeHashLiteral):    AST.ASTNodeTypeHash;
-	static decorate(node: PARSER.ParseNodeTypeMapLiteral):     AST.ASTNodeTypeMapping;
+	static decorate(node: PARSER.ParseNodeTypeMapLiteral):     AST.ASTNodeTypeMap;
 	static decorate(node: PARSER.ParseNodeGenericArguments):   NonemptyArray<AST.ASTNodeType>;
 	static decorate(node: PARSER.ParseNodePropertyAccessType): AST.ASTNodeIndexType | AST.ASTNodeKey;
 	static decorate(node: PARSER.ParseNodeGenericCall):        NonemptyArray<AST.ASTNodeType>;
@@ -241,7 +241,7 @@ export class Decorator {
 			return new AST.ASTNodeTypeHash(node, this.decorate(node.children[2]));
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeTypeMapLiteral) {
-			return new AST.ASTNodeTypeMapping(node, this.decorate(node.children[1]), this.decorate(node.children[3]));
+			return new AST.ASTNodeTypeMap(node, this.decorate(node.children[1]), this.decorate(node.children[3]));
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeGenericArguments) {
 			return this.parseList<PARSER.ParseNodeType, AST.ASTNodeType>(

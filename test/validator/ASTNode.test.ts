@@ -911,9 +911,9 @@ describe('ASTNodeSolid', () => {
 					new SolidTypeSet(Int16.union(SolidBoolean)),
 				);
 			});
-			specify('ASTNodeTypeMapping', () => {
+			specify('ASTNodeTypeMap', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeTypeMapping.fromSource(`{int -> bool}`).assess(new Validator()),
+					AST.ASTNodeTypeMap.fromSource(`{int -> bool}`).assess(new Validator()),
 					new SolidTypeMapping(Int16, SolidBoolean),
 				);
 			});

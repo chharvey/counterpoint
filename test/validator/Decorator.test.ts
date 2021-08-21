@@ -223,17 +223,17 @@ describe('Decorator', () => {
 		});
 
 		describe('TypeMapLiteral ::= "{" Type "->" Type "}"', () => {
-			it('makes an ASTNodeTypeMapping.', () => {
+			it('makes an ASTNodeTypeMap.', () => {
 				/*
-					<TypeMapping>
+					<TypeMap>
 						<TypeConstant source="int"/>
 						<TypeConstant source="float"/>
-					</TypeMapping>
+					</TypeMap>
 				*/
-				const mapping: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`{int -> float}`));
-				assert.ok(mapping instanceof AST.ASTNodeTypeMapping);
-				assert.deepStrictEqual(mapping.antecedenttype.source, `int`);
-				assert.deepStrictEqual(mapping.consequenttype.source, `float`);
+				const map: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`{int -> float}`));
+				assert.ok(map instanceof AST.ASTNodeTypeMap);
+				assert.deepStrictEqual(map.antecedenttype.source, `int`);
+				assert.deepStrictEqual(map.consequenttype.source, `float`);
 			});
 		});
 

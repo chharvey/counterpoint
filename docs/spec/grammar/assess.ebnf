@@ -72,10 +72,10 @@ Type Assess(SemanticTypeSet settype) :=
 
 
 
-Type Assess(SemanticTypeMapping mappingtype) :=
-	1. *Assert:* `mappingtype.children.count` is 1.
-	2. *Let* `antecedenttype` be *UnwrapAffirm:* `Assess(mappingtype.children.0)`.
-	2. *Let* `consequenttype` be *UnwrapAffirm:* `Assess(mappingtype.children.1)`.
+Type Assess(SemanticTypeMap maptype) :=
+	1. *Assert:* `maptype.children.count` is 1.
+	2. *Let* `antecedenttype` be *UnwrapAffirm:* `Assess(maptype.children.0)`.
+	2. *Let* `consequenttype` be *UnwrapAffirm:* `Assess(maptype.children.1)`.
 	3. *Return:* a subtype of `Mapping` whose antecedents’ type is `antecedenttype`
 		and whose consequents’ type is `consequenttype`.
 ;

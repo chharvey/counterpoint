@@ -214,7 +214,7 @@ export class ASTNodeCase extends ASTNodeSolid {
  * - ASTNodeTypeList
  * - ASTNodeTypeHash
  * - ASTNodeTypeSet
- * - ASTNodeTypeMapping
+ * - ASTNodeTypeMap
  * - ASTNodeTypeAccess
  * - ASTNodeTypeCall
  * - ASTNodeTypeOperation
@@ -406,10 +406,10 @@ export class ASTNodeTypeSet extends ASTNodeType {
 		return new SolidTypeSet(this.type.assess(validator));
 	}
 }
-export class ASTNodeTypeMapping extends ASTNodeType {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeMapping {
+export class ASTNodeTypeMap extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeMap {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeMapping);
+		assert.ok(typ instanceof ASTNodeTypeMap);
 		return typ;
 	}
 	constructor (
