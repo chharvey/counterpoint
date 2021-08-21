@@ -222,7 +222,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		describe('TypeMappingLiteral ::= "{" Type "->" Type "}"', () => {
+		describe('TypeMapLiteral ::= "{" Type "->" Type "}"', () => {
 			it('makes an ASTNodeTypeMapping.', () => {
 				/*
 					<TypeMapping>

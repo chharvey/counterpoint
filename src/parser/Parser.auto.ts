@@ -198,8 +198,8 @@ export class ProductionTypeHashLiteral extends Production {
 	}
 }
 
-export class ProductionTypeMappingLiteral extends Production {
-	static readonly instance: ProductionTypeMappingLiteral = new ProductionTypeMappingLiteral();
+export class ProductionTypeMapLiteral extends Production {
+	static readonly instance: ProductionTypeMapLiteral = new ProductionTypeMapLiteral();
 	/** @implements Production */
 	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
@@ -243,7 +243,7 @@ export class ProductionTypeUnit extends Production {
 			[ProductionTypeTupleLiteral.instance],
 			[ProductionTypeRecordLiteral.instance],
 			[ProductionTypeHashLiteral.instance],
-			[ProductionTypeMappingLiteral.instance],
+			[ProductionTypeMapLiteral.instance],
 			['(', ProductionType.instance, ')'],
 		];
 	}
@@ -849,7 +849,7 @@ export class ParseNodeTypeHashLiteral extends ParseNode {
 	;
 }
 
-export class ParseNodeTypeMappingLiteral extends ParseNode {
+export class ParseNodeTypeMapLiteral extends ParseNode {
 	declare readonly children:
 		| readonly [Token, ParseNodeType, Token, ParseNodeType, Token]
 	;
@@ -879,7 +879,7 @@ export class ParseNodeTypeUnit extends ParseNode {
 		| readonly [ParseNodeTypeTupleLiteral]
 		| readonly [ParseNodeTypeRecordLiteral]
 		| readonly [ParseNodeTypeHashLiteral]
-		| readonly [ParseNodeTypeMappingLiteral]
+		| readonly [ParseNodeTypeMapLiteral]
 		| readonly [Token, ParseNodeType, Token]
 	;
 }
@@ -1218,7 +1218,7 @@ export const grammar_Solid: Grammar = new Grammar([
 	ProductionTypeTupleLiteral.instance,
 	ProductionTypeRecordLiteral.instance,
 	ProductionTypeHashLiteral.instance,
-	ProductionTypeMappingLiteral.instance,
+	ProductionTypeMapLiteral.instance,
 	ProductionGenericArguments__0__List.instance,
 	ProductionGenericArguments.instance,
 	ProductionTypeUnit.instance,
@@ -1286,7 +1286,7 @@ export class ParserSolid extends Parser {
 			[ProductionTypeTupleLiteral.instance, ParseNodeTypeTupleLiteral],
 			[ProductionTypeRecordLiteral.instance, ParseNodeTypeRecordLiteral],
 			[ProductionTypeHashLiteral.instance, ParseNodeTypeHashLiteral],
-			[ProductionTypeMappingLiteral.instance, ParseNodeTypeMappingLiteral],
+			[ProductionTypeMapLiteral.instance, ParseNodeTypeMapLiteral],
 			[ProductionGenericArguments__0__List.instance, ParseNodeGenericArguments__0__List],
 			[ProductionGenericArguments.instance, ParseNodeGenericArguments],
 			[ProductionTypeUnit.instance, ParseNodeTypeUnit],

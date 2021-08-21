@@ -86,7 +86,7 @@ Decorate(TypeHashLiteral ::= "[" ":" Type "]") -> SemanticTypeHash
 		Decorate(Type)
 	);
 
-Decorate(TypeMappingLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMapping
+Decorate(TypeMapLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMapping
 	:= (SemanticTypeMapping
 		Decorate(Type__0)
 		Decorate(Type__1)

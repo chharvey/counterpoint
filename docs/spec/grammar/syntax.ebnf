@@ -48,11 +48,11 @@ ItemsType ::=
 PropertiesType
 	::= EntryType<+Named><-Optional, +Optional># ","?;
 
-TypeTupleLiteral   ::= "[" (","? ItemsType)?    "]";
-TypeRecordLiteral  ::= "["  ","? PropertiesType "]";
-TypeHashLiteral    ::= "[" ":" Type             "]";
-TypeMappingLiteral ::= "{" Type "->" Type       "}";
-GenericArguments   ::= "<"  ","? Type# ","?     ">";
+TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
+TypeRecordLiteral ::= "["  ","? PropertiesType "]";
+TypeHashLiteral   ::= "[" ":" Type             "]";
+TypeMapLiteral    ::= "{" Type "->" Type       "}";
+GenericArguments  ::= "<"  ","? Type# ","?     ">";
 
 TypeUnit ::=
 	| IDENTIFIER
@@ -61,7 +61,7 @@ TypeUnit ::=
 	| TypeTupleLiteral
 	| TypeRecordLiteral
 	| TypeHashLiteral
-	| TypeMappingLiteral
+	| TypeMapLiteral
 	| "(" Type ")"
 ;
 

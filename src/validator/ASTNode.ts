@@ -413,7 +413,7 @@ export class ASTNodeTypeMapping extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeTypeMappingLiteral,
+		start_node: PARSER.ParseNodeTypeMapLiteral,
 		readonly antecedenttype: ASTNodeType,
 		readonly consequenttype: ASTNodeType,
 	) {
