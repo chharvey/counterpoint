@@ -76,7 +76,7 @@ Type Assess(SemanticTypeMap maptype) :=
 	1. *Assert:* `maptype.children.count` is 1.
 	2. *Let* `antecedenttype` be *UnwrapAffirm:* `Assess(maptype.children.0)`.
 	2. *Let* `consequenttype` be *UnwrapAffirm:* `Assess(maptype.children.1)`.
-	3. *Return:* a subtype of `Mapping` whose antecedents’ type is `antecedenttype`
+	3. *Return:* a subtype of `Map` whose antecedents’ type is `antecedenttype`
 		and whose consequents’ type is `consequenttype`.
 ;
 
@@ -130,7 +130,7 @@ Type Assess(SemanticTypeCall call) :=
 			1. *Let* `consequenttype` be *UnwrapAffirm:* `Assess(call.children.2)`.
 		4. *Else*:
 			1. *Throw:* a new TypeError.
-		5. *Return:* a subtype of `Mapping` whose antecedents’ type is `antecedenttype`
+		5. *Return:* a subtype of `Map` whose antecedents’ type is `antecedenttype`
 			and whose consequents’ type is `consequenttype`.
 	6. *Throw* a new SyntaxError.
 ;

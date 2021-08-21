@@ -476,14 +476,14 @@ let GREETING: '''Hello World!''' = 'Hello World!'; %> ParseError
 ## Compound Types
 The following table summarizes the built-in compound types.
 
-Type                | Size           | Indices/Keys  | Generic Type Syntax  | Explicit Type Syntax         | Constructor Syntax                               | Literal Syntax                         | Empty Literal Syntax
-------------------- | -------------- | ------------  | -------------------- | ---------------------------- | ------------------------------------------------ | -------------------------------------- | --------------------
-[Tuple](#tuple)     | Fixed          | integers      | *(none)*             | `[str, str, str]` / `str[3]` | *(none)*                                         | `['x', 'y', 'z']`                      | `[]`
-[Record](#record)   | Fixed          | words         | *(none)*             | `[a: str, b: str, c: str]`   | *(none)*                                         | `[a= 'x', b= 'y', c= 'z']`             | *(none)*
-[List](#list)       | Variable       | integers      | `List.<str>`         | `str[]`                      | `List.(['x', 'y', 'z'])`                         | *(none)*                               | *(none)*
-[Hash](#hash)       | Variable       | atoms/strings | `Hash.<str>`         | `[:str]`                     | `Hash.([a= 'x', b= 'y', c= 'z'])`                | *(none)*                               | *(none)*
-[Set](#set)         | Variable       | *(none)*      | `Set.<str>`          | `str{}`                      | `Set.(['x', 'y', 'z'])`                          | `{'x', 'y', 'z'}`                      | `{}`
-[Mapping](#mapping) | Variable       | objects       | `Mapping.<str, str>` | `{str -> str}`               | `Mapping.([['u', 'x'], ['v', 'y'], ['w', 'z']])` | `{'u' -> 'x', 'v' -> 'y', 'w' -> 'z'}` | *(none)*
+Type              | Size           | Indices/Keys  | Generic Type Syntax  | Explicit Type Syntax         | Constructor Syntax                               | Literal Syntax                         | Empty Literal Syntax
+----------------- | -------------- | ------------  | -------------------- | ---------------------------- | ------------------------------------------------ | -------------------------------------- | --------------------
+[Tuple](#tuple)   | Fixed          | integers      | *(none)*             | `[str, str, str]` / `str[3]` | *(none)*                                         | `['x', 'y', 'z']`                      | `[]`
+[Record](#record) | Fixed          | words         | *(none)*             | `[a: str, b: str, c: str]`   | *(none)*                                         | `[a= 'x', b= 'y', c= 'z']`             | *(none)*
+[List](#list)     | Variable       | integers      | `List.<str>`         | `str[]`                      | `List.(['x', 'y', 'z'])`                         | *(none)*                               | *(none)*
+[Hash](#hash)     | Variable       | atoms/strings | `Hash.<str>`         | `[:str]`                     | `Hash.([a= 'x', b= 'y', c= 'z'])`                | *(none)*                               | *(none)*
+[Set](#set)       | Variable       | *(none)*      | `Set.<str>`          | `str{}`                      | `Set.(['x', 'y', 'z'])`                          | `{'x', 'y', 'z'}`                      | `{}`
+[Map](#map)       | Variable       | objects       | `Mapping.<str, str>` | `{str -> str}`               | `Mapping.([['u', 'x'], ['v', 'y'], ['w', 'z']])` | `{'u' -> 'x', 'v' -> 'y', 'w' -> 'z'}` | *(none)*
 
 
 ### Tuple
@@ -901,11 +901,11 @@ bases?.[a]; % produces the element if it exists, else `null`
 ```
 
 
-### Mapping
-Mappings are variable-sized unordered lists of antecedent-consequent pairs.
-Mappings form associations (**cases**) of values (**antecedents**) to other values (**consequents**).
+### Map
+Maps are variable-sized unordered lists of antecedent-consequent pairs.
+Maps form associations (**cases**) of values (**antecedents**) to other values (**consequents**).
 The antecedents are unique (by identity) in that each antecedent can be associated with only one consequent.
-The number of cases in a mapping is called its **count**.
+The number of cases in a map is called its **count**.
 
 ```
 let bases: obj = {
@@ -914,16 +914,16 @@ let bases: obj = {
 	1 + 2 -> { 'i' -> {'don’t' -> 'know'} },
 };
 ```
-The mapping above has antecedents and consequents of various types.
+The map above has antecedents and consequents of various types.
 Typically, all the antecedents will be of one type and all the consequents will be of one type,
 but this isn’t a requirement.
 
-The size of mappings is not known at compile-time, and could change during run-time, if the mapping is mutable.
-For example, a program could add a case to the above mapping after it’s been declared, changing its count.
-Like records, the order of entries in a mapping is not necessarily significant.
+The size of maps is not known at compile-time, and could change during run-time, if the map is mutable.
+For example, a program could add a case to the above map after it’s been declared, changing its count.
+Like records, the order of entries in a map is not necessarily significant.
 
 Also like records, antecedents have unique consequents in that latter declarations take precedence.
-In the case of mappings, antecedents that are identical are considered “the same object”.
+In the case of maps, antecedents that are identical are considered “the same object”.
 ```
 let bases: obj = {
 	1     -> 'who',
@@ -934,7 +934,7 @@ let bases: obj = {
 ```
 The consequent corresponding to the antecedent `3` will be `` [i= [`don’t`= 'know']] ``.
 
-Mappings may have several antecedents that are un-identical but “equal”.
+Maps may have several antecedents that are un-identical but “equal”.
 ```
 let x: [int] = [3];
 let y: [int] = [3];
@@ -949,10 +949,10 @@ In this example, the antecedents `0.0` and `-0.0` are not identical
 (even if they are equal by the floating-point definition of equality).
 Thus we are able to retrieve the different consequents at each of those antecedents.
 Similarly, `x` and `y` are not identical, but they are equal by tuple composition.
-Even though `0.0 == -0.0` and `x == y`, this mapping has four entries.
+Even though `0.0 == -0.0` and `x == y`, this map has four entries.
 
-#### Mapping Access
-Consequents of a mapping can be accessed via **bracket-accessor notation**,
+#### Map Access
+Consequents of a map can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the antecedent to get.
 ```
 let bases: obj = {

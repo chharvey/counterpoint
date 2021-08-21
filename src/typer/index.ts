@@ -11,7 +11,7 @@ export {SolidTypeRecord}  from './SolidTypeRecord.js';
 export {SolidTypeList}    from './SolidTypeList.js';
 export {SolidTypeHash}    from './SolidTypeHash.js';
 export {SolidTypeSet}     from './SolidTypeSet.js';
-export {SolidTypeMapping} from './SolidTypeMapping.js';
+export {SolidTypeMap}     from './SolidTypeMapping.js';
 
 export {SolidObject}  from './SolidObject.js';
 export {SolidNull}    from './SolidNull.js';

@@ -10,7 +10,7 @@ import {
 	SolidTypeConstant,
 	solidObjectsIdentical,
 } from './SolidType.js';
-import {SolidTypeMapping} from './SolidTypeMapping.js';
+import {SolidTypeMap} from './SolidTypeMapping.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
 import {Collection} from './Collection.js';
@@ -51,11 +51,11 @@ export class SolidMapping<K extends SolidObject = SolidObject, V extends SolidOb
 		);
 	}
 
-	override toType(): SolidTypeMapping {
-		return (this.cases.size) ? new SolidTypeMapping(
+	override toType(): SolidTypeMap {
+		return (this.cases.size) ? new SolidTypeMap(
 			SolidType.unionAll([...this.cases.keys()]  .map<SolidType>((ant) => new SolidTypeConstant(ant))),
 			SolidType.unionAll([...this.cases.values()].map<SolidType>((con) => new SolidTypeConstant(con))),
-		) : new SolidTypeMapping(SolidType.NEVER, SolidType.NEVER);
+		) : new SolidTypeMap(SolidType.NEVER, SolidType.NEVER);
 	}
 
 	get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | SolidNull {

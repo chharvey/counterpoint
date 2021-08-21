@@ -28,7 +28,7 @@ import {
 	SolidTypeList,
 	SolidTypeHash,
 	SolidTypeSet,
-	SolidTypeMapping,
+	SolidTypeMap,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -420,7 +420,7 @@ export class ASTNodeTypeMap extends ASTNodeType {
 		super(start_node, {}, [antecedenttype, consequenttype]);
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		return new SolidTypeMapping(this.antecedenttype.assess(validator), this.consequenttype.assess(validator));
+		return new SolidTypeMap(this.antecedenttype.assess(validator), this.consequenttype.assess(validator));
 	}
 }
 export class ASTNodeTypeAccess extends ASTNodeType {
@@ -495,7 +495,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 				this.countArgs([1n, 3n]);
 				const anttype: SolidType = this.args[0].assess(validator);
 				const contype: SolidType = this.args[1]?.assess(validator) || anttype;
-				return new SolidTypeMapping(anttype, contype);
+				return new SolidTypeMap(anttype, contype);
 			}],
 		]).get(this.base.source) || (() => {
 			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Mapping\`.`)
@@ -912,7 +912,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	}
 	protected override type_do(validator: Validator): SolidType {
 		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
-		return new SolidTypeMapping(
+		return new SolidTypeMap(
 			SolidType.unionAll(this.children.map((c) => c.antecedent.type(validator))),
 			SolidType.unionAll(this.children.map((c) => c.consequent.type(validator))),
 		);
@@ -1003,10 +1003,10 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				return (accessor_type.isSubtypeOf(base_type_set.types))
 					? updateDynamicType(base_type_set.types, this.kind)
 					: throwWrongSubtypeError(this.accessor, base_type_set.types);
-			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping || base_type instanceof SolidTypeMapping) {
-				const base_type_mapping: SolidTypeMapping = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping)
+			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping || base_type instanceof SolidTypeMap) {
+				const base_type_mapping: SolidTypeMap = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping)
 					? base_type.value.toType()
-					: (base_type as SolidTypeMapping);
+					: (base_type as SolidTypeMap);
 				return (accessor_type.isSubtypeOf(base_type_mapping.antecedenttypes))
 					? updateDynamicType(base_type_mapping.consequenttypes, this.kind)
 					: throwWrongSubtypeError(this.accessor, base_type_mapping.antecedenttypes);

@@ -22,7 +22,7 @@ import {
 	SolidTypeList,
 	SolidTypeHash,
 	SolidTypeSet,
-	SolidTypeMapping,
+	SolidTypeMap,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -808,7 +808,7 @@ describe('ASTNodeSolid', () => {
 			})
 			context('ASTNodeTypeCall', () => {
 				const validator: Validator = new Validator();
-				it('evaluates List, Hash, Set, and Mapping.', () => {
+				it('evaluates List, Hash, Set, and Map.', () => {
 					assert.deepStrictEqual(
 						[
 							`List.<null>`,
@@ -820,14 +820,14 @@ describe('ASTNodeSolid', () => {
 							new SolidTypeList(SolidNull),
 							new SolidTypeHash(SolidBoolean),
 							new SolidTypeSet(SolidString),
-							new SolidTypeMapping(Int16, Float64),
+							new SolidTypeMap(Int16, Float64),
 						],
 					);
 				});
-				it('Mapping has a default type parameter.', () => {
+				it('Map has a default type parameter.', () => {
 					assert.deepStrictEqual(
 						AST.ASTNodeTypeCall.fromSource(`Mapping.<int>`).assess(validator),
-						new SolidTypeMapping(Int16, Int16),
+						new SolidTypeMap(Int16, Int16),
 					);
 				});
 				it('throws if base is not an ASTNodeTypeAlias.', () => {
@@ -914,7 +914,7 @@ describe('ASTNodeSolid', () => {
 			specify('ASTNodeTypeMap', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeMap.fromSource(`{int -> bool}`).assess(new Validator()),
-					new SolidTypeMapping(Int16, SolidBoolean),
+					new SolidTypeMap(Int16, SolidBoolean),
 				);
 			});
 			it('computes the value of a nullified (ORNULL) type.', () => {
@@ -1081,7 +1081,7 @@ describe('ASTNodeSolid', () => {
 								expected[i],
 							]))),
 							new SolidTypeSet(SolidType.unionAll(expected)),
-							new SolidTypeMapping(
+							new SolidTypeMap(
 								SolidType.unionAll([typeConstStr('a'), Int16, Float64]),
 								SolidType.unionAll(expected),
 							),

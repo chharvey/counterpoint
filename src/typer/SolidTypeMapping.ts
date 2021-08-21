@@ -6,13 +6,13 @@ import {SolidType} from './SolidType.js';
 
 
 
-export class SolidTypeMapping extends SolidType {
+export class SolidTypeMap extends SolidType {
 	override readonly isBottomType: boolean = false;
 
 	/**
-	 * Construct a new SolidTypeMapping object.
-	 * @param antecedenttypes a union of antecedent types in this mapping type
-	 * @param consequenttypes a union of consequent types in this mapping type
+	 * Construct a new SolidTypeMap object.
+	 * @param antecedenttypes a union of antecedent types in this map type
+	 * @param consequenttypes a union of consequent types in this map type
 	 */
 	constructor (
 		readonly antecedenttypes: SolidType,
@@ -31,7 +31,7 @@ export class SolidTypeMapping extends SolidType {
 
 	override isSubtypeOf_do(t: SolidType): boolean {
 		return t.equals(SolidObject) || (
-			t instanceof SolidTypeMapping
+			t instanceof SolidTypeMap
 			&& this.antecedenttypes.isSubtypeOf(t.antecedenttypes)
 			&& this.consequenttypes.isSubtypeOf(t.consequenttypes)
 		);

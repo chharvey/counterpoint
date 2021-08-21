@@ -283,7 +283,7 @@ Boolean Equal(Object a, Object b) :=
 			2. *If* `it_a` does not exist:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
-	7. *If* `a` is an instance of `Mapping` *and* `b` is an instance of `Mapping`:
+	7. *If* `a` is an instance of `Map` *and* `b` is an instance of `Map`:
 		1. *Let* `data_a` be a new Sequence of 2-tuples,
 			whose items are exactly the antecedents and consequents in `a`.
 		2. *Let* `data_b` be a new Sequence of 2-tuples,
@@ -390,7 +390,7 @@ Boolean Subtype(Type a, Type b) :=
 		2. *Let* `be` be the union of types in `b`.
 		3. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
 			1. *Return:* `true`.
-	15. *If* `Equal(a, Mapping)` *and* `Equal(b, Mapping)`:
+	15. *If* `Equal(a, Map)` *and* `Equal(b, Map)`:
 		1. *Let* `ak` be the union of antecedent types in `a`.
 		2. *Let* `av` be the union of consequent types in `a`.
 		3. *Let* `bk` be the union of antecedent types in `b`.
