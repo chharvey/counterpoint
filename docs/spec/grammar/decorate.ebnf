@@ -37,7 +37,7 @@ Decorate(TypeKeyword ::= "obj") -> SemanticTypeConstant
 
 Decorate(EntryType ::= Type) -> SemanticItemType
 	:= (SemanticItemType[optional=false] Decorate(Type));
-Decorate(EntryType_Optional ::= Type) -> SemanticItemType
+Decorate(EntryType_Optional ::= "?:" Type) -> SemanticItemType
 	:= (SemanticItemType[optional=true] Decorate(Type));
 Decorate(EntryType_Named ::= Word ":" Type) -> SemanticPropertyType
 	:= (SemanticPropertyType[optional=false]

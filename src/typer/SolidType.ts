@@ -13,7 +13,7 @@ import {
 
 
 /**
- * Internal representation of an entry of a tuple or mapping type.
+ * Internal representation of an entry of a tuple or record type.
  * @property type     - the type value, a Solid Language Type
  * @property optional - is the entry optional on the collection?
  */

@@ -934,7 +934,6 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		return expression;
 	}
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
-	// private readonly claim:    boolean = this.kind === Operator.CLAIMDOT;
 	constructor (
 		start_node: PARSER.ParseNodeExpressionCompound,
 		readonly kind:     ValidAccessOperator,
@@ -1295,8 +1294,10 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		)
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
-		// If `a` and `b` are of disjoint numeric types, then `a is b` will always return `false`.
-		// If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
+		/*
+		 * If `a` and `b` are of disjoint numeric types, then `a === b` will always return `false`.
+		 * If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
+		 */
 		if (bothNumeric(t0, t1)) {
 			if (oneFloats(t0, t1) && (this.operator === Operator.ID || !int_coercion)) {
 				return SolidBoolean.FALSETYPE
@@ -1404,8 +1405,10 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		)
 	}
 	protected override type_do(validator: Validator): SolidType {
-		// If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
-		// If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
+		/**
+		 * If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
+		 * If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
+		 */
 		const t0: SolidType = this.operand0.type(validator);
 		const t1: SolidType = this.operand1.type(validator);
 		const t2: SolidType = this.operand2.type(validator);
