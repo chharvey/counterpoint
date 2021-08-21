@@ -463,6 +463,20 @@ export class ProductionMapLiteral extends Production {
 	}
 }
 
+export class ProductionFunctionArguments extends Production {
+	static readonly instance: ProductionFunctionArguments = new ProductionFunctionArguments();
+	/** @implements Production */
+	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['(', ')'],
+			['(', ProductionTupleLiteral__0__List.instance, ')'],
+			['(', ProductionTupleLiteral__0__List.instance, ',', ')'],
+			['(', ',', ProductionTupleLiteral__0__List.instance, ')'],
+			['(', ',', ProductionTupleLiteral__0__List.instance, ',', ')'],
+		];
+	}
+}
+
 export class ProductionExpressionUnit extends Production {
 	static readonly instance: ProductionExpressionUnit = new ProductionExpressionUnit();
 	/** @implements Production */
@@ -498,6 +512,17 @@ export class ProductionPropertyAccess extends Production {
 	}
 }
 
+export class ProductionFunctionCall extends Production {
+	static readonly instance: ProductionFunctionCall = new ProductionFunctionCall();
+	/** @implements Production */
+	get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['.', ProductionFunctionArguments.instance],
+			['.', ProductionGenericArguments.instance, ProductionFunctionArguments.instance],
+		];
+	}
+}
+
 export class ProductionExpressionCompound extends Production {
 	static readonly instance: ProductionExpressionCompound = new ProductionExpressionCompound();
 	/** @implements Production */
@@ -505,6 +530,7 @@ export class ProductionExpressionCompound extends Production {
 		return [
 			[ProductionExpressionUnit.instance],
 			[ProductionExpressionCompound.instance, ProductionPropertyAccess.instance],
+			[ProductionExpressionCompound.instance, ProductionFunctionCall.instance],
 		];
 	}
 }
@@ -1026,6 +1052,16 @@ export class ParseNodeMapLiteral extends ParseNode {
 	;
 }
 
+export class ParseNodeFunctionArguments extends ParseNode {
+	declare readonly children:
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
+	;
+}
+
 export class ParseNodeExpressionUnit extends ParseNode {
 	declare readonly children:
 		| readonly [Token]
@@ -1053,10 +1089,18 @@ export class ParseNodePropertyAccess extends ParseNode {
 	;
 }
 
+export class ParseNodeFunctionCall extends ParseNode {
+	declare readonly children:
+		| readonly [Token, ParseNodeFunctionArguments]
+		| readonly [Token, ParseNodeGenericArguments, ParseNodeFunctionArguments]
+	;
+}
+
 export class ParseNodeExpressionCompound extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeExpressionUnit]
 		| readonly [ParseNodeExpressionCompound, ParseNodePropertyAccess]
+		| readonly [ParseNodeExpressionCompound, ParseNodeFunctionCall]
 	;
 }
 
@@ -1240,8 +1284,10 @@ export const grammar_Solid: Grammar = new Grammar([
 	ProductionSetLiteral.instance,
 	ProductionMapLiteral__0__List.instance,
 	ProductionMapLiteral.instance,
+	ProductionFunctionArguments.instance,
 	ProductionExpressionUnit.instance,
 	ProductionPropertyAccess.instance,
+	ProductionFunctionCall.instance,
 	ProductionExpressionCompound.instance,
 	ProductionExpressionUnarySymbol.instance,
 	ProductionExpressionExponential.instance,
@@ -1308,8 +1354,10 @@ export class ParserSolid extends Parser {
 			[ProductionSetLiteral.instance, ParseNodeSetLiteral],
 			[ProductionMapLiteral__0__List.instance, ParseNodeMapLiteral__0__List],
 			[ProductionMapLiteral.instance, ParseNodeMapLiteral],
+			[ProductionFunctionArguments.instance, ParseNodeFunctionArguments],
 			[ProductionExpressionUnit.instance, ParseNodeExpressionUnit],
 			[ProductionPropertyAccess.instance, ParseNodePropertyAccess],
+			[ProductionFunctionCall.instance, ParseNodeFunctionCall],
 			[ProductionExpressionCompound.instance, ParseNodeExpressionCompound],
 			[ProductionExpressionUnarySymbol.instance, ParseNodeExpressionUnarySymbol],
 			[ProductionExpressionExponential.instance, ParseNodeExpressionExponential],

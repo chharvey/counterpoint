@@ -371,12 +371,12 @@ export class Decorator {
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeExpressionCompound) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: new AST.ASTNodeAccess(
+				: (node.children[1] instanceof PARSER.ParseNodePropertyAccess) ? new AST.ASTNodeAccess(
 					node,
 					this.ACCESSORS.get(node.children[1].children[0].source as Punctuator)!,
 					this.decorate(node.children[0]),
 					this.decorate(node.children[1]),
-				);
+				) : (() => { throw '`Decorate(ExpressionCompound ::= ExpressionCompound FunctionCall)` not yet supported.'; })();
 
 		} else if (node instanceof PARSER.ParseNodeExpressionUnarySymbol) {
 			return (node.children.length === 1)

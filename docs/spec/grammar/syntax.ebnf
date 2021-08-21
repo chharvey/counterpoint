@@ -98,10 +98,11 @@ StringTemplate ::=
 Property ::= Word       "="  Expression;
 Case     ::= Expression "->" Expression;
 
-TupleLiteral  ::= "[" ( ","? Expression# ","? )? "]";
-RecordLiteral ::= "["   ","? Property#   ","?    "]";
-SetLiteral    ::= "{" ( ","? Expression# ","? )? "}";
-MapLiteral    ::= "{"   ","? Case#       ","?    "}";
+TupleLiteral      ::= "[" ( ","? Expression# ","? )? "]";
+RecordLiteral     ::= "["   ","? Property#   ","?    "]";
+SetLiteral        ::= "{" ( ","? Expression# ","? )? "}";
+MapLiteral        ::= "{"   ","? Case#       ","?    "}";
+FunctionArguments ::= "(" ( ","? Expression# ","? )? ")";
 
 ExpressionUnit ::=
 	| IDENTIFIER
@@ -117,9 +118,12 @@ ExpressionUnit ::=
 PropertyAccess
 	::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression "]");
 
+FunctionCall
+	::= "." GenericArguments? FunctionArguments;
+
 ExpressionCompound ::=
 	| ExpressionUnit
-	| ExpressionCompound PropertyAccess
+	| ExpressionCompound (PropertyAccess | FunctionCall)
 ;
 
 ExpressionUnarySymbol ::=

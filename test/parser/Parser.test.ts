@@ -542,6 +542,28 @@ describe('Parser', () => {
 			})
 		})
 
+		specify('ExpressionCompound ::= ExpressionCompound (PropertyAccess | FunctionCall)', () => {
+			[
+				`a`,
+				`[a, b]`,
+				`[x= a, y= b]`,
+				`{a -> b}`,
+				`(!a)`,
+				`(?a)`,
+				`(+a)`,
+				`(-a)`,
+				`(a ^ b)`,
+				`(a || b)`,
+			].flatMap((base) => [
+				`.1`,
+				`.x`,
+				`.(x, y)`,
+				`.<X, Y>(x, y)`,
+			].map((dot) => `${ base }${ dot };`)).forEach((src) => {
+				assert.doesNotThrow(() => h.compoundExpressionFromSource(src), src);
+			});
+		});
+
 		context('ExpressionExponential ::=  ExpressionUnarySymbol "^" ExpressionExponential', () => {
 			it('makes a ParseNodeExpressionExponential node.', () => {
 				/*
