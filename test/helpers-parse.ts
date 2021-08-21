@@ -118,10 +118,10 @@ export function propertyFromString(propertystring: string, config: SolidConfig =
 	return record.children[1].children[0];
 }
 export function caseFromString(casestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeCase {
-	const mapping: PARSER.ParseNodeMappingLiteral = mappingLiteralFromSource(`{${ casestring }};`, config);
-	assert_arrayLength(mapping.children, 3, 'map should have 3 children');
-	assert_arrayLength(mapping.children[1].children, 1, 'case list should have 1 child');
-	return mapping.children[1].children[0];
+	const map: PARSER.ParseNodeMapLiteral = mapLiteralFromSource(`{${ casestring }};`, config);
+	assert_arrayLength(map.children, 3, 'map should have 3 children');
+	assert_arrayLength(map.children[1].children, 1, 'case list should have 1 child');
+	return map.children[1].children[0];
 }
 export function tokenLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString {
 	const token: Token = primitiveLiteralFromSource(src, config).children[0]
@@ -164,9 +164,9 @@ export function setLiteralFromSource(src: string, config: SolidConfig = CONFIG_D
 	assert.ok(unit instanceof PARSER.ParseNodeSetLiteral, 'unit should be a ParseNodeSetLiteral');
 	return unit;
 }
-export function mappingLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeMappingLiteral {
+export function mapLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeMapLiteral {
 	const unit: PARSER.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
-	assert.ok(unit instanceof PARSER.ParseNodeMappingLiteral, 'unit should be a ParseNodeMappingLiteral');
+	assert.ok(unit instanceof PARSER.ParseNodeMapLiteral, 'unit should be a ParseNodeMapLiteral');
 	return unit;
 }
 function valueLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeExpressionUnit['children'][0] {

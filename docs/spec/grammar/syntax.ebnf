@@ -98,10 +98,10 @@ StringTemplate ::=
 Property ::= Word       "="  Expression;
 Case     ::= Expression "->" Expression;
 
-TupleLiteral   ::= "[" ( ","? Expression# ","? )? "]";
-RecordLiteral  ::= "["   ","? Property#   ","?    "]";
-SetLiteral     ::= "{" ( ","? Expression# ","? )? "}";
-MappingLiteral ::= "{"   ","? Case#       ","?    "}";
+TupleLiteral  ::= "[" ( ","? Expression# ","? )? "]";
+RecordLiteral ::= "["   ","? Property#   ","?    "]";
+SetLiteral    ::= "{" ( ","? Expression# ","? )? "}";
+MapLiteral    ::= "{"   ","? Case#       ","?    "}";
 
 ExpressionUnit ::=
 	| IDENTIFIER
@@ -110,7 +110,7 @@ ExpressionUnit ::=
 	| TupleLiteral
 	| RecordLiteral
 	| SetLiteral
-	| MappingLiteral
+	| MapLiteral
 	| "(" Expression ")"
 ;
 

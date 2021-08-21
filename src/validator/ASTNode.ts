@@ -899,7 +899,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		return expression;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeMappingLiteral,
+		start_node: PARSER.ParseNodeMapLiteral,
 		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, {}, children);

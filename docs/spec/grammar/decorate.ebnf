@@ -269,7 +269,7 @@ Decorate(SetLiteral ::= "{" ","? Expression# ","? "}") -> SemanticSet
 		...ParseList(Expression, SemanticExpression)
 	);
 
-Decorate(MappingLiteral ::= "{" ","? Case# ","? "}") -> SemanticMapping
+Decorate(MapLiteral ::= "{" ","? Case# ","? "}") -> SemanticMapping
 	:= (SemanticMapping
 		...ParseList(Case, SemanticCase)
 	);
@@ -288,8 +288,8 @@ Decorate(ExpressionUnit ::= RecordLiteral) -> SemanticRecord
 	:= Decorate(RecordLiteral);
 Decorate(ExpressionUnit ::= SetLiteral) -> SemanticSet
 	:= Decorate(SetLiteral);
-Decorate(ExpressionUnit ::= MappingLiteral) -> SemanticMapping
-	:= Decorate(MappingLiteral);
+Decorate(ExpressionUnit ::= MapLiteral) -> SemanticMapping
+	:= Decorate(MapLiteral);
 Decorate(ExpressionUnit ::= "(" Expression ")") -> SemanticExpression
 	:= Decorate(Expression);
 
