@@ -778,7 +778,7 @@ The number of entries in a list is called its **count**; the count of a list is 
 Lists are homogeneous, meaning all entries in the list have the same type (or parent type).
 If a list is mutable, the entries of the list may be reassigned, and items may be added and removed from the list as well.
 
-List types are declared via the **generic list type syntax**: `List.<T>`
+List types are declared via the generic list type syntax: `List.<T>`
 where `T` indicates the type of items in the list.
 Lists are constructed via the constructor syntax `List.<T>(arg)`,
 where `arg` is a [Tuple](#tuple) object.
@@ -812,7 +812,7 @@ The number of properties in a record is called its **count**; the count of a has
 Hashes are homogeneous, meaning all entries in the hash have the same type (or parent type).
 If a hash is mutable, the entries of the hash may be reassigned, and properties may be added and removed from the hash as well.
 
-Hash types are declared via the **generic hash type syntax**: `Hash.<T>`
+Hash types are declared via the generic hash type syntax: `Hash.<T>`
 where `T` indicates the type of values in the hash.
 Hashes are constructed via the constructor syntax `Hash.<T>(arg)`,
 where `arg` is a [Record](#record) object.
@@ -845,12 +845,21 @@ As shown above, we can mix value types, but the hash type must be homogeneous.
 Sets are variable-sized unordered lists of values.
 The values in a set are called **elements**. The number of elements in a set is called its **count**.
 
-Set literals are comma-separated expressions within curly braces.
+Set types are declared via the generic set type syntax: `Set.<T>`
+where `T` indicates the type of elements in the set.
+Sets may be constructed via the constructor syntax `Set.<T>(arg)`,
+where `arg` is a [Tuple](#tuple) object of elements.
 ```
-let elements: obj = {'earth', 'wind', 'fire'};
+let elements: Set.<str> = Set.<str>(['earth', 'wind', 'fire']);
 ```
 The set above has elements of one type.
 Typically this will be the case, but it’s possible for a set to contain a mix of different element types.
+
+A shorthand for the generic syntax `Set.<T>` is `T{}`,
+and the set literal shorthand syntax is a sequence of comma-separated expressions within curly braces.
+```
+let elements: str{} = {'earth', 'wind', 'fire'};
+```
 
 The size of sets is not known at compile-time, and could change during run-time, if the set is mutable.
 For example, a program could add an element to the above set after it’s been declared, changing its count.
@@ -863,7 +872,7 @@ Sets may have several elements that are un-identical but “equal”.
 ```
 let x: [str] = ['water'];
 let y: [str] = ['water'];
-let elements: obj = {0.0, -0.0, x, y};
+let elements: (float | [str]){} = {0.0, -0.0, x, y};
 ```
 In this example, the elements `0.0` and `-0.0` are not identical
 (even if they are equal by the floating-point definition of equality).
@@ -874,7 +883,7 @@ Even though `0.0 == -0.0` and `x == y`, this set has four elements.
 Elements of a set can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the element to get.
 ```
-let bases: obj = {
+let bases: obj{} = {
 	'who',
 	['what'],
 	{ 'i' -> {'don’t' -> 'know'} },
@@ -907,16 +916,30 @@ Maps form associations (**cases**) of values (**antecedents**) to other values (
 The antecedents are unique (by identity) in that each antecedent can be associated with only one consequent.
 The number of cases in a map is called its **count**.
 
+Map types are declared via the **generic map type syntax**: `Map.<K, V>`
+where `K` indicates the type of antecedents and `V` indicates the type of consequents in the map.
+Maps may be constructed via the constructor syntax `Map.<K, V>(arg)`,
+where `arg` is a [Tuple](#tuple) object of key-value pairs (also tuples).
 ```
-let bases: obj = {
+let bases: Map.<int | str, obj> = Map.<int | str, obj>([
+	[1,     'who'],
+	['2nd', ['what']],
+	[1 + 2, { 'i' -> {'don’t' -> 'know'} }],
+]);
+```
+The map above has antecedents and consequents of various types.
+Typically, all the antecedents will be of one type and all the consequents will be of one type,
+but this isn’t a requirement.
+
+A shorthand for the generic syntax `Map.<K, V>` is `{K -> V}`,
+and the map literal shorthand syntax is a sequence of comma-separated `key -> value` pairs within curly braces.
+```
+let bases: {int | str -> obj} = {
 	1     -> 'who',
 	'2nd' -> ['what'],
 	1 + 2 -> { 'i' -> {'don’t' -> 'know'} },
 };
 ```
-The map above has antecedents and consequents of various types.
-Typically, all the antecedents will be of one type and all the consequents will be of one type,
-but this isn’t a requirement.
 
 The size of maps is not known at compile-time, and could change during run-time, if the map is mutable.
 For example, a program could add a case to the above map after it’s been declared, changing its count.
@@ -925,7 +948,7 @@ Like records, the order of entries in a map is not necessarily significant.
 Also like records, antecedents have unique consequents in that latter declarations take precedence.
 In the case of maps, antecedents that are identical are considered “the same object”.
 ```
-let bases: obj = {
+let bases: {int | str -> obj} = {
 	1     -> 'who',
 	'2nd' -> ['what'],
 	1 + 2 -> { 'i' -> {'don’t' -> 'know'} },
@@ -938,11 +961,11 @@ Maps may have several antecedents that are un-identical but “equal”.
 ```
 let x: [int] = [3];
 let y: [int] = [3];
-let bases: obj = {
+let bases: {float | [int] -> obj} = {
 	0.0  -> 'who',
 	-0.0 -> ['what'],
-	x -> { 'i' -> {'don’t' -> 'know'} },
-	y -> [i= [`don’t`= 'know']],
+	x    -> { 'i' -> {'don’t' -> 'know'} },
+	y    -> [i= [`don’t`= 'know']],
 };
 ```
 In this example, the antecedents `0.0` and `-0.0` are not identical
@@ -955,7 +978,7 @@ Even though `0.0 == -0.0` and `x == y`, this map has four entries.
 Consequents of a map can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the antecedent to get.
 ```
-let bases: obj = {
+let bases: {int | str -> obj} = {
 	1     -> 'who',
 	'2nd' -> ['what'],
 	1 + 2 -> { 'i' -> {'don’t' -> 'know'} },
