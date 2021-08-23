@@ -593,6 +593,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeSet
  * - ASTNodeMap
  * - ASTNodeAccess
+ * - ASTNodeCall
  * - ASTNodeOperation
  */
 export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildable {
@@ -1039,6 +1040,33 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				return (base_value as SolidMap).get(accessor_value, this.optional, this.accessor);
 			}
 		}
+	}
+}
+export class ASTNodeCall extends ASTNodeExpression {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeCall {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeCall);
+		return expression;
+	}
+	constructor (
+		start_node: PARSER.ParseNodeExpressionCompound,
+		readonly base: ASTNodeExpression,
+		readonly typeargs: readonly ASTNodeType[],
+		readonly exprargs: readonly ASTNodeExpression[],
+	) {
+		super(start_node, {}, [base, ...typeargs, ...exprargs]);
+	}
+	override shouldFloat(_validator: Validator): boolean {
+		return false;
+	}
+	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
+		throw builder && to_float && '`ASTNodeCall#build_do` not yet supported.'
+	}
+	protected override type_do(validator: Validator): SolidType {
+		throw validator && '`ASTNodeCall#type_do` not yet supported.'
+	}
+	protected override assess_do(validator: Validator): SolidObject | null {
+		throw validator && '`ASTNodeCall#assess_do` not yet supported.'
 	}
 }
 export abstract class ASTNodeOperation extends ASTNodeExpression {

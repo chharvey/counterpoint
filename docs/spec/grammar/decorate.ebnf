@@ -273,6 +273,9 @@ Decorate(MapLiteral ::= "{" ","? Case# ","? "}") -> SemanticMap
 		...ParseList(Case, SemanticCase)
 	);
 
+Decorate(FunctionArguments ::= "(" ( ","? Expression# ","? )? ")") -> Sequence<SemanticExpression>
+	:= ParseList(Expression, SemanticExpression);
+
 
 
 Decorate(ExpressionUnit ::= IDENTIFIER) -> SemanticVariable
@@ -303,6 +306,17 @@ Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey
 Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticExpression
 	:= Decorate(Expression);
 
+Decorate(FunctionCall ::= "." FunctionArguments) -> Vector<Sequence<SemanticType>, Sequence<SemanticExpression>>
+	:= [
+		[],
+		Decorate(FunctionArguments),
+	];
+Decorate(FunctionCall ::= "." GenericArguments FunctionArguments) -> Vector<Sequence<SemanticType>, Sequence<SemanticExpression>>
+	:= [
+		Decorate(GenericArguments),
+		Decorate(FunctionArguments),
+	];
+
 
 
 Decorate(ExpressionCompound ::= ExpressionUnit) -> SemanticExpression
@@ -311,6 +325,11 @@ Decorate(ExpressionCompound ::= ExpressionCompound PropertyAccess) -> SemanticAc
 	:= (SemanticAccess[kind=AccessKind(PropertyAccess)]
 		Decorate(ExpressionCompound)
 		Decorate(PropertyAccess)
+	);
+Decorate(ExpressionCompound ::= ExpressionCompound FunctionCall) -> SemanticCall
+	:= (SemanticCall
+		Decorate(ExpressionCompound)
+		...(...Decorate(FunctionCall))
 	);
 
 

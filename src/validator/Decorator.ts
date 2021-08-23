@@ -53,6 +53,14 @@ type TemplatePartialType = // FIXME spread types
 
 
 
+/**
+ * The return type of `Decorator.decorate`.
+ * May be an ASTNodeSolid, or an array of that, or an array of *that*, and so on.
+ */
+type DecorateReturnType = ASTNodeSolid | DecorateReturnType[];
+
+
+
 export class Decorator {
 	private static readonly ACCESSORS: ReadonlyMap<Punctuator, ValidAccessOperator> = new Map<Punctuator, ValidAccessOperator>([
 		[Punctuator.DOT,      Operator.DOT],
@@ -153,7 +161,9 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeRecordLiteral):           AST.ASTNodeRecord;
 	static decorate(node: PARSER.ParseNodeSetLiteral):              AST.ASTNodeSet;
 	static decorate(node: PARSER.ParseNodeMapLiteral):              AST.ASTNodeMap;
+	static decorate(node: PARSER.ParseNodeFunctionArguments):       AST.ASTNodeExpression[];
 	static decorate(node: PARSER.ParseNodePropertyAccess):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
+	static decorate(node: PARSER.ParseNodeFunctionCall):            [AST.ASTNodeType[], AST.ASTNodeExpression[]];
 	static decorate(node:
 		| PARSER.ParseNodeExpressionUnit
 		| PARSER.ParseNodeExpressionCompound
@@ -175,8 +185,8 @@ export class Decorator {
 	static decorate(node: PARSER.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
 	static decorate(node: PARSER.ParseNodeStatement):             AST.ASTNodeStatement;
 	static decorate(node: PARSER.ParseNodeGoal):                  AST.ASTNodeGoal;
-	static decorate(node: ParseNode): ASTNodeSolid | ASTNodeSolid[];
-	static decorate(node: ParseNode): ASTNodeSolid | ASTNodeSolid[] {
+	static decorate(node: ParseNode): DecorateReturnType;
+	static decorate(node: ParseNode): DecorateReturnType {
 		if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeWord) {
 			return new AST.ASTNodeKey(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenIdentifier);
 
@@ -354,6 +364,11 @@ export class Decorator {
 				node.children.find((c): c is PARSER.ParseNodeMapLiteral__0__List => c instanceof PARSER.ParseNodeMapLiteral__0__List)!,
 			));
 
+		} else if (node instanceof PARSER.ParseNodeFunctionArguments) {
+			return (node.children.length === 2) ? [] : this.parseList<PARSER.ParseNodeExpression, AST.ASTNodeExpression>(
+				node.children.find((c): c is PARSER.ParseNodeTupleLiteral__0__List => c instanceof PARSER.ParseNodeTupleLiteral__0__List)!,
+			);
+
 		} else if (node instanceof PARSER.ParseNodeExpressionUnit) {
 			return (node.children.length === 1)
 				? (node.children[0] instanceof ParseNode)
@@ -368,15 +383,21 @@ export class Decorator {
 				this.decorate(node.children[2]!)
 			);
 
+		} else if (node instanceof PARSER.ParseNodeFunctionCall) {
+			return (node.children.length === 2) ? [
+				[],
+				this.decorate(node.children[1]),
+			] : [
+				this.decorate(node.children[1]),
+				this.decorate(node.children[2]),
+			];
+
 		} else if (Dev.supports('literalCollection') && node instanceof PARSER.ParseNodeExpressionCompound) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: (node.children[1] instanceof PARSER.ParseNodePropertyAccess) ? new AST.ASTNodeAccess(
-					node,
-					this.ACCESSORS.get(node.children[1].children[0].source as Punctuator)!,
-					this.decorate(node.children[0]),
-					this.decorate(node.children[1]),
-				) : (() => { throw '`Decorate(ExpressionCompound ::= ExpressionCompound FunctionCall)` not yet supported.'; })();
+				: (node.children[1] instanceof PARSER.ParseNodePropertyAccess)
+					? new AST.ASTNodeAccess(node, this.ACCESSORS.get(node.children[1].children[0].source as Punctuator)!, this.decorate(node.children[0]),    this.decorate(node.children[1]))
+					: new AST.ASTNodeCall  (node,                                                                         this.decorate(node.children[0]), ...this.decorate(node.children[1]));
 
 		} else if (node instanceof PARSER.ParseNodeExpressionUnarySymbol) {
 			return (node.children.length === 1)
