@@ -42,6 +42,14 @@ Void! VarCheck(SemanticVariable var) :=
 
 
 
+Void! VarCheck(SemanticCall call) :=
+	1. *Note:* Skip var-checking of `call.children.0` for now, as semantics is determined by syntax.
+	2. *For each* `it` in `call.children[1..]`:
+		1. *Perform:* *Unwrap:* `VarCheck(it)`.
+;
+
+
+
 Void! VarCheck(SemanticDeclarationType decl) :=
 	1. *Assert:* `decl.children.count` is 2.
 	2. *Let* `id` be `decl.children.0.id`.
