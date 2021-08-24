@@ -1090,6 +1090,94 @@ describe('ASTNodeSolid', () => {
 				});
 			});
 
+			describe('ASTNodeCall', () => {
+				const validator: Validator = new Validator();
+				it('evaluates List, Hash, Set, and Map.', () => {
+					assert.deepStrictEqual(
+						[
+							`List.<int>([1, 2, 3]);`,
+							`Hash.<int>([a= 1, b= 2, c= 3]);`,
+							`Set.<int>([1, 2, 3]);`,
+							`Map.<int, float>([
+								[1, 0.1],
+								[2, 0.2],
+								[3, 0.3],
+							]);`,
+						].map((src) => AST.ASTNodeCall.fromSource(src).type(validator)),
+						[
+							new SolidTypeList(Int16),
+							new SolidTypeHash(Int16),
+							new SolidTypeSet(Int16),
+							new SolidTypeMap(Int16, Float64),
+						],
+					);
+				});
+				it('zero/empty functional arguments.', () => {
+					assert.deepStrictEqual(
+						[
+							`List.<int>();`,
+							`Hash.<int>();`,
+							`Set.<int>();`,
+							`Map.<int, float>();`,
+							`List.<int>([]);`,
+							`Set.<int>([]);`,
+							`Map.<int, float>([]);`,
+						].map((src) => AST.ASTNodeCall.fromSource(src).type(validator)),
+						[
+							new SolidTypeList(Int16),
+							new SolidTypeHash(Int16),
+							new SolidTypeSet(Int16),
+							new SolidTypeMap(Int16, Float64),
+							new SolidTypeList(Int16),
+							new SolidTypeSet(Int16),
+							new SolidTypeMap(Int16, Float64),
+						],
+					);
+				});
+				it('Map has a default type parameter.', () => {
+					assert.deepStrictEqual(
+						AST.ASTNodeCall.fromSource(`Map.<int>();`).type(validator),
+						new SolidTypeMap(Int16, Int16),
+					);
+				});
+				it('throws if base is not an ASTNodeVariable.', () => {
+					[
+						`null.();`,
+						`(42 || 43).<bool>();`,
+					].forEach((src) => {
+						assert.throws(() => AST.ASTNodeCall.fromSource(src).type(validator), TypeError05);
+					});
+				});
+				it('throws if base is not one of the allowed strings.', () => {
+					[
+						`SET.<str>();`,
+						`Mapping.<bool>();`,
+					].forEach((src) => {
+						assert.throws(() => AST.ASTNodeCall.fromSource(src).type(validator), SyntaxError);
+					});
+				});
+				it('throws when providing incorrect number of arguments.', () => {
+					[
+						`List.<int>([], []);`,
+						`Hash.<int>([], []);`,
+						`Set.<int>([], []);`,
+						`Map.<int>([], []);`,
+					].forEach((src) => {
+						assert.throws(() => AST.ASTNodeCall.fromSource(src).type(validator), TypeError06);
+					});
+				});
+				it('throws when providing incorrect type of arguments.', () => {
+					[
+						`List.<int>(42);`,
+						`Hash.<int>([4.2]);`,
+						`Set.<int>([42, '42']);`,
+						`Map.<int>([42, '42']);`,
+					].forEach((src) => {
+						assert.throws(() => AST.ASTNodeCall.fromSource(src).type(validator), TypeError02);
+					});
+				});
+			});
+
 			describe('ASTNodeOperation', () => {
 				function typeOperations(tests: ReadonlyMap<string, SolidObject>, config: SolidConfig = CONFIG_DEFAULT): void {
 					return assert.deepStrictEqual(

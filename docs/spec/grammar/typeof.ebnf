@@ -149,6 +149,75 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 
 
 
+Type! TypeOfUnassessed(SemanticCall call) :=
+	1. *Assert:* `call.children.count` is greater than or equal to 1.
+	2. *Let* `base` be `call.children.0`.
+	3. *If* `base` is not a SemanticVariable:
+		1. *Note:* Currently, the only allowed generics are `List.<T>(arg)`, `Hash.<T>(arg)`, `Set.<T>(arg)`, `Map.<K, V>(arg)`.
+		2. *Throw:* a new TypeError.
+	4. *If* `base.source` is one of "List", "Hash", or "Set":
+		1. *If* `call.children.count` is 2 or 3:
+			1. *If* `call.children.1` is a SemanticType:
+				1. *Let* `genericarg` be *UnwrapAffirm:* `Assess(call.children.1)`.
+				2. *If* `base.source` is "List":
+					1. *Let* `returntype` be a subtype of `List` whose items’ type is `genericarg`.
+				3. *Else If* `base.source` is "Hash":
+					1. *Let* `returntype` be a subtype of `Hash` whose values’ type is `genericarg`.
+				4. *Else If* `base.source` is "Set":
+					1. *Let* `returntype` be a subtype of `Set` whose elements’ type is `genericarg`.
+				5. *If* `call.children.count` is 3:
+					1. *If* `call.children.2` is a SemanticExpression:
+						1. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.2)`.
+						2. *If* `base.source` is "List":
+							1. *If* `argtype` is not a subtype of `returntype`:
+								1. *Throw:* a new TypeError.
+						3. *Else If* `base.source` is "Hash":
+							1. *If* `argtype` is not a subtype of `returntype`:
+								1. *Throw:* a new TypeError.
+						4. *Else If* `base.source` is "Set":
+							1. *Let* `listtype` be a subtype of `List` whose items’ type is `genericarg`.
+							2. *If* `argtype` is not a subtype of `listtype`:
+								1. *Throw:* a new TypeError.
+					2. *Else*:
+						1. *Throw:* a new TypeError.
+				6. *Return:* `returntype`.
+		2. *Throw:* a new TypeError.
+	5. *Else If* `base.source` is "Map":
+		1. *If* `call.children.count` is 2 or 3 or 4:
+			1. *If* `call.children.1` is a SemanticType:
+				1. *Let* `antecedenttype` be *UnwrapAffirm:* `Assess(call.children.1)`.
+				2. *If* `call.children.count` is 2:
+					1. *Note:* The call looks like "Map.<K>()".
+					2. *Let* `consequenttype` be `antecedenttype`.
+				3. *Else If* `call.children.count` is 3:
+					1. *If* `call.children.2` is a SemanticType:
+						1. *Note:* The call looks like "Map.<K, V>()".
+						2. *Let* `consequenttype` be *UnwrapAffirm:* `Assess(call.children.2)`.
+					2. *Else:*
+						1. *Assert:* `call.children.2` is a SemanticExpression.
+						2. *Note:* The call looks like "Map.<K>(arg)".
+						3. *Let* `consequenttype` be `antecedenttype`.
+						4. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.2)`.
+				4. *Else:*
+					1. *Assert:* `call.children.count` is 4.
+					2. *If* `call.children.2` is a SemanticType *and* `call.children.3` is a SemanticExpression:
+						1. *Note:* The call looks like "Map.<K, V>(arg)".
+						2. *Let* `consequenttype` be *UnwrapAffirm:* `Assess(call.children.2)`.
+						3. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.3)`.
+					3. *Else:*
+						1. *Throw:* a new TypeError.
+				5. *Let:* `keyvaluetype` be a subtype of `Tuple` whose items are [`antecedenttype`, `consequenttype`].
+				6. *Let*: `paramtype` be a subtype of `List` whose items’ type is `keyvaluetype`.
+				7. *If*: `argtype` is not a subtype of `paramtype`:
+						1. *Throw:* a new TypeError.
+				8. *Return:* a subtype of `Map` whose antecedents’ type is `antecedenttype`
+					and whose consequents’ type is `consequenttype`.
+		2. *Throw:* a new TypeError.
+	6. *Throw* a new SyntaxError.
+;
+
+
+
 Type! TypeOfUnassessed(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `TypeOf(expr.children.0)`.

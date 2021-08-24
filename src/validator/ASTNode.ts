@@ -1071,10 +1071,81 @@ export class ASTNodeCall extends ASTNodeExpression {
 		throw builder && to_float && '`ASTNodeCall#build_do` not yet supported.'
 	}
 	protected override type_do(validator: Validator): SolidType {
-		throw validator && '`ASTNodeCall#type_do` not yet supported.'
+		if (!(this.base instanceof ASTNodeVariable)) {
+			throw new TypeError05(this.base.type(validator), this.base);
+		}
+		return (new Map<string, () => SolidType>([
+			['List', () => {
+				this.countArgs(1n, [0n, 2n]);
+				const returntype: SolidType = new SolidTypeList(this.typeargs[0].assess(validator));
+				this.exprargs.length && this.typeCheckArgs(this.exprargs[0].type(validator), returntype);
+				return returntype;
+			}],
+			['Hash', () => {
+				this.countArgs(1n, [0n, 2n]);
+				const returntype: SolidType = new SolidTypeHash(this.typeargs[0].assess(validator));
+				this.exprargs.length && this.typeCheckArgs(this.exprargs[0].type(validator), returntype);
+				return returntype;
+			}],
+			['Set', () => {
+				this.countArgs(1n, [0n, 2n]);
+				const eltype:     SolidType = this.typeargs[0].assess(validator);
+				const returntype: SolidType = new SolidTypeSet(eltype);
+				this.exprargs.length && this.typeCheckArgs(this.exprargs[0].type(validator), new SolidTypeList(eltype));
+				return returntype;
+			}],
+			['Map', () => {
+				this.countArgs([1n, 3n], [0n, 2n]);
+				const anttype:    SolidType = this.typeargs[0].assess(validator);
+				const contype:    SolidType = this.typeargs[1]?.assess(validator) || anttype;
+				const returntype: SolidType = new SolidTypeMap(anttype, contype);
+				this.exprargs.length && this.typeCheckArgs(this.exprargs[0].type(validator), new SolidTypeList(SolidTypeTuple.fromTypes([anttype, contype])));
+				return returntype;
+			}],
+		]).get(this.base.source) || (() => {
+			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Map\`.`);
+		}))();
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
 		throw validator && '`ASTNodeCall#assess_do` not yet supported.'
+	}
+	/**
+	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,
+	 * and throw if the number is incorrect.
+	 * Each given argument may be a single value or a 2-tuple of values representing a range.
+	 * If a 2-tuple, the first item represents the minimum (inclusive),
+	 * and the second item represents the maximum (exclusive).
+	 * E.g., `countArgs([2n, 5n])` expects 2, 3, or 4 arguments, but not 5.
+	 * @param expected_generic  - the number of expected generic arguments, or a half-open range
+	 * @param expected_function - the number of expected function arguments, or a half-open range
+	 * @throws if this call’s number of actual arguments does not satisfy the expected number
+	 */
+	private countArgs(expected_generic: bigint | [bigint, bigint], expected_function: bigint | [bigint, bigint]): void {
+		const actual_generic:  bigint = BigInt(this.typeargs.length);
+		const actual_function: bigint = BigInt(this.exprargs.length);
+		if (typeof expected_generic === 'bigint') {
+			expected_generic = [expected_generic, expected_generic + 1n];
+		}
+		if (typeof expected_function === 'bigint') {
+			expected_function = [expected_function, expected_function + 1n];
+		}
+		if (actual_generic < expected_generic[0]) {
+			throw new TypeError06(actual_generic, expected_generic[0], true, this);
+		}
+		if (expected_generic[1] <= actual_generic) {
+			throw new TypeError06(actual_generic, expected_generic[1] - 1n, true, this);
+		}
+		if (actual_function < expected_function[0]) {
+			throw new TypeError06(actual_function, expected_function[0], false, this);
+		}
+		if (expected_function[1] <= actual_function) {
+			throw new TypeError06(actual_function, expected_function[1] - 1n, false, this);
+		}
+	}
+	private typeCheckArgs(argtype: SolidType, paramtype: SolidType): void {
+		if (!argtype.isSubtypeOf(paramtype)) {
+			throw new TypeError02(argtype, paramtype, this.line_index, this.col_index);
+		}
 	}
 }
 export abstract class ASTNodeOperation extends ASTNodeExpression {
