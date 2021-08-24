@@ -517,10 +517,10 @@ export class ASTNodeTypeCall extends ASTNodeType {
 			expected = [expected, expected + 1n];
 		}
 		if (actual < expected[0]) {
-			throw new TypeError06(actual, expected[0], this);
+			throw new TypeError06(actual, expected[0], true, this);
 		}
 		if (expected[1] <= actual) {
-			throw new TypeError06(actual, expected[1] - 1n, this);
+			throw new TypeError06(actual, expected[1] - 1n, true, this);
 		}
 	}
 }
