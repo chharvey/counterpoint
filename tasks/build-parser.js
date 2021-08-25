@@ -17,7 +17,7 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 		import {
 			SolidConfig,
 			CONFIG_DEFAULT,
-		} from '../core/index.js';
+		} from './package.js';
 		${ generate(await grammar_solid, 'Solid')
 			.replace(`from './Lexer';`, `from './Lexer.js';`)
 			.replace(`from './Terminal';`, `from './Terminal.js';`)

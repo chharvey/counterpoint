@@ -5,7 +5,7 @@ import {
 } from '@chharvey/parser';
 import {
 	Util,
-} from '../core/index.js';
+} from './package.js';
 import {Keyword} from './Keyword.js';
 import {
 	RadixType,

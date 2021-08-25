@@ -4,13 +4,11 @@ import {
 	Lexer,
 } from '@chharvey/parser';
 import {
+	LexError03,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-} from '../core/index.js';
-import {
-	LexError03,
-} from '../error/index.js';
+} from './package.js';
 import {
 	Punctuator,
 } from './Punctuator.js';

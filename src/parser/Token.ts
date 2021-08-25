@@ -8,21 +8,19 @@ import {
 } from '@chharvey/parser';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
-import {
-	LexError03,
-	LexError04,
-	LexError05,
-} from '../index.js'; // avoids circular imports
 import type {
 	CodePoint,
 	CodeUnit,
 	EncodedChar,
-} from '../types';
+} from '../types.js';
 import {
+	LexError03,
+	LexError04,
+	LexError05,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-} from '../core/index.js';
+} from './package.js';
 import {Punctuator} from './Punctuator.js';
 import {Keyword} from './Keyword.js';
 import type {

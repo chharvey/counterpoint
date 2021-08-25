@@ -7,7 +7,7 @@
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
+} from './package.js';
 
 import {
 	NonemptyArray,
