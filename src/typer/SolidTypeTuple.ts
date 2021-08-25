@@ -1,10 +1,10 @@
 import type {IntRange} from '../types.js';
 import {
+	TypeError04,
 	Operator,
 	ValidAccessOperator,
-} from '../validator/index.js';
-import type * as AST from '../validator/index.js';
-import {TypeError04} from '../error/index.js';
+	AST,
+} from './package.js';
 import {
 	SolidObject,
 	SolidNull,

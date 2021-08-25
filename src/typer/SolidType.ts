@@ -4,7 +4,7 @@ import {
 	SolidTypeIntersection,
 	SolidTypeUnion,
 	SolidObject,
-} from './index.js'; // avoids circular imports
+} from './index.js';
 
 
 

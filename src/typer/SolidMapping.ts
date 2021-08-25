@@ -1,7 +1,9 @@
 import * as xjs from 'extrajs';
-import type {Keys} from '../types';
-import type * as AST from '../validator/index.js';
-import {VoidError01} from '../error/index.js';
+import type {Keys} from '../types.js';
+import {
+	VoidError01,
+	AST,
+} from './package.js';
 import {SolidTypeConstant} from './index.js';
 import {SolidType} from './SolidType.js';
 import {SolidTypeMapping} from './SolidTypeMapping.js';
