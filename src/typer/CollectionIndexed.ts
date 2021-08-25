@@ -14,7 +14,7 @@ import {Collection} from './Collection.js';
  */
 export abstract class CollectionIndexed<T extends SolidObject = SolidObject> extends Collection {
 	constructor (
-		protected readonly items: readonly T[] = [],
+		readonly items: readonly T[] = [],
 	) {
 		super();
 	}

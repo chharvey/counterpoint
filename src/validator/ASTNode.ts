@@ -38,6 +38,8 @@ import {
 	SolidString,
 	SolidTuple,
 	SolidRecord,
+	SolidList,
+	SolidHash,
 	SolidSet,
 	SolidMap,
 } from '../typer/index.js';
@@ -1107,7 +1109,18 @@ export class ASTNodeCall extends ASTNodeExpression {
 		}))();
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		throw validator && '`ASTNodeCall#assess_do` not yet supported.'
+		const argvalue: SolidObject | null | undefined = (this.exprargs.length) // TODO #assess should not return native `null` if it cannot assess
+			? this.exprargs[0].assess(validator)
+			: undefined;
+		if (argvalue === null) {
+			return null;
+		}
+		return new Map<string, (argument: SolidObject | undefined) => SolidObject | null>([
+			['List', (tuple)  => (tuple === undefined)  ? new SolidList() : new SolidList((tuple as SolidTuple).items)],
+			['Hash', (record) => (record === undefined) ? new SolidHash() : new SolidHash((record as SolidRecord).properties)],
+			['Set',  (tuple)  => (tuple === undefined)  ? new SolidSet()  : new SolidSet(new Set<SolidObject>((tuple as SolidTuple).items))],
+			['Map',  (tuple)  => (tuple === undefined)  ? new SolidMap()  : new SolidMap(new Map<SolidObject, SolidObject>((tuple as SolidTuple).items.map((pair) => (pair as SolidTuple).items as [SolidObject, SolidObject])))],
+		]).get(this.base.source)!(argvalue);
 	}
 	/**
 	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,

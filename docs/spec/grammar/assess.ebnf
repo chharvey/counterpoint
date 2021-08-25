@@ -267,6 +267,53 @@ Object! Assess(SemanticAccess access) :=
 
 
 
+Object! Assess(SemanticCall call) :=
+	1. *Assert:* `call.children.count` is greater than or equal to 1.
+	2. *Let* `base` be `call.children.0`.
+	3. *If* `base.source` is "List":
+		1. *Assert:* `call.children.count` is 2 or 3.
+		2. *If* `call.children.count` is 2:
+			1. *Note:* The call looks like "List.<T>()".
+			2. *Return:* a new empty List.
+		3. *Note:* The call looks like "List.<T>(arg)".
+		4. *Let* `tuple` be *Unwrap:* `Assess(call.children.2)`.
+		5. *Return:* a new List containing the items in `tuple`.
+	5. *Else If* `base.source` is "Hash":
+		1. *Assert:* `call.children.count` is 2 or 3.
+		2. *If* `call.children.count` is 2:
+			1. *Note:* The call looks like "Hash.<T>()".
+			2. *Return:* a new empty Hash.
+		3. *Note:* The call looks like "Hash.<T>(arg)".
+		4. *Let* `record` be *Unwrap:* `Assess(call.children.2)`.
+		5. *Return:* a new Hash containing the properties in `record`.
+	6. *Else If* `base.source` is "Set":
+		1. *Assert:* `call.children.count` is 2 or 3.
+		2. *If* `call.children.count` is 2:
+			1. *Note:* The call looks like "Set.<T>()".
+			2. *Return:* a new empty Set.
+		3. *Note:* The call looks like "Set.<T>(arg)".
+		4. *Let* `tuple` be *Unwrap:* `Assess(call.children.2)`.
+		5. *Return:* a new Set containing the items in `tuple`.
+	7. *Assert:* `base.source` is "Map".
+	8. *Assert:* `call.children.count` is 2 or 3 or 4.
+	9. *If* `call.children.count` is 2:
+		1. *Note:* The call looks like "Map.<K>()".
+		2. *Return:* a new empty Map.
+	10. *Else If* `call.children.count` is 3:
+		1. *If* `call.children.2` is a SemanticType:
+			1. *Note:* The call looks like "Map.<K, V>()".
+			2. *Return:* a new empty Map.
+		2. *Else:*
+			1. *Note:* The call looks like "Map.<K>(arg)".
+			2. *Let* `tuple` be *Unwrap:* `Assess(call.children.2)`.
+			3. *Return:* a new Map containing the pairs in `tuple`.
+	11. *Note:* The call looks like "Map.<K, V>(arg)".
+	12. *Let* `tuple` be *Unwrap:* `Assess(call.children.3)`.
+	13. *Return:* a new Map containing the pairs in `tuple`.
+;
+
+
+
 Boolean! Assess(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `Assess(expr.children.0)`.

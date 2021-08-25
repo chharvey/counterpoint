@@ -31,6 +31,8 @@ import {
 	SolidString,
 	SolidTuple,
 	SolidRecord,
+	SolidList,
+	SolidHash,
 	SolidSet,
 	SolidMap,
 } from '../../src/typer/index.js';
@@ -1091,7 +1093,7 @@ describe('ASTNodeSolid', () => {
 			});
 
 			describe('ASTNodeCall', () => {
-				const validator: Validator = new Validator();
+				const validator: Validator = new Validator(folding_off);
 				it('evaluates List, Hash, Set, and Map.', () => {
 					assert.deepStrictEqual(
 						[
@@ -1827,6 +1829,68 @@ describe('ASTNodeSolid', () => {
 							[0x101n, new Float64(2.0)],
 							[0x100n, new SolidString('three')],
 						])),
+					);
+				});
+			});
+
+			describe('ASTNodeCall', () => {
+				const validator: Validator = new Validator();
+				it('evaluates List, Hash, Set, and Map.', () => {
+					assert.deepStrictEqual(
+						[
+							`List.<int>([1, 2, 3]);`,
+							`Hash.<int>([a= 1, b= 2, c= 3]);`,
+							`Set.<int>([1, 2, 3]);`,
+							`Map.<int, float>([
+								[1, 0.1],
+								[2, 0.2],
+								[3, 0.4],
+							]);`,
+						].map((src) => AST.ASTNodeCall.fromSource(src).assess(validator)),
+						[
+							new SolidList<Int16>([
+								new Int16(1n),
+								new Int16(2n),
+								new Int16(3n),
+							]),
+							new SolidHash<Int16>(new Map<bigint, Int16>([
+								[0x101n, new Int16(1n)], // 0x100n is "Hash"
+								[0x102n, new Int16(2n)],
+								[0x103n, new Int16(3n)],
+							])),
+							new SolidSet<Int16>(new Set<Int16>([
+								new Int16(1n),
+								new Int16(2n),
+								new Int16(3n),
+							])),
+							new SolidMap<Int16, Float64>(new Map<Int16, Float64>([
+								[new Int16(1n), new Float64(0.1)],
+								[new Int16(2n), new Float64(0.2)],
+								[new Int16(3n), new Float64(0.4)],
+							])),
+						],
+					);
+				});
+				it('zero/empty functional arguments.', () => {
+					assert.deepStrictEqual(
+						[
+							`List.<int>();`,
+							`Hash.<int>();`,
+							`Set.<int>();`,
+							`Map.<int, float>();`,
+							`List.<int>([]);`,
+							`Set.<int>([]);`,
+							`Map.<int, float>([]);`,
+						].map((src) => AST.ASTNodeCall.fromSource(src).assess(validator)),
+						[
+							new SolidList<never>(),
+							new SolidHash<never>(),
+							new SolidSet<never>(),
+							new SolidMap<never, never>(),
+							new SolidList<never>(),
+							new SolidSet<never>(),
+							new SolidMap<never, never>(),
+						],
 					);
 				});
 			});
