@@ -7,15 +7,13 @@ import {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-} from '../validator/index.js';
-import {
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
 	SolidNumber,
 	Int16,
 	Float64,
-} from '../typer/index.js';
+} from './package.js';
 
 
 
