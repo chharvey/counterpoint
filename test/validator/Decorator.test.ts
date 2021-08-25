@@ -248,7 +248,7 @@ describe('Decorator', () => {
 				assert.ok(args.children[1] instanceof PARSER.ParseNodeGenericCall);
 				const sequence: NonemptyArray<AST.ASTNodeType> = Decorator.decorate(args.children[1]);
 				assert.deepStrictEqual(
-				sequence.map((c) => c.source),
+					sequence.map((c) => c.source),
 					[`Bar | Qux`, `Diz`],
 				);
 			});
@@ -661,6 +661,33 @@ describe('Decorator', () => {
 			});
 		});
 
+		describe('FunctionArguments ::= "(" ( ","? Expression# ","? )? ")"', () => {
+			it('makes a Vector<Sequence<SemanticType>, Sequence<SemanticExpression>>.', () => {
+				/*
+					<>
+					</>
+					<>
+						<Operation source="bar || qux">...</Operation>
+						<Variable source="diz"/>
+					</>
+				*/
+				const args: PARSER.ParseNodeExpressionCompound = h.compoundExpressionFromSource(`foo.(bar || qux, diz);`);
+				assert_arrayLength(args.children, 2);
+				assert.ok(args.children[1] instanceof PARSER.ParseNodeFunctionCall);
+				const sequence: [AST.ASTNodeType[], AST.ASTNodeExpression[]] = Decorator.decorate(args.children[1]);
+				assert.deepStrictEqual(
+					[
+						sequence[0],
+						sequence[1].map((c) => c.source),
+					],
+					[
+						[],
+						[`bar || qux`, `diz`],
+					],
+				);
+			});
+		});
+
 		context('ExpressionUnit ::= IDENTIFIER', () => {
 			it('assigns a unique ID starting from 256.', () => {
 				/*
@@ -782,14 +809,14 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('literalCollection') && describe('ExpressionCompound ::= ExpressionCompound PropertyAccess', () => {
+		describe('ExpressionCompound ::= ExpressionCompound (PropertyAccess | FunctionCall)', () => {
 			function makeAccess(src: string, kind: ValidAccessOperator = Operator.DOT, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeAccess {
 				const access: AST.ASTNodeExpression = Decorator.decorate(h.compoundExpressionFromSource(src, config));
 				assert.ok(access instanceof AST.ASTNodeAccess);
 				assert.strictEqual(access.kind, kind);
 				return access;
 			}
-			context('normal access.', () => {
+			Dev.supports('literalCollection') && context('normal access.', () => {
 				it('access by index.', () => {
 					/*
 						<Access kind=NORMAL>
@@ -914,6 +941,23 @@ describe('Decorator', () => {
 						{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}!.[0.7 + 0.3];
 					`, Operator.CLAIMDOT);
 				});
+			});
+			it('makes an ASTNodeCall.', () => {
+				/*
+					<Call>
+						<Variable source="foo"/>
+						<TypeOperation source="Bar | Qux">...</TypeOperation>
+						<TypeAlias source="Diz"/>
+						<Operation source="bar || qux">...</Operation>
+						<Variable source="diz"/>
+					</Call>
+				*/
+				const call: AST.ASTNodeExpression = Decorator.decorate(h.compoundExpressionFromSource(`foo.<Bar | Qux, Diz>(bar || qux, diz);`));
+				assert.ok(call instanceof AST.ASTNodeCall, 'should be instance of ASTNodeCall.');
+				assert.deepStrictEqual(
+					[call.base, ...call.typeargs, ...call.exprargs].map((c) => c.source),
+					[`foo`, `Bar | Qux`, `Diz`, `bar || qux`, `diz`],
+				);
 			});
 		});
 

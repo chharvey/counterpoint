@@ -1,7 +1,7 @@
 import {
 	ErrorCode,
 } from '@chharvey/parser';
-import {AST} from '../validator/index.js';
+import type {AST} from '../validator/index.js';
 import type {SolidType} from '../typer/index.js';
 
 
@@ -122,7 +122,7 @@ export class TypeError05 extends SolidTypeError {
 	 * @param typ  - the type trying to be called
 	 * @param base - the object expression being called
 	 */
-	constructor (typ: SolidType, base: AST.ASTNodeType) {
+	constructor (typ: SolidType, base: AST.ASTNodeType | AST.ASTNodeExpression) {
 		super(`Type \`${ typ }\` is not callable.`, TypeError05.CODE, base.line_index, base.col_index);
 	}
 }
@@ -142,9 +142,9 @@ export class TypeError06 extends SolidTypeError {
 	 * @param actual   - the number of arguments received
 	 * @param expected - the number of arguments expected
 	 * @param call     - the function call
+	 * @param generic  - whether the arguments are generic arguments (true) or function arguments (false)
 	 */
-	constructor (actual: bigint, expected: bigint, call: AST.ASTNodeTypeCall) { // TODO: `AST.ASTNodeExpressionCall`
-		const typ: string = (call instanceof AST.ASTNodeTypeCall) ? 'type ' : '';
-		super(`Got \`${ actual }\` ${ typ }arguments, but expected \`${ expected }\`.`, TypeError06.CODE, call.line_index, call.col_index);
+	constructor (actual: bigint, expected: bigint, generic: boolean, call: AST.ASTNodeTypeCall | AST.ASTNodeCall) {
+		super(`Got \`${ actual }\` ${ (generic) ? 'type ' : '' }arguments, but expected \`${ expected }\`.`, TypeError06.CODE, call.line_index, call.col_index);
 	}
 }

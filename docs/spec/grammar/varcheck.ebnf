@@ -24,12 +24,28 @@ Void! VarCheck(SemanticTypeAlias var) :=
 
 
 
+Void! VarCheck(SemanticTypeCall call) :=
+	1. *Note:* Skip var-checking of `call.children.0` for now, as semantics is determined by syntax.
+	2. *For each* `it` in `call.children[1..]`:
+		1. *Perform:* *Unwrap:* `VarCheck(it)`.
+;
+
+
+
 Void! VarCheck(SemanticVariable var) :=
 	1. *If* the validator’s symbol table does not contain a SymbolStructure `symbol` whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceError01.
 	// TODO: Throw a ReferenceError02 if the variable is declared further down in source.
 	2. *If* `symbol` is an instance of `SymbolStructureType`:
 		1. *Throw:* a new ReferenceError03.
+;
+
+
+
+Void! VarCheck(SemanticCall call) :=
+	1. *Note:* Skip var-checking of `call.children.0` for now, as semantics is determined by syntax.
+	2. *For each* `it` in `call.children[1..]`:
+		1. *Perform:* *Unwrap:* `VarCheck(it)`.
 ;
 
 

@@ -13,7 +13,7 @@ import {Collection} from './Collection.js';
  */
 export abstract class CollectionKeyed<T extends SolidObject = SolidObject> extends Collection {
 	constructor (
-		protected readonly properties: ReadonlyMap<bigint, T> = new Map(),
+		readonly properties: ReadonlyMap<bigint, T> = new Map(),
 	) {
 		super();
 	}

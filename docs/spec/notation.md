@@ -883,6 +883,8 @@ When the compiler recognizes a type mismatch, a type error is raised.
 2302. One type is expected to be a subtype of another, but is not.
 2303. An expression was assigned to a type to which it is not assignable.
 2304. The validator encountered a non-existent index/property/argument access.
+2305. The validator encountered an attempt to call a non-callable object.
+2306. An incorrect number of arguments is passed to a callable object.
 
 
 
