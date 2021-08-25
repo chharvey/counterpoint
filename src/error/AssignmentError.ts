@@ -1,7 +1,7 @@
 import {
 	ErrorCode,
 } from '@chharvey/parser';
-import type * as AST from '../validator/index.js';
+import type {AST} from './package.js';
 
 
 

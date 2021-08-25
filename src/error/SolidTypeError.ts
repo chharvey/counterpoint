@@ -1,8 +1,10 @@
 import {
 	ErrorCode,
 } from '@chharvey/parser';
-import type * as AST from '../validator/index.js';
-import type {SolidType} from '../typer/index.js';
+import type {
+	AST,
+	SolidType,
+} from './package.js';
 
 
 
