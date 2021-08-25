@@ -1,20 +1,16 @@
 import type {ParseNode} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
+	TypeError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import {
 	SolidType,
 	SolidTypeConstant,
 	SolidObject,
 	SolidBoolean,
-} from '../typer/index.js';
-import {
-	Builder,
 	INST,
-} from '../builder/index.js';
-import {TypeError01} from '../error/index.js';
+	Builder,
+} from './package.js';
 import type {Operator} from './Operator.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';

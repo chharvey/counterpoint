@@ -4,25 +4,19 @@ import type {
 import * as assert from 'assert';
 import * as xjs from 'extrajs'
 import {
+	TypeError01,
+	NanError01,
+	NanError02,
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import {
 	SolidType,
 	SolidObject,
 	SolidNumber,
 	Int16,
 	Float64,
-} from '../typer/index.js';
-import {
-	Builder,
 	INST,
-} from '../builder/index.js';
-import {
-	TypeError01,
-	NanError01,
-	NanError02,
-} from '../error/index.js';
+	Builder,
+} from './package.js';
 import {
 	bothNumeric,
 	eitherFloats,

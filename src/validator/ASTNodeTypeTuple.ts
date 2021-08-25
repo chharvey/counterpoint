@@ -2,12 +2,10 @@ import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import type {PARSER} from '../parser/index.js';
-import {
+	PARSER,
 	SolidType,
 	SolidTypeTuple,
-} from '../typer/index.js';
+} from './package.js';
 import type {ASTNodeItemType} from './ASTNodeItemType.js';
 import {ASTNodeType} from './ASTNodeType.js';
 import type {Validator} from './Validator.js';

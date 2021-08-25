@@ -3,11 +3,9 @@ import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import {
 	SolidType,
 	SolidNull,
-} from '../typer/index.js';
+} from './package.js';
 import {
 	Operator,
 	ValidTypeOperator,

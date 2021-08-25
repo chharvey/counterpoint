@@ -6,13 +6,11 @@ import {
 
 import {
 	Dev,
-} from '../core/index.js';
-import {
 	Punctuator,
 	Keyword,
 	TOKEN,
 	PARSER,
-} from '../parser/index.js';
+} from './package.js';
 import * as AST from './index.js';
 import {
 	Operator,

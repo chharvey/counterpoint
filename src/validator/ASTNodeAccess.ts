@@ -1,10 +1,11 @@
 import * as assert from 'assert';
 import {
+	TypeError01,
+	TypeError02,
+	TypeError04,
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import type {PARSER} from '../parser/index.js';
-import {
+	PARSER,
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,
@@ -20,16 +21,9 @@ import {
 	SolidRecord,
 	SolidSet,
 	SolidMapping,
-} from '../typer/index.js';
-import type {
-	Builder,
 	INST,
-} from '../builder/index.js';
-import {
-	TypeError01,
-	TypeError02,
-	TypeError04,
-} from '../error/index.js';
+	Builder,
+} from './package.js';
 import {
 	Operator,
 	ValidAccessOperator,

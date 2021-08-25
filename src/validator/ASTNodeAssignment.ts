@@ -1,22 +1,16 @@
 import type {ParseNode} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
+	AssignmentError10,
+	TypeError03,
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import {
 	SolidType,
 	Int16,
 	Float64,
-} from '../typer/index.js';
-import {
-	Builder,
 	INST,
-} from '../builder/index.js';
-import {
-	AssignmentError10,
-	TypeError03,
-} from '../error/index.js';
+	Builder,
+} from './package.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeVariable} from './ASTNodeVariable.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';

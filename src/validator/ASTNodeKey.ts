@@ -1,4 +1,4 @@
-import type {TOKEN} from '../parser/index.js';
+import type {TOKEN} from './package.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 
 

@@ -1,14 +1,12 @@
 import type {ParseNode} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
+	AssignmentError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import {
-	Builder,
 	INST,
-} from '../builder/index.js';
-import {AssignmentError01} from '../error/index.js';
+	Builder,
+} from './package.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';

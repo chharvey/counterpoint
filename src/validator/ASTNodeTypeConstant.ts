@@ -3,12 +3,8 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-} from '../core/index.js';
-import {
 	Keyword,
 	TOKEN,
-} from '../parser/index.js';
-import {
 	SolidType,
 	SolidTypeConstant,
 	SolidObject,
@@ -17,7 +13,7 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-} from '../typer/index.js';
+} from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
 import type {Validator} from './Validator.js';
 

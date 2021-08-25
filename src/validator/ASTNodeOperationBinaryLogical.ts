@@ -5,17 +5,13 @@ import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import {
 	SolidType,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
-} from '../typer/index.js';
-import {
-	Builder,
 	INST,
-} from '../builder/index.js';
+	Builder,
+} from './package.js';
 import {
 	Operator,
 	ValidOperatorLogical,

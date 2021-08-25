@@ -2,7 +2,7 @@ import {
 	SolidType,
 	SolidNumber,
 	Float64,
-} from '../typer/index.js';
+} from './package.js';
 
 
 

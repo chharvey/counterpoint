@@ -6,7 +6,7 @@ import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
+} from './package.js';
 import type {ValidTypeOperator} from './Operator.js';
 import {ASTNodeType} from './ASTNodeType.js';
 

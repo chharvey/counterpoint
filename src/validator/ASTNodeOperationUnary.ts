@@ -4,24 +4,18 @@ import type {
 import * as assert from 'assert';
 import * as xjs from 'extrajs'
 import {
+	TypeError01,
+	NanError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import {
 	SolidType,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
 	SolidNumber,
-} from '../typer/index.js';
-import {
-	Builder,
 	INST,
-} from '../builder/index.js';
-import {
-	TypeError01,
-	NanError01,
-} from '../error/index.js';
+	Builder,
+} from './package.js';
 import {
 	Operator,
 	ValidOperatorUnary,

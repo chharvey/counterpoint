@@ -1,4 +1,4 @@
-import type {PARSER} from '../parser/index.js';
+import type {PARSER} from './package.js';
 import type {ASTNodeConstant} from './index.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 

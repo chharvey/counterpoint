@@ -3,8 +3,8 @@ import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import type {SolidType} from '../typer/index.js';
+	SolidType,
+} from './package.js';
 import type {ValidOperatorBinary} from './Operator.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';

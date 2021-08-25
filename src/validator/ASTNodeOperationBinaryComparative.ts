@@ -3,23 +3,17 @@ import type {
 } from '@chharvey/parser';
 import * as assert from 'assert';
 import {
+	TypeError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import {
 	SolidType,
 	SolidObject,
 	SolidBoolean,
 	SolidNumber,
 	Int16,
-} from '../typer/index.js';
-import {
-	Builder,
 	INST,
-} from '../builder/index.js';
-import {
-	TypeError01,
-} from '../error/index.js';
+	Builder,
+} from './package.js';
 import {
 	bothNumeric,
 	bothFloats,

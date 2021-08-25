@@ -2,12 +2,10 @@ import type {ParseNode} from '@chharvey/parser';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import {ParserSolid as Parser} from '../parser/index.js';
-import {
-	Builder,
+	Parser,
 	INST,
-} from '../builder/index.js';
+	Builder,
+} from './package.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeStatement} from './ASTNodeStatement.js';

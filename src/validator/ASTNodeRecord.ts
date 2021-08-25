@@ -3,18 +3,14 @@ import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import type {PARSER} from '../parser/index.js';
-import {
+	PARSER,
 	SolidType,
 	SolidTypeRecord,
 	SolidObject,
 	SolidRecord,
-} from '../typer/index.js';
-import type {
-	Builder,
 	INST,
-} from '../builder/index.js';
+	Builder,
+} from './package.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {Validator} from './Validator.js';

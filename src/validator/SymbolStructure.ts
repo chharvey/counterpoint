@@ -1,7 +1,7 @@
 import {
 	SolidType,
 	SolidObject,
-} from '../typer/index.js';
+} from './package.js';
 
 
 

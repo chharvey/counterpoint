@@ -1,14 +1,12 @@
 import * as assert from 'assert';
 import {
-	SolidConfig,
-	CONFIG_DEFAULT,
-} from '../core/index.js';
-import type {TOKEN} from '../parser/index.js';
-import {SolidType} from '../typer/index.js';
-import {
 	ReferenceError01,
 	ReferenceError03,
-} from '../error/index.js';
+	SolidConfig,
+	CONFIG_DEFAULT,
+	TOKEN,
+	SolidType,
+} from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
 import type {Validator} from './Validator.js';
 import {

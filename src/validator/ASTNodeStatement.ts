@@ -5,12 +5,10 @@ import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import {
 	Builder,
 	Instruction,
 	INST,
-} from '../builder/index.js';
+} from './package.js';
 import {ASTNodeGoal} from './index.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';

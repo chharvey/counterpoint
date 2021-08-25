@@ -1,22 +1,16 @@
 import * as assert from 'assert';
 import {
+	ReferenceError01,
+	ReferenceError03,
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import type {TOKEN} from '../parser/index.js';
-import {
+	TOKEN,
 	SolidType,
 	SolidObject,
 	Float64,
-} from '../typer/index.js';
-import {
-	Builder,
 	INST,
-} from '../builder/index.js';
-import {
-	ReferenceError01,
-	ReferenceError03,
-} from '../error/index.js';
+	Builder,
+} from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {Validator} from './Validator.js';
 import {

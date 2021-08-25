@@ -1,7 +1,7 @@
 import type {
-	Builder,
 	Instruction,
-} from '../builder/index.js';
+	Builder,
+} from './package.js';
 import type {ASTNodeSolid} from './index.js';
 
 

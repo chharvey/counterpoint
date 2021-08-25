@@ -1,8 +1,8 @@
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import type {SolidType} from '../typer/index.js';
+	SolidType,
+} from './package.js';
 import {ASTNodeDeclarationType} from './index.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {Validator} from './Validator.js';
