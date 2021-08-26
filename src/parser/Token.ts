@@ -21,28 +21,15 @@ import {
 	CONFIG_DEFAULT,
 	Dev,
 } from './package.js';
+import {
+	RadixType,
+	TemplatePosition,
+} from './utils.js';
 import {Punctuator} from './Punctuator.js';
 import {Keyword} from './Keyword.js';
 import type {
 	LexerSolid,
 } from './Lexer.js';
-
-
-
-export type RadixType = 2n|4n|8n|10n|16n|36n
-
-export enum TemplatePosition {
-	FULL,
-	HEAD,
-	MIDDLE,
-	TAIL,
-}
-
-export type CookValueType =
-	| null       // TokenIdentifier
-	| bigint     // TokenPuncuator | TokenKeyword | TokenIdentifier
-	| number     // TokenNumber
-	| CodeUnit[] // TokenString | TokenTemplate
 
 
 
@@ -77,7 +64,12 @@ export abstract class TokenSolid extends Token {
 	 * If this Token is not to be sent to the parser, then return `null`.
 	 * @returns              the computed value of this token, or `null`
 	 */
-	abstract cook(): CookValueType;
+	abstract cook():
+		| null       // TokenIdentifier
+		| bigint     // TokenPuncuator | TokenKeyword | TokenIdentifier
+		| number     // TokenNumber
+		| CodeUnit[] // TokenString | TokenTemplate
+	;
 }
 
 
