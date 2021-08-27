@@ -13,7 +13,6 @@ import type {
 } from '../types.js';
 import {
 	LexError03,
-	LexError04,
 	LexError05,
 	SolidConfig,
 	CONFIG_DEFAULT,
@@ -34,6 +33,7 @@ import {
 	TokenCommentMulti,
 	TokenSolid,
 } from './token/index.js';
+import {NumberOrStringToken} from './token/NumberOrStringToken.js'; // TEMP
 
 
 
@@ -41,44 +41,6 @@ export * from './token/index.js';
 
 
 
-abstract class NumberOrStringToken extends TokenSolid {
-	constructor (tagname: string,
-		protected override readonly lexer: LexerSolid,
-		...chars: [Char, ...Char[]]
-	) {
-		super(tagname, lexer, ...chars);
-	}
-	/**
-	 * Lex a numeric digit sequence, advancing this token as necessary.
-	 * @param digits the digit sequence to lex
-	 * @return       a cargo of source text for any error-reporting
-	 * @throws {LexError04} if an unexpected numeric separator was found
-	 * @final
-	 */
-	protected lexDigitSequence(digits: readonly string[]): string {
-		let cargo: string = '';
-		const allowedchars: string[] = [
-			...digits,
-			...(this.lexer.config.languageFeatures.numericSeparators ? [TokenNumber.SEPARATOR] : [])
-		];
-		while (!this.lexer.isDone && Char.inc(allowedchars, this.lexer.c0)) {
-			if (Char.inc(digits, this.lexer.c0)) {
-				cargo += this.lexer.c0.source;
-				this.advance();
-			} else if (this.lexer.config.languageFeatures.numericSeparators && Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
-				if (Char.inc(digits, this.lexer.c1)) {
-					cargo += `${ this.lexer.c0.source }${ this.lexer.c1!.source }`;
-					this.advance(2n);
-				} else {
-					throw new LexError04(Char.eq(TokenNumber.SEPARATOR, this.lexer.c1) ? this.lexer.c1! : this.lexer.c0);
-				};
-			} else {
-				break;
-			};
-		};
-		return cargo;
-	}
-}
 export class TokenNumber extends NumberOrStringToken {
 	static readonly RADIX_DEFAULT: 10n = 10n
 	static readonly ESCAPER:   '\\' = '\\'
