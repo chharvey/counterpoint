@@ -6,3 +6,4 @@
  */
 export {Dev} from '../package.js';
 export {Punctuator} from '../Punctuator.js';
+export {Keyword} from '../Keyword.js';
