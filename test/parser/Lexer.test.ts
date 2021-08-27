@@ -13,9 +13,9 @@ import {
 } from '../../src/core/index.js';
 import {
 	TemplatePosition,
-	TOKEN,
 	LexerSolid as Lexer,
 } from '../../src/parser/index.js'
+import * as TOKEN from '../../src/parser/index.js'; // TODO
 import {
 	LexError03,
 	LexError04,

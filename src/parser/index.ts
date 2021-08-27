@@ -3,7 +3,7 @@ export * from './utils.js';
 export {Punctuator} from './Punctuator.js';
 export {Keyword} from './Keyword.js';
 
-export * as TOKEN from './Token.js';
+export * from './token/index.js';
 
 export {
 	LexerSolid,

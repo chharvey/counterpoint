@@ -12,10 +12,10 @@ import {
 } from '../src/core/index.js';
 import {
 	Punctuator,
-	TOKEN,
 	PARSER,
 	ParserSolid as Parser,
 } from '../src/parser/index.js';
+import * as TOKEN from '../src/parser/index.js'; // TODO
 import {
 	assert_arrayLength,
 } from './assert-helpers.js';

@@ -13,7 +13,7 @@ import {
 	maybeA,
 } from './utils.js';
 import {Keyword} from './Keyword.js';
-import * as TOKEN from './Token.js';
+import * as TOKEN from './token/index.js';
 
 
 

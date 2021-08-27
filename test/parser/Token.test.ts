@@ -10,9 +10,9 @@ import {
 	Dev,
 } from '../../src/core/index.js';
 import {
-	TOKEN,
 	LexerSolid as Lexer,
 } from '../../src/parser/index.js';
+import * as TOKEN from '../../src/parser/index.js'; // TODO
 
 
 
