@@ -33,6 +33,7 @@ import {
 	TokenCommentLine,
 	TokenCommentMulti,
 	TokenSolid,
+	TokenIdentifier,
 } from './token/index.js';
 
 
@@ -41,34 +42,6 @@ export * from './token/index.js';
 
 
 
-export abstract class TokenIdentifier extends TokenSolid {
-	private static readonly MINIMUM_VALUE: 0x100n = 0x100n
-	/**
-	 * The cooked value of this Token.
-	 * If the token is a keyword, the cooked value is its contents.
-	 * If the token is an identifier, the cooked value is set by a {@link Screener},
-	 * which indexes unique identifier tokens.
-	 */
-	private _cooked: bigint|null;
-	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
-		super('IDENTIFIER', lexer, start_char, ...more_chars)
-		this._cooked = null
-	}
-	/**
-	 * Set the numeric integral value of this Token.
-	 * The value must be 128 or higher.
-	 * This operation can only be done once.
-	 * @param value - the value to set, unique among all identifiers in a program
-	 */
-	/** @final */ setValue(value: bigint): void {
-		if (this._cooked === null) {
-			this._cooked = value + TokenIdentifier.MINIMUM_VALUE
-		}
-	}
-	/** @final */ cook(): bigint|null {
-		return this._cooked
-	}
-}
 export class TokenIdentifierBasic extends TokenIdentifier {
 	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
