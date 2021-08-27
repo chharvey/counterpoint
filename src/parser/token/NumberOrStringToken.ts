@@ -1,9 +1,9 @@
 import {Char} from '@chharvey/parser';
-import {TokenNumber} from '../Token.js'; // TEMP
 import {
 	LexError04,
 	LexerSolid,
 } from './package.js';
+import {TokenNumber} from './index.js';
 import {TokenSolid} from './TokenSolid.js';
 
 
