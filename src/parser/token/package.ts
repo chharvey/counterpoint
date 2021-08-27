@@ -13,6 +13,9 @@ export {
 	Dev,
 } from '../package.js';
 export {LexerSolid} from '../index.js';
-export type {RadixType} from '../utils.js';
+export {
+	RadixType,
+	TemplatePosition,
+} from '../utils.js';
 export {Punctuator} from '../Punctuator.js';
 export {Keyword} from '../Keyword.js';

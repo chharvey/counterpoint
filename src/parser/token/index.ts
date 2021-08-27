@@ -8,3 +8,4 @@ export * from './TokenIdentifierBasic.js';
 export * from './TokenIdentifierUnicode.js';
 export * from './TokenNumber.js';
 export * from './TokenString.js';
+export * from './TokenTemplate.js';
