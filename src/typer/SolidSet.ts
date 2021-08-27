@@ -1,8 +1,8 @@
 import * as xjs from 'extrajs';
 import {SetEq} from '../core/index.js';
-import type {Keys} from '../types.js';
 import {
 	VoidError01,
+	Keys,
 	AST,
 } from './package.js';
 import {SolidTypeConstant} from './index.js';

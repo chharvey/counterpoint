@@ -8,15 +8,13 @@ import {
 } from '@chharvey/parser';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
-import type {
-	CodePoint,
-	CodeUnit,
-	EncodedChar,
-} from '../types.js';
 import {
 	LexError03,
 	LexError04,
 	LexError05,
+	CodePoint,
+	CodeUnit,
+	EncodedChar,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,

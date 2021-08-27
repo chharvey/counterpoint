@@ -1,7 +1,7 @@
 /**
  * A half-closed range of integers from min (inclusive) to max (exclusive).
  * @example
- * type T = [3n, 7n]; % a range of integers including 3, 4, 5, and 6, but not 7.
+ * const r: IntRange = [3n, 7n]; % a range of integers including 3, 4, 5, and 6, but not 7.
  * @index 0 the minimum, inclusive
  * @index 1 the maximum, exclusive
  */

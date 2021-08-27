@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
-import type {Keys} from '../types.js';
 import {
 	VoidError01,
+	Keys,
 	AST,
 } from './package.js';
 import {SolidTypeConstant} from './index.js';

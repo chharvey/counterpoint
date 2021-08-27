@@ -1,6 +1,6 @@
-import type {IntRange} from '../types.js';
 import {
 	TypeError04,
+	IntRange,
 	Operator,
 	ValidAccessOperator,
 	AST,

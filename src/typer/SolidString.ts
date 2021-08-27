@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
-import type {CodeUnit} from '../types';
+import type {CodeUnit} from './package.js';
 import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
 

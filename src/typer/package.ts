@@ -8,6 +8,11 @@ export {
 	TypeError04,
 	VoidError01,
 } from '../index.js';
+export type {
+	IntRange,
+	CodeUnit,
+	Keys,
+} from '../lib/utils.js';
 export {
 	Operator,
 	ValidAccessOperator,

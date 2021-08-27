@@ -9,6 +9,11 @@ export {
 	LexError04,
 	LexError05,
 } from '../index.js';
+export type {
+	CodePoint,
+	CodeUnit,
+	EncodedChar,
+} from '../lib/utils.js';
 export {
 	SolidConfig,
 	CONFIG_DEFAULT,
