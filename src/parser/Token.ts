@@ -17,7 +17,6 @@ import {
 	LexError05,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Dev,
 } from './package.js';
 import {
 	RadixType,
@@ -43,30 +42,6 @@ export * from './token/index.js';
 
 
 
-export class TokenPunctuator extends TokenSolid {
-	static readonly PUNCTUATORS: readonly Punctuator[] = [...new Set( // remove duplicates
-		Object.values(Punctuator).filter((p) => Dev.supports('literalCollection') ? true : ![
-			Punctuator.BRAK_OPN,
-			Punctuator.BRAK_CLS,
-			Punctuator.COMMA,
-			Punctuator.MAPTO,
-		].includes(p))
-	)]
-	// declare readonly source: Punctuator; // NB: https://github.com/microsoft/TypeScript/issues/40220
-	constructor (lexer: Lexer, count: 1n | 2n | 3n | 4n = 1n) {
-		super('PUNCTUATOR', lexer, ...lexer.advance())
-		if (count >= 4n) {
-			this.advance(3n)
-		} else if (count >= 3n) {
-			this.advance(2n)
-		} else if (count >= 2n) {
-			this.advance()
-		}
-	}
-	cook(): bigint {
-		return BigInt(TokenPunctuator.PUNCTUATORS.indexOf(this.source as Punctuator))
-	}
-}
 export class TokenKeyword extends TokenSolid {
 	private static readonly MINIMUM_VALUE: 0x80n = 0x80n
 	static readonly CHAR: RegExp = /^[a-z]$/
