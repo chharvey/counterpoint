@@ -1,6 +1,5 @@
 export * from './Operator.js';
 
-export * from './ASTNodeSolid.js';
 export * from './ASTNodeKey.js';
 export * from './ASTNodeIndexType.js';
 export * from './ASTNodeItemType.js';
@@ -14,7 +13,6 @@ export * from './ASTNodeTypeAlias.js';
 export * from './ASTNodeTypeTuple.js';
 export * from './ASTNodeTypeRecord.js';
 export * from './ASTNodeTypeAccess.js';
-export * from './ASTNodeTypeOperation.js';
 export * from './ASTNodeTypeOperationUnary.js';
 export * from './ASTNodeTypeOperationBinary.js';
 export * from './ASTNodeExpression.js';
@@ -34,7 +32,8 @@ export * from './ASTNodeOperationBinaryComparative.js';
 export * from './ASTNodeOperationBinaryEquality.js';
 export * from './ASTNodeOperationBinaryLogical.js';
 export * from './ASTNodeOperationTernary.js';
-export * from './ASTNodeStatement.js';
+export {ASTNodeStatement} from './ASTNodeStatement.js';
+export {ASTNodeStatementExpression} from './ASTNodeStatement.js';
 export * from './ASTNodeDeclaration.js';
 export * from './ASTNodeDeclarationType.js';
 export * from './ASTNodeDeclarationVariable.js';
