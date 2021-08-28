@@ -77,11 +77,11 @@ export class TypeError03 extends SolidTypeError {
 	static override readonly CODE = 3;
 	/**
 	 * Construct a new TypeError03 object.
-	 * @param assignment    - the node where the assignment took place
 	 * @param assignee_type - the type to which the expression is assigned
 	 * @param assigned_type - the type of the expression
+	 * @param assignment    - the node where the assignment took place
 	 */
-	constructor (assignment: AST.ASTNodeDeclarationVariable | AST.ASTNodeAssignment, assignee_type: SolidType, assigned_type: SolidType) {
+	constructor (assignee_type: SolidType, assigned_type: SolidType, assignment: AST.ASTNodeSolid) {
 		super(`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }.`, TypeError03.CODE, assignment.line_index, assignment.col_index)
 	}
 }

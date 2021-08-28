@@ -137,29 +137,6 @@ function mapAggregated<T, U>(array: readonly T[], callback: (item: T) => U): U[]
 		return successes;
 	}
 }
-/**
- * Type-check an assignment.
- * @param assignment    either a variable declaration or a reassignment
- * @param assignee_type the type of the assignee (the variable or bound property being reassigned)
- * @param assigned_type the type of the expression assigned
- * @param validator     a validator
- * @throws {TypeError03} if the assigned expression is not assignable to the assignee
- */
-function typeCheckAssignment(
-	assignment:    ASTNodeDeclarationVariable | ASTNodeAssignment,
-	assignee_type: SolidType,
-	assigned_type: SolidType,
-	validator:     Validator,
-): void {
-	const treatIntAsSubtypeOfFloat: boolean = (
-		   validator.config.compilerOptions.intCoercion
-		&& assigned_type.isSubtypeOf(Int16)
-		&& Float64.isSubtypeOf(assignee_type)
-	);
-	if (!assigned_type.isSubtypeOf(assignee_type) && !treatIntAsSubtypeOfFloat) {
-		throw new TypeError03(assignment, assignee_type, assigned_type);
-	}
-}
 
 
 
@@ -196,6 +173,29 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 */
 	typeCheck(validator: Validator): void {
 		return forEachAggregated(this.children, (c) => c.typeCheck(validator));
+	}
+
+	/**
+	 * Type-check an assignment.
+	 * @final
+	 * @param assignee_type the type of the assignee (the variable or bound property being reassigned)
+	 * @param assigned_type the type of the expression assigned
+	 * @param validator     a validator
+	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
+	 */
+	protected typeCheckAssignment(
+		assignee_type: SolidType,
+		assigned_type: SolidType,
+		validator:     Validator,
+	): void {
+		const treatIntAsSubtypeOfFloat: boolean = (
+			   validator.config.compilerOptions.intCoercion
+			&& assigned_type.isSubtypeOf(Int16)
+			&& Float64.isSubtypeOf(assignee_type)
+		);
+		if (!assigned_type.isSubtypeOf(assignee_type) && !treatIntAsSubtypeOfFloat) {
+			throw new TypeError03(assignee_type, assigned_type, this);
+		}
 	}
 }
 
@@ -1141,20 +1141,20 @@ export class ASTNodeCall extends ASTNodeExpression {
 			['List', () => {
 				this.countArgs(1n, [0n, 2n]);
 				const returntype: SolidType = new SolidTypeList(this.typeargs[0].assess(validator));
-				this.exprargs.length && this.typeCheckArgs(this.exprargs[0].type(validator), returntype);
+				this.exprargs.length && this.typeCheckAssignment(returntype, this.exprargs[0].type(validator), validator);
 				return returntype;
 			}],
 			['Hash', () => {
 				this.countArgs(1n, [0n, 2n]);
 				const returntype: SolidType = new SolidTypeHash(this.typeargs[0].assess(validator));
-				this.exprargs.length && this.typeCheckArgs(this.exprargs[0].type(validator), returntype);
+				this.exprargs.length && this.typeCheckAssignment(returntype, this.exprargs[0].type(validator), validator);
 				return returntype;
 			}],
 			['Set', () => {
 				this.countArgs(1n, [0n, 2n]);
 				const eltype:     SolidType = this.typeargs[0].assess(validator);
 				const returntype: SolidType = new SolidTypeSet(eltype);
-				this.exprargs.length && this.typeCheckArgs(this.exprargs[0].type(validator), new SolidTypeList(eltype));
+				this.exprargs.length && this.typeCheckAssignment(new SolidTypeList(eltype), this.exprargs[0].type(validator), validator);
 				return returntype;
 			}],
 			['Map', () => {
@@ -1162,7 +1162,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 				const anttype:    SolidType = this.typeargs[0].assess(validator);
 				const contype:    SolidType = this.typeargs[1]?.assess(validator) || anttype;
 				const returntype: SolidType = new SolidTypeMap(anttype, contype);
-				this.exprargs.length && this.typeCheckArgs(this.exprargs[0].type(validator), new SolidTypeList(SolidTypeTuple.fromTypes([anttype, contype])));
+				this.exprargs.length && this.typeCheckAssignment(new SolidTypeList(SolidTypeTuple.fromTypes([anttype, contype])), this.exprargs[0].type(validator), validator);
 				return returntype;
 			}],
 		]).get(this.base.source) || (() => {
@@ -1214,11 +1214,6 @@ export class ASTNodeCall extends ASTNodeExpression {
 		}
 		if (expected_function[1] <= actual_function) {
 			throw new TypeError06(actual_function, expected_function[1] - 1n, false, this);
-		}
-	}
-	private typeCheckArgs(argtype: SolidType, paramtype: SolidType): void {
-		if (!argtype.isSubtypeOf(paramtype)) {
-			throw new TypeError02(argtype, paramtype, this.line_index, this.col_index);
 		}
 	}
 }
@@ -1729,8 +1724,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 	override typeCheck(validator: Validator): void {
 		this.value.typeCheck(validator);
-		typeCheckAssignment(
-			this,
+		this.typeCheckAssignment(
 			this.type.assess(validator),
 			this.value.type(validator),
 			validator,
@@ -1768,8 +1762,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	}
 	override typeCheck(validator: Validator): void {
 		this.assigned.typeCheck(validator);
-		return typeCheckAssignment(
-			this,
+		return this.typeCheckAssignment(
 			this.assignee.type(validator),
 			this.assigned.type(validator),
 			validator,

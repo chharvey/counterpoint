@@ -1287,7 +1287,7 @@ describe('ASTNodeSolid', () => {
 						`Set.<int>([42, '42']);`,
 						`Map.<int>([42, '42']);`,
 					].forEach((src) => {
-						assert.throws(() => AST.ASTNodeCall.fromSource(src).type(validator), TypeError02);
+						assert.throws(() => AST.ASTNodeCall.fromSource(src).type(validator), TypeError03);
 					});
 				});
 			});
