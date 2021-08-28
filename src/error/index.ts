@@ -1,8 +1,6 @@
-export {
-	LexError05,
-} from './LexError.js';
 export * from './LexError03.js';
 export * from './LexError04.js';
+export * from './LexError05.js';
 export {
 	ReferenceError01,
 	ReferenceError02,
