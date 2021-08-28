@@ -10,6 +10,7 @@ import {
 	INST,
 	Builder,
 } from './package.js';
+import {mapAggregated} from './utilities.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {Validator} from './Validator.js';
 
@@ -34,7 +35,7 @@ export class ASTNodeTuple extends ASTNodeExpression {
 		throw builder && 'ASTNodeTuple#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type(validator)));
+		return SolidTypeTuple.fromTypes(mapAggregated(this.children, (c) => c.type(validator)));
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
 		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.assess(validator));

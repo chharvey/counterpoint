@@ -3,6 +3,7 @@ import {
 	ParseNode,
 	ASTNode,
 } from '@chharvey/parser';
+import {forEachAggregated} from './utilities.js';
 import type {Validator} from './Validator.js';
 
 
@@ -31,7 +32,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * @param validator a record of declared variable symbols
 	 */
 	varCheck(validator: Validator): void {
-		return this.children.forEach((c) => c.varCheck(validator));
+		return forEachAggregated(this.children, (c) => c.varCheck(validator));
 	}
 
 	/**
@@ -39,6 +40,6 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * @param validator stores validation information
 	 */
 	typeCheck(validator: Validator): void {
-		return this.children.forEach((c) => c.typeCheck(validator));
+		return forEachAggregated(this.children, (c) => c.typeCheck(validator));
 	}
 }

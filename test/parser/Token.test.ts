@@ -58,15 +58,18 @@ describe('TokenSolid', () => {
 
 		context('TokenIdentifier', () => {
 			context('TokenIdentifierBasic', () => {
-				const cooked: (bigint|null)[] = [...new Lexer(`
-					this be a word
-					_words _can _start _with _underscores
-					_and0 _can1 contain2 numb3rs
+				let cooked: (bigint | null)[];
+				before(() => {
+					cooked = [...new Lexer(`
+						this be a word
+						_words _can _start _with _underscores
+						_and0 _can1 contain2 numb3rs
 
-					a word _can repeat _with the same id
-				`, CONFIG_DEFAULT).generate()]
-					.filter((token): token is TOKEN.TokenIdentifier => token instanceof TOKEN.TokenIdentifier)
-					.map((identifier) => identifier.cook())
+						a word _can repeat _with the same id
+					`, CONFIG_DEFAULT).generate()]
+						.filter((token): token is TOKEN.TokenIdentifier => token instanceof TOKEN.TokenIdentifier)
+						.map((identifier) => identifier.cook());
+				});
 				it('assigns values 256n or greater.', () => {
 					cooked.forEach((value) => {
 						assert.ok(value !== null, 'cooked value should not be null.')
@@ -89,13 +92,16 @@ describe('TokenSolid', () => {
 			})
 
 			context('TokenIdentifierUnicode', () => {
-				const cooked: (bigint|null)[] = [...new Lexer(`
-					\`this\` \`is\` \`a\` \`unicode word\`
-					\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
-					\`except\` \`back-ticks\` \`.\`
-				`, CONFIG_DEFAULT).generate()]
-					.filter((token): token is TOKEN.TokenIdentifierUnicode => token instanceof TOKEN.TokenIdentifierUnicode)
-					.map((identifier) => identifier.cook())
+				let cooked: (bigint | null)[];
+				before(() => {
+					cooked = [...new Lexer(`
+						\`this\` \`is\` \`a\` \`unicode word\`
+						\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
+						\`except\` \`back-ticks\` \`.\`
+					`, CONFIG_DEFAULT).generate()]
+						.filter((token): token is TOKEN.TokenIdentifierUnicode => token instanceof TOKEN.TokenIdentifierUnicode)
+						.map((identifier) => identifier.cook());
+				});
 				it('assigns values 256n or greater.', () => {
 					cooked.forEach((value) => {
 						assert.ok(value !== null, 'cooked value should not be null.')

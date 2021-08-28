@@ -2,16 +2,17 @@ import type {ParseNode} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
 	AssignmentError01,
-	TypeError03,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	SolidType,
 	SolidObject,
-	Int16,
 	Float64,
 	INST,
 	Builder,
 } from './package.js';
+import {
+	forEachAggregated,
+	typeCheckAssignment,
+} from './utilities.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeVariable} from './ASTNodeVariable.js';
@@ -41,8 +42,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		if (validator.hasSymbol(variable.id)) {
 			throw new AssignmentError01(variable);
 		};
-		this.type.varCheck(validator);
-		this.value.varCheck(validator);
+		forEachAggregated([this.type, this.value], (c) => c.varCheck(validator));
 		validator.addSymbol(new SymbolStructureVar(
 			variable.id,
 			variable.line_index,
@@ -56,17 +56,13 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		));
 	}
 	override typeCheck(validator: Validator): void {
-		this.type.typeCheck(validator);
 		this.value.typeCheck(validator);
-		const assignee_type: SolidType = this.type.assess(validator);
-		const assigned_type: SolidType = this.value.type(validator);
-		if (
-			assigned_type.isSubtypeOf(assignee_type) ||
-			validator.config.compilerOptions.intCoercion && assigned_type.isSubtypeOf(Int16) && Float64.isSubtypeOf(assignee_type)
-		) {
-		} else {
-			throw new TypeError03(this, assignee_type, assigned_type)
-		}
+		typeCheckAssignment(
+			this,
+			this.type.assess(validator),
+			this.value.type(validator),
+			validator,
+		);
 		return validator.getSymbolInfo(this.variable.id)?.assess();
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {

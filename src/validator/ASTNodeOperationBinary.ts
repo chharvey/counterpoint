@@ -5,6 +5,7 @@ import {
 	CONFIG_DEFAULT,
 	SolidType,
 } from './package.js';
+import {forEachAggregated} from './utilities.js';
 import type {ValidOperatorBinary} from './Operator.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
@@ -33,6 +34,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	 * @final
 	 */
 	protected override type_do(validator: Validator): SolidType {
+		forEachAggregated([this.operand0, this.operand1], (c) => c.typeCheck(validator));
 		return this.type_do_do(
 			this.operand0.type(validator),
 			this.operand1.type(validator),

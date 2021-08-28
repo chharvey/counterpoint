@@ -42,7 +42,6 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		));
 	}
 	override typeCheck(validator: Validator): void {
-		this.value.typeCheck(validator);
 		return validator.getSymbolInfo(this.variable.id)?.assess();
 	}
 	override build(_builder: Builder): INST.InstructionNone {

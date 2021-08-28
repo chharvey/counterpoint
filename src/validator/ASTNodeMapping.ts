@@ -13,6 +13,7 @@ import {
 	INST,
 	Builder,
 } from './package.js';
+import {forEachAggregated} from './utilities.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {Validator} from './Validator.js';
@@ -38,7 +39,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		throw builder && 'ASTNodeMapping#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
+		forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		return new SolidTypeMapping(
 			SolidType.unionAll(this.children.map((c) => c.antecedent.type(validator))),
 			SolidType.unionAll(this.children.map((c) => c.consequent.type(validator))),

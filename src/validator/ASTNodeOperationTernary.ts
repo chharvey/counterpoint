@@ -11,6 +11,7 @@ import {
 	INST,
 	Builder,
 } from './package.js';
+import {forEachAggregated} from './utilities.js';
 import type {Operator} from './Operator.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
@@ -45,14 +46,15 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		)
 	}
 	protected override type_do(validator: Validator): SolidType {
-		// If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
-		// If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
+		forEachAggregated([this.operand0, this.operand1, this.operand2], (c) => c.typeCheck(validator));
 		const t0: SolidType = this.operand0.type(validator);
 		const t1: SolidType = this.operand1.type(validator);
 		const t2: SolidType = this.operand2.type(validator);
 		return (t0.isSubtypeOf(SolidBoolean))
 			? (t0 instanceof SolidTypeConstant)
-				? (t0.value === SolidBoolean.FALSE) ? t2 : t1
+				? (t0.value === SolidBoolean.FALSE)
+					? t2 // If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
+					: t1 // If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
 				: t1.union(t2)
 			: (() => { throw new TypeError01(this) })()
 	}
