@@ -6,3 +6,4 @@ export * from './TerminalString.js';
 export * from './TerminalTemplateFull.js';
 export * from './TerminalTemplateHead.js';
 export * from './TerminalTemplateMiddle.js';
+export * from './TerminalTemplateTail.js';
