@@ -7,12 +7,14 @@ import {
 	Util,
 } from './package.js';
 import {
-	RadixType,
 	TemplatePosition,
 	maybe,
 	maybeA,
 } from './utils.js';
 import * as TOKEN from './token/index.js';
+import {
+	TerminalInteger,
+} from './terminal/index.js';
 
 
 
@@ -20,34 +22,6 @@ export * from './terminal/index.js';
 
 
 
-export class TerminalInteger extends Terminal {
-	static readonly instance: TerminalInteger = new TerminalInteger()
-	static digitSequence(radix: RadixType = TOKEN.TokenNumber.RADIX_DEFAULT): string {
-		return [
-			...maybeA(() => [
-				TerminalInteger.digitSequence(radix),
-				maybe(() => TOKEN.TokenNumber.SEPARATOR),
-			]),
-			Util.arrayRandom(TOKEN.TokenNumber.DIGITS.get(radix)!),
-		].join('')
-	}
-	random(): string {
-		const [base, radix]: [string, RadixType] = Util.arrayRandom([...TOKEN.TokenNumber.BASES])
-		return [
-			maybe(() => Util.arrayRandom(TOKEN.TokenNumber.UNARY)),
-			...(Util.randomBool() ? [
-				TerminalInteger.digitSequence(),
-			] : [
-				TOKEN.TokenNumber.ESCAPER,
-				base,
-				TerminalInteger.digitSequence(radix),
-			]),
-		].join('')
-	}
-	match(candidate: Token): boolean {
-		return candidate instanceof TOKEN.TokenNumber && !candidate.isFloat
-	}
-}
 export class TerminalFloat extends Terminal {
 	static readonly instance: TerminalFloat = new TerminalFloat()
 	random(): string {
