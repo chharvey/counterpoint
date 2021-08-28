@@ -8,7 +8,7 @@ import type {AST} from './package.js';
 /**
  * An AssignmentError is thrown when the validator detects an illegal declaration or assignment.
  */
-class AssignmentError extends ErrorCode {
+export class AssignmentError extends ErrorCode {
 	/** The name of this class of errors. */
 	static override readonly NAME: string = 'AssignmentError';
 	/** The number series of this class of errors. */
@@ -32,26 +32,6 @@ class AssignmentError extends ErrorCode {
 }
 
 
-/**
- * An AssignmentError01 is thrown when the validator encounters a duplicate declaration.
- * @example
- * let my_var: int = 42;
- * let my_var: int = 24; % AssignmentError01: Duplicate declaration: `my_var` is already declared.
- * @example
- * type MyType = int;
- * type MyType = float; % AssignmentError01: Duplicate declaration: `MyType` is already declared.
- */
-export class AssignmentError01 extends AssignmentError {
-	/** The number series of this class of errors. */
-	static override readonly CODE = 1;
-	/**
-	 * Construct a new AssignmentError01 object.
-	 * @param symbol the duplicate symbol
-	 */
-	constructor (symbol: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
-		super(`Duplicate declaration: \`${ symbol.source }\` is already declared.`, AssignmentError01.CODE, symbol.line_index, symbol.col_index);
-	}
-}
 /**
  * An AssignmentError10 is thrown when attempting to reassign a fixed variable.
  * @example
