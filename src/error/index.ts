@@ -7,11 +7,11 @@ export * from './ReferenceError03.js';
 export * from './AssignmentError01.js';
 export * from './AssignmentError10.js';
 export {
-	TypeError02,
 	TypeError03,
 	TypeError04,
 } from './SolidTypeError.js';
 export * from './TypeError01.js';
+export * from './TypeError02.js';
 export {
 	VoidError01,
 } from './VoidError.js';
