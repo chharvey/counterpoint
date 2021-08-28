@@ -2,10 +2,10 @@ export * from './LexError03.js';
 export * from './LexError04.js';
 export * from './LexError05.js';
 export {
-	ReferenceError02,
 	ReferenceError03,
 } from './SolidReferenceError.js';
 export * from './ReferenceError01.js';
+export * from './ReferenceError02.js';
 export {
 	AssignmentError01,
 	AssignmentError10,
