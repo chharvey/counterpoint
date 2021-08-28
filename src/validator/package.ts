@@ -24,10 +24,11 @@ export {
 export {
 	Punctuator,
 	Keyword,
+	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
 	ParserSolid as Parser,
 	PARSER,
 } from '../parser/index.js';
-export * as TOKEN from '../parser/index.js'; // TODO
+export * as TOKEN from '../parser/token/index.js'; // HACK
 export {
 	SolidType,
 	SolidTypeIntersection,
