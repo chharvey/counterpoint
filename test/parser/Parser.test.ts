@@ -9,10 +9,11 @@ import {
 import {
 	Punctuator,
 	Keyword,
-	TOKEN,
+	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
 	PARSER,
 	ParserSolid as Parser,
 } from '../../src/parser/index.js';
+import * as TOKEN from '../../src/parser/token/index.js'; // HACK
 import {
 	assert_arrayLength,
 } from '../assert-helpers.js';

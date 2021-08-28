@@ -12,7 +12,7 @@ import {
 import {
 	Punctuator,
 } from './Punctuator.js';
-import * as TOKEN from './Token.js';
+import * as TOKEN from './token/index.js';
 
 
 

@@ -6,21 +6,14 @@ import {
 import {
 	Util,
 } from './package.js';
-import {Keyword} from './Keyword.js';
 import {
 	RadixType,
 	TemplatePosition,
-} from './Token.js';
-import * as TOKEN from './Token.js';
-
-
-
-function maybe(fun: () => string): string {
-	return Util.randomBool() ? '' : fun()
-}
-function maybeA(fun: () => string[]): string[] {
-	return Util.randomBool() ? [] : fun()
-}
+	maybe,
+	maybeA,
+} from './utils.js';
+import {Keyword} from './Keyword.js';
+import * as TOKEN from './token/index.js';
 
 
 
