@@ -99,6 +99,67 @@ function neitherFloats(t0: SolidType, t1: SolidType): boolean {
 function oneFloats(t0: SolidType, t1: SolidType): boolean {
 	return !neitherFloats(t0, t1) && !bothFloats(t0, t1)
 }
+/** Implementation of `xjs.Array.forEachAggregated` until it is released. */
+function forEachAggregated<T>(array: readonly T[], callback: (item: T) => void): void {
+	const errors: readonly Error[] = array.map((it) => {
+		try {
+			callback(it);
+			return null;
+		} catch (err) {
+			return (err instanceof Error) ? err : new Error(`${ err }`);
+		}
+	}).filter((e): e is Error => e instanceof Error);
+	if (errors.length) {
+		throw (errors.length === 1)
+			? errors[0]
+			: new AggregateError(errors, errors.map((err) => err.message).join('\n'));
+	}
+}
+/** Implementation of `xjs.Array.mapAggregated` until it is released. */
+function mapAggregated<T, U>(array: readonly T[], callback: (item: T) => U): U[] {
+	const successes: U[]     = [];
+	const errors:    Error[] = [];
+	array.forEach((it) => {
+		let success: U;
+		try {
+			success = callback(it);
+		} catch (err) {
+			errors.push((err instanceof Error) ? err : new Error(`${ err }`));
+			return;
+		}
+		successes.push(success);
+	});
+	if (errors.length) {
+		throw (errors.length === 1)
+			? errors[0]
+			: new AggregateError(errors, errors.map((err) => err.message).join('\n'));
+	} else {
+		return successes;
+	}
+}
+/**
+ * Type-check an assignment.
+ * @param assignment    either a variable declaration or a reassignment
+ * @param assignee_type the type of the assignee (the variable or bound property being reassigned)
+ * @param assigned_type the type of the expression assigned
+ * @param validator     a validator
+ * @throws {TypeError03} if the assigned expression is not assignable to the assignee
+ */
+function typeCheckAssignment(
+	assignment:    ASTNodeDeclarationVariable | ASTNodeAssignment,
+	assignee_type: SolidType,
+	assigned_type: SolidType,
+	validator:     Validator,
+): void {
+	const treatIntAsSubtypeOfFloat: boolean = (
+		   validator.config.compilerOptions.intCoercion
+		&& assigned_type.isSubtypeOf(Int16)
+		&& Float64.isSubtypeOf(assignee_type)
+	);
+	if (!assigned_type.isSubtypeOf(assignee_type) && !treatIntAsSubtypeOfFloat) {
+		throw new TypeError03(assignment, assignee_type, assigned_type);
+	}
+}
 
 
 
@@ -126,7 +187,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * @param validator a record of declared variable symbols
 	 */
 	varCheck(validator: Validator): void {
-		return this.children.forEach((c) => c.varCheck(validator));
+		return forEachAggregated(this.children, (c) => c.varCheck(validator));
 	}
 
 	/**
@@ -134,7 +195,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * @param validator stores validation information
 	 */
 	typeCheck(validator: Validator): void {
-		return this.children.forEach((c) => c.typeCheck(validator));
+		return forEachAggregated(this.children, (c) => c.typeCheck(validator));
 	}
 }
 
@@ -483,7 +544,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	override varCheck(validator: Validator): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be `List | Hash | Set | Map`)
-		return this.args.forEach((arg) => arg.varCheck(validator)); // TODO: AggregateForEach
+		return forEachAggregated(this.args, (arg) => arg.varCheck(validator));
 	}
 	protected override assess_do(validator: Validator): SolidType {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
@@ -819,7 +880,7 @@ export class ASTNodeTuple extends ASTNodeExpression {
 		throw builder && 'ASTNodeTuple#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type(validator)));
+		return SolidTypeTuple.fromTypes(mapAggregated(this.children, (c) => c.type(validator)));
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
 		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.assess(validator));
@@ -847,7 +908,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
+		return SolidTypeRecord.fromTypes(new Map(mapAggregated(this.children, (c) => [
 			c.key.id,
 			c.value.type(validator),
 		])));
@@ -881,7 +942,7 @@ export class ASTNodeSet extends ASTNodeExpression {
 		throw builder && 'ASTNodeSet#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
+		forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		return new SolidTypeSet(
 			(this.children.length)
 				? SolidType.unionAll(this.children.map((c) => c.type(validator)))
@@ -914,7 +975,7 @@ export class ASTNodeMap extends ASTNodeExpression {
 		throw builder && 'ASTNodeMap#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
+		forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		return new SolidTypeMap(
 			SolidType.unionAll(this.children.map((c) => c.antecedent.type(validator))),
 			SolidType.unionAll(this.children.map((c) => c.consequent.type(validator))),
@@ -952,7 +1013,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		throw builder && 'ASTNodeAccess#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		this.children.forEach((c) => c.typeCheck(validator)); // TODO: use forEachAggregated
+		forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		let base_type: SolidType = this.base.type(validator);
 		if (base_type instanceof SolidTypeIntersection || base_type instanceof SolidTypeUnion) {
 			base_type = base_type.combineTuplesOrRecords();
@@ -1061,10 +1122,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 	override varCheck(validator: Validator): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be `List | Hash | Set | Map`)
-		return [
+		return forEachAggregated([
 			...this.typeargs,
 			...this.exprargs,
-		].forEach((arg) => arg.varCheck(validator)); // TODO: AggregateForEach
+		], (arg) => arg.varCheck(validator));
 	}
 	override shouldFloat(_validator: Validator): boolean {
 		return false;
@@ -1255,6 +1316,7 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	 * @final
 	 */
 	protected override type_do(validator: Validator): SolidType {
+		forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		return this.type_do_do(
 			this.operand0.type(validator),
 			this.operand1.type(validator),
@@ -1525,16 +1587,15 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		)
 	}
 	protected override type_do(validator: Validator): SolidType {
-		/**
-		 * If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
-		 * If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
-		 */
+		forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		const t0: SolidType = this.operand0.type(validator);
 		const t1: SolidType = this.operand1.type(validator);
 		const t2: SolidType = this.operand2.type(validator);
 		return (t0.isSubtypeOf(SolidBoolean))
 			? (t0 instanceof SolidTypeConstant)
-				? (t0.value === SolidBoolean.FALSE) ? t2 : t1
+				? (t0.value === SolidBoolean.FALSE)
+					? t2 // If `a` is of type `false`, then `typeof (if a then b else c)` is `typeof c`.
+					: t1 // If `a` is of type `true`,  then `typeof (if a then b else c)` is `typeof b`.
 				: t1.union(t2)
 			: (() => { throw new TypeError01(this) })()
 	}
@@ -1624,7 +1685,6 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		));
 	}
 	override typeCheck(validator: Validator): void {
-		this.value.typeCheck(validator);
 		return validator.getSymbolInfo(this.variable.id)?.assess();
 	}
 	override build(_builder: Builder): INST.InstructionNone {
@@ -1651,8 +1711,10 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		if (validator.hasSymbol(variable.id)) {
 			throw new AssignmentError01(variable);
 		};
-		this.type.varCheck(validator);
-		this.value.varCheck(validator);
+		forEachAggregated([
+			this.type,
+			this.value,
+		], (c) => c.varCheck(validator));
 		validator.addSymbol(new SymbolStructureVar(
 			variable.id,
 			variable.line_index,
@@ -1666,17 +1728,13 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		));
 	}
 	override typeCheck(validator: Validator): void {
-		this.type.typeCheck(validator);
 		this.value.typeCheck(validator);
-		const assignee_type: SolidType = this.type.assess(validator);
-		const assigned_type: SolidType = this.value.type(validator);
-		if (
-			assigned_type.isSubtypeOf(assignee_type) ||
-			validator.config.compilerOptions.intCoercion && assigned_type.isSubtypeOf(Int16) && Float64.isSubtypeOf(assignee_type)
-		) {
-		} else {
-			throw new TypeError03(this, assignee_type, assigned_type)
-		}
+		typeCheckAssignment(
+			this,
+			this.type.assess(validator),
+			this.value.type(validator),
+			validator,
+		);
 		return validator.getSymbolInfo(this.variable.id)?.assess();
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
@@ -1702,7 +1760,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		super(start_node, {}, [assignee, assigned]);
 	}
 	override varCheck(validator: Validator): void {
-		this.children.forEach((c) => c.varCheck(validator));
+		forEachAggregated(this.children, (c) => c.varCheck(validator));
 		const variable: ASTNodeVariable = this.assignee;
 		if (!(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
 			throw new AssignmentError10(variable);
@@ -1710,15 +1768,12 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	}
 	override typeCheck(validator: Validator): void {
 		this.assigned.typeCheck(validator);
-		const assignee_type: SolidType = this.assignee.type(validator);
-		const assigned_type: SolidType = this.assigned.type(validator);
-		if (
-			assigned_type.isSubtypeOf(assignee_type) ||
-			validator.config.compilerOptions.intCoercion && assigned_type.isSubtypeOf(Int16) && Float64.isSubtypeOf(assignee_type)
-		) {
-		} else {
-			throw new TypeError03(this, assignee_type, assigned_type);
-		};
+		return typeCheckAssignment(
+			this,
+			this.assignee.type(validator),
+			this.assigned.type(validator),
+			validator,
+		);
 	}
 	override build(builder: Builder): INST.InstructionStatement {
 		const tofloat: boolean = this.assignee.type(builder.validator).isSubtypeOf(Float64) || this.assigned.shouldFloat(builder.validator);
