@@ -11,7 +11,7 @@ import type {
 /**
  * A TypeError is thrown when the validator recognizes a type mismatch.
  */
-class SolidTypeError extends ErrorCode {
+export class SolidTypeError extends ErrorCode {
 	/** The name of this class of errors. */
 	static override readonly NAME: string = 'TypeError';
 	/** The number series of this class of errors. */
@@ -35,22 +35,6 @@ class SolidTypeError extends ErrorCode {
 }
 
 
-/**
- * A TypeError01 is thrown when the validator encounters an invalid operation.
- * @example
- * true + false; % TypeError01: Invalid operation.
- */
-export class TypeError01 extends SolidTypeError {
-	/** The number series of this class of errors. */
-	static override readonly CODE = 1;
-	/**
-	 * Construct a new TypeError01 object.
-	 * @param expression - the invalid operation expression
-	 */
-	constructor (expression: AST.ASTNodeAccess | AST.ASTNodeOperation) {
-		super(`Invalid operation: \`${ expression.source }\` at line ${ expression.line_index + 1 } col ${ expression.col_index + 1 }.`, TypeError01.CODE, expression.line_index, expression.col_index)
-	}
-}
 /**
  * A TypeError02 is thrown when one type is expected to narrow another type, but does not.
  * A general error used for different cases, such as compound types’s components, generic constraints, or throwing non-Exceptions.
