@@ -12,20 +12,14 @@ import {
 	maybe,
 	maybeA,
 } from './utils.js';
-import {Keyword} from './Keyword.js';
 import * as TOKEN from './token/index.js';
 
 
 
-export class TerminalKeyword extends Terminal {
-	static readonly instance: TerminalKeyword = new TerminalKeyword();
-	random(): Keyword {
-		return Util.arrayRandom(Object.values(Keyword));
-	}
-	match(candidate: Token): boolean {
-		return candidate instanceof TOKEN.TokenKeyword;
-	}
-}
+export * from './terminal/index.js';
+
+
+
 export class TerminalIdentifier extends Terminal {
 	static readonly instance: TerminalIdentifier = new TerminalIdentifier()
 	private static charsBasic(start: boolean = false): string {
