@@ -20,7 +20,7 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 		} from './package.js';
 		${ generate(await grammar_solid, 'Solid')
 			.replace(`from './Lexer';`, `from './Lexer.js';`)
-			.replace(`from './Terminal';`, `from './Terminal.js';`)
+			.replace(`from './Terminal';`, `from './terminal/index.js';`)
 			.replace(`constructor (source: string)`, `constructor (source: string, config: SolidConfig = CONFIG_DEFAULT)`)
 			.replace(`new LexerSolid(source)`, `new LexerSolid(source, config)`)
 		}

@@ -19,7 +19,7 @@ import {
 	GrammarSymbol,
 } from '@chharvey/parser';
 import {LexerSolid} from './Lexer.js';
-import * as TERMINAL from './Terminal.js';
+import * as TERMINAL from './terminal/index.js';
 
 export class ProductionWord extends Production {
 	static readonly instance: ProductionWord = new ProductionWord();
