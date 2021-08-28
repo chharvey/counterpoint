@@ -132,29 +132,6 @@ function mapAggregated<T, U>(array: readonly T[], callback: (item: T) => U): U[]
 	}
 }
 mapAggregated;
-/**
- * Type-check an assignment.
- * @param assignment    either a variable declaration or a reassignment
- * @param assignee_type the type of the assignee (the variable or bound property being reassigned)
- * @param assigned_type the type of the expression assigned
- * @param validator     a validator
- * @throws {TypeError03} if the assigned expression is not assignable to the assignee
- */
-function typeCheckAssignment(
-	assignment:    ASTNodeDeclarationVariable | ASTNodeAssignment,
-	assignee_type: SolidType,
-	assigned_type: SolidType,
-	validator:     Validator,
-): void {
-	const treatIntAsSubtypeOfFloat: boolean = (
-		   validator.config.compilerOptions.intCoercion
-		&& assigned_type.isSubtypeOf(Int16)
-		&& Float64.isSubtypeOf(assignee_type)
-	);
-	if (!assigned_type.isSubtypeOf(assignee_type) && !treatIntAsSubtypeOfFloat) {
-		throw new TypeError03(assignment, assignee_type, assigned_type);
-	}
-}
 
 
 
@@ -1369,6 +1346,24 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 		return goal.children[0];
 	}
 	abstract build(builder: Builder): Instruction;
+	/**
+	 * Type-check an assignment.
+	 * @final
+	 * @param assignee_type the type of the assignee (the variable or bound property being reassigned)
+	 * @param assigned_type the type of the expression assigned
+	 * @param validator     a validator
+	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
+	 */
+	protected typeCheckAssignment(assignee_type: SolidType, assigned_type: SolidType, validator: Validator): void {
+		const treatIntAsSubtypeOfFloat: boolean = (
+			   validator.config.compilerOptions.intCoercion
+			&& assigned_type.isSubtypeOf(Int16)
+			&& Float64.isSubtypeOf(assignee_type)
+		);
+		if (!assigned_type.isSubtypeOf(assignee_type) && !treatIntAsSubtypeOfFloat) {
+			throw new TypeError03(this, assignee_type, assigned_type);
+		}
+	}
 }
 export class ASTNodeStatementExpression extends ASTNodeStatement {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
@@ -1468,8 +1463,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 	override typeCheck(validator: Validator): void {
 		this.value.typeCheck(validator);
-		typeCheckAssignment(
-			this,
+		this.typeCheckAssignment(
 			this.type.assess(validator),
 			this.value.type(validator),
 			validator,
@@ -1507,8 +1501,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	}
 	override typeCheck(validator: Validator): void {
 		super.typeCheck(validator);
-		return typeCheckAssignment(
-			this,
+		return this.typeCheckAssignment(
 			this.assignee.type(validator),
 			this.assigned.type(validator),
 			validator,
