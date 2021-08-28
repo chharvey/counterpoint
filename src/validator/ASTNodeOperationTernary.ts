@@ -11,7 +11,6 @@ import {
 	INST,
 	Builder,
 } from './package.js';
-import {forEachAggregated} from './utilities.js';
 import type {Operator} from './Operator.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
@@ -46,7 +45,6 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		)
 	}
 	protected override type_do(validator: Validator): SolidType {
-		forEachAggregated([this.operand0, this.operand1, this.operand2], (c) => c.typeCheck(validator));
 		const t0: SolidType = this.operand0.type(validator);
 		const t1: SolidType = this.operand1.type(validator);
 		const t2: SolidType = this.operand2.type(validator);

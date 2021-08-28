@@ -11,7 +11,6 @@ import {
 	INST,
 	Builder,
 } from './package.js';
-import {mapAggregated} from './utilities.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {Validator} from './Validator.js';
@@ -37,7 +36,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return SolidTypeRecord.fromTypes(new Map(mapAggregated(this.children, (c) => [
+		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
 			c.value.type(validator),
 		])));

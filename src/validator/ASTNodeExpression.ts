@@ -58,6 +58,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 * @final
 	 */
 	override typeCheck(validator: Validator): void {
+		super.typeCheck(validator);
 		this.type(validator); // assert does not throw
 	}
 	/**

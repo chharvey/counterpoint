@@ -24,7 +24,6 @@ import {
 	INST,
 	Builder,
 } from './package.js';
-import {forEachAggregated} from './utilities.js';
 import {
 	Operator,
 	ValidAccessOperator,
@@ -59,7 +58,6 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		throw builder && 'ASTNodeAccess#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		forEachAggregated([this.base, this.accessor], (c) => c.typeCheck(validator));
 		let base_type: SolidType = this.base.type(validator);
 		if (base_type instanceof SolidTypeIntersection || base_type instanceof SolidTypeUnion) {
 			base_type = base_type.combineTuplesOrRecords();

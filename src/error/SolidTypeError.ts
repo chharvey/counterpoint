@@ -83,7 +83,7 @@ export class TypeError03 extends SolidTypeError {
 	 * @param assignee_type - the type to which the expression is assigned
 	 * @param assigned_type - the type of the expression
 	 */
-	constructor (assignment: AST.ASTNodeDeclarationVariable | AST.ASTNodeAssignment, assignee_type: SolidType, assigned_type: SolidType) {
+	constructor (assignment: AST.ASTNodeStatement, assignee_type: SolidType, assigned_type: SolidType) {
 		super(`Expression of type ${ assigned_type } is not assignable to type ${ assignee_type }.`, TypeError03.CODE, assignment.line_index, assignment.col_index)
 	}
 }

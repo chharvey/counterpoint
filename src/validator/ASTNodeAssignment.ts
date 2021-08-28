@@ -8,7 +8,6 @@ import {
 	INST,
 	Builder,
 } from './package.js';
-import {typeCheckAssignment} from './utilities.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeVariable} from './ASTNodeVariable.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';
@@ -39,8 +38,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	}
 	override typeCheck(validator: Validator): void {
 		super.typeCheck(validator);
-		return typeCheckAssignment(
-			this,
+		return this.typeCheckAssignment(
 			this.assignee.type(validator),
 			this.assigned.type(validator),
 			validator,
