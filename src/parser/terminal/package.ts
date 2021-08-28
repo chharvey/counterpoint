@@ -3,6 +3,7 @@ export {
 } from '../package.js';
 export {
 	RadixType,
+	TemplatePosition,
 	maybe,
 	maybeA,
 } from '../utils.js';
