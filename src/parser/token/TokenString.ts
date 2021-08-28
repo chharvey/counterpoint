@@ -7,9 +7,7 @@ import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import {
 	LexError03,
-	CodePoint,
 	CodeUnit,
-	EncodedChar,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	LexerSolid,
@@ -18,6 +16,27 @@ import {TokenCommentLine} from './TokenCommentLine.js';
 import {TokenCommentMulti} from './TokenCommentMulti.js';
 import {NumberOrStringToken} from './NumberOrStringToken.js';
 import {TokenNumber} from './TokenNumber.js';
+
+
+
+/**
+ * A code point is a number within [0, 0x10_ffff] that represents
+ * the index of a character in the Unicode Universal Character Set.
+ */
+type CodePoint = number;
+
+
+
+/**
+ * An encoded character is a sequence of code units
+ * that corresponds to a single code point in the UTF-8 encoding.
+ */
+type EncodedChar =
+	| [CodeUnit]
+	| [CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
+;
 
 
 
