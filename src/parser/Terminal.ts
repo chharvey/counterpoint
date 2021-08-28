@@ -13,15 +13,6 @@ export * from './terminal/index.js';
 
 
 
-export class TerminalTemplateFull extends TerminalTemplate {
-	static readonly instance: TerminalTemplateFull = new TerminalTemplateFull()
-	override random(): string {
-		return super.random(TOKEN.TokenTemplate.DELIM, TOKEN.TokenTemplate.DELIM)
-	}
-	override match(candidate: Token): boolean {
-		return super.match(candidate, TemplatePosition.FULL)
-	}
-}
 export class TerminalTemplateHead extends TerminalTemplate {
 	static readonly instance: TerminalTemplateHead = new TerminalTemplateHead()
 	override random(): string {
