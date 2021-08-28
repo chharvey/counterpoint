@@ -1,18 +1,13 @@
-import type {
-	ParseNode,
-} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Builder,
 	Instruction,
-	INST,
 } from './package.js';
 import {ASTNodeGoal} from './index.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
-import type {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
 
@@ -37,22 +32,4 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 		return goal.children[0];
 	}
 	abstract build(builder: Builder): Instruction;
-}
-export class ASTNodeStatementExpression extends ASTNodeStatement {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
-		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert.ok(statement instanceof ASTNodeStatementExpression);
-		return statement;
-	}
-	constructor(
-		start_node: ParseNode,
-		readonly expr?: ASTNodeExpression,
-	) {
-		super(start_node, {}, (expr) ? [expr] : void 0);
-	}
-	override build(builder: Builder): INST.InstructionNone | INST.InstructionStatement {
-		return (this.expr)
-			? new INST.InstructionStatement(builder.stmtCount, this.expr.build(builder))
-			: new INST.InstructionNone();
-	}
 }
