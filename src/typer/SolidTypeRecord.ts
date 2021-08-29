@@ -1,17 +1,16 @@
-import {
+import type {
 	AST,
-	Operator,
 	ValidAccessOperator,
 } from '../validator/index.js';
 import {TypeError04} from '../error/index.js';
 import {
 	SolidTypeHash,
 	SolidObject,
-	SolidNull,
 	SolidRecord,
 } from './index.js'; // avoids circular imports
 import {
 	TypeEntry,
+	updateAccessedStaticType,
 	IntRange,
 	SolidType,
 } from './SolidType.js';
@@ -78,12 +77,10 @@ export class SolidTypeRecord extends SolidType {
 	}
 
 	get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): SolidType {
-		const entry: TypeEntry = (this.propertytypes.has(key))
+		return updateAccessedStaticType(((this.propertytypes.has(key))
 			? this.propertytypes.get(key)!
-			: (() => { throw new TypeError04('property', this, accessor); })();
-		return (access_kind === Operator.CLAIMDOT)
-			? entry.type.subtract(SolidType.VOID)
-			: entry.type.union((entry.optional) ? (access_kind === Operator.OPTDOT) ? SolidNull : SolidType.VOID : SolidType.NEVER);
+			: (() => { throw new TypeError04('property', this, accessor); })()
+		), access_kind);
 	}
 
 	valueTypes(): SolidType {
