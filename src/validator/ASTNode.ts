@@ -134,29 +134,7 @@ function mapAggregated<T, U>(array: readonly T[], callback: (item: T) => U): U[]
 		return successes;
 	}
 }
-/**
- * Type-check an assignment.
- * @param assignment    either a variable declaration or a reassignment
- * @param assignee_type the type of the assignee (the variable or bound property being reassigned)
- * @param assigned_type the type of the expression assigned
- * @param validator     a validator
- * @throws {TypeError03} if the assigned expression is not assignable to the assignee
- */
-function typeCheckAssignment(
-	assignment:    ASTNodeDeclarationVariable | ASTNodeAssignment,
-	assignee_type: SolidType,
-	assigned_type: SolidType,
-	validator:     Validator,
-): void {
-	const treatIntAsSubtypeOfFloat: boolean = (
-		   validator.config.compilerOptions.intCoercion
-		&& assigned_type.isSubtypeOf(Int16)
-		&& Float64.isSubtypeOf(assignee_type)
-	);
-	if (!assigned_type.isSubtypeOf(assignee_type) && !treatIntAsSubtypeOfFloat) {
-		throw new TypeError03(assignment, assignee_type, assigned_type);
-	}
-}
+mapAggregated;
 
 
 
@@ -606,6 +584,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 * @final
 	 */
 	override typeCheck(validator: Validator): void {
+		super.typeCheck(validator);
 		this.type(validator); // assert does not throw
 	}
 	/**
@@ -785,7 +764,7 @@ export class ASTNodeTuple extends ASTNodeExpression {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	override type(validator: Validator): SolidType {
-		return SolidTypeTuple.fromTypes(mapAggregated(this.children, (c) => c.type(validator)));
+		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type(validator)));
 	}
 	@memoizeMethod
 	override assess(validator: Validator): SolidObject | null {
@@ -818,7 +797,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	override type(validator: Validator): SolidType {
-		return SolidTypeRecord.fromTypes(new Map(mapAggregated(this.children, (c) => [
+		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
 			c.value.type(validator),
 		])));
@@ -857,7 +836,6 @@ export class ASTNodeSet extends ASTNodeExpression {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	override type(validator: Validator): SolidType {
-		forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		return new SolidTypeSet(
 			(this.children.length)
 				? SolidType.unionAll(this.children.map((c) => c.type(validator)))
@@ -895,7 +873,6 @@ export class ASTNodeMapping extends ASTNodeExpression {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	override type(validator: Validator): SolidType {
-		forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		return new SolidTypeMapping(
 			SolidType.unionAll(this.children.map((c) => c.antecedent.type(validator))),
 			SolidType.unionAll(this.children.map((c) => c.consequent.type(validator))),
@@ -939,7 +916,6 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	override type(validator: Validator): SolidType {
-		forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		let base_type: SolidType = this.base.type(validator);
 		if (base_type instanceof SolidTypeIntersection || base_type instanceof SolidTypeUnion) {
 			base_type = base_type.combineTuplesOrRecords();
@@ -1133,7 +1109,6 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	override type(validator: Validator): SolidType {
-		forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		return this.type_do(
 			this.operand0.type(validator),
 			this.operand1.type(validator),
@@ -1418,7 +1393,6 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	override type(validator: Validator): SolidType {
-		forEachAggregated(this.children, (c) => c.typeCheck(validator));
 		const t0: SolidType = this.operand0.type(validator);
 		const t1: SolidType = this.operand1.type(validator);
 		const t2: SolidType = this.operand2.type(validator);
@@ -1462,6 +1436,24 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 		return goal.children[0];
 	}
 	abstract build(builder: Builder): Instruction;
+	/**
+	 * Type-check an assignment.
+	 * @final
+	 * @param assignee_type the type of the assignee (the variable or bound property being reassigned)
+	 * @param assigned_type the type of the expression assigned
+	 * @param validator     a validator
+	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
+	 */
+	protected typeCheckAssignment(assignee_type: SolidType, assigned_type: SolidType, validator: Validator): void {
+		const treatIntAsSubtypeOfFloat: boolean = (
+			   validator.config.compilerOptions.intCoercion
+			&& assigned_type.isSubtypeOf(Int16)
+			&& Float64.isSubtypeOf(assignee_type)
+		);
+		if (!assigned_type.isSubtypeOf(assignee_type) && !treatIntAsSubtypeOfFloat) {
+			throw new TypeError03(this, assignee_type, assigned_type);
+		}
+	}
 }
 export class ASTNodeStatementExpression extends ASTNodeStatement {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
@@ -1561,8 +1553,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 	override typeCheck(validator: Validator): void {
 		this.value.typeCheck(validator);
-		typeCheckAssignment(
-			this,
+		this.typeCheckAssignment(
 			this.type.assess(validator),
 			this.value.type(validator),
 			validator,
@@ -1592,16 +1583,15 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		super(start_node, {}, [assignee, assigned]);
 	}
 	override varCheck(validator: Validator): void {
-		forEachAggregated(this.children, (c) => c.varCheck(validator));
+		super.varCheck(validator);
 		const variable: ASTNodeVariable = this.assignee;
 		if (!(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
 			throw new AssignmentError10(variable);
 		};
 	}
 	override typeCheck(validator: Validator): void {
-		this.assigned.typeCheck(validator);
-		return typeCheckAssignment(
-			this,
+		super.typeCheck(validator);
+		return this.typeCheckAssignment(
 			this.assignee.type(validator),
 			this.assigned.type(validator),
 			validator,
