@@ -114,9 +114,12 @@ export function assertAssignable(actual: Error, validation: ValidationObject): v
 	if ('message' in validation) {
 		return assert.strictEqual(actual.message, validation.message);
 	} else if ('errors' in validation) {
-		assert.ok(actual instanceof AggregateError);
+		assert.ok(
+			validation.cons === AggregateError || validation.cons.prototype instanceof AggregateError, // validation.cons extends AggregateError
+			`The \`cons\` value of validation object ${ validation } with an \`errors\` property must be \`AggregateError\` or a subclass of it.`,
+		);
 		return validation.errors.forEach((subvalidation, i) => {
-			assertAssignable(actual.errors[i], subvalidation);
+			assertAssignable((actual as AggregateError).errors[i], subvalidation);
 		});
 	}
 }
