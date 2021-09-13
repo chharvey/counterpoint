@@ -37,6 +37,7 @@ import {
 	Float64,
 	SolidString,
 	CollectionIndexed,
+	CollectionKeyed,
 	SolidTuple,
 	SolidRecord,
 	SolidList,
@@ -1107,7 +1108,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (this.accessor instanceof ASTNodeIndex) {
 			return (base_value as CollectionIndexed).get(this.accessor.value.assess(validator) as Int16, this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
-			return (base_value as SolidRecord).get(this.accessor.id, this.optional, this.accessor);
+			return (base_value as CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
 			const accessor_value: SolidObject | null = this.accessor.assess(validator);
 			if (accessor_value === null) {

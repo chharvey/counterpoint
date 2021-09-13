@@ -249,8 +249,15 @@ Object! Assess(SemanticAccess access) :=
 				1. *Return:* `null`.
 	7. *Else If* `accessor` is a SemanticKey:
 		1. *Let* `id` be `accessor.id`.
-		2. *Assert:* `base_value` is an instance of `Record` *and* `id` is a key in `base_value`.
-		3. *Return:* the value accessed at key `id` in `base_value`.
+		2. *If* `base_value` is an instance of `Record`:
+			1. *Assert:* `id` is a key in `base_value`.
+			2. *Return:* the value accessed at key `id` in `base_value`.
+		3. *Else:*
+			1. *Assert:* `base_value` is an instance of `Hash`.
+			2. *If* `id` is a key in `base_value`:
+				1. *Return:* the value accessed at key `id` in `base_value`.
+			3. *If* `access.kind` is `OPTIONAL`:
+				1. *Return:* `null`.
 	8. *Assert:* `accessor` is a SemanticExpression.
 	9. *Let* `accessor_value` be *Unwrap:* `Assess(accessor)`.
 	10. *If* `base_value` is an instance of `Tuple`:
