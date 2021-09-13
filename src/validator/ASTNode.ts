@@ -1038,23 +1038,31 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
 				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple)
 					? base_type.value.toType()
-					: (base_type as SolidTypeTuple);
+					: base_type as SolidTypeTuple;
 				return base_type_tuple.get(accessor_value, this.kind, this.accessor);
 			}
 			else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidList || base_type instanceof SolidTypeList) {
 				const base_type_list: SolidTypeList = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidList)
 					? base_type.value.toType()
-					: (base_type as SolidTypeList);
+					: base_type as SolidTypeList;
 				return updateAccessedDynamicType(base_type_list.types, this.kind);
 			} else {
 				throw new TypeError04('index', base_type, this.accessor);
 			}
 		} else if (this.accessor instanceof ASTNodeKey) {
-			return (
-				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, this.kind, this.accessor) :
-				(base_type instanceof SolidTypeRecord)                                             ? base_type               .get(this.accessor.id, this.kind, this.accessor) :
-				(() => { throw new TypeError04('property', base_type, this.accessor); })()
-			);
+			if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord || base_type instanceof SolidTypeRecord) {
+				const base_type_record: SolidTypeRecord = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord)
+					? base_type.value.toType()
+					: base_type as SolidTypeRecord;
+				return base_type_record.get(this.accessor.id, this.kind, this.accessor);
+			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidHash || base_type instanceof SolidTypeHash) {
+				const base_type_hash: SolidTypeHash = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidHash)
+					? base_type.value.toType()
+					: base_type as SolidTypeHash;
+				return updateAccessedDynamicType(base_type_hash.types, this.kind);
+			} else {
+				throw new TypeError04('property', base_type, this.accessor);
+			}
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
 			const accessor_type: SolidType = this.accessor.type(validator);
 			function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: SolidType): never {

@@ -2466,12 +2466,12 @@ describe('ASTNodeSolid', () => {
 				rec_unfixed.c; % type \`str\`     % non-computable value
 
 				%% statements 10 – 16 %%
-				null; % hash_fixed.a;   % type \`1\`                 % value \`1\`
-				null; % hash_fixed.b;   % type \`2.0\`               % value \`2.0\`
-				null; % hash_fixed.c;   % type \`'three'\`           % value \`'three'\`
-				null; % hash_unfixed.a; % type \`int | float | str\` % non-computable value
-				null; % hash_unfixed.b; % type \`int | float | str\` % non-computable value
-				null; % hash_unfixed.c; % type \`int | float | str\` % non-computable value
+				hash_fixed.a;   % type \`1\`                 % value \`1\`
+				hash_fixed.b;   % type \`2.0\`               % value \`2.0\`
+				hash_fixed.c;   % type \`'three'\`           % value \`'three'\`
+				hash_unfixed.a; % type \`int | float | str\` % non-computable value
+				hash_unfixed.b; % type \`int | float | str\` % non-computable value
+				hash_unfixed.c; % type \`int | float | str\` % non-computable value
 				${ Dev.supports('optionalEntries') ? `
 					%% statements 16 – 24 %%
 					let         reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= 'three'];
@@ -2495,8 +2495,8 @@ describe('ASTNodeSolid', () => {
 					reco2_u?.b; % type \`str?\`    % non-computable value
 
 					%% statements 30 – 32 %%
-					null; % hash_fixed?.b;   % type \`'three'\`                  % value \`'three'\`
-					null; % hash_unfixed?.b; % type \`int | float | str | null\` % non-computable value
+					hash_fixed?.c;   % type \`'three'\`                  % value \`'three'\`
+					hash_unfixed?.c; % type \`int | float | str | null\` % non-computable value
 				` : '' }
 				${ Dev.supports('claimAccess') ? `
 					%% statements 32 – 36 %%
@@ -2771,6 +2771,15 @@ describe('ASTNodeSolid', () => {
 							program.children.slice(4, 10).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
+						assert.deepStrictEqual(
+							program.children.slice(10, 16).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							[
+								...expected.slice(0, 3),
+								COMMON_TYPES.int_float_str,
+								COMMON_TYPES.int_float_str,
+								COMMON_TYPES.int_float_str,
+							],
+						);
 					});
 					Dev.supports('optionalEntries') && it('unions with void if entry is optional.', () => {
 						assert.deepStrictEqual(
@@ -2792,7 +2801,16 @@ describe('ASTNodeSolid', () => {
 							],
 						);
 					});
-					Dev.supports('claimAccess') && it('always subtracts void.', () => {
+					Dev.supports('optionalAccess') && it('unions with null for hashes if access is optional.', () => {
+						assert.deepStrictEqual(
+							program.children.slice(30, 32).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							[
+								typeConstStr('three'),
+								COMMON_TYPES.int_float_str.union(SolidNull),
+							],
+						);
+					});
+					Dev.supports('claimAccess') && it('claim access always subtracts void.', () => {
 						assert.deepStrictEqual(
 							[
 								...program.children.slice(32, 36),
@@ -2807,9 +2825,22 @@ describe('ASTNodeSolid', () => {
 							],
 						);
 					});
-					it('throws when key is out of bounds.', () => {
+					it('throws when key is out of bounds for records.', () => {
 						assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`).type(validator), TypeError04);
 						Dev.supports('optionalAccess') && assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).type(validator), TypeError04);
+					});
+					it('returns the hash item type when key is out of bounds for hashes.', () => {
+						const validator: Validator = new Validator();
+						const program: AST.ASTNodeGoal = programFactory(`
+							let list: [: int | float | str] = Hash.<int | float| str>([a= 1, b= 2.0, c= 'three']);
+							list.d;  % type \`1 | 2.0 | 'three'\`
+						`)(validator);
+						program.varCheck(validator);
+						program.typeCheck(validator);
+						assert.deepStrictEqual(
+							typeOfStmtExpr(program.children[1] as AST.ASTNodeStatementExpression, validator),
+							SolidType.unionAll(expected.slice(0, 3)), // TODO: use `COMMON_TYPES.int_float_str` when constant folding off
+						);
 					});
 				});
 				context('access by computed expression.', () => {
