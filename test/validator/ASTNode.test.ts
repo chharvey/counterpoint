@@ -2451,16 +2451,29 @@ describe('ASTNodeSolid', () => {
 				` : '' }
 			`);
 			const KEY_ACCESS_PROGRAM = programFactory(`
-				let         rec_fixed:   [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
-				let unfixed rec_unfixed: [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
+				%% statements 0 – 4 %%
+				let         rec_fixed:    [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
+				let unfixed rec_unfixed:  [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
+				let         hash_fixed:   [: int | float | str]      = Hash.<int | float | str>([a= 1, b= 2.0, c= 'three']);
+				let unfixed hash_unfixed: [: int | float | str]      = Hash.<int | float | str>([a= 1, b= 2.0, c= 'three']);
 
+				%% statements 4 – 10 %%
 				rec_fixed.a;   % type \`1\`       % value \`1\`
 				rec_fixed.b;   % type \`2.0\`     % value \`2.0\`
 				rec_fixed.c;   % type \`'three'\` % value \`'three'\`
 				rec_unfixed.a; % type \`int\`     % non-computable value
 				rec_unfixed.b; % type \`float\`   % non-computable value
 				rec_unfixed.c; % type \`str\`     % non-computable value
+
+				%% statements 10 – 16 %%
+				null; % hash_fixed.a;   % type \`1\`                 % value \`1\`
+				null; % hash_fixed.b;   % type \`2.0\`               % value \`2.0\`
+				null; % hash_fixed.c;   % type \`'three'\`           % value \`'three'\`
+				null; % hash_unfixed.a; % type \`int | float | str\` % non-computable value
+				null; % hash_unfixed.b; % type \`int | float | str\` % non-computable value
+				null; % hash_unfixed.c; % type \`int | float | str\` % non-computable value
 				${ Dev.supports('optionalEntries') ? `
+					%% statements 16 – 24 %%
 					let         reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= 'three'];
 					let         reco2_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
 					let         reco3_f: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
@@ -2470,21 +2483,29 @@ describe('ASTNodeSolid', () => {
 					let unfixed reco3_u: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
 					let unfixed reco4_u: [a: int, c: float]          = [a= 1, c= 2.0];
 
+					%% statements 24 – 26 %%
 					reco1_u.b; % type \`str | void\` % non-computable value
 					reco2_u.b; % type \`str | void\` % non-computable value
 				` : '' }
 				${ Dev.supports('optionalAccess') ? `
+					%% statements 26 – 30 %%
 					reco1_f?.b; % type \`'three'\` % value \`'three'\`
 					reco3_f?.b; % type \`true\`    % value \`true\`
 					reco1_u?.b; % type \`str?\`    % non-computable value
 					reco2_u?.b; % type \`str?\`    % non-computable value
+
+					%% statements 30 – 32 %%
+					null; % hash_fixed?.b;   % type \`'three'\`                  % value \`'three'\`
+					null; % hash_unfixed?.b; % type \`int | float | str | null\` % non-computable value
 				` : '' }
 				${ Dev.supports('claimAccess') ? `
+					%% statements 32 – 36 %%
 					reco1_f!.b; % type \`'three'\` % value \`'three'\`
 					reco3_f!.b; % type \`true\`    % value \`true\`
 					reco1_u!.b; % type \`str\`     % non-computable value
 					reco2_u!.b; % type \`str\`     % non-computable value
 
+					%% statements 36 – 38 %%
 					let unfixed recvoid: [c: int | void] = [c= 42];
 					recvoid!.c; % type \`int\` % non-computable value
 				` : '' }
@@ -2747,13 +2768,13 @@ describe('ASTNodeSolid', () => {
 					});
 					it('returns individual entry types.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(2, 8).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(4, 10).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
 					});
 					Dev.supports('optionalEntries') && it('unions with void if entry is optional.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(16, 18).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(24, 26).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
 								SolidString.union(SolidType.VOID),
 								SolidString.union(SolidType.VOID),
@@ -2762,7 +2783,7 @@ describe('ASTNodeSolid', () => {
 					});
 					Dev.supports('optionalAccess') && it('unions with null if entry and access are optional.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(18, 22).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(26, 30).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
 								typeConstStr('three'),
 								SolidBoolean.TRUETYPE,
@@ -2774,8 +2795,8 @@ describe('ASTNodeSolid', () => {
 					Dev.supports('claimAccess') && it('always subtracts void.', () => {
 						assert.deepStrictEqual(
 							[
-								...program.children.slice(22, 26),
-								program.children[27],
+								...program.children.slice(32, 36),
+								program.children[37],
 							].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
 								typeConstStr('three'),
@@ -3089,17 +3110,17 @@ describe('ASTNodeSolid', () => {
 					});
 					it('returns individual entries.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(2, 8).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(4, 10).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
 						Dev.supports('optionalAccess') && assert.deepStrictEqual(
-							program.children.slice(18, 22).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(26, 30).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected_o,
 						);
 						Dev.supports('claimAccess') && assert.deepStrictEqual(
 							[
-								...program.children.slice(22, 26),
-								program.children[27]
+								...program.children.slice(32, 36),
+								program.children[37],
 							].map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
 								...expected_o,
