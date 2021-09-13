@@ -90,7 +90,10 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 		6. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)` *and* `i` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
 			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access)`.
-		7. *Else:*
+		7. *Else If* *UnwrapAffirm:* `Subtype(base_type, List)`:
+			1. *Let* `type` be the union of all item types in `base_type`.
+			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access)`.
+		8. *Else:*
 			1. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
 	8. *If* `accessor` is a SemanticKey:
 		1. *Let* `id` be `accessor.id`.
