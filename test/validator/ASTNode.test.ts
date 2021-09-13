@@ -3040,6 +3040,10 @@ describe('ASTNodeSolid', () => {
 							program.children.slice(4, 10).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
+						assert.deepStrictEqual(
+							program.children.slice(10, 16).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							expected,
+						);
 						Dev.supports('optionalAccess') && assert.deepStrictEqual(
 							program.children.slice(38, 42).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected_o,

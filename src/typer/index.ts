@@ -20,6 +20,9 @@ export {SolidNumber}  from './SolidNumber.js';
 export {Int16}        from './Int16.js';
 export {Float64}      from './Float64.js';
 export {SolidString}  from './SolidString.js';
+
+export {CollectionIndexed} from './CollectionIndexed.js';
+
 export {SolidTuple}   from './SolidTuple.js';
 export {SolidRecord}  from './SolidRecord.js';
 export {SolidList}    from './SolidList.js';
