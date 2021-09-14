@@ -85,6 +85,12 @@ the Sequence type is denoted \`Sequence<‹T›>\`.
 For example, a sequence of Integers is denoted \`Sequence&lt;Integer&gt;\`.
 
 
+### Vector
+A **Vector** is an ordered list of values where the number of values is fixed.
+For example, the notation \`Vector&lt;Integer, Float&gt;\` indicates a sequence of two items,
+the first of which is of type \`Integer\` and the second of which is of type \`Float\`.
+
+
 ### Structure
 A **Structure** is an unordered list of name–value pairs. The names are unique words and the values may be any type.
 A name–value pair of a structure is called a **property**.
