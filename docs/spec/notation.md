@@ -426,7 +426,7 @@ The output type of an algorithm is the type of the \`value\` (if it exists) of
 a returned normal completion structure, and it is specified before
 the name of the algorithm in its header.
 If an algorithm outputs a normal completion structure without a \`value\`,
-the output type is specified as [Void](./data-types.md#void).
+the output type is specified as [None](./data-types.md#none).
 
 If an algorithm outputs an *abrupt* completion structure, its \`value\`, if it exists,
 though it is still included in the returned structure, is *not* indicated in the output type,
@@ -507,7 +507,9 @@ where ‹CS› represents an actual CompletionStructure object (such as the resu
 is also to be interpreted as-is, as returning the completion structure itself.
 
 An algorithm step that reads «*Return*.» is shorthand for «*Return:* [type= normal].», that is,
-it outputs a normal completion structure without a \`value\` (thus the output type is Void).
+it outputs a normal completion structure without a \`value\` (thus the output type is None).
+
+An algorithm with no Return statement is implied to return a normal completion with no value.
 
 #### Throw
 When an algorithm step reads «*Throw:* ‹v›.» (where ‹v› is a metavariable representing a completion value),
@@ -533,7 +535,7 @@ The step is shorthand for the following steps:
 3. *If* ‹s› has a `value` property:
 	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with `‹s›.value`.
 4. *Else:*
-	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with `void`.
+	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with `none`.
 ```
 
 For example, setting a variable to an unwrap step …
@@ -550,7 +552,7 @@ For example, setting a variable to an unwrap step …
 4. *If* `call` has a `value` property:
 	1. *Let* `v` be `call.value`.
 5. *Else:*
-	1. *Let* `v` be `void`.
+	1. *Let* `v` be `none`.
 ```
 
 #### UnwrapAffirm
@@ -562,7 +564,7 @@ The step is shorthand for the following steps:
 2. *If* ‹s› has a `value` property:
 	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with `‹s›.value`.
 3. *Else:*
-	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with `void`.
+	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with `none`.
 ```
 
 For example, setting a variable to an unwrap-affirm step …
@@ -577,7 +579,7 @@ For example, setting a variable to an unwrap-affirm step …
 3. *If* `call` has a `value` property:
 	1. *Let* `v` be `call.value`.
 4. *Else:*
-	1. *Let* `v` be `void`.
+	1. *Let* `v` be `none`.
 ```
 
 #### Shorthand Notation
@@ -812,7 +814,7 @@ are delimited with \`back-ticks\`.
 Algorithm instructions (*If*, *Perform*, etc.) are written in *italics*.
 
 ```
-Void AlgorithmName(RealNumber param) :=
+None AlgorithmName(RealNumber param) :=
 	1. Step 1.
 	2. Step 2.
 		1. Substep 2.1.

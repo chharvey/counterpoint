@@ -14,10 +14,10 @@ Solid Specification Types are only used internally within this specification to 
 They are not directly observable from Solid code.
 
 
-### Void
-The **Void** type has one value called *void*.
+### None
+The **None** type has one value called *none*.
 It signifies a variable with no meaningful value.
-An algorithm with output type Void returns a [completion structure](#completionstructure)
+An algorithm with output type None returns a [completion structure](#completionstructure)
 with no \`value\` property.
 
 

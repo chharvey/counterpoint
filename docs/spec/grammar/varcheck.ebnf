@@ -1,4 +1,4 @@
-Void! VarCheck(Or<
+None! VarCheck(Or<
 	SemanticKey,
 	SemanticPropertyType,
 	SemanticProperty,
@@ -14,7 +14,7 @@ Void! VarCheck(Or<
 
 
 
-Void! VarCheck(SemanticTypeAlias var) :=
+None! VarCheck(SemanticTypeAlias var) :=
 	1. *If* the validator’s symbol table does not contain a SymbolStructure `symbol` whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceError01.
 	// TODO: Throw a ReferenceError02 if the variable is declared further down in source.
@@ -24,7 +24,7 @@ Void! VarCheck(SemanticTypeAlias var) :=
 
 
 
-Void! VarCheck(SemanticVariable var) :=
+None! VarCheck(SemanticVariable var) :=
 	1. *If* the validator’s symbol table does not contain a SymbolStructure `symbol` whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceError01.
 	// TODO: Throw a ReferenceError02 if the variable is declared further down in source.
@@ -34,7 +34,7 @@ Void! VarCheck(SemanticVariable var) :=
 
 
 
-Void! VarCheck(SemanticDeclarationType decl) :=
+None! VarCheck(SemanticDeclarationType decl) :=
 	1. *Assert:* `decl.children.count` is 2.
 	2. *Let* `id` be `decl.children.0.id`.
 	3. *If* the validator’s symbol table contains a SymbolStructure whose `id` is `var.id`:
@@ -49,7 +49,7 @@ Void! VarCheck(SemanticDeclarationType decl) :=
 
 
 
-Void! VarCheck(SemanticDeclarationVariable decl) :=
+None! VarCheck(SemanticDeclarationVariable decl) :=
 	1. *Assert:* `decl.children.count` is 3.
 	2. *Let* `id` be `decl.children.0.id`.
 	3. *If* the validator’s symbol table contains a SymbolStructure whose `id` is `var.id`:
@@ -67,7 +67,7 @@ Void! VarCheck(SemanticDeclarationVariable decl) :=
 
 
 
-Void! VarCheck(SemanticAssignment assignment) :=
+None! VarCheck(SemanticAssignment assignment) :=
 	1. *For each* `it` in `assignment`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
 	2. *Assert:* `assignment.children.count` is 2.

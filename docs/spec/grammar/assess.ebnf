@@ -104,7 +104,7 @@ Object! Assess(SemanticVariable var) :=
 		2. *If* `symbol.unfixed` is `false`:
 			1. *Assert:* `symbol.value` is a Completion Structure.
 			2. *Return:* `symbol.value`.
-	2. *Throw:* `void`.
+	2. *Throw:* `none`.
 ;
 
 
@@ -256,16 +256,14 @@ Boolean! Assess(SemanticOperation[operator: ID] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *Unwrap:* `Assess(expr.children.0)`.
 	3. *Let* `operand1` be *Unwrap:* `Assess(expr.children.1)`.
-	4. *Assert*: Neither `operand0` nor `operand1` is `void`.
-	5. *Return:* `Identical(operand0, operand1)`.
+	4. *Return:* `Identical(operand0, operand1)`.
 ;
 
 Boolean! Assess(SemanticOperation[operator: EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `operand0` be *Unwrap:* `Assess(expr.children.0)`.
 	3. *Let* `operand1` be *Unwrap:* `Assess(expr.children.1)`.
-	4. *Assert*: Neither `operand0` nor `operand1` is `void`.
-	5. *Return:* `Equal(operand0, operand1)`.
+	4. *Return:* `Equal(operand0, operand1)`.
 ;
 
 Object! Assess(SemanticOperation[operator: AND] expr) :=
