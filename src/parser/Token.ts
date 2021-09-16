@@ -138,15 +138,7 @@ export class TokenIdentifierBasic extends TokenIdentifier {
 export class TokenIdentifierUnicode extends TokenIdentifier {
 	static readonly DELIM: '`' = '`'
 }
-abstract class NumberOrStringToken extends TokenSolid {
-	constructor (tagname: string,
-		protected override readonly lexer: LexerSolid,
-		...chars: [Char, ...Char[]]
-	) {
-		super(tagname, lexer, ...chars);
-	}
-}
-export class TokenNumber extends NumberOrStringToken {
+export class TokenNumber extends TokenSolid {
 	static readonly RADIX_DEFAULT: 10n = 10n
 	static readonly ESCAPER:   '\\' = '\\'
 	static readonly SEPARATOR: '_' = '_'
@@ -240,7 +232,7 @@ export class TokenNumber extends NumberOrStringToken {
 		} else { // implicit default base
 			buffer.push(...lexer.advance())
 		}
-		super('NUMBER', lexer, buffer[0], ...buffer.slice(1))
+		super('NUMBER', buffer[0], ...buffer.slice(1));
 		this.has_unary = has_unary
 		this.has_radix = has_radix
 		this.radix     = radix
@@ -283,7 +275,7 @@ export class TokenNumber extends NumberOrStringToken {
 		return this.source.indexOf(TokenNumber.POINT) > 0
 	}
 }
-export class TokenString extends NumberOrStringToken {
+export class TokenString extends TokenSolid {
 	static readonly DELIM:   '\'' = '\''
 	static readonly ESCAPER: '\\' = '\\'
 	static readonly ESCAPES: readonly string[] = [
@@ -376,7 +368,7 @@ export class TokenString extends NumberOrStringToken {
 		};
 	}
 	constructor (lexer: LexerSolid) {
-		super('STRING', lexer, ...lexer.advance())
+		super('STRING', ...lexer.advance());
 		while (!this.lexer.isDone && !Char.eq(TokenString.DELIM, this.lexer.c0)) {
 			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
