@@ -1,4 +1,5 @@
 import {
+	NonemptyArray,
 	Filebound,
 	Char,
 	Token,
@@ -82,15 +83,8 @@ export class TokenPunctuator extends TokenSolid {
 		].includes(p))
 	)]
 	// declare readonly source: Punctuator; // NB: https://github.com/microsoft/TypeScript/issues/40220
-	constructor (lexer: Lexer, count: 1n | 2n | 3n | 4n = 1n) {
-		super('PUNCTUATOR', lexer, ...lexer.advance())
-		if (count >= 4n) {
-			this.advance(3n)
-		} else if (count >= 3n) {
-			this.advance(2n)
-		} else if (count >= 2n) {
-			this.advance()
-		}
+	constructor (...chars: NonemptyArray<Char>) {
+		super('PUNCTUATOR', ...chars);
 	}
 	cook(): bigint {
 		return BigInt(TokenPunctuator.PUNCTUATORS.indexOf(this.source as Punctuator))

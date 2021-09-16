@@ -44,9 +44,9 @@ export class LexerSolid extends Lexer {
 	protected override generate_do(): Token | null {
 			let token: Token;
 			if (Char.inc(LexerSolid.PUNCTUATORS_3, this.c0, this.c1, this.c2)) {
-				token = new TOKEN.TokenPunctuator(this, 3n)
+				token = new TOKEN.TokenPunctuator(...this.advance(3n));
 			} else if (Char.inc(LexerSolid.PUNCTUATORS_2, this.c0, this.c1)) {
-				token = new TOKEN.TokenPunctuator(this, 2n)
+				token = new TOKEN.TokenPunctuator(...this.advance(2n));
 			} else if (Char.inc(LexerSolid.PUNCTUATORS_1, this.c0) && (!Dev.supports('literalTemplate-lex') || !Char.eq(Punctuator.BRAC_CLS, this.c0))) {
 				/* we found a punctuator or a number literal prefixed with a unary operator; the punctuator is not a closing brace `}` */
 				if (Char.inc(TOKEN.TokenNumber.UNARY, this.c0)) {
@@ -62,11 +62,11 @@ export class LexerSolid extends Lexer {
 						}
 					} else {
 						/* a punctuator "+" or "-" */
-						token = new TOKEN.TokenPunctuator(this)
+						token = new TOKEN.TokenPunctuator(...this.advance());
 					}
 				} else {
 					/* a different punctuator */
-					token = new TOKEN.TokenPunctuator(this)
+					token = new TOKEN.TokenPunctuator(...this.advance());
 				}
 
 			} else if (TOKEN.TokenKeyword.CHAR.test(this.c0.source)) {
@@ -115,7 +115,7 @@ export class LexerSolid extends Lexer {
 				token = new TOKEN.TokenString(this)
 			} else if (Dev.supports('literalString-lex') && Char.eq(Punctuator.BRAC_CLS, this.c0)) {
 				/* we found a closing brace `}` */
-				token = new TOKEN.TokenPunctuator(this);
+				token = new TOKEN.TokenPunctuator(...this.advance());
 
 			} else if (this.config.languageFeatures.comments && Char.eq(TOKEN.TokenCommentMulti.DELIM_START, this.c0, this.c1)) {
 				/* we found a multiline comment */
