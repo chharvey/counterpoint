@@ -19,7 +19,10 @@ import {
 import {
 	Punctuator,
 } from './Punctuator.js';
-import type {RadixType} from './Token.js';
+import {
+	RadixType,
+	TemplatePosition,
+} from './Token.js';
 import * as TOKEN from './Token.js';
 
 
@@ -118,10 +121,10 @@ export class LexerSolid extends Lexer {
 
 			} else if (Dev.supports('literalTemplate-lex') && Char.eq(TOKEN.TokenTemplate.DELIM, this.c0, this.c1, this.c2)) {
 				/* we found a template literal full or head */
-				token = new TOKEN.TokenTemplate(this, TOKEN.TokenTemplate.DELIM)
+				token = this.newTokenTemplate(TOKEN.TokenTemplate.DELIM);
 			} else if (Dev.supports('literalTemplate-lex') && Char.eq(TOKEN.TokenTemplate.DELIM_INTERP_END, this.c0, this.c1)) {
 				/* we found a template literal middle or tail */
-				token = new TOKEN.TokenTemplate(this, TOKEN.TokenTemplate.DELIM_INTERP_END)
+				token = this.newTokenTemplate(TOKEN.TokenTemplate.DELIM_INTERP_END);
 			} else if (Dev.supports('literalString-lex') && Char.eq(TOKEN.TokenString.DELIM, this.c0)) {
 				/* we found a string literal */
 				token = new TOKEN.TokenString(
@@ -341,5 +344,46 @@ export class LexerSolid extends Lexer {
 			buffer[0],
 			...buffer.slice(1),
 		);
+	}
+
+	/**
+	 * Construct a new TokenTemplate instance.
+	 * @param delim_start the starting delimiter
+	 * @return            a new instance of TokenTemplate
+	 */
+	private newTokenTemplate(
+		delim_start: typeof TOKEN.TokenTemplate.DELIM | typeof TOKEN.TokenTemplate.DELIM_INTERP_END,
+	): TOKEN.TokenTemplate {
+		const buffer: NonemptyArray<Char> = [...this.advance(BigInt(delim_start.length))]; // starting delim
+		const positions: Set<TemplatePosition> = new Set<TemplatePosition>();
+		if (delim_start === TOKEN.TokenTemplate.DELIM) {
+			positions.add(TemplatePosition.FULL).add(TemplatePosition.HEAD);
+		} else /* (delim_start === TOKEN.TokenTemplate.DELIM_INTERP_END) */ {
+			positions.add(TemplatePosition.MIDDLE).add(TemplatePosition.TAIL)
+		}
+		let delim_end: typeof TOKEN.TokenTemplate.DELIM | typeof TOKEN.TokenTemplate.DELIM_INTERP_START;
+		while (!this.isDone) {
+			if (Char.eq(Filebound.EOT, this.c0)) {
+				throw new LexError02(new Token('TEMPLATE', ...buffer));
+			}
+			if (Char.eq(TOKEN.TokenTemplate.DELIM, this.c0, this.c1, this.c2)) {
+				/* end string template full/tail */
+				delim_end = TOKEN.TokenTemplate.DELIM;
+				positions.delete(TOKEN.TemplatePosition.HEAD);
+				positions.delete(TOKEN.TemplatePosition.MIDDLE);
+				buffer.push(...this.advance(BigInt(delim_end.length))); // ending delim
+				break;
+			} else if (Char.eq(TOKEN.TokenTemplate.DELIM_INTERP_START, this.c0, this.c1)) {
+				/* end string template head/middle */
+				delim_end = TOKEN.TokenTemplate.DELIM_INTERP_START;
+				positions.delete(TOKEN.TemplatePosition.FULL);
+				positions.delete(TOKEN.TemplatePosition.TAIL);
+				buffer.push(...this.advance(BigInt(delim_end.length))); // ending delim
+				break;
+			} else {
+				buffer.push(...this.advance());
+			}
+		}
+		return new TOKEN.TokenTemplate(delim_start, delim_end!, [...positions][0], ...buffer);
 	}
 }
