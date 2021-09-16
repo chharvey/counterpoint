@@ -119,7 +119,10 @@ export class LexerSolid extends Lexer {
 
 			} else if (this.config.languageFeatures.comments && Char.eq(TOKEN.TokenCommentMulti.DELIM_START, this.c0, this.c1)) {
 				/* we found a multiline comment */
-				token = new TOKEN.TokenCommentMulti(this)
+				token = new TOKEN.TokenCommentMulti(...this.lexQuoted(
+					TOKEN.TokenCommentMulti.DELIM_START,
+					TOKEN.TokenCommentMulti.DELIM_END,
+				));
 			} else if (this.config.languageFeatures.comments && Char.eq(TOKEN.TokenCommentLine.DELIM_START, this.c0)) {
 				/* we found a single-line comment */
 				token = new TOKEN.TokenCommentLine(...this.lexQuoted(
