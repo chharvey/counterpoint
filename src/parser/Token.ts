@@ -11,7 +11,6 @@ import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import {
 	LexError03,
-	LexError04,
 	LexError05,
 } from '../index.js'; // avoids circular imports
 import type {
@@ -146,36 +145,6 @@ abstract class NumberOrStringToken extends TokenSolid {
 	) {
 		super(tagname, lexer, ...chars);
 	}
-	/**
-	 * Lex a numeric digit sequence, advancing this token as necessary.
-	 * @param digits the digit sequence to lex
-	 * @return       a cargo of source text for any error-reporting
-	 * @throws {LexError04} if an unexpected numeric separator was found
-	 * @final
-	 */
-	protected lexDigitSequence(digits: readonly string[]): string {
-		let cargo: string = '';
-		const allowedchars: string[] = [
-			...digits,
-			...(this.lexer.config.languageFeatures.numericSeparators ? [TokenNumber.SEPARATOR] : [])
-		];
-		while (!this.lexer.isDone && Char.inc(allowedchars, this.lexer.c0)) {
-			if (Char.inc(digits, this.lexer.c0)) {
-				cargo += this.lexer.c0.source;
-				this.advance();
-			} else if (this.lexer.config.languageFeatures.numericSeparators && Char.eq(TokenNumber.SEPARATOR, this.lexer.c0)) {
-				if (Char.inc(digits, this.lexer.c1)) {
-					cargo += `${ this.lexer.c0.source }${ this.lexer.c1!.source }`;
-					this.advance(2n);
-				} else {
-					throw new LexError04(Char.eq(TokenNumber.SEPARATOR, this.lexer.c1) ? this.lexer.c1! : this.lexer.c0);
-				};
-			} else {
-				break;
-			};
-		};
-		return cargo;
-	}
 }
 export class TokenNumber extends NumberOrStringToken {
 	static readonly RADIX_DEFAULT: 10n = 10n
@@ -275,20 +244,20 @@ export class TokenNumber extends NumberOrStringToken {
 		this.has_unary = has_unary
 		this.has_radix = has_radix
 		this.radix     = radix
-		this.lexDigitSequence(digits)
+		this.lexer.lexDigitSequence(digits);
 		if (!this.has_radix && Char.eq(TokenNumber.POINT, this.lexer.c0)) {
 			this.advance()
 			if (Char.inc(digits, this.lexer.c0)) {
-				this.lexDigitSequence(digits)
+				this.lexer.lexDigitSequence(digits);
 				if (Char.eq(TokenNumber.EXPONENT, this.lexer.c0)) {
 					const err: LexError05 = new LexError05(this.lexer.c0)
 					this.advance()
 					if (Char.inc(TokenNumber.UNARY, this.lexer.c0) && Char.inc(digits, this.lexer.c1)) {
 						this.advance(2n)
-						this.lexDigitSequence(digits)
+						this.lexer.lexDigitSequence(digits);
 					} else if (Char.inc(digits, this.lexer.c0)) {
 						this.advance()
-						this.lexDigitSequence(digits)
+						this.lexer.lexDigitSequence(digits);
 					} else {
 						throw err
 					}
@@ -426,7 +395,7 @@ export class TokenString extends NumberOrStringToken {
 					if (Char.inc(digits, this.lexer.c0)) {
 						cargo += this.lexer.c0.source
 						this.advance()
-						cargo += this.lexDigitSequence(digits);
+						cargo += this.lexer.lexDigitSequence(digits).map((char) => char.source).join('');
 					}
 					// add ending escape delim
 					if (Char.eq('}', this.lexer.c0)) {

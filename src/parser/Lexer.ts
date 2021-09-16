@@ -11,6 +11,7 @@ import {
 } from '../core/index.js';
 import {
 	LexError03,
+	LexError04,
 } from '../error/index.js';
 import {
 	Punctuator,
@@ -150,5 +151,34 @@ export class LexerSolid extends Lexer {
 	private setIdentifierValue(id_token: TOKEN.TokenIdentifier): void {
 		this._ids.add(id_token.source);
 		return id_token.setValue(BigInt([...this._ids].indexOf(id_token.source)));
+	}
+
+	/**
+	 * Lex a numeric digit sequence, advancing this token as necessary.
+	 * @param  allowed_digits the digit sequence to lex
+	 * @return                a cargo of source text for any error-reporting
+	 * @throws {LexError04}   if an unexpected numeric separator was found
+	 * @final
+	 */
+	private lexDigitSequence(allowed_digits: readonly string[]): Char[] {
+		const buffer: Char[] = [];
+		const allowedchars: string[] = [
+			...allowed_digits,
+			...(this.config.languageFeatures.numericSeparators ? [TOKEN.TokenNumber.SEPARATOR] : []),
+		];
+		while (!this.isDone && Char.inc(allowedchars, this.c0)) {
+			if (Char.inc(allowed_digits, this.c0)) {
+				buffer.push(...this.advance());
+			} else if (this.config.languageFeatures.numericSeparators && Char.eq(TOKEN.TokenNumber.SEPARATOR, this.c0)) {
+				if (Char.inc(allowed_digits, this.c1)) {
+					buffer.push(...this.advance(2n));
+				} else {
+					throw new LexError04(Char.eq(TOKEN.TokenNumber.SEPARATOR, this.c1) ? this.c1! : this.c0);
+				};
+			} else {
+				break;
+			};
+		};
+		return buffer;
 	}
 }
