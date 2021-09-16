@@ -97,7 +97,7 @@ export class LexerSolid extends Lexer {
 				this.setIdentifierValue(token as TOKEN.TokenIdentifierBasic);
 			} else if (Char.eq(TOKEN.TokenIdentifierUnicode.DELIM, this.c0)) {
 				/* we found a unicode identifier */
-				token = new TOKEN.TokenIdentifierUnicode(this)
+				token = new TOKEN.TokenIdentifierUnicode(...this.lexQuoted(TOKEN.TokenIdentifierUnicode.DELIM));
 				this.setIdentifierValue(token as TOKEN.TokenIdentifierUnicode);
 
 			} else if (Char.inc(LexerSolid.DIGITS_DEFAULT, this.c0)) {
