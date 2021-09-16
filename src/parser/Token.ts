@@ -11,7 +11,6 @@ import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import {
 	LexError03,
-	LexError05,
 } from '../index.js'; // avoids circular imports
 import type {
 	CodePoint,
@@ -213,49 +212,14 @@ export class TokenNumber extends TokenSolid {
 		// const expvalue: number = base ** TokenNumber.tokenWorthInt(exppart, TokenNumber.RADIX_DEFAULT, allow_separators)
 		return (wholevalue + fracvalue) * expvalue
 	}
-	private readonly has_unary: boolean;
-	private readonly has_radix: boolean;
-	private readonly radix: RadixType;
-	constructor (lexer: LexerSolid, has_unary: boolean, has_radix: boolean = false) {
-		// NB https://github.com/microsoft/TypeScript/issues/8277
-		const buffer: Char[] = []
-		if (has_unary) { // prefixed with leading unary operator "+" or "-"
-			buffer.push(...lexer.advance())
-		}
-		const radix: RadixType = has_radix ? TokenNumber.BASES.get(lexer.c1 !.source) ! : TokenNumber.RADIX_DEFAULT
-		const digits: readonly string[] = TokenNumber.DIGITS.get(radix) !
-		if (has_radix) { // an explicit base
-			if (!Char.inc(digits, lexer.c2)) {
-				throw new LexError03(`${lexer.c0.source}${lexer.c1 !.source}`, lexer.c0.line_index, lexer.c0.col_index)
-			}
-			buffer.push(...lexer.advance(3n))
-		} else { // implicit default base
-			buffer.push(...lexer.advance())
-		}
-		super('NUMBER', buffer[0], ...buffer.slice(1));
-		this.has_unary = has_unary
-		this.has_radix = has_radix
-		this.radix     = radix
-		this.lexer.lexDigitSequence(digits);
-		if (!this.has_radix && Char.eq(TokenNumber.POINT, this.lexer.c0)) {
-			this.advance()
-			if (Char.inc(digits, this.lexer.c0)) {
-				this.lexer.lexDigitSequence(digits);
-				if (Char.eq(TokenNumber.EXPONENT, this.lexer.c0)) {
-					const err: LexError05 = new LexError05(this.lexer.c0)
-					this.advance()
-					if (Char.inc(TokenNumber.UNARY, this.lexer.c0) && Char.inc(digits, this.lexer.c1)) {
-						this.advance(2n)
-						this.lexer.lexDigitSequence(digits);
-					} else if (Char.inc(digits, this.lexer.c0)) {
-						this.advance()
-						this.lexer.lexDigitSequence(digits);
-					} else {
-						throw err
-					}
-				}
-			}
-		}
+	constructor (
+		private readonly has_unary: boolean,
+		private readonly has_radix: boolean,
+		private readonly radix: RadixType,
+		private readonly allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
+		...chars: NonemptyArray<Char>
+	) {
+		super('NUMBER', ...chars);
 	}
 	cook(): number {
 		let text: string = this.source
@@ -263,8 +227,8 @@ export class TokenNumber extends TokenSolid {
 		if (this.has_unary) text = text.slice(1) // cut off unary, if any
 		if (this.has_radix) text = text.slice(2) // cut off radix, if any
 		return multiplier * (this.isFloat
-			? TokenNumber.tokenWorthFloat(text,             this.lexer.config.languageFeatures.numericSeparators)
-			: TokenNumber.tokenWorthInt  (text, this.radix, this.lexer.config.languageFeatures.numericSeparators)
+			? TokenNumber.tokenWorthFloat(text,             this.allow_separators)
+			: TokenNumber.tokenWorthInt  (text, this.radix, this.allow_separators)
 		)
 	}
 	/**

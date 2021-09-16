@@ -12,10 +12,12 @@ import {
 import {
 	LexError03,
 	LexError04,
+	LexError05,
 } from '../error/index.js';
 import {
 	Punctuator,
 } from './Punctuator.js';
+import type {RadixType} from './Token.js';
 import * as TOKEN from './Token.js';
 
 
@@ -54,11 +56,11 @@ export class LexerSolid extends Lexer {
 				if (Char.inc(TOKEN.TokenNumber.UNARY, this.c0)) {
 					if (Char.inc(LexerSolid.DIGITS_DEFAULT, this.c1)) {
 						/* a number literal with a unary operator and without an explicit radix */
-						token = new TOKEN.TokenNumber(this, true)
+						token = this.newTokenNumber(true, false);
 					} else if (this.config.languageFeatures.integerRadices && Char.eq(TOKEN.TokenNumber.ESCAPER, this.c1)) {
 						if (Char.inc(LexerSolid.BASES_KEYS, this.c2)) {
 							/* a number literal with a unary operator and with an explicit radix */
-							token = new TOKEN.TokenNumber(this, true, true)
+							token = this.newTokenNumber(true, true);
 						} else {
 							throw new LexError03(`${ this.c0.source }${ this.c1 && this.c1.source || '' }${ this.c2 && this.c2.source || '' }`, this.c0.line_index, this.c0.col_index)
 						}
@@ -103,11 +105,11 @@ export class LexerSolid extends Lexer {
 
 			} else if (Char.inc(LexerSolid.DIGITS_DEFAULT, this.c0)) {
 				/* a number literal without a unary operator and without an explicit radix */
-				token = new TOKEN.TokenNumber(this, false)
+				token = this.newTokenNumber(false, false);
 			} else if (this.config.languageFeatures.integerRadices && Char.eq(TOKEN.TokenNumber.ESCAPER, this.c0)) {
 				if (Char.inc(LexerSolid.BASES_KEYS, this.c1)) {
 					/* a number literal without a unary operator and with an explicit radix */
-					token = new TOKEN.TokenNumber(this, false, true)
+					token = this.newTokenNumber(false, true);
 				} else {
 					throw new LexError03(`${this.c0.source}${this.c1 && this.c1.source || ''}`, this.c0.line_index, this.c0.col_index)
 				}
@@ -180,5 +182,62 @@ export class LexerSolid extends Lexer {
 			};
 		};
 		return buffer;
+	}
+
+	/**
+	 * Construct a new TokenNumber instance.
+	 * @param has_unary does the token start with a unary operator?
+	 * @param has_radix does the token have an explicit radix specified?
+	 * @return          a new instance of TokenNumber
+	 */
+	private newTokenNumber(has_unary: boolean, has_radix: boolean): TOKEN.TokenNumber {
+		const buffer: Char[] = [];
+		if (has_unary) { // prefixed with leading unary operator "+" or "-"
+			buffer.push(...this.advance());
+		}
+		const radix: RadixType = (has_radix)
+			? TOKEN.TokenNumber.BASES.get(this.c1!.source)!
+			: TOKEN.TokenNumber.RADIX_DEFAULT;
+		const allowed_digits: readonly string[] = TOKEN.TokenNumber.DIGITS.get(radix)!;
+		if (has_radix) { // an explicit base
+			if (!Char.inc(allowed_digits, this.c2)) {
+				throw new LexError03(`${ this.c0.source }${ this.c1!.source }`, this.c0.line_index, this.c0.col_index);
+			}
+			buffer.push(...this.advance(3n));
+		} else { // implicit default base
+			buffer.push(...this.advance());
+		}
+		buffer.push(...this.lexDigitSequence(allowed_digits));
+		if (!has_radix && Char.eq(TOKEN.TokenNumber.POINT, this.c0)) { // decimal point
+			buffer.push(...this.advance());
+			if (Char.inc(allowed_digits, this.c0)) { // [0-9]
+				buffer.push(...this.lexDigitSequence(allowed_digits));
+				if (Char.eq(TOKEN.TokenNumber.EXPONENT, this.c0)) { // exponent symbol
+					const exp_char: Char = this.c0;
+					buffer.push(...this.advance());
+					if (Char.inc(TOKEN.TokenNumber.UNARY, this.c0) && Char.inc(allowed_digits, this.c1)) { // [+\-][0-9]
+						buffer.push(
+							...this.advance(2n),
+							...this.lexDigitSequence(allowed_digits),
+						);
+					} else if (Char.inc(allowed_digits, this.c0)) { // [0-9]
+						buffer.push(
+							...this.advance(),
+							...this.lexDigitSequence(allowed_digits),
+						);
+					} else {
+						throw new LexError05(exp_char);
+					}
+				}
+			}
+		}
+		return new TOKEN.TokenNumber(
+			has_unary,
+			has_radix,
+			radix,
+			this.config.languageFeatures.numericSeparators,
+			buffer[0],
+			...buffer.slice(1),
+		);
 	}
 }
