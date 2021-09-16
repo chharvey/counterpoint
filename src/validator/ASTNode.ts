@@ -16,7 +16,7 @@ import {
 	Keyword,
 	TOKEN,
 	PARSER,
-	ParserSolid as Parser,
+	ParserSolid,
 } from '../parser/index.js';
 import {
 	SolidType,
@@ -1524,7 +1524,7 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	 * @returns      a new ASTNodeGoal representing the given source
 	 */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeGoal {
-		return Decorator.decorate(new Parser(src, config).parse());
+		return Decorator.decorate(new ParserSolid(config).parse(src));
 	}
 	constructor(
 		start_node: ParseNode,

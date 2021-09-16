@@ -7,7 +7,7 @@ const path = require('path');
 	const {Decorator} = require('../build/validator/index.js');
 
 	const input = fs.promises.readFile(path.join(__dirname, '../sample/test-v0.3.solid'), 'utf8');
-	const tree = new Parser(await input).parse();
+	const tree = new Parser().parse(await input);
 	const code = new Builder(await input).print();
 	console.log('\nThe parse tree returned by the parser is written to file: `./sample/output.xml`');
 	console.log('\nThe semantic tree returned by the decorator is written to file: `./sample/output-1.xml`');

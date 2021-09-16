@@ -1164,7 +1164,7 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 	 * Construct a new ParserSolid object.
 	 * @param source the source text to parse
 	 */
-	constructor (private source: string, config: SolidConfig = CONFIG_DEFAULT) {
+	constructor (config: SolidConfig = CONFIG_DEFAULT) {
 		super(new LexerSolid(config), grammar_Solid, new Map<Production, typeof ParseNode>([
 			[ProductionWord.instance, ParseNodeWord],
 			[ProductionPrimitiveLiteral.instance, ParseNodePrimitiveLiteral],
@@ -1220,9 +1220,6 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 			[ProductionGoal__0__List.instance, ParseNodeGoal__0__List],
 			[ProductionGoal.instance, ParseNodeGoal],
 		]));
-	}
-	override parse(): ParseNodeGoal {
-		return super.parse(this.source);
 	}
 }
 

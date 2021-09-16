@@ -14,7 +14,7 @@ import {
 	Punctuator,
 	TOKEN,
 	PARSER,
-	ParserSolid as Parser,
+	ParserSolid,
 } from '../src/parser/index.js';
 import {
 	assert_arrayLength,
@@ -285,7 +285,7 @@ export function statementFromSource(src: string, config: SolidConfig = CONFIG_DE
 	return stat_list.children[0]
 }
 export function goalFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSER.ParseNodeGoal {
-	return new Parser(src, config).parse();
+	return new ParserSolid(config).parse(src);
 }
 
 

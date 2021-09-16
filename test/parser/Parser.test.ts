@@ -11,7 +11,7 @@ import {
 	Keyword,
 	TOKEN,
 	PARSER,
-	ParserSolid as Parser,
+	ParserSolid,
 } from '../../src/parser/index.js';
 import {
 	assert_arrayLength,
@@ -20,7 +20,7 @@ import * as h from '../helpers-parse.js';
 
 
 
-describe('Parser', () => {
+describe('ParserSolid', () => {
 	describe('#parse', () => {
 		Dev.supports('literalCollection') && describe('Word ::= KEYWORD | IDENTIFIER', () => {
 			it('makes a Word node.', () => {
@@ -303,19 +303,19 @@ describe('Parser', () => {
 			});
 
 			it('throws when reaching an orphaned head.', () => {
-				assert.throws(() => new Parser(`
+				assert.throws(() => new ParserSolid().parse(`
 					'''A string template head token not followed by a middle or tail {{ 1;
-				`).parse(), ParseError01)
+				`), ParseError01);
 			})
 			it('throws when reaching an orphaned middle.', () => {
-				assert.throws(() => new Parser(`
+				assert.throws(() => new ParserSolid().parse(`
 					2 }} a string template middle token not preceded by a head/middle and not followed by a middle/tail {{ 3;
-				`).parse(), ParseError01)
+				`), ParseError01);
 			})
 			it('throws when reaching an orphaned tail.', () => {
-				assert.throws(() => new Parser(`
+				assert.throws(() => new ParserSolid().parse(`
 					4 }} a string template tail token not preceded by a head or middle''';
-				`).parse(), ParseError01)
+				`), ParseError01);
 			})
 		});
 
