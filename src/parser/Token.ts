@@ -135,16 +135,6 @@ export abstract class TokenIdentifier extends TokenSolid {
 export class TokenIdentifierBasic extends TokenIdentifier {
 	static readonly CHAR_START: RegExp = /^[A-Za-z_]$/
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
-	constructor (lexer: Lexer, start_char?: Char, ...more_chars: Char[]) {
-		if (start_char) {
-			super(start_char, ...more_chars)
-		} else {
-			super(...lexer.advance())
-			while (!this.lexer.isDone && TokenIdentifierBasic.CHAR_REST.test(this.lexer.c0.source)) {
-				this.advance()
-			}
-		}
-	}
 }
 export class TokenIdentifierUnicode extends TokenIdentifier {
 	static readonly DELIM: '`' = '`'

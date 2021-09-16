@@ -82,12 +82,18 @@ export class LexerSolid extends Lexer {
 				if ((TOKEN.TokenKeyword.KEYWORDS as string[]).includes(bufferstring)) {
 					token = new TOKEN.TokenKeyword(...buffer);
 				} else {
-					token = new TOKEN.TokenIdentifierBasic(this, buffer[0], ...buffer.slice(1))
+					token = new TOKEN.TokenIdentifierBasic(...buffer);
 					this.setIdentifierValue(token as TOKEN.TokenIdentifierBasic);
 				}
 			} else if (TOKEN.TokenIdentifierBasic.CHAR_START.test(this.c0.source)) {
 				/* we found a basic identifier */
-				token = new TOKEN.TokenIdentifierBasic(this)
+				const buffer: NonemptyArray<Char> = [this.c0];
+				this.advance();
+				while (!this.isDone && TOKEN.TokenIdentifierBasic.CHAR_REST.test(this.c0.source)) {
+					buffer.push(this.c0);
+					this.advance();
+				}
+				token = new TOKEN.TokenIdentifierBasic(...buffer);
 				this.setIdentifierValue(token as TOKEN.TokenIdentifierBasic);
 			} else if (Char.eq(TOKEN.TokenIdentifierUnicode.DELIM, this.c0)) {
 				/* we found a unicode identifier */
