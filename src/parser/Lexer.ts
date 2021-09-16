@@ -1,8 +1,10 @@
 import {
 	NonemptyArray,
+	Filebound,
 	Char,
 	Token,
 	Lexer,
+	LexError02,
 } from '@chharvey/parser';
 import {
 	SolidConfig,
@@ -122,7 +124,11 @@ export class LexerSolid extends Lexer {
 				token = new TOKEN.TokenTemplate(this, TOKEN.TokenTemplate.DELIM_INTERP_END)
 			} else if (Dev.supports('literalString-lex') && Char.eq(TOKEN.TokenString.DELIM, this.c0)) {
 				/* we found a string literal */
-				token = new TOKEN.TokenString(this)
+				token = new TOKEN.TokenString(
+					this.config.languageFeatures.comments,
+					this.config.languageFeatures.numericSeparators,
+					...this.lexTokenString(),
+				);
 			} else if (Dev.supports('literalString-lex') && Char.eq(Punctuator.BRAC_CLS, this.c0)) {
 				/* we found a closing brace `}` */
 				token = new TOKEN.TokenPunctuator(...this.advance());
@@ -181,6 +187,102 @@ export class LexerSolid extends Lexer {
 				break;
 			};
 		};
+		return buffer;
+	}
+
+	/**
+	 * Lex a string token.
+	 * @return the characters from which to construct a new TokenString
+	 */
+	private lexTokenString(): NonemptyArray<Char> {
+		const buffer: NonemptyArray<Char> = [...this.advance(BigInt(TOKEN.TokenString.DELIM.length))]; // starting delim
+		while (!this.isDone && !Char.eq(TOKEN.TokenString.DELIM, this.c0)) {
+			if (Char.eq(Filebound.EOT, this.c0)) {
+				throw new LexError02(new Token('STRING', ...buffer));
+			}
+			if (Char.eq(TOKEN.TokenString.ESCAPER, this.c0)) {
+				/* possible escape or line continuation */
+				if (Char.inc(TOKEN.TokenString.ESCAPES, this.c1)) {
+					/* an escaped character literal */
+					buffer.push(...this.advance(2n));
+
+				} else if (Char.eq('u{', this.c1, this.c2)) {
+					/* an escape sequence */
+					const allowed_digits: readonly string[] = TOKEN.TokenNumber.DIGITS.get(16n)!;
+					let next: Char[] = this.advance(3n);
+					buffer.push(...next);
+					const err_cargo: NonemptyArray<Char> = next.slice() as NonemptyArray<Char>;
+					if (Char.inc(allowed_digits, this.c0)) {
+						next = this.advance();
+						buffer   .push(...next);
+						err_cargo.push(...next);
+						next = this.lexDigitSequence(allowed_digits);
+						buffer   .push(...next);
+						err_cargo.push(...next);
+					}
+					// add ending escape delim
+					if (Char.eq('}', this.c0)) {
+						next = this.advance();
+						buffer   .push(...next);
+						err_cargo.push(...next);
+					} else {
+						throw new LexError03(err_cargo.map((char) => char.source).join(''), this.c0.line_index, this.c0.col_index);
+					}
+
+				} else if (Char.eq('\n', this.c1)) {
+					/* a line continuation (LF) */
+					buffer.push(...this.advance(2n));
+
+				} else {
+					/* a backslash escapes the following character */
+					buffer.push(...this.advance(2n));
+				}
+
+			} else if (this.config.languageFeatures.comments && Char.eq(TOKEN.TokenCommentMulti.DELIM_START, this.c0, this.c1)) {
+				/* an in-string multiline comment */
+				buffer.push(...this.advance(BigInt(TOKEN.TokenCommentMulti.DELIM_START.length)));
+				while (
+					   !this.isDone
+					&& !Char.eq(TOKEN.TokenString.DELIM, this.c0)
+					&& !Char.eq(TOKEN.TokenCommentMulti.DELIM_END, this.c0, this.c1)
+				) {
+					if (Char.eq(Filebound.EOT, this.c0)) {
+						throw new LexError02(new Token('STRING', ...buffer));
+					};
+					buffer.push(...this.advance());
+				};
+				if (Char.eq(TOKEN.TokenString.DELIM, this.c0)) {
+					// do nothing, as the ending string delim is not included in the in-string comment
+				} else if (Char.eq(TOKEN.TokenCommentMulti.DELIM_END, this.c0, this.c1)) {
+					// add ending comment delim to in-string comment
+					buffer.push(...this.advance(BigInt(TOKEN.TokenCommentMulti.DELIM_END.length)));
+				};
+
+			} else if (this.config.languageFeatures.comments && Char.eq(TOKEN.TokenCommentLine.DELIM_START, this.c0)) {
+				/* an in-string line comment */
+				buffer.push(...this.advance(BigInt(TOKEN.TokenCommentLine.DELIM_START.length)));
+				while (!this.isDone && !Char.inc([
+					TOKEN.TokenString.DELIM,
+					TOKEN.TokenCommentLine.DELIM_END,
+				], this.c0)) {
+					if (Char.eq(Filebound.EOT, this.c0)) {
+						throw new LexError02(new Token('STRING', ...buffer));
+					};
+					buffer.push(...this.advance());
+				};
+				if (Char.eq(TOKEN.TokenString.DELIM, this.c0)) {
+					// do nothing, as the ending string delim is not included in the in-string comment
+				} else if (Char.eq(TOKEN.TokenCommentLine.DELIM_END, this.c0)) {
+					// add ending comment delim to in-string comment
+					buffer.push(...this.advance(BigInt(TOKEN.TokenCommentLine.DELIM_END.length)));
+				};
+
+			} else {
+				buffer.push(...this.advance());
+			}
+		}
+		// add ending delim to token
+		buffer.push(...this.advance(BigInt(TOKEN.TokenString.DELIM.length)));
 		return buffer;
 	}
 
