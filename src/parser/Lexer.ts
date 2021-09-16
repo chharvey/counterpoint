@@ -1,4 +1,5 @@
 import {
+	NonemptyArray,
 	Char,
 	Token,
 	Lexer,
@@ -71,7 +72,7 @@ export class LexerSolid extends Lexer {
 
 			} else if (TOKEN.TokenKeyword.CHAR.test(this.c0.source)) {
 				/* we found a keyword or a basic identifier */
-				const buffer: Char[] = [this.c0]
+				const buffer: NonemptyArray<Char> = [this.c0];
 				this.advance()
 				while (!this.isDone && TOKEN.TokenIdentifierBasic.CHAR_REST.test(this.c0.source)) {
 					buffer.push(this.c0)
@@ -79,7 +80,7 @@ export class LexerSolid extends Lexer {
 				}
 				const bufferstring: string = buffer.map((char) => char.source).join('')
 				if ((TOKEN.TokenKeyword.KEYWORDS as string[]).includes(bufferstring)) {
-					token = new TOKEN.TokenKeyword(this, buffer[0], ...buffer.slice(1))
+					token = new TOKEN.TokenKeyword(...buffer);
 				} else {
 					token = new TOKEN.TokenIdentifierBasic(this, buffer[0], ...buffer.slice(1))
 					this.setIdentifierValue(token as TOKEN.TokenIdentifierBasic);
