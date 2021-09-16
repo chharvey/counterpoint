@@ -113,8 +113,8 @@ export abstract class TokenIdentifier extends TokenSolid {
 	 * which indexes unique identifier tokens.
 	 */
 	private _cooked: bigint|null;
-	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
-		super('IDENTIFIER', lexer, start_char, ...more_chars)
+	constructor (...chars: NonemptyArray<Char>) {
+		super('IDENTIFIER', ...chars);
 		this._cooked = null
 	}
 	/**
@@ -137,9 +137,9 @@ export class TokenIdentifierBasic extends TokenIdentifier {
 	static readonly CHAR_REST : RegExp = /^[A-Za-z0-9_]$/
 	constructor (lexer: Lexer, start_char?: Char, ...more_chars: Char[]) {
 		if (start_char) {
-			super(lexer, start_char, ...more_chars)
+			super(start_char, ...more_chars)
 		} else {
-			super(lexer, ...lexer.advance())
+			super(...lexer.advance())
 			while (!this.lexer.isDone && TokenIdentifierBasic.CHAR_REST.test(this.lexer.c0.source)) {
 				this.advance()
 			}
@@ -149,7 +149,7 @@ export class TokenIdentifierBasic extends TokenIdentifier {
 export class TokenIdentifierUnicode extends TokenIdentifier {
 	static readonly DELIM: '`' = '`'
 	constructor (lexer: Lexer) {
-		super(lexer, ...lexer.advance())
+		super(...lexer.advance())
 		while (!this.lexer.isDone && !Char.eq(TokenIdentifierUnicode.DELIM, this.lexer.c0)) {
 			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
 				throw new LexError02(this)
