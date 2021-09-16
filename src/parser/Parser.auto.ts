@@ -1159,13 +1159,13 @@ export const grammar_Solid: Grammar = new Grammar([
 ], ProductionGoal.instance);
 
 
-export class ParserSolid extends Parser {
+export class ParserSolid extends Parser<ParseNodeGoal> {
 	/**
 	 * Construct a new ParserSolid object.
 	 * @param source the source text to parse
 	 */
-	constructor (source: string, config: SolidConfig = CONFIG_DEFAULT) {
-		super(new LexerSolid(source, config), grammar_Solid, new Map<Production, typeof ParseNode>([
+	constructor (private source: string, config: SolidConfig = CONFIG_DEFAULT) {
+		super(new LexerSolid(config), grammar_Solid, new Map<Production, typeof ParseNode>([
 			[ProductionWord.instance, ParseNodeWord],
 			[ProductionPrimitiveLiteral.instance, ParseNodePrimitiveLiteral],
 			[ProductionTypeKeyword.instance, ParseNodeTypeKeyword],
@@ -1221,8 +1221,9 @@ export class ParserSolid extends Parser {
 			[ProductionGoal.instance, ParseNodeGoal],
 		]));
 	}
-	// @ts-expect-error
-	declare override parse(): ParseNodeGoal;
+	override parse(): ParseNodeGoal {
+		return super.parse(this.source);
+	}
 }
 
 

@@ -40,14 +40,12 @@ export class LexerSolid extends Lexer {
 
 	/**
 	 * Construct a new LexerSolid object.
-	 * @param source - the source text
 	 * @param config - The configuration settings for an instance program.
 	 */
 	constructor (
-		source: string,
 		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
-		super(source)
+		super();
 	}
 
 	protected override generate_do(): Token | null {
