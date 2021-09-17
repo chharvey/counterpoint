@@ -37,18 +37,31 @@ export {
 	TypeError04,
 	NanError01,
 	NanError02,
-} from '../index.js';
-export {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-} from '../core/index.js';
-export {
-	Punctuator,
 	Keyword,
-	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
+	TOKEN,
 	ParserSolid,
 	PARSER,
 	PARSENODE,
-} from '../parser/index.js';
-export * as TOKEN from '../parser/token/index.js'; // HACK
+} from '../package.js';
+export {
+	Decorator,
+	Validator,
+	SymbolKind,
+	SymbolStructure,
+	SymbolStructureVar,
+	SymbolStructureType,
+} from '../index.js';
+export {
+	Operator,
+	ValidAccessOperator,
+	ValidTypeOperator,
+	ValidOperatorUnary,
+	ValidOperatorBinary,
+	ValidOperatorArithmetic,
+	ValidOperatorComparative,
+	ValidOperatorEquality,
+	ValidOperatorLogical,
+} from '../Operator.js';

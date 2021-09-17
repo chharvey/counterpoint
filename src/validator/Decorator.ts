@@ -11,7 +11,6 @@ import {
 	TOKEN,
 	PARSENODE,
 } from './package.js';
-import * as AST from './index.js';
 import {
 	Operator,
 	ValidAccessOperator,
@@ -22,7 +21,8 @@ import {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from './Operator.js';
-import type {ASTNodeSolid} from './ASTNodeSolid.js';
+import type {ASTNodeSolid} from './astnode/index.js';
+import * as AST from './astnode/index.js';
 
 
 

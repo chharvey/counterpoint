@@ -2,9 +2,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 } from './package.js';
-import type {
-	SymbolStructure,
-} from './SymbolStructure.js';
+import type {SymbolStructure} from './index.js';
 
 
 

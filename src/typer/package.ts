@@ -16,5 +16,6 @@ export type {
 export {
 	Operator,
 	ValidAccessOperator,
+	// {ASTNodeKey, ...} as AST,
 } from '../validator/index.js';
-export * as AST from '../validator/index.js';
+export * as AST from '../validator/astnode/index.js'; // HACK
