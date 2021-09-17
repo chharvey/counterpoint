@@ -189,7 +189,7 @@ export class Decorator {
 			return new AST.ASTNodeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
 
 		} else if (node instanceof PARSENODE.ParseNodeTypeKeyword) {
-			return new AST.ASTNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
+			return new AST.ASTNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword);
 
 		} else if (Dev.supports('literalCollection') && node instanceof PARSENODE.ParseNodeEntryType) {
 			return new AST.ASTNodeItemType(
