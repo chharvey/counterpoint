@@ -11,7 +11,7 @@ import {
 	Keyword,
 	TOKEN,
 	PARSENODE,
-	ParserSolid,
+	PARSER,
 } from '../../src/parser/index.js';
 import {
 	assert_arrayLength,
@@ -303,17 +303,17 @@ describe('ParserSolid', () => {
 			});
 
 			it('throws when reaching an orphaned head.', () => {
-				assert.throws(() => new ParserSolid().parse(`
+				assert.throws(() => PARSER.parse(`
 					'''A string template head token not followed by a middle or tail {{ 1;
 				`), ParseError01);
 			})
 			it('throws when reaching an orphaned middle.', () => {
-				assert.throws(() => new ParserSolid().parse(`
+				assert.throws(() => PARSER.parse(`
 					2 }} a string template middle token not preceded by a head/middle and not followed by a middle/tail {{ 3;
 				`), ParseError01);
 			})
 			it('throws when reaching an orphaned tail.', () => {
-				assert.throws(() => new ParserSolid().parse(`
+				assert.throws(() => PARSER.parse(`
 					4 }} a string template tail token not preceded by a head or middle''';
 				`), ParseError01);
 			})

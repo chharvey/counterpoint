@@ -1219,6 +1219,7 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 );
 	}
 }
+export const PARSER: ParserSolid = new ParserSolid();
 
 
 

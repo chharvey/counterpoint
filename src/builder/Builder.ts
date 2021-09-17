@@ -6,10 +6,6 @@ import {
 	CONFIG_DEFAULT,
 } from '../core/index.js';
 import {
-	ParserSolid,
-} from '../parser/index.js';
-import {
-	Decorator,
 	Validator,
 	AST,
 } from '../validator/index.js';
@@ -50,7 +46,7 @@ export class Builder {
 		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
 		this.validator = new Validator(this.config);
-		this.ast_goal  = Decorator.decorate(new ParserSolid(config).parse(source));
+		this.ast_goal  = AST.ASTNodeGoal.fromSource(source, config);
 		this.ast_goal.varCheck (this.validator); // assert does not throw
 		this.ast_goal.typeCheck(this.validator); // assert does not throw
 	}

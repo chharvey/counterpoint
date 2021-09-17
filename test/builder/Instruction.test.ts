@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import * as assert from 'assert'
 import {
-	ParserSolid,
+	PARSER,
 } from '../../src/parser/index.js';
 import {
 	Decorator,
@@ -245,7 +245,7 @@ describe('Instruction', () => {
 					``,
 					`;`,
 				].map((src) => Decorator
-					.decorate(new ParserSolid().parse(src))
+					.decorate(PARSER.parse(src))
 					.build(new Builder(src))
 				);
 				assert.ok(mods[0] instanceof INST.InstructionNone);

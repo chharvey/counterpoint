@@ -27,6 +27,7 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 						super($1);
 					}
 				}
+				export const PARSER: ParserSolid = new ParserSolid();
 			`)
 			.replace(`LEXER,`, `(config === CONFIG_DEFAULT) ? LEXER : new LexerSolid(config),`)
 		}

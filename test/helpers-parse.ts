@@ -15,6 +15,7 @@ import {
 	TOKEN,
 	PARSENODE,
 	ParserSolid,
+	PARSER,
 } from '../src/parser/index.js';
 import {
 	assert_arrayLength,
@@ -285,7 +286,7 @@ export function statementFromSource(src: string, config: SolidConfig = CONFIG_DE
 	return stat_list.children[0]
 }
 export function goalFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeGoal {
-	return new ParserSolid(config).parse(src);
+	return ((config === CONFIG_DEFAULT) ? PARSER : new ParserSolid(config)).parse(src);
 }
 
 
