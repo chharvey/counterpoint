@@ -12,4 +12,4 @@ export * as TOKEN from './Token.js';
 export * from './Lexer.js';
 
 export {ParserSolid} from './Parser.auto.js';
-export * as PARSER from './Parser.auto.js';
+export * as PARSENODE from './Parser.auto.js';

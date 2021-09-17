@@ -15,7 +15,7 @@ import {
 import {
 	Keyword,
 	TOKEN,
-	PARSER,
+	PARSENODE,
 	ParserSolid,
 } from '../parser/index.js';
 import {
@@ -182,7 +182,7 @@ export class ASTNodeKey extends ASTNodeSolid {
 }
 export class ASTNodeIndexType extends ASTNodeSolid {
 	constructor (
-		start_node: PARSER.ParseNodePropertyAccessType,
+		start_node: PARSENODE.ParseNodePropertyAccessType,
 		readonly value: ASTNodeTypeConstant,
 	) {
 		super(start_node, {}, [value]);
@@ -191,8 +191,8 @@ export class ASTNodeIndexType extends ASTNodeSolid {
 export class ASTNodeItemType extends ASTNodeSolid {
 	constructor (
 		start_node:
-			| PARSER.ParseNodeEntryType
-			| PARSER.ParseNodeEntryType_Optional
+			| PARSENODE.ParseNodeEntryType
+			| PARSENODE.ParseNodeEntryType_Optional
 		,
 		readonly optional: boolean,
 		readonly value: ASTNodeType,
@@ -203,8 +203,8 @@ export class ASTNodeItemType extends ASTNodeSolid {
 export class ASTNodePropertyType extends ASTNodeSolid {
 	constructor (
 		start_node:
-			| PARSER.ParseNodeEntryType_Named
-			| PARSER.ParseNodeEntryType_Named_Optional
+			| PARSENODE.ParseNodeEntryType_Named
+			| PARSENODE.ParseNodeEntryType_Named_Optional
 		,
 		readonly optional: boolean,
 		readonly key:      ASTNodeKey,
@@ -215,7 +215,7 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 }
 export class ASTNodeIndex extends ASTNodeSolid {
 	constructor (
-		start_node: PARSER.ParseNodePropertyAccess,
+		start_node: PARSENODE.ParseNodePropertyAccess,
 		readonly value: ASTNodeConstant,
 	) {
 		super(start_node, {}, [value]);
@@ -223,7 +223,7 @@ export class ASTNodeIndex extends ASTNodeSolid {
 }
 export class ASTNodeProperty extends ASTNodeSolid {
 	constructor (
-		start_node: PARSER.ParseNodeProperty,
+		start_node: PARSENODE.ParseNodeProperty,
 		readonly key:   ASTNodeKey,
 		readonly value: ASTNodeExpression,
 	) {
@@ -232,7 +232,7 @@ export class ASTNodeProperty extends ASTNodeSolid {
 }
 export class ASTNodeCase extends ASTNodeSolid {
 	constructor (
-		start_node: PARSER.ParseNodeCase,
+		start_node: PARSENODE.ParseNodeCase,
 		readonly antecedent: ASTNodeExpression,
 		readonly consequent: ASTNodeExpression,
 	) {
@@ -350,7 +350,7 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeTypeTupleLiteral,
+		start_node: PARSENODE.ParseNodeTypeTupleLiteral,
 		override readonly children: readonly ASTNodeItemType[],
 	) {
 		super(start_node, {}, children);
@@ -369,7 +369,7 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeTypeRecordLiteral,
+		start_node: PARSENODE.ParseNodeTypeRecordLiteral,
 		override readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
 	) {
 		super(start_node, {}, children);
@@ -391,7 +391,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeTypeCompound,
+		start_node: PARSENODE.ParseNodeTypeCompound,
 		readonly base:     ASTNodeType,
 		readonly accessor: ASTNodeIndexType | ASTNodeKey,
 	) {
@@ -707,7 +707,7 @@ export class ASTNodeTuple extends ASTNodeExpression {
 		return expression;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeTupleLiteral,
+		start_node: PARSENODE.ParseNodeTupleLiteral,
 		override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, children);
@@ -735,7 +735,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		return expression;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeRecordLiteral,
+		start_node: PARSENODE.ParseNodeRecordLiteral,
 		override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {
 		super(start_node, {}, children);
@@ -769,7 +769,7 @@ export class ASTNodeSet extends ASTNodeExpression {
 		return expression;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeTupleLiteral,
+		start_node: PARSENODE.ParseNodeTupleLiteral,
 		override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, children);
@@ -801,7 +801,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		return expression;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeMappingLiteral,
+		start_node: PARSENODE.ParseNodeMappingLiteral,
 		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, {}, children);
@@ -837,7 +837,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
 	// private readonly claim:    boolean = this.kind === Operator.CLAIMDOT;
 	constructor (
-		start_node: PARSER.ParseNodeExpressionCompound,
+		start_node: PARSENODE.ParseNodeExpressionCompound,
 		readonly kind:     ValidAccessOperator,
 		readonly base:     ASTNodeExpression,
 		readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
