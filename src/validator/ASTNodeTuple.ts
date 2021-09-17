@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSER,
+	PARSENODE,
 	SolidType,
 	SolidTypeTuple,
 	SolidObject,
@@ -22,7 +22,7 @@ export class ASTNodeTuple extends ASTNodeExpression {
 		return expression;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeTupleLiteral,
+		start_node: PARSENODE.ParseNodeTupleLiteral,
 		override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, children);

@@ -3,7 +3,7 @@ import {
 	TypeError04,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSER,
+	PARSENODE,
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,
@@ -31,7 +31,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeTypeCompound,
+		start_node: PARSENODE.ParseNodeTypeCompound,
 		readonly base:     ASTNodeType,
 		readonly accessor: ASTNodeIndexType | ASTNodeKey,
 	) {

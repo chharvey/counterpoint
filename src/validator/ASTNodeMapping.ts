@@ -5,7 +5,7 @@ import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSER,
+	PARSENODE,
 	SolidType,
 	SolidTypeMapping,
 	SolidObject,
@@ -26,7 +26,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		return expression;
 	}
 	constructor (
-		start_node: PARSER.ParseNodeMappingLiteral,
+		start_node: PARSENODE.ParseNodeMappingLiteral,
 		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, {}, children);

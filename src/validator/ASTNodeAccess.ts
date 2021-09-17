@@ -5,7 +5,7 @@ import {
 	TypeError04,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	PARSER,
+	PARSENODE,
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,
@@ -44,7 +44,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
 	// private readonly claim:    boolean = this.kind === Operator.CLAIMDOT;
 	constructor (
-		start_node: PARSER.ParseNodeExpressionCompound,
+		start_node: PARSENODE.ParseNodeExpressionCompound,
 		readonly kind:     ValidAccessOperator,
 		readonly base:     ASTNodeExpression,
 		readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
