@@ -18,7 +18,7 @@ import {
 	Grammar,
 	GrammarSymbol,
 } from '@chharvey/parser';
-import {LexerSolid} from './Lexer.js';
+import {LexerSolid, LEXER} from './Lexer.js';
 import * as TERMINAL from './Terminal.js';
 
 export class ProductionWord extends Production {
@@ -1159,7 +1159,7 @@ export const GRAMMAR: Grammar = new Grammar([
 export class ParserSolid extends Parser<ParseNodeGoal> {
 	constructor (config: SolidConfig = CONFIG_DEFAULT) {
 		super(
-	new LexerSolid(config),
+	(config === CONFIG_DEFAULT) ? LEXER : new LexerSolid(config),
 	GRAMMAR,
 	new Map<Production, typeof ParseNode>([
 		[ProductionWord.instance, ParseNodeWord],

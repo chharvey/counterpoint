@@ -7,14 +7,14 @@ import {
 import * as assert from 'assert'
 import * as xjs from 'extrajs';
 import {
-	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
 } from '../../src/core/index.js';
 import {
 	TemplatePosition,
 	TOKEN,
-	LexerSolid as Lexer,
+	LexerSolid,
+	LEXER,
 } from '../../src/parser/index.js'
 import {
 	LexError03,
@@ -28,7 +28,7 @@ describe('LexerSolid', () => {
 	describe('#generate', () => {
 		it('rejects unrecognized characters.', () => {
 			`~ # $ @ "`.split(' ').forEach((c) => {
-				assert.throws(() => [...new Lexer(CONFIG_DEFAULT).generate(`
+				assert.throws(() => [...LEXER.generate(`
 				5  +  30
 				+ 6 ^ - (${c} - 37 *
 			`)], LexError01);
@@ -73,23 +73,23 @@ describe('LexerSolid', () => {
 			])].forEach(([name, sources]) => {
 				it(`throws when ${name} token is unfinished.`, () => {
 					sources.forEach((source) => {
-						assert.throws(() => [...new Lexer(CONFIG_DEFAULT).generate(source)], LexError02);
+						assert.throws(() => [...LEXER.generate(source)], LexError02);
 					})
 				})
 			})
 		})
 
 		context('recgnizes `TokenComment` conditions.', () => {
-			const comments_off: SolidConfig = {
+			const LEXER_COMMENTS_OFF: LexerSolid = new LexerSolid({
 				...CONFIG_DEFAULT,
 				languageFeatures: {
 					...CONFIG_DEFAULT.languageFeatures,
 					comments: false,
 				},
-			}
+			});
 			context('TokenCommentLine', () => {
 				specify('Empty line comment.', () => {
-					const comment: Token = [...new Lexer(CONFIG_DEFAULT).generate(`
+					const comment: Token = [...LEXER.generate(`
 						%
 						8;
 					`)][2];
@@ -97,18 +97,18 @@ describe('LexerSolid', () => {
 					assert.strictEqual(comment.source, '%\n')
 				})
 				specify('Basic line comment.', () => {
-					assert.ok([...new Lexer(CONFIG_DEFAULT).generate(`
+					assert.ok([...LEXER.generate(`
 						500  +  30; ;  % line comment  *  2
 						8;
 					`)][11] instanceof TOKEN.TokenCommentLine);
 				})
 				specify('Line comment at end of file not followed by LF.', () => {
-					assert.doesNotThrow(() => [...new Lexer(CONFIG_DEFAULT).generate(`
+					assert.doesNotThrow(() => [...LEXER.generate(`
 						% line comment not followed by LF
 					`.trimEnd())]);
 				})
 				it('throws when `config.languageFeatures.comments` is turned off.', () => {
-					assert.throws(() => [...new Lexer(comments_off).generate(`
+					assert.throws(() => [...LEXER_COMMENTS_OFF.generate(`
 						%
 						8;
 					`)], LexError01);
@@ -116,7 +116,7 @@ describe('LexerSolid', () => {
 			})
 			context('TokenCommentMulti', () => {
 				specify('Empty multiline comment.', () => {
-					const tokens: Token[] = [...new Lexer(CONFIG_DEFAULT).generate(`
+					const tokens: Token[] = [...LEXER.generate(`
 						%%%%
 						%% %%
 					`)];
@@ -126,7 +126,7 @@ describe('LexerSolid', () => {
 					assert.strictEqual(tokens[4].source, '%% %%')
 				})
 				specify('Nonempty multiline comment.', () => {
-					const comment: Token = [...new Lexer(CONFIG_DEFAULT).generate(`
+					const comment: Token = [...LEXER.generate(`
 						%% multiline
 						that has contents
 						comment %%
@@ -134,7 +134,7 @@ describe('LexerSolid', () => {
 					assert.ok(comment instanceof TOKEN.TokenCommentMulti)
 				})
 				specify('Simulate inline documentation comment.', () => {
-					const tokens: Token[] = [...new Lexer(CONFIG_DEFAULT).generate(`
+					const tokens: Token[] = [...LEXER.generate(`
 						%%% The third power of 2. %%
 						8;
 					`)];
@@ -143,7 +143,7 @@ describe('LexerSolid', () => {
 					assert.strictEqual(tokens[4].source, '8')
 				})
 				specify('Simulate block documentation comment.', () => {
-					const tokens: Token[] = [...new Lexer(CONFIG_DEFAULT).generate(xjs.String.dedent`
+					const tokens: Token[] = [...LEXER.generate(xjs.String.dedent`
 						%%%
 						The third power of 2.
 						%%%
@@ -160,7 +160,7 @@ describe('LexerSolid', () => {
 					assert.strictEqual(tokens[4].source, '8')
 				})
 				it('throws when `config.languageFeatures.comments` is turned off.', () => {
-					assert.throws(() => [...new Lexer(comments_off).generate(`
+					assert.throws(() => [...LEXER_COMMENTS_OFF.generate(`
 						%% multiline
 						comment %%
 					`)], LexError01);
@@ -169,13 +169,13 @@ describe('LexerSolid', () => {
 		})
 
 		it('recognizes `TokenPunctuator` conditions.', () => {
-			[...new Lexer(CONFIG_DEFAULT).generate(TOKEN.TokenPunctuator.PUNCTUATORS.join(' '))].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((value) => {
+			[...LEXER.generate(TOKEN.TokenPunctuator.PUNCTUATORS.join(' '))].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((value) => {
 				assert.ok(value instanceof TOKEN.TokenPunctuator)
 			})
 		})
 
 		it('recognizes `TokenKeyword` conditions.', () => {
-			[...new Lexer(CONFIG_DEFAULT).generate(TOKEN.TokenKeyword.KEYWORDS.join(' '))].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
+			[...LEXER.generate(TOKEN.TokenKeyword.KEYWORDS.join(' '))].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 				assert.ok(token instanceof TOKEN.TokenKeyword)
 			})
 		})
@@ -183,14 +183,14 @@ describe('LexerSolid', () => {
 		context('recognizes `TokenIdentifier` conditions.', () => {
 			context('recognizes `TokenIdentifierBasic` conditions.', () => {
 				specify('Basic identifier beginners.', () => {
-					[...new Lexer(CONFIG_DEFAULT).generate(`
+					[...LEXER.generate(`
 						A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z _
 					`)].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 						assert.ok(token instanceof TOKEN.TokenIdentifierBasic)
 					})
 				})
 				specify('Identifier continuations.', () => {
-					const tokens: Token[] = [...new Lexer(CONFIG_DEFAULT).generate(`
+					const tokens: Token[] = [...LEXER.generate(`
 						this be a word
 						_words _can _start _with _underscores
 						_and0 _can1 contain2 numb3rs
@@ -202,7 +202,7 @@ describe('LexerSolid', () => {
 					assert.strictEqual(tokens.length, 13)
 				})
 				specify('Identifiers cannot start with a digit.', () => {
-					assert.deepStrictEqual([...new Lexer(CONFIG_DEFAULT).generate(`
+					assert.deepStrictEqual([...LEXER.generate(`
 						this be 0a word
 						_words 1c_an _start 2w_ith _underscores
 						_and0 3c_an1 contain2 44numb3rs
@@ -213,7 +213,7 @@ describe('LexerSolid', () => {
 			})
 			context('recognizes `TokenIdentifierUnicode` conditions.', () => {
 				specify('Identifier boundaries.', () => {
-					let tokens: Token[] = [...new Lexer(CONFIG_DEFAULT).generate(`
+					let tokens: Token[] = [...LEXER.generate(`
 						\`this\` \`is\` \`a\` \`unicode word\`
 						\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
 						\`except\` \`back-ticks\` \`.\`
@@ -226,7 +226,7 @@ describe('LexerSolid', () => {
 					assert.strictEqual(tokens.length, 18)
 				})
 				it('should throw if Unicode identifier contains U+0060 GRAVE ACCENT.', () => {
-					assert.throws(() => [...new Lexer(CONFIG_DEFAULT).generate(`
+					assert.throws(() => [...LEXER.generate(`
 						\`a \\\` grave accent\`
 					`)], LexError02);
 				})
@@ -234,34 +234,26 @@ describe('LexerSolid', () => {
 		})
 
 		context('recognizes `TokenNumber` conditions.', () => {
-			const radices_on: SolidConfig = {
+			const LEXER_RADICES_ON: LexerSolid = new LexerSolid({
 				...CONFIG_DEFAULT,
 				languageFeatures: {
 					...CONFIG_DEFAULT.languageFeatures,
 					integerRadices: true,
 				},
-			}
-			const separators_on: SolidConfig = {
+			});
+			const LEXER_SEPARATORS_ON: LexerSolid = new LexerSolid({
 				...CONFIG_DEFAULT,
 				languageFeatures: {
 					...CONFIG_DEFAULT.languageFeatures,
 					numericSeparators: true,
 				},
-			}
-			const both_on: SolidConfig = {
-				...CONFIG_DEFAULT,
-				languageFeatures: {
-					...CONFIG_DEFAULT.languageFeatures,
-					integerRadices: true,
-					numericSeparators: true,
-				},
-			}
+			});
 			specify('implicit radix integers.', () => {
-				[...new Lexer(CONFIG_DEFAULT).generate(TOKEN.TokenNumber.DIGITS.get(TOKEN.TokenNumber.RADIX_DEFAULT)!.join(' '))]
+				[...LEXER.generate(TOKEN.TokenNumber.DIGITS.get(TOKEN.TokenNumber.RADIX_DEFAULT)!.join(' '))]
 					.slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 						assert.ok(token instanceof TOKEN.TokenNumber)
 					})
-				const tokens: Token[] = [...new Lexer(CONFIG_DEFAULT).generate(`
+				const tokens: Token[] = [...LEXER.generate(`
 					+  55  -  33  2  007  700  +91  -27  +091  -0027
 				`)];
 				assert.strictEqual(tokens[ 4].source, `55`)
@@ -276,7 +268,7 @@ describe('LexerSolid', () => {
 			})
 			context('explicit radix integers.', () => {
 				it('throws when `config.languageFeatures.integerRadices` is turned off.', () => {
-					assert.throws(() => [...new Lexer(CONFIG_DEFAULT).generate(`
+					assert.throws(() => [...LEXER.generate(`
 						\\b100  \\b001  +\\b1000  -\\b1000  +\\b01  -\\b01
 						\\q320  \\q032  +\\q1032  -\\q1032  +\\q03  -\\q03
 						\\o370  \\o037  +\\o1037  -\\o1037  +\\o06  -\\o06
@@ -286,7 +278,7 @@ describe('LexerSolid', () => {
 					`)], LexError01);
 				})
 				it('recognizes radix prefix as the start of a number token.', () => {
-					[...TOKEN.TokenNumber.BASES].flatMap(([base, radix]) => [...new Lexer(radices_on).generate(
+					[...TOKEN.TokenNumber.BASES].flatMap(([base, radix]) => [...LEXER_RADICES_ON.generate(
 						TOKEN.TokenNumber.DIGITS.get(radix)!.map((d) => `\\${ base }${ d }`).join(' '),
 					)].slice(1, -1)).filter((token) => !(token instanceof TokenWhitespace)).forEach((token) => {
 						assert.ok(token instanceof TOKEN.TokenNumber)
@@ -301,13 +293,13 @@ describe('LexerSolid', () => {
 						\\xe70  \\x0e7  +\\x90e7  -\\x90e7  +\\x06  -\\x06
 						\\ze70  \\z0e7  +\\z90e7  -\\z90e7  +\\z06  -\\z06
 					`.replace(/\n\t+/g, '  ').trim();
-					[...new Lexer(radices_on).generate(source)].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
+					[...LEXER_RADICES_ON.generate(source)].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
 						assert.ok(token instanceof TOKEN.TokenNumber)
 						assert.strictEqual(token.source, source.split('  ')[i])
 					})
 				})
 				specify('invalid sequence.', () => {
-					assert.deepStrictEqual([...new Lexer(radices_on).generate(`
+					assert.deepStrictEqual([...LEXER_RADICES_ON.generate(`
 							\\d39c
 					`)].slice(2, -2).map((token) => token.source), ['\\d39', 'c']);
 				})
@@ -317,11 +309,11 @@ describe('LexerSolid', () => {
 						+\\a0 +\\c0 +\\e0 +\\f0 +\\g0 +\\h0 +\\i0 +\\j0 +\\k0 +\\l0 +\\m0 +\\n0 +\\p0 +\\r0 +\\s0 +\\t0 +\\u0 +\\v0 +\\w0 +\\y0 +\\
 						-\\a0 -\\c0 -\\e0 -\\f0 -\\g0 -\\h0 -\\i0 -\\j0 -\\k0 -\\l0 -\\m0 -\\n0 -\\p0 -\\r0 -\\s0 -\\t0 -\\u0 -\\v0 -\\w0 -\\y0 -\\
 					`.trim().split(' ').filter((src) => src !== '').forEach((src) => {
-						assert.throws(() => [...new Lexer(radices_on).generate(src)], LexError03);
+						assert.throws(() => [...LEXER_RADICES_ON.generate(src)], LexError03);
 					})
 				})
 				specify('integers with invalid digits start a new token.', () => {
-					assert.deepStrictEqual([...new Lexer(radices_on).generate(`
+					assert.deepStrictEqual([...LEXER_RADICES_ON.generate(`
 						\\b100400000  \\q1231423  \\o12345678
 					`)].filter((token) => token instanceof TOKEN.TokenNumber).map((token) => token.source), [
 						'\\b100', '400000', '\\q1231', '423', '\\o1234567', '8'
@@ -330,7 +322,7 @@ describe('LexerSolid', () => {
 			})
 			context('floats.', () => {
 				it('tokenizes floats.', () => {
-					const tokens: Token[] = [...new Lexer(CONFIG_DEFAULT).generate(`
+					const tokens: Token[] = [...LEXER.generate(`
 						55.  -55.  033.  -033.  2.007  -2.007
 						91.27e4  -91.27e4  91.27e-4  -91.27e-4
 						-0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
@@ -356,7 +348,7 @@ describe('LexerSolid', () => {
 					assert.strictEqual(tokens[35].source, `-78`)
 				})
 				it('recognizes exponent part not following fraction part as identifier.', () => {
-					const tokens: Token[] = [...new Lexer(CONFIG_DEFAULT).generate(`91.e27`)];
+					const tokens: Token[] = [...LEXER.generate(`91.e27`)];
 						assert.ok(tokens[2] instanceof TOKEN.TokenNumber)
 						assert.strictEqual(tokens[2].source, `91.`)
 						assert.ok(tokens[3] instanceof TOKEN.TokenIdentifier)
@@ -365,7 +357,7 @@ describe('LexerSolid', () => {
 			})
 			context('numbers with separators.', () => {
 				it('tokenizes numeric separators as identifiers when `config.languageFeatures.numericSeparators` is turned off.', () => {
-					const tokens: Token[] = [...new Lexer(radices_on).generate(`
+					const tokens: Token[] = [...LEXER_RADICES_ON.generate(`
 							12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
 							\\b1_00  \\q0_32  +\\o1_037  -\\d9_037  +\\x0_6  -\\z0_6
 							91.2e4_7  81.2e+4_7  71.2e-4_7  2.00_7  -1.00_7
@@ -393,25 +385,32 @@ describe('LexerSolid', () => {
 						5_5.  -5_5.  2.00_7  -2.00_7
 						91.2e4_7  91.2e+4_7  91.2e-4_7
 					`.replace(/\n\t+/g, '  ').trim();
-					[...new Lexer(both_on).generate(source)].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
+					[...new LexerSolid({
+						...CONFIG_DEFAULT,
+						languageFeatures: {
+							...CONFIG_DEFAULT.languageFeatures,
+							integerRadices:    true,
+							numericSeparators: true,
+						},
+					}).generate(source)].slice(1, -1).filter((token) => !(token instanceof TokenWhitespace)).forEach((token, i) => {
 						assert.ok(token instanceof TOKEN.TokenNumber)
 						assert.strictEqual(token.source, source.split('  ')[i])
 					})
 				})
 				specify('numeric separator cannot appear at end of token.', () => {
-					assert.throws(() => [...new Lexer(separators_on).generate(`12_345_`)], LexError04);
+					assert.throws(() => [...LEXER_SEPARATORS_ON.generate(`12_345_`)], LexError04);
 				})
 				specify('numeric separators cannot appear consecutively.', () => {
-					assert.throws(() => [...new Lexer(separators_on).generate(`12__345`)], LexError04);
+					assert.throws(() => [...LEXER_SEPARATORS_ON.generate(`12__345`)], LexError04);
 				})
 				specify('numeric separator at beginning of token is an identifier.', () => {
-					assert.throws(() => [...new Lexer(separators_on).generate(`6.7e_12345`)],  LexError05);
-					assert.throws(() => [...new Lexer(separators_on).generate(`6.7e-_12345`)], LexError05);
+					assert.throws(() => [...LEXER_SEPARATORS_ON.generate(`6.7e_12345`)],  LexError05);
+					assert.throws(() => [...LEXER_SEPARATORS_ON.generate(`6.7e-_12345`)], LexError05);
 						function tokenTypeAndSource(index: number, type: NewableFunction, source: string) {
 							assert.ok(tokens[index] instanceof type, `Token \`${ tokens[index].source }\` (${ index }) is not instance of ${ type.name }.`)
 							assert.strictEqual(tokens[index].source, source)
 						}
-					const tokens: Token[] = [...new Lexer(separators_on).generate(`
+					const tokens: Token[] = [...LEXER_SEPARATORS_ON.generate(`
 							_12345  -_12345  6._12345  6.-_12345
 					`, )];
 						tokenTypeAndSource(2, TOKEN.TokenIdentifier, `_12345`)
@@ -431,7 +430,7 @@ describe('LexerSolid', () => {
 
 		Dev.supports('literalString-lex') && context('recognizes `TokenString` conditions.', () => {
 			specify('Basic strings.', () => {
-				const tokens: Token[] = [...new Lexer(CONFIG_DEFAULT).generate(`
+				const tokens: Token[] = [...LEXER.generate(`
 					3 - 50 + * 2
 					5 + 03 + '' * 'hello' *  -2
 					600  /  3  *  2
@@ -444,7 +443,7 @@ describe('LexerSolid', () => {
 				assert.strictEqual(tokens[26].source, `'hello'`)
 			})
 			specify('Escaped characters.', () => {
-				const tokenstring: Token = [...new Lexer(CONFIG_DEFAULT).generate(`
+				const tokenstring: Token = [...LEXER.generate(`
 					'0 \\' 1 \\\\ 2 \\% 7 \\s 3 \\t 4 \\n 5 \\r 6';
 				`)][2];
 				assert.strictEqual(tokenstring.source.slice( 3,  5), `\\'`)
@@ -456,7 +455,7 @@ describe('LexerSolid', () => {
 				assert.strictEqual(tokenstring.source.slice(33, 35), `\\r`);
 			})
 			specify('Escaped character sequences.', () => {
-				const tokenstring: Token = [...new Lexer(CONFIG_DEFAULT).generate(`
+				const tokenstring: Token = [...LEXER.generate(`
 					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3';
 				`)][2];
 				assert.strictEqual(tokenstring.source.slice( 3,  9), `\\u{24}`)
@@ -464,12 +463,12 @@ describe('LexerSolid', () => {
 				assert.strictEqual(tokenstring.source.slice(23, 27), `\\u{}`)
 			})
 			it('may contain an escaped `u` anywhere.', () => {
-				assert.strictEqual([...new Lexer(CONFIG_DEFAULT).generate(`
+				assert.strictEqual([...LEXER.generate(`
 					'abc\\udef\\u';
 				`)][2].source, `'abc\\udef\\u'`);
 			});
 			specify('Line continuation.', () => {
-				const tokenstring: Token = [...new Lexer(CONFIG_DEFAULT).generate(`
+				const tokenstring: Token = [...LEXER.generate(`
 					'012\\
 					345
 					678';
@@ -485,7 +484,7 @@ describe('LexerSolid', () => {
 				`, `
 					'Here is a string %% that contains a comment start marker but no end.'
 				`].forEach((src) => {
-					assert.doesNotThrow(() => [...new Lexer(CONFIG_DEFAULT).generate(src)]);
+					assert.doesNotThrow(() => [...LEXER.generate(src)]);
 				})
 			})
 			specify('Invalid escape sequences.', () => {
@@ -496,15 +495,15 @@ describe('LexerSolid', () => {
 				`, `
 					'escaped percent: \\% invalid unicode: \\u{24u done.'
 				`].forEach((src) => {
-					assert.throws(() => [...new Lexer(CONFIG_DEFAULT).generate(src)], LexError03);
+					assert.throws(() => [...LEXER.generate(src)], LexError03);
 				})
 			})
 			it('invalid escape sequences within in-string comments.', () => {
 				const src: string = `
 					'in-string comment: % invalid unicode: \\u{24u done.'
 				`;
-				assert.doesNotThrow(() => [...new Lexer(CONFIG_DEFAULT).generate(src)], 'with comments enabled');
-				assert.throws(() => [...new Lexer({
+				assert.doesNotThrow(() => [...LEXER.generate(src)], 'with comments enabled');
+				assert.throws(() => [...new LexerSolid({
 						...CONFIG_DEFAULT,
 						languageFeatures: {
 							...CONFIG_DEFAULT.languageFeatures,
@@ -516,7 +515,7 @@ describe('LexerSolid', () => {
 
 		Dev.supports('literalTemplate-lex') && context('recognizes `TokenTemplate` conditions.', () => {
 			specify('Basic templates.', () => {
-				const tokens: Token[] = [...new Lexer(CONFIG_DEFAULT).generate(`
+				const tokens: Token[] = [...LEXER.generate(`
 					600  /  '''''' * 3 + '''hello''' *  2
 				`)];
 				assert.ok(tokens[ 6] instanceof TOKEN.TokenTemplate)
@@ -527,7 +526,7 @@ describe('LexerSolid', () => {
 				assert.strictEqual(tokens[14].source, `'''hello'''`)
 			})
 			specify('Template interpolation.', () => {
-				const tokens: Token[] = [...new Lexer(CONFIG_DEFAULT).generate(`
+				const tokens: Token[] = [...LEXER.generate(`
 					3 + '''head{{ * 2
 					3 + }}midl{{ * 2
 					3 + }}tail''' * 2
@@ -543,7 +542,7 @@ describe('LexerSolid', () => {
 				assert.strictEqual(tokens[26].source, `}}tail'''`)
 			})
 			specify('Empty/comment interpolation.', () => {
-				const tokens: Token[] = [...new Lexer(CONFIG_DEFAULT).generate(`
+				const tokens: Token[] = [...LEXER.generate(`
 					'''abc{{ }}def'''
 					'''ghi{{}}jkl'''
 					'''mno{{ %% pqr %% }}stu'''
@@ -568,7 +567,7 @@ describe('LexerSolid', () => {
 				assert.strictEqual(tokens[13].source, `}}stu'''`)
 			})
 			specify('Nested interpolation.', () => {
-				const tokens: Token[] = [...new Lexer(CONFIG_DEFAULT).generate(`
+				const tokens: Token[] = [...LEXER.generate(`
 					1 + '''head1 {{ 2 + '''head2 {{ 3 ^ 3 }} tail2''' * 2 }} tail1''' * 1
 				`)];
 				assert.ok(tokens[ 6] instanceof TOKEN.TokenTemplate)
@@ -585,7 +584,7 @@ describe('LexerSolid', () => {
 				assert.strictEqual(tokens[26].source, `}} tail1'''`)
 			})
 			specify('Non-escaped characters.', () => {
-				const tokentemplate: Token = [...new Lexer(CONFIG_DEFAULT).generate(`
+				const tokentemplate: Token = [...LEXER.generate(`
 					'''0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6 \\\\\` 7''';
 				`)][2];
 				assert.strictEqual(tokentemplate.source.slice( 5,  7), `\\'`)
@@ -597,7 +596,7 @@ describe('LexerSolid', () => {
 				assert.strictEqual(tokentemplate.source.slice(35, 38), `\\\\\``)
 			})
 			specify('Non-escaped character sequences.', () => {
-				const tokentemplate: Token = [...new Lexer(CONFIG_DEFAULT).generate(`
+				const tokentemplate: Token = [...LEXER.generate(`
 					'''0 \\u{24} 1 \\u{005f} 2 \\u{} 3''';
 				`)][2];
 				assert.strictEqual(tokentemplate.source.slice( 5, 11), `\\u{24}`)
@@ -605,7 +604,7 @@ describe('LexerSolid', () => {
 				assert.strictEqual(tokentemplate.source.slice(25, 29), `\\u{}`)
 			})
 			specify('Line breaks.', () => {
-				const tokentemplate: Token = [...new Lexer(CONFIG_DEFAULT).generate(`
+				const tokentemplate: Token = [...LEXER.generate(`
 					'''012\\
 					345
 					678''';
@@ -620,7 +619,7 @@ describe('LexerSolid', () => {
 					`, `
 						}}template-tail that ends with a single apostrophe ''''
 					`].forEach((src) => {
-						assert.throws(() => [...new Lexer(CONFIG_DEFAULT).generate(src)], LexError02);
+						assert.throws(() => [...LEXER.generate(src)], LexError02);
 					})
 				})
 			})

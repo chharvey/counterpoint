@@ -385,3 +385,6 @@ export class LexerSolid extends Lexer {
 		return new TOKEN.TokenTemplate(delim_start, delim_end!, [...positions][0], ...buffer);
 	}
 }
+
+
+export const LEXER: LexerSolid = new LexerSolid();
