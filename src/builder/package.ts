@@ -9,9 +9,6 @@ export {
 	CONFIG_DEFAULT,
 } from '../core/index.js';
 export {
-	ParserSolid as Parser,
-} from '../parser/index.js';
-export {
 	Operator,
 	ValidOperatorUnary,
 	ValidOperatorBinary,

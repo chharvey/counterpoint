@@ -4,8 +4,6 @@ import wabt from 'wabt'; // need `tsconfig.json#compilerOptions.allowSyntheticDe
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Parser,
-	Decorator,
 	Validator,
 	AST,
 } from './package.js';
@@ -46,7 +44,7 @@ export class Builder {
 		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
 		this.validator = new Validator(this.config);
-		this.ast_goal  = Decorator.decorate(new Parser(source, config).parse());
+		this.ast_goal  = AST.ASTNodeGoal.fromSource(source, config);
 		this.ast_goal.varCheck (this.validator); // assert does not throw
 		this.ast_goal.typeCheck(this.validator); // assert does not throw
 	}

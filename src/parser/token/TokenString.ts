@@ -1,20 +1,17 @@
-import {
-	Filebound,
+import type {
+	NonemptyArray,
 	Char,
-	LexError02,
 } from '@chharvey/parser';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import {
-	LexError03,
 	CodeUnit,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	LexerSolid,
 } from './package.js';
 import {TokenCommentLine} from './TokenCommentLine.js';
 import {TokenCommentMulti} from './TokenCommentMulti.js';
-import {NumberOrStringToken} from './NumberOrStringToken.js';
+import {TokenSolid} from './TokenSolid.js';
 import {TokenNumber} from './TokenNumber.js';
 
 
@@ -40,7 +37,7 @@ type EncodedChar =
 
 
 
-export class TokenString extends NumberOrStringToken {
+export class TokenString extends TokenSolid {
 	static readonly DELIM:   '\'' = '\''
 	static readonly ESCAPER: '\\' = '\\'
 	static readonly ESCAPES: readonly string[] = [
@@ -132,95 +129,18 @@ export class TokenString extends NumberOrStringToken {
 			];
 		};
 	}
-	constructor (lexer: LexerSolid) {
-		super('STRING', lexer, ...lexer.advance())
-		while (!this.lexer.isDone && !Char.eq(TokenString.DELIM, this.lexer.c0)) {
-			if (Char.eq(Filebound.EOT, this.lexer.c0)) {
-				throw new LexError02(this)
-			}
-			if (Char.eq(TokenString.ESCAPER, this.lexer.c0)) {
-				/* possible escape or line continuation */
-				if (Char.inc(TokenString.ESCAPES, this.lexer.c1)) {
-					/* an escaped character literal */
-					this.advance(2n)
-
-				} else if (Char.eq('u{', this.lexer.c1, this.lexer.c2)) {
-					/* an escape sequence */
-					const digits: readonly string[] = TokenNumber.DIGITS.get(16n) !
-					let cargo: string = `${this.lexer.c0.source}${this.lexer.c1 !.source}${this.lexer.c2 !.source}`
-					this.advance(3n)
-					if (Char.inc(digits, this.lexer.c0)) {
-						cargo += this.lexer.c0.source
-						this.advance()
-						cargo += this.lexDigitSequence(digits);
-					}
-					// add ending escape delim
-					if (Char.eq('}', this.lexer.c0)) {
-						this.advance()
-					} else {
-						throw new LexError03(cargo, this.lexer.c0.line_index, this.lexer.c0.col_index)
-					}
-
-				} else if (Char.eq('\n', this.lexer.c1)) {
-					/* a line continuation (LF) */
-					this.advance(2n)
-
-				} else {
-					/* a backslash escapes the following character */
-					this.advance(2n);
-				}
-
-			} else if (this.lexer.config.languageFeatures.comments && Char.eq(TokenCommentMulti.DELIM_START, this.lexer.c0, this.lexer.c1)) {
-				/* an in-string multiline comment */
-				this.advance(BigInt(TokenCommentMulti.DELIM_START.length));
-				while (
-					   !this.lexer.isDone
-					&& !Char.eq(TokenString.DELIM, this.lexer.c0)
-					&& !Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)
-				) {
-					if (Char.eq(Filebound.EOT, this.lexer.c0)) {
-						throw new LexError02(this);
-					};
-					this.advance();
-				};
-				if (Char.eq(TokenString.DELIM, this.lexer.c0)) {
-					// do nothing, as the ending string delim is not included in the in-string comment
-				} else if (Char.eq(TokenCommentMulti.DELIM_END, this.lexer.c0, this.lexer.c1)) {
-					// add ending comment delim to in-string comment
-					this.advance(BigInt(TokenCommentMulti.DELIM_END.length));
-				};
-
-			} else if (this.lexer.config.languageFeatures.comments && Char.eq(TokenCommentLine.DELIM_START, this.lexer.c0)) {
-				/* an in-string line comment */
-				this.advance(BigInt(TokenCommentLine.DELIM_START.length));
-				while (!this.lexer.isDone && !Char.inc([
-					TokenString.DELIM,
-					TokenCommentLine.DELIM_END,
-				], this.lexer.c0)) {
-					if (Char.eq(Filebound.EOT, this.lexer.c0)) {
-						throw new LexError02(this);
-					};
-					this.advance();
-				};
-				if (Char.eq(TokenString.DELIM, this.lexer.c0)) {
-					// do nothing, as the ending string delim is not included in the in-string comment
-				} else if (Char.eq(TokenCommentLine.DELIM_END, this.lexer.c0)) {
-					// add ending comment delim to in-string comment
-					this.advance(BigInt(TokenCommentLine.DELIM_END.length));
-				};
-
-			} else {
-				this.advance()
-			}
-		}
-		// add ending delim to token
-		this.advance()
+	constructor (
+		private readonly allow_comments:   SolidConfig['languageFeatures']['comments']          = CONFIG_DEFAULT.languageFeatures.comments,
+		private readonly allow_separators: SolidConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
+		...chars: NonemptyArray<Char>
+	) {
+		super('STRING', ...chars);
 	}
 	cook(): CodeUnit[] {
 		return TokenString.tokenWorth(
 			this.source.slice(TokenString.DELIM.length, -TokenString.DELIM.length),
-			this.lexer.config.languageFeatures.comments,
-			this.lexer.config.languageFeatures.numericSeparators,
+			this.allow_comments,
+			this.allow_separators,
 		);
 	}
 }

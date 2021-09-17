@@ -1,6 +1,6 @@
 import type {
+	NonemptyArray,
 	Char,
-	Lexer,
 } from '@chharvey/parser';
 import {Keyword} from './package.js';
 import {TokenSolid} from './TokenSolid.js';
@@ -14,8 +14,8 @@ export class TokenKeyword extends TokenSolid {
 		Object.values(Keyword),
 	)]
 	// declare readonly source: Keyword; // NB: https://github.com/microsoft/TypeScript/issues/40220
-	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
-		super('KEYWORD', lexer, start_char, ...more_chars)
+	constructor (...chars: NonemptyArray<Char>) {
+		super('KEYWORD', ...chars);
 	}
 	cook(): bigint {
 		return BigInt(TokenKeyword.KEYWORDS.indexOf(this.source as Keyword)) + TokenKeyword.MINIMUM_VALUE

@@ -2,7 +2,8 @@ import type {ParseNode} from '@chharvey/parser';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Parser,
+	ParserSolid,
+	PARSER,
 	INST,
 	Builder,
 } from './package.js';
@@ -22,7 +23,7 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	 * @returns      a new ASTNodeGoal representing the given source
 	 */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeGoal {
-		return Decorator.decorate(new Parser(src, config).parse());
+		return Decorator.decorate(((config === CONFIG_DEFAULT) ? PARSER : new ParserSolid(config)).parse(src));
 	}
 	constructor(
 		start_node: ParseNode,

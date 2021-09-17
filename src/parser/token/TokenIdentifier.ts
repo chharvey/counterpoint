@@ -1,6 +1,6 @@
 import type {
+	NonemptyArray,
 	Char,
-	Lexer,
 } from '@chharvey/parser';
 import {TokenSolid} from './TokenSolid.js';
 
@@ -15,8 +15,8 @@ export abstract class TokenIdentifier extends TokenSolid {
 	 * which indexes unique identifier tokens.
 	 */
 	private _cooked: bigint|null;
-	constructor (lexer: Lexer, start_char: Char, ...more_chars: Char[]) {
-		super('IDENTIFIER', lexer, start_char, ...more_chars)
+	constructor (...chars: NonemptyArray<Char>) {
+		super('IDENTIFIER', ...chars);
 		this._cooked = null
 	}
 	/**
