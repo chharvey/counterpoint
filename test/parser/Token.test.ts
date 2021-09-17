@@ -11,7 +11,8 @@ import {
 } from '../../src/core/index.js';
 import {
 	TOKEN,
-	LexerSolid as Lexer,
+	LexerSolid,
+	LEXER,
 } from '../../src/parser/index.js';
 
 
@@ -29,7 +30,7 @@ describe('TokenSolid', () => {
 
 		context('TokenPunctuator', () => {
 			it('assigns values 0n–127n to punctuator tokens.', () => {
-				const cooked: bigint[] = [...new Lexer(TOKEN.TokenPunctuator.PUNCTUATORS.join(' '), CONFIG_DEFAULT).generate()]
+				const cooked: bigint[] = [...LEXER.generate(TOKEN.TokenPunctuator.PUNCTUATORS.join(' '))]
 					.filter((token): token is TOKEN.TokenPunctuator => token instanceof TOKEN.TokenPunctuator)
 					.map((punctuator) => punctuator.cook())
 				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i)).slice(0, TOKEN.TokenPunctuator.PUNCTUATORS.length)
@@ -43,7 +44,7 @@ describe('TokenSolid', () => {
 
 		context('TokenKeyword', () => {
 			it('assigns values 128n–255n to reserved keywords.', () => {
-				const cooked: bigint[] = [...new Lexer(TOKEN.TokenKeyword.KEYWORDS.join(' '), CONFIG_DEFAULT).generate()]
+				const cooked: bigint[] = [...LEXER.generate(TOKEN.TokenKeyword.KEYWORDS.join(' '))]
 					.filter((token): token is TOKEN.TokenKeyword => token instanceof TOKEN.TokenKeyword)
 					.map((keyword) => keyword.cook())
 				const expected: bigint[] = [...new Array(128)].map((_, i) => BigInt(i + 128)).slice(0, TOKEN.TokenKeyword.KEYWORDS.length)
@@ -59,13 +60,13 @@ describe('TokenSolid', () => {
 			context('TokenIdentifierBasic', () => {
 				let cooked: (bigint | null)[];
 				before(() => {
-					cooked = [...new Lexer(`
+					cooked = [...LEXER.generate(`
 						this be a word
 						_words _can _start _with _underscores
 						_and0 _can1 contain2 numb3rs
 
 						a word _can repeat _with the same id
-					`, CONFIG_DEFAULT).generate()]
+					`)]
 						.filter((token): token is TOKEN.TokenIdentifier => token instanceof TOKEN.TokenIdentifier)
 						.map((identifier) => identifier.cook());
 				});
@@ -93,11 +94,11 @@ describe('TokenSolid', () => {
 			context('TokenIdentifierUnicode', () => {
 				let cooked: (bigint | null)[];
 				before(() => {
-					cooked = [...new Lexer(`
+					cooked = [...LEXER.generate(`
 						\`this\` \`is\` \`a\` \`unicode word\`
 						\`any\` \`unicode word\` \`can\` \`contain\` \`any\` \`character\`
 						\`except\` \`back-ticks\` \`.\`
-					`, CONFIG_DEFAULT).generate()]
+					`)]
 						.filter((token): token is TOKEN.TokenIdentifierUnicode => token instanceof TOKEN.TokenIdentifierUnicode)
 						.map((identifier) => identifier.cook());
 				});
@@ -120,6 +121,14 @@ describe('TokenSolid', () => {
 		})
 
 		context('TokenNumber', () => {
+			const lexer: LexerSolid = new LexerSolid({
+				...CONFIG_DEFAULT,
+				languageFeatures: {
+					...CONFIG_DEFAULT.languageFeatures,
+					integerRadices: true,
+					numericSeparators: true,
+				},
+			});
 			;[...new Map<string, [string, number[]]>([
 				['implicit radix integers', [`
 					370  037  +9037  -9037  +06  -06
@@ -172,14 +181,7 @@ describe('TokenSolid', () => {
 				]]],
 			])].forEach(([name, [source, values]]) => {
 				it(`correctly cooks ${name}.`, () => {
-					assert.deepStrictEqual([...new Lexer(source, {
-						...CONFIG_DEFAULT,
-						languageFeatures: {
-							...CONFIG_DEFAULT.languageFeatures,
-							integerRadices: true,
-							numericSeparators: true,
-						},
-					}).generate()]
+					assert.deepStrictEqual([...lexer.generate(source)]
 						.filter((token) => token instanceof TOKEN.TokenNumber)
 						.map((token) => (token as TOKEN.TokenNumber).cook()), values)
 				})
@@ -188,7 +190,7 @@ describe('TokenSolid', () => {
 
 		Dev.supports('literalString-cook') && context('TokenString', () => {
 			it('produces the cooked string value.', () => {
-				assert.deepStrictEqual([...new Lexer(xjs.String.dedent`
+				assert.deepStrictEqual([...LEXER.generate(xjs.String.dedent`
 					5 + 03 + '' * 'hello' *  -2;
 					'0 \\' 1 \\\\ 2 \\s 3 \\t 4 \\n 5 \\r 6';
 					'0 \\u{24} 1 \\u{005f} 2 \\u{} 3';
@@ -196,7 +198,7 @@ describe('TokenSolid', () => {
 					345\\%
 					678';
 					'😀' '\u{10001}' '\\\u{10001}' '\\u{10001}';
-				`, CONFIG_DEFAULT).generate()]
+				`)]
 					.filter((token): token is TOKEN.TokenString => token instanceof TOKEN.TokenString)
 					.map((token) => utf8Decode(token.cook()))
 				, [
@@ -209,13 +211,13 @@ describe('TokenSolid', () => {
 				]);
 			})
 			it('may contain an escaped `u` anywhere.', () => {
-				assert.strictEqual(utf8Decode(([...new Lexer(`
+				assert.strictEqual(utf8Decode(([...LEXER.generate(`
 					'abc\\udef\\u';
-				`, CONFIG_DEFAULT).generate()][2] as TOKEN.TokenString).cook()), `abcudefu`);
+				`)][2] as TOKEN.TokenString).cook()), `abcudefu`);
 			});
 			describe('In-String Comments', () => {
 				function cook(config: SolidConfig): string[] {
-					return [...new Lexer(xjs.String.dedent`
+					return [...new LexerSolid(config).generate(xjs.String.dedent`
 						'The five boxing wizards % jump quickly.'
 
 						'The five % boxing wizards
@@ -242,7 +244,7 @@ describe('TokenSolid', () => {
 						'The five boxing
 						wizards %% jump
 						quickly.'
-					`, config).generate()]
+					`)]
 						.filter((token): token is TOKEN.TokenString => token instanceof TOKEN.TokenString)
 						.map((token) => utf8Decode(token.cook()))
 					;
@@ -290,7 +292,7 @@ describe('TokenSolid', () => {
 		Dev.supports('literalTemplate-cook') && context('TokenTemplate', () => {
 			it('produces the cooked template value.', () => {
 				assert.deepStrictEqual(
-					[...new Lexer(xjs.String.dedent`
+					[...LEXER.generate(xjs.String.dedent`
 						600  /  '''''' * 3 + '''hello''' *  2;
 						3 + '''head{{ * 2
 						3 + }}midl{{ * 2
@@ -302,7 +304,7 @@ describe('TokenSolid', () => {
 						345
 						678''';
 						'''😀 \\😀 \\u{1f600}''';
-					`, CONFIG_DEFAULT).generate()]
+					`)]
 						.filter((token): token is TOKEN.TokenTemplate => token instanceof TOKEN.TokenTemplate)
 						.map((token) => utf8Decode(token.cook()))
 					,
@@ -322,28 +324,28 @@ describe('TokenSolid', () => {
 		})
 
 		Dev.supports('literalString-cook') && it('`String.fromCodePoint` throws when UTF-8 encoding input is out of range.', () => {
-			const stringtoken: TOKEN.TokenString = [...new Lexer(`
+			const stringtoken: TOKEN.TokenString = [...LEXER.generate(`
 				'a string literal with a unicode \\u{a00061} escape sequence out of range';
-			`, CONFIG_DEFAULT).generate()][2] as TOKEN.TokenString;
+			`)][2] as TOKEN.TokenString;
 			assert.throws(() => stringtoken.cook(), RangeError)
 		})
 	})
 
 	describe('#serialize', () => {
 		specify('TokenCommentLine', () => {
-			assert.strictEqual([...new Lexer(xjs.String.dedent`
+			assert.strictEqual([...LEXER.generate(xjs.String.dedent`
 				500  +  30; ;  % line comment  *  2
 				8;
-			`, CONFIG_DEFAULT).generate()][11].serialize(), `
+			`)][11].serialize(), `
 				<COMMENT line="2" col="16">% line comment  *  2\n</COMMENT>
 			`.trim());
 		})
 		specify('TokenCommentMulti', () => {
-			assert.strictEqual([...new Lexer(xjs.String.dedent`
+			assert.strictEqual([...LEXER.generate(xjs.String.dedent`
 				%% multiline
 				that has a
 				comment %%
-			`, CONFIG_DEFAULT).generate()][2].serialize(), xjs.String.dedent`
+			`)][2].serialize(), xjs.String.dedent`
 				<COMMENT line="2" col="1">%% multiline
 				that has a
 				comment %%</COMMENT>

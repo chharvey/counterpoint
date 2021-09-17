@@ -2,6 +2,7 @@ import {
 	SolidType,
 	SolidObject,
 } from '../typer/index.js';
+import type * as ASTNODE from './ASTNode.js';
 
 
 
@@ -40,14 +41,11 @@ export class SymbolStructureType extends SymbolStructure {
 	/** The assessed value of the symbol. */
 	private _value: SolidType = SolidType.UNKNOWN;
 	constructor (
-		id:     bigint,
-		line:   number,
-		col:    number,
-		source: string,
+		node: ASTNODE.ASTNodeTypeAlias,
 		/** A lambda returning the assessed value of the symbol. */
 		private readonly value_setter: () => SolidType,
 	) {
-		super(id, line, col, source);
+		super(node.id, node.line_index, node.col_index, node.source);
 	}
 	get value(): SolidType {
 		return this._value;
@@ -69,10 +67,7 @@ export class SymbolStructureVar extends SymbolStructure {
 	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
 	private _value: SolidObject | null = null;
 	constructor (
-		id:     bigint,
-		line:   number,
-		col:    number,
-		source: string,
+		node: ASTNODE.ASTNodeVariable,
 		/** May the symbol be reassigned? */
 		readonly unfixed: boolean,
 		/** A lambda returning the variable’s Type. */
@@ -80,7 +75,7 @@ export class SymbolStructureVar extends SymbolStructure {
 		/** A lambda returning the assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
 		private value_setter: (() => SolidObject | null) | null,
 	) {
-		super(id, line, col, source);
+		super(node.id, node.line_index, node.col_index, node.source);
 	}
 	get type(): SolidType {
 		return this._type;

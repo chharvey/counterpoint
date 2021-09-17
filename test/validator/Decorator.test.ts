@@ -8,7 +8,7 @@ import {
 	Dev,
 } from '../../src/core/index.js';
 import type {
-	PARSER,
+	PARSENODE,
 } from '../../src/parser/index.js';
 import {
 	AST,
@@ -376,7 +376,7 @@ describe('Decorator', () => {
 		})
 
 		Dev.supports('stringTemplate-decorate') && describe('StringTemplate', () => {
-			function templateSources(tpl: PARSER.ParseNodeStringTemplate, ...srcs: Readonly<NonemptyArray<string>>): void {
+			function templateSources(tpl: PARSENODE.ParseNodeStringTemplate, ...srcs: Readonly<NonemptyArray<string>>): void {
 				return assert.deepStrictEqual([...Decorator.decorate(tpl).children].map((c) => c.source), srcs);
 			}
 			specify('StringTemplate ::= TEMPLATE_FULL', () => {

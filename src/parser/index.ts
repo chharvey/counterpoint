@@ -9,9 +9,10 @@ export {
 } from './Token.js';
 export * as TOKEN from './Token.js';
 
-export {
-	LexerSolid,
-} from './Lexer.js';
+export * from './Lexer.js';
 
-export {ParserSolid} from './Parser.auto.js';
-export * as PARSER from './Parser.auto.js';
+export {
+	ParserSolid,
+	PARSER,
+} from './Parser.auto.js';
+export * as PARSENODE from './Parser.auto.js';
