@@ -34,7 +34,7 @@ export class LexerSolid extends Lexer {
 
 
 	/** A set of all unique identifiers in the program, for optimization purposes. */
-	private _ids: Set<string> = new Set()
+	private readonly _ids: Set<string> = new Set()
 
 	/**
 	 * Construct a new LexerSolid object.
@@ -44,6 +44,11 @@ export class LexerSolid extends Lexer {
 		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
 		super();
+	}
+
+	override * generate(source: string): Generator<Token> {
+		this._ids.clear(); // reset the set for the next time lexing
+		yield * super.generate(source);
 	}
 
 	protected override generate_do(): Token | null {

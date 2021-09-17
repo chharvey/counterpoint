@@ -34,10 +34,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		};
 		this.value.varCheck(validator);
 		validator.addSymbol(new SymbolStructureType(
-			this.variable.id,
-			this.variable.line_index,
-			this.variable.col_index,
-			this.variable.source,
+			this.variable,
 			() => this.value.assess(validator),
 		));
 	}
