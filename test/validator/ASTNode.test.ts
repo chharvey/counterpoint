@@ -903,7 +903,7 @@ describe('ASTNodeSolid', () => {
 				assert.deepStrictEqual(
 					((goal
 						.children[1] as AST.ASTNodeDeclarationType)
-						.value as AST.ASTNodeTypeAlias)
+						.assigned as AST.ASTNodeTypeAlias)
 						.eval(validator),
 					Int16,
 				);
@@ -2281,7 +2281,7 @@ describe('ASTNodeSolid', () => {
 		Dev.supports('literalCollection') && describe('ASTNodeTypeAccess', () => {
 			describe('#eval', () => {
 				function evalTypeDecl(decl: AST.ASTNodeDeclarationType, validator: Validator): SolidType {
-					return decl.value.eval(validator);
+					return decl.assigned.eval(validator);
 				}
 				const expected: SolidType[] = [
 					typeConstInt(1n),

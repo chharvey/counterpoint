@@ -24,18 +24,18 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 	constructor (
 		start_node: ParseNode,
 		readonly assignee: ASTNodeTypeAlias,
-		readonly value:    ASTNodeType,
+		readonly assigned: ASTNodeType,
 	) {
-		super(start_node, {}, [assignee, value]);
+		super(start_node, {}, [assignee, assigned]);
 	}
 	override varCheck(validator: Validator): void {
 		if (validator.hasSymbol(this.assignee.id)) {
 			throw new AssignmentError01(this.assignee);
 		};
-		this.value.varCheck(validator);
+		this.assigned.varCheck(validator);
 		validator.addSymbol(new SymbolStructureType(
 			this.assignee,
-			() => this.value.eval(validator),
+			() => this.assigned.eval(validator),
 		));
 	}
 	override typeCheck(validator: Validator): void {

@@ -1201,10 +1201,10 @@ describe('Decorator', () => {
 					type T  =  int | float;
 				`));
 				assert.strictEqual(decl.assignee.id, 256n);
-				assert.ok(decl.value instanceof AST.ASTNodeTypeOperationBinary);
-				assert.strictEqual(decl.value.operator, Operator.OR);
+				assert.ok(decl.assigned instanceof AST.ASTNodeTypeOperationBinary);
+				assert.strictEqual(decl.assigned.operator, Operator.OR);
 				assert.deepStrictEqual(
-					[decl.assignee.source, decl.value.source],
+					[decl.assignee.source, decl.assigned.source],
 					[`T`,                  `int | float`],
 				);
 			});

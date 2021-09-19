@@ -34,7 +34,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeType {
 		const statement: ASTNodeDeclarationType = ASTNodeDeclarationType.fromSource(`type T = ${ src };`, config);
-		return statement.value;
+		return statement.assigned;
 	}
 	private assessed?: SolidType;
 	/**
