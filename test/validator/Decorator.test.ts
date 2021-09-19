@@ -8,7 +8,7 @@ import {
 	Dev,
 } from '../../src/core/index.js';
 import {
-	PARSER,
+	PARSENODE,
 } from '../../src/parser/index.js';
 import {
 	AST,
@@ -243,9 +243,9 @@ describe('Decorator', () => {
 					<TypeOperation source="Bar | Qux">...</TypeOperation>
 					<TypeAlias source="Diz"/>
 				*/
-				const args: PARSER.ParseNodeTypeCompound = h.compoundTypeFromString(`Foo.<Bar | Qux, Diz>`);
+				const args: PARSENODE.ParseNodeTypeCompound = h.compoundTypeFromString(`Foo.<Bar | Qux, Diz>`);
 				assert_arrayLength(args.children, 2);
-				assert.ok(args.children[1] instanceof PARSER.ParseNodeGenericCall);
+				assert.ok(args.children[1] instanceof PARSENODE.ParseNodeGenericCall);
 				const sequence: NonemptyArray<AST.ASTNodeType> = Decorator.decorate(args.children[1]);
 				assert.deepStrictEqual(
 					sequence.map((c) => c.source),
@@ -478,7 +478,7 @@ describe('Decorator', () => {
 		})
 
 		Dev.supports('stringTemplate-decorate') && describe('StringTemplate', () => {
-			function templateSources(tpl: PARSER.ParseNodeStringTemplate, ...srcs: Readonly<NonemptyArray<string>>): void {
+			function templateSources(tpl: PARSENODE.ParseNodeStringTemplate, ...srcs: Readonly<NonemptyArray<string>>): void {
 				return assert.deepStrictEqual([...Decorator.decorate(tpl).children].map((c) => c.source), srcs);
 			}
 			specify('StringTemplate ::= TEMPLATE_FULL', () => {
@@ -671,9 +671,9 @@ describe('Decorator', () => {
 						<Variable source="diz"/>
 					</>
 				*/
-				const args: PARSER.ParseNodeExpressionCompound = h.compoundExpressionFromSource(`foo.(bar || qux, diz);`);
+				const args: PARSENODE.ParseNodeExpressionCompound = h.compoundExpressionFromSource(`foo.(bar || qux, diz);`);
 				assert_arrayLength(args.children, 2);
-				assert.ok(args.children[1] instanceof PARSER.ParseNodeFunctionCall);
+				assert.ok(args.children[1] instanceof PARSENODE.ParseNodeFunctionCall);
 				const sequence: [AST.ASTNodeType[], AST.ASTNodeExpression[]] = Decorator.decorate(args.children[1]);
 				assert.deepStrictEqual(
 					[
