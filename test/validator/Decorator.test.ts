@@ -1226,7 +1226,7 @@ describe('Decorator', () => {
 				assert.ok(decl.type instanceof AST.ASTNodeTypeOperationBinary);
 				assert.ok(decl.value instanceof AST.ASTNodeOperationBinary);
 				assert.deepStrictEqual(
-					[decl.variable.source, decl.variable.id, decl.type.source, decl.type.operator, decl.value.source, decl.value.operator],
+					[decl.assignee.source, decl.assignee.id, decl.type.source, decl.type.operator, decl.value.source, decl.value.operator],
 					[`the_answer`,         256n,             `int | float`,    Operator.OR,        `21 * 2`,          Operator.MUL],
 				);
 			})
@@ -1249,7 +1249,7 @@ describe('Decorator', () => {
 				assert.ok(decl.value instanceof AST.ASTNodeOperationBinary);
 				assert.ok(decl.value.operand0 instanceof AST.ASTNodeVariable);
 				assert.deepStrictEqual(
-					[decl.variable.source, decl.variable.id, decl.type.source, decl.value.source, decl.value.operator, decl.value.operand0.id],
+					[decl.assignee.source, decl.assignee.id, decl.type.source, decl.value.source, decl.value.operator, decl.value.operand0.id],
 					[`\`the £ answer\``,   256n,             `int`,            `the_answer * 10`, Operator.MUL,        257n],
 				);
 			})

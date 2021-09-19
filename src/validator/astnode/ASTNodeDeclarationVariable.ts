@@ -28,19 +28,19 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	constructor (
 		start_node: ParseNode,
 		readonly unfixed: boolean,
-		readonly variable: ASTNodeVariable,
+		readonly assignee: ASTNodeVariable,
 		readonly type:     ASTNodeType,
 		readonly value:    ASTNodeExpression,
 	) {
-		super(start_node, {unfixed}, [variable, type, value]);
+		super(start_node, {unfixed}, [assignee, type, value]);
 	}
 	override varCheck(validator: Validator): void {
-		if (validator.hasSymbol(this.variable.id)) {
-			throw new AssignmentError01(this.variable);
+		if (validator.hasSymbol(this.assignee.id)) {
+			throw new AssignmentError01(this.assignee);
 		};
 		forEachAggregated([this.type, this.value], (c) => c.varCheck(validator));
 		validator.addSymbol(new SymbolStructureVar(
-			this.variable,
+			this.assignee,
 			this.unfixed,
 			() => this.type.eval(validator),
 			(validator.config.compilerOptions.constantFolding && !this.unfixed)
@@ -55,14 +55,14 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			this.value.type(validator),
 			validator,
 		);
-		return validator.getSymbolInfo(this.variable.id)?.assess();
+		return validator.getSymbolInfo(this.assignee.id)?.assess();
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
 		const tofloat: boolean = this.type.eval(builder.validator).isSubtypeOf(Float64) || this.value.shouldFloat(builder.validator);
-		const assess: SolidObject | null = this.variable.fold(builder.validator);
+		const assess: SolidObject | null = this.assignee.fold(builder.validator);
 		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && assess)
 			? new INST.InstructionNone()
-			: new INST.InstructionDeclareGlobal(this.variable.id, this.unfixed, this.value.build(builder, tofloat))
+			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.value.build(builder, tofloat))
 		;
 	}
 }
