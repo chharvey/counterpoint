@@ -11,7 +11,7 @@ export {
 } from '../index.js';
 export type {
 	CodeUnit,
-} from '../lib/utils.js';
+} from '../lib/index.js';
 export {
 	SolidConfig,
 	CONFIG_DEFAULT,

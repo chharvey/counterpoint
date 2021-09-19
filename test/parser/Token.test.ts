@@ -3,7 +3,7 @@ import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import type {
 	CodeUnit,
-} from '../../src/lib/utils.js';
+} from '../../src/lib/index.js';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,

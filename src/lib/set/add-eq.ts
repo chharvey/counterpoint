@@ -1,4 +1,4 @@
-import {defaultComparator} from '../-private.js';
+import {defaultComparator} from './package.js';
 
 
 /**

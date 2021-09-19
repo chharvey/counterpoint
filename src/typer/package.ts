@@ -9,6 +9,9 @@ export {
 	VoidError01,
 } from '../index.js';
 export {
+	IntRange,
+	CodeUnit,
+	Keys,
 	Set_hasEq,
 	Set_addEq,
 	Set_intersectionEq,
@@ -18,11 +21,6 @@ export {
 	Map_getEq,
 	Map_setEq,
 } from '../lib/index.js';
-export type {
-	IntRange,
-	CodeUnit,
-	Keys,
-} from '../lib/utils.js';
 export {
 	Operator,
 	ValidAccessOperator,

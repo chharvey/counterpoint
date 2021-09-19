@@ -1,4 +1,4 @@
-import {defaultComparator} from '../-private.js';
+import {defaultComparator} from './package.js';
 import {Set_intersectionEq} from './intersection-eq.js';
 import {Set_unionEq} from './union-eq.js';
 import {Set_differenceEq} from './difference-eq.js';
