@@ -30,39 +30,39 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		readonly unfixed: boolean,
 		readonly assignee: ASTNodeVariable,
 		readonly type:     ASTNodeType,
-		readonly value:    ASTNodeExpression,
+		readonly assigned: ASTNodeExpression,
 	) {
-		super(start_node, {unfixed}, [assignee, type, value]);
+		super(start_node, {unfixed}, [assignee, type, assigned]);
 	}
 	override varCheck(validator: Validator): void {
 		if (validator.hasSymbol(this.assignee.id)) {
 			throw new AssignmentError01(this.assignee);
 		};
-		forEachAggregated([this.type, this.value], (c) => c.varCheck(validator));
+		forEachAggregated([this.type, this.assigned], (c) => c.varCheck(validator));
 		validator.addSymbol(new SymbolStructureVar(
 			this.assignee,
 			this.unfixed,
 			() => this.type.eval(validator),
 			(validator.config.compilerOptions.constantFolding && !this.unfixed)
-				? () => this.value.fold(validator)
+				? () => this.assigned.fold(validator)
 				: null,
 		));
 	}
 	override typeCheck(validator: Validator): void {
-		this.value.typeCheck(validator);
+		this.assigned.typeCheck(validator);
 		this.typeCheckAssignment(
 			this.type.eval(validator),
-			this.value.type(validator),
+			this.assigned.type(validator),
 			validator,
 		);
 		return validator.getSymbolInfo(this.assignee.id)?.assess();
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		const tofloat: boolean = this.type.eval(builder.validator).isSubtypeOf(Float64) || this.value.shouldFloat(builder.validator);
+		const tofloat: boolean = this.type.eval(builder.validator).isSubtypeOf(Float64) || this.assigned.shouldFloat(builder.validator);
 		const assess: SolidObject | null = this.assignee.fold(builder.validator);
 		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && assess)
 			? new INST.InstructionNone()
-			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.value.build(builder, tofloat))
+			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat))
 		;
 	}
 }

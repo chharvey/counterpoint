@@ -1224,10 +1224,10 @@ describe('Decorator', () => {
 				`));
 				assert.strictEqual(decl.unfixed, true);
 				assert.ok(decl.type instanceof AST.ASTNodeTypeOperationBinary);
-				assert.ok(decl.value instanceof AST.ASTNodeOperationBinary);
+				assert.ok(decl.assigned instanceof AST.ASTNodeOperationBinary);
 				assert.deepStrictEqual(
-					[decl.assignee.source, decl.assignee.id, decl.type.source, decl.type.operator, decl.value.source, decl.value.operator],
-					[`the_answer`,         256n,             `int | float`,    Operator.OR,        `21 * 2`,          Operator.MUL],
+					[decl.assignee.source, decl.assignee.id, decl.type.source, decl.type.operator, decl.assigned.source, decl.assigned.operator],
+					[`the_answer`,         256n,             `int | float`,    Operator.OR,        `21 * 2`,             Operator.MUL],
 				);
 			})
 			it('makes a fixed ASTNodeDeclarationVariable node.', () => {
@@ -1246,11 +1246,11 @@ describe('Decorator', () => {
 				`));
 				assert.strictEqual(decl.unfixed, false);
 				assert.ok(decl.type instanceof AST.ASTNodeTypeConstant);
-				assert.ok(decl.value instanceof AST.ASTNodeOperationBinary);
-				assert.ok(decl.value.operand0 instanceof AST.ASTNodeVariable);
+				assert.ok(decl.assigned instanceof AST.ASTNodeOperationBinary);
+				assert.ok(decl.assigned.operand0 instanceof AST.ASTNodeVariable);
 				assert.deepStrictEqual(
-					[decl.assignee.source, decl.assignee.id, decl.type.source, decl.value.source, decl.value.operator, decl.value.operand0.id],
-					[`\`the £ answer\``,   256n,             `int`,            `the_answer * 10`, Operator.MUL,        257n],
+					[decl.assignee.source, decl.assignee.id, decl.type.source, decl.assigned.source, decl.assigned.operator, decl.assigned.operand0.id],
+					[`\`the £ answer\``,   256n,             `int`,            `the_answer * 10`,    Operator.MUL,           257n],
 				);
 			})
 		})
