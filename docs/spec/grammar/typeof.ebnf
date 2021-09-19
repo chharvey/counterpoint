@@ -1,6 +1,6 @@
 Type! TypeOf(SemanticExpression expr) :=
 	1. *Let* `t` be *Unrwap:* `TypeOfUnassessed(expr)`.
-	2. *Let* `assess` be `Assess(expr)`.
+	2. *Let* `assess` be `ValueOf(expr)`.
 	3. *If* `assess` is an abrupt completion:
 		1. *Return:* `t`.
 	4. *Assert:* `assess.value` exists.
@@ -10,7 +10,7 @@ Type! TypeOf(SemanticExpression expr) :=
 
 
 Type TypeOfUnassessed(SemanticConstant const) :=
-	1. *Let* `assess` be *UnwrapAffirm:* `Assess(const)`.
+	1. *Let* `assess` be *UnwrapAffirm:* `ValueOf(const)`.
 	2. *Note:* `assess` is `const.value`.
 	3. *Return:* `ToType(assess)`.
 ;

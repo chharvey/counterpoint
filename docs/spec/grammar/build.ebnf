@@ -16,7 +16,7 @@ Sequence<Instruction> Build(Number n) :=
 
 
 Sequence<Instruction> Build(SemanticExpression expr) :=
-	1. *Let* `assess` be `Assess(expr)`.
+	1. *Let* `assess` be `ValueOf(expr)`.
 	2. *If* `assess` is an abrupt completion:
 		1. *Return:* `BuildExpression(expr)`.
 	3. *Assert:* `assess.value` exists.
@@ -40,7 +40,7 @@ Sequence<Instruction> Build(SemanticDeclarationType decl) :=
 
 Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
 	1. *Assert:* `decl.children.count` is 3.
-	2. *Let* `assess` be `Assess(decl)`.
+	2. *Let* `assess` be `ValueOf(decl)`.
 	3. *If* `assess` is a normal completion *and* `decl.unfixed` is `false`:
 		1. *Note:* references to the variable will be constant-propegated by its fixed value.
 		2. *Return:* [].
@@ -71,7 +71,7 @@ Sequence<Instruction> Build(SemanticGoal goal) :=
 
 
 Sequence<Instruction> BuildExpression(SemanticConstant const) :=
-	1. *Let* `assess` be *UnwrapAffirm:* `Assess(const)`.
+	1. *Let* `assess` be *UnwrapAffirm:* `ValueOf(const)`.
 	2. *Return:* `Build(assess)`.
 ;
 
