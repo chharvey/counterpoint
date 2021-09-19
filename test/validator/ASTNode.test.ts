@@ -3252,6 +3252,19 @@ describe('ASTNodeSolid', () => {
 							expected_o,
 						);
 					});
+					it('returns individual entries for lists.', () => {
+						assert.deepStrictEqual(
+							program.children.slice(18, 24).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							expected,
+						);
+						Dev.supports('optionalAccess') && assert.deepStrictEqual(
+							program.children.slice(50, 52).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							[
+								new SolidString('three'),
+								null,
+							],
+						);
+					});
 					it('returns individual entries for sets.', () => {
 						assert.deepStrictEqual(
 							program.children.slice(24, 30).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),

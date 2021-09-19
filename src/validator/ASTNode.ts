@@ -1121,13 +1121,11 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			if (accessor_value === null) {
 				return null;
 			}
-			if (base_value instanceof SolidTuple) {
-				return (base_value as SolidTuple).get(accessor_value as Int16, this.optional, this.accessor);
-			} else if (base_value instanceof SolidSet) {
-				return (base_value as SolidSet).get(accessor_value, this.optional, this.accessor);
-			} else /* (base_value instanceof SolidMap) */ {
-				return (base_value as SolidMap).get(accessor_value, this.optional, this.accessor);
-			}
+			return (
+				(base_value instanceof CollectionIndexed) ?    (base_value as CollectionIndexed).get(accessor_value as Int16, this.optional, this.accessor) :
+				(base_value instanceof SolidSet)          ?    (base_value as SolidSet)         .get(accessor_value,          this.optional, this.accessor) :
+				/* (base_value instanceof SolidMap)       ? */ (base_value as SolidMap)         .get(accessor_value,          this.optional, this.accessor)
+			);
 		}
 	}
 }
