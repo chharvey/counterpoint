@@ -7,12 +7,13 @@ import {
 } from '../../src/core/index.js';
 import {
 	Operator,
-	AST,
+	// {ASTNodeKey, ...} as AST,
 	SymbolStructure,
 	SymbolStructureType,
 	SymbolStructureVar,
 	Validator,
 } from '../../src/validator/index.js';
+import * as AST from '../../src/validator/astnode/index.js'; // HACK
 import {
 	TypeEntry,
 	SolidType,

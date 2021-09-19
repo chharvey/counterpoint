@@ -12,11 +12,12 @@ import {
 } from '../src/core/index.js';
 import {
 	Punctuator,
-	TOKEN,
+	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
 	PARSENODE,
 	ParserSolid,
 	PARSER,
 } from '../src/parser/index.js';
+import * as TOKEN from '../src/parser/token/index.js'; // HACK
 import {
 	assert_arrayLength,
 } from './assert-helpers.js';

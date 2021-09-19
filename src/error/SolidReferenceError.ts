@@ -1,17 +1,13 @@
 import {
 	ErrorCode,
 } from '@chharvey/parser';
-import type {
-	AST,
-	SymbolKind,
-} from '../validator/index.js';
 
 
 
 /**
  * A ReferenceError is thrown when the validator fails to dereference an identifier.
  */
-class SolidReferenceError extends ErrorCode {
+export class SolidReferenceError extends ErrorCode {
 	/** The name of this class of errors. */
 	static override readonly NAME: string = 'ReferenceError';
 	/** The number series of this class of errors. */
@@ -31,63 +27,5 @@ class SolidReferenceError extends ErrorCode {
 			line_index: line,
 			col_index:  col,
 		});
-	}
-}
-
-
-/**
- * A ReferenceError01 is thrown when the validator encounters an undeclared variable.
- * @example
- * my_var; % ReferenceError01: `my_var` is never declared.
- */
-export class ReferenceError01 extends SolidReferenceError {
-	/** The number series of this class of errors. */
-	static override readonly CODE = 1;
-	/**
-	 * Construct a new ReferenceError01 object.
-	 * @param variable the undeclared variable
-	 */
-	constructor (variable: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
-		super(`\`${ variable.source }\` is never declared.`, ReferenceError01.CODE, variable.line_index, variable.col_index);
-	}
-}
-/**
- * A ReferenceError02 is thrown when the validator encounters a not-yet-declared variable.
- * @example
- * my_var; % ReferenceError02: `my_var` is used before it is declared.
- * % (This is called a Temporal Dead Zone.)
- * let my_var: int = 42;
- */
-export class ReferenceError02 extends SolidReferenceError {
-	/** The number series of this class of errors. */
-	static override readonly CODE = 2;
-	/**
-	 * Construct a new ReferenceError02 object.
-	 * @param variable the not-yet-declared variable
-	 */
-	constructor (variable: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
-		super(`\`${ variable.source }\` is used before it is declared.`, ReferenceError02.CODE, variable.line_index, variable.col_index);
-	}
-}
-/**
- * A ReferenceError03 is thrown when a symbol of the wrong kind is used.
- * @example
- * let FOO: int = 42;
- * type T = FOO | float; % ReferenceError03: `FOO` refers to a value, but is used as a type.
- * @example
- * type FOO = int;
- * 42 || FOO;      % ReferenceError03: `FOO` refers to a type, but is used as a value.
- */
-export class ReferenceError03 extends SolidReferenceError {
-	/** The number series of this class of errors. */
-	static override readonly CODE = 3;
-	/**
-	 * Construct a new ReferenceError03 object.
-	 * @param symbol    the referenced symbol
-	 * @param refers_to what the symbol was declared as
-	 * @param used_as   what the symbol is used as
-	 */
-	constructor (symbol: AST.ASTNodeTypeAlias | AST.ASTNodeVariable, refers_to: SymbolKind, used_as: SymbolKind) {
-		super(`\`${ symbol.source }\` refers to a ${ refers_to }, but is used as a ${ used_as }.`, ReferenceError03.CODE, symbol.line_index, symbol.col_index);
 	}
 }

@@ -1,7 +1,5 @@
-import {
-	SolidType,
-	SolidTypeConstant,
-} from './SolidType.js';
+import {SolidType} from './SolidType.js';
+import {SolidTypeConstant} from './SolidTypeConstant.js';
 import {SolidTypeList} from './SolidTypeList.js';
 import type {SolidObject} from './SolidObject.js';
 import {CollectionIndexed} from './CollectionIndexed.js';

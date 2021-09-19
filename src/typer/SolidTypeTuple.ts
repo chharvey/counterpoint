@@ -1,20 +1,18 @@
-import type {
-	AST,
+import {
+	TypeError04,
+	IntRange,
 	ValidAccessOperator,
-} from '../validator/index.js';
-import {TypeError04} from '../error/index.js';
+	AST,
+} from './package.js';
 import {
 	SolidTypeList,
 	SolidObject,
 	Int16,
 	SolidTuple,
-} from './index.js'; // avoids circular imports
-import {
-	TypeEntry,
-	updateAccessedStaticType,
-	IntRange,
-	SolidType,
-} from './SolidType.js';
+} from './index.js';
+import type {TypeEntry} from './utils-public.js';
+import {updateAccessedStaticType} from './utils-private.js';
+import {SolidType} from './SolidType.js';
 
 
 
@@ -47,8 +45,8 @@ export class SolidTypeTuple extends SolidType {
 	/** The possible number of items in this tuple type. */
 	private get count(): IntRange {
 		return [
-			this.types.filter((it) => !it.optional).length,
-			this.types.length + 1,
+			BigInt(this.types.filter((it) => !it.optional).length),
+			BigInt(this.types.length) + 1n,
 		];
 	}
 

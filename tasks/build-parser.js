@@ -17,10 +17,10 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 		import {
 			SolidConfig,
 			CONFIG_DEFAULT,
-		} from '../core/index.js';
+		} from './package.js';
 		${ generate(await grammar_solid, 'Solid')
 			.replace(`import {LEXER} from './Lexer';`, `import {LexerSolid, LEXER} from './Lexer.js';`)
-			.replace(`import * as TERMINAL from './Terminal';`, `import * as TERMINAL from './Terminal.js';`)
+			.replace(`import * as TERMINAL from './Terminal';`, `import * as TERMINAL from './terminal/index.js';`)
 			.replace(/export const PARSER: Parser<ParseNodeGoal> = new Parser<ParseNodeGoal>\((.*)\);/s, xjs.String.dedent`
 				export class ParserSolid extends Parser<ParseNodeGoal> {
 					constructor (config: SolidConfig = CONFIG_DEFAULT) {

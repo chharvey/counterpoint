@@ -1,9 +1,9 @@
-import type {Keys} from '../types';
 import {
-	Map_getEq,
 	Map_hasEq,
+	Map_getEq,
 	Map_setEq,
-} from '../lib/index.js';
+	Keys,
+} from './package.js';
 import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
 

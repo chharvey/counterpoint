@@ -1,19 +1,17 @@
-import type {
-	AST,
+import {
+	TypeError04,
+	IntRange,
 	ValidAccessOperator,
-} from '../validator/index.js';
-import {TypeError04} from '../error/index.js';
+	AST,
+} from './package.js';
 import {
 	SolidTypeHash,
 	SolidObject,
 	SolidRecord,
-} from './index.js'; // avoids circular imports
-import {
-	TypeEntry,
-	updateAccessedStaticType,
-	IntRange,
-	SolidType,
-} from './SolidType.js';
+} from './index.js';
+import type {TypeEntry} from './utils-public.js';
+import {updateAccessedStaticType} from './utils-private.js';
+import {SolidType} from './SolidType.js';
 
 
 
@@ -46,8 +44,8 @@ export class SolidTypeRecord extends SolidType {
 	/** The possible number of values in this record type. */
 	private get count(): IntRange {
 		return [
-			[...this.propertytypes].filter(([_, entry]) => !entry.optional).length,
-			this.propertytypes.size + 1,
+			BigInt([...this.propertytypes].filter(([_, entry]) => !entry.optional).length),
+			BigInt(this.propertytypes.size) + 1n,
 		];
 	}
 

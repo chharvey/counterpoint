@@ -4,11 +4,9 @@ import wabt from 'wabt'; // need `tsconfig.json#compilerOptions.allowSyntheticDe
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import {
 	Validator,
 	AST,
-} from '../validator/index.js';
+} from './package.js';
 
 
 

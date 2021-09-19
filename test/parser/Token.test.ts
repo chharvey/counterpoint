@@ -3,17 +3,18 @@ import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import type {
 	CodeUnit,
-} from '../../src/types';
+} from '../../src/lib/index.js';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
 } from '../../src/core/index.js';
 import {
-	TOKEN,
+	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
 	LexerSolid,
 	LEXER,
 } from '../../src/parser/index.js';
+import * as TOKEN from '../../src/parser/token/index.js'; // HACK
 
 
 

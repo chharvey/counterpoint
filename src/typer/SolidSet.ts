@@ -1,14 +1,12 @@
 import {
-	Set_addEq,
+	VoidError01,
 	Set_hasEq,
-} from '../lib/index.js';
-import type {AST} from '../validator/index.js';
-import {VoidError01} from '../error/index.js';
-import {
-	SolidType,
-	SolidTypeConstant,
-	solidObjectsIdentical,
-} from './SolidType.js';
+	Set_addEq,
+	AST,
+} from './package.js';
+import {solidObjectsIdentical} from './utils-private.js';
+import {SolidType} from './SolidType.js';
+import {SolidTypeConstant} from './SolidTypeConstant.js';
 import {SolidTypeSet} from './SolidTypeSet.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';

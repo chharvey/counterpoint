@@ -1,55 +1,13 @@
 import {
-	Set_differenceEq,
 	Set_hasEq,
-	Set_intersectionEq,
-	Set_unionEq,
-} from '../lib/index.js';
+	Set_differenceEq,
+} from './package.js';
 import {
-	Operator,
-	ValidAccessOperator,
-} from '../validator/index.js';
-import {
-	SolidTypeTuple,
-	SolidTypeRecord,
+	SolidTypeIntersection,
+	SolidTypeUnion,
 	SolidObject,
-	SolidNull,
-} from './index.js'; // avoids circular imports
-
-
-
-/**
- * Internal representation of an entry of a tuple or record type.
- * @property type     - the type value, a Solid Language Type
- * @property optional - is the entry optional on the collection?
- */
-export type TypeEntry = {
-	type:     SolidType,
-	optional: boolean,
-};
-export function updateAccessedStaticType(entry: TypeEntry, access_kind: ValidAccessOperator): SolidType {
-	return (access_kind === Operator.CLAIMDOT)
-		? entry.type.subtract(SolidType.VOID)
-		: entry.type.union((entry.optional) ? (access_kind === Operator.OPTDOT) ? SolidNull : SolidType.VOID : SolidType.NEVER);
-}
-
-
-
-/**
- * A half-closed range of integers from min (inclusive) to max (exclusive).
- * @example
- * type T = [3, 7]; % a range of integers including 3, 4, 5, and 6.
- * @index 0 the minimum, inclusive
- * @index 1 the maximum, exclusive
- */
-export type IntRange = [number, number];
-
-
-
-/**
- * Comparator function for checking “sameness” of `SolidType#values` set elements.
- * Values should be “the same” iff they are identical per the Solid specification.
- */
-export const solidObjectsIdentical = (a: SolidObject, b: SolidObject): boolean => a.identical(b);
+} from './index.js';
+import {solidObjectsIdentical} from './utils-private.js';
 
 
 
@@ -248,117 +206,6 @@ export abstract class SolidType {
 
 
 /**
- * A type intersection of two types `T` and `U` is the type
- * that contains values either assignable to `T` *or* assignable to `U`.
- */
-export class SolidTypeIntersection extends SolidType {
-	declare readonly isBottomType: boolean;
-
-	/**
-	 * Construct a new SolidTypeIntersection object.
-	 * @param left the first type
-	 * @param right the second type
-	 */
-	constructor (
-		private readonly left:  SolidType,
-		private readonly right: SolidType,
-	) {
-		super(Set_intersectionEq(left.values, right.values, solidObjectsIdentical));
-		this.isBottomType = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
-	}
-
-	override toString(): string {
-		return `${ this.left } & ${ this.right }`;
-	}
-	override includes(v: SolidObject): boolean {
-		return this.left.includes(v) && this.right.includes(v)
-	}
-	override isSubtypeOf_do(t: SolidType): boolean {
-		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
-		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) { return true }
-		/** 3-1 | `A  & B <: A  &&  A  & B <: B` */
-		if (t.equals(this.left) || t.equals(this.right)) { return true }
-		return super.isSubtypeOf_do(t)
-	}
-	isSupertypeOf(t: SolidType): boolean {
-		/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
-		return t.isSubtypeOf(this.left) && t.isSubtypeOf(this.right);
-	}
-	combineTuplesOrRecords(): SolidType {
-		return (
-			(this.left instanceof SolidTypeTuple  && this.right instanceof SolidTypeTuple)  ? this.left.intersectWithTuple(this.right)  :
-			(this.left instanceof SolidTypeRecord && this.right instanceof SolidTypeRecord) ? this.left.intersectWithRecord(this.right) :
-			this
-		);
-	}
-}
-
-
-
-/**
- * A type union of two types `T` and `U` is the type
- * that contains values both assignable to `T` *and* assignable to `U`.
- */
-export class SolidTypeUnion extends SolidType {
-	declare readonly isBottomType: boolean;
-
-	/**
-	 * Construct a new SolidTypeUnion object.
-	 * @param left the first type
-	 * @param right the second type
-	 */
-	constructor (
-		private readonly left:  SolidType,
-		private readonly right: SolidType,
-	) {
-		super(Set_unionEq(left.values, right.values, solidObjectsIdentical));
-		this.isBottomType = this.left.isBottomType && this.right.isBottomType;
-	}
-
-	override toString(): string {
-		return `${ this.left } | ${ this.right }`;
-	}
-	override includes(v: SolidObject): boolean {
-		return this.left.includes(v) || this.right.includes(v)
-	}
-	/**
-	 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
-	 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
-	 */
-	override intersect_do(t: SolidType): SolidType {
-		return this.left.intersect(t).union(this.right.intersect(t));
-	}
-	override subtract_do(t: SolidType): SolidType {
-		/** 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
-		return this.left.subtract(t).union(this.right.subtract(t));
-	}
-	override isSubtypeOf_do(t: SolidType): boolean {
-		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
-		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
-	}
-	subtractedFrom(t: SolidType): SolidType {
-		/** 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
-		return t.subtract(this.left).intersect(t.subtract(this.right));
-	}
-	isNecessarilySupertypeOf(t: SolidType): boolean {
-		/** 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
-		if (t.isSubtypeOf(this.left) || t.isSubtypeOf(this.right)) { return true; }
-		/** 3-2 | `A <: A \| B  &&  B <: A \| B` */
-		if (t.equals(this.left) || t.equals(this.right)) { return true; }
-		return false;
-	}
-	combineTuplesOrRecords(): SolidType {
-		return (
-			(this.left instanceof SolidTypeTuple  && this.right instanceof SolidTypeTuple)  ? this.left.unionWithTuple(this.right)  :
-			(this.left instanceof SolidTypeRecord && this.right instanceof SolidTypeRecord) ? this.left.unionWithRecord(this.right) :
-			this
-		);
-	}
-}
-
-
-
-/**
  * A type difference of two types `T` and `U` is the type
  * that contains values assignable to `T` but *not* assignable to `U`.
  */
@@ -509,30 +356,6 @@ class SolidTypeVoid extends SolidType {
 	}
 	override equals(t: SolidType): boolean {
 		return t === SolidTypeVoid.INSTANCE || super.equals(t);
-	}
-}
-
-
-
-/**
- * Class for constructing constant types / unit types, types that contain one value.
- */
-export class SolidTypeConstant extends SolidType {
-	override readonly isBottomType: boolean = false;
-	override readonly isTopType: boolean = false;
-
-	constructor (readonly value: SolidObject) {
-		super(new Set([value]))
-	}
-
-	override toString(): string {
-		return this.value.toString();
-	}
-	override includes(v: SolidObject): boolean {
-		return this.value.identical(v);
-	}
-	override isSubtypeOf_do(t: SolidType): boolean {
-		return t instanceof Function && this.value instanceof t || t.includes(this.value)
 	}
 }
 

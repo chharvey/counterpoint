@@ -2,7 +2,7 @@ import {
 	SolidObject,
 	SolidRecord,
 	SolidHash,
-} from './index.js'; // avoids circular imports
+} from './index.js';
 import {SolidType} from './SolidType.js';
 
 

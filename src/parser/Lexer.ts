@@ -7,23 +7,19 @@ import {
 	LexError02,
 } from '@chharvey/parser';
 import {
-	SolidConfig,
-	CONFIG_DEFAULT,
-	Dev,
-} from '../core/index.js';
-import {
 	LexError03,
 	LexError04,
 	LexError05,
-} from '../error/index.js';
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Dev,
+} from './package.js';
+import {TemplatePosition} from './utils-public.js';
+import type {RadixType} from './utils-private.js';
 import {
 	Punctuator,
 } from './Punctuator.js';
-import {
-	RadixType,
-	TemplatePosition,
-} from './Token.js';
-import * as TOKEN from './Token.js';
+import * as TOKEN from './token/index.js';
 
 
 
@@ -372,15 +368,15 @@ export class LexerSolid extends Lexer {
 			if (Char.eq(TOKEN.TokenTemplate.DELIM, this.c0, this.c1, this.c2)) {
 				/* end string template full/tail */
 				delim_end = TOKEN.TokenTemplate.DELIM;
-				positions.delete(TOKEN.TemplatePosition.HEAD);
-				positions.delete(TOKEN.TemplatePosition.MIDDLE);
+				positions.delete(TemplatePosition.HEAD);
+				positions.delete(TemplatePosition.MIDDLE);
 				buffer.push(...this.advance(BigInt(delim_end.length))); // ending delim
 				break;
 			} else if (Char.eq(TOKEN.TokenTemplate.DELIM_INTERP_START, this.c0, this.c1)) {
 				/* end string template head/middle */
 				delim_end = TOKEN.TokenTemplate.DELIM_INTERP_START;
-				positions.delete(TOKEN.TemplatePosition.FULL);
-				positions.delete(TOKEN.TemplatePosition.TAIL);
+				positions.delete(TemplatePosition.FULL);
+				positions.delete(TemplatePosition.TAIL);
 				buffer.push(...this.advance(BigInt(delim_end.length))); // ending delim
 				break;
 			} else {

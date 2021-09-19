@@ -1,6 +1,4 @@
-import {
-	SolidString,
-} from './index.js'; // avoids circular imports
+import {SolidString} from './index.js';
 import {SolidType} from './SolidType.js';
 
 

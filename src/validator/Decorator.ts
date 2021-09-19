@@ -6,13 +6,11 @@ import {
 
 import {
 	Dev,
-} from '../core/index.js';
-import {
 	Punctuator,
 	Keyword,
 	TOKEN,
 	PARSENODE,
-} from '../parser/index.js';
+} from './package.js';
 import {
 	Operator,
 	ValidAccessOperator,
@@ -23,8 +21,8 @@ import {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from './Operator.js';
-import type {ASTNodeSolid} from './ASTNode.js';
-import * as AST from './ASTNode.js';
+import type {ASTNodeSolid} from './astnode/index.js';
+import * as AST from './astnode/index.js';
 
 
 

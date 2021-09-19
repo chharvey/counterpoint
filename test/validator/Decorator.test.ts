@@ -11,11 +11,12 @@ import {
 	PARSENODE,
 } from '../../src/parser/index.js';
 import {
-	AST,
-	Decorator,
 	Operator,
 	ValidAccessOperator,
+	// {ASTNodeKey, ...} as AST,
+	Decorator,
 } from '../../src/validator/index.js';
+import * as AST from '../../src/validator/astnode/index.js'; // HACK
 import {
 	assert_arrayLength,
 } from '../assert-helpers.js';

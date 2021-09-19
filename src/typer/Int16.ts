@@ -1,7 +1,7 @@
+import {Float64} from './index.js';
 import type {SolidType} from './SolidType.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNumber} from './SolidNumber.js';
-import {Float64} from './Float64.js';
 
 
 

@@ -1,15 +1,13 @@
 import {
-	Map_getEq,
+	VoidError01,
 	Map_hasEq,
+	Map_getEq,
 	Map_setEq,
-} from '../lib/index.js';
-import type {AST} from '../validator/index.js';
-import {VoidError01} from '../error/index.js';
-import {
-	SolidType,
-	SolidTypeConstant,
-	solidObjectsIdentical,
-} from './SolidType.js';
+	AST,
+} from './package.js';
+import {solidObjectsIdentical} from './utils-private.js';
+import {SolidType} from './SolidType.js';
+import {SolidTypeConstant} from './SolidTypeConstant.js';
 import {SolidTypeMap} from './SolidTypeMap.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';

@@ -7,7 +7,7 @@
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
+} from './package.js';
 
 import {
 	NonemptyArray,
@@ -19,7 +19,7 @@ import {
 	GrammarSymbol,
 } from '@chharvey/parser';
 import {LexerSolid, LEXER} from './Lexer.js';
-import * as TERMINAL from './Terminal.js';
+import * as TERMINAL from './terminal/index.js';
 
 export class ProductionWord extends Production {
 	static readonly instance: ProductionWord = new ProductionWord();

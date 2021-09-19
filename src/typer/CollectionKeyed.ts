@@ -1,5 +1,7 @@
-import {VoidError01} from '../error/index.js';
-import type {AST} from '../validator/index.js';
+import {
+	VoidError01,
+	AST,
+} from './package.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
 import {Collection} from './Collection.js';

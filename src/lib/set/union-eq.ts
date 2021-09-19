@@ -1,7 +1,5 @@
-import {defaultComparator} from '../-private.js';
-import {
-	Set_addEq,
-} from './index.js';
+import {defaultComparator} from './package.js';
+import {Set_addEq} from './add-eq.js';
 
 
 /**
