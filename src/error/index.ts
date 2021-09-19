@@ -11,9 +11,7 @@ export * from './TypeError02.js';
 export * from './TypeError03.js';
 export * from './TypeError04.js';
 export * from './TypeError05.js';
-export {
-	TypeError06,
-} from './SolidTypeError.js';
+export * from './TypeError06.js';
 export {
 	VoidError01,
 } from './VoidError.js';
