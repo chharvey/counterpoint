@@ -1,18 +1,20 @@
 import {
 	TypeError04,
 	IntRange,
-	Operator,
 	ValidAccessOperator,
 	AST,
 } from './package.js';
 import {
+	SolidTypeList,
 	SolidObject,
-	SolidNull,
 	Int16,
 	SolidTuple,
 } from './index.js';
 import type {TypeEntry} from './types.js';
-import {SolidType} from './SolidType.js';
+import {
+	SolidType,
+	updateAccessedStaticType,
+} from './SolidType.js';
 
 
 
@@ -63,20 +65,20 @@ export class SolidTypeTuple extends SolidType {
 			t instanceof SolidTypeTuple
 			&& this.count[0] >= t.count[0]
 			&& t.types.every((thattype, i) => !this.types[i] || this.types[i].type.isSubtypeOf(thattype.type))
+		) || (
+			t instanceof SolidTypeList
+			&& this.itemTypes().isSubtypeOf(t.types)
 		);
 	}
 
 	get(index: Int16, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): SolidType {
 		const n: number = this.types.length;
 		const i: number = Number(index.toNumeric());
-		const entry: TypeEntry = (
+		return updateAccessedStaticType((
 			(-n <= i && i < 0) ? this.types[i + n] :
 			(0  <= i && i < n) ? this.types[i] :
 			(() => { throw new TypeError04('index', this, accessor); })()
-		);
-		return (access_kind === Operator.CLAIMDOT)
-			? entry.type.subtract(SolidType.VOID)
-			: entry.type.union((entry.optional) ? (access_kind === Operator.OPTDOT) ? SolidNull : SolidType.VOID : SolidType.NEVER);
+		), access_kind);
 	}
 
 	itemTypes(): SolidType {

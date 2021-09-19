@@ -1,10 +1,32 @@
-import * as xjs from 'extrajs'
-import {SetEq} from '../core/index.js'
+import {
+	Set_differenceEq,
+	Set_hasEq,
+	Operator,
+	ValidAccessOperator,
+} from './package.js';
 import {
 	SolidTypeIntersection,
 	SolidTypeUnion,
 	SolidObject,
+	SolidNull,
 } from './index.js';
+import type {TypeEntry} from './types.js';
+
+
+
+export function updateAccessedStaticType(entry: TypeEntry, access_kind: ValidAccessOperator): SolidType {
+	return (access_kind === Operator.CLAIMDOT)
+		? entry.type.subtract(SolidType.VOID)
+		: entry.type.union((entry.optional) ? (access_kind === Operator.OPTDOT) ? SolidNull : SolidType.VOID : SolidType.NEVER);
+}
+
+
+
+/**
+ * Comparator function for checking “sameness” of `SolidType#values` set elements.
+ * Values should be “the same” iff they are identical per the Solid specification.
+ */
+export const solidObjectsIdentical = (a: SolidObject, b: SolidObject): boolean => a.identical(b);
 
 
 
@@ -20,8 +42,10 @@ import {
  * - SolidTypeUnknown
  * - SolidTypeTuple
  * - SolidTypeRecord
+ * - SolidTypeList
+ * - SolidTypeHash
  * - SolidTypeSet
- * - SolidTypeMapping
+ * - SolidTypeMap
  */
 export abstract class SolidType {
 	/** The Bottom Type, containing no values. */
@@ -30,10 +54,6 @@ export abstract class SolidType {
 	static get UNKNOWN(): SolidTypeUnknown { return SolidTypeUnknown.INSTANCE }
 	/** The Void Type, representing a completion but not a value. */
 	static get VOID(): SolidTypeVoid { return SolidTypeVoid.INSTANCE; }
-	/** Comparator function for `SolidType#values` set. */
-	private static VALUE_COMPARATOR(a: SolidObject, b: SolidObject): boolean {
-		return a.identical(b);
-	}
 	/**
 	 * Intersect all the given types.
 	 * @param types the types to intersect
@@ -57,24 +77,21 @@ export abstract class SolidType {
 	 * i.e., it is equal to the type `never`.
 	 * Used internally for special cases of computations.
 	 */
-	readonly isBottomType: boolean;
+	readonly isBottomType: boolean = this.values.size === 0;
 	/**
 	 * Whether this type has all values assignable to it,
 	 * i.e., it is equal to the type `unknown`.
 	 * Used internally for special cases of computations.
 	 */
-	readonly isTopType: boolean;
-	/** An enumerated set of values that are assignable to this type. */
-	readonly values: ReadonlySet<SolidObject>;
+	readonly isTopType: boolean = false;
 
 	/**
 	 * Construct a new SolidType object.
 	 * @param values an enumerated set of values that are assignable to this type
 	 */
-	constructor (values: ReadonlySet<SolidObject> = new Set()) {
-		this.values = new SetEq(SolidType.VALUE_COMPARATOR, values);
-		this.isBottomType = this.values.size === 0;
-		this.isTopType = false;
+	constructor (
+		readonly values: ReadonlySet<SolidObject> = new Set(),
+	) {
 	}
 
 	/**
@@ -84,7 +101,7 @@ export abstract class SolidType {
 	 * @returns Is `v` assignable to this type?
 	 */
 	includes(v: SolidObject): boolean {
-		return this.values.has(v)
+		return Set_hasEq(this.values, v, solidObjectsIdentical);
 	}
 	/**
 	 * Return the type intersection of this type with another.
@@ -223,7 +240,7 @@ class SolidTypeDifference extends SolidType {
 		private readonly left:  SolidType,
 		private readonly right: SolidType,
 	) {
-		super(xjs.Set.difference(left.values, right.values));
+		super(Set_differenceEq(left.values, right.values, solidObjectsIdentical));
 		/*
 		We can assert that this is always non-empty because
 		the only cases in which it could be empty are

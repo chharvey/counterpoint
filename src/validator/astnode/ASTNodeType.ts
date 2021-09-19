@@ -16,7 +16,12 @@ import {ASTNodeSolid} from './ASTNodeSolid.js';
  * - ASTNodeTypeAlias
  * - ASTNodeTypeTuple
  * - ASTNodeTypeRecord
+ * - ASTNodeTypeList
+ * - ASTNodeTypeHash
+ * - ASTNodeTypeSet
+ * - ASTNodeTypeMap
  * - ASTNodeTypeAccess
+ * - ASTNodeTypeCall
  * - ASTNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {

@@ -7,9 +7,9 @@ import {
 	CONFIG_DEFAULT,
 	PARSENODE,
 	SolidType,
-	SolidTypeMapping,
+	SolidTypeMap,
 	SolidObject,
-	SolidMapping,
+	SolidMap,
 	INST,
 	Builder,
 	Validator,
@@ -19,26 +19,26 @@ import {ASTNodeExpression} from './ASTNodeExpression.js';
 
 
 
-export class ASTNodeMapping extends ASTNodeExpression {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeMapping {
+export class ASTNodeMap extends ASTNodeExpression {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeMap {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeMapping);
+		assert.ok(expression instanceof ASTNodeMap);
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeMappingLiteral,
+		start_node: PARSENODE.ParseNodeMapLiteral,
 		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, {}, children);
 	}
 	override shouldFloat(_validator: Validator): boolean {
-		throw 'ASTNodeMapping#shouldFloat not yet supported.';
+		throw 'ASTNodeMap#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeMapping#build_do not yet supported.';
+		throw builder && 'ASTNodeMap#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return new SolidTypeMapping(
+		return new SolidTypeMap(
 			SolidType.unionAll(this.children.map((c) => c.antecedent.type(validator))),
 			SolidType.unionAll(this.children.map((c) => c.consequent.type(validator))),
 		);
@@ -50,6 +50,6 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		]));
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null
-			: new SolidMapping(cases as ReadonlyMap<SolidObject, SolidObject>);
+			: new SolidMap(cases as ReadonlyMap<SolidObject, SolidObject>);
 	}
 }

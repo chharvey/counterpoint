@@ -47,8 +47,10 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		)
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
-		// If `a` and `b` are of disjoint numeric types, then `a is b` will always return `false`.
-		// If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
+		/*
+		 * If `a` and `b` are of disjoint numeric types, then `a === b` will always return `false`.
+		 * If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
+		 */
 		if (bothNumeric(t0, t1)) {
 			if (oneFloats(t0, t1) && (this.operator === Operator.ID || !int_coercion)) {
 				return SolidBoolean.FALSETYPE

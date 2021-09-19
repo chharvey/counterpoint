@@ -1,5 +1,5 @@
+import type {Float64} from './index.js';
 import {SolidObject} from './SolidObject.js';
-import type {Float64} from './Float64.js';
 
 
 
@@ -56,22 +56,6 @@ export abstract class SolidNumber<T = unknown> extends SolidObject {
 	 * @return the additive inverse of this number
 	 */
 	abstract neg(): T;
-	/**
-	 * Does this number have the same (an identical) bit-wise encoding as the argument?
-	 * Note that while the integer values `0` and `-0` are encoded the same,
-	 * the floating-point values `0.0` and `-0.0` do not have the same encoding.
-	 * @param x the number to compare
-	 * @returns are the numbers identically the same?
-	 */
-	protected abstract is(x: T): boolean;
-	/**
-	 * Are the numbers mathematically equal?
-	 * This treats all integer and all non-zero floating-point numbers the same as does {@link #is},
-	 * while also returning `true` for the floating-point values `0.0` and `-0.0`.
-	 * @param x the number to compare
-	 * @returns do the numbers have the same mathematical value?
-	 */
-	protected abstract eq(x: T): boolean;
 	/**
 	 * Is the number equal to zero?
 	 * @returns Is the number equal to zero?

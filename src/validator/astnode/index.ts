@@ -21,7 +21,7 @@ export * from './ASTNodeTemplate.js';
 export * from './ASTNodeTuple.js';
 export * from './ASTNodeRecord.js';
 export * from './ASTNodeSet.js';
-export * from './ASTNodeMapping.js';
+export * from './ASTNodeMap.js';
 export * from './ASTNodeAccess.js';
 export * from './ASTNodeOperation.js';
 export * from './ASTNodeOperationUnary.js';
@@ -38,3 +38,5 @@ export * from './ASTNodeDeclarationType.js';
 export * from './ASTNodeDeclarationVariable.js';
 export * from './ASTNodeAssignment.js';
 export * from './ASTNodeGoal.js';
+
+export * from '../ASTNode.js';

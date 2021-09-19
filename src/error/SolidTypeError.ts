@@ -1,6 +1,10 @@
 import {
 	ErrorCode,
 } from '@chharvey/parser';
+import type {
+	SolidType,
+	AST,
+} from './package.js';
 
 
 
@@ -27,5 +31,47 @@ export class SolidTypeError extends ErrorCode {
 			line_index : line,
 			col_index  : col,
 		})
+	}
+}
+/**
+ * A TypeError05 is thrown when an attempt is made to call an object that is not callable.
+ * @example
+ * type U = int;
+ * type T = U.<V>;  % TypeError05: Type `U` is not callable.
+ * let x: int = 42;
+ * x.(24);          % TypeError05: Type `int` is not callable.
+ */
+export class TypeError05 extends SolidTypeError {
+	/** The number series of this class of errors. */
+	static override readonly CODE = 5;
+	/**
+	 * Construct a new TypeError05 object.
+	 * @param typ  - the type trying to be called
+	 * @param base - the object expression being called
+	 */
+	constructor (typ: SolidType, base: AST.ASTNodeType | AST.ASTNodeExpression) {
+		super(`Type \`${ typ }\` is not callable.`, TypeError05.CODE, base.line_index, base.col_index);
+	}
+}
+/**
+ * A TypeError06 is thrown when an attempt is made to call a callable object with an incorrect number of arguments.
+ * @example
+ * type U<V, W> = V | W;
+ * type T = U.<V>;                % TypeError06: Got 1 type arguments, but expected 2.
+ * func x(y: int): int => y + 42;
+ * x.(2, 4);                      % TypeError06: Got 2 arguments, but expected 1.
+ */
+export class TypeError06 extends SolidTypeError {
+	/** The number series of this class of errors. */
+	static override readonly CODE = 6;
+	/**
+	 * Construct a new TypeError06 object.
+	 * @param actual   - the number of arguments received
+	 * @param expected - the number of arguments expected
+	 * @param call     - the function call
+	 * @param generic  - whether the arguments are generic arguments (true) or function arguments (false)
+	 */
+	constructor (actual: bigint, expected: bigint, generic: boolean, call: AST.ASTNodeTypeCall | AST.ASTNodeCall) {
+		super(`Got \`${ actual }\` ${ (generic) ? 'type ' : '' }arguments, but expected \`${ expected }\`.`, TypeError06.CODE, call.line_index, call.col_index);
 	}
 }

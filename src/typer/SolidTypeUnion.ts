@@ -1,10 +1,15 @@
-import * as xjs from 'extrajs'
+import {
+	Set_unionEq,
+} from './package.js';
 import {
 	SolidTypeTuple,
 	SolidTypeRecord,
 	SolidObject,
 } from './index.js';
-import {SolidType} from './SolidType.js';
+import {
+	SolidType,
+	solidObjectsIdentical,
+} from './SolidType.js';
 
 
 
@@ -24,7 +29,7 @@ export class SolidTypeUnion extends SolidType {
 		private readonly left:  SolidType,
 		private readonly right: SolidType,
 	) {
-		super(xjs.Set.union(left.values, right.values))
+		super(Set_unionEq(left.values, right.values, solidObjectsIdentical));
 		this.isBottomType = this.left.isBottomType && this.right.isBottomType;
 	}
 

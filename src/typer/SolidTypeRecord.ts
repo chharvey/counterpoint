@@ -1,17 +1,19 @@
 import {
 	TypeError04,
 	IntRange,
-	Operator,
 	ValidAccessOperator,
 	AST,
 } from './package.js';
 import {
+	SolidTypeHash,
 	SolidObject,
-	SolidNull,
 	SolidRecord,
 } from './index.js';
 import type {TypeEntry} from './types.js';
-import {SolidType} from './SolidType.js';
+import {
+	SolidType,
+	updateAccessedStaticType,
+} from './SolidType.js';
 
 
 
@@ -68,16 +70,17 @@ export class SolidTypeRecord extends SolidType {
 					&& (!thistype || thistype.type.isSubtypeOf(thattype.type))
 				);
 			})
+		) || (
+			t instanceof SolidTypeHash
+			&& this.valueTypes().isSubtypeOf(t.types)
 		);
 	}
 
 	get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): SolidType {
-		const entry: TypeEntry = (this.propertytypes.has(key))
+		return updateAccessedStaticType(((this.propertytypes.has(key))
 			? this.propertytypes.get(key)!
-			: (() => { throw new TypeError04('property', this, accessor); })();
-		return (access_kind === Operator.CLAIMDOT)
-			? entry.type.subtract(SolidType.VOID)
-			: entry.type.union((entry.optional) ? (access_kind === Operator.OPTDOT) ? SolidNull : SolidType.VOID : SolidType.NEVER);
+			: (() => { throw new TypeError04('property', this, accessor); })()
+		), access_kind);
 	}
 
 	valueTypes(): SolidType {

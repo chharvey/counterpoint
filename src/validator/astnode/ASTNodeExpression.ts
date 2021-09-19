@@ -28,8 +28,9 @@ import {ASTNodeSolid} from './ASTNodeSolid.js';
  * - ASTNodeTuple
  * - ASTNodeRecord
  * - ASTNodeSet
- * - ASTNodeMapping
+ * - ASTNodeMap
  * - ASTNodeAccess
+ * - ASTNodeCall
  * - ASTNodeOperation
  */
 export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildable {

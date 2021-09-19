@@ -8,6 +8,16 @@ export {
 	TypeError04,
 	VoidError01,
 } from '../index.js';
+export {
+	Set_addEq,
+	Set_differenceEq,
+	Set_hasEq,
+	Set_intersectionEq,
+	Set_unionEq,
+	Map_getEq,
+	Map_hasEq,
+	Map_setEq,
+} from '../lib/index.js';
 export type {
 	IntRange,
 	CodeUnit,

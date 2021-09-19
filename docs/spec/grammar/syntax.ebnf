@@ -50,6 +50,9 @@ PropertiesType
 
 TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
 TypeRecordLiteral ::= "["  ","? PropertiesType "]";
+TypeHashLiteral   ::= "[" ":" Type             "]";
+TypeMapLiteral    ::= "{" Type "->" Type       "}";
+GenericArguments  ::= "<"  ","? Type# ","?     ">";
 
 TypeUnit ::=
 	| IDENTIFIER
@@ -57,21 +60,22 @@ TypeUnit ::=
 	| TypeKeyword
 	| TypeTupleLiteral
 	| TypeRecordLiteral
+	| TypeHashLiteral
+	| TypeMapLiteral
 	| "(" Type ")"
 ;
 
-PropertyAccessType
-	::= "." (INTEGER | Word);
+PropertyAccessType ::= "." (INTEGER | Word);
+GenericCall        ::= "." GenericArguments;
 
 TypeCompound ::=
 	| TypeUnit
-	| TypeCompound PropertyAccessType
+	| TypeCompound (PropertyAccessType | GenericCall)
 ;
 
 TypeUnarySymbol ::=
 	| TypeCompound
-	| TypeUnarySymbol "?"
-	| TypeUnarySymbol "!"
+	| TypeUnarySymbol ("?" | "!" | "[" INTEGER? "]" | "{" "}")
 ;
 
 TypeIntersection ::= (TypeIntersection "&")? TypeUnarySymbol;
@@ -88,13 +92,14 @@ StringTemplate ::=
 	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
 ;
 
-Property ::= Word       "="   Expression;
-Case     ::= Expression "|->" Expression;
+Property ::= Word       "="  Expression;
+Case     ::= Expression "->" Expression;
 
-TupleLiteral   ::= "[" ( ","? Expression# ","? )? "]";
-RecordLiteral  ::= "["   ","? Property#   ","?    "]";
-SetLiteral     ::= "{" ( ","? Expression# ","? )? "}";
-MappingLiteral ::= "{"   ","? Case#       ","?    "}";
+TupleLiteral      ::= "[" ( ","? Expression# ","? )? "]";
+RecordLiteral     ::= "["   ","? Property#   ","?    "]";
+SetLiteral        ::= "{" ( ","? Expression# ","? )? "}";
+MapLiteral        ::= "{"   ","? Case#       ","?    "}";
+FunctionArguments ::= "(" ( ","? Expression# ","? )? ")";
 
 ExpressionUnit ::=
 	| IDENTIFIER
@@ -103,16 +108,16 @@ ExpressionUnit ::=
 	| TupleLiteral
 	| RecordLiteral
 	| SetLiteral
-	| MappingLiteral
+	| MapLiteral
 	| "(" Expression ")"
 ;
 
-PropertyAccess
-	::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression "]");
+PropertyAccess ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression "]");
+FunctionCall   ::= "."                 GenericArguments? FunctionArguments;
 
 ExpressionCompound ::=
 	| ExpressionUnit
-	| ExpressionCompound PropertyAccess
+	| ExpressionCompound (PropertyAccess | FunctionCall)
 ;
 
 ExpressionUnarySymbol ::=
