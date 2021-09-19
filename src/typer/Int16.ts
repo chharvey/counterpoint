@@ -1,10 +1,10 @@
 import {
 	strictEqual,
 } from '../decorators.js';
+import {Float64} from './index.js';
 import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidNumber} from './SolidNumber.js';
-import {Float64} from './Float64.js';
 
 
 
@@ -55,7 +55,7 @@ export class Int16 extends SolidNumber<Int16> {
 	}
 	@SolidObject.equalsDeco
 	override equal(value: SolidObject): boolean {
-		return value instanceof Float64 && value.equal(this);
+		return value instanceof Float64 && this.toFloat().equal(value);
 	}
 
 	override toFloat(): Float64 {

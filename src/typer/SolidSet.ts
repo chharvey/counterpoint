@@ -1,46 +1,38 @@
-import * as xjs from 'extrajs';
-import {SetEq} from '../core/index.js';
-import type {Keys} from '../types';
 import {
 	strictEqual,
 } from '../decorators.js';
-import type {AST} from '../validator/index.js';
-import {VoidError01} from '../error/index.js';
 import {
-	SolidType,
-	SolidTypeConstant,
-} from './SolidType.js';
+	VoidError01,
+	Set_hasEq,
+	Set_addEq,
+	AST,
+} from './package.js';
+import {solidObjectsIdentical} from './utils-private.js';
+import {SolidType} from './SolidType.js';
+import {SolidTypeConstant} from './SolidTypeConstant.js';
 import {SolidTypeSet} from './SolidTypeSet.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
+import {Collection} from './Collection.js';
 
 
 
-export class SolidSet<T extends SolidObject = SolidObject> extends SolidObject {
+export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
 	static override toString(): string {
 		return 'Set';
 	}
 	static override values: SolidType['values'] = new Set([new SolidSet()]);
-	private static readonly EQ_MEMO: xjs.MapEq<readonly [SolidSet, SolidSet], boolean> = new xjs.MapEq(
-		(a, b) => a[0].identical(b[0]) && a[1].identical(b[1]),
-	);
 
 
-	/**
-	 * Comparator for all internal sets.
-	 * @param el1 an element
-	 * @param el2 an element
-	 * @returns are the elements ‘identical’ per Solid specification?
-	 */
-	private static comparator(el1: SolidObject, el2: SolidObject): boolean {
-		return el1.identical(el2);
-	}
-
-
-	private readonly elements: ReadonlySet<T>;
-	constructor (elements: ReadonlySet<T> = new Set()) {
+	constructor (
+		private readonly elements: ReadonlySet<T> = new Set(),
+	) {
 		super();
-		this.elements = new SetEq(SolidSet.comparator, elements);
+		const uniques: Set<T> = new Set();
+		[...elements].forEach((el) => {
+			Set_addEq(uniques, el, solidObjectsIdentical);
+		});
+		this.elements = uniques;
 	}
 	override toString(): string {
 		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
@@ -52,21 +44,16 @@ export class SolidSet<T extends SolidObject = SolidObject> extends SolidObject {
 	@strictEqual
 	@SolidObject.equalsDeco
 	override equal(value: SolidObject): boolean {
-		if (value instanceof SolidSet && this.elements.size === value.elements.size) {
-			const memokey: Keys<typeof SolidSet.EQ_MEMO> = [this, value];
-			if (!SolidSet.EQ_MEMO.has(memokey)) {
-				SolidSet.EQ_MEMO.set(memokey, false); // use this assumption in the next step
-				SolidSet.EQ_MEMO.set(memokey, [...(value as SolidSet).elements].every(
-					(thatelement) => !![...this.elements].find((el) => el.equal(thatelement)),
-				));
-			}
-			return SolidSet.EQ_MEMO.get(memokey)!;
-		} else {
-			return false;
-		}
+		return (
+			value instanceof SolidSet
+			&& this.elements.size === value.elements.size
+			&& Collection.do_Equal<SolidSet>(this, value, () => [...(value as SolidSet).elements].every(
+				(thatelement) => !![...this.elements].find((el) => el.equal(thatelement)),
+			))
+		);
 	}
 
-	toType(): SolidTypeSet {
+	override toType(): SolidTypeSet {
 		return new SolidTypeSet(
 			(this.elements.size)
 				? SolidType.unionAll([...this.elements].map<SolidType>((el) => new SolidTypeConstant(el)))
@@ -75,7 +62,7 @@ export class SolidSet<T extends SolidObject = SolidObject> extends SolidObject {
 	}
 
 	get(el: T, access_optional: boolean, accessor: AST.ASTNodeExpression): T | SolidNull {
-		return (this.elements.has(el))
+		return (Set_hasEq(this.elements, el, solidObjectsIdentical))
 			? el
 			: (access_optional)
 				? SolidNull.NULL

@@ -1,9 +1,7 @@
 import {
 	strictEqual,
 } from '../decorators.js';
-import {
-	SolidString,
-} from './index.js'; // avoids circular imports
+import {SolidString} from './index.js';
 import {SolidType} from './SolidType.js';
 
 
@@ -16,6 +14,7 @@ import {SolidType} from './SolidType.js';
  * - Int16
  * - Float64
  * - SolidString
+ * - Collection
  */
 export abstract class SolidObject {
 	/** @implements Object */

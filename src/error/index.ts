@@ -1,23 +1,17 @@
-export {
-	LexError03,
-	LexError04,
-	LexError05,
-} from './LexError.js';
-export {
-	ReferenceError01,
-	ReferenceError02,
-	ReferenceError03,
-} from './SolidReferenceError.js';
-export {
-	AssignmentError01,
-	AssignmentError10,
-} from './AssignmentError.js';
-export {
-	TypeError01,
-	TypeError02,
-	TypeError03,
-	TypeError04,
-} from './SolidTypeError.js';
+export * from './LexError03.js';
+export * from './LexError04.js';
+export * from './LexError05.js';
+export * from './ReferenceError01.js';
+export * from './ReferenceError02.js';
+export * from './ReferenceError03.js';
+export * from './AssignmentError01.js';
+export * from './AssignmentError10.js';
+export * from './TypeError01.js';
+export * from './TypeError02.js';
+export * from './TypeError03.js';
+export * from './TypeError04.js';
+export * from './TypeError05.js';
+export * from './TypeError06.js';
 export {
 	VoidError01,
 } from './VoidError.js';

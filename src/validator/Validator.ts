@@ -1,10 +1,8 @@
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
-import type {
-	SymbolStructure,
-} from './SymbolStructure.js';
+} from './package.js';
+import type {SymbolStructure} from './index.js';
 
 
 

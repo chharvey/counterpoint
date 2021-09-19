@@ -244,7 +244,7 @@ Boolean Equal(Object a, Object b) :=
 			1. *Return:* `true`.
 		2. *If* `a` is `-0.0` *and* `b` is `0.0`:
 			1. *Return:* `true`.
-	4. *If* `a` is an instance of `Tuple` *and* `b` is an instance of `Tuple`:
+	4. *If* `a` is an instance of `Tuple` or `List` *and* `b` is an instance of `Tuple` or `List`:
 		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
 		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
 		3. *If* `seq_a.count` is not `seq_b.count`:
@@ -256,7 +256,7 @@ Boolean Equal(Object a, Object b) :=
 			1. *If* *UnwrapAffirm*: `Equal(seq_a[i], seq_b[i])` is `false`:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
-	5. *If* `a` is an instance of `Record` *and* `b` is an instance of `Record`:
+	5. *If* `a` is an instance of `Record` or `Hash` *and* `b` is an instance of `Record` or `Hash`:
 		1. *Let* `struct_a` be a new Structure whose properties are exactly the properties in `a`.
 		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
 		3. *If* `struct_a.count` is not `struct_b.count`:
@@ -283,7 +283,7 @@ Boolean Equal(Object a, Object b) :=
 			2. *If* `it_a` does not exist:
 				1. *Return:* `false`.
 		6. *Return:* `true`.
-	7. *If* `a` is an instance of `Mapping` *and* `b` is an instance of `Mapping`:
+	7. *If* `a` is an instance of `Map` *and* `b` is an instance of `Map`:
 		1. *Let* `data_a` be a new Sequence of 2-tuples,
 			whose items are exactly the antecedents and consequents in `a`.
 		2. *Let* `data_b` be a new Sequence of 2-tuples,
@@ -373,23 +373,35 @@ Boolean Subtype(Type a, Type b) :=
 			2. *If* `struct_a[k]` is set *and* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
 				1. *Return:* `false`.
 		7. *Return:* `true`.
-	12. *If* `Equal(a, Set)` *and* `Equal(b, Set)`:
+	12. *If* `Equal(b, List)`:
+		1. *Let* `bi` be the union of types in `b`.
+		2. *If* `Equal(a, List)` *or* `Equal(a, Tuple)`:
+			1. *Let* `ai` be the union of types in `a`.
+			2. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
+				1. *Return:* `true`.
+	13. *If* `Equal(b, Hash)`:
+		1. *Let* `bv` be the union of value types in `b`.
+		2. *If* `Equal(a, Hash)` *or* `Equal(a, Record)`:
+			1. *Let* `av` be the union of value types in `a`.
+			2. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
+				1. *Return:* `true`.
+	14. *If* `Equal(a, Set)` *and* `Equal(b, Set)`:
 		1. *Let* `ae` be the union of types in `a`.
 		2. *Let* `be` be the union of types in `b`.
 		3. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
 			1. *Return:* `true`.
-	13. *If* `Equal(a, Mapping)` *and* `Equal(b, Mapping)`:
+	15. *If* `Equal(a, Map)` *and* `Equal(b, Map)`:
 		1. *Let* `ak` be the union of antecedent types in `a`.
 		2. *Let* `av` be the union of consequent types in `a`.
 		3. *Let* `bk` be the union of antecedent types in `b`.
 		4. *Let* `bv` be the union of consequent types in `b`.
 		5. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 			1. *Return:* `true`.
-	14. *If* every value that is assignable to `a` is also assignable to `b`:
+	16. *If* every value that is assignable to `a` is also assignable to `b`:
 		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
 			because an instance of `Integer` is an instance of `Object`.
 		2. *Return:* `true`.
-	15. *Return:* `false`.
+	17. *Return:* `false`.
 ;
 ```
 
@@ -446,6 +458,7 @@ Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 		3. *Return:* `false`.
 	5. *Throw:* a new TypeError01.
 ```
+
 
 
 ## CombineTuplesOrRecords
@@ -525,10 +538,13 @@ Type CombineTuplesOrRecords(Type t) :=
 ```
 
 
-## MaybeOptional
-Returns an entry’s type if it is required; unions with Void if it is optional.
+
+## UpdateAccessedStaticType
+Modifies the type of an accessed bound property of a tuple or record.
+If the bound property is required: Under claim access, subtracts Void; else returns unmodified type.
+If the bound property is optional: Under claim access, subtracts Void; under optional access, unions with Null; else unions with Void.
 ```
-Type MaybeOptional(EntryTypeStructure entry) :=
+Type UpdateAccessedStaticType(EntryTypeStructure entry, SemanticAccess access) :=
 	1. *Let* `type` be `entry.type`.
 	2. *If*: `access.kind` is `CLAIM`:
 		1. *Return:* `Difference(type, Void)`.
@@ -537,5 +553,20 @@ Type MaybeOptional(EntryTypeStructure entry) :=
 			1. *Return:* `Union(type, Null)`.
 		2. *Return:* `Union(type, Void)`.
 	4. *Return:* `type`.
+;
+```
+
+
+
+## UpdateAccessedDynamicType
+Modifies the type of an accessed bound property of a dynamic data type.
+Under claim access, subtracts Void; under optional access, unions with Null; else returns unmodified type.
+```
+Type UpdateAccessedDynamicType(Type type, SemanticAccess access) :=
+	1. *If*: `access.kind` is `OPTIONAL`:
+		1. *Return:* `Union(type, Null)`.
+	2. *If*: `access.kind` is `CLAIM`:
+		1. *Return:* `Difference(type, Void)`.
+	3. *Return:* `type`.
 ;
 ```

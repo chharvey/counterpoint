@@ -30,7 +30,12 @@ SemanticType =:=
 	| SemanticTypeAlias
 	| SemanticTypeTuple
 	| SemanticTypeRecord
+	| SemanticTypeList
+	| SemanticTypeHash
+	| SemanticTypeSet
+	| SemanticTypeMap
 	| SemanticTypeAccess
+	| SemanticTypeCall
 	| SemanticTypeOperation
 ;
 
@@ -44,9 +49,17 @@ SemanticTypeAlias[id: RealNumber]
 
 SemanticTypeTuple  ::= SemanticItemType*;
 SemanticTypeRecord ::= SemanticPropertyType+;
+SemanticTypeHash   ::= SemanticType;
+SemanticTypeSet    ::= SemanticType;
+SemanticTypeMap    ::= SemanticType SemanticType;
+SemanticTypeList[count: RealNumber | Void]
+	::= SemanticType; // Note: a SemanticTypeList with a non-void `count` represents a Tuple Type
 
 SemanticTypeAccess
 	::= SemanticType (SemanticIndexType | SemanticKey);
+
+SemanticTypeCall
+	::= SemanticType SemanticType+;
 
 SemanticTypeOperation[operator: ORNULL]
 	::= SemanticType;
@@ -64,7 +77,8 @@ SemanticExpression =:=
 	| SemanticTuple
 	| SemanticRecord
 	| SemanticSet
-	| SemanticMapping
+	| SemanticMap
+	| SemanticCall
 	| SemanticAccess
 	| SemanticOperation
 ;
@@ -83,13 +97,16 @@ SemanticTemplate
 SemanticTemplatePartial
 	::= (SemanticConstant SemanticExpression?)+;
 
-SemanticTuple   ::= SemanticExpression*;
-SemanticRecord  ::= SemanticProperty+;
-SemanticSet     ::= SemanticExpression*;
-SemanticMapping ::= SemanticCase+;
+SemanticTuple  ::= SemanticExpression*;
+SemanticRecord ::= SemanticProperty+;
+SemanticSet    ::= SemanticExpression*;
+SemanticMap    ::= SemanticCase+;
 
 SemanticAccess[kind: NORMAL | OPTIONAL | CLAIM]
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
+
+SemanticCall
+	::= SemanticExpression SemanticType* SemanticExpression*;
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;

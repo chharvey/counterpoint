@@ -12,10 +12,11 @@ import {
 } from '../../src/core/index.js';
 import {
 	TemplatePosition,
-	TOKEN,
+	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
 	LexerSolid,
 	LEXER,
 } from '../../src/parser/index.js'
+import * as TOKEN from '../../src/parser/token/index.js'; // HACK
 import {
 	LexError03,
 	LexError04,

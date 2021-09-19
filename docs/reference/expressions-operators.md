@@ -233,11 +233,11 @@ Tuples take integer literal properties and records take word (key) properties.
 For example: `tuple.3` and `record.prop`.
 
 Dynamic access can be used on tuples as well as on dynamic data types
-such as mappings, e.g., `mapping.[expr]`.
+such as maps, e.g., `map.[expr]`.
 The expression in the brackets evaluates to an item index or case antecedent
 of the binding object and must be of the correct type.
 
-More information about property access when used on tuples, records, and mappings
+More information about property access when used on tuples, records, and maps
 can be found in the [Types](./types) chapter.
 
 #### Optional Access
@@ -251,7 +251,7 @@ the expression `record.b` will produce that value if it exists,
 but will result in a runtime error if there’s no actual value at that location.
 Using the optional access operator though, `record?.b` will produce `record.b`
 if it exists, but otherwise will produce `null` and avoid the error.
-An equivalent syntax exists for dynamic access: `mapping?.[expr]`, etc.
+An equivalent syntax exists for dynamic access: `map?.[expr]`, etc.
 
 Note that if `foo?.bar` produces `null`, it either means that `foo.bar` does exist and is equal to `null`,
 or that there’s no value for the `bar` property bound to `foo`,

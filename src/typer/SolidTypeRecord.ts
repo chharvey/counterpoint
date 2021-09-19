@@ -2,21 +2,19 @@ import {
 	strictEqual,
 } from '../decorators.js';
 import {
-	AST,
-	Operator,
-	ValidAccessOperator,
-} from '../validator/index.js';
-import {TypeError04} from '../error/index.js';
-import {
-	SolidObject,
-	SolidNull,
-	SolidRecord,
-} from '../index.js'; // avoids circular imports
-import {
-	TypeEntry,
+	TypeError04,
 	IntRange,
-	SolidType,
-} from './SolidType.js';
+	ValidAccessOperator,
+	AST,
+} from './package.js';
+import {
+	SolidTypeHash,
+	SolidObject,
+	SolidRecord,
+} from './index.js';
+import type {TypeEntry} from './utils-public.js';
+import {updateAccessedStaticType} from './utils-private.js';
+import {SolidType} from './SolidType.js';
 
 
 
@@ -49,8 +47,8 @@ export class SolidTypeRecord extends SolidType {
 	/** The possible number of values in this record type. */
 	private get count(): IntRange {
 		return [
-			[...this.propertytypes].filter(([_, entry]) => !entry.optional).length,
-			this.propertytypes.size + 1,
+			BigInt([...this.propertytypes].filter(([_, entry]) => !entry.optional).length),
+			BigInt(this.propertytypes.size) + 1n,
 		];
 	}
 
@@ -75,16 +73,17 @@ export class SolidTypeRecord extends SolidType {
 					&& (!thistype || thistype.type.isSubtypeOf(thattype.type))
 				);
 			})
+		) || (
+			t instanceof SolidTypeHash
+			&& this.valueTypes().isSubtypeOf(t.types)
 		);
 	}
 
 	get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): SolidType {
-		const entry: TypeEntry = (this.propertytypes.has(key))
+		return updateAccessedStaticType(((this.propertytypes.has(key))
 			? this.propertytypes.get(key)!
-			: (() => { throw new TypeError04('property', this, accessor); })();
-		return (access_kind === Operator.CLAIMDOT)
-			? entry.type.subtract(SolidType.VOID)
-			: entry.type.union((entry.optional) ? (access_kind === Operator.OPTDOT) ? SolidNull : SolidType.VOID : SolidType.NEVER);
+			: (() => { throw new TypeError04('property', this, accessor); })()
+		), access_kind);
 	}
 
 	valueTypes(): SolidType {

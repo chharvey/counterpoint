@@ -12,11 +12,12 @@ import {
 } from '../src/core/index.js';
 import {
 	Punctuator,
-	TOKEN,
+	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
 	PARSENODE,
 	ParserSolid,
 	PARSER,
 } from '../src/parser/index.js';
+import * as TOKEN from '../src/parser/token/index.js'; // HACK
 import {
 	assert_arrayLength,
 } from './assert-helpers.js';
@@ -91,7 +92,7 @@ export function unitTypeFromString(typestring: string, config: SolidConfig = CON
 	assert_arrayLength(type_compound.children, 1, 'compound type should have 1 child');
 	return type_compound.children[0];
 }
-function compoundTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeCompound {
+export function compoundTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeCompound {
 	const type_unary: PARSENODE.ParseNodeTypeUnarySymbol = unaryTypeFromString(typestring, config)
 	assert_arrayLength(type_unary.children, 1, 'unary type should have 1 child')
 	return type_unary.children[0]
@@ -119,10 +120,10 @@ export function propertyFromString(propertystring: string, config: SolidConfig =
 	return record.children[1].children[0];
 }
 export function caseFromString(casestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeCase {
-	const mapping: PARSENODE.ParseNodeMappingLiteral = mappingLiteralFromSource(`{${ casestring }};`, config);
-	assert_arrayLength(mapping.children, 3, 'map should have 3 children');
-	assert_arrayLength(mapping.children[1].children, 1, 'case list should have 1 child');
-	return mapping.children[1].children[0];
+	const map: PARSENODE.ParseNodeMapLiteral = mapLiteralFromSource(`{${ casestring }};`, config);
+	assert_arrayLength(map.children, 3, 'map should have 3 children');
+	assert_arrayLength(map.children[1].children, 1, 'case list should have 1 child');
+	return map.children[1].children[0];
 }
 export function tokenLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString {
 	const token: Token = primitiveLiteralFromSource(src, config).children[0]
@@ -165,9 +166,9 @@ export function setLiteralFromSource(src: string, config: SolidConfig = CONFIG_D
 	assert.ok(unit instanceof PARSENODE.ParseNodeSetLiteral, 'unit should be a ParseNodeSetLiteral');
 	return unit;
 }
-export function mappingLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeMappingLiteral {
+export function mapLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeMapLiteral {
 	const unit: PARSENODE.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
-	assert.ok(unit instanceof PARSENODE.ParseNodeMappingLiteral, 'unit should be a ParseNodeMappingLiteral');
+	assert.ok(unit instanceof PARSENODE.ParseNodeMapLiteral, 'unit should be a ParseNodeMapLiteral');
 	return unit;
 }
 function valueLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeExpressionUnit['children'][0] {

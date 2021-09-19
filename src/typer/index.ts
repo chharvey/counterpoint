@@ -1,24 +1,31 @@
-export {
-	TypeEntry,
-	SolidType,
-	SolidTypeIntersection,
-	SolidTypeUnion,
-	SolidTypeConstant,
-	SolidTypeInterface,
-} from './SolidType.js';
-export {SolidTypeTuple}   from './SolidTypeTuple.js';
-export {SolidTypeRecord}  from './SolidTypeRecord.js';
-export {SolidTypeSet}     from './SolidTypeSet.js';
-export {SolidTypeMapping} from './SolidTypeMapping.js';
+export * from './utils-public.js';
 
-export {SolidObject}  from './SolidObject.js';
-export {SolidNull}    from './SolidNull.js';
-export {SolidBoolean} from './SolidBoolean.js';
-export {SolidNumber}  from './SolidNumber.js';
-export {Int16}        from './Int16.js';
-export {Float64}      from './Float64.js';
-export {SolidString}  from './SolidString.js';
-export {SolidTuple}   from './SolidTuple.js';
-export {SolidRecord}  from './SolidRecord.js';
-export {SolidSet}     from './SolidSet.js';
-export {SolidMapping} from './SolidMapping.js';
+export * from './SolidType.js';
+export * from './SolidTypeIntersection.js';
+export * from './SolidTypeUnion.js';
+export * from './SolidTypeConstant.js';
+
+export * from './SolidTypeTuple.js';
+export * from './SolidTypeRecord.js';
+export * from './SolidTypeList.js';
+export * from './SolidTypeHash.js';
+export * from './SolidTypeSet.js';
+export * from './SolidTypeMap.js';
+
+export * from './SolidObject.js';
+export * from './SolidNull.js';
+export * from './SolidBoolean.js';
+export * from './SolidNumber.js';
+export * from './Int16.js';
+export * from './Float64.js';
+export * from './SolidString.js';
+
+export * from './CollectionIndexed.js';
+export * from './CollectionKeyed.js';
+
+export * from './SolidTuple.js';
+export * from './SolidRecord.js';
+export * from './SolidList.js';
+export * from './SolidHash.js';
+export * from './SolidSet.js';
+export * from './SolidMap.js';

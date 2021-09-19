@@ -2,22 +2,20 @@ import {
 	strictEqual,
 } from '../decorators.js';
 import {
-	AST,
-	Operator,
+	TypeError04,
+	IntRange,
 	ValidAccessOperator,
-} from '../validator/index.js';
-import {TypeError04} from '../error/index.js';
+	AST,
+} from './package.js';
 import {
+	SolidTypeList,
 	SolidObject,
-	SolidNull,
 	Int16,
 	SolidTuple,
-} from '../index.js'; // avoids circular imports
-import {
-	TypeEntry,
-	IntRange,
-	SolidType,
-} from './SolidType.js';
+} from './index.js';
+import type {TypeEntry} from './utils-public.js';
+import {updateAccessedStaticType} from './utils-private.js';
+import {SolidType} from './SolidType.js';
 
 
 
@@ -50,8 +48,8 @@ export class SolidTypeTuple extends SolidType {
 	/** The possible number of items in this tuple type. */
 	private get count(): IntRange {
 		return [
-			this.types.filter((it) => !it.optional).length,
-			this.types.length + 1,
+			BigInt(this.types.filter((it) => !it.optional).length),
+			BigInt(this.types.length) + 1n,
 		];
 	}
 
@@ -70,20 +68,20 @@ export class SolidTypeTuple extends SolidType {
 			t instanceof SolidTypeTuple
 			&& this.count[0] >= t.count[0]
 			&& t.types.every((thattype, i) => !this.types[i] || this.types[i].type.isSubtypeOf(thattype.type))
+		) || (
+			t instanceof SolidTypeList
+			&& this.itemTypes().isSubtypeOf(t.types)
 		);
 	}
 
 	get(index: Int16, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): SolidType {
 		const n: number = this.types.length;
 		const i: number = Number(index.toNumeric());
-		const entry: TypeEntry = (
+		return updateAccessedStaticType((
 			(-n <= i && i < 0) ? this.types[i + n] :
 			(0  <= i && i < n) ? this.types[i] :
 			(() => { throw new TypeError04('index', this, accessor); })()
-		);
-		return (access_kind === Operator.CLAIMDOT)
-			? entry.type.subtract(SolidType.VOID)
-			: entry.type.union((entry.optional) ? (access_kind === Operator.OPTDOT) ? SolidNull : SolidType.VOID : SolidType.NEVER);
+		), access_kind);
 	}
 
 	itemTypes(): SolidType {

@@ -1,10 +1,8 @@
 import {
 	strictEqual,
 } from '../decorators';
-import {
-	SolidType,
-	SolidTypeConstant,
-} from './SolidType.js';
+import type {SolidType} from './SolidType.js';
+import {SolidTypeConstant} from './SolidTypeConstant.js';
 import {SolidObject} from './SolidObject.js';
 
 
