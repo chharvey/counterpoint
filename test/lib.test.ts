@@ -1,16 +1,16 @@
 import * as assert from 'assert';
 import {
+	Set_hasEq,
 	Set_addEq,
 	Set_deleteEq,
-	Set_differenceEq,
-	Set_hasEq,
 	Set_intersectionEq,
-	Set_symmetricDifferenceEq,
 	Set_unionEq,
-	Map_deleteEq,
-	Map_getEq,
+	Set_differenceEq,
+	Set_symmetricDifferenceEq,
 	Map_hasEq,
+	Map_getEq,
 	Map_setEq,
+	Map_deleteEq,
 } from '../src/lib/index.js';
 
 context('library.', () => {

@@ -1,9 +1,7 @@
 import {defaultComparator} from '../-private.js';
-import {
-	Set_differenceEq,
-	Set_intersectionEq,
-	Set_unionEq,
-} from './index.js';
+import {Set_intersectionEq} from './intersection-eq.js';
+import {Set_unionEq} from './union-eq.js';
+import {Set_differenceEq} from './difference-eq.js';
 
 
 /**

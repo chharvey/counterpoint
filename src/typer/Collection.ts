@@ -1,6 +1,6 @@
 import {
-	Map_getEq,
 	Map_hasEq,
+	Map_getEq,
 	Map_setEq,
 	Keys,
 } from './package.js';

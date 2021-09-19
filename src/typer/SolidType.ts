@@ -1,6 +1,6 @@
 import {
-	Set_differenceEq,
 	Set_hasEq,
+	Set_differenceEq,
 } from './package.js';
 import {
 	SolidTypeIntersection,

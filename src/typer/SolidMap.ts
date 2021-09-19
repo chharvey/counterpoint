@@ -1,7 +1,7 @@
 import {
 	VoidError01,
-	Map_getEq,
 	Map_hasEq,
+	Map_getEq,
 	Map_setEq,
 	AST,
 } from './package.js';

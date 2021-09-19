@@ -9,13 +9,13 @@ export {
 	VoidError01,
 } from '../index.js';
 export {
-	Set_addEq,
-	Set_differenceEq,
 	Set_hasEq,
+	Set_addEq,
 	Set_intersectionEq,
 	Set_unionEq,
-	Map_getEq,
+	Set_differenceEq,
 	Map_hasEq,
+	Map_getEq,
 	Map_setEq,
 } from '../lib/index.js';
 export type {

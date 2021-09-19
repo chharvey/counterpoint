@@ -1,7 +1,7 @@
 import {
 	VoidError01,
-	Set_addEq,
 	Set_hasEq,
+	Set_addEq,
 	AST,
 } from './package.js';
 import {solidObjectsIdentical} from './utils-private.js';
