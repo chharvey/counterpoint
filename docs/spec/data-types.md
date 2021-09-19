@@ -14,10 +14,10 @@ Solid Specification Types are only used internally within this specification to 
 They are not directly observable from Solid code.
 
 
-### Void
-The **Void** type has one value called *void*.
+### None
+The **None** type has one value called *none*.
 It signifies a variable with no meaningful value.
-An algorithm with output type Void returns a [completion structure](#completionstructure)
+An algorithm with output type None returns a [completion structure](#completionstructure)
 with no \`value\` property.
 
 
@@ -83,6 +83,12 @@ A **Sequence** is an ordered list of values. The values may be a mix of any type
 If the values fall within a certain type \`‹T›\` (a metavariable),
 the Sequence type is denoted \`Sequence<‹T›>\`.
 For example, a sequence of Integers is denoted \`Sequence&lt;Integer&gt;\`.
+
+
+### Vector
+A **Vector** is an ordered list of values where the number of values is fixed.
+For example, the notation \`Vector&lt;Integer, Float&gt;\` indicates a sequence of two items,
+the first of which is of type \`Integer\` and the second of which is of type \`Float\`.
 
 
 ### Structure
