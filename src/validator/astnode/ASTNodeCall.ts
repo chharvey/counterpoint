@@ -20,14 +20,12 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
+	Validator,
 } from './package.js';
-import type {Validator} from './Validator.js';
-import {forEachAggregated} from './astnode/utilities.js';
-import {
-	ASTNodeType,
-	ASTNodeExpression,
-	ASTNodeVariable,
-} from './astnode/index.js';
+import {forEachAggregated} from './utilities.js';
+import type {ASTNodeType} from './ASTNodeType.js';
+import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeVariable} from './ASTNodeVariable.js';
 
 
 
