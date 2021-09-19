@@ -105,7 +105,7 @@ describe('Decorator', () => {
 				const itemtype: AST.ASTNodeItemType = Decorator.decorate(h.entryTypeFromString(`float`));
 				assert.ok(!itemtype.optional);
 				assert.deepStrictEqual(
-					itemtype.value.source,
+					itemtype.val.source,
 					`float`,
 				);
 			});
@@ -118,7 +118,7 @@ describe('Decorator', () => {
 				const itemtype: AST.ASTNodeItemType = Decorator.decorate(h.entryTypeFromString(`?:float`));
 				assert.ok(itemtype.optional);
 				assert.deepStrictEqual(
-					itemtype.value.source,
+					itemtype.val.source,
 					`float`,
 				);
 			});
