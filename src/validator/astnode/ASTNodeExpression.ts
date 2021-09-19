@@ -111,7 +111,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 * @final
 	 */
 	fold(validator: Validator): SolidObject | null {
-		return this.assessed ||= this.assess_do(validator);
+		return this.assessed ||= this.fold_do(validator);
 	}
-	protected abstract assess_do(validator: Validator): SolidObject | null;
+	protected abstract fold_do(validator: Validator): SolidObject | null;
 }

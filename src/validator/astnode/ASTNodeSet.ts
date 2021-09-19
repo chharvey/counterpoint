@@ -40,7 +40,7 @@ export class ASTNodeSet extends ASTNodeExpression {
 				: SolidType.NEVER,
 		);
 	}
-	protected override assess_do(validator: Validator): SolidObject | null {
+	protected override fold_do(validator: Validator): SolidObject | null {
 		const elements: readonly (SolidObject | null)[] = this.children.map((c) => c.fold(validator));
 		return (elements.includes(null))
 			? null

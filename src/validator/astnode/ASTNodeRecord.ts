@@ -41,7 +41,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 			c.value.type(validator),
 		])));
 	}
-	protected override assess_do(validator: Validator): SolidObject | null {
+	protected override fold_do(validator: Validator): SolidObject | null {
 		const properties: ReadonlyMap<bigint, SolidObject | null> = new Map(this.children.map((c) => [
 			c.key.id,
 			c.value.fold(validator),

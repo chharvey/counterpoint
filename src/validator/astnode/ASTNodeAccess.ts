@@ -150,7 +150,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 		}
 	}
-	protected override assess_do(validator: Validator): SolidObject | null {
+	protected override fold_do(validator: Validator): SolidObject | null {
 		const base_value: SolidObject | null = this.base.fold(validator);
 		if (base_value === null) {
 			return null;

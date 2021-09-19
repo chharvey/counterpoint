@@ -62,7 +62,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		}
 		return SolidBoolean
 	}
-	protected override assess_do(validator: Validator): SolidObject | null {
+	protected override fold_do(validator: Validator): SolidObject | null {
 		const assess0: SolidObject | null = this.operand0.fold(validator);
 		if (!assess0) {
 			return assess0

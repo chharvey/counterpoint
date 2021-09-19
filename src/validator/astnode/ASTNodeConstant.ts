@@ -53,7 +53,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	protected override type_do(_validator: Validator): SolidType {
 		return new SolidTypeConstant(this.value);
 	}
-	protected override assess_do(_validator: Validator): SolidObject {
+	protected override fold_do(_validator: Validator): SolidObject {
 		if (this.value instanceof SolidString && !Dev.supports('stringConstant-assess')) {
 			throw new Error('`stringConstant-assess` not yet supported.');
 		};

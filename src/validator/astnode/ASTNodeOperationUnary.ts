@@ -59,7 +59,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(SolidNumber)) ? t0 : (() => { throw new TypeError01(this); })()
 		);
 	}
-	protected override assess_do(validator: Validator): SolidObject | null {
+	protected override fold_do(validator: Validator): SolidObject | null {
 		const assess0: SolidObject | null = this.operand.fold(validator);
 		if (!assess0) {
 			return assess0

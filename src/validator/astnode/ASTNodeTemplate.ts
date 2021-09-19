@@ -43,7 +43,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	protected override type_do(_validator: Validator): SolidType {
 		return SolidString
 	}
-	protected override assess_do(validator: Validator): SolidString | null {
+	protected override fold_do(validator: Validator): SolidString | null {
 		const assesses: (SolidObject | null)[] = [...this.children].map((expr) => expr.fold(validator));
 		return (assesses.includes(null))
 			? null
