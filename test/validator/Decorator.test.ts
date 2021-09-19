@@ -132,7 +132,7 @@ describe('Decorator', () => {
 				const propertytype: AST.ASTNodePropertyType = Decorator.decorate(h.entryTypeNamedFromString(`fontSize: float`));
 				assert.ok(!propertytype.optional);
 				assert.deepStrictEqual(
-					[propertytype.key.source, propertytype.value.source],
+					[propertytype.key.source, propertytype.val.source],
 					[`fontSize`,              `float`],
 				);
 			});
@@ -146,7 +146,7 @@ describe('Decorator', () => {
 				const propertytype: AST.ASTNodePropertyType = Decorator.decorate(h.entryTypeNamedFromString(`fontSize?: float`));
 				assert.ok(propertytype.optional);
 				assert.deepStrictEqual(
-					[propertytype.key.source, propertytype.value.source],
+					[propertytype.key.source, propertytype.val.source],
 					[`fontSize`,              `float`],
 				);
 			});

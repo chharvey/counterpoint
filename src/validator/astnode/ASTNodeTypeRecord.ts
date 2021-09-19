@@ -29,7 +29,7 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		return new SolidTypeRecord(new Map(this.children.map((c) => [
 			c.key.id,
 			{
-				type:     c.value.eval(validator),
+				type:     c.val.eval(validator),
 				optional: c.optional,
 			},
 		])));
