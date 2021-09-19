@@ -16,11 +16,11 @@ Sequence<Instruction> Build(Number n) :=
 
 
 Sequence<Instruction> Build(SemanticExpression expr) :=
-	1. *Let* `assess` be `ValueOf(expr)`.
-	2. *If* `assess` is an abrupt completion:
+	1. *Let* `folded` be `ValueOf(expr)`.
+	2. *If* `folded` is an abrupt completion:
 		1. *Return:* `BuildExpression(expr)`.
-	3. *Assert:* `assess.value` exists.
-	4. *Return:* `Build(assess.value)`.
+	3. *Assert:* `folded.value` exists.
+	4. *Return:* `Build(folded.value)`.
 ;
 
 
@@ -40,8 +40,8 @@ Sequence<Instruction> Build(SemanticDeclarationType decl) :=
 
 Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
 	1. *Assert:* `decl.children.count` is 3.
-	2. *Let* `assess` be `ValueOf(decl)`.
-	3. *If* `assess` is a normal completion *and* `decl.unfixed` is `false`:
+	2. *Let* `folded` be `ValueOf(decl)`.
+	3. *If* `folded` is a normal completion *and* `decl.unfixed` is `false`:
 		1. *Note:* references to the variable will be constant-propegated by its fixed value.
 		2. *Return:* [].
 	4. *Let* `name` be the string-concatenation of "glb" and `decl.children.0.id`.
@@ -71,8 +71,8 @@ Sequence<Instruction> Build(SemanticGoal goal) :=
 
 
 Sequence<Instruction> BuildExpression(SemanticConstant const) :=
-	1. *Let* `assess` be *UnwrapAffirm:* `ValueOf(const)`.
-	2. *Return:* `Build(assess)`.
+	1. *Let* `folded` be *UnwrapAffirm:* `ValueOf(const)`.
+	2. *Return:* `Build(folded)`.
 ;
 
 

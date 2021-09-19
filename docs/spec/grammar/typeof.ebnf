@@ -1,18 +1,18 @@
 Type! TypeOf(SemanticExpression expr) :=
 	1. *Let* `t` be *Unrwap:* `TypeOfUnfolded(expr)`.
-	2. *Let* `assess` be `ValueOf(expr)`.
-	3. *If* `assess` is an abrupt completion:
+	2. *Let* `folded` be `ValueOf(expr)`.
+	3. *If* `folded` is an abrupt completion:
 		1. *Return:* `t`.
-	4. *Assert:* `assess.value` exists.
-	5. *Return:* `ToType(assess.value)`.
+	4. *Assert:* `folded.value` exists.
+	5. *Return:* `ToType(folded.value)`.
 ;
 
 
 
 Type TypeOfUnfolded(SemanticConstant const) :=
-	1. *Let* `assess` be *UnwrapAffirm:* `ValueOf(const)`.
-	2. *Note:* `assess` is `const.value`.
-	3. *Return:* `ToType(assess)`.
+	1. *Let* `folded` be *UnwrapAffirm:* `ValueOf(const)`.
+	2. *Note:* `folded` is `const.value`.
+	3. *Return:* `ToType(folded)`.
 ;
 
 

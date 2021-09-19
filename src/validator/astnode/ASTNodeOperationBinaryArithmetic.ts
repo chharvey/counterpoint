@@ -64,22 +64,22 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		throw new TypeError01(this)
 	}
 	protected override fold_do(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.operand0.fold(validator);
-		if (!assess0) {
-			return assess0
+		const v0: SolidObject | null = this.operand0.fold(validator);
+		if (!v0) {
+			return v0;
 		}
-		const assess1: SolidObject | null = this.operand1.fold(validator);
-		if (!assess1) {
-			return assess1
+		const v1: SolidObject | null = this.operand1.fold(validator);
+		if (!v1) {
+			return v1;
 		}
-		if (this.operator === Operator.DIV && assess1 instanceof SolidNumber && assess1.eq0()) {
+		if (this.operator === Operator.DIV && v1 instanceof SolidNumber && v1.eq0()) {
 			throw new NanError02(this.operand1);
 		}
-		return (assess0 instanceof Int16 && assess1 instanceof Int16)
-			? this.foldNumeric(assess0, assess1)
+		return (v0 instanceof Int16 && v1 instanceof Int16)
+			? this.foldNumeric(v0, v1)
 			: this.foldNumeric(
-				(assess0 as SolidNumber).toFloat(),
-				(assess1 as SolidNumber).toFloat(),
+				(v0 as SolidNumber).toFloat(),
+				(v1 as SolidNumber).toFloat(),
 			);
 	}
 	private foldNumeric<T extends SolidNumber<T>>(x: T, y: T): T {

@@ -60,14 +60,14 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		);
 	}
 	protected override fold_do(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.operand.fold(validator);
-		if (!assess0) {
-			return assess0
+		const v0: SolidObject | null = this.operand.fold(validator);
+		if (!v0) {
+			return v0;
 		}
 		return (
-			(this.operator === Operator.NOT) ? SolidBoolean.fromBoolean(!assess0.isTruthy) :
-			(this.operator === Operator.EMP) ? SolidBoolean.fromBoolean(!assess0.isTruthy || assess0.isEmpty) :
-			(this.operator === Operator.NEG) ? this.foldNumeric(assess0 as SolidNumber<any>) :
+			(this.operator === Operator.NOT) ? SolidBoolean.fromBoolean(!v0.isTruthy) :
+			(this.operator === Operator.EMP) ? SolidBoolean.fromBoolean(!v0.isTruthy || v0.isEmpty) :
+			(this.operator === Operator.NEG) ? this.foldNumeric(v0 as SolidNumber<any>) :
 			(() => { throw new ReferenceError(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
 	}
