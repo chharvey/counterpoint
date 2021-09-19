@@ -49,10 +49,10 @@ export class ASTNodeMap extends ASTNodeExpression {
 		);
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidObject | null {
+	override fold(validator: Validator): SolidObject | null {
 		const cases: ReadonlyMap<SolidObject | null, SolidObject | null> = new Map(this.children.map((c) => [
-			c.antecedent.assess(validator),
-			c.consequent.assess(validator),
+			c.antecedent.fold(validator),
+			c.consequent.fold(validator),
 		]));
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null

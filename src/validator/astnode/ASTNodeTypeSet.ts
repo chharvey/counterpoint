@@ -25,7 +25,7 @@ export class ASTNodeTypeSet extends ASTNodeType {
 		super(start_node, {}, [type]);
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidType {
-		return new SolidTypeSet(this.type.assess(validator));
+	override eval(validator: Validator): SolidType {
+		return new SolidTypeSet(this.type.eval(validator));
 	}
 }

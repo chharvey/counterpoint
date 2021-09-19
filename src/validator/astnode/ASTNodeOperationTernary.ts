@@ -62,13 +62,13 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 			: (() => { throw new TypeError01(this) })()
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.operand0.assess(validator);
-		if (!assess0) {
-			return assess0
+	override fold(validator: Validator): SolidObject | null {
+		const v0: SolidObject | null = this.operand0.fold(validator);
+		if (!v0) {
+			return v0;
 		}
-		return (assess0 === SolidBoolean.TRUE)
-			? this.operand1.assess(validator)
-			: this.operand2.assess(validator);
+		return (v0 === SolidBoolean.TRUE)
+			? this.operand1.fold(validator)
+			: this.operand2.fold(validator);
 	}
 }

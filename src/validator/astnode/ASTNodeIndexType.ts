@@ -7,8 +7,8 @@ import {ASTNodeSolid} from './ASTNodeSolid.js';
 export class ASTNodeIndexType extends ASTNodeSolid {
 	constructor (
 		start_node: PARSENODE.ParseNodePropertyAccessType,
-		readonly value: ASTNodeTypeConstant,
+		readonly val: ASTNodeTypeConstant,
 	) {
-		super(start_node, {}, [value]);
+		super(start_node, {}, [val]);
 	}
 }

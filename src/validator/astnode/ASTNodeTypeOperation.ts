@@ -12,6 +12,11 @@ import {ASTNodeType} from './ASTNodeType.js';
 
 
 
+/**
+ * Known subclasses:
+ * - ASTNodeTypeOperationUnary
+ * - ASTNodeTypeOperationBinary
+ */
 export abstract class ASTNodeTypeOperation extends ASTNodeType {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeOperation {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);

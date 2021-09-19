@@ -25,7 +25,7 @@ export class ASTNodeTypeHash extends ASTNodeType {
 		super(start_node, {}, [type]);
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidType {
-		return new SolidTypeHash(this.type.assess(validator));
+	override eval(validator: Validator): SolidType {
+		return new SolidTypeHash(this.type.eval(validator));
 	}
 }

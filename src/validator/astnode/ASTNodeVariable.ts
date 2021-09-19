@@ -61,7 +61,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		return SolidType.NEVER;
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidObject | null {
+	override fold(validator: Validator): SolidObject | null {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {

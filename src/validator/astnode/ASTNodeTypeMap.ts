@@ -26,7 +26,7 @@ export class ASTNodeTypeMap extends ASTNodeType {
 		super(start_node, {}, [antecedenttype, consequenttype]);
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidType {
-		return new SolidTypeMap(this.antecedenttype.assess(validator), this.consequenttype.assess(validator));
+	override eval(validator: Validator): SolidType {
+		return new SolidTypeMap(this.antecedenttype.eval(validator), this.consequenttype.eval(validator));
 	}
 }

@@ -85,7 +85,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			);
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			const accessor_type:  SolidTypeConstant = this.accessor.value.type(validator) as SolidTypeConstant;
+			const accessor_type:  SolidTypeConstant = this.accessor.val.type(validator) as SolidTypeConstant;
 			const accessor_value: Int16             = accessor_type.value as Int16;
 			if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
 				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple)
@@ -156,8 +156,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		}
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidObject | null {
-		const base_value: SolidObject | null = this.base.assess(validator);
+	override fold(validator: Validator): SolidObject | null {
+		const base_value: SolidObject | null = this.base.fold(validator);
 		if (base_value === null) {
 			return null;
 		}
@@ -165,11 +165,11 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as CollectionIndexed).get(this.accessor.value.assess(validator) as Int16, this.optional, this.accessor);
+			return (base_value as CollectionIndexed).get(this.accessor.val.fold(validator) as Int16, this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (base_value as CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
-			const accessor_value: SolidObject | null = this.accessor.assess(validator);
+			const accessor_value: SolidObject | null = this.accessor.fold(validator);
 			if (accessor_value === null) {
 				return null;
 			}

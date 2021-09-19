@@ -51,7 +51,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	@memoizeMethod
 	@ASTNodeExpression.buildDeco
 	override build(builder: Builder, to_float: boolean = false): INST.InstructionConst {
-		return INST.InstructionConst.fromAssessment(this.assess(builder.validator), to_float);
+		return INST.InstructionConst.fromCPValue(this.fold(builder.validator), to_float);
 	}
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
@@ -59,7 +59,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return new SolidTypeConstant(this.value);
 	}
 	@memoizeMethod
-	override assess(_validator: Validator): SolidObject {
+	override fold(_validator: Validator): SolidObject {
 		if (this.value instanceof SolidString && !Dev.supports('stringConstant-assess')) {
 			throw new Error('`stringConstant-assess` not yet supported.');
 		};

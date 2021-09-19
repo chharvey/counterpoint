@@ -42,8 +42,8 @@ export class ASTNodeTuple extends ASTNodeExpression {
 		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type(validator)));
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidObject | null {
-		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.assess(validator));
+	override fold(validator: Validator): SolidObject | null {
+		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.fold(validator));
 		return (items.includes(null))
 			? null
 			: new SolidTuple(items as SolidObject[]);

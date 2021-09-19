@@ -59,17 +59,17 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 					: t0
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.operand0.assess(validator);
-		if (!assess0) {
-			return assess0
+	override fold(validator: Validator): SolidObject | null {
+		const v0: SolidObject | null = this.operand0.fold(validator);
+		if (!v0) {
+			return v0;
 		}
 		if (
-			this.operator === Operator.AND && !assess0.isTruthy
-			|| this.operator === Operator.OR && assess0.isTruthy
+			   this.operator === Operator.AND && !v0.isTruthy
+			|| this.operator === Operator.OR  &&  v0.isTruthy
 		) {
-			return assess0;
+			return v0;
 		}
-		return this.operand1.assess(validator);
+		return this.operand1.fold(validator);
 	}
 }

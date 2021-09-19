@@ -66,16 +66,16 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return SolidBoolean
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.operand0.assess(validator);
-		if (!assess0) {
-			return assess0
+	override fold(validator: Validator): SolidObject | null {
+		const v0: SolidObject | null = this.operand0.fold(validator);
+		if (!v0) {
+			return v0;
 		}
-		const assess1: SolidObject | null = this.operand1.assess(validator);
-		if (!assess1) {
-			return assess1
+		const v1: SolidObject | null = this.operand1.fold(validator);
+		if (!v1) {
+			return v1;
 		}
-		return this.foldEquality(assess0, assess1);
+		return this.foldEquality(v0, v1);
 	}
 	private foldEquality(x: SolidObject, y: SolidObject): SolidBoolean {
 		return SolidBoolean.fromBoolean(new Map<Operator, (x: SolidObject, y: SolidObject) => boolean>([

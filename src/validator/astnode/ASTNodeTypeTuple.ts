@@ -26,9 +26,9 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 		super(start_node, {}, children);
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidType {
+	override eval(validator: Validator): SolidType {
 		return new SolidTypeTuple(this.children.map((c) => ({
-			type:     c.value.assess(validator),
+			type:     c.val.eval(validator),
 			optional: c.optional,
 		})));
 	}

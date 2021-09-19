@@ -37,7 +37,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		};
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidType {
+	override eval(validator: Validator): SolidType {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureType) {

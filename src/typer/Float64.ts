@@ -17,21 +17,21 @@ export class Float64 extends SolidNumber<Float64> {
 	static override values: SolidType['values'] = new Set([new Float64(0.0)])
 
 
-	constructor (private readonly value: number = 0) {
+	constructor (private readonly data: number = 0) {
 		super()
-		xjs.Number.assertType(this.value, xjs.NumericType.FINITE)
+		xjs.Number.assertType(this.data, xjs.NumericType.FINITE);
 	}
 
 	override toString(): string {
-		return `${ this.value }${ (this.value % 1 === 0) ? '.0' : '' }`
+		return `${ this.data }${ (this.data % 1 === 0) ? '.0' : '' }`;
 	}
 	@strictEqual
 	override identical(value: SolidObject): boolean {
-		return value instanceof Float64 && Object.is(this.value, value.value);
+		return value instanceof Float64 && Object.is(this.data, value.data);
 	}
 	@SolidObject.equalsDeco
 	override equal(value: SolidObject): boolean {
-		return value instanceof SolidNumber && this.value === value.toFloat().value;
+		return value instanceof SolidNumber && this.data === value.toFloat().data;
 	}
 
 	override toFloat(): this {
@@ -39,31 +39,31 @@ export class Float64 extends SolidNumber<Float64> {
 	}
 
 	override plus(addend: Float64): Float64 {
-		return new Float64(this.value + addend.value)
+		return new Float64(this.data + addend.data);
 	}
 	override minus(subtrahend: Float64): Float64 {
-		return new Float64(this.value - subtrahend.value)
+		return new Float64(this.data - subtrahend.data);
 	}
 	override times(multiplicand: Float64): Float64 {
-		return new Float64(this.value * multiplicand.value)
+		return new Float64(this.data * multiplicand.data);
 	}
 	override divide(divisor: Float64): Float64 {
-		if (divisor.value === 0) { throw new RangeError('Division by zero.') }
-		return new Float64(this.value / divisor.value)
+		if (divisor.data === 0) { throw new RangeError('Division by zero.'); }
+		return new Float64(this.data / divisor.data);
 	}
 	override exp(exponent: Float64): Float64 {
-		return new Float64(this.value ** exponent.value)
+		return new Float64(this.data ** exponent.data);
 	}
 	override neg(): Float64 {
-		return new Float64(-this.value)
+		return new Float64(-this.data);
 	}
 	/**
 	 * The floating-point numbers `0.0` and `-0.0`, while not identical, are mathematically equal.
 	 */
 	override eq0(): boolean {
-		return this.value === 0
+		return this.data === 0;
 	}
 	override lt(y: Float64): boolean {
-		return this.value < y.value
+		return this.data < y.data;
 	}
 }

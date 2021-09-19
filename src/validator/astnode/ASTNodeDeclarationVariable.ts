@@ -28,41 +28,41 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	constructor (
 		start_node: ParseNode,
 		readonly unfixed: boolean,
-		readonly variable: ASTNodeVariable,
-		readonly type:     ASTNodeType,
-		readonly value:    ASTNodeExpression,
+		readonly assignee: ASTNodeVariable,
+		readonly typenode: ASTNodeType,
+		readonly assigned: ASTNodeExpression,
 	) {
-		super(start_node, {unfixed}, [variable, type, value]);
+		super(start_node, {unfixed}, [assignee, typenode, assigned]);
 	}
 	override varCheck(validator: Validator): void {
-		if (validator.hasSymbol(this.variable.id)) {
-			throw new AssignmentError01(this.variable);
+		if (validator.hasSymbol(this.assignee.id)) {
+			throw new AssignmentError01(this.assignee);
 		};
-		forEachAggregated([this.type, this.value], (c) => c.varCheck(validator));
+		forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck(validator));
 		validator.addSymbol(new SymbolStructureVar(
-			this.variable,
+			this.assignee,
 			this.unfixed,
-			() => this.type.assess(validator),
+			() => this.typenode.eval(validator),
 			(validator.config.compilerOptions.constantFolding && !this.unfixed)
-				? () => this.value.assess(validator)
+				? () => this.assigned.fold(validator)
 				: null,
 		));
 	}
 	override typeCheck(validator: Validator): void {
-		this.value.typeCheck(validator);
+		this.assigned.typeCheck(validator);
 		this.typeCheckAssignment(
-			this.type.assess(validator),
-			this.value.type(validator),
+			this.typenode.eval(validator),
+			this.assigned.type(validator),
 			validator,
 		);
-		return validator.getSymbolInfo(this.variable.id)?.assess();
+		return validator.getSymbolInfo(this.assignee.id)?.assess();
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		const tofloat: boolean = this.type.assess(builder.validator).isSubtypeOf(Float64) || this.value.shouldFloat(builder.validator);
-		const assess: SolidObject | null = this.variable.assess(builder.validator);
-		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && assess)
+		const tofloat: boolean = this.typenode.eval(builder.validator).isSubtypeOf(Float64) || this.assigned.shouldFloat(builder.validator);
+		const value: SolidObject | null = this.assignee.fold(builder.validator);
+		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
 			? new INST.InstructionNone()
-			: new INST.InstructionDeclareGlobal(this.variable.id, this.unfixed, this.value.build(builder, tofloat))
+			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat))
 		;
 	}
 }

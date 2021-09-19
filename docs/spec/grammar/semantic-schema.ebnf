@@ -52,8 +52,8 @@ SemanticTypeRecord ::= SemanticPropertyType+;
 SemanticTypeHash   ::= SemanticType;
 SemanticTypeSet    ::= SemanticType;
 SemanticTypeMap    ::= SemanticType SemanticType;
-SemanticTypeList[count: RealNumber | Void]
-	::= SemanticType; // Note: a SemanticTypeList with a non-void `count` represents a Tuple Type
+SemanticTypeList[count: RealNumber | None]
+	::= SemanticType; // Note: a SemanticTypeList with a `count` represents a Tuple Type; otherwise it represents a List Type.
 
 SemanticTypeAccess
 	::= SemanticType (SemanticIndexType | SemanticKey);

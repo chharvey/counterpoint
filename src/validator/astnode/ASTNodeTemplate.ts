@@ -49,11 +49,11 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		return SolidString
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidString | null {
-		const assesses: (SolidObject | null)[] = [...this.children].map((expr) => expr.assess(validator));
-		return (assesses.includes(null))
+	override fold(validator: Validator): SolidString | null {
+		const values: (SolidObject | null)[] = [...this.children].map((expr) => expr.fold(validator));
+		return (values.includes(null))
 			? null
-			: (assesses as SolidObject[])
+			: (values as SolidObject[])
 				.map((value) => value.toSolidString())
 				.reduce((a, b) => a.concatenate(b));
 	}

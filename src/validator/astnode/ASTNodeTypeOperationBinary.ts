@@ -29,10 +29,10 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 		super(start_node, operator, [operand0, operand1]);
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidType {
+	override eval(validator: Validator): SolidType {
 		return (
-			(this.operator === Operator.AND) ? this.operand0.assess(validator).intersect(this.operand1.assess(validator)) :
-			(this.operator === Operator.OR)  ? this.operand0.assess(validator).union    (this.operand1.assess(validator)) :
+			(this.operator === Operator.AND) ? this.operand0.eval(validator).intersect(this.operand1.eval(validator)) :
+			(this.operator === Operator.OR)  ? this.operand0.eval(validator).union    (this.operand1.eval(validator)) :
 			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
 		)
 	}

@@ -26,7 +26,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		assert.ok(typ instanceof ASTNodeTypeConstant);
 		return typ;
 	}
-	private readonly value: SolidType;
+	private readonly type: SolidType;
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) {
 		const value: SolidType = (
 			(start_node instanceof TOKEN.TokenKeyword) ?
@@ -49,10 +49,10 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 			: /* (start_node instanceof TOKEN.TokenString) */ (Dev.supports('literalString-cook')) ? new SolidTypeConstant(new SolidString(start_node.cook())) : (() => { throw new Error('`literalString-cook` not yet supported.'); })()
 		);
 		super(start_node, {value});
-		this.value = value
+		this.type = value;
 	}
 	@memoizeMethod
-	override assess(_validator: Validator): SolidType {
-		return this.value
+	override eval(_validator: Validator): SolidType {
+		return this.type
 	}
 }

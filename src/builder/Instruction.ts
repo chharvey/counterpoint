@@ -72,21 +72,21 @@ export abstract class InstructionExpression extends Instruction {
  */
 export class InstructionConst extends InstructionExpression {
 	/**
-	 * Construct a new InstructionConst given an assessed value.
-	 * @param assessed the assessed value
+	 * Construct a new InstructionConst given an assessed Counterpoint value.
+	 * @param value the Counterpoint value
 	 * @param to_float Should the value be type-coerced into a floating-point number?
 	 * @return the directions to print
 	 */
-	static fromAssessment(assessed: SolidObject | null, to_float: boolean = false): InstructionConst {
-		if (!assessed) {
+	static fromCPValue(value: SolidObject | null, to_float: boolean = false): InstructionConst {
+		if (!value) {
 			throw new Error('Cannot build an abrupt completion structure.')
 		}
-		const value: SolidNumber =
-			(assessed instanceof SolidNull)    ? Int16.ZERO :
-			(assessed instanceof SolidBoolean) ? (assessed.value) ? Int16.UNIT : Int16.ZERO :
-			(assessed instanceof SolidNumber)  ? assessed :
+		const numeric: SolidNumber =
+			(value instanceof SolidNull)    ? Int16.ZERO :
+			(value instanceof SolidBoolean) ? (value.isTruthy) ? Int16.UNIT : Int16.ZERO :
+			(value instanceof SolidNumber)  ? value :
 			(() => { throw new Error('not yet supported.') })()
-		return new InstructionConst((to_float) ? value.toFloat() : value)
+		return new InstructionConst((to_float) ? numeric.toFloat() : numeric)
 	}
 	/**
 	 * @param value the constant to push

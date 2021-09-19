@@ -27,8 +27,8 @@ export class ASTNodeTypeList extends ASTNodeType {
 		super(start_node, {count}, [type]);
 	}
 	@memoizeMethod
-	override assess(validator: Validator): SolidType {
-		const itemstype: SolidType = this.type.assess(validator);
+	override eval(validator: Validator): SolidType {
+		const itemstype: SolidType = this.type.eval(validator);
 		return (this.count === null)
 			? new SolidTypeList(itemstype)
 			: SolidTypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype));

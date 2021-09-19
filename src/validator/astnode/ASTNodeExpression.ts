@@ -51,11 +51,11 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	): typeof descriptor {
 		const method = descriptor.value!;
 		descriptor.value = function (validator) {
-			const typed: SolidType = method.call(this, validator); // type-check first, to re-throw any TypeErrors
+			const type: SolidType = method.call(this, validator); // type-check first, to re-throw any TypeErrors
 			if (validator.config.compilerOptions.constantFolding) {
-				let assessed: SolidObject | null;
+				let value: SolidObject | null;
 				try {
-					assessed = this.assess(validator);
+					value = this.fold(validator);
 				} catch (err) {
 					if (err instanceof ErrorCode) {
 						// ignore evaluation errors such as VoidError, NanError, etc.
@@ -64,11 +64,11 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 						throw err;
 					}
 				}
-				if (!!assessed) {
-					return new SolidTypeConstant(assessed);
+				if (!!value) {
+					return new SolidTypeConstant(value);
 				};
 			};
-			return typed;
+			return type;
 		};
 		return descriptor;
 	}
@@ -88,8 +88,8 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	): typeof descriptor {
 		const method = descriptor.value!;
 		descriptor.value = function (builder, to_float = false) {
-			const assessed: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
-			return (!!assessed) ? INST.InstructionConst.fromAssessment(assessed, to_float) : method.call(this, builder, to_float);
+			const value: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.fold(builder.validator) : null;
+			return (!!value) ? INST.InstructionConst.fromCPValue(value, to_float) : method.call(this, builder, to_float);
 		};
 		return descriptor;
 	}
@@ -134,5 +134,5 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 * @param validator stores validation and configuration information
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 */
-	abstract assess(validator: Validator): SolidObject | null;
+	abstract fold(validator: Validator): SolidObject | null;
 }

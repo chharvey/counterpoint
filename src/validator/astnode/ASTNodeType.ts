@@ -34,7 +34,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeType {
 		const statement: ASTNodeDeclarationType = ASTNodeDeclarationType.fromSource(`type T = ${ src };`, config);
-		return statement.value;
+		return statement.assigned;
 	}
 	/**
 	 * @final
@@ -47,5 +47,5 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 * @param validator a record of declared variable symbols
 	 * @returns the computed type-value of this node
 	 */
-	abstract assess(validator: Validator): SolidType;
+	abstract eval(validator: Validator): SolidType;
 }
