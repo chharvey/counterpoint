@@ -1,7 +1,5 @@
 import * as xjs from 'extrajs'
-import {
-	strictEqual,
-} from '../decorators.js';
+import {strictEqual} from './package.js';
 import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidNumber} from './SolidNumber.js';

@@ -1,14 +1,12 @@
 import type {ParseNode} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
+	SolidType,
 	memoizeMethod,
-} from '../../decorators.js';
-import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	SolidType,
-	ValidOperatorBinary,
 	Validator,
+	ValidOperatorBinary,
 } from './package.js';
 import {forEachAggregated} from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';

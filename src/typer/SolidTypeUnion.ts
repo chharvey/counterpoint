@@ -1,7 +1,5 @@
 import {
 	strictEqual,
-} from '../decorators.js';
-import {
 	Set_unionEq,
 } from './package.js';
 import {

@@ -1,17 +1,15 @@
 import * as assert from 'assert';
 import {
-	memoizeMethod,
-} from '../../decorators.js';
-import {
-	SolidConfig,
-	CONFIG_DEFAULT,
-	PARSENODE,
 	SolidType,
 	SolidTypeTuple,
 	SolidObject,
 	SolidTuple,
 	INST,
 	Builder,
+	memoizeMethod,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	PARSENODE,
 	Validator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';

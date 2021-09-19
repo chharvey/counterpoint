@@ -1,7 +1,5 @@
 import {
 	strictEqual,
-} from '../decorators.js';
-import {
 	Set_hasEq,
 	Set_differenceEq,
 } from './package.js';

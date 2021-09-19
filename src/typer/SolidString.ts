@@ -1,9 +1,9 @@
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import {
+	CodeUnit,
 	strictEqual,
-} from '../decorators.js';
-import type {CodeUnit} from './package.js';
+} from './package.js';
 import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
 

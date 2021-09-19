@@ -1,10 +1,8 @@
 import * as assert from 'assert';
 import {
-	memoizeMethod,
-} from '../../decorators.js';
-import {
 	SolidType,
 	SolidTypeSet,
+	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,

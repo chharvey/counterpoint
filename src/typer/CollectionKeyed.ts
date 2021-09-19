@@ -1,8 +1,6 @@
 import {
-	strictEqual,
-} from '../decorators.js';
-import {
 	VoidError01,
+	strictEqual,
 	AST,
 } from './package.js';
 import {SolidObject} from './SolidObject.js';

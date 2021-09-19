@@ -1,14 +1,12 @@
 import * as assert from 'assert';
 import {
-	memoizeMethod,
-} from '../../decorators.js';
-import {
+	SolidType,
 	ReferenceError01,
 	ReferenceError03,
+	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	TOKEN,
-	SolidType,
 	Validator,
 	SymbolKind,
 	SymbolStructure,

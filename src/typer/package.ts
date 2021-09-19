@@ -12,6 +12,7 @@ export {
 	IntRange,
 	CodeUnit,
 	Keys,
+	strictEqual,
 	Set_hasEq,
 	Set_addEq,
 	Set_intersectionEq,

@@ -1,8 +1,6 @@
 import {
-	strictEqual,
-} from '../decorators.js';
-import {
 	VoidError01,
+	strictEqual,
 	Set_hasEq,
 	Set_addEq,
 	AST,

@@ -1,9 +1,7 @@
 import {
-	strictEqual,
-} from '../decorators.js';
-import {
 	TypeError04,
 	IntRange,
+	strictEqual,
 	ValidAccessOperator,
 	AST,
 } from './package.js';

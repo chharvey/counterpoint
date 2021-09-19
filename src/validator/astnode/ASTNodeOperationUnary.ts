@@ -4,13 +4,6 @@ import type {
 import * as assert from 'assert';
 import * as xjs from 'extrajs'
 import {
-	memoizeMethod,
-} from '../../decorators.js';
-import {
-	TypeError01,
-	NanError01,
-	SolidConfig,
-	CONFIG_DEFAULT,
 	SolidType,
 	SolidObject,
 	SolidNull,
@@ -18,9 +11,14 @@ import {
 	SolidNumber,
 	INST,
 	Builder,
+	TypeError01,
+	NanError01,
+	memoizeMethod,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Validator,
 	Operator,
 	ValidOperatorUnary,
-	Validator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';

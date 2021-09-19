@@ -1,16 +1,14 @@
 import type {ParseNode} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
-	memoizeMethod,
-} from '../../decorators.js';
-import {
-	SolidConfig,
-	CONFIG_DEFAULT,
 	SolidType,
 	SolidObject,
 	SolidString,
 	INST,
 	Builder,
+	memoizeMethod,
+	SolidConfig,
+	CONFIG_DEFAULT,
 	Validator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';

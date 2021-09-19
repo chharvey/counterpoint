@@ -45,6 +45,7 @@ export {
 	TypeError06,
 	NanError01,
 	NanError02,
+	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,

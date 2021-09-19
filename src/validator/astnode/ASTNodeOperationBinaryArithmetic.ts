@@ -4,14 +4,6 @@ import type {
 import * as assert from 'assert';
 import * as xjs from 'extrajs'
 import {
-	memoizeMethod,
-} from '../../decorators.js';
-import {
-	TypeError01,
-	NanError01,
-	NanError02,
-	SolidConfig,
-	CONFIG_DEFAULT,
 	SolidType,
 	SolidObject,
 	SolidNumber,
@@ -19,9 +11,15 @@ import {
 	Float64,
 	INST,
 	Builder,
+	TypeError01,
+	NanError01,
+	NanError02,
+	memoizeMethod,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Validator,
 	Operator,
 	ValidOperatorArithmetic,
-	Validator,
 } from './package.js';
 import {
 	bothNumeric,

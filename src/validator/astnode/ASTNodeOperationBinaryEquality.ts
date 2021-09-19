@@ -1,19 +1,17 @@
 import type {ParseNode} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
-	memoizeMethod,
-} from '../../decorators.js';
-import {
-	SolidConfig,
-	CONFIG_DEFAULT,
 	SolidType,
 	SolidObject,
 	SolidBoolean,
 	INST,
 	Builder,
+	memoizeMethod,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Validator,
 	Operator,
 	ValidOperatorEquality,
-	Validator,
 } from './package.js';
 import {
 	bothNumeric,

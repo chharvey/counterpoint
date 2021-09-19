@@ -1,8 +1,6 @@
 import {
-	strictEqual,
-} from '../decorators.js';
-import {
 	VoidError01,
+	strictEqual,
 	Map_hasEq,
 	Map_getEq,
 	Map_setEq,

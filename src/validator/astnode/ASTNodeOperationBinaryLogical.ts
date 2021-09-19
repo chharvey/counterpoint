@@ -3,20 +3,18 @@ import type {
 } from '@chharvey/parser';
 import * as assert from 'assert';
 import {
-	memoizeMethod,
-} from '../../decorators.js';
-import {
-	SolidConfig,
-	CONFIG_DEFAULT,
 	SolidType,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
 	INST,
 	Builder,
+	memoizeMethod,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Validator,
 	Operator,
 	ValidOperatorLogical,
-	Validator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';

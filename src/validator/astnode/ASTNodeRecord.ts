@@ -1,18 +1,16 @@
 import type {NonemptyArray} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
-	memoizeMethod,
-} from '../../decorators.js';
-import {
-	SolidConfig,
-	CONFIG_DEFAULT,
-	PARSENODE,
 	SolidType,
 	SolidTypeRecord,
 	SolidObject,
 	SolidRecord,
 	INST,
 	Builder,
+	memoizeMethod,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	PARSENODE,
 	Validator,
 } from './package.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';

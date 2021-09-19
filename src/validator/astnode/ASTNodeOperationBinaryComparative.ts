@@ -3,12 +3,6 @@ import type {
 } from '@chharvey/parser';
 import * as assert from 'assert';
 import {
-	memoizeMethod,
-} from '../../decorators.js';
-import {
-	TypeError01,
-	SolidConfig,
-	CONFIG_DEFAULT,
 	SolidType,
 	SolidObject,
 	SolidBoolean,
@@ -16,9 +10,13 @@ import {
 	Int16,
 	INST,
 	Builder,
+	TypeError01,
+	memoizeMethod,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Validator,
 	Operator,
 	ValidOperatorComparative,
-	Validator,
 } from './package.js';
 import {
 	bothNumeric,

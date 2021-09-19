@@ -3,9 +3,6 @@ import type {
 } from '@chharvey/parser';
 import * as assert from 'assert';
 import {
-	memoizeMethod,
-} from '../../decorators.js';
-import {
 	SolidType,
 	SolidTypeList,
 	SolidTypeHash,
@@ -13,6 +10,7 @@ import {
 	SolidTypeMap,
 	TypeError05,
 	TypeError06,
+	memoizeMethod,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,

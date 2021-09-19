@@ -47,6 +47,10 @@ export {
 	NanError02,
 } from '../index.js';
 export {
+	memoizeMethod,
+	runOnceMethod,
+} from '../lib/index.js';
+export {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,

@@ -1,6 +1,4 @@
-import {
-	strictEqual,
-} from '../decorators.js';
+import {strictEqual} from './package.js';
 import {SolidString} from './index.js';
 import {SolidType} from './SolidType.js';
 

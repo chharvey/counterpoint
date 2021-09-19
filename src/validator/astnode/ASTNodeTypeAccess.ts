@@ -1,12 +1,5 @@
 import * as assert from 'assert';
 import {
-	memoizeMethod,
-} from '../../decorators.js';
-import {
-	TypeError04,
-	SolidConfig,
-	CONFIG_DEFAULT,
-	PARSENODE,
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,
@@ -16,8 +9,13 @@ import {
 	Int16,
 	SolidTuple,
 	SolidRecord,
-	Operator,
+	TypeError04,
+	memoizeMethod,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	PARSENODE,
 	Validator,
+	Operator,
 } from './package.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndexType} from './ASTNodeIndexType.js';

@@ -1,9 +1,7 @@
 import {
-	runOnceMethod,
-} from '../decorators';
-import {
 	SolidType,
 	SolidObject,
+	runOnceMethod,
 } from './package.js';
 import type * as AST from './astnode/index.js';
 
