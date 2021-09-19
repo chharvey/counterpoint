@@ -25,7 +25,7 @@ import {
 	eitherFloats,
 	bothFloats,
 	neitherFloats,
-} from './utilities.js';
+} from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
 

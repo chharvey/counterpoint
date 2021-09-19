@@ -22,7 +22,7 @@ import {
 	PARSENODE,
 	Validator,
 } from './package.js';
-import {forEachAggregated} from './utilities.js';
+import {forEachAggregated} from './utils-private.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeVariable} from './ASTNodeVariable.js';

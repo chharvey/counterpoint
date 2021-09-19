@@ -11,7 +11,7 @@ import {
 	Validator,
 	SymbolStructureVar,
 } from './package.js';
-import {forEachAggregated} from './utilities.js';
+import {forEachAggregated} from './utils-private.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeVariable} from './ASTNodeVariable.js';
