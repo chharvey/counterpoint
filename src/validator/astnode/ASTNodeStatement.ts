@@ -13,7 +13,7 @@ import {ASTNodeSolid} from './ASTNodeSolid.js';
 
 /**
  * A sematic node representing a statement.
- * There are 3 known subclasses:
+ * Known subclasses:
  * - ASTNodeStatementExpression
  * - ASTNodeDeclaration
  * - ASTNodeAssignment

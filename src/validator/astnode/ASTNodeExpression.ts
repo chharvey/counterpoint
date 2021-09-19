@@ -68,8 +68,8 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 */
 	build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
 		if (!this.built) {
-			const assessed: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.assess(builder.validator) : null;
-			this.built = (!!assessed) ? INST.InstructionConst.fromAssessment(assessed, to_float) : this.build_do(builder, to_float);
+			const value: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.fold(builder.validator) : null;
+			this.built = (!!value) ? INST.InstructionConst.fromCPValue(value, to_float) : this.build_do(builder, to_float);
 		}
 		return this.built;
 	}
@@ -84,9 +84,9 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 		if (!this.typed) {
 			this.typed = this.type_do(validator); // type-check first, to re-throw any TypeErrors
 			if (validator.config.compilerOptions.constantFolding) {
-				let assessed: SolidObject | null = null;
+				let value: SolidObject | null = null;
 				try {
-					assessed = this.assess(validator);
+					value = this.fold(validator);
 				} catch (err) {
 					if (err instanceof ErrorCode) {
 						// ignore evaluation errors such as VoidError, NanError, etc.
@@ -95,8 +95,8 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 						throw err;
 					}
 				}
-				if (!!assessed) {
-					this.typed = new SolidTypeConstant(assessed);
+				if (!!value) {
+					this.typed = new SolidTypeConstant(value);
 				};
 			};
 		};
@@ -110,8 +110,8 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 * @final
 	 */
-	assess(validator: Validator): SolidObject | null {
-		return this.assessed ||= this.assess_do(validator);
+	fold(validator: Validator): SolidObject | null {
+		return this.assessed ||= this.fold_do(validator);
 	}
-	protected abstract assess_do(validator: Validator): SolidObject | null;
+	protected abstract fold_do(validator: Validator): SolidObject | null;
 }

@@ -25,11 +25,11 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 	) {
 		super(start_node, {}, children);
 	}
-	protected override assess_do(validator: Validator): SolidType {
+	protected override eval_do(validator: Validator): SolidType {
 		return new SolidTypeRecord(new Map(this.children.map((c) => [
 			c.key.id,
 			{
-				type:     c.value.assess(validator),
+				type:     c.val.eval(validator),
 				optional: c.optional,
 			},
 		])));

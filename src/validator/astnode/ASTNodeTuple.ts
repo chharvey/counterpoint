@@ -36,8 +36,8 @@ export class ASTNodeTuple extends ASTNodeExpression {
 	protected override type_do(validator: Validator): SolidType {
 		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type(validator)));
 	}
-	protected override assess_do(validator: Validator): SolidObject | null {
-		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.assess(validator));
+	protected override fold_do(validator: Validator): SolidObject | null {
+		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.fold(validator));
 		return (items.includes(null))
 			? null
 			: new SolidTuple(items as SolidObject[]);

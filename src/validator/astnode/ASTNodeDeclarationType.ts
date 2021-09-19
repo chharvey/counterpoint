@@ -23,23 +23,23 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 	}
 	constructor (
 		start_node: ParseNode,
-		readonly variable: ASTNodeTypeAlias,
-		readonly value:    ASTNodeType,
+		readonly assignee: ASTNodeTypeAlias,
+		readonly assigned: ASTNodeType,
 	) {
-		super(start_node, {}, [variable, value]);
+		super(start_node, {}, [assignee, assigned]);
 	}
 	override varCheck(validator: Validator): void {
-		if (validator.hasSymbol(this.variable.id)) {
-			throw new AssignmentError01(this.variable);
+		if (validator.hasSymbol(this.assignee.id)) {
+			throw new AssignmentError01(this.assignee);
 		};
-		this.value.varCheck(validator);
+		this.assigned.varCheck(validator);
 		validator.addSymbol(new SymbolStructureType(
-			this.variable,
-			() => this.value.assess(validator),
+			this.assignee,
+			() => this.assigned.eval(validator),
 		));
 	}
 	override typeCheck(validator: Validator): void {
-		return validator.getSymbolInfo(this.variable.id)?.assess();
+		return validator.getSymbolInfo(this.assignee.id)?.assess();
 	}
 	override build(_builder: Builder): INST.InstructionNone {
 		return new INST.InstructionNone();

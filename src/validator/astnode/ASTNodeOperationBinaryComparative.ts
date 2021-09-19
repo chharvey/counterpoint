@@ -60,20 +60,20 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		}
 		throw new TypeError01(this)
 	}
-	protected override assess_do(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.operand0.assess(validator);
-		if (!assess0) {
-			return assess0
+	protected override fold_do(validator: Validator): SolidObject | null {
+		const v0: SolidObject | null = this.operand0.fold(validator);
+		if (!v0) {
+			return v0;
 		}
-		const assess1: SolidObject | null = this.operand1.assess(validator);
-		if (!assess1) {
-			return assess1
+		const v1: SolidObject | null = this.operand1.fold(validator);
+		if (!v1) {
+			return v1;
 		}
-		return (assess0 instanceof Int16 && assess1 instanceof Int16)
-			? this.foldComparative(assess0, assess1)
+		return (v0 instanceof Int16 && v1 instanceof Int16)
+			? this.foldComparative(v0, v1)
 			: this.foldComparative(
-				(assess0 as SolidNumber).toFloat(),
-				(assess1 as SolidNumber).toFloat(),
+				(v0 as SolidNumber).toFloat(),
+				(v1 as SolidNumber).toFloat(),
 			);
 	}
 	private foldComparative<T extends SolidNumber<T>>(x: T, y: T): SolidBoolean {

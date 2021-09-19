@@ -11,8 +11,8 @@ export class ASTNodeItemType extends ASTNodeSolid {
 			| PARSENODE.ParseNodeEntryType_Optional
 		,
 		readonly optional: boolean,
-		readonly value: ASTNodeType,
+		readonly val: ASTNodeType,
 	) {
-		super(start_node, {optional}, [value]);
+		super(start_node, {optional}, [val]);
 	}
 }

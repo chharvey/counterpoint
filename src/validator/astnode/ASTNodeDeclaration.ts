@@ -7,7 +7,7 @@ import type {
 
 /**
  * A sematic node representing a declaration.
- * There are 2 known subclasses:
+ * Known subclasses:
  * - ASTNodeDeclarationType
  * - ASTNodeDeclarationVariable
  */
