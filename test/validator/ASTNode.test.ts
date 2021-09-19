@@ -62,6 +62,7 @@ import {
 	assertAssignable,
 } from '../assert-helpers.js';
 import {
+	CONFIG_FOLDING_OFF,
 	TYPE_CONST_NULL,
 	typeConstInt,
 	typeConstFloat,
@@ -318,14 +319,7 @@ describe('ASTNodeSolid', () => {
 				);
 			});
 			it('with constant folding off, does nothing to the SymbolStructure.', () => {
-				const folding_off: SolidConfig = {
-					...CONFIG_DEFAULT,
-					compilerOptions: {
-						...CONFIG_DEFAULT.compilerOptions,
-						constantFolding: false,
-					},
-				};
-				const validator: Validator = new Validator(folding_off);
+				const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let x: int = 42;
 				`);
@@ -499,21 +493,14 @@ describe('ASTNodeSolid', () => {
 				);
 			});
 			it('with constant folding off, always returns InstructionGlobalGet.', () => {
-				const folding_off: SolidConfig = {
-					...CONFIG_DEFAULT,
-					compilerOptions: {
-						...CONFIG_DEFAULT.compilerOptions,
-						constantFolding: false,
-					},
-				};
 				const src: string = `
 					let x: int = 42;
 					let unfixed y: float = 4.2;
 					x;
 					y;
 				`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, folding_off);
-				const builder: Builder = new Builder(src, folding_off);
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
+				const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 				assert.deepStrictEqual(
 					[
 						goal.children[2].build(builder),
@@ -528,16 +515,9 @@ describe('ASTNodeSolid', () => {
 		});
 
 		describe('ASTNodeOperation', () => {
-			const folding_off: SolidConfig = {
-				...CONFIG_DEFAULT,
-				compilerOptions: {
-					...CONFIG_DEFAULT.compilerOptions,
-					constantFolding: false,
-				},
-			};
 			function buildOperations(tests: ReadonlyMap<string, INST.InstructionExpression>): void {
 				assert.deepStrictEqual(
-					[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, folding_off).build(new Builder(src, folding_off))),
+					[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))),
 					[...tests.values()],
 				);
 			}
@@ -589,7 +569,7 @@ describe('ASTNodeSolid', () => {
 						`null === false;`,
 						`null == false;`,
 						`false == 0.0;`,
-					].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, folding_off).build(new Builder(src, folding_off))), [
+					].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))), [
 						new INST.InstructionBinopEquality(
 							Operator.EQ,
 							instructionConstInt(42n),
@@ -671,7 +651,7 @@ describe('ASTNodeSolid', () => {
 						`null && 201.0e-1;`,
 						`true && 201.0e-1;`,
 						`false || null;`,
-					].map((src) => AST.ASTNodeOperationBinaryLogical.fromSource(src, folding_off).build(new Builder(src, folding_off))), [
+					].map((src) => AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))), [
 						new INST.InstructionBinopLogical(
 							0n,
 							Operator.AND,
@@ -707,7 +687,7 @@ describe('ASTNodeSolid', () => {
 				it('counts internal variables correctly.', () => {
 					const src: string = `1 && 2 || 3 && 4;`
 					assert.deepStrictEqual(
-						AST.ASTNodeOperationBinaryLogical.fromSource(src, folding_off).build(new Builder(src, folding_off)),
+						AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF)),
 						new INST.InstructionBinopLogical(
 							0n,
 							Operator.OR,
@@ -825,19 +805,12 @@ describe('ASTNodeSolid', () => {
 				);
 			});
 			it('with constant folding off, always returns InstructionDeclareGlobal.', () => {
-				const folding_off: SolidConfig = {
-					...CONFIG_DEFAULT,
-					compilerOptions: {
-						...CONFIG_DEFAULT.compilerOptions,
-						constantFolding: false,
-					},
-				};
 				const src: string = `
 					let x: int = 42;
 					let unfixed y: float = 4.2;
 				`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, folding_off);
-				const builder: Builder = new Builder(src, folding_off);
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
+				const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 				assert.deepStrictEqual(
 					[
 						goal.children[0].build(builder),
@@ -1054,13 +1027,6 @@ describe('ASTNodeSolid', () => {
 
 	describe('ASTNodeExpression', () => {
 		describe('#type', () => {
-			const folding_off: SolidConfig = {
-				...CONFIG_DEFAULT,
-				compilerOptions: {
-					...CONFIG_DEFAULT.compilerOptions,
-					constantFolding: false,
-				},
-			};
 			it('returns Never for undeclared variables.', () => {
 				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidType.NEVER);
 			});
@@ -1135,7 +1101,7 @@ describe('ASTNodeSolid', () => {
 					it('always returns `String`.', () => {
 						templates = initTemplates();
 						templates.forEach((t) => {
-							assert.deepStrictEqual(t.type(new Validator(folding_off)), SolidString);
+							assert.deepStrictEqual(t.type(new Validator(CONFIG_FOLDING_OFF)), SolidString);
 						});
 					});
 				});
@@ -1186,7 +1152,7 @@ describe('ASTNodeSolid', () => {
 				it('with constant folding off.', () => {
 					const expected: SolidTypeConstant[] = [typeConstInt(1n), typeConstFloat(2.0), typeConstStr('three')];
 					collections = initCollections();
-					const validator: Validator = new Validator(folding_off);
+					const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 					assert.deepStrictEqual(
 						collections.map((node) => node.type(validator)),
 						[
@@ -1206,7 +1172,7 @@ describe('ASTNodeSolid', () => {
 			});
 
 			describe('ASTNodeCall', () => {
-				const validator: Validator = new Validator(folding_off);
+				const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 				it('evaluates List, Hash, Set, and Map.', () => {
 					assert.deepStrictEqual(
 						[
@@ -1352,8 +1318,8 @@ describe('ASTNodeSolid', () => {
 									!a;
 									!b;
 									!c;
-								`, folding_off);
-								const validator: Validator = new Validator(folding_off);
+								`, CONFIG_FOLDING_OFF);
+								const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
 								goal.children.slice(3).forEach((stmt) => {
@@ -1372,8 +1338,8 @@ describe('ASTNodeSolid', () => {
 									!c;
 									!d;
 									!e;
-								`, folding_off);
-								const validator: Validator = new Validator(folding_off);
+								`, CONFIG_FOLDING_OFF);
+								const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
 								goal.children.slice(5).forEach((stmt) => {
@@ -1386,8 +1352,8 @@ describe('ASTNodeSolid', () => {
 									let unfixed b: float = 4.2;
 									!a;
 									!b;
-								`, folding_off);
-								const validator: Validator = new Validator(folding_off);
+								`, CONFIG_FOLDING_OFF);
+								const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
 								goal.children.slice(2).forEach((stmt) => {
@@ -1400,8 +1366,8 @@ describe('ASTNodeSolid', () => {
 									![42];
 									![a= 42];
 									!{41 -> 42};
-								`, folding_off);
-								const validator: Validator = new Validator(folding_off);
+								`, CONFIG_FOLDING_OFF);
+								const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
 								goal.children.forEach((stmt) => {
@@ -1411,14 +1377,14 @@ describe('ASTNodeSolid', () => {
 						});
 						describe('[operator=EMP]', () => {
 							it('always returns type `bool`.', () => {
-								const validator: Validator = new Validator(folding_off);
+								const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 								[
 									`?false;`,
 									`?true;`,
 									`?null;`,
 									`?42;`,
 									`?4.2e+1;`,
-								].map((src) => AST.ASTNodeOperation.fromSource(src, folding_off).type(validator)).forEach((typ) => {
+								].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).type(validator)).forEach((typ) => {
 									assert.deepStrictEqual(typ, SolidBoolean);
 								});
 								Dev.supports('literalCollection') && [
@@ -1426,7 +1392,7 @@ describe('ASTNodeSolid', () => {
 									`?[42];`,
 									`?[a= 42];`,
 									`?{41 -> 42};`,
-								].map((src) => AST.ASTNodeOperation.fromSource(src, folding_off).type(validator)).forEach((typ) => {
+								].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).type(validator)).forEach((typ) => {
 									assert.deepStrictEqual(typ, SolidBoolean);
 								});
 							});
@@ -1444,9 +1410,9 @@ describe('ASTNodeSolid', () => {
 						});
 					});
 					context('with folding off but int coersion on.', () => {
-						const validator: Validator = new Validator(folding_off);
+						const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 						it('returns Integer for integer arithmetic.', () => {
-							const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource(`(7 + 3) * 2;`, folding_off);
+							const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource(`(7 + 3) * 2;`, CONFIG_FOLDING_OFF);
 							assert.deepStrictEqual(node.type(validator), Int16);
 							assert.deepStrictEqual(
 								[node.operand0.type(validator), node.operand1.type(validator)],
@@ -1454,7 +1420,7 @@ describe('ASTNodeSolid', () => {
 							);
 						});
 						it('returns Float for float arithmetic.', () => {
-							const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3.0 ^ 2;`, folding_off);
+							const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3.0 ^ 2;`, CONFIG_FOLDING_OFF);
 							assert.deepStrictEqual(node.type(validator), Float64);
 							assert.deepStrictEqual(
 								[node.operand0.type(validator), node.operand1.type(validator)],
@@ -1499,7 +1465,7 @@ describe('ASTNodeSolid', () => {
 					});
 					context('with folding off but int coersion on.', () => {
 						it('allows coercing of ints to floats if there are any floats.', () => {
-							assert.deepStrictEqual(AST.ASTNodeOperationBinaryComparative.fromSource(`7.0 > 3;`).type(new Validator(folding_off)), SolidBoolean);
+							assert.deepStrictEqual(AST.ASTNodeOperationBinaryComparative.fromSource(`7.0 > 3;`).type(new Validator(CONFIG_FOLDING_OFF)), SolidBoolean);
 						});
 					});
 					context('with folding and int coersion off.', () => {
@@ -1573,10 +1539,10 @@ describe('ASTNodeSolid', () => {
 					});
 					context('with folding off but int coersion on.', () => {
 						it('allows coercing of ints to floats if there are any floats.', () => {
-							assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 == 7.0;`).type(new Validator(folding_off)), SolidBoolean);
+							assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 == 7.0;`).type(new Validator(CONFIG_FOLDING_OFF)), SolidBoolean);
 						});
 						it('returns `false` if operands are of different numeric types.', () => {
-							assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 === 7.0;`, folding_off).type(new Validator(folding_off)), SolidBoolean.FALSETYPE);
+							assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 === 7.0;`, CONFIG_FOLDING_OFF).type(new Validator(CONFIG_FOLDING_OFF)), SolidBoolean.FALSETYPE);
 						});
 					});
 					context('with folding and int coersion off.', () => {
@@ -1613,8 +1579,8 @@ describe('ASTNodeSolid', () => {
 									a && 42;
 									b && 42;
 									c && 42;
-								`, folding_off);
-								const validator: Validator = new Validator(folding_off);
+								`, CONFIG_FOLDING_OFF);
+								const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
 								assert.deepStrictEqual(goal.children.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
@@ -1636,8 +1602,8 @@ describe('ASTNodeSolid', () => {
 									c && 'hello';
 									d && 'hello';
 									e && 42;
-								`, folding_off);
-								const validator: Validator = new Validator(folding_off);
+								`, CONFIG_FOLDING_OFF);
+								const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
 								assert.deepStrictEqual(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
@@ -1654,8 +1620,8 @@ describe('ASTNodeSolid', () => {
 									let unfixed b: float = 4.2;
 									a && true;
 									b && null;
-								`, folding_off);
-								const validator: Validator = new Validator(folding_off);
+								`, CONFIG_FOLDING_OFF);
+								const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
 								assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
@@ -1673,8 +1639,8 @@ describe('ASTNodeSolid', () => {
 									a || false;
 									b || 42;
 									c || 4.2;
-								`, folding_off);
-								const validator: Validator = new Validator(folding_off);
+								`, CONFIG_FOLDING_OFF);
+								const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
 								assert.deepStrictEqual(goal.children.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
@@ -1696,8 +1662,8 @@ describe('ASTNodeSolid', () => {
 									c || 'hello';
 									d || 'hello';
 									e || 42;
-								`, folding_off);
-								const validator: Validator = new Validator(folding_off);
+								`, CONFIG_FOLDING_OFF);
+								const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
 								assertEqualTypes(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
@@ -1714,8 +1680,8 @@ describe('ASTNodeSolid', () => {
 									let unfixed b: float = 4.2;
 									a || true;
 									b || null;
-								`, folding_off);
-								const validator: Validator = new Validator(folding_off);
+								`, CONFIG_FOLDING_OFF);
+								const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 								goal.varCheck(validator);
 								goal.typeCheck(validator);
 								assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
@@ -2619,13 +2585,6 @@ describe('ASTNodeSolid', () => {
 				function typeOfStmtExpr(stmt: AST.ASTNodeStatementExpression, validator: Validator): SolidType {
 					return stmt.expr!.type(validator);
 				}
-				const folding_off: SolidConfig = {
-					...CONFIG_DEFAULT,
-					compilerOptions: {
-						...CONFIG_DEFAULT.compilerOptions,
-						constantFolding: false,
-					},
-				};
 				const COMMON_TYPES = {
 					int_float: SolidType.unionAll([
 						Int16,
@@ -3007,7 +2966,7 @@ describe('ASTNodeSolid', () => {
 						let validator: Validator;
 						let program: AST.ASTNodeGoal;
 						before(() => {
-							validator = new Validator(folding_off);
+							validator = new Validator(CONFIG_FOLDING_OFF);
 							program = EXPR_ACCESS_PROGRAM(validator);
 							program.varCheck(validator);
 							program.typeCheck(validator);

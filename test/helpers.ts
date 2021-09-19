@@ -1,4 +1,8 @@
 import {
+	SolidConfig,
+	CONFIG_DEFAULT,
+} from '../src/core/index.js';
+import {
 	SolidTypeConstant,
 	SolidNull,
 	Int16,
@@ -8,6 +12,16 @@ import {
 import {
 	INST,
 } from '../src/builder/index.js';
+
+
+
+export const CONFIG_FOLDING_OFF: SolidConfig = {
+	...CONFIG_DEFAULT,
+	compilerOptions: {
+		...CONFIG_DEFAULT.compilerOptions,
+		constantFolding: false,
+	},
+};
 
 
 
