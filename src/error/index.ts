@@ -17,6 +17,8 @@ export {
 	TypeError02,
 	TypeError03,
 	TypeError04,
+	TypeError05,
+	TypeError06,
 } from './SolidTypeError.js';
 export {
 	VoidError01,

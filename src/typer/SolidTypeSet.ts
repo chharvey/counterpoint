@@ -1,7 +1,7 @@
 import {
 	SolidObject,
 	SolidSet,
-} from '../index.js'; // avoids circular imports
+} from './index.js'; // avoids circular imports
 import {SolidType} from './SolidType.js';
 
 

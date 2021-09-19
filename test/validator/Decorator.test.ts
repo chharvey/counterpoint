@@ -7,7 +7,7 @@ import {
 	CONFIG_DEFAULT,
 	Dev,
 } from '../../src/core/index.js';
-import type {
+import {
 	PARSENODE,
 } from '../../src/parser/index.js';
 import {
@@ -209,6 +209,51 @@ describe('Decorator', () => {
 			});
 		});
 
+		describe('TypeHashLiteral ::= "[" ":" Type "]"', () => {
+			it('makes an ASTNodeTypeHash.', () => {
+				/*
+					<TypeHash>
+						<TypeConstant source="bool"/>
+					</TypeHash>
+				*/
+				const hash: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`[:bool]`));
+				assert.ok(hash instanceof AST.ASTNodeTypeHash);
+				assert.deepStrictEqual(hash.type.source, `bool`);
+			});
+		});
+
+		describe('TypeMapLiteral ::= "{" Type "->" Type "}"', () => {
+			it('makes an ASTNodeTypeMap.', () => {
+				/*
+					<TypeMap>
+						<TypeConstant source="int"/>
+						<TypeConstant source="float"/>
+					</TypeMap>
+				*/
+				const map: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`{int -> float}`));
+				assert.ok(map instanceof AST.ASTNodeTypeMap);
+				assert.deepStrictEqual(map.antecedenttype.source, `int`);
+				assert.deepStrictEqual(map.consequenttype.source, `float`);
+			});
+		});
+
+		describe('GenericArguments ::= "<" ","? Type# ","? ">"', () => {
+			it('makes a Sequence<SemanticType>.', () => {
+				/*
+					<TypeOperation source="Bar | Qux">...</TypeOperation>
+					<TypeAlias source="Diz"/>
+				*/
+				const args: PARSENODE.ParseNodeTypeCompound = h.compoundTypeFromString(`Foo.<Bar | Qux, Diz>`);
+				assert_arrayLength(args.children, 2);
+				assert.ok(args.children[1] instanceof PARSENODE.ParseNodeGenericCall);
+				const sequence: NonemptyArray<AST.ASTNodeType> = Decorator.decorate(args.children[1]);
+				assert.deepStrictEqual(
+					sequence.map((c) => c.source),
+					[`Bar | Qux`, `Diz`],
+				);
+			});
+		});
+
 		describe('TypeUnit ::= IDENTIFIER', () => {
 			it('makes an ASTNodeTypeAlias.', () => {
 				/*
@@ -268,8 +313,8 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('literalCollection') && describe('TypeCompound ::= TypeCompound PropertyAccessType', () => {
-			it('access by integer.', () => {
+		describe('TypeCompound ::= TypeCompound (PropertyAccessType | GenericCall)', () => {
+			Dev.supports('literalCollection') && it('access by integer.', () => {
 				/*
 					<AccessType>
 						<TypeTuple source="[42, 420, 4200]">...</TypeTuple>
@@ -287,7 +332,7 @@ describe('Decorator', () => {
 					[`[ 42 , 420 , 4200 ]`, `. 1`],
 				);
 			});
-			it('access by key.', () => {
+			Dev.supports('literalCollection') && it('access by key.', () => {
 				/*
 					<AccessType>
 						<TypeRecord source="[c: 42, b: 420, a: 4200]">...</TypeRecord>
@@ -301,6 +346,21 @@ describe('Decorator', () => {
 				assert.deepStrictEqual(
 					[access.base.source,                access.accessor.source],
 					[`[ c : 42 , b : 420 , a : 4200 ]`, `b`],
+				);
+			});
+			it('makes an ASTNodeTypeCall.', () => {
+				/*
+					<TypeCall>
+						<TypeAlias source="Foo"/>
+						<TypeOperation source="Bar | Qux">...</TypeOperation>
+						<TypeAlias source="Diz"/>
+					</TypeCall>
+				*/
+				const call: AST.ASTNodeType = Decorator.decorate(h.compoundTypeFromString(`Foo.<Bar | Qux, Diz>`));
+				assert.ok(call instanceof AST.ASTNodeTypeCall, 'should be instance of ASTNodeTypeCall.');
+				assert.deepStrictEqual(
+					[call.base, ...call.args].map((c) => c.source),
+					[`Foo`, `Bar | Qux`, `Diz`],
 				);
 			});
 		});
@@ -323,6 +383,48 @@ describe('Decorator', () => {
 				assert.throws(() => Decorator.decorate(h.unaryTypeFromString(`float!`)), /not yet supported/);
 			});
 		})
+
+		describe('TypeUnarySymbol ::= TypeUnarySymbol "[" INTEGER? "]"', () => {
+			it('makes an ASTNodeTypeList with null count.', () => {
+				/*
+					<ASTNodeTypeList count=null>
+						<TypeConstant source="int"/>
+					</ASTNodeTypeList>
+				*/
+				const list: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int[]`));
+				assert.ok(list instanceof AST.ASTNodeTypeList);
+				assert.deepStrictEqual(
+					[list.type.source, list.count],
+					[`int`,            null],
+				);
+			});
+			it('makes an ASTNodeTypeList with non-null count.', () => {
+				/*
+					<ASTNodeTypeList count=3n>
+						<TypeConstant source="float"/>
+					</ASTNodeTypeList>
+				*/
+				const list: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`float[3]`));
+				assert.ok(list instanceof AST.ASTNodeTypeList);
+				assert.deepStrictEqual(
+					[list.type.source, list.count],
+					[`float`,          3n],
+				);
+			});
+		});
+
+		describe('TypeUnarySymbol ::= TypeUnarySymbol "{" "}"', () => {
+			it('makes an ASTNodeTypeSet.', () => {
+				/*
+					<ASTNodeTypeSet>
+						<TypeConstant source="bool"/>
+					</ASTNodeTypeSet>
+				*/
+				const set: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`bool{}`));
+				assert.ok(set instanceof AST.ASTNodeTypeSet);
+				assert.deepStrictEqual(set.type.source, `bool`);
+			});
+		});
 
 		describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
@@ -439,7 +541,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('Case ::= Expression "|->" Expression', () => {
+		Dev.supports('literalCollection') && context('Case ::= Expression "->" Expression', () => {
 			it('makes an ASTNodeCase', () => {
 				/*
 					<Case>
@@ -447,7 +549,7 @@ describe('Decorator', () => {
 						<Constant source="1.25"/>
 					</Case>
 				*/
-				const kase: AST.ASTNodeCase = Decorator.decorate(h.caseFromString(`1 + 0.25 |-> 1.25`));
+				const kase: AST.ASTNodeCase = Decorator.decorate(h.caseFromString(`1 + 0.25 -> 1.25`));
 				assert.deepStrictEqual(
 					[kase.antecedent.source, kase.consequent.source],
 					[`1 + 0.25`,             `1.25`],
@@ -533,29 +635,56 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('MappingLiteral ::= "{" ","? Case# ","? "}"', () => {
-			it('makes an ASTNodeMapping.', () => {
+		Dev.supports('literalCollection') && context('MapLiteral ::= "{" ","? Case# ","? "}"', () => {
+			it('makes an ASTNodeMap.', () => {
 				/*
-					<Mapping>
-						<Case source="1 |-> null">...</Case>
-						<Case source="4 |-> false">...</Case>
-						<Case source="7 |-> true">...</Case>
-						<Case source="9 |-> 42.0">...</Case>
-					</Mapping>
+					<Map>
+						<Case source="1 -> null">...</Case>
+						<Case source="4 -> false">...</Case>
+						<Case source="7 -> true">...</Case>
+						<Case source="9 -> 42.0">...</Case>
+					</Map>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.mappingLiteralFromSource(`
+				assert.deepStrictEqual(Decorator.decorate(h.mapLiteralFromSource(`
 					{
-						1 |-> null,
-						4 |-> false,
-						7 |-> true,
-						9 |-> 42.0,
+						1 -> null,
+						4 -> false,
+						7 -> true,
+						9 -> 42.0,
 					};
 				`)).children.map((c) => c.source), [
-					`1 |-> null`,
-					`4 |-> false`,
-					`7 |-> true`,
-					`9 |-> 42.0`,
+					`1 -> null`,
+					`4 -> false`,
+					`7 -> true`,
+					`9 -> 42.0`,
 				]);
+			});
+		});
+
+		describe('FunctionArguments ::= "(" ( ","? Expression# ","? )? ")"', () => {
+			it('makes a Vector<Sequence<SemanticType>, Sequence<SemanticExpression>>.', () => {
+				/*
+					<>
+					</>
+					<>
+						<Operation source="bar || qux">...</Operation>
+						<Variable source="diz"/>
+					</>
+				*/
+				const args: PARSENODE.ParseNodeExpressionCompound = h.compoundExpressionFromSource(`foo.(bar || qux, diz);`);
+				assert_arrayLength(args.children, 2);
+				assert.ok(args.children[1] instanceof PARSENODE.ParseNodeFunctionCall);
+				const sequence: [AST.ASTNodeType[], AST.ASTNodeExpression[]] = Decorator.decorate(args.children[1]);
+				assert.deepStrictEqual(
+					[
+						sequence[0],
+						sequence[1].map((c) => c.source),
+					],
+					[
+						[],
+						[`bar || qux`, `diz`],
+					],
+				);
 			});
 		});
 
@@ -680,14 +809,14 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('literalCollection') && describe('ExpressionCompound ::= ExpressionCompound PropertyAccess', () => {
+		describe('ExpressionCompound ::= ExpressionCompound (PropertyAccess | FunctionCall)', () => {
 			function makeAccess(src: string, kind: ValidAccessOperator = Operator.DOT, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeAccess {
 				const access: AST.ASTNodeExpression = Decorator.decorate(h.compoundExpressionFromSource(src, config));
 				assert.ok(access instanceof AST.ASTNodeAccess);
 				assert.strictEqual(access.kind, kind);
 				return access;
 			}
-			context('normal access.', () => {
+			Dev.supports('literalCollection') && context('normal access.', () => {
 				it('access by index.', () => {
 					/*
 						<Access kind=NORMAL>
@@ -725,17 +854,17 @@ describe('Decorator', () => {
 				it('access by computed expression.', () => {
 					/*
 						<Access kind=NORMAL>
-							<Mapping source="{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}">...</Mapping>
+							<Map source="{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}">...</Map>
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/
 					const access: AST.ASTNodeAccess = makeAccess(`
-						{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}.[0.7 + 0.3];
+						{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}.[0.7 + 0.3];
 					`);
 					assert.ok(access.accessor instanceof AST.ASTNodeExpression);
 					assert.deepStrictEqual(
 						[access.base.source,                            access.accessor.source],
-						[`{ 0.5 * 2 |-> 'one' , 1.4 + 0.6 |-> 'two' }`, `0.7 + 0.3`],
+						[`{ 0.5 * 2 -> 'one' , 1.4 + 0.6 -> 'two' }`, `0.7 + 0.3`],
 					);
 				});
 			});
@@ -767,12 +896,12 @@ describe('Decorator', () => {
 				it('access by computed expression.', () => {
 					/*
 						<Access kind=OPTIONAL>
-							<Mapping source="{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}">...</Mapping>
+							<Map source="{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}">...</Map>
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/
 					makeAccess(`
-						{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}?.[0.7 + 0.3];
+						{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}?.[0.7 + 0.3];
 					`, Operator.OPTDOT);
 				});
 			});
@@ -804,14 +933,31 @@ describe('Decorator', () => {
 				it('access by computed expression.', () => {
 					/*
 						<Access kind=CLAIM>
-							<Mapping source="{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}">...</Mapping>
+							<Map source="{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}">...</Map>
 							<Expression source="0.7 + 0.3">...</Expression>
 						</Access>
 					*/
 					makeAccess(`
-						{0.5 * 2 |-> 'one', 1.4 + 0.6 |-> 'two'}!.[0.7 + 0.3];
+						{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}!.[0.7 + 0.3];
 					`, Operator.CLAIMDOT);
 				});
+			});
+			it('makes an ASTNodeCall.', () => {
+				/*
+					<Call>
+						<Variable source="foo"/>
+						<TypeOperation source="Bar | Qux">...</TypeOperation>
+						<TypeAlias source="Diz"/>
+						<Operation source="bar || qux">...</Operation>
+						<Variable source="diz"/>
+					</Call>
+				*/
+				const call: AST.ASTNodeExpression = Decorator.decorate(h.compoundExpressionFromSource(`foo.<Bar | Qux, Diz>(bar || qux, diz);`));
+				assert.ok(call instanceof AST.ASTNodeCall, 'should be instance of ASTNodeCall.');
+				assert.deepStrictEqual(
+					[call.base, ...call.typeargs, ...call.exprargs].map((c) => c.source),
+					[`foo`, `Bar | Qux`, `Diz`, `bar || qux`, `diz`],
+				);
 			});
 		});
 
@@ -1134,7 +1280,7 @@ describe('Decorator', () => {
 				*/
 				const assn: AST.ASTNodeAssignment = Decorator.decorate(h.assignmentFromSource(`
 					the_answer = the_answer - 40;
-				`)) as AST.ASTNodeAssignment;
+				`));
 				assert.ok(assn.assigned instanceof AST.ASTNodeOperationBinary);
 				assert.ok(assn.assigned.operand0 instanceof AST.ASTNodeVariable);
 				assert.deepStrictEqual(

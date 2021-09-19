@@ -195,6 +195,29 @@ describe('ParserSolid', () => {
 			})
 		})
 
+		specify('TypeCompound ::= TypeCompound (PropertyAccessType | GenericCall)', () => {
+			[
+				`A`,
+				`[A, B]`,
+				`[a: A, b: B]`,
+				`[:A]`,
+				`{A -> B}`,
+				`(A?)`,
+				`(A!)`,
+				`(A[])`,
+				`(A[3])`,
+				`(A{})`,
+				`(A & B)`,
+				`(A | B)`,
+			].flatMap((base) => [
+				`.1`,
+				`.b`,
+				`.<X, Y>`,
+			].map((dot) => `${ base }${ dot }`)).forEach((src) => {
+				assert.doesNotThrow(() => h.compoundTypeFromString(src), src);
+			});
+		});
+
 		describe('TypeUnarySymbol ::= TypeUnarySymbol ("?" | "!")', () => {
 			it('makes a ParseNodeTypeUnarySymbol node.', () => {
 				/*
@@ -339,17 +362,17 @@ describe('ParserSolid', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('Case ::= Expression "|->" Expression', () => {
+		Dev.supports('literalCollection') && describe('Case ::= Expression "->" Expression', () => {
 			it('makes a Case node.', () => {
 				/*
 					<Case>
 						<Expression source="42">...</Expression>
-						<PUNCTUATOR>|-></PUNCTUATOR>
+						<PUNCTUATOR>-></PUNCTUATOR>
 						<Expression source="null || false">...</Expression>
 					</Case>
 				*/
 				assert.deepStrictEqual(
-					h.caseFromString(`42 |-> null || false`).children.map((c) => c.source),
+					h.caseFromString(`42 -> null || false`).children.map((c) => c.source),
 					[`42`, Punctuator.MAPTO, `null || false`],
 				);
 			});
@@ -518,6 +541,28 @@ describe('ParserSolid', () => {
 				)
 			})
 		})
+
+		specify('ExpressionCompound ::= ExpressionCompound (PropertyAccess | FunctionCall)', () => {
+			[
+				`a`,
+				`[a, b]`,
+				`[x= a, y= b]`,
+				`{a -> b}`,
+				`(!a)`,
+				`(?a)`,
+				`(+a)`,
+				`(-a)`,
+				`(a ^ b)`,
+				`(a || b)`,
+			].flatMap((base) => [
+				`.1`,
+				`.x`,
+				`.(x, y)`,
+				`.<X, Y>(x, y)`,
+			].map((dot) => `${ base }${ dot };`)).forEach((src) => {
+				assert.doesNotThrow(() => h.compoundExpressionFromSource(src), src);
+			});
+		});
 
 		context('ExpressionExponential ::=  ExpressionUnarySymbol "^" ExpressionExponential', () => {
 			it('makes a ParseNodeExpressionExponential node.', () => {

@@ -283,8 +283,10 @@ and the “absorption element” of the [union](#union) operation.
 
 - [Tuple](#tuple-type)
 - [Record](#record-type)
+- [List](#list-type)
+- [Hash](#hash-type)
 - [Set](#set-type)
-- [Mapping](#mapping-type)
+- [Map](#map-type)
 
 #### Tuple Type
 A **Tuple Type** contains [`Tuple` objects](./built-ins.md#tuple) and is described by an ordered list of types.
@@ -296,17 +298,29 @@ A **Record Type** contains [`Record` objects](./built-ins.md#record) and is desc
 The objects that any given Record Type contains are `Record` objects whose properties’ types
 match up with the types in the list by name.
 
+#### List Type
+A **List Type** contains [`List` objects](./built-ins.md#list) and is described by a single type,
+representing items.
+The objects that any given List Type contains are `List` objects whose
+items are assignable to the type describing the List Type.
+
+#### Hash Type
+A **Hash Type** contains [`Hash` objects](./built-ins.md#hash) and is described by a single type,
+representing values.
+The objects that any given Hash Type contains are `Hash` objects whose
+values are assignable to the type describing the Hash Type.
+
 #### Set Type
 A **Set Type** contains [`Set` objects](./built-ins.md#set) and is described by a single type,
 representing elements.
 The objects that any given Set Type contains are `Set` objects whose
 elements are assignable to the type describing the Set Type.
 
-#### Mapping Type
-A **Mapping Type** contains [`Mapping` objects](./built-ins.md#mapping) and is described by a pair of two types,
+#### Map Type
+A **Map Type** contains [`Map` objects](./built-ins.md#map) and is described by a pair of two types,
 the first of which represents antecedents and the second of which represents consequents.
-The objects that any given Mapping Type contains are `Mapping` objects whose
-antcedents and consequents are respectively assignable to the types describing the Mapping Type.
+The objects that any given Map Type contains are `Map` objects whose
+antcedents and consequents are respectively assignable to the types describing the Map Type.
 
 
 

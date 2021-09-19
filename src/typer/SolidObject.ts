@@ -13,6 +13,7 @@ import {SolidType} from './SolidType.js';
  * - Int16
  * - Float64
  * - SolidString
+ * - Collection
  */
 export abstract class SolidObject {
 	/** @implements Object */

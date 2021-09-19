@@ -59,12 +59,12 @@ Type! TypeOfUnassessed(SemanticSet set) :=
 
 
 
-Type! TypeOfUnassessed(SemanticMapping mapping) :=
-	1. *Let* `ant_types` be a mapping of `mapping` for each `case` to *Unwrap:* `TypeOf(case.children.0)`.
-	2. *Let* `con_types` be a mapping of `mapping` for each `case` to *Unwrap:* `TypeOf(case.children.1)`.
+Type! TypeOfUnassessed(SemanticMap map) :=
+	1. *Let* `ant_types` be a mapping of `map` for each `case` to *Unwrap:* `TypeOf(case.children.0)`.
+	2. *Let* `con_types` be a mapping of `map` for each `case` to *Unwrap:* `TypeOf(case.children.1)`.
 	3. *Let* `k` be `Union(...ant_types)`.
 	4. *Let* `v` be `Union(...con_types)`.
-	5. *Return:* a new Mapping type whose antecedent types are `k` and whose consequent types are `v`.
+	5. *Return:* a new Map type whose antecedent types are `k` and whose consequent types are `v`.
 ;
 
 
@@ -89,15 +89,21 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 		5. *Assert:* `i` is a instance of `Integer`.
 		6. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)` *and* `i` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `MaybeOptional(access, entry)`.
-		7. *Else:*
+			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access)`.
+		7. *Else If* *UnwrapAffirm:* `Subtype(base_type, List)`:
+			1. *Let* `type` be the union of all item types in `base_type`.
+			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access)`.
+		8. *Else:*
 			1. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
 	8. *If* `accessor` is a SemanticKey:
 		1. *Let* `id` be `accessor.id`.
 		2. *If* *UnwrapAffirm:* `Subtype(base_type, Record)` *and* `id` is a key in `base_type`:
 			1. *Let* `entry` be the item accessed at key `id` in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `MaybeOptional(access, entry)`.
-		3. *Else:*
+			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access)`.
+		3. *Else If* *UnwrapAffirm:* `Subtype(base_type, Hash)`:
+			1. *Let* `type` be the union of all value types in `base_type`.
+			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access)`.
+		4. *Else:*
 			1. *Throw:* a new TypeError04 "Property {{ id }} does not exist on type {{ base_type }}.".
 	9. *Assert:* `accessor` is a SemanticExpression.
 	10. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
@@ -107,44 +113,107 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 			2. *If* `i` is a instance of `Integer`:
 				1. *If* `i` is an index in `base_type`:
 					1. *Let* `entry` be the item accessed at index `i` in `base_type`.
-					2. *Set* `returned` to *UnwrapAffirm:* `MaybeOptional(access, entry)`.
+					2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedStaticType(entry, access)`.
 				2. *Else:*
 					1. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
 		2. *Else If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)`:
-			1. *Let* `type` be the union of all item types in `base_type`.
-			2. *If*: `access.kind` is `OPTIONAL`:
-				1. *Set* `returned` to `Union(type, Null)`.
-			3. *If*: `access.kind` is `CLAIM`:
-				1. *Set* `returned` to `Difference(type, Void)`.
-			4. *Set* `returned` to `type`.
+			1. *Let* `t` be the union of all item types in `base_type`.
+			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access)`.
 		3. *Else:*
 			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
-	12. *If* *UnwrapAffirm:* `Subtype(base_type, Set)`:
+	12. *Else If* *UnwrapAffirm:* `Subtype(base_type, List)`:
+		1. *Let* `t` be the union of all item types in `base_type`.
+		2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)`:
+			1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access)`.
+		2. *Else:*
+			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
+	13. *Else If* *UnwrapAffirm:* `Subtype(base_type, Set)`:
 		1. *Let* `t` be the type of the elements in `base_type`.
 		2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)`:
-			1. *If*: `access.kind` is `OPTIONAL`:
-				1. *Set* `returned` to `Union(t, Null)`.
-			2. *If*: `access.kind` is `CLAIM`:
-				1. *Set* `returned` to `Difference(t, Void)`.
-			3. *Set* `returned` to `t`.
+			1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access)`.
 		3. *Else:*
 			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ t }}.".
-	13. *If* *UnwrapAffirm:* `Subtype(base_type, Mapping)`:
+	14. *Else If* *UnwrapAffirm:* `Subtype(base_type, Map)`:
 		1. *Let* `k` be the type of the antecedents in `base_type`.
 		2. *Let* `v` be the type of the consequents in `base_type`.
 		3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)`:
-			1. *If*: `access.kind` is `OPTIONAL`:
-				1. *Set* `returned` to `Union(v, Null)`.
-			2. *If*: `access.kind` is `CLAIM`:
-				1. *Set* `returned` to `Difference(v, Void)`.
-			3. *Set* `returned` to `v`.
+			1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(v, access)`.
 		4. *Else:*
 			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ k }}.".
-	14. *If* `returned` is not `void`:
+	15. *If* `returned` is not `void`:
 		1. *If* `is_nullish` is `true`:
 			1. *Return:* `Union(returned, Null)`.
 		2. *Return*: `returned`.
-	15. *Throw:* a new TypeError01.
+	16. *Throw:* a new TypeError01.
+;
+
+
+
+Type! TypeOfUnassessed(SemanticCall call) :=
+	1. *Assert:* `call.children.count` is greater than or equal to 1.
+	2. *Let* `base` be `call.children.0`.
+	3. *If* `base` is not a SemanticVariable:
+		1. *Note:* Currently, the only allowed generics are `List.<T>(arg)`, `Hash.<T>(arg)`, `Set.<T>(arg)`, `Map.<K, V>(arg)`.
+		2. *Throw:* a new TypeError05.
+	4. *If* `base.source` is one of "List", "Hash", or "Set":
+		1. *If* `call.children.count` is 2 or 3:
+			1. *If* `call.children.1` is a SemanticType:
+				1. *Let* `genericarg` be *UnwrapAffirm:* `Assess(call.children.1)`.
+				2. *If* `base.source` is "List":
+					1. *Let* `returntype` be a subtype of `List` whose items’ type is `genericarg`.
+				3. *Else If* `base.source` is "Hash":
+					1. *Let* `returntype` be a subtype of `Hash` whose values’ type is `genericarg`.
+				4. *Else If* `base.source` is "Set":
+					1. *Let* `returntype` be a subtype of `Set` whose elements’ type is `genericarg`.
+				5. *If* `call.children.count` is 3:
+					1. *If* `call.children.2` is a SemanticExpression:
+						1. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.2)`.
+						2. *If* `base.source` is "List":
+							1. *If* `argtype` is not a subtype of `returntype`:
+								1. *Throw:* a new TypeError03.
+						3. *Else If* `base.source` is "Hash":
+							1. *If* `argtype` is not a subtype of `returntype`:
+								1. *Throw:* a new TypeError03.
+						4. *Else If* `base.source` is "Set":
+							1. *Let* `listtype` be a subtype of `List` whose items’ type is `genericarg`.
+							2. *If* `argtype` is not a subtype of `listtype`:
+								1. *Throw:* a new TypeError03.
+					2. *Else*:
+						1. *Throw:* a new TypeError06.
+				6. *Return:* `returntype`.
+		2. *Throw:* a new TypeError06.
+	5. *Else If* `base.source` is "Map":
+		1. *If* `call.children.count` is 2 or 3 or 4:
+			1. *If* `call.children.1` is a SemanticType:
+				1. *Let* `antecedenttype` be *UnwrapAffirm:* `Assess(call.children.1)`.
+				2. *If* `call.children.count` is 2:
+					1. *Note:* The call looks like "Map.<K>()".
+					2. *Let* `consequenttype` be `antecedenttype`.
+				3. *Else If* `call.children.count` is 3:
+					1. *If* `call.children.2` is a SemanticType:
+						1. *Note:* The call looks like "Map.<K, V>()".
+						2. *Let* `consequenttype` be *UnwrapAffirm:* `Assess(call.children.2)`.
+					2. *Else:*
+						1. *Assert:* `call.children.2` is a SemanticExpression.
+						2. *Note:* The call looks like "Map.<K>(arg)".
+						3. *Let* `consequenttype` be `antecedenttype`.
+						4. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.2)`.
+				4. *Else:*
+					1. *Assert:* `call.children.count` is 4.
+					2. *If* `call.children.2` is a SemanticType *and* `call.children.3` is a SemanticExpression:
+						1. *Note:* The call looks like "Map.<K, V>(arg)".
+						2. *Let* `consequenttype` be *UnwrapAffirm:* `Assess(call.children.2)`.
+						3. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.3)`.
+					3. *Else:*
+						1. *Throw:* a new TypeError06.
+				5. *Let:* `keyvaluetype` be a subtype of `Tuple` whose items are [`antecedenttype`, `consequenttype`].
+				6. *Let*: `paramtype` be a subtype of `List` whose items’ type is `keyvaluetype`.
+				7. *If*: `argtype` is not a subtype of `paramtype`:
+						1. *Throw:* a new TypeError03.
+				8. *Return:* a subtype of `Map` whose antecedents’ type is `antecedenttype`
+					and whose consequents’ type is `consequenttype`.
+		2. *Throw:* a new TypeError06.
+	6. *Throw* a new SyntaxError.
 ;
 
 

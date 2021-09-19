@@ -26,8 +26,10 @@ import {
 	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
+	SolidTypeList,
+	SolidTypeHash,
 	SolidTypeSet,
-	SolidTypeMapping,
+	SolidTypeMap,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -35,10 +37,14 @@ import {
 	Int16,
 	Float64,
 	SolidString,
+	CollectionIndexed,
+	CollectionKeyed,
 	SolidTuple,
 	SolidRecord,
+	SolidList,
+	SolidHash,
 	SolidSet,
-	SolidMapping,
+	SolidMap,
 } from '../typer/index.js';
 import {
 	Builder,
@@ -54,6 +60,8 @@ import {
 	TypeError02,
 	TypeError03,
 	TypeError04,
+	TypeError05,
+	TypeError06,
 	NanError01,
 	NanError02,
 } from '../error/index.js';
@@ -170,6 +178,29 @@ export abstract class ASTNodeSolid extends ASTNode {
 	typeCheck(validator: Validator): void {
 		return forEachAggregated(this.children, (c) => c.typeCheck(validator));
 	}
+
+	/**
+	 * Type-check an assignment.
+	 * @final
+	 * @param assignee_type the type of the assignee (the variable, bound property, or parameter being reassigned)
+	 * @param assigned_type the type of the expression assigned
+	 * @param validator     a validator
+	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
+	 */
+	protected typeCheckAssignment(
+		assignee_type: SolidType,
+		assigned_type: SolidType,
+		validator:     Validator,
+	): void {
+		const treatIntAsSubtypeOfFloat: boolean = (
+			   validator.config.compilerOptions.intCoercion
+			&& assigned_type.isSubtypeOf(Int16)
+			&& Float64.isSubtypeOf(assignee_type)
+		);
+		if (!assigned_type.isSubtypeOf(assignee_type) && !treatIntAsSubtypeOfFloat) {
+			throw new TypeError03(assignee_type, assigned_type, this);
+		}
+	}
 }
 
 
@@ -247,7 +278,12 @@ export class ASTNodeCase extends ASTNodeSolid {
  * - ASTNodeTypeAlias
  * - ASTNodeTypeTuple
  * - ASTNodeTypeRecord
+ * - ASTNodeTypeList
+ * - ASTNodeTypeHash
+ * - ASTNodeTypeSet
+ * - ASTNodeTypeMap
  * - ASTNodeTypeAccess
+ * - ASTNodeTypeCall
  * - ASTNodeTypeOperation
  */
 export abstract class ASTNodeType extends ASTNodeSolid {
@@ -385,6 +421,75 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 		])));
 	}
 }
+export class ASTNodeTypeList extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeList {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeList);
+		return typ;
+	}
+	constructor (
+		start_node: PARSENODE.ParseNodeTypeUnarySymbol,
+		readonly type:  ASTNodeType,
+		readonly count: bigint | null,
+	) {
+		super(start_node, {count}, [type]);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		const itemstype: SolidType = this.type.assess(validator);
+		return (this.count === null)
+			? new SolidTypeList(itemstype)
+			: SolidTypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype));
+	}
+}
+export class ASTNodeTypeHash extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeHash {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeHash);
+		return typ;
+	}
+	constructor (
+		start_node: PARSENODE.ParseNodeTypeHashLiteral,
+		readonly type: ASTNodeType,
+	) {
+		super(start_node, {}, [type]);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		return new SolidTypeHash(this.type.assess(validator));
+	}
+}
+export class ASTNodeTypeSet extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeSet {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeSet);
+		return typ;
+	}
+	constructor (
+		start_node: PARSENODE.ParseNodeTypeUnarySymbol,
+		readonly type: ASTNodeType,
+	) {
+		super(start_node, {}, [type]);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		return new SolidTypeSet(this.type.assess(validator));
+	}
+}
+export class ASTNodeTypeMap extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeMap {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeMap);
+		return typ;
+	}
+	constructor (
+		start_node: PARSENODE.ParseNodeTypeMapLiteral,
+		readonly antecedenttype: ASTNodeType,
+		readonly consequenttype: ASTNodeType,
+	) {
+		super(start_node, {}, [antecedenttype, consequenttype]);
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		return new SolidTypeMap(this.antecedenttype.assess(validator), this.consequenttype.assess(validator));
+	}
+}
 export class ASTNodeTypeAccess extends ASTNodeType {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeAccess {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
@@ -424,6 +529,65 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, Operator.DOT, this.accessor) :
 				(() => { throw new TypeError04('property', base_type, this.accessor); })()
 			);
+		}
+	}
+}
+export class ASTNodeTypeCall extends ASTNodeType {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeCall {
+		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
+		assert.ok(typ instanceof ASTNodeTypeCall);
+		return typ;
+	}
+	constructor (
+		start_node: PARSENODE.ParseNodeTypeCompound,
+		readonly base: ASTNodeType,
+		readonly args: Readonly<NonemptyArray<ASTNodeType>>,
+	) {
+		super(start_node, {}, [base, ...args]);
+	}
+	override varCheck(validator: Validator): void {
+		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
+		// (`this.base.source` must be `List | Hash | Set | Map`)
+		return forEachAggregated(this.args, (arg) => arg.varCheck(validator));
+	}
+	protected override assess_do(validator: Validator): SolidType {
+		if (!(this.base instanceof ASTNodeTypeAlias)) {
+			throw new TypeError05(this.base.assess(validator), this.base);
+		}
+		return (new Map<string, () => SolidType>([
+			['List', () => (this.countArgs(1n), new SolidTypeList(this.args[0].assess(validator)))],
+			['Hash', () => (this.countArgs(1n), new SolidTypeHash(this.args[0].assess(validator)))],
+			['Set',  () => (this.countArgs(1n), new SolidTypeSet (this.args[0].assess(validator)))],
+			['Map',  () => {
+				this.countArgs([1n, 3n]);
+				const anttype: SolidType = this.args[0].assess(validator);
+				const contype: SolidType = this.args[1]?.assess(validator) || anttype;
+				return new SolidTypeMap(anttype, contype);
+			}],
+		]).get(this.base.source) || (() => {
+			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Map\`.`);
+		}))();
+	}
+	/**
+	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,
+	 * and throw if the number is incorrect.
+	 * The given argument may be a single value or a 2-tuple of values representing a range.
+	 * If a 2-tuple, the first item represents the minimum (inclusive),
+	 * and the second item represents the maximum (exclusive).
+	 * E.g., `countArgs([2n, 5n])` expects 2, 3, or 4 arguments, but not 5.
+	 * @param expected - the number of expected arguments, or a half-open range
+	 * @throws if this call’s number of actual arguments does not satisfy the expected number
+	 */
+	private countArgs(expected: bigint | [bigint, bigint]): void {
+		const actual: bigint = BigInt(this.args.length);
+		if (typeof expected === 'bigint') {
+			expected = [expected, expected + 1n];
+		}
+		if (actual < expected[0]) {
+			throw new TypeError06(actual, expected[0], true, this);
+		}
+		if (expected[1] <= actual) {
+			throw new TypeError06(actual, expected[1] - 1n, true, this);
 		}
 	}
 }
@@ -494,8 +658,9 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
  * - ASTNodeTuple
  * - ASTNodeRecord
  * - ASTNodeSet
- * - ASTNodeMapping
+ * - ASTNodeMap
  * - ASTNodeAccess
+ * - ASTNodeCall
  * - ASTNodeOperation
  */
 export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildable {
@@ -795,26 +960,26 @@ export class ASTNodeSet extends ASTNodeExpression {
 			: new SolidSet(new Set(elements as SolidObject[]));
 	}
 }
-export class ASTNodeMapping extends ASTNodeExpression {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeMapping {
+export class ASTNodeMap extends ASTNodeExpression {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeMap {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert.ok(expression instanceof ASTNodeMapping);
+		assert.ok(expression instanceof ASTNodeMap);
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeMappingLiteral,
+		start_node: PARSENODE.ParseNodeMapLiteral,
 		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, {}, children);
 	}
 	override shouldFloat(_validator: Validator): boolean {
-		throw 'ASTNodeMapping#shouldFloat not yet supported.';
+		throw 'ASTNodeMap#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
-		throw builder && 'ASTNodeMapping#build_do not yet supported.';
+		throw builder && 'ASTNodeMap#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return new SolidTypeMapping(
+		return new SolidTypeMap(
 			SolidType.unionAll(this.children.map((c) => c.antecedent.type(validator))),
 			SolidType.unionAll(this.children.map((c) => c.consequent.type(validator))),
 		);
@@ -826,7 +991,7 @@ export class ASTNodeMapping extends ASTNodeExpression {
 		]));
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null
-			: new SolidMapping(cases as ReadonlyMap<SolidObject, SolidObject>);
+			: new SolidMap(cases as ReadonlyMap<SolidObject, SolidObject>);
 	}
 }
 export class ASTNodeAccess extends ASTNodeExpression {
@@ -836,7 +1001,6 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		return expression;
 	}
 	private readonly optional: boolean = this.kind === Operator.OPTDOT;
-	// private readonly claim:    boolean = this.kind === Operator.CLAIMDOT;
 	constructor (
 		start_node: PARSENODE.ParseNodeExpressionCompound,
 		readonly kind:     ValidAccessOperator,
@@ -863,26 +1027,44 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		);
 	}
 	private type_do_do(base_type: SolidType, validator: Validator): SolidType {
-		function updateDynamicType(type: SolidType, access_kind: ValidAccessOperator): SolidType {
-			return new Map([
-				[Operator.OPTDOT,   () => type.union(SolidNull)],
-				[Operator.CLAIMDOT, () => type.subtract(SolidType.VOID)],
-			]).get(access_kind)?.() || type;
+		function updateAccessedDynamicType(type: SolidType, access_kind: ValidAccessOperator): SolidType {
+			return (
+				(access_kind === Operator.OPTDOT)   ? type.union(SolidNull) :
+				(access_kind === Operator.CLAIMDOT) ? type.subtract(SolidType.VOID) :
+				type
+			);
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			const accessor_type:  SolidTypeConstant = this.accessor.value.type(validator) as SolidTypeConstant;
 			const accessor_value: Int16             = accessor_type.value as Int16;
-			return (
-				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? base_type.value.toType().get(accessor_value, this.kind, this.accessor) :
-				(base_type instanceof SolidTypeTuple)                                             ? base_type               .get(accessor_value, this.kind, this.accessor) :
-				(() => { throw new TypeError04('index', base_type, this.accessor); })()
-			);
+			if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
+				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple)
+					? base_type.value.toType()
+					: base_type as SolidTypeTuple;
+				return base_type_tuple.get(accessor_value, this.kind, this.accessor);
+			}
+			else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidList || base_type instanceof SolidTypeList) {
+				const base_type_list: SolidTypeList = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidList)
+					? base_type.value.toType()
+					: base_type as SolidTypeList;
+				return updateAccessedDynamicType(base_type_list.types, this.kind);
+			} else {
+				throw new TypeError04('index', base_type, this.accessor);
+			}
 		} else if (this.accessor instanceof ASTNodeKey) {
-			return (
-				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, this.kind, this.accessor) :
-				(base_type instanceof SolidTypeRecord)                                             ? base_type               .get(this.accessor.id, this.kind, this.accessor) :
-				(() => { throw new TypeError04('property', base_type, this.accessor); })()
-			);
+			if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord || base_type instanceof SolidTypeRecord) {
+				const base_type_record: SolidTypeRecord = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord)
+					? base_type.value.toType()
+					: base_type as SolidTypeRecord;
+				return base_type_record.get(this.accessor.id, this.kind, this.accessor);
+			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidHash || base_type instanceof SolidTypeHash) {
+				const base_type_hash: SolidTypeHash = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidHash)
+					? base_type.value.toType()
+					: base_type as SolidTypeHash;
+				return updateAccessedDynamicType(base_type_hash.types, this.kind);
+			} else {
+				throw new TypeError04('property', base_type, this.accessor);
+			}
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
 			const accessor_type: SolidType = this.accessor.type(validator);
 			function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: SolidType): never {
@@ -891,26 +1073,33 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
 				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple)
 					? base_type.value.toType()
-					: (base_type as SolidTypeTuple);
+					: base_type as SolidTypeTuple;
 				return (accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16)
 					? base_type_tuple.get(accessor_type.value, this.kind, this.accessor)
 					: (accessor_type.isSubtypeOf(Int16))
-						? updateDynamicType(base_type_tuple.itemTypes(), this.kind)
+						? updateAccessedDynamicType(base_type_tuple.itemTypes(), this.kind)
 						: throwWrongSubtypeError(this.accessor, Int16);
+			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidList || base_type instanceof SolidTypeList) {
+				const base_type_list: SolidTypeList = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidList)
+					? base_type.value.toType()
+					: base_type as SolidTypeList;
+				return (accessor_type.isSubtypeOf(Int16))
+					? updateAccessedDynamicType(base_type_list.types, this.kind)
+					: throwWrongSubtypeError(this.accessor, Int16);
 			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidSet || base_type instanceof SolidTypeSet) {
 				const base_type_set: SolidTypeSet = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidSet)
 					? base_type.value.toType()
-					: (base_type as SolidTypeSet);
+					: base_type as SolidTypeSet;
 				return (accessor_type.isSubtypeOf(base_type_set.types))
-					? updateDynamicType(base_type_set.types, this.kind)
+					? updateAccessedDynamicType(base_type_set.types, this.kind)
 					: throwWrongSubtypeError(this.accessor, base_type_set.types);
-			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping || base_type instanceof SolidTypeMapping) {
-				const base_type_mapping: SolidTypeMapping = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMapping)
+			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMap || base_type instanceof SolidTypeMap) {
+				const base_type_map: SolidTypeMap = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMap)
 					? base_type.value.toType()
-					: (base_type as SolidTypeMapping);
-				return (accessor_type.isSubtypeOf(base_type_mapping.antecedenttypes))
-					? updateDynamicType(base_type_mapping.consequenttypes, this.kind)
-					: throwWrongSubtypeError(this.accessor, base_type_mapping.antecedenttypes);
+					: base_type as SolidTypeMap;
+				return (accessor_type.isSubtypeOf(base_type_map.antecedenttypes))
+					? updateAccessedDynamicType(base_type_map.consequenttypes, this.kind)
+					: throwWrongSubtypeError(this.accessor, base_type_map.antecedenttypes);
 			} else {
 				throw new TypeError01(this);
 			}
@@ -925,21 +1114,131 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as SolidTuple).get(this.accessor.value.assess(validator) as Int16, this.optional, this.accessor);
+			return (base_value as CollectionIndexed).get(this.accessor.value.assess(validator) as Int16, this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
-			return (base_value as SolidRecord).get(this.accessor.id, this.optional, this.accessor);
+			return (base_value as CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
 			const accessor_value: SolidObject | null = this.accessor.assess(validator);
 			if (accessor_value === null) {
 				return null;
 			}
-			if (base_value instanceof SolidTuple) {
-				return (base_value as SolidTuple).get(accessor_value as Int16, this.optional, this.accessor);
-			} else if (base_value instanceof SolidSet) {
-				return (base_value as SolidSet).get(accessor_value, this.optional, this.accessor);
-			} else /* (base_value instanceof SolidMapping) */ {
-				return (base_value as SolidMapping).get(accessor_value, this.optional, this.accessor);
-			}
+			return (
+				(base_value instanceof CollectionIndexed) ?    (base_value as CollectionIndexed).get(accessor_value as Int16, this.optional, this.accessor) :
+				(base_value instanceof SolidSet)          ?    (base_value as SolidSet)         .get(accessor_value,          this.optional, this.accessor) :
+				/* (base_value instanceof SolidMap)       ? */ (base_value as SolidMap)         .get(accessor_value,          this.optional, this.accessor)
+			);
+		}
+	}
+}
+export class ASTNodeCall extends ASTNodeExpression {
+	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeCall {
+		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
+		assert.ok(expression instanceof ASTNodeCall);
+		return expression;
+	}
+	constructor (
+		start_node: PARSENODE.ParseNodeExpressionCompound,
+		readonly base: ASTNodeExpression,
+		readonly typeargs: readonly ASTNodeType[],
+		readonly exprargs: readonly ASTNodeExpression[],
+	) {
+		super(start_node, {}, [base, ...typeargs, ...exprargs]);
+	}
+	override varCheck(validator: Validator): void {
+		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
+		// (`this.base.source` must be `List | Hash | Set | Map`)
+		return forEachAggregated([
+			...this.typeargs,
+			...this.exprargs,
+		], (arg) => arg.varCheck(validator));
+	}
+	override shouldFloat(_validator: Validator): boolean {
+		return false;
+	}
+	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
+		throw builder && to_float && '`ASTNodeCall#build_do` not yet supported.'
+	}
+	protected override type_do(validator: Validator): SolidType {
+		if (!(this.base instanceof ASTNodeVariable)) {
+			throw new TypeError05(this.base.type(validator), this.base);
+		}
+		return (new Map<string, () => SolidType>([
+			['List', () => {
+				this.countArgs(1n, [0n, 2n]);
+				const returntype: SolidType = new SolidTypeList(this.typeargs[0].assess(validator));
+				this.exprargs.length && this.typeCheckAssignment(returntype, this.exprargs[0].type(validator), validator);
+				return returntype;
+			}],
+			['Hash', () => {
+				this.countArgs(1n, [0n, 2n]);
+				const returntype: SolidType = new SolidTypeHash(this.typeargs[0].assess(validator));
+				this.exprargs.length && this.typeCheckAssignment(returntype, this.exprargs[0].type(validator), validator);
+				return returntype;
+			}],
+			['Set', () => {
+				this.countArgs(1n, [0n, 2n]);
+				const eltype:     SolidType = this.typeargs[0].assess(validator);
+				const returntype: SolidType = new SolidTypeSet(eltype);
+				this.exprargs.length && this.typeCheckAssignment(new SolidTypeList(eltype), this.exprargs[0].type(validator), validator);
+				return returntype;
+			}],
+			['Map', () => {
+				this.countArgs([1n, 3n], [0n, 2n]);
+				const anttype:    SolidType = this.typeargs[0].assess(validator);
+				const contype:    SolidType = this.typeargs[1]?.assess(validator) || anttype;
+				const returntype: SolidType = new SolidTypeMap(anttype, contype);
+				this.exprargs.length && this.typeCheckAssignment(new SolidTypeList(SolidTypeTuple.fromTypes([anttype, contype])), this.exprargs[0].type(validator), validator);
+				return returntype;
+			}],
+		]).get(this.base.source) || (() => {
+			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Map\`.`);
+		}))();
+	}
+	protected override assess_do(validator: Validator): SolidObject | null {
+		const argvalue: SolidObject | null | undefined = (this.exprargs.length) // TODO #assess should not return native `null` if it cannot assess
+			? this.exprargs[0].assess(validator)
+			: undefined;
+		if (argvalue === null) {
+			return null;
+		}
+		return new Map<string, (argument: SolidObject | undefined) => SolidObject | null>([
+			['List', (tuple)  => (tuple === undefined)  ? new SolidList() : new SolidList((tuple as SolidTuple).items)],
+			['Hash', (record) => (record === undefined) ? new SolidHash() : new SolidHash((record as SolidRecord).properties)],
+			['Set',  (tuple)  => (tuple === undefined)  ? new SolidSet()  : new SolidSet(new Set<SolidObject>((tuple as SolidTuple).items))],
+			['Map',  (tuple)  => (tuple === undefined)  ? new SolidMap()  : new SolidMap(new Map<SolidObject, SolidObject>((tuple as SolidTuple).items.map((pair) => (pair as SolidTuple).items as [SolidObject, SolidObject])))],
+		]).get(this.base.source)!(argvalue);
+	}
+	/**
+	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,
+	 * and throw if the number is incorrect.
+	 * Each given argument may be a single value or a 2-tuple of values representing a range.
+	 * If a 2-tuple, the first item represents the minimum (inclusive),
+	 * and the second item represents the maximum (exclusive).
+	 * E.g., `countArgs([2n, 5n])` expects 2, 3, or 4 arguments, but not 5.
+	 * @param expected_generic  - the number of expected generic arguments, or a half-open range
+	 * @param expected_function - the number of expected function arguments, or a half-open range
+	 * @throws if this call’s number of actual arguments does not satisfy the expected number
+	 */
+	private countArgs(expected_generic: bigint | [bigint, bigint], expected_function: bigint | [bigint, bigint]): void {
+		const actual_generic:  bigint = BigInt(this.typeargs.length);
+		const actual_function: bigint = BigInt(this.exprargs.length);
+		if (typeof expected_generic === 'bigint') {
+			expected_generic = [expected_generic, expected_generic + 1n];
+		}
+		if (typeof expected_function === 'bigint') {
+			expected_function = [expected_function, expected_function + 1n];
+		}
+		if (actual_generic < expected_generic[0]) {
+			throw new TypeError06(actual_generic, expected_generic[0], true, this);
+		}
+		if (expected_generic[1] <= actual_generic) {
+			throw new TypeError06(actual_generic, expected_generic[1] - 1n, true, this);
+		}
+		if (actual_function < expected_function[0]) {
+			throw new TypeError06(actual_function, expected_function[0], false, this);
+		}
+		if (expected_function[1] <= actual_function) {
+			throw new TypeError06(actual_function, expected_function[1] - 1n, false, this);
 		}
 	}
 }
@@ -1196,8 +1495,10 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		)
 	}
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
-		// If `a` and `b` are of disjoint numeric types, then `a is b` will always return `false`.
-		// If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
+		/*
+		 * If `a` and `b` are of disjoint numeric types, then `a === b` will always return `false`.
+		 * If `a` and `b` are of disjoint numeric types, then `a == b` will return `false` when `intCoercion` is off.
+		 */
 		if (bothNumeric(t0, t1)) {
 			if (oneFloats(t0, t1) && (this.operator === Operator.ID || !int_coercion)) {
 				return SolidBoolean.FALSETYPE
@@ -1347,24 +1648,6 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 		return goal.children[0];
 	}
 	abstract build(builder: Builder): Instruction;
-	/**
-	 * Type-check an assignment.
-	 * @final
-	 * @param assignee_type the type of the assignee (the variable or bound property being reassigned)
-	 * @param assigned_type the type of the expression assigned
-	 * @param validator     a validator
-	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
-	 */
-	protected typeCheckAssignment(assignee_type: SolidType, assigned_type: SolidType, validator: Validator): void {
-		const treatIntAsSubtypeOfFloat: boolean = (
-			   validator.config.compilerOptions.intCoercion
-			&& assigned_type.isSubtypeOf(Int16)
-			&& Float64.isSubtypeOf(assignee_type)
-		);
-		if (!assigned_type.isSubtypeOf(assignee_type) && !treatIntAsSubtypeOfFloat) {
-			throw new TypeError03(this, assignee_type, assigned_type);
-		}
-	}
 }
 export class ASTNodeStatementExpression extends ASTNodeStatement {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
