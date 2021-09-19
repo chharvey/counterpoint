@@ -117,28 +117,34 @@ Type! TypeOfUnassessed(SemanticAccess access) :=
 				2. *Else:*
 					1. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
 		2. *Else If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)`:
-			1. *Let* `type` be the union of all item types in `base_type`.
-			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(type, access)`.
+			1. *Let* `t` be the union of all item types in `base_type`.
+			2. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access)`.
 		3. *Else:*
 			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
-	12. *If* *UnwrapAffirm:* `Subtype(base_type, Set)`:
+	12. *Else If* *UnwrapAffirm:* `Subtype(base_type, List)`:
+		1. *Let* `t` be the union of all item types in `base_type`.
+		2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)`:
+			1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access)`.
+		2. *Else:*
+			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ Integer }}.".
+	13. *Else If* *UnwrapAffirm:* `Subtype(base_type, Set)`:
 		1. *Let* `t` be the type of the elements in `base_type`.
 		2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)`:
 			1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(t, access)`.
 		3. *Else:*
 			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ t }}.".
-	13. *If* *UnwrapAffirm:* `Subtype(base_type, Map)`:
+	14. *Else If* *UnwrapAffirm:* `Subtype(base_type, Map)`:
 		1. *Let* `k` be the type of the antecedents in `base_type`.
 		2. *Let* `v` be the type of the consequents in `base_type`.
 		3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)`:
 			1. *Set* `returned` to *UnwrapAffirm:* `UpdateAccessedDynamicType(v, access)`.
 		4. *Else:*
 			1. *Throw:* a new TypeError02 "Type {{ accessor_type }} is not a subtype of type {{ k }}.".
-	14. *If* `returned` is not `void`:
+	15. *If* `returned` is not `void`:
 		1. *If* `is_nullish` is `true`:
 			1. *Return:* `Union(returned, Null)`.
 		2. *Return*: `returned`.
-	15. *Throw:* a new TypeError01.
+	16. *Throw:* a new TypeError01.
 ;
 
 

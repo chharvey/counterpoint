@@ -1072,23 +1072,30 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
 				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple)
 					? base_type.value.toType()
-					: (base_type as SolidTypeTuple);
+					: base_type as SolidTypeTuple;
 				return (accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16)
 					? base_type_tuple.get(accessor_type.value, this.kind, this.accessor)
 					: (accessor_type.isSubtypeOf(Int16))
 						? updateAccessedDynamicType(base_type_tuple.itemTypes(), this.kind)
 						: throwWrongSubtypeError(this.accessor, Int16);
+			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidList || base_type instanceof SolidTypeList) {
+				const base_type_list: SolidTypeList = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidList)
+					? base_type.value.toType()
+					: base_type as SolidTypeList;
+				return (accessor_type.isSubtypeOf(Int16))
+					? updateAccessedDynamicType(base_type_list.types, this.kind)
+					: throwWrongSubtypeError(this.accessor, Int16);
 			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidSet || base_type instanceof SolidTypeSet) {
 				const base_type_set: SolidTypeSet = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidSet)
 					? base_type.value.toType()
-					: (base_type as SolidTypeSet);
+					: base_type as SolidTypeSet;
 				return (accessor_type.isSubtypeOf(base_type_set.types))
 					? updateAccessedDynamicType(base_type_set.types, this.kind)
 					: throwWrongSubtypeError(this.accessor, base_type_set.types);
 			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMap || base_type instanceof SolidTypeMap) {
 				const base_type_map: SolidTypeMap = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMap)
 					? base_type.value.toType()
-					: (base_type as SolidTypeMap);
+					: base_type as SolidTypeMap;
 				return (accessor_type.isSubtypeOf(base_type_map.antecedenttypes))
 					? updateAccessedDynamicType(base_type_map.consequenttypes, this.kind)
 					: throwWrongSubtypeError(this.accessor, base_type_map.antecedenttypes);
