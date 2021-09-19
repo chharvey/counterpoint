@@ -35,22 +35,6 @@ import {
 
 
 
-export class ASTNodeTypeSet extends ASTNodeType {
-	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeSet {
-		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert.ok(typ instanceof ASTNodeTypeSet);
-		return typ;
-	}
-	constructor (
-		start_node: PARSENODE.ParseNodeTypeUnarySymbol,
-		readonly type: ASTNodeType,
-	) {
-		super(start_node, {}, [type]);
-	}
-	protected override assess_do(validator: Validator): SolidType {
-		return new SolidTypeSet(this.type.assess(validator));
-	}
-}
 export class ASTNodeTypeMap extends ASTNodeType {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTypeMap {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
