@@ -14,6 +14,7 @@ export * from './ASTNodeTypeRecord.js';
 export * from './ASTNodeTypeList.js';
 export * from './ASTNodeTypeHash.js';
 export * from './ASTNodeTypeSet.js';
+export * from './ASTNodeTypeMap.js';
 export * from './ASTNodeTypeAccess.js';
 export * from './ASTNodeTypeOperationUnary.js';
 export * from './ASTNodeTypeOperationBinary.js';
