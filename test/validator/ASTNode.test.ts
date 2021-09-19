@@ -2031,12 +2031,15 @@ describe('ASTNodeSolid', () => {
 							[`!'hello';`, SolidBoolean.FALSE],
 						]))
 						Dev.supports('literalCollection') && assessOperations(new Map([
-							[`![];`,         SolidBoolean.FALSE],
-							[`![42];`,       SolidBoolean.FALSE],
-							[`![a= 42];`,    SolidBoolean.FALSE],
-							[`!{};`,         SolidBoolean.FALSE],
-							[`!{42};`,       SolidBoolean.FALSE],
-							[`!{41 -> 42};`, SolidBoolean.FALSE],
+							[`![];`,                  SolidBoolean.FALSE],
+							[`![42];`,                SolidBoolean.FALSE],
+							[`![a= 42];`,             SolidBoolean.FALSE],
+							[`!List.<int>([]);`,      SolidBoolean.FALSE],
+							[`!List.<int>([42]);`,    SolidBoolean.FALSE],
+							[`!Hash.<int>([a= 42]);`, SolidBoolean.FALSE],
+							[`!{};`,                  SolidBoolean.FALSE],
+							[`!{42};`,                SolidBoolean.FALSE],
+							[`!{41 -> 42};`,          SolidBoolean.FALSE],
 						]));
 					})
 					specify('[operator=EMP]', () => {
@@ -2055,12 +2058,15 @@ describe('ASTNodeSolid', () => {
 							[`?'hello';`, SolidBoolean.FALSE],
 						]))
 						Dev.supports('literalCollection') && assessOperations(new Map([
-							[`?[];`,         SolidBoolean.TRUE],
-							[`?[42];`,       SolidBoolean.FALSE],
-							[`?[a= 42];`,    SolidBoolean.FALSE],
-							[`?{};`,         SolidBoolean.TRUE],
-							[`?{42};`,       SolidBoolean.FALSE],
-							[`?{41 -> 42};`, SolidBoolean.FALSE],
+							[`?[];`,                  SolidBoolean.TRUE],
+							[`?[42];`,                SolidBoolean.FALSE],
+							[`?[a= 42];`,             SolidBoolean.FALSE],
+							[`?List.<int>([]);`,      SolidBoolean.TRUE],
+							[`?List.<int>([42]);`,    SolidBoolean.FALSE],
+							[`?Hash.<int>([a= 42]);`, SolidBoolean.FALSE],
+							[`?{};`,                  SolidBoolean.TRUE],
+							[`?{42};`,                SolidBoolean.FALSE],
+							[`?{41 -> 42};`,          SolidBoolean.FALSE],
 						]));
 					})
 				});
@@ -2179,57 +2185,69 @@ describe('ASTNodeSolid', () => {
 							let a: obj = [];
 							let b: obj = [42];
 							let c: obj = [x= 42];
-							let d: obj = {};
-							let e: obj = {42};
-							let f: obj = {41 -> 42};
+							let d: obj = List.<int>([]);
+							let e: obj = List.<int>([42]);
+							let f: obj = Hash.<int>([x= 42]);
+							let g: obj = {};
+							let h: obj = {42};
+							let i: obj = {41 -> 42};
 
 							let bb: obj = [[42]];
 							let cc: obj = [x= [42]];
-							let ee: obj = {[42]};
-							let ff: obj = {[41] -> [42]};
+							let hh: obj = {[42]};
+							let ii: obj = {[41] -> [42]};
 
 							a !== [];
 							b !== [42];
 							c !== [x= 42];
-							d !== {};
-							e !== {42};
-							f !== {41 -> 42};
+							d !== List.<int>([]);
+							e !== List.<int>([42]);
+							f !== Hash.<int>([x= 42]);
+							g !== {};
+							h !== {42};
+							i !== {41 -> 42};
 							a === a;
 							b === b;
 							c === c;
 							d === d;
 							e === e;
 							f === f;
+							g === g;
+							h === h;
+							i === i;
 							a == [];
 							b == [42];
 							c == [x= 42];
-							d == {};
-							e == {42};
-							f == {41 -> 42};
+							d == List.<int>([]);
+							e == List.<int>([42]);
+							f == Hash.<int>([x= 42]);
+							g == {};
+							h == {42};
+							i == {41 -> 42};
 
 							bb !== [[42]];
 							cc !== [x= [42]];
-							ee !== {[42]};
-							ff !== {[41] -> [42]};
+							hh !== {[42]};
+							ii !== {[41] -> [42]};
 							bb === bb;
 							cc === cc;
-							ee === ee;
-							ff === ff;
+							hh === hh;
+							ii === ii;
 							bb == [[42]];
 							cc == [x= [42]];
-							ee == {[42]};
-							ff == {[41] -> [42]};
+							hh == {[42]};
+							ii == {[41] -> [42]};
 
 							b != [42, 43];
 							c != [x= 43];
 							c != [y= 42];
-							f != {41 -> 43};
-							f != {43 -> 42};
+							i != {41 -> 43};
+							i != {43 -> 42};
 						`);
 						const validator: Validator = new Validator();
 						goal.varCheck(validator);
 						goal.typeCheck(validator);
-						goal.children.slice(10).forEach((stmt) => {
+						goal.children.slice(13).forEach((stmt) => {
 							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.assess(validator), SolidBoolean.TRUE, stmt.source);
 						});
 					})();

@@ -353,7 +353,7 @@ Boolean! Assess(SemanticOperation[operator: EMP] expr) :=
 		1. *Return:* `true`.
 	6. *If* `operand` is an instance of `String` *and* `operand` contains 0 codepoints:
 		1. *Return:* `true`.
-	7. *If* `operand` is an instance of `Tuple` or `Record` or `Map` *and* `operand.count` is 0:
+	7. *If* `operand` is an instance of `Tuple` or `Record` or `List` or `Hash` or `Set` or `Map` *and* `operand.count` is 0:
 		1. *Return:* `true`.
 	8. *Return:* `false`.
 ;
