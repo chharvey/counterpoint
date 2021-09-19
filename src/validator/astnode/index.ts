@@ -12,6 +12,7 @@ export * from './ASTNodeTypeAlias.js';
 export * from './ASTNodeTypeTuple.js';
 export * from './ASTNodeTypeRecord.js';
 export * from './ASTNodeTypeList.js';
+export * from './ASTNodeTypeHash.js';
 export * from './ASTNodeTypeAccess.js';
 export * from './ASTNodeTypeOperationUnary.js';
 export * from './ASTNodeTypeOperationBinary.js';
