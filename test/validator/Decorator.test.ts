@@ -1200,11 +1200,11 @@ describe('Decorator', () => {
 				const decl: AST.ASTNodeDeclarationType = Decorator.decorate(h.typeDeclarationFromSource(`
 					type T  =  int | float;
 				`));
-				assert.strictEqual(decl.variable.id, 256n);
+				assert.strictEqual(decl.assignee.id, 256n);
 				assert.ok(decl.value instanceof AST.ASTNodeTypeOperationBinary);
 				assert.strictEqual(decl.value.operator, Operator.OR);
 				assert.deepStrictEqual(
-					[decl.variable.source, decl.value.source],
+					[decl.assignee.source, decl.value.source],
 					[`T`,                  `int | float`],
 				);
 			});
