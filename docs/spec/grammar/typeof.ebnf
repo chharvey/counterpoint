@@ -158,7 +158,7 @@ Type! TypeOfUnassessed(SemanticCall call) :=
 	4. *If* `base.source` is one of "List", "Hash", or "Set":
 		1. *If* `call.children.count` is 2 or 3:
 			1. *If* `call.children.1` is a SemanticType:
-				1. *Let* `genericarg` be *UnwrapAffirm:* `Assess(call.children.1)`.
+				1. *Let* `genericarg` be *UnwrapAffirm:* `TypeValueOf(call.children.1)`.
 				2. *If* `base.source` is "List":
 					1. *Let* `returntype` be a subtype of `List` whose items’ type is `genericarg`.
 				3. *Else If* `base.source` is "Hash":
@@ -185,14 +185,14 @@ Type! TypeOfUnassessed(SemanticCall call) :=
 	5. *Else If* `base.source` is "Map":
 		1. *If* `call.children.count` is 2 or 3 or 4:
 			1. *If* `call.children.1` is a SemanticType:
-				1. *Let* `antecedenttype` be *UnwrapAffirm:* `Assess(call.children.1)`.
+				1. *Let* `antecedenttype` be *UnwrapAffirm:* `TypeValueOf(call.children.1)`.
 				2. *If* `call.children.count` is 2:
 					1. *Note:* The call looks like "Map.<K>()".
 					2. *Let* `consequenttype` be `antecedenttype`.
 				3. *Else If* `call.children.count` is 3:
 					1. *If* `call.children.2` is a SemanticType:
 						1. *Note:* The call looks like "Map.<K, V>()".
-						2. *Let* `consequenttype` be *UnwrapAffirm:* `Assess(call.children.2)`.
+						2. *Let* `consequenttype` be *UnwrapAffirm:* `TypeValueOf(call.children.2)`.
 					2. *Else:*
 						1. *Assert:* `call.children.2` is a SemanticExpression.
 						2. *Note:* The call looks like "Map.<K>(arg)".
@@ -202,7 +202,7 @@ Type! TypeOfUnassessed(SemanticCall call) :=
 					1. *Assert:* `call.children.count` is 4.
 					2. *If* `call.children.2` is a SemanticType *and* `call.children.3` is a SemanticExpression:
 						1. *Note:* The call looks like "Map.<K, V>(arg)".
-						2. *Let* `consequenttype` be *UnwrapAffirm:* `Assess(call.children.2)`.
+						2. *Let* `consequenttype` be *UnwrapAffirm:* `TypeValueOf(call.children.2)`.
 						3. *Let* `argtype` be *Unwrap:* `TypeOf(call.children.3)`.
 					3. *Else:*
 						1. *Throw:* a new TypeError06.
