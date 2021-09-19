@@ -9,19 +9,20 @@ Type Assess(SemanticTypeAlias var) :=
 		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
 		2. *Assert:* `symbol.value` is a Solid Language Type.
 		3. *Return:* `symbol.value`.
-	2. *Return:* `Unknown`.
+	2. *Return:* `Never`.
 ;
 
 
-Type Assess(SemanticTypeEmptyCollection listtype) :=
-	1. *Return:* `Intersection(Tuple, Record)`.
-;
-
-
-
-Type Assess(SemanticTypeList listtype) :=
-	1. *Let* `data` be a mapping of `listtype` for each `type` to *UnwrapAffirm:* `Assess(type)`.
-	2. *Return:* a subtype of `Tuple` whose items are `data`.
+Type Assess(SemanticTypeTuple tupletype) :=
+	1. *Let* `data` be a new Sequence.
+	2. *For each* `itemtype` in `tupletype`:
+		1. *Assert:* `itemtype.children.count` is 1.
+		2. *Let* `typedatum` be a new Structure [
+			type:     *UnwrapAffirm:* `Assess(itemtype.children.0)`,
+			optional: `itemtype.optional`,
+		].
+		3. Push `typedatum` to `data`.
+	3. *Return:* a subtype of `Tuple` whose items are `data`.
 ;
 
 
@@ -29,11 +30,110 @@ Type Assess(SemanticTypeList listtype) :=
 Type Assess(SemanticTypeRecord recordtype) :=
 	1. *Let* `data` be a new Structure.
 	2. *For each* `propertytype` in `recordtype`:
-		1. Set `data` to [
-			...data,
-			`propertytype.children.0.id`= *UnwrapAffirm:* `Assess(propertytype.children.1)`,
+		1. *Assert:* `propertytype.children.count` is 2.
+		2. *Let* `typedatum` be a new Structure [
+			type:     *UnwrapAffirm:* `Assess(propertytype.children.1)`,
+			optional: `propertytype.optional`,
 		].
+		3. Set the property `propertytype.children.0.id` on `data` to the value `typedatum`.
 	3. *Return:* a subtype of `Record` whose properties are `data`.
+;
+
+
+
+Type Assess(SemanticTypeList listtype) :=
+	1. *Assert:* `listtype.children.count` is 1.
+	2. *Let* `itemtype` be *UnwrapAffirm:* `Assess(listtype.children.0)`.
+	3. *If* `listtype.count` is a RealNumber:
+		1. *Let* `data` be a new Sequence.
+		2. *Let* `i` be 0.
+		3. *While* `i` is less than `listtype.count`:
+			1. Push `itemtype` to `data`.
+			2. Increment `i`.
+		4. *Return:* a subtype of `Tuple` whose items are `data`.
+	4. *Return:* a subtype of `List` whose items’ type is `itemtype`.
+;
+
+
+
+Type Assess(SemanticTypeHash hashtype) :=
+	1. *Assert:* `hashtype.children.count` is 1.
+	2. *Let* `valuetype` be *UnwrapAffirm:* `Assess(hashtype.children.0)`.
+	3. *Return:* a subtype of `Hash` whose values’ type is `valuetype`.
+;
+
+
+
+Type Assess(SemanticTypeSet settype) :=
+	1. *Assert:* `settype.children.count` is 1.
+	2. *Let* `elementtype` be *UnwrapAffirm:* `Assess(settype.children.0)`.
+	3. *Return:* a subtype of `Set` whose elements’ type is `elementtype`.
+;
+
+
+
+Type Assess(SemanticTypeMap maptype) :=
+	1. *Assert:* `maptype.children.count` is 1.
+	2. *Let* `antecedenttype` be *UnwrapAffirm:* `Assess(maptype.children.0)`.
+	2. *Let* `consequenttype` be *UnwrapAffirm:* `Assess(maptype.children.1)`.
+	3. *Return:* a subtype of `Map` whose antecedents’ type is `antecedenttype`
+		and whose consequents’ type is `consequenttype`.
+;
+
+
+
+Type Assess(SemanticTypeAccess access) :=
+	1. *Assert:* `access.children.count` is 2.
+	2. *Let* `base` be `access.children.0`.
+	3. *Let* `accessor` be `access.children.1`.
+	4. *Let* `base_type` be *Unwrap:* `CombineTuplesOrRecords(Assess(base))`.
+	5. *If* `accessor` is a SemanticIndexType:
+		1. *Assert:* `accessor.children.count` is 1.
+		2. *Let* `accessor_type` be *Unwrap:* `Assess(accessor.children.0)`.
+		3. *Assert:* `accessor_type` is a TypeConstant.
+		4. *Let* `i` be `accessor_type.value`.
+		5. *Assert:* `i` is a instance of `Integer`.
+		6. *If* *UnwrapAffirm:* `Subtype(base_type, Tuple)` *and* `i` is an index in `base_type`:
+			1. *Let* `entry` be the item accessed at index `i` in `base_type`.
+			2. *Return:* *UnwrapAffirm:* `MaybeOptional(entry)`.
+		7. *Throw:* a new TypeError04 "Index {{ i }} does not exist on type {{ base_type }}.".
+	6. *Assert:* `accessor` is a SemanticKey.
+	7. *Let* `id` be `accessor.id`.
+	8. *If* *UnwrapAffirm:* `Subtype(base_type, Record)` *and* `id` is a key in `base_type`:
+		1. *Let* `entry` be the item accessed at key `id` in `base_type`.
+		2. *Return:* *UnwrapAffirm:* `MaybeOptional(entry)`.
+	9. *Throw:* a new TypeError04 "Property {{ id }} does not exist on type {{ base_type }}.".
+;
+
+
+
+Type Assess(SemanticTypeCall call) :=
+	1. *Assert:* `call.children.count` is greater than or equal to 2.
+	2. *Let* `base` be `call.children.0`.
+	3. *If* `base` is not a SemanticTypeAlias:
+		1. *Note:* Currently, the only allowed generic calls are `List.<T>`, `Hash.<T>`, `Set.<T>`, `Map.<K, V>`.
+		2. *Throw:* a new TypeError.
+	4. *If* `base.source` is one of "List", "Hash", or "Set":
+		1. *If* `call.children.count` is 2:
+			1. *Let* `genericarg` be *UnwrapAffirm:* `Assess(call.children.1)`.
+			2. *If* `base.source` is "List":
+				1. *Return:* a subtype of `List` whose items’ type is `genericarg`.
+			3. *If* `base.source` is "Hash":
+				1. *Return:* a subtype of `Hash` whose values’ type is `genericarg`.
+			4. *If* `base.source` is "Set":
+				1. *Return:* a subtype of `Set` whose elements’ type is `genericarg`.
+		2. *Throw:* a new TypeError.
+	5. *Else If* `base.source` is "Map":
+		1. *Let* `antecedenttype` be *UnwrapAffirm:* `Assess(call.children.1)`.
+		2. *If* `call.children.count` is 2:
+			1. *Let* `consequenttype` be `antecedenttype`.
+		3. *Else If* `call.children.count` is 3:
+			1. *Let* `consequenttype` be *UnwrapAffirm:* `Assess(call.children.2)`.
+		4. *Else*:
+			1. *Throw:* a new TypeError.
+		5. *Return:* a subtype of `Map` whose antecedents’ type is `antecedenttype`
+			and whose consequents’ type is `consequenttype`.
+	6. *Throw* a new SyntaxError.
 ;
 
 
@@ -42,6 +142,10 @@ Type Assess(SemanticTypeOperation[operator: ORNULL] oper) :=
 	1. *Assert:* `oper.children.count` is 1.
 	2. *Let* `child` be *UnwrapAffirm:* `Assess(oper.children.0)`.
 	3. *Return:* `Union(child, Null)`.
+;
+
+Type Assess(SemanticTypeOperation[operator: OREXCP] oper) :=
+	1. *Throw:* new TypeError "Operator not yet supported.".
 ;
 
 Type Assess(SemanticTypeOperation[operator: AND] oper) :=
@@ -85,21 +189,9 @@ String! Assess(SemanticTemplate tpl) :=
 
 
 
-Object! Assess(SemanticEmptyCollection coll) :=
-	1. *Throw.* // TODO
-;
-
-
-
-Tuple! Assess(SemanticList list) :=
-	1. *Let* `data` be a mapping of `list` for each `it` to `Assess(it)`.
-	2. *For index* `i` in `data`:
-		1. *If* `data[i]` is a normal completion:
-			1. *Set* `data[i]` to `data[i].value`.
-	3. *If* `data` contains a CompletionStructure `err`:
-		1. *Assert:* `err` is an abrupt completion.
-		2. *Return:* `err`.
-	4. *Return:* a new Tuple containing the items in the sequence `data`.
+Tuple! Assess(SemanticTuple tuple) :=
+	1. *Let* `data` be a mapping of `tuple` for each `it` to *Unwrap:* `Assess(it)`.
+	2. *Return:* a new Tuple containing the items in the sequence `data`.
 ;
 
 
@@ -107,36 +199,137 @@ Tuple! Assess(SemanticList list) :=
 Record! Assess(SemanticRecord record) :=
 	1. *Let* `data` be a new Structure.
 	2. *For each* `property` in `record`:
-		1. Set `data` to [
+		1. Set `data` to a new Structure [
 			...data,
-			`property.children.0.id`= `Assess(property.children.1)`,
+			`property.children.0.id`= *Unwrap:* `Assess(property.children.1)`,
 		].
-	3. *For key* `k` in `data`:
-		1. *If* `data[k]` is a normal completion:
-			1. *Set* `data[k]` to `data[k].value`.
-	4. *If* `data` contains a property whose value is a CompletionStructure `err`:
-		1. *Assert:* `err` is an abrupt completion.
-		2. *Return:* `err`.
-	5. *Return:* a new Record containing the properties in the structure `data`.
+	3. *Return:* a new Record containing the properties in the structure `data`.
 ;
 
 
 
-Mapping! Assess(SemanticMapping mapping) :=
-	1. *Let* `data` be a mapping of `mapping` for each `case` to a new Sequence [
-		`Assess(case.children.0)`,
-		`Assess(case.children.1)`,
+Set! Assess(SemanticSet set) :=
+	1. *Let* `data` be a mapping of `set` for each `el` to *Unwrap:* `Assess(el)`.
+	2. *Return:* a new Set containing the items in the sequence `data`.
+;
+
+
+
+Map! Assess(SemanticMap map) :=
+	1. *Let* `data` be a mapping of `map` for each `case` to a new Sequence [
+		*Unwrap:* `Assess(case.children.0)`,
+		*Unwrap:* `Assess(case.children.1)`,
 	].
 	2. *For each* `it` in `data`:
 		1. *Assert:* `it.count` is 2.
-		2. *If* `it.0` is a normal completion:
-			1. *Set* `it.0` to `it.0.value`.
-		3. *If* `it.1` is a normal completion:
-			1. *Set* `it.1` to `it.1.value`.
-	3. *If* `data` contains a 2-tuple that contains a CompletionStructure `err`:
-		1. *Assert:* `err` is an abrupt completion.
-		2. *Return:* `err`.
-	4. *Return:* a new Mapping containing the pairs in the sequence `data`.
+	3. *Return:* a new Map containing the pairs in the sequence `data`.
+;
+
+
+
+Object! Assess(SemanticAccess access) :=
+	1. *Assert:* `access.children.count` is 2.
+	2. *Let* `base` be `access.children.0`.
+	3. *Let* `accessor` be `access.children.1`.
+	4. *Let* `base_value` be *Unwrap:* `Assess(base)`.
+	5. *If* `access.kind` is `OPTIONAL` *and* *UnwrapAffirm:* `Equal(base_value, null)`:
+		1. *Return:* `base_value`.
+	6. *If* `accessor` is a SemanticIndex:
+		1. *Assert:* `accessor.children.count` is 1.
+		2. *Let* `accessor_value` be *Unwrap:* `Assess(accessor.children.0)`.
+		3. *Assert:* `accessor_value` is an instance of `Integer`.
+		4. *If* `base_value` is an instance of `Tuple`:
+			1. *Assert:* `accessor_value` is an index in `base_value`.
+			2. *Return:* the item accessed at index `accessor_value` in `base_value`.
+		5. *Else:*
+			1. *Assert:* `base_value` is an instance of `List`.
+			2. *If* `accessor_value` is an index in `base_value`:
+				1. *Return:* the item accessed at index `accessor_value` in `base_value`.
+			3. *If* `access.kind` is `OPTIONAL`:
+				1. *Return:* `null`.
+	7. *Else If* `accessor` is a SemanticKey:
+		1. *Let* `id` be `accessor.id`.
+		2. *If* `base_value` is an instance of `Record`:
+			1. *Assert:* `id` is a key in `base_value`.
+			2. *Return:* the value accessed at key `id` in `base_value`.
+		3. *Else:*
+			1. *Assert:* `base_value` is an instance of `Hash`.
+			2. *If* `id` is a key in `base_value`:
+				1. *Return:* the value accessed at key `id` in `base_value`.
+			3. *If* `access.kind` is `OPTIONAL`:
+				1. *Return:* `null`.
+	8. *Else:*
+		1. *Assert:* `accessor` is a SemanticExpression.
+		2. *Let* `accessor_value` be *Unwrap:* `Assess(accessor)`.
+		3. *If* `base_value` is an instance of `Tuple`:
+			1. *Assert:* `accessor_value` is an instance of `Integer` *and* `accessor_value` is an index in `base_value`.
+			2. *Return:* the item accessed at index `accessor_value` in `base_value`.
+		4. *Else If* `base_value` is an instance of `List`:
+			1. *If* `accessor_value` is an index in `base_value`:
+				1. *Return:* the item accessed at index `accessor_value` in `base_value`.
+			2. *If* `access.kind` is `OPTIONAL`:
+				1. *Return:* `null`.
+		5. *Else If* `base_value` is an instance of `Set`:
+			1. Find an element `e` in `base_value` such that `Identical(e, accessor_value)`.
+			2. *If* `e` exists:
+				1. *Return:* `e`.
+			3. *If*: `access.kind` is `OPTIONAL`:
+				1. *Return:* `null`.
+		6. *Else:*
+			1. *Assert*: `base_value` is an instance of `Map`.
+			2. Find an antecedent `k` in `base_value` such that `Identical(k, accessor_value)`.
+			3. *If* `k` exists:
+				1. *Return:* the consequent accessed at antecedent `k` in `base_value`.
+			4. *If*: `access.kind` is `OPTIONAL`:
+				1. *Return:* `null`.
+	9. *Throw:* a new VoidError.
+;
+
+
+
+Object! Assess(SemanticCall call) :=
+	1. *Assert:* `call.children.count` is greater than or equal to 1.
+	2. *Let* `base` be `call.children.0`.
+	3. *If* `base.source` is "List":
+		1. *Assert:* `call.children.count` is 2 or 3.
+		2. *If* `call.children.count` is 2:
+			1. *Note:* The call looks like "List.<T>()".
+			2. *Return:* a new empty List.
+		3. *Note:* The call looks like "List.<T>(arg)".
+		4. *Let* `tuple` be *Unwrap:* `Assess(call.children.2)`.
+		5. *Return:* a new List containing the items in `tuple`.
+	5. *Else If* `base.source` is "Hash":
+		1. *Assert:* `call.children.count` is 2 or 3.
+		2. *If* `call.children.count` is 2:
+			1. *Note:* The call looks like "Hash.<T>()".
+			2. *Return:* a new empty Hash.
+		3. *Note:* The call looks like "Hash.<T>(arg)".
+		4. *Let* `record` be *Unwrap:* `Assess(call.children.2)`.
+		5. *Return:* a new Hash containing the properties in `record`.
+	6. *Else If* `base.source` is "Set":
+		1. *Assert:* `call.children.count` is 2 or 3.
+		2. *If* `call.children.count` is 2:
+			1. *Note:* The call looks like "Set.<T>()".
+			2. *Return:* a new empty Set.
+		3. *Note:* The call looks like "Set.<T>(arg)".
+		4. *Let* `tuple` be *Unwrap:* `Assess(call.children.2)`.
+		5. *Return:* a new Set containing the items in `tuple`.
+	7. *Assert:* `base.source` is "Map".
+	8. *Assert:* `call.children.count` is 2 or 3 or 4.
+	9. *If* `call.children.count` is 2:
+		1. *Note:* The call looks like "Map.<K>()".
+		2. *Return:* a new empty Map.
+	10. *Else If* `call.children.count` is 3:
+		1. *If* `call.children.2` is a SemanticType:
+			1. *Note:* The call looks like "Map.<K, V>()".
+			2. *Return:* a new empty Map.
+		2. *Else:*
+			1. *Note:* The call looks like "Map.<K>(arg)".
+			2. *Let* `tuple` be *Unwrap:* `Assess(call.children.2)`.
+			3. *Return:* a new Map containing the pairs in `tuple`.
+	11. *Note:* The call looks like "Map.<K, V>(arg)".
+	12. *Let* `tuple` be *Unwrap:* `Assess(call.children.3)`.
+	13. *Return:* a new Map containing the pairs in `tuple`.
 ;
 
 
@@ -160,7 +353,9 @@ Boolean! Assess(SemanticOperation[operator: EMP] expr) :=
 		1. *Return:* `true`.
 	6. *If* `operand` is an instance of `String` *and* `operand` contains 0 codepoints:
 		1. *Return:* `true`.
-	7. *Return:* `false`.
+	7. *If* `operand` is an instance of `Tuple` or `Record` or `List` or `Hash` or `Set` or `Map` *and* `operand.count` is 0:
+		1. *Return:* `true`.
+	8. *Return:* `false`.
 ;
 
 Number! Assess(SemanticOperation[operator: NEG] expr) :=

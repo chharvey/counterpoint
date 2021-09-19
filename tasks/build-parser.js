@@ -1,13 +1,14 @@
-const {
+import {
 	generate,
-} = require('@chharvey/parser');
-const xjs = require('extrajs');
-const fs = require('fs');
-const path = require('path');
+} from '@chharvey/parser';
+import * as xjs from 'extrajs';
+import * as fs from 'fs';
+import * as path from 'path';
 
+const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 (async () => {
-	const grammar_solid = fs.promises.readFile(path.join(__dirname, '../docs/spec/grammar/syntax.ebnf'), 'utf8');
-	return fs.promises.writeFile(path.join(__dirname, '../src/parser/Parser.auto.ts'), xjs.String.dedent`
+	const grammar_solid = fs.promises.readFile(path.join(DIRNAME, '../docs/spec/grammar/syntax.ebnf'), 'utf8');
+	return fs.promises.writeFile(path.join(DIRNAME, '../src/parser/Parser.auto.ts'), xjs.String.dedent`
 		/*----------------------------------------------------------------/
 		| WARNING: Do not manually update this file!
 		| It is auto-generated via <@chharvey/parser>.
@@ -16,10 +17,20 @@ const path = require('path');
 		import {
 			SolidConfig,
 			CONFIG_DEFAULT,
-		} from '../core/';
+		} from './package.js';
 		${ generate(await grammar_solid, 'Solid')
-			.replace(`constructor (source: string)`, `constructor (source: string, config: SolidConfig = CONFIG_DEFAULT)`)
-			.replace(`new LexerSolid(source)`, `new LexerSolid(source, config)`) }
+			.replace(`import {LEXER} from './Lexer';`, `import {LexerSolid, LEXER} from './Lexer.js';`)
+			.replace(`import * as TERMINAL from './Terminal';`, `import * as TERMINAL from './terminal/index.js';`)
+			.replace(/export const PARSER: Parser<ParseNodeGoal> = new Parser<ParseNodeGoal>\((.*)\);/s, xjs.String.dedent`
+				export class ParserSolid extends Parser<ParseNodeGoal> {
+					constructor (config: SolidConfig = CONFIG_DEFAULT) {
+						super($1);
+					}
+				}
+				export const PARSER: ParserSolid = new ParserSolid();
+			`)
+			.replace(`LEXER,`, `(config === CONFIG_DEFAULT) ? LEXER : new LexerSolid(config),`)
+		}
 	`);
 })().catch((err) => {
 	console.error(err);

@@ -1,4 +1,20 @@
-type DevToggle = [boolean, (keyof typeof Dev['TOGGLES'])[]?];
+type DevToggleKey =
+	// v0.4.0
+		| 'literalCollection'
+		| 'literalString-lex'
+		| 'literalString-cook'
+		| 'stringConstant-assess'
+		| 'literalTemplate-lex'
+		| 'literalTemplate-cook'
+		| 'stringTemplate-parse'
+		| 'stringTemplate-decorate'
+		| 'stringTemplate-assess'
+		| 'voidType'
+		| 'optionalEntries'
+		| 'optionalAccess'
+		| 'claimAccess'
+;
+type DevToggleVal = [boolean, DevToggleKey[]?];
 
 
 
@@ -19,20 +35,8 @@ export class Dev {
 	 * and those features should become fully enabled.
 	 * Released features may have an optional language feature option defined in {@link SolidConfig}.
 	 */
-	private static readonly TOGGLES: {
-		// v0.4.0
-		readonly literalCollection:         DevToggle,
-		readonly 'literalString-lex':       DevToggle,
-		readonly 'literalTemplate-lex':     DevToggle,
-		readonly 'literalString-cook':      DevToggle,
-		readonly 'literalTemplate-cook':    DevToggle,
-		readonly 'stringConstant-assess':   DevToggle,
-		readonly 'stringTemplate-parse':    DevToggle,
-		readonly 'stringTemplate-decorate': DevToggle,
-		readonly 'stringTemplate-assess':   DevToggle,
-	} = {
-		// v0.4.0
-		literalCollection:         [false],
+	private static readonly TOGGLES: {[K in DevToggleKey]: DevToggleVal} = {
+		literalCollection:         [true],
 		'literalString-lex':       [true],
 		'literalString-cook':      [true, ['literalString-lex']],
 		'stringConstant-assess':   [true, ['literalString-cook']],
@@ -41,6 +45,10 @@ export class Dev {
 		'stringTemplate-parse':    [true, ['literalTemplate-cook']],
 		'stringTemplate-decorate': [true, ['stringTemplate-parse']],
 		'stringTemplate-assess':   [true, ['stringTemplate-decorate']],
+		voidType:                  [true],
+		optionalEntries:           [true, ['literalCollection', 'voidType']],
+		optionalAccess:            [true, ['literalCollection', 'optionalEntries']],
+		claimAccess:               [true, ['literalCollection', 'optionalEntries']],
 	}
 
 	/**
@@ -48,8 +56,8 @@ export class Dev {
 	 * @param feature the feature to test
 	 * @return is this project’s version number in the range of the feature?
 	 */
-	static supports(feature: keyof typeof Dev.TOGGLES): boolean {
-		const toggle: DevToggle = Dev.TOGGLES[feature];
+	static supports(feature: DevToggleKey): boolean {
+		const toggle: DevToggleVal = Dev.TOGGLES[feature];
 		return toggle[0] && Dev.supportsAll(...toggle[1] || []);
 	}
 	/**
@@ -58,7 +66,7 @@ export class Dev {
 	 * @see Dev.supports
 	 * @return are any of the given features supported?
 	 */
-	static supportsAny(...features: (keyof typeof Dev.TOGGLES)[]): boolean {
+	static supportsAny(...features: DevToggleKey[]): boolean {
 		return features.some((feature) => Dev.supports(feature))
 	}
 	/**
@@ -67,7 +75,7 @@ export class Dev {
 	 * @see Dev.supports
 	 * @return are all of the given features supported?
 	 */
-	static supportsAll(...features: (keyof typeof Dev.TOGGLES)[]): boolean {
+	static supportsAll(...features: DevToggleKey[]): boolean {
 		return features.every((feature) => Dev.supports(feature))
 	}
 }

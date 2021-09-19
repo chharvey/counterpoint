@@ -1,33 +1,27 @@
 import * as fs from 'fs'
 import * as path from 'path'
-
-import wabt from 'wabt' // need `tsconfig.json#compilerOptions.esModuleInterop = true`
-
+import wabt from 'wabt'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../core/';
-import {
-	ParserSolid as Parser,
-} from '../parser/';
-import {
-	Decorator,
 	Validator,
 	AST,
-} from '../validator/'
+} from './package.js';
 
 
+
+const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 
 /**
  * The Builder generates assembly code.
  */
 export class Builder {
 	static readonly IMPORTS: readonly string[] = [
-		fs.readFileSync(path.join(__dirname, '../../src/builder/not.wat'), 'utf8'),
-		fs.readFileSync(path.join(__dirname, '../../src/builder/emp.wat'), 'utf8'),
-		fs.readFileSync(path.join(__dirname, '../../src/builder/neg.wat'), 'utf8'),
-		fs.readFileSync(path.join(__dirname, '../../src/builder/exp.wat'), 'utf8'),
-		fs.readFileSync(path.join(__dirname, '../../src/builder/fid.wat'), 'utf8'),
+		fs.readFileSync(path.join(DIRNAME, '../../src/builder/not.wat'), 'utf8'),
+		fs.readFileSync(path.join(DIRNAME, '../../src/builder/emp.wat'), 'utf8'),
+		fs.readFileSync(path.join(DIRNAME, '../../src/builder/neg.wat'), 'utf8'),
+		fs.readFileSync(path.join(DIRNAME, '../../src/builder/exp.wat'), 'utf8'),
+		fs.readFileSync(path.join(DIRNAME, '../../src/builder/fid.wat'), 'utf8'),
 	]
 
 
@@ -50,7 +44,7 @@ export class Builder {
 		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
 		this.validator = new Validator(this.config);
-		this.ast_goal  = Decorator.decorate(new Parser(source, config).parse());
+		this.ast_goal  = AST.ASTNodeGoal.fromSource(source, config);
 		this.ast_goal.varCheck (this.validator); // assert does not throw
 		this.ast_goal.typeCheck(this.validator); // assert does not throw
 	}

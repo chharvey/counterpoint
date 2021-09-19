@@ -1,15 +1,18 @@
-import type {SolidType} from './SolidType';
-import {SolidObject} from './SolidObject';
+import type {SolidType} from './SolidType.js';
+import {SolidTypeConstant} from './SolidTypeConstant.js';
+import {SolidTypeTuple} from './SolidTypeTuple.js';
+import type {SolidObject} from './SolidObject.js';
+import {CollectionIndexed} from './CollectionIndexed.js';
 
 
 
-export class SolidTuple<T extends SolidObject> extends SolidObject {
+export class SolidTuple<T extends SolidObject = SolidObject> extends CollectionIndexed<T> {
+	static override toString(): string {
+		return 'Tuple';
+	}
 	static override values: SolidType['values'] = new Set([new SolidTuple()]);
 
-
-	constructor (
-		readonly items: readonly T[] = [],
-	) {
-		super();
+	override toType(): SolidTypeTuple {
+		return SolidTypeTuple.fromTypes(this.items.map((it) => new SolidTypeConstant(it)));
 	}
 }

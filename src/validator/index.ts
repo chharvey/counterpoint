@@ -1,11 +1,8 @@
-export {Validator} from './Validator';
-export {Decorator} from './Decorator';
+export * from './Operator.js';
 
-export {ASTNodeSolid} from './ASTNode';
-export * as AST from './ASTNode';
+export * from './astnode/index.js';
 
-export {
-	SymbolStructure,
-	SymbolStructureType,
-	SymbolStructureVar,
-} from './SymbolStructure';
+export * from './Decorator.js';
+export * from './Validator.js';
+
+export * from './SymbolStructure.js';

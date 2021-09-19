@@ -3,7 +3,13 @@ SemanticKey[id: RealNumber]
 
 
 
-SemanticPropertyType
+SemanticIndexType
+	::= SemanticTypeConstant;
+
+SemanticItemType[optional: Boolean]
+	::= SemanticType;
+
+SemanticPropertyType[optional: Boolean]
 	::= SemanticKey SemanticType;
 
 
@@ -22,9 +28,14 @@ SemanticCase
 SemanticType =:=
 	| SemanticTypeConstant
 	| SemanticTypeAlias
-	| SemanticTypeEmptyCollection
-	| SemanticTypeList
+	| SemanticTypeTuple
 	| SemanticTypeRecord
+	| SemanticTypeList
+	| SemanticTypeHash
+	| SemanticTypeSet
+	| SemanticTypeMap
+	| SemanticTypeAccess
+	| SemanticTypeCall
 	| SemanticTypeOperation
 ;
 
@@ -36,11 +47,23 @@ SemanticTypeConstant[value: Type]
 SemanticTypeAlias[id: RealNumber]
 	::= ();
 
-SemanticTypeEmptyCollection ::= ();
-SemanticTypeList            ::= SemanticType+;
-SemanticTypeRecord          ::= SemanticPropertyType+;
+SemanticTypeTuple  ::= SemanticItemType*;
+SemanticTypeRecord ::= SemanticPropertyType+;
+SemanticTypeHash   ::= SemanticType;
+SemanticTypeSet    ::= SemanticType;
+SemanticTypeMap    ::= SemanticType SemanticType;
+SemanticTypeList[count: RealNumber | Void]
+	::= SemanticType; // Note: a SemanticTypeList with a non-void `count` represents a Tuple Type
+
+SemanticTypeAccess
+	::= SemanticType (SemanticIndexType | SemanticKey);
+
+SemanticTypeCall
+	::= SemanticType SemanticType+;
 
 SemanticTypeOperation[operator: ORNULL]
+	::= SemanticType;
+SemanticTypeOperation[operator: OREXCP]
 	::= SemanticType;
 SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
@@ -51,10 +74,11 @@ SemanticExpression =:=
 	| SemanticConstant
 	| SemanticVariable
 	| SemanticTemplate
-	| SemanticEmptyCollection
-	| SemanticList
+	| SemanticTuple
 	| SemanticRecord
-	| SemanticMapping
+	| SemanticSet
+	| SemanticMap
+	| SemanticCall
 	| SemanticAccess
 	| SemanticOperation
 ;
@@ -73,13 +97,16 @@ SemanticTemplate
 SemanticTemplatePartial
 	::= (SemanticConstant SemanticExpression?)+;
 
-SemanticEmptyCollection ::= ();
-SemanticList            ::= SemanticExpression+;
-SemanticRecord          ::= SemanticProperty+;
-SemanticMapping         ::= SemanticCase+;
+SemanticTuple  ::= SemanticExpression*;
+SemanticRecord ::= SemanticProperty+;
+SemanticSet    ::= SemanticExpression*;
+SemanticMap    ::= SemanticCase+;
 
-SemanticAccess
+SemanticAccess[kind: NORMAL | OPTIONAL | CLAIM]
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
+
+SemanticCall
+	::= SemanticExpression SemanticType* SemanticExpression*;
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;

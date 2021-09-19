@@ -29,6 +29,7 @@ PrimitiveLiteral ::=
 
 
 TypeKeyword ::=
+	| "void"
 	| "bool"
 	| "int"
 	| "float"
@@ -36,25 +37,45 @@ TypeKeyword ::=
 	| "obj"
 ;
 
-PropertyType
-	::= Word ":" Type;
+EntryType<Named, Optional>
+	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type;
 
-TypeTupleLiteral  ::= "[" ","? Type#         ","? "]";
-TypeRecordLiteral ::= "[" ","? PropertyType# ","? "]";
+ItemsType ::=
+	|  EntryType<-Named><-Optional># ","?
+	| (EntryType<-Named><-Optional># ",")? EntryType<-Named><+Optional># ","?
+;
+
+PropertiesType
+	::= EntryType<+Named><-Optional, +Optional># ","?;
+
+TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
+TypeRecordLiteral ::= "["  ","? PropertiesType "]";
+TypeHashLiteral   ::= "[" ":" Type             "]";
+TypeMapLiteral    ::= "{" Type "->" Type       "}";
+GenericArguments  ::= "<"  ","? Type# ","?     ">";
 
 TypeUnit ::=
-	| "[" "]"
 	| IDENTIFIER
 	| PrimitiveLiteral
 	| TypeKeyword
 	| TypeTupleLiteral
 	| TypeRecordLiteral
+	| TypeHashLiteral
+	| TypeMapLiteral
 	| "(" Type ")"
 ;
 
-TypeUnarySymbol ::=
+PropertyAccessType ::= "." (INTEGER | Word);
+GenericCall        ::= "." GenericArguments;
+
+TypeCompound ::=
 	| TypeUnit
-	| TypeUnarySymbol "!"
+	| TypeCompound (PropertyAccessType | GenericCall)
+;
+
+TypeUnarySymbol ::=
+	| TypeCompound
+	| TypeUnarySymbol ("?" | "!" | "[" INTEGER? "]" | "{" "}")
 ;
 
 TypeIntersection ::= (TypeIntersection "&")? TypeUnarySymbol;
@@ -71,30 +92,32 @@ StringTemplate ::=
 	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
 ;
 
-Property ::= Word       "="   Expression;
-Case     ::= Expression "|->" Expression;
+Property ::= Word       "="  Expression;
+Case     ::= Expression "->" Expression;
 
-ListLiteral    ::= "[" ","? Expression# ","? "]";
-RecordLiteral  ::= "[" ","? Property#   ","? "]";
-MappingLiteral ::= "[" ","? Case#       ","? "]";
+TupleLiteral      ::= "[" ( ","? Expression# ","? )? "]";
+RecordLiteral     ::= "["   ","? Property#   ","?    "]";
+SetLiteral        ::= "{" ( ","? Expression# ","? )? "}";
+MapLiteral        ::= "{"   ","? Case#       ","?    "}";
+FunctionArguments ::= "(" ( ","? Expression# ","? )? ")";
 
 ExpressionUnit ::=
-	| "[" "]"
 	| IDENTIFIER
 	| PrimitiveLiteral
 	| StringTemplate
-	| ListLiteral
+	| TupleLiteral
 	| RecordLiteral
-	| MappingLiteral
+	| SetLiteral
+	| MapLiteral
 	| "(" Expression ")"
 ;
 
-PropertyAccess
-	::= "." (INTEGER | Word | "[" Expression "]");
+PropertyAccess ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression "]");
+FunctionCall   ::= "."                 GenericArguments? FunctionArguments;
 
 ExpressionCompound ::=
 	| ExpressionUnit
-	| ExpressionCompound PropertyAccess
+	| ExpressionCompound (PropertyAccess | FunctionCall)
 ;
 
 ExpressionUnarySymbol ::=

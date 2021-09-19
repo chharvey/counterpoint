@@ -1,15 +1,18 @@
-import type {SolidType} from './SolidType';
-import {SolidObject} from './SolidObject';
+import type {SolidType} from './SolidType.js';
+import {SolidTypeConstant} from './SolidTypeConstant.js';
+import {SolidTypeRecord} from './SolidTypeRecord.js';
+import type {SolidObject} from './SolidObject.js';
+import {CollectionKeyed} from './CollectionKeyed.js';
 
 
 
-export class SolidRecord<T extends SolidObject> extends SolidObject {
+export class SolidRecord<T extends SolidObject = SolidObject> extends CollectionKeyed<T> {
+	static override toString(): string {
+		return 'Record';
+	}
 	static override values: SolidType['values'] = new Set([new SolidRecord()]);
 
-
-	constructor (
-		readonly properties: ReadonlyMap<bigint, T> = new Map(),
-	) {
-		super();
+	override toType(): SolidTypeRecord {
+		return SolidTypeRecord.fromTypes(new Map([...this.properties].map(([key, value]) => [key, new SolidTypeConstant(value)])));
 	}
 }

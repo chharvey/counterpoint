@@ -1,6 +1,13 @@
-import * as xjs from 'extrajs'
-
-import type {SolidObject} from './SolidObject';
+import {
+	Set_hasEq,
+	Set_differenceEq,
+} from './package.js';
+import {
+	SolidTypeIntersection,
+	SolidTypeUnion,
+	SolidObject,
+} from './index.js';
+import {solidObjectsIdentical} from './utils-private.js';
 
 
 
@@ -11,30 +18,53 @@ import type {SolidObject} from './SolidObject';
  * - SolidTypeUnion
  * - SolidTypeInterface
  * - SolidTypeNever
+ * - SolidTypeVoid
  * - SolidTypeConstant
  * - SolidTypeUnknown
  * - SolidTypeTuple
  * - SolidTypeRecord
+ * - SolidTypeList
+ * - SolidTypeHash
+ * - SolidTypeSet
+ * - SolidTypeMap
  */
 export abstract class SolidType {
 	/** The Bottom Type, containing no values. */
 	static get NEVER(): SolidTypeNever { return SolidTypeNever.INSTANCE }
 	/** The Top Type, containing all values. */
 	static get UNKNOWN(): SolidTypeUnknown { return SolidTypeUnknown.INSTANCE }
+	/** The Void Type, representing a completion but not a value. */
+	static get VOID(): SolidTypeVoid { return SolidTypeVoid.INSTANCE; }
+	/**
+	 * Intersect all the given types.
+	 * @param types the types to intersect
+	 * @returns the intersection
+	 */
+	static intersectAll(types: SolidType[]): SolidType {
+		return types.reduce((a, b) => a.intersect(b));
+	}
+	/**
+	 * Unions all the given types.
+	 * @param types the types to union
+	 * @returns the union
+	 */
+	static unionAll(types: SolidType[]): SolidType {
+		return types.reduce((a, b) => a.union(b));
+	};
 
 
 	/**
 	 * Whether this type has no values assignable to it,
-	 * i.e., it is equal to the Bottom Type (`never`).
+	 * i.e., it is equal to the type `never`.
 	 * Used internally for special cases of computations.
 	 */
-	readonly isEmpty: boolean = this.values.size === 0
+	readonly isBottomType: boolean = this.values.size === 0;
 	/**
 	 * Whether this type has all values assignable to it,
-	 * i.e., it is equal to the Top Type (`unknown`).
+	 * i.e., it is equal to the type `unknown`.
 	 * Used internally for special cases of computations.
 	 */
-	readonly isUniverse: boolean = false // this.equals(SolidType.UNKNOWN)
+	readonly isTopType: boolean = false;
 
 	/**
 	 * Construct a new SolidType object.
@@ -52,7 +82,7 @@ export abstract class SolidType {
 	 * @returns Is `v` assignable to this type?
 	 */
 	includes(v: SolidObject): boolean {
-		return this.values.has(v)
+		return Set_hasEq(this.values, v, solidObjectsIdentical);
 	}
 	/**
 	 * Return the type intersection of this type with another.
@@ -62,12 +92,11 @@ export abstract class SolidType {
 	 */
 	intersect(t: SolidType): SolidType {
 		/** 1-5 | `T  & never   == never` */
-		if (t.isEmpty) { return SolidType.NEVER; }
-		if (this.isEmpty) { return this }
+		if (t.isBottomType) { return SolidType.NEVER; }
+		if (this.isBottomType) { return this }
 		/** 1-6 | `T  & unknown == T` */
-		if (t.isUniverse) { return this }
-		if (this.isUniverse) { return t }
-
+		if (t.isTopType) { return this; }
+		if (this.isTopType) { return t; }
 		/** 3-3 | `A <: B  <->  A  & B == A` */
 		if (this.isSubtypeOf(t)) { return this }
 		if (t.isSubtypeOf(this)) { return t }
@@ -75,6 +104,9 @@ export abstract class SolidType {
 		return this.intersect_do(t)
 	}
 	intersect_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
+		/** 2-2 | `A \| B == B \| A` */
+		if (t instanceof SolidTypeUnion) { return t.intersect(this); }
+
 		return new SolidTypeIntersection(this, t)
 	}
 	/**
@@ -85,12 +117,11 @@ export abstract class SolidType {
 	 */
 	union(t: SolidType): SolidType {
 		/** 1-7 | `T \| never   == T` */
-		if (t.isEmpty) { return this }
-		if (this.isEmpty) { return t }
+		if (t.isBottomType) { return this; }
+		if (this.isBottomType) { return t; }
 		/** 1-8 | `T \| unknown == unknown` */
-		if (t.isUniverse) { return t }
-		if (this.isUniverse) { return this }
-
+		if (t.isTopType) { return t; }
+		if (this.isTopType) { return SolidType.UNKNOWN; }
 		/** 3-4 | `A <: B  <->  A \| B == B` */
 		if (this.isSubtypeOf(t)) { return t }
 		if (t.isSubtypeOf(this)) { return this }
@@ -98,7 +129,32 @@ export abstract class SolidType {
 		return this.union_do(t)
 	}
 	union_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
+		/** 2-1 | `A  & B == B  & A` */
+		if (t instanceof SolidTypeIntersection) { return t.union(this); }
+
 		return new SolidTypeUnion(this, t)
+	}
+	/**
+	 * Return a new type that includes the values in this type that are not included in the argument type.
+	 * @param t the other type
+	 * @returns the type difference
+	 * @final
+	 */
+	subtract(t: SolidType): SolidType {
+		/** 4-1 | `A - B == A  <->  A & B == never` */
+		if (this.intersect(t).isBottomType) { return this; }
+
+		/** 4-2 | `A - B == never  <->  A <: B` */
+		if (this.isSubtypeOf(t)) { return SolidType.NEVER; }
+
+		if (t instanceof SolidTypeUnion) {
+			return t.subtractedFrom(this);
+		}
+
+		return this.subtract_do(t);
+	}
+	subtract_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
+		return new SolidTypeDifference(this, t);
 	}
 	/**
 	 * Return whether this type is a structural subtype of the given type.
@@ -110,29 +166,29 @@ export abstract class SolidType {
 		/** 2-7 | `A <: A` */
 		if (this === t) { return true }
 		/** 1-1 | `never <: T` */
-		if (this.isEmpty) { return true; };
+		if (this.isBottomType) { return true; };
 		/** 1-3 | `T       <: never  <->  T == never` */
-		if (t.isEmpty) { return this.isEmpty }
+		if (t.isBottomType) { return this.isBottomType; }
 		/** 1-4 | `unknown <: T      <->  T == unknown` */
-		if (this.isUniverse) { return t.isUniverse; };
+		if (this.isTopType) { return t.isTopType; };
 		/** 1-2 | `T     <: unknown` */
-		if (t.isUniverse) { return true }
+		if (t.isTopType) { return true; }
 
 		if (t instanceof SolidTypeIntersection) {
-			/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
-			return this.isSubtypeOf(t.left) && this.isSubtypeOf(t.right)
+			return t.isSupertypeOf(this);
 		}
 		if (t instanceof SolidTypeUnion) {
-			/** 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` */
-			if (this.isSubtypeOf(t.left) || this.isSubtypeOf(t.right)) { return true }
-			/** 3-2 | `A <: A \| B  &&  B <: A \| B` */
-			if (this.equals(t.left) || this.equals(t.right)) { return true }
+			if (t.isNecessarilySupertypeOf(this)) { return true; }
+		}
+		if (t instanceof SolidTypeDifference) {
+			return t.isSupertypeOf(this);
 		}
 
 		return this.isSubtypeOf_do(t)
 	}
 	isSubtypeOf_do(t: SolidType): boolean { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
-		return !this.isEmpty && !!this.values.size && [...this.values].every((v) => t.includes(v));
+		return !this.isBottomType && !!this.values.size // these checks are needed because this is called by `SolidObject.isSubtypeOf_do`
+			&& [...this.values].every((v) => t.includes(v));
 	}
 	/**
 	 * Return whether this type is structurally equal to the given type.
@@ -150,67 +206,41 @@ export abstract class SolidType {
 
 
 /**
- * A type intersection of two types `T` and `U` is the type
- * that contains values either assignable to `T` *or* assignable to `U`.
+ * A type difference of two types `T` and `U` is the type
+ * that contains values assignable to `T` but *not* assignable to `U`.
  */
-class SolidTypeIntersection extends SolidType {
+class SolidTypeDifference extends SolidType {
+	declare readonly isBottomType: boolean;
+
 	/**
-	 * Construct a new SolidTypeIntersection object.
+	 * Construct a new SolidTypeDifference object.
 	 * @param left the first type
 	 * @param right the second type
 	 */
 	constructor (
-		readonly left:  SolidType,
-		readonly right: SolidType,
+		private readonly left:  SolidType,
+		private readonly right: SolidType,
 	) {
-		super(xjs.Set.intersection(left.values, right.values))
+		super(Set_differenceEq(left.values, right.values, solidObjectsIdentical));
+		/*
+		We can assert that this is always non-empty because
+		the only cases in which it could be empty are
+		1. if left is empty
+		2. if left is a subtype of right
+		each of which is impossible because the algorithm would have already produced the `never` type.
+		*/
+		this.isBottomType = false;
 	}
 
-	override toString(): string {
-		return `${ this.left } & ${ this.right }`;
-	}
 	override includes(v: SolidObject): boolean {
-		return this.left.includes(v) && this.right.includes(v)
+		return this.left.includes(v) && !this.right.includes(v);
 	}
-	/** @implements SolidType */
 	override isSubtypeOf_do(t: SolidType): boolean {
-		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
-		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) { return true }
-		/** 3-1 | `A  & B <: A  &&  A  & B <: B` */
-		if (t.equals(this.left) || t.equals(this.right)) { return true }
-		return super.isSubtypeOf_do(t)
+		return this.left.isSubtypeOf(t) || super.isSubtypeOf_do(t);
 	}
-}
-
-
-
-/**
- * A type union of two types `T` and `U` is the type
- * that contains values both assignable to `T` *and* assignable to `U`.
- */
-class SolidTypeUnion extends SolidType {
-	/**
-	 * Construct a new SolidTypeUnion object.
-	 * @param left the first type
-	 * @param right the second type
-	 */
-	constructor (
-		readonly left:  SolidType,
-		readonly right: SolidType,
-	) {
-		super(xjs.Set.union(left.values, right.values))
-	}
-
-	override toString(): string {
-		return `${ this.left } | ${ this.right }`;
-	}
-	override includes(v: SolidObject): boolean {
-		return this.left.includes(v) || this.right.includes(v)
-	}
-	/** @implements SolidType */
-	override isSubtypeOf_do(t: SolidType): boolean {
-		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
-		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
+	isSupertypeOf(t: SolidType): boolean {
+		/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
+		return t.isSubtypeOf(this.left) && t.intersect(this.right).isBottomType;
 	}
 }
 
@@ -220,8 +250,8 @@ class SolidTypeUnion extends SolidType {
  * An Interface Type is a set of properties that a value must have.
  */
 export class SolidTypeInterface extends SolidType {
-	override readonly isEmpty: boolean = [...this.properties.values()].some((value) => value.isEmpty)
-	override readonly isUniverse: boolean = this.properties.size === 0
+	override readonly isBottomType: boolean = [...this.properties.values()].some((value) => value.isBottomType);
+	override readonly isTopType: boolean = this.properties.size === 0;
 
 	/**
 	 * Construct a new SolidInterface object.
@@ -259,7 +289,6 @@ export class SolidTypeInterface extends SolidType {
 		return new SolidTypeInterface(props)
 	}
 	/**
-	 * @implements SolidType
 	 * In the general case, `S` is a subtype of `T` if every property of `T` exists in `S`,
 	 * and for each of those properties `#prop`, the type of `S#prop` is a subtype of `T#prop`.
 	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
@@ -279,8 +308,8 @@ export class SolidTypeInterface extends SolidType {
 class SolidTypeNever extends SolidType {
 	static readonly INSTANCE: SolidTypeNever = new SolidTypeNever()
 
-	override readonly isEmpty: boolean = true
-	override readonly isUniverse: boolean = false
+	override readonly isBottomType: boolean = true;
+	override readonly isTopType: boolean = false;
 
 	private constructor () {
 		super()
@@ -293,32 +322,40 @@ class SolidTypeNever extends SolidType {
 		return false
 	}
 	override equals(t: SolidType): boolean {
-		return t.isEmpty
+		return t.isBottomType;
 	}
 }
 
 
 
 /**
- * Class for constructing constant types / unit types, types that contain one value.
+ * Class for constructing the `void` type.
+ * @final
  */
-export class SolidTypeConstant extends SolidType {
-	override readonly isEmpty: boolean = false
-	override readonly isUniverse: boolean = false
+class SolidTypeVoid extends SolidType {
+	static readonly INSTANCE: SolidTypeVoid = new SolidTypeVoid();
 
-	constructor (readonly value: SolidObject) {
-		super(new Set([value]))
+	override readonly isBottomType: boolean = false;
+	override readonly isTopType: boolean = false;
+
+	private constructor () {
+		super();
 	}
 
 	override toString(): string {
-		return this.value.toString();
+		return 'void';
 	}
 	override includes(_v: SolidObject): boolean {
-		return this.value.equal(_v)
+		return false;
 	}
-	/** @implements SolidType */
-	override isSubtypeOf_do(t: SolidType): boolean {
-		return t instanceof Function && this.value instanceof t || t.includes(this.value)
+	override intersect_do(_t: SolidType): SolidType {
+		return SolidType.NEVER;
+	}
+	override isSubtypeOf_do(_t: SolidType): boolean {
+		return false;
+	}
+	override equals(t: SolidType): boolean {
+		return t === SolidTypeVoid.INSTANCE || super.equals(t);
 	}
 }
 
@@ -330,8 +367,8 @@ export class SolidTypeConstant extends SolidType {
 class SolidTypeUnknown extends SolidType {
 	static readonly INSTANCE: SolidTypeUnknown = new SolidTypeUnknown()
 
-	override readonly isEmpty: boolean = false
-	override readonly isUniverse: boolean = true
+	override readonly isBottomType: boolean = false;
+	override readonly isTopType: boolean = true;
 
 	private constructor () {
 		super()
@@ -344,6 +381,6 @@ class SolidTypeUnknown extends SolidType {
 		return true
 	}
 	override equals(t: SolidType): boolean {
-		return t.isUniverse
+		return t.isTopType;
 	}
 }

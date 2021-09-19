@@ -1,26 +1,22 @@
+export * from './LexError03.js';
+export * from './LexError04.js';
+export * from './LexError05.js';
+export * from './ReferenceError01.js';
+export * from './ReferenceError02.js';
+export * from './ReferenceError03.js';
+export * from './AssignmentError01.js';
+export * from './AssignmentError10.js';
+export * from './TypeError01.js';
+export * from './TypeError02.js';
+export * from './TypeError03.js';
+export * from './TypeError04.js';
+export * from './TypeError05.js';
+export * from './TypeError06.js';
+export * from './MutabilityError01.js';
 export {
-	LexError03,
-	LexError04,
-	LexError05,
-} from './LexError';
-
-export {
-	ReferenceError01,
-	ReferenceError02,
-	ReferenceError03,
-} from './SolidReferenceError';
-
-export {
-	AssignmentError01,
-	AssignmentError10,
-} from './AssignmentError';
-
-export {
-	TypeError01,
-	TypeError03,
-} from './SolidTypeError';
-
+	VoidError01,
+} from './VoidError.js';
 export {
 	NanError01,
 	NanError02,
-} from './NanError';
+} from './NanError.js';

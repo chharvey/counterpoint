@@ -223,8 +223,8 @@ Boolean Identical(Object a, Object b) :=
 		1. *If* `a` and `b` are exactly the same sequence of code units
 			(same length and same code units at corresponding indices):
 			1. *Return:* `true`.
-	// 7. *If* `a` and `b` are the same object:
-	// 	1. *Return:* `true`.
+	7. *If* `a` and `b` are the same object:
+		1. *Return:* `true`.
 	8. Return `false`.
 ```
 
@@ -244,8 +244,63 @@ Boolean Equal(Object a, Object b) :=
 			1. *Return:* `true`.
 		2. *If* `a` is `-0.0` *and* `b` is `0.0`:
 			1. *Return:* `true`.
-	// 3. TODO: custom equality operators
-	4. Return `false`.
+	4. *If* `a` is an instance of `Tuple` or `List` *and* `b` is an instance of `Tuple` or `List`:
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *If* `seq_a.count` is not `seq_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For index* `i` in `seq_b`:
+			1. *If* *UnwrapAffirm*: `Equal(seq_a[i], seq_b[i])` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	5. *If* `a` is an instance of `Record` or `Hash` *and* `b` is an instance of `Record` or `Hash`:
+		1. *Let* `struct_a` be a new Structure whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a new Structure whose properties are exactly the properties in `b`.
+		3. *If* `struct_a.count` is not `struct_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For key* `k` in `struct_b`:
+			1. *If* `struct_a[k]` is not set:
+				1. *Return:* `false`.
+			2. *If* *UnwrapAffirm*: `Equal(struct_a[k], struct_b[k])` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	6. *If* `a` is an instance of `Set` *and* `b` is an instance of `Set`:
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *If* `seq_a.count` is not `seq_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For each* `it_b` in `seq_b`:
+			1. Find an item `it_a` in `seq_a` such that *UnwrapAffirm:* `Equal(it_a, it_b)` is `true`.
+			2. *If* `it_a` does not exist:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	7. *If* `a` is an instance of `Map` *and* `b` is an instance of `Map`:
+		1. *Let* `data_a` be a new Sequence of 2-tuples,
+			whose items are exactly the antecedents and consequents in `a`.
+		2. *Let* `data_b` be a new Sequence of 2-tuples,
+			whose items are exactly the antecedents and consequents in `b`.
+		3. *If* `data_a.count` is not `data_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Equal(a, b)` is `false`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For each* `it_b` in `data_b`:
+			1. Find an item `it_a` in `data_a` such that *UnwrapAffirm:* `Equal(it_a.0, it_b.0)` is `true`.
+			2. *If* `it_a` does not exist:
+				1. *Return:* `false`.
+			3. *If* *UnwrapAffirm:* `Equal(it_a.1, it_b.1)` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	8. Return `false`.
 ```
 
 
@@ -291,33 +346,62 @@ Boolean Subtype(Type a, Type b) :=
 		2. *If* *UnwrapAffirm:* `Subtype(a, x)` *or* *UnwrapAffirm:* `Subtype(a, y)`:
 			// 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`
 			1. *Return:* `true`.
-	10. *If* `Equal(a, Tuple)`:
-		1. *If* `Equal(b, Tuple)`:
-			1. *Let* `seq_a` be the Sequence whose items are exactly the items in `a`.
-			2. *Let* `seq_b` be the Sequence whose items are exactly the items in `b`.
-			3. *If* `seq_a.count` is less than `seq_b.count`:
+	10. *If* `Equal(a, Tuple)` *and* `Equal(b, Tuple)`:
+		1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
+		3. *Let* `seq_a_req` be a filtering of `seq_a` for each `ia` such that `ia.optional` is `false`.
+		4. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
+		5. *If* `seq_a_req.count` is less than `seq_b_req.count`:
+			1. *Return:* `false`.
+		6. *For index* `i` in `seq_b`:
+			1. *If* `seq_b[i].optional` is `false`:
+				1. *Assert:* `seq_a[i]` is set *and* `seq_a[i].optional` is `false`.
+			2. *If* `seq_a[i]` is set *and* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
 				1. *Return:* `false`.
-			4. *For index* `i` in `seq_b`:
-				1. *If* *UnwrapAffirm:* `Subtype(seq_a[i], seq_b[i])` is `false`:
+		7. *Return:* `true`.
+	11. *If* `Equal(a, Record)` *and* `Equal(b, Record)`:
+		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
+		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
+		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
+		4. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
+		5. *If* `struct_a_req.count` is less than `struct_b_req.count`:
+			1. *Return:* `false`.
+		6. *For key* `k` in `struct_b`:
+			1. *If* `struct_b[k].optional` is `false`:
+				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
 					1. *Return:* `false`.
-			5. *Return:* `true`.
-	11. *If* `Equal(a, Record)`:
-		1. *If* `Equal(b, Record)`:
-			1. *Let* `struct_a` be the Structure whose properties are exactly the properties in `a`.
-			2. *Let* `struct_b` be the Structure whose properties are exactly the properties in `b`.
-			3. *If* `struct_a.count` is less than `struct_b.count`:
+			2. *If* `struct_a[k]` is set *and* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
 				1. *Return:* `false`.
-			4. *For key* `k` in `struct_b`:
-				1. *If* `struct_a[k]` is not set:
-					1. *Return:* `false`.
-				2. *If* *UnwrapAffirm:* `Subtype(struct_a[k], struct_b[k])` is `false`:
-					1. *Return:* `false`.
-			5. *Return:* `true`.
-	12. *If* every value that is assignable to `a` is also assignable to `b`:
+		7. *Return:* `true`.
+	12. *If* `Equal(b, List)`:
+		1. *Let* `bi` be the union of types in `b`.
+		2. *If* `Equal(a, List)` *or* `Equal(a, Tuple)`:
+			1. *Let* `ai` be the union of types in `a`.
+			2. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
+				1. *Return:* `true`.
+	13. *If* `Equal(b, Hash)`:
+		1. *Let* `bv` be the union of value types in `b`.
+		2. *If* `Equal(a, Hash)` *or* `Equal(a, Record)`:
+			1. *Let* `av` be the union of value types in `a`.
+			2. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
+				1. *Return:* `true`.
+	14. *If* `Equal(a, Set)` *and* `Equal(b, Set)`:
+		1. *Let* `ae` be the union of types in `a`.
+		2. *Let* `be` be the union of types in `b`.
+		3. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
+			1. *Return:* `true`.
+	15. *If* `Equal(a, Map)` *and* `Equal(b, Map)`:
+		1. *Let* `ak` be the union of antecedent types in `a`.
+		2. *Let* `av` be the union of consequent types in `a`.
+		3. *Let* `bk` be the union of antecedent types in `b`.
+		4. *Let* `bv` be the union of consequent types in `b`.
+		5. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
+			1. *Return:* `true`.
+	16. *If* every value that is assignable to `a` is also assignable to `b`:
 		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
 			because an instance of `Integer` is an instance of `Object`.
 		2. *Return:* `true`.
-	13. *Return:* `false`.
+	17. *Return:* `false`.
 ;
 ```
 
@@ -373,4 +457,116 @@ Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 			1. *Return:* `true`.
 		3. *Return:* `false`.
 	5. *Throw:* a new TypeError01.
+```
+
+
+
+## CombineTuplesOrRecords
+Combines an intersection or union of tuples or records for the purposes of type-checking index/property access.
+```
+Type CombineTuplesOrRecords(Type t) :=
+	1. *If* `t` is the intersection of some types `a` and `b`:
+		1. *If* `Subtype(a, Tuple)` *and* `Subtype(b, Tuple)`:
+			1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
+			2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
+			3. *Let* `data` be a copy of `seq_a`.
+			4. *For index* `i` in `seq_b`:
+				1. *If* `data[i]` is set:
+					1. *If* `data[i].optional` is `true` *and* `seq_b[i].optional` is `true`:
+						1. *Let* `optional` be `true`.
+					2. *Else:*
+						1. *Let* `optional` be `false`.
+					3. *Set* `data[i]` to a new Structure [
+						type=     *UnwrapAffirm:* `Intersect(data[i].type, seq_b[i].type)`,
+						optional= optional,
+					].
+				2. *Else:*
+					1. *Set* `data[i]` to `seq_b[i]`.
+			5. *Assert:* In `data`, all optional items follow all required items.
+			6. *Return:* a subtype of `Tuple` whose items are `data`.
+		2. *If* `Subtype(a, Record)` *and* `Subtype(b, Record)`:
+			1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
+			2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
+			3. *Let* `data` be a copy of `struct_a`.
+			4. *For key* `k` in `struct_b`:
+				1. *If* `data[k]` is set:
+					1. *If* `data[k].optional` is `true` *and* `struct_b[k].optional` is `true`:
+						1. *Let* `optional` be `true`.
+					2. *Else:*
+						1. *Let* `optional` be `false`.
+					3. *Set* `data[k]` to a new Structure [
+						type=     *UnwrapAffirm:* `Intersect(data[k].type, struct_b[k].type)`,
+						optional= optional,
+					].
+				2. *Else:*
+					1. *Set* `data[k]` to `struct_b[k]`.
+			5. *Return:* a subtype of `Record` whose properties are `data`.
+	2. *If* `t` is the union of some types `a` and `b`:
+		1. *If* `Subtype(a, Tuple)` *and* `Subtype(b, Tuple)`:
+			1. *Let* `seq_a` be a Sequence whose items are exactly the items in `a`.
+			2. *Let* `seq_b` be a Sequence whose items are exactly the items in `b`.
+			3. *Let* `data` be a new Sequence.
+			4. *For index* `i` in `seq_b`:
+				1. *If* `seq_a[i]` is set:
+					1. *If* `seq_a[i].optional` is `true` *or* `seq_b[i].optional` is `true`:
+						1. *Let* `optional` be `true`.
+					2. *Else:*
+						1. *Let* `optional` be `false`.
+					3. *Set* `data[i]` to a new Structure [
+						type=     *UnwrapAffirm:* `Union(seq_a[i].type, seq_b[i].type)`,
+						optional= optional,
+					].
+			5. *Assert:* In `data`, all optional items follow all required items.
+			6. *Return:* a subtype of `Tuple` whose items are `data`.
+		2. *If* `Subtype(a, Record)` *and* `Subtype(b, Record)`:
+			1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
+			2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
+			3. *Let* `data` be a new Structure.
+			4. *For key* `k` in `struct_b`:
+				1. *If* `struct_a[k]` is set:
+					1. *If* `struct_a[k].optional` is `true` *or* `struct_b[k].optional` is `true`:
+						1. *Let* `optional` be `true`.
+					2. *Else:*
+						1. *Let* `optional` be `false`.
+					3. *Set* `data[k]` to a new Structure [
+						type=     *UnwrapAffirm:* `Union(struct_a[k].type, struct_b[k].type)`,
+						optional= optional,
+					].
+			5. *Return:* a subtype of `Record` whose properties are `data`.
+	3. *Return:* `t`.
+;
+```
+
+
+
+## UpdateAccessedStaticType
+Modifies the type of an accessed bound property of a tuple or record.
+If the bound property is required: Under claim access, subtracts Void; else returns unmodified type.
+If the bound property is optional: Under claim access, subtracts Void; under optional access, unions with Null; else unions with Void.
+```
+Type UpdateAccessedStaticType(EntryTypeStructure entry, SemanticAccess access) :=
+	1. *Let* `type` be `entry.type`.
+	2. *If*: `access.kind` is `CLAIM`:
+		1. *Return:* `Difference(type, Void)`.
+	3. *If*: `entry.optional` is `true`:
+		1. *If*: `access.kind` is `OPTIONAL`:
+			1. *Return:* `Union(type, Null)`.
+		2. *Return:* `Union(type, Void)`.
+	4. *Return:* `type`.
+;
+```
+
+
+
+## UpdateAccessedDynamicType
+Modifies the type of an accessed bound property of a dynamic data type.
+Under claim access, subtracts Void; under optional access, unions with Null; else returns unmodified type.
+```
+Type UpdateAccessedDynamicType(Type type, SemanticAccess access) :=
+	1. *If*: `access.kind` is `OPTIONAL`:
+		1. *Return:* `Union(type, Null)`.
+	2. *If*: `access.kind` is `CLAIM`:
+		1. *Return:* `Difference(type, Void)`.
+	3. *Return:* `type`.
+;
 ```
