@@ -83,7 +83,7 @@ export class InstructionConst extends InstructionExpression {
 		}
 		const numeric: SolidNumber =
 			(value instanceof SolidNull)    ? Int16.ZERO :
-			(value instanceof SolidBoolean) ? (value.value) ? Int16.UNIT : Int16.ZERO :
+			(value instanceof SolidBoolean) ? (value.isTruthy) ? Int16.UNIT : Int16.ZERO :
 			(value instanceof SolidNumber)  ? value :
 			(() => { throw new Error('not yet supported.') })()
 		return new InstructionConst((to_float) ? numeric.toFloat() : numeric)
