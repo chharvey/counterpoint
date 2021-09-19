@@ -5,9 +5,14 @@ import {
 	Set_unionEq,
 } from '../lib/index.js';
 import {
+	Operator,
+	ValidAccessOperator,
+} from '../validator/index.js';
+import {
 	SolidTypeTuple,
 	SolidTypeRecord,
 	SolidObject,
+	SolidNull,
 } from './index.js'; // avoids circular imports
 
 
@@ -21,6 +26,11 @@ export type TypeEntry = {
 	type:     SolidType,
 	optional: boolean,
 };
+export function updateAccessedStaticType(entry: TypeEntry, access_kind: ValidAccessOperator): SolidType {
+	return (access_kind === Operator.CLAIMDOT)
+		? entry.type.subtract(SolidType.VOID)
+		: entry.type.union((entry.optional) ? (access_kind === Operator.OPTDOT) ? SolidNull : SolidType.VOID : SolidType.NEVER);
+}
 
 
 

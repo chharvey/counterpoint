@@ -460,6 +460,7 @@ Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 ```
 
 
+
 ## CombineTuplesOrRecords
 Combines an intersection or union of tuples or records for the purposes of type-checking index/property access.
 ```
@@ -537,10 +538,13 @@ Type CombineTuplesOrRecords(Type t) :=
 ```
 
 
-## MaybeOptional
-Returns an entry’s type if it is required; unions with Void if it is optional.
+
+## UpdateAccessedStaticType
+Modifies the type of an accessed bound property of a tuple or record.
+If the bound property is required: Under claim access, subtracts Void; else returns unmodified type.
+If the bound property is optional: Under claim access, subtracts Void; under optional access, unions with Null; else unions with Void.
 ```
-Type MaybeOptional(EntryTypeStructure entry) :=
+Type UpdateAccessedStaticType(EntryTypeStructure entry, SemanticAccess access) :=
 	1. *Let* `type` be `entry.type`.
 	2. *If*: `access.kind` is `CLAIM`:
 		1. *Return:* `Difference(type, Void)`.
@@ -549,5 +553,20 @@ Type MaybeOptional(EntryTypeStructure entry) :=
 			1. *Return:* `Union(type, Null)`.
 		2. *Return:* `Union(type, Void)`.
 	4. *Return:* `type`.
+;
+```
+
+
+
+## UpdateAccessedDynamicType
+Modifies the type of an accessed bound property of a dynamic data type.
+Under claim access, subtracts Void; under optional access, unions with Null; else returns unmodified type.
+```
+Type UpdateAccessedDynamicType(Type type, SemanticAccess access) :=
+	1. *If*: `access.kind` is `OPTIONAL`:
+		1. *Return:* `Union(type, Null)`.
+	2. *If*: `access.kind` is `CLAIM`:
+		1. *Return:* `Difference(type, Void)`.
+	3. *Return:* `type`.
 ;
 ```

@@ -65,11 +65,8 @@ TypeUnit ::=
 	| "(" Type ")"
 ;
 
-PropertyAccessType
-	::= "." (INTEGER | Word);
-
-GenericCall
-	::= "." GenericArguments;
+PropertyAccessType ::= "." (INTEGER | Word);
+GenericCall        ::= "." GenericArguments;
 
 TypeCompound ::=
 	| TypeUnit
@@ -115,11 +112,8 @@ ExpressionUnit ::=
 	| "(" Expression ")"
 ;
 
-PropertyAccess
-	::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression "]");
-
-FunctionCall
-	::= "." GenericArguments? FunctionArguments;
+PropertyAccess ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression "]");
+FunctionCall   ::= "."                 GenericArguments? FunctionArguments;
 
 ExpressionCompound ::=
 	| ExpressionUnit

@@ -1280,7 +1280,7 @@ describe('Decorator', () => {
 				*/
 				const assn: AST.ASTNodeAssignment = Decorator.decorate(h.assignmentFromSource(`
 					the_answer = the_answer - 40;
-				`)) as AST.ASTNodeAssignment;
+				`));
 				assert.ok(assn.assigned instanceof AST.ASTNodeOperationBinary);
 				assert.ok(assn.assigned.operand0 instanceof AST.ASTNodeVariable);
 				assert.deepStrictEqual(
