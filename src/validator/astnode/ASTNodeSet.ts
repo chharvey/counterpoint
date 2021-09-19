@@ -41,7 +41,7 @@ export class ASTNodeSet extends ASTNodeExpression {
 		);
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		const elements: readonly (SolidObject | null)[] = this.children.map((c) => c.assess(validator));
+		const elements: readonly (SolidObject | null)[] = this.children.map((c) => c.fold(validator));
 		return (elements.includes(null))
 			? null
 			: new SolidSet(new Set(elements as SolidObject[]));

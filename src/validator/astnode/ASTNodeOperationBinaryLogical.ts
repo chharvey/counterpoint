@@ -56,7 +56,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 					: t0
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.operand0.assess(validator);
+		const assess0: SolidObject | null = this.operand0.fold(validator);
 		if (!assess0) {
 			return assess0
 		}
@@ -66,6 +66,6 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		) {
 			return assess0;
 		}
-		return this.operand1.assess(validator);
+		return this.operand1.fold(validator);
 	}
 }

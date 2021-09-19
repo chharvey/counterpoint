@@ -94,8 +94,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 		}))();
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		const argvalue: SolidObject | null | undefined = (this.exprargs.length) // TODO #assess should not return native `null` if it cannot assess
-			? this.exprargs[0].assess(validator)
+		const argvalue: SolidObject | null | undefined = (this.exprargs.length) // TODO #fold should not return native `null` if it cannot assess
+			? this.exprargs[0].fold(validator)
 			: undefined;
 		if (argvalue === null) {
 			return null;

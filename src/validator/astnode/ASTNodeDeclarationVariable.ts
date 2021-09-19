@@ -44,7 +44,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			this.unfixed,
 			() => this.type.eval(validator),
 			(validator.config.compilerOptions.constantFolding && !this.unfixed)
-				? () => this.value.assess(validator)
+				? () => this.value.fold(validator)
 				: null,
 		));
 	}
@@ -59,7 +59,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
 		const tofloat: boolean = this.type.eval(builder.validator).isSubtypeOf(Float64) || this.value.shouldFloat(builder.validator);
-		const assess: SolidObject | null = this.variable.assess(builder.validator);
+		const assess: SolidObject | null = this.variable.fold(builder.validator);
 		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && assess)
 			? new INST.InstructionNone()
 			: new INST.InstructionDeclareGlobal(this.variable.id, this.unfixed, this.value.build(builder, tofloat))

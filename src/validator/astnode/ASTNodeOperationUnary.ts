@@ -60,7 +60,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		);
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.operand.assess(validator);
+		const assess0: SolidObject | null = this.operand.fold(validator);
 		if (!assess0) {
 			return assess0
 		}

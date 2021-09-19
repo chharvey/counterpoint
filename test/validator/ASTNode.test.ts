@@ -1073,7 +1073,7 @@ describe('ASTNodeSolid', () => {
 				})
 			});
 			describe('ASTNodeConstant', () => {
-				it('returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
+				it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
 					const constants: AST.ASTNodeConstant[] = `
 						null  false  true
 						55  -55  033  -033  0  -0
@@ -1083,14 +1083,14 @@ describe('ASTNodeSolid', () => {
 						${ (Dev.supports('stringConstant-assess')) ? `'42😀'  '42\\u{1f600}'` : `` }
 					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`));
 					const validator: Validator = new Validator();
-					assert.deepStrictEqual(constants.map((c) => assert_wasCalled(c.assess, 1, (orig, spy) => {
-						c.assess = spy;
+					assert.deepStrictEqual(constants.map((c) => assert_wasCalled(c.fold, 1, (orig, spy) => {
+						c.fold = spy;
 						try {
 							return c.type(validator);
 						} finally {
-							c.assess = orig;
+							c.fold = orig;
 						};
-					})), constants.map((c) => new SolidTypeConstant(c.assess(validator)!)));
+					})), constants.map((c) => new SolidTypeConstant(c.fold(validator)!)));
 				});
 			});
 			Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
@@ -1112,19 +1112,19 @@ describe('ASTNodeSolid', () => {
 					let types: SolidType[];
 					before(() => {
 						templates = initTemplates();
-						types = templates.map((t) => assert_wasCalled(t.assess, 1, (orig, spy) => {
-							t.assess = spy;
+						types = templates.map((t) => assert_wasCalled(t.fold, 1, (orig, spy) => {
+							t.fold = spy;
 							try {
 								return t.type(validator);
 							} finally {
-								t.assess = orig;
+								t.fold = orig;
 							};
 						}));
 					});
-					it('for foldable interpolations, returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
+					it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
 						assert.deepStrictEqual(
 							types.slice(0, 2),
-							templates.slice(0, 2).map((t) => new SolidTypeConstant(t.assess(validator)!)),
+							templates.slice(0, 2).map((t) => new SolidTypeConstant(t.fold(validator)!)),
 						);
 					});
 					it('for non-foldable interpolations, returns `String`.', () => {
@@ -1167,19 +1167,19 @@ describe('ASTNodeSolid', () => {
 					let types: SolidType[];
 					before(() => {
 						collections = initCollections();
-						types = collections.map((c) => assert_wasCalled(c.assess, 1, (orig, spy) => {
-							c.assess = spy;
+						types = collections.map((c) => assert_wasCalled(c.fold, 1, (orig, spy) => {
+							c.fold = spy;
 							try {
 								return c.type(validator);
 							} finally {
-								c.assess = orig;
+								c.fold = orig;
 							};
 						}));
 					});
-					it('returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
+					it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
 						assert.deepStrictEqual(
 							types,
-							collections.map((c) => new SolidTypeConstant(c.assess(validator)!)),
+							collections.map((c) => new SolidTypeConstant(c.fold(validator)!)),
 						);
 					});
 				});
@@ -1535,7 +1535,7 @@ describe('ASTNodeSolid', () => {
 								[`-0.0 == 0.0;`,  true],
 							]), (v) => SolidBoolean.fromBoolean(v)));
 						});
-						Dev.supports('literalCollection') && it('returns the result of `this#assess`, wrapped in a `new SolidTypeConstant`.', () => {
+						Dev.supports('literalCollection') && it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
 							const validator: Validator = new Validator();
 							const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 								let a: obj = [];
@@ -1566,7 +1566,7 @@ describe('ASTNodeSolid', () => {
 								const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
 								assert.deepStrictEqual(
 									expr.type(validator),
-									new SolidTypeConstant(expr.assess(validator)!),
+									new SolidTypeConstant(expr.fold(validator)!),
 								);
 							});
 						});
@@ -1744,14 +1744,14 @@ describe('ASTNodeSolid', () => {
 			});
 		});
 
-		describe('#assess', () => {
+		describe('#fold', () => {
 			describe('ASTNodeConstant', () => {
 				it('computes null and boolean values.', () => {
 					assert.deepStrictEqual([
 						'null;',
 						'false;',
 						'true;',
-					].map((src) => AST.ASTNodeConstant.fromSource(src).assess(new Validator())), [
+					].map((src) => AST.ASTNodeConstant.fromSource(src).fold(new Validator())), [
 						SolidNull.NULL,
 						SolidBoolean.FALSE,
 						SolidBoolean.TRUE,
@@ -1768,7 +1768,7 @@ describe('ASTNodeSolid', () => {
 					assert.deepStrictEqual(`
 						55  -55  033  -033  0  -0
 						\\o55  -\\o55  \\q033  -\\q033
-					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`, integer_radices_on).assess(new Validator())), [
+					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`, integer_radices_on).fold(new Validator())), [
 						55, -55, 33, -33, 0, 0,
 						parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
 					].map((v) => new Int16(BigInt(v))));
@@ -1778,7 +1778,7 @@ describe('ASTNodeSolid', () => {
 						55.  -55.  033.  -033.  2.007  -2.007
 						91.27e4  -91.27e4  91.27e-4  -91.27e-4
 						0.  -0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`).assess(new Validator())), [
+					`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`).fold(new Validator())), [
 						55, -55, 33, -33, 2.007, -2.007,
 						91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 						0, -0, -0, 6.8, 6.8, 0, -0,
@@ -1803,7 +1803,7 @@ describe('ASTNodeSolid', () => {
 					goal.typeCheck(validator);
 					assert.ok(!(goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
 					assert.deepStrictEqual(
-						(goal.children[1] as AST.ASTNodeStatementExpression).expr!.assess(validator),
+						(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(validator),
 						new Int16(42n),
 					);
 				});
@@ -1817,7 +1817,7 @@ describe('ASTNodeSolid', () => {
 					goal.typeCheck(validator);
 					assert.ok((goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
 					assert.deepStrictEqual(
-						(goal.children[1] as AST.ASTNodeStatementExpression).expr!.assess(validator),
+						(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(validator),
 						null,
 					);
 				});
@@ -1832,7 +1832,7 @@ describe('ASTNodeSolid', () => {
 					goal.typeCheck(validator);
 					assert.ok(!(goal.children[1] as AST.ASTNodeDeclarationVariable).unfixed);
 					assert.deepStrictEqual(
-						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.assess(validator),
+						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.fold(validator),
 						null,
 					);
 				});
@@ -1853,19 +1853,19 @@ describe('ASTNodeSolid', () => {
 				});
 				it('returns a constant String for ASTNodeTemplate with no interpolations.', () => {
 					assert.deepStrictEqual(
-						templates[0].assess(new Validator()),
+						templates[0].fold(new Validator()),
 						new SolidString('42😀'),
 					);
 				});
 				it('returns a constant String for ASTNodeTemplate with foldable interpolations.', () => {
 					assert.deepStrictEqual(
-						templates[1].assess(new Validator()),
+						templates[1].fold(new Validator()),
 						new SolidString('the answer is 42 but what is the question?'),
 					);
 				});
 				it('returns null for ASTNodeTemplate with dynamic interpolations.', () => {
 					assert.deepStrictEqual(
-						templates[2].assess(new Validator()),
+						templates[2].fold(new Validator()),
 						null,
 					);
 				});
@@ -1885,7 +1885,7 @@ describe('ASTNodeSolid', () => {
 									3 * 1.0   -> 'three',
 								};
 							`),
-						].map((c) => c.assess(new Validator())),
+						].map((c) => c.fold(new Validator())),
 						[
 							new SolidTuple([
 								new Int16(1n),
@@ -1931,13 +1931,13 @@ describe('ASTNodeSolid', () => {
 							tuple,
 							record,
 							map,
-						].map((c) => c.assess(new Validator())),
+						].map((c) => c.fold(new Validator())),
 						[null, null, null],
 					);
 				});
 				it('ASTNodeRecord overwrites duplicate keys.', () => {
 					assert.deepStrictEqual(
-						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, a= 'three'];`).assess(new Validator()),
+						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, a= 'three'];`).fold(new Validator()),
 						new SolidRecord(new Map<bigint, SolidObject>([
 							[0x101n, new Float64(2.0)],
 							[0x100n, new SolidString('three')],
@@ -1959,7 +1959,7 @@ describe('ASTNodeSolid', () => {
 								[2, 0.2],
 								[3, 0.4],
 							]);`,
-						].map((src) => AST.ASTNodeCall.fromSource(src).assess(validator)),
+						].map((src) => AST.ASTNodeCall.fromSource(src).fold(validator)),
 						[
 							new SolidList<Int16>([
 								new Int16(1n),
@@ -1994,7 +1994,7 @@ describe('ASTNodeSolid', () => {
 							`List.<int>([]);`,
 							`Set.<int>([]);`,
 							`Map.<int, float>([]);`,
-						].map((src) => AST.ASTNodeCall.fromSource(src).assess(validator)),
+						].map((src) => AST.ASTNodeCall.fromSource(src).fold(validator)),
 						[
 							new SolidList<never>(),
 							new SolidHash<never>(),
@@ -2009,15 +2009,15 @@ describe('ASTNodeSolid', () => {
 			});
 
 			describe('ASTNodeOperation', () => {
-				function assessOperations(tests: Map<string, SolidObject>): void {
+				function foldOperations(tests: Map<string, SolidObject>): void {
 					return assert.deepStrictEqual(
-						[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src).assess(new Validator())),
+						[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src).fold(new Validator())),
 						[...tests.values()],
 					);
 				}
 				describe('ASTNodeOperationUnary', () => {
 					specify('[operator=NOT]', () => {
-						assessOperations(new Map([
+						foldOperations(new Map([
 							[`!false;`,  SolidBoolean.TRUE],
 							[`!true;`,   SolidBoolean.FALSE],
 							[`!null;`,   SolidBoolean.TRUE],
@@ -2027,11 +2027,11 @@ describe('ASTNodeSolid', () => {
 							[`!-0.0;`,   SolidBoolean.FALSE],
 							[`!4.2e+1;`, SolidBoolean.FALSE],
 						]))
-						Dev.supports('stringConstant-assess') && assessOperations(new Map([
+						Dev.supports('stringConstant-assess') && foldOperations(new Map([
 							[`!'';`,      SolidBoolean.FALSE],
 							[`!'hello';`, SolidBoolean.FALSE],
 						]))
-						Dev.supports('literalCollection') && assessOperations(new Map([
+						Dev.supports('literalCollection') && foldOperations(new Map([
 							[`![];`,                  SolidBoolean.FALSE],
 							[`![42];`,                SolidBoolean.FALSE],
 							[`![a= 42];`,             SolidBoolean.FALSE],
@@ -2044,7 +2044,7 @@ describe('ASTNodeSolid', () => {
 						]));
 					})
 					specify('[operator=EMP]', () => {
-						assessOperations(new Map([
+						foldOperations(new Map([
 							[`?false;`,  SolidBoolean.TRUE],
 							[`?true;`,   SolidBoolean.FALSE],
 							[`?null;`,   SolidBoolean.TRUE],
@@ -2054,11 +2054,11 @@ describe('ASTNodeSolid', () => {
 							[`?-0.0;`,   SolidBoolean.TRUE],
 							[`?4.2e+1;`, SolidBoolean.FALSE],
 						]))
-						Dev.supports('stringConstant-assess') && assessOperations(new Map([
+						Dev.supports('stringConstant-assess') && foldOperations(new Map([
 							[`?'';`,      SolidBoolean.TRUE],
 							[`?'hello';`, SolidBoolean.FALSE],
 						]))
-						Dev.supports('literalCollection') && assessOperations(new Map([
+						Dev.supports('literalCollection') && foldOperations(new Map([
 							[`?[];`,                  SolidBoolean.TRUE],
 							[`?[42];`,                SolidBoolean.FALSE],
 							[`?[a= 42];`,             SolidBoolean.FALSE],
@@ -2073,7 +2073,7 @@ describe('ASTNodeSolid', () => {
 				});
 				describe('ASTNodeOperationBinaryArithmetic', () => {
 					it('computes the value of an integer operation of constants.', () => {
-						assessOperations(xjs.Map.mapValues(new Map([
+						foldOperations(xjs.Map.mapValues(new Map([
 							[`42 + 420;`,           42 + 420],
 							[`42 - 420;`,           42 + -420],
 							[` 126 /  3;`,          Math.trunc( 126 /  3)],
@@ -2094,23 +2094,23 @@ describe('ASTNodeSolid', () => {
 						assert.deepStrictEqual([
 							`2 ^ 15 + 2 ^ 14;`,
 							`-(2 ^ 14) - 2 ^ 15;`,
-						].map((src) => AST.ASTNodeOperationBinaryArithmetic.fromSource(src).assess(new Validator())), [
+						].map((src) => AST.ASTNodeOperationBinaryArithmetic.fromSource(src).fold(new Validator())), [
 							new Int16(-(2n ** 14n)),
 							new Int16(2n ** 14n),
 						])
 					})
 					it('computes the value of a float operation of constants.', () => {
-						assessOperations(new Map<string, SolidObject>([
+						foldOperations(new Map<string, SolidObject>([
 							[`3.0e1 - 201.0e-1;`,     new Float64(30 - 20.1)],
 							[`3 * 2.1;`,     new Float64(3 * 2.1)],
 						]))
 					})
 					it('throws when performing an operation that does not yield a valid number.', () => {
-						assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource(`-4 ^ -0.5;`).assess(new Validator()), NanError01);
+						assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource(`-4 ^ -0.5;`).fold(new Validator()), NanError01);
 					})
 				});
 				specify('ASTNodeOperationBinaryComparative', () => {
-					assessOperations(xjs.Map.mapValues(new Map([
+					foldOperations(xjs.Map.mapValues(new Map([
 						[`3 <  3;`,     false],
 						[`3 >  3;`,     false],
 						[`3 <= 3;`,     true],
@@ -2138,7 +2138,7 @@ describe('ASTNodeSolid', () => {
 					]), (val) => SolidBoolean.fromBoolean(val)))
 				})
 				specify('ASTNodeOperationBinaryEquality', () => {
-					assessOperations(xjs.Map.mapValues(new Map([
+					foldOperations(xjs.Map.mapValues(new Map([
 						[`null === null;`, true],
 						[`null ==  null;`, true],
 						[`null === 5;`,    false],
@@ -2170,7 +2170,7 @@ describe('ASTNodeSolid', () => {
 						[`-0.0 === 0.0;`,  false],
 						[`-0.0 ==  0.0;`,  true],
 					]), (val) => SolidBoolean.fromBoolean(val)))
-					Dev.supports('stringConstant-assess') && assessOperations(xjs.Map.mapValues(new Map([
+					Dev.supports('stringConstant-assess') && foldOperations(xjs.Map.mapValues(new Map([
 						[`'' == '';`,    true],
 						[`'a' === 'a';`, true],
 						[`'a' ==  'a';`, true],
@@ -2249,12 +2249,12 @@ describe('ASTNodeSolid', () => {
 						goal.varCheck(validator);
 						goal.typeCheck(validator);
 						goal.children.slice(13).forEach((stmt) => {
-							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.assess(validator), SolidBoolean.TRUE, stmt.source);
+							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(validator), SolidBoolean.TRUE, stmt.source);
 						});
 					})();
 				});
 				specify('ASTNodeOperationBinaryLogical', () => {
-					assessOperations(new Map<string, SolidObject>([
+					foldOperations(new Map<string, SolidObject>([
 						[`null && 5;`,     SolidNull.NULL],
 						[`null || 5;`,     new Int16(5n)],
 						[`5 && null;`,     SolidNull.NULL],
@@ -2268,7 +2268,7 @@ describe('ASTNodeSolid', () => {
 					]))
 				})
 				specify('ASTNodeOperationTernary', () => {
-					assessOperations(new Map<string, SolidObject>([
+					foldOperations(new Map<string, SolidObject>([
 						[`if true then false else 2;`,          SolidBoolean.FALSE],
 						[`if false then 3.0 else null;`,        SolidNull.NULL],
 						[`if true then 2 else 3.0;`,            new Int16(2n)],
@@ -3086,9 +3086,9 @@ describe('ASTNodeSolid', () => {
 					});
 				});
 			});
-			describe('#assess', () => {
-				function evalOfStmtExpr(stmt: AST.ASTNodeStatementExpression, validator: Validator): SolidObject | null {
-					return stmt.expr!.assess(validator);
+			describe('#fold', () => {
+				function foldStmtExpr(stmt: AST.ASTNodeStatementExpression, validator: Validator): SolidObject | null {
+					return stmt.expr!.fold(validator);
 				}
 				const expected: (SolidObject | null)[] = [
 					new Int16(1n),
@@ -3107,13 +3107,13 @@ describe('ASTNodeSolid', () => {
 				Dev.supports('optionalAccess') && context('when base is nullish.', () => {
 					it('optional access returns base when it is null.', () => {
 						const validator: Validator = new Validator();
-						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .assess(validator), /TypeError: \w+\.get is not a function/);
-						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .assess(validator), /TypeError: \w+\.get is not a function/);
-						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).assess(validator), /TypeError: \w+\.get is not a function/);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .fold(validator), /TypeError: \w+\.get is not a function/);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .fold(validator), /TypeError: \w+\.get is not a function/);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).fold(validator), /TypeError: \w+\.get is not a function/);
 						[
-							AST.ASTNodeAccess.fromSource(`null?.3;`)         .assess(validator),
-							AST.ASTNodeAccess.fromSource(`null?.four;`)      .assess(validator),
-							AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).assess(validator),
+							AST.ASTNodeAccess.fromSource(`null?.3;`)         .fold(validator),
+							AST.ASTNodeAccess.fromSource(`null?.four;`)      .fold(validator),
+							AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).fold(validator),
 						].forEach((t) => {
 							assert.strictEqual(t, SolidNull.NULL);
 						});
@@ -3136,7 +3136,7 @@ describe('ASTNodeSolid', () => {
 						const prop1: SolidTuple = new SolidTuple([SolidBoolean.TRUE]);
 						const prop2: SolidTuple = new SolidTuple();
 						assert.deepStrictEqual(
-							program.children.slice(2, 7).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(2, 7).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
 								new SolidRecord(new Map([[0x101n, prop1],])),
 								prop1,
@@ -3147,7 +3147,7 @@ describe('ASTNodeSolid', () => {
 						);
 						// must bypass type-checker:
 						assert.deepStrictEqual(
-							AST.ASTNodeAccess.fromSource(`[prop= []]?.prop?.0;`).assess(validator),
+							AST.ASTNodeAccess.fromSource(`[prop= []]?.prop?.0;`).fold(validator),
 							SolidNull.NULL,
 						);
 					});
@@ -3163,22 +3163,22 @@ describe('ASTNodeSolid', () => {
 					});
 					it('returns individual entries.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(4, 10).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(4, 10).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
 						assert.deepStrictEqual(
-							program.children.slice(10, 16).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(10, 16).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
 						Dev.supports('optionalAccess') && assert.deepStrictEqual(
-							program.children.slice(38, 42).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(38, 42).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected_o,
 						);
 						Dev.supports('claimAccess') && assert.deepStrictEqual(
 							[
 								...program.children.slice(44, 48),
 								program.children[49]
-							].map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							].map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
 								...expected_o,
 								null,
@@ -3187,18 +3187,18 @@ describe('ASTNodeSolid', () => {
 					});
 					it('negative indices count backwards from end.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(16, 22).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(16, 22).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
 					});
 					it('throws when index is out of bounds.', () => {
-						assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`).assess(validator), VoidError01);
-						assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`).assess(validator), VoidError01);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`) .fold(validator), VoidError01);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`).fold(validator), VoidError01);
 					});
 					Dev.supports('optionalAccess') && it('returns null when optionally accessing index out of bounds.', () => {
 						[
-							AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`).assess(validator),
-							AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).assess(validator),
+							AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`) .fold(validator),
+							AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).fold(validator),
 						].forEach((v) => {
 							assert.deepStrictEqual(v, SolidNull.NULL);
 						});
@@ -3215,22 +3215,22 @@ describe('ASTNodeSolid', () => {
 					});
 					it('returns individual entries.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(4, 10).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(4, 10).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
 						assert.deepStrictEqual(
-							program.children.slice(10, 16).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(10, 16).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
 						Dev.supports('optionalAccess') && assert.deepStrictEqual(
-							program.children.slice(26, 30).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(26, 30).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected_o,
 						);
 						Dev.supports('claimAccess') && assert.deepStrictEqual(
 							[
 								...program.children.slice(32, 36),
 								program.children[37],
-							].map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							].map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
 								...expected_o,
 								null,
@@ -3238,11 +3238,11 @@ describe('ASTNodeSolid', () => {
 						);
 					});
 					it('throws when key is out of bounds.', () => {
-						assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`).assess(validator), VoidError01);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`).fold(validator), VoidError01);
 					});
 					Dev.supports('optionalAccess') && it('returns null when optionally accessing key out of bounds.', () => {
 						[
-							AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).assess(validator),
+							AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).fold(validator),
 						].forEach((v) => {
 							assert.deepStrictEqual(v, SolidNull.NULL);
 						});
@@ -3259,25 +3259,25 @@ describe('ASTNodeSolid', () => {
 					});
 					it('returns individual entries for tuples.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(12, 18).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(12, 18).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
 						Dev.supports('optionalAccess') && assert.deepStrictEqual(
-							program.children.slice(46, 50).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(46, 50).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected_o,
 						);
 						Dev.supports('claimAccess') && assert.deepStrictEqual(
-							program.children.slice(56, 60).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(56, 60).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected_o,
 						);
 					});
 					it('returns individual entries for lists.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(18, 24).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(18, 24).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
 						Dev.supports('optionalAccess') && assert.deepStrictEqual(
-							program.children.slice(50, 52).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(50, 52).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
 								new SolidString('three'),
 								null,
@@ -3286,11 +3286,11 @@ describe('ASTNodeSolid', () => {
 					});
 					it('returns individual entries for sets.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(24, 30).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(24, 30).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
 						Dev.supports('optionalAccess') && assert.deepStrictEqual(
-							program.children.slice(52, 54).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(52, 54).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
 								new SolidString('three'),
 								null,
@@ -3299,11 +3299,11 @@ describe('ASTNodeSolid', () => {
 					});
 					it('returns individual entries for maps.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(30, 36).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(30, 36).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							expected,
 						);
 						Dev.supports('optionalAccess') && assert.deepStrictEqual(
-							program.children.slice(54, 56).map((c) => evalOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
+							program.children.slice(54, 56).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 							[
 								new SolidString('three'),
 								null,
@@ -3311,15 +3311,15 @@ describe('ASTNodeSolid', () => {
 						);
 					});
 					it('throws when accessor expression is out of bounds.', () => {
-						assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`).assess(validator), VoidError01);
-						assert.throws(() => AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}.[3];`).assess(validator), VoidError01);
-						assert.throws(() => AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}.[['a']];`).assess(validator), VoidError01);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`)                               .fold(validator), VoidError01);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}.[3];`)                               .fold(validator), VoidError01);
+						assert.throws(() => AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}.[['a']];`).fold(validator), VoidError01);
 					});
 					Dev.supports('optionalAccess') && it('returns null when optionally accessing index/antecedent out of bounds.', () => {
 						[
-							AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`).assess(validator),
-							AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}?.[3];`).assess(validator),
-							AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}?.[['a']];`).assess(validator),
+							AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`)                               .fold(validator),
+							AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}?.[3];`)                               .fold(validator),
+							AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}?.[['a']];`).fold(validator),
 						].forEach((v) => {
 							assert.deepStrictEqual(v, SolidNull.NULL);
 						});

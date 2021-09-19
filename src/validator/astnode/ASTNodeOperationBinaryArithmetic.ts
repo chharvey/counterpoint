@@ -64,11 +64,11 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		throw new TypeError01(this)
 	}
 	protected override assess_do(validator: Validator): SolidObject | null {
-		const assess0: SolidObject | null = this.operand0.assess(validator);
+		const assess0: SolidObject | null = this.operand0.fold(validator);
 		if (!assess0) {
 			return assess0
 		}
-		const assess1: SolidObject | null = this.operand1.assess(validator);
+		const assess1: SolidObject | null = this.operand1.fold(validator);
 		if (!assess1) {
 			return assess1
 		}
