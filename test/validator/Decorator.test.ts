@@ -536,7 +536,7 @@ describe('Decorator', () => {
 				const property = Decorator.decorate(h.propertyFromString(`fontSize= 1. + 0.25`));
 				assert.ok(property instanceof AST.ASTNodeProperty); // FIXME: `AST.ASTNodeProperty` is assignable to `TemplatePartialType`, so `Decorator.decorate` overlads get confused
 				assert.deepStrictEqual(
-					[property.key.source, property.value.source],
+					[property.key.source, property.val.source],
 					[`fontSize`,          `1. + 0.25`],
 				);
 			});
