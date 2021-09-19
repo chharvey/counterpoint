@@ -4,10 +4,8 @@ import {
 	Set_hasEq,
 	AST,
 } from './package.js';
-import {
-	SolidType,
-	solidObjectsIdentical,
-} from './SolidType.js';
+import {solidObjectsIdentical} from './utils-private.js';
+import {SolidType} from './SolidType.js';
 import {SolidTypeConstant} from './SolidTypeConstant.js';
 import {SolidTypeSet} from './SolidTypeSet.js';
 import type {SolidObject} from './SolidObject.js';

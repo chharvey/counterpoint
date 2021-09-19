@@ -5,10 +5,8 @@ import {
 	Map_setEq,
 	AST,
 } from './package.js';
-import {
-	SolidType,
-	solidObjectsIdentical,
-} from './SolidType.js';
+import {solidObjectsIdentical} from './utils-private.js';
+import {SolidType} from './SolidType.js';
 import {SolidTypeConstant} from './SolidTypeConstant.js';
 import {SolidTypeMap} from './SolidTypeMap.js';
 import type {SolidObject} from './SolidObject.js';

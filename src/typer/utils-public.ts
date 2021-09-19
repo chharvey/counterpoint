@@ -1,3 +1,7 @@
+import type {SolidType} from './index.js';
+
+
+
 /**
  * Internal representation of an entry of a tuple or mapping type.
  * @property type     - the type value, a Solid Language Type

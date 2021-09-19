@@ -1,32 +1,13 @@
 import {
 	Set_differenceEq,
 	Set_hasEq,
-	Operator,
-	ValidAccessOperator,
 } from './package.js';
 import {
 	SolidTypeIntersection,
 	SolidTypeUnion,
 	SolidObject,
-	SolidNull,
 } from './index.js';
-import type {TypeEntry} from './types.js';
-
-
-
-export function updateAccessedStaticType(entry: TypeEntry, access_kind: ValidAccessOperator): SolidType {
-	return (access_kind === Operator.CLAIMDOT)
-		? entry.type.subtract(SolidType.VOID)
-		: entry.type.union((entry.optional) ? (access_kind === Operator.OPTDOT) ? SolidNull : SolidType.VOID : SolidType.NEVER);
-}
-
-
-
-/**
- * Comparator function for checking “sameness” of `SolidType#values` set elements.
- * Values should be “the same” iff they are identical per the Solid specification.
- */
-export const solidObjectsIdentical = (a: SolidObject, b: SolidObject): boolean => a.identical(b);
+import {solidObjectsIdentical} from './utils-private.js';
 
 
 

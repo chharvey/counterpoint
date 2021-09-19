@@ -15,6 +15,7 @@ import {
 } from '../../src/validator/index.js';
 import * as AST from '../../src/validator/astnode/index.js'; // HACK
 import {
+	TypeEntry,
 	SolidType,
 	SolidTypeConstant,
 	SolidTypeTuple,
@@ -36,9 +37,6 @@ import {
 	SolidSet,
 	SolidMap,
 } from '../../src/typer/index.js';
-import type {
-	TypeEntry,
-} from '../../src/typer/types.js';
 import {
 	Builder,
 	INST,

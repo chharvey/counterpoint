@@ -6,10 +6,8 @@ import {
 	SolidTypeRecord,
 	SolidObject,
 } from './index.js';
-import {
-	SolidType,
-	solidObjectsIdentical,
-} from './SolidType.js';
+import {solidObjectsIdentical} from './utils-private.js';
+import {SolidType} from './SolidType.js';
 
 
 

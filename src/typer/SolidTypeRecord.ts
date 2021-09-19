@@ -9,11 +9,9 @@ import {
 	SolidObject,
 	SolidRecord,
 } from './index.js';
-import type {TypeEntry} from './types.js';
-import {
-	SolidType,
-	updateAccessedStaticType,
-} from './SolidType.js';
+import type {TypeEntry} from './utils-public.js';
+import {updateAccessedStaticType} from './utils-private.js';
+import {SolidType} from './SolidType.js';
 
 
 

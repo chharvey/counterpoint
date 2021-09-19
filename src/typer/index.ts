@@ -1,4 +1,4 @@
-export {TypeEntry} from './types.d';
+export * from './utils-public.js';
 
 export * from './SolidType.js';
 export * from './SolidTypeIntersection.js';
