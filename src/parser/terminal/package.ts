@@ -2,10 +2,12 @@ export {
 	Util,
 } from '../package.js';
 export {
-	RadixType,
 	TemplatePosition,
+} from '../utils-public.js';
+export {
+	RadixType,
 	maybe,
 	maybeA,
-} from '../utils.js';
+} from '../utils-private.js';
 export {Keyword} from '../Keyword.js';
 export * as TOKEN from '../token/index.js';

@@ -14,10 +14,8 @@ import {
 	CONFIG_DEFAULT,
 	Dev,
 } from './package.js';
-import {
-	RadixType,
-	TemplatePosition,
-} from './utils.js';
+import {TemplatePosition} from './utils-public.js';
+import type {RadixType} from './utils-private.js';
 import {
 	Punctuator,
 } from './Punctuator.js';

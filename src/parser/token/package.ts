@@ -15,8 +15,10 @@ export {
 } from '../package.js';
 export {LexerSolid} from '../index.js';
 export {
-	RadixType,
 	TemplatePosition,
-} from '../utils.js';
+} from '../utils-public.js';
+export {
+	RadixType,
+} from '../utils-private.js';
 export {Punctuator} from '../Punctuator.js';
 export {Keyword} from '../Keyword.js';

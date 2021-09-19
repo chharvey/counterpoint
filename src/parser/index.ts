@@ -1,4 +1,4 @@
-export * from './utils.js';
+export * from './utils-public.js';
 
 export {Punctuator} from './Punctuator.js';
 export {Keyword} from './Keyword.js';
