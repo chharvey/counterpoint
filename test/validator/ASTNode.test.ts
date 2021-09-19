@@ -876,7 +876,7 @@ describe('ASTNodeSolid', () => {
 
 
 	describe('ASTNodeType', () => {
-		describe('#assess', () => {
+		describe('#eval', () => {
 			it('computes the value of constant null, boolean, or number types.', () => {
 				assert.deepStrictEqual([
 					`null`,
@@ -884,7 +884,7 @@ describe('ASTNodeSolid', () => {
 					`true`,
 					`42`,
 					`4.2e+3`,
-				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).assess(new Validator())), [
+				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval(new Validator())), [
 					SolidNull,
 					SolidBoolean.FALSETYPE,
 					SolidBoolean.TRUETYPE,
@@ -904,7 +904,7 @@ describe('ASTNodeSolid', () => {
 					((goal
 						.children[1] as AST.ASTNodeDeclarationType)
 						.value as AST.ASTNodeTypeAlias)
-						.assess(validator),
+						.eval(validator),
 					Int16,
 				);
 			});
@@ -914,7 +914,7 @@ describe('ASTNodeSolid', () => {
 					'int',
 					'float',
 					'obj',
-				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).assess(new Validator())), [
+				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval(new Validator())), [
 					SolidBoolean,
 					Int16,
 					Float64,
@@ -930,7 +930,7 @@ describe('ASTNodeSolid', () => {
 							`Hash.<bool>`,
 							`Set.<str>`,
 							`Map.<int, float>`,
-						].map((src) => AST.ASTNodeTypeCall.fromSource(src).assess(validator)),
+						].map((src) => AST.ASTNodeTypeCall.fromSource(src).eval(validator)),
 						[
 							new SolidTypeList(SolidNull),
 							new SolidTypeHash(SolidBoolean),
@@ -941,7 +941,7 @@ describe('ASTNodeSolid', () => {
 				});
 				it('Map has a default type parameter.', () => {
 					assert.deepStrictEqual(
-						AST.ASTNodeTypeCall.fromSource(`Map.<int>`).assess(validator),
+						AST.ASTNodeTypeCall.fromSource(`Map.<int>`).eval(validator),
 						new SolidTypeMap(Int16, Int16),
 					);
 				});
@@ -950,7 +950,7 @@ describe('ASTNodeSolid', () => {
 						`int.<str>`,
 						`(List | Hash).<bool>`,
 					].forEach((src) => {
-						assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).assess(validator), TypeError05);
+						assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(validator), TypeError05);
 					});
 				});
 				it('throws if base is not one of the allowed strings.', () => {
@@ -958,7 +958,7 @@ describe('ASTNodeSolid', () => {
 						`SET.<str>`,
 						`Mapping.<bool>`,
 					].forEach((src) => {
-						assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).assess(validator), SyntaxError);
+						assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(validator), SyntaxError);
 					});
 				});
 				it('throws when providing incorrect number of arguments.', () => {
@@ -968,13 +968,13 @@ describe('ASTNodeSolid', () => {
 						`Set.<str, str, str, str>`,
 						`Map.<int, int, int, int, int>`,
 					].forEach((src) => {
-						assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).assess(validator), TypeError06);
+						assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(validator), TypeError06);
 					});
 				});
 			});
 			Dev.supports('optionalEntries') && specify('ASTNodeTypeTuple', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).assess(new Validator()),
+					AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).eval(new Validator()),
 					new SolidTypeTuple([
 						{type: Int16,        optional: false},
 						{type: SolidBoolean, optional: false},
@@ -985,7 +985,7 @@ describe('ASTNodeSolid', () => {
 			Dev.supports('optionalEntries') && specify('ASTNodeTypeRecord', () => {
 				const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource(`[x: int, y?: bool, z: str]`);
 				assert.deepStrictEqual(
-					node.assess(new Validator()),
+					node.eval(new Validator()),
 					new SolidTypeRecord(new Map<bigint, TypeEntry>(node.children.map((c, i) => [
 						c.key.id,
 						[
@@ -999,13 +999,13 @@ describe('ASTNodeSolid', () => {
 			describe('ASTNodeTypeList', () => {
 				it('returns a SolidTypeList if there is no count.', () => {
 					assert.deepStrictEqual(
-						AST.ASTNodeTypeList.fromSource(`(int | bool)[]`).assess(new Validator()),
+						AST.ASTNodeTypeList.fromSource(`(int | bool)[]`).eval(new Validator()),
 						new SolidTypeList(Int16.union(SolidBoolean)),
 					);
 				});
 				it('returns a SolidTypeTuple if there is a count.', () => {
 					assert.deepStrictEqual(
-						AST.ASTNodeTypeList.fromSource(`(int | bool)[3]`).assess(new Validator()),
+						AST.ASTNodeTypeList.fromSource(`(int | bool)[3]`).eval(new Validator()),
 						SolidTypeTuple.fromTypes([
 							Int16.union(SolidBoolean),
 							Int16.union(SolidBoolean),
@@ -1016,35 +1016,35 @@ describe('ASTNodeSolid', () => {
 			});
 			specify('ASTNodeTypeHash', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeTypeHash.fromSource(`[:int | bool]`).assess(new Validator()),
+					AST.ASTNodeTypeHash.fromSource(`[:int | bool]`).eval(new Validator()),
 					new SolidTypeHash(Int16.union(SolidBoolean)),
 				);
 			});
 			specify('ASTNodeTypeSet', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeTypeSet.fromSource(`(int | bool){}`).assess(new Validator()),
+					AST.ASTNodeTypeSet.fromSource(`(int | bool){}`).eval(new Validator()),
 					new SolidTypeSet(Int16.union(SolidBoolean)),
 				);
 			});
 			specify('ASTNodeTypeMap', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeTypeMap.fromSource(`{int -> bool}`).assess(new Validator()),
+					AST.ASTNodeTypeMap.fromSource(`{int -> bool}`).eval(new Validator()),
 					new SolidTypeMap(Int16, SolidBoolean),
 				);
 			});
 			it('computes the value of a nullified (ORNULL) type.', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeTypeOperationUnary.fromSource(`int?`).assess(new Validator()),
+					AST.ASTNodeTypeOperationUnary.fromSource(`int?`).eval(new Validator()),
 					Int16.union(SolidNull),
 				)
 			})
 			it('computes the value of AND and OR operators', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeTypeOperationBinary.fromSource(`obj & 3`).assess(new Validator()),
+					AST.ASTNodeTypeOperationBinary.fromSource(`obj & 3`).eval(new Validator()),
 					SolidObject.intersect(typeConstInt(3n)),
 				)
 				assert.deepStrictEqual(
-					AST.ASTNodeTypeOperationBinary.fromSource(`4.2 | int`).assess(new Validator()),
+					AST.ASTNodeTypeOperationBinary.fromSource(`4.2 | int`).eval(new Validator()),
 					typeConstFloat(4.2).union(Int16),
 				)
 			})
@@ -2279,9 +2279,9 @@ describe('ASTNodeSolid', () => {
 		})
 
 		Dev.supports('literalCollection') && describe('ASTNodeTypeAccess', () => {
-			describe('#assess', () => {
-				function evalOfTypeDecl(decl: AST.ASTNodeDeclarationType, validator: Validator): SolidType {
-					return decl.value.assess(validator);
+			describe('#eval', () => {
+				function evalTypeDecl(decl: AST.ASTNodeDeclarationType, validator: Validator): SolidType {
+					return decl.value.eval(validator);
 				}
 				const expected: SolidType[] = [
 					typeConstInt(1n),
@@ -2342,19 +2342,19 @@ describe('ASTNodeSolid', () => {
 				context('index access.', () => {
 					it('returns individual entry types.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(2, 8).map((c) => evalOfTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+							program.children.slice(2, 8).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
 							expected,
 						);
 					});
 					it('negative indices count backwards from end.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(8, 14).map((c) => evalOfTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+							program.children.slice(8, 14).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
 							expected,
 						);
 					});
 					Dev.supports('optionalAccess') && it('unions with void if entry is optional.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(24, 26).map((c) => evalOfTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+							program.children.slice(24, 26).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
 							[
 								typeConstStr('three').union(SolidType.VOID),
 								SolidString.union(SolidType.VOID),
@@ -2362,20 +2362,20 @@ describe('ASTNodeSolid', () => {
 						);
 					});
 					it('throws when index is out of bounds.', () => {
-						assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].3`).assess(validator), TypeError04);
-						assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].-4`).assess(validator), TypeError04);
+						assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].3`) .eval(validator), TypeError04);
+						assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].-4`).eval(validator), TypeError04);
 					});
 				});
 				context('key access.', () => {
 					it('returns individual entry types.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(16, 22).map((c) => evalOfTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+							program.children.slice(16, 22).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
 							expected,
 						);
 					});
 					Dev.supports('optionalAccess') && it('unions with void if entry is optional.', () => {
 						assert.deepStrictEqual(
-							program.children.slice(28, 30).map((c) => evalOfTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+							program.children.slice(28, 30).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
 							[
 								typeConstFloat(2.0).union(SolidType.VOID),
 								Float64.union(SolidType.VOID),
@@ -2383,7 +2383,7 @@ describe('ASTNodeSolid', () => {
 						);
 					});
 					it('throws when key is out of bounds.', () => {
-						assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[a: 1, b: 2.0, c: 'three'].d`).assess(validator), TypeError04);
+						assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[a: 1, b: 2.0, c: 'three'].d`).eval(validator), TypeError04);
 					});
 				});
 			});

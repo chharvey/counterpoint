@@ -25,6 +25,6 @@ export class ASTNodeTypeMap extends ASTNodeType {
 		super(start_node, {}, [antecedenttype, consequenttype]);
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		return new SolidTypeMap(this.antecedenttype.assess(validator), this.consequenttype.assess(validator));
+		return new SolidTypeMap(this.antecedenttype.eval(validator), this.consequenttype.eval(validator));
 	}
 }

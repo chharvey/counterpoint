@@ -24,6 +24,6 @@ export class ASTNodeTypeHash extends ASTNodeType {
 		super(start_node, {}, [type]);
 	}
 	protected override assess_do(validator: Validator): SolidType {
-		return new SolidTypeHash(this.type.assess(validator));
+		return new SolidTypeHash(this.type.eval(validator));
 	}
 }

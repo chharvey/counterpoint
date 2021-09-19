@@ -26,7 +26,7 @@ export class ASTNodeTypeTuple extends ASTNodeType {
 	}
 	protected override assess_do(validator: Validator): SolidType {
 		return new SolidTypeTuple(this.children.map((c) => ({
-			type:     c.value.assess(validator),
+			type:     c.value.eval(validator),
 			optional: c.optional,
 		})));
 	}

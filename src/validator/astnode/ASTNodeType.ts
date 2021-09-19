@@ -49,7 +49,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 * @returns the computed type-value of this node
 	 * @final
 	 */
-	assess(validator: Validator): SolidType {
+	eval(validator: Validator): SolidType {
 		return this.assessed ||= this.assess_do(validator);
 	}
 	protected abstract assess_do(validator: Validator): SolidType;

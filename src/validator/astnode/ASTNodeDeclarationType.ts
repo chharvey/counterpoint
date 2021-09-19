@@ -35,7 +35,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		this.value.varCheck(validator);
 		validator.addSymbol(new SymbolStructureType(
 			this.variable,
-			() => this.value.assess(validator),
+			() => this.value.eval(validator),
 		));
 	}
 	override typeCheck(validator: Validator): void {

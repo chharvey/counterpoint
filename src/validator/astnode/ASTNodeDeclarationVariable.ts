@@ -42,7 +42,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		validator.addSymbol(new SymbolStructureVar(
 			this.variable,
 			this.unfixed,
-			() => this.type.assess(validator),
+			() => this.type.eval(validator),
 			(validator.config.compilerOptions.constantFolding && !this.unfixed)
 				? () => this.value.assess(validator)
 				: null,
@@ -51,14 +51,14 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	override typeCheck(validator: Validator): void {
 		this.value.typeCheck(validator);
 		this.typeCheckAssignment(
-			this.type.assess(validator),
+			this.type.eval(validator),
 			this.value.type(validator),
 			validator,
 		);
 		return validator.getSymbolInfo(this.variable.id)?.assess();
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		const tofloat: boolean = this.type.assess(builder.validator).isSubtypeOf(Float64) || this.value.shouldFloat(builder.validator);
+		const tofloat: boolean = this.type.eval(builder.validator).isSubtypeOf(Float64) || this.value.shouldFloat(builder.validator);
 		const assess: SolidObject | null = this.variable.assess(builder.validator);
 		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && assess)
 			? new INST.InstructionNone()

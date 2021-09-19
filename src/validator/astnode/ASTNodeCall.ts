@@ -64,27 +64,27 @@ export class ASTNodeCall extends ASTNodeExpression {
 		return (new Map<string, () => SolidType>([
 			['List', () => {
 				this.countArgs(1n, [0n, 2n]);
-				const returntype: SolidType = new SolidTypeList(this.typeargs[0].assess(validator));
+				const returntype: SolidType = new SolidTypeList(this.typeargs[0].eval(validator));
 				this.exprargs.length && this.typeCheckAssignment(returntype, this.exprargs[0].type(validator), validator);
 				return returntype;
 			}],
 			['Hash', () => {
 				this.countArgs(1n, [0n, 2n]);
-				const returntype: SolidType = new SolidTypeHash(this.typeargs[0].assess(validator));
+				const returntype: SolidType = new SolidTypeHash(this.typeargs[0].eval(validator));
 				this.exprargs.length && this.typeCheckAssignment(returntype, this.exprargs[0].type(validator), validator);
 				return returntype;
 			}],
 			['Set', () => {
 				this.countArgs(1n, [0n, 2n]);
-				const eltype:     SolidType = this.typeargs[0].assess(validator);
+				const eltype:     SolidType = this.typeargs[0].eval(validator);
 				const returntype: SolidType = new SolidTypeSet(eltype);
 				this.exprargs.length && this.typeCheckAssignment(new SolidTypeList(eltype), this.exprargs[0].type(validator), validator);
 				return returntype;
 			}],
 			['Map', () => {
 				this.countArgs([1n, 3n], [0n, 2n]);
-				const anttype:    SolidType = this.typeargs[0].assess(validator);
-				const contype:    SolidType = this.typeargs[1]?.assess(validator) || anttype;
+				const anttype:    SolidType = this.typeargs[0].eval(validator);
+				const contype:    SolidType = this.typeargs[1]?.eval(validator) || anttype;
 				const returntype: SolidType = new SolidTypeMap(anttype, contype);
 				this.exprargs.length && this.typeCheckAssignment(new SolidTypeList(SolidTypeTuple.fromTypes([anttype, contype])), this.exprargs[0].type(validator), validator);
 				return returntype;
