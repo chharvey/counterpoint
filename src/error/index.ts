@@ -10,8 +10,8 @@ export * from './TypeError01.js';
 export * from './TypeError02.js';
 export * from './TypeError03.js';
 export * from './TypeError04.js';
+export * from './TypeError05.js';
 export {
-	TypeError05,
 	TypeError06,
 } from './SolidTypeError.js';
 export {
