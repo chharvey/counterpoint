@@ -27,7 +27,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 	) {
 		super(start_node, operator, [operand0, operand1]);
 	}
-	protected override assess_do(validator: Validator): SolidType {
+	protected override eval_do(validator: Validator): SolidType {
 		return (
 			(this.operator === Operator.AND) ? this.operand0.eval(validator).intersect(this.operand1.eval(validator)) :
 			(this.operator === Operator.OR)  ? this.operand0.eval(validator).union    (this.operand1.eval(validator)) :

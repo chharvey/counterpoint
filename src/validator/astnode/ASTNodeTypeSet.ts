@@ -23,7 +23,7 @@ export class ASTNodeTypeSet extends ASTNodeType {
 	) {
 		super(start_node, {}, [type]);
 	}
-	protected override assess_do(validator: Validator): SolidType {
+	protected override eval_do(validator: Validator): SolidType {
 		return new SolidTypeSet(this.type.eval(validator));
 	}
 }

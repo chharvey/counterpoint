@@ -50,7 +50,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		super(start_node, {value});
 		this.value = value
 	}
-	protected override assess_do(_validator: Validator): SolidType {
+	protected override eval_do(_validator: Validator): SolidType {
 		return this.value
 	}
 }

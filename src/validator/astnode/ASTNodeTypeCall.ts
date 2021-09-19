@@ -39,7 +39,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		// (`this.base.source` must be `List | Hash | Set | Map`)
 		return forEachAggregated(this.args, (arg) => arg.varCheck(validator));
 	}
-	protected override assess_do(validator: Validator): SolidType {
+	protected override eval_do(validator: Validator): SolidType {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
 			throw new TypeError05(this.base.eval(validator), this.base);
 		}
