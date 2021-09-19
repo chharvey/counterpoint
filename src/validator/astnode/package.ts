@@ -41,6 +41,8 @@ export {
 	TypeError02,
 	TypeError03,
 	TypeError04,
+	TypeError05,
+	TypeError06,
 	NanError01,
 	NanError02,
 	SolidConfig,
