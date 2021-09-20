@@ -1,17 +1,19 @@
+import * as assert from 'assert';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-} from '../src/core/index.js';
-import {
+	// {ASTNodeKey, ...} as AST,
+	Validator,
 	SolidTypeConstant,
+	SolidObject,
 	SolidNull,
 	Int16,
 	Float64,
 	SolidString,
-} from '../src/typer/index.js';
-import {
 	INST,
-} from '../src/builder/index.js';
+	Builder,
+} from '../src/index.js';
+import * as AST from '../src/validator/astnode/index.js'; // HACK
 
 
 
@@ -22,6 +24,27 @@ export const CONFIG_FOLDING_OFF: SolidConfig = {
 		constantFolding: false,
 	},
 };
+
+
+
+export function typeOperations(tests: ReadonlyMap<string, SolidObject>, config: SolidConfig = CONFIG_DEFAULT): void {
+	return assert.deepStrictEqual(
+		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type(new Validator(config))),
+		[...tests.values()].map((expected) => new SolidTypeConstant(expected)),
+	);
+}
+export function foldOperations(tests: Map<string, SolidObject>): void {
+	return assert.deepStrictEqual(
+		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src).fold(new Validator())),
+		[...tests.values()],
+	);
+}
+export function buildOperations(tests: ReadonlyMap<string, INST.InstructionExpression>): void {
+	assert.deepStrictEqual(
+		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))),
+		[...tests.values()],
+	);
+}
 
 
 
