@@ -466,37 +466,6 @@ describe('ASTNodeSolid', () => {
 			});
 		});
 
-		describe('ASTNodeOperation', () => {
-			function buildOperations(tests: ReadonlyMap<string, INST.InstructionExpression>): void {
-				assert.deepStrictEqual(
-					[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))),
-					[...tests.values()],
-				);
-			}
-			it('compound expression.', () => {
-				buildOperations(new Map([
-					[`42 ^ 2 * 420;`, new INST.InstructionBinopArithmetic(
-						Operator.MUL,
-						new INST.InstructionBinopArithmetic(
-							Operator.EXP,
-							instructionConstInt(42n),
-							instructionConstInt(2n),
-						),
-						instructionConstInt(420n),
-					)],
-					[`2 * 3.0 + 5;`, new INST.InstructionBinopArithmetic(
-						Operator.ADD,
-						new INST.InstructionBinopArithmetic(
-							Operator.MUL,
-							instructionConstFloat(2.0),
-							instructionConstFloat(3.0),
-						),
-						instructionConstFloat(5.0),
-					)],
-				]));
-			});
-		});
-
 		describe('ASTNodeDeclarationType', () => {
 			it('always returns InstructionNone.', () => {
 				const src: string = `
@@ -784,14 +753,6 @@ describe('ASTNodeSolid', () => {
 		describe('#type', () => {
 			it('returns Never for undeclared variables.', () => {
 				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidType.NEVER);
-			});
-			it('returns Never for NanErrors.', () => {
-				[
-					AST.ASTNodeOperationBinaryArithmetic.fromSource(`-4 ^ -0.5;`).type(new Validator()),
-					AST.ASTNodeOperationBinaryArithmetic.fromSource(`1.5 / 0.0;`).type(new Validator()),
-				].forEach((typ) => {
-					assert.strictEqual(typ, SolidType.NEVER);
-				})
 			});
 
 			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Set,Map}', () => {
