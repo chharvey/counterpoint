@@ -1,7 +1,5 @@
 import * as assert from 'assert'
-import * as xjs from 'extrajs'
 import {
-	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
 } from '../../src/core/index.js';
@@ -475,17 +473,6 @@ describe('ASTNodeSolid', () => {
 					[...tests.values()],
 				);
 			}
-			specify('ASTNodeOperationTernary', () => {
-				buildOperations(xjs.Map.mapValues(new Map([
-					[`if true  then false else 2;`,    [new Int16(1n), new Int16(0n),    new Int16(2n)]],
-					[`if false then 3.0   else null;`, [new Int16(0n), new Float64(3.0), new Float64(0.0)]],
-					[`if true  then 2     else 3.0;`,  [new Int16(1n), new Float64(2.0), new Float64(3.0)]],
-				]), ([cond, cons, alt]) => new INST.InstructionCond(
-					new INST.InstructionConst(cond),
-					new INST.InstructionConst(cons),
-					new INST.InstructionConst(alt),
-				)));
-			});
 			it('compound expression.', () => {
 				buildOperations(new Map([
 					[`42 ^ 2 * 420;`, new INST.InstructionBinopArithmetic(
@@ -870,30 +857,6 @@ describe('ASTNodeSolid', () => {
 					);
 				});
 			});
-
-			describe('ASTNodeOperation', () => {
-				function typeOperations(tests: ReadonlyMap<string, SolidObject>, config: SolidConfig = CONFIG_DEFAULT): void {
-					return assert.deepStrictEqual(
-						[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type(new Validator(config))),
-						[...tests.values()].map((result) => new SolidTypeConstant(result)),
-					);
-				}
-				describe('ASTNodeOperationTernary', () => {
-					context('with constant folding on', () => {
-						it('computes type for for conditionals', () => {
-							typeOperations(new Map<string, SolidObject>([
-								[`if true then false else 2;`,          SolidBoolean.FALSE],
-								[`if false then 3.0 else null;`,        SolidNull.NULL],
-								[`if true then 2 else 3.0;`,            new Int16(2n)],
-								[`if false then 2 + 3.0 else 1.0 * 2;`, new Float64(2.0)],
-							]));
-						});
-					});
-					it('throws when condition is not boolean.', () => {
-						assert.throws(() => AST.ASTNodeOperationTernary.fromSource(`if 2 then true else false;`).type(new Validator()), TypeError01);
-					});
-				});
-			});
 		});
 
 		describe('#fold', () => {
@@ -1016,23 +979,6 @@ describe('ASTNodeSolid', () => {
 						])),
 					);
 				});
-			});
-
-			describe('ASTNodeOperation', () => {
-				function foldOperations(tests: Map<string, SolidObject>): void {
-					return assert.deepStrictEqual(
-						[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src).fold(new Validator())),
-						[...tests.values()],
-					);
-				}
-				specify('ASTNodeOperationTernary', () => {
-					foldOperations(new Map<string, SolidObject>([
-						[`if true then false else 2;`,          SolidBoolean.FALSE],
-						[`if false then 3.0 else null;`,        SolidNull.NULL],
-						[`if true then 2 else 3.0;`,            new Int16(2n)],
-						[`if false then 2 + 3.0 else 1.0 * 2;`, new Float64(2.0)],
-					]))
-				})
 			});
 		})
 
