@@ -944,46 +944,6 @@ describe('ASTNodeSolid', () => {
 						[...tests.values()].map((result) => new SolidTypeConstant(result)),
 					);
 				}
-				function typeOfOperationFromSource(src: string): SolidType {
-					return AST.ASTNodeOperation.fromSource(src, folding_coercion_off).type(new Validator(folding_coercion_off));
-				}
-				const folding_coercion_off: SolidConfig = {
-					...CONFIG_DEFAULT,
-					compilerOptions: {
-						...CONFIG_DEFAULT.compilerOptions,
-						constantFolding: false,
-						intCoercion: false,
-					},
-				};
-				describe('ASTNodeOperationBinaryComparative', () => {
-					it('with folding and int coersion on.', () => {
-						typeOperations(xjs.Map.mapValues(new Map([
-							[`2 < 3;`,    true],
-							[`2 > 3;`,    false],
-							[`2 <= 3;`,   true],
-							[`2 >= 3;`,   false],
-							[`2 !< 3;`,   false],
-							[`2 !> 3;`,   true],
-						]), (v) => SolidBoolean.fromBoolean(v)));
-					});
-					context('with folding off but int coersion on.', () => {
-						it('allows coercing of ints to floats if there are any floats.', () => {
-							assert.deepStrictEqual(AST.ASTNodeOperationBinaryComparative.fromSource(`7.0 > 3;`).type(new Validator(CONFIG_FOLDING_OFF)), SolidBoolean);
-						});
-					});
-					context('with folding and int coersion off.', () => {
-						it('returns `Boolean` if both operands are of the same numeric type.', () => {
-							assert.deepStrictEqual(typeOfOperationFromSource(`7 < 3;`), SolidBoolean);
-							assert.deepStrictEqual(typeOfOperationFromSource(`7.0 >= 3.0;`), SolidBoolean);
-						});
-						it('throws TypeError if operands have different types.', () => {
-							assert.throws(() => typeOfOperationFromSource(`7.0 <= 3;`), TypeError01);
-						});
-					});
-					it('throws for comparative operation of non-numbers.', () => {
-						assert.throws(() => AST.ASTNodeOperationBinaryComparative.fromSource(`7.0 <= null;`).type(new Validator()), TypeError01);
-					});
-				});
 				describe('ASTNodeOperationBinaryLogical', () => {
 					it('with constant folding on.', () => {
 						typeOperations(new Map<string, SolidObject>([
@@ -1269,34 +1229,6 @@ describe('ASTNodeSolid', () => {
 						[...tests.values()],
 					);
 				}
-				specify('ASTNodeOperationBinaryComparative', () => {
-					foldOperations(xjs.Map.mapValues(new Map([
-						[`3 <  3;`,     false],
-						[`3 >  3;`,     false],
-						[`3 <= 3;`,     true],
-						[`3 >= 3;`,     true],
-						[`5.2 <  7.0;`, true],
-						[`5.2 >  7.0;`, false],
-						[`5.2 <= 7.0;`, true],
-						[`5.2 >= 7.0;`, false],
-						[`5.2 <  9;`, true],
-						[`5.2 >  9;`, false],
-						[`5.2 <= 9;`, true],
-						[`5.2 >= 9;`, false],
-						[`5 <  9.2;`, true],
-						[`5 >  9.2;`, false],
-						[`5 <= 9.2;`, true],
-						[`5 >= 9.2;`, false],
-						[`3.0 <  3;`, false],
-						[`3.0 >  3;`, false],
-						[`3.0 <= 3;`, true],
-						[`3.0 >= 3;`, true],
-						[`3 <  3.0;`, false],
-						[`3 >  3.0;`, false],
-						[`3 <= 3.0;`, true],
-						[`3 >= 3.0;`, true],
-					]), (val) => SolidBoolean.fromBoolean(val)))
-				})
 				specify('ASTNodeOperationBinaryLogical', () => {
 					foldOperations(new Map<string, SolidObject>([
 						[`null && 5;`,     SolidNull.NULL],
