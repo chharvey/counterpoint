@@ -4,6 +4,7 @@ import {
 	CONFIG_DEFAULT,
 	// {ASTNodeKey, ...} as AST,
 	Validator,
+	SolidType,
 	SolidTypeConstant,
 	SolidObject,
 	SolidNull,
@@ -22,6 +23,14 @@ export const CONFIG_FOLDING_OFF: SolidConfig = {
 	compilerOptions: {
 		...CONFIG_DEFAULT.compilerOptions,
 		constantFolding: false,
+	},
+};
+export const CONFIG_FOLDING_COERCION_OFF: SolidConfig = {
+	...CONFIG_DEFAULT,
+	compilerOptions: {
+		...CONFIG_DEFAULT.compilerOptions,
+		constantFolding: false,
+		intCoercion: false,
 	},
 };
 
@@ -44,6 +53,9 @@ export function buildOperations(tests: ReadonlyMap<string, INST.InstructionExpre
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))),
 		[...tests.values()],
 	);
+}
+export function typeOfOperationFromSource(src: string): SolidType {
+	return AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_COERCION_OFF).type(new Validator(CONFIG_FOLDING_COERCION_OFF));
 }
 
 
