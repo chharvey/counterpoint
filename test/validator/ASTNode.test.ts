@@ -15,7 +15,6 @@ import * as AST from '../../src/validator/astnode/index.js'; // HACK
 import {
 	TypeEntry,
 	SolidType,
-	SolidTypeConstant,
 	SolidTypeTuple,
 	SolidTypeRecord,
 	SolidTypeList,
@@ -28,10 +27,6 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-	SolidTuple,
-	SolidRecord,
-	SolidSet,
-	SolidMap,
 } from '../../src/typer/index.js';
 import {
 	Builder,
@@ -50,7 +45,6 @@ import {
 	TypeError06,
 } from '../../src/error/index.js';
 import {
-	assert_wasCalled,
 	assertAssignable,
 } from '../assert-helpers.js';
 import {
@@ -86,27 +80,6 @@ describe('ASTNodeSolid', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					let FOO: int = 42;
 					type T = FOO | float;
-				`).varCheck(new Validator()), ReferenceError03);
-			});
-		});
-		describe('ASTNodeVariable', () => {
-			it('throws if the validator does not contain a record for the identifier.', () => {
-				AST.ASTNodeGoal.fromSource(`
-					let unfixed i: int = 42;
-					i;
-				`).varCheck(new Validator()); // assert does not throw
-				assert.throws(() => AST.ASTNodeVariable.fromSource(`i;`).varCheck(new Validator()), ReferenceError01);
-			});
-			it.skip('throws when there is a temporal dead zone.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`
-					i;
-					let unfixed i: int = 42;
-				`).varCheck(new Validator()), ReferenceError02);
-			});
-			it('throws if it was declared as a type alias.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`
-					type FOO = int;
-					42 || FOO;
 				`).varCheck(new Validator()), ReferenceError03);
 			});
 		});
@@ -403,69 +376,6 @@ describe('ASTNodeSolid', () => {
 			})
 		})
 
-		describe('ASTNodeVariable', () => {
-			it('with constant folding on, returns InstructionConst for fixed & foldable variables.', () => {
-				const src: string = `
-					let x: int = 42;
-					let y: float = 4.2 * 10;
-					x;
-					y;
-				`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				const builder: Builder = new Builder(src)
-				assert.deepStrictEqual(
-					[
-						goal.children[2].build(builder),
-						goal.children[3].build(builder),
-					],
-					[
-						new INST.InstructionStatement(0n, instructionConstInt(42n)),
-						new INST.InstructionStatement(1n, instructionConstFloat(42.0)),
-					],
-				);
-			});
-			it('with constant folding on, returns InstructionGlobalGet for unfixed / non-foldable variables.', () => {
-				const src: string = `
-					let unfixed x: int = 42;
-					let y: int = x + 10;
-					x;
-					y;
-				`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				const builder: Builder = new Builder(src)
-				assert.deepStrictEqual(
-					[
-						goal.children[2].build(builder),
-						goal.children[3].build(builder),
-					],
-					[
-						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
-						new INST.InstructionStatement(1n, new INST.InstructionGlobalGet(0x101n)),
-					],
-				);
-			});
-			it('with constant folding off, always returns InstructionGlobalGet.', () => {
-				const src: string = `
-					let x: int = 42;
-					let unfixed y: float = 4.2;
-					x;
-					y;
-				`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
-				const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
-				assert.deepStrictEqual(
-					[
-						goal.children[2].build(builder),
-						goal.children[3].build(builder),
-					],
-					[
-						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
-						new INST.InstructionStatement(1n, new INST.InstructionGlobalGet(0x101n, true)),
-					],
-				);
-			});
-		});
-
 		describe('ASTNodeDeclarationType', () => {
 			it('always returns InstructionNone.', () => {
 				const src: string = `
@@ -750,199 +660,6 @@ describe('ASTNodeSolid', () => {
 
 
 	describe('ASTNodeExpression', () => {
-		describe('#type', () => {
-			it('returns Never for undeclared variables.', () => {
-				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidType.NEVER);
-			});
-
-			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Set,Map}', () => {
-				let collections: readonly [
-					AST.ASTNodeTuple,
-					AST.ASTNodeRecord,
-					AST.ASTNodeSet,
-					AST.ASTNodeMap,
-				];
-				function initCollections() {
-					return [
-						AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
-						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
-						AST.ASTNodeSet.fromSource(`{1, 2.0, 'three'};`),
-						AST.ASTNodeMap.fromSource(`
-							{
-								'a' || '' -> 1,
-								21 + 21   -> 2.0,
-								3 * 1.0   -> 'three',
-							};
-						`),
-					] as const;
-				}
-				context('with constant folding on.', () => {
-					const validator: Validator = new Validator();
-					let types: SolidType[];
-					before(() => {
-						collections = initCollections();
-						types = collections.map((c) => assert_wasCalled(c.fold, 1, (orig, spy) => {
-							c.fold = spy;
-							try {
-								return c.type(validator);
-							} finally {
-								c.fold = orig;
-							};
-						}));
-					});
-					it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
-						assert.deepStrictEqual(
-							types,
-							collections.map((c) => new SolidTypeConstant(c.fold(validator)!)),
-						);
-					});
-				});
-				it('with constant folding off.', () => {
-					const expected: SolidTypeConstant[] = [typeConstInt(1n), typeConstFloat(2.0), typeConstStr('three')];
-					collections = initCollections();
-					const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
-					assert.deepStrictEqual(
-						collections.map((node) => node.type(validator)),
-						[
-							SolidTypeTuple.fromTypes(expected),
-							SolidTypeRecord.fromTypes(new Map(collections[1].children.map((c, i) => [
-								c.key.id,
-								expected[i],
-							]))),
-							new SolidTypeSet(SolidType.unionAll(expected)),
-							new SolidTypeMap(
-								SolidType.unionAll([typeConstStr('a'), Int16, Float64]),
-								SolidType.unionAll(expected),
-							),
-						],
-					);
-				});
-			});
-		});
-
-		describe('#fold', () => {
-			describe('ASTNodeVariable', () => {
-				it('assesses the value of a fixed variable.', () => {
-					const validator: Validator = new Validator();
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let x: int = 21 * 2;
-						x;
-					`);
-					goal.varCheck(validator);
-					goal.typeCheck(validator);
-					assert.ok(!(goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
-					assert.deepStrictEqual(
-						(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(validator),
-						new Int16(42n),
-					);
-				});
-				it('returns null for an unfixed variable.', () => {
-					const validator: Validator = new Validator();
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let unfixed x: int = 21 * 2;
-						x;
-					`);
-					goal.varCheck(validator);
-					goal.typeCheck(validator);
-					assert.ok((goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
-					assert.deepStrictEqual(
-						(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(validator),
-						null,
-					);
-				});
-				it('returns null for an uncomputable fixed variable.', () => {
-					const validator: Validator = new Validator();
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let unfixed x: int = 21 * 2;
-						let y: int = x / 2;
-						y;
-					`);
-					goal.varCheck(validator);
-					goal.typeCheck(validator);
-					assert.ok(!(goal.children[1] as AST.ASTNodeDeclarationVariable).unfixed);
-					assert.deepStrictEqual(
-						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.fold(validator),
-						null,
-					);
-				});
-			});
-
-			Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Set,Map}', () => {
-				it('returns a constant Tuple/Record/Set/Map for foldable entries.', () => {
-					assert.deepStrictEqual(
-						[
-							AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
-							AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
-							AST.ASTNodeSet.fromSource(`{1, 2.0, 'three'};`),
-							AST.ASTNodeMap.fromSource(`
-								{
-									'a' || '' -> 1,
-									21 + 21   -> 2.0,
-									3 * 1.0   -> 'three',
-								};
-							`),
-						].map((c) => c.fold(new Validator())),
-						[
-							new SolidTuple([
-								new Int16(1n),
-								new Float64(2.0),
-								new SolidString('three'),
-							]),
-							new SolidRecord(new Map<bigint, SolidObject>([
-								[0x100n, new Int16(1n)],
-								[0x101n, new Float64(2.0)],
-								[0x102n, new SolidString('three')],
-							])),
-							new SolidSet(new Set([
-								new Int16(1n),
-								new Float64(2.0),
-								new SolidString('three'),
-							])),
-							new SolidMap(new Map<SolidObject, SolidObject>([
-								[new SolidString('a'), new Int16(1n)],
-								[new Int16(42n),       new Float64(2.0)],
-								[new Float64(3.0),     new SolidString('three')],
-							])),
-						],
-					);
-				});
-				it('returns null for non-foldable entries.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let unfixed x: int = 1;
-						let unfixed y: float = 2.0;
-						let unfixed z: str = 'three';
-						[x, 2.0, 'three'];
-						[a= 1, b= y, c= 'three'];
-						{
-							'a' || '' -> 1,
-							21 + 21   -> y,
-							3 * 1.0   -> 'three',
-						};
-					`);
-					const tuple:   AST.ASTNodeTuple   = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple;
-					const record:  AST.ASTNodeRecord  = (goal.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord;
-					const map:     AST.ASTNodeMap     = (goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap;
-					assert.deepStrictEqual(
-						[
-							tuple,
-							record,
-							map,
-						].map((c) => c.fold(new Validator())),
-						[null, null, null],
-					);
-				});
-				it('ASTNodeRecord overwrites duplicate keys.', () => {
-					assert.deepStrictEqual(
-						AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, a= 'three'];`).fold(new Validator()),
-						new SolidRecord(new Map<bigint, SolidObject>([
-							[0x101n, new Float64(2.0)],
-							[0x100n, new SolidString('three')],
-						])),
-					);
-				});
-			});
-		})
-
 		Dev.supports('literalCollection') && describe('ASTNodeTypeAccess', () => {
 			describe('#eval', () => {
 				function evalTypeDecl(decl: AST.ASTNodeDeclarationType, validator: Validator): SolidType {
