@@ -6,7 +6,6 @@ import {
 	Operator,
 	// {ASTNodeKey, ...} as AST,
 	SymbolStructure,
-	SymbolStructureType,
 	SymbolStructureVar,
 	Validator,
 } from '../../src/validator/index.js';
@@ -41,30 +40,6 @@ import {
 
 describe('ASTNodeSolid', () => {
 	describe('#varCheck', () => {
-		describe('ASTNodeDeclarationType', () => {
-			it('adds a SymbolStructure to the symbol table with a preset `type` value of `unknown`.', () => {
-				const validator: Validator = new Validator();
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					type T = int;
-				`);
-				assert.ok(!validator.hasSymbol(256n))
-				goal.varCheck(validator);
-				assert.ok(validator.hasSymbol(256n));
-				const info: SymbolStructure | null = validator.getSymbolInfo(256n);
-				assert.ok(info instanceof SymbolStructureType);
-				assert.strictEqual(info.value, SolidType.UNKNOWN);
-			});
-			it('throws if the validator already contains a record for the symbol.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`
-					type T = int;
-					type T = float;
-				`).varCheck(new Validator()), AssignmentError01);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`
-					let FOO: int = 42;
-					type FOO = float;
-				`).varCheck(new Validator()), AssignmentError01);
-			});
-		});
 		describe('ASTNodeDeclarationVariable', () => {
 			it('adds a SymbolStructure to the symbol table with a preset `type` value of `unknown` and a preset null `value` value.', () => {
 				const validator: Validator = new Validator();
@@ -178,20 +153,6 @@ describe('ASTNodeSolid', () => {
 
 
 	describe('#typeCheck', () => {
-		describe('ASTNodeDeclarationType', () => {
-			it('sets `SymbolStructure#value`.', () => {
-				const validator: Validator = new Validator();
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					type T = int;
-				`);
-				goal.varCheck(validator);
-				goal.typeCheck(validator);
-				assert.strictEqual(
-					(validator.getSymbolInfo(256n) as SymbolStructureType).value,
-					Int16,
-				);
-			});
-		});
 		describe('ASTNodeDeclarationVariable', () => {
 			it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				const src: string = `let  the_answer:  int | float =  21  *  2;`
@@ -333,27 +294,6 @@ describe('ASTNodeSolid', () => {
 				})
 			})
 		})
-
-		describe('ASTNodeDeclarationType', () => {
-			it('always returns InstructionNone.', () => {
-				const src: string = `
-					type T = int;
-					type U = T | float;
-				`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				const builder: Builder = new Builder(src)
-				assert.deepStrictEqual(
-					[
-						goal.children[0].build(builder),
-						goal.children[1].build(builder),
-					],
-					[
-						new INST.InstructionNone(),
-						new INST.InstructionNone(),
-					],
-				);
-			});
-		});
 
 		describe('ASTNodeDeclarationVariable', () => {
 			it('with constant folding on, returns InstructionNone for fixed & foldable variables.', () => {
