@@ -123,8 +123,7 @@ describe('ASTNodeOperation', () => {
 						[`?null;`,   SolidBoolean.TRUE],
 						[`?42;`,     SolidBoolean.FALSE],
 						[`?4.2e+1;`, SolidBoolean.FALSE],
-					]));
-					Dev.supports('literalCollection') && typeOperations(new Map([
+
 						[`![];`,         SolidBoolean.FALSE],
 						[`![42];`,       SolidBoolean.FALSE],
 						[`![a= 42];`,    SolidBoolean.FALSE],
@@ -193,7 +192,7 @@ describe('ASTNodeOperation', () => {
 							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidBoolean.FALSETYPE);
 						});
 					});
-					Dev.supports('literalCollection') && it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
+					it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							![];
 							![42];
@@ -217,10 +216,7 @@ describe('ASTNodeOperation', () => {
 							`?null;`,
 							`?42;`,
 							`?4.2e+1;`,
-						].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).type(validator)).forEach((typ) => {
-							assert.deepStrictEqual(typ, SolidBoolean);
-						});
-						Dev.supports('literalCollection') && [
+
 							`?[];`,
 							`?[42];`,
 							`?[a= 42];`,
@@ -250,7 +246,7 @@ describe('ASTNodeOperation', () => {
 					[`!'';`,      SolidBoolean.FALSE],
 					[`!'hello';`, SolidBoolean.FALSE],
 				]));
-				Dev.supports('literalCollection') && foldOperations(new Map([
+				foldOperations(new Map([
 					[`![];`,                  SolidBoolean.FALSE],
 					[`![42];`,                SolidBoolean.FALSE],
 					[`![a= 42];`,             SolidBoolean.FALSE],
@@ -277,7 +273,7 @@ describe('ASTNodeOperation', () => {
 					[`?'';`,      SolidBoolean.TRUE],
 					[`?'hello';`, SolidBoolean.FALSE],
 				]));
-				Dev.supports('literalCollection') && foldOperations(new Map([
+				foldOperations(new Map([
 					[`?[];`,                  SolidBoolean.TRUE],
 					[`?[42];`,                SolidBoolean.FALSE],
 					[`?[a= 42];`,             SolidBoolean.FALSE],
@@ -517,7 +513,7 @@ describe('ASTNodeOperation', () => {
 						[`-0.0 == 0.0;`,  SolidBoolean.TRUE],
 					]));
 				});
-				Dev.supports('literalCollection') && it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
+				it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
 					const validator: Validator = new Validator();
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 						let a: obj = [];
@@ -572,51 +568,53 @@ describe('ASTNodeOperation', () => {
 		});
 
 
-		specify('#fold', () => {
-			foldOperations(new Map([
-				[`null === null;`, SolidBoolean.TRUE],
-				[`null ==  null;`, SolidBoolean.TRUE],
-				[`null === 5;`,    SolidBoolean.FALSE],
-				[`null ==  5;`,    SolidBoolean.FALSE],
-				[`true === 1;`,    SolidBoolean.FALSE],
-				[`true ==  1;`,    SolidBoolean.FALSE],
-				[`true === 1.0;`,  SolidBoolean.FALSE],
-				[`true ==  1.0;`,  SolidBoolean.FALSE],
-				[`true === 5.1;`,  SolidBoolean.FALSE],
-				[`true ==  5.1;`,  SolidBoolean.FALSE],
-				[`true === true;`, SolidBoolean.TRUE],
-				[`true ==  true;`, SolidBoolean.TRUE],
-				[`3.0 === 3;`,     SolidBoolean.FALSE],
-				[`3.0 ==  3;`,     SolidBoolean.TRUE],
-				[`3 === 3.0;`,     SolidBoolean.FALSE],
-				[`3 ==  3.0;`,     SolidBoolean.TRUE],
-				[`0.0 === 0.0;`,   SolidBoolean.TRUE],
-				[`0.0 ==  0.0;`,   SolidBoolean.TRUE],
-				[`0.0 === -0.0;`,  SolidBoolean.FALSE],
-				[`0.0 ==  -0.0;`,  SolidBoolean.TRUE],
-				[`0 === -0;`,      SolidBoolean.TRUE],
-				[`0 ==  -0;`,      SolidBoolean.TRUE],
-				[`0.0 === 0;`,     SolidBoolean.FALSE],
-				[`0.0 ==  0;`,     SolidBoolean.TRUE],
-				[`0.0 === -0;`,    SolidBoolean.FALSE],
-				[`0.0 ==  -0;`,    SolidBoolean.TRUE],
-				[`-0.0 === 0;`,    SolidBoolean.FALSE],
-				[`-0.0 ==  0;`,    SolidBoolean.TRUE],
-				[`-0.0 === 0.0;`,  SolidBoolean.FALSE],
-				[`-0.0 ==  0.0;`,  SolidBoolean.TRUE],
-			]));
-			Dev.supports('stringConstant-assess') && foldOperations(new Map([
-				[`'' == '';`,                               SolidBoolean.TRUE],
-				[`'a' === 'a';`,                            SolidBoolean.TRUE],
-				[`'a' ==  'a';`,                            SolidBoolean.TRUE],
-				[`'hello\\u{20}world' === 'hello world';`,  SolidBoolean.TRUE],
-				[`'hello\\u{20}world' ==  'hello world';`,  SolidBoolean.TRUE],
-				[`'a' !== 'b';`,                            SolidBoolean.TRUE],
-				[`'a' !=  'b';`,                            SolidBoolean.TRUE],
-				[`'hello\\u{20}world' !== 'hello20world';`, SolidBoolean.TRUE],
-				[`'hello\\u{20}world' !=  'hello20world';`, SolidBoolean.TRUE],
-			]));
-			Dev.supports('literalCollection') && (() => {
+		describe('#fold', () => {
+			it('simple types.', () => {
+				foldOperations(new Map([
+					[`null === null;`, SolidBoolean.TRUE],
+					[`null ==  null;`, SolidBoolean.TRUE],
+					[`null === 5;`,    SolidBoolean.FALSE],
+					[`null ==  5;`,    SolidBoolean.FALSE],
+					[`true === 1;`,    SolidBoolean.FALSE],
+					[`true ==  1;`,    SolidBoolean.FALSE],
+					[`true === 1.0;`,  SolidBoolean.FALSE],
+					[`true ==  1.0;`,  SolidBoolean.FALSE],
+					[`true === 5.1;`,  SolidBoolean.FALSE],
+					[`true ==  5.1;`,  SolidBoolean.FALSE],
+					[`true === true;`, SolidBoolean.TRUE],
+					[`true ==  true;`, SolidBoolean.TRUE],
+					[`3.0 === 3;`,     SolidBoolean.FALSE],
+					[`3.0 ==  3;`,     SolidBoolean.TRUE],
+					[`3 === 3.0;`,     SolidBoolean.FALSE],
+					[`3 ==  3.0;`,     SolidBoolean.TRUE],
+					[`0.0 === 0.0;`,   SolidBoolean.TRUE],
+					[`0.0 ==  0.0;`,   SolidBoolean.TRUE],
+					[`0.0 === -0.0;`,  SolidBoolean.FALSE],
+					[`0.0 ==  -0.0;`,  SolidBoolean.TRUE],
+					[`0 === -0;`,      SolidBoolean.TRUE],
+					[`0 ==  -0;`,      SolidBoolean.TRUE],
+					[`0.0 === 0;`,     SolidBoolean.FALSE],
+					[`0.0 ==  0;`,     SolidBoolean.TRUE],
+					[`0.0 === -0;`,    SolidBoolean.FALSE],
+					[`0.0 ==  -0;`,    SolidBoolean.TRUE],
+					[`-0.0 === 0;`,    SolidBoolean.FALSE],
+					[`-0.0 ==  0;`,    SolidBoolean.TRUE],
+					[`-0.0 === 0.0;`,  SolidBoolean.FALSE],
+					[`-0.0 ==  0.0;`,  SolidBoolean.TRUE],
+				]));
+				Dev.supports('stringConstant-assess') && foldOperations(new Map([
+					[`'' == '';`,                               SolidBoolean.TRUE],
+					[`'a' === 'a';`,                            SolidBoolean.TRUE],
+					[`'a' ==  'a';`,                            SolidBoolean.TRUE],
+					[`'hello\\u{20}world' === 'hello world';`,  SolidBoolean.TRUE],
+					[`'hello\\u{20}world' ==  'hello world';`,  SolidBoolean.TRUE],
+					[`'a' !== 'b';`,                            SolidBoolean.TRUE],
+					[`'a' !=  'b';`,                            SolidBoolean.TRUE],
+					[`'hello\\u{20}world' !== 'hello20world';`, SolidBoolean.TRUE],
+					[`'hello\\u{20}world' !=  'hello20world';`, SolidBoolean.TRUE],
+				]));
+			});
+			it('compound types.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let a: obj = [];
 					let b: obj = [42];
@@ -686,7 +684,7 @@ describe('ASTNodeOperation', () => {
 				goal.children.slice(13).forEach((stmt) => {
 					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(validator), SolidBoolean.TRUE, stmt.source);
 				});
-			})();
+			});
 		});
 
 

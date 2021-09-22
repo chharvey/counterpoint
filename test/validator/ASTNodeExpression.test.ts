@@ -388,7 +388,7 @@ describe('ASTNodeExpression', () => {
 
 
 
-	Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Set,Map}', () => {
+	describe('ASTNode{Tuple,Record,Set,Map}', () => {
 		describe('#type', () => {
 			let collections: readonly [
 				AST.ASTNodeTuple,

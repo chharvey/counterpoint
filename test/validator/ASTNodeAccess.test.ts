@@ -1,6 +1,5 @@
 import * as assert from 'assert'
 import {
-	Dev,
 	// {ASTNodeKey, ...} as AST,
 	Validator,
 	SolidType,
@@ -29,7 +28,7 @@ import {
 
 
 
-Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
+describe('ASTNodeAccess', () => {
 	function programFactory(src: string): (validator: Validator) => AST.ASTNodeGoal {
 		return (validator: Validator) => AST.ASTNodeGoal.fromSource(src, validator.config);
 	}
@@ -71,43 +70,40 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 		list_unfixed.-3; % type \`int | float | str\` % non-computable value
 		list_unfixed.-2; % type \`int | float | str\` % non-computable value
 		list_unfixed.-1; % type \`int | float | str\` % non-computable value
-		${ Dev.supports('optionalEntries') ? `
-			%% statements 28 – 36 %%
-			let         tupo1_f: [int, float, ?: str] = [1, 2.0, 'three'];
-			let         tupo2_f: [int, float, ?: str] = [1, 2.0];
-			let         tupo3_f: [int, float]         = [1, 2.0, true];
-			let         tupo4_f: [int, float]         = [1, 2.0];
-			let unfixed tupo1_u: [int, float, ?: str] = [1, 2.0, 'three'];
-			let unfixed tupo2_u: [int, float, ?: str] = [1, 2.0];
-			let unfixed tupo3_u: [int, float]         = [1, 2.0, true];
-			let unfixed tupo4_u: [int, float]         = [1, 2.0];
 
-			%% statements 36 – 38 %%
-			tupo1_u.2; % type \`str | void\` % non-computable value
-			tupo2_u.2; % type \`str | void\` % non-computable value
-		` : '' }
-		${ Dev.supports('optionalAccess') ? `
-			%% statements 38 – 42 %%
-			tupo1_f?.2; % type \`'three'\` % value \`'three'\`
-			tupo3_f?.2; % type \`true\`    % value \`true\`
-			tupo1_u?.2; % type \`str?\`    % non-computable value
-			tupo2_u?.2; % type \`str?\`    % non-computable value
+		%% statements 28 – 36 %%
+		let         tupo1_f: [int, float, ?: str] = [1, 2.0, 'three'];
+		let         tupo2_f: [int, float, ?: str] = [1, 2.0];
+		let         tupo3_f: [int, float]         = [1, 2.0, true];
+		let         tupo4_f: [int, float]         = [1, 2.0];
+		let unfixed tupo1_u: [int, float, ?: str] = [1, 2.0, 'three'];
+		let unfixed tupo2_u: [int, float, ?: str] = [1, 2.0];
+		let unfixed tupo3_u: [int, float]         = [1, 2.0, true];
+		let unfixed tupo4_u: [int, float]         = [1, 2.0];
 
-			%% statements 42 – 44 %%
-			list_fixed  ?.2; % type \`'three'\`                  % value \`'three'\`
-			list_unfixed?.2; % type \`int | float | str | null\` % non-computable value
-		` : '' }
-		${ Dev.supports('claimAccess') ? `
-			%% statements 44 – 48 %%
-			tupo1_f!.2; % type \`'three'\` % value \`'three'\`
-			tupo3_f!.2; % type \`true\`    % value \`true\`
-			tupo1_u!.2; % type \`str\`     % non-computable value
-			tupo2_u!.2; % type \`str\`     % non-computable value
+		%% statements 36 – 38 %%
+		tupo1_u.2; % type \`str | void\` % non-computable value
+		tupo2_u.2; % type \`str | void\` % non-computable value
 
-			%% statements 48 – 50 %%
-			let unfixed tupvoid: [int | void] = [42];
-			tupvoid!.0; % type \`int\` % non-computable value
-		` : '' }
+		%% statements 38 – 42 %%
+		tupo1_f?.2; % type \`'three'\` % value \`'three'\`
+		tupo3_f?.2; % type \`true\`    % value \`true\`
+		tupo1_u?.2; % type \`str?\`    % non-computable value
+		tupo2_u?.2; % type \`str?\`    % non-computable value
+
+		%% statements 42 – 44 %%
+		list_fixed  ?.2; % type \`'three'\`                  % value \`'three'\`
+		list_unfixed?.2; % type \`int | float | str | null\` % non-computable value
+
+		%% statements 44 – 48 %%
+		tupo1_f!.2; % type \`'three'\` % value \`'three'\`
+		tupo3_f!.2; % type \`true\`    % value \`true\`
+		tupo1_u!.2; % type \`str\`     % non-computable value
+		tupo2_u!.2; % type \`str\`     % non-computable value
+
+		%% statements 48 – 50 %%
+		let unfixed tupvoid: [int | void] = [42];
+		tupvoid!.0; % type \`int\` % non-computable value
 	`);
 	const KEY_ACCESS_PROGRAM = programFactory(`
 		%% statements 0 – 4 %%
@@ -131,43 +127,40 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 		hash_unfixed.a; % type \`int | float | str\` % non-computable value
 		hash_unfixed.b; % type \`int | float | str\` % non-computable value
 		hash_unfixed.c; % type \`int | float | str\` % non-computable value
-		${ Dev.supports('optionalEntries') ? `
-			%% statements 16 – 24 %%
-			let         reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= 'three'];
-			let         reco2_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
-			let         reco3_f: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
-			let         reco4_f: [a: int, c: float]          = [a= 1, c= 2.0];
-			let unfixed reco1_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= 'three'];
-			let unfixed reco2_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
-			let unfixed reco3_u: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
-			let unfixed reco4_u: [a: int, c: float]          = [a= 1, c= 2.0];
 
-			%% statements 24 – 26 %%
-			reco1_u.b; % type \`str | void\` % non-computable value
-			reco2_u.b; % type \`str | void\` % non-computable value
-		` : '' }
-		${ Dev.supports('optionalAccess') ? `
-			%% statements 26 – 30 %%
-			reco1_f?.b; % type \`'three'\` % value \`'three'\`
-			reco3_f?.b; % type \`true\`    % value \`true\`
-			reco1_u?.b; % type \`str?\`    % non-computable value
-			reco2_u?.b; % type \`str?\`    % non-computable value
+		%% statements 16 – 24 %%
+		let         reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= 'three'];
+		let         reco2_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
+		let         reco3_f: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
+		let         reco4_f: [a: int, c: float]          = [a= 1, c= 2.0];
+		let unfixed reco1_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= 'three'];
+		let unfixed reco2_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
+		let unfixed reco3_u: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
+		let unfixed reco4_u: [a: int, c: float]          = [a= 1, c= 2.0];
 
-			%% statements 30 – 32 %%
-			hash_fixed?.c;   % type \`'three'\`                  % value \`'three'\`
-			hash_unfixed?.c; % type \`int | float | str | null\` % non-computable value
-		` : '' }
-		${ Dev.supports('claimAccess') ? `
-			%% statements 32 – 36 %%
-			reco1_f!.b; % type \`'three'\` % value \`'three'\`
-			reco3_f!.b; % type \`true\`    % value \`true\`
-			reco1_u!.b; % type \`str\`     % non-computable value
-			reco2_u!.b; % type \`str\`     % non-computable value
+		%% statements 24 – 26 %%
+		reco1_u.b; % type \`str | void\` % non-computable value
+		reco2_u.b; % type \`str | void\` % non-computable value
 
-			%% statements 36 – 38 %%
-			let unfixed recvoid: [c: int | void] = [c= 42];
-			recvoid!.c; % type \`int\` % non-computable value
-		` : '' }
+		%% statements 26 – 30 %%
+		reco1_f?.b; % type \`'three'\` % value \`'three'\`
+		reco3_f?.b; % type \`true\`    % value \`true\`
+		reco1_u?.b; % type \`str?\`    % non-computable value
+		reco2_u?.b; % type \`str?\`    % non-computable value
+
+		%% statements 30 – 32 %%
+		hash_fixed?.c;   % type \`'three'\`                  % value \`'three'\`
+		hash_unfixed?.c; % type \`int | float | str | null\` % non-computable value
+
+		%% statements 32 – 36 %%
+		reco1_f!.b; % type \`'three'\` % value \`'three'\`
+		reco3_f!.b; % type \`true\`    % value \`true\`
+		reco1_u!.b; % type \`str\`     % non-computable value
+		reco2_u!.b; % type \`str\`     % non-computable value
+
+		%% statements 36 – 38 %%
+		let unfixed recvoid: [c: int | void] = [c= 42];
+		recvoid!.c; % type \`int\` % non-computable value
 	`);
 	const EXPR_ACCESS_PROGRAM = programFactory(`
 		%% statements 0 – 4 %%
@@ -217,43 +210,40 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 		map_unfixed.[a]; % type \`1 | 2.0 | str\` % non-computable value
 		map_unfixed.[b]; % type \`1 | 2.0 | str\` % non-computable value
 		map_unfixed.[c]; % type \`1 | 2.0 | str\` % non-computable value
-		${ Dev.supports('optionalEntries') ? `
-			%% statements 36 – 44 %%
-			let         tupo1_f: [int, float, ?: str] = [1, 2.0, 'three'];
-			let         tupo2_f: [int, float, ?: str] = [1, 2.0];
-			let         tupo3_f: [int, float]         = [1, 2.0, true];
-			let         tupo4_f: [int, float]         = [1, 2.0];
-			let unfixed tupo1_u: [int, float, ?: str] = [1, 2.0, 'three'];
-			let unfixed tupo2_u: [int, float, ?: str] = [1, 2.0];
-			let unfixed tupo3_u: [int, float]         = [1, 2.0, true];
-			let unfixed tupo4_u: [int, float]         = [1, 2.0];
 
-			%% statements 44 – 46 %%
-			tupo1_u.[0 + 2]; % type \`str | void\` % non-computable value
-			tupo2_u.[0 + 2]; % type \`str | void\` % non-computable value
-		` : '' }
-		${ Dev.supports('optionalAccess') ? `
-			%% statements 46 – 50 %%
-			tupo1_f?.[0 + 2]; % type \`'three'\` % value \`'three'\`
-			tupo3_f?.[0 + 2]; % type \`true\`    % value \`true\`
-			tupo1_u?.[0 + 2]; % type \`str?\`    % non-computable value
-			tupo2_u?.[0 + 2]; % type \`str?\`    % non-computable value
+		%% statements 36 – 44 %%
+		let         tupo1_f: [int, float, ?: str] = [1, 2.0, 'three'];
+		let         tupo2_f: [int, float, ?: str] = [1, 2.0];
+		let         tupo3_f: [int, float]         = [1, 2.0, true];
+		let         tupo4_f: [int, float]         = [1, 2.0];
+		let unfixed tupo1_u: [int, float, ?: str] = [1, 2.0, 'three'];
+		let unfixed tupo2_u: [int, float, ?: str] = [1, 2.0];
+		let unfixed tupo3_u: [int, float]         = [1, 2.0, true];
+		let unfixed tupo4_u: [int, float]         = [1, 2.0];
 
-			%% statements 50 – 56 %%
-			list_fixed  ?.[2];       % type \`'three'\`                  % value \`'three'\`
-			list_unfixed?.[2];       % type \`int | float | str | null\` % non-computable value
-			set_fixed   ?.['three']; % type \`'three'\`                  % value \`'three'\`
-			set_unfixed ?.[three];   % type \`int | float | str | null\` % non-computable value
-			map_fixed   ?.[c];       % type \`'three'\`                  % value \`'three'\`
-			map_unfixed ?.[c];       % type \`int | float | str | null\` % non-computable value
-		` : '' }
-		${ Dev.supports('claimAccess') ? `
-			%% statements 56 – 60 %%
-			tupo1_f!.[0 + 2]; % type \`'three'\` % value \`'three'\`
-			tupo3_f!.[0 + 2]; % type \`true\`    % value \`true\`
-			tupo1_u!.[0 + 2]; % type \`str\`     % non-computable value
-			tupo2_u!.[0 + 2]; % type \`str\`     % non-computable value
-		` : '' }
+		%% statements 44 – 46 %%
+		tupo1_u.[0 + 2]; % type \`str | void\` % non-computable value
+		tupo2_u.[0 + 2]; % type \`str | void\` % non-computable value
+
+		%% statements 46 – 50 %%
+		tupo1_f?.[0 + 2]; % type \`'three'\` % value \`'three'\`
+		tupo3_f?.[0 + 2]; % type \`true\`    % value \`true\`
+		tupo1_u?.[0 + 2]; % type \`str?\`    % non-computable value
+		tupo2_u?.[0 + 2]; % type \`str?\`    % non-computable value
+
+		%% statements 50 – 56 %%
+		list_fixed  ?.[2];       % type \`'three'\`                  % value \`'three'\`
+		list_unfixed?.[2];       % type \`int | float | str | null\` % non-computable value
+		set_fixed   ?.['three']; % type \`'three'\`                  % value \`'three'\`
+		set_unfixed ?.[three];   % type \`int | float | str | null\` % non-computable value
+		map_fixed   ?.[c];       % type \`'three'\`                  % value \`'three'\`
+		map_unfixed ?.[c];       % type \`int | float | str | null\` % non-computable value
+
+		%% statements 56 – 60 %%
+		tupo1_f!.[0 + 2]; % type \`'three'\` % value \`'three'\`
+		tupo3_f!.[0 + 2]; % type \`true\`    % value \`true\`
+		tupo1_u!.[0 + 2]; % type \`str\`     % non-computable value
+		tupo2_u!.[0 + 2]; % type \`str\`     % non-computable value
 	`);
 
 
@@ -280,7 +270,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 			Float64,
 			SolidString,
 		];
-		Dev.supports('optionalAccess') && context('when base is nullish.', () => {
+		context('when base is nullish.', () => {
 			it('optional access returns type of base when it is a subtype of null.', () => {
 				const validator: Validator = new Validator();
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .type(validator), TypeError04);
@@ -365,7 +355,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					],
 				);
 			});
-			Dev.supports('optionalEntries') && it('unions with void if entry is optional.', () => {
+			it('unions with void if entry is optional.', () => {
 				assert.deepStrictEqual(
 					program.children.slice(36, 38).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
@@ -374,7 +364,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					],
 				);
 			});
-			Dev.supports('optionalAccess') && it('unions with null if entry and access are optional.', () => {
+			it('unions with null if entry and access are optional.', () => {
 				assert.deepStrictEqual(
 					program.children.slice(38, 42).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
@@ -385,7 +375,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					],
 				);
 			});
-			Dev.supports('optionalAccess') && it('unions with null for lists if access is optional.', () => {
+			it('unions with null for lists if access is optional.', () => {
 				assert.deepStrictEqual(
 					program.children.slice(42, 44).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
@@ -394,7 +384,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					],
 				);
 			});
-			Dev.supports('claimAccess') && it('claim access always subtracts void.', () => {
+			it('claim access always subtracts void.', () => {
 				assert.deepStrictEqual(
 					[
 						...program.children.slice(44, 48),
@@ -410,10 +400,10 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when index is out of bounds for tuples.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`) .type(validator), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`).type(validator), TypeError04);
-				Dev.supports('optionalAccess') && assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`) .type(validator), TypeError04);
-				Dev.supports('optionalAccess') && assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).type(validator), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`)  .type(validator), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`) .type(validator), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`) .type(validator), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).type(validator), TypeError04);
 			});
 			it('returns the list item type when index is out of bounds for lists.', () => {
 				const validator: Validator = new Validator();
@@ -457,7 +447,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					],
 				);
 			});
-			Dev.supports('optionalEntries') && it('unions with void if entry is optional.', () => {
+			it('unions with void if entry is optional.', () => {
 				assert.deepStrictEqual(
 					program.children.slice(24, 26).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
@@ -466,7 +456,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					],
 				);
 			});
-			Dev.supports('optionalAccess') && it('unions with null if entry and access are optional.', () => {
+			it('unions with null if entry and access are optional.', () => {
 				assert.deepStrictEqual(
 					program.children.slice(26, 30).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
@@ -477,7 +467,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					],
 				);
 			});
-			Dev.supports('optionalAccess') && it('unions with null for hashes if access is optional.', () => {
+			it('unions with null for hashes if access is optional.', () => {
 				assert.deepStrictEqual(
 					program.children.slice(30, 32).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
@@ -486,7 +476,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					],
 				);
 			});
-			Dev.supports('claimAccess') && it('claim access always subtracts void.', () => {
+			it('claim access always subtracts void.', () => {
 				assert.deepStrictEqual(
 					[
 						...program.children.slice(32, 36),
@@ -502,8 +492,8 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when key is out of bounds for records.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`).type(validator), TypeError04);
-				Dev.supports('optionalAccess') && assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).type(validator), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`) .type(validator), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).type(validator), TypeError04);
 			});
 			it('returns the hash item type when key is out of bounds for hashes.', () => {
 				const validator: Validator = new Validator();
@@ -569,7 +559,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 						],
 					);
 				});
-				Dev.supports('optionalEntries') && it('unions with void if tuple entry is optional.', () => {
+				it('unions with void if tuple entry is optional.', () => {
 					assert.deepStrictEqual(
 						program.children.slice(44, 46).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 						[
@@ -578,7 +568,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 						],
 					);
 				});
-				Dev.supports('optionalAccess') && it('unions with null if tuple entry and access are optional.', () => {
+				it('unions with null if tuple entry and access are optional.', () => {
 					assert.deepStrictEqual(
 						program.children.slice(46, 50).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 						[
@@ -589,7 +579,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 						],
 					);
 				});
-				Dev.supports('optionalAccess') && it('unions with null if list/set/mappping access is optional.', () => {
+				it('unions with null if list/set/mappping access is optional.', () => {
 					assert.deepStrictEqual(
 						program.children.slice(50, 56).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 						[
@@ -602,7 +592,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 						],
 					);
 				});
-				Dev.supports('claimAccess') && it('claim access always subtracts void.', () => {
+				it('claim access always subtracts void.', () => {
 					assert.deepStrictEqual(
 						program.children.slice(56, 60).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 						[
@@ -614,10 +604,10 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					);
 				});
 				it('throws when accessor expression is correct type but out of bounds for tuples.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`).type(validator), TypeError04);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[-4];`).type(validator), TypeError04);
-					Dev.supports('optionalAccess') && assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`).type(validator), TypeError04);
-					Dev.supports('optionalAccess') && assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4];`).type(validator), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`)  .type(validator), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[-4];`) .type(validator), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`) .type(validator), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4];`).type(validator), TypeError04);
 				});
 				it('returns the list item type when accessor expression is correct type but out of bounds for lists.', () => {
 					const validator: Validator = new Validator();
@@ -682,7 +672,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 						);
 					});
 				});
-				Dev.supports('optionalEntries') && it('does not union with void, even with optional tuple entries.', () => {
+				it('does not union with void, even with optional tuple entries.', () => {
 					program.children.slice(44, 46).forEach((c) => {
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
@@ -690,7 +680,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 						);
 					});
 				});
-				Dev.supports('optionalAccess') && it('unions with null if access is optional.', () => {
+				it('unions with null if access is optional.', () => {
 					assert.deepStrictEqual(
 						program.children.slice(46, 50).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 						[
@@ -707,7 +697,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 						);
 					});
 				});
-				Dev.supports('claimAccess') && it('claim access always subtracts void.', () => {
+				it('claim access always subtracts void.', () => {
 					assert.deepStrictEqual(
 						program.children.slice(56, 60).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 						[
@@ -745,7 +735,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 			null,
 		];
 
-		Dev.supports('optionalAccess') && context('when base is nullish.', () => {
+		context('when base is nullish.', () => {
 			it('optional access returns base when it is null.', () => {
 				const validator: Validator = new Validator();
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .fold(validator), /TypeError: \w+\.get is not a function/);
@@ -812,11 +802,11 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					program.children.slice(10, 16).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					expected,
 				);
-				Dev.supports('optionalAccess') && assert.deepStrictEqual(
+				assert.deepStrictEqual(
 					program.children.slice(38, 42).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					expected_o,
 				);
-				Dev.supports('claimAccess') && assert.deepStrictEqual(
+				assert.deepStrictEqual(
 					[
 						...program.children.slice(44, 48),
 						program.children[49]
@@ -837,7 +827,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`) .fold(validator), VoidError01);
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`).fold(validator), VoidError01);
 			});
-			Dev.supports('optionalAccess') && it('returns null when optionally accessing index out of bounds.', () => {
+			it('returns null when optionally accessing index out of bounds.', () => {
 				[
 					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`) .fold(validator),
 					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).fold(validator),
@@ -865,11 +855,11 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					program.children.slice(10, 16).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					expected,
 				);
-				Dev.supports('optionalAccess') && assert.deepStrictEqual(
+				assert.deepStrictEqual(
 					program.children.slice(26, 30).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					expected_o,
 				);
-				Dev.supports('claimAccess') && assert.deepStrictEqual(
+				assert.deepStrictEqual(
 					[
 						...program.children.slice(32, 36),
 						program.children[37],
@@ -883,7 +873,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 			it('throws when key is out of bounds.', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`).fold(validator), VoidError01);
 			});
-			Dev.supports('optionalAccess') && it('returns null when optionally accessing key out of bounds.', () => {
+			it('returns null when optionally accessing key out of bounds.', () => {
 				[
 					AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).fold(validator),
 				].forEach((v) => {
@@ -906,11 +896,11 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					program.children.slice(12, 18).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					expected,
 				);
-				Dev.supports('optionalAccess') && assert.deepStrictEqual(
+				assert.deepStrictEqual(
 					program.children.slice(46, 50).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					expected_o,
 				);
-				Dev.supports('claimAccess') && assert.deepStrictEqual(
+				assert.deepStrictEqual(
 					program.children.slice(56, 60).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					expected_o,
 				);
@@ -920,7 +910,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					program.children.slice(18, 24).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					expected,
 				);
-				Dev.supports('optionalAccess') && assert.deepStrictEqual(
+				assert.deepStrictEqual(
 					program.children.slice(50, 52).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
 						new SolidString('three'),
@@ -933,7 +923,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					program.children.slice(24, 30).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					expected,
 				);
-				Dev.supports('optionalAccess') && assert.deepStrictEqual(
+				assert.deepStrictEqual(
 					program.children.slice(52, 54).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
 						new SolidString('three'),
@@ -946,7 +936,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 					program.children.slice(30, 36).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					expected,
 				);
-				Dev.supports('optionalAccess') && assert.deepStrictEqual(
+				assert.deepStrictEqual(
 					program.children.slice(54, 56).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
 						new SolidString('three'),
@@ -959,7 +949,7 @@ Dev.supports('literalCollection') && describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}.[3];`)                               .fold(validator), VoidError01);
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}.[['a']];`).fold(validator), VoidError01);
 			});
-			Dev.supports('optionalAccess') && it('returns null when optionally accessing index/antecedent out of bounds.', () => {
+			it('returns null when optionally accessing index/antecedent out of bounds.', () => {
 				[
 					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`)                               .fold(validator),
 					AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}?.[3];`)                               .fold(validator),

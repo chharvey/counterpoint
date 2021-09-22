@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import {
-	Dev,
 	// {ASTNodeKey, ...} as AST,
 	Validator,
 	TypeEntry,
@@ -111,7 +110,7 @@ describe('ASTNodeType', () => {
 
 
 
-	Dev.supports('optionalEntries') && specify('ASTNodeTypeTuple', () => {
+	specify('ASTNodeTypeTuple', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).eval(new Validator()),
@@ -126,7 +125,7 @@ describe('ASTNodeType', () => {
 
 
 
-	Dev.supports('optionalEntries') && specify('ASTNodeTypeRecord', () => {
+	specify('ASTNodeTypeRecord', () => {
 		specify('#eval', () => {
 			const node: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource(`[x: int, y?: bool, z: str]`);
 			assert.deepStrictEqual(

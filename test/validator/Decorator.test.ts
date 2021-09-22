@@ -26,7 +26,7 @@ import * as h from '../helpers-parse.js';
 
 describe('Decorator', () => {
 	describe('.decorate', () => {
-		Dev.supports('literalCollection') && describe('Word ::= KEYWORD | IDENTIFIER', () => {
+		describe('Word ::= KEYWORD | IDENTIFIER', () => {
 			it('makes an ASTNodeKey.', () => {
 				/*
 					<Key source="let" id=\x8c/>
@@ -95,7 +95,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('literalCollection') && describe('EntryType<Named, Optional> ::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type', () => {
+		describe('EntryType<Named, Optional> ::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type', () => {
 			specify('EntryType ::= Type', () => {
 				/*
 					<ItemType optional=false>
@@ -109,7 +109,7 @@ describe('Decorator', () => {
 					`float`,
 				);
 			});
-			Dev.supports('optionalEntries') && specify('EntryType_Optional ::= "?:" Type', () => {
+			specify('EntryType_Optional ::= "?:" Type', () => {
 				/*
 					<ItemType optional=true>
 						<TypeConstant source="float"/>
@@ -136,7 +136,7 @@ describe('Decorator', () => {
 					[`fontSize`,              `float`],
 				);
 			});
-			Dev.supports('optionalEntries') && specify('EntryType_Named_Optional ::= Word "?:" Type', () => {
+			specify('EntryType_Named_Optional ::= Word "?:" Type', () => {
 				/*
 					<PropertyType optional=true>
 						<Key source="fontSize"/>
@@ -152,14 +152,14 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" (","? ItemsType)? "]"', () => {
+		describe('TypeTupleLiteral ::= "[" (","? ItemsType)? "]"', () => {
 			it('makes an empty ASTNodeTypeTuple.', () => {
 				/*
 					<TypeTuple/>
 				*/
 				assert_arrayLength(Decorator.decorate(h.tupleTypeFromString(`[]`)).children, 0);
 			});
-			Dev.supports('optionalEntries') && it('makes a nonempty ASTNodeTypeTuple.', () => {
+			it('makes a nonempty ASTNodeTypeTuple.', () => {
 				/*
 					<TypeTuple>
 						<TypeAlias source="T"/>
@@ -184,7 +184,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('optionalEntries') && describe('TypeRecordLiteral ::= "[" ","? PropertiesType "]"', () => {
+		describe('TypeRecordLiteral ::= "[" ","? PropertiesType "]"', () => {
 			it('makes an ASTNodeTypeRecord.', () => {
 				/*
 					<TypeRecord>
@@ -315,7 +315,7 @@ describe('Decorator', () => {
 		})
 
 		describe('TypeCompound ::= TypeCompound (PropertyAccessType | GenericCall)', () => {
-			Dev.supports('literalCollection') && it('access by integer.', () => {
+			it('access by integer.', () => {
 				/*
 					<AccessType>
 						<TypeTuple source="[42, 420, 4200]">...</TypeTuple>
@@ -333,7 +333,7 @@ describe('Decorator', () => {
 					[`[ 42 , 420 , 4200 ]`, `. 1`],
 				);
 			});
-			Dev.supports('literalCollection') && it('access by key.', () => {
+			it('access by key.', () => {
 				/*
 					<AccessType>
 						<TypeRecord source="[c: 42, b: 420, a: 4200]">...</TypeRecord>
@@ -525,7 +525,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('Property ::= Word "=" Expression', () => {
+		describe('Property ::= Word "=" Expression', () => {
 			it('makes an ASTNodeProperty.', () => {
 				/*
 					<Property>
@@ -542,7 +542,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('Case ::= Expression "->" Expression', () => {
+		describe('Case ::= Expression "->" Expression', () => {
 			it('makes an ASTNodeCase', () => {
 				/*
 					<Case>
@@ -558,7 +558,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
+		describe('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
 			it('makes an empty ASTNodeTuple.', () => {
 				/*
 					<Tuple/>
@@ -587,7 +587,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('RecordLiteral ::= "[" ","? Property# ","? "]"', () => {
+		describe('RecordLiteral ::= "[" ","? Property# ","? "]"', () => {
 			it('makes an ASTNodeRecord.', () => {
 				/*
 					<Record>
@@ -607,7 +607,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('SetLiteral ::= "{" (","? Expression# ","?)? "}"', () => {
+		describe('SetLiteral ::= "{" (","? Expression# ","?)? "}"', () => {
 			it('makes an empty ASTNodeSet.', () => {
 				/*
 					<Set/>
@@ -636,7 +636,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('MapLiteral ::= "{" ","? Case# ","? "}"', () => {
+		describe('MapLiteral ::= "{" ","? Case# ","? "}"', () => {
 			it('makes an ASTNodeMap.', () => {
 				/*
 					<Map>
@@ -817,7 +817,7 @@ describe('Decorator', () => {
 				assert.strictEqual(access.kind, kind);
 				return access;
 			}
-			Dev.supports('literalCollection') && context('normal access.', () => {
+			context('normal access.', () => {
 				it('access by index.', () => {
 					/*
 						<Access kind=NORMAL>
@@ -869,7 +869,7 @@ describe('Decorator', () => {
 					);
 				});
 			});
-			Dev.supports('optionalAccess') && context('optional access.', () => {
+			context('optional access.', () => {
 				it('access by index.', () => {
 					/*
 						<Access kind=OPTIONAL>
@@ -906,7 +906,7 @@ describe('Decorator', () => {
 					`, Operator.OPTDOT);
 				});
 			});
-			Dev.supports('claimAccess') && context('claim access.', () => {
+			context('claim access.', () => {
 				it('access by index.', () => {
 					/*
 						<Access kind=CLAIM>

@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import {
-	Dev,
 	// {ASTNodeKey, ...} as AST,
 	Validator,
 	SolidType,
@@ -18,7 +17,7 @@ import {
 
 
 
-Dev.supports('literalCollection') && describe('ASTNodeTypeAccess', () => {
+describe('ASTNodeTypeAccess', () => {
 	describe('#eval', () => {
 		function evalTypeDecl(decl: AST.ASTNodeDeclarationType, validator: Validator): SolidType {
 			return decl.assigned.eval(validator);
@@ -62,19 +61,17 @@ Dev.supports('literalCollection') && describe('ASTNodeTypeAccess', () => {
 				type C5 = RecV.b; % type \`float\`
 				type C6 = RecV.c; % type \`str\`
 
-				${ Dev.supports('optionalAccess') ? `
-					type TupoC = [1,   2.0,   ?: 'three'];
-					type TupoV = [int, float, ?: str];
+				type TupoC = [1,   2.0,   ?: 'three'];
+				type TupoV = [int, float, ?: str];
 
-					type D1 = TupoC.2; % type \`'three' | void\`
-					type D2 = TupoV.2; % type \`str | void\`
+				type D1 = TupoC.2; % type \`'three' | void\`
+				type D2 = TupoV.2; % type \`str | void\`
 
-					type RecoC = [a: 1,   b?: 2.0,   c: 'three'];
-					type RecoV = [a: int, b?: float, c: str];
+				type RecoC = [a: 1,   b?: 2.0,   c: 'three'];
+				type RecoV = [a: int, b?: float, c: str];
 
-					type E1 = RecoC.b; % type \`2.0 | void\`
-					type E2 = RecoV.b; % type \`float | void\`
-				` : '' }
+				type E1 = RecoC.b; % type \`2.0 | void\`
+				type E2 = RecoV.b; % type \`float | void\`
 			`, validator.config);
 			program.varCheck(validator);
 			program.typeCheck(validator);
@@ -93,7 +90,7 @@ Dev.supports('literalCollection') && describe('ASTNodeTypeAccess', () => {
 					expected,
 				);
 			});
-			Dev.supports('optionalAccess') && it('unions with void if entry is optional.', () => {
+			it('unions with void if entry is optional.', () => {
 				assert.deepStrictEqual(
 					program.children.slice(24, 26).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
 					[
@@ -115,7 +112,7 @@ Dev.supports('literalCollection') && describe('ASTNodeTypeAccess', () => {
 					expected,
 				);
 			});
-			Dev.supports('optionalAccess') && it('unions with void if entry is optional.', () => {
+			it('unions with void if entry is optional.', () => {
 				assert.deepStrictEqual(
 					program.children.slice(28, 30).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
 					[
