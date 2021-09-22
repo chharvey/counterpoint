@@ -1,13 +1,23 @@
 import {
+	SolidConfig,
+	CONFIG_DEFAULT,
 	SolidTypeConstant,
 	SolidNull,
 	Int16,
 	Float64,
 	SolidString,
-} from '../src/typer/index.js';
-import {
 	INST,
-} from '../src/builder/index.js';
+} from '../src/index.js';
+
+
+
+export const CONFIG_FOLDING_OFF: SolidConfig = {
+	...CONFIG_DEFAULT,
+	compilerOptions: {
+		...CONFIG_DEFAULT.compilerOptions,
+		constantFolding: false,
+	},
+};
 
 
 
