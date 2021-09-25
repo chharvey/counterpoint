@@ -57,8 +57,8 @@ None! VarCheck(SemanticDeclarationType decl) :=
 		1. *Throw:* a new AssignmentError01.
 	4. *Perform:* *Unwrap:* `VarCheck(decl.children.1)`.
 	5. *Let* `symbol` be a new SymbolStructureType [
-		id=    `id`,
-		value= `Unknown`,
+		id=        `id`,
+		typevalue= `Unknown`,
 	].
 	6. Add `symbol` as a record for `id` to the validator.
 ;

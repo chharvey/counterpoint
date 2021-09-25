@@ -37,24 +37,14 @@ export abstract class SymbolStructure {
 
 
 export class SymbolStructureType extends SymbolStructure {
-	private was_evaluated: boolean = false;
 	/** The assessed value of the symbol. */
-	private _value: SolidType = SolidType.UNKNOWN;
+	typevalue: SolidType = SolidType.UNKNOWN;
 	constructor (
 		node: AST.ASTNodeTypeAlias,
-		/** A lambda returning the assessed value of the symbol. */
-		private readonly value_setter: () => SolidType,
 	) {
 		super(node.id, node.line_index, node.col_index, node.source);
 	}
-	get value(): SolidType {
-		return this._value;
-	}
 	override assess(): void {
-		if (!this.was_evaluated) {
-			this.was_evaluated = true;
-			this._value = this.value_setter();
-		};
 	}
 }
 
