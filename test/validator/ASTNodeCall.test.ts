@@ -48,6 +48,24 @@ describe('ASTNodeCall', () => {
 				],
 			);
 		});
+		it('List, Set, and Map take List-type arguments.', () => {
+			assert.deepStrictEqual(
+				[
+					`List.<int>(List.<int>([1, 2, 3]));`,
+					`Set.<int>(List.<int>([1, 2, 3]));`,
+					`Map.<int, float>(List.<[int, float]>([
+						[1, 0.1],
+						[2, 0.2],
+						[3, 0.3],
+					]));`,
+				].map((src) => AST.ASTNodeCall.fromSource(src).type(validator)),
+				[
+					new SolidTypeList(Int16),
+					new SolidTypeSet(Int16),
+					new SolidTypeMap(Int16, Float64),
+				],
+			);
+		});
 		it('zero/empty functional arguments.', () => {
 			assert.deepStrictEqual(
 				[
@@ -140,6 +158,36 @@ describe('ASTNodeCall', () => {
 						[0x102n, new Int16(2n)],
 						[0x103n, new Int16(3n)],
 					])),
+					new SolidSet<Int16>(new Set<Int16>([
+						new Int16(1n),
+						new Int16(2n),
+						new Int16(3n),
+					])),
+					new SolidMap<Int16, Float64>(new Map<Int16, Float64>([
+						[new Int16(1n), new Float64(0.1)],
+						[new Int16(2n), new Float64(0.2)],
+						[new Int16(3n), new Float64(0.4)],
+					])),
+				],
+			);
+		});
+		it('List, Set, and Map take List-value arguments.', () => {
+			assert.deepStrictEqual(
+				[
+					`List.<int>(List.<int>([1, 2, 3]));`,
+					`Set.<int>(List.<int>([1, 2, 3]));`,
+					`Map.<int, float>(List.<[int, float]>([
+						[1, 0.1],
+						[2, 0.2],
+						[3, 0.4],
+					]));`,
+				].map((src) => AST.ASTNodeCall.fromSource(src).fold(validator)),
+				[
+					new SolidList<Int16>([
+						new Int16(1n),
+						new Int16(2n),
+						new Int16(3n),
+					]),
 					new SolidSet<Int16>(new Set<Int16>([
 						new Int16(1n),
 						new Int16(2n),
