@@ -35,7 +35,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
 		};
 	}
-	protected override assess_do(validator: Validator): SolidType {
+	protected override eval_do(validator: Validator): SolidType {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureType) {

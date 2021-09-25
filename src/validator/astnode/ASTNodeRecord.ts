@@ -38,13 +38,13 @@ export class ASTNodeRecord extends ASTNodeExpression {
 	protected override type_do(validator: Validator): SolidType {
 		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
-			c.value.type(validator),
+			c.val.type(validator),
 		])));
 	}
-	protected override assess_do(validator: Validator): SolidObject | null {
+	protected override fold_do(validator: Validator): SolidObject | null {
 		const properties: ReadonlyMap<bigint, SolidObject | null> = new Map(this.children.map((c) => [
 			c.key.id,
-			c.value.assess(validator),
+			c.val.fold(validator),
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null

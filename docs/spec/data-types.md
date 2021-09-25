@@ -14,10 +14,10 @@ Solid Specification Types are only used internally within this specification to 
 They are not directly observable from Solid code.
 
 
-### Void
-The **Void** type has one value called *void*.
+### None
+The **None** type has one value called *none*.
 It signifies a variable with no meaningful value.
-An algorithm with output type Void returns a [completion structure](#completionstructure)
+An algorithm with output type None returns a [completion structure](#completionstructure)
 with no \`value\` property.
 
 
@@ -83,6 +83,12 @@ A **Sequence** is an ordered list of values. The values may be a mix of any type
 If the values fall within a certain type \`‹T›\` (a metavariable),
 the Sequence type is denoted \`Sequence<‹T›>\`.
 For example, a sequence of Integers is denoted \`Sequence&lt;Integer&gt;\`.
+
+
+### Vector
+A **Vector** is an ordered list of values where the number of values is fixed.
+For example, the notation \`Vector&lt;Integer, Float&gt;\` indicates a sequence of two items,
+the first of which is of type \`Integer\` and the second of which is of type \`Float\`.
 
 
 ### Structure
@@ -180,6 +186,9 @@ values directly manipulated by a Solid program.
 Solid has the following built-in types.
 This list is not exhaustive, as Solid Types may be created in any Solid program.
 
+
+### Simple Types
+
 - [Never](#never)
 - [Void](#void)
 - [Null](#null)
@@ -191,8 +200,7 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 - [Unknown](#unknown)
 - [Compound Types](#compound-types)
 
-
-### Never
+#### Never
 The Botton Type represents the set of no values, called `never`.
 No value is assignable to `never`,
 and expressions of type `never` are accepted everywhere.
@@ -202,8 +210,7 @@ and no type (except `never` itself) is a subtype of `never`.
 `never` is the the “absorption element” of the [intersection](#intersection) operation
 and the “identity element” of the [union](#union) operation.
 
-
-### Void
+#### Void
 The Void type represents the completion of an evaluation but the absence of a value.
 It is the return type of a function that may have side-effects but that does not return a value.
 It is also partly the type of an optional entry in a collection.
@@ -218,20 +225,17 @@ the [union](#union) \`Or<‹T›, Void>\` is not necessarily the same as \`‹T�
 
 The Void type is also unlike Null in that no Solid Language Value has type Void.
 
-
-### Null
+#### Null
 The Null type has exactly one value, called `null`.
 
-
-### Boolean
+#### Boolean
 The Boolean type has two logical values, called `true` and `false`.
 
-
-### Number
+#### Number
 The Number type represents numerical values.
 The Number type is partitioned into two disjoint subtypes: Integer and Float.
 
-#### Integer
+##### Integer
 The Integer type represents [mathematical integers](#real-integer-numbers).
 The Solid compiler represents Integers as 16-bit signed two’s complement values.
 
@@ -249,26 +253,23 @@ The behavior of performing arithmetic operations that are invalid in the integer
 (such as dividing by a non-factor, or raising to a negative exponent) are defined in each respective operation.
 The result of division is rounded towards zero. Dividing by zero results in an error.
 
-#### Float
+##### Float
 The Float type represents [mathematical rational numbers](#real-rational-numbers)
 whose decimals terminate in base 10.
 (That is, numbers that can be expressed as a finite sum of multiples of powers of 10.)
 The Float type contains “floating-point numbers”, which are 64-bit format values as specified in the
 *IEEE Standard for Binary Floating-Point Arithmetic ([IEEE 754-2019](https://standards.ieee.org/standard/754-2019.html))*.
 
-
-### String
+#### String
 The String type represents textual data and is stored as an immutable tuple of [integers](#integer).
 Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algorithm.
 
-
-### Object
+#### Object
 The Object type is the parent type of all Solid Language Types.
 Every Solid Language Value is an Object.
 Some specific built-in subtypes of Object are described in the [Built-Ins](./built-ins.md) chapter.
 
-
-### Unknown
+#### Unknown
 The Top Type represents the set of all possible values, called `unknown`.
 Any value or expression is assignable to `unknown`,
 and expressions of type `unknown` are accepted almost nowhere.
@@ -280,6 +281,7 @@ and the “absorption element” of the [union](#union) operation.
 
 
 ### Compound Types
+Compound types are subtypes of [Object](#object) and are composed of other types.
 
 - [Tuple](#tuple-type)
 - [Record](#record-type)

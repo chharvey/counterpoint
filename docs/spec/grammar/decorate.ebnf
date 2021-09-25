@@ -150,7 +150,7 @@ Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation
 		Decorate(TypeUnarySymbol)
 	);
 Decorate(TypeUnarySymbol ::= TypeUnarySymbol "[" "]") -> SemanticTypeList
-	:= (SemanticTypeList[count=null]
+	:= (SemanticTypeList[count=none]
 		Decorate(TypeUnarySymbol)
 	);
 Decorate(TypeUnarySymbol ::= TypeUnarySymbol "[" INTEGER "]") -> SemanticTypeList

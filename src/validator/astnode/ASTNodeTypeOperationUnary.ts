@@ -30,9 +30,9 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
 		}
 	}
-	protected override assess_do(validator: Validator): SolidType {
+	protected override eval_do(validator: Validator): SolidType {
 		return (this.operator === Operator.ORNULL)
-			? this.operand.assess(validator).union(SolidNull)
+			? this.operand.eval(validator).union(SolidNull)
 			: (() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
 	}
 }

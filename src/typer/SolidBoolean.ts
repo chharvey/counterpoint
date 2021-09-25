@@ -37,19 +37,19 @@ export class SolidBoolean extends SolidObject {
 	}
 	/**
 	 * Construct a new SolidBoolean object.
-	 * @param value The native boolean value of this object.
+	 * @param data The native boolean value of this object.
 	 */
-	private constructor (readonly value: boolean = false) {
+	private constructor (private readonly data: boolean = false) {
 		super()
 	}
 
 	override toString(): string {
-		return `${ this.value }`
+		return `${ this.data }`;
 	}
 	override get isTruthy(): boolean {
-		return this.value;
+		return this.data;
 	}
 	protected override identical_helper(value: SolidObject): boolean {
-		return value instanceof SolidBoolean && this.value === value.value
+		return value instanceof SolidBoolean && this.data === value.data;
 	}
 }

@@ -43,10 +43,10 @@ export class ASTNodeMap extends ASTNodeExpression {
 			SolidType.unionAll(this.children.map((c) => c.consequent.type(validator))),
 		);
 	}
-	protected override assess_do(validator: Validator): SolidObject | null {
+	protected override fold_do(validator: Validator): SolidObject | null {
 		const cases: ReadonlyMap<SolidObject | null, SolidObject | null> = new Map(this.children.map((c) => [
-			c.antecedent.assess(validator),
-			c.consequent.assess(validator),
+			c.antecedent.fold(validator),
+			c.consequent.fold(validator),
 		]));
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null

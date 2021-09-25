@@ -23,7 +23,7 @@ import * as h from '../helpers-parse.js';
 
 describe('ParserSolid', () => {
 	describe('#parse', () => {
-		Dev.supports('literalCollection') && describe('Word ::= KEYWORD | IDENTIFIER', () => {
+		describe('Word ::= KEYWORD | IDENTIFIER', () => {
 			it('makes a Word node.', () => {
 				/*
 					<Word>
@@ -40,7 +40,7 @@ describe('ParserSolid', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" (","? ItemsType)? "]"', () => {
+		describe('TypeTupleLiteral ::= "[" (","? ItemsType)? "]"', () => {
 			/*
 				<TypeTupleLiteral>
 					<PUNCTUATOR>[</PUNCTUATOR>
@@ -72,7 +72,7 @@ describe('ParserSolid', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeRecordLiteral ::= "[" ","? PropertiesType "]"', () => {
+		describe('TypeRecordLiteral ::= "[" ","? PropertiesType "]"', () => {
 			/*
 				<TypeRecordLiteral>
 					<PUNCTUATOR>[</PUNCTUATOR>
@@ -161,11 +161,11 @@ describe('ParserSolid', () => {
 			})
 		})
 
-		Dev.supports('literalCollection') && specify('TypeUnit ::= TypeTupleLiteral', () => {
+		specify('TypeUnit ::= TypeTupleLiteral', () => {
 			h.tupleTypeFromString(`[T, U | V, W & X!]`); // assert does not throw
 		});
 
-		Dev.supports('literalCollection') && specify('TypeUnit ::= TypeRecordLiteral', () => {
+		specify('TypeUnit ::= TypeRecordLiteral', () => {
 			h.recordTypeFromString(`[a: T, b: U | V, c: W & X!]`); // assert does not throw
 		});
 
@@ -343,7 +343,7 @@ describe('ParserSolid', () => {
 			})
 		});
 
-		Dev.supports('literalCollection') && describe('Property ::= Word "=" Expression', () => {
+		describe('Property ::= Word "=" Expression', () => {
 			it('makes a Property node.', () => {
 				/*
 					<Property>
@@ -363,7 +363,7 @@ describe('ParserSolid', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('Case ::= Expression "->" Expression', () => {
+		describe('Case ::= Expression "->" Expression', () => {
 			it('makes a Case node.', () => {
 				/*
 					<Case>
@@ -379,7 +379,7 @@ describe('ParserSolid', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
+		describe('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
 			it('with no leading or trailing comma.', () => {
 				/*
 					<TupleLiteral>
@@ -443,7 +443,7 @@ describe('ParserSolid', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('RecordLiteral ::= "[" ","? Property# ","? "]"', () => {
+		describe('RecordLiteral ::= "[" ","? Property# ","? "]"', () => {
 			it('with leading comma.', () => {
 				/*
 					<RecordLiteral>
@@ -508,11 +508,11 @@ describe('ParserSolid', () => {
 			})
 		})
 
-		Dev.supports('literalCollection') && specify('ExpressionUnit ::= TupleLiteral', () => {
+		specify('ExpressionUnit ::= TupleLiteral', () => {
 			h.tupleLiteralFromSource(`[, 42, true, null || false,];`); // assert does not throw
 		});
 
-		Dev.supports('literalCollection') && specify('ExpressionUnit ::= RecordLiteral', () => {
+		specify('ExpressionUnit ::= RecordLiteral', () => {
 			h.recordLiteralFromSource(`
 				[
 					, let= true

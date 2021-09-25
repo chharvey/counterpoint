@@ -1,6 +1,5 @@
 type DevToggleKey =
 	// v0.4.0
-		| 'literalCollection'
 		| 'literalString-lex'
 		| 'literalString-cook'
 		| 'stringConstant-assess'
@@ -9,10 +8,6 @@ type DevToggleKey =
 		| 'stringTemplate-parse'
 		| 'stringTemplate-decorate'
 		| 'stringTemplate-assess'
-		| 'voidType'
-		| 'optionalEntries'
-		| 'optionalAccess'
-		| 'claimAccess'
 ;
 type DevToggleVal = [boolean, DevToggleKey[]?];
 
@@ -36,7 +31,6 @@ export class Dev {
 	 * Released features may have an optional language feature option defined in {@link SolidConfig}.
 	 */
 	private static readonly TOGGLES: {[K in DevToggleKey]: DevToggleVal} = {
-		literalCollection:         [true],
 		'literalString-lex':       [true],
 		'literalString-cook':      [true, ['literalString-lex']],
 		'stringConstant-assess':   [true, ['literalString-cook']],
@@ -45,10 +39,6 @@ export class Dev {
 		'stringTemplate-parse':    [true, ['literalTemplate-cook']],
 		'stringTemplate-decorate': [true, ['stringTemplate-parse']],
 		'stringTemplate-assess':   [true, ['stringTemplate-decorate']],
-		voidType:                  [true],
-		optionalEntries:           [true, ['literalCollection', 'voidType']],
-		optionalAccess:            [true, ['literalCollection', 'optionalEntries']],
-		claimAccess:               [true, ['literalCollection', 'optionalEntries']],
 	}
 
 	/**

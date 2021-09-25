@@ -8,9 +8,9 @@ import type {ASTNodeKey} from './ASTNodeKey.js';
 export class ASTNodeProperty extends ASTNodeSolid {
 	constructor (
 		start_node: PARSENODE.ParseNodeProperty,
-		readonly key:   ASTNodeKey,
-		readonly value: ASTNodeExpression,
+		readonly key: ASTNodeKey,
+		readonly val: ASTNodeExpression,
 	) {
-		super(start_node, {}, [key, value]);
+		super(start_node, {}, [key, val]);
 	}
 }

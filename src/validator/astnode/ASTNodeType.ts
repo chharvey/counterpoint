@@ -34,7 +34,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeType {
 		const statement: ASTNodeDeclarationType = ASTNodeDeclarationType.fromSource(`type T = ${ src };`, config);
-		return statement.value;
+		return statement.assigned;
 	}
 	private assessed?: SolidType;
 	/**
@@ -49,8 +49,8 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	 * @returns the computed type-value of this node
 	 * @final
 	 */
-	assess(validator: Validator): SolidType {
-		return this.assessed ||= this.assess_do(validator);
+	eval(validator: Validator): SolidType {
+		return this.assessed ||= this.eval_do(validator);
 	}
-	protected abstract assess_do(validator: Validator): SolidType;
+	protected abstract eval_do(validator: Validator): SolidType;
 }

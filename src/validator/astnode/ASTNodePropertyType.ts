@@ -13,8 +13,8 @@ export class ASTNodePropertyType extends ASTNodeSolid {
 		,
 		readonly optional: boolean,
 		readonly key:      ASTNodeKey,
-		readonly value:    ASTNodeType,
+		readonly val:      ASTNodeType,
 	) {
-		super(start_node, {optional}, [key, value]);
+		super(start_node, {optional}, [key, val]);
 	}
 }

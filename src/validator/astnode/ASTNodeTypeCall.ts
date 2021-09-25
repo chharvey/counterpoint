@@ -39,18 +39,18 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		// (`this.base.source` must be `List | Hash | Set | Map`)
 		return forEachAggregated(this.args, (arg) => arg.varCheck(validator));
 	}
-	protected override assess_do(validator: Validator): SolidType {
+	protected override eval_do(validator: Validator): SolidType {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {
-			throw new TypeError05(this.base.assess(validator), this.base);
+			throw new TypeError05(this.base.eval(validator), this.base);
 		}
 		return (new Map<string, () => SolidType>([
-			['List', () => (this.countArgs(1n), new SolidTypeList(this.args[0].assess(validator)))],
-			['Hash', () => (this.countArgs(1n), new SolidTypeHash(this.args[0].assess(validator)))],
-			['Set',  () => (this.countArgs(1n), new SolidTypeSet (this.args[0].assess(validator)))],
+			['List', () => (this.countArgs(1n), new SolidTypeList(this.args[0].eval(validator)))],
+			['Hash', () => (this.countArgs(1n), new SolidTypeHash(this.args[0].eval(validator)))],
+			['Set',  () => (this.countArgs(1n), new SolidTypeSet (this.args[0].eval(validator)))],
 			['Map',  () => {
 				this.countArgs([1n, 3n]);
-				const anttype: SolidType = this.args[0].assess(validator);
-				const contype: SolidType = this.args[1]?.assess(validator) || anttype;
+				const anttype: SolidType = this.args[0].eval(validator);
+				const contype: SolidType = this.args[1]?.eval(validator) || anttype;
 				return new SolidTypeMap(anttype, contype);
 			}],
 		]).get(this.base.source) || (() => {
