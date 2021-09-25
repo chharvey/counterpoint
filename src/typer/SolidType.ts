@@ -103,7 +103,7 @@ export abstract class SolidType {
 
 		return this.intersect_do(t)
 	}
-	intersect_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
+	public intersect_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
 		/** 2-2 | `A \| B == B \| A` */
 		if (t instanceof SolidTypeUnion) { return t.intersect(this); }
 
@@ -128,7 +128,7 @@ export abstract class SolidType {
 
 		return this.union_do(t)
 	}
-	union_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
+	public union_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
 		/** 2-1 | `A  & B == B  & A` */
 		if (t instanceof SolidTypeIntersection) { return t.union(this); }
 
@@ -153,7 +153,7 @@ export abstract class SolidType {
 
 		return this.subtract_do(t);
 	}
-	subtract_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
+	public subtract_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
 		return new SolidTypeDifference(this, t);
 	}
 	/**
@@ -186,7 +186,7 @@ export abstract class SolidType {
 
 		return this.isSubtypeOf_do(t)
 	}
-	isSubtypeOf_do(t: SolidType): boolean { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
+	public isSubtypeOf_do(t: SolidType): boolean { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
 		return !this.isBottomType && !!this.values.size // these checks are needed because this is called by `SolidObject.isSubtypeOf_do`
 			&& [...this.values].every((v) => t.includes(v));
 	}

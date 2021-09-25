@@ -25,7 +25,7 @@ export abstract class SolidObject {
 	/** @implements SolidType */
 	static values: SolidType['values'] = new Set();
 	/** @implements SolidType */
-	static includes(v: SolidObject): boolean {
+	static includes(v: SolidObject): ReturnType<SolidType['includes']> {
 		return v instanceof this/*static*/
 	}
 	/** @implements SolidType */
@@ -43,7 +43,7 @@ export abstract class SolidObject {
 	/** @implements SolidType */
 	static isSubtypeOf: SolidType['isSubtypeOf'] = SolidType.prototype.isSubtypeOf;
 	/** @implements SolidType */
-	static isSubtypeOf_do(t: SolidType): boolean {
+	static isSubtypeOf_do(t: SolidType): ReturnType<SolidType['isSubtypeOf_do']> {
 		return (t instanceof Function)
 			? this/*static*/.prototype instanceof t
 			: SolidType.prototype.isSubtypeOf_do.call(this, t);
