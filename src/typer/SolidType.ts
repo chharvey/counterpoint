@@ -68,10 +68,12 @@ export abstract class SolidType {
 
 	/**
 	 * Construct a new SolidType object.
-	 * @param values an enumerated set of values that are assignable to this type
+	 * @param isMutable Whether this type is `mutable`. Mutable objects may change fields/entries and call mutating methods.
+	 * @param values    An enumerated set of values that are assignable to this type.
 	 */
 	constructor (
-		readonly values: ReadonlySet<SolidObject> = new Set(),
+		readonly isMutable: boolean,
+		readonly values:    ReadonlySet<SolidObject> = new Set(),
 	) {
 	}
 
@@ -216,12 +218,14 @@ class SolidTypeDifference extends SolidType {
 	 * Construct a new SolidTypeDifference object.
 	 * @param left the first type
 	 * @param right the second type
+	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		private readonly left:  SolidType,
 		private readonly right: SolidType,
+		is_mutable: boolean = false,
 	) {
-		super(Set_differenceEq(left.values, right.values, solidObjectsIdentical));
+		super(is_mutable, Set_differenceEq(left.values, right.values, solidObjectsIdentical));
 		/*
 		We can assert that this is always non-empty because
 		the only cases in which it could be empty are
@@ -256,9 +260,13 @@ export class SolidTypeInterface extends SolidType {
 	/**
 	 * Construct a new SolidInterface object.
 	 * @param properties a map of this type’s members’ names along with their associated types
+	 * @param is_mutable is this type mutable?
 	 */
-	constructor (private readonly properties: ReadonlyMap<string, SolidType>) {
-		super()
+	constructor (
+		private readonly properties: ReadonlyMap<string, SolidType>,
+		is_mutable: boolean = false,
+	) {
+		super(is_mutable);
 	}
 
 	override includes(v: SolidObject): boolean {
@@ -304,6 +312,7 @@ export class SolidTypeInterface extends SolidType {
 
 /**
  * Class for constructing the Bottom Type, the type containing no values.
+ * @final
  */
 class SolidTypeNever extends SolidType {
 	static readonly INSTANCE: SolidTypeNever = new SolidTypeNever()
@@ -312,7 +321,7 @@ class SolidTypeNever extends SolidType {
 	override readonly isTopType: boolean = false;
 
 	private constructor () {
-		super()
+		super(false);
 	}
 
 	override toString(): string {
@@ -339,7 +348,7 @@ class SolidTypeVoid extends SolidType {
 	override readonly isTopType: boolean = false;
 
 	private constructor () {
-		super();
+		super(false);
 	}
 
 	override toString(): string {
@@ -363,6 +372,7 @@ class SolidTypeVoid extends SolidType {
 
 /**
  * Class for constructing the Top Type, the type containing all values.
+ * @final
  */
 class SolidTypeUnknown extends SolidType {
 	static readonly INSTANCE: SolidTypeUnknown = new SolidTypeUnknown()
@@ -371,7 +381,7 @@ class SolidTypeUnknown extends SolidType {
 	override readonly isTopType: boolean = true;
 
 	private constructor () {
-		super()
+		super(false);
 	}
 
 	override toString(): string {

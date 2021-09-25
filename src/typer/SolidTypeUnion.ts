@@ -22,12 +22,14 @@ export class SolidTypeUnion extends SolidType {
 	 * Construct a new SolidTypeUnion object.
 	 * @param left the first type
 	 * @param right the second type
+	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		private readonly left:  SolidType,
 		private readonly right: SolidType,
+		is_mutable: boolean = false,
 	) {
-		super(Set_unionEq(left.values, right.values, solidObjectsIdentical));
+		super(is_mutable, Set_unionEq(left.values, right.values, solidObjectsIdentical));
 		this.isBottomType = this.left.isBottomType && this.right.isBottomType;
 	}
 

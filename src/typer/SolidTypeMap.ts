@@ -13,12 +13,14 @@ export class SolidTypeMap extends SolidType {
 	 * Construct a new SolidTypeMap object.
 	 * @param antecedenttypes a union of antecedent types in this map type
 	 * @param consequenttypes a union of consequent types in this map type
+	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		readonly antecedenttypes: SolidType,
 		readonly consequenttypes: SolidType,
+		is_mutable: boolean = false,
 	) {
-		super(SolidMap.values);
+		super(is_mutable, SolidMap.values);
 	}
 
 	override toString(): string {

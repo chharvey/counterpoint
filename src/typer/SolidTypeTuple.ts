@@ -35,11 +35,13 @@ export class SolidTypeTuple extends SolidType {
 	/**
 	 * Construct a new SolidTypeTuple object.
 	 * @param types this type’s item types
+	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		private readonly types: readonly TypeEntry[] = [],
+		is_mutable: boolean = false,
 	) {
-		super(SolidTuple.values);
+		super(is_mutable, SolidTuple.values);
 	}
 
 	/** The possible number of items in this tuple type. */

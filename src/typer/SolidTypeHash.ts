@@ -13,11 +13,13 @@ export class SolidTypeHash extends SolidType {
 	/**
 	 * Construct a new SolidTypeHash object.
 	 * @param types a union of types in this hash type
+	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		readonly types: SolidType,
+		is_mutable: boolean = false,
 	) {
-		super(SolidHash.values);
+		super(is_mutable, SolidHash.values);
 	}
 
 	override toString(): string {

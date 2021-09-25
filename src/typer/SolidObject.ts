@@ -23,6 +23,8 @@ export abstract class SolidObject {
 	/** @implements SolidType */
 	static isTopType: SolidType['isTopType'] = false;
 	/** @implements SolidType */
+	static isMutable: SolidType['isMutable'] = false;
+	/** @implements SolidType */
 	static values: SolidType['values'] = new Set();
 	/** @implements SolidType */
 	static includes(v: SolidObject): ReturnType<SolidType['includes']> {

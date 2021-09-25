@@ -13,11 +13,13 @@ export class SolidTypeList extends SolidType {
 	/**
 	 * Construct a new SolidTypeList object.
 	 * @param types a union of types in this list type
+	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		readonly types: SolidType,
+		is_mutable: boolean = false,
 	) {
-		super(SolidList.values);
+		super(is_mutable, SolidList.values);
 	}
 
 	override toString(): string {

@@ -34,11 +34,13 @@ export class SolidTypeRecord extends SolidType {
 	/**
 	 * Construct a new SolidTypeRecord object.
 	 * @param propertytypes a map of this type’s property ids along with their associated types
+	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		private readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
+		is_mutable: boolean = false,
 	) {
-		super(SolidRecord.values);
+		super(is_mutable, SolidRecord.values);
 	}
 
 	/** The possible number of values in this record type. */
