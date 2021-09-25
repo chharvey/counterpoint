@@ -76,7 +76,7 @@ None! VarCheck(SemanticDeclarationVariable decl) :=
 		id=      `id`,
 		unfixed= `decl.unfixed`,
 		type=    `Unknown`,
-		value=   [type= throw],
+		value=   none,
 	].
 	7. Add `symbol` as a record for `id` to the validator.
 ;
