@@ -28,10 +28,6 @@ export abstract class SymbolStructure {
 		readonly source: string,
 	) {
 	}
-	/**
-	 * Perform type and constant-folding assessments during semantic analysis.
-	 */
-	abstract assess(): void;
 }
 
 
@@ -43,8 +39,6 @@ export class SymbolStructureType extends SymbolStructure {
 		node: AST.ASTNodeTypeAlias,
 	) {
 		super(node.id, node.line_index, node.col_index, node.source);
-	}
-	override assess(): void {
 	}
 }
 
@@ -61,7 +55,5 @@ export class SymbolStructureVar extends SymbolStructure {
 		readonly unfixed: boolean,
 	) {
 		super(node.id, node.line_index, node.col_index, node.source);
-	}
-	override assess(): void {
 	}
 }
