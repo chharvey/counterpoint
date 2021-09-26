@@ -63,15 +63,20 @@ export class SolidTypeRecord extends SolidType {
 		return t.equals(SolidObject) || (
 			t instanceof SolidTypeRecord
 			&& this.count[0] >= t.count[0]
+			&& (!t.isMutable || this.isMutable)
 			&& [...t.propertytypes].every(([id, thattype]) => {
 				const thistype: TypeEntry | null = this.propertytypes.get(id) || null;
 				return (
 					(thattype.optional || thistype && !thistype.optional)
-					&& (!thistype || thistype.type.isSubtypeOf(thattype.type))
+					&& (!thistype || ((t.isMutable)
+						? thistype.type.equals(thattype.type)
+						: thistype.type.isSubtypeOf(thattype.type)
+					))
 				);
 			})
 		) || (
 			t instanceof SolidTypeHash
+			&& !t.isMutable
 			&& this.valueTypes().isSubtypeOf(t.types)
 		);
 	}

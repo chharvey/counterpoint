@@ -64,9 +64,14 @@ export class SolidTypeTuple extends SolidType {
 		return t.equals(SolidObject) || (
 			t instanceof SolidTypeTuple
 			&& this.count[0] >= t.count[0]
-			&& t.types.every((thattype, i) => !this.types[i] || this.types[i].type.isSubtypeOf(thattype.type))
+			&& (!t.isMutable || this.isMutable)
+			&& t.types.every((thattype, i) => !this.types[i] || ((t.isMutable)
+				? this.types[i].type.equals(thattype.type)
+				: this.types[i].type.isSubtypeOf(thattype.type)
+			))
 		) || (
 			t instanceof SolidTypeList
+			&& !t.isMutable
 			&& this.itemTypes().isSubtypeOf(t.types)
 		);
 	}
