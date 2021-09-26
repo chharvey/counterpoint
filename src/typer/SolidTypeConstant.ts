@@ -13,13 +13,11 @@ export class SolidTypeConstant extends SolidType {
 	/**
 	 * Construct a new SolidTypeConstant object.
 	 * @param value the Solid Language Value contained in this Type
-	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		readonly value: SolidObject,
-		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([value]));
+		super(false, new Set([value]));
 	}
 
 	override toString(): string {

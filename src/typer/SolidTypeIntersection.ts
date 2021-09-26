@@ -22,14 +22,12 @@ export class SolidTypeIntersection extends SolidType {
 	 * Construct a new SolidTypeIntersection object.
 	 * @param left the first type
 	 * @param right the second type
-	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		private readonly left:  SolidType,
 		private readonly right: SolidType,
-		is_mutable: boolean = false,
 	) {
-		super(is_mutable, Set_intersectionEq(left.values, right.values, solidObjectsIdentical));
+		super(false, Set_intersectionEq(left.values, right.values, solidObjectsIdentical));
 		this.isBottomType = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
 	}
 
@@ -47,7 +45,7 @@ export class SolidTypeIntersection extends SolidType {
 		return super.isSubtypeOf_do(t)
 	}
 	override mutableOf(): SolidTypeIntersection {
-		return new SolidTypeIntersection(this.left, this.right, true);
+		return new SolidTypeIntersection(this.left.mutableOf(), this.right.mutableOf());
 	}
 	isSupertypeOf(t: SolidType): boolean {
 		/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */

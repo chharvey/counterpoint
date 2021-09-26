@@ -214,21 +214,19 @@ export abstract class SolidType {
  * A type difference of two types `T` and `U` is the type
  * that contains values assignable to `T` but *not* assignable to `U`.
  */
-class SolidTypeDifference extends SolidType {
+export class SolidTypeDifference extends SolidType {
 	declare readonly isBottomType: boolean;
 
 	/**
 	 * Construct a new SolidTypeDifference object.
 	 * @param left the first type
 	 * @param right the second type
-	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		private readonly left:  SolidType,
 		private readonly right: SolidType,
-		is_mutable: boolean = false,
 	) {
-		super(is_mutable, Set_differenceEq(left.values, right.values, solidObjectsIdentical));
+		super(false, Set_differenceEq(left.values, right.values, solidObjectsIdentical));
 		/*
 		We can assert that this is always non-empty because
 		the only cases in which it could be empty are
@@ -246,7 +244,7 @@ class SolidTypeDifference extends SolidType {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf_do(t);
 	}
 	override mutableOf(): SolidTypeDifference {
-		return new SolidTypeDifference(this.left, this.right, true);
+		return new SolidTypeDifference(this.left.mutableOf(), this.right.mutableOf());
 	}
 	isSupertypeOf(t: SolidType): boolean {
 		/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */

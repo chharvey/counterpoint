@@ -2,6 +2,7 @@ import * as assert from 'assert'
 import {
 	TypeEntry,
 	SolidType,
+	SolidTypeIntersection,
 	SolidTypeUnion,
 	SolidTypeConstant,
 	SolidTypeInterface,
@@ -25,6 +26,7 @@ import {
 	SolidSet,
 	SolidMap,
 } from '../../src/typer/index.js';
+import {SolidTypeDifference} from '../../src/typer/SolidType.js';
 import {
 	typeConstInt,
 	typeConstFloat,
@@ -785,6 +787,52 @@ describe('SolidType', () => {
 				new SolidTypeMap(Int16, Float64),
 			].forEach((t) => {
 				assert.ok(!t.mutableOf().equals(t), `mutable ${ t } != ${ t }`);
+			});
+		});
+		context('disributes over binary operations.', () => {
+			const types: SolidType[] = [
+				...builtin_types,
+				SolidTypeTuple.fromTypes([
+					Int16,
+					Float64,
+					SolidString,
+				]),
+				SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+					[0x100n, Int16],
+					[0x101n, Float64],
+					[0x102n, SolidString],
+				])),
+				new SolidTypeList(SolidBoolean),
+				new SolidTypeHash(SolidBoolean),
+				new SolidTypeSet(SolidNull),
+				new SolidTypeMap(Int16, Float64),
+			];
+			specify('mutable (A - B) == mutable A - mutable B', () => {
+				predicate2(types, (a, b) => {
+					const difference: SolidType = a.subtract(b).mutableOf();
+					assert.ok(difference.equals(a.mutableOf().subtract(b.mutableOf())), `${ a }, ${ b }`);
+					if (difference instanceof SolidTypeDifference) {
+						assert.ok(!difference.isMutable, 'SolidTypeDifference#isMutable === false');
+					}
+				});
+			});
+			specify('mutable (A & B) == mutable A & mutable B', () => {
+				predicate2(types, (a, b) => {
+					const intersection: SolidType = a.intersect(b).mutableOf();
+					assert.ok(intersection.equals(a.mutableOf().intersect(b.mutableOf())), `${ a }, ${ b }`);
+					if (intersection instanceof SolidTypeIntersection) {
+						assert.ok(!intersection.isMutable, 'SolidTypeIntersection#isMutable === false');
+					}
+				});
+			});
+			specify('mutable (A | B) == mutable A | mutable B', () => {
+				predicate2(types, (a, b) => {
+					const union: SolidType = a.union(b).mutableOf();
+					assert.ok(union.equals(a.mutableOf().union(b.mutableOf())), `${ a }, ${ b }`);
+					if (union instanceof SolidTypeUnion) {
+						assert.ok(!union.isMutable, 'SolidTypeUnion#isMutable === false');
+					}
+				});
 			});
 		});
 	});
