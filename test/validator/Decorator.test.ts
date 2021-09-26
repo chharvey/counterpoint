@@ -367,7 +367,7 @@ describe('Decorator', () => {
 		});
 
 		describe('TypeUnarySymbol ::= TypeUnarySymbol ("?" | "!")', () => {
-			it('makes an ASTNodeTypeOperation.', () => {
+			it('makes an ASTNodeTypeOperationUnary.', () => {
 				/*
 					<TypeOperation operator="?">
 						<TypeConstant source="int"/>
@@ -427,8 +427,24 @@ describe('Decorator', () => {
 			});
 		});
 
+		describe('TypeUnaryKeyword ::= "mutable" TypeUnaryKeyword', () => {
+			it('makes an ASTNodeTypeOperationUnary.', () => {
+				/*
+					<TypeOperation operator="mutable">
+						<TypeConstant source="int"/>
+					</TypeOperation>
+				*/
+				const operation: AST.ASTNodeType = Decorator.decorate(h.unaryKeywordTypeFromString(`mutable int`));
+				assert.ok(operation instanceof AST.ASTNodeTypeOperationUnary);
+				assert.deepStrictEqual(
+					[operation.operand.source, operation.operator],
+					[`int`,                    Operator.MUTABLE],
+				);
+			});
+		});
+
 		describe('TypeIntersection ::= TypeIntersection "&" TypeUnaryKeyword', () => {
-			it('makes an ASTNodeTypeOperation.', () => {
+			it('makes an ASTNodeTypeOperationBinary.', () => {
 				/*
 					<TypeOperation operator="&">
 						<TypeConstant source="int"/>
@@ -445,7 +461,7 @@ describe('Decorator', () => {
 		})
 
 		describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
-			it('makes an ASTNodeTypeOperation.', () => {
+			it('makes an ASTNodeTypeOperationBinary.', () => {
 				/*
 					<TypeOperation operator="|">
 						<TypeOperation source="4.2 ?">...</TypeOperation>

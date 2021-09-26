@@ -64,9 +64,10 @@ export class Decorator {
 		[Punctuator.OPTDOT,   Operator.OPTDOT],
 		[Punctuator.CLAIMDOT, Operator.CLAIMDOT],
 	]);
-	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
-		[Punctuator.ORNULL, Operator.ORNULL],
-		[Punctuator.OREXCP, Operator.OREXCP],
+	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, ValidTypeOperator> = new Map<Punctuator | Keyword, ValidTypeOperator>([
+		[Punctuator.ORNULL,  Operator.ORNULL],
+		[Punctuator.OREXCP,  Operator.OREXCP],
+		[Keyword   .MUTABLE, Operator.MUTABLE],
 	])
 	private static readonly TYPEOPERATORS_BINARY: ReadonlyMap<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
 		[Punctuator.INTER, Operator.AND],
@@ -301,7 +302,11 @@ export class Decorator {
 		} else if (node instanceof PARSENODE.ParseNodeTypeUnaryKeyword) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: this.decorate(node.children[1]);
+				: new AST.ASTNodeTypeOperationUnary(
+					node,
+					this.TYPEOPERATORS_UNARY.get(node.children[0].source as Keyword)!,
+					this.decorate(node.children[1]),
+				);
 
 		} else if (
 			node instanceof PARSENODE.ParseNodeTypeIntersection ||

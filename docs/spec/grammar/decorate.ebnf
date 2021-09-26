@@ -167,7 +167,9 @@ Decorate(TypeUnarySymbol ::= TypeUnarySymbol "{" "}") -> SemanticTypeSet
 Decorate(TypeUnaryKeyword ::= TypeUnarySymbol) -> SemanticType
 	:= Decorate(TypeUnarySymbol);
 Decorate(TypeUnaryKeyword ::= "mutable" TypeUnaryKeyword) -> SemanticTypeOperation
-	:= Decorate(TypeUnaryKeyword); // TODO
+	:= (SemanticTypeOperation[operator=MUTABLE]
+		Decorate(TypeUnaryKeyword)
+	);
 
 
 
