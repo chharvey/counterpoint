@@ -29,7 +29,7 @@ describe('Decorator', () => {
 		describe('Word ::= KEYWORD | IDENTIFIER', () => {
 			it('makes an ASTNodeKey.', () => {
 				/*
-					<Key source="let" id=\x8c/>
+					<Key source="let" id=\x8f/>
 					<Key source="foobar" id=\x100/>
 				*/
 				const srcs: string[] = [
@@ -42,7 +42,7 @@ describe('Decorator', () => {
 						return [key.source, key.id];
 					}),
 					srcs.map((src, i) => [src, [
-						0x8en,
+						0x8fn,
 						0x100n,
 					][i]]),
 				);
@@ -373,7 +373,7 @@ describe('Decorator', () => {
 						<TypeConstant source="int"/>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int?`));
+				const operation: AST.ASTNodeType = Decorator.decorate(h.unarySymbolTypeFromString(`int?`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationUnary);
 				assert.deepStrictEqual(
 					[operation.operand.source, operation.operator],
@@ -381,7 +381,7 @@ describe('Decorator', () => {
 				)
 			})
 			it('operator `!` is not yet supported.', () => {
-				assert.throws(() => Decorator.decorate(h.unaryTypeFromString(`float!`)), /not yet supported/);
+				assert.throws(() => Decorator.decorate(h.unarySymbolTypeFromString(`float!`)), /not yet supported/);
 			});
 		})
 
@@ -392,7 +392,7 @@ describe('Decorator', () => {
 						<TypeConstant source="int"/>
 					</ASTNodeTypeList>
 				*/
-				const list: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int[]`));
+				const list: AST.ASTNodeType = Decorator.decorate(h.unarySymbolTypeFromString(`int[]`));
 				assert.ok(list instanceof AST.ASTNodeTypeList);
 				assert.deepStrictEqual(
 					[list.type.source, list.count],
@@ -405,7 +405,7 @@ describe('Decorator', () => {
 						<TypeConstant source="float"/>
 					</ASTNodeTypeList>
 				*/
-				const list: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`float[3]`));
+				const list: AST.ASTNodeType = Decorator.decorate(h.unarySymbolTypeFromString(`float[3]`));
 				assert.ok(list instanceof AST.ASTNodeTypeList);
 				assert.deepStrictEqual(
 					[list.type.source, list.count],
@@ -421,13 +421,13 @@ describe('Decorator', () => {
 						<TypeConstant source="bool"/>
 					</ASTNodeTypeSet>
 				*/
-				const set: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`bool{}`));
+				const set: AST.ASTNodeType = Decorator.decorate(h.unarySymbolTypeFromString(`bool{}`));
 				assert.ok(set instanceof AST.ASTNodeTypeSet);
 				assert.deepStrictEqual(set.type.source, `bool`);
 			});
 		});
 
-		describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
+		describe('TypeIntersection ::= TypeIntersection "&" TypeUnaryKeyword', () => {
 			it('makes an ASTNodeTypeOperation.', () => {
 				/*
 					<TypeOperation operator="&">

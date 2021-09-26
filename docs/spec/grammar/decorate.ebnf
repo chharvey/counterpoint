@@ -164,12 +164,19 @@ Decorate(TypeUnarySymbol ::= TypeUnarySymbol "{" "}") -> SemanticTypeSet
 
 
 
+Decorate(TypeUnaryKeyword ::= TypeUnarySymbol) -> SemanticType
+	:= Decorate(TypeUnarySymbol);
+Decorate(TypeUnaryKeyword ::= "mutable" TypeUnaryKeyword) -> SemanticTypeOperation
+	:= Decorate(TypeUnaryKeyword); // TODO
+
+
+
 Decorate(TypeIntersection ::= TypeUnarySymbol) -> SemanticType
 	:= Decorate(TypeUnarySymbol);
-Decorate(TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol) -> SemanticTypeOperation
+Decorate(TypeIntersection ::= TypeIntersection "&" TypeUnaryKeyword) -> SemanticTypeOperation
 	:= (SemanticTypeOperation[operator=AND]
 		Decorate(TypeIntersection)
-		Decorate(TypeUnarySymbol)
+		Decorate(TypeUnaryKeyword)
 	);
 
 

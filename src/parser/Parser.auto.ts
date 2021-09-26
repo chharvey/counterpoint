@@ -295,13 +295,24 @@ export class ProductionTypeUnarySymbol extends Production {
 	}
 }
 
+export class ProductionTypeUnaryKeyword extends Production {
+	static readonly instance: ProductionTypeUnaryKeyword = new ProductionTypeUnaryKeyword();
+	/** @implements Production */
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionTypeUnarySymbol.instance],
+			['mutable', ProductionTypeUnaryKeyword.instance],
+		];
+	}
+}
+
 export class ProductionTypeIntersection extends Production {
 	static readonly instance: ProductionTypeIntersection = new ProductionTypeIntersection();
 	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionTypeUnarySymbol.instance],
-			[ProductionTypeIntersection.instance, '&', ProductionTypeUnarySymbol.instance],
+			[ProductionTypeUnaryKeyword.instance],
+			[ProductionTypeIntersection.instance, '&', ProductionTypeUnaryKeyword.instance],
 		];
 	}
 }
@@ -938,10 +949,17 @@ export class ParseNodeTypeUnarySymbol extends ParseNode {
 	;
 }
 
-export class ParseNodeTypeIntersection extends ParseNode {
+export class ParseNodeTypeUnaryKeyword extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeTypeUnarySymbol]
-		| readonly [ParseNodeTypeIntersection, Token, ParseNodeTypeUnarySymbol]
+		| readonly [Token, ParseNodeTypeUnaryKeyword]
+	;
+}
+
+export class ParseNodeTypeIntersection extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeTypeUnaryKeyword]
+		| readonly [ParseNodeTypeIntersection, Token, ParseNodeTypeUnaryKeyword]
 	;
 }
 
@@ -1266,6 +1284,7 @@ export const GRAMMAR: Grammar = new Grammar([
 	ProductionGenericCall.instance,
 	ProductionTypeCompound.instance,
 	ProductionTypeUnarySymbol.instance,
+	ProductionTypeUnaryKeyword.instance,
 	ProductionTypeIntersection.instance,
 	ProductionTypeUnion.instance,
 	ProductionType.instance,
@@ -1336,6 +1355,7 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 		[ProductionGenericCall.instance, ParseNodeGenericCall],
 		[ProductionTypeCompound.instance, ParseNodeTypeCompound],
 		[ProductionTypeUnarySymbol.instance, ParseNodeTypeUnarySymbol],
+		[ProductionTypeUnaryKeyword.instance, ParseNodeTypeUnaryKeyword],
 		[ProductionTypeIntersection.instance, ParseNodeTypeIntersection],
 		[ProductionTypeUnion.instance, ParseNodeTypeUnion],
 		[ProductionType.instance, ParseNodeType],

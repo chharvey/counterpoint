@@ -146,6 +146,7 @@ export class Decorator {
 		| PARSENODE.ParseNodeTypeUnit
 		| PARSENODE.ParseNodeTypeCompound
 		| PARSENODE.ParseNodeTypeUnarySymbol
+		| PARSENODE.ParseNodeTypeUnaryKeyword
 		| PARSENODE.ParseNodeTypeIntersection
 		| PARSENODE.ParseNodeTypeUnion
 		| PARSENODE.ParseNodeType
@@ -296,6 +297,11 @@ export class Decorator {
 					)
 					: new AST.ASTNodeTypeSet(node, this.decorate(node.children[0]))
 			);
+
+		} else if (node instanceof PARSENODE.ParseNodeTypeUnaryKeyword) {
+			return (node.children.length === 1)
+				? this.decorate(node.children[0])
+				: this.decorate(node.children[1]);
 
 		} else if (
 			node instanceof PARSENODE.ParseNodeTypeIntersection ||
