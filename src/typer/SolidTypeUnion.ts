@@ -54,6 +54,9 @@ export class SolidTypeUnion extends SolidType {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
 	}
+	override mutableOf(): SolidTypeUnion {
+		return new SolidTypeUnion(this.left, this.right, true);
+	}
 	subtractedFrom(t: SolidType): SolidType {
 		/** 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
 		return t.subtract(this.left).intersect(t.subtract(this.right));

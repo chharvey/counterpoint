@@ -203,6 +203,9 @@ export abstract class SolidType {
 	equals(t: SolidType): boolean {
 		return this.isSubtypeOf(t) && t.isSubtypeOf(this)
 	}
+	mutableOf(): SolidType {
+		return this;
+	}
 }
 
 
@@ -241,6 +244,9 @@ class SolidTypeDifference extends SolidType {
 	}
 	override isSubtypeOf_do(t: SolidType): boolean {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf_do(t);
+	}
+	override mutableOf(): SolidTypeDifference {
+		return new SolidTypeDifference(this.left, this.right, true);
 	}
 	isSupertypeOf(t: SolidType): boolean {
 		/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
@@ -305,6 +311,9 @@ export class SolidTypeInterface extends SolidType {
 		return [...t.properties].every(([name, type_]) =>
 			this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
 		)
+	}
+	override mutableOf(): SolidTypeInterface {
+		return new SolidTypeInterface(this.properties, true);
 	}
 }
 

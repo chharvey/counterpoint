@@ -46,6 +46,9 @@ export class SolidTypeIntersection extends SolidType {
 		if (t.equals(this.left) || t.equals(this.right)) { return true }
 		return super.isSubtypeOf_do(t)
 	}
+	override mutableOf(): SolidTypeIntersection {
+		return new SolidTypeIntersection(this.left, this.right, true);
+	}
 	isSupertypeOf(t: SolidType): boolean {
 		/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 		return t.isSubtypeOf(this.left) && t.isSubtypeOf(this.right);

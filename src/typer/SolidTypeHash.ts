@@ -39,4 +39,8 @@ export class SolidTypeHash extends SolidType {
 			&& this.types.isSubtypeOf(t.types)
 		);
 	}
+
+	override mutableOf(): SolidTypeHash {
+		return new SolidTypeHash(this.types, true);
+	}
 }

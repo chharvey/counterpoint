@@ -38,4 +38,8 @@ export class SolidTypeMap extends SolidType {
 			&& this.consequenttypes.isSubtypeOf(t.consequenttypes)
 		);
 	}
+
+	override mutableOf(): SolidTypeMap {
+		return new SolidTypeMap(this.antecedenttypes, this.consequenttypes, true);
+	}
 }

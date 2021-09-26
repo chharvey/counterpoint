@@ -745,6 +745,31 @@ describe('SolidType', () => {
 	})
 
 
+	describe('#mutableOf', () => {
+		it('mutable types are subtypes of their immutable counterparts.', () => {
+			[
+				...builtin_types,
+				SolidTypeTuple.fromTypes([
+					Int16,
+					Float64,
+					SolidString,
+				]),
+				SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+					[0x100n, Int16],
+					[0x101n, Float64],
+					[0x102n, SolidString],
+				])),
+				new SolidTypeList(SolidBoolean),
+				new SolidTypeHash(SolidBoolean),
+				new SolidTypeSet(SolidNull),
+				new SolidTypeMap(Int16, Float64),
+			].forEach((t) => {
+				assert.ok(t.mutableOf().isSubtypeOf(t), `mutable ${ t } <: ${ t }`);
+			});
+		});
+	});
+
+
 	describe('SolidTypeIntersection', () => {
 		describe('#combineTuplesOrRecords', () => {
 			context('with tuple operands.', () => {

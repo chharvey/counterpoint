@@ -35,4 +35,8 @@ export class SolidTypeSet extends SolidType {
 			&& this.types.isSubtypeOf(t.types)
 		);
 	}
+
+	override mutableOf(): SolidTypeSet {
+		return new SolidTypeSet(this.types, true);
+	}
 }

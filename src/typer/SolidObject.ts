@@ -52,6 +52,8 @@ export abstract class SolidObject {
 	}
 	/** @implements SolidType */
 	static equals: SolidType['equals'] = SolidType.prototype.equals;
+	/** @implements SolidType */
+	static mutableOf: SolidType['mutableOf'] = SolidType.prototype.mutableOf;
 
 
 	/**

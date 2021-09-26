@@ -71,6 +71,10 @@ export class SolidTypeTuple extends SolidType {
 		);
 	}
 
+	override mutableOf(): SolidTypeTuple {
+		return new SolidTypeTuple(this.types, true);
+	}
+
 	get(index: Int16, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): SolidType {
 		const n: number = this.types.length;
 		const i: number = Number(index.toNumeric());
