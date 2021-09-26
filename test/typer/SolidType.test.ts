@@ -4,6 +4,7 @@ import {
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,
+	SolidTypeDifference,
 	SolidTypeConstant,
 	SolidTypeInterface,
 	SolidTypeTuple,
@@ -26,7 +27,6 @@ import {
 	SolidSet,
 	SolidMap,
 } from '../../src/typer/index.js';
-import {SolidTypeDifference} from '../../src/typer/SolidType.js';
 import {
 	typeConstInt,
 	typeConstFloat,
