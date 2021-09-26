@@ -3,6 +3,7 @@ export * from './utils-public.js';
 export * from './SolidType.js';
 export * from './SolidTypeIntersection.js';
 export * from './SolidTypeUnion.js';
+export * from './SolidTypeDifference.js';
 export * from './SolidTypeConstant.js';
 
 export * from './SolidTypeTuple.js';

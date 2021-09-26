@@ -6,6 +6,10 @@ import {SolidObject} from './SolidObject.js';
 
 
 
+/**
+ * A textual Solid Language Value.
+ * @final
+ */
 export class SolidString extends SolidObject {
 	static override toString(): string {
 		return 'str';

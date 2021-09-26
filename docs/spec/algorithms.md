@@ -353,12 +353,18 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
 		5. *If* `seq_a_req.count` is less than `seq_b_req.count`:
 			1. *Return:* `false`.
-		6. *For index* `i` in `seq_b`:
+		6. *If* `b` is mutable:
+			1. *If* `a` is not mutable:
+				1. *Return:* `false`.
+		7. *For index* `i` in `seq_b`:
 			1. *If* `seq_b[i].optional` is `false`:
 				1. *Assert:* `seq_a[i]` is set *and* `seq_a[i].optional` is `false`.
-			2. *If* `seq_a[i]` is set *and* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
-				1. *Return:* `false`.
-		7. *Return:* `true`.
+			2. *If* `seq_a[i]` is set:
+				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(seq_a[i].type, seq_b[i].type)` is `false`:
+					1. *Return:* `false`.
+				2. *Else If* *UnwrapAffirm:* `Subtype(seq_a[i].type, seq_b[i].type)` is `false`:
+					1. *Return:* `false`.
+		8. *Return:* `true`.
 	11. *If* `Equal(a, Record)` *and* `Equal(b, Record)`:
 		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
 		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
@@ -366,37 +372,63 @@ Boolean Subtype(Type a, Type b) :=
 		4. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
 		5. *If* `struct_a_req.count` is less than `struct_b_req.count`:
 			1. *Return:* `false`.
-		6. *For key* `k` in `struct_b`:
+		6. *If* `b` is mutable:
+			1. *If* `a` is not mutable:
+				1. *Return:* `false`.
+		7. *For key* `k` in `struct_b`:
 			1. *If* `struct_b[k].optional` is `false`:
 				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
 					1. *Return:* `false`.
-			2. *If* `struct_a[k]` is set *and* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
-				1. *Return:* `false`.
-		7. *Return:* `true`.
+			2. *If* `struct_a[k]` is set:
+				1. *If* `b` is mutable *and* *UnwrapAffirm:* `Equal(struct_a[k].type, struct_b[k].type)` is `false`:
+					1. *Return:* `false`.
+				2. *Else If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
+					1. *Return:* `false`.
+		8. *Return:* `true`.
 	12. *If* `Equal(b, List)`:
 		1. *Let* `bi` be the union of types in `b`.
-		2. *If* `Equal(a, List)` *or* `Equal(a, Tuple)`:
-			1. *Let* `ai` be the union of types in `a`.
-			2. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
-				1. *Return:* `true`.
+		2. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* `Equal(a, List)`:
+				1. *Let* `ai` be the union of types in `a`.
+				2. *If* *UnwrapAffirm:* `Equal(ai, bi)` is `true`:
+					1. *Return:* `true`.
+		3. *Else:*
+			1. *If* `Equal(a, List)` *or* `Equal(a, Tuple)`:
+				1. *Let* `ai` be the union of types in `a`.
+				2. *If* *UnwrapAffirm:* `Subtype(ai, bi)` is `true`:
+					1. *Return:* `true`.
 	13. *If* `Equal(b, Hash)`:
 		1. *Let* `bv` be the union of value types in `b`.
-		2. *If* `Equal(a, Hash)` *or* `Equal(a, Record)`:
-			1. *Let* `av` be the union of value types in `a`.
-			2. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
-				1. *Return:* `true`.
+		2. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* `Equal(a, Hash)`:
+				1. *Let* `av` be the union of value types in `a`.
+				2. *If* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
+					1. *Return:* `true`.
+		3. *Else:*
+			1. *If* `Equal(a, Hash)` *or* `Equal(a, Record)`:
+				1. *Let* `av` be the union of value types in `a`.
+				2. *If* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
+					1. *Return:* `true`.
 	14. *If* `Equal(a, Set)` *and* `Equal(b, Set)`:
 		1. *Let* `ae` be the union of types in `a`.
 		2. *Let* `be` be the union of types in `b`.
-		3. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
-			1. *Return:* `true`.
+		3. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ae, be)` is `true`:
+				1. *Return:* `true`.
+		4. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(ae, be)` is `true`:
+				1. *Return:* `true`.
 	15. *If* `Equal(a, Map)` *and* `Equal(b, Map)`:
 		1. *Let* `ak` be the union of antecedent types in `a`.
 		2. *Let* `av` be the union of consequent types in `a`.
 		3. *Let* `bk` be the union of antecedent types in `b`.
 		4. *Let* `bv` be the union of consequent types in `b`.
-		5. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
-			1. *Return:* `true`.
+		5. *If* `b` is mutable:
+			1. *If* `a` is mutable *and* *UnwrapAffirm:* `Equal(ak, bk)` is `true` *and* *UnwrapAffirm:* `Equal(av, bv)` is `true`:
+					1. *Return:* `true`.
+		6. *Else:*
+			1. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
+				1. *Return:* `true`.
 	16. *If* every value that is assignable to `a` is also assignable to `b`:
 		1. *Note:* This covers all subtypes of `Object`, e.g., `Subtype(Integer, Object)` returns true
 			because an instance of `Integer` is an instance of `Object`.
