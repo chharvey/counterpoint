@@ -1,7 +1,7 @@
 export enum Operator {
-	DOT,      // Dev.supports('literalCollection')
-	OPTDOT,   // Dev.supports('optionalAccess')
-	CLAIMDOT, // Dev.supports('claimAccess')
+	DOT,
+	OPTDOT,
+	CLAIMDOT,
 	ORNULL,
 	OREXCP,
 	NOT,
