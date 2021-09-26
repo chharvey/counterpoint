@@ -201,7 +201,7 @@ export abstract class SolidType {
 	 * @returns Is this type equal to the argument?
 	 */
 	equals(t: SolidType): boolean {
-		return this.isSubtypeOf(t) && t.isSubtypeOf(this)
+		return this.isMutable === t.isMutable && this.isSubtypeOf(t) && t.isSubtypeOf(this);
 	}
 	mutableOf(): SolidType {
 		return this;
