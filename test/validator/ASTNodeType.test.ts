@@ -186,11 +186,15 @@ describe('ASTNodeType', () => {
 
 
 
-	describe('ASTNodeOperation', () => {
+	describe('ASTNodeTypeOperation', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationUnary.fromSource(`int?`).eval(new Validator()),
 				Int16.union(SolidNull),
+			);
+			assert.deepStrictEqual(
+				AST.ASTNodeTypeOperationUnary.fromSource(`mutable int[]`).eval(new Validator()),
+				new SolidTypeList(Int16).mutableOf(),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource(`obj & 3`).eval(new Validator()),

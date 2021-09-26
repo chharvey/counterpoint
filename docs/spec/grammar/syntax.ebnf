@@ -78,7 +78,12 @@ TypeUnarySymbol ::=
 	| TypeUnarySymbol ("?" | "!" | "[" INTEGER? "]" | "{" "}")
 ;
 
-TypeIntersection ::= (TypeIntersection "&")? TypeUnarySymbol;
+TypeUnaryKeyword ::=
+	| TypeUnarySymbol
+	| "mutable" TypeUnaryKeyword
+;
+
+TypeIntersection ::= (TypeIntersection "&")? TypeUnaryKeyword;
 TypeUnion        ::= (TypeUnion        "|")? TypeIntersection;
 
 Type ::=

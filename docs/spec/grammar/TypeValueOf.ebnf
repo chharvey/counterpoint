@@ -149,6 +149,13 @@ Type TypeValueOf(SemanticTypeOperation[operator: OREXCP] oper) :=
 	1. *Throw:* new TypeError "Operator not yet supported.".
 ;
 
+Type TypeValueOf(SemanticTypeOperation[operator: MUTABLE] oper) :=
+	1. *Assert:* `oper.children.count` is 1.
+	2. *Let* `child` be *UnwrapAffirm:* `TypeValueOf(oper.children.0)`.
+	3. *Let* `returned` be a mutable copy of `child`.
+	4. *Return:* `returned`.
+;
+
 Type TypeValueOf(SemanticTypeOperation[operator: AND] oper) :=
 	1. *Assert:* `oper.children.count` is 2.
 	2. *Let* `child0` be *UnwrapAffirm:* `TypeValueOf(oper.children.0)`.

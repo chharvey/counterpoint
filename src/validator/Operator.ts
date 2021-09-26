@@ -4,6 +4,7 @@ export enum Operator {
 	CLAIMDOT, // Dev.supports('claimAccess')
 	ORNULL,
 	OREXCP,
+	MUTABLE,
 	NOT,
 	EMP,
 	AFF,
@@ -40,6 +41,7 @@ export type ValidAccessOperator =
 export type ValidTypeOperator =
 	| Operator.ORNULL
 	| Operator.OREXCP
+	| Operator.MUTABLE
 	| Operator.AND
 	| Operator.OR
 

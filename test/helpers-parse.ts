@@ -93,11 +93,16 @@ export function unitTypeFromString(typestring: string, config: SolidConfig = CON
 	return type_compound.children[0];
 }
 export function compoundTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeCompound {
-	const type_unary: PARSENODE.ParseNodeTypeUnarySymbol = unaryTypeFromString(typestring, config)
-	assert_arrayLength(type_unary.children, 1, 'unary type should have 1 child')
-	return type_unary.children[0]
+	const type_unary_symbol: PARSENODE.ParseNodeTypeUnarySymbol = unarySymbolTypeFromString(typestring, config);
+	assert_arrayLength(type_unary_symbol.children, 1, 'unary-symbol type should have 1 child');
+	return type_unary_symbol.children[0];
 }
-export function unaryTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeUnarySymbol {
+export function unarySymbolTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeUnarySymbol {
+	const type_unary_keyword: PARSENODE.ParseNodeTypeUnaryKeyword = unaryKeywordTypeFromString(typestring, config);
+	assert_arrayLength(type_unary_keyword.children, 1, 'unary-keyword type should have 1 child');
+	return type_unary_keyword.children[0];
+}
+export function unaryKeywordTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeUnaryKeyword {
 	const type_intersection: PARSENODE.ParseNodeTypeIntersection = intersectionTypeFromString(typestring, config)
 	assert_arrayLength(type_intersection.children, 1, 'intersection type should have 1 child')
 	return type_intersection.children[0]

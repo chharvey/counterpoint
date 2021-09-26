@@ -231,7 +231,7 @@ describe('ParserSolid', () => {
 					`int?`,
 					`float!`,
 				].map((src) => {
-					const type_unary: PARSENODE.ParseNodeTypeUnarySymbol = h.unaryTypeFromString(src);
+					const type_unary: PARSENODE.ParseNodeTypeUnarySymbol = h.unarySymbolTypeFromString(src);
 					assert_arrayLength(type_unary.children, 2);
 					const [unary, op]: readonly [PARSENODE.ParseNodeTypeUnarySymbol, Token] = type_unary.children;
 					assert.ok(op instanceof TOKEN.TokenPunctuator);
@@ -240,26 +240,6 @@ describe('ParserSolid', () => {
 					[Keyword.INT,   Punctuator.ORNULL],
 					[Keyword.FLOAT, Punctuator.OREXCP],
 				]);
-			})
-		})
-
-		describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
-			it('makes a ParseNodeTypeIntersection node.', () => {
-				/*
-					<TypeIntersection>
-						<TypeIntersection source="int">...</TypeIntersection>
-						<PUNCTUATOR>&</PUNCTUATOR>
-						<TypeUnarySymbol source="float">...</TypeUnarySymbol>
-					</TypeIntersection>
-				*/
-				const type_intersection: PARSENODE.ParseNodeTypeIntersection = h.intersectionTypeFromString(`int & float`)
-				assert_arrayLength(type_intersection.children, 3)
-				const [left, op, right]: readonly [PARSENODE.ParseNodeTypeIntersection, Token, PARSENODE.ParseNodeTypeUnarySymbol] = type_intersection.children
-				assert.ok(op instanceof TOKEN.TokenPunctuator)
-				assert.deepStrictEqual(
-					[left.source, op.source,        right.source],
-					[Keyword.INT, Punctuator.INTER, Keyword.FLOAT],
-				)
 			})
 		})
 
