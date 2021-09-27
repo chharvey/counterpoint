@@ -11,7 +11,8 @@ import {
 	SymbolStructureVar,
 } from './package.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
-import type {ASTNodeVariable} from './ASTNodeVariable.js';
+import {ASTNodeVariable} from './ASTNodeVariable.js';
+import type {ASTNodeAccess} from './ASTNodeAccess.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';
 
 
@@ -24,15 +25,15 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	}
 	constructor (
 		start_node: ParseNode,
-		readonly assignee: ASTNodeVariable,
+		readonly assignee: ASTNodeVariable | ASTNodeAccess,
 		readonly assigned: ASTNodeExpression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
 	override varCheck(validator: Validator): void {
 		super.varCheck(validator);
-		const variable: ASTNodeVariable = this.assignee;
-		if (!(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
+		const variable: ASTNodeVariable | ASTNodeAccess = this.assignee;
+		if (variable instanceof ASTNodeVariable && !(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
 			throw new AssignmentError10(variable);
 		};
 	}
@@ -48,7 +49,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		const tofloat: boolean = this.assignee.type(builder.validator).isSubtypeOf(Float64) || this.assigned.shouldFloat(builder.validator);
 		return new INST.InstructionStatement(
 			builder.stmtCount,
-			new INST.InstructionGlobalSet(this.assignee.id, this.assigned.build(builder, tofloat)),
+			new INST.InstructionGlobalSet((this.assignee as ASTNodeVariable).id, this.assigned.build(builder, tofloat)),
 		);
 	}
 }

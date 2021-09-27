@@ -1284,6 +1284,27 @@ describe('Decorator', () => {
 			});
 		});
 
+		describe('Assignee ::= ExpressionCompound PropertyAssign', () => {
+			it('makes an ASTNodeAccess node.', () => {
+				/*
+					<Access source="x.().y.z" kind=NORMAL>
+						<Access source="x.().y">...</Access>
+						<Key source="z"/>
+					</Access>
+				*/
+				const access: AST.ASTNodeAccess = (Decorator.decorate(h.assigneeFromSource(`
+					x.().y.z = a;
+				`)) as AST.ASTNodeAccess);
+				const base: AST.ASTNodeExpression = access.base;
+				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.accessor;
+				assert.ok(accessor instanceof AST.ASTNodeKey);
+				assert.deepStrictEqual(
+					[access.source,     base.source,   accessor.source],
+					[`x . ( ) . y . z`, `x . ( ) . y`, `z`],
+				);
+			});
+		});
+
 		describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
 			it('makes an ASTNodeAssignment node.', () => {
 				/*
