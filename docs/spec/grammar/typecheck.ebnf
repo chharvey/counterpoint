@@ -29,7 +29,7 @@ None TypeCheck(SemanticDeclarationType decl) :=
 	1. *Assert:* `decl.children.count` is 2.
 	2. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `decl.children.0.id`:
 		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
-		2. *Set* `symbol.value` to *UnwrapAffirm:* `TypeValueOf(decl.children.1)`.
+		2. *Set* `symbol.typevalue` to *UnwrapAffirm:* `TypeValueOf(decl.children.1)`.
 ;
 
 

@@ -7,8 +7,8 @@ Type TypeValueOf(SemanticTypeConstant const) :=
 Type TypeValueOf(SemanticTypeAlias var) :=
 	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
 		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
-		2. *Assert:* `symbol.value` is a Solid Language Type.
-		3. *Return:* `symbol.value`.
+		2. *Assert:* `symbol.typevalue` is a Solid Language Type.
+		3. *Return:* `symbol.typevalue`.
 	2. *Return:* `Never`.
 ;
 

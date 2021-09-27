@@ -8,7 +8,7 @@ Object! ValueOf(SemanticVariable var) :=
 	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
 		1. *Assert:* `symbol` is an instance of `SymbolStructureVar`.
 		2. *If* `symbol.unfixed` is `false`:
-			1. *Assert:* `symbol.value` is a Completion Structure.
+			1. *Assert:* `symbol.value` is not *none*.
 			2. *Return:* `symbol.value`.
 	2. *Throw:* `none`.
 ;
