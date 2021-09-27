@@ -118,11 +118,17 @@ ExpressionUnit ::=
 ;
 
 PropertyAccess ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression "]");
-FunctionCall   ::= "."                 GenericArguments? FunctionArguments;
+PropertyAssign ::=  "."                (INTEGER | Word | "[" Expression "]");
+FunctionCall   ::=  "."                GenericArguments? FunctionArguments;
 
 ExpressionCompound ::=
 	| ExpressionUnit
 	| ExpressionCompound (PropertyAccess | FunctionCall)
+;
+
+Assignee ::=
+	| IDENTIFIER
+	| ExpressionCompound PropertyAssign
 ;
 
 ExpressionUnarySymbol ::=
@@ -156,10 +162,6 @@ DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression ";"
 Declaration ::=
 	| DeclarationType
 	| DeclarationVariable
-;
-
-Assignee ::=
-	| IDENTIFIER
 ;
 
 StatementAssignment
