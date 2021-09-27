@@ -39,7 +39,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.type(validator),
-		])));
+		]))).mutableOf();
 	}
 	protected override fold_do(validator: Validator): SolidObject | null {
 		const properties: ReadonlyMap<bigint, SolidObject | null> = new Map(this.children.map((c) => [

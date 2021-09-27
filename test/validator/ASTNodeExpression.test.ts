@@ -438,16 +438,16 @@ describe('ASTNodeExpression', () => {
 				assert.deepStrictEqual(
 					collections.map((node) => node.type(validator)),
 					[
-						SolidTypeTuple.fromTypes(expected),
+						SolidTypeTuple.fromTypes(expected).mutableOf(),
 						SolidTypeRecord.fromTypes(new Map(collections[1].children.map((c, i) => [
 							c.key.id,
 							expected[i],
-						]))),
-						new SolidTypeSet(SolidType.unionAll(expected)),
+						]))).mutableOf(),
+						new SolidTypeSet(SolidType.unionAll(expected)).mutableOf(),
 						new SolidTypeMap(
 							SolidType.unionAll([typeConstStr('a'), Int16, Float64]),
 							SolidType.unionAll(expected),
-						),
+						).mutableOf(),
 					],
 				);
 			});

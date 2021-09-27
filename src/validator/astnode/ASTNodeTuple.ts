@@ -34,7 +34,7 @@ export class ASTNodeTuple extends ASTNodeExpression {
 		throw builder && 'ASTNodeTuple#build_do not yet supported.';
 	}
 	protected override type_do(validator: Validator): SolidType {
-		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type(validator)));
+		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type(validator))).mutableOf();
 	}
 	protected override fold_do(validator: Validator): SolidObject | null {
 		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.fold(validator));
