@@ -32,6 +32,9 @@ export class SolidTypeDifference extends SolidType {
 		this.isBottomType = false;
 	}
 
+	override get hasMutable(): boolean {
+		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
+	}
 	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) && !this.right.includes(v);
 	}

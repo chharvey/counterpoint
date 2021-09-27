@@ -43,6 +43,10 @@ export class SolidTypeRecord extends SolidType {
 		super(is_mutable, SolidRecord.values);
 	}
 
+	override get hasMutable(): boolean {
+		return super.hasMutable || [...this.propertytypes.values()].some((t) => t.type.hasMutable);
+	}
+
 	/** The possible number of values in this record type. */
 	private get count(): IntRange {
 		return [

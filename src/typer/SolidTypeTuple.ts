@@ -44,6 +44,10 @@ export class SolidTypeTuple extends SolidType {
 		super(is_mutable, SolidTuple.values);
 	}
 
+	override get hasMutable(): boolean {
+		return super.hasMutable || this.types.some((t) => t.type.hasMutable);
+	}
+
 	/** The possible number of items in this tuple type. */
 	private get count(): IntRange {
 		return [

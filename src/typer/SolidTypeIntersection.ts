@@ -31,6 +31,9 @@ export class SolidTypeIntersection extends SolidType {
 		this.isBottomType = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
 	}
 
+	override get hasMutable(): boolean {
+		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
+	}
 	override toString(): string {
 		return `${ this.left } & ${ this.right }`;
 	}

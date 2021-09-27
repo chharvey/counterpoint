@@ -27,6 +27,8 @@ export abstract class SolidObject {
 	/** @implements SolidType */
 	static values: SolidType['values'] = new Set();
 	/** @implements SolidType */
+	static hasMutable: SolidType['hasMutable'] = false;
+	/** @implements SolidType */
 	static includes(v: SolidObject): ReturnType<SolidType['includes']> {
 		return v instanceof this/*static*/
 	}

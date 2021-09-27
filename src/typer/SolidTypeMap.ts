@@ -23,6 +23,10 @@ export class SolidTypeMap extends SolidType {
 		super(is_mutable, SolidMap.values);
 	}
 
+	override get hasMutable(): boolean {
+		return super.hasMutable || this.antecedenttypes.hasMutable || this.consequenttypes.hasMutable;
+	}
+
 	override toString(): string {
 		return `Map.<${ this.antecedenttypes }, ${ this.consequenttypes }>`;
 	}
