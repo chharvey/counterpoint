@@ -28,7 +28,7 @@ export class SolidTypeMap extends SolidType {
 	}
 
 	override toString(): string {
-		return `Map.<${ this.antecedenttypes }, ${ this.consequenttypes }>`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }Map.<${ this.antecedenttypes }, ${ this.consequenttypes }>`;
 	}
 
 	override includes(v: SolidObject): boolean {

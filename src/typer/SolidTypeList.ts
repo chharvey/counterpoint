@@ -27,7 +27,7 @@ export class SolidTypeList extends SolidType {
 	}
 
 	override toString(): string {
-		return `List.<${ this.types }>`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }List.<${ this.types }>`;
 	}
 
 	override includes(v: SolidObject): boolean {

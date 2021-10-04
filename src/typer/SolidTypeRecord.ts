@@ -56,7 +56,7 @@ export class SolidTypeRecord extends SolidType {
 	}
 
 	override toString(): string {
-		return `[${ [...this.propertytypes].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }[${ [...this.propertytypes].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
 	}
 
 	override includes(v: SolidObject): boolean {
