@@ -1,6 +1,7 @@
 import type {SolidType} from './SolidType.js';
 import {SolidTypeConstant} from './SolidTypeConstant.js';
-import {SolidObject} from './SolidObject.js';
+import type {SolidObject} from './SolidObject.js';
+import {Primitive} from './Primitive.js';
 
 
 
@@ -13,7 +14,7 @@ import {SolidObject} from './SolidObject.js';
  *
  * @final
  */
-export class SolidBoolean extends SolidObject {
+export class SolidBoolean extends Primitive {
 	static override toString(): string {
 		return 'bool';
 	}

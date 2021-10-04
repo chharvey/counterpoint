@@ -14,6 +14,8 @@ export * from './SolidTypeSet.js';
 export * from './SolidTypeMap.js';
 
 export * from './SolidObject.js';
+
+export * from './Primitive.js';
 export * from './SolidNull.js';
 export * from './SolidBoolean.js';
 export * from './SolidNumber.js';

@@ -6,11 +6,7 @@ import {SolidType} from './SolidType.js';
 /**
  * Parent class for all Solid Language Values.
  * Known subclasses:
- * - SolidNull
- * - SolidBoolean
- * - Int16
- * - Float64
- * - SolidString
+ * - Primitive
  * - Collection
  */
 export abstract class SolidObject {
