@@ -3,8 +3,9 @@ Type! TypeOf(SemanticExpression expr) :=
 	2. *Let* `folded` be `ValueOf(expr)`.
 	3. *If* `folded` is an abrupt completion:
 		1. *Return:* `t`.
-	4. *Assert:* `folded.value` exists.
-	5. *Return:* `ToType(folded.value)`.
+	4. *If* `folded.value` is an instance of `Null`, `Boolean`, `Integer`, `Float`, or `String`:
+		1. *Return:* `ToType(folded.value)`.
+	5. *Return:* `t`.
 ;
 
 
