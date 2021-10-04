@@ -51,7 +51,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		const symbol: SymbolStructureVar | null = validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;
 		if (symbol) {
 			symbol.type = this.typenode.eval(validator);
-			if (validator.config.compilerOptions.constantFolding && !this.unfixed) {
+			if (validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
 				symbol.value = this.assigned.fold(validator);
 			}
 		}

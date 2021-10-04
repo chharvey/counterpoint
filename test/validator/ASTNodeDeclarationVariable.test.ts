@@ -7,7 +7,9 @@ import {
 	SymbolStructureVar,
 	Validator,
 	SolidType,
+	SolidTypeList,
 	Int16,
+	SolidTuple,
 	INST,
 	Builder,
 	AssignmentError01,
@@ -61,6 +63,33 @@ describe('ASTNodeDeclarationVariable', () => {
 				let  the_answer:  null =  21  *  2;
 			`).typeCheck(new Validator()), TypeError03);
 		})
+		it('always sets `SymbolStructure#type`.', () => {
+			[
+				CONFIG_DEFAULT,
+				CONFIG_FOLDING_OFF,
+			].forEach((config) => {
+				const validator: Validator = new Validator(config);
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					let x: int = 42;
+					let y: int[] = [42];
+					let z: mutable int[] = List.<int>([42]);
+				`);
+				goal.varCheck(validator);
+				goal.typeCheck(validator);
+				assert.deepStrictEqual(
+					[
+						(validator.getSymbolInfo(256n) as SymbolStructureVar).type,
+						(validator.getSymbolInfo(257n) as SymbolStructureVar).type,
+						(validator.getSymbolInfo(258n) as SymbolStructureVar).type,
+					],
+					[
+						Int16,
+						new SolidTypeList(Int16),
+						new SolidTypeList(Int16).mutableOf(),
+					],
+				);
+			});
+		});
 		it('with int coersion on, allows assigning ints to floats.', () => {
 			AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
@@ -77,33 +106,49 @@ describe('ASTNodeDeclarationVariable', () => {
 				},
 			})), TypeError03);
 		})
-		it('with constant folding on, sets `SymbolStructure#{type, value}`.', () => {
+		it('with constant folding on, only sets `SymbolStructure#value` if type is immutable and variable is fixed.', () => {
 			const validator: Validator = new Validator();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let x: int = 42;
+				let y: int[] = [42];
+				let z: mutable int[] = List.<int>([42]);
+				let unfixed w: int = 42;
 			`);
 			goal.varCheck(validator);
 			goal.typeCheck(validator);
-			assert.strictEqual(
-				(validator.getSymbolInfo(256n) as SymbolStructureVar).type,
-				Int16,
-			);
 			assert.deepStrictEqual(
-				(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
-				new Int16(42n),
+				[
+					(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
+					(validator.getSymbolInfo(257n) as SymbolStructureVar).value,
+					(validator.getSymbolInfo(258n) as SymbolStructureVar).value,
+					(validator.getSymbolInfo(260n) as SymbolStructureVar).value, // 259n is TokenWorth("List")
+				],
+				[
+					new Int16(42n),
+					new SolidTuple<Int16>([new Int16(42n)]),
+					null,
+					null,
+				],
 			);
 		});
-		it('with constant folding off, does nothing to the SymbolStructure.', () => {
+		it('with constant folding off, never sets `SymbolStructure#value`.', () => {
 			const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let x: int = 42;
+				let y: int[] = [42];
+				let z: mutable int[] = List.<int>([42]);
+				let unfixed w: int = 42;
 			`);
 			goal.varCheck(validator);
 			goal.typeCheck(validator);
-			assert.strictEqual(
-				(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
-				null,
-			);
+			[
+				(validator.getSymbolInfo(256n) as SymbolStructureVar),
+				(validator.getSymbolInfo(257n) as SymbolStructureVar),
+				(validator.getSymbolInfo(258n) as SymbolStructureVar),
+				(validator.getSymbolInfo(260n) as SymbolStructureVar), // 259n is TokenWorth("List")
+			].forEach((symbol) => {
+				assert.strictEqual(symbol.value, null, symbol.source);
+			});
 		});
 	});
 
