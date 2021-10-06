@@ -1,12 +1,12 @@
 import type {ParseNode} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
-	AssignmentError10,
-	SolidConfig,
-	CONFIG_DEFAULT,
 	Float64,
 	INST,
 	Builder,
+	AssignmentError10,
+	SolidConfig,
+	CONFIG_DEFAULT,
 	Validator,
 	SymbolStructureVar,
 } from './package.js';
@@ -32,9 +32,9 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	}
 	override varCheck(validator: Validator): void {
 		super.varCheck(validator);
-		const variable: ASTNodeVariable | ASTNodeAccess = this.assignee;
-		if (variable instanceof ASTNodeVariable && !(validator.getSymbolInfo(variable.id) as SymbolStructureVar).unfixed) {
-			throw new AssignmentError10(variable);
+		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
+		if (assignee instanceof ASTNodeVariable && !(validator.getSymbolInfo(assignee.id) as SymbolStructureVar).unfixed) {
+			throw new AssignmentError10(assignee);
 		};
 	}
 	override typeCheck(validator: Validator): void {
