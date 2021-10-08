@@ -7,6 +7,7 @@ import {
 	SymbolStructureVar,
 	Validator,
 	SolidType,
+	SolidTypeTuple,
 	SolidTypeList,
 	Int16,
 	SolidTuple,
@@ -20,6 +21,7 @@ import {
 	CONFIG_FOLDING_OFF,
 	instructionConstInt,
 	instructionConstFloat,
+	typeConstInt,
 } from '../helpers.js';
 
 
@@ -53,6 +55,13 @@ describe('ASTNodeDeclarationVariable', () => {
 
 
 	describe('#typeCheck', () => {
+		const abcde: string = `
+			let a: int = 42;
+			let b: int[] = [42];
+			let unfixed c: int = 42;
+			let d: mutable [42] = [42];
+			let e: mutable int[] = List.<int>([42]);
+		`;
 		it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 			AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  int | float =  21  *  2;
@@ -69,11 +78,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				CONFIG_FOLDING_OFF,
 			].forEach((config) => {
 				const validator: Validator = new Validator(config);
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let x: int = 42;
-					let y: int[] = [42];
-					let z: mutable int[] = List.<int>([42]);
-				`);
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde, config);
 				goal.varCheck(validator);
 				goal.typeCheck(validator);
 				assert.deepStrictEqual(
@@ -81,10 +86,14 @@ describe('ASTNodeDeclarationVariable', () => {
 						(validator.getSymbolInfo(256n) as SymbolStructureVar).type,
 						(validator.getSymbolInfo(257n) as SymbolStructureVar).type,
 						(validator.getSymbolInfo(258n) as SymbolStructureVar).type,
+						(validator.getSymbolInfo(259n) as SymbolStructureVar).type,
+						(validator.getSymbolInfo(260n) as SymbolStructureVar).type,
 					],
 					[
 						Int16,
 						new SolidTypeList(Int16),
+						Int16,
+						SolidTypeTuple.fromTypes([typeConstInt(42n)]).mutableOf(),
 						new SolidTypeList(Int16).mutableOf(),
 					],
 				);
@@ -108,12 +117,7 @@ describe('ASTNodeDeclarationVariable', () => {
 		})
 		it('with constant folding on, only sets `SymbolStructure#value` if type is immutable and variable is fixed.', () => {
 			const validator: Validator = new Validator();
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let x: int = 42;
-				let y: int[] = [42];
-				let z: mutable int[] = List.<int>([42]);
-				let unfixed w: int = 42;
-			`);
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde);
 			goal.varCheck(validator);
 			goal.typeCheck(validator);
 			assert.deepStrictEqual(
@@ -121,11 +125,13 @@ describe('ASTNodeDeclarationVariable', () => {
 					(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
 					(validator.getSymbolInfo(257n) as SymbolStructureVar).value,
 					(validator.getSymbolInfo(258n) as SymbolStructureVar).value,
-					(validator.getSymbolInfo(260n) as SymbolStructureVar).value, // 259n is TokenWorth("List")
+					(validator.getSymbolInfo(259n) as SymbolStructureVar).value,
+					(validator.getSymbolInfo(260n) as SymbolStructureVar).value,
 				],
 				[
 					new Int16(42n),
 					new SolidTuple<Int16>([new Int16(42n)]),
+					null,
 					null,
 					null,
 				],
@@ -133,19 +139,15 @@ describe('ASTNodeDeclarationVariable', () => {
 		});
 		it('with constant folding off, never sets `SymbolStructure#value`.', () => {
 			const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let x: int = 42;
-				let y: int[] = [42];
-				let z: mutable int[] = List.<int>([42]);
-				let unfixed w: int = 42;
-			`);
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde, CONFIG_FOLDING_OFF);
 			goal.varCheck(validator);
 			goal.typeCheck(validator);
 			[
 				(validator.getSymbolInfo(256n) as SymbolStructureVar),
 				(validator.getSymbolInfo(257n) as SymbolStructureVar),
 				(validator.getSymbolInfo(258n) as SymbolStructureVar),
-				(validator.getSymbolInfo(260n) as SymbolStructureVar), // 259n is TokenWorth("List")
+				(validator.getSymbolInfo(259n) as SymbolStructureVar),
+				(validator.getSymbolInfo(260n) as SymbolStructureVar),
 			].forEach((symbol) => {
 				assert.strictEqual(symbol.value, null, symbol.source);
 			});
