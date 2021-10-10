@@ -6,11 +6,7 @@ import {SolidType} from './SolidType.js';
 /**
  * Parent class for all Solid Language Values.
  * Known subclasses:
- * - SolidNull
- * - SolidBoolean
- * - Int16
- * - Float64
- * - SolidString
+ * - Primitive
  * - Collection
  */
 export abstract class SolidObject {
@@ -26,6 +22,8 @@ export abstract class SolidObject {
 	static isMutable: SolidType['isMutable'] = false;
 	/** @implements SolidType */
 	static values: SolidType['values'] = new Set();
+	/** @implements SolidType */
+	static hasMutable: SolidType['hasMutable'] = false;
 	/** @implements SolidType */
 	static includes(v: SolidObject): ReturnType<SolidType['includes']> {
 		return v instanceof this/*static*/

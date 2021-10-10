@@ -38,7 +38,7 @@ export class ASTNodeSet extends ASTNodeExpression {
 			(this.children.length)
 				? SolidType.unionAll(this.children.map((c) => c.type(validator)))
 				: SolidType.NEVER,
-		);
+		).mutableOf();
 	}
 	protected override fold_do(validator: Validator): SolidObject | null {
 		const elements: readonly (SolidObject | null)[] = this.children.map((c) => c.fold(validator));

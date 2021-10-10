@@ -143,10 +143,10 @@ Symbol structures’ properties are described in the tables below.
 ##### SymbolStructureType
 A **SymbolStructureType** represents a type alias referencing a Solid Language Type.
 
-Property  | Description
---------- | -----------
-\`id\`    | the unique identifier of the declared symbol
-\`value\` | the assessed value (a Solid Language Type) of this symbol
+Property      | Description
+------------- | -----------
+\`id\`        | the unique identifier of the declared symbol
+\`typevalue\` | the assessed type (a Solid Language Type) of this symbol
 
 ##### SymbolStructureVar
 A **SymbolStructureVar** represents a variable referencing a Solid Language Value.
@@ -156,7 +156,7 @@ Property    | Description
 \`id\`      | the unique identifier of the declared symbol
 \`unfixed\` | a Boolean, whether the variable may be reassigned
 \`type\`    | the Solid Language Type of the variable
-\`value\`   | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Solid Language Value) of this symbol; otherwise: *void*
+\`value\`   | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Solid Language Value) of this symbol; otherwise: *none*
 
 
 ### Nodes

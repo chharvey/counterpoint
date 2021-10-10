@@ -39,7 +39,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		if (validator.hasSymbol(this.id)) {
 			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureType) {
-				return symbol.value;
+				return symbol.typevalue;
 			};
 		};
 		return SolidType.NEVER;

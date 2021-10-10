@@ -78,6 +78,14 @@ export abstract class SolidType {
 	}
 
 	/**
+	 * Return whether this type is mutable or has a mutable operand or component.
+	 * @return `true` if this type is mutable or has a mutable operand/component
+	 */
+	get hasMutable(): boolean {
+		return this.isMutable;
+	}
+
+	/**
 	 * Return whether this type “includes” the value, i.e.,
 	 * whether the value is assignable to this type.
 	 * @param v the value to check
@@ -229,6 +237,9 @@ export class SolidTypeInterface extends SolidType {
 		super(is_mutable);
 	}
 
+	override get hasMutable(): boolean {
+		return super.hasMutable || [...this.properties.values()].some((t) => t.hasMutable);
+	}
 	override includes(v: SolidObject): boolean {
 		return [...this.properties.keys()].every((key) => key in v)
 	}

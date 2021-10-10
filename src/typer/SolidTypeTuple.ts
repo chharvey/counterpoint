@@ -44,6 +44,10 @@ export class SolidTypeTuple extends SolidType {
 		super(is_mutable, SolidTuple.values);
 	}
 
+	override get hasMutable(): boolean {
+		return super.hasMutable || this.types.some((t) => t.type.hasMutable);
+	}
+
 	/** The possible number of items in this tuple type. */
 	private get count(): IntRange {
 		return [
@@ -53,7 +57,7 @@ export class SolidTypeTuple extends SolidType {
 	}
 
 	override toString(): string {
-		return `[${ this.types.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }[${ this.types.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
 
 	override includes(v: SolidObject): boolean {

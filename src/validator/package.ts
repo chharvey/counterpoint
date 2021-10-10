@@ -16,6 +16,7 @@ export {
 	SolidTypeSet,
 	SolidTypeMap,
 	SolidObject,
+	Primitive,
 	SolidNull,
 	SolidBoolean,
 	SolidNumber,

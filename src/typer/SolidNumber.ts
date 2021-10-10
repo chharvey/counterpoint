@@ -1,12 +1,12 @@
 import type {Float64} from './index.js';
-import {SolidObject} from './SolidObject.js';
+import {Primitive} from './Primitive.js';
 
 
 
 /**
  * A numeric Solid Language Value.
  */
-export abstract class SolidNumber<T = unknown> extends SolidObject {
+export abstract class SolidNumber<T = unknown> extends Primitive {
 	/**
 	 * @final
 	 */

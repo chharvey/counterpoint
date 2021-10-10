@@ -3,8 +3,9 @@ Type! TypeOf(SemanticExpression expr) :=
 	2. *Let* `folded` be `ValueOf(expr)`.
 	3. *If* `folded` is an abrupt completion:
 		1. *Return:* `t`.
-	4. *Assert:* `folded.value` exists.
-	5. *Return:* `ToType(folded.value)`.
+	4. *If* `folded.value` is an instance of `Null`, `Boolean`, `Integer`, `Float`, or `String`:
+		1. *Return:* `ToType(folded.value)`.
+	5. *Return:* `t`.
 ;
 
 
@@ -34,7 +35,7 @@ Type TypeOfUnfolded(StringTemplate template) :=
 
 Type! TypeOfUnfolded(SemanticTuple tuple) :=
 	1. *Let* `types` be a mapping of `tuple` for each `it` to *Unwrap:* `TypeOf(it)`.
-	2. *Return:* a new Tuple type containing the items in the sequence `types`.
+	2. *Return:* a new mutable Tuple type containing the items in the sequence `types`.
 ;
 
 
@@ -46,7 +47,7 @@ Type! TypeOfUnfolded(SemanticRecord record) :=
 			...types,
 			`property.children.0` = *Unwrap:* `TypeOf(property.children.1)`,
 		].
-	3. *Return:* a new Record type containing the properties in the structure `types`.
+	3. *Return:* a new mutable Record type containing the properties in the structure `types`.
 ;
 
 
@@ -54,7 +55,7 @@ Type! TypeOfUnfolded(SemanticRecord record) :=
 Type! TypeOfUnfolded(SemanticSet set) :=
 	1. *Let* `types` be a mapping of `set` for each `el` to *Unwrap:* `TypeOf(el)`.
 	2. *Let* `t` be `Union(...types)`.
-	3. *Return:* a new Set type whose types are `t`.
+	3. *Return:* a new mutable Set type whose types are `t`.
 ;
 
 
@@ -64,7 +65,7 @@ Type! TypeOfUnfolded(SemanticMap map) :=
 	2. *Let* `con_types` be a mapping of `map` for each `case` to *Unwrap:* `TypeOf(case.children.1)`.
 	3. *Let* `k` be `Union(...ant_types)`.
 	4. *Let* `v` be `Union(...con_types)`.
-	5. *Return:* a new Map type whose antecedent types are `k` and whose consequent types are `v`.
+	5. *Return:* a new mutable Map type whose antecedent types are `k` and whose consequent types are `v`.
 ;
 
 
@@ -180,7 +181,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 								1. *Throw:* a new TypeError03.
 					2. *Else*:
 						1. *Throw:* a new TypeError06.
-				6. *Return:* `returntype`.
+				6. *Return:* a mutable copy of `returntype`.
 		2. *Throw:* a new TypeError06.
 	5. *Else If* `base.source` is "Map":
 		1. *If* `call.children.count` is 2 or 3 or 4:
@@ -210,7 +211,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 				6. *Let*: `paramtype` be a subtype of `List` whose items’ type is `keyvaluetype`.
 				7. *If*: `argtype` is not a subtype of `paramtype`:
 						1. *Throw:* a new TypeError03.
-				8. *Return:* a subtype of `Map` whose antecedents’ type is `antecedenttype`
+				8. *Return:* a mutable subtype of `Map` whose antecedents’ type is `antecedenttype`
 					and whose consequents’ type is `consequenttype`.
 		2. *Throw:* a new TypeError06.
 	6. *Throw* a new SyntaxError.

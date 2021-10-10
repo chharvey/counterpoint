@@ -21,8 +21,12 @@ export class SolidTypeSet extends SolidType {
 		super(is_mutable, SolidSet.values);
 	}
 
+	override get hasMutable(): boolean {
+		return super.hasMutable || this.types.hasMutable;
+	}
+
 	override toString(): string {
-		return `Set.<${ this.types }>`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }Set.<${ this.types }>`;
 	}
 
 	override includes(v: SolidObject): boolean {
