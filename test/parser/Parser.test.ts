@@ -545,6 +545,39 @@ describe('ParserSolid', () => {
 			});
 		});
 
+		describe('Assignee ::= IDENTIFIER', () => {
+			/*
+				<Assignee>
+					<IDENTIFIER>this_answer</IDENTIFIER>
+				</Assignee>
+			*/
+			it('makes a ParseNodeAssignee node.', () => {
+				const assignee: PARSENODE.ParseNodeAssignee = h.assigneeFromSource(`this_answer  =  that_answer  -  40;`);
+				assert_arrayLength(assignee.children, 1);
+				const id: Token = assignee.children[0];
+				assert.ok(id instanceof TOKEN.TokenIdentifier);
+				assert.strictEqual(id.source, `this_answer`);
+			});
+		});
+
+		describe('Assignee ::= ExpressionCompound PropertyAssign', () => {
+			/*
+				<Assignee>
+					<ExpressionCompound source="x.().y">...</ExpressionCompound>
+					<PropertyAssign source=".z">...</PropertyAssign>
+				</Assignee>
+			*/
+			it('makes a ParseNodeAssignee node.', () => {
+				const assignee: PARSENODE.ParseNodeAssignee = h.assigneeFromSource(`x.().y.z = a;`);
+				assert_arrayLength(assignee.children, 2);
+				const [compound, assign]: readonly [PARSENODE.ParseNodeExpressionCompound, PARSENODE.ParseNodePropertyAssign] = assignee.children;
+				assert.deepStrictEqual(
+					[compound.source, assign.source],
+					[`x . ( ) . y`,   `. z`],
+				);
+			});
+		});
+
 		context('ExpressionExponential ::=  ExpressionUnarySymbol "^" ExpressionExponential', () => {
 			it('makes a ParseNodeExpressionExponential node.', () => {
 				/*
@@ -789,21 +822,6 @@ describe('ParserSolid', () => {
 				])
 			})
 		})
-
-		describe('Assignee ::= IDENTIFIER', () => {
-			/*
-				<Assignee>
-					<IDENTIFIER>this_answer</IDENTIFIER>
-				</Statement>
-			*/
-			it('makes a ParseNodeAssignee node.', () => {
-				const assignee: PARSENODE.ParseNodeAssignee = h.assigneeFromSource(`this_answer  =  that_answer  -  40;`);
-				assert_arrayLength(assignee.children, 1);
-				const id: Token = assignee.children[0];
-				assert.ok(id instanceof TOKEN.TokenIdentifier);
-				assert.strictEqual(id.source, `this_answer`);
-			});
-		});
 
 		describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
 			/*

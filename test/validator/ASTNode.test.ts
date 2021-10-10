@@ -12,6 +12,7 @@ import {
 	AssignmentError10,
 	TypeError01,
 	TypeError03,
+	MutabilityError01,
 } from '../../src/index.js';
 import * as AST from '../../src/validator/astnode/index.js'; // HACK
 import {
@@ -75,6 +76,90 @@ describe('ASTNodeSolid', () => {
 					type T = 42;
 					T = 43;
 				`).varCheck(new Validator()), ReferenceError03);
+			});
+		});
+
+
+		describe('#typeCheck', () => {
+			context('for variable reassignment.', () => {
+				it('throws when variable assignee type is not supertype.', () => {
+					const validator: Validator = new Validator();
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						let unfixed i: int = 42;
+						i = 4.3;
+					`);
+					goal.varCheck(validator);
+					assert.throws(() => goal.typeCheck(validator), TypeError03);
+				});
+			});
+
+			context('for property reassignment.', () => {
+				it('throws when property assignee type is not supertype.', () => {
+					[
+						`
+							let t: mutable [42] = [42];
+							t.0 = 4.2;
+						`,
+						`
+							let r: mutable [i: 42] = [i= 42];
+							r.i = 4.2;
+						`,
+						`
+							let l: mutable int[] = List.<int>([42]);
+							l.0 = 4.2;
+						`,
+						`
+							let h: mutable [:int] = Hash.<int>([i= 42]);
+							h.i = 4.2;
+						`,
+						`
+							let s: mutable int{} = Set.<int>([42]);
+							s.[42] = 4.2;
+						`,
+						`
+							let m: mutable {bool -> int} = Map.<bool, int>([[true, 42]]);
+							m.[true] = 4.2;
+						`,
+					].forEach((src) => {
+						const validator: Validator = new Validator();
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+						goal.varCheck(validator);
+						assert.throws(() => goal.typeCheck(validator), TypeError03);
+					});
+				});
+				it('throws when assignee’s base type is not mutable.', () => {
+					[
+						`
+							let t: [42] = [42];
+							t.0 = 4.2;
+						`,
+						`
+							let r: [i: 42] = [i= 42];
+							r.i = 4.2;
+						`,
+						`
+							let l: int[] = List.<int>([42]);
+							l.0 = 4.2;
+						`,
+						`
+							let h: [:int] = Hash.<int>([i= 42]);
+							h.i = 4.2;
+						`,
+						`
+							let s: int{} = Set.<int>([42]);
+							s.[42] = 4.2;
+						`,
+						`
+							let m: {bool -> int} = Map.<bool, int>([[true, 42]]);
+							m.[true] = 4.2;
+						`,
+					].forEach((src) => {
+						const validator: Validator = new Validator();
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+						goal.varCheck(validator);
+						assert.throws(() => goal.typeCheck(validator), MutabilityError01);
+					});
+				});
 			});
 		});
 

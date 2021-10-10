@@ -87,9 +87,11 @@ None! VarCheck(SemanticAssignment assignment) :=
 	1. *For each* `it` in `assignment`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
 	2. *Assert:* `assignment.children.count` is 2.
-	3. *Let* `id` be `assignment.children.0.id`.
-	4. *Assert:* The validator contains a record for `id`.
-	5. *Let* `info` be the record for `id` in the validator.
-	6. *If* `info.unfixed` is `false`:
-		1. *Throw:* a new AssignmentError10.
+	3. *Let* `assignee` be `assignment.children.0`.
+	4. *If* `assignee` is a SemanticVariable:
+		1. *Let* `id` be `assignee.id`.
+		2. *Assert:* The validator contains a record for `id`.
+		3. *Let* `info` be the record for `id` in the validator.
+		4. *If* `info.unfixed` is `false`:
+			1. *Throw:* a new AssignmentError10.
 ;

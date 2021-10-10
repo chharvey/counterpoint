@@ -148,7 +148,7 @@ SemanticDeclarationVariable[unfixed: Boolean]
 
 
 SemanticAssignment
-	::= SemanticVariable SemanticExpression;
+	::= (SemanticVariable | SemanticAccess) SemanticExpression;
 
 
 

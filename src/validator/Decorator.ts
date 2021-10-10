@@ -162,7 +162,9 @@ export class Decorator {
 	static decorate(node: PARSENODE.ParseNodeMapLiteral):              AST.ASTNodeMap;
 	static decorate(node: PARSENODE.ParseNodeFunctionArguments):       AST.ASTNodeExpression[];
 	static decorate(node: PARSENODE.ParseNodePropertyAccess):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
+	static decorate(node: PARSENODE.ParseNodePropertyAssign):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
 	static decorate(node: PARSENODE.ParseNodeFunctionCall):            [AST.ASTNodeType[], AST.ASTNodeExpression[]];
+	static decorate(node: PARSENODE.ParseNodeAssignee):                AST.ASTNodeVariable | AST.ASTNodeAccess;
 	static decorate(node:
 		| PARSENODE.ParseNodeExpressionUnit
 		| PARSENODE.ParseNodeExpressionCompound
@@ -180,7 +182,6 @@ export class Decorator {
 	static decorate(node: PARSENODE.ParseNodeDeclarationType):       AST.ASTNodeDeclarationType;
 	static decorate(node: PARSENODE.ParseNodeDeclarationVariable):   AST.ASTNodeDeclarationVariable;
 	static decorate(node: PARSENODE.ParseNodeDeclaration):           AST.ASTNodeDeclaration;
-	static decorate(node: PARSENODE.ParseNodeAssignee):              AST.ASTNodeVariable;
 	static decorate(node: PARSENODE.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
 	static decorate(node: PARSENODE.ParseNodeStatement):             AST.ASTNodeStatement;
 	static decorate(node: PARSENODE.ParseNodeGoal):                  AST.ASTNodeGoal;
@@ -384,7 +385,10 @@ export class Decorator {
 					: new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier)
 				: this.decorate(node.children[1]);
 
-		} else if (node instanceof PARSENODE.ParseNodePropertyAccess) {
+		} else if (
+			node instanceof PARSENODE.ParseNodePropertyAccess
+			|| node instanceof PARSENODE.ParseNodePropertyAssign
+		) {
 			return (
 				(node.children[1] instanceof TOKEN.TokenNumber)       ? new AST.ASTNodeIndex(node, new AST.ASTNodeConstant(node.children[1])) :
 				(node.children[1] instanceof PARSENODE.ParseNodeWord) ? this.decorate(node.children[1]) :
@@ -406,6 +410,16 @@ export class Decorator {
 				: (node.children[1] instanceof PARSENODE.ParseNodePropertyAccess)
 					? new AST.ASTNodeAccess(node, this.ACCESSORS.get(node.children[1].children[0].source as Punctuator)!, this.decorate(node.children[0]),    this.decorate(node.children[1]))
 					: new AST.ASTNodeCall  (node,                                                                         this.decorate(node.children[0]), ...this.decorate(node.children[1]));
+
+		} else if (node instanceof PARSENODE.ParseNodeAssignee) {
+			return (node.children.length === 1)
+				? new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier)
+				: new AST.ASTNodeAccess(
+					node,
+					Operator.DOT,
+					this.decorate(node.children[0]),
+					this.decorate(node.children[1]),
+				);
 
 		} else if (node instanceof PARSENODE.ParseNodeExpressionUnarySymbol) {
 			return (node.children.length === 1)
@@ -540,13 +554,10 @@ export class Decorator {
 		} else if (node instanceof PARSENODE.ParseNodeDeclaration) {
 			return this.decorate(node.children[0]);
 
-		} else if (node instanceof PARSENODE.ParseNodeAssignee) {
-			return new AST.ASTNodeVariable(node.children[0] as TOKEN.TokenIdentifier);
-
 		} else if (node instanceof PARSENODE.ParseNodeStatementAssignment) {
 			return new AST.ASTNodeAssignment(
 				node,
-				this.decorate(node.children[0]) as AST.ASTNodeVariable,
+				this.decorate(node.children[0]),
 				this.decorate(node.children[2]),
 			);
 
