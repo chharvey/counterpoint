@@ -1,5 +1,6 @@
 import type {SolidType} from './SolidType.js';
-import {SolidObject} from './SolidObject.js';
+import type {SolidObject} from './SolidObject.js';
+import {Primitive} from './Primitive.js';
 
 
 
@@ -17,7 +18,7 @@ import {SolidObject} from './SolidObject.js';
  *
  * @final
  */
-export class SolidNull extends SolidObject {
+export class SolidNull extends Primitive {
 	static override toString(): string {
 		return 'null';
 	}

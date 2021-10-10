@@ -27,10 +27,13 @@ export class SolidTypeUnion extends SolidType {
 		private readonly left:  SolidType,
 		private readonly right: SolidType,
 	) {
-		super(Set_unionEq(left.values, right.values, solidObjectsIdentical));
+		super(false, Set_unionEq(left.values, right.values, solidObjectsIdentical));
 		this.isBottomType = this.left.isBottomType && this.right.isBottomType;
 	}
 
+	override get hasMutable(): boolean {
+		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
+	}
 	override toString(): string {
 		return `${ this.left } | ${ this.right }`;
 	}
@@ -51,6 +54,9 @@ export class SolidTypeUnion extends SolidType {
 	override isSubtypeOf_do(t: SolidType): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
+	}
+	override mutableOf(): SolidTypeUnion {
+		return new SolidTypeUnion(this.left.mutableOf(), this.right.mutableOf());
 	}
 	subtractedFrom(t: SolidType): SolidType {
 		/** 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */

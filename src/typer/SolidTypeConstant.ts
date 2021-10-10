@@ -10,8 +10,14 @@ export class SolidTypeConstant extends SolidType {
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType: boolean = false;
 
-	constructor (readonly value: SolidObject) {
-		super(new Set([value]))
+	/**
+	 * Construct a new SolidTypeConstant object.
+	 * @param value the Solid Language Value contained in this Type
+	 */
+	constructor (
+		readonly value: SolidObject,
+	) {
+		super(false, new Set([value]));
 	}
 
 	override toString(): string {

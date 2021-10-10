@@ -6,6 +6,7 @@ import {
 	SolidType,
 	SolidTypeConstant,
 	SolidObject,
+	Primitive,
 	INST,
 	Builder,
 	Validator,
@@ -95,7 +96,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 						throw err;
 					}
 				}
-				if (!!value) {
+				if (!!value && value instanceof Primitive) {
 					this.typed = new SolidTypeConstant(value);
 				};
 			};

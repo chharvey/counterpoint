@@ -41,10 +41,10 @@ describe('ASTNodeCall', () => {
 					]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type(validator)),
 				[
-					new SolidTypeList(Int16),
-					new SolidTypeHash(Int16),
-					new SolidTypeSet(Int16),
-					new SolidTypeMap(Int16, Float64),
+					new SolidTypeList(Int16).mutableOf(),
+					new SolidTypeHash(Int16).mutableOf(),
+					new SolidTypeSet(Int16).mutableOf(),
+					new SolidTypeMap(Int16, Float64).mutableOf(),
 				],
 			);
 		});
@@ -60,9 +60,9 @@ describe('ASTNodeCall', () => {
 					]));`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type(validator)),
 				[
-					new SolidTypeList(Int16),
-					new SolidTypeSet(Int16),
-					new SolidTypeMap(Int16, Float64),
+					new SolidTypeList(Int16).mutableOf(),
+					new SolidTypeSet(Int16).mutableOf(),
+					new SolidTypeMap(Int16, Float64).mutableOf(),
 				],
 			);
 		});
@@ -78,20 +78,20 @@ describe('ASTNodeCall', () => {
 					`Map.<int, float>([]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type(validator)),
 				[
-					new SolidTypeList(Int16),
-					new SolidTypeHash(Int16),
-					new SolidTypeSet(Int16),
-					new SolidTypeMap(Int16, Float64),
-					new SolidTypeList(Int16),
-					new SolidTypeSet(Int16),
-					new SolidTypeMap(Int16, Float64),
+					new SolidTypeList(Int16).mutableOf(),
+					new SolidTypeHash(Int16).mutableOf(),
+					new SolidTypeSet(Int16).mutableOf(),
+					new SolidTypeMap(Int16, Float64).mutableOf(),
+					new SolidTypeList(Int16).mutableOf(),
+					new SolidTypeSet(Int16).mutableOf(),
+					new SolidTypeMap(Int16, Float64).mutableOf(),
 				],
 			);
 		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeCall.fromSource(`Map.<int>();`).type(validator),
-				new SolidTypeMap(Int16, Int16),
+				new SolidTypeMap(Int16, Int16).mutableOf(),
 			);
 		});
 		it('throws if base is not an ASTNodeVariable.', () => {

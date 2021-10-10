@@ -34,11 +34,17 @@ export class SolidTypeRecord extends SolidType {
 	/**
 	 * Construct a new SolidTypeRecord object.
 	 * @param propertytypes a map of this type’s property ids along with their associated types
+	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		private readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
+		is_mutable: boolean = false,
 	) {
-		super(SolidRecord.values);
+		super(is_mutable, SolidRecord.values);
+	}
+
+	override get hasMutable(): boolean {
+		return super.hasMutable || [...this.propertytypes.values()].some((t) => t.type.hasMutable);
 	}
 
 	/** The possible number of values in this record type. */
@@ -50,7 +56,7 @@ export class SolidTypeRecord extends SolidType {
 	}
 
 	override toString(): string {
-		return `[${ [...this.propertytypes].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }[${ [...this.propertytypes].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
 	}
 
 	override includes(v: SolidObject): boolean {
@@ -61,17 +67,26 @@ export class SolidTypeRecord extends SolidType {
 		return t.equals(SolidObject) || (
 			t instanceof SolidTypeRecord
 			&& this.count[0] >= t.count[0]
+			&& (!t.isMutable || this.isMutable)
 			&& [...t.propertytypes].every(([id, thattype]) => {
 				const thistype: TypeEntry | null = this.propertytypes.get(id) || null;
 				return (
 					(thattype.optional || thistype && !thistype.optional)
-					&& (!thistype || thistype.type.isSubtypeOf(thattype.type))
+					&& (!thistype || ((t.isMutable)
+						? thistype.type.equals(thattype.type)
+						: thistype.type.isSubtypeOf(thattype.type)
+					))
 				);
 			})
 		) || (
 			t instanceof SolidTypeHash
+			&& !t.isMutable
 			&& this.valueTypes().isSubtypeOf(t.types)
 		);
+	}
+
+	override mutableOf(): SolidTypeRecord {
+		return new SolidTypeRecord(this.propertytypes, true);
 	}
 
 	get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): SolidType {

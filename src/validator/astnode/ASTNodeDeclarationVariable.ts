@@ -39,14 +39,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			throw new AssignmentError01(this.assignee);
 		};
 		forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck(validator));
-		validator.addSymbol(new SymbolStructureVar(
-			this.assignee,
-			this.unfixed,
-			() => this.typenode.eval(validator),
-			(validator.config.compilerOptions.constantFolding && !this.unfixed)
-				? () => this.assigned.fold(validator)
-				: null,
-		));
+		validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
 	}
 	override typeCheck(validator: Validator): void {
 		this.assigned.typeCheck(validator);
@@ -55,7 +48,13 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			this.assigned.type(validator),
 			validator,
 		);
-		return validator.getSymbolInfo(this.assignee.id)?.assess();
+		const symbol: SymbolStructureVar | null = validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;
+		if (symbol) {
+			symbol.type = this.typenode.eval(validator);
+			if (validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
+				symbol.value = this.assigned.fold(validator);
+			}
+		}
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
 		const tofloat: boolean = this.typenode.eval(builder.validator).isSubtypeOf(Float64) || this.assigned.shouldFloat(builder.validator);

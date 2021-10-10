@@ -2,7 +2,9 @@ import * as assert from 'assert'
 import {
 	TypeEntry,
 	SolidType,
+	SolidTypeIntersection,
 	SolidTypeUnion,
+	SolidTypeDifference,
 	SolidTypeConstant,
 	SolidTypeInterface,
 	SolidTypeTuple,
@@ -581,6 +583,9 @@ describe('SolidType', () => {
 					{type: Int16, optional: true},
 				])), `[int, ?:int, ?:int, ?:int, ?:int] !<: [int, int, ?:int, ?:int]`);
 			});
+			it('Invariance for mutable tuples: `A == B --> mutable Tuple.<A> <: mutable Tuple.<B>`.', () => {
+				assert.ok(!SolidTypeTuple.fromTypes([Int16, Float64]).mutableOf().isSubtypeOf(SolidTypeTuple.fromTypes([Int16.union(SolidNull), Float64.union(SolidNull)]).mutableOf()), `mutable [int, float] !<: mutable [int?, float?]`);
+			});
 		});
 
 		describe('SolidTypeRecord', () => {
@@ -667,6 +672,15 @@ describe('SolidType', () => {
 					[0x102n, {type: SolidBoolean, optional: false}],
 				]))), `[a: str, b?: int, c: bool] !<: [a?: str, b: int, c: bool]`);
 			});
+			it('Invariance for mutable records: `A == B --> mutable Record.<A> <: mutable Record.<B>`.', () => {
+				assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+					[0x100n, Int16],
+					[0x101n, Float64],
+				])).mutableOf().isSubtypeOf(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+					[0x100n, Int16.union(SolidNull)],
+					[0x101n, Float64.union(SolidNull)],
+				])).mutableOf()), `mutable [a: int, b: float] !<: mutable [a: int?, b: float?]`);
+			});
 		});
 
 		describe('SolidTypeList', () => {
@@ -674,12 +688,16 @@ describe('SolidType', () => {
 				assert.ok(new SolidTypeList(Int16.union(SolidBoolean)).isSubtypeOf(SolidObject), `List.<int | bool> <: obj;`);
 				assert.ok(!SolidObject.isSubtypeOf(new SolidTypeList(Int16.union(SolidBoolean))), `obj !<: List.<int | bool>`);
 			});
-			it('Covariance: `A <: B --> List.<A> <: List.<B>`.', () => {
+			it('Covariance for immutable lists: `A <: B --> List.<A> <: List.<B>`.', () => {
 				assert.ok(new SolidTypeList(Int16).isSubtypeOf(new SolidTypeList(Int16.union(Float64))), `List.<int> <: List.<int | float>`);
 				assert.ok(!new SolidTypeList(Int16.union(Float64)).isSubtypeOf(new SolidTypeList(Int16)), `List.<int | float> !<: List.<int>`);
 			});
+			it('Invariance for mutable lists: `A == B --> mutable List.<A> <: mutable List.<B>`.', () => {
+				assert.ok(!new SolidTypeList(Int16).mutableOf().isSubtypeOf(new SolidTypeList(Int16.union(Float64)).mutableOf()), `mutable List.<int> !<: mutable List.<int | float>`);
+			});
 			it('Generalization: `A <: B --> Tuple.<A> <: List.<B>`.', () => {
 				assert.ok(SolidTypeTuple.fromTypes([Float64, Int16]).isSubtypeOf(new SolidTypeList(Int16.union(Float64))), `[float, int] <: List.<int | float>`);
+				assert.ok(!SolidTypeTuple.fromTypes([Float64, Int16]).isSubtypeOf(new SolidTypeList(Int16.union(Float64)).mutableOf()), `[float, int] !<: mutable List.<int | float>`);
 			});
 		});
 
@@ -688,15 +706,22 @@ describe('SolidType', () => {
 				assert.ok(new SolidTypeHash(Int16.union(SolidBoolean)).isSubtypeOf(SolidObject), `Hash.<int | bool> <: obj;`);
 				assert.ok(!SolidObject.isSubtypeOf(new SolidTypeHash(Int16.union(SolidBoolean))), `obj !<: Hash.<int | bool>`);
 			});
-			it('Covariance: `A <: B --> Hash.<A> <: Hash.<B>`.', () => {
+			it('Covariance for immutable hashes: `A <: B --> Hash.<A> <: Hash.<B>`.', () => {
 				assert.ok(new SolidTypeHash(Int16).isSubtypeOf(new SolidTypeHash(Int16.union(Float64))), `Hash.<int> <: Hash.<int | float>`);
 				assert.ok(!new SolidTypeHash(Int16.union(Float64)).isSubtypeOf(new SolidTypeHash(Int16)), `Hash.<int | float> !<: Hash.<int>`);
+			});
+			it('Invariance for mutable hashes: `A == B --> mutable Hash.<A> <: mutable Hash.<B>`.', () => {
+				assert.ok(!new SolidTypeHash(Int16).mutableOf().isSubtypeOf(new SolidTypeHash(Int16.union(Float64)).mutableOf()), `mutable Hash.<int> !<: mutable Hash.<int | float>`);
 			});
 			it('Generalization: `A <: B --> Record.<A> <: Hash.<B>`.', () => {
 				assert.ok(SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
 					[0x100n, Float64],
 					[0x101n, Int16],
 				])).isSubtypeOf(new SolidTypeHash(Int16.union(Float64))), `[a: float, b: int] <: Hash.<int | float>`);
+				assert.ok(!SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+					[0x100n, Float64],
+					[0x101n, Int16],
+				])).isSubtypeOf(new SolidTypeHash(Int16.union(Float64)).mutableOf()), `[a: float, b: int] !<: mutable Hash.<int | float>`);
 			});
 		});
 
@@ -705,13 +730,12 @@ describe('SolidType', () => {
 				assert.ok(new SolidTypeSet(Int16).isSubtypeOf(SolidObject), `Set.<int> <: obj`);
 				assert.ok(!SolidObject.isSubtypeOf(new SolidTypeSet(Int16)), `obj !<: Set.<int>`);
 			});
-			it('Covariance: `A <: B --> Set.<A> <: Set.<B>`.', () => {
-				assert.ok(new SolidTypeSet(Int16).isSubtypeOf(
-					new SolidTypeSet(Int16.union(SolidBoolean))
-				), `Set.<int> <: Set.<int | bool>`);
-				assert.ok(!new SolidTypeSet(Int16).isSubtypeOf(
-					new SolidTypeSet(SolidBoolean)
-				), `Set.<int> !<: Set.<bool>`);
+			it('Covariance or immutable sets: `A <: B --> Set.<A> <: Set.<B>`.', () => {
+				assert.ok(new SolidTypeSet(Int16).isSubtypeOf(new SolidTypeSet(Int16.union(Float64))), `Set.<int> <: Set.<int | float>`);
+				assert.ok(!new SolidTypeSet(Int16.union(Float64)).isSubtypeOf(new SolidTypeSet(Int16)), `Set.<int | float> !<: Set.<int>`);
+			});
+			it('Invariance for mutable sets: `A == B --> mutable Set.<A> <: mutable Set.<B>`.', () => {
+				assert.ok(!new SolidTypeSet(Int16).mutableOf().isSubtypeOf(new SolidTypeSet(Int16.union(Float64)).mutableOf()), `mutable Set.<int> !<: mutable Set.<int | float>`);
 			});
 		});
 
@@ -720,13 +744,12 @@ describe('SolidType', () => {
 				assert.ok(new SolidTypeMap(Int16, SolidBoolean).isSubtypeOf(SolidObject), `Map.<int, bool> <: obj`);
 				assert.ok(!SolidObject.isSubtypeOf(new SolidTypeMap(Int16, SolidBoolean)), `obj !<: Map.<int, bool>`);
 			});
-			it('Covariance: `A <: C && B <: D --> Map.<A, B> <: Map.<C, D>`.', () => {
-				assert.ok(new SolidTypeMap(Int16, SolidBoolean).isSubtypeOf(
-					new SolidTypeMap(Int16.union(Float64), SolidBoolean.union(SolidNull))
-				), `Map.<int, bool> <: Map.<int | float, bool | null>`);
-				assert.ok(!new SolidTypeMap(Int16, SolidBoolean).isSubtypeOf(
-					new SolidTypeMap(SolidBoolean.union(SolidNull), SolidObject)
-				), `Map.<int, bool> !<: Map.<bool | null, obj>`);
+			it('Covariance for immutable maps: `A <: C && B <: D --> Map.<A, B> <: Map.<C, D>`.', () => {
+				assert.ok(new SolidTypeMap(Int16, SolidBoolean).isSubtypeOf(new SolidTypeMap(Int16.union(Float64), SolidBoolean.union(SolidNull))), `Map.<int, bool> <: Map.<int | float, bool | null>`);
+				assert.ok(!new SolidTypeMap(Int16.union(Float64), SolidBoolean.union(SolidNull)).isSubtypeOf(new SolidTypeMap(Int16, SolidBoolean)), `Map.<int | float, bool | null> !<: Map.<int, bool>`);
+			});
+			it('Invariance for mutable maps: `A == C && B == D --> mutable Map.<A, B> <: mutable Map.<C, D>`.', () => {
+				assert.ok(!new SolidTypeMap(Int16, SolidBoolean).mutableOf().isSubtypeOf(new SolidTypeMap(Int16.union(Float64), SolidBoolean.union(SolidNull)).mutableOf()), `mutable Map.<int, bool> !<: mutable Map.<int | float, bool | null>`);
 			});
 		});
 
@@ -743,6 +766,125 @@ describe('SolidType', () => {
 			})
 		})
 	})
+
+
+	describe('#mutableOf', () => {
+		it('mutable types are subtypes of their immutable counterparts.', () => {
+			[
+				...builtin_types,
+				SolidTypeTuple.fromTypes([
+					Int16,
+					Float64,
+					SolidString,
+				]),
+				SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+					[0x100n, Int16],
+					[0x101n, Float64],
+					[0x102n, SolidString],
+				])),
+				new SolidTypeList(SolidBoolean),
+				new SolidTypeHash(SolidBoolean),
+				new SolidTypeSet(SolidNull),
+				new SolidTypeMap(Int16, Float64),
+			].forEach((t) => {
+				assert.ok(t.mutableOf().isSubtypeOf(t), `mutable ${ t } <: ${ t }`);
+			});
+		});
+		it('non-constant mutable types are not equal to their immutable counterparts.', () => {
+			[
+				SolidTypeTuple.fromTypes([
+					Int16,
+					Float64,
+					SolidString,
+				]),
+				SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+					[0x100n, Int16],
+					[0x101n, Float64],
+					[0x102n, SolidString],
+				])),
+				new SolidTypeList(SolidBoolean),
+				new SolidTypeHash(SolidBoolean),
+				new SolidTypeSet(SolidNull),
+				new SolidTypeMap(Int16, Float64),
+			].forEach((t) => {
+				assert.ok(!t.mutableOf().equals(t), `mutable ${ t } != ${ t }`);
+			});
+		});
+		it('non-constant immutable types are not subtypes of their mutable counterparts.', () => {
+			[
+				SolidTypeTuple.fromTypes([
+					Int16,
+					Float64,
+					SolidString,
+				]),
+				SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+					[0x100n, Int16],
+					[0x101n, Float64],
+					[0x102n, SolidString],
+				])),
+				new SolidTypeList(SolidBoolean),
+				new SolidTypeHash(SolidBoolean),
+				new SolidTypeSet(SolidNull),
+				new SolidTypeMap(Int16, Float64),
+			].forEach((t) => {
+				assert.ok(!t.isSubtypeOf(t.mutableOf()), `${ t } !<: mutable ${ t }`);
+			});
+		});
+		context('disributes over binary operations.', () => {
+			const types: SolidType[] = [
+				SolidType.NEVER,
+				SolidType.UNKNOWN,
+				SolidType.VOID,
+				SolidObject,
+				SolidNull,
+				SolidBoolean,
+				Int16,
+				Float64,
+				SolidString,
+				SolidTypeTuple.fromTypes([
+					Int16,
+					Float64,
+					SolidString,
+				]),
+				SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([
+					[0x100n, Int16],
+					[0x101n, Float64],
+					[0x102n, SolidString],
+				])),
+				new SolidTypeList(SolidBoolean),
+				new SolidTypeHash(SolidBoolean),
+				new SolidTypeSet(SolidNull),
+				new SolidTypeMap(Int16, Float64),
+			];
+			specify('mutable (A - B) == mutable A - mutable B', () => {
+				predicate2(types, (a, b) => {
+					const difference: SolidType = a.subtract(b).mutableOf();
+					assert.ok(difference.equals(a.mutableOf().subtract(b.mutableOf())), `${ a }, ${ b }`);
+					if (difference instanceof SolidTypeDifference) {
+						assert.ok(!difference.isMutable, 'SolidTypeDifference#isMutable === false');
+					}
+				});
+			});
+			specify('mutable (A & B) == mutable A & mutable B', () => {
+				predicate2(types, (a, b) => {
+					const intersection: SolidType = a.intersect(b).mutableOf();
+					assert.ok(intersection.equals(a.mutableOf().intersect(b.mutableOf())), `${ a }, ${ b }`);
+					if (intersection instanceof SolidTypeIntersection) {
+						assert.ok(!intersection.isMutable, 'SolidTypeIntersection#isMutable === false');
+					}
+				});
+			});
+			specify('mutable (A | B) == mutable A | mutable B', () => {
+				predicate2(types, (a, b) => {
+					const union: SolidType = a.union(b).mutableOf();
+					assert.ok(union.equals(a.mutableOf().union(b.mutableOf())), `${ a }, ${ b }`);
+					if (union instanceof SolidTypeUnion) {
+						assert.ok(!union.isMutable, 'SolidTypeUnion#isMutable === false');
+					}
+				});
+			});
+		});
+	});
 
 
 	describe('SolidTypeIntersection', () => {

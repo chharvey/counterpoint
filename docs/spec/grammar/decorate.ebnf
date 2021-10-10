@@ -164,12 +164,21 @@ Decorate(TypeUnarySymbol ::= TypeUnarySymbol "{" "}") -> SemanticTypeSet
 
 
 
+Decorate(TypeUnaryKeyword ::= TypeUnarySymbol) -> SemanticType
+	:= Decorate(TypeUnarySymbol);
+Decorate(TypeUnaryKeyword ::= "mutable" TypeUnaryKeyword) -> SemanticTypeOperation
+	:= (SemanticTypeOperation[operator=MUTABLE]
+		Decorate(TypeUnaryKeyword)
+	);
+
+
+
 Decorate(TypeIntersection ::= TypeUnarySymbol) -> SemanticType
 	:= Decorate(TypeUnarySymbol);
-Decorate(TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol) -> SemanticTypeOperation
+Decorate(TypeIntersection ::= TypeIntersection "&" TypeUnaryKeyword) -> SemanticTypeOperation
 	:= (SemanticTypeOperation[operator=AND]
 		Decorate(TypeIntersection)
-		Decorate(TypeUnarySymbol)
+		Decorate(TypeUnaryKeyword)
 	);
 
 
@@ -306,6 +315,15 @@ Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey
 Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticExpression
 	:= Decorate(Expression);
 
+Decorate(PropertyAssign ::= "." INTEGER) -> SemanticIndex
+	:= (SemanticIndex
+		(SemanticConstant[value=Integer(TokenWorth(INTEGER))])
+	);
+Decorate(PropertyAssign ::= "." Word) -> SemanticKey
+	:= Decorate(Word);
+Decorate(PropertyAssign ::= "." "[" Expression "]") -> SemanticExpression
+	:= Decorate(Expression);
+
 Decorate(FunctionCall ::= "." FunctionArguments) -> Vector<Sequence<SemanticType>, Sequence<SemanticExpression>>
 	:= [
 		[],
@@ -330,6 +348,16 @@ Decorate(ExpressionCompound ::= ExpressionCompound FunctionCall) -> SemanticCall
 	:= (SemanticCall
 		Decorate(ExpressionCompound)
 		...(...Decorate(FunctionCall))
+	);
+
+
+
+Decorate(Assignee ::= IDENTIFIER) -> SemanticVariable
+	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
+Decorate(Assignee ::= ExpressionCompound PropertyAssign) -> SemanticAccess
+	:= (SemanticAccess[kind=NORMAL]
+		Decorate(ExpressionCompound)
+		Decorate(PropertyAssign)
 	);
 
 
@@ -552,9 +580,6 @@ Decorate(Declaration ::= DeclarationVariable) -> SemanticDeclarationVariable
 	:= Decorate(DeclarationVariable);
 
 
-
-Decorate(Assignee ::= IDENTIFIER) -> SemanticVariable
-	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
 
 Decorate(StatementAssignment ::= Assignee "=" Expression ";") -> SemanticAssignment
 	:= (SemanticAssignment

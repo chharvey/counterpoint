@@ -55,6 +55,7 @@ Keyword :::=
 		| "str"
 		| "obj"
 	// operator
+		| "mutable"
 		| "is"
 		| "isnt"
 		| "if"

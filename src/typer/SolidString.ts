@@ -2,11 +2,16 @@ import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import type {CodeUnit} from './package.js';
 import type {SolidType} from './SolidType.js';
-import {SolidObject} from './SolidObject.js';
+import type {SolidObject} from './SolidObject.js';
+import {Primitive} from './Primitive.js';
 
 
 
-export class SolidString extends SolidObject {
+/**
+ * A textual Solid Language Value.
+ * @final
+ */
+export class SolidString extends Primitive {
 	static override toString(): string {
 		return 'str';
 	}

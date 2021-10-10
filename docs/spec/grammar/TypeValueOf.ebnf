@@ -7,8 +7,8 @@ Type TypeValueOf(SemanticTypeConstant const) :=
 Type TypeValueOf(SemanticTypeAlias var) :=
 	1. *If* the validator’s symbol table contains a SymbolStructure `symbol` whose `id` is `var.id`:
 		1. *Assert:* `symbol` is an instance of `SymbolStructureType`.
-		2. *Assert:* `symbol.value` is a Solid Language Type.
-		3. *Return:* `symbol.value`.
+		2. *Assert:* `symbol.typevalue` is a Solid Language Type.
+		3. *Return:* `symbol.typevalue`.
 	2. *Return:* `Never`.
 ;
 
@@ -147,6 +147,13 @@ Type TypeValueOf(SemanticTypeOperation[operator: ORNULL] oper) :=
 
 Type TypeValueOf(SemanticTypeOperation[operator: OREXCP] oper) :=
 	1. *Throw:* new TypeError "Operator not yet supported.".
+;
+
+Type TypeValueOf(SemanticTypeOperation[operator: MUTABLE] oper) :=
+	1. *Assert:* `oper.children.count` is 1.
+	2. *Let* `child` be *UnwrapAffirm:* `TypeValueOf(oper.children.0)`.
+	3. *Let* `returned` be a mutable copy of `child`.
+	4. *Return:* `returned`.
 ;
 
 Type TypeValueOf(SemanticTypeOperation[operator: AND] oper) :=

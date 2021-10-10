@@ -33,13 +33,13 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 			throw new AssignmentError01(this.assignee);
 		};
 		this.assigned.varCheck(validator);
-		validator.addSymbol(new SymbolStructureType(
-			this.assignee,
-			() => this.assigned.eval(validator),
-		));
+		validator.addSymbol(new SymbolStructureType(this.assignee));
 	}
 	override typeCheck(validator: Validator): void {
-		return validator.getSymbolInfo(this.assignee.id)?.assess();
+		const symbol: SymbolStructureType | null = validator.getSymbolInfo(this.assignee.id) as SymbolStructureType | null;
+		if (symbol) {
+			symbol.typevalue = this.assigned.eval(validator);
+		}
 	}
 	override build(_builder: Builder): INST.InstructionNone {
 		return new INST.InstructionNone();
