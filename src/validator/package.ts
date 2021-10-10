@@ -44,6 +44,7 @@ export {
 	TypeError04,
 	TypeError05,
 	TypeError06,
+	MutabilityError01,
 	NanError01,
 	NanError02,
 } from '../index.js';

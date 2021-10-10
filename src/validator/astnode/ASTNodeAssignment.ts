@@ -1,10 +1,12 @@
 import type {ParseNode} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
+	SolidType,
 	Float64,
 	INST,
 	Builder,
 	AssignmentError10,
+	MutabilityError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Validator,
@@ -12,7 +14,7 @@ import {
 } from './package.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeVariable} from './ASTNodeVariable.js';
-import type {ASTNodeAccess} from './ASTNodeAccess.js';
+import {ASTNodeAccess} from './ASTNodeAccess.js';
 import {ASTNodeStatement} from './ASTNodeStatement.js';
 
 
@@ -39,6 +41,13 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	}
 	override typeCheck(validator: Validator): void {
 		super.typeCheck(validator);
+		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
+		if (assignee instanceof ASTNodeAccess) {
+			const base_type: SolidType = assignee.base.type(validator);
+			if (!base_type.isMutable) {
+				throw new MutabilityError01(base_type, this);
+			}
+		}
 		return this.typeCheckAssignment(
 			this.assignee.type(validator),
 			this.assigned.type(validator),
