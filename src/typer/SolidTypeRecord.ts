@@ -89,6 +89,10 @@ export class SolidTypeRecord extends SolidType {
 		return new SolidTypeRecord(this.propertytypes, true);
 	}
 
+	override immutableOf(): SolidTypeRecord {
+		return new SolidTypeRecord(this.propertytypes, false);
+	}
+
 	get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): SolidType {
 		return updateAccessedStaticType(((this.propertytypes.has(key))
 			? this.propertytypes.get(key)!

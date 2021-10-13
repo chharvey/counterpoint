@@ -12,6 +12,7 @@ import {
 	SymbolStructureVar,
 } from './package.js';
 import {forEachAggregated} from './utils-private.js';
+import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeVariable} from './ASTNodeVariable.js';
@@ -43,9 +44,10 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 	override typeCheck(validator: Validator): void {
 		this.assigned.typeCheck(validator);
-		this.typeCheckAssignment(
+		ASTNodeSolid.typeCheckAssignment(
 			this.typenode.eval(validator),
-			this.assigned.type(validator),
+			this.assigned,
+			this,
 			validator,
 		);
 		const symbol: SymbolStructureVar | null = validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;

@@ -18,6 +18,9 @@ import {
 } from '../../src/index.js';
 import * as AST from '../../src/validator/astnode/index.js'; // HACK
 import {
+	assertAssignable,
+} from '../assert-helpers.js';
+import {
 	CONFIG_FOLDING_OFF,
 	instructionConstInt,
 	instructionConstFloat,
@@ -72,6 +75,59 @@ describe('ASTNodeDeclarationVariable', () => {
 				let  the_answer:  null =  21  *  2;
 			`).typeCheck(new Validator()), TypeError03);
 		})
+		it('allows assigning a collection literal to a wider mutable type.', () => {
+			const validator: Validator = new Validator();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				let t1: mutable [42]         = [42];
+				let r1: mutable [x: 42]      = [x= 42];
+				let s1: mutable 42{}         = {42};
+				let m1: mutable {true -> 42} = {true -> 42};
+
+				let t2: mutable [42 | 4.3]          = [42];
+				let r2: mutable [x: 42 | 4.3]       = [x= 42];
+				let s2: mutable (42 | 4.3){}        = {42};
+				let m2: mutable {true? -> 42 | 4.3} = {true -> 42};
+
+				let t3: mutable [int]         = [42];
+				let r3: mutable [x: int]      = [x= 42];
+				let s3: mutable int{}         = {42};
+				let m3: mutable {bool -> int} = {true -> 42};
+
+				type T = [int];
+				let v: T = [42];
+				let t4: mutable [T?]         = [v];
+				let r4: mutable [x: T?]      = [x= v];
+				let s4: mutable T?{}         = {v};
+				let m4: mutable {bool -> T?} = {true -> v};
+			`);
+			goal.varCheck(validator);
+			goal.typeCheck(validator); // assert does not throw
+		});
+		it('disallows assigning a constructor call to a wider mutable type.', () => {
+			const validator: Validator = new Validator();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				let a: mutable int[]         = List.<42>([42]);
+				let b: mutable [:int]        = Hash.<42>([x= 42]);
+				let c: mutable int{}         = Set.<42>([42]);
+				let d: mutable {bool -> int} = Map.<true, 42>([[true, 42]]);
+			`);
+			goal.varCheck(validator);
+			assert.throws(() => {
+				goal.typeCheck(validator);
+			}, (err) => {
+				assert.ok(err instanceof AggregateError);
+				assertAssignable(err, {
+					cons: AggregateError,
+					errors: [
+						{cons: TypeError03, message: 'Expression of type mutable List.<42> is not assignable to type mutable List.<int>.'},
+						{cons: TypeError03, message: 'Expression of type mutable Hash.<42> is not assignable to type mutable Hash.<int>.'},
+						{cons: TypeError03, message: 'Expression of type mutable Set.<42> is not assignable to type mutable Set.<int>.'},
+						{cons: TypeError03, message: 'Expression of type mutable Map.<true, 42> is not assignable to type mutable Map.<bool, int>.'},
+					],
+				});
+				return true;
+			});
+		});
 		it('always sets `SymbolStructure#type`.', () => {
 			[
 				CONFIG_DEFAULT,

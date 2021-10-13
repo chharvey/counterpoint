@@ -214,6 +214,9 @@ export abstract class SolidType {
 	mutableOf(): SolidType {
 		return this;
 	}
+	immutableOf(): SolidType {
+		return this;
+	}
 }
 
 
@@ -279,6 +282,9 @@ export class SolidTypeInterface extends SolidType {
 	}
 	override mutableOf(): SolidTypeInterface {
 		return new SolidTypeInterface(this.properties, true);
+	}
+	override immutableOf(): SolidTypeInterface {
+		return new SolidTypeInterface(this.properties, false);
 	}
 }
 

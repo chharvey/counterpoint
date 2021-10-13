@@ -12,6 +12,7 @@ import {
 	Validator,
 	SymbolStructureVar,
 } from './package.js';
+import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeVariable} from './ASTNodeVariable.js';
 import {ASTNodeAccess} from './ASTNodeAccess.js';
@@ -48,9 +49,10 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 				throw new MutabilityError01(base_type, this);
 			}
 		}
-		return this.typeCheckAssignment(
+		return ASTNodeSolid.typeCheckAssignment(
 			this.assignee.type(validator),
-			this.assigned.type(validator),
+			this.assigned,
+			this,
 			validator,
 		);
 	}

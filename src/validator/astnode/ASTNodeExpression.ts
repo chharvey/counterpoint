@@ -26,10 +26,7 @@ import {ASTNodeSolid} from './ASTNodeSolid.js';
  * - ASTNodeConstant
  * - ASTNodeVariable
  * - ASTNodeTemplate
- * - ASTNodeTuple
- * - ASTNodeRecord
- * - ASTNodeSet
- * - ASTNodeMap
+ * - ASTNodeCollectionLiteral
  * - ASTNodeAccess
  * - ASTNodeCall
  * - ASTNodeOperation

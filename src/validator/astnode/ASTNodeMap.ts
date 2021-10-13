@@ -16,10 +16,11 @@ import {
 } from './package.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 
-export class ASTNodeMap extends ASTNodeExpression {
+export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeMap {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeMap);

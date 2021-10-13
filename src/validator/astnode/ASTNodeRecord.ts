@@ -14,10 +14,11 @@ import {
 } from './package.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 
-export class ASTNodeRecord extends ASTNodeExpression {
+export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeRecord {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeRecord);

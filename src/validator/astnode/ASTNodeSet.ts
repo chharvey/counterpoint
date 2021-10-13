@@ -12,10 +12,11 @@ import {
 	Validator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 
-export class ASTNodeSet extends ASTNodeExpression {
+export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeSet {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeSet);
