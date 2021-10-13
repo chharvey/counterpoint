@@ -48,4 +48,8 @@ export class SolidTypeMap extends SolidType {
 	override mutableOf(): SolidTypeMap {
 		return new SolidTypeMap(this.antecedenttypes, this.consequenttypes, true);
 	}
+
+	override immutableOf(): SolidTypeMap {
+		return new SolidTypeMap(this.antecedenttypes, this.consequenttypes, false);
+	}
 }

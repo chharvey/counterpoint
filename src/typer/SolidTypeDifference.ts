@@ -44,6 +44,9 @@ export class SolidTypeDifference extends SolidType {
 	override mutableOf(): SolidTypeDifference {
 		return new SolidTypeDifference(this.left.mutableOf(), this.right.mutableOf());
 	}
+	override immutableOf(): SolidTypeDifference {
+		return new SolidTypeDifference(this.left.immutableOf(), this.right.immutableOf());
+	}
 	isSupertypeOf(t: SolidType): boolean {
 		/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
 		return t.isSubtypeOf(this.left) && t.intersect(this.right).isBottomType;

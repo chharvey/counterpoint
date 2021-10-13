@@ -50,4 +50,8 @@ export class SolidTypeList extends SolidType {
 	override mutableOf(): SolidTypeList {
 		return new SolidTypeList(this.types, true);
 	}
+
+	override immutableOf(): SolidTypeList {
+		return new SolidTypeList(this.types, false);
+	}
 }

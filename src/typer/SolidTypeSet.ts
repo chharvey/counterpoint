@@ -46,4 +46,8 @@ export class SolidTypeSet extends SolidType {
 	override mutableOf(): SolidTypeSet {
 		return new SolidTypeSet(this.types, true);
 	}
+
+	override immutableOf(): SolidTypeSet {
+		return new SolidTypeSet(this.types, false);
+	}
 }

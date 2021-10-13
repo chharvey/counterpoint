@@ -50,4 +50,8 @@ export class SolidTypeHash extends SolidType {
 	override mutableOf(): SolidTypeHash {
 		return new SolidTypeHash(this.types, true);
 	}
+
+	override immutableOf(): SolidTypeHash {
+		return new SolidTypeHash(this.types, false);
+	}
 }
