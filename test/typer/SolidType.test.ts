@@ -56,18 +56,12 @@ describe('SolidType', () => {
 		SolidType.NEVER,
 		SolidType.UNKNOWN,
 		SolidType.VOID,
-		SolidObject,
-		SolidNull,
-		SolidBoolean,
-		Int16,
-		Float64,
-		SolidString,
-		SolidTuple,
-		SolidRecord,
-		SolidList,
-		SolidHash,
-		SolidSet,
-		SolidMap,
+		SolidType.OBJ,
+		SolidType.NULL,
+		SolidType.BOOL,
+		SolidType.INT,
+		SolidType.FLOAT,
+		SolidType.STR,
 	]
 	const t0: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidType>([
 		['foo', SolidObject],
@@ -370,17 +364,11 @@ describe('SolidType', () => {
 		it('discrete types.', () => {
 			;[
 				SolidType.VOID,
-				SolidNull,
-				SolidBoolean,
-				Int16,
-				Float64,
-				SolidString,
-				SolidTuple,
-				SolidRecord,
-				SolidList,
-				SolidHash,
-				SolidSet,
-				SolidMap,
+				SolidType.NULL,
+				SolidType.BOOL,
+				SolidType.INT,
+				SolidType.FLOAT,
+				SolidType.STR,
 			].forEach((t, _, arr) => {
 				arr.filter((u) => u !== t).forEach((u) => {
 					assert.ok(!u.isSubtypeOf(t), `${ u }, ${ t }`)
