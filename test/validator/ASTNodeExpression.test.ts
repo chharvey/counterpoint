@@ -6,7 +6,7 @@ import {
 	// {ASTNodeKey, ...} as AST,
 	Validator,
 	SolidType,
-	SolidTypeConstant,
+	SolidTypeUnit,
 	SolidTypeTuple,
 	SolidTypeRecord,
 	SolidTypeSet,
@@ -67,7 +67,7 @@ describe('ASTNodeExpression', () => {
 					} finally {
 						c.fold = orig;
 					};
-				})), constants.map((c) => new SolidTypeConstant(c.fold(validator)!)));
+				})), constants.map((c) => new SolidTypeUnit(c.fold(validator)!)));
 			});
 		});
 
@@ -333,7 +333,7 @@ describe('ASTNodeExpression', () => {
 				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
 					assert.deepStrictEqual(
 						types.slice(0, 2),
-						templates.slice(0, 2).map((t) => new SolidTypeConstant(t.fold(validator)!)),
+						templates.slice(0, 2).map((t) => new SolidTypeUnit(t.fold(validator)!)),
 					);
 				});
 				it('for non-foldable interpolations, returns `String`.', () => {
@@ -394,7 +394,7 @@ describe('ASTNodeExpression', () => {
 				['with constant folding on.',  CONFIG_DEFAULT,     SolidType.unionAll([typeConstStr('a'), typeConstInt(42n), typeConstFloat(3.0)])],
 				['with constant folding off.', CONFIG_FOLDING_OFF, SolidType.unionAll([typeConstStr('a'), Int16,             Float64])],
 			] as const).forEach(([description, config, map_ant_type]) => it(description, () => {
-				const expected: SolidTypeConstant[] = [typeConstInt(1n), typeConstFloat(2.0), typeConstStr('three')];
+				const expected: SolidTypeUnit[] = [typeConstInt(1n), typeConstFloat(2.0), typeConstStr('three')];
 				const collections: readonly [
 					AST.ASTNodeTuple,
 					AST.ASTNodeRecord,

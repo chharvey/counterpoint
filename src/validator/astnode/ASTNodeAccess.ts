@@ -9,7 +9,7 @@ import {
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,
-	SolidTypeConstant,
+	SolidTypeUnit,
 	SolidTypeTuple,
 	SolidTypeList,
 	SolidTypeHash,
@@ -80,16 +80,16 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			);
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			const accessor_type:  SolidTypeConstant = this.accessor.val.type(validator) as SolidTypeConstant;
-			const accessor_value: Int16             = accessor_type.value as Int16;
-			if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
-				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple)
+			const accessor_type:  SolidTypeUnit = this.accessor.val.type(validator) as SolidTypeUnit;
+			const accessor_value: Int16         = accessor_type.value as Int16;
+			if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
+				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple)
 					? base_type.value.toType()
 					: base_type as SolidTypeTuple;
 				return base_type_tuple.get(accessor_value, this.kind, this.accessor);
 			}
-			else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidList || base_type instanceof SolidTypeList) {
-				const base_type_list: SolidTypeList = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidList)
+			else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidList || base_type instanceof SolidTypeList) {
+				const base_type_list: SolidTypeList = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidList)
 					? base_type.value.toType()
 					: base_type as SolidTypeList;
 				return updateAccessedDynamicType(base_type_list.types, this.kind);
@@ -97,13 +97,13 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				throw new TypeError04('index', base_type, this.accessor);
 			}
 		} else if (this.accessor instanceof ASTNodeKey) {
-			if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord || base_type instanceof SolidTypeRecord) {
-				const base_type_record: SolidTypeRecord = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord)
+			if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidRecord || base_type instanceof SolidTypeRecord) {
+				const base_type_record: SolidTypeRecord = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidRecord)
 					? base_type.value.toType()
 					: base_type as SolidTypeRecord;
 				return base_type_record.get(this.accessor.id, this.kind, this.accessor);
-			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidHash || base_type instanceof SolidTypeHash) {
-				const base_type_hash: SolidTypeHash = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidHash)
+			} else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidHash || base_type instanceof SolidTypeHash) {
+				const base_type_hash: SolidTypeHash = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidHash)
 					? base_type.value.toType()
 					: base_type as SolidTypeHash;
 				return updateAccessedDynamicType(base_type_hash.types, this.kind);
@@ -115,31 +115,31 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: SolidType): never {
 				throw new TypeError02(accessor_type, supertype, accessor.line_index, accessor.col_index);
 			}
-			if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
-				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple)
+			if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
+				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple)
 					? base_type.value.toType()
 					: base_type as SolidTypeTuple;
-				return (accessor_type instanceof SolidTypeConstant && accessor_type.value instanceof Int16)
+				return (accessor_type instanceof SolidTypeUnit && accessor_type.value instanceof Int16)
 					? base_type_tuple.get(accessor_type.value, this.kind, this.accessor)
 					: (accessor_type.isSubtypeOf(Int16))
 						? updateAccessedDynamicType(base_type_tuple.itemTypes(), this.kind)
 						: throwWrongSubtypeError(this.accessor, Int16);
-			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidList || base_type instanceof SolidTypeList) {
-				const base_type_list: SolidTypeList = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidList)
+			} else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidList || base_type instanceof SolidTypeList) {
+				const base_type_list: SolidTypeList = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidList)
 					? base_type.value.toType()
 					: base_type as SolidTypeList;
 				return (accessor_type.isSubtypeOf(Int16))
 					? updateAccessedDynamicType(base_type_list.types, this.kind)
 					: throwWrongSubtypeError(this.accessor, Int16);
-			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidSet || base_type instanceof SolidTypeSet) {
-				const base_type_set: SolidTypeSet = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidSet)
+			} else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidSet || base_type instanceof SolidTypeSet) {
+				const base_type_set: SolidTypeSet = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidSet)
 					? base_type.value.toType()
 					: base_type as SolidTypeSet;
 				return (accessor_type.isSubtypeOf(base_type_set.types))
 					? updateAccessedDynamicType(base_type_set.types, this.kind)
 					: throwWrongSubtypeError(this.accessor, base_type_set.types);
-			} else if (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMap || base_type instanceof SolidTypeMap) {
-				const base_type_map: SolidTypeMap = (base_type instanceof SolidTypeConstant && base_type.value instanceof SolidMap)
+			} else if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidMap || base_type instanceof SolidTypeMap) {
+				const base_type_map: SolidTypeMap = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidMap)
 					? base_type.value.toType()
 					: base_type as SolidTypeMap;
 				return (accessor_type.isSubtypeOf(base_type_map.antecedenttypes))

@@ -7,7 +7,7 @@ import {
 	// {ASTNodeKey, ...} as AST,
 	Validator,
 	SolidType,
-	SolidTypeConstant,
+	SolidTypeUnit,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -46,7 +46,7 @@ const CONFIG_FOLDING_COERCION_OFF: SolidConfig = {
 function typeOperations(tests: ReadonlyMap<string, SolidObject>, config: SolidConfig = CONFIG_DEFAULT): void {
 	return assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type(new Validator(config))),
-		[...tests.values()].map((expected) => new SolidTypeConstant(expected)),
+		[...tests.values()].map((expected) => new SolidTypeUnit(expected)),
 	);
 }
 function foldOperations(tests: Map<string, SolidObject>): void {
@@ -544,7 +544,7 @@ describe('ASTNodeOperation', () => {
 						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
 						assert.deepStrictEqual(
 							expr.type(validator),
-							new SolidTypeConstant(expr.fold(validator)!),
+							new SolidTypeUnit(expr.fold(validator)!),
 						);
 					});
 				});
@@ -807,7 +807,7 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: SolidTypeConstant = typeConstStr('hello');
+						const hello: SolidTypeUnit = typeConstStr('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;
@@ -867,7 +867,7 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
-						const hello: SolidTypeConstant = typeConstStr('hello');
+						const hello: SolidTypeUnit = typeConstStr('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;

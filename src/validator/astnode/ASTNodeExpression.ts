@@ -4,7 +4,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SolidType,
-	SolidTypeConstant,
+	SolidTypeUnit,
 	SolidObject,
 	Primitive,
 	INST,
@@ -94,7 +94,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 					}
 				}
 				if (!!value && value instanceof Primitive) {
-					this.typed = new SolidTypeConstant(value);
+					this.typed = new SolidTypeUnit(value);
 				};
 			};
 		};

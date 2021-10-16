@@ -1,7 +1,7 @@
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
-	SolidTypeConstant,
+	SolidTypeUnit,
 	SolidNull,
 	Int16,
 	Float64,
@@ -21,15 +21,15 @@ export const CONFIG_FOLDING_OFF: SolidConfig = {
 
 
 
-export const TYPE_CONST_NULL: SolidTypeConstant = new SolidTypeConstant(SolidNull.NULL);
-export function typeConstInt(x: bigint): SolidTypeConstant {
-	return new SolidTypeConstant(new Int16(x))
+export const TYPE_CONST_NULL: SolidTypeUnit = new SolidTypeUnit(SolidNull.NULL);
+export function typeConstInt(x: bigint): SolidTypeUnit {
+	return new SolidTypeUnit(new Int16(x));
 }
-export function typeConstFloat(x: number): SolidTypeConstant {
-	return new SolidTypeConstant(new Float64(x))
+export function typeConstFloat(x: number): SolidTypeUnit {
+	return new SolidTypeUnit(new Float64(x));
 }
-export function typeConstStr(x: string): SolidTypeConstant {
-	return new SolidTypeConstant(new SolidString(x));
+export function typeConstStr(x: string): SolidTypeUnit {
+	return new SolidTypeUnit(new SolidString(x));
 }
 
 export function instructionConstInt(x: bigint): INST.InstructionConst {

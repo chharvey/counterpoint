@@ -6,7 +6,7 @@ import {
 	Keyword,
 	TOKEN,
 	SolidType,
-	SolidTypeConstant,
+	SolidTypeUnit,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -40,12 +40,12 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				(start_node.source === Keyword.OBJ)   ? SolidObject :
 				(() => { throw new Error(`ASTNodeTypeConstant.constructor did not expect the keyword \`${ start_node.source }\`.`); })()
 			: (start_node instanceof TOKEN.TokenNumber) ?
-				new SolidTypeConstant(
+				new SolidTypeUnit(
 					start_node.isFloat
 						? new Float64(start_node.cook())
 						: new Int16(BigInt(start_node.cook()))
 				)
-			: /* (start_node instanceof TOKEN.TokenString) */ (Dev.supports('literalString-cook')) ? new SolidTypeConstant(new SolidString(start_node.cook())) : (() => { throw new Error('`literalString-cook` not yet supported.'); })()
+			: /* (start_node instanceof TOKEN.TokenString) */ (Dev.supports('literalString-cook')) ? new SolidTypeUnit(new SolidString(start_node.cook())) : (() => { throw new Error('`literalString-cook` not yet supported.'); })()
 		);
 		super(start_node, {value});
 		this.type = value;

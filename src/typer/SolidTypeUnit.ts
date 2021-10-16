@@ -4,11 +4,11 @@ import {SolidType} from './SolidType.js';
 
 
 /**
- * Class for constructing constant types / unit types, types that contain one value.
+ * Class for constructing unit types, types that contain exactly one value.
  */
-export class SolidTypeConstant extends SolidType {
+export class SolidTypeUnit extends SolidType {
 	override readonly isBottomType: boolean = false;
-	override readonly isTopType: boolean = false;
+	override readonly isTopType:    boolean = false;
 
 	/**
 	 * Construct a new SolidTypeConstant object.
@@ -27,6 +27,6 @@ export class SolidTypeConstant extends SolidType {
 		return this.value.identical(v);
 	}
 	override isSubtypeOf_do(t: SolidType): boolean {
-		return t instanceof Function && this.value instanceof t || t.includes(this.value)
+		return t instanceof Function && this.value instanceof t || t.includes(this.value);
 	}
 }
