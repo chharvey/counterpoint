@@ -1,5 +1,5 @@
 import {SolidType} from './SolidType.js';
-import {SolidTypeConstant} from './SolidTypeConstant.js';
+import {SolidTypeConstant} from './SolidTypeUnit.js';
 import {SolidTypeHash} from './SolidTypeHash.js';
 import type {SolidObject} from './SolidObject.js';
 import {CollectionKeyed} from './CollectionKeyed.js';

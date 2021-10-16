@@ -1,5 +1,5 @@
 import type {SolidType} from './SolidType.js';
-import {SolidTypeConstant} from './SolidTypeConstant.js';
+import {SolidTypeConstant} from './SolidTypeUnit.js';
 import type {SolidObject} from './SolidObject.js';
 import {Primitive} from './Primitive.js';
 

@@ -6,7 +6,7 @@ import {
 } from './package.js';
 import {solidObjectsIdentical} from './utils-private.js';
 import {SolidType} from './SolidType.js';
-import {SolidTypeConstant} from './SolidTypeConstant.js';
+import {SolidTypeConstant} from './SolidTypeUnit.js';
 import {SolidTypeSet} from './SolidTypeSet.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
