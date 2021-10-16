@@ -14,7 +14,6 @@ import {
 	SolidNull,
 	SolidBoolean,
 	Int16,
-	Float64,
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
@@ -53,7 +52,7 @@ describe('ASTNodeType', () => {
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval(new Validator())), [
 					SolidBoolean,
 					Int16,
-					Float64,
+					SolidType.FLOAT,
 					SolidObject,
 				]);
 			});

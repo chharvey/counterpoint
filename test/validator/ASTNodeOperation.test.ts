@@ -331,10 +331,10 @@ describe('ASTNodeOperation', () => {
 				});
 				it('returns Float for float arithmetic.', () => {
 					const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource(`7 * 3.0 ^ 2;`, CONFIG_FOLDING_OFF);
-					assert.deepStrictEqual(node.type(validator), Float64);
+					assert.deepStrictEqual(node.type(validator), SolidType.FLOAT);
 					assert.deepStrictEqual(
 						[node.operand0.type(validator), node.operand1.type(validator)],
-						[typeConstInt(7n),              Float64],
+						[typeConstInt(7n),              SolidType.FLOAT],
 					);
 				});
 			});
@@ -343,7 +343,7 @@ describe('ASTNodeOperation', () => {
 					assert.deepStrictEqual(typeOfOperationFromSource(`7 * 3;`), Int16);
 				})
 				it('returns `Float` if both operands are floats.', () => {
-					assert.deepStrictEqual(typeOfOperationFromSource(`7.0 - 3.0;`), Float64);
+					assert.deepStrictEqual(typeOfOperationFromSource(`7.0 - 3.0;`), SolidType.FLOAT);
 				})
 				it('throws TypeError for invalid type operations.', () => {
 					assert.throws(() => typeOfOperationFromSource(`7.0 + 3;`), TypeError01);
@@ -885,7 +885,7 @@ describe('ASTNodeOperation', () => {
 							Int16.union(hello),
 							Int16.union(hello),
 							SolidBoolean.TRUETYPE.union(hello),
-							SolidBoolean.TRUETYPE.union(Float64).union(hello),
+							SolidBoolean.TRUETYPE.union(SolidType.FLOAT).union(hello),
 							SolidType.STR.union(typeConstInt(42n)),
 						]);
 					});
@@ -901,7 +901,7 @@ describe('ASTNodeOperation', () => {
 						goal.typeCheck(validator);
 						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
 							Int16,
-							Float64,
+							SolidType.FLOAT,
 						]);
 					});
 				});

@@ -4,7 +4,6 @@ import {
 	Validator,
 	SolidType,
 	Int16,
-	Float64,
 	TypeError04,
 } from '../../src/index.js';
 import * as AST from '../../src/validator/astnode/index.js'; // HACK
@@ -26,7 +25,7 @@ describe('ASTNodeTypeAccess', () => {
 			typeConstFloat(2.0),
 			typeConstStr('three'),
 			Int16,
-			Float64,
+			SolidType.FLOAT,
 			SolidType.STR,
 		];
 		let validator: Validator;
@@ -116,7 +115,7 @@ describe('ASTNodeTypeAccess', () => {
 					program.children.slice(28, 30).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
 					[
 						typeConstFloat(2.0).union(SolidType.VOID),
-						Float64.union(SolidType.VOID),
+						SolidType.FLOAT.union(SolidType.VOID),
 					],
 				);
 			});

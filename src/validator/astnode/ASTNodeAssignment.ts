@@ -2,7 +2,6 @@ import type {ParseNode} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
 	SolidType,
-	Float64,
 	INST,
 	Builder,
 	AssignmentError10,
@@ -57,7 +56,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		);
 	}
 	override build(builder: Builder): INST.InstructionStatement {
-		const tofloat: boolean = this.assignee.type(builder.validator).isSubtypeOf(Float64) || this.assigned.shouldFloat(builder.validator);
+		const tofloat: boolean = this.assignee.type(builder.validator).isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat(builder.validator);
 		return new INST.InstructionStatement(
 			builder.stmtCount,
 			new INST.InstructionGlobalSet((this.assignee as ASTNodeVariable).id, this.assigned.build(builder, tofloat)),

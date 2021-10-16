@@ -6,7 +6,6 @@ import {
 import {
 	SolidType,
 	Int16,
-	Float64,
 	TypeError03,
 	Validator,
 } from './package.js';
@@ -43,7 +42,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 		const treatIntAsSubtypeOfFloat: boolean = (
 			   validator.config.compilerOptions.intCoercion
 			&& assigned_type.isSubtypeOf(Int16)
-			&& Float64.isSubtypeOf(assignee_type)
+			&& SolidType.FLOAT.isSubtypeOf(assignee_type)
 		);
 		if (!is_subtype && !is_collection_assignable && !treatIntAsSubtypeOfFloat) {
 			throw new TypeError03(assignee_type, assigned_type, node);

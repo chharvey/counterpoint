@@ -5,6 +5,7 @@ import {
 } from '../../src/validator/index.js';
 import * as AST from '../../src/validator/astnode/index.js'; // HACK
 import {
+	SolidType,
 	SolidTypeList,
 	SolidTypeHash,
 	SolidTypeSet,
@@ -44,7 +45,7 @@ describe('ASTNodeCall', () => {
 					new SolidTypeList(Int16).mutableOf(),
 					new SolidTypeHash(Int16).mutableOf(),
 					new SolidTypeSet(Int16).mutableOf(),
-					new SolidTypeMap(Int16, Float64).mutableOf(),
+					new SolidTypeMap(Int16, SolidType.FLOAT).mutableOf(),
 				],
 			);
 		});
@@ -62,7 +63,7 @@ describe('ASTNodeCall', () => {
 				[
 					new SolidTypeList(Int16).mutableOf(),
 					new SolidTypeSet(Int16).mutableOf(),
-					new SolidTypeMap(Int16, Float64).mutableOf(),
+					new SolidTypeMap(Int16, SolidType.FLOAT).mutableOf(),
 				],
 			);
 		});
@@ -81,10 +82,10 @@ describe('ASTNodeCall', () => {
 					new SolidTypeList(Int16).mutableOf(),
 					new SolidTypeHash(Int16).mutableOf(),
 					new SolidTypeSet(Int16).mutableOf(),
-					new SolidTypeMap(Int16, Float64).mutableOf(),
+					new SolidTypeMap(Int16, SolidType.FLOAT).mutableOf(),
 					new SolidTypeList(Int16).mutableOf(),
 					new SolidTypeSet(Int16).mutableOf(),
-					new SolidTypeMap(Int16, Float64).mutableOf(),
+					new SolidTypeMap(Int16, SolidType.FLOAT).mutableOf(),
 				],
 			);
 		});

@@ -248,16 +248,16 @@ describe('ASTNodeAccess', () => {
 		const COMMON_TYPES = {
 			int_float: SolidType.unionAll([
 				Int16,
-				Float64,
+				SolidType.FLOAT,
 			]),
 			int_float_str: SolidType.unionAll([
 				Int16,
-				Float64,
+				SolidType.FLOAT,
 				SolidType.STR,
 			]),
 			int_float_str_null: SolidType.unionAll([
 				Int16,
-				Float64,
+				SolidType.FLOAT,
 				SolidType.STR,
 				SolidNull,
 			]),
@@ -267,7 +267,7 @@ describe('ASTNodeAccess', () => {
 			typeConstFloat(2.0),
 			typeConstStr('three'),
 			Int16,
-			Float64,
+			SolidType.FLOAT,
 			SolidType.STR,
 		];
 		const expected_o: SolidType[] = [

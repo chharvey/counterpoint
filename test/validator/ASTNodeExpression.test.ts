@@ -392,7 +392,7 @@ describe('ASTNodeExpression', () => {
 		describe('#type', () => {
 			([
 				['with constant folding on.',  CONFIG_DEFAULT,     SolidType.unionAll([typeConstStr('a'), typeConstInt(42n), typeConstFloat(3.0)])],
-				['with constant folding off.', CONFIG_FOLDING_OFF, SolidType.unionAll([typeConstStr('a'), Int16,             Float64])],
+				['with constant folding off.', CONFIG_FOLDING_OFF, SolidType.unionAll([typeConstStr('a'), Int16,             SolidType.FLOAT])],
 			] as const).forEach(([description, config, map_ant_type]) => it(description, () => {
 				const expected: SolidTypeUnit[] = [typeConstInt(1n), typeConstFloat(2.0), typeConstStr('three')];
 				const collections: readonly [

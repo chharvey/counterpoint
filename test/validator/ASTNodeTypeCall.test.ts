@@ -10,7 +10,6 @@ import {
 	SolidNull,
 	SolidBoolean,
 	Int16,
-	Float64,
 	TypeError05,
 	TypeError06,
 } from '../../src/index.js';
@@ -33,7 +32,7 @@ describe('ASTNodeTypeCall', () => {
 					new SolidTypeList(SolidNull),
 					new SolidTypeHash(SolidBoolean),
 					new SolidTypeSet(SolidType.STR),
-					new SolidTypeMap(Int16, Float64),
+					new SolidTypeMap(Int16, SolidType.FLOAT),
 				],
 			);
 		});
