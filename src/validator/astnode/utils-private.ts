@@ -1,12 +1,10 @@
-import {
-	SolidType,
-	Int16,
-} from './package.js';
+import {SolidType} from './package.js';
 
 
 
 export function bothNumeric(t0: SolidType, t1: SolidType): boolean {
-	return t0.isSubtypeOf(Int16.union(SolidType.FLOAT)) && t1.isSubtypeOf(Int16.union(SolidType.FLOAT));
+	const int_float: SolidType = SolidType.INT.union(SolidType.FLOAT);
+	return t0.isSubtypeOf(int_float) && t1.isSubtypeOf(int_float);
 }
 export function eitherFloats(t0: SolidType, t1: SolidType): boolean {
 	return t0.isSubtypeOf(SolidType.FLOAT) || t1.isSubtypeOf(SolidType.FLOAT);

@@ -323,10 +323,10 @@ describe('ASTNodeOperation', () => {
 				const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 				it('returns Integer for integer arithmetic.', () => {
 					const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource(`(7 + 3) * 2;`, CONFIG_FOLDING_OFF);
-					assert.deepStrictEqual(node.type(validator), Int16);
+					assert.deepStrictEqual(node.type(validator), SolidType.INT);
 					assert.deepStrictEqual(
 						[node.operand0.type(validator), node.operand1.type(validator)],
-						[Int16,                         typeConstInt(2n)],
+						[SolidType.INT,                 typeConstInt(2n)],
 					);
 				});
 				it('returns Float for float arithmetic.', () => {
@@ -340,7 +340,7 @@ describe('ASTNodeOperation', () => {
 			});
 			context('with folding and int coersion off.', () => {
 				it('returns `Integer` if both operands are ints.', () => {
-					assert.deepStrictEqual(typeOfOperationFromSource(`7 * 3;`), Int16);
+					assert.deepStrictEqual(typeOfOperationFromSource(`7 * 3;`), SolidType.INT);
 				})
 				it('returns `Float` if both operands are floats.', () => {
 					assert.deepStrictEqual(typeOfOperationFromSource(`7.0 - 3.0;`), SolidType.FLOAT);
@@ -882,8 +882,8 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck(validator);
 						goal.typeCheck(validator);
 						assertEqualTypes(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
-							Int16.union(hello),
-							Int16.union(hello),
+							SolidType.INT.union(hello),
+							SolidType.INT.union(hello),
 							SolidBoolean.TRUETYPE.union(hello),
 							SolidBoolean.TRUETYPE.union(SolidType.FLOAT).union(hello),
 							SolidType.STR.union(typeConstInt(42n)),
@@ -900,7 +900,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck(validator);
 						goal.typeCheck(validator);
 						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
-							Int16,
+							SolidType.INT,
 							SolidType.FLOAT,
 						]);
 					});

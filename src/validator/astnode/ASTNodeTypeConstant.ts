@@ -34,7 +34,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				(start_node.source === Keyword.BOOL)  ? SolidBoolean :
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSETYPE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
-				(start_node.source === Keyword.INT)   ? Int16 :
+				(start_node.source === Keyword.INT)   ? SolidType.INT :
 				(start_node.source === Keyword.FLOAT) ? SolidType.FLOAT :
 				(start_node.source === Keyword.STR)   ? SolidType.STR :
 				(start_node.source === Keyword.OBJ)   ? SolidObject :

@@ -247,16 +247,16 @@ describe('ASTNodeAccess', () => {
 		}
 		const COMMON_TYPES = {
 			int_float: SolidType.unionAll([
-				Int16,
+				SolidType.INT,
 				SolidType.FLOAT,
 			]),
 			int_float_str: SolidType.unionAll([
-				Int16,
+				SolidType.INT,
 				SolidType.FLOAT,
 				SolidType.STR,
 			]),
 			int_float_str_null: SolidType.unionAll([
-				Int16,
+				SolidType.INT,
 				SolidType.FLOAT,
 				SolidType.STR,
 				SolidNull,
@@ -266,7 +266,7 @@ describe('ASTNodeAccess', () => {
 			typeConstInt(1n),
 			typeConstFloat(2.0),
 			typeConstStr('three'),
-			Int16,
+			SolidType.INT,
 			SolidType.FLOAT,
 			SolidType.STR,
 		];
@@ -397,7 +397,7 @@ describe('ASTNodeAccess', () => {
 					].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
 						...expected_c,
-						Int16,
+						SolidType.INT,
 					],
 				);
 			});
@@ -481,7 +481,7 @@ describe('ASTNodeAccess', () => {
 					].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
 						...expected_c,
-						Int16,
+						SolidType.INT,
 					],
 				);
 			});

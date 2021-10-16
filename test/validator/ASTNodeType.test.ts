@@ -13,7 +13,6 @@ import {
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
-	Int16,
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
@@ -51,7 +50,7 @@ describe('ASTNodeType', () => {
 					'obj',
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval(new Validator())), [
 					SolidBoolean,
-					Int16,
+					SolidType.INT,
 					SolidType.FLOAT,
 					SolidObject,
 				]);
@@ -101,7 +100,7 @@ describe('ASTNodeType', () => {
 						.children[1] as AST.ASTNodeDeclarationType)
 						.assigned as AST.ASTNodeTypeAlias)
 						.eval(validator),
-					Int16,
+					SolidType.INT,
 				);
 			});
 		});
@@ -114,7 +113,7 @@ describe('ASTNodeType', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).eval(new Validator()),
 				new SolidTypeTuple([
-					{type: Int16,         optional: false},
+					{type: SolidType.INT, optional: false},
 					{type: SolidBoolean,  optional: false},
 					{type: SolidType.STR, optional: true},
 				]),
@@ -132,7 +131,7 @@ describe('ASTNodeType', () => {
 				new SolidTypeRecord(new Map<bigint, TypeEntry>(node.children.map((c, i) => [
 					c.key.id,
 					[
-						{type: Int16,         optional: false},
+						{type: SolidType.INT, optional: false},
 						{type: SolidBoolean,  optional: true},
 						{type: SolidType.STR, optional: false},
 					][i],
@@ -148,16 +147,16 @@ describe('ASTNodeType', () => {
 			it('returns a SolidTypeList if there is no count.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeList.fromSource(`(int | bool)[]`).eval(new Validator()),
-					new SolidTypeList(Int16.union(SolidBoolean)),
+					new SolidTypeList(SolidType.INT.union(SolidBoolean)),
 				);
 			});
 			it('returns a SolidTypeTuple if there is a count.', () => {
 				assert.deepStrictEqual(
 					AST.ASTNodeTypeList.fromSource(`(int | bool)[3]`).eval(new Validator()),
 					SolidTypeTuple.fromTypes([
-						Int16.union(SolidBoolean),
-						Int16.union(SolidBoolean),
-						Int16.union(SolidBoolean),
+						SolidType.INT.union(SolidBoolean),
+						SolidType.INT.union(SolidBoolean),
+						SolidType.INT.union(SolidBoolean),
 					]),
 				);
 			});
@@ -170,15 +169,15 @@ describe('ASTNodeType', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeHash.fromSource(`[:int | bool]`).eval(new Validator()),
-				new SolidTypeHash(Int16.union(SolidBoolean)),
+				new SolidTypeHash(SolidType.INT.union(SolidBoolean)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeSet.fromSource(`(int | bool){}`).eval(new Validator()),
-				new SolidTypeSet(Int16.union(SolidBoolean)),
+				new SolidTypeSet(SolidType.INT.union(SolidBoolean)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeMap.fromSource(`{int -> bool}`).eval(new Validator()),
-				new SolidTypeMap(Int16, SolidBoolean),
+				new SolidTypeMap(SolidType.INT, SolidBoolean),
 			);
 		});
 	});
@@ -189,11 +188,11 @@ describe('ASTNodeType', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationUnary.fromSource(`int?`).eval(new Validator()),
-				Int16.union(SolidNull),
+				SolidType.INT.union(SolidNull),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationUnary.fromSource(`mutable int[]`).eval(new Validator()),
-				new SolidTypeList(Int16).mutableOf(),
+				new SolidTypeList(SolidType.INT).mutableOf(),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource(`obj & 3`).eval(new Validator()),
@@ -201,7 +200,7 @@ describe('ASTNodeType', () => {
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource(`4.2 | int`).eval(new Validator()),
-				typeConstFloat(4.2).union(Int16),
+				typeConstFloat(4.2).union(SolidType.INT),
 			);
 		});
 	});

@@ -3,7 +3,6 @@ import {
 	// {ASTNodeKey, ...} as AST,
 	Validator,
 	SolidType,
-	Int16,
 	TypeError04,
 } from '../../src/index.js';
 import * as AST from '../../src/validator/astnode/index.js'; // HACK
@@ -24,7 +23,7 @@ describe('ASTNodeTypeAccess', () => {
 			typeConstInt(1n),
 			typeConstFloat(2.0),
 			typeConstStr('three'),
-			Int16,
+			SolidType.INT,
 			SolidType.FLOAT,
 			SolidType.STR,
 		];

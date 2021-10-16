@@ -9,7 +9,6 @@ import {
 	SolidTypeMap,
 	SolidNull,
 	SolidBoolean,
-	Int16,
 	TypeError05,
 	TypeError06,
 } from '../../src/index.js';
@@ -32,14 +31,14 @@ describe('ASTNodeTypeCall', () => {
 					new SolidTypeList(SolidNull),
 					new SolidTypeHash(SolidBoolean),
 					new SolidTypeSet(SolidType.STR),
-					new SolidTypeMap(Int16, SolidType.FLOAT),
+					new SolidTypeMap(SolidType.INT, SolidType.FLOAT),
 				],
 			);
 		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeCall.fromSource(`Map.<int>`).eval(validator),
-				new SolidTypeMap(Int16, Int16),
+				new SolidTypeMap(SolidType.INT, SolidType.INT),
 			);
 		});
 		it('throws if base is not an ASTNodeTypeAlias.', () => {

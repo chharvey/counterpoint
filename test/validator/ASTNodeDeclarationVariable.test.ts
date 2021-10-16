@@ -146,11 +146,11 @@ describe('ASTNodeDeclarationVariable', () => {
 						(validator.getSymbolInfo(260n) as SymbolStructureVar).type,
 					],
 					[
-						Int16,
-						new SolidTypeList(Int16),
-						Int16,
+						SolidType.INT,
+						new SolidTypeList(SolidType.INT),
+						SolidType.INT,
 						SolidTypeTuple.fromTypes([typeConstInt(42n)]).mutableOf(),
-						new SolidTypeList(Int16).mutableOf(),
+						new SolidTypeList(SolidType.INT).mutableOf(),
 					],
 				);
 			});
