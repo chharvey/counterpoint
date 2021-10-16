@@ -337,14 +337,14 @@ describe('ASTNodeExpression', () => {
 					);
 				});
 				it('for non-foldable interpolations, returns `String`.', () => {
-					assert.deepStrictEqual(types[2], SolidString);
+					assert.deepStrictEqual(types[2], SolidType.STR);
 				});
 			});
 			context('with constant folding off.', () => {
 				it('always returns `String`.', () => {
 					templates = initTemplates();
 					templates.forEach((t) => {
-						assert.deepStrictEqual(t.type(new Validator(CONFIG_FOLDING_OFF)), SolidString);
+						assert.deepStrictEqual(t.type(new Validator(CONFIG_FOLDING_OFF)), SolidType.STR);
 					});
 				});
 			});

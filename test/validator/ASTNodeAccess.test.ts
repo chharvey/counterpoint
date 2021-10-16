@@ -253,12 +253,12 @@ describe('ASTNodeAccess', () => {
 			int_float_str: SolidType.unionAll([
 				Int16,
 				Float64,
-				SolidString,
+				SolidType.STR,
 			]),
 			int_float_str_null: SolidType.unionAll([
 				Int16,
 				Float64,
-				SolidString,
+				SolidType.STR,
 				SolidNull,
 			]),
 		};
@@ -268,17 +268,17 @@ describe('ASTNodeAccess', () => {
 			typeConstStr('three'),
 			Int16,
 			Float64,
-			SolidString,
+			SolidType.STR,
 		];
 		const expected_o: SolidType[] = [
 			typeConstStr('three'),
-			SolidString.union(SolidNull),
-			SolidString.union(SolidNull),
+			SolidType.STR.union(SolidNull),
+			SolidType.STR.union(SolidNull),
 		];
 		const expected_c: SolidType[] = [
 			typeConstStr('three'),
-			SolidString,
-			SolidString,
+			SolidType.STR,
+			SolidType.STR,
 		];
 		context('when base is nullish.', () => {
 			it('optional access returns type of base when it is a subtype of null.', () => {
@@ -369,8 +369,8 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(36, 38).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
-						SolidString.union(SolidType.VOID),
-						SolidString.union(SolidType.VOID),
+						SolidType.STR.union(SolidType.VOID),
+						SolidType.STR.union(SolidType.VOID),
 					],
 				);
 			});
@@ -453,8 +453,8 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(24, 26).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
-						SolidString.union(SolidType.VOID),
-						SolidString.union(SolidType.VOID),
+						SolidType.STR.union(SolidType.VOID),
+						SolidType.STR.union(SolidType.VOID),
 					],
 				);
 			});
@@ -557,8 +557,8 @@ describe('ASTNodeAccess', () => {
 					assert.deepStrictEqual(
 						program.children.slice(44, 46).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 						[
-							SolidString.union(SolidType.VOID),
-							SolidString.union(SolidType.VOID),
+							SolidType.STR.union(SolidType.VOID),
+							SolidType.STR.union(SolidType.VOID),
 						],
 					);
 				});

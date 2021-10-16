@@ -13,7 +13,6 @@ import {
 	SolidBoolean,
 	Int16,
 	Float64,
-	SolidString,
 	INST,
 	Builder,
 	TypeError01,
@@ -887,7 +886,7 @@ describe('ASTNodeOperation', () => {
 							Int16.union(hello),
 							SolidBoolean.TRUETYPE.union(hello),
 							SolidBoolean.TRUETYPE.union(Float64).union(hello),
-							SolidString.union(typeConstInt(42n)),
+							SolidType.STR.union(typeConstInt(42n)),
 						]);
 					});
 					it('returns `left` if it does not contain `void` nor `null` nor `false`.', () => {

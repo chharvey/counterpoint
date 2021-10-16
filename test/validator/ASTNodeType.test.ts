@@ -3,6 +3,7 @@ import {
 	// {ASTNodeKey, ...} as AST,
 	Validator,
 	TypeEntry,
+	SolidType,
 	SolidTypeTuple,
 	SolidTypeRecord,
 	SolidTypeList,
@@ -14,7 +15,6 @@ import {
 	SolidBoolean,
 	Int16,
 	Float64,
-	SolidString,
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
@@ -115,9 +115,9 @@ describe('ASTNodeType', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeTuple.fromSource(`[int, bool, ?:str]`).eval(new Validator()),
 				new SolidTypeTuple([
-					{type: Int16,        optional: false},
-					{type: SolidBoolean, optional: false},
-					{type: SolidString,  optional: true},
+					{type: Int16,         optional: false},
+					{type: SolidBoolean,  optional: false},
+					{type: SolidType.STR, optional: true},
 				]),
 			);
 		});
@@ -133,9 +133,9 @@ describe('ASTNodeType', () => {
 				new SolidTypeRecord(new Map<bigint, TypeEntry>(node.children.map((c, i) => [
 					c.key.id,
 					[
-						{type: Int16,        optional: false},
-						{type: SolidBoolean, optional: true},
-						{type: SolidString,  optional: false},
+						{type: Int16,         optional: false},
+						{type: SolidBoolean,  optional: true},
+						{type: SolidType.STR, optional: false},
 					][i],
 				]))),
 			);

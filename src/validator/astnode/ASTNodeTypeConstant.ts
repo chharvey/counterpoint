@@ -36,7 +36,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
 				(start_node.source === Keyword.INT)   ? Int16 :
 				(start_node.source === Keyword.FLOAT) ? Float64 :
-				(start_node.source === Keyword.STR)   ? SolidString :
+				(start_node.source === Keyword.STR)   ? SolidType.STR :
 				(start_node.source === Keyword.OBJ)   ? SolidObject :
 				(() => { throw new Error(`ASTNodeTypeConstant.constructor did not expect the keyword \`${ start_node.source }\`.`); })()
 			: (start_node instanceof TOKEN.TokenNumber) ?
