@@ -2,7 +2,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SolidTypeUnit,
-	SolidNull,
 	Int16,
 	Float64,
 	SolidString,
@@ -21,7 +20,6 @@ export const CONFIG_FOLDING_OFF: SolidConfig = {
 
 
 
-export const TYPE_CONST_NULL: SolidTypeUnit = new SolidTypeUnit(SolidNull.NULL);
 export function typeConstInt(x: bigint): SolidTypeUnit {
 	return new SolidTypeUnit(new Int16(x));
 }

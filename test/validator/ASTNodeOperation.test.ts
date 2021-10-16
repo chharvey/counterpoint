@@ -24,7 +24,6 @@ import {
 	assertEqualTypes,
 } from '../assert-helpers.js';
 import {
-	TYPE_CONST_NULL,
 	CONFIG_FOLDING_OFF,
 	typeConstInt,
 	typeConstFloat,
@@ -843,7 +842,7 @@ describe('ASTNodeOperation', () => {
 						goal.typeCheck(validator);
 						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
 							SolidBoolean.TRUETYPE,
-							TYPE_CONST_NULL,
+							SolidNull.NULLTYPE,
 						]);
 					});
 				});

@@ -19,9 +19,9 @@ export class SolidBoolean extends Primitive {
 		return 'bool';
 	}
 	/** The Solid Language Value `false`. */
-	static readonly FALSE: SolidBoolean = new SolidBoolean()
+	static readonly FALSE: SolidBoolean = new SolidBoolean(false);
 	/** The Solid Language Value `true`. */
-	static readonly TRUE: SolidBoolean = new SolidBoolean(true)
+	static readonly TRUE: SolidBoolean = new SolidBoolean(true);
 	/** A Unit Type containing only the Solid Language Value `false`. */
 	static readonly FALSETYPE: SolidTypeUnit = new SolidTypeUnit(SolidBoolean.FALSE);
 	/** A Unit Type containing only the Solid Language Value `true`. */
@@ -40,7 +40,7 @@ export class SolidBoolean extends Primitive {
 	 * Construct a new SolidBoolean object.
 	 * @param data The native boolean value of this object.
 	 */
-	private constructor (private readonly data: boolean = false) {
+	private constructor (private readonly data: boolean) {
 		super()
 	}
 
