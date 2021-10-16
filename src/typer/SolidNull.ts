@@ -1,4 +1,3 @@
-import type {SolidType} from './SolidType.js';
 import {SolidTypeUnit} from './SolidTypeUnit.js';
 import type {SolidObject} from './SolidObject.js';
 import {Primitive} from './Primitive.js';
@@ -14,20 +13,13 @@ import {Primitive} from './Primitive.js';
  * This class is a singleton: there exists only one instance.
  * The reference to the instance of this class is a constant named `null`.
  *
- * The type of the value `null` is this class (the class `Null`),
- * but as a shorthand in type declarations that type is referred to as `null`.
- *
  * @final
  */
 export class SolidNull extends Primitive {
-	static override toString(): string {
-		return 'null';
-	}
 	/** The Solid Language Value `null`. */
 	static readonly NULL: SolidNull = new SolidNull();
 	/** A Unit Type containing only the Solid Language Value `null`. */
 	static readonly NULLTYPE: SolidTypeUnit = new SolidTypeUnit(SolidNull.NULL);
-	static override values: SolidType['values'] = new Set([SolidNull.NULL]);
 
 
 	private constructor () {

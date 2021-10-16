@@ -7,11 +7,6 @@ import {CollectionKeyed} from './CollectionKeyed.js';
 
 
 export class SolidHash<T extends SolidObject = SolidObject> extends CollectionKeyed<T> {
-	static override toString(): string {
-		return 'Hash';
-	}
-	static override values: SolidType['values'] = new Set([new SolidHash()]);
-
 	override toString(): string {
 		return `${ SolidHash/*static*/ }.(${ super.toString() })`;
 	}

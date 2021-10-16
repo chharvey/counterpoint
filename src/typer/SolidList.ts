@@ -7,11 +7,6 @@ import {CollectionIndexed} from './CollectionIndexed.js';
 
 
 export class SolidList<T extends SolidObject = SolidObject> extends CollectionIndexed<T> {
-	static override toString(): string {
-		return 'List';
-	}
-	static override values: SolidType['values'] = new Set([new SolidList()]);
-
 	override toString(): string {
 		return `${ SolidList/*static*/ }.(${ super.toString() })`;
 	}

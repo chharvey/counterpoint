@@ -15,12 +15,6 @@ import {Collection} from './Collection.js';
 
 
 export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
-	static override toString(): string {
-		return 'Set';
-	}
-	static override values: SolidType['values'] = new Set([new SolidSet()]);
-
-
 	constructor (
 		private readonly elements: ReadonlySet<T> = new Set(),
 	) {

@@ -16,12 +16,6 @@ import {Collection} from './Collection.js';
 
 
 export class SolidMap<K extends SolidObject = SolidObject, V extends SolidObject = SolidObject> extends Collection {
-	static override toString(): string {
-		return 'Map';
-	}
-	static override values: SolidType['values'] = new Set([new SolidMap()]);
-
-
 	constructor (
 		private readonly cases: ReadonlyMap<K, V> = new Map(),
 	) {
