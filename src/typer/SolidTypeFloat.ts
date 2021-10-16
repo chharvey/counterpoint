@@ -11,11 +11,11 @@ import {SolidType} from './SolidType.js';
  * @final
  */
 export class SolidTypeFloat extends SolidType {
-	static readonly INSTANCE: SolidTypeFloat = new SolidTypeFloat();
+	static get INSTANCE(): SolidTypeFloat { return new SolidTypeFloat(); }
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {
-		super(false);
+		super(false, new Set([new Float64(0.0)]));
 	}
 	override toString(): string {
 		return 'int';

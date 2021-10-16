@@ -41,7 +41,7 @@ export class SolidTypeTuple extends SolidType {
 		private readonly types: readonly TypeEntry[] = [],
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, SolidTuple.values);
+		super(is_mutable, new Set([new SolidTuple()]));
 	}
 
 	override get hasMutable(): boolean {

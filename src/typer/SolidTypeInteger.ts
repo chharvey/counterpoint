@@ -11,11 +11,11 @@ import {SolidType} from './SolidType.js';
  * @final
  */
 export class SolidTypeInteger extends SolidType {
-	static readonly INSTANCE: SolidTypeInteger = new SolidTypeInteger();
+	static get INSTANCE(): SolidTypeInteger { return new SolidTypeInteger(); }
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {
-		super(false);
+		super(false, new Set([Int16.ZERO]));
 	}
 	override toString(): string {
 		return 'int';

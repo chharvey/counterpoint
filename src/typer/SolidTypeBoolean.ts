@@ -11,11 +11,11 @@ import {SolidType} from './SolidType.js';
  * @final
  */
 export class SolidTypeBoolean extends SolidType {
-	static readonly INSTANCE: SolidTypeBoolean = new SolidTypeBoolean();
+	static get INSTANCE(): SolidTypeBoolean { return new SolidTypeBoolean(); }
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {
-		super(false);
+		super(false, new Set([SolidBoolean.FALSE, SolidBoolean.TRUE]));
 	}
 	override toString(): string {
 		return 'bool';

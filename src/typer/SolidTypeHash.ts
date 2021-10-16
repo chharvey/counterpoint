@@ -19,7 +19,7 @@ export class SolidTypeHash extends SolidType {
 		readonly types: SolidType,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, SolidHash.values);
+		super(is_mutable, new Set([new SolidHash()]));
 	}
 
 	override get hasMutable(): boolean {

@@ -40,7 +40,7 @@ export class SolidTypeRecord extends SolidType {
 		private readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, SolidRecord.values);
+		super(is_mutable, new Set([new SolidRecord()]));
 	}
 
 	override get hasMutable(): boolean {
