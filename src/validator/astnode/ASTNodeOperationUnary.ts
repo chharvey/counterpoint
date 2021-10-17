@@ -55,7 +55,9 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				SolidBoolean.FALSETYPE
 			) :
 			(this.operator === Operator.EMP) ? SolidType.BOOL :
-			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(SolidNumber)) ? t0 : (() => { throw new TypeError01(this); })()
+			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(SolidType.INT.union(SolidType.FLOAT)))
+				? t0
+				: (() => { throw new TypeError01(this); })()
 		);
 	}
 	protected override fold_do(validator: Validator): SolidObject | null {

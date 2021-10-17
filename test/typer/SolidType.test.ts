@@ -15,7 +15,6 @@ import {
 	SolidTypeMap,
 	SolidObject,
 	SolidBoolean,
-	SolidNumber,
 	Int16,
 	Float64,
 	SolidString,
@@ -69,7 +68,7 @@ describe('SolidType', () => {
 	]))
 	const t1: SolidTypeInterface = new SolidTypeInterface(new Map<string, SolidType>([
 		['foo', SolidObject],
-		['qux', SolidNumber],
+		['qux', SolidType.INT.union(SolidType.FLOAT)],
 		['diz', SolidType.STR],
 	]))
 
@@ -401,7 +400,6 @@ describe('SolidType', () => {
 					[new SolidTuple([new Int16(42n)]),                             SolidTypeTuple.fromTypes([SolidType.INT])],
 					[new SolidTuple([new Float64(4.2), new SolidString('hello')]), SolidTypeTuple.fromTypes([SolidType.FLOAT, SolidType.STR])],
 				]).forEach((tupletype, value) => {
-					assert.ok(new SolidTypeUnit(value).isSubtypeOf(SolidTuple), `let x: Tuple = ${ value };`);
 					assert.ok(new SolidTypeUnit(value).isSubtypeOf(tupletype),  `let x: ${ tupletype } = ${ value };`);
 				});
 			});
@@ -411,7 +409,6 @@ describe('SolidType', () => {
 					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new Float64(4.2)], [0x101n, new SolidString('hello')]])), SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([[0x100n, SolidType.FLOAT], [0x101n, SolidType.STR]]))],
 					[new SolidRecord(new Map<bigint, SolidObject>([[0x100n, new SolidString('hello')], [0x101n, new Float64(4.2)]])), SolidTypeRecord.fromTypes(new Map<bigint, SolidType>([[0x100n, SolidType.STR], [0x101n, SolidType.FLOAT]]))],
 				]).forEach((recordtype, value) => {
-					assert.ok(new SolidTypeUnit(value).isSubtypeOf(SolidRecord), `let x: Record = ${ value };`);
 					assert.ok(new SolidTypeUnit(value).isSubtypeOf(recordtype),  `let x: ${ recordtype } = ${ value };`);
 				});
 			});
@@ -434,7 +431,6 @@ describe('SolidType', () => {
 					[new SolidTuple(input[1]), output[1]],
 					[new SolidTuple(input[2]), output[2]],
 				]).forEach((listtype, value) => {
-					value instanceof SolidList && assert.ok(new SolidTypeUnit(value).isSubtypeOf(SolidList), `let x: List = ${ value };`);
 					assert.ok(new SolidTypeUnit(value).isSubtypeOf(listtype), `let x: ${ listtype } = ${ value };`);
 				});
 			});
@@ -465,7 +461,6 @@ describe('SolidType', () => {
 					[new SolidRecord(input[1]), output[1]],
 					[new SolidRecord(input[2]), output[2]],
 				]).forEach((hashtype, value) => {
-					value instanceof SolidHash && assert.ok(new SolidTypeUnit(value).isSubtypeOf(SolidHash), `let x: Hash = ${ value };`);
 					assert.ok(new SolidTypeUnit(value).isSubtypeOf(hashtype), `let x: ${ hashtype } = ${ value };`);
 				});
 			});
@@ -475,7 +470,6 @@ describe('SolidType', () => {
 					[new SolidSet(new Set([new Int16(42n)])),                             new SolidTypeSet(SolidType.INT)],
 					[new SolidSet(new Set([new Float64(4.2), new SolidString('hello')])), new SolidTypeSet(SolidType.FLOAT.union(SolidType.STR))],
 				]).forEach((settype, value) => {
-					assert.ok(new SolidTypeUnit(value).isSubtypeOf(SolidSet), `let x: Set = ${ value };`);
 					assert.ok(new SolidTypeUnit(value).isSubtypeOf(settype), `let x: ${ settype } = ${ value };`);
 				});
 			});
@@ -485,7 +479,6 @@ describe('SolidType', () => {
 					[new SolidMap(new Map<SolidObject, SolidObject>([[new Int16(0x100n), new Float64(4.2)], [new Int16(0x101n), new SolidString('hello')]])), new SolidTypeMap(SolidType.INT, SolidType.FLOAT.union(SolidType.STR))],
 					[new SolidMap(new Map<SolidObject, SolidObject>([[new SolidString('hello'), new Int16(0x100n)], [new Float64(4.2), new Int16(0x101n)]])), new SolidTypeMap(SolidType.FLOAT.union(SolidType.STR), SolidType.INT)],
 				]).forEach((maptype, value) => {
-					assert.ok(new SolidTypeUnit(value).isSubtypeOf(SolidMap), `let x: Record = ${ value };`);
 					assert.ok(new SolidTypeUnit(value).isSubtypeOf(maptype), `let x: ${ maptype } = ${ value };`);
 				});
 			});
@@ -748,7 +741,7 @@ describe('SolidType', () => {
 					['foo', SolidType.STR],
 					['bar', SolidType.NULL],
 					['diz', SolidType.BOOL],
-					['qux', SolidNumber],
+					['qux', SolidType.INT.union(SolidType.FLOAT)],
 				])).isSubtypeOf(t0))
 			})
 		})
