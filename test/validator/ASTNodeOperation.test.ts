@@ -799,9 +799,9 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck(validator);
 						goal.typeCheck(validator);
 						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
-							SolidNull,
-							SolidNull.union(SolidBoolean.FALSETYPE),
-							SolidNull.union(SolidType.VOID),
+							SolidType.NULL,
+							SolidType.NULL.union(SolidBoolean.FALSETYPE),
+							SolidType.NULL.union(SolidType.VOID),
 						]);
 					});
 					it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
@@ -822,8 +822,8 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck(validator);
 						goal.typeCheck(validator);
 						assert.deepStrictEqual(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
-							SolidNull.union(hello),
-							SolidNull.union(hello),
+							SolidType.NULL.union(hello),
+							SolidType.NULL.union(hello),
 							SolidBoolean.FALSETYPE.union(hello),
 							SolidBoolean.FALSETYPE.union(hello),
 							SolidType.VOID.union(typeConstInt(42n)),
@@ -841,7 +841,7 @@ describe('ASTNodeOperation', () => {
 						goal.typeCheck(validator);
 						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
 							SolidBoolean.TRUETYPE,
-							SolidNull.NULLTYPE,
+							SolidType.NULL,
 						]);
 					});
 				});

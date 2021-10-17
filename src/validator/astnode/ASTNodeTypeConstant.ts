@@ -8,7 +8,6 @@ import {
 	SolidType,
 	SolidTypeUnit,
 	SolidObject,
-	SolidNull,
 	SolidBoolean,
 	Int16,
 	Float64,
@@ -30,7 +29,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		const value: SolidType = (
 			(start_node instanceof TOKEN.TokenKeyword) ?
 				(start_node.source === Keyword.VOID)  ? SolidType.VOID :
-				(start_node.source === Keyword.NULL)  ? SolidNull :
+				(start_node.source === Keyword.NULL)  ? SolidType.NULL :
 				(start_node.source === Keyword.BOOL)  ? SolidType.BOOL :
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSETYPE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :

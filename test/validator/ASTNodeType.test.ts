@@ -11,7 +11,6 @@ import {
 	SolidTypeSet,
 	SolidTypeMap,
 	SolidObject,
-	SolidNull,
 	SolidBoolean,
 	ReferenceError01,
 	ReferenceError02,
@@ -35,7 +34,7 @@ describe('ASTNodeType', () => {
 					`42`,
 					`4.2e+3`,
 				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval(new Validator())), [
-					SolidNull,
+					SolidType.NULL,
 					SolidBoolean.FALSETYPE,
 					SolidBoolean.TRUETYPE,
 					typeConstInt(42n),
@@ -188,7 +187,7 @@ describe('ASTNodeType', () => {
 		specify('#eval', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationUnary.fromSource(`int?`).eval(new Validator()),
-				SolidType.INT.union(SolidNull),
+				SolidType.INT.union(SolidType.NULL),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationUnary.fromSource(`mutable int[]`).eval(new Validator()),

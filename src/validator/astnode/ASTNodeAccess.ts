@@ -66,15 +66,15 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		return (
-			(this.optional && base_type.isSubtypeOf(SolidNull)) ? base_type :
-			(this.optional && SolidNull.isSubtypeOf(base_type)) ? this.type_do_do(base_type.subtract(SolidNull), validator).union(SolidNull) :
+			(this.optional && base_type.isSubtypeOf(SolidType.NULL)) ? base_type :
+			(this.optional && SolidType.NULL.isSubtypeOf(base_type)) ? this.type_do_do(base_type.subtract(SolidType.NULL), validator).union(SolidType.NULL) :
 			this.type_do_do(base_type, validator)
 		);
 	}
 	private type_do_do(base_type: SolidType, validator: Validator): SolidType {
 		function updateAccessedDynamicType(type: SolidType, access_kind: ValidAccessOperator): SolidType {
 			return (
-				(access_kind === Operator.OPTDOT)   ? type.union(SolidNull) :
+				(access_kind === Operator.OPTDOT)   ? type.union(SolidType.NULL) :
 				(access_kind === Operator.CLAIMDOT) ? type.subtract(SolidType.VOID) :
 				type
 			);

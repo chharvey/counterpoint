@@ -259,7 +259,7 @@ describe('ASTNodeAccess', () => {
 				SolidType.INT,
 				SolidType.FLOAT,
 				SolidType.STR,
-				SolidNull,
+				SolidType.NULL,
 			]),
 		};
 		const expected: SolidType[] = [
@@ -272,8 +272,8 @@ describe('ASTNodeAccess', () => {
 		];
 		const expected_o: SolidType[] = [
 			typeConstStr('three'),
-			SolidType.STR.union(SolidNull),
-			SolidType.STR.union(SolidNull),
+			SolidType.STR.union(SolidType.NULL),
+			SolidType.STR.union(SolidType.NULL),
 		];
 		const expected_c: SolidType[] = [
 			typeConstStr('three'),
@@ -291,7 +291,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource(`null?.four;`)      .type(validator),
 					AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).type(validator),
 				].forEach((t) => {
-					assert.ok(t.isSubtypeOf(SolidNull));
+					assert.ok(t.isSubtypeOf(SolidType.NULL));
 				});
 			});
 			it('chained optional access.', () => {
@@ -316,11 +316,11 @@ describe('ASTNodeAccess', () => {
 					program.children.slice(2, 8).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
 						new SolidTypeRecord(new Map([[0x101n, {type: prop1, optional: true}]])),
-						prop1.union(SolidNull),
-						SolidType.BOOL.union(SolidNull),
+						prop1.union(SolidType.NULL),
+						SolidType.BOOL.union(SolidType.NULL),
 						new SolidTypeRecord(new Map([[0x101n, {type: prop2, optional: true}]])),
-						prop2.union(SolidNull),
-						SolidType.BOOL.union(SolidNull),
+						prop2.union(SolidType.NULL),
+						SolidType.BOOL.union(SolidType.NULL),
 					],
 				);
 			});
@@ -385,7 +385,7 @@ describe('ASTNodeAccess', () => {
 					program.children.slice(41, 43).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
 						typeConstStr('three'),
-						COMMON_TYPES.int_float_str.union(SolidNull),
+						COMMON_TYPES.int_float_str.union(SolidType.NULL),
 					],
 				);
 			});
@@ -469,7 +469,7 @@ describe('ASTNodeAccess', () => {
 					program.children.slice(29, 31).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
 						typeConstStr('three'),
-						COMMON_TYPES.int_float_str.union(SolidNull),
+						COMMON_TYPES.int_float_str.union(SolidType.NULL),
 					],
 				);
 			});
@@ -573,11 +573,11 @@ describe('ASTNodeAccess', () => {
 						program.children.slice(49, 55).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 						[
 							typeConstStr('three'),
-							COMMON_TYPES.int_float_str.union(SolidNull),
+							COMMON_TYPES.int_float_str.union(SolidType.NULL),
 							typeConstStr('three'),
-							COMMON_TYPES.int_float_str.union(SolidNull),
+							COMMON_TYPES.int_float_str.union(SolidType.NULL),
 							typeConstStr('three'),
-							COMMON_TYPES.int_float_str.union(SolidNull),
+							COMMON_TYPES.int_float_str.union(SolidType.NULL),
 						],
 					);
 				});
@@ -676,7 +676,7 @@ describe('ASTNodeAccess', () => {
 					program.children.slice(49, 55).forEach((c) => {
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator),
-							COMMON_TYPES.int_float_str.union(SolidNull),
+							COMMON_TYPES.int_float_str.union(SolidType.NULL),
 						);
 					});
 				});
