@@ -8,7 +8,6 @@ import {
 	SolidTypeSet,
 	SolidTypeMap,
 	SolidNull,
-	SolidBoolean,
 	TypeError05,
 	TypeError06,
 } from '../../src/index.js';
@@ -29,7 +28,7 @@ describe('ASTNodeTypeCall', () => {
 				].map((src) => AST.ASTNodeTypeCall.fromSource(src).eval(validator)),
 				[
 					new SolidTypeList(SolidNull),
-					new SolidTypeHash(SolidBoolean),
+					new SolidTypeHash(SolidType.BOOL),
 					new SolidTypeSet(SolidType.STR),
 					new SolidTypeMap(SolidType.INT, SolidType.FLOAT),
 				],

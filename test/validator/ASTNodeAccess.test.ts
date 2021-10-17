@@ -310,17 +310,17 @@ describe('ASTNodeAccess', () => {
 				`);
 				program.varCheck(validator);
 				program.typeCheck(validator);
-				const prop1: SolidTypeTuple = SolidTypeTuple.fromTypes([SolidBoolean]);
-				const prop2: SolidTypeTuple = new SolidTypeTuple([{type: SolidBoolean, optional: true}]);
+				const prop1: SolidTypeTuple = SolidTypeTuple.fromTypes([SolidType.BOOL]);
+				const prop2: SolidTypeTuple = new SolidTypeTuple([{type: SolidType.BOOL, optional: true}]);
 				assert.deepStrictEqual(
 					program.children.slice(2, 8).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, validator)),
 					[
 						new SolidTypeRecord(new Map([[0x101n, {type: prop1, optional: true}]])),
 						prop1.union(SolidNull),
-						SolidBoolean.union(SolidNull),
+						SolidType.BOOL.union(SolidNull),
 						new SolidTypeRecord(new Map([[0x101n, {type: prop2, optional: true}]])),
 						prop2.union(SolidNull),
-						SolidBoolean.union(SolidNull),
+						SolidType.BOOL.union(SolidNull),
 					],
 				);
 			});

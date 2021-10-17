@@ -31,7 +31,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 			(start_node instanceof TOKEN.TokenKeyword) ?
 				(start_node.source === Keyword.VOID)  ? SolidType.VOID :
 				(start_node.source === Keyword.NULL)  ? SolidNull :
-				(start_node.source === Keyword.BOOL)  ? SolidBoolean :
+				(start_node.source === Keyword.BOOL)  ? SolidType.BOOL :
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSETYPE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
 				(start_node.source === Keyword.INT)   ? SolidType.INT :

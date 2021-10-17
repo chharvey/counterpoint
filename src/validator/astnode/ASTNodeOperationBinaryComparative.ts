@@ -56,7 +56,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		if (bothNumeric(t0, t1) && (int_coercion || (
 			bothFloats(t0, t1) || neitherFloats(t0, t1)
 		))) {
-			return SolidBoolean
+			return SolidType.BOOL;
 		}
 		throw new TypeError01(this)
 	}

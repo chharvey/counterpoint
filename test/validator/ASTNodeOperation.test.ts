@@ -173,7 +173,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck(validator);
 						goal.typeCheck(validator);
 						goal.children.slice(5).forEach((stmt) => {
-							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidBoolean);
+							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidType.BOOL);
 						});
 					});
 					it('returns type `false` for any type not a supertype of `null` or `false`.', () => {
@@ -220,7 +220,7 @@ describe('ASTNodeOperation', () => {
 							`?[a= 42];`,
 							`?{41 -> 42};`,
 						].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).type(validator)).forEach((typ) => {
-							assert.deepStrictEqual(typ, SolidBoolean);
+							assert.deepStrictEqual(typ, SolidType.BOOL);
 						});
 					});
 				});
@@ -440,13 +440,13 @@ describe('ASTNodeOperation', () => {
 			});
 			context('with folding off but int coersion on.', () => {
 				it('allows coercing of ints to floats if there are any floats.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryComparative.fromSource(`7.0 > 3;`).type(new Validator(CONFIG_FOLDING_OFF)), SolidBoolean);
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryComparative.fromSource(`7.0 > 3;`).type(new Validator(CONFIG_FOLDING_OFF)), SolidType.BOOL);
 				});
 			});
 			context('with folding and int coersion off.', () => {
 				it('returns `Boolean` if both operands are of the same numeric type.', () => {
-					assert.deepStrictEqual(typeOfOperationFromSource(`7 < 3;`), SolidBoolean);
-					assert.deepStrictEqual(typeOfOperationFromSource(`7.0 >= 3.0;`), SolidBoolean);
+					assert.deepStrictEqual(typeOfOperationFromSource(`7 < 3;`), SolidType.BOOL);
+					assert.deepStrictEqual(typeOfOperationFromSource(`7.0 >= 3.0;`), SolidType.BOOL);
 				});
 				it('throws TypeError if operands have different types.', () => {
 					assert.throws(() => typeOfOperationFromSource(`7.0 <= 3;`), TypeError01);
@@ -549,7 +549,7 @@ describe('ASTNodeOperation', () => {
 			});
 			context('with folding off but int coersion on.', () => {
 				it('allows coercing of ints to floats if there are any floats.', () => {
-					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 == 7.0;`).type(new Validator(CONFIG_FOLDING_OFF)), SolidBoolean);
+					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 == 7.0;`).type(new Validator(CONFIG_FOLDING_OFF)), SolidType.BOOL);
 				});
 				it('returns `false` if operands are of different numeric types.', () => {
 					assert.deepStrictEqual(AST.ASTNodeOperationBinaryEquality.fromSource(`7 === 7.0;`, CONFIG_FOLDING_OFF).type(new Validator(CONFIG_FOLDING_OFF)), SolidBoolean.FALSETYPE);

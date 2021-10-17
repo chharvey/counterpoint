@@ -52,10 +52,10 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		return (
 			(this.operator === Operator.NOT) ? (
 				(t0.isSubtypeOf(SolidType.VOID.union(SolidNull).union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
-				(SolidType.VOID.isSubtypeOf(t0) || SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? SolidBoolean :
+				(SolidType.VOID.isSubtypeOf(t0) || SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0)) ? SolidType.BOOL :
 				SolidBoolean.FALSETYPE
 			) :
-			(this.operator === Operator.EMP) ? SolidBoolean :
+			(this.operator === Operator.EMP) ? SolidType.BOOL :
 			/* (this.operator === Operator.NEG) */ (t0.isSubtypeOf(SolidNumber)) ? t0 : (() => { throw new TypeError01(this); })()
 		);
 	}
