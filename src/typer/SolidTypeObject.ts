@@ -8,7 +8,7 @@ import {SolidType} from './SolidType.js';
  * @final
  */
 export class SolidTypeObject extends SolidType {
-	static get INSTANCE(): SolidTypeObject { return new SolidTypeObject(); }
+	static readonly INSTANCE: SolidTypeObject = new SolidTypeObject();
 	override readonly isBottomType: boolean = false;
 	override readonly isTopType:    boolean = false;
 	private constructor () {

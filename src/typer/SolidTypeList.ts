@@ -38,7 +38,7 @@ export class SolidTypeList extends SolidType {
 	}
 
 	override isSubtypeOf_do(t: SolidType): boolean {
-		return t.equals(SolidObject) || (
+		return t.equals(SolidType.OBJ) || (
 			t instanceof SolidTypeList
 			&& ((t.isMutable)
 				? this.isMutable && this.types.equals(t.types)

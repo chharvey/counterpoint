@@ -7,7 +7,6 @@ import {
 	TOKEN,
 	SolidType,
 	SolidTypeUnit,
-	SolidObject,
 	SolidBoolean,
 	Int16,
 	Float64,
@@ -36,7 +35,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				(start_node.source === Keyword.INT)   ? SolidType.INT :
 				(start_node.source === Keyword.FLOAT) ? SolidType.FLOAT :
 				(start_node.source === Keyword.STR)   ? SolidType.STR :
-				(start_node.source === Keyword.OBJ)   ? SolidObject :
+				(start_node.source === Keyword.OBJ)   ? SolidType.OBJ :
 				(() => { throw new Error(`ASTNodeTypeConstant.constructor did not expect the keyword \`${ start_node.source }\`.`); })()
 			: (start_node instanceof TOKEN.TokenNumber) ?
 				new SolidTypeUnit(

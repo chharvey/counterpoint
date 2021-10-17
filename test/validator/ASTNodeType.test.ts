@@ -10,7 +10,6 @@ import {
 	SolidTypeHash,
 	SolidTypeSet,
 	SolidTypeMap,
-	SolidObject,
 	SolidBoolean,
 	ReferenceError01,
 	ReferenceError02,
@@ -51,7 +50,7 @@ describe('ASTNodeType', () => {
 					SolidType.BOOL,
 					SolidType.INT,
 					SolidType.FLOAT,
-					SolidObject,
+					SolidType.OBJ,
 				]);
 			});
 		});
@@ -195,7 +194,7 @@ describe('ASTNodeType', () => {
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource(`obj & 3`).eval(new Validator()),
-				SolidObject.intersect(typeConstInt(3n)),
+				SolidType.OBJ.intersect(typeConstInt(3n)),
 			);
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeOperationBinary.fromSource(`4.2 | int`).eval(new Validator()),
