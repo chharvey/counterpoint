@@ -3,7 +3,14 @@ export * from './utils-public.js';
 export * from './SolidType.js';
 export * from './SolidTypeIntersection.js';
 export * from './SolidTypeUnion.js';
-export * from './SolidTypeConstant.js';
+export * from './SolidTypeDifference.js';
+export * from './SolidTypeUnit.js';
+
+export * from './SolidTypeObject.js';
+export * from './SolidTypeBoolean.js';
+export * from './SolidTypeInteger.js';
+export * from './SolidTypeFloat.js';
+export * from './SolidTypeString.js';
 
 export * from './SolidTypeTuple.js';
 export * from './SolidTypeRecord.js';
@@ -13,6 +20,8 @@ export * from './SolidTypeSet.js';
 export * from './SolidTypeMap.js';
 
 export * from './SolidObject.js';
+
+export * from './Primitive.js';
 export * from './SolidNull.js';
 export * from './SolidBoolean.js';
 export * from './SolidNumber.js';

@@ -5,7 +5,6 @@ import {
 	SymbolStructureType,
 	Validator,
 	SolidType,
-	Int16,
 	INST,
 	Builder,
 	AssignmentError01,
@@ -26,7 +25,7 @@ describe('ASTNodeDeclarationType', () => {
 			assert.ok(validator.hasSymbol(256n));
 			const info: SymbolStructure | null = validator.getSymbolInfo(256n);
 			assert.ok(info instanceof SymbolStructureType);
-			assert.strictEqual(info.value, SolidType.UNKNOWN);
+			assert.strictEqual(info.typevalue, SolidType.UNKNOWN);
 		});
 		it('throws if the validator already contains a record for the symbol.', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
@@ -49,9 +48,9 @@ describe('ASTNodeDeclarationType', () => {
 			`);
 			goal.varCheck(validator);
 			goal.typeCheck(validator);
-			assert.strictEqual(
-				(validator.getSymbolInfo(256n) as SymbolStructureType).value,
-				Int16,
+			assert.deepStrictEqual(
+				(validator.getSymbolInfo(256n) as SymbolStructureType).typevalue,
+				SolidType.INT,
 			);
 		});
 	});

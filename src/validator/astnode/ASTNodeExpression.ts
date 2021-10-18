@@ -4,8 +4,9 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SolidType,
-	SolidTypeConstant,
+	SolidTypeUnit,
 	SolidObject,
+	Primitive,
 	INST,
 	Builder,
 	Validator,
@@ -25,10 +26,7 @@ import {ASTNodeSolid} from './ASTNodeSolid.js';
  * - ASTNodeConstant
  * - ASTNodeVariable
  * - ASTNodeTemplate
- * - ASTNodeTuple
- * - ASTNodeRecord
- * - ASTNodeSet
- * - ASTNodeMap
+ * - ASTNodeCollectionLiteral
  * - ASTNodeAccess
  * - ASTNodeCall
  * - ASTNodeOperation
@@ -95,8 +93,8 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 						throw err;
 					}
 				}
-				if (!!value) {
-					this.typed = new SolidTypeConstant(value);
+				if (!!value && value instanceof Primitive) {
+					this.typed = new SolidTypeUnit(value);
 				};
 			};
 		};

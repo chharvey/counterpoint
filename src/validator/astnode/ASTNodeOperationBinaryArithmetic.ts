@@ -13,7 +13,6 @@ import {
 	SolidObject,
 	SolidNumber,
 	Int16,
-	Float64,
 	INST,
 	Builder,
 	Operator,
@@ -56,10 +55,10 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	protected override type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType {
 		if (bothNumeric(t0, t1)) {
 			if (int_coercion) {
-				return (eitherFloats(t0, t1)) ? Float64 : Int16
+				return (eitherFloats(t0, t1)) ? SolidType.FLOAT : SolidType.INT;
 			}
-			if (bothFloats   (t0, t1)) { return Float64 }
-			if (neitherFloats(t0, t1)) { return Int16 }
+			if (bothFloats   (t0, t1)) { return SolidType.FLOAT; }
+			if (neitherFloats(t0, t1)) { return SolidType.INT; }
 		}
 		throw new TypeError01(this)
 	}

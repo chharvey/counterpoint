@@ -1,18 +1,16 @@
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import type {CodeUnit} from './package.js';
-import type {SolidType} from './SolidType.js';
-import {SolidObject} from './SolidObject.js';
+import type {SolidObject} from './SolidObject.js';
+import {Primitive} from './Primitive.js';
 
 
 
-export class SolidString extends SolidObject {
-	static override toString(): string {
-		return 'str';
-	}
-	static override values: SolidType['values'] = new Set([new SolidString('')]);
-
-
+/**
+ * A textual Solid Language Value.
+ * @final
+ */
+export class SolidString extends Primitive {
 	private readonly codeunits: readonly CodeUnit[];
 	constructor (data: string | readonly CodeUnit[] = []) {
 		super();

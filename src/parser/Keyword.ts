@@ -10,11 +10,12 @@ export enum Keyword {
 		STR   = 'str',
 		OBJ   = 'obj',
 	// operator
-		IS   = 'is',
-		ISNT = 'isnt',
-		IF   = 'if',
-		THEN = 'then',
-		ELSE = 'else',
+		MUTABLE = 'mutable',
+		IS      = 'is',
+		ISNT    = 'isnt',
+		IF      = 'if',
+		THEN    = 'then',
+		ELSE    = 'else',
 	// storage
 		LET  = 'let',
 		TYPE = 'type',

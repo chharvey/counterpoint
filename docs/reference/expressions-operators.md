@@ -226,18 +226,18 @@ Operations that are associative are indicated as so in their respective sections
 The **property accesss** syntax is a unary operator on an object.
 The object it operates on is called the **binding object** and
 the property it accesses is called the **bound property** (or index, field, member, etc.).
-There are two flavors of the operator: static access and dynamic access.
+There are two flavors of the operator: literal access and computed access.
 
-Static access can be used on static data types such as tuples and records.
-Tuples take integer literal properties and records take word (key) properties.
+Literal access requires a literal (integer or word) and can be used on tuples, lists, records, and hashes.
+Tuples/lists take integer literal properties and records/hashes take word (key) properties.
 For example: `tuple.3` and `record.prop`.
 
-Dynamic access can be used on tuples as well as on dynamic data types
-such as maps, e.g., `map.[expr]`.
-The expression in the brackets evaluates to an item index or case antecedent
+Computed access can be used on tuples and lists as well as on dynamic data types
+such as sets and maps, e.g., `map.[expr]`.
+The expression in the brackets evaluates to an item index, element, or case antecedent
 of the binding object and must be of the correct type.
 
-More information about property access when used on tuples, records, and maps
+More information about property access when used on collections
 can be found in the [Types](./types) chapter.
 
 #### Optional Access

@@ -1,57 +1,14 @@
 import {SolidString} from './index.js';
-import {SolidType} from './SolidType.js';
 
 
 
 /**
  * Parent class for all Solid Language Values.
  * Known subclasses:
- * - SolidNull
- * - SolidBoolean
- * - Int16
- * - Float64
- * - SolidString
+ * - Primitive
  * - Collection
  */
 export abstract class SolidObject {
-	/** @implements Object */
-	static toString(): string {
-		return 'obj';
-	}
-	/** @implements SolidType */
-	static isBottomType: SolidType['isBottomType'] = false;
-	/** @implements SolidType */
-	static isTopType: SolidType['isTopType'] = false;
-	/** @implements SolidType */
-	static values: SolidType['values'] = new Set();
-	/** @implements SolidType */
-	static includes(v: SolidObject): boolean {
-		return v instanceof this/*static*/
-	}
-	/** @implements SolidType */
-	static intersect: SolidType['intersect'] = SolidType.prototype.intersect;
-	/** @implements SolidType */
-	static intersect_do: SolidType['intersect_do'] = SolidType.prototype.intersect_do;
-	/** @implements SolidType */
-	static union: SolidType['union'] = SolidType.prototype.union;
-	/** @implements SolidType */
-	static union_do: SolidType['union_do'] = SolidType.prototype.union_do;
-	/** @implements SolidType */
-	static subtract: SolidType['subtract'] = SolidType.prototype.subtract;
-	/** @implements SolidType */
-	static subtract_do: SolidType['subtract_do'] = SolidType.prototype.subtract_do;
-	/** @implements SolidType */
-	static isSubtypeOf: SolidType['isSubtypeOf'] = SolidType.prototype.isSubtypeOf;
-	/** @implements SolidType */
-	static isSubtypeOf_do(t: SolidType): boolean {
-		return (t instanceof Function)
-			? this/*static*/.prototype instanceof t
-			: SolidType.prototype.isSubtypeOf_do.call(this, t);
-	}
-	/** @implements SolidType */
-	static equals: SolidType['equals'] = SolidType.prototype.equals;
-
-
 	/**
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value

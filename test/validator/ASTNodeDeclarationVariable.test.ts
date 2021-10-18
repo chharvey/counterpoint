@@ -7,7 +7,10 @@ import {
 	SymbolStructureVar,
 	Validator,
 	SolidType,
+	SolidTypeTuple,
+	SolidTypeList,
 	Int16,
+	SolidTuple,
 	INST,
 	Builder,
 	AssignmentError01,
@@ -15,9 +18,13 @@ import {
 } from '../../src/index.js';
 import * as AST from '../../src/validator/astnode/index.js'; // HACK
 import {
+	assertAssignable,
+} from '../assert-helpers.js';
+import {
 	CONFIG_FOLDING_OFF,
 	instructionConstInt,
 	instructionConstFloat,
+	typeConstInt,
 } from '../helpers.js';
 
 
@@ -51,6 +58,13 @@ describe('ASTNodeDeclarationVariable', () => {
 
 
 	describe('#typeCheck', () => {
+		const abcde: string = `
+			let a: int = 42;
+			let b: int[] = [42];
+			let unfixed c: int = 42;
+			let d: mutable [42] = [42];
+			let e: mutable int[] = List.<int>([42]);
+		`;
 		it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 			AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  int | float =  21  *  2;
@@ -61,6 +75,86 @@ describe('ASTNodeDeclarationVariable', () => {
 				let  the_answer:  null =  21  *  2;
 			`).typeCheck(new Validator()), TypeError03);
 		})
+		it('allows assigning a collection literal to a wider mutable type.', () => {
+			const validator: Validator = new Validator();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				let t1: mutable [42]         = [42];
+				let r1: mutable [x: 42]      = [x= 42];
+				let s1: mutable 42{}         = {42};
+				let m1: mutable {true -> 42} = {true -> 42};
+
+				let t2: mutable [42 | 4.3]          = [42];
+				let r2: mutable [x: 42 | 4.3]       = [x= 42];
+				let s2: mutable (42 | 4.3){}        = {42};
+				let m2: mutable {true? -> 42 | 4.3} = {true -> 42};
+
+				let t3: mutable [int]         = [42];
+				let r3: mutable [x: int]      = [x= 42];
+				let s3: mutable int{}         = {42};
+				let m3: mutable {bool -> int} = {true -> 42};
+
+				type T = [int];
+				let v: T = [42];
+				let t4: mutable [T?]         = [v];
+				let r4: mutable [x: T?]      = [x= v];
+				let s4: mutable T?{}         = {v};
+				let m4: mutable {bool -> T?} = {true -> v};
+			`);
+			goal.varCheck(validator);
+			goal.typeCheck(validator); // assert does not throw
+		});
+		it('disallows assigning a constructor call to a wider mutable type.', () => {
+			const validator: Validator = new Validator();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				let a: mutable int[]         = List.<42>([42]);
+				let b: mutable [:int]        = Hash.<42>([x= 42]);
+				let c: mutable int{}         = Set.<42>([42]);
+				let d: mutable {bool -> int} = Map.<true, 42>([[true, 42]]);
+			`);
+			goal.varCheck(validator);
+			assert.throws(() => {
+				goal.typeCheck(validator);
+			}, (err) => {
+				assert.ok(err instanceof AggregateError);
+				assertAssignable(err, {
+					cons: AggregateError,
+					errors: [
+						{cons: TypeError03, message: 'Expression of type mutable List.<42> is not assignable to type mutable List.<int>.'},
+						{cons: TypeError03, message: 'Expression of type mutable Hash.<42> is not assignable to type mutable Hash.<int>.'},
+						{cons: TypeError03, message: 'Expression of type mutable Set.<42> is not assignable to type mutable Set.<int>.'},
+						{cons: TypeError03, message: 'Expression of type mutable Map.<true, 42> is not assignable to type mutable Map.<bool, int>.'},
+					],
+				});
+				return true;
+			});
+		});
+		it('always sets `SymbolStructure#type`.', () => {
+			[
+				CONFIG_DEFAULT,
+				CONFIG_FOLDING_OFF,
+			].forEach((config) => {
+				const validator: Validator = new Validator(config);
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde, config);
+				goal.varCheck(validator);
+				goal.typeCheck(validator);
+				assert.deepStrictEqual(
+					[
+						(validator.getSymbolInfo(256n) as SymbolStructureVar).type,
+						(validator.getSymbolInfo(257n) as SymbolStructureVar).type,
+						(validator.getSymbolInfo(258n) as SymbolStructureVar).type,
+						(validator.getSymbolInfo(259n) as SymbolStructureVar).type,
+						(validator.getSymbolInfo(260n) as SymbolStructureVar).type,
+					],
+					[
+						SolidType.INT,
+						new SolidTypeList(SolidType.INT),
+						SolidType.INT,
+						SolidTypeTuple.fromTypes([typeConstInt(42n)]).mutableOf(),
+						new SolidTypeList(SolidType.INT).mutableOf(),
+					],
+				);
+			});
+		});
 		it('with int coersion on, allows assigning ints to floats.', () => {
 			AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
@@ -77,33 +171,42 @@ describe('ASTNodeDeclarationVariable', () => {
 				},
 			})), TypeError03);
 		})
-		it('with constant folding on, sets `SymbolStructure#{type, value}`.', () => {
+		it('with constant folding on, only sets `SymbolStructure#value` if type is immutable and variable is fixed.', () => {
 			const validator: Validator = new Validator();
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let x: int = 42;
-			`);
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde);
 			goal.varCheck(validator);
 			goal.typeCheck(validator);
-			assert.strictEqual(
-				(validator.getSymbolInfo(256n) as SymbolStructureVar).type,
-				Int16,
-			);
 			assert.deepStrictEqual(
-				(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
-				new Int16(42n),
+				[
+					(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
+					(validator.getSymbolInfo(257n) as SymbolStructureVar).value,
+					(validator.getSymbolInfo(258n) as SymbolStructureVar).value,
+					(validator.getSymbolInfo(259n) as SymbolStructureVar).value,
+					(validator.getSymbolInfo(260n) as SymbolStructureVar).value,
+				],
+				[
+					new Int16(42n),
+					new SolidTuple<Int16>([new Int16(42n)]),
+					null,
+					null,
+					null,
+				],
 			);
 		});
-		it('with constant folding off, does nothing to the SymbolStructure.', () => {
+		it('with constant folding off, never sets `SymbolStructure#value`.', () => {
 			const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let x: int = 42;
-			`);
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde, CONFIG_FOLDING_OFF);
 			goal.varCheck(validator);
 			goal.typeCheck(validator);
-			assert.strictEqual(
-				(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
-				null,
-			);
+			[
+				(validator.getSymbolInfo(256n) as SymbolStructureVar),
+				(validator.getSymbolInfo(257n) as SymbolStructureVar),
+				(validator.getSymbolInfo(258n) as SymbolStructureVar),
+				(validator.getSymbolInfo(259n) as SymbolStructureVar),
+				(validator.getSymbolInfo(260n) as SymbolStructureVar),
+			].forEach((symbol) => {
+				assert.strictEqual(symbol.value, null, symbol.source);
+			});
 		});
 	});
 

@@ -6,9 +6,7 @@ import {
 	Keyword,
 	TOKEN,
 	SolidType,
-	SolidTypeConstant,
-	SolidObject,
-	SolidNull,
+	SolidTypeUnit,
 	SolidBoolean,
 	Int16,
 	Float64,
@@ -30,22 +28,22 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		const value: SolidType = (
 			(start_node instanceof TOKEN.TokenKeyword) ?
 				(start_node.source === Keyword.VOID)  ? SolidType.VOID :
-				(start_node.source === Keyword.NULL)  ? SolidNull :
-				(start_node.source === Keyword.BOOL)  ? SolidBoolean :
+				(start_node.source === Keyword.NULL)  ? SolidType.NULL :
+				(start_node.source === Keyword.BOOL)  ? SolidType.BOOL :
 				(start_node.source === Keyword.FALSE) ? SolidBoolean.FALSETYPE :
 				(start_node.source === Keyword.TRUE ) ? SolidBoolean.TRUETYPE :
-				(start_node.source === Keyword.INT)   ? Int16 :
-				(start_node.source === Keyword.FLOAT) ? Float64 :
-				(start_node.source === Keyword.STR)   ? SolidString :
-				(start_node.source === Keyword.OBJ)   ? SolidObject :
+				(start_node.source === Keyword.INT)   ? SolidType.INT :
+				(start_node.source === Keyword.FLOAT) ? SolidType.FLOAT :
+				(start_node.source === Keyword.STR)   ? SolidType.STR :
+				(start_node.source === Keyword.OBJ)   ? SolidType.OBJ :
 				(() => { throw new Error(`ASTNodeTypeConstant.constructor did not expect the keyword \`${ start_node.source }\`.`); })()
 			: (start_node instanceof TOKEN.TokenNumber) ?
-				new SolidTypeConstant(
+				new SolidTypeUnit(
 					start_node.isFloat
 						? new Float64(start_node.cook())
 						: new Int16(BigInt(start_node.cook()))
 				)
-			: /* (start_node instanceof TOKEN.TokenString) */ (Dev.supports('literalString-cook')) ? new SolidTypeConstant(new SolidString(start_node.cook())) : (() => { throw new Error('`literalString-cook` not yet supported.'); })()
+			: /* (start_node instanceof TOKEN.TokenString) */ (Dev.supports('literalString-cook')) ? new SolidTypeUnit(new SolidString(start_node.cook())) : (() => { throw new Error('`literalString-cook` not yet supported.'); })()
 		);
 		super(start_node, {value});
 		this.type = value;

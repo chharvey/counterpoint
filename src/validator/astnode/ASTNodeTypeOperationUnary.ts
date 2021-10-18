@@ -4,7 +4,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SolidType,
-	SolidNull,
 	Operator,
 	ValidTypeOperator,
 	Validator,
@@ -31,8 +30,10 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		}
 	}
 	protected override eval_do(validator: Validator): SolidType {
-		return (this.operator === Operator.ORNULL)
-			? this.operand.eval(validator).union(SolidNull)
-			: (() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`) })()
+		return (
+			(this.operator === Operator.ORNULL)  ? this.operand.eval(validator).union(SolidType.NULL) :
+			(this.operator === Operator.MUTABLE) ? this.operand.eval(validator).mutableOf()           :
+			(() => { throw new Error(`Operator ${ Operator[this.operator] } not found.`); })()
+		);
 	}
 }

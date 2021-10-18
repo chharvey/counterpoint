@@ -6,7 +6,7 @@ import {
 	// {ASTNodeKey, ...} as AST,
 	Validator,
 	SolidType,
-	SolidTypeConstant,
+	SolidTypeUnit,
 	SolidTypeTuple,
 	SolidTypeRecord,
 	SolidTypeSet,
@@ -67,7 +67,7 @@ describe('ASTNodeExpression', () => {
 					} finally {
 						c.fold = orig;
 					};
-				})), constants.map((c) => new SolidTypeConstant(c.fold(validator)!)));
+				})), constants.map((c) => new SolidTypeUnit(c.fold(validator)!)));
 			});
 		});
 
@@ -333,18 +333,18 @@ describe('ASTNodeExpression', () => {
 				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
 					assert.deepStrictEqual(
 						types.slice(0, 2),
-						templates.slice(0, 2).map((t) => new SolidTypeConstant(t.fold(validator)!)),
+						templates.slice(0, 2).map((t) => new SolidTypeUnit(t.fold(validator)!)),
 					);
 				});
 				it('for non-foldable interpolations, returns `String`.', () => {
-					assert.deepStrictEqual(types[2], SolidString);
+					assert.deepStrictEqual(types[2], SolidType.STR);
 				});
 			});
 			context('with constant folding off.', () => {
 				it('always returns `String`.', () => {
 					templates = initTemplates();
 					templates.forEach((t) => {
-						assert.deepStrictEqual(t.type(new Validator(CONFIG_FOLDING_OFF)), SolidString);
+						assert.deepStrictEqual(t.type(new Validator(CONFIG_FOLDING_OFF)), SolidType.STR);
 					});
 				});
 			});
@@ -388,16 +388,19 @@ describe('ASTNodeExpression', () => {
 
 
 
-	Dev.supports('literalCollection') && describe('ASTNode{Tuple,Record,Set,Map}', () => {
+	describe('ASTNode{Tuple,Record,Set,Map}', () => {
 		describe('#type', () => {
-			let collections: readonly [
-				AST.ASTNodeTuple,
-				AST.ASTNodeRecord,
-				AST.ASTNodeSet,
-				AST.ASTNodeMap,
-			];
-			function initCollections() {
-				return [
+			([
+				['with constant folding on.',  CONFIG_DEFAULT,     SolidType.unionAll([typeConstStr('a'), typeConstInt(42n), typeConstFloat(3.0)])],
+				['with constant folding off.', CONFIG_FOLDING_OFF, SolidType.unionAll([typeConstStr('a'), SolidType.INT,     SolidType.FLOAT])],
+			] as const).forEach(([description, config, map_ant_type]) => it(description, () => {
+				const expected: SolidTypeUnit[] = [typeConstInt(1n), typeConstFloat(2.0), typeConstStr('three')];
+				const collections: readonly [
+					AST.ASTNodeTuple,
+					AST.ASTNodeRecord,
+					AST.ASTNodeSet,
+					AST.ASTNodeMap,
+				] = [
 					AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
 					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
 					AST.ASTNodeSet.fromSource(`{1, 2.0, 'three'};`),
@@ -408,49 +411,24 @@ describe('ASTNodeExpression', () => {
 							3 * 1.0   -> 'three',
 						};
 					`),
-				] as const;
-			}
-			context('with constant folding on.', () => {
-				const validator: Validator = new Validator();
-				let types: SolidType[];
-				before(() => {
-					collections = initCollections();
-					types = collections.map((c) => assert_wasCalled(c.fold, 1, (orig, spy) => {
-						c.fold = spy;
-						try {
-							return c.type(validator);
-						} finally {
-							c.fold = orig;
-						};
-					}));
-				});
-				it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
-					assert.deepStrictEqual(
-						types,
-						collections.map((c) => new SolidTypeConstant(c.fold(validator)!)),
-					);
-				});
-			});
-			it('with constant folding off.', () => {
-				const expected: SolidTypeConstant[] = [typeConstInt(1n), typeConstFloat(2.0), typeConstStr('three')];
-				collections = initCollections();
-				const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
+				];
+				const validator: Validator = new Validator(config);
 				assert.deepStrictEqual(
 					collections.map((node) => node.type(validator)),
 					[
-						SolidTypeTuple.fromTypes(expected),
+						SolidTypeTuple.fromTypes(expected).mutableOf(),
 						SolidTypeRecord.fromTypes(new Map(collections[1].children.map((c, i) => [
 							c.key.id,
 							expected[i],
-						]))),
-						new SolidTypeSet(SolidType.unionAll(expected)),
+						]))).mutableOf(),
+						new SolidTypeSet(SolidType.unionAll(expected)).mutableOf(),
 						new SolidTypeMap(
-							SolidType.unionAll([typeConstStr('a'), Int16, Float64]),
+							map_ant_type,
 							SolidType.unionAll(expected),
-						),
+						).mutableOf(),
 					],
 				);
-			});
+			}));
 		});
 
 
