@@ -35,6 +35,9 @@ export class SolidTypeDifference extends SolidType {
 	override get hasMutable(): boolean {
 		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
 	}
+	override toString(): string {
+		return `${ this.left } - ${ this.right }`;
+	}
 	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) && !this.right.includes(v);
 	}
