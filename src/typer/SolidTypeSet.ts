@@ -13,15 +13,21 @@ export class SolidTypeSet extends SolidType {
 	/**
 	 * Construct a new SolidTypeSet object.
 	 * @param types a union of types in this set type
+	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		readonly types: SolidType,
+		is_mutable: boolean = false,
 	) {
-		super(SolidSet.values);
+		super(is_mutable, new Set([new SolidSet()]));
+	}
+
+	override get hasMutable(): boolean {
+		return super.hasMutable || this.types.hasMutable;
 	}
 
 	override toString(): string {
-		return `Set.<${ this.types }>`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }Set.<${ this.types }>`;
 	}
 
 	override includes(v: SolidObject): boolean {
@@ -31,9 +37,20 @@ export class SolidTypeSet extends SolidType {
 	@strictEqual
 	@SolidType.subtypeDeco
 	override isSubtypeOf(t: SolidType): boolean {
-		return t.equals(SolidObject) || (
+		return t.equals(SolidType.OBJ) || (
 			t instanceof SolidTypeSet
-			&& this.types.isSubtypeOf(t.types)
+			&& ((t.isMutable)
+				? this.isMutable && this.types.equals(t.types)
+				: this.types.isSubtypeOf(t.types)
+			)
 		);
+	}
+
+	override mutableOf(): SolidTypeSet {
+		return new SolidTypeSet(this.types, true);
+	}
+
+	override immutableOf(): SolidTypeSet {
+		return new SolidTypeSet(this.types, false);
 	}
 }

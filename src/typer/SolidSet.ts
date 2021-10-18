@@ -7,7 +7,7 @@ import {
 } from './package.js';
 import {solidObjectsIdentical} from './utils-private.js';
 import {SolidType} from './SolidType.js';
-import {SolidTypeConstant} from './SolidTypeConstant.js';
+import {SolidTypeUnit} from './SolidTypeUnit.js';
 import {SolidTypeSet} from './SolidTypeSet.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidNull} from './SolidNull.js';
@@ -16,12 +16,6 @@ import {Collection} from './Collection.js';
 
 
 export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
-	static override toString(): string {
-		return 'Set';
-	}
-	static override values: SolidType['values'] = new Set([new SolidSet()]);
-
-
 	constructor (
 		private readonly elements: ReadonlySet<T> = new Set(),
 	) {
@@ -54,7 +48,7 @@ export class SolidSet<T extends SolidObject = SolidObject> extends Collection {
 	override toType(): SolidTypeSet {
 		return new SolidTypeSet(
 			(this.elements.size)
-				? SolidType.unionAll([...this.elements].map<SolidType>((el) => new SolidTypeConstant(el)))
+				? SolidType.unionAll([...this.elements].map<SolidType>((el) => new SolidTypeUnit(el)))
 				: SolidType.NEVER,
 		);
 	}

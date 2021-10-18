@@ -46,7 +46,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	override type(_validator: Validator): SolidType {
-		return SolidString
+		return SolidType.STR;
 	}
 	@memoizeMethod
 	override fold(validator: Validator): SolidString | null {

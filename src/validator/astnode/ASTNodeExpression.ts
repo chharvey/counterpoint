@@ -4,8 +4,9 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SolidType,
-	SolidTypeConstant,
+	SolidTypeUnit,
 	SolidObject,
+	Primitive,
 	INST,
 	Builder,
 	Validator,
@@ -25,10 +26,7 @@ import {ASTNodeSolid} from './ASTNodeSolid.js';
  * - ASTNodeConstant
  * - ASTNodeVariable
  * - ASTNodeTemplate
- * - ASTNodeTuple
- * - ASTNodeRecord
- * - ASTNodeSet
- * - ASTNodeMap
+ * - ASTNodeCollectionLiteral
  * - ASTNodeAccess
  * - ASTNodeCall
  * - ASTNodeOperation
@@ -53,7 +51,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 		descriptor.value = function (validator) {
 			const type: SolidType = method.call(this, validator); // type-check first, to re-throw any TypeErrors
 			if (validator.config.compilerOptions.constantFolding) {
-				let value: SolidObject | null;
+				let value: SolidObject | null = null;
 				try {
 					value = this.fold(validator);
 				} catch (err) {
@@ -64,8 +62,8 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 						throw err;
 					}
 				}
-				if (!!value) {
-					return new SolidTypeConstant(value);
+				if (!!value && value instanceof Primitive) {
+					return new SolidTypeUnit(value);
 				};
 			};
 			return type;

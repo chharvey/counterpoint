@@ -26,10 +26,10 @@ import * as h from '../helpers-parse.js';
 
 describe('Decorator', () => {
 	describe('.decorate', () => {
-		Dev.supports('literalCollection') && describe('Word ::= KEYWORD | IDENTIFIER', () => {
+		describe('Word ::= KEYWORD | IDENTIFIER', () => {
 			it('makes an ASTNodeKey.', () => {
 				/*
-					<Key source="let" id=\x8c/>
+					<Key source="let" id=\x8f/>
 					<Key source="foobar" id=\x100/>
 				*/
 				const srcs: string[] = [
@@ -42,7 +42,7 @@ describe('Decorator', () => {
 						return [key.source, key.id];
 					}),
 					srcs.map((src, i) => [src, [
-						0x8en,
+						0x8fn,
 						0x100n,
 					][i]]),
 				);
@@ -95,7 +95,7 @@ describe('Decorator', () => {
 			})
 		})
 
-		Dev.supports('literalCollection') && describe('EntryType<Named, Optional> ::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type', () => {
+		describe('EntryType<Named, Optional> ::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type', () => {
 			specify('EntryType ::= Type', () => {
 				/*
 					<ItemType optional=false>
@@ -109,7 +109,7 @@ describe('Decorator', () => {
 					`float`,
 				);
 			});
-			Dev.supports('optionalEntries') && specify('EntryType_Optional ::= "?:" Type', () => {
+			specify('EntryType_Optional ::= "?:" Type', () => {
 				/*
 					<ItemType optional=true>
 						<TypeConstant source="float"/>
@@ -136,7 +136,7 @@ describe('Decorator', () => {
 					[`fontSize`,              `float`],
 				);
 			});
-			Dev.supports('optionalEntries') && specify('EntryType_Named_Optional ::= Word "?:" Type', () => {
+			specify('EntryType_Named_Optional ::= Word "?:" Type', () => {
 				/*
 					<PropertyType optional=true>
 						<Key source="fontSize"/>
@@ -152,14 +152,14 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && describe('TypeTupleLiteral ::= "[" (","? ItemsType)? "]"', () => {
+		describe('TypeTupleLiteral ::= "[" (","? ItemsType)? "]"', () => {
 			it('makes an empty ASTNodeTypeTuple.', () => {
 				/*
 					<TypeTuple/>
 				*/
 				assert_arrayLength(Decorator.decorate(h.tupleTypeFromString(`[]`)).children, 0);
 			});
-			Dev.supports('optionalEntries') && it('makes a nonempty ASTNodeTypeTuple.', () => {
+			it('makes a nonempty ASTNodeTypeTuple.', () => {
 				/*
 					<TypeTuple>
 						<TypeAlias source="T"/>
@@ -184,7 +184,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('optionalEntries') && describe('TypeRecordLiteral ::= "[" ","? PropertiesType "]"', () => {
+		describe('TypeRecordLiteral ::= "[" ","? PropertiesType "]"', () => {
 			it('makes an ASTNodeTypeRecord.', () => {
 				/*
 					<TypeRecord>
@@ -315,7 +315,7 @@ describe('Decorator', () => {
 		})
 
 		describe('TypeCompound ::= TypeCompound (PropertyAccessType | GenericCall)', () => {
-			Dev.supports('literalCollection') && it('access by integer.', () => {
+			it('access by integer.', () => {
 				/*
 					<AccessType>
 						<TypeTuple source="[42, 420, 4200]">...</TypeTuple>
@@ -333,7 +333,7 @@ describe('Decorator', () => {
 					[`[ 42 , 420 , 4200 ]`, `. 1`],
 				);
 			});
-			Dev.supports('literalCollection') && it('access by key.', () => {
+			it('access by key.', () => {
 				/*
 					<AccessType>
 						<TypeRecord source="[c: 42, b: 420, a: 4200]">...</TypeRecord>
@@ -367,13 +367,13 @@ describe('Decorator', () => {
 		});
 
 		describe('TypeUnarySymbol ::= TypeUnarySymbol ("?" | "!")', () => {
-			it('makes an ASTNodeTypeOperation.', () => {
+			it('makes an ASTNodeTypeOperationUnary.', () => {
 				/*
 					<TypeOperation operator="?">
 						<TypeConstant source="int"/>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int?`));
+				const operation: AST.ASTNodeType = Decorator.decorate(h.unarySymbolTypeFromString(`int?`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationUnary);
 				assert.deepStrictEqual(
 					[operation.operand.source, operation.operator],
@@ -381,7 +381,7 @@ describe('Decorator', () => {
 				)
 			})
 			it('operator `!` is not yet supported.', () => {
-				assert.throws(() => Decorator.decorate(h.unaryTypeFromString(`float!`)), /not yet supported/);
+				assert.throws(() => Decorator.decorate(h.unarySymbolTypeFromString(`float!`)), /not yet supported/);
 			});
 		})
 
@@ -392,7 +392,7 @@ describe('Decorator', () => {
 						<TypeConstant source="int"/>
 					</ASTNodeTypeList>
 				*/
-				const list: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`int[]`));
+				const list: AST.ASTNodeType = Decorator.decorate(h.unarySymbolTypeFromString(`int[]`));
 				assert.ok(list instanceof AST.ASTNodeTypeList);
 				assert.deepStrictEqual(
 					[list.type.source, list.count],
@@ -405,7 +405,7 @@ describe('Decorator', () => {
 						<TypeConstant source="float"/>
 					</ASTNodeTypeList>
 				*/
-				const list: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`float[3]`));
+				const list: AST.ASTNodeType = Decorator.decorate(h.unarySymbolTypeFromString(`float[3]`));
 				assert.ok(list instanceof AST.ASTNodeTypeList);
 				assert.deepStrictEqual(
 					[list.type.source, list.count],
@@ -421,14 +421,30 @@ describe('Decorator', () => {
 						<TypeConstant source="bool"/>
 					</ASTNodeTypeSet>
 				*/
-				const set: AST.ASTNodeType = Decorator.decorate(h.unaryTypeFromString(`bool{}`));
+				const set: AST.ASTNodeType = Decorator.decorate(h.unarySymbolTypeFromString(`bool{}`));
 				assert.ok(set instanceof AST.ASTNodeTypeSet);
 				assert.deepStrictEqual(set.type.source, `bool`);
 			});
 		});
 
-		describe('TypeIntersection ::= TypeIntersection "&" TypeUnarySymbol', () => {
-			it('makes an ASTNodeTypeOperation.', () => {
+		describe('TypeUnaryKeyword ::= "mutable" TypeUnaryKeyword', () => {
+			it('makes an ASTNodeTypeOperationUnary.', () => {
+				/*
+					<TypeOperation operator="mutable">
+						<TypeConstant source="int"/>
+					</TypeOperation>
+				*/
+				const operation: AST.ASTNodeType = Decorator.decorate(h.unaryKeywordTypeFromString(`mutable int`));
+				assert.ok(operation instanceof AST.ASTNodeTypeOperationUnary);
+				assert.deepStrictEqual(
+					[operation.operand.source, operation.operator],
+					[`int`,                    Operator.MUTABLE],
+				);
+			});
+		});
+
+		describe('TypeIntersection ::= TypeIntersection "&" TypeUnaryKeyword', () => {
+			it('makes an ASTNodeTypeOperationBinary.', () => {
 				/*
 					<TypeOperation operator="&">
 						<TypeConstant source="int"/>
@@ -445,7 +461,7 @@ describe('Decorator', () => {
 		})
 
 		describe('TypeUnion ::= TypeUnion "|" TypeIntersection', () => {
-			it('makes an ASTNodeTypeOperation.', () => {
+			it('makes an ASTNodeTypeOperationBinary.', () => {
 				/*
 					<TypeOperation operator="|">
 						<TypeOperation source="4.2 ?">...</TypeOperation>
@@ -525,7 +541,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('Property ::= Word "=" Expression', () => {
+		describe('Property ::= Word "=" Expression', () => {
 			it('makes an ASTNodeProperty.', () => {
 				/*
 					<Property>
@@ -542,7 +558,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('Case ::= Expression "->" Expression', () => {
+		describe('Case ::= Expression "->" Expression', () => {
 			it('makes an ASTNodeCase', () => {
 				/*
 					<Case>
@@ -558,7 +574,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
+		describe('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
 			it('makes an empty ASTNodeTuple.', () => {
 				/*
 					<Tuple/>
@@ -587,7 +603,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('RecordLiteral ::= "[" ","? Property# ","? "]"', () => {
+		describe('RecordLiteral ::= "[" ","? Property# ","? "]"', () => {
 			it('makes an ASTNodeRecord.', () => {
 				/*
 					<Record>
@@ -607,7 +623,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('SetLiteral ::= "{" (","? Expression# ","?)? "}"', () => {
+		describe('SetLiteral ::= "{" (","? Expression# ","?)? "}"', () => {
 			it('makes an empty ASTNodeSet.', () => {
 				/*
 					<Set/>
@@ -636,7 +652,7 @@ describe('Decorator', () => {
 			});
 		});
 
-		Dev.supports('literalCollection') && context('MapLiteral ::= "{" ","? Case# ","? "}"', () => {
+		describe('MapLiteral ::= "{" ","? Case# ","? "}"', () => {
 			it('makes an ASTNodeMap.', () => {
 				/*
 					<Map>
@@ -817,7 +833,7 @@ describe('Decorator', () => {
 				assert.strictEqual(access.kind, kind);
 				return access;
 			}
-			Dev.supports('literalCollection') && context('normal access.', () => {
+			context('normal access.', () => {
 				it('access by index.', () => {
 					/*
 						<Access kind=NORMAL>
@@ -869,7 +885,7 @@ describe('Decorator', () => {
 					);
 				});
 			});
-			Dev.supports('optionalAccess') && context('optional access.', () => {
+			context('optional access.', () => {
 				it('access by index.', () => {
 					/*
 						<Access kind=OPTIONAL>
@@ -906,7 +922,7 @@ describe('Decorator', () => {
 					`, Operator.OPTDOT);
 				});
 			});
-			Dev.supports('claimAccess') && context('claim access.', () => {
+			context('claim access.', () => {
 				it('access by index.', () => {
 					/*
 						<Access kind=CLAIM>
@@ -1265,6 +1281,27 @@ describe('Decorator', () => {
 				`)) as AST.ASTNodeVariable);
 				assert.strictEqual(variable.id, 256n);
 				assert.strictEqual(variable.source, `the_answer`);
+			});
+		});
+
+		describe('Assignee ::= ExpressionCompound PropertyAssign', () => {
+			it('makes an ASTNodeAccess node.', () => {
+				/*
+					<Access source="x.().y.z" kind=NORMAL>
+						<Access source="x.().y">...</Access>
+						<Key source="z"/>
+					</Access>
+				*/
+				const access: AST.ASTNodeAccess = (Decorator.decorate(h.assigneeFromSource(`
+					x.().y.z = a;
+				`)) as AST.ASTNodeAccess);
+				const base: AST.ASTNodeExpression = access.base;
+				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.accessor;
+				assert.ok(accessor instanceof AST.ASTNodeKey);
+				assert.deepStrictEqual(
+					[access.source,     base.source,   accessor.source],
+					[`x . ( ) . y . z`, `x . ( ) . y`, `z`],
+				);
 			});
 		});
 

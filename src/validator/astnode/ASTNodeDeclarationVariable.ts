@@ -4,14 +4,15 @@ import {
 	AssignmentError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
+	SolidType,
 	SolidObject,
-	Float64,
 	INST,
 	Builder,
 	Validator,
 	SymbolStructureVar,
 } from './package.js';
 import {forEachAggregated} from './utils-private.js';
+import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeVariable} from './ASTNodeVariable.js';
@@ -39,26 +40,26 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			throw new AssignmentError01(this.assignee);
 		};
 		forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck(validator));
-		validator.addSymbol(new SymbolStructureVar(
-			this.assignee,
-			this.unfixed,
-			() => this.typenode.eval(validator),
-			(validator.config.compilerOptions.constantFolding && !this.unfixed)
-				? () => this.assigned.fold(validator)
-				: null,
-		));
+		validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
 	}
 	override typeCheck(validator: Validator): void {
 		this.assigned.typeCheck(validator);
-		this.typeCheckAssignment(
+		ASTNodeSolid.typeCheckAssignment(
 			this.typenode.eval(validator),
-			this.assigned.type(validator),
+			this.assigned,
+			this,
 			validator,
 		);
-		return validator.getSymbolInfo(this.assignee.id)?.assess();
+		const symbol: SymbolStructureVar | null = validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;
+		if (symbol) {
+			symbol.type = this.typenode.eval(validator);
+			if (validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
+				symbol.value = this.assigned.fold(validator);
+			}
+		}
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		const tofloat: boolean = this.typenode.eval(builder.validator).isSubtypeOf(Float64) || this.assigned.shouldFloat(builder.validator);
+		const tofloat: boolean = this.typenode.eval(builder.validator).isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat(builder.validator);
 		const value: SolidObject | null = this.assignee.fold(builder.validator);
 		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
 			? new INST.InstructionNone()

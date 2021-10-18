@@ -1,9 +1,10 @@
 export enum Operator {
-	DOT,      // Dev.supports('literalCollection')
-	OPTDOT,   // Dev.supports('optionalAccess')
-	CLAIMDOT, // Dev.supports('claimAccess')
+	DOT,
+	OPTDOT,
+	CLAIMDOT,
 	ORNULL,
 	OREXCP,
+	MUTABLE,
 	NOT,
 	EMP,
 	AFF,
@@ -40,6 +41,7 @@ export type ValidAccessOperator =
 export type ValidTypeOperator =
 	| Operator.ORNULL
 	| Operator.OREXCP
+	| Operator.MUTABLE
 	| Operator.AND
 	| Operator.OR
 

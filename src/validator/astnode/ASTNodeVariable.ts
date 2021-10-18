@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import {
 	SolidType,
 	SolidObject,
-	Float64,
 	INST,
 	Builder,
 	ReferenceError01,
@@ -33,7 +32,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		this.id = start_node.cook()!;
 	}
 	override shouldFloat(validator: Validator): boolean {
-		return this.type(validator).isSubtypeOf(Float64);
+		return this.type(validator).isSubtypeOf(SolidType.FLOAT);
 	}
 	override varCheck(validator: Validator): void {
 		if (!validator.hasSymbol(this.id)) {

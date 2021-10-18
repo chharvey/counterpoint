@@ -15,10 +15,11 @@ import {
 } from './package.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 
-export class ASTNodeRecord extends ASTNodeExpression {
+export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeRecord {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeRecord);
@@ -44,7 +45,7 @@ export class ASTNodeRecord extends ASTNodeExpression {
 		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
 			c.val.type(validator),
-		])));
+		]))).mutableOf();
 	}
 	@memoizeMethod
 	override fold(validator: Validator): SolidObject | null {

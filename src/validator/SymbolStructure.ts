@@ -1,7 +1,6 @@
 import {
 	SolidType,
 	SolidObject,
-	runOnceMethod,
 } from './package.js';
 import type * as AST from './astnode/index.js';
 
@@ -29,30 +28,17 @@ export abstract class SymbolStructure {
 		readonly source: string,
 	) {
 	}
-	/**
-	 * Perform type and constant-folding assessments during semantic analysis.
-	 */
-	abstract assess(): void;
 }
 
 
 
 export class SymbolStructureType extends SymbolStructure {
 	/** The assessed value of the symbol. */
-	private _value: SolidType = SolidType.UNKNOWN;
+	typevalue: SolidType = SolidType.UNKNOWN;
 	constructor (
 		node: AST.ASTNodeTypeAlias,
-		/** A lambda returning the assessed value of the symbol. */
-		private readonly value_setter: () => SolidType,
 	) {
 		super(node.id, node.line_index, node.col_index, node.source);
-	}
-	get value(): SolidType {
-		return this._value;
-	}
-	@runOnceMethod
-	override assess(): void {
-		this._value = this.value_setter();
 	}
 }
 
@@ -60,31 +46,14 @@ export class SymbolStructureType extends SymbolStructure {
 
 export class SymbolStructureVar extends SymbolStructure {
 	/** The variable’s Type. */
-	private _type: SolidType = SolidType.UNKNOWN;
+	type: SolidType = SolidType.UNKNOWN;
 	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
-	private _value: SolidObject | null = null;
+	value: SolidObject | null = null;
 	constructor (
 		node: AST.ASTNodeVariable,
 		/** May the symbol be reassigned? */
 		readonly unfixed: boolean,
-		/** A lambda returning the variable’s Type. */
-		private type_setter: () => SolidType,
-		/** A lambda returning the assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
-		private value_setter: (() => SolidObject | null) | null,
 	) {
 		super(node.id, node.line_index, node.col_index, node.source);
-	}
-	get type(): SolidType {
-		return this._type;
-	}
-	get value(): SolidObject | null {
-		return this._value;
-	}
-	@runOnceMethod
-	override assess(): void {
-		this._type = this.type_setter();
-		if (!this.unfixed && !!this.value_setter) {
-			this._value = this.value_setter();
-		};
 	}
 }

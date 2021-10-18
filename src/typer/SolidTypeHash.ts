@@ -14,15 +14,21 @@ export class SolidTypeHash extends SolidType {
 	/**
 	 * Construct a new SolidTypeHash object.
 	 * @param types a union of types in this hash type
+	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		readonly types: SolidType,
+		is_mutable: boolean = false,
 	) {
-		super(SolidHash.values);
+		super(is_mutable, new Set([new SolidHash()]));
+	}
+
+	override get hasMutable(): boolean {
+		return super.hasMutable || this.types.hasMutable;
 	}
 
 	override toString(): string {
-		return `Hash.<${ this.types }>`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }Hash.<${ this.types }>`;
 	}
 
 	override includes(v: SolidObject): boolean {
@@ -35,9 +41,20 @@ export class SolidTypeHash extends SolidType {
 	@strictEqual
 	@SolidType.subtypeDeco
 	override isSubtypeOf(t: SolidType): boolean {
-		return t.equals(SolidObject) || (
+		return t.equals(SolidType.OBJ) || (
 			t instanceof SolidTypeHash
-			&& this.types.isSubtypeOf(t.types)
+			&& ((t.isMutable)
+				? this.isMutable && this.types.equals(t.types)
+				: this.types.isSubtypeOf(t.types)
+			)
 		);
+	}
+
+	override mutableOf(): SolidTypeHash {
+		return new SolidTypeHash(this.types, true);
+	}
+
+	override immutableOf(): SolidTypeHash {
+		return new SolidTypeHash(this.types, false);
 	}
 }

@@ -6,7 +6,6 @@ import type {TypeEntry} from './utils-public.js';
 import {
 	SolidType,
 	SolidObject,
-	SolidNull,
 } from './index.js';
 
 
@@ -22,5 +21,5 @@ export const solidObjectsIdentical = (a: SolidObject, b: SolidObject): boolean =
 export function updateAccessedStaticType(entry: TypeEntry, access_kind: ValidAccessOperator): SolidType {
 	return (access_kind === Operator.CLAIMDOT)
 		? entry.type.subtract(SolidType.VOID)
-		: entry.type.union((entry.optional) ? (access_kind === Operator.OPTDOT) ? SolidNull : SolidType.VOID : SolidType.NEVER);
+		: entry.type.union((entry.optional) ? (access_kind === Operator.OPTDOT) ? SolidType.NULL : SolidType.VOID : SolidType.NEVER);
 }

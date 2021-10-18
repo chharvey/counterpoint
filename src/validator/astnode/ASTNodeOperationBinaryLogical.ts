@@ -5,7 +5,6 @@ import * as assert from 'assert';
 import {
 	SolidType,
 	SolidObject,
-	SolidNull,
 	SolidBoolean,
 	INST,
 	Builder,
@@ -47,14 +46,14 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		)
 	}
 	protected override type_do(t0: SolidType, t1: SolidType, _int_coercion: boolean): SolidType {
-		const falsytypes: SolidType = SolidType.VOID.union(SolidNull).union(SolidBoolean.FALSETYPE);
+		const falsytypes: SolidType = SolidType.VOID.union(SolidType.NULL).union(SolidBoolean.FALSETYPE);
 		return (this.operator === Operator.AND)
 			? (t0.isSubtypeOf(falsytypes))
 				? t0
 				: t0.intersect(falsytypes).union(t1)
 			: (t0.isSubtypeOf(falsytypes))
 				? t1
-				: (SolidType.VOID.isSubtypeOf(t0) || SolidNull.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
+				: (SolidType.VOID.isSubtypeOf(t0) || SolidType.NULL.isSubtypeOf(t0) || SolidBoolean.FALSETYPE.isSubtypeOf(t0))
 					? t0.subtract(falsytypes).union(t1)
 					: t0
 	}

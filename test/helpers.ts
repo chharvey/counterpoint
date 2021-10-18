@@ -1,25 +1,33 @@
 import {
-	SolidTypeConstant,
-	SolidNull,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	SolidTypeUnit,
 	Int16,
 	Float64,
 	SolidString,
-} from '../src/typer/index.js';
-import {
 	INST,
-} from '../src/builder/index.js';
+} from '../src/index.js';
 
 
 
-export const TYPE_CONST_NULL: SolidTypeConstant = new SolidTypeConstant(SolidNull.NULL);
-export function typeConstInt(x: bigint): SolidTypeConstant {
-	return new SolidTypeConstant(new Int16(x))
+export const CONFIG_FOLDING_OFF: SolidConfig = {
+	...CONFIG_DEFAULT,
+	compilerOptions: {
+		...CONFIG_DEFAULT.compilerOptions,
+		constantFolding: false,
+	},
+};
+
+
+
+export function typeConstInt(x: bigint): SolidTypeUnit {
+	return new SolidTypeUnit(new Int16(x));
 }
-export function typeConstFloat(x: number): SolidTypeConstant {
-	return new SolidTypeConstant(new Float64(x))
+export function typeConstFloat(x: number): SolidTypeUnit {
+	return new SolidTypeUnit(new Float64(x));
 }
-export function typeConstStr(x: string): SolidTypeConstant {
-	return new SolidTypeConstant(new SolidString(x));
+export function typeConstStr(x: string): SolidTypeUnit {
+	return new SolidTypeUnit(new SolidString(x));
 }
 
 export function instructionConstInt(x: bigint): INST.InstructionConst {

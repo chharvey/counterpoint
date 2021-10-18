@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {
 	SolidType,
-	SolidTypeConstant,
+	SolidTypeUnit,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -56,7 +56,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	override type(_validator: Validator): SolidType {
-		return new SolidTypeConstant(this.value);
+		return new SolidTypeUnit(this.value);
 	}
 	@memoizeMethod
 	override fold(_validator: Validator): SolidObject {

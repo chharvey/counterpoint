@@ -3,7 +3,7 @@ import {
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,
-	SolidTypeConstant,
+	SolidTypeUnit,
 	SolidTypeTuple,
 	SolidTypeRecord,
 	Int16,
@@ -45,13 +45,13 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		if (this.accessor instanceof ASTNodeIndexType) {
 			const accessor_type: SolidType = this.accessor.val.eval(validator);
 			return (
-				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidTuple) ? (
-					(accessor_type instanceof SolidTypeConstant)
+				(base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple) ? (
+					(accessor_type instanceof SolidTypeUnit)
 						? base_type.value.toType().get(accessor_type.value as Int16, Operator.DOT, this.accessor)
 						: base_type.value.toType().itemTypes()
 				) :
 				(base_type instanceof SolidTypeTuple) ? (
-					(accessor_type instanceof SolidTypeConstant)
+					(accessor_type instanceof SolidTypeUnit)
 						? base_type.get(accessor_type.value as Int16, Operator.DOT, this.accessor)
 						: base_type.itemTypes()
 				) :
@@ -59,7 +59,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 			);
 		} else /* (this.accessor instanceof ASTNodeKey) */ {
 			return (
-				(base_type instanceof SolidTypeConstant && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, Operator.DOT, this.accessor) :
+				(base_type instanceof SolidTypeUnit && base_type.value instanceof SolidRecord) ? base_type.value.toType().get(this.accessor.id, Operator.DOT, this.accessor) :
 				(base_type instanceof SolidTypeRecord) ? base_type.get(this.accessor.id, Operator.DOT, this.accessor) :
 				(() => { throw new TypeError04('property', base_type, this.accessor); })()
 			);

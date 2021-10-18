@@ -1,12 +1,19 @@
 import {
 	strictEqual,
 	Set_hasEq,
-	Set_differenceEq,
 } from './package.js';
 import {
 	SolidTypeIntersection,
 	SolidTypeUnion,
+	SolidTypeDifference,
+	SolidTypeUnit,
+	SolidTypeObject,
+	SolidTypeBoolean,
+	SolidTypeInteger,
+	SolidTypeFloat,
+	SolidTypeString,
 	SolidObject,
+	SolidNull,
 } from './index.js';
 import {solidObjectsIdentical} from './utils-private.js';
 
@@ -22,6 +29,11 @@ import {solidObjectsIdentical} from './utils-private.js';
  * - SolidTypeVoid
  * - SolidTypeConstant
  * - SolidTypeUnknown
+ * - SolidTypeObject
+ * - SolidTypeBoolean
+ * - SolidTypeInteger
+ * - SolidTypeFloat
+ * - SolidTypeString
  * - SolidTypeTuple
  * - SolidTypeRecord
  * - SolidTypeList
@@ -30,12 +42,15 @@ import {solidObjectsIdentical} from './utils-private.js';
  * - SolidTypeMap
  */
 export abstract class SolidType {
-	/** The Bottom Type, containing no values. */
-	static get NEVER(): SolidTypeNever { return SolidTypeNever.INSTANCE }
-	/** The Top Type, containing all values. */
-	static get UNKNOWN(): SolidTypeUnknown { return SolidTypeUnknown.INSTANCE }
-	/** The Void Type, representing a completion but not a value. */
-	static get VOID(): SolidTypeVoid { return SolidTypeVoid.INSTANCE; }
+	/** The Bottom Type, containing no values. */                    static get NEVER():   SolidTypeNever   { return SolidTypeNever.INSTANCE; }
+	/** The Top Type, containing all values. */                      static get UNKNOWN(): SolidTypeUnknown { return SolidTypeUnknown.INSTANCE; }
+	/** The Void Type, representing a completion but not a value. */ static get VOID():    SolidTypeVoid    { return SolidTypeVoid.INSTANCE; }
+	/** The Object Type. */                                          static get OBJ():     SolidTypeObject  { return SolidTypeObject.INSTANCE; }
+	/** The Null Type. */                                            static get NULL():    SolidTypeUnit    { return SolidNull.NULLTYPE; }
+	/** The Boolean Type. */                                         static get BOOL():    SolidTypeBoolean { return SolidTypeBoolean.INSTANCE; }
+	/** The Integer Type. */                                         static get INT():     SolidTypeInteger { return SolidTypeInteger.INSTANCE; }
+	/** The Float Type. */                                           static get FLOAT():   SolidTypeFloat   { return SolidTypeFloat.INSTANCE; }
+	/** The String Type. */                                          static get STR():     SolidTypeString  { return SolidTypeString.INSTANCE; }
 	/**
 	 * Decorator for {@link SolidLanguageType#intersect} method and any overrides.
 	 * Contains shortcuts for constructing type intersections.
@@ -198,11 +213,21 @@ export abstract class SolidType {
 
 	/**
 	 * Construct a new SolidType object.
-	 * @param values an enumerated set of values that are assignable to this type
+	 * @param isMutable Whether this type is `mutable`. Mutable objects may change fields/entries and call mutating methods.
+	 * @param values    An enumerated set of values that are assignable to this type.
 	 */
 	constructor (
-		readonly values: ReadonlySet<SolidObject> = new Set(),
+		readonly isMutable: boolean,
+		readonly values:    ReadonlySet<SolidObject> = new Set(),
 	) {
+	}
+
+	/**
+	 * Return whether this type is mutable or has a mutable operand or component.
+	 * @return `true` if this type is mutable or has a mutable operand/component
+	 */
+	get hasMutable(): boolean {
+		return this.isMutable;
 	}
 
 	/**
@@ -268,50 +293,13 @@ export abstract class SolidType {
 	 */
 	@strictEqual
 	equals(t: SolidType): boolean {
-		return this.isSubtypeOf(t) && t.isSubtypeOf(this)
+		return this.isMutable === t.isMutable && this.isSubtypeOf(t) && t.isSubtypeOf(this);
 	}
-}
-
-
-
-/**
- * A type difference of two types `T` and `U` is the type
- * that contains values assignable to `T` but *not* assignable to `U`.
- */
-class SolidTypeDifference extends SolidType {
-	declare readonly isBottomType: boolean;
-
-	/**
-	 * Construct a new SolidTypeDifference object.
-	 * @param left the first type
-	 * @param right the second type
-	 */
-	constructor (
-		private readonly left:  SolidType,
-		private readonly right: SolidType,
-	) {
-		super(Set_differenceEq(left.values, right.values, solidObjectsIdentical));
-		/*
-		We can assert that this is always non-empty because
-		the only cases in which it could be empty are
-		1. if left is empty
-		2. if left is a subtype of right
-		each of which is impossible because the algorithm would have already produced the `never` type.
-		*/
-		this.isBottomType = false;
+	mutableOf(): SolidType {
+		return this;
 	}
-
-	override includes(v: SolidObject): boolean {
-		return this.left.includes(v) && !this.right.includes(v);
-	}
-	@strictEqual
-	@SolidType.subtypeDeco
-	override isSubtypeOf(t: SolidType): boolean {
-		return this.left.isSubtypeOf(t) || super.isSubtypeOf(t);
-	}
-	isSupertypeOf(t: SolidType): boolean {
-		/** 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
-		return t.isSubtypeOf(this.left) && t.intersect(this.right).isBottomType;
+	immutableOf(): SolidType {
+		return this;
 	}
 }
 
@@ -327,11 +315,18 @@ export class SolidTypeInterface extends SolidType {
 	/**
 	 * Construct a new SolidInterface object.
 	 * @param properties a map of this type’s members’ names along with their associated types
+	 * @param is_mutable is this type mutable?
 	 */
-	constructor (private readonly properties: ReadonlyMap<string, SolidType>) {
-		super()
+	constructor (
+		private readonly properties: ReadonlyMap<string, SolidType>,
+		is_mutable: boolean = false,
+	) {
+		super(is_mutable);
 	}
 
+	override get hasMutable(): boolean {
+		return super.hasMutable || [...this.properties.values()].some((t) => t.hasMutable);
+	}
 	override includes(v: SolidObject): boolean {
 		return [...this.properties.keys()].every((key) => key in v)
 	}
@@ -385,12 +380,19 @@ export class SolidTypeInterface extends SolidType {
 			return super.isSubtypeOf(t);
 		};
 	}
+	override mutableOf(): SolidTypeInterface {
+		return new SolidTypeInterface(this.properties, true);
+	}
+	override immutableOf(): SolidTypeInterface {
+		return new SolidTypeInterface(this.properties, false);
+	}
 }
 
 
 
 /**
  * Class for constructing the Bottom Type, the type containing no values.
+ * @final
  */
 class SolidTypeNever extends SolidType {
 	static readonly INSTANCE: SolidTypeNever = new SolidTypeNever()
@@ -399,7 +401,7 @@ class SolidTypeNever extends SolidType {
 	override readonly isTopType: boolean = false;
 
 	private constructor () {
-		super()
+		super(false);
 	}
 
 	override toString(): string {
@@ -427,7 +429,7 @@ class SolidTypeVoid extends SolidType {
 	override readonly isTopType: boolean = false;
 
 	private constructor () {
-		super();
+		super(false);
 	}
 
 	override toString(): string {
@@ -455,6 +457,7 @@ class SolidTypeVoid extends SolidType {
 
 /**
  * Class for constructing the Top Type, the type containing all values.
+ * @final
  */
 class SolidTypeUnknown extends SolidType {
 	static readonly INSTANCE: SolidTypeUnknown = new SolidTypeUnknown()
@@ -463,7 +466,7 @@ class SolidTypeUnknown extends SolidType {
 	override readonly isTopType: boolean = true;
 
 	private constructor () {
-		super()
+		super(false);
 	}
 
 	override toString(): string {

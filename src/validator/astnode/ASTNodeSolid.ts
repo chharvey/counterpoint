@@ -5,16 +5,50 @@ import {
 } from '@chharvey/parser';
 import {
 	SolidType,
-	Int16,
-	Float64,
 	TypeError03,
 	Validator,
 } from './package.js';
+import {
+	ASTNodeExpression,
+	ASTNodeCollectionLiteral,
+} from './index.js';
 import {forEachAggregated} from './utils-private.js';
 
 
 
 export abstract class ASTNodeSolid extends ASTNode {
+	/**
+	 * Type-check an assignment.
+	 * @final
+	 * @param assignee_type the type of the assignee (the variable, bound property, or parameter being (re)assigned)
+	 * @param assigned      the expression assigned
+	 * @param node          the node where the assignment took place
+	 * @param validator     a validator for type-checking purposes
+	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
+	 */
+	static typeCheckAssignment(
+		assignee_type: SolidType,
+		assigned:      ASTNodeExpression,
+		node:          ASTNodeSolid,
+		validator:     Validator,
+	): void {
+		const assigned_type: SolidType = assigned.type(validator);
+		const is_subtype: boolean = assigned_type.isSubtypeOf(assignee_type);
+		const is_collection_assignable: boolean = (
+			   assigned instanceof ASTNodeCollectionLiteral
+			&& assigned_type.isSubtypeOf(assignee_type.immutableOf())
+		);
+		const treatIntAsSubtypeOfFloat: boolean = (
+			   validator.config.compilerOptions.intCoercion
+			&& assigned_type.isSubtypeOf(SolidType.INT)
+			&& SolidType.FLOAT.isSubtypeOf(assignee_type)
+		);
+		if (!is_subtype && !is_collection_assignable && !treatIntAsSubtypeOfFloat) {
+			throw new TypeError03(assignee_type, assigned_type, node);
+		}
+	}
+
+
 	/**
 	 * Construct a new ASTNodeSolid object.
 	 *
@@ -47,28 +81,5 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 */
 	typeCheck(validator: Validator): void {
 		return forEachAggregated(this.children, (c) => c.typeCheck(validator));
-	}
-
-	/**
-	 * Type-check an assignment.
-	 * @final
-	 * @param assignee_type the type of the assignee (the variable, bound property, or parameter being reassigned)
-	 * @param assigned_type the type of the expression assigned
-	 * @param validator     a validator
-	 * @throws {TypeError03} if the assigned expression is not assignable to the assignee
-	 */
-	protected typeCheckAssignment(
-		assignee_type: SolidType,
-		assigned_type: SolidType,
-		validator:     Validator,
-	): void {
-		const treatIntAsSubtypeOfFloat: boolean = (
-			   validator.config.compilerOptions.intCoercion
-			&& assigned_type.isSubtypeOf(Int16)
-			&& Float64.isSubtypeOf(assignee_type)
-		);
-		if (!assigned_type.isSubtypeOf(assignee_type) && !treatIntAsSubtypeOfFloat) {
-			throw new TypeError03(assignee_type, assigned_type, this);
-		}
 	}
 }

@@ -1,6 +1,5 @@
 import {strictEqual} from './package.js';
 import {Float64} from './index.js';
-import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';
 import {SolidNumber} from './SolidNumber.js';
 
@@ -16,16 +15,12 @@ type Int16DatatypeMutable =   [boolean, boolean, boolean, boolean, boolean, bool
  * @final
  */
 export class Int16 extends SolidNumber<Int16> {
-	static override toString(): string {
-		return 'int';
-	}
 	private static readonly BITCOUNT: number = 16
 
 	        static readonly ZERO  : Int16 = new Int16(0n)
 	        static readonly UNIT  : Int16 = new Int16(1n)
 	private static readonly RADIX : Int16 = new Int16(2n)
 
-	static override values: SolidType['values'] = new Set([Int16.ZERO])
 	private static mod(n: bigint, modulus: bigint): bigint {
 		return (n % modulus + modulus) % modulus
 	}

@@ -1,5 +1,4 @@
 import * as assert from 'assert'
-import {Dev} from '../../src/core/index.js';
 import {
 	SolidObject,
 	Int16,
@@ -13,7 +12,7 @@ import {
 
 describe('SolidObject', () => {
 	describe('#equal', () => {
-		Dev.supports('literalCollection') && describe('SolidSet', () => {
+		describe('SolidSet', () => {
 			it('return false if sets have different counts.', () => {
 				assert.ok(!new SolidSet<SolidString>(new Set([
 					new SolidString('earth'),

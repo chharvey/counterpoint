@@ -28,10 +28,13 @@ export class SolidTypeIntersection extends SolidType {
 		private readonly left:  SolidType,
 		private readonly right: SolidType,
 	) {
-		super(Set_intersectionEq(left.values, right.values, solidObjectsIdentical));
+		super(false, Set_intersectionEq(left.values, right.values, solidObjectsIdentical));
 		this.isBottomType = this.left.isBottomType || this.right.isBottomType || this.isBottomType;
 	}
 
+	override get hasMutable(): boolean {
+		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
+	}
 	override toString(): string {
 		return `${ this.left } & ${ this.right }`;
 	}
@@ -46,6 +49,12 @@ export class SolidTypeIntersection extends SolidType {
 		/** 3-1 | `A  & B <: A  &&  A  & B <: B` */
 		if (t.equals(this.left) || t.equals(this.right)) { return true }
 		return super.isSubtypeOf(t);
+	}
+	override mutableOf(): SolidTypeIntersection {
+		return new SolidTypeIntersection(this.left.mutableOf(), this.right.mutableOf());
+	}
+	override immutableOf(): SolidTypeIntersection {
+		return new SolidTypeIntersection(this.left.immutableOf(), this.right.immutableOf());
 	}
 	isSupertypeOf(t: SolidType): boolean {
 		/** 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */

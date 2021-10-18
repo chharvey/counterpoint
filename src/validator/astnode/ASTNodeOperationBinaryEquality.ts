@@ -58,12 +58,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			if (oneFloats(t0, t1) && (this.operator === Operator.ID || !int_coercion)) {
 				return SolidBoolean.FALSETYPE
 			}
-			return SolidBoolean
+			return SolidType.BOOL;
 		}
 		if (t0.intersect(t1).isBottomType) {
 			return SolidBoolean.FALSETYPE
 		}
-		return SolidBoolean
+		return SolidType.BOOL;
 	}
 	@memoizeMethod
 	override fold(validator: Validator): SolidObject | null {

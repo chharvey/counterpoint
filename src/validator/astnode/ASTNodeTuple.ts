@@ -13,10 +13,11 @@ import {
 	Validator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
 
 
 
-export class ASTNodeTuple extends ASTNodeExpression {
+export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	static override fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeTuple {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert.ok(expression instanceof ASTNodeTuple);
@@ -39,7 +40,7 @@ export class ASTNodeTuple extends ASTNodeExpression {
 	@memoizeMethod
 	@ASTNodeExpression.typeDeco
 	override type(validator: Validator): SolidType {
-		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type(validator)));
+		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type(validator))).mutableOf();
 	}
 	@memoizeMethod
 	override fold(validator: Validator): SolidObject | null {

@@ -36,11 +36,17 @@ export class SolidTypeTuple extends SolidType {
 	/**
 	 * Construct a new SolidTypeTuple object.
 	 * @param types this type’s item types
+	 * @param is_mutable is this type mutable?
 	 */
 	constructor (
 		private readonly types: readonly TypeEntry[] = [],
+		is_mutable: boolean = false,
 	) {
-		super(SolidTuple.values);
+		super(is_mutable, new Set([new SolidTuple()]));
+	}
+
+	override get hasMutable(): boolean {
+		return super.hasMutable || this.types.some((t) => t.type.hasMutable);
 	}
 
 	/** The possible number of items in this tuple type. */
@@ -52,7 +58,7 @@ export class SolidTypeTuple extends SolidType {
 	}
 
 	override toString(): string {
-		return `[${ this.types.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
+		return `${ (this.isMutable) ? 'mutable ' : '' }[${ this.types.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
 	}
 
 	override includes(v: SolidObject): boolean {
@@ -62,14 +68,27 @@ export class SolidTypeTuple extends SolidType {
 	@strictEqual
 	@SolidType.subtypeDeco
 	override isSubtypeOf(t: SolidType): boolean {
-		return t.equals(SolidObject) || (
+		return t.equals(SolidType.OBJ) || (
 			t instanceof SolidTypeTuple
 			&& this.count[0] >= t.count[0]
-			&& t.types.every((thattype, i) => !this.types[i] || this.types[i].type.isSubtypeOf(thattype.type))
+			&& (!t.isMutable || this.isMutable)
+			&& t.types.every((thattype, i) => !this.types[i] || ((t.isMutable)
+				? this.types[i].type.equals(thattype.type)
+				: this.types[i].type.isSubtypeOf(thattype.type)
+			))
 		) || (
 			t instanceof SolidTypeList
+			&& !t.isMutable
 			&& this.itemTypes().isSubtypeOf(t.types)
 		);
+	}
+
+	override mutableOf(): SolidTypeTuple {
+		return new SolidTypeTuple(this.types, true);
+	}
+
+	override immutableOf(): SolidTypeTuple {
+		return new SolidTypeTuple(this.types, false);
 	}
 
 	get(index: Int16, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): SolidType {
