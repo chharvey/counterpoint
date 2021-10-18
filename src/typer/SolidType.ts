@@ -280,7 +280,7 @@ export abstract class SolidType {
 	@strictEqual
 	@SolidType.subtypeDeco
 	isSubtypeOf(t: SolidType): boolean {
-		return !this.isBottomType && !!this.values.size // these checks are needed because this is called by `SolidObject.isSubtypeOf`
+		return !this.isBottomType && !!this.values.size // these checks are needed in cases of `obj` and `void`, which don’t store values
 			&& [...this.values].every((v) => t.includes(v));
 	}
 	/**

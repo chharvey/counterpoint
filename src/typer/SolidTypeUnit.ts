@@ -30,6 +30,6 @@ export class SolidTypeUnit extends SolidType {
 	@strictEqual
 	@SolidType.subtypeDeco
 	override isSubtypeOf(t: SolidType): boolean {
-		return t instanceof Function && this.value instanceof t || t.includes(this.value);
+		return t.includes(this.value);
 	}
 }
