@@ -41,7 +41,7 @@ export class SolidTypeDifference extends SolidType {
 	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) && !this.right.includes(v);
 	}
-	override isSubtypeOf_do(t: SolidType): boolean {
+	protected override isSubtypeOf_do(t: SolidType): boolean {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf_do(t);
 	}
 	override mutableOf(): SolidTypeDifference {

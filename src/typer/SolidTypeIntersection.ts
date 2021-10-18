@@ -40,7 +40,7 @@ export class SolidTypeIntersection extends SolidType {
 	override includes(v: SolidObject): boolean {
 		return this.left.includes(v) && this.right.includes(v)
 	}
-	override isSubtypeOf_do(t: SolidType): boolean {
+	protected override isSubtypeOf_do(t: SolidType): boolean {
 		/** 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.left.isSubtypeOf(t) || this.right.isSubtypeOf(t)) { return true }
 		/** 3-1 | `A  & B <: A  &&  A  & B <: B` */

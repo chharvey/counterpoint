@@ -128,7 +128,7 @@ export abstract class SolidType {
 
 		return this.intersect_do(t)
 	}
-	public intersect_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
+	protected intersect_do(t: SolidType): SolidType {
 		/** 2-2 | `A \| B == B \| A` */
 		if (t instanceof SolidTypeUnion) { return t.intersect(this); }
 
@@ -153,7 +153,7 @@ export abstract class SolidType {
 
 		return this.union_do(t)
 	}
-	public union_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
+	protected union_do(t: SolidType): SolidType {
 		/** 2-1 | `A  & B == B  & A` */
 		if (t instanceof SolidTypeIntersection) { return t.union(this); }
 
@@ -178,7 +178,7 @@ export abstract class SolidType {
 
 		return this.subtract_do(t);
 	}
-	public subtract_do(t: SolidType): SolidType { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
+	protected subtract_do(t: SolidType): SolidType {
 		return new SolidTypeDifference(this, t);
 	}
 	/**
@@ -211,8 +211,8 @@ export abstract class SolidType {
 
 		return this.isSubtypeOf_do(t)
 	}
-	public isSubtypeOf_do(t: SolidType): boolean { // NOTE: should be protected, but needs to be public because need to implement in SolidObject
-		return !this.isBottomType && !!this.values.size // these checks are needed because this is called by `SolidObject.isSubtypeOf_do`
+	protected isSubtypeOf_do(t: SolidType): boolean {
+		return !this.isBottomType && !!this.values.size // these checks are needed in cases of `obj` and `void`, which don’t store values
 			&& [...this.values].every((v) => t.includes(v));
 	}
 	/**
@@ -265,7 +265,7 @@ export class SolidTypeInterface extends SolidType {
 	 * The *intersection* of types `S` and `T` is the *union* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type intersection is taken.
 	 */
-	override intersect_do(t: SolidTypeInterface): SolidTypeInterface {
+	protected override intersect_do(t: SolidTypeInterface): SolidTypeInterface {
 		const props: Map<string, SolidType> = new Map([...this.properties]);
 		;[...t.properties].forEach(([name, type_]) => {
 			props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_)
@@ -276,7 +276,7 @@ export class SolidTypeInterface extends SolidType {
 	 * The *union* of types `S` and `T` is the *intersection* of the set of properties on `T` with the set of properties on `S`.
 	 * If any properties disagree on type, their type union is taken.
 	 */
-	override union_do(t: SolidTypeInterface): SolidTypeInterface {
+	protected override union_do(t: SolidTypeInterface): SolidTypeInterface {
 		const props: Map<string, SolidType> = new Map();
 		;[...this.properties].forEach(([name, type_]) => {
 			if (t.properties.has(name)) {
@@ -290,7 +290,7 @@ export class SolidTypeInterface extends SolidType {
 	 * and for each of those properties `#prop`, the type of `S#prop` is a subtype of `T#prop`.
 	 * In other words, `S` is a subtype of `T` if the set of properties on `T` is a subset of the set of properties on `S`.
 	 */
-	override isSubtypeOf_do(t: SolidTypeInterface) {
+	protected override isSubtypeOf_do(t: SolidTypeInterface) {
 		return [...t.properties].every(([name, type_]) =>
 			this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
 		)
@@ -352,10 +352,10 @@ class SolidTypeVoid extends SolidType {
 	override includes(_v: SolidObject): boolean {
 		return false;
 	}
-	override intersect_do(_t: SolidType): SolidType {
+	protected override intersect_do(_t: SolidType): SolidType {
 		return SolidType.NEVER;
 	}
-	override isSubtypeOf_do(_t: SolidType): boolean {
+	protected override isSubtypeOf_do(_t: SolidType): boolean {
 		return false;
 	}
 	override equals(t: SolidType): boolean {

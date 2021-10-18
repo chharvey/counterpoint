@@ -33,7 +33,7 @@ export class SolidTypeSet extends SolidType {
 		return v instanceof SolidSet && v.toType().isSubtypeOf(this);
 	}
 
-	override isSubtypeOf_do(t: SolidType): boolean {
+	protected override isSubtypeOf_do(t: SolidType): boolean {
 		return t.equals(SolidType.OBJ) || (
 			t instanceof SolidTypeSet
 			&& ((t.isMutable)

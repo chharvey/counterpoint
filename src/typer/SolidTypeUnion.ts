@@ -44,14 +44,14 @@ export class SolidTypeUnion extends SolidType {
 	 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
 	 *     |  (B \| C)  & A == (B  & A) \| (C  & A)
 	 */
-	override intersect_do(t: SolidType): SolidType {
+	protected override intersect_do(t: SolidType): SolidType {
 		return this.left.intersect(t).union(this.right.intersect(t));
 	}
-	override subtract_do(t: SolidType): SolidType {
+	protected override subtract_do(t: SolidType): SolidType {
 		/** 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
 		return this.left.subtract(t).union(this.right.subtract(t));
 	}
-	override isSubtypeOf_do(t: SolidType): boolean {
+	protected override isSubtypeOf_do(t: SolidType): boolean {
 		/** 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.left.isSubtypeOf(t) && this.right.isSubtypeOf(t)
 	}

@@ -35,7 +35,7 @@ export class SolidTypeMap extends SolidType {
 		return v instanceof SolidMap && v.toType().isSubtypeOf(this);
 	}
 
-	override isSubtypeOf_do(t: SolidType): boolean {
+	protected override isSubtypeOf_do(t: SolidType): boolean {
 		return t.equals(SolidType.OBJ) || (
 			t instanceof SolidTypeMap
 			&& ((t.isMutable)

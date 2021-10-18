@@ -63,7 +63,7 @@ export class SolidTypeRecord extends SolidType {
 		return v instanceof SolidRecord && v.toType().isSubtypeOf(this);
 	}
 
-	override isSubtypeOf_do(t: SolidType): boolean {
+	protected override isSubtypeOf_do(t: SolidType): boolean {
 		return t.equals(SolidType.OBJ) || (
 			t instanceof SolidTypeRecord
 			&& this.count[0] >= t.count[0]

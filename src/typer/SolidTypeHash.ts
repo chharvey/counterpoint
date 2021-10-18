@@ -37,7 +37,7 @@ export class SolidTypeHash extends SolidType {
 		);
 	}
 
-	override isSubtypeOf_do(t: SolidType): boolean {
+	protected override isSubtypeOf_do(t: SolidType): boolean {
 		return t.equals(SolidType.OBJ) || (
 			t instanceof SolidTypeHash
 			&& ((t.isMutable)

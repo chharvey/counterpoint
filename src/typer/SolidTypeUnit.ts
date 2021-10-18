@@ -26,7 +26,7 @@ export class SolidTypeUnit extends SolidType {
 	override includes(v: SolidObject): boolean {
 		return this.value.identical(v);
 	}
-	override isSubtypeOf_do(t: SolidType): boolean {
-		return t instanceof Function && this.value instanceof t || t.includes(this.value);
+	protected override isSubtypeOf_do(t: SolidType): boolean {
+		return t.includes(this.value);
 	}
 }
