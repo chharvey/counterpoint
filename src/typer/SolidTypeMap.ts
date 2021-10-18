@@ -20,7 +20,7 @@ export class SolidTypeMap extends SolidType {
 		readonly consequenttypes: SolidType,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, SolidMap.values);
+		super(is_mutable, new Set([new SolidMap()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -36,7 +36,7 @@ export class SolidTypeMap extends SolidType {
 	}
 
 	override isSubtypeOf_do(t: SolidType): boolean {
-		return t.equals(SolidObject) || (
+		return t.equals(SolidType.OBJ) || (
 			t instanceof SolidTypeMap
 			&& ((t.isMutable)
 				? this.isMutable && this.antecedenttypes.equals(t.antecedenttypes) && this.consequenttypes.equals(t.consequenttypes)

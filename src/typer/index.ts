@@ -4,7 +4,13 @@ export * from './SolidType.js';
 export * from './SolidTypeIntersection.js';
 export * from './SolidTypeUnion.js';
 export * from './SolidTypeDifference.js';
-export * from './SolidTypeConstant.js';
+export * from './SolidTypeUnit.js';
+
+export * from './SolidTypeObject.js';
+export * from './SolidTypeBoolean.js';
+export * from './SolidTypeInteger.js';
+export * from './SolidTypeFloat.js';
+export * from './SolidTypeString.js';
 
 export * from './SolidTypeTuple.js';
 export * from './SolidTypeRecord.js';

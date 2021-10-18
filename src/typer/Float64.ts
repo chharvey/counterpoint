@@ -1,5 +1,4 @@
 import * as xjs from 'extrajs'
-import type {SolidType} from './SolidType.js';
 import type {SolidObject} from './SolidObject.js';
 import {SolidNumber} from './SolidNumber.js';
 
@@ -10,12 +9,6 @@ import {SolidNumber} from './SolidNumber.js';
  * @final
  */
 export class Float64 extends SolidNumber<Float64> {
-	static override toString(): string {
-		return 'float';
-	}
-	static override values: SolidType['values'] = new Set([new Float64(0.0)])
-
-
 	constructor (private readonly data: number = 0) {
 		super()
 		xjs.Number.assertType(this.data, xjs.NumericType.FINITE);

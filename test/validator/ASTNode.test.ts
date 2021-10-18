@@ -3,7 +3,7 @@ import {
 	Operator,
 	// {ASTNodeKey, ...} as AST,
 	Validator,
-	Int16,
+	SolidType,
 	INST,
 	Builder,
 	ReferenceError01,
@@ -296,7 +296,7 @@ describe('ASTNodeSolid', () => {
 								],
 							},
 							{cons: TypeError01, message: 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'},
-							{cons: TypeError03, message: `Expression of type ${ typeConstFloat(4.2) } is not assignable to type ${ Int16 }.`},
+							{cons: TypeError03, message: `Expression of type ${ typeConstFloat(4.2) } is not assignable to type ${ SolidType.INT }.`},
 						],
 					});
 					return true;

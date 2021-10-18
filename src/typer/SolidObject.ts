@@ -1,5 +1,4 @@
 import {SolidString} from './index.js';
-import {SolidType} from './SolidType.js';
 
 
 
@@ -10,52 +9,6 @@ import {SolidType} from './SolidType.js';
  * - Collection
  */
 export abstract class SolidObject {
-	/** @implements Object */
-	static toString(): string {
-		return 'obj';
-	}
-	/** @implements SolidType */
-	static isBottomType: SolidType['isBottomType'] = false;
-	/** @implements SolidType */
-	static isTopType: SolidType['isTopType'] = false;
-	/** @implements SolidType */
-	static isMutable: SolidType['isMutable'] = false;
-	/** @implements SolidType */
-	static values: SolidType['values'] = new Set();
-	/** @implements SolidType */
-	static hasMutable: SolidType['hasMutable'] = false;
-	/** @implements SolidType */
-	static includes(v: SolidObject): ReturnType<SolidType['includes']> {
-		return v instanceof this/*static*/
-	}
-	/** @implements SolidType */
-	static intersect: SolidType['intersect'] = SolidType.prototype.intersect;
-	/** @implements SolidType */
-	static intersect_do: SolidType['intersect_do'] = SolidType.prototype.intersect_do;
-	/** @implements SolidType */
-	static union: SolidType['union'] = SolidType.prototype.union;
-	/** @implements SolidType */
-	static union_do: SolidType['union_do'] = SolidType.prototype.union_do;
-	/** @implements SolidType */
-	static subtract: SolidType['subtract'] = SolidType.prototype.subtract;
-	/** @implements SolidType */
-	static subtract_do: SolidType['subtract_do'] = SolidType.prototype.subtract_do;
-	/** @implements SolidType */
-	static isSubtypeOf: SolidType['isSubtypeOf'] = SolidType.prototype.isSubtypeOf;
-	/** @implements SolidType */
-	static isSubtypeOf_do(t: SolidType): ReturnType<SolidType['isSubtypeOf_do']> {
-		return (t instanceof Function)
-			? this/*static*/.prototype instanceof t
-			: SolidType.prototype.isSubtypeOf_do.call(this, t);
-	}
-	/** @implements SolidType */
-	static equals: SolidType['equals'] = SolidType.prototype.equals;
-	/** @implements SolidType */
-	static mutableOf: SolidType['mutableOf'] = SolidType.prototype.mutableOf;
-	/** @implements SolidType */
-	static immutableOf: SolidType['immutableOf'] = SolidType.prototype.immutableOf;
-
-
 	/**
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value

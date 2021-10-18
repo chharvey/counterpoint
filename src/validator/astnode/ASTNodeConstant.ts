@@ -6,7 +6,7 @@ import {
 	Keyword,
 	TOKEN,
 	SolidType,
-	SolidTypeConstant,
+	SolidTypeUnit,
 	SolidObject,
 	SolidNull,
 	SolidBoolean,
@@ -51,7 +51,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		return INST.InstructionConst.fromCPValue(this.fold(builder.validator), to_float);
 	}
 	protected override type_do(_validator: Validator): SolidType {
-		return new SolidTypeConstant(this.value);
+		return new SolidTypeUnit(this.value);
 	}
 	protected override fold_do(_validator: Validator): SolidObject {
 		if (this.value instanceof SolidString && !Dev.supports('stringConstant-assess')) {

@@ -2,15 +2,11 @@ import * as assert from 'assert';
 import {
 	// {ASTNodeKey, ...} as AST,
 	Validator,
+	SolidType,
 	SolidTypeList,
 	SolidTypeHash,
 	SolidTypeSet,
 	SolidTypeMap,
-	SolidNull,
-	SolidBoolean,
-	Int16,
-	Float64,
-	SolidString,
 	TypeError05,
 	TypeError06,
 } from '../../src/index.js';
@@ -30,17 +26,17 @@ describe('ASTNodeTypeCall', () => {
 					`Map.<int, float>`,
 				].map((src) => AST.ASTNodeTypeCall.fromSource(src).eval(validator)),
 				[
-					new SolidTypeList(SolidNull),
-					new SolidTypeHash(SolidBoolean),
-					new SolidTypeSet(SolidString),
-					new SolidTypeMap(Int16, Float64),
+					new SolidTypeList(SolidType.NULL),
+					new SolidTypeHash(SolidType.BOOL),
+					new SolidTypeSet(SolidType.STR),
+					new SolidTypeMap(SolidType.INT, SolidType.FLOAT),
 				],
 			);
 		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeTypeCall.fromSource(`Map.<int>`).eval(validator),
-				new SolidTypeMap(Int16, Int16),
+				new SolidTypeMap(SolidType.INT, SolidType.INT),
 			);
 		});
 		it('throws if base is not an ASTNodeTypeAlias.', () => {

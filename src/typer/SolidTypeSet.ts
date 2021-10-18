@@ -18,7 +18,7 @@ export class SolidTypeSet extends SolidType {
 		readonly types: SolidType,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, SolidSet.values);
+		super(is_mutable, new Set([new SolidSet()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -34,7 +34,7 @@ export class SolidTypeSet extends SolidType {
 	}
 
 	override isSubtypeOf_do(t: SolidType): boolean {
-		return t.equals(SolidObject) || (
+		return t.equals(SolidType.OBJ) || (
 			t instanceof SolidTypeSet
 			&& ((t.isMutable)
 				? this.isMutable && this.types.equals(t.types)

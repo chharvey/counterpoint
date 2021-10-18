@@ -40,7 +40,7 @@ export class SolidTypeRecord extends SolidType {
 		private readonly propertytypes: ReadonlyMap<bigint, TypeEntry> = new Map(),
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, SolidRecord.values);
+		super(is_mutable, new Set([new SolidRecord()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -64,7 +64,7 @@ export class SolidTypeRecord extends SolidType {
 	}
 
 	override isSubtypeOf_do(t: SolidType): boolean {
-		return t.equals(SolidObject) || (
+		return t.equals(SolidType.OBJ) || (
 			t instanceof SolidTypeRecord
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)

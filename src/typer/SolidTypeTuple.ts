@@ -41,7 +41,7 @@ export class SolidTypeTuple extends SolidType {
 		private readonly types: readonly TypeEntry[] = [],
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, SolidTuple.values);
+		super(is_mutable, new Set([new SolidTuple()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -65,7 +65,7 @@ export class SolidTypeTuple extends SolidType {
 	}
 
 	override isSubtypeOf_do(t: SolidType): boolean {
-		return t.equals(SolidObject) || (
+		return t.equals(SolidType.OBJ) || (
 			t instanceof SolidTypeTuple
 			&& this.count[0] >= t.count[0]
 			&& (!t.isMutable || this.isMutable)

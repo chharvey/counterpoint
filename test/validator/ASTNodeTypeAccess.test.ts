@@ -3,9 +3,6 @@ import {
 	// {ASTNodeKey, ...} as AST,
 	Validator,
 	SolidType,
-	Int16,
-	Float64,
-	SolidString,
 	TypeError04,
 } from '../../src/index.js';
 import * as AST from '../../src/validator/astnode/index.js'; // HACK
@@ -26,9 +23,9 @@ describe('ASTNodeTypeAccess', () => {
 			typeConstInt(1n),
 			typeConstFloat(2.0),
 			typeConstStr('three'),
-			Int16,
-			Float64,
-			SolidString,
+			SolidType.INT,
+			SolidType.FLOAT,
+			SolidType.STR,
 		];
 		let validator: Validator;
 		let program: AST.ASTNodeGoal;
@@ -95,7 +92,7 @@ describe('ASTNodeTypeAccess', () => {
 					program.children.slice(24, 26).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
 					[
 						typeConstStr('three').union(SolidType.VOID),
-						SolidString.union(SolidType.VOID),
+						SolidType.STR.union(SolidType.VOID),
 					],
 				);
 			});
@@ -117,7 +114,7 @@ describe('ASTNodeTypeAccess', () => {
 					program.children.slice(28, 30).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
 					[
 						typeConstFloat(2.0).union(SolidType.VOID),
-						Float64.union(SolidType.VOID),
+						SolidType.FLOAT.union(SolidType.VOID),
 					],
 				);
 			});

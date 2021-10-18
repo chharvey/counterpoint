@@ -8,7 +8,7 @@ export {
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,
-	SolidTypeConstant,
+	SolidTypeUnit,
 	SolidTypeTuple,
 	SolidTypeRecord,
 	SolidTypeList,

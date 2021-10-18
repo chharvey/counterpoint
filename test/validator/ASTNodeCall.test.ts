@@ -5,6 +5,7 @@ import {
 } from '../../src/validator/index.js';
 import * as AST from '../../src/validator/astnode/index.js'; // HACK
 import {
+	SolidType,
 	SolidTypeList,
 	SolidTypeHash,
 	SolidTypeSet,
@@ -41,10 +42,10 @@ describe('ASTNodeCall', () => {
 					]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type(validator)),
 				[
-					new SolidTypeList(Int16).mutableOf(),
-					new SolidTypeHash(Int16).mutableOf(),
-					new SolidTypeSet(Int16).mutableOf(),
-					new SolidTypeMap(Int16, Float64).mutableOf(),
+					new SolidTypeList(SolidType.INT).mutableOf(),
+					new SolidTypeHash(SolidType.INT).mutableOf(),
+					new SolidTypeSet(SolidType.INT).mutableOf(),
+					new SolidTypeMap(SolidType.INT, SolidType.FLOAT).mutableOf(),
 				],
 			);
 		});
@@ -60,9 +61,9 @@ describe('ASTNodeCall', () => {
 					]));`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type(validator)),
 				[
-					new SolidTypeList(Int16).mutableOf(),
-					new SolidTypeSet(Int16).mutableOf(),
-					new SolidTypeMap(Int16, Float64).mutableOf(),
+					new SolidTypeList(SolidType.INT).mutableOf(),
+					new SolidTypeSet(SolidType.INT).mutableOf(),
+					new SolidTypeMap(SolidType.INT, SolidType.FLOAT).mutableOf(),
 				],
 			);
 		});
@@ -78,20 +79,20 @@ describe('ASTNodeCall', () => {
 					`Map.<int, float>([]);`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type(validator)),
 				[
-					new SolidTypeList(Int16).mutableOf(),
-					new SolidTypeHash(Int16).mutableOf(),
-					new SolidTypeSet(Int16).mutableOf(),
-					new SolidTypeMap(Int16, Float64).mutableOf(),
-					new SolidTypeList(Int16).mutableOf(),
-					new SolidTypeSet(Int16).mutableOf(),
-					new SolidTypeMap(Int16, Float64).mutableOf(),
+					new SolidTypeList(SolidType.INT).mutableOf(),
+					new SolidTypeHash(SolidType.INT).mutableOf(),
+					new SolidTypeSet(SolidType.INT).mutableOf(),
+					new SolidTypeMap(SolidType.INT, SolidType.FLOAT).mutableOf(),
+					new SolidTypeList(SolidType.INT).mutableOf(),
+					new SolidTypeSet(SolidType.INT).mutableOf(),
+					new SolidTypeMap(SolidType.INT, SolidType.FLOAT).mutableOf(),
 				],
 			);
 		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
 				AST.ASTNodeCall.fromSource(`Map.<int>();`).type(validator),
-				new SolidTypeMap(Int16, Int16).mutableOf(),
+				new SolidTypeMap(SolidType.INT, SolidType.INT).mutableOf(),
 			);
 		});
 		it('throws if base is not an ASTNodeVariable.', () => {

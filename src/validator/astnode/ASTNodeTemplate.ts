@@ -41,7 +41,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 		throw new Error('ASTNodeTemplate#build_do not yet supported.');
 	}
 	protected override type_do(_validator: Validator): SolidType {
-		return SolidString
+		return SolidType.STR;
 	}
 	protected override fold_do(validator: Validator): SolidString | null {
 		const values: (SolidObject | null)[] = [...this.children].map((expr) => expr.fold(validator));

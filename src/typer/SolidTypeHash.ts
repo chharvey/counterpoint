@@ -19,7 +19,7 @@ export class SolidTypeHash extends SolidType {
 		readonly types: SolidType,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, SolidHash.values);
+		super(is_mutable, new Set([new SolidHash()]));
 	}
 
 	override get hasMutable(): boolean {
@@ -38,7 +38,7 @@ export class SolidTypeHash extends SolidType {
 	}
 
 	override isSubtypeOf_do(t: SolidType): boolean {
-		return t.equals(SolidObject) || (
+		return t.equals(SolidType.OBJ) || (
 			t instanceof SolidTypeHash
 			&& ((t.isMutable)
 				? this.isMutable && this.types.equals(t.types)

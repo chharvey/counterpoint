@@ -5,7 +5,6 @@ import {
 	SymbolStructureType,
 	Validator,
 	SolidType,
-	Int16,
 	INST,
 	Builder,
 	AssignmentError01,
@@ -49,9 +48,9 @@ describe('ASTNodeDeclarationType', () => {
 			`);
 			goal.varCheck(validator);
 			goal.typeCheck(validator);
-			assert.strictEqual(
+			assert.deepStrictEqual(
 				(validator.getSymbolInfo(256n) as SymbolStructureType).typevalue,
-				Int16,
+				SolidType.INT,
 			);
 		});
 	});
