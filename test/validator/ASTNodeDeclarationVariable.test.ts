@@ -128,6 +128,21 @@ describe('ASTNodeDeclarationVariable', () => {
 				return true;
 			});
 		});
+		it('allows assigning a tuple/record collection literal to a corresponding list/hash type.', () => {
+			const validator: Validator = new Validator();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				let t1: mutable 42[]  = [42];
+				let r1: mutable [:42] = [x= 42];
+
+				let t2: mutable (42 | 4.3)[] = [42];
+				let r2: mutable [:42 | 4.3]  = [x= 42];
+
+				let t3: mutable [int]  = [42];
+				let r3: mutable [:int] = [x= 42];
+			`);
+			goal.varCheck(validator);
+			goal.typeCheck(validator); // assert does not throw
+		});
 		it('always sets `SymbolStructure#type`.', () => {
 			[
 				CONFIG_DEFAULT,
