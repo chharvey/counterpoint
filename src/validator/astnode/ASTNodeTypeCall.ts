@@ -1,6 +1,3 @@
-import type {
-	NonemptyArray,
-} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
 	SolidType,
@@ -10,6 +7,7 @@ import {
 	SolidTypeMap,
 	TypeError05,
 	TypeError06,
+	NonemptyArray,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,

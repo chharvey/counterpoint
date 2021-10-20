@@ -49,6 +49,9 @@ export {
 	NanError02,
 } from '../index.js';
 export {
+	NonemptyArray,
+} from '../lib/index.js';
+export {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,

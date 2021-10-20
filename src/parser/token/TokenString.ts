@@ -1,10 +1,10 @@
 import type {
-	NonemptyArray,
 	Char,
 } from '@chharvey/parser';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import {
+	NonemptyArray,
 	CodeUnit,
 	SolidConfig,
 	CONFIG_DEFAULT,

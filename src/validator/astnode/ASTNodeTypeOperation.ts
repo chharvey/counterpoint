@@ -1,9 +1,9 @@
 import type {
 	ParseNode,
-	NonemptyArray,
 } from '@chharvey/parser';
 import * as assert from 'assert';
 import {
+	NonemptyArray,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ValidTypeOperator,

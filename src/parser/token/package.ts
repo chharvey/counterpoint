@@ -8,6 +8,7 @@ export {
 	LexError03,
 	LexError04,
 	LexError05,
+	NonemptyArray,
 	CodeUnit,
 	SolidConfig,
 	CONFIG_DEFAULT,

@@ -1,8 +1,8 @@
 import type {
-	NonemptyArray,
 	Char,
 } from '@chharvey/parser';
 import {
+	NonemptyArray,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	RadixType,

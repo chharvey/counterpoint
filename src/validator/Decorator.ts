@@ -1,10 +1,9 @@
 import {
-	NonemptyArray,
 	Token,
 	ParseNode,
 } from '@chharvey/parser';
-
 import {
+	NonemptyArray,
 	Punctuator,
 	Keyword,
 	TOKEN,

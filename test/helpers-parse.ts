@@ -1,7 +1,6 @@
 import * as assert from 'assert'
 import {
 	NonemptyArray,
-	Filebound,
 	Token,
 	TokenFilebound,
 	ParseNode,
@@ -11,6 +10,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../src/core/index.js';
 import {
+	Filebound,
 	Punctuator,
 	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
 	PARSENODE,

@@ -47,6 +47,7 @@ export {
 	MutabilityError01,
 	NanError01,
 	NanError02,
+	NonemptyArray,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,

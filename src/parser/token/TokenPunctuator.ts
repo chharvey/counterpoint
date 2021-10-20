@@ -1,8 +1,8 @@
 import type {
-	NonemptyArray,
 	Char,
 } from '@chharvey/parser';
 import {
+	NonemptyArray,
 	Punctuator,
 } from './package.js';
 import {TokenSolid} from './TokenSolid.js';

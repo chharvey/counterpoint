@@ -1,6 +1,4 @@
 import {
-	NonemptyArray,
-	Filebound,
 	Char,
 	Token,
 	Lexer,
@@ -10,11 +8,15 @@ import {
 	LexError03,
 	LexError04,
 	LexError05,
+	NonemptyArray,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
 } from './package.js';
-import {TemplatePosition} from './utils-public.js';
+import {
+	Filebound,
+	TemplatePosition,
+} from './utils-public.js';
 import type {RadixType} from './utils-private.js';
 import {
 	Punctuator,

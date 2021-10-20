@@ -1,3 +1,6 @@
+/** A non-empty array. */
+export type NonemptyArray<T> = [T, ...T[]];
+
 /**
  * A half-closed range of integers from min (inclusive) to max (exclusive).
  * @example

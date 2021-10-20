@@ -1,10 +1,10 @@
 import {
-	Filebound,
 	Token,
 	Terminal,
 } from '@chharvey/parser';
 import {
 	Util,
+	Filebound,
 	maybe,
 	maybeA,
 	TOKEN,

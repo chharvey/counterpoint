@@ -1,9 +1,9 @@
 import type {
-	NonemptyArray,
 	Char,
 } from '@chharvey/parser';
 import utf8 from 'utf8';
 import type {
+	NonemptyArray,
 	CodeUnit,
 	TemplatePosition,
 } from './package.js';

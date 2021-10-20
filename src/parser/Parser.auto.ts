@@ -5,12 +5,12 @@
 | If you need to make updates, make them there.
 /----------------------------------------------------------------*/
 import {
+	NonemptyArray,
 	SolidConfig,
 	CONFIG_DEFAULT,
 } from './package.js';
 
 import {
-	NonemptyArray,
 	Token,
 	ParseNode,
 	Parser,

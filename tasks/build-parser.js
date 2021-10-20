@@ -15,10 +15,19 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 		| If you need to make updates, make them there.
 		/----------------------------------------------------------------*/
 		import {
+			NonemptyArray,
 			SolidConfig,
 			CONFIG_DEFAULT,
 		} from './package.js';
 		${ generate(await grammar_solid, 'Solid')
+			.replace(xjs.String.dedent`
+				import {
+					NonemptyArray,
+					Token,
+			`, xjs.String.dedent`
+				import {
+					Token,
+			`)
 			.replace(`import {LEXER} from './Lexer';`, `import {LexerSolid, LEXER} from './Lexer.js';`)
 			.replace(`import * as TERMINAL from './Terminal';`, `import * as TERMINAL from './terminal/index.js';`)
 			.replace(/export const PARSER: Parser<ParseNodeGoal> = new Parser<ParseNodeGoal>\((.*)\);/s, xjs.String.dedent`
