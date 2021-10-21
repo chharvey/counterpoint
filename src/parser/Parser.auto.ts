@@ -9,14 +9,16 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 } from './package.js';
+import {
+	Grammar,
+	GrammarSymbol,
+} from './Grammar.js';
 
 import {
 	Token,
 	ParseNode,
 	Parser,
 	Production,
-	Grammar,
-	GrammarSymbol,
 } from '@chharvey/parser';
 import {LexerSolid, LEXER} from './Lexer.js';
 import * as TERMINAL from './terminal/index.js';
@@ -1353,6 +1355,7 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 	constructor (config: SolidConfig = CONFIG_DEFAULT) {
 		super(
 	(config === CONFIG_DEFAULT) ? LEXER : new LexerSolid(config),
+	// @ts-expect-error
 	GRAMMAR,
 	new Map<Production, typeof ParseNode>([
 		[ProductionWord.instance, ParseNodeWord],

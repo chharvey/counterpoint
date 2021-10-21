@@ -1,8 +1,8 @@
-import type {GrammarSymbol} from '@chharvey/parser';
 import {
 	Util,
 } from './package.js';
 import {Filebound} from './utils-public.js';
+import type {GrammarSymbol} from './Grammar.js';
 
 
 
