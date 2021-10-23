@@ -3,10 +3,10 @@ import {
 	Production,
 } from '@chharvey/parser';
 import type {Rule} from '@chharvey/parser/dist/grammar/Rule.js';
-import {Configuration} from '@chharvey/parser/dist/grammar/Configuration.js';
 import * as xjs from 'extrajs';
 import type {NonemptyArray} from './package.js';
 import type {EBNFObject} from './utils-public.js';
+import {Configuration} from './Configuration.js';
 
 
 
@@ -15,7 +15,7 @@ export type GrammarSymbol =
 	| Production
 ;
 
-type GrammarTerminal =
+export type GrammarTerminal =
 	| string
 	| Terminal
 ;
