@@ -1,5 +1,6 @@
 import {
 	Token,
+	TokenFilebound,
 	TokenWhitespace,
 	LexError01,
 	LexError02,
@@ -11,12 +12,14 @@ import {
 	Dev,
 } from '../../src/core/index.js';
 import {
+	Filebound,
 	TemplatePosition,
 	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
 	LexerSolid,
 	LEXER,
 } from '../../src/parser/index.js'
 import * as TOKEN from '../../src/parser/token/index.js'; // HACK
+import {Lexer} from '../../src/parser/Lexer.js';
 import {
 	LexError03,
 	LexError04,
@@ -36,7 +39,7 @@ describe('LexerSolid', () => {
 			})
 		})
 
-		context('unfinished tokens.', () => {
+		context('throws when token is unfinished.', () => {
 			;[...new Map<string, string[]>([
 				['line comment', [`
 					% line \u0003 comment containing U+0003 END OF TEXT
@@ -79,6 +82,20 @@ describe('LexerSolid', () => {
 				})
 			})
 		})
+
+		it('recognizes `TokenFilebound` conditions.', () => {
+			const tokens: Token[] = [...new Lexer().generate(` `)];
+			assert.ok(tokens[0] instanceof TokenFilebound);
+			assert.strictEqual(tokens[0].source, Filebound.SOT);
+			assert.ok(tokens[tokens.length - 1] instanceof TokenFilebound);
+			assert.strictEqual(tokens[tokens.length - 1].source, Filebound.EOT);
+		});
+
+		it('recognizes `TokenWhitespace` conditions.', () => {
+			[...new Lexer().generate(TokenWhitespace.CHARS.join(''))].slice(1, -1).forEach((value) => {
+				assert.ok(value instanceof TokenWhitespace);
+			});
+		});
 
 		context('recgnizes `TokenComment` conditions.', () => {
 			const LEXER_COMMENTS_OFF: LexerSolid = new LexerSolid({

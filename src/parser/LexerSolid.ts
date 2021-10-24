@@ -1,7 +1,6 @@
 import {
 	Char,
 	Token,
-	Lexer,
 	LexError02,
 } from '@chharvey/parser';
 import {
@@ -22,6 +21,7 @@ import {
 	Punctuator,
 } from './Punctuator.js';
 import * as TOKEN from './token/index.js';
+import {Lexer} from './Lexer.js';
 
 
 
