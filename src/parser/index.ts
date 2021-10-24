@@ -5,7 +5,7 @@ export {Keyword} from './Keyword.js';
 
 export * from './token/index.js';
 
-export * from './Lexer.js';
+export * from './LexerSolid.js';
 
 export {
 	ParserSolid,

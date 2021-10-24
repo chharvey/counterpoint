@@ -20,7 +20,7 @@ import {
 	Token,
 	ParseNode,
 } from '@chharvey/parser';
-import {LexerSolid, LEXER} from './Lexer.js';
+import {LexerSolid, LEXER} from './LexerSolid.js';
 import * as TERMINAL from './terminal/index.js';
 
 export class ProductionWord extends Production {
