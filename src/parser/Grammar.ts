@@ -2,10 +2,10 @@ import {
 	Terminal,
 	Production,
 } from '@chharvey/parser';
-import type {Rule} from '@chharvey/parser/dist/grammar/Rule.js';
 import * as xjs from 'extrajs';
 import type {NonemptyArray} from './package.js';
 import type {EBNFObject} from './utils-public.js';
+import type {Rule} from './Rule.js';
 import {Configuration} from './Configuration.js';
 
 

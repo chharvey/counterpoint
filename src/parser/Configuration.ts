@@ -2,9 +2,9 @@ import {
 	Token,
 	Terminal,
 } from '@chharvey/parser';
-import type {Rule} from '@chharvey/parser/dist/grammar/Rule.js';
 import * as xjs from 'extrajs';
 import {stringOfSymbols} from './utils-private.js';
+import type {Rule} from './Rule.js';
 import type {
 	GrammarSymbol,
 	GrammarTerminal,
