@@ -1,9 +1,9 @@
-import {
+import type {
 	Token,
-	Terminal,
 } from '@chharvey/parser';
 import * as xjs from 'extrajs';
 import {stringOfSymbols} from './utils-private.js';
+import {Terminal} from './terminal/index.js';
 import type {Rule} from './Rule.js';
 import type {
 	GrammarSymbol,

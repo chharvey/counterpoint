@@ -1,9 +1,7 @@
-import {
-	Terminal,
-} from '@chharvey/parser';
 import * as xjs from 'extrajs';
 import type {NonemptyArray} from './package.js';
 import type {EBNFObject} from './utils-public.js';
+import {Terminal} from './terminal/index.js';
 import {Production} from './Production.js';
 import type {Rule} from './Rule.js';
 import {Configuration} from './Configuration.js';

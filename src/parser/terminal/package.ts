@@ -13,6 +13,7 @@ export {
 } from '../utils-public.js';
 export {
 	RadixType,
+	titleToMacro,
 	maybe,
 	maybeA,
 } from '../utils-private.js';
