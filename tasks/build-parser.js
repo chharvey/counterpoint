@@ -19,6 +19,7 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 			SolidConfig,
 			CONFIG_DEFAULT,
 		} from './package.js';
+		import {Production} from './Production.js';
 		import {
 			Grammar,
 			GrammarSymbol,
@@ -46,7 +47,6 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 					Token,
 					ParseNode,
 					Parser,
-					Production,
 				} from '@chharvey/parser';
 			`)
 			.replace(`import {LEXER} from './Lexer';`, `import {LexerSolid, LEXER} from './Lexer.js';`)

@@ -9,6 +9,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 } from './package.js';
+import {Production} from './Production.js';
 import {
 	Grammar,
 	GrammarSymbol,
@@ -18,7 +19,6 @@ import {
 	Token,
 	ParseNode,
 	Parser,
-	Production,
 } from '@chharvey/parser';
 import {LexerSolid, LEXER} from './Lexer.js';
 import * as TERMINAL from './terminal/index.js';
