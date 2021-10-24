@@ -1,8 +1,10 @@
 import {
 	Token,
+	TokenFilebound,
 	ParseError01,
 } from '@chharvey/parser';
 import * as assert from 'assert'
+import * as xjs from 'extrajs';
 import {
 	Dev,
 } from '../../src/core/index.js';
@@ -14,10 +16,54 @@ import {
 	PARSER,
 } from '../../src/parser/index.js';
 import * as TOKEN from '../../src/parser/token/index.js'; // HACK
+import {Parser} from '../../src/parser/Parser.js';
 import {
 	assert_arrayLength,
 } from '../assert-helpers.js';
 import * as h from '../helpers-parse.js';
+
+
+
+describe('Parser', () => {
+	describe('.fromJSON', () => {
+		it('returns a string representing a new subclass of Parser.', () => {
+			assert.strictEqual(Parser.fromJSON(JSON.parse(`
+				[
+					{
+						"name": "Unit",
+						"defn": [
+							[{"term":"NUMBER"}],
+							["(", {"term":"OPERATOR"}, {"prod":"Unit"}, {"prod":"Unit"}, ")"]
+						]
+					},
+					{
+						"name": "Goal",
+						"defn": [
+							["\\u0002", "\\u0003"],
+							["\\u0002", {"prod":"Unit"}, "\\u0003"]
+						]
+					}
+				]
+			`)), (xjs.String.dedent`
+				export const PARSER: Parser<ParseNodeGoal> = new Parser<ParseNodeGoal>(
+					LEXER,
+					GRAMMAR,
+					new Map<Production, typeof ParseNode>([
+						[ProductionUnit.instance, ParseNodeUnit],
+						[ProductionGoal.instance, ParseNodeGoal],
+					]),
+				);
+			`));
+		});
+	});
+
+
+	describe('#parse', () => {
+		it('rejects unexpected tokens.', () => {
+			assert.throws(() => PARSER.parse(`(+ 3 4 5);`), ParseError01);
+		});
+	});
+});
 
 
 
@@ -854,6 +900,20 @@ describe('ParserSolid', () => {
 				assert.strictEqual(token.source, Punctuator.ENDSTAT)
 			})
 		})
+
+		context('Goal ::= #x02 #x03', () => {
+			it('returns only file bounds.', () => {
+				/*
+					<Goal>
+						<FILEBOUND.../>...</FILEBOUND>
+						<FILEBOUND.../>...</FILEBOUND>
+					</Goal>
+				*/
+				const goal: PARSENODE.ParseNodeGoal = PARSER.parse(``);
+				assert.strictEqual(goal.children.length, 2);
+				goal.children.forEach((c) => assert.ok(c instanceof TokenFilebound));
+			});
+		});
 
 		context('Goal ::= #x02 Statement* #x03', () => {
 			it('parses multiple statements.', () => {

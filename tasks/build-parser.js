@@ -24,6 +24,7 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 			Grammar,
 			GrammarSymbol,
 		} from './Grammar.js';
+		import {Parser} from './Parser.js';
 		${ generate(await grammar_solid, 'Solid')
 			.replace(xjs.String.dedent`
 				import {
@@ -46,7 +47,6 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 				import {
 					Token,
 					ParseNode,
-					Parser,
 				} from '@chharvey/parser';
 			`)
 			.replace(`import {LEXER} from './Lexer';`, `import {LexerSolid, LEXER} from './Lexer.js';`)
@@ -60,7 +60,6 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 				export const PARSER: ParserSolid = new ParserSolid();
 			`)
 			.replace(`LEXER,`, `(config === CONFIG_DEFAULT) ? LEXER : new LexerSolid(config),`)
-			.replace(`GRAMMAR,`, `// @ts-expect-error\n\tGRAMMAR,`)
 		}
 	`);
 })().catch((err) => {

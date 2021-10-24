@@ -14,11 +14,11 @@ import {
 	Grammar,
 	GrammarSymbol,
 } from './Grammar.js';
+import {Parser} from './Parser.js';
 
 import {
 	Token,
 	ParseNode,
-	Parser,
 } from '@chharvey/parser';
 import {LexerSolid, LEXER} from './Lexer.js';
 import * as TERMINAL from './terminal/index.js';
@@ -1355,7 +1355,6 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 	constructor (config: SolidConfig = CONFIG_DEFAULT) {
 		super(
 	(config === CONFIG_DEFAULT) ? LEXER : new LexerSolid(config),
-	// @ts-expect-error
 	GRAMMAR,
 	new Map<Production, typeof ParseNode>([
 		[ProductionWord.instance, ParseNodeWord],
