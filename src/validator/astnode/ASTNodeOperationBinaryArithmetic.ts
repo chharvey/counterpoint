@@ -1,23 +1,21 @@
-import type {
-	ParseNode,
-} from '@chharvey/parser';
 import * as assert from 'assert';
 import * as xjs from 'extrajs'
 import {
-	TypeError01,
-	NanError01,
-	NanError02,
-	SolidConfig,
-	CONFIG_DEFAULT,
 	SolidType,
 	SolidObject,
 	SolidNumber,
 	Int16,
 	INST,
 	Builder,
+	TypeError01,
+	NanError01,
+	NanError02,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	ParseNode,
+	Validator,
 	Operator,
 	ValidOperatorArithmetic,
-	Validator,
 } from './package.js';
 import {
 	bothNumeric,

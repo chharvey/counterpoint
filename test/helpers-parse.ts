@@ -3,7 +3,6 @@ import {
 	NonemptyArray,
 	Token,
 	TokenFilebound,
-	ParseNode,
 } from '@chharvey/parser';
 import {
 	SolidConfig,
@@ -13,6 +12,7 @@ import {
 	Filebound,
 	Punctuator,
 	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
+	ParseNode,
 	PARSENODE,
 	ParserSolid,
 	PARSER,

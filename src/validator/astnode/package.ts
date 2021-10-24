@@ -53,9 +53,10 @@ export {
 	Dev,
 	Keyword,
 	TOKEN,
+	ParseNode,
+	PARSENODE,
 	ParserSolid,
 	PARSER,
-	PARSENODE,
 } from '../package.js';
 export {
 	Decorator,

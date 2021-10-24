@@ -1,11 +1,11 @@
-import type {ParseNode} from '@chharvey/parser';
 import {
-	SolidConfig,
-	CONFIG_DEFAULT,
-	ParserSolid,
-	PARSER,
 	INST,
 	Builder,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	ParseNode,
+	ParserSolid,
+	PARSER,
 	Decorator,
 } from './package.js';
 import type {Buildable} from './Buildable.js';

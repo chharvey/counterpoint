@@ -1,4 +1,3 @@
-import type {ParseNode} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
 	SolidType,
@@ -8,6 +7,7 @@ import {
 	MutabilityError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
+	ParseNode,
 	Validator,
 	SymbolStructureVar,
 } from './package.js';

@@ -1,12 +1,12 @@
-import {
+import type {
 	Token,
-	ParseNode,
 } from '@chharvey/parser';
 import {
 	NonemptyArray,
 	Punctuator,
 	Keyword,
 	TOKEN,
+	ParseNode,
 	PARSENODE,
 } from './package.js';
 import {

@@ -1,17 +1,17 @@
-import type {ParseNode} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
-	TypeError01,
-	SolidConfig,
-	CONFIG_DEFAULT,
 	SolidType,
 	SolidTypeUnit,
 	SolidObject,
 	SolidBoolean,
 	INST,
 	Builder,
-	Operator,
+	TypeError01,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	ParseNode,
 	Validator,
+	Operator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';

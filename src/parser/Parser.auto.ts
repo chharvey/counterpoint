@@ -14,11 +14,11 @@ import {
 	Grammar,
 	GrammarSymbol,
 } from './Grammar.js';
+import {ParseNode} from './ParseNode.js';
 import {Parser} from './Parser.js';
 
-import {
+import type {
 	Token,
-	ParseNode,
 } from '@chharvey/parser';
 import {LexerSolid, LEXER} from './LexerSolid.js';
 import * as TERMINAL from './terminal/index.js';

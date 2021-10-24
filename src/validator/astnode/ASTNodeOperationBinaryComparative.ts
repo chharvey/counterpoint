@@ -1,11 +1,5 @@
-import type {
-	ParseNode,
-} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
-	TypeError01,
-	SolidConfig,
-	CONFIG_DEFAULT,
 	SolidType,
 	SolidObject,
 	SolidBoolean,
@@ -13,9 +7,13 @@ import {
 	Int16,
 	INST,
 	Builder,
+	TypeError01,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	ParseNode,
+	Validator,
 	Operator,
 	ValidOperatorComparative,
-	Validator,
 } from './package.js';
 import {
 	bothNumeric,

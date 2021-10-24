@@ -1,11 +1,11 @@
-import type {ParseNode} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
+	INST,
+	Builder,
 	AssignmentError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	INST,
-	Builder,
+	ParseNode,
 	Validator,
 	SymbolStructureType,
 } from './package.js';

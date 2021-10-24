@@ -18,4 +18,5 @@ export {
 	CONFIG_DEFAULT,
 	Dev,
 	Util,
+	Serializable,
 } from '../core/index.js';

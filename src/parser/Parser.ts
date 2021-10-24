@@ -2,7 +2,6 @@ import {
 	Token,
 	TokenWhitespace,
 	TokenComment,
-	ParseNode,
 	ParseError01,
 } from '@chharvey/parser';
 import * as xjs from 'extrajs';
@@ -15,6 +14,7 @@ import type {
 	GrammarSymbol,
 	Grammar,
 } from './Grammar.js';
+import {ParseNode} from './ParseNode.js';
 import type {Lexer} from './Lexer.js';
 
 

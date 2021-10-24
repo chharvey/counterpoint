@@ -1,11 +1,11 @@
 import {
 	Token,
-	ParseNode,
 	ASTNode,
 } from '@chharvey/parser';
 import {
 	SolidType,
 	TypeError03,
+	ParseNode,
 	Validator,
 } from './package.js';
 import {

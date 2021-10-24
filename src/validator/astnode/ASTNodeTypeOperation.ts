@@ -1,11 +1,9 @@
-import type {
-	ParseNode,
-} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
 	NonemptyArray,
 	SolidConfig,
 	CONFIG_DEFAULT,
+	ParseNode,
 	ValidTypeOperator,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
