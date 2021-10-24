@@ -1,10 +1,12 @@
-import type {Token} from '@chharvey/parser';
 import * as assert from 'assert';
+import {
+	LEXER,
+	Token,
+} from '../../src/index.js';
 import {
 	TerminalInteger,
 	TerminalString,
 } from '../../src/parser/terminal/index.js';
-import {LEXER} from '../../src/index.js';
 
 
 

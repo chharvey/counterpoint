@@ -1,5 +1,5 @@
-import {Token} from '@chharvey/parser';
 import type {CodeUnit} from './package.js';
+import {Token} from './Token.js';
 
 
 

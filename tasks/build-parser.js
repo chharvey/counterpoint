@@ -24,6 +24,7 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 			Grammar,
 			GrammarSymbol,
 		} from './Grammar.js';
+		import type {Token} from './token/Token.js';
 		import {ParseNode} from './ParseNode.js';
 		import {Parser} from './Parser.js';
 		${ generate(await grammar_solid, 'Solid')
@@ -31,24 +32,13 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 				import {
 					NonemptyArray,
 					Token,
-			`, xjs.String.dedent`
-				import {
-					Token,
-			`)
-			.replace(xjs.String.dedent`
-				import {
-					Token,
 					ParseNode,
 					Parser,
 					Production,
 					Grammar,
 					GrammarSymbol,
 				} from '@chharvey/parser';
-			`, xjs.String.dedent`
-				import type {
-					Token,
-				} from '@chharvey/parser';
-			`)
+			`, '')
 			.replace(`import {LEXER} from './Lexer';`, `import {LexerSolid, LEXER} from './LexerSolid.js';`)
 			.replace(`import * as TERMINAL from './Terminal';`, `import * as TERMINAL from './terminal/index.js';`)
 			.replace(/export const PARSER: Parser<ParseNodeGoal> = new Parser<ParseNodeGoal>\((.*)\);/s, xjs.String.dedent`

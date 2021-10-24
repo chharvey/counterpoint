@@ -1,5 +1,4 @@
 import {
-	Token,
 	ParseError01,
 } from '@chharvey/parser';
 import * as xjs from 'extrajs';
@@ -13,6 +12,7 @@ import type {
 	Grammar,
 } from './Grammar.js';
 import {
+	Token,
 	TokenWhitespace,
 	TokenComment,
 } from './token/index.js';
@@ -132,6 +132,7 @@ export class Parser<GoalNodeType extends ParseNode> {
 				throw new Error(`Reduce-Reduce Conflict:\n${ reductions.map((r) => r.toString()).join('\n') }`);
 			};
 		};
+		// @ts-expect-error
 		throw new ParseError01(this.lookahead);
 	}
 

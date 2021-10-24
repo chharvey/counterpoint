@@ -1,8 +1,6 @@
-import type {
-	Token,
-} from '@chharvey/parser';
 import {
 	TemplatePosition,
+	Token,
 	TOKEN,
 } from './package.js';
 import {TerminalTemplate} from './TerminalTemplate.js';

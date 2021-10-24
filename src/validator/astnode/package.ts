@@ -52,6 +52,7 @@ export {
 	CONFIG_DEFAULT,
 	Dev,
 	Keyword,
+	Token,
 	TOKEN,
 	ParseNode,
 	PARSENODE,

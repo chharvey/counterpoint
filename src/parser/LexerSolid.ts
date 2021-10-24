@@ -1,6 +1,5 @@
 import {
 	Char,
-	Token,
 	LexError02,
 } from '@chharvey/parser';
 import {
@@ -20,6 +19,7 @@ import type {RadixType} from './utils-private.js';
 import {
 	Punctuator,
 } from './Punctuator.js';
+import {Token} from './token/index.js';
 import * as TOKEN from './token/index.js';
 import {Lexer} from './Lexer.js';
 
@@ -202,6 +202,7 @@ export class LexerSolid extends Lexer {
 		const buffer: NonemptyArray<Char> = [...this.advance(BigInt(TOKEN.TokenString.DELIM.length))]; // starting delim
 		while (!this.isDone && !Char.eq(TOKEN.TokenString.DELIM, this.c0)) {
 			if (Char.eq(Filebound.EOT, this.c0)) {
+				// @ts-expect-error
 				throw new LexError02(new Token('STRING', ...buffer));
 			}
 			if (Char.eq(TOKEN.TokenString.ESCAPER, this.c0)) {
@@ -251,6 +252,7 @@ export class LexerSolid extends Lexer {
 					&& !Char.eq(TOKEN.TokenCommentMulti.DELIM_END, this.c0, this.c1)
 				) {
 					if (Char.eq(Filebound.EOT, this.c0)) {
+						// @ts-expect-error
 						throw new LexError02(new Token('STRING', ...buffer));
 					};
 					buffer.push(...this.advance());
@@ -270,6 +272,7 @@ export class LexerSolid extends Lexer {
 					TOKEN.TokenCommentLine.DELIM_END,
 				], this.c0)) {
 					if (Char.eq(Filebound.EOT, this.c0)) {
+						// @ts-expect-error
 						throw new LexError02(new Token('STRING', ...buffer));
 					};
 					buffer.push(...this.advance());
@@ -365,6 +368,7 @@ export class LexerSolid extends Lexer {
 		let delim_end: typeof TOKEN.TokenTemplate.DELIM | typeof TOKEN.TokenTemplate.DELIM_INTERP_START;
 		while (!this.isDone) {
 			if (Char.eq(Filebound.EOT, this.c0)) {
+				// @ts-expect-error
 				throw new LexError02(new Token('TEMPLATE', ...buffer));
 			}
 			if (Char.eq(TOKEN.TokenTemplate.DELIM, this.c0, this.c1, this.c2)) {

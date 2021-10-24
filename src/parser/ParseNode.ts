@@ -1,8 +1,8 @@
-import type {Token} from '@chharvey/parser';
 import * as xjs from 'extrajs';
 import type {Serializable} from './package.js';
 import type {EBNFObject} from './utils-public.js';
 import {stringifyAttributes} from './utils-private.js';
+import type {Token} from './token/index.js';
 
 
 

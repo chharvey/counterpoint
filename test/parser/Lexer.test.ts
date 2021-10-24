@@ -1,5 +1,4 @@
 import {
-	Token,
 	LexError01,
 	LexError02,
 } from '@chharvey/parser';
@@ -12,6 +11,7 @@ import {
 import {
 	Filebound,
 	TemplatePosition,
+	Token,
 	TokenFilebound,
 	TokenWhitespace,
 	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,

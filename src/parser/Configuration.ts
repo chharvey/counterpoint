@@ -1,6 +1,3 @@
-import type {
-	Token,
-} from '@chharvey/parser';
 import * as xjs from 'extrajs';
 import {stringOfSymbols} from './utils-private.js';
 import {Terminal} from './terminal/index.js';
@@ -9,6 +6,7 @@ import type {
 	GrammarSymbol,
 	GrammarTerminal,
 } from './Grammar.js'; // TODO: move to `./utils-private.ts`
+import type {Token} from './token/index.js';
 
 
 /**

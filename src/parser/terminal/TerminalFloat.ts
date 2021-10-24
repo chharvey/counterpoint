@@ -1,10 +1,8 @@
-import type {
-	Token,
-} from '@chharvey/parser';
 import {
 	Util,
 	maybe,
 	maybeA,
+	Token,
 	TOKEN,
 } from './package.js';
 import {Terminal} from './Terminal.js';

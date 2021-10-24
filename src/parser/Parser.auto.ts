@@ -14,12 +14,9 @@ import {
 	Grammar,
 	GrammarSymbol,
 } from './Grammar.js';
+import type {Token} from './token/Token.js';
 import {ParseNode} from './ParseNode.js';
 import {Parser} from './Parser.js';
-
-import type {
-	Token,
-} from '@chharvey/parser';
 import {LexerSolid, LEXER} from './LexerSolid.js';
 import * as TERMINAL from './terminal/index.js';
 

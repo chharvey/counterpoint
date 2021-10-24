@@ -1,12 +1,12 @@
 import {
 	Char,
-	Token,
 	LexError01,
 	LexError02,
 } from '@chharvey/parser';
 import type {NonemptyArray} from './package.js';
 import {Filebound} from './utils-public.js';
 import {
+	Token,
 	TokenFilebound,
 	TokenWhitespace,
 } from './token/index.js';
@@ -127,6 +127,7 @@ export class Lexer {
 		}
 		while (!this.isDone && !stopAdvancing(this)) {
 			if (Char.eq(Filebound.EOT, this.c0)) {
+				// @ts-expect-error
 				throw new LexError02(new Token('QUOTED', ...buffer));
 			};
 			buffer.push(...this.advance());

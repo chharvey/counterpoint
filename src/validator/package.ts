@@ -59,6 +59,7 @@ export {
 export {
 	Punctuator,
 	Keyword,
+	Token,
 	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
 	ParserSolid,
 	ParseNode,

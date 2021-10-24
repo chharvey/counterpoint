@@ -1,3 +1,5 @@
+export * from './Token.js';
+
 export * from './TokenFilebound.js';
 export * from './TokenWhitespace.js';
 export * from './TokenComment.js';

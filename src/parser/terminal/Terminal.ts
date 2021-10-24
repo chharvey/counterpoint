@@ -1,5 +1,7 @@
-import type {Token} from '@chharvey/parser';
-import {titleToMacro} from './package.js';
+import {
+	titleToMacro,
+	Token,
+} from './package.js';
 
 
 

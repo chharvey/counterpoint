@@ -1,7 +1,6 @@
 import * as assert from 'assert'
-import {
+import type {
 	NonemptyArray,
-	Token,
 } from '@chharvey/parser';
 import {
 	SolidConfig,
@@ -10,6 +9,7 @@ import {
 import {
 	Filebound,
 	Punctuator,
+	Token,
 	TokenFilebound,
 	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
 	ParseNode,
