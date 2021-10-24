@@ -1,6 +1,5 @@
 import {
 	Token,
-	TokenFilebound,
 	ParseError01,
 } from '@chharvey/parser';
 import * as assert from 'assert'
@@ -11,6 +10,7 @@ import {
 import {
 	Punctuator,
 	Keyword,
+	TokenFilebound,
 	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
 	PARSENODE,
 	PARSER,

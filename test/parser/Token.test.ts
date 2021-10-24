@@ -18,6 +18,20 @@ import * as TOKEN from '../../src/parser/token/index.js'; // HACK
 
 
 
+describe('TokenComment', () => {
+	specify('#serialize', () => {
+		assert.strictEqual([...LEXER.generate(`
+			%% multiline
+			comment %%
+		`)][2].serialize(), `
+			<COMMENT line="2" col="4">%% multiline
+			comment %%</COMMENT>
+		`.trim());
+	});
+});
+
+
+
 describe('TokenSolid', () => {
 	describe('#cook', () => {
 		/**

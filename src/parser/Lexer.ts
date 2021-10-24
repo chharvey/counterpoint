@@ -1,13 +1,15 @@
 import {
 	Char,
 	Token,
-	TokenFilebound,
-	TokenWhitespace,
 	LexError01,
 	LexError02,
 } from '@chharvey/parser';
 import type {NonemptyArray} from './package.js';
 import {Filebound} from './utils-public.js';
+import {
+	TokenFilebound,
+	TokenWhitespace,
+} from './token/index.js';
 import {Scanner} from './Scanner.js';
 
 

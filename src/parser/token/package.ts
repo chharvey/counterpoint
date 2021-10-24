@@ -16,6 +16,7 @@ export {
 } from '../package.js';
 export {LexerSolid} from '../index.js';
 export {
+	Filebound,
 	TemplatePosition,
 } from '../utils-public.js';
 export {

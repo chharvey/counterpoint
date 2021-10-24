@@ -1,7 +1,4 @@
-import {
-	TokenComment,
-} from '@chharvey/parser';
-
+import {TokenComment} from './TokenComment.js';
 
 
 export class TokenCommentMulti extends TokenComment {
