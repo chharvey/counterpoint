@@ -5,6 +5,9 @@
  * they are only for modules within this package.
  */
 export type {Char} from '../parser/index.js';
-export type {SymbolKind} from '../validator/index.js';
+export type {
+	ASTNode,
+	SymbolKind,
+} from '../validator/index.js';
 export * as AST from '../validator/astnode/index.js'; // HACK
 export type {SolidType} from '../typer/index.js';

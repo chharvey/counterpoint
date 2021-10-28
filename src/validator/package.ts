@@ -55,8 +55,10 @@ export {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
+	Serializable,
 } from '../core/index.js';
 export {
+	stringifyAttributes,
 	Punctuator,
 	Keyword,
 	Token,

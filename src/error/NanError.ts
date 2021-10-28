@@ -1,7 +1,7 @@
 import {
-	ASTNode,
 	ErrorCode,
 } from '@chharvey/parser';
+import type {ASTNode} from './package.js';
 
 
 class NanError extends ErrorCode {

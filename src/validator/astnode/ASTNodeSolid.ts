@@ -1,7 +1,4 @@
 import {
-	ASTNode,
-} from '@chharvey/parser';
-import {
 	SolidType,
 	TypeError03,
 	Token,
@@ -12,6 +9,7 @@ import {
 	ASTNodeExpression,
 	ASTNodeCollectionLiteral,
 } from './index.js';
+import {ASTNode} from './ASTNode.js';
 import {forEachAggregated} from './utils-private.js';
 
 
@@ -61,7 +59,6 @@ export abstract class ASTNodeSolid extends ASTNode {
 		attributes: {[key: string]: unknown} = {},
 		override readonly children: readonly ASTNodeSolid[] = [],
 	) {
-		// @ts-expect-error
 		super(start_node, attributes, children)
 	}
 

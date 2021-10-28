@@ -51,6 +51,8 @@ export {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
+	Serializable,
+	stringifyAttributes,
 	Keyword,
 	Token,
 	TOKEN,

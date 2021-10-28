@@ -1,7 +1,5 @@
-import type {
-	NonemptyArray,
-} from '@chharvey/parser';
 import * as assert from 'assert'
+import type {NonemptyArray} from '../../src/lib/index.js';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,

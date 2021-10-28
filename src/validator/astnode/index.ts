@@ -1,3 +1,5 @@
+export * from './ASTNode.js';
+
 export * from './ASTNodeSolid.js';
 export * from './ASTNodeKey.js';
 export * from './ASTNodeIndexType.js';
