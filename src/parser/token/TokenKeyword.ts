@@ -1,9 +1,7 @@
-import type {
-	Char,
-} from '@chharvey/parser';
 import {
 	NonemptyArray,
 	Keyword,
+	Char,
 } from './package.js';
 import {TokenSolid} from './TokenSolid.js';
 

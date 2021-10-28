@@ -1,9 +1,9 @@
-import type {Char} from '@chharvey/parser';
 import {
 	NonemptyArray,
 	Serializable,
 	stringifyAttributes,
 	sanitizeContent,
+	Char,
 } from './package.js';
 
 

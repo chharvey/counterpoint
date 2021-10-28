@@ -1,6 +1,3 @@
-import type {
-	Char,
-} from '@chharvey/parser';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
 import {
@@ -8,6 +5,7 @@ import {
 	CodeUnit,
 	SolidConfig,
 	CONFIG_DEFAULT,
+	Char,
 } from './package.js';
 import {TokenCommentLine} from './TokenCommentLine.js';
 import {TokenCommentMulti} from './TokenCommentMulti.js';

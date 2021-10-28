@@ -1,7 +1,7 @@
 import {
-	Char,
 	LexError,
 } from '@chharvey/parser';
+import type {Char} from './package.js';
 
 
 

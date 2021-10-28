@@ -1,9 +1,7 @@
-import type {
-	Char,
-} from '@chharvey/parser';
 import {
 	NonemptyArray,
 	Filebound,
+	Char,
 } from './package.js';
 import {Token} from './Token.js';
 

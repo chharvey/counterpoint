@@ -1,12 +1,10 @@
-import type {
-	Char,
-} from '@chharvey/parser';
 import {
 	NonemptyArray,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	RadixType,
 	Punctuator,
+	Char,
 } from './package.js';
 import {TokenSolid} from './TokenSolid.js';
 

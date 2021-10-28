@@ -1,5 +1,4 @@
 import {
-	Char,
 	LexError02,
 } from '@chharvey/parser';
 import {
@@ -19,6 +18,7 @@ import type {RadixType} from './utils-private.js';
 import {
 	Punctuator,
 } from './Punctuator.js';
+import {Char} from './Char.js';
 import {Token} from './token/index.js';
 import * as TOKEN from './token/index.js';
 import {Lexer} from './Lexer.js';

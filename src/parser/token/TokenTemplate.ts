@@ -1,11 +1,9 @@
-import type {
-	Char,
-} from '@chharvey/parser';
 import utf8 from 'utf8';
 import type {
 	NonemptyArray,
 	CodeUnit,
 	TemplatePosition,
+	Char,
 } from './package.js';
 import {TokenSolid} from './TokenSolid.js';
 

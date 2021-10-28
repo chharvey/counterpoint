@@ -27,3 +27,4 @@ export {
 } from '../utils-private.js';
 export {Punctuator} from '../Punctuator.js';
 export {Keyword} from '../Keyword.js';
+export {Char} from '../Char.js';

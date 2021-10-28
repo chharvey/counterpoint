@@ -1,5 +1,5 @@
-import {Char} from '@chharvey/parser';
 import {Filebound} from './utils-public.js';
+import {Char} from './Char.js';
 
 
 

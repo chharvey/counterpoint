@@ -1,10 +1,10 @@
 import {
-	Char,
 	LexError01,
 	LexError02,
 } from '@chharvey/parser';
 import type {NonemptyArray} from './package.js';
 import {Filebound} from './utils-public.js';
+import {Char} from './Char.js';
 import {
 	Token,
 	TokenFilebound,
@@ -99,6 +99,7 @@ export class Lexer {
 				yield new TokenWhitespace(...buffer);
 
 			} else {
+				// @ts-expect-error
 				yield this.generate_do() || (() => { throw new LexError01(this.c0); })();
 			};
 		};
