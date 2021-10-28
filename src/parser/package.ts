@@ -8,6 +8,7 @@ export {
 	LexError03,
 	LexError04,
 	LexError05,
+	ParseError01,
 } from '../index.js';
 export type {
 	NonemptyArray,

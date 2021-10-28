@@ -1,7 +1,5 @@
-import {
-	ParseError01,
-} from '@chharvey/parser';
 import * as xjs from 'extrajs';
+import {ParseError01} from './package.js';
 import type {EBNFObject} from './utils-public.js';
 import {Terminal} from './terminal/index.js';
 import {Production} from './Production.js';
@@ -132,7 +130,6 @@ export class Parser<GoalNodeType extends ParseNode> {
 				throw new Error(`Reduce-Reduce Conflict:\n${ reductions.map((r) => r.toString()).join('\n') }`);
 			};
 		};
-		// @ts-expect-error
 		throw new ParseError01(this.lookahead);
 	}
 

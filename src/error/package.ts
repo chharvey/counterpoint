@@ -4,7 +4,10 @@
  * Other packages should not import them from here;
  * they are only for modules within this package.
  */
-export type {Char} from '../parser/index.js';
+export type {
+	Char,
+	Token,
+} from '../parser/index.js';
 export type {
 	ASTNode,
 	SymbolKind,

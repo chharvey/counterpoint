@@ -1,12 +1,7 @@
-import {
-	ParseError01,
-} from '@chharvey/parser';
 import * as assert from 'assert'
 import * as xjs from 'extrajs';
 import {
 	Dev,
-} from '../../src/core/index.js';
-import {
 	Punctuator,
 	Keyword,
 	Token,
@@ -14,7 +9,8 @@ import {
 	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
 	PARSENODE,
 	PARSER,
-} from '../../src/parser/index.js';
+	ParseError01,
+} from '../../src/index.js';
 import * as TOKEN from '../../src/parser/token/index.js'; // HACK
 import {Parser} from '../../src/parser/Parser.js';
 import {
