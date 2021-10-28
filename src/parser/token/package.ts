@@ -19,10 +19,10 @@ export {LexerSolid} from '../index.js';
 export {
 	Filebound,
 	TemplatePosition,
+	stringifyAttributes,
 } from '../utils-public.js';
 export {
 	RadixType,
-	stringifyAttributes,
 	sanitizeContent,
 } from '../utils-private.js';
 export {Punctuator} from '../Punctuator.js';

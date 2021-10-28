@@ -1,7 +1,9 @@
 import type {Serializable} from './package.js';
-import {Filebound} from './utils-public.js';
 import {
+	Filebound,
 	stringifyAttributes,
+} from './utils-public.js';
+import {
 	sanitizeContent,
 } from './utils-private.js';
 
