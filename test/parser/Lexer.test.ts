@@ -1,14 +1,8 @@
-import {
-	LexError01,
-	LexError02,
-} from '@chharvey/parser';
 import * as assert from 'assert'
 import * as xjs from 'extrajs';
 import {
 	CONFIG_DEFAULT,
 	Dev,
-} from '../../src/core/index.js';
-import {
 	Filebound,
 	TemplatePosition,
 	Token,
@@ -17,14 +11,14 @@ import {
 	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
 	LexerSolid,
 	LEXER,
-} from '../../src/parser/index.js'
-import * as TOKEN from '../../src/parser/token/index.js'; // HACK
-import {Lexer} from '../../src/parser/Lexer.js';
-import {
+	LexError01,
+	LexError02,
 	LexError03,
 	LexError04,
 	LexError05,
-} from '../../src/error/index.js';
+} from '../../src/index.js';
+import * as TOKEN from '../../src/parser/token/index.js'; // HACK
+import {Lexer} from '../../src/parser/Lexer.js';
 
 
 

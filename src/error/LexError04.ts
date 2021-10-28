@@ -1,7 +1,5 @@
-import {
-	LexError,
-} from '@chharvey/parser';
 import type {Char} from './package.js';
+import {LexError} from './LexError.js';
 
 
 

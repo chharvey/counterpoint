@@ -1,7 +1,5 @@
 import {
 	LexError02,
-} from '@chharvey/parser';
-import {
 	LexError03,
 	LexError04,
 	LexError05,
@@ -197,12 +195,12 @@ export class LexerSolid extends Lexer {
 	/**
 	 * Lex a string token.
 	 * @return the characters from which to construct a new TokenString
+	 * @throws {LexError02} if the end of the file was reached before the end of the token
 	 */
 	private lexTokenString(): NonemptyArray<Char> {
 		const buffer: NonemptyArray<Char> = [...this.advance(BigInt(TOKEN.TokenString.DELIM.length))]; // starting delim
 		while (!this.isDone && !Char.eq(TOKEN.TokenString.DELIM, this.c0)) {
 			if (Char.eq(Filebound.EOT, this.c0)) {
-				// @ts-expect-error
 				throw new LexError02(new Token('STRING', ...buffer));
 			}
 			if (Char.eq(TOKEN.TokenString.ESCAPER, this.c0)) {
@@ -252,7 +250,6 @@ export class LexerSolid extends Lexer {
 					&& !Char.eq(TOKEN.TokenCommentMulti.DELIM_END, this.c0, this.c1)
 				) {
 					if (Char.eq(Filebound.EOT, this.c0)) {
-						// @ts-expect-error
 						throw new LexError02(new Token('STRING', ...buffer));
 					};
 					buffer.push(...this.advance());
@@ -272,7 +269,6 @@ export class LexerSolid extends Lexer {
 					TOKEN.TokenCommentLine.DELIM_END,
 				], this.c0)) {
 					if (Char.eq(Filebound.EOT, this.c0)) {
-						// @ts-expect-error
 						throw new LexError02(new Token('STRING', ...buffer));
 					};
 					buffer.push(...this.advance());
@@ -354,6 +350,7 @@ export class LexerSolid extends Lexer {
 	 * Construct a new TokenTemplate instance.
 	 * @param delim_start the starting delimiter
 	 * @return            a new instance of TokenTemplate
+	 * @throws {LexError02} if the end of the file was reached before the end of the token
 	 */
 	private newTokenTemplate(
 		delim_start: typeof TOKEN.TokenTemplate.DELIM | typeof TOKEN.TokenTemplate.DELIM_INTERP_END,
@@ -368,7 +365,6 @@ export class LexerSolid extends Lexer {
 		let delim_end: typeof TOKEN.TokenTemplate.DELIM | typeof TOKEN.TokenTemplate.DELIM_INTERP_START;
 		while (!this.isDone) {
 			if (Char.eq(Filebound.EOT, this.c0)) {
-				// @ts-expect-error
 				throw new LexError02(new Token('TEMPLATE', ...buffer));
 			}
 			if (Char.eq(TOKEN.TokenTemplate.DELIM, this.c0, this.c1, this.c2)) {

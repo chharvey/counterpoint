@@ -1,8 +1,8 @@
 import {
 	LexError01,
 	LexError02,
-} from '@chharvey/parser';
-import type {NonemptyArray} from './package.js';
+	NonemptyArray,
+} from './package.js';
 import {Filebound} from './utils-public.js';
 import {Char} from './Char.js';
 import {
@@ -99,7 +99,6 @@ export class Lexer {
 				yield new TokenWhitespace(...buffer);
 
 			} else {
-				// @ts-expect-error
 				yield this.generate_do() || (() => { throw new LexError01(this.c0); })();
 			};
 		};
@@ -113,6 +112,7 @@ export class Lexer {
 	 * @param start_delim   the delimiter that starts the token (e.g., an open-quote)
 	 * @param end_delim     the delimiter that ends the token (e.g., a close-quote)
 	 * @returns             the characters from which to construct a new Token
+	 * @throws {LexError02} if the end of the file was reached before the end of the token
 	 * @final
 	 */
 	protected lexQuoted(start_delim: string, end_delim: string = start_delim): NonemptyArray<Char> {
@@ -128,7 +128,6 @@ export class Lexer {
 		}
 		while (!this.isDone && !stopAdvancing(this)) {
 			if (Char.eq(Filebound.EOT, this.c0)) {
-				// @ts-expect-error
 				throw new LexError02(new Token('QUOTED', ...buffer));
 			};
 			buffer.push(...this.advance());

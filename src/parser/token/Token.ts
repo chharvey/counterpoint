@@ -31,7 +31,6 @@ export class Token implements Serializable {
 	 * Construct a new Token object.
 	 * @param tagname    The name of the type of this Token.
 	 * @param chars      characters to add upon construction
-	 * @throws           {LexError02} if the end of the file is reached before the end of the token
 	 */
 	constructor (
 		/** @implements Serializable */
