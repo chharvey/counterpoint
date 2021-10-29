@@ -17,7 +17,7 @@ import {
 	LexError04,
 	LexError05,
 } from '../../src/index.js';
-import * as TOKEN from '../../src/parser/token/index.js'; // HACK
+import * as TOKEN from '../../src/parser/token-solid/index.js'; // HACK
 import {Lexer} from '../../src/parser/Lexer.js';
 
 

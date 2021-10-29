@@ -14,7 +14,7 @@ import {
 	LexerSolid,
 	LEXER,
 } from '../../src/parser/index.js';
-import * as TOKEN from '../../src/parser/token/index.js'; // HACK
+import * as TOKEN from '../../src/parser/token-solid/index.js'; // HACK
 
 
 

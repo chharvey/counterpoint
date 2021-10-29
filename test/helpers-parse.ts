@@ -17,7 +17,7 @@ import {
 	ParserSolid,
 	PARSER,
 } from '../src/parser/index.js';
-import * as TOKEN from '../src/parser/token/index.js'; // HACK
+import * as TOKEN from '../src/parser/token-solid/index.js'; // HACK
 import {
 	assert_arrayLength,
 } from './assert-helpers.js';

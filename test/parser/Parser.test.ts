@@ -11,7 +11,7 @@ import {
 	PARSER,
 	ParseError01,
 } from '../../src/index.js';
-import * as TOKEN from '../../src/parser/token/index.js'; // HACK
+import * as TOKEN from '../../src/parser/token-solid/index.js'; // HACK
 import {Parser} from '../../src/parser/Parser.js';
 import {
 	assert_arrayLength,

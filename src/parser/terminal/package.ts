@@ -19,4 +19,4 @@ export {
 } from '../utils-private.js';
 export {Keyword} from '../Keyword.js';
 export {Token} from '../Token.js';
-export * as TOKEN from '../token/index.js';
+export * as TOKEN from '../token-solid/index.js';

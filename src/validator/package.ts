@@ -69,4 +69,4 @@ export {
 	PARSENODE,
 	PARSER,
 } from '../parser/index.js';
-export * as TOKEN from '../parser/token/index.js'; // HACK
+export * as TOKEN from '../parser/token-solid/index.js'; // HACK
