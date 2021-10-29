@@ -59,6 +59,10 @@ export {
 	Serializable,
 } from '../core/index.js';
 export {
+	EBNFObject,
+	EBNFChoice,
+	EBNFSequence,
+	EBNFItem,
 	stringifyAttributes,
 	Punctuator,
 	Keyword,

@@ -5,6 +5,11 @@
  * they are only for modules within this package.
  */
 export {
+	NonemptyArray,
+	EBNFObject,
+	EBNFChoice,
+	EBNFSequence,
+	EBNFItem,
 	Token,
 	ParseNode,
 } from '../package.js';

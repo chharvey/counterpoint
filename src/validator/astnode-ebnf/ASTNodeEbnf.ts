@@ -6,6 +6,16 @@ import {
 
 
 
+/**
+ * Known subclasses:
+ * - ASTNodeParam
+ * - ASTNodeArg
+ * - ASTNodeCondition
+ * - ASTNodeExpr
+ * - ASTNodeNonterminal
+ * - ASTNodeProduction
+ * - ASTNodeGoal
+ */
 export class ASTNodeEbnf extends ASTNode {
 	constructor (
 		parse_node: ParseNode | Token,
