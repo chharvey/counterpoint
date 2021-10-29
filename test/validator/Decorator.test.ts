@@ -12,7 +12,7 @@ import {
 	Operator,
 	ValidAccessOperator,
 	// {ASTNodeKey, ...} as AST,
-	Decorator,
+	DecoratorSolid,
 } from '../../src/validator/index.js';
 import * as AST from '../../src/validator/astnode/index.js'; // HACK
 import {
@@ -22,7 +22,7 @@ import * as h from '../helpers-parse.js';
 
 
 
-describe('Decorator', () => {
+describe('DecoratorSolid', () => {
 	describe('.decorate', () => {
 		describe('Word ::= KEYWORD | IDENTIFIER', () => {
 			it('makes an ASTNodeKey.', () => {
@@ -36,7 +36,7 @@ describe('Decorator', () => {
 				];
 				assert.deepStrictEqual(
 					srcs.map((src) => {
-						const key: AST.ASTNodeKey = Decorator.decorate(h.wordFromString(src));
+						const key: AST.ASTNodeKey = DecoratorSolid.decorate(h.wordFromString(src));
 						return [key.source, key.id];
 					}),
 					srcs.map((src, i) => [src, [
@@ -59,7 +59,7 @@ describe('Decorator', () => {
 					`42;`,
 					`4.2;`,
 					`'hello';`,
-				].map((src) => (Decorator.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).source), [
+				].map((src) => (DecoratorSolid.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).source), [
 					`null`,
 					`false`,
 					`true`,
@@ -82,7 +82,7 @@ describe('Decorator', () => {
 					`float`,
 					`str`,
 					`obj`,
-				].map((src) => (Decorator.decorate(h.keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).source), [
+				].map((src) => (DecoratorSolid.decorate(h.keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).source), [
 					`void`,
 					`bool`,
 					`int`,
@@ -100,7 +100,7 @@ describe('Decorator', () => {
 						<TypeConstant source="float"/>
 					</ItemType>
 				*/
-				const itemtype: AST.ASTNodeItemType = Decorator.decorate(h.entryTypeFromString(`float`));
+				const itemtype: AST.ASTNodeItemType = DecoratorSolid.decorate(h.entryTypeFromString(`float`));
 				assert.ok(!itemtype.optional);
 				assert.deepStrictEqual(
 					itemtype.val.source,
@@ -113,7 +113,7 @@ describe('Decorator', () => {
 						<TypeConstant source="float"/>
 					</ItemType>
 				*/
-				const itemtype: AST.ASTNodeItemType = Decorator.decorate(h.entryTypeFromString(`?:float`));
+				const itemtype: AST.ASTNodeItemType = DecoratorSolid.decorate(h.entryTypeFromString(`?:float`));
 				assert.ok(itemtype.optional);
 				assert.deepStrictEqual(
 					itemtype.val.source,
@@ -127,7 +127,7 @@ describe('Decorator', () => {
 						<TypeConstant source="float"/>
 					</PropertyType>
 				*/
-				const propertytype: AST.ASTNodePropertyType = Decorator.decorate(h.entryTypeNamedFromString(`fontSize: float`));
+				const propertytype: AST.ASTNodePropertyType = DecoratorSolid.decorate(h.entryTypeNamedFromString(`fontSize: float`));
 				assert.ok(!propertytype.optional);
 				assert.deepStrictEqual(
 					[propertytype.key.source, propertytype.val.source],
@@ -141,7 +141,7 @@ describe('Decorator', () => {
 						<TypeConstant source="float"/>
 					</PropertyType>
 				*/
-				const propertytype: AST.ASTNodePropertyType = Decorator.decorate(h.entryTypeNamedFromString(`fontSize?: float`));
+				const propertytype: AST.ASTNodePropertyType = DecoratorSolid.decorate(h.entryTypeNamedFromString(`fontSize?: float`));
 				assert.ok(propertytype.optional);
 				assert.deepStrictEqual(
 					[propertytype.key.source, propertytype.val.source],
@@ -155,7 +155,7 @@ describe('Decorator', () => {
 				/*
 					<TypeTuple/>
 				*/
-				assert_arrayLength(Decorator.decorate(h.tupleTypeFromString(`[]`)).children, 0);
+				assert_arrayLength(DecoratorSolid.decorate(h.tupleTypeFromString(`[]`)).children, 0);
 			});
 			it('makes a nonempty ASTNodeTypeTuple.', () => {
 				/*
@@ -166,7 +166,7 @@ describe('Decorator', () => {
 						<TypeOperation source="?:str">...</TypeOperation>
 					</TypeTuple>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.tupleTypeFromString(`
+				assert.deepStrictEqual(DecoratorSolid.decorate(h.tupleTypeFromString(`
 					[
 						T,
 						42,
@@ -215,7 +215,7 @@ describe('Decorator', () => {
 						<TypeConstant source="bool"/>
 					</TypeHash>
 				*/
-				const hash: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`[:bool]`));
+				const hash: AST.ASTNodeType = DecoratorSolid.decorate(h.unitTypeFromString(`[:bool]`));
 				assert.ok(hash instanceof AST.ASTNodeTypeHash);
 				assert.deepStrictEqual(hash.type.source, `bool`);
 			});
@@ -229,7 +229,7 @@ describe('Decorator', () => {
 						<TypeConstant source="float"/>
 					</TypeMap>
 				*/
-				const map: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(`{int -> float}`));
+				const map: AST.ASTNodeType = DecoratorSolid.decorate(h.unitTypeFromString(`{int -> float}`));
 				assert.ok(map instanceof AST.ASTNodeTypeMap);
 				assert.deepStrictEqual(map.antecedenttype.source, `int`);
 				assert.deepStrictEqual(map.consequenttype.source, `float`);
@@ -245,7 +245,7 @@ describe('Decorator', () => {
 				const args: PARSENODE.ParseNodeTypeCompound = h.compoundTypeFromString(`Foo.<Bar | Qux, Diz>`);
 				assert_arrayLength(args.children, 2);
 				assert.ok(args.children[1] instanceof PARSENODE.ParseNodeGenericCall);
-				const sequence: NonemptyArray<AST.ASTNodeType> = Decorator.decorate(args.children[1]);
+				const sequence: NonemptyArray<AST.ASTNodeType> = DecoratorSolid.decorate(args.children[1]);
 				assert.deepStrictEqual(
 					sequence.map((c) => c.source),
 					[`Bar | Qux`, `Diz`],
@@ -263,7 +263,7 @@ describe('Decorator', () => {
 					`Bar`,
 					`Qux`,
 				].map((src) => {
-					const constant: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(src));
+					const constant: AST.ASTNodeType = DecoratorSolid.decorate(h.unitTypeFromString(src));
 					assert.ok(constant instanceof AST.ASTNodeTypeAlias);
 					return constant.id;
 				}), [
@@ -280,7 +280,7 @@ describe('Decorator', () => {
 						<TypeAlias source="Bar" id=257/>
 					</TypeOperation>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.unionTypeFromString(`Foo | Bar`)).children.map((op) => {
+				assert.deepStrictEqual(DecoratorSolid.decorate(h.unionTypeFromString(`Foo | Bar`)).children.map((op) => {
 					assert.ok(op instanceof AST.ASTNodeTypeAlias);
 					return op.id;
 				}), [257n, 258n]);
@@ -299,7 +299,7 @@ describe('Decorator', () => {
 					`42`,
 					`4.2`,
 				].map((src) => {
-					const constant: AST.ASTNodeType = Decorator.decorate(h.unitTypeFromString(src));
+					const constant: AST.ASTNodeType = DecoratorSolid.decorate(h.unitTypeFromString(src));
 					assert.ok(constant instanceof AST.ASTNodeTypeConstant);
 					return constant.source;
 				}), [
@@ -355,7 +355,7 @@ describe('Decorator', () => {
 						<TypeAlias source="Diz"/>
 					</TypeCall>
 				*/
-				const call: AST.ASTNodeType = Decorator.decorate(h.compoundTypeFromString(`Foo.<Bar | Qux, Diz>`));
+				const call: AST.ASTNodeType = DecoratorSolid.decorate(h.compoundTypeFromString(`Foo.<Bar | Qux, Diz>`));
 				assert.ok(call instanceof AST.ASTNodeTypeCall, 'should be instance of ASTNodeTypeCall.');
 				assert.deepStrictEqual(
 					[call.base, ...call.args].map((c) => c.source),
@@ -371,7 +371,7 @@ describe('Decorator', () => {
 						<TypeConstant source="int"/>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(h.unarySymbolTypeFromString(`int?`));
+				const operation: AST.ASTNodeType = DecoratorSolid.decorate(h.unarySymbolTypeFromString(`int?`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationUnary);
 				assert.deepStrictEqual(
 					[operation.operand.source, operation.operator],
@@ -379,7 +379,7 @@ describe('Decorator', () => {
 				)
 			})
 			it('operator `!` is not yet supported.', () => {
-				assert.throws(() => Decorator.decorate(h.unarySymbolTypeFromString(`float!`)), /not yet supported/);
+				assert.throws(() => DecoratorSolid.decorate(h.unarySymbolTypeFromString(`float!`)), /not yet supported/);
 			});
 		})
 
@@ -390,7 +390,7 @@ describe('Decorator', () => {
 						<TypeConstant source="int"/>
 					</ASTNodeTypeList>
 				*/
-				const list: AST.ASTNodeType = Decorator.decorate(h.unarySymbolTypeFromString(`int[]`));
+				const list: AST.ASTNodeType = DecoratorSolid.decorate(h.unarySymbolTypeFromString(`int[]`));
 				assert.ok(list instanceof AST.ASTNodeTypeList);
 				assert.deepStrictEqual(
 					[list.type.source, list.count],
@@ -403,7 +403,7 @@ describe('Decorator', () => {
 						<TypeConstant source="float"/>
 					</ASTNodeTypeList>
 				*/
-				const list: AST.ASTNodeType = Decorator.decorate(h.unarySymbolTypeFromString(`float[3]`));
+				const list: AST.ASTNodeType = DecoratorSolid.decorate(h.unarySymbolTypeFromString(`float[3]`));
 				assert.ok(list instanceof AST.ASTNodeTypeList);
 				assert.deepStrictEqual(
 					[list.type.source, list.count],
@@ -419,7 +419,7 @@ describe('Decorator', () => {
 						<TypeConstant source="bool"/>
 					</ASTNodeTypeSet>
 				*/
-				const set: AST.ASTNodeType = Decorator.decorate(h.unarySymbolTypeFromString(`bool{}`));
+				const set: AST.ASTNodeType = DecoratorSolid.decorate(h.unarySymbolTypeFromString(`bool{}`));
 				assert.ok(set instanceof AST.ASTNodeTypeSet);
 				assert.deepStrictEqual(set.type.source, `bool`);
 			});
@@ -432,7 +432,7 @@ describe('Decorator', () => {
 						<TypeConstant source="int"/>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(h.unaryKeywordTypeFromString(`mutable int`));
+				const operation: AST.ASTNodeType = DecoratorSolid.decorate(h.unaryKeywordTypeFromString(`mutable int`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationUnary);
 				assert.deepStrictEqual(
 					[operation.operand.source, operation.operator],
@@ -449,7 +449,7 @@ describe('Decorator', () => {
 						<TypeConstant source="3"/>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(h.intersectionTypeFromString(`int & 3`));
+				const operation: AST.ASTNodeType = DecoratorSolid.decorate(h.intersectionTypeFromString(`int & 3`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
 				assert.deepStrictEqual(
 					[operation.operand0.source, operation.operator, operation.operand1.source],
@@ -466,7 +466,7 @@ describe('Decorator', () => {
 						<TypeOperation source="int & int">...</TypeOperation>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(h.unionTypeFromString(`4.2? | int & int`));
+				const operation: AST.ASTNodeType = DecoratorSolid.decorate(h.unionTypeFromString(`4.2? | int & int`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
 				assert.deepStrictEqual(
 					[operation.operand0.source, operation.operator, operation.operand1.source],
@@ -483,7 +483,7 @@ describe('Decorator', () => {
 						<TypeOperation source="int | int">...</TypeOperation>
 					</TypeOperation>
 				*/
-				const operation: AST.ASTNodeType = Decorator.decorate(h.unionTypeFromString(`4.2? & (int | int)`));
+				const operation: AST.ASTNodeType = DecoratorSolid.decorate(h.unionTypeFromString(`4.2? & (int | int)`));
 				assert.ok(operation instanceof AST.ASTNodeTypeOperationBinary);
 				assert.deepStrictEqual(
 					[operation.operand0.source, operation.operator, operation.operand1.source],
@@ -494,7 +494,7 @@ describe('Decorator', () => {
 
 		Dev.supports('stringTemplate-decorate') && describe('StringTemplate', () => {
 			function templateSources(tpl: PARSENODE.ParseNodeStringTemplate, ...srcs: Readonly<NonemptyArray<string>>): void {
-				return assert.deepStrictEqual([...Decorator.decorate(tpl).children].map((c) => c.source), srcs);
+				return assert.deepStrictEqual([...DecoratorSolid.decorate(tpl).children].map((c) => c.source), srcs);
 			}
 			specify('StringTemplate ::= TEMPLATE_FULL', () => {
 				templateSources(h.stringTemplateFromSource(`
@@ -547,7 +547,7 @@ describe('Decorator', () => {
 						<Operation source="1. + 0.25">...</Operation>
 					</Property>
 				*/
-				const property = Decorator.decorate(h.propertyFromString(`fontSize= 1. + 0.25`));
+				const property = DecoratorSolid.decorate(h.propertyFromString(`fontSize= 1. + 0.25`));
 				assert.ok(property instanceof AST.ASTNodeProperty); // FIXME: `AST.ASTNodeProperty` is assignable to `TemplatePartialType`, so `Decorator.decorate` overlads get confused
 				assert.deepStrictEqual(
 					[property.key.source, property.val.source],
@@ -564,7 +564,7 @@ describe('Decorator', () => {
 						<Constant source="1.25"/>
 					</Case>
 				*/
-				const kase: AST.ASTNodeCase = Decorator.decorate(h.caseFromString(`1 + 0.25 -> 1.25`));
+				const kase: AST.ASTNodeCase = DecoratorSolid.decorate(h.caseFromString(`1 + 0.25 -> 1.25`));
 				assert.deepStrictEqual(
 					[kase.antecedent.source, kase.consequent.source],
 					[`1 + 0.25`,             `1.25`],
@@ -577,7 +577,7 @@ describe('Decorator', () => {
 				/*
 					<Tuple/>
 				*/
-				assert_arrayLength(Decorator.decorate(h.tupleLiteralFromSource(`[];`)).children, 0);
+				assert_arrayLength(DecoratorSolid.decorate(h.tupleLiteralFromSource(`[];`)).children, 0);
 			});
 			it('makes a nonempty ASTNodeTuple.', () => {
 				/*
@@ -587,7 +587,7 @@ describe('Decorator', () => {
 						<Operation source="null || false">...</Operation>
 					</Tuple>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.tupleLiteralFromSource(`
+				assert.deepStrictEqual(DecoratorSolid.decorate(h.tupleLiteralFromSource(`
 					[
 						42,
 						true,
@@ -609,7 +609,7 @@ describe('Decorator', () => {
 						<Property source="foobar = 42">...</Property>
 					</Record>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.recordLiteralFromSource(`
+				assert.deepStrictEqual(DecoratorSolid.decorate(h.recordLiteralFromSource(`
 					[
 						let= true,
 						foobar= 42,
@@ -626,7 +626,7 @@ describe('Decorator', () => {
 				/*
 					<Set/>
 				*/
-				assert_arrayLength(Decorator.decorate(h.setLiteralFromSource(`{};`)).children, 0);
+				assert_arrayLength(DecoratorSolid.decorate(h.setLiteralFromSource(`{};`)).children, 0);
 			});
 			it('makes a nonempty ASTNodeSet.', () => {
 				/*
@@ -636,7 +636,7 @@ describe('Decorator', () => {
 						<Operation source="null || false">...</Operation>
 					</Set>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.setLiteralFromSource(`
+				assert.deepStrictEqual(DecoratorSolid.decorate(h.setLiteralFromSource(`
 					{
 						42,
 						true,
@@ -660,7 +660,7 @@ describe('Decorator', () => {
 						<Case source="9 -> 42.0">...</Case>
 					</Map>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.mapLiteralFromSource(`
+				assert.deepStrictEqual(DecoratorSolid.decorate(h.mapLiteralFromSource(`
 					{
 						1 -> null,
 						4 -> false,
@@ -689,7 +689,7 @@ describe('Decorator', () => {
 				const args: PARSENODE.ParseNodeExpressionCompound = h.compoundExpressionFromSource(`foo.(bar || qux, diz);`);
 				assert_arrayLength(args.children, 2);
 				assert.ok(args.children[1] instanceof PARSENODE.ParseNodeFunctionCall);
-				const sequence: [AST.ASTNodeType[], AST.ASTNodeExpression[]] = Decorator.decorate(args.children[1]);
+				const sequence: [AST.ASTNodeType[], AST.ASTNodeExpression[]] = DecoratorSolid.decorate(args.children[1]);
 				assert.deepStrictEqual(
 					[
 						sequence[0],
@@ -712,7 +712,7 @@ describe('Decorator', () => {
 					`variable;`,
 					`var;`,
 				].map((src) => {
-					const variable: AST.ASTNodeExpression = Decorator.decorate(h.unitExpressionFromSource(src));
+					const variable: AST.ASTNodeExpression = DecoratorSolid.decorate(h.unitExpressionFromSource(src));
 					assert.ok(variable instanceof AST.ASTNodeVariable)
 					return variable.id;
 				}), [
@@ -727,7 +727,7 @@ describe('Decorator', () => {
 						<Variable source="var" id="257"/>
 					</Operation>
 				*/
-				assert.deepStrictEqual(Decorator.decorate(h.expressionFromSource(`
+				assert.deepStrictEqual(DecoratorSolid.decorate(h.expressionFromSource(`
 					variable || var;
 				`)).children.map((op) => {
 					assert.ok(op instanceof AST.ASTNodeVariable);
@@ -745,7 +745,7 @@ describe('Decorator', () => {
 						</StatementExpression>
 					</Goal>
 				*/
-				const goal: AST.ASTNodeGoal = Decorator.decorate(h.goalFromSource(`
+				const goal: AST.ASTNodeGoal = DecoratorSolid.decorate(h.goalFromSource(`
 					variable;
 					var;
 				`));
@@ -769,7 +769,7 @@ describe('Decorator', () => {
 					`false;`,
 					`true;`,
 					`42;`,
-				].map((src) => (Decorator.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).source), [
+				].map((src) => (DecoratorSolid.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).source), [
 					`null`,
 					`false`,
 					`true`,
@@ -786,7 +786,7 @@ describe('Decorator', () => {
 						<Constant source="-3"/>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`(2 + -3);`));
+				const operation: AST.ASTNodeExpression = DecoratorSolid.decorate(h.expressionFromSource(`(2 + -3);`));
 				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
 				assert.ok(operation.operand0 instanceof AST.ASTNodeConstant);
 				assert.ok(operation.operand1 instanceof AST.ASTNodeConstant);
@@ -807,7 +807,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`(-(42) ^ +(2 * 420));`));
+				const operation: AST.ASTNodeExpression = DecoratorSolid.decorate(h.expressionFromSource(`(-(42) ^ +(2 * 420));`));
 				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
 				assert.strictEqual(operation.operator, Operator.EXP)
 				assert.ok(operation.operand0 instanceof AST.ASTNodeOperationUnary);
@@ -826,7 +826,7 @@ describe('Decorator', () => {
 
 		describe('ExpressionCompound ::= ExpressionCompound (PropertyAccess | FunctionCall)', () => {
 			function makeAccess(src: string, kind: ValidAccessOperator = Operator.DOT, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeAccess {
-				const access: AST.ASTNodeExpression = Decorator.decorate(h.compoundExpressionFromSource(src, config));
+				const access: AST.ASTNodeExpression = DecoratorSolid.decorate(h.compoundExpressionFromSource(src, config));
 				assert.ok(access instanceof AST.ASTNodeAccess);
 				assert.strictEqual(access.kind, kind);
 				return access;
@@ -967,7 +967,7 @@ describe('Decorator', () => {
 						<Variable source="diz"/>
 					</Call>
 				*/
-				const call: AST.ASTNodeExpression = Decorator.decorate(h.compoundExpressionFromSource(`foo.<Bar | Qux, Diz>(bar || qux, diz);`));
+				const call: AST.ASTNodeExpression = DecoratorSolid.decorate(h.compoundExpressionFromSource(`foo.<Bar | Qux, Diz>(bar || qux, diz);`));
 				assert.ok(call instanceof AST.ASTNodeCall, 'should be instance of ASTNodeCall.');
 				assert.deepStrictEqual(
 					[call.base, ...call.typeargs, ...call.exprargs].map((c) => c.source),
@@ -988,7 +988,7 @@ describe('Decorator', () => {
 					`?41;`,
 					`- 42;`,
 				].map((src) => {
-					const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(src));
+					const operation: AST.ASTNodeExpression = DecoratorSolid.decorate(h.expressionFromSource(src));
 					assert.ok(operation instanceof AST.ASTNodeOperationUnary);
 					assert.ok(operation.operand instanceof AST.ASTNodeConstant);
 					return [operation.operand.source, operation.operator];
@@ -1013,7 +1013,7 @@ describe('Decorator', () => {
 					`2 * -3;`,
 					`2 + -3;`,
 				].map((src) => {
-					const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(src));
+					const operation: AST.ASTNodeExpression = DecoratorSolid.decorate(h.expressionFromSource(src));
 					assert.ok(operation instanceof AST.ASTNodeOperationBinary);
 					assert.ok(operation.operand0 instanceof AST.ASTNodeConstant);
 					assert.ok(operation.operand1 instanceof AST.ASTNodeConstant);
@@ -1038,7 +1038,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`2 - 3;`));
+				const operation: AST.ASTNodeExpression = DecoratorSolid.decorate(h.expressionFromSource(`2 - 3;`));
 				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
 				assert.strictEqual(operation.operator, Operator.ADD)
 				assert.ok(operation.operand0 instanceof AST.ASTNodeConstant);
@@ -1074,7 +1074,7 @@ describe('Decorator', () => {
 					</Operation>
 				*/
 				return testNegatedBinaryOperation(
-					Decorator.decorate(h.expressionFromSource(`2 !< 3;`)),
+					DecoratorSolid.decorate(h.expressionFromSource(`2 !< 3;`)),
 					[`2`, Operator.LT, `3`],
 				);
 			})
@@ -1088,7 +1088,7 @@ describe('Decorator', () => {
 					</Operation>
 				*/
 				return testNegatedBinaryOperation(
-					Decorator.decorate(h.expressionFromSource(`2 !> 3;`)),
+					DecoratorSolid.decorate(h.expressionFromSource(`2 !> 3;`)),
 					[`2`, Operator.GT, `3`],
 				);
 			})
@@ -1102,13 +1102,13 @@ describe('Decorator', () => {
 					</Operation>
 				*/
 				return testNegatedBinaryOperation(
-					Decorator.decorate(h.expressionFromSource(`2 isnt 3;`)),
+					DecoratorSolid.decorate(h.expressionFromSource(`2 isnt 3;`)),
 					[`2`, Operator.IS, `3`],
 				);
 			})
 			it('operator `is`/`isnt` is not yet supported.', () => {
-				assert.throws(() => Decorator.decorate(h.expressionFromSource(`2 is   2;`)), /not yet supported/);
-				assert.throws(() => Decorator.decorate(h.expressionFromSource(`2 isnt 3;`)), /not yet supported/);
+				assert.throws(() => DecoratorSolid.decorate(h.expressionFromSource(`2 is   2;`)), /not yet supported/);
+				assert.throws(() => DecoratorSolid.decorate(h.expressionFromSource(`2 isnt 3;`)), /not yet supported/);
 			});
 		})
 
@@ -1123,7 +1123,7 @@ describe('Decorator', () => {
 					</Operation>
 				*/
 				return testNegatedBinaryOperation(
-					Decorator.decorate(h.expressionFromSource(`2 !== 3;`)),
+					DecoratorSolid.decorate(h.expressionFromSource(`2 !== 3;`)),
 					[`2`, Operator.ID, `3`],
 				);
 			});
@@ -1137,7 +1137,7 @@ describe('Decorator', () => {
 					</Operation>
 				*/
 				return testNegatedBinaryOperation(
-					Decorator.decorate(h.expressionFromSource(`2 != 3;`)),
+					DecoratorSolid.decorate(h.expressionFromSource(`2 != 3;`)),
 					[`2`, Operator.EQ, `3`],
 				);
 			})
@@ -1154,7 +1154,7 @@ describe('Decorator', () => {
 					</Operation>
 				*/
 				return testNegatedBinaryOperation(
-					Decorator.decorate(h.expressionFromSource(`2 !& 3;`)),
+					DecoratorSolid.decorate(h.expressionFromSource(`2 !& 3;`)),
 					[`2`, Operator.AND, `3`],
 				);
 			})
@@ -1171,7 +1171,7 @@ describe('Decorator', () => {
 					</Operation>
 				*/
 				return testNegatedBinaryOperation(
-					Decorator.decorate(h.expressionFromSource(`2 !| 3;`)),
+					DecoratorSolid.decorate(h.expressionFromSource(`2 !| 3;`)),
 					[`2`, Operator.OR, `3`],
 				);
 			})
@@ -1186,7 +1186,7 @@ describe('Decorator', () => {
 						<Constant source="3"/>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = Decorator.decorate(h.expressionFromSource(`if true then 2 else 3;`));
+				const operation: AST.ASTNodeExpression = DecoratorSolid.decorate(h.expressionFromSource(`if true then 2 else 3;`));
 				assert.ok(operation instanceof AST.ASTNodeOperationTernary);
 				assert.deepStrictEqual([
 					operation.operand0,
@@ -1211,7 +1211,7 @@ describe('Decorator', () => {
 						<TypeOperation operator=OR source="int | float">...</TypeOperation>
 					</DeclarationType>
 				*/
-				const decl: AST.ASTNodeDeclarationType = Decorator.decorate(h.typeDeclarationFromSource(`
+				const decl: AST.ASTNodeDeclarationType = DecoratorSolid.decorate(h.typeDeclarationFromSource(`
 					type T  =  int | float;
 				`));
 				assert.strictEqual(decl.assignee.id, 256n);
@@ -1233,7 +1233,7 @@ describe('Decorator', () => {
 						<Operation operator=MUL source="21 * 2">...</Operation>
 					</DeclarationVariable>
 				*/
-				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(h.variableDeclarationFromSource(`
+				const decl: AST.ASTNodeDeclarationVariable = DecoratorSolid.decorate(h.variableDeclarationFromSource(`
 					let unfixed the_answer:  int | float =  21  *  2;
 				`));
 				assert.strictEqual(decl.unfixed, true);
@@ -1255,7 +1255,7 @@ describe('Decorator', () => {
 						</Operation>
 					</DeclarationVariable>
 				*/
-				const decl: AST.ASTNodeDeclarationVariable = Decorator.decorate(h.variableDeclarationFromSource(`
+				const decl: AST.ASTNodeDeclarationVariable = DecoratorSolid.decorate(h.variableDeclarationFromSource(`
 					let \`the £ answer\`: int = the_answer * 10;
 				`));
 				assert.strictEqual(decl.unfixed, false);
@@ -1274,7 +1274,7 @@ describe('Decorator', () => {
 				/*
 					<Variable source="the_answer" id=256n/>
 				*/
-				const variable: AST.ASTNodeVariable = (Decorator.decorate(h.assigneeFromSource(`
+				const variable: AST.ASTNodeVariable = (DecoratorSolid.decorate(h.assigneeFromSource(`
 					the_answer = the_answer - 40;
 				`)) as AST.ASTNodeVariable);
 				assert.strictEqual(variable.id, 256n);
@@ -1290,7 +1290,7 @@ describe('Decorator', () => {
 						<Key source="z"/>
 					</Access>
 				*/
-				const access: AST.ASTNodeAccess = (Decorator.decorate(h.assigneeFromSource(`
+				const access: AST.ASTNodeAccess = (DecoratorSolid.decorate(h.assigneeFromSource(`
 					x.().y.z = a;
 				`)) as AST.ASTNodeAccess);
 				const base: AST.ASTNodeExpression = access.base;
@@ -1314,7 +1314,7 @@ describe('Decorator', () => {
 						</Operation>
 					</Assignment>
 				*/
-				const assn: AST.ASTNodeAssignment = Decorator.decorate(h.assignmentFromSource(`
+				const assn: AST.ASTNodeAssignment = DecoratorSolid.decorate(h.assignmentFromSource(`
 					the_answer = the_answer - 40;
 				`));
 				assert.ok(assn.assigned instanceof AST.ASTNodeOperationBinary);
@@ -1328,7 +1328,7 @@ describe('Decorator', () => {
 
 		context('Statement ::= ";"', () => {
 			it('makes an ASTNodeStatementExpression node containing no children.', () => {
-				const statement: AST.ASTNodeStatement = Decorator.decorate(h.statementFromSource(`;`));
+				const statement: AST.ASTNodeStatement = DecoratorSolid.decorate(h.statementFromSource(`;`));
 				assert.ok(statement instanceof AST.ASTNodeStatementExpression);
 				assert.ok(!statement.expr, 'semantic statement should have 0 children');
 				assert.strictEqual(statement.source, `;`)
@@ -1337,7 +1337,7 @@ describe('Decorator', () => {
 
 		context('Goal ::= #x02 Statement* #x03', () => {
 			it('makes an ASTNodeGoal node containing no children.', () => {
-				const goal: AST.ASTNodeGoal = Decorator.decorate(h.goalFromSource(``));
+				const goal: AST.ASTNodeGoal = DecoratorSolid.decorate(h.goalFromSource(``));
 				assert_arrayLength(goal.children, 0, 'semantic goal should have 0 children')
 			})
 			it('decorates multiple statements.', () => {
@@ -1347,7 +1347,7 @@ describe('Decorator', () => {
 						<StatementExpression source="420 ;">...</StatementExpression>
 					</Goal>
 				*/
-				const goal: AST.ASTNodeGoal = Decorator.decorate(h.goalFromSource(`42; 420;`));
+				const goal: AST.ASTNodeGoal = DecoratorSolid.decorate(h.goalFromSource(`42; 420;`));
 				assert_arrayLength(goal.children, 2, 'goal should have 2 children')
 				assert.deepStrictEqual(goal.children.map((stat) => {
 					assert.ok(stat instanceof AST.ASTNodeStatementExpression);

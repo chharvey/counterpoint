@@ -55,7 +55,7 @@ type DecorateReturnType = ASTNodeSolid | DecorateReturnType[];
 
 
 
-export class Decorator {
+export class DecoratorSolid {
 	private static readonly ACCESSORS: ReadonlyMap<Punctuator, ValidAccessOperator> = new Map<Punctuator, ValidAccessOperator>([
 		[Punctuator.DOT,      Operator.DOT],
 		[Punctuator.OPTDOT,   Operator.OPTDOT],
