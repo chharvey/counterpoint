@@ -5,11 +5,11 @@ import {
 } from './package.js';
 import {Filebound} from './utils-public.js';
 import {Char} from './Char.js';
-import {Token} from './Token.js';
 import {
+	Token,
 	TokenFilebound,
 	TokenWhitespace,
-} from './token/index.js';
+} from './Token.js';
 import {Scanner} from './Scanner.js';
 
 

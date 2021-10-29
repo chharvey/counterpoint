@@ -2,7 +2,10 @@ import type {
 	NonemptyArray,
 	Serializable,
 } from './package.js';
-import {stringifyAttributes} from './utils-public.js';
+import {
+	Filebound,
+	stringifyAttributes,
+} from './utils-public.js';
 import {sanitizeContent} from './utils-private.js';
 import type {Char} from './Char.js';
 
@@ -59,5 +62,38 @@ export class Token implements Serializable {
 			['line', (this.line_index + 1).toString()],
 			['col',  (this.col_index  + 1).toString()],
 		])) }>${ sanitizeContent(this.source) }</${ this.tagname }>`;
+	}
+}
+
+
+
+/** @final */
+export class TokenFilebound extends Token {
+	static readonly CHARS: readonly Filebound[] = [Filebound.SOT, Filebound.EOT];
+	// declare readonly source: Filebound; // NB: https://github.com/microsoft/TypeScript/issues/40220
+
+
+	constructor (...chars: NonemptyArray<Char>) {
+		super('FILEBOUND', ...chars);
+	}
+}
+
+
+
+/** @final */
+export class TokenWhitespace extends Token {
+	static readonly CHARS: readonly string[] = [' ', '\t', '\n'];
+
+
+	constructor (...chars: NonemptyArray<Char>) {
+		super('WHITESPACE', ...chars);
+	}
+}
+
+
+
+export class TokenComment extends Token {
+	constructor (...chars: NonemptyArray<Char>) {
+		super('COMMENT', ...chars);
 	}
 }

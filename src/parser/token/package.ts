@@ -17,4 +17,7 @@ export {
 export {Punctuator} from '../Punctuator.js';
 export {Keyword} from '../Keyword.js';
 export {Char} from '../Char.js';
-export {Token} from '../Token.js';
+export {
+	Token,
+	TokenComment,
+} from '../Token.js';
