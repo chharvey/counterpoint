@@ -8,7 +8,7 @@ import * as path from 'path';
 const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 (async () => {
 	const grammar_solid = fs.promises.readFile(path.join(DIRNAME, '../docs/spec/grammar/syntax.ebnf'), 'utf8');
-	return fs.promises.writeFile(path.join(DIRNAME, '../src/parser/Parser.auto.ts'), xjs.String.dedent`
+	return fs.promises.writeFile(path.join(DIRNAME, '../src/parser/ParserSolid.ts'), xjs.String.dedent`
 		/*----------------------------------------------------------------/
 		| WARNING: Do not manually update this file!
 		| It is auto-generated via <@chharvey/parser>.
