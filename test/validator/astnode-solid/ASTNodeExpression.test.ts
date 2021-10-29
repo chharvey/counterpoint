@@ -26,9 +26,9 @@ import {
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
-} from '../../src/index.js';
-import * as AST from '../../src/validator/astnode-solid/index.js'; // HACK
-import {assert_wasCalled} from '../assert-helpers.js';
+} from '../../../src/index.js';
+import * as AST from '../../../src/validator/astnode-solid/index.js'; // HACK
+import {assert_wasCalled} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	typeConstInt,
@@ -36,7 +36,7 @@ import {
 	typeConstStr,
 	instructionConstInt,
 	instructionConstFloat,
-} from '../helpers.js';
+} from '../../helpers.js';
 
 
 

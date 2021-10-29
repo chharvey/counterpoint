@@ -4,13 +4,13 @@ import {
 	Validator,
 	SolidType,
 	TypeError04,
-} from '../../src/index.js';
-import * as AST from '../../src/validator/astnode-solid/index.js'; // HACK
+} from '../../../src/index.js';
+import * as AST from '../../../src/validator/astnode-solid/index.js'; // HACK
 import {
 	typeConstInt,
 	typeConstFloat,
 	typeConstStr,
-} from '../helpers.js';
+} from '../../helpers.js';
 
 
 

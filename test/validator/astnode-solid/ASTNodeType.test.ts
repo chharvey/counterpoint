@@ -14,12 +14,12 @@ import {
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
-} from '../../src/index.js';
-import * as AST from '../../src/validator/astnode-solid/index.js'; // HACK
+} from '../../../src/index.js';
+import * as AST from '../../../src/validator/astnode-solid/index.js'; // HACK
 import {
 	typeConstInt,
 	typeConstFloat,
-} from '../helpers.js';
+} from '../../helpers.js';
 
 
 describe('ASTNodeType', () => {

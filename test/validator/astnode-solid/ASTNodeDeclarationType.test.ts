@@ -8,8 +8,8 @@ import {
 	INST,
 	Builder,
 	AssignmentError01,
-} from '../../src/index.js';
-import * as AST from '../../src/validator/astnode-solid/index.js'; // HACK
+} from '../../../src/index.js';
+import * as AST from '../../../src/validator/astnode-solid/index.js'; // HACK
 
 
 
