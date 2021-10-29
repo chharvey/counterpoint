@@ -1,4 +1,3 @@
-import {ErrorCode} from '@chharvey/parser';
 import * as assert from 'assert';
 import {
 	SolidConfig,
@@ -9,6 +8,7 @@ import {
 	Primitive,
 	INST,
 	Builder,
+	ErrorCode,
 	Validator,
 } from './package.js';
 import {

@@ -1,5 +1,5 @@
-import {ErrorCode} from '@chharvey/parser';
 import type {Token} from './package.js';
+import {ErrorCode} from './ErrorCode.js';
 
 
 

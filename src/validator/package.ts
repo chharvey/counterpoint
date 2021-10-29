@@ -34,6 +34,7 @@ export {
 	Instruction,
 	INST,
 	Builder,
+	ErrorCode,
 	ReferenceError01,
 	ReferenceError03,
 	AssignmentError01,

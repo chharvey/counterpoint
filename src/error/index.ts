@@ -1,3 +1,5 @@
+export * from './ErrorCode.js';
+
 export * from './LexError01.js';
 export * from './LexError02.js';
 export * from './LexError03.js';

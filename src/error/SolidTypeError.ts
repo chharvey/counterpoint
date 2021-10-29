@@ -1,6 +1,4 @@
-import {
-	ErrorCode,
-} from '@chharvey/parser';
+import {ErrorCode} from './ErrorCode.js';
 
 
 
