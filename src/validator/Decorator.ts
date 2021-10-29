@@ -38,7 +38,7 @@ export abstract class Decorator {
 	 * @return a sequence of `A` nodes.
 	 * @final
 	 */
-	protected static parseList<T extends ParseNode, A extends ASTNode>(node: ParseList<T> | HashList<T>): NonemptyArray<A> {
+	protected parseList<T extends ParseNode, A extends ASTNode>(node: ParseList<T> | HashList<T>): NonemptyArray<A> {
 		return (node.children.length === 1)
 			? [this.decorate(node.children[0]) as A]
 			: [
@@ -52,8 +52,5 @@ export abstract class Decorator {
 	 * @param node the ParseNode to decorate
 	 * @returns an ASTNode
 	 */
-	static decorate(node: ParseNode): DecoratorReturnType {
-		node;
-		throw 'please override me';
-	}
+	abstract decorate(node: ParseNode): DecoratorReturnType;
 }

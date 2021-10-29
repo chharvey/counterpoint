@@ -6,7 +6,7 @@ import {
 	ParseNode,
 	ParserSolid,
 	PARSER,
-	DecoratorSolid,
+	DECORATOR,
 } from './package.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
@@ -23,7 +23,7 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	 * @returns      a new ASTNodeGoal representing the given source
 	 */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeGoal {
-		return DecoratorSolid.decorate(((config === CONFIG_DEFAULT) ? PARSER : new ParserSolid(config)).parse(src));
+		return DECORATOR.decorate(((config === CONFIG_DEFAULT) ? PARSER : new ParserSolid(config)).parse(src));
 	}
 	constructor(
 		start_node: ParseNode,
