@@ -14,7 +14,7 @@ import {
 	// {ASTNodeKey, ...} as AST,
 	DECORATOR as DECORATOR_SOLID,
 } from '../../src/validator/index.js';
-import * as AST from '../../src/validator/astnode/index.js'; // HACK
+import * as AST from '../../src/validator/astnode-solid/index.js'; // HACK
 import {
 	assert_arrayLength,
 } from '../assert-helpers.js';

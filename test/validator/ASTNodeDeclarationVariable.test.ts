@@ -16,7 +16,7 @@ import {
 	AssignmentError01,
 	TypeError03,
 } from '../../src/index.js';
-import * as AST from '../../src/validator/astnode/index.js'; // HACK
+import * as AST from '../../src/validator/astnode-solid/index.js'; // HACK
 import {
 	assertAssignable,
 } from '../assert-helpers.js';

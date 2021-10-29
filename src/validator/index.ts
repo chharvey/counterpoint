@@ -1,7 +1,7 @@
 export * from './Operator.js';
 
 export * from './ASTNode.js';
-export * from './astnode/index.js';
+export * from './astnode-solid/index.js';
 
 export * from './DecoratorSolid.js';
 export * from './Validator.js';

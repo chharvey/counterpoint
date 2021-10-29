@@ -3,7 +3,7 @@ import {
 	// {ASTNodeKey, ...} as AST,
 	Validator,
 } from '../../src/validator/index.js';
-import * as AST from '../../src/validator/astnode/index.js'; // HACK
+import * as AST from '../../src/validator/astnode-solid/index.js'; // HACK
 import {
 	SolidType,
 	SolidTypeList,

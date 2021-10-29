@@ -12,5 +12,5 @@ export type {
 	ASTNode,
 	SymbolKind,
 } from '../validator/index.js';
-export * as AST from '../validator/astnode/index.js'; // HACK
+export * as AST from '../validator/astnode-solid/index.js'; // HACK
 export type {SolidType} from '../typer/index.js';

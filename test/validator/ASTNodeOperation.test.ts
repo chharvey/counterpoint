@@ -18,7 +18,7 @@ import {
 	TypeError01,
 	NanError01,
 } from '../../src/index.js';
-import * as AST from '../../src/validator/astnode/index.js'; // HACK
+import * as AST from '../../src/validator/astnode-solid/index.js'; // HACK
 import {
 	assertEqualTypes,
 } from '../assert-helpers.js';

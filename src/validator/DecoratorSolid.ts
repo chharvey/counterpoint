@@ -16,7 +16,7 @@ import {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from './Operator.js';
-import * as AST from './astnode/index.js';
+import * as AST from './astnode-solid/index.js';
 import {
 	DecoratorReturnType,
 	Decorator,
