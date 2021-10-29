@@ -1,7 +1,5 @@
-import {
-	titleToMacro,
-	Token,
-} from './package.js';
+import {titleToMacro} from './utils-private.js';
+import type {Token} from './Token.js';
 
 
 

@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import {stringOfSymbols} from './utils-private.js';
-import {Terminal} from './terminal/index.js';
+import {Terminal} from './Terminal.js';
 import type {Rule} from './Rule.js';
 import type {
 	GrammarSymbol,
