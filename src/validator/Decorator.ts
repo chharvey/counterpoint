@@ -3,7 +3,7 @@ import type {
 	Token,
 	ParseNode,
 } from './package.js';
-import type {ASTNode} from './astnode/index.js';
+import type {ASTNode} from './ASTNode.js';
 
 
 

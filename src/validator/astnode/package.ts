@@ -81,3 +81,4 @@ export {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from '../Operator.js';
+export {ASTNode} from '../ASTNode.js';

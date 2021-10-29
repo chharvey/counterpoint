@@ -4,12 +4,12 @@ import {
 	Token,
 	ParseNode,
 	Validator,
+	ASTNode,
 } from './package.js';
 import {
 	ASTNodeExpression,
 	ASTNodeCollectionLiteral,
 } from './index.js';
-import {ASTNode} from './ASTNode.js';
 import {forEachAggregated} from './utils-private.js';
 
 
