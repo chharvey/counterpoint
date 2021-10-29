@@ -9,8 +9,8 @@ import type {
 	GrammarSymbol,
 	Grammar,
 } from './Grammar.js';
+import type {Token} from './Token.js';
 import {
-	Token,
 	TokenWhitespace,
 	TokenComment,
 } from './token/index.js';

@@ -1,8 +1,8 @@
-import type {
+import {
 	NonemptyArray,
 	Char,
+	Token,
 } from './package.js';
-import {Token} from './Token.js';
 
 
 

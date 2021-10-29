@@ -14,7 +14,7 @@ import {
 	Grammar,
 	GrammarSymbol,
 } from './Grammar.js';
-import type {Token} from './token/Token.js';
+import type {Token} from './Token.js';
 import {ParseNode} from './ParseNode.js';
 import {Parser} from './Parser.js';
 import {LexerSolid, LEXER} from './LexerSolid.js';

@@ -24,7 +24,7 @@ const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 			Grammar,
 			GrammarSymbol,
 		} from './Grammar.js';
-		import type {Token} from './token/Token.js';
+		import type {Token} from './Token.js';
 		import {ParseNode} from './ParseNode.js';
 		import {Parser} from './Parser.js';
 		${ generate(await grammar_solid, 'Solid')

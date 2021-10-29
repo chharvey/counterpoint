@@ -1,10 +1,10 @@
-import {
+import type {
 	NonemptyArray,
 	Serializable,
-	stringifyAttributes,
-	sanitizeContent,
-	Char,
 } from './package.js';
+import {stringifyAttributes} from './utils-public.js';
+import {sanitizeContent} from './utils-private.js';
+import type {Char} from './Char.js';
 
 
 

@@ -5,26 +5,16 @@
  * they are only for modules within this package.
  */
 export {
-	LexError03,
-	LexError04,
-	LexError05,
 	NonemptyArray,
 	CodeUnit,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	Dev,
-	Serializable,
 } from '../package.js';
-export {LexerSolid} from '../index.js';
-export {
-	Filebound,
-	TemplatePosition,
-	stringifyAttributes,
-} from '../utils-public.js';
+export {TemplatePosition} from '../utils-public.js';
 export {
 	RadixType,
-	sanitizeContent,
 } from '../utils-private.js';
 export {Punctuator} from '../Punctuator.js';
 export {Keyword} from '../Keyword.js';
 export {Char} from '../Char.js';
+export {Token} from '../Token.js';

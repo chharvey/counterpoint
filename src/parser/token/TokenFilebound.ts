@@ -2,8 +2,8 @@ import {
 	NonemptyArray,
 	Filebound,
 	Char,
+	Token,
 } from './package.js';
-import {Token} from './Token.js';
 
 
 

@@ -6,7 +6,7 @@ import type {
 	GrammarSymbol,
 	GrammarTerminal,
 } from './Grammar.js'; // TODO: move to `./utils-private.ts`
-import type {Token} from './token/index.js';
+import type {Token} from './Token.js';
 
 
 /**
