@@ -2,7 +2,6 @@ import {
 	NonemptyArray,
 	Punctuator,
 	Keyword,
-	Token,
 	TOKEN,
 	ParseNode,
 	PARSENODE,
@@ -17,23 +16,11 @@ import {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 } from './Operator.js';
-import type {ASTNodeSolid} from './astnode/index.js';
 import * as AST from './astnode/index.js';
-
-
-
-type ParseList<T extends ParseNode> = ParseNode & {
-	children:
-		| readonly [T]
-		| readonly [ParseList<T>, T]
-	,
-};
-type HashList<T extends ParseNode> = ParseNode & {
-	children:
-		| readonly [T]
-		| readonly [HashList<T>, Token, T]
-	,
-};
+import {
+	DecoratorReturnType,
+	Decorator,
+} from './Decorator.js';
 
 
 
@@ -47,15 +34,7 @@ type TemplatePartialType = // FIXME spread types
 
 
 
-/**
- * The return type of `Decorator.decorate`.
- * May be an ASTNodeSolid, or an array of that, or an array of *that*, and so on.
- */
-type DecorateReturnType = ASTNodeSolid | DecorateReturnType[];
-
-
-
-export class DecoratorSolid {
+export class DecoratorSolid extends Decorator {
 	private static readonly ACCESSORS: ReadonlyMap<Punctuator, ValidAccessOperator> = new Map<Punctuator, ValidAccessOperator>([
 		[Punctuator.DOT,      Operator.DOT],
 		[Punctuator.OPTDOT,   Operator.OPTDOT],
@@ -100,47 +79,27 @@ export class DecoratorSolid {
 		[Punctuator.NOR,  Operator.NOR],
 	])
 
-	/**
-	 * Decorate a list.
-	 * @typeParam T - the type of ParseNode in the list
-	 * @typeParam A - the ASTNode that is returned by decoration
-	 * @return a sequence of `A` nodes.
-	 */
-	private static parseList<T extends ParseNode, A extends ASTNodeSolid>(node: ParseList<T> | HashList<T>): NonemptyArray<A> {
-		return (node.children.length === 1)
-			? [this.decorate(node.children[0]) as A]
-			: [
-				...this.parseList<T, A>(node.children[0]) as NonemptyArray<A>,
-				this.decorate((node.children.length === 2) ? node.children[1] : node.children[2]) as A,
-			];
-	}
-
-	/**
-	 * Return an ASTNode corresponding to a ParseNode’s contents.
-	 * @param node the parse node to decorate
-	 * @returns an ASTNode
-	 */
-	static decorate(node: PARSENODE.ParseNodeWord):             AST.ASTNodeKey;
-	static decorate(node: PARSENODE.ParseNodePrimitiveLiteral): AST.ASTNodeConstant;
-	static decorate(node: PARSENODE.ParseNodeTypeKeyword):      AST.ASTNodeTypeConstant;
-	static decorate(node:
+	static override decorate(node: PARSENODE.ParseNodeWord):             AST.ASTNodeKey;
+	static override decorate(node: PARSENODE.ParseNodePrimitiveLiteral): AST.ASTNodeConstant;
+	static override decorate(node: PARSENODE.ParseNodeTypeKeyword):      AST.ASTNodeTypeConstant;
+	static override decorate(node:
 		| PARSENODE.ParseNodeEntryType
 		| PARSENODE.ParseNodeEntryType_Optional
 	): AST.ASTNodeItemType;
-	static decorate(node:
+	static override decorate(node:
 		| PARSENODE.ParseNodeEntryType_Named
 		| PARSENODE.ParseNodeEntryType_Named_Optional
 	): AST.ASTNodePropertyType;
-	static decorate(node: PARSENODE.ParseNodeItemsType):          NonemptyArray<AST.ASTNodeItemType>;
-	static decorate(node: PARSENODE.ParseNodePropertiesType):     NonemptyArray<AST.ASTNodePropertyType>;
-	static decorate(node: PARSENODE.ParseNodeTypeTupleLiteral):   AST.ASTNodeTypeTuple;
-	static decorate(node: PARSENODE.ParseNodeTypeRecordLiteral):  AST.ASTNodeTypeRecord;
-	static decorate(node: PARSENODE.ParseNodeTypeHashLiteral):    AST.ASTNodeTypeHash;
-	static decorate(node: PARSENODE.ParseNodeTypeMapLiteral):     AST.ASTNodeTypeMap;
-	static decorate(node: PARSENODE.ParseNodeGenericArguments):   NonemptyArray<AST.ASTNodeType>;
-	static decorate(node: PARSENODE.ParseNodePropertyAccessType): AST.ASTNodeIndexType | AST.ASTNodeKey;
-	static decorate(node: PARSENODE.ParseNodeGenericCall):        NonemptyArray<AST.ASTNodeType>;
-	static decorate(node:
+	static override decorate(node: PARSENODE.ParseNodeItemsType):          NonemptyArray<AST.ASTNodeItemType>;
+	static override decorate(node: PARSENODE.ParseNodePropertiesType):     NonemptyArray<AST.ASTNodePropertyType>;
+	static override decorate(node: PARSENODE.ParseNodeTypeTupleLiteral):   AST.ASTNodeTypeTuple;
+	static override decorate(node: PARSENODE.ParseNodeTypeRecordLiteral):  AST.ASTNodeTypeRecord;
+	static override decorate(node: PARSENODE.ParseNodeTypeHashLiteral):    AST.ASTNodeTypeHash;
+	static override decorate(node: PARSENODE.ParseNodeTypeMapLiteral):     AST.ASTNodeTypeMap;
+	static override decorate(node: PARSENODE.ParseNodeGenericArguments):   NonemptyArray<AST.ASTNodeType>;
+	static override decorate(node: PARSENODE.ParseNodePropertyAccessType): AST.ASTNodeIndexType | AST.ASTNodeKey;
+	static override decorate(node: PARSENODE.ParseNodeGenericCall):        NonemptyArray<AST.ASTNodeType>;
+	static override decorate(node:
 		| PARSENODE.ParseNodeTypeUnit
 		| PARSENODE.ParseNodeTypeCompound
 		| PARSENODE.ParseNodeTypeUnarySymbol
@@ -149,20 +108,20 @@ export class DecoratorSolid {
 		| PARSENODE.ParseNodeTypeUnion
 		| PARSENODE.ParseNodeType
 	): AST.ASTNodeType;
-	static decorate(node: PARSENODE.ParseNodeStringTemplate):          AST.ASTNodeTemplate;
-	static decorate(node: PARSENODE.ParseNodeStringTemplate__0__List): TemplatePartialType;
-	static decorate(node: PARSENODE.ParseNodeProperty):                AST.ASTNodeProperty;
-	static decorate(node: PARSENODE.ParseNodeCase):                    AST.ASTNodeCase;
-	static decorate(node: PARSENODE.ParseNodeTupleLiteral):            AST.ASTNodeTuple;
-	static decorate(node: PARSENODE.ParseNodeRecordLiteral):           AST.ASTNodeRecord;
-	static decorate(node: PARSENODE.ParseNodeSetLiteral):              AST.ASTNodeSet;
-	static decorate(node: PARSENODE.ParseNodeMapLiteral):              AST.ASTNodeMap;
-	static decorate(node: PARSENODE.ParseNodeFunctionArguments):       AST.ASTNodeExpression[];
-	static decorate(node: PARSENODE.ParseNodePropertyAccess):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
-	static decorate(node: PARSENODE.ParseNodePropertyAssign):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
-	static decorate(node: PARSENODE.ParseNodeFunctionCall):            [AST.ASTNodeType[], AST.ASTNodeExpression[]];
-	static decorate(node: PARSENODE.ParseNodeAssignee):                AST.ASTNodeVariable | AST.ASTNodeAccess;
-	static decorate(node:
+	static override decorate(node: PARSENODE.ParseNodeStringTemplate):          AST.ASTNodeTemplate;
+	static override decorate(node: PARSENODE.ParseNodeStringTemplate__0__List): TemplatePartialType;
+	static override decorate(node: PARSENODE.ParseNodeProperty):                AST.ASTNodeProperty;
+	static override decorate(node: PARSENODE.ParseNodeCase):                    AST.ASTNodeCase;
+	static override decorate(node: PARSENODE.ParseNodeTupleLiteral):            AST.ASTNodeTuple;
+	static override decorate(node: PARSENODE.ParseNodeRecordLiteral):           AST.ASTNodeRecord;
+	static override decorate(node: PARSENODE.ParseNodeSetLiteral):              AST.ASTNodeSet;
+	static override decorate(node: PARSENODE.ParseNodeMapLiteral):              AST.ASTNodeMap;
+	static override decorate(node: PARSENODE.ParseNodeFunctionArguments):       AST.ASTNodeExpression[];
+	static override decorate(node: PARSENODE.ParseNodePropertyAccess):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
+	static override decorate(node: PARSENODE.ParseNodePropertyAssign):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
+	static override decorate(node: PARSENODE.ParseNodeFunctionCall):            [AST.ASTNodeType[], AST.ASTNodeExpression[]];
+	static override decorate(node: PARSENODE.ParseNodeAssignee):                AST.ASTNodeVariable | AST.ASTNodeAccess;
+	static override decorate(node:
 		| PARSENODE.ParseNodeExpressionUnit
 		| PARSENODE.ParseNodeExpressionCompound
 		| PARSENODE.ParseNodeExpressionUnarySymbol
@@ -175,15 +134,15 @@ export class DecoratorSolid {
 		| PARSENODE.ParseNodeExpressionDisjunctive
 		| PARSENODE.ParseNodeExpression
 	): AST.ASTNodeExpression;
-	static decorate(node: PARSENODE.ParseNodeExpressionConditional): AST.ASTNodeOperationTernary;
-	static decorate(node: PARSENODE.ParseNodeDeclarationType):       AST.ASTNodeDeclarationType;
-	static decorate(node: PARSENODE.ParseNodeDeclarationVariable):   AST.ASTNodeDeclarationVariable;
-	static decorate(node: PARSENODE.ParseNodeDeclaration):           AST.ASTNodeDeclaration;
-	static decorate(node: PARSENODE.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
-	static decorate(node: PARSENODE.ParseNodeStatement):             AST.ASTNodeStatement;
-	static decorate(node: PARSENODE.ParseNodeGoal):                  AST.ASTNodeGoal;
-	static decorate(node: ParseNode): DecorateReturnType;
-	static decorate(node: ParseNode): DecorateReturnType {
+	static override decorate(node: PARSENODE.ParseNodeExpressionConditional): AST.ASTNodeOperationTernary;
+	static override decorate(node: PARSENODE.ParseNodeDeclarationType):       AST.ASTNodeDeclarationType;
+	static override decorate(node: PARSENODE.ParseNodeDeclarationVariable):   AST.ASTNodeDeclarationVariable;
+	static override decorate(node: PARSENODE.ParseNodeDeclaration):           AST.ASTNodeDeclaration;
+	static override decorate(node: PARSENODE.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
+	static override decorate(node: PARSENODE.ParseNodeStatement):             AST.ASTNodeStatement;
+	static override decorate(node: PARSENODE.ParseNodeGoal):                  AST.ASTNodeGoal;
+	static override decorate(node: ParseNode): DecoratorReturnType;
+	static override decorate(node: ParseNode): DecoratorReturnType {
 		if (node instanceof PARSENODE.ParseNodeWord) {
 			return new AST.ASTNodeKey(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenIdentifier);
 
