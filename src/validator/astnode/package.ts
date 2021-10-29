@@ -63,7 +63,7 @@ export {
 	PARSER,
 } from '../package.js';
 export {
-	Decorator,
+	DECORATOR,
 	Validator,
 	SymbolKind,
 	SymbolStructure,

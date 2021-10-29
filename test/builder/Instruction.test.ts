@@ -4,7 +4,7 @@ import {
 	PARSER,
 } from '../../src/parser/index.js';
 import {
-	Decorator,
+	DECORATOR,
 	Operator,
 } from '../../src/validator/index.js';
 import {
@@ -244,7 +244,7 @@ describe('Instruction', () => {
 				const mods: (INST.InstructionNone | INST.InstructionModule)[] = [
 					``,
 					`;`,
-				].map((src) => Decorator
+				].map((src) => DECORATOR
 					.decorate(PARSER.parse(src))
 					.build(new Builder(src))
 				);
