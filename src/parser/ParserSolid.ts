@@ -18,7 +18,7 @@ import type {Token} from './Token.js';
 import {ParseNode} from './ParseNode.js';
 import {Parser} from './Parser.js';
 import {LexerSolid, LEXER} from './LexerSolid.js';
-import * as TERMINAL from './terminal/index.js';
+import * as TERMINAL from './terminal-solid/index.js';
 
 export class ProductionWord extends Production {
 	static readonly instance: ProductionWord = new ProductionWord();
