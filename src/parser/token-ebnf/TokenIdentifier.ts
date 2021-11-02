@@ -6,7 +6,7 @@ import {
 
 
 
-export class TokenIden extends Token {
+export class TokenIdentifier extends Token {
 	static readonly START: RegExp = /^[A-Z]$/;
 	static readonly REST:  RegExp = /^[A-Za-z0-9_]+$/;
 	constructor (...chars: NonemptyArray<Char>) {

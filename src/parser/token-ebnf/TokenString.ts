@@ -6,7 +6,7 @@ import {
 
 
 
-export class TokenStr extends Token {
+export class TokenString extends Token {
 	static readonly DELIM: '"' = '"';
 	constructor (...chars: NonemptyArray<Char>) {
 		super('STRING', ...chars);
