@@ -1,0 +1,64 @@
+// IDENTIFIER  ::= [./lexicon.ebnf#Identifier];
+// CHAR_CODE   ::= [./lexicon.ebnf#CharCode];
+// STRING      ::= [./lexicon.ebnf#String];
+// CHAR_CLASS  ::= [./lexicon.ebnf#CharClass];
+
+
+
+ParameterSet ::= "<"                    IDENTIFIER             # ">";
+ArgumentSet  ::= "<" (("+" | "-" | "?") IDENTIFIER            )# ">";
+ConditionSet ::= "<" (                  IDENTIFIER ("+" | "-"))# ">";
+
+
+
+Reference ::=
+	| IDENTIFIER
+	| Reference ArgumentSet;
+
+
+
+Unit ::=
+	| CHAR_CODE
+	| STRING
+	| CHAR_CLASS
+	| Reference
+	| "(" Definition ")"
+;
+
+
+
+Unary
+	::= Unit ("+" | "*" | "#")? "?"?;
+
+
+
+Item ::=
+	| Unary
+	| ConditionSet Item
+;
+
+
+Order  ::= ( Order  "."? )? Item;
+Concat ::= ( Concat "&"  )? Order;
+Altern ::= ( Altern "|"  )? Concat;
+
+
+
+Definition
+	::= ("." | "&" | "|")? Altern;
+
+
+
+NonterminalName ::=
+	| IDENTIFIER
+	| NonterminalName ParameterSet;
+
+
+
+Production
+	::= NonterminalName (":::=" | "::=") Definition ";";
+
+
+
+Goal
+	::= #x02 Production* #x03;

@@ -4,18 +4,19 @@
 | It is auto-generated via <@chharvey/parser>.
 | If you need to make updates, make them there.
 /----------------------------------------------------------------*/
+
 import {
 	NonemptyArray,
 	SolidConfig,
 	CONFIG_DEFAULT,
 } from './package.js';
+import type {Token} from './Token.js';
+import {ParseNode} from './ParseNode.js';
 import {Production} from './Production.js';
 import {
 	Grammar,
 	GrammarSymbol,
 } from './Grammar.js';
-import type {Token} from './Token.js';
-import {ParseNode} from './ParseNode.js';
 import {Parser} from './Parser.js';
 import {LexerSolid, LEXER} from './LexerSolid.js';
 import * as TERMINAL from './terminal-solid/index.js';
