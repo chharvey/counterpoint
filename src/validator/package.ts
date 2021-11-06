@@ -67,10 +67,9 @@ export {
 	Punctuator,
 	Keyword,
 	Token,
-	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
+	TOKEN_SOLID as TOKEN,
 	ParserSolid,
 	ParseNode,
-	PARSENODE,
-	PARSER,
+	PARSENODE_SOLID as PARSENODE,
+	PARSER_SOLID as PARSER,
 } from '../parser/index.js';
-export * as TOKEN from '../parser/token/index.js'; // HACK

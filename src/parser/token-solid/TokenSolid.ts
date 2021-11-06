@@ -1,5 +1,7 @@
-import type {CodeUnit} from './package.js';
-import {Token} from './Token.js';
+import {
+	CodeUnit,
+	Token,
+} from './package.js';
 
 
 

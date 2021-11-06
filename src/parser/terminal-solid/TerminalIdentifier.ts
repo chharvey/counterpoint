@@ -3,8 +3,8 @@ import {
 	maybe,
 	Token,
 	TOKEN,
+	Terminal,
 } from './package.js';
-import {Terminal} from './Terminal.js';
 
 
 

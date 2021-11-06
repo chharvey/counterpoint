@@ -1,11 +1,11 @@
 import * as assert from 'assert';
 import * as xjs from 'extrajs';
-import {
+import type {
 	EBNFObject,
-	PARSENODE as PROD,
 } from '../../src/index.js';
 import {Production} from '../../src/parser/Production.js';
 import {Rule} from '../../src/parser/Rule.js';
+import * as PROD from '../../src/parser/ParserSolid.js';
 
 
 

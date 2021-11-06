@@ -1,12 +1,12 @@
 import * as xjs from 'extrajs';
 import {stringOfSymbols} from './utils-private.js';
-import {Terminal} from './terminal/index.js';
+import {Terminal} from './Terminal.js';
 import type {Rule} from './Rule.js';
 import type {
 	GrammarSymbol,
 	GrammarTerminal,
 } from './Grammar.js'; // TODO: move to `./utils-private.ts`
-import type {Token} from './token/index.js';
+import type {Token} from './Token.js';
 
 
 /**
