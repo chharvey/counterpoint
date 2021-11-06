@@ -13,7 +13,5 @@ export * as PARSENODE_SOLID from './ParserSolid.js';
 
 export * from './LexerSolid.js';
 
-export {
-	ParserSolid,
-	PARSER,
-} from './ParserSolid.js';
+export {PARSER as PARSER_EBNF} from './ParserEbnf.js';
+export {ParserSolid, PARSER as PARSER_SOLID} from './ParserSolid.js';

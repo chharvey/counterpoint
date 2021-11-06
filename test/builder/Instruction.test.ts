@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import * as assert from 'assert'
 import {
-	PARSER,
+	PARSER_SOLID as PARSER,
 } from '../../src/parser/index.js';
 import {
 	DECORATOR,

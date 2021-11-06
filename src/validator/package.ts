@@ -67,5 +67,5 @@ export {
 	ParserSolid,
 	ParseNode,
 	PARSENODE_SOLID as PARSENODE,
-	PARSER,
+	PARSER_SOLID as PARSER,
 } from '../parser/index.js';

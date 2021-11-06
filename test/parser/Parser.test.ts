@@ -8,7 +8,7 @@ import {
 	TokenFilebound,
 	TOKEN_SOLID as TOKEN,
 	PARSENODE_SOLID as PARSENODE,
-	PARSER,
+	PARSER_SOLID as PARSER,
 	ParseError01,
 } from '../../src/index.js';
 import {Parser} from '../../src/parser/Parser.js';

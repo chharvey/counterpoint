@@ -15,7 +15,7 @@ import {
 	ParseNode,
 	PARSENODE_SOLID as PARSENODE,
 	ParserSolid,
-	PARSER,
+	PARSER_SOLID as PARSER,
 } from '../src/parser/index.js';
 import {
 	assert_arrayLength,
