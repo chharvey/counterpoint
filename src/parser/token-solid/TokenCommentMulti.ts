@@ -1,4 +1,5 @@
-import {TokenComment} from './TokenComment.js';
+import {TokenComment} from './package.js';
+
 
 
 export class TokenCommentMulti extends TokenComment {

@@ -5,8 +5,8 @@ import {
 	maybeA,
 	Token,
 	TOKEN,
+	Terminal,
 } from './package.js';
-import {Terminal} from './Terminal.js';
 import {TerminalInteger} from './TerminalInteger.js';
 
 

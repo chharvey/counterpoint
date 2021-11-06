@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import {ParseError01} from './package.js';
 import type {EBNFObject} from './utils-public.js';
-import {Terminal} from './terminal/index.js';
+import {Terminal} from './Terminal.js';
 import {Production} from './Production.js';
 import type {Rule} from './Rule.js';
 import type {Configuration} from './Configuration.js';
@@ -13,7 +13,7 @@ import {
 	Token,
 	TokenWhitespace,
 	TokenComment,
-} from './token/index.js';
+} from './Token.js';
 import {ParseNode} from './ParseNode.js';
 import type {Lexer} from './Lexer.js';
 

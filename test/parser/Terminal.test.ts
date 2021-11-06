@@ -6,7 +6,7 @@ import {
 import {
 	TerminalInteger,
 	TerminalString,
-} from '../../src/parser/terminal/index.js';
+} from '../../src/parser/terminal-solid/index.js';
 
 
 

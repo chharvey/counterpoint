@@ -6,7 +6,7 @@ import {
 	Dev,
 } from '../../src/core/index.js';
 import {
-	PARSENODE,
+	PARSENODE_SOLID as PARSENODE,
 } from '../../src/parser/index.js';
 import {
 	Operator,

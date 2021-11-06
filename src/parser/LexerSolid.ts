@@ -17,8 +17,8 @@ import {
 	Punctuator,
 } from './Punctuator.js';
 import {Char} from './Char.js';
-import {Token} from './token/index.js';
-import * as TOKEN from './token/index.js';
+import {Token} from './Token.js';
+import * as TOKEN from './token-solid/index.js';
 import {Lexer} from './Lexer.js';
 
 

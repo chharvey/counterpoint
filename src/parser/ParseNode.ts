@@ -4,7 +4,7 @@ import {
 	EBNFObject,
 	stringifyAttributes,
 } from './utils-public.js';
-import type {Token} from './token/index.js';
+import type {Token} from './Token.js';
 
 
 
