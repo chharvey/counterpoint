@@ -1,8 +1,8 @@
-import type * as TOKEN from '@chharvey/parser/dist/ebnf/Token.js';
 import type {
 	NonemptyArray,
 	EBNFObject,
 	EBNFChoice,
+	TOKEN,
 	ParseNode,
 } from './package.js';
 import {

@@ -67,6 +67,7 @@ export {
 	Punctuator,
 	Keyword,
 	Token,
+	TOKEN_EBNF,
 	TOKEN_SOLID,
 	ParserSolid,
 	ParseNode,

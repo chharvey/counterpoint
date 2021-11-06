@@ -1,5 +1,7 @@
-import type * as TOKEN from '@chharvey/parser/dist/ebnf/Token.js';
-import type {ParseNode} from './package.js';
+import type {
+	TOKEN,
+	ParseNode,
+} from './package.js';
 import {ConcreteNonterminal} from './utils-private.js';
 import {ASTNodeEbnf} from './ASTNodeEbnf.js';
 import type {ASTNodeParam} from './ASTNodeParam.js';

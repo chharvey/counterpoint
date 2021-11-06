@@ -11,6 +11,7 @@ export {
 	EBNFSequence,
 	EBNFItem,
 	Token,
+	TOKEN_EBNF as TOKEN,
 	ParseNode,
 } from '../package.js';
 export {

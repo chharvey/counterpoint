@@ -1,11 +1,12 @@
-import type * as TOKEN from '@chharvey/parser/dist/ebnf/Token.js';
+import type {
+	TOKEN,
+} from './package.js';
 import {ASTNodeEbnf} from './ASTNodeEbnf.js';
 
 
 
 export class ASTNodeParam extends ASTNodeEbnf {
 	constructor (parse_node: TOKEN.TokenIdentifier) {
-		// @ts-expect-error
 		super(parse_node, {name: parse_node.source});
 	}
 }

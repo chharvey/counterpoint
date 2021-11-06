@@ -1,7 +1,7 @@
-import * as TOKEN from '@chharvey/parser/dist/ebnf/Token.js';
-import type {
+import {
 	EBNFObject,
 	EBNFChoice,
+	TOKEN,
 } from './package.js';
 import type {ConcreteNonterminal} from './utils-private.js';
 import {ASTNodeExpr} from './ASTNodeExpr.js';
@@ -16,7 +16,6 @@ export class ASTNodeConst extends ASTNodeExpr {
 			| TOKEN.TokenCharClass
 		,
 	) {
-		// @ts-expect-error
 		super(p_node, {value: p_node.source});
 	}
 
