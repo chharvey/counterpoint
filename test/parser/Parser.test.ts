@@ -6,12 +6,11 @@ import {
 	Keyword,
 	Token,
 	TokenFilebound,
-	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
+	TOKEN_SOLID as TOKEN,
 	PARSENODE,
 	PARSER,
 	ParseError01,
 } from '../../src/index.js';
-import * as TOKEN from '../../src/parser/token-solid/index.js'; // HACK
 import {Parser} from '../../src/parser/Parser.js';
 import {
 	assert_arrayLength,

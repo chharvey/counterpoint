@@ -10,11 +10,10 @@ import {
 	Dev,
 } from '../../src/core/index.js';
 import {
-	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
+	TOKEN_SOLID as TOKEN,
 	LexerSolid,
 	LEXER,
 } from '../../src/parser/index.js';
-import * as TOKEN from '../../src/parser/token-solid/index.js'; // HACK
 
 
 
