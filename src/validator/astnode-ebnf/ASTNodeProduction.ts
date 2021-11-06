@@ -24,8 +24,8 @@ type Mutable<T> = {
 export class ASTNodeProduction extends ASTNodeEbnf {
 	constructor (
 		parse_node: ParseNode,
-		private readonly nonterminal: ASTNodeNonterminal,
-		private readonly definition:  ASTNodeExpr,
+		readonly nonterminal: ASTNodeNonterminal,
+		readonly definition:  ASTNodeExpr,
 	) {
 		super(parse_node, {}, [nonterminal, definition]);
 	}

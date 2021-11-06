@@ -28,7 +28,7 @@ export class ASTNodeRef extends ASTNodeExpr {
 			(ref instanceof ASTNodeRef) ? [ref, ...args] : [],
 		);
 	}
-	private readonly name: string = (this.ref instanceof ASTNodeRef) ? this.ref.name : this.ref.source;
+	readonly name: string = (this.ref instanceof ASTNodeRef) ? this.ref.name : this.ref.source;
 
 	override transform(nt: ConcreteNonterminal, _data: EBNFObject[]): EBNFChoice {
 		return (this.name === this.name.toUpperCase())

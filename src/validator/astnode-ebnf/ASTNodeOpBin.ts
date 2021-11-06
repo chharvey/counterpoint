@@ -16,9 +16,9 @@ import {ASTNodeOp} from './ASTNodeOp.js';
 export class ASTNodeOpBin extends ASTNodeOp {
 	constructor (
 		parse_node: ParseNode,
-		private readonly operator: Binop,
-		private readonly operand0: ASTNodeExpr,
-		private readonly operand1: ASTNodeExpr,
+		readonly operator: Binop,
+		readonly operand0: ASTNodeExpr,
+		readonly operand1: ASTNodeExpr,
 	) {
 		super(parse_node, operator, [operand0, operand1]);
 	}

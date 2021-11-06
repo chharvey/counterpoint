@@ -71,6 +71,7 @@ export {
 	TOKEN_SOLID,
 	ParserSolid,
 	ParseNode,
+	PARSENODE_EBNF,
 	PARSENODE_SOLID,
 	PARSER_SOLID,
 } from '../parser/index.js';

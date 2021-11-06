@@ -22,8 +22,8 @@ export class ASTNodeOpUn extends ASTNodeOp {
 	]);
 	constructor (
 		parse_node: ParseNode,
-		private readonly operator: Unop,
-		private readonly operand:  ASTNodeExpr,
+		readonly operator: Unop,
+		readonly operand:  ASTNodeExpr,
 	) {
 		super(parse_node, operator, [operand]);
 	}

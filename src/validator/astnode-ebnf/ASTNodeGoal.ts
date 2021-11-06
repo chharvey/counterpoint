@@ -10,7 +10,7 @@ import type {ASTNodeProduction} from './ASTNodeProduction.js';
 export class ASTNodeGoal extends ASTNodeEbnf {
 	constructor (
 		parse_node: ParseNode,
-		private readonly productions: readonly ASTNodeProduction[] = [],
+		readonly productions: readonly ASTNodeProduction[] = [],
 	) {
 		super(parse_node, {}, productions);
 	}
