@@ -2,9 +2,9 @@ import {
 	NonemptyArray,
 	Punctuator,
 	Keyword,
-	TOKEN,
+	TOKEN_SOLID as TOKEN,
 	ParseNode,
-	PARSENODE,
+	PARSENODE_SOLID as PARSENODE,
 } from './package.js';
 import {
 	Operator,

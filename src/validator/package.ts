@@ -67,9 +67,9 @@ export {
 	Punctuator,
 	Keyword,
 	Token,
-	TOKEN_SOLID as TOKEN,
+	TOKEN_SOLID,
 	ParserSolid,
 	ParseNode,
-	PARSENODE_SOLID as PARSENODE,
-	PARSER_SOLID as PARSER,
+	PARSENODE_SOLID,
+	PARSER_SOLID,
 } from '../parser/index.js';
