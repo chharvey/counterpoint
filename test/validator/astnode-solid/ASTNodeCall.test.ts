@@ -1,9 +1,8 @@
 import * as assert from 'assert';
 import {
-	// {ASTNodeKey, ...} as AST,
+	ASTNODE_SOLID as AST,
 	Validator,
 } from '../../../src/validator/index.js';
-import * as AST from '../../../src/validator/astnode-solid/index.js'; // HACK
 import {
 	SolidType,
 	SolidTypeList,

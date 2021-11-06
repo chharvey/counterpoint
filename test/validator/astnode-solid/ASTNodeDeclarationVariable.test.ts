@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import {
 	CONFIG_DEFAULT,
 	Operator,
-	// {ASTNodeKey, ...} as AST,
+	ASTNODE_SOLID as AST,
 	SymbolStructure,
 	SymbolStructureVar,
 	Validator,
@@ -16,7 +16,6 @@ import {
 	AssignmentError01,
 	TypeError03,
 } from '../../../src/index.js';
-import * as AST from '../../../src/validator/astnode-solid/index.js'; // HACK
 import {
 	assertAssignable,
 } from '../../assert-helpers.js';

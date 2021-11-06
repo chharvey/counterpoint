@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	// {ASTNodeKey, ...} as AST,
+	ASTNODE_SOLID as AST,
 	SymbolStructure,
 	SymbolStructureType,
 	Validator,
@@ -9,7 +9,6 @@ import {
 	Builder,
 	AssignmentError01,
 } from '../../../src/index.js';
-import * as AST from '../../../src/validator/astnode-solid/index.js'; // HACK
 
 
 

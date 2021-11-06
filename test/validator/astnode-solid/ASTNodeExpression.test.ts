@@ -3,7 +3,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
-	// {ASTNodeKey, ...} as AST,
+	ASTNODE_SOLID as AST,
 	Validator,
 	SolidType,
 	SolidTypeUnit,
@@ -27,7 +27,6 @@ import {
 	ReferenceError02,
 	ReferenceError03,
 } from '../../../src/index.js';
-import * as AST from '../../../src/validator/astnode-solid/index.js'; // HACK
 import {assert_wasCalled} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,

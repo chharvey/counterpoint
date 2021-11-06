@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {
 	Operator,
-	// {ASTNodeKey, ...} as AST,
+	ASTNODE_SOLID as AST,
 	Validator,
 	SolidType,
 	INST,
@@ -14,7 +14,6 @@ import {
 	TypeError03,
 	MutabilityError01,
 } from '../../../src/index.js';
-import * as AST from '../../../src/validator/astnode-solid/index.js'; // HACK
 import {
 	assertAssignable,
 } from '../../assert-helpers.js';
