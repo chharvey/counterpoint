@@ -66,6 +66,6 @@ export {
 	TOKEN_SOLID as TOKEN,
 	ParserSolid,
 	ParseNode,
-	PARSENODE,
+	PARSENODE_SOLID as PARSENODE,
 	PARSER,
 } from '../parser/index.js';

@@ -13,7 +13,7 @@ import {
 	TokenFilebound,
 	TOKEN_SOLID as TOKEN,
 	ParseNode,
-	PARSENODE,
+	PARSENODE_SOLID as PARSENODE,
 	ParserSolid,
 	PARSER,
 } from '../src/parser/index.js';

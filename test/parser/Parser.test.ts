@@ -7,7 +7,7 @@ import {
 	Token,
 	TokenFilebound,
 	TOKEN_SOLID as TOKEN,
-	PARSENODE,
+	PARSENODE_SOLID as PARSENODE,
 	PARSER,
 	ParseError01,
 } from '../../src/index.js';
