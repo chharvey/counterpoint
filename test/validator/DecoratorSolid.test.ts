@@ -12,7 +12,7 @@ import {
 	Operator,
 	ValidAccessOperator,
 	ASTNODE_SOLID as AST,
-	DECORATOR as DECORATOR_SOLID,
+	DECORATOR_SOLID,
 } from '../../src/validator/index.js';
 import {
 	assert_arrayLength,
