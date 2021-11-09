@@ -13,7 +13,7 @@ await Promise.all([
 		| It is auto-generated via <@chharvey/parser>.
 		| If you need to make updates, make them there.
 		/----------------------------------------------------------------*/
-		${ generate(await fs.promises.readFile(path.join(DIRNAME, '../docs/spec/grammar/syntax-ebnf.ebnf'), 'utf8'))
+		${ generate(await fs.promises.readFile(path.join(DIRNAME, '../docs/spec/grammar-ebnf/syntax.ebnf'), 'utf8'))
 			.replace(xjs.String.dedent`
 				import {
 					NonemptyArray,
@@ -47,7 +47,7 @@ await Promise.all([
 		| It is auto-generated via <@chharvey/parser>.
 		| If you need to make updates, make them there.
 		/----------------------------------------------------------------*/
-		${ generate(await fs.promises.readFile(path.join(DIRNAME, '../docs/spec/grammar/syntax-solid.ebnf'), 'utf8'))
+		${ generate(await fs.promises.readFile(path.join(DIRNAME, '../docs/spec/grammar-solid/syntax.ebnf'), 'utf8'))
 			.replace(xjs.String.dedent`
 				import {
 					NonemptyArray,
