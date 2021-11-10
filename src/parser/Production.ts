@@ -1,9 +1,11 @@
 import * as xjs from 'extrajs';
 import type {NonemptyArray} from './package.js';
 import type {EBNFObject} from './utils-public.js';
-import {macroToTitle} from './utils-private.js';
+import {
+	GrammarSymbol,
+	macroToTitle,
+} from './utils-private.js';
 import {Rule} from './Rule.js';
-import type {GrammarSymbol} from './Grammar.js'; // TODO: move to `./utils-private.ts`
 
 
 

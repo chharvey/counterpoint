@@ -6,9 +6,9 @@ import type {
 import type {
 	EBNFObject,
 } from '../../src/index.js';
+import type {GrammarSymbol} from '../../src/parser/utils-private.js';
 import {Production} from '../../src/parser/Production.js';
 import {Rule} from '../../src/parser/Rule.js';
-import type {GrammarSymbol} from '../../src/parser/Grammar.js';
 
 
 

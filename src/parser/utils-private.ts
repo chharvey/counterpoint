@@ -2,11 +2,26 @@ import {
 	Util,
 } from './package.js';
 import {Filebound} from './utils-public.js';
-import type {GrammarSymbol} from './Grammar.js';
+import type {Terminal} from './Terminal.js';
+import type {Production} from './Production.js';
 
 
 
 export type RadixType = 2n|4n|8n|10n|16n|36n
+
+
+
+export type GrammarTerminal =
+	| string
+	| Terminal
+;
+
+
+
+export type GrammarSymbol =
+	| GrammarTerminal
+	| Production
+;
 
 
 

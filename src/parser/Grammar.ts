@@ -1,22 +1,14 @@
 import * as xjs from 'extrajs';
 import type {NonemptyArray} from './package.js';
 import type {EBNFObject} from './utils-public.js';
+import type {
+	GrammarTerminal,
+	GrammarSymbol,
+} from './utils-private.js';
 import {Terminal} from './Terminal.js';
 import {Production} from './Production.js';
 import type {Rule} from './Rule.js';
 import {Configuration} from './Configuration.js';
-
-
-
-export type GrammarSymbol =
-	| GrammarTerminal
-	| Production
-;
-
-export type GrammarTerminal =
-	| string
-	| Terminal
-;
 
 
 

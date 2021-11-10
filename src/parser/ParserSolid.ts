@@ -11,12 +11,12 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 } from './package.js';
+import type {
+	GrammarSymbol,
+} from './utils-private.js';
 import * as TERMINAL from './terminal-solid/index.js';
 import {Production} from './Production.js';
-import {
-	Grammar,
-	GrammarSymbol,
-} from './Grammar.js';
+import {Grammar} from './Grammar.js';
 import type {Token} from './Token.js';
 import {ParseNode} from './ParseNode.js';
 import {LexerSolid, LEXER} from './LexerSolid.js';

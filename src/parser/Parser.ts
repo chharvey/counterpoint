@@ -1,14 +1,12 @@
 import * as xjs from 'extrajs';
 import {ParseError01} from './package.js';
 import type {EBNFObject} from './utils-public.js';
+import type {GrammarSymbol} from './utils-private.js';
 import {Terminal} from './Terminal.js';
 import {Production} from './Production.js';
 import type {Rule} from './Rule.js';
 import type {Configuration} from './Configuration.js';
-import type {
-	GrammarSymbol,
-	Grammar,
-} from './Grammar.js';
+import type {Grammar} from './Grammar.js';
 import {
 	Token,
 	TokenWhitespace,

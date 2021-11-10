@@ -1,7 +1,9 @@
 import * as xjs from 'extrajs';
-import {stringOfSymbols} from './utils-private.js';
+import {
+	GrammarSymbol,
+	stringOfSymbols,
+} from './utils-private.js';
 import type {Production} from './Production.js';
-import type {GrammarSymbol} from './Grammar'; // TODO: move to `./utils-private.ts`
 
 
 
