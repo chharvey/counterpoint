@@ -31,9 +31,8 @@ export abstract class Production {
 	 */
 	static fromJSON(json: EBNFObject): string {
 		return (json.family === true) ? '' : xjs.String.dedent`
-			export class ${ this.classnameOf(json) } extends Production {
+			class ${ this.classnameOf(json) } extends Production {
 				static readonly instance: ${ this.classnameOf(json) } = new ${ this.classnameOf(json) }();
-				/** @implements Production */
 				override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 					return [
 						${ json.defn.map((seq) => `[${ seq.map((it) =>

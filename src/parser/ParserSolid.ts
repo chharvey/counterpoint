@@ -1,7 +1,8 @@
 
+
 /*----------------------------------------------------------------/
 | WARNING: Do not manually update this file!
-| It is auto-generated via <@chharvey/parser>.
+| It is auto-generated via `/tasks/build-parser.js`.
 | If you need to make updates, make them there.
 /----------------------------------------------------------------*/
 
@@ -10,20 +11,19 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 } from './package.js';
-import type {Token} from './Token.js';
-import {ParseNode} from './ParseNode.js';
+import * as TERMINAL from './terminal-solid/index.js';
 import {Production} from './Production.js';
 import {
 	Grammar,
 	GrammarSymbol,
 } from './Grammar.js';
-import {Parser} from './Parser.js';
+import type {Token} from './Token.js';
+import {ParseNode} from './ParseNode.js';
 import {LexerSolid, LEXER} from './LexerSolid.js';
-import * as TERMINAL from './terminal-solid/index.js';
+import {Parser} from './Parser.js';
 
-export class ProductionWord extends Production {
+class ProductionWord extends Production {
 	static readonly instance: ProductionWord = new ProductionWord();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[TERMINAL.TerminalKeyword.instance],
@@ -32,9 +32,8 @@ export class ProductionWord extends Production {
 	}
 }
 
-export class ProductionPrimitiveLiteral extends Production {
+class ProductionPrimitiveLiteral extends Production {
 	static readonly instance: ProductionPrimitiveLiteral = new ProductionPrimitiveLiteral();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['null'],
@@ -47,9 +46,8 @@ export class ProductionPrimitiveLiteral extends Production {
 	}
 }
 
-export class ProductionTypeKeyword extends Production {
+class ProductionTypeKeyword extends Production {
 	static readonly instance: ProductionTypeKeyword = new ProductionTypeKeyword();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['void'],
@@ -62,9 +60,8 @@ export class ProductionTypeKeyword extends Production {
 	}
 }
 
-export class ProductionEntryType extends Production {
+class ProductionEntryType extends Production {
 	static readonly instance: ProductionEntryType = new ProductionEntryType();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionType.instance],
@@ -72,9 +69,8 @@ export class ProductionEntryType extends Production {
 	}
 }
 
-export class ProductionEntryType_Optional extends Production {
+class ProductionEntryType_Optional extends Production {
 	static readonly instance: ProductionEntryType_Optional = new ProductionEntryType_Optional();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['?:', ProductionType.instance],
@@ -82,9 +78,8 @@ export class ProductionEntryType_Optional extends Production {
 	}
 }
 
-export class ProductionEntryType_Named extends Production {
+class ProductionEntryType_Named extends Production {
 	static readonly instance: ProductionEntryType_Named = new ProductionEntryType_Named();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionWord.instance, ':', ProductionType.instance],
@@ -92,9 +87,8 @@ export class ProductionEntryType_Named extends Production {
 	}
 }
 
-export class ProductionEntryType_Named_Optional extends Production {
+class ProductionEntryType_Named_Optional extends Production {
 	static readonly instance: ProductionEntryType_Named_Optional = new ProductionEntryType_Named_Optional();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionWord.instance, '?:', ProductionType.instance],
@@ -102,9 +96,8 @@ export class ProductionEntryType_Named_Optional extends Production {
 	}
 }
 
-export class ProductionItemsType__0__List extends Production {
+class ProductionItemsType__0__List extends Production {
 	static readonly instance: ProductionItemsType__0__List = new ProductionItemsType__0__List();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionEntryType.instance],
@@ -113,9 +106,8 @@ export class ProductionItemsType__0__List extends Production {
 	}
 }
 
-export class ProductionItemsType__1__List extends Production {
+class ProductionItemsType__1__List extends Production {
 	static readonly instance: ProductionItemsType__1__List = new ProductionItemsType__1__List();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionEntryType_Optional.instance],
@@ -124,9 +116,8 @@ export class ProductionItemsType__1__List extends Production {
 	}
 }
 
-export class ProductionItemsType extends Production {
+class ProductionItemsType extends Production {
 	static readonly instance: ProductionItemsType = new ProductionItemsType();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionItemsType__0__List.instance],
@@ -139,9 +130,8 @@ export class ProductionItemsType extends Production {
 	}
 }
 
-export class ProductionPropertiesType__0__List extends Production {
+class ProductionPropertiesType__0__List extends Production {
 	static readonly instance: ProductionPropertiesType__0__List = new ProductionPropertiesType__0__List();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionEntryType_Named.instance],
@@ -152,9 +142,8 @@ export class ProductionPropertiesType__0__List extends Production {
 	}
 }
 
-export class ProductionPropertiesType extends Production {
+class ProductionPropertiesType extends Production {
 	static readonly instance: ProductionPropertiesType = new ProductionPropertiesType();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionPropertiesType__0__List.instance],
@@ -163,9 +152,8 @@ export class ProductionPropertiesType extends Production {
 	}
 }
 
-export class ProductionTypeTupleLiteral extends Production {
+class ProductionTypeTupleLiteral extends Production {
 	static readonly instance: ProductionTypeTupleLiteral = new ProductionTypeTupleLiteral();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['[', ']'],
@@ -175,9 +163,8 @@ export class ProductionTypeTupleLiteral extends Production {
 	}
 }
 
-export class ProductionTypeRecordLiteral extends Production {
+class ProductionTypeRecordLiteral extends Production {
 	static readonly instance: ProductionTypeRecordLiteral = new ProductionTypeRecordLiteral();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['[', ProductionPropertiesType.instance, ']'],
@@ -186,9 +173,8 @@ export class ProductionTypeRecordLiteral extends Production {
 	}
 }
 
-export class ProductionTypeHashLiteral extends Production {
+class ProductionTypeHashLiteral extends Production {
 	static readonly instance: ProductionTypeHashLiteral = new ProductionTypeHashLiteral();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['[', ':', ProductionType.instance, ']'],
@@ -196,9 +182,8 @@ export class ProductionTypeHashLiteral extends Production {
 	}
 }
 
-export class ProductionTypeMapLiteral extends Production {
+class ProductionTypeMapLiteral extends Production {
 	static readonly instance: ProductionTypeMapLiteral = new ProductionTypeMapLiteral();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['{', ProductionType.instance, '->', ProductionType.instance, '}'],
@@ -206,9 +191,8 @@ export class ProductionTypeMapLiteral extends Production {
 	}
 }
 
-export class ProductionGenericArguments__0__List extends Production {
+class ProductionGenericArguments__0__List extends Production {
 	static readonly instance: ProductionGenericArguments__0__List = new ProductionGenericArguments__0__List();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionType.instance],
@@ -217,9 +201,8 @@ export class ProductionGenericArguments__0__List extends Production {
 	}
 }
 
-export class ProductionGenericArguments extends Production {
+class ProductionGenericArguments extends Production {
 	static readonly instance: ProductionGenericArguments = new ProductionGenericArguments();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['<', ProductionGenericArguments__0__List.instance, '>'],
@@ -230,9 +213,8 @@ export class ProductionGenericArguments extends Production {
 	}
 }
 
-export class ProductionTypeUnit extends Production {
+class ProductionTypeUnit extends Production {
 	static readonly instance: ProductionTypeUnit = new ProductionTypeUnit();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[TERMINAL.TerminalIdentifier.instance],
@@ -247,9 +229,8 @@ export class ProductionTypeUnit extends Production {
 	}
 }
 
-export class ProductionPropertyAccessType extends Production {
+class ProductionPropertyAccessType extends Production {
 	static readonly instance: ProductionPropertyAccessType = new ProductionPropertyAccessType();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['.', TERMINAL.TerminalInteger.instance],
@@ -258,9 +239,8 @@ export class ProductionPropertyAccessType extends Production {
 	}
 }
 
-export class ProductionGenericCall extends Production {
+class ProductionGenericCall extends Production {
 	static readonly instance: ProductionGenericCall = new ProductionGenericCall();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['.', ProductionGenericArguments.instance],
@@ -268,9 +248,8 @@ export class ProductionGenericCall extends Production {
 	}
 }
 
-export class ProductionTypeCompound extends Production {
+class ProductionTypeCompound extends Production {
 	static readonly instance: ProductionTypeCompound = new ProductionTypeCompound();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionTypeUnit.instance],
@@ -280,9 +259,8 @@ export class ProductionTypeCompound extends Production {
 	}
 }
 
-export class ProductionTypeUnarySymbol extends Production {
+class ProductionTypeUnarySymbol extends Production {
 	static readonly instance: ProductionTypeUnarySymbol = new ProductionTypeUnarySymbol();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionTypeCompound.instance],
@@ -295,9 +273,8 @@ export class ProductionTypeUnarySymbol extends Production {
 	}
 }
 
-export class ProductionTypeUnaryKeyword extends Production {
+class ProductionTypeUnaryKeyword extends Production {
 	static readonly instance: ProductionTypeUnaryKeyword = new ProductionTypeUnaryKeyword();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionTypeUnarySymbol.instance],
@@ -306,9 +283,8 @@ export class ProductionTypeUnaryKeyword extends Production {
 	}
 }
 
-export class ProductionTypeIntersection extends Production {
+class ProductionTypeIntersection extends Production {
 	static readonly instance: ProductionTypeIntersection = new ProductionTypeIntersection();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionTypeUnaryKeyword.instance],
@@ -317,9 +293,8 @@ export class ProductionTypeIntersection extends Production {
 	}
 }
 
-export class ProductionTypeUnion extends Production {
+class ProductionTypeUnion extends Production {
 	static readonly instance: ProductionTypeUnion = new ProductionTypeUnion();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionTypeIntersection.instance],
@@ -328,9 +303,8 @@ export class ProductionTypeUnion extends Production {
 	}
 }
 
-export class ProductionType extends Production {
+class ProductionType extends Production {
 	static readonly instance: ProductionType = new ProductionType();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionTypeUnion.instance],
@@ -338,9 +312,8 @@ export class ProductionType extends Production {
 	}
 }
 
-export class ProductionStringTemplate__0__List extends Production {
+class ProductionStringTemplate__0__List extends Production {
 	static readonly instance: ProductionStringTemplate__0__List = new ProductionStringTemplate__0__List();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[TERMINAL.TerminalTemplateMiddle.instance],
@@ -351,9 +324,8 @@ export class ProductionStringTemplate__0__List extends Production {
 	}
 }
 
-export class ProductionStringTemplate extends Production {
+class ProductionStringTemplate extends Production {
 	static readonly instance: ProductionStringTemplate = new ProductionStringTemplate();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[TERMINAL.TerminalTemplateFull.instance],
@@ -365,9 +337,8 @@ export class ProductionStringTemplate extends Production {
 	}
 }
 
-export class ProductionProperty extends Production {
+class ProductionProperty extends Production {
 	static readonly instance: ProductionProperty = new ProductionProperty();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionWord.instance, '=', ProductionExpression.instance],
@@ -375,9 +346,8 @@ export class ProductionProperty extends Production {
 	}
 }
 
-export class ProductionCase extends Production {
+class ProductionCase extends Production {
 	static readonly instance: ProductionCase = new ProductionCase();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpression.instance, '->', ProductionExpression.instance],
@@ -385,9 +355,8 @@ export class ProductionCase extends Production {
 	}
 }
 
-export class ProductionTupleLiteral__0__List extends Production {
+class ProductionTupleLiteral__0__List extends Production {
 	static readonly instance: ProductionTupleLiteral__0__List = new ProductionTupleLiteral__0__List();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpression.instance],
@@ -396,9 +365,8 @@ export class ProductionTupleLiteral__0__List extends Production {
 	}
 }
 
-export class ProductionTupleLiteral extends Production {
+class ProductionTupleLiteral extends Production {
 	static readonly instance: ProductionTupleLiteral = new ProductionTupleLiteral();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['[', ']'],
@@ -410,9 +378,8 @@ export class ProductionTupleLiteral extends Production {
 	}
 }
 
-export class ProductionRecordLiteral__0__List extends Production {
+class ProductionRecordLiteral__0__List extends Production {
 	static readonly instance: ProductionRecordLiteral__0__List = new ProductionRecordLiteral__0__List();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionProperty.instance],
@@ -421,9 +388,8 @@ export class ProductionRecordLiteral__0__List extends Production {
 	}
 }
 
-export class ProductionRecordLiteral extends Production {
+class ProductionRecordLiteral extends Production {
 	static readonly instance: ProductionRecordLiteral = new ProductionRecordLiteral();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['[', ProductionRecordLiteral__0__List.instance, ']'],
@@ -434,9 +400,8 @@ export class ProductionRecordLiteral extends Production {
 	}
 }
 
-export class ProductionSetLiteral extends Production {
+class ProductionSetLiteral extends Production {
 	static readonly instance: ProductionSetLiteral = new ProductionSetLiteral();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['{', '}'],
@@ -448,9 +413,8 @@ export class ProductionSetLiteral extends Production {
 	}
 }
 
-export class ProductionMapLiteral__0__List extends Production {
+class ProductionMapLiteral__0__List extends Production {
 	static readonly instance: ProductionMapLiteral__0__List = new ProductionMapLiteral__0__List();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionCase.instance],
@@ -459,9 +423,8 @@ export class ProductionMapLiteral__0__List extends Production {
 	}
 }
 
-export class ProductionMapLiteral extends Production {
+class ProductionMapLiteral extends Production {
 	static readonly instance: ProductionMapLiteral = new ProductionMapLiteral();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['{', ProductionMapLiteral__0__List.instance, '}'],
@@ -472,9 +435,8 @@ export class ProductionMapLiteral extends Production {
 	}
 }
 
-export class ProductionFunctionArguments extends Production {
+class ProductionFunctionArguments extends Production {
 	static readonly instance: ProductionFunctionArguments = new ProductionFunctionArguments();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['(', ')'],
@@ -486,9 +448,8 @@ export class ProductionFunctionArguments extends Production {
 	}
 }
 
-export class ProductionExpressionUnit extends Production {
+class ProductionExpressionUnit extends Production {
 	static readonly instance: ProductionExpressionUnit = new ProductionExpressionUnit();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[TERMINAL.TerminalIdentifier.instance],
@@ -503,9 +464,8 @@ export class ProductionExpressionUnit extends Production {
 	}
 }
 
-export class ProductionPropertyAccess extends Production {
+class ProductionPropertyAccess extends Production {
 	static readonly instance: ProductionPropertyAccess = new ProductionPropertyAccess();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['.', TERMINAL.TerminalInteger.instance],
@@ -521,9 +481,8 @@ export class ProductionPropertyAccess extends Production {
 	}
 }
 
-export class ProductionPropertyAssign extends Production {
+class ProductionPropertyAssign extends Production {
 	static readonly instance: ProductionPropertyAssign = new ProductionPropertyAssign();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['.', TERMINAL.TerminalInteger.instance],
@@ -533,9 +492,8 @@ export class ProductionPropertyAssign extends Production {
 	}
 }
 
-export class ProductionFunctionCall extends Production {
+class ProductionFunctionCall extends Production {
 	static readonly instance: ProductionFunctionCall = new ProductionFunctionCall();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['.', ProductionFunctionArguments.instance],
@@ -544,9 +502,8 @@ export class ProductionFunctionCall extends Production {
 	}
 }
 
-export class ProductionExpressionCompound extends Production {
+class ProductionExpressionCompound extends Production {
 	static readonly instance: ProductionExpressionCompound = new ProductionExpressionCompound();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionUnit.instance],
@@ -556,9 +513,8 @@ export class ProductionExpressionCompound extends Production {
 	}
 }
 
-export class ProductionAssignee extends Production {
+class ProductionAssignee extends Production {
 	static readonly instance: ProductionAssignee = new ProductionAssignee();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[TERMINAL.TerminalIdentifier.instance],
@@ -567,9 +523,8 @@ export class ProductionAssignee extends Production {
 	}
 }
 
-export class ProductionExpressionUnarySymbol extends Production {
+class ProductionExpressionUnarySymbol extends Production {
 	static readonly instance: ProductionExpressionUnarySymbol = new ProductionExpressionUnarySymbol();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionCompound.instance],
@@ -581,9 +536,8 @@ export class ProductionExpressionUnarySymbol extends Production {
 	}
 }
 
-export class ProductionExpressionExponential extends Production {
+class ProductionExpressionExponential extends Production {
 	static readonly instance: ProductionExpressionExponential = new ProductionExpressionExponential();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionUnarySymbol.instance],
@@ -592,9 +546,8 @@ export class ProductionExpressionExponential extends Production {
 	}
 }
 
-export class ProductionExpressionMultiplicative extends Production {
+class ProductionExpressionMultiplicative extends Production {
 	static readonly instance: ProductionExpressionMultiplicative = new ProductionExpressionMultiplicative();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionExponential.instance],
@@ -604,9 +557,8 @@ export class ProductionExpressionMultiplicative extends Production {
 	}
 }
 
-export class ProductionExpressionAdditive extends Production {
+class ProductionExpressionAdditive extends Production {
 	static readonly instance: ProductionExpressionAdditive = new ProductionExpressionAdditive();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionMultiplicative.instance],
@@ -616,9 +568,8 @@ export class ProductionExpressionAdditive extends Production {
 	}
 }
 
-export class ProductionExpressionComparative extends Production {
+class ProductionExpressionComparative extends Production {
 	static readonly instance: ProductionExpressionComparative = new ProductionExpressionComparative();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionAdditive.instance],
@@ -634,9 +585,8 @@ export class ProductionExpressionComparative extends Production {
 	}
 }
 
-export class ProductionExpressionEquality extends Production {
+class ProductionExpressionEquality extends Production {
 	static readonly instance: ProductionExpressionEquality = new ProductionExpressionEquality();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionComparative.instance],
@@ -648,9 +598,8 @@ export class ProductionExpressionEquality extends Production {
 	}
 }
 
-export class ProductionExpressionConjunctive extends Production {
+class ProductionExpressionConjunctive extends Production {
 	static readonly instance: ProductionExpressionConjunctive = new ProductionExpressionConjunctive();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionEquality.instance],
@@ -660,9 +609,8 @@ export class ProductionExpressionConjunctive extends Production {
 	}
 }
 
-export class ProductionExpressionDisjunctive extends Production {
+class ProductionExpressionDisjunctive extends Production {
 	static readonly instance: ProductionExpressionDisjunctive = new ProductionExpressionDisjunctive();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionConjunctive.instance],
@@ -672,9 +620,8 @@ export class ProductionExpressionDisjunctive extends Production {
 	}
 }
 
-export class ProductionExpressionConditional extends Production {
+class ProductionExpressionConditional extends Production {
 	static readonly instance: ProductionExpressionConditional = new ProductionExpressionConditional();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['if', ProductionExpression.instance, 'then', ProductionExpression.instance, 'else', ProductionExpression.instance],
@@ -682,9 +629,8 @@ export class ProductionExpressionConditional extends Production {
 	}
 }
 
-export class ProductionExpression extends Production {
+class ProductionExpression extends Production {
 	static readonly instance: ProductionExpression = new ProductionExpression();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionDisjunctive.instance],
@@ -693,9 +639,8 @@ export class ProductionExpression extends Production {
 	}
 }
 
-export class ProductionDeclarationType extends Production {
+class ProductionDeclarationType extends Production {
 	static readonly instance: ProductionDeclarationType = new ProductionDeclarationType();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['type', TERMINAL.TerminalIdentifier.instance, '=', ProductionType.instance, ';'],
@@ -703,9 +648,8 @@ export class ProductionDeclarationType extends Production {
 	}
 }
 
-export class ProductionDeclarationVariable extends Production {
+class ProductionDeclarationVariable extends Production {
 	static readonly instance: ProductionDeclarationVariable = new ProductionDeclarationVariable();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['let', TERMINAL.TerminalIdentifier.instance, ':', ProductionType.instance, '=', ProductionExpression.instance, ';'],
@@ -714,9 +658,8 @@ export class ProductionDeclarationVariable extends Production {
 	}
 }
 
-export class ProductionDeclaration extends Production {
+class ProductionDeclaration extends Production {
 	static readonly instance: ProductionDeclaration = new ProductionDeclaration();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionDeclarationType.instance],
@@ -725,9 +668,8 @@ export class ProductionDeclaration extends Production {
 	}
 }
 
-export class ProductionStatementAssignment extends Production {
+class ProductionStatementAssignment extends Production {
 	static readonly instance: ProductionStatementAssignment = new ProductionStatementAssignment();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionAssignee.instance, '=', ProductionExpression.instance, ';'],
@@ -735,9 +677,8 @@ export class ProductionStatementAssignment extends Production {
 	}
 }
 
-export class ProductionStatement extends Production {
+class ProductionStatement extends Production {
 	static readonly instance: ProductionStatement = new ProductionStatement();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[';'],
@@ -748,9 +689,8 @@ export class ProductionStatement extends Production {
 	}
 }
 
-export class ProductionGoal__0__List extends Production {
+class ProductionGoal__0__List extends Production {
 	static readonly instance: ProductionGoal__0__List = new ProductionGoal__0__List();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionStatement.instance],
@@ -759,9 +699,8 @@ export class ProductionGoal__0__List extends Production {
 	}
 }
 
-export class ProductionGoal extends Production {
+class ProductionGoal extends Production {
 	static readonly instance: ProductionGoal = new ProductionGoal();
-	/** @implements Production */
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['\u0002', '\u0003'],
@@ -1422,6 +1361,5 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 	}
 }
 export const PARSER: ParserSolid = new ParserSolid();
-
 
 
