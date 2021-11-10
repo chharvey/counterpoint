@@ -11,10 +11,9 @@ import {
 import {
 	Operator,
 	ValidAccessOperator,
-	// {ASTNodeKey, ...} as AST,
-	DECORATOR as DECORATOR_SOLID,
+	ASTNODE_SOLID as AST,
+	DECORATOR_SOLID,
 } from '../../src/validator/index.js';
-import * as AST from '../../src/validator/astnode/index.js'; // HACK
 import {
 	assert_arrayLength,
 } from '../assert-helpers.js';

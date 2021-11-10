@@ -2,9 +2,9 @@ import {
 	NonemptyArray,
 	Punctuator,
 	Keyword,
-	TOKEN,
+	TOKEN_SOLID as TOKEN,
 	ParseNode,
-	PARSENODE,
+	PARSENODE_SOLID as PARSENODE,
 } from './package.js';
 import {
 	Operator,
@@ -15,8 +15,8 @@ import {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-} from './Operator.js';
-import * as AST from './astnode/index.js';
+} from './OperatorSolid.js';
+import * as AST from './astnode-solid/index.js';
 import {
 	DecoratorReturnType,
 	Decorator,

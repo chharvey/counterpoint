@@ -56,14 +56,14 @@ export {
 	stringifyAttributes,
 	Keyword,
 	Token,
-	TOKEN,
+	TOKEN_SOLID as TOKEN,
 	ParseNode,
-	PARSENODE,
+	PARSENODE_SOLID as PARSENODE,
 	ParserSolid,
-	PARSER,
+	PARSER_SOLID as PARSER,
 } from '../package.js';
 export {
-	DECORATOR,
+	DECORATOR_SOLID as DECORATOR,
 	Validator,
 	SymbolKind,
 	SymbolStructure,
@@ -80,4 +80,5 @@ export {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-} from '../Operator.js';
+} from '../OperatorSolid.js';
+export {ASTNode} from '../ASTNode.js';

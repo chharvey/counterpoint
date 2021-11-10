@@ -4,7 +4,7 @@ import {
 	PARSER_SOLID as PARSER,
 } from '../../src/parser/index.js';
 import {
-	DECORATOR,
+	DECORATOR_SOLID as DECORATOR,
 	Operator,
 } from '../../src/validator/index.js';
 import {

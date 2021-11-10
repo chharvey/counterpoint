@@ -1,9 +1,8 @@
 import * as assert from 'assert';
 import {
-	// {ASTNodeKey, ...} as AST,
+	ASTNODE_SOLID as AST,
 	Validator,
-} from '../../src/validator/index.js';
-import * as AST from '../../src/validator/astnode/index.js'; // HACK
+} from '../../../src/validator/index.js';
 import {
 	SolidType,
 	SolidTypeList,
@@ -16,13 +15,13 @@ import {
 	SolidHash,
 	SolidSet,
 	SolidMap,
-} from '../../src/typer/index.js';
+} from '../../../src/typer/index.js';
 import {
 	TypeError03,
 	TypeError05,
 	TypeError06,
-} from '../../src/error/index.js';
-import {CONFIG_FOLDING_OFF} from '../helpers.js';
+} from '../../../src/error/index.js';
+import {CONFIG_FOLDING_OFF} from '../../helpers.js';
 
 
 

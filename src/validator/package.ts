@@ -51,6 +51,9 @@ export {
 } from '../index.js';
 export {
 	NonemptyArray,
+	Map_hasEq,
+	Map_getEq,
+	Map_setEq,
 } from '../lib/index.js';
 export {
 	SolidConfig,
@@ -59,13 +62,19 @@ export {
 	Serializable,
 } from '../core/index.js';
 export {
+	EBNFObject,
+	EBNFChoice,
+	EBNFSequence,
+	EBNFItem,
 	stringifyAttributes,
 	Punctuator,
 	Keyword,
 	Token,
-	TOKEN_SOLID as TOKEN,
+	TOKEN_EBNF,
+	TOKEN_SOLID,
 	ParserSolid,
 	ParseNode,
-	PARSENODE_SOLID as PARSENODE,
-	PARSER_SOLID as PARSER,
+	PARSENODE_EBNF,
+	PARSENODE_SOLID,
+	PARSER_SOLID,
 } from '../parser/index.js';

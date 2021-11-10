@@ -10,7 +10,7 @@ export type {
 } from '../parser/index.js';
 export type {
 	ASTNode,
+	ASTNODE_SOLID as AST,
 	SymbolKind,
 } from '../validator/index.js';
-export * as AST from '../validator/astnode/index.js'; // HACK
 export type {SolidType} from '../typer/index.js';

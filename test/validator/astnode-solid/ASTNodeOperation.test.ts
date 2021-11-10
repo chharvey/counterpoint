@@ -4,7 +4,7 @@ import {
 	CONFIG_DEFAULT,
 	Dev,
 	Operator,
-	// {ASTNodeKey, ...} as AST,
+	ASTNODE_SOLID as AST,
 	Validator,
 	SolidType,
 	SolidTypeUnit,
@@ -17,11 +17,10 @@ import {
 	Builder,
 	TypeError01,
 	NanError01,
-} from '../../src/index.js';
-import * as AST from '../../src/validator/astnode/index.js'; // HACK
+} from '../../../src/index.js';
 import {
 	assertEqualTypes,
-} from '../assert-helpers.js';
+} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
 	typeConstInt,
@@ -29,7 +28,7 @@ import {
 	typeConstStr,
 	instructionConstInt,
 	instructionConstFloat,
-} from '../helpers.js';
+} from '../../helpers.js';
 
 
 

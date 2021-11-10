@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import {
 	Operator,
-	// {ASTNodeKey, ...} as AST,
+	ASTNODE_SOLID as AST,
 	Validator,
 	SolidType,
 	INST,
@@ -13,15 +13,14 @@ import {
 	TypeError01,
 	TypeError03,
 	MutabilityError01,
-} from '../../src/index.js';
-import * as AST from '../../src/validator/astnode/index.js'; // HACK
+} from '../../../src/index.js';
 import {
 	assertAssignable,
-} from '../assert-helpers.js';
+} from '../../assert-helpers.js';
 import {
 	typeConstFloat,
 	instructionConstFloat,
-} from '../helpers.js';
+} from '../../helpers.js';
 
 
 

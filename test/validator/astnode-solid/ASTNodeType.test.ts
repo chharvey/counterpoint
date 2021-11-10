@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {
-	// {ASTNodeKey, ...} as AST,
+	ASTNODE_SOLID as AST,
 	Validator,
 	TypeEntry,
 	SolidType,
@@ -14,12 +14,11 @@ import {
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
-} from '../../src/index.js';
-import * as AST from '../../src/validator/astnode/index.js'; // HACK
+} from '../../../src/index.js';
 import {
 	typeConstInt,
 	typeConstFloat,
-} from '../helpers.js';
+} from '../../helpers.js';
 
 
 describe('ASTNodeType', () => {
