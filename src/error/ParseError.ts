@@ -24,10 +24,10 @@ class ParseError extends ErrorCode {
 	constructor (message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name:       ParseError.NAME,
-			code:       ParseError.CODE + code,
-			line_index: line,
-			col_index:  col,
+			name: ParseError.NAME,
+			code: ParseError.CODE + code,
+			...((line !== void 0) ? {line_index: line} : {}),
+			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});
 	}
 }

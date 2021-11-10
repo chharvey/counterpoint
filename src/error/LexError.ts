@@ -23,10 +23,10 @@ export class LexError extends ErrorCode {
 	constructor (message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name:       LexError.NAME,
-			code:       LexError.CODE + code,
-			line_index: line,
-			col_index:  col,
+			name: LexError.NAME,
+			code: LexError.CODE + code,
+			...((line !== void 0) ? {line_index: line} : {}),
+			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});
 	}
 }

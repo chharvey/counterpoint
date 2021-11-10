@@ -11,8 +11,8 @@ class VoidError extends ErrorCode {
 			message,
 			name: VoidError.NAME,
 			code: VoidError.CODE + code,
-			line_index: line,
-			col_index: col,
+			...((line !== void 0) ? {line_index: line} : {}),
+			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});
 	}
 }
