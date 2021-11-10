@@ -1,7 +1,9 @@
-import * as xjs from 'extrajs';
 import deepStrictEqual from 'fast-deep-equal';
 import {
 	NonemptyArray,
+	Map_hasEq,
+	Map_getEq,
+	Map_setEq,
 	EBNFObject,
 	EBNFChoice,
 	EBNFSequence,
@@ -16,9 +18,9 @@ import {ASTNodeOp} from './ASTNodeOp.js';
 
 
 export class ASTNodeOpUn extends ASTNodeOp {
-	private static readonly memoized: ReadonlyMap<Unop, xjs.MapEq<EBNFChoice, string>> = new Map<Unop, xjs.MapEq<EBNFChoice, string>>([
-		[Op.PLUS, new xjs.MapEq<EBNFChoice, string>(deepStrictEqual)],
-		[Op.HASH, new xjs.MapEq<EBNFChoice, string>(deepStrictEqual)],
+	private static readonly memoized: ReadonlyMap<Unop, Map<EBNFChoice, string>> = new Map<Unop, Map<EBNFChoice, string>>([
+		[Op.PLUS, new Map<EBNFChoice, string>()],
+		[Op.HASH, new Map<EBNFChoice, string>()],
 	]);
 	constructor (
 		parse_node: ParseNode,
@@ -31,10 +33,10 @@ export class ASTNodeOpUn extends ASTNodeOp {
 	override transform(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
 		return new Map<Unop, (operand: EBNFChoice) => EBNFChoice>([
 			[Op.PLUS, (operand) => {
-				const memoized: xjs.MapEq<EBNFChoice, string> = ASTNodeOpUn.memoized.get(Op.PLUS)!;
-				if (!memoized.has(operand)) {
+				const memoized: Map<EBNFChoice, string> = ASTNodeOpUn.memoized.get(Op.PLUS)!;
+				if (!Map_hasEq(memoized, operand, deepStrictEqual)) {
 					const name: string = nt.newSubexprName;
-					memoized.set(operand, name);
+					Map_setEq(memoized, operand, name, deepStrictEqual);
 					data.push({
 						name,
 						defn: operand.flatMap((seq) => [
@@ -44,14 +46,14 @@ export class ASTNodeOpUn extends ASTNodeOp {
 					});
 				};
 				return [
-					[{prod: memoized.get(operand)!}],
+					[{prod: Map_getEq(memoized, operand, deepStrictEqual)!}],
 				];
 			}],
 			[Op.HASH, (operand) => {
-				const memoized: xjs.MapEq<EBNFChoice, string> = ASTNodeOpUn.memoized.get(Op.HASH)!;
-				if (!memoized.has(operand)) {
+				const memoized: Map<EBNFChoice, string> = ASTNodeOpUn.memoized.get(Op.HASH)!;
+				if (!Map_hasEq(memoized, operand, deepStrictEqual)) {
 					const name: string = nt.newSubexprName;
-					memoized.set(operand, name);
+					Map_setEq(memoized, operand, name, deepStrictEqual);
 					data.push({
 						name,
 						defn: operand.flatMap((seq) => [
@@ -61,7 +63,7 @@ export class ASTNodeOpUn extends ASTNodeOp {
 					});
 				};
 				return [
-					[{prod: memoized.get(operand)!}],
+					[{prod: Map_getEq(memoized, operand, deepStrictEqual)!}],
 				];
 			}],
 			[Op.OPT, (operand) => {

@@ -6,6 +6,9 @@
  */
 export {
 	NonemptyArray,
+	Map_hasEq,
+	Map_getEq,
+	Map_setEq,
 	EBNFObject,
 	EBNFChoice,
 	EBNFSequence,
