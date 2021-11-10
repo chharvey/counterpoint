@@ -28,8 +28,8 @@
     "solid:d-o": "solid d ./sample/test-v0.3.solid -o ./sample/testout.wat",
     "solid:d-p": "solid d ./sample/test-v0.3.solid -p ./sample/solid-config.json",
     "solid:r": "solid r ./sample/test-v0.3.wasm",
-    "predist": "node ./tasks/build-parser.js",
     "dist": "tsc",
+    "postdist": "node ./tasks/build-parser.js",
     "test": "mocha -r ts-node/esm src/index.ts --loader='ts-node/esm' --timeout 10000 './test/**/*.test.ts'",
     "build": "rm -rf ./build/ && npm run dist && npm run test"
   },

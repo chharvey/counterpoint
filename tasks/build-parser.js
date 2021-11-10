@@ -1,9 +1,36 @@
-import {
-	generate,
-} from '@chharvey/parser';
 import * as xjs from 'extrajs';
 import * as fs from 'fs';
 import * as path from 'path';
+import {
+	ParseNode,
+	PARSER_EBNF,
+	DECORATOR_EBNF,
+} from '../build/index.js';
+import {Production} from '../build/parser/Production.js';
+import {Grammar} from '../build/parser/Grammar.js';
+import {Parser} from '../build/parser/Parser.js';
+
+function generate(ebnf) {
+	const jsons       = DECORATOR_EBNF.decorate(PARSER_EBNF.parse(ebnf)).transform();
+	const nonabstract = jsons.filter((j) => j.family !== true);
+	return xjs.String.dedent`
+		import {
+			NonemptyArray,
+			Token,
+			ParseNode,
+			Parser,
+			Production,
+			Grammar,
+			GrammarSymbol,
+		} from '@chharvey/parser';
+		import {LEXER} from './Lexer';
+		import * as TERMINAL from './Terminal';
+		${ nonabstract.map((j) => Production.fromJSON(j)).join('') }
+		${ jsons      .map((j) => ParseNode .fromJSON(j)).join('') }
+		${ Grammar.fromJSON(nonabstract) }
+		${ Parser .fromJSON(nonabstract) }
+	`;
+}
 
 const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 await Promise.all([
