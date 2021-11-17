@@ -16,11 +16,9 @@ export {
 	ValidOperatorComparative,
 	ValidOperatorEquality,
 	ValidOperatorLogical,
-	// {ASTNodeKey, ...} as AST,
-	Decorator,
+	ASTNODE_SOLID as AST,
 	Validator,
 } from '../validator/index.js';
-export * as AST from '../validator/astnode/index.js'; // HACK
 export {
 	SolidObject,
 	SolidNull,

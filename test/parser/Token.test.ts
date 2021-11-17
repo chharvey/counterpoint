@@ -10,11 +10,24 @@ import {
 	Dev,
 } from '../../src/core/index.js';
 import {
-	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
+	TOKEN_SOLID as TOKEN,
 	LexerSolid,
 	LEXER,
 } from '../../src/parser/index.js';
-import * as TOKEN from '../../src/parser/token/index.js'; // HACK
+
+
+
+describe('TokenComment', () => {
+	specify('#serialize', () => {
+		assert.strictEqual([...LEXER.generate(`
+			%% multiline
+			comment %%
+		`)][2].serialize(), `
+			<COMMENT line="2" col="4">%% multiline
+			comment %%</COMMENT>
+		`.trim());
+	});
+});
 
 
 

@@ -1,6 +1,4 @@
-import {
-	ErrorCode,
-} from '@chharvey/parser';
+import {ErrorCode} from './ErrorCode.js';
 
 
 
@@ -22,10 +20,10 @@ export class SolidTypeError extends ErrorCode {
 	constructor (message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name       : SolidTypeError.NAME,
-			code       : SolidTypeError.CODE + code,
-			line_index : line,
-			col_index  : col,
+			name: SolidTypeError.NAME,
+			code: SolidTypeError.CODE + code,
+			...((line !== void 0) ? {line_index: line} : {}),
+			...((col  !== void 0) ? {col_index:  col}  : {}),
 		})
 	}
 }

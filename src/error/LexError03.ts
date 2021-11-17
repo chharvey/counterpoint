@@ -1,4 +1,4 @@
-import {LexError} from '@chharvey/parser';
+import {LexError} from './LexError.js';
 
 
 

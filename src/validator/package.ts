@@ -34,6 +34,7 @@ export {
 	Instruction,
 	INST,
 	Builder,
+	ErrorCode,
 	ReferenceError01,
 	ReferenceError03,
 	AssignmentError01,
@@ -49,16 +50,31 @@ export {
 	NanError02,
 } from '../index.js';
 export {
+	NonemptyArray,
+	Map_hasEq,
+	Map_getEq,
+	Map_setEq,
+} from '../lib/index.js';
+export {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,
+	Serializable,
 } from '../core/index.js';
 export {
+	EBNFObject,
+	EBNFChoice,
+	EBNFSequence,
+	EBNFItem,
+	stringifyAttributes,
 	Punctuator,
 	Keyword,
-	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
+	Token,
+	TOKEN_EBNF,
+	TOKEN_SOLID,
 	ParserSolid,
-	PARSER,
-	PARSENODE,
+	ParseNode,
+	PARSENODE_EBNF,
+	PARSENODE_SOLID,
+	PARSER_SOLID,
 } from '../parser/index.js';
-export * as TOKEN from '../parser/token/index.js'; // HACK

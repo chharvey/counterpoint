@@ -1,8 +1,8 @@
 import {
+	Keys,
 	Map_hasEq,
 	Map_getEq,
 	Map_setEq,
-	Keys,
 } from './package.js';
 import type {SolidType} from './SolidType.js';
 import {SolidObject} from './SolidObject.js';

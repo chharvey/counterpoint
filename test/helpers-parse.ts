@@ -1,23 +1,22 @@
 import * as assert from 'assert'
-import {
+import type {
 	NonemptyArray,
-	Filebound,
-	Token,
-	TokenFilebound,
-	ParseNode,
-} from '@chharvey/parser';
+} from '../src/lib/index.js';
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 } from '../src/core/index.js';
 import {
+	Filebound,
 	Punctuator,
-	// {TokenPunctuator, TokenKeyword, ...} as TOKEN,
-	PARSENODE,
+	Token,
+	TokenFilebound,
+	TOKEN_SOLID as TOKEN,
+	ParseNode,
+	PARSENODE_SOLID as PARSENODE,
 	ParserSolid,
-	PARSER,
+	PARSER_SOLID as PARSER,
 } from '../src/parser/index.js';
-import * as TOKEN from '../src/parser/token/index.js'; // HACK
 import {
 	assert_arrayLength,
 } from './assert-helpers.js';

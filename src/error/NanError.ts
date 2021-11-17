@@ -1,7 +1,6 @@
-import {
-	ASTNode,
-	ErrorCode,
-} from '@chharvey/parser';
+import type {ASTNode} from './package.js';
+import {ErrorCode} from './ErrorCode.js';
+
 
 
 class NanError extends ErrorCode {
@@ -10,10 +9,10 @@ class NanError extends ErrorCode {
 	constructor (message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name       : NanError.NAME,
-			code       : NanError.CODE + code,
-			line_index : line,
-			col_index  : col,
+			name: NanError.NAME,
+			code: NanError.CODE + code,
+			...((line !== void 0) ? {line_index: line} : {}),
+			...((col  !== void 0) ? {col_index:  col}  : {}),
 		})
 	}
 }

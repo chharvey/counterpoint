@@ -1,6 +1,11 @@
+export * from './ErrorCode.js';
+
+export * from './LexError01.js';
+export * from './LexError02.js';
 export * from './LexError03.js';
 export * from './LexError04.js';
 export * from './LexError05.js';
+export * from './ParseError.js';
 export * from './ReferenceError01.js';
 export * from './ReferenceError02.js';
 export * from './ReferenceError03.js';

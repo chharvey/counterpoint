@@ -1,7 +1,6 @@
-import {
-	ASTNode,
-	ErrorCode,
-} from '@chharvey/parser';
+import type {ASTNode} from './package.js';
+import {ErrorCode} from './ErrorCode.js';
+
 
 
 class VoidError extends ErrorCode {
@@ -12,8 +11,8 @@ class VoidError extends ErrorCode {
 			message,
 			name: VoidError.NAME,
 			code: VoidError.CODE + code,
-			line_index: line,
-			col_index: col,
+			...((line !== void 0) ? {line_index: line} : {}),
+			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});
 	}
 }
