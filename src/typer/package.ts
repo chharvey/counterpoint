@@ -25,6 +25,5 @@ export {
 export {
 	Operator,
 	ValidAccessOperator,
-	// {ASTNodeKey, ...} as AST,
+	ASTNODE_SOLID as AST,
 } from '../validator/index.js';
-export * as AST from '../validator/astnode/index.js'; // HACK

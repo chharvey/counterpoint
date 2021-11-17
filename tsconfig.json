@@ -1,25 +1,31 @@
 {
 	"compilerOptions": {
-		// Project Options
-		"module":      "ES2020",
-		"outDir":      "./build/",
-		"target":      "ESnext",
-		// Strict Checks
-		"strict": true,
-		// Module Resolution
-		"allowSyntheticDefaultImports": true,
-		"moduleResolution":             "Node",
-		// Linter Checks
-		"noImplicitOverride": true,
-		"noImplicitReturns":  true,
-		"noUnusedLocals":     true,
-		"noUnusedParameters": true,
-		// Experimental
-		"experimentalDecorators": true,
-		// Advanced
+		// Type Checking
+		"exactOptionalPropertyTypes": true,
+		"noImplicitOverride":         true,
+		"noImplicitReturns":          true,
+		"noUnusedLocals":             true,
+		"noUnusedParameters":         true,
+		"strict":                     true,
+
+		// Modules
+		"module":           "ESnext",
+		"moduleResolution": "Node",
+
+		// Emit
 		"importsNotUsedAsValues": "error",
 		"noEmitOnError":          true,
-		"skipLibCheck":           true,
+		"outDir":                 "./build/",
+
+		// Interop Constraints
+		"allowSyntheticDefaultImports": true,
+
+		// Language and Environment
+		"experimentalDecorators": true,
+		"target":                 "ES2021",
+
+		// Completeness
+		"skipLibCheck": true,
 	},
 	"include": ["./src/"],
 }
