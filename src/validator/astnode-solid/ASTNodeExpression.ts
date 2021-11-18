@@ -88,7 +88,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 				} catch (err) {
 					if (err instanceof ErrorCode) {
 						// ignore evaluation errors such as VoidError, NanError, etc.
-						return SolidType.NEVER;
+						this.typed = SolidType.NEVER;
 					} else {
 						throw err;
 					}

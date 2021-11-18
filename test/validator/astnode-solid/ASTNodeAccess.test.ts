@@ -409,7 +409,7 @@ describe('ASTNodeAccess', () => {
 			it('returns the list item type when index is out of bounds for lists.', () => {
 				const validator: Validator = new Validator();
 				const program: AST.ASTNodeGoal = programFactory(`
-					let list: (int | float | str)[] = List.<int | float| str>([1, 2.0, 'three']);
+					let unfixed list: (int | float | str)[] = List.<int | float| str>([1, 2.0, 'three']);
 					list.3;
 					list.-4;
 				`)(validator);
@@ -491,8 +491,8 @@ describe('ASTNodeAccess', () => {
 			it('returns the hash item type when key is out of bounds for hashes.', () => {
 				const validator: Validator = new Validator();
 				const program: AST.ASTNodeGoal = programFactory(`
-					let list: [: int | float | str] = Hash.<int | float| str>([a= 1, b= 2.0, c= 'three']);
-					list.d;
+					let unfixed hash: [: int | float | str] = Hash.<int | float| str>([a= 1, b= 2.0, c= 'three']);
+					hash.d;
 				`)(validator);
 				program.varCheck(validator);
 				program.typeCheck(validator);
@@ -595,7 +595,7 @@ describe('ASTNodeAccess', () => {
 				it('returns the list item type when accessor expression is correct type but out of bounds for lists.', () => {
 					const validator: Validator = new Validator();
 					const program: AST.ASTNodeGoal = programFactory(`
-						let list: (int | float | str)[] = List.<int | float| str>([1, 2.0, 'three']);
+						let unfixed list: (int | float | str)[] = List.<int | float| str>([1, 2.0, 'three']);
 						list.[3];
 						list.[-4];
 					`)(validator);
