@@ -26,10 +26,8 @@ describe('ASTNodeTypeAccess', () => {
 			SolidType.FLOAT,
 			SolidType.STR,
 		];
-		let validator: Validator;
 		let program: AST.ASTNodeGoal;
 		before(() => {
-			validator = new Validator();
 			program = AST.ASTNodeGoal.fromSource(`
 				type TupC = [1,   2.0,   'three'];
 				type TupV = [int, float, str];
@@ -68,7 +66,7 @@ describe('ASTNodeTypeAccess', () => {
 
 				type E1 = RecoC.b; % type \`2.0 | void\`
 				type E2 = RecoV.b; % type \`float | void\`
-			`, validator.config);
+			`);
 			program.varCheck();
 			program.typeCheck();
 		});

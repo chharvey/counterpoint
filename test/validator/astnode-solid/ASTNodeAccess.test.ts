@@ -28,10 +28,7 @@ import {
 
 
 describe('ASTNodeAccess', () => {
-	function programFactory(src: string): (validator: Validator) => AST.ASTNodeGoal {
-		return (validator: Validator) => AST.ASTNodeGoal.fromSource(src, validator.config);
-	}
-	const INDEX_ACCESS_PROGRAM = programFactory(`
+	const INDEX_ACCESS_SRC: string = `
 		%% statements 0 – 4 %%
 		let         tup_fixed:    [int, float, str]     = [1, 2.0, 'three'];
 		let unfixed tup_unfixed:  [int, float, str]     = [1, 2.0, 'three'];
@@ -101,8 +98,8 @@ describe('ASTNodeAccess', () => {
 		%% statements 46 – 48 %%
 		let unfixed tupvoid: [int | void] = [42];
 		tupvoid!.0; % type \`int\` % non-computable value
-	`);
-	const KEY_ACCESS_PROGRAM = programFactory(`
+	`;
+	const KEY_ACCESS_SRC: string = `
 		%% statements 0 – 4 %%
 		let         rec_fixed:    [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
 		let unfixed rec_unfixed:  [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
@@ -156,8 +153,8 @@ describe('ASTNodeAccess', () => {
 		%% statements 34 – 36 %%
 		let unfixed recvoid: [c: int | void] = [c= 42];
 		recvoid!.c; % type \`int\` % non-computable value
-	`);
-	const EXPR_ACCESS_PROGRAM = programFactory(`
+	`;
+	const EXPR_ACCESS_SRC: string = `
 		%% statements 0 – 4 %%
 		let a: [str] = ['a'];
 		let b: [str] = ['b'];
@@ -237,7 +234,7 @@ describe('ASTNodeAccess', () => {
 		tupo1_f!.[0 + 2]; % type \`'three'\` % value \`'three'\`
 		tupo1_u!.[0 + 2]; % type \`str\`     % non-computable value
 		tupo2_u!.[0 + 2]; % type \`str\`     % non-computable value
-	`);
+	`;
 
 
 	describe('#type', () => {
@@ -325,11 +322,9 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by index.', () => {
-			let validator: Validator;
 			let program: AST.ASTNodeGoal;
 			before(() => {
-				validator = new Validator();
-				program = INDEX_ACCESS_PROGRAM(validator);
+				program = AST.ASTNodeGoal.fromSource(INDEX_ACCESS_SRC);
 				program.varCheck();
 				program.typeCheck();
 			});
@@ -406,12 +401,11 @@ describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).type(program.validator), TypeError04);
 			});
 			it('returns the list item type when index is out of bounds for lists.', () => {
-				const validator: Validator = new Validator();
-				const program: AST.ASTNodeGoal = programFactory(`
+				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let unfixed list: (int | float | str)[] = List.<int | float| str>([1, 2.0, 'three']);
 					list.3;
 					list.-4;
-				`)(validator);
+				`);
 				program.varCheck();
 				program.typeCheck();
 				program.children.slice(1, 3).forEach((c) => {
@@ -424,11 +418,9 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by key.', () => {
-			let validator: Validator;
 			let program: AST.ASTNodeGoal;
 			before(() => {
-				validator = new Validator();
-				program = KEY_ACCESS_PROGRAM(validator);
+				program = AST.ASTNodeGoal.fromSource(KEY_ACCESS_SRC);
 				program.varCheck();
 				program.typeCheck();
 			});
@@ -488,11 +480,10 @@ describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).type(program.validator), TypeError04);
 			});
 			it('returns the hash item type when key is out of bounds for hashes.', () => {
-				const validator: Validator = new Validator();
-				const program: AST.ASTNodeGoal = programFactory(`
+				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let unfixed hash: [: int | float | str] = Hash.<int | float| str>([a= 1, b= 2.0, c= 'three']);
 					hash.d;
-				`)(validator);
+				`);
 				program.varCheck();
 				program.typeCheck();
 				assert.deepStrictEqual(
@@ -504,11 +495,9 @@ describe('ASTNodeAccess', () => {
 
 		context('access by computed expression.', () => {
 			context('with constant folding on, folds expression accessor.', () => {
-				let validator: Validator;
 				let program: AST.ASTNodeGoal;
 				before(() => {
-					validator = new Validator();
-					program = EXPR_ACCESS_PROGRAM(validator);
+					program = AST.ASTNodeGoal.fromSource(EXPR_ACCESS_SRC);
 					program.varCheck();
 					program.typeCheck();
 				});
@@ -592,12 +581,11 @@ describe('ASTNodeAccess', () => {
 					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4];`).type(program.validator), TypeError04);
 				});
 				it('returns the list item type when accessor expression is correct type but out of bounds for lists.', () => {
-					const validator: Validator = new Validator();
-					const program: AST.ASTNodeGoal = programFactory(`
+					const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 						let unfixed list: (int | float | str)[] = List.<int | float| str>([1, 2.0, 'three']);
 						list.[3];
 						list.[-4];
-					`)(validator);
+					`);
 					program.varCheck();
 					program.typeCheck();
 					program.children.slice(1, 3).forEach((c) => {
@@ -614,11 +602,9 @@ describe('ASTNodeAccess', () => {
 				});
 			});
 			context('with constant folding off.', () => {
-				let validator: Validator;
 				let program: AST.ASTNodeGoal;
 				before(() => {
-					validator = new Validator(CONFIG_FOLDING_OFF);
-					program = EXPR_ACCESS_PROGRAM(validator);
+					program = AST.ASTNodeGoal.fromSource(EXPR_ACCESS_SRC, CONFIG_FOLDING_OFF);
 					program.varCheck();
 					program.typeCheck();
 				});
@@ -763,11 +749,9 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by index.', () => {
-			let validator: Validator;
 			let program: AST.ASTNodeGoal;
 			before(() => {
-				validator = new Validator();
-				program = INDEX_ACCESS_PROGRAM(validator);
+				program = AST.ASTNodeGoal.fromSource(INDEX_ACCESS_SRC);
 				program.varCheck();
 				program.typeCheck();
 			});
@@ -816,11 +800,9 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by key.', () => {
-			let validator: Validator;
 			let program: AST.ASTNodeGoal;
 			before(() => {
-				validator = new Validator();
-				program = KEY_ACCESS_PROGRAM(validator);
+				program = AST.ASTNodeGoal.fromSource(KEY_ACCESS_SRC);
 				program.varCheck();
 				program.typeCheck();
 			});
@@ -861,11 +843,9 @@ describe('ASTNodeAccess', () => {
 		});
 
 		context('access by computed expression.', () => {
-			let validator: Validator;
 			let program: AST.ASTNodeGoal;
 			before(() => {
-				validator = new Validator();
-				program = EXPR_ACCESS_PROGRAM(validator);
+				program = AST.ASTNodeGoal.fromSource(EXPR_ACCESS_SRC);
 				program.varCheck();
 				program.typeCheck();
 			});
