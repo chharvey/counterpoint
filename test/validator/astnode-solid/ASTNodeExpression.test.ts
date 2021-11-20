@@ -162,20 +162,20 @@ describe('ASTNodeExpression', () => {
 				AST.ASTNodeGoal.fromSource(`
 					let unfixed i: int = 42;
 					i;
-				`).varCheck(new Validator()); // assert does not throw
+				`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeVariable.fromSource(`i;`).varCheck(new Validator()), ReferenceError01);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					i;
 					let unfixed i: int = 42;
-				`).varCheck(new Validator()), ReferenceError02);
+				`).varCheck(), ReferenceError02);
 			});
 			it('throws if it was declared as a type alias.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					type FOO = int;
 					42 || FOO;
-				`).varCheck(new Validator()), ReferenceError03);
+				`).varCheck(), ReferenceError03);
 			});
 		});
 
@@ -189,45 +189,42 @@ describe('ASTNodeExpression', () => {
 
 		describe('#fold', () => {
 			it('assesses the value of a fixed variable.', () => {
-				const validator: Validator = new Validator();
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let x: int = 21 * 2;
 					x;
 				`);
-				goal.varCheck(validator);
-				goal.typeCheck(validator);
+				goal.varCheck();
+				goal.typeCheck();
 				assert.ok(!(goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
-					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(validator),
+					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(goal.validator),
 					new Int16(42n),
 				);
 			});
 			it('returns null for an unfixed variable.', () => {
-				const validator: Validator = new Validator();
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let unfixed x: int = 21 * 2;
 					x;
 				`);
-				goal.varCheck(validator);
-				goal.typeCheck(validator);
+				goal.varCheck();
+				goal.typeCheck();
 				assert.ok((goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
-					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(validator),
+					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(goal.validator),
 					null,
 				);
 			});
 			it('returns null for an uncomputable fixed variable.', () => {
-				const validator: Validator = new Validator();
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					let unfixed x: int = 21 * 2;
 					let y: int = x / 2;
 					y;
 				`);
-				goal.varCheck(validator);
-				goal.typeCheck(validator);
+				goal.varCheck();
+				goal.typeCheck();
 				assert.ok(!(goal.children[1] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
-					(goal.children[2] as AST.ASTNodeStatementExpression).expr!.fold(validator),
+					(goal.children[2] as AST.ASTNodeStatementExpression).expr!.fold(goal.validator),
 					null,
 				);
 			});

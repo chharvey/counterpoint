@@ -43,10 +43,10 @@ export class Builder {
 		source: string,
 		readonly config: SolidConfig = CONFIG_DEFAULT,
 	) {
-		this.validator = new Validator(this.config);
 		this.ast_goal  = AST.ASTNodeGoal.fromSource(source, config);
-		this.ast_goal.varCheck (this.validator); // assert does not throw
-		this.ast_goal.typeCheck(this.validator); // assert does not throw
+		this.validator = this.ast_goal.validator;
+		this.ast_goal.varCheck (); // assert does not throw
+		this.ast_goal.typeCheck(); // assert does not throw
 	}
 
 	/**

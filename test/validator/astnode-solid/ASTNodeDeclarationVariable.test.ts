@@ -31,14 +31,13 @@ import {
 describe('ASTNodeDeclarationVariable', () => {
 	describe('#varCheck', () => {
 		it('adds a SymbolStructure to the symbol table with a preset `type` value of `unknown` and a preset null `value` value.', () => {
-			const validator: Validator = new Validator();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let x: int = 42;
 			`);
-			assert.ok(!validator.hasSymbol(256n));
-			goal.varCheck(validator);
-			assert.ok(validator.hasSymbol(256n));
-			const info: SymbolStructure | null = validator.getSymbolInfo(256n);
+			assert.ok(!goal.validator.hasSymbol(256n));
+			goal.varCheck();
+			assert.ok(goal.validator.hasSymbol(256n));
+			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
 			assert.ok(info instanceof SymbolStructureVar);
 			assert.strictEqual(info.type, SolidType.UNKNOWN);
 			assert.strictEqual(info.value, null);
@@ -47,11 +46,11 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				let i: int = 42;
 				let i: int = 43;
-			`).varCheck(new Validator()), AssignmentError01);
+			`).varCheck(), AssignmentError01);
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				type FOO = float;
 				let FOO: int = 42;
-			`).varCheck(new Validator()), AssignmentError01);
+			`).varCheck(), AssignmentError01);
 		});
 	});
 
@@ -75,7 +74,6 @@ describe('ASTNodeDeclarationVariable', () => {
 			`).typeCheck(new Validator()), TypeError03);
 		})
 		it('allows assigning a collection literal to a wider mutable type.', () => {
-			const validator: Validator = new Validator();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let t1: mutable [42]         = [42];
 				let r1: mutable [x: 42]      = [x= 42];
@@ -99,20 +97,19 @@ describe('ASTNodeDeclarationVariable', () => {
 				let s4: mutable T?{}         = {v};
 				let m4: mutable {bool -> T?} = {true -> v};
 			`);
-			goal.varCheck(validator);
-			goal.typeCheck(validator); // assert does not throw
+			goal.varCheck();
+			goal.typeCheck(); // assert does not throw
 		});
 		it('disallows assigning a constructor call to a wider mutable type.', () => {
-			const validator: Validator = new Validator();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let a: mutable int[]         = List.<42>([42]);
 				let b: mutable [:int]        = Hash.<42>([x= 42]);
 				let c: mutable int{}         = Set.<42>([42]);
 				let d: mutable {bool -> int} = Map.<true, 42>([[true, 42]]);
 			`);
-			goal.varCheck(validator);
+			goal.varCheck();
 			assert.throws(() => {
-				goal.typeCheck(validator);
+				goal.typeCheck();
 			}, (err) => {
 				assert.ok(err instanceof AggregateError);
 				assertAssignable(err, {
@@ -128,7 +125,6 @@ describe('ASTNodeDeclarationVariable', () => {
 			});
 		});
 		it('allows assigning a tuple/record collection literal to a corresponding list/hash type.', () => {
-			const validator: Validator = new Validator();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let t1: mutable 42[]  = [42];
 				let r1: mutable [:42] = [x= 42];
@@ -139,25 +135,24 @@ describe('ASTNodeDeclarationVariable', () => {
 				let t3: mutable [int]  = [42];
 				let r3: mutable [:int] = [x= 42];
 			`);
-			goal.varCheck(validator);
-			goal.typeCheck(validator); // assert does not throw
+			goal.varCheck();
+			goal.typeCheck(); // assert does not throw
 		});
 		it('always sets `SymbolStructure#type`.', () => {
 			[
 				CONFIG_DEFAULT,
 				CONFIG_FOLDING_OFF,
 			].forEach((config) => {
-				const validator: Validator = new Validator(config);
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde, config);
-				goal.varCheck(validator);
-				goal.typeCheck(validator);
+				goal.varCheck();
+				goal.typeCheck();
 				assert.deepStrictEqual(
 					[
-						(validator.getSymbolInfo(256n) as SymbolStructureVar).type,
-						(validator.getSymbolInfo(257n) as SymbolStructureVar).type,
-						(validator.getSymbolInfo(258n) as SymbolStructureVar).type,
-						(validator.getSymbolInfo(259n) as SymbolStructureVar).type,
-						(validator.getSymbolInfo(260n) as SymbolStructureVar).type,
+						(goal.validator.getSymbolInfo(256n) as SymbolStructureVar).type,
+						(goal.validator.getSymbolInfo(257n) as SymbolStructureVar).type,
+						(goal.validator.getSymbolInfo(258n) as SymbolStructureVar).type,
+						(goal.validator.getSymbolInfo(259n) as SymbolStructureVar).type,
+						(goal.validator.getSymbolInfo(260n) as SymbolStructureVar).type,
 					],
 					[
 						SolidType.INT,
@@ -186,17 +181,16 @@ describe('ASTNodeDeclarationVariable', () => {
 			})), TypeError03);
 		})
 		it('with constant folding on, only sets `SymbolStructure#value` if type is immutable and variable is fixed.', () => {
-			const validator: Validator = new Validator();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde);
-			goal.varCheck(validator);
-			goal.typeCheck(validator);
+			goal.varCheck();
+			goal.typeCheck();
 			assert.deepStrictEqual(
 				[
-					(validator.getSymbolInfo(256n) as SymbolStructureVar).value,
-					(validator.getSymbolInfo(257n) as SymbolStructureVar).value,
-					(validator.getSymbolInfo(258n) as SymbolStructureVar).value,
-					(validator.getSymbolInfo(259n) as SymbolStructureVar).value,
-					(validator.getSymbolInfo(260n) as SymbolStructureVar).value,
+					(goal.validator.getSymbolInfo(256n) as SymbolStructureVar).value,
+					(goal.validator.getSymbolInfo(257n) as SymbolStructureVar).value,
+					(goal.validator.getSymbolInfo(258n) as SymbolStructureVar).value,
+					(goal.validator.getSymbolInfo(259n) as SymbolStructureVar).value,
+					(goal.validator.getSymbolInfo(260n) as SymbolStructureVar).value,
 				],
 				[
 					new Int16(42n),
@@ -208,16 +202,15 @@ describe('ASTNodeDeclarationVariable', () => {
 			);
 		});
 		it('with constant folding off, never sets `SymbolStructure#value`.', () => {
-			const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde, CONFIG_FOLDING_OFF);
-			goal.varCheck(validator);
-			goal.typeCheck(validator);
+			goal.varCheck();
+			goal.typeCheck();
 			[
-				(validator.getSymbolInfo(256n) as SymbolStructureVar),
-				(validator.getSymbolInfo(257n) as SymbolStructureVar),
-				(validator.getSymbolInfo(258n) as SymbolStructureVar),
-				(validator.getSymbolInfo(259n) as SymbolStructureVar),
-				(validator.getSymbolInfo(260n) as SymbolStructureVar),
+				(goal.validator.getSymbolInfo(256n) as SymbolStructureVar),
+				(goal.validator.getSymbolInfo(257n) as SymbolStructureVar),
+				(goal.validator.getSymbolInfo(258n) as SymbolStructureVar),
+				(goal.validator.getSymbolInfo(259n) as SymbolStructureVar),
+				(goal.validator.getSymbolInfo(260n) as SymbolStructureVar),
 			].forEach((symbol) => {
 				assert.strictEqual(symbol.value, null, symbol.source);
 			});

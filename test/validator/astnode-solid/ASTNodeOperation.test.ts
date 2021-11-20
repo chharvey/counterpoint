@@ -148,11 +148,10 @@ describe('ASTNodeOperation', () => {
 							!b;
 							!c;
 						`, CONFIG_FOLDING_OFF);
-						const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
-						goal.varCheck(validator);
-						goal.typeCheck(validator);
+						goal.varCheck();
+						goal.typeCheck();
 						goal.children.slice(3).forEach((stmt) => {
-							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidBoolean.TRUETYPE);
+							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(goal.validator), SolidBoolean.TRUETYPE);
 						});
 					});
 					it('returns type `bool` for a supertype of `void` or a supertype of `null` or a supertype of `false`.', () => {
@@ -168,11 +167,10 @@ describe('ASTNodeOperation', () => {
 							!d;
 							!e;
 						`, CONFIG_FOLDING_OFF);
-						const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
-						goal.varCheck(validator);
-						goal.typeCheck(validator);
+						goal.varCheck();
+						goal.typeCheck();
 						goal.children.slice(5).forEach((stmt) => {
-							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidType.BOOL);
+							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(goal.validator), SolidType.BOOL);
 						});
 					});
 					it('returns type `false` for any type not a supertype of `null` or `false`.', () => {
@@ -182,11 +180,10 @@ describe('ASTNodeOperation', () => {
 							!a;
 							!b;
 						`, CONFIG_FOLDING_OFF);
-						const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
-						goal.varCheck(validator);
-						goal.typeCheck(validator);
+						goal.varCheck();
+						goal.typeCheck();
 						goal.children.slice(2).forEach((stmt) => {
-							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidBoolean.FALSETYPE);
+							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(goal.validator), SolidBoolean.FALSETYPE);
 						});
 					});
 					it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
@@ -196,11 +193,10 @@ describe('ASTNodeOperation', () => {
 							![a= 42];
 							!{41 -> 42};
 						`, CONFIG_FOLDING_OFF);
-						const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
-						goal.varCheck(validator);
-						goal.typeCheck(validator);
+						goal.varCheck();
+						goal.typeCheck();
 						goal.children.forEach((stmt) => {
-							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(validator), SolidBoolean.FALSETYPE);
+							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(goal.validator), SolidBoolean.FALSETYPE);
 						});
 					});
 				});
@@ -511,7 +507,6 @@ describe('ASTNodeOperation', () => {
 					]));
 				});
 				it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
-					const validator: Validator = new Validator();
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 						let a: obj = [];
 						let b: obj = [42];
@@ -535,13 +530,13 @@ describe('ASTNodeOperation', () => {
 						d != {41 -> 43};
 						d != {43 -> 42};
 					`);
-					goal.varCheck(validator);
-					goal.typeCheck(validator);
+					goal.varCheck();
+					goal.typeCheck();
 					goal.children.slice(4).forEach((stmt) => {
 						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
 						assert.deepStrictEqual(
-							expr.type(validator),
-							new SolidTypeUnit(expr.fold(validator)!),
+							expr.type(goal.validator),
+							new SolidTypeUnit(expr.fold(goal.validator)!),
 						);
 					});
 				});
@@ -675,11 +670,10 @@ describe('ASTNodeOperation', () => {
 					i != {41 -> 43};
 					i != {43 -> 42};
 				`);
-				const validator: Validator = new Validator();
-				goal.varCheck(validator);
-				goal.typeCheck(validator);
+				goal.varCheck();
+				goal.typeCheck();
 				goal.children.slice(13).forEach((stmt) => {
-					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(validator), SolidBoolean.TRUE, stmt.source);
+					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(goal.validator), SolidBoolean.TRUE, stmt.source);
 				});
 			});
 		});
@@ -794,10 +788,9 @@ describe('ASTNodeOperation', () => {
 							b && 42;
 							c && 42;
 						`, CONFIG_FOLDING_OFF);
-						const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
-						goal.varCheck(validator);
-						goal.typeCheck(validator);
-						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+						goal.varCheck();
+						goal.typeCheck();
+						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(goal.validator)), [
 							SolidType.NULL,
 							SolidType.NULL.union(SolidBoolean.FALSETYPE),
 							SolidType.NULL.union(SolidType.VOID),
@@ -817,10 +810,9 @@ describe('ASTNodeOperation', () => {
 							d && 'hello';
 							e && 42;
 						`, CONFIG_FOLDING_OFF);
-						const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
-						goal.varCheck(validator);
-						goal.typeCheck(validator);
-						assert.deepStrictEqual(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+						goal.varCheck();
+						goal.typeCheck();
+						assert.deepStrictEqual(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(goal.validator)), [
 							SolidType.NULL.union(hello),
 							SolidType.NULL.union(hello),
 							SolidBoolean.FALSETYPE.union(hello),
@@ -835,10 +827,9 @@ describe('ASTNodeOperation', () => {
 							a && true;
 							b && null;
 						`, CONFIG_FOLDING_OFF);
-						const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
-						goal.varCheck(validator);
-						goal.typeCheck(validator);
-						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+						goal.varCheck();
+						goal.typeCheck();
+						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(goal.validator)), [
 							SolidBoolean.TRUETYPE,
 							SolidType.NULL,
 						]);
@@ -854,10 +845,9 @@ describe('ASTNodeOperation', () => {
 							b || 42;
 							c || 4.2;
 						`, CONFIG_FOLDING_OFF);
-						const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
-						goal.varCheck(validator);
-						goal.typeCheck(validator);
-						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+						goal.varCheck();
+						goal.typeCheck();
+						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(goal.validator)), [
 							SolidBoolean.FALSETYPE,
 							typeConstInt(42n),
 							typeConstFloat(4.2),
@@ -877,10 +867,9 @@ describe('ASTNodeOperation', () => {
 							d || 'hello';
 							e || 42;
 						`, CONFIG_FOLDING_OFF);
-						const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
-						goal.varCheck(validator);
-						goal.typeCheck(validator);
-						assertEqualTypes(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+						goal.varCheck();
+						goal.typeCheck();
+						assertEqualTypes(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(goal.validator)), [
 							SolidType.INT.union(hello),
 							SolidType.INT.union(hello),
 							SolidBoolean.TRUETYPE.union(hello),
@@ -895,10 +884,9 @@ describe('ASTNodeOperation', () => {
 							a || true;
 							b || null;
 						`, CONFIG_FOLDING_OFF);
-						const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
-						goal.varCheck(validator);
-						goal.typeCheck(validator);
-						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(validator)), [
+						goal.varCheck();
+						goal.typeCheck();
+						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type(goal.validator)), [
 							SolidType.INT,
 							SolidType.FLOAT,
 						]);

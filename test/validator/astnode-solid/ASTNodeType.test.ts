@@ -63,40 +63,39 @@ describe('ASTNodeType', () => {
 				AST.ASTNodeGoal.fromSource(`
 					type T = int;
 					type U = float | T;
-				`).varCheck(new Validator()); // assert does not throw
+				`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					type U = float | T;
-				`).varCheck(new Validator()), ReferenceError01);
+				`).varCheck(), ReferenceError01);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					T;
 					type T = int;
-				`).varCheck(new Validator()), ReferenceError02);
+				`).varCheck(), ReferenceError02);
 			});
 			it('throws if was declared as a value variable.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					let FOO: int = 42;
 					type T = FOO | float;
-				`).varCheck(new Validator()), ReferenceError03);
+				`).varCheck(), ReferenceError03);
 			});
 		});
 
 
 		describe('#eval', () => {
 			it('computes the value of a type alias.', () => {
-				const validator: Validator = new Validator();
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					type T = int;
 					type U = T;
 				`);
-				goal.varCheck(validator);
-				goal.typeCheck(validator);
+				goal.varCheck();
+				goal.typeCheck();
 				assert.deepStrictEqual(
 					((goal
 						.children[1] as AST.ASTNodeDeclarationType)
 						.assigned as AST.ASTNodeTypeAlias)
-						.eval(validator),
+						.eval(goal.validator),
 					SolidType.INT,
 				);
 			});
