@@ -31,6 +31,7 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	) {
 		super(start_node, {}, children)
 	}
+	/** @implements Buildable */
 	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
 		return (!this.children.length)
 			? new INST.InstructionNone()

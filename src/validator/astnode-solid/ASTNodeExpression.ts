@@ -61,7 +61,9 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 		this.type(validator); // assert does not throw
 	}
 	/**
+	 * @inheritdoc
 	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
+	 * @implements Buildable
 	 * @final
 	 */
 	build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
