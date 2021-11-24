@@ -56,9 +56,9 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	/**
 	 * @final
 	 */
-	override typeCheck(validator: Validator): void {
-		super.typeCheck(validator);
-		this.type(validator); // assert does not throw
+	override typeCheck(): void {
+		super.typeCheck();
+		this.type(this.validator); // assert does not throw
 	}
 	/**
 	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?

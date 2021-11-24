@@ -78,9 +78,8 @@ export abstract class ASTNodeSolid extends ASTNode {
 
 	/**
 	 * Type-check the node as part of semantic analysis.
-	 * @param validator stores validation information
 	 */
-	typeCheck(validator: Validator): void {
-		return forEachAggregated(this.children, (c) => c.typeCheck(validator));
+	typeCheck(): void {
+		return forEachAggregated(this.children, (c) => c.typeCheck());
 	}
 }

@@ -8,7 +8,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	SymbolStructureVar,
 } from './package.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
@@ -39,20 +38,20 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			throw new AssignmentError10(assignee);
 		};
 	}
-	override typeCheck(validator: Validator): void {
-		super.typeCheck(validator);
+	override typeCheck(): void {
+		super.typeCheck();
 		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
 		if (assignee instanceof ASTNodeAccess) {
-			const base_type: SolidType = assignee.base.type(validator);
+			const base_type: SolidType = assignee.base.type(this.validator);
 			if (!base_type.isMutable) {
 				throw new MutabilityError01(base_type, this);
 			}
 		}
 		return ASTNodeSolid.typeCheckAssignment(
-			this.assignee.type(validator),
+			this.assignee.type(this.validator),
 			this.assigned,
 			this,
-			validator,
+			this.validator,
 		);
 	}
 	override build(builder: Builder): INST.InstructionStatement {

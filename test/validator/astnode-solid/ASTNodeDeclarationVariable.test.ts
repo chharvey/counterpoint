@@ -5,7 +5,6 @@ import {
 	ASTNODE_SOLID as AST,
 	SymbolStructure,
 	SymbolStructureVar,
-	Validator,
 	SolidType,
 	SolidTypeTuple,
 	SolidTypeList,
@@ -66,12 +65,12 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('checks the assigned expression’s type against the variable assignee’s type.', () => {
 			AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  int | float =  21  *  2;
-			`).typeCheck(new Validator());
+			`).typeCheck();
 		})
 		it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let  the_answer:  null =  21  *  2;
-			`).typeCheck(new Validator()), TypeError03);
+			`).typeCheck(), TypeError03);
 		})
 		it('allows assigning a collection literal to a wider mutable type.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -167,18 +166,18 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('with int coersion on, allows assigning ints to floats.', () => {
 			AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
-			`).typeCheck(new Validator());
+			`).typeCheck();
 		})
 		it('with int coersion off, throws when assigning int to float.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				let x: float = 42;
-			`).typeCheck(new Validator({
+			`, {
 				...CONFIG_DEFAULT,
 				compilerOptions: {
 					...CONFIG_DEFAULT.compilerOptions,
 					intCoercion: false,
 				},
-			})), TypeError03);
+			}).typeCheck(), TypeError03);
 		})
 		it('with constant folding on, only sets `SymbolStructure#value` if type is immutable and variable is fixed.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(abcde);

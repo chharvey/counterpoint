@@ -8,7 +8,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	SymbolStructureVar,
 } from './package.js';
 import {forEachAggregated} from './utils-private.js';
@@ -42,19 +41,19 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
 		this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
 	}
-	override typeCheck(validator: Validator): void {
-		this.assigned.typeCheck(validator);
+	override typeCheck(): void {
+		this.assigned.typeCheck();
 		ASTNodeSolid.typeCheckAssignment(
-			this.typenode.eval(validator),
+			this.typenode.eval(this.validator),
 			this.assigned,
 			this,
-			validator,
+			this.validator,
 		);
-		const symbol: SymbolStructureVar | null = validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;
+		const symbol: SymbolStructureVar | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;
 		if (symbol) {
-			symbol.type = this.typenode.eval(validator);
-			if (validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
-				symbol.value = this.assigned.fold(validator);
+			symbol.type = this.typenode.eval(this.validator);
+			if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
+				symbol.value = this.assigned.fold(this.validator);
 			}
 		}
 	}

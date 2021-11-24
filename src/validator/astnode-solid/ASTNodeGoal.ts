@@ -38,9 +38,6 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	override get validator(): Validator {
 		return this._validator;
 	}
-	override typeCheck(): void {
-		return super.typeCheck(this.validator);
-	}
 	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
 		return (!this.children.length)
 			? new INST.InstructionNone()

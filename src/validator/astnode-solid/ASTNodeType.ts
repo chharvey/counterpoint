@@ -40,7 +40,7 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	/**
 	 * @final
 	 */
-	override typeCheck(_validator: Validator): void {
+	override typeCheck(): void {
 		return; // no type-checking necessary
 	}
 	/**

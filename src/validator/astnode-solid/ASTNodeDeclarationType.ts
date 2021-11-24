@@ -6,7 +6,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	SymbolStructureType,
 } from './package.js';
 import type {ASTNodeType} from './ASTNodeType.js';
@@ -35,10 +34,10 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		this.assigned.varCheck();
 		this.validator.addSymbol(new SymbolStructureType(this.assignee));
 	}
-	override typeCheck(validator: Validator): void {
-		const symbol: SymbolStructureType | null = validator.getSymbolInfo(this.assignee.id) as SymbolStructureType | null;
+	override typeCheck(): void {
+		const symbol: SymbolStructureType | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureType | null;
 		if (symbol) {
-			symbol.typevalue = this.assigned.eval(validator);
+			symbol.typevalue = this.assigned.eval(this.validator);
 		}
 	}
 	override build(_builder: Builder): INST.InstructionNone {
