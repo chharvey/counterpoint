@@ -14,7 +14,8 @@ import {
 
 describe('ASTNodeTypeAccess', () => {
 	describe('#eval', () => {
-		function evalTypeDecl(decl: AST.ASTNodeDeclarationType): SolidType {
+		function evalTypeDecl(decl: AST.ASTNodeStatement): SolidType {
+			assert.ok(decl instanceof AST.ASTNodeDeclarationType);
 			return decl.assigned.eval();
 		}
 		const expected: SolidType[] = [
@@ -73,19 +74,19 @@ describe('ASTNodeTypeAccess', () => {
 		context('index access.', () => {
 			it('returns individual entry types.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(2, 8).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType)),
+					program.children.slice(2, 8).map((c) => evalTypeDecl(c)),
 					expected,
 				);
 			});
 			it('negative indices count backwards from end.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(8, 14).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType)),
+					program.children.slice(8, 14).map((c) => evalTypeDecl(c)),
 					expected,
 				);
 			});
 			it('unions with void if entry is optional.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(24, 26).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType)),
+					program.children.slice(24, 26).map((c) => evalTypeDecl(c)),
 					[
 						typeConstStr('three').union(SolidType.VOID),
 						SolidType.STR.union(SolidType.VOID),
@@ -101,13 +102,13 @@ describe('ASTNodeTypeAccess', () => {
 		context('key access.', () => {
 			it('returns individual entry types.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(16, 22).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType)),
+					program.children.slice(16, 22).map((c) => evalTypeDecl(c)),
 					expected,
 				);
 			});
 			it('unions with void if entry is optional.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(28, 30).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType)),
+					program.children.slice(28, 30).map((c) => evalTypeDecl(c)),
 					[
 						typeConstFloat(2.0).union(SolidType.VOID),
 						SolidType.FLOAT.union(SolidType.VOID),

@@ -64,6 +64,13 @@ function typeOfOperationFromSource(src: string): SolidType {
 
 
 describe('ASTNodeOperation', () => {
+	function typeOfStmtExpr(stmt: AST.ASTNodeStatement): SolidType {
+		assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
+		return stmt.expr!.type();
+	}
+
+
+
 	describe('#type', () => {
 		it('returns Never for NanErrors.', () => {
 			[
@@ -150,7 +157,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.slice(3).forEach((stmt) => {
-							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(), SolidBoolean.TRUETYPE);
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), SolidBoolean.TRUETYPE);
 						});
 					});
 					it('returns type `bool` for a supertype of `void` or a supertype of `null` or a supertype of `false`.', () => {
@@ -169,7 +176,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.slice(5).forEach((stmt) => {
-							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(), SolidType.BOOL);
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), SolidType.BOOL);
 						});
 					});
 					it('returns type `false` for any type not a supertype of `null` or `false`.', () => {
@@ -182,7 +189,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.slice(2).forEach((stmt) => {
-							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(), SolidBoolean.FALSETYPE);
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), SolidBoolean.FALSETYPE);
 						});
 					});
 					it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
@@ -195,7 +202,7 @@ describe('ASTNodeOperation', () => {
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.forEach((stmt) => {
-							assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.type(), SolidBoolean.FALSETYPE);
+							assert.deepStrictEqual(typeOfStmtExpr(stmt), SolidBoolean.FALSETYPE);
 						});
 					});
 				});
@@ -787,7 +794,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()), [
+						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidType.NULL,
 							SolidType.NULL.union(SolidBoolean.FALSETYPE),
 							SolidType.NULL.union(SolidType.VOID),
@@ -809,7 +816,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()), [
+						assert.deepStrictEqual(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidType.NULL.union(hello),
 							SolidType.NULL.union(hello),
 							SolidBoolean.FALSETYPE.union(hello),
@@ -826,7 +833,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()), [
+						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidBoolean.TRUETYPE,
 							SolidType.NULL,
 						]);
@@ -844,7 +851,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()), [
+						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidBoolean.FALSETYPE,
 							typeConstInt(42n),
 							typeConstFloat(4.2),
@@ -866,7 +873,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assertEqualTypes(goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()), [
+						assertEqualTypes(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidType.INT.union(hello),
 							SolidType.INT.union(hello),
 							SolidBoolean.TRUETYPE.union(hello),
@@ -883,7 +890,7 @@ describe('ASTNodeOperation', () => {
 						`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()), [
+						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidType.INT,
 							SolidType.FLOAT,
 						]);
