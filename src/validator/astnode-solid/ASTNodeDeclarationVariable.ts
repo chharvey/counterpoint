@@ -44,21 +44,21 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	override typeCheck(): void {
 		this.assigned.typeCheck();
 		ASTNodeSolid.typeCheckAssignment(
-			this.typenode.eval(this.validator),
+			this.typenode.eval(),
 			this.assigned,
 			this,
 			this.validator,
 		);
 		const symbol: SymbolStructureVar | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureVar | null;
 		if (symbol) {
-			symbol.type = this.typenode.eval(this.validator);
+			symbol.type = this.typenode.eval();
 			if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
 				symbol.value = this.assigned.fold(this.validator);
 			}
 		}
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
-		const tofloat: boolean = this.typenode.eval(builder.validator).isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat(builder.validator);
+		const tofloat: boolean = this.typenode.eval().isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat(builder.validator);
 		const value: SolidObject | null = this.assignee.fold(builder.validator);
 		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
 			? new INST.InstructionNone()

@@ -11,7 +11,6 @@ import {
 	Int16,
 	Float64,
 	SolidString,
-	Validator,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
@@ -48,7 +47,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		super(start_node, {value});
 		this.type = value;
 	}
-	protected override eval_do(_validator: Validator): SolidType {
+	protected override eval_do(): SolidType {
 		return this.type;
 	}
 }

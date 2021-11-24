@@ -6,7 +6,6 @@ import {
 	CONFIG_DEFAULT,
 	TOKEN,
 	SolidType,
-	Validator,
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
@@ -35,9 +34,9 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 			throw new ReferenceError03(this, SymbolKind.VALUE, SymbolKind.TYPE);
 		};
 	}
-	protected override eval_do(validator: Validator): SolidType {
-		if (validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
+	protected override eval_do(): SolidType {
+		if (this.validator.hasSymbol(this.id)) {
+			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureType) {
 				return symbol.typevalue;
 			};

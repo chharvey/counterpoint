@@ -2,7 +2,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	SolidType,
-	Validator,
 } from './package.js';
 import {ASTNodeDeclarationType} from './index.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
@@ -45,12 +44,11 @@ export abstract class ASTNodeType extends ASTNodeSolid {
 	}
 	/**
 	 * Assess the type-value of this node at compile-time.
-	 * @param validator a record of declared variable symbols
 	 * @returns the computed type-value of this node
 	 * @final
 	 */
-	eval(validator: Validator): SolidType {
-		return this.assessed ||= this.eval_do(validator);
+	eval(): SolidType {
+		return this.assessed ||= this.eval_do();
 	}
-	protected abstract eval_do(validator: Validator): SolidType;
+	protected abstract eval_do(): SolidType;
 }

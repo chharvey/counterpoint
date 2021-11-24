@@ -37,7 +37,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 	override typeCheck(): void {
 		const symbol: SymbolStructureType | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureType | null;
 		if (symbol) {
-			symbol.typevalue = this.assigned.eval(this.validator);
+			symbol.typevalue = this.assigned.eval();
 		}
 	}
 	override build(_builder: Builder): INST.InstructionNone {

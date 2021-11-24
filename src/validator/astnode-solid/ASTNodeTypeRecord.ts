@@ -6,7 +6,6 @@ import {
 	PARSENODE,
 	SolidType,
 	SolidTypeRecord,
-	Validator,
 } from './package.js';
 import type {ASTNodePropertyType} from './ASTNodePropertyType.js';
 import {ASTNodeType} from './ASTNodeType.js';
@@ -25,11 +24,11 @@ export class ASTNodeTypeRecord extends ASTNodeType {
 	) {
 		super(start_node, {}, children);
 	}
-	protected override eval_do(validator: Validator): SolidType {
+	protected override eval_do(): SolidType {
 		return new SolidTypeRecord(new Map(this.children.map((c) => [
 			c.key.id,
 			{
-				type:     c.val.eval(validator),
+				type:     c.val.eval(),
 				optional: c.optional,
 			},
 		])));
