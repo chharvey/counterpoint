@@ -6,7 +6,6 @@ import {
 	ParseNode,
 	ValidOperatorBinary,
 } from './package.js';
-import {forEachAggregated} from './utils-private.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeOperation} from './ASTNodeOperation.js';
 
@@ -33,7 +32,6 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	 * @final
 	 */
 	protected override type_do(): SolidType {
-		forEachAggregated([this.operand0, this.operand1], (c) => c.typeCheck());
 		return this.type_do_do(
 			this.operand0.type(),
 			this.operand1.type(),

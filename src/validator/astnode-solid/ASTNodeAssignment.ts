@@ -40,9 +40,8 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	}
 	override typeCheck(): void {
 		super.typeCheck();
-		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
-		if (assignee instanceof ASTNodeAccess) {
-			const base_type: SolidType = assignee.base.type();
+		if (this.assignee instanceof ASTNodeAccess) {
+			const base_type: SolidType = this.assignee.base.type();
 			if (!base_type.isMutable) {
 				throw new MutabilityError01(base_type, this);
 			}
