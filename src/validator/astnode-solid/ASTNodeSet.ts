@@ -9,7 +9,6 @@ import {
 	SolidSet,
 	INST,
 	Builder,
-	Validator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
@@ -27,9 +26,6 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 		override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, children);
-	}
-	override shouldFloat(_validator: Validator): boolean {
-		throw 'ASTNodeSet#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeSet#build_do not yet supported.';

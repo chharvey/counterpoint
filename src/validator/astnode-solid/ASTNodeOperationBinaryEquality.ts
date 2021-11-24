@@ -8,7 +8,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	Operator,
 	ValidOperatorEquality,
 } from './package.js';
@@ -35,11 +34,11 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	) {
 		super(start_node, operator, operand0, operand1);
 	}
-	override shouldFloat(validator: Validator): boolean {
-		return this.operator === Operator.EQ && super.shouldFloat(validator);
+	override shouldFloat(): boolean {
+		return this.operator === Operator.EQ && super.shouldFloat();
 	}
 	protected override build_do(builder: Builder, _to_float: boolean = false): INST.InstructionBinopEquality {
-		const tofloat: boolean = builder.config.compilerOptions.intCoercion && this.shouldFloat(builder.validator);
+		const tofloat: boolean = builder.config.compilerOptions.intCoercion && this.shouldFloat();
 		return new INST.InstructionBinopEquality(
 			this.operator,
 			this.operand0.build(builder, tofloat),

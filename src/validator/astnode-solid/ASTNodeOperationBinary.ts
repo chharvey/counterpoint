@@ -4,7 +4,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	ValidOperatorBinary,
 } from './package.js';
 import {forEachAggregated} from './utils-private.js';
@@ -27,8 +26,8 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand0, operand1]);
 	}
-	override shouldFloat(validator: Validator): boolean {
-		return this.operand0.shouldFloat(validator) || this.operand1.shouldFloat(validator);
+	override shouldFloat(): boolean {
+		return this.operand0.shouldFloat() || this.operand1.shouldFloat();
 	}
 	/**
 	 * @final

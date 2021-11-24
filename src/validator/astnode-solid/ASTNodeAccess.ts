@@ -31,7 +31,6 @@ import {
 	Builder,
 	Operator,
 	ValidAccessOperator,
-	Validator,
 } from './package.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
@@ -54,7 +53,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	) {
 		super(start_node, {kind}, [base, accessor]);
 	}
-	override shouldFloat(_validator: Validator): boolean {
+	override shouldFloat(): boolean {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {

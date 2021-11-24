@@ -42,7 +42,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopArithmetic {
-		const tofloat: boolean = to_float || this.shouldFloat(builder.validator);
+		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionBinopArithmetic(
 			this.operator,
 			this.operand0.build(builder, tofloat),

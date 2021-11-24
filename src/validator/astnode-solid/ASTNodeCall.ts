@@ -20,7 +20,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
-	Validator,
 } from './package.js';
 import {forEachAggregated} from './utils-private.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
@@ -52,7 +51,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 			...this.exprargs,
 		], (arg) => arg.varCheck());
 	}
-	override shouldFloat(_validator: Validator): boolean {
+	override shouldFloat(): boolean {
 		return false;
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {

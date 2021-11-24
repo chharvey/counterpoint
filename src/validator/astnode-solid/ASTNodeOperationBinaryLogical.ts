@@ -31,7 +31,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopLogical {
-		const tofloat: boolean = to_float || this.shouldFloat(builder.validator);
+		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionBinopLogical(
 			builder.varCount,
 			this.operator,

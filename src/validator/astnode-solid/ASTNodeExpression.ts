@@ -9,7 +9,6 @@ import {
 	INST,
 	Builder,
 	ErrorCode,
-	Validator,
 } from './package.js';
 import {
 	ASTNodeStatement,
@@ -52,7 +51,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 * Determine whether this expression should build to a float-type instruction.
 	 * @return Should the built instruction be type-coerced into a floating-point number?
 	 */
-	abstract shouldFloat(validator: Validator): boolean;
+	abstract shouldFloat(): boolean;
 	/**
 	 * @final
 	 */

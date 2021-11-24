@@ -10,7 +10,6 @@ import {
 	SolidMap,
 	INST,
 	Builder,
-	Validator,
 } from './package.js';
 import type {ASTNodeCase} from './ASTNodeCase.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -29,9 +28,6 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, {}, children);
-	}
-	override shouldFloat(_validator: Validator): boolean {
-		throw 'ASTNodeMap#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeMap#build_do not yet supported.';

@@ -10,7 +10,6 @@ import {
 	SolidRecord,
 	INST,
 	Builder,
-	Validator,
 } from './package.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -29,9 +28,6 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {
 		super(start_node, {}, children);
-	}
-	override shouldFloat(_validator: Validator): boolean {
-		throw 'ASTNodeRecord#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';

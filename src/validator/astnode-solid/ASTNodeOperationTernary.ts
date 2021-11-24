@@ -10,7 +10,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	Operator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -33,11 +32,11 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}
-	override shouldFloat(validator: Validator): boolean {
-		return this.operand1.shouldFloat(validator) || this.operand2.shouldFloat(validator);
+	override shouldFloat(): boolean {
+		return this.operand1.shouldFloat() || this.operand2.shouldFloat();
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionCond {
-		const tofloat: boolean = to_float || this.shouldFloat(builder.validator);
+		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionCond(
 			this.operand0.build(builder, false),
 			this.operand1.build(builder, tofloat),

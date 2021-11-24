@@ -9,7 +9,6 @@ import {
 	SolidObject,
 	INST,
 	Builder,
-	Validator,
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
@@ -30,7 +29,7 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		super(start_node, {id: start_node.cook()})
 		this.id = start_node.cook()!;
 	}
-	override shouldFloat(_validator: Validator): boolean {
+	override shouldFloat(): boolean {
 		return this.type().isSubtypeOf(SolidType.FLOAT);
 	}
 	override varCheck(): void {
@@ -42,8 +41,8 @@ export class ASTNodeVariable extends ASTNodeExpression {
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		};
 	}
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
-		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat(builder.validator));
+	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
+		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat());
 	}
 	protected override type_do(): SolidType {
 		if (this.validator.hasSymbol(this.id)) {

@@ -12,7 +12,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	Operator,
 	ValidOperatorUnary,
 } from './package.js';
@@ -34,11 +33,11 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand]);
 	}
-	override shouldFloat(validator: Validator): boolean {
-		return this.operand.shouldFloat(validator);
+	override shouldFloat(): boolean {
+		return this.operand.shouldFloat();
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
-		const tofloat: boolean = to_float || this.shouldFloat(builder.validator);
+		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionUnop(
 			this.operator,
 			this.operand.build(builder, tofloat),
