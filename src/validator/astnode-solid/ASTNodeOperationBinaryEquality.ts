@@ -38,7 +38,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		return this.operator === Operator.EQ && super.shouldFloat();
 	}
 	protected override build_do(builder: Builder, _to_float: boolean = false): INST.InstructionBinopEquality {
-		const tofloat: boolean = builder.config.compilerOptions.intCoercion && this.shouldFloat();
+		const tofloat: boolean = this.validator.config.compilerOptions.intCoercion && this.shouldFloat();
 		return new INST.InstructionBinopEquality(
 			this.operator,
 			this.operand0.build(builder, tofloat),
