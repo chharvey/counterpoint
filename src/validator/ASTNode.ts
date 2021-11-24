@@ -35,6 +35,8 @@ export class ASTNode implements Serializable {
 	/** @implements Serializable */
 	readonly col_index: number = this.parse_node.col_index;
 
+	private _parent: ASTNode | null = null;
+
 	/**
 	 * Construct a new ASTNode object.
 	 *
@@ -47,6 +49,12 @@ export class ASTNode implements Serializable {
 		private readonly attributes: {[key: string]: unknown} = {},
 		readonly children: readonly ASTNode[] = [],
 	) {
+		children.forEach((c) => { c._parent = this; });
+	}
+
+	/** The unique parent node containing this node. */
+	get parent(): ASTNode | null {
+		return this._parent;
 	}
 
 	/** @implements Serializable */

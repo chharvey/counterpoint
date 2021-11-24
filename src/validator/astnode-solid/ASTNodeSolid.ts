@@ -62,6 +62,10 @@ export abstract class ASTNodeSolid extends ASTNode {
 		super(start_node, attributes, children)
 	}
 
+	get validator(): Validator {
+		return (this.parent as ASTNodeSolid).validator;
+	}
+
 	/**
 	 * Perform definite assignment phase of semantic analysis:
 	 * - Check that all variables have been assigned before being used.

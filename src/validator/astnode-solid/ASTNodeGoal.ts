@@ -26,14 +26,17 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeGoal {
 		return DECORATOR.decorate(((config === CONFIG_DEFAULT) ? PARSER : new ParserSolid(config)).parse(src), config);
 	}
-	readonly validator: Validator;
+	private readonly _validator: Validator;
 	constructor(
 		start_node: ParseNode,
 		override readonly children: readonly ASTNodeStatement[],
 		config: SolidConfig,
 	) {
 		super(start_node, {}, children)
-		this.validator = new Validator(config);
+		this._validator = new Validator(config);
+	}
+	override get validator(): Validator {
+		return this._validator;
 	}
 	override varCheck(): void {
 		return super.varCheck(this.validator);
