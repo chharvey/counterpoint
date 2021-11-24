@@ -37,8 +37,8 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	protected override type_do(): SolidType {
 		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type())).mutableOf();
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.fold(validator));
+	protected override fold_do(): SolidObject | null {
+		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.fold());
 		return (items.includes(null))
 			? null
 			: new SolidTuple(items as SolidObject[]);

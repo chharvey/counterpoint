@@ -114,9 +114,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Map\`.`);
 		}))();
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
+	protected override fold_do(): SolidObject | null {
 		const argvalue: SolidObject | null | undefined = (this.exprargs.length) // TODO #fold should not return native `null` if it cannot assess
-			? this.exprargs[0].fold(validator)
+			? this.exprargs[0].fold()
 			: undefined;
 		if (argvalue === null) {
 			return null;

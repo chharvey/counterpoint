@@ -41,8 +41,8 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 				: SolidType.NEVER,
 		).mutableOf();
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		const elements: readonly (SolidObject | null)[] = this.children.map((c) => c.fold(validator));
+	protected override fold_do(): SolidObject | null {
+		const elements: readonly (SolidObject | null)[] = this.children.map((c) => c.fold());
 		return (elements.includes(null))
 			? null
 			: new SolidSet(new Set(elements as SolidObject[]));

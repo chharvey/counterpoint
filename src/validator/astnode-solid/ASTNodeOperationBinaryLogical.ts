@@ -8,7 +8,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	Operator,
 	ValidOperatorLogical,
 } from './package.js';
@@ -52,8 +51,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 					? t0.subtract(falsytypes).union(t1)
 					: t0
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		const v0: SolidObject | null = this.operand0.fold(validator);
+	protected override fold_do(): SolidObject | null {
+		const v0: SolidObject | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
@@ -63,6 +62,6 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		) {
 			return v0;
 		}
-		return this.operand1.fold(validator);
+		return this.operand1.fold();
 	}
 }

@@ -42,10 +42,10 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 			SolidType.unionAll(this.children.map((c) => c.consequent.type())),
 		).mutableOf();
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
+	protected override fold_do(): SolidObject | null {
 		const cases: ReadonlyMap<SolidObject | null, SolidObject | null> = new Map(this.children.map((c) => [
-			c.antecedent.fold(validator),
-			c.consequent.fold(validator),
+			c.antecedent.fold(),
+			c.consequent.fold(),
 		]));
 		return ([...cases].some((c) => c[0] === null || c[1] === null))
 			? null

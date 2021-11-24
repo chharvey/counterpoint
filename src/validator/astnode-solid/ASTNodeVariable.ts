@@ -54,9 +54,9 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		};
 		return SolidType.NEVER;
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		if (validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
+	protected override fold_do(): SolidObject | null {
+		if (this.validator.hasSymbol(this.id)) {
+			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
 				return symbol.value;
 			};

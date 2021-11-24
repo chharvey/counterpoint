@@ -56,13 +56,13 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 				: t1.union(t2)
 			: (() => { throw new TypeError01(this) })()
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		const v0: SolidObject | null = this.operand0.fold(validator);
+	protected override fold_do(): SolidObject | null {
+		const v0: SolidObject | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
 		return (v0 === SolidBoolean.TRUE)
-			? this.operand1.fold(validator)
-			: this.operand2.fold(validator);
+			? this.operand1.fold()
+			: this.operand2.fold();
 	}
 }

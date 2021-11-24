@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import {
 	ASTNODE_SOLID as AST,
-	Validator,
 } from '../../../src/validator/index.js';
 import {
 	SolidType,
@@ -132,7 +131,6 @@ describe('ASTNodeCall', () => {
 
 
 	describe('#fold', () => {
-		const validator: Validator = new Validator();
 		it('evaluates List, Hash, Set, and Map.', () => {
 			assert.deepStrictEqual(
 				[
@@ -144,7 +142,7 @@ describe('ASTNodeCall', () => {
 						[2, 0.2],
 						[3, 0.4],
 					]);`,
-				].map((src) => AST.ASTNodeCall.fromSource(src).fold(validator)),
+				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
 					new SolidList<Int16>([
 						new Int16(1n),
@@ -179,7 +177,7 @@ describe('ASTNodeCall', () => {
 						[2, 0.2],
 						[3, 0.4],
 					]));`,
-				].map((src) => AST.ASTNodeCall.fromSource(src).fold(validator)),
+				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
 					new SolidList<Int16>([
 						new Int16(1n),
@@ -209,7 +207,7 @@ describe('ASTNodeCall', () => {
 					`List.<int>([]);`,
 					`Set.<int>([]);`,
 					`Map.<int, float>([]);`,
-				].map((src) => AST.ASTNodeCall.fromSource(src).fold(validator)),
+				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
 					new SolidList<never>(),
 					new SolidHash<never>(),

@@ -43,8 +43,8 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	protected override type_do(): SolidType {
 		return SolidType.STR;
 	}
-	protected override fold_do(validator: Validator): SolidString | null {
-		const values: (SolidObject | null)[] = [...this.children].map((expr) => expr.fold(validator));
+	protected override fold_do(): SolidString | null {
+		const values: (SolidObject | null)[] = [...this.children].map((expr) => expr.fold());
 		return (values.includes(null))
 			? null
 			: (values as SolidObject[])

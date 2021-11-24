@@ -53,13 +53,13 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		if (symbol) {
 			symbol.type = this.typenode.eval();
 			if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
-				symbol.value = this.assigned.fold(this.validator);
+				symbol.value = this.assigned.fold();
 			}
 		}
 	}
 	override build(builder: Builder): INST.InstructionNone | INST.InstructionDeclareGlobal {
 		const tofloat: boolean = this.typenode.eval().isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat(builder.validator);
-		const value: SolidObject | null = this.assignee.fold(builder.validator);
+		const value: SolidObject | null = this.assignee.fold();
 		return (builder.validator.config.compilerOptions.constantFolding && !this.unfixed && value)
 			? new INST.InstructionNone()
 			: new INST.InstructionDeclareGlobal(this.assignee.id, this.unfixed, this.assigned.build(builder, tofloat))

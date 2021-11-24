@@ -42,10 +42,10 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 			c.val.type(),
 		]))).mutableOf();
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
+	protected override fold_do(): SolidObject | null {
 		const properties: ReadonlyMap<bigint, SolidObject | null> = new Map(this.children.map((c) => [
 			c.key.id,
-			c.val.fold(validator),
+			c.val.fold(),
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null

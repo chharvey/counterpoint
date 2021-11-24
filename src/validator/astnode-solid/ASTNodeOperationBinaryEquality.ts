@@ -62,12 +62,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		}
 		return SolidType.BOOL;
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		const v0: SolidObject | null = this.operand0.fold(validator);
+	protected override fold_do(): SolidObject | null {
+		const v0: SolidObject | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		const v1: SolidObject | null = this.operand1.fold(validator);
+		const v1: SolidObject | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}

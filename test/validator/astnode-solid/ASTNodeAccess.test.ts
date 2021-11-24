@@ -1,7 +1,6 @@
 import * as assert from 'assert'
 import {
 	ASTNODE_SOLID as AST,
-	Validator,
 	SolidType,
 	SolidTypeTuple,
 	SolidTypeRecord,
@@ -682,8 +681,8 @@ describe('ASTNodeAccess', () => {
 
 
 	describe('#fold', () => {
-		function foldStmtExpr(stmt: AST.ASTNodeStatementExpression, validator: Validator): SolidObject | null {
-			return stmt.expr!.fold(validator);
+		function foldStmtExpr(stmt: AST.ASTNodeStatementExpression): SolidObject | null {
+			return stmt.expr!.fold();
 		}
 		const expected: (SolidObject | null)[] = [
 			new Int16(1n),
@@ -701,14 +700,13 @@ describe('ASTNodeAccess', () => {
 
 		context('when base is nullish.', () => {
 			it('optional access returns base when it is null.', () => {
-				const validator: Validator = new Validator();
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .fold(validator), /TypeError: \w+\.get is not a function/);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .fold(validator), /TypeError: \w+\.get is not a function/);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).fold(validator), /TypeError: \w+\.get is not a function/);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .fold(), /TypeError: \w+\.get is not a function/);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .fold(), /TypeError: \w+\.get is not a function/);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).fold(), /TypeError: \w+\.get is not a function/);
 				[
-					AST.ASTNodeAccess.fromSource(`null?.3;`)         .fold(validator),
-					AST.ASTNodeAccess.fromSource(`null?.four;`)      .fold(validator),
-					AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).fold(validator),
+					AST.ASTNodeAccess.fromSource(`null?.3;`)         .fold(),
+					AST.ASTNodeAccess.fromSource(`null?.four;`)      .fold(),
+					AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).fold(),
 				].forEach((t) => {
 					assert.strictEqual(t, SolidNull.NULL);
 				});
@@ -730,7 +728,7 @@ describe('ASTNodeAccess', () => {
 				const prop1: SolidTuple = new SolidTuple([SolidBoolean.TRUE]);
 				const prop2: SolidTuple = new SolidTuple();
 				assert.deepStrictEqual(
-					program.children.slice(2, 7).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(2, 7).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						new SolidRecord(new Map([[0x101n, prop1],])),
 						prop1,
@@ -741,7 +739,7 @@ describe('ASTNodeAccess', () => {
 				);
 				// must bypass type-checker:
 				assert.deepStrictEqual(
-					AST.ASTNodeAccess.fromSource(`[prop= []]?.prop?.0;`).fold(program.validator),
+					AST.ASTNodeAccess.fromSource(`[prop= []]?.prop?.0;`).fold(),
 					SolidNull.NULL,
 				);
 			});
@@ -756,22 +754,22 @@ describe('ASTNodeAccess', () => {
 			});
 			it('returns individual entries.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(4, 10).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(4, 10).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected,
 				);
 				assert.deepStrictEqual(
-					program.children.slice(10, 16).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(10, 16).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected,
 				);
 				assert.deepStrictEqual(
-					program.children.slice(38, 41).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(38, 41).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected_o,
 				);
 				assert.deepStrictEqual(
 					[
 						...program.children.slice(43, 46),
 						program.children[47]
-					].map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					].map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						...expected_o,
 						null,
@@ -780,18 +778,18 @@ describe('ASTNodeAccess', () => {
 			});
 			it('negative indices count backwards from end.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(16, 22).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(16, 22).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected,
 				);
 			});
 			it('throws when index is out of bounds.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`) .fold(program.validator), VoidError01);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`).fold(program.validator), VoidError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`) .fold(), VoidError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`).fold(), VoidError01);
 			});
 			it('returns null when optionally accessing index out of bounds.', () => {
 				[
-					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`) .fold(program.validator),
-					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).fold(program.validator),
+					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`) .fold(),
+					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).fold(),
 				].forEach((v) => {
 					assert.deepStrictEqual(v, SolidNull.NULL);
 				});
@@ -807,22 +805,22 @@ describe('ASTNodeAccess', () => {
 			});
 			it('returns individual entries.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(4, 10).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(4, 10).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected,
 				);
 				assert.deepStrictEqual(
-					program.children.slice(10, 16).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(10, 16).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected,
 				);
 				assert.deepStrictEqual(
-					program.children.slice(26, 29).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(26, 29).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected_o,
 				);
 				assert.deepStrictEqual(
 					[
 						...program.children.slice(31, 34),
 						program.children[35],
-					].map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					].map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						...expected_o,
 						null,
@@ -830,11 +828,11 @@ describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when key is out of bounds.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`).fold(program.validator), VoidError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`).fold(), VoidError01);
 			});
 			it('returns null when optionally accessing key out of bounds.', () => {
 				[
-					AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).fold(program.validator),
+					AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).fold(),
 				].forEach((v) => {
 					assert.deepStrictEqual(v, SolidNull.NULL);
 				});
@@ -850,25 +848,25 @@ describe('ASTNodeAccess', () => {
 			});
 			it('returns individual entries for tuples.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(12, 18).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(12, 18).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected,
 				);
 				assert.deepStrictEqual(
-					program.children.slice(46, 49).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(46, 49).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected_o,
 				);
 				assert.deepStrictEqual(
-					program.children.slice(55, 58).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(55, 58).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected_o,
 				);
 			});
 			it('returns individual entries for lists.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(18, 24).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(18, 24).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected,
 				);
 				assert.deepStrictEqual(
-					program.children.slice(49, 51).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(49, 51).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						new SolidString('three'),
 						null,
@@ -877,11 +875,11 @@ describe('ASTNodeAccess', () => {
 			});
 			it('returns individual entries for sets.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(24, 30).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(24, 30).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected,
 				);
 				assert.deepStrictEqual(
-					program.children.slice(51, 53).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(51, 53).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						new SolidString('three'),
 						null,
@@ -890,11 +888,11 @@ describe('ASTNodeAccess', () => {
 			});
 			it('returns individual entries for maps.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(30, 36).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(30, 36).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected,
 				);
 				assert.deepStrictEqual(
-					program.children.slice(53, 55).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(53, 55).map((c) => foldStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						new SolidString('three'),
 						null,
@@ -902,15 +900,15 @@ describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when accessor expression is out of bounds.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`)                               .fold(program.validator), VoidError01);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}.[3];`)                               .fold(program.validator), VoidError01);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}.[['a']];`).fold(program.validator), VoidError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`)                               .fold(), VoidError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}.[3];`)                               .fold(), VoidError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}.[['a']];`).fold(), VoidError01);
 			});
 			it('returns null when optionally accessing index/antecedent out of bounds.', () => {
 				[
-					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`)                               .fold(program.validator),
-					AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}?.[3];`)                               .fold(program.validator),
-					AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}?.[['a']];`).fold(program.validator),
+					AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`)                               .fold(),
+					AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}?.[3];`)                               .fold(),
+					AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}?.[['a']];`).fold(),
 				].forEach((v) => {
 					assert.deepStrictEqual(v, SolidNull.NULL);
 				});

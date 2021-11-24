@@ -4,7 +4,6 @@ import {
 	CONFIG_DEFAULT,
 	Dev,
 	ASTNODE_SOLID as AST,
-	Validator,
 	SolidType,
 	SolidTypeUnit,
 	SolidTypeTuple,
@@ -58,7 +57,6 @@ describe('ASTNodeExpression', () => {
 					0.  -0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
 					${ (Dev.supports('stringConstant-assess')) ? `'42😀'  '42\\u{1f600}'` : `` }
 				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`));
-				const validator: Validator = new Validator();
 				assert.deepStrictEqual(constants.map((c) => assert_wasCalled(c.fold, 1, (orig, spy) => {
 					c.fold = spy;
 					try {
@@ -66,7 +64,7 @@ describe('ASTNodeExpression', () => {
 					} finally {
 						c.fold = orig;
 					};
-				})), constants.map((c) => new SolidTypeUnit(c.fold(validator)!)));
+				})), constants.map((c) => new SolidTypeUnit(c.fold()!)));
 			});
 		});
 
@@ -77,7 +75,7 @@ describe('ASTNodeExpression', () => {
 					'null;',
 					'false;',
 					'true;',
-				].map((src) => AST.ASTNodeConstant.fromSource(src).fold(new Validator())), [
+				].map((src) => AST.ASTNodeConstant.fromSource(src).fold()), [
 					SolidNull.NULL,
 					SolidBoolean.FALSE,
 					SolidBoolean.TRUE,
@@ -94,7 +92,7 @@ describe('ASTNodeExpression', () => {
 				assert.deepStrictEqual(`
 					55  -55  033  -033  0  -0
 					\\o55  -\\o55  \\q033  -\\q033
-				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`, integer_radices_on).fold(new Validator())), [
+				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`, integer_radices_on).fold()), [
 					55, -55, 33, -33, 0, 0,
 					parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
 				].map((v) => new Int16(BigInt(v))));
@@ -104,7 +102,7 @@ describe('ASTNodeExpression', () => {
 					55.  -55.  033.  -033.  2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
 					0.  -0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`).fold(new Validator())), [
+				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`).fold()), [
 					55, -55, 33, -33, 2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					0, -0, -0, 6.8, 6.8, 0, -0,
@@ -197,7 +195,7 @@ describe('ASTNodeExpression', () => {
 				goal.typeCheck();
 				assert.ok(!(goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
-					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(goal.validator),
+					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
 					new Int16(42n),
 				);
 			});
@@ -210,7 +208,7 @@ describe('ASTNodeExpression', () => {
 				goal.typeCheck();
 				assert.ok((goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
-					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(goal.validator),
+					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
 					null,
 				);
 			});
@@ -224,7 +222,7 @@ describe('ASTNodeExpression', () => {
 				goal.typeCheck();
 				assert.ok(!(goal.children[1] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
-					(goal.children[2] as AST.ASTNodeStatementExpression).expr!.fold(goal.validator),
+					(goal.children[2] as AST.ASTNodeStatementExpression).expr!.fold(),
 					null,
 				);
 			});
@@ -319,7 +317,6 @@ describe('ASTNodeExpression', () => {
 				] as const;
 			}
 			context('with constant folding on.', () => {
-				const validator: Validator = new Validator();
 				let types: SolidType[];
 				before(() => {
 					templates = initTemplates();
@@ -335,7 +332,7 @@ describe('ASTNodeExpression', () => {
 				it('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
 					assert.deepStrictEqual(
 						types.slice(0, 2),
-						templates.slice(0, 2).map((t) => new SolidTypeUnit(t.fold(validator)!)),
+						templates.slice(0, 2).map((t) => new SolidTypeUnit(t.fold()!)),
 					);
 				});
 				it('for non-foldable interpolations, returns `String`.', () => {
@@ -369,19 +366,19 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns a constant String for ASTNodeTemplate with no interpolations.', () => {
 				assert.deepStrictEqual(
-					templates[0].fold(new Validator()),
+					templates[0].fold(),
 					new SolidString('42😀'),
 				);
 			});
 			it('returns a constant String for ASTNodeTemplate with foldable interpolations.', () => {
 				assert.deepStrictEqual(
-					templates[1].fold(new Validator()),
+					templates[1].fold(),
 					new SolidString('the answer is 42 but what is the question?'),
 				);
 			});
 			it('returns null for ASTNodeTemplate with dynamic interpolations.', () => {
 				assert.deepStrictEqual(
-					templates[2].fold(new Validator()),
+					templates[2].fold(),
 					null,
 				);
 			});
@@ -447,7 +444,7 @@ describe('ASTNodeExpression', () => {
 								3 * 1.0   -> 'three',
 							};
 						`),
-					].map((c) => c.fold(new Validator())),
+					].map((c) => c.fold()),
 					[
 						new SolidTuple([
 							new Int16(1n),
@@ -494,13 +491,13 @@ describe('ASTNodeExpression', () => {
 						tuple,
 						record,
 						map,
-					].map((c) => c.fold(new Validator())),
+					].map((c) => c.fold()),
 					[null, null, null],
 				);
 			});
 			it('ASTNodeRecord overwrites duplicate keys.', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, a= 'three'];`).fold(new Validator()),
+					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, a= 'three'];`).fold(),
 					new SolidRecord(new Map<bigint, SolidObject>([
 						[0x101n, new Float64(2.0)],
 						[0x100n, new SolidString('three')],

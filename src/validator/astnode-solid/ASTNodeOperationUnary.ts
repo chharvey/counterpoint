@@ -58,8 +58,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				: (() => { throw new TypeError01(this); })()
 		);
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		const v0: SolidObject | null = this.operand.fold(validator);
+	protected override fold_do(): SolidObject | null {
+		const v0: SolidObject | null = this.operand.fold();
 		if (!v0) {
 			return v0;
 		}

@@ -150,8 +150,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 		}
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		const base_value: SolidObject | null = this.base.fold(validator);
+	protected override fold_do(): SolidObject | null {
+		const base_value: SolidObject | null = this.base.fold();
 		if (base_value === null) {
 			return null;
 		}
@@ -159,11 +159,11 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as CollectionIndexed).get(this.accessor.val.fold(validator) as Int16, this.optional, this.accessor);
+			return (base_value as CollectionIndexed).get(this.accessor.val.fold() as Int16, this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (base_value as CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
-			const accessor_value: SolidObject | null = this.accessor.fold(validator);
+			const accessor_value: SolidObject | null = this.accessor.fold();
 			if (accessor_value === null) {
 				return null;
 			}

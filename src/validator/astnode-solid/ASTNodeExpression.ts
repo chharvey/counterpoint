@@ -66,7 +66,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 */
 	build(builder: Builder, to_float?: boolean): INST.InstructionExpression {
 		if (!this.built) {
-			const value: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.fold(builder.validator) : null;
+			const value: SolidObject | null = (builder.config.compilerOptions.constantFolding) ? this.fold() : null;
 			this.built = (!!value) ? INST.InstructionConst.fromCPValue(value, to_float) : this.build_do(builder, to_float);
 		}
 		return this.built;
@@ -83,7 +83,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 			if (this.validator.config.compilerOptions.constantFolding) {
 				let value: SolidObject | null = null;
 				try {
-					value = this.fold(this.validator);
+					value = this.fold();
 				} catch (err) {
 					if (err instanceof ErrorCode) {
 						// ignore evaluation errors such as VoidError, NanError, etc.
@@ -103,12 +103,11 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	/**
 	 * Assess the value of this node at compile-time, if possible.
 	 * If {@link SolidConfig|constant folding} is off, this should not be called.
-	 * @param validator stores validation and configuration information
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 * @final
 	 */
-	fold(validator: Validator): SolidObject | null {
-		return this.assessed ||= this.fold_do(validator);
+	fold(): SolidObject | null {
+		return this.assessed ||= this.fold_do();
 	}
-	protected abstract fold_do(validator: Validator): SolidObject | null;
+	protected abstract fold_do(): SolidObject | null;
 }

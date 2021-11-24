@@ -5,7 +5,6 @@ import {
 	Dev,
 	Operator,
 	ASTNODE_SOLID as AST,
-	Validator,
 	SolidType,
 	SolidTypeUnit,
 	SolidObject,
@@ -48,7 +47,7 @@ function typeOperations(tests: ReadonlyMap<string, SolidObject>, config: SolidCo
 }
 function foldOperations(tests: Map<string, SolidObject>): void {
 	return assert.deepStrictEqual(
-		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src).fold(new Validator())),
+		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src).fold()),
 		[...tests.values()],
 	);
 }
@@ -380,7 +379,7 @@ describe('ASTNodeOperation', () => {
 				assert.deepStrictEqual([
 					`2 ^ 15 + 2 ^ 14;`,
 					`-(2 ^ 14) - 2 ^ 15;`,
-				].map((src) => AST.ASTNodeOperationBinaryArithmetic.fromSource(src).fold(new Validator())), [
+				].map((src) => AST.ASTNodeOperationBinaryArithmetic.fromSource(src).fold()), [
 					new Int16(-(2n ** 14n)),
 					new Int16(2n ** 14n),
 				]);
@@ -392,7 +391,7 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 			it('throws when performing an operation that does not yield a valid number.', () => {
-				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource(`-4 ^ -0.5;`).fold(new Validator()), NanError01);
+				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource(`-4 ^ -0.5;`).fold(), NanError01);
 			});
 		});
 
@@ -534,7 +533,7 @@ describe('ASTNodeOperation', () => {
 						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
 						assert.deepStrictEqual(
 							expr.type(),
-							new SolidTypeUnit(expr.fold(goal.validator)!),
+							new SolidTypeUnit(expr.fold()!),
 						);
 					});
 				});
@@ -671,7 +670,7 @@ describe('ASTNodeOperation', () => {
 				goal.varCheck();
 				goal.typeCheck();
 				goal.children.slice(13).forEach((stmt) => {
-					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(goal.validator), SolidBoolean.TRUE, stmt.source);
+					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), SolidBoolean.TRUE, stmt.source);
 				});
 			});
 		});
