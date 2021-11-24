@@ -32,10 +32,10 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	) {
 		super(start_node, {}, [base, ...args]);
 	}
-	override varCheck(validator: Validator): void {
+	override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be `List | Hash | Set | Map`)
-		return forEachAggregated(this.args, (arg) => arg.varCheck(validator));
+		return forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
 	protected override eval_do(validator: Validator): SolidType {
 		if (!(this.base instanceof ASTNodeTypeAlias)) {

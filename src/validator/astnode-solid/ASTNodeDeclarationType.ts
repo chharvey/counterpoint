@@ -28,12 +28,12 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
-	override varCheck(validator: Validator): void {
-		if (validator.hasSymbol(this.assignee.id)) {
+	override varCheck(): void {
+		if (this.validator.hasSymbol(this.assignee.id)) {
 			throw new AssignmentError01(this.assignee);
 		};
-		this.assigned.varCheck(validator);
-		validator.addSymbol(new SymbolStructureType(this.assignee));
+		this.assigned.varCheck();
+		this.validator.addSymbol(new SymbolStructureType(this.assignee));
 	}
 	override typeCheck(validator: Validator): void {
 		const symbol: SymbolStructureType | null = validator.getSymbolInfo(this.assignee.id) as SymbolStructureType | null;

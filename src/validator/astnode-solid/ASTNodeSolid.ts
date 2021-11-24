@@ -71,10 +71,9 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * - Check that all variables have been assigned before being used.
 	 * - Check that no varaible is declared more than once.
 	 * - Check that fixed variables are not reassigned.
-	 * @param validator a record of declared variable symbols
 	 */
-	varCheck(validator: Validator): void {
-		return forEachAggregated(this.children, (c) => c.varCheck(validator));
+	varCheck(): void {
+		return forEachAggregated(this.children, (c) => c.varCheck());
 	}
 
 	/**

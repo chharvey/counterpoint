@@ -44,13 +44,13 @@ export class ASTNodeCall extends ASTNodeExpression {
 	) {
 		super(start_node, {}, [base, ...typeargs, ...exprargs]);
 	}
-	override varCheck(validator: Validator): void {
+	override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be `List | Hash | Set | Map`)
 		return forEachAggregated([
 			...this.typeargs,
 			...this.exprargs,
-		], (arg) => arg.varCheck(validator));
+		], (arg) => arg.varCheck());
 	}
 	override shouldFloat(_validator: Validator): boolean {
 		return false;

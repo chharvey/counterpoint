@@ -43,7 +43,7 @@ describe('ASTNodeExpression', () => {
 	describe('ASTNodeConstant', () => {
 		describe('#varCheck', () => {
 			it('never throws.', () => {
-				AST.ASTNodeConstant.fromSource(`42;`).varCheck(new Validator());
+				AST.ASTNodeConstant.fromSource(`42;`).varCheck();
 			});
 		});
 
@@ -163,7 +163,7 @@ describe('ASTNodeExpression', () => {
 					let unfixed i: int = 42;
 					i;
 				`).varCheck(); // assert does not throw
-				assert.throws(() => AST.ASTNodeVariable.fromSource(`i;`).varCheck(new Validator()), ReferenceError01);
+				assert.throws(() => AST.ASTNodeVariable.fromSource(`i;`).varCheck(), ReferenceError01);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`

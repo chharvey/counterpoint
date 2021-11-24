@@ -33,11 +33,11 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	override shouldFloat(validator: Validator): boolean {
 		return this.type(validator).isSubtypeOf(SolidType.FLOAT);
 	}
-	override varCheck(validator: Validator): void {
-		if (!validator.hasSymbol(this.id)) {
+	override varCheck(): void {
+		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
 		};
-		if (validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
+		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
 			throw new ReferenceError03(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		};

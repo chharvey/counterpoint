@@ -32,10 +32,10 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
-	override varCheck(validator: Validator): void {
-		super.varCheck(validator);
+	override varCheck(): void {
+		super.varCheck();
 		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
-		if (assignee instanceof ASTNodeVariable && !(validator.getSymbolInfo(assignee.id) as SymbolStructureVar).unfixed) {
+		if (assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(assignee.id) as SymbolStructureVar).unfixed) {
 			throw new AssignmentError10(assignee);
 		};
 	}

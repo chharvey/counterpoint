@@ -35,12 +35,12 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	) {
 		super(start_node, {unfixed}, [assignee, typenode, assigned]);
 	}
-	override varCheck(validator: Validator): void {
-		if (validator.hasSymbol(this.assignee.id)) {
+	override varCheck(): void {
+		if (this.validator.hasSymbol(this.assignee.id)) {
 			throw new AssignmentError01(this.assignee);
 		};
-		forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck(validator));
-		validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
+		forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
+		this.validator.addSymbol(new SymbolStructureVar(this.assignee, this.unfixed));
 	}
 	override typeCheck(validator: Validator): void {
 		this.assigned.typeCheck(validator);
