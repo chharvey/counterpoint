@@ -62,7 +62,7 @@ describe('ASTNodeExpression', () => {
 				assert.deepStrictEqual(constants.map((c) => assert_wasCalled(c.fold, 1, (orig, spy) => {
 					c.fold = spy;
 					try {
-						return c.type(validator);
+						return c.type();
 					} finally {
 						c.fold = orig;
 					};
@@ -112,7 +112,7 @@ describe('ASTNodeExpression', () => {
 			})
 			Dev.supports('stringConstant-assess') && it('computes string values.', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeConstant.fromSource(`'42😀\\u{1f600}';`).type(new Validator()),
+					AST.ASTNodeConstant.fromSource(`'42😀\\u{1f600}';`).type(),
 					typeConstStr('42😀\u{1f600}'),
 				);
 			});
@@ -182,7 +182,7 @@ describe('ASTNodeExpression', () => {
 
 		describe('#type', () => {
 			it('returns Never for undeclared variables.', () => {
-				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(new Validator()), SolidType.NEVER);
+				assert.strictEqual(AST.ASTNodeVariable.fromSource(`x;`).type(), SolidType.NEVER);
 			});
 		});
 
@@ -240,6 +240,8 @@ describe('ASTNodeExpression', () => {
 					y;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				goal.varCheck();
+				goal.typeCheck();
 				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
 					[
@@ -260,6 +262,8 @@ describe('ASTNodeExpression', () => {
 					y;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				goal.varCheck();
+				goal.typeCheck();
 				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
 					[
@@ -280,6 +284,8 @@ describe('ASTNodeExpression', () => {
 					y;
 				`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
+				goal.varCheck();
+				goal.typeCheck();
 				const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 				assert.deepStrictEqual(
 					[
@@ -300,14 +306,14 @@ describe('ASTNodeExpression', () => {
 	Dev.supports('stringTemplate-assess') && describe('ASTNodeTemplate', () => {
 		describe('#type', () => {
 			let templates: readonly AST.ASTNodeTemplate[];
-			function initTemplates() {
+			function initTemplates(config: SolidConfig = CONFIG_DEFAULT) {
 				return [
-					AST.ASTNodeTemplate.fromSource(`'''42😀''';`),
-					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
+					AST.ASTNodeTemplate.fromSource(`'''42😀''';`, config),
+					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, config),
 					(AST.ASTNodeGoal.fromSource(`
 						let unfixed x: int = 21;
 						'''the answer is {{ x * 2 }} but what is the question?''';
-					`)
+					`, config)
 						.children[1] as AST.ASTNodeStatementExpression)
 						.expr as AST.ASTNodeTemplate,
 				] as const;
@@ -320,7 +326,7 @@ describe('ASTNodeExpression', () => {
 					types = templates.map((t) => assert_wasCalled(t.fold, 1, (orig, spy) => {
 						t.fold = spy;
 						try {
-							return t.type(validator);
+							return t.type();
 						} finally {
 							t.fold = orig;
 						};
@@ -338,9 +344,9 @@ describe('ASTNodeExpression', () => {
 			});
 			context('with constant folding off.', () => {
 				it('always returns `String`.', () => {
-					templates = initTemplates();
+					templates = initTemplates(CONFIG_FOLDING_OFF);
 					templates.forEach((t) => {
-						assert.deepStrictEqual(t.type(new Validator(CONFIG_FOLDING_OFF)), SolidType.STR);
+						assert.deepStrictEqual(t.type(), SolidType.STR);
 					});
 				});
 			});
@@ -397,20 +403,19 @@ describe('ASTNodeExpression', () => {
 					AST.ASTNodeSet,
 					AST.ASTNodeMap,
 				] = [
-					AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`),
-					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`),
-					AST.ASTNodeSet.fromSource(`{1, 2.0, 'three'};`),
+					AST.ASTNodeTuple.fromSource(`[1, 2.0, 'three'];`, config),
+					AST.ASTNodeRecord.fromSource(`[a= 1, b= 2.0, c= 'three'];`, config),
+					AST.ASTNodeSet.fromSource(`{1, 2.0, 'three'};`, config),
 					AST.ASTNodeMap.fromSource(`
 						{
 							'a' || '' -> 1,
 							21 + 21   -> 2.0,
 							3 * 1.0   -> 'three',
 						};
-					`),
+					`, config),
 				];
-				const validator: Validator = new Validator(config);
 				assert.deepStrictEqual(
-					collections.map((node) => node.type(validator)),
+					collections.map((node) => node.type()),
 					[
 						SolidTypeTuple.fromTypes(expected).mutableOf(),
 						SolidTypeRecord.fromTypes(new Map(collections[1].children.map((c, i) => [

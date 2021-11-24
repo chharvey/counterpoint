@@ -34,10 +34,10 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeSet#build_do not yet supported.';
 	}
-	protected override type_do(validator: Validator): SolidType {
+	protected override type_do(): SolidType {
 		return new SolidTypeSet(
 			(this.children.length)
-				? SolidType.unionAll(this.children.map((c) => c.type(validator)))
+				? SolidType.unionAll(this.children.map((c) => c.type()))
 				: SolidType.NEVER,
 		).mutableOf();
 	}

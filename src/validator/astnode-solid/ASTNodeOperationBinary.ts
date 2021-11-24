@@ -33,12 +33,12 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	/**
 	 * @final
 	 */
-	protected override type_do(validator: Validator): SolidType {
+	protected override type_do(): SolidType {
 		forEachAggregated([this.operand0, this.operand1], (c) => c.typeCheck());
 		return this.type_do_do(
-			this.operand0.type(validator),
-			this.operand1.type(validator),
-			validator.config.compilerOptions.intCoercion,
+			this.operand0.type(),
+			this.operand1.type(),
+			this.validator.config.compilerOptions.intCoercion,
 		)
 	}
 	protected abstract type_do_do(t0: SolidType, t1: SolidType, int_coercion: boolean): SolidType;

@@ -30,8 +30,8 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		super(start_node, {id: start_node.cook()})
 		this.id = start_node.cook()!;
 	}
-	override shouldFloat(validator: Validator): boolean {
-		return this.type(validator).isSubtypeOf(SolidType.FLOAT);
+	override shouldFloat(_validator: Validator): boolean {
+		return this.type().isSubtypeOf(SolidType.FLOAT);
 	}
 	override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {
@@ -45,9 +45,9 @@ export class ASTNodeVariable extends ASTNodeExpression {
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
 		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat(builder.validator));
 	}
-	protected override type_do(validator: Validator): SolidType {
-		if (validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
+	protected override type_do(): SolidType {
+		if (this.validator.hasSymbol(this.id)) {
+			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar) {
 				return symbol.type;
 			};

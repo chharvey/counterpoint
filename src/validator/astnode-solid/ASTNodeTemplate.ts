@@ -40,7 +40,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	protected override build_do(_builder: Builder): INST.InstructionExpression {
 		throw new Error('ASTNodeTemplate#build_do not yet supported.');
 	}
-	protected override type_do(_validator: Validator): SolidType {
+	protected override type_do(): SolidType {
 		return SolidType.STR;
 	}
 	protected override fold_do(validator: Validator): SolidString | null {

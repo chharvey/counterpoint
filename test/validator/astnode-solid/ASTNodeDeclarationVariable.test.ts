@@ -224,6 +224,8 @@ describe('ASTNodeDeclarationVariable', () => {
 				let y: float = 4.2 * 10;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+			goal.varCheck();
+			goal.typeCheck();
 			const builder: Builder = new Builder(src)
 			assert.deepStrictEqual(
 				[
@@ -242,6 +244,8 @@ describe('ASTNodeDeclarationVariable', () => {
 				let y: int = x + 10;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+			goal.varCheck();
+			goal.typeCheck();
 			const builder: Builder = new Builder(src)
 			assert.deepStrictEqual(
 				[
@@ -264,6 +268,8 @@ describe('ASTNodeDeclarationVariable', () => {
 				let unfixed y: float = 4.2;
 			`;
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
+			goal.varCheck();
+			goal.typeCheck();
 			const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 			assert.deepStrictEqual(
 				[

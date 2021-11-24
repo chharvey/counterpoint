@@ -30,7 +30,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 		node:          ASTNodeSolid,
 		validator:     Validator,
 	): void {
-		const assigned_type: SolidType = assigned.type(validator);
+		const assigned_type: SolidType = assigned.type();
 		const is_subtype: boolean = assigned_type.isSubtypeOf(assignee_type);
 		const is_collection_assignable: boolean = (
 			   assigned instanceof ASTNodeCollectionLiteral

@@ -238,8 +238,8 @@ describe('ASTNodeAccess', () => {
 
 
 	describe('#type', () => {
-		function typeOfStmtExpr(stmt: AST.ASTNodeStatementExpression, validator: Validator): SolidType {
-			return stmt.expr!.type(validator);
+		function typeOfStmtExpr(stmt: AST.ASTNodeStatementExpression): SolidType {
+			return stmt.expr!.type();
 		}
 		const COMMON_TYPES = {
 			int_float: SolidType.unionAll([
@@ -278,14 +278,13 @@ describe('ASTNodeAccess', () => {
 		];
 		context('when base is nullish.', () => {
 			it('optional access returns type of base when it is a subtype of null.', () => {
-				const validator: Validator = new Validator();
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .type(validator), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .type(validator), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).type(validator), TypeError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.4;`)         .type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.four;`)      .type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`null.[[[[[]]]]];`).type(), TypeError01);
 				[
-					AST.ASTNodeAccess.fromSource(`null?.3;`)         .type(validator),
-					AST.ASTNodeAccess.fromSource(`null?.four;`)      .type(validator),
-					AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).type(validator),
+					AST.ASTNodeAccess.fromSource(`null?.3;`)         .type(),
+					AST.ASTNodeAccess.fromSource(`null?.four;`)      .type(),
+					AST.ASTNodeAccess.fromSource(`null?.[[[[[]]]]];`).type(),
 				].forEach((t) => {
 					assert.ok(t.isSubtypeOf(SolidType.NULL));
 				});
@@ -308,7 +307,7 @@ describe('ASTNodeAccess', () => {
 				const prop1: SolidTypeTuple = SolidTypeTuple.fromTypes([SolidType.BOOL]);
 				const prop2: SolidTypeTuple = new SolidTypeTuple([{type: SolidType.BOOL, optional: true}]);
 				assert.deepStrictEqual(
-					program.children.slice(2, 8).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(2, 8).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						new SolidTypeRecord(new Map([[0x101n, {type: prop1, optional: true}]])),
 						prop1.union(SolidType.NULL),
@@ -330,11 +329,11 @@ describe('ASTNodeAccess', () => {
 			});
 			it('returns individual entry types.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(4, 10).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(4, 10).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected,
 				);
 				assert.deepStrictEqual(
-					program.children.slice(10, 16).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(10, 16).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						...expected.slice(0, 3),
 						COMMON_TYPES.int_float_str,
@@ -345,11 +344,11 @@ describe('ASTNodeAccess', () => {
 			});
 			it('negative indices count backwards from end.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(16, 22).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(16, 22).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected,
 				);
 				assert.deepStrictEqual(
-					program.children.slice(22, 28).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(22, 28).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						...expected.slice(0, 3),
 						COMMON_TYPES.int_float_str,
@@ -360,7 +359,7 @@ describe('ASTNodeAccess', () => {
 			});
 			it('unions with void if entry is optional.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(36, 38).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(36, 38).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						SolidType.STR.union(SolidType.VOID),
 						SolidType.STR.union(SolidType.VOID),
@@ -369,13 +368,13 @@ describe('ASTNodeAccess', () => {
 			});
 			it('unions with null if entry and access are optional.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(38, 41).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(38, 41).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected_o,
 				);
 			});
 			it('unions with null for lists if access is optional.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(41, 43).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(41, 43).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						typeConstStr('three'),
 						COMMON_TYPES.int_float_str.union(SolidType.NULL),
@@ -387,7 +386,7 @@ describe('ASTNodeAccess', () => {
 					[
 						...program.children.slice(43, 46),
 						program.children[47],
-					].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						...expected_c,
 						SolidType.INT,
@@ -395,10 +394,10 @@ describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when index is out of bounds for tuples.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`)  .type(program.validator), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`) .type(program.validator), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`) .type(program.validator), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).type(program.validator), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].3;`)  .type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].-4;`) .type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.3;`) .type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).type(), TypeError04);
 			});
 			it('returns the list item type when index is out of bounds for lists.', () => {
 				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -410,7 +409,7 @@ describe('ASTNodeAccess', () => {
 				program.typeCheck();
 				program.children.slice(1, 3).forEach((c) => {
 					assert.deepStrictEqual(
-						typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator),
+						typeOfStmtExpr(c as AST.ASTNodeStatementExpression),
 						COMMON_TYPES.int_float_str,
 					);
 				});
@@ -426,11 +425,11 @@ describe('ASTNodeAccess', () => {
 			});
 			it('returns individual entry types.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(4, 10).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(4, 10).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected,
 				);
 				assert.deepStrictEqual(
-					program.children.slice(10, 16).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(10, 16).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						...expected.slice(0, 3),
 						COMMON_TYPES.int_float_str,
@@ -441,7 +440,7 @@ describe('ASTNodeAccess', () => {
 			});
 			it('unions with void if entry is optional.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(24, 26).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(24, 26).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						SolidType.STR.union(SolidType.VOID),
 						SolidType.STR.union(SolidType.VOID),
@@ -450,13 +449,13 @@ describe('ASTNodeAccess', () => {
 			});
 			it('unions with null if entry and access are optional.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(26, 29).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(26, 29).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					expected_o,
 				);
 			});
 			it('unions with null for hashes if access is optional.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(29, 31).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					program.children.slice(29, 31).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						typeConstStr('three'),
 						COMMON_TYPES.int_float_str.union(SolidType.NULL),
@@ -468,7 +467,7 @@ describe('ASTNodeAccess', () => {
 					[
 						...program.children.slice(31, 34),
 						program.children[35],
-					].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+					].map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 					[
 						...expected_c,
 						SolidType.INT,
@@ -476,8 +475,8 @@ describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when key is out of bounds for records.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`) .type(program.validator), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).type(program.validator), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three'].d;`) .type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).type(), TypeError04);
 			});
 			it('returns the hash item type when key is out of bounds for hashes.', () => {
 				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -487,7 +486,7 @@ describe('ASTNodeAccess', () => {
 				program.varCheck();
 				program.typeCheck();
 				assert.deepStrictEqual(
-					typeOfStmtExpr(program.children[1] as AST.ASTNodeStatementExpression, program.validator),
+					typeOfStmtExpr(program.children[1] as AST.ASTNodeStatementExpression),
 					COMMON_TYPES.int_float_str,
 				);
 			});
@@ -503,13 +502,13 @@ describe('ASTNodeAccess', () => {
 				});
 				it('returns individual entry types for tuples.', () => {
 					assert.deepStrictEqual(
-						program.children.slice(12, 18).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+						program.children.slice(12, 18).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 						expected,
 					);
 				});
 				it('returns the union of all element types, constants, for lists.', () => {
 					assert.deepStrictEqual(
-						program.children.slice(18, 24).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+						program.children.slice(18, 24).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 						[
 							...expected.slice(0, 3),
 							COMMON_TYPES.int_float_str,
@@ -520,7 +519,7 @@ describe('ASTNodeAccess', () => {
 				});
 				it('returns the union of all element types, constants, for sets.', () => {
 					assert.deepStrictEqual(
-						program.children.slice(24, 30).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+						program.children.slice(24, 30).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 						[
 							...expected.slice(0, 3),
 							COMMON_TYPES.int_float_str,
@@ -531,7 +530,7 @@ describe('ASTNodeAccess', () => {
 				});
 				it('returns the union of all consequent types, constants, for maps.', () => {
 					assert.deepStrictEqual(
-						program.children.slice(30, 36).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+						program.children.slice(30, 36).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 						[
 							...expected.slice(0, 3),
 							COMMON_TYPES.int_float_str,
@@ -542,7 +541,7 @@ describe('ASTNodeAccess', () => {
 				});
 				it('unions with void if tuple entry is optional.', () => {
 					assert.deepStrictEqual(
-						program.children.slice(44, 46).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+						program.children.slice(44, 46).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 						[
 							SolidType.STR.union(SolidType.VOID),
 							SolidType.STR.union(SolidType.VOID),
@@ -551,13 +550,13 @@ describe('ASTNodeAccess', () => {
 				});
 				it('unions with null if tuple entry and access are optional.', () => {
 					assert.deepStrictEqual(
-						program.children.slice(46, 49).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+						program.children.slice(46, 49).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 						expected_o,
 					);
 				});
 				it('unions with null if list/set/mappping access is optional.', () => {
 					assert.deepStrictEqual(
-						program.children.slice(49, 55).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+						program.children.slice(49, 55).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 						[
 							typeConstStr('three'),
 							COMMON_TYPES.int_float_str.union(SolidType.NULL),
@@ -570,15 +569,15 @@ describe('ASTNodeAccess', () => {
 				});
 				it('claim access always subtracts void.', () => {
 					assert.deepStrictEqual(
-						program.children.slice(55, 58).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+						program.children.slice(55, 58).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 						expected_c,
 					);
 				});
 				it('throws when accessor expression is correct type but out of bounds for tuples.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`)  .type(program.validator), TypeError04);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[-4];`) .type(program.validator), TypeError04);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`) .type(program.validator), TypeError04);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4];`).type(program.validator), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[3];`)  .type(), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].[-4];`) .type(), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[3];`) .type(), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4];`).type(), TypeError04);
 				});
 				it('returns the list item type when accessor expression is correct type but out of bounds for lists.', () => {
 					const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -590,15 +589,15 @@ describe('ASTNodeAccess', () => {
 					program.typeCheck();
 					program.children.slice(1, 3).forEach((c) => {
 						assert.deepStrictEqual(
-							typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator),
+							typeOfStmtExpr(c as AST.ASTNodeStatementExpression),
 							COMMON_TYPES.int_float_str,
 						);
 					});
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].['3'];`).type(program.validator), TypeError02);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}.[true];`).type(program.validator), TypeError02);
-					assert.throws(() => AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}.['a'];`).type(program.validator), TypeError02);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three'].['3'];`)                           .type(), TypeError02);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`{1, 2.0, 'three'}.[true];`)                          .type(), TypeError02);
+					assert.throws(() => AST.ASTNodeAccess.fromSource(`{['a'] -> 1, ['b'] -> 2.0, ['c'] -> 'three'}.['a'];`).type(), TypeError02);
 				});
 			});
 			context('with constant folding off.', () => {
@@ -611,7 +610,7 @@ describe('ASTNodeAccess', () => {
 				it('returns the union of all entry types for tuples.', () => {
 					program.children.slice(12, 18).forEach((c) => {
 						assert.deepStrictEqual(
-							typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator),
+							typeOfStmtExpr(c as AST.ASTNodeStatementExpression),
 							COMMON_TYPES.int_float_str,
 						);
 					});
@@ -619,7 +618,7 @@ describe('ASTNodeAccess', () => {
 				it('returns the union of all item types for lists.', () => {
 					program.children.slice(18, 24).forEach((c) => {
 						assert.deepStrictEqual(
-							typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator),
+							typeOfStmtExpr(c as AST.ASTNodeStatementExpression),
 							COMMON_TYPES.int_float_str,
 						);
 					});
@@ -627,7 +626,7 @@ describe('ASTNodeAccess', () => {
 				it('returns the union of all element types for sets.', () => {
 					program.children.slice(24, 30).forEach((c) => {
 						assert.deepStrictEqual(
-							typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator),
+							typeOfStmtExpr(c as AST.ASTNodeStatementExpression),
 							COMMON_TYPES.int_float_str,
 						);
 					});
@@ -635,7 +634,7 @@ describe('ASTNodeAccess', () => {
 				it('returns the union of all consequent types for maps.', () => {
 					program.children.slice(30, 36).forEach((c) => {
 						assert.deepStrictEqual(
-							typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator),
+							typeOfStmtExpr(c as AST.ASTNodeStatementExpression),
 							COMMON_TYPES.int_float_str,
 						);
 					});
@@ -643,14 +642,14 @@ describe('ASTNodeAccess', () => {
 				it('does not union with void, even with optional tuple entries.', () => {
 					program.children.slice(44, 46).forEach((c) => {
 						assert.deepStrictEqual(
-							typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator),
+							typeOfStmtExpr(c as AST.ASTNodeStatementExpression),
 							COMMON_TYPES.int_float_str,
 						);
 					});
 				});
 				it('unions with null if access is optional.', () => {
 					assert.deepStrictEqual(
-						program.children.slice(46, 49).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+						program.children.slice(46, 49).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 						[
 							COMMON_TYPES.int_float_str_null,
 							COMMON_TYPES.int_float_str_null,
@@ -659,14 +658,14 @@ describe('ASTNodeAccess', () => {
 					);
 					program.children.slice(49, 55).forEach((c) => {
 						assert.deepStrictEqual(
-							typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator),
+							typeOfStmtExpr(c as AST.ASTNodeStatementExpression),
 							COMMON_TYPES.int_float_str.union(SolidType.NULL),
 						);
 					});
 				});
 				it('claim access always subtracts void.', () => {
 					assert.deepStrictEqual(
-						program.children.slice(55, 58).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression, program.validator)),
+						program.children.slice(55, 58).map((c) => typeOfStmtExpr(c as AST.ASTNodeStatementExpression)),
 						[
 							COMMON_TYPES.int_float_str,
 							COMMON_TYPES.int_float_str,
@@ -676,7 +675,7 @@ describe('ASTNodeAccess', () => {
 				});
 			});
 			it('throws when base object is of incorrect type.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource(`(4).[2];`).type(new Validator()), TypeError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource(`(4).[2];`).type(), TypeError01);
 			});
 		});
 	});

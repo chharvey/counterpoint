@@ -50,7 +50,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionConst {
 		return INST.InstructionConst.fromCPValue(this.fold(builder.validator), to_float);
 	}
-	protected override type_do(_validator: Validator): SolidType {
+	protected override type_do(): SolidType {
 		return new SolidTypeUnit(this.value);
 	}
 	protected override fold_do(_validator: Validator): SolidObject {

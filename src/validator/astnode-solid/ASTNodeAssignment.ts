@@ -42,20 +42,20 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		super.typeCheck();
 		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
 		if (assignee instanceof ASTNodeAccess) {
-			const base_type: SolidType = assignee.base.type(this.validator);
+			const base_type: SolidType = assignee.base.type();
 			if (!base_type.isMutable) {
 				throw new MutabilityError01(base_type, this);
 			}
 		}
 		return ASTNodeSolid.typeCheckAssignment(
-			this.assignee.type(this.validator),
+			this.assignee.type(),
 			this.assigned,
 			this,
 			this.validator,
 		);
 	}
 	override build(builder: Builder): INST.InstructionStatement {
-		const tofloat: boolean = this.assignee.type(builder.validator).isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat(builder.validator);
+		const tofloat: boolean = this.assignee.type().isSubtypeOf(SolidType.FLOAT) || this.assigned.shouldFloat(builder.validator);
 		return new INST.InstructionStatement(
 			builder.stmtCount,
 			new INST.InstructionGlobalSet((this.assignee as ASTNodeVariable).id, this.assigned.build(builder, tofloat)),

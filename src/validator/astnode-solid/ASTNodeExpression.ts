@@ -58,7 +58,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	 */
 	override typeCheck(): void {
 		super.typeCheck();
-		this.type(this.validator); // assert does not throw
+		this.type(); // assert does not throw
 	}
 	/**
 	 * @param to_float Should the returned instruction be type-coerced into a floating-point number?
@@ -74,17 +74,16 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 	protected abstract build_do(builder: Builder, to_float?: boolean): INST.InstructionExpression;
 	/**
 	 * The Type of this expression.
-	 * @param validator stores validation and configuration information
 	 * @return the compile-time type of this node
 	 * @final
 	 */
-	type(validator: Validator): SolidType {
+	type(): SolidType {
 		if (!this.typed) {
-			this.typed = this.type_do(validator); // type-check first, to re-throw any TypeErrors
-			if (validator.config.compilerOptions.constantFolding) {
+			this.typed = this.type_do(); // type-check first, to re-throw any TypeErrors
+			if (this.validator.config.compilerOptions.constantFolding) {
 				let value: SolidObject | null = null;
 				try {
-					value = this.fold(validator);
+					value = this.fold(this.validator);
 				} catch (err) {
 					if (err instanceof ErrorCode) {
 						// ignore evaluation errors such as VoidError, NanError, etc.
@@ -100,7 +99,7 @@ export abstract class ASTNodeExpression extends ASTNodeSolid implements Buildabl
 		};
 		return this.typed;
 	}
-	protected abstract type_do(validator: Validator): SolidType;
+	protected abstract type_do(): SolidType;
 	/**
 	 * Assess the value of this node at compile-time, if possible.
 	 * If {@link SolidConfig|constant folding} is off, this should not be called.

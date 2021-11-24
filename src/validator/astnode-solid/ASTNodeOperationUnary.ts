@@ -44,8 +44,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			this.operand.build(builder, tofloat),
 		)
 	}
-	protected override type_do(validator: Validator): SolidType {
-		const t0: SolidType = this.operand.type(validator);
+	protected override type_do(): SolidType {
+		const t0: SolidType = this.operand.type();
 		return (
 			(this.operator === Operator.NOT) ? (
 				(t0.isSubtypeOf(SolidType.VOID.union(SolidType.NULL).union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :

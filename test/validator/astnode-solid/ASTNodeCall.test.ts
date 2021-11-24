@@ -21,13 +21,11 @@ import {
 	TypeError05,
 	TypeError06,
 } from '../../../src/error/index.js';
-import {CONFIG_FOLDING_OFF} from '../../helpers.js';
 
 
 
 describe('ASTNodeCall', () => {
 	describe('#type', () => {
-		const validator: Validator = new Validator(CONFIG_FOLDING_OFF);
 		it('evaluates List, Hash, Set, and Map.', () => {
 			assert.deepStrictEqual(
 				[
@@ -39,7 +37,7 @@ describe('ASTNodeCall', () => {
 						[2, 0.2],
 						[3, 0.3],
 					]);`,
-				].map((src) => AST.ASTNodeCall.fromSource(src).type(validator)),
+				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new SolidTypeList(SolidType.INT).mutableOf(),
 					new SolidTypeHash(SolidType.INT).mutableOf(),
@@ -58,7 +56,7 @@ describe('ASTNodeCall', () => {
 						[2, 0.2],
 						[3, 0.3],
 					]));`,
-				].map((src) => AST.ASTNodeCall.fromSource(src).type(validator)),
+				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new SolidTypeList(SolidType.INT).mutableOf(),
 					new SolidTypeSet(SolidType.INT).mutableOf(),
@@ -76,7 +74,7 @@ describe('ASTNodeCall', () => {
 					`List.<int>([]);`,
 					`Set.<int>([]);`,
 					`Map.<int, float>([]);`,
-				].map((src) => AST.ASTNodeCall.fromSource(src).type(validator)),
+				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new SolidTypeList(SolidType.INT).mutableOf(),
 					new SolidTypeHash(SolidType.INT).mutableOf(),
@@ -90,7 +88,7 @@ describe('ASTNodeCall', () => {
 		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
-				AST.ASTNodeCall.fromSource(`Map.<int>();`).type(validator),
+				AST.ASTNodeCall.fromSource(`Map.<int>();`).type(),
 				new SolidTypeMap(SolidType.INT, SolidType.INT).mutableOf(),
 			);
 		});
@@ -99,7 +97,7 @@ describe('ASTNodeCall', () => {
 				`null.();`,
 				`(42 || 43).<bool>();`,
 			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(validator), TypeError05);
+				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeError05);
 			});
 		});
 		it('throws if base is not one of the allowed strings.', () => {
@@ -107,7 +105,7 @@ describe('ASTNodeCall', () => {
 				`SET.<str>();`,
 				`Mapping.<bool>();`,
 			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(validator), SyntaxError);
+				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), SyntaxError);
 			});
 		});
 		it('throws when providing incorrect number of arguments.', () => {
@@ -117,7 +115,7 @@ describe('ASTNodeCall', () => {
 				`Set.<int>([], []);`,
 				`Map.<int>([], []);`,
 			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(validator), TypeError06);
+				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeError06);
 			});
 		});
 		it('throws when providing incorrect type of arguments.', () => {
@@ -127,7 +125,7 @@ describe('ASTNodeCall', () => {
 				`Set.<int>([42, '42']);`,
 				`Map.<int>([42, '42']);`,
 			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(validator), TypeError03);
+				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeError03);
 			});
 		});
 	});
