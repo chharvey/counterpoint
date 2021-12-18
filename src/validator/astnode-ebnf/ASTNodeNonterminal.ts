@@ -14,7 +14,7 @@ export class ASTNodeNonterminal extends ASTNodeEbnf {
 	constructor (
 		parse_node: ParseNode,
 		private readonly nonterm: TOKEN.TokenIdentifier | ASTNodeNonterminal,
-		private readonly params:  readonly ASTNodeParam[] = [],
+		readonly params: readonly ASTNodeParam[] = [],
 	) {
 		super(
 			parse_node,

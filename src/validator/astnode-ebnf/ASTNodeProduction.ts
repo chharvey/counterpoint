@@ -6,18 +6,13 @@ import type {
 	EBNFItem,
 } from './package.js';
 import {
+	Mutable,
 	FAMILY_SYMBOL,
 	ConcreteNonterminal,
 } from './utils-private.js';
 import {ASTNodeEbnf} from './ASTNodeEbnf.js';
 import type {ASTNodeExpr} from './ASTNodeExpr.js';
 import type {ASTNodeNonterminal} from './ASTNodeNonterminal.js';
-
-
-
-type Mutable<T> = {
-	-readonly [P in keyof T]: T[P];
-};
 
 
 
@@ -35,7 +30,7 @@ export class ASTNodeProduction extends ASTNodeEbnf {
 		const nonterms: ConcreteNonterminal[] = this.nonterminal.expand();
 		const data: Mutable<EBNFObject>[] = nonterms.map((cn) => ({
 			name: cn.toString(),
-			defn: this.definition.transform(cn, productions_data),
+			defn: this.definition.transform(cn, this.nonterminal.params.length > 0, productions_data),
 		}));
 		if (nonterms.length >= 2) {
 			const family_name: string = nonterms[0].name.concat(FAMILY_SYMBOL);
