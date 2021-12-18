@@ -1093,11 +1093,16 @@ export class ParseNodeType extends ParseNode {
 	;
 }
 
-// WARNING: Manual code. Do not delete!
 export abstract class ParseNodeStringTemplate$__0__List extends ParseNode {
 	declare readonly children:
-		| ParseNodeStringTemplate__0__List['children']
-		| ParseNodeStringTemplate_Dynamic__0__List['children']
+		| readonly [Token]
+		| readonly [ParseNodeStringTemplate__0__List, Token]
+		| readonly [Token, ParseNodeExpression]
+		| readonly [ParseNodeStringTemplate__0__List, Token, ParseNodeExpression]
+		| readonly [Token]
+		| readonly [ParseNodeStringTemplate_Dynamic__0__List, Token]
+		| readonly [Token, ParseNodeExpression_Dynamic]
+		| readonly [ParseNodeStringTemplate_Dynamic__0__List, Token, ParseNodeExpression_Dynamic]
 	;
 }
 

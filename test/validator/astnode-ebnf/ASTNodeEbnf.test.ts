@@ -128,7 +128,16 @@ describe('ASTNodeEbnf', () => {
 				`)).productions[0];
 				assert.deepStrictEqual(prod.transform(), [
 					{
+						name: 'NonTerm$__0__List',
+						family: true,
+						defn: [
+							[                            {term: 'TERM'}],
+							[{prod: 'NonTerm__0__List'}, {term: 'TERM'}],
+						],
+					},
+					{
 						name: 'NonTerm__0__List',
+						family: 'NonTerm$__0__List',
 						defn: [
 							[                            {term: 'TERM'}],
 							[{prod: 'NonTerm__0__List'}, {term: 'TERM'}],
@@ -164,7 +173,18 @@ describe('ASTNodeEbnf', () => {
 				`)).productions[0];
 				assert.deepStrictEqual(prod.transform(), [
 					{
+						name: 'NonTerm$__0__List',
+						family: true,
+						defn: [
+							[                                  {prod: 'Ref'}],
+							[{prod: 'NonTerm__0__List'},       {prod: 'Ref'}],
+							[                                  {prod: 'Ref_Param'}],
+							[{prod: 'NonTerm_Param__0__List'}, {prod: 'Ref_Param'}],
+						],
+					},
+					{
 						name: 'NonTerm__0__List',
+						family: 'NonTerm$__0__List',
 						defn: [
 							[                            {prod: 'Ref'}],
 							[{prod: 'NonTerm__0__List'}, {prod: 'Ref'}],
@@ -172,6 +192,7 @@ describe('ASTNodeEbnf', () => {
 					},
 					{
 						name: 'NonTerm_Param__0__List',
+						family: 'NonTerm$__0__List',
 						defn: [
 							[                                  {prod: 'Ref_Param'}],
 							[{prod: 'NonTerm_Param__0__List'}, {prod: 'Ref_Param'}],
