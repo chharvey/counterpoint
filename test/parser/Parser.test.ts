@@ -632,9 +632,9 @@ describe('ParserSolid', () => {
 						<ExpressionExponential source="-3">...</ExpressionExponential>
 					</ExpressionExponential>
 				*/
-				const expression_exp: PARSENODE_SOLID.ParseNodeExpressionExponential = h.exponentialExpressionFromSource(`2 ^ -3;`);
+				const expression_exp: PARSENODE_SOLID.ParseNodeExpressionExponential$ = h.exponentialExpressionFromSource(`2 ^ -3;`);
 				assert_arrayLength(expression_exp.children, 3, 'exponential expression should have 3 children')
-				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionUnarySymbol, Token, PARSENODE_SOLID.ParseNodeExpressionExponential] = expression_exp.children;
+				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionUnarySymbol$, Token, PARSENODE_SOLID.ParseNodeExpressionExponential$] = expression_exp.children;
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,      right.source],
@@ -652,9 +652,9 @@ describe('ParserSolid', () => {
 						<ExpressionExponential source="-3">...</ExpressionExponential>
 					</ExpressionMultiplicative>
 				*/
-				const expression_mul: PARSENODE_SOLID.ParseNodeExpressionMultiplicative = h.multiplicativeExpressionFromSource(`2 * -3;`);
+				const expression_mul: PARSENODE_SOLID.ParseNodeExpressionMultiplicative$ = h.multiplicativeExpressionFromSource(`2 * -3;`);
 				assert_arrayLength(expression_mul.children, 3, 'multiplicative expression should have 3 children')
-				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionMultiplicative, Token, PARSENODE_SOLID.ParseNodeExpressionExponential] = expression_mul.children;
+				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionMultiplicative$, Token, PARSENODE_SOLID.ParseNodeExpressionExponential$] = expression_mul.children;
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,      right.source],
@@ -672,9 +672,9 @@ describe('ParserSolid', () => {
 						<ExpressionMultiplicative source="-3">...</ExpressionMultiplicative>
 					</ExpressionAdditive>
 				*/
-				const expression_add: PARSENODE_SOLID.ParseNodeExpressionAdditive = h.additiveExpressionFromSource(`2 + -3;`);
+				const expression_add: PARSENODE_SOLID.ParseNodeExpressionAdditive$ = h.additiveExpressionFromSource(`2 + -3;`);
 				assert_arrayLength(expression_add.children, 3, 'additive expression should have 3 children')
-				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionAdditive, Token, PARSENODE_SOLID.ParseNodeExpressionMultiplicative] = expression_add.children;
+				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionAdditive$, Token, PARSENODE_SOLID.ParseNodeExpressionMultiplicative$] = expression_add.children;
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,      right.source],
@@ -696,9 +696,9 @@ describe('ParserSolid', () => {
 					`2 < -3;`,
 					`2 is -3;`,
 				].map((src, i) => {
-					const expression_compare: PARSENODE_SOLID.ParseNodeExpressionComparative = h.comparativeExpressionFromSource(src);
+					const expression_compare: PARSENODE_SOLID.ParseNodeExpressionComparative$ = h.comparativeExpressionFromSource(src);
 					assert_arrayLength(expression_compare.children, 3, 'comparative expression should have 3 children');
-					const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionComparative, Token, PARSENODE_SOLID.ParseNodeExpressionAdditive] = expression_compare.children;
+					const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionComparative$, Token, PARSENODE_SOLID.ParseNodeExpressionAdditive$] = expression_compare.children;
 					assert.ok(op instanceof [TOKEN.TokenPunctuator, TOKEN.TokenKeyword][i]);
 					return [left.source, op.source, right.source];
 				}), [
@@ -707,9 +707,9 @@ describe('ParserSolid', () => {
 				]);
 			})
 			it('allows chaining of `<` and `>`.', () => {
-				const expression_compare: PARSENODE_SOLID.ParseNodeExpressionComparative = h.comparativeExpressionFromSource(`2 < 3 > 4;`);
+				const expression_compare: PARSENODE_SOLID.ParseNodeExpressionComparative$ = h.comparativeExpressionFromSource(`2 < 3 > 4;`);
 				assert_arrayLength(expression_compare.children, 3, 'comparative expression should have 3 children')
-				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionComparative, Token, PARSENODE_SOLID.ParseNodeExpressionAdditive] = expression_compare.children;
+				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionComparative$, Token, PARSENODE_SOLID.ParseNodeExpressionAdditive$] = expression_compare.children;
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,     right.source],
@@ -731,9 +731,9 @@ describe('ParserSolid', () => {
 					`2 === -3;`,
 					`2 == -3;`,
 				].map((src) => {
-					const expression_eq: PARSENODE_SOLID.ParseNodeExpressionEquality = h.equalityExpressionFromSource(src);
+					const expression_eq: PARSENODE_SOLID.ParseNodeExpressionEquality$ = h.equalityExpressionFromSource(src);
 					assert_arrayLength(expression_eq.children, 3, 'equality expression should have 3 children')
-					const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionEquality, Token, PARSENODE_SOLID.ParseNodeExpressionComparative] = expression_eq.children;
+					const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionEquality$, Token, PARSENODE_SOLID.ParseNodeExpressionComparative$] = expression_eq.children;
 					assert.ok(op instanceof TOKEN.TokenPunctuator);
 					return [left.source, op.source, right.source]
 				}), [
@@ -752,9 +752,9 @@ describe('ParserSolid', () => {
 						<ExpressionAdditive source="-3">...</ExpressionAdditive>
 					</ExpressionConjunctive>
 				*/
-				const expression_conj: PARSENODE_SOLID.ParseNodeExpressionConjunctive = h.conjunctiveExpressionFromSource(`2 && -3;`);
+				const expression_conj: PARSENODE_SOLID.ParseNodeExpressionConjunctive$ = h.conjunctiveExpressionFromSource(`2 && -3;`);
 				assert_arrayLength(expression_conj.children, 3, 'conjunctive expression should have 3 children')
-				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionConjunctive, Token, PARSENODE_SOLID.ParseNodeExpressionEquality] = expression_conj.children;
+				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionConjunctive$, Token, PARSENODE_SOLID.ParseNodeExpressionEquality$] = expression_conj.children;
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,      right.source],
@@ -772,9 +772,9 @@ describe('ParserSolid', () => {
 						<ExpressionConjunctive source="-3">...</ExpressionConjunctive>
 					</ExpressionDisjunctive>
 				*/
-				const expression_disj: PARSENODE_SOLID.ParseNodeExpressionDisjunctive = h.disjunctiveExpressionFromSource(`2 || -3;`);
+				const expression_disj: PARSENODE_SOLID.ParseNodeExpressionDisjunctive$ = h.disjunctiveExpressionFromSource(`2 || -3;`);
 				assert_arrayLength(expression_disj.children, 3, 'disjunctive expression should have 3 children')
-				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionDisjunctive, Token, PARSENODE_SOLID.ParseNodeExpressionConjunctive] = expression_disj.children;
+				const [left, op, right]: readonly [PARSENODE_SOLID.ParseNodeExpressionDisjunctive$, Token, PARSENODE_SOLID.ParseNodeExpressionConjunctive$] = expression_disj.children;
 				assert.ok(op instanceof TOKEN.TokenPunctuator)
 				assert.deepStrictEqual(
 					[left.source, op.source,     right.source],
@@ -795,12 +795,12 @@ describe('ParserSolid', () => {
 						<Expression source="3">...</Expression>
 					</ExpressionConditional>
 				*/
-				const expression_cond: PARSENODE_SOLID.ParseNodeExpressionConditional = h.conditionalExpressionFromSource(`
+				const expression_cond: PARSENODE_SOLID.ParseNodeExpressionConditional$ = h.conditionalExpressionFromSource(`
 					if true then 2 else 3;
 				`)
 				const
-					[_if,   condition,                           _then, consequent,                          _else, alternative]: readonly
-					[Token, PARSENODE_SOLID.ParseNodeExpression, Token, PARSENODE_SOLID.ParseNodeExpression, Token, PARSENODE_SOLID.ParseNodeExpression] = expression_cond.children;
+					[_if,   condition,                            _then, consequent,                           _else, alternative]: readonly
+					[Token, PARSENODE_SOLID.ParseNodeExpression$, Token, PARSENODE_SOLID.ParseNodeExpression$, Token, PARSENODE_SOLID.ParseNodeExpression$] = expression_cond.children;
 				assert.ok(_if   instanceof TOKEN.TokenKeyword)
 				assert.ok(_then instanceof TOKEN.TokenKeyword)
 				assert.ok(_else instanceof TOKEN.TokenKeyword)

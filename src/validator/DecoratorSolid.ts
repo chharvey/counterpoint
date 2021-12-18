@@ -118,7 +118,7 @@ class DecoratorSolid extends Decorator {
 	override decorate(node: PARSENODE.ParseNodeSetLiteral):              AST.ASTNodeSet;
 	override decorate(node: PARSENODE.ParseNodeMapLiteral):              AST.ASTNodeMap;
 	override decorate(node: PARSENODE.ParseNodeFunctionArguments):       AST.ASTNodeExpression[];
-	override decorate(node: PARSENODE.ParseNodePropertyAccess):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
+	override decorate(node: PARSENODE.ParseNodePropertyAccess$):         AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
 	override decorate(node: PARSENODE.ParseNodePropertyAssign):          AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression;
 	override decorate(node: PARSENODE.ParseNodeFunctionCall):            [AST.ASTNodeType[], AST.ASTNodeExpression[]];
 	override decorate(node: PARSENODE.ParseNodeAssignee):                AST.ASTNodeVariable | AST.ASTNodeAccess;
@@ -348,7 +348,7 @@ class DecoratorSolid extends Decorator {
 				: this.decorate(node.children[1]);
 
 		} else if (
-			node instanceof PARSENODE.ParseNodePropertyAccess
+			   node instanceof PARSENODE.ParseNodePropertyAccess$
 			|| node instanceof PARSENODE.ParseNodePropertyAssign
 		) {
 			return (
@@ -369,7 +369,7 @@ class DecoratorSolid extends Decorator {
 		} else if (node instanceof PARSENODE.ParseNodeExpressionCompound$) {
 			return (node.children.length === 1)
 				? this.decorate(node.children[0])
-				: (node.children[1] instanceof PARSENODE.ParseNodePropertyAccess)
+				: (node.children[1] instanceof PARSENODE.ParseNodePropertyAccess$)
 					? new AST.ASTNodeAccess(node, DecoratorSolid.ACCESSORS.get(node.children[1].children[0].source as Punctuator)!, this.decorate(node.children[0]),    this.decorate(node.children[1]))
 					: new AST.ASTNodeCall  (node,                                                                                   this.decorate(node.children[0]), ...this.decorate(node.children[1]));
 

@@ -479,10 +479,6 @@ class ProductionExpressionUnit extends Production {
 		return [
 			[ProductionPrimitiveLiteral.instance],
 			[ProductionStringTemplate.instance],
-			[ProductionTupleLiteral.instance],
-			[ProductionRecordLiteral.instance],
-			[ProductionSetLiteral.instance],
-			[ProductionMapLiteral.instance],
 			['(', ProductionExpression.instance, ')'],
 		];
 	}
@@ -506,6 +502,23 @@ class ProductionExpressionUnit_Dynamic extends Production {
 
 class ProductionPropertyAccess extends Production {
 	static readonly instance: ProductionPropertyAccess = new ProductionPropertyAccess();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['.', TERMINAL.TerminalInteger.instance],
+			['.', ProductionWord.instance],
+			['.', '[', ProductionExpression.instance, ']'],
+			['?.', TERMINAL.TerminalInteger.instance],
+			['?.', ProductionWord.instance],
+			['?.', '[', ProductionExpression.instance, ']'],
+			['!.', TERMINAL.TerminalInteger.instance],
+			['!.', ProductionWord.instance],
+			['!.', '[', ProductionExpression.instance, ']'],
+		];
+	}
+}
+
+class ProductionPropertyAccess_Dynamic extends Production {
+	static readonly instance: ProductionPropertyAccess_Dynamic = new ProductionPropertyAccess_Dynamic();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['.', TERMINAL.TerminalInteger.instance],
@@ -547,6 +560,7 @@ class ProductionExpressionCompound extends Production {
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionUnit.instance],
+			[ProductionExpressionCompound.instance, ProductionPropertyAccess.instance],
 		];
 	}
 }
@@ -556,7 +570,7 @@ class ProductionExpressionCompound_Dynamic extends Production {
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionExpressionUnit_Dynamic.instance],
-			[ProductionExpressionCompound_Dynamic.instance, ProductionPropertyAccess.instance],
+			[ProductionExpressionCompound_Dynamic.instance, ProductionPropertyAccess_Dynamic.instance],
 			[ProductionExpressionCompound_Dynamic.instance, ProductionFunctionCall.instance],
 		];
 	}
@@ -1244,10 +1258,6 @@ export abstract class ParseNodeExpressionUnit$ extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodePrimitiveLiteral]
 		| readonly [ParseNodeStringTemplate]
-		| readonly [ParseNodeTupleLiteral]
-		| readonly [ParseNodeRecordLiteral]
-		| readonly [ParseNodeSetLiteral]
-		| readonly [ParseNodeMapLiteral]
 		| readonly [Token, ParseNodeExpression, Token]
 		| readonly [Token]
 		| readonly [ParseNodePrimitiveLiteral]
@@ -1264,10 +1274,6 @@ export class ParseNodeExpressionUnit extends ParseNodeExpressionUnit$ {
 	declare readonly children:
 		| readonly [ParseNodePrimitiveLiteral]
 		| readonly [ParseNodeStringTemplate]
-		| readonly [ParseNodeTupleLiteral]
-		| readonly [ParseNodeRecordLiteral]
-		| readonly [ParseNodeSetLiteral]
-		| readonly [ParseNodeMapLiteral]
 		| readonly [Token, ParseNodeExpression, Token]
 	;
 }
@@ -1285,7 +1291,44 @@ export class ParseNodeExpressionUnit_Dynamic extends ParseNodeExpressionUnit$ {
 	;
 }
 
-export class ParseNodePropertyAccess extends ParseNode {
+export abstract class ParseNodePropertyAccess$ extends ParseNode {
+	declare readonly children:
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression_Dynamic, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression_Dynamic, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression_Dynamic, Token]
+	;
+}
+
+export class ParseNodePropertyAccess extends ParseNodePropertyAccess$ {
+	declare readonly children:
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeWord]
+		| readonly [Token, Token, ParseNodeExpression, Token]
+	;
+}
+
+export class ParseNodePropertyAccess_Dynamic extends ParseNodePropertyAccess$ {
 	declare readonly children:
 		| readonly [Token, Token]
 		| readonly [Token, ParseNodeWord]
@@ -1317,8 +1360,9 @@ export class ParseNodeFunctionCall extends ParseNode {
 export abstract class ParseNodeExpressionCompound$ extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeExpressionUnit]
+		| readonly [ParseNodeExpressionCompound, ParseNodePropertyAccess]
 		| readonly [ParseNodeExpressionUnit_Dynamic]
-		| readonly [ParseNodeExpressionCompound_Dynamic, ParseNodePropertyAccess]
+		| readonly [ParseNodeExpressionCompound_Dynamic, ParseNodePropertyAccess_Dynamic]
 		| readonly [ParseNodeExpressionCompound_Dynamic, ParseNodeFunctionCall]
 	;
 }
@@ -1326,13 +1370,14 @@ export abstract class ParseNodeExpressionCompound$ extends ParseNode {
 export class ParseNodeExpressionCompound extends ParseNodeExpressionCompound$ {
 	declare readonly children:
 		| readonly [ParseNodeExpressionUnit]
+		| readonly [ParseNodeExpressionCompound, ParseNodePropertyAccess]
 	;
 }
 
 export class ParseNodeExpressionCompound_Dynamic extends ParseNodeExpressionCompound$ {
 	declare readonly children:
 		| readonly [ParseNodeExpressionUnit_Dynamic]
-		| readonly [ParseNodeExpressionCompound_Dynamic, ParseNodePropertyAccess]
+		| readonly [ParseNodeExpressionCompound_Dynamic, ParseNodePropertyAccess_Dynamic]
 		| readonly [ParseNodeExpressionCompound_Dynamic, ParseNodeFunctionCall]
 	;
 }
@@ -1733,6 +1778,7 @@ export const GRAMMAR: Grammar = new Grammar([
 	ProductionExpressionUnit.instance,
 	ProductionExpressionUnit_Dynamic.instance,
 	ProductionPropertyAccess.instance,
+	ProductionPropertyAccess_Dynamic.instance,
 	ProductionPropertyAssign.instance,
 	ProductionFunctionCall.instance,
 	ProductionExpressionCompound.instance,
@@ -1819,6 +1865,7 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 		[ProductionExpressionUnit.instance, ParseNodeExpressionUnit],
 		[ProductionExpressionUnit_Dynamic.instance, ParseNodeExpressionUnit_Dynamic],
 		[ProductionPropertyAccess.instance, ParseNodePropertyAccess],
+		[ProductionPropertyAccess_Dynamic.instance, ParseNodePropertyAccess_Dynamic],
 		[ProductionPropertyAssign.instance, ParseNodePropertyAssign],
 		[ProductionFunctionCall.instance, ParseNodeFunctionCall],
 		[ProductionExpressionCompound.instance, ParseNodeExpressionCompound],

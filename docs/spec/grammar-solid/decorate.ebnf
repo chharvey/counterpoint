@@ -248,23 +248,23 @@ Decorate(StringTemplate<Dynamic> ::= TEMPLATE_HEAD Expression<?Dynamic> StringTe
 
 
 
-Decorate(Property ::= Word "=" Expression) -> SemanticProperty
+Decorate(Property ::= Word "=" Expression<+Dynamic>) -> SemanticProperty
 	:= (SemanticProperty
 		Decorate(Word)
-		Decorate(Expression)
+		Decorate(Expression<+Dynamic>)
 	);
 
-Decorate(Case ::= Expression "->" Expression) -> SemanticCase
+Decorate(Case ::= Expression<+Dynamic> "->" Expression<+Dynamic>) -> SemanticCase
 	:= (SemanticCase
-		Decorate(Expression)
-		Decorate(Expression)
+		Decorate(Expression<+Dynamic>)
+		Decorate(Expression<+Dynamic>)
 	);
 
 Decorate(TupleLiteral ::= "[" "]") -> SemanticTuple
 	:= (SemanticTuple);
-Decorate(TupleLiteral ::= "[" ","? Expression# ","? "]") -> SemanticTuple
+Decorate(TupleLiteral ::= "[" ","? Expression<+Dynamic># ","? "]") -> SemanticTuple
 	:= (SemanticTuple
-		...ParseList(Expression, SemanticExpression)
+		...ParseList(Expression<+Dynamic>, SemanticExpression)
 	);
 
 Decorate(RecordLiteral ::= "[" ","? Property# ","? "]") -> SemanticRecord
@@ -272,9 +272,9 @@ Decorate(RecordLiteral ::= "[" ","? Property# ","? "]") -> SemanticRecord
 		...ParseList(Property, SemanticProperty)
 	);
 
-Decorate(SetLiteral ::= "{" ","? Expression# ","? "}") -> SemanticSet
+Decorate(SetLiteral ::= "{" ","? Expression<+Dynamic># ","? "}") -> SemanticSet
 	:= (SemanticSet
-		...ParseList(Expression, SemanticExpression)
+		...ParseList(Expression<+Dynamic>, SemanticExpression)
 	);
 
 Decorate(MapLiteral ::= "{" ","? Case# ","? "}") -> SemanticMap
@@ -282,8 +282,8 @@ Decorate(MapLiteral ::= "{" ","? Case# ","? "}") -> SemanticMap
 		...ParseList(Case, SemanticCase)
 	);
 
-Decorate(FunctionArguments ::= "(" ( ","? Expression# ","? )? ")") -> Sequence<SemanticExpression>
-	:= ParseList(Expression, SemanticExpression);
+Decorate(FunctionArguments ::= "(" ( ","? Expression<+Dynamic># ","? )? ")") -> Sequence<SemanticExpression>
+	:= ParseList(Expression<+Dynamic>, SemanticExpression);
 
 
 
@@ -293,27 +293,27 @@ Decorate(ExpressionUnit<Dynamic> ::= PrimitiveLiteral) -> SemanticConstant
 	:= Decorate(PrimitiveLiteral);
 Decorate(ExpressionUnit<Dynamic> ::= StringTemplate) -> SemanticTemplate
 	:= Decorate(StringTemplate);
-Decorate(ExpressionUnit<Dynamic> ::= TupleLiteral) -> SemanticTuple
+Decorate(ExpressionUnit<Dynamic> ::= <Dynamic+>TupleLiteral) -> SemanticTuple
 	:= Decorate(TupleLiteral);
-Decorate(ExpressionUnit<Dynamic> ::= RecordLiteral) -> SemanticRecord
+Decorate(ExpressionUnit<Dynamic> ::= <Dynamic+>RecordLiteral) -> SemanticRecord
 	:= Decorate(RecordLiteral);
-Decorate(ExpressionUnit<Dynamic> ::= SetLiteral) -> SemanticSet
+Decorate(ExpressionUnit<Dynamic> ::= <Dynamic+>SetLiteral) -> SemanticSet
 	:= Decorate(SetLiteral);
-Decorate(ExpressionUnit<Dynamic> ::= MapLiteral) -> SemanticMap
+Decorate(ExpressionUnit<Dynamic> ::= <Dynamic+>MapLiteral) -> SemanticMap
 	:= Decorate(MapLiteral);
 Decorate(ExpressionUnit<Dynamic> ::= "(" Expression<?Dynamic> ")") -> SemanticExpression
 	:= Decorate(Expression<?Dynamic>);
 
 
 
-Decorate(PropertyAccess ::= ("." | "?." | "!.") INTEGER) -> SemanticIndex
+Decorate(PropertyAccess<Dynamic> ::= ("." | "?." | "!.") INTEGER) -> SemanticIndex
 	:= (SemanticIndex
 		(SemanticConstant[value=Integer(TokenWorth(INTEGER))])
 	);
-Decorate(PropertyAccess ::= ("." | "?." | "!.") Word) -> SemanticKey
+Decorate(PropertyAccess<Dynamic> ::= ("." | "?." | "!.") Word) -> SemanticKey
 	:= Decorate(Word);
-Decorate(PropertyAccess ::= ("." | "?." | "!.") "[" Expression "]") -> SemanticExpression
-	:= Decorate(Expression);
+Decorate(PropertyAccess<Dynamic> ::= ("." | "?." | "!.") "[" Expression<?Dynamic> "]") -> SemanticExpression
+	:= Decorate(Expression<?Dynamic>);
 
 Decorate(PropertyAssign ::= "." INTEGER) -> SemanticIndex
 	:= (SemanticIndex
@@ -321,8 +321,8 @@ Decorate(PropertyAssign ::= "." INTEGER) -> SemanticIndex
 	);
 Decorate(PropertyAssign ::= "." Word) -> SemanticKey
 	:= Decorate(Word);
-Decorate(PropertyAssign ::= "." "[" Expression "]") -> SemanticExpression
-	:= Decorate(Expression);
+Decorate(PropertyAssign ::= "." "[" Expression<+Dynamic> "]") -> SemanticExpression
+	:= Decorate(Expression<+Dynamic>);
 
 Decorate(FunctionCall ::= "." FunctionArguments) -> Vector<Sequence<SemanticType>, Sequence<SemanticExpression>>
 	:= [
@@ -339,10 +339,10 @@ Decorate(FunctionCall ::= "." GenericArguments FunctionArguments) -> Vector<Sequ
 
 Decorate(ExpressionCompound<Dynamic> ::= ExpressionUnit<?Dynamic>) -> SemanticExpression
 	:= Decorate(ExpressionUnit);
-Decorate(ExpressionCompound<Dynamic> ::= <Dynamic+>(ExpressionCompound<?Dynamic> PropertyAccess)) -> SemanticAccess
-	:= (SemanticAccess[kind=AccessKind(PropertyAccess)]
+Decorate(ExpressionCompound<Dynamic> ::= ExpressionCompound<?Dynamic> PropertyAccess<?Dynamic>) -> SemanticAccess
+	:= (SemanticAccess[kind=AccessKind(PropertyAccess<?Dynamic>)]
 		Decorate(ExpressionCompound<?Dynamic>)
-		Decorate(PropertyAccess)
+		Decorate(PropertyAccess<?Dynamic>)
 	);
 Decorate(ExpressionCompound<Dynamic> ::= <Dynamic+>(ExpressionCompound<?Dynamic> FunctionCall)) -> SemanticCall
 	:= (SemanticCall
@@ -619,6 +619,6 @@ ParseList(ParseNode, ASTNode)(ParseNode__List ::= ParseNode__List ","? ParseNode
 
 
 
-AccessKind(PropertyAccess ::= "."  (INTEGER | Word | "[" Expression "]")) -> NORMAL   := NORMAL;
-AccessKind(PropertyAccess ::= "?." (INTEGER | Word | "[" Expression "]")) -> OPTIONAL := OPTIONAL;
-AccessKind(PropertyAccess ::= "!." (INTEGER | Word | "[" Expression "]")) -> CLAIM    := CLAIM;
+AccessKind(PropertyAccess<Dynamic> ::= "."  (INTEGER | Word | "[" Expression<?Dynamic> "]")) -> NORMAL   := NORMAL;
+AccessKind(PropertyAccess<Dynamic> ::= "?." (INTEGER | Word | "[" Expression<?Dynamic> "]")) -> OPTIONAL := OPTIONAL;
+AccessKind(PropertyAccess<Dynamic> ::= "!." (INTEGER | Word | "[" Expression<?Dynamic> "]")) -> CLAIM    := CLAIM;

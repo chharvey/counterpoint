@@ -110,20 +110,21 @@ ExpressionUnit<Dynamic> ::=
 	| <Dynamic+>IDENTIFIER
 	| PrimitiveLiteral
 	| StringTemplate<?Dynamic>
-	| TupleLiteral
-	| RecordLiteral
-	| SetLiteral
-	| MapLiteral
+	| <Dynamic+>TupleLiteral
+	| <Dynamic+>RecordLiteral
+	| <Dynamic+>SetLiteral
+	| <Dynamic+>MapLiteral
 	| "(" Expression<?Dynamic> ")"
 ;
 
-PropertyAccess ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression<+Dynamic> "]");
-PropertyAssign ::=  "."                (INTEGER | Word | "[" Expression<+Dynamic> "]");
-FunctionCall   ::=  "."                GenericArguments? FunctionArguments;
+PropertyAccess<Dynamic> ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression<?Dynamic> "]");
+PropertyAssign          ::=  "."                (INTEGER | Word | "[" Expression<+Dynamic> "]");
+FunctionCall            ::=  "."                GenericArguments? FunctionArguments;
 
 ExpressionCompound<Dynamic> ::=
 	| ExpressionUnit<?Dynamic>
-	| <Dynamic+>(ExpressionCompound<?Dynamic> (PropertyAccess | FunctionCall))
+	| ExpressionCompound<?Dynamic> PropertyAccess<?Dynamic>
+	| <Dynamic+>(ExpressionCompound<?Dynamic> FunctionCall)
 ;
 
 Assignee ::=
