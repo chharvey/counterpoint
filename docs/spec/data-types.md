@@ -14,10 +14,10 @@ Solid Specification Types are only used internally within this specification to 
 They are not directly observable from Solid code.
 
 
-### Void
-The **Void** type has one value called \`void\`.
+### None
+The **None** type has one value called *none*.
 It signifies a variable with no meaningful value.
-An algorithm with output type Void returns a [completion structure](#completionstructure)
+An algorithm with output type None returns a [completion structure](#completionstructure)
 with no \`value\` property.
 
 
@@ -85,6 +85,12 @@ the Sequence type is denoted \`Sequence<‹T›>\`.
 For example, a sequence of Integers is denoted \`Sequence&lt;Integer&gt;\`.
 
 
+### Vector
+A **Vector** is an ordered list of values where the number of values is fixed.
+For example, the notation \`Vector&lt;Integer, Float&gt;\` indicates a sequence of two items,
+the first of which is of type \`Integer\` and the second of which is of type \`Float\`.
+
+
 ### Structure
 A **Structure** is an unordered list of name–value pairs. The names are unique words and the values may be any type.
 A name–value pair of a structure is called a **property**.
@@ -95,6 +101,11 @@ a mandatory property \`type\` and an optional property \`value\`.
 The value of the \`type\` property must be one of the [enumerated](#enumerated-values) specification values
 *normal*, *break*, *continue*, *return*, or *throw*, which are described below.
 The value of the \`value\` property must be a [Solid Language Value](#solid-language-types).
+
+Property  | Description
+--------- | -----------
+\`type\`  | the kind of completion structure
+\`value\` | the Solid Language Value carried with the structure
 
 Completion structures are the default values returned by all specification algorithms,
 unless explicitly stated otherwise.
@@ -113,6 +124,60 @@ The term “normal completion” refers to any completion with a \`type\` of *no
 the term “abrupt completion” refers to any completion with a \`type\` other than *normal*.
 
 
+#### EntryTypeStructure
+An **EntryTypeStructure** represents an entry in a static collection type.
+It contains the type value and whether the entry is optional.
+
+Property     | Description
+------------ | -----------
+\`type\`     | the Solid Language Type
+\`optional\` | a Boolean, whether the entry is optional
+
+
+#### SymbolStructure
+A **SymbolStructure** encapsulates the compile-time information of a declared symbol in Solid source code.
+Symbols are identifiers that refer to Solid Language Values or Solid Language Types.
+
+Symbol structures’ properties are described in the tables below.
+
+##### SymbolStructureType
+A **SymbolStructureType** represents a type alias referencing a Solid Language Type.
+
+Property      | Description
+------------- | -----------
+\`id\`        | the unique identifier of the declared symbol
+\`typevalue\` | the assessed type (a Solid Language Type) of this symbol
+
+##### SymbolStructureVar
+A **SymbolStructureVar** represents a variable referencing a Solid Language Value.
+
+Property    | Description
+----------- | -----------
+\`id\`      | the unique identifier of the declared symbol
+\`unfixed\` | a Boolean, whether the variable may be reassigned
+\`type\`    | the Solid Language Type of the variable
+\`value\`   | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Solid Language Value) of this symbol; otherwise: *none*
+
+
+### Nodes
+
+#### Token
+A **Token** is the resulting output of a **tokenization** step in lexical analysis.
+Tokens are represented by [lexical grammar](./notation.md#the-lexical-grammar) productions
+such as `Identifier :::= [A-Za-z_] [A-Za-z0-9_]*`;
+
+#### ParseNode
+A ParseNode is the resulting output of a **reduction** step in syntactic analysis.
+ParseNodes are repesented by [syntactic grammar](./notation.md#the-syntactic-grammar) productions
+such as `ExpressionUnit ::= IDENTIFIER | "(" Expression ")";`.
+
+#### ASTNode
+An ASTNode is the resulting output of a **decoration** step in semantic analysis,
+which is described by the [Decoration attribute grammar](./notation.md#decoration).
+ASTNodes are represented by [tree node schema grammar](./notation.md#tree-node-schema-grammar) productions
+such as `SemanticOperation ::= SemanticExpression+;`.
+
+
 
 ## Solid Language Types
 Solid Language Types characterize Solid Language Values, which are
@@ -121,34 +186,56 @@ values directly manipulated by a Solid program.
 Solid has the following built-in types.
 This list is not exhaustive, as Solid Types may be created in any Solid program.
 
+
+### Simple Types
+
 - [Never](#never)
+- [Void](#void)
 - [Null](#null)
 - [Boolean](#boolean)
 - [Integer](#integer)
 - [Float](#float)
-- String
+- [String](#string)
 - [Object](#object)
 - [Unknown](#unknown)
+- [Compound Types](#compound-types)
 
-
-### Never
+#### Never
 The Botton Type represents the set of no values, called `never`.
-No value or expression is assignable to `never`.
+No value is assignable to `never`,
+and expressions of type `never` are accepted everywhere.
 
+`never` is a subtype of every type,
+and no type (except `never` itself) is a subtype of `never`.
+`never` is the the “absorption element” of the [intersection](#intersection) operation
+and the “identity element” of the [union](#union) operation.
 
-### Null
+#### Void
+The Void type represents the completion of an evaluation but the absence of a value.
+It is the return type of a function that may have side-effects but that does not return a value.
+It is also partly the type of an optional entry in a collection.
+
+There are no values assignable to Void, but it is different from Never in that
+it does not behave like the Bottom Type.
+Void is not a subtype of every other type; in fact, the only types of which Void is a subtype
+are type unions that include it in their construction.
+In general, given a type \`‹T›\`,
+the [intersection](#intersection) \`And<‹T›, Void>\` is not necessarily the same as Void, and
+the [union](#union) \`Or<‹T›, Void>\` is not necessarily the same as \`‹T›\`.
+
+The Void type is also unlike Null in that no Solid Language Value has type Void.
+
+#### Null
 The Null type has exactly one value, called `null`.
 
-
-### Boolean
+#### Boolean
 The Boolean type has two logical values, called `true` and `false`.
 
-
-### Number
+#### Number
 The Number type represents numerical values.
 The Number type is partitioned into two disjoint subtypes: Integer and Float.
 
-#### Integer
+##### Integer
 The Integer type represents [mathematical integers](#real-integer-numbers).
 The Solid compiler represents Integers as 16-bit signed two’s complement values.
 
@@ -166,22 +253,76 @@ The behavior of performing arithmetic operations that are invalid in the integer
 (such as dividing by a non-factor, or raising to a negative exponent) are defined in each respective operation.
 The result of division is rounded towards zero. Dividing by zero results in an error.
 
-#### Float
+##### Float
 The Float type represents [mathematical rational numbers](#real-rational-numbers)
 whose decimals terminate in base 10.
 (That is, numbers that can be expressed as a finite sum of multiples of powers of 10.)
 The Float type contains “floating-point numbers”, which are 64-bit format values as specified in the
 *IEEE Standard for Binary Floating-Point Arithmetic ([IEEE 754-2019](https://standards.ieee.org/standard/754-2019.html))*.
 
+#### String
+The String type represents textual data and is stored as an immutable tuple of [integers](#integer).
+Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algorithm.
 
-### Object
+#### Object
 The Object type is the parent type of all Solid Language Types.
 Every Solid Language Value is an Object.
+Some specific built-in subtypes of Object are described in the [Built-Ins](./built-ins.md) chapter.
 
-
-### Unknown
+#### Unknown
 The Top Type represents the set of all possible values, called `unknown`.
-Any value or expression is assignable to `unknown`.
+Any value or expression is assignable to `unknown`,
+and expressions of type `unknown` are accepted almost nowhere.
+
+`unknown` is a supertype of every type,
+and no type (except `unknown` itself) is a supertype of `unknown`.
+`unknown` is the the “identity element” of the [intersection](#intersection) operation
+and the “absorption element” of the [union](#union) operation.
+
+
+### Compound Types
+Compound types are subtypes of [Object](#object) and are composed of other types.
+
+- [Tuple](#tuple-type)
+- [Record](#record-type)
+- [List](#list-type)
+- [Hash](#hash-type)
+- [Set](#set-type)
+- [Map](#map-type)
+
+#### Tuple Type
+A **Tuple Type** contains [`Tuple` objects](./built-ins.md#tuple) and is described by an ordered list of types.
+The objects that any given Tuple Type contains are `Tuple` objects whose items’ types
+match up with the types in the list in order.
+
+#### Record Type
+A **Record Type** contains [`Record` objects](./built-ins.md#record) and is described by an unordered list of name–type pairs.
+The objects that any given Record Type contains are `Record` objects whose properties’ types
+match up with the types in the list by name.
+
+#### List Type
+A **List Type** contains [`List` objects](./built-ins.md#list) and is described by a single type,
+representing items.
+The objects that any given List Type contains are `List` objects whose
+items are assignable to the type describing the List Type.
+
+#### Hash Type
+A **Hash Type** contains [`Hash` objects](./built-ins.md#hash) and is described by a single type,
+representing values.
+The objects that any given Hash Type contains are `Hash` objects whose
+values are assignable to the type describing the Hash Type.
+
+#### Set Type
+A **Set Type** contains [`Set` objects](./built-ins.md#set) and is described by a single type,
+representing elements.
+The objects that any given Set Type contains are `Set` objects whose
+elements are assignable to the type describing the Set Type.
+
+#### Map Type
+A **Map Type** contains [`Map` objects](./built-ins.md#map) and is described by a pair of two types,
+the first of which represents antecedents and the second of which represents consequents.
+The objects that any given Map Type contains are `Map` objects whose
+antcedents and consequents are respectively assignable to the types describing the Map Type.
 
 
 
@@ -194,6 +335,27 @@ where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
 is a data type that contains values assignable to *both* type \`‹T›\` and type \`‹U›\`.
 Such a data type is called the **intersection** of \`‹T›\` and \`‹U›\`.
 
+```
+Type Intersect(Type a, Type b) :=
+	// 1-5 | `T  & never   == never`
+	1. *If* *UnwrapAffirm:* `Identical(b, Never)`:
+		1. *Return:* `Never`.
+	2. *If* *UnwrapAffirm:* `Identical(a, Never)`:
+		1. *Return:* `a`.
+	// 1-6 | `T  & unknown == T`
+	3. *If* *UnwrapAffirm:* `Identical(b, Unknown)`:
+		1. *Return:* `a`.
+	4. *If* *UnwrapAffirm:* `Identical(a, Unknown)`:
+		1. *Return:* `b`.
+	// 3-3 | `A <: B  <->  A  & B == A`
+	5. *If* *UnwrapAffirm:* `Subtype(a, b)`:
+		1. *Return:* `a`.
+	6. *If* *UnwrapAffirm:* `Subtype(b, a)`:
+		1. *Return:* `b`.
+	7. *Return:* a new type with values given by the the intersection of values in `a` and `b`.
+;
+```
+
 
 ### Union
 A data type specified as \`Or<‹T›, ‹U›>\`,
@@ -203,6 +365,34 @@ Such a data type is called the **union** of \`‹T›\` and \`‹U›\`.
 
 For example, the type \`Or<Integer, Null>\` contains values of either \`Integer\` or \`Null\`.
 (Since there is no overlap, there are no values of both \`Integer\` *and* \`Null\`.)
+
+```
+Type Union(Type a, Type b) :=
+	// 1-7 | `T \| never   == T`
+	1. *If* *UnwrapAffirm:* `Identical(b, Never)`:
+		1. *Return:* `a`.
+	2. *If* *UnwrapAffirm:* `Identical(a, Never)`:
+		1. *Return:* `b`.
+	// 1-8 | `T \| unknown == unknown`
+	3. *If* *UnwrapAffirm:* `Identical(b, Unknown)`:
+		1. *Return:* `b`.
+	4. *If* *UnwrapAffirm:* `Identical(a, Unknown)`:
+		1. *Return:* `Unknown`.
+	// 3-4 | `A <: B  <->  A \| B == B`
+	5. *If* *UnwrapAffirm:* `Subtype(a, b)`:
+		1. *Return:* `b`.
+	6. *If* *UnwrapAffirm:* `Subtype(b, a)`:
+		1. *Return:* `a`.
+	7. *Return:* a new type with values given by the the union of values in `a` and `b`.
+;
+```
+
+
+### Difference
+A data type specified as \`Diff<‹T›, ‹U›>\`,
+where \`‹T›\` and \`‹U›\` are metavariables representing any data types,
+is a data type that contains values assignable *only* to type \`‹T›\` and *not* to type \`‹U›\`.
+Such a data type is called the **difference** of \`‹T›\` and \`‹U›\`.
 
 
 ### Subtype
@@ -226,10 +416,11 @@ For brevity, this section uses the following notational conventions:
 - Metavariables such as \`‹A›\`, \`‹B›\`, \`‹C›\` denote placeholders for Solid Language Types
 	and do not refer to real variables or real types.
 - Angle quotes and back-ticks will be omitted. Instead, a `monospace font face` is used.
-- The [intersection](#intersection) of `A` and `B`, `And<A, B>`, is written `A & B`.
-- The [union](#union)               of `A` and `B`, `Or<A, B>`,  is written `A | B`. The symbol `|`  is weaker than `&`.
-- If `A` is a [subtype](#subtype) of `B`, we write `A <: B`.                         The symbol `<:` is weaker than `|`.
-- If `A` is [equal](#equality)    to `B`, we write `A == B`.                         The symbol `==` is weaker than `<:`.
+- The [intersection](#intersection) of `A` and `B`, `And<A, B>`,  is written `A & B`.
+- The [union](#union)               of `A` and `B`, `Or<A, B>`,   is written `A | B`. The symbol `|`  is weaker than `&`.
+- The [difference](#difference)     of `A` and `B`, `Diff<A, B>`, is written `A - B`. The symbol `-`  has the same precedence as `|`.
+- If `A` is a [subtype](#subtype) of `B`, we write `A <: B`.                          The symbol `<:` is weaker than `|` and `-`.
+- If `A` is [equal](#equality)    to `B`, we write `A == B`.                          The symbol `==` is weaker than `<:`.
 - Where ‹X› and ‹Y› represent statements in prose:
 	- `‹X› &&  ‹Y›` denotes “‹X› and            ‹Y›”. The symbol `&&`  is weaker than `<:`.
 	- `‹X› ||  ‹Y›` denotes “‹X› or             ‹Y›”. The symbol `||`  is weaker than `&&`.
@@ -275,3 +466,13 @@ For brevity, this section uses the following notational conventions:
 3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D` | Subtype is Left-Factorable      under Disjunction (but *not* Left-Distributive      over Union)
 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` | Subtype is Right-Antifactorable under Conjunction, and       Right-Antidistributive over Union
 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` | Subtype is Right-Antifactorable under Disjunction (but *not* Right-Antidistributive over Intersection)
+
+
+### Difference Properties
+\# | Law | Description
+-- | --- | -----------
+4-1 | `A - B == A  <->  A & B == never`             | The difference of two types is the first type iff they are disjoint.
+4-2 | `A - B == never  <->  A <: B`                 | The difference of two types is empty iff the first type is a subtype of the second type.
+4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` | Any subtype of a difference is a subtype of its first part and disjoint with its second part.
+4-4 | `(A \| B) - C == (A - C) \| (B - C)` | Difference is Right-Distributive    over Union
+4-5 | `A - (B \| C) == (A - B)  & (A - C)` | Difference is Left-Antidistributive over Union

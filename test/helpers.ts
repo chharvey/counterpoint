@@ -1,25 +1,38 @@
 import {
-	SolidTypeConstant,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	SolidTypeUnit,
 	Int16,
 	Float64,
-} from '../src/validator/'
-import {
-	InstructionConst,
-} from '../src/builder/'
+	SolidString,
+	INST,
+} from '../src/index.js';
 
 
 
-export function typeConstInt(x: bigint): SolidTypeConstant {
-	return new SolidTypeConstant(new Int16(x))
+export const CONFIG_FOLDING_OFF: SolidConfig = {
+	...CONFIG_DEFAULT,
+	compilerOptions: {
+		...CONFIG_DEFAULT.compilerOptions,
+		constantFolding: false,
+	},
+};
+
+
+
+export function typeConstInt(x: bigint): SolidTypeUnit {
+	return new SolidTypeUnit(new Int16(x));
+}
+export function typeConstFloat(x: number): SolidTypeUnit {
+	return new SolidTypeUnit(new Float64(x));
+}
+export function typeConstStr(x: string): SolidTypeUnit {
+	return new SolidTypeUnit(new SolidString(x));
 }
 
-export function typeConstFloat(x: number): SolidTypeConstant {
-	return new SolidTypeConstant(new Float64(x))
+export function instructionConstInt(x: bigint): INST.InstructionConst {
+	return new INST.InstructionConst(new Int16(x));
 }
-
-export function instructionConstInt(x: bigint): InstructionConst {
-	return new InstructionConst(new Int16(x))
-}
-export function instructionConstFloat(x: number): InstructionConst {
-	return new InstructionConst(new Float64(x))
+export function instructionConstFloat(x: number): INST.InstructionConst {
+	return new INST.InstructionConst(new Float64(x));
 }

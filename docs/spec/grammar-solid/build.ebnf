@@ -1,0 +1,170 @@
+Sequence<Instruction> Build(Null n) :=
+	1. *Return:* ["Push `0` onto the operand stack."].
+;
+
+Sequence<Instruction> Build(Boolean b) :=
+	1. *If* `b` is `true`:
+		1. *Return:* ["Push `1` onto the operand stack."].
+	2. *Assert:* `b` is `false`.
+	3. *Return:* ["Push `0` onto the operand stack."].
+;
+
+Sequence<Instruction> Build(Number n) :=
+	1. *Return:* ["Push `n` onto the operand stack."].
+;
+
+
+
+Sequence<Instruction> Build(SemanticExpression expr) :=
+	1. *Let* `folded` be `ValueOf(expr)`.
+	2. *If* `folded` is an abrupt completion:
+		1. *Return:* `BuildExpression(expr)`.
+	3. *Assert:* `folded.value` exists.
+	4. *Return:* `Build(folded.value)`.
+;
+
+
+
+Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
+	1. *Let* `sequence` be an empty sequence of `Instruction`s.
+	2. *If* `stmt.children.count` is greater than 0:
+		1. *Set* `sequence` to *UnwrapAffirm:* `Build(stmt.children.0)`.
+	3. *Return:* `sequence`.
+;
+
+
+
+Sequence<Instruction> Build(SemanticDeclarationType decl) :=
+	1. *Return:* [].
+;
+
+Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
+	1. *Assert:* `decl.children.count` is 3.
+	2. *Let* `folded` be `ValueOf(decl)`.
+	3. *If* `folded` is a normal completion *and* `decl.unfixed` is `false`:
+		1. *Note:* references to the variable will be constant-propegated by its fixed value.
+		2. *Return:* [].
+	4. *Let* `name` be the string-concatenation of "glb" and `decl.children.0.id`.
+	5. *Let* `instrs` be *UnwrapAffirm:* `Build(decl.childen.2)`.
+	6. *Return:* [
+		...instrs,
+		"DECL the global variable `name`.",
+	].
+;
+
+Sequence<Instruction> Build(SemanticAssignment assign) :=
+	1. *Assert:* `assign.children.count` is 2.
+	2. *Let* `name` be the string-concatenation of "glb" and `assign.children.0.id`.
+	3. *Let* `instrs` be *UnwrapAffirm:* `Build(assign.childen.1)`.
+	4. *Return:* [
+		...instrs,
+		"SET the global variable `name`.",
+	].
+;
+
+
+
+Sequence<Instruction> Build(SemanticGoal goal) :=
+	1. *Return:* a flattened mapping of `goal.children` for each `stmt` to *UnwrapAffirm:* `Build(stmt)`.
+;
+
+
+
+Sequence<Instruction> BuildExpression(SemanticConstant const) :=
+	1. *Let* `folded` be *UnwrapAffirm:* `ValueOf(const)`.
+	2. *Return:* `Build(folded)`.
+;
+
+
+
+Sequence<Instruction> BuildExpression(SemanticVariable var) :=
+	1. *Let* `name` be the string-concatenation of "glb" and `var.id`.
+	2. *Return:* [
+		"GET the global variable `name`.",
+	].
+;
+
+
+
+Sequence<Instruction> BuildExpression(SemanticTemplate tpl) :=
+	// TO BE DETERMINED
+;
+
+
+
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NEG] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `instrs` be *UnwrapAffirm:* `Build(expr.children.0)`.
+	3. *Return:* [
+		...instrs,
+		"`expr.operator`",
+	].
+;
+
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: IS] expr) :=
+	1. *Throw:* new TypeError "Operator not yet supported.".
+;
+
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | GT | LE | GE | ID | EQ] expr) :=
+	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
+	2. *Return:* [
+		...builds.0,
+		...builds.1,
+		"`expr.operator`",
+	].
+;
+
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: AND] expr) :=
+	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
+	2. *Return:* [
+		...builds.0,
+		"TEE the local variable `operand0`.",
+		"NOT",
+		"NOT",
+		"IF",
+		...builds.1,
+		"ELSE",
+		"GET the local variable `operand0`.",
+		"END",
+	].
+;
+
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: OR] expr) :=
+	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
+	2. *Return:* [
+		...builds.0,
+		"TEE the local variable `operand0`.",
+		"NOT",
+		"NOT",
+		"IF",
+		"GET the local variable `operand0`.",
+		"ELSE",
+		...builds.1,
+		"END",
+	].
+;
+
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: COND] expr) :=
+	1. *Assert:* `expr.children.count` is 3.
+	2. *Let* `instrs0` be *UnwrapAffirm:* `Build(expr.children.0)`.
+	3. *Let* `instrs1` be *UnwrapAffirm:* `Build(expr.children.1)`.
+	4. *Let* `instrs2` be *UnwrapAffirm:* `Build(expr.children.2)`.
+	5. *Return:* [
+		...instrs0,
+		"IF",
+		...instrs1,
+		"ELSE",
+		...instrs2,
+		"END",
+	].
+;
+
+
+
+// Prepares instructions for a binary operation.
+Sequence<Sequence<Instruction>, Sequence<Instruction>> PrebuildSemanticOperationBinary(SemanticOperation expr) :=
+	1. *Assert:* `expr.children.count` is 2.
+	2. *Let* `instrs0` be *UnwrapAffirm:* `Build(expr.children.0)`.
+	3. *Let* `instrs1` be *UnwrapAffirm:* `Build(expr.children.1)`.
+	4. *Return:* [instrs0, instrs1].
+;

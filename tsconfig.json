@@ -1,23 +1,30 @@
 {
 	"compilerOptions": {
-		"target"            : "ES2020",
-		"module"            : "commonjs",
-		"esModuleInterop"   : true,
-		"strict"            : true,
+		// Type Checking
+		"exactOptionalPropertyTypes": true,
+		"noImplicitOverride":         true,
+		"noImplicitReturns":          true,
+		"noUnusedLocals":             true,
+		"noUnusedParameters":         true,
+		"strict":                     true,
+
+		// Modules
+		"module":           "ES2020",
+		"moduleResolution": "Node",
+
+		// Emit
 		"importsNotUsedAsValues": "error",
-		"noImplicitReturns" : true,
-		"noUnusedLocals":     false,
-		"noUnusedParameters": false,
-		"removeComments"    : true,
-		"noEmitOnError"     : true
+		"noEmitOnError":          true,
+		"outDir":                 "./build/",
+
+		// Interop Constraints
+		"allowSyntheticDefaultImports": true,
+
+		// Language and Environment
+		"target": "ES2021",
+
+		// Completeness
+		"skipLibCheck": true,
 	},
-	"typedocOptions": {
-		"tsconfig": "./",
-		"mode"   : "file",
-		"name"   : "solid",
-		"out"    : "./docs/api/",
-		"includeDeclarations" : true,
-		"excludeExternals"    : true,
-		"ignoreCompilerErrors": true
-	}
+	"include": ["./src/"],
 }

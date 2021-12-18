@@ -1,0 +1,178 @@
+// KEYWORD         ::= [./lexicon.ebnf#Keyword];
+// IDENTIFIER      ::= [./lexicon.ebnf#Identifier];
+// INTEGER         ::= [./lexicon.ebnf#Integer];
+// FLOAT           ::= [./lexicon.ebnf#Float];
+// STRING          ::= [./lexicon.ebnf#String];
+// TEMPLATE_FULL   ::= [./lexicon.ebnf#TemplateFull];
+// TEMPLATE_HEAD   ::= [./lexicon.ebnf#TemplateHead];
+// TEMPLATE_MIDDLE ::= [./lexicon.ebnf#TempalteMiddle];
+// TEMPLATE_TAIL   ::= [./lexicon.ebnf#TempalteTail];
+
+
+
+Word ::=
+	| KEYWORD
+	| IDENTIFIER
+;
+
+
+
+PrimitiveLiteral ::=
+	| "null"
+	| "false"
+	| "true"
+	| INTEGER
+	| FLOAT
+	| STRING
+;
+
+
+
+TypeKeyword ::=
+	| "void"
+	| "bool"
+	| "int"
+	| "float"
+	| "str"
+	| "obj"
+;
+
+EntryType<Named, Optional>
+	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type;
+
+ItemsType ::=
+	|  EntryType<-Named><-Optional># ","?
+	| (EntryType<-Named><-Optional># ",")? EntryType<-Named><+Optional># ","?
+;
+
+PropertiesType
+	::= EntryType<+Named><-Optional, +Optional># ","?;
+
+TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
+TypeRecordLiteral ::= "["  ","? PropertiesType "]";
+TypeHashLiteral   ::= "[" ":" Type             "]";
+TypeMapLiteral    ::= "{" Type "->" Type       "}";
+GenericArguments  ::= "<"  ","? Type# ","?     ">";
+
+TypeUnit ::=
+	| IDENTIFIER
+	| PrimitiveLiteral
+	| TypeKeyword
+	| TypeTupleLiteral
+	| TypeRecordLiteral
+	| TypeHashLiteral
+	| TypeMapLiteral
+	| "(" Type ")"
+;
+
+PropertyAccessType ::= "." (INTEGER | Word);
+GenericCall        ::= "." GenericArguments;
+
+TypeCompound ::=
+	| TypeUnit
+	| TypeCompound (PropertyAccessType | GenericCall)
+;
+
+TypeUnarySymbol ::=
+	| TypeCompound
+	| TypeUnarySymbol ("?" | "!" | "[" INTEGER? "]" | "{" "}")
+;
+
+TypeUnaryKeyword ::=
+	| TypeUnarySymbol
+	| "mutable" TypeUnaryKeyword
+;
+
+TypeIntersection ::= (TypeIntersection "&")? TypeUnaryKeyword;
+TypeUnion        ::= (TypeUnion        "|")? TypeIntersection;
+
+Type ::=
+	| TypeUnion
+;
+
+
+
+StringTemplate<Dynamic> ::=
+	| TEMPLATE_FULL
+	| TEMPLATE_HEAD Expression<?Dynamic>? (TEMPLATE_MIDDLE Expression<?Dynamic>?)* TEMPLATE_TAIL
+;
+
+Property ::= Word                 "="  Expression<+Dynamic>;
+Case     ::= Expression<+Dynamic> "->" Expression<+Dynamic>;
+
+TupleLiteral      ::= "[" ( ","? Expression<+Dynamic># ","? )? "]";
+RecordLiteral     ::= "["   ","? Property#             ","?    "]";
+SetLiteral        ::= "{" ( ","? Expression<+Dynamic># ","? )? "}";
+MapLiteral        ::= "{"   ","? Case#                 ","?    "}";
+FunctionArguments ::= "(" ( ","? Expression<+Dynamic># ","? )? ")";
+
+ExpressionUnit<Dynamic> ::=
+	| <Dynamic+>IDENTIFIER
+	| PrimitiveLiteral
+	| StringTemplate<?Dynamic>
+	| TupleLiteral
+	| RecordLiteral
+	| SetLiteral
+	| MapLiteral
+	| "(" Expression<?Dynamic> ")"
+;
+
+PropertyAccess ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression<+Dynamic> "]");
+PropertyAssign ::=  "."                (INTEGER | Word | "[" Expression<+Dynamic> "]");
+FunctionCall   ::=  "."                GenericArguments? FunctionArguments;
+
+ExpressionCompound<Dynamic> ::=
+	| ExpressionUnit<?Dynamic>
+	| <Dynamic+>(ExpressionCompound<?Dynamic> (PropertyAccess | FunctionCall))
+;
+
+Assignee ::=
+	| IDENTIFIER
+	| ExpressionCompound<+Dynamic> PropertyAssign
+;
+
+ExpressionUnarySymbol<Dynamic> ::=
+	| ExpressionCompound<?Dynamic>
+	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol<?Dynamic>
+;
+
+ExpressionExponential<Dynamic>
+	::= ExpressionUnarySymbol<?Dynamic> ("^" ExpressionExponential<?Dynamic>)?;
+
+ExpressionMultiplicative <Dynamic> ::= (ExpressionMultiplicative <?Dynamic> ("*" | "/" ))?                                            ExpressionExponential    <?Dynamic>;
+ExpressionAdditive       <Dynamic> ::= (ExpressionAdditive       <?Dynamic> ("+" | "-" ))?                                            ExpressionMultiplicative <?Dynamic>;
+ExpressionComparative    <Dynamic> ::= (ExpressionComparative    <?Dynamic> ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "isnt"))? ExpressionAdditive       <?Dynamic>;
+ExpressionEquality       <Dynamic> ::= (ExpressionEquality       <?Dynamic> ("===" | "!==" | "==" | "!="))?                           ExpressionComparative    <?Dynamic>;
+ExpressionConjunctive    <Dynamic> ::= (ExpressionConjunctive    <?Dynamic> ("&&" | "!&"))?                                           ExpressionEquality       <?Dynamic>;
+ExpressionDisjunctive    <Dynamic> ::= (ExpressionDisjunctive    <?Dynamic> ("||" | "!|"))?                                           ExpressionConjunctive    <?Dynamic>;
+
+ExpressionConditional<Dynamic>
+	::= "if" Expression<?Dynamic> "then" Expression<?Dynamic> "else" Expression<?Dynamic>;
+
+Expression<Dynamic> ::=
+	| ExpressionDisjunctive<?Dynamic>
+	| ExpressionConditional<?Dynamic>
+;
+
+
+
+DeclarationType     ::= "type"            IDENTIFIER "=" Type                          ";";
+DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression<+Dynamic> ";";
+
+Declaration ::=
+	| DeclarationType
+	| DeclarationVariable
+;
+
+StatementAssignment
+	::= Assignee "=" Expression<+Dynamic> ";";
+
+Statement ::=
+	| Expression<+Dynamic>? ";"
+	| Declaration
+	| StatementAssignment
+;
+
+
+
+Goal ::= #x02 Statement* #x03;

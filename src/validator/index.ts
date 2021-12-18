@@ -1,48 +1,12 @@
-export {default as Validator}    from './Validator.class'
-export {Decorator} from './Decorator';
+export * from './OperatorEbnf.js';
+export * from './OperatorSolid.js';
 
-export {
-	SemanticNodeSolid,
-	SemanticNodeType,
-	SemanticNodeTypeConstant,
-	SemanticNodeTypeOperation,
-	SemanticNodeTypeOperationUnary,
-	SemanticNodeTypeOperationBinary,
-	SemanticNodeExpression,
-	SemanticNodeConstant,
-	SemanticNodeIdentifier,
-	SemanticNodeTemplate,
-	SemanticNodeOperation,
-	SemanticNodeOperationUnary,
-	SemanticNodeOperationBinary,
-	SemanticNodeOperationBinaryArithmetic,
-	SemanticNodeOperationBinaryComparative,
-	SemanticNodeOperationBinaryEquality,
-	SemanticNodeOperationBinaryLogical,
-	SemanticNodeOperationTernary,
-	SemanticNodeDeclarationVariable,
-	SemanticNodeAssignment,
-	SemanticNodeAssignee,
-	SemanticStatementType,
-	SemanticNodeStatementExpression,
-	SemanticNodeGoal,
-} from './SemanticNode.class'
+export * from './ASTNode.js';
+export * as ASTNODE_EBNF from './astnode-ebnf/index.js';
+export * as ASTNODE_SOLID from './astnode-solid/index.js';
 
-export {
-	CompletionStructureAssessment,
-} from './CompletionStructure.class'
+export {DECORATOR as DECORATOR_EBNF} from './DecoratorEbnf.js';
+export {DECORATOR as DECORATOR_SOLID} from './DecoratorSolid.js';
+export * from './Validator.js';
 
-export {default as SolidLanguageType} from './SolidLanguageType.class'
-
-export {
-	SolidTypeConstant,
-	SolidTypeInterface,
-} from './SolidLanguageType.class'
-
-export {default as SolidObject}  from './SolidObject.class'
-export {default as SolidNull}    from './SolidNull.class'
-export {default as SolidBoolean} from './SolidBoolean.class'
-export {default as SolidNumber}  from './SolidNumber.class'
-export {default as Int16}        from './Int16.class'
-export {default as Float64}      from './Float64.class'
-export {default as SolidString}  from './SolidString.class'
+export * from './SymbolStructure.js';
