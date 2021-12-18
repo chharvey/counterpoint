@@ -20,9 +20,9 @@ export class ASTNodeItem extends ASTNodeExpr {
 		super(parse_node, {}, [item, ...conditions]);
 	}
 
-	override transform(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
+	override transform(nt: ConcreteNonterminal, has_params: boolean, data: EBNFObject[]): EBNFChoice {
 		return (this.conditions.some((cond) => cond.include === nt.hasSuffix(cond)))
-			? this.item.transform(nt, data)
+			? this.item.transform(nt, has_params, data)
 			: [
 				[''],
 			]

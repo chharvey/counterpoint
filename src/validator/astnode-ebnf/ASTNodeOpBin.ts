@@ -23,9 +23,9 @@ export class ASTNodeOpBin extends ASTNodeOp {
 		super(parse_node, operator, [operand0, operand1]);
 	}
 
-	override transform(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
-		const trans0: EBNFChoice = this.operand0.transform(nt, data);
-		const trans1: EBNFChoice = this.operand1.transform(nt, data);
+	override transform(nt: ConcreteNonterminal, has_params: boolean, data: EBNFObject[]): EBNFChoice {
+		const trans0: EBNFChoice = this.operand0.transform(nt, has_params, data);
+		const trans1: EBNFChoice = this.operand1.transform(nt, has_params, data);
 		return new Map<Binop, () => EBNFChoice>([
 			[Op.ORDER, () => trans0.flatMap((seq0) =>
 				trans1.flatMap((seq1) => [

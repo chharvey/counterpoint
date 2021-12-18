@@ -19,7 +19,7 @@ export class ASTNodeConst extends ASTNodeExpr {
 		super(p_node, {value: p_node.source});
 	}
 
-	override transform(_nt: ConcreteNonterminal, _data: EBNFObject[]): EBNFChoice {
+	override transform(_nt: ConcreteNonterminal, _has_params: boolean, _data: EBNFObject[]): EBNFChoice {
 		return [
 			[
 				(this.p_node instanceof TOKEN.TokenCharCode) ? `\\u${ this.source.slice(2).padStart(4, '0') }` : // remove '#x'

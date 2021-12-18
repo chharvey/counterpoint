@@ -30,7 +30,7 @@ export class ASTNodeOpUn extends ASTNodeOp {
 		super(parse_node, operator, [operand]);
 	}
 
-	override transform(nt: ConcreteNonterminal, data: EBNFObject[]): EBNFChoice {
+	override transform(nt: ConcreteNonterminal, has_params: boolean, data: EBNFObject[]): EBNFChoice {
 		return new Map<Unop, (operand: EBNFChoice) => EBNFChoice>([
 			[Op.PLUS, (operand) => {
 				const memoized: Map<EBNFChoice, string> = ASTNodeOpUn.memoized.get(Op.PLUS)!;
@@ -72,6 +72,6 @@ export class ASTNodeOpUn extends ASTNodeOp {
 					...operand,
 				];
 			}],
-		]).get(this.operator)!(this.operand.transform(nt, data));
+		]).get(this.operator)!(this.operand.transform(nt, has_params, data));
 	}
 }
