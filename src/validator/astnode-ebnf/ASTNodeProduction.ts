@@ -6,18 +6,13 @@ import type {
 	EBNFItem,
 } from './package.js';
 import {
+	Mutable,
 	FAMILY_SYMBOL,
 	ConcreteNonterminal,
 } from './utils-private.js';
 import {ASTNodeEbnf} from './ASTNodeEbnf.js';
 import type {ASTNodeExpr} from './ASTNodeExpr.js';
 import type {ASTNodeNonterminal} from './ASTNodeNonterminal.js';
-
-
-
-type Mutable<T> = {
-	-readonly [P in keyof T]: T[P];
-};
 
 
 
