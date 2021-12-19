@@ -404,48 +404,48 @@ describe('ParserSolid', () => {
 			});
 		});
 
-		describe('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
+		describe('TupleLiteral<-Dynamic> ::= "[/" (","? Expression<-Dynamic># ","?)? "/]"', () => {
 			it('with no leading or trailing comma.', () => {
 				/*
 					<TupleLiteral>
-						<PUNCTUATOR>[</PUNCTUATOR>
+						<PUNCTUATOR>[/</PUNCTUATOR>
 						<TupleLiteral__0__List source="42, true, null || false">...</TupleLiteral__0__List>
-						<PUNCTUATOR>]</PUNCTUATOR>
+						<PUNCTUATOR>/]</PUNCTUATOR>
 					</TupleLiteral>
 				*/
-				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral$ = h.tupleLiteralFromSource(`[42, true, null || false];`);
+				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral$ = h.tupleLiteralFromSource(`[/42, true, null || false/];`);
 				assert_arrayLength(unit.children, 3);
 				assert.deepStrictEqual(
 					unit.children.map((c) => c.source),
-					[Punctuator.BRAK_OPN, `42 , true , null || false`, Punctuator.BRAK_CLS],
+					[Punctuator.BRAK_OPN_S, `42 , true , null || false`, Punctuator.BRAK_CLS_S],
 				);
 			});
 			it('with leading comma.', () => {
 				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral$ = h.tupleLiteralFromSource(`
-					[
+					[/
 						, 42
 						, true
 						, null || false
-					];
+					/];
 				`);
 				assert_arrayLength(unit.children, 4);
 				assert.deepStrictEqual(
 					unit.children.map((c) => c.source),
-					[Punctuator.BRAK_OPN, Punctuator.COMMA, `42 , true , null || false`, Punctuator.BRAK_CLS],
+					[Punctuator.BRAK_OPN_S, Punctuator.COMMA, `42 , true , null || false`, Punctuator.BRAK_CLS_S],
 				);
 			});
 			it('with trailing comma.', () => {
 				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral$ = h.tupleLiteralFromSource(`
-					[
+					[/
 						42,
 						true,
 						null || false,
-					];
+					/];
 				`);
 				assert_arrayLength(unit.children, 4);
 				assert.deepStrictEqual(
 					unit.children.map((c) => c.source),
-					[Punctuator.BRAK_OPN, `42 , true , null || false`, Punctuator.COMMA, Punctuator.BRAK_CLS],
+					[Punctuator.BRAK_OPN_S, `42 , true , null || false`, Punctuator.COMMA, Punctuator.BRAK_CLS_S],
 				);
 			});
 			specify('TupleLiteral__0__List ::= TupleLiteral__0__List "," Expression', () => {
@@ -462,33 +462,66 @@ describe('ParserSolid', () => {
 						<Expression source="null || false">...</Expression>
 					</TupleLiteral__0__List>
 				*/
-				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral$ = h.tupleLiteralFromSource(`[42, true, null || false];`);
+				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral$ = h.tupleLiteralFromSource(`[/42, true, null || false/];`);
 				assert_arrayLength(unit.children, 3);
 				h.hashListSources(unit.children[1], `42`, `true`, `null || false`);
 			});
+			it('throws when containing dynamic expression.', () => {
+				assert.throws(() => h.tupleLiteralFromSource(`[/42, x, null || false/];`),         ParseError01);
+				assert.throws(() => h.tupleLiteralFromSource(`[/42, true, x || false/];`),         ParseError01);
+				assert.throws(() => h.tupleLiteralFromSource(`[/42, a.b.(c), null || false/];`),   ParseError01);
+				assert.throws(() => h.tupleLiteralFromSource(`[/42, [true], null || false/];`),    ParseError01);
+				assert.throws(() => h.tupleLiteralFromSource(`[/42, [v= true], null || false/];`), ParseError01);
+			});
 		});
 
-		describe('RecordLiteral ::= "[" ","? Property# ","? "]"', () => {
+		describe('TupleLiteral<+Dynamic> ::= "[" (","? Expression<+Dynamic># ","?)? "]"', () => {
+			/*
+				<TupleLiteral_Dynamic>
+					<PUNCTUATOR>[</PUNCTUATOR>
+					<TupleLiteral_Dynamic__0__List source="42, [/true/], null || false">...</TupleLiteral_Dynamic__0__List>
+					<PUNCTUATOR>]</PUNCTUATOR>
+				</TupleLiteral_Dynamic>
+			*/
+			it('with no dynamic expressions.', () => {
+				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral$ = h.tupleLiteralFromSource(`[42, [/true/], null || false];`);
+				assert_arrayLength(unit.children, 3);
+				assert.deepStrictEqual(
+					unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, `42 , [/ true /] , null || false`, Punctuator.BRAK_CLS],
+				);
+			});
+			it('with dynamic expressions.', () => {
+				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral$ = h.tupleLiteralFromSource(`[x, [true], a.b.(c)];`);
+				assert_arrayLength(unit.children, 3);
+				assert.deepStrictEqual(
+					unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, `x , [ true ] , a . b . ( c )`, Punctuator.BRAK_CLS],
+				);
+			});
+		});
+
+		describe('RecordLiteral<-Dynamic> ::= "[/" ","? Property<-Dynamic># ","? "/]"', () => {
 			it('with leading comma.', () => {
 				/*
 					<RecordLiteral>
-						<PUNCTUATOR>[</PUNCTUATOR>
+						<PUNCTUATOR>[/</PUNCTUATOR>
 						<PUNCTUATOR>,</PUNCTUATOR>
 						<RecordLiteral__0__List source="let= true, foobar= 42">...</RecordLiteral__0__List>
-						<PUNCTUATOR>]</PUNCTUATOR>
+						<PUNCTUATOR>/]</PUNCTUATOR>
 					</RecordLiteral>
 				*/
 				const unit: PARSENODE_SOLID.ParseNodeRecordLiteral$ = h.recordLiteralFromSource(`
-					[
+					[/
 						, let= true
 						, foobar= 42
-					];
+					/];
 				`);
 				assert_arrayLength(unit.children, 4);
 				assert.ok(unit.children[2] instanceof PARSENODE_SOLID.ParseNodeRecordLiteral$__0__List);
 				assert.deepStrictEqual(
 					unit.children.map((c) => c.source),
-					[Punctuator.BRAK_OPN, Punctuator.COMMA, `let = true , foobar = 42`, Punctuator.BRAK_CLS],
+					[Punctuator.BRAK_OPN_S, Punctuator.COMMA, `let = true , foobar = 42`, Punctuator.BRAK_CLS_S],
 				);
 			});
 			specify('RecordLiteral__0__List ::= RecordLiteral__0__List "," Property', () => {
@@ -501,12 +534,47 @@ describe('ParserSolid', () => {
 						<Property source="foobar= 42">...</Property>
 					</RecordLiteral__0__List>
 				*/
-				const unit: PARSENODE_SOLID.ParseNodeRecordLiteral$ = h.recordLiteralFromSource(`[let= true, foobar= 42];`);
+				const unit: PARSENODE_SOLID.ParseNodeRecordLiteral$ = h.recordLiteralFromSource(`[/let= true, foobar= 42/];`);
 				assert_arrayLength(unit.children, 3);
 				h.hashListSources(unit.children[1], `let = true`, `foobar = 42`);
 			});
+			it('throws when containing dynamic expression.', () => {
+				assert.throws(() => h.tupleLiteralFromSource(`[/let= 42, foobar= x/];`),          ParseError01);
+				assert.throws(() => h.tupleLiteralFromSource(`[/let= 42, foobar= x || false/];`), ParseError01);
+				assert.throws(() => h.tupleLiteralFromSource(`[/let= 42, foobar= a.b.(c)/];`),    ParseError01);
+				assert.throws(() => h.tupleLiteralFromSource(`[/let= 42, foobar= [true]/];`),     ParseError01);
+				assert.throws(() => h.tupleLiteralFromSource(`[/let= 42, foobar= [v= true]/];`),  ParseError01);
+			});
 		});
 
+		describe('RecordLiteral<+Dynamic> ::= "[" ","? Property<+Dynamic># ","? "]"', () => {
+			/*
+				<RecordLiteral_Dynamic>
+					<PUNCTUATOR>[/</PUNCTUATOR>
+					<PUNCTUATOR>,</PUNCTUATOR>
+					<RecordLiteral_Dynamic__0__List source="let= true, foobar= 42">...</RecordLiteral_Dynamic__0__List>
+					<PUNCTUATOR>/]</PUNCTUATOR>
+				</RecordLiteral>
+			*/
+			it('with no dynamic expressions.', () => {
+				const unit: PARSENODE_SOLID.ParseNodeRecordLiteral$ = h.recordLiteralFromSource(`[let= true, foobar= 42];`);
+				assert_arrayLength(unit.children, 3);
+				assert.ok(unit.children[1] instanceof PARSENODE_SOLID.ParseNodeRecordLiteral$__0__List);
+				assert.deepStrictEqual(
+					unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, `let = true , foobar = 42`, Punctuator.BRAK_CLS],
+				);
+			});
+			it('with dynamic expressions.', () => {
+				const unit: PARSENODE_SOLID.ParseNodeRecordLiteral$ = h.recordLiteralFromSource(`[let= [true], foobar= a.b.(c) || 42];`);
+				assert_arrayLength(unit.children, 3);
+				assert.ok(unit.children[1] instanceof PARSENODE_SOLID.ParseNodeRecordLiteral$__0__List);
+				assert.deepStrictEqual(
+					unit.children.map((c) => c.source),
+					[Punctuator.BRAK_OPN, `let = [ true ] , foobar = a . b . ( c ) || 42`, Punctuator.BRAK_CLS],
+				);
+			});
+		});
 
 		context('ExpressionUnit ::= PrimitiveLiteral', () => {
 			it('parses IDENTIFIER.', () => {
