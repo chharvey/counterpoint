@@ -248,10 +248,10 @@ Decorate(StringTemplate<Dynamic> ::= TEMPLATE_HEAD Expression<?Dynamic> StringTe
 
 
 
-Decorate(Property ::= Word "=" Expression<+Dynamic>) -> SemanticProperty
+Decorate(Property<Dynamic> ::= Word "=" Expression<?Dynamic>) -> SemanticProperty
 	:= (SemanticProperty
 		Decorate(Word)
-		Decorate(Expression<+Dynamic>)
+		Decorate(Expression<?Dynamic>)
 	);
 
 Decorate(Case ::= Expression<+Dynamic> "->" Expression<+Dynamic>) -> SemanticCase
@@ -260,16 +260,16 @@ Decorate(Case ::= Expression<+Dynamic> "->" Expression<+Dynamic>) -> SemanticCas
 		Decorate(Expression<+Dynamic>)
 	);
 
-Decorate(TupleLiteral ::= "[" "]") -> SemanticTuple
+Decorate(TupleLiteral<Dynamic> ::= <Dynamic->"[/" <Dynamic+>"[" <Dynamic+>"]" <Dynamic->"/]") -> SemanticTuple
 	:= (SemanticTuple);
-Decorate(TupleLiteral ::= "[" ","? Expression<+Dynamic># ","? "]") -> SemanticTuple
+Decorate(TupleLiteral<Dynamic> ::= <Dynamic->"[/" <Dynamic+>"[" ","? Expression<?Dynamic># ","? <Dynamic->"/]" <Dynamic+>"]") -> SemanticTuple
 	:= (SemanticTuple
-		...ParseList(Expression<+Dynamic>, SemanticExpression)
+		...ParseList(Expression<?Dynamic>, SemanticExpression)
 	);
 
-Decorate(RecordLiteral ::= "[" ","? Property# ","? "]") -> SemanticRecord
+Decorate(RecordLiteral<Dynamic> ::= <Dynamic->"[/" <Dynamic+>"[" ","? Property<?Dynamic># ","? <Dynamic->"/]" <Dynamic+>"]") -> SemanticRecord
 	:= (SemanticRecord
-		...ParseList(Property, SemanticProperty)
+		...ParseList(Property<?Dynamic>, SemanticProperty)
 	);
 
 Decorate(SetLiteral ::= "{" ","? Expression<+Dynamic># ","? "}") -> SemanticSet
@@ -293,10 +293,14 @@ Decorate(ExpressionUnit<Dynamic> ::= PrimitiveLiteral) -> SemanticConstant
 	:= Decorate(PrimitiveLiteral);
 Decorate(ExpressionUnit<Dynamic> ::= StringTemplate) -> SemanticTemplate
 	:= Decorate(StringTemplate);
-Decorate(ExpressionUnit<Dynamic> ::= <Dynamic+>TupleLiteral) -> SemanticTuple
-	:= Decorate(TupleLiteral);
-Decorate(ExpressionUnit<Dynamic> ::= <Dynamic+>RecordLiteral) -> SemanticRecord
-	:= Decorate(RecordLiteral);
+Decorate(ExpressionUnit<Dynamic> ::= TupleLiteral<-Dynamic>) -> SemanticTuple
+	:= Decorate(TupleLiteral<-Dynamic>);
+Decorate(ExpressionUnit<Dynamic> ::= RecordLiteral<-Dynamic>) -> SemanticRecord
+	:= Decorate(RecordLiteral<-Dynamic>);
+Decorate(ExpressionUnit<Dynamic> ::= <Dynamic+>TupleLiteral<?Dynamic>) -> SemanticTuple
+	:= Decorate(TupleLiteral<?Dynamic>);
+Decorate(ExpressionUnit<Dynamic> ::= <Dynamic+>RecordLiteral<?Dynamic>) -> SemanticRecord
+	:= Decorate(RecordLiteral<?Dynamic>);
 Decorate(ExpressionUnit<Dynamic> ::= <Dynamic+>SetLiteral) -> SemanticSet
 	:= Decorate(SetLiteral);
 Decorate(ExpressionUnit<Dynamic> ::= <Dynamic+>MapLiteral) -> SemanticMap

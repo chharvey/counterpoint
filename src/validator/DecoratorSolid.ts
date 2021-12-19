@@ -111,10 +111,10 @@ class DecoratorSolid extends Decorator {
 	): AST.ASTNodeType;
 	override decorate(node: PARSENODE.ParseNodeStringTemplate$):          AST.ASTNodeTemplate;
 	override decorate(node: PARSENODE.ParseNodeStringTemplate$__0__List): TemplatePartialType;
-	override decorate(node: PARSENODE.ParseNodeProperty):                AST.ASTNodeProperty;
+	override decorate(node: PARSENODE.ParseNodeProperty$):                AST.ASTNodeProperty;
 	override decorate(node: PARSENODE.ParseNodeCase):                    AST.ASTNodeCase;
-	override decorate(node: PARSENODE.ParseNodeTupleLiteral):            AST.ASTNodeTuple;
-	override decorate(node: PARSENODE.ParseNodeRecordLiteral):           AST.ASTNodeRecord;
+	override decorate(node: PARSENODE.ParseNodeTupleLiteral$):           AST.ASTNodeTuple;
+	override decorate(node: PARSENODE.ParseNodeRecordLiteral$):          AST.ASTNodeRecord;
 	override decorate(node: PARSENODE.ParseNodeSetLiteral):              AST.ASTNodeSet;
 	override decorate(node: PARSENODE.ParseNodeMapLiteral):              AST.ASTNodeMap;
 	override decorate(node: PARSENODE.ParseNodeFunctionArguments):       AST.ASTNodeExpression[];
@@ -296,7 +296,7 @@ class DecoratorSolid extends Decorator {
 				this.decorate(c as PARSENODE.ParseNodeStringTemplate$__0__List)
 			);
 
-		} else if (node instanceof PARSENODE.ParseNodeProperty) {
+		} else if (node instanceof PARSENODE.ParseNodeProperty$) {
 			return new AST.ASTNodeProperty(
 				node,
 				this.decorate(node.children[0]),
@@ -310,19 +310,19 @@ class DecoratorSolid extends Decorator {
 				this.decorate(node.children[2]),
 			);
 
-		} else if (node instanceof PARSENODE.ParseNodeTupleLiteral) {
+		} else if (node instanceof PARSENODE.ParseNodeTupleLiteral$) {
 			return new AST.ASTNodeTuple(node, (node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeExpression, AST.ASTNodeExpression>(
-				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral__0__List)!,
+				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral$__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral$__0__List)!,
 			));
 
-		} else if (node instanceof PARSENODE.ParseNodeRecordLiteral) {
+		} else if (node instanceof PARSENODE.ParseNodeRecordLiteral$) {
 			return new AST.ASTNodeRecord(node, this.parseList<PARSENODE.ParseNodeProperty, AST.ASTNodeProperty>(
-				node.children.find((c): c is PARSENODE.ParseNodeRecordLiteral__0__List => c instanceof PARSENODE.ParseNodeRecordLiteral__0__List)!,
+				node.children.find((c): c is PARSENODE.ParseNodeRecordLiteral$__0__List => c instanceof PARSENODE.ParseNodeRecordLiteral$__0__List)!,
 			));
 
 		} else if (node instanceof PARSENODE.ParseNodeSetLiteral) {
 			return new AST.ASTNodeSet(node, (node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeExpression, AST.ASTNodeExpression>(
-				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral__0__List)!,
+				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral_Dynamic__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral_Dynamic__0__List)!,
 			));
 
 		} else if (node instanceof PARSENODE.ParseNodeMapLiteral) {
@@ -332,7 +332,7 @@ class DecoratorSolid extends Decorator {
 
 		} else if (node instanceof PARSENODE.ParseNodeFunctionArguments) {
 			return (node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeExpression, AST.ASTNodeExpression>(
-				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral__0__List)!,
+				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral_Dynamic__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral_Dynamic__0__List)!,
 			);
 
 		} else if (node instanceof PARSENODE.ParseNodeExpressionUnit) {

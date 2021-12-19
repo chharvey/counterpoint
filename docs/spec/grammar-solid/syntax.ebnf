@@ -97,21 +97,23 @@ StringTemplate<Dynamic> ::=
 	| TEMPLATE_HEAD Expression<?Dynamic>? (TEMPLATE_MIDDLE Expression<?Dynamic>?)* TEMPLATE_TAIL
 ;
 
-Property ::= Word                 "="  Expression<+Dynamic>;
-Case     ::= Expression<+Dynamic> "->" Expression<+Dynamic>;
+Property <Dynamic> ::= Word                 "="  Expression<?Dynamic>;
+Case               ::= Expression<+Dynamic> "->" Expression<+Dynamic>;
 
-TupleLiteral      ::= "[" ( ","? Expression<+Dynamic># ","? )? "]";
-RecordLiteral     ::= "["   ","? Property#             ","?    "]";
-SetLiteral        ::= "{" ( ","? Expression<+Dynamic># ","? )? "}";
-MapLiteral        ::= "{"   ","? Case#                 ","?    "}";
-FunctionArguments ::= "(" ( ","? Expression<+Dynamic># ","? )? ")";
+TupleLiteral  <Dynamic> ::= <Dynamic->"[/" <Dynamic+>"[" ( ","? Expression <?Dynamic># ","? )?  <Dynamic->"/]" <Dynamic+>"]";
+RecordLiteral <Dynamic> ::= <Dynamic->"[/" <Dynamic+>"["   ","? Property   <?Dynamic># ","?     <Dynamic->"/]" <Dynamic+>"]";
+SetLiteral              ::= "{"                          ( ","? Expression <+Dynamic># ","? )?  "}";
+MapLiteral              ::= "{"                            ","? Case#                  ","?     "}";
+FunctionArguments       ::= "("                          ( ","? Expression <+Dynamic># ","? )?  ")";
 
 ExpressionUnit<Dynamic> ::=
 	| <Dynamic+>IDENTIFIER
 	| PrimitiveLiteral
 	| StringTemplate<?Dynamic>
-	| <Dynamic+>TupleLiteral
-	| <Dynamic+>RecordLiteral
+	| TupleLiteral  <-Dynamic>
+	| RecordLiteral <-Dynamic>
+	| <Dynamic+>TupleLiteral  <?Dynamic>
+	| <Dynamic+>RecordLiteral <?Dynamic>
 	| <Dynamic+>SetLiteral
 	| <Dynamic+>MapLiteral
 	| "(" Expression<?Dynamic> ")"

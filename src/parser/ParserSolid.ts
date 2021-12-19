@@ -366,6 +366,15 @@ class ProductionProperty extends Production {
 	static readonly instance: ProductionProperty = new ProductionProperty();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
+			[ProductionWord.instance, '=', ProductionExpression.instance],
+		];
+	}
+}
+
+class ProductionProperty_Dynamic extends Production {
+	static readonly instance: ProductionProperty_Dynamic = new ProductionProperty_Dynamic();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
 			[ProductionWord.instance, '=', ProductionExpression_Dynamic.instance],
 		];
 	}
@@ -384,8 +393,18 @@ class ProductionTupleLiteral__0__List extends Production {
 	static readonly instance: ProductionTupleLiteral__0__List = new ProductionTupleLiteral__0__List();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
+			[ProductionExpression.instance],
+			[ProductionTupleLiteral__0__List.instance, ',', ProductionExpression.instance],
+		];
+	}
+}
+
+class ProductionTupleLiteral_Dynamic__0__List extends Production {
+	static readonly instance: ProductionTupleLiteral_Dynamic__0__List = new ProductionTupleLiteral_Dynamic__0__List();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
 			[ProductionExpression_Dynamic.instance],
-			[ProductionTupleLiteral__0__List.instance, ',', ProductionExpression_Dynamic.instance],
+			[ProductionTupleLiteral_Dynamic__0__List.instance, ',', ProductionExpression_Dynamic.instance],
 		];
 	}
 }
@@ -394,11 +413,24 @@ class ProductionTupleLiteral extends Production {
 	static readonly instance: ProductionTupleLiteral = new ProductionTupleLiteral();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
+			['[/', '/]'],
+			['[/', ProductionTupleLiteral__0__List.instance, '/]'],
+			['[/', ProductionTupleLiteral__0__List.instance, ',', '/]'],
+			['[/', ',', ProductionTupleLiteral__0__List.instance, '/]'],
+			['[/', ',', ProductionTupleLiteral__0__List.instance, ',', '/]'],
+		];
+	}
+}
+
+class ProductionTupleLiteral_Dynamic extends Production {
+	static readonly instance: ProductionTupleLiteral_Dynamic = new ProductionTupleLiteral_Dynamic();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
 			['[', ']'],
-			['[', ProductionTupleLiteral__0__List.instance, ']'],
-			['[', ProductionTupleLiteral__0__List.instance, ',', ']'],
-			['[', ',', ProductionTupleLiteral__0__List.instance, ']'],
-			['[', ',', ProductionTupleLiteral__0__List.instance, ',', ']'],
+			['[', ProductionTupleLiteral_Dynamic__0__List.instance, ']'],
+			['[', ProductionTupleLiteral_Dynamic__0__List.instance, ',', ']'],
+			['[', ',', ProductionTupleLiteral_Dynamic__0__List.instance, ']'],
+			['[', ',', ProductionTupleLiteral_Dynamic__0__List.instance, ',', ']'],
 		];
 	}
 }
@@ -413,14 +445,36 @@ class ProductionRecordLiteral__0__List extends Production {
 	}
 }
 
+class ProductionRecordLiteral_Dynamic__0__List extends Production {
+	static readonly instance: ProductionRecordLiteral_Dynamic__0__List = new ProductionRecordLiteral_Dynamic__0__List();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[ProductionProperty_Dynamic.instance],
+			[ProductionRecordLiteral_Dynamic__0__List.instance, ',', ProductionProperty_Dynamic.instance],
+		];
+	}
+}
+
 class ProductionRecordLiteral extends Production {
 	static readonly instance: ProductionRecordLiteral = new ProductionRecordLiteral();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[', ProductionRecordLiteral__0__List.instance, ']'],
-			['[', ProductionRecordLiteral__0__List.instance, ',', ']'],
-			['[', ',', ProductionRecordLiteral__0__List.instance, ']'],
-			['[', ',', ProductionRecordLiteral__0__List.instance, ',', ']'],
+			['[/', ProductionRecordLiteral__0__List.instance, '/]'],
+			['[/', ProductionRecordLiteral__0__List.instance, ',', '/]'],
+			['[/', ',', ProductionRecordLiteral__0__List.instance, '/]'],
+			['[/', ',', ProductionRecordLiteral__0__List.instance, ',', '/]'],
+		];
+	}
+}
+
+class ProductionRecordLiteral_Dynamic extends Production {
+	static readonly instance: ProductionRecordLiteral_Dynamic = new ProductionRecordLiteral_Dynamic();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['[', ProductionRecordLiteral_Dynamic__0__List.instance, ']'],
+			['[', ProductionRecordLiteral_Dynamic__0__List.instance, ',', ']'],
+			['[', ',', ProductionRecordLiteral_Dynamic__0__List.instance, ']'],
+			['[', ',', ProductionRecordLiteral_Dynamic__0__List.instance, ',', ']'],
 		];
 	}
 }
@@ -430,10 +484,10 @@ class ProductionSetLiteral extends Production {
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['{', '}'],
-			['{', ProductionTupleLiteral__0__List.instance, '}'],
-			['{', ProductionTupleLiteral__0__List.instance, ',', '}'],
-			['{', ',', ProductionTupleLiteral__0__List.instance, '}'],
-			['{', ',', ProductionTupleLiteral__0__List.instance, ',', '}'],
+			['{', ProductionTupleLiteral_Dynamic__0__List.instance, '}'],
+			['{', ProductionTupleLiteral_Dynamic__0__List.instance, ',', '}'],
+			['{', ',', ProductionTupleLiteral_Dynamic__0__List.instance, '}'],
+			['{', ',', ProductionTupleLiteral_Dynamic__0__List.instance, ',', '}'],
 		];
 	}
 }
@@ -465,10 +519,10 @@ class ProductionFunctionArguments extends Production {
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['(', ')'],
-			['(', ProductionTupleLiteral__0__List.instance, ')'],
-			['(', ProductionTupleLiteral__0__List.instance, ',', ')'],
-			['(', ',', ProductionTupleLiteral__0__List.instance, ')'],
-			['(', ',', ProductionTupleLiteral__0__List.instance, ',', ')'],
+			['(', ProductionTupleLiteral_Dynamic__0__List.instance, ')'],
+			['(', ProductionTupleLiteral_Dynamic__0__List.instance, ',', ')'],
+			['(', ',', ProductionTupleLiteral_Dynamic__0__List.instance, ')'],
+			['(', ',', ProductionTupleLiteral_Dynamic__0__List.instance, ',', ')'],
 		];
 	}
 }
@@ -479,6 +533,8 @@ class ProductionExpressionUnit extends Production {
 		return [
 			[ProductionPrimitiveLiteral.instance],
 			[ProductionStringTemplate.instance],
+			[ProductionTupleLiteral.instance],
+			[ProductionRecordLiteral.instance],
 			['(', ProductionExpression.instance, ')'],
 		];
 	}
@@ -493,6 +549,8 @@ class ProductionExpressionUnit_Dynamic extends Production {
 			[ProductionStringTemplate_Dynamic.instance],
 			[ProductionTupleLiteral.instance],
 			[ProductionRecordLiteral.instance],
+			[ProductionTupleLiteral_Dynamic.instance],
+			[ProductionRecordLiteral_Dynamic.instance],
 			[ProductionSetLiteral.instance],
 			[ProductionMapLiteral.instance],
 			['(', ProductionExpression_Dynamic.instance, ')'],
@@ -1173,7 +1231,20 @@ export class ParseNodeStringTemplate_Dynamic extends ParseNodeStringTemplate$ {
 	;
 }
 
-export class ParseNodeProperty extends ParseNode {
+export abstract class ParseNodeProperty$ extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeWord, Token, ParseNodeExpression]
+		| readonly [ParseNodeWord, Token, ParseNodeExpression_Dynamic]
+	;
+}
+
+export class ParseNodeProperty extends ParseNodeProperty$ {
+	declare readonly children:
+		| readonly [ParseNodeWord, Token, ParseNodeExpression]
+	;
+}
+
+export class ParseNodeProperty_Dynamic extends ParseNodeProperty$ {
 	declare readonly children:
 		| readonly [ParseNodeWord, Token, ParseNodeExpression_Dynamic]
 	;
@@ -1185,14 +1256,45 @@ export class ParseNodeCase extends ParseNode {
 	;
 }
 
-export class ParseNodeTupleLiteral__0__List extends ParseNode {
+export abstract class ParseNodeTupleLiteral$__0__List extends ParseNode {
 	declare readonly children:
+		| readonly [ParseNodeExpression]
+		| readonly [ParseNodeTupleLiteral__0__List, Token, ParseNodeExpression]
 		| readonly [ParseNodeExpression_Dynamic]
-		| readonly [ParseNodeTupleLiteral__0__List, Token, ParseNodeExpression_Dynamic]
+		| readonly [ParseNodeTupleLiteral_Dynamic__0__List, Token, ParseNodeExpression_Dynamic]
 	;
 }
 
-export class ParseNodeTupleLiteral extends ParseNode {
+export class ParseNodeTupleLiteral__0__List extends ParseNodeTupleLiteral$__0__List {
+	declare readonly children:
+		| readonly [ParseNodeExpression]
+		| readonly [ParseNodeTupleLiteral__0__List, Token, ParseNodeExpression]
+	;
+}
+
+export class ParseNodeTupleLiteral_Dynamic__0__List extends ParseNodeTupleLiteral$__0__List {
+	declare readonly children:
+		| readonly [ParseNodeExpression_Dynamic]
+		| readonly [ParseNodeTupleLiteral_Dynamic__0__List, Token, ParseNodeExpression_Dynamic]
+	;
+}
+
+export abstract class ParseNodeTupleLiteral$ extends ParseNode {
+	declare readonly children:
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
+	;
+}
+
+export class ParseNodeTupleLiteral extends ParseNodeTupleLiteral$ {
 	declare readonly children:
 		| readonly [Token, Token]
 		| readonly [Token, ParseNodeTupleLiteral__0__List, Token]
@@ -1202,14 +1304,53 @@ export class ParseNodeTupleLiteral extends ParseNode {
 	;
 }
 
-export class ParseNodeRecordLiteral__0__List extends ParseNode {
+export class ParseNodeTupleLiteral_Dynamic extends ParseNodeTupleLiteral$ {
+	declare readonly children:
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
+	;
+}
+
+export abstract class ParseNodeRecordLiteral$__0__List extends ParseNode {
+	declare readonly children:
+		| readonly [ParseNodeProperty]
+		| readonly [ParseNodeRecordLiteral__0__List, Token, ParseNodeProperty]
+		| readonly [ParseNodeProperty_Dynamic]
+		| readonly [ParseNodeRecordLiteral_Dynamic__0__List, Token, ParseNodeProperty_Dynamic]
+	;
+}
+
+export class ParseNodeRecordLiteral__0__List extends ParseNodeRecordLiteral$__0__List {
 	declare readonly children:
 		| readonly [ParseNodeProperty]
 		| readonly [ParseNodeRecordLiteral__0__List, Token, ParseNodeProperty]
 	;
 }
 
-export class ParseNodeRecordLiteral extends ParseNode {
+export class ParseNodeRecordLiteral_Dynamic__0__List extends ParseNodeRecordLiteral$__0__List {
+	declare readonly children:
+		| readonly [ParseNodeProperty_Dynamic]
+		| readonly [ParseNodeRecordLiteral_Dynamic__0__List, Token, ParseNodeProperty_Dynamic]
+	;
+}
+
+export abstract class ParseNodeRecordLiteral$ extends ParseNode {
+	declare readonly children:
+		| readonly [Token, ParseNodeRecordLiteral__0__List, Token]
+		| readonly [Token, ParseNodeRecordLiteral__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral__0__List, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral__0__List, Token, Token]
+		| readonly [Token, ParseNodeRecordLiteral_Dynamic__0__List, Token]
+		| readonly [Token, ParseNodeRecordLiteral_Dynamic__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral_Dynamic__0__List, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral_Dynamic__0__List, Token, Token]
+	;
+}
+
+export class ParseNodeRecordLiteral extends ParseNodeRecordLiteral$ {
 	declare readonly children:
 		| readonly [Token, ParseNodeRecordLiteral__0__List, Token]
 		| readonly [Token, ParseNodeRecordLiteral__0__List, Token, Token]
@@ -1218,13 +1359,22 @@ export class ParseNodeRecordLiteral extends ParseNode {
 	;
 }
 
+export class ParseNodeRecordLiteral_Dynamic extends ParseNodeRecordLiteral$ {
+	declare readonly children:
+		| readonly [Token, ParseNodeRecordLiteral_Dynamic__0__List, Token]
+		| readonly [Token, ParseNodeRecordLiteral_Dynamic__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral_Dynamic__0__List, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral_Dynamic__0__List, Token, Token]
+	;
+}
+
 export class ParseNodeSetLiteral extends ParseNode {
 	declare readonly children:
 		| readonly [Token, Token]
-		| readonly [Token, ParseNodeTupleLiteral__0__List, Token]
-		| readonly [Token, ParseNodeTupleLiteral__0__List, Token, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
 	;
 }
 
@@ -1247,10 +1397,10 @@ export class ParseNodeMapLiteral extends ParseNode {
 export class ParseNodeFunctionArguments extends ParseNode {
 	declare readonly children:
 		| readonly [Token, Token]
-		| readonly [Token, ParseNodeTupleLiteral__0__List, Token]
-		| readonly [Token, ParseNodeTupleLiteral__0__List, Token, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
 	;
 }
 
@@ -1258,12 +1408,16 @@ export abstract class ParseNodeExpressionUnit$ extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodePrimitiveLiteral]
 		| readonly [ParseNodeStringTemplate]
+		| readonly [ParseNodeTupleLiteral]
+		| readonly [ParseNodeRecordLiteral]
 		| readonly [Token, ParseNodeExpression, Token]
 		| readonly [Token]
 		| readonly [ParseNodePrimitiveLiteral]
 		| readonly [ParseNodeStringTemplate_Dynamic]
 		| readonly [ParseNodeTupleLiteral]
 		| readonly [ParseNodeRecordLiteral]
+		| readonly [ParseNodeTupleLiteral_Dynamic]
+		| readonly [ParseNodeRecordLiteral_Dynamic]
 		| readonly [ParseNodeSetLiteral]
 		| readonly [ParseNodeMapLiteral]
 		| readonly [Token, ParseNodeExpression_Dynamic, Token]
@@ -1274,6 +1428,8 @@ export class ParseNodeExpressionUnit extends ParseNodeExpressionUnit$ {
 	declare readonly children:
 		| readonly [ParseNodePrimitiveLiteral]
 		| readonly [ParseNodeStringTemplate]
+		| readonly [ParseNodeTupleLiteral]
+		| readonly [ParseNodeRecordLiteral]
 		| readonly [Token, ParseNodeExpression, Token]
 	;
 }
@@ -1285,6 +1441,8 @@ export class ParseNodeExpressionUnit_Dynamic extends ParseNodeExpressionUnit$ {
 		| readonly [ParseNodeStringTemplate_Dynamic]
 		| readonly [ParseNodeTupleLiteral]
 		| readonly [ParseNodeRecordLiteral]
+		| readonly [ParseNodeTupleLiteral_Dynamic]
+		| readonly [ParseNodeRecordLiteral_Dynamic]
 		| readonly [ParseNodeSetLiteral]
 		| readonly [ParseNodeMapLiteral]
 		| readonly [Token, ParseNodeExpression_Dynamic, Token]
@@ -1766,11 +1924,16 @@ export const GRAMMAR: Grammar = new Grammar([
 	ProductionStringTemplate.instance,
 	ProductionStringTemplate_Dynamic.instance,
 	ProductionProperty.instance,
+	ProductionProperty_Dynamic.instance,
 	ProductionCase.instance,
 	ProductionTupleLiteral__0__List.instance,
+	ProductionTupleLiteral_Dynamic__0__List.instance,
 	ProductionTupleLiteral.instance,
+	ProductionTupleLiteral_Dynamic.instance,
 	ProductionRecordLiteral__0__List.instance,
+	ProductionRecordLiteral_Dynamic__0__List.instance,
 	ProductionRecordLiteral.instance,
+	ProductionRecordLiteral_Dynamic.instance,
 	ProductionSetLiteral.instance,
 	ProductionMapLiteral__0__List.instance,
 	ProductionMapLiteral.instance,
@@ -1853,11 +2016,16 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 		[ProductionStringTemplate.instance, ParseNodeStringTemplate],
 		[ProductionStringTemplate_Dynamic.instance, ParseNodeStringTemplate_Dynamic],
 		[ProductionProperty.instance, ParseNodeProperty],
+		[ProductionProperty_Dynamic.instance, ParseNodeProperty_Dynamic],
 		[ProductionCase.instance, ParseNodeCase],
 		[ProductionTupleLiteral__0__List.instance, ParseNodeTupleLiteral__0__List],
+		[ProductionTupleLiteral_Dynamic__0__List.instance, ParseNodeTupleLiteral_Dynamic__0__List],
 		[ProductionTupleLiteral.instance, ParseNodeTupleLiteral],
+		[ProductionTupleLiteral_Dynamic.instance, ParseNodeTupleLiteral_Dynamic],
 		[ProductionRecordLiteral__0__List.instance, ParseNodeRecordLiteral__0__List],
+		[ProductionRecordLiteral_Dynamic__0__List.instance, ParseNodeRecordLiteral_Dynamic__0__List],
 		[ProductionRecordLiteral.instance, ParseNodeRecordLiteral],
+		[ProductionRecordLiteral_Dynamic.instance, ParseNodeRecordLiteral_Dynamic],
 		[ProductionSetLiteral.instance, ParseNodeSetLiteral],
 		[ProductionMapLiteral__0__List.instance, ParseNodeMapLiteral__0__List],
 		[ProductionMapLiteral.instance, ParseNodeMapLiteral],

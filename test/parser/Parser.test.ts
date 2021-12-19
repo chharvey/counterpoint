@@ -413,7 +413,7 @@ describe('ParserSolid', () => {
 						<PUNCTUATOR>]</PUNCTUATOR>
 					</TupleLiteral>
 				*/
-				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral = h.tupleLiteralFromSource(`[42, true, null || false];`);
+				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral$ = h.tupleLiteralFromSource(`[42, true, null || false];`);
 				assert_arrayLength(unit.children, 3);
 				assert.deepStrictEqual(
 					unit.children.map((c) => c.source),
@@ -421,7 +421,7 @@ describe('ParserSolid', () => {
 				);
 			});
 			it('with leading comma.', () => {
-				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral = h.tupleLiteralFromSource(`
+				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral$ = h.tupleLiteralFromSource(`
 					[
 						, 42
 						, true
@@ -435,7 +435,7 @@ describe('ParserSolid', () => {
 				);
 			});
 			it('with trailing comma.', () => {
-				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral = h.tupleLiteralFromSource(`
+				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral$ = h.tupleLiteralFromSource(`
 					[
 						42,
 						true,
@@ -462,7 +462,7 @@ describe('ParserSolid', () => {
 						<Expression source="null || false">...</Expression>
 					</TupleLiteral__0__List>
 				*/
-				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral = h.tupleLiteralFromSource(`[42, true, null || false];`);
+				const unit: PARSENODE_SOLID.ParseNodeTupleLiteral$ = h.tupleLiteralFromSource(`[42, true, null || false];`);
 				assert_arrayLength(unit.children, 3);
 				h.hashListSources(unit.children[1], `42`, `true`, `null || false`);
 			});
@@ -478,14 +478,14 @@ describe('ParserSolid', () => {
 						<PUNCTUATOR>]</PUNCTUATOR>
 					</RecordLiteral>
 				*/
-				const unit: PARSENODE_SOLID.ParseNodeRecordLiteral = h.recordLiteralFromSource(`
+				const unit: PARSENODE_SOLID.ParseNodeRecordLiteral$ = h.recordLiteralFromSource(`
 					[
 						, let= true
 						, foobar= 42
 					];
 				`);
 				assert_arrayLength(unit.children, 4);
-				assert.ok(unit.children[2] instanceof PARSENODE_SOLID.ParseNodeRecordLiteral__0__List);
+				assert.ok(unit.children[2] instanceof PARSENODE_SOLID.ParseNodeRecordLiteral$__0__List);
 				assert.deepStrictEqual(
 					unit.children.map((c) => c.source),
 					[Punctuator.BRAK_OPN, Punctuator.COMMA, `let = true , foobar = 42`, Punctuator.BRAK_CLS],
@@ -501,7 +501,7 @@ describe('ParserSolid', () => {
 						<Property source="foobar= 42">...</Property>
 					</RecordLiteral__0__List>
 				*/
-				const unit: PARSENODE_SOLID.ParseNodeRecordLiteral = h.recordLiteralFromSource(`[let= true, foobar= 42];`);
+				const unit: PARSENODE_SOLID.ParseNodeRecordLiteral$ = h.recordLiteralFromSource(`[let= true, foobar= 42];`);
 				assert_arrayLength(unit.children, 3);
 				h.hashListSources(unit.children[1], `let = true`, `foobar = 42`);
 			});

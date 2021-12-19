@@ -24,7 +24,7 @@ import {
 
 
 export function wordFromString(wordstring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeWord {
-	const property: PARSENODE.ParseNodeProperty = propertyFromString(`${ wordstring } = null`, config);
+	const property: PARSENODE.ParseNodeProperty$ = propertyFromString(`${ wordstring } = null`, config);
 	return property.children[0];
 }
 export function tokenLiteralFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString {
@@ -117,8 +117,8 @@ export function unionTypeFromString(typestring: string, config: SolidConfig = CO
 function typeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeType {
 	return typeDeclarationFromSource(`type T = ${ typestring };`, config).children[3];
 }
-export function propertyFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeProperty {
-	const record: PARSENODE.ParseNodeRecordLiteral = recordLiteralFromSource(`[${ propertystring }];`, config);
+export function propertyFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeProperty$ {
+	const record: PARSENODE.ParseNodeRecordLiteral$ = recordLiteralFromSource(`[${ propertystring }];`, config);
 	assert_arrayLength(record.children, 3, 'record should have 3 children');
 	assert_arrayLength(record.children[1].children, 1, 'property list should have 1 child');
 	return record.children[1].children[0];
@@ -155,14 +155,14 @@ export function stringTemplateFromSource(src: string, config: SolidConfig = CONF
 	assert.ok(unit instanceof PARSENODE.ParseNodeStringTemplate$, 'unit should be a ParseNodeStringTemplate$');
 	return unit;
 }
-export function tupleLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTupleLiteral {
+export function tupleLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTupleLiteral$ {
 	const unit: PARSENODE.ParseNodeExpressionUnit$['children'][0] = valueLiteralFromSource(src, config);
-	assert.ok(unit instanceof PARSENODE.ParseNodeTupleLiteral, 'unit should be a ParseNodeTupleLiteral');
+	assert.ok(unit instanceof PARSENODE.ParseNodeTupleLiteral$, 'unit should be a ParseNodeTupleLiteral$');
 	return unit;
 }
-export function recordLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeRecordLiteral {
+export function recordLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeRecordLiteral$ {
 	const unit: PARSENODE.ParseNodeExpressionUnit$['children'][0] = valueLiteralFromSource(src, config);
-	assert.ok(unit instanceof PARSENODE.ParseNodeRecordLiteral, 'unit should be a ParseNodeRecordLiteral');
+	assert.ok(unit instanceof PARSENODE.ParseNodeRecordLiteral$, 'unit should be a ParseNodeRecordLiteral$');
 	return unit;
 }
 export function setLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeSetLiteral {
