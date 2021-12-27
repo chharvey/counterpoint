@@ -381,11 +381,21 @@ Decorate(ExpressionUnarySymbol ::= "-" ExpressionUnarySymbol) -> SemanticOperati
 
 
 
-Decorate(ExpressionExponential ::= ExpressionUnarySymbol) -> SemanticExpression
+Decorate(ExpressionClaim ::= ExpressionUnarySymbol) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol);
-Decorate(ExpressionExponential ::= ExpressionUnarySymbol "^" ExpressionExponential) -> SemanticOperation
+Decorate(ExpressionClaim ::= "<" Type ">" ExpressionClaim) -> SemanticClaim
+	:= (SemanticClaim
+		Decorate(Type)
+		Decorate(ExpressionClaim)
+	);
+
+
+
+Decorate(ExpressionExponential ::= ExpressionClaim) -> SemanticExpression
+	:= Decorate(ExpressionClaim);
+Decorate(ExpressionExponential ::= ExpressionClaim "^" ExpressionExponential) -> SemanticOperation
 	:= (SemanticOperation[operator=EXP]
-		Decorate(ExpressionUnarySymbol)
+		Decorate(ExpressionClaim)
 		Decorate(ExpressionExponential)
 	);
 
