@@ -9,7 +9,6 @@ import {
 	SolidTuple,
 	INST,
 	Builder,
-	Validator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import {ASTNodeCollectionLiteral} from './ASTNodeCollectionLiteral.js';
@@ -28,17 +27,14 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	) {
 		super(start_node, {}, children);
 	}
-	override shouldFloat(_validator: Validator): boolean {
-		throw 'ASTNodeTuple#shouldFloat not yet supported.';
-	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeTuple#build_do not yet supported.';
 	}
-	protected override type_do(validator: Validator): SolidType {
-		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type(validator))).mutableOf();
+	protected override type_do(): SolidType {
+		return SolidTypeTuple.fromTypes(this.children.map((c) => c.type())).mutableOf();
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.fold(validator));
+	protected override fold_do(): SolidObject | null {
+		const items: readonly (SolidObject | null)[] = this.children.map((c) => c.fold());
 		return (items.includes(null))
 			? null
 			: new SolidTuple(items as SolidObject[]);

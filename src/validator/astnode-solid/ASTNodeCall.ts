@@ -20,7 +20,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
-	Validator,
 } from './package.js';
 import {forEachAggregated} from './utils-private.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
@@ -44,59 +43,79 @@ export class ASTNodeCall extends ASTNodeExpression {
 	) {
 		super(start_node, {}, [base, ...typeargs, ...exprargs]);
 	}
-	override varCheck(validator: Validator): void {
+	override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as we are using syntax to determine semantics.
 		// (`this.base.source` must be `List | Hash | Set | Map`)
 		return forEachAggregated([
 			...this.typeargs,
 			...this.exprargs,
-		], (arg) => arg.varCheck(validator));
+		], (arg) => arg.varCheck());
 	}
-	override shouldFloat(_validator: Validator): boolean {
+	override shouldFloat(): boolean {
 		return false;
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
 		throw builder && to_float && '`ASTNodeCall#build_do` not yet supported.'
 	}
-	protected override type_do(validator: Validator): SolidType {
+	protected override type_do(): SolidType {
 		if (!(this.base instanceof ASTNodeVariable)) {
-			throw new TypeError05(this.base.type(validator), this.base);
+			throw new TypeError05(this.base.type(), this.base);
 		}
 		return (new Map<string, () => SolidType>([
 			['List', () => {
 				this.countArgs(1n, [0n, 2n]);
-				const returntype: SolidType = new SolidTypeList(this.typeargs[0].eval(validator));
-				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(returntype, this.exprargs[0], this, validator);
+				const returntype: SolidType = new SolidTypeList(this.typeargs[0].eval());
+				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
+					returntype,
+					this.exprargs[0],
+					this,
+					this.validator,
+				);
 				return returntype.mutableOf();
 			}],
 			['Hash', () => {
 				this.countArgs(1n, [0n, 2n]);
-				const returntype: SolidType = new SolidTypeHash(this.typeargs[0].eval(validator));
-				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(returntype, this.exprargs[0], this, validator);
+				const returntype: SolidType = new SolidTypeHash(this.typeargs[0].eval());
+				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
+					returntype,
+					this.exprargs[0],
+					this,
+					this.validator,
+				);
 				return returntype.mutableOf();
 			}],
 			['Set', () => {
 				this.countArgs(1n, [0n, 2n]);
-				const eltype:     SolidType = this.typeargs[0].eval(validator);
+				const eltype:     SolidType = this.typeargs[0].eval();
 				const returntype: SolidType = new SolidTypeSet(eltype);
-				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(new SolidTypeList(eltype), this.exprargs[0], this, validator);
+				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
+					new SolidTypeList(eltype),
+					this.exprargs[0],
+					this,
+					this.validator,
+				);
 				return returntype.mutableOf();
 			}],
 			['Map', () => {
 				this.countArgs([1n, 3n], [0n, 2n]);
-				const anttype:    SolidType = this.typeargs[0].eval(validator);
-				const contype:    SolidType = this.typeargs[1]?.eval(validator) || anttype;
+				const anttype:    SolidType = this.typeargs[0].eval();
+				const contype:    SolidType = this.typeargs[1]?.eval() || anttype;
 				const returntype: SolidType = new SolidTypeMap(anttype, contype);
-				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(new SolidTypeList(SolidTypeTuple.fromTypes([anttype, contype])), this.exprargs[0], this, validator);
+				this.exprargs.length && ASTNodeSolid.typeCheckAssignment(
+					new SolidTypeList(SolidTypeTuple.fromTypes([anttype, contype])),
+					this.exprargs[0],
+					this,
+					this.validator,
+				);
 				return returntype.mutableOf();
 			}],
 		]).get(this.base.source) || (() => {
 			throw new SyntaxError(`Unexpected token: ${ this.base.source }; expected \`List | Hash | Set | Map\`.`);
 		}))();
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
+	protected override fold_do(): SolidObject | null {
 		const argvalue: SolidObject | null | undefined = (this.exprargs.length) // TODO #fold should not return native `null` if it cannot assess
-			? this.exprargs[0].fold(validator)
+			? this.exprargs[0].fold()
 			: undefined;
 		if (argvalue === null) {
 			return null;

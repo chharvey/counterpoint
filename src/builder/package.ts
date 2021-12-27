@@ -17,7 +17,6 @@ export {
 	ValidOperatorEquality,
 	ValidOperatorLogical,
 	ASTNODE_SOLID as AST,
-	Validator,
 } from '../validator/index.js';
 export {
 	SolidObject,

@@ -14,7 +14,6 @@ import {
 	SolidTuple,
 	SolidRecord,
 	Operator,
-	Validator,
 } from './package.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndexType} from './ASTNodeIndexType.js';
@@ -35,13 +34,13 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 	) {
 		super(start_node, {}, [base, accessor]);
 	}
-	protected override eval_do(validator: Validator): SolidType {
-		let base_type: SolidType = this.base.eval(validator);
+	protected override eval_do(): SolidType {
+		let base_type: SolidType = this.base.eval();
 		if (base_type instanceof SolidTypeIntersection || base_type instanceof SolidTypeUnion) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		if (this.accessor instanceof ASTNodeIndexType) {
-			const accessor_type: SolidType = this.accessor.val.eval(validator);
+			const accessor_type: SolidType = this.accessor.val.eval();
 			return (
 				(base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple) ? (
 					(accessor_type instanceof SolidTypeUnit)

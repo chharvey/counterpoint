@@ -30,7 +30,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 		node:          ASTNodeSolid,
 		validator:     Validator,
 	): void {
-		const assigned_type: SolidType = assigned.type(validator);
+		const assigned_type: SolidType = assigned.type();
 		const is_subtype: boolean = assigned_type.isSubtypeOf(assignee_type);
 		const is_collection_assignable: boolean = (
 			   assigned instanceof ASTNodeCollectionLiteral
@@ -62,22 +62,24 @@ export abstract class ASTNodeSolid extends ASTNode {
 		super(start_node, attributes, children)
 	}
 
+	get validator(): Validator {
+		return (this.parent as ASTNodeSolid).validator;
+	}
+
 	/**
 	 * Perform definite assignment phase of semantic analysis:
 	 * - Check that all variables have been assigned before being used.
 	 * - Check that no varaible is declared more than once.
 	 * - Check that fixed variables are not reassigned.
-	 * @param validator a record of declared variable symbols
 	 */
-	varCheck(validator: Validator): void {
-		return forEachAggregated(this.children, (c) => c.varCheck(validator));
+	varCheck(): void {
+		return forEachAggregated(this.children, (c) => c.varCheck());
 	}
 
 	/**
 	 * Type-check the node as part of semantic analysis.
-	 * @param validator stores validation information
 	 */
-	typeCheck(validator: Validator): void {
-		return forEachAggregated(this.children, (c) => c.typeCheck(validator));
+	typeCheck(): void {
+		return forEachAggregated(this.children, (c) => c.typeCheck());
 	}
 }

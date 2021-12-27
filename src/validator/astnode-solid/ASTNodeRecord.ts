@@ -10,7 +10,6 @@ import {
 	SolidRecord,
 	INST,
 	Builder,
-	Validator,
 } from './package.js';
 import type {ASTNodeProperty} from './ASTNodeProperty.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -30,22 +29,19 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	) {
 		super(start_node, {}, children);
 	}
-	override shouldFloat(_validator: Validator): boolean {
-		throw 'ASTNodeRecord#shouldFloat not yet supported.';
-	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeRecord#build_do not yet supported.';
 	}
-	protected override type_do(validator: Validator): SolidType {
+	protected override type_do(): SolidType {
 		return SolidTypeRecord.fromTypes(new Map(this.children.map((c) => [
 			c.key.id,
-			c.val.type(validator),
+			c.val.type(),
 		]))).mutableOf();
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
+	protected override fold_do(): SolidObject | null {
 		const properties: ReadonlyMap<bigint, SolidObject | null> = new Map(this.children.map((c) => [
 			c.key.id,
-			c.val.fold(validator),
+			c.val.fold(),
 		]));
 		return ([...properties].map((p) => p[1]).includes(null))
 			? null

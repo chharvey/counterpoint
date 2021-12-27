@@ -13,7 +13,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	Operator,
 	ValidOperatorArithmetic,
 } from './package.js';
@@ -43,7 +42,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionBinopArithmetic {
-		const tofloat: boolean = to_float || this.shouldFloat(builder.validator);
+		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionBinopArithmetic(
 			this.operator,
 			this.operand0.build(builder, tofloat),
@@ -60,12 +59,12 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		}
 		throw new TypeError01(this)
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		const v0: SolidObject | null = this.operand0.fold(validator);
+	protected override fold_do(): SolidObject | null {
+		const v0: SolidObject | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		const v1: SolidObject | null = this.operand1.fold(validator);
+		const v1: SolidObject | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}
