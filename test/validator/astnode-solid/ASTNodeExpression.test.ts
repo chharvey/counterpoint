@@ -25,6 +25,7 @@ import {
 	ReferenceError01,
 	ReferenceError02,
 	ReferenceError03,
+	TypeError03,
 } from '../../../src/index.js';
 import {assert_wasCalled} from '../../assert-helpers.js';
 import {
@@ -505,6 +506,65 @@ describe('ASTNodeExpression', () => {
 				);
 			});
 			// TODO: SolidSet overwrites duplicate elements. // move this to SolidType.test.ts
+		});
+	});
+
+
+
+	describe('ASTNodeConstant', () => {
+		const samples: string[] = [
+			`null;`,
+			`false;`,
+			`true;`,
+			`0;`,
+			`+0;`,
+			`-0;`,
+			`42;`,
+			`+42;`,
+			`-42;`,
+			`0.0;`,
+			`+0.0;`,
+			`-0.0;`,
+			`-4.2e-2;`,
+		];
+		describe('#type', () => {
+			it('returns the type value of the claimed type.', () => {
+				assert.ok(AST.ASTNodeClaim.fromSource(`<int?>3;`).type().equals(SolidType.INT.union(SolidType.NULL)));
+			});
+			it('throws when the operand type and claimed type do not overlap.', () => {
+				assert.throws(() => AST.ASTNodeClaim.fromSource(`<float>3;`)    .type(), TypeError03);
+				assert.throws(() => AST.ASTNodeClaim.fromSource(`<int>3.0;`)    .type(), TypeError03);
+				assert.throws(() => AST.ASTNodeClaim.fromSource(`<str>3;`)      .type(), TypeError03);
+				assert.throws(() => AST.ASTNodeClaim.fromSource(`<int>'three';`).type(), TypeError03);
+			});
+		});
+
+
+		describe('#fold', () => {
+			it('returns the fold of the operand.', () => {
+				samples.forEach((expr) => {
+					const src: string = `<obj>${ expr }`;
+					assert.deepStrictEqual(
+						AST.ASTNodeClaim     .fromSource(src) .fold(),
+						AST.ASTNodeExpression.fromSource(expr).fold(),
+						expr,
+					);
+				});
+			});
+		});
+
+
+		describe('#build', () => {
+			it('returns the build of the operand.', () => {
+				samples.forEach((expr) => {
+					const src: string = `<obj>${ expr }`;
+					assert.deepStrictEqual(
+						AST.ASTNodeClaim     .fromSource(src) .build(new Builder(src)),
+						AST.ASTNodeExpression.fromSource(expr).build(new Builder(expr)),
+						expr,
+					);
+				});
+			});
 		});
 	});
 });
