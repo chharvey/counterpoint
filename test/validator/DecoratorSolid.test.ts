@@ -999,7 +999,7 @@ describe('DecoratorSolid', () => {
 			})
 		})
 
-		context('ExpressionExponential ::= ExpressionUnarySymbol ("^" ExpressionExponential)?', () => {
+		context('ExpressionExponential ::= ExpressionClaim ("^" ExpressionExponential)?', () => {
 			it('makes an ASTNodeOperationBinary.', () => {
 				/*
 					<Operation operator=EXP>
