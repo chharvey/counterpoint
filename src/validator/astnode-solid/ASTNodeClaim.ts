@@ -46,7 +46,14 @@ export class ASTNodeClaim extends ASTNodeExpression {
 	protected override type_do(): SolidType {
 		const claimed_type:  SolidType = this.claimed_type.eval();
 		const computed_type: SolidType = this.operand.type();
-		if (claimed_type.intersect(computed_type).equals(SolidType.NEVER)) {
+		const is_intersection_empty: boolean = claimed_type.intersect(computed_type).equals(SolidType.NEVER);
+		const treatIntAsSubtypeOfFloat: boolean = this.validator.config.compilerOptions.intCoercion && (
+			   computed_type.isSubtypeOf(SolidType.INT) && SolidType.FLOAT.isSubtypeOf(claimed_type)
+			|| claimed_type.isSubtypeOf(SolidType.INT)  && SolidType.FLOAT.isSubtypeOf(computed_type)
+			|| SolidType.INT.isSubtypeOf(computed_type) && claimed_type.isSubtypeOf(SolidType.FLOAT)
+			|| SolidType.INT.isSubtypeOf(claimed_type)  && computed_type.isSubtypeOf(SolidType.FLOAT)
+		);
+		if (is_intersection_empty && !treatIntAsSubtypeOfFloat) {
 			/*
 				`Conversion of type \`${ computed_type }\` to type \`${ claimed_type }\` may be a mistake
 				because neither type sufficiently overlaps with the other. If this was intentional,

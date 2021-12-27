@@ -30,6 +30,7 @@ import {
 import {assert_wasCalled} from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
+	CONFIG_COERCION_OFF,
 	typeConstInt,
 	typeConstFloat,
 	typeConstStr,
@@ -511,7 +512,7 @@ describe('ASTNodeExpression', () => {
 
 
 
-	describe('ASTNodeConstant', () => {
+	describe('ASTNodeClaim', () => {
 		const samples: string[] = [
 			`null;`,
 			`false;`,
@@ -532,10 +533,14 @@ describe('ASTNodeExpression', () => {
 				assert.ok(AST.ASTNodeClaim.fromSource(`<int?>3;`).type().equals(SolidType.INT.union(SolidType.NULL)));
 			});
 			it('throws when the operand type and claimed type do not overlap.', () => {
-				assert.throws(() => AST.ASTNodeClaim.fromSource(`<float>3;`)    .type(), TypeError03);
-				assert.throws(() => AST.ASTNodeClaim.fromSource(`<int>3.0;`)    .type(), TypeError03);
 				assert.throws(() => AST.ASTNodeClaim.fromSource(`<str>3;`)      .type(), TypeError03);
 				assert.throws(() => AST.ASTNodeClaim.fromSource(`<int>'three';`).type(), TypeError03);
+			});
+			it('with int coersion off, does not allow converting between int and float.', () => {
+				AST.ASTNodeClaim.fromSource(`<float>3;`).type(); // assert does not throw
+				AST.ASTNodeClaim.fromSource(`<int>3.0;`).type(); // assert does not throw
+				assert.throws(() => AST.ASTNodeClaim.fromSource(`<float>3;`, CONFIG_COERCION_OFF).type(), TypeError03);
+				assert.throws(() => AST.ASTNodeClaim.fromSource(`<int>3.0;`, CONFIG_COERCION_OFF).type(), TypeError03);
 			});
 		});
 
