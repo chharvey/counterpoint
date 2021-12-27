@@ -78,13 +78,20 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 		</tr>
 		<tr>
 			<th>4</th>
+			<td>Type Claim</td>
+			<td>unary prefix</td>
+			<td>right-to-left</td>
+			<td><code>&lt; … &gt; …</code></td>
+		</tr>
+		<tr>
+			<th>5</th>
 			<td>Exponentiation</td>
 			<td>binary infix</td>
 			<td>right-to-left</td>
 			<td><code>… ^ …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">5</th>
+			<th rowspan="2">6</th>
 			<td>Multiplication</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -95,7 +102,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… / …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">6</th>
+			<th rowspan="2">7</th>
 			<td>Addition</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -106,7 +113,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… - …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="8">7</th>
+			<th rowspan="8">8</th>
 			<td>Less Than</td>
 			<td rowspan="8">binary infix</td>
 			<td rowspan="8">left-to-right</td>
@@ -141,7 +148,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… isnt …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="4">8</th>
+			<th rowspan="4">9</th>
 			<td>Identity</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
@@ -160,7 +167,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… != …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">9</th>
+			<th rowspan="2">10</th>
 			<td>Conjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -171,7 +178,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !& …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">10</th>
+			<th rowspan="2">11</th>
 			<td>Disjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -182,7 +189,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !| …</code></td>
 		</tr>
 		<tr>
-			<th>11</th>
+			<th>12</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
@@ -353,6 +360,54 @@ Even though these tokens’ values are the same as the computed values of
 the expressions `-(\x200)` and `+(\x200)`,
 this is important to mention because it could affect how we write
 [additive expressions](#parsing-additive-expressions).
+
+
+### Type Claim
+```
+`<` <Type> `>` <obj>
+```
+The expression `<T>expr` tells the type system to treat `expr` as type `T`,
+even though it might have been computed as a different type.
+This is called a **type claim**, because we’re *claiming* that `expr` is of type `T`.
+
+Normally, the compiler will compute the type of an expression, but sometimes the compiler gets it wrong,
+or we as programmers know more than the compiler does, based on conditions or circumstances of our code.
+We can use a claim to tell the compiler, “I know what I’m doing and the type should be *that*.”
+
+Type claims are a general form of [Claim Access](#claim-access).
+For example, we could use claim access to say that an optional entry exists on an object:
+```
+let unfixed item: [str, ?: int] = ['apples', 42];
+let quantity: int = item!.1;
+```
+The more general form of this is claiming that `item.1` is of type `int`:
+```
+let unfixed item: [str, ?: int] = ['apples', 42];
+let quantity: int = <int>item.1;
+```
+
+Type claims can be used in situations where claim access cannot.
+Whereas claim access can only tell the compiler that a property *exists*,
+type claims can widen, narrow, or shift the type of an expression.
+```
+let unfixed item: [str, int | str] = ['apples', 42];
+let ingredient: obj        = <obj>item.0;        % widening
+let quantity:   int        = <int>item.1;        % narrowing
+let in_stock:   int | bool = <int | bool>item.1; % shifting
+```
+
+The compiler will throw an error when encountering a type claim if its operand’s computed type
+and its claimed type are disjoint (i.e. if there’s no overlap).
+```
+<str>42; %> TypeError
+```
+
+A note of caution: Like claim access, **type claims should never be used to “hack” the compiler**.
+Using type claims to “just get your code to compile” is never recommended,
+because it won’t prevent runtime errors and it will most likely cause more problems down the road.
+But there are cases in which human reasoning about type safety outsmarts the compiler,
+so in those cases we may use type claims to write good code.
+
 
 
 ### Exponentiation
