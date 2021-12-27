@@ -92,6 +92,13 @@ Sequence<Instruction> BuildExpression(SemanticTemplate tpl) :=
 
 
 
+Sequence<Instruction> BuildExpression(SemanticClaim claim) :=
+	1. *Assert:* `claim.children.count` is 2.
+	2. *Return:* `Build(expr.children.1)`.
+;
+
+
+
 Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `instrs` be *UnwrapAffirm:* `Build(expr.children.0)`.
