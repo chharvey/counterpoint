@@ -223,14 +223,14 @@ describe('ASTNodeDeclarationVariable', () => {
 				let x: int = 42;
 				let y: float = 4.2 * 10;
 			}`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			goal.varCheck();
-			goal.typeCheck();
+			const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
+			block.varCheck();
+			block.typeCheck();
 			const builder: Builder = new Builder(src)
 			assert.deepStrictEqual(
 				[
-					goal.block!.children[0].build(builder),
-					goal.block!.children[1].build(builder),
+					block.children[0].build(builder),
+					block.children[1].build(builder),
 				],
 				[
 					new INST.InstructionNone(),
@@ -243,14 +243,14 @@ describe('ASTNodeDeclarationVariable', () => {
 				let unfixed x: int = 42;
 				let y: int = x + 10;
 			}`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-			goal.varCheck();
-			goal.typeCheck();
+			const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
+			block.varCheck();
+			block.typeCheck();
 			const builder: Builder = new Builder(src)
 			assert.deepStrictEqual(
 				[
-					goal.block!.children[0].build(builder),
-					goal.block!.children[1].build(builder),
+					block.children[0].build(builder),
+					block.children[1].build(builder),
 				],
 				[
 					new INST.InstructionDeclareGlobal(0x100n, true,  instructionConstInt(42n)),
@@ -267,14 +267,14 @@ describe('ASTNodeDeclarationVariable', () => {
 				let x: int = 42;
 				let unfixed y: float = 4.2;
 			}`;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
-			goal.varCheck();
-			goal.typeCheck();
+			const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src, CONFIG_FOLDING_OFF);
+			block.varCheck();
+			block.typeCheck();
 			const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 			assert.deepStrictEqual(
 				[
-					goal.block!.children[0].build(builder),
-					goal.block!.children[1].build(builder),
+					block.children[0].build(builder),
+					block.children[1].build(builder),
 				],
 				[
 					new INST.InstructionDeclareGlobal(0x100n, false, instructionConstInt(42n)),

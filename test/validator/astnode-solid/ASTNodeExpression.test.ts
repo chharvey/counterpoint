@@ -157,20 +157,20 @@ describe('ASTNodeExpression', () => {
 	describe('ASTNodeVariable', () => {
 		describe('#varCheck', () => {
 			it('throws if the validator does not contain a record for the identifier.', () => {
-				AST.ASTNodeGoal.fromSource(`{
+				AST.ASTNodeBlock.fromSource(`{
 					let unfixed i: int = 42;
 					i;
 				}`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeVariable.fromSource(`i`).varCheck(), ReferenceError01);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.ASTNodeBlock.fromSource(`{
 					i;
 					let unfixed i: int = 42;
 				}`).varCheck(), ReferenceError02);
 			});
 			it('throws if it was declared as a type alias.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.ASTNodeBlock.fromSource(`{
 					type FOO = int;
 					42 || FOO;
 				}`).varCheck(), ReferenceError03);
@@ -187,42 +187,42 @@ describe('ASTNodeExpression', () => {
 
 		describe('#fold', () => {
 			it('assesses the value of a fixed variable.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 					let x: int = 21 * 2;
 					x;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				assert.ok(!(goal.block!.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
+				block.varCheck();
+				block.typeCheck();
+				assert.ok(!(block.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
-					(goal.block!.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
+					(block.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
 					new Int16(42n),
 				);
 			});
 			it('returns null for an unfixed variable.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 					let unfixed x: int = 21 * 2;
 					x;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				assert.ok((goal.block!.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
+				block.varCheck();
+				block.typeCheck();
+				assert.ok((block.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
-					(goal.block!.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
+					(block.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
 					null,
 				);
 			});
 			it('returns null for an uncomputable fixed variable.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 					let unfixed x: int = 21 * 2;
 					let y: int = x / 2;
 					y;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				assert.ok(!(goal.block!.children[1] as AST.ASTNodeDeclarationVariable).unfixed);
+				block.varCheck();
+				block.typeCheck();
+				assert.ok(!(block.children[1] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
-					(goal.block!.children[2] as AST.ASTNodeStatementExpression).expr!.fold(),
+					(block.children[2] as AST.ASTNodeStatementExpression).expr!.fold(),
 					null,
 				);
 			});
@@ -237,14 +237,14 @@ describe('ASTNodeExpression', () => {
 					x;
 					y;
 				}`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				goal.varCheck();
-				goal.typeCheck();
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
+				block.varCheck();
+				block.typeCheck();
 				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
 					[
-						goal.block!.children[2].build(builder),
-						goal.block!.children[3].build(builder),
+						block.children[2].build(builder),
+						block.children[3].build(builder),
 					],
 					[
 						new INST.InstructionStatement(0n, instructionConstInt(42n)),
@@ -259,14 +259,14 @@ describe('ASTNodeExpression', () => {
 					x;
 					y;
 				}`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-				goal.varCheck();
-				goal.typeCheck();
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
+				block.varCheck();
+				block.typeCheck();
 				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
 					[
-						goal.block!.children[2].build(builder),
-						goal.block!.children[3].build(builder),
+						block.children[2].build(builder),
+						block.children[3].build(builder),
 					],
 					[
 						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
@@ -281,14 +281,14 @@ describe('ASTNodeExpression', () => {
 					x;
 					y;
 				}`;
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
-				goal.varCheck();
-				goal.typeCheck();
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src, CONFIG_FOLDING_OFF);
+				block.varCheck();
+				block.typeCheck();
 				const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 				assert.deepStrictEqual(
 					[
-						goal.block!.children[2].build(builder),
-						goal.block!.children[3].build(builder),
+						block.children[2].build(builder),
+						block.children[3].build(builder),
 					],
 					[
 						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
@@ -308,11 +308,10 @@ describe('ASTNodeExpression', () => {
 				return [
 					AST.ASTNodeTemplate.fromSource(`'''42😀'''`, config),
 					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?'''`, config),
-					(AST.ASTNodeGoal.fromSource(`{
+					(AST.ASTNodeBlock.fromSource(`{
 						let unfixed x: int = 21;
 						'''the answer is {{ x * 2 }} but what is the question?''';
 					}`, config)
-						.block!
 						.children[1] as AST.ASTNodeStatementExpression)
 						.expr as AST.ASTNodeTemplate,
 				] as const;
@@ -357,11 +356,10 @@ describe('ASTNodeExpression', () => {
 				templates = [
 					AST.ASTNodeTemplate.fromSource(`'''42😀'''`),
 					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?'''`),
-					(AST.ASTNodeGoal.fromSource(`{
+					(AST.ASTNodeBlock.fromSource(`{
 						let unfixed x: int = 21;
 						'''the answer is {{ x * 2 }} but what is the question?''';
 					}`)
-						.block!
 						.children[1] as AST.ASTNodeStatementExpression)
 						.expr as AST.ASTNodeTemplate,
 				];
@@ -472,7 +470,7 @@ describe('ASTNodeExpression', () => {
 				);
 			});
 			it('returns null for non-foldable entries.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 					let unfixed x: int = 1;
 					let unfixed y: float = 2.0;
 					let unfixed z: str = 'three';
@@ -485,9 +483,9 @@ describe('ASTNodeExpression', () => {
 						3 * 1.0   -> 'three',
 					};
 				}`);
-				const tuple:   AST.ASTNodeTuple   = (goal.block!.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple;
-				const record:  AST.ASTNodeRecord  = (goal.block!.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord;
-				const map:     AST.ASTNodeMap     = (goal.block!.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap;
+				const tuple:   AST.ASTNodeTuple   = (block.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple;
+				const record:  AST.ASTNodeRecord  = (block.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord;
+				const map:     AST.ASTNodeMap     = (block.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap;
 				assert.deepStrictEqual(
 					[
 						tuple,

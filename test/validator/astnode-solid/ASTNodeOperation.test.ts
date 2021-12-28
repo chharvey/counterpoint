@@ -146,7 +146,7 @@ describe('ASTNodeOperation', () => {
 			context('with constant folding off.', () => {
 				describe('[operator=NOT]', () => {
 					it('returns type `true` for a subtype of `void | null | false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+						const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 							let unfixed a: null = null;
 							let unfixed b: null | false = null;
 							let unfixed c: null | void = null;
@@ -154,14 +154,14 @@ describe('ASTNodeOperation', () => {
 							!b;
 							!c;
 						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						goal.block!.children.slice(3).forEach((stmt) => {
+						block.varCheck();
+						block.typeCheck();
+						block.children.slice(3).forEach((stmt) => {
 							assert.deepStrictEqual(typeOfStmtExpr(stmt), SolidBoolean.TRUETYPE);
 						});
 					});
 					it('returns type `bool` for a supertype of `void` or a supertype of `null` or a supertype of `false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+						const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;
 							let unfixed c: bool = false;
@@ -173,35 +173,35 @@ describe('ASTNodeOperation', () => {
 							!d;
 							!e;
 						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						goal.block!.children.slice(5).forEach((stmt) => {
+						block.varCheck();
+						block.typeCheck();
+						block.children.slice(5).forEach((stmt) => {
 							assert.deepStrictEqual(typeOfStmtExpr(stmt), SolidType.BOOL);
 						});
 					});
 					it('returns type `false` for any type not a supertype of `null` or `false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+						const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 							let unfixed a: int = 42;
 							let unfixed b: float = 4.2;
 							!a;
 							!b;
 						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						goal.block!.children.slice(2).forEach((stmt) => {
+						block.varCheck();
+						block.typeCheck();
+						block.children.slice(2).forEach((stmt) => {
 							assert.deepStrictEqual(typeOfStmtExpr(stmt), SolidBoolean.FALSETYPE);
 						});
 					});
 					it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+						const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 							![];
 							![42];
 							![a= 42];
 							!{41 -> 42};
 						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						goal.block!.children.forEach((stmt) => {
+						block.varCheck();
+						block.typeCheck();
+						block.children.forEach((stmt) => {
 							assert.deepStrictEqual(typeOfStmtExpr(stmt), SolidBoolean.FALSETYPE);
 						});
 					});
@@ -511,7 +511,7 @@ describe('ASTNodeOperation', () => {
 					]));
 				});
 				it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+					const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 						let a: obj = [];
 						let b: obj = [42];
 						let c: obj = [x= 42];
@@ -534,9 +534,9 @@ describe('ASTNodeOperation', () => {
 						d != {41 -> 43};
 						d != {43 -> 42};
 					}`);
-					goal.varCheck();
-					goal.typeCheck();
-					goal.children.slice(4).forEach((stmt) => {
+					block.varCheck();
+					block.typeCheck();
+					block.children.slice(4).forEach((stmt) => {
 						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
 						assert.deepStrictEqual(
 							expr.type(),
@@ -611,7 +611,7 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 			it('compound types.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 					let a: obj = [];
 					let b: obj = [42];
 					let c: obj = [x= 42];
@@ -674,9 +674,9 @@ describe('ASTNodeOperation', () => {
 					i != {41 -> 43};
 					i != {43 -> 42};
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.children.slice(13).forEach((stmt) => {
+				block.varCheck();
+				block.typeCheck();
+				block.children.slice(13).forEach((stmt) => {
 					assert.deepStrictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), SolidBoolean.TRUE, stmt.source);
 				});
 			});
@@ -784,7 +784,7 @@ describe('ASTNodeOperation', () => {
 			context('with constant folding off.', () => {
 				describe('[operator=AND]', () => {
 					it('returns `left` if it’s a subtype of `void | null | false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+						const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 							let unfixed a: null = null;
 							let unfixed b: null | false = null;
 							let unfixed c: null | void = null;
@@ -792,9 +792,9 @@ describe('ASTNodeOperation', () => {
 							b && 42;
 							c && 42;
 						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						assert.deepStrictEqual(goal.block!.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
+						block.varCheck();
+						block.typeCheck();
+						assert.deepStrictEqual(block.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidType.NULL,
 							SolidType.NULL.union(SolidBoolean.FALSETYPE),
 							SolidType.NULL.union(SolidType.VOID),
@@ -802,7 +802,7 @@ describe('ASTNodeOperation', () => {
 					});
 					it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
 						const hello: SolidTypeUnit = typeConstStr('hello');
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+						const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;
 							let unfixed c: bool = false;
@@ -814,9 +814,9 @@ describe('ASTNodeOperation', () => {
 							d && 'hello';
 							e && 42;
 						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						assert.deepStrictEqual(goal.block!.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
+						block.varCheck();
+						block.typeCheck();
+						assert.deepStrictEqual(block.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidType.NULL.union(hello),
 							SolidType.NULL.union(hello),
 							SolidBoolean.FALSETYPE.union(hello),
@@ -825,15 +825,15 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `right` if left does not contain `void` nor `null` nor `false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+						const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 							let unfixed a: int = 42;
 							let unfixed b: float = 4.2;
 							a && true;
 							b && null;
 						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						assert.deepStrictEqual(goal.block!.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						block.varCheck();
+						block.typeCheck();
+						assert.deepStrictEqual(block.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidBoolean.TRUETYPE,
 							SolidType.NULL,
 						]);
@@ -841,7 +841,7 @@ describe('ASTNodeOperation', () => {
 				});
 				describe('[operator=OR]', () => {
 					it('returns `right` if it’s a subtype of `void | null | false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+						const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 							let unfixed a: null = null;
 							let unfixed b: null | false = null;
 							let unfixed c: null | void = null;
@@ -849,9 +849,9 @@ describe('ASTNodeOperation', () => {
 							b || 42;
 							c || 4.2;
 						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						assert.deepStrictEqual(goal.block!.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
+						block.varCheck();
+						block.typeCheck();
+						assert.deepStrictEqual(block.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidBoolean.FALSETYPE,
 							typeConstInt(42n),
 							typeConstFloat(4.2),
@@ -859,7 +859,7 @@ describe('ASTNodeOperation', () => {
 					});
 					it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
 						const hello: SolidTypeUnit = typeConstStr('hello');
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+						const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;
 							let unfixed c: bool = false;
@@ -871,9 +871,9 @@ describe('ASTNodeOperation', () => {
 							d || 'hello';
 							e || 42;
 						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						assertEqualTypes(goal.block!.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
+						block.varCheck();
+						block.typeCheck();
+						assertEqualTypes(block.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidType.INT.union(hello),
 							SolidType.INT.union(hello),
 							SolidBoolean.TRUETYPE.union(hello),
@@ -882,15 +882,15 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `left` if it does not contain `void` nor `null` nor `false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+						const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 							let unfixed a: int = 42;
 							let unfixed b: float = 4.2;
 							a || true;
 							b || null;
 						}`, CONFIG_FOLDING_OFF);
-						goal.varCheck();
-						goal.typeCheck();
-						assert.deepStrictEqual(goal.block!.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						block.varCheck();
+						block.typeCheck();
+						assert.deepStrictEqual(block.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidType.INT,
 							SolidType.FLOAT,
 						]);

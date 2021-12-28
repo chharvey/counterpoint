@@ -84,15 +84,14 @@ describe('ASTNodeType', () => {
 
 		describe('#eval', () => {
 			it('computes the value of a type alias.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 					type T = int;
 					type U = T;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
+				block.varCheck();
+				block.typeCheck();
 				assert.deepStrictEqual(
-					((goal
-						.block!
+					((block
 						.children[1] as AST.ASTNodeDeclarationType)
 						.assigned as AST.ASTNodeTypeAlias)
 						.eval(),

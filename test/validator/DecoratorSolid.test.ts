@@ -744,12 +744,12 @@ describe('DecoratorSolid', () => {
 						</StatementExpression>
 					</Goal>
 				*/
-				const goal: AST.ASTNodeGoal = DECORATOR_SOLID.decorate(h.goalFromSource(`{
+				const block: AST.ASTNodeBlock = DECORATOR_SOLID.decorate(h.blockFromSource(`{
 					variable;
 					var;
 				}`));
-				assert_arrayLength(goal.block!.children, 2);
-				assert.deepStrictEqual(goal.block!.children.map((stmt) => {
+				assert_arrayLength(block.children, 2);
+				assert.deepStrictEqual(block.children.map((stmt) => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 					const ident: AST.ASTNodeExpression | null = stmt.expr || null;
 					assert.ok(ident instanceof AST.ASTNodeVariable);

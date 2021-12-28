@@ -34,6 +34,11 @@ export class ASTNodeBlock extends ASTNodeSolid implements Buildable {
 	}
 	/** @implements Buildable */
 	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
-		throw builder && 'ASTNodeBlock#build not yet suppored.';
+		return (!this.children.length)
+			? new INST.InstructionNone()
+			: new INST.InstructionModule([
+				...Builder.IMPORTS,
+				...this.children.map((child) => child.build(builder)),
+			]);
 	}
 }

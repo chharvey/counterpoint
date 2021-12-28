@@ -11,7 +11,6 @@ import {
 } from './package.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
-import type {ASTNodeStatement} from './ASTNodeStatement.js';
 import type {ASTNodeBlock} from './ASTNodeBlock.js';
 
 
@@ -41,11 +40,6 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	}
 	/** @implements Buildable */
 	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
-		return (!this.block?.children.length)
-			? new INST.InstructionNone()
-			: new INST.InstructionModule([
-				...Builder.IMPORTS,
-				...(this.block.children as readonly ASTNodeStatement[]).map((child) => child.build(builder)),
-			])
+		return this.block?.build(builder) || new INST.InstructionNone();
 	}
 }
