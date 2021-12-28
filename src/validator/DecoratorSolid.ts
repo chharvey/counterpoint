@@ -143,6 +143,7 @@ class DecoratorSolid extends Decorator {
 	override decorate(node: PARSENODE.ParseNodeDeclaration):           AST.ASTNodeDeclaration;
 	override decorate(node: PARSENODE.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
 	override decorate(node: PARSENODE.ParseNodeStatement):             AST.ASTNodeStatement;
+	override decorate(node: PARSENODE.ParseNodeBlock):                 AST.ASTNodeBlock;
 	override decorate(node: PARSENODE.ParseNodeGoal, config?: SolidConfig): AST.ASTNodeGoal;
 	override decorate(node: ParseNode): DecoratorReturnType;
 	override decorate(node: ParseNode, config: SolidConfig = CONFIG_DEFAULT): DecoratorReturnType {
@@ -525,10 +526,16 @@ class DecoratorSolid extends Decorator {
 				? this.decorate(node.children[0])
 				: new AST.ASTNodeStatementExpression(node, (node.children.length === 2) ? this.decorate(node.children[0]) : void 0);
 
+		} else if (node instanceof PARSENODE.ParseNodeBlock) {
+			return new AST.ASTNodeBlock(
+				node,
+				(node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeStatement, AST.ASTNodeStatement>(node.children[1]),
+			);
+
 		} else if (node instanceof PARSENODE.ParseNodeGoal) {
 			return new AST.ASTNodeGoal(
 				node,
-				(node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeStatement, AST.ASTNodeStatement>(node.children[1]),
+				(node.children.length === 2) ? null : this.decorate(node.children[1]),
 				config,
 			);
 		}

@@ -156,7 +156,7 @@ describe('ASTNodeOperation', () => {
 						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						goal.children.slice(3).forEach((stmt) => {
+						goal.block!.children.slice(3).forEach((stmt) => {
 							assert.deepStrictEqual(typeOfStmtExpr(stmt), SolidBoolean.TRUETYPE);
 						});
 					});
@@ -175,7 +175,7 @@ describe('ASTNodeOperation', () => {
 						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						goal.children.slice(5).forEach((stmt) => {
+						goal.block!.children.slice(5).forEach((stmt) => {
 							assert.deepStrictEqual(typeOfStmtExpr(stmt), SolidType.BOOL);
 						});
 					});
@@ -188,7 +188,7 @@ describe('ASTNodeOperation', () => {
 						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						goal.children.slice(2).forEach((stmt) => {
+						goal.block!.children.slice(2).forEach((stmt) => {
 							assert.deepStrictEqual(typeOfStmtExpr(stmt), SolidBoolean.FALSETYPE);
 						});
 					});
@@ -201,7 +201,7 @@ describe('ASTNodeOperation', () => {
 						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						goal.children.forEach((stmt) => {
+						goal.block!.children.forEach((stmt) => {
 							assert.deepStrictEqual(typeOfStmtExpr(stmt), SolidBoolean.FALSETYPE);
 						});
 					});
@@ -794,7 +794,7 @@ describe('ASTNodeOperation', () => {
 						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
+						assert.deepStrictEqual(goal.block!.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidType.NULL,
 							SolidType.NULL.union(SolidBoolean.FALSETYPE),
 							SolidType.NULL.union(SolidType.VOID),
@@ -816,7 +816,7 @@ describe('ASTNodeOperation', () => {
 						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
+						assert.deepStrictEqual(goal.block!.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidType.NULL.union(hello),
 							SolidType.NULL.union(hello),
 							SolidBoolean.FALSETYPE.union(hello),
@@ -833,7 +833,7 @@ describe('ASTNodeOperation', () => {
 						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						assert.deepStrictEqual(goal.block!.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidBoolean.TRUETYPE,
 							SolidType.NULL,
 						]);
@@ -851,7 +851,7 @@ describe('ASTNodeOperation', () => {
 						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
+						assert.deepStrictEqual(goal.block!.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidBoolean.FALSETYPE,
 							typeConstInt(42n),
 							typeConstFloat(4.2),
@@ -873,7 +873,7 @@ describe('ASTNodeOperation', () => {
 						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assertEqualTypes(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
+						assertEqualTypes(goal.block!.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidType.INT.union(hello),
 							SolidType.INT.union(hello),
 							SolidBoolean.TRUETYPE.union(hello),
@@ -890,7 +890,7 @@ describe('ASTNodeOperation', () => {
 						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
-						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						assert.deepStrictEqual(goal.block!.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							SolidType.INT,
 							SolidType.FLOAT,
 						]);

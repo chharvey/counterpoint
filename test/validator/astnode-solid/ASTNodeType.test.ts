@@ -92,6 +92,7 @@ describe('ASTNodeType', () => {
 				goal.typeCheck();
 				assert.deepStrictEqual(
 					((goal
+						.block!
 						.children[1] as AST.ASTNodeDeclarationType)
 						.assigned as AST.ASTNodeTypeAlias)
 						.eval(),

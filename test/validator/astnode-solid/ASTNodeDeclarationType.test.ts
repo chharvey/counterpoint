@@ -62,8 +62,8 @@ describe('ASTNodeDeclarationType', () => {
 			const builder: Builder = new Builder(src);
 			assert.deepStrictEqual(
 				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
+					goal.block!.children[0].build(builder),
+					goal.block!.children[1].build(builder),
 				],
 				[
 					new INST.InstructionNone(),

@@ -193,9 +193,9 @@ describe('ASTNodeExpression', () => {
 				}`);
 				goal.varCheck();
 				goal.typeCheck();
-				assert.ok(!(goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
+				assert.ok(!(goal.block!.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
-					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
+					(goal.block!.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
 					new Int16(42n),
 				);
 			});
@@ -206,9 +206,9 @@ describe('ASTNodeExpression', () => {
 				}`);
 				goal.varCheck();
 				goal.typeCheck();
-				assert.ok((goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
+				assert.ok((goal.block!.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
-					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
+					(goal.block!.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
 					null,
 				);
 			});
@@ -220,9 +220,9 @@ describe('ASTNodeExpression', () => {
 				}`);
 				goal.varCheck();
 				goal.typeCheck();
-				assert.ok(!(goal.children[1] as AST.ASTNodeDeclarationVariable).unfixed);
+				assert.ok(!(goal.block!.children[1] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
-					(goal.children[2] as AST.ASTNodeStatementExpression).expr!.fold(),
+					(goal.block!.children[2] as AST.ASTNodeStatementExpression).expr!.fold(),
 					null,
 				);
 			});
@@ -243,8 +243,8 @@ describe('ASTNodeExpression', () => {
 				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
 					[
-						goal.children[2].build(builder),
-						goal.children[3].build(builder),
+						goal.block!.children[2].build(builder),
+						goal.block!.children[3].build(builder),
 					],
 					[
 						new INST.InstructionStatement(0n, instructionConstInt(42n)),
@@ -265,8 +265,8 @@ describe('ASTNodeExpression', () => {
 				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
 					[
-						goal.children[2].build(builder),
-						goal.children[3].build(builder),
+						goal.block!.children[2].build(builder),
+						goal.block!.children[3].build(builder),
 					],
 					[
 						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
@@ -287,8 +287,8 @@ describe('ASTNodeExpression', () => {
 				const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 				assert.deepStrictEqual(
 					[
-						goal.children[2].build(builder),
-						goal.children[3].build(builder),
+						goal.block!.children[2].build(builder),
+						goal.block!.children[3].build(builder),
 					],
 					[
 						new INST.InstructionStatement(0n, new INST.InstructionGlobalGet(0x100n)),
@@ -312,6 +312,7 @@ describe('ASTNodeExpression', () => {
 						let unfixed x: int = 21;
 						'''the answer is {{ x * 2 }} but what is the question?''';
 					}`, config)
+						.block!
 						.children[1] as AST.ASTNodeStatementExpression)
 						.expr as AST.ASTNodeTemplate,
 				] as const;
@@ -360,6 +361,7 @@ describe('ASTNodeExpression', () => {
 						let unfixed x: int = 21;
 						'''the answer is {{ x * 2 }} but what is the question?''';
 					}`)
+						.block!
 						.children[1] as AST.ASTNodeStatementExpression)
 						.expr as AST.ASTNodeTemplate,
 				];
@@ -483,9 +485,9 @@ describe('ASTNodeExpression', () => {
 						3 * 1.0   -> 'three',
 					};
 				}`);
-				const tuple:   AST.ASTNodeTuple   = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple;
-				const record:  AST.ASTNodeRecord  = (goal.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord;
-				const map:     AST.ASTNodeMap     = (goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap;
+				const tuple:   AST.ASTNodeTuple   = (goal.block!.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple;
+				const record:  AST.ASTNodeRecord  = (goal.block!.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord;
+				const map:     AST.ASTNodeMap     = (goal.block!.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap;
 				assert.deepStrictEqual(
 					[
 						tuple,

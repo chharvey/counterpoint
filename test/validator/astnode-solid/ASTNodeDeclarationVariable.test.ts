@@ -229,8 +229,8 @@ describe('ASTNodeDeclarationVariable', () => {
 			const builder: Builder = new Builder(src)
 			assert.deepStrictEqual(
 				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
+					goal.block!.children[0].build(builder),
+					goal.block!.children[1].build(builder),
 				],
 				[
 					new INST.InstructionNone(),
@@ -249,8 +249,8 @@ describe('ASTNodeDeclarationVariable', () => {
 			const builder: Builder = new Builder(src)
 			assert.deepStrictEqual(
 				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
+					goal.block!.children[0].build(builder),
+					goal.block!.children[1].build(builder),
 				],
 				[
 					new INST.InstructionDeclareGlobal(0x100n, true,  instructionConstInt(42n)),
@@ -273,8 +273,8 @@ describe('ASTNodeDeclarationVariable', () => {
 			const builder: Builder = new Builder(src, CONFIG_FOLDING_OFF);
 			assert.deepStrictEqual(
 				[
-					goal.children[0].build(builder),
-					goal.children[1].build(builder),
+					goal.block!.children[0].build(builder),
+					goal.block!.children[1].build(builder),
 				],
 				[
 					new INST.InstructionDeclareGlobal(0x100n, false, instructionConstInt(42n)),

@@ -748,8 +748,8 @@ describe('DecoratorSolid', () => {
 					variable;
 					var;
 				}`));
-				assert_arrayLength(goal.children, 2);
-				assert.deepStrictEqual(goal.children.map((stmt) => {
+				assert_arrayLength(goal.block!.children, 2);
+				assert.deepStrictEqual(goal.block!.children.map((stmt) => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 					const ident: AST.ASTNodeExpression | null = stmt.expr || null;
 					assert.ok(ident instanceof AST.ASTNodeVariable);
@@ -1334,24 +1334,41 @@ describe('DecoratorSolid', () => {
 			})
 		})
 
-		context('Goal ::= #x02 Statement* #x03', () => {
-			it('makes an ASTNodeGoal node containing no children.', () => {
-				const goal: AST.ASTNodeGoal = DECORATOR_SOLID.decorate(h.goalFromSource(``));
-				assert_arrayLength(goal.children, 0, 'semantic goal should have 0 children')
-			})
+		context('Block ::= "{" Statement* "}"', () => {
+			it('makes an ASTNodeBlock node containing no children.', () => {
+				const block: AST.ASTNodeBlock = DECORATOR_SOLID.decorate(h.blockFromSource(`{}`));
+				return assert_arrayLength(block.children, 0, 'semantic block should have 0 children');
+			});
 			it('decorates multiple statements.', () => {
 				/*
-					<Goal>
+					<Block>
 						<StatementExpression source="42 ;">...</StatementExpression>
 						<StatementExpression source="420 ;">...</StatementExpression>
+					</Block>
+				*/
+				const block: AST.ASTNodeBlock = DECORATOR_SOLID.decorate(h.blockFromSource(`{ 42; 420; }`));
+				assert_arrayLength(block.children, 2, 'semantic block should have 2 children');
+				return assert.deepStrictEqual(block.children.map((stat) => {
+					assert.ok(stat instanceof AST.ASTNodeStatementExpression);
+					return stat.source;
+				}), ['42 ;', '420 ;']);
+			});
+		});
+
+		context('Goal ::= #x02 Block? #x03', () => {
+			it('makes an ASTNodeGoal node containing no block.', () => {
+				const goal: AST.ASTNodeGoal = DECORATOR_SOLID.decorate(h.goalFromSource(``));
+				return assert.ok(!goal.block, 'semantic goal should not have a block');
+			})
+			it('makes an ASTNodeGoal containing a block.', () => {
+				/*
+					<Goal>
+						<Block source="{ 42 ; 420 ; }">...</Block>
 					</Goal>
 				*/
 				const goal: AST.ASTNodeGoal = DECORATOR_SOLID.decorate(h.goalFromSource(`{ 42; 420; }`));
-				assert_arrayLength(goal.children, 2, 'goal should have 2 children')
-				assert.deepStrictEqual(goal.children.map((stat) => {
-					assert.ok(stat instanceof AST.ASTNodeStatementExpression);
-					return stat.source
-				}), ['42 ;', '420 ;'])
+				assert.ok(goal.block, 'semantic goal should have a block');
+				return assert.strictEqual(goal.block.source, '{ 42 ; 420 ; }');
 			})
 		})
 	})

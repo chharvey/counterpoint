@@ -43,7 +43,7 @@ describe('ASTNodeSolid', () => {
 			it('multiple statements.', () => {
 				const src: string = `{ 42; 420; }`;
 				const generator: Builder = new Builder(src);
-				AST.ASTNodeGoal.fromSource(src).children.forEach((stmt, i) => {
+				AST.ASTNodeGoal.fromSource(src).block!.children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
 					const expr: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource(stmt.source.slice(0, -1)); // slice off the semicolon
 					assert.deepStrictEqual(
@@ -168,7 +168,7 @@ describe('ASTNodeSolid', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
-					goal.children[1].build(builder),
+					goal.block!.children[1].build(builder),
 					new INST.InstructionStatement(
 						0n,
 						new INST.InstructionGlobalSet(0x100n, new INST.InstructionBinopArithmetic(
