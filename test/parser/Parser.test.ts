@@ -914,7 +914,7 @@ describe('ParserSolid', () => {
 						<PUNCTUATOR source="}"/>...</PUNCTUATOR>
 					</Block>
 				*/
-				const block: PARSENODE_SOLID.ParseNodeBlock = h.blockFromSource(`42; 420;`);
+				const block: PARSENODE_SOLID.ParseNodeBlock = h.blockFromSource(`{ 42; 420; }`);
 				assert_arrayLength(block.children, 3, 'block should have 3 children');
 				const [brak_opn, stat_list, brak_cls]: readonly [Token, PARSENODE_SOLID.ParseNodeBlock__0__List, Token] = block.children;
 				assert.ok(brak_opn instanceof TOKEN.TokenPunctuator);
@@ -934,7 +934,7 @@ describe('ParserSolid', () => {
 		})
 
 		context('Goal ::= #x02 #x03', () => {
-			it.skip('returns only file bounds.', () => {
+			it('returns only file bounds.', () => {
 				/*
 					<Goal>
 						<FILEBOUND.../>...</FILEBOUND>
@@ -956,7 +956,7 @@ describe('ParserSolid', () => {
 						<FILEBOUND.../>...</FILEBOUND>
 					</Goal>
 				*/
-				const goal: PARSENODE_SOLID.ParseNodeGoal = h.goalFromSource(`42; 420;`);
+				const goal: PARSENODE_SOLID.ParseNodeGoal = h.goalFromSource(`{ 42; 420; }`);
 				assert_arrayLength(goal.children, 3, 'goal should have 3 children')
 				const [sot, block, eot]: readonly [Token, PARSENODE_SOLID.ParseNodeBlock, Token] = goal.children;
 				assert.ok(sot instanceof TokenFilebound);

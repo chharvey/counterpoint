@@ -27,7 +27,7 @@ import {
 
 
 describe('ASTNodeAccess', () => {
-	const INDEX_ACCESS_SRC: string = `
+	const INDEX_ACCESS_SRC: string = `{
 		%% statements 0 – 4 %%
 		let         tup_fixed:    [int, float, str]     = [1, 2.0, 'three'];
 		let unfixed tup_unfixed:  [int, float, str]     = [1, 2.0, 'three'];
@@ -97,8 +97,8 @@ describe('ASTNodeAccess', () => {
 		%% statements 46 – 48 %%
 		let unfixed tupvoid: [int | void] = [42];
 		tupvoid!.0; % type \`int\` % non-computable value
-	`;
-	const KEY_ACCESS_SRC: string = `
+	}`;
+	const KEY_ACCESS_SRC: string = `{
 		%% statements 0 – 4 %%
 		let         rec_fixed:    [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
 		let unfixed rec_unfixed:  [a: int, b: float, c: str] = [a= 1, b= 2.0, c= 'three'];
@@ -152,8 +152,8 @@ describe('ASTNodeAccess', () => {
 		%% statements 34 – 36 %%
 		let unfixed recvoid: [c: int | void] = [c= 42];
 		recvoid!.c; % type \`int\` % non-computable value
-	`;
-	const EXPR_ACCESS_SRC: string = `
+	}`;
+	const EXPR_ACCESS_SRC: string = `{
 		%% statements 0 – 4 %%
 		let a: [str] = ['a'];
 		let b: [str] = ['b'];
@@ -233,7 +233,7 @@ describe('ASTNodeAccess', () => {
 		tupo1_f!.[0 + 2]; % type \`'three'\` % value \`'three'\`
 		tupo1_u!.[0 + 2]; % type \`str\`     % non-computable value
 		tupo2_u!.[0 + 2]; % type \`str\`     % non-computable value
-	`;
+	}`;
 
 
 	describe('#type', () => {
@@ -290,7 +290,7 @@ describe('ASTNodeAccess', () => {
 				});
 			});
 			it('chained optional access.', () => {
-				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let unfixed bound1: [prop?: [bool]] = [prop= [true]];
 					let unfixed bound2: [prop?: [?: bool]] = [prop= []];
 
@@ -301,7 +301,7 @@ describe('ASTNodeAccess', () => {
 					bound2;          % type \`[prop?: [?: bool]]\`
 					bound2?.prop;    % type \`[?: bool] | null\`
 					bound2?.prop?.0; % type \`bool | null\`
-				`);
+				}`);
 				program.varCheck();
 				program.typeCheck();
 				const prop1: SolidTypeTuple = SolidTypeTuple.fromTypes([SolidType.BOOL]);
@@ -400,11 +400,11 @@ describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.-4;`).type(), TypeError04);
 			});
 			it('returns the list item type when index is out of bounds for lists.', () => {
-				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let unfixed list: (int | float | str)[] = List.<int | float| str>([1, 2.0, 'three']);
 					list.3;
 					list.-4;
-				`);
+				}`);
 				program.varCheck();
 				program.typeCheck();
 				program.children.slice(1, 3).forEach((c) => {
@@ -479,10 +479,10 @@ describe('ASTNodeAccess', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource(`[a= 1, b= 2.0, c= 'three']?.d;`).type(), TypeError04);
 			});
 			it('returns the hash item type when key is out of bounds for hashes.', () => {
-				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let unfixed hash: [: int | float | str] = Hash.<int | float| str>([a= 1, b= 2.0, c= 'three']);
 					hash.d;
-				`);
+				}`);
 				program.varCheck();
 				program.typeCheck();
 				assert.deepStrictEqual(
@@ -580,11 +580,11 @@ describe('ASTNodeAccess', () => {
 					assert.throws(() => AST.ASTNodeAccess.fromSource(`[1, 2.0, 'three']?.[-4];`).type(), TypeError04);
 				});
 				it('returns the list item type when accessor expression is correct type but out of bounds for lists.', () => {
-					const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 						let unfixed list: (int | float | str)[] = List.<int | float| str>([1, 2.0, 'three']);
 						list.[3];
 						list.[-4];
-					`);
+					}`);
 					program.varCheck();
 					program.typeCheck();
 					program.children.slice(1, 3).forEach((c) => {
@@ -714,7 +714,7 @@ describe('ASTNodeAccess', () => {
 				});
 			});
 			it('chained optional access.', () => {
-				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let bound1: [prop?: [bool]] = [prop= [true]];
 					let bound2: [prop?: [?: bool]] = [prop= []];
 
@@ -724,7 +724,7 @@ describe('ASTNodeAccess', () => {
 
 					bound2;          % value \`[prop= []]\`
 					bound2?.prop;    % value \`[]\`
-				`);
+				}`);
 				program.varCheck();
 				program.typeCheck();
 				const prop1: SolidTuple = new SolidTuple([SolidBoolean.TRUE]);

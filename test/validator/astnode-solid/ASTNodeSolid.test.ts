@@ -28,13 +28,12 @@ describe('ASTNodeSolid', () => {
 		describe('#build', () => {
 			it('returns InstructionNone for empty statement expression.', () => {
 				const src: string = `;`;
-				const instr: INST.InstructionNone | INST.InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src)
-					.build(new Builder(src))
+				const instr: INST.InstructionNone | INST.InstructionStatement = AST.ASTNodeStatementExpression.fromSource(src).build(new Builder(`{ ${ src } }`));
 				assert.ok(instr instanceof INST.InstructionNone);
 			})
 			it('returns InstructionStatement for nonempty statement expression.', () => {
 				const src: string = `42 + 420;`;
-				const builder: Builder = new Builder(src);
+				const builder: Builder = new Builder(`{ ${ src } }`);
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
 				assert.deepStrictEqual(
 					stmt.build(builder),
@@ -42,7 +41,7 @@ describe('ASTNodeSolid', () => {
 				);
 			})
 			it('multiple statements.', () => {
-				const src: string = `42; 420;`;
+				const src: string = `{ 42; 420; }`;
 				const generator: Builder = new Builder(src);
 				AST.ASTNodeGoal.fromSource(src).children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
@@ -60,20 +59,20 @@ describe('ASTNodeSolid', () => {
 	describe('ASTNodeAssignment', () => {
 		describe('#varCheck', () => {
 			it('throws if the variable is not unfixed.', () => {
-				AST.ASTNodeGoal.fromSource(`
+				AST.ASTNodeGoal.fromSource(`{
 					let unfixed i: int = 42;
 					i = 43;
-				`).varCheck(); // assert does not throw
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`
+				}`).varCheck(); // assert does not throw
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let i: int = 42;
 					i = 43;
-				`).varCheck(), AssignmentError10);
+				}`).varCheck(), AssignmentError10);
 			});
 			it('always throws for type alias reassignment.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					type T = 42;
 					T = 43;
-				`).varCheck(), ReferenceError03);
+				}`).varCheck(), ReferenceError03);
 			});
 		});
 
@@ -81,10 +80,10 @@ describe('ASTNodeSolid', () => {
 		describe('#typeCheck', () => {
 			context('for variable reassignment.', () => {
 				it('throws when variable assignee type is not supertype.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 						let unfixed i: int = 42;
 						i = 4.3;
-					`);
+					}`);
 					goal.varCheck();
 					assert.throws(() => goal.typeCheck(), TypeError03);
 				});
@@ -93,30 +92,30 @@ describe('ASTNodeSolid', () => {
 			context('for property reassignment.', () => {
 				it('throws when property assignee type is not supertype.', () => {
 					[
-						`
+						`{
 							let t: mutable [42] = [42];
 							t.0 = 4.2;
-						`,
-						`
+						}`,
+						`{
 							let r: mutable [i: 42] = [i= 42];
 							r.i = 4.2;
-						`,
-						`
+						}`,
+						`{
 							let l: mutable int[] = List.<int>([42]);
 							l.0 = 4.2;
-						`,
-						`
+						}`,
+						`{
 							let h: mutable [:int] = Hash.<int>([i= 42]);
 							h.i = 4.2;
-						`,
-						`
+						}`,
+						`{
 							let s: mutable int{} = Set.<int>([42]);
 							s.[42] = 4.2;
-						`,
-						`
+						}`,
+						`{
 							let m: mutable {bool -> int} = Map.<bool, int>([[true, 42]]);
 							m.[true] = 4.2;
-						`,
+						}`,
 					].forEach((src) => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 						goal.varCheck();
@@ -125,30 +124,30 @@ describe('ASTNodeSolid', () => {
 				});
 				it('throws when assignee’s base type is not mutable.', () => {
 					[
-						`
+						`{
 							let t: [42] = [42];
 							t.0 = 4.2;
-						`,
-						`
+						}`,
+						`{
 							let r: [i: 42] = [i= 42];
 							r.i = 4.2;
-						`,
-						`
+						}`,
+						`{
 							let l: int[] = List.<int>([42]);
 							l.0 = 4.2;
-						`,
-						`
+						}`,
+						`{
 							let h: [:int] = Hash.<int>([i= 42]);
 							h.i = 4.2;
-						`,
-						`
+						}`,
+						`{
 							let s: int{} = Set.<int>([42]);
 							s.[42] = 4.2;
-						`,
-						`
+						}`,
+						`{
 							let m: {bool -> int} = Map.<bool, int>([[true, 42]]);
 							m.[true] = 4.2;
-						`,
+						}`,
 					].forEach((src) => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 						goal.varCheck();
@@ -161,10 +160,10 @@ describe('ASTNodeSolid', () => {
 
 		describe('#build', () => {
 			it('always returns InstructionStatement containing InstructionGlobalSet.', () => {
-				const src: string = `
+				const src: string = `{
 					let unfixed y: float = 4.2;
 					y = y * 10;
-				`;
+				}`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				const builder: Builder = new Builder(src);
 				assert.deepStrictEqual(
@@ -187,7 +186,7 @@ describe('ASTNodeSolid', () => {
 	describe('ASTNodeGoal', () => {
 		describe('#varCheck', () => {
 			it('aggregates multiple errors.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					a + b || c * d;
 					let y: V & W | X & Y = null;
 					let x: int = 42;
@@ -197,7 +196,7 @@ describe('ASTNodeSolid', () => {
 					type T = float;
 					let z: x = null;
 					let z: int = T;
-				`).varCheck(), (err) => {
+				}`).varCheck(), (err) => {
 					assert.ok(err instanceof AggregateError);
 					assertAssignable(err, {
 						cons: AggregateError,
@@ -255,7 +254,7 @@ describe('ASTNodeSolid', () => {
 
 		describe('#typeCheck', () => {
 			it('aggregates multiple errors.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let a: null = null;
 					let b: null = null;
 					let c: null = null;
@@ -268,7 +267,7 @@ describe('ASTNodeSolid', () => {
 					e * f + g * h;
 					if null then 42 else 4.2;
 					let x: int = 4.2;
-				`);
+				}`);
 				goal.varCheck();
 				assert.throws(() => goal.typeCheck(), (err) => {
 					assert.ok(err instanceof AggregateError);

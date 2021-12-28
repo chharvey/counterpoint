@@ -133,7 +133,7 @@ describe('ASTNodeExpression', () => {
 					'+0.0;',
 					'-0.0;',
 					'-4.2e-2;',
-				].map((src) => AST.ASTNodeConstant.fromSource(src).build(new Builder(src))), [
+				].map((src) => AST.ASTNodeConstant.fromSource(src).build(new Builder(`{ ${ src } }`))), [
 					instructionConstInt(0n),
 					instructionConstInt(0n),
 					instructionConstInt(1n),
@@ -157,23 +157,23 @@ describe('ASTNodeExpression', () => {
 	describe('ASTNodeVariable', () => {
 		describe('#varCheck', () => {
 			it('throws if the validator does not contain a record for the identifier.', () => {
-				AST.ASTNodeGoal.fromSource(`
+				AST.ASTNodeGoal.fromSource(`{
 					let unfixed i: int = 42;
 					i;
-				`).varCheck(); // assert does not throw
+				}`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeVariable.fromSource(`i;`).varCheck(), ReferenceError01);
 			});
 			it.skip('throws when there is a temporal dead zone.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					i;
 					let unfixed i: int = 42;
-				`).varCheck(), ReferenceError02);
+				}`).varCheck(), ReferenceError02);
 			});
 			it('throws if it was declared as a type alias.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					type FOO = int;
 					42 || FOO;
-				`).varCheck(), ReferenceError03);
+				}`).varCheck(), ReferenceError03);
 			});
 		});
 
@@ -187,10 +187,10 @@ describe('ASTNodeExpression', () => {
 
 		describe('#fold', () => {
 			it('assesses the value of a fixed variable.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let x: int = 21 * 2;
 					x;
-				`);
+				}`);
 				goal.varCheck();
 				goal.typeCheck();
 				assert.ok(!(goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
@@ -200,10 +200,10 @@ describe('ASTNodeExpression', () => {
 				);
 			});
 			it('returns null for an unfixed variable.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let unfixed x: int = 21 * 2;
 					x;
-				`);
+				}`);
 				goal.varCheck();
 				goal.typeCheck();
 				assert.ok((goal.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
@@ -213,11 +213,11 @@ describe('ASTNodeExpression', () => {
 				);
 			});
 			it('returns null for an uncomputable fixed variable.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let unfixed x: int = 21 * 2;
 					let y: int = x / 2;
 					y;
-				`);
+				}`);
 				goal.varCheck();
 				goal.typeCheck();
 				assert.ok(!(goal.children[1] as AST.ASTNodeDeclarationVariable).unfixed);
@@ -231,12 +231,12 @@ describe('ASTNodeExpression', () => {
 
 		describe('#build', () => {
 			it('with constant folding on, returns InstructionConst for fixed & foldable variables.', () => {
-				const src: string = `
+				const src: string = `{
 					let x: int = 42;
 					let y: float = 4.2 * 10;
 					x;
 					y;
-				`;
+				}`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				goal.varCheck();
 				goal.typeCheck();
@@ -253,12 +253,12 @@ describe('ASTNodeExpression', () => {
 				);
 			});
 			it('with constant folding on, returns InstructionGlobalGet for unfixed / non-foldable variables.', () => {
-				const src: string = `
+				const src: string = `{
 					let unfixed x: int = 42;
 					let y: int = x + 10;
 					x;
 					y;
-				`;
+				}`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
 				goal.varCheck();
 				goal.typeCheck();
@@ -275,12 +275,12 @@ describe('ASTNodeExpression', () => {
 				);
 			});
 			it('with constant folding off, always returns InstructionGlobalGet.', () => {
-				const src: string = `
+				const src: string = `{
 					let x: int = 42;
 					let unfixed y: float = 4.2;
 					x;
 					y;
-				`;
+				}`;
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
 				goal.varCheck();
 				goal.typeCheck();
@@ -308,10 +308,10 @@ describe('ASTNodeExpression', () => {
 				return [
 					AST.ASTNodeTemplate.fromSource(`'''42😀''';`, config),
 					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`, config),
-					(AST.ASTNodeGoal.fromSource(`
+					(AST.ASTNodeGoal.fromSource(`{
 						let unfixed x: int = 21;
 						'''the answer is {{ x * 2 }} but what is the question?''';
-					`, config)
+					}`, config)
 						.children[1] as AST.ASTNodeStatementExpression)
 						.expr as AST.ASTNodeTemplate,
 				] as const;
@@ -356,10 +356,10 @@ describe('ASTNodeExpression', () => {
 				templates = [
 					AST.ASTNodeTemplate.fromSource(`'''42😀''';`),
 					AST.ASTNodeTemplate.fromSource(`'''the answer is {{ 7 * 3 * 2 }} but what is the question?''';`),
-					(AST.ASTNodeGoal.fromSource(`
+					(AST.ASTNodeGoal.fromSource(`{
 						let unfixed x: int = 21;
 						'''the answer is {{ x * 2 }} but what is the question?''';
-					`)
+					}`)
 						.children[1] as AST.ASTNodeStatementExpression)
 						.expr as AST.ASTNodeTemplate,
 				];
@@ -470,7 +470,7 @@ describe('ASTNodeExpression', () => {
 				);
 			});
 			it('returns null for non-foldable entries.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let unfixed x: int = 1;
 					let unfixed y: float = 2.0;
 					let unfixed z: str = 'three';
@@ -482,7 +482,7 @@ describe('ASTNodeExpression', () => {
 						21 + 21   -> y,
 						3 * 1.0   -> 'three',
 					};
-				`);
+				}`);
 				const tuple:   AST.ASTNodeTuple   = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTuple;
 				const record:  AST.ASTNodeRecord  = (goal.children[4] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeRecord;
 				const map:     AST.ASTNodeMap     = (goal.children[5] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeMap;

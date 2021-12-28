@@ -280,7 +280,7 @@ export function assignmentFromSource(src: string, config: SolidConfig = CONFIG_D
 	return assignment;
 }
 export function statementFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeStatement {
-	const block: PARSENODE.ParseNodeBlock = blockFromSource(src, config);
+	const block: PARSENODE.ParseNodeBlock = blockFromSource(`{ ${ src } }`, config);
 	assert_arrayLength(block.children, 3, 'block should have 3 children')
 	const [brak_opn, stat_list, brak_cls]: readonly [Token, PARSENODE.ParseNodeBlock__0__List, Token] = block.children
 	assert.ok(brak_opn instanceof TOKEN.TokenPunctuator);
@@ -305,7 +305,7 @@ export function blockFromSource(src: string, config: SolidConfig = CONFIG_DEFAUL
 	return block;
 }
 export function goalFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeGoal {
-	return ((config === CONFIG_DEFAULT) ? PARSER : new ParserSolid(config)).parse(`{ ${ src } }`);
+	return ((config === CONFIG_DEFAULT) ? PARSER : new ParserSolid(config)).parse(src);
 }
 
 

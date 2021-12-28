@@ -744,10 +744,10 @@ describe('DecoratorSolid', () => {
 						</StatementExpression>
 					</Goal>
 				*/
-				const goal: AST.ASTNodeGoal = DECORATOR_SOLID.decorate(h.goalFromSource(`
+				const goal: AST.ASTNodeGoal = DECORATOR_SOLID.decorate(h.goalFromSource(`{
 					variable;
 					var;
-				`));
+				}`));
 				assert_arrayLength(goal.children, 2);
 				assert.deepStrictEqual(goal.children.map((stmt) => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
@@ -1346,7 +1346,7 @@ describe('DecoratorSolid', () => {
 						<StatementExpression source="420 ;">...</StatementExpression>
 					</Goal>
 				*/
-				const goal: AST.ASTNodeGoal = DECORATOR_SOLID.decorate(h.goalFromSource(`42; 420;`));
+				const goal: AST.ASTNodeGoal = DECORATOR_SOLID.decorate(h.goalFromSource(`{ 42; 420; }`));
 				assert_arrayLength(goal.children, 2, 'goal should have 2 children')
 				assert.deepStrictEqual(goal.children.map((stat) => {
 					assert.ok(stat instanceof AST.ASTNodeStatementExpression);

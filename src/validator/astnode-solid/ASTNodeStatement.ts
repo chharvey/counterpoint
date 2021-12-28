@@ -27,7 +27,7 @@ export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable
 	 * @returns      a new ASTNodeStatement representing the given source
 	 */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeStatement {
-		const goal: ASTNodeGoal = ASTNodeGoal.fromSource(src, config);
+		const goal: ASTNodeGoal = ASTNodeGoal.fromSource(`{ ${ src } }`, config);
 		assert.strictEqual(goal.children.length, 1, 'semantic goal should have 1 child');
 		return goal.children[0];
 	}

@@ -53,7 +53,7 @@ function foldOperations(tests: Map<string, SolidObject>): void {
 }
 function buildOperations(tests: ReadonlyMap<string, INST.InstructionExpression>): void {
 	assert.deepStrictEqual(
-		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))),
+		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(`{ ${ src } }`, CONFIG_FOLDING_OFF))),
 		[...tests.values()],
 	);
 }
@@ -146,14 +146,14 @@ describe('ASTNodeOperation', () => {
 			context('with constant folding off.', () => {
 				describe('[operator=NOT]', () => {
 					it('returns type `true` for a subtype of `void | null | false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 							let unfixed a: null = null;
 							let unfixed b: null | false = null;
 							let unfixed c: null | void = null;
 							!a;
 							!b;
 							!c;
-						`, CONFIG_FOLDING_OFF);
+						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.slice(3).forEach((stmt) => {
@@ -161,7 +161,7 @@ describe('ASTNodeOperation', () => {
 						});
 					});
 					it('returns type `bool` for a supertype of `void` or a supertype of `null` or a supertype of `false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;
 							let unfixed c: bool = false;
@@ -172,7 +172,7 @@ describe('ASTNodeOperation', () => {
 							!c;
 							!d;
 							!e;
-						`, CONFIG_FOLDING_OFF);
+						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.slice(5).forEach((stmt) => {
@@ -180,12 +180,12 @@ describe('ASTNodeOperation', () => {
 						});
 					});
 					it('returns type `false` for any type not a supertype of `null` or `false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 							let unfixed a: int = 42;
 							let unfixed b: float = 4.2;
 							!a;
 							!b;
-						`, CONFIG_FOLDING_OFF);
+						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.slice(2).forEach((stmt) => {
@@ -193,12 +193,12 @@ describe('ASTNodeOperation', () => {
 						});
 					});
 					it('[literalCollection] returns type `false` for any type not a supertype of `null` or `false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 							![];
 							![42];
 							![a= 42];
 							!{41 -> 42};
-						`, CONFIG_FOLDING_OFF);
+						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
 						goal.children.forEach((stmt) => {
@@ -511,7 +511,7 @@ describe('ASTNodeOperation', () => {
 					]));
 				});
 				it('returns the result of `this#fold`, wrapped in a `new SolidTypeConstant`.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 						let a: obj = [];
 						let b: obj = [42];
 						let c: obj = [x= 42];
@@ -533,7 +533,7 @@ describe('ASTNodeOperation', () => {
 						c != [y= 42];
 						d != {41 -> 43};
 						d != {43 -> 42};
-					`);
+					}`);
 					goal.varCheck();
 					goal.typeCheck();
 					goal.children.slice(4).forEach((stmt) => {
@@ -611,7 +611,7 @@ describe('ASTNodeOperation', () => {
 				]));
 			});
 			it('compound types.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let a: obj = [];
 					let b: obj = [42];
 					let c: obj = [x= 42];
@@ -673,7 +673,7 @@ describe('ASTNodeOperation', () => {
 					c != [y= 42];
 					i != {41 -> 43};
 					i != {43 -> 42};
-				`);
+				}`);
 				goal.varCheck();
 				goal.typeCheck();
 				goal.children.slice(13).forEach((stmt) => {
@@ -695,7 +695,7 @@ describe('ASTNodeOperation', () => {
 					`null === false;`,
 					`null == false;`,
 					`false == 0.0;`,
-				].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))), [
+				].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(`{ ${ src } }`, CONFIG_FOLDING_OFF))), [
 					new INST.InstructionBinopEquality(
 						Operator.EQ,
 						instructionConstInt(42n),
@@ -751,7 +751,7 @@ describe('ASTNodeOperation', () => {
 					`null == 0.0;`,
 					`false == 0.0;`,
 					`true == 1.0;`,
-				].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_COERCION_OFF).build(new Builder(src, CONFIG_FOLDING_COERCION_OFF))), [
+				].map((src) => AST.ASTNodeOperationBinaryEquality.fromSource(src, CONFIG_FOLDING_COERCION_OFF).build(new Builder(`{ ${ src } }`, CONFIG_FOLDING_COERCION_OFF))), [
 					[instructionConstInt(42n),   instructionConstInt(420n)],
 					[instructionConstFloat(4.2), instructionConstInt(42n)],
 					[instructionConstInt(42n),   instructionConstFloat(4.2)],
@@ -784,14 +784,14 @@ describe('ASTNodeOperation', () => {
 			context('with constant folding off.', () => {
 				describe('[operator=AND]', () => {
 					it('returns `left` if it’s a subtype of `void | null | false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 							let unfixed a: null = null;
 							let unfixed b: null | false = null;
 							let unfixed c: null | void = null;
 							a && 42;
 							b && 42;
 							c && 42;
-						`, CONFIG_FOLDING_OFF);
+						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
@@ -802,7 +802,7 @@ describe('ASTNodeOperation', () => {
 					});
 					it('returns `T | right` if left is a supertype of `T narrows void | null | false`.', () => {
 						const hello: SolidTypeUnit = typeConstStr('hello');
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;
 							let unfixed c: bool = false;
@@ -813,7 +813,7 @@ describe('ASTNodeOperation', () => {
 							c && 'hello';
 							d && 'hello';
 							e && 42;
-						`, CONFIG_FOLDING_OFF);
+						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
@@ -825,12 +825,12 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `right` if left does not contain `void` nor `null` nor `false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 							let unfixed a: int = 42;
 							let unfixed b: float = 4.2;
 							a && true;
 							b && null;
-						`, CONFIG_FOLDING_OFF);
+						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
@@ -841,14 +841,14 @@ describe('ASTNodeOperation', () => {
 				});
 				describe('[operator=OR]', () => {
 					it('returns `right` if it’s a subtype of `void | null | false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 							let unfixed a: null = null;
 							let unfixed b: null | false = null;
 							let unfixed c: null | void = null;
 							a || false;
 							b || 42;
 							c || 4.2;
-						`, CONFIG_FOLDING_OFF);
+						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
@@ -859,7 +859,7 @@ describe('ASTNodeOperation', () => {
 					});
 					it('returns `(left - T) | right` if left is a supertype of `T narrows void | null | false`.', () => {
 						const hello: SolidTypeUnit = typeConstStr('hello');
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 							let unfixed a: null | int = null;
 							let unfixed b: null | int = 42;
 							let unfixed c: bool = false;
@@ -870,7 +870,7 @@ describe('ASTNodeOperation', () => {
 							c || 'hello';
 							d || 'hello';
 							e || 42;
-						`, CONFIG_FOLDING_OFF);
+						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
 						assertEqualTypes(goal.children.slice(5).map((stmt) => typeOfStmtExpr(stmt)), [
@@ -882,12 +882,12 @@ describe('ASTNodeOperation', () => {
 						]);
 					});
 					it('returns `left` if it does not contain `void` nor `null` nor `false`.', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 							let unfixed a: int = 42;
 							let unfixed b: float = 4.2;
 							a || true;
 							b || null;
-						`, CONFIG_FOLDING_OFF);
+						}`, CONFIG_FOLDING_OFF);
 						goal.varCheck();
 						goal.typeCheck();
 						assert.deepStrictEqual(goal.children.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
@@ -924,7 +924,7 @@ describe('ASTNodeOperation', () => {
 					`null && 201.0e-1;`,
 					`true && 201.0e-1;`,
 					`false || null;`,
-				].map((src) => AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF))), [
+				].map((src) => AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(`{ ${ src } }`, CONFIG_FOLDING_OFF))), [
 					new INST.InstructionBinopLogical(
 						0n,
 						Operator.AND,
@@ -960,7 +960,7 @@ describe('ASTNodeOperation', () => {
 			it('counts internal variables correctly.', () => {
 				const src: string = `1 && 2 || 3 && 4;`
 				assert.deepStrictEqual(
-					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(src, CONFIG_FOLDING_OFF)),
+					AST.ASTNodeOperationBinaryLogical.fromSource(src, CONFIG_FOLDING_OFF).build(new Builder(`{ ${ src } }`, CONFIG_FOLDING_OFF)),
 					new INST.InstructionBinopLogical(
 						0n,
 						Operator.OR,

@@ -24,7 +24,7 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	 * @returns      a new ASTNodeGoal representing the given source
 	 */
 	static fromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): ASTNodeGoal {
-		return DECORATOR.decorate(((config === CONFIG_DEFAULT) ? PARSER : new ParserSolid(config)).parse(`{ ${ src } }`), config);
+		return DECORATOR.decorate(((config === CONFIG_DEFAULT) ? PARSER : new ParserSolid(config)).parse(src), config);
 	}
 	private readonly _validator: Validator;
 	constructor(
