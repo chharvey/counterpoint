@@ -28,14 +28,14 @@ describe('ASTNodeCall', () => {
 		it('evaluates List, Hash, Set, and Map.', () => {
 			assert.deepStrictEqual(
 				[
-					`List.<int>([1, 2, 3]);`,
-					`Hash.<int>([a= 1, b= 2, c= 3]);`,
-					`Set.<int>([1, 2, 3]);`,
+					`List.<int>([1, 2, 3])`,
+					`Hash.<int>([a= 1, b= 2, c= 3])`,
+					`Set.<int>([1, 2, 3])`,
 					`Map.<int, float>([
 						[1, 0.1],
 						[2, 0.2],
 						[3, 0.3],
-					]);`,
+					])`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new SolidTypeList(SolidType.INT).mutableOf(),
@@ -48,13 +48,13 @@ describe('ASTNodeCall', () => {
 		it('List, Set, and Map take List-type arguments.', () => {
 			assert.deepStrictEqual(
 				[
-					`List.<int>(List.<int>([1, 2, 3]));`,
-					`Set.<int>(List.<int>([1, 2, 3]));`,
+					`List.<int>(List.<int>([1, 2, 3]))`,
+					`Set.<int>(List.<int>([1, 2, 3]))`,
 					`Map.<int, float>(List.<[int, float]>([
 						[1, 0.1],
 						[2, 0.2],
 						[3, 0.3],
-					]));`,
+					]))`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new SolidTypeList(SolidType.INT).mutableOf(),
@@ -66,13 +66,13 @@ describe('ASTNodeCall', () => {
 		it('zero/empty functional arguments.', () => {
 			assert.deepStrictEqual(
 				[
-					`List.<int>();`,
-					`Hash.<int>();`,
-					`Set.<int>();`,
-					`Map.<int, float>();`,
-					`List.<int>([]);`,
-					`Set.<int>([]);`,
-					`Map.<int, float>([]);`,
+					`List.<int>()`,
+					`Hash.<int>()`,
+					`Set.<int>()`,
+					`Map.<int, float>()`,
+					`List.<int>([])`,
+					`Set.<int>([])`,
+					`Map.<int, float>([])`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
 					new SolidTypeList(SolidType.INT).mutableOf(),
@@ -87,42 +87,42 @@ describe('ASTNodeCall', () => {
 		});
 		it('Map has a default type parameter.', () => {
 			assert.deepStrictEqual(
-				AST.ASTNodeCall.fromSource(`Map.<int>();`).type(),
+				AST.ASTNodeCall.fromSource(`Map.<int>()`).type(),
 				new SolidTypeMap(SolidType.INT, SolidType.INT).mutableOf(),
 			);
 		});
 		it('throws if base is not an ASTNodeVariable.', () => {
 			[
-				`null.();`,
-				`(42 || 43).<bool>();`,
+				`null.()`,
+				`(42 || 43).<bool>()`,
 			].forEach((src) => {
 				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeError05);
 			});
 		});
 		it('throws if base is not one of the allowed strings.', () => {
 			[
-				`SET.<str>();`,
-				`Mapping.<bool>();`,
+				`SET.<str>()`,
+				`Mapping.<bool>()`,
 			].forEach((src) => {
 				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), SyntaxError);
 			});
 		});
 		it('throws when providing incorrect number of arguments.', () => {
 			[
-				`List.<int>([], []);`,
-				`Hash.<int>([], []);`,
-				`Set.<int>([], []);`,
-				`Map.<int>([], []);`,
+				`List.<int>([], [])`,
+				`Hash.<int>([], [])`,
+				`Set.<int>([], [])`,
+				`Map.<int>([], [])`,
 			].forEach((src) => {
 				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeError06);
 			});
 		});
 		it('throws when providing incorrect type of arguments.', () => {
 			[
-				`List.<int>(42);`,
-				`Hash.<int>([4.2]);`,
-				`Set.<int>([42, '42']);`,
-				`Map.<int>([42, '42']);`,
+				`List.<int>(42)`,
+				`Hash.<int>([4.2])`,
+				`Set.<int>([42, '42'])`,
+				`Map.<int>([42, '42'])`,
 			].forEach((src) => {
 				assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeError03);
 			});
@@ -134,14 +134,14 @@ describe('ASTNodeCall', () => {
 		it('evaluates List, Hash, Set, and Map.', () => {
 			assert.deepStrictEqual(
 				[
-					`List.<int>([1, 2, 3]);`,
-					`Hash.<int>([a= 1, b= 2, c= 3]);`,
-					`Set.<int>([1, 2, 3]);`,
+					`List.<int>([1, 2, 3])`,
+					`Hash.<int>([a= 1, b= 2, c= 3])`,
+					`Set.<int>([1, 2, 3])`,
 					`Map.<int, float>([
 						[1, 0.1],
 						[2, 0.2],
 						[3, 0.4],
-					]);`,
+					])`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
 					new SolidList<Int16>([
@@ -170,13 +170,13 @@ describe('ASTNodeCall', () => {
 		it('List, Set, and Map take List-value arguments.', () => {
 			assert.deepStrictEqual(
 				[
-					`List.<int>(List.<int>([1, 2, 3]));`,
-					`Set.<int>(List.<int>([1, 2, 3]));`,
+					`List.<int>(List.<int>([1, 2, 3]))`,
+					`Set.<int>(List.<int>([1, 2, 3]))`,
 					`Map.<int, float>(List.<[int, float]>([
 						[1, 0.1],
 						[2, 0.2],
 						[3, 0.4],
-					]));`,
+					]))`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
 					new SolidList<Int16>([
@@ -200,13 +200,13 @@ describe('ASTNodeCall', () => {
 		it('zero/empty functional arguments.', () => {
 			assert.deepStrictEqual(
 				[
-					`List.<int>();`,
-					`Hash.<int>();`,
-					`Set.<int>();`,
-					`Map.<int, float>();`,
-					`List.<int>([]);`,
-					`Set.<int>([]);`,
-					`Map.<int, float>([]);`,
+					`List.<int>()`,
+					`Hash.<int>()`,
+					`Set.<int>()`,
+					`Map.<int, float>()`,
+					`List.<int>([])`,
+					`Set.<int>([])`,
+					`Map.<int, float>([])`,
 				].map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
 					new SolidList<never>(),

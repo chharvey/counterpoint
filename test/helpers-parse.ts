@@ -118,13 +118,13 @@ function typeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT
 	return typeDeclarationFromSource(`type T = ${ typestring };`, config).children[3];
 }
 export function propertyFromString(propertystring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeProperty {
-	const record: PARSENODE.ParseNodeRecordLiteral = recordLiteralFromSource(`[${ propertystring }];`, config);
+	const record: PARSENODE.ParseNodeRecordLiteral = recordLiteralFromSource(`[${ propertystring }]`, config);
 	assert_arrayLength(record.children, 3, 'record should have 3 children');
 	assert_arrayLength(record.children[1].children, 1, 'property list should have 1 child');
 	return record.children[1].children[0];
 }
 export function caseFromString(casestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeCase {
-	const map: PARSENODE.ParseNodeMapLiteral = mapLiteralFromSource(`{${ casestring }};`, config);
+	const map: PARSENODE.ParseNodeMapLiteral = mapLiteralFromSource(`{${ casestring }}`, config);
 	assert_arrayLength(map.children, 3, 'map should have 3 children');
 	assert_arrayLength(map.children[1].children, 1, 'case list should have 1 child');
 	return map.children[1].children[0];
@@ -239,7 +239,7 @@ export function conditionalExpressionFromSource(src: string, config: SolidConfig
 	return expression_cond
 }
 export function expressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeExpression {
-	const statement: PARSENODE.ParseNodeStatement = statementFromSource(src, config)
+	const statement: PARSENODE.ParseNodeStatement = statementFromSource(`${ src };`, config)
 	assert_arrayLength(statement.children, 2, 'statment should have 2 children')
 	const [expression, endstat]: readonly [PARSENODE.ParseNodeExpression, Token] = statement.children
 	assert.ok(endstat instanceof TOKEN.TokenPunctuator)

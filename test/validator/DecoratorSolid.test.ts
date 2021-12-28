@@ -52,12 +52,12 @@ describe('DecoratorSolid', () => {
 					<Constant source="null"/>
 				*/
 				assert.deepStrictEqual([
-					`null;`,
-					`false;`,
-					`true;`,
-					`42;`,
-					`4.2;`,
-					`'hello';`,
+					`null`,
+					`false`,
+					`true`,
+					`42`,
+					`4.2`,
+					`'hello'`,
 				].map((src) => (DECORATOR_SOLID.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).source), [
 					`null`,
 					`false`,
@@ -497,43 +497,43 @@ describe('DecoratorSolid', () => {
 			}
 			specify('StringTemplate ::= TEMPLATE_FULL', () => {
 				templateSources(h.stringTemplateFromSource(`
-					'''full1''';
+					'''full1'''
 				`), `'''full1'''`);
 			});
 			specify('StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL', () => {
 				templateSources(h.stringTemplateFromSource(`
-					'''head1{{}}tail1''';
+					'''head1{{}}tail1'''
 				`), `'''head1{{`, `}}tail1'''`);
 			});
 			specify('StringTemplate ::= TEMPLATE_HEAD Expression TEMPLATE_TAIL', () => {
 				templateSources(h.stringTemplateFromSource(`
-					'''head1{{ '''full1''' }}tail1''';
+					'''head1{{ '''full1''' }}tail1'''
 				`), `'''head1{{`, `'''full1'''`, `}}tail1'''`);
 			});
 			specify('StringTemplate ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL', () => {
 				templateSources(h.stringTemplateFromSource(`
-					'''head1{{}}midd1{{}}tail1''';
+					'''head1{{}}midd1{{}}tail1'''
 				`), `'''head1{{`, `}}midd1{{`, `}}tail1'''`);
 			});
 			specify('StringTemplate ::= TEMPLATE_HEAD Expression StringTemplate__0__List TEMPLATE_TAIL', () => {
 				templateSources(h.stringTemplateFromSource(`
-					'''head1{{ '''full1''' }}midd1{{}}tail1''';
+					'''head1{{ '''full1''' }}midd1{{}}tail1'''
 				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `}}tail1'''`);
 			});
 
 			specify('StringTemplate__0__List ::= TEMPLATE_MIDDLE Expression', () => {
 				templateSources(h.stringTemplateFromSource(`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1''';
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}tail1'''
 				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}tail1'''`);
 			});
 			specify('StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE', () => {
 				templateSources(h.stringTemplateFromSource(`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1''';
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{}}tail1'''
 				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}midd2{{`, `}}tail1'''`);
 			});
 			specify('StringTemplate__0__List ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression', () => {
 				templateSources(h.stringTemplateFromSource(`
-					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1''';
+					'''head1{{ '''full1''' }}midd1{{ '''full2''' }}midd2{{ '''head2{{ '''full3''' }}tail2''' }}tail1'''
 				`), `'''head1{{`, `'''full1'''`, `}}midd1{{`, `'''full2'''`, `}}midd2{{`, `'''head2{{ '''full3''' }}tail2'''`, `}}tail1'''`);
 			});
 		});
@@ -576,7 +576,7 @@ describe('DecoratorSolid', () => {
 				/*
 					<Tuple/>
 				*/
-				assert_arrayLength(DECORATOR_SOLID.decorate(h.tupleLiteralFromSource(`[];`)).children, 0);
+				assert_arrayLength(DECORATOR_SOLID.decorate(h.tupleLiteralFromSource(`[]`)).children, 0);
 			});
 			it('makes a nonempty ASTNodeTuple.', () => {
 				/*
@@ -591,7 +591,7 @@ describe('DecoratorSolid', () => {
 						42,
 						true,
 						null || false,
-					];
+					]
 				`)).children.map((c) => c.source), [
 					`42`,
 					`true`,
@@ -612,7 +612,7 @@ describe('DecoratorSolid', () => {
 					[
 						let= true,
 						foobar= 42,
-					];
+					]
 				`)).children.map((c) => c.source), [
 					`let = true`,
 					`foobar = 42`,
@@ -625,7 +625,7 @@ describe('DecoratorSolid', () => {
 				/*
 					<Set/>
 				*/
-				assert_arrayLength(DECORATOR_SOLID.decorate(h.setLiteralFromSource(`{};`)).children, 0);
+				assert_arrayLength(DECORATOR_SOLID.decorate(h.setLiteralFromSource(`{}`)).children, 0);
 			});
 			it('makes a nonempty ASTNodeSet.', () => {
 				/*
@@ -640,7 +640,7 @@ describe('DecoratorSolid', () => {
 						42,
 						true,
 						null || false,
-					};
+					}
 				`)).children.map((c) => c.source), [
 					`42`,
 					`true`,
@@ -665,7 +665,7 @@ describe('DecoratorSolid', () => {
 						4 -> false,
 						7 -> true,
 						9 -> 42.0,
-					};
+					}
 				`)).children.map((c) => c.source), [
 					`1 -> null`,
 					`4 -> false`,
@@ -685,7 +685,7 @@ describe('DecoratorSolid', () => {
 						<Variable source="diz"/>
 					</>
 				*/
-				const args: PARSENODE.ParseNodeExpressionCompound = h.compoundExpressionFromSource(`foo.(bar || qux, diz);`);
+				const args: PARSENODE.ParseNodeExpressionCompound = h.compoundExpressionFromSource(`foo.(bar || qux, diz)`);
 				assert_arrayLength(args.children, 2);
 				assert.ok(args.children[1] instanceof PARSENODE.ParseNodeFunctionCall);
 				const sequence: [AST.ASTNodeType[], AST.ASTNodeExpression[]] = DECORATOR_SOLID.decorate(args.children[1]);
@@ -708,8 +708,8 @@ describe('DecoratorSolid', () => {
 					<Variable source="variable" id="256"/>
 				*/
 				assert.deepStrictEqual([
-					`variable;`,
-					`var;`,
+					`variable`,
+					`var`,
 				].map((src) => {
 					const variable: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.unitExpressionFromSource(src));
 					assert.ok(variable instanceof AST.ASTNodeVariable)
@@ -727,7 +727,7 @@ describe('DecoratorSolid', () => {
 					</Operation>
 				*/
 				assert.deepStrictEqual(DECORATOR_SOLID.decorate(h.expressionFromSource(`
-					variable || var;
+					variable || var
 				`)).children.map((op) => {
 					assert.ok(op instanceof AST.ASTNodeVariable);
 					return op.id;
@@ -764,10 +764,10 @@ describe('DecoratorSolid', () => {
 					<Constant line="1" col="1" source="null"/>
 				*/
 				assert.deepStrictEqual([
-					`null;`,
-					`false;`,
-					`true;`,
-					`42;`,
+					`null`,
+					`false`,
+					`true`,
+					`42`,
 				].map((src) => (DECORATOR_SOLID.decorate(h.primitiveLiteralFromSource(src)) as unknown as AST.ASTNodeConstant).source), [
 					`null`,
 					`false`,
@@ -785,7 +785,7 @@ describe('DecoratorSolid', () => {
 						<Constant source="-3"/>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(`(2 + -3);`));
+				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(`(2 + -3)`));
 				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
 				assert.ok(operation.operand0 instanceof AST.ASTNodeConstant);
 				assert.ok(operation.operand1 instanceof AST.ASTNodeConstant);
@@ -806,7 +806,7 @@ describe('DecoratorSolid', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(`(-(42) ^ +(2 * 420));`));
+				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(`(-(42) ^ +(2 * 420))`));
 				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
 				assert.strictEqual(operation.operator, Operator.EXP)
 				assert.ok(operation.operand0 instanceof AST.ASTNodeOperationUnary);
@@ -841,7 +841,7 @@ describe('DecoratorSolid', () => {
 						</Access>
 					*/
 					const access: AST.ASTNodeAccess = makeAccess(`
-						[42, 420, 4200].1;
+						[42, 420, 4200].1
 					`);
 					assert.ok(access.accessor instanceof AST.ASTNodeIndex);
 					assert.deepStrictEqual(
@@ -857,7 +857,7 @@ describe('DecoratorSolid', () => {
 						</Access>
 					*/
 					const access: AST.ASTNodeAccess = makeAccess(`
-						[c= 42, b= 420, a= 4200].b;
+						[c= 42, b= 420, a= 4200].b
 					`);
 					assert.ok(access.accessor instanceof AST.ASTNodeKey);
 					assert.deepStrictEqual(
@@ -873,7 +873,7 @@ describe('DecoratorSolid', () => {
 						</Access>
 					*/
 					const access: AST.ASTNodeAccess = makeAccess(`
-						{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}.[0.7 + 0.3];
+						{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}.[0.7 + 0.3]
 					`);
 					assert.ok(access.accessor instanceof AST.ASTNodeExpression);
 					assert.deepStrictEqual(
@@ -893,7 +893,7 @@ describe('DecoratorSolid', () => {
 						</Access>
 					*/
 					makeAccess(`
-						[42, 420, 4200]?.1;
+						[42, 420, 4200]?.1
 					`, Operator.OPTDOT);
 				});
 				it('access by key.', () => {
@@ -904,7 +904,7 @@ describe('DecoratorSolid', () => {
 						</Access>
 					*/
 					makeAccess(`
-						[c= 42, b= 420, a= 4200]?.b;
+						[c= 42, b= 420, a= 4200]?.b
 					`, Operator.OPTDOT);
 				});
 				it('access by computed expression.', () => {
@@ -915,7 +915,7 @@ describe('DecoratorSolid', () => {
 						</Access>
 					*/
 					makeAccess(`
-						{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}?.[0.7 + 0.3];
+						{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}?.[0.7 + 0.3]
 					`, Operator.OPTDOT);
 				});
 			});
@@ -930,7 +930,7 @@ describe('DecoratorSolid', () => {
 						</Access>
 					*/
 					makeAccess(`
-						[42, 420, 4200]!.1;
+						[42, 420, 4200]!.1
 					`, Operator.CLAIMDOT);
 				});
 				it('access by key.', () => {
@@ -941,7 +941,7 @@ describe('DecoratorSolid', () => {
 						</Access>
 					*/
 					makeAccess(`
-						[c= 42, b= 420, a= 4200]!.b;
+						[c= 42, b= 420, a= 4200]!.b
 					`, Operator.CLAIMDOT);
 				});
 				it('access by computed expression.', () => {
@@ -952,7 +952,7 @@ describe('DecoratorSolid', () => {
 						</Access>
 					*/
 					makeAccess(`
-						{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}!.[0.7 + 0.3];
+						{0.5 * 2 -> 'one', 1.4 + 0.6 -> 'two'}!.[0.7 + 0.3]
 					`, Operator.CLAIMDOT);
 				});
 			});
@@ -966,7 +966,7 @@ describe('DecoratorSolid', () => {
 						<Variable source="diz"/>
 					</Call>
 				*/
-				const call: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.compoundExpressionFromSource(`foo.<Bar | Qux, Diz>(bar || qux, diz);`));
+				const call: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.compoundExpressionFromSource(`foo.<Bar | Qux, Diz>(bar || qux, diz)`));
 				assert.ok(call instanceof AST.ASTNodeCall, 'should be instance of ASTNodeCall.');
 				assert.deepStrictEqual(
 					[call.base, ...call.typeargs, ...call.exprargs].map((c) => c.source),
@@ -983,9 +983,9 @@ describe('DecoratorSolid', () => {
 					</Operation>
 				*/
 				assert.deepStrictEqual([
-					`!null;`,
-					`?41;`,
-					`- 42;`,
+					`!null`,
+					`?41`,
+					`- 42`,
 				].map((src) => {
 					const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(src));
 					assert.ok(operation instanceof AST.ASTNodeOperationUnary);
@@ -1008,9 +1008,9 @@ describe('DecoratorSolid', () => {
 					</Operation>
 				*/
 				assert.deepStrictEqual([
-					`2 ^ -3;`,
-					`2 * -3;`,
-					`2 + -3;`,
+					`2 ^ -3`,
+					`2 * -3`,
+					`2 + -3`,
 				].map((src) => {
 					const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(src));
 					assert.ok(operation instanceof AST.ASTNodeOperationBinary);
@@ -1037,7 +1037,7 @@ describe('DecoratorSolid', () => {
 						</Operation>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(`2 - 3;`));
+				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(`2 - 3`));
 				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
 				assert.strictEqual(operation.operator, Operator.ADD)
 				assert.ok(operation.operand0 instanceof AST.ASTNodeConstant);
@@ -1073,7 +1073,7 @@ describe('DecoratorSolid', () => {
 					</Operation>
 				*/
 				return testNegatedBinaryOperation(
-					DECORATOR_SOLID.decorate(h.expressionFromSource(`2 !< 3;`)),
+					DECORATOR_SOLID.decorate(h.expressionFromSource(`2 !< 3`)),
 					[`2`, Operator.LT, `3`],
 				);
 			})
@@ -1087,7 +1087,7 @@ describe('DecoratorSolid', () => {
 					</Operation>
 				*/
 				return testNegatedBinaryOperation(
-					DECORATOR_SOLID.decorate(h.expressionFromSource(`2 !> 3;`)),
+					DECORATOR_SOLID.decorate(h.expressionFromSource(`2 !> 3`)),
 					[`2`, Operator.GT, `3`],
 				);
 			})
@@ -1101,13 +1101,13 @@ describe('DecoratorSolid', () => {
 					</Operation>
 				*/
 				return testNegatedBinaryOperation(
-					DECORATOR_SOLID.decorate(h.expressionFromSource(`2 isnt 3;`)),
+					DECORATOR_SOLID.decorate(h.expressionFromSource(`2 isnt 3`)),
 					[`2`, Operator.IS, `3`],
 				);
 			})
 			it('operator `is`/`isnt` is not yet supported.', () => {
-				assert.throws(() => DECORATOR_SOLID.decorate(h.expressionFromSource(`2 is   2;`)), /not yet supported/);
-				assert.throws(() => DECORATOR_SOLID.decorate(h.expressionFromSource(`2 isnt 3;`)), /not yet supported/);
+				assert.throws(() => DECORATOR_SOLID.decorate(h.expressionFromSource(`2 is   2`)), /not yet supported/);
+				assert.throws(() => DECORATOR_SOLID.decorate(h.expressionFromSource(`2 isnt 3`)), /not yet supported/);
 			});
 		})
 
@@ -1122,7 +1122,7 @@ describe('DecoratorSolid', () => {
 					</Operation>
 				*/
 				return testNegatedBinaryOperation(
-					DECORATOR_SOLID.decorate(h.expressionFromSource(`2 !== 3;`)),
+					DECORATOR_SOLID.decorate(h.expressionFromSource(`2 !== 3`)),
 					[`2`, Operator.ID, `3`],
 				);
 			});
@@ -1136,7 +1136,7 @@ describe('DecoratorSolid', () => {
 					</Operation>
 				*/
 				return testNegatedBinaryOperation(
-					DECORATOR_SOLID.decorate(h.expressionFromSource(`2 != 3;`)),
+					DECORATOR_SOLID.decorate(h.expressionFromSource(`2 != 3`)),
 					[`2`, Operator.EQ, `3`],
 				);
 			})
@@ -1153,7 +1153,7 @@ describe('DecoratorSolid', () => {
 					</Operation>
 				*/
 				return testNegatedBinaryOperation(
-					DECORATOR_SOLID.decorate(h.expressionFromSource(`2 !& 3;`)),
+					DECORATOR_SOLID.decorate(h.expressionFromSource(`2 !& 3`)),
 					[`2`, Operator.AND, `3`],
 				);
 			})
@@ -1170,7 +1170,7 @@ describe('DecoratorSolid', () => {
 					</Operation>
 				*/
 				return testNegatedBinaryOperation(
-					DECORATOR_SOLID.decorate(h.expressionFromSource(`2 !| 3;`)),
+					DECORATOR_SOLID.decorate(h.expressionFromSource(`2 !| 3`)),
 					[`2`, Operator.OR, `3`],
 				);
 			})
@@ -1185,7 +1185,7 @@ describe('DecoratorSolid', () => {
 						<Constant source="3"/>
 					</Operation>
 				*/
-				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(`if true then 2 else 3;`));
+				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(`if true then 2 else 3`));
 				assert.ok(operation instanceof AST.ASTNodeOperationTernary);
 				assert.deepStrictEqual([
 					operation.operand0,

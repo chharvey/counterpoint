@@ -32,9 +32,9 @@ describe('ASTNodeSolid', () => {
 				assert.ok(instr instanceof INST.InstructionNone);
 			})
 			it('returns InstructionStatement for nonempty statement expression.', () => {
-				const src: string = `42 + 420;`;
-				const builder: Builder = new Builder(`{ ${ src } }`);
-				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(src);
+				const src: string = `42 + 420`;
+				const builder: Builder = new Builder(`{ ${ src }; }`);
+				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(`${ src };`);
 				assert.deepStrictEqual(
 					stmt.build(builder),
 					new INST.InstructionStatement(0n, AST.ASTNodeOperationBinaryArithmetic.fromSource(src).build(builder)),
@@ -45,9 +45,10 @@ describe('ASTNodeSolid', () => {
 				const generator: Builder = new Builder(src);
 				AST.ASTNodeGoal.fromSource(src).children.forEach((stmt, i) => {
 					assert.ok(stmt instanceof AST.ASTNodeStatementExpression);
+					const expr: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource(stmt.source.slice(0, -1)); // slice off the semicolon
 					assert.deepStrictEqual(
 						stmt.build(generator),
-						new INST.InstructionStatement(BigInt(i), AST.ASTNodeConstant.fromSource(stmt.source).build(generator)),
+						new INST.InstructionStatement(BigInt(i), expr.build(generator)),
 					);
 				});
 			});
