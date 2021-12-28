@@ -689,12 +689,22 @@ class ProductionStatement extends Production {
 	}
 }
 
-class ProductionGoal__0__List extends Production {
-	static readonly instance: ProductionGoal__0__List = new ProductionGoal__0__List();
+class ProductionBlock__0__List extends Production {
+	static readonly instance: ProductionBlock__0__List = new ProductionBlock__0__List();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionStatement.instance],
-			[ProductionGoal__0__List.instance, ProductionStatement.instance],
+			[ProductionBlock__0__List.instance, ProductionStatement.instance],
+		];
+	}
+}
+
+class ProductionBlock extends Production {
+	static readonly instance: ProductionBlock = new ProductionBlock();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['{', '}'],
+			['{', ProductionBlock__0__List.instance, '}'],
 		];
 	}
 }
@@ -704,7 +714,7 @@ class ProductionGoal extends Production {
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['\u0002', '\u0003'],
-			['\u0002', ProductionGoal__0__List.instance, '\u0003'],
+			['\u0002', ProductionBlock.instance, '\u0003'],
 		];
 	}
 }
@@ -1206,17 +1216,24 @@ export class ParseNodeStatement extends ParseNode {
 	;
 }
 
-export class ParseNodeGoal__0__List extends ParseNode {
+export class ParseNodeBlock__0__List extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeStatement]
-		| readonly [ParseNodeGoal__0__List, ParseNodeStatement]
+		| readonly [ParseNodeBlock__0__List, ParseNodeStatement]
+	;
+}
+
+export class ParseNodeBlock extends ParseNode {
+	declare readonly children:
+		| readonly [Token, Token]
+		| readonly [Token, ParseNodeBlock__0__List, Token]
 	;
 }
 
 export class ParseNodeGoal extends ParseNode {
 	declare readonly children:
 		| readonly [Token, Token]
-		| readonly [Token, ParseNodeGoal__0__List, Token]
+		| readonly [Token, ParseNodeBlock, Token]
 	;
 }
 
@@ -1282,7 +1299,8 @@ export const GRAMMAR: Grammar = new Grammar([
 	ProductionDeclaration.instance,
 	ProductionStatementAssignment.instance,
 	ProductionStatement.instance,
-	ProductionGoal__0__List.instance,
+	ProductionBlock__0__List.instance,
+	ProductionBlock.instance,
 	ProductionGoal.instance,
 ], ProductionGoal.instance);
 
@@ -1354,7 +1372,8 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 		[ProductionDeclaration.instance, ParseNodeDeclaration],
 		[ProductionStatementAssignment.instance, ParseNodeStatementAssignment],
 		[ProductionStatement.instance, ParseNodeStatement],
-		[ProductionGoal__0__List.instance, ParseNodeGoal__0__List],
+		[ProductionBlock__0__List.instance, ParseNodeBlock__0__List],
+		[ProductionBlock.instance, ParseNodeBlock],
 		[ProductionGoal.instance, ParseNodeGoal],
 	]),
 );

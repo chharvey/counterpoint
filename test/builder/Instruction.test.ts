@@ -1,10 +1,7 @@
 import * as xjs from 'extrajs';
 import * as assert from 'assert'
 import {
-	PARSER_SOLID as PARSER,
-} from '../../src/parser/index.js';
-import {
-	DECORATOR_SOLID as DECORATOR,
+	ASTNODE_SOLID as AST,
 	Operator,
 } from '../../src/validator/index.js';
 import {
@@ -244,8 +241,8 @@ describe('Instruction', () => {
 				const mods: (INST.InstructionNone | INST.InstructionModule)[] = [
 					``,
 					`;`,
-				].map((src) => DECORATOR
-					.decorate(PARSER.parse(src))
+				].map((src) => AST.ASTNodeGoal
+					.fromSource(src)
 					.build(new Builder(src))
 				);
 				assert.ok(mods[0] instanceof INST.InstructionNone);
