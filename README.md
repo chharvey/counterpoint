@@ -34,7 +34,9 @@ Now you’re ready to start coding!
 For this demo, we’ll write a simple calculation of only numbers and operators.
 Open a new text file and enter the following source code:
 ```
-1 + +2 ^ (5 - 3) * -4;
+{
+	1 + +2 ^ (5 - 3) * -4;
+}
 ```
 Then save the file under `./sample/my-program.solid` within the project directory.
 

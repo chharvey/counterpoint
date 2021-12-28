@@ -198,7 +198,6 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 - [String](#string)
 - [Object](#object)
 - [Unknown](#unknown)
-- [Compound Types](#compound-types)
 
 #### Never
 The Botton Type represents the set of no values, called `never`.
