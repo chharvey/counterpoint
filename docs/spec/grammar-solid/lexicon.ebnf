@@ -148,35 +148,41 @@ TemplateMiddle :::= "}}"  TemplateChars__EndInterp? "{{" ;
 TemplateTail   :::= "}}"  TemplateChars__EndDelim?  "'''";
 
 	TemplateChars__EndDelim :::=
-		| [^'{#x03] TemplateChars__EndDelim?
+		| TemplateChars__EndDelim__Basic
 		| TemplateChars__EndDelim__StartDelim
 		| TemplateChars__EndDelim__StartInterp
 	;
 
+		TemplateChars__EndDelim__Basic
+			:::= [^'{#x03] TemplateChars__EndDelim?;
+
 		TemplateChars__EndDelim__StartDelim :::=
-			| ("'"  | "''")   [^'{#x03] TemplateChars__EndDelim?
-			| ("'{" | "''{") ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)?
+			| ("'"  | "''")   TemplateChars__EndDelim__Basic
+			| ("'{" | "''{") (TemplateChars__EndDelim__Basic | TemplateChars__EndDelim__StartDelim)?
 		;
 
 		TemplateChars__EndDelim__StartInterp :::=
-			| "{"            ([^'{#x03] TemplateChars__EndDelim?                                       )?
-			| ("{'" | "{''") ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)
+			| "{"             TemplateChars__EndDelim__Basic?
+			| ("{'" | "{''") (TemplateChars__EndDelim__Basic | TemplateChars__EndDelim__StartInterp)
 		;
 
 	TemplateChars__EndInterp :::=
-		| [^'{#x03] TemplateChars__EndInterp?
+		| TemplateChars__EndInterp__Basic
 		| TemplateChars__EndInterp__StartDelim
 		| TemplateChars__EndInterp__StartInterp
 	;
 
+		TemplateChars__EndInterp__Basic
+			:::= [^'{#x03] TemplateChars__EndInterp?;
+
 		TemplateChars__EndInterp__StartDelim :::=
-			| ("'"  | "''")  ([^'{#x03] TemplateChars__EndInterp?                                       )?
-			| ("'{" | "''{") ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)
+			| ("'"  | "''")   TemplateChars__EndInterp__Basic?
+			| ("'{" | "''{") (TemplateChars__EndInterp__Basic | TemplateChars__EndInterp__StartDelim)
 		;
 
 		TemplateChars__EndInterp__StartInterp :::=
-			| "{"             [^'{#x03] TemplateChars__EndInterp?
-			| ("{'" | "{''") ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)?
+			| "{"             TemplateChars__EndInterp__Basic
+			| ("{'" | "{''") (TemplateChars__EndInterp__Basic | TemplateChars__EndInterp__StartInterp)?
 		;
 
 
