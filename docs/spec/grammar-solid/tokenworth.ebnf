@@ -90,23 +90,23 @@ TokenWorth(IntegerDigits<Radix, Separator> :::= <Radix+>("\x"  DigitSequenceHex<
 TokenWorth(IntegerDigits<Radix, Separator> :::= <Radix+>("\z"  DigitSequenceHTD<?Separator>)) -> RealNumber
 	:= TokenWorth(DigitSequenceHTD<?Separator>);
 
-TokenWorth(Float :::= SignedDigitSequenceDec ".") -> RealNumber
-	:= TokenWorth(SignedDigitSequenceDec);
-TokenWorth(Float :::= SignedDigitSequenceDec "." FractionalPart) -> RealNumber
-	:= TokenWorth(SignedDigitSequenceDec) + TokenWorth(FractionalPart);
-TokenWorth(Float :::= SignedDigitSequenceDec "." FractionalPart ExponentPart) -> RealNumber
-	:= (TokenWorth(SignedDigitSequenceDec) + TokenWorth(FractionalPart)) * TokenWorth(ExponentPart);
+TokenWorth(Float<Separator> :::= SignedDigitSequenceDec<?Separator> ".") -> RealNumber
+	:= TokenWorth(SignedDigitSequenceDec<?Separator>);
+TokenWorth(Float<Separator> :::= SignedDigitSequenceDec<?Separator> "." FractionalPart<?Separator>) -> RealNumber
+	:= TokenWorth(SignedDigitSequenceDec) + TokenWorth(FractionalPart<?Separator>);
+TokenWorth(Float<Separator> :::= SignedDigitSequenceDec<?Separator> "." FractionalPart<?Separator> ExponentPart<?Separator>) -> RealNumber
+	:= (TokenWorth(SignedDigitSequenceDec<?Separator>) + TokenWorth(FractionalPart<?Separator>)) * TokenWorth(ExponentPart<?Separator>);
 
-TokenWorth(FractionalPart :::= DigitSequenceDec) -> RealNumber
-	:= TokenWorth(DigitSequenceDec) * 10 ^ (-1 * DigitCount(DigitSequenceDec));
+TokenWorth(FractionalPart<Separator> :::= DigitSequenceDec<?Separator>) -> RealNumber
+	:= TokenWorth(DigitSequenceDec<?Separator>) * 10 ^ (-1 * DigitCount(DigitSequenceDec<?Separator>));
 
-TokenWorth(ExponentPart :::= "e" SignedDigitSequenceDec) -> RealNumber
-	:= 10 ^ TokenWorth(SignedDigitSequenceDec);
+TokenWorth(ExponentPart<Separator> :::= "e" SignedDigitSequenceDec<?Separator>) -> RealNumber
+	:= 10 ^ TokenWorth(SignedDigitSequenceDec<?Separator>);
 
-TokenWorth(SignedDigitSequenceDec :::= "+"? DigitSequenceDec) -> RealNumber
-	:= TokenWorth(DigitSequenceDec);
-TokenWorth(SignedDigitSequenceDec :::= "-"  DigitSequenceDec) -> RealNumber
-	:= -1 * TokenWorth(DigitSequenceDec);
+TokenWorth(SignedDigitSequenceDec<Separator> :::= "+"? DigitSequenceDec<?Separator>) -> RealNumber
+	:= TokenWorth(DigitSequenceDec<?Separator>);
+TokenWorth(SignedDigitSequenceDec<Separator> :::= "-"  DigitSequenceDec<?Separator>) -> RealNumber
+	:= -1 * TokenWorth(DigitSequenceDec<?Separator>);
 
 TokenWorth(DigitSequenceBin<Separator> :::= [0-1]) -> RealNumber
 	:= TokenWorth([0-1]);
