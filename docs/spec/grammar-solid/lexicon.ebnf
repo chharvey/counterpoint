@@ -76,12 +76,12 @@ Identifier
 
 
 Number<Radix, Separator> :::=
-	| Integer<?Radix, ?Separator>
+	| Integer<?Radix><?Separator>
 	| Float<?Separator>
 ;
 
 Integer<Radix, Separator>
-	:::= ("+" | "-")? IntegerDigits<?Radix, ?Separator>;
+	:::= ("+" | "-")? IntegerDigits<?Radix><?Separator>;
 
 IntegerDigits<Radix, Separator> :::=
 	| <Radix->DigitSequenceDec<?Separator>
@@ -105,12 +105,12 @@ ExponentPart<Separator>
 SignedDigitSequenceDec<Separator>
 	:::= ("+" | "-")? DigitSequenceDec<?Separator>;
 
-DigitSequenceBin<Separator> :::= ( DigitSequenceBin <Separator+>"_"? )? [0-1];
-DigitSequenceQua<Separator> :::= ( DigitSequenceQua <Separator+>"_"? )? [0-3];
-DigitSequenceOct<Separator> :::= ( DigitSequenceOct <Separator+>"_"? )? [0-7];
-DigitSequenceDec<Separator> :::= ( DigitSequenceDec <Separator+>"_"? )? [0-9];
-DigitSequenceHex<Separator> :::= ( DigitSequenceHex <Separator+>"_"? )? [0-9a-f];
-DigitSequenceHTD<Separator> :::= ( DigitSequenceHTD <Separator+>"_"? )? [0-9a-z];
+DigitSequenceBin<Separator> :::= ( DigitSequenceBin<?Separator> . <Separator+>"_"? )? [0-1];
+DigitSequenceQua<Separator> :::= ( DigitSequenceQua<?Separator> . <Separator+>"_"? )? [0-3];
+DigitSequenceOct<Separator> :::= ( DigitSequenceOct<?Separator> . <Separator+>"_"? )? [0-7];
+DigitSequenceDec<Separator> :::= ( DigitSequenceDec<?Separator> . <Separator+>"_"? )? [0-9];
+DigitSequenceHex<Separator> :::= ( DigitSequenceHex<?Separator> . <Separator+>"_"? )? [0-9a-f];
+DigitSequenceHTD<Separator> :::= ( DigitSequenceHTD<?Separator> . <Separator+>"_"? )? [0-9a-z];
 
 
 
@@ -192,7 +192,7 @@ Goal<Comment, Radix, Separator> :::=
 	| Punctuator
 	| Keyword
 	| Identifier
-	| Number<?Radix, ?Separator>
+	| Number<?Radix><?Separator>
 	| String<?Comment>
 	| TemplateFull
 	| TemplateHead
