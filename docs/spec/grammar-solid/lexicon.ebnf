@@ -114,25 +114,25 @@ DigitSequenceHTD<Separator> :::= ( DigitSequenceHTD<?Separator> . <Separator+>"_
 
 
 
-String<Comment>
-	:::= "'" StringChars<?Comment>? StringUnfinished<?Comment>? "'";
+String<Comment, Separator>
+	:::= "'" StringChars<?Comment><?Separator>? StringUnfinished<?Comment>? "'";
 
-	StringChars<Comment>
-		:::= StringChar<?Comment> StringChars<?Comment>?;
+	StringChars<Comment, Separator>
+		:::= StringChar<?Comment><?Separator> StringChars<?Comment><?Separator>?;
 
-		StringChar<Comment> :::=
+		StringChar<Comment, Separator> :::=
 			| <Comment->[^'\#x03]
 			| <Comment+>[^'\%#x03]
-			| "\"  StringEscape<?Comment>
+			| "\"  StringEscape<?Comment><?Separator>
 			| "\u" [^'{#x03]
 			| <Comment+>("%"  ([^'%#x0a#x03] [^'#x0a#x03]*)? #x0a)
 			| <Comment+>("%%" ("%"? [^'%#x03])*              "%%")
 		;
 
-			StringEscape<Comment> :::=
+			StringEscape<Comment, Separator> :::=
 				| "'" | "\" | <Comment+>"%"
 				| "s" | "t" | "n" | "r"
-				| "u{" DigitSequenceHex? "}"
+				| "u{" DigitSequenceHex<?Separator>? "}"
 				| #x0a
 				| <Comment->[^'\stnru#x0a#x03]
 				| <Comment+>[^'\%stnru#x0a#x03]
@@ -193,7 +193,7 @@ Goal<Comment, Radix, Separator> :::=
 	| Keyword
 	| Identifier
 	| Number<?Radix><?Separator>
-	| String<?Comment>
+	| String<?Comment><?Separator>
 	| TemplateFull
 	| TemplateHead
 	| TemplateMiddle
