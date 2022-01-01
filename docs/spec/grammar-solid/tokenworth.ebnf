@@ -252,79 +252,8 @@ TokenWorth(TemplateTail :::= "}}" "'''") -> Sequence<RealNumber>
 TokenWorth(TemplateTail :::= "}}" TemplateChars__EndDelim "'''") -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim);
 
-	TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__Basic) -> Sequence<RealNumber>
-		:= TokenWorth(TemplateChars__EndDelim__Basic);
-	TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartDelim) -> Sequence<RealNumber>
-		:= TokenWorth(TemplateChars__EndDelim__StartDelim);
-	TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartInterp) -> Sequence<RealNumber>
-		:= TokenWorth(TemplateChars__EndDelim__StartInterp);
+	TokenWorth(TemplateChars__EndDelim) -> Sequence<RealNumber>
+		:= "Return a mapping of `TemplateChars__EndDelim` for each `character` to `UTF8Encoding(CodePoint(character))`.";
 
-		TokenWorth(TemplateChars__EndDelim__Basic :::= [^'{#x03]) -> Sequence<RealNumber>
-			:= UTF8Encoding(CodePoint([^'{#x03]));
-		TokenWorth(TemplateChars__EndDelim__Basic :::= [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
-			:= [...UTF8Encoding(CodePoint([^'{#x03])), ...TokenWorth(TemplateChars__EndDelim)];
-
-		TokenWorth(TemplateChars__EndDelim__StartDelim :::= ("'" | "''") TemplateChars__EndDelim__Basic) -> Sequence<RealNumber>
-			:= [...Encode("'" | "''"), ...TokenWorth(TemplateChars__EndDelim__Basic)];
-		TokenWorth(TemplateChars__EndDelim__StartDelim :::= "'{" | "''{") -> Sequence<RealNumber>
-			:= Encode("'{" | "''{");
-		TokenWorth(TemplateChars__EndDelim__StartDelim :::= ("'{" | "''{") TemplateChars__EndDelim__Basic) -> Sequence<RealNumber>
-			:= [...Encode("'{" | "''{"), ...TokenWorth(TemplateChars__EndDelim__Basic)];
-		TokenWorth(TemplateChars__EndDelim__StartDelim :::= ("'{" | "''{") TemplateChars__EndDelim__StartDelim) -> Sequence<RealNumber>
-			:= [...Encode("'{" | "''{"), ...TokenWorth(TemplateChars__EndDelim__StartDelim)];
-
-		TokenWorth(TemplateChars__EndDelim__StartInterp :::= "{") -> Sequence<RealNumber>
-			:= Encode("{");
-		TokenWorth(TemplateChars__EndDelim__StartInterp :::= "{" TemplateChars__EndDelim__Basic) -> Sequence<RealNumber>
-			:= [...Encode("{"), ...TokenWorth(TemplateChars__EndDelim__Basic)];
-		TokenWorth(TemplateChars__EndDelim__StartInterp :::= ("{'" | "{''") TemplateChars__EndDelim__Basic) -> Sequence<RealNumber>
-			:= [...Encode("{'" | "{''"), ...TokenWorth(TemplateChars__EndDelim__Basic)];
-		TokenWorth(TemplateChars__EndDelim__StartInterp :::= ("{'" | "{''") TemplateChars__EndDelim__StartInterp) -> Sequence<RealNumber>
-			:= [...Encode("{'" | "{''"), ...TokenWorth(TemplateChars__EndDelim__StartInterp)];
-
-	TokenWorth(TemplateChars__EndInterp :::= TemplateChars__EndInterp__Basic) -> Sequence<RealNumber>
-		:= TokenWorth(TemplateChars__EndInterp__Basic);
-	TokenWorth(TemplateChars__EndInterp :::= TemplateChars__EndInterp__StartDelim) -> Sequence<RealNumber>
-		:= TokenWorth(TemplateChars__EndInterp__StartDelim);
-	TokenWorth(TemplateChars__EndInterp :::= TemplateChars__EndInterp__StartInterp) -> Sequence<RealNumber>
-		:= TokenWorth(TemplateChars__EndInterp__StartInterp);
-
-		TokenWorth(TemplateChars__EndInterp__Basic :::= [^'{#x03]) -> Sequence<RealNumber>
-			:= UTF8Encoding(CodePoint([^'{#x03]));
-		TokenWorth(TemplateChars__EndInterp__Basic :::= [^'{#x03] TemplateChars__EndInterp) -> Sequence<RealNumber>
-			:= [...UTF8Encoding(CodePoint([^'{#x03])), ...TokenWorth(TemplateChars__EndInterp)];
-
-		TokenWorth(TemplateChars__EndInterp__StartDelim :::= "'" | "''") -> Sequence<RealNumber>
-			:= Encode("'" | "''");
-		TokenWorth(TemplateChars__EndInterp__StartDelim :::= ("'" | "''") TemplateChars__EndInterp__Basic) -> Sequence<RealNumber>
-			:= [...Encode("'" | "''"), ...TokenWorth(TemplateChars__EndInterp__Basic)];
-		TokenWorth(TemplateChars__EndInterp__StartDelim :::= ("'{" | "''{") TemplateChars__EndInterp__Basic) -> Sequence<RealNumber>
-			:= [...Encode("'{" | "''{"), ...TokenWorth(TemplateChars__EndInterp__Basic)];
-		TokenWorth(TemplateChars__EndInterp__StartDelim :::= ("'{" | "''{") TemplateChars__EndInterp__StartDelim) -> Sequence<RealNumber>
-			:= [...Encode("'{" | "''{"), ...TokenWorth(TemplateChars__EndInterp__StartDelim)];
-
-		TokenWorth(TemplateChars__EndInterp__StartInterp :::= "{" TemplateChars__EndInterp__Basic) -> Sequence<RealNumber>
-			:= [...Encode("{"), ...TokenWorth(TemplateChars__EndInterp__Basic)];
-		TokenWorth(TemplateChars__EndInterp__StartInterp :::= "{'" | "{''") -> Sequence<RealNumber>
-			:= Encode("{'" | "{''");
-		TokenWorth(TemplateChars__EndInterp__StartInterp :::= ("{'" | "{''") TemplateChars__EndInterp__Basic) -> Sequence<RealNumber>
-			:= [...Encode("{'" | "{''"), ...TokenWorth(TemplateChars__EndInterp__Basic)];
-		TokenWorth(TemplateChars__EndInterp__StartInterp :::= ("{'" | "{''") TemplateChars__EndInterp__StartInterp) -> Sequence<RealNumber>
-			:= [...Encode("{'" | "{''"), ...TokenWorth(TemplateChars__EndInterp__StartInterp)];
-
-Encode("'") -> Sequence<RealNumber>
-	:= UTF8Encoding(\x27); // U+0027 APOSTROPHE
-Encode("''") -> Sequence<RealNumber>
-	:= [...Encode("'"), ...Encode("'")];
-Encode("'''") -> Sequence<RealNumber>
-	:= [...Encode("'"), ...Encode("'"), ...Encode("'")];
-Encode("{") -> Sequence<RealNumber>
-	:= UTF8Encoding(\x7b); // U+007B LEFT CURLY BRACKET
-Encode("'{") -> Sequence<RealNumber>
-	:= [...Encode("'"), ...Encode("{")];
-Encode("''{") -> Sequence<RealNumber>
-	:= [...Encode("''"), ...Encode("{")];
-Encode("{'") -> Sequence<RealNumber>
-	:= [...Encode("{"), ...Encode("'")];
-Encode("{''") -> Sequence<RealNumber>
-	:= [...Encode("{"), ...Encode("''")];
+	TokenWorth(TemplateChars__EndInterp) -> Sequence<RealNumber>
+		:= "Return a mapping of `TemplateChars__EndInterp` for each `character` to `UTF8Encoding(CodePoint(character))`.";
