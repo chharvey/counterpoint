@@ -1,7 +1,6 @@
 import {
 	Util,
 	maybe,
-	maybeA,
 	Token,
 	TOKEN,
 	Terminal,
@@ -17,14 +16,14 @@ export class TerminalFloat extends Terminal {
 			maybe(() => Util.arrayRandom(TOKEN.TokenNumber.UNARY)),
 			TerminalInteger.digitSequence(),
 			TOKEN.TokenNumber.POINT,
-			...maybeA(() => [
+			maybe(() => [
 				TerminalInteger.digitSequence(),
-				...maybeA(() => [
+				maybe(() => [
 					TOKEN.TokenNumber.EXPONENT,
 					maybe(() => Util.arrayRandom(TOKEN.TokenNumber.UNARY)),
 					TerminalInteger.digitSequence(),
-				]),
-			]),
+				].join('')),
+			].join('')),
 		].join('')
 	}
 	match(candidate: Token): boolean {

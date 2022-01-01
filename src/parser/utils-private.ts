@@ -52,10 +52,6 @@ export function maybe(fun: () => string): string {
 	return Util.randomBool() ? '' : fun.call(null);
 }
 
-export function maybeA(fun: () => string[]): string[] {
-	return Util.randomBool() ? [] : fun.call(null);
-}
-
 export function choose(...funs: Readonly<NonemptyArray<() => string>>): string {
 	return Util.arrayRandom(funs).call(null);
 }

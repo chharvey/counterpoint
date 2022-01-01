@@ -3,7 +3,6 @@ import {
 	Util,
 	Filebound,
 	maybe,
-	maybeA,
 	choose,
 	Token,
 	TOKEN,
@@ -23,9 +22,9 @@ export class TerminalString extends Terminal {
 	]
 	private static maybeChars(): string {
 		return maybe(() => choose(
-			() => [Util.randomChar([TOKEN.TokenString.DELIM, TOKEN.TokenString.ESCAPER, Filebound.EOT]),                            TerminalString.maybeChars()  ].join(''),
-			() => [TOKEN.TokenString.ESCAPER, Util.arrayRandom(TerminalString.escape_opts)(),                                       TerminalString.maybeChars()  ].join(''),
-			() => [TOKEN.TokenString.ESCAPER, 'u', ...maybeA(() => [Util.randomChar([TOKEN.TokenString.DELIM, '{', Filebound.EOT]), TerminalString.maybeChars()])].join(''),
+			() => [Util.randomChar([TOKEN.TokenString.DELIM, TOKEN.TokenString.ESCAPER, Filebound.EOT]),                        TerminalString.maybeChars()           ].join(''),
+			() => [TOKEN.TokenString.ESCAPER, Util.arrayRandom(TerminalString.escape_opts)(),                                   TerminalString.maybeChars()           ].join(''),
+			() => [TOKEN.TokenString.ESCAPER, 'u', maybe(() => [Util.randomChar([TOKEN.TokenString.DELIM, '{', Filebound.EOT]), TerminalString.maybeChars()].join(''))].join(''),
 		));
 	}
 	random(): string {

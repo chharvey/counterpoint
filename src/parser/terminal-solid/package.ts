@@ -15,7 +15,6 @@ export {
 export {
 	RadixType,
 	maybe,
-	maybeA,
 	choose,
 } from '../utils-private.js';
 export {Keyword} from '../Keyword.js';
