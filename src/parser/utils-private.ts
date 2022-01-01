@@ -51,11 +51,23 @@ export function maybe(fun: () => string): string {
 	return Util.randomBool() ? '' : fun.call(null);
 }
 
-
-
 export function maybeA(fun: () => string[]): string[] {
 	return Util.randomBool() ? [] : fun.call(null);
 }
+
+export function choose(...funs: (() => string)[]): string {
+	if (!funs.length) {
+		return '';
+	}
+	const random: number = Math.random();
+	for (let i = 0; i < funs.length; i++) {
+		if (random < (i + 1) / funs.length) {
+			return funs[i].call(null);
+		}
+	}
+	throw new Error('Should have returned.');
+}
+
 
 
 
