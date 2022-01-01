@@ -5,6 +5,7 @@
  * they are only for modules within this package.
  */
 export {
+	NonemptyArray,
 	Util,
 } from '../package.js';
 export {

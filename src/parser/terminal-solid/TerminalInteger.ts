@@ -1,4 +1,5 @@
 import {
+	NonemptyArray,
 	Util,
 	RadixType,
 	maybe,
@@ -22,7 +23,7 @@ export class TerminalInteger extends Terminal {
 		].join('')
 	}
 	random(): string {
-		const [base, radix]: [string, RadixType] = Util.arrayRandom([...TOKEN.TokenNumber.BASES])
+		const [base, radix]: [string, RadixType] = Util.arrayRandom([...TOKEN.TokenNumber.BASES] as NonemptyArray<[string, RadixType]>)
 		return [
 			maybe(() => Util.arrayRandom(TOKEN.TokenNumber.UNARY)),
 			...(Util.randomBool() ? [

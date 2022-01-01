@@ -1,4 +1,5 @@
 import {
+	NonemptyArray,
 	Util,
 	Keyword,
 	Token,
@@ -11,7 +12,7 @@ import {
 export class TerminalKeyword extends Terminal {
 	static readonly instance: TerminalKeyword = new TerminalKeyword();
 	random(): Keyword {
-		return Util.arrayRandom(Object.values(Keyword));
+		return Util.arrayRandom(Object.values(Keyword) as NonemptyArray<Keyword>);
 	}
 	match(candidate: Token): boolean {
 		return candidate instanceof TOKEN.TokenKeyword;

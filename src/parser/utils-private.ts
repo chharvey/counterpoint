@@ -1,4 +1,5 @@
 import {
+	NonemptyArray,
 	Util,
 } from './package.js';
 import {Filebound} from './utils-public.js';
@@ -55,17 +56,8 @@ export function maybeA(fun: () => string[]): string[] {
 	return Util.randomBool() ? [] : fun.call(null);
 }
 
-export function choose(...funs: (() => string)[]): string {
-	if (!funs.length) {
-		return '';
-	}
-	const random: number = Math.random();
-	for (let i = 0; i < funs.length; i++) {
-		if (random < (i + 1) / funs.length) {
-			return funs[i].call(null);
-		}
-	}
-	throw new Error('Should have returned.');
+export function choose(...funs: Readonly<NonemptyArray<() => string>>): string {
+	return Util.arrayRandom(funs).call(null);
 }
 
 
