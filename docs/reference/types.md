@@ -10,21 +10,18 @@ This reference takes a more informative approach.
 
 
 ## Simple Types
+Simple types are primitive and basic types. They cannot be broken up into smaller types.
 
 
 ### Never
-The Never type, `never`, is the Bottom type in the type hierarchy —
+The Never type, `never`, is at the bottom of the type hierarchy —
 it contains no values and is a subtype of every other type.
 
-The Never type is used to describe the return type of functions that never return,
+`never` is used to describe the return type of functions that never return,
 or the type of an expression that never evaluates.
 
-The Never type is most commonly a result of a type operation that produces the Bottom type,
+`never` is most commonly a result of a type operation that produces the Bottom type,
 for example, the intersection of two disjoint types.
-
-There are no values assignble to the Never type.
-Currently, there are no expressions assignable to it either, but
-future versions of Solid will support expressions of type Never.
 
 
 ### Void
@@ -394,20 +391,15 @@ I {{ '\u{2764}' }} Unicode!
 
 ### Object
 The Object type, `obj`, is the type of all values, that is, every value is assignable to the Object type.
+Expressions of type `void` cannot hold values, so they are not assignable to `obj`.
 
 
 ### Unknown
-The Unknown type, `unknown`, is the Top type in the type hierarchy —
+The Unknown type, `unknown`, is at the top of the type hierarchy —
 it contains every value and expression, and is a supertype of every other type.
 
-The Unknown type is used to describe a value or expression about which nothing is known.
+`unknown` is used to describe a value or expression about which nothing is known.
 Therefore, the compiler will not assume it has any properties or is valid in some operations.
-
-Every value and expression is assignble to the Unknown type.
-Currently, since there are no valueless expressions,
-the Unknown type is equivalent to the [Object](#object) type.
-However, future versions of Solid will support expressions assignable to Unknown
-that are not assignable to Object.
 
 
 ### Unit Types
@@ -430,7 +422,7 @@ let CAT_FEET: \b100 = \o4;
 CAR_WHEELS = CAT_FEET;
 ```
 
-The assigned value doesn’t need to be a literal; it may be a expression,
+The assigned value doesn’t need to be a literal; it may be an expression,
 as long as it’s computable by the compiler’s [constant folding](./configuration.md#constantFolding) mechanism.
 ```
 let TAU: true = !false;
@@ -473,8 +465,9 @@ let GREETING: '''Hello World!''' = 'Hello World!'; %> ParseError
 ```
 
 
+
 ## Compound Types
-Compound types are subtypes of [Object](#object) and are composed of other types.
+Compound types are collections composed of other types.
 The following table summarizes the built-in compound types.
 
 Type              | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax         | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax

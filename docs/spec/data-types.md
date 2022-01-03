@@ -198,16 +198,15 @@ This list is not exhaustive, as Solid Types may be created in any Solid program.
 - [String](#string)
 - [Object](#object)
 - [Unknown](#unknown)
-- [Compound Types](#compound-types)
 
 #### Never
-The Botton Type represents the set of no values, called `never`.
-No value is assignable to `never`,
-and expressions of type `never` are accepted everywhere.
+The Never type is the Botton Type and it represents the set of no values.
+No value is assignable to Never,
+and expressions of type Never are accepted everywhere.
 
-`never` is a subtype of every type,
-and no type (except `never` itself) is a subtype of `never`.
-`never` is the the “absorption element” of the [intersection](#intersection) operation
+Never is a subtype of every type,
+and no type (except Never itself) is a subtype of Never.
+Never is the the “absorption element” of the [intersection](#intersection) operation
 and the “identity element” of the [union](#union) operation.
 
 #### Void
@@ -270,18 +269,17 @@ Every Solid Language Value is an Object.
 Some specific built-in subtypes of Object are described in the [Built-Ins](./built-ins.md) chapter.
 
 #### Unknown
-The Top Type represents the set of all possible values, called `unknown`.
-Any value or expression is assignable to `unknown`,
-and expressions of type `unknown` are accepted almost nowhere.
+The Unknown type is the Top Type and it represents the set of all possible values.
+Any value or expression is assignable to Unknown,
+and expressions of type Unknown are accepted almost nowhere.
 
-`unknown` is a supertype of every type,
-and no type (except `unknown` itself) is a supertype of `unknown`.
-`unknown` is the the “identity element” of the [intersection](#intersection) operation
+Unknown is a supertype of every type,
+and no type (except Unknown itself) is a supertype of Unknown.
+Unknown is the the “identity element” of the [intersection](#intersection) operation
 and the “absorption element” of the [union](#union) operation.
 
 
 ### Compound Types
-Compound types are subtypes of [Object](#object) and are composed of other types.
 
 - [Tuple](#tuple-type)
 - [Record](#record-type)
