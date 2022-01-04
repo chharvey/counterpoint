@@ -996,3 +996,21 @@ We can avoid the potential crash using the
 ```
 bases?.[a]; % produces the consequent if it exists, else `null`
 ```
+
+
+
+## Callable Types
+
+
+### Function
+Functions are callable objects, which codify algorithms to be dynamically executed
+and can be reused many times.
+
+Some functions have parameters, and these functions take arguments when called.
+When a function is called, it obtains control of execution within a new scope.
+Upon completing execution, functions return control back to their caller,
+and some of these functions return a value along with control.
+Some functions do not even complete execution, either because their author specified so,
+or because something broke internally.
+
+Functions are explored in-depth in the [Functions](./functions.md) chapter.

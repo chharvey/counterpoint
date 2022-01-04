@@ -323,6 +323,18 @@ The objects that any given Map Type contains are `Map` objects whose
 antcedents and consequents are respectively assignable to the types describing the Map Type.
 
 
+### Callable Types
+
+- [Function](#function-type)
+
+#### Function Type
+A **Function Type** contains [`Function` objects](./intrinsics.md#function) and is described by types
+representing parameters and a return value.
+The objects that any Function Type contains are `Function` objects whose
+parameters and return value are respectively assignable to the types describing the Function Type.
+
+
+
 
 ## Type Operations
 

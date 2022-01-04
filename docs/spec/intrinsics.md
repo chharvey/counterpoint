@@ -43,3 +43,9 @@ The values of sets are Solid Language Values.
 ## Map
 `Map` objects are variable-size unordered associations of values.
 The antecedents and consequents of maps are Solid Language Values.
+
+
+
+## Function
+`Function` objects encapsulate parameterized Solid code closed over a lexical environment
+and support the dynamic execution of that code.
