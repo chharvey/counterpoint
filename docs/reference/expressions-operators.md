@@ -21,14 +21,17 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 	</thead>
 	<tbody>
 		<tr>
-			<th rowspan="2">1</th>
-			<td rowspan="2">Grouping</td>
-			<td rowspan="2">unary wrap</td>
-			<td rowspan="2">inner-to-outer</td>
+			<th rowspan="3">1</th>
+			<td rowspan="3">Grouping</td>
+			<td rowspan="3">unary wrap</td>
+			<td rowspan="3">inner-to-outer</td>
 			<td><code>( … )</code></td>
 		</tr>
 		<tr>
 			<td><code>[ … ]</code></td>
+		</tr>
+		<tr>
+			<td><code>{ … }</code></td>
 		</tr>
 		<tr>
 			<th rowspan="6">2</th>
@@ -207,6 +210,10 @@ whether left-to-right or right-to-left, would yield the same mathematical result
 Addition is an example of this. Whether we group *left-to-right* `(a + b) + c`
 or *right-to-left* `a + (b + c)`, the output remains the same.
 Operations that are associative are indicated as so in their respective sections below.
+
+
+### Grouping
+Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
 
 
 ### Property Access
@@ -651,14 +658,17 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 	</thead>
 	<tbody>
 		<tr>
-			<th rowspan="2">1</th>
-			<td rowspan="2">Grouping</td>
-			<td rowspan="2">unary wrap</td>
-			<td rowspan="2">inner-to-outer</td>
+			<th rowspan="3">1</th>
+			<td rowspan="3">Grouping</td>
+			<td rowspan="3">unary wrap</td>
+			<td rowspan="3">inner-to-outer</td>
 			<td><code>( … )</code></td>
 		</tr>
 		<tr>
 			<td><code>[ … ]</code></td>
+		</tr>
+		<tr>
+			<td><code>{ … }</code></td>
 		</tr>
 		<tr>
 			<th>2</th>
@@ -694,6 +704,10 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 		</tr>
 	</tbody>
 </table>
+
+
+### Grouping
+Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
 
 
 ### Type Property Access
