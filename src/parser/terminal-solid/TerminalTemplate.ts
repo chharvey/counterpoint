@@ -2,7 +2,7 @@ import {
 	Util,
 	TemplatePosition,
 	maybe,
-	maybeA,
+	choose,
 	Token,
 	TOKEN,
 	Terminal,
@@ -13,54 +13,48 @@ import {
 export abstract class TerminalTemplate extends Terminal {
 	private static forbidden(): string { return Util.randomChar('\' { \u0003'.split(' ')) }
 	private static charsEndDelim(): string {
-		const random: number = Math.random()
-		return (
-			random < 1/3 ? [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndDelim)].join('') :
-			random < 2/3 ? TerminalTemplate.charsEndDelimStartDelim() :
-			               TerminalTemplate.charsEndDelimStartInterp()
+		return choose(
+			TerminalTemplate.charsEndDelimBasic,
+			TerminalTemplate.charsEndDelimStartDelim,
+			TerminalTemplate.charsEndDelimStartInterp,
 		)
+	}
+	private static charsEndDelimBasic(): string {
+		return [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndDelim)].join('');
 	}
 	private static charsEndDelimStartDelim(): string {
-		const random: number = Math.random()
-		return (
-			random < 1/4 ? [`'`,                                                 TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndDelim)                                                 ] :
-			random < 2/4 ? [`''`,                                                TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndDelim)                                                 ] :
-			random < 3/4 ? [`'{`,  ...maybeA(() => Util.randomBool() ? [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndDelim)] : [TerminalTemplate.charsEndDelimStartDelim()])] :
-			               [`''{`, ...maybeA(() => Util.randomBool() ? [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndDelim)] : [TerminalTemplate.charsEndDelimStartDelim()])]
-		).join('')
+		return choose(
+			() => [Util.arrayRandom([`'`,  `''`]),                     TerminalTemplate.charsEndDelimBasic()                                          ].join(''),
+			() => [Util.arrayRandom([`'{`, `''{`]), maybe(() => choose(TerminalTemplate.charsEndDelimBasic, TerminalTemplate.charsEndDelimStartDelim))].join(''),
+		);
 	}
 	private static charsEndDelimStartInterp(): string {
-		const random: number = Math.random()
-		return (
-			random < 1/3 ? [`{`,   ...(Util.randomBool() ? [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndDelim)] : [''                                         ])] :
-			random < 2/3 ? [`{'`,  ...(Util.randomBool() ? [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndDelim)] : [TerminalTemplate.charsEndDelimStartInterp()])] :
-			               [`{''`, ...(Util.randomBool() ? [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndDelim)] : [TerminalTemplate.charsEndDelimStartInterp()])]
-		).join('')
+		return choose(
+			() => [`{`,                             maybe (TerminalTemplate.charsEndDelimBasic)                                           ].join(''),
+			() => [Util.arrayRandom([`{'`, `{''`]), choose(TerminalTemplate.charsEndDelimBasic, TerminalTemplate.charsEndDelimStartInterp)].join(''),
+		);
 	}
 	private static charsEndInterp(): string {
-		const random: number = Math.random()
-		return (
-			random < 1/3 ? [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndInterp)].join('') :
-			random < 2/3 ? TerminalTemplate.charsEndInterpStartDelim() :
-			               TerminalTemplate.charsEndInterpStartInterp()
+		return choose(
+			TerminalTemplate.charsEndInterpBasic,
+			TerminalTemplate.charsEndInterpStartDelim,
+			TerminalTemplate.charsEndInterpStartInterp,
 		)
 	}
+	private static charsEndInterpBasic(): string {
+		return [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndInterp)].join('');
+	}
 	private static charsEndInterpStartDelim(): string {
-		const random: number = Math.random()
-		return (
-			random < 1/4 ? [`'`,   ...(Util.randomBool() ? [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndInterp)] : [''                                         ])] :
-			random < 2/4 ? [`''`,  ...(Util.randomBool() ? [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndInterp)] : [''                                         ])] :
-			random < 3/4 ? [`'{`,  ...(Util.randomBool() ? [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndInterp)] : [TerminalTemplate.charsEndInterpStartDelim()])] :
-			               [`''{`, ...(Util.randomBool() ? [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndInterp)] : [TerminalTemplate.charsEndInterpStartDelim()])]
-		).join('')
+		return choose(
+			() => [Util.arrayRandom([`'`, `''`]),   maybe (TerminalTemplate.charsEndInterpBasic)].join(''),
+			() => [Util.arrayRandom([`'{`, `''{`]), choose(TerminalTemplate.charsEndInterpBasic, TerminalTemplate.charsEndInterpStartDelim)].join(''),
+		);
 	}
 	private static charsEndInterpStartInterp(): string {
-		const random: number = Math.random()
-		return (
-			random < 1/3 ? [`{`,                                                 TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndInterp)                                                   ] :
-			random < 2/3 ? [`{'`,  ...maybeA(() => Util.randomBool() ? [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndInterp)] : [TerminalTemplate.charsEndInterpStartInterp()])] :
-			               [`{''`, ...maybeA(() => Util.randomBool() ? [TerminalTemplate.forbidden(), maybe(TerminalTemplate.charsEndInterp)] : [TerminalTemplate.charsEndInterpStartInterp()])]
-		).join('')
+		return choose(
+			() => [`{`,                                                TerminalTemplate.charsEndInterpBasic()                                            ].join(''),
+			() => [Util.arrayRandom([`{'`, `{''`]), maybe(() => choose(TerminalTemplate.charsEndInterpBasic, TerminalTemplate.charsEndInterpStartInterp))].join(''),
+		);
 	}
 	random(start: string = TOKEN.TokenTemplate.DELIM, end: string = TOKEN.TokenTemplate.DELIM): string {
 		return [start, maybe(end === TOKEN.TokenTemplate.DELIM ? TerminalTemplate.charsEndDelim : TerminalTemplate.charsEndInterp), end].join('')

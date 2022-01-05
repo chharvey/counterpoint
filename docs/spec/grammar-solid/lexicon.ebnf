@@ -76,28 +76,24 @@ Identifier
 
 
 Number<Radix, Separator> :::=
-	| Integer<?Radix, ?Separator>
+	| Integer<?Radix><?Separator>
 	| Float<?Separator>
 ;
 
 Integer<Radix, Separator>
-	:::= ("+" | "-")? IntegerDigits<?Radix, ?Separator>;
+	:::= ("+" | "-")? <Radix->DigitSequenceDec<?Separator> . <Radix+>IntegerDigitsRadix<?Separator>;
 
-IntegerDigits<Radix, Separator> :::=
-	| <Radix->DigitSequenceDec<?Separator>
-	| <Radix+>("\b"  DigitSequenceBin<?Separator>)
-	| <Radix+>("\q"  DigitSequenceQua<?Separator>)
-	| <Radix+>("\o"  DigitSequenceOct<?Separator>)
-	| <Radix+>("\d"? DigitSequenceDec<?Separator>)
-	| <Radix+>("\x"  DigitSequenceHex<?Separator>)
-	| <Radix+>("\z"  DigitSequenceHTD<?Separator>)
+IntegerDigitsRadix<Separator> :::=
+	| "\b"  DigitSequenceBin<?Separator>
+	| "\q"  DigitSequenceQua<?Separator>
+	| "\o"  DigitSequenceOct<?Separator>
+	| "\d"? DigitSequenceDec<?Separator>
+	| "\x"  DigitSequenceHex<?Separator>
+	| "\z"  DigitSequenceHTD<?Separator>
 ;
 
 Float<Separator>
-	:::= SignedDigitSequenceDec<?Separator> "." ( FractionalPart<?Separator> ExponentPart<?Separator>? )?;
-
-FractionalPart<Separator>
-	:::= DigitSequenceDec<?Separator>;
+	:::= SignedDigitSequenceDec<?Separator> "." ( DigitSequenceDec<?Separator> ExponentPart<?Separator>? )?;
 
 ExponentPart<Separator>
 	:::= "e" SignedDigitSequenceDec<?Separator>;
@@ -105,34 +101,34 @@ ExponentPart<Separator>
 SignedDigitSequenceDec<Separator>
 	:::= ("+" | "-")? DigitSequenceDec<?Separator>;
 
-DigitSequenceBin<Separator> :::= ( DigitSequenceBin <Separator+>"_"? )? [0-1];
-DigitSequenceQua<Separator> :::= ( DigitSequenceQua <Separator+>"_"? )? [0-3];
-DigitSequenceOct<Separator> :::= ( DigitSequenceOct <Separator+>"_"? )? [0-7];
-DigitSequenceDec<Separator> :::= ( DigitSequenceDec <Separator+>"_"? )? [0-9];
-DigitSequenceHex<Separator> :::= ( DigitSequenceHex <Separator+>"_"? )? [0-9a-f];
-DigitSequenceHTD<Separator> :::= ( DigitSequenceHTD <Separator+>"_"? )? [0-9a-z];
+DigitSequenceBin<Separator> :::= ( DigitSequenceBin<?Separator> . <Separator+>"_"? )? [0-1];
+DigitSequenceQua<Separator> :::= ( DigitSequenceQua<?Separator> . <Separator+>"_"? )? [0-3];
+DigitSequenceOct<Separator> :::= ( DigitSequenceOct<?Separator> . <Separator+>"_"? )? [0-7];
+DigitSequenceDec<Separator> :::= ( DigitSequenceDec<?Separator> . <Separator+>"_"? )? [0-9];
+DigitSequenceHex<Separator> :::= ( DigitSequenceHex<?Separator> . <Separator+>"_"? )? [0-9a-f];
+DigitSequenceHTD<Separator> :::= ( DigitSequenceHTD<?Separator> . <Separator+>"_"? )? [0-9a-z];
 
 
 
-String<Comment>
-	:::= "'" StringChars<?Comment>? StringUnfinished<?Comment>? "'";
+String<Comment, Separator>
+	:::= "'" StringChars<?Comment><?Separator>? StringUnfinished<?Comment>? "'";
 
-	StringChars<Comment>
-		:::= StringChar<?Comment> StringChars<?Comment>?;
+	StringChars<Comment, Separator>
+		:::= StringChar<?Comment><?Separator> StringChars<?Comment><?Separator>?;
 
-		StringChar<Comment> :::=
+		StringChar<Comment, Separator> :::=
 			| <Comment->[^'\#x03]
 			| <Comment+>[^'\%#x03]
-			| "\"  StringEscape<?Comment>
+			| "\"  StringEscape<?Comment><?Separator>
 			| "\u" [^'{#x03]
 			| <Comment+>("%"  ([^'%#x0a#x03] [^'#x0a#x03]*)? #x0a)
 			| <Comment+>("%%" ("%"? [^'%#x03])*              "%%")
 		;
 
-			StringEscape<Comment> :::=
+			StringEscape<Comment, Separator> :::=
 				| "'" | "\" | <Comment+>"%"
 				| "s" | "t" | "n" | "r"
-				| "u{" DigitSequenceHex? "}"
+				| "u{" DigitSequenceHex<?Separator>? "}"
 				| #x0a
 				| <Comment->[^'\stnru#x0a#x03]
 				| <Comment+>[^'\%stnru#x0a#x03]
@@ -152,36 +148,230 @@ TemplateMiddle :::= "}}"  TemplateChars__EndInterp? "{{" ;
 TemplateTail   :::= "}}"  TemplateChars__EndDelim?  "'''";
 
 	TemplateChars__EndDelim :::=
-		| [^'{#x03] TemplateChars__EndDelim?
-		| TemplateChars__EndDelim__StartDelim
-		| TemplateChars__EndDelim__StartInterp
+		// Step 1
+		// | TemplateChars__EndDelim__Basic
+		// | TemplateChars__EndDelim__StartDelim
+		// | TemplateChars__EndDelim__StartInterp
+
+		// Step 2
+		// - TemplateChars__EndDelim__Basic
+		// |                              [^'{#x03]
+		// |                              [^'{#x03] TemplateChars__EndDelim
+		// - TemplateChars__EndDelim__StartDelim
+		// | ("'{" | "''{")* ("'" | "''") [^'{#x03]
+		// | ("'{" | "''{")* ("'" | "''") [^'{#x03] TemplateChars__EndDelim
+		// | ("'{" | "''{")+
+		// | ("'{" | "''{")+              [^'{#x03]
+		// | ("'{" | "''{")+              [^'{#x03] TemplateChars__EndDelim
+		// - TemplateChars__EndDelim__StartInterp
+		// | ("{'" | "{''")* "{"
+		// | ("{'" | "{''")* "{"          [^'{#x03]
+		// | ("{'" | "{''")* "{"          [^'{#x03] TemplateChars__EndDelim
+		// | ("{'" | "{''")+              [^'{#x03]
+		// | ("{'" | "{''")+              [^'{#x03] TemplateChars__EndDelim
+
+		// Step 3
+		// |                              [^'{#x03]
+		// | ("'{" | "''{")* ("'" | "''") [^'{#x03]
+		// | ("'{" | "''{")+              [^'{#x03]?
+		// | ("{'" | "{''")* "{"          [^'{#x03]?
+		// | ("{'" | "{''")+              [^'{#x03]
+		// | (
+		// 	|                              [^'{#x03]
+		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03]
+		// 	| ("'{" | "''{")+              [^'{#x03]
+		// 	| ("{'" | "{''")* "{"          [^'{#x03]
+		// 	| ("{'" | "{''")+              [^'{#x03]
+		// ) TemplateChars__EndDelim
+
+		// Step 4
+		// | (
+		// 	|                              [^'{#x03]
+		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03]
+		// 	| ("'{" | "''{")+              [^'{#x03]
+		// 	| ("{'" | "{''")* "{"          [^'{#x03]
+		// 	| ("{'" | "{''")+              [^'{#x03]
+		// )* (
+		// 	|                              [^'{#x03]
+		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03]
+		// 	| ("'{" | "''{")+              [^'{#x03]?
+		// 	| ("{'" | "{''")* "{"          [^'{#x03]?
+		// 	| ("{'" | "{''")+              [^'{#x03]
+		// )
+
+		// Step 5
+		| TemplateChars__NoEnd* (
+			|                              [^'{#x03]
+			| ("'{" | "''{")* ("'" | "''") [^'{#x03]
+			| ("'{" | "''{")+              [^'{#x03]?
+			| ("{'" | "{''")* "{"          [^'{#x03]?
+			| ("{'" | "{''")+              [^'{#x03]
+		)
 	;
 
-		TemplateChars__EndDelim__StartDelim :::=
-			| ("'"  | "''")   [^'{#x03] TemplateChars__EndDelim?
-			| ("'{" | "''{") ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartDelim)?
-		;
+		// TemplateChars__EndDelim__Basic
+		// 	:::= [^'{#x03] TemplateChars__EndDelim?;
 
-		TemplateChars__EndDelim__StartInterp :::=
-			| "{"            ([^'{#x03] TemplateChars__EndDelim?                                       )?
-			| ("{'" | "{''") ([^'{#x03] TemplateChars__EndDelim? | TemplateChars__EndDelim__StartInterp)
-		;
+		// TemplateChars__EndDelim__StartDelim :::=
+		// 	Step 1
+		// 	| ("'"  | "''")   TemplateChars__EndDelim__Basic
+		// 	| ("'{" | "''{") (TemplateChars__EndDelim__Basic | TemplateChars__EndDelim__StartDelim)?
+		//
+		// 	Step 2
+		// 	| ("'"  | "''")  TemplateChars__EndDelim__Basic
+		// 	| ("'{" | "''{")
+		// 	| ("'{" | "''{") TemplateChars__EndDelim__Basic
+		// 	| ("'{" | "''{") TemplateChars__EndDelim__StartDelim
+		//
+		// 	Step 3
+		// 	| ("'{" | "''{")* ("'"  | "''") TemplateChars__EndDelim__Basic
+		// 	| ("'{" | "''{")+
+		// 	| ("'{" | "''{")+               TemplateChars__EndDelim__Basic
+		//
+		// 	Step 4
+		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03] TemplateChars__EndDelim?
+		// 	| ("'{" | "''{")+
+		// 	| ("'{" | "''{")+              [^'{#x03] TemplateChars__EndDelim?
+		// ;
+
+		// TemplateChars__EndDelim__StartInterp :::=
+		// 	Step 1
+		// 	| "{"             TemplateChars__EndDelim__Basic?
+		// 	| ("{'" | "{''") (TemplateChars__EndDelim__Basic | TemplateChars__EndDelim__StartInterp)
+		//
+		// 	Step 2
+		// 	| "{"
+		// 	| "{"            TemplateChars__EndDelim__Basic
+		// 	| ("{'" | "{''") TemplateChars__EndDelim__Basic
+		// 	| ("{'" | "{''") TemplateChars__EndDelim__StartInterp
+		//
+		// 	Step 3
+		// 	| ("{'" | "{''")* "{"
+		// 	| ("{'" | "{''")* "{" TemplateChars__EndDelim__Basic
+		// 	| ("{'" | "{''")+     TemplateChars__EndDelim__Basic
+		//
+		// 	Step 4
+		// 	| ("{'" | "{''")* "{"
+		// 	| ("{'" | "{''")* "{" [^'{#x03] TemplateChars__EndDelim?
+		// 	| ("{'" | "{''")+     [^'{#x03] TemplateChars__EndDelim?
+		// ;
 
 	TemplateChars__EndInterp :::=
-		| [^'{#x03] TemplateChars__EndInterp?
-		| TemplateChars__EndInterp__StartDelim
-		| TemplateChars__EndInterp__StartInterp
+		// Step 1
+		// | TemplateChars__EndInterp__Basic
+		// | TemplateChars__EndInterp__StartDelim
+		// | TemplateChars__EndInterp__StartInterp
+
+		// Step 2
+		// - TemplateChars__EndInterp__Basic
+		// |                              [^'{#x03]
+		// |                              [^'{#x03] TemplateChars__EndInterp
+		// - TemplateChars__EndInterp__StartDelim
+		// | ("'{" | "''{")* ("'" | "''")
+		// | ("'{" | "''{")* ("'" | "''") [^'{#x03]
+		// | ("'{" | "''{")* ("'" | "''") [^'{#x03] TemplateChars__EndInterp
+		// | ("'{" | "''{")+              [^'{#x03]
+		// | ("'{" | "''{")+              [^'{#x03] TemplateChars__EndInterp
+		// - TemplateChars__EndInterp__StartInterp
+		// | ("{'" | "{''")* "{"          [^'{#x03]
+		// | ("{'" | "{''")* "{"          [^'{#x03] TemplateChars__EndInterp
+		// | ("{'" | "{''")+
+		// | ("{'" | "{''")+              [^'{#x03]
+		// | ("{'" | "{''")+              [^'{#x03] TemplateChars__EndInterp
+
+		// Step 3
+		// |                              [^'{#x03]
+		// | ("'{" | "''{")* ("'" | "''") [^'{#x03]?
+		// | ("'{" | "''{")+              [^'{#x03]
+		// | ("{'" | "{''")* "{"          [^'{#x03]
+		// | ("{'" | "{''")+              [^'{#x03]?
+		// | (
+		// 	|                              [^'{#x03]
+		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03]
+		// 	| ("'{" | "''{")+              [^'{#x03]
+		// 	| ("{'" | "{''")* "{"          [^'{#x03]
+		// 	| ("{'" | "{''")+              [^'{#x03]
+		// ) TemplateChars__EndInterp
+
+		// Step 4
+		// | (
+		// 	|                              [^'{#x03]
+		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03]
+		// 	| ("'{" | "''{")+              [^'{#x03]
+		// 	| ("{'" | "{''")* "{"          [^'{#x03]
+		// 	| ("{'" | "{''")+              [^'{#x03]
+		// )* (
+		// 	|                              [^'{#x03]
+		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03]?
+		// 	| ("'{" | "''{")+              [^'{#x03]
+		// 	| ("{'" | "{''")* "{"          [^'{#x03]
+		// 	| ("{'" | "{''")+              [^'{#x03]?
+		// )
+
+		// Step 5
+		| TemplateChars__NoEnd* (
+			|                              [^'{#x03]
+			| ("'{" | "''{")* ("'" | "''") [^'{#x03]?
+			| ("'{" | "''{")+              [^'{#x03]
+			| ("{'" | "{''")* "{"          [^'{#x03]
+			| ("{'" | "{''")+              [^'{#x03]?
+		)
 	;
 
-		TemplateChars__EndInterp__StartDelim :::=
-			| ("'"  | "''")  ([^'{#x03] TemplateChars__EndInterp?                                       )?
-			| ("'{" | "''{") ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartDelim)
-		;
+		// TemplateChars__EndInterp__Basic
+		// 	:::= [^'{#x03] TemplateChars__EndInterp?;
 
-		TemplateChars__EndInterp__StartInterp :::=
-			| "{"             [^'{#x03] TemplateChars__EndInterp?
-			| ("{'" | "{''") ([^'{#x03] TemplateChars__EndInterp? | TemplateChars__EndInterp__StartInterp)?
-		;
+		// TemplateChars__EndInterp__StartDelim :::=
+		// 	Step 1
+		// 	| ("'"  | "''")   TemplateChars__EndInterp__Basic?
+		// 	| ("'{" | "''{") (TemplateChars__EndInterp__Basic | TemplateChars__EndInterp__StartDelim)
+		//
+		// 	Step 2
+		// 	| ("'"  | "''")
+		// 	| ("'"  | "''")  TemplateChars__EndInterp__Basic
+		// 	| ("'{" | "''{") TemplateChars__EndInterp__Basic
+		// 	| ("'{" | "''{") TemplateChars__EndInterp__StartDelim
+		//
+		// 	Step 3
+		// 	| ("'{" | "''{")* ("'" | "''")
+		// 	| ("'{" | "''{")* ("'" | "''") TemplateChars__EndInterp__Basic
+		// 	| ("'{" | "''{")+              TemplateChars__EndInterp__Basic
+		//
+		// 	Step 4
+		// 	| ("'{" | "''{")* ("'" | "''")
+		// 	| ("'{" | "''{")* ("'" | "''") [^'{#x03] TemplateChars__EndInterp?
+		// 	| ("'{" | "''{")+              [^'{#x03] TemplateChars__EndInterp?
+		// ;
+
+		// TemplateChars__EndInterp__StartInterp :::=
+		// 	Step 1
+		// 	| "{"             TemplateChars__EndInterp__Basic
+		// 	| ("{'" | "{''") (TemplateChars__EndInterp__Basic | TemplateChars__EndInterp__StartInterp)?
+		//
+		// 	Step 2
+		// 	| "{"            TemplateChars__EndInterp__Basic
+		// 	| ("{'" | "{''")
+		// 	| ("{'" | "{''") TemplateChars__EndInterp__Basic
+		// 	| ("{'" | "{''") TemplateChars__EndInterp__StartInterp
+		//
+		// 	Step 3
+		// 	| ("{'" | "{''")* "{" TemplateChars__EndInterp__Basic
+		// 	| ("{'" | "{''")+
+		// 	| ("{'" | "{''")+     TemplateChars__EndInterp__Basic
+		//
+		// 	Step 4
+		// 	| ("{'" | "{''")* "{" [^'{#x03] TemplateChars__EndInterp?
+		// 	| ("{'" | "{''")+
+		// 	| ("{'" | "{''")+     [^'{#x03] TemplateChars__EndInterp?
+		// ;
+
+	TemplateChars__NoEnd :::=
+		|                              [^'{#x03]
+		| ("'{" | "''{")* ("'" | "''") [^'{#x03]
+		| ("'{" | "''{")+              [^'{#x03]
+		| ("{'" | "{''")* "{"          [^'{#x03]
+		| ("{'" | "{''")+              [^'{#x03]
+	;
 
 
 
@@ -192,8 +382,8 @@ Goal<Comment, Radix, Separator> :::=
 	| Punctuator
 	| Keyword
 	| Identifier
-	| Number<?Radix, ?Separator>
-	| String<?Comment>
+	| Number<?Radix><?Separator>
+	| String<?Comment><?Separator>
 	| TemplateFull
 	| TemplateHead
 	| TemplateMiddle

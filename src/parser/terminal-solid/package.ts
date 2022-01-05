@@ -5,6 +5,7 @@
  * they are only for modules within this package.
  */
 export {
+	NonemptyArray,
 	Util,
 } from '../package.js';
 export {
@@ -14,7 +15,7 @@ export {
 export {
 	RadixType,
 	maybe,
-	maybeA,
+	choose,
 } from '../utils-private.js';
 export {Keyword} from '../Keyword.js';
 export {Token} from '../Token.js';

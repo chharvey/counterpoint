@@ -1,4 +1,5 @@
 import {
+	NonemptyArray,
 	Util,
 } from './package.js';
 import {Filebound} from './utils-public.js';
@@ -51,11 +52,10 @@ export function maybe(fun: () => string): string {
 	return Util.randomBool() ? '' : fun.call(null);
 }
 
-
-
-export function maybeA(fun: () => string[]): string[] {
-	return Util.randomBool() ? [] : fun.call(null);
+export function choose(...funs: Readonly<NonemptyArray<() => string>>): string {
+	return Util.arrayRandom(funs).call(null);
 }
+
 
 
 
