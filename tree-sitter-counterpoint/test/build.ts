@@ -1,9 +1,10 @@
+#!/usr/bin/env node
+
 import * as fs from 'fs';
 import * as path from 'path';
 
 
 
-const DIRNAME = path.dirname(new URL(import.meta.url).pathname);
 const BOT_TYPE = 'type_unit';
 const TOP_TYPE = 'type';
 const BOT_EXPR = 'expression_unit';
@@ -35,7 +36,7 @@ const hierarchy_expr = [
 
 
 
-function s(name, ...operands) {
+function s(name: string, ...operands: string[]): string {
 	return `
 		(${ name }
 			${ operands.join('\n\t\t\t') }
@@ -43,7 +44,7 @@ function s(name, ...operands) {
 	`;
 }
 
-function fromTypeUnit(name, primary) {
+function fromTypeUnit(name: string, primary: string): string {
 	if (name === BOT_TYPE) {
 		return s(name, primary);
 	}
@@ -51,7 +52,7 @@ function fromTypeUnit(name, primary) {
 	return s(name, fromTypeUnit(child, primary));
 }
 
-function toType(name, ...operands) {
+function toType(name: string, ...operands: string[]): string {
 	const typ = s(name, ...operands);
 	if (name === TOP_TYPE) {
 		return typ;
@@ -60,7 +61,7 @@ function toType(name, ...operands) {
 	return toType(parent, typ);
 }
 
-function fromUnit(name, primary) {
+function fromUnit(name: string, primary: string): string {
 	if (name === BOT_EXPR) {
 		return s(name, primary);
 	}
@@ -68,7 +69,7 @@ function fromUnit(name, primary) {
 	return s(name, fromUnit(child, primary));
 }
 
-function toExpression(name, ...operands) {
+function toExpression(name: string, ...operands: string[]): string {
 	const exp = s(name, ...operands);
 	if (name === TOP_EXPR) {
 		return exp;
@@ -77,7 +78,7 @@ function toExpression(name, ...operands) {
 	return toExpression(parent, exp);
 }
 
-function extractType(operand) {
+function extractType(operand: string): string {
 	return toExpression('expression_compound',
 		fromUnit('expression_compound', s('identifier')),
 		s('function_call',
@@ -87,7 +88,7 @@ function extractType(operand) {
 	);
 }
 
-function makeSourceFile(...expressions) {
+function makeSourceFile(...expressions: string[]): string {
 	return s('source_file',
 		expressions.map((expr) => s('statement', expr)).join(''),
 	);
@@ -95,7 +96,7 @@ function makeSourceFile(...expressions) {
 
 
 
-function buildTest(title, source, expected) {
+function buildTest(title: string, source: string, expected: string) {
 	return `
 ${ '='.repeat(title.length) }
 ${ title }
@@ -111,7 +112,7 @@ ${ expected }
 
 
 
-await fs.promises.writeFile(path.join(DIRNAME, `../test/corpus/index.txt`), Object.entries({
+(() => fs.promises.writeFile(path.join(__dirname, `../test/corpus/index.txt`), Object.entries({
 	/* # TERMINALS */
 	KEYWORDTYPE: [`
 		f.<void>();
@@ -825,4 +826,11 @@ await fs.promises.writeFile(path.join(DIRNAME, `../test/corpus/index.txt`), Obje
 	Statement: [`
 		;
 	`, s('source_file', s('statement'))],
-}).map(([title, [source, expected]]) => buildTest(title, source, expected)).filter((test) => !!test).join(''));
+})
+	.map(([title, [source, expected]]) => buildTest(title, source, expected))
+	.filter((test) => !!test)
+	.join('')
+))().catch((err) => {
+	console.error(err);
+	process.exit(1);
+});

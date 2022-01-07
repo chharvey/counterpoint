@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import * as xjs from 'extrajs';
 import * as fs from 'fs';
 import * as path from 'path';

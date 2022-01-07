@@ -67,6 +67,8 @@ sample/
 # Generated build files
 build/
 *.wasm
+tree-sitter-counterpoint/grammar.js
+tree-sitter-counterpoint/test/build.js
 
 # Generated documentation & style guides
 docs/api/

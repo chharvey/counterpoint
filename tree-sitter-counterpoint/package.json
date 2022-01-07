@@ -24,10 +24,11 @@
     "url": "git+https://github.com/chharvey/tree-sitter-counterpoint.git"
   },
   "scripts": {
-    "generate": "tree-sitter generate",
-    "pretest": "node ./test/build.mjs",
+    "dist": "tsc",
+    "postdist": "tree-sitter generate",
+    "pretest": "node ./test/build.js",
     "test": "tree-sitter test",
-    "build": "npm run generate && npm run test"
+    "build": "npm run dist && npm run test"
   },
   "dependencies": {
     "nan": "^2.15.0"

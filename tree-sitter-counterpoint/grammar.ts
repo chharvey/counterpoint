@@ -1,3 +1,7 @@
+/// <reference path="../node_modules/tree-sitter-cli/dsl.d.ts"/>
+
+
+
 /**
  * Generate a list of productions from a set of parameters.
  * E.g., to generate the following EBNF production:
@@ -18,18 +22,22 @@
  * )
  * ```
  * @param family_name        the name of the production without parameters
- * @param parameterized_rule a rule for the production
+ * @param parameterized_rule a function returning a rule for the production
  * @param params             a set of stringified parameters
  * @returns                  an object of newly generated rules
  */
-function parameterize(family_name, parameterized_rule, ...params) {
-	const rules_obj = {};
-	new Map([...new Array(2 ** params.length)].map((_, nth) => {      // e.g. `['await', 'static', 'instance', 'method']`
-		const args = [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
-			.map((bit, i) => [params[i], !!+bit])                       // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
-			.filter(([_param, to_include]) => !!to_include)             // `[['static', true],  ['method', true]]`
-			.map(([param, _to_include]) => param);                      // `['static', 'method']`
-		const args_obj = {};
+function parameterize<RuleName extends string>(
+	family_name: string,
+	parameterized_rule: (args_obj: Record<string, boolean>) => RuleBuilder<RuleName>,
+	...params: string[]
+): Record<string, RuleBuilder<RuleName>> {
+	const rules_obj: Record<string, RuleBuilder<RuleName>> = {};
+	new Map<string, RuleBuilder<RuleName>>([...new Array(2 ** params.length)].map((_, nth) => { // e.g. `['await', 'static', 'instance', 'method']`
+		const args: string[] = [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
+			.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
+			.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
+			.map(([param, _to_include]) => param);                   // `['static', 'method']`
+		const args_obj: Record<string, boolean> = {};
 		args.forEach((arg) => {
 			args_obj[arg] = true;
 		}); // `{static: true, method: true}`
@@ -57,15 +65,15 @@ function parameterize(family_name, parameterized_rule, ...params) {
  * @param rest_args   any further true stringified arguments
  * @returns           a property name of the `$` object
  */
-function call(family_name, first_arg = {}, ...rest_args) {
+function call(family_name: string, first_arg: Record<string, boolean> | string = {}, ...rest_args: string[]): string {
 	if (typeof first_arg === 'string') {
 		rest_args.push(first_arg);
 		first_arg = {};
 	}
 	rest_args.forEach((arg) => {
-		first_arg[arg] = true;
+		(first_arg as Record<string, boolean>)[arg] = true;
 	});
-	const args_arr = Object.entries(first_arg)
+	const args_arr: string[] = Object.entries(first_arg)
 		.filter(([_,    is_true]) => is_true)
 		.map   (([name, _])       => name);
 	return family_name.concat((args_arr.length) ? `__${ args_arr.join('__') }` : '');
@@ -207,13 +215,13 @@ const OPT_COM = optional(',');
  *                    @default blank()
  * @returns           either `consequent` or `alternative` based on `condition`
  */
-function iff(condition, consequent, alternative = blank()) {
+function iff(condition: boolean, consequent: RuleOrLiteral, alternative: RuleOrLiteral = blank()): RuleOrLiteral {
 	return (!!condition) ? consequent : alternative;
 }
-function repCom(production) {
+function repCom(production: RuleOrLiteral): ChoiceRule {
 	return optional(repCom1(production));
 }
-function repCom1(production) {
+function repCom1(production: RuleOrLiteral): SeqRule {
 	return seq(repeat(seq(production, ',')), production);
 }
 
@@ -228,7 +236,7 @@ module.exports = grammar({
 
 
 		/* # LEXICON */
-		keyword_type: $ => token(choice(
+		keyword_type: _$ => token(choice(
 			'void',
 			'bool',
 			'int',
@@ -236,12 +244,12 @@ module.exports = grammar({
 			'str',
 			'obj',
 		)),
-		keyword_value: $ => token(choice(
+		keyword_value: _$ => token(choice(
 			'null',
 			'false',
 			'true',
 		)),
-		keyword_other: $ => token(choice(
+		keyword_other: _$ => token(choice(
 			// operator
 				'mutable',
 				'is',
@@ -256,28 +264,28 @@ module.exports = grammar({
 				'unfixed',
 		)),
 
-		identifier: $ => token(choice(
+		identifier: _$ => token(choice(
 			/[A-Za-z_][A-Za-z0-9_]*/,
 			/`[^`]*`/
 		)),
 
-		integer:                   $ => token(seq(/[+-]?/, DIGIT_SEQ_DEC)),
-		integer__radix:            $ => token(seq(/[+-]?/, INTEGER_DIGITS_RADIX)),
-		integer__separator:        $ => token(seq(/[+-]?/, DIGIT_SEQ_DEC__SEPARATOR)),
-		integer__radix__separator: $ => token(seq(/[+-]?/, INTEGER_DIGITS_RADIX__SEPARATOR)),
+		integer:                   _$ => token(seq(/[+-]?/, DIGIT_SEQ_DEC)),
+		integer__radix:            _$ => token(seq(/[+-]?/, INTEGER_DIGITS_RADIX)),
+		integer__separator:        _$ => token(seq(/[+-]?/, DIGIT_SEQ_DEC__SEPARATOR)),
+		integer__radix__separator: _$ => token(seq(/[+-]?/, INTEGER_DIGITS_RADIX__SEPARATOR)),
 
-		float:            $ => token(seq(SIGNED_DIGIT_SEQ_DEC,            '.', optional(seq(DIGIT_SEQ_DEC,            optional(EXPONENT_PART))))),
-		float__separator: $ => token(seq(SIGNED_DIGIT_SEQ_DEC__SEPARATOR, '.', optional(seq(DIGIT_SEQ_DEC__SEPARATOR, optional(EXPONENT_PART__SEPARATOR))))),
+		float:            _$ => token(seq(SIGNED_DIGIT_SEQ_DEC,            '.', optional(seq(DIGIT_SEQ_DEC,            optional(EXPONENT_PART))))),
+		float__separator: _$ => token(seq(SIGNED_DIGIT_SEQ_DEC__SEPARATOR, '.', optional(seq(DIGIT_SEQ_DEC__SEPARATOR, optional(EXPONENT_PART__SEPARATOR))))),
 
-		string:                     $ => token(seq('\'', optional(STRING_CHARS),                     optional(STRING_UNFINISHED),          '\'')),
-		string__comment:            $ => token(seq('\'', optional(STRING_CHARS__COMMENT),            optional(STRING_UNFINISHED__COMMENT), '\'')),
-		string__separator:          $ => token(seq('\'', optional(STRING_CHARS__SEPARATOR),          optional(STRING_UNFINISHED),          '\'')),
-		string__comment__separator: $ => token(seq('\'', optional(STRING_CHARS__COMMENT__SEPARATOR), optional(STRING_UNFINISHED__COMMENT), '\'')),
+		string:                     _$ => token(seq('\'', optional(STRING_CHARS),                     optional(STRING_UNFINISHED),          '\'')),
+		string__comment:            _$ => token(seq('\'', optional(STRING_CHARS__COMMENT),            optional(STRING_UNFINISHED__COMMENT), '\'')),
+		string__separator:          _$ => token(seq('\'', optional(STRING_CHARS__SEPARATOR),          optional(STRING_UNFINISHED),          '\'')),
+		string__comment__separator: _$ => token(seq('\'', optional(STRING_CHARS__COMMENT__SEPARATOR), optional(STRING_UNFINISHED__COMMENT), '\'')),
 
-		template_full:   $ => token(seq('\'\'\'', optional(TEMPLATE_CHARS_END_DELIM),  '\'\'\'')),
-		template_head:   $ => token(seq('\'\'\'', optional(TEMPLATE_CHARS_END_INTERP), '{{')),
-		template_middle: $ => token(seq('}}',     optional(TEMPLATE_CHARS_END_INTERP), '{{')),
-		template_tail:   $ => token(seq('}}',     optional(TEMPLATE_CHARS_END_DELIM),  '\'\'\'')),
+		template_full:   _$ => token(seq('\'\'\'', optional(TEMPLATE_CHARS_END_DELIM),  '\'\'\'')),
+		template_head:   _$ => token(seq('\'\'\'', optional(TEMPLATE_CHARS_END_INTERP), '{{')),
+		template_middle: _$ => token(seq('}}',     optional(TEMPLATE_CHARS_END_INTERP), '{{')),
+		template_tail:   _$ => token(seq('}}',     optional(TEMPLATE_CHARS_END_DELIM),  '\'\'\'')),
 
 
 
@@ -439,7 +447,7 @@ module.exports = grammar({
 		),
 	},
 
-	extras: $ => [
+	extras: _$ => [
 		/(\u0020|\t|\n)+/, // whitespace
 		token(choice(
 			/%([^%\n][^\n]*)?\n/, // line comment

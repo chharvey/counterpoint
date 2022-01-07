@@ -1,0 +1,14 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		// Modules
+		"module": "CommonJS",
+		// Emit
+		"outDir":         "./",
+		"removeComments": true,
+		// Language and Environment
+		"target": "ESnext",
+	},
+	"include": ["**/*"],
+	"files": ["grammar.ts", "test/build.ts"],
+}
