@@ -6,13 +6,13 @@
  * ```
  * we can call:
  * ```js
- * parameterizeProduction(
+ * parameterize(
  * 	'non_terminal',
  * 	({param_a, param_b, param_c}) => $ => seq(
  * 		$.item_a,
- * 		callProduction('item_b', {}, 'param_a'),
- * 		callProduction('item_c', {}, 'param_a'),                   // ignore false arguments
- * 		callProduction('item_d', {param_c}, 'param_a', 'param_b'), // `param_c` is inherited
+ * 		$[call('item_b', 'param_a')],
+ * 		$[call('item_c', 'param_a')],                       // ignore false arguments
+ * 		$[call('item_d', {param_c}, 'param_a', 'param_b')], // `param_c` is inherited
  * 	),
  * 	'param_a', 'param_b', 'param_c',
  * )
@@ -50,18 +50,25 @@ function parameterize(family_name, parameterized_rule, ...params) {
  * ```
  * we can call:
  * ```js
- * callProduction('item', {param_d}, 'param_a', 'param_b')
+ * $[call('item', {param_d}, 'param_a', 'param_b')]
  * ```
- * @param $           an object of inherited argument values from the containing production
- * @param args_obj    an object of inherited argument values from the containing production
- * @param args        any further true stringified arguments
+ * @param family_name the name of the production without parameters
+ * @param first_arg   an object of inherited argument values from the containing production
+ * @param rest_args   any further true stringified arguments
  * @returns           a property name of the `$` object
  */
-function call(family_name, args_obj = {}, ...args) {
-	args.forEach((arg) => {
-		args_obj[arg] = true;
+function call(family_name, first_arg = {}, ...rest_args) {
+	if (typeof first_arg === 'string') {
+		rest_args.push(first_arg);
+		first_arg = {};
+	}
+	rest_args.forEach((arg) => {
+		first_arg[arg] = true;
 	});
-	return family_name.concat((args.length) ? `__${ args.join('__') }` : '');
+	const args_arr = Object.entries(first_arg)
+		.filter(([_,    is_true]) => is_true)
+		.map   (([name, _])       => name);
+	return family_name.concat((args_arr.length) ? `__${ args_arr.join('__') }` : '');
 }
 
 
