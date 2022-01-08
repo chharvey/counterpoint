@@ -1,7 +1,11 @@
 Decorate(Word ::= IDENTIFIER) -> SemanticKey
 	:= (SemanticKey[id=TokenWorth(IDENTIFIER)]);
-Decorate(Word ::= KEYWORD) -> SemanticKey
-	:= (SemanticKey[id=TokenWorth(KEYWORD)]);
+Decorate(Word ::= KEYWORD_TYPE) -> SemanticKey
+	:= (SemanticKey[id=TokenWorth(KEYWORD_TYPE)]);
+Decorate(Word ::= KEYWORD_VALUE) -> SemanticKey
+	:= (SemanticKey[id=TokenWorth(KEYWORD_VALUE)]);
+Decorate(Word ::= KEYWORD_OTHER) -> SemanticKey
+	:= (SemanticKey[id=TokenWorth(KEYWORD_OTHER)]);
 
 
 

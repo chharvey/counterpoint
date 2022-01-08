@@ -26,7 +26,9 @@ class ProductionWord extends Production {
 	static readonly instance: ProductionWord = new ProductionWord();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[TERMINAL.TerminalKeyword.instance],
+			[TERMINAL.TerminalKeywordType.instance],
+			[TERMINAL.TerminalKeywordValue.instance],
+			[TERMINAL.TerminalKeywordOther.instance],
 			[TERMINAL.TerminalIdentifier.instance],
 		];
 	}
@@ -712,6 +714,8 @@ class ProductionGoal extends Production {
 
 export class ParseNodeWord extends ParseNode {
 	declare readonly children:
+		| readonly [Token]
+		| readonly [Token]
 		| readonly [Token]
 		| readonly [Token]
 	;

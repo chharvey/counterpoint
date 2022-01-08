@@ -39,7 +39,7 @@ describe('DecoratorSolid', () => {
 						return [key.source, key.id];
 					}),
 					srcs.map((src, i) => [src, [
-						0x8fn,
+						0x90n,
 						0x100n,
 					][i]]),
 				);
