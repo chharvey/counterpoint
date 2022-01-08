@@ -269,18 +269,35 @@ module.exports = grammar({
 			/`[^`]*`/
 		)),
 
-		integer:                   _$ => token(seq(/[+-]?/, DIGIT_SEQ_DEC)),
-		integer__radix:            _$ => token(seq(/[+-]?/, INTEGER_DIGITS_RADIX)),
-		integer__separator:        _$ => token(seq(/[+-]?/, DIGIT_SEQ_DEC__SEPARATOR)),
-		integer__radix__separator: _$ => token(seq(/[+-]?/, INTEGER_DIGITS_RADIX__SEPARATOR)),
+		...parameterize('integer', ({radix, separator}) => (
+			_$ => token(seq(/[+-]?/, (!radix)
+				? (!separator) ? DIGIT_SEQ_DEC        : DIGIT_SEQ_DEC__SEPARATOR
+				: (!separator) ? INTEGER_DIGITS_RADIX : INTEGER_DIGITS_RADIX__SEPARATOR,
+			))
+		), 'radix', 'separator'),
 
-		float:            _$ => token(seq(SIGNED_DIGIT_SEQ_DEC,            '.', optional(seq(DIGIT_SEQ_DEC,            optional(EXPONENT_PART))))),
-		float__separator: _$ => token(seq(SIGNED_DIGIT_SEQ_DEC__SEPARATOR, '.', optional(seq(DIGIT_SEQ_DEC__SEPARATOR, optional(EXPONENT_PART__SEPARATOR))))),
+		...parameterize('float', ({separator}) => (
+			_$ => token(seq(
+				(!separator) ? SIGNED_DIGIT_SEQ_DEC : SIGNED_DIGIT_SEQ_DEC__SEPARATOR,
+				'.',
+				optional(seq(
+					         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR,
+					optional((!separator) ? EXPONENT_PART : EXPONENT_PART__SEPARATOR),
+				)),
+			))
+		), 'separator'),
 
-		string:                     _$ => token(seq('\'', optional(STRING_CHARS),                     optional(STRING_UNFINISHED),          '\'')),
-		string__comment:            _$ => token(seq('\'', optional(STRING_CHARS__COMMENT),            optional(STRING_UNFINISHED__COMMENT), '\'')),
-		string__separator:          _$ => token(seq('\'', optional(STRING_CHARS__SEPARATOR),          optional(STRING_UNFINISHED),          '\'')),
-		string__comment__separator: _$ => token(seq('\'', optional(STRING_CHARS__COMMENT__SEPARATOR), optional(STRING_UNFINISHED__COMMENT), '\'')),
+		...parameterize('string', ({comment, separator}) => (
+			_$ => token(seq(
+				'\'',
+				optional((!comment)
+					? (!separator) ? STRING_CHARS          : STRING_CHARS__SEPARATOR
+					: (!separator) ? STRING_CHARS__COMMENT : STRING_CHARS__COMMENT__SEPARATOR,
+				),
+				optional((!comment) ? STRING_UNFINISHED : STRING_UNFINISHED__COMMENT),
+				'\'',
+			))
+		), 'comment', 'separator'),
 
 		template_full:   _$ => token(seq('\'\'\'', optional(TEMPLATE_CHARS_END_DELIM),  '\'\'\'')),
 		template_head:   _$ => token(seq('\'\'\'', optional(TEMPLATE_CHARS_END_INTERP), '{{')),
