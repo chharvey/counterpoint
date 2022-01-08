@@ -69,29 +69,6 @@ describe('DecoratorSolid', () => {
 			})
 		})
 
-		describe('TypeKeyword ::= "void" | "bool" | "int" | "float" | "str" | "obj"', () => {
-			it('makes an ASTNodeTypeConstant.', () => {
-				/*
-					<TypeConstant source="void"/>
-				*/
-				assert.deepStrictEqual([
-					`void`,
-					`bool`,
-					`int`,
-					`float`,
-					`str`,
-					`obj`,
-				].map((src) => (DECORATOR_SOLID.decorate(h.keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).source), [
-					`void`,
-					`bool`,
-					`int`,
-					`float`,
-					`str`,
-					`obj`,
-				])
-			})
-		})
-
 		describe('EntryType<Named, Optional> ::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type', () => {
 			specify('EntryType ::= Type', () => {
 				/*

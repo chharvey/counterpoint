@@ -38,26 +38,10 @@ class ProductionPrimitiveLiteral extends Production {
 	static readonly instance: ProductionPrimitiveLiteral = new ProductionPrimitiveLiteral();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['null'],
-			['false'],
-			['true'],
+			[TERMINAL.TerminalKeywordValue.instance],
 			[TERMINAL.TerminalInteger.instance],
 			[TERMINAL.TerminalFloat.instance],
 			[TERMINAL.TerminalString.instance],
-		];
-	}
-}
-
-class ProductionTypeKeyword extends Production {
-	static readonly instance: ProductionTypeKeyword = new ProductionTypeKeyword();
-	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
-		return [
-			['void'],
-			['bool'],
-			['int'],
-			['float'],
-			['str'],
-			['obj'],
 		];
 	}
 }
@@ -219,9 +203,9 @@ class ProductionTypeUnit extends Production {
 	static readonly instance: ProductionTypeUnit = new ProductionTypeUnit();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
+			[TERMINAL.TerminalKeywordType.instance],
 			[TERMINAL.TerminalIdentifier.instance],
 			[ProductionPrimitiveLiteral.instance],
-			[ProductionTypeKeyword.instance],
 			[ProductionTypeTupleLiteral.instance],
 			[ProductionTypeRecordLiteral.instance],
 			[ProductionTypeHashLiteral.instance],
@@ -727,19 +711,6 @@ export class ParseNodePrimitiveLiteral extends ParseNode {
 		| readonly [Token]
 		| readonly [Token]
 		| readonly [Token]
-		| readonly [Token]
-		| readonly [Token]
-	;
-}
-
-export class ParseNodeTypeKeyword extends ParseNode {
-	declare readonly children:
-		| readonly [Token]
-		| readonly [Token]
-		| readonly [Token]
-		| readonly [Token]
-		| readonly [Token]
-		| readonly [Token]
 	;
 }
 
@@ -863,8 +834,8 @@ export class ParseNodeGenericArguments extends ParseNode {
 export class ParseNodeTypeUnit extends ParseNode {
 	declare readonly children:
 		| readonly [Token]
+		| readonly [Token]
 		| readonly [ParseNodePrimitiveLiteral]
-		| readonly [ParseNodeTypeKeyword]
 		| readonly [ParseNodeTypeTupleLiteral]
 		| readonly [ParseNodeTypeRecordLiteral]
 		| readonly [ParseNodeTypeHashLiteral]
@@ -1228,7 +1199,6 @@ export class ParseNodeGoal extends ParseNode {
 export const GRAMMAR: Grammar = new Grammar([
 	ProductionWord.instance,
 	ProductionPrimitiveLiteral.instance,
-	ProductionTypeKeyword.instance,
 	ProductionEntryType.instance,
 	ProductionEntryType_Optional.instance,
 	ProductionEntryType_Named.instance,
@@ -1300,7 +1270,6 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 	new Map<Production, typeof ParseNode>([
 		[ProductionWord.instance, ParseNodeWord],
 		[ProductionPrimitiveLiteral.instance, ParseNodePrimitiveLiteral],
-		[ProductionTypeKeyword.instance, ParseNodeTypeKeyword],
 		[ProductionEntryType.instance, ParseNodeEntryType],
 		[ProductionEntryType_Optional.instance, ParseNodeEntryType_Optional],
 		[ProductionEntryType_Named.instance, ParseNodeEntryType_Named],

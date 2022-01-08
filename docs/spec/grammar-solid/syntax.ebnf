@@ -22,24 +22,13 @@ Word ::=
 
 
 PrimitiveLiteral ::=
-	| "null"
-	| "false"
-	| "true"
+	| KEYWORD_VALUE
 	| INTEGER
 	| FLOAT
 	| STRING
 ;
 
 
-
-TypeKeyword ::=
-	| "void"
-	| "bool"
-	| "int"
-	| "float"
-	| "str"
-	| "obj"
-;
 
 EntryType<Named, Optional>
 	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type;
@@ -59,9 +48,9 @@ TypeMapLiteral    ::= "{" Type "->" Type       "}";
 GenericArguments  ::= "<"  ","? Type# ","?     ">";
 
 TypeUnit ::=
+	| KEYWORD_TYPE
 	| IDENTIFIER
 	| PrimitiveLiteral
-	| TypeKeyword
 	| TypeTupleLiteral
 	| TypeRecordLiteral
 	| TypeHashLiteral

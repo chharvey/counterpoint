@@ -257,3 +257,18 @@ TokenWorth(TemplateTail :::= "}}" TemplateChars__EndDelim "'''") -> Sequence<Rea
 
 	TokenWorth(TemplateChars__EndInterp) -> Sequence<RealNumber>
 		:= "Return a mapping of `TemplateChars__EndInterp` for each `character` to `UTF8Encoding(CodePoint(character))`.";
+
+
+
+KeywordType(KEYWORD_TYPE :::= "void")  -> Type := Void;
+KeywordType(KEYWORD_TYPE :::= "bool")  -> Type := Boolean;
+KeywordType(KEYWORD_TYPE :::= "int")   -> Type := Integer;
+KeywordType(KEYWORD_TYPE :::= "float") -> Type := Float;
+KeywordType(KEYWORD_TYPE :::= "str")   -> Type := String;
+KeywordType(KEYWORD_TYPE :::= "obj")   -> Type := Object;
+
+
+
+KeywordValue(KEYWORD_VALUE :::= "null")  -> Object := null;
+KeywordValue(KEYWORD_VALUE :::= "false") -> Object := false;
+KeywordValue(KEYWORD_VALUE :::= "true")  -> Object := true;

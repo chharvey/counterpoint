@@ -84,7 +84,6 @@ class DecoratorSolid extends Decorator {
 
 	override decorate(node: PARSENODE.ParseNodeWord):             AST.ASTNodeKey;
 	override decorate(node: PARSENODE.ParseNodePrimitiveLiteral): AST.ASTNodeConstant;
-	override decorate(node: PARSENODE.ParseNodeTypeKeyword):      AST.ASTNodeTypeConstant;
 	override decorate(node:
 		| PARSENODE.ParseNodeEntryType
 		| PARSENODE.ParseNodeEntryType_Optional
@@ -151,9 +150,6 @@ class DecoratorSolid extends Decorator {
 
 		} else if (node instanceof PARSENODE.ParseNodePrimitiveLiteral) {
 			return new AST.ASTNodeConstant(node.children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString);
-
-		} else if (node instanceof PARSENODE.ParseNodeTypeKeyword) {
-			return new AST.ASTNodeTypeConstant(node.children[0] as TOKEN.TokenKeyword);
 
 		} else if (node instanceof PARSENODE.ParseNodeEntryType) {
 			return new AST.ASTNodeItemType(
@@ -223,7 +219,9 @@ class DecoratorSolid extends Decorator {
 					? (node.children[0] instanceof PARSENODE.ParseNodePrimitiveLiteral)
 						? new AST.ASTNodeTypeConstant(node.children[0].children[0] as TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString)
 						: this.decorate(node.children[0])
-					: new AST.ASTNodeTypeAlias(node.children[0] as TOKEN.TokenIdentifier)
+					: (node.children[0] instanceof TOKEN.TokenKeyword)
+						? new AST.ASTNodeTypeConstant(node.children[0])
+						: new AST.ASTNodeTypeAlias(node.children[0] as TOKEN.TokenIdentifier)
 				: this.decorate(node.children[1]);
 
 		} else if (node instanceof PARSENODE.ParseNodePropertyAccessType) {

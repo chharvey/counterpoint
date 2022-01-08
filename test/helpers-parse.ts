@@ -37,9 +37,9 @@ export function tokenLiteralFromTypeString(typestring: string, config: SolidConf
 	return token
 }
 export function tokenKeywordFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenKeyword {
-	const token: Token = keywordTypeFromString(typestring, config).children[0]
-	assert.ok(token instanceof TOKEN.TokenKeyword, 'token should be a TokenKeyword')
-	return token
+	const unit: PARSENODE.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
+	assert.ok(unit instanceof TOKEN.TokenKeyword, 'unit should be a TokenKeyword');
+	return unit;
 }
 export function tokenIdentifierFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenIdentifier {
 	const unit: PARSENODE.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
@@ -49,11 +49,6 @@ export function tokenIdentifierFromTypeString(typestring: string, config: SolidC
 export function primitiveTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodePrimitiveLiteral {
 	const unit: PARSENODE.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
 	assert.ok(unit instanceof PARSENODE.ParseNodePrimitiveLiteral, 'unit should be a ParseNodePrimitiveLiteral')
-	return unit
-}
-export function keywordTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeKeyword {
-	const unit: PARSENODE.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
-	assert.ok(unit instanceof PARSENODE.ParseNodeTypeKeyword, 'unit should be a ParseNodeTypeKeyword')
 	return unit
 }
 export function entryTypeFromString(itemstring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeEntryType | PARSENODE.ParseNodeEntryType_Optional {
