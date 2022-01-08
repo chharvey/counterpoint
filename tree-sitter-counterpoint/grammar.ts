@@ -2,6 +2,9 @@
 
 
 
+function familyName<RuleName extends string>(family_name: string, ...suffices: readonly string[]): RuleName {
+	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
+}
 /**
  * Generate a list of productions from a set of parameters.
  * E.g., to generate the following EBNF production:
@@ -26,23 +29,23 @@
  * @param params             a set of stringified parameters
  * @returns                  an object of newly generated rules
  */
-function parameterize<RuleName extends string>(
+function parameterize<RuleName extends string, BaseGrammarRuleName extends string>(
 	family_name: string,
 	parameterized_rule: (args_obj: Record<string, boolean>) => RuleBuilder<RuleName>,
-	...params: string[]
-): Record<string, RuleBuilder<RuleName>> {
-	const rules_obj: Record<string, RuleBuilder<RuleName>> = {};
-	new Map<string, RuleBuilder<RuleName>>([...new Array(2 ** params.length)].map((_, nth) => { // e.g. `['await', 'static', 'instance', 'method']`
-		const args: string[] = [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
+	...params: readonly string[]
+): RuleBuilders<RuleName, BaseGrammarRuleName> {
+	const rules_obj: RuleBuilders<RuleName, BaseGrammarRuleName> = {} as RuleBuilders<RuleName, BaseGrammarRuleName>;
+	new Map<RuleName, RuleBuilder<RuleName>>([...new Array(2 ** params.length)].map((_, nth) => { // e.g. `['await', 'static', 'instance', 'method']`
+		const args_arr: readonly string[] = [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
 			.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
 			.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
 			.map(([param, _to_include]) => param);                   // `['static', 'method']`
 		const args_obj: Record<string, boolean> = {};
-		args.forEach((arg) => {
+		args_arr.forEach((arg) => {
 			args_obj[arg] = true;
 		}); // `{static: true, method: true}`
 		return [
-			family_name.concat((args.length) ? `__${ args.join('__') }` : ''), // 'family_name__static__method'
+			familyName(family_name, ...args_arr), // 'family_name__static__method'
 			parameterized_rule.call(null, args_obj),
 		];
 	})).forEach((rule, name) => {
@@ -50,33 +53,28 @@ function parameterize<RuleName extends string>(
 	});
 	return rules_obj;
 }
+
 /**
- * References a production with arguments.
+ * References a production with arguments. Arguments must be provided in order.
  * E.g., to generate the following EBNF item:
  * ```ebnf
  * Item<+ParamA><+ParamB><-ParamC><?ParamD>
  * ```
  * we can call:
  * ```js
- * $[call('item', {param_d}, 'param_a', 'param_b')]
+ * $[call('item', 'param_a', 'param_b', {param_d})]
  * ```
  * @param family_name the name of the production without parameters
- * @param first_arg   an object of inherited argument values from the containing production
- * @param rest_args   any further true stringified arguments
+ * @param args        argument names or objects of inherited argument values from the containing production
  * @returns           a property name of the `$` object
  */
-function call(family_name: string, first_arg: Record<string, boolean> | string = {}, ...rest_args: string[]): string {
-	if (typeof first_arg === 'string') {
-		rest_args.push(first_arg);
-		first_arg = {};
-	}
-	rest_args.forEach((arg) => {
-		(first_arg as Record<string, boolean>)[arg] = true;
-	});
-	const args_arr: string[] = Object.entries(first_arg)
-		.filter(([_,    is_true]) => is_true)
-		.map   (([name, _])       => name);
-	return family_name.concat((args_arr.length) ? `__${ args_arr.join('__') }` : '');
+function call<RuleName extends string>(family_name: string, ...args: readonly (string | Record<string, boolean>)[]): RuleName {
+	return familyName(family_name, ...args.flatMap((arg) => (typeof arg === 'string')
+		? [arg]
+		: Object.entries(arg)
+			.filter(([_,    is_true]) => is_true)
+			.map   (([name, _])       => name)
+	));
 }
 
 
