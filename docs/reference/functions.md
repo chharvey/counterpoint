@@ -132,7 +132,7 @@ we can return them as [closures](#closures),
 ```
 func adder(augend: int): (int) => int {
 	return [augend](addend: int): int { return augend + addend; };
-	%       ^ this is called a ‘capture’ --- don’t worry about it for now
+	%      ^ this is called ‘capturing’ --- don’t worry about it for now
 }
 let closure: (int) => int = adder.(3);
 closure.(5); %== 8
@@ -234,7 +234,7 @@ let mult: (int, int) => int =
 
 % typeof mult: (int, int) => int
 
-mult.(a= 2, b= 3); %> TypeError
+mult.(a= 2, b= 3); %> TypeError (cannot send named arguments)
 ```
 This time, the parameters `a` and `b` are completely internal to the function’s implementation,
 and the caller does not know their names. On the downside, the caller may only provide positional arguments.
@@ -249,7 +249,7 @@ any function assigned to that type may be called with corresponding named argume
 The second type signature has positional parameters, so any implementations can only be called with positional arguments.
 ```
 type BinOp1 = (left: float, right: float) => float;
-type BinOp2 = (float, float) => float;
+type BinOp2 = (      float,        float) => float;
 
 % assume `fn1` is of type `BinOp1`
 fn1.(      1.5,        2.5); % ok
@@ -266,14 +266,14 @@ When assigning a function to a type signature with named parameters,
 the assigned parameter order must match up with the assignee parameters.
 ```
 type BinaryOperator = (left: float, right: float) => float;
-let subtract: BinaryOperator = (x: float, y: float): float { return x - y; }; %> TypeError
+let subtract: BinaryOperator = (x: float, y: float): float => x - y; %> TypeError
 ```
 This errors because a caller must be able to call `subtract` with the named arguments `left` and `right`.
 
 Function parameter syntax includes a mechanism for handling function assignment/implementation with named parameters.
 In the parameter name, we use `left as x` to **alias** the real parameter `x` to the assignee parameter `left`.
 ```
-let subtract: BinaryOperator = (left as x: float, right as y: float): float { return x - y; };
+let subtract: BinaryOperator = (left as x: float, right as y: float): float => x - y;
 subtract.(left= 2.5, right= 1.5);
 ```
 This lets the function author internally use the parameter names `x` and `y`
@@ -284,10 +284,10 @@ Function types with positional parameters are useful when a function type needs 
 be specified with positional parameters.)
 ```
 type BinaryOperatorUnnamed = (float, float) => float;
-let add:      BinaryOperatorUnnamed = (augend:       float, addend:     float): void { augend       + addend; };
-let subtract: BinaryOperatorUnnamed = (minuend:      float, subtrahend: float): void { minuend      - subtrahend; };
-let multiply: BinaryOperatorUnnamed = (multiplicand: float, multiplier: float): void { multiplicand * multiplier; };
-let divide:   BinaryOperatorUnnamed = (dividend:     float, divisor:    float): void { dividend     / divisor; };
+let add:      BinaryOperatorUnnamed = (augend:       float, addend:     float): float => augend       + addend;
+let subtract: BinaryOperatorUnnamed = (minuend:      float, subtrahend: float): float => minuend      - subtrahend;
+let multiply: BinaryOperatorUnnamed = (multiplicand: float, multiplier: float): float => multiplicand * multiplier;
+let divide:   BinaryOperatorUnnamed = (dividend:     float, divisor:    float): float => dividend     / divisor;
 ```
 
 
@@ -309,8 +309,8 @@ func iterate(list: float[], callback: (item: float) => void): void {
 ```
 And a caller might use it as so:
 ```
-iterate.([2.0, 4.0, 8.0, 16.0], (item: float): str {
-	return '''2 to the {{ item }} power is {{ 2.0 ^ item }}''';
+iterate.([2.0, 4.0, 8.0, 16.0], (item: float): void {
+	'''2 to the {{ item }} power is {{ 2.0 ^ item }}''';
 });
 ```
 If the caller doesn’t like `item` as the callback parameter name,
@@ -360,7 +360,7 @@ func sayHello(): str {
 	print.('world');
 	return 'world';
 }
-sayAll.([sayHello.(), sayWorld.()]);
+sayAll.(sayHello.(), sayWorld.());
 ```
 In this example, the order of prints is:
 1. `'hello'`
@@ -385,7 +385,7 @@ func sayHello(): str {
 	print.('world');
 	return 'world';
 }
-sayAll.([() => sayHello.(), () => sayWorld.()]);
+sayAll.(() => sayHello.(), () => sayWorld.());
 ```
 1. `'printing...'`
 2. `'world'`
