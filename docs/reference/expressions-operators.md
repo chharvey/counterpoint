@@ -369,6 +369,7 @@ this is important to mention because it could affect how we write
 The expression `<T>expr` tells the type system to treat `expr` as type `T`,
 even though it might have been computed as a different type.
 This is called a **type claim**, because we’re *claiming* that `expr` is of type `T`.
+(We say “claim” instead of “assert”, which is an unrelated concept.)
 
 Normally, the compiler will compute the type of an expression, but sometimes the compiler gets it wrong,
 or we as programmers know more than the compiler does, based on conditions or circumstances of our code.
