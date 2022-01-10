@@ -112,7 +112,7 @@ ${ expected }
 
 
 
-(() => fs.promises.writeFile(path.join(__dirname, `../test/corpus/index.txt`), Object.entries({
+(() => fs.promises.mkdir(path.join(__dirname, './corpus/'), {recursive: true}).then(() => fs.promises.writeFile(path.join(__dirname, './corpus/index.txt'), Object.entries({
 	/* # TERMINALS */
 	KEYWORDTYPE: [`
 		f.<void>();
@@ -830,7 +830,7 @@ ${ expected }
 	.map(([title, [source, expected]]) => buildTest(title, source, expected))
 	.filter((test) => !!test)
 	.join('')
-))().catch((err) => {
+)))().catch((err) => {
 	console.error(err);
 	process.exit(1);
 });

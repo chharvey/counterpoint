@@ -8,20 +8,21 @@
     "language",
     "parser"
   ],
-  "homepage": "https://github.com/chharvey/tree-sitter-counterpoint#readme",
+  "homepage": "https://github.com/chharvey/solid#readme",
   "bugs": {
-    "url": "https://github.com/chharvey/tree-sitter-counterpoint/issues"
+    "url": "https://github.com/chharvey/solid/issues"
   },
   "license": "GPL-3.0-or-later",
   "author": "Chris Harvey <chrisharvey2pi@gmail.com> (https://chharvey.github.io/)",
   "files": [
     "bindings",
-    "build"
+    "build",
+    "src"
   ],
   "main": "bindings/node",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chharvey/tree-sitter-counterpoint.git"
+    "url": "git+https://github.com/chharvey/solid.git"
   },
   "scripts": {
     "dist": "tsc",
