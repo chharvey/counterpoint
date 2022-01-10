@@ -235,12 +235,12 @@ The object it operates on is called the **binding object** and
 the property it accesses is called the **bound property** (or index, field, member, etc.).
 There are two flavors of the operator: literal access and computed access.
 
-Literal access requires a literal (integer or word) and can be used on tuples, lists, records, and hashes.
+Literal access requires a literal (integer or word) and can be used to access a literal bound property.
 Tuples/lists take integer literal properties and records/hashes take word (key) properties.
 For example: `tuple.3` and `record.prop`.
 
-Computed access can be used on tuples and lists as well as on dynamic data types
-such as sets and maps, e.g., `map.[expr]`.
+Computed access must be used when the bound property name is computed,
+such as an operation of expressions, e.g., `map.[expr]`.
 The expression in the brackets evaluates to an item index, element, or case antecedent
 of the binding object and must be of the correct type.
 
