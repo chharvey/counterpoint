@@ -49,6 +49,7 @@ export {
 	NanError01,
 	NanError02,
 	NonemptyArray,
+	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	Dev,

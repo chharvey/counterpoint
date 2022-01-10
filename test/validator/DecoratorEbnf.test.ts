@@ -13,10 +13,13 @@ import {
 
 describe('DecoratorEbnf', () => {
 	describe('#decorate', () => {
-		const goal: ASTNODE.ASTNodeGoal = DECORATOR.decorate(PARSER.parse(`
-			Unit ::= NUMBER | "(" OPERATOR Unit Unit ")";
-			Goal ::= #x02 Unit? #x03;
-		`));
+		let goal: ASTNODE.ASTNodeGoal;
+		before(() => {
+			goal = DECORATOR.decorate(PARSER.parse(`
+				Unit ::= NUMBER | "(" OPERATOR Unit Unit ")";
+				Goal ::= #x02 Unit? #x03;
+			`));
+		});
 
 		specify('Goal ::= #x02 Production* #x03;', () => {
 			/*
