@@ -529,7 +529,7 @@ class DecoratorSolid extends Decorator {
 		} else if (node instanceof PARSENODE.ParseNodeBlock) {
 			return new AST.ASTNodeBlock(
 				node,
-				(node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeStatement, AST.ASTNodeStatement>(node.children[1]),
+				this.parseList<PARSENODE.ParseNodeStatement, AST.ASTNodeStatement>(node.children[1]),
 			);
 
 		} else if (node instanceof PARSENODE.ParseNodeGoal) {

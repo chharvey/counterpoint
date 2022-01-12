@@ -703,7 +703,6 @@ class ProductionBlock extends Production {
 	static readonly instance: ProductionBlock = new ProductionBlock();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['{', '}'],
 			['{', ProductionBlock__0__List.instance, '}'],
 		];
 	}
@@ -1225,7 +1224,6 @@ export class ParseNodeBlock__0__List extends ParseNode {
 
 export class ParseNodeBlock extends ParseNode {
 	declare readonly children:
-		| readonly [Token, Token]
 		| readonly [Token, ParseNodeBlock__0__List, Token]
 	;
 }

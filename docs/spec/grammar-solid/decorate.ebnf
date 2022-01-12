@@ -600,8 +600,6 @@ Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
 
 
 
-Decorate(Block ::= "{" "}") -> SemanticBlock
-	:= (SemanticBlock);
 Decorate(Block ::= "{" Statement+ "}") -> SemanticBlock
 	:= (SemanticBlock
 		...ParseList(Statement, SemanticStatement)

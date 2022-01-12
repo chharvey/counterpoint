@@ -240,7 +240,6 @@ describe('Instruction', () => {
 			it('creates a program.', () => {
 				const mods: (INST.InstructionNone | INST.InstructionModule)[] = [
 					``,
-					`{}`,
 					`{;}`,
 				].map((src) => AST.ASTNodeGoal
 					.fromSource(src)
@@ -248,10 +247,8 @@ describe('Instruction', () => {
 				);
 				assert.ok(mods[0] instanceof INST.InstructionNone);
 				assert.strictEqual(mods[0].toString(), ``)
-				assert.ok(mods[1] instanceof INST.InstructionNone);
-				assert.strictEqual(mods[1].toString(), ``);
-				assert.ok(mods[2] instanceof INST.InstructionModule);
-				assert.deepStrictEqual(mods[2], new INST.InstructionModule([
+				assert.ok(mods[1] instanceof INST.InstructionModule);
+				assert.deepStrictEqual(mods[1], new INST.InstructionModule([
 					...Builder.IMPORTS,
 					new INST.InstructionNone(),
 				]))

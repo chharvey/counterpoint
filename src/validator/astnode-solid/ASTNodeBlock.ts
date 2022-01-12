@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import {
+	NonemptyArray,
 	INST,
 	Builder,
 	SolidConfig,
@@ -28,17 +29,15 @@ export class ASTNodeBlock extends ASTNodeSolid implements Buildable {
 	}
 	constructor(
 		start_node: ParseNode,
-		override readonly children: readonly ASTNodeStatement[],
+		override readonly children: Readonly<NonemptyArray<ASTNodeStatement>>,
 	) {
 		super(start_node, {}, children);
 	}
 	/** @implements Buildable */
-	build(builder: Builder): INST.InstructionNone | INST.InstructionModule {
-		return (!this.children.length)
-			? new INST.InstructionNone()
-			: new INST.InstructionModule([
-				...Builder.IMPORTS,
-				...this.children.map((child) => child.build(builder)),
-			]);
+	build(builder: Builder): INST.InstructionModule {
+		return new INST.InstructionModule([
+			...Builder.IMPORTS,
+			...this.children.map((child) => child.build(builder)),
+		]);
 	}
 }

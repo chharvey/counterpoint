@@ -1334,11 +1334,7 @@ describe('DecoratorSolid', () => {
 			})
 		})
 
-		context('Block ::= "{" Statement* "}"', () => {
-			it('makes an ASTNodeBlock node containing no children.', () => {
-				const block: AST.ASTNodeBlock = DECORATOR_SOLID.decorate(h.blockFromSource(`{}`));
-				return assert_arrayLength(block.children, 0, 'semantic block should have 0 children');
-			});
+		context('Block ::= "{" Statement+ "}"', () => {
 			it('decorates multiple statements.', () => {
 				/*
 					<Block>
