@@ -1,4 +1,5 @@
-// KEYWORD         ::= [./lexicon.ebnf#Keyword];
+// KEYWORD_TYPE    ::= [./lexicon.ebnf#KeywordType];
+// KEYWORD_VALUE   ::= [./lexicon.ebnf#KeywordValue];
 // IDENTIFIER      ::= [./lexicon.ebnf#Identifier];
 // INTEGER         ::= [./lexicon.ebnf#Integer];
 // FLOAT           ::= [./lexicon.ebnf#Float];
@@ -11,31 +12,33 @@
 
 
 Word ::=
-	| KEYWORD
+	// operator
+		| "mutable"
+		| "is"
+		| "isnt"
+		| "if"
+		| "then"
+		| "else"
+	// storage
+		| "type"
+		| "let"
+	// modifier
+		| "unfixed"
+	| KEYWORD_TYPE
+	| KEYWORD_VALUE
 	| IDENTIFIER
 ;
 
 
 
 PrimitiveLiteral ::=
-	| "null"
-	| "false"
-	| "true"
+	| KEYWORD_VALUE
 	| INTEGER
 	| FLOAT
 	| STRING
 ;
 
 
-
-TypeKeyword ::=
-	| "void"
-	| "bool"
-	| "int"
-	| "float"
-	| "str"
-	| "obj"
-;
 
 EntryType<Named, Optional>
 	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type;
@@ -55,9 +58,9 @@ TypeMapLiteral    ::= "{" Type "->" Type       "}";
 GenericArguments  ::= "<"  ","? Type# ","?     ">";
 
 TypeUnit ::=
+	| KEYWORD_TYPE
 	| IDENTIFIER
 	| PrimitiveLiteral
-	| TypeKeyword
 	| TypeTupleLiteral
 	| TypeRecordLiteral
 	| TypeHashLiteral

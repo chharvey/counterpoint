@@ -1,37 +1,22 @@
 Decorate(Word ::= IDENTIFIER) -> SemanticKey
 	:= (SemanticKey[id=TokenWorth(IDENTIFIER)]);
-Decorate(Word ::= KEYWORD) -> SemanticKey
-	:= (SemanticKey[id=TokenWorth(KEYWORD)]);
+Decorate(Word ::= KEYWORD_TYPE) -> SemanticKey
+	:= (SemanticKey[id=TokenWorth(KEYWORD_TYPE)]);
+Decorate(Word ::= KEYWORD_VALUE) -> SemanticKey
+	:= (SemanticKey[id=TokenWorth(KEYWORD_VALUE)]);
+Decorate(Word ::= KEYWORD_OTHER) -> SemanticKey
+	:= (SemanticKey[id=TokenWorth(KEYWORD_OTHER)]);
 
 
 
-Decorate(PrimitiveLiteral ::= "null") -> SemanticConstant
-	:= (SemanticConstant[value=null]);
-Decorate(PrimitiveLiteral ::= "false") -> SemanticConstant
-	:= (SemanticConstant[value=false]);
-Decorate(PrimitiveLiteral ::= "true") -> SemanticConstant
-	:= (SemanticConstant[value=true]);
+Decorate(PrimitiveLiteral ::= KEYWORD_VALUE) -> SemanticConstant
+	:= (SemanticConstant[value=KeywordValue(KEYWORD_VALUE)]);
 Decorate(PrimitiveLiteral ::= INTEGER) -> SemanticConstant
 	:= (SemanticConstant[value=Integer(TokenWorth(INTEGER))]);
 Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticConstant
 	:= (SemanticConstant[value=Float(TokenWorth(FLOAT))]);
 Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 	:= (SemanticConstant[value=String(TokenWorth(STRING))]);
-
-
-
-Decorate(TypeKeyword ::= "void") -> SemanticTypeConstant
-	:= (SemanticTypeConstant[value=Void]);
-Decorate(TypeKeyword ::= "bool") -> SemanticTypeConstant
-	:= (SemanticTypeConstant[value=Boolean]);
-Decorate(TypeKeyword ::= "int") -> SemanticTypeConstant
-	:= (SemanticTypeConstant[value=Integer]);
-Decorate(TypeKeyword ::= "float") -> SemanticTypeConstant
-	:= (SemanticTypeConstant[value=Float]);
-Decorate(TypeKeyword ::= "str") -> SemanticTypeConstant
-	:= (SemanticTypeConstant[value=String]);
-Decorate(TypeKeyword ::= "obj") -> SemanticTypeConstant
-	:= (SemanticTypeConstant[value=Object]);
 
 
 
@@ -97,12 +82,12 @@ Decorate(GenericArguments ::= "<" ","? Type# ","? ">") -> Sequence<SemanticType>
 
 
 
+Decorate(TypeUnit ::= KEYWORD_TYPE) -> SemanticTypeConstant
+	:= (SemanticTypeConstant[value=KeywordType(KEYWORD_TYPE)]);
 Decorate(TypeUnit ::= IDENTIFIER) -> SemanticTypeAlias
 	:= (SemanticTypeAlias[id=TokenWorth(IDENTIFIER)]);
 Decorate(TypeUnit ::= PrimitiveLiteral) -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=ToType(Decorate(PrimitiveLiteral).value)]);
-Decorate(TypeUnit ::= TypeKeyword) -> SemanticTypeConstant
-	:= Decorate(TypeKeyword);
 Decorate(TypeUnit ::= TypeTupleLiteral) -> SemanticTypeTuple
 	:= Decorate(TypeTupleLiteral);
 Decorate(TypeUnit ::= TypeRecordLiteral) -> SemanticTypeRecord

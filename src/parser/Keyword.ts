@@ -17,8 +17,8 @@ export enum Keyword {
 		THEN    = 'then',
 		ELSE    = 'else',
 	// storage
-		LET  = 'let',
 		TYPE = 'type',
+		LET  = 'let',
 	// modifier
 		UNFIXED = 'unfixed',
 }
