@@ -247,20 +247,6 @@ module.exports = grammar({
 			'false',
 			'true',
 		)),
-		keyword_other: _$ => token(choice(
-			// operator
-				'mutable',
-				'is',
-				'isnt',
-				'if',
-				'then',
-				'else',
-			// storage
-				'type',
-				'let',
-			// modifier
-				'unfixed',
-		)),
 
 		identifier: _$ => token(choice(
 			/[A-Za-z_][A-Za-z0-9_]*/,
@@ -306,9 +292,20 @@ module.exports = grammar({
 
 		/* # SYNTAX */
 		word: $ => choice(
+			// operator
+				'mutable',
+				'is',
+				'isnt',
+				'if',
+				'then',
+				'else',
+			// storage
+				'type',
+				'let',
+			// modifier
+				'unfixed',
 			$.keyword_type,
 			$.keyword_value,
-			$.keyword_other,
 			$.identifier,
 		),
 
