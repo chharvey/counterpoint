@@ -1,6 +1,5 @@
 // KEYWORD_TYPE    ::= [./lexicon.ebnf#KeywordType];
 // KEYWORD_VALUE   ::= [./lexicon.ebnf#KeywordValue];
-// KEYWORD_OTHER   ::= [./lexicon.ebnf#KeywordOther];
 // IDENTIFIER      ::= [./lexicon.ebnf#Identifier];
 // INTEGER         ::= [./lexicon.ebnf#Integer];
 // FLOAT           ::= [./lexicon.ebnf#Float];
@@ -13,9 +12,20 @@
 
 
 Word ::=
+	// operator
+		| "mutable"
+		| "is"
+		| "isnt"
+		| "if"
+		| "then"
+		| "else"
+	// storage
+		| "type"
+		| "let"
+	// modifier
+		| "unfixed"
 	| KEYWORD_TYPE
 	| KEYWORD_VALUE
-	| KEYWORD_OTHER
 	| IDENTIFIER
 ;
 

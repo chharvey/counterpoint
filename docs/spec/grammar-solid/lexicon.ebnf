@@ -76,7 +76,7 @@ KeywordOther :::=
 
 
 Identifier
-	:::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - Keyword;
+	:::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - (KeywordType | KeywordValue | KeywordOther);
 
 
 
