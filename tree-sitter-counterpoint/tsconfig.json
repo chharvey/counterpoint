@@ -10,5 +10,5 @@
 		"target": "ESnext",
 	},
 	"include": ["**/*"],
-	"files": ["grammar.ts", "test/build.ts"],
+	"files": ["grammar.ts"],
 }

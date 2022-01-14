@@ -27,7 +27,7 @@
   "scripts": {
     "dist": "tsc",
     "postdist": "tree-sitter generate",
-    "pretest": "node ./test/build.js",
+    "pretest": "ts-node ./test/build.ts",
     "test": "tree-sitter test",
     "build": "npm run dist && npm run test"
   },
@@ -35,6 +35,8 @@
     "nan": "^2.15.0"
   },
   "devDependencies": {
-    "tree-sitter-cli": "^0.20.1"
+    "tree-sitter-cli": "^0.20.1",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.4"
   }
 }
