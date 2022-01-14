@@ -27,7 +27,7 @@
   "scripts": {
     "dist": "tsc",
     "postdist": "tree-sitter generate",
-    "pretest": "node ./test/build.js",
+    "pretest": "ts-node ./test/build.ts",
     "test": "tree-sitter test",
     "build": "npm run dist && npm run test"
   },
