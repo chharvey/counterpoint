@@ -9,7 +9,6 @@ import {
 	SolidObject,
 	INST,
 	Builder,
-	Validator,
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
@@ -30,33 +29,33 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		super(start_node, {id: start_node.cook()})
 		this.id = start_node.cook()!;
 	}
-	override shouldFloat(validator: Validator): boolean {
-		return this.type(validator).isSubtypeOf(SolidType.FLOAT);
+	override shouldFloat(): boolean {
+		return this.type().isSubtypeOf(SolidType.FLOAT);
 	}
-	override varCheck(validator: Validator): void {
-		if (!validator.hasSymbol(this.id)) {
+	override varCheck(): void {
+		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceError01(this);
 		};
-		if (validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
+		if (this.validator.getSymbolInfo(this.id)! instanceof SymbolStructureType) {
 			throw new ReferenceError03(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		};
 	}
-	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
-		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat(builder.validator));
+	protected override build_do(_builder: Builder, to_float: boolean = false): INST.InstructionGlobalGet {
+		return new INST.InstructionGlobalGet(this.id, to_float || this.shouldFloat());
 	}
-	protected override type_do(validator: Validator): SolidType {
-		if (validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
+	protected override type_do(): SolidType {
+		if (this.validator.hasSymbol(this.id)) {
+			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar) {
 				return symbol.type;
 			};
 		};
 		return SolidType.NEVER;
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		if (validator.hasSymbol(this.id)) {
-			const symbol: SymbolStructure = validator.getSymbolInfo(this.id)!;
+	protected override fold_do(): SolidObject | null {
+		if (this.validator.hasSymbol(this.id)) {
+			const symbol: SymbolStructure = this.validator.getSymbolInfo(this.id)!;
 			if (symbol instanceof SymbolStructureVar && !symbol.unfixed) {
 				return symbol.value;
 			};

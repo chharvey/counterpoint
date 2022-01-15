@@ -8,7 +8,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
 import type {ASTNodeConstant} from './ASTNodeConstant.js';
@@ -34,17 +33,17 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	) {
 		super(start_node, {}, children)
 	}
-	override shouldFloat(_validator: Validator): boolean {
+	override shouldFloat(): boolean {
 		throw new Error('ASTNodeTemplate#shouldFloat not yet supported.');
 	}
 	protected override build_do(_builder: Builder): INST.InstructionExpression {
 		throw new Error('ASTNodeTemplate#build_do not yet supported.');
 	}
-	protected override type_do(_validator: Validator): SolidType {
+	protected override type_do(): SolidType {
 		return SolidType.STR;
 	}
-	protected override fold_do(validator: Validator): SolidString | null {
-		const values: (SolidObject | null)[] = [...this.children].map((expr) => expr.fold(validator));
+	protected override fold_do(): SolidString | null {
+		const values: (SolidObject | null)[] = [...this.children].map((expr) => expr.fold());
 		return (values.includes(null))
 			? null
 			: (values as SolidObject[])

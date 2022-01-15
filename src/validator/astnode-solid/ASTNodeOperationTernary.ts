@@ -10,7 +10,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	Operator,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
@@ -33,21 +32,21 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}
-	override shouldFloat(validator: Validator): boolean {
-		return this.operand1.shouldFloat(validator) || this.operand2.shouldFloat(validator);
+	override shouldFloat(): boolean {
+		return this.operand1.shouldFloat() || this.operand2.shouldFloat();
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionCond {
-		const tofloat: boolean = to_float || this.shouldFloat(builder.validator);
+		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionCond(
 			this.operand0.build(builder, false),
 			this.operand1.build(builder, tofloat),
 			this.operand2.build(builder, tofloat),
 		)
 	}
-	protected override type_do(validator: Validator): SolidType {
-		const t0: SolidType = this.operand0.type(validator);
-		const t1: SolidType = this.operand1.type(validator);
-		const t2: SolidType = this.operand2.type(validator);
+	protected override type_do(): SolidType {
+		const t0: SolidType = this.operand0.type();
+		const t1: SolidType = this.operand1.type();
+		const t2: SolidType = this.operand2.type();
 		return (t0.isSubtypeOf(SolidType.BOOL))
 			? (t0 instanceof SolidTypeUnit)
 				? (t0.value === SolidBoolean.FALSE)
@@ -56,13 +55,13 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 				: t1.union(t2)
 			: (() => { throw new TypeError01(this) })()
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		const v0: SolidObject | null = this.operand0.fold(validator);
+	protected override fold_do(): SolidObject | null {
+		const v0: SolidObject | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
 		return (v0 === SolidBoolean.TRUE)
-			? this.operand1.fold(validator)
-			: this.operand2.fold(validator);
+			? this.operand1.fold()
+			: this.operand2.fold();
 	}
 }

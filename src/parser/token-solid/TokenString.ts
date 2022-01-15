@@ -38,7 +38,7 @@ type EncodedChar =
 export class TokenString extends TokenSolid {
 	static readonly DELIM:   '\'' = '\''
 	static readonly ESCAPER: '\\' = '\\'
-	static readonly ESCAPES: readonly string[] = [
+	static readonly ESCAPES: Readonly<NonemptyArray<string>> = [
 		TokenString.DELIM,
 		TokenString.ESCAPER,
 		TokenCommentLine.DELIM_START,

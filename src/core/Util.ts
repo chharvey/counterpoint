@@ -1,3 +1,7 @@
+import type {NonemptyArray} from './package.js';
+
+
+
 /**
  * Utility fields and methods.
  */
@@ -43,7 +47,7 @@ export class Util {
 	 * @param   array - the array to select from
 	 * @returns         a uniformly-distributed random element from the array
 	 */
-	static arrayRandom<T>(array: readonly T[]): T {
+	static arrayRandom<T>(array: Readonly<NonemptyArray<T>>): T {
 		return array[Math.floor(Math.random() * array.length)]
 	}
 }

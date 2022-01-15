@@ -8,7 +8,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	Operator,
 	ValidOperatorEquality,
 } from './package.js';
@@ -35,11 +34,11 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	) {
 		super(start_node, operator, operand0, operand1);
 	}
-	override shouldFloat(validator: Validator): boolean {
-		return this.operator === Operator.EQ && super.shouldFloat(validator);
+	override shouldFloat(): boolean {
+		return this.operator === Operator.EQ && super.shouldFloat();
 	}
 	protected override build_do(builder: Builder, _to_float: boolean = false): INST.InstructionBinopEquality {
-		const tofloat: boolean = builder.config.compilerOptions.intCoercion && this.shouldFloat(builder.validator);
+		const tofloat: boolean = this.validator.config.compilerOptions.intCoercion && this.shouldFloat();
 		return new INST.InstructionBinopEquality(
 			this.operator,
 			this.operand0.build(builder, tofloat),
@@ -62,12 +61,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		}
 		return SolidType.BOOL;
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		const v0: SolidObject | null = this.operand0.fold(validator);
+	protected override fold_do(): SolidObject | null {
+		const v0: SolidObject | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}
-		const v1: SolidObject | null = this.operand1.fold(validator);
+		const v1: SolidObject | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}

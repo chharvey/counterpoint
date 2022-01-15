@@ -31,7 +31,6 @@ import {
 	Builder,
 	Operator,
 	ValidAccessOperator,
-	Validator,
 } from './package.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
@@ -54,24 +53,24 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	) {
 		super(start_node, {kind}, [base, accessor]);
 	}
-	override shouldFloat(_validator: Validator): boolean {
+	override shouldFloat(): boolean {
 		throw 'ASTNodeAccess#shouldFloat not yet supported.';
 	}
 	protected override build_do(builder: Builder): INST.InstructionExpression {
 		throw builder && 'ASTNodeAccess#build_do not yet supported.';
 	}
-	protected override type_do(validator: Validator): SolidType {
-		let base_type: SolidType = this.base.type(validator);
+	protected override type_do(): SolidType {
+		let base_type: SolidType = this.base.type();
 		if (base_type instanceof SolidTypeIntersection || base_type instanceof SolidTypeUnion) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		return (
 			(this.optional && base_type.isSubtypeOf(SolidType.NULL)) ? base_type :
-			(this.optional && SolidType.NULL.isSubtypeOf(base_type)) ? this.type_do_do(base_type.subtract(SolidType.NULL), validator).union(SolidType.NULL) :
-			this.type_do_do(base_type, validator)
+			(this.optional && SolidType.NULL.isSubtypeOf(base_type)) ? this.type_do_do(base_type.subtract(SolidType.NULL)).union(SolidType.NULL) :
+			this.type_do_do(base_type)
 		);
 	}
-	private type_do_do(base_type: SolidType, validator: Validator): SolidType {
+	private type_do_do(base_type: SolidType): SolidType {
 		function updateAccessedDynamicType(type: SolidType, access_kind: ValidAccessOperator): SolidType {
 			return (
 				(access_kind === Operator.OPTDOT)   ? type.union(SolidType.NULL) :
@@ -80,7 +79,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			);
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			const accessor_type:  SolidTypeUnit = this.accessor.val.type(validator) as SolidTypeUnit;
+			const accessor_type:  SolidTypeUnit = this.accessor.val.type() as SolidTypeUnit;
 			const accessor_value: Int16         = accessor_type.value as Int16;
 			if (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple || base_type instanceof SolidTypeTuple) {
 				const base_type_tuple: SolidTypeTuple = (base_type instanceof SolidTypeUnit && base_type.value instanceof SolidTuple)
@@ -111,7 +110,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 				throw new TypeError04('property', base_type, this.accessor);
 			}
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
-			const accessor_type: SolidType = this.accessor.type(validator);
+			const accessor_type: SolidType = this.accessor.type();
 			function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: SolidType): never {
 				throw new TypeError02(accessor_type, supertype, accessor.line_index, accessor.col_index);
 			}
@@ -150,8 +149,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			}
 		}
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		const base_value: SolidObject | null = this.base.fold(validator);
+	protected override fold_do(): SolidObject | null {
+		const base_value: SolidObject | null = this.base.fold();
 		if (base_value === null) {
 			return null;
 		}
@@ -159,11 +158,11 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as CollectionIndexed).get(this.accessor.val.fold(validator) as Int16, this.optional, this.accessor);
+			return (base_value as CollectionIndexed).get(this.accessor.val.fold() as Int16, this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (base_value as CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else /* (this.accessor instanceof ASTNodeExpression) */ {
-			const accessor_value: SolidObject | null = this.accessor.fold(validator);
+			const accessor_value: SolidObject | null = this.accessor.fold();
 			if (accessor_value === null) {
 				return null;
 			}

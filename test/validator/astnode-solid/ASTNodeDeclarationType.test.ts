@@ -3,7 +3,6 @@ import {
 	ASTNODE_SOLID as AST,
 	SymbolStructure,
 	SymbolStructureType,
-	Validator,
 	SolidType,
 	INST,
 	Builder,
@@ -15,14 +14,13 @@ import {
 describe('ASTNodeDeclarationType', () => {
 	describe('#varCheck', () => {
 		it('adds a SymbolStructure to the symbol table with a preset `type` value of `unknown`.', () => {
-			const validator: Validator = new Validator();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
 			`);
-			assert.ok(!validator.hasSymbol(256n));
-			goal.varCheck(validator);
-			assert.ok(validator.hasSymbol(256n));
-			const info: SymbolStructure | null = validator.getSymbolInfo(256n);
+			assert.ok(!goal.validator.hasSymbol(256n));
+			goal.varCheck();
+			assert.ok(goal.validator.hasSymbol(256n));
+			const info: SymbolStructure | null = goal.validator.getSymbolInfo(256n);
 			assert.ok(info instanceof SymbolStructureType);
 			assert.strictEqual(info.typevalue, SolidType.UNKNOWN);
 		});
@@ -30,25 +28,24 @@ describe('ASTNodeDeclarationType', () => {
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				type T = int;
 				type T = float;
-			`).varCheck(new Validator()), AssignmentError01);
+			`).varCheck(), AssignmentError01);
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
 				let FOO: int = 42;
 				type FOO = float;
-			`).varCheck(new Validator()), AssignmentError01);
+			`).varCheck(), AssignmentError01);
 		});
 	});
 
 
 	describe('#typeCheck', () => {
 		it('sets `SymbolStructure#value`.', () => {
-			const validator: Validator = new Validator();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				type T = int;
 			`);
-			goal.varCheck(validator);
-			goal.typeCheck(validator);
+			goal.varCheck();
+			goal.typeCheck();
 			assert.deepStrictEqual(
-				(validator.getSymbolInfo(256n) as SymbolStructureType).typevalue,
+				(goal.validator.getSymbolInfo(256n) as SymbolStructureType).typevalue,
 				SolidType.INT,
 			);
 		});

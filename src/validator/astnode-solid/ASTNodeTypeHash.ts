@@ -5,7 +5,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
-	Validator,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
@@ -23,7 +22,7 @@ export class ASTNodeTypeHash extends ASTNodeType {
 	) {
 		super(start_node, {}, [type]);
 	}
-	protected override eval_do(validator: Validator): SolidType {
-		return new SolidTypeHash(this.type.eval(validator));
+	protected override eval_do(): SolidType {
+		return new SolidTypeHash(this.type.eval());
 	}
 }

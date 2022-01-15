@@ -5,7 +5,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
-	Validator,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
@@ -24,7 +23,7 @@ export class ASTNodeTypeMap extends ASTNodeType {
 	) {
 		super(start_node, {}, [antecedenttype, consequenttype]);
 	}
-	protected override eval_do(validator: Validator): SolidType {
-		return new SolidTypeMap(this.antecedenttype.eval(validator), this.consequenttype.eval(validator));
+	protected override eval_do(): SolidType {
+		return new SolidTypeMap(this.antecedenttype.eval(), this.consequenttype.eval());
 	}
 }

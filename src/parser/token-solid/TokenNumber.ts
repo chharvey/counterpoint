@@ -16,7 +16,7 @@ export class TokenNumber extends TokenSolid {
 	static readonly SEPARATOR: '_' = '_'
 	static readonly POINT:     '.' = '.'
 	static readonly EXPONENT:  'e' = 'e'
-	static readonly UNARY: readonly Punctuator[] = [
+	static readonly UNARY: Readonly<NonemptyArray<Punctuator>> = [
 		Punctuator.AFF,
 		Punctuator.NEG,
 	]
@@ -28,13 +28,13 @@ export class TokenNumber extends TokenSolid {
 		['x', 16n],
 		['z', 36n],
 	])
-	static readonly DIGITS: ReadonlyMap<RadixType, readonly string[]> = new Map<RadixType, readonly string[]>([
-		[ 2n, '0 1'                                                                     .split(' ')],
-		[ 4n, '0 1 2 3'                                                                 .split(' ')],
-		[ 8n, '0 1 2 3 4 5 6 7'                                                         .split(' ')],
-		[10n, '0 1 2 3 4 5 6 7 8 9'                                                     .split(' ')],
-		[16n, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ')],
-		[36n, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ')],
+	static readonly DIGITS: ReadonlyMap<RadixType, Readonly<NonemptyArray<string>>> = new Map<RadixType, Readonly<NonemptyArray<string>>>([
+		[ 2n, '0 1'                                                                     .split(' ') as NonemptyArray<string>],
+		[ 4n, '0 1 2 3'                                                                 .split(' ') as NonemptyArray<string>],
+		[ 8n, '0 1 2 3 4 5 6 7'                                                         .split(' ') as NonemptyArray<string>],
+		[10n, '0 1 2 3 4 5 6 7 8 9'                                                     .split(' ') as NonemptyArray<string>],
+		[16n, '0 1 2 3 4 5 6 7 8 9 a b c d e f'                                         .split(' ') as NonemptyArray<string>],
+		[36n, '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x y z' .split(' ') as NonemptyArray<string>],
 	])
 	/**
 	 * Compute the token worth of a `TokenNumber` token in Integer format.

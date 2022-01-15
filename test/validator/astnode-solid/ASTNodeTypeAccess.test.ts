@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import {
 	ASTNODE_SOLID as AST,
-	Validator,
 	SolidType,
 	TypeError04,
 } from '../../../src/index.js';
@@ -15,8 +14,9 @@ import {
 
 describe('ASTNodeTypeAccess', () => {
 	describe('#eval', () => {
-		function evalTypeDecl(decl: AST.ASTNodeDeclarationType, validator: Validator): SolidType {
-			return decl.assigned.eval(validator);
+		function evalTypeDecl(decl: AST.ASTNodeStatement): SolidType {
+			assert.ok(decl instanceof AST.ASTNodeDeclarationType);
+			return decl.assigned.eval();
 		}
 		const expected: SolidType[] = [
 			typeConstInt(1n),
@@ -26,10 +26,8 @@ describe('ASTNodeTypeAccess', () => {
 			SolidType.FLOAT,
 			SolidType.STR,
 		];
-		let validator: Validator;
 		let program: AST.ASTNodeGoal;
 		before(() => {
-			validator = new Validator();
 			program = AST.ASTNodeGoal.fromSource(`
 				type TupC = [1,   2.0,   'three'];
 				type TupV = [int, float, str];
@@ -68,27 +66,27 @@ describe('ASTNodeTypeAccess', () => {
 
 				type E1 = RecoC.b; % type \`2.0 | void\`
 				type E2 = RecoV.b; % type \`float | void\`
-			`, validator.config);
-			program.varCheck(validator);
-			program.typeCheck(validator);
+			`);
+			program.varCheck();
+			program.typeCheck();
 		});
 
 		context('index access.', () => {
 			it('returns individual entry types.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(2, 8).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+					program.children.slice(2, 8).map((c) => evalTypeDecl(c)),
 					expected,
 				);
 			});
 			it('negative indices count backwards from end.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(8, 14).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+					program.children.slice(8, 14).map((c) => evalTypeDecl(c)),
 					expected,
 				);
 			});
 			it('unions with void if entry is optional.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(24, 26).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+					program.children.slice(24, 26).map((c) => evalTypeDecl(c)),
 					[
 						typeConstStr('three').union(SolidType.VOID),
 						SolidType.STR.union(SolidType.VOID),
@@ -96,21 +94,21 @@ describe('ASTNodeTypeAccess', () => {
 				);
 			});
 			it('throws when index is out of bounds.', () => {
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].3`) .eval(validator), TypeError04);
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].-4`).eval(validator), TypeError04);
+				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].3`) .eval(), TypeError04);
+				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[1, 2.0, 'three'].-4`).eval(), TypeError04);
 			});
 		});
 
 		context('key access.', () => {
 			it('returns individual entry types.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(16, 22).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+					program.children.slice(16, 22).map((c) => evalTypeDecl(c)),
 					expected,
 				);
 			});
 			it('unions with void if entry is optional.', () => {
 				assert.deepStrictEqual(
-					program.children.slice(28, 30).map((c) => evalTypeDecl(c as AST.ASTNodeDeclarationType, validator)),
+					program.children.slice(28, 30).map((c) => evalTypeDecl(c)),
 					[
 						typeConstFloat(2.0).union(SolidType.VOID),
 						SolidType.FLOAT.union(SolidType.VOID),
@@ -118,7 +116,7 @@ describe('ASTNodeTypeAccess', () => {
 				);
 			});
 			it('throws when key is out of bounds.', () => {
-				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[a: 1, b: 2.0, c: 'three'].d`).eval(validator), TypeError04);
+				assert.throws(() => AST.ASTNodeTypeAccess.fromSource(`[a: 1, b: 2.0, c: 'three'].d`).eval(), TypeError04);
 			});
 		});
 	});

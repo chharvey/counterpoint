@@ -6,7 +6,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
-	Validator,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
 
@@ -25,8 +24,8 @@ export class ASTNodeTypeList extends ASTNodeType {
 	) {
 		super(start_node, {count}, [type]);
 	}
-	protected override eval_do(validator: Validator): SolidType {
-		const itemstype: SolidType = this.type.eval(validator);
+	protected override eval_do(): SolidType {
+		const itemstype: SolidType = this.type.eval();
 		return (this.count === null)
 			? new SolidTypeList(itemstype)
 			: SolidTypeTuple.fromTypes(Array.from(new Array(Number(this.count)), () => itemstype));

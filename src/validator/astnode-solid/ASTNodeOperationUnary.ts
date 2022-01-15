@@ -12,7 +12,6 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
-	Validator,
 	Operator,
 	ValidOperatorUnary,
 } from './package.js';
@@ -34,18 +33,18 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	) {
 		super(start_node, operator, [operand]);
 	}
-	override shouldFloat(validator: Validator): boolean {
-		return this.operand.shouldFloat(validator);
+	override shouldFloat(): boolean {
+		return this.operand.shouldFloat();
 	}
 	protected override build_do(builder: Builder, to_float: boolean = false): INST.InstructionUnop {
-		const tofloat: boolean = to_float || this.shouldFloat(builder.validator);
+		const tofloat: boolean = to_float || this.shouldFloat();
 		return new INST.InstructionUnop(
 			this.operator,
 			this.operand.build(builder, tofloat),
 		)
 	}
-	protected override type_do(validator: Validator): SolidType {
-		const t0: SolidType = this.operand.type(validator);
+	protected override type_do(): SolidType {
+		const t0: SolidType = this.operand.type();
 		return (
 			(this.operator === Operator.NOT) ? (
 				(t0.isSubtypeOf(SolidType.VOID.union(SolidType.NULL).union(SolidBoolean.FALSETYPE))) ? SolidBoolean.TRUETYPE :
@@ -58,8 +57,8 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				: (() => { throw new TypeError01(this); })()
 		);
 	}
-	protected override fold_do(validator: Validator): SolidObject | null {
-		const v0: SolidObject | null = this.operand.fold(validator);
+	protected override fold_do(): SolidObject | null {
+		const v0: SolidObject | null = this.operand.fold();
 		if (!v0) {
 			return v0;
 		}
