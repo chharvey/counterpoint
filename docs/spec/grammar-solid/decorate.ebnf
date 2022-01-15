@@ -566,6 +566,13 @@ Decorate(Declaration ::= DeclarationVariable) -> SemanticDeclarationVariable
 
 
 
+Decorate(StatementExpression ::= ";") -> SemanticStatementExpression
+	:= (SemanticStatementExpression);
+Decorate(StatementExpression ::= Expression ";") -> SemanticStatementExpression
+	:= (SemanticStatementExpression Decorate(Expression));
+
+
+
 Decorate(StatementAssignment ::= Assignee "=" Expression ";") -> SemanticAssignment
 	:= (SemanticAssignment
 		Decorate(Assignee)
@@ -574,12 +581,10 @@ Decorate(StatementAssignment ::= Assignee "=" Expression ";") -> SemanticAssignm
 
 
 
-Decorate(Statement ::= ";") -> SemanticStatementExpression
-	:= (SemanticStatementExpression);
-Decorate(Statement ::= Expression ";") -> SemanticStatementExpression
-	:= (SemanticStatementExpression Decorate(Expression));
 Decorate(Statement ::= Declaration) -> SemanticDeclaration
 	:= Decorate(Declaration);
+Decorate(Statement ::= StatementExpression) -> SemanticStatementExpression
+	:= Decorate(StatementExpression);
 Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
 	:= Decorate(StatementAssignment);
 
