@@ -39,7 +39,7 @@ describe('DecoratorSolid', () => {
 						return [key.source, key.id];
 					}),
 					srcs.map((src, i) => [src, [
-						0x8fn,
+						0x90n,
 						0x100n,
 					][i]]),
 				);
@@ -65,29 +65,6 @@ describe('DecoratorSolid', () => {
 					`42`,
 					`4.2`,
 					`'hello'`,
-				])
-			})
-		})
-
-		describe('TypeKeyword ::= "void" | "bool" | "int" | "float" | "str" | "obj"', () => {
-			it('makes an ASTNodeTypeConstant.', () => {
-				/*
-					<TypeConstant source="void"/>
-				*/
-				assert.deepStrictEqual([
-					`void`,
-					`bool`,
-					`int`,
-					`float`,
-					`str`,
-					`obj`,
-				].map((src) => (DECORATOR_SOLID.decorate(h.keywordTypeFromString(src)) as unknown as AST.ASTNodeTypeConstant).source), [
-					`void`,
-					`bool`,
-					`int`,
-					`float`,
-					`str`,
-					`obj`,
 				])
 			})
 		})

@@ -37,9 +37,9 @@ export function tokenLiteralFromTypeString(typestring: string, config: SolidConf
 	return token
 }
 export function tokenKeywordFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenKeyword {
-	const token: Token = keywordTypeFromString(typestring, config).children[0]
-	assert.ok(token instanceof TOKEN.TokenKeyword, 'token should be a TokenKeyword')
-	return token
+	const unit: PARSENODE.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
+	assert.ok(unit instanceof TOKEN.TokenKeyword, 'unit should be a TokenKeyword');
+	return unit;
 }
 export function tokenIdentifierFromTypeString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): TOKEN.TokenIdentifier {
 	const unit: PARSENODE.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
@@ -49,11 +49,6 @@ export function tokenIdentifierFromTypeString(typestring: string, config: SolidC
 export function primitiveTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodePrimitiveLiteral {
 	const unit: PARSENODE.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
 	assert.ok(unit instanceof PARSENODE.ParseNodePrimitiveLiteral, 'unit should be a ParseNodePrimitiveLiteral')
-	return unit
-}
-export function keywordTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeKeyword {
-	const unit: PARSENODE.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
-	assert.ok(unit instanceof PARSENODE.ParseNodeTypeKeyword, 'unit should be a ParseNodeTypeKeyword')
 	return unit
 }
 export function entryTypeFromString(itemstring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeEntryType | PARSENODE.ParseNodeEntryType_Optional {
@@ -191,6 +186,11 @@ export function compoundExpressionFromSource(src: string, config: SolidConfig = 
 	assert_arrayLength(expression_unary.children, 1, 'unary expression should have 1 child');
 	return expression_unary.children[0];
 }
+export function assigneeFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeAssignee {
+	const assignment: PARSENODE.ParseNodeStatementAssignment = assignmentFromSource(src, config);
+	const assignee: PARSENODE.ParseNodeAssignee = assignment.children[0];
+	return assignee;
+}
 export function unaryExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeExpressionUnarySymbol {
 	const expression_exp: PARSENODE.ParseNodeExpressionExponential = exponentialExpressionFromSource(src, config)
 	assert_arrayLength(expression_exp.children, 1, 'exponential expression should have 1 child')
@@ -239,9 +239,9 @@ export function conditionalExpressionFromSource(src: string, config: SolidConfig
 	return expression_cond
 }
 export function expressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeExpression {
-	const statement: PARSENODE.ParseNodeStatement = statementFromSource(`${ src };`, config)
-	assert_arrayLength(statement.children, 2, 'statment should have 2 children')
-	const [expression, endstat]: readonly [PARSENODE.ParseNodeExpression, Token] = statement.children
+	const statexpr: PARSENODE.ParseNodeStatementExpression = statementExpressionFromSource(`${ src };`, config);
+	assert_arrayLength(statexpr.children, 2, 'statement-expression should have 2 children');
+	const [expression, endstat]: readonly [PARSENODE.ParseNodeExpression, Token] = statexpr.children;
 	assert.ok(endstat instanceof TOKEN.TokenPunctuator)
 	assert.strictEqual(endstat.source, Punctuator.ENDSTAT)
 	return expression
@@ -263,19 +263,21 @@ export function variableDeclarationFromSource(src: string, config: SolidConfig =
 function declarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeDeclaration {
 	const statement: PARSENODE.ParseNodeStatement = statementFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'statement should have 1 child');
-	const declaration: Token | PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementAssignment = statement.children[0];
+	const declaration: PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementExpression | PARSENODE.ParseNodeStatementAssignment = statement.children[0];
 	assert.ok(declaration instanceof PARSENODE.ParseNodeDeclaration);
 	return declaration;
 }
-export function assigneeFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeAssignee {
-	const assignment: PARSENODE.ParseNodeStatementAssignment = assignmentFromSource(src, config);
-	const assignee: PARSENODE.ParseNodeAssignee = assignment.children[0];
-	return assignee;
+export function statementExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeStatementExpression {
+	const statement: PARSENODE.ParseNodeStatement = statementFromSource(src, config);
+	assert_arrayLength(statement.children, 1, 'statement should have 1 child');
+	const statexpr: PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementExpression | PARSENODE.ParseNodeStatementAssignment = statement.children[0];
+	assert.ok(statexpr instanceof PARSENODE.ParseNodeStatementExpression);
+	return statexpr;
 }
 export function assignmentFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeStatementAssignment {
 	const statement: PARSENODE.ParseNodeStatement = statementFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'statement should have 1 child');
-	const assignment: Token | PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementAssignment = statement.children[0];
+	const assignment: PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementExpression | PARSENODE.ParseNodeStatementAssignment = statement.children[0];
 	assert.ok(assignment instanceof PARSENODE.ParseNodeStatementAssignment);
 	return assignment;
 }
