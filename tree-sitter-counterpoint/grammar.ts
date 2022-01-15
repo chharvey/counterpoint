@@ -463,11 +463,13 @@ module.exports = grammar({
 			$.declaration_variable,
 		),
 
+		statement_expression: $ => seq(optional($._expression), ';'),
+
 		statement_assignment: $ => seq($.assignee, '=', $._expression, ';'),
 
 		_statement: $ => choice(
-			seq(optional(alias($._expression, $.statement_expression)), ';'), // TODO: create `$.statement_expression` node
 			$._declaration,
+			$.statement_expression,
 			$.statement_assignment,
 		),
 	},

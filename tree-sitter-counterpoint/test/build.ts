@@ -829,6 +829,13 @@ function buildTest(title: string, source: string, expected: string) {
 		// Declaration
 		// see #Declaration{Type,Variable}
 
+		StatementExpression: [
+			xjs.String.dedent`
+				my_var;
+			`,
+			s('source_file', s('statement_expression', s('identifier'))),
+		],
+
 		StatementAssignment: [
 			xjs.String.dedent`
 				my_var       = a;
@@ -867,12 +874,8 @@ function buildTest(title: string, source: string, expected: string) {
 			),
 		],
 
-		Statement: [
-			xjs.String.dedent`
-				;
-			`,
-			s('source_file'),
-		],
+		// Statement
+		// see #{Declaration,Statement{Expression,Assignment}}
 	})
 		.map(([title, [source, expected]]) => buildTest(title, source, expected))
 		.filter((test) => !!test)

@@ -186,6 +186,11 @@ export function compoundExpressionFromSource(src: string, config: SolidConfig = 
 	assert_arrayLength(expression_unary.children, 1, 'unary expression should have 1 child');
 	return expression_unary.children[0];
 }
+export function assigneeFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeAssignee {
+	const assignment: PARSENODE.ParseNodeStatementAssignment = assignmentFromSource(src, config);
+	const assignee: PARSENODE.ParseNodeAssignee = assignment.children[0];
+	return assignee;
+}
 export function unaryExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeExpressionUnarySymbol {
 	const expression_exp: PARSENODE.ParseNodeExpressionExponential = exponentialExpressionFromSource(src, config)
 	assert_arrayLength(expression_exp.children, 1, 'exponential expression should have 1 child')
@@ -234,9 +239,9 @@ export function conditionalExpressionFromSource(src: string, config: SolidConfig
 	return expression_cond
 }
 export function expressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeExpression {
-	const statement: PARSENODE.ParseNodeStatement = statementFromSource(src, config)
-	assert_arrayLength(statement.children, 2, 'statment should have 2 children')
-	const [expression, endstat]: readonly [PARSENODE.ParseNodeExpression, Token] = statement.children
+	const statexpr: PARSENODE.ParseNodeStatementExpression = statementExpressionFromSource(src, config);
+	assert_arrayLength(statexpr.children, 2, 'statment-expression should have 2 children');
+	const [expression, endstat]: readonly [PARSENODE.ParseNodeExpression, Token] = statexpr.children;
 	assert.ok(endstat instanceof TOKEN.TokenPunctuator)
 	assert.strictEqual(endstat.source, Punctuator.ENDSTAT)
 	return expression
@@ -258,19 +263,21 @@ export function variableDeclarationFromSource(src: string, config: SolidConfig =
 function declarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeDeclaration {
 	const statement: PARSENODE.ParseNodeStatement = statementFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'statement should have 1 child');
-	const declaration: Token | PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementAssignment = statement.children[0];
+	const declaration: PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementExpression | PARSENODE.ParseNodeStatementAssignment = statement.children[0];
 	assert.ok(declaration instanceof PARSENODE.ParseNodeDeclaration);
 	return declaration;
 }
-export function assigneeFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeAssignee {
-	const assignment: PARSENODE.ParseNodeStatementAssignment = assignmentFromSource(src, config);
-	const assignee: PARSENODE.ParseNodeAssignee = assignment.children[0];
-	return assignee;
+export function statementExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeStatementExpression {
+	const statement: PARSENODE.ParseNodeStatement = statementFromSource(src, config);
+	assert_arrayLength(statement.children, 1, 'statement should have 1 child');
+	const statexpr: PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementExpression | PARSENODE.ParseNodeStatementAssignment = statement.children[0];
+	assert.ok(statexpr instanceof PARSENODE.ParseNodeStatementExpression);
+	return statexpr;
 }
 export function assignmentFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeStatementAssignment {
 	const statement: PARSENODE.ParseNodeStatement = statementFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'statement should have 1 child');
-	const assignment: Token | PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementAssignment = statement.children[0];
+	const assignment: PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementExpression | PARSENODE.ParseNodeStatementAssignment = statement.children[0];
 	assert.ok(assignment instanceof PARSENODE.ParseNodeStatementAssignment);
 	return assignment;
 }

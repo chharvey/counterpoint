@@ -662,6 +662,16 @@ class ProductionDeclaration extends Production {
 	}
 }
 
+class ProductionStatementExpression extends Production {
+	static readonly instance: ProductionStatementExpression = new ProductionStatementExpression();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			[';'],
+			[ProductionExpression.instance, ';'],
+		];
+	}
+}
+
 class ProductionStatementAssignment extends Production {
 	static readonly instance: ProductionStatementAssignment = new ProductionStatementAssignment();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -675,9 +685,8 @@ class ProductionStatement extends Production {
 	static readonly instance: ProductionStatement = new ProductionStatement();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[';'],
-			[ProductionExpression.instance, ';'],
 			[ProductionDeclaration.instance],
+			[ProductionStatementExpression.instance],
 			[ProductionStatementAssignment.instance],
 		];
 	}
@@ -1182,6 +1191,13 @@ export class ParseNodeDeclaration extends ParseNode {
 	;
 }
 
+export class ParseNodeStatementExpression extends ParseNode {
+	declare readonly children:
+		| readonly [Token]
+		| readonly [ParseNodeExpression, Token]
+	;
+}
+
 export class ParseNodeStatementAssignment extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeAssignee, Token, ParseNodeExpression, Token]
@@ -1190,9 +1206,8 @@ export class ParseNodeStatementAssignment extends ParseNode {
 
 export class ParseNodeStatement extends ParseNode {
 	declare readonly children:
-		| readonly [Token]
-		| readonly [ParseNodeExpression, Token]
 		| readonly [ParseNodeDeclaration]
+		| readonly [ParseNodeStatementExpression]
 		| readonly [ParseNodeStatementAssignment]
 	;
 }
@@ -1270,6 +1285,7 @@ export const GRAMMAR: Grammar = new Grammar([
 	ProductionDeclarationType.instance,
 	ProductionDeclarationVariable.instance,
 	ProductionDeclaration.instance,
+	ProductionStatementExpression.instance,
 	ProductionStatementAssignment.instance,
 	ProductionStatement.instance,
 	ProductionGoal__0__List.instance,
@@ -1341,6 +1357,7 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 		[ProductionDeclarationType.instance, ParseNodeDeclarationType],
 		[ProductionDeclarationVariable.instance, ParseNodeDeclarationVariable],
 		[ProductionDeclaration.instance, ParseNodeDeclaration],
+		[ProductionStatementExpression.instance, ParseNodeStatementExpression],
 		[ProductionStatementAssignment.instance, ParseNodeStatementAssignment],
 		[ProductionStatement.instance, ParseNodeStatement],
 		[ProductionGoal__0__List.instance, ParseNodeGoal__0__List],

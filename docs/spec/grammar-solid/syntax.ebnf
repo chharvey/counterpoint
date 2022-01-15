@@ -167,12 +167,17 @@ Declaration ::=
 	| DeclarationVariable
 ;
 
+
+
+StatementExpression
+	::= Expression? ";";
+
 StatementAssignment
 	::= Assignee "=" Expression ";";
 
 Statement ::=
-	| Expression? ";"
 	| Declaration
+	| StatementExpression
 	| StatementAssignment
 ;
 
