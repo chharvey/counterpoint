@@ -324,14 +324,14 @@ class ProductionStringTemplate__0__List extends Production {
 	}
 }
 
-class ProductionStringTemplate_Dynamic__0__List extends Production {
-	static readonly instance: ProductionStringTemplate_Dynamic__0__List = new ProductionStringTemplate_Dynamic__0__List();
+class ProductionStringTemplate_Variable__0__List extends Production {
+	static readonly instance: ProductionStringTemplate_Variable__0__List = new ProductionStringTemplate_Variable__0__List();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[TERMINAL.TerminalTemplateMiddle.instance],
-			[ProductionStringTemplate_Dynamic__0__List.instance, TERMINAL.TerminalTemplateMiddle.instance],
-			[TERMINAL.TerminalTemplateMiddle.instance, ProductionExpression_Dynamic.instance],
-			[ProductionStringTemplate_Dynamic__0__List.instance, TERMINAL.TerminalTemplateMiddle.instance, ProductionExpression_Dynamic.instance],
+			[ProductionStringTemplate_Variable__0__List.instance, TERMINAL.TerminalTemplateMiddle.instance],
+			[TERMINAL.TerminalTemplateMiddle.instance, ProductionExpression_Variable.instance],
+			[ProductionStringTemplate_Variable__0__List.instance, TERMINAL.TerminalTemplateMiddle.instance, ProductionExpression_Variable.instance],
 		];
 	}
 }
@@ -349,15 +349,15 @@ class ProductionStringTemplate extends Production {
 	}
 }
 
-class ProductionStringTemplate_Dynamic extends Production {
-	static readonly instance: ProductionStringTemplate_Dynamic = new ProductionStringTemplate_Dynamic();
+class ProductionStringTemplate_Variable extends Production {
+	static readonly instance: ProductionStringTemplate_Variable = new ProductionStringTemplate_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[TERMINAL.TerminalTemplateFull.instance],
 			[TERMINAL.TerminalTemplateHead.instance, TERMINAL.TerminalTemplateTail.instance],
-			[TERMINAL.TerminalTemplateHead.instance, ProductionStringTemplate_Dynamic__0__List.instance, TERMINAL.TerminalTemplateTail.instance],
-			[TERMINAL.TerminalTemplateHead.instance, ProductionExpression_Dynamic.instance, TERMINAL.TerminalTemplateTail.instance],
-			[TERMINAL.TerminalTemplateHead.instance, ProductionExpression_Dynamic.instance, ProductionStringTemplate_Dynamic__0__List.instance, TERMINAL.TerminalTemplateTail.instance],
+			[TERMINAL.TerminalTemplateHead.instance, ProductionStringTemplate_Variable__0__List.instance, TERMINAL.TerminalTemplateTail.instance],
+			[TERMINAL.TerminalTemplateHead.instance, ProductionExpression_Variable.instance, TERMINAL.TerminalTemplateTail.instance],
+			[TERMINAL.TerminalTemplateHead.instance, ProductionExpression_Variable.instance, ProductionStringTemplate_Variable__0__List.instance, TERMINAL.TerminalTemplateTail.instance],
 		];
 	}
 }
@@ -371,11 +371,11 @@ class ProductionProperty extends Production {
 	}
 }
 
-class ProductionProperty_Dynamic extends Production {
-	static readonly instance: ProductionProperty_Dynamic = new ProductionProperty_Dynamic();
+class ProductionProperty_Variable extends Production {
+	static readonly instance: ProductionProperty_Variable = new ProductionProperty_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionWord.instance, '=', ProductionExpression_Dynamic.instance],
+			[ProductionWord.instance, '=', ProductionExpression_Variable.instance],
 		];
 	}
 }
@@ -384,7 +384,7 @@ class ProductionCase extends Production {
 	static readonly instance: ProductionCase = new ProductionCase();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpression_Dynamic.instance, '->', ProductionExpression_Dynamic.instance],
+			[ProductionExpression_Variable.instance, '->', ProductionExpression_Variable.instance],
 		];
 	}
 }
@@ -399,12 +399,12 @@ class ProductionTupleLiteral__0__List extends Production {
 	}
 }
 
-class ProductionTupleLiteral_Dynamic__0__List extends Production {
-	static readonly instance: ProductionTupleLiteral_Dynamic__0__List = new ProductionTupleLiteral_Dynamic__0__List();
+class ProductionTupleLiteral_Variable__0__List extends Production {
+	static readonly instance: ProductionTupleLiteral_Variable__0__List = new ProductionTupleLiteral_Variable__0__List();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpression_Dynamic.instance],
-			[ProductionTupleLiteral_Dynamic__0__List.instance, ',', ProductionExpression_Dynamic.instance],
+			[ProductionExpression_Variable.instance],
+			[ProductionTupleLiteral_Variable__0__List.instance, ',', ProductionExpression_Variable.instance],
 		];
 	}
 }
@@ -413,24 +413,24 @@ class ProductionTupleLiteral extends Production {
 	static readonly instance: ProductionTupleLiteral = new ProductionTupleLiteral();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[/', '/]'],
-			['[/', ProductionTupleLiteral__0__List.instance, '/]'],
-			['[/', ProductionTupleLiteral__0__List.instance, ',', '/]'],
-			['[/', ',', ProductionTupleLiteral__0__List.instance, '/]'],
-			['[/', ',', ProductionTupleLiteral__0__List.instance, ',', '/]'],
+			['@', '[', ']'],
+			['@', '[', ProductionTupleLiteral__0__List.instance, ']'],
+			['@', '[', ProductionTupleLiteral__0__List.instance, ',', ']'],
+			['@', '[', ',', ProductionTupleLiteral__0__List.instance, ']'],
+			['@', '[', ',', ProductionTupleLiteral__0__List.instance, ',', ']'],
 		];
 	}
 }
 
-class ProductionTupleLiteral_Dynamic extends Production {
-	static readonly instance: ProductionTupleLiteral_Dynamic = new ProductionTupleLiteral_Dynamic();
+class ProductionTupleLiteral_Variable extends Production {
+	static readonly instance: ProductionTupleLiteral_Variable = new ProductionTupleLiteral_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['[', ']'],
-			['[', ProductionTupleLiteral_Dynamic__0__List.instance, ']'],
-			['[', ProductionTupleLiteral_Dynamic__0__List.instance, ',', ']'],
-			['[', ',', ProductionTupleLiteral_Dynamic__0__List.instance, ']'],
-			['[', ',', ProductionTupleLiteral_Dynamic__0__List.instance, ',', ']'],
+			['[', ProductionTupleLiteral_Variable__0__List.instance, ']'],
+			['[', ProductionTupleLiteral_Variable__0__List.instance, ',', ']'],
+			['[', ',', ProductionTupleLiteral_Variable__0__List.instance, ']'],
+			['[', ',', ProductionTupleLiteral_Variable__0__List.instance, ',', ']'],
 		];
 	}
 }
@@ -445,12 +445,12 @@ class ProductionRecordLiteral__0__List extends Production {
 	}
 }
 
-class ProductionRecordLiteral_Dynamic__0__List extends Production {
-	static readonly instance: ProductionRecordLiteral_Dynamic__0__List = new ProductionRecordLiteral_Dynamic__0__List();
+class ProductionRecordLiteral_Variable__0__List extends Production {
+	static readonly instance: ProductionRecordLiteral_Variable__0__List = new ProductionRecordLiteral_Variable__0__List();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionProperty_Dynamic.instance],
-			[ProductionRecordLiteral_Dynamic__0__List.instance, ',', ProductionProperty_Dynamic.instance],
+			[ProductionProperty_Variable.instance],
+			[ProductionRecordLiteral_Variable__0__List.instance, ',', ProductionProperty_Variable.instance],
 		];
 	}
 }
@@ -459,22 +459,22 @@ class ProductionRecordLiteral extends Production {
 	static readonly instance: ProductionRecordLiteral = new ProductionRecordLiteral();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[/', ProductionRecordLiteral__0__List.instance, '/]'],
-			['[/', ProductionRecordLiteral__0__List.instance, ',', '/]'],
-			['[/', ',', ProductionRecordLiteral__0__List.instance, '/]'],
-			['[/', ',', ProductionRecordLiteral__0__List.instance, ',', '/]'],
+			['@', '[', ProductionRecordLiteral__0__List.instance, ']'],
+			['@', '[', ProductionRecordLiteral__0__List.instance, ',', ']'],
+			['@', '[', ',', ProductionRecordLiteral__0__List.instance, ']'],
+			['@', '[', ',', ProductionRecordLiteral__0__List.instance, ',', ']'],
 		];
 	}
 }
 
-class ProductionRecordLiteral_Dynamic extends Production {
-	static readonly instance: ProductionRecordLiteral_Dynamic = new ProductionRecordLiteral_Dynamic();
+class ProductionRecordLiteral_Variable extends Production {
+	static readonly instance: ProductionRecordLiteral_Variable = new ProductionRecordLiteral_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['[', ProductionRecordLiteral_Dynamic__0__List.instance, ']'],
-			['[', ProductionRecordLiteral_Dynamic__0__List.instance, ',', ']'],
-			['[', ',', ProductionRecordLiteral_Dynamic__0__List.instance, ']'],
-			['[', ',', ProductionRecordLiteral_Dynamic__0__List.instance, ',', ']'],
+			['[', ProductionRecordLiteral_Variable__0__List.instance, ']'],
+			['[', ProductionRecordLiteral_Variable__0__List.instance, ',', ']'],
+			['[', ',', ProductionRecordLiteral_Variable__0__List.instance, ']'],
+			['[', ',', ProductionRecordLiteral_Variable__0__List.instance, ',', ']'],
 		];
 	}
 }
@@ -484,10 +484,10 @@ class ProductionSetLiteral extends Production {
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['{', '}'],
-			['{', ProductionTupleLiteral_Dynamic__0__List.instance, '}'],
-			['{', ProductionTupleLiteral_Dynamic__0__List.instance, ',', '}'],
-			['{', ',', ProductionTupleLiteral_Dynamic__0__List.instance, '}'],
-			['{', ',', ProductionTupleLiteral_Dynamic__0__List.instance, ',', '}'],
+			['{', ProductionTupleLiteral_Variable__0__List.instance, '}'],
+			['{', ProductionTupleLiteral_Variable__0__List.instance, ',', '}'],
+			['{', ',', ProductionTupleLiteral_Variable__0__List.instance, '}'],
+			['{', ',', ProductionTupleLiteral_Variable__0__List.instance, ',', '}'],
 		];
 	}
 }
@@ -519,10 +519,10 @@ class ProductionFunctionArguments extends Production {
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['(', ')'],
-			['(', ProductionTupleLiteral_Dynamic__0__List.instance, ')'],
-			['(', ProductionTupleLiteral_Dynamic__0__List.instance, ',', ')'],
-			['(', ',', ProductionTupleLiteral_Dynamic__0__List.instance, ')'],
-			['(', ',', ProductionTupleLiteral_Dynamic__0__List.instance, ',', ')'],
+			['(', ProductionTupleLiteral_Variable__0__List.instance, ')'],
+			['(', ProductionTupleLiteral_Variable__0__List.instance, ',', ')'],
+			['(', ',', ProductionTupleLiteral_Variable__0__List.instance, ')'],
+			['(', ',', ProductionTupleLiteral_Variable__0__List.instance, ',', ')'],
 		];
 	}
 }
@@ -540,20 +540,20 @@ class ProductionExpressionUnit extends Production {
 	}
 }
 
-class ProductionExpressionUnit_Dynamic extends Production {
-	static readonly instance: ProductionExpressionUnit_Dynamic = new ProductionExpressionUnit_Dynamic();
+class ProductionExpressionUnit_Variable extends Production {
+	static readonly instance: ProductionExpressionUnit_Variable = new ProductionExpressionUnit_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[TERMINAL.TerminalIdentifier.instance],
 			[ProductionPrimitiveLiteral.instance],
-			[ProductionStringTemplate_Dynamic.instance],
+			[ProductionStringTemplate_Variable.instance],
 			[ProductionTupleLiteral.instance],
 			[ProductionRecordLiteral.instance],
-			[ProductionTupleLiteral_Dynamic.instance],
-			[ProductionRecordLiteral_Dynamic.instance],
+			[ProductionTupleLiteral_Variable.instance],
+			[ProductionRecordLiteral_Variable.instance],
 			[ProductionSetLiteral.instance],
 			[ProductionMapLiteral.instance],
-			['(', ProductionExpression_Dynamic.instance, ')'],
+			['(', ProductionExpression_Variable.instance, ')'],
 		];
 	}
 }
@@ -575,19 +575,19 @@ class ProductionPropertyAccess extends Production {
 	}
 }
 
-class ProductionPropertyAccess_Dynamic extends Production {
-	static readonly instance: ProductionPropertyAccess_Dynamic = new ProductionPropertyAccess_Dynamic();
+class ProductionPropertyAccess_Variable extends Production {
+	static readonly instance: ProductionPropertyAccess_Variable = new ProductionPropertyAccess_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			['.', TERMINAL.TerminalInteger.instance],
 			['.', ProductionWord.instance],
-			['.', '[', ProductionExpression_Dynamic.instance, ']'],
+			['.', '[', ProductionExpression_Variable.instance, ']'],
 			['?.', TERMINAL.TerminalInteger.instance],
 			['?.', ProductionWord.instance],
-			['?.', '[', ProductionExpression_Dynamic.instance, ']'],
+			['?.', '[', ProductionExpression_Variable.instance, ']'],
 			['!.', TERMINAL.TerminalInteger.instance],
 			['!.', ProductionWord.instance],
-			['!.', '[', ProductionExpression_Dynamic.instance, ']'],
+			['!.', '[', ProductionExpression_Variable.instance, ']'],
 		];
 	}
 }
@@ -598,7 +598,7 @@ class ProductionPropertyAssign extends Production {
 		return [
 			['.', TERMINAL.TerminalInteger.instance],
 			['.', ProductionWord.instance],
-			['.', '[', ProductionExpression_Dynamic.instance, ']'],
+			['.', '[', ProductionExpression_Variable.instance, ']'],
 		];
 	}
 }
@@ -623,13 +623,13 @@ class ProductionExpressionCompound extends Production {
 	}
 }
 
-class ProductionExpressionCompound_Dynamic extends Production {
-	static readonly instance: ProductionExpressionCompound_Dynamic = new ProductionExpressionCompound_Dynamic();
+class ProductionExpressionCompound_Variable extends Production {
+	static readonly instance: ProductionExpressionCompound_Variable = new ProductionExpressionCompound_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionUnit_Dynamic.instance],
-			[ProductionExpressionCompound_Dynamic.instance, ProductionPropertyAccess_Dynamic.instance],
-			[ProductionExpressionCompound_Dynamic.instance, ProductionFunctionCall.instance],
+			[ProductionExpressionUnit_Variable.instance],
+			[ProductionExpressionCompound_Variable.instance, ProductionPropertyAccess_Variable.instance],
+			[ProductionExpressionCompound_Variable.instance, ProductionFunctionCall.instance],
 		];
 	}
 }
@@ -639,7 +639,7 @@ class ProductionAssignee extends Production {
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[TERMINAL.TerminalIdentifier.instance],
-			[ProductionExpressionCompound_Dynamic.instance, ProductionPropertyAssign.instance],
+			[ProductionExpressionCompound_Variable.instance, ProductionPropertyAssign.instance],
 		];
 	}
 }
@@ -657,15 +657,15 @@ class ProductionExpressionUnarySymbol extends Production {
 	}
 }
 
-class ProductionExpressionUnarySymbol_Dynamic extends Production {
-	static readonly instance: ProductionExpressionUnarySymbol_Dynamic = new ProductionExpressionUnarySymbol_Dynamic();
+class ProductionExpressionUnarySymbol_Variable extends Production {
+	static readonly instance: ProductionExpressionUnarySymbol_Variable = new ProductionExpressionUnarySymbol_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionCompound_Dynamic.instance],
-			['!', ProductionExpressionUnarySymbol_Dynamic.instance],
-			['?', ProductionExpressionUnarySymbol_Dynamic.instance],
-			['+', ProductionExpressionUnarySymbol_Dynamic.instance],
-			['-', ProductionExpressionUnarySymbol_Dynamic.instance],
+			[ProductionExpressionCompound_Variable.instance],
+			['!', ProductionExpressionUnarySymbol_Variable.instance],
+			['?', ProductionExpressionUnarySymbol_Variable.instance],
+			['+', ProductionExpressionUnarySymbol_Variable.instance],
+			['-', ProductionExpressionUnarySymbol_Variable.instance],
 		];
 	}
 }
@@ -680,12 +680,12 @@ class ProductionExpressionExponential extends Production {
 	}
 }
 
-class ProductionExpressionExponential_Dynamic extends Production {
-	static readonly instance: ProductionExpressionExponential_Dynamic = new ProductionExpressionExponential_Dynamic();
+class ProductionExpressionExponential_Variable extends Production {
+	static readonly instance: ProductionExpressionExponential_Variable = new ProductionExpressionExponential_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionUnarySymbol_Dynamic.instance],
-			[ProductionExpressionUnarySymbol_Dynamic.instance, '^', ProductionExpressionExponential_Dynamic.instance],
+			[ProductionExpressionUnarySymbol_Variable.instance],
+			[ProductionExpressionUnarySymbol_Variable.instance, '^', ProductionExpressionExponential_Variable.instance],
 		];
 	}
 }
@@ -701,13 +701,13 @@ class ProductionExpressionMultiplicative extends Production {
 	}
 }
 
-class ProductionExpressionMultiplicative_Dynamic extends Production {
-	static readonly instance: ProductionExpressionMultiplicative_Dynamic = new ProductionExpressionMultiplicative_Dynamic();
+class ProductionExpressionMultiplicative_Variable extends Production {
+	static readonly instance: ProductionExpressionMultiplicative_Variable = new ProductionExpressionMultiplicative_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionExponential_Dynamic.instance],
-			[ProductionExpressionMultiplicative_Dynamic.instance, '*', ProductionExpressionExponential_Dynamic.instance],
-			[ProductionExpressionMultiplicative_Dynamic.instance, '/', ProductionExpressionExponential_Dynamic.instance],
+			[ProductionExpressionExponential_Variable.instance],
+			[ProductionExpressionMultiplicative_Variable.instance, '*', ProductionExpressionExponential_Variable.instance],
+			[ProductionExpressionMultiplicative_Variable.instance, '/', ProductionExpressionExponential_Variable.instance],
 		];
 	}
 }
@@ -723,13 +723,13 @@ class ProductionExpressionAdditive extends Production {
 	}
 }
 
-class ProductionExpressionAdditive_Dynamic extends Production {
-	static readonly instance: ProductionExpressionAdditive_Dynamic = new ProductionExpressionAdditive_Dynamic();
+class ProductionExpressionAdditive_Variable extends Production {
+	static readonly instance: ProductionExpressionAdditive_Variable = new ProductionExpressionAdditive_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionMultiplicative_Dynamic.instance],
-			[ProductionExpressionAdditive_Dynamic.instance, '+', ProductionExpressionMultiplicative_Dynamic.instance],
-			[ProductionExpressionAdditive_Dynamic.instance, '-', ProductionExpressionMultiplicative_Dynamic.instance],
+			[ProductionExpressionMultiplicative_Variable.instance],
+			[ProductionExpressionAdditive_Variable.instance, '+', ProductionExpressionMultiplicative_Variable.instance],
+			[ProductionExpressionAdditive_Variable.instance, '-', ProductionExpressionMultiplicative_Variable.instance],
 		];
 	}
 }
@@ -751,19 +751,19 @@ class ProductionExpressionComparative extends Production {
 	}
 }
 
-class ProductionExpressionComparative_Dynamic extends Production {
-	static readonly instance: ProductionExpressionComparative_Dynamic = new ProductionExpressionComparative_Dynamic();
+class ProductionExpressionComparative_Variable extends Production {
+	static readonly instance: ProductionExpressionComparative_Variable = new ProductionExpressionComparative_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionAdditive_Dynamic.instance],
-			[ProductionExpressionComparative_Dynamic.instance, '<', ProductionExpressionAdditive_Dynamic.instance],
-			[ProductionExpressionComparative_Dynamic.instance, '>', ProductionExpressionAdditive_Dynamic.instance],
-			[ProductionExpressionComparative_Dynamic.instance, '<=', ProductionExpressionAdditive_Dynamic.instance],
-			[ProductionExpressionComparative_Dynamic.instance, '>=', ProductionExpressionAdditive_Dynamic.instance],
-			[ProductionExpressionComparative_Dynamic.instance, '!<', ProductionExpressionAdditive_Dynamic.instance],
-			[ProductionExpressionComparative_Dynamic.instance, '!>', ProductionExpressionAdditive_Dynamic.instance],
-			[ProductionExpressionComparative_Dynamic.instance, 'is', ProductionExpressionAdditive_Dynamic.instance],
-			[ProductionExpressionComparative_Dynamic.instance, 'isnt', ProductionExpressionAdditive_Dynamic.instance],
+			[ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, '<', ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, '>', ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, '<=', ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, '>=', ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, '!<', ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, '!>', ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, 'is', ProductionExpressionAdditive_Variable.instance],
+			[ProductionExpressionComparative_Variable.instance, 'isnt', ProductionExpressionAdditive_Variable.instance],
 		];
 	}
 }
@@ -781,15 +781,15 @@ class ProductionExpressionEquality extends Production {
 	}
 }
 
-class ProductionExpressionEquality_Dynamic extends Production {
-	static readonly instance: ProductionExpressionEquality_Dynamic = new ProductionExpressionEquality_Dynamic();
+class ProductionExpressionEquality_Variable extends Production {
+	static readonly instance: ProductionExpressionEquality_Variable = new ProductionExpressionEquality_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionComparative_Dynamic.instance],
-			[ProductionExpressionEquality_Dynamic.instance, '===', ProductionExpressionComparative_Dynamic.instance],
-			[ProductionExpressionEquality_Dynamic.instance, '!==', ProductionExpressionComparative_Dynamic.instance],
-			[ProductionExpressionEquality_Dynamic.instance, '==', ProductionExpressionComparative_Dynamic.instance],
-			[ProductionExpressionEquality_Dynamic.instance, '!=', ProductionExpressionComparative_Dynamic.instance],
+			[ProductionExpressionComparative_Variable.instance],
+			[ProductionExpressionEquality_Variable.instance, '===', ProductionExpressionComparative_Variable.instance],
+			[ProductionExpressionEquality_Variable.instance, '!==', ProductionExpressionComparative_Variable.instance],
+			[ProductionExpressionEquality_Variable.instance, '==', ProductionExpressionComparative_Variable.instance],
+			[ProductionExpressionEquality_Variable.instance, '!=', ProductionExpressionComparative_Variable.instance],
 		];
 	}
 }
@@ -805,13 +805,13 @@ class ProductionExpressionConjunctive extends Production {
 	}
 }
 
-class ProductionExpressionConjunctive_Dynamic extends Production {
-	static readonly instance: ProductionExpressionConjunctive_Dynamic = new ProductionExpressionConjunctive_Dynamic();
+class ProductionExpressionConjunctive_Variable extends Production {
+	static readonly instance: ProductionExpressionConjunctive_Variable = new ProductionExpressionConjunctive_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionEquality_Dynamic.instance],
-			[ProductionExpressionConjunctive_Dynamic.instance, '&&', ProductionExpressionEquality_Dynamic.instance],
-			[ProductionExpressionConjunctive_Dynamic.instance, '!&', ProductionExpressionEquality_Dynamic.instance],
+			[ProductionExpressionEquality_Variable.instance],
+			[ProductionExpressionConjunctive_Variable.instance, '&&', ProductionExpressionEquality_Variable.instance],
+			[ProductionExpressionConjunctive_Variable.instance, '!&', ProductionExpressionEquality_Variable.instance],
 		];
 	}
 }
@@ -827,13 +827,13 @@ class ProductionExpressionDisjunctive extends Production {
 	}
 }
 
-class ProductionExpressionDisjunctive_Dynamic extends Production {
-	static readonly instance: ProductionExpressionDisjunctive_Dynamic = new ProductionExpressionDisjunctive_Dynamic();
+class ProductionExpressionDisjunctive_Variable extends Production {
+	static readonly instance: ProductionExpressionDisjunctive_Variable = new ProductionExpressionDisjunctive_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionConjunctive_Dynamic.instance],
-			[ProductionExpressionDisjunctive_Dynamic.instance, '||', ProductionExpressionConjunctive_Dynamic.instance],
-			[ProductionExpressionDisjunctive_Dynamic.instance, '!|', ProductionExpressionConjunctive_Dynamic.instance],
+			[ProductionExpressionConjunctive_Variable.instance],
+			[ProductionExpressionDisjunctive_Variable.instance, '||', ProductionExpressionConjunctive_Variable.instance],
+			[ProductionExpressionDisjunctive_Variable.instance, '!|', ProductionExpressionConjunctive_Variable.instance],
 		];
 	}
 }
@@ -847,11 +847,11 @@ class ProductionExpressionConditional extends Production {
 	}
 }
 
-class ProductionExpressionConditional_Dynamic extends Production {
-	static readonly instance: ProductionExpressionConditional_Dynamic = new ProductionExpressionConditional_Dynamic();
+class ProductionExpressionConditional_Variable extends Production {
+	static readonly instance: ProductionExpressionConditional_Variable = new ProductionExpressionConditional_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['if', ProductionExpression_Dynamic.instance, 'then', ProductionExpression_Dynamic.instance, 'else', ProductionExpression_Dynamic.instance],
+			['if', ProductionExpression_Variable.instance, 'then', ProductionExpression_Variable.instance, 'else', ProductionExpression_Variable.instance],
 		];
 	}
 }
@@ -866,12 +866,12 @@ class ProductionExpression extends Production {
 	}
 }
 
-class ProductionExpression_Dynamic extends Production {
-	static readonly instance: ProductionExpression_Dynamic = new ProductionExpression_Dynamic();
+class ProductionExpression_Variable extends Production {
+	static readonly instance: ProductionExpression_Variable = new ProductionExpression_Variable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionExpressionDisjunctive_Dynamic.instance],
-			[ProductionExpressionConditional_Dynamic.instance],
+			[ProductionExpressionDisjunctive_Variable.instance],
+			[ProductionExpressionConditional_Variable.instance],
 		];
 	}
 }
@@ -889,8 +889,8 @@ class ProductionDeclarationVariable extends Production {
 	static readonly instance: ProductionDeclarationVariable = new ProductionDeclarationVariable();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			['let', TERMINAL.TerminalIdentifier.instance, ':', ProductionType.instance, '=', ProductionExpression_Dynamic.instance, ';'],
-			['let', 'unfixed', TERMINAL.TerminalIdentifier.instance, ':', ProductionType.instance, '=', ProductionExpression_Dynamic.instance, ';'],
+			['let', TERMINAL.TerminalIdentifier.instance, ':', ProductionType.instance, '=', ProductionExpression_Variable.instance, ';'],
+			['let', 'unfixed', TERMINAL.TerminalIdentifier.instance, ':', ProductionType.instance, '=', ProductionExpression_Variable.instance, ';'],
 		];
 	}
 }
@@ -909,7 +909,7 @@ class ProductionStatementAssignment extends Production {
 	static readonly instance: ProductionStatementAssignment = new ProductionStatementAssignment();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
-			[ProductionAssignee.instance, '=', ProductionExpression_Dynamic.instance, ';'],
+			[ProductionAssignee.instance, '=', ProductionExpression_Variable.instance, ';'],
 		];
 	}
 }
@@ -919,7 +919,7 @@ class ProductionStatement extends Production {
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[';'],
-			[ProductionExpression_Dynamic.instance, ';'],
+			[ProductionExpression_Variable.instance, ';'],
 			[ProductionDeclaration.instance],
 			[ProductionStatementAssignment.instance],
 		];
@@ -1172,9 +1172,9 @@ export abstract class ParseNodeStringTemplate$__0__List extends ParseNode {
 		| readonly [Token, ParseNodeExpression]
 		| readonly [ParseNodeStringTemplate__0__List, Token, ParseNodeExpression]
 		| readonly [Token]
-		| readonly [ParseNodeStringTemplate_Dynamic__0__List, Token]
-		| readonly [Token, ParseNodeExpression_Dynamic]
-		| readonly [ParseNodeStringTemplate_Dynamic__0__List, Token, ParseNodeExpression_Dynamic]
+		| readonly [ParseNodeStringTemplate_Variable__0__List, Token]
+		| readonly [Token, ParseNodeExpression_Variable]
+		| readonly [ParseNodeStringTemplate_Variable__0__List, Token, ParseNodeExpression_Variable]
 	;
 }
 
@@ -1187,12 +1187,12 @@ export class ParseNodeStringTemplate__0__List extends ParseNodeStringTemplate$__
 	;
 }
 
-export class ParseNodeStringTemplate_Dynamic__0__List extends ParseNodeStringTemplate$__0__List {
+export class ParseNodeStringTemplate_Variable__0__List extends ParseNodeStringTemplate$__0__List {
 	declare readonly children:
 		| readonly [Token]
-		| readonly [ParseNodeStringTemplate_Dynamic__0__List, Token]
-		| readonly [Token, ParseNodeExpression_Dynamic]
-		| readonly [ParseNodeStringTemplate_Dynamic__0__List, Token, ParseNodeExpression_Dynamic]
+		| readonly [ParseNodeStringTemplate_Variable__0__List, Token]
+		| readonly [Token, ParseNodeExpression_Variable]
+		| readonly [ParseNodeStringTemplate_Variable__0__List, Token, ParseNodeExpression_Variable]
 	;
 }
 
@@ -1205,9 +1205,9 @@ export abstract class ParseNodeStringTemplate$ extends ParseNode {
 		| readonly [Token, ParseNodeExpression, ParseNodeStringTemplate__0__List, Token]
 		| readonly [Token]
 		| readonly [Token, Token]
-		| readonly [Token, ParseNodeStringTemplate_Dynamic__0__List, Token]
-		| readonly [Token, ParseNodeExpression_Dynamic, Token]
-		| readonly [Token, ParseNodeExpression_Dynamic, ParseNodeStringTemplate_Dynamic__0__List, Token]
+		| readonly [Token, ParseNodeStringTemplate_Variable__0__List, Token]
+		| readonly [Token, ParseNodeExpression_Variable, Token]
+		| readonly [Token, ParseNodeExpression_Variable, ParseNodeStringTemplate_Variable__0__List, Token]
 	;
 }
 
@@ -1221,20 +1221,20 @@ export class ParseNodeStringTemplate extends ParseNodeStringTemplate$ {
 	;
 }
 
-export class ParseNodeStringTemplate_Dynamic extends ParseNodeStringTemplate$ {
+export class ParseNodeStringTemplate_Variable extends ParseNodeStringTemplate$ {
 	declare readonly children:
 		| readonly [Token]
 		| readonly [Token, Token]
-		| readonly [Token, ParseNodeStringTemplate_Dynamic__0__List, Token]
-		| readonly [Token, ParseNodeExpression_Dynamic, Token]
-		| readonly [Token, ParseNodeExpression_Dynamic, ParseNodeStringTemplate_Dynamic__0__List, Token]
+		| readonly [Token, ParseNodeStringTemplate_Variable__0__List, Token]
+		| readonly [Token, ParseNodeExpression_Variable, Token]
+		| readonly [Token, ParseNodeExpression_Variable, ParseNodeStringTemplate_Variable__0__List, Token]
 	;
 }
 
 export abstract class ParseNodeProperty$ extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeWord, Token, ParseNodeExpression]
-		| readonly [ParseNodeWord, Token, ParseNodeExpression_Dynamic]
+		| readonly [ParseNodeWord, Token, ParseNodeExpression_Variable]
 	;
 }
 
@@ -1244,15 +1244,15 @@ export class ParseNodeProperty extends ParseNodeProperty$ {
 	;
 }
 
-export class ParseNodeProperty_Dynamic extends ParseNodeProperty$ {
+export class ParseNodeProperty_Variable extends ParseNodeProperty$ {
 	declare readonly children:
-		| readonly [ParseNodeWord, Token, ParseNodeExpression_Dynamic]
+		| readonly [ParseNodeWord, Token, ParseNodeExpression_Variable]
 	;
 }
 
 export class ParseNodeCase extends ParseNode {
 	declare readonly children:
-		| readonly [ParseNodeExpression_Dynamic, Token, ParseNodeExpression_Dynamic]
+		| readonly [ParseNodeExpression_Variable, Token, ParseNodeExpression_Variable]
 	;
 }
 
@@ -1260,8 +1260,8 @@ export abstract class ParseNodeTupleLiteral$__0__List extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeExpression]
 		| readonly [ParseNodeTupleLiteral__0__List, Token, ParseNodeExpression]
-		| readonly [ParseNodeExpression_Dynamic]
-		| readonly [ParseNodeTupleLiteral_Dynamic__0__List, Token, ParseNodeExpression_Dynamic]
+		| readonly [ParseNodeExpression_Variable]
+		| readonly [ParseNodeTupleLiteral_Variable__0__List, Token, ParseNodeExpression_Variable]
 	;
 }
 
@@ -1272,45 +1272,45 @@ export class ParseNodeTupleLiteral__0__List extends ParseNodeTupleLiteral$__0__L
 	;
 }
 
-export class ParseNodeTupleLiteral_Dynamic__0__List extends ParseNodeTupleLiteral$__0__List {
+export class ParseNodeTupleLiteral_Variable__0__List extends ParseNodeTupleLiteral$__0__List {
 	declare readonly children:
-		| readonly [ParseNodeExpression_Dynamic]
-		| readonly [ParseNodeTupleLiteral_Dynamic__0__List, Token, ParseNodeExpression_Dynamic]
+		| readonly [ParseNodeExpression_Variable]
+		| readonly [ParseNodeTupleLiteral_Variable__0__List, Token, ParseNodeExpression_Variable]
 	;
 }
 
 export abstract class ParseNodeTupleLiteral$ extends ParseNode {
 	declare readonly children:
-		| readonly [Token, Token]
-		| readonly [Token, ParseNodeTupleLiteral__0__List, Token]
-		| readonly [Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, Token, Token]
 		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token]
 		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, Token, Token, ParseNodeTupleLiteral__0__List, Token]
+		| readonly [Token, Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
 		| readonly [Token, Token]
-		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
-		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
 	;
 }
 
 export class ParseNodeTupleLiteral extends ParseNodeTupleLiteral$ {
 	declare readonly children:
-		| readonly [Token, Token]
-		| readonly [Token, ParseNodeTupleLiteral__0__List, Token]
-		| readonly [Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, Token, Token]
 		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token]
 		| readonly [Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
+		| readonly [Token, Token, Token, ParseNodeTupleLiteral__0__List, Token]
+		| readonly [Token, Token, Token, ParseNodeTupleLiteral__0__List, Token, Token]
 	;
 }
 
-export class ParseNodeTupleLiteral_Dynamic extends ParseNodeTupleLiteral$ {
+export class ParseNodeTupleLiteral_Variable extends ParseNodeTupleLiteral$ {
 	declare readonly children:
 		| readonly [Token, Token]
-		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
-		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
 	;
 }
 
@@ -1318,8 +1318,8 @@ export abstract class ParseNodeRecordLiteral$__0__List extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeProperty]
 		| readonly [ParseNodeRecordLiteral__0__List, Token, ParseNodeProperty]
-		| readonly [ParseNodeProperty_Dynamic]
-		| readonly [ParseNodeRecordLiteral_Dynamic__0__List, Token, ParseNodeProperty_Dynamic]
+		| readonly [ParseNodeProperty_Variable]
+		| readonly [ParseNodeRecordLiteral_Variable__0__List, Token, ParseNodeProperty_Variable]
 	;
 }
 
@@ -1330,51 +1330,51 @@ export class ParseNodeRecordLiteral__0__List extends ParseNodeRecordLiteral$__0_
 	;
 }
 
-export class ParseNodeRecordLiteral_Dynamic__0__List extends ParseNodeRecordLiteral$__0__List {
+export class ParseNodeRecordLiteral_Variable__0__List extends ParseNodeRecordLiteral$__0__List {
 	declare readonly children:
-		| readonly [ParseNodeProperty_Dynamic]
-		| readonly [ParseNodeRecordLiteral_Dynamic__0__List, Token, ParseNodeProperty_Dynamic]
+		| readonly [ParseNodeProperty_Variable]
+		| readonly [ParseNodeRecordLiteral_Variable__0__List, Token, ParseNodeProperty_Variable]
 	;
 }
 
 export abstract class ParseNodeRecordLiteral$ extends ParseNode {
 	declare readonly children:
-		| readonly [Token, ParseNodeRecordLiteral__0__List, Token]
-		| readonly [Token, ParseNodeRecordLiteral__0__List, Token, Token]
 		| readonly [Token, Token, ParseNodeRecordLiteral__0__List, Token]
 		| readonly [Token, Token, ParseNodeRecordLiteral__0__List, Token, Token]
-		| readonly [Token, ParseNodeRecordLiteral_Dynamic__0__List, Token]
-		| readonly [Token, ParseNodeRecordLiteral_Dynamic__0__List, Token, Token]
-		| readonly [Token, Token, ParseNodeRecordLiteral_Dynamic__0__List, Token]
-		| readonly [Token, Token, ParseNodeRecordLiteral_Dynamic__0__List, Token, Token]
+		| readonly [Token, Token, Token, ParseNodeRecordLiteral__0__List, Token]
+		| readonly [Token, Token, Token, ParseNodeRecordLiteral__0__List, Token, Token]
+		| readonly [Token, ParseNodeRecordLiteral_Variable__0__List, Token]
+		| readonly [Token, ParseNodeRecordLiteral_Variable__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral_Variable__0__List, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral_Variable__0__List, Token, Token]
 	;
 }
 
 export class ParseNodeRecordLiteral extends ParseNodeRecordLiteral$ {
 	declare readonly children:
-		| readonly [Token, ParseNodeRecordLiteral__0__List, Token]
-		| readonly [Token, ParseNodeRecordLiteral__0__List, Token, Token]
 		| readonly [Token, Token, ParseNodeRecordLiteral__0__List, Token]
 		| readonly [Token, Token, ParseNodeRecordLiteral__0__List, Token, Token]
+		| readonly [Token, Token, Token, ParseNodeRecordLiteral__0__List, Token]
+		| readonly [Token, Token, Token, ParseNodeRecordLiteral__0__List, Token, Token]
 	;
 }
 
-export class ParseNodeRecordLiteral_Dynamic extends ParseNodeRecordLiteral$ {
+export class ParseNodeRecordLiteral_Variable extends ParseNodeRecordLiteral$ {
 	declare readonly children:
-		| readonly [Token, ParseNodeRecordLiteral_Dynamic__0__List, Token]
-		| readonly [Token, ParseNodeRecordLiteral_Dynamic__0__List, Token, Token]
-		| readonly [Token, Token, ParseNodeRecordLiteral_Dynamic__0__List, Token]
-		| readonly [Token, Token, ParseNodeRecordLiteral_Dynamic__0__List, Token, Token]
+		| readonly [Token, ParseNodeRecordLiteral_Variable__0__List, Token]
+		| readonly [Token, ParseNodeRecordLiteral_Variable__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral_Variable__0__List, Token]
+		| readonly [Token, Token, ParseNodeRecordLiteral_Variable__0__List, Token, Token]
 	;
 }
 
 export class ParseNodeSetLiteral extends ParseNode {
 	declare readonly children:
 		| readonly [Token, Token]
-		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
-		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
 	;
 }
 
@@ -1397,10 +1397,10 @@ export class ParseNodeMapLiteral extends ParseNode {
 export class ParseNodeFunctionArguments extends ParseNode {
 	declare readonly children:
 		| readonly [Token, Token]
-		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
-		| readonly [Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token]
-		| readonly [Token, Token, ParseNodeTupleLiteral_Dynamic__0__List, Token, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token]
+		| readonly [Token, Token, ParseNodeTupleLiteral_Variable__0__List, Token, Token]
 	;
 }
 
@@ -1413,14 +1413,14 @@ export abstract class ParseNodeExpressionUnit$ extends ParseNode {
 		| readonly [Token, ParseNodeExpression, Token]
 		| readonly [Token]
 		| readonly [ParseNodePrimitiveLiteral]
-		| readonly [ParseNodeStringTemplate_Dynamic]
+		| readonly [ParseNodeStringTemplate_Variable]
 		| readonly [ParseNodeTupleLiteral]
 		| readonly [ParseNodeRecordLiteral]
-		| readonly [ParseNodeTupleLiteral_Dynamic]
-		| readonly [ParseNodeRecordLiteral_Dynamic]
+		| readonly [ParseNodeTupleLiteral_Variable]
+		| readonly [ParseNodeRecordLiteral_Variable]
 		| readonly [ParseNodeSetLiteral]
 		| readonly [ParseNodeMapLiteral]
-		| readonly [Token, ParseNodeExpression_Dynamic, Token]
+		| readonly [Token, ParseNodeExpression_Variable, Token]
 	;
 }
 
@@ -1434,18 +1434,18 @@ export class ParseNodeExpressionUnit extends ParseNodeExpressionUnit$ {
 	;
 }
 
-export class ParseNodeExpressionUnit_Dynamic extends ParseNodeExpressionUnit$ {
+export class ParseNodeExpressionUnit_Variable extends ParseNodeExpressionUnit$ {
 	declare readonly children:
 		| readonly [Token]
 		| readonly [ParseNodePrimitiveLiteral]
-		| readonly [ParseNodeStringTemplate_Dynamic]
+		| readonly [ParseNodeStringTemplate_Variable]
 		| readonly [ParseNodeTupleLiteral]
 		| readonly [ParseNodeRecordLiteral]
-		| readonly [ParseNodeTupleLiteral_Dynamic]
-		| readonly [ParseNodeRecordLiteral_Dynamic]
+		| readonly [ParseNodeTupleLiteral_Variable]
+		| readonly [ParseNodeRecordLiteral_Variable]
 		| readonly [ParseNodeSetLiteral]
 		| readonly [ParseNodeMapLiteral]
-		| readonly [Token, ParseNodeExpression_Dynamic, Token]
+		| readonly [Token, ParseNodeExpression_Variable, Token]
 	;
 }
 
@@ -1462,13 +1462,13 @@ export abstract class ParseNodePropertyAccess$ extends ParseNode {
 		| readonly [Token, Token, ParseNodeExpression, Token]
 		| readonly [Token, Token]
 		| readonly [Token, ParseNodeWord]
-		| readonly [Token, Token, ParseNodeExpression_Dynamic, Token]
+		| readonly [Token, Token, ParseNodeExpression_Variable, Token]
 		| readonly [Token, Token]
 		| readonly [Token, ParseNodeWord]
-		| readonly [Token, Token, ParseNodeExpression_Dynamic, Token]
+		| readonly [Token, Token, ParseNodeExpression_Variable, Token]
 		| readonly [Token, Token]
 		| readonly [Token, ParseNodeWord]
-		| readonly [Token, Token, ParseNodeExpression_Dynamic, Token]
+		| readonly [Token, Token, ParseNodeExpression_Variable, Token]
 	;
 }
 
@@ -1486,17 +1486,17 @@ export class ParseNodePropertyAccess extends ParseNodePropertyAccess$ {
 	;
 }
 
-export class ParseNodePropertyAccess_Dynamic extends ParseNodePropertyAccess$ {
+export class ParseNodePropertyAccess_Variable extends ParseNodePropertyAccess$ {
 	declare readonly children:
 		| readonly [Token, Token]
 		| readonly [Token, ParseNodeWord]
-		| readonly [Token, Token, ParseNodeExpression_Dynamic, Token]
+		| readonly [Token, Token, ParseNodeExpression_Variable, Token]
 		| readonly [Token, Token]
 		| readonly [Token, ParseNodeWord]
-		| readonly [Token, Token, ParseNodeExpression_Dynamic, Token]
+		| readonly [Token, Token, ParseNodeExpression_Variable, Token]
 		| readonly [Token, Token]
 		| readonly [Token, ParseNodeWord]
-		| readonly [Token, Token, ParseNodeExpression_Dynamic, Token]
+		| readonly [Token, Token, ParseNodeExpression_Variable, Token]
 	;
 }
 
@@ -1504,7 +1504,7 @@ export class ParseNodePropertyAssign extends ParseNode {
 	declare readonly children:
 		| readonly [Token, Token]
 		| readonly [Token, ParseNodeWord]
-		| readonly [Token, Token, ParseNodeExpression_Dynamic, Token]
+		| readonly [Token, Token, ParseNodeExpression_Variable, Token]
 	;
 }
 
@@ -1519,9 +1519,9 @@ export abstract class ParseNodeExpressionCompound$ extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeExpressionUnit]
 		| readonly [ParseNodeExpressionCompound, ParseNodePropertyAccess]
-		| readonly [ParseNodeExpressionUnit_Dynamic]
-		| readonly [ParseNodeExpressionCompound_Dynamic, ParseNodePropertyAccess_Dynamic]
-		| readonly [ParseNodeExpressionCompound_Dynamic, ParseNodeFunctionCall]
+		| readonly [ParseNodeExpressionUnit_Variable]
+		| readonly [ParseNodeExpressionCompound_Variable, ParseNodePropertyAccess_Variable]
+		| readonly [ParseNodeExpressionCompound_Variable, ParseNodeFunctionCall]
 	;
 }
 
@@ -1532,18 +1532,18 @@ export class ParseNodeExpressionCompound extends ParseNodeExpressionCompound$ {
 	;
 }
 
-export class ParseNodeExpressionCompound_Dynamic extends ParseNodeExpressionCompound$ {
+export class ParseNodeExpressionCompound_Variable extends ParseNodeExpressionCompound$ {
 	declare readonly children:
-		| readonly [ParseNodeExpressionUnit_Dynamic]
-		| readonly [ParseNodeExpressionCompound_Dynamic, ParseNodePropertyAccess_Dynamic]
-		| readonly [ParseNodeExpressionCompound_Dynamic, ParseNodeFunctionCall]
+		| readonly [ParseNodeExpressionUnit_Variable]
+		| readonly [ParseNodeExpressionCompound_Variable, ParseNodePropertyAccess_Variable]
+		| readonly [ParseNodeExpressionCompound_Variable, ParseNodeFunctionCall]
 	;
 }
 
 export class ParseNodeAssignee extends ParseNode {
 	declare readonly children:
 		| readonly [Token]
-		| readonly [ParseNodeExpressionCompound_Dynamic, ParseNodePropertyAssign]
+		| readonly [ParseNodeExpressionCompound_Variable, ParseNodePropertyAssign]
 	;
 }
 
@@ -1554,11 +1554,11 @@ export abstract class ParseNodeExpressionUnarySymbol$ extends ParseNode {
 		| readonly [Token, ParseNodeExpressionUnarySymbol]
 		| readonly [Token, ParseNodeExpressionUnarySymbol]
 		| readonly [Token, ParseNodeExpressionUnarySymbol]
-		| readonly [ParseNodeExpressionCompound_Dynamic]
-		| readonly [Token, ParseNodeExpressionUnarySymbol_Dynamic]
-		| readonly [Token, ParseNodeExpressionUnarySymbol_Dynamic]
-		| readonly [Token, ParseNodeExpressionUnarySymbol_Dynamic]
-		| readonly [Token, ParseNodeExpressionUnarySymbol_Dynamic]
+		| readonly [ParseNodeExpressionCompound_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
 	;
 }
 
@@ -1572,13 +1572,13 @@ export class ParseNodeExpressionUnarySymbol extends ParseNodeExpressionUnarySymb
 	;
 }
 
-export class ParseNodeExpressionUnarySymbol_Dynamic extends ParseNodeExpressionUnarySymbol$ {
+export class ParseNodeExpressionUnarySymbol_Variable extends ParseNodeExpressionUnarySymbol$ {
 	declare readonly children:
-		| readonly [ParseNodeExpressionCompound_Dynamic]
-		| readonly [Token, ParseNodeExpressionUnarySymbol_Dynamic]
-		| readonly [Token, ParseNodeExpressionUnarySymbol_Dynamic]
-		| readonly [Token, ParseNodeExpressionUnarySymbol_Dynamic]
-		| readonly [Token, ParseNodeExpressionUnarySymbol_Dynamic]
+		| readonly [ParseNodeExpressionCompound_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [Token, ParseNodeExpressionUnarySymbol_Variable]
 	;
 }
 
@@ -1586,8 +1586,8 @@ export abstract class ParseNodeExpressionExponential$ extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeExpressionUnarySymbol]
 		| readonly [ParseNodeExpressionUnarySymbol, Token, ParseNodeExpressionExponential]
-		| readonly [ParseNodeExpressionUnarySymbol_Dynamic]
-		| readonly [ParseNodeExpressionUnarySymbol_Dynamic, Token, ParseNodeExpressionExponential_Dynamic]
+		| readonly [ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [ParseNodeExpressionUnarySymbol_Variable, Token, ParseNodeExpressionExponential_Variable]
 	;
 }
 
@@ -1598,10 +1598,10 @@ export class ParseNodeExpressionExponential extends ParseNodeExpressionExponenti
 	;
 }
 
-export class ParseNodeExpressionExponential_Dynamic extends ParseNodeExpressionExponential$ {
+export class ParseNodeExpressionExponential_Variable extends ParseNodeExpressionExponential$ {
 	declare readonly children:
-		| readonly [ParseNodeExpressionUnarySymbol_Dynamic]
-		| readonly [ParseNodeExpressionUnarySymbol_Dynamic, Token, ParseNodeExpressionExponential_Dynamic]
+		| readonly [ParseNodeExpressionUnarySymbol_Variable]
+		| readonly [ParseNodeExpressionUnarySymbol_Variable, Token, ParseNodeExpressionExponential_Variable]
 	;
 }
 
@@ -1610,9 +1610,9 @@ export abstract class ParseNodeExpressionMultiplicative$ extends ParseNode {
 		| readonly [ParseNodeExpressionExponential]
 		| readonly [ParseNodeExpressionMultiplicative, Token, ParseNodeExpressionExponential]
 		| readonly [ParseNodeExpressionMultiplicative, Token, ParseNodeExpressionExponential]
-		| readonly [ParseNodeExpressionExponential_Dynamic]
-		| readonly [ParseNodeExpressionMultiplicative_Dynamic, Token, ParseNodeExpressionExponential_Dynamic]
-		| readonly [ParseNodeExpressionMultiplicative_Dynamic, Token, ParseNodeExpressionExponential_Dynamic]
+		| readonly [ParseNodeExpressionExponential_Variable]
+		| readonly [ParseNodeExpressionMultiplicative_Variable, Token, ParseNodeExpressionExponential_Variable]
+		| readonly [ParseNodeExpressionMultiplicative_Variable, Token, ParseNodeExpressionExponential_Variable]
 	;
 }
 
@@ -1624,11 +1624,11 @@ export class ParseNodeExpressionMultiplicative extends ParseNodeExpressionMultip
 	;
 }
 
-export class ParseNodeExpressionMultiplicative_Dynamic extends ParseNodeExpressionMultiplicative$ {
+export class ParseNodeExpressionMultiplicative_Variable extends ParseNodeExpressionMultiplicative$ {
 	declare readonly children:
-		| readonly [ParseNodeExpressionExponential_Dynamic]
-		| readonly [ParseNodeExpressionMultiplicative_Dynamic, Token, ParseNodeExpressionExponential_Dynamic]
-		| readonly [ParseNodeExpressionMultiplicative_Dynamic, Token, ParseNodeExpressionExponential_Dynamic]
+		| readonly [ParseNodeExpressionExponential_Variable]
+		| readonly [ParseNodeExpressionMultiplicative_Variable, Token, ParseNodeExpressionExponential_Variable]
+		| readonly [ParseNodeExpressionMultiplicative_Variable, Token, ParseNodeExpressionExponential_Variable]
 	;
 }
 
@@ -1637,9 +1637,9 @@ export abstract class ParseNodeExpressionAdditive$ extends ParseNode {
 		| readonly [ParseNodeExpressionMultiplicative]
 		| readonly [ParseNodeExpressionAdditive, Token, ParseNodeExpressionMultiplicative]
 		| readonly [ParseNodeExpressionAdditive, Token, ParseNodeExpressionMultiplicative]
-		| readonly [ParseNodeExpressionMultiplicative_Dynamic]
-		| readonly [ParseNodeExpressionAdditive_Dynamic, Token, ParseNodeExpressionMultiplicative_Dynamic]
-		| readonly [ParseNodeExpressionAdditive_Dynamic, Token, ParseNodeExpressionMultiplicative_Dynamic]
+		| readonly [ParseNodeExpressionMultiplicative_Variable]
+		| readonly [ParseNodeExpressionAdditive_Variable, Token, ParseNodeExpressionMultiplicative_Variable]
+		| readonly [ParseNodeExpressionAdditive_Variable, Token, ParseNodeExpressionMultiplicative_Variable]
 	;
 }
 
@@ -1651,11 +1651,11 @@ export class ParseNodeExpressionAdditive extends ParseNodeExpressionAdditive$ {
 	;
 }
 
-export class ParseNodeExpressionAdditive_Dynamic extends ParseNodeExpressionAdditive$ {
+export class ParseNodeExpressionAdditive_Variable extends ParseNodeExpressionAdditive$ {
 	declare readonly children:
-		| readonly [ParseNodeExpressionMultiplicative_Dynamic]
-		| readonly [ParseNodeExpressionAdditive_Dynamic, Token, ParseNodeExpressionMultiplicative_Dynamic]
-		| readonly [ParseNodeExpressionAdditive_Dynamic, Token, ParseNodeExpressionMultiplicative_Dynamic]
+		| readonly [ParseNodeExpressionMultiplicative_Variable]
+		| readonly [ParseNodeExpressionAdditive_Variable, Token, ParseNodeExpressionMultiplicative_Variable]
+		| readonly [ParseNodeExpressionAdditive_Variable, Token, ParseNodeExpressionMultiplicative_Variable]
 	;
 }
 
@@ -1670,15 +1670,15 @@ export abstract class ParseNodeExpressionComparative$ extends ParseNode {
 		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
 		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
 		| readonly [ParseNodeExpressionComparative, Token, ParseNodeExpressionAdditive]
-		| readonly [ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
+		| readonly [ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
 	;
 }
 
@@ -1696,17 +1696,17 @@ export class ParseNodeExpressionComparative extends ParseNodeExpressionComparati
 	;
 }
 
-export class ParseNodeExpressionComparative_Dynamic extends ParseNodeExpressionComparative$ {
+export class ParseNodeExpressionComparative_Variable extends ParseNodeExpressionComparative$ {
 	declare readonly children:
-		| readonly [ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
-		| readonly [ParseNodeExpressionComparative_Dynamic, Token, ParseNodeExpressionAdditive_Dynamic]
+		| readonly [ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
+		| readonly [ParseNodeExpressionComparative_Variable, Token, ParseNodeExpressionAdditive_Variable]
 	;
 }
 
@@ -1717,11 +1717,11 @@ export abstract class ParseNodeExpressionEquality$ extends ParseNode {
 		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
 		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
 		| readonly [ParseNodeExpressionEquality, Token, ParseNodeExpressionComparative]
-		| readonly [ParseNodeExpressionComparative_Dynamic]
-		| readonly [ParseNodeExpressionEquality_Dynamic, Token, ParseNodeExpressionComparative_Dynamic]
-		| readonly [ParseNodeExpressionEquality_Dynamic, Token, ParseNodeExpressionComparative_Dynamic]
-		| readonly [ParseNodeExpressionEquality_Dynamic, Token, ParseNodeExpressionComparative_Dynamic]
-		| readonly [ParseNodeExpressionEquality_Dynamic, Token, ParseNodeExpressionComparative_Dynamic]
+		| readonly [ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
 	;
 }
 
@@ -1735,13 +1735,13 @@ export class ParseNodeExpressionEquality extends ParseNodeExpressionEquality$ {
 	;
 }
 
-export class ParseNodeExpressionEquality_Dynamic extends ParseNodeExpressionEquality$ {
+export class ParseNodeExpressionEquality_Variable extends ParseNodeExpressionEquality$ {
 	declare readonly children:
-		| readonly [ParseNodeExpressionComparative_Dynamic]
-		| readonly [ParseNodeExpressionEquality_Dynamic, Token, ParseNodeExpressionComparative_Dynamic]
-		| readonly [ParseNodeExpressionEquality_Dynamic, Token, ParseNodeExpressionComparative_Dynamic]
-		| readonly [ParseNodeExpressionEquality_Dynamic, Token, ParseNodeExpressionComparative_Dynamic]
-		| readonly [ParseNodeExpressionEquality_Dynamic, Token, ParseNodeExpressionComparative_Dynamic]
+		| readonly [ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
+		| readonly [ParseNodeExpressionEquality_Variable, Token, ParseNodeExpressionComparative_Variable]
 	;
 }
 
@@ -1750,9 +1750,9 @@ export abstract class ParseNodeExpressionConjunctive$ extends ParseNode {
 		| readonly [ParseNodeExpressionEquality]
 		| readonly [ParseNodeExpressionConjunctive, Token, ParseNodeExpressionEquality]
 		| readonly [ParseNodeExpressionConjunctive, Token, ParseNodeExpressionEquality]
-		| readonly [ParseNodeExpressionEquality_Dynamic]
-		| readonly [ParseNodeExpressionConjunctive_Dynamic, Token, ParseNodeExpressionEquality_Dynamic]
-		| readonly [ParseNodeExpressionConjunctive_Dynamic, Token, ParseNodeExpressionEquality_Dynamic]
+		| readonly [ParseNodeExpressionEquality_Variable]
+		| readonly [ParseNodeExpressionConjunctive_Variable, Token, ParseNodeExpressionEquality_Variable]
+		| readonly [ParseNodeExpressionConjunctive_Variable, Token, ParseNodeExpressionEquality_Variable]
 	;
 }
 
@@ -1764,11 +1764,11 @@ export class ParseNodeExpressionConjunctive extends ParseNodeExpressionConjuncti
 	;
 }
 
-export class ParseNodeExpressionConjunctive_Dynamic extends ParseNodeExpressionConjunctive$ {
+export class ParseNodeExpressionConjunctive_Variable extends ParseNodeExpressionConjunctive$ {
 	declare readonly children:
-		| readonly [ParseNodeExpressionEquality_Dynamic]
-		| readonly [ParseNodeExpressionConjunctive_Dynamic, Token, ParseNodeExpressionEquality_Dynamic]
-		| readonly [ParseNodeExpressionConjunctive_Dynamic, Token, ParseNodeExpressionEquality_Dynamic]
+		| readonly [ParseNodeExpressionEquality_Variable]
+		| readonly [ParseNodeExpressionConjunctive_Variable, Token, ParseNodeExpressionEquality_Variable]
+		| readonly [ParseNodeExpressionConjunctive_Variable, Token, ParseNodeExpressionEquality_Variable]
 	;
 }
 
@@ -1777,9 +1777,9 @@ export abstract class ParseNodeExpressionDisjunctive$ extends ParseNode {
 		| readonly [ParseNodeExpressionConjunctive]
 		| readonly [ParseNodeExpressionDisjunctive, Token, ParseNodeExpressionConjunctive]
 		| readonly [ParseNodeExpressionDisjunctive, Token, ParseNodeExpressionConjunctive]
-		| readonly [ParseNodeExpressionConjunctive_Dynamic]
-		| readonly [ParseNodeExpressionDisjunctive_Dynamic, Token, ParseNodeExpressionConjunctive_Dynamic]
-		| readonly [ParseNodeExpressionDisjunctive_Dynamic, Token, ParseNodeExpressionConjunctive_Dynamic]
+		| readonly [ParseNodeExpressionConjunctive_Variable]
+		| readonly [ParseNodeExpressionDisjunctive_Variable, Token, ParseNodeExpressionConjunctive_Variable]
+		| readonly [ParseNodeExpressionDisjunctive_Variable, Token, ParseNodeExpressionConjunctive_Variable]
 	;
 }
 
@@ -1791,18 +1791,18 @@ export class ParseNodeExpressionDisjunctive extends ParseNodeExpressionDisjuncti
 	;
 }
 
-export class ParseNodeExpressionDisjunctive_Dynamic extends ParseNodeExpressionDisjunctive$ {
+export class ParseNodeExpressionDisjunctive_Variable extends ParseNodeExpressionDisjunctive$ {
 	declare readonly children:
-		| readonly [ParseNodeExpressionConjunctive_Dynamic]
-		| readonly [ParseNodeExpressionDisjunctive_Dynamic, Token, ParseNodeExpressionConjunctive_Dynamic]
-		| readonly [ParseNodeExpressionDisjunctive_Dynamic, Token, ParseNodeExpressionConjunctive_Dynamic]
+		| readonly [ParseNodeExpressionConjunctive_Variable]
+		| readonly [ParseNodeExpressionDisjunctive_Variable, Token, ParseNodeExpressionConjunctive_Variable]
+		| readonly [ParseNodeExpressionDisjunctive_Variable, Token, ParseNodeExpressionConjunctive_Variable]
 	;
 }
 
 export abstract class ParseNodeExpressionConditional$ extends ParseNode {
 	declare readonly children:
 		| readonly [Token, ParseNodeExpression, Token, ParseNodeExpression, Token, ParseNodeExpression]
-		| readonly [Token, ParseNodeExpression_Dynamic, Token, ParseNodeExpression_Dynamic, Token, ParseNodeExpression_Dynamic]
+		| readonly [Token, ParseNodeExpression_Variable, Token, ParseNodeExpression_Variable, Token, ParseNodeExpression_Variable]
 	;
 }
 
@@ -1812,9 +1812,9 @@ export class ParseNodeExpressionConditional extends ParseNodeExpressionCondition
 	;
 }
 
-export class ParseNodeExpressionConditional_Dynamic extends ParseNodeExpressionConditional$ {
+export class ParseNodeExpressionConditional_Variable extends ParseNodeExpressionConditional$ {
 	declare readonly children:
-		| readonly [Token, ParseNodeExpression_Dynamic, Token, ParseNodeExpression_Dynamic, Token, ParseNodeExpression_Dynamic]
+		| readonly [Token, ParseNodeExpression_Variable, Token, ParseNodeExpression_Variable, Token, ParseNodeExpression_Variable]
 	;
 }
 
@@ -1822,8 +1822,8 @@ export abstract class ParseNodeExpression$ extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeExpressionDisjunctive]
 		| readonly [ParseNodeExpressionConditional]
-		| readonly [ParseNodeExpressionDisjunctive_Dynamic]
-		| readonly [ParseNodeExpressionConditional_Dynamic]
+		| readonly [ParseNodeExpressionDisjunctive_Variable]
+		| readonly [ParseNodeExpressionConditional_Variable]
 	;
 }
 
@@ -1834,10 +1834,10 @@ export class ParseNodeExpression extends ParseNodeExpression$ {
 	;
 }
 
-export class ParseNodeExpression_Dynamic extends ParseNodeExpression$ {
+export class ParseNodeExpression_Variable extends ParseNodeExpression$ {
 	declare readonly children:
-		| readonly [ParseNodeExpressionDisjunctive_Dynamic]
-		| readonly [ParseNodeExpressionConditional_Dynamic]
+		| readonly [ParseNodeExpressionDisjunctive_Variable]
+		| readonly [ParseNodeExpressionConditional_Variable]
 	;
 }
 
@@ -1849,8 +1849,8 @@ export class ParseNodeDeclarationType extends ParseNode {
 
 export class ParseNodeDeclarationVariable extends ParseNode {
 	declare readonly children:
-		| readonly [Token, Token, Token, ParseNodeType, Token, ParseNodeExpression_Dynamic, Token]
-		| readonly [Token, Token, Token, Token, ParseNodeType, Token, ParseNodeExpression_Dynamic, Token]
+		| readonly [Token, Token, Token, ParseNodeType, Token, ParseNodeExpression_Variable, Token]
+		| readonly [Token, Token, Token, Token, ParseNodeType, Token, ParseNodeExpression_Variable, Token]
 	;
 }
 
@@ -1863,14 +1863,14 @@ export class ParseNodeDeclaration extends ParseNode {
 
 export class ParseNodeStatementAssignment extends ParseNode {
 	declare readonly children:
-		| readonly [ParseNodeAssignee, Token, ParseNodeExpression_Dynamic, Token]
+		| readonly [ParseNodeAssignee, Token, ParseNodeExpression_Variable, Token]
 	;
 }
 
 export class ParseNodeStatement extends ParseNode {
 	declare readonly children:
 		| readonly [Token]
-		| readonly [ParseNodeExpression_Dynamic, Token]
+		| readonly [ParseNodeExpression_Variable, Token]
 		| readonly [ParseNodeDeclaration]
 		| readonly [ParseNodeStatementAssignment]
 	;
@@ -1920,53 +1920,53 @@ export const GRAMMAR: Grammar = new Grammar([
 	ProductionTypeUnion.instance,
 	ProductionType.instance,
 	ProductionStringTemplate__0__List.instance,
-	ProductionStringTemplate_Dynamic__0__List.instance,
+	ProductionStringTemplate_Variable__0__List.instance,
 	ProductionStringTemplate.instance,
-	ProductionStringTemplate_Dynamic.instance,
+	ProductionStringTemplate_Variable.instance,
 	ProductionProperty.instance,
-	ProductionProperty_Dynamic.instance,
+	ProductionProperty_Variable.instance,
 	ProductionCase.instance,
 	ProductionTupleLiteral__0__List.instance,
-	ProductionTupleLiteral_Dynamic__0__List.instance,
+	ProductionTupleLiteral_Variable__0__List.instance,
 	ProductionTupleLiteral.instance,
-	ProductionTupleLiteral_Dynamic.instance,
+	ProductionTupleLiteral_Variable.instance,
 	ProductionRecordLiteral__0__List.instance,
-	ProductionRecordLiteral_Dynamic__0__List.instance,
+	ProductionRecordLiteral_Variable__0__List.instance,
 	ProductionRecordLiteral.instance,
-	ProductionRecordLiteral_Dynamic.instance,
+	ProductionRecordLiteral_Variable.instance,
 	ProductionSetLiteral.instance,
 	ProductionMapLiteral__0__List.instance,
 	ProductionMapLiteral.instance,
 	ProductionFunctionArguments.instance,
 	ProductionExpressionUnit.instance,
-	ProductionExpressionUnit_Dynamic.instance,
+	ProductionExpressionUnit_Variable.instance,
 	ProductionPropertyAccess.instance,
-	ProductionPropertyAccess_Dynamic.instance,
+	ProductionPropertyAccess_Variable.instance,
 	ProductionPropertyAssign.instance,
 	ProductionFunctionCall.instance,
 	ProductionExpressionCompound.instance,
-	ProductionExpressionCompound_Dynamic.instance,
+	ProductionExpressionCompound_Variable.instance,
 	ProductionAssignee.instance,
 	ProductionExpressionUnarySymbol.instance,
-	ProductionExpressionUnarySymbol_Dynamic.instance,
+	ProductionExpressionUnarySymbol_Variable.instance,
 	ProductionExpressionExponential.instance,
-	ProductionExpressionExponential_Dynamic.instance,
+	ProductionExpressionExponential_Variable.instance,
 	ProductionExpressionMultiplicative.instance,
-	ProductionExpressionMultiplicative_Dynamic.instance,
+	ProductionExpressionMultiplicative_Variable.instance,
 	ProductionExpressionAdditive.instance,
-	ProductionExpressionAdditive_Dynamic.instance,
+	ProductionExpressionAdditive_Variable.instance,
 	ProductionExpressionComparative.instance,
-	ProductionExpressionComparative_Dynamic.instance,
+	ProductionExpressionComparative_Variable.instance,
 	ProductionExpressionEquality.instance,
-	ProductionExpressionEquality_Dynamic.instance,
+	ProductionExpressionEquality_Variable.instance,
 	ProductionExpressionConjunctive.instance,
-	ProductionExpressionConjunctive_Dynamic.instance,
+	ProductionExpressionConjunctive_Variable.instance,
 	ProductionExpressionDisjunctive.instance,
-	ProductionExpressionDisjunctive_Dynamic.instance,
+	ProductionExpressionDisjunctive_Variable.instance,
 	ProductionExpressionConditional.instance,
-	ProductionExpressionConditional_Dynamic.instance,
+	ProductionExpressionConditional_Variable.instance,
 	ProductionExpression.instance,
-	ProductionExpression_Dynamic.instance,
+	ProductionExpression_Variable.instance,
 	ProductionDeclarationType.instance,
 	ProductionDeclarationVariable.instance,
 	ProductionDeclaration.instance,
@@ -2012,53 +2012,53 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 		[ProductionTypeUnion.instance, ParseNodeTypeUnion],
 		[ProductionType.instance, ParseNodeType],
 		[ProductionStringTemplate__0__List.instance, ParseNodeStringTemplate__0__List],
-		[ProductionStringTemplate_Dynamic__0__List.instance, ParseNodeStringTemplate_Dynamic__0__List],
+		[ProductionStringTemplate_Variable__0__List.instance, ParseNodeStringTemplate_Variable__0__List],
 		[ProductionStringTemplate.instance, ParseNodeStringTemplate],
-		[ProductionStringTemplate_Dynamic.instance, ParseNodeStringTemplate_Dynamic],
+		[ProductionStringTemplate_Variable.instance, ParseNodeStringTemplate_Variable],
 		[ProductionProperty.instance, ParseNodeProperty],
-		[ProductionProperty_Dynamic.instance, ParseNodeProperty_Dynamic],
+		[ProductionProperty_Variable.instance, ParseNodeProperty_Variable],
 		[ProductionCase.instance, ParseNodeCase],
 		[ProductionTupleLiteral__0__List.instance, ParseNodeTupleLiteral__0__List],
-		[ProductionTupleLiteral_Dynamic__0__List.instance, ParseNodeTupleLiteral_Dynamic__0__List],
+		[ProductionTupleLiteral_Variable__0__List.instance, ParseNodeTupleLiteral_Variable__0__List],
 		[ProductionTupleLiteral.instance, ParseNodeTupleLiteral],
-		[ProductionTupleLiteral_Dynamic.instance, ParseNodeTupleLiteral_Dynamic],
+		[ProductionTupleLiteral_Variable.instance, ParseNodeTupleLiteral_Variable],
 		[ProductionRecordLiteral__0__List.instance, ParseNodeRecordLiteral__0__List],
-		[ProductionRecordLiteral_Dynamic__0__List.instance, ParseNodeRecordLiteral_Dynamic__0__List],
+		[ProductionRecordLiteral_Variable__0__List.instance, ParseNodeRecordLiteral_Variable__0__List],
 		[ProductionRecordLiteral.instance, ParseNodeRecordLiteral],
-		[ProductionRecordLiteral_Dynamic.instance, ParseNodeRecordLiteral_Dynamic],
+		[ProductionRecordLiteral_Variable.instance, ParseNodeRecordLiteral_Variable],
 		[ProductionSetLiteral.instance, ParseNodeSetLiteral],
 		[ProductionMapLiteral__0__List.instance, ParseNodeMapLiteral__0__List],
 		[ProductionMapLiteral.instance, ParseNodeMapLiteral],
 		[ProductionFunctionArguments.instance, ParseNodeFunctionArguments],
 		[ProductionExpressionUnit.instance, ParseNodeExpressionUnit],
-		[ProductionExpressionUnit_Dynamic.instance, ParseNodeExpressionUnit_Dynamic],
+		[ProductionExpressionUnit_Variable.instance, ParseNodeExpressionUnit_Variable],
 		[ProductionPropertyAccess.instance, ParseNodePropertyAccess],
-		[ProductionPropertyAccess_Dynamic.instance, ParseNodePropertyAccess_Dynamic],
+		[ProductionPropertyAccess_Variable.instance, ParseNodePropertyAccess_Variable],
 		[ProductionPropertyAssign.instance, ParseNodePropertyAssign],
 		[ProductionFunctionCall.instance, ParseNodeFunctionCall],
 		[ProductionExpressionCompound.instance, ParseNodeExpressionCompound],
-		[ProductionExpressionCompound_Dynamic.instance, ParseNodeExpressionCompound_Dynamic],
+		[ProductionExpressionCompound_Variable.instance, ParseNodeExpressionCompound_Variable],
 		[ProductionAssignee.instance, ParseNodeAssignee],
 		[ProductionExpressionUnarySymbol.instance, ParseNodeExpressionUnarySymbol],
-		[ProductionExpressionUnarySymbol_Dynamic.instance, ParseNodeExpressionUnarySymbol_Dynamic],
+		[ProductionExpressionUnarySymbol_Variable.instance, ParseNodeExpressionUnarySymbol_Variable],
 		[ProductionExpressionExponential.instance, ParseNodeExpressionExponential],
-		[ProductionExpressionExponential_Dynamic.instance, ParseNodeExpressionExponential_Dynamic],
+		[ProductionExpressionExponential_Variable.instance, ParseNodeExpressionExponential_Variable],
 		[ProductionExpressionMultiplicative.instance, ParseNodeExpressionMultiplicative],
-		[ProductionExpressionMultiplicative_Dynamic.instance, ParseNodeExpressionMultiplicative_Dynamic],
+		[ProductionExpressionMultiplicative_Variable.instance, ParseNodeExpressionMultiplicative_Variable],
 		[ProductionExpressionAdditive.instance, ParseNodeExpressionAdditive],
-		[ProductionExpressionAdditive_Dynamic.instance, ParseNodeExpressionAdditive_Dynamic],
+		[ProductionExpressionAdditive_Variable.instance, ParseNodeExpressionAdditive_Variable],
 		[ProductionExpressionComparative.instance, ParseNodeExpressionComparative],
-		[ProductionExpressionComparative_Dynamic.instance, ParseNodeExpressionComparative_Dynamic],
+		[ProductionExpressionComparative_Variable.instance, ParseNodeExpressionComparative_Variable],
 		[ProductionExpressionEquality.instance, ParseNodeExpressionEquality],
-		[ProductionExpressionEquality_Dynamic.instance, ParseNodeExpressionEquality_Dynamic],
+		[ProductionExpressionEquality_Variable.instance, ParseNodeExpressionEquality_Variable],
 		[ProductionExpressionConjunctive.instance, ParseNodeExpressionConjunctive],
-		[ProductionExpressionConjunctive_Dynamic.instance, ParseNodeExpressionConjunctive_Dynamic],
+		[ProductionExpressionConjunctive_Variable.instance, ParseNodeExpressionConjunctive_Variable],
 		[ProductionExpressionDisjunctive.instance, ParseNodeExpressionDisjunctive],
-		[ProductionExpressionDisjunctive_Dynamic.instance, ParseNodeExpressionDisjunctive_Dynamic],
+		[ProductionExpressionDisjunctive_Variable.instance, ParseNodeExpressionDisjunctive_Variable],
 		[ProductionExpressionConditional.instance, ParseNodeExpressionConditional],
-		[ProductionExpressionConditional_Dynamic.instance, ParseNodeExpressionConditional_Dynamic],
+		[ProductionExpressionConditional_Variable.instance, ParseNodeExpressionConditional_Variable],
 		[ProductionExpression.instance, ParseNodeExpression],
-		[ProductionExpression_Dynamic.instance, ParseNodeExpression_Dynamic],
+		[ProductionExpression_Variable.instance, ParseNodeExpression_Variable],
 		[ProductionDeclarationType.instance, ParseNodeDeclarationType],
 		[ProductionDeclarationVariable.instance, ParseNodeDeclarationVariable],
 		[ProductionDeclaration.instance, ParseNodeDeclaration],

@@ -4,10 +4,9 @@ export enum Punctuator {
 		GRP_CLS = ')',
 		BRAK_OPN = '[',
 		BRAK_CLS = ']',
-		BRAK_OPN_S = '[/',
-		BRAK_CLS_S = '/]',
 		BRAC_OPN = '{',
 		BRAC_CLS = '}',
+		CONST    = '@',
 		COMMA    = ',',
 		MAPTO    = '->',
 	// compound

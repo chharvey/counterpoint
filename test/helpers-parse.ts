@@ -240,7 +240,7 @@ export function conditionalExpressionFromSource(src: string, config: SolidConfig
 export function expressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeExpression$ {
 	const statement: PARSENODE.ParseNodeStatement = statementFromSource(src, config)
 	assert_arrayLength(statement.children, 2, 'statment should have 2 children')
-	const [expression, endstat]: readonly [PARSENODE.ParseNodeExpression_Dynamic, Token] = statement.children;
+	const [expression, endstat]: readonly [PARSENODE.ParseNodeExpression$, Token] = statement.children;
 	assert.ok(endstat instanceof TOKEN.TokenPunctuator)
 	assert.strictEqual(endstat.source, Punctuator.ENDSTAT)
 	return expression

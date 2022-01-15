@@ -314,17 +314,17 @@ class DecoratorSolid extends Decorator {
 
 		} else if (node instanceof PARSENODE.ParseNodeTupleLiteral$) {
 			return new AST.ASTNodeTuple(node, (node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeExpression, AST.ASTNodeExpression>(
-				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral$__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral$__0__List)!,
+				node.children.find((c) => c instanceof PARSENODE.ParseNodeTupleLiteral$__0__List) as PARSENODE.ParseNodeTupleLiteral$__0__List,
 			));
 
 		} else if (node instanceof PARSENODE.ParseNodeRecordLiteral$) {
 			return new AST.ASTNodeRecord(node, this.parseList<PARSENODE.ParseNodeProperty, AST.ASTNodeProperty>(
-				node.children.find((c): c is PARSENODE.ParseNodeRecordLiteral$__0__List => c instanceof PARSENODE.ParseNodeRecordLiteral$__0__List)!,
+				node.children.find((c) => c instanceof PARSENODE.ParseNodeRecordLiteral$__0__List) as PARSENODE.ParseNodeRecordLiteral$__0__List,
 			));
 
 		} else if (node instanceof PARSENODE.ParseNodeSetLiteral) {
 			return new AST.ASTNodeSet(node, (node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeExpression, AST.ASTNodeExpression>(
-				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral_Dynamic__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral_Dynamic__0__List)!,
+				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral_Variable__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral_Variable__0__List)!,
 			));
 
 		} else if (node instanceof PARSENODE.ParseNodeMapLiteral) {
@@ -334,7 +334,7 @@ class DecoratorSolid extends Decorator {
 
 		} else if (node instanceof PARSENODE.ParseNodeFunctionArguments) {
 			return (node.children.length === 2) ? [] : this.parseList<PARSENODE.ParseNodeExpression, AST.ASTNodeExpression>(
-				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral_Dynamic__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral_Dynamic__0__List)!,
+				node.children.find((c): c is PARSENODE.ParseNodeTupleLiteral_Variable__0__List => c instanceof PARSENODE.ParseNodeTupleLiteral_Variable__0__List)!,
 			);
 
 		} else if (node instanceof PARSENODE.ParseNodeExpressionUnit) {
@@ -342,7 +342,7 @@ class DecoratorSolid extends Decorator {
 				? this.decorate(node.children[0])
 				: this.decorate(node.children[1]);
 
-		} else if (node instanceof PARSENODE.ParseNodeExpressionUnit_Dynamic) {
+		} else if (node instanceof PARSENODE.ParseNodeExpressionUnit_Variable) {
 			return (node.children.length === 1)
 				? (node.children[0] instanceof ParseNode)
 					? this.decorate(node.children[0])

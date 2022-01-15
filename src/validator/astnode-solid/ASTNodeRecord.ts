@@ -24,7 +24,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		return expression;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeRecordLiteral,
+		start_node: PARSENODE.ParseNodeRecordLiteral$,
 		override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {
 		super(start_node, {}, children);

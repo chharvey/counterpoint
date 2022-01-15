@@ -92,75 +92,75 @@ Type ::=
 
 
 
-StringTemplate<Dynamic> ::=
+StringTemplate<Variable> ::=
 	| TEMPLATE_FULL
-	| TEMPLATE_HEAD Expression<?Dynamic>? (TEMPLATE_MIDDLE Expression<?Dynamic>?)* TEMPLATE_TAIL
+	| TEMPLATE_HEAD Expression<?Variable>? (TEMPLATE_MIDDLE Expression<?Variable>?)* TEMPLATE_TAIL
 ;
 
-Property <Dynamic> ::= Word                 "="  Expression<?Dynamic>;
-Case               ::= Expression<+Dynamic> "->" Expression<+Dynamic>;
+Property <Variable> ::= Word                  "="  Expression<?Variable>;
+Case                ::= Expression<+Variable> "->" Expression<+Variable>;
 
-TupleLiteral  <Dynamic> ::= <Dynamic->"[/" <Dynamic+>"[" ( ","? Expression <?Dynamic># ","? )?  <Dynamic->"/]" <Dynamic+>"]";
-RecordLiteral <Dynamic> ::= <Dynamic->"[/" <Dynamic+>"["   ","? Property   <?Dynamic># ","?     <Dynamic->"/]" <Dynamic+>"]";
-SetLiteral              ::= "{"                          ( ","? Expression <+Dynamic># ","? )?  "}";
-MapLiteral              ::= "{"                            ","? Case#                  ","?     "}";
-FunctionArguments       ::= "("                          ( ","? Expression <+Dynamic># ","? )?  ")";
+TupleLiteral  <Variable> ::= <Variable->"@" "[" ( ","? Expression <?Variable># ","? )? "]";
+RecordLiteral <Variable> ::= <Variable->"@" "["   ","? Property   <?Variable># ","?    "]";
+SetLiteral               ::=                "{" ( ","? Expression <+Variable># ","? )? "}";
+MapLiteral               ::=                "{"   ","? Case#                   ","?    "}";
+FunctionArguments        ::=                "(" ( ","? Expression <+Variable># ","? )? ")";
 
-ExpressionUnit<Dynamic> ::=
-	| <Dynamic+>IDENTIFIER
+ExpressionUnit<Variable> ::=
+	| <Variable+>IDENTIFIER
 	| PrimitiveLiteral
-	| StringTemplate<?Dynamic>
-	| TupleLiteral  <-Dynamic>
-	| RecordLiteral <-Dynamic>
-	| <Dynamic+>TupleLiteral  <?Dynamic>
-	| <Dynamic+>RecordLiteral <?Dynamic>
-	| <Dynamic+>SetLiteral
-	| <Dynamic+>MapLiteral
-	| "(" Expression<?Dynamic> ")"
+	| StringTemplate<?Variable>
+	| TupleLiteral  <-Variable>
+	| RecordLiteral <-Variable>
+	| <Variable+>TupleLiteral  <?Variable>
+	| <Variable+>RecordLiteral <?Variable>
+	| <Variable+>SetLiteral
+	| <Variable+>MapLiteral
+	| "(" Expression<?Variable> ")"
 ;
 
-PropertyAccess<Dynamic> ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression<?Dynamic> "]");
-PropertyAssign          ::=  "."                (INTEGER | Word | "[" Expression<+Dynamic> "]");
-FunctionCall            ::=  "."                GenericArguments? FunctionArguments;
+PropertyAccess<Variable> ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression<?Variable> "]");
+PropertyAssign           ::=  "."                (INTEGER | Word | "[" Expression<+Variable> "]");
+FunctionCall             ::=  "."                GenericArguments? FunctionArguments;
 
-ExpressionCompound<Dynamic> ::=
-	| ExpressionUnit<?Dynamic>
-	| ExpressionCompound<?Dynamic> PropertyAccess<?Dynamic>
-	| <Dynamic+>(ExpressionCompound<?Dynamic> FunctionCall)
+ExpressionCompound<Variable> ::=
+	| ExpressionUnit<?Variable>
+	| ExpressionCompound<?Variable> PropertyAccess<?Variable>
+	| <Variable+>(ExpressionCompound<?Variable> FunctionCall)
 ;
 
 Assignee ::=
 	| IDENTIFIER
-	| ExpressionCompound<+Dynamic> PropertyAssign
+	| ExpressionCompound<+Variable> PropertyAssign
 ;
 
-ExpressionUnarySymbol<Dynamic> ::=
-	| ExpressionCompound<?Dynamic>
-	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol<?Dynamic>
+ExpressionUnarySymbol<Variable> ::=
+	| ExpressionCompound<?Variable>
+	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol<?Variable>
 ;
 
-ExpressionExponential<Dynamic>
-	::= ExpressionUnarySymbol<?Dynamic> ("^" ExpressionExponential<?Dynamic>)?;
+ExpressionExponential<Variable>
+	::= ExpressionUnarySymbol<?Variable> ("^" ExpressionExponential<?Variable>)?;
 
-ExpressionMultiplicative <Dynamic> ::= (ExpressionMultiplicative <?Dynamic> ("*" | "/" ))?                                            ExpressionExponential    <?Dynamic>;
-ExpressionAdditive       <Dynamic> ::= (ExpressionAdditive       <?Dynamic> ("+" | "-" ))?                                            ExpressionMultiplicative <?Dynamic>;
-ExpressionComparative    <Dynamic> ::= (ExpressionComparative    <?Dynamic> ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "isnt"))? ExpressionAdditive       <?Dynamic>;
-ExpressionEquality       <Dynamic> ::= (ExpressionEquality       <?Dynamic> ("===" | "!==" | "==" | "!="))?                           ExpressionComparative    <?Dynamic>;
-ExpressionConjunctive    <Dynamic> ::= (ExpressionConjunctive    <?Dynamic> ("&&" | "!&"))?                                           ExpressionEquality       <?Dynamic>;
-ExpressionDisjunctive    <Dynamic> ::= (ExpressionDisjunctive    <?Dynamic> ("||" | "!|"))?                                           ExpressionConjunctive    <?Dynamic>;
+ExpressionMultiplicative <Variable> ::= (ExpressionMultiplicative <?Variable> ("*" | "/" ))?                                            ExpressionExponential    <?Variable>;
+ExpressionAdditive       <Variable> ::= (ExpressionAdditive       <?Variable> ("+" | "-" ))?                                            ExpressionMultiplicative <?Variable>;
+ExpressionComparative    <Variable> ::= (ExpressionComparative    <?Variable> ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "isnt"))? ExpressionAdditive       <?Variable>;
+ExpressionEquality       <Variable> ::= (ExpressionEquality       <?Variable> ("===" | "!==" | "==" | "!="))?                           ExpressionComparative    <?Variable>;
+ExpressionConjunctive    <Variable> ::= (ExpressionConjunctive    <?Variable> ("&&" | "!&"))?                                           ExpressionEquality       <?Variable>;
+ExpressionDisjunctive    <Variable> ::= (ExpressionDisjunctive    <?Variable> ("||" | "!|"))?                                           ExpressionConjunctive    <?Variable>;
 
-ExpressionConditional<Dynamic>
-	::= "if" Expression<?Dynamic> "then" Expression<?Dynamic> "else" Expression<?Dynamic>;
+ExpressionConditional<Variable>
+	::= "if" Expression<?Variable> "then" Expression<?Variable> "else" Expression<?Variable>;
 
-Expression<Dynamic> ::=
-	| ExpressionDisjunctive<?Dynamic>
-	| ExpressionConditional<?Dynamic>
+Expression<Variable> ::=
+	| ExpressionDisjunctive<?Variable>
+	| ExpressionConditional<?Variable>
 ;
 
 
 
 DeclarationType     ::= "type"            IDENTIFIER "=" Type                          ";";
-DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression<+Dynamic> ";";
+DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression<+Variable> ";";
 
 Declaration ::=
 	| DeclarationType
@@ -168,10 +168,10 @@ Declaration ::=
 ;
 
 StatementAssignment
-	::= Assignee "=" Expression<+Dynamic> ";";
+	::= Assignee "=" Expression<+Variable> ";";
 
 Statement ::=
-	| Expression<+Dynamic>? ";"
+	| Expression<+Variable>? ";"
 	| Declaration
 	| StatementAssignment
 ;
