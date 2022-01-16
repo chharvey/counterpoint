@@ -21,5 +21,7 @@ export const solidObjectsIdentical = (a: SolidObject, b: SolidObject): boolean =
 export function updateAccessedStaticType(entry: TypeEntry, access_kind: ValidAccessOperator): SolidType {
 	return (access_kind === Operator.CLAIMDOT)
 		? entry.type.subtract(SolidType.VOID)
-		: entry.type.union((entry.optional) ? (access_kind === Operator.OPTDOT) ? SolidType.NULL : SolidType.VOID : SolidType.NEVER);
+		: (entry.optional)
+			? entry.type.union((access_kind === Operator.OPTDOT) ? SolidType.NULL : SolidType.VOID)
+			: entry.type;
 }
