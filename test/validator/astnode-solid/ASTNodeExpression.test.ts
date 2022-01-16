@@ -52,9 +52,9 @@ describe('ASTNodeExpression', () => {
 				const constants: AST.ASTNodeConstant[] = `
 					null  false  true
 					55  -55  033  -033  0  -0
-					55.  -55.  033.  -033.  2.007  -2.007
+					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
-					0.  -0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
+					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
 					${ (Dev.supports('stringConstant-assess')) ? `'42😀'  '42\\u{1f600}'` : `` }
 				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`));
 				assert.deepStrictEqual(constants.map((c) => assert_wasCalled(c.fold, 1, (orig, spy) => {
@@ -99,13 +99,13 @@ describe('ASTNodeExpression', () => {
 			});
 			it('computes float values.', () => {
 				assert.deepStrictEqual(`
-					55.  -55.  033.  -033.  2.007  -2.007
+					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
-					0.  -0.  -0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
+					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
 				`.trim().replace(/\n\t+/g, '  ').split('  ').map((src) => AST.ASTNodeConstant.fromSource(`${ src };`).fold()), [
-					55, -55, 33, -33, 2.007, -2.007,
+					2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
-					0, -0, -0, 6.8, 6.8, 0, -0,
+					-0, 6.8, 6.8, 0, -0,
 				].map((v) => new Float64(v)));
 			})
 			Dev.supports('stringConstant-assess') && it('computes string values.', () => {

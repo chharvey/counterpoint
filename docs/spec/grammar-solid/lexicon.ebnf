@@ -93,7 +93,7 @@ IntegerDigitsRadix<Separator> :::=
 ;
 
 Float<Separator>
-	:::= SignedDigitSequenceDec<?Separator> "." ( DigitSequenceDec<?Separator> ExponentPart<?Separator>? )?;
+	:::= SignedDigitSequenceDec<?Separator> "." DigitSequenceDec<?Separator> ExponentPart<?Separator>?;
 
 ExponentPart<Separator>
 	:::= "e" SignedDigitSequenceDec<?Separator>;

@@ -16,13 +16,11 @@ export class TerminalFloat extends Terminal {
 			maybe(() => Util.arrayRandom(TOKEN.TokenNumber.UNARY)),
 			TerminalInteger.digitSequence(),
 			TOKEN.TokenNumber.POINT,
+			TerminalInteger.digitSequence(),
 			maybe(() => [
+				TOKEN.TokenNumber.EXPONENT,
+				maybe(() => Util.arrayRandom(TOKEN.TokenNumber.UNARY)),
 				TerminalInteger.digitSequence(),
-				maybe(() => [
-					TOKEN.TokenNumber.EXPONENT,
-					maybe(() => Util.arrayRandom(TOKEN.TokenNumber.UNARY)),
-					TerminalInteger.digitSequence(),
-				].join('')),
 			].join('')),
 		].join('')
 	}
