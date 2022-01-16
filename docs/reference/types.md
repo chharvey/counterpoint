@@ -97,7 +97,7 @@ Exactly one decimal point must be present in a float literal.
 ```
 0.25;
 0.5;     % the leading whole number part is required
-1.;      % but we can omit the trailing fractional part
+1.0;     % the trailing fractional part is also requied
 0 . 5;   %> Error
 ```
 
@@ -107,8 +107,8 @@ This notation consts of the following parts:
 - the whole part (an integer)
 - a decimal point (`.`)
 - the fractional part (the decimal places)
-- the symbol `e`
-- the exponent part (an integer)
+- optionally, the symbol `e`
+- if `e` present, the exponent part (an integer)
 
 It’s called “scientific-like notation” because it’s technically not scientific notation:
 The coefficient need not be between 1 and 10. `-42.0e-1` is a valid floating-point value.

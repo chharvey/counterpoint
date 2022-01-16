@@ -313,26 +313,24 @@ export class LexerSolid extends Lexer {
 			buffer.push(...this.advance());
 		}
 		buffer.push(...this.lexDigitSequence(allowed_digits));
-		if (!has_radix && Char.eq(TOKEN.TokenNumber.POINT, this.c0)) { // decimal point
-			buffer.push(...this.advance());
-			if (Char.inc(allowed_digits, this.c0)) { // [0-9]
-				buffer.push(...this.lexDigitSequence(allowed_digits));
-				if (Char.eq(TOKEN.TokenNumber.EXPONENT, this.c0)) { // exponent symbol
-					const exp_char: Char = this.c0;
-					buffer.push(...this.advance());
-					if (Char.inc(TOKEN.TokenNumber.UNARY, this.c0) && Char.inc(allowed_digits, this.c1)) { // [+\-][0-9]
-						buffer.push(
-							...this.advance(2n),
-							...this.lexDigitSequence(allowed_digits),
-						);
-					} else if (Char.inc(allowed_digits, this.c0)) { // [0-9]
-						buffer.push(
-							...this.advance(),
-							...this.lexDigitSequence(allowed_digits),
-						);
-					} else {
-						throw new LexError05(exp_char);
-					}
+		if (!has_radix && Char.eq(TOKEN.TokenNumber.POINT, this.c0) && Char.inc(allowed_digits, this.c1)) { // decimal point followed by [0-9]
+			buffer.push(...this.advance(2n));
+			buffer.push(...this.lexDigitSequence(allowed_digits));
+			if (Char.eq(TOKEN.TokenNumber.EXPONENT, this.c0)) { // exponent symbol
+				const exp_char: Char = this.c0;
+				buffer.push(...this.advance());
+				if (Char.inc(TOKEN.TokenNumber.UNARY, this.c0) && Char.inc(allowed_digits, this.c1)) { // [+\-][0-9]
+					buffer.push(
+						...this.advance(2n),
+						...this.lexDigitSequence(allowed_digits),
+					);
+				} else if (Char.inc(allowed_digits, this.c0)) { // [0-9]
+					buffer.push(
+						...this.advance(),
+						...this.lexDigitSequence(allowed_digits),
+					);
+				} else {
+					throw new LexError05(exp_char);
 				}
 			}
 		}

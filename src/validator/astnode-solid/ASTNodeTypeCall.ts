@@ -8,11 +8,11 @@ import {
 	TypeError05,
 	TypeError06,
 	NonemptyArray,
+	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
 } from './package.js';
-import {forEachAggregated} from './utils-private.js';
 import {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
 
