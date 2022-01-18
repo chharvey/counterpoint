@@ -115,6 +115,50 @@ b;                       % still `42`
 
 
 
+## Type Claim Declarations
+A type claim declaration is a [type claim](./expressions-operators.md#type-claim) for a variable at the block level.
+After a variable `expr` has been declared, we may want to **claim** that it has type `T` throughout the block,
+so we would declare the following:
+```
+claim expr: T;
+```
+This is convenient because we don’t have to claim the expression everywhere it’s used in the block.
+
+The code below has to claim that `item.1` is of type `int` every time it’s referenced.
+```
+let item: mutable [str, int | str] = ['apples', 42];
+'''
+	Clerk: How many {{ item.0 }} would you like?
+	Customer: {{ <int>item.1 }} please.
+	Clerk: Wow, {{ <int>item.1 }} is a lot!
+''';
+```
+One way to simplify this would be to declare a new variable:
+```
+let item: mutable [str, int | str] = ['apples', 42];
+let quantity: int = <int>item.1;
+'''
+	Clerk: How many {{ item.0 }} would you like?
+	Customer: {{ quantity }} please.
+	Clerk: Wow, {{ quantity }} is a lot!
+''';
+```
+But a new variable could take up space on the runtime machine.
+The only purpose of `quantity` is to make a type claim, so it’s not necessary at runtime.
+Instead, we should claim the expression’s type in a claim statement.
+Type claims take place only in the compiler, so no memory is wasted.
+```
+let item: mutable [str, int | str] = ['apples', 42];
+claim item.1: int;
+'''
+	Clerk: How many {{ item.0 }} would you like?
+	Customer: {{ item.1 }} please.
+	Clerk: Wow, {{ item.1 }} is a lot!
+''';
+```
+
+
+
 ## Unicode Identifiers
 Identifiers exist to name variables, among other programming constructs.
 **Basic identifiers** take the form of a single upper- or lower-case letter or underscore,
