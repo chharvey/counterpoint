@@ -192,6 +192,11 @@ export function assigneeFromSource(src: string, config: SolidConfig = CONFIG_DEF
 	return assignee;
 }
 export function unaryExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeExpressionUnarySymbol {
+	const expression_claim: PARSENODE.ParseNodeExpressionClaim = claimExpressionFromSource(src, config);
+	assert_arrayLength(expression_claim.children, 1, 'claim expression should have 1 child');
+	return expression_claim.children[0];
+}
+export function claimExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeExpressionClaim {
 	const expression_exp: PARSENODE.ParseNodeExpressionExponential = exponentialExpressionFromSource(src, config)
 	assert_arrayLength(expression_exp.children, 1, 'exponential expression should have 1 child')
 	return expression_exp.children[0]

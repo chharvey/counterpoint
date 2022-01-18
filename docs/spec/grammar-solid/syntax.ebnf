@@ -134,13 +134,11 @@ Assignee ::=
 	| ExpressionCompound PropertyAssign
 ;
 
-ExpressionUnarySymbol ::=
-	| ExpressionCompound
-	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol
-;
+ExpressionUnarySymbol ::= ExpressionCompound    | ("!" | "?" | "+" | "-") ExpressionUnarySymbol;
+ExpressionClaim       ::= ExpressionUnarySymbol | "<" Type ">"            ExpressionClaim;
 
 ExpressionExponential
-	::= ExpressionUnarySymbol ("^" ExpressionExponential)?;
+	::= ExpressionClaim ("^" ExpressionExponential)?;
 
 ExpressionMultiplicative ::= (ExpressionMultiplicative ("*" | "/" ))?                                            ExpressionExponential;
 ExpressionAdditive       ::= (ExpressionAdditive       ("+" | "-" ))?                                            ExpressionMultiplicative;

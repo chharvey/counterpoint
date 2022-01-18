@@ -22,6 +22,7 @@ import {
 } from '../../assert-helpers.js';
 import {
 	CONFIG_FOLDING_OFF,
+	CONFIG_FOLDING_COERCION_OFF,
 	typeConstInt,
 	typeConstFloat,
 	typeConstStr,
@@ -31,14 +32,6 @@ import {
 
 
 
-const CONFIG_FOLDING_COERCION_OFF: SolidConfig = {
-	...CONFIG_DEFAULT,
-	compilerOptions: {
-		...CONFIG_DEFAULT.compilerOptions,
-		constantFolding: false,
-		intCoercion: false,
-	},
-};
 function typeOperations(tests: ReadonlyMap<string, SolidObject>, config: SolidConfig = CONFIG_DEFAULT): void {
 	return assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type()),

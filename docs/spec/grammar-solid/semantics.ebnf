@@ -78,6 +78,7 @@ SemanticExpression =:=
 	| SemanticMap
 	| SemanticCall
 	| SemanticAccess
+	| SemanticClaim
 	| SemanticOperation
 ;
 
@@ -105,6 +106,9 @@ SemanticAccess[kind: NORMAL | OPTIONAL | CLAIM]
 
 SemanticCall
 	::= SemanticExpression SemanticType* SemanticExpression*;
+
+SemanticClaim
+	::= SemanticType SemanticExpression;
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;

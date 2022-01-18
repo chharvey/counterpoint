@@ -168,6 +168,13 @@ Object! ValueOf(SemanticCall call) :=
 
 
 
+Object! ValueOf(SemanticClaim claim) :=
+	1. *Assert:* `claim.children.count` is 2.
+	2. *Return:* `ValueOf(claim.children.1)`.
+;
+
+
+
 Boolean! ValueOf(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `operand` be *Unwrap:* `ValueOf(expr.children.0)`.

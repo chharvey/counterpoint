@@ -976,7 +976,24 @@ describe('DecoratorSolid', () => {
 			})
 		})
 
-		context('ExpressionExponential ::= ExpressionUnarySymbol ("^" ExpressionExponential)?', () => {
+		context('ExpressionClaim ::= "<" Type ">" ExpressionClaim', () => {
+			it('makes an ASTNodeClaim.', () => {
+				/*
+					<Claim>
+						<TypeConstant source="float"/>
+						<Constant source="3"/>
+					</Claim>
+				*/
+				const claim: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.claimExpressionFromSource(`<float>3;`));
+				assert.ok(claim instanceof AST.ASTNodeClaim);
+				assert.ok(claim.claimed_type instanceof AST.ASTNodeTypeConstant);
+				assert.ok(claim.operand      instanceof AST.ASTNodeConstant);
+				assert.strictEqual(claim.claimed_type.source, `float`);
+				assert.strictEqual(claim.operand.source,      `3`);
+			});
+		});
+
+		context('ExpressionExponential ::= ExpressionClaim ("^" ExpressionExponential)?', () => {
 			it('makes an ASTNodeOperationBinary.', () => {
 				/*
 					<Operation operator=EXP>
