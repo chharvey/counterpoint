@@ -662,12 +662,22 @@ class ProductionDeclarationVariable extends Production {
 	}
 }
 
+class ProductionDeclarationClaim extends Production {
+	static readonly instance: ProductionDeclarationClaim = new ProductionDeclarationClaim();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['claim', ProductionAssignee.instance, ':', ProductionType.instance, ';'],
+		];
+	}
+}
+
 class ProductionDeclaration extends Production {
 	static readonly instance: ProductionDeclaration = new ProductionDeclaration();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionDeclarationType.instance],
 			[ProductionDeclarationVariable.instance],
+			[ProductionDeclarationClaim.instance],
 		];
 	}
 }
@@ -1210,10 +1220,17 @@ export class ParseNodeDeclarationVariable extends ParseNode {
 	;
 }
 
+export class ParseNodeDeclarationClaim extends ParseNode {
+	declare readonly children:
+		| readonly [Token, ParseNodeAssignee, Token, ParseNodeType, Token]
+	;
+}
+
 export class ParseNodeDeclaration extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeDeclarationType]
 		| readonly [ParseNodeDeclarationVariable]
+		| readonly [ParseNodeDeclarationClaim]
 	;
 }
 
@@ -1317,6 +1334,7 @@ export const GRAMMAR: Grammar = new Grammar([
 	ProductionExpression.instance,
 	ProductionDeclarationType.instance,
 	ProductionDeclarationVariable.instance,
+	ProductionDeclarationClaim.instance,
 	ProductionDeclaration.instance,
 	ProductionStatementExpression.instance,
 	ProductionStatementAssignment.instance,
@@ -1391,6 +1409,7 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 		[ProductionExpression.instance, ParseNodeExpression],
 		[ProductionDeclarationType.instance, ParseNodeDeclarationType],
 		[ProductionDeclarationVariable.instance, ParseNodeDeclarationVariable],
+		[ProductionDeclarationClaim.instance, ParseNodeDeclarationClaim],
 		[ProductionDeclaration.instance, ParseNodeDeclaration],
 		[ProductionStatementExpression.instance, ParseNodeStatementExpression],
 		[ProductionStatementAssignment.instance, ParseNodeStatementAssignment],

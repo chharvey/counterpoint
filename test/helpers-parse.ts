@@ -273,16 +273,23 @@ export function expressionFromSource(src: string, config: SolidConfig = CONFIG_D
 export function typeDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeDeclarationType {
 	const declaration: PARSENODE.ParseNodeDeclaration = declarationFromSource(src, config);
 	assert_arrayLength(declaration.children, 1, 'declaration should have 1 child');
-	const typ_decl: PARSENODE.ParseNodeDeclarationVariable | PARSENODE.ParseNodeDeclarationType = declaration.children[0];
+	const typ_decl: PARSENODE.ParseNodeDeclaration['children'][0] = declaration.children[0];
 	assert.ok(typ_decl instanceof PARSENODE.ParseNodeDeclarationType);
 	return typ_decl;
 }
 export function variableDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeDeclarationVariable {
 	const declaration: PARSENODE.ParseNodeDeclaration = declarationFromSource(src, config);
 	assert_arrayLength(declaration.children, 1, 'declaration should have 1 child');
-	const var_decl: PARSENODE.ParseNodeDeclarationVariable | PARSENODE.ParseNodeDeclarationType = declaration.children[0];
+	const var_decl: PARSENODE.ParseNodeDeclaration['children'][0] = declaration.children[0];
 	assert.ok(var_decl instanceof PARSENODE.ParseNodeDeclarationVariable)
 	return var_decl
+}
+export function claimDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeDeclarationClaim {
+	const declaration: PARSENODE.ParseNodeDeclaration = declarationFromSource(src, config);
+	assert_arrayLength(declaration.children, 1, 'declaration should have 1 child');
+	const clm_decl: PARSENODE.ParseNodeDeclaration['children'][0] = declaration.children[0];
+	assert.ok(clm_decl instanceof PARSENODE.ParseNodeDeclarationClaim);
+	return clm_decl;
 }
 function declarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeDeclaration {
 	const statement: PARSENODE.ParseNodeStatement = statementFromSource(src, config);

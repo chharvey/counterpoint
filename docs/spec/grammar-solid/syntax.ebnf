@@ -157,12 +157,14 @@ Expression ::=
 
 
 
-DeclarationType     ::= "type"            IDENTIFIER "=" Type                ";";
-DeclarationVariable ::= "let"  "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
+DeclarationType     ::= "type"             IDENTIFIER "=" Type                ";";
+DeclarationVariable ::= "let"   "unfixed"? IDENTIFIER ":" Type "=" Expression ";";
+DeclarationClaim    ::= "claim"            Assignee   ":" Type                ";";
 
 Declaration ::=
 	| DeclarationType
 	| DeclarationVariable
+	| DeclarationClaim
 ;
 
 
