@@ -20,6 +20,7 @@ export enum Keyword {
 		TYPE  = 'type',
 		LET   = 'let',
 		CLAIM = 'claim',
+		SET   = 'set',
 	// modifier
 		UNFIXED = 'unfixed',
 }

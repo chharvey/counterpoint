@@ -958,7 +958,7 @@ describe('DecoratorSolid', () => {
 					<Variable source="the_answer" id=256n/>
 				*/
 				const variable: AST.ASTNodeVariable = (DECORATOR_SOLID.decorate(h.assigneeFromSource(`
-					the_answer = the_answer - 40;
+					set the_answer = the_answer - 40;
 				`)) as AST.ASTNodeVariable);
 				assert.strictEqual(variable.id, 256n);
 				assert.strictEqual(variable.source, `the_answer`);
@@ -974,7 +974,7 @@ describe('DecoratorSolid', () => {
 					</Access>
 				*/
 				const access: AST.ASTNodeAccess = (DECORATOR_SOLID.decorate(h.assigneeFromSource(`
-					x.().y.z = a;
+					set x.().y.z = a;
 				`)) as AST.ASTNodeAccess);
 				const base: AST.ASTNodeExpression = access.base;
 				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.accessor;
@@ -1324,19 +1324,19 @@ describe('DecoratorSolid', () => {
 			});
 		});
 
-		describe('StatementAssignment ::= Assignee "=" Expression ";"', () => {
-			it('makes an ASTNodeAssignment node.', () => {
+		describe('DeclarationReassignment ::= "set" Assignee "=" Expression ";"', () => {
+			it('makes an ASTNodeDeclarationReassignment node.', () => {
 				/*
-					<Assignment>
+					<DeclarationReassignment>
 						<Variable source="the_answer">...</Variable>
 						<Operation operator=ADD source="the_answer - 40">
 							<Variable source="the_answer" id="256"/>
 							<Operation operator=NEG source="40">...</Operation>
 						</Operation>
-					</Assignment>
+					</DeclarationReassignment>
 				*/
-				const assn: AST.ASTNodeAssignment = DECORATOR_SOLID.decorate(h.assignmentFromSource(`
-					the_answer = the_answer - 40;
+				const assn: AST.ASTNodeDeclarationReassignment = DECORATOR_SOLID.decorate(h.reassignmentDeclarationFromSource(`
+					set the_answer = the_answer - 40;
 				`));
 				assert.ok(assn.assigned instanceof AST.ASTNodeOperationBinary);
 				assert.ok(assn.assigned.operand0 instanceof AST.ASTNodeVariable);

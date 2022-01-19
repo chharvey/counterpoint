@@ -671,6 +671,15 @@ class ProductionDeclarationClaim extends Production {
 	}
 }
 
+class ProductionDeclarationReassignment extends Production {
+	static readonly instance: ProductionDeclarationReassignment = new ProductionDeclarationReassignment();
+	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
+		return [
+			['set', ProductionAssignee.instance, '=', ProductionExpression.instance, ';'],
+		];
+	}
+}
+
 class ProductionDeclaration extends Production {
 	static readonly instance: ProductionDeclaration = new ProductionDeclaration();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
@@ -678,6 +687,7 @@ class ProductionDeclaration extends Production {
 			[ProductionDeclarationType.instance],
 			[ProductionDeclarationVariable.instance],
 			[ProductionDeclarationClaim.instance],
+			[ProductionDeclarationReassignment.instance],
 		];
 	}
 }
@@ -692,22 +702,12 @@ class ProductionStatementExpression extends Production {
 	}
 }
 
-class ProductionStatementAssignment extends Production {
-	static readonly instance: ProductionStatementAssignment = new ProductionStatementAssignment();
-	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
-		return [
-			[ProductionAssignee.instance, '=', ProductionExpression.instance, ';'],
-		];
-	}
-}
-
 class ProductionStatement extends Production {
 	static readonly instance: ProductionStatement = new ProductionStatement();
 	override get sequences(): NonemptyArray<NonemptyArray<GrammarSymbol>> {
 		return [
 			[ProductionDeclaration.instance],
 			[ProductionStatementExpression.instance],
-			[ProductionStatementAssignment.instance],
 		];
 	}
 }
@@ -1226,11 +1226,18 @@ export class ParseNodeDeclarationClaim extends ParseNode {
 	;
 }
 
+export class ParseNodeDeclarationReassignment extends ParseNode {
+	declare readonly children:
+		| readonly [Token, ParseNodeAssignee, Token, ParseNodeExpression, Token]
+	;
+}
+
 export class ParseNodeDeclaration extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeDeclarationType]
 		| readonly [ParseNodeDeclarationVariable]
 		| readonly [ParseNodeDeclarationClaim]
+		| readonly [ParseNodeDeclarationReassignment]
 	;
 }
 
@@ -1241,17 +1248,10 @@ export class ParseNodeStatementExpression extends ParseNode {
 	;
 }
 
-export class ParseNodeStatementAssignment extends ParseNode {
-	declare readonly children:
-		| readonly [ParseNodeAssignee, Token, ParseNodeExpression, Token]
-	;
-}
-
 export class ParseNodeStatement extends ParseNode {
 	declare readonly children:
 		| readonly [ParseNodeDeclaration]
 		| readonly [ParseNodeStatementExpression]
-		| readonly [ParseNodeStatementAssignment]
 	;
 }
 
@@ -1335,9 +1335,9 @@ export const GRAMMAR: Grammar = new Grammar([
 	ProductionDeclarationType.instance,
 	ProductionDeclarationVariable.instance,
 	ProductionDeclarationClaim.instance,
+	ProductionDeclarationReassignment.instance,
 	ProductionDeclaration.instance,
 	ProductionStatementExpression.instance,
-	ProductionStatementAssignment.instance,
 	ProductionStatement.instance,
 	ProductionBlock__0__List.instance,
 	ProductionBlock.instance,
@@ -1410,9 +1410,9 @@ export class ParserSolid extends Parser<ParseNodeGoal> {
 		[ProductionDeclarationType.instance, ParseNodeDeclarationType],
 		[ProductionDeclarationVariable.instance, ParseNodeDeclarationVariable],
 		[ProductionDeclarationClaim.instance, ParseNodeDeclarationClaim],
+		[ProductionDeclarationReassignment.instance, ParseNodeDeclarationReassignment],
 		[ProductionDeclaration.instance, ParseNodeDeclaration],
 		[ProductionStatementExpression.instance, ParseNodeStatementExpression],
-		[ProductionStatementAssignment.instance, ParseNodeStatementAssignment],
 		[ProductionStatement.instance, ParseNodeStatement],
 		[ProductionBlock__0__List.instance, ParseNodeBlock__0__List],
 		[ProductionBlock.instance, ParseNodeBlock],

@@ -62,17 +62,17 @@ describe('ASTNodeSolid', () => {
 			it('throws if the variable is not unfixed.', () => {
 				AST.ASTNodeGoal.fromSource(`{
 					let unfixed i: int = 42;
-					i = 43;
+					set i = 43;
 				}`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let i: int = 42;
-					i = 43;
+					set i = 43;
 				}`).varCheck(), AssignmentError10);
 			});
 			it('always throws for type alias reassignment.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					type T = 42;
-					T = 43;
+					set T = 43;
 				}`).varCheck(), ReferenceError03);
 			});
 		});
@@ -83,7 +83,7 @@ describe('ASTNodeSolid', () => {
 				it('throws when variable assignee type is not supertype.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 						let unfixed i: int = 42;
-						i = 4.3;
+						set i = 4.3;
 					}`);
 					goal.varCheck();
 					assert.throws(() => goal.typeCheck(), TypeError03);
@@ -95,27 +95,27 @@ describe('ASTNodeSolid', () => {
 					[
 						`{
 							let t: mutable [42] = [42];
-							t.0 = 4.2;
+							set t.0 = 4.2;
 						}`,
 						`{
 							let r: mutable [i: 42] = [i= 42];
-							r.i = 4.2;
+							set r.i = 4.2;
 						}`,
 						`{
 							let l: mutable int[] = List.<int>([42]);
-							l.0 = 4.2;
+							set l.0 = 4.2;
 						}`,
 						`{
 							let h: mutable [:int] = Hash.<int>([i= 42]);
-							h.i = 4.2;
+							set h.i = 4.2;
 						}`,
 						`{
 							let s: mutable int{} = Set.<int>([42]);
-							s.[42] = 4.2;
+							set s.[42] = 4.2;
 						}`,
 						`{
 							let m: mutable {bool -> int} = Map.<bool, int>([[true, 42]]);
-							m.[true] = 4.2;
+							set m.[true] = 4.2;
 						}`,
 					].forEach((src) => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
@@ -127,27 +127,27 @@ describe('ASTNodeSolid', () => {
 					[
 						`{
 							let t: [42] = [42];
-							t.0 = 4.2;
+							set t.0 = 4.2;
 						}`,
 						`{
 							let r: [i: 42] = [i= 42];
-							r.i = 4.2;
+							set r.i = 4.2;
 						}`,
 						`{
 							let l: int[] = List.<int>([42]);
-							l.0 = 4.2;
+							set l.0 = 4.2;
 						}`,
 						`{
 							let h: [:int] = Hash.<int>([i= 42]);
-							h.i = 4.2;
+							set h.i = 4.2;
 						}`,
 						`{
 							let s: int{} = Set.<int>([42]);
-							s.[42] = 4.2;
+							set s.[42] = 4.2;
 						}`,
 						`{
 							let m: {bool -> int} = Map.<bool, int>([[true, 42]]);
-							m.[true] = 4.2;
+							set m.[true] = 4.2;
 						}`,
 					].forEach((src) => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
@@ -163,7 +163,7 @@ describe('ASTNodeSolid', () => {
 			it('always returns InstructionStatement containing InstructionGlobalSet.', () => {
 				const src: string = `{
 					let unfixed y: float = 4.2;
-					y = y * 10;
+					set y = y * 10;
 				}`;
 				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
 				const builder: Builder = new Builder(src);
@@ -192,7 +192,7 @@ describe('ASTNodeSolid', () => {
 					let y: V & W | X & Y = null;
 					let x: int = 42;
 					let x: int = 420;
-					x = 4200;
+					set x = 4200;
 					type T = int;
 					type T = float;
 					let z: x = null;
