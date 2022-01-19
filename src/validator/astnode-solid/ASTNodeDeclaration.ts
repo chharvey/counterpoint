@@ -2,6 +2,7 @@ import type {
 	ASTNodeDeclarationType,
 	ASTNodeDeclarationVariable,
 	ASTNodeDeclarationClaim,
+	ASTNodeDeclarationReassignment,
 } from './index.js';
 
 
@@ -12,9 +13,11 @@ import type {
  * - ASTNodeDeclarationType
  * - ASTNodeDeclarationVariable
  * - ASTNodeDeclarationClaim
+ * - ASTNodeDeclarationReassignment
  */
 export type ASTNodeDeclaration =
 	| ASTNodeDeclarationType
 	| ASTNodeDeclarationVariable
 	| ASTNodeDeclarationClaim
+	| ASTNodeDeclarationReassignment
 ;

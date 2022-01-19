@@ -570,9 +570,17 @@ Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Express
 
 
 Decorate(DeclarationClaim ::= "claim" Assignee ":" Type) -> SemanticDeclarationClaim
-	:= (SemanticAssignment
+	:= (SemanticDeclarationClaim
 		Decorate(Assignee)
 		Decorate(Type)
+	);
+
+
+
+Decorate(DeclarationReassignment ::= "set" Assignee "=" Expression ";") -> SemanticDeclarationReassignment
+	:= (SemanticDeclarationReassignment
+		Decorate(Assignee)
+		Decorate(Expression)
 	);
 
 
@@ -583,6 +591,8 @@ Decorate(Declaration ::= DeclarationVariable) -> SemanticDeclarationVariable
 	:= Decorate(DeclarationVariable);
 Decorate(Declaration ::= DeclarationClaim) -> SemanticDeclarationClaim
 	:= Decorate(DeclarationClaim);
+Decorate(Declaration ::= DeclarationReassignment) -> SemanticDeclarationReassignment
+	:= Decorate(StatementAssignment);
 
 
 
@@ -593,20 +603,10 @@ Decorate(StatementExpression ::= Expression ";") -> SemanticStatementExpression
 
 
 
-Decorate(StatementAssignment ::= Assignee "=" Expression ";") -> SemanticAssignment
-	:= (SemanticAssignment
-		Decorate(Assignee)
-		Decorate(Expression)
-	);
-
-
-
 Decorate(Statement ::= Declaration) -> SemanticDeclaration
 	:= Decorate(Declaration);
 Decorate(Statement ::= StatementExpression) -> SemanticStatementExpression
 	:= Decorate(StatementExpression);
-Decorate(Statement ::= StatementAssignment) -> SemanticAssignment
-	:= Decorate(StatementAssignment);
 
 
 

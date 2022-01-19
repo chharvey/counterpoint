@@ -141,9 +141,9 @@ class DecoratorSolid extends Decorator {
 	override decorate(node: PARSENODE.ParseNodeDeclarationType):       AST.ASTNodeDeclarationType;
 	override decorate(node: PARSENODE.ParseNodeDeclarationVariable):   AST.ASTNodeDeclarationVariable;
 	override decorate(node: PARSENODE.ParseNodeDeclarationClaim):      AST.ASTNodeDeclarationClaim;
+	override decorate(node: PARSENODE.ParseNodeDeclarationReassignment): AST.ASTNodeDeclarationReassignment;
 	override decorate(node: PARSENODE.ParseNodeDeclaration):           AST.ASTNodeDeclaration;
 	override decorate(node: PARSENODE.ParseNodeStatementExpression):   AST.ASTNodeStatementExpression;
-	override decorate(node: PARSENODE.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
 	override decorate(node: PARSENODE.ParseNodeStatement):             AST.ASTNodeStatement;
 	override decorate(node: PARSENODE.ParseNodeBlock):                 AST.ASTNodeBlock;
 	override decorate(node: PARSENODE.ParseNodeGoal, config?: SolidConfig): AST.ASTNodeGoal;
@@ -524,15 +524,15 @@ class DecoratorSolid extends Decorator {
 				this.decorate(node.children[3]),
 			);
 
+		} else if (node instanceof PARSENODE.ParseNodeDeclarationReassignment) {
+			return new AST.ASTNodeDeclarationReassignment(
+				node,
+				this.decorate(node.children[1]),
+				this.decorate(node.children[3]),
+			);
+
 		} else if (node instanceof PARSENODE.ParseNodeDeclaration) {
 			return this.decorate(node.children[0]);
-
-		} else if (node instanceof PARSENODE.ParseNodeStatementAssignment) {
-			return new AST.ASTNodeAssignment(
-				node,
-				this.decorate(node.children[0]),
-				this.decorate(node.children[2]),
-			);
 
 		} else if (node instanceof PARSENODE.ParseNodeStatementExpression) {
 			return new AST.ASTNodeStatementExpression(node, (node.children.length === 2) ? this.decorate(node.children[0]) : void 0);
