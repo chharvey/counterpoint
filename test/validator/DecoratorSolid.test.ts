@@ -952,6 +952,40 @@ describe('DecoratorSolid', () => {
 			});
 		});
 
+		describe('Assignee ::= IDENTIFIER', () => {
+			it('makes an ASTNodeVariable node.', () => {
+				/*
+					<Variable source="the_answer" id=256n/>
+				*/
+				const variable: AST.ASTNodeVariable = (DECORATOR_SOLID.decorate(h.assigneeFromSource(`
+					the_answer = the_answer - 40;
+				`)) as AST.ASTNodeVariable);
+				assert.strictEqual(variable.id, 256n);
+				assert.strictEqual(variable.source, `the_answer`);
+			});
+		});
+
+		describe('Assignee ::= ExpressionCompound PropertyAssign', () => {
+			it('makes an ASTNodeAccess node.', () => {
+				/*
+					<Access source="x.().y.z" kind=NORMAL>
+						<Access source="x.().y">...</Access>
+						<Key source="z"/>
+					</Access>
+				*/
+				const access: AST.ASTNodeAccess = (DECORATOR_SOLID.decorate(h.assigneeFromSource(`
+					x.().y.z = a;
+				`)) as AST.ASTNodeAccess);
+				const base: AST.ASTNodeExpression = access.base;
+				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.accessor;
+				assert.ok(accessor instanceof AST.ASTNodeKey);
+				assert.deepStrictEqual(
+					[access.source,     base.source,   accessor.source],
+					[`x . ( ) . y . z`, `x . ( ) . y`, `z`],
+				);
+			});
+		});
+
 		context('ExpressionUnarySymbol ::= ("!" | "?" | "-") ExpressionUnarySymbol', () => {
 			it('makes an ASTNodeOperationUnary.', () => {
 				/*
@@ -1262,37 +1296,31 @@ describe('DecoratorSolid', () => {
 			})
 		})
 
-		describe('Assignee ::= IDENTIFIER', () => {
-			it('makes an ASTNodeVariable node.', () => {
+		describe('DeclarationClaim ::= "claim" Assignee ":" Type ";"', () => {
+			it('makes a ASTNodeDeclarationClaim node.', () => {
 				/*
-					<Variable source="the_answer" id=256n/>
+					<DeclarationClaim>
+						<Variable source="my_var"/>
+						<TypeOperation source="int | float">...</TypeOperation>
+					</DeclarationClaim>
 				*/
-				const variable: AST.ASTNodeVariable = (DECORATOR_SOLID.decorate(h.assigneeFromSource(`
-					the_answer = the_answer - 40;
-				`)) as AST.ASTNodeVariable);
-				assert.strictEqual(variable.id, 256n);
-				assert.strictEqual(variable.source, `the_answer`);
-			});
-		});
-
-		describe('Assignee ::= ExpressionCompound PropertyAssign', () => {
-			it('makes an ASTNodeAccess node.', () => {
-				/*
-					<Access source="x.().y.z" kind=NORMAL>
-						<Access source="x.().y">...</Access>
-						<Key source="z"/>
-					</Access>
-				*/
-				const access: AST.ASTNodeAccess = (DECORATOR_SOLID.decorate(h.assigneeFromSource(`
-					x.().y.z = a;
-				`)) as AST.ASTNodeAccess);
-				const base: AST.ASTNodeExpression = access.base;
-				const accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = access.accessor;
-				assert.ok(accessor instanceof AST.ASTNodeKey);
-				assert.deepStrictEqual(
-					[access.source,     base.source,   accessor.source],
-					[`x . ( ) . y . z`, `x . ( ) . y`, `z`],
-				);
+				[
+					`my_var`,
+					`my_var.2`,
+					`my_var.prop`,
+					`my_var.2.prop`,
+					`my_var.prop.2`,
+				].forEach((assignee, i) => {
+					const decl: AST.ASTNodeDeclarationClaim = DECORATOR_SOLID.decorate(h.claimDeclarationFromSource(`
+						claim ${ assignee }: int | float;
+					`));
+					assert.ok(decl.claimed_type instanceof AST.ASTNodeTypeOperation);
+					assert.ok(decl.assignee instanceof ((i === 0) ? AST.ASTNodeVariable : AST.ASTNodeAccess));
+					return assert.deepStrictEqual(
+						[decl.assignee.source,            decl.claimed_type.source],
+						[assignee.replaceAll('.', ' . '), `int | float`],
+					);
+				});
 			});
 		});
 

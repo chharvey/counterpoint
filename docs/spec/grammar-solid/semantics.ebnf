@@ -136,6 +136,7 @@ SemanticStatement =:=
 SemanticDeclaration =:=
 	| SemanticDeclarationType
 	| SemanticDeclarationVariable
+	| SemanticDeclarationClaim
 ;
 
 SemanticDeclarationType
@@ -143,6 +144,9 @@ SemanticDeclarationType
 
 SemanticDeclarationVariable[unfixed: Boolean]
 	::= SemanticVariable SemanticType SemanticExpression;
+
+SemanticDeclarationClaim
+	::= (SemanticVariable | SemanticAccess) SemanticType;
 
 
 

@@ -569,10 +569,20 @@ Decorate(DeclarationVariable ::= "let" "unfixed" IDENTIFIER ":" Type "=" Express
 
 
 
+Decorate(DeclarationClaim ::= "claim" Assignee ":" Type) -> SemanticDeclarationClaim
+	:= (SemanticAssignment
+		Decorate(Assignee)
+		Decorate(Type)
+	);
+
+
+
 Decorate(Declaration ::= DeclarationType) -> SemanticDeclarationType
 	:= Decorate(DeclarationType);
 Decorate(Declaration ::= DeclarationVariable) -> SemanticDeclarationVariable
 	:= Decorate(DeclarationVariable);
+Decorate(Declaration ::= DeclarationClaim) -> SemanticDeclarationClaim
+	:= Decorate(DeclarationClaim);
 
 
 

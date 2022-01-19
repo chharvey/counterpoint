@@ -140,6 +140,7 @@ class DecoratorSolid extends Decorator {
 	override decorate(node: PARSENODE.ParseNodeExpressionConditional): AST.ASTNodeOperationTernary;
 	override decorate(node: PARSENODE.ParseNodeDeclarationType):       AST.ASTNodeDeclarationType;
 	override decorate(node: PARSENODE.ParseNodeDeclarationVariable):   AST.ASTNodeDeclarationVariable;
+	override decorate(node: PARSENODE.ParseNodeDeclarationClaim):      AST.ASTNodeDeclarationClaim;
 	override decorate(node: PARSENODE.ParseNodeDeclaration):           AST.ASTNodeDeclaration;
 	override decorate(node: PARSENODE.ParseNodeStatementExpression):   AST.ASTNodeStatementExpression;
 	override decorate(node: PARSENODE.ParseNodeStatementAssignment):   AST.ASTNodeAssignment;
@@ -514,6 +515,13 @@ class DecoratorSolid extends Decorator {
 				new AST.ASTNodeVariable(((node.children.length === 7) ? node.children[1] : node.children[2]) as TOKEN.TokenIdentifier),
 				this.decorate((node.children.length === 7) ? node.children[3] : node.children[4]),
 				this.decorate((node.children.length === 7) ? node.children[5] : node.children[6]),
+			);
+
+		} else if (node instanceof PARSENODE.ParseNodeDeclarationClaim) {
+			return new AST.ASTNodeDeclarationClaim(
+				node,
+				this.decorate(node.children[1]),
+				this.decorate(node.children[3]),
 			);
 
 		} else if (node instanceof PARSENODE.ParseNodeDeclaration) {
