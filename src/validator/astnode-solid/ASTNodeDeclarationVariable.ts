@@ -5,12 +5,12 @@ import {
 	INST,
 	Builder,
 	AssignmentError01,
+	forEachAggregated,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
 	SymbolStructureVar,
 } from './package.js';
-import {forEachAggregated} from './utils-private.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeExpression} from './ASTNodeExpression.js';

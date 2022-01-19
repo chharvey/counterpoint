@@ -73,8 +73,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	private type_do_do(base_type: SolidType): SolidType {
 		function updateAccessedDynamicType(type: SolidType, access_kind: ValidAccessOperator): SolidType {
 			return (
-				(access_kind === Operator.OPTDOT)   ? type.union(SolidType.NULL) :
 				(access_kind === Operator.CLAIMDOT) ? type.subtract(SolidType.VOID) :
+				(access_kind === Operator.OPTDOT)   ? type.union   (SolidType.NULL) :
 				type
 			);
 		}
