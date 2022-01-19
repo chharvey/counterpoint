@@ -214,17 +214,50 @@ describe('ASTNodeExpression', () => {
 					null,
 				);
 			});
+			it('returns null for a fixed variable of mutable type.', () => {
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+					let tup_fixed_mutable: mutable [int, float, str] = [1, 2.0, 'three'];
+					tup_fixed_mutable;
+				}`);
+				block.varCheck();
+				block.typeCheck();
+				assert.ok((block.children[0] as AST.ASTNodeDeclarationVariable).typenode.eval().hasMutable);
+				assert.deepStrictEqual(
+					(block.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
+					null,
+				);
+			});
 			it('returns null for an uncomputable fixed variable.', () => {
 				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
 					let unfixed x: int = 21 * 2;
 					let y: int = x / 2;
 					y;
+					let z: mutable [int, float, str] = [1, 2.0, 'three'];
+					let w: int = z.0;
+					w;
 				}`);
 				block.varCheck();
 				block.typeCheck();
 				assert.ok(!(block.children[1] as AST.ASTNodeDeclarationVariable).unfixed);
+				assert.ok(!(block.children[4] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
-					(block.children[2] as AST.ASTNodeStatementExpression).expr!.fold(),
+					[
+						(block.children[2] as AST.ASTNodeStatementExpression).expr!.fold(),
+						(block.children[5] as AST.ASTNodeStatementExpression).expr!.fold(),
+					],
+					[null, null],
+				);
+			});
+			it('with constant folding off, returns null even for a fixed variable.', () => {
+				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+					let x: int = 21 * 2;
+					x;
+				}`, CONFIG_FOLDING_OFF);
+				block.varCheck();
+				block.typeCheck();
+				assert.ok(!(block.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
+				assert.deepStrictEqual(
+					(block.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
 					null,
 				);
 			});
