@@ -868,7 +868,7 @@ The **union** operator creates a type that is either one operand, or the other, 
 ```
 type T = bool | int;
 let unfixed v: T = false;
-v = 42;
+set v = 42;
 ```
 
 The *union* of types forms the *intersection* of the properties of each type.
