@@ -7,7 +7,11 @@ import {
 	INST,
 	Builder,
 	AssignmentError01,
+	TypeError03,
 } from '../../../src/index.js';
+import {
+	CONFIG_COERCION_OFF,
+} from '../../helpers.js';
 
 
 
@@ -69,6 +73,53 @@ describe('ASTNodeDeclarationType', () => {
 					new INST.InstructionNone(),
 					new INST.InstructionNone(),
 				],
+			);
+		});
+	});
+});
+
+
+
+describe('ASTNodeDeclarationType', () => {
+	describe('#typeCheck', () => {
+		it('throws when the assignee type and claimed type do not overlap.', () => {
+			const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
+				let x: int = 3;
+				claim x: str;
+			}`);
+			block.varCheck();
+			assert.throws(() => block.typeCheck(), TypeError03);
+		});
+		it('with int coersion off, does not allow converting between int and float.', () => {
+			[
+				`{
+					let x: int = 3;
+					claim x: float;
+				}`,
+				`{
+					let x: float = 3.0;
+					claim x: int;
+				}`,
+			].forEach((src) => {
+				const block_ok: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src);
+				block_ok.varCheck();
+				block_ok.typeCheck(); // assert does not throw
+				const block_err: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(src, CONFIG_COERCION_OFF);
+				block_err.varCheck();
+				assert.throws(() => block_err.typeCheck(), TypeError03);
+			});
+		});
+	});
+
+
+	describe('#build', () => {
+		it('always returns InstructionNone.', () => {
+			const src: string = `{
+				claim x: T;
+			}`;
+			assert.deepStrictEqual(
+				AST.ASTNodeBlock.fromSource(src).children[0].build(new Builder('')),
+				new INST.InstructionNone(),
 			);
 		});
 	});
