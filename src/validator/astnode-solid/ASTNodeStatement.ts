@@ -16,7 +16,6 @@ import {ASTNodeSolid} from './ASTNodeSolid.js';
  * Known subclasses:
  * - ASTNodeDeclaration
  * - ASTNodeStatementExpression
- * - ASTNodeAssignment
  */
 export abstract class ASTNodeStatement extends ASTNodeSolid implements Buildable {
 	/**

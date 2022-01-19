@@ -414,12 +414,12 @@ but they can only be reassigned to the same value, so having an `unfixed` variab
 Variables with unit types are conventionally written in MACRO_CASE.
 ```
 let unfixed TAU: true = true;
-TAU = true;
-TAU = false; %> TypeError
+set TAU = true;
+set TAU = false; %> TypeError
 
 let unfixed CAR_WHEELS: 4 = 4;
 let CAT_FEET: \b100 = \o4;
-CAR_WHEELS = CAT_FEET;
+set CAR_WHEELS = CAT_FEET;
 ```
 
 The assigned value doesn’t need to be a literal; it may be an expression,
@@ -574,7 +574,7 @@ elements.[i];           % no compile-time error, but value at runtime will be un
 Tuple types may have optional items, indicating that a tuple of that type might or might not have that item.
 ```
 let unfixed x: [str, int, ?: bool] = ['hello', 42];
-x = ['hello', 42, true];
+set x = ['hello', 42, true];
 ```
 The symbol `?:` in the type signature indicates that the item is optional.
 In a tuple type, all optional items *must* come after all required items.
@@ -733,7 +733,7 @@ let unfixed y: [firstname: str, middlename?: str, lastname: str] = [
 	firstname= 'Martha',
 	lastname=  'Dandridge',
 ];
-y = [
+set y = [
 	firstname=  'Martha',
 	lastname=   'Washington',
 	middlename= 'Dandridge',

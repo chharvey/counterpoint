@@ -128,7 +128,6 @@ SemanticOperation[operator: COND]
 SemanticStatement =:=
 	| SemanticDeclaration
 	| SemanticStatementExpression
-	| SemanticAssignment
 ;
 
 
@@ -137,6 +136,7 @@ SemanticDeclaration =:=
 	| SemanticDeclarationType
 	| SemanticDeclarationVariable
 	| SemanticDeclarationClaim
+	| SemanticDeclarationReassignment
 ;
 
 SemanticDeclarationType
@@ -148,15 +148,13 @@ SemanticDeclarationVariable[unfixed: Boolean]
 SemanticDeclarationClaim
 	::= (SemanticVariable | SemanticAccess) SemanticType;
 
+SemanticDeclarationReassignment
+	::= (SemanticVariable | SemanticAccess) SemanticExpression;
+
 
 
 SemanticStatementExpression
 	::= SemanticExpression?;
-
-
-
-SemanticAssignment
-	::= (SemanticVariable | SemanticAccess) SemanticExpression;
 
 
 

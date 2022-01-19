@@ -66,7 +66,7 @@ let my_other_var: str = 'Hello, programmer!';
 By default, variables are **fixed** in that they cannot be reassigned.
 ```
 let my_var: str = 'Hello, world!';
-my_var = '¡Hola, mundo!';          %> AssignmentError
+set my_var = '¡Hola, mundo!';      %> AssignmentError
 ```
 > AssignmentError: Reassignment of a fixed variable: `my_var`.
 
@@ -76,13 +76,14 @@ However, changing a variable’s value is useful in some cases, such as in loops
 
 Therefore, we can declare a variables with the keywords `let unfixed`,
 which allows us to assign it a new value later.
+The variable is reassigned with the keyword `set`.
 ```
 let unfixed my_var = 'Hello, world!';
 my_var;                               %== 'Hello, world!'
-my_var = '¡Hola, mundo!';
+set my_var = '¡Hola, mundo!';
 my_var;                               %== '¡Hola, mundo!'
 ```
-The statement `my_var = '¡Hola, mundo!';` is called a **variable reassignment statement**.
+The statement `set my_var = '¡Hola, mundo!';` is called a **variable reassignment statement**.
 An unfixed variable can be reassigned anywhere in the scope in which it’s visible.
 
 
@@ -108,7 +109,7 @@ let unfixed a: int = 42;
 let unfixed b: int = a;
 a;                       %== 42
 b;                       % also `42`
-a = 420;
+set a = 420;
 a;                       % now `420`
 b;                       % still `42`
 ```
@@ -258,7 +259,7 @@ By convention, type aliases are named in *PascalCase*.
 Type aliases are initialized when they’re declared, and they’re always fixed — they can never be reassigned.
 ```
 type MyType = int | float;
-MyType = int;              % raises a ParseError or ReferenceError (depending on type expression)
+set MyType = int;          % raises a ParseError or ReferenceError (depending on type expression)
 ```
 
 Type aliases can be declared only once within a given scope.

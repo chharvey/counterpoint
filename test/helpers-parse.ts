@@ -206,8 +206,8 @@ export function compoundExpressionFromSource(src: string, config: SolidConfig = 
 	return expression_unary.children[0];
 }
 export function assigneeFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeAssignee {
-	const assignment: PARSENODE.ParseNodeStatementAssignment = assignmentFromSource(src, config);
-	const assignee: PARSENODE.ParseNodeAssignee = assignment.children[0];
+	const assignment: PARSENODE.ParseNodeDeclarationReassignment = reassignmentDeclarationFromSource(src, config);
+	const assignee: PARSENODE.ParseNodeAssignee = assignment.children[1];
 	return assignee;
 }
 export function unaryExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeExpressionUnarySymbol {
@@ -291,26 +291,26 @@ export function claimDeclarationFromSource(src: string, config: SolidConfig = CO
 	assert.ok(clm_decl instanceof PARSENODE.ParseNodeDeclarationClaim);
 	return clm_decl;
 }
+export function reassignmentDeclarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeDeclarationReassignment {
+	const declaration: PARSENODE.ParseNodeDeclaration = declarationFromSource(src, config);
+	assert_arrayLength(declaration.children, 1, 'declaration should have 1 child');
+	const assn_decl: PARSENODE.ParseNodeDeclaration['children'][0] = declaration.children[0];
+	assert.ok(assn_decl instanceof PARSENODE.ParseNodeDeclarationReassignment);
+	return assn_decl;
+}
 function declarationFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeDeclaration {
 	const statement: PARSENODE.ParseNodeStatement = statementFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'statement should have 1 child');
-	const declaration: PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementExpression | PARSENODE.ParseNodeStatementAssignment = statement.children[0];
+	const declaration: PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementExpression = statement.children[0];
 	assert.ok(declaration instanceof PARSENODE.ParseNodeDeclaration);
 	return declaration;
 }
 export function statementExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeStatementExpression {
 	const statement: PARSENODE.ParseNodeStatement = statementFromSource(src, config);
 	assert_arrayLength(statement.children, 1, 'statement should have 1 child');
-	const statexpr: PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementExpression | PARSENODE.ParseNodeStatementAssignment = statement.children[0];
+	const statexpr: PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementExpression = statement.children[0];
 	assert.ok(statexpr instanceof PARSENODE.ParseNodeStatementExpression);
 	return statexpr;
-}
-export function assignmentFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeStatementAssignment {
-	const statement: PARSENODE.ParseNodeStatement = statementFromSource(src, config);
-	assert_arrayLength(statement.children, 1, 'statement should have 1 child');
-	const assignment: PARSENODE.ParseNodeDeclaration | PARSENODE.ParseNodeStatementExpression | PARSENODE.ParseNodeStatementAssignment = statement.children[0];
-	assert.ok(assignment instanceof PARSENODE.ParseNodeStatementAssignment);
-	return assignment;
 }
 export function statementFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeStatement {
 	const block: PARSENODE.ParseNodeBlock = blockFromSource(`{ ${ src } }`, config);

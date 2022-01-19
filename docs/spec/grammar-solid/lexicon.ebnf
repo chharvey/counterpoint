@@ -70,6 +70,7 @@ KeywordOther :::=
 		| "type"
 		| "let"
 		| "claim"
+		| "set"
 	// modifier
 		| "unfixed"
 ;
