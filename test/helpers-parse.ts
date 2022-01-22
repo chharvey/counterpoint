@@ -66,6 +66,11 @@ export function entryTypeNamedFromString(propertystring: string, config: SolidCo
 	assert_arrayLength(recordtype.children[1].children[0].children, 1, 'property list should have 1 child');
 	return recordtype.children[1].children[0].children[0];
 }
+export function groupedTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeGrouped {
+	const unit: PARSENODE.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
+	assert.ok(unit instanceof PARSENODE.ParseNodeTypeGrouped, 'unit should be a ParseNodeTypeGrouped');
+	return unit;
+}
 export function tupleTypeFromString(typestring: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTypeTupleLiteral {
 	const unit: PARSENODE.ParseNodeTypeUnit['children'][0] = typeLiteralFromString(typestring, config);
 	assert.ok(unit instanceof PARSENODE.ParseNodeTypeTupleLiteral, 'unit should be a ParseNodeTypeTupleLiteral');
@@ -167,6 +172,11 @@ export function primitiveLiteralFromSource(src: string, config: SolidConfig = CO
 export function stringTemplateFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeStringTemplate {
 	const unit: PARSENODE.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
 	assert.ok(unit instanceof PARSENODE.ParseNodeStringTemplate, 'unit should be a ParseNodeStringTemplate');
+	return unit;
+}
+export function groupedExpressionFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeExpressionGrouped {
+	const unit: PARSENODE.ParseNodeExpressionUnit['children'][0] = valueLiteralFromSource(src, config);
+	assert.ok(unit instanceof PARSENODE.ParseNodeExpressionGrouped, 'unit should be a ParseNodeExpressionGrouped');
 	return unit;
 }
 export function tupleLiteralFromSource(src: string, config: SolidConfig = CONFIG_DEFAULT): PARSENODE.ParseNodeTupleLiteral {

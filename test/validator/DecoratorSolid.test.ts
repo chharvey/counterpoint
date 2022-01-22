@@ -548,6 +548,52 @@ describe('DecoratorSolid', () => {
 			});
 		});
 
+		context('ExpressionGrouped ::= "(" Expression ")"', () => {
+			it('returns the inner Expression node.', () => {
+				/*
+					<Operation operator=ADD>
+						<Constant source="2"/>
+						<Constant source="-3"/>
+					</Operation>
+				*/
+				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.groupedExpressionFromSource(`(2 + -3);`));
+				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
+				assert.ok(operation.operand0 instanceof AST.ASTNodeConstant);
+				assert.ok(operation.operand1 instanceof AST.ASTNodeConstant);
+				assert.deepStrictEqual(
+					[operation.operand0.source, operation.operator, operation.operand1.source],
+					[`2`,                       Operator.ADD,       `-3`],
+				)
+			})
+			it('recursively applies to several sub-expressions.', () => {
+				/*
+					<Operation operator=EXP>
+						<Operation operator=NEG>
+							<Constant source="42"/>
+						</Operation>
+						<Operation operator=MUL>
+							<Constant source="2"/>
+							<Constant source="420"/>
+						</Operation>
+					</Operation>
+				*/
+				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(`(-(42) ^ +(2 * 420));`));
+				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
+				assert.strictEqual(operation.operator, Operator.EXP)
+				assert.ok(operation.operand0 instanceof AST.ASTNodeOperationUnary);
+				assert.strictEqual(operation.operand0.operator, Operator.NEG);
+				assert.ok(operation.operand0.operand instanceof AST.ASTNodeConstant);
+				assert.strictEqual(operation.operand0.operand.source, `42`);
+
+				assert.ok(operation.operand1 instanceof AST.ASTNodeOperationBinary);
+				assert.strictEqual(operation.operand1.operator, Operator.MUL);
+				assert.ok(operation.operand1.operand0 instanceof AST.ASTNodeConstant);
+				assert.ok(operation.operand1.operand1 instanceof AST.ASTNodeConstant);
+				assert.strictEqual(operation.operand1.operand0.source, `2`);
+				assert.strictEqual(operation.operand1.operand1.source, `420`);
+			})
+		})
+
 		describe('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
 			it('makes an empty ASTNodeTuple.', () => {
 				/*
@@ -751,52 +797,6 @@ describe('DecoratorSolid', () => {
 					`true`,
 					`42`,
 				])
-			})
-		})
-
-		context('ExpressionUnit ::= "(" Expression ")"', () => {
-			it('returns the inner Expression node.', () => {
-				/*
-					<Operation operator=ADD>
-						<Constant source="2"/>
-						<Constant source="-3"/>
-					</Operation>
-				*/
-				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(`(2 + -3);`));
-				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
-				assert.ok(operation.operand0 instanceof AST.ASTNodeConstant);
-				assert.ok(operation.operand1 instanceof AST.ASTNodeConstant);
-				assert.deepStrictEqual(
-					[operation.operand0.source, operation.operator, operation.operand1.source],
-					[`2`,                       Operator.ADD,       `-3`],
-				)
-			})
-			it('recursively applies to several sub-expressions.', () => {
-				/*
-					<Operation operator=EXP>
-						<Operation operator=NEG>
-							<Constant source="42"/>
-						</Operation>
-						<Operation operator=MUL>
-							<Constant source="2"/>
-							<Constant source="420"/>
-						</Operation>
-					</Operation>
-				*/
-				const operation: AST.ASTNodeExpression = DECORATOR_SOLID.decorate(h.expressionFromSource(`(-(42) ^ +(2 * 420));`));
-				assert.ok(operation instanceof AST.ASTNodeOperationBinary);
-				assert.strictEqual(operation.operator, Operator.EXP)
-				assert.ok(operation.operand0 instanceof AST.ASTNodeOperationUnary);
-				assert.strictEqual(operation.operand0.operator, Operator.NEG);
-				assert.ok(operation.operand0.operand instanceof AST.ASTNodeConstant);
-				assert.strictEqual(operation.operand0.operand.source, `42`);
-
-				assert.ok(operation.operand1 instanceof AST.ASTNodeOperationBinary);
-				assert.strictEqual(operation.operand1.operator, Operator.MUL);
-				assert.ok(operation.operand1.operand0 instanceof AST.ASTNodeConstant);
-				assert.ok(operation.operand1.operand1 instanceof AST.ASTNodeConstant);
-				assert.strictEqual(operation.operand1.operand0.source, `2`);
-				assert.strictEqual(operation.operand1.operand1.source, `420`);
 			})
 		})
 

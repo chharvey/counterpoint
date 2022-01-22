@@ -336,6 +336,7 @@ module.exports = grammar({
 
 		_properties_type: $ => seq(repCom1(choice($.entry_type__named, $.entry_type__named__optional)), OPT_COM),
 
+		type_grouped:        $ => seq('(', $._type,                                  ')'),
 		type_tuple_literal:  $ => seq('[', optional(seq(OPT_COM, $._items_type)),    ']'),
 		type_record_literal: $ => seq('[',              OPT_COM, $._properties_type, ']'),
 		type_hash_literal:   $ => seq('[', ':', $._type,                             ']'),
@@ -346,11 +347,11 @@ module.exports = grammar({
 			$.keyword_type,
 			$.identifier,
 			$.primitive_literal,
+			$.type_grouped,
 			$.type_tuple_literal,
 			$.type_record_literal,
 			$.type_hash_literal,
 			$.type_map_literal,
-			seq('(', $._type, ')'),
 		),
 
 		property_access_type: $ => seq('.', choice($.integer, $.word)),
@@ -393,6 +394,7 @@ module.exports = grammar({
 		property: $ => seq($.word,        '=',  $._expression),
 		case:     $ => seq($._expression, '->', $._expression),
 
+		expression_grouped: $ => seq('(',                               $._expression,             ')'),
 		tuple_literal:      $ => seq('[', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), ']'),
 		record_literal:     $ => seq('[',              OPT_COM, repCom1($.property),    OPT_COM,   ']'),
 		set_literal:        $ => seq('{', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), '}'),
@@ -403,11 +405,11 @@ module.exports = grammar({
 			$.identifier,
 			$.primitive_literal,
 			$.string_template,
+			$.expression_grouped,
 			$.tuple_literal,
 			$.record_literal,
 			$.set_literal,
 			$.map_literal,
-			seq('(', $._expression, ')'),
 		),
 
 		property_access: $ => seq(choice('.', '?.', '!.'), choice($.integer, $.word, seq('[', $._expression, ']'))),
@@ -487,4 +489,13 @@ module.exports = grammar({
 	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers#keyword-extraction
 	 */
 	word: $ => $.identifier,
+
+	supertypes: $ => [
+		$._type_unit,
+		$._type,
+		$._expression_unit,
+		$._expression,
+		$._declaration,
+		$._statement,
+	],
 });

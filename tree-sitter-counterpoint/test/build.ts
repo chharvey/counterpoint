@@ -229,8 +229,17 @@ function buildTest(title: string, source: string, expected: string) {
 		// PropertiesType
 		// see #TypeRecordLiteral
 
+		TypeGrouped: [
+			xjs.String.dedent`
+				f.<(T)>();
+			`,
+			makeSourceFile(
+				extractType(s('type_grouped', s('identifier'))),
+			),
+		],
+
 		TypeTupleLiteral: [
-				xjs.String.dedent`
+			xjs.String.dedent`
 				f.<[bool, int, ?: str]>();
 			`,
 			makeSourceFile(
@@ -278,14 +287,8 @@ function buildTest(title: string, source: string, expected: string) {
 			),
 		],
 
-		TypeUnit: [
-			xjs.String.dedent`
-				f.<(T)>();
-			`,
-			makeSourceFile(
-				extractType(s('identifier')),
-			),
-		],
+		// TypeUnit
+		// see #KEYWORDTYPE,IDENTIFIER,PrimitiveLiteral,Type{Grouped,{Tuple,Record,Hash,Map}Literal}
 
 		// PropertyAccessType
 		// see #TypeCompound
@@ -396,6 +399,15 @@ function buildTest(title: string, source: string, expected: string) {
 		// Case
 		// see #MapLiteral
 
+		ExpressionGrouped: [
+			xjs.String.dedent`
+				(a);
+			`,
+			makeSourceFile(
+				s('expression_grouped', s('identifier')),
+			),
+		],
+
 		TupleLiteral: [
 			xjs.String.dedent`
 				[1, 2, 3];
@@ -469,14 +481,8 @@ function buildTest(title: string, source: string, expected: string) {
 		// FunctionArguments
 		// see #FunctionCall
 
-		ExpressionUnit: [
-			xjs.String.dedent`
-				(a);
-			`,
-			makeSourceFile(
-				s('identifier'),
-			),
-		],
+		// ExpressionUnit
+		// see #IDENTIFIER,PrimitiveLiteral,StringTemplate,ExpressionGrouped,{Tuple,Record,Set,Map}Literal
 
 		// PropertyAccess
 		// see #ExpressionCompound

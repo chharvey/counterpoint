@@ -85,6 +85,33 @@ describe('ParserSolid', () => {
 			});
 		});
 
+		describe('TypeGrouped ::= "(" Type ")"', () => {
+			it('makes an TypeUnit node containing a Type node.', () => {
+				/*
+					<TypeGrouped>
+						<PUNCTUATOR>(</PUNCTUATOR>
+						<Type source="(obj | int) & float">...</Type>
+						<PUNCTUATOR>)</PUNCTUATOR>
+					</TypeGrouped>
+				*/
+				const type_grouped: PARSENODE_SOLID.ParseNodeTypeGrouped = h.groupedTypeFromString(`(obj | int & float)`);
+				assert_arrayLength(type_grouped.children, 3);
+				const [open, typ, close]: readonly [Token, PARSENODE_SOLID.ParseNodeType, Token] = type_grouped.children;
+				assert.ok(open  instanceof TOKEN.TokenPunctuator)
+				assert.ok(close instanceof TOKEN.TokenPunctuator)
+				assert.deepStrictEqual(
+					[open.source, typ.source, close.source],
+					[Punctuator.GRP_OPN, [
+						Keyword.OBJ,
+						Punctuator.UNION,
+						Keyword.INT,
+						Punctuator.INTER,
+						Keyword.FLOAT,
+					].join(' '), Punctuator.GRP_CLS],
+				)
+			})
+		})
+
 		describe('TypeTupleLiteral ::= "[" (","? ItemsType)? "]"', () => {
 			/*
 				<TypeTupleLiteral>
@@ -213,33 +240,6 @@ describe('ParserSolid', () => {
 		specify('TypeUnit ::= TypeRecordLiteral', () => {
 			h.recordTypeFromString(`[a: T, b: U | V, c: W & X!]`); // assert does not throw
 		});
-
-		describe('TypeUnit ::= "(" Type ")"', () => {
-			it('makes an TypeUnit node containing a Type node.', () => {
-				/*
-					<TypeUnit>
-						<PUNCTUATOR>(</PUNCTUATOR>
-						<Type source="(obj | int) & float">...</Type>
-						<PUNCTUATOR>)</PUNCTUATOR>
-					</TypeUnit>
-				*/
-				const type_unit: PARSENODE_SOLID.ParseNodeTypeUnit = h.unitTypeFromString(`(obj | int & float)`);
-				assert_arrayLength(type_unit.children, 3)
-				const [open, typ, close]: readonly [Token, PARSENODE_SOLID.ParseNodeType, Token] = type_unit.children;
-				assert.ok(open  instanceof TOKEN.TokenPunctuator)
-				assert.ok(close instanceof TOKEN.TokenPunctuator)
-				assert.deepStrictEqual(
-					[open.source, typ.source, close.source],
-					[Punctuator.GRP_OPN, [
-						Keyword.OBJ,
-						Punctuator.UNION,
-						Keyword.INT,
-						Punctuator.INTER,
-						Keyword.FLOAT,
-					].join(' '), Punctuator.GRP_CLS],
-				)
-			})
-		})
 
 		describe('TypeCompound ::= TypeCompound (PropertyAccessType | GenericCall)', () => {
 			it('ok.', () => {
@@ -412,6 +412,27 @@ describe('ParserSolid', () => {
 			});
 		});
 
+		context('ExpressionGrouped ::= "(" Expression ")"', () => {
+			it('makes an ExpressionGrouped node containing an Expression node.', () => {
+				/*
+					<ExpressionGrouped>
+						<PUNCTUATOR>(</PUNCTUATOR>
+						<Expression source="2 + -3">...</Expression>
+						<PUNCTUATOR>)</PUNCTUATOR>
+					</ExpressionGrouped>
+				*/
+				const expression_grouped: PARSENODE_SOLID.ParseNodeExpressionGrouped = h.groupedExpressionFromSource(`(2 + -3);`);
+				assert_arrayLength(expression_grouped.children, 3);
+				const [open, expr, close]: readonly [Token, PARSENODE_SOLID.ParseNodeExpression, Token] = expression_grouped.children;
+				assert.ok(open  instanceof TOKEN.TokenPunctuator)
+				assert.ok(close instanceof TOKEN.TokenPunctuator)
+				assert.deepStrictEqual(
+					[open.source,        expr.source, close.source],
+					[Punctuator.GRP_OPN, `2 + -3`,    Punctuator.GRP_CLS],
+				)
+			})
+		})
+
 		describe('TupleLiteral ::= "[" (","? Expression# ","?)? "]"', () => {
 			it('with no leading or trailing comma.', () => {
 				/*
@@ -554,27 +575,6 @@ describe('ParserSolid', () => {
 				];
 			`); // assert does not throw
 		});
-
-		context('ExpressionUnit ::= "(" Expression ")"', () => {
-			it('makes an ExpressionUnit node containing an Expression node.', () => {
-				/*
-					<ExpressionUnit>
-						<PUNCTUATOR>(</PUNCTUATOR>
-						<Expression source="2 + -3">...</Expression>
-						<PUNCTUATOR>)</PUNCTUATOR>
-					</ExpressionUnit>
-				*/
-				const expression_unit: PARSENODE_SOLID.ParseNodeExpressionUnit = h.unitExpressionFromSource(`(2 + -3);`);
-				assert_arrayLength(expression_unit.children, 3)
-				const [open, expr, close]: readonly [Token, PARSENODE_SOLID.ParseNodeExpression, Token] = expression_unit.children;
-				assert.ok(open  instanceof TOKEN.TokenPunctuator)
-				assert.ok(close instanceof TOKEN.TokenPunctuator)
-				assert.deepStrictEqual(
-					[open.source,        expr.source, close.source],
-					[Punctuator.GRP_OPN, `2 + -3`,    Punctuator.GRP_CLS],
-				)
-			})
-		})
 
 		describe('ExpressionCompound ::= ExpressionCompound (PropertyAccess | FunctionCall)', () => {
 			it('ok.', () => {
