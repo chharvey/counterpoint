@@ -113,12 +113,12 @@ function buildTest(title: string, source: string, expected: string) {
 
 		FLOAT: [
 			xjs.String.dedent`
-				42.;
+				42.0;
 				42.69;
 				42.69e15;
 				42.69e+15;
 				42.69e-15;
-				4_2.;
+				4_2.0;
 				4_2.6_9;
 				4_2.6_9e1_5;
 				4_2.6_9e+1_5;

@@ -51,6 +51,7 @@ export {
 } from '../index.js';
 export {
 	NonemptyArray,
+	forEachAggregated,
 	Map_hasEq,
 	Map_getEq,
 	Map_setEq,
