@@ -1,9 +1,5 @@
 import * as assert from 'assert';
 import {
-	TypeError04,
-	SolidConfig,
-	CONFIG_DEFAULT,
-	PARSENODE,
 	SolidType,
 	SolidTypeIntersection,
 	SolidTypeUnion,
@@ -13,6 +9,11 @@ import {
 	Int16,
 	SolidTuple,
 	SolidRecord,
+	TypeError04,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	PARSENODE,
+	SyntaxNodeType,
 	Operator,
 } from './package.js';
 import type {ASTNodeKey} from './ASTNodeKey.js';
@@ -28,7 +29,7 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTypeCompound,
+		start_node: PARSENODE.ParseNodeTypeCompound | SyntaxNodeType<'type_compound'>,
 		readonly base:     ASTNodeType,
 		readonly accessor: ASTNodeIndexType | ASTNodeKey,
 	) {

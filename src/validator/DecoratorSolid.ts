@@ -734,12 +734,12 @@ class DecoratorSolid extends Decorator {
 
 			type_compound: (node) => (
 				(isSyntaxNodeType(node.children[1], 'property_access_type')) ? new AST.ASTNodeTypeAccess(
-					h.compoundTypeFromString(node.text),
+					node as SyntaxNodeType<'type_compound'>,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 					this.decorateTS(node.children[1] as SyntaxNodeType<'property_access_type'>),
 				) :
 				(isSyntaxNodeType(node.children[1], 'generic_call'), new AST.ASTNodeTypeCall(
-					h.compoundTypeFromString(node.text),
+					node as SyntaxNodeType<'type_compound'>,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 					((node.children[1] as SyntaxNodeType<'generic_call'>).children[1] as SyntaxNodeType<'generic_arguments'>).children
 						.filter((c): c is SyntaxNodeSupertype<'type'> => isSyntaxNodeSupertype(c, 'type'))
