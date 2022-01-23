@@ -749,7 +749,7 @@ class DecoratorSolid extends Decorator {
 
 			type_unary_symbol: (node) => (
 				(node.children.length === 2) ? new AST.ASTNodeTypeOperationUnary(
-					h.unarySymbolTypeFromString(node.text),
+					node as SyntaxNodeType<'type_unary_symbol'>,
 					DecoratorSolid.TYPEOPERATORS_UNARY.get(node.children[1].text as Punctuator)!,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 				) :
@@ -769,20 +769,20 @@ class DecoratorSolid extends Decorator {
 			),
 
 			type_unary_keyword: (node) => new AST.ASTNodeTypeOperationUnary(
-				h.unaryKeywordTypeFromString(node.text),
+				node as SyntaxNodeType<'type_unary_keyword'>,
 				DecoratorSolid.TYPEOPERATORS_UNARY.get(node.children[0].text as Keyword)!,
 				this.decorateTS(node.children[1] as SyntaxNodeSupertype<'type'>),
 			),
 
 			type_intersection: (node) => new AST.ASTNodeTypeOperationBinary(
-				h.intersectionTypeFromString(node.text),
+				node as SyntaxNodeType<'type_intersection'>,
 				DecoratorSolid.TYPEOPERATORS_BINARY.get(node.children[1].text as Punctuator)!,
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'type'>),
 			),
 
 			type_union: (node) => new AST.ASTNodeTypeOperationBinary(
-				h.unionTypeFromString(node.text),
+				node as SyntaxNodeType<'type_union'>,
 				DecoratorSolid.TYPEOPERATORS_BINARY.get(node.children[1].text as Punctuator)!,
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'type'>),

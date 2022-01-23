@@ -3,7 +3,8 @@ import {
 	NonemptyArray,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
+	PARSENODE,
+	SyntaxNodeType,
 	ValidTypeOperator,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
@@ -22,7 +23,16 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: ParseNode,
+		start_node:
+			| PARSENODE.ParseNodeTypeUnarySymbol
+			| PARSENODE.ParseNodeTypeUnaryKeyword
+			| PARSENODE.ParseNodeTypeIntersection
+			| PARSENODE.ParseNodeTypeUnion
+			| SyntaxNodeType<'type_unary_symbol'>
+			| SyntaxNodeType<'type_unary_keyword'>
+			| SyntaxNodeType<'type_intersection'>
+			| SyntaxNodeType<'type_union'>
+		,
 		readonly operator: ValidTypeOperator,
 		override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
 	) {
