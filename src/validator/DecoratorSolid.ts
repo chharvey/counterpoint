@@ -801,7 +801,7 @@ class DecoratorSolid extends Decorator {
 			),
 
 			property: (node) => new AST.ASTNodeProperty(
-				h.propertyFromString(node.text),
+				node as SyntaxNodeType<'property'>,
 				this.decorateTS(node.children[0] as SyntaxNodeType<'word'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			),
