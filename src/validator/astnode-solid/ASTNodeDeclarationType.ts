@@ -5,8 +5,9 @@ import {
 	AssignmentError01,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
+	PARSENODE,
 	SymbolStructureType,
+	SyntaxNodeType,
 } from './package.js';
 import type {ASTNodeType} from './ASTNodeType.js';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
@@ -21,7 +22,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		return statement;
 	}
 	constructor (
-		start_node: ParseNode,
+		start_node: PARSENODE.ParseNodeDeclarationType | SyntaxNodeType<'declaration_type'>,
 		readonly assignee: ASTNodeTypeAlias,
 		readonly assigned: ASTNodeType,
 	) {

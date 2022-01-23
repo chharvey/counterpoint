@@ -1004,13 +1004,13 @@ class DecoratorSolid extends Decorator {
 
 			/* ## Statements */
 			declaration_type: (node) => new AST.ASTNodeDeclarationType(
-				h.typeDeclarationFromSource(node.text),
+				node as SyntaxNodeType<'declaration_type'>,
 				new AST.ASTNodeTypeAlias(node.children[1] as SyntaxNodeType<'identifier'>),
 				this.decorateTS(node.children[3] as SyntaxNodeSupertype<'type'>),
 			),
 
 			declaration_variable: (node) => new AST.ASTNodeDeclarationVariable(
-				h.variableDeclarationFromSource(node.text),
+				node as SyntaxNodeType<'declaration_variable'>,
 				node.children.length === 8,
 				new AST.ASTNodeVariable (((node.children.length === 7) ? node.children[1] : node.children[2]) as SyntaxNodeType<'identifier'>),
 				this.decorateTS         (((node.children.length === 7) ? node.children[3] : node.children[4]) as SyntaxNodeSupertype<'type'>),
@@ -1018,12 +1018,12 @@ class DecoratorSolid extends Decorator {
 			),
 
 			statement_expression: (node) => new AST.ASTNodeStatementExpression(
-				h.statementExpressionFromSource(node.text),
+				node as SyntaxNodeType<'statement_expression'>,
 				(node.children.length === 2) ? this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>) : void 0,
 			),
 
 			statement_assignment: (node) => new AST.ASTNodeAssignment(
-				h.assignmentFromSource(node.text),
+				node as SyntaxNodeType<'statement_assignment'>,
 				this.decorateTS(node.children[0] as SyntaxNodeType<'assignee'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			),
