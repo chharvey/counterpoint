@@ -726,7 +726,7 @@ class DecoratorSolid extends Decorator {
 
 			property_access_type: (node) => (
 				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndexType(
-					h.compoundTypeFromString(`o${ node.text }`).children[1] as PARSENODE.ParseNodePropertyAccessType,
+					node as SyntaxNodeType<'property_access_type'>,
 					new AST.ASTNodeTypeConstant(h.tokenLiteralFromTypeString(node.children[1].text) as TOKEN.TokenNumber),
 				) :
 				(isSyntaxNodeType(node.children[1], 'word'), this.decorateTS(node.children[1] as SyntaxNodeType<'word'>))
