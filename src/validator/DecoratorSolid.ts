@@ -663,7 +663,7 @@ class DecoratorSolid extends Decorator {
 			),
 
 			/* # PRODUCTIONS */
-			word: (node) => new AST.ASTNodeKey(h.wordFromString(node.children[0].text).children[0] as TOKEN.TokenKeyword | TOKEN.TokenIdentifier),
+			word: (node) => new AST.ASTNodeKey(node as SyntaxNodeType<'word'>),
 
 			primitive_literal: (node) => (
 				(isSyntaxNodeSupertype(node.parent!, 'type'))      || isSyntaxNodeType(node.parent!, 'declaration_type')     ? new AST.ASTNodeTypeConstant (h.tokenLiteralFromTypeString(node.children[0].text)) :
