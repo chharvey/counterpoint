@@ -812,28 +812,28 @@ class DecoratorSolid extends Decorator {
 			expression_grouped: (node) => this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>),
 
 			tuple_literal: (node) => new AST.ASTNodeTuple(
-				h.tupleLiteralFromSource(node.text + ';'),
+				node as SyntaxNodeType<'tuple_literal'>,
 				node.children
 					.filter((c): c is SyntaxNodeSupertype<'expression'> => isSyntaxNodeSupertype(c, 'expression'))
 					.map((c) => this.decorateTS(c)),
 			),
 
 			record_literal: (node) => new AST.ASTNodeRecord(
-				h.recordLiteralFromSource(node.text + ';'),
+				node as SyntaxNodeType<'record_literal'>,
 				node.children
 					.filter((c): c is SyntaxNodeType<'property'> => isSyntaxNodeType(c, 'property'))
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeProperty>,
 			),
 
 			set_literal: (node) => new AST.ASTNodeSet(
-				h.setLiteralFromSource(node.text + ';'),
+				node as SyntaxNodeType<'set_literal'>,
 				node.children
 					.filter((c): c is SyntaxNodeSupertype<'expression'> => isSyntaxNodeSupertype(c, 'expression'))
 					.map((c) => this.decorateTS(c)),
 			),
 
 			map_literal: (node) => new AST.ASTNodeMap(
-				h.mapLiteralFromSource(node.text + ';'),
+				node as SyntaxNodeType<'map_literal'>,
 				node.children
 					.filter((c): c is SyntaxNodeType<'case'> => isSyntaxNodeType(c, 'case'))
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodeCase>,
