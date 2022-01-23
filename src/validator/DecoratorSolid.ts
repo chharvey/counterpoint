@@ -700,26 +700,26 @@ class DecoratorSolid extends Decorator {
 			type_grouped: (node) => this.decorateTS(node.children[1] as SyntaxNodeSupertype<'type'>),
 
 			type_tuple_literal: (node) => new AST.ASTNodeTypeTuple(
-				h.tupleTypeFromString(node.text),
+				node as SyntaxNodeType<'type_tuple_literal'>,
 				node.children
 					.filter((c): c is SyntaxNodeType<'entry_type' | 'entry_type__optional'> => isSyntaxNodeType(c, /^entry_type(__optional)?$/))
 					.map((c) => this.decorateTS(c)),
 			),
 
 			type_record_literal: (node) => new AST.ASTNodeTypeRecord(
-				h.recordTypeFromString(node.text),
+				node as SyntaxNodeType<'type_record_literal'>,
 				node.children
 					.filter((c): c is SyntaxNodeType<'entry_type__named' | 'entry_type__named__optional'> => isSyntaxNodeType(c, /^entry_type__named(__optional)?$/))
 					.map((c) => this.decorateTS(c)) as NonemptyArray<AST.ASTNodePropertyType>,
 			),
 
 			type_hash_literal: (node) => new AST.ASTNodeTypeHash(
-				h.hashTypeFromString(node.text),
+				node as SyntaxNodeType<'type_hash_literal'>,
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'type'>),
 			),
 
 			type_map_literal: (node) => new AST.ASTNodeTypeMap(
-				h.mapTypeFromString(node.text),
+				node as SyntaxNodeType<'type_map_literal'>,
 				this.decorateTS(node.children[1] as SyntaxNodeSupertype<'type'>),
 				this.decorateTS(node.children[3] as SyntaxNodeSupertype<'type'>),
 			),
@@ -755,14 +755,14 @@ class DecoratorSolid extends Decorator {
 				) :
 				(node.children.length > 2, (node.children[1].text === Punctuator.BRAK_OPN)
 					? new AST.ASTNodeTypeList(
-						h.unarySymbolTypeFromString(node.text),
+						node as SyntaxNodeType<'type_unary_symbol'>,
 						this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 						(node.children[2].text === Punctuator.BRAK_CLS)
 							? null
 							: BigInt((h.tokenLiteralFromTypeString(node.children[2].text) as TOKEN.TokenNumber).cook())
 					)
 					: new AST.ASTNodeTypeSet(
-						h.unarySymbolTypeFromString(node.text),
+						node as SyntaxNodeType<'type_unary_symbol'>,
 						this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 					)
 				)
