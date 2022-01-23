@@ -672,13 +672,13 @@ class DecoratorSolid extends Decorator {
 
 			/* ## Types */
 			entry_type: (node) => new AST.ASTNodeItemType(
-				h.entryTypeFromString(node.text),
+				node as SyntaxNodeType<'entry_type'>,
 				false,
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'type'>),
 			),
 
 			entry_type__optional: (node) => new AST.ASTNodeItemType(
-				h.entryTypeFromString(node.text),
+				node as SyntaxNodeType<'entry_type__optional'>,
 				true,
 				this.decorateTS(node.children[1] as SyntaxNodeSupertype<'type'>),
 			),
