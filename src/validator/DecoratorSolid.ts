@@ -667,7 +667,7 @@ class DecoratorSolid extends Decorator {
 
 			primitive_literal: (node) => (
 				(isSyntaxNodeSupertype(node.parent!, 'type'))      || isSyntaxNodeType(node.parent!, 'declaration_type')     ? new AST.ASTNodeTypeConstant (node as SyntaxNodeType<'primitive_literal'>) :
-				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, 'declaration_variable'),  new AST.ASTNodeConstant     (h.tokenLiteralFromSource    (node.children[0].text + ';')))
+				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, 'declaration_variable'),  new AST.ASTNodeConstant     (node as SyntaxNodeType<'primitive_literal'>))
 			),
 
 			/* ## Types */
@@ -791,13 +791,10 @@ class DecoratorSolid extends Decorator {
 			/* ## Expressions */
 			string_template: (node) => new AST.ASTNodeTemplate(
 				h.stringTemplateFromSource(node.text + ';'),
-				node.children.map((c) => (
-					(isSyntaxNodeType      (c, 'template_full'))   ? new AST.ASTNodeConstant(h.tokenTemplateFullFromSource(c.text + ';')) :
-					(isSyntaxNodeType      (c, 'template_head'))   ? new AST.ASTNodeConstant(h.tokenTemplateFullFromSource([                           c.text.slice(0,                                           -TOKEN.TokenTemplate.DELIM_INTERP_START.length), TOKEN.TokenTemplate.DELIM].join('') + ';')) :
-					(isSyntaxNodeType      (c, 'template_middle')) ? new AST.ASTNodeConstant(h.tokenTemplateFullFromSource([TOKEN.TokenTemplate.DELIM, c.text.slice(TOKEN.TokenTemplate.DELIM_INTERP_END.length, -TOKEN.TokenTemplate.DELIM_INTERP_START.length), TOKEN.TokenTemplate.DELIM].join('') + ';')) :
-					(isSyntaxNodeType      (c, 'template_tail'))   ? new AST.ASTNodeConstant(h.tokenTemplateFullFromSource([TOKEN.TokenTemplate.DELIM, c.text.slice(TOKEN.TokenTemplate.DELIM_INTERP_END.length                                                )                           ].join('') + ';')) :
-					(isSyntaxNodeSupertype (c, 'expression'),        this.decorateTS(c as SyntaxNodeSupertype<'expression'>))
-				)),
+				node.children.map((c) => (isSyntaxNodeType(c, /^template_(full|head|middle|tail)$/))
+					? new AST.ASTNodeConstant(c as SyntaxNodeType<`template_${ 'full' | 'head' | 'middle' | 'tail' }`>)
+					: this.decorateTS(c as SyntaxNodeSupertype<'expression'>)
+				),
 			),
 
 			property: (node) => new AST.ASTNodeProperty(
@@ -845,7 +842,7 @@ class DecoratorSolid extends Decorator {
 			property_access: (node) => (
 				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(
 					node as SyntaxNodeType<'property_access'>,
-					new AST.ASTNodeConstant(h.tokenLiteralFromSource(node.children[1].text + ';') as TOKEN.TokenNumber),
+					new AST.ASTNodeConstant(node.children[1]),
 				) :
 				(isSyntaxNodeType     (node.children[1], 'word'))      ? this.decorateTS(node.children[1] as SyntaxNodeType<'word'>) :
 				(isSyntaxNodeSupertype(node.children[2], 'expression'),  this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>))
@@ -854,7 +851,7 @@ class DecoratorSolid extends Decorator {
 			property_assign: (node) => (
 				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(
 					node as SyntaxNodeType<'property_assign'>,
-					new AST.ASTNodeConstant(h.tokenLiteralFromSource(node.children[1].text + ';') as TOKEN.TokenNumber),
+					new AST.ASTNodeConstant(node.children[1]),
 				) :
 				(isSyntaxNodeType     (node.children[1], 'word'))      ? this.decorateTS(node.children[1] as SyntaxNodeType<'word'>) :
 				(isSyntaxNodeSupertype(node.children[2], 'expression'),  this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>))
