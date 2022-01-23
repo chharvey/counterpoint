@@ -844,7 +844,7 @@ class DecoratorSolid extends Decorator {
 
 			property_access: (node) => (
 				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(
-					h.compoundExpressionFromSource(`o${ node.text };`).children[1] as PARSENODE.ParseNodePropertyAccess,
+					node as SyntaxNodeType<'property_access'>,
 					new AST.ASTNodeConstant(h.tokenLiteralFromSource(node.children[1].text + ';') as TOKEN.TokenNumber),
 				) :
 				(isSyntaxNodeType     (node.children[1], 'word'))      ? this.decorateTS(node.children[1] as SyntaxNodeType<'word'>) :
@@ -853,7 +853,7 @@ class DecoratorSolid extends Decorator {
 
 			property_assign: (node) => (
 				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndex(
-					h.compoundExpressionFromSource(`o${ node.text };`).children[1] as PARSENODE.ParseNodePropertyAccess,
+					node as SyntaxNodeType<'property_assign'>,
 					new AST.ASTNodeConstant(h.tokenLiteralFromSource(node.children[1].text + ';') as TOKEN.TokenNumber),
 				) :
 				(isSyntaxNodeType     (node.children[1], 'word'))      ? this.decorateTS(node.children[1] as SyntaxNodeType<'word'>) :
