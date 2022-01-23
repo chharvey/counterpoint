@@ -655,7 +655,7 @@ class DecoratorSolid extends Decorator {
 			),
 
 			/* # TERMINALS */
-			keyword_type: (node) => new AST.ASTNodeTypeConstant(h.tokenKeywordFromTypeString(node.text)),
+			keyword_type: (node) => new AST.ASTNodeTypeConstant(node as SyntaxNodeType<'keyword_type'>),
 
 			identifier: (node) => (
 				(isSyntaxNodeSupertype(node.parent!, 'type'))      || isSyntaxNodeType(node.parent!, 'declaration_type')     ? new AST.ASTNodeTypeAlias (h.tokenIdentifierFromTypeString (node.text)) :
@@ -666,7 +666,7 @@ class DecoratorSolid extends Decorator {
 			word: (node) => new AST.ASTNodeKey(node as SyntaxNodeType<'word'>),
 
 			primitive_literal: (node) => (
-				(isSyntaxNodeSupertype(node.parent!, 'type'))      || isSyntaxNodeType(node.parent!, 'declaration_type')     ? new AST.ASTNodeTypeConstant (h.tokenLiteralFromTypeString(node.children[0].text)) :
+				(isSyntaxNodeSupertype(node.parent!, 'type'))      || isSyntaxNodeType(node.parent!, 'declaration_type')     ? new AST.ASTNodeTypeConstant (node as SyntaxNodeType<'primitive_literal'>) :
 				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, 'declaration_variable'),  new AST.ASTNodeConstant     (h.tokenLiteralFromSource    (node.children[0].text + ';')))
 			),
 
@@ -727,7 +727,7 @@ class DecoratorSolid extends Decorator {
 			property_access_type: (node) => (
 				(isSyntaxNodeType(node.children[1], 'integer')) ? new AST.ASTNodeIndexType(
 					node as SyntaxNodeType<'property_access_type'>,
-					new AST.ASTNodeTypeConstant(h.tokenLiteralFromTypeString(node.children[1].text) as TOKEN.TokenNumber),
+					new AST.ASTNodeTypeConstant(node.children[1]),
 				) :
 				(isSyntaxNodeType(node.children[1], 'word'), this.decorateTS(node.children[1] as SyntaxNodeType<'word'>))
 			),

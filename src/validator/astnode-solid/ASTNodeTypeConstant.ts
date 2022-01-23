@@ -1,18 +1,21 @@
 import * as assert from 'assert';
 import {
-	SolidConfig,
-	CONFIG_DEFAULT,
-	Dev,
-	Keyword,
-	TOKEN,
 	SolidType,
 	SolidTypeUnit,
 	SolidBoolean,
 	Int16,
 	Float64,
 	SolidString,
+	SolidConfig,
+	CONFIG_DEFAULT,
+	Dev,
+	Keyword,
+	TOKEN,
+	SyntaxNodeType,
+	isSyntaxNodeType,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
+import * as h from '../../../test/helpers-parse.js';
 
 
 
@@ -23,8 +26,15 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 		return typ;
 	}
 	private readonly type: SolidType;
-	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) {
-		const value: SolidType = (
+	constructor (start_node:
+		| TOKEN.TokenKeyword
+		| TOKEN.TokenNumber
+		| TOKEN.TokenString
+		| SyntaxNodeType<'keyword_type'>
+		| SyntaxNodeType<'integer'>
+		| SyntaxNodeType<'primitive_literal'>
+	) {
+		const value: SolidType = ((start_node: TOKEN.TokenKeyword | TOKEN.TokenNumber | TOKEN.TokenString) => (
 			(start_node instanceof TOKEN.TokenKeyword) ?
 				(start_node.source === Keyword.VOID)  ? SolidType.VOID :
 				(start_node.source === Keyword.NULL)  ? SolidType.NULL :
@@ -42,8 +52,12 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 						? new Float64(start_node.cook())
 						: new Int16(BigInt(start_node.cook()))
 				)
-			: /* (start_node instanceof TOKEN.TokenString) */ (Dev.supports('literalString-cook')) ? new SolidTypeUnit(new SolidString(start_node.cook())) : (() => { throw new Error('`literalString-cook` not yet supported.'); })()
-		);
+			: (start_node instanceof TOKEN.TokenString, (Dev.supports('literalString-cook')) ? new SolidTypeUnit(new SolidString(start_node.cook())) : (() => { throw new Error('`literalString-cook` not yet supported.'); })())
+		))(('tree' in start_node) ? (
+			(isSyntaxNodeType(start_node, 'keyword_type'))     ? h.tokenKeywordFromTypeString(start_node.text) :
+			(isSyntaxNodeType(start_node, 'integer'))          ? h.tokenLiteralFromTypeString(start_node.text) :
+			(isSyntaxNodeType(start_node, 'primitive_literal'),  h.tokenLiteralFromTypeString(start_node.children[0].text))
+		) : start_node);
 		super(start_node, {value});
 		this.type = value;
 	}

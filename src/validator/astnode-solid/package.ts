@@ -74,6 +74,7 @@ export {
 } from '../index.js';
 export {
 	SyntaxNodeType,
+	isSyntaxNodeType,
 } from '../utils-private.js';
 export {
 	Operator,
