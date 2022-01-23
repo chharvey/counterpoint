@@ -859,13 +859,13 @@ class DecoratorSolid extends Decorator {
 
 			expression_compound: (node) => (
 				(isSyntaxNodeType(node.children[1], 'property_access')) ? new AST.ASTNodeAccess(
-					h.compoundExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_compound'>,
 					DecoratorSolid.ACCESSORS.get(node.children[1].children[0].text as Punctuator)!,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 					this.decorateTS(node.children[1] as SyntaxNodeType<'property_access'>),
 				)
 				: (isSyntaxNodeType(node.children[1], 'function_call'), new AST.ASTNodeCall(
-					h.compoundExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_compound'>,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 					(node.children[1] as SyntaxNodeType<'function_call'>).children
 						.find((c): c is SyntaxNodeType<'generic_arguments'> => isSyntaxNodeType(c, 'generic_arguments'))?.children
@@ -881,7 +881,7 @@ class DecoratorSolid extends Decorator {
 			assignee: (node) => (node.children.length === 1)
 				? new AST.ASTNodeVariable(node.children[0] as SyntaxNodeType<'identifier'>)
 				: new AST.ASTNodeAccess(
-					h.compoundExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'assignee'>,
 					Operator.DOT,
 					this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 					this.decorateTS(node.children[1] as SyntaxNodeType<'property_assign'>),
