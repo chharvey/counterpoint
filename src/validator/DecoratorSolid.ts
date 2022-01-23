@@ -807,7 +807,7 @@ class DecoratorSolid extends Decorator {
 			),
 
 			case: (node) => new AST.ASTNodeCase(
-				h.caseFromString(node.text),
+				node as SyntaxNodeType<'case'>,
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			),
