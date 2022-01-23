@@ -921,16 +921,16 @@ describe('ParserSolid', () => {
 			})
 		})
 
-		context('Statement ::= ";"', () => {
+		context('StatementExpression ::= ";"', () => {
 			it('returns a statement with only a punctuator.', () => {
 				/*
-					<Statement line="1" col="1" source=";">
+					<StatementExpression line="1" col="1" source=";">
 						<PUNCTUATOR line="1" col="1" value="7">;</PUNCTUATOR>
-					</Statement>
+					</StatementExpression>
 				*/
-				const statement: PARSENODE_SOLID.ParseNodeStatement = h.statementFromSource(`;`);
-				assert_arrayLength(statement.children, 1)
-				const token: PARSENODE_SOLID.ParseNodeDeclaration | PARSENODE_SOLID.ParseNodeStatementAssignment | Token = statement.children[0];
+				const statexpr: PARSENODE_SOLID.ParseNodeStatementExpression = h.statementExpressionFromSource(`;`);
+				assert_arrayLength(statexpr.children, 1);
+				const token: Token = statexpr.children[0];
 				assert.ok(token instanceof TOKEN.TokenPunctuator)
 				assert.strictEqual(token.source, Punctuator.ENDSTAT)
 			})

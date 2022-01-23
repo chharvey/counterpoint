@@ -43,17 +43,22 @@ Punctuator :::=
 
 
 
-Keyword :::=
-	// literal
-		| "void"
-		| "null"
-		| "bool"
-		| "false"
-		| "true"
-		| "int"
-		| "float"
-		| "str"
-		| "obj"
+KeywordType :::=
+	| "void"
+	| "bool"
+	| "int"
+	| "float"
+	| "str"
+	| "obj"
+;
+
+KeywordValue :::=
+	| "null"
+	| "false"
+	| "true"
+;
+
+KeywordOther :::=
 	// operator
 		| "mutable"
 		| "is"
@@ -62,8 +67,8 @@ Keyword :::=
 		| "then"
 		| "else"
 	// storage
-		| "let"
 		| "type"
+		| "let"
 	// modifier
 		| "unfixed"
 ;
@@ -71,7 +76,7 @@ Keyword :::=
 
 
 Identifier
-	:::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - Keyword;
+	:::= ([A-Za-z_] [A-Za-z0-9_]* | "`" [^`#x03]* "`") - (KeywordType | KeywordValue | KeywordOther);
 
 
 
@@ -380,7 +385,9 @@ Goal<Comment, Radix, Separator> :::=
 	| Whitespace
 	| <Comment+>Comment
 	| Punctuator
-	| Keyword
+	| KeywordType
+	| KeywordValue
+	| KeywordOther
 	| Identifier
 	| Number<?Radix><?Separator>
 	| String<?Comment><?Separator>
