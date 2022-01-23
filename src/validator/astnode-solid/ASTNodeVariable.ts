@@ -1,20 +1,22 @@
 import * as assert from 'assert';
 import {
+	SolidType,
+	SolidObject,
+	INST,
+	Builder,
 	ReferenceError01,
 	ReferenceError03,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	TOKEN,
-	SolidType,
-	SolidObject,
-	INST,
-	Builder,
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
 	SymbolStructureType,
+	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeExpression} from './ASTNodeExpression.js';
+import * as h from '../../../test/helpers-parse.js';
 
 
 
@@ -25,9 +27,13 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		return expression;
 	}
 	readonly id: bigint;
-	constructor (start_node: TOKEN.TokenIdentifier) {
-		super(start_node, {id: start_node.cook()})
-		this.id = start_node.cook()!;
+	constructor (start_node: TOKEN.TokenIdentifier | SyntaxNodeType<'identifier'>) {
+		const id = (('tree' in start_node)
+			? h.tokenIdentifierFromSource(start_node.text + ';')
+			: start_node
+		).cook();
+		super(start_node, {id});
+		this.id = id!;
 	}
 	override shouldFloat(): boolean {
 		return this.type().isSubtypeOf(SolidType.FLOAT);

@@ -659,7 +659,7 @@ class DecoratorSolid extends Decorator {
 
 			identifier: (node) => (
 				(isSyntaxNodeSupertype(node.parent!, 'type'))      || isSyntaxNodeType(node.parent!, 'declaration_type')     ? new AST.ASTNodeTypeAlias (node as SyntaxNodeType<'identifier'>) :
-				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, 'declaration_variable'),  new AST.ASTNodeVariable  (h.tokenIdentifierFromSource     (node.text + ';')))
+				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, 'declaration_variable'),  new AST.ASTNodeVariable  (node as SyntaxNodeType<'identifier'>))
 			),
 
 			/* # PRODUCTIONS */
@@ -879,7 +879,7 @@ class DecoratorSolid extends Decorator {
 			),
 
 			assignee: (node) => (node.children.length === 1)
-				? new AST.ASTNodeVariable(h.tokenIdentifierFromSource(node.children[0].text + ';'))
+				? new AST.ASTNodeVariable(node.children[0] as SyntaxNodeType<'identifier'>)
 				: new AST.ASTNodeAccess(
 					h.compoundExpressionFromSource(node.text + ';'),
 					Operator.DOT,
@@ -1063,9 +1063,9 @@ class DecoratorSolid extends Decorator {
 			declaration_variable: (node) => new AST.ASTNodeDeclarationVariable(
 				h.variableDeclarationFromSource(node.text),
 				node.children.length === 8,
-				new AST.ASTNodeVariable(h.tokenIdentifierFromSource(((node.children.length === 7) ? node.children[1].text : node.children[2].text) + ';')),
-				this.decorateTS(((node.children.length === 7) ? node.children[3] : node.children[4]) as SyntaxNodeSupertype<'type'>),
-				this.decorateTS(((node.children.length === 7) ? node.children[5] : node.children[6]) as SyntaxNodeSupertype<'expression'>),
+				new AST.ASTNodeVariable (((node.children.length === 7) ? node.children[1] : node.children[2]) as SyntaxNodeType<'identifier'>),
+				this.decorateTS         (((node.children.length === 7) ? node.children[3] : node.children[4]) as SyntaxNodeSupertype<'type'>),
+				this.decorateTS         (((node.children.length === 7) ? node.children[5] : node.children[6]) as SyntaxNodeSupertype<'expression'>),
 			),
 
 			statement_expression: (node) => new AST.ASTNodeStatementExpression(
