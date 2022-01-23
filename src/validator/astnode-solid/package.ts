@@ -75,6 +75,7 @@ export {
 export {
 	SyntaxNodeType,
 	isSyntaxNodeType,
+	SyntaxNodeSupertype,
 } from '../utils-private.js';
 export {
 	Operator,

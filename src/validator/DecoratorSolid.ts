@@ -12,6 +12,8 @@ import {
 import {
 	SyntaxNodeType,
 	isSyntaxNodeType,
+	SyntaxNodeSupertype,
+	isSyntaxNodeSupertype,
 } from './utils-private.js';
 import {
 	Operator,
@@ -31,59 +33,6 @@ import {
 import * as h from '../../test/helpers-parse.js';
 
 
-
-type Category =
-	| 'type'
-	| 'expression'
-	| 'declaration'
-	| 'statement'
-;
-type SyntaxNodeSupertype<C extends Category> = C extends 'type' ?
-	| SyntaxNodeType<'primitive_literal'>
-	| SyntaxNodeType<'type_grouped'>
-	| SyntaxNodeType<'type_tuple_literal'>
-	| SyntaxNodeType<'type_record_literal'>
-	| SyntaxNodeType<'type_hash_literal'>
-	| SyntaxNodeType<'type_map_literal'>
-	| SyntaxNodeType<'type_compound'>
-	| SyntaxNodeType<'type_unary_symbol'>
-	| SyntaxNodeType<'type_unary_keyword'>
-	| SyntaxNodeType<'type_intersection'>
-	| SyntaxNodeType<'type_union'>
-: C extends 'expression' ?
-	| SyntaxNodeType<'primitive_literal'>
-	| SyntaxNodeType<'string_template'>
-	| SyntaxNodeType<'expression_grouped'>
-	| SyntaxNodeType<'tuple_literal'>
-	| SyntaxNodeType<'record_literal'>
-	| SyntaxNodeType<'set_literal'>
-	| SyntaxNodeType<'map_literal'>
-	| SyntaxNodeType<'expression_compound'>
-	| SyntaxNodeType<'expression_unary_symbol'>
-	| SyntaxNodeType<'expression_exponential'>
-	| SyntaxNodeType<'expression_multiplicative'>
-	| SyntaxNodeType<'expression_additive'>
-	| SyntaxNodeType<'expression_comparative'>
-	| SyntaxNodeType<'expression_equality'>
-	| SyntaxNodeType<'expression_conjunctive'>
-	| SyntaxNodeType<'expression_disjunctive'>
-	| SyntaxNodeType<'expression_conditional'>
-: C extends 'declaration' ?
-	| SyntaxNodeType<'declaration_type'>
-	| SyntaxNodeType<'declaration_variable'>
-: C extends 'statement' ?
-	| SyntaxNodeSupertype<'declaration'>
-	| SyntaxNodeType<'statement_expression'>
-	| SyntaxNodeType<'statement_assignment'>
-: never;
-function isSyntaxNodeSupertype<C extends Category>(node: SyntaxNode, category: C): node is SyntaxNodeSupertype<C> {
-	return new Map<Category, (node: SyntaxNode) => boolean>([
-		['type',        (node) => isSyntaxNodeType(node, /^primitive_literal|type_grouped|type_tuple_literal|type_record_literal|type_hash_literal|type_map_literal|type_compound|type_unary_symbol|type_unary_keyword|type_intersection|type_union$/)],
-		['expression',  (node) => isSyntaxNodeType(node, /^primitive_literal|string_template|expression_grouped|tuple_literal|record_literal|set_literal|map_literal|expression_compound|expression_unary_symbol|expression_exponential|expression_multiplicative|expression_additive|expression_comparative|expression_equality|expression_conjunctive|expression_disjunctive|expression_conditional$/)],
-		['declaration', (node) => isSyntaxNodeType(node, /^declaration_type|declaration_variable$/)],
-		['statement',   (node) => isSyntaxNodeType(node, /^statement_expression|statement_assignment$/) || isSyntaxNodeSupertype(node, 'declaration')],
-	]).get(category)!(node);
-}
 
 type TemplatePartialType = // FIXME spread types
 	| [                        AST.ASTNodeConstant                       ]
@@ -890,20 +839,20 @@ class DecoratorSolid extends Decorator {
 			expression_unary_symbol: (node) => (node.children[0].text === Punctuator.AFF) // `+a` is a no-op
 				? this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>)
 				: new AST.ASTNodeOperationUnary(
-					h.unaryExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_unary_symbol'>,
 					DecoratorSolid.OPERATORS_UNARY.get(node.children[0].text as Punctuator) as ValidOperatorUnary,
 					this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>),
 				),
 
 			expression_exponential: (node) => new AST.ASTNodeOperationBinaryArithmetic(
-				h.exponentialExpressionFromSource(node.text + ';'),
+				node as SyntaxNodeType<'expression_exponential'>,
 				DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			),
 
 			expression_multiplicative: (node) => new AST.ASTNodeOperationBinaryArithmetic(
-				h.multiplicativeExpressionFromSource(node.text + ';'),
+				node as SyntaxNodeType<'expression_multiplicative'>,
 				DecoratorSolid.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
 				this.decorateTS(node.children[0] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[2] as SyntaxNodeSupertype<'expression'>),
@@ -912,17 +861,17 @@ class DecoratorSolid extends Decorator {
 			expression_additive: (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
 				// `a - b` is syntax sugar for `a + -(b)`
 				(operator === Operator.SUB) ? new AST.ASTNodeOperationBinaryArithmetic(
-					h.additiveExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_additive'>,
 					Operator.ADD,
 					operands[0],
 					new AST.ASTNodeOperationUnary(
-						h.multiplicativeExpressionFromSource(node.children[2].text + ';'),
+						node.children[2] as SyntaxNodeSupertype<'expression'>,
 						Operator.NEG,
 						operands[1],
 					),
 				) :
 				new AST.ASTNodeOperationBinaryArithmetic(
-					h.additiveExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_additive'>,
 					operator as ValidOperatorArithmetic,
 					...operands,
 				)
@@ -934,36 +883,36 @@ class DecoratorSolid extends Decorator {
 			expression_comparative: (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
 				// `a !< b` is syntax sugar for `!(a < b)`
 				(operator === Operator.NLT) ? new AST.ASTNodeOperationUnary(
-					h.comparativeExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_comparative'>,
 					Operator.NOT,
 					new AST.ASTNodeOperationBinaryComparative(
-						h.comparativeExpressionFromSource(node.children[0].text + ';'),
+						node.children[0] as SyntaxNodeSupertype<'expression'>,
 						Operator.LT,
 						...operands,
 					),
 				) :
 				// `a !> b` is syntax sugar for `!(a > b)`
 				(operator === Operator.NGT) ? new AST.ASTNodeOperationUnary(
-					h.comparativeExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_comparative'>,
 					Operator.NOT,
 					new AST.ASTNodeOperationBinaryComparative(
-						h.comparativeExpressionFromSource(node.children[0].text + ';'),
+						node.children[0] as SyntaxNodeSupertype<'expression'>,
 						Operator.GT,
 						...operands,
 					),
 				) :
 				// `a isnt b` is syntax sugar for `!(a is b)`
 				(operator === Operator.ISNT) ? new AST.ASTNodeOperationUnary(
-					h.comparativeExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_comparative'>,
 					Operator.NOT,
 					new AST.ASTNodeOperationBinaryComparative(
-						h.comparativeExpressionFromSource(node.children[0].text + ';'),
+						node.children[0] as SyntaxNodeSupertype<'expression'>,
 						Operator.IS,
 						...operands,
 					),
 				) :
 				new AST.ASTNodeOperationBinaryComparative(
-					h.comparativeExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_comparative'>,
 					operator as ValidOperatorComparative,
 					...operands,
 				)
@@ -975,26 +924,26 @@ class DecoratorSolid extends Decorator {
 			expression_equality: (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
 				// `a !== b` is syntax sugar for `!(a === b)`
 				(operator === Operator.NID) ? new AST.ASTNodeOperationUnary(
-					h.equalityExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_equality'>,
 					Operator.NOT,
 					new AST.ASTNodeOperationBinaryEquality(
-						h.equalityExpressionFromSource(node.children[0].text + ';'),
+						node.children[0] as SyntaxNodeSupertype<'expression'>,
 						Operator.ID,
 						...operands,
 					),
 				) :
 				// `a != b` is syntax sugar for `!(a == b)`
 				(operator === Operator.NEQ) ? new AST.ASTNodeOperationUnary(
-					h.equalityExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_equality'>,
 					Operator.NOT,
 					new AST.ASTNodeOperationBinaryEquality(
-						h.equalityExpressionFromSource(node.children[0].text + ';'),
+						node.children[0] as SyntaxNodeSupertype<'expression'>,
 						Operator.EQ,
 						...operands,
 					),
 				) :
 				new AST.ASTNodeOperationBinaryEquality(
-					h.equalityExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_equality'>,
 					operator as ValidOperatorEquality,
 					...operands,
 				)
@@ -1006,16 +955,16 @@ class DecoratorSolid extends Decorator {
 			expression_conjunctive: (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
 				// `a !& b` is syntax sugar for `!(a && b)`
 				(operator === Operator.NAND) ? new AST.ASTNodeOperationUnary(
-					h.conjunctiveExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_conjunctive'>,
 					Operator.NOT,
 					new AST.ASTNodeOperationBinaryLogical(
-						h.conjunctiveExpressionFromSource(node.children[0].text + ';'),
+						node.children[0] as SyntaxNodeSupertype<'expression'>,
 						Operator.AND,
 						...operands,
 					),
 				) :
 				new AST.ASTNodeOperationBinaryLogical(
-					h.conjunctiveExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_conjunctive'>,
 					operator as ValidOperatorLogical,
 					...operands,
 				)
@@ -1027,16 +976,16 @@ class DecoratorSolid extends Decorator {
 			expression_disjunctive: (node) => ((operator: Operator, operands: [AST.ASTNodeExpression, AST.ASTNodeExpression]) => (
 				// `a !| b` is syntax sugar for `!(a || b)`
 				(operator === Operator.NOR) ? new AST.ASTNodeOperationUnary(
-					h.disjunctiveExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_disjunctive'>,
 					Operator.NOT,
 					new AST.ASTNodeOperationBinaryLogical(
-						h.disjunctiveExpressionFromSource(node.children[0].text + ';'),
+						node.children[0] as SyntaxNodeSupertype<'expression'>,
 						Operator.OR,
 						...operands,
 					),
 				) :
 				new AST.ASTNodeOperationBinaryLogical(
-					h.disjunctiveExpressionFromSource(node.text + ';'),
+					node as SyntaxNodeType<'expression_disjunctive'>,
 					operator as ValidOperatorLogical,
 					...operands,
 				)
@@ -1046,7 +995,7 @@ class DecoratorSolid extends Decorator {
 			]),
 
 			expression_conditional: (node) => new AST.ASTNodeOperationTernary(
-				h.conditionalExpressionFromSource(node.text + ';'),
+				node as SyntaxNodeType<'expression_conditional'>,
 				Operator.COND,
 				this.decorateTS(node.children[1] as SyntaxNodeSupertype<'expression'>),
 				this.decorateTS(node.children[3] as SyntaxNodeSupertype<'expression'>),
