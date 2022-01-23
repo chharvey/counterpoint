@@ -790,7 +790,7 @@ class DecoratorSolid extends Decorator {
 
 			/* ## Expressions */
 			string_template: (node) => new AST.ASTNodeTemplate(
-				h.stringTemplateFromSource(node.text + ';'),
+				node as SyntaxNodeType<'string_template'>,
 				node.children.map((c) => (isSyntaxNodeType(c, /^template_(full|head|middle|tail)$/))
 					? new AST.ASTNodeConstant(c as SyntaxNodeType<`template_${ 'full' | 'head' | 'middle' | 'tail' }`>)
 					: this.decorateTS(c as SyntaxNodeSupertype<'expression'>)
