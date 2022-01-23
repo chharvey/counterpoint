@@ -1,11 +1,26 @@
-Decorate(Word ::= IDENTIFIER) -> SemanticKey
-	:= (SemanticKey[id=TokenWorth(IDENTIFIER)]);
+_KEYWORD_OTHER =:=
+	// operator
+		| "mutable"
+		| "is"
+		| "isnt"
+		| "if"
+		| "then"
+		| "else"
+	// storage
+		| "type"
+		| "let"
+	// modifier
+		| "unfixed"
+;
+
+Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey
+	:= (SemanticKey[id=TokenWorth(_KEYWORD_OTHER)]);
 Decorate(Word ::= KEYWORD_TYPE) -> SemanticKey
 	:= (SemanticKey[id=TokenWorth(KEYWORD_TYPE)]);
 Decorate(Word ::= KEYWORD_VALUE) -> SemanticKey
 	:= (SemanticKey[id=TokenWorth(KEYWORD_VALUE)]);
-Decorate(Word ::= KEYWORD_OTHER) -> SemanticKey
-	:= (SemanticKey[id=TokenWorth(KEYWORD_OTHER)]);
+Decorate(Word ::= IDENTIFIER) -> SemanticKey
+	:= (SemanticKey[id=TokenWorth(IDENTIFIER)]);
 
 
 
@@ -20,16 +35,16 @@ Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
 
 
 
-Decorate(EntryType ::= Type) -> SemanticItemType
+Decorate(EntryType<-Named><-Optional> ::= Type) -> SemanticItemType
 	:= (SemanticItemType[optional=false] Decorate(Type));
-Decorate(EntryType_Optional ::= "?:" Type) -> SemanticItemType
+Decorate(EntryType<-Named><+Optional> ::= "?:" Type) -> SemanticItemType
 	:= (SemanticItemType[optional=true] Decorate(Type));
-Decorate(EntryType_Named ::= Word ":" Type) -> SemanticPropertyType
+Decorate(EntryType<+Named><-Optional> ::= Word ":" Type) -> SemanticPropertyType
 	:= (SemanticPropertyType[optional=false]
 		Decorate(Word)
 		Decorate(Type)
 	);
-Decorate(EntryType_Named_Optional ::= Word "?:" Type) -> SemanticPropertyType
+Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType
 	:= (SemanticPropertyType[optional=true]
 		Decorate(Word)
 		Decorate(Type)
@@ -526,7 +541,7 @@ Decorate(ExpressionDisjunctive ::= ExpressionDisjunctive "!|" ExpressionConjunct
 
 
 
-Decorate(ExpressionConditional ::= "if" Expression__0 "then" Expression__1 "else" Expression__2)
+Decorate(ExpressionConditional ::= "if" Expression__0 "then" Expression__1 "else" Expression__2) -> SemanticOperation
 	:= (SemanticOperation[operator=COND]
 		Decorate(Expression__0)
 		Decorate(Expression__1)
