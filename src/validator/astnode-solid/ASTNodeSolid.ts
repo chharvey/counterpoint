@@ -1,6 +1,8 @@
+import type {SyntaxNode} from 'tree-sitter';
 import {
 	SolidType,
 	TypeError03,
+	Punctuator,
 	Token,
 	ParseNode,
 	forEachAggregated,
@@ -55,11 +57,25 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * @param attributes - Any other attributes to attach.
 	 */
 	constructor(
-		start_node: Token|ParseNode,
+		start_node: Token | ParseNode | SyntaxNode,
 		attributes: {[key: string]: unknown} = {},
 		override readonly children: readonly ASTNodeSolid[] = [],
 	) {
-		super(start_node, attributes, children)
+		super(('tree' in start_node) ? ((node: SyntaxNode) => {
+			const source:       string = node.text;
+			const source_index: number = node.startIndex;
+			const prev_chars:   readonly string[] = [...source.slice(0, source_index)];
+			return {
+				source,
+				source_index,
+				line_index:   prev_chars.filter((c) => c === '\n').length,
+				col_index:    source_index - (prev_chars.lastIndexOf('\n') + 1),
+				tagname:      Object.values(Punctuator).find((punct) => punct === node.type) ? 'PUNCTUATOR' : node.type,
+				serialize() {
+					return Token.prototype.serialize.call(this);
+				},
+			};
+		})(start_node) : start_node, attributes, children);
 	}
 
 	get validator(): Validator {

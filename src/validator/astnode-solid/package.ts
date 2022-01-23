@@ -55,6 +55,7 @@ export {
 	Dev,
 	Serializable,
 	stringifyAttributes,
+	Punctuator,
 	Keyword,
 	Token,
 	TOKEN_SOLID as TOKEN,
