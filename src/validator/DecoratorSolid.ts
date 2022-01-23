@@ -10,6 +10,10 @@ import {
 	PARSENODE_SOLID as PARSENODE,
 } from './package.js';
 import {
+	SyntaxNodeType,
+	isSyntaxNodeType,
+} from './utils-private.js';
+import {
 	Operator,
 	ValidAccessOperator,
 	ValidTypeOperator,
@@ -27,15 +31,6 @@ import {
 import * as h from '../../test/helpers-parse.js';
 
 
-
-type SyntaxNodeType<T extends string> = SyntaxNode & {type: T} & {isNamed: true};
-function isSyntaxNodeType                  (node: SyntaxNode, regex: RegExp):             boolean;
-function isSyntaxNodeType<T extends string>(node: SyntaxNode, type: T):                   node is SyntaxNodeType<T>;
-function isSyntaxNodeType<T extends string>(node: SyntaxNode, type_or_regex: T | RegExp): node is SyntaxNodeType<T> {
-	return node.isNamed && ((typeof type_or_regex === 'string')
-		? node.type === type_or_regex
-		: type_or_regex.test(node.type));
-}
 
 type Category =
 	| 'type'
@@ -652,7 +647,7 @@ class DecoratorSolid extends Decorator {
 	decorateTS(node: SyntaxNode, config: SolidConfig = CONFIG_DEFAULT): AST.ASTNodeSolid {
 		return new Map<string, (node: SyntaxNode) => AST.ASTNodeSolid>(Object.entries({
 			source_file: (node) => new AST.ASTNodeGoal(
-				h.goalFromSource(node.text),
+				node as SyntaxNodeType<'source_file'>,
 				node.children
 					.filter((c): c is SyntaxNodeSupertype<'statement'> => isSyntaxNodeSupertype(c, 'statement'))
 					.map((c) => this.decorateTS(c)),

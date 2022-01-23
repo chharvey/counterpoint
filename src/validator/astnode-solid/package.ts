@@ -73,6 +73,9 @@ export {
 	SymbolStructureType,
 } from '../index.js';
 export {
+	SyntaxNodeType,
+} from '../utils-private.js';
+export {
 	Operator,
 	ValidAccessOperator,
 	ValidTypeOperator,

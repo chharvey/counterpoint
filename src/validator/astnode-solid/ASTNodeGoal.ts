@@ -3,11 +3,12 @@ import {
 	Builder,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
+	PARSENODE,
 	ParserSolid,
 	PARSER,
 	DECORATOR,
 	Validator,
+	SyntaxNodeType,
 } from './package.js';
 import type {Buildable} from './Buildable.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
@@ -28,7 +29,7 @@ export class ASTNodeGoal extends ASTNodeSolid implements Buildable {
 	}
 	private readonly _validator: Validator;
 	constructor(
-		start_node: ParseNode,
+		start_node: PARSENODE.ParseNodeGoal | SyntaxNodeType<'source_file'>,
 		override readonly children: readonly ASTNodeStatement[],
 		config: SolidConfig,
 	) {
