@@ -1,20 +1,28 @@
-import type {
+import {
+	Keyword,
 	TOKEN,
+	Validator,
 	SyntaxNodeType,
+	isSyntaxNodeType,
 } from './package.js';
 import {ASTNodeSolid} from './ASTNodeSolid.js';
-import * as h from '../../../test/helpers-parse.js';
 
 
 
 export class ASTNodeKey extends ASTNodeSolid {
-	readonly id: bigint;
+	private _id: bigint | null = null; // TODO use memoize decorator
+
 	constructor (start_node: TOKEN.TokenKeyword | TOKEN.TokenIdentifier | SyntaxNodeType<'word'>) {
-		const id = (('tree' in start_node)
-			? h.wordFromString(start_node.children[0].text).children[0] as TOKEN.TokenKeyword | TOKEN.TokenIdentifier
-			: start_node
-		).cook();
-		super(start_node, {id});
-		this.id = id!;
+		super(start_node);
+	}
+
+	get id(): bigint {
+		return this._id ??= ('tree' in this.start_node)
+			? (isSyntaxNodeType(this.start_node.children[0], 'identifier'))
+				? this.validator.cookTokenIdentifier(this.start_node.children[0].text)
+				: Validator.cookTokenKeyword(this.start_node.children[0].text as Keyword)
+			: (this.start_node instanceof TOKEN.TokenKeyword)
+				? Validator.cookTokenKeyword(this.start_node.source as Keyword)
+				: this.validator.cookTokenIdentifier(this.start_node.source);
 	}
 }

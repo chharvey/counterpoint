@@ -1,6 +1,9 @@
 import {
 	SolidConfig,
 	CONFIG_DEFAULT,
+	Punctuator,
+	Keyword,
+	TOKEN_SOLID as TOKEN,
 } from './package.js';
 import type {SymbolStructure} from './index.js';
 
@@ -17,8 +20,45 @@ import type {SymbolStructure} from './index.js';
  * 	to `(sum (const 2) (const 3))`
  */
 export class Validator {
+	/**
+	 * Give the unique integer identifier of a punctuator token.
+	 * The id is determined by the language specification.
+	 * @param source the token’s text
+	 * @return       the unique id identifying the token
+	 */
+	static cookTokenPunctuator(source: Punctuator): bigint {
+		const index: number = TOKEN.TokenPunctuator.PUNCTUATORS.indexOf(source);
+		if (0 <= index && index < TOKEN.TokenPunctuator.PUNCTUATORS.length) {
+			return BigInt(index) + TOKEN.TokenPunctuator.MINIMUM_VALUE;
+		} else {
+			throw new RangeError(`Token \`${ source }\` is not a valid punctuator.`);
+		}
+	}
+
+	/**
+	 * Give the unique integer identifier of a reserved keyword token.
+	 * The id is determined by the language specification.
+	 * @param source the token’s text
+	 * @return       the unique id identifying the token
+	 */
+	static cookTokenKeyword(source: Keyword): bigint {
+		const index: number = TOKEN.TokenKeyword.KEYWORDS.indexOf(source);
+		if (0 <= index && index < TOKEN.TokenKeyword.KEYWORDS.length) {
+			return BigInt(index) + TOKEN.TokenKeyword.MINIMUM_VALUE;
+		} else {
+			throw new RangeError(`Token \`${ source }\` is not a valid keyword.`);
+		}
+	}
+
+
 	/** A symbol table, which keeps tracks of variables. */
 	private readonly symbol_table: Map<bigint, SymbolStructure> = new Map();
+
+	/**
+	 * A bank of unique identifier names.
+	 * COMBAK: Note that this is only temporary, until we have identifiers bound to object and lexical environments.
+	 */
+	private readonly identifiers: Set<string> = new Set();
 
 	/**
 	 * Construct a new Validator object.
@@ -70,5 +110,15 @@ export class Validator {
 	clearSymbols(): this {
 		this.symbol_table.clear();
 		return this;
+	}
+
+	/**
+	 * Give a uniquely-generated integer identifier of a custom identifier token.
+	 * @param source the token’s text
+	 * @return       the unique id identifying the token
+	 */
+	cookTokenIdentifier(source: string): bigint {
+		this.identifiers.add(source);
+		return BigInt([...this.identifiers].indexOf(source)) + TOKEN.TokenIdentifier.MINIMUM_VALUE;
 	}
 }

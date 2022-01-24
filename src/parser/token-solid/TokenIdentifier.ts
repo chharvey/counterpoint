@@ -7,7 +7,10 @@ import {TokenSolid} from './TokenSolid.js';
 
 
 export abstract class TokenIdentifier extends TokenSolid {
-	private static readonly MINIMUM_VALUE: 0x100n = 0x100n
+	/** The minimum allowed cooked value of an identifier token. */
+	static readonly MINIMUM_VALUE = 0x100n;
+
+
 	/**
 	 * The cooked value of this Token.
 	 * If the token is a keyword, the cooked value is its contents.
@@ -30,7 +33,9 @@ export abstract class TokenIdentifier extends TokenSolid {
 			this._cooked = value + TokenIdentifier.MINIMUM_VALUE
 		}
 	}
-	/** @final */ cook(): bigint|null {
+
+	/** @deprecated This method is going away soon. Use {@link Validator#cookTokenIdentifier} instead. */
+	/** @final */ override cook(): bigint | null {
 		return this._cooked
 	}
 }

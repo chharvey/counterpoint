@@ -25,25 +25,25 @@ export class ASTNode implements Serializable {
 	/** @implements Serializable */
 	readonly tagname: string = this.constructor.name.slice('ASTNode'.length);
 	/** @implements Serializable */
-	readonly source: string = this.start_node.source;
+	readonly source: string = this.start.source;
 	/** @implements Serializable */
-	readonly source_index: number = this.start_node.source_index;
+	readonly source_index: number = this.start.source_index;
 	/** @implements Serializable */
-	readonly line_index: number = this.start_node.line_index;
+	readonly line_index: number = this.start.line_index;
 	/** @implements Serializable */
-	readonly col_index: number = this.start_node.col_index;
+	readonly col_index: number = this.start.col_index;
 
 	private _parent: ASTNode | null = null;
 
 	/**
 	 * Construct a new ASTNode object.
 	 *
-	 * @param start_node The node in the parse tree to which this ASTNode corresponds.
+	 * @param start      The node in the parse tree to which this ASTNode corresponds.
 	 * @param attributes Any other attributes to attach.
 	 * @param children   The set of child inputs that creates this ASTNode.
 	 */
 	constructor (
-		protected readonly start_node: Serializable,
+		private readonly start: Serializable,
 		private readonly attributes: {[key: string]: unknown} = {},
 		readonly children: readonly ASTNode[] = [],
 	) {

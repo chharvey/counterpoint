@@ -57,7 +57,7 @@ export abstract class ASTNodeSolid extends ASTNode {
 	 * @param attributes - Any other attributes to attach.
 	 */
 	constructor(
-		start_node: Token | ParseNode | SyntaxNode,
+		protected readonly start_node: Token | ParseNode | SyntaxNode,
 		attributes: {[key: string]: unknown} = {},
 		override readonly children: readonly ASTNodeSolid[] = [],
 	) {

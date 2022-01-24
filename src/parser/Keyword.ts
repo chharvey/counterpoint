@@ -1,14 +1,15 @@
 export enum Keyword {
-	// literal
+	// type literal
 		VOID  = 'void',
-		NULL  = 'null',
 		BOOL  = 'bool',
-		FALSE = 'false',
-		TRUE  = 'true',
 		INT   = 'int',
 		FLOAT = 'float',
 		STR   = 'str',
 		OBJ   = 'obj',
+	// value literal
+		NULL  = 'null',
+		FALSE = 'false',
+		TRUE  = 'true',
 	// operator
 		MUTABLE = 'mutable',
 		IS      = 'is',
