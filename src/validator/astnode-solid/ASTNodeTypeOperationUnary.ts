@@ -3,7 +3,8 @@ import {
 	SolidType,
 	SolidConfig,
 	CONFIG_DEFAULT,
-	ParseNode,
+	PARSENODE,
+	SyntaxNodeType,
 	Operator,
 	ValidTypeOperator,
 } from './package.js';
@@ -19,7 +20,12 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		return typ;
 	}
 	constructor (
-		start_node: ParseNode,
+		start_node:
+			| PARSENODE.ParseNodeTypeUnarySymbol
+			| PARSENODE.ParseNodeTypeUnaryKeyword
+			| SyntaxNodeType<'type_unary_symbol'>
+			| SyntaxNodeType<'type_unary_keyword'>
+		,
 		operator: ValidTypeOperator,
 		readonly operand: ASTNodeType,
 	) {

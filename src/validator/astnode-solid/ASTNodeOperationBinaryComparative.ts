@@ -11,6 +11,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	ParseNode,
+	SyntaxNodeSupertype,
 	Operator,
 	ValidOperatorComparative,
 } from './package.js';
@@ -31,7 +32,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		return expression;
 	}
 	constructor (
-		start_node: ParseNode,
+		start_node: ParseNode | SyntaxNodeSupertype<'expression'>,
 		override readonly operator: ValidOperatorComparative,
 		operand0: ASTNodeExpression,
 		operand1: ASTNodeExpression,

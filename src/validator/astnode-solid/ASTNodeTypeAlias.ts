@@ -1,17 +1,19 @@
 import * as assert from 'assert';
 import {
+	SolidType,
 	ReferenceError01,
 	ReferenceError03,
 	SolidConfig,
 	CONFIG_DEFAULT,
 	TOKEN,
-	SolidType,
 	SymbolKind,
 	SymbolStructure,
 	SymbolStructureVar,
 	SymbolStructureType,
+	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
+import * as h from '../../../test/helpers-parse.js';
 
 
 
@@ -22,9 +24,13 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		return typ;
 	}
 	readonly id: bigint;
-	constructor (start_node: TOKEN.TokenIdentifier) {
-		super(start_node, {id: start_node.cook()})
-		this.id = start_node.cook()!;
+	constructor (start_node: TOKEN.TokenIdentifier | SyntaxNodeType<'identifier'>) {
+		const id = (('tree' in start_node)
+			? h.tokenIdentifierFromTypeString(start_node.text)
+			: start_node
+		).cook();
+		super(start_node, {id});
+		this.id = id!;
 	}
 	override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {

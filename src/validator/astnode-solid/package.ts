@@ -55,6 +55,7 @@ export {
 	Dev,
 	Serializable,
 	stringifyAttributes,
+	Punctuator,
 	Keyword,
 	Token,
 	TOKEN_SOLID as TOKEN,
@@ -71,6 +72,11 @@ export {
 	SymbolStructureVar,
 	SymbolStructureType,
 } from '../index.js';
+export {
+	SyntaxNodeType,
+	isSyntaxNodeType,
+	SyntaxNodeSupertype,
+} from '../utils-private.js';
 export {
 	Operator,
 	ValidAccessOperator,

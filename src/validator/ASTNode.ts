@@ -1,8 +1,6 @@
 import {
 	Serializable,
 	stringifyAttributes,
-	Token,
-	ParseNode,
 } from './package.js';
 
 
@@ -27,25 +25,25 @@ export class ASTNode implements Serializable {
 	/** @implements Serializable */
 	readonly tagname: string = this.constructor.name.slice('ASTNode'.length);
 	/** @implements Serializable */
-	readonly source: string = this.parse_node.source;
+	readonly source: string = this.start_node.source;
 	/** @implements Serializable */
-	readonly source_index: number = this.parse_node.source_index;
+	readonly source_index: number = this.start_node.source_index;
 	/** @implements Serializable */
-	readonly line_index: number = this.parse_node.line_index;
+	readonly line_index: number = this.start_node.line_index;
 	/** @implements Serializable */
-	readonly col_index: number = this.parse_node.col_index;
+	readonly col_index: number = this.start_node.col_index;
 
 	private _parent: ASTNode | null = null;
 
 	/**
 	 * Construct a new ASTNode object.
 	 *
-	 * @param parse_node The node in the parse tree to which this ASTNode corresponds.
+	 * @param start_node The node in the parse tree to which this ASTNode corresponds.
 	 * @param attributes Any other attributes to attach.
 	 * @param children   The set of child inputs that creates this ASTNode.
 	 */
 	constructor (
-		private readonly parse_node: Token | ParseNode,
+		protected readonly start_node: Serializable,
 		private readonly attributes: {[key: string]: unknown} = {},
 		readonly children: readonly ASTNode[] = [],
 	) {

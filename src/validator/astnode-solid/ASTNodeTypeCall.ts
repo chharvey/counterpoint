@@ -12,6 +12,7 @@ import {
 	SolidConfig,
 	CONFIG_DEFAULT,
 	PARSENODE,
+	SyntaxNodeType,
 } from './package.js';
 import {ASTNodeType} from './ASTNodeType.js';
 import {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
@@ -25,7 +26,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		return typ;
 	}
 	constructor (
-		start_node: PARSENODE.ParseNodeTypeCompound,
+		start_node: PARSENODE.ParseNodeTypeCompound | SyntaxNodeType<'type_compound'>,
 		readonly base: ASTNodeType,
 		readonly args: Readonly<NonemptyArray<ASTNodeType>>,
 	) {
